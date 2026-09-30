@@ -1,15 +1,23 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { Box, Button, ButtonBase, Typography } from '@mui/material'
+import { Play } from 'lucide-react'
+import { type MouseEvent, useEffect, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { List } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { SetLastGame } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import {
+  Get,
+  SetLastGame,
+  SetLastProfile,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
+import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { useNav } from '../nav/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { relativePlay } from './lastPlayed.ts'
 import { type GameStatus, loaderCaption, loadGameStatus } from './status.ts'
 
 type Game = GameInfo
@@ -24,83 +32,151 @@ const SMALL_FONT = 13
 const NORMAL_FONT = 15
 const shadow = '0 1px 2px rgba(0,0,0,0.9), 0 0 18px rgba(0,0,0,0.85)'
 
+function fail(title: string, err: unknown) {
+  useToasts.getState().push({ kind: 'error', title, body: errorMessage(err) })
+}
+
+function Art({ src, openable }: { src: string; openable: boolean }) {
+  return (
+    <>
+      <Box
+        component="img"
+        src={src}
+        alt=""
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          opacity: 0.72,
+          filter: openable ? 'none' : 'saturate(0.6)',
+        }}
+      />
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          bgcolor: openable ? 'rgba(0,0,0,0.28)' : 'rgba(0,0,0,0.55)',
+        }}
+      />
+    </>
+  )
+}
+
+function SourceBadges({ gameId }: { gameId: string }) {
+  return (
+    <>
+      {(SOURCES[gameId] ?? []).map((name) => (
+        <Box
+          key={name}
+          sx={{
+            width: 96,
+            height: 96,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            bgcolor: 'rgba(28,28,32,0.92)',
+            fontSize: name.length > LONG_NAME ? SMALL_FONT : NORMAL_FONT,
+            fontWeight: 700,
+            color: '#fff',
+          }}
+        >
+          <SourceLogo name={name} size={40} />
+          {name}
+        </Box>
+      ))}
+    </>
+  )
+}
+
 function Row({
   game,
   openable,
   note,
   loader,
+  lastPlayedName,
+  lastPlayedAt,
+  lastPlayedId,
 }: {
   game: Game
   openable: boolean
   note: string
   loader: string
+  lastPlayedName: string
+  lastPlayedAt: string
+  lastPlayedId: string
 }) {
   const { t } = useLingui()
+  const start = useLaunch((s) => s.start)
+  const rel = relativePlay(lastPlayedAt, Date.now())
+  let ago = ''
+  if (rel?.kind === 'now') {
+    ago = t`just now`
+  } else if (rel?.unit === 'minute') {
+    ago = plural(rel.n, { one: '# minute ago', other: '# minutes ago' })
+  } else if (rel?.unit === 'hour') {
+    ago = plural(rel.n, { one: '# hour ago', other: '# hours ago' })
+  } else if (rel?.unit === 'day') {
+    ago = plural(rel.n, { one: '# day ago', other: '# days ago' })
+  }
+  let lastLine = ''
+  if (lastPlayedName && ago) {
+    lastLine = t`last played ${lastPlayedName} · ${ago}`
+  } else if (lastPlayedName) {
+    lastLine = t`last played ${lastPlayedName}`
+  }
   const open = () => {
     if (game.id !== 'stardew') {
       return
     }
-    SetLastGame(game.id).catch((e: unknown) =>
-      useToasts
-        .getState()
-        .push({ kind: 'error', title: t`Could not save the last game`, body: errorMessage(e) }),
-    )
+    SetLastGame(game.id).catch((err: unknown) => fail(t`Could not save the last game`, err))
     useNav.getState().openGame(game.id)
   }
+  const playLast = (ev: MouseEvent) => {
+    ev.stopPropagation()
+    if (game.id !== 'stardew' || !lastPlayedId) {
+      return
+    }
+    SetLastGame(game.id).catch((err: unknown) => fail(t`Could not save the last game`, err))
+    SetLastProfile(game.id, lastPlayedId).catch((err: unknown) =>
+      fail(t`Could not save the open profile`, err),
+    )
+    useNav.getState().openGame(game.id)
+    start(game.id, lastPlayedId, false).then(() => undefined)
+  }
+  const loaderLine = lastLine ? t`${loader} | Steam · ${lastLine}` : t`${loader} | Steam`
   const content = (
     <>
-      {game.artUrl ? (
-        <Box
-          component="img"
-          src={game.artUrl}
-          alt=""
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            opacity: 0.72,
-            filter: openable ? 'none' : 'saturate(0.6)',
-          }}
-        />
-      ) : null}
-      {game.artUrl ? (
-        <Box
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            bgcolor: openable ? 'rgba(0,0,0,0.28)' : 'rgba(0,0,0,0.55)',
-          }}
-        />
-      ) : null}
+      {game.artUrl ? <Art src={game.artUrl} openable={openable} /> : null}
       <Box sx={{ position: 'relative', textShadow: shadow, textAlign: 'left', color: '#fff' }}>
         <Typography sx={{ fontSize: 34, fontWeight: 600, lineHeight: 1.2 }}>{game.name}</Typography>
-        <Typography sx={{ fontSize: 17 }}>{t`${loader} | Steam`}</Typography>
+        <Typography sx={{ fontSize: 17 }}>{loaderLine}</Typography>
         <Typography sx={{ mt: '6px', fontSize: 16, fontWeight: 600 }}>{note}</Typography>
       </Box>
-      <Box sx={{ position: 'relative', display: 'flex', gap: '14px' }}>
-        {(SOURCES[game.id] ?? []).map((name) => (
-          <Box
-            key={name}
+      <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '14px' }}>
+        {openable && lastPlayedId ? (
+          <Button
+            component="span"
+            variant="contained"
+            startIcon={<Play size={18} fill="currentColor" />}
+            onClick={playLast}
             sx={{
-              width: 96,
-              height: 96,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              bgcolor: 'rgba(28,28,32,0.92)',
-              fontSize: name.length > LONG_NAME ? SMALL_FONT : NORMAL_FONT,
+              flexShrink: 0,
+              borderRadius: 0,
               fontWeight: 700,
-              color: '#fff',
+              textTransform: 'none',
+              boxShadow: 'none',
+              whiteSpace: 'nowrap',
+              '& .MuiButton-startIcon': { mr: '8px' },
             }}
           >
-            <SourceLogo name={name} size={40} />
-            {name}
-          </Box>
-        ))}
+            {t`Play`}
+          </Button>
+        ) : null}
+        <SourceBadges gameId={game.id} />
       </Box>
     </>
   )
@@ -131,27 +207,31 @@ function Row({
 export function GameSelect() {
   const { t } = useLingui()
   const [status, setStatus] = useState<GameStatus | null>(null)
-  const [profileCount, setProfileCount] = useState(0)
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [lastPlayedId, setLastPlayedId] = useState('')
+  const [lastPlayedAt, setLastPlayedAt] = useState('')
   const loaderStatus = useLoader((s) => s.status)
   const checkLoader = useLoader((s) => s.check)
   useEffect(() => {
     checkLoader('stardew')
   }, [checkLoader])
   useEffect(() => {
-    Promise.all([loadGameStatus(), List('stardew')])
-      .then(([s, profiles]) => {
+    Promise.all([loadGameStatus(), List('stardew'), Get()])
+      .then(([s, listed, settings]) => {
         setStatus(s)
-        setProfileCount(profiles?.length ?? 0)
+        const next = listed ?? []
+        setProfiles(next)
+        const played = settings.lastPlayed?.stardew
+        const still = Boolean(played?.profile && next.some((p) => p.id === played.profile))
+        setLastPlayedId(still && played ? played.profile : '')
+        setLastPlayedAt(still && played ? played.at : '')
       })
-      .catch((e: unknown) =>
-        useToasts
-          .getState()
-          .push({ kind: 'error', title: t`Could not read your games`, body: errorMessage(e) }),
-      )
+      .catch((err: unknown) => fail(t`Could not read your games`, err))
   }, [t])
   if (!status) {
     return null
   }
+  const lastName = profiles.find((p) => p.id === lastPlayedId)?.name ?? ''
   const noteFor = (g: Game) => {
     if (!g.available) {
       return t`After the first release`
@@ -162,7 +242,7 @@ export function GameSelect() {
     if (g.id !== 'stardew') {
       return t`Installed`
     }
-    return plural(profileCount, {
+    return plural(profiles.length, {
       one: 'Installed · # profile',
       other: 'Installed · # profiles',
     })
@@ -177,6 +257,9 @@ export function GameSelect() {
             openable={g.available && g.installed}
             note={noteFor(g)}
             loader={loaderCaption(g.loader, g.id === 'stardew' ? loaderStatus : null)}
+            lastPlayedName={g.id === 'stardew' ? lastName : ''}
+            lastPlayedAt={g.id === 'stardew' ? lastPlayedAt : ''}
+            lastPlayedId={g.id === 'stardew' ? lastPlayedId : ''}
           />
         ))}
       </Box>

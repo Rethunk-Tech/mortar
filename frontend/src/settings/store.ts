@@ -9,6 +9,7 @@ const defaults: Settings = {
   backgroundImage: '',
   lastGame: '',
   lastProfile: {},
+  lastPlayed: {},
   gameFolders: {},
   loaders: {},
   dismissed: {},
@@ -19,6 +20,9 @@ const defaults: Settings = {
   nxmPrevious: '',
   nxmAsked: false,
   backupsKept: 5,
+  listColumns: ['on', 'name', 'version', 'author', 'source', 'category', 'status'],
+  listSortColumn: 'name',
+  listSortDir: 'asc',
 }
 
 export const useSettings = create<Settings>(() => defaults)
