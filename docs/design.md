@@ -10,7 +10,7 @@ Mortar finds a game, installs its mod loader, keeps each set of mods in its own 
 
 - **What matters:** Mortar working for NOMAD's own use with a personal Nexus API key. Registering the app with Nexus is not a v1 goal.
 - **Licence:** AGPL-3.0 (NOMAD, 2026-09-29): the same as GPL-3.0 for the desktop app, and it already covers a hosted share service if one is built here later.
-- **Scope of the first release:** Stardew Valley only, on Windows and Linux, from Steam or GOG. macOS is out (fleet CI has no macOS runners, and Wails does not cross-compile to it). Everything deferred is listed under Later.
+- **Scope of the first release:** Stardew Valley only, on Windows and Linux, from a Steam client installed directly on the system (NOMAD, 2026-09-29: no GOG, Heroic, Lutris or Flatpak Steam in v1). macOS is out (fleet CI has no macOS runners, and Wails does not cross-compile to it). Everything deferred is listed under Later.
 
 ## Stack
 
@@ -43,7 +43,7 @@ One Go module and one Vite frontend, no workspaces:
 - `internal/source/nexus`, `internal/source/github`: API clients and the download queue.
 - `internal/meta`: SMAPI's update API, the mod dataset, and their caches.
 - `internal/share`: link and `.mortar` encode and decode.
-- `internal/launch`: Steam and GOG launch, launch detection, and the SMAPI log tail sent to the frontend as events.
+- `internal/launch`: Steam launch, launch detection, and the SMAPI log tail sent to the frontend as events.
 
 ### Storage
 
@@ -86,7 +86,7 @@ Sources: SMAPI's `docs/technical/smapi.md`, `docs/technical/web.md`, `Manifest.c
 
 ### Finding the game
 
-- Steam app `413150`, through `libraryfolders.vdf`; a machine can hold several Steam accounts (NOMAD's has two `userdata` folders), so per-account files such as `localconfig.vdf` are read for the account marked `MostRecent` in `config/loginusers.vdf`. GOG: its default folders (the wiki lists Windows and Linux paths) and Heroic's install record (`~/.var/app/com.heroicgameslauncher.hgl/config/heroic/gog_store/installed.json` for the Flatpak, `~/.config/heroic/...` otherwise); Mortar launches SMAPI itself, so Heroic's own sandbox does not matter. Flatpak Steam is not supported: its sandbox cannot read Mortar's data folder (Flathub's manifest grants no home access), so Mortar says so when it finds only a Flatpak Steam. When nothing is found, first run says so and offers Browse and a retry.
+- Steam app `413150`, through `libraryfolders.vdf`; a machine can hold several Steam accounts (NOMAD's has two `userdata` folders), so per-account files such as `localconfig.vdf` are read for the account marked `MostRecent` in `config/loginusers.vdf`. Only a directly installed Steam is supported; Mortar says so when it finds only a Flatpak Steam, whose sandbox could not read Mortar's data folder anyway (Flathub's manifest grants no home access). When nothing is found, first run says so and offers Browse and a retry.
 
 ### SMAPI
 
@@ -103,7 +103,6 @@ Concrete launched with `steam -applaunch <appid> <args>`, and Steam passes the a
 
 - **Linux:** `steam -applaunch 413150 --skip-terminal -- --mods-path <absolute path to the profile's mods/>`. SMAPI's launcher script reads its own flags (`--skip-terminal`, which then starts SMAPI with `--no-terminal`; SMAPI still writes its log file then, `smapi.md:46`) only before `--` and forwards only what follows it (`unix-launcher.sh:35-43`), which is why SMAPI's docs say arguments do not work on Linux. Measured: without `--` the path is ignored; with it SMAPI loads the profile, including through NOMAD's real Steam client, where the game reached the main menu. Without `--skip-terminal` the launcher opened its console in `xterm`, unreadably small.
 - **Windows:** Steam starts `Stardew Valley.exe`, not SMAPI, so first run shows the line `"<game>\StardewModdingAPI.exe" %command%` to paste into Stardew's Steam launch options once, with a copy button; Mortar reads `LaunchOptions` from `localconfig.vdf` to warn when it is missing, and never writes that file (Steam rewrites it while running). Mortar then adds `--mods-path <path>` after the app ID. **Measure on Windows:** how the arguments order around `%command%`, and whether SMAPI needs `--no-terminal`.
-- **GOG:** no client to go through, so Mortar starts SMAPI itself: `StardewModdingAPI.exe --mods-path <path>` on Windows, and on Linux the game folder's `StardewValley` launcher with `--skip-terminal -- --mods-path <path>`.
 - **Success or failure:** `steam -applaunch` returns at once, so a launch counts as started when `SMAPI-latest.txt` (`~/.config/StardewValley/ErrorLogs/`, `%APPDATA%\StardewValley\ErrorLogs\`) is rewritten within 60 s, and failed otherwise, with a hint (on Windows, the missing launch-options line). When SMAPI exits having written no log, the console shows its exit code.
 - **Running:** a `StardewModdingAPI` process whose `--mods-path` is a profile's folder means that profile is in use; its folder is locked against changes until the process exits (Windows locks loaded files anyway).
 - **Console:** the Console tab tails `SMAPI-latest.txt` from the moment the launch counts as started.
@@ -173,7 +172,7 @@ Go tests run against local HTTP test servers replaying recorded Nexus, GitHub, S
 After the go-ahead, each milestone ends with the gate green and NOMAD clicking through it on Linux:
 
 1. **Shell and look.** Wails v3 app on patched GTK4, frameless translucent window with the themed title bar, Concrete's theme and layout with real empty states, Lingui. In parallel: the GTK4 transparency PR to Wails.
-2. **Stardew core.** Steam and GOG discovery, SMAPI install and updates (GitHub releases), bundled mods, profiles (create, duplicate, delete to trash, toggle, copy into `mods/`), installing from a picked or dropped archive, launch with success detection (the Windows path is written here and measured in milestone 6), and the console.
+2. **Stardew core.** Steam discovery, SMAPI install and updates (GitHub releases), bundled mods, profiles (create, duplicate, delete to trash, toggle, copy into `mods/`), installing from a picked or dropped archive, launch with success detection (the Windows path is written here and measured in milestone 6), and the console.
 3. **Mod data.** Manifest scanning, dependency and problem checks, SMAPI API update checks, update and rollback with carry-over and save backups, the dataset, the save scan.
 4. **Nexus.** Personal-key sign-in, runtime `nxm://` registration, the guided download queue, GitHub mod sources.
 5. **Sharing.** Links, the import preview, `.mortar` files, and the static page.
@@ -187,7 +186,7 @@ Not in the first release, each by NOMAD on 2026-09-29; re-weigh only when asked:
 - A hosted share service with short codes and share versioning (running costs).
 - Importing the game folder's existing `Mods` folder as a profile.
 - In-app mod search and browsing: Mortar links out to Nexus.
-- CurseForge (needs an API key application) and ModDrop (no documented download API) as sources; the Xbox app version; Steam Deck; Flatpak Steam.
+- CurseForge (needs an API key application) and ModDrop (no documented download API) as sources; the Xbox app version; GOG and launchers such as Heroic and Lutris; Steam Deck; Flatpak Steam.
 - Windows code signing.
 - Per-profile save isolation.
 - Registering Mortar with Nexus (SSO slug; ask then about OAuth, which Vortex uses via `nxm://oauth/callback`, and Collections), and a mode for users without an API key: an `nxm://` link cannot become a download without API authentication (HTTP 401 without a key, measured), so that mode would pick up manual downloads from the Downloads folder by their manifests, with confirmation.

@@ -65,7 +65,7 @@ A side sheet listing each item: waiting for your click (free accounts), download
 
 Only when no game is set up, never on later launches:
 
-1. Find Stardew Valley (Steam, then GOG) and show what was found, with **Browse** for another folder; when nothing is found, say so, with Browse and a retry.
+1. Find Stardew Valley in Steam and show what was found, with **Browse** for another folder; when nothing is found, say so, with Browse and a retry.
 2. Install SMAPI if it is missing (one click, unattended). On Windows with Steam, show the launch-options line to paste into Stardew's Steam properties, with a copy button.
 3. Create the first profile: empty, or from a pasted share link, which asks for the Nexus sign-in first when the import needs downloads.
 
