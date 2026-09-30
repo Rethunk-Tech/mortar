@@ -6,6 +6,7 @@ import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConsoleTab, CopyLog } from '../console/ConsoleTab.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
+import { NotesTab } from '../notes/NotesTab.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { compact } from './compact.ts'
 import { NameField } from './NameField.tsx'
@@ -215,16 +216,15 @@ export function Detail() {
           }}
         >
           <Tab value="mods" label={t`Mods`} />
+          <Tab value="notes" label={t`Notes`} />
           <Tab value="console" label={t`Console`} />
         </Tabs>
         <Box sx={{ flexGrow: 1 }} />
         {tab === 'console' ? <CopyLog /> : null}
       </Box>
-      {tab === 'console' ? (
-        <ConsoleTab game={game} />
-      ) : (
-        <ModsTab key={`mods-${profile.id}`} profile={profile} />
-      )}
+      {tab === 'console' ? <ConsoleTab game={game} /> : null}
+      {tab === 'notes' ? <NotesTab key={`notes-${profile.id}`} profile={profile} /> : null}
+      {tab === 'mods' ? <ModsTab key={`mods-${profile.id}`} profile={profile} /> : null}
     </Box>
   )
 }
