@@ -104,6 +104,11 @@ msgstr "Resolve"
 msgid "Make your first profile"
 msgstr "Make your first profile"
 
+#: src/settings/sections/NexusMods.tsx:48
+#: src/shell/NexusAccount.tsx:33
+msgid "Free"
+msgstr "Free"
+
 #: src/firstrun/SmapiStep.tsx:136
 msgid "Mortar found it in Steam's settings."
 msgstr "Mortar found it in Steam's settings."
@@ -163,6 +168,11 @@ msgstr "Grid view"
 msgid "Review"
 msgstr "Review"
 
+#: src/settings/sections/NexusMods.tsx:95
+#: src/shell/NexusAccount.tsx:59
+msgid "Sign in"
+msgstr "Sign in"
+
 #: src/mods/Toolbar.tsx:123
 msgid "List view"
 msgstr "List view"
@@ -211,7 +221,7 @@ msgstr "SMAPI is the loader every Stardew mod needs. It goes into the game folde
 msgid "{name} is marked broken for this game version."
 msgstr "{name} is marked broken for this game version."
 
-#: src/shell/AppMenu.tsx:33
+#: src/shell/AppMenu.tsx:34
 msgid "Could not quit Mortar"
 msgstr "Could not quit Mortar"
 
@@ -249,6 +259,10 @@ msgstr "Found in your Steam library"
 msgid "New profile"
 msgstr "New profile"
 
+#: src/shell/NexusAccount.tsx:27
+msgid "Not signed in"
+msgstr "Not signed in"
+
 #: src/firstrun/FindStep.tsx:125
 #: src/settings/sections/GameSettings.tsx:35
 #: src/settings/sections/GameSettings.tsx:40
@@ -275,7 +289,7 @@ msgstr "Rename profile"
 msgid "Could not run that action"
 msgstr "Could not run that action"
 
-#: src/settings/SettingsPage.tsx:26
+#: src/settings/SettingsPage.tsx:27
 msgid "Appearance"
 msgstr "Appearance"
 
@@ -355,6 +369,10 @@ msgstr "Could not read the mods"
 #: src/profiles/store.ts:64
 msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
+
+#: src/settings/sections/NexusMods.tsx:25
+msgid "Could not sign in"
+msgstr "Could not sign in"
 
 #: src/console/ConsoleTab.tsx:57
 msgid "Info"
@@ -448,7 +466,7 @@ msgid "Installing…"
 msgstr "Installing…"
 
 #: src/settings/sections/About.tsx:17
-#: src/shell/AppMenu.tsx:59
+#: src/shell/AppMenu.tsx:60
 msgid "Mortar"
 msgstr "Mortar"
 
@@ -518,6 +536,11 @@ msgstr "Also updates {0} (same download)"
 msgid "Log copied"
 msgstr "Log copied"
 
+#: src/settings/sections/NexusMods.tsx:64
+#: src/shell/NexusAccount.tsx:47
+msgid "Sign out"
+msgstr "Sign out"
+
 #: src/firstrun/FindStep.tsx:94
 msgid "Choose your Stardew Valley folder"
 msgstr "Choose your Stardew Valley folder"
@@ -559,7 +582,7 @@ msgstr "Enable {0}"
 msgid "SMAPI {0} installed"
 msgstr "SMAPI {0} installed"
 
-#: src/shell/AppMenu.tsx:99
+#: src/shell/AppMenu.tsx:100
 msgid "About Mortar"
 msgstr "About Mortar"
 
@@ -594,6 +617,10 @@ msgstr "Remove filter {mod}"
 #: src/games/GameSelect.tsx:141
 msgid "After the first release"
 msgstr "After the first release"
+
+#: src/settings/sections/NexusMods.tsx:99
+msgid "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
+msgstr "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 
 #: src/firstrun/ProfileStep.tsx:92
 msgid "Create profile"
@@ -641,7 +668,7 @@ msgstr "Problem: {text}"
 msgid "Trace"
 msgstr "Trace"
 
-#: src/settings/SettingsPage.tsx:27
+#: src/settings/SettingsPage.tsx:28
 msgid "Data"
 msgstr "Data"
 
@@ -687,7 +714,7 @@ msgid "Notifications"
 msgstr "Notifications"
 
 #: src/profiles/ProfilesPage.tsx:338
-#: src/settings/SettingsPage.tsx:52
+#: src/settings/SettingsPage.tsx:55
 msgid "Back"
 msgstr "Back"
 
@@ -713,7 +740,7 @@ msgstr "{0} needs this version or newer."
 msgid "Not affiliated"
 msgstr "Not affiliated"
 
-#: src/shell/AppMenu.tsx:110
+#: src/shell/AppMenu.tsx:111
 msgid "Open data folder"
 msgstr "Open data folder"
 
@@ -773,7 +800,7 @@ msgstr "Mods"
 msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
-#: src/shell/AppMenu.tsx:121
+#: src/shell/AppMenu.tsx:122
 msgid "Source code"
 msgstr "Source code"
 
@@ -958,6 +985,10 @@ msgstr "Spring"
 msgid "Couldn't close the window"
 msgstr "Couldn't close the window"
 
+#: src/settings/sections/NexusMods.tsx:53
+msgid "Free accounts need one click on Nexus for every download. Mortar opens each file's page in turn and takes the download from your click."
+msgstr "Free accounts need one click on Nexus for every download. Mortar opens each file's page in turn and takes the download from your click."
+
 #: src/profiles/ProfilesPage.tsx:377
 msgid "No profiles yet."
 msgstr "No profiles yet."
@@ -1073,6 +1104,11 @@ msgstr "Three steps and you are playing with mods."
 msgid "Enabled"
 msgstr "Enabled"
 
+#: src/settings/sections/NexusMods.tsx:48
+#: src/shell/NexusAccount.tsx:33
+msgid "Premium"
+msgstr "Premium"
+
 #. placeholder {0}: dup.name
 #: src/mods/DuplicateDialog.tsx:85
 msgid "{profileName} has {0} more than once. SMAPI loads only one, so pick which to keep. The others are switched off, not deleted."
@@ -1130,7 +1166,7 @@ msgstr "Saved · {n, plural, one {# min ago} other {# min ago}}"
 msgid "Could not restore the profile"
 msgstr "Could not restore the profile"
 
-#: src/shell/AppMenu.tsx:128
+#: src/shell/AppMenu.tsx:129
 msgid "Quit"
 msgstr "Quit"
 
@@ -1143,8 +1179,8 @@ msgstr "Details of {0}"
 msgid "Filter {total, plural, one {# mod} other {# mods}}"
 msgstr "Filter {total, plural, one {# mod} other {# mods}}"
 
-#: src/shell/AppMenu.tsx:41
-#: src/shell/AppMenu.tsx:78
+#: src/shell/AppMenu.tsx:42
+#: src/shell/AppMenu.tsx:79
 msgid "Mortar menu"
 msgstr "Mortar menu"
 
@@ -1214,8 +1250,8 @@ msgid "{0} · in use"
 msgstr "{0} · in use"
 
 #: src/mods/ModDetail.tsx:128
-#: src/settings/SettingsPage.tsx:65
-#: src/shell/AppMenu.tsx:88
+#: src/settings/SettingsPage.tsx:68
+#: src/shell/AppMenu.tsx:89
 #: src/shell/TitleBar.tsx:107
 msgid "Settings"
 msgstr "Settings"
@@ -1299,7 +1335,7 @@ msgstr "Install SMAPI"
 msgid "Cool and calm"
 msgstr "Cool and calm"
 
-#: src/settings/SettingsPage.tsx:28
+#: src/settings/SettingsPage.tsx:30
 msgid "About"
 msgstr "About"
 
@@ -1386,6 +1422,10 @@ msgstr "Steam's launch options for Stardew Valley lack the SMAPI line. Set them 
 msgid "Browse Nexus"
 msgstr "Browse Nexus"
 
+#: src/settings/sections/NexusMods.tsx:44
+msgid "Signed in as {name}"
+msgstr "Signed in as {name}"
+
 #: src/mods/DuplicateDialog.tsx:37
 msgid "Gets update checks."
 msgstr "Gets update checks."
@@ -1402,6 +1442,11 @@ msgstr "Could not save notes"
 #: src/mods/ModDetail.tsx:47
 msgid "Switched off"
 msgstr "Switched off"
+
+#: src/settings/SettingsPage.tsx:29
+#: src/shell/NexusAccount.tsx:24
+msgid "Nexus Mods"
+msgstr "Nexus Mods"
 
 #: src/console/ConsoleTab.tsx:350
 msgid "Clear"
@@ -1469,7 +1514,7 @@ msgstr "Reading your saves…"
 msgid "{season} {day}, year {year}"
 msgstr "{season} {day}, year {year}"
 
-#: src/settings/SettingsPage.tsx:40
+#: src/settings/SettingsPage.tsx:43
 msgid "Settings sections"
 msgstr "Settings sections"
 
@@ -1572,3 +1617,7 @@ msgstr "No config.json yet"
 #: src/game/Detail.tsx:261
 msgid "{gameName} settings"
 msgstr "{gameName} settings"
+
+#: src/settings/sections/NexusMods.tsx:76
+msgid "Personal API key"
+msgstr "Personal API key"
