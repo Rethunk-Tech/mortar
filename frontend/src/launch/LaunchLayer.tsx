@@ -63,11 +63,11 @@ function Spinner() {
 function Overlay({ game }: { game: string }) {
   const { t } = useLingui()
   const name = useProfiles((s) => s.game?.name ?? '')
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const status = useLaunch((s) => s.status)
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === status?.profile))
   const entries = useConsole((s) => s.entries)
   const setTab = useTab((s) => s.setTab)
   const hide = useLaunch((s) => s.hide)
-  const status = useLaunch((s) => s.status)
   const hidden = useLaunch((s) => s.hidden)
   if (status?.game !== game || status.state !== State.Launching || hidden) {
     return null

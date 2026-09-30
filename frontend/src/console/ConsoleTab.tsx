@@ -42,10 +42,12 @@ const dots: Record<Level, string> = {
   [Level.Alert]: '#c792ea',
 }
 
+// A launch of another profile takes the log over; its lines are not this profile's to show.
 function useVisible() {
   const entries = useConsole((s) => s.entries)
   const filters = useConsole((s) => s.filters)
-  return useMemo(() => visible(entries, filters), [entries, filters])
+  const mine = useConsole((s) => s.shown.profile) === useProfiles((s) => s.openId)
+  return useMemo(() => (mine ? visible(entries, filters) : []), [mine, entries, filters])
 }
 
 function LevelToggles() {
@@ -338,11 +340,26 @@ export function ConsoleTab({ game }: { game: string }) {
   const { load, setMods, clearFilters, setTimestamps, setFollow } = useConsole.getState()
   const profile = useProfiles((s) => s.openId)
   const rows = useVisible()
+  // Launching another profile resets the log to it; this one's history is read again once that launch settles.
+  const launchingOther = useLaunch(
+    (s) => s.status?.state === State.Launching && s.status.game === game && s.status.profile !== profile,
+  )
   const [loaded, setLoaded] = useState(false)
   useEffect(() => {
+    if (launchingOther) {
+      return
+    }
+    let live = true
     setLoaded(false)
-    load(game, profile).then(() => setLoaded(true))
-  }, [game, profile, load])
+    load(game, profile).then(() => {
+      if (live) {
+        setLoaded(true)
+      }
+    })
+    return () => {
+      live = false
+    }
+  }, [game, profile, launchingOther, load])
   const total = entries.length
   let empty: string | null = null
   if (loaded && total === 0) {
