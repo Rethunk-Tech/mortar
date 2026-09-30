@@ -2,9 +2,11 @@ package nexussvc
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"sync/atomic"
 	"testing"
@@ -136,5 +138,68 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 	}
 	if d, err := s.Details(ctx, 541); err != nil || d.Page.Name != "Lookup Anything" || hits.Load() != 4 {
 		t.Fatalf("stale signed-out details = %+v, %v, hits %d", d.Page, err, hits.Load())
+	}
+}
+
+func TestDetailsRefetchesUnversionedCache(t *testing.T) {
+	keyring.MockInit()
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	files := map[string]string{
+		"/v1/users/validate.json":                          "validate.json",
+		"/v1/games/stardewvalley/mods/541.json":            "mod-541.json",
+		"/v1/games/stardewvalley/mods/541/files.json":      "files-541.json",
+		"/v1/games/stardewvalley/mods/541/changelogs.json": "changelogs-541.json",
+		"/v1/games/stardewvalley.json":                     "game.json",
+	}
+	var hits atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits.Add(1)
+		b, err := fsx.ReadFile(filepath.Join("..", "nexus", "testdata", files[r.URL.Path]))
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		_, _ = w.Write(b)
+	}))
+	defer srv.Close()
+	store, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := nexus.New("1")
+	c.BaseURL = srv.URL
+	now := time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)
+	m := &meta.Client{CacheDir: t.TempDir(), Now: func() time.Time { return now }}
+	s := NewService(store, c, m)
+	ctx := context.Background()
+	if _, err := s.SignIn(ctx, "k"); err != nil {
+		t.Fatal(err)
+	}
+	old := struct {
+		Fetched time.Time `json:"fetched"`
+		Value   Details   `json:"value"`
+	}{
+		Fetched: now,
+		Value:   Details{Changelogs: []nexus.Changelog{{Version: "0.1.0"}}},
+	}
+	b, err := json.Marshal(old)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(m.CacheDir, "nexus", "details-stardewvalley-541.json")
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, b, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	hits.Store(0)
+	d, err := s.Details(ctx, 541)
+	if err != nil || d.Changelogs[0].Version != "1.8.2" {
+		t.Fatalf("details = %+v, %v", d, err)
+	}
+	if hits.Load() == 0 {
+		t.Fatal("unversioned cache was served")
 	}
 }

@@ -24,7 +24,8 @@ type Details struct {
 	Changelogs []nexus.Changelog `json:"changelogs"`
 }
 
-// Details returns a mod page's details from the cache under <datadir>/cache/nexus, refetching once they are a day
+// Details returns a mod page's details from the cache under <datadir>/cache/nexus
+// (details-v2-… so copies from before newest-first changelogs are not reused), refetching once they are a day
 // old. Signed out, rate-limited or offline, it serves what is cached however old, and errors only with nothing.
 func (s *Service) Details(ctx context.Context, modID int) (Details, error) {
 	return meta.Cached(s.meta, detailsName(modID), detailsTTL, func() (Details, error) {
@@ -52,7 +53,9 @@ func (s *Service) Details(ctx context.Context, modID int) (Details, error) {
 	})
 }
 
-func detailsName(modID int) string { return fmt.Sprintf("nexus/details-%s-%d.json", nexus.Game, modID) }
+func detailsName(modID int) string {
+	return fmt.Sprintf("nexus/details-v2-%s-%d.json", nexus.Game, modID)
+}
 
 // CachedDetails returns whatever details are cached for modIDs, however old, without a network call, so a list of
 // many mods can show them without a burst of requests. Uncached mods are absent from the map.
