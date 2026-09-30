@@ -50,6 +50,9 @@ export function createMortarTheme(accent: AccentName): Theme {
           },
         },
       },
+      MuiToggleButton: {
+        styleOverrides: { root: { textTransform: 'none', whiteSpace: 'nowrap' } },
+      },
       MuiButton: {
         defaultProps: { disableElevation: true },
         styleOverrides: {
