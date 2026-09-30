@@ -78,8 +78,9 @@ func TestLoadRefusesSerialRollbackAndKeepsCachedManifest(t *testing.T) {
 	if !ok {
 		t.Fatal("generated key is not Ed25519")
 	}
-	body, signature := signedManifest(t, 2, private)
-	rollback, rollbackSignature := signedManifest(t, 1, private)
+	base := bundledSerial(t)
+	body, signature := signedManifest(t, base+2, private)
+	rollback, rollbackSignature := signedManifest(t, base+1, private)
 	serveRollback := false
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/components.json.sig" {
@@ -101,13 +102,13 @@ func TestLoadRefusesSerialRollbackAndKeepsCachedManifest(t *testing.T) {
 	cache := &meta.Client{CacheDir: t.TempDir(), Now: func() time.Time { return now }}
 	client := NewClient(server.Client())
 	client.ManifestURL = server.URL + "/components.json"
-	if manifest, err := client.Load(t.Context(), cache, public); err != nil || manifest.Serial != 2 {
+	if manifest, err := client.Load(t.Context(), cache, public); err != nil || manifest.Serial != base+2 {
 		t.Fatalf("initial manifest = %#v, %v", manifest, err)
 	}
 	now = now.Add(25 * time.Hour)
 	serveRollback = true
 	manifest, err := client.Load(t.Context(), cache, public)
-	if manifest.Serial != 2 {
+	if manifest.Serial != base+2 {
 		t.Fatalf("rollback replaced cached serial: %d", manifest.Serial)
 	}
 	if err == nil {
@@ -137,7 +138,7 @@ func TestDownloadHashMismatchKeepsCurrentVersion(t *testing.T) {
 	if err := client.Download(t.Context(), component, dest); err == nil {
 		t.Fatal("accepted a mismatched component")
 	}
-	got, err := os.ReadFile(dest) //nolint:gosec // the destination is a test temp file
+	got, err := os.ReadFile(filepath.Clean(dest))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,4 +169,40 @@ func fmtSHA(sum [sha256.Size]byte) string {
 		out[i*2+1] = hex[b&15]
 	}
 	return string(out)
+}
+
+func bundledSerial(t *testing.T) uint64 {
+	t.Helper()
+	bundled, err := BundledManifest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return bundled.Serial
+}
+
+func TestLoadRefusesManifestOlderThanBundled(t *testing.T) {
+	_, private, err := ed25519.GenerateKey(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	public, ok := private.Public().(ed25519.PublicKey)
+	if !ok {
+		t.Fatal("generated key is not Ed25519")
+	}
+	base := bundledSerial(t)
+	body, signature := signedManifest(t, base-1, private)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/components.json.sig" {
+			_, _ = w.Write(signature)
+			return
+		}
+		_, _ = w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+	client := NewClient(server.Client())
+	client.ManifestURL = server.URL + "/components.json"
+	manifest, err := client.Load(t.Context(), nil, public)
+	if err == nil || manifest.Serial != base {
+		t.Fatalf("older signed manifest = serial %d, %v; want the bundled serial %d and an error", manifest.Serial, err, base)
+	}
 }

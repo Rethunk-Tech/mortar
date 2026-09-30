@@ -273,12 +273,13 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 	if bundledErr != nil {
 		return Manifest{}, bundledErr
 	}
-	var oldSerial uint64
+	// A fetched manifest older than the one this build ships or the one already cached is a rollback.
+	oldSerial := bundled.Serial
 	if cache != nil {
 		if old, ok := meta.Peek[cachedManifest](cache, cacheName); ok {
 			if err := Verify(old.Manifest, old.Signature, publicKey); err == nil {
 				if parsed, err := Decode(old.Manifest); err == nil {
-					oldSerial = parsed.Serial
+					oldSerial = max(oldSerial, parsed.Serial)
 				}
 			}
 		}
@@ -299,7 +300,7 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 			fetchFailure = err
 			return cachedManifest{}, err
 		}
-		if oldSerial != 0 && parsed.Serial < oldSerial {
+		if parsed.Serial < oldSerial {
 			fetchFailure = fmt.Errorf("component manifest serial %d is older than cached serial %d", parsed.Serial, oldSerial)
 			return cachedManifest{}, fetchFailure
 		}
@@ -418,7 +419,7 @@ func (c *Client) Download(ctx context.Context, component Component, dest string)
 }
 
 func fileSHA256(path string) (string, error) {
-	f, err := os.Open(path) //nolint:gosec // the path is a verified component download
+	f, err := os.Open(filepath.Clean(path))
 	if err != nil {
 		return "", err
 	}

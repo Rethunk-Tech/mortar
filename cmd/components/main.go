@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -90,7 +91,7 @@ func run(ctx context.Context, o options) error {
 		}
 		signature := ed25519.Sign(private, body)
 		sigPath := o.output + ".sig"
-		if err := os.WriteFile(sigPath, signature, 0o600); err != nil { //nolint:gosec // the output path is a command input
+		if err := os.WriteFile(filepath.Clean(sigPath), signature, 0o600); err != nil {
 			return fmt.Errorf("write component signature: %w", err)
 		}
 		public, err := os.ReadFile(o.public)
@@ -135,7 +136,7 @@ func (t bearerTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func readSource(file string) (components.SourceFile, error) {
-	body, err := os.ReadFile(file) //nolint:gosec // the source path is a command input
+	body, err := os.ReadFile(filepath.Clean(file))
 	if err != nil {
 		return components.SourceFile{}, fmt.Errorf("read component source: %w", err)
 	}
@@ -225,7 +226,7 @@ func downloadAsset(ctx context.Context, client *http.Client, address, dest strin
 	if resp.ContentLength > maxAsset {
 		return fmt.Errorf("larger than %d MiB", maxAsset>>20)
 	}
-	file, err := os.OpenFile(dest, os.O_WRONLY|os.O_TRUNC, 0o600) //nolint:gosec // the destination is a generated temp file
+	file, err := os.OpenFile(filepath.Clean(dest), os.O_WRONLY|os.O_TRUNC, 0o600)
 	if err != nil {
 		return err
 	}
@@ -277,7 +278,7 @@ func normalizeVersion(version string) string {
 
 func nextSerial(output string) (uint64, error) {
 	var previous components.Manifest
-	if body, err := os.ReadFile(output); err == nil { //nolint:gosec // the output path is a command input
+	if body, err := os.ReadFile(filepath.Clean(output)); err == nil {
 		if json.Unmarshal(body, &previous) != nil {
 			previous.Serial = 0
 		}
@@ -295,7 +296,7 @@ func nextSerial(output string) (uint64, error) {
 }
 
 func readPrivateKey(path string) (ed25519.PrivateKey, error) {
-	body, err := os.ReadFile(path) //nolint:gosec // the signing-key path is supplied by the environment
+	body, err := os.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return nil, fmt.Errorf("read signing key: %w", err)
 	}
@@ -315,7 +316,7 @@ func readPrivateKey(path string) (ed25519.PrivateKey, error) {
 }
 
 func fileSHA256(file string) (string, error) {
-	f, err := os.Open(file) //nolint:gosec // the generator opened this temporary file
+	f, err := os.Open(filepath.Clean(file))
 	if err != nil {
 		return "", err
 	}

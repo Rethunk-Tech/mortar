@@ -6,3 +6,5 @@ frontend/bindings
 build/linux/appimage/build
 build/windows/nsis/MicrosoftEdgeWebview2Setup.exe
 /mortar
+/components.json
+/components.json.sig
