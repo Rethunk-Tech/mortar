@@ -1,0 +1,9 @@
+{
+  "1.0": ["Initial version"],
+  "1.0.11": [
+    "Fixed custom menu not resizing when zoom options changed.",
+    "Fixed Sebastian&#39;s room and the Saloon not existing as map locations."
+  ],
+  "1.8.0": ["Updated for Stardew Valley 1.4 and SMAPI 3.0", "Updated Portuguese"],
+  "1.8.2": ["Fixed race condition when rendering ranges of items like sprinklers"]
+}

@@ -1,0 +1,77 @@
+{
+  "id": 1303,
+  "name": "Stardew Valley",
+  "forum_url": "https://forums.nexusmods.com/games/19-stardew-valley/",
+  "nexusmods_url": "https://www.nexusmods.com/stardewvalley",
+  "genre": "Simulation",
+  "file_count": 181757,
+  "downloads": 842129109,
+  "domain_name": "stardewvalley",
+  "approved_date": 1457432329,
+  "file_views": 276447902,
+  "authors": 13130,
+  "file_endorsements": 15994057,
+  "mods": 34138,
+  "categories": [
+    {
+      "category_id": 1,
+      "name": "Stardew Valley",
+      "parent_category": false
+    },
+    {
+      "category_id": 2,
+      "name": "Miscellaneous",
+      "parent_category": 1
+    },
+    {
+      "category_id": 3,
+      "name": "Gameplay Mechanics",
+      "parent_category": 1
+    },
+    {
+      "category_id": 4,
+      "name": "Player",
+      "parent_category": 1
+    },
+    {
+      "category_id": 5,
+      "name": "Characters",
+      "parent_category": 1
+    },
+    {
+      "category_id": 6,
+      "name": "Portraits",
+      "parent_category": 1
+    },
+    {
+      "category_id": 7,
+      "name": "Livestock and Animals",
+      "parent_category": 1
+    },
+    {
+      "category_id": 8,
+      "name": "Pets / Horses",
+      "parent_category": 1
+    },
+    {
+      "category_id": 9,
+      "name": "Modding Tools",
+      "parent_category": 1
+    },
+    {
+      "category_id": 10,
+      "name": "User Interface",
+      "parent_category": 1
+    },
+    {
+      "category_id": 11,
+      "name": "Cheats",
+      "parent_category": 1
+    },
+    {
+      "category_id": 12,
+      "name": "Audio",
+      "parent_category": 1
+    }
+  ]
+}

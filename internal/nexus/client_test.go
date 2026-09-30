@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -30,6 +32,8 @@ func serve(t *testing.T, status *atomic.Int32, hourly string, hits *atomic.Int32
 		"/v1/users/validate.json":                                        "validate.json",
 		"/v1/games/stardewvalley/mods/541.json":                          "mod-541.json",
 		"/v1/games/stardewvalley/mods/541/files.json":                    "files-541.json",
+		"/v1/games/stardewvalley/mods/541/changelogs.json":               "changelogs-541.json",
+		"/v1/games/stardewvalley.json":                                   "game.json",
 		"/v1/games/stardewvalley/mods/541/files/3001/download_link.json": "download-link.json",
 	}
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +81,7 @@ func TestReplays(t *testing.T) {
 	}
 
 	files, err := c.Files(ctx, 541)
-	if err != nil || len(files) != 2 || files[0] != (File{FileID: 3001, FileName: "Content Patcher-541-2-0-0.zip", Version: "2.0.0", ModVersion: "2.0.0", Category: "MAIN", SizeKB: 2048, IsPrimary: true}) || files[1].Category != "" {
+	if err != nil || len(files) != 2 || files[0] != (File{FileID: 3001, FileName: "Content Patcher-541-2-0-0.zip", Name: "Content Patcher", Version: "2.0.0", ModVersion: "2.0.0", Category: "MAIN", SizeKB: 2048, IsPrimary: true, Uploaded: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)}) || files[1].Category != "" {
 		t.Fatalf("files = %+v, %v", files, err)
 	}
 
@@ -90,7 +94,7 @@ func TestReplays(t *testing.T) {
 func TestModCachedOnDisk(t *testing.T) {
 	var status, hits atomic.Int32
 	c := serve(t, &status, "1900", &hits)
-	want := Mod{Name: "Content Patcher", Author: "Pathoschild", PictureURL: "https://staticdelivery.nexusmods.com/mods/1303/images/541-0.png", EndorsementCount: 12345, Summary: "Load content packs that change the game's data and assets."}
+	want := Mod{Name: "Lookup Anything", Author: "Pathoschild", PictureURL: "https://staticdelivery.nexusmods.com/mods/1303/images/541-0-1482010183.png", EndorsementCount: 201516, Summary: "See live info about whatever's under your cursor when you press F1. Learn a villager's favourite gifts, when a crop will be ready to harvest, how long a fence will last, why your farm animals are unhappy, and more."}
 	for range 2 {
 		m, err := c.Mod(context.Background(), 541)
 		if err != nil || m != want {
@@ -99,6 +103,38 @@ func TestModCachedOnDisk(t *testing.T) {
 	}
 	if hits.Load() != 1 {
 		t.Fatalf("hits = %d, want the second call served from disk", hits.Load())
+	}
+}
+
+func TestPageChangelogsCategories(t *testing.T) {
+	var status, hits atomic.Int32
+	c := serve(t, &status, "1900", &hits)
+	ctx := context.Background()
+
+	p, err := c.Page(ctx, 541)
+	if err != nil || p.ModID != 541 || p.Version != "1.55.0" || p.UploadedBy != "Pathoschild" || p.CategoryID != 10 ||
+		p.Downloads != 9915155 || p.UniqueDownloads != 3726255 || p.Adult || !p.Available || p.Status != "published" ||
+		!p.Created.Equal(time.Date(2016, 9, 19, 2, 37, 8, 0, time.UTC)) || !p.Updated.Equal(time.Date(2026, 3, 15, 2, 54, 41, 0, time.UTC)) ||
+		!strings.HasPrefix(p.Description, "See live info") {
+		t.Fatalf("page = %+v, %v", p, err)
+	}
+
+	logs, err := c.Changelogs(ctx, 541, 3)
+	want := []Changelog{
+		{Version: "1.8.2", Notes: []string{"Fixed race condition when rendering ranges of items like sprinklers"}},
+		{Version: "1.8.0", Notes: []string{"Updated for Stardew Valley 1.4 and SMAPI 3.0", "Updated Portuguese"}},
+		{Version: "1.0.11", Notes: []string{"Fixed custom menu not resizing when zoom options changed.", "Fixed Sebastian's room and the Saloon not existing as map locations."}},
+	}
+	if err != nil || !reflect.DeepEqual(logs, want) {
+		t.Fatalf("changelogs = %+v, %v", logs, err)
+	}
+	if none, err := parseChangelogs([]byte("[]"), 5); err != nil || len(none) != 0 {
+		t.Fatalf("empty changelogs = %+v, %v", none, err)
+	}
+
+	cats, err := c.Categories(ctx)
+	if err != nil || cats[10] != "User Interface" || cats[1] != "Stardew Valley" {
+		t.Fatalf("categories = %v, %v", cats, err)
 	}
 }
 

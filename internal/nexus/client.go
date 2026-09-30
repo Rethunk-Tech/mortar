@@ -233,28 +233,35 @@ func (c *Client) Validate(ctx context.Context) (User, error) {
 	return User{ID: raw.ID, Name: raw.Name, IsPremium: raw.IsPremium}, nil
 }
 
-// File is one downloadable file of a mod; Category is empty when Nexus reports null.
+// File is one downloadable file of a mod; Category is empty when Nexus reports null. Name is its title on the
+// page and Description its BBCode.
 type File struct {
-	FileID     int    `json:"fileId"`
-	FileName   string `json:"fileName"`
-	Version    string `json:"version"`
-	ModVersion string `json:"modVersion"`
-	Category   string `json:"category"`
-	SizeKB     int64  `json:"sizeKb"`
-	IsPrimary  bool   `json:"isPrimary"`
+	FileID      int       `json:"fileId"`
+	FileName    string    `json:"fileName"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Version     string    `json:"version"`
+	ModVersion  string    `json:"modVersion"`
+	Category    string    `json:"category"`
+	SizeKB      int64     `json:"sizeKb"`
+	IsPrimary   bool      `json:"isPrimary"`
+	Uploaded    time.Time `json:"uploaded"`
 }
 
 // Files lists every file of a mod.
 func (c *Client) Files(ctx context.Context, modID int) ([]File, error) {
 	var raw struct {
 		Files []struct {
-			FileID     int     `json:"file_id"`
-			FileName   string  `json:"file_name"`
-			Version    string  `json:"version"`
-			ModVersion string  `json:"mod_version"`
-			Category   *string `json:"category_name"`
-			SizeKB     int64   `json:"size_kb"`
-			IsPrimary  bool    `json:"is_primary"`
+			FileID      int       `json:"file_id"`
+			FileName    string    `json:"file_name"`
+			Name        string    `json:"name"`
+			Description string    `json:"description"`
+			Version     string    `json:"version"`
+			ModVersion  string    `json:"mod_version"`
+			Category    *string   `json:"category_name"`
+			SizeKB      int64     `json:"size_kb"`
+			IsPrimary   bool      `json:"is_primary"`
+			Uploaded    time.Time `json:"uploaded_time"`
 		} `json:"files"`
 	}
 	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s/mods/%d/files.json", Game, modID), false, &raw); err != nil {
@@ -262,7 +269,10 @@ func (c *Client) Files(ctx context.Context, modID int) ([]File, error) {
 	}
 	files := make([]File, 0, len(raw.Files))
 	for _, f := range raw.Files {
-		file := File{FileID: f.FileID, FileName: f.FileName, Version: f.Version, ModVersion: f.ModVersion, SizeKB: f.SizeKB, IsPrimary: f.IsPrimary}
+		file := File{
+			FileID: f.FileID, FileName: f.FileName, Name: f.Name, Description: f.Description, Version: f.Version,
+			ModVersion: f.ModVersion, SizeKB: f.SizeKB, IsPrimary: f.IsPrimary, Uploaded: f.Uploaded.UTC(),
+		}
 		if f.Category != nil {
 			file.Category = *f.Category
 		}

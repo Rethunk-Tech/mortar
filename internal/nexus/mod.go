@@ -1,11 +1,14 @@
 package nexus
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"html"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
@@ -33,19 +36,134 @@ func (c *Client) Mod(ctx context.Context, modID int) (Mod, error) {
 			}
 		}
 	}
-	var raw struct {
-		Name             string `json:"name"`
-		Author           string `json:"author"`
-		PictureURL       string `json:"picture_url"`
-		EndorsementCount int    `json:"endorsement_count"`
-		Summary          string `json:"summary"`
-	}
-	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s/mods/%d.json", Game, modID), false, &raw); err != nil {
+	p, err := c.Page(ctx, modID)
+	if err != nil {
 		return Mod{}, err
 	}
-	m := Mod{Name: raw.Name, Author: raw.Author, PictureURL: raw.PictureURL, EndorsementCount: raw.EndorsementCount, Summary: raw.Summary}
+	m := Mod{Name: p.Name, Author: p.Author, PictureURL: p.PictureURL, EndorsementCount: p.Endorsements, Summary: p.Summary}
 	if dirErr == nil && os.MkdirAll(dir, 0o700) == nil {
 		_ = datadir.WriteJSON(path, m)
 	}
 	return m, nil
+}
+
+// Page is everything a mod page reports. Description is Nexus's BBCode with <br /> line breaks, unrendered.
+// Status is published, under_moderation, not_published, publish_with_game, removed, wastebinned or hidden; an
+// unavailable page comes without its text.
+type Page struct {
+	ModID           int       `json:"modId"`
+	Name            string    `json:"name"`
+	Summary         string    `json:"summary"`
+	Description     string    `json:"description"`
+	PictureURL      string    `json:"pictureUrl"`
+	Version         string    `json:"version"`
+	Author          string    `json:"author"`
+	UploadedBy      string    `json:"uploadedBy"`
+	UploaderURL     string    `json:"uploaderUrl"`
+	CategoryID      int       `json:"categoryId"`
+	Endorsements    int       `json:"endorsements"`
+	Downloads       int       `json:"downloads"`
+	UniqueDownloads int       `json:"uniqueDownloads"`
+	Created         time.Time `json:"created"`
+	Updated         time.Time `json:"updated"`
+	Adult           bool      `json:"adult"`
+	Status          string    `json:"status"`
+	Available       bool      `json:"available"`
+}
+
+// Page fetches a mod page, uncached.
+func (c *Client) Page(ctx context.Context, modID int) (Page, error) {
+	var raw struct {
+		ModID           int       `json:"mod_id"`
+		Name            string    `json:"name"`
+		Summary         string    `json:"summary"`
+		Description     string    `json:"description"`
+		PictureURL      string    `json:"picture_url"`
+		Version         string    `json:"version"`
+		Author          string    `json:"author"`
+		UploadedBy      string    `json:"uploaded_by"`
+		UploaderURL     string    `json:"uploaded_users_profile_url"`
+		CategoryID      int       `json:"category_id"`
+		Endorsements    int       `json:"endorsement_count"`
+		Downloads       int       `json:"mod_downloads"`
+		UniqueDownloads int       `json:"mod_unique_downloads"`
+		Created         time.Time `json:"created_time"`
+		Updated         time.Time `json:"updated_time"`
+		Adult           bool      `json:"contains_adult_content"`
+		Status          string    `json:"status"`
+		Available       bool      `json:"available"`
+	}
+	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s/mods/%d.json", Game, modID), false, &raw); err != nil {
+		return Page{}, err
+	}
+	p := Page(raw)
+	p.Created, p.Updated = p.Created.UTC(), p.Updated.UTC()
+	return p, nil
+}
+
+// Changelog is one version's notes, as plain text.
+type Changelog struct {
+	Version string   `json:"version"`
+	Notes   []string `json:"notes"`
+}
+
+// Changelogs returns a mod's last limit changelog versions, newest first. Nexus lists versions oldest first as
+// object keys, which a map would lose, so the object is read token by token; a mod with none answers [].
+func (c *Client) Changelogs(ctx context.Context, modID, limit int) ([]Changelog, error) {
+	var raw json.RawMessage
+	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s/mods/%d/changelogs.json", Game, modID), false, &raw); err != nil {
+		return nil, err
+	}
+	return parseChangelogs(raw, limit)
+}
+
+func parseChangelogs(raw []byte, limit int) ([]Changelog, error) {
+	dec := json.NewDecoder(bytes.NewReader(raw))
+	tok, err := dec.Token()
+	if err != nil {
+		return nil, err
+	}
+	if tok != json.Delim('{') {
+		return nil, nil
+	}
+	var all []Changelog
+	for dec.More() {
+		key, err := dec.Token()
+		if err != nil {
+			return nil, err
+		}
+		var notes []string
+		if err := dec.Decode(&notes); err != nil {
+			return nil, err
+		}
+		for i, n := range notes {
+			notes[i] = html.UnescapeString(n)
+		}
+		if v, ok := key.(string); ok && len(notes) > 0 {
+			all = append(all, Changelog{Version: v, Notes: notes})
+		}
+	}
+	out := make([]Changelog, 0, min(limit, len(all)))
+	for i := len(all) - 1; i >= 0 && len(out) < limit; i-- {
+		out = append(out, all[i])
+	}
+	return out, nil
+}
+
+// Categories maps the game's category IDs to their names.
+func (c *Client) Categories(ctx context.Context) (map[int]string, error) {
+	var raw struct {
+		Categories []struct {
+			ID   int    `json:"category_id"`
+			Name string `json:"name"`
+		} `json:"categories"`
+	}
+	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s.json", Game), false, &raw); err != nil {
+		return nil, err
+	}
+	out := make(map[int]string, len(raw.Categories))
+	for _, cat := range raw.Categories {
+		out[cat.ID] = cat.Name
+	}
+	return out, nil
 }
