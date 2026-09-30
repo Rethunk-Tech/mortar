@@ -392,7 +392,9 @@ func (s *Service) ForcesSMAPI(gameID string) (bool, error) {
 	return g.SteamLaunchForcesLoader(opts), nil
 }
 
-// StartVanilla launches the game through Steam without a profile mods folder or SMAPI arguments.
+// StartVanilla launches the game without a profile mods folder. On Windows that is steam -applaunch
+// with no extra arguments (Steam launch options may still force SMAPI). On Linux SMAPI replaced the
+// game launcher, so Mortar starts StardewValley-original directly.
 func (s *Service) StartVanilla(gameID string, direct bool) error {
 	g := game.Find(gameID)
 	if g == nil {

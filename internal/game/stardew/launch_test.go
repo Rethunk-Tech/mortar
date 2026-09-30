@@ -70,9 +70,9 @@ func TestCommand(t *testing.T) {
 		},
 		{
 			"linux steam vanilla", "linux",
-			launch.Request{Vanilla: true, Steam: st},
+			launch.Request{Vanilla: true, Steam: st, InstallDir: dir},
 			"/usr/bin/steam",
-			[]string{"/usr/bin/steam", "-applaunch", "413150"},
+			[]string{filepath.Join(dir, "StardewValley-original")},
 			nil,
 		},
 		{
@@ -98,6 +98,13 @@ func TestCommand(t *testing.T) {
 		},
 		{"no steam", "linux", launch.Request{ModsDir: mods}, "/usr/bin/steam", nil, launch.ErrNoSteam},
 		{"steam not on PATH", "linux", launch.Request{ModsDir: mods, Steam: st}, "", nil, launch.ErrNoSteam},
+		{
+			"linux vanilla without steam", "linux",
+			launch.Request{Vanilla: true, InstallDir: dir},
+			"",
+			[]string{filepath.Join(dir, "StardewValley-original")},
+			nil,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c, err := g.command(tc.goos, tc.req, tc.steam)
@@ -187,8 +194,9 @@ func TestVanillaLaunchSucceedsWhenAProcessAppears(t *testing.T) {
 		},
 	}
 	req := launch.Request{
-		Vanilla: true,
-		Steam:   &steam.Steam{Root: t.TempDir()},
+		Vanilla:    true,
+		InstallDir: t.TempDir(),
+		Steam:      &steam.Steam{Root: t.TempDir()},
 		Seen: func() bool {
 			n++
 			return n > 2

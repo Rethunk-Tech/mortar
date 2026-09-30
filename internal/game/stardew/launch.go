@@ -16,7 +16,8 @@ func (Game) ProcessName() string { return smapiMarker }
 
 // GameProcesses covers SMAPI, the vanilla game's native executable, and the launcher names either install leaves.
 func (Game) GameProcesses() []string {
-	return []string{smapiMarker, "Stardew Valley", linuxLauncher, linuxOriginal}
+	// StardewValley-original execs the native binary; vanilla success watches that name too.
+	return []string{smapiMarker, "Stardew Valley", linuxLauncher, linuxOriginal, "StardewValley.bin.x86_64"}
 }
 
 // LogFile is SMAPI-latest.txt, which SMAPI rewrites on each start.
@@ -59,7 +60,7 @@ func (g Game) Launch(ctx context.Context, req launch.Request, onLines func([]str
 // command builds the process to start. steamPath is the `steam` found on PATH, "" when there is none.
 func (g Game) command(goos string, req launch.Request, steamPath string) (launch.Command, error) {
 	if req.Vanilla {
-		return g.vanillaCommand(goos, req, steamPath)
+		return g.vanillaCommand(goos, req)
 	}
 	if !filepath.IsAbs(req.ModsDir) {
 		return launch.Command{}, fmt.Errorf("mods folder %q is not an absolute path", req.ModsDir)
@@ -90,25 +91,26 @@ func (g Game) command(goos string, req launch.Request, steamPath string) (launch
 	return launch.Command{Name: steamPath, Args: append(appID, smapiArgs...), Failure: launch.HintSteam, Relay: true}, nil
 }
 
-func (g Game) vanillaCommand(goos string, req launch.Request, steamPath string) (launch.Command, error) {
+func (g Game) vanillaCommand(goos string, req launch.Request) (launch.Command, error) {
 	windows := goos == "windows"
-	if req.Direct {
+	if !windows || req.Direct {
 		name := "Stardew Valley.exe"
 		if !windows {
+			// SMAPI's unix-launcher.sh always execs StardewModdingAPI; steam -applaunch hits that
+			// script. There is no vanilla flag. The installer kept the unmodded game as StardewValley-original.
 			name = linuxOriginal
 		}
 		return launch.Command{Dir: req.InstallDir, Name: filepath.Join(req.InstallDir, name)}, nil
 	}
-	appID := []string{"-applaunch", g.SteamAppID()}
-	switch {
-	case req.Steam == nil:
-		return launch.Command{}, launch.ErrNoSteam
-	case windows:
-		return launch.Command{Name: filepath.Join(req.Steam.Root, "steam.exe"), Args: appID, Failure: launch.HintSteam, Relay: true}, nil
-	case steamPath == "":
+	if req.Steam == nil {
 		return launch.Command{}, launch.ErrNoSteam
 	}
-	return launch.Command{Name: steamPath, Args: appID, Failure: launch.HintSteam, Relay: true}, nil
+	return launch.Command{
+		Name:    filepath.Join(req.Steam.Root, "steam.exe"),
+		Args:    []string{"-applaunch", g.SteamAppID()},
+		Failure: launch.HintSteam,
+		Relay:   true,
+	}, nil
 }
 
 // SteamLaunchForcesLoader reports whether Steam launch options run SMAPI in place of the game.
