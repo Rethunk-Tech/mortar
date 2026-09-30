@@ -21,6 +21,8 @@ wails3 dev      # app with the Vite dev server
 wails3 build    # production binary in bin/mortar
 ```
 
+The frontend build first runs `scripts/gen-credits.ts`, which rewrites `frontend/src/settings/generated/credits.json` (the licence list on Settings › About) from `frontend/package.json` and `go.mod`; commit the file when it changes.
+
 ## Gate
 
 ```sh
