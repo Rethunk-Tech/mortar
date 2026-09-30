@@ -93,12 +93,13 @@ func run() error {
 	)
 	ready := make(chan struct{})
 	closeReady := sync.OnceFunc(func() { close(ready) })
+	defer closeReady()
 	app := application.New(application.Options{
 		Name: "Mortar",
 		Icon: appIcon,
-		// The Wayland app_id comes from the program name and must equal the desktop entry's file name, mortar.desktop,
-		// for the shell to show Mortar's icon; a renamed AppImage would otherwise report its own file name.
-		Linux: application.LinuxOptions{ProgramName: "mortar"},
+		// ApplicationID is the GtkApplication / Wayland app_id and the Linux desktop file id. It must not equal
+		// UniqueID: both become D-Bus names, and GApplication also owns ApplicationID on the session bus.
+		Linux: application.LinuxOptions{ApplicationID: "tech.rethunk.Mortar"},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
 			Middleware: application.ChainMiddleware(
@@ -301,6 +302,7 @@ func run() error {
 	}
 	queueCtx, stopQueue := context.WithCancel(context.Background())
 	defer stopQueue()
+	launchsvc.SetLife(launches, queueCtx)
 	queue.Run(queueCtx, queueSvc, nxmSvc.Assigned)
 	svc.App = app
 	loaders.App = app
