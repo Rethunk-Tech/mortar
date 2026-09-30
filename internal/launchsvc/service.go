@@ -83,14 +83,14 @@ type Service struct {
 	logs map[string]session
 	// stop ends the log follower of a launch when the game goes idle.
 	stop map[string]context.CancelFunc
-	// preparing holds games being readied for launch: their loader checked or installed, then the profile, which
-	// is recorded once the loader is in place (an install must still reach it) and from then counts as running.
+	// preparing holds the profile being readied for launch (loader check/install, then launch) and counts as running.
 	preparing map[string]string
 	seq       atomic.Int64
 	// App is set after application.New so events can be emitted.
 	App *application.App
 	// EnsureLoader installs the game's loader when it is missing or broken. Start calls it before launching.
-	EnsureLoader func(ctx context.Context, gameID string) error
+	// fromStart is true when Play requested the install, so a preparing claim for this Start must not skip it.
+	EnsureLoader func(ctx context.Context, gameID string, fromStart bool) error
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store) *Service {
@@ -98,7 +98,7 @@ func NewService(home string, s *settings.Store, profiles *profile.Store) *Servic
 		home: home, settings: s, profiles: profiles, procDir: procDirRun,
 		status: map[string]Status{}, watching: map[string]bool{},
 		logs: map[string]session{}, stop: map[string]context.CancelFunc{}, preparing: map[string]string{},
-		EnsureLoader: func(context.Context, string) error { return errors.New("the loader cannot be installed here") },
+		EnsureLoader: func(context.Context, string, bool) error { return errors.New("the loader cannot be installed here") },
 	}
 }
 
@@ -279,7 +279,7 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 	_, busy := s.preparing[gameID]
 	busy = busy || cur.State == Launching || cur.State == Running
 	if !busy {
-		s.preparing[gameID] = ""
+		s.preparing[gameID] = profileID
 	}
 	s.mu.Unlock()
 	if busy {
@@ -294,13 +294,10 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 	// otherwise launch the game on half-replaced files.
 	go func() {
 		defer s.donePreparing(gameID)
-		err := s.EnsureLoader(context.Background(), gameID)
+		err := s.EnsureLoader(context.Background(), gameID, true)
 		if err != nil {
 			err = fmt.Errorf("could not install %s: %w", g.LoaderName(), err)
 		} else {
-			s.mu.Lock()
-			s.preparing[gameID] = profileID
-			s.mu.Unlock()
 			// Reading the profile takes its lock, so a change to its mods already under way finishes first; any
 			// later one sees the profile as running.
 			if _, err = s.profiles.Mods(gameID, profileID); err == nil {

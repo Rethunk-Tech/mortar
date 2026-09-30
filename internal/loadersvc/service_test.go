@@ -124,7 +124,7 @@ func newEnsureEnv(t *testing.T) ensureEnv {
 	}
 	svc := NewService(t.TempDir(), set, items, profiles)
 	var installs atomic.Int32
-	svc.run = func(context.Context, string) (loader.Status, error) {
+	svc.run = func(context.Context, string, bool) (loader.Status, error) {
 		installs.Add(1)
 		return loader.Status{Installed: true}, nil
 	}
@@ -166,7 +166,7 @@ func TestEnsureLeavesAWorkingLoaderAlone(t *testing.T) {
 	put(t, filepath.Join(e.game, "StardewValley-original"), "x")
 	put(t, filepath.Join(e.game, "StardewValley"), "#!/bin/sh\nexec StardewModdingAPI\n")
 	put(t, filepath.Join(e.game, "Mods", "ConsoleCommands", "manifest.json"), `{"Name": "Console Commands", "Version": "4.5.2", "UniqueId": "SMAPI.ConsoleCommands", "EntryDll": "ConsoleCommands.dll"}`)
-	if _, err := e.svc.Ensure(context.Background(), "stardew"); err != nil {
+	if _, err := e.svc.Ensure(context.Background(), "stardew", false); err != nil {
 		t.Fatal(err)
 	}
 	if got := e.installs.Load(); got != 0 {
@@ -174,7 +174,7 @@ func TestEnsureLeavesAWorkingLoaderAlone(t *testing.T) {
 	}
 	// A game update replaces the launcher: SMAPI is broken and is reinstalled.
 	put(t, filepath.Join(e.game, "StardewValley"), "native launcher")
-	if _, err := e.svc.Ensure(context.Background(), "stardew"); err != nil {
+	if _, err := e.svc.Ensure(context.Background(), "stardew", false); err != nil {
 		t.Fatal(err)
 	}
 	if got := e.installs.Load(); got != 1 {
@@ -186,7 +186,7 @@ func TestInstallRefusesWhileTheGameRunsOutsideMortar(t *testing.T) {
 	e := newEnsureEnv(t)
 	e.svc.procDir = t.TempDir()
 	put(t, filepath.Join(e.svc.procDir, "4242", "cmdline"), "/games/Stardew Valley/Stardew Valley\x00")
-	if _, err := e.svc.install(context.Background(), "stardew"); err == nil || !strings.Contains(err.Error(), "is running") {
+	if _, err := e.svc.install(context.Background(), "stardew", false); err == nil || !strings.Contains(err.Error(), "is running") {
 		t.Fatalf("err = %v, want a running refusal", err)
 	}
 }

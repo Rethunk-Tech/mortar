@@ -203,7 +203,7 @@ func startEnv(t *testing.T) (*Service, profile.Profile) {
 func TestStartInstallsAMissingLoaderBeforeLaunching(t *testing.T) {
 	svc, p := startEnv(t)
 	asked, release := make(chan string), make(chan struct{})
-	svc.EnsureLoader = func(_ context.Context, id string) error {
+	svc.EnsureLoader = func(_ context.Context, id string, _ bool) error {
 		asked <- id
 		<-release
 		return errors.New("boom")
@@ -316,7 +316,7 @@ func TestConcurrentStartsLaunchOnce(t *testing.T) {
 	svc, p := startEnv(t)
 	var ensured atomic.Int32
 	release := make(chan struct{})
-	svc.EnsureLoader = func(context.Context, string) error {
+	svc.EnsureLoader = func(context.Context, string, bool) error {
 		ensured.Add(1)
 		<-release
 		return errors.New("stop here")
@@ -350,7 +350,7 @@ func TestStartWithAnInstalledLoaderWaitsForEnsureLoader(t *testing.T) {
 		t.Fatal(err)
 	}
 	asked, release := make(chan struct{}), make(chan struct{})
-	svc.EnsureLoader = func(context.Context, string) error {
+	svc.EnsureLoader = func(context.Context, string, bool) error {
 		close(asked)
 		<-release
 		return errors.New("update failed")
@@ -388,12 +388,11 @@ func TestAProfileReadiedForLaunchIsRunning(t *testing.T) {
 		t.Fatal(err)
 	}
 	svc.procDir = t.TempDir()
-	svc.preparing["stardew"] = ""
-	if svc.Running("stardew", p.ID) {
-		t.Fatal("a profile is not locked while its loader is still being checked")
-	}
 	svc.preparing["stardew"] = p.ID
-	if !svc.Running("stardew", p.ID) || svc.Running("stardew", other.ID) {
+	if !svc.Running("stardew", p.ID) {
+		t.Fatal("the profile is locked while its loader is still being checked")
+	}
+	if svc.Running("stardew", other.ID) {
 		t.Fatal("only the readied profile is running")
 	}
 }

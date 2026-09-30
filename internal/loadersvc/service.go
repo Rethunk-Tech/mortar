@@ -48,7 +48,7 @@ type Service struct {
 	// background tracks installs started by ensureInBackground.
 	background sync.WaitGroup
 	// run installs or updates the loader with busy held; tests replace it.
-	run func(ctx context.Context, id string) (loader.Status, error)
+	run func(ctx context.Context, id string, fromStart bool) (loader.Status, error)
 	// App is set after application.New so events can be emitted.
 	App *application.App
 	// procDir is where running processes are listed on Linux; tests point it at a fake.
@@ -132,7 +132,7 @@ func (s *Service) ensureBridge(id string) (profile.Bundle, error) {
 // Failures are logged and announced with StateEvent; the game may simply not be installed.
 func (s *Service) ensureInBackground(id string) {
 	s.background.Go(func() {
-		if _, err := s.Ensure(context.Background(), id); err != nil {
+		if _, err := s.Ensure(context.Background(), id, false); err != nil {
 			log.Printf("loader for %s: %v", id, err)
 		}
 	})
@@ -227,12 +227,13 @@ func (s *Service) Install(ctx context.Context, id string) (loader.Status, error)
 		return loader.Status{}, errors.New("a loader install is already running")
 	}
 	defer s.busy.Unlock()
-	return s.run(ctx, id)
+	return s.run(ctx, id, false)
 }
 
 // Ensure installs the loader when it is missing or broken, waiting for an install already running, and does
 // nothing when it is fine. A newer release is never applied here: an update can break mods, so the user does it.
-func (s *Service) Ensure(ctx context.Context, id string) (loader.Status, error) {
+// fromStart is true when Play requested this install, so a preparing claim for that Start is not treated as running.
+func (s *Service) Ensure(ctx context.Context, id string, fromStart bool) (loader.Status, error) {
 	s.busy.Lock()
 	defer s.busy.Unlock()
 	st, err := s.LocalStatus(id)
@@ -242,11 +243,11 @@ func (s *Service) Ensure(ctx context.Context, id string) (loader.Status, error) 
 	if st.Installed && !st.Broken {
 		return st, nil
 	}
-	return s.run(ctx, id)
+	return s.run(ctx, id, fromStart)
 }
 
 // install runs one install with busy held and announces its start and end.
-func (s *Service) install(ctx context.Context, id string) (st loader.Status, err error) {
+func (s *Service) install(ctx context.Context, id string, fromStart bool) (st loader.Status, err error) {
 	g, dir, err := s.target(id)
 	if err != nil {
 		return loader.Status{}, err
@@ -255,7 +256,7 @@ func (s *Service) install(ctx context.Context, id string) (st loader.Status, err
 	if err != nil {
 		return loader.Status{}, err
 	}
-	if running || s.profiles.AnyRunning(id) {
+	if running || (!fromStart && s.profiles.AnyRunning(id)) {
 		return loader.Status{}, fmt.Errorf("%s is running: close it before installing %s", g.Name(), g.LoaderName())
 	}
 	s.emit(StateEvent, State{Game: id, Installing: true})
@@ -270,6 +271,11 @@ func (s *Service) install(ctx context.Context, id string) (st loader.Status, err
 		key := store.SMAPIKey(version)
 		if err := s.items.AddDir(id, key, modsDir); err != nil {
 			return err
+		}
+		if fromStart {
+			prev := s.profiles.Running
+			s.profiles.Running = nil
+			defer func() { s.profiles.Running = prev }()
 		}
 		return s.profiles.ApplyBundled(id, profile.Bundle{Key: key, Source: profile.Source{Kind: profile.SourceSMAPI, Name: "SMAPI"}})
 	}

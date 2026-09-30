@@ -28,7 +28,7 @@ export const useInstall = create<{
       routeGame(useNav.getState().route) === null ||
       !game ||
       !profile ||
-      isLocked(useLaunch.getState().status, openId)
+      isLocked(useLaunch.getState().status, openId, useLaunch.getState().starting)
     ) {
       return
     }

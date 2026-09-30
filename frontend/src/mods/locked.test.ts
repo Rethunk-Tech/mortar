@@ -21,3 +21,9 @@ test('only a launching or running game on the open profile locks it', () => {
   expect(isLocked(status(State.Idle, 'a'), 'a')).toBe(false)
   expect(isLocked(null, 'a')).toBe(false)
 })
+
+test('Play pressed before Launching locks the open profile', () => {
+  expect(isLocked(status(State.Idle, 'a'), 'a', true)).toBe(true)
+  expect(isLocked(null, 'a', true)).toBe(true)
+  expect(isLocked(status(State.Idle, 'a'), 'a', false)).toBe(false)
+})
