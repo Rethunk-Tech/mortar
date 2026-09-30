@@ -80,3 +80,13 @@ func (s *Service) update(fn func(*settings.Settings)) (Account, error) {
 	}
 	return acct, nil
 }
+
+// ModName is the title of a Stardew Valley mod page on Nexus, for showing what a download link is for.
+func (s *Service) ModName(ctx context.Context, modID int) (string, error) {
+	c, err := Authed(s.store, s.client)
+	if err != nil {
+		return "", err
+	}
+	m, err := c.Mod(ctx, modID)
+	return m.Name, err
+}

@@ -7,7 +7,7 @@ import { MainScreen } from './game/MainScreen.tsx'
 import { GameSelect } from './games/GameSelect.tsx'
 import { loadGameStatus } from './games/status.ts'
 import { useNav } from './nav/store.ts'
-import { ArrivalCards } from './nxm/ArrivalCards.tsx'
+import { ArrivalDialog } from './nxm/ArrivalDialog.tsx'
 import { ProfilesPage } from './profiles/ProfilesPage.tsx'
 import { GameSettingsPage } from './settings/GameSettingsPage.tsx'
 import { SettingsPage } from './settings/SettingsPage.tsx'
@@ -58,7 +58,7 @@ export function App() {
         {route.name === 'setup' ? <FirstRun /> : null}
         {ready && route.name === 'game-select' ? <GameSelect /> : null}
       </AppFrame>
-      <ArrivalCards />
+      <ArrivalDialog />
       <ToastHost />
     </>
   )

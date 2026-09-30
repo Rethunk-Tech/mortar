@@ -14,9 +14,10 @@ import { useDetail } from './detail.ts'
 import { modId, sourceKind } from './lookup.ts'
 import { ModDetail } from './ModDetail.tsx'
 import { ModList } from './ModList.tsx'
-import { useContextMenuSx, useModMenuEvents } from './menu.ts'
+import { ModContextMenu, ModMenu } from './ModMenu.tsx'
+import { contextMenuProps, useContextMenu } from './menu.ts'
 import { ProblemBar } from './ProblemBar.tsx'
-import { LetterTile, ModMenu, ProblemBadge, RemoveDialog, UpdateBadge } from './parts.tsx'
+import { LetterTile, ProblemBadge, RemoveDialog, UpdateBadge } from './parts.tsx'
 import { ModSidebar } from './Sidebar.tsx'
 import { useMods, type View } from './store.ts'
 import { AddArchive, BrowseNexus, Toolbar } from './Toolbar.tsx'
@@ -30,9 +31,9 @@ function ModCard({ mod: m, profile }: { mod: Mod; profile: Profile }) {
   const openDetail = useDetail((s) => s.show)
   const selectedId = useDetail((s) => s.detailId)
   const removable = sourceKind(profile, m) !== 'smapi'
-  const menuSx = useContextMenuSx(m, removable)
   return (
     <Card
+      {...contextMenuProps(m, removable)}
       sx={{
         height: 64,
         pl: 1,
@@ -44,7 +45,6 @@ function ModCard({ mod: m, profile }: { mod: Mod; profile: Profile }) {
         borderRadius: '6px',
         outline: modId(m) === selectedId ? '1px solid' : 'none',
         outlineColor: 'primary.main',
-        ...menuSx,
         [compact]: { height: 50, '& .tile': { width: 38, height: 38, fontSize: 19 } },
       }}
     >
@@ -52,6 +52,7 @@ function ModCard({ mod: m, profile }: { mod: Mod; profile: Profile }) {
         aria-label={t`Details of ${m.name}`}
         onClick={() => openDetail(m)}
         sx={{
+          '&.Mui-focusVisible': { outlineOffset: '-2px' },
           flex: 1,
           minWidth: 0,
           height: '100%',
@@ -97,6 +98,7 @@ function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
         gap: '6px',
         px: 2,
+        pt: '4px',
         pb: 1.75,
         overflowY: 'auto',
         alignContent: 'start',
@@ -136,7 +138,6 @@ export function ModsTab({ profile }: { profile: Profile }) {
   const view = useMods((s) => s.view)
   const load = useMods((s) => s.load)
   const [query, setQuery] = useState('')
-  useModMenuEvents()
   useEffect(() => {
     useMods.setState({
       mods: [],
@@ -144,6 +145,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
     })
     useUpdates.setState({ updates: null, reviewing: false })
     useDetail.getState().show(null)
+    useContextMenu.getState().close()
     load().catch(reportUnexpected)
   }, [load])
 
@@ -203,6 +205,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
       <ModsBody profile={profile} shown={shown} view={view} />
       <ModDetail profile={profile} />
       <UpdateReview profile={profile} />
+      <ModContextMenu />
       <RemoveDialog />
       <DuplicateDialog profileName={profile.name} />
     </Box>

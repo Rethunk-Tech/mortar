@@ -14,7 +14,6 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/loadersvc"
 	"github.com/Rethunk-AI/mortar/internal/meta"
-	"github.com/Rethunk-AI/mortar/internal/modmenu"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/nexussvc"
 	"github.com/Rethunk-AI/mortar/internal/nxm"
@@ -48,10 +47,6 @@ func registerEvents() {
 	application.RegisterEvent[queue.State](queue.ChangedEvent)
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
 	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
-	application.RegisterEvent[modmenu.Target](modmenu.DetailsEvent)
-	application.RegisterEvent[modmenu.Target](modmenu.RemoveEvent)
-	application.RegisterEvent[profile.Profile](modmenu.ChangedEvent)
-	application.RegisterEvent[string](modmenu.FailedEvent)
 }
 
 func main() {
@@ -155,8 +150,6 @@ func main() {
 	profileSvc := profile.NewService(profiles)
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
 
-	menuSvc := &modmenu.Service{}
-
 	app = application.New(application.Options{
 		Name:        "Mortar",
 		Description: "Multi-game desktop mod manager",
@@ -164,7 +157,7 @@ func main() {
 			application.NewService(svc), application.NewService(gamesSvc),
 			application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
 			application.NewService(savesSvc), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
-			application.NewService(problemsSvc), application.NewService(menuSvc), application.NewService(queueSvc),
+			application.NewService(problemsSvc), application.NewService(queueSvc),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -196,20 +189,6 @@ func main() {
 	notifier.OnNotificationResponse(func(notifications.NotificationResult) {
 		window.Restore()
 		window.Focus()
-	})
-	menuSvc.Register(app, modmenu.Backend{
-		SetEnabled: func(t modmenu.Target, enabled bool) (profile.Profile, error) {
-			return profileSvc.SetModEnabled(t.Game, t.Profile, t.Key, t.UniqueID, enabled)
-		},
-		ShowFiles: func(t modmenu.Target) error {
-			return profileSvc.ShowFiles(t.Game, t.Profile, t.Key, t.UniqueID)
-		},
-		PageURL: func(t modmenu.Target) (string, error) {
-			r, err := problemsSvc.Relations(t.Game, t.Profile, t.Key, t.UniqueID)
-			return r.PageURL, err
-		},
-		OpenURL: app.Browser.OpenURL,
-		Emit:    app.Event.Emit,
 	})
 
 	window = app.Window.NewWithOptions(application.WebviewWindowOptions{

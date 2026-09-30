@@ -16,7 +16,7 @@ import type {
 import { compact } from '../game/compact.ts'
 import { useDetail } from './detail.ts'
 import { kindLabel, modId, sourceKind } from './lookup.ts'
-import { useContextMenuSx } from './menu.ts'
+import { contextMenuProps } from './menu.ts'
 import { heading } from './paper.ts'
 import { LetterTile, ModSwitch, ProblemBadge, UpdateBadge } from './parts.tsx'
 
@@ -44,15 +44,15 @@ function ModRow({ mod: m, striped, profile }: { mod: Mod; striped: boolean; prof
   const { t } = useLingui()
   const selectedId = useDetail((s) => s.detailId)
   const show = useDetail((s) => s.show)
-  const menuSx = useContextMenuSx(m, sourceKind(profile, m) !== 'smapi')
   return (
     <TableRow
       hover={true}
       selected={modId(m) === selectedId}
       onClick={() => show(m)}
+      tabIndex={0}
+      {...contextMenuProps(m, sourceKind(profile, m) !== 'smapi')}
       sx={{
         ...rowSx,
-        ...menuSx,
         height: 36,
         fontSize: 14,
         cursor: 'pointer',

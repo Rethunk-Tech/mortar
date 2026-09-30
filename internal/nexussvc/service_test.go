@@ -54,3 +54,17 @@ func TestSignInOutKeepsKeyOutOfSettings(t *testing.T) {
 		t.Fatal("key survived sign out")
 	}
 }
+
+func TestModNameNeedsASignedInAccount(t *testing.T) {
+	keyring.MockInit()
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	store, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := NewService(store, nexus.New("1"))
+	if _, err := s.ModName(context.Background(), 1); !errors.Is(err, ErrSignedOut) {
+		t.Fatalf("got %v", err)
+	}
+}

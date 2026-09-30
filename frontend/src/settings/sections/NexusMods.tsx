@@ -33,26 +33,33 @@ export function NexusMods() {
   if (signedIn) {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            p: '12px 14px',
-            bgcolor: 'rgba(12,223,100,0.12)',
-            border: '1px solid rgba(12,223,100,0.4)',
-            borderRadius: '6px',
-            fontSize: 14,
-          }}
+        <Alert
+          severity="success"
+          icon={<Check size={16} aria-hidden={true} />}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              startIcon={<LogOut size={16} />}
+              onClick={() => {
+                SignOut().catch(reportUnexpected)
+              }}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              {t`Sign out`}
+            </Button>
+          }
+          sx={{ alignItems: 'center', fontSize: 14 }}
         >
-          <Check size={16} aria-hidden={true} />
-          <span>{t`Signed in as ${name}`}</span>
-          <Chip
-            size="small"
-            color={premium ? 'primary' : 'default'}
-            label={premium ? t`Premium` : t`Free`}
-          />
-        </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>{t`Signed in as ${name}`}</span>
+            <Chip
+              size="small"
+              color={premium ? 'primary' : 'default'}
+              label={premium ? t`Premium` : t`Free`}
+            />
+          </Box>
+        </Alert>
         {premium ? null : (
           <Box sx={{ fontSize: 14, lineHeight: 1.5 }}>
             {t`Free accounts need one click on Nexus for every download. Mortar opens each file's page in turn and takes the download from your click.`}
@@ -66,16 +73,6 @@ export function NexusMods() {
           {t`Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them.`}
         </Box>
         {nxm.dialog}
-        <Button
-          variant="outlined"
-          startIcon={<LogOut size={16} />}
-          onClick={() => {
-            SignOut().catch(reportUnexpected)
-          }}
-          sx={{ alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
-        >
-          {t`Sign out`}
-        </Button>
       </Box>
     )
   }

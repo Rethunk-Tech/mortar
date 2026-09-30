@@ -1,6 +1,7 @@
 import { msg } from '@lingui/core/macro'
 import { Events, Window } from '@wailsio/runtime'
 import { create } from 'zustand'
+import { ModName } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
 import type {
   Arrival,
   Rejection,
@@ -10,10 +11,14 @@ import {
   Ignore,
   Inbox,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/service.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { SendNotification } from '../../bindings/github.com/wailsapp/wails/v3/pkg/services/notifications/notificationservice.ts'
 import { i18n } from '../i18n/index.ts'
+import { useNav } from '../nav/store.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { directProfile, NXM_GAME } from './route.ts'
 
 const rejectionText = (reason: string): string => {
   switch (reason) {
@@ -30,22 +35,42 @@ const rejectionText = (reason: string): string => {
   }
 }
 
-// A desktop notification stands in for the card while the window is minimised; clicking it brings the window up.
-async function notifyArrival(arrival: Arrival) {
+// A desktop notification stands in for the on-screen prompt while the window is minimised; clicking it brings the
+// window up.
+async function notify(arrival: Arrival, title: string, body: string) {
   if (!(await Window.IsMinimised())) {
     return
   }
-  await SendNotification({
-    id: `nxm-${arrival.id}`,
-    title: i18n._(msg`Mortar · Install Nexus mod ${arrival.link.modId}?`),
-    body: i18n._(
-      msg`You started this download on Nexus. Show Mortar to choose the profile it goes into.`,
-    ),
-  })
+  await SendNotification({ id: `nxm-${arrival.id}`, title, body })
 }
 
-// The game an nxm link for stardewvalley belongs to.
-export const NXM_GAME = 'stardew'
+const names = new Map<number, Promise<string>>()
+
+async function install(arrival: Arrival, profile: Profile) {
+  await Assign(arrival.id, NXM_GAME, profile.id)
+  const name = await modName(arrival.link.modId)
+  const profileName = profile.name
+  const title = i18n._(msg`Downloading ${name} into ${profileName}`)
+  useToasts.getState().push({ kind: 'info', title })
+  await notify(arrival, title, '')
+}
+
+export const fallbackName = (modId: number) => i18n._(msg`Nexus mod ${modId}`)
+
+// The mod's Nexus page title, fetched once per mod; the fallback stands in when signed out or offline.
+export function modName(modId: number): Promise<string> {
+  let name = names.get(modId)
+  if (!name) {
+    name = ModName(modId)
+      .then((n) => n || fallbackName(modId))
+      .catch(() => {
+        names.delete(modId)
+        return fallbackName(modId)
+      })
+    names.set(modId, name)
+  }
+  return name
+}
 
 export const useNxm = create<{
   arrivals: Arrival[]
@@ -81,8 +106,24 @@ export async function initNxm(): Promise<void> {
     }
   }
   const arrive = (a: Arrival) => {
+    const { game, openId, profiles } = useProfiles.getState()
+    const direct = directProfile(useNav.getState().route, game?.id, openId, profiles)
+    if (direct) {
+      install(a, direct).catch(reportUnexpected)
+      return
+    }
     useNxm.getState().add(a)
-    notifyArrival(a).catch(reportUnexpected)
+    modName(a.link.modId)
+      .then((name) =>
+        notify(
+          a,
+          i18n._(msg`Mortar · Install ${name}?`),
+          i18n._(
+            msg`You started this download on Nexus. Show Mortar to choose the profile it goes into.`,
+          ),
+        ),
+      )
+      .catch(reportUnexpected)
   }
   Events.On('nxm:rejected', (e) => reject(e.data))
   Events.On('nxm:arrived', (e) => arrive(e.data))

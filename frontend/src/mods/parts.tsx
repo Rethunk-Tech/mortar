@@ -7,44 +7,18 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Divider,
-  IconButton,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
   Switch,
   Tooltip,
 } from '@mui/material'
-import {
-  ArrowUp,
-  Ellipsis,
-  ExternalLink,
-  FolderOpen,
-  Info,
-  Power,
-  Trash2,
-  TriangleAlert,
-} from 'lucide-react'
-import { type ReactNode, useState } from 'react'
-import { Actions } from '../../bindings/github.com/Rethunk-AI/mortar/internal/modmenu/service.ts'
+import { ArrowUp, TriangleAlert } from 'lucide-react'
+import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useDescribe } from './describe.ts'
-import { useDetail } from './detail.ts'
-import { concerns, modId, problemsOf, siblingsOf, updateFor } from './lookup.ts'
-import { openPage, pageLabel, useMenuState } from './menu.ts'
+import { concerns, problemsOf, siblingsOf, updateFor } from './lookup.ts'
 import { paper } from './paper.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
-
-const ICONS: Record<string, ReactNode> = {
-  toggle: <Power size={16} />,
-  details: <Info size={16} />,
-  page: <ExternalLink size={16} />,
-  files: <FolderOpen size={16} />,
-  remove: <Trash2 size={16} />,
-}
 
 const HASH_MULTIPLIER = 31
 const UINT32_BITS = 32
@@ -190,72 +164,6 @@ export function RemoveButton({ mod }: { mod: Mod }) {
     >
       {t`Remove`}
     </Button>
-  )
-}
-
-export function ModMenu({ mod, removable }: { mod: Mod; removable: boolean }) {
-  const { t } = useLingui()
-  const showFiles = useMods((s) => s.showFiles)
-  const askRemove = useMods((s) => s.askRemove)
-  const setEnabled = useMods((s) => s.setEnabled)
-  const setDetail = useDetail((s) => s.show)
-  const setOpen = useDetail((s) => s.setOpen)
-  const page = useMods((s) => s.pages[modId(mod)])
-  const state = useMenuState(mod, removable)
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
-  const [actions, setActions] = useState<string[]>([])
-  const close = () => setAnchor(null)
-  const labels: Record<string, string> = {
-    toggle: mod.enabled ? t`Disable` : t`Enable`,
-    details: t`More details`,
-    page: pageLabel(state.host),
-    files: t`Show files`,
-    remove: t`Remove`,
-  }
-  const run: Record<string, () => void> = {
-    toggle: () => setEnabled(mod, !mod.enabled).catch(reportUnexpected),
-    details: () => {
-      setDetail(mod)
-      setOpen(true)
-    },
-    page: () => (page ? openPage(page).catch(reportUnexpected) : undefined),
-    files: () => showFiles(mod).catch(reportUnexpected),
-    remove: () => askRemove(mod),
-  }
-  return (
-    <>
-      <IconButton
-        aria-label={t`More actions for ${mod.name}`}
-        size="small"
-        onClick={(e) => {
-          e.stopPropagation()
-          const target = e.currentTarget
-          Actions(state.enabled, state.host, state.removable)
-            .then((list) => {
-              setActions(list ?? [])
-              setAnchor(target)
-            })
-            .catch(reportUnexpected)
-        }}
-      >
-        <Ellipsis size={18} />
-      </IconButton>
-      <Menu anchorEl={anchor} open={anchor !== null} onClose={close} slotProps={{ paper }}>
-        {actions.flatMap((a) => [
-          a === 'remove' ? <Divider key="divider" /> : null,
-          <MenuItem
-            key={a}
-            onClick={() => {
-              close()
-              run[a]?.()
-            }}
-          >
-            <ListItemIcon>{ICONS[a]}</ListItemIcon>
-            <ListItemText>{labels[a]}</ListItemText>
-          </MenuItem>,
-        ])}
-      </Menu>
-    </>
   )
 }
 

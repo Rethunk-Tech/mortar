@@ -60,13 +60,7 @@ const DRAG_TINT_ALPHA = 0.24
 const panelSx = { bgcolor: 'rgba(50,50,60,0.78)', borderRadius: '6px' }
 const menuPaper = {
   paper: {
-    sx: {
-      width: 220,
-      p: 0.75,
-      bgcolor: 'rgba(28,28,34,0.99)',
-      border: '1px solid rgba(255,255,255,0.14)',
-      borderRadius: '8px',
-    },
+    sx: { width: 220, p: 0.75 },
   },
   list: { sx: { p: 0 } },
 }

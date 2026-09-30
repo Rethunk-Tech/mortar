@@ -50,6 +50,15 @@ export function createMortarTheme(accent: AccentName): Theme {
           },
         },
       },
+      MuiMenu: {
+        styleOverrides: {
+          paper: {
+            backgroundColor: 'rgba(28,28,34,0.99)',
+            border: '1px solid rgba(255,255,255,0.14)',
+            borderRadius: 8,
+          },
+        },
+      },
       MuiToggleButton: {
         styleOverrides: { root: { textTransform: 'none', whiteSpace: 'nowrap' } },
       },
