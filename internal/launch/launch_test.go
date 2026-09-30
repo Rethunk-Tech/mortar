@@ -137,6 +137,32 @@ func TestRunSurfacesExitWhenLogIsUnchanged(t *testing.T) {
 	}
 }
 
+func TestRunStartsWhenReadyWithoutALog(t *testing.T) {
+	n := 0
+	err := Run(t.Context(), func(string, string, ...string) (<-chan error, error) {
+		return make(chan error), nil
+	}, Command{Name: "steam", Args: []string{"-applaunch", "413150"}, Failure: HintSteam, Relay: true, Ready: func() bool {
+		n++
+		return n > 2
+	}}, fast, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n < 3 {
+		t.Fatalf("Ready called %d times, want the process scan to decide success", n)
+	}
+}
+
+func TestRunFailsWhenReadyNeverSeesAProcess(t *testing.T) {
+	err := Run(context.Background(), func(string, string, ...string) (<-chan error, error) {
+		return make(chan error), nil
+	}, Command{Failure: HintSteam, Ready: func() bool { return false }}, fast, nil)
+	var f *Failure
+	if !errors.As(err, &f) || f.Hint != HintSteam {
+		t.Fatalf("err = %v, want a steam-hint failure", err)
+	}
+}
+
 func TestRunIgnoresARelayExitingBeforeTheLog(t *testing.T) {
 	log := filepath.Join(t.TempDir(), "SMAPI-latest.txt")
 	done := make(chan error, 1)

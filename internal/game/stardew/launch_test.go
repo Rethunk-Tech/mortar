@@ -54,6 +54,34 @@ func TestCommand(t *testing.T) {
 			[]string{filepath.Join(dir, "StardewModdingAPI.exe"), "--mods-path", mods},
 			nil,
 		},
+		{
+			"linux steam vanilla", "linux",
+			launch.Request{Vanilla: true, Steam: st},
+			"/usr/bin/steam",
+			[]string{"/usr/bin/steam", "-applaunch", "413150"},
+			nil,
+		},
+		{
+			"windows steam vanilla", "windows",
+			launch.Request{Vanilla: true, Steam: st},
+			"",
+			[]string{filepath.Join(st.Root, "steam.exe"), "-applaunch", "413150"},
+			nil,
+		},
+		{
+			"linux direct vanilla", "linux",
+			launch.Request{Vanilla: true, InstallDir: dir, Direct: true},
+			"",
+			[]string{filepath.Join(dir, "StardewValley-original")},
+			nil,
+		},
+		{
+			"windows direct vanilla", "windows",
+			launch.Request{Vanilla: true, InstallDir: dir, Direct: true},
+			"",
+			[]string{filepath.Join(dir, "Stardew Valley.exe")},
+			nil,
+		},
 		{"no steam", "linux", launch.Request{ModsDir: mods}, "/usr/bin/steam", nil, launch.ErrNoSteam},
 		{"steam not on PATH", "linux", launch.Request{ModsDir: mods, Steam: st}, "", nil, launch.ErrNoSteam},
 	} {
@@ -132,5 +160,27 @@ func TestLaunch(t *testing.T) {
 	var f *launch.Failure
 	if !errors.As(err, &f) || f.Hint != launch.HintSteam {
 		t.Fatalf("err = %v, want a steam-hint failure", err)
+	}
+}
+
+func TestVanillaLaunchSucceedsWhenAProcessAppears(t *testing.T) {
+	n := 0
+	g := Game{
+		LookPath:     func(string) (string, error) { return "/usr/bin/steam", nil },
+		LaunchTiming: launch.Timing{Timeout: 300 * time.Millisecond, Poll: 5 * time.Millisecond},
+		Runner: func(string, string, ...string) (<-chan error, error) {
+			return make(chan error), nil
+		},
+	}
+	req := launch.Request{
+		Vanilla: true,
+		Steam:   &steam.Steam{Root: t.TempDir()},
+		Seen: func() bool {
+			n++
+			return n > 2
+		},
+	}
+	if err := g.Launch(t.Context(), req, nil); err != nil {
+		t.Fatal(err)
 	}
 }

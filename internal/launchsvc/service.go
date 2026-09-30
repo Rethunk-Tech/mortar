@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -67,6 +68,7 @@ type Lines struct {
 type session struct {
 	buf     *launch.Buffer
 	profile string
+	vanilla bool
 }
 
 // Service exposes launch, status and stop to the frontend.
@@ -155,12 +157,14 @@ func (s *Service) procsFor(g game.Game, modsDir, profileID string) ([]launch.Pro
 	sess, ok := s.logs[g.ID()]
 	s.mu.Unlock()
 	launched := ""
+	vanilla := false
 	if ok && cur.State != Idle {
 		launched = sess.profile
+		vanilla = sess.vanilla
 	}
 	var out []launch.Process
 	for _, p := range procs {
-		if credited(p, modsDir, profileID, launched) {
+		if credited(p, modsDir, profileID, launched, vanilla) {
 			out = append(out, p)
 		}
 	}
@@ -170,7 +174,10 @@ func (s *Service) procsFor(g game.Game, modsDir, profileID string) ([]launch.Pro
 // credited reports whether the loader process p runs profileID, whose mods folder is modsDir. launched is the
 // profile of the launch Mortar made and has not seen end, if any. Where the platform gives no command line (Windows),
 // the process is credited to that profile, or to every profile when Mortar did not start it: it may run any of them.
-func credited(p launch.Process, modsDir, profileID, launched string) bool {
+func credited(p launch.Process, modsDir, profileID, launched string, vanilla bool) bool {
+	if vanilla {
+		return false
+	}
 	if p.Args == nil {
 		return launched == "" || launched == profileID
 	}
@@ -186,7 +193,7 @@ func (s *Service) Running(gameID, profileID string) bool {
 	s.mu.Lock()
 	cur, prep := s.status[gameID], s.preparing[gameID]
 	s.mu.Unlock()
-	if prep == profileID || (cur.State == Launching && cur.Profile == profileID) {
+	if (prep != "" && prep == profileID) || (cur.State == Launching && cur.Profile != "" && cur.Profile == profileID) {
 		return true
 	}
 	dir, err := s.profiles.ModsDir(gameID, profileID)
@@ -223,8 +230,29 @@ func sinceOr(t time.Time) int64 {
 }
 
 // poll syncs the stored state with the processes, and reports whether the game is still worth watching.
+func (s *Service) gameProcs(g game.Game) ([]launch.Process, error) {
+	var out []launch.Process
+	for _, name := range g.GameProcesses() {
+		ps, err := launch.Processes(s.procDir, name)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, ps...)
+	}
+	return out, nil
+}
+
+func (s *Service) seen(g game.Game) func() bool {
+	return func() bool {
+		ps, err := s.gameProcs(g)
+		return err == nil && len(ps) > 0
+	}
+}
+
 func (s *Service) poll(g game.Game) bool {
 	profileID, began := s.find(g)
+	procs, _ := s.gameProcs(g)
+	alive := len(procs) > 0
 	cur := s.current(g.ID())
 	switch {
 	case cur.State == Launching:
@@ -234,7 +262,14 @@ func (s *Service) poll(g game.Game) bool {
 		delete(s.logs, g.ID())
 		s.mu.Unlock()
 		s.set(Status{Game: g.ID(), State: Running, Profile: profileID, Since: sinceOr(began)})
-	case cur.State == Running && profileID == "":
+	case cur.State == Idle && alive:
+		s.mu.Lock()
+		delete(s.logs, g.ID())
+		s.mu.Unlock()
+		s.set(Status{Game: g.ID(), State: Running, Since: sinceOr(procs[0].Start)})
+	case cur.State == Running && cur.Profile != "" && profileID == "":
+		s.closed(g, cur, false)
+	case cur.State == Running && cur.Profile == "" && !alive:
 		s.closed(g, cur, false)
 	}
 	return s.current(g.ID()).State != Idle
@@ -310,11 +345,66 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 			// Reading the profile takes its lock, so a change to its mods already under way finishes first; any
 			// later one sees the profile as running.
 			if _, err = s.profiles.Mods(gameID, profileID); err == nil {
-				err = s.begin(g, profileID, dir, modsDir, direct)
+				err = s.begin(g, profileID, dir, modsDir, direct, false)
 			}
 		}
 		if err != nil {
 			s.set(Status{Game: gameID, State: Failed, Profile: profileID, Error: err.Error()})
+		}
+	}()
+	return nil
+}
+
+// ForcesSMAPI reports whether Steam's launch options will start SMAPI even for a vanilla launch.
+func (s *Service) ForcesSMAPI(gameID string) (bool, error) {
+	g := game.Find(gameID)
+	if g == nil {
+		return false, fmt.Errorf("unknown game %q", gameID)
+	}
+	if runtime.GOOS != "windows" {
+		return false, nil
+	}
+	st, status := steam.Locate(s.home)
+	if status != steam.Found {
+		return false, nil
+	}
+	opts, err := st.LaunchOptions(g.SteamAppID())
+	if err != nil {
+		return false, err
+	}
+	return g.SteamLaunchForcesLoader(opts), nil
+}
+
+// StartVanilla launches the game through Steam without a profile mods folder or SMAPI arguments.
+func (s *Service) StartVanilla(gameID string, direct bool) error {
+	g := game.Find(gameID)
+	if g == nil {
+		return fmt.Errorf("unknown game %q", gameID)
+	}
+	s.mu.Lock()
+	cur := s.status[gameID]
+	_, busy := s.preparing[gameID]
+	busy = busy || cur.State == Launching || cur.State == Running
+	if !busy {
+		s.preparing[gameID] = ""
+	}
+	s.mu.Unlock()
+	if busy {
+		return fmt.Errorf("%s is already running", g.Name())
+	}
+	dir, err := game.InstallDir(s.home, s.settings.Get().GameFolders, g.ID())
+	if err != nil {
+		s.donePreparing(gameID)
+		return err
+	}
+	if dir == "" {
+		s.donePreparing(gameID)
+		return fmt.Errorf("%s is not installed", g.Name())
+	}
+	go func() {
+		defer s.donePreparing(gameID)
+		if err := s.begin(g, "", dir, "", direct, true); err != nil {
+			s.set(Status{Game: gameID, State: Failed, Error: err.Error()})
 		}
 	}()
 	return nil
@@ -347,19 +437,19 @@ func (s *Service) donePreparing(gameID string) {
 }
 
 // begin starts the launch once the loader is in place.
-func (s *Service) begin(g game.Game, profileID, dir, modsDir string, direct bool) error {
+func (s *Service) begin(g game.Game, profileID, dir, modsDir string, direct, vanilla bool) error {
 	gameID := g.ID()
-	if other, _ := s.find(g); other != "" {
+	if ps, err := s.gameProcs(g); err == nil && len(ps) > 0 {
 		return fmt.Errorf("%s is already running", g.Name())
 	}
-	req := launch.Request{InstallDir: dir, ModsDir: modsDir, Direct: direct}
+	req := launch.Request{InstallDir: dir, ModsDir: modsDir, Direct: direct, Vanilla: vanilla, Seen: s.seen(g)}
 	if st, status := steam.Locate(s.home); status == steam.Found {
 		req.Steam = &st
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	buf := &launch.Buffer{}
 	s.mu.Lock()
-	s.logs[gameID], s.stop[gameID] = session{buf: buf, profile: profileID}, cancel
+	s.logs[gameID], s.stop[gameID] = session{buf: buf, profile: profileID, vanilla: vanilla}, cancel
 	s.mu.Unlock()
 	s.set(Status{Game: gameID, State: Launching, Profile: profileID, Since: time.Now().UnixMilli()})
 	s.watch(g)
@@ -403,10 +493,10 @@ func (s *Service) Lines(gameID, profileID string) ([]launch.Entry, error) {
 	sess, ok := s.logs[gameID]
 	s.mu.Unlock()
 	if ok {
-		if sess.profile != profileID {
-			return []launch.Entry{}, nil
+		if sess.vanilla || sess.profile == profileID {
+			return sess.buf.Lines(), nil
 		}
-		return sess.buf.Lines(), nil
+		return []launch.Entry{}, nil
 	}
 	path, err := g.LogFile()
 	if err != nil {
@@ -447,6 +537,9 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, req la
 	switch {
 	case err == nil:
 		s.set(Status{Game: g.ID(), State: Running, Profile: profileID, Since: time.Now().UnixMilli()})
+		if req.Vanilla {
+			s.say(g.ID(), profileID, "Started without mods")
+		}
 	case errors.Is(err, launch.ErrNoSteam):
 		s.set(Status{Game: g.ID(), State: NoSteam, Profile: profileID})
 	case errors.As(err, &exited):
@@ -471,11 +564,18 @@ func (s *Service) Stop(gameID string) error {
 	if cur.State != Running {
 		return fmt.Errorf("%s is not running", g.Name())
 	}
-	dir, err := s.profiles.ModsDir(gameID, cur.Profile)
-	if err != nil {
-		return err
+	var procs []launch.Process
+	var err error
+	if cur.Profile == "" {
+		procs, err = s.gameProcs(g)
+	} else {
+		var dir string
+		dir, err = s.profiles.ModsDir(gameID, cur.Profile)
+		if err != nil {
+			return err
+		}
+		procs, err = s.procsFor(g, dir, cur.Profile)
 	}
-	procs, err := s.procsFor(g, dir, cur.Profile)
 	if err != nil {
 		return err
 	}

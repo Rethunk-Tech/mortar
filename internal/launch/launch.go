@@ -56,6 +56,10 @@ type Request struct {
 	Steam *steam.Steam
 	// Direct launches the loader without Steam, after the user agreed to lose the overlay and playtime.
 	Direct bool
+	// Vanilla starts the game without the loader or a profile mods folder.
+	Vanilla bool
+	// Seen reports that a vanilla launch succeeded, when the game process is running. Ignored otherwise.
+	Seen func() bool
 }
 
 // Runner starts a command and returns without waiting for it to finish. exited receives the Wait
@@ -86,6 +90,8 @@ type Command struct {
 	// Relay marks a process that hands the launch to another and exits 0, such as `steam -applaunch`; a zero exit
 	// says nothing about the game, so only the log decides. A non-zero exit is still a failure.
 	Relay bool
+	// Ready, when set, is the success rule instead of a rewritten log: a vanilla launch waits for the game process.
+	Ready func() bool
 }
 
 const clockSlack = 50 * time.Millisecond
@@ -106,9 +112,10 @@ func (t Timing) withDefaults() Timing {
 	return t
 }
 
-// Run starts c and waits for its log file to be rewritten after the start, sending each batch of new log lines to
-// onLines as it appears. It returns a *Failure when the log does not change within the timeout. Once the game has
-// started, the log keeps being followed until ctx is done, with one last read then; ctx must outlive the game.
+// Run starts c and waits for success: Ready when set, otherwise the log file rewritten after the start, sending
+// each batch of new log lines to onLines as it appears. It returns a *Failure when that does not happen within
+// the timeout. Once the game has started, a log keeps being followed until ctx is done, with one last read then;
+// ctx must outlive the game.
 func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]string)) error {
 	tm = tm.withDefaults()
 	began := time.Now()
@@ -122,12 +129,20 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 	defer deadline.Stop()
 	tick := time.NewTicker(tm.Poll)
 	defer tick.Stop()
+	ok := func() bool {
+		if c.Ready != nil {
+			return c.Ready()
+		}
+		return tail.poll()
+	}
 	started := func() error {
-		go follow(ctx, &tail, tm.Poll)
+		if c.LogFile != "" {
+			go follow(ctx, &tail, tm.Poll)
+		}
 		return nil
 	}
 	for {
-		if tail.poll() {
+		if ok() {
 			return started()
 		}
 		select {
@@ -136,7 +151,7 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 		case <-deadline.C:
 			return &Failure{Hint: c.Failure, Err: errors.New("the game did not start in time")}
 		case waitErr := <-exited:
-			if tail.poll() {
+			if ok() {
 				return started()
 			}
 			if c.Relay && waitErr == nil {
@@ -186,6 +201,9 @@ type tailer struct {
 
 // poll reports whether the log has been rewritten since the launch, emitting any new lines first.
 func (t *tailer) poll() bool {
+	if t.path == "" {
+		return false
+	}
 	st, err := os.Stat(t.path)
 	if err != nil || !st.ModTime().After(t.since) {
 		return false
@@ -214,7 +232,7 @@ func (t *tailer) poll() bool {
 			batch = append(batch, l)
 		}
 	}
-	if len(batch) > 0 {
+	if len(batch) > 0 && t.onLines != nil {
 		t.onLines(batch)
 	}
 	return true
