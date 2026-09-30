@@ -94,6 +94,8 @@ type Service struct {
 	nextID  int
 	inbox   []Arrival
 	current *session
+	// gen counts previews started and discards, so a preview that finishes after a newer one does not replace it.
+	gen     int
 	pending []*pending
 }
 
@@ -318,6 +320,10 @@ func (s *Service) PreviewFile(ctx context.Context, game, file, profileID string)
 }
 
 func (s *Service) preview(ctx context.Context, game string, shared share.Shared, notes string, configs []share.Config, profileID string) (Preview, error) {
+	s.mu.Lock()
+	s.gen++
+	gen := s.gen
+	s.mu.Unlock()
 	r := &resolver{
 		meta: s.d.Meta, files: s.d.Files, signedIn: s.d.SignedIn(), premium: s.d.Premium(), env: s.d.Env(game),
 	}
@@ -339,7 +345,9 @@ func (s *Service) preview(ctx context.Context, game string, shared share.Shared,
 		SignedIn: r.signedIn, Premium: r.premium,
 	}
 	s.mu.Lock()
-	s.current = &session{id: pv.Session, game: game, preview: pv, notes: notes, configs: configs}
+	if s.gen == gen {
+		s.current = &session{id: pv.Session, game: game, preview: pv, notes: notes, configs: configs}
+	}
 	s.mu.Unlock()
 	return pv, nil
 }
@@ -347,6 +355,7 @@ func (s *Service) preview(ctx context.Context, game string, shared share.Shared,
 // Discard forgets the preview; closing the import dialog leaves nothing behind.
 func (s *Service) Discard() {
 	s.mu.Lock()
+	s.gen++
 	s.current = nil
 	s.mu.Unlock()
 }

@@ -1,9 +1,12 @@
-import { plural } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { RegisterLinks } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/service.ts'
 import { SetLastGame } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
-import type { Preview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
+import type {
+  Preview,
+  Result,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
 import {
   Discard,
   Import,
@@ -12,6 +15,7 @@ import {
   PreviewLink,
   ReadClipboard,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
+import { i18n } from '../i18n/index.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
@@ -35,6 +39,29 @@ async function showImported(game: string, intoOpen: boolean, id: string) {
   }
 }
 
+// Tells what an import did: the downloads it queued, and the name a new profile took when the shared one was taken.
+function announce(result: Result, intoOpen: boolean, sharedName: string | undefined) {
+  const { name } = result.profile
+  const { queued } = result
+  const renamed = !intoOpen && sharedName !== undefined && name !== sharedName
+  const body = [
+    queued > 0
+      ? plural(queued, { one: '# download queued', other: '# downloads queued' })
+      : i18n._(msg`Nothing to download`),
+    renamed ? i18n._(msg`A profile with that name already exists, so this one is "${name}"`) : '',
+  ]
+    .filter(Boolean)
+    .join('. ')
+  useToasts.getState().push({
+    kind: 'info',
+    title: queued > 0 ? i18n._(msg`Importing into ${name}`) : i18n._(msg`Imported ${name}`),
+    body,
+  })
+  if (queued > 0) {
+    useQueue.getState().setOpen(true)
+  }
+}
+
 export type Tab = 'link' | 'file'
 
 // The import dialog's state: what was typed or picked, the preview it produced and the mods unticked.
@@ -48,17 +75,28 @@ export function useImportFlow(game: string, profileId: string, close: () => void
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
+  // Each preview or reset takes a new number; a result for an older one arrived after it was overtaken.
+  const latest = useRef(0)
   const show = useCallback(async (pending: Promise<Preview>) => {
+    const n = latest.current + 1
+    latest.current = n
     setBusy(true)
     setError('')
     try {
-      setPreview(shownPreview(await pending))
-      setExcluded(new Set())
+      const shown = shownPreview(await pending)
+      if (n === latest.current) {
+        setPreview(shown)
+        setExcluded(new Set())
+      }
     } catch (e) {
-      setPreview(null)
-      setError(errorMessage(e))
+      if (n === latest.current) {
+        setPreview(null)
+        setError(errorMessage(e))
+      }
     } finally {
-      setBusy(false)
+      if (n === latest.current) {
+        setBusy(false)
+      }
     }
   }, [])
 
@@ -87,6 +125,8 @@ export function useImportFlow(game: string, profileId: string, close: () => void
     }
   }
   const reset = () => {
+    latest.current += 1
+    setBusy(false)
     Discard().catch(reportUnexpected)
     setPreview(null)
     setExcluded(new Set())
@@ -106,34 +146,28 @@ export function useImportFlow(game: string, profileId: string, close: () => void
   // Creates the profile (or fills the open one) and queues the downloads; this is the only place anything starts.
   const run = async (intoOpen: boolean) => {
     setBusy(true)
+    const target = intoOpen ? profileId : ''
+    let result: Result
     try {
-      const target = intoOpen ? profileId : ''
-      const result = await Import(game, preview?.session ?? '', target, [...excluded])
-      await showImported(game, intoOpen, result.profile.id)
-      const { name } = result.profile
-      const { queued } = result
-      const renamed = !intoOpen && preview !== null && name !== preview.name
-      const body = [
-        queued > 0
-          ? plural(queued, { one: '# download queued', other: '# downloads queued' })
-          : t`Nothing to download`,
-        renamed ? t`A profile with that name already exists, so this one is "${name}"` : '',
-      ]
-        .filter(Boolean)
-        .join('. ')
-      useToasts.getState().push({
-        kind: 'info',
-        title: queued > 0 ? t`Importing into ${name}` : t`Imported ${name}`,
-        body,
-      })
-      if (queued > 0) {
-        useQueue.getState().setOpen(true)
-      }
-      close()
+      result = await Import(game, preview?.session ?? '', target, [...excluded])
     } catch (e) {
       setError(errorMessage(e))
+      setBusy(false)
+      return
+    }
+    // The import already happened, so a failure to show it is not an import failure and a retry would fail.
+    try {
+      await showImported(game, intoOpen, result.profile.id)
+      announce(result, intoOpen, preview?.name)
+    } catch (e) {
+      useToasts.getState().push({
+        kind: 'error',
+        title: t`Imported, but could not show the profile`,
+        body: errorMessage(e),
+      })
     } finally {
       setBusy(false)
+      close()
     }
   }
 

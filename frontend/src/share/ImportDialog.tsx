@@ -98,8 +98,8 @@ function Body({ request }: { request: ImportRequest }) {
             },
           }}
         >
-          <Tab value="link" label={t`Link`} />
-          <Tab value="file" label={t`.mortar file`} />
+          <Tab value="link" label={t`Link`} disabled={flow.busy} />
+          <Tab value="file" label={t`.mortar file`} disabled={flow.busy} />
         </Tabs>
         <IconButton
           aria-label={t`Close`}

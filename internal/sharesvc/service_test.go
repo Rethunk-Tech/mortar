@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/nexus"
@@ -301,5 +302,50 @@ func TestImportLeavesTheConfigOfModsTheProfileHas(t *testing.T) {
 	}
 	if len(s.pending) != 1 || len(s.pending[0].Configs) != 1 || s.pending[0].Configs[0].UniqueID != "B.Mod" {
 		t.Fatalf("pending = %+v", s.pending)
+	}
+}
+
+// slowFirst makes the first Files call wait until release is closed, reporting on entered once it is waiting.
+func slowFirst(s *Service) (entered, release chan struct{}) {
+	entered, release = make(chan struct{}), make(chan struct{})
+	files := s.d.Files
+	var first atomic.Bool
+	s.d.Files = func(ctx context.Context, modID int) ([]nexus.File, error) {
+		if first.CompareAndSwap(false, true) {
+			close(entered)
+			<-release
+		}
+		return files(ctx, modID)
+	}
+	return entered, release
+}
+
+func TestAnOvertakenPreviewDoesNotReplaceTheNewer(t *testing.T) {
+	for _, discard := range []bool{false, true} {
+		s, _ := newService(t, true)
+		entered, release := slowFirst(s)
+		done := make(chan error)
+		go func() {
+			_, err := s.PreviewLink(context.Background(), "stardew", link(t, "Old", share.Ref{ModID: 100, FileID: 1}), "")
+			done <- err
+		}()
+		<-entered
+		want := ""
+		if discard {
+			s.Discard()
+		} else {
+			pv, err := s.PreviewLink(context.Background(), "stardew", link(t, "New", share.Ref{ModID: 100, FileID: 1}), "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			want = pv.Session
+		}
+		close(release)
+		if err := <-done; err != nil {
+			t.Fatal(err)
+		}
+		if got := sessionOf(s); got != want {
+			t.Errorf("discard %v: current = %q, want %q", discard, got, want)
+		}
 	}
 }
