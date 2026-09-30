@@ -19,7 +19,6 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/steam"
-	"github.com/Rethunk-AI/mortar/internal/store"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -247,12 +246,23 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 	if g == nil {
 		return fmt.Errorf("unknown game %q", gameID)
 	}
+	// preparing is claimed under the same lock as the check, so two Starts cannot both pass it.
 	s.mu.Lock()
-	busy := s.preparing[gameID]
+	cur := s.status[gameID]
+	busy := s.preparing[gameID] || cur.State == Launching || cur.State == Running
+	if !busy {
+		s.preparing[gameID] = true
+	}
 	s.mu.Unlock()
-	if cur := s.current(gameID); busy || cur.State == Launching || cur.State == Running {
+	if busy {
 		return fmt.Errorf("%s is already running", g.Name())
 	}
+	async := false
+	defer func() {
+		if !async {
+			s.donePreparing(gameID)
+		}
+	}()
 	dir, err := game.InstallDir(s.home, s.settings.Get().GameFolders, gameID)
 	if err != nil {
 		return err
@@ -270,14 +280,10 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 	if st := g.LoaderStatus(dir, s.settings.Get().Loaders[gameID]); st.Installed && !st.Broken {
 		return s.begin(g, profileID, dir, modsDir, direct)
 	}
-	s.mu.Lock()
-	s.preparing[gameID] = true
-	s.mu.Unlock()
+	async = true
 	go func() {
+		defer s.donePreparing(gameID)
 		err := s.EnsureLoader(context.Background(), gameID)
-		s.mu.Lock()
-		delete(s.preparing, gameID)
-		s.mu.Unlock()
 		if err != nil {
 			err = fmt.Errorf("could not install %s: %w", g.LoaderName(), err)
 		} else {
@@ -288,6 +294,12 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 		}
 	}()
 	return nil
+}
+
+func (s *Service) donePreparing(gameID string) {
+	s.mu.Lock()
+	delete(s.preparing, gameID)
+	s.mu.Unlock()
 }
 
 // begin starts the launch once the loader is in place.
@@ -460,16 +472,37 @@ func (s *Service) Send(gameID, command string) error {
 	if cur.State != Running {
 		return fmt.Errorf("%s is not running", g.Name())
 	}
-	if g.BridgeVersion() == "" {
-		return fmt.Errorf("%s has no console bridge", g.Name())
-	}
-	modsDir, err := s.profiles.ModsDir(gameID, cur.Profile)
+	folder, err := s.bridgeFolder(g, cur.Profile)
 	if err != nil {
 		return err
 	}
-	if err := bridge.Send(filepath.Join(modsDir, store.BridgeKey(g.BridgeVersion()), bridge.ModFolder), command); err != nil {
+	if err := bridge.Send(folder, command); err != nil {
 		return err
 	}
 	s.say(gameID, "> "+command)
 	return nil
+}
+
+// bridgeFolder is the bridge mod's folder in the profile the game runs, under the key that profile holds: a
+// Mortar update can bundle a newer bridge than the one the running game loaded.
+func (s *Service) bridgeFolder(g game.Game, profileID string) (string, error) {
+	all, err := s.profiles.List(g.ID())
+	if err != nil {
+		return "", err
+	}
+	for _, p := range all {
+		if p.ID != profileID {
+			continue
+		}
+		for _, e := range p.Entries {
+			if e.Source.Kind == profile.SourceMortar {
+				modsDir, err := s.profiles.ModsDir(g.ID(), profileID)
+				if err != nil {
+					return "", err
+				}
+				return filepath.Join(modsDir, e.Key, bridge.ModFolder), nil
+			}
+		}
+	}
+	return "", fmt.Errorf("%s has no console bridge in this profile", g.Name())
 }

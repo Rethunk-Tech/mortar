@@ -11,11 +11,12 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/game"
-	"github.com/Rethunk-AI/mortar/internal/game/stardew"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
@@ -134,7 +135,9 @@ func TestGameClosingEndsTheConsoleWithAMortarLine(t *testing.T) {
 	}
 }
 
-func TestStartInstallsAMissingLoaderBeforeLaunching(t *testing.T) {
+// startEnv is a Stardew folder without SMAPI and one profile, so Start goes through EnsureLoader.
+func startEnv(t *testing.T) (*Service, profile.Profile) {
+	t.Helper()
 	data := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", data)
 	t.Setenv("LOCALAPPDATA", data)
@@ -161,7 +164,11 @@ func TestStartInstallsAMissingLoaderBeforeLaunching(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	svc := NewService(t.TempDir(), set, profiles)
+	return NewService(t.TempDir(), set, profiles), p
+}
+
+func TestStartInstallsAMissingLoaderBeforeLaunching(t *testing.T) {
+	svc, p := startEnv(t)
 	asked, release := make(chan string), make(chan struct{})
 	svc.EnsureLoader = func(_ context.Context, id string) error {
 		asked <- id
@@ -236,11 +243,23 @@ func TestSendRunsThroughTheBridgeAndEchoesTheCommand(t *testing.T) {
 		got <- token + cmd
 		_, _ = c.Write([]byte("ok\n"))
 	}()
-	modsDir, _ := profiles.ModsDir("stardew", p.ID)
-	dir := filepath.Join(modsDir, "bridge-"+(stardew.Game{}).BridgeVersion(), "MortarSmapiBridge")
-	if err := os.MkdirAll(dir, 0o700); err != nil {
+	// The running profile holds an older bridge than the one this build bundles.
+	src := filepath.Join(t.TempDir(), "MortarSmapiBridge")
+	if err := os.MkdirAll(src, 0o700); err != nil {
 		t.Fatal(err)
 	}
+	manifest := `{"Name":"Bridge","Author":"m","Version":"0.9.0","UniqueID":"Rethunk.MortarSmapiBridge","EntryDll":"B.dll"}`
+	if err := os.WriteFile(filepath.Join(src, "manifest.json"), []byte(manifest), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := items.AddDir("stardew", "bridge-0.9.0", filepath.Dir(src)); err != nil {
+		t.Fatal(err)
+	}
+	if err := profiles.ApplyBundled("stardew", profile.Bundle{Key: "bridge-0.9.0", Source: profile.Source{Kind: profile.SourceMortar, Name: "Bridge"}}); err != nil {
+		t.Fatal(err)
+	}
+	modsDir, _ := profiles.ModsDir("stardew", p.ID)
+	dir := filepath.Join(modsDir, "bridge-0.9.0", "MortarSmapiBridge")
 	state := fmt.Sprintf(`{"port":%d,"token":"tok","pid":%d}`, addr.Port, os.Getpid())
 	if err := os.WriteFile(filepath.Join(dir, "mortar-smapi-bridge.json"), []byte(state), 0o600); err != nil {
 		t.Fatal(err)
@@ -257,5 +276,33 @@ func TestSendRunsThroughTheBridgeAndEchoesTheCommand(t *testing.T) {
 	lines := buf.Lines()
 	if len(lines) != 1 || lines[0].Mod != "Mortar" || lines[0].Message != "> help" {
 		t.Fatalf("console = %+v", lines)
+	}
+}
+
+func TestConcurrentStartsLaunchOnce(t *testing.T) {
+	svc, p := startEnv(t)
+	var ensured atomic.Int32
+	release := make(chan struct{})
+	svc.EnsureLoader = func(context.Context, string) error {
+		ensured.Add(1)
+		<-release
+		return errors.New("stop here")
+	}
+	var wg sync.WaitGroup
+	var refused atomic.Int32
+	gate := make(chan struct{})
+	for range 2 {
+		wg.Go(func() {
+			<-gate
+			if svc.Start("stardew", p.ID, false) != nil {
+				refused.Add(1)
+			}
+		})
+	}
+	close(gate)
+	wg.Wait()
+	close(release)
+	if refused.Load() != 1 {
+		t.Fatalf("%d of two concurrent Starts refused, want 1", refused.Load())
 	}
 }
