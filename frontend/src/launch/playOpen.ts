@@ -4,6 +4,16 @@ import { routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useLaunch } from './store.ts'
 
+export function windowsVanillaAfterForcesCheck(
+  ok: boolean,
+  forces: boolean,
+): 'warn' | 'start' | 'abort' {
+  if (!ok) {
+    return 'abort'
+  }
+  return forces ? 'warn' : 'start'
+}
+
 export function playOpenProfile() {
   const game = routeGame(useNav.getState().route)
   const { openId } = useProfiles.getState()

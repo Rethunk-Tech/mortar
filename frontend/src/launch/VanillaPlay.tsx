@@ -18,6 +18,8 @@ import { ChevronDown, Gamepad2, Play } from 'lucide-react'
 import { type MouseEvent, useState } from 'react'
 import { ForcesSMAPI } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { compact } from '../game/compact.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import { windowsVanillaAfterForcesCheck } from './playOpen.ts'
 import { SmapiWarnDialog } from './SmapiWarnDialog.tsx'
 import { useLaunch } from './store.ts'
 
@@ -78,13 +80,16 @@ export function VanillaPlay({
     }
     ForcesSMAPI(game)
       .then((forces) => {
-        if (forces) {
+        const next = windowsVanillaAfterForcesCheck(true, forces)
+        if (next === 'warn') {
           setSmapiWarn(true)
           return
         }
         return startVanilla(game, false)
       })
-      .catch(() => startVanilla(game, false))
+      .catch((e: unknown) => {
+        reportUnexpected(e)
+      })
   }
   return (
     <>
