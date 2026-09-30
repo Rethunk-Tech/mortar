@@ -97,6 +97,19 @@ export function createMortarTheme(accent: AccentName): Theme {
         ],
       },
       MuiChip: { styleOverrides: { label: { whiteSpace: 'nowrap' } } },
+      MuiLink: {
+        styleOverrides: {
+          root: {
+            color: 'rgba(225,225,230,0.95)',
+            textDecoration: 'underline dotted',
+            textUnderlineOffset: '0.15em',
+            '&:hover, &:focus-visible': {
+              color: 'rgba(255,255,255,0.90)',
+              textDecoration: 'underline solid',
+            },
+          },
+        },
+      },
       MuiButtonBase: {
         styleOverrides: {
           root: { '&.Mui-focusVisible': { outline: `2px solid ${main}`, outlineOffset: 2 } },
