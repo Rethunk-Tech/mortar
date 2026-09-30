@@ -506,6 +506,9 @@ func TestNewQueueClientTimesOutSlowHeaders(t *testing.T) {
 	if !ok || tr.ResponseHeaderTimeout != 20*time.Second {
 		t.Fatalf("queue HTTP client missing ResponseHeaderTimeout: %#v", s.d.HTTP)
 	}
+	if s.d.HTTP.Timeout != 30*time.Minute {
+		t.Fatalf("queue HTTP client missing Timeout: %#v", s.d.HTTP)
+	}
 }
 
 func itemIDs(st State) []string {

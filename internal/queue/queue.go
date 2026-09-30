@@ -198,7 +198,7 @@ func New(d Deps) (*Service, error) {
 			tr = dt.Clone()
 			tr.ResponseHeaderTimeout = 20 * time.Second
 		}
-		d.HTTP = &http.Client{Transport: tr}
+		d.HTTP = &http.Client{Transport: tr, Timeout: 30 * time.Minute}
 	}
 	s := &Service{d: d, kick: make(chan struct{}, 1), cancels: map[string]context.CancelFunc{}}
 	b, err := os.ReadFile(filepath.Join(d.Dir, fileName))
