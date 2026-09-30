@@ -24,6 +24,7 @@ func newEnv(t *testing.T) env {
 	t.Helper()
 	base := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", base)
+	t.Setenv("XDG_CONFIG_HOME", base)
 	t.Setenv("LOCALAPPDATA", base)
 	items, err := store.Open()
 	if err != nil {

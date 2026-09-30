@@ -209,6 +209,10 @@ func (s *Store) AddEntry(game, id, key string, source Source) (Profile, error) {
 	if err := s.unlocked(game, id); err != nil {
 		return Profile{}, err
 	}
+	return s.addEntryLocked(game, id, key, source)
+}
+
+func (s *Store) addEntryLocked(game, id, key string, source Source) (Profile, error) {
 	var placed string
 	p, err := s.updateLocked(game, id, func(p *Profile, dir string) (err error) {
 		placed, err = s.addTo(game, p, dir, key, source, nil)

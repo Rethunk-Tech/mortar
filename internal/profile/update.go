@@ -44,6 +44,10 @@ func (s *Store) moveTo(game, id, oldKey, newKey string, source *Source) (Profile
 	if err := s.unlocked(game, id); err != nil {
 		return Profile{}, err
 	}
+	return s.moveToLocked(game, id, oldKey, newKey, source)
+}
+
+func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (Profile, error) {
 	var sw swapped
 	p, err := s.updateLocked(game, id, func(p *Profile, dir string) error {
 		ei := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == oldKey })

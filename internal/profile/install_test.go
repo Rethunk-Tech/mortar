@@ -124,3 +124,30 @@ func TestStageThenInstallGitHubKeepsTheTypedSource(t *testing.T) {
 		t.Fatalf("source after a round trip through profile.json: %+v, %v", got, err)
 	}
 }
+
+func TestConcurrentInstallsOfOneModKeepOneEntry(t *testing.T) {
+	e := newEnv(t)
+	p, _ := e.Create("stardew", "P")
+	a := buildZip(t, "A.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/one.txt": "1"})
+	b := buildZip(t, "B.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/two.txt": "2"})
+
+	errs := make(chan error, 2)
+	for _, path := range []string{a, b} {
+		go func() {
+			_, err := e.InstallArchive("stardew", p.ID, path)
+			errs <- err
+		}()
+	}
+	for range 2 {
+		if err := <-errs; err != nil {
+			t.Fatal(err)
+		}
+	}
+	got, err := e.read("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Entries) != 1 {
+		t.Fatalf("entries = %+v", got.Entries)
+	}
+}

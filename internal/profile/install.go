@@ -88,27 +88,11 @@ func (s *Store) InstallStaged(game, id, key string, source Source) (InstallResul
 }
 
 func (s *Store) installKey(game, id, key string, source Source) (InstallResult, error) {
-	held, err := s.holding(game, id, key)
+	p, updated, err := s.placeKey(game, id, key, source)
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
-	var p Profile
-	switch len(held) {
-	case 0:
-		p, err = s.AddEntry(game, id, key, source)
-	case 1:
-		p, err = s.moveTo(game, id, held[0].Key, key, &source)
-	default:
-		labels := make([]string, len(held))
-		for i, e := range held {
-			labels[i] = entryLabel(e)
-		}
-		err = &SpansEntriesError{Labels: labels}
-	}
-	if err != nil {
-		return InstallResult{}, installError(err)
-	}
-	res := InstallResult{Profile: p, Added: []string{}, Updated: len(held) == 1}
+	res := InstallResult{Profile: p, Added: []string{}, Updated: updated}
 	for _, e := range p.Entries {
 		if e.Key == key {
 			for _, m := range e.Mods {
@@ -117,6 +101,33 @@ func (s *Store) installKey(game, id, key string, source Source) (InstallResult, 
 		}
 	}
 	return res, nil
+}
+
+// placeKey adds key to the profile, or swaps it in for the one entry already holding its mods. The decision and the
+// change share one lock, so two concurrent installs of the same mod cannot both add an entry.
+func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err := s.unlocked(game, id); err != nil {
+		return Profile{}, false, err
+	}
+	held, err := s.holding(game, id, key)
+	if err != nil {
+		return Profile{}, false, err
+	}
+	switch len(held) {
+	case 0:
+		p, err := s.addEntryLocked(game, id, key, source)
+		return p, false, err
+	case 1:
+		p, err := s.moveToLocked(game, id, held[0].Key, key, &source)
+		return p, true, err
+	}
+	labels := make([]string, len(held))
+	for i, e := range held {
+		labels[i] = entryLabel(e)
+	}
+	return Profile{}, false, &SpansEntriesError{Labels: labels}
 }
 
 // holding returns the profile's entries that hold any mod of the store item key. An entry that is already key is a
