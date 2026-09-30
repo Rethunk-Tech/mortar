@@ -11,6 +11,7 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -165,7 +166,7 @@ func TestImportFromMortarFileRecordsOrigin(t *testing.T) {
 		},
 	}
 	file := filepath.Join(t.TempDir(), "from.mortar")
-	f, err := os.Create(file)
+	f, err := fsx.Create(file)
 	if err != nil {
 		t.Fatal(err)
 	}

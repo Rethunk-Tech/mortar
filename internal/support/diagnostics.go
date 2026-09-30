@@ -183,7 +183,7 @@ func webkitVersion() string {
 
 func mortarLog(dir, recent string) (string, string) {
 	for _, rel := range []string{"mortar.log", filepath.Join("logs", "mortar.log")} {
-		b, err := os.ReadFile(filepath.Join(dir, rel))
+		b, err := fsx.ReadFile(filepath.Join(dir, rel))
 		if err != nil {
 			continue
 		}
@@ -232,7 +232,7 @@ func lastLines(text string, n int) string {
 }
 
 func readFile(path string) []byte {
-	b, err := os.ReadFile(path)
+	b, err := fsx.ReadFile(path)
 	if err != nil {
 		return nil
 	}
@@ -307,7 +307,7 @@ func collectProfiles(root string) []bundleProfile {
 			if !e.IsDir() || e.Type()&fs.ModeSymlink != 0 {
 				continue
 			}
-			raw, err := os.ReadFile(filepath.Join(root, gameID, e.Name(), "profile.json"))
+			raw, err := fsx.ReadFile(filepath.Join(root, gameID, e.Name(), "profile.json"))
 			if err != nil {
 				continue
 			}
