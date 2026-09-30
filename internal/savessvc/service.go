@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -173,10 +174,7 @@ func (s *Service) Dismiss(saveFolder, uniqueID string) error {
 		if slices.Contains(v.Dismissed[saveFolder], id) {
 			return
 		}
-		next := make(map[string][]string, len(v.Dismissed)+1)
-		for k, ids := range v.Dismissed {
-			next[k] = ids
-		}
+		next := maps.Clone(v.Dismissed)
 		next[saveFolder] = append(slices.Clone(v.Dismissed[saveFolder]), id)
 		v.Dismissed = next
 	})

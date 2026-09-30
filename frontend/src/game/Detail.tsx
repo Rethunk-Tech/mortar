@@ -2,12 +2,15 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
 import { Pencil, Plus } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConsoleTab, CopyLog } from '../console/ConsoleTab.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { NotesTab } from '../notes/NotesTab.tsx'
 import { useProfiles } from '../profiles/store.ts'
+import { SavesTab } from '../saves/SavesTab.tsx'
+import { useSaves } from '../saves/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { compact } from './compact.ts'
 import { NameField } from './NameField.tsx'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
@@ -15,10 +18,18 @@ import { type TabId, useTab } from './tab.ts'
 
 const fmt = (iso: unknown) => new Date(String(iso)).toLocaleDateString()
 
-function Card({ label, value }: { label: string; value: string }) {
+function Card({ label, value, onClick }: { label: string; value: string; onClick?: () => void }) {
   return (
     <Box
+      component={onClick ? 'button' : 'div'}
+      onClick={onClick}
       sx={{
+        border: 0,
+        color: 'inherit',
+        font: 'inherit',
+        textAlign: 'left',
+        cursor: onClick ? 'pointer' : 'default',
+        '&:hover': onClick ? { bgcolor: 'rgba(60,60,70,0.9)' } : undefined,
         display: 'flex',
         flexDirection: 'column',
         px: 1.5,
@@ -43,6 +54,11 @@ function Hero({ profile }: { profile: Profile }) {
   const rename = useProfiles((s) => s.rename)
   const [editing, setEditing] = useState(false)
   const mods = (profile.entries ?? []).reduce((n, e) => n + (e.mods ?? []).length, 0)
+  const setTab = useTab((s) => s.setTab)
+  const fits = useSaves((s) => s.fits)
+  const savesReady = useSaves((s) => s.status === 'ready')
+  const fitting = fits.filter((f) => (f.missing ?? []).length === 0).length
+  const total = fits.length
   const created = fmt(profile.created)
   const updated = fmt(profile.updated)
   return (
@@ -135,6 +151,13 @@ function Hero({ profile }: { profile: Profile }) {
         </Box>
         <Box sx={{ display: 'flex', gap: 1, [compact]: { display: 'none' } }}>
           <Card label={t`Mods`} value={String(mods)} />
+          {savesReady && fits.length > 0 ? (
+            <Card
+              label={t`Saves`}
+              value={t`${fitting} of ${total}`}
+              onClick={() => setTab('saves')}
+            />
+          ) : null}
           <Card label={t`Updated`} value={updated} />
           <Card label={t`Created`} value={created} />
         </Box>
@@ -153,6 +176,15 @@ export function Detail() {
   const setTab = useTab((s) => s.setTab)
   const game = useProfiles((s) => s.game?.id ?? '')
   const profile = profiles.find((p) => p.id === openId)
+  const loadSaves = useSaves((s) => s.load)
+  const profileId = profile?.id
+  const updated = String(profile?.updated)
+  // The profile's mods change with `updated`, and the save comparison follows them.
+  useEffect(() => {
+    if (game && profileId) {
+      loadSaves(game, profileId, updated).catch(reportUnexpected)
+    }
+  }, [game, profileId, updated, loadSaves])
   if (!loaded) {
     return null
   }
@@ -216,6 +248,7 @@ export function Detail() {
           }}
         >
           <Tab value="mods" label={t`Mods`} />
+          <Tab value="saves" label={t`Saves`} />
           <Tab value="notes" label={t`Notes`} />
           <Tab value="console" label={t`Console`} />
         </Tabs>
@@ -224,6 +257,7 @@ export function Detail() {
       </Box>
       {tab === 'console' ? <ConsoleTab game={game} /> : null}
       {tab === 'notes' ? <NotesTab key={`notes-${profile.id}`} profile={profile} /> : null}
+      {tab === 'saves' ? <SavesTab profile={profile} game={game} /> : null}
       {tab === 'mods' ? <ModsTab key={`mods-${profile.id}`} profile={profile} /> : null}
     </Box>
   )
