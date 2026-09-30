@@ -1,6 +1,6 @@
 # Mortar runbook
 
-How to run, build and gate Mortar. What it is and the rules it keeps: [AGENTS.md](AGENTS.md); how it works now: [docs/architecture.md](docs/architecture.md); decided work not yet built: [docs/design.md](docs/design.md).
+How to run, build and gate Mortar. What it is and the rules it keeps: [AGENTS.md](AGENTS.md); how it works: [docs/architecture.md](docs/architecture.md); decided work not yet built: [docs/design.md](docs/design.md).
 
 ## Prerequisites
 
@@ -45,7 +45,7 @@ MORTAR_UPDATE_KEY=/path/to/updater.key wails3 task release:manifest VERSION=1.2.
 
 `.github/workflows/release.yml` does all of the above on a `v*` tag: it runs the gate, builds the AppImage, `bin/mortar.exe` and the per-user NSIS installer (`bin/mortar-amd64-installer.exe`), signs `manifest.json`, and publishes the GitHub release with those four files. A manual dispatch (Actions › Release › Run workflow) runs the same build and signing for `main.go`'s version and publishes nothing.
 
-Once, add the repository secret `MORTAR_UPDATE_KEY` holding the full contents of the private key file (PEM, as generated), not its path:
+Add the repository secret `MORTAR_UPDATE_KEY` holding the full contents of the private key file (PEM, as generated), not its path:
 
 ```sh
 gh secret set MORTAR_UPDATE_KEY --repo Rethunk-AI/mortar < ~/.config/mortar-release/updater.key

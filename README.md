@@ -24,7 +24,7 @@ Prerequisites, build and gate: [HUMANS.md](HUMANS.md).
 
 | Topic | Location |
 | --- | --- |
-| How it works now | [docs/architecture.md](docs/architecture.md) |
+| How it works | [docs/architecture.md](docs/architecture.md) |
 | Decided work not yet built | [docs/design.md](docs/design.md) |
 | Screens and styling | [docs/gui-design.md](docs/gui-design.md) |
 | Run, build, gate | [HUMANS.md](HUMANS.md) |
