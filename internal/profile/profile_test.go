@@ -74,3 +74,14 @@ func TestRejects(t *testing.T) {
 		}
 	}
 }
+
+func TestModFolderRejectsUnknown(t *testing.T) {
+	s := newStore(t)
+	p, err := s.Create("stardew", "x")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.ModFolder("stardew", p.ID, "nope.Mod"); err == nil {
+		t.Fatal("unknown mod accepted")
+	}
+}

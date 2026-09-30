@@ -43,3 +43,12 @@ func (s *Service) Reorder(game string, ids []string) error { return s.store.Reor
 
 // Mods lists the profile's mods, rebuilding missing mod folders from the store first.
 func (s *Service) Mods(game, id string) ([]Mod, error) { return s.store.Mods(game, id) }
+
+// ShowFiles opens the mod's folder in the system file manager.
+func (s *Service) ShowFiles(game, id, uniqueID string) error {
+	dir, err := s.store.ModFolder(game, id, uniqueID)
+	if err != nil {
+		return err
+	}
+	return openFolder(dir)
+}
