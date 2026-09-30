@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync/atomic"
@@ -119,6 +120,25 @@ func TestDownload(t *testing.T) {
 	}
 	if err := Download(context.Background(), nil, c.APIBase, path, 3, nil); err == nil {
 		t.Fatal("body over the cap must fail")
+	}
+}
+
+func TestDownloadCancelsAStalledBody(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		if f, ok := w.(http.Flusher); ok {
+			f.Flush()
+		}
+		<-r.Context().Done()
+	}))
+	t.Cleanup(srv.Close)
+	old := downloadIdle
+	downloadIdle = 80 * time.Millisecond
+	t.Cleanup(func() { downloadIdle = old })
+	dest := filepath.Join(t.TempDir(), "stalled.bin")
+	err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil)
+	if err == nil {
+		t.Fatal("stalled body must fail")
 	}
 }
 

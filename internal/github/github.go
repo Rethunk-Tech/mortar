@@ -31,6 +31,9 @@ const (
 	maxList    = 8 << 20
 )
 
+// downloadIdle is how long a GitHub asset body may sit idle before Download cancels the copy.
+var downloadIdle = 30 * time.Second
+
 // Release is one entry of a repository's releases list.
 type Release struct {
 	Tag        string  `json:"tag_name"`
@@ -115,7 +118,7 @@ func Download(ctx context.Context, hc *http.Client, url, dest string, limit int6
 		return err
 	}
 	if hc == nil {
-		hc = http.DefaultClient
+		hc = &http.Client{Timeout: 30 * time.Minute}
 	}
 	resp, err := hc.Do(req)
 	if err != nil {
@@ -139,7 +142,7 @@ func Download(ctx context.Context, hc *http.Client, url, dest string, limit int6
 	if progress != nil {
 		w = &progressWriter{w: out, total: max(resp.ContentLength, 0), fn: progress}
 	}
-	n, err := io.Copy(w, io.LimitReader(resp.Body, limit+1))
+	n, err := copyIdle(ctx, w, io.LimitReader(resp.Body, limit+1), downloadIdle)
 	if cerr := out.Close(); err == nil {
 		err = cerr
 	}
@@ -147,6 +150,44 @@ func Download(ctx context.Context, hc *http.Client, url, dest string, limit int6
 		err = fmt.Errorf("larger than %d MiB", limit>>20)
 	}
 	return err
+}
+
+func copyIdle(ctx context.Context, dst io.Writer, src io.Reader, idle time.Duration) (int64, error) {
+	if idle <= 0 {
+		return io.Copy(dst, src)
+	}
+	return io.Copy(dst, &idleReader{ctx: ctx, r: src, idle: idle})
+}
+
+type idleReader struct {
+	ctx  context.Context
+	r    io.Reader
+	idle time.Duration
+}
+
+func (r *idleReader) Read(p []byte) (int, error) {
+	if err := r.ctx.Err(); err != nil {
+		return 0, err
+	}
+	type result struct {
+		n   int
+		err error
+	}
+	ch := make(chan result, 1)
+	go func() {
+		n, err := r.r.Read(p)
+		ch <- result{n, err}
+	}()
+	t := time.NewTimer(r.idle)
+	defer t.Stop()
+	select {
+	case <-r.ctx.Done():
+		return 0, r.ctx.Err()
+	case <-t.C:
+		return 0, context.DeadlineExceeded
+	case got := <-ch:
+		return got.n, got.err
+	}
 }
 
 type progressWriter struct {
