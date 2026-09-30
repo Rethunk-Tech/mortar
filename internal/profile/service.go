@@ -1,5 +1,7 @@
 package profile
 
+import "github.com/Rethunk-AI/mortar/internal/datadir"
+
 // Service exposes the store to the frontend.
 type Service struct{ store *Store }
 
@@ -55,5 +57,5 @@ func (s *Service) ShowFiles(game, id, uniqueID string) error {
 	if err != nil {
 		return err
 	}
-	return openFolder(dir)
+	return datadir.Open(dir)
 }

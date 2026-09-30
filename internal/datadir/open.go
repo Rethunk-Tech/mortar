@@ -1,4 +1,4 @@
-package profile
+package datadir
 
 import (
 	"context"
@@ -6,7 +6,8 @@ import (
 	"runtime"
 )
 
-func openFolder(dir string) error {
+// Open shows dir in the system file manager without waiting for it.
+func Open(dir string) error {
 	name := "xdg-open"
 	switch runtime.GOOS {
 	case "windows":

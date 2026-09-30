@@ -59,7 +59,7 @@ linters:
   # named by a variable is the product; gosec has no per-call option for that.
   exclusions:
     rules:
-      - path: ^internal/(launch/launch|game/stardew/smapi|profile/open|backdrop/desktop)\.go$
+      - path: ^internal/(launch/launch|game/stardew/smapi|datadir/open|backdrop/desktop)\.go$
         linters: [gosec]
         text: G204
   settings:

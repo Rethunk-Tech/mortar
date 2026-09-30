@@ -3,6 +3,7 @@ package settings
 import (
 	"maps"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -90,6 +91,47 @@ func (s *Service) SetGameFolder(game, dir string) error {
 			v.GameFolders[game] = dir
 		}
 	})
+}
+
+// ChooseGameFolder asks for a folder and stores it as the game's install folder; cancelling changes nothing.
+func (s *Service) ChooseGameFolder(game string) error {
+	d := s.App.Dialog.OpenFile().
+		SetTitle("Choose game folder").
+		CanChooseDirectories(true).
+		CanChooseFiles(false)
+	if w := s.App.Window.Current(); w != nil {
+		d.AttachToWindow(w)
+	}
+	dir, err := d.PromptForSingleSelection()
+	if err != nil || dir == "" {
+		return err
+	}
+	return s.SetGameFolder(game, dir)
+}
+
+// DataFolder is Mortar's data folder and the space it takes.
+type DataFolder struct {
+	Path string `json:"path"`
+	Size int64  `json:"size"`
+}
+
+// DataFolder measures the data folder; Wails runs it off the UI thread.
+func (s *Service) DataFolder() (DataFolder, error) {
+	dir, err := datadir.Dir()
+	if err != nil {
+		return DataFolder{}, err
+	}
+	size, err := datadir.Size(dir)
+	return DataFolder{Path: dir, Size: size}, err
+}
+
+// OpenDataFolder shows the data folder in the system file manager.
+func (s *Service) OpenDataFolder() error {
+	dir, err := datadir.Dir()
+	if err != nil {
+		return err
+	}
+	return datadir.Open(dir)
 }
 
 func (s *Service) set(fn func(*Settings)) error {

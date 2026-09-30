@@ -125,3 +125,37 @@ func TestSetBackgroundImageValidates(t *testing.T) {
 		t.Fatalf("reset: %v %q", err, s.Get().BackgroundImage)
 	}
 }
+
+func TestSetGameFolderValidates(t *testing.T) {
+	s, _ := open(t)
+	svc := NewService(s)
+	svc.ValidateGameFolder = func(_, dir string) error {
+		if dir == "/bad" {
+			return os.ErrInvalid
+		}
+		return nil
+	}
+	if err := svc.SetGameFolder("stardew", "/bad"); err == nil {
+		t.Fatal("an invalid folder should be rejected")
+	}
+	if len(s.Get().GameFolders) != 0 {
+		t.Fatal("a rejected folder must not be stored")
+	}
+	if err := svc.SetGameFolder("stardew", "/good"); err != nil || s.Get().GameFolders["stardew"] != "/good" {
+		t.Fatalf("set: %v %v", err, s.Get().GameFolders)
+	}
+	if err := svc.SetGameFolder("stardew", ""); err != nil || len(s.Get().GameFolders) != 0 {
+		t.Fatalf("clear: %v %v", err, s.Get().GameFolders)
+	}
+}
+
+func TestDataFolderMeasures(t *testing.T) {
+	s, dir := open(t)
+	if err := os.WriteFile(filepath.Join(dir, "x"), make([]byte, 42), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got, err := NewService(s).DataFolder()
+	if err != nil || got.Path != dir || got.Size != 42 {
+		t.Fatalf("DataFolder = %+v, %v", got, err)
+	}
+}
