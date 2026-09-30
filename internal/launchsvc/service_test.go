@@ -428,7 +428,7 @@ func TestStartLoaderUsesAppLifetime(t *testing.T) {
 	svc, p := startEnv(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	svc.life = ctx
+	SetLife(svc, ctx)
 	saw := make(chan context.Context, 1)
 	svc.EnsureLoader = func(ctx context.Context, _ string, _ bool) error {
 		saw <- ctx

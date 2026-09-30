@@ -97,7 +97,7 @@ type Service struct {
 	EnsureLoader func(ctx context.Context, gameID string, fromStart bool) error
 	// Unlocked is called when a game is no longer launching or running, so the queue can retry work it held.
 	Unlocked func()
-	life     context.Context
+	quit     <-chan struct{}
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store) *Service {
@@ -109,9 +109,9 @@ func NewService(home string, s *settings.Store, profiles *profile.Store) *Servic
 	}
 }
 
-// SetLife is cancelled when Mortar quits; Start's loader install uses it. Nil means Background.
+// SetLife cancels Start's loader install when ctx ends, which is when Mortar quits.
 func SetLife(s *Service, ctx context.Context) {
-	s.life = ctx
+	s.quit = ctx.Done()
 }
 
 func (s *Service) emit(name string, data any) {
@@ -361,10 +361,15 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 	// otherwise launch the game on half-replaced files.
 	go func() {
 		defer s.donePreparing(gameID)
-		ctx := s.life
-		if ctx == nil {
-			ctx = context.Background()
-		}
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		go func() {
+			select {
+			case <-s.quit:
+				cancel()
+			case <-ctx.Done():
+			}
+		}()
 		err := s.EnsureLoader(ctx, gameID, true)
 		if err != nil {
 			err = fmt.Errorf("could not install %s: %w", g.LoaderName(), err)

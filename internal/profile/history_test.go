@@ -344,7 +344,7 @@ func TestRevertRestoresLiveModsWhenProfileJSONFails(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected profile.json write to fail")
 	}
-	if b, readErr := os.ReadFile(cfg); readErr != nil || string(b) != `{"keep":true}` {
+	if b, readErr := os.ReadFile(filepath.Clean(cfg)); readErr != nil || string(b) != `{"keep":true}` {
 		t.Fatalf("live config lost: %q, %v", b, readErr)
 	}
 }

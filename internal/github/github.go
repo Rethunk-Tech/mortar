@@ -156,17 +156,18 @@ func copyIdle(ctx context.Context, dst io.Writer, src io.Reader, idle time.Durat
 	if idle <= 0 {
 		return io.Copy(dst, src)
 	}
-	return io.Copy(dst, &idleReader{ctx: ctx, r: src, idle: idle})
+	return io.Copy(dst, &idleReader{done: ctx.Done(), cause: ctx.Err, r: src, idle: idle})
 }
 
 type idleReader struct {
-	ctx  context.Context
-	r    io.Reader
-	idle time.Duration
+	done  <-chan struct{}
+	cause func() error
+	r     io.Reader
+	idle  time.Duration
 }
 
 func (r *idleReader) Read(p []byte) (int, error) {
-	if err := r.ctx.Err(); err != nil {
+	if err := r.cause(); err != nil {
 		return 0, err
 	}
 	type result struct {
@@ -181,8 +182,8 @@ func (r *idleReader) Read(p []byte) (int, error) {
 	t := time.NewTimer(r.idle)
 	defer t.Stop()
 	select {
-	case <-r.ctx.Done():
-		return 0, r.ctx.Err()
+	case <-r.done:
+		return 0, r.cause()
 	case <-t.C:
 		return 0, context.DeadlineExceeded
 	case got := <-ch:
