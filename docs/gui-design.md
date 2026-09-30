@@ -4,6 +4,8 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
 
 ## Window
 
+- **Logo (NOMAD, 2026-09-29):** the running-bond mark, seven rounded bricks in three courses, filled in the primary colour; used in the title bar at 20px, as the app icon on a dark rounded square, and in notifications.
+
 - Frameless and translucent (see [design.md](design.md#look)): 1280×720 by default, 768×432 minimum, as Concrete.
 - The app draws its own title bar, 36px, marked `--wails-draggable: drag`: the logo in a darker square, the app name, then location tabs ("Game Select", or the current game) underlined in the primary colour, and minimise, maximise and close on the right. Double-click maximises. The window has a 1px light border and rounded corners, since GNOME draws no shadow for a frameless window.
 - `user-select: none` everywhere except text fields and the console.
@@ -63,7 +65,7 @@ A plain text area for the profile's notes, saved automatically ("Saved · 2 min 
 
 ## In-between moments
 
-- **Dropping an archive:** while an archive is dragged over the window, a dashed drop zone says where it goes ("Drop to install into Cookie farm"), with the file name and the supported formats.
+- **Dropping an archive:** while an archive is dragged over the window, a dashed drop zone filling the window 12px in from its edges says where it goes ("Drop to install into Cookie farm"), with the file name and the supported formats.
 - **A Nexus link while minimised:** a desktop notification says what is downloading and into which profile, with Show. An `nxm://` link Mortar did not ask for gets a notification with the open profile, Other profile… and Ignore.
 - **Two copies of one mod:** a dialog shows both (source, version, what depends on it), preselects the newer or Nexus-sourced one, and switches the other off rather than deleting it; Decide later leaves both as a problem.
 
