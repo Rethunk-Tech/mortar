@@ -48,12 +48,7 @@ export function ImportFooter({
           }}
         >
           <Box sx={{ flex: 1 }}>{t`Sign in to Nexus Mods to download these mods.`}</Box>
-          <Button
-            size="small"
-            variant="outlined"
-            color="inherit"
-            onClick={flow.signIn}
-          >
+          <Button size="small" variant="outlined" color="inherit" onClick={flow.signIn}>
             {t`Open Nexus settings`}
           </Button>
         </Box>

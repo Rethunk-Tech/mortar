@@ -6,6 +6,24 @@ import { reportUnexpected } from '../toasts/report.ts'
 
 let runs = 0
 
+// What Import was showing when it sent the user to sign in to Nexus Mods.
+let waiting: ImportOptions | null = null
+
+useNexus.subscribe((state, prev) => {
+  if (state.signedIn && !prev.signedIn && waiting) {
+    const options = waiting
+    waiting = null
+    useImportDialog.getState().open(options)
+  }
+})
+
+// Leaving Settings without signing in drops the wait, so a later sign-in elsewhere does not reopen Import.
+useNav.subscribe((state) => {
+  if (state.route.name !== 'settings') {
+    waiting = null
+  }
+})
+
 export const useShareDialog = create<{
   profileId: string
   open: (profileId: string) => void
@@ -52,26 +70,8 @@ export const useImportDialog = create<{
 
 export const openImport = (options: ImportOptions = {}) => useImportDialog.getState().open(options)
 
-// What Import was showing when it sent the user to sign in to Nexus Mods.
-let waiting: ImportOptions | null = null
-
 // Opens Settings on Nexus Mods; once the account signs in, Import opens again on the same link or file and previews it afresh.
 export function importAfterSignIn(options: ImportOptions) {
   waiting = options
   openSettings('nexus')
 }
-
-useNexus.subscribe((state, prev) => {
-  if (state.signedIn && !prev.signedIn && waiting) {
-    const options = waiting
-    waiting = null
-    openImport(options)
-  }
-})
-
-// Leaving Settings without signing in drops the wait, so a later sign-in elsewhere does not reopen Import.
-useNav.subscribe((state) => {
-  if (state.route.name !== 'settings') {
-    waiting = null
-  }
-})

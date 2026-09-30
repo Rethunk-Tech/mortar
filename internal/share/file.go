@@ -44,9 +44,9 @@ var ErrBadFile = errors.New("not a valid .mortar file")
 // Config is one config file to write into an installed mod's folder: Path is relative to the mod folder, slash
 // separated, ends in .json and stays inside it.
 type Config struct {
-	UniqueID string
-	Path     string
-	Data     []byte
+	UniqueID string `json:"uniqueId"`
+	Path     string `json:"path"`
+	Data     []byte `json:"data"`
 }
 
 // Preview is what reading a .mortar file yields. The apply step writes Configs only into installed mod folders.
