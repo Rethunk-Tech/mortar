@@ -2,6 +2,7 @@ package profile
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-AI/mortar/internal/meta"
 )
 
 const importedProfileName = "Imported mods"
@@ -22,14 +24,17 @@ const (
 
 const configFileName = "config.json"
 
-// GameModPreview is one mod that ImportGameMods would copy from the game's Mods folder.
+// GameModPreview is one row PreviewGameMods shows: a mod to copy, or a skipped or failed folder.
 type GameModPreview struct {
-	Name    string `json:"name"`
-	Version string `json:"version"`
-	Source  string `json:"source"`
+	Name     string `json:"name"`
+	Version  string `json:"version,omitempty"`
+	Source   string `json:"source,omitempty"`
+	Status   string `json:"status"`
+	Reason   string `json:"reason,omitempty"`
+	Disabled bool   `json:"disabled,omitempty"`
 }
 
-// GameModsPreview is the list ImportGameMods would copy.
+// GameModsPreview is the list PreviewGameMods returns, including skips and failures.
 type GameModsPreview struct {
 	Mods []GameModPreview `json:"mods"`
 }
@@ -56,6 +61,13 @@ type gameModFolder struct {
 	disabled bool
 	mods     []manifest.Mod
 	source   Source
+}
+
+type gameModSlot struct {
+	folder     gameModFolder
+	ready      bool
+	outcome    GameModOutcome
+	hasOutcome bool
 }
 
 func bundledFolder(name string) string {
@@ -135,17 +147,16 @@ func readTopManifest(dir string) (manifest.Manifest, bool, error) {
 	return m, true, err
 }
 
-func classifyFolder(dir, name string) (gameModFolder, GameModOutcome, bool) {
+func classifyFolder(dir, name string) (gameModSlot, bool) {
 	label := strings.TrimLeft(name, ".")
-	out := GameModOutcome{Name: label}
-	if reason := bundledFolder(name); reason != "" {
-		out.Status, out.Reason = outcomeSkipped, reason
-		return gameModFolder{}, out, false
+	if bundledFolder(name) != "" {
+		return gameModSlot{}, false
 	}
+	out := GameModOutcome{Name: label}
 	m, hasManifest, err := readTopManifest(dir)
 	if err != nil && hasManifest {
 		out.Status, out.Reason = outcomeFailed, "The manifest is invalid"
-		return gameModFolder{}, out, false
+		return gameModSlot{outcome: out, hasOutcome: true}, true
 	}
 	var mods []manifest.Mod
 	if hasManifest {
@@ -154,15 +165,15 @@ func classifyFolder(dir, name string) (gameModFolder, GameModOutcome, bool) {
 		found, scanErr := manifest.Scan(dir)
 		if scanErr != nil {
 			out.Status, out.Reason = outcomeFailed, scanErr.Error()
-			return gameModFolder{}, out, false
+			return gameModSlot{outcome: out, hasOutcome: true}, true
 		}
 		if len(found) == 0 {
 			if _, err := fsx.ReadFile(filepath.Join(dir, manifest.FileName)); err == nil {
 				out.Status, out.Reason = outcomeFailed, "The manifest is invalid"
-				return gameModFolder{}, out, false
+				return gameModSlot{outcome: out, hasOutcome: true}, true
 			}
 			out.Status, out.Reason = outcomeFailed, "No SMAPI mod was found"
-			return gameModFolder{}, out, false
+			return gameModSlot{outcome: out, hasOutcome: true}, true
 		}
 		mods = found
 	}
@@ -174,48 +185,126 @@ func classifyFolder(dir, name string) (gameModFolder, GameModOutcome, bool) {
 		}
 	}
 	if allBundled {
-		out.Status, out.Reason = outcomeSkipped, "SMAPI's bundled mods or Mortar's bridge"
-		return gameModFolder{}, out, false
+		return gameModSlot{}, false
 	}
-	return gameModFolder{
-		dir: dir, label: label, disabled: strings.HasPrefix(name, "."),
-		mods: mods, source: sourceFromMods(mods, label),
-	}, GameModOutcome{}, true
+	return gameModSlot{
+		folder: gameModFolder{
+			dir: dir, label: label, disabled: strings.HasPrefix(name, "."),
+			mods: mods, source: sourceFromMods(mods, label),
+		},
+		ready: true,
+	}, true
 }
 
-func scanGameMods(modsDir string) (ready []gameModFolder, outcomes []GameModOutcome, err error) {
+func modVersion(f gameModFolder, id string) string {
+	for _, m := range f.mods {
+		if strings.EqualFold(m.UniqueID, id) {
+			return m.Version
+		}
+	}
+	return ""
+}
+
+func preferFolder(a, b gameModFolder, id string) bool {
+	if a.disabled != b.disabled {
+		return !a.disabled
+	}
+	va, vb := modVersion(a, id), modVersion(b, id)
+	if c, ok := meta.CompareVersions(va, vb); ok && c != 0 {
+		return c > 0
+	}
+	return false
+}
+
+func resolveDuplicates(slots []gameModSlot) {
+	winner := map[string]int{}
+	for i, s := range slots {
+		if !s.ready {
+			continue
+		}
+		for _, m := range s.folder.mods {
+			id := strings.ToLower(m.UniqueID)
+			j, ok := winner[id]
+			if !ok || preferFolder(s.folder, slots[j].folder, m.UniqueID) {
+				winner[id] = i
+			}
+		}
+	}
+	type skip struct {
+		i      int
+		reason string
+	}
+	var losers []skip
+	seen := map[int]bool{}
+	for i, s := range slots {
+		if !s.ready {
+			continue
+		}
+		for _, m := range s.folder.mods {
+			id := strings.ToLower(m.UniqueID)
+			w := winner[id]
+			if w == i || seen[i] {
+				continue
+			}
+			seen[i] = true
+			losers = append(losers, skip{i, fmt.Sprintf("same mod as %s", slots[w].folder.label)})
+		}
+	}
+	for _, l := range losers {
+		slots[l.i].ready = false
+		slots[l.i].hasOutcome = true
+		slots[l.i].outcome = GameModOutcome{Name: slots[l.i].folder.label, Status: outcomeSkipped, Reason: l.reason}
+	}
+}
+
+func scanGameMods(modsDir string) ([]gameModSlot, error) {
 	entries, err := os.ReadDir(modsDir)
 	if errors.Is(err, fs.ErrNotExist) {
-		return nil, nil, nil
+		return nil, nil
 	}
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
+	var slots []gameModSlot
 	for _, it := range entries {
 		if !it.IsDir() {
 			continue
 		}
-		dir := filepath.Join(modsDir, it.Name())
-		folder, outcome, ok := classifyFolder(dir, it.Name())
-		if !ok {
-			outcomes = append(outcomes, outcome)
+		slot, keep := classifyFolder(filepath.Join(modsDir, it.Name()), it.Name())
+		if !keep {
 			continue
 		}
-		ready = append(ready, folder)
+		slots = append(slots, slot)
 	}
-	return ready, outcomes, nil
+	resolveDuplicates(slots)
+	return slots, nil
 }
 
-func previewFrom(ready []gameModFolder) GameModsPreview {
+func previewMod(f gameModFolder, m manifest.Mod) GameModPreview {
+	name := m.Name
+	if name == "" {
+		name = m.UniqueID
+	}
+	return GameModPreview{
+		Name: name, Version: m.Version, Source: sourceLabel(f.source),
+		Status: outcomeImported, Disabled: f.disabled,
+	}
+}
+
+func previewFrom(slots []gameModSlot) GameModsPreview {
 	var mods []GameModPreview
-	for _, f := range ready {
-		src := sourceLabel(f.source)
-		for _, m := range f.mods {
-			name := m.Name
-			if name == "" {
-				name = m.UniqueID
+	for _, s := range slots {
+		if s.ready {
+			for _, m := range s.folder.mods {
+				mods = append(mods, previewMod(s.folder, m))
 			}
-			mods = append(mods, GameModPreview{Name: name, Version: m.Version, Source: src})
+			continue
+		}
+		if s.hasOutcome {
+			mods = append(mods, GameModPreview{
+				Name: s.outcome.Name, Status: s.outcome.Status, Reason: s.outcome.Reason,
+				Disabled: s.folder.disabled,
+			})
 		}
 	}
 	if mods == nil {
@@ -224,13 +313,23 @@ func previewFrom(ready []gameModFolder) GameModsPreview {
 	return GameModsPreview{Mods: mods}
 }
 
+func outcomesFrom(slots []gameModSlot) []GameModOutcome {
+	var out []GameModOutcome
+	for _, s := range slots {
+		if s.hasOutcome {
+			out = append(out, s.outcome)
+		}
+	}
+	return out
+}
+
 // PreviewGameMods lists mods that ImportGameMods would copy from modsDir. It reads only.
 func (s *Store) PreviewGameMods(modsDir string) (GameModsPreview, error) {
-	ready, _, err := scanGameMods(modsDir)
+	slots, err := scanGameMods(modsDir)
 	if err != nil {
 		return GameModsPreview{}, err
 	}
-	return previewFrom(ready), nil
+	return previewFrom(slots), nil
 }
 
 func carryConfig(srcRoot, destDir, folder string) error {
@@ -279,7 +378,7 @@ func (s *Store) importFolder(game, id string, f gameModFolder) error {
 // ImportGameMods copies each importable folder under modsDir into the store and a new "Imported mods" profile.
 // It never writes to modsDir.
 func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
-	ready, outcomes, err := scanGameMods(modsDir)
+	slots, err := scanGameMods(modsDir)
 	if err != nil {
 		return GameModsResult{}, err
 	}
@@ -295,8 +394,8 @@ func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
 	if err != nil {
 		return GameModsResult{}, err
 	}
-	res := GameModsResult{Profile: created, Outcomes: outcomes}
-	for _, o := range outcomes {
+	res := GameModsResult{Profile: created, Outcomes: outcomesFrom(slots)}
+	for _, o := range res.Outcomes {
 		switch o.Status {
 		case outcomeSkipped:
 			res.Skipped++
@@ -304,9 +403,12 @@ func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
 			res.Failed++
 		}
 	}
-	for _, f := range ready {
-		outcome := GameModOutcome{Name: f.label, Status: outcomeImported}
-		if err := s.importFolder(game, created.ID, f); err != nil {
+	for _, slot := range slots {
+		if !slot.ready {
+			continue
+		}
+		outcome := GameModOutcome{Name: slot.folder.label, Status: outcomeImported}
+		if err := s.importFolder(game, created.ID, slot.folder); err != nil {
 			outcome.Status, outcome.Reason = outcomeFailed, err.Error()
 			if ie, ok := errors.AsType[*InstallError](err); ok {
 				outcome.Reason = ie.Msg

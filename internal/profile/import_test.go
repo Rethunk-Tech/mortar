@@ -79,7 +79,13 @@ func TestImportGameModsCopiesIntoAProfileAndLeavesTheGameFolderUnchanged(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(preview.Mods) != 4 {
+	byPreview := map[string]GameModPreview{}
+	for _, m := range preview.Mods {
+		byPreview[m.Name] = m
+	}
+	if len(preview.Mods) != 5 || byPreview["Console Commands"].Name != "" || byPreview["Save Backup"].Name != "" ||
+		byPreview["Bridge"].Name != "" || byPreview["Broken"].Status != outcomeFailed ||
+		byPreview["Quiet"].Disabled != true || byPreview["Loud"].Status != outcomeImported {
 		t.Fatalf("preview = %+v", preview.Mods)
 	}
 
@@ -91,7 +97,7 @@ func TestImportGameModsCopiesIntoAProfileAndLeavesTheGameFolderUnchanged(t *test
 	if after != before {
 		t.Fatalf("game folder changed:\n--- before ---\n%s--- after ---\n%s", before, after)
 	}
-	if res.Profile.Name != importedProfileName || res.Imported != 3 || res.Skipped != 3 || res.Failed != 1 {
+	if res.Profile.Name != importedProfileName || res.Imported != 3 || res.Skipped != 0 || res.Failed != 1 {
 		t.Fatalf("result = %+v", res)
 	}
 
@@ -141,6 +147,107 @@ func TestImportGameModsCopiesIntoAProfileAndLeavesTheGameFolderUnchanged(t *test
 	}
 	if dumpTree(t, gameDir) != before {
 		t.Fatal("second import changed the game folder")
+	}
+}
+
+func TestImportGameModsPrefersEnabledDuplicateAndOmitsBundled(t *testing.T) {
+	e := newEnv(t)
+	gameDir := filepath.Join(t.TempDir(), "Stardew Valley")
+	mods := filepath.Join(gameDir, "Mods")
+	putGameMod(t, mods, "GenericModConfigMenu/manifest.json",
+		`{"Name":"Generic Mod Config Menu","Version":"1.14.1","UniqueID":"spacechase0.GenericModConfigMenu"}`)
+	putGameMod(t, mods, "NPCMapLocations/manifest.json",
+		`{"Name":"NPC Map Locations","Version":"3.3.0","UniqueID":"Bouhm.NPCMapLocations"}`)
+	putGameMod(t, mods, ".DisabledCopy/manifest.json",
+		`{"Name":"NPC Map Locations","Version":"3.3.0","UniqueID":"Bouhm.NPCMapLocations"}`)
+	putGameMod(t, mods, "ConsoleCommands/manifest.json",
+		`{"Name":"Console Commands","Version":"4.5.2","UniqueID":"SMAPI.ConsoleCommands"}`)
+	putGameMod(t, mods, "SaveBackup/manifest.json",
+		`{"Name":"Save Backup","Version":"4.5.2","UniqueID":"SMAPI.SaveBackup"}`)
+	before := dumpTree(t, gameDir)
+
+	preview, err := e.PreviewGameMods(mods)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var npcImport, npcSkip, bundled int
+	for _, m := range preview.Mods {
+		switch {
+		case m.Name == "NPC Map Locations" && m.Status == outcomeImported && !m.Disabled:
+			npcImport++
+		case m.Name == "DisabledCopy" && m.Status == outcomeSkipped && m.Reason == "same mod as NPCMapLocations":
+			npcSkip++
+		case strings.Contains(strings.ToLower(m.Name), "console") || strings.Contains(strings.ToLower(m.Name), "backup"):
+			bundled++
+		}
+	}
+	if npcImport != 1 || npcSkip != 1 || bundled != 0 {
+		t.Fatalf("preview = %+v", preview.Mods)
+	}
+
+	res, err := e.ImportGameMods("stardew", mods)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if dumpTree(t, gameDir) != before {
+		t.Fatal("import wrote the game folder")
+	}
+	if res.Imported != 2 || res.Skipped != 1 || res.Failed != 0 {
+		t.Fatalf("result = imported %d skipped %d failed %d outcomes %+v", res.Imported, res.Skipped, res.Failed, res.Outcomes)
+	}
+	modsList, err := e.UserMods("stardew", res.Profile.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	byID := map[string]Mod{}
+	for _, m := range modsList {
+		byID[m.UniqueID] = m
+	}
+	if len(byID) != 2 || !byID["Bouhm.NPCMapLocations"].Enabled || !byID["spacechase0.GenericModConfigMenu"].Enabled {
+		t.Fatalf("mods = %+v", modsList)
+	}
+}
+
+func TestImportGameModsPicksNewestWhenBothCopiesAreOff(t *testing.T) {
+	e := newEnv(t)
+	gameDir := filepath.Join(t.TempDir(), "Stardew Valley")
+	mods := filepath.Join(gameDir, "Mods")
+	putGameMod(t, mods, ".Old/manifest.json",
+		`{"Name":"Map","Version":"1.0.0","UniqueID":"Me.Map"}`)
+	putGameMod(t, mods, ".New/manifest.json",
+		`{"Name":"Map","Version":"2.0.0","UniqueID":"Me.Map"}`)
+	before := dumpTree(t, gameDir)
+
+	preview, err := e.PreviewGameMods(mods)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var kept, skipped bool
+	for _, m := range preview.Mods {
+		if m.Status == outcomeImported && m.Disabled && m.Version == "2.0.0" {
+			kept = true
+		}
+		if m.Status == outcomeSkipped && m.Reason == "same mod as New" {
+			skipped = true
+		}
+	}
+	if !kept || !skipped {
+		t.Fatalf("preview = %+v", preview.Mods)
+	}
+
+	res, err := e.ImportGameMods("stardew", mods)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if dumpTree(t, gameDir) != before {
+		t.Fatal("import wrote the game folder")
+	}
+	modsList, err := e.UserMods("stardew", res.Profile.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(modsList) != 1 || modsList[0].Enabled || modsList[0].Version != "2.0.0" {
+		t.Fatalf("mods = %+v", modsList)
 	}
 }
 
