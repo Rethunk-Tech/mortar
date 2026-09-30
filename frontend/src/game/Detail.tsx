@@ -1,7 +1,28 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, IconButton, Tab, Tabs, Tooltip, Typography } from '@mui/material'
-import { Palette, Pencil, Plus, RotateCcw, Settings2, Share2 } from 'lucide-react'
+import {
+  Box,
+  Button,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Tab,
+  Tabs,
+  Tooltip,
+  Typography,
+} from '@mui/material'
+import {
+  FileDown,
+  MoreHorizontal,
+  Palette,
+  Pencil,
+  Plus,
+  RotateCcw,
+  Settings2,
+  Share2,
+} from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
@@ -25,6 +46,38 @@ import { type TabId, useTab } from './tab.ts'
 import { useRestoreFocus } from './useRestoreFocus.ts'
 
 const fmt = (iso: unknown) => new Date(String(iso)).toLocaleDateString()
+
+function HeroMenu({ profile }: { profile: Profile }) {
+  const { t } = useLingui()
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const exportProfile = useProfiles((s) => s.exportProfile)
+  const close = () => setAnchor(null)
+  return (
+    <>
+      <IconButton
+        aria-label={t`Profile menu`}
+        aria-haspopup="menu"
+        onClick={(e) => setAnchor(e.currentTarget)}
+        size="small"
+      >
+        <MoreHorizontal size={16} />
+      </IconButton>
+      <Menu open={anchor !== null} anchorEl={anchor} onClose={close} transitionDuration={0}>
+        <MenuItem
+          onClick={() => {
+            close()
+            exportProfile(profile.id).catch(reportUnexpected)
+          }}
+        >
+          <ListItemIcon sx={{ color: 'inherit' }}>
+            <FileDown size={16} />
+          </ListItemIcon>
+          <ListItemText>{t`Export profile…`}</ListItemText>
+        </MenuItem>
+      </Menu>
+    </>
+  )
+}
 
 function Card({ label, value, onClick }: { label: string; value: string; onClick?: () => void }) {
   return (
@@ -106,6 +159,7 @@ function HeroName({ profile, game, meta }: { profile: Profile; game: string; met
               <Palette size={16} />
             </IconButton>
             <CoverButton game={game} profile={profile} />
+            <HeroMenu profile={profile} />
           </>
         )}
       </Box>

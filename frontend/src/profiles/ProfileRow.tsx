@@ -18,6 +18,7 @@ import {
   Copy,
   Eye,
   EyeOff,
+  FileDown,
   GitCompare,
   GripVertical,
   MoreHorizontal,
@@ -83,6 +84,7 @@ function RowMenu({
 }) {
   const { t } = useLingui()
   const duplicate = useProfiles((s) => s.duplicate)
+  const exportProfile = useProfiles((s) => s.exportProfile)
   const setHidden = useProfiles((s) => s.setHidden)
   // An action that moves focus itself (rename, delete) turns the return to the ⋯ button off.
   const refocus = useRef(true)
@@ -126,6 +128,14 @@ function RowMenu({
         })}
       >
         {t`Duplicate`}
+      </Item>
+      <Item
+        icon={<FileDown size={15} />}
+        onClick={choose(() => {
+          exportProfile(profile.id).catch(reportUnexpected)
+        })}
+      >
+        {t`Export profile…`}
       </Item>
       <Item icon={<GitCompare size={15} />} disabled={!canCompare} onClick={choose(onCompare)}>
         {t`Compare with…`}

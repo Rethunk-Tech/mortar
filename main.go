@@ -57,6 +57,7 @@ var updateKey []byte
 func registerEvents() {
 	application.RegisterEvent[launchsvc.Status](launchsvc.StateEvent)
 	application.RegisterEvent[launchsvc.Lines](launchsvc.LineEvent)
+	application.RegisterEvent[launchsvc.Crash](launchsvc.CrashEvent)
 	application.RegisterEvent[loadersvc.Progress](loadersvc.ProgressEvent)
 	application.RegisterEvent[[]string](picker.DroppedEvent)
 	application.RegisterEvent[settings.Settings](settings.ChangedEvent)
@@ -240,6 +241,7 @@ func run() error {
 
 	pick := &picker.Service{}
 	profileSvc := profile.NewService(profiles, home, store)
+	profileSvc.Version = version
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
 	supportSvc := support.NewService(version, problemsSvc.Environment, home, profiles.ModsDir)
 	supportSvc.RecentLog = func(gameID, profileID string) string {
@@ -298,6 +300,7 @@ func run() error {
 	queue.Run(context.Background(), queueSvc, nxmSvc.Assigned)
 	svc.App = app
 	loaders.App = app
+	profileSvc.App = app
 	launches.App = app
 	loadersvc.EnsureExisting(loaders, "stardew")
 	pick.App = app

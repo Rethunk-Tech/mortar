@@ -28,7 +28,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { ArrowLeft, Download, FolderInput, Plus, RotateCcw, Search } from 'lucide-react'
+import { ArrowLeft, Download, FileUp, FolderInput, Plus, RotateCcw, Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type {
   Profile,
@@ -215,11 +215,13 @@ function ProfilesHeader({
   onBack,
   onImportGame,
   onImport,
+  onRestoreZip,
   onCreate,
 }: {
   onBack: () => void
   onImportGame: () => void
   onImport: () => void
+  onRestoreZip: () => void
   onCreate: () => void
 }) {
   const { t } = useLingui()
@@ -264,9 +266,18 @@ function ProfilesHeader({
         color="inherit"
         startIcon={<Download size={16} />}
         onClick={onImport}
-        sx={{ height: 40, px: 2, fontSize: 14 }}
+        sx={{ height: 40, px: 2, fontSize: 14, whiteSpace: 'nowrap' }}
       >
         {t`Import`}
+      </Button>
+      <Button
+        variant="outlined"
+        color="inherit"
+        startIcon={<FileUp size={16} />}
+        onClick={onRestoreZip}
+        sx={{ height: 40, px: 2, fontSize: 14, whiteSpace: 'nowrap' }}
+      >
+        {t`Restore from zip…`}
       </Button>
       <Button
         variant="contained"
@@ -286,6 +297,7 @@ export function ProfilesPage() {
   const game = useNav((s) => (s.route.name === 'profiles' ? s.route.game : 'stardew'))
   const profiles = useProfiles((s) => s.profiles)
   const reorder = useProfiles((s) => s.reorder)
+  const restoreZip = useProfiles((s) => s.restoreZip)
   const loadTrash = useProfiles((s) => s.loadTrash)
   const [creating, setCreating] = useState(false)
   const [importingGameMods, setImportingGameMods] = useState(false)
@@ -324,6 +336,7 @@ export function ProfilesPage() {
         onBack={closeProfiles}
         onImportGame={() => setImportingGameMods(true)}
         onImport={() => openImport()}
+        onRestoreZip={() => restoreZip().catch(reportUnexpected)}
         onCreate={() => setCreating(true)}
       />
       <FindModSearch profiles={profiles} />
