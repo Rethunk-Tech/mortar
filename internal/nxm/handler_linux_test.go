@@ -170,8 +170,8 @@ func TestAnAppImageRegistersItselfAndMovesItsEntry(t *testing.T) {
 	if err := l.refresh(); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := os.Stat(l.desktopPath()); !os.IsNotExist(err) {
-		t.Fatalf("Refresh wrote an entry before first run: %v", err)
+	if desktop, err := fsx.ReadFile(l.desktopPath()); err != nil || strings.Contains(string(desktop), nxmMime) {
+		t.Fatalf("links entry before Register: %s, %v", desktop, err)
 	}
 	if err := l.Register(); err != nil {
 		t.Fatal(err)
@@ -197,5 +197,54 @@ func TestAnAppImageRegistersItselfAndMovesItsEntry(t *testing.T) {
 	desktop, _ := fsx.ReadFile(l.desktopPath())
 	if !strings.Contains(string(desktop), `Exec="`+l.exe+`" %u`) || !strings.Contains(string(desktop), nxmMime) {
 		t.Errorf("moved entry: %s", desktop)
+	}
+}
+
+func TestRefreshRegistersLinksWhenMissing(t *testing.T) {
+	l, r := newLinux(t, "vortex.desktop")
+	if err := l.refresh(); err != nil {
+		t.Fatal(err)
+	}
+	xml, err := fsx.ReadFile(filepath.Join(l.dataHome, "mime", "packages", "mortar.xml"))
+	if err != nil || !strings.Contains(string(xml), `<glob pattern="*.mortar"/>`) {
+		t.Fatalf("mime xml: %s, %v", xml, err)
+	}
+	desktop, err := fsx.ReadFile(l.desktopPath())
+	if err != nil || strings.Contains(string(desktop), nxmMime) || !strings.Contains(string(desktop), "MimeType=x-scheme-handler/mortar;application/x-mortar;") {
+		t.Fatalf("desktop file: %s, %v", desktop, err)
+	}
+	if r.current != "vortex.desktop" {
+		t.Errorf("refresh took the nxm default: %q", r.current)
+	}
+	r.calls = nil
+	if err := l.refresh(); err != nil {
+		t.Fatal(err)
+	}
+	if len(r.calls) != 2 {
+		t.Errorf("a second run only sets the defaults again, calls = %q", r.calls)
+	}
+}
+
+func TestRefreshLeavesAnotherCopy(t *testing.T) {
+	l, _ := newLinux(t, "")
+	other := filepath.Join(t.TempDir(), "other-mortar")
+	if err := fsx.WriteFile(other, nil, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	l.exe = other
+	if err := l.Register(); err != nil {
+		t.Fatal(err)
+	}
+	registered, err := fsx.ReadFile(l.desktopPath())
+	if err != nil {
+		t.Fatal(err)
+	}
+	l.exe = filepath.Join(t.TempDir(), "this-mortar")
+	if err := l.refresh(); err != nil {
+		t.Fatal(err)
+	}
+	desktop, _ := fsx.ReadFile(l.desktopPath())
+	if string(desktop) != string(registered) {
+		t.Errorf("another copy took the entry: %s", desktop)
 	}
 }

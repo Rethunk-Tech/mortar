@@ -232,8 +232,8 @@ func (l *System) RegisterLinks() error {
 }
 
 // Refresh rewrites the desktop entry when Mortar has moved since it was written, as an AppImage does when the user
-// moves the file. Before first run has written the entry it writes nothing. Only a production build refreshes, so
-// a dev build or go run does not take the entry from the installed Mortar.
+// moves the file. When no entry exists yet it registers mortar:// and .mortar so a skipped first run still gets
+// those. Only a production build refreshes, so a dev build or go run does not take the entry from the installed Mortar.
 func (l *System) Refresh() error {
 	if !production {
 		return nil
@@ -242,11 +242,11 @@ func (l *System) Refresh() error {
 }
 
 // refresh leaves an entry whose Exec target still exists to that copy of Mortar: a second one running beside it,
-// such as another AppImage, is not a move.
+// such as another AppImage, is not a move. When no entry exists it registers mortar:// and .mortar.
 func (l *System) refresh() error {
 	current, err := fsx.ReadFile(l.desktopPath())
 	if errors.Is(err, fs.ErrNotExist) {
-		return nil
+		return l.RegisterLinks()
 	}
 	if err != nil {
 		return err
@@ -256,7 +256,7 @@ func (l *System) refresh() error {
 			return nil
 		}
 	}
-	return l.rewrite(current)
+	return l.RegisterLinks()
 }
 
 // execTarget is the program the desktop entry runs, as desktopFile writes it, or "" when it holds no such line.
