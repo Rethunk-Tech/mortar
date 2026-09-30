@@ -1,0 +1,355 @@
+package profile
+
+import (
+	"os"
+	"path/filepath"
+	"slices"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/store"
+)
+
+type env struct {
+	*Store
+	items *store.Store
+	base  string
+}
+
+func newEnv(t *testing.T) env {
+	t.Helper()
+	base := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", base)
+	t.Setenv("LOCALAPPDATA", base)
+	items, err := store.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return env{&Store{root: filepath.Join(base, "profiles"), trash: filepath.Join(base, "trash"), items: items}, items, base}
+}
+
+func writeFile(t *testing.T, root, rel, body string) {
+	t.Helper()
+	p := filepath.Join(root, filepath.FromSlash(rel))
+	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// item puts files into the store under key.
+func (e env) item(t *testing.T, key string, files map[string]string) {
+	t.Helper()
+	src := t.TempDir()
+	for rel, body := range files {
+		writeFile(t, src, rel, body)
+	}
+	if err := e.items.AddDir("stardew", key, src); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func manifestJSON(id string) string {
+	return `{"Name":"` + id + `","Author":"me","Version":"1.0.0","UniqueID":"` + id + `", /* c */}`
+}
+
+func (e env) mods(id string) string { return filepath.Join(e.root, "stardew", id, "mods") }
+
+func names(t *testing.T, dir string) []string {
+	t.Helper()
+	ents, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out []string
+	for _, d := range ents {
+		out = append(out, d.Name())
+	}
+	return out
+}
+
+func TestAddEntryScansAndRejectsDuplicates(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{
+		"Pack/A/manifest.json":    manifestJSON("X.A"),
+		"Pack/B/manifest.json":    manifestJSON("X.B"),
+		"Pack/.off/manifest.json": manifestJSON("X.Off"),
+	})
+	p, _ := e.Create("stardew", "P")
+	got, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: "local", Name: "a.zip"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	en := got.Entries[0]
+	if en.Source.Name != "a.zip" || len(en.Mods) != 2 || en.Mods[0].Folder != "Pack/A" || en.Mods[1].UniqueID != "X.B" {
+		t.Fatalf("entry = %+v", en)
+	}
+	if _, err := os.Stat(filepath.Join(e.mods(p.ID), "local-a", "Pack", "A", "manifest.json")); err != nil {
+		t.Fatal(err)
+	}
+	_, err = e.AddEntry("stardew", p.ID, "local-a", Source{})
+	if err == nil || !strings.Contains(err.Error(), "X.A, X.B") {
+		t.Fatalf("duplicate err = %v", err)
+	}
+	if _, err := e.AddEntry("stardew", p.ID, "local-missing", Source{}); err == nil {
+		t.Fatal("missing store item accepted")
+	}
+	e.item(t, "local-empty", map[string]string{"readme.txt": "x"})
+	if _, err := e.AddEntry("stardew", p.ID, "local-empty", Source{}); err == nil {
+		t.Fatal("entry without a manifest accepted")
+	}
+	if slices.Contains(names(t, e.mods(p.ID)), "local-empty") || len(names(t, e.mods(p.ID))) != 1 {
+		t.Fatalf("mods = %v", names(t, e.mods(p.ID)))
+	}
+	if _, err := e.AddEntry("stardew", "../x", "local-a", Source{}); err == nil {
+		t.Fatal("bad id accepted")
+	}
+	if _, err := e.AddEntry("stardew", p.ID, "../x", Source{}); err == nil {
+		t.Fatal("bad key accepted")
+	}
+}
+
+func TestToggleNestedAndRoot(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "local-n", map[string]string{"W/A/manifest.json": manifestJSON("X.A"), "W/B/manifest.json": manifestJSON("X.B")})
+	e.item(t, "local-r", map[string]string{"manifest.json": manifestJSON("X.R"), "data.txt": "d"})
+	p, _ := e.Create("stardew", "P")
+	for _, k := range []string{"local-n", "local-r"} {
+		if _, err := e.AddEntry("stardew", p.ID, k, Source{}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	mods := e.mods(p.ID)
+
+	got, err := e.SetModEnabled("stardew", p.ID, "x.a", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(got.Entries[0].Disabled, []string{"X.A"}) {
+		t.Fatalf("disabled = %v", got.Entries[0].Disabled)
+	}
+	if !slices.Equal(names(t, filepath.Join(mods, "local-n", "W")), []string{".A", "B"}) {
+		t.Fatalf("W = %v", names(t, filepath.Join(mods, "local-n", "W")))
+	}
+	if _, err := e.SetModEnabled("stardew", p.ID, "X.A", false); err != nil {
+		t.Fatalf("not idempotent: %v", err)
+	}
+
+	got, err = e.SetModEnabled("stardew", p.ID, "X.R", false)
+	if err != nil || !slices.Equal(got.Entries[1].Disabled, []string{"X.R"}) {
+		t.Fatalf("root disable = %+v, %v", got, err)
+	}
+	if !slices.Equal(names(t, mods), []string{".local-r", "local-n"}) {
+		t.Fatalf("mods = %v", names(t, mods))
+	}
+	if _, err := e.SetModEnabled("stardew", p.ID, "X.R", false); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.RemoveEntry("stardew", p.ID, "local-r"); err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(names(t, mods), []string{"local-n"}) {
+		t.Fatalf("after remove = %v", names(t, mods))
+	}
+
+	if _, err := e.SetModEnabled("stardew", p.ID, "X.A", true); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := e.read("stardew", p.ID); len(got.Entries[0].Disabled) != 0 || !slices.Equal(names(t, filepath.Join(mods, "local-n", "W")), []string{"A", "B"}) {
+		t.Fatalf("re-enable = %+v", got.Entries[0])
+	}
+	if _, err := e.SetModEnabled("stardew", p.ID, "X.Nope", true); err == nil {
+		t.Fatal("unknown mod accepted")
+	}
+	if _, err := e.RemoveEntry("stardew", p.ID, "local-r"); err == nil {
+		t.Fatal("removing a missing entry accepted")
+	}
+}
+
+func TestRootToggleRoundTrip(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "local-r", map[string]string{"manifest.json": manifestJSON("X.R")})
+	p, _ := e.Create("stardew", "P")
+	if _, err := e.AddEntry("stardew", p.ID, "local-r", Source{}); err != nil {
+		t.Fatal(err)
+	}
+	for _, on := range []bool{false, true, false, true} {
+		if _, err := e.SetModEnabled("stardew", p.ID, "X.R", on); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if !slices.Equal(names(t, e.mods(p.ID)), []string{"local-r"}) {
+		t.Fatalf("mods = %v", names(t, e.mods(p.ID)))
+	}
+}
+
+func TestDuplicateIsIndependent(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("X.A")})
+	a, _ := e.Create("stardew", "A")
+	b, _ := e.Create("stardew", "B")
+	if _, err := e.AddEntry("stardew", a.ID, "local-a", Source{}); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, e.mods(a.ID), "local-a/save.json", "orig")
+	dup, err := e.Duplicate("stardew", a.ID)
+	if err != nil || dup.Name != "A copy" || dup.ID == a.ID || len(dup.Entries) != 1 {
+		t.Fatalf("dup = %+v, %v", dup, err)
+	}
+	list, _ := e.List("stardew")
+	if len(list) != 3 || list[0].ID != a.ID || list[1].ID != dup.ID || list[2].ID != b.ID {
+		t.Fatalf("order = %+v", list)
+	}
+	if b, _ := os.ReadFile(filepath.Join(e.mods(dup.ID), "local-a", "save.json")); string(b) != "orig" {
+		t.Fatalf("copy lost mod data: %q", b)
+	}
+	writeFile(t, e.mods(dup.ID), "local-a/save.json", "changed")
+	if b, _ := os.ReadFile(filepath.Join(e.mods(a.ID), "local-a", "save.json")); string(b) != "orig" {
+		t.Fatalf("original changed: %q", b)
+	}
+	if b, _ := os.ReadFile(filepath.Join(e.base, "mortar", "store", "stardew", "local-a", "manifest.json")); !strings.Contains(string(b), "X.A") {
+		t.Fatal("store item changed")
+	}
+	long, _ := e.Create("stardew", strings.Repeat("é", 60))
+	if d, err := e.Duplicate("stardew", long.ID); err != nil || len([]rune(d.Name)) > maxName {
+		t.Fatalf("long dup = %q, %v", d.Name, err)
+	}
+}
+
+func TestTrashRestorePurge(t *testing.T) {
+	e := newEnv(t)
+	a, _ := e.Create("stardew", "A")
+	b, _ := e.Create("stardew", "B")
+	if err := e.Delete("stardew", a.ID); err != nil {
+		t.Fatal(err)
+	}
+	if list, _ := e.List("stardew"); len(list) != 1 || list[0].ID != b.ID {
+		t.Fatalf("list = %+v", list)
+	}
+	tr, err := e.ListTrash("stardew")
+	if err != nil || len(tr) != 1 || tr[0].ID != a.ID || tr[0].Name != "A" || tr[0].DaysLeft != 30 {
+		t.Fatalf("trash = %+v, %v", tr, err)
+	}
+	if err := e.Delete("stardew", "../x"); err == nil {
+		t.Fatal("bad id accepted")
+	}
+	if _, err := e.Restore("stardew", a.ID); err != nil {
+		t.Fatal(err)
+	}
+	if list, _ := e.List("stardew"); len(list) != 2 {
+		t.Fatalf("restored list = %+v", list)
+	}
+	if err := e.Delete("stardew", a.ID); err != nil {
+		t.Fatal(err)
+	}
+	// Recreate the id's folder: restore must refuse.
+	if err := os.MkdirAll(filepath.Join(e.root, "stardew", a.ID), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.Restore("stardew", a.ID); err == nil || !strings.Contains(err.Error(), "already exists") {
+		t.Fatalf("restore over existing = %v", err)
+	}
+	if err := os.Remove(filepath.Join(e.root, "stardew", a.ID)); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := e.PurgeTrash(time.Now().Add(29 * 24 * time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	if tr, _ := e.ListTrash("stardew"); len(tr) != 1 {
+		t.Fatal("purged too early")
+	}
+	if err := e.PurgeTrash(time.Now().Add(31 * 24 * time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	if tr, _ := e.ListTrash("stardew"); len(tr) != 0 {
+		t.Fatalf("trash after purge = %+v", tr)
+	}
+}
+
+func TestRebuildAfterModsDeleted(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "local-n", map[string]string{"W/A/manifest.json": manifestJSON("X.A"), "W/B/manifest.json": manifestJSON("X.B")})
+	e.item(t, "local-r", map[string]string{"manifest.json": manifestJSON("X.R")})
+	p, _ := e.Create("stardew", "P")
+	for _, k := range []string{"local-n", "local-r"} {
+		if _, err := e.AddEntry("stardew", p.ID, k, Source{}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, id := range []string{"X.A", "X.R"} {
+		if _, err := e.SetModEnabled("stardew", p.ID, id, false); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.RemoveAll(e.mods(p.ID)); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, e.mods(p.ID), ".tmp_leftover/x", "x")
+	mods, err := e.Mods("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(names(t, e.mods(p.ID)), []string{".local-r", "local-n"}) {
+		t.Fatalf("mods = %v", names(t, e.mods(p.ID)))
+	}
+	if !slices.Equal(names(t, filepath.Join(e.mods(p.ID), "local-n", "W")), []string{".A", "B"}) {
+		t.Fatal("disabled nested mod not dotted after rebuild")
+	}
+	if len(mods) != 3 || mods[0].Enabled || !mods[1].Enabled || !slices.Equal(mods[0].Siblings, []string{"X.B"}) || len(mods[2].Siblings) != 0 {
+		t.Fatalf("mods = %+v", mods)
+	}
+
+	// One entry folder missing while the other stays untouched.
+	writeFile(t, e.mods(p.ID), "local-n/W/B/keep.json", "kept")
+	if err := os.RemoveAll(filepath.Join(e.mods(p.ID), ".local-r")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.Mods("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(names(t, e.mods(p.ID)), []string{".local-r", "local-n"}) {
+		t.Fatalf("mods = %v", names(t, e.mods(p.ID)))
+	}
+	if _, err := os.Stat(filepath.Join(e.mods(p.ID), "local-n", "W", "B", "keep.json")); err != nil {
+		t.Fatal("intact entry was recopied")
+	}
+}
+
+func TestHiddenReorderAndStoreKeys(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("X.A")})
+	a, _ := e.Create("stardew", "A")
+	b, _ := e.Create("stardew", "B")
+	c, _ := e.Create("stardew", "C")
+	if p, err := e.SetHidden("stardew", b.ID, true); err != nil || !p.Hidden {
+		t.Fatalf("hidden = %+v, %v", p, err)
+	}
+	if err := e.Reorder("stardew", []string{c.ID, a.ID}); err != nil {
+		t.Fatal(err)
+	}
+	list, _ := e.List("stardew")
+	if list[0].ID != c.ID || list[1].ID != a.ID || list[2].ID != b.ID || list[2].Order != 2 {
+		t.Fatalf("order = %+v", list)
+	}
+	if err := e.Reorder("stardew", []string{a.ID, a.ID}); err == nil {
+		t.Fatal("duplicate id accepted")
+	}
+	if err := e.Reorder("stardew", []string{"0000000000000000"}); err == nil {
+		t.Fatal("unknown id accepted")
+	}
+
+	if _, err := e.AddEntry("stardew", a.ID, "local-a", Source{}); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.Delete("stardew", a.ID); err != nil {
+		t.Fatal(err)
+	}
+	keys, err := e.StoreKeys()
+	if err != nil || !slices.Equal(keys["stardew"], []string{"local-a"}) {
+		t.Fatalf("keys = %v, %v", keys, err)
+	}
+}

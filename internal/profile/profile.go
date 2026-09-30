@@ -12,11 +12,13 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 	"unicode/utf8"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
 const (
@@ -26,11 +28,29 @@ const (
 
 var idPattern = regexp.MustCompile(`^[0-9a-f]{16}$`)
 
-// Entry is one mod archive in a profile.
+// Source says where an entry came from. Kind is "local" for an archive the user picked, Name its file name.
+type Source struct {
+	Kind string `json:"kind"`
+	Name string `json:"name"`
+}
+
+// EntryMod is one mod inside an entry. Folder holds its manifest.json, relative to mods/<key>/, in its
+// enabled (not dot-prefixed) form; "." is the entry's own folder.
+type EntryMod struct {
+	UniqueID string `json:"uniqueId"`
+	Version  string `json:"version"`
+	Name     string `json:"name"`
+	Author   string `json:"author"`
+	Folder   string `json:"folder"`
+}
+
+// Entry is one mod archive in a profile. Disabled lists the UniqueIDs switched off.
 type Entry struct {
-	Key         string   `json:"key"`
-	PreviousKey string   `json:"previousKey"`
-	Disabled    []string `json:"disabled"`
+	Key         string     `json:"key"`
+	PreviousKey string     `json:"previousKey"`
+	Source      Source     `json:"source"`
+	Mods        []EntryMod `json:"mods"`
+	Disabled    []string   `json:"disabled"`
 }
 
 // Profile is the on-disk shape of profile.json.
@@ -47,15 +67,20 @@ type Profile struct {
 }
 
 // Store reads and writes profiles under one root folder.
-type Store struct{ root string }
+type Store struct {
+	root  string
+	trash string
+	items *store.Store
+	mu    sync.Mutex
+}
 
-// Open returns a store rooted at <datadir>/profiles.
-func Open() (*Store, error) {
+// Open returns a store rooted at <datadir>/profiles, with deleted profiles in <datadir>/trash.
+func Open(items *store.Store) (*Store, error) {
 	dir, err := datadir.Dir()
 	if err != nil {
 		return nil, err
 	}
-	return &Store{root: filepath.Join(dir, "profiles")}, nil
+	return &Store{root: filepath.Join(dir, "profiles"), trash: filepath.Join(dir, "trash"), items: items}, nil
 }
 
 func cleanName(name string) (string, error) {
@@ -125,6 +150,10 @@ func (s *Store) read(game, id string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
+	return readAt(dir, id)
+}
+
+func readAt(dir, id string) (Profile, error) {
 	b, err := os.ReadFile(filepath.Join(dir, fileName))
 	if err != nil {
 		return Profile{}, err
@@ -136,11 +165,21 @@ func (s *Store) read(game, id string) (Profile, error) {
 	if p.Entries == nil {
 		p.Entries = []Entry{}
 	}
+	for i := range p.Entries {
+		if p.Entries[i].Mods == nil {
+			p.Entries[i].Mods = []EntryMod{}
+		}
+		if p.Entries[i].Disabled == nil {
+			p.Entries[i].Disabled = []string{}
+		}
+	}
 	return p, nil
 }
 
 // Create adds an empty profile, with its mods/ folder, after the existing ones.
 func (s *Store) Create(game, name string) (Profile, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	name, err := cleanName(name)
 	if err != nil {
 		return Profile{}, err
@@ -178,6 +217,20 @@ func (s *Store) Rename(game, id, name string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
+	return s.update(game, id, func(p *Profile, _ string) error {
+		p.Name = name
+		return nil
+	})
+}
+
+// update reads the profile under the lock, applies fn (given the profile folder), then writes it with a new updated time.
+func (s *Store) update(game, id string, fn func(p *Profile, dir string) error) (Profile, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.updateLocked(game, id, fn)
+}
+
+func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) error) (Profile, error) {
 	p, err := s.read(game, id)
 	if err != nil {
 		return Profile{}, err
@@ -186,6 +239,9 @@ func (s *Store) Rename(game, id, name string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	p.Name, p.Updated = name, time.Now().UTC().Truncate(time.Second)
+	if err := fn(&p, dir); err != nil {
+		return Profile{}, err
+	}
+	p.Updated = time.Now().UTC().Truncate(time.Second)
 	return p, datadir.WriteJSON(filepath.Join(dir, fileName), p)
 }

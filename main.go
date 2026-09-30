@@ -4,6 +4,7 @@ import (
 	"embed"
 	"log"
 	"os"
+	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -29,17 +30,27 @@ func main() {
 	}
 	gamesSvc := game.NewService(home, store)
 
-	profiles, err := profile.Open()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	items, err := modstore.Open()
 	if err != nil {
 		log.Fatal(err)
 	}
 	if err := items.Cleanup(); err != nil {
 		log.Printf("store cleanup: %v", err)
+	}
+
+	profiles, err := profile.Open(items)
+	if err != nil {
+		log.Fatal(err)
+	}
+	now := time.Now()
+	if err := profiles.PurgeTrash(now); err != nil {
+		log.Printf("purge trash: %v", err)
+	}
+	// An unreadable profile.json stops collection: its keys are unknown, and their items must not be deleted.
+	if keys, err := profiles.StoreKeys(); err != nil {
+		log.Printf("store collect skipped: %v", err)
+	} else if err := items.Collect(keys, now); err != nil {
+		log.Printf("store collect: %v", err)
 	}
 
 	var window *application.WebviewWindow
