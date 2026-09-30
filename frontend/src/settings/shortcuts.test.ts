@@ -4,11 +4,26 @@ import { matchShortcut, SHORTCUTS, shortcutAllowed } from './shortcuts.ts'
 describe('SHORTCUTS', () => {
   test('lists every chord the handler recognises', () => {
     const ids = SHORTCUTS.map((s) => s.id)
-    expect(ids).toEqual(['filter-mods', 'play', 'check-updates', 'open-settings', 'dismiss'])
-    expect(SHORTCUTS.map((s) => s.keys)).toEqual(['Ctrl+F', 'Ctrl+P', 'F5', 'Ctrl+,', 'Esc'])
+    expect(ids).toEqual([
+      'command-palette',
+      'filter-mods',
+      'play',
+      'check-updates',
+      'open-settings',
+      'dismiss',
+    ])
+    expect(SHORTCUTS.map((s) => s.keys)).toEqual([
+      'Ctrl+K',
+      'Ctrl+F',
+      'Ctrl+P',
+      'F5',
+      'Ctrl+,',
+      'Esc',
+    ])
   })
 
   test('matchShortcut covers the table', () => {
+    expect(matchShortcut({ key: 'k', ctrlKey: true })).toBe('command-palette')
     expect(matchShortcut({ key: 'f', ctrlKey: true })).toBe('filter-mods')
     expect(matchShortcut({ key: 'p', metaKey: true })).toBe('play')
     expect(matchShortcut({ key: 'F5' })).toBe('check-updates')

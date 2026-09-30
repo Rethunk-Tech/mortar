@@ -1,4 +1,10 @@
-export type ShortcutId = 'filter-mods' | 'play' | 'check-updates' | 'open-settings' | 'dismiss'
+export type ShortcutId =
+  | 'command-palette'
+  | 'filter-mods'
+  | 'play'
+  | 'check-updates'
+  | 'open-settings'
+  | 'dismiss'
 
 export interface Shortcut {
   id: ShortcutId
@@ -20,6 +26,7 @@ export interface TypingTarget {
 
 /** Single table for key handling and Settings › Shortcuts. */
 export const SHORTCUTS: readonly Shortcut[] = [
+  { id: 'command-palette', keys: 'Ctrl+K', label: 'Open the command palette', always: false },
   { id: 'filter-mods', keys: 'Ctrl+F', label: 'Focus the Mods filter', always: false },
   { id: 'play', keys: 'Ctrl+P', label: 'Play the open profile', always: false },
   { id: 'check-updates', keys: 'F5', label: 'Check for mod updates', always: false },
@@ -66,6 +73,9 @@ export function matchShortcut(e: Chord): ShortcutId | null {
   const ctrl = Boolean(ctrlKey || metaKey)
   if (key === 'Escape') {
     return 'dismiss'
+  }
+  if (ctrl && (key === 'k' || key === 'K')) {
+    return 'command-palette'
   }
   if (ctrl && (key === 'f' || key === 'F')) {
     return 'filter-mods'
