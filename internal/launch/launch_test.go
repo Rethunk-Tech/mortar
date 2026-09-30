@@ -33,7 +33,14 @@ func TestRunStartsWhenLogRewritten(t *testing.T) {
 	}
 	var mu sync.Mutex
 	var lines []string
-	err := Run(context.Background(), run, Command{Dir: "/g", Name: "steam", Args: []string{"-applaunch", "1"}, LogFile: log}, fast, func(l []string) {
+	snapshot := func() []string {
+		mu.Lock()
+		defer mu.Unlock()
+		return slices.Clone(lines)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	err := Run(ctx, run, Command{Dir: "/g", Name: "steam", Args: []string{"-applaunch", "1"}, LogFile: log}, fast, func(l []string) {
 		mu.Lock()
 		lines = append(lines, l...)
 		mu.Unlock()
@@ -44,8 +51,15 @@ func TestRunStartsWhenLogRewritten(t *testing.T) {
 	if !slices.Equal(got, []string{"/g", "steam", "-applaunch", "1"}) {
 		t.Fatalf("command = %v", got)
 	}
-	if !slices.Equal(lines, []string{"SMAPI 4.5.2 with Stardew Valley 1.6.15", "Loading mods"}) {
-		t.Fatalf("lines = %q (the old run's line or a partial line leaked)", lines)
+	// Run returns once the log is rewritten; os.WriteFile truncates first, so the rest
+	// of the lines can arrive through the follower after Run has returned.
+	want := []string{"SMAPI 4.5.2 with Stardew Valley 1.6.15", "Loading mods"}
+	deadline := time.Now().Add(2 * time.Second)
+	for !slices.Equal(snapshot(), want) && time.Now().Before(deadline) {
+		time.Sleep(fast.Poll)
+	}
+	if got := snapshot(); !slices.Equal(got, want) {
+		t.Fatalf("lines = %q (the old run's line or a partial line leaked)", got)
 	}
 }
 
