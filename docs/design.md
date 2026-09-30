@@ -117,6 +117,10 @@ Sources: Gale (`Kesomannen/gale`), r2modmanPlus (`ebkr/r2modmanPlus`), the Thund
 - **Mod updates: a prompt per profile (NOMAD, 2026-09-29).** Update checks (SMAPI API) show a count on each profile. The user reviews and applies them; the store keeps the previous version, so a rollback is one click. Nothing updates on its own.
 - **Support (NOMAD, 2026-09-29).** One button uploads the current SMAPI log to smapi.io/log, the Stardew community's standard support tool, and copies the link for help channels; another opens a prefilled GitHub issue for Mortar's own bugs once the repo is public. The upload is `POST https://smapi.io/log` with a form-encoded body `input=<log text>`, no auth; the server parses and stores it and answers with a redirect to `/log/<id>`, which is the link (`src/SMAPI.Web/Controllers/LogParserController.cs:119-150`). Trap: a SMAPI log holds local paths, including the user's name, and anyone with the link can read it, so Mortar shows the log and asks before uploading.
 - **Language: i18n-ready, English only (NOMAD, 2026-09-29).** Every UI string goes through an i18n library from the first line, as Maître does with Lingui; only English ships at first.
+- **Per-mod toggle (NOMAD, 2026-09-29).** Within a profile, disabling a mod renames its folder with a leading dot (and a trailing dot on Windows, which refuses a leading-dot-only name), which SMAPI skips (measured); files and config stay.
+- **Problems warn, never block (NOMAD, 2026-09-29).** Before launch Mortar lists missing dependencies, duplicate `UniqueID`s and mods SMAPI's API marks broken for this game version, each with a one-click fix (open the dependency's Nexus page, disable the mod); the user can still launch, and SMAPI skips what it cannot load.
+- **SMAPI updates prompt (NOMAD, 2026-09-29).** A banner appears when a newer SMAPI is on GitHub releases or a game update has broken the installed one; one click runs the unattended installer.
+- **The game folder's own `Mods` is left alone in v1.** Mortar never reads, moves or changes it; importing it as a profile is v2.
 - **Windows is measured after the go-ahead (NOMAD, 2026-09-29),** before the first release: every **Measure on Windows** item below.
 
 ## Share links
@@ -128,3 +132,15 @@ What a shared profile holds: name, game, and per mod its source reference (Nexus
 **Self-contained Brotli links; no hosted service in v1 (NOMAD, 2026-09-29).** A hosted share service, and share versioning with it, are parked for v2 to avoid running costs. The link carries the whole profile: `mortar://stardew/p/<payload>`, where the payload is compact JSON (`["<profile name>", [[<nexus mod id>, <nexus file id>], ...]]`), Brotli-compressed at quality 11 and base64url-encoded without padding. Measured on real mod IDs sampled from SMAPI's `StardewModDataset` (`dataset/indexes/pages by mod ID.json`, 2026-09-29), the whole link is 498 characters for 50 mods, 879 for 100 and 1,630 for 200, so profiles up to about 240 mods fit a 2,000-character Discord message. Including SMAPI `UniqueID`s pushes 100 mods to 3,435 characters, because those IDs barely compress, so the link carries none: the recipient reads each `UniqueID` from the downloaded mod's manifest and matches mods it already has through their `Nexus:` update keys. Brotli beats gzip by 12 to 15% at every size. A GitHub-hosted mod adds `"<owner>/<repo>@<tag>"` in place of the ID pair. Mod configs do not fit in a link and travel in an optional `.mortar` file (the same JSON plus configs, uncompressed zip).
 
 For Lethal Company, r2modman codes through Thunderstore stay supported for import and export alongside Mortar links.
+
+## Later
+
+Decided against for the first release, each by NOMAD on 2026-09-29; re-weigh only when asked:
+
+- Lethal Company support: after the Stardew release, as the second `Game` implementation.
+- A hosted share service with short codes and share versioning: parked for v2 to avoid running costs.
+- Importing the game folder's existing `Mods` folder as a profile: v2.
+- In-app mod search and browsing (Nexus GraphQL v2): Mortar links out to Nexus instead.
+- CurseForge (needs an API key application) and ModDrop (no documented download API) as sources; the Xbox app version of Stardew; Steam Deck.
+- Windows code signing: the first release ships unsigned.
+- Per-profile save isolation: saves stay shared, with a warning.
