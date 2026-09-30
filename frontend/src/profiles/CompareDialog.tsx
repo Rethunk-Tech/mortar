@@ -78,7 +78,9 @@ export function PickCompareDialog({
   onClose: () => void
 }) {
   const { t } = useLingui()
-  const profiles = useProfiles((s) => s.profiles.filter((p) => p.id !== from?.id))
+  // Filtering inside the selector would hand zustand a new array on every render and loop forever.
+  const all = useProfiles((s) => s.profiles)
+  const profiles = all.filter((p) => p.id !== from?.id)
   return (
     <Dialog open={from !== null} onClose={onClose} transitionDuration={0} slotProps={paper}>
       <DialogTitle>{t`Compare ${from?.name ?? ''} with…`}</DialogTitle>
