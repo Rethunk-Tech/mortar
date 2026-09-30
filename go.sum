@@ -2,8 +2,8 @@ al.essio.dev/pkg/shellescape v1.6.0 h1:NxFcEqzFSEVCGN2yq7Huv/9hyCEGVa/TncnOOBBeX
 al.essio.dev/pkg/shellescape v1.6.0/go.mod h1:6sIqp7X2P6mThCQ7twERpZTuigpr6KbZWtls1U8I890=
 git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 h1:N3IGoHHp9pb6mj1cbXbuaSXV/UMKwmbKLf53nQmtqMA=
 git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3/go.mod h1:QtOLZGz8olr4qH2vWK0QH0w0O4T9fEIjMuWpKUsH7nc=
-github.com/Rethunk-AI/wails/v3 v3.0.0-beta.26.0.20260930124554-1a75a02e2f63 h1:HwSl5u2BQvnEp95LXLSB4OgfDIC5YcxW/i0NJHRFhUI=
-github.com/Rethunk-AI/wails/v3 v3.0.0-beta.26.0.20260930124554-1a75a02e2f63/go.mod h1:5DR/EG5FHU8+BNV7tQYQ/rJMjoFsVlYpM+0gp1+gcTI=
+github.com/Rethunk-AI/wails/v3 v3.0.0-beta.26.0.20260930134438-9abb589bd053 h1:ch1walIbb1uGAOoZxZM7oHRJx07+Y+sVz+TN6R2btGQ=
+github.com/Rethunk-AI/wails/v3 v3.0.0-beta.26.0.20260930134438-9abb589bd053/go.mod h1:5DR/EG5FHU8+BNV7tQYQ/rJMjoFsVlYpM+0gp1+gcTI=
 github.com/adrg/xdg v0.5.3 h1:xRnxJXne7+oWDatRhR1JLnvuccuIeCoBu2rtuLqQB78=
 github.com/adrg/xdg v0.5.3/go.mod h1:nlTsY+NNiCBGCK2tpm09vRqfVzrc2fLmXGpBLF0zlTQ=
 github.com/andybalholm/brotli v1.2.2 h1:HzTuoo2ErYQqf5qvcJInB8uvqSVxRttzkFexPWtnceM=

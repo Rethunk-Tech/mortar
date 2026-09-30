@@ -35,4 +35,4 @@ require (
 	golang.org/x/text v0.40.0 // indirect
 )
 
-replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-beta.26.0.20260930124554-1a75a02e2f63
+replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-beta.26.0.20260930134438-9abb589bd053
