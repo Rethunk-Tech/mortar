@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -116,7 +117,7 @@ func TestReadWriteConfigRoundTripAndLock(t *testing.T) {
 	e.Running = func(_, id string) bool { return id == p.ID }
 	if err := svc.WriteConfig("stardew", p.ID, "a-1", "me.a", `{"z":2}`); err == nil {
 		t.Fatal("write while running")
-	} else if _, ok := err.(*RunningError); !ok {
+	} else if _, ok := errors.AsType[*RunningError](err); !ok {
 		t.Fatalf("err = %v, want RunningError", err)
 	}
 	if _, err := svc.ReadConfig("stardew", p.ID, "a-1", "nope.Mod"); err == nil {
