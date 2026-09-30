@@ -6,7 +6,7 @@ import {
   Details as readDetails,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
 import { useNexus } from '../settings/nexus.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorMessage } from '../toasts/report.ts'
 
 interface Entry {
   details?: Details
@@ -59,6 +59,7 @@ useNexus.subscribe((s, prev) => {
     }
     for (const [key, entry] of Object.entries(useNexusDetails.getState().byId)) {
       if (!entry?.details) {
+        reads.delete(Number(key))
         enqueue(Number(key))
       }
     }
@@ -92,14 +93,14 @@ const primeDetails = async (ids: number[]) => {
     const next = { ...s.byId }
     for (const id of unknown) {
       const details = cached[`${id}`]
-      if (details && !next[id]) {
+      if (details && !next[id]?.details) {
         next[id] = { details }
       }
     }
     return { byId: next }
   })
   for (const id of unknown) {
-    if (!cached[`${id}`]) {
+    if (!useNexusDetails.getState().byId[id]?.details) {
       enqueue(id)
     }
   }
@@ -109,7 +110,7 @@ const primeDetails = async (ids: number[]) => {
 const useNexusEntry = (id: number) => {
   useEffect(() => {
     if (id) {
-      loadDetails(id).catch(reportUnexpected)
+      enqueue(id)
     }
   }, [id])
   return useNexusDetails((s) => s.byId[id])
