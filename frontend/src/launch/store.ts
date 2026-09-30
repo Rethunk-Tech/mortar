@@ -47,7 +47,8 @@ export const useLaunch = create<{
   stopping: boolean
   // Play was pressed and no launch:state has answered yet, which is when SMAPI installs first.
   starting: boolean
-  apply: (status: Status) => void
+  // polled marks a status read by refresh() rather than announced by a launch:state event.
+  apply: (status: Status, polled?: boolean) => void
   refresh: (game: string) => Promise<void>
   start: (game: string, profile: string, direct: boolean) => Promise<void>
   hide: () => void
@@ -61,8 +62,11 @@ export const useLaunch = create<{
   askDirect: null,
   stopping: false,
   starting: false,
-  apply: (status) => {
-    set({ starting: false })
+  apply: (status, polled = false) => {
+    // A poll that lands before the first launch:state still reports Idle; only an event ends preparation.
+    if (!polled || status.state !== State.Idle) {
+      set({ starting: false })
+    }
     if (status.state === State.Launching) {
       // A status refresh during the same launch must keep its log and a hidden overlay hidden.
       const prev = get().status
@@ -99,7 +103,7 @@ export const useLaunch = create<{
   },
   refresh: async (game) => {
     try {
-      get().apply(await LaunchStatus(game))
+      get().apply(await LaunchStatus(game), true)
     } catch (e) {
       reportError(i18n._(msg`Could not check whether the game is running`))(e)
     }

@@ -52,3 +52,11 @@ test('launching another profile starts over', () => {
   expect(useLaunch.getState().hidden).toBe(false)
   expect(useConsole.getState().shown).toEqual({ game: 'stardew', profile: 'p2' })
 })
+
+test('a polled Idle keeps preparation going; an announced one ends it', () => {
+  useLaunch.setState({ starting: true })
+  useLaunch.getState().apply(status(State.Idle), true)
+  expect(useLaunch.getState().starting).toBe(true)
+  useLaunch.getState().apply(status(State.Idle))
+  expect(useLaunch.getState().starting).toBe(false)
+})
