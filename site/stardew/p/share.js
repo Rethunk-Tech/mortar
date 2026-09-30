@@ -1,20 +1,13 @@
 import init, { DecompressStream } from '../../vendor/brotli-dec-wasm/brotli_dec_wasm.js'
 
-const MAX_ENCODED = 8 * 1024
-const MAX_DECODED = 64 * 1024
+const MAX_ENCODED = 8_192
+const MAX_DECODED = 65_536
 const VERSION = 1
 const REPO = /^[\w.-]+\/[\w.-]+$/
 const HASH = /^#/
 const B64URL = /^[\w-]+$/
 const DASH = /-/g
 const UNDERSCORE = /_/g
-
-export class ShareError extends Error {
-  constructor(kind) {
-    super(kind)
-    this.kind = kind
-  }
-}
 
 let ready
 const wasmUrl = new URL('../../vendor/brotli-dec-wasm/brotli_dec_wasm_bg.wasm', import.meta.url)
@@ -60,8 +53,8 @@ export async function decodeShare(hash, wasm) {
   let json
   try {
     json = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await inflate(bytes, wasm)))
-  } catch {
-    throw new ShareError('bad')
+  } catch (err) {
+    throw new ShareError('bad', { cause: err })
   }
   if (!Array.isArray(json) || json.length === 0) {
     throw new ShareError('bad')
@@ -74,4 +67,11 @@ export async function decodeShare(hash, wasm) {
     throw new ShareError('bad')
   }
   return { name, entries: entries.map(entry) }
+}
+
+export class ShareError extends Error {
+  constructor(kind, options) {
+    super(kind, options)
+    this.kind = kind
+  }
 }

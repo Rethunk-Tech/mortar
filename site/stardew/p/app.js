@@ -45,6 +45,12 @@ function row(e) {
   return li
 }
 
+const ERRORS = {
+  missing: 'This link has no profile in it. Ask the sender for the full link.',
+  version: 'This profile was shared by a newer Mortar. Update Mortar, then open the link again.',
+  bad: 'This link is damaged or too large to read. Ask the sender to share it again.',
+}
+
 async function main() {
   const link = location.href
   const payload = location.hash.replace(HASH, '')
@@ -53,13 +59,7 @@ async function main() {
     share = await decodeShare(location.hash)
   } catch (err) {
     const kind = err?.kind
-    show(
-      kind === 'missing'
-        ? 'This link has no profile in it. Ask the sender for the full link.'
-        : kind === 'version'
-          ? 'This profile was shared by a newer Mortar. Update Mortar, then open the link again.'
-          : 'This link is damaged or too large to read. Ask the sender to share it again.',
-    )
+    show(ERRORS[kind] ?? ERRORS.bad)
     return
   }
   $('name').textContent = share.name
