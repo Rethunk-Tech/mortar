@@ -1,0 +1,29 @@
+{
+  "components": [
+    {
+      "game": "stardew",
+      "name": "smapi",
+      "kind": "loader",
+      "source": {
+        "host": "github.com",
+        "owner": "Pathoschild",
+        "repo": "SMAPI"
+      },
+      "asset": "SMAPI-{version}-installer.zip",
+      "version": "latest",
+      "accepted": ">=1.6.14"
+    },
+    {
+      "game": "stardew",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-AI",
+        "repo": "mortar-smapi-bridge"
+      },
+      "asset": "MortarSmapiBridge-{version}.zip",
+      "version": "1.1.0"
+    }
+  ]
+}

@@ -46,6 +46,7 @@ type Release struct {
 
 // Asset is one downloadable file of a release.
 type Asset struct {
+	ID          int64  `json:"id"`
 	Name        string `json:"name"`
 	ContentType string `json:"content_type"`
 	Size        int64  `json:"size"`

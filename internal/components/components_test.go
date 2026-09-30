@@ -1,0 +1,171 @@
+package components
+
+import (
+	"crypto/ed25519"
+	"crypto/sha256"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"testing"
+	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/meta"
+)
+
+func signedManifest(t *testing.T, serial uint64, public ed25519.PrivateKey) ([]byte, []byte) {
+	t.Helper()
+	m := Manifest{
+		Serial: serial,
+		Components: []Component{{
+			Game: "stardew", Name: "bridge", Kind: "bridge",
+			Source: Source{Host: "github.com", Owner: "Rethunk-AI", Repo: "mortar-smapi-bridge"},
+			Tag:    "v1.1.0", Asset: "bridge.zip", Version: "1.1.0",
+			SHA256: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		}},
+	}
+	body, err := json.Marshal(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return body, ed25519.Sign(public, body)
+}
+
+func TestVerifySignature(t *testing.T) {
+	public, private, err := ed25519.GenerateKey(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, signature := signedManifest(t, 1, private)
+	if err := Verify(body, signature, public); err != nil {
+		t.Fatalf("valid signature: %v", err)
+	}
+	tampered := append([]byte(nil), body...)
+	tampered[0] ^= 1
+	if err := Verify(tampered, signature, public); err == nil {
+		t.Fatal("tampered manifest was accepted")
+	}
+	wrong, _, err := ed25519.GenerateKey(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := Verify(body, signature, wrong); err == nil {
+		t.Fatal("signature verified with the wrong key")
+	}
+}
+
+func TestManifestRejectsUntrustedHost(t *testing.T) {
+	m := Manifest{
+		Serial: 1,
+		Components: []Component{{
+			Game: "stardew", Name: "bridge", Kind: "bridge",
+			Source: Source{Host: "example.com", Owner: "a", Repo: "b"},
+			Tag:    "v1", Asset: "bridge.zip", Version: "1", SHA256: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		}},
+	}
+	if err := m.Validate(); err == nil {
+		t.Fatal("manifest accepted a source outside the allowlist")
+	}
+}
+
+func TestLoadRefusesSerialRollbackAndKeepsCachedManifest(t *testing.T) {
+	_, private, err := ed25519.GenerateKey(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	public, ok := private.Public().(ed25519.PublicKey)
+	if !ok {
+		t.Fatal("generated key is not Ed25519")
+	}
+	body, signature := signedManifest(t, 2, private)
+	rollback, rollbackSignature := signedManifest(t, 1, private)
+	serveRollback := false
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/components.json.sig" {
+			if serveRollback {
+				_, _ = w.Write(rollbackSignature)
+			} else {
+				_, _ = w.Write(signature)
+			}
+			return
+		}
+		if serveRollback {
+			_, _ = w.Write(rollback)
+		} else {
+			_, _ = w.Write(body)
+		}
+	}))
+	t.Cleanup(server.Close)
+	now := time.Now()
+	cache := &meta.Client{CacheDir: t.TempDir(), Now: func() time.Time { return now }}
+	client := NewClient(server.Client())
+	client.ManifestURL = server.URL + "/components.json"
+	if manifest, err := client.Load(t.Context(), cache, public); err != nil || manifest.Serial != 2 {
+		t.Fatalf("initial manifest = %#v, %v", manifest, err)
+	}
+	now = now.Add(25 * time.Hour)
+	serveRollback = true
+	manifest, err := client.Load(t.Context(), cache, public)
+	if manifest.Serial != 2 {
+		t.Fatalf("rollback replaced cached serial: %d", manifest.Serial)
+	}
+	if err == nil {
+		t.Fatal("serial rollback was not reported")
+	}
+}
+
+func TestDownloadHashMismatchKeepsCurrentVersion(t *testing.T) {
+	body := []byte("new but wrong")
+	sum := sha256.Sum256([]byte("expected"))
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+	client := NewClient(server.Client())
+	client.GitHubBaseURL = server.URL
+	dest := filepath.Join(t.TempDir(), "bridge.zip")
+	if err := os.WriteFile(dest, []byte("current"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	component := Component{
+		Game: "stardew", Name: "bridge", Kind: "bridge",
+		Source: Source{Host: "github.com", Owner: "a", Repo: "b"},
+		Tag:    "v1", Asset: "bridge.zip", Version: "1",
+		SHA256: fmtSHA(sum),
+	}
+	if err := client.Download(t.Context(), component, dest); err == nil {
+		t.Fatal("accepted a mismatched component")
+	}
+	got, err := os.ReadFile(dest) //nolint:gosec // the destination is a test temp file
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != "current" {
+		t.Fatalf("current component changed to %q", got)
+	}
+}
+
+func TestOfflineFirstRunUsesBundledManifest(t *testing.T) {
+	server := httptest.NewServer(http.NotFoundHandler())
+	server.Close()
+	client := NewClient(http.DefaultClient)
+	client.ManifestURL = server.URL + "/components.json"
+	manifest, err := client.Load(t.Context(), &meta.Client{CacheDir: t.TempDir()}, []byte("not a key"))
+	if manifest.Serial == 0 {
+		t.Fatal("offline load returned no bundled manifest")
+	}
+	if err == nil {
+		t.Fatal("offline load unexpectedly fetched a manifest")
+	}
+}
+
+func fmtSHA(sum [sha256.Size]byte) string {
+	const hex = "0123456789abcdef"
+	out := make([]byte, len(sum)*2)
+	for i, b := range sum {
+		out[i*2] = hex[b>>4]
+		out[i*2+1] = hex[b&15]
+	}
+	return string(out)
+}

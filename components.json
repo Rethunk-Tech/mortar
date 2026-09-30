@@ -1,0 +1,34 @@
+{
+  "serial": 1790807999,
+  "components": [
+    {
+      "game": "stardew",
+      "name": "smapi",
+      "kind": "loader",
+      "source": {
+        "host": "github.com",
+        "owner": "Pathoschild",
+        "repo": "SMAPI"
+      },
+      "tag": "4.5.2",
+      "asset": "SMAPI-4.5.2-installer.zip",
+      "version": "4.5.2",
+      "accepted": "\u003e=1.6.14",
+      "sha256": "dd01ddca7b566bfe0d3b3d2d03833496abc56c53da976241f2ab443f5484acc4"
+    },
+    {
+      "game": "stardew",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-AI",
+        "repo": "mortar-smapi-bridge"
+      },
+      "tag": "v1.1.0",
+      "asset": "MortarSmapiBridge-1.1.0.zip",
+      "version": "1.1.0",
+      "sha256": "03b7b658567bcd08a9aea416a30d59de65950324be482093b2c99cc55a033546"
+    }
+  ]
+}
