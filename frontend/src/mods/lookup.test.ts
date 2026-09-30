@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { Copy } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import { preselect, problemCount, reshow, updateCount, updateFor } from './lookup.ts'
+import { nexusKeepKey, preselect, problemCount, reshow, updateCount, updateFor } from './lookup.ts'
 
 const copy = (key: string, newest: boolean, nexus = false): Copy => ({
   key,
@@ -19,6 +19,11 @@ test('preselect keeps the newest copy', () => {
 
 test('preselect prefers the Nexus copy among equals', () => {
   expect(preselect([copy('a', true), copy('b', true, true)])).toBe('b')
+})
+
+test('Keep the Nexus copy is the recommended key when exactly one copy is from Nexus', () => {
+  expect(nexusKeepKey([copy('a', false), copy('b', true, true)])).toBe('b')
+  expect(nexusKeepKey([copy('a', true, true), copy('b', true, true)])).toBeNull()
 })
 
 test('a newer archive beats an older Nexus copy', () => {

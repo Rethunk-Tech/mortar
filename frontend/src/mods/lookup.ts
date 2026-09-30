@@ -91,6 +91,11 @@ export function preselect(copies: Copy[]): string {
   return (pool.find((c) => c.nexus) ?? pool[0])?.key ?? ''
 }
 
+export function nexusKeepKey(copies: Copy[]): string | null {
+  const nexus = copies.filter((c) => c.nexus)
+  return nexus.length === 1 ? (nexus[0].key ?? null) : null
+}
+
 export const problemCount = (result: Result | null): number => problemsOf(result).length
 
 export const updateCount = (result: UpdatesResult | null): number => (result?.updates ?? []).length

@@ -16,7 +16,7 @@ import type {
   Duplicate,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { preselect } from './lookup.ts'
+import { nexusKeepKey, preselect } from './lookup.ts'
 import { paper } from './paper.ts'
 import { LetterTile } from './parts.tsx'
 import { useMods } from './store.ts'
@@ -76,6 +76,7 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
   const locked = useLocked()
   const copies = dup.copies ?? []
   const [keep, setKeep] = useState(preselect(copies))
+  const nexusKey = nexusKeepKey(copies)
   const differ = copies.some((c) => !c.newest)
   return (
     <>
@@ -104,16 +105,30 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
         <Button variant="outlined" sx={{ whiteSpace: 'nowrap' }} onClick={() => resolve(null)}>
           {t`Decide later`}
         </Button>
-        <Button
-          variant="contained"
-          disabled={locked}
-          sx={{ whiteSpace: 'nowrap' }}
-          onClick={() => {
-            keepCopy(dup, keep).catch(reportUnexpected)
-          }}
-        >
-          {t`Keep this one`}
-        </Button>
+        {nexusKey === null || keep !== nexusKey ? (
+          <Button
+            variant={nexusKey === null ? 'contained' : 'outlined'}
+            disabled={locked}
+            sx={{ whiteSpace: 'nowrap' }}
+            onClick={() => {
+              keepCopy(dup, keep).catch(reportUnexpected)
+            }}
+          >
+            {t`Keep this one`}
+          </Button>
+        ) : null}
+        {nexusKey === null ? null : (
+          <Button
+            variant="contained"
+            disabled={locked}
+            sx={{ whiteSpace: 'nowrap' }}
+            onClick={() => {
+              keepCopy(dup, nexusKey).catch(reportUnexpected)
+            }}
+          >
+            {t`Keep the Nexus copy`}
+          </Button>
+        )}
       </DialogActions>
     </>
   )
@@ -127,6 +142,7 @@ export function DuplicateDialog({ profileName }: { profileName: string }) {
       open={dup !== null}
       onClose={() => resolve(null)}
       maxWidth={false}
+      transitionDuration={0}
       slotProps={{ paper: { sx: { ...paper.sx, width: 780, maxWidth: 'calc(100% - 32px)' } } }}
     >
       {dup ? <Resolver key={dup.uniqueId} dup={dup} profileName={profileName} /> : null}
