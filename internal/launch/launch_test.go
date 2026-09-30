@@ -145,9 +145,7 @@ func TestRunIgnoresARelayExitingBeforeTheLog(t *testing.T) {
 		time.Sleep(30 * time.Millisecond)
 		_ = os.WriteFile(log, []byte("[08:43:28 INFO  SMAPI] started\n"), 0o600)
 	}()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	err := Run(ctx, func(string, string, ...string) (<-chan error, error) {
+	err := Run(t.Context(), func(string, string, ...string) (<-chan error, error) {
 		return done, nil
 	}, Command{LogFile: log, Failure: HintSteam, Relay: true}, fast, func([]string) {})
 	if err != nil {
