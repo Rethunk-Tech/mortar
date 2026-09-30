@@ -3,9 +3,10 @@ package stardew
 import (
 	"context"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 
 	"github.com/Rethunk-AI/mortar/internal/loader"
 )
@@ -27,11 +28,11 @@ func TestSmokeRealInstaller(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = os.RemoveAll(copyDir) })
-	if err := os.MkdirAll(filepath.Dir(copyDir), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(copyDir), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if out, err := exec.Command("cp", "-a", src, copyDir).CombinedOutput(); err != nil {
-		t.Fatalf("copy install: %v: %s", err, out)
+	if err := datadir.CopyTree(src, copyDir); err != nil {
+		t.Fatalf("copy install: %v", err)
 	}
 	g := Game{CacheDir: t.TempDir(), LogDir: t.TempDir()}
 	if st := g.LoaderStatus(copyDir, ""); st.Installed || st.Broken {

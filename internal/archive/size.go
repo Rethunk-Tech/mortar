@@ -4,7 +4,9 @@ import (
 	"archive/zip"
 	"errors"
 	"io"
-	"os"
+	"math"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 
 	"github.com/bodgit/sevenzip"
 	"github.com/nwaples/rardecode/v2"
@@ -13,7 +15,7 @@ import (
 // DeclaredSize sums the uncompressed sizes the archive's headers declare. It
 // is informational (an untrusted archive can lie); Extract's caps count bytes.
 func DeclaredSize(archivePath string) (int64, error) {
-	f, err := os.Open(archivePath)
+	f, err := fsx.Open(archivePath)
 	if err != nil {
 		return 0, err
 	}
@@ -33,7 +35,7 @@ func DeclaredSize(archivePath string) (int64, error) {
 			return 0, wrap("", err)
 		}
 		for _, e := range zr.File {
-			total += int64(e.UncompressedSize64)
+			total += int64(min(e.UncompressedSize64, math.MaxInt64))
 		}
 	case fmtSevenZip:
 		zr, err := sevenzip.NewReader(f, info.Size())
@@ -41,7 +43,7 @@ func DeclaredSize(archivePath string) (int64, error) {
 			return 0, wrap("", err)
 		}
 		for _, e := range zr.File {
-			total += int64(e.UncompressedSize)
+			total += int64(min(e.UncompressedSize, math.MaxInt64))
 		}
 	case fmtRAR:
 		if _, err := f.Seek(0, io.SeekStart); err != nil {

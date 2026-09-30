@@ -14,6 +14,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+
 	"github.com/Rethunk-AI/mortar/internal/archive"
 	"github.com/Rethunk-AI/mortar/internal/loader"
 )
@@ -46,7 +48,7 @@ func (g Game) logVersions() (smapi, game string) {
 	if err != nil {
 		return "", ""
 	}
-	f, err := os.Open(filepath.Join(dir, "SMAPI-latest.txt"))
+	f, err := fsx.Open(filepath.Join(dir, "SMAPI-latest.txt"))
 	if err != nil {
 		return "", ""
 	}
@@ -62,7 +64,7 @@ func (g Game) logVersions() (smapi, game string) {
 }
 
 func launcherHasSMAPI(dir string) bool {
-	f, err := os.Open(filepath.Join(dir, linuxLauncher))
+	f, err := fsx.Open(filepath.Join(dir, linuxLauncher))
 	if err != nil {
 		return false
 	}
@@ -154,7 +156,7 @@ func (g Game) InstallLoader(ctx context.Context, dir string, bundled loader.Bund
 
 	folder := filepath.Join(unpacked, instDir)
 	// Extraction writes plain files, and the Linux installer must be executable.
-	if err := os.Chmod(filepath.Join(folder, exe), 0o755); err != nil {
+	if err := fsx.Chmod(filepath.Join(folder, exe), 0o700); err != nil {
 		return "", fmt.Errorf("SMAPI %s installer is missing %s: %w", version, exe, err)
 	}
 	cmd := exec.CommandContext(ctx, filepath.Join(folder, exe), "--install", "--no-prompt", "--game-path", dir)

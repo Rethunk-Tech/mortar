@@ -19,10 +19,6 @@ import (
 // ProgressEvent is emitted with a Progress after each install step.
 const ProgressEvent = "loader:progress"
 
-func init() {
-	application.RegisterEvent[Progress]("loader:progress")
-}
-
 // Progress says which install step just finished for a game.
 type Progress struct {
 	Game string      `json:"game"`

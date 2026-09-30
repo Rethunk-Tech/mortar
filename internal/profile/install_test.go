@@ -3,10 +3,11 @@ package profile
 import (
 	"archive/zip"
 	"errors"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 
 	"github.com/Rethunk-AI/mortar/internal/archive"
 )
@@ -14,7 +15,7 @@ import (
 func buildZip(t *testing.T, name string, files map[string]string) string {
 	t.Helper()
 	p := filepath.Join(t.TempDir(), name)
-	f, err := os.Create(p)
+	f, err := fsx.Create(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +61,7 @@ func TestInstallArchive(t *testing.T) {
 	}
 
 	txt := filepath.Join(t.TempDir(), "notes.txt")
-	if err := os.WriteFile(txt, []byte("not an archive at all"), 0o644); err != nil {
+	if err := fsx.WriteFile(txt, []byte("not an archive at all"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	_, err = e.InstallArchive("stardew", p.ID, txt)

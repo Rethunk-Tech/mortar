@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+
 	"github.com/Rethunk-AI/mortar/internal/game/stardew"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/loader"
@@ -18,26 +20,46 @@ const artPrefix = "/steam-art/"
 
 // Game is everything that differs per game.
 type Game interface {
+	Identity
+	Installs
+	Loaders
+	Launcher
+}
+
+// Identity names a game and where its process and mods come from.
+type Identity interface {
 	ID() string
 	Name() string
 	SteamAppID() string
 	LoaderName() string
 	ModSources() []string
+	// ProcessName is the loader's executable, the process a running profile is found by.
+	ProcessName() string
+}
+
+// Installs finds and validates a game's install folder.
+type Installs interface {
 	// ValidInstall reports why dir is not this game's install folder, or nil.
 	ValidInstall(dir string) error
 	// Discover prefers a still-valid override folder over Steam (st is nil without Steam) and returns "" when not installed.
 	Discover(override string, st *steam.Steam) (string, error)
+}
+
+// Loaders manages the game's mod loader.
+type Loaders interface {
 	// LoaderStatus reports the loader's state in the install dir; recorded is the version Mortar installed, or "".
 	LoaderStatus(dir, recorded string) loader.Status
 	// LatestLoader returns the newest stable loader version.
 	LatestLoader(ctx context.Context) (string, error)
-	// ProcessName is the loader's executable, the process a running profile is found by.
-	ProcessName() string
+	// InstallLoader installs or updates the loader in dir and returns its version.
+	InstallLoader(ctx context.Context, dir string, bundled loader.Bundled, progress func(loader.Step)) (string, error)
+}
+
+// Launcher starts a game.
+type Launcher interface {
 	// Launch starts the profile's mods folder and returns once the game has started, sending the loader's log
 	// lines to onLine. It returns launch.ErrNoSteam when there is no Steam and req.Direct is false.
 	Launch(ctx context.Context, req launch.Request, onLine func(string)) error
-	// InstallLoader installs or updates the loader in dir and returns its version.
-	InstallLoader(ctx context.Context, dir string, bundled loader.Bundled, progress func(loader.Step)) (string, error)
 }
 
 var games = []Game{stardew.Game{}}
@@ -95,8 +117,19 @@ func ArtMiddleware(home string) func(http.Handler) http.Handler {
 				http.NotFound(w, r)
 				return
 			}
+			art, err := fsx.Open(path)
+			if err != nil {
+				http.NotFound(w, r)
+				return
+			}
+			defer func() { _ = art.Close() }()
+			info, err := art.Stat()
+			if err != nil {
+				http.NotFound(w, r)
+				return
+			}
 			w.Header().Set("Content-Type", "image/jpeg")
-			http.ServeFile(w, r, path)
+			http.ServeContent(w, r, "", info.ModTime(), art)
 		})
 	}
 }

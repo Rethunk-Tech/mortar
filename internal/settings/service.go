@@ -9,10 +9,6 @@ import (
 // ChangedEvent is emitted with the new Settings after every successful setter.
 const ChangedEvent = "settings:changed"
 
-func init() {
-	application.RegisterEvent[Settings]("settings:changed")
-}
-
 // Service exposes the store to the frontend.
 type Service struct {
 	store *Store

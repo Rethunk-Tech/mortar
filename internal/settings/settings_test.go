@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 func open(t *testing.T) (*Store, string) {
@@ -38,7 +40,7 @@ func TestDefaultsAndRoundTrip(t *testing.T) {
 	if len(entries) != 1 || entries[0].Name() != fileName {
 		t.Fatalf("leftover files: %v", entries)
 	}
-	raw, _ := os.ReadFile(filepath.Join(dir, fileName))
+	raw, _ := fsx.ReadFile(filepath.Join(dir, fileName))
 	if want := `"lastGame": "lethal"`; !strings.Contains(string(raw), want) {
 		t.Fatalf("json keys: %s", raw)
 	}

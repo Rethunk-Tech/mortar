@@ -6,10 +6,6 @@ import "github.com/wailsapp/wails/v3/pkg/application"
 // DroppedEvent is emitted with the paths of the files dropped on the window.
 const DroppedEvent = "files:dropped"
 
-func init() {
-	application.RegisterEvent[[]string](DroppedEvent)
-}
-
 // Service exposes the file dialog to the frontend.
 type Service struct {
 	// App is set after application.New.

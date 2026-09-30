@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"context"
 	"os/exec"
 	"runtime"
 )
@@ -13,7 +14,7 @@ func openFolder(dir string) error {
 	case "darwin":
 		name = "open"
 	}
-	cmd := exec.Command(name, dir)
+	cmd := exec.CommandContext(context.Background(), name, dir)
 	if err := cmd.Start(); err != nil {
 		return err
 	}

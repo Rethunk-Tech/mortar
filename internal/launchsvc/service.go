@@ -27,11 +27,6 @@ const (
 	procDirRun = "/proc"
 )
 
-func init() {
-	application.RegisterEvent[Status](StateEvent)
-	application.RegisterEvent[Line](LineEvent)
-}
-
 // State is where a game is in its launch.
 type State string
 
@@ -76,8 +71,10 @@ type Service struct {
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store) *Service {
-	return &Service{home: home, settings: s, profiles: profiles, procDir: procDirRun,
-		status: map[string]Status{}, watching: map[string]bool{}}
+	return &Service{
+		home: home, settings: s, profiles: profiles, procDir: procDirRun,
+		status: map[string]Status{}, watching: map[string]bool{},
+	}
 }
 
 func (s *Service) emit(name string, data any) {
@@ -92,6 +89,7 @@ func (s *Service) set(st Status) {
 	switch st.State {
 	case Failed, NoSteam, NeedsLoader:
 		stored = Status{Game: st.Game, State: Idle}
+	case Idle, Launching, Running:
 	}
 	s.mu.Lock()
 	s.status[st.Game] = stored

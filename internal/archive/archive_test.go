@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"syscall"
 	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 // zentry is one zip entry; a name ending in "/" is a directory, a zero mode a regular file.
@@ -45,7 +47,7 @@ func buildZip(t *testing.T, entries ...zentry) string {
 func writeTemp(t *testing.T, name string, b []byte) string {
 	t.Helper()
 	p := filepath.Join(t.TempDir(), name)
-	if err := os.WriteFile(p, b, 0o600); err != nil {
+	if err := fsx.WriteFile(p, b, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	return p
@@ -70,7 +72,7 @@ func wantReason(t *testing.T, err, reason error, entry string) {
 
 func readFile(t *testing.T, p string) string {
 	t.Helper()
-	b, err := os.ReadFile(p)
+	b, err := fsx.ReadFile(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,14 +103,14 @@ func TestValidExtractsAndNormalisesModes(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if info.Mode().Perm() != 0o644 || info.Mode()&(os.ModeSetuid|os.ModeSetgid) != 0 {
+			if info.Mode().Perm() != 0o600 || info.Mode()&(os.ModeSetuid|os.ModeSetgid) != 0 {
 				t.Fatalf("file mode = %v", info.Mode())
 			}
 			dir, err := os.Stat(filepath.Dir(target))
 			if err != nil {
 				t.Fatal(err)
 			}
-			if dir.Mode().Perm() != 0o755 {
+			if filepath.Dir(target) != dest && dir.Mode().Perm() != 0o750 {
 				t.Fatalf("dir mode = %v", dir.Mode())
 			}
 		})
@@ -158,7 +160,7 @@ func TestUnsafeEntriesRejected(t *testing.T) {
 func TestNothingWrittenOutsideDest(t *testing.T) {
 	parent := t.TempDir()
 	dest := filepath.Join(parent, "dest")
-	if err := os.Mkdir(dest, 0o755); err != nil {
+	if err := os.Mkdir(dest, 0o750); err != nil {
 		t.Fatal(err)
 	}
 	err := Extract(buildZip(t, zentry{name: "../evil", body: "x"}), dest, Options{})
@@ -212,7 +214,7 @@ func TestCaps(t *testing.T) {
 func TestCapCountsActualBytesNotDeclared(t *testing.T) {
 	// Declare 1 byte in the local header and central directory, store 100.
 	p := buildZip(t, zentry{name: "big", body: string(make([]byte, 100))})
-	b, err := os.ReadFile(p)
+	b, err := fsx.ReadFile(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -225,8 +227,7 @@ func TestCapCountsActualBytesNotDeclared(t *testing.T) {
 		binary.LittleEndian.PutUint32(b[off:], 1)
 	}
 	_, err = extract(t, writeTemp(t, "lie.zip", b), Options{MaxEntryBytes: 10})
-	var e *Error
-	if !errors.As(err, &e) {
+	if _, ok := errors.AsType[*Error](err); !ok {
 		t.Fatalf("got %v", err)
 	}
 }
@@ -321,8 +322,7 @@ func vint(n uint64) []byte {
 func rarBlock(content []byte, pad ...byte) []byte {
 	content = append(content, pad...) // the reader wants at least 4 header bytes; a padded zero vint is valid
 	body := append(vint(uint64(len(content))), content...)
-	crc := make([]byte, 4)
-	binary.LittleEndian.PutUint32(crc, crc32.ChecksumIEEE(body))
+	crc := binary.LittleEndian.AppendUint32(nil, crc32.ChecksumIEEE(body))
 	return append(crc, body...)
 }
 

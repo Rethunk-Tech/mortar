@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 // fixture copies testdata/lib into a temp Steam root, pointing the library list at it.
@@ -15,11 +17,11 @@ func fixture(t *testing.T) string {
 		t.Fatal(err)
 	}
 	vdfPath := filepath.Join(root, "steamapps", "libraryfolders.vdf")
-	b, err := os.ReadFile(vdfPath)
+	b, err := fsx.ReadFile(vdfPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(vdfPath, []byte(strings.ReplaceAll(string(b), "@ROOT@", root)), 0o600); err != nil {
+	if err := fsx.WriteFile(vdfPath, []byte(strings.ReplaceAll(string(b), "@ROOT@", root)), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	return root

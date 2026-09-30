@@ -12,6 +12,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 // FileName is the manifest file SMAPI looks for.
@@ -166,7 +168,7 @@ func Scan(root string) ([]Mod, error) {
 	var mods []Mod
 	var walk func(dir, rel string) error
 	walk = func(dir, rel string) error {
-		b, err := os.ReadFile(filepath.Join(dir, FileName))
+		b, err := fsx.ReadFile(filepath.Join(dir, FileName))
 		if err == nil {
 			if m, perr := Parse(b); perr == nil {
 				mods = append(mods, Mod{Manifest: m, Folder: rel})

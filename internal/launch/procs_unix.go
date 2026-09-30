@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 // Processes lists running processes whose executable is name, from procDir (/proc) on Linux.
@@ -23,7 +25,7 @@ func Processes(procDir, name string) ([]Process, error) {
 		if err != nil {
 			continue
 		}
-		raw, err := os.ReadFile(filepath.Join(procDir, e.Name(), "cmdline"))
+		raw, err := fsx.ReadFile(filepath.Join(procDir, e.Name(), "cmdline"))
 		if err != nil {
 			continue
 		}
@@ -44,7 +46,7 @@ const clockTicks = 100
 // startTime is when the process began, from its /proc/<pid>/stat start tick and the boot time in /proc/stat;
 // the zero time when either is unreadable.
 func startTime(procDir, pid string) time.Time {
-	stat, err := os.ReadFile(filepath.Join(procDir, pid, "stat"))
+	stat, err := fsx.ReadFile(filepath.Join(procDir, pid, "stat"))
 	if err != nil {
 		return time.Time{}
 	}
@@ -57,11 +59,11 @@ func startTime(procDir, pid string) time.Time {
 	if err != nil {
 		return time.Time{}
 	}
-	sys, err := os.ReadFile(filepath.Join(procDir, "stat"))
+	sys, err := fsx.ReadFile(filepath.Join(procDir, "stat"))
 	if err != nil {
 		return time.Time{}
 	}
-	for _, line := range strings.Split(string(sys), "\n") {
+	for line := range strings.SplitSeq(string(sys), "\n") {
 		if v, ok := strings.CutPrefix(line, "btime "); ok {
 			boot, err := strconv.ParseInt(strings.TrimSpace(v), 10, 64)
 			if err != nil {

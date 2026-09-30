@@ -26,14 +26,34 @@ func TestCommand(t *testing.T) {
 		want  []string
 		err   error
 	}{
-		{"linux steam", "linux", launch.Request{ModsDir: mods, Steam: st}, "/usr/bin/steam",
-			[]string{"/usr/bin/steam", "-applaunch", "413150", "--skip-terminal", "--", "--mods-path", mods}, nil},
-		{"windows steam", "windows", launch.Request{ModsDir: mods, Steam: st}, "",
-			[]string{filepath.Join(st.Root, "steam.exe"), "-applaunch", "413150", "--mods-path", mods}, nil},
-		{"linux direct", "linux", launch.Request{ModsDir: mods, InstallDir: dir, Direct: true}, "",
-			[]string{filepath.Join(dir, "StardewValley"), "--skip-terminal", "--", "--mods-path", mods}, nil},
-		{"windows direct", "windows", launch.Request{ModsDir: mods, InstallDir: dir, Direct: true}, "",
-			[]string{filepath.Join(dir, "StardewModdingAPI.exe"), "--mods-path", mods}, nil},
+		{
+			"linux steam", "linux",
+			launch.Request{ModsDir: mods, Steam: st},
+			"/usr/bin/steam",
+			[]string{"/usr/bin/steam", "-applaunch", "413150", "--skip-terminal", "--", "--mods-path", mods},
+			nil,
+		},
+		{
+			"windows steam", "windows",
+			launch.Request{ModsDir: mods, Steam: st},
+			"",
+			[]string{filepath.Join(st.Root, "steam.exe"), "-applaunch", "413150", "--mods-path", mods},
+			nil,
+		},
+		{
+			"linux direct", "linux",
+			launch.Request{ModsDir: mods, InstallDir: dir, Direct: true},
+			"",
+			[]string{filepath.Join(dir, "StardewValley"), "--skip-terminal", "--", "--mods-path", mods},
+			nil,
+		},
+		{
+			"windows direct", "windows",
+			launch.Request{ModsDir: mods, InstallDir: dir, Direct: true},
+			"",
+			[]string{filepath.Join(dir, "StardewModdingAPI.exe"), "--mods-path", mods},
+			nil,
+		},
 		{"no steam", "linux", launch.Request{ModsDir: mods}, "/usr/bin/steam", nil, launch.ErrNoSteam},
 		{"steam not on PATH", "linux", launch.Request{ModsDir: mods, Steam: st}, "", nil, launch.ErrNoSteam},
 	} {

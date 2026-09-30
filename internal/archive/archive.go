@@ -14,6 +14,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+
 	"github.com/bodgit/sevenzip"
 	"github.com/nwaples/rardecode/v2"
 )
@@ -69,7 +71,7 @@ func (e *Error) Unwrap() error { return e.Reason }
 // failure and leaves what it wrote in dest, so the caller passes a temp
 // directory and discards it on error.
 func Extract(archivePath, dest string, opts Options) error {
-	f, err := os.Open(archivePath)
+	f, err := fsx.Open(archivePath)
 	if err != nil {
 		return err
 	}
@@ -243,12 +245,12 @@ func (x *extractor) entry(name string, isDir bool, open func() (io.ReadCloser, e
 	}
 	target := filepath.Join(x.dest, filepath.FromSlash(rel))
 	if isDir {
-		if err := os.MkdirAll(target, 0o755); err != nil {
+		if err := os.MkdirAll(target, 0o750); err != nil {
 			return wrap(name, err)
 		}
 		return nil
 	}
-	if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(target), 0o750); err != nil {
 		return wrap(name, err)
 	}
 	src, err := open()
@@ -261,7 +263,7 @@ func (x *extractor) entry(name string, isDir bool, open func() (io.ReadCloser, e
 
 func (x *extractor) write(name, target string, src io.Reader, wantCRC *uint32) error {
 	// O_EXCL refuses to write through an existing symlink or over a duplicate.
-	out, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
+	out, err := fsx.CreateExcl(target, 0o600)
 	if err != nil {
 		return wrap(name, err)
 	}
@@ -328,7 +330,7 @@ func cleanName(name string) (string, error) {
 		return "", ErrTraversal
 	}
 	var segs []string
-	for _, s := range strings.Split(name, "/") {
+	for s := range strings.SplitSeq(name, "/") {
 		switch s {
 		case "", ".":
 			continue
@@ -358,8 +360,7 @@ func reserved(seg string) bool {
 // wrap types a library or filesystem error as an *Error. Filesystem errors
 // stay in the chain, so errors.Is(err, syscall.ENOSPC) reports a full disk.
 func wrap(entry string, err error) error {
-	var typed *Error
-	if errors.As(err, &typed) {
+	if _, typed := errors.AsType[*Error](err); typed {
 		return err
 	}
 	var re *sevenzip.ReadError

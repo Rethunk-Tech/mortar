@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+
 	"github.com/andygrunwald/vdf"
 )
 
@@ -128,7 +130,7 @@ func (s Steam) HeroArt(appID string) string {
 }
 
 func parseVDF(path string) (map[string]any, error) {
-	f, err := os.Open(path)
+	f, err := fsx.Open(path)
 	if err != nil {
 		return nil, err
 	}

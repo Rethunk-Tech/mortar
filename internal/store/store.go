@@ -18,6 +18,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+
 	"github.com/Rethunk-AI/mortar/internal/archive"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/game"
@@ -188,7 +190,7 @@ func exists(p string) bool {
 }
 
 func hashKey(path string) (string, error) {
-	f, err := os.Open(path)
+	f, err := fsx.Open(path)
 	if err != nil {
 		return "", err
 	}

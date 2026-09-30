@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+
 	"github.com/Rethunk-AI/mortar/internal/archive"
 )
 
@@ -21,7 +23,7 @@ func newStore(t *testing.T) *Store {
 func buildZip(t *testing.T, files map[string]string) string {
 	t.Helper()
 	p := filepath.Join(t.TempDir(), "mod.zip")
-	f, err := os.Create(p)
+	f, err := fsx.Create(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +70,7 @@ func TestAddArchiveIsIdempotent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if b, err := os.ReadFile(filepath.Join(dir, "Mod", "manifest.json")); err != nil || string(b) != "{}" {
+	if b, err := fsx.ReadFile(filepath.Join(dir, "Mod", "manifest.json")); err != nil || string(b) != "{}" {
 		t.Fatalf("extracted = %q, %v", b, err)
 	}
 	again, err := s.AddArchive("stardew", p)
@@ -96,7 +98,7 @@ func TestAddArchiveFailureLeavesNothing(t *testing.T) {
 func TestDiskFullMessage(t *testing.T) {
 	s := newStore(t)
 	src := t.TempDir()
-	if err := os.WriteFile(filepath.Join(src, "a"), make([]byte, 3<<20), 0o644); err != nil {
+	if err := fsx.WriteFile(filepath.Join(src, "a"), make([]byte, 3<<20), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	err := s.install("stardew", "smapi-1", func(string) error { return syscall.ENOSPC }, func() int64 { return dirSize(src) })
@@ -126,10 +128,10 @@ func TestKeyAndGameValidation(t *testing.T) {
 func TestAddDir(t *testing.T) {
 	s := newStore(t)
 	src := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(src, "ConsoleCommands"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(src, "ConsoleCommands"), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(src, "ConsoleCommands", "manifest.json"), []byte("{}"), 0o644); err != nil {
+	if err := fsx.WriteFile(filepath.Join(src, "ConsoleCommands", "manifest.json"), []byte("{}"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := s.AddDir("stardew", SMAPIKey("4.1.0"), src); err != nil {
@@ -196,7 +198,7 @@ func TestTouchAndCleanup(t *testing.T) {
 	}
 
 	tmp := filepath.Join(s.root, "stardew", tempPrefix+"123")
-	if err := os.MkdirAll(filepath.Join(tmp, "x"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(tmp, "x"), 0o750); err != nil {
 		t.Fatal(err)
 	}
 	if err := s.Cleanup(); err != nil {

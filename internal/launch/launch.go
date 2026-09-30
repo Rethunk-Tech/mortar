@@ -53,7 +53,7 @@ type Runner func(dir, name string, args ...string) error
 
 // Start is the Runner that runs the real command, reaping it in the background.
 func Start(dir, name string, args ...string) error {
-	cmd := exec.Command(name, args...)
+	cmd := exec.CommandContext(context.Background(), name, args...)
 	cmd.Dir = dir
 	if err := cmd.Start(); err != nil {
 		return err

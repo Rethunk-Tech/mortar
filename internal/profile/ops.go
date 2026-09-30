@@ -222,8 +222,7 @@ func (s *Store) ApplyBundled(game, key string) error {
 		var placed string
 		_, err := s.updateLocked(game, prof.ID, func(p *Profile, dir string) (err error) {
 			var disabled []string
-			for i := len(p.Entries) - 1; i >= 0; i-- {
-				e := p.Entries[i]
+			for _, e := range slices.Backward(slices.Clone(p.Entries)) {
 				if e.Source.Kind != SourceSMAPI || e.Key == key {
 					continue
 				}

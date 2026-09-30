@@ -7,6 +7,8 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 // CopyTree copies the regular files and folders under src into dst (which may exist), file by file with io.Copy, which
@@ -23,7 +25,7 @@ func CopyTree(src, dst string) error {
 		target := filepath.Join(dst, rel)
 		switch {
 		case d.IsDir():
-			return os.MkdirAll(target, 0o755)
+			return os.MkdirAll(target, 0o750)
 		case !d.Type().IsRegular():
 			return fmt.Errorf("%s is not a regular file", p)
 		}
@@ -32,12 +34,12 @@ func CopyTree(src, dst string) error {
 }
 
 func copyFile(src, dst string) (err error) {
-	in, err := os.Open(src)
+	in, err := fsx.Open(src)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = in.Close() }()
-	out, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
+	out, err := fsx.CreateExcl(dst, 0o600)
 	if err != nil {
 		return err
 	}

@@ -14,15 +14,17 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+
 	"github.com/Rethunk-AI/mortar/internal/loader"
 )
 
 func write(t *testing.T, path, body string) {
 	t.Helper()
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(path, []byte(body), 0o755); err != nil {
+	if err := fsx.WriteFile(path, []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -90,8 +92,8 @@ func TestLatestSkipsPrereleaseAndUsesStaleCacheOnFailure(t *testing.T) {
 
 func TestRateLimitMessage(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("X-RateLimit-Remaining", "0")
-		w.Header().Set("X-RateLimit-Reset", "1790000000")
+		w.Header().Set("X-Ratelimit-Remaining", "0")
+		w.Header().Set("X-Ratelimit-Reset", "1790000000")
 		http.Error(w, `{"message":"API rate limit exceeded"}`, http.StatusForbidden)
 	}))
 	defer srv.Close()

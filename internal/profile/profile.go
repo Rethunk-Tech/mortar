@@ -16,6 +16,8 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/store"
@@ -186,7 +188,7 @@ func (s *Store) read(game, id string) (Profile, error) {
 }
 
 func readAt(dir, id string) (Profile, error) {
-	b, err := os.ReadFile(filepath.Join(dir, fileName))
+	b, err := fsx.ReadFile(filepath.Join(dir, fileName))
 	if err != nil {
 		return Profile{}, err
 	}

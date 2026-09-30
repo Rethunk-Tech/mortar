@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
 
@@ -65,7 +67,7 @@ func (g Game) cachePath() (string, error) {
 }
 
 func readCache(path string) (cachedRelease, bool) {
-	b, err := os.ReadFile(path)
+	b, err := fsx.ReadFile(path)
 	if err != nil {
 		return cachedRelease{}, false
 	}
@@ -151,11 +153,11 @@ func rateLimited(resp *http.Response) error {
 	if resp.StatusCode != http.StatusForbidden && resp.StatusCode != http.StatusTooManyRequests {
 		return nil
 	}
-	if resp.Header.Get("X-RateLimit-Remaining") != "0" && resp.Header.Get("Retry-After") == "" {
+	if resp.Header.Get("X-Ratelimit-Remaining") != "0" && resp.Header.Get("Retry-After") == "" {
 		return nil
 	}
 	msg := "GitHub's rate limit for unauthenticated requests is used up"
-	if secs, err := strconv.ParseInt(resp.Header.Get("X-RateLimit-Reset"), 10, 64); err == nil {
+	if secs, err := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64); err == nil {
 		msg += "; try again after " + time.Unix(secs, 0).Format("15:04")
 	}
 	return errors.New(msg)
@@ -183,7 +185,7 @@ func (g Game) download(ctx context.Context, version, dest string) error {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("download SMAPI %s: server answered %s", version, resp.Status)
 	}
-	out, err := os.Create(dest)
+	out, err := fsx.Create(dest)
 	if err != nil {
 		return err
 	}

@@ -20,7 +20,17 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+// registerEvents declares the custom events for the binding generator and the runtime's payload checks.
+func registerEvents() {
+	application.RegisterEvent[launchsvc.Status](launchsvc.StateEvent)
+	application.RegisterEvent[launchsvc.Line](launchsvc.LineEvent)
+	application.RegisterEvent[loadersvc.Progress](loadersvc.ProgressEvent)
+	application.RegisterEvent[[]string](picker.DroppedEvent)
+	application.RegisterEvent[settings.Settings](settings.ChangedEvent)
+}
+
 func main() {
+	registerEvents()
 	store, err := settings.Open()
 	if err != nil {
 		log.Fatal(err)
