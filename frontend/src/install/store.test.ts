@@ -6,7 +6,7 @@ import { useLaunch } from '../launch/store.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useToasts } from '../toasts/store.ts'
-import { entryForNames, undoArchiveInstall, useInstall } from './store.ts'
+import { entryForNames, shouldConsiderMissing, undoArchiveInstall, useInstall } from './store.ts'
 
 const calls = { remove: [] as string[], roll: [] as string[] }
 
@@ -83,4 +83,9 @@ test('undo of an archive install does nothing while the profile is locked', asyn
   })
   await undoArchiveInstall('stardew', 'p1', 'k1', false)
   expect(calls.remove).toEqual([])
+})
+
+test('missing-deps offers skip when the open profile is no longer the install target', () => {
+  expect(shouldConsiderMissing('p2', 'p1')).toBe(false)
+  expect(shouldConsiderMissing('p1', 'p1')).toBe(true)
 })
