@@ -110,10 +110,12 @@ func (s *Store) previousVersion(game string, e Entry, uniqueID string) string {
 
 // ResetConfig deletes the mod's config.json so the mod writes a fresh one the next time it runs.
 func (s *Store) ResetConfig(game, id, key, uniqueID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if err := s.unlocked(game, id); err != nil {
 		return err
 	}
-	folder, err := s.ModFolder(game, id, key, uniqueID)
+	folder, err := s.modFolderLocked(game, id, key, uniqueID)
 	if err != nil {
 		return err
 	}

@@ -565,6 +565,10 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 func (s *Store) ModFolder(game, id, key, uniqueID string) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	return s.modFolderLocked(game, id, key, uniqueID)
+}
+
+func (s *Store) modFolderLocked(game, id, key, uniqueID string) (string, error) {
 	p, err := s.read(game, id)
 	if err != nil {
 		return "", err
