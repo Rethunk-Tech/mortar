@@ -219,6 +219,9 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 		}
 	}
 	stage := filepath.Join(tmp, "stage")
+	s.setHistoryQuiet(true)
+	defer s.setHistoryQuiet(false)
+	restored := 0
 	for _, e := range src.Entries {
 		if isBundled(e) {
 			continue
@@ -242,6 +245,7 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 		if err != nil {
 			return Profile{}, err
 		}
+		restored++
 		for _, uid := range e.Disabled {
 			out, err = s.SetModEnabled(game, created.ID, key, uid, false)
 			if err != nil {
@@ -268,6 +272,11 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 		}
 	}
 	ok = true
+	if restored > 0 {
+		if err := s.recordSnapshot(game, created.ID, historyRestored, fmt.Sprintf("Restored %d mods", restored), restored); err != nil {
+			return Profile{}, err
+		}
+	}
 	return out, nil
 }
 

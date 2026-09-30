@@ -404,6 +404,8 @@ func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
 	if err != nil {
 		return GameModsResult{}, errors.Join(err, s.Delete(game, created.ID))
 	}
+	s.setHistoryQuiet(true)
+	defer s.setHistoryQuiet(false)
 	res := GameModsResult{Profile: created, Outcomes: outcomesFrom(slots)}
 	for _, o := range res.Outcomes {
 		switch o.Status {
@@ -436,6 +438,11 @@ func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
 	res.Profile = p
 	if res.Outcomes == nil {
 		res.Outcomes = []GameModOutcome{}
+	}
+	if res.Imported > 0 {
+		if err := s.recordSnapshot(game, created.ID, historyImported, fmt.Sprintf("Imported %d mods", res.Imported), res.Imported); err != nil {
+			return res, err
+		}
 	}
 	return res, nil
 }

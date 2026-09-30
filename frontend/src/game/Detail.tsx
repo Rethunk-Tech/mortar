@@ -15,6 +15,7 @@ import {
 } from '@mui/material'
 import {
   FileDown,
+  History,
   MoreHorizontal,
   Palette,
   Pencil,
@@ -33,6 +34,7 @@ import { useNav } from '../nav/store.ts'
 import { NotesTab } from '../notes/NotesTab.tsx'
 import { userModCount } from '../profiles/count.ts'
 import { EditProfileDialog } from '../profiles/EditProfileDialog.tsx'
+import { HistoryDialog } from '../profiles/HistoryDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { SavesTab } from '../saves/SavesTab.tsx'
 import { useSaves } from '../saves/store.ts'
@@ -50,6 +52,7 @@ const fmt = (iso: unknown) => new Date(String(iso)).toLocaleDateString()
 function HeroMenu({ profile }: { profile: Profile }) {
   const { t } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const [historyOpen, setHistoryOpen] = useState(false)
   const exportProfile = useProfiles((s) => s.exportProfile)
   const close = () => setAnchor(null)
   return (
@@ -66,6 +69,17 @@ function HeroMenu({ profile }: { profile: Profile }) {
         <MenuItem
           onClick={() => {
             close()
+            setHistoryOpen(true)
+          }}
+        >
+          <ListItemIcon sx={{ color: 'inherit' }}>
+            <History size={16} />
+          </ListItemIcon>
+          <ListItemText>{t`History`}</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            close()
             exportProfile(profile.id).catch(reportUnexpected)
           }}
         >
@@ -75,6 +89,11 @@ function HeroMenu({ profile }: { profile: Profile }) {
           <ListItemText>{t`Export profile…`}</ListItemText>
         </MenuItem>
       </Menu>
+      <HistoryDialog
+        profileId={profile.id}
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+      />
     </>
   )
 }

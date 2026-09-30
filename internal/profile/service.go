@@ -59,6 +59,16 @@ func (s *Service) ImportGameMods(gameID string) (GameModsResult, error) {
 
 func (s *Service) List(game string) ([]Profile, error) { return s.store.List(game) }
 
+// History lists this profile's mod-set changes, newest first.
+func (s *Service) History(game, id string) ([]HistoryEvent, error) {
+	return s.store.History(game, id)
+}
+
+// Revert restores the profile's entries to the snapshot stored with eventID.
+func (s *Service) Revert(game, id, eventID string) (Profile, error) {
+	return s.store.Revert(game, id, eventID)
+}
+
 // ProfilesWithMod lists the profiles of game whose profile.json names uniqueID.
 func (s *Service) ProfilesWithMod(game, uniqueID string) ([]ModInProfile, error) {
 	return s.store.ProfilesWithMod(game, uniqueID)

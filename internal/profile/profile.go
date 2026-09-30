@@ -126,7 +126,10 @@ type Store struct {
 	// Running reports whether the game is running this profile; nil means never.
 	Running func(game, id string) bool
 	// BackupsKept returns how many save backups to retain; nil means backup.DefaultKeep.
-	BackupsKept func() int
+	BackupsKept  func() int
+	historyKind  string
+	historyLabel string
+	historyQuiet bool
 }
 
 // RunningError is returned by operations that would change the mods/ folder of a profile its game is running.
@@ -411,9 +414,22 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 	if err != nil {
 		return Profile{}, err
 	}
+	before := cloneEntries(p.Entries)
 	if err := fn(&p, dir); err != nil {
+		s.historyKind, s.historyLabel = "", ""
 		return Profile{}, err
 	}
 	p.Updated = time.Now().UTC().Truncate(time.Second)
-	return p, datadir.WriteJSON(filepath.Join(dir, fileName), p)
+	if err := datadir.WriteJSON(filepath.Join(dir, fileName), p); err != nil {
+		s.historyKind, s.historyLabel = "", ""
+		return Profile{}, err
+	}
+	kind, label := s.historyKind, s.historyLabel
+	s.historyKind, s.historyLabel = "", ""
+	if !s.historyQuiet {
+		if err := recordHistory(dir, before, p.Entries, kind, label); err != nil {
+			return Profile{}, err
+		}
+	}
+	return p, nil
 }
