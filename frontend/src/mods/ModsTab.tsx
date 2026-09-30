@@ -166,7 +166,7 @@ function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
     )
   }, [shown, profile])
   const groups = groupSorted(
-    shown.map((m) => toListRow(m, profile, byId, t)),
+    shown.map((m) => toListRow(m, profile, byId)),
     groupBy,
     (row) => {
       if (groupBy === 'category') {

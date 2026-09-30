@@ -1,4 +1,5 @@
-import type { useLingui } from '@lingui/react/macro'
+import { i18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import type {
   Mod,
   Profile,
@@ -10,13 +11,12 @@ function toListRow(
   m: Mod,
   profile: Profile,
   byId: Record<number, { details?: ListRow['details'] } | undefined>,
-  t: ReturnType<typeof useLingui>['t'],
 ): ListRow {
   const entry = (profile.entries ?? []).find((e) => e.key === m.key)
   const source = kindLabel(sourceKind(profile, m), {
-    archive: t`Archive`,
-    nexus: t`Nexus Mods`,
-    github: t`GitHub`,
+    archive: i18n._(msg`Archive`),
+    nexus: i18n._(msg`Nexus Mods`),
+    github: i18n._(msg`GitHub`),
   })
   const details = byId[nexusIdOf(profile, m)]?.details
   const row: ListRow = {
@@ -24,7 +24,7 @@ function toListRow(
     added: entry?.added ?? '',
     pinned: Boolean(entry?.pinned),
     source,
-    status: m.enabled ? t`Enabled` : t`Off`,
+    status: m.enabled ? i18n._(msg`Enabled`) : i18n._(msg`Off`),
     note: entry?.note ?? '',
     tags: [...(entry?.tags ?? [])],
   }

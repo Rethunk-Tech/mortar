@@ -1,3 +1,5 @@
+import { i18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -32,31 +34,27 @@ import { useSaves } from './store.ts'
 
 const nowrap = { whiteSpace: 'nowrap' } as const
 
-function overwriteMessage(
-  t: ReturnType<typeof useLingui>['t'],
-  snaps: Snap[],
-  have: Set<string>,
-): string {
+function overwriteMessage(snaps: Snap[], have: Set<string>): string {
   const names = snaps.map((s) => s.farm || s.folder)
   const hit = snaps.filter((s) => have.has(s.folder)).map((s) => s.farm || s.folder)
   if (hit.length === 0) {
-    return t`None of ${names.join(', ')} are in Saves yet; they will be added. A backup of the current Saves folder is made first.`
+    return i18n._(
+      msg`None of ${names.join(', ')} are in Saves yet; they will be added. A backup of the current Saves folder is made first.`,
+    )
   }
-  return t`${hit.join(', ')} will be overwritten. A backup of the current Saves folder is made first.`
+  return i18n._(
+    msg`${hit.join(', ')} will be overwritten. A backup of the current Saves folder is made first.`,
+  )
 }
 
-function causeLabel(
-  t: ReturnType<typeof useLingui>['t'],
-  b: Backup,
-  profileName: (id: string) => string,
-): string {
+function causeLabel(b: Backup, profileName: (id: string) => string): string {
   if (b.kind === 'update' && b.profile) {
-    return t`Before updating ${profileName(b.profile)}`
+    return i18n._(msg`Before updating ${profileName(b.profile)}`)
   }
   if (b.kind === 'restore') {
-    return t`Before a restore`
+    return i18n._(msg`Before a restore`)
   }
-  return t`Unknown`
+  return i18n._(msg`Unknown`)
 }
 
 function BackupRow({
@@ -76,8 +74,8 @@ function BackupRow({
   const when = backup.at > 0 ? new Date(backup.at).toLocaleString() : backup.name
   const farms = (backup.saves ?? []).map((s) => s.farm || s.folder).join(', ')
   const meta = farms
-    ? t`${causeLabel(t, backup, profileName)} · ${formatBytes(backup.size)} · ${farms}`
-    : t`${causeLabel(t, backup, profileName)} · ${formatBytes(backup.size)}`
+    ? t`${causeLabel(backup, profileName)} · ${formatBytes(backup.size)} · ${farms}`
+    : t`${causeLabel(backup, profileName)} · ${formatBytes(backup.size)}`
   return (
     <Box
       sx={{
@@ -237,7 +235,7 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
         <DialogTitle>{t`Restore this backup?`}</DialogTitle>
         <DialogContent>
           <Typography sx={{ fontSize: 14 }}>
-            {overwriteMessage(t, confirm?.snaps ?? [], new Set((fits ?? []).map((f) => f.folder)))}
+            {overwriteMessage(confirm?.snaps ?? [], new Set((fits ?? []).map((f) => f.folder)))}
           </Typography>
         </DialogContent>
         <DialogActions>

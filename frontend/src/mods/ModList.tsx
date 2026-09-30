@@ -1,3 +1,5 @@
+import { i18n as catalog, type MessageDescriptor } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   alpha,
@@ -64,41 +66,26 @@ function Cell({ sx, ...props }: TableCellProps) {
   return <TableCell {...props} sx={{ ...cellBase, ...sx }} />
 }
 
-function headerLabel(id: ListColumnId, t: ReturnType<typeof useLingui>['t']): string {
-  switch (id) {
-    case 'on':
-      return t`On`
-    case 'name':
-      return t`Name`
-    case 'version':
-      return t`Version`
-    case 'latest':
-      return t`Latest on Nexus`
-    case 'uniqueId':
-      return t`UniqueID`
-    case 'author':
-      return t`Author`
-    case 'source':
-      return t`Source`
-    case 'category':
-      return t`Category`
-    case 'endorsements':
-      return t`Endorsements`
-    case 'downloads':
-      return t`Downloads`
-    case 'updated':
-      return t`Updated on Nexus`
-    case 'installed':
-      return t`Installed`
-    case 'needs':
-      return t`Needs`
-    case 'status':
-      return t`Status`
-    case 'notes':
-      return t`Notes and tags`
-    default:
-      return id
-  }
+const COLUMN_LABELS: Record<ListColumnId, MessageDescriptor> = {
+  on: msg`On`,
+  name: msg`Name`,
+  version: msg`Version`,
+  latest: msg`Latest on Nexus`,
+  uniqueId: msg`UniqueID`,
+  author: msg`Author`,
+  source: msg`Source`,
+  category: msg`Category`,
+  endorsements: msg`Endorsements`,
+  downloads: msg`Downloads`,
+  updated: msg`Updated on Nexus`,
+  installed: msg`Installed`,
+  needs: msg`Needs`,
+  status: msg`Status`,
+  notes: msg`Notes and tags`,
+}
+
+function headerLabel(id: ListColumnId): string {
+  return catalog._(COLUMN_LABELS[id])
 }
 
 function dash(value: string) {
@@ -338,12 +325,10 @@ function persistSort(column: ListColumnId, dir: 'asc' | 'desc') {
 function HeaderCells({
   cols,
   sort,
-  t,
   onMenu,
 }: {
   cols: readonly ListColumnId[]
   sort: ReturnType<typeof sanitizeListSort>
-  t: ReturnType<typeof useLingui>['t']
   onMenu: (e: MouseEvent) => void
 }) {
   const onSort = (col: ListColumnId) => {
@@ -359,7 +344,7 @@ function HeaderCells({
       <HeaderCell
         key={id}
         id={id}
-        label={headerLabel(id, t)}
+        label={headerLabel(id)}
         sortColumn={sort.column}
         sortDir={sort.dir}
         onSort={onSort}
@@ -406,7 +391,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   }, [mods, profile])
 
   const groups = groupSorted(
-    mods.map((m) => toListRow(m, profile, byId, t)),
+    mods.map((m) => toListRow(m, profile, byId)),
     groupBy,
     (row) => rowGroupKey(groupBy, row),
     (a, b) => compareListRows(a, b, sort),
@@ -447,7 +432,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
               borderBottom: '1px solid rgba(255,255,255,0.08)',
             }}
           >
-            <HeaderCells cols={cols} sort={sort} t={t} onMenu={onMenu} />
+            <HeaderCells cols={cols} sort={sort} onMenu={onMenu} />
           </TableRow>
         </TableHead>
         <TableBody>

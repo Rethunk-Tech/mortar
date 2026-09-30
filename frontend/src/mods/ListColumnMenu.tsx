@@ -1,43 +1,30 @@
+import { i18n, type MessageDescriptor } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Divider, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
 import { Check, RotateCcw } from 'lucide-react'
 import { LIST_COLUMN_IDS, type ListColumnId, LOCKED_LIST_COLUMNS } from './listColumns.ts'
 
-function columnLabel(id: ListColumnId, t: ReturnType<typeof useLingui>['t']): string {
-  switch (id) {
-    case 'on':
-      return t`On`
-    case 'name':
-      return t`Name`
-    case 'version':
-      return t`Version`
-    case 'latest':
-      return t`Latest on Nexus`
-    case 'uniqueId':
-      return t`UniqueID`
-    case 'author':
-      return t`Author`
-    case 'source':
-      return t`Source`
-    case 'category':
-      return t`Category`
-    case 'endorsements':
-      return t`Endorsements`
-    case 'downloads':
-      return t`Downloads`
-    case 'updated':
-      return t`Updated on Nexus`
-    case 'installed':
-      return t`Installed`
-    case 'needs':
-      return t`Needs`
-    case 'status':
-      return t`Status`
-    case 'notes':
-      return t`Notes and tags`
-    default:
-      return id
-  }
+const COLUMN_LABELS: Record<ListColumnId, MessageDescriptor> = {
+  on: msg`On`,
+  name: msg`Name`,
+  version: msg`Version`,
+  latest: msg`Latest on Nexus`,
+  uniqueId: msg`UniqueID`,
+  author: msg`Author`,
+  source: msg`Source`,
+  category: msg`Category`,
+  endorsements: msg`Endorsements`,
+  downloads: msg`Downloads`,
+  updated: msg`Updated on Nexus`,
+  installed: msg`Installed`,
+  needs: msg`Needs`,
+  status: msg`Status`,
+  notes: msg`Notes and tags`,
+}
+
+function columnLabel(id: ListColumnId): string {
+  return i18n._(COLUMN_LABELS[id])
 }
 
 export function ListColumnMenu({
@@ -73,7 +60,7 @@ export function ListColumnMenu({
             }}
           >
             <ListItemIcon>{shown ? <Check size={16} aria-hidden={true} /> : null}</ListItemIcon>
-            <ListItemText>{columnLabel(id, t)}</ListItemText>
+            <ListItemText>{columnLabel(id)}</ListItemText>
           </MenuItem>
         )
       })}

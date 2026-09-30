@@ -1,3 +1,5 @@
+import { i18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -47,32 +49,32 @@ function Row({ label, size }: { label: string; size: number }) {
   )
 }
 
-function changeLine(t: ReturnType<typeof useLingui>['t'], field: string, from: string, to: string) {
+function changeLine(field: string, from: string, to: string) {
   switch (field) {
     case 'accent':
-      return t`Accent: ${from} → ${to}`
+      return i18n._(msg`Accent: ${from} → ${to}`)
     case 'background':
-      return t`Background: ${from} → ${to}`
+      return i18n._(msg`Background: ${from} → ${to}`)
     case 'lastGame':
-      return t`Last game: ${from} → ${to}`
+      return i18n._(msg`Last game: ${from} → ${to}`)
     case 'backupsKept':
-      return t`Backups kept: ${from} → ${to}`
+      return i18n._(msg`Backups kept: ${from} → ${to}`)
     case 'listColumns':
-      return t`List columns: ${from} → ${to}`
+      return i18n._(msg`List columns: ${from} → ${to}`)
     case 'listSortColumn':
-      return t`List sort: ${from} → ${to}`
+      return i18n._(msg`List sort: ${from} → ${to}`)
     case 'listSortDir':
-      return t`List sort direction: ${from} → ${to}`
+      return i18n._(msg`List sort direction: ${from} → ${to}`)
     case 'listGroupBy':
-      return t`List grouping: ${from} → ${to}`
+      return i18n._(msg`List grouping: ${from} → ${to}`)
     case 'checkModUpdatesOnStart':
-      return t`Check mod updates on start: ${from} → ${to}`
+      return i18n._(msg`Check mod updates on start: ${from} → ${to}`)
     case 'tellWhenSmapiOut':
-      return t`Tell when SMAPI is out: ${from} → ${to}`
+      return i18n._(msg`Tell when SMAPI is out: ${from} → ${to}`)
     case 'tipsSeen':
-      return t`Seen tips: ${from} → ${to}`
+      return i18n._(msg`Seen tips: ${from} → ${to}`)
     default:
-      return t`${field}: ${from} → ${to}`
+      return i18n._(msg`${field}: ${from} → ${to}`)
   }
 }
 
@@ -94,7 +96,7 @@ function ImportSettingsDialog({
         ) : (
           changes.map((c) => (
             <Box key={c.field} sx={{ fontSize: 13 }}>
-              {changeLine(t, c.field, c.from, c.to)}
+              {changeLine(c.field, c.from, c.to)}
             </Box>
           ))
         )}
