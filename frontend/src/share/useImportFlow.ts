@@ -90,14 +90,15 @@ export function useImportFlow(game: string, profileId: string, close: () => void
   const [preview, setPreview] = useState<ShownPreview | null>(null)
   const [excluded, setExcluded] = useState<ReadonlySet<string>>(new Set())
   const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [previewBusy, setPreviewBusy] = useState(false)
+  const [importBusy, setImportBusy] = useState(false)
   // Each preview or reset takes a new number; a result for an older one arrived after it was overtaken.
   const latest = useRef(0)
   const importing = useRef(false)
   const show = useCallback(async (pending: Promise<Preview>) => {
     const n = latest.current + 1
     latest.current = n
-    setBusy(true)
+    setPreviewBusy(true)
     setError('')
     try {
       const shown = shownPreview(await pending)
@@ -112,7 +113,7 @@ export function useImportFlow(game: string, profileId: string, close: () => void
       }
     } finally {
       if (n === latest.current) {
-        setBusy(false)
+        setPreviewBusy(false)
       }
     }
   }, [])
@@ -143,7 +144,7 @@ export function useImportFlow(game: string, profileId: string, close: () => void
   }
   const reset = () => {
     latest.current += 1
-    setBusy(false)
+    setPreviewBusy(false)
     Discard().catch(reportUnexpected)
     setPreview(null)
     setExcluded(new Set())
@@ -164,7 +165,7 @@ export function useImportFlow(game: string, profileId: string, close: () => void
     if (!beginWork(importing)) {
       return
     }
-    setBusy(true)
+    setImportBusy(true)
     const opened = useImportDialog.getState().request?.run
     try {
       const result = await Import(game, preview?.session ?? '', intoOpen ? profileId : '', [
@@ -178,7 +179,7 @@ export function useImportFlow(game: string, profileId: string, close: () => void
       setError(errorMessage(e))
     } finally {
       importing.current = false
-      setBusy(false)
+      setImportBusy(false)
     }
   }
   // The dialog closes for Nexus settings and comes back with this link or file after sign-in.
@@ -196,7 +197,7 @@ export function useImportFlow(game: string, profileId: string, close: () => void
     preview,
     excluded,
     error,
-    busy,
+    busy: previewBusy || importBusy,
     previewLink,
     previewFile,
     paste,
