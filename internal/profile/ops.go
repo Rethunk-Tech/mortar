@@ -50,8 +50,8 @@ func writeProfile(dir string, p Profile) error {
 	return datadir.WriteJSON(filepath.Join(dir, fileName), p)
 }
 
-// pair returns a mod folder's enabled and disabled paths under entryRoot. folder comes from profile.json, so it must stay inside.
-func pair(modsDir, key, folder string) (plain, dotted string, err error) {
+// ModPaths returns a mod folder's enabled and disabled paths under modsDir. folder comes from profile.json, so it must stay inside.
+func ModPaths(modsDir, key, folder string) (plain, dotted string, err error) {
 	if folder == "." {
 		return filepath.Join(modsDir, key), filepath.Join(modsDir, "."+key), nil
 	}
@@ -93,7 +93,7 @@ func materialize(tmp string, e Entry) (string, error) {
 			continue
 		}
 		// tmp stands in for mods/<key>, so pair resolves the folder inside it.
-		plain, dotted, err := pair(filepath.Dir(tmp), filepath.Base(tmp), m.Folder)
+		plain, dotted, err := ModPaths(filepath.Dir(tmp), filepath.Base(tmp), m.Folder)
 		if err != nil {
 			return "", err
 		}
@@ -324,7 +324,7 @@ func (s *Store) SetModEnabled(game, id, key, uniqueID string, enabled bool) (Pro
 			if mi < 0 {
 				continue
 			}
-			plain, dotted, err := pair(filepath.Join(dir, "mods"), e.Key, e.Mods[mi].Folder)
+			plain, dotted, err := ModPaths(filepath.Join(dir, "mods"), e.Key, e.Mods[mi].Folder)
 			if err != nil {
 				return err
 			}
@@ -563,7 +563,7 @@ func (s *Store) ModFolder(game, id, key, uniqueID string) (string, error) {
 			if !sameID(m.UniqueID, uniqueID) {
 				continue
 			}
-			plain, dotted, err := pair(filepath.Join(dir, "mods"), e.Key, m.Folder)
+			plain, dotted, err := ModPaths(filepath.Join(dir, "mods"), e.Key, m.Folder)
 			if err != nil {
 				return "", err
 			}

@@ -31,7 +31,7 @@ func (s *Store) Installed(game, id string) ([]Installed, error) {
 	var out []Installed
 	for _, e := range p.Entries {
 		for _, m := range e.Mods {
-			plain, dotted, err := pair(filepath.Join(dir, "mods"), e.Key, m.Folder)
+			plain, dotted, err := ModPaths(filepath.Join(dir, "mods"), e.Key, m.Folder)
 			if err != nil {
 				return nil, err
 			}

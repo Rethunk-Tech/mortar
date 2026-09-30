@@ -13,20 +13,21 @@ const configPerm = 0o644
 
 // Apply writes configs into the folders of the entries' mods, matched by UniqueID, and returns the UniqueIDs it
 // wrote for. It re-checks every path, since a Config may not have come through Read: only a plain relative
-// .json path is written, never a manifest, and only inside a folder the entry's mod already has. modsDir is the
-// profile's mods/ folder.
+// .json path is written, never a manifest, and only inside a folder the entry's mod already has, switched on or
+// off. modsDir is the profile's mods/ folder.
 func Apply(modsDir string, entries []profile.Entry, configs []Config) (written []string, err error) {
 	done := map[string]bool{}
 	for _, e := range entries {
 		for _, m := range e.Mods {
-			folder := filepath.Join(modsDir, e.Key)
-			if m.Folder != "." {
-				if !filepath.IsLocal(filepath.FromSlash(m.Folder)) {
-					continue
-				}
-				folder = filepath.Join(folder, filepath.FromSlash(m.Folder))
+			plain, dotted, pathErr := profile.ModPaths(modsDir, e.Key, m.Folder)
+			if pathErr != nil {
+				continue
 			}
-			if info, statErr := os.Stat(folder); statErr != nil || !info.IsDir() {
+			folder := plain
+			if !isDir(folder) {
+				folder = dotted
+			}
+			if !isDir(folder) {
 				continue
 			}
 			for _, c := range configs {
@@ -51,4 +52,9 @@ func Apply(modsDir string, entries []profile.Entry, configs []Config) (written [
 		}
 	}
 	return written, nil
+}
+
+func isDir(p string) bool {
+	info, err := os.Stat(p)
+	return err == nil && info.IsDir()
 }

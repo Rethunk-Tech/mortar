@@ -130,7 +130,7 @@ func fillUpdate(tmp, modsDir, oldSrc, newSrc string, e, ne Entry) (swapped, erro
 		if i < 0 {
 			continue
 		}
-		plain, dotted, err := pair(modsDir, e.Key, e.Mods[i].Folder)
+		plain, dotted, err := ModPaths(modsDir, e.Key, e.Mods[i].Folder)
 		if err != nil {
 			return swapped{}, err
 		}
