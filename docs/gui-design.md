@@ -61,7 +61,7 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
     - **Cover source, in order:** an image the user picked, else the Nexus picture of the profile's most-endorsed mod (`endorsement_count` from the mod endpoint), else Steam's own hero art for the game, else a solid tone; never a random image (NOMAD, 2026-09-29). Steam's art is read at runtime from `<Steam>/appcache/librarycache/413150/library_hero.jpg` (Steam also keeps a `library_hero_blur.jpg`) and never bundled with Mortar.
     - **Text:** the profile name large and bold with a soft white glow, and always the same cards (Mods, Updated, Created) so the name sits at the same place for every profile, with no subtitle line.
   - A **Saves** card in the hero (NOMAD, 2026-09-29) with how many saves fit this profile ("2 of 4"), opening the **Saves** tab: each save in the Saves folder with its fit, "all mods present" or "has used N mods this profile lacks" with their names, from the save scan ([architecture.md](architecture.md#saves)); a mod can be dismissed for a save. Players pick their save inside the game, so this is where the check shows, before Play.
-  - Tabs: **Mods** (default), **Saves**, **Notes**, **Console**, and a **Share** button at the end of the tab row (milestone 5).
+  - Tabs: **Mods** (default), **Saves**, **Notes**, **Console**, and a **Share** button at the end of the tab row.
 - **Launching** covers the window with the launch overlay: a spinner, "Launching Stardew Valley", and SMAPI's first log lines as they arrive (started, mods loading, mods it will skip), with Open console and Hide, until the game is up or the launch fails. While the game runs, the Play button becomes a Running status with the elapsed time and a **Stop game** button.
 - **Minimum size (768×432):** the sidebar collapses to a rail of profile initials with Play at its foot, the hero gives way to a one-line header (name and counts), search and actions fold into icon buttons, and the mod grid drops to two columns.
 
@@ -73,7 +73,7 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 - **Mod menu** (NOMAD, 2026-09-30): right-clicking a card or a list row opens a native menu (Wails' `--custom-contextmenu` on the element, one Go-registered menu per state), and the card's ⋯ button opens the same list. Actions, from one list in `internal/modmenu`: Enable or Disable (the label follows the state), More details, Open on Nexus or Open on GitHub (by the page's host; only when the mod has a page), Show files, and after a separator Remove (absent for the bundled SMAPI entry; it opens the confirm dialog). The native menu's labels are the frontend's translated strings, sent to Go at startup (`SetLabels`) since Go has no Lingui; details and remove reach the window as events, the rest run in Go and emit a refresh.
 - Above the grid: a search field that filters by name, the problem summary with one-click fixes ([architecture.md](architecture.md#mod-data)), and buttons to add mods (open Nexus, or pick an archive). Dropping an archive anywhere on the window installs it into the open profile.
 - SMAPI's bundled Console Commands and Save Backup, and Mortar's console bridge, are installed in every profile and not shown, listed, counted or removable (NOMAD, 2026-09-30).
-- Empty (a new profile): "No mods yet", a line on how to add them, **Browse Nexus** and **Add archive**, a link to import a shared profile (milestone 5), and a note that archives can be dropped anywhere. The hero uses Steam's art.
+- Empty (a new profile): "No mods yet", a line on how to add them, **Browse Nexus** and **Add archive**, a link to import a shared profile, and a note that archives can be dropped anywhere. The hero uses Steam's art.
 
 ## Mod detail
 
@@ -104,21 +104,21 @@ A plain text area for the profile's notes, saved automatically ("Saved · 2 min 
 
 ## Profile management
 
-A page, as Concrete's: a header with a back button, **Import** (milestone 5) and **New profile**; beside the list, a **Recently deleted** panel (profiles in the 30-day trash, each with its days left and Restore).
+A page, as Concrete's: a header with a back button, **Import** and **New profile**; beside the list, a **Recently deleted** panel (profiles in the 30-day trash, each with its days left and Restore).
 
 - **Rows:** every profile as a sortable row: drag handle, name (with a Hidden chip when hidden) and its summary, **Share**, and a ⋯ menu holding Rename, Duplicate, Hide from sidebar (or Show) and Delete. Reordering uses dnd-kit's sortable list with a drop indicator.
 - **Delete** asks first and says the profile stays restorable for 30 days.
-- **Share** (milestone 5) opens a dialog with two tabs, **Link** and **.mortar file with settings**. Over about 240 mods it suggests the file.
-- **Link tab** (milestone 5): the `https://mortar.rethunk.tech/stardew/p#...` link with Copy link, a meter of its length against Discord's 2,000 characters, Copy as a message, the included mods by source, and what is left out (local archives, switched-off mods). Beside it, a preview of the page the recipient sees.
+- **Share** opens a dialog with two tabs, **Link** and **.mortar file with settings**. Over about 240 mods it suggests the file.
+- **Link tab:** the `https://mortar.rethunk.tech/stardew/p#...` link with Copy link, a meter of its length against Discord's 2,000 characters, Copy as a message, the included mods by source, and what is left out (local archives, switched-off mods). Beside it, a preview of the page the recipient sees.
 
-## Import (milestone 5)
+## Import
 
 A wide "Import profile from…" dialog over the dimmed game screen, with tabs **Link** and **.mortar file** (NOMAD, 2026-09-29: archives go into an existing profile through Add archive or a drop, not through Import). Nothing downloads before the user confirms.
 
-- A dense five-column grid of mod tiles: icon, name, author, and on the right the mod's import state (installed, download, dependency, check later, unavailable) in place of a version number.
+- A dense grid of mod tiles: icon with an include tick, name, author (with "different file" or "unverified" where they apply), and on the right the mod's import state (installed, download, dependency, check later, unavailable) in place of a version number. An unticked mod is left out.
 - A status bar: "Ready to import", the profile name, the mod count, the counts per state, and the approximate download size (the sum of each file's `size_kb` from Nexus).
 - Problems found before download, one compact item each with its own action: a mod removed from Nexus (with its page), a mod broken for this game version (from SMAPI's update API, with Leave out), missing dependencies (from the mod dataset); and for a free account, an item saying each download takes one click on Nexus.
-- **Reset** and **New profile from link**, which creates the profile and fills the download queue; closing leaves nothing behind.
+- **Reset**, **New profile from link** (**from file** on the file tab), which creates the profile and fills the download queue, and **Add to <profile>** when Import was opened from one; closing leaves nothing behind. When the import needs Nexus downloads and no account is signed in, a banner offers Nexus settings and the import buttons stay off. The Link tab reads the clipboard only from **Paste from clipboard**; a `mortar://` link, a dropped `.mortar` file or a second launch opens the dialog with it filled in and previewed.
 
 ## Download queue
 
@@ -133,7 +133,7 @@ Only when no game is set up, never on later launches:
 1. Find Stardew Valley in Steam and show what was found, with **Browse** for another folder; when nothing is found, say so, with Browse and a retry.
 2. Install SMAPI if it is missing: it starts by itself, unattended, with no button (NOMAD, 2026-09-30), and a failure shows its error with **Retry**. On Windows with Steam, show the launch-options line to paste into Stardew's Steam properties, with a copy button.
    Installing SMAPI shows its progress as steps (downloaded, files added, launcher replaced, bundled mods added).
-3. Create the first profile: two cards, **Start empty** (with a name field) and **From a shared link** (milestone 5; with a link field, which asks for the Nexus sign-in first when the import needs downloads).
+3. Create the first profile: two cards, **Start empty** (with a name field) and **From a shared link** (with a link field, which asks for the Nexus sign-in first when the import needs downloads).
 
 ## Confirmations
 

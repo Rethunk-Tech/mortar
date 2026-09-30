@@ -4,20 +4,12 @@ This file holds only work that is decided but not built. Each item is written to
 
 Items marked **Measure** need a throwaway test first; those tests run outside this repo and only their results land here. Measurements were taken as stated in architecture.md.
 
-## GitHub references in links
+## Sharing (milestone 5): the static page deploy
 
-GitHub installs and updates are built ([architecture.md](architecture.md#github-releases)). Remaining: a GitHub reference in a share link is marked unverified in the import preview, since its trust rule can only run after download.
+Links, the Share dialog, the import preview, `.mortar` files and first run's link card are built ([architecture.md](architecture.md#sharing)), and so is the page's source (`site/stardew/p/`). Remaining: deploying it at `https://mortar.rethunk.tech/stardew/p`.
 
-## Sharing (milestone 5)
-
-- **Form:** Discord makes only `http://`, `https://` and `discord://` links clickable (Discord community posts 14574789338135 and 25441082215447), so a shared link is `https://mortar.rethunk.tech/stardew/p#<payload>`. The page is a static file, `site/stardew/p/index.html` in this repo, deployed as a DigitalOcean App Platform static site (free tier: three static apps); `rethunk.tech` is on DigitalOcean's nameservers, and `maitre.rethunk.tech` is already a CNAME to an App Platform app, so the subdomain is set up the same way. Browsers never send the part after `#`, so no profile data reaches any server. The page shows two buttons, since it cannot tell whether a scheme handler exists: open in Mortar (`mortar://stardew/p/<payload>`) and download Mortar, which also copies the link so the importer can take it after installing. The app accepts either form pasted into its import box.
-- **Payload:** compact JSON `[1, "<profile name>", [<entry>, ...]]`, the leading number being the format version (an older Mortar meeting a newer one says to update), Brotli-compressed at quality 11 and base64url-encoded without padding. An entry is `[<nexus mod id>, <nexus file id>]`, or `"<owner>/<repo>@<tag>/<asset>"` for GitHub, so a link names the exact file. Only enabled entries with a source are shared; entries from local archives are listed at Share as left out. SMAPI's bundled mods (the `smapi-<version>` entry) and the bridge (`bridge-<version>`) are never shared, listed or imported: every profile gets them from the local SMAPI install (NOMAD, 2026-09-30). Measured on real mod IDs sampled from the mod dataset: the whole link is 498 characters for 50 mods, 879 for 100 and 1,630 for 200, so about 240 mods fit a 2,000-character Discord message. `UniqueID`s would push 100 mods to 3,435 characters, since they barely compress, so the link has none. Brotli beats the standard library's deflate by 12 to 15% at every size.
-- **Import:** the preview matches entries the user already has by Nexus mod and file ID (from `profile.json`), resolves the rest through the mod dataset to `UniqueID`s and dependencies, groups mods as installed, to download, dependencies added, checked after download (files the dataset lacks), and unavailable (with the page link); importing installs everything available and leaves the unavailable ones listed on the profile. A shared file Nexus has since deleted or archived is replaced by the `MAIN` file with the same version, else the primary file, marked "different file".
-- **`.mortar` file:** a zip holding `profile.json` (the same entries as a link, the name, notes and the shared mods' `UniqueID`s, which bound the config files it may carry) and `configs/<UniqueID>/<relative path>.json` for each enabled mod's `.json` files. Share always offers it as "with settings" and suggests it over about 240 mods. It opens by drop, file picker, or double-click (a `.mortar` file association registered by the installer on Windows and by the `.desktop` file on Linux).
-- **Link routing:** `mortar://` goes in `protocols:` in `build/config.yml`, which the NSIS installer registers on Windows. `Options.SingleInstance` with `OnSecondInstanceLaunch`: a link reaches the app as `events.Common.ApplicationLaunchedWithUrl` on a cold start (fired when the only argument contains `://`, `Rethunk-AI/wails` `v3/pkg/application/application_linux.go:73-83`) or in `SecondInstanceData.Args` when it is already running. Both feed one link router.
-- **New Go dependency:** `github.com/andybalholm/brotli` (MIT, maintained; the standard library has no Brotli).
-- **Trust boundaries:** link parsing accepts only the known forms and caps the encoded payload at 8 KB and the decompressed payload at 64 KB before parsing; nothing downloads or launches from a link by itself, every import shows a preview and waits; a `.mortar` file writes only `.json` files inside the mod folders its profile installs; the clipboard is read only when the user presses Import. Extraction limits: [architecture.md](architecture.md#trust-boundaries).
-- Screens: Share and Import in [gui-design.md](gui-design.md#profile-management).
+- **Deploy:** `site/stardew/p/index.html` in this repo, as a DigitalOcean App Platform static site (free tier: three static apps); `rethunk.tech` is on DigitalOcean's nameservers, and `maitre.rethunk.tech` is already a CNAME to an App Platform app, so the subdomain is set up the same way. The page shows two buttons, since it cannot tell whether a scheme handler exists: open in Mortar (`mortar://stardew/p/<payload>`) and download Mortar, which also copies the link so the importer can take it after installing.
+- **Done when** the link opens the page on the live domain, its button opens Mortar's Import with the link filled in, and no request the page makes carries the fragment.
 
 ## Release (milestone 6)
 
@@ -25,7 +17,7 @@ GitHub installs and updates are built ([architecture.md](architecture.md#github-
 - **Packaging:** an AppImage on Linux, and on Windows an NSIS installer built with `INSTALL_SCOPE=user` (`build/windows/Taskfile.yml:83` passes `-DWAILS_INSTALL_SCOPE=user`), installing to `$LOCALAPPDATA\Programs\Mortar` without admin (`build/windows/nsis/project.nsi:71-72`).
 - **Not packaged:** no deb or rpm, since the updater cannot replace a root-owned binary; no Flatpak target exists in Wails.
 - **Windows** builds ship unsigned, so SmartScreen warns and the download page explains it.
-- **Linux desktop integration:** nothing installs an AppImage's embedded `.desktop` file, so on first run Mortar writes `~/.local/share/applications/mortar.desktop` with `Exec=<resolved AppImage path> %u` (desktop files do not expand variables) and `MimeType=x-scheme-handler/mortar;application/x-mortar;`, runs `xdg-mime default mortar.desktop x-scheme-handler/mortar`, and rewrites it when the AppImage moves.
+- **Linux desktop integration:** nothing installs an AppImage's embedded `.desktop` file. First run already writes `~/.local/share/applications/mortar.desktop` and the `.mortar` MIME type ([architecture.md](architecture.md#sharing)); remaining is `Exec=<resolved AppImage path> %u` from `$APPIMAGE` instead of `os.Executable()` (desktop files do not expand variables), rewritten when the AppImage moves.
 - **Self-update:** Wails' updater (`app.Updater`, `pkg/updater`) with the `endpoint` provider reading a signed `manifest.json` published as a GitHub release asset, fetched from the fixed URL `https://github.com/Rethunk-AI/mortar/releases/latest/download/manifest.json` (`wails3 updater genkey`, `sign` and `manifest`, `Rethunk-AI/wails` `v3/internal/commands/updater_tool.go`). The public key ships in the app. Assets are named `mortar-linux-x86_64.AppImage` and `mortar-windows-amd64.exe`.
 - **Why not the GitHub provider:** it verifies no signature, only an optional checksum asset (`v3/pkg/updater/providers/github/github.go:51-55`).
 - **Three traps need patches to the updater**, sent upstream as a second PR:
@@ -44,7 +36,7 @@ After the go-ahead, each milestone ends with the gate green and NOMAD clicking t
 2. **Stardew core.** Built.
 3. **Mod data.** Built.
 4. **Nexus.** Built.
-5. **Sharing.** Links, the Share dialog, the import preview, `.mortar` files, the static page, and first run's **From a shared link** card.
+5. **Sharing.** Built except the static page.
 6. **Release.** smapi.io/log upload and the GitHub issue link, the updater patches and signed manifest, Settings › Updates, Check for updates and Report a bug in the app menu, Windows measurements and fixes, packaging, the repo made public.
 
 ## Later
