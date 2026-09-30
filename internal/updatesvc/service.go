@@ -109,20 +109,16 @@ func (s *Service) Check(ctx context.Context) (*Release, error) {
 
 // Install downloads, verifies and stages the release Check found; Restart applies it.
 func (s *Service) Install(ctx context.Context) error {
+	// Held throughout: a Check in between would point the updater at whatever release it found, signed or not.
 	s.mu.Lock()
-	found := s.found
-	s.mu.Unlock()
-	if found == nil {
+	defer s.mu.Unlock()
+	if s.found == nil {
 		return errNone
 	}
 	if err := s.u.DownloadAndInstall(ctx); err != nil {
 		return err
 	}
-	s.mu.Lock()
-	if s.found == found {
-		s.found.Staged = true
-	}
-	s.mu.Unlock()
+	s.found.Staged = true
 	return nil
 }
 
