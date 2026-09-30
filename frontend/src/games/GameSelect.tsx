@@ -3,6 +3,7 @@ import { Box, ButtonBase, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/games/models.ts'
 import { SetLastGame } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { useNav } from '../nav/store.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type GameStatus, loadGameStatus } from './status.ts'
@@ -69,14 +70,18 @@ function Row({ game, openable, note }: { game: Game; openable: boolean; note: st
             sx={{
               width: 96,
               height: 96,
-              display: 'grid',
-              placeItems: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
               bgcolor: 'rgba(28,28,32,0.92)',
               fontSize: name.length > 8 ? 13 : 15,
               fontWeight: 700,
               color: '#fff',
             }}
           >
+            <SourceLogo name={name} size={40} />
             {name}
           </Box>
         ))}
