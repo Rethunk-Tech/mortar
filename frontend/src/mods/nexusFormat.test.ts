@@ -71,7 +71,15 @@ test('a release outranks its pre-releases, matching SMAPI CompareVersions', () =
   }
 })
 
-test('recent changes keep the newest five versions', () => {
-  const logs = [1, 2, 3, 4, 5, 6].map((n) => ({ version: `${n}` }))
-  expect(recentChangelogs(logs).map((c) => c.version)).toEqual(['1', '2', '3', '4', '5'])
+test('recent changes keep the first five of newest-first input', () => {
+  const logs = ['1.0.19', '1.0.18', '1.0.17', '1.0.16', '1.0.15', '1.0.14', '1.0.0'].map(
+    (version) => ({ version }),
+  )
+  expect(recentChangelogs(logs).map((c) => c.version)).toEqual([
+    '1.0.19',
+    '1.0.18',
+    '1.0.17',
+    '1.0.16',
+    '1.0.15',
+  ])
 })
