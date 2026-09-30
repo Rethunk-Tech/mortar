@@ -9,12 +9,14 @@ import {
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useNexus } from '../nexus.ts'
 import { useNxmHandler } from './nxmHandler.tsx'
+import { nxmOwnerName } from './nxmOwnerName.ts'
 
 export function NexusMods() {
   const { t } = useLingui()
   const keyId = useId()
   const { signedIn, name, premium } = useNexus()
   const nxm = useNxmHandler()
+  const owner = nxmOwnerName(nxm.handled, nxm.owner)
   const [key, setKey] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -69,6 +71,11 @@ export function NexusMods() {
           control={<Switch checked={nxm.handled} onChange={(_, on) => nxm.toggle(on)} />}
           label={t`Handle Nexus "Mod Manager Download" links`}
         />
+        {owner ? (
+          <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
+            {t`${owner} opens these links now.`}
+          </Box>
+        ) : null}
         <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
           {t`Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them.`}
         </Box>

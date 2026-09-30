@@ -7,7 +7,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@mui/material'
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import {
   DeclineOffer,
   Disable,
@@ -28,13 +28,32 @@ interface Prompt {
 // Whether Mortar handles nxm links, the switch that changes it and the dialog that asks first.
 export function useNxmHandler(): {
   handled: boolean
+  owner: string
   toggle: (on: boolean) => void
   offer: () => void
   dialog: ReactNode
 } {
   const { t } = useLingui()
   const handled = useSettings((s) => s.nxmHandled)
+  const [owner, setOwner] = useState('')
   const [prompt, setPrompt] = useState<Prompt | null>(null)
+  useEffect(() => {
+    let live = true
+    Owner()
+      .then((name) => {
+        if (live) {
+          setOwner(handled ? '' : name)
+        }
+      })
+      .catch(() => {
+        if (live) {
+          setOwner('')
+        }
+      })
+    return () => {
+      live = false
+    }
+  }, [handled])
   const fail = (e: unknown) =>
     useToasts.getState().push({
       kind: 'error',
@@ -47,8 +66,8 @@ export function useNxmHandler(): {
   }
   const ask = (mode: Prompt['mode'], onNone: () => void) => {
     Owner()
-      .then((owner) =>
-        owner === '' && mode === 'takeover' ? onNone() : setPrompt({ mode, owner }),
+      .then((name) =>
+        name === '' && mode === 'takeover' ? onNone() : setPrompt({ mode, owner: name }),
       )
       .catch(fail)
   }
@@ -61,7 +80,7 @@ export function useNxmHandler(): {
     ? t`${prompt.owner} opens these links now. Mortar takes them over and gives them back when you turn this off in Settings.`
     : ''
   const dialog = (
-    <Dialog open={prompt !== null} onClose={close} slotProps={{ paper }}>
+    <Dialog open={prompt !== null} onClose={close} transitionDuration={0} slotProps={{ paper }}>
       <DialogTitle>
         {prompt?.mode === 'offer' || !prompt?.owner
           ? t`Handle Nexus download links?`
@@ -95,6 +114,7 @@ export function useNxmHandler(): {
   )
   return {
     handled,
+    owner,
     toggle: (on) => (on ? ask('takeover', () => change(true)) : change(false)),
     offer: () => {
       if (!(useSettings.getState().nxmAsked || useSettings.getState().nxmHandled)) {
