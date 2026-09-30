@@ -53,6 +53,7 @@ import { NameField } from '../game/NameField.tsx'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { useNav } from '../nav/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { userModCount } from './count.ts'
 import { useProfiles } from './store.ts'
 
 const DRAG_TINT_ALPHA = 0.24
@@ -99,7 +100,7 @@ function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) =
     transition,
     isDragging,
   } = useSortable({ id: profile.id })
-  const mods = (profile.entries ?? []).reduce((n, e) => n + (e.mods ?? []).length, 0)
+  const mods = userModCount(profile)
   const modsLabel = plural(mods, { one: '# mod', other: '# mods' })
   const updated = new Date(String(profile.updated)).toLocaleDateString()
   const choose = (run: () => void) => () => {

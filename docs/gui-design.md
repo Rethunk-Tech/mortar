@@ -52,6 +52,7 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 - Grid: a responsive grid of mod cards (`minmax(300px, 1fr)`: three columns at the default window, two at the minimum).
 - A card: the mod's icon (its Nexus `picture_url`, fetched once when the mod is installed and cached on disk; a letter tile until it loads or when there is none, NOMAD 2026-09-29), its name, author and version from its manifest, an enable switch (the dot-folder toggle), and badges for an available update or a problem. One card per mod; its menu (open the Nexus page, update, roll back when there is a previous version, remove) acts on the whole archive entry the mod came in, and when that entry holds other mods the menu names them first.
 - Above the grid: a search field that filters by name, the problem summary with one-click fixes ([design.md](design.md#mod-data)), and buttons to add mods (open Nexus, or pick an archive). Dropping an archive anywhere on the window installs it into the open profile.
+- SMAPI's bundled Console Commands and Save Backup are installed in every profile and not shown, listed, counted or removable (NOMAD, 2026-09-30).
 - Empty (a new profile): "No mods yet", a line on how to add them, **Browse Nexus** and **Add archive**, a link to import a shared profile, and a note that archives can be dropped anywhere. The hero uses Steam's art.
 
 ## Mod detail

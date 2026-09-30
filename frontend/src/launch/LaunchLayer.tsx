@@ -17,6 +17,7 @@ import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/laun
 import { format } from '../console/filter.ts'
 import { useConsole } from '../console/store.ts'
 import { useTab } from '../game/tab.ts'
+import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useLaunch } from './store.ts'
 
@@ -67,7 +68,7 @@ function Overlay({ game }: { game: string }) {
     return null
   }
   const profileName = profile?.name ?? ''
-  const mods = (profile?.entries ?? []).reduce((n, e) => n + (e.mods ?? []).length, 0)
+  const mods = profile ? userModCount(profile) : 0
   const shown = entries.slice(-VISIBLE_LINES)
   return (
     <Box

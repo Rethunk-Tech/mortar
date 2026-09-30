@@ -7,6 +7,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import { ConsoleTab, CopyLog } from '../console/ConsoleTab.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { NotesTab } from '../notes/NotesTab.tsx'
+import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { SavesTab } from '../saves/SavesTab.tsx'
 import { useSaves } from '../saves/store.ts'
@@ -53,7 +54,7 @@ function Hero({ profile }: { profile: Profile }) {
   const art = useProfiles((s) => s.game?.artUrl)
   const rename = useProfiles((s) => s.rename)
   const [editing, setEditing] = useState(false)
-  const mods = (profile.entries ?? []).reduce((n, e) => n + (e.mods ?? []).length, 0)
+  const mods = userModCount(profile)
   const setTab = useTab((s) => s.setTab)
   const fits = useSaves((s) => s.fits)
   const savesReady = useSaves((s) => s.status === 'ready')
