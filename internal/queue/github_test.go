@@ -307,3 +307,23 @@ func TestSkippingAConfirmationReleasesItsStagedKey(t *testing.T) {
 		t.Fatalf("a skipped item keeps its staged key: %v", keys)
 	}
 }
+
+func TestAddKeepsGitHubTagAndAssetDistinct(t *testing.T) {
+	g := newGitHubFixture(t)
+	first, err := g.s.Add([]Request{
+		{Kind: KindInstall, Game: "stardew", Profile: "p1", Repo: "me/mod", Tag: "v1.0.0", Asset: "a.zip"},
+		{Kind: KindInstall, Game: "stardew", Profile: "p1", Repo: "me/mod", Tag: "v1.0.0", Asset: "b.zip"},
+		{Kind: KindInstall, Game: "stardew", Profile: "p1", Repo: "me/mod", Tag: "v2.0.0", Asset: "a.zip"},
+		{Kind: KindInstall, Game: "stardew", Profile: "p1", Repo: "me/mod", Tag: "v1.0.0"},
+	})
+	if err != nil || len(first) != 4 {
+		t.Fatalf("queued %d, %v, want 4 distinct GitHub rows", len(first), err)
+	}
+	again, err := g.s.Add([]Request{
+		{Kind: KindInstall, Game: "stardew", Profile: "p1", Repo: "me/mod", Tag: "v1.0.0", Asset: "a.zip"},
+		{Kind: KindInstall, Game: "stardew", Profile: "p1", Repo: "me/mod", Tag: "v1.0.0"},
+	})
+	if err != nil || len(again) != 2 || again[0].ID != first[0].ID || again[1].ID != first[3].ID {
+		t.Fatalf("dedup = %+v, %v", again, err)
+	}
+}

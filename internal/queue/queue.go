@@ -286,6 +286,25 @@ func finished(state string) bool {
 	return state == StateDone || state == StateSkipped || state == StateCancelled
 }
 
+// sameDownload is an in-flight queue item for the same file. GitHub items match on repo, tag and asset; an
+// unresolved empty asset is not the same as a chosen one.
+func sameDownload(it *Item, r Request) bool {
+	if finished(it.State) || it.Game != r.Game || it.Profile != r.Profile {
+		return false
+	}
+	if it.Repo != "" || r.Repo != "" {
+		return it.Repo == r.Repo && it.Tag == r.Tag && it.Asset == r.Asset
+	}
+	return it.ModID == r.ModID && it.FileID == r.FileID
+}
+
+// NotifyUnlocked republishes the queue after a profile is no longer running, so downloads and pending share
+// configs that were waiting can continue.
+func NotifyUnlocked(s *Service) {
+	s.publish(false)
+	s.poke()
+}
+
 // publish tells the window; persist also writes queue.json, which progress ticks skip.
 func (s *Service) publish(persist bool) {
 	s.pub.Lock()
@@ -360,9 +379,7 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 			s.mu.Unlock()
 			return nil, errors.New("choose a mod and a profile for the download")
 		}
-		if i := slices.IndexFunc(s.items, func(it *Item) bool {
-			return !finished(it.State) && it.Game == r.Game && it.Profile == r.Profile && it.ModID == r.ModID && it.FileID == r.FileID && it.Repo == r.Repo
-		}); i >= 0 {
+		if i := slices.IndexFunc(s.items, func(it *Item) bool { return sameDownload(it, r) }); i >= 0 {
 			it := s.items[i]
 			if it.State == StateFailed {
 				it.State, it.Error = StateQueued, ""
