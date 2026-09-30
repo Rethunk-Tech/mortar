@@ -8,10 +8,10 @@ Work follows [docs/design.md](docs/design.md) § Build order. Agents continue in
 
 ## Decided
 
-- Wails v3, pinned to one exact beta in `go.mod` (the Rethunk-AI fork, see its `replace`) and upgraded on purpose. React, TypeScript and MUI on Vite; never Next.js.
-- The look carries over from Concrete: a solid window (base `rgb(25,25,30)`) with a wallpaper backdrop under a static `rgba(25,25,30,0.8)` tint, frameless with a themed title bar, and an MUI dark theme whose paper and background are 80% opaque over it. Only the colour tokens change. The Concrete-style translucent window is deferred to v2 (design.md § Later).
-- One Go `Game` interface holds everything that differs per game: install discovery, loader install, mod source, manifest identity, and profile launch. Everything else is shared. Stardew Valley is the only implementation in v1; Lethal Company is deferred (design.md § Later).
-- Share links name their game: `https://mortar.rethunk.tech/<game>/p#<payload>`, handed to the app as `mortar://<game>/p/<payload>`.
+- Wails v3, pinned in `go.mod` (the Rethunk-AI fork) and upgraded on purpose. Pin: [docs/architecture.md](docs/architecture.md#stack). React, TypeScript and MUI on Vite; never Next.js.
+- Solid window with a wallpaper backdrop under a tint, frameless with a themed title bar, and an MUI dark theme over it. Surfaces: [docs/gui-design.md](docs/gui-design.md#surfaces-and-colour). Translucent window: [docs/design.md](docs/design.md#later).
+- One Go `Game` interface holds everything that differs per game: install discovery, loader install, mod source, manifest identity, and profile launch. Everything else is shared. Stardew Valley is the only implementation in v1; Lethal Company is deferred ([docs/design.md](docs/design.md#later)).
+- Share links name their game. Form: [docs/architecture.md](docs/architecture.md#sharing).
 - Mortar never re-hosts mod files; downloads come from each mod's own source.
 
 ## Verify
