@@ -7,6 +7,7 @@ import { compact } from '../game/compact.ts'
 import { useInstall } from '../install/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useMods } from './store.ts'
+import { useLocked } from './useLocked.ts'
 
 const NEXUS = 'https://www.nexusmods.com/stardewvalley/mods'
 
@@ -68,11 +69,12 @@ export function AddArchive({
   const { t } = useLingui()
   const installing = useInstall((s) => s.pending > 0)
   const pick = useInstall((s) => s.pick)
+  const locked = useLocked()
   return (
     <Button
       variant={variant}
       size={size}
-      disabled={installing}
+      disabled={installing || locked}
       aria-label={t`Add archive`}
       startIcon={installing ? <CircularProgress size={14} color="inherit" /> : <Plus size={14} />}
       onClick={() => {

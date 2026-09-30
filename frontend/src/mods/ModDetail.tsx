@@ -26,6 +26,7 @@ import { useDetail } from './detail.ts'
 import { modId, siblingsOf } from './lookup.ts'
 import { heading, paper } from './paper.ts'
 import { useMods } from './store.ts'
+import { useLocked } from './useLocked.ts'
 
 const text = { fontSize: 13 } as const
 const row = { display: 'flex', alignItems: 'center', gap: 1, minHeight: 30, ...text } as const
@@ -89,6 +90,7 @@ function Versions({
   ask: () => void
 }) {
   const { t } = useLingui()
+  const locked = useLocked()
   return (
     <Section title={t`Versions`}>
       <Typography sx={{ ...row }}>{t`${mod.version} · in use`}</Typography>
@@ -97,7 +99,7 @@ function Versions({
           <Typography sx={{ flex: 1, ...text }}>
             {t`${state.previousVersion} · kept for rollback`}
           </Typography>
-          <Button size="small" variant="outlined" onClick={ask} sx={noWrap}>
+          <Button size="small" variant="outlined" disabled={locked} onClick={ask} sx={noWrap}>
             {t`Roll back`}
           </Button>
         </Box>
@@ -117,6 +119,7 @@ function Settings({
 }) {
   const { t } = useLingui()
   const showFiles = useMods((s) => s.showFiles)
+  const locked = useLocked()
   const labels: Record<string, string> = {
     default: t`config.json, as the mod ships it`,
     changed: t`config.json, changed from the mod's own`,
@@ -138,7 +141,7 @@ function Settings({
             >
               {t`Open`}
             </Button>
-            <Button size="small" variant="outlined" onClick={ask} sx={noWrap}>
+            <Button size="small" variant="outlined" disabled={locked} onClick={ask} sx={noWrap}>
               {t`Reset`}
             </Button>
           </>

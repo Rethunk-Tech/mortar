@@ -9,6 +9,7 @@ import { modId } from './lookup.ts'
 import { type MenuAnchor, openPage, useContextMenu, useMenuState } from './menu.ts'
 import { type ModAction, modActions } from './modActions.ts'
 import { useMods } from './store.ts'
+import { useLocked } from './useLocked.ts'
 
 const ICON_SIZE = 16
 
@@ -29,6 +30,7 @@ function ModMenuItems({
   const setOpen = useDetail((s) => s.setOpen)
   const page = useMods((s) => s.pages[modId(mod)])
   const state = useMenuState(mod, removable)
+  const locked = useLocked()
   const items: Record<ModAction, { label: string; icon: ReactNode; run: () => void }> = {
     toggle: {
       label: mod.enabled ? t`Disable` : t`Enable`,
@@ -67,6 +69,7 @@ function ModMenuItems({
     a === 'remove' ? <Divider key="divider" /> : null,
     <MenuItem
       key={a}
+      disabled={locked && (a === 'toggle' || a === 'remove')}
       sx={a === 'remove' ? { color: 'error.main' } : undefined}
       onClick={() => {
         close()

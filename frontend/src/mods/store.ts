@@ -17,6 +17,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useBadges } from './badges.ts'
 import { modId, problemCount } from './lookup.ts'
@@ -35,7 +36,7 @@ function storedView(): View {
 }
 
 const fail = (title: string) => (e: unknown) => {
-  useToasts.getState().push({ kind: 'error', title, body: String(e) })
+  useToasts.getState().push({ kind: 'error', title, body: errorMessage(e) })
 }
 
 const open = () => {
@@ -46,6 +47,7 @@ const open = () => {
 export const useMods = create<{
   mods: Mod[]
   loaded: boolean
+  loadError: string
   pages: Record<string, string | undefined>
   view: View
   removing: Mod | null
@@ -63,6 +65,7 @@ export const useMods = create<{
 }>((set, get) => ({
   mods: [],
   loaded: false,
+  loadError: '',
   pages: {},
   view: storedView(),
   removing: null,
@@ -81,6 +84,7 @@ export const useMods = create<{
     if (!target) {
       return
     }
+    set({ loadError: '' })
     try {
       const [mods, pages] = await Promise.all([
         Mods(target.game, target.id),
@@ -90,7 +94,9 @@ export const useMods = create<{
         set({ mods: mods ?? [], pages: pages ?? {}, loaded: true })
       }
     } catch (e) {
-      fail(i18n._(msg`Could not read the mods`))(e)
+      if (open()?.id === target.id) {
+        set({ loadError: errorMessage(e) })
+      }
       return
     }
     await Promise.all([get().loadProblems(), useUpdates.getState().load()])

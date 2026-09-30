@@ -19,6 +19,7 @@ import { concerns, problemsOf, siblingsOf, updateFor } from './lookup.ts'
 import { paper } from './paper.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
+import { useLocked } from './useLocked.ts'
 
 const HASH_MULTIPLIER = 31
 const UINT32_BITS = 32
@@ -123,10 +124,12 @@ export function UpdateBadge({ mod }: { mod: Mod }) {
 export function ModSwitch({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const setEnabled = useMods((s) => s.setEnabled)
+  const locked = useLocked()
   return (
     <Switch
       size="small"
       checked={mod.enabled}
+      disabled={locked}
       onChange={(e) => {
         setEnabled(mod, e.target.checked).catch(reportUnexpected)
       }}
@@ -155,10 +158,12 @@ export function ShowFilesButton({ mod }: { mod: Mod }) {
 export function RemoveButton({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const askRemove = useMods((s) => s.askRemove)
+  const locked = useLocked()
   return (
     <Button
       variant="outlined"
       color="error"
+      disabled={locked}
       sx={{ whiteSpace: 'nowrap' }}
       onClick={() => askRemove(mod)}
     >

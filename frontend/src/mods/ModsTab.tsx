@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Card, Typography } from '@mui/material'
+import { Box, Button, ButtonBase, Card, CircularProgress, Typography } from '@mui/material'
 import { Download } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
@@ -11,6 +11,7 @@ import { userModCount } from '../profiles/count.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { DuplicateDialog } from './DuplicateDialog.tsx'
 import { useDetail } from './detail.ts'
+import { LockedNote } from './LockedNote.tsx'
 import { modId, sourceKind } from './lookup.ts'
 import { ModDetail } from './ModDetail.tsx'
 import { ModList } from './ModList.tsx'
@@ -111,9 +112,38 @@ function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
   )
 }
 
-function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; view: View }) {
+function ModsBody({
+  profile,
+  shown,
+  view,
+  query,
+}: {
+  profile: Profile
+  shown: Mod[]
+  view: View
+  query: string
+}) {
   const { t } = useLingui()
-  if (shown.length === 0) {
+  const loaded = useMods((s) => s.loaded)
+  const loadError = useMods((s) => s.loadError)
+  const load = useMods((s) => s.load)
+  if (!loaded) {
+    return loadError ? (
+      <Box sx={{ px: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Typography
+          sx={{ color: 'error.main' }}
+        >{t`Could not read the mods: ${loadError}`}</Typography>
+        <Button variant="outlined" onClick={() => load().catch(reportUnexpected)}>
+          {t`Retry`}
+        </Button>
+      </Box>
+    ) : (
+      <Box sx={{ px: 2 }}>
+        <CircularProgress size={20} aria-label={t`Loading mods`} />
+      </Box>
+    )
+  }
+  if (shown.length === 0 && query) {
     return (
       <Typography
         sx={{ px: 2, color: 'text.secondary' }}
@@ -142,6 +172,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
     useMods.setState({
       mods: [],
       loaded: false,
+      loadError: '',
     })
     useUpdates.setState({ updates: null, reviewing: false })
     useDetail.getState().show(null)
@@ -202,7 +233,8 @@ export function ModsTab({ profile }: { profile: Profile }) {
       <ProblemBar />
       <UpdateBar />
       <Toolbar query={query} onQuery={setQuery} total={mods.length} />
-      <ModsBody profile={profile} shown={shown} view={view} />
+      <LockedNote />
+      <ModsBody profile={profile} shown={shown} view={view} query={q} />
       <ModDetail profile={profile} />
       <UpdateReview profile={profile} />
       <ModContextMenu />

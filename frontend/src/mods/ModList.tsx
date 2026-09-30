@@ -77,6 +77,7 @@ function ModRow({ mod: m, striped, profile }: { mod: Mod; striped: boolean; prof
           smapi: t`SMAPI`,
           archive: t`Archive`,
           nexus: t`Nexus Mods`,
+          github: t`GitHub`,
         })}
       </Cell>
       <Cell

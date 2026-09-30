@@ -20,7 +20,7 @@ export const sourceKind = (profile: Profile, mod: Mod) =>
 
 export const kindLabel = (
   kind: string,
-  labels: { smapi: string; archive: string; nexus: string },
+  labels: { smapi: string; archive: string; nexus: string; github: string },
 ) => {
   switch (kind) {
     case 'smapi':
@@ -29,6 +29,8 @@ export const kindLabel = (
       return labels.archive
     case 'nexus':
       return labels.nexus
+    case 'github':
+      return labels.github
     default:
       return kind
   }

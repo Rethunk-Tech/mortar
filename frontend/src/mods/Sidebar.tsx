@@ -85,7 +85,12 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   const others = siblingsOf(all, mod)
   const setOpen = useDetail((s) => s.setOpen)
   const kind = sourceKind(profile, mod)
-  const source = kindLabel(kind, { smapi: t`SMAPI`, archive: t`Archive`, nexus: t`Nexus Mods` })
+  const source = kindLabel(kind, {
+    smapi: t`SMAPI`,
+    archive: t`Archive`,
+    nexus: t`Nexus Mods`,
+    github: t`GitHub`,
+  })
   return (
     <Box sx={{ p: 1.75, display: 'flex', flexDirection: 'column', gap: 1.25, minHeight: '100%' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
