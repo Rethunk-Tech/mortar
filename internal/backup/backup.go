@@ -37,9 +37,14 @@ func Saves(savesDir, backupsDir string, keep int, now time.Time) (string, error)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return "", err
 	}
+	name := now.UTC().Truncate(time.Millisecond)
 	if len(zips) > 0 {
 		newest := zips[len(zips)-1]
 		if t, err := time.Parse(stamp, strings.TrimSuffix(newest, ".zip")); err == nil {
+			// A clock that went back must not name the new zip older than the rest, where prune would take it.
+			if !name.After(t) {
+				name = t.Add(time.Millisecond)
+			}
 			if age := now.Sub(t); age >= 0 && age < MinGap {
 				changed, err := lastChange(savesDir)
 				if err != nil {
@@ -65,7 +70,7 @@ func Saves(savesDir, backupsDir string, keep int, now time.Time) (string, error)
 	if err = errors.Join(err, tmp.Close()); err != nil {
 		return "", errors.Join(err, os.Remove(tmp.Name()))
 	}
-	dst := filepath.Join(backupsDir, now.UTC().Format(stamp)+".zip")
+	dst := filepath.Join(backupsDir, name.Format(stamp)+".zip")
 	if err := os.Rename(tmp.Name(), dst); err != nil {
 		return "", errors.Join(err, os.Remove(tmp.Name()))
 	}

@@ -119,3 +119,22 @@ func TestSavesBacksUpAgainWhenASaveChangedAndSweepsCrashedTemps(t *testing.T) {
 		t.Fatalf("backup after a save changed = %q, %v; want a new one", got, err)
 	}
 }
+
+func TestABackwardsClockKeepsTheNewZip(t *testing.T) {
+	saves := filepath.Join(t.TempDir(), "Saves")
+	if err := os.MkdirAll(saves, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	out := t.TempDir()
+	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	if _, err := Saves(saves, out, 1, start.Add(time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	got, err := Saves(saves, out, 1, start)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(got); err != nil {
+		t.Fatalf("the zip just written is gone: %v", err)
+	}
+}
