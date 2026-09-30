@@ -187,12 +187,12 @@ function Branch({ title, nodes, mods }: { title: string; nodes: DepViewNode[]; m
 export function ModDependencyTree({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
-  const broken = useMods((s) => s.problems?.broken ?? [])
+  const broken = useMods((s) => s.problems?.broken)
   const trees = buildDependencyTrees(manifestsFromMods(mods), mod.uniqueId)
   const installed = mods.map((m) => ({
     uniqueID: m.uniqueId,
     enabled: m.enabled,
-    broken: broken.some((b) => sameId(b.uniqueId, m.uniqueId)),
+    broken: (broken ?? []).some((b) => sameId(b.uniqueId, m.uniqueId)),
   }))
   const needs = annotateTree(trees.needs, installed)
   const neededBy = annotateTree(trees.neededBy, installed)

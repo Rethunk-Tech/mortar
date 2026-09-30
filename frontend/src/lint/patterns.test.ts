@@ -200,6 +200,9 @@ function unstableSelector(body: string): boolean {
   if (/\.\s*(map|filter|slice|concat|sort)\s*\(/.test(body)) {
     return true
   }
+  if (/\?\?\s*(?:\[\]|\{\})/.test(body)) {
+    return true
+  }
   const trimmed = body.trim()
   if (trimmed.startsWith('({') || trimmed.startsWith('[')) {
     return true
