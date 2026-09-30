@@ -40,7 +40,12 @@ export function createMortarTheme(accent: AccentName): Theme {
         styleOverrides: {
           root: {
             variants: [
-              { props: { invisible: false }, style: { backgroundColor: 'rgba(0,0,0,0.3)' } },
+              // A dark overlay would compound with the translucent window toward opaque;
+              // dimming what is underneath keeps its alpha, so the desktop still shows.
+              {
+                props: { invisible: false },
+                style: { backgroundColor: 'transparent', backdropFilter: 'brightness(0.55)' },
+              },
             ],
           },
         },

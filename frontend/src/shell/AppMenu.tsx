@@ -50,7 +50,16 @@ export function AppMenu() {
         open={open}
         onClose={close}
         sx={{ top: 36 }}
-        slotProps={{ paper: { sx: { width: 280, top: 36, height: 'calc(100% - 36px)' } } }}
+        slotProps={{
+          paper: {
+            sx: {
+              width: 280,
+              top: 36,
+              height: 'calc(100% - 36px)',
+              bgcolor: 'rgba(40,40,48,0.92)',
+            },
+          },
+        }}
       >
         <List component="nav" aria-label={t`Mortar menu`}>
           <ListItemButton
