@@ -32,7 +32,7 @@ func (s *Service) usable(it *Item) bool {
 // next decides what to do now, under the lock; a nil item means nothing. An item that can download goes first (premium, or holding a key
 // from a link); otherwise the head item waits for its click, unless one already does. Items for a profile the game
 // runs stay queued, and held reports whether any did.
-func (s *Service) next() (it *Item, act action, held bool) {
+func (s *Service) next(running map[string]bool) (it *Item, act action, held bool) {
 	if s.paused || s.until.After(s.d.Now()) {
 		return nil, resolve, false
 	}
@@ -44,7 +44,7 @@ func (s *Service) next() (it *Item, act action, held bool) {
 		case it.State == StateWaitingClick:
 			waiting = true
 		case it.State != StateQueued:
-		case s.d.Running != nil && s.d.Running(it.Game, it.Profile):
+		case running[it.Game+"\n"+it.Profile]:
 			held = true
 		case it.Repo != "":
 			return it, s.forAsset(it), held
@@ -58,6 +58,23 @@ func (s *Service) next() (it *Item, act action, held bool) {
 		return nil, resolve, held
 	}
 	return head, s.forFile(head, click), held
+}
+
+func (s *Service) runningOf(items []*Item) map[string]bool {
+	out := map[string]bool{}
+	if s.d.Running == nil {
+		return out
+	}
+	seen := map[string]struct{}{}
+	for _, it := range items {
+		k := it.Game + "\n" + it.Profile
+		if _, ok := seen[k]; ok {
+			continue
+		}
+		seen[k] = struct{}{}
+		out[k] = s.d.Running(it.Game, it.Profile)
+	}
+	return out
 }
 
 // forFile is resolve while the item's file is not known yet.
@@ -89,7 +106,16 @@ func (s *Service) run(ctx context.Context) {
 		}
 		var wake <-chan time.Time
 		s.mu.Lock()
-		_, _, held := s.next()
+		var queued []*Item
+		for _, it := range s.items {
+			if it.State == StateQueued || it.State == StateWaitingClick {
+				queued = append(queued, it)
+			}
+		}
+		s.mu.Unlock()
+		running := s.runningOf(queued)
+		s.mu.Lock()
+		_, _, held := s.next(running)
 		if d := s.until.Sub(s.d.Now()); d > 0 {
 			wake = time.After(d)
 		} else if held {
@@ -108,7 +134,16 @@ func (s *Service) run(ctx context.Context) {
 
 func (s *Service) step(ctx context.Context) bool {
 	s.mu.Lock()
-	it, act, _ := s.next()
+	var queued []*Item
+	for _, it := range s.items {
+		if it.State == StateQueued || it.State == StateWaitingClick {
+			queued = append(queued, it)
+		}
+	}
+	s.mu.Unlock()
+	running := s.runningOf(queued)
+	s.mu.Lock()
+	it, act, _ := s.next(running)
 	if it == nil || ctx.Err() != nil {
 		s.mu.Unlock()
 		return false
