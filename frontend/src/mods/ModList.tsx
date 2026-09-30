@@ -18,8 +18,8 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compact, compactQuery } from '../game/compact.ts'
-import { siblingsOf, sourceKind } from './lookup.ts'
-import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
+import { modId, siblingsOf, sourceKind } from './lookup.ts'
+import { LetterTile, ModSwitch, ProblemBadge, RemoveButton, ShowFilesButton } from './parts.tsx'
 import { useMods } from './store.ts'
 
 const SELECTED_ALPHA = 0.14
@@ -102,7 +102,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   const { t } = useLingui()
   const narrow = useMediaQuery(compactQuery)
   const [selectedId, setSelectedId] = useState('')
-  const selected = mods.find((m) => m.uniqueId === selectedId)
+  const selected = mods.find((m) => modId(m) === selectedId)
   const kindLabel = (kind: string) => {
     if (kind === 'smapi') {
       return t`SMAPI`
@@ -144,17 +144,17 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
           <TableBody>
             {mods.map((m, i) => (
               <TableRow
-                key={m.uniqueId}
+                key={modId(m)}
                 hover={true}
-                selected={m.uniqueId === selected?.uniqueId}
-                onClick={() => setSelectedId(m.uniqueId)}
+                selected={selected !== undefined && modId(m) === modId(selected)}
+                onClick={() => setSelectedId(modId(m))}
                 sx={{
                   ...rowSx,
                   height: 36,
                   fontSize: 14,
                   cursor: 'pointer',
                   bgcolor: (th) => {
-                    if (m.uniqueId === selected?.uniqueId) {
+                    if (selected !== undefined && modId(m) === modId(selected)) {
                       return alpha(th.palette.primary.main, SELECTED_ALPHA)
                     }
                     return i % 2 ? 'rgba(255,255,255,0.03)' : 'transparent'
@@ -181,7 +181,10 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
                     color: m.enabled ? 'text.primary' : 'text.secondary',
                   }}
                 >
-                  {m.enabled ? t`Enabled` : t`Off`}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <ProblemBadge mod={m} />
+                    {m.enabled ? t`Enabled` : t`Off`}
+                  </Box>
                 </Cell>
               </TableRow>
             ))}

@@ -8,8 +8,11 @@ import type {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compact } from '../game/compact.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { DuplicateDialog } from './DuplicateDialog.tsx'
+import { modId } from './lookup.ts'
 import { ModList } from './ModList.tsx'
-import { LetterTile, ModMenu, ModSwitch, RemoveDialog } from './parts.tsx'
+import { ProblemBar } from './ProblemBar.tsx'
+import { LetterTile, ModMenu, ModSwitch, ProblemBadge, RemoveDialog } from './parts.tsx'
 import { useMods, type View } from './store.ts'
 import { AddArchive, BrowseNexus, Toolbar } from './Toolbar.tsx'
 
@@ -41,7 +44,7 @@ function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; vi
     >
       {shown.map((m) => (
         <Card
-          key={m.uniqueId}
+          key={modId(m)}
           sx={{
             height: 64,
             pl: 1,
@@ -71,6 +74,7 @@ function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; vi
               {`${m.author} · ${m.version}`}
             </Typography>
           </Box>
+          <ProblemBadge mod={m} />
           <ModSwitch mod={m} />
           <ModMenu mod={m} />
         </Card>
@@ -138,9 +142,11 @@ export function ModsTab({ profile }: { profile: Profile }) {
   )
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <ProblemBar />
       <Toolbar query={query} onQuery={setQuery} total={mods.length} />
       <ModsBody profile={profile} shown={shown} view={view} />
       <RemoveDialog />
+      <DuplicateDialog profileName={profile.name} />
     </Box>
   )
 }

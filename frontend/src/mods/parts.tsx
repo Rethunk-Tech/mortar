@@ -13,15 +13,16 @@ import {
   Menu,
   MenuItem,
   Switch,
+  Tooltip,
 } from '@mui/material'
-import { Ellipsis, FolderOpen, Trash2 } from 'lucide-react'
+import { Ellipsis, FolderOpen, Trash2, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { siblingsOf } from './lookup.ts'
+import { useDescribe } from './describe.ts'
+import { concerns, problemsOf, siblingsOf } from './lookup.ts'
+import { paper } from './paper.ts'
 import { useMods } from './store.ts'
-
-const paper = { sx: { bgcolor: 'rgba(40,40,48,0.92)' } }
 
 const HASH_MULTIPLIER = 31
 const UINT32_BITS = 32
@@ -39,7 +40,13 @@ function hash(s: string): number {
   return h
 }
 
-export function LetterTile({ mod, size = DEFAULT_TILE_SIZE }: { mod: Mod; size?: number }) {
+export function LetterTile({
+  mod,
+  size = DEFAULT_TILE_SIZE,
+}: {
+  mod: Pick<Mod, 'uniqueId' | 'name'>
+  size?: number
+}) {
   return (
     <Box
       aria-hidden={true}
@@ -58,6 +65,28 @@ export function LetterTile({ mod, size = DEFAULT_TILE_SIZE }: { mod: Mod; size?:
     >
       {(Array.from(mod.name)[0] ?? '?').toUpperCase()}
     </Box>
+  )
+}
+
+export function ProblemBadge({ mod }: { mod: Mod }) {
+  const { t } = useLingui()
+  const describe = useDescribe()
+  const result = useMods((s) => s.problems)
+  const mine = problemsOf(result).filter((p) => concerns(p, mod))
+  if (mine.length === 0) {
+    return null
+  }
+  const text = mine.map(describe).join(' ')
+  return (
+    <Tooltip title={text}>
+      <Box
+        role="img"
+        aria-label={t`Problem: ${text}`}
+        sx={{ display: 'flex', flexShrink: 0, color: 'warning.main' }}
+      >
+        <TriangleAlert size={16} />
+      </Box>
+    </Tooltip>
   )
 }
 
