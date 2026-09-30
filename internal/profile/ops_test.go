@@ -357,17 +357,17 @@ func TestHiddenReorderAndStoreKeys(t *testing.T) {
 	}
 }
 
-func bundle(id string) map[string]string {
+func bundle() map[string]string {
 	return map[string]string{
-		"ConsoleCommands/manifest.json": manifestJSON(id + ".Console"),
-		"SaveBackup/manifest.json":      manifestJSON(id + ".Backup"),
+		"ConsoleCommands/manifest.json": manifestJSON("SMAPI.Console"),
+		"SaveBackup/manifest.json":      manifestJSON("SMAPI.Backup"),
 	}
 }
 
 func TestApplyBundledReplacesAndKeepsDisabled(t *testing.T) {
 	e := newEnv(t)
-	e.item(t, "smapi-1.0.0", bundle("SMAPI"))
-	e.item(t, "smapi-2.0.0", bundle("SMAPI"))
+	e.item(t, "smapi-1.0.0", bundle())
+	e.item(t, "smapi-2.0.0", bundle())
 	e.item(t, "local-x", map[string]string{"manifest.json": manifestJSON("Other")})
 	a, err := e.Create("stardew", "a")
 	if err != nil {
@@ -432,7 +432,7 @@ func TestCreateGetsBundledEntry(t *testing.T) {
 	if err != nil || len(p.Entries) != 0 {
 		t.Fatalf("before install: %+v, %v", p, err)
 	}
-	e.item(t, "smapi-1.0.0", bundle("SMAPI"))
+	e.item(t, "smapi-1.0.0", bundle())
 	key = "smapi-1.0.0"
 	p, err = e.Create("stardew", "after")
 	if err != nil || len(p.Entries) != 1 || p.Entries[0].Source.Kind != SourceSMAPI {
@@ -441,6 +441,40 @@ func TestCreateGetsBundledEntry(t *testing.T) {
 	key = "smapi-0.0.1"
 	if p, err = e.Create("stardew", "collected"); err != nil || len(p.Entries) != 0 {
 		t.Fatalf("missing store item must not block creation: %+v, %v", p, err)
+	}
+}
+
+func TestApplyBundledSkipsRunningProfile(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "smapi-1.0.0", bundle())
+	e.item(t, "smapi-2.0.0", bundle())
+	busy, err := e.Create("stardew", "busy")
+	if err != nil {
+		t.Fatal(err)
+	}
+	idle, err := e.Create("stardew", "idle")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := e.ApplyBundled("stardew", "smapi-1.0.0"); err != nil {
+		t.Fatal(err)
+	}
+	e.Running = func(_, id string) bool { return id == busy.ID }
+	if !e.AnyRunning("stardew") {
+		t.Fatal("AnyRunning = false with a running profile")
+	}
+	var re *RunningError
+	if err := e.ApplyBundled("stardew", "smapi-2.0.0"); !errors.As(err, &re) {
+		t.Fatalf("err = %v, want a RunningError", err)
+	}
+	for id, want := range map[string]string{busy.ID: "smapi-1.0.0", idle.ID: "smapi-2.0.0"} {
+		p, err := e.read("stardew", id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(p.Entries) != 1 || p.Entries[0].Key != want {
+			t.Errorf("profile %s entries = %+v, want only %s", id, p.Entries, want)
+		}
 	}
 }
 

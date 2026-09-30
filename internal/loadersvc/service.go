@@ -87,6 +87,9 @@ func (s *Service) Install(ctx context.Context, id string) (loader.Status, error)
 	if err != nil {
 		return loader.Status{}, err
 	}
+	if s.profiles.AnyRunning(id) {
+		return loader.Status{}, fmt.Errorf("%s is running: close it before installing %s", g.Name(), g.LoaderName())
+	}
 	if !s.busy.TryLock() {
 		return loader.Status{}, errors.New("a loader install is already running")
 	}

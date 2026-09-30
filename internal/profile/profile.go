@@ -99,6 +99,15 @@ func (s *Store) unlocked(game, id string) error {
 	return nil
 }
 
+// AnyRunning reports whether the game is running any of its profiles.
+func (s *Store) AnyRunning(game string) bool {
+	all, err := s.List(game)
+	if err != nil {
+		return false
+	}
+	return slices.ContainsFunc(all, func(p Profile) bool { return s.unlocked(game, p.ID) != nil })
+}
+
 // ModsDir returns the absolute path of the profile's mods/ folder, the one passed to the game as its mods path.
 func (s *Store) ModsDir(game, id string) (string, error) {
 	dir, err := s.profileDir(game, id)

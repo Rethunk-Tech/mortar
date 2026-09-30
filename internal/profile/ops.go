@@ -209,7 +209,8 @@ func (s *Store) AddEntry(game, id, key string, source Source) (Profile, error) {
 }
 
 // ApplyBundled makes key the loader's bundled-mods entry in every profile of the game, replacing older ones
-// and keeping each profile's switched-off mods off. Profiles that fail do not stop the others.
+// and keeping each profile's switched-off mods off. Profiles that fail, including one the game is running, do not stop
+// the others.
 func (s *Store) ApplyBundled(game, key string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -219,6 +220,10 @@ func (s *Store) ApplyBundled(game, key string) error {
 	}
 	var errs []error
 	for _, prof := range all {
+		if err := s.unlocked(game, prof.ID); err != nil {
+			errs = append(errs, err)
+			continue
+		}
 		var placed string
 		_, err := s.updateLocked(game, prof.ID, func(p *Profile, dir string) (err error) {
 			var disabled []string
