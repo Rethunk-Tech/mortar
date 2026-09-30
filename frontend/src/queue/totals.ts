@@ -62,3 +62,16 @@ export const downloadedKb = (i: Item) => (i.sizeKb * i.progress) / PERCENT
 // The wall-clock time of a Unix timestamp, as "14:05".
 export const clockTime = (unix: number) =>
   new Date(unix * MS_PER_SECOND).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+
+// The name of the profile an item installs into: '' when the open game's list no longer has it, null when the
+// list loaded is another game's and cannot tell.
+export function profileOf(
+  item: Pick<Item, 'game' | 'profileId'>,
+  game: string | undefined,
+  profiles: readonly { id: string; name: string }[],
+): string | null {
+  if (item.game !== game) {
+    return null
+  }
+  return profiles.find((p) => p.id === item.profileId)?.name ?? ''
+}

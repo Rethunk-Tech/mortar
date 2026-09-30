@@ -15,6 +15,7 @@ import {
   Skip,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { LetterTile } from '../mods/parts.tsx'
+import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useQueue } from './store.ts'
 import {
@@ -23,6 +24,7 @@ import {
   isActive,
   megabytes,
   megabytesPerSecond,
+  profileOf,
   totals,
 } from './totals.ts'
 
@@ -46,6 +48,39 @@ const tile = (i: Item) => ({
   name: i.name || i.repo || String(i.modId),
   picture: '',
 })
+
+// Runs one backend action at a time for a card, so a double click does not send it twice.
+function usePending() {
+  const [pending, setPending] = useState(false)
+  const run = (action: () => Promise<unknown>) => {
+    if (pending) {
+      return
+    }
+    setPending(true)
+    action()
+      .catch(reportUnexpected)
+      .finally(() => setPending(false))
+  }
+  return [pending, run] as const
+}
+
+// The item's name with the profile it installs into beside it.
+function Title({ item, size }: { item: Item; size: number }) {
+  const { t } = useLingui()
+  const profile = useProfiles((s) => profileOf(item, s.game?.id, s.profiles))
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, minWidth: 0 }}>
+      <Typography noWrap={true} sx={{ fontSize: size, fontWeight: 600 }}>
+        {item.name || item.fileName}
+      </Typography>
+      {profile === null ? null : (
+        <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary', flexShrink: 0 }}>
+          {profile ? t`into ${profile}` : t`into a deleted profile`}
+        </Typography>
+      )}
+    </Box>
+  )
+}
 
 function SectionTitle({
   color,
@@ -90,9 +125,7 @@ function Row({
     <Box sx={{ ...ROW, ...sx }}>
       <LetterTile mod={tile(item)} size={36} />
       <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 600 }}>
-          {item.name || item.fileName}
-        </Typography>
+        <Title item={item} size={14} />
         {sub}
       </Box>
       {actions}
@@ -142,9 +175,7 @@ function Callout({
           >
             {label}
           </Typography>
-          <Typography noWrap={true} sx={{ fontSize: 16, fontWeight: 600 }}>
-            {item.name || item.fileName}
-          </Typography>
+          <Title item={item} size={16} />
         </Box>
         {actions}
       </Box>
@@ -156,6 +187,7 @@ function Callout({
 
 function Click({ item }: { item: Item }) {
   const { t } = useLingui()
+  const [pending, run] = usePending()
   return (
     <Callout
       item={item}
@@ -164,7 +196,8 @@ function Click({ item }: { item: Item }) {
       actions={
         <Button
           variant="contained"
-          onClick={() => OpenPage(item.id).catch(reportUnexpected)}
+          disabled={pending}
+          onClick={() => run(() => OpenPage(item.id))}
           sx={{ whiteSpace: 'nowrap' }}
         >
           {t`Open download page`}
@@ -190,6 +223,7 @@ function SkipButton({ item }: { item: Item }) {
 
 function Choice({ item }: { item: Item }) {
   const { t } = useLingui()
+  const [pending, run] = usePending()
   return (
     <Callout
       item={item}
@@ -201,7 +235,8 @@ function Choice({ item }: { item: Item }) {
         <Button
           key={asset}
           variant="outlined"
-          onClick={() => Choose(item.id, asset).catch(reportUnexpected)}
+          disabled={pending}
+          onClick={() => run(() => Choose(item.id, asset))}
           sx={{ justifyContent: 'flex-start', textTransform: 'none', overflowWrap: 'anywhere' }}
         >
           {asset}
@@ -213,6 +248,7 @@ function Choice({ item }: { item: Item }) {
 
 function Confirmation({ item }: { item: Item }) {
   const { t } = useLingui()
+  const [pending, run] = usePending()
   return (
     <Callout
       item={item}
@@ -223,7 +259,8 @@ function Confirmation({ item }: { item: Item }) {
           <SkipButton item={item} />
           <Button
             variant="contained"
-            onClick={() => Confirm(item.id).catch(reportUnexpected)}
+            disabled={pending}
+            onClick={() => run(() => Confirm(item.id))}
             sx={{ whiteSpace: 'nowrap' }}
           >
             {t`Install anyway`}
@@ -302,9 +339,7 @@ function Active({ item }: { item: Item }) {
       <LetterTile mod={tile(item)} size={36} />
       <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '5px' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
-          <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 600 }}>
-            {item.name || item.fileName}
-          </Typography>
+          <Title item={item} size={14} />
           <Typography sx={{ ...detail, flexShrink: 0 }}>{text}</Typography>
         </Box>
         <Box sx={{ height: 4, borderRadius: '2px', bgcolor: 'rgba(255,255,255,0.1)' }}>
@@ -456,11 +491,14 @@ function Body({ items }: { items: Item[] }) {
           line={t`Done (${done.length}): ${names(done)}`}
         >
           {done.map((i) => (
-            <Typography key={i.id} sx={{ px: '10px', fontSize: 13 }}>
-              {i.unverified
-                ? t`${i.name || i.fileName} (could not verify its source)`
-                : i.name || i.fileName}
-            </Typography>
+            <Box key={i.id} sx={{ px: '10px' }}>
+              <Title item={i} size={13} />
+              {i.unverified ? (
+                <Typography sx={{ ...detail, color: 'text.secondary' }}>
+                  {t`Could not verify its source`}
+                </Typography>
+              ) : null}
+            </Box>
           ))}
         </Fold>
       ) : null}
