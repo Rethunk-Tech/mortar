@@ -7,7 +7,7 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#: src/settings/sections/Appearance.tsx:18
+#: src/settings/sections/Appearance.tsx:22
 msgid "Sand"
 msgstr "Sand"
 
@@ -15,15 +15,15 @@ msgstr "Sand"
 msgid "Dismiss"
 msgstr "Dismiss"
 
-#: src/settings/sections/Appearance.tsx:113
+#: src/settings/sections/Appearance.tsx:117
 msgid "Translucent window"
 msgstr "Translucent window"
 
-#: src/settings/sections/Appearance.tsx:20
+#: src/settings/sections/Appearance.tsx:24
 msgid "Copper"
 msgstr "Copper"
 
-#: src/settings/sections/Appearance.tsx:116
+#: src/settings/sections/Appearance.tsx:120
 msgid "Takes effect when Mortar restarts"
 msgstr "Takes effect when Mortar restarts"
 
@@ -35,15 +35,15 @@ msgstr "Appearance"
 msgid "Stardew Valley is ConcernedApe's. Game art shown in Mortar is read from your own Steam install. Nexus Mods and GitHub content belongs to its authors."
 msgstr "Stardew Valley is ConcernedApe's. Game art shown in Mortar is read from your own Steam install. Nexus Mods and GitHub content belongs to its authors."
 
-#: src/settings/sections/Appearance.tsx:21
+#: src/settings/sections/Appearance.tsx:25
 msgid "Sky"
 msgstr "Sky"
 
-#: src/settings/sections/Appearance.tsx:89
+#: src/settings/sections/Appearance.tsx:93
 msgid "3 updates"
 msgstr "3 updates"
 
-#: src/settings/sections/Appearance.tsx:19
+#: src/settings/sections/Appearance.tsx:23
 msgid "Stardew green"
 msgstr "Stardew green"
 
@@ -56,7 +56,7 @@ msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschil
 msgid "Mortar"
 msgstr "Mortar"
 
-#: src/settings/sections/Appearance.tsx:100
+#: src/settings/sections/Appearance.tsx:104
 msgid "Changes apply right away"
 msgstr "Changes apply right away"
 
@@ -68,20 +68,20 @@ msgstr "Notifications"
 msgid "Not affiliated"
 msgstr "Not affiliated"
 
-#: src/settings/sections/Appearance.tsx:20
+#: src/settings/sections/Appearance.tsx:24
 msgid "Warm and bold"
 msgstr "Warm and bold"
 
-#: src/settings/sections/Appearance.tsx:94
+#: src/settings/sections/Appearance.tsx:98
 #: src/shell/TitleBar.tsx:98
 msgid "Stardew Valley"
 msgstr "Stardew Valley"
 
-#: src/settings/sections/Appearance.tsx:18
+#: src/settings/sections/Appearance.tsx:22
 msgid "Default"
 msgstr "Default"
 
-#: src/settings/sections/Appearance.tsx:19
+#: src/settings/sections/Appearance.tsx:23
 msgid "Moss"
 msgstr "Moss"
 
@@ -101,7 +101,7 @@ msgstr "Game Select"
 msgid "Built on"
 msgstr "Built on"
 
-#: src/settings/sections/Appearance.tsx:87
+#: src/settings/sections/Appearance.tsx:91
 msgid "Play"
 msgstr "Play"
 
@@ -113,7 +113,7 @@ msgstr "Settings"
 msgid "Minimise"
 msgstr "Minimise"
 
-#: src/settings/sections/Appearance.tsx:21
+#: src/settings/sections/Appearance.tsx:25
 msgid "Cool and calm"
 msgstr "Cool and calm"
 
@@ -121,8 +121,8 @@ msgstr "Cool and calm"
 msgid "About"
 msgstr "About"
 
-#: src/settings/sections/Appearance.tsx:26
 #: src/settings/sections/Appearance.tsx:30
+#: src/settings/sections/Appearance.tsx:34
 msgid "Accent colour"
 msgstr "Accent colour"
 
@@ -133,6 +133,10 @@ msgstr "Settings sections"
 #: src/shell/TitleBar.tsx:105
 msgid "Restore"
 msgstr "Restore"
+
+#: src/settings/sections/Appearance.tsx:19
+msgid "Couldn't save that setting"
+msgstr "Couldn't save that setting"
 
 #: src/shell/TitleBar.tsx:108
 msgid "Close"

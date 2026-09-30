@@ -5,15 +5,19 @@ import {
   SetTranslucent,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { type AccentName, accents } from '../../theme/accents.ts'
+import { useToasts } from '../../toasts/store.ts'
 import { useSettings } from '../store.ts'
 import { isAccent } from '../theme.ts'
-
-const ignore = () => undefined
 
 export function Appearance() {
   const { t } = useLingui()
   const accent = useSettings((s) => s.accent)
   const translucent = useSettings((s) => s.translucent)
+  const push = useToasts((s) => s.push)
+  const reportFailure = (err: unknown) => {
+    const body = typeof err === 'string' ? err : err instanceof Error ? err.message : undefined
+    push({ kind: 'error', title: t`Couldn't save that setting`, ...(body ? { body } : {}) })
+  }
   const cards: { name: AccentName; label: string; note: string }[] = [
     { name: 'sand', label: t`Sand`, note: t`Default` },
     { name: 'moss', label: t`Moss`, note: t`Stardew green` },
@@ -38,7 +42,7 @@ export function Appearance() {
               role="radio"
               aria-checked={checked}
               onClick={() => {
-                SetAccent(card.name).catch(ignore)
+                SetAccent(card.name).catch(reportFailure)
               }}
               sx={{
                 display: 'flex',
@@ -106,7 +110,7 @@ export function Appearance() {
             <Switch
               checked={translucent}
               onChange={(_, on) => {
-                SetTranslucent(on).catch(ignore)
+                SetTranslucent(on).catch(reportFailure)
               }}
             />
           }
