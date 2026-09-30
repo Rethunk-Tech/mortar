@@ -7,6 +7,7 @@ import { About } from './sections/About.tsx'
 import { Appearance } from './sections/Appearance.tsx'
 import { Data } from './sections/Data.tsx'
 import { NexusMods } from './sections/NexusMods.tsx'
+import { Shortcuts } from './sections/Shortcuts.tsx'
 import { Updates } from './sections/Updates.tsx'
 import { shouldLeavePageOnEscape } from './shouldLeavePageOnEscape.ts'
 
@@ -30,6 +31,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
     { id: 'data', label: t`Data` },
     { id: 'nexus', label: t`Nexus Mods` },
     { id: 'updates', label: t`Updates` },
+    { id: 'shortcuts', label: t`Shortcuts` },
     { id: 'about', label: t`About` },
   ]
   const body: Record<SettingsSection, ReactNode> = {
@@ -37,6 +39,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
     data: <Data />,
     nexus: <NexusMods />,
     updates: <Updates />,
+    shortcuts: <Shortcuts />,
     about: <About />,
   }
   const current = sections.find((s) => s.id === section)

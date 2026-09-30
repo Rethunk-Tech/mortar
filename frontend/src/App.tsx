@@ -13,6 +13,8 @@ import { ArrivalDialog } from './nxm/ArrivalDialog.tsx'
 import { ProfilesPage } from './profiles/ProfilesPage.tsx'
 import { GameSettingsPage } from './settings/GameSettingsPage.tsx'
 import { SettingsPage } from './settings/SettingsPage.tsx'
+import { useStartupChecks } from './settings/startupChecks.ts'
+import { useAppShortcuts } from './settings/useShortcuts.ts'
 import { ImportDialog } from './share/ImportDialog.tsx'
 import { ShareDialog } from './share/ShareDialog.tsx'
 import { AppFrame } from './shell/AppFrame.tsx'
@@ -21,6 +23,8 @@ import { useToasts } from './toasts/store.ts'
 import { ToastHost } from './toasts/ToastHost.tsx'
 
 export function App() {
+  useAppShortcuts()
+  useStartupChecks()
   const { t } = useLingui()
   const route = useNav((s) => s.route)
   const game = overlayGame(
@@ -48,16 +52,6 @@ export function App() {
       )
       .finally(() => setReady(true))
   }, [t])
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === ',') {
-        e.preventDefault()
-        useNav.getState().openSettings()
-      }
-    }
-    globalThis.addEventListener('keydown', onKey)
-    return () => globalThis.removeEventListener('keydown', onKey)
-  }, [])
   return (
     <>
       <AppFrame>

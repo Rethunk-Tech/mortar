@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from 'react'
 import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
 import { useInstall } from '../install/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { onFilterFocus } from './filterFocus.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -123,6 +124,7 @@ export function Toolbar({
       inputRef.current?.focus()
     }
   }, [expanded])
+  useEffect(() => onFilterFocus(() => setExpanded(true)), [])
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1.25, flexShrink: 0 }}>
       <Box
@@ -167,7 +169,7 @@ export function Toolbar({
           placeholder={placeholder}
           inputRef={inputRef}
           slotProps={{
-            htmlInput: { 'aria-label': t`Filter mods` },
+            htmlInput: { id: 'mods-filter', 'aria-label': t`Filter mods` },
             input: {
               startAdornment: (
                 <InputAdornment position="start">
