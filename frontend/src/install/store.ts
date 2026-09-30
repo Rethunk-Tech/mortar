@@ -13,6 +13,7 @@ import { isLocked } from '../mods/locked.ts'
 import { useMods } from '../mods/store.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { changeStillLatest } from '../toasts/history.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
@@ -85,6 +86,13 @@ export const useInstall = create<{
                 action: {
                   label: i18n._(msg`Undo`),
                   run: () => undoArchiveInstall(game.id, profile.id, entry.key, updated),
+                  profileId: profile.id,
+                  live: () =>
+                    changeStillLatest(
+                      useProfiles.getState().profiles.find((p) => p.id === profile.id),
+                      entry.key,
+                      (entry.mods ?? []).map((m) => m.uniqueId),
+                    ),
                 },
               }
             : {}),

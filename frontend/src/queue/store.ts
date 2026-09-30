@@ -22,6 +22,7 @@ import { isLocked } from '../mods/locked.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { follow } from '../shell/follow.ts'
+import { changeStillLatest, type HistoryActionState } from '../toasts/history.ts'
 import { useToasts } from '../toasts/store.ts'
 
 // The binding types a Go slice as nullable; the store keeps it a list.
@@ -32,6 +33,28 @@ const snapshot = (s: State): Snapshot => ({ ...s, items: s.items ?? [] })
 const empty: Snapshot = { items: [], paused: false, limitedUntil: 0 }
 
 const show = () => useQueue.getState().setOpen(true)
+
+function showLive(): HistoryActionState {
+  const {
+    state: { items },
+  } = useQueue.getState()
+  if (
+    items.some(
+      (i) => i.state === 'needs-choice' || i.state === 'needs-confirm' || i.state === 'failed',
+    )
+  ) {
+    return { disabled: false }
+  }
+  return { disabled: true, reason: i18n._(msg`Nothing in the queue needs a decision.`) }
+}
+
+function retryLive(id: string): HistoryActionState {
+  const item = useQueue.getState().state.items.find((i) => i.id === id)
+  if (item?.state !== 'failed') {
+    return { disabled: true, reason: i18n._(msg`That download is no longer waiting to retry.`) }
+  }
+  return { disabled: false }
+}
 
 const shouldRollBack = (item: Pick<Item, 'kind'>) => item.kind === 'update'
 
@@ -120,6 +143,12 @@ async function announce(prev: Snapshot, next: Snapshot) {
                 label: i18n._(msg`Undo`),
                 run: () => undoInstall(item, extra.entry),
                 profileId: extra.profileId,
+                live: () =>
+                  changeStillLatest(
+                    useProfiles.getState().profiles.find((p) => p.id === extra.profileId),
+                    extra.entry.key,
+                    (extra.entry.mods ?? []).map((m) => m.uniqueId),
+                  ),
               },
             }
           : {}),
@@ -139,7 +168,7 @@ async function announce(prev: Snapshot, next: Snapshot) {
       title: i18n._(
         msg`${plural(waiting.length, { one: '# download needs your decision', other: '# downloads need your decision' })}`,
       ),
-      action: { label: i18n._(msg`Show`), run: show },
+      action: { label: i18n._(msg`Show`), run: show, live: showLive },
     })
   }
   const nexusFail = singleNexusFailure(failed)
@@ -151,6 +180,7 @@ async function announce(prev: Snapshot, next: Snapshot) {
       action: {
         label: i18n._(msg`Retry now`),
         run: () => Retry(nexusFail.id),
+        live: () => retryLive(nexusFail.id),
       },
     })
   } else if (failed.length > 0) {
@@ -161,7 +191,7 @@ async function announce(prev: Snapshot, next: Snapshot) {
         msg`${plural(failed.length, { one: '# download failed', other: '# downloads failed' })}`,
       ),
       body: firstFail?.error ?? '',
-      action: { label: i18n._(msg`Show`), run: show },
+      action: { label: i18n._(msg`Show`), run: show, live: showLive },
     })
   }
 }

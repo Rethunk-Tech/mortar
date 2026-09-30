@@ -72,7 +72,14 @@ export async function download(reqs: Want[], showQueue = false): Promise<boolean
       title: i18n._(
         msg`${plural(reqs.length, { one: '# download added', other: '# downloads added' })}`,
       ),
-      action: { label: i18n._(msg`Show`), run: () => useQueue.getState().setOpen(true) },
+      action: {
+        label: i18n._(msg`Show`),
+        run: () => useQueue.getState().setOpen(true),
+        live: () =>
+          useQueue.getState().state.items.length === 0
+            ? { disabled: true, reason: i18n._(msg`The download queue is empty.`) }
+            : { disabled: false },
+      },
     })
   }
   return true

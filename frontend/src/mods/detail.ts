@@ -13,6 +13,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { changeStillLatest } from '../toasts/history.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { modId, reshow } from './lookup.ts'
@@ -118,6 +119,13 @@ export const useDetail = create<{
       action: {
         label: i18n._(msg`Redo update`),
         run: () => redoUpdate(target.game, target.id, key),
+        profileId: target.id,
+        live: () =>
+          changeStillLatest(
+            useProfiles.getState().profiles.find((p) => p.id === target.id),
+            key,
+            [mod.uniqueId],
+          ),
       },
     })
     set({ open: false, extras: null })
