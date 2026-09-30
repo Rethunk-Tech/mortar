@@ -8,7 +8,7 @@ Items marked **Measure** need a throwaway test first; those tests run outside th
 
 - **Guided queue for free accounts:** an import or a profile's missing files run a queue. Mortar opens each missing file's download page in turn, `https://www.nexusmods.com/stardewvalley/mods/<id>?tab=files&file_id=<file id>&nmm=1`, the URL Vortex opens for free accounts (`Nexus-Mods/Vortex` `src/renderer/src/extensions/nexus_integration/eventHandlers.ts`), takes the `nxm://` link from the user's click, downloads and installs it, and opens the next. An expired key reopens its page. Premium accounts download without clicks (facts: [architecture.md](architecture.md#nexus-mods)).
 - **Failure:** Nexus unreachable or erroring pauses the queue and retries with backoff; a reached rate limit waits for the reset time and shows it.
-- **`nxm://` arrival:** an `nxm://` link is taken only for game domain `stardewvalley` and the signed-in `user_id`; it completes a waiting queue item, and an unexpected one asks which profile it is for first.
+- **`nxm://` routing:** a valid link (rules in [architecture.md](architecture.md#trust-boundaries)) whose mod and file match a waiting queue item completes that item instead of showing the arrival card.
 - Screen: [gui-design.md](gui-design.md#download-queue).
 
 ## GitHub sources (milestone 4)
