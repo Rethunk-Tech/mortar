@@ -13,7 +13,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { DuplicateDialog } from './DuplicateDialog.tsx'
 import { useDetail } from './detail.ts'
 import { LockedNote } from './LockedNote.tsx'
-import { modId, sourceKind } from './lookup.ts'
+import { modId } from './lookup.ts'
 import { ModDetail } from './ModDetail.tsx'
 import { ModList } from './ModList.tsx'
 import { ModContextMenu, ModMenu } from './ModMenu.tsx'
@@ -28,14 +28,13 @@ import { useUpdates } from './updates.ts'
 
 const OFF_OPACITY = 0.6
 
-function ModCard({ mod: m, profile }: { mod: Mod; profile: Profile }) {
+function ModCard({ mod: m }: { mod: Mod }) {
   const { t } = useLingui()
   const openDetail = useDetail((s) => s.show)
   const selectedId = useDetail((s) => s.detailId)
-  const removable = sourceKind(profile, m) !== 'smapi'
   return (
     <Card
-      {...contextMenuProps(m, removable)}
+      {...contextMenuProps(m)}
       sx={{
         height: 64,
         pl: 1,
@@ -87,12 +86,12 @@ function ModCard({ mod: m, profile }: { mod: Mod; profile: Profile }) {
       </ButtonBase>
       <UpdateBadge mod={m} />
       <ProblemBadge mod={m} />
-      <ModMenu mod={m} removable={removable} />
+      <ModMenu mod={m} />
     </Card>
   )
 }
 
-function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
+function Cards({ shown }: { shown: Mod[] }) {
   return (
     <Box
       sx={{
@@ -107,7 +106,7 @@ function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
       }}
     >
       {shown.map((m) => (
-        <ModCard key={modId(m)} mod={m} profile={profile} />
+        <ModCard key={modId(m)} mod={m} />
       ))}
     </Box>
   )
@@ -153,11 +152,7 @@ function ModsBody({
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto' }}>
-      {view === 'list' ? (
-        <ModList profile={profile} mods={shown} />
-      ) : (
-        <Cards shown={shown} profile={profile} />
-      )}
+      {view === 'list' ? <ModList profile={profile} mods={shown} /> : <Cards shown={shown} />}
       <ModSidebar profile={profile} />
     </Box>
   )

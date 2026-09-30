@@ -62,7 +62,7 @@ function ModRow({ mod: m, striped, profile }: { mod: Mod; striped: boolean; prof
       selected={modId(m) === selectedId}
       onClick={() => show(m)}
       tabIndex={0}
-      {...contextMenuProps(m, sourceKind(profile, m) !== 'smapi')}
+      {...contextMenuProps(m)}
       sx={{
         ...rowSx,
         height: 36,
@@ -86,7 +86,6 @@ function ModRow({ mod: m, striped, profile }: { mod: Mod; striped: boolean; prof
       <Cell sx={{ ...ellipsis, color: 'text.secondary', ...hideCompact }}>{m.author}</Cell>
       <Cell sx={{ color: 'text.secondary', ...hideCompact }}>
         {kindLabel(sourceKind(profile, m), {
-          smapi: t`SMAPI`,
           archive: t`Archive`,
           nexus: t`Nexus Mods`,
           github: t`GitHub`,

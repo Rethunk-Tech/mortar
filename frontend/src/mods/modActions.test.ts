@@ -1,8 +1,8 @@
 import { expect, test } from 'bun:test'
 import { hostOf, modActions } from './modActions.ts'
 
-test('a mod with a page and a removable folder gets every action', () => {
-  expect(modActions({ enabled: true, host: 'nexus', removable: true })).toEqual([
+test('a mod with a page gets every action', () => {
+  expect(modActions({ enabled: true, host: 'nexus' })).toEqual([
     'toggle',
     'details',
     'page',
@@ -11,12 +11,8 @@ test('a mod with a page and a removable folder gets every action', () => {
   ])
 })
 
-test('no page and not removable drops those actions', () => {
-  expect(modActions({ enabled: false, host: '', removable: false })).toEqual([
-    'toggle',
-    'details',
-    'files',
-  ])
+test('no page drops the page action', () => {
+  expect(modActions({ enabled: false, host: '' })).toEqual(['toggle', 'details', 'files', 'remove'])
 })
 
 test('the page host follows the URL', () => {

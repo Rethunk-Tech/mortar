@@ -146,7 +146,6 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   const kind = sourceKind(profile, mod)
   const nexusId = nexusIdOf(profile, mod)
   const source = kindLabel(kind, {
-    smapi: t`SMAPI`,
     archive: t`Archive`,
     nexus: t`Nexus Mods`,
     github: t`GitHub`,
@@ -190,12 +189,12 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: kind === 'smapi' ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
           gap: 1,
         }}
       >
         <ShowFilesButton mod={mod} />
-        {kind === 'smapi' ? null : <RemoveButton mod={mod} />}
+        <RemoveButton mod={mod} />
       </Box>
     </Box>
   )

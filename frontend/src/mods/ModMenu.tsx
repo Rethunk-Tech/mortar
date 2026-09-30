@@ -13,15 +13,7 @@ import { useLocked } from './useLocked.ts'
 
 const ICON_SIZE = 16
 
-function ModMenuItems({
-  mod,
-  removable,
-  close,
-}: {
-  mod: Mod
-  removable: boolean
-  close: () => void
-}) {
+function ModMenuItems({ mod, close }: { mod: Mod; close: () => void }) {
   const { t } = useLingui()
   const showFiles = useMods((s) => s.showFiles)
   const askRemove = useMods((s) => s.askRemove)
@@ -29,7 +21,7 @@ function ModMenuItems({
   const show = useDetail((s) => s.show)
   const setOpen = useDetail((s) => s.setOpen)
   const page = useMods((s) => s.pages[modId(mod)])
-  const state = useMenuState(mod, removable)
+  const state = useMenuState(mod)
   const locked = useLocked()
   const items: Record<ModAction, { label: string; icon: ReactNode; run: () => void }> = {
     toggle: {
@@ -84,12 +76,10 @@ function ModMenuItems({
 
 function ModActionMenu({
   mod,
-  removable,
   anchor,
   onClose,
 }: {
   mod: Mod
-  removable: boolean
   anchor: MenuAnchor
   onClose: () => void
 }) {
@@ -102,13 +92,13 @@ function ModActionMenu({
       anchorEl={'el' in anchor ? anchor.el : undefined}
       {...position}
     >
-      <ModMenuItems mod={mod} removable={removable} close={onClose} />
+      <ModMenuItems mod={mod} close={onClose} />
     </Menu>
   )
 }
 
 // The ⋯ button of a card.
-export function ModMenu({ mod, removable }: { mod: Mod; removable: boolean }) {
+export function ModMenu({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   return (
@@ -124,12 +114,7 @@ export function ModMenu({ mod, removable }: { mod: Mod; removable: boolean }) {
         <Ellipsis size={18} />
       </IconButton>
       {anchor ? (
-        <ModActionMenu
-          mod={mod}
-          removable={removable}
-          anchor={{ el: anchor }}
-          onClose={() => setAnchor(null)}
-        />
+        <ModActionMenu mod={mod} anchor={{ el: anchor }} onClose={() => setAnchor(null)} />
       ) : null}
     </>
   )

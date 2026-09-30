@@ -26,11 +26,9 @@ export const nexusIdOf = (profile: Profile, mod: Mod) => {
 
 export const kindLabel = (
   kind: string,
-  labels: { smapi: string; archive: string; nexus: string; github: string },
+  labels: { archive: string; nexus: string; github: string },
 ) => {
   switch (kind) {
-    case 'smapi':
-      return labels.smapi
     case 'local':
       return labels.archive
     case 'nexus':

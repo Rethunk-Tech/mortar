@@ -4,7 +4,6 @@ export type ModAction = 'toggle' | 'details' | 'page' | 'files' | 'remove'
 export interface MenuState {
   enabled: boolean
   host: PageHost
-  removable: boolean
 }
 
 // Mod pages are on Nexus or GitHub only.
@@ -22,8 +21,6 @@ export function modActions(s: MenuState): ModAction[] {
     out.push('page')
   }
   out.push('files')
-  if (s.removable) {
-    out.push('remove')
-  }
+  out.push('remove')
   return out
 }
