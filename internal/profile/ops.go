@@ -34,6 +34,7 @@ type Mod struct {
 	Picture      string   `json:"picture"`
 	Endorsements int      `json:"endorsements"`
 	Needs        []string `json:"needs,omitempty"`
+	Optional     []string `json:"optional,omitempty"`
 }
 
 // EnableRef names one mod to switch, matching SetModEnabled's key and UniqueID.
@@ -140,12 +141,16 @@ func entryMods(found []manifest.Mod) []EntryMod {
 	out := make([]EntryMod, len(found))
 	for i, m := range found {
 		needs := make([]string, 0, len(m.Dependencies))
+		optional := make([]string, 0)
 		for _, d := range m.Dependencies {
 			if d.UniqueID != "" {
 				needs = append(needs, d.UniqueID)
+				if !d.Required {
+					optional = append(optional, d.UniqueID)
+				}
 			}
 		}
-		out[i] = EntryMod{UniqueID: m.UniqueID, Version: m.Version, Name: m.Name, Author: m.Author, Folder: m.Folder, Needs: needs}
+		out[i] = EntryMod{UniqueID: m.UniqueID, Version: m.Version, Name: m.Name, Author: m.Author, Folder: m.Folder, Needs: needs, Optional: optional}
 	}
 	return out
 }
@@ -566,7 +571,7 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 			out = append(out, Mod{
 				Key: e.Key, UniqueID: m.UniqueID, Name: m.Name, Author: m.Author, Version: m.Version,
 				Enabled: !isDisabled(e, m), Siblings: sib,
-				Picture: e.Source.Picture, Endorsements: e.Source.EndorsementCount, Needs: m.Needs,
+				Picture: e.Source.Picture, Endorsements: e.Source.EndorsementCount, Needs: m.Needs, Optional: m.Optional,
 			})
 		}
 	}

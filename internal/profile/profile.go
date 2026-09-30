@@ -63,6 +63,8 @@ type EntryMod struct {
 	Author   string   `json:"author"`
 	Folder   string   `json:"folder"`
 	Needs    []string `json:"needs,omitempty"`
+	// Optional is the UniqueIDs in Needs whose manifest listed IsRequired as false.
+	Optional []string `json:"optional,omitempty"`
 }
 
 // Entry is one mod archive in a profile. Disabled lists the UniqueIDs switched off.
@@ -78,6 +80,10 @@ type Entry struct {
 	Pinned bool `json:"pinned,omitempty"`
 	// SkipVersion is one newer version to hide; a later version is offered again.
 	SkipVersion string `json:"skipVersion,omitempty"`
+	// Note is a per-entry remark in this profile, at most MaxEntryNote characters.
+	Note string `json:"note,omitempty"`
+	// Tags are per-entry labels in this profile, at most MaxEntryTags of MaxEntryTag characters each.
+	Tags []string `json:"tags,omitempty"`
 }
 
 // Profile is the on-disk shape of profile.json.
@@ -102,6 +108,8 @@ type Profile struct {
 	Icon string `json:"icon,omitempty"`
 	// Description is a short blurb shown on the Profiles list and in the hero; at most MaxDescription runes.
 	Description string `json:"description,omitempty"`
+	// LaunchOptions is extra SMAPI arguments for this profile, as the user typed them.
+	LaunchOptions string `json:"launchOptions,omitempty"`
 }
 
 // Store reads and writes profiles under one root folder.

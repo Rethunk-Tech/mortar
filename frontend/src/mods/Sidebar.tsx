@@ -25,6 +25,8 @@ import {
   sourceKind,
   updateFor,
 } from './lookup.ts'
+import { ModDependencyTree } from './ModDependencyTree.tsx'
+import { ModNoteTags } from './ModNoteTags.tsx'
 import { useLookedSnapshot, useNexusEntry, useNexusFresh } from './nexusDetails.ts'
 import { formatCount, formatDate, isNewer } from './nexusFormat.ts'
 import { accent, heading } from './paper.ts'
@@ -253,7 +255,9 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       {nexusId ? <NexusFields key={nexusId} mod={mod} nexusId={nexusId} /> : null}
       <UpdateBanner mod={mod} />
       <ProblemLine mod={mod} />
+      <ModDependencyTree mod={mod} />
       <AlsoInProfiles mod={mod} profile={profile} />
+      <ModNoteTags profile={profile} mod={mod} />
       {others.length > 0 ? (
         <Box>
           <Typography sx={heading}>{t`In the same download`}</Typography>
