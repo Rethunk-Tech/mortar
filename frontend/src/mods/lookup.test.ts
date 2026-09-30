@@ -45,7 +45,15 @@ test('problems and updates are counted per finding', () => {
 })
 
 test('an update belongs to one copy of a mod', () => {
-  const update = { key: 'a-1', uniqueId: 'Me.A', name: 'A', installed: '1', version: '2', url: '' }
+  const update = {
+    key: 'a-1',
+    uniqueId: 'Me.A',
+    name: 'A',
+    installed: '1',
+    version: '2',
+    url: '',
+    nexusId: 0,
+  }
   const result = { updates: [update], unknown: false }
   expect(updateCount(result)).toBe(1)
   expect(updateFor(result, { key: 'a-1', uniqueId: 'me.a' })).toBe(update)

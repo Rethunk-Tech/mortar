@@ -73,7 +73,11 @@ function ModRow({ mod: m, striped, profile }: { mod: Mod; striped: boolean; prof
       <Cell sx={{ ...ellipsis, fontWeight: 500 }}>{m.name}</Cell>
       <Cell sx={{ ...ellipsis, color: 'text.secondary', ...hideCompact }}>{m.author}</Cell>
       <Cell sx={{ color: 'text.secondary', ...hideCompact }}>
-        {kindLabel(sourceKind(profile, m), t`SMAPI`, t`Archive`)}
+        {kindLabel(sourceKind(profile, m), {
+          smapi: t`SMAPI`,
+          archive: t`Archive`,
+          nexus: t`Nexus Mods`,
+        })}
       </Cell>
       <Cell
         sx={{

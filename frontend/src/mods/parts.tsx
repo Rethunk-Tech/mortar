@@ -62,13 +62,16 @@ function hash(s: string): number {
   return h
 }
 
+// The mod's Nexus picture when it has one that loads, else its first letter on a colour from its UniqueID.
 export function LetterTile({
   mod,
   size = DEFAULT_TILE_SIZE,
 }: {
-  mod: Pick<Mod, 'uniqueId' | 'name'>
+  mod: Pick<Mod, 'uniqueId' | 'name'> & { picture?: string }
   size?: number
 }) {
+  const [failed, setFailed] = useState<string | null>(null)
+  const picture = mod.picture && failed !== mod.picture ? mod.picture : ''
   return (
     <Box
       aria-hidden={true}
@@ -80,12 +83,23 @@ export function LetterTile({
         borderRadius: size < SMALL_TILE ? '4px' : '6px',
         display: 'grid',
         placeItems: 'center',
+        overflow: 'hidden',
         fontWeight: 700,
         fontSize: size * TILE_FONT_RATIO,
         bgcolor: `hsl(${hash(mod.uniqueId.toLowerCase()) % HUE_DEGREES} 35% 38% / 0.85)`,
       }}
     >
-      {(Array.from(mod.name)[0] ?? '?').toUpperCase()}
+      {picture ? (
+        <Box
+          component="img"
+          alt=""
+          src={picture}
+          onError={() => setFailed(picture)}
+          sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      ) : (
+        (Array.from(mod.name)[0] ?? '?').toUpperCase()
+      )}
     </Box>
   )
 }

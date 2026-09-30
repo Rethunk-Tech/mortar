@@ -15,6 +15,9 @@ import { Browser } from '@wailsio/runtime'
 import { ArrowRight, ArrowUp, ExternalLink, ShieldCheck, X } from 'lucide-react'
 import type { Update } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { download, type Want } from '../queue/actions.ts'
+import { useQueue } from '../queue/store.ts'
+import { pendingFor } from '../queue/totals.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { modId, sameId, siblingsOf, updateCount } from './lookup.ts'
 import { accent, paper } from './paper.ts'
@@ -49,10 +52,19 @@ function Version({ children, isNew }: { children: string; isNew?: boolean }) {
   )
 }
 
-function Row({ update }: { update: Update }) {
+const updateWant = (u: Update): Want => ({
+  kind: 'update',
+  modId: u.nexusId,
+  name: u.name,
+  version: u.version,
+  currentKey: u.key,
+})
+
+function Row({ update, profileId }: { update: Update; profileId: string }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const mod = mods.find((m) => m.key === update.key && sameId(m.uniqueId, update.uniqueId))
+  const queued = useQueue((s) => pendingFor(s.state.items, profileId, update.nexusId))
   const notes = [
     ...(mod ? siblingsOf(mods, mod).map((o) => t`Also updates ${o.name} (same download)`) : []),
     ...(mod && !mod.enabled ? [t`Switched off in this profile`] : []),
@@ -94,18 +106,28 @@ function Row({ update }: { update: Update }) {
         <ArrowRight size={14} aria-hidden={true} />
         <Version isNew={true}>{update.version}</Version>
       </Box>
-      {update.url ? (
-        <Button
-          variant="outlined"
-          endIcon={<ExternalLink size={12} />}
-          onClick={() => Browser.OpenURL(update.url).catch(reportUnexpected)}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
-          {t`Open page`}
-        </Button>
-      ) : (
-        <span />
-      )}
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        {update.url ? (
+          <Button
+            variant="outlined"
+            endIcon={<ExternalLink size={12} />}
+            onClick={() => Browser.OpenURL(update.url).catch(reportUnexpected)}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            {t`Open page`}
+          </Button>
+        ) : null}
+        {update.nexusId > 0 ? (
+          <Button
+            variant="contained"
+            disabled={queued}
+            onClick={() => download([updateWant(update)]).catch(reportUnexpected)}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            {queued ? t`Queued` : t`Update`}
+          </Button>
+        ) : null}
+      </Box>
     </Box>
   )
 }
@@ -166,6 +188,10 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   const setReviewing = useUpdates((s) => s.setReviewing)
   const close = () => setReviewing(false)
   const list = updates?.updates ?? []
+  const items = useQueue((s) => s.state.items)
+  const wanted = list
+    .filter((u) => u.nexusId > 0 && !pendingFor(items, profile.id, u.nexusId))
+    .map(updateWant)
   return (
     <Dialog
       open={open && list.length > 0}
@@ -206,7 +232,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
       <DialogContent sx={{ p: 0, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
         <Box role="list">
           {list.map((u) => (
-            <Row key={modId(u)} update={u} />
+            <Row key={modId(u)} update={u} profileId={profile.id} />
           ))}
         </Box>
       </DialogContent>
@@ -215,11 +241,23 @@ export function UpdateReview({ profile }: { profile: Profile }) {
           <ShieldCheck size={18} aria-hidden={true} />
         </Box>
         <Typography sx={{ flex: 1, fontSize: 13, lineHeight: 1.45 }}>
-          {t`Download a mod's new archive from its page and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details.`}
+          {t`Update downloads a mod's new file from Nexus. For other pages, download the archive and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details.`}
         </Typography>
         <Button variant="outlined" onClick={close} sx={{ whiteSpace: 'nowrap' }}>
           {t`Close`}
         </Button>
+        {wanted.length > 0 ? (
+          <Button
+            variant="contained"
+            onClick={() => {
+              close()
+              download(wanted, true).catch(reportUnexpected)
+            }}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            {t`Update all`}
+          </Button>
+        ) : null}
       </DialogActions>
     </Dialog>
   )

@@ -2,6 +2,10 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
 import { TriangleAlert } from 'lucide-react'
+import { useProfiles } from '../profiles/store.ts'
+import { download } from '../queue/actions.ts'
+import { useQueue } from '../queue/store.ts'
+import { pendingFor } from '../queue/totals.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useDescribe } from './describe.ts'
 import { type Problem, problemsOf, sameId } from './lookup.ts'
@@ -16,6 +20,8 @@ function FixButton({ problem }: { problem: Problem }) {
   const mods = useMods((s) => s.mods)
   const setEnabled = useMods((s) => s.setEnabled)
   const resolve = useMods((s) => s.resolve)
+  const queue = useQueue((s) => s.state.items)
+  const profileId = useProfiles((s) => s.openId)
   const button = (label: string, onClick: () => void) => (
     <Button
       size="small"
@@ -40,8 +46,52 @@ function FixButton({ problem }: { problem: Problem }) {
     const off = mods.find((m) => !m.enabled && sameId(m.uniqueId, missing.uniqueId))
     return off ? button(t`Switch on`, () => setEnabled(off, true).catch(reportUnexpected)) : null
   }
-  const url = missing.where?.url
-  return url ? button(t`Open page`, () => Browser.OpenURL(url).catch(reportUnexpected)) : null
+  const { where } = missing
+  if (!where?.url) {
+    return null
+  }
+  const { url } = where
+  const open = (
+    <Button
+      size="small"
+      color="warning"
+      variant="outlined"
+      onClick={() => Browser.OpenURL(url).catch(reportUnexpected)}
+      sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+    >
+      {t`Open page`}
+    </Button>
+  )
+  if (where.site !== 'Nexus' || where.pageId <= 0) {
+    return open
+  }
+  const queued = pendingFor(queue, profileId, where.pageId)
+  return (
+    <>
+      {open}
+      <Button
+        size="small"
+        variant="contained"
+        color="warning"
+        disabled={queued}
+        onClick={() =>
+          download([
+            {
+              kind: 'dependency',
+              modId: where.pageId,
+              fileId: where.fileId,
+              name: where.pageName,
+              fileName: where.fileName,
+              version: where.version,
+            },
+          ]).catch(reportUnexpected)
+        }
+        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+      >
+        {queued ? t`Queued` : t`Add`}
+      </Button>
+    </>
+  )
 }
 
 export function ProblemBar() {

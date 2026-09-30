@@ -18,11 +18,20 @@ export const siblingsOf = (mods: Mod[], mod: Mod) =>
 export const sourceKind = (profile: Profile, mod: Mod) =>
   (profile.entries ?? []).find((e) => e.key === mod.key)?.source.kind ?? ''
 
-export const kindLabel = (kind: string, smapi: string, archive: string) => {
-  if (kind === 'smapi') {
-    return smapi
+export const kindLabel = (
+  kind: string,
+  labels: { smapi: string; archive: string; nexus: string },
+) => {
+  switch (kind) {
+    case 'smapi':
+      return labels.smapi
+    case 'local':
+      return labels.archive
+    case 'nexus':
+      return labels.nexus
+    default:
+      return kind
   }
-  return kind === 'local' ? archive : kind
 }
 
 // A mod is told apart by its entry too, since two entries can hold the same UniqueID.

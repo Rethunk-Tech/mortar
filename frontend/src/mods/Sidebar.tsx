@@ -85,7 +85,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   const others = siblingsOf(all, mod)
   const setOpen = useDetail((s) => s.setOpen)
   const kind = sourceKind(profile, mod)
-  const source = kindLabel(kind, t`SMAPI`, t`Archive`)
+  const source = kindLabel(kind, { smapi: t`SMAPI`, archive: t`Archive`, nexus: t`Nexus Mods` })
   return (
     <Box sx={{ p: 1.75, display: 'flex', flexDirection: 'column', gap: 1.25, minHeight: '100%' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -102,6 +102,9 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       </Box>
       <Field label={t`Version`} value={mod.version} />
       <Field label={t`UniqueID`} value={mod.uniqueId} />
+      {mod.endorsements > 0 ? (
+        <Field label={t`Endorsements`} value={mod.endorsements.toLocaleString()} />
+      ) : null}
       <UpdateBanner mod={mod} />
       <ProblemLine mod={mod} />
       {others.length > 0 ? (
