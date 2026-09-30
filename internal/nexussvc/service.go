@@ -32,13 +32,25 @@ type Service struct {
 	store  *settings.Store
 	client *nexus.Client
 	meta   *meta.Client
+	seen   *nexus.SeenStore
 	// App is set after application.New so sign-in and sign-out can emit events.
 	App *application.App
 }
 
 // NewService keeps mod page details in m's cache.
 func NewService(store *settings.Store, client *nexus.Client, m *meta.Client) *Service {
-	return &Service{store: store, client: client, meta: m}
+	s := &Service{store: store, client: client, meta: m}
+	client.SetLimitsHook(func(nexus.Limits) {
+		if s.App != nil {
+			s.App.Event.Emit(ChangedEvent, s.Account())
+		}
+	})
+	return s
+}
+
+// Limits is the budget from the last Nexus response; it does not call the API.
+func (s *Service) Limits() nexus.Limits {
+	return s.client.Limits()
 }
 
 // Account describes the current sign-in.

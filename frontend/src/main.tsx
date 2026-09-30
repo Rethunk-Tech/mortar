@@ -7,6 +7,7 @@ import { App } from './App.tsx'
 import { i18n } from './i18n/index.ts'
 import { initLaunch } from './launch/store.ts'
 import { initLoader } from './loader/store.ts'
+import { initNexusSeen } from './mods/nexusDetails.ts'
 import { initNxm } from './nxm/store.ts'
 import { initQueue } from './queue/store.ts'
 import { initNexus } from './settings/nexus.ts'
@@ -18,6 +19,7 @@ import './theme/fonts.ts'
 
 initSettings().catch(reportUnexpected)
 initNexus().catch(reportUnexpected)
+initNexusSeen().catch(reportUnexpected)
 initLaunch()
 initLoader()
 initNxm().catch(reportUnexpected)

@@ -184,6 +184,9 @@ func main() {
 		log.Fatal(err)
 	}
 	pictures = modpic.New(dataDir, &http.Client{Timeout: 30 * time.Second})
+	if err := nexusSvc.UseDataDir(dataDir); err != nil {
+		log.Fatal(err)
+	}
 	updates := &updatesvc.Service{}
 	emit := func(name string, data any) { app.Event.Emit(name, data) }
 	queueSvc, err := queue.New(queue.Deps{

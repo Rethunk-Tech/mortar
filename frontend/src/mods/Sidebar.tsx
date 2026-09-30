@@ -250,7 +250,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       {mod.endorsements > 0 ? (
         <Field label={t`Endorsements`} value={mod.endorsements.toLocaleString()} />
       ) : null}
-      {nexusId ? <NexusFields mod={mod} nexusId={nexusId} /> : null}
+      {nexusId ? <NexusFields key={nexusId} mod={mod} nexusId={nexusId} /> : null}
       <UpdateBanner mod={mod} />
       <ProblemLine mod={mod} />
       <AlsoInProfiles mod={mod} profile={profile} />

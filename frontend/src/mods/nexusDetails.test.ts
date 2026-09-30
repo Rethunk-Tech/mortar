@@ -1,7 +1,14 @@
 import { beforeEach, expect, mock, test } from 'bun:test'
+import type { File } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
 import type { Details } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/models.ts'
 import { useNexus } from '../settings/nexus.ts'
-import { primeDetails, useNexusDetails } from './nexusDetails.ts'
+import {
+  isNewSinceLooked,
+  primeDetails,
+  useNexusDetails,
+  useNexusSeen,
+  watermarkOf,
+} from './nexusDetails.ts'
 
 const loads: number[] = []
 let cached: Record<string, Details> = {}
@@ -39,6 +46,8 @@ mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/servi
     loads.push(id)
     return page(id)
   },
+  Seen: async () => ({}),
+  MarkSeen: async () => undefined,
 }))
 
 beforeEach(() => {
@@ -46,6 +55,7 @@ beforeEach(() => {
   cached = {}
   useNexus.setState(useNexus.getInitialState(), true)
   useNexusDetails.setState(useNexusDetails.getInitialState(), true)
+  useNexusSeen.setState(useNexusSeen.getInitialState(), true)
 })
 
 test('sign-in starts details reads that were skipped while signed out', async () => {
@@ -74,4 +84,44 @@ test('primeDetails enqueues an error-only entry when cache has nothing', async (
   await Promise.resolve()
   await Promise.resolve()
   expect(loads).toEqual([2400])
+})
+
+const file = (category: string, uploaded: string): File => ({
+  fileId: 1,
+  fileName: 'a.zip',
+  name: 'a',
+  description: '',
+  version: '1',
+  modVersion: '1',
+  category,
+  sizeKb: 1,
+  isPrimary: false,
+  uploaded,
+})
+
+test('isNewSinceLooked is false until the user has looked', () => {
+  const now = watermarkOf({
+    files: [file('MAIN', '2025-01-01T00:00:00Z')],
+    changelogs: [{ version: '1.1.0', notes: [] }],
+  })
+  expect(isNewSinceLooked(undefined, now)).toBe(false)
+})
+
+test('isNewSinceLooked is true when a current file is newer than last look', () => {
+  const older = watermarkOf({ files: [file('MAIN', '2024-01-01T00:00:00Z')], changelogs: [] })
+  const newer = watermarkOf({ files: [file('MAIN', '2025-06-01T00:00:00Z')], changelogs: [] })
+  expect(isNewSinceLooked(older, newer)).toBe(true)
+  expect(isNewSinceLooked(newer, newer)).toBe(false)
+})
+
+test('isNewSinceLooked is true when a changelog version is newer than last look', () => {
+  const seen = watermarkOf({
+    files: [file('MAIN', '2024-01-01T00:00:00Z')],
+    changelogs: [{ version: '1.0.0', notes: [] }],
+  })
+  const now = watermarkOf({
+    files: [file('MAIN', '2024-01-01T00:00:00Z')],
+    changelogs: [{ version: '1.1.0', notes: [] }],
+  })
+  expect(isNewSinceLooked(seen, now)).toBe(true)
 })

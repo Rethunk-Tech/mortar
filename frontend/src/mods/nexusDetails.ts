@@ -1,12 +1,15 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { create } from 'zustand'
 import type { Details } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/models.ts'
 import {
   CachedDetails,
+  MarkSeen,
   Details as readDetails,
+  Seen,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
 import { useNexus } from '../settings/nexus.ts'
-import { errorMessage } from '../toasts/report.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { currentFiles, isNewer } from './nexusFormat.ts'
 
 interface Entry {
   details?: Details
@@ -116,4 +119,123 @@ const useNexusEntry = (id: number) => {
   return useNexusDetails((s) => s.byId[id])
 }
 
-export { loadDetails, primeDetails, useNexusDetails, useNexusEntry }
+interface SeenWatermark {
+  newestFileUnix: number
+  newestChange: string
+}
+
+const MS_PER_SEC = 1000
+
+const fileUnix = (iso: string) => {
+  const t = Date.parse(iso)
+  return Number.isNaN(t) ? 0 : Math.floor(t / MS_PER_SEC)
+}
+
+const watermarkOf = (details: Pick<Details, 'files' | 'changelogs'>): SeenWatermark => {
+  let newestFileUnix = 0
+  for (const f of currentFiles(details.files ?? [], 0)) {
+    newestFileUnix = Math.max(newestFileUnix, fileUnix(f.uploaded))
+  }
+  if (newestFileUnix === 0) {
+    for (const f of details.files ?? []) {
+      newestFileUnix = Math.max(newestFileUnix, fileUnix(f.uploaded))
+    }
+  }
+  let newestChange = ''
+  for (const c of details.changelogs ?? []) {
+    if (!newestChange || isNewer(c.version, newestChange)) {
+      newestChange = c.version
+    }
+  }
+  return { newestFileUnix, newestChange }
+}
+
+const isNewSinceLooked = (seen: SeenWatermark | undefined, now: SeenWatermark) => {
+  if (!seen) {
+    return false
+  }
+  if (now.newestFileUnix > seen.newestFileUnix) {
+    return true
+  }
+  if (!now.newestChange || now.newestChange === seen.newestChange) {
+    return false
+  }
+  if (!seen.newestChange) {
+    return true
+  }
+  return isNewer(now.newestChange, seen.newestChange)
+}
+
+const fileIsNewSinceLooked = (uploaded: string, seen: SeenWatermark | undefined) =>
+  Boolean(seen && fileUnix(uploaded) > seen.newestFileUnix)
+
+const changelogIsNewSinceLooked = (version: string, seen: SeenWatermark | undefined) => {
+  if (!(seen && version)) {
+    return false
+  }
+  if (!seen.newestChange) {
+    return true
+  }
+  return isNewer(version, seen.newestChange)
+}
+
+const useNexusSeen = create<{ byId: Record<number, SeenWatermark | undefined> }>(() => ({
+  byId: {},
+}))
+
+const initNexusSeen = () =>
+  Seen()
+    .then((snap) => {
+      const byId: Record<number, SeenWatermark | undefined> = {}
+      for (const [key, entry] of Object.entries(snap ?? {})) {
+        if (!entry) {
+          continue
+        }
+        byId[Number(key)] = {
+          newestFileUnix: entry.newestFileUnix,
+          newestChange: entry.newestChange,
+        }
+      }
+      useNexusSeen.setState({ byId })
+    })
+    .catch(reportUnexpected)
+
+const markLooked = (modId: number, details: Details) => {
+  const w = watermarkOf(details)
+  useNexusSeen.setState((s) => ({ byId: { ...s.byId, [modId]: w } }))
+  MarkSeen(modId, w.newestFileUnix, w.newestChange).catch(reportUnexpected)
+}
+
+const useLookedSnapshot = (modId: number, details: Details | undefined) => {
+  const [looked] = useState(() => useNexusSeen.getState().byId[modId])
+  useEffect(() => {
+    if (details && modId) {
+      markLooked(modId, details)
+    }
+  }, [modId, details])
+  return looked
+}
+
+const useNexusFresh = (nexusId: number) => {
+  const details = useNexusDetails((s) => s.byId[nexusId]?.details)
+  const seen = useNexusSeen((s) => s.byId[nexusId])
+  if (!(nexusId && details)) {
+    return false
+  }
+  return isNewSinceLooked(seen, watermarkOf(details))
+}
+
+export {
+  changelogIsNewSinceLooked,
+  fileIsNewSinceLooked,
+  initNexusSeen,
+  isNewSinceLooked,
+  loadDetails,
+  primeDetails,
+  useLookedSnapshot,
+  useNexusDetails,
+  useNexusEntry,
+  useNexusFresh,
+  useNexusSeen,
+  watermarkOf,
+}

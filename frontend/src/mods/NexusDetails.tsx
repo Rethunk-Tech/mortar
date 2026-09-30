@@ -8,8 +8,14 @@ import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/p
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { type Block, parseBBCode, safeUrl } from './bbcode.ts'
+import { NewSinceLooked } from './NewSince.tsx'
 import { NexusAccountActions } from './NexusAccountActions.tsx'
-import { useNexusEntry } from './nexusDetails.ts'
+import {
+  changelogIsNewSinceLooked,
+  fileIsNewSinceLooked,
+  useLookedSnapshot,
+  useNexusEntry,
+} from './nexusDetails.ts'
 import {
   currentFiles,
   formatCount,
@@ -141,7 +147,15 @@ function Facts({ details, mod }: { details: Details; mod: Mod }) {
   )
 }
 
-function Files({ details, fileId }: { details: Details; fileId: number }) {
+function Files({
+  details,
+  fileId,
+  looked,
+}: {
+  details: Details
+  fileId: number
+  looked: { newestFileUnix: number; newestChange: string } | undefined
+}) {
   const { t, i18n } = useLingui()
   const files = currentFiles(details.files ?? [], fileId)
   const installed = files[0]?.fileId === fileId ? files[0] : undefined
@@ -155,9 +169,12 @@ function Files({ details, fileId }: { details: Details; fileId: number }) {
       {installed ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
           <Typography sx={heading}>{t`Installed file`}</Typography>
-          <Typography sx={{ ...text, overflowWrap: 'anywhere' }}>
-            {installed.name || installed.fileName}
-          </Typography>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'baseline', flexWrap: 'wrap' }}>
+            <Typography sx={{ ...text, overflowWrap: 'anywhere' }}>
+              {installed.name || installed.fileName}
+            </Typography>
+            <NewSinceLooked show={fileIsNewSinceLooked(installed.uploaded, looked)} />
+          </Box>
           <Typography sx={muted}>{line(installed)}</Typography>
           {installed.description ? (
             <Box sx={{ color: 'text.secondary' }}>
@@ -173,6 +190,7 @@ function Files({ details, fileId }: { details: Details; fileId: number }) {
               <Typography noWrap={true} sx={{ ...text, flex: 1, minWidth: 0 }}>
                 {f.name || f.fileName}
               </Typography>
+              <NewSinceLooked show={fileIsNewSinceLooked(f.uploaded, looked)} />
               <Typography sx={{ ...muted, ...noWrap }}>{line(f)}</Typography>
             </Box>
           ))}
@@ -202,6 +220,7 @@ function Loaded({
   const { page } = details
   const logs = details.changelogs ?? []
   const description = page.description ? parseBBCode(page.description) : []
+  const looked = useLookedSnapshot(modId, details)
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       {page.adult || !page.available ? (
@@ -225,12 +244,15 @@ function Loaded({
       ) : null}
       <Facts details={details} mod={mod} />
       <NexusAccountActions modId={modId} version={mod.version} endorsement={page.endorsement} />
-      <Files details={details} fileId={fileId} />
+      <Files details={details} fileId={fileId} looked={looked} />
       {logs.length > 0 ? (
         <Fold title={t`Recent changes`}>
           {recentChangelogs(logs).map((c) => (
-            <Box key={c.version}>
-              <Typography sx={{ ...text, fontWeight: BOLD }}>{c.version}</Typography>
+            <Box key={c.version} sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'baseline' }}>
+                <Typography sx={{ ...text, fontWeight: BOLD }}>{c.version}</Typography>
+                <NewSinceLooked show={changelogIsNewSinceLooked(c.version, looked)} />
+              </Box>
               <Typography sx={{ ...text, pl: 2, whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}>
                 {(c.notes ?? []).map((n) => `• ${n}`).join('\n')}
               </Typography>
@@ -253,7 +275,7 @@ export function NexusDetails({ mod, modId, fileId }: { mod: Mod; modId: number; 
   const signedIn = useNexus((s) => s.signedIn)
   const entry = useNexusEntry(modId)
   if (entry?.details) {
-    return <Loaded details={entry.details} mod={mod} fileId={fileId} modId={modId} />
+    return <Loaded key={modId} details={entry.details} mod={mod} fileId={fileId} modId={modId} />
   }
   if (!entry) {
     return <Typography sx={muted}>{t`Reading the Nexus page…`}</Typography>
