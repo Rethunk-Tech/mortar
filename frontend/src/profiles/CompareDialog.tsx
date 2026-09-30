@@ -138,9 +138,17 @@ export function CompareDialog({
       setSelected(new Set())
       return
     }
+    let live = true
     loadDiff(game, aId, bId)
-      .then((d) => setDiff(d))
+      .then((d) => {
+        if (live) {
+          setDiff(d)
+        }
+      })
       .catch(reportUnexpected)
+    return () => {
+      live = false
+    }
   }, [game, aId, bId])
   const toggle = (id: string) =>
     setSelected((cur) => {
