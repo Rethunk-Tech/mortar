@@ -6,5 +6,5 @@ reconciled = "canon v0.1.0-poc"
 "ts-biome-00006 style/noTernary" = "ternaries are React JSX's branching idiom; noNestedTernary stays on"
 # wails3 generate bindings emits `export enum` for every Go named-string type with constants
 # (launch.Hint, launchsvc.State, loader.Step, steam.Status), and erasableSyntaxOnly rejects enums.
-# The fork's models.ts.tmpl has no const-object option; regenerating cannot be edited by hand.
+# The fork's models.ts.tmpl has no const-object option, and generated files are overwritten on every build.
 "ts-typescript-00006" = "wails-generated bindings contain TS enums; fix belongs in the Rethunk-AI/wails generator template"
