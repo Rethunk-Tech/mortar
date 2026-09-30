@@ -52,6 +52,8 @@ type Request struct {
 	InstallDir string
 	// ModsDir is the profile's absolute mods folder.
 	ModsDir string
+	// ExtraArgs are extra SMAPI arguments from the profile's launch options.
+	ExtraArgs []string
 	// Steam is nil when no Steam was found.
 	Steam *steam.Steam
 	// Direct launches the loader without Steam, after the user agreed to lose the overlay and playtime.

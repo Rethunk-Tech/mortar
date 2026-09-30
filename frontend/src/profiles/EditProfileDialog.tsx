@@ -34,24 +34,41 @@ export function EditProfileDialog({
 }) {
   const { t } = useLingui()
   const setAppearance = useProfiles((s) => s.setAppearance)
+  const setLaunchOptions = useProfiles((s) => s.setLaunchOptions)
   const [color, setColor] = useState(profile.color ?? '')
   const [icon, setIcon] = useState(profile.icon ?? '')
   const [description, setDescription] = useState(profile.description ?? '')
+  const [launchOptions, setLaunchOptionsField] = useState(profile.launchOptions ?? '')
+  const [optionsError, setOptionsError] = useState('')
   const [busy, setBusy] = useState(false)
   useEffect(() => {
     if (open) {
       setColor(profile.color ?? '')
       setIcon(profile.icon ?? '')
       setDescription(profile.description ?? '')
+      setLaunchOptionsField(profile.launchOptions ?? '')
+      setOptionsError('')
     }
-  }, [open, profile.color, profile.description, profile.icon])
+  }, [open, profile.color, profile.description, profile.icon, profile.launchOptions])
   const save = async () => {
     if (busy) {
       return
     }
     setBusy(true)
+    setOptionsError('')
     try {
-      await setAppearance(profile.id, color, icon, clipDescription(description))
+      try {
+        await setAppearance(profile.id, color, icon, clipDescription(description))
+      } catch (e) {
+        reportUnexpected(e)
+        return
+      }
+      try {
+        await setLaunchOptions(profile.id, launchOptions)
+      } catch (e) {
+        setOptionsError(e instanceof Error ? e.message : String(e))
+        return
+      }
       onClose()
     } finally {
       setBusy(false)
@@ -123,6 +140,22 @@ export function EditProfileDialog({
               htmlInput: { maxLength: MAX_DESCRIPTION },
               root: { sx: { userSelect: 'text' } },
             }}
+          />
+          <TextField
+            fullWidth={true}
+            margin="dense"
+            label={t`Launch options`}
+            value={launchOptions}
+            onChange={(e) => {
+              setLaunchOptionsField(e.target.value)
+              setOptionsError('')
+            }}
+            error={optionsError !== ''}
+            helperText={
+              optionsError ||
+              t`Extra SMAPI arguments for this profile. Mortar sets --mods-path itself.`
+            }
+            slotProps={{ root: { sx: { userSelect: 'text' } } }}
           />
         </DialogContent>
         <DialogActions>

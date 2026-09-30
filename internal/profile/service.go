@@ -3,17 +3,25 @@ package profile
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
+
+var zipFileUnsafe = strings.NewReplacer("/", "-", "\\", "-", ":", "-", "*", "-", "?", "-", "\"", "-", "<", "-", ">", "-", "|", "-")
 
 // Service exposes the store to the frontend.
 type Service struct {
 	store    *Store
 	home     string
 	settings *settings.Store
+	// App is set after application.New so export and restore can use native file dialogs.
+	App *application.App
+	// Version is Mortar's version written into exported zips.
+	Version string
 }
 
 func NewService(store *Store, home string, settings *settings.Store) *Service {
@@ -69,6 +77,11 @@ func (s *Service) SetNotes(game, id, notes string) (Profile, error) {
 // SetAppearance replaces a profile's colour, icon and short description.
 func (s *Service) SetAppearance(game, id, color, icon, description string) (Profile, error) {
 	return s.store.SetAppearance(game, id, color, icon, description)
+}
+
+// SetLaunchOptions replaces a profile's extra SMAPI arguments.
+func (s *Service) SetLaunchOptions(game, id, options string) (Profile, error) {
+	return s.store.SetLaunchOptions(game, id, options)
 }
 
 // AddEntry copies the store item key into the profile.
@@ -181,4 +194,52 @@ func (s *Service) SetPinned(game, id, key string, pinned bool) (Profile, error) 
 // SetSkipVersion hides that exact newer version, or clears the skip when version is empty.
 func (s *Service) SetSkipVersion(game, id, key, version string) (Profile, error) {
 	return s.store.SetSkipVersion(game, id, key, version)
+}
+
+// ExportProfile asks where to save a zip of the whole profile and writes it. It returns "" when the dialog is cancelled.
+func (s *Service) ExportProfile(game, id string) (string, error) {
+	p, err := s.store.read(game, id)
+	if err != nil {
+		return "", err
+	}
+	if s.App == nil {
+		return "", fmt.Errorf("no window")
+	}
+	d := s.App.Dialog.SaveFile()
+	d.SetOptions(&application.SaveFileDialogOptions{
+		Title:    "Export profile",
+		Filename: zipFileUnsafe.Replace(p.Name) + ".zip",
+	})
+	d.AddFilter("Zip archive", "*.zip")
+	if w := s.App.Window.Current(); w != nil {
+		d.AttachToWindow(w)
+	}
+	dest, err := d.PromptForSingleSelection()
+	if err != nil || dest == "" {
+		return dest, err
+	}
+	return dest, s.store.ExportZip(game, id, dest, s.Version)
+}
+
+// RestoreFromZip asks for a profile zip and imports it as a new profile. It returns an empty profile when cancelled.
+func (s *Service) RestoreFromZip(game string) (Profile, error) {
+	if s.App == nil {
+		return Profile{}, fmt.Errorf("no window")
+	}
+	d := s.App.Dialog.OpenFile().
+		SetTitle("Restore from zip").
+		AddFilter("Zip archive", "*.zip")
+	if w := s.App.Window.Current(); w != nil {
+		d.AttachToWindow(w)
+	}
+	path, err := d.PromptForSingleSelection()
+	if err != nil || path == "" {
+		return Profile{}, err
+	}
+	return s.store.RestoreZip(game, path)
+}
+
+// SetEntryNoteTags records the note and tags on one profile entry.
+func (s *Service) SetEntryNoteTags(game, id, key, note string, tags []string) (Profile, error) {
+	return s.store.SetEntryNoteTags(game, id, key, note, tags)
 }

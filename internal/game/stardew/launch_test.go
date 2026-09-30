@@ -34,10 +34,24 @@ func TestCommand(t *testing.T) {
 			nil,
 		},
 		{
+			"linux steam extra", "linux",
+			launch.Request{ModsDir: mods, Steam: st, ExtraArgs: []string{"--developer-mode"}},
+			"/usr/bin/steam",
+			[]string{"/usr/bin/steam", "-applaunch", "413150", "--skip-terminal", "--", "--mods-path", mods, "--developer-mode"},
+			nil,
+		},
+		{
 			"windows steam", "windows",
 			launch.Request{ModsDir: mods, Steam: st},
 			"",
 			[]string{filepath.Join(st.Root, "steam.exe"), "-applaunch", "413150", "--mods-path", mods},
+			nil,
+		},
+		{
+			"windows steam extra", "windows",
+			launch.Request{ModsDir: mods, Steam: st, ExtraArgs: []string{"--developer-mode"}},
+			"",
+			[]string{filepath.Join(st.Root, "steam.exe"), "-applaunch", "413150", "--mods-path", mods, "--developer-mode"},
 			nil,
 		},
 		{

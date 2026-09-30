@@ -65,14 +65,14 @@ func (g Game) command(goos string, req launch.Request, steamPath string) (launch
 		return launch.Command{}, fmt.Errorf("mods folder %q is not an absolute path", req.ModsDir)
 	}
 	modsArgs := []string{"--mods-path", req.ModsDir}
+	smapiArgs := appendLaunchArgs(goos, modsArgs, req.ExtraArgs)
 	windows := goos == "windows"
 	if req.Direct {
 		if windows {
-			return launch.Command{Dir: req.InstallDir, Name: filepath.Join(req.InstallDir, smapiMarker+".exe"), Args: modsArgs}, nil
+			return launch.Command{Dir: req.InstallDir, Name: filepath.Join(req.InstallDir, smapiMarker+".exe"), Args: smapiArgs}, nil
 		}
 		// The launcher reads its own flags before `--` and forwards only what follows it.
-		args := append([]string{"--skip-terminal", "--"}, modsArgs...)
-		return launch.Command{Dir: req.InstallDir, Name: filepath.Join(req.InstallDir, linuxLauncher), Args: args}, nil
+		return launch.Command{Dir: req.InstallDir, Name: filepath.Join(req.InstallDir, linuxLauncher), Args: smapiArgs}, nil
 	}
 	appID := []string{"-applaunch", g.SteamAppID()}
 	switch {
@@ -83,12 +83,11 @@ func (g Game) command(goos string, req launch.Request, steamPath string) (launch
 		if opts, err := req.Steam.LaunchOptions(g.SteamAppID()); err == nil && !hasSMAPILine(opts) {
 			hint = launch.HintLaunchOptions
 		}
-		return launch.Command{Name: filepath.Join(req.Steam.Root, "steam.exe"), Args: append(appID, modsArgs...), Failure: hint, Relay: true}, nil
+		return launch.Command{Name: filepath.Join(req.Steam.Root, "steam.exe"), Args: append(appID, smapiArgs...), Failure: hint, Relay: true}, nil
 	case steamPath == "":
 		return launch.Command{}, launch.ErrNoSteam
 	}
-	args := append(append(appID, "--skip-terminal", "--"), modsArgs...)
-	return launch.Command{Name: steamPath, Args: args, Failure: launch.HintSteam, Relay: true}, nil
+	return launch.Command{Name: steamPath, Args: append(appID, smapiArgs...), Failure: launch.HintSteam, Relay: true}, nil
 }
 
 func (g Game) vanillaCommand(goos string, req launch.Request, steamPath string) (launch.Command, error) {
