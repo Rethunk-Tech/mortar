@@ -518,10 +518,13 @@ func (s *Service) Import(ctx context.Context, game, session, profileID string, e
 	}
 	res.Queued = len(reqs)
 	if len(configs) > 0 && len(reqs) > 0 {
+		// savePending marshals every pending import, which queueChanged edits under applyMu.
+		s.applyMu.Lock()
 		s.mu.Lock()
 		s.pending = append(s.pending, &pending{Game: game, Profile: profileID, Wanted: wanted, Configs: configs})
 		s.mu.Unlock()
 		s.savePending()
+		s.applyMu.Unlock()
 	}
 	return res, nil
 }
@@ -626,17 +629,17 @@ func (s *Service) apply(p *pending) {
 		p.seen = ""
 		return
 	}
-	prof, err := s.find(p.Game, p.Profile)
+	var written []string
+	var applyErr error
+	err := s.d.Profiles.InMods(p.Game, p.Profile, func(prof profile.Profile, modsDir string) error {
+		entries := slices.DeleteFunc(slices.Clone(prof.Entries), func(e profile.Entry) bool { return !p.wants(e) })
+		written, applyErr = share.Apply(modsDir, entries, p.Configs)
+		return nil
+	})
 	if err != nil {
 		return
 	}
-	modsDir, err := s.d.Profiles.ModsDir(p.Game, p.Profile)
-	if err != nil {
-		return
-	}
-	entries := slices.DeleteFunc(slices.Clone(prof.Entries), func(e profile.Entry) bool { return !p.wants(e) })
-	written, err := share.Apply(modsDir, entries, p.Configs)
-	if err != nil {
+	if applyErr != nil {
 		p.seen = ""
 	}
 	p.Configs = slices.DeleteFunc(p.Configs, func(c share.Config) bool {

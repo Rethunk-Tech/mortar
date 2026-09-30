@@ -110,3 +110,23 @@ func TestSetNotes(t *testing.T) {
 		t.Fatal("unknown profile accepted")
 	}
 }
+
+func TestInModsHoldsTheStoreLock(t *testing.T) {
+	s := newStore(t)
+	p, err := s.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = s.InMods("stardew", p.ID, func(got Profile, modsDir string) error {
+		if s.mu.TryLock() {
+			t.Error("the store lock is free while fn runs")
+		}
+		if got.ID != p.ID || !filepath.IsAbs(modsDir) || filepath.Base(modsDir) != "mods" {
+			t.Errorf("fn got %+v, %q", got, modsDir)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}

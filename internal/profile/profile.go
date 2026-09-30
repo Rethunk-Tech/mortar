@@ -140,6 +140,22 @@ func (s *Store) ModsDir(game, id string) (string, error) {
 	return filepath.Abs(filepath.Join(dir, "mods"))
 }
 
+// InMods runs fn on the profile and its absolute mods/ folder under the store's lock, so files fn writes there cannot
+// race a mod being switched on or off, updated or removed.
+func (s *Store) InMods(game, id string, fn func(p Profile, modsDir string) error) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	p, err := s.read(game, id)
+	if err != nil {
+		return err
+	}
+	modsDir, err := s.ModsDir(game, id)
+	if err != nil {
+		return err
+	}
+	return fn(p, modsDir)
+}
+
 // Open returns a store rooted at <datadir>/profiles, with deleted profiles in <datadir>/trash.
 func Open(items *store.Store) (*Store, error) {
 	dir, err := datadir.Dir()
