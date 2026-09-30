@@ -62,6 +62,9 @@ func TestSavesSkipsWhileTheNewestIsRecent(t *testing.T) {
 	}
 	out := t.TempDir()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	if err := os.Chtimes(saves, start.Add(-time.Hour), start.Add(-time.Hour)); err != nil {
+		t.Fatal(err)
+	}
 	first, err := Saves(saves, out, DefaultKeep, start)
 	if err != nil {
 		t.Fatal(err)
@@ -77,5 +80,42 @@ func TestSavesSkipsWhileTheNewestIsRecent(t *testing.T) {
 	}
 	if items, _ := os.ReadDir(out); len(items) != 2 {
 		t.Fatalf("%d backups, want 2", len(items))
+	}
+}
+
+func TestSavesBacksUpAgainWhenASaveChangedAndSweepsCrashedTemps(t *testing.T) {
+	saves := filepath.Join(t.TempDir(), "Saves")
+	if err := os.MkdirAll(saves, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	out := t.TempDir()
+	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	if err := os.Chtimes(saves, start.Add(-time.Hour), start.Add(-time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	crashed := filepath.Join(out, "backup-1.tmp")
+	if err := fsx.WriteFile(crashed, []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(crashed, start.Add(-time.Hour), start.Add(-time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	first, err := Saves(saves, out, DefaultKeep, start)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(crashed); err == nil {
+		t.Fatal("a crashed temp file survived")
+	}
+	farm := filepath.Join(saves, "Farm_1")
+	if err := fsx.WriteFile(farm, []byte("day 2"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(farm, start.Add(time.Minute), start.Add(time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	got, err := Saves(saves, out, DefaultKeep, start.Add(2*time.Minute))
+	if err != nil || got == first {
+		t.Fatalf("backup after a save changed = %q, %v; want a new one", got, err)
 	}
 }

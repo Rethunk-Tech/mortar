@@ -25,8 +25,8 @@ const MinGap = 10 * time.Minute
 const stamp = "2006-01-02T15-04-05.000"
 
 // Saves zips savesDir into backupsDir/<timestamp>.zip through a temp file and rename, then deletes all but the
-// newest keep backups. It returns the zip's path (the newest existing one when that is under MinGap old), or ""
-// when savesDir does not exist.
+// newest keep backups and temp files a crash left. It returns the zip's path (the newest existing one when that is
+// under MinGap old and nothing in savesDir changed since), or "" when savesDir does not exist.
 func Saves(savesDir, backupsDir string, keep int, now time.Time) (string, error) {
 	if _, err := os.Stat(savesDir); errors.Is(err, fs.ErrNotExist) {
 		return "", nil
@@ -41,7 +41,13 @@ func Saves(savesDir, backupsDir string, keep int, now time.Time) (string, error)
 		newest := zips[len(zips)-1]
 		if t, err := time.Parse(stamp, strings.TrimSuffix(newest, ".zip")); err == nil {
 			if age := now.Sub(t); age >= 0 && age < MinGap {
-				return filepath.Join(backupsDir, newest), nil
+				changed, err := lastChange(savesDir)
+				if err != nil {
+					return "", err
+				}
+				if changed.Before(t) {
+					return filepath.Join(backupsDir, newest), nil
+				}
 			}
 		}
 	}
@@ -63,7 +69,26 @@ func Saves(savesDir, backupsDir string, keep int, now time.Time) (string, error)
 	if err := os.Rename(tmp.Name(), dst); err != nil {
 		return "", errors.Join(err, os.Remove(tmp.Name()))
 	}
-	return dst, prune(backupsDir, keep)
+	return dst, prune(backupsDir, keep, now)
+}
+
+// lastChange is the newest modification time in the tree; a folder's covers the files removed from it.
+func lastChange(root string) (time.Time, error) {
+	var last time.Time
+	err := filepath.WalkDir(root, func(_ string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		if info.ModTime().After(last) {
+			last = info.ModTime()
+		}
+		return nil
+	})
+	return last, err
 }
 
 func writeZip(w io.Writer, root string) error {
@@ -117,8 +142,9 @@ func list(dir string) ([]string, error) {
 	return zips, nil
 }
 
-// prune removes the oldest backups beyond keep.
-func prune(dir string, keep int) error {
+// prune removes the oldest backups beyond keep, and temp files older than MinGap: a backup still being written
+// is younger.
+func prune(dir string, keep int, now time.Time) error {
 	zips, err := list(dir)
 	if err != nil {
 		return err
@@ -126,6 +152,15 @@ func prune(dir string, keep int) error {
 	var errs []error
 	for _, n := range zips[:max(0, len(zips)-keep)] {
 		errs = append(errs, os.Remove(filepath.Join(dir, n)))
+	}
+	tmps, err := filepath.Glob(filepath.Join(dir, "backup-*.tmp"))
+	if err != nil {
+		return errors.Join(append(errs, err)...)
+	}
+	for _, p := range tmps {
+		if info, err := os.Stat(p); err == nil && now.Sub(info.ModTime()) > MinGap {
+			errs = append(errs, os.Remove(p))
+		}
 	}
 	return errors.Join(errs...)
 }
