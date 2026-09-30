@@ -82,7 +82,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
     <Dialog
       open={true}
       onClose={(_, reason) => {
-        if (reason === 'escapeKeyDown') {
+        if (reason === 'escapeKeyDown' && !busy) {
           dismiss(arrival.id)
         }
       }}
@@ -98,7 +98,9 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
         ) : null}
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => dismiss(arrival.id)}>{t`Ignore`}</Button>
+        <Button disabled={busy} onClick={() => dismiss(arrival.id)}>
+          {t`Ignore`}
+        </Button>
         {others.length > 0 ? (
           <Button variant="outlined" disabled={busy} onClick={(e) => setAnchor(e.currentTarget)}>
             {t`Other profile…`}
