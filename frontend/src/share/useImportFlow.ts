@@ -17,6 +17,7 @@ import { useQueue } from '../queue/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type ShownPreview, shownPreview } from './logic.ts'
+import { importAfterSignIn } from './store.ts'
 
 export type Tab = 'link' | 'file'
 
@@ -119,6 +120,12 @@ export function useImportFlow(game: string, profileId: string, close: () => void
     }
   }
 
+  // The dialog closes for Nexus settings and comes back with this link or file after sign-in.
+  const signIn = () => {
+    close()
+    importAfterSignIn({ profileId, ...(tab === 'file' ? { file: path } : { link: text }) })
+  }
+
   return {
     tab,
     setTab,
@@ -137,6 +144,7 @@ export function useImportFlow(game: string, profileId: string, close: () => void
     dismiss: close,
     toggle,
     run,
+    signIn,
   }
 }
 

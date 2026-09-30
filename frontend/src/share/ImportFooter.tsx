@@ -1,7 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { ChevronRight } from 'lucide-react'
-import { openSettings } from '../nav/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { Problems, StatusBar } from './ImportPreview.tsx'
 import type { ShownPreview, Summary } from './logic.ts'
@@ -53,10 +52,7 @@ export function ImportFooter({
             size="small"
             variant="outlined"
             color="inherit"
-            onClick={() => {
-              flow.dismiss()
-              openSettings('nexus')
-            }}
+            onClick={flow.signIn}
           >
             {t`Open Nexus settings`}
           </Button>
