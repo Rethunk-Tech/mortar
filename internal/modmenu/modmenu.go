@@ -3,9 +3,11 @@
 package modmenu
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -40,10 +42,16 @@ func ParseTarget(data string) (Target, error) {
 	return t, nil
 }
 
+// The hosts a mod's page can be on; an empty host means the mod has no page.
+const (
+	HostNexus  = "nexus"
+	HostGitHub = "github"
+)
+
 // State is what decides which actions a mod's menu offers.
 type State struct {
 	Enabled   bool
-	HasPage   bool
+	Host      string
 	Removable bool
 }
 
@@ -51,7 +59,7 @@ type State struct {
 const (
 	Toggle  = "toggle"
 	Details = "details"
-	Nexus   = "nexus"
+	Page    = "page"
 	Files   = "files"
 	Remove  = "remove"
 )
@@ -59,8 +67,8 @@ const (
 // Actions lists the menu's actions for a mod in state s.
 func Actions(s State) []string {
 	out := []string{Toggle, Details}
-	if s.HasPage {
-		out = append(out, Nexus)
+	if s.Host != "" {
+		out = append(out, Page)
 	}
 	out = append(out, Files)
 	if s.Removable {
@@ -76,30 +84,57 @@ func flag(on bool, yes, no string) string {
 	return no
 }
 
+// Labels are the menu's item texts. Go has no translations, so the frontend sends its own at startup.
+type Labels struct {
+	Enable     string `json:"enable"`
+	Disable    string `json:"disable"`
+	Details    string `json:"details"`
+	OpenNexus  string `json:"openNexus"`
+	OpenGitHub string `json:"openGitHub"`
+	Files      string `json:"files"`
+	Remove     string `json:"remove"`
+}
+
+var english = Labels{
+	Enable: "Enable", Disable: "Disable", Details: "More details", OpenNexus: "Open on Nexus",
+	OpenGitHub: "Open on GitHub", Files: "Show files", Remove: "Remove",
+}
+
 // MenuID names the registered native menu for state s. The frontend builds the same name.
 func MenuID(s State) string {
-	return "mod-menu-" + flag(s.Enabled, "on", "off") + "-" + flag(s.HasPage, "page", "nopage") + "-" +
+	return "mod-menu-" + flag(s.Enabled, "on", "off") + "-" + cmp.Or(s.Host, "nopage") + "-" +
 		flag(s.Removable, "remove", "keep")
 }
 
 func states() []State {
 	var out []State
 	for _, enabled := range []bool{true, false} {
-		for _, page := range []bool{true, false} {
+		for _, host := range []string{HostNexus, HostGitHub, ""} {
 			for _, removable := range []bool{true, false} {
-				out = append(out, State{Enabled: enabled, HasPage: page, Removable: removable})
+				out = append(out, State{Enabled: enabled, Host: host, Removable: removable})
 			}
 		}
 	}
 	return out
 }
 
-// Service exposes the action list to the frontend.
-type Service struct{}
+// Service exposes the action list to the frontend and owns the native menus.
+type Service struct {
+	mu  sync.Mutex
+	app *application.App
+	b   Backend
+}
 
 // Actions is the list of actions for a mod in the given state.
-func (Service) Actions(enabled, hasPage, removable bool) []string {
-	return Actions(State{Enabled: enabled, HasPage: hasPage, Removable: removable})
+func (*Service) Actions(enabled bool, host string, removable bool) []string {
+	return Actions(State{Enabled: enabled, Host: host, Removable: removable})
+}
+
+// SetLabels rebuilds the native menus with the frontend's translated labels.
+func (s *Service) SetLabels(l Labels) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.build(l)
 }
 
 // Backend is what the native menu's own actions call.
@@ -111,18 +146,18 @@ type Backend struct {
 	Emit       func(name string, data ...any) bool
 }
 
-func label(action string, s State) string {
+func label(l Labels, action string, s State) string {
 	switch action {
 	case Toggle:
-		return flag(s.Enabled, "Disable", "Enable")
+		return flag(s.Enabled, l.Disable, l.Enable)
 	case Details:
-		return "More details"
-	case Nexus:
-		return "Open page"
+		return l.Details
+	case Page:
+		return flag(s.Host == HostGitHub, l.OpenGitHub, l.OpenNexus)
 	case Files:
-		return "Show files"
+		return l.Files
 	default:
-		return "Remove"
+		return l.Remove
 	}
 }
 
@@ -146,7 +181,7 @@ func (b Backend) act(t Target, s State, action string) error {
 		return err
 	case Details:
 		b.Emit(DetailsEvent, t)
-	case Nexus:
+	case Page:
 		url, err := b.PageURL(t)
 		if err != nil {
 			return err
@@ -160,16 +195,23 @@ func (b Backend) act(t Target, s State, action string) error {
 	return nil
 }
 
-// Register adds every state's native menu to the app.
-func Register(app *application.App, b Backend) {
-	for _, s := range states() {
-		menu := app.ContextMenu.New()
-		for _, action := range Actions(s) {
+// Register hands the service the app and builds every state's native menu in English; SetLabels replaces them.
+func (s *Service) Register(app *application.App, b Backend) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.app, s.b = app, b
+	s.build(english)
+}
+
+func (s *Service) build(l Labels) {
+	for _, st := range states() {
+		menu := s.app.ContextMenu.New()
+		for _, action := range Actions(st) {
 			if action == Remove {
 				menu.AddSeparator()
 			}
-			menu.Add(label(action, s)).OnClick(func(ctx *application.Context) { b.run(ctx, s, action) })
+			menu.Add(label(l, action, st)).OnClick(func(ctx *application.Context) { s.b.run(ctx, st, action) })
 		}
-		app.ContextMenu.Add(MenuID(s), menu)
+		s.app.ContextMenu.Add(MenuID(st), menu)
 	}
 }

@@ -1,6 +1,7 @@
 import { msg } from '@lingui/core/macro'
 import { Browser, Events } from '@wailsio/runtime'
 import { useEffect } from 'react'
+import { SetLabels } from '../../bindings/github.com/Rethunk-AI/mortar/internal/modmenu/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -11,20 +12,46 @@ import { modId } from './lookup.ts'
 import { useMods } from './store.ts'
 
 // The state that decides a mod's actions, and the name of the native menu registered for it (modmenu.MenuID).
+export type PageHost = 'nexus' | 'github' | ''
+
 interface MenuState {
   enabled: boolean
-  hasPage: boolean
+  host: PageHost
   removable: boolean
 }
 
 const flag = (on: boolean, yes: string, no: string) => (on ? yes : no)
 
 export const menuId = (s: MenuState) =>
-  `mod-menu-${flag(s.enabled, 'on', 'off')}-${flag(s.hasPage, 'page', 'nopage')}-${flag(s.removable, 'remove', 'keep')}`
+  `mod-menu-${flag(s.enabled, 'on', 'off')}-${s.host || 'nopage'}-${flag(s.removable, 'remove', 'keep')}`
+
+// Mod pages are on Nexus or GitHub only.
+const hostOf = (url: string | undefined): PageHost => {
+  if (!url) {
+    return ''
+  }
+  return new URL(url).hostname === 'github.com' ? 'github' : 'nexus'
+}
 
 export function useMenuState(mod: Mod, removable: boolean): MenuState {
-  const hasPage = useMods((s) => modId(mod) in s.pages)
-  return { enabled: mod.enabled, hasPage, removable }
+  const host = useMods((s) => hostOf(s.pages[modId(mod)]))
+  return { enabled: mod.enabled, host, removable }
+}
+
+export const pageLabel = (host: PageHost): string =>
+  host === 'github' ? i18n._(msg`Open on GitHub`) : i18n._(msg`Open on Nexus`)
+
+// The native menus are built in Go, which has no translations: send it the labels once at startup.
+export function sendMenuLabels(): Promise<void> {
+  return SetLabels({
+    enable: i18n._(msg`Enable`),
+    disable: i18n._(msg`Disable`),
+    details: i18n._(msg`More details`),
+    openNexus: pageLabel('nexus'),
+    openGitHub: pageLabel('github'),
+    files: i18n._(msg`Show files`),
+    remove: i18n._(msg`Remove`),
+  })
 }
 
 // The style that makes a right-click on the element open the native menu of the mod.

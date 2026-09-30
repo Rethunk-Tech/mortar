@@ -6,6 +6,7 @@ import ReactDOM from 'react-dom/client'
 import { App } from './App.tsx'
 import { i18n } from './i18n/index.ts'
 import { initLaunch } from './launch/store.ts'
+import { sendMenuLabels } from './mods/menu.ts'
 import { initNexus } from './settings/nexus.ts'
 import { initSettings } from './settings/store.ts'
 import { Themed } from './Themed.tsx'
@@ -15,6 +16,7 @@ import './theme/fonts.ts'
 initSettings().catch(reportUnexpected)
 initNexus().catch(reportUnexpected)
 initLaunch()
+sendMenuLabels().catch(reportUnexpected)
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

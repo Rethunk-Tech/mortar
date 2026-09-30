@@ -147,6 +147,7 @@ msgstr "Bundled with SMAPI"
 msgid "Its folder in this profile is deleted."
 msgstr "Its folder in this profile is deleted."
 
+#: src/mods/menu.ts:52
 #: src/mods/parts.tsx:162
 #: src/mods/parts.tsx:198
 msgid "Show files"
@@ -285,7 +286,7 @@ msgstr "One step in Steam"
 msgid "Rename profile"
 msgstr "Rename profile"
 
-#: src/mods/menu.ts:81
+#: src/mods/menu.ts:108
 msgid "Could not run that action"
 msgstr "Could not run that action"
 
@@ -403,6 +404,7 @@ msgstr "Stardew green"
 msgid "Delete"
 msgstr "Delete"
 
+#: src/mods/menu.ts:48
 #: src/mods/parts.tsx:195
 msgid "Disable"
 msgstr "Disable"
@@ -590,15 +592,15 @@ msgstr "About Mortar"
 msgid "Open console"
 msgstr "Open console"
 
+#: src/mods/menu.ts:42
+msgid "Open on GitHub"
+msgstr "Open on GitHub"
+
 #: src/game/Detail.tsx:116
 #: src/game/NewProfileDialog.tsx:48
 #: src/profiles/ProfilesPage.tsx:155
 msgid "Profile name"
 msgstr "Profile name"
-
-#: src/mods/parts.tsx:197
-msgid "Open mod page"
-msgstr "Open mod page"
 
 #. placeholder {0}: mod.name
 #: src/mods/store.ts:143
@@ -884,6 +886,7 @@ msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was add
 msgid "Stardew Valley"
 msgstr "Stardew Valley"
 
+#: src/mods/menu.ts:49
 #: src/mods/parts.tsx:196
 #: src/mods/Sidebar.tsx:119
 msgid "More details"
@@ -1029,6 +1032,7 @@ msgstr "Create your first profile"
 msgid "Moss"
 msgstr "Moss"
 
+#: src/mods/menu.ts:47
 #: src/mods/parts.tsx:195
 msgid "Enable"
 msgstr "Enable"
@@ -1063,6 +1067,7 @@ msgstr "Open folder"
 msgid "Default background"
 msgstr "Default background"
 
+#: src/mods/menu.ts:42
 #: src/saves/SavesTab.tsx:61
 msgid "Open on Nexus"
 msgstr "Open on Nexus"
@@ -1196,6 +1201,7 @@ msgstr "Running {time}"
 msgid "Built on"
 msgstr "Built on"
 
+#: src/mods/menu.ts:53
 #: src/mods/parts.tsx:177
 #: src/mods/parts.tsx:199
 #: src/mods/parts.tsx:277

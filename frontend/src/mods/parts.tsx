@@ -33,7 +33,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { useDescribe } from './describe.ts'
 import { useDetail } from './detail.ts'
 import { concerns, modId, problemsOf, siblingsOf, updateFor } from './lookup.ts'
-import { openPage, useMenuState } from './menu.ts'
+import { openPage, pageLabel, useMenuState } from './menu.ts'
 import { paper } from './paper.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
@@ -41,7 +41,7 @@ import { useUpdates } from './updates.ts'
 const ICONS: Record<string, ReactNode> = {
   toggle: <Power size={16} />,
   details: <Info size={16} />,
-  nexus: <ExternalLink size={16} />,
+  page: <ExternalLink size={16} />,
   files: <FolderOpen size={16} />,
   remove: <Trash2 size={16} />,
 }
@@ -194,7 +194,7 @@ export function ModMenu({ mod, removable }: { mod: Mod; removable: boolean }) {
   const labels: Record<string, string> = {
     toggle: mod.enabled ? t`Disable` : t`Enable`,
     details: t`More details`,
-    nexus: t`Open mod page`,
+    page: pageLabel(state.host),
     files: t`Show files`,
     remove: t`Remove`,
   }
@@ -204,7 +204,7 @@ export function ModMenu({ mod, removable }: { mod: Mod; removable: boolean }) {
       setDetail(mod)
       setOpen(true)
     },
-    nexus: () => (page ? openPage(page).catch(reportUnexpected) : undefined),
+    page: () => (page ? openPage(page).catch(reportUnexpected) : undefined),
     files: () => showFiles(mod).catch(reportUnexpected),
     remove: () => askRemove(mod),
   }
@@ -216,7 +216,7 @@ export function ModMenu({ mod, removable }: { mod: Mod; removable: boolean }) {
         onClick={(e) => {
           e.stopPropagation()
           const target = e.currentTarget
-          Actions(state.enabled, state.hasPage, state.removable)
+          Actions(state.enabled, state.host, state.removable)
             .then((list) => {
               setActions(list ?? [])
               setAnchor(target)

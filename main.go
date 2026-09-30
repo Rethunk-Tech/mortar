@@ -101,6 +101,8 @@ func main() {
 	profileSvc := profile.NewService(profiles)
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
 
+	menuSvc := &modmenu.Service{}
+
 	app := application.New(application.Options{
 		Name:        "Mortar",
 		Description: "Multi-game desktop mod manager",
@@ -108,7 +110,7 @@ func main() {
 			application.NewService(svc), application.NewService(gamesSvc),
 			application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
 			application.NewService(savesSvc), application.NewService(nexusSvc),
-			application.NewService(problemsSvc), application.NewService(&modmenu.Service{}),
+			application.NewService(problemsSvc), application.NewService(menuSvc),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -131,7 +133,7 @@ func main() {
 	launches.App = app
 	pick.App = app
 	nexusSvc.App = app
-	modmenu.Register(app, modmenu.Backend{
+	menuSvc.Register(app, modmenu.Backend{
 		SetEnabled: func(t modmenu.Target, enabled bool) (profile.Profile, error) {
 			return profileSvc.SetModEnabled(t.Game, t.Profile, t.Key, t.UniqueID, enabled)
 		},
