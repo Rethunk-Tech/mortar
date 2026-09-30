@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { Copy } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import { preselect, problemCount, updateCount, updateFor } from './lookup.ts'
+import { preselect, problemCount, reshow, updateCount, updateFor } from './lookup.ts'
 
 const copy = (key: string, newest: boolean, nexus = false): Copy => ({
   key,
@@ -50,4 +50,12 @@ test('an update belongs to one copy of a mod', () => {
   expect(updateCount(result)).toBe(1)
   expect(updateFor(result, { key: 'a-1', uniqueId: 'me.a' })).toBe(update)
   expect(updateFor(result, { key: 'a-2', uniqueId: 'me.a' })).toBeUndefined()
+})
+
+test('reshow keeps the loaded extras when the open mod is shown again', () => {
+  const extras = { id: 'a/b' }
+  const open = { detailId: 'a/b', extras }
+  expect(reshow(open, { key: 'a', uniqueId: 'b' })).toEqual(open)
+  expect(reshow(open, { key: 'a', uniqueId: 'c' })).toEqual({ detailId: 'a/c', extras: null })
+  expect(reshow(open, null)).toEqual({ detailId: '', extras: null })
 })

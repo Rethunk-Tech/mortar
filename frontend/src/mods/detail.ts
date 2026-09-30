@@ -14,7 +14,7 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useToasts } from '../toasts/store.ts'
-import { modId } from './lookup.ts'
+import { modId, reshow } from './lookup.ts'
 import { useMods } from './store.ts'
 
 interface Extras {
@@ -43,7 +43,7 @@ export const useDetail = create<{
 }>((set, get) => ({
   detailId: '',
   extras: null,
-  show: (mod) => set({ detailId: mod ? modId(mod) : '', extras: null }),
+  show: (mod) => set((s) => reshow(s, mod)),
   loadExtras: async (mod) => {
     const target = open()
     if (!target) {

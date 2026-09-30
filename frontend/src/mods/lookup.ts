@@ -21,6 +21,15 @@ export const sourceKind = (profile: Profile, mod: Mod) =>
 // A mod is told apart by its entry too, since two entries can hold the same UniqueID.
 export const modId = (mod: Pick<Mod, 'key' | 'uniqueId'>) => `${mod.key}/${mod.uniqueId}`
 
+// Showing the mod already open keeps what the panel loaded: it will not load again, since the mod is unchanged.
+export const reshow = <E extends { id: string }>(
+  s: { detailId: string; extras: E | null },
+  mod: Pick<Mod, 'key' | 'uniqueId'> | null,
+) => {
+  const detailId = mod ? modId(mod) : ''
+  return { detailId, extras: detailId === s.detailId ? s.extras : null }
+}
+
 export type Problem =
   | { kind: 'broken'; broken: Broken }
   | { kind: 'missing'; missing: Missing }
