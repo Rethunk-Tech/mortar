@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Tab, Tabs, Tooltip, Typography } from '@mui/material'
-import { Pencil, Plus, RotateCcw, Settings2, Share2 } from 'lucide-react'
+import { Palette, Pencil, Plus, RotateCcw, Settings2, Share2 } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
@@ -11,6 +11,7 @@ import { ModsTab } from '../mods/ModsTab.tsx'
 import { useNav } from '../nav/store.ts'
 import { NotesTab } from '../notes/NotesTab.tsx'
 import { userModCount } from '../profiles/count.ts'
+import { EditProfileDialog } from '../profiles/EditProfileDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { SavesTab } from '../saves/SavesTab.tsx'
 import { useSaves } from '../saves/store.ts'
@@ -55,12 +56,91 @@ function Card({ label, value, onClick }: { label: string; value: string; onClick
   )
 }
 
-function Hero({ profile, game }: { profile: Profile; game: string }) {
+function HeroName({ profile, game, meta }: { profile: Profile; game: string; meta: string[] }) {
   const { t } = useLingui()
   const rename = useProfiles((s) => s.rename)
   const [editing, setEditing] = useState(false)
+  const [editingProfile, setEditingProfile] = useState(false)
   const pencil = useRef<HTMLButtonElement>(null)
   useRestoreFocus(editing, pencil)
+  return (
+    <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {editing ? (
+          <NameField
+            initial={profile.name}
+            label={t`Profile name`}
+            onSubmit={(name) =>
+              name.trim() === profile.name ? Promise.resolve(true) : rename(profile.id, name)
+            }
+            onCancel={() => setEditing(false)}
+          />
+        ) : (
+          <>
+            <Typography
+              noWrap={true}
+              sx={{
+                fontSize: 44,
+                fontWeight: 700,
+                lineHeight: 1.1,
+                color: '#ffffff',
+                textShadow: '0 0 32px rgba(255,255,255,0.45)',
+                [compact]: { fontSize: 18, lineHeight: 1.3 },
+              }}
+            >
+              {profile.name}
+            </Typography>
+            <IconButton
+              ref={pencil}
+              aria-label={t`Rename profile`}
+              onClick={() => setEditing(true)}
+              size="small"
+            >
+              <Pencil size={16} />
+            </IconButton>
+            <IconButton
+              aria-label={t`Edit profile`}
+              onClick={() => setEditingProfile(true)}
+              size="small"
+            >
+              <Palette size={16} />
+            </IconButton>
+            <CoverButton game={game} profile={profile} />
+          </>
+        )}
+      </Box>
+      {profile.description ? (
+        <Typography
+          noWrap={true}
+          title={profile.description}
+          sx={{
+            mt: 0.5,
+            fontSize: 13,
+            color: 'rgba(255,255,255,0.72)',
+            textShadow: '0 1px 8px rgba(0,0,0,0.55)',
+            [compact]: { display: 'none' },
+          }}
+        >
+          {profile.description}
+        </Typography>
+      ) : null}
+      <Typography
+        noWrap={true}
+        sx={{ display: 'none', fontSize: 12, [compact]: { display: 'block' } }}
+      >
+        {meta.join(' · ')}
+      </Typography>
+      <EditProfileDialog
+        profile={profile}
+        open={editingProfile}
+        onClose={() => setEditingProfile(false)}
+      />
+    </Box>
+  )
+}
+
+function Hero({ profile, game }: { profile: Profile; game: string }) {
+  const { t } = useLingui()
   const mods = userModCount(profile)
   const setTab = useTab((s) => s.setTab)
   const fits = useSaves((s) => s.fits)
@@ -116,51 +196,7 @@ function Hero({ profile, game }: { profile: Profile; game: string }) {
           [compact]: { top: 0, bottom: 0, left: 12, right: 12, alignItems: 'center' },
         }}
       >
-        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {editing ? (
-              <NameField
-                initial={profile.name}
-                label={t`Profile name`}
-                onSubmit={(name) =>
-                  name.trim() === profile.name ? Promise.resolve(true) : rename(profile.id, name)
-                }
-                onCancel={() => setEditing(false)}
-              />
-            ) : (
-              <>
-                <Typography
-                  noWrap={true}
-                  sx={{
-                    fontSize: 44,
-                    fontWeight: 700,
-                    lineHeight: 1.1,
-                    color: '#ffffff',
-                    textShadow: '0 0 32px rgba(255,255,255,0.45)',
-                    [compact]: { fontSize: 18, lineHeight: 1.3 },
-                  }}
-                >
-                  {profile.name}
-                </Typography>
-                <IconButton
-                  ref={pencil}
-                  aria-label={t`Rename profile`}
-                  onClick={() => setEditing(true)}
-                  size="small"
-                >
-                  <Pencil size={16} />
-                </IconButton>
-                <CoverButton game={game} profile={profile} />
-              </>
-            )}
-          </Box>
-          <Typography
-            noWrap={true}
-            sx={{ display: 'none', fontSize: 12, [compact]: { display: 'block' } }}
-          >
-            {meta.join(' · ')}
-          </Typography>
-        </Box>
+        <HeroName profile={profile} game={game} meta={meta} />
         <Box sx={{ display: 'flex', gap: 1, [compact]: { display: 'none' } }}>
           <Card label={t`Mods`} value={String(mods)} />
           {total === 0 ? (

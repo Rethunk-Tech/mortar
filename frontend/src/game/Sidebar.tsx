@@ -8,6 +8,7 @@ import { HelpDialog } from '../console/HelpDialog.tsx'
 import { PlayControl } from '../launch/PlayControl.tsx'
 import { useBadges } from '../mods/badges.ts'
 import { useNav } from '../nav/store.ts'
+import { ProfileMark } from '../profiles/ProfileMark.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { QueueButton } from '../queue/QueueButton.tsx'
 import { HistoryButton } from '../toasts/HistoryButton.tsx'
@@ -142,15 +143,27 @@ function ProfileButton({
       <Box
         component="span"
         sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
           flex: 1,
           minWidth: 0,
           overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
           [compact]: { display: 'none' },
         }}
       >
-        {profile.name}
+        <ProfileMark profile={profile} size={22} />
+        <Box
+          component="span"
+          sx={{
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {profile.name}
+        </Box>
       </Box>
       <Badges profile={profile} />
       <Box
@@ -160,10 +173,14 @@ function ProfileButton({
           display: 'none',
           fontWeight: 700,
           color: '#ffffff',
-          [compact]: { display: 'inline' },
+          [compact]: { display: 'inline-flex' },
         }}
       >
-        {initials(profile.name)}
+        {profile.color || profile.icon ? (
+          <ProfileMark profile={profile} size={28} />
+        ) : (
+          initials(profile.name)
+        )}
       </Box>
     </ButtonBase>
   )

@@ -1,0 +1,137 @@
+import { useLingui } from '@lingui/react/macro'
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { useEffect, useState } from 'react'
+import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import {
+  clipDescription,
+  colorHex,
+  MAX_DESCRIPTION,
+  PROFILE_COLORS,
+  PROFILE_ICONS,
+} from './appearance.ts'
+import { ProfileMark } from './ProfileMark.tsx'
+import { useProfiles } from './store.ts'
+
+export function EditProfileDialog({
+  profile,
+  open,
+  onClose,
+}: {
+  profile: Profile
+  open: boolean
+  onClose: () => void
+}) {
+  const { t } = useLingui()
+  const setAppearance = useProfiles((s) => s.setAppearance)
+  const [color, setColor] = useState(profile.color ?? '')
+  const [icon, setIcon] = useState(profile.icon ?? '')
+  const [description, setDescription] = useState(profile.description ?? '')
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    if (open) {
+      setColor(profile.color ?? '')
+      setIcon(profile.icon ?? '')
+      setDescription(profile.description ?? '')
+    }
+  }, [open, profile.color, profile.description, profile.icon])
+  const save = async () => {
+    if (busy) {
+      return
+    }
+    setBusy(true)
+    try {
+      await setAppearance(profile.id, color, icon, clipDescription(description))
+      onClose()
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      transitionDuration={0}
+      slotProps={{ paper: { sx: { bgcolor: 'rgb(40,40,48)', minWidth: 400 } } }}
+    >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          save().catch(reportUnexpected)
+        }}
+      >
+        <DialogTitle>{t`Edit profile`}</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Colour`}</Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
+            {PROFILE_COLORS.map((token) => (
+              <IconButton
+                key={token}
+                aria-label={token}
+                aria-pressed={color === token}
+                onClick={() => setColor(color === token ? '' : token)}
+                sx={{
+                  width: 32,
+                  height: 32,
+                  bgcolor: colorHex(token),
+                  outline: color === token ? '2px solid #fff' : '2px solid transparent',
+                  outlineOffset: 1,
+                  '&:hover': { bgcolor: colorHex(token) },
+                }}
+              />
+            ))}
+          </Box>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Icon`}</Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
+            {PROFILE_ICONS.map((name) => (
+              <IconButton
+                key={name}
+                aria-label={name}
+                aria-pressed={icon === name}
+                onClick={() => setIcon(icon === name ? '' : name)}
+                sx={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '6px',
+                  bgcolor: icon === name ? 'rgba(255,255,255,0.12)' : 'transparent',
+                }}
+              >
+                <ProfileMark profile={{ ...profile, color, icon: name }} size={28} />
+              </IconButton>
+            ))}
+          </Box>
+          <TextField
+            fullWidth={true}
+            margin="dense"
+            multiline={true}
+            minRows={2}
+            label={t`Description`}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            helperText={`${[...description].length}/${MAX_DESCRIPTION}`}
+            slotProps={{
+              htmlInput: { maxLength: MAX_DESCRIPTION },
+              root: { sx: { userSelect: 'text' } },
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose} sx={{ whiteSpace: 'nowrap' }}>{t`Cancel`}</Button>
+          <Button type="submit" variant="contained" disabled={busy} sx={{ whiteSpace: 'nowrap' }}>
+            {t`Save`}
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
+  )
+}

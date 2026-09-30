@@ -14,6 +14,7 @@ import {
   Rename,
   Reorder,
   Restore,
+  SetAppearance,
   SetHidden,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { SetLastProfile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
@@ -53,6 +54,7 @@ export const useProfiles = create<{
   create: (name: string) => Promise<void>
   // Rejects with the reason when the name is refused, for the field to show.
   rename: (id: string, name: string) => Promise<boolean>
+  setAppearance: (id: string, color: string, icon: string, description: string) => Promise<void>
   replace: (profile: Profile) => void
   refresh: () => Promise<void>
   loadTrash: () => Promise<void>
@@ -108,6 +110,12 @@ export const useProfiles = create<{
     const p = await Rename(game.id, id, name)
     set((s) => ({ profiles: s.profiles.map((x) => (x.id === id ? p : x)) }))
     return true
+  },
+  setAppearance: async (id, color, icon, description) => {
+    const { game } = get()
+    if (game) {
+      get().replace(await SetAppearance(game.id, id, color, icon, description))
+    }
   },
   replace: (p) => set((s) => ({ profiles: s.profiles.map((x) => (x.id === p.id ? p : x)) })),
   refresh: async () => {

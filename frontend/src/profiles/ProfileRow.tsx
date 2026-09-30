@@ -11,6 +11,7 @@ import {
   Menu,
   MenuItem,
   type MenuItemProps,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import {
@@ -20,6 +21,7 @@ import {
   GitCompare,
   GripVertical,
   MoreHorizontal,
+  Palette,
   Pencil,
   Share2,
   Trash2,
@@ -32,6 +34,8 @@ import { useBadges } from '../mods/badges.ts'
 import { openShare } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { userModCount } from './count.ts'
+import { EditProfileDialog } from './EditProfileDialog.tsx'
+import { ProfileMark } from './ProfileMark.tsx'
 import { useProfiles } from './store.ts'
 import { joinSummary, knownCount, originLine } from './summary.ts'
 
@@ -61,6 +65,7 @@ function RowMenu({
   anchor,
   onClose,
   onRename,
+  onEdit,
   onDelete,
   onCompare,
   canCompare,
@@ -70,6 +75,7 @@ function RowMenu({
   anchor: HTMLElement | null
   onClose: () => void
   onRename: () => void
+  onEdit: () => void
   onDelete: (p: Profile) => void
   onCompare: () => void
   canCompare: boolean
@@ -109,6 +115,9 @@ function RowMenu({
     >
       <Item icon={<Pencil size={15} />} onClick={choose(onRename, false)}>
         {t`Rename`}
+      </Item>
+      <Item icon={<Palette size={15} />} onClick={choose(onEdit, false)}>
+        {t`Edit profile`}
       </Item>
       <Item
         icon={<Copy size={15} />}
@@ -175,6 +184,7 @@ export function ProfileRow({
   const { t } = useLingui()
   const rename = useProfiles((s) => s.rename)
   const [renaming, setRenaming] = useState(false)
+  const [editing, setEditing] = useState(false)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const more = useRef<HTMLButtonElement>(null)
   useRestoreFocus(renaming, more)
@@ -199,7 +209,9 @@ export function ProfileRow({
         display: 'flex',
         alignItems: 'center',
         gap: 1.5,
-        height: 64,
+        height: 'auto',
+        minHeight: 64,
+        py: 0.75,
         px: 1,
         boxSizing: 'border-box',
         mb: '6px',
@@ -239,6 +251,7 @@ export function ProfileRow({
           />
         ) : (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ProfileMark profile={profile} />
             <Typography noWrap={true} sx={{ fontSize: 17, fontWeight: 600 }}>
               {profile.name}
             </Typography>
@@ -252,6 +265,13 @@ export function ProfileRow({
             ) : null}
           </Box>
         )}
+        {profile.description ? (
+          <Tooltip title={profile.description}>
+            <Typography noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
+              {profile.description}
+            </Typography>
+          </Tooltip>
+        ) : null}
         <Typography noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
           {summary}
         </Typography>
@@ -286,11 +306,13 @@ export function ProfileRow({
         anchor={anchor}
         onClose={() => setAnchor(null)}
         onRename={() => setRenaming(true)}
+        onEdit={() => setEditing(true)}
         onDelete={onDelete}
         onCompare={() => onCompare(profile)}
         canCompare={canCompare}
         returnFocus={() => more.current?.focus()}
       />
+      <EditProfileDialog profile={profile} open={editing} onClose={() => setEditing(false)} />
     </Box>
   )
 }
