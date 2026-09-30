@@ -13,6 +13,7 @@ func TestFileURLPath(t *testing.T) {
 		{"linux", "file:///tmp/pack.mortar", filepath.FromSlash("/tmp/pack.mortar")},
 		{"windows", "file:///C:/Users/x.mortar", filepath.FromSlash("C:/Users/x.mortar")},
 		{"uncoded space", "file:///tmp/a%20b.mortar", filepath.FromSlash("/tmp/a b.mortar")},
+		{"unc", "file://server/share/pack.mortar", filepath.FromSlash(`\\server/share/pack.mortar`)},
 		{"plain", `/tmp/plain.mortar`, `/tmp/plain.mortar`},
 	}
 	for _, tc := range cases {
