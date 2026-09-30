@@ -15,7 +15,7 @@ import { OpenDataFolder } from '../../bindings/github.com/Rethunk-AI/mortar/inte
 import { Logo } from '../brand/Logo.tsx'
 import { compact } from '../game/compact.ts'
 import { openSettings } from '../nav/store.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { NexusAccount } from './NexusAccount.tsx'
 
@@ -32,7 +32,7 @@ export function AppMenu() {
       useToasts.getState().push({
         kind: 'error',
         title: t`Could not quit Mortar`,
-        body: e instanceof Error ? e.message : String(e),
+        body: errorMessage(e),
       }),
     )
   }

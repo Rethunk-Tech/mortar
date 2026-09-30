@@ -9,6 +9,7 @@ import {
   Send,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { DEFAULT_FILTERS, type Filters } from './filter.ts'
 import { pushCommand } from './history.ts'
@@ -67,7 +68,7 @@ export const useConsole = create<{
       useToasts.getState().push({
         kind: 'error',
         title: i18n._(msg`Could not read the SMAPI log`),
-        body: String(e),
+        body: errorMessage(e),
       })
     }
   },
@@ -79,7 +80,7 @@ export const useConsole = create<{
       useToasts.getState().push({
         kind: 'error',
         title: i18n._(msg`Could not run the command`),
-        body: String(e),
+        body: errorMessage(e),
       })
       return false
     }

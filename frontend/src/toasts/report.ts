@@ -6,7 +6,7 @@ import { useToasts } from './store.ts'
 export const reportUnexpected = (e: unknown) => {
   useToasts
     .getState()
-    .push({ kind: 'error', title: i18n._(msg`Something went wrong`), body: String(e) })
+    .push({ kind: 'error', title: i18n._(msg`Something went wrong`), body: errorMessage(e) })
 }
 
 export function errorText(e: unknown): string | undefined {
@@ -15,3 +15,5 @@ export function errorText(e: unknown): string | undefined {
   }
   return typeof e === 'string' ? e : undefined
 }
+
+export const errorMessage = (e: unknown) => errorText(e) ?? String(e)

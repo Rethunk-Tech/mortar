@@ -7,6 +7,7 @@ import { List } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profi
 import { SetLastGame } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { useNav } from '../nav/store.ts'
+import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type GameStatus, loadGameStatus } from './status.ts'
 
@@ -32,7 +33,7 @@ function Row({ game, openable, note }: { game: Game; openable: boolean; note: st
     SetLastGame(game.id).catch((e: unknown) =>
       useToasts
         .getState()
-        .push({ kind: 'error', title: t`Could not save the last game`, body: String(e) }),
+        .push({ kind: 'error', title: t`Could not save the last game`, body: errorMessage(e) }),
     )
     useNav.getState().openGame(game.id)
   }
@@ -130,7 +131,7 @@ export function GameSelect() {
       .catch((e: unknown) =>
         useToasts
           .getState()
-          .push({ kind: 'error', title: t`Could not read your games`, body: String(e) }),
+          .push({ kind: 'error', title: t`Could not read your games`, body: errorMessage(e) }),
       )
   }, [t])
   if (!status) {

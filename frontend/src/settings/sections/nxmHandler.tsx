@@ -15,7 +15,7 @@ import {
   Owner,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/service.ts'
 import { paper } from '../../mods/paper.ts'
-import { errorText } from '../../toasts/report.ts'
+import { errorMessage } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { useSettings } from '../store.ts'
 
@@ -39,7 +39,7 @@ export function useNxmHandler(): {
     useToasts.getState().push({
       kind: 'error',
       title: t`Could not change how Nexus links open`,
-      body: errorText(e) ?? String(e),
+      body: errorMessage(e),
     })
   const change = (on: boolean) => {
     const done = on ? Enable() : Disable()

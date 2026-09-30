@@ -4,6 +4,7 @@ import type { UpdatesResult } from '../../bindings/github.com/Rethunk-AI/mortar/
 import { Updates } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useBadges } from './badges.ts'
 import { updateCount } from './lookup.ts'
@@ -31,7 +32,7 @@ export const useUpdates = create<{
       useToasts.getState().push({
         kind: 'error',
         title: i18n._(msg`Could not check the mods for updates`),
-        body: String(e),
+        body: errorMessage(e),
       })
     }
   },
