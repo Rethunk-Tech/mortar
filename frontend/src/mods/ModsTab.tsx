@@ -2,12 +2,15 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Card, Chip, CircularProgress, Typography } from '@mui/material'
 import { Download } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compact } from '../game/compact.ts'
+import { useLaunch } from '../launch/store.ts'
 import { userModCount } from '../profiles/count.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
@@ -16,6 +19,7 @@ import { DuplicateDialog } from './DuplicateDialog.tsx'
 import { useDetail } from './detail.ts'
 import { emptyGroupLabel, firstTag, groupSorted, sanitizeListGroupBy } from './group.ts'
 import { LockedNote } from './LockedNote.tsx'
+import { useLastRun } from './lastRun.ts'
 import { compareListRows, sanitizeListSort } from './listColumns.ts'
 import { toListRow } from './listRows.ts'
 import { entryOf, modId, nexusIdOf } from './lookup.ts'
@@ -26,7 +30,14 @@ import { ModsGroupHeader } from './ModsGroupHeader.tsx'
 import { contextMenuProps, useContextMenu } from './menu.ts'
 import { primeDetails, useNexusDetails, useNexusFresh } from './nexusDetails.ts'
 import { ProblemBar } from './ProblemBar.tsx'
-import { LetterTile, PinBadge, ProblemBadge, RemoveDialog, UpdateBadge } from './parts.tsx'
+import {
+  LastRunBadge,
+  LetterTile,
+  PinBadge,
+  ProblemBadge,
+  RemoveDialog,
+  UpdateBadge,
+} from './parts.tsx'
 import { SelectionBar } from './SelectionBar.tsx'
 import { ModSidebar } from './Sidebar.tsx'
 import { useSelection } from './selection.ts'
@@ -145,6 +156,7 @@ function ModCard({
       <PinBadge mod={m} />
       <UpdateBadge mod={m} />
       <ProblemBadge mod={m} />
+      <LastRunBadge mod={m} />
       {tag ? <Chip size="small" label={tag} sx={{ maxWidth: 96 }} /> : null}
       <ModMenu mod={m} />
     </Card>
@@ -287,7 +299,18 @@ export function ModsTab({ profile }: { profile: Profile }) {
   const mods = useMods((s) => s.mods)
   const view = useMods((s) => s.view)
   const load = useMods((s) => s.load)
+  const gameId = useProfiles((s) => s.game?.id)
+  const launchState = useLaunch((s) => s.status?.state)
   const [query, setQuery] = useState('')
+  useEffect(() => {
+    if (!gameId || launchState === State.Launching || launchState === State.Running) {
+      return
+    }
+    useLastRun
+      .getState()
+      .load(gameId, profile.id)
+      .then(() => undefined)
+  }, [gameId, profile.id, launchState])
   useEffect(() => {
     const pending = useDetail.getState().pendingId
     useMods.setState({

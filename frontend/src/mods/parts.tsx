@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -20,6 +21,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/p
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useDescribe } from './describe.ts'
+import { useLastRun } from './lastRun.ts'
 import { concerns, entryOf, modId, problemsOf, siblingsOf, updateFor } from './lookup.ts'
 import { NewDot } from './NewSince.tsx'
 import { paper } from './paper.ts'
@@ -108,6 +110,45 @@ export function ProblemBadge({ mod }: { mod: Mod }) {
         <TriangleAlert size={16} />
       </Box>
     </Tooltip>
+  )
+}
+
+export function LastRunBadge({ mod }: { mod: Mod }) {
+  const { t } = useLingui()
+  const hit = useLastRun((s) => s.byId[mod.uniqueId])
+  if (!hit || (hit.errors === 0 && hit.warnings === 0)) {
+    return null
+  }
+  const errors = hit.errors ? t`${plural(hit.errors, { one: '# error', other: '# errors' })}` : ''
+  const warnings = hit.warnings
+    ? t`${plural(hit.warnings, { one: '# warning', other: '# warnings' })}`
+    : ''
+  const text = [errors, warnings].filter((p) => p !== '').join(', ')
+  const chipSx = {
+    minWidth: 16,
+    height: 16,
+    px: 0.4,
+    borderRadius: '4px',
+    color: 'common.white',
+    fontSize: 11,
+    fontWeight: 700,
+    lineHeight: '16px',
+    textAlign: 'center',
+    flexShrink: 0,
+  } as const
+  return (
+    <Box sx={{ display: 'flex', flexShrink: 0, gap: 0.4 }} aria-label={t`Last run: ${text}`}>
+      {hit.errors > 0 ? (
+        <Box role="img" aria-label={errors} sx={{ ...chipSx, bgcolor: 'error.main' }}>
+          {hit.errors}
+        </Box>
+      ) : null}
+      {hit.warnings > 0 ? (
+        <Box role="img" aria-label={warnings} sx={{ ...chipSx, bgcolor: 'warning.main' }}>
+          {hit.warnings}
+        </Box>
+      ) : null}
+    </Box>
   )
 }
 

@@ -54,7 +54,14 @@ import { contextMenuProps } from './menu.ts'
 import { primeDetails, useNexusDetails, useNexusFresh } from './nexusDetails.ts'
 import { formatCount, formatDate, isNewer } from './nexusFormat.ts'
 import { heading } from './paper.ts'
-import { LetterTile, ModSwitch, PinBadge, ProblemBadge, UpdateBadge } from './parts.tsx'
+import {
+  LastRunBadge,
+  LetterTile,
+  ModSwitch,
+  PinBadge,
+  ProblemBadge,
+  UpdateBadge,
+} from './parts.tsx'
 import { useSelection } from './selection.ts'
 
 const SELECTED_ALPHA = 0.14
@@ -82,6 +89,7 @@ const COLUMN_LABELS: Record<ListColumnId, MessageDescriptor> = {
   needs: msg`Needs`,
   status: msg`Status`,
   notes: msg`Notes and tags`,
+  lastRun: msg`Last run`,
 }
 
 function headerLabel(id: ListColumnId): string {
@@ -231,6 +239,12 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string) {
               {row.status}
             </Box>
           </Box>
+        </Cell>
+      )
+    case 'lastRun':
+      return (
+        <Cell key="lastRun">
+          <LastRunBadge mod={m} />
         </Cell>
       )
     case 'notes': {

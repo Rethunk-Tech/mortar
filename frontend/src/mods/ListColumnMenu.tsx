@@ -21,6 +21,7 @@ const COLUMN_LABELS: Record<ListColumnId, MessageDescriptor> = {
   needs: msg`Needs`,
   status: msg`Status`,
   notes: msg`Notes and tags`,
+  lastRun: msg`Last run`,
 }
 
 function columnLabel(id: ListColumnId): string {

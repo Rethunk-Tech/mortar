@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Drawer, Tooltip, Typography, useMediaQuery } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
@@ -14,6 +15,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useDescribe } from './describe.ts'
 import { useDetail } from './detail.ts'
+import { showLastRunInConsole, useLastRun } from './lastRun.ts'
 import {
   concerns,
   entryOf,
@@ -158,6 +160,33 @@ function ProblemLine({ mod }: { mod: Mod }) {
   )
 }
 
+function LastRunLine({ mod, profile }: { mod: Mod; profile: Profile }) {
+  const { t } = useLingui()
+  const game = useProfiles((s) => s.game?.id)
+  const hit = useLastRun((s) => s.byId[mod.uniqueId])
+  if (!hit || (hit.errors === 0 && hit.warnings === 0) || !game) {
+    return null
+  }
+  const errors = hit.errors ? t`${plural(hit.errors, { one: '# error', other: '# errors' })}` : ''
+  const warnings = hit.warnings
+    ? t`${plural(hit.warnings, { one: '# warning', other: '# warnings' })}`
+    : ''
+  const summary = [errors, warnings].filter((p) => p !== '').join(', ')
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, alignItems: 'flex-start' }}>
+      <Typography sx={{ fontSize: 13 }}>{t`Last run: ${summary}`}</Typography>
+      <Button
+        size="small"
+        variant="outlined"
+        onClick={() => showLastRunInConsole(game, profile.id, mod)}
+        sx={noWrap}
+      >
+        {t`Show in Console`}
+      </Button>
+    </Box>
+  )
+}
+
 function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id)
@@ -255,6 +284,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       {nexusId ? <NexusFields key={nexusId} mod={mod} nexusId={nexusId} /> : null}
       <UpdateBanner mod={mod} />
       <ProblemLine mod={mod} />
+      <LastRunLine mod={mod} profile={profile} />
       <ModDependencyTree mod={mod} />
       <AlsoInProfiles mod={mod} profile={profile} />
       <ModNoteTags profile={profile} mod={mod} />

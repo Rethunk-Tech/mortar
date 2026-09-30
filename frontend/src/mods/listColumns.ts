@@ -1,5 +1,6 @@
 import type { Details } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { lastRunOf } from './lastRun.ts'
 import { isNewer } from './nexusFormat.ts'
 
 const LIST_COLUMN_IDS = [
@@ -18,6 +19,7 @@ const LIST_COLUMN_IDS = [
   'needs',
   'status',
   'notes',
+  'lastRun',
 ] as const
 
 type ListColumnId = (typeof LIST_COLUMN_IDS)[number]
@@ -46,6 +48,7 @@ const NARROW_HIDE_LIST_COLUMNS: readonly ListColumnId[] = [
   'installed',
   'needs',
   'notes',
+  'lastRun',
 ]
 
 type ListSortDir = 'asc' | 'desc'
@@ -79,6 +82,7 @@ const LIST_COLUMN_WIDTH: Record<ListColumnId, string> = {
   needs: '140px',
   status: '100px',
   notes: '160px',
+  lastRun: '88px',
 }
 
 interface ListRow {
@@ -225,6 +229,14 @@ function notesText(row: ListRow): string {
   return [row.note, tags].filter((part) => part !== '').join(' · ')
 }
 
+function lastRunCounts(mod: Mod): { errors: number; warnings: number } | null {
+  const hit = lastRunOf(mod)
+  if (!hit || (hit.errors === 0 && hit.warnings === 0)) {
+    return null
+  }
+  return { errors: hit.errors, warnings: hit.warnings }
+}
+
 function compareListRows(a: ListRow, b: ListRow, sort: ListColumnSort): number {
   const { column, dir } = sort
   let primary = 0
@@ -313,6 +325,15 @@ function compareListRows(a: ListRow, b: ListRow, sort: ListColumnSort): number {
       const av = notesText(a)
       const bv = notesText(b)
       primary = missingLast(!av, !bv, dir, cmpText(av, bv))
+      break
+    }
+    case 'lastRun': {
+      const av = lastRunCounts(a.mod)
+      const bv = lastRunCounts(b.mod)
+      primary = missingLast(!av, !bv, dir, cmpNum(av?.errors ?? 0, bv?.errors ?? 0))
+      if (primary === 0 && av && bv) {
+        primary = missingLast(false, false, dir, cmpNum(av.warnings, bv.warnings))
+      }
       break
     }
     default:
