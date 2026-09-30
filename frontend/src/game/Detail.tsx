@@ -6,7 +6,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import { useProfiles } from '../profiles/store.ts'
 import { compact } from './compact.ts'
 import { NameField } from './NameField.tsx'
-import { NewProfilePopover } from './NewProfile.tsx'
+import { NewProfileDialog } from './NewProfileDialog.tsx'
 
 const fmt = (iso: unknown) => new Date(String(iso)).toLocaleDateString()
 
@@ -124,7 +124,7 @@ export function Detail() {
   const profiles = useProfiles((s) => s.profiles)
   const openId = useProfiles((s) => s.openId)
   const loaded = useProfiles((s) => s.loaded)
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const [creating, setCreating] = useState(false)
   const profile = profiles.find((p) => p.id === openId)
   if (!loaded) {
     return null
@@ -152,11 +152,11 @@ export function Detail() {
         <Button
           variant="contained"
           startIcon={<Plus size={16} />}
-          onClick={(e) => setAnchor(e.currentTarget)}
+          onClick={() => setCreating(true)}
         >
           <Trans>Create your first profile</Trans>
         </Button>
-        <NewProfilePopover anchor={anchor} onClose={() => setAnchor(null)} />
+        <NewProfileDialog open={creating} onClose={() => setCreating(false)} />
       </Box>
     )
   }

@@ -23,7 +23,7 @@ export const useProfiles = create<{
   loaded: boolean
   load: (gameId: string) => Promise<void>
   open: (id: string) => void
-  create: (name: string) => Promise<boolean>
+  create: (name: string) => Promise<void>
   rename: (id: string, name: string) => Promise<boolean>
 }>((set, get) => ({
   game: null,
@@ -52,17 +52,11 @@ export const useProfiles = create<{
   create: async (name) => {
     const { game } = get()
     if (!game) {
-      return false
+      throw new Error('no game open')
     }
-    try {
-      const p = await Create(game.id, name)
-      set((s) => ({ profiles: [...s.profiles, p] }))
-      get().open(p.id)
-      return true
-    } catch (e) {
-      fail(t`Could not create the profile`)(e)
-      return false
-    }
+    const p = await Create(game.id, name)
+    set((s) => ({ profiles: [...s.profiles, p] }))
+    get().open(p.id)
   },
   rename: async (id, name) => {
     const { game } = get()

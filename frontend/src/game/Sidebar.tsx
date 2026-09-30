@@ -5,7 +5,7 @@ import { type PointerEvent, useState } from 'react'
 import { openSettings } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { compact } from './compact.ts'
-import { NewProfilePopover } from './NewProfile.tsx'
+import { NewProfileDialog } from './NewProfileDialog.tsx'
 
 const MIN = 150
 const MAX = 300
@@ -37,7 +37,7 @@ export function Sidebar() {
   const openId = useProfiles((s) => s.openId)
   const open = useProfiles((s) => s.open)
   const [width, setWidth] = useState(storedWidth)
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const [creating, setCreating] = useState(false)
   const [drag, setDrag] = useState<{ x: number; w: number } | null>(null)
 
   const move = (e: PointerEvent<HTMLElement>) => {
@@ -143,7 +143,7 @@ export function Sidebar() {
           )
         })}
         <ButtonBase
-          onClick={(e) => setAnchor(e.currentTarget)}
+          onClick={() => setCreating(true)}
           sx={{
             width: '100%',
             justifyContent: 'flex-start',
@@ -172,7 +172,7 @@ export function Sidebar() {
       >
         <IconButton
           aria-label={t`New profile`}
-          onClick={(e) => setAnchor(e.currentTarget)}
+          onClick={() => setCreating(true)}
           sx={{ display: 'none', [compact]: { display: 'inline-flex' } }}
         >
           <Plus size={20} />
@@ -214,7 +214,7 @@ export function Sidebar() {
           [compact]: { display: 'none' },
         }}
       />
-      <NewProfilePopover anchor={anchor} onClose={() => setAnchor(null)} />
+      <NewProfileDialog open={creating} onClose={() => setCreating(false)} />
     </Box>
   )
 }
