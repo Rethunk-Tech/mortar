@@ -12,6 +12,9 @@ const defaults: Settings = {
   gameFolders: {},
   loaders: {},
   dismissed: {},
+  nexusUserId: 0,
+  nexusName: '',
+  nexusPremium: false,
 }
 
 export const useSettings = create<Settings>(() => defaults)

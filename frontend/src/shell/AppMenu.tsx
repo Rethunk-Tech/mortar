@@ -17,6 +17,7 @@ import { compact } from '../game/compact.ts'
 import { openSettings } from '../nav/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { NexusAccount } from './NexusAccount.tsx'
 
 const SOURCE = 'https://github.com/Rethunk-AI/mortar'
 
@@ -128,6 +129,7 @@ export function AppMenu() {
             <ListItemText primary={t`Quit`} />
           </ListItemButton>
         </List>
+        <NexusAccount onNavigate={close} />
       </Drawer>
     </>
   )
