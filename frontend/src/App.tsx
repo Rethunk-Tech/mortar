@@ -14,6 +14,7 @@ import { SettingsPage } from './settings/SettingsPage.tsx'
 import { ImportDialog } from './share/ImportDialog.tsx'
 import { ShareDialog } from './share/ShareDialog.tsx'
 import { AppFrame } from './shell/AppFrame.tsx'
+import { errorMessage } from './toasts/report.ts'
 import { useToasts } from './toasts/store.ts'
 import { ToastHost } from './toasts/ToastHost.tsx'
 
@@ -36,7 +37,7 @@ export function App() {
       .catch((e: unknown) =>
         useToasts
           .getState()
-          .push({ kind: 'error', title: t`Could not read your games`, body: String(e) }),
+          .push({ kind: 'error', title: t`Could not read your games`, body: errorMessage(e) }),
       )
       .finally(() => setReady(true))
   }, [t])

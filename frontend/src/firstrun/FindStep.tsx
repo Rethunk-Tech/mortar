@@ -7,7 +7,7 @@ import { PickFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal
 import { SetGameFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import type { GameStatus } from '../games/status.ts'
 import { useLoader } from '../loader/store.ts'
-import { errorText } from '../toasts/report.ts'
+import { errorMessage } from '../toasts/report.ts'
 import { STARDEW } from './needed.ts'
 import { Panel } from './Panel.tsx'
 
@@ -99,7 +99,7 @@ export function FindStep({
       setError('')
       refresh()
     } catch (e) {
-      setError(errorText(e) ?? String(e))
+      setError(errorMessage(e))
     }
   }
 

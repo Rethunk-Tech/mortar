@@ -13,7 +13,7 @@ export async function firstRunNeeded(games: GameInfo[]): Promise<boolean> {
   const [status, profiles] = await Promise.all([LocalStatus(STARDEW), List(STARDEW)])
   return shouldShowFirstRun({
     installed,
-    smapiReady: status.installed && !status.broken,
+    smapiInstalled: status.installed,
     profileCount: profiles?.length ?? 0,
   })
 }

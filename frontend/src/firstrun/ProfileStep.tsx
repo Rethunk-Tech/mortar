@@ -10,7 +10,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useNav } from '../nav/store.ts'
 import { openImport } from '../share/store.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { STARDEW } from './needed.ts'
 
 const cardSx = (borderColor: string) => ({
@@ -26,7 +26,7 @@ const cardSx = (borderColor: string) => ({
 
 export function ProfileStep() {
   const { t } = useLingui()
-  const [name, setName] = useState('Main')
+  const [name, setName] = useState(t`Main`)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [link, setLink] = useState('')
@@ -43,7 +43,7 @@ export function ProfileStep() {
       RegisterLinks().catch(reportUnexpected)
       useNav.getState().openGame(STARDEW)
     } catch (e) {
-      setError(String(e))
+      setError(errorMessage(e))
       setBusy(false)
     }
   }
