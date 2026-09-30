@@ -8,7 +8,7 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { GameModPreview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   ImportGameMods,
@@ -37,27 +37,58 @@ export function GameModsDialog({
   const [mods, setMods] = useState<GameModPreview[]>([])
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [previewing, setPreviewing] = useState(false)
+  const gen = useRef(0)
+  const live = useRef(false)
   useEffect(() => {
     if (!open) {
+      live.current = false
+      gen.current += 1
+      setMods([])
+      setError('')
+      setBusy(false)
+      setPreviewing(false)
       return
     }
+    live.current = true
+    gen.current += 1
+    const token = gen.current
+    setMods([])
     setError('')
+    setPreviewing(true)
     PreviewGameMods(game)
-      .then((p) => setMods(p.mods ?? []))
+      .then((p) => {
+        if (token !== gen.current || !live.current) {
+          return
+        }
+        setMods(p.mods ?? [])
+        setPreviewing(false)
+      })
       .catch((e: unknown) => {
+        if (token !== gen.current || !live.current) {
+          return
+        }
         setMods([])
         setError(errorMessage(e))
+        setPreviewing(false)
       })
   }, [open, game])
   const importable = mods.filter((m) => willImport(m.status)).length
   const importMods = async () => {
-    if (busy) {
+    if (busy || previewing || !live.current) {
       return
     }
+    const token = gen.current
     setBusy(true)
     try {
       const res = await ImportGameMods(game)
+      if (token !== gen.current || !live.current) {
+        return
+      }
       await load(game)
+      if (token !== gen.current || !live.current) {
+        return
+      }
       const detail = formatOutcomeDetail(res.outcomes ?? [])
       const toast = {
         kind: 'success' as const,
@@ -72,15 +103,20 @@ export function GameModsDialog({
       onImported(res.profile.id)
       onClose()
     } catch (e) {
+      if (token !== gen.current || !live.current) {
+        return
+      }
       setError(errorMessage(e))
     } finally {
-      setBusy(false)
+      if (token === gen.current) {
+        setBusy(false)
+      }
     }
   }
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={busy ? undefined : onClose}
       transitionDuration={0}
       slotProps={{ paper: { sx: { bgcolor: 'rgb(40,40,48)', minWidth: 420 } } }}
     >
@@ -109,12 +145,12 @@ export function GameModsDialog({
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} sx={{ whiteSpace: 'nowrap' }}>
+        <Button onClick={onClose} disabled={busy} sx={{ whiteSpace: 'nowrap' }}>
           {t`Cancel`}
         </Button>
         <Button
           variant="contained"
-          disabled={busy || importable === 0 || error !== ''}
+          disabled={busy || previewing || importable === 0 || error !== ''}
           onClick={() => importMods().catch(reportUnexpected)}
           sx={{ whiteSpace: 'nowrap' }}
         >
