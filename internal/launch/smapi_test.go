@@ -112,3 +112,13 @@ func TestLogOwnedByExpandsHome(t *testing.T) {
 		t.Error("a log without the line belongs to no profile")
 	}
 }
+
+func TestIncompatibleDetectsSMAPIsMaxVersionMessage(t *testing.T) {
+	line := "Oops! You're running Stardew Valley 1.6.16, but this version of SMAPI is only compatible up to Stardew Valley 1.6.15. Please check for a newer version of SMAPI: https://smapi.io."
+	if !Incompatible(line) {
+		t.Fatal("SMAPI's max-version Oops line must be recognised")
+	}
+	if Incompatible("[19:43:50 ERROR SMAPI] Failed to load a mod") {
+		t.Fatal("an ordinary error is not an incompatible-game message")
+	}
+}

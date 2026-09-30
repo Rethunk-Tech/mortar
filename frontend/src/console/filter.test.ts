@@ -8,6 +8,7 @@ import {
   DEFAULT_FILTERS,
   firstError,
   formatAll,
+  incompatibleSMAPI,
   isFiltered,
   modsOf,
   visible,
@@ -67,4 +68,13 @@ test('formatAll writes SMAPI lines, continuations bare', () => {
   expect(formatAll(log.slice(2, 5))).toBe(
     '[19:43:50 WARN  SMAPI] obsolete API\n[19:43:50 ERROR Love of Cooking] Failed to load:\n  needs SpaceCore',
   )
+})
+
+test('incompatible SMAPI is the max-version Oops line from SMAPI itself', () => {
+  expect(
+    incompatibleSMAPI(
+      "Oops! You're running Stardew Valley 1.6.16, but this version of SMAPI is only compatible up to Stardew Valley 1.6.15. Please check for a newer version of SMAPI: https://smapi.io.",
+    ),
+  ).toBe(true)
+  expect(incompatibleSMAPI('Failed to load a mod')).toBe(false)
 })

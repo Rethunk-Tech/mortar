@@ -11,11 +11,12 @@ import {
   Typography,
 } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
-import { ChevronDown, LifeBuoy, Search, X } from 'lucide-react'
+import { ChevronDown, Download, LifeBuoy, Search, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { useLaunch } from '../launch/store.ts'
+import { useLoader } from '../loader/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -23,6 +24,7 @@ import {
   countByLevel,
   firstError,
   formatAll,
+  incompatibleSMAPI,
   isFiltered,
   LEVELS,
   modsOf,
@@ -330,6 +332,42 @@ const actionSx = {
   color: '#ffffff',
 } as const
 
+function ReinstallLoader({ game }: { game: string }) {
+  const { t } = useLingui()
+  const install = useLoader((s) => s.install)
+  const installing = useLoader((s) => s.installing)
+  const pending = useLoader((s) => s.pending)
+  const playing = useLaunch(
+    (s) =>
+      s.starting ||
+      (s.status?.game === game &&
+        (s.status.state === State.Launching || s.status.state === State.Running)),
+  )
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        px: 2,
+        pb: 1,
+        flexShrink: 0,
+      }}
+    >
+      <Button
+        variant="contained"
+        size="small"
+        startIcon={<Download size={16} />}
+        disabled={pending || installing || playing}
+        onClick={() => install(game)}
+        sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+      >
+        {t`Reinstall`}
+      </Button>
+    </Box>
+  )
+}
+
 export function ConsoleTab({ game }: { game: string }) {
   const { t } = useLingui()
   const entries = useConsole((s) => s.entries)
@@ -340,6 +378,7 @@ export function ConsoleTab({ game }: { game: string }) {
   const { load, setMods, clearFilters, setTimestamps, setFollow } = useConsole.getState()
   const profile = useProfiles((s) => s.openId)
   const rows = useVisible()
+  const offerReinstall = entries.some((e) => incompatibleSMAPI(e.message))
   // Launching another profile resets the log to it; this one's history is read again once that launch settles.
   const launchingOther = useLaunch(
     (s) =>
@@ -424,6 +463,7 @@ export function ConsoleTab({ game }: { game: string }) {
           </Button>
         </Box>
       ) : null}
+      {offerReinstall ? <ReinstallLoader game={game} /> : null}
       <Box
         sx={{
           flex: 1,

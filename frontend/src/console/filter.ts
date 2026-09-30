@@ -4,6 +4,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 
 const LEVEL_WIDTH = 5
+const INCOMPATIBLE_GAME = 'this version of SMAPI is only compatible up to Stardew Valley'
 
 export const LEVELS = [Level.Trace, Level.Debug, Level.Info, Level.Warn, Level.Error, Level.Alert]
 
@@ -68,4 +69,8 @@ export function format(e: Entry): string {
 
 export function formatAll(rows: Entry[]): string {
   return rows.map(format).join('\n')
+}
+
+export function incompatibleSMAPI(message: string): boolean {
+  return message.includes(INCOMPATIBLE_GAME)
 }
