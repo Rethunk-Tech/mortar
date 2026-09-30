@@ -102,18 +102,6 @@ test('an update rolls back; a new install is removed', () => {
   expect(entryForItem(baseProfile(), item())?.key).toBe('k1')
 })
 
-test('undo of a new install removes the entry', async () => {
-  await undoInstall(item(), entry())
-  expect(calls.remove).toEqual(['k1'])
-  expect(calls.roll).toEqual([])
-})
-
-test('undo of an update rolls back', async () => {
-  await undoInstall(item({ kind: 'update' }), entry())
-  expect(calls.roll).toEqual(['k1'])
-  expect(calls.remove).toEqual([])
-})
-
 test('undo does nothing while the profile is locked', async () => {
   useLaunch.setState({
     status: {
@@ -125,7 +113,19 @@ test('undo does nothing while the profile is locked', async () => {
       error: '',
     },
   })
-  await undoInstall(item(), entry())
+  expect(await undoInstall(item(), entry())).toBe(false)
+  expect(calls.remove).toEqual([])
+})
+
+test('undo of a new install removes the entry', async () => {
+  expect(await undoInstall(item(), entry())).toBe(true)
+  expect(calls.remove).toEqual(['k1'])
+  expect(calls.roll).toEqual([])
+})
+
+test('undo of an update rolls back', async () => {
+  expect(await undoInstall(item({ kind: 'update' }), entry())).toBe(true)
+  expect(calls.roll).toEqual(['k1'])
   expect(calls.remove).toEqual([])
 })
 

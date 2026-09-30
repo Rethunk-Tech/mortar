@@ -60,10 +60,11 @@ test('a toast keeps its picture and action', () => {
     kind: 'success',
     title: 'SpaceCore installed',
     picture: 'https://example.test/mod.png',
-    action: { label: 'Undo', run },
+    action: { label: 'Undo', run, profileId: 'p1' },
   })
   const [toast] = useToasts.getState().toasts
   expect(toast?.picture).toBe('https://example.test/mod.png')
   expect(toast?.action?.label).toBe('Undo')
   expect(toast?.action?.run).toBe(run)
+  expect(toast?.action?.profileId).toBe('p1')
 })

@@ -63,7 +63,7 @@ function singleNexusFailure(failed: Item[]) {
 
 async function undoInstall(item: Item, entry: Entry | undefined) {
   if (!entry || profileLocked(item.profileId)) {
-    return
+    return false
   }
   try {
     const next = shouldRollBack(item)
@@ -71,9 +71,10 @@ async function undoInstall(item: Item, entry: Entry | undefined) {
       : await RemoveEntry(item.game, item.profileId, entry.key)
     useProfiles.getState().replace(next)
   } catch {
-    return
+    return false
   }
   await useMods.getState().load()
+  return true
 }
 
 // Says what changed since the last state: installs land in the open profile's list, and failures are worth a nudge.
@@ -103,6 +104,7 @@ async function announce(prev: Snapshot, next: Snapshot) {
         action: {
           label: i18n._(msg`Undo`),
           run: () => undoInstall(item, entry),
+          profileId: item.profileId,
         },
       })
     }

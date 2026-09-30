@@ -1,8 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, IconButton, Tooltip } from '@mui/material'
 import { X } from 'lucide-react'
+import { useLaunch } from '../launch/store.ts'
+import { isLocked } from '../mods/locked.ts'
 import { LetterTile } from '../mods/parts.tsx'
-import { useLocked } from '../mods/useLocked.ts'
+import { reportUnexpected } from './report.ts'
 import { type Toast, type ToastKind, useToasts } from './store.ts'
 
 const edge: Record<ToastKind, string> = {
@@ -17,15 +19,20 @@ function ToastCard({ toast }: { toast: Toast }) {
   const dismiss = useToasts((s) => s.dismiss)
   const hold = useToasts((s) => s.hold)
   const release = useToasts((s) => s.release)
-  const locked = useLocked()
+  const status = useLaunch((s) => s.status)
+  const starting = useLaunch((s) => s.starting)
   const { action } = toast
+  const locked = action?.profileId !== undefined && isLocked(status, action.profileId, starting)
   const lockHint = t`Stop the game to change mods.`
   const run = () => {
-    if (locked) {
+    if (locked || !action) {
       return
     }
-    action?.run()
-    dismiss(toast.id)
+    Promise.resolve(action.run()).then((ok) => {
+      if (ok !== false) {
+        dismiss(toast.id)
+      }
+    }, reportUnexpected)
   }
   return (
     <Box

@@ -15,7 +15,11 @@ export interface ToastInput {
   title: string
   body?: string
   picture?: string
-  action?: { label: string; run: () => void }
+  action?: {
+    label: string
+    run: () => unknown
+    profileId?: string
+  }
 }
 
 export interface Toast extends ToastInput {
