@@ -363,13 +363,19 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 		defer s.donePreparing(gameID)
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		go func() {
-			select {
-			case <-s.quit:
-				cancel()
-			case <-ctx.Done():
-			}
-		}()
+		// Checked before the watcher starts, so a quit that already happened cancels before EnsureLoader runs.
+		select {
+		case <-s.quit:
+			cancel()
+		default:
+			go func() {
+				select {
+				case <-s.quit:
+					cancel()
+				case <-ctx.Done():
+				}
+			}()
+		}
 		err := s.EnsureLoader(ctx, gameID, true)
 		if err != nil {
 			err = fmt.Errorf("could not install %s: %w", g.LoaderName(), err)
