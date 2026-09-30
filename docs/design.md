@@ -2,7 +2,7 @@
 
 This file holds only work that is decided but not built. Each item is written to be implemented cold: the shape, the sources it rests on, the traps, and when it is done. When an item lands, delete it here; the code is the record of what exists. Standing rules live in [AGENTS.md](../AGENTS.md).
 
-Nothing is built yet. Implementation starts only on NOMAD's explicit go-ahead; until then this file is refined by research and question rounds. Items marked **Open** are still being decided, and items marked **Measure** need a throwaway test before the shape is final.
+Nothing is built yet. Implementation starts only on NOMAD's explicit go-ahead; until then this file is refined by research and question rounds. Items marked **Open** are still being decided, and items marked **Measure** need a throwaway test before the shape is final. Those tests run outside this repo and only their results land here (NOMAD, 2026-09-29).
 
 ## Product
 
@@ -28,7 +28,7 @@ Concrete's look carries over unchanged apart from colour tokens:
 - The MUI dark theme from Concrete's `frontend/src/styles/darkThemeOptions.ts`: background and paper at 80% opacity, Open Sans (loaded from `@fontsource/open-sans`, not `next/font`), dialog backdrops at 75% black, and the blurred, glowing hero art from `ProfileDetailsPane.tsx`.
 - Native scrollbars themed to match.
 
-**Open, Linux translucency.** Wails v3's default GTK4 build leaves `setTransparent()` empty (`v3/pkg/application/linux_cgo.go:1418`), so only the webview's background alpha applies and the window itself may paint opaque. The legacy GTK3 build (`-tags gtk3`) sets an RGBA visual when the screen is composited, which is what Concrete got from Wails v2, but GTK3 is removed in v3.1. Blur on Linux comes from the compositor either way (KDE's blur effect, for example), never from the app. Choices: contribute GTK4 transparency upstream to Wails, build with `-tags gtk3` until v3.1, or accept an opaque window on Linux. **Measure:** a throwaway GTK4 window with a transparent CSS background under KDE and GNOME, to see whether upstream work is small.
+**Linux translucency (NOMAD, 2026-09-29): fix it upstream.** Wails v3's default GTK4 build leaves `setTransparent()` empty (`v3/pkg/application/linux_cgo.go:1418`), so only the webview's background alpha applies and the window itself may paint opaque. The legacy GTK3 build (`-tags gtk3`) sets an RGBA visual when the screen is composited, which is what Concrete got from Wails v2, but GTK3 is removed in v3.1. Mortar contributes GTK4 window transparency to Wails and builds with `-tags gtk3` until that merges. Blur on Linux comes from the compositor (KDE's blur effect, for example), never from the app. **Measure:** a throwaway GTK4 window with a transparent CSS background, to size the upstream change. Before opening the Wails PR, read its CONTRIBUTING and AGENTS files.
 
 ## Architecture
 
@@ -52,15 +52,15 @@ All Mortar data lives in the user data directory (`%LOCALAPPDATA%\Mortar`, `$XDG
 - `profiles/<game>/<profile-id>/`: the profile's own mod tree plus `profile.json`.
 - `cache/`: API responses and indexes.
 
-**Open, how a profile holds its mods.** Copying from the store costs disk per profile. Hard links cost nothing extra but need the store and profiles on one volume. Symlinks need Developer Mode on Windows, and whether SMAPI follows them is unmeasured. Trap for any linking scheme: mods write `config.json` into their own folder, so a linked `config.json` would be shared between profiles. It must always be a real per-profile file. Proposed: hard-link every file except `config.json`, and fall back to copying when the volumes differ.
+**How a profile holds its mods.** Copying from the store costs disk per profile. Measured on Linux (2026-09-29, SMAPI 4.5.2, Stardew 1.6.15): SMAPI loads a mod whose folder is a symlink into the store and a mod whose files are hard links, and skips a dot-prefixed folder. Trap for any linking scheme: mods write `config.json` into their own folder, so a linked `config.json` would be shared between profiles, and a symlinked folder would carry every profile's config. So each mod folder in a profile is a real directory whose files are hard links to the store, except `config.json`, which is always a real per-profile file. Copy when the store and the profile are on different volumes. **Measure on Windows:** hard links need NTFS and one volume; symlinks need Developer Mode and are not used.
 
 ## Stardew Valley
 
 Sources: SMAPI's `docs/technical/smapi.md`, `docs/technical/web.md`, `src/SMAPI.Toolkit/Serialization/Models/Manifest.cs` and `ModScanner.cs`; the Stardew Valley wiki's Modding pages.
 
 - **Discovery:** Steam app `413150`. The wiki lists default game folders for Steam, GOG and the Xbox app on Windows, and Steam and GOG on Linux.
-- **SMAPI install and update:** download the release installer (latest 4.5.2, needs Stardew 1.6.14 or later) and run it unattended with `--install --no-prompt --game-path "<dir>"`. Running it again updates SMAPI. On Linux the installer renames the game's `StardewValley` to `StardewValley-original` and puts its launcher in its place, so a game update breaks SMAPI. Mortar detects that at startup and offers the reinstall.
-- **Profiles:** SMAPI takes `--mods-path <path>` on Windows and the `SMAPI_MODS_PATH` environment variable on Linux, where command-line arguments do not reach SMAPI (`smapi.md:40-59`). Paths may be absolute.
+- **SMAPI install and update:** download the release installer (latest 4.5.2, needs Stardew 1.6.14 or later) and run it unattended with `--install --no-prompt --game-path "<dir>"` (measured on Linux: exit 0, no prompts, launcher replaced, bundled mods added). Running it again updates SMAPI. On Linux the installer renames the game's `StardewValley` to `StardewValley-original` and puts its launcher in its place, so a game update breaks SMAPI. Mortar detects that at startup and offers the reinstall.
+- **Profiles:** SMAPI takes `--mods-path <path>` on Windows and the `SMAPI_MODS_PATH` environment variable on Linux, where command-line arguments do not reach SMAPI (`smapi.md:40-59`). Paths may be absolute. Measured on Linux: `SMAPI_MODS_PATH=<absolute path>` set on the game's `StardewValley` launcher loads mods from that folder.
 - **Bundled mods:** a profile folder replaces `Mods/`, so SMAPI's bundled Console Commands and Save Backup mods must be placed into every profile.
 - **Scanning:** SMAPI recurses into subfolders until it finds a `manifest.json` and skips any folder whose name starts with a dot. Manifests are JSON with comments and trailing commas, so they are parsed leniently.
 - **Dependencies:** `Dependencies[]` (`UniqueID`, `MinimumVersion`, `IsRequired` defaulting to true) plus `ContentPackFor`, treated as a required dependency on the framework mod. Every check is by `UniqueID`.
@@ -77,7 +77,7 @@ Sources: the Nexus API acceptable-use policy (help.nexusmods.com article 114), t
 - **Sign-in:** SSO over `wss://sso.nexusmods.com` with the slug; the user approves in the browser and the socket returns the user's API key, which Mortar keeps in the OS keyring. Keys are never sent to any server of ours, and no call is made that the user did not start.
 - **Headers:** every request carries a truthful `Application-Name` and `Application-Version`.
 - **Rate limits:** 20,000 requests a day, then 500 an hour, reported in the `x-rl-*` headers. The client backs off as the remaining count gets low.
-- **Downloads:** `GET /v1/games/{game}/mods/{mod}/files/{file}/download_link.json`. Premium users get the link directly. Free users need the `key` and `expires` from an `nxm://` link generated by the site's download button, so each mod needs one click on its Nexus page. For free users, a profile import opens each missing mod's files page in turn and completes each download when its `nxm://` link arrives.
+- **Downloads:** `GET /v1/games/{game}/mods/{mod}/files/{file}/download_link.json`. Premium users get the link directly. Free users need the `key` and `expires` from an `nxm://` link generated by the site's download button, so each mod needs one click on its Nexus page. For free users, a profile import runs a guided queue (NOMAD, 2026-09-29): Mortar opens each missing mod's files page in turn, catches the `nxm://` link from the user's click, installs it, and moves to the next. Premium users skip the queue.
 - **nxm:// ownership:** only one app can own the scheme, so registering Mortar takes it from Vortex or Mod Organizer 2. Mortar asks before claiming it.
 - **Mapping:** an `UpdateKeys` entry `Nexus:1915` is mod 1915 on the `stardewvalley` domain. The file ID comes from `GET /v1/games/stardewvalley/mods/1915/files.json`, matched by version.
 - **No re-hosting:** Mortar never stores or serves mod files or bulk Nexus metadata anywhere but the user's own machine. A shared profile holds IDs only.
@@ -105,18 +105,11 @@ A link names its game: `mortar://<game>/...`. It must open the importer whether 
 
 What a shared profile holds: name, game, and per mod the ID, the version, and the source reference (`Nexus:<mod>` plus file ID, `GitHub:<owner>/<repo>`, or `Namespace-Name-Version`). Optionally, mod configs.
 
-**Open, where the payload lives.** A 100-mod Stardew profile is about 6 KB of JSON, and roughly 3 KB after compression and base64. Discord messages allow 2,000 characters, or 4,000 with Nitro. So a link that carries the whole profile only works for small profiles. Choices:
+**Hosted short codes (NOMAD, 2026-09-29).** A 100-mod Stardew profile is about 6 KB of JSON, roughly 3 KB after compression and base64, and Discord messages allow 2,000 characters (4,000 with Nitro), so a link carrying the whole profile does not fit. A small Mortar service stores the payload and returns a short code; the link is `mortar://<game>/p/<code>`, with an `https://` page on the same service that opens the app or offers the download. The payload holds IDs, versions and optional configs, never mod files. It runs on DigitalOcean App Platform (fleet default). **Open:** payload size limit, retention, whether a share can be updated in place under the same code, and abuse handling.
 
-- Inline for small profiles, and a file (`.mortar`) for larger ones.
-- A small hosted store that takes the payload and returns a short code. That means a service to run (fleet default: DigitalOcean App Platform) and an abuse policy.
-- A GitHub Gist, which needs the sharer's GitHub sign-in.
-
-For Lethal Company, r2modman codes already cover this through Thunderstore.
+For Lethal Company, r2modman codes through Thunderstore stay supported for import and export alongside Mortar codes.
 
 ## Open questions for NOMAD
 
-- Linux translucency: upstream GTK4 fix, GTK3 tag, or opaque.
-- Share payload: inline plus file, hosted short codes, or Gist.
 - Stardew mod sources in v1 beyond Nexus: GitHub releases (no auth), ModDrop and CurseForge (CurseForge needs an API key application).
-- Free Nexus users: is a guided one-click-per-mod queue acceptable, or is Premium-only automatic install the product?
 - What happens to LethalModding/Concrete once Mortar ships Lethal Company support.
