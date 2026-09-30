@@ -27,7 +27,8 @@ export const useUpdates = create<{
       if (useProfiles.getState().openId === openId) {
         set({ updates })
       }
-      useBadges.getState().patch(openId, { updates: updateCount(updates) })
+      const profile = useProfiles.getState().profiles.find((p) => p.id === openId)
+      useBadges.getState().patch(openId, { updates: updateCount(updates, profile) })
     } catch (e) {
       useToasts.getState().push({
         kind: 'error',

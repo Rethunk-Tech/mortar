@@ -26,12 +26,13 @@ import { type ReactNode, useEffect, useState } from 'react'
 import type { Update } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { changelogsBetween, mergeCachedDetails } from './changelogRange.ts'
-import { modId, sameId, siblingsOf, updateCount } from './lookup.ts'
+import { modId, sameId, siblingsOf, updateCount, visibleUpdates } from './lookup.ts'
 import { useNexusDetails } from './nexusDetails.ts'
 import { accent, paper } from './paper.ts'
 import { LetterTile } from './parts.tsx'
@@ -234,7 +235,8 @@ export function UpdateBar() {
   const { t } = useLingui()
   const updates = useUpdates((s) => s.updates)
   const setReviewing = useUpdates((s) => s.setReviewing)
-  const count = updateCount(updates)
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const count = updateCount(updates, profile)
   if (count === 0) {
     return updates?.unknown ? (
       <Typography sx={{ mx: 2, mt: 1, fontSize: 12, color: 'text.secondary' }}>
@@ -285,7 +287,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   const updates = useUpdates((s) => s.updates)
   const setReviewing = useUpdates((s) => s.setReviewing)
   const close = () => setReviewing(false)
-  const list = updates?.updates ?? []
+  const list = visibleUpdates(updates, profile)
   const items = useQueue((s) => s.state.items)
   useEffect(() => {
     if (!open) {

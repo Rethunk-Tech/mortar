@@ -39,7 +39,7 @@ export const useBadges = create<{
             set((s) => ({
               byProfile: {
                 ...s.byProfile,
-                [p.id]: { problems: problemCount(problems), updates: updateCount(updates) },
+                [p.id]: { problems: problemCount(problems), updates: updateCount(updates, p) },
               },
             }))
           } catch {

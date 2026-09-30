@@ -1,14 +1,28 @@
 import { useLingui } from '@lingui/react/macro'
 import { Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
-import { Ellipsis, ExternalLink, FolderOpen, Info, Power, PowerOff, Trash2 } from 'lucide-react'
+import {
+  Ban,
+  Ellipsis,
+  ExternalLink,
+  Eye,
+  FolderOpen,
+  Info,
+  Pin,
+  PinOff,
+  Power,
+  PowerOff,
+  Trash2,
+} from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useDetail } from './detail.ts'
-import { modId } from './lookup.ts'
+import { modId, updateFor } from './lookup.ts'
 import { type MenuAnchor, openPage, useContextMenu, useMenuState } from './menu.ts'
 import { type ModAction, modActions } from './modActions.ts'
 import { useMods } from './store.ts'
+import { useUpdates } from './updates.ts'
 import { useLocked } from './useLocked.ts'
 
 const ICON_SIZE = 16
@@ -18,11 +32,15 @@ function ModMenuItems({ mod, close }: { mod: Mod; close: () => void }) {
   const showFiles = useMods((s) => s.showFiles)
   const askRemove = useMods((s) => s.askRemove)
   const setEnabled = useMods((s) => s.setEnabled)
+  const setPinned = useMods((s) => s.setPinned)
+  const setSkipVersion = useMods((s) => s.setSkipVersion)
   const show = useDetail((s) => s.show)
   const setOpen = useDetail((s) => s.setOpen)
   const page = useMods((s) => s.pages[modId(mod)])
   const state = useMenuState(mod)
   const locked = useLocked()
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const update = useUpdates((s) => updateFor(s.updates, mod, profile))
   const items: Record<ModAction, { label: string; icon: ReactNode; run: () => void }> = {
     toggle: {
       label: mod.enabled ? t`Disable` : t`Enable`,
@@ -50,6 +68,16 @@ function ModMenuItems({ mod, close }: { mod: Mod; close: () => void }) {
       label: t`Show files`,
       icon: <FolderOpen size={ICON_SIZE} />,
       run: () => showFiles(mod).catch(reportUnexpected),
+    },
+    pin: {
+      label: state.pinned ? t`Unpin` : t`Pin this version`,
+      icon: state.pinned ? <PinOff size={ICON_SIZE} /> : <Pin size={ICON_SIZE} />,
+      run: () => setPinned(mod, !state.pinned).catch(reportUnexpected),
+    },
+    skip: {
+      label: update ? t`Skip this update` : t`Show skipped update`,
+      icon: update ? <Ban size={ICON_SIZE} /> : <Eye size={ICON_SIZE} />,
+      run: () => setSkipVersion(mod, update ? update.version : '').catch(reportUnexpected),
     },
     remove: {
       label: t`Remove`,

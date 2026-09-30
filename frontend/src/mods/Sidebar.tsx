@@ -16,6 +16,7 @@ import { useDescribe } from './describe.ts'
 import { useDetail } from './detail.ts'
 import {
   concerns,
+  entryOf,
   kindLabel,
   modId,
   nexusIdOf,
@@ -24,7 +25,7 @@ import {
   sourceKind,
   updateFor,
 } from './lookup.ts'
-import { useNexusEntry } from './nexusDetails.ts'
+import { useLookedSnapshot, useNexusEntry, useNexusFresh } from './nexusDetails.ts'
 import { formatCount, formatDate, isNewer } from './nexusFormat.ts'
 import { accent, heading } from './paper.ts'
 import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
@@ -77,6 +78,7 @@ interface ClippedProps {
 function NexusFields({ mod, nexusId }: { mod: Mod; nexusId: number }) {
   const { t, i18n } = useLingui()
   const details = useNexusEntry(nexusId)?.details
+  useLookedSnapshot(nexusId, details)
   if (!details) {
     return null
   }
@@ -100,8 +102,10 @@ function NexusFields({ mod, nexusId }: { mod: Mod; nexusId: number }) {
 
 function UpdateBanner({ mod }: { mod: Mod }) {
   const { t } = useLingui()
-  const update = useUpdates((s) => updateFor(s.updates, mod))
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const update = useUpdates((s) => updateFor(s.updates, mod, profile))
   const setReviewing = useUpdates((s) => s.setReviewing)
+  const setSkipVersion = useMods((s) => s.setSkipVersion)
   if (!update) {
     return null
   }
@@ -122,6 +126,14 @@ function UpdateBanner({ mod }: { mod: Mod }) {
       <Typography sx={{ flex: 1, fontSize: 13 }}>
         {t`Update available: ${update.installed} → ${update.version}`}
       </Typography>
+      <Button
+        size="small"
+        variant="outlined"
+        onClick={() => setSkipVersion(mod, update.version).catch(reportUnexpected)}
+        sx={noWrap}
+      >
+        {t`Skip this update`}
+      </Button>
       <Button size="small" variant="contained" onClick={() => setReviewing(true)} sx={noWrap}>
         {t`Update`}
       </Button>
@@ -189,10 +201,15 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
 function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   const { t } = useLingui()
   const all = useMods((s) => s.mods)
+  const setPinned = useMods((s) => s.setPinned)
+  const setSkipVersion = useMods((s) => s.setSkipVersion)
   const others = siblingsOf(all, mod)
   const setOpen = useDetail((s) => s.setOpen)
   const kind = sourceKind(profile, mod)
   const nexusId = nexusIdOf(profile, mod)
+  const fresh = useNexusFresh(nexusId)
+  const entry = entryOf(profile, mod.key)
+  const offered = useUpdates((s) => updateFor(s.updates, mod, profile))
   const source = kindLabel(kind, {
     archive: t`Archive`,
     nexus: t`Nexus Mods`,
@@ -201,7 +218,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   return (
     <Box sx={{ p: 1.75, display: 'flex', flexDirection: 'column', gap: 1.25, minHeight: '100%' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <LetterTile mod={mod} size={52} />
+        <LetterTile mod={mod} size={52} fresh={fresh} />
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography sx={{ fontSize: 16, fontWeight: 700, overflowWrap: 'anywhere' }}>
             {mod.name}
@@ -213,6 +230,22 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
         <ModSwitch mod={mod} />
       </Box>
       <Field label={t`Version`} value={mod.version} />
+      <Button
+        variant="outlined"
+        onClick={() => setPinned(mod, !entry?.pinned).catch(reportUnexpected)}
+        sx={noWrap}
+      >
+        {entry?.pinned ? t`Unpin` : t`Pin this version`}
+      </Button>
+      {entry?.skipVersion && !offered ? (
+        <Button
+          variant="outlined"
+          onClick={() => setSkipVersion(mod, '').catch(reportUnexpected)}
+          sx={noWrap}
+        >
+          {t`Show skipped update`}
+        </Button>
+      ) : null}
       <Field label={t`UniqueID`} value={mod.uniqueId} />
       {mod.endorsements > 0 ? (
         <Field label={t`Endorsements`} value={mod.endorsements.toLocaleString()} />

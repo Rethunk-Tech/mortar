@@ -13,11 +13,12 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { DuplicateDialog } from './DuplicateDialog.tsx'
 import { useDetail } from './detail.ts'
 import { LockedNote } from './LockedNote.tsx'
-import { modId } from './lookup.ts'
+import { modId, nexusIdOf } from './lookup.ts'
 import { ModDetail } from './ModDetail.tsx'
 import { ModList } from './ModList.tsx'
 import { ModContextMenu, ModMenu } from './ModMenu.tsx'
 import { contextMenuProps, useContextMenu } from './menu.ts'
+import { useNexusFresh } from './nexusDetails.ts'
 import { ProblemBar } from './ProblemBar.tsx'
 import { LetterTile, PinBadge, ProblemBadge, RemoveDialog, UpdateBadge } from './parts.tsx'
 import { SelectionBar } from './SelectionBar.tsx'
@@ -58,13 +59,22 @@ function SelectionKeys({ shown }: { shown: Mod[] }) {
   return null
 }
 
-function ModCard({ mod: m, orderedIds }: { mod: Mod; orderedIds: readonly string[] }) {
+function ModCard({
+  mod: m,
+  orderedIds,
+  profile,
+}: {
+  mod: Mod
+  orderedIds: readonly string[]
+  profile: Profile
+}) {
   const { t } = useLingui()
   const openDetail = useDetail((s) => s.show)
   const selectedId = useDetail((s) => s.detailId)
   const selectedIds = useSelection((s) => s.ids)
   const id = modId(m)
   const marked = selectedIds.includes(id) || (selectedIds.length === 0 && id === selectedId)
+  const fresh = useNexusFresh(nexusIdOf(profile, m))
   return (
     <Card
       {...contextMenuProps(m)}
@@ -107,7 +117,7 @@ function ModCard({ mod: m, orderedIds }: { mod: Mod; orderedIds: readonly string
           color: 'inherit',
         }}
       >
-        <LetterTile mod={m} />
+        <LetterTile mod={m} fresh={fresh} />
         <Box
           sx={{
             flex: 1,
@@ -133,7 +143,7 @@ function ModCard({ mod: m, orderedIds }: { mod: Mod; orderedIds: readonly string
   )
 }
 
-function Cards({ shown }: { shown: Mod[] }) {
+function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
   const orderedIds = shown.map((m) => modId(m))
   return (
     <Box
@@ -149,7 +159,7 @@ function Cards({ shown }: { shown: Mod[] }) {
       }}
     >
       {shown.map((m) => (
-        <ModCard key={modId(m)} mod={m} orderedIds={orderedIds} />
+        <ModCard key={modId(m)} mod={m} orderedIds={orderedIds} profile={profile} />
       ))}
     </Box>
   )
@@ -195,7 +205,11 @@ function ModsBody({
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto' }}>
-      {view === 'list' ? <ModList profile={profile} mods={shown} /> : <Cards shown={shown} />}
+      {view === 'list' ? (
+        <ModList profile={profile} mods={shown} />
+      ) : (
+        <Cards shown={shown} profile={profile} />
+      )}
       <ModSidebar profile={profile} />
     </Box>
   )

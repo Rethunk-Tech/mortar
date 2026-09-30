@@ -21,6 +21,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useDescribe } from './describe.ts'
 import { concerns, entryOf, modId, problemsOf, siblingsOf, updateFor } from './lookup.ts'
+import { NewDot } from './NewSince.tsx'
 import { paper } from './paper.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
@@ -46,40 +47,44 @@ function hash(s: string): number {
 export function LetterTile({
   mod,
   size = DEFAULT_TILE_SIZE,
+  fresh = false,
 }: {
   mod: Pick<Mod, 'uniqueId' | 'name'> & { picture?: string }
   size?: number
+  fresh?: boolean
 }) {
   const [failed, setFailed] = useState<string | null>(null)
   const picture = mod.picture && failed !== mod.picture ? mod.picture : ''
   return (
-    <Box
-      aria-hidden={true}
-      className="tile"
-      sx={{
-        width: size,
-        height: size,
-        flexShrink: 0,
-        borderRadius: size < SMALL_TILE ? '4px' : '6px',
-        display: 'grid',
-        placeItems: 'center',
-        overflow: 'hidden',
-        fontWeight: 700,
-        fontSize: size * TILE_FONT_RATIO,
-        bgcolor: `hsl(${hash(mod.uniqueId.toLowerCase()) % HUE_DEGREES} 35% 38% / 0.85)`,
-      }}
-    >
-      {picture ? (
-        <Box
-          component="img"
-          alt=""
-          src={`/mod-picture/?u=${encodeURIComponent(picture)}`}
-          onError={() => setFailed(picture)}
-          sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        />
-      ) : (
-        (Array.from(mod.name)[0] ?? '?').toUpperCase()
-      )}
+    <Box sx={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      <Box
+        aria-hidden={true}
+        className="tile"
+        sx={{
+          width: size,
+          height: size,
+          borderRadius: size < SMALL_TILE ? '4px' : '6px',
+          display: 'grid',
+          placeItems: 'center',
+          overflow: 'hidden',
+          fontWeight: 700,
+          fontSize: size * TILE_FONT_RATIO,
+          bgcolor: `hsl(${hash(mod.uniqueId.toLowerCase()) % HUE_DEGREES} 35% 38% / 0.85)`,
+        }}
+      >
+        {picture ? (
+          <Box
+            component="img"
+            alt=""
+            src={`/mod-picture/?u=${encodeURIComponent(picture)}`}
+            onError={() => setFailed(picture)}
+            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : (
+          (Array.from(mod.name)[0] ?? '?').toUpperCase()
+        )}
+      </Box>
+      <NewDot show={fresh} />
     </Box>
   )
 }

@@ -40,7 +40,7 @@ import {
 } from './listColumns.ts'
 import { kindLabel, modId, nexusIdOf, sourceKind } from './lookup.ts'
 import { contextMenuProps } from './menu.ts'
-import { primeDetails, useNexusDetails } from './nexusDetails.ts'
+import { primeDetails, useNexusDetails, useNexusFresh } from './nexusDetails.ts'
 import { formatCount, formatDate, isNewer } from './nexusFormat.ts'
 import { heading } from './paper.ts'
 import { LetterTile, ModSwitch, PinBadge, ProblemBadge, UpdateBadge } from './parts.tsx'
@@ -246,12 +246,14 @@ function ModRow({
   cols,
   locale,
   orderedIds,
+  profile,
 }: {
   row: ListRow
   striped: boolean
   cols: readonly ListColumnId[]
   locale: string
   orderedIds: readonly string[]
+  profile: Profile
 }) {
   const detailId = useDetail((s) => s.detailId)
   const selectedIds = useSelection((s) => s.ids)
@@ -260,6 +262,7 @@ function ModRow({
   const rowId = modId(m)
   const marked = selectedIds.includes(rowId) || (selectedIds.length === 0 && rowId === detailId)
   const menu = contextMenuProps(m)
+  const fresh = useNexusFresh(nexusIdOf(profile, m))
   return (
     <TableRow
       hover={true}
@@ -297,7 +300,7 @@ function ModRow({
         id === 'name'
           ? [
               <Cell key="tile">
-                <LetterTile mod={m} size={26} />
+                <LetterTile mod={m} size={26} fresh={fresh} />
               </Cell>,
               cellsFor(id, row, locale),
             ]
@@ -443,6 +446,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
               cols={cols}
               locale={i18n.locale}
               orderedIds={orderedIds}
+              profile={profile}
             />
           ))}
         </TableBody>

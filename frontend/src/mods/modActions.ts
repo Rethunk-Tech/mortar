@@ -1,9 +1,12 @@
 export type PageHost = 'nexus' | 'github' | ''
-export type ModAction = 'toggle' | 'details' | 'page' | 'files' | 'remove'
+export type ModAction = 'toggle' | 'details' | 'page' | 'files' | 'pin' | 'skip' | 'remove'
 
 export interface MenuState {
   enabled: boolean
   host: PageHost
+  pinned: boolean
+  skipVersion: string
+  hasUpdate: boolean
 }
 
 // Mod pages are on Nexus or GitHub only.
@@ -21,6 +24,10 @@ export function modActions(s: MenuState): ModAction[] {
     out.push('page')
   }
   out.push('files')
+  out.push('pin')
+  if (s.hasUpdate || s.skipVersion !== '') {
+    out.push('skip')
+  }
   out.push('remove')
   return out
 }

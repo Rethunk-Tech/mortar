@@ -83,6 +83,7 @@ interface ListRow {
   added: string
   source: string
   status: string
+  pinned?: boolean
   details?: Details
 }
 

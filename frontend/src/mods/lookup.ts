@@ -15,8 +15,11 @@ import type {
 export const siblingsOf = (mods: Mod[], mod: Mod) =>
   mods.filter((m) => m.key === mod.key && m.uniqueId !== mod.uniqueId)
 
+export const entryOf = (profile: Profile | null | undefined, key: string) =>
+  (profile?.entries ?? []).find((e) => e.key === key)
+
 export const sourceKind = (profile: Profile, mod: Mod) =>
-  (profile.entries ?? []).find((e) => e.key === mod.key)?.source.kind ?? ''
+  entryOf(profile, mod.key)?.source.kind ?? ''
 
 // The Nexus mod ID a mod was installed from, or 0 for any other source.
 export const nexusIdOf = (profile: Profile, mod: Mod) => {
@@ -93,16 +96,32 @@ export function preselect(copies: Copy[]): string {
 
 export function nexusKeepKey(copies: Copy[]): string | null {
   const nexus = copies.filter((c) => c.nexus)
-  return nexus.length === 1 ? (nexus[0].key ?? null) : null
+  return nexus.length === 1 ? (nexus[0]?.key ?? null) : null
 }
 
 export const problemCount = (result: Result | null): number => problemsOf(result).length
 
-export const updateCount = (result: UpdatesResult | null): number => (result?.updates ?? []).length
+export const offersUpdate = (
+  entry: { pinned?: boolean; skipVersion?: string } | undefined,
+  newer: string,
+): boolean => {
+  if (!newer || entry?.pinned) {
+    return false
+  }
+  const skip = entry?.skipVersion ?? ''
+  return skip === '' || skip !== newer
+}
+
+export const visibleUpdates = (result: UpdatesResult | null, profile?: Profile | null): Update[] =>
+  (result?.updates ?? []).filter((u) => offersUpdate(entryOf(profile, u.key), u.version))
+
+export const updateCount = (result: UpdatesResult | null, profile?: Profile | null): number =>
+  visibleUpdates(result, profile).length
 
 // The update SMAPI's API suggests for this very copy of a mod, if any.
 export const updateFor = (
   result: UpdatesResult | null,
   mod: Pick<Mod, 'key' | 'uniqueId'>,
+  profile?: Profile | null,
 ): Update | undefined =>
-  (result?.updates ?? []).find((u) => u.key === mod.key && sameId(u.uniqueId, mod.uniqueId))
+  visibleUpdates(result, profile).find((u) => u.key === mod.key && sameId(u.uniqueId, mod.uniqueId))

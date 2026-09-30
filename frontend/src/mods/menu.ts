@@ -2,16 +2,27 @@ import { Browser } from '@wailsio/runtime'
 import type { KeyboardEvent, MouseEvent } from 'react'
 import { create } from 'zustand'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { modId } from './lookup.ts'
+import { useProfiles } from '../profiles/store.ts'
+import { entryOf, modId, updateFor } from './lookup.ts'
 import { hostOf, type MenuState } from './modActions.ts'
 import { useMods } from './store.ts'
+import { useUpdates } from './updates.ts'
 
 const isMenuKey = (e: { key: string; shiftKey: boolean }) =>
   e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')
 
 export function useMenuState(mod: Mod): MenuState {
   const host = useMods((s) => hostOf(s.pages[modId(mod)]))
-  return { enabled: mod.enabled, host }
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const entry = entryOf(profile, mod.key)
+  const update = useUpdates((s) => updateFor(s.updates, mod, profile))
+  return {
+    enabled: mod.enabled,
+    host,
+    pinned: Boolean(entry?.pinned),
+    skipVersion: entry?.skipVersion ?? '',
+    hasUpdate: Boolean(update),
+  }
 }
 
 export const openPage = (url: string) => Browser.OpenURL(url)
