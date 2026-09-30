@@ -1,6 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { useEffect, useState } from 'react'
 import { Get } from '../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { FirstRun } from './firstrun/FirstRun.tsx'
+import { firstRunNeeded } from './firstrun/needed.ts'
 import { MainScreen } from './game/MainScreen.tsx'
 import { GameSelect } from './games/GameSelect.tsx'
 import { loadGameStatus } from './games/status.ts'
@@ -17,7 +19,11 @@ export function App() {
   const [ready, setReady] = useState(false)
   useEffect(() => {
     Promise.all([Get(), loadGameStatus()])
-      .then(([settings, { games }]) => {
+      .then(async ([settings, { games }]) => {
+        if (await firstRunNeeded(games)) {
+          useNav.getState().openSetup()
+          return
+        }
         const last = games.find((g) => g.id === settings.lastGame)
         if (last?.id === 'stardew' && last.available && last.installed) {
           useNav.getState().openGame(last.id)
@@ -46,6 +52,7 @@ export function App() {
         {route.name === 'settings' ? <SettingsPage section={route.section} /> : null}
         {route.name === 'profiles' ? <ProfilesPage /> : null}
         {route.name === 'game' ? <MainScreen game={route.game} /> : null}
+        {route.name === 'setup' ? <FirstRun /> : null}
         {ready && route.name === 'game-select' ? <GameSelect /> : null}
       </AppFrame>
       <ToastHost />

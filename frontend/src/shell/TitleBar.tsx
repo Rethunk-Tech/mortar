@@ -88,9 +88,15 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
       }}
     >
       <AppMenu />
-      <Tab active={route.name === 'game-select'} onClick={openGameSelect}>
-        {t`Game Select`}
-      </Tab>
+      {route.name === 'setup' ? (
+        <Tab active={true} onClick={() => undefined}>
+          {t`Setup`}
+        </Tab>
+      ) : (
+        <Tab active={route.name === 'game-select'} onClick={openGameSelect}>
+          {t`Game Select`}
+        </Tab>
+      )}
       {route.name === 'game' && (
         <Tab active={true} onClick={() => openGame(route.game)}>
           {gameName}

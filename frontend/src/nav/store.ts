@@ -6,6 +6,7 @@ export type SettingsSection = 'game' | 'appearance' | 'about'
 
 export type Route =
   | { name: 'game-select' }
+  | { name: 'setup' }
   | { name: 'game'; game: GameId }
   | { name: 'profiles'; game: GameId }
   | { name: 'settings'; section: SettingsSection; back: Route }
@@ -14,6 +15,7 @@ export const useNav = create<{
   route: Route
   openGame: (game: GameId) => void
   openGameSelect: () => void
+  openSetup: () => void
   openProfiles: () => void
   closeProfiles: () => void
   openSettings: (section?: SettingsSection) => void
@@ -22,6 +24,7 @@ export const useNav = create<{
   route: { name: 'game-select' },
   openGame: (game) => set({ route: { name: 'game', game } }),
   openGameSelect: () => set({ route: { name: 'game-select' } }),
+  openSetup: () => set({ route: { name: 'setup' } }),
   openProfiles: () =>
     set(({ route }) =>
       route.name === 'game' ? { route: { name: 'profiles', game: route.game } } : {},
