@@ -11,7 +11,7 @@ msgstr ""
 msgid "Mortar's licence"
 msgstr "Mortar's licence"
 
-#: src/console/ConsoleTab.tsx:449
+#: src/console/ConsoleTab.tsx:460
 msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
@@ -53,8 +53,9 @@ msgid "Updated"
 msgstr "Updated"
 
 #: src/mods/LockedNote.tsx:9
-#: src/saves/SavesTab.tsx:79
-#: src/toasts/ToastHost.tsx:22
+#: src/saves/SavesTab.tsx:66
+#: src/saves/SavesTab.tsx:86
+#: src/toasts/ToastHost.tsx:26
 msgid "Stop the game to change mods."
 msgstr "Stop the game to change mods."
 
@@ -70,7 +71,8 @@ msgstr "{name} broke in {brokeIn}."
 msgid "Could not save the file"
 msgstr "Could not save the file"
 
-#: src/firstrun/ProfileStep.tsx:130
+#: src/firstrun/ProfileStep.tsx:97
+#: src/firstrun/ProfileStep.tsx:168
 msgid "Preview import"
 msgstr "Preview import"
 
@@ -83,7 +85,7 @@ msgid "Sand"
 msgstr "Sand"
 
 #. placeholder {0}: failed.length
-#: src/queue/store.ts:142
+#: src/queue/store.ts:144
 msgid "{0, plural, one {# download failed} other {# downloads failed}}"
 msgstr "{0, plural, one {# download failed} other {# downloads failed}}"
 
@@ -109,7 +111,7 @@ msgid "Could not change the profile's visibility"
 msgstr "Could not change the profile's visibility"
 
 #. placeholder {0}: others.join(', ')
-#: src/mods/parts.tsx:196
+#: src/mods/parts.tsx:190
 msgid "It came in one download with {0}, and all of them are removed together."
 msgstr "It came in one download with {0}, and all of them are removed together."
 
@@ -122,7 +124,7 @@ msgstr "Saved · just now"
 msgid "Add archive"
 msgstr "Add archive"
 
-#: src/console/ConsoleTab.tsx:408
+#: src/console/ConsoleTab.tsx:419
 msgid "No lines match the filters."
 msgstr "No lines match the filters."
 
@@ -132,7 +134,7 @@ msgstr "Notes"
 
 #. placeholder {0}: update.installed
 #. placeholder {1}: update.version
-#: src/mods/parts.tsx:116
+#: src/mods/parts.tsx:110
 #: src/mods/Sidebar.tsx:117
 msgid "Update available: {0} → {1}"
 msgstr "Update available: {0} → {1}"
@@ -144,7 +146,7 @@ msgstr "Update available: {0} → {1}"
 msgid "{0, plural, one {# update} other {# updates}}"
 msgstr "{0, plural, one {# update} other {# updates}}"
 
-#: src/toasts/ToastHost.tsx:85
+#: src/toasts/ToastHost.tsx:92
 msgid "Dismiss"
 msgstr "Dismiss"
 
@@ -165,7 +167,7 @@ msgstr "Installing SMAPI"
 msgid "Not in the link"
 msgstr "Not in the link"
 
-#: src/console/ConsoleTab.tsx:293
+#: src/console/ConsoleTab.tsx:304
 msgid "Type a command, for example help"
 msgstr "Type a command, for example help"
 
@@ -176,11 +178,11 @@ msgid "Try my Mortar profile \"{0}\" for {gameName} ({mods}): {1}"
 msgstr "Try my Mortar profile \"{0}\" for {gameName} ({mods}): {1}"
 
 #. placeholder {0}: profile.name
-#: src/profiles/ProfilesPage.tsx:212
+#: src/profiles/ProfilesPage.tsx:214
 msgid "Reorder {0}"
 msgstr "Reorder {0}"
 
-#: src/mods/NexusDetails.tsx:246
+#: src/mods/NexusDetails.tsx:253
 msgid "Sign in to Nexus Mods in Settings to see more from this mod's page."
 msgstr "Sign in to Nexus Mods in Settings to see more from this mod's page."
 
@@ -188,11 +190,11 @@ msgstr "Sign in to Nexus Mods in Settings to see more from this mod's page."
 msgid "Resolve"
 msgstr "Resolve"
 
-#: src/mods/NexusDetails.tsx:116
+#: src/mods/NexusDetails.tsx:123
 msgid "Uploaded by"
 msgstr "Uploaded by"
 
-#: src/firstrun/ProfileStep.tsx:60
+#: src/firstrun/ProfileStep.tsx:71
 msgid "Make your first profile"
 msgstr "Make your first profile"
 
@@ -213,7 +215,7 @@ msgstr "Sign in to Nexus Mods to download these mods."
 msgid "What they see"
 msgstr "What they see"
 
-#: src/profiles/ProfilesPage.tsx:137
+#: src/profiles/ProfilesPage.tsx:139
 msgid "Rename"
 msgstr "Rename"
 
@@ -238,7 +240,7 @@ msgstr "Bundled mods added"
 msgid "Steam's launch options for Stardew Valley lack the SMAPI line. In Steam, right-click the game, choose Properties, and paste this line into Launch Options."
 msgstr "Steam's launch options for Stardew Valley lack the SMAPI line. In Steam, right-click the game, choose Properties, and paste this line into Launch Options."
 
-#: src/firstrun/ProfileStep.tsx:74
+#: src/firstrun/ProfileStep.tsx:112
 msgid "Start empty"
 msgstr "Start empty"
 
@@ -250,7 +252,7 @@ msgstr "· updates and rolls back with this mod"
 msgid "Bundled with SMAPI"
 msgstr "Bundled with SMAPI"
 
-#: src/mods/parts.tsx:197
+#: src/mods/parts.tsx:191
 msgid "Its folder in this profile is deleted."
 msgstr "Its folder in this profile is deleted."
 
@@ -259,7 +261,7 @@ msgid "You started this download on Nexus, but there is no Stardew Valley profil
 msgstr "You started this download on Nexus, but there is no Stardew Valley profile to put it in yet."
 
 #: src/mods/ModMenu.tsx:50
-#: src/mods/parts.tsx:159
+#: src/mods/parts.tsx:153
 msgid "Show files"
 msgstr "Show files"
 
@@ -271,13 +273,18 @@ msgstr "{name} is marked obsolete and may not work with this game version."
 msgid "Import profile"
 msgstr "Import profile"
 
-#: src/firstrun/ProfileStep.tsx:112
+#: src/firstrun/ProfileStep.tsx:150
 msgid "From a shared link"
 msgstr "From a shared link"
 
 #: src/game/HeroCover.tsx:97
 msgid "Use the automatic cover"
 msgstr "Use the automatic cover"
+
+#. placeholder {0}: res.failed
+#: src/profiles/GameModsDialog.tsx:64
+msgid "{0, plural, one {# failed} other {# failed}}"
+msgstr "{0, plural, one {# failed} other {# failed}}"
 
 #: src/settings/sections/Appearance.tsx:124
 msgid "Solid"
@@ -331,7 +338,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/mods/ModsTab.tsx:137
 #: src/notes/NotesTab.tsx:39
 #: src/queue/QueueSheet.tsx:308
-#: src/saves/SavesTab.tsx:247
+#: src/saves/SavesTab.tsx:255
 #: src/settings/sections/Updates.tsx:32
 msgid "Retry"
 msgstr "Retry"
@@ -364,7 +371,7 @@ msgstr "Skip"
 msgid "Page"
 msgstr "Page"
 
-#: src/firstrun/ProfileStep.tsx:82
+#: src/firstrun/ProfileStep.tsx:120
 #: src/mods/ModList.tsx:149
 msgid "Name"
 msgstr "Name"
@@ -390,7 +397,7 @@ msgstr "Paste a Mortar link. You see what it holds before anything downloads."
 msgid "More actions for {0}"
 msgstr "More actions for {0}"
 
-#: src/firstrun/ProfileStep.tsx:36
+#: src/firstrun/ProfileStep.tsx:47
 #: src/game/NewProfileDialog.tsx:24
 msgid "Enter a name for the profile."
 msgstr "Enter a name for the profile."
@@ -419,14 +426,14 @@ msgstr "{name} was removed from Nexus"
 
 #: src/nxm/store.ts:51
 #: src/queue/actions.ts:75
-#: src/queue/store.ts:123
-#: src/queue/store.ts:145
+#: src/queue/store.ts:125
+#: src/queue/store.ts:147
 msgid "Show"
 msgstr "Show"
 
 #: src/mods/ProblemBar.tsx:96
 #: src/mods/UpdateReview.tsx:136
-#: src/saves/SavesTab.tsx:95
+#: src/saves/SavesTab.tsx:63
 msgid "Queued"
 msgstr "Queued"
 
@@ -436,7 +443,7 @@ msgstr "Queued"
 msgid "Skip {0}"
 msgstr "Skip {0}"
 
-#: src/mods/NexusDetails.tsx:110
+#: src/mods/NexusDetails.tsx:117
 #: src/mods/Sidebar.tsx:83
 msgid "Latest on Nexus"
 msgstr "Latest on Nexus"
@@ -445,7 +452,7 @@ msgstr "Latest on Nexus"
 #: src/game/Sidebar.tsx:350
 #: src/game/Sidebar.tsx:368
 #: src/nxm/ArrivalDialog.tsx:116
-#: src/profiles/ProfilesPage.tsx:486
+#: src/profiles/ProfilesPage.tsx:500
 msgid "New profile"
 msgstr "New profile"
 
@@ -483,12 +490,12 @@ msgstr "Your notes for this profile, for example: Friday co-op profile. Keep eve
 msgid "One step in Steam"
 msgstr "One step in Steam"
 
-#: src/console/ConsoleTab.tsx:293
+#: src/console/ConsoleTab.tsx:304
 msgid "Start the game to run commands"
 msgstr "Start the game to run commands"
 
 #: src/install/store.ts:86
-#: src/queue/store.ts:104
+#: src/queue/store.ts:105
 msgid "Undo"
 msgstr "Undo"
 
@@ -496,7 +503,7 @@ msgstr "Undo"
 msgid "Handle Nexus \"Mod Manager Download\" links"
 msgstr "Handle Nexus \"Mod Manager Download\" links"
 
-#: src/queue/store.ts:101
+#: src/queue/store.ts:102
 msgid "{first} installed"
 msgstr "{first} installed"
 
@@ -524,7 +531,7 @@ msgstr "Imported {name}"
 msgid "Add mods from an archive you downloaded, or find them on Nexus."
 msgstr "Add mods from an archive you downloaded, or find them on Nexus."
 
-#: src/saves/SavesTab.tsx:123
+#: src/saves/SavesTab.tsx:130
 msgid "Dismiss for this save"
 msgstr "Dismiss for this save"
 
@@ -540,19 +547,19 @@ msgstr "{count} checked later"
 msgid "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · and open-source libraries under their own licences."
 msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · and open-source libraries under their own licences."
 
-#: src/console/ConsoleTab.tsx:406
+#: src/console/ConsoleTab.tsx:417
 msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
-#: src/mods/NexusDetails.tsx:240
+#: src/mods/NexusDetails.tsx:247
 msgid "Reading the Nexus page…"
 msgstr "Reading the Nexus page…"
 
-#: src/saves/SavesTab.tsx:212
+#: src/saves/SavesTab.tsx:220
 msgid "All mods present"
 msgstr "All mods present"
 
-#: src/console/ConsoleTab.tsx:544
+#: src/console/ConsoleTab.tsx:555
 #: src/console/HelpDialog.tsx:160
 #: src/game/SupportButton.tsx:34
 msgid "Get help"
@@ -571,6 +578,11 @@ msgstr "Off"
 msgid "Archive"
 msgstr "Archive"
 
+#. placeholder {0}: res.profile.name
+#: src/profiles/GameModsDialog.tsx:60
+msgid "Imported {0}"
+msgstr "Imported {0}"
+
 #: src/settings/sections/Appearance.tsx:123
 msgid "Desktop"
 msgstr "Desktop"
@@ -583,7 +595,7 @@ msgstr "A profile holds one set of mods for this game."
 msgid "Could not open the file dialog"
 msgstr "Could not open the file dialog"
 
-#: src/mods/NexusDetails.tsx:149
+#: src/mods/NexusDetails.tsx:156
 msgid "Installed file"
 msgstr "Installed file"
 
@@ -608,7 +620,7 @@ msgid "Mortar is up to date."
 msgstr "Mortar is up to date."
 
 #. placeholder {0}: others.length - FILES_SHOWN
-#: src/mods/NexusDetails.tsx:174
+#: src/mods/NexusDetails.tsx:181
 msgid "And {0} more on the Nexus page"
 msgstr "And {0} more on the Nexus page"
 
@@ -632,7 +644,7 @@ msgstr "Saved · {n, plural, one {# hour ago} other {# hours ago}}"
 msgid "{gameName} · {mods}"
 msgstr "{gameName} · {mods}"
 
-#: src/saves/SavesTab.tsx:76
+#: src/saves/SavesTab.tsx:83
 msgid "{name} (switched off)"
 msgstr "{name} (switched off)"
 
@@ -663,7 +675,7 @@ msgstr "Could not sign in"
 msgid "Report a bug"
 msgstr "Report a bug"
 
-#: src/console/ConsoleTab.tsx:65
+#: src/console/ConsoleTab.tsx:75
 msgid "Info"
 msgstr "Info"
 
@@ -671,7 +683,7 @@ msgstr "Info"
 msgid "3 updates"
 msgstr "3 updates"
 
-#: src/saves/SavesTab.tsx:100
+#: src/saves/SavesTab.tsx:107
 msgid "Add {name} to this profile"
 msgstr "Add {name} to this profile"
 
@@ -691,8 +703,8 @@ msgstr "Stop the game?"
 msgid "Stardew green"
 msgstr "Stardew green"
 
-#: src/profiles/ProfilesPage.tsx:161
-#: src/profiles/ProfilesPage.tsx:403
+#: src/profiles/ProfilesPage.tsx:163
+#: src/profiles/ProfilesPage.tsx:405
 msgid "Delete"
 msgstr "Delete"
 
@@ -724,7 +736,7 @@ msgstr "Resize sidebar"
 msgid "Created"
 msgstr "Created"
 
-#: src/profiles/ProfilesPage.tsx:245
+#: src/profiles/ProfilesPage.tsx:247
 msgid "Hidden"
 msgstr "Hidden"
 
@@ -732,7 +744,7 @@ msgstr "Hidden"
 msgid "Mortar · Install {name}?"
 msgstr "Mortar · Install {name}?"
 
-#: src/firstrun/ProfileStep.tsx:29
+#: src/firstrun/ProfileStep.tsx:33
 msgid "Main"
 msgstr "Main"
 
@@ -757,8 +769,9 @@ msgstr "Cover image"
 #: src/launch/LaunchLayer.tsx:257
 #: src/launch/StopDialog.tsx:36
 #: src/mods/ModDetail.tsx:188
-#: src/mods/parts.tsx:201
-#: src/profiles/ProfilesPage.tsx:391
+#: src/mods/parts.tsx:195
+#: src/profiles/GameModsDialog.tsx:107
+#: src/profiles/ProfilesPage.tsx:393
 #: src/settings/sections/nxmHandler.tsx:101
 msgid "Cancel"
 msgstr "Cancel"
@@ -793,7 +806,7 @@ msgstr "In progress ({0})"
 msgid "Summary"
 msgstr "Summary"
 
-#: src/firstrun/ProfileStep.tsx:76
+#: src/firstrun/ProfileStep.tsx:114
 msgid "A profile with only SMAPI. Add mods from Nexus or from archives."
 msgstr "A profile with only SMAPI. Add mods from Nexus or from archives."
 
@@ -842,7 +855,7 @@ msgstr "{mods} · about {size} to download"
 msgid "Could not read recently deleted profiles"
 msgstr "Could not read recently deleted profiles"
 
-#: src/saves/SavesTab.tsx:174
+#: src/saves/SavesTab.tsx:182
 msgid "last played {played}"
 msgstr "last played {played}"
 
@@ -896,7 +909,7 @@ msgstr "Take Nexus links from {0}?"
 msgid "{name} has no file Mortar can use in place of the one shared"
 msgstr "{name} has no file Mortar can use in place of the one shared"
 
-#: src/profiles/ProfilesPage.tsx:145
+#: src/profiles/ProfilesPage.tsx:147
 msgid "Duplicate"
 msgstr "Duplicate"
 
@@ -912,7 +925,7 @@ msgstr "Game found"
 msgid "Choose a file"
 msgstr "Choose a file"
 
-#: src/profiles/ProfilesPage.tsx:184
+#: src/profiles/ProfilesPage.tsx:186
 msgid "{mods, plural, one {# mod} other {# mods}}"
 msgstr "{mods, plural, one {# mod} other {# mods}}"
 
@@ -921,7 +934,7 @@ msgstr "{mods, plural, one {# mod} other {# mods}}"
 msgid "Also updates {0} (same download)"
 msgstr "Also updates {0} (same download)"
 
-#: src/console/ConsoleTab.tsx:529
+#: src/console/ConsoleTab.tsx:540
 msgid "Log copied"
 msgstr "Log copied"
 
@@ -947,7 +960,7 @@ msgstr "Choose your Stardew Valley folder"
 msgid "Added from an archive, so it only exists on this computer."
 msgstr "Added from an archive, so it only exists on this computer."
 
-#: src/mods/NexusDetails.tsx:126
+#: src/mods/NexusDetails.tsx:133
 #: src/mods/Sidebar.tsx:88
 #: src/queue/QueueButton.tsx:17
 #: src/queue/QueueButton.tsx:36
@@ -976,7 +989,7 @@ msgstr "Choose a file…"
 msgid "Background preview"
 msgstr "Background preview"
 
-#: src/mods/NexusDetails.tsx:129
+#: src/mods/NexusDetails.tsx:136
 msgid "Created · updated"
 msgstr "Created · updated"
 
@@ -984,7 +997,7 @@ msgstr "Created · updated"
 msgid "Restarting…"
 msgstr "Restarting…"
 
-#: src/console/ConsoleTab.tsx:66
+#: src/console/ConsoleTab.tsx:76
 msgid "Warn"
 msgstr "Warn"
 
@@ -997,7 +1010,7 @@ msgid "Changes apply right away"
 msgstr "Changes apply right away"
 
 #. placeholder {0}: mod.name
-#: src/mods/parts.tsx:143
+#: src/mods/parts.tsx:137
 msgid "Enable {0}"
 msgstr "Enable {0}"
 
@@ -1016,7 +1029,7 @@ msgstr "Uploading…"
 msgid "Ignore"
 msgstr "Ignore"
 
-#: src/console/store.ts:105
+#: src/console/store.ts:113
 msgid "Could not run the command"
 msgstr "Could not run the command"
 
@@ -1042,7 +1055,7 @@ msgstr "Open on GitHub"
 
 #: src/game/Detail.tsx:123
 #: src/game/NewProfileDialog.tsx:55
-#: src/profiles/ProfilesPage.tsx:231
+#: src/profiles/ProfilesPage.tsx:233
 msgid "Profile name"
 msgstr "Profile name"
 
@@ -1061,7 +1074,7 @@ msgstr "{0} is installed twice, and SMAPI loads only one."
 msgid "Up next: {0}"
 msgstr "Up next: {0}"
 
-#: src/console/ConsoleTab.tsx:451
+#: src/console/ConsoleTab.tsx:462
 msgid "Remove filter {mod}"
 msgstr "Remove filter {mod}"
 
@@ -1073,7 +1086,7 @@ msgstr "After the first release"
 msgid "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 msgstr "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 
-#: src/firstrun/ProfileStep.tsx:98
+#: src/firstrun/ProfileStep.tsx:136
 msgid "Create profile"
 msgstr "Create profile"
 
@@ -1092,7 +1105,12 @@ msgstr "Ready to import"
 msgid "Needs {0} or newer, has {1}"
 msgstr "Needs {0} or newer, has {1}"
 
-#: src/saves/SavesTab.tsx:95
+#. placeholder {0}: mods.length
+#: src/profiles/GameModsDialog.tsx:87
+msgid "{0, plural, one {# mod will be copied into a new profile. The game folder is left as it is.} other {# mods will be copied into a new profile. The game folder is left as it is.}}"
+msgstr "{0, plural, one {# mod will be copied into a new profile. The game folder is left as it is.} other {# mods will be copied into a new profile. The game folder is left as it is.}}"
+
+#: src/saves/SavesTab.tsx:61
 msgid "Add to this profile"
 msgstr "Add to this profile"
 
@@ -1118,7 +1136,7 @@ msgstr "Paste from clipboard"
 msgid "{0} copies of {1}"
 msgstr "{0} copies of {1}"
 
-#: src/console/ConsoleTab.tsx:535
+#: src/console/ConsoleTab.tsx:546
 #: src/console/HelpDialog.tsx:53
 #: src/firstrun/SmapiStep.tsx:116
 #: src/launch/LaunchLayer.tsx:189
@@ -1129,11 +1147,11 @@ msgstr "Copy"
 msgid "Image"
 msgstr "Image"
 
-#: src/mods/parts.tsx:101
+#: src/mods/parts.tsx:95
 msgid "Problem: {text}"
 msgstr "Problem: {text}"
 
-#: src/console/ConsoleTab.tsx:63
+#: src/console/ConsoleTab.tsx:73
 msgid "Trace"
 msgstr "Trace"
 
@@ -1141,7 +1159,7 @@ msgstr "Trace"
 msgid "Data"
 msgstr "Data"
 
-#: src/mods/NexusDetails.tsx:125
+#: src/mods/NexusDetails.tsx:132
 #: src/mods/Sidebar.tsx:170
 msgid "Endorsements"
 msgstr "Endorsements"
@@ -1185,7 +1203,7 @@ msgid "Mortar {0} is available."
 msgstr "Mortar {0} is available."
 
 #. placeholder {0}: done.length
-#: src/queue/store.ts:113
+#: src/queue/store.ts:115
 msgid "{0, plural, one {# mod installed} other {# mods installed}}"
 msgstr "{0, plural, one {# mod installed} other {# mods installed}}"
 
@@ -1198,7 +1216,7 @@ msgstr "config.json, made by the mod"
 msgid "Mortar {0} is ready. Restart Mortar to finish updating."
 msgstr "Mortar {0} is ready. Restart Mortar to finish updating."
 
-#: src/console/ConsoleTab.tsx:291
+#: src/console/ConsoleTab.tsx:302
 msgid "Console command"
 msgstr "Console command"
 
@@ -1208,7 +1226,7 @@ msgstr "That folder cannot be used"
 
 #: src/mods/ProblemBar.tsx:65
 #: src/mods/UpdateReview.tsx:126
-#: src/saves/SavesTab.tsx:111
+#: src/saves/SavesTab.tsx:118
 msgid "Open page"
 msgstr "Open page"
 
@@ -1220,7 +1238,12 @@ msgstr "{count} to download"
 msgid "Saves are zipped before mods update; older backups beyond this many are deleted. {MIN_KEPT} to {MAX_KEPT}."
 msgstr "Saves are zipped before mods update; older backups beyond this many are deleted. {MIN_KEPT} to {MAX_KEPT}."
 
-#: src/toasts/ToastHost.tsx:101
+#. placeholder {0}: res.skipped
+#: src/profiles/GameModsDialog.tsx:63
+msgid "{0, plural, one {# skipped} other {# skipped}}"
+msgstr "{0, plural, one {# skipped} other {# skipped}}"
+
+#: src/toasts/ToastHost.tsx:108
 msgid "Notifications"
 msgstr "Notifications"
 
@@ -1229,7 +1252,7 @@ msgstr "Notifications"
 msgid "This download's mod is not known to come from {0}."
 msgstr "This download's mod is not known to come from {0}."
 
-#: src/profiles/ProfilesPage.tsx:457
+#: src/profiles/ProfilesPage.tsx:462
 #: src/settings/SettingsPage.tsx:59
 msgid "Back"
 msgstr "Back"
@@ -1243,7 +1266,7 @@ msgstr "Selected mod"
 msgid "Could not switch off the other copy of {0}"
 msgstr "Could not switch off the other copy of {0}"
 
-#: src/saves/SavesTab.tsx:261
+#: src/saves/SavesTab.tsx:269
 msgid "Mortar reads each save for the mods it has used. You pick the save in the game; this is how well each one fits {name}."
 msgstr "Mortar reads each save for the mods it has used. You pick the save in the game; this is how well each one fits {name}."
 
@@ -1285,11 +1308,11 @@ msgstr "Roll back {0}?"
 msgid "Could not check whether the game is running"
 msgstr "Could not check whether the game is running"
 
-#: src/console/ConsoleTab.tsx:73
+#: src/console/ConsoleTab.tsx:83
 msgid "Levels"
 msgstr "Levels"
 
-#: src/profiles/ProfilesPage.tsx:347
+#: src/profiles/ProfilesPage.tsx:349
 msgid "Deleted profiles stay here for 30 days, mods and settings included."
 msgstr "Deleted profiles stay here for 30 days, mods and settings included."
 
@@ -1302,8 +1325,8 @@ msgstr "Stardew Valley {0}"
 msgid "Could not check the mods for problems"
 msgstr "Could not check the mods for problems"
 
-#: src/console/ConsoleTab.tsx:183
-#: src/console/ConsoleTab.tsx:184
+#: src/console/ConsoleTab.tsx:193
+#: src/console/ConsoleTab.tsx:194
 msgid "Search the log"
 msgstr "Search the log"
 
@@ -1316,7 +1339,7 @@ msgstr "{owner} opens these links now."
 msgid "Notes for {0}"
 msgstr "Notes for {0}"
 
-#: src/console/ConsoleTab.tsx:131
+#: src/console/ConsoleTab.tsx:141
 #: src/game/Detail.tsx:164
 #: src/game/Detail.tsx:309
 #: src/mods/ModList.tsx:127
@@ -1362,12 +1385,12 @@ msgstr "into {profile}"
 msgid "Saving…"
 msgstr "Saving…"
 
-#: src/profiles/ProfilesPage.tsx:387
+#: src/profiles/ProfilesPage.tsx:389
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
 #. placeholder {0}: others.length
-#: src/mods/NexusDetails.tsx:162
+#: src/mods/NexusDetails.tsx:169
 msgid "Current files on Nexus ({0})"
 msgstr "Current files on Nexus ({0})"
 
@@ -1380,7 +1403,7 @@ msgid "New profile from file"
 msgstr "New profile from file"
 
 #: src/mods/ModList.tsx:152
-#: src/mods/NexusDetails.tsx:115
+#: src/mods/NexusDetails.tsx:122
 #: src/mods/Sidebar.tsx:87
 msgid "Category"
 msgstr "Category"
@@ -1401,9 +1424,13 @@ msgstr "Try again"
 msgid "Stardew Valley was not found"
 msgstr "Stardew Valley was not found"
 
-#: src/console/ConsoleTab.tsx:428
+#: src/console/ConsoleTab.tsx:439
 msgid "Times"
 msgstr "Times"
+
+#: src/firstrun/ProfileStep.tsx:89
+msgid "Copy the mods already in Stardew Valley's Mods folder into a new profile. Nothing in the game folder is moved or changed."
+msgstr "Copy the mods already in Stardew Valley's Mods folder into a new profile. Nothing in the game folder is moved or changed."
 
 #: src/firstrun/FindStep.tsx:151
 #: src/games/GameSelect.tsx:187
@@ -1414,13 +1441,13 @@ msgstr "Only a Flatpak Steam was found."
 msgid "Open Stardew Valley settings"
 msgstr "Open Stardew Valley settings"
 
-#: src/saves/SavesTab.tsx:254
+#: src/saves/SavesTab.tsx:262
 msgid "No saves found yet."
 msgstr "No saves found yet."
 
 #. placeholder {0}: formatCount(page.downloads, i18n.locale)
 #. placeholder {1}: formatCount(page.uniqueDownloads, i18n.locale)
-#: src/mods/NexusDetails.tsx:127
+#: src/mods/NexusDetails.tsx:134
 msgid "{0} · {1} unique"
 msgstr "{0} · {1} unique"
 
@@ -1429,11 +1456,11 @@ msgid "Not found"
 msgstr "Not found"
 
 #. placeholder {0}: entry.error ?? ''
-#: src/mods/NexusDetails.tsx:245
+#: src/mods/NexusDetails.tsx:252
 msgid "Could not read the Nexus page: {0}"
 msgstr "Could not read the Nexus page: {0}"
 
-#: src/share/useImportFlow.ts:166
+#: src/share/useImportFlow.ts:77
 msgid "Imported, but could not show the profile"
 msgstr "Imported, but could not show the profile"
 
@@ -1457,7 +1484,8 @@ msgstr "Could not stop the game"
 msgid "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 
-#: src/profiles/ProfilesPage.tsx:478
+#: src/profiles/GameModsDialog.tsx:114
+#: src/profiles/ProfilesPage.tsx:492
 msgid "Import"
 msgstr "Import"
 
@@ -1486,7 +1514,7 @@ msgstr "Choose the folder that holds Stardew Valley instead."
 msgid "The link has expired. Click Mod Manager Download on Nexus again."
 msgstr "The link has expired. Click Mod Manager Download on Nexus again."
 
-#: src/saves/SavesTab.tsx:167
+#: src/saves/SavesTab.tsx:175
 msgid "Summer"
 msgstr "Summer"
 
@@ -1503,12 +1531,12 @@ msgid "Download and install"
 msgstr "Download and install"
 
 #: src/console/HelpDialog.tsx:103
-#: src/console/store.ts:93
+#: src/console/store.ts:101
 msgid "Could not read the SMAPI log"
 msgstr "Could not read the SMAPI log"
 
-#: src/profiles/ProfilesPage.tsx:332
-#: src/profiles/ProfilesPage.tsx:344
+#: src/profiles/ProfilesPage.tsx:334
+#: src/profiles/ProfilesPage.tsx:346
 msgid "Recently deleted"
 msgstr "Recently deleted"
 
@@ -1549,7 +1577,7 @@ msgstr "Couldn't minimise the window"
 msgid "{length} of {limit} characters · close to the Discord message limit"
 msgstr "{length} of {limit} characters · close to the Discord message limit"
 
-#: src/console/ConsoleTab.tsx:429
+#: src/console/ConsoleTab.tsx:440
 msgid "Follow"
 msgstr "Follow"
 
@@ -1582,7 +1610,7 @@ msgstr "Could not open the folder of {0}"
 msgid "Other profile…"
 msgstr "Other profile…"
 
-#: src/saves/SavesTab.tsx:219
+#: src/saves/SavesTab.tsx:227
 msgid "Has used:"
 msgstr "Has used:"
 
@@ -1606,7 +1634,7 @@ msgstr "Couldn't resize the window"
 msgid "Couldn't read the window state"
 msgstr "Couldn't read the window state"
 
-#: src/saves/SavesTab.tsx:114
+#: src/saves/SavesTab.tsx:121
 msgid "Open {name} on Nexus"
 msgstr "Open {name} on Nexus"
 
@@ -1618,11 +1646,11 @@ msgstr "Nexus link not used"
 msgid "Nexus mod {modId}"
 msgstr "Nexus mod {modId}"
 
-#: src/mods/NexusDetails.tsx:223
+#: src/mods/NexusDetails.tsx:230
 msgid "Description"
 msgstr "Description"
 
-#: src/console/ConsoleTab.tsx:140
+#: src/console/ConsoleTab.tsx:150
 msgid "No mods have logged yet"
 msgstr "No mods have logged yet"
 
@@ -1642,7 +1670,7 @@ msgstr "unverified until downloaded"
 msgid "Something went wrong"
 msgstr "Something went wrong"
 
-#: src/saves/SavesTab.tsx:167
+#: src/saves/SavesTab.tsx:175
 msgid "Winter"
 msgstr "Winter"
 
@@ -1664,7 +1692,7 @@ msgstr "Reset"
 msgid "Use Steam's"
 msgstr "Use Steam's"
 
-#: src/saves/SavesTab.tsx:167
+#: src/saves/SavesTab.tsx:175
 msgid "Spring"
 msgstr "Spring"
 
@@ -1676,7 +1704,7 @@ msgstr "Couldn't close the window"
 msgid "Free accounts need one click on Nexus for every download. Mortar opens each file's page in turn and takes the download from your click."
 msgstr "Free accounts need one click on Nexus for every download. Mortar opens each file's page in turn and takes the download from your click."
 
-#: src/profiles/ProfilesPage.tsx:505
+#: src/profiles/ProfilesPage.tsx:519
 msgid "No profiles yet."
 msgstr "No profiles yet."
 
@@ -1704,7 +1732,7 @@ msgstr "Checked with SMAPI's update service"
 msgid "A profile with that name already exists, so this one is \"{name}\""
 msgstr "A profile with that name already exists, so this one is \"{name}\""
 
-#: src/console/ConsoleTab.tsx:64
+#: src/console/ConsoleTab.tsx:74
 msgid "Debug"
 msgstr "Debug"
 
@@ -1733,7 +1761,7 @@ msgstr "Create your first profile"
 msgid "Moss"
 msgstr "Moss"
 
-#: src/saves/SavesTab.tsx:114
+#: src/saves/SavesTab.tsx:121
 msgid "Open the page of {name}"
 msgstr "Open the page of {name}"
 
@@ -1750,7 +1778,7 @@ msgstr "Not now"
 msgid "Could not reset the settings of {0}"
 msgstr "Could not reset the settings of {0}"
 
-#: src/App.tsx:40
+#: src/App.tsx:47
 #: src/games/GameSelect.tsx:149
 msgid "Could not read your games"
 msgstr "Could not read your games"
@@ -1784,7 +1812,7 @@ msgid "Default background"
 msgstr "Default background"
 
 #: src/mods/ModMenu.tsx:41
-#: src/saves/SavesTab.tsx:111
+#: src/saves/SavesTab.tsx:118
 msgid "Open on Nexus"
 msgstr "Open on Nexus"
 
@@ -1821,7 +1849,7 @@ msgstr "Log link"
 msgid "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 msgstr "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 
-#: src/saves/SavesTab.tsx:84
+#: src/saves/SavesTab.tsx:91
 msgid "Switch on {name} in this profile"
 msgstr "Switch on {name} in this profile"
 
@@ -1857,7 +1885,7 @@ msgstr "Setup"
 msgid "Preview"
 msgstr "Preview"
 
-#: src/profiles/ProfilesPage.tsx:153
+#: src/profiles/ProfilesPage.tsx:155
 msgid "Show in sidebar"
 msgstr "Show in sidebar"
 
@@ -1877,7 +1905,7 @@ msgid "GitHub"
 msgstr "GitHub"
 
 #. placeholder {0}: profile.name
-#: src/profiles/ProfilesPage.tsx:267
+#: src/profiles/ProfilesPage.tsx:269
 msgid "Actions for {0}"
 msgstr "Actions for {0}"
 
@@ -1889,7 +1917,7 @@ msgstr "Pause all"
 msgid "Three steps and you are playing with mods."
 msgstr "Three steps and you are playing with mods."
 
-#: src/mods/NexusDetails.tsx:211
+#: src/mods/NexusDetails.tsx:218
 msgid "Recent changes"
 msgstr "Recent changes"
 
@@ -1976,7 +2004,7 @@ msgstr "Install {name}?"
 msgid "Switch off"
 msgstr "Switch off"
 
-#: src/console/ConsoleTab.tsx:67
+#: src/console/ConsoleTab.tsx:77
 msgid "Error"
 msgstr "Error"
 
@@ -2024,8 +2052,8 @@ msgid "Built on"
 msgstr "Built on"
 
 #: src/mods/ModMenu.tsx:55
-#: src/mods/parts.tsx:176
-#: src/mods/parts.tsx:212
+#: src/mods/parts.tsx:170
+#: src/mods/parts.tsx:206
 msgid "Remove"
 msgstr "Remove"
 
@@ -2045,7 +2073,7 @@ msgid "Done ({0}): {1}"
 msgstr "Done ({0}): {1}"
 
 #. placeholder {0}: deleting?.name ?? ''
-#: src/profiles/ProfilesPage.tsx:384
+#: src/profiles/ProfilesPage.tsx:386
 msgid "Delete {0}?"
 msgstr "Delete {0}?"
 
@@ -2061,7 +2089,7 @@ msgstr "From Nexus"
 msgid "{0} done · {1} in progress · {2} failed · {3} left"
 msgstr "{0} done · {1} in progress · {2} failed · {3} left"
 
-#: src/profiles/ProfilesPage.tsx:153
+#: src/profiles/ProfilesPage.tsx:155
 msgid "Hide from sidebar"
 msgstr "Hide from sidebar"
 
@@ -2089,11 +2117,11 @@ msgstr "Select a mod to see its details."
 msgid "Redo update"
 msgstr "Redo update"
 
-#: src/saves/SavesTab.tsx:126
+#: src/saves/SavesTab.tsx:133
 msgid "Dismiss {name} for this save"
 msgstr "Dismiss {name} for this save"
 
-#: src/firstrun/ProfileStep.tsx:114
+#: src/firstrun/ProfileStep.tsx:152
 msgid "Someone sent you a Mortar link? You see what it holds first. Mods from Nexus need your Nexus sign-in, which Mortar asks for then."
 msgstr "Someone sent you a Mortar link? You see what it holds first. Mods from Nexus need your Nexus sign-in, which Mortar asks for then."
 
@@ -2132,11 +2160,11 @@ msgstr "Launching {name}"
 msgid "{fitting} of {total}"
 msgstr "{fitting} of {total}"
 
-#: src/console/ConsoleTab.tsx:462
+#: src/console/ConsoleTab.tsx:473
 msgid "Clear filters"
 msgstr "Clear filters"
 
-#: src/saves/SavesTab.tsx:238
+#: src/saves/SavesTab.tsx:246
 msgid "Could not read your saves: {detail}"
 msgstr "Could not read your saves: {detail}"
 
@@ -2175,7 +2203,7 @@ msgstr "First profile"
 msgid "Saved to {0}"
 msgstr "Saved to {0}"
 
-#: src/firstrun/ProfileStep.tsx:119
+#: src/firstrun/ProfileStep.tsx:157
 #: src/share/ImportInput.tsx:56
 msgid "Share link"
 msgstr "Share link"
@@ -2186,7 +2214,7 @@ msgid "{0} needs a newer version than this."
 msgstr "{0} needs a newer version than this."
 
 #: src/mods/updates.ts:34
-#: src/queue/store.ts:130
+#: src/queue/store.ts:132
 msgid "Couldn't reach Nexus"
 msgstr "Couldn't reach Nexus"
 
@@ -2212,7 +2240,7 @@ msgstr "Drop to install into {0}"
 msgid "Newer."
 msgstr "Newer."
 
-#: src/mods/NexusDetails.tsx:192
+#: src/mods/NexusDetails.tsx:199
 msgid "Adult content"
 msgstr "Adult content"
 
@@ -2279,7 +2307,7 @@ msgid "{0} (optional)"
 msgstr "{0} (optional)"
 
 #. placeholder {0}: wants.length
-#: src/saves/SavesTab.tsx:160
+#: src/saves/SavesTab.tsx:168
 msgid "Add all {0}"
 msgstr "Add all {0}"
 
@@ -2302,7 +2330,7 @@ msgid "Accent colour"
 msgstr "Accent colour"
 
 #: src/game/Sidebar.tsx:301
-#: src/profiles/ProfilesPage.tsx:469
+#: src/profiles/ProfilesPage.tsx:474
 msgid "Profiles"
 msgstr "Profiles"
 
@@ -2324,7 +2352,7 @@ msgstr "Downloaded"
 msgid "{0} left out"
 msgstr "{0} left out"
 
-#: src/saves/SavesTab.tsx:79
+#: src/saves/SavesTab.tsx:86
 msgid "Switch on in this profile"
 msgstr "Switch on in this profile"
 
@@ -2332,7 +2360,7 @@ msgstr "Switch on in this profile"
 msgid "Could not build the link"
 msgstr "Could not build the link"
 
-#: src/console/ConsoleTab.tsx:512
+#: src/console/ConsoleTab.tsx:523
 msgid "Jump to first error"
 msgstr "Jump to first error"
 
@@ -2423,7 +2451,7 @@ msgstr "Downloading and verifying Mortar {0}…"
 msgid "Cancel {0}"
 msgstr "Cancel {0}"
 
-#: src/console/ConsoleTab.tsx:521
+#: src/console/ConsoleTab.tsx:532
 msgid "Clear"
 msgstr "Clear"
 
@@ -2435,7 +2463,7 @@ msgstr "Handle links"
 msgid "SMAPI installed"
 msgstr "SMAPI installed"
 
-#: src/mods/NexusDetails.tsx:200
+#: src/mods/NexusDetails.tsx:207
 msgid "Not available on Nexus"
 msgstr "Not available on Nexus"
 
@@ -2479,6 +2507,12 @@ msgstr "Import profile from…"
 msgid "{n} GitHub"
 msgstr "{n} GitHub"
 
+#: src/firstrun/ProfileStep.tsx:86
+#: src/profiles/GameModsDialog.tsx:82
+#: src/profiles/ProfilesPage.tsx:483
+msgid "Import from the game's Mods folder"
+msgstr "Import from the game's Mods folder"
+
 #: src/mods/ProblemBar.tsx:50
 msgid "Switch on"
 msgstr "Switch on"
@@ -2491,7 +2525,7 @@ msgstr "Check this download"
 msgid "Save…"
 msgstr "Save…"
 
-#: src/saves/SavesTab.tsx:167
+#: src/saves/SavesTab.tsx:175
 msgid "Fall"
 msgstr "Fall"
 
@@ -2512,13 +2546,18 @@ msgstr "into a deleted profile"
 msgid "{0, plural, one {# update} other {# updates}} for {1}"
 msgstr "{0, plural, one {# update} other {# updates}} for {1}"
 
+#. placeholder {0}: res.imported
+#: src/profiles/GameModsDialog.tsx:62
+msgid "{0, plural, one {# imported} other {# imported}}"
+msgstr "{0, plural, one {# imported} other {# imported}}"
+
 #: src/share/ShareDialog.tsx:151
 msgid "Get Mortar"
 msgstr "Get Mortar"
 
 #. placeholder {0}: info.name
 #. placeholder {0}: profile.name
-#: src/profiles/ProfilesPage.tsx:258
+#: src/profiles/ProfilesPage.tsx:260
 #: src/share/ShareDialog.tsx:378
 msgid "Share {0}"
 msgstr "Share {0}"
@@ -2531,7 +2570,7 @@ msgstr "Support"
 msgid "No mods yet"
 msgstr "No mods yet"
 
-#: src/saves/SavesTab.tsx:252
+#: src/saves/SavesTab.tsx:260
 msgid "Reading your saves…"
 msgstr "Reading your saves…"
 
@@ -2539,7 +2578,7 @@ msgstr "Reading your saves…"
 msgid "Copy link"
 msgstr "Copy link"
 
-#: src/saves/SavesTab.tsx:173
+#: src/saves/SavesTab.tsx:181
 msgid "{season} {day}, year {year}"
 msgstr "{season} {day}, year {year}"
 
@@ -2551,12 +2590,12 @@ msgstr "Mortar downloads and installs a mod when you click Mod Manager Download 
 msgid "Settings sections"
 msgstr "Settings sections"
 
-#: src/profiles/ProfilesPage.tsx:251
+#: src/profiles/ProfilesPage.tsx:253
 msgid "{modsLabel} · Updated {updated}"
 msgstr "{modsLabel} · Updated {updated}"
 
 #. placeholder {0}: missing.length
-#: src/saves/SavesTab.tsx:213
+#: src/saves/SavesTab.tsx:221
 msgid "Has used {0, plural, one {# mod it lacks} other {# mods it lacks}}"
 msgstr "Has used {0, plural, one {# mod it lacks} other {# mods it lacks}}"
 
@@ -2564,7 +2603,7 @@ msgstr "Has used {0, plural, one {# mod it lacks} other {# mods it lacks}}"
 msgid "Open Nexus settings"
 msgstr "Open Nexus settings"
 
-#: src/console/ConsoleTab.tsx:365
+#: src/console/ConsoleTab.tsx:376
 #: src/loader/Banner.tsx:35
 #: src/settings/sections/GameSettings.tsx:124
 #: src/settings/sections/GameSettings.tsx:127
@@ -2579,7 +2618,7 @@ msgstr "Checking for updates…"
 msgid "Stardew Valley was not found in Steam. Browse to its folder."
 msgstr "Stardew Valley was not found in Steam. Browse to its folder."
 
-#: src/profiles/ProfilesPage.tsx:320
+#: src/profiles/ProfilesPage.tsx:322
 #: src/shell/TitleBar.tsx:120
 msgid "Restore"
 msgstr "Restore"
@@ -2602,7 +2641,7 @@ msgid "Take over"
 msgstr "Take over"
 
 #. placeholder {0}: item.daysLeft
-#: src/profiles/ProfilesPage.tsx:295
+#: src/profiles/ProfilesPage.tsx:297
 msgid "{0, plural, one {# day left} other {# days left}}"
 msgstr "{0, plural, one {# day left} other {# days left}}"
 
@@ -2611,7 +2650,7 @@ msgid "Update all"
 msgstr "Update all"
 
 #. placeholder {0}: waiting.length
-#: src/queue/store.ts:121
+#: src/queue/store.ts:123
 msgid "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 msgstr "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 
@@ -2651,7 +2690,7 @@ msgid "Adding…"
 msgstr "Adding…"
 
 #. placeholder {0}: mod?.name
-#: src/mods/parts.tsx:192
+#: src/mods/parts.tsx:186
 msgid "Remove {0} from this profile?"
 msgstr "Remove {0} from this profile?"
 
@@ -2664,7 +2703,7 @@ msgid "On"
 msgstr "On"
 
 #: src/game/Detail.tsx:323
-#: src/profiles/ProfilesPage.tsx:262
+#: src/profiles/ProfilesPage.tsx:264
 msgid "Share"
 msgstr "Share"
 
@@ -2676,7 +2715,7 @@ msgstr "Leave out"
 msgid "Copy as a message"
 msgstr "Copy as a message"
 
-#: src/console/ConsoleTab.tsx:68
+#: src/console/ConsoleTab.tsx:78
 msgid "Alert"
 msgstr "Alert"
 
@@ -2691,7 +2730,7 @@ msgid "A game update replaced SMAPI's launcher"
 msgstr "A game update replaced SMAPI's launcher"
 
 #: src/mods/updates.ts:37
-#: src/queue/store.ts:133
+#: src/queue/store.ts:135
 msgid "Retry now"
 msgstr "Retry now"
 
