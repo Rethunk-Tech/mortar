@@ -105,6 +105,51 @@ func TestSetCoverValidatesAndCopies(t *testing.T) {
 	}
 }
 
+func TestSetCoverKeepsTheOldFileWhenTheProfileCannotBeSaved(t *testing.T) {
+	s := newStore(t)
+	p, err := s.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := t.TempDir()
+	png := filepath.Join(src, "a.png")
+	if err := os.WriteFile(png, pngHeader, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.SetCover("stardew", p.ID, png); err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(s.root, "stardew", p.ID)
+	saved, err := fsx.ReadFile(filepath.Join(dir, fileName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	jpeg := filepath.Join(src, "b.jpg")
+	if err := os.WriteFile(jpeg, []byte("\xff\xd8\xff\xe0\x00\x10JFIF\x00"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	coverAfterWrite = func(d string) {
+		p := filepath.Join(d, fileName)
+		_ = os.Remove(p)
+		_ = os.Mkdir(p, 0o700)
+	}
+	t.Cleanup(func() { coverAfterWrite = nil })
+	if _, err := s.SetCover("stardew", p.ID, jpeg); err == nil {
+		t.Fatal("set succeeded after the profile could not be saved")
+	}
+	_ = os.RemoveAll(filepath.Join(dir, fileName))
+	if err := fsx.WriteFile(filepath.Join(dir, fileName), saved, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got, err := s.read("stardew", p.ID)
+	if err != nil || got.Cover != "cover.png" {
+		t.Fatalf("profile = %+v, %v", got, err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "cover.png")); err != nil {
+		t.Fatalf("old cover gone: %v", err)
+	}
+}
+
 func TestCoverMiddlewarePathSafety(t *testing.T) {
 	s := newStore(t)
 	p, err := s.Create("stardew", "Farm")

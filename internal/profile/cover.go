@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
@@ -73,24 +74,40 @@ func removeCover(dir, name string) error {
 	return nil
 }
 
+var coverAfterWrite func(dir string)
+
 // SetCover copies the image at path into the profile folder as its cover; the original is never referenced again.
 func (s *Store) SetCover(game, id, path string) (Profile, error) {
 	b, name, err := readCover(path)
 	if err != nil {
 		return Profile{}, err
 	}
-	return s.update(game, id, func(p *Profile, dir string) error {
-		if err := datadir.WriteFile(filepath.Join(dir, name), b, 0o600); err != nil {
-			return err
-		}
-		if p.Cover != name {
-			if err := removeCover(dir, p.Cover); err != nil {
-				return err
-			}
-		}
-		p.Cover = name
-		return nil
-	})
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	p, err := s.read(game, id)
+	if err != nil {
+		return Profile{}, err
+	}
+	dir, err := s.profileDir(game, id)
+	if err != nil {
+		return Profile{}, err
+	}
+	if err := datadir.WriteFile(filepath.Join(dir, name), b, 0o600); err != nil {
+		return Profile{}, err
+	}
+	if coverAfterWrite != nil {
+		coverAfterWrite(dir)
+	}
+	old := p.Cover
+	p.Cover = name
+	p.Updated = time.Now().UTC().Truncate(time.Second)
+	if err := datadir.WriteJSON(filepath.Join(dir, fileName), p); err != nil {
+		return Profile{}, err
+	}
+	if old != name {
+		_ = removeCover(dir, old)
+	}
+	return p, nil
 }
 
 // ClearCover drops the picked cover, so the hero goes back to the automatic one.
