@@ -1,7 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Link } from '@mui/material'
+import { Box, Button, Link } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
+import { FileArchive } from 'lucide-react'
 import { Logo } from '../../brand/Logo.tsx'
+import { routeGame, useNav } from '../../nav/store.ts'
+import { useProfiles } from '../../profiles/store.ts'
+import { saveDiagnostics } from '../../shell/saveDiagnostics.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import credits from '../generated/credits.json' with { type: 'json' }
 
@@ -11,6 +15,8 @@ const body = { color: 'rgba(235,235,240,0.95)' }
 
 export function About() {
   const { t } = useLingui()
+  const game = useNav((s) => routeGame(s.route) ?? '')
+  const profile = useProfiles((s) => s.openId)
   return (
     <Box
       sx={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: 14, lineHeight: 1.55 }}
@@ -60,6 +66,15 @@ export function About() {
       <Box sx={body}>
         {t`Stardew Valley is ConcernedApe's. Game art shown in Mortar is read from your own Steam install. Nexus Mods and GitHub content belongs to its authors.`}
       </Box>
+      <Button
+        variant="outlined"
+        color="inherit"
+        startIcon={<FileArchive size={16} />}
+        onClick={() => saveDiagnostics(game, profile)}
+        sx={{ alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
+      >
+        {t`Save diagnostics…`}
+      </Button>
     </Box>
   )
 }
