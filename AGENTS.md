@@ -4,7 +4,7 @@ Mortar is a multi-game desktop mod manager: game discovery, mod loader install, 
 
 ## Milestones
 
-Milestone 1 (shell and look, `docs/design.md` § Build order) is approved (NOMAD, 2026-09-29). Every later milestone needs NOMAD's explicit go-ahead before any of its code is written.
+Milestone 1 (shell and look) is approved (NOMAD, 2026-09-29) and Milestone 2 (Stardew core) (NOMAD, 2026-09-30), per `docs/design.md` § Build order. Every later milestone needs NOMAD's explicit go-ahead before any of its code is written.
 
 ## Decided
 
