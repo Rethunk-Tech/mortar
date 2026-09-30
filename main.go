@@ -10,8 +10,11 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/loadersvc"
+	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/picker"
+	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-AI/mortar/internal/savessvc"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	modstore "github.com/Rethunk-AI/mortar/internal/store"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -73,6 +76,12 @@ func main() {
 		log.Printf("store collect: %v", err)
 	}
 
+	modMeta := &meta.Client{}
+	savesSvc, err := savessvc.NewService(profiles, store, modMeta)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	var window *application.WebviewWindow
 	pick := &picker.Service{}
 
@@ -82,6 +91,8 @@ func main() {
 		Services: []application.Service{
 			application.NewService(svc), application.NewService(gamesSvc),
 			application.NewService(profile.NewService(profiles)), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
+			application.NewService(savesSvc),
+			application.NewService(problems.NewService(home, store, profiles, modMeta)),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
