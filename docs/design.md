@@ -21,14 +21,10 @@ Built: packaging, self-update, the signing key and Linux desktop integration ([a
 
 ## Gap-filling features (NOMAD, 2026-09-30)
 
-Chosen from suggestion rounds; each lands as its own unit and moves to architecture.md and gui-design.md when built.
+Chosen from suggestion rounds; each lands as its own unit and moves to architecture.md and gui-design.md when built. Two are left:
 
-- **Mods tab:** a list view with more columns, a right-click header menu to show or hide them, and click-to-sort (persisted); bulk select in the list (enable, disable, remove, share the selection); which profiles use a mod, with search across profiles; a note or tag per mod; the Nexus changelog between the installed and latest version in Update review; pin a version or ignore one update; offer missing dependencies at install; a form editor for config.json; badges for mods that logged errors or warnings in the profile's last run.
-- **Profiles and Saves:** row summaries (updates, problems, origin); compare two profiles and copy mods across; browse and restore save backups; per-profile launch options; a colour or icon per profile; last played on Game Select with one-click Play; export and restore a whole profile as a zip.
-- **Nexus and downloads:** a requests-left meter; update-check toggles (mod updates at start, new SMAPI notice); endorse or track a mod; resume interrupted downloads; mark mods with new files or changes since last seen; a download history; clear finished downloads.
-- **App-wide:** a keyboard shortcuts page and shortcuts; a command palette (Ctrl+K); a notification history; empty-state tips on first open; a credits and licences page; save the console log to a file; "Keep the Nexus copy" in the duplicate dialog.
-
-- **More (NOMAD, 2026-09-30, second round):** a transitive dependency tree in the mod panel; group the list or grid by category, source or tag; copy the mod list as text; clickable mod names and paths in the Console; a profile change history with revert; a profile description; richer save cards (playtime, money, farm type, date); a warning after a game update for mods broken on the new version; play without mods; a launch history per profile; a crash summary naming the mods that logged errors; a storage page with clean-up of unused items; export and import of settings without secrets; a diagnostics bundle for bug reports.
+- **Error badges on mods:** a badge on each mod that logged errors or warnings in the profile's last run. The pieces exist: `launch.Summarize` reads errors per mod from a run's log, every run's log is stored under the profile's `runs/` ([architecture.md](architecture.md#launch)) and the crash dialog lists the mods; what is missing is showing the newest run's per-mod counts in the list, grid and sidebar, and clearing a badge when a later run is clean.
+- **Profile change history with revert:** a bounded log per profile of what changed (mods added, removed, updated, rolled back, switched on or off) with a Revert that restores an earlier state. Nothing records changes today; `previousKey` holds only one step of rollback per entry.
 
 ## Build order
 
