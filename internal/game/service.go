@@ -53,14 +53,14 @@ func (s *Service) List() ([]GameInfo, error) {
 		}
 		info.Installed, info.InstallDir = dir != "", dir
 		if stp != nil && stp.HeroArt(info.AppID) != "" {
-			info.ArtURL = artPrefix + info.AppID
+			info.ArtURL = ArtURL(info.AppID)
 		}
 		out = append(out, info)
 	}
 	for _, c := range comingLater {
 		info := GameInfo{ID: c.id, Name: c.name, AppID: c.appID, Loader: c.loader}
 		if stp != nil && stp.HeroArt(c.appID) != "" {
-			info.ArtURL = artPrefix + c.appID
+			info.ArtURL = ArtURL(c.appID)
 		}
 		out = append(out, info)
 	}

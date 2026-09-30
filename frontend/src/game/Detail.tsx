@@ -15,6 +15,7 @@ import { useSaves } from '../saves/store.ts'
 import { openShare } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { compact } from './compact.ts'
+import { CoverButton, HeroCover } from './HeroCover.tsx'
 import { NameField } from './NameField.tsx'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
 import { type TabId, useTab } from './tab.ts'
@@ -52,9 +53,8 @@ function Card({ label, value, onClick }: { label: string; value: string; onClick
   )
 }
 
-function Hero({ profile }: { profile: Profile }) {
+function Hero({ profile, game }: { profile: Profile; game: string }) {
   const { t } = useLingui()
-  const art = useProfiles((s) => s.game?.artUrl)
   const rename = useProfiles((s) => s.rename)
   const [editing, setEditing] = useState(false)
   const pencil = useRef<HTMLButtonElement>(null)
@@ -89,14 +89,7 @@ function Hero({ profile }: { profile: Profile }) {
           [compact]: { display: 'none' },
         }}
       >
-        {art ? (
-          <Box
-            component="img"
-            src={art}
-            alt=""
-            sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          />
-        ) : null}
+        <HeroCover game={game} profile={profile} />
         <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(20,20,24,0.18)' }} />
       </Box>
       <Box
@@ -145,6 +138,7 @@ function Hero({ profile }: { profile: Profile }) {
                 >
                   <Pencil size={16} />
                 </IconButton>
+                <CoverButton game={game} profile={profile} />
               </>
             )}
           </Box>
@@ -266,7 +260,7 @@ export function Detail() {
   }
   return (
     <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-      <Hero key={`hero-${profile.id}`} profile={profile} />
+      <Hero key={`hero-${profile.id}`} profile={profile} game={game} />
       <Box
         sx={{
           display: 'flex',

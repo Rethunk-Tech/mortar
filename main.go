@@ -79,6 +79,7 @@ func main() {
 		nxmSvc   *nxmsvc.Service
 		shareSvc *sharesvc.Service
 		window   *application.WebviewWindow
+		profiles *profile.Store
 	)
 	ready := make(chan struct{})
 	app := application.New(application.Options{
@@ -88,6 +89,7 @@ func main() {
 			Handler: application.AssetFileServerFS(assets),
 			Middleware: application.ChainMiddleware(
 				game.ArtMiddleware(home),
+				profile.CoverMiddleware(func() *profile.Store { return profiles }),
 				backdrop.Middleware(store.Get, backdrop.SystemDefault, backdrop.DesktopWallpaper),
 			),
 		},
@@ -115,7 +117,7 @@ func main() {
 		log.Printf("store cleanup: %v", err)
 	}
 
-	profiles, err := profile.Open(items)
+	profiles, err = profile.Open(items)
 	if err != nil {
 		log.Fatal(err)
 	}

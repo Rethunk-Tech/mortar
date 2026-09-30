@@ -1,4 +1,4 @@
-// Package picker brings archives into the window: the open-file dialog and the drop event.
+// Package picker brings files into the window: the open-file dialogs and the drop event.
 package picker
 
 import "github.com/wailsapp/wails/v3/pkg/application"
@@ -22,4 +22,15 @@ func (s *Service) PickArchives() ([]string, error) {
 		d.AttachToWindow(w)
 	}
 	return d.PromptForMultipleSelection()
+}
+
+// PickImage asks for one image and returns its path, or "" when the dialog is cancelled.
+func (s *Service) PickImage(title string) (string, error) {
+	d := s.App.Dialog.OpenFile().
+		SetTitle(title).
+		AddFilter("Images (PNG, JPEG, WebP)", "*.png;*.jpg;*.jpeg;*.webp")
+	if w := s.App.Window.Current(); w != nil {
+		d.AttachToWindow(w)
+	}
+	return d.PromptForSingleSelection()
 }

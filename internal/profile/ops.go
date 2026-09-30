@@ -438,6 +438,12 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 	if err == nil {
 		err = datadir.CopyTree(filepath.Join(srcDir, "mods"), filepath.Join(tmp, "mods"))
 	}
+	if err == nil && coverType(src.Cover) != "" {
+		err = datadir.CopyFile(filepath.Join(srcDir, src.Cover), filepath.Join(tmp, src.Cover))
+		if errors.Is(err, fs.ErrNotExist) {
+			dup.Cover, err = "", nil
+		}
+	}
 	if err == nil {
 		err = writeProfile(tmp, dup)
 	}

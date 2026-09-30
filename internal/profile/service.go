@@ -38,6 +38,17 @@ func (s *Service) SetModEnabled(game, id, key, uniqueID string, enabled bool) (P
 	return s.store.SetModEnabled(game, id, key, uniqueID, enabled)
 }
 
+// SetCover copies the image at path into the profile as its hero cover.
+func (s *Service) SetCover(game, id, path string) (Profile, error) {
+	return s.store.SetCover(game, id, path)
+}
+
+// ClearCover goes back to the automatic cover.
+func (s *Service) ClearCover(game, id string) (Profile, error) { return s.store.ClearCover(game, id) }
+
+// Covers lists the hero images to try, in order.
+func (s *Service) Covers(game, id string) ([]string, error) { return s.store.Covers(game, id) }
+
 func (s *Service) Duplicate(game, id string) (Profile, error) { return s.store.Duplicate(game, id) }
 
 // Delete moves the profile to the trash, where it stays restorable for 30 days.

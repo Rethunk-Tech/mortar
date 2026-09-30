@@ -29,11 +29,12 @@ func CopyTree(src, dst string) error {
 		case !d.Type().IsRegular():
 			return fmt.Errorf("%s is not a regular file", p)
 		}
-		return copyFile(p, target)
+		return CopyFile(p, target)
 	})
 }
 
-func copyFile(src, dst string) (err error) {
+// CopyFile copies the regular file src to dst, which must not exist yet.
+func CopyFile(src, dst string) (err error) {
 	in, err := fsx.Open(src)
 	if err != nil {
 		return err

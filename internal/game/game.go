@@ -18,6 +18,9 @@ import (
 
 const artPrefix = "/steam-art/"
 
+// ArtURL is where the frontend loads Steam's hero art for appID from; ArtMiddleware serves it.
+func ArtURL(appID string) string { return artPrefix + appID }
+
 // Game is everything that differs per game.
 type Game interface {
 	Identity
