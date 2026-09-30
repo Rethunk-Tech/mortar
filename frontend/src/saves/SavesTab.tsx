@@ -58,6 +58,13 @@ function LackChip({
   const queued = useQueue((s) =>
     want ? pendingFor(s.state.items, profile.id, want.modId ?? 0, want.repo ?? '') : false,
   )
+  let plusTitle = t`Add to this profile`
+  if (queued) {
+    plusTitle = t`Queued`
+  }
+  if (locked) {
+    plusTitle = t`Stop the game to change mods.`
+  }
   const url = lack.where?.url ?? ''
   const nexusPage = lack.where?.site === 'Nexus'
   return (
@@ -92,11 +99,11 @@ function LackChip({
         </Tooltip>
       ) : null}
       {want ? (
-        <Tooltip title={queued ? t`Queued` : t`Add to this profile`}>
+        <Tooltip title={plusTitle}>
           <span>
             <IconButton
               size="small"
-              disabled={queued}
+              disabled={queued || locked}
               aria-label={t`Add ${name} to this profile`}
               onClick={() => {
                 download([want]).catch(reportUnexpected)
@@ -139,6 +146,7 @@ function LackChip({
 function AddAll({ missing, profile }: { missing: Lack[]; profile: Profile }) {
   const { t } = useLingui()
   const [pending, run] = usePending()
+  const locked = useLocked()
   const items = useQueue((s) => s.state.items)
   const wants = missing
     .map((lack) => (lack.disabled ? null : wantFor(lack)))
@@ -153,7 +161,7 @@ function AddAll({ missing, profile }: { missing: Lack[]; profile: Profile }) {
       variant="outlined"
       color="inherit"
       startIcon={<Plus size={14} />}
-      disabled={pending}
+      disabled={pending || locked}
       onClick={() => run(() => download(wants))}
       sx={nowrap}
     >
