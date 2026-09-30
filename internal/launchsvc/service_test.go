@@ -397,3 +397,17 @@ func TestAProfileReadiedForLaunchIsRunning(t *testing.T) {
 		t.Fatal("only the readied profile is running")
 	}
 }
+
+func TestAProcessWithoutACommandLineLocksEveryProfileUnlessMortarLaunchedIt(t *testing.T) {
+	bare := launch.Process{PID: 1}
+	if !credited(bare, "/a", "a", "") || !credited(bare, "/b", "b", "") {
+		t.Fatal("a game Mortar did not start may run any profile")
+	}
+	if !credited(bare, "/a", "a", "a") || credited(bare, "/b", "b", "a") {
+		t.Fatal("a game Mortar launched runs its launched profile only")
+	}
+	withArgs := launch.Process{PID: 2, Args: []string{"StardewModdingAPI", "--mods-path", "/a"}}
+	if !credited(withArgs, "/a", "a", "") || credited(withArgs, "/b", "b", "") {
+		t.Fatal("a command line names its profile")
+	}
+}

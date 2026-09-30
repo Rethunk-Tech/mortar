@@ -135,21 +135,37 @@ func (s *Service) current(id string) Status {
 	return Status{Game: id, State: Idle}
 }
 
-// procsFor returns the game's loader processes that run modsDir. Where the platform gives no command line,
-// the process is credited to the profile this session launched.
+// procsFor returns the game's loader processes that run modsDir.
 func (s *Service) procsFor(g game.Game, modsDir, profileID string) ([]launch.Process, error) {
 	procs, err := launch.Processes(s.procDir, g.ProcessName())
 	if err != nil {
 		return nil, err
 	}
-	launched := s.current(g.ID())
+	s.mu.Lock()
+	cur := s.status[g.ID()]
+	sess, ok := s.logs[g.ID()]
+	s.mu.Unlock()
+	launched := ""
+	if ok && cur.State != Idle {
+		launched = sess.profile
+	}
 	var out []launch.Process
 	for _, p := range procs {
-		if (p.Args == nil && launched.Profile == profileID && launched.State != Idle) || p.UsesModsPath(modsDir) {
+		if credited(p, modsDir, profileID, launched) {
 			out = append(out, p)
 		}
 	}
 	return out, nil
+}
+
+// credited reports whether the loader process p runs profileID, whose mods folder is modsDir. launched is the
+// profile of the launch Mortar made and has not seen end, if any. Where the platform gives no command line (Windows),
+// the process is credited to that profile, or to every profile when Mortar did not start it: it may run any of them.
+func credited(p launch.Process, modsDir, profileID, launched string) bool {
+	if p.Args == nil {
+		return launched == "" || launched == profileID
+	}
+	return p.UsesModsPath(modsDir)
 }
 
 // Running reports whether the game is launching or running this profile, for locking its mods folder.
