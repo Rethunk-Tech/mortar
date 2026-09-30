@@ -1,6 +1,7 @@
 package nxm
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,16 +14,28 @@ import (
 type recorder struct {
 	calls   []string
 	current string
+	byMime  map[string]string
 }
 
 // run plays xdg-mime: query answers the current default, default changes it. Nothing touches the real system.
 func (r *recorder) run(name string, args ...string) (string, error) {
 	r.calls = append(r.calls, name+" "+strings.Join(args, " "))
 	if name == xdgMime && args[0] == "query" {
+		if r.byMime != nil {
+			if v, ok := r.byMime[args[1]]; ok {
+				return v + "\n", nil
+			}
+		}
 		return r.current + "\n", nil
 	}
-	if name == xdgMime && args[0] == "default" && args[2] == nxmMime {
-		r.current = args[1]
+	if name == xdgMime && args[0] == "default" {
+		if r.byMime == nil {
+			r.byMime = map[string]string{}
+		}
+		r.byMime[args[2]] = args[1]
+		if args[2] == nxmMime {
+			r.current = args[1]
+		}
 	}
 	return "", nil
 }
@@ -30,7 +43,7 @@ func (r *recorder) run(name string, args ...string) (string, error) {
 func newLinux(t *testing.T, current string) (*System, *recorder) {
 	t.Helper()
 	dir := t.TempDir()
-	r := &recorder{current: current}
+	r := &recorder{current: current, byMime: map[string]string{nxmMime: current}}
 	return &System{exe: "/opt/mortar/mortar", dataHome: filepath.Join(dir, "data"), configHome: filepath.Join(dir, "config"), run: r.run}, r
 }
 
@@ -86,7 +99,7 @@ func TestRestoreWithoutPreviousDropsOurDefault(t *testing.T) {
 		t.Fatal(err)
 	}
 	target := filepath.Join(l.configHome, "dotfiles.list")
-	if err := fsx.WriteFile(target, []byte("[Default Applications]\nx-scheme-handler/nxm=mortar.desktop;\ntext/html=a.desktop\n"), 0o600); err != nil {
+	if err := fsx.WriteFile(target, []byte("[Default Applications]\nx-scheme-handler/nxm="+desktopID+";\ntext/html=a.desktop\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.Symlink(target, list); err != nil {
@@ -304,5 +317,91 @@ func TestInstallIconsOutdatesAStaleIconCache(t *testing.T) {
 	}
 	if dir.ModTime().Before(c.ModTime()) {
 		t.Fatalf("theme folder %v is older than its cache %v, so GTK would keep the stale cache", dir.ModTime(), c.ModTime())
+	}
+}
+
+func TestRegisterLinksWritesReverseDNSDesktop(t *testing.T) {
+	l, _ := newLinux(t, "")
+	if err := l.RegisterLinks(); err != nil {
+		t.Fatal(err)
+	}
+	if filepath.Base(l.desktopPath()) != desktopID {
+		t.Fatalf("desktop path %s", l.desktopPath())
+	}
+	b, err := fsx.ReadFile(l.desktopPath())
+	if err != nil || !strings.Contains(string(b), "StartupWMClass="+linuxAppID) {
+		t.Fatalf("desktop file: %s, %v", b, err)
+	}
+	if _, err := os.Stat(l.legacyDesktopPath()); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("legacy desktop: %v", err)
+	}
+}
+
+func TestMigrateOldDesktopMovesAssociations(t *testing.T) {
+	l, r := newLinux(t, legacyDesktopID)
+	old := l.legacyDesktopPath()
+	if err := os.MkdirAll(filepath.Dir(old), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	oldFile := `[Desktop Entry]
+Type=Application
+Name=Mortar
+Comment=Multi-game desktop mod manager
+Exec="/opt/mortar/old" %u
+Icon=mortar
+Terminal=false
+Categories=Game;Utility;
+Keywords=mod;manager;nexus;stardew;
+StartupWMClass=mortar
+MimeType=x-scheme-handler/nxm;x-scheme-handler/mortar;application/x-mortar;
+`
+	if err := fsx.WriteFile(old, []byte(oldFile), desktopPerm); err != nil {
+		t.Fatal(err)
+	}
+	r.byMime = map[string]string{nxmMime: legacyDesktopID, mortarMime: legacyDesktopID, fileMime: legacyDesktopID}
+	r.current = legacyDesktopID
+	if err := os.MkdirAll(l.configHome, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	mimeapps := filepath.Join(l.configHome, "mimeapps.list")
+	body := "[Default Applications]\nx-scheme-handler/nxm=" + legacyDesktopID + ";\nx-scheme-handler/mortar=" + legacyDesktopID + ";\napplication/x-mortar=" + legacyDesktopID + ";\n"
+	if err := fsx.WriteFile(mimeapps, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.RegisterLinks(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(old); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("old desktop still there: %v", err)
+	}
+	b, err := fsx.ReadFile(l.desktopPath())
+	if err != nil || !strings.Contains(string(b), `Exec="/opt/mortar/mortar"`) || !strings.Contains(string(b), nxmMime) {
+		t.Fatalf("new desktop: %s, %v", b, err)
+	}
+	if r.current != desktopID {
+		t.Fatalf("nxm default %q", r.current)
+	}
+	got, _ := fsx.ReadFile(mimeapps)
+	if strings.Contains(string(got), legacyDesktopID) || !strings.Contains(string(got), desktopID) {
+		t.Fatalf("mimeapps: %s", got)
+	}
+}
+
+func TestForeignOldDesktopIsLeftAlone(t *testing.T) {
+	l, _ := newLinux(t, legacyDesktopID)
+	old := l.legacyDesktopPath()
+	if err := os.MkdirAll(filepath.Dir(old), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	foreign := "[Desktop Entry]\nType=Application\nName=Other\nExec=\"/usr/bin/other\" %u\n"
+	if err := fsx.WriteFile(old, []byte(foreign), desktopPerm); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.RegisterLinks(); err != nil {
+		t.Fatal(err)
+	}
+	b, err := fsx.ReadFile(old)
+	if err != nil || string(b) != foreign {
+		t.Fatalf("foreign entry changed: %s, %v", b, err)
 	}
 }

@@ -17,15 +17,17 @@ import (
 )
 
 const (
-	desktopID   = "mortar.desktop"
-	nxmMime     = "x-scheme-handler/nxm"
-	mortarMime  = "x-scheme-handler/mortar"
-	fileMime    = "application/x-mortar"
-	updateMIME  = "update-mime-database"
-	updateIcons = "gtk4-update-icon-cache"
-	xdgMime     = "/usr/bin/xdg-mime"
-	updateDB    = "update-desktop-database"
-	desktopPerm = 0o644
+	desktopID       = "tech.rethunk.Mortar.desktop"
+	linuxAppID      = "tech.rethunk.Mortar"
+	legacyDesktopID = "mortar.desktop"
+	nxmMime         = "x-scheme-handler/nxm"
+	mortarMime      = "x-scheme-handler/mortar"
+	fileMime        = "application/x-mortar"
+	updateMIME      = "update-mime-database"
+	updateIcons     = "gtk4-update-icon-cache"
+	xdgMime         = "/usr/bin/xdg-mime"
+	updateDB        = "update-desktop-database"
+	desktopPerm     = 0o644
 )
 
 // System is the system's registration of the nxm scheme.
@@ -78,7 +80,13 @@ func execRun(name string, args ...string) (string, error) {
 	return string(out), err
 }
 
-func (l *System) desktopPath() string { return filepath.Join(l.dataHome, "applications", desktopID) }
+func (l *System) desktopPath() string {
+	return filepath.Join(l.dataHome, "applications", desktopID)
+}
+
+func (l *System) legacyDesktopPath() string {
+	return filepath.Join(l.dataHome, "applications", legacyDesktopID)
+}
 
 func (l *System) Owner() (Owner, error) {
 	out, err := l.run(xdgMime, "query", "default", nxmMime)
@@ -128,9 +136,9 @@ Icon=mortar
 Terminal=false
 Categories=Game;Utility;
 Keywords=mod;manager;nexus;stardew;
-StartupWMClass=mortar
+StartupWMClass=%s
 MimeType=%s
-`, l.exe, mime)
+`, l.exe, linuxAppID, mime)
 }
 
 func (l *System) iconPNGPath() string {
@@ -198,6 +206,9 @@ func (l *System) writeDesktop(withNxm bool) error {
 }
 
 func (l *System) Register() error {
+	if err := l.migrateLegacy(); err != nil {
+		return err
+	}
 	if err := l.writeDesktop(true); err != nil {
 		return err
 	}
@@ -259,6 +270,9 @@ const mimeXML = `<?xml version="1.0" encoding="UTF-8"?>
 // definition and the desktop entry, and sets both defaults. Running it again changes nothing. The nxm scheme is
 // left as it is.
 func (l *System) RegisterLinks() error {
+	if err := l.migrateLegacy(); err != nil {
+		return err
+	}
 	xml := filepath.Join(l.dataHome, "mime", "packages", "mortar.xml")
 	if err := os.MkdirAll(filepath.Dir(xml), 0o750); err != nil {
 		return err
@@ -295,6 +309,9 @@ func (l *System) Refresh() error {
 // refresh leaves an entry whose Exec target still exists to that copy of Mortar: a second one running beside it,
 // such as another AppImage, is not a move. When no entry exists it registers mortar:// and .mortar.
 func (l *System) refresh() error {
+	if err := l.migrateLegacy(); err != nil {
+		return err
+	}
 	current, err := fsx.ReadFile(l.desktopPath())
 	if errors.Is(err, fs.ErrNotExist) {
 		return l.RegisterLinks()
@@ -320,6 +337,97 @@ func execTarget(entry []byte) string {
 		}
 	}
 	return ""
+}
+
+func oursLegacyDesktop(entry []byte, exe string) bool {
+	if execTarget(entry) == exe {
+		return true
+	}
+	s := string(entry)
+	return strings.Contains(s, "Name=Mortar\n") && strings.Contains(s, "Icon=mortar\n") && strings.Contains(s, "Comment=Multi-game desktop mod manager\n")
+}
+
+func (l *System) mimeDefault(mime string) string {
+	out, err := l.run(xdgMime, "query", "default", mime)
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(out)
+}
+
+func (l *System) retargetMimeapps(fromID, toID string, mimes []string) error {
+	path := filepath.Join(l.configHome, "mimeapps.list")
+	if target, err := filepath.EvalSymlinks(path); err == nil {
+		path = target
+	}
+	b, err := fsx.ReadFile(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	want := map[string]bool{}
+	for _, m := range mimes {
+		want[m] = true
+	}
+	lines := strings.Split(string(b), "\n")
+	changed := false
+	for i, s := range lines {
+		k, v, ok := strings.Cut(strings.TrimSpace(s), "=")
+		if !ok || !want[k] {
+			continue
+		}
+		if strings.TrimSuffix(v, ";") != fromID {
+			continue
+		}
+		lines[i] = k + "=" + toID + ";"
+		changed = true
+	}
+	if !changed {
+		return nil
+	}
+	return datadir.WriteFile(path, []byte(strings.Join(lines, "\n")), desktopPerm)
+}
+
+func (l *System) migrateLegacy() error {
+	legacy := l.legacyDesktopPath()
+	current, err := fsx.ReadFile(legacy)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if !oursLegacyDesktop(current, l.exe) {
+		return nil
+	}
+	withNxm := strings.Contains(string(current), nxmMime)
+	if err := l.writeDesktop(withNxm); err != nil {
+		return err
+	}
+	move := []string{mortarMime, fileMime}
+	if l.mimeDefault(nxmMime) == legacyDesktopID {
+		if _, err := l.run(xdgMime, "default", desktopID, nxmMime); err != nil {
+			return fmt.Errorf("xdg-mime default: %w", err)
+		}
+		move = append(move, nxmMime)
+	}
+	for _, mime := range []string{mortarMime, fileMime} {
+		if l.mimeDefault(mime) == legacyDesktopID {
+			if _, err := l.run(xdgMime, "default", desktopID, mime); err != nil {
+				return fmt.Errorf("xdg-mime default: %w", err)
+			}
+		}
+	}
+	if err := l.retargetMimeapps(legacyDesktopID, desktopID, move); err != nil {
+		return err
+	}
+	if err := os.Remove(legacy); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
+	_, _ = l.run(updateDB, filepath.Dir(legacy))
+	return nil
 }
 
 // rewrite writes the desktop entry unless current already is it, keeping the nxm scheme as current has it.

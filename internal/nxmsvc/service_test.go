@@ -21,7 +21,7 @@ func (f *fakeHandler) Register() error {
 	if f.failNext {
 		return errors.New("boom")
 	}
-	f.owner = nxm.Owner{ID: "mortar.desktop", Name: "Mortar", Mine: true}
+	f.owner = nxm.Owner{ID: "tech.rethunk.Mortar.desktop", Name: "Mortar", Mine: true}
 	f.registry = append(f.registry, "register")
 	return nil
 }
