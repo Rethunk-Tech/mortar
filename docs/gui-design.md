@@ -6,7 +6,7 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
 
 - **Logo (NOMAD, 2026-09-29):** the running-bond mark, seven rounded bricks in three courses, filled in the primary colour; used in the title bar at 20px, as the app icon on a dark rounded square, and in notifications.
 
-- Frameless, with a solid window (see [design.md](design.md#look)): 1280×720 by default, 768×432 minimum, as Concrete.
+- Frameless, with a solid window (see [architecture.md](architecture.md#stack)): 1280×720 by default, 768×432 minimum, as Concrete.
 - The app draws its own title bar, 36px, marked `--wails-draggable: drag`. Double-click maximises.
   - **Left:** the logo in a darker square and the app name, which open the app menu.
   - **Location tabs**, underlined in the primary colour: "Game Select", or the current game. First run shows a "Setup" tab. While Mortar's Settings page is open the game tab gives way to a "Settings" tab, and the game settings page keeps the game tab highlighted.
@@ -54,14 +54,14 @@ Full-width banner rows stacked down the window, one per game, about 300px tall a
 A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 
 - **Sidebar** (150-300px, resized from an 8px handle on its right edge, 2px primary right border): a "Profiles" header that opens profile management, then one row per profile in the user's order, the open one selected. Each row shows a problem or update badge when it has any.
-- **Bottom block** pinned under the sidebar: a **New profile** row at the foot of the list, icon buttons for Support (a menu: Get help, which opens the Console tab's upload, and Report a Mortar bug) and the download queue (with a count while it has items) when those milestones land, then a full-width **Play** button in the primary colour. There is no Settings icon here (NOMAD, 2026-09-30): it displaced Play, and Settings stays in the app menu and on Ctrl+,.
+- **Bottom block** pinned under the sidebar: a **New profile** row at the foot of the list, icon buttons for Support (milestone 6; a menu: Get help, which opens the Console tab's upload, and Report a Mortar bug) and the download queue (milestone 4; with a count while it has items), then a full-width **Play** button in the primary colour. There is no Settings icon here (NOMAD, 2026-09-30): it displaced Play, and Settings stays in the app menu and on Ctrl+,.
 - **Detail pane** for the open profile:
   - A hero, 190px tall in every view and tab (NOMAD, 2026-09-30; only the minimum-size layout folds it to one line), bleeding to the pane's edges.
     - **Cover:** the profile's cover image at full opacity under a light solid dim layer (`rgba(20,20,24,0.18)`), its alpha fading to transparent over the bottom 40% by an alpha mask so the backdrop shows through into the tab row (the hero has no background of its own).
     - **Cover source, in order:** an image the user picked, else the Nexus picture of the profile's most-endorsed mod (`endorsement_count` from the mod endpoint), else Steam's own hero art for the game, else a solid tone; never a random image (NOMAD, 2026-09-29). Steam's art is read at runtime from `<Steam>/appcache/librarycache/413150/library_hero.jpg` (Steam also keeps a `library_hero_blur.jpg`) and never bundled with Mortar.
     - **Text:** the profile name large and bold with a soft white glow, and always the same cards (Mods, Updated, Created) so the name sits at the same place for every profile, with no subtitle line.
-  - A **Saves** card in the hero (NOMAD, 2026-09-29) with how many saves fit this profile ("2 of 4"), opening the **Saves** tab: each save in the Saves folder with its fit, "all mods present" or "has used N mods this profile lacks" with their names, from the save scan in design.md; a mod can be dismissed for a save. Players pick their save inside the game, so this is where the check shows, before Play.
-  - Tabs: **Mods** (default), **Saves**, **Notes**, **Console**, and a **Share** button at the end of the tab row.
+  - A **Saves** card in the hero (NOMAD, 2026-09-29) with how many saves fit this profile ("2 of 4"), opening the **Saves** tab: each save in the Saves folder with its fit, "all mods present" or "has used N mods this profile lacks" with their names, from the save scan ([architecture.md](architecture.md#saves)); a mod can be dismissed for a save. Players pick their save inside the game, so this is where the check shows, before Play.
+  - Tabs: **Mods** (default), **Saves**, **Notes**, **Console**, and a **Share** button at the end of the tab row (milestone 5).
 - **Launching** covers the window with the launch overlay: a spinner, "Launching Stardew Valley", and SMAPI's first log lines as they arrive (started, mods loading, mods it will skip), with Open console and Hide, until the game is up or the launch fails. While the game runs, the Play button becomes a Running status with the elapsed time and a **Stop game** button.
 - **Minimum size (768×432):** the sidebar collapses to a rail of profile initials with Play at its foot, the hero gives way to a one-line header (name and counts), search and actions fold into icon buttons, and the mod grid drops to two columns.
 
@@ -71,9 +71,9 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 - Grid: a responsive grid of mod cards (`minmax(300px, 1fr)`: three columns at the default window, two at the minimum).
 - A card: the mod's icon (its Nexus `picture_url`, fetched once when the mod is installed and cached on disk; a letter tile until it loads or when there is none, NOMAD 2026-09-29), its name, author and version from its manifest, and badges for an available update or a problem. The card view is deliberately simple: no switch (the enable toggle lives in the sidebar). Clicking a card selects it and fills the sidebar. One card per mod; Remove acts on the whole archive entry the mod came in (its confirm names the other mods in it).
 - **Mod menu** (NOMAD, 2026-09-30): right-clicking a card or a list row opens a native menu (Wails' `--custom-contextmenu` on the element, one Go-registered menu per state), and the card's ⋯ button opens the same list. Actions, from one list in `internal/modmenu`: Enable or Disable (the label follows the state), More details, Open on Nexus or Open on GitHub (by the page's host; only when the mod has a page), Show files, and after a separator Remove (absent for the bundled SMAPI entry; it opens the confirm dialog). The native menu's labels are the frontend's translated strings, sent to Go at startup (`SetLabels`) since Go has no Lingui; details and remove reach the window as events, the rest run in Go and emit a refresh.
-- Above the grid: a search field that filters by name, the problem summary with one-click fixes ([design.md](design.md#mod-data)), and buttons to add mods (open Nexus, or pick an archive). Dropping an archive anywhere on the window installs it into the open profile.
+- Above the grid: a search field that filters by name, the problem summary with one-click fixes ([architecture.md](architecture.md#mod-data)), and buttons to add mods (open Nexus, or pick an archive). Dropping an archive anywhere on the window installs it into the open profile.
 - SMAPI's bundled Console Commands and Save Backup, and Mortar's console bridge, are installed in every profile and not shown, listed, counted or removable (NOMAD, 2026-09-30).
-- Empty (a new profile): "No mods yet", a line on how to add them, **Browse Nexus** and **Add archive**, a link to import a shared profile, and a note that archives can be dropped anywhere. The hero uses Steam's art.
+- Empty (a new profile): "No mods yet", a line on how to add them, **Browse Nexus** and **Add archive**, a link to import a shared profile (milestone 5), and a note that archives can be dropped anywhere. The hero uses Steam's art.
 
 ## Mod detail
 
@@ -98,20 +98,20 @@ A plain text area for the profile's notes, saved automatically ("Saved · 2 min 
 
 - SMAPI's log as it is written, monospace, in columns: a level bar, time, level, mod and message; warnings and errors get a tinted row.
 - Filters: a search box, toggles for SMAPI's six levels (Trace, Debug, Info, Warn, Error, Alert; `Pathoschild/SMAPI` `src/SMAPI/LogLevel.cs`) each with its line count (Trace and Debug off by default), a mod picker whose choices show as removable chips, "Showing X of Y lines" with Clear filters, and Jump to first error. Toggles for timestamps and follow-tail (on by default).
-- **Copy**, and **Get help**: shows the log with its local paths and asks before uploading it to smapi.io/log, then copies the link.
+- **Copy**, and **Get help** (milestone 6): shows the log with its local paths and asks before uploading it to smapi.io/log, then copies the link.
 - Before the first launch: a line saying the console fills when the game runs.
 - **Input line** at the bottom (monospace, prompt `>`): Enter sends the command to the running game through the Mortar SMAPI Bridge and echoes `> <command>` into the log as a Mortar line; the output arrives with SMAPI's own lines, and Follow is switched back on so it scrolls into view. Up and Down browse the last 100 commands of that game (in memory only). Disabled with the hint "Start the game to run commands" while the game is not running; a failed send shows a toast.
 
 ## Profile management
 
-A page, as Concrete's: a header with a back button, **Import** and **New profile**; beside the list, a **Recently deleted** panel (profiles in the 30-day trash, each with its days left and Restore).
+A page, as Concrete's: a header with a back button, **Import** (milestone 5) and **New profile**; beside the list, a **Recently deleted** panel (profiles in the 30-day trash, each with its days left and Restore).
 
 - **Rows:** every profile as a sortable row: drag handle, name (with a Hidden chip when hidden) and its summary, **Share**, and a ⋯ menu holding Rename, Duplicate, Hide from sidebar (or Show) and Delete. Reordering uses dnd-kit's sortable list with a drop indicator.
 - **Delete** asks first and says the profile stays restorable for 30 days.
-- **Share** opens a dialog with two tabs, **Link** and **.mortar file with settings**. Over about 240 mods it suggests the file.
-- **Link tab:** the `https://mortar.rethunk.tech/stardew/p#...` link with Copy link, a meter of its length against Discord's 2,000 characters, Copy as a message, the included mods by source, and what is left out (local archives, switched-off mods). Beside it, a preview of the page the recipient sees.
+- **Share** (milestone 5) opens a dialog with two tabs, **Link** and **.mortar file with settings**. Over about 240 mods it suggests the file.
+- **Link tab** (milestone 5): the `https://mortar.rethunk.tech/stardew/p#...` link with Copy link, a meter of its length against Discord's 2,000 characters, Copy as a message, the included mods by source, and what is left out (local archives, switched-off mods). Beside it, a preview of the page the recipient sees.
 
-## Import
+## Import (milestone 5)
 
 A wide "Import profile from…" dialog over the dimmed game screen, with tabs **Link** and **.mortar file** (NOMAD, 2026-09-29: archives go into an existing profile through Add archive or a drop, not through Import). Nothing downloads before the user confirms.
 
@@ -120,7 +120,7 @@ A wide "Import profile from…" dialog over the dimmed game screen, with tabs **
 - Problems found before download, one compact item each with its own action: a mod removed from Nexus (with its page), a mod broken for this game version (from SMAPI's update API, with Leave out), missing dependencies (from the mod dataset); and for a free account, an item saying each download takes one click on Nexus.
 - **Reset** and **New profile from link**, which creates the profile and fills the download queue; closing leaves nothing behind.
 
-## Download queue
+## Download queue (milestone 4)
 
 A side sheet. The header gives totals (done, in progress, failed, left, size) over a progress bar split by state, with **Pause all**. Sections, top down: **Needs your click** (free accounts: the head item with Open download page; the next page opens when it finishes), **Failed** (with Retry failed; each row says why and has Retry and Skip on its right edge), **In progress** (size, speed and Cancel per row), **Up next** and **Done** (both collapsed to one line). Every row's action sits on its right edge. Premium accounts download without clicks. Closing the sheet keeps the queue running.
 
@@ -131,7 +131,7 @@ Only when no game is set up, never on later launches:
 1. Find Stardew Valley in Steam and show what was found, with **Browse** for another folder; when nothing is found, say so, with Browse and a retry.
 2. Install SMAPI if it is missing: it starts by itself, unattended, with no button (NOMAD, 2026-09-30), and a failure shows its error with **Retry**. On Windows with Steam, show the launch-options line to paste into Stardew's Steam properties, with a copy button.
    Installing SMAPI shows its progress as steps (downloaded, files added, launcher replaced, bundled mods added).
-3. Create the first profile: two cards, **Start empty** (with a name field) and **From a shared link** (with a link field, which asks for the Nexus sign-in first when the import needs downloads).
+3. Create the first profile: two cards, **Start empty** (with a name field) and **From a shared link** (milestone 5; with a link field, which asks for the Nexus sign-in first when the import needs downloads).
 
 ## Confirmations
 
@@ -144,7 +144,7 @@ Mortar's Settings holds only what is Mortar-wide, never one game's (NOMAD, 2026-
 - **Appearance** (first, and the one Settings opens on): accent colour and background.
 - **Data:** Mortar's data folder with its total size and an **Open folder** link.
 - **Nexus Mods:** the personal API key (saving it the first time asks whether Mortar should handle `nxm://` links), and the switch **Handle Nexus "Mod Manager Download" links**, which names the app that owns them now, asks before taking them, and gives them back when turned off.
-- **Updates:** mod, SMAPI and Mortar update checks; backups kept.
+- **Updates** (milestone 6): mod, SMAPI and Mortar update checks; backups kept.
 - **About:** licences and credits, including SMAPI and the Stardew mod dataset (CC-BY-SA 4.0).
 
 **Game settings** are per game and live on their own page, opened from the game screen by a settings icon button (Lucide Settings2, labelled "Stardew Valley settings") at the right of the tab row. The page is titled "Stardew Valley settings", has a back button to the game (Esc also returns), and the title bar keeps the game tab highlighted. It holds the game folder, found in Steam or chosen, with **Browse…** (a folder dialog, checked before it is saved, with an inline error when the folder is not a Stardew install) and **Use Steam's** while a chosen folder overrides Steam; and the installed SMAPI version with Install, Reinstall or Update, showing the same step checks as the banner.

@@ -1,6 +1,6 @@
 # Mortar runbook
 
-How to run, build and gate Mortar. What it is and the rules it keeps: [AGENTS.md](AGENTS.md); decided work not yet built: [docs/design.md](docs/design.md).
+How to run, build and gate Mortar. What it is and the rules it keeps: [AGENTS.md](AGENTS.md); how it works now: [docs/architecture.md](docs/architecture.md); decided work not yet built: [docs/design.md](docs/design.md).
 
 ## Prerequisites
 
