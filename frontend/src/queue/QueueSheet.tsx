@@ -17,6 +17,7 @@ import {
 import { LetterTile } from '../mods/parts.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { useQueue } from './store.ts'
 import {
   clockTime,
@@ -48,21 +49,6 @@ const tile = (i: Item) => ({
   name: i.name || i.repo || String(i.modId),
   picture: '',
 })
-
-// Runs one backend action at a time for a card, so a double click does not send it twice.
-function usePending() {
-  const [pending, setPending] = useState(false)
-  const run = (action: () => Promise<unknown>) => {
-    if (pending) {
-      return
-    }
-    setPending(true)
-    action()
-      .catch(reportUnexpected)
-      .finally(() => setPending(false))
-  }
-  return [pending, run] as const
-}
 
 // The item's name with the profile it installs into beside it.
 function Title({ item, size }: { item: Item; size: number }) {

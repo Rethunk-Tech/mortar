@@ -49,7 +49,10 @@ import {
   Trash2,
 } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type {
+  Profile,
+  TrashItem,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compact } from '../game/compact.ts'
 import { NameField } from '../game/NameField.tsx'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
@@ -57,6 +60,7 @@ import { useRestoreFocus } from '../game/useRestoreFocus.ts'
 import { useNav } from '../nav/store.ts'
 import { openImport, openShare } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { userModCount } from './count.ts'
 import { useProfiles } from './store.ts'
 
@@ -284,10 +288,44 @@ function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) =
   )
 }
 
+function TrashRow({ item }: { item: TrashItem }) {
+  const { t } = useLingui()
+  const restore = useProfiles((s) => s.restore)
+  const [pending, run] = usePending()
+  const days = plural(item.daysLeft, { one: '# day left', other: '# days left' })
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.25,
+        p: 1.5,
+        bgcolor: 'rgba(55,55,65,0.9)',
+        borderRadius: '6px',
+      }}
+    >
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography noWrap={true} sx={{ fontSize: 15, fontWeight: 600 }}>
+          {item.name}
+        </Typography>
+        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{days}</Typography>
+      </Box>
+      <Button
+        variant="outlined"
+        startIcon={<RotateCcw size={14} />}
+        disabled={pending}
+        onClick={() => run(() => restore(item.id))}
+        sx={{ whiteSpace: 'nowrap' }}
+      >
+        {t`Restore`}
+      </Button>
+    </Box>
+  )
+}
+
 function Trash() {
   const { t } = useLingui()
   const trash = useProfiles((s) => s.trash)
-  const restore = useProfiles((s) => s.restore)
   return (
     <Box
       component="aside"
@@ -308,38 +346,9 @@ function Trash() {
       <Typography sx={{ fontSize: 13, lineHeight: 1.45 }}>
         {t`Deleted profiles stay here for 30 days, mods and settings included.`}
       </Typography>
-      {trash.map((item) => {
-        const days = plural(item.daysLeft, { one: '# day left', other: '# days left' })
-        return (
-          <Box
-            key={item.id}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.25,
-              p: 1.5,
-              bgcolor: 'rgba(55,55,65,0.9)',
-              borderRadius: '6px',
-            }}
-          >
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography noWrap={true} sx={{ fontSize: 15, fontWeight: 600 }}>
-                {item.name}
-              </Typography>
-              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{days}</Typography>
-            </Box>
-            <Button
-              variant="outlined"
-              startIcon={<RotateCcw size={14} />}
-              onClick={() => {
-                restore(item.id).catch(reportUnexpected)
-              }}
-            >
-              {t`Restore`}
-            </Button>
-          </Box>
-        )
-      })}
+      {trash.map((item) => (
+        <TrashRow key={item.id} item={item} />
+      ))}
     </Box>
   )
 }
