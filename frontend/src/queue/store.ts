@@ -78,6 +78,17 @@ async function undoInstall(item: Item, entry: Entry | undefined) {
 }
 
 // Says what changed since the last state: installs land in the open profile's list, and failures are worth a nudge.
+function installUndo(item: Item, entry: Entry | undefined) {
+  if (!entry) {
+    return
+  }
+  return {
+    picture: entry.source.picture,
+    profileId: item.profileId,
+    entry,
+  }
+}
+
 async function announce(prev: Snapshot, next: Snapshot) {
   const before = new Map(prev.items.map((i) => [i.id, i.state]))
   const changed = (state: string) =>
@@ -85,9 +96,10 @@ async function announce(prev: Snapshot, next: Snapshot) {
   const done = changed('done')
   const failed = changed('failed')
   const waiting = [...changed('needs-choice'), ...changed('needs-confirm')]
-  const { game, refresh } = useProfiles.getState()
-  if (done.some((i) => i.game === game?.id)) {
-    await refresh()
+  const { game, refresh, load } = useProfiles.getState()
+  const games = [...new Set(done.map((i) => i.game))]
+  for (const id of games) {
+    await (id === game?.id ? refresh() : load(id))
       .then(() => useMods.getState().load())
       .catch(() => undefined)
   }
@@ -96,16 +108,21 @@ async function announce(prev: Snapshot, next: Snapshot) {
     if (item) {
       const profile = useProfiles.getState().profiles.find((p) => p.id === item.profileId)
       const entry = entryForItem(profile, item)
+      const extra = installUndo(item, entry)
       const first = item.name
       useToasts.getState().push({
         kind: 'success',
         title: i18n._(msg`${first} installed`),
-        picture: entry?.source.picture ?? '',
-        action: {
-          label: i18n._(msg`Undo`),
-          run: () => undoInstall(item, entry),
-          profileId: item.profileId,
-        },
+        ...(extra
+          ? {
+              picture: extra.picture,
+              action: {
+                label: i18n._(msg`Undo`),
+                run: () => undoInstall(item, extra.entry),
+                profileId: extra.profileId,
+              },
+            }
+          : {}),
       })
     }
   } else if (done.length > 1) {
@@ -170,4 +187,4 @@ export const initQueue = () =>
     }
   })
 
-export { announce, entryForItem, shouldRollBack, singleNexusFailure, undoInstall }
+export { announce, entryForItem, installUndo, shouldRollBack, singleNexusFailure, undoInstall }

@@ -9,7 +9,13 @@ import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/
 import { useLaunch } from '../launch/store.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { entryForItem, shouldRollBack, singleNexusFailure, undoInstall } from './store.ts'
+import {
+  entryForItem,
+  installUndo,
+  shouldRollBack,
+  singleNexusFailure,
+  undoInstall,
+} from './store.ts'
 
 const calls = { remove: [] as string[], roll: [] as string[] }
 
@@ -127,6 +133,16 @@ test('undo of an update rolls back', async () => {
   expect(await undoInstall(item({ kind: 'update' }), entry())).toBe(true)
   expect(calls.roll).toEqual(['k1'])
   expect(calls.remove).toEqual([])
+})
+
+test('a finished install without a matching entry has no undo', () => {
+  expect(installUndo(item(), undefined)).toBeUndefined()
+})
+
+test('a finished install with a matching entry keeps picture and undo', () => {
+  const extra = installUndo(item(), entry())
+  expect(extra?.picture).toBe('https://example.test/p.png')
+  expect(extra?.profileId).toBe('p1')
 })
 
 test('a lone Nexus download failure is the one retried', () => {
