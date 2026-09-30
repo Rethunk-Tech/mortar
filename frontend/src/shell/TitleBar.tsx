@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase } from '@mui/material'
 import { Copy, Minus, Square, X } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { compact } from '../game/compact.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { AppMenu } from './AppMenu.tsx'
@@ -26,6 +27,7 @@ function Tab({
         ...noDrag,
         px: '12px',
         fontSize: 15,
+        [compact]: { fontSize: 14 },
         fontFamily: 'inherit',
         whiteSpace: 'nowrap',
         color: active ? '#ffffff' : 'rgba(210,210,215,0.92)',
@@ -56,6 +58,7 @@ function WindowButton({
       sx={{
         ...noDrag,
         width: 46,
+        [compact]: { width: 40 },
         color: 'rgba(255,255,255,0.85)',
         '&:hover': { bgcolor: danger ? 'error.main' : 'rgba(255,255,255,0.1)' },
       }}
@@ -77,7 +80,7 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
       onDoubleClick={win.toggleMaximise}
       sx={{
         '--wails-draggable': 'drag',
-        height: 36,
+        height: 'var(--title-bar)',
         flexShrink: 0,
         display: 'flex',
         alignItems: 'stretch',

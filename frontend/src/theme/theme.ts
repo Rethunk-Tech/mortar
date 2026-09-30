@@ -1,4 +1,5 @@
 import { alpha, createTheme, responsiveFontSizes, type Theme } from '@mui/material/styles'
+import { compact } from '../game/compact.ts'
 import { type AccentName, accents } from './accents.ts'
 
 const THUMB_ALPHA = 0.45
@@ -24,6 +25,7 @@ export function createMortarTheme(accent: AccentName): Theme {
       MuiCssBaseline: {
         styleOverrides: {
           'html, body, #root': { background: 'transparent' },
+          ':root': { '--title-bar': '36px', [compact]: { '--title-bar': '32px' } },
           '*': {
             scrollbarWidth: 'thin',
             scrollbarColor: `${alpha(main, THUMB_ALPHA)} ${alpha(main, TRACK_ALPHA)}`,

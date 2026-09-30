@@ -43,6 +43,7 @@ export function LetterTile({ mod, size = DEFAULT_TILE_SIZE }: { mod: Mod; size?:
   return (
     <Box
       aria-hidden={true}
+      className="tile"
       sx={{
         width: size,
         height: size,

@@ -6,6 +6,7 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { compact } from '../game/compact.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { ModList } from './ModList.tsx'
 import { LetterTile, ModMenu, ModSwitch, RemoveDialog } from './parts.tsx'
@@ -50,6 +51,7 @@ function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; vi
             gap: '10px',
             minWidth: 0,
             borderRadius: '6px',
+            [compact]: { height: 50, '& .tile': { width: 38, height: 38, fontSize: 19 } },
           }}
         >
           <LetterTile mod={m} />

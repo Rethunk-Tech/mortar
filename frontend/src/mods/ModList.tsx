@@ -193,13 +193,13 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
           anchor="right"
           open={selected !== undefined}
           onClose={() => setSelectedId('')}
-          sx={{ top: 36 }}
+          sx={{ top: 'var(--title-bar)' }}
           slotProps={{
             paper: {
               sx: {
                 width: 320,
-                top: 36,
-                height: 'calc(100% - 36px)',
+                top: 'var(--title-bar)',
+                height: 'calc(100% - var(--title-bar))',
                 bgcolor: 'rgba(40,40,48,0.92)',
               },
             },

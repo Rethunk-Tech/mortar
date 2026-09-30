@@ -152,13 +152,14 @@ export function PlayControl({ game }: { game: string }) {
         onClick={play}
         sx={{
           display: 'none',
+          borderRadius: 0,
           bgcolor: 'primary.main',
           color: 'primary.contrastText',
           '&:hover': { bgcolor: 'primary.dark' },
-          [compact]: { display: 'inline-flex' },
+          [compact]: { display: 'flex', width: '100%', height: 50 },
         }}
       >
-        <Play size={20} />
+        <Play size={20} fill="currentColor" />
       </IconButton>
     </>
   )

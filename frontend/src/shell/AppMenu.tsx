@@ -4,6 +4,7 @@ import { Application } from '@wailsio/runtime'
 import { Info, LogOut, Settings } from 'lucide-react'
 import { useId, useState } from 'react'
 import { Logo } from '../brand/Logo.tsx'
+import { compact } from '../game/compact.ts'
 import { openSettings } from '../nav/store.ts'
 import { useToasts } from '../toasts/store.ts'
 
@@ -36,26 +37,27 @@ export function AppMenu() {
           pr: '14px',
           fontSize: 15,
           fontWeight: 600,
+          [compact]: { pl: '11px', pr: '11px', '& .label': { display: 'none' } },
           fontFamily: 'inherit',
           color: 'inherit',
           bgcolor: 'rgba(0,0,0,0.3)',
         }}
       >
         <Logo size={20} />
-        {t`Mortar`}
+        <span className="label">{t`Mortar`}</span>
       </ButtonBase>
       <Drawer
         id={drawerId}
         anchor="left"
         open={open}
         onClose={close}
-        sx={{ top: 36 }}
+        sx={{ top: 'var(--title-bar)' }}
         slotProps={{
           paper: {
             sx: {
               width: 280,
-              top: 36,
-              height: 'calc(100% - 36px)',
+              top: 'var(--title-bar)',
+              height: 'calc(100% - var(--title-bar))',
               bgcolor: 'rgba(40,40,48,0.92)',
             },
           },

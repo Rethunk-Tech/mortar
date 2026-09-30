@@ -50,7 +50,7 @@ function Hero({ profile }: { profile: Profile }) {
         flexShrink: 0,
         overflow: 'hidden',
         bgcolor: 'rgba(15,15,18,0.5)',
-        [compact]: { height: 56 },
+        [compact]: { height: 52, borderBottom: '1px solid rgba(255,255,255,0.1)' },
       }}
     >
       {art ? (
@@ -87,7 +87,7 @@ function Hero({ profile }: { profile: Profile }) {
           display: 'flex',
           alignItems: 'flex-end',
           gap: 2,
-          [compact]: { top: 0, bottom: 0, left: 16, right: 16, alignItems: 'center' },
+          [compact]: { top: 0, bottom: 0, left: 12, right: 12, alignItems: 'center' },
         }}
       >
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
@@ -111,7 +111,7 @@ function Hero({ profile }: { profile: Profile }) {
                     lineHeight: 1.1,
                     color: '#ffffff',
                     textShadow: '0 0 32px rgba(255,255,255,0.45)',
-                    [compact]: { fontSize: 22 },
+                    [compact]: { fontSize: 18, lineHeight: 1.3 },
                   }}
                 >
                   {profile.name}
@@ -131,23 +131,18 @@ function Hero({ profile }: { profile: Profile }) {
               {t`No mods yet · created ${created}`}
             </Typography>
           ) : null}
+          <Typography
+            noWrap={true}
+            sx={{ display: 'none', fontSize: 12, [compact]: { display: 'block' } }}
+          >
+            {t`${plural(mods, { one: '# mod', other: '# mods' })} · Updated ${updated}`}
+          </Typography>
         </Box>
         <Box sx={{ display: mods > 0 ? 'flex' : 'none', gap: 1, [compact]: { display: 'none' } }}>
           <Card label={t`Mods`} value={String(mods)} />
           <Card label={t`Updated`} value={updated} />
           <Card label={t`Created`} value={created} />
         </Box>
-        <Typography
-          noWrap={true}
-          sx={{
-            display: 'none',
-            fontSize: 14,
-            color: 'text.secondary',
-            [compact]: { display: 'block' },
-          }}
-        >
-          {t`Created ${created} · Updated ${updated} · ${plural(mods, { one: '# mod', other: '# mods' })}`}
-        </Typography>
       </Box>
     </Box>
   )

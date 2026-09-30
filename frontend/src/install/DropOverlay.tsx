@@ -11,7 +11,6 @@ import { useInstall } from './store.ts'
 // Wails toggles this class on the element carrying data-file-drop-target while a file drag is over it.
 const ACTIVE_CLASS = 'file-drop-target-active'
 const TINT_ALPHA = 0.08
-const TITLE_BAR = 36
 
 export function DropOverlay({ target }: { target: HTMLElement | null }) {
   const { t } = useLingui()
@@ -48,7 +47,7 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
     <Box
       sx={(theme) => ({
         position: 'absolute',
-        top: TITLE_BAR,
+        top: 'var(--title-bar)',
         left: 0,
         right: 0,
         bottom: 0,

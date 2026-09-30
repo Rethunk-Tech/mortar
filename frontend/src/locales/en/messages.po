@@ -11,7 +11,7 @@ msgstr ""
 msgid "No mods yet · created {created}"
 msgstr "No mods yet · created {created}"
 
-#: src/game/Detail.tsx:137
+#: src/game/Detail.tsx:143
 msgid "Updated"
 msgstr "Updated"
 
@@ -24,7 +24,7 @@ msgid "Could not change the profile's visibility"
 msgstr "Could not change the profile's visibility"
 
 #. placeholder {0}: others.join(', ')
-#: src/mods/parts.tsx:164
+#: src/mods/parts.tsx:165
 msgid "It came in one download with {0}, and all of them are removed together."
 msgstr "It came in one download with {0}, and all of them are removed together."
 
@@ -59,12 +59,12 @@ msgstr "Bundled mods added"
 msgid "Added {names} to {0}"
 msgstr "Added {names} to {0}"
 
-#: src/mods/parts.tsx:165
+#: src/mods/parts.tsx:166
 msgid "Its folder in this profile is deleted."
 msgstr "Its folder in this profile is deleted."
 
-#: src/mods/parts.tsx:89
-#: src/mods/parts.tsx:132
+#: src/mods/parts.tsx:90
+#: src/mods/parts.tsx:133
 msgid "Show files"
 msgstr "Show files"
 
@@ -88,12 +88,12 @@ msgstr "Copper"
 msgid "Name"
 msgstr "Name"
 
-#: src/shell/AppMenu.tsx:20
+#: src/shell/AppMenu.tsx:21
 msgid "Could not quit Mortar"
 msgstr "Could not quit Mortar"
 
 #. placeholder {0}: mod.name
-#: src/mods/parts.tsx:113
+#: src/mods/parts.tsx:114
 msgid "More actions for {0}"
 msgstr "More actions for {0}"
 
@@ -114,8 +114,8 @@ msgid "Filter mods"
 msgstr "Filter mods"
 
 #: src/game/NewProfileDialog.tsx:42
-#: src/game/Sidebar.tsx:241
-#: src/game/Sidebar.tsx:259
+#: src/game/Sidebar.tsx:256
+#: src/game/Sidebar.tsx:274
 #: src/profiles/ProfilesPage.tsx:357
 msgid "New profile"
 msgstr "New profile"
@@ -136,7 +136,7 @@ msgstr "Rename profile"
 msgid "Appearance"
 msgstr "Appearance"
 
-#: src/mods/ModsTab.tsx:107
+#: src/mods/ModsTab.tsx:109
 msgid "Add mods from an archive you downloaded, or find them on Nexus."
 msgstr "Add mods from an archive you downloaded, or find them on Nexus."
 
@@ -152,7 +152,7 @@ msgstr "Off"
 msgid "Archive"
 msgstr "Archive"
 
-#: src/game/Detail.tsx:182
+#: src/game/Detail.tsx:177
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
 
@@ -197,11 +197,11 @@ msgstr "Delete"
 msgid "Could not duplicate the profile"
 msgstr "Could not duplicate the profile"
 
-#: src/game/Sidebar.tsx:116
+#: src/game/Sidebar.tsx:131
 msgid "Resize sidebar"
 msgstr "Resize sidebar"
 
-#: src/game/Detail.tsx:138
+#: src/game/Detail.tsx:144
 msgid "Created"
 msgstr "Created"
 
@@ -220,13 +220,13 @@ msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschil
 #: src/game/NewProfileDialog.tsx:60
 #: src/launch/LaunchLayer.tsx:184
 #: src/launch/StopDialog.tsx:36
-#: src/mods/parts.tsx:169
+#: src/mods/parts.tsx:170
 #: src/profiles/ProfilesPage.tsx:401
 msgid "Cancel"
 msgstr "Cancel"
 
 #: src/settings/sections/About.tsx:17
-#: src/shell/AppMenu.tsx:45
+#: src/shell/AppMenu.tsx:47
 msgid "Mortar"
 msgstr "Mortar"
 
@@ -235,7 +235,7 @@ msgstr "Mortar"
 msgid "Could not install SMAPI"
 msgstr "Could not install SMAPI"
 
-#: src/mods/ModsTab.tsx:127
+#: src/mods/ModsTab.tsx:129
 msgid "You can also drop archives anywhere on the window."
 msgstr "You can also drop archives anywhere on the window."
 
@@ -281,11 +281,11 @@ msgid "Changes apply right away"
 msgstr "Changes apply right away"
 
 #. placeholder {0}: mod.name
-#: src/mods/parts.tsx:74
+#: src/mods/parts.tsx:75
 msgid "Enable {0}"
 msgstr "Enable {0}"
 
-#: src/shell/AppMenu.tsx:85
+#: src/shell/AppMenu.tsx:87
 msgid "About Mortar"
 msgstr "About Mortar"
 
@@ -316,7 +316,7 @@ msgstr "Could not rename the profile"
 msgid "Could not save the profile order"
 msgstr "Could not save the profile order"
 
-#: src/game/Detail.tsx:180
+#: src/game/Detail.tsx:175
 msgid "No profiles yet"
 msgstr "No profiles yet"
 
@@ -353,8 +353,8 @@ msgstr "Could not check whether the game is running"
 msgid "Deleted profiles stay here for 30 days, mods and settings included."
 msgstr "Deleted profiles stay here for 30 days, mods and settings included."
 
-#: src/game/Detail.tsx:136
-#: src/game/Detail.tsx:224
+#: src/game/Detail.tsx:142
+#: src/game/Detail.tsx:219
 #: src/mods/ModList.tsx:116
 msgid "Mods"
 msgstr "Mods"
@@ -398,7 +398,7 @@ msgstr "SMAPI"
 msgid "Could not stop the game"
 msgstr "Could not stop the game"
 
-#: src/install/DropOverlay.tsx:85
+#: src/install/DropOverlay.tsx:84
 msgid "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 
@@ -460,7 +460,7 @@ msgstr "UniqueID"
 msgid "{profileName} · {mods, plural, one {# mod} other {# mods}}"
 msgstr "{profileName} · {mods, plural, one {# mod} other {# mods}}"
 
-#: src/game/Detail.tsx:189
+#: src/game/Detail.tsx:184
 msgid "Create your first profile"
 msgstr "Create your first profile"
 
@@ -473,7 +473,7 @@ msgstr "Moss"
 msgid "Could not read your games"
 msgstr "Could not read your games"
 
-#: src/install/DropOverlay.tsx:90
+#: src/install/DropOverlay.tsx:89
 msgid "Open a profile to install mods"
 msgstr "Open a profile to install mods"
 
@@ -502,11 +502,11 @@ msgstr "Enabled"
 msgid "In the same download"
 msgstr "In the same download"
 
-#: src/shell/TitleBar.tsx:105
+#: src/shell/TitleBar.tsx:108
 msgid "Maximise"
 msgstr "Maximise"
 
-#: src/shell/TitleBar.tsx:89
+#: src/shell/TitleBar.tsx:92
 msgid "Game Select"
 msgstr "Game Select"
 
@@ -518,7 +518,7 @@ msgstr "{name} did not start"
 msgid "Could not restore the profile"
 msgstr "Could not restore the profile"
 
-#: src/shell/AppMenu.tsx:91
+#: src/shell/AppMenu.tsx:93
 msgid "Quit"
 msgstr "Quit"
 
@@ -526,12 +526,12 @@ msgstr "Quit"
 msgid "Filter {total, plural, one {# mod} other {# mods}}"
 msgstr "Filter {total, plural, one {# mod} other {# mods}}"
 
-#: src/shell/AppMenu.tsx:28
-#: src/shell/AppMenu.tsx:64
+#: src/shell/AppMenu.tsx:29
+#: src/shell/AppMenu.tsx:66
 msgid "Mortar menu"
 msgstr "Mortar menu"
 
-#: src/game/Sidebar.tsx:256
+#: src/game/Sidebar.tsx:271
 msgid "Manage profiles"
 msgstr "Manage profiles"
 
@@ -543,9 +543,9 @@ msgstr "Running {time}"
 msgid "Built on"
 msgstr "Built on"
 
-#: src/mods/parts.tsx:99
-#: src/mods/parts.tsx:143
-#: src/mods/parts.tsx:179
+#: src/mods/parts.tsx:100
+#: src/mods/parts.tsx:144
+#: src/mods/parts.tsx:180
 msgid "Remove"
 msgstr "Remove"
 
@@ -561,10 +561,6 @@ msgstr "Play"
 msgid "Delete {0}?"
 msgstr "Delete {0}?"
 
-#: src/game/Detail.tsx:149
-msgid "Created {created} · Updated {updated} · {mods, plural, one {# mod} other {# mods}}"
-msgstr "Created {created} · Updated {updated} · {mods, plural, one {# mod} other {# mods}}"
-
 #: src/profiles/ProfilesPage.tsx:214
 msgid "Hide from sidebar"
 msgstr "Hide from sidebar"
@@ -578,8 +574,8 @@ msgid "Select a mod to see its details."
 msgstr "Select a mod to see its details."
 
 #: src/settings/SettingsPage.tsx:58
-#: src/shell/AppMenu.tsx:74
-#: src/shell/TitleBar.tsx:98
+#: src/shell/AppMenu.tsx:76
+#: src/shell/TitleBar.tsx:101
 msgid "Settings"
 msgstr "Settings"
 
@@ -605,12 +601,12 @@ msgstr "Status"
 msgid "{profileCount, plural, one {Installed · # profile} other {Installed · # profiles}}"
 msgstr "{profileCount, plural, one {Installed · # profile} other {Installed · # profiles}}"
 
-#: src/shell/TitleBar.tsx:102
+#: src/shell/TitleBar.tsx:105
 msgid "Minimise"
 msgstr "Minimise"
 
 #. placeholder {0}: profile.name
-#: src/install/DropOverlay.tsx:82
+#: src/install/DropOverlay.tsx:81
 msgid "Drop to install into {0}"
 msgstr "Drop to install into {0}"
 
@@ -639,12 +635,12 @@ msgstr "Hide"
 msgid "Accent colour"
 msgstr "Accent colour"
 
-#: src/game/Sidebar.tsx:192
+#: src/game/Sidebar.tsx:207
 #: src/profiles/ProfilesPage.tsx:349
 msgid "Profiles"
 msgstr "Profiles"
 
-#: src/mods/ModsTab.tsx:23
+#: src/mods/ModsTab.tsx:24
 msgid "No mods match your search."
 msgstr "No mods match your search."
 
@@ -681,7 +677,11 @@ msgstr "Could not save the last game"
 msgid "SMAPI {0} is available"
 msgstr "SMAPI {0} is available"
 
-#: src/mods/ModsTab.tsx:105
+#: src/game/Detail.tsx:138
+msgid "{mods, plural, one {# mod} other {# mods}} · Updated {updated}"
+msgstr "{mods, plural, one {# mod} other {# mods}} · Updated {updated}"
+
+#: src/mods/ModsTab.tsx:107
 msgid "No mods yet"
 msgstr "No mods yet"
 
@@ -699,7 +699,7 @@ msgid "Reinstall"
 msgstr "Reinstall"
 
 #: src/profiles/ProfilesPage.tsx:280
-#: src/shell/TitleBar.tsx:105
+#: src/shell/TitleBar.tsx:108
 msgid "Restore"
 msgstr "Restore"
 
@@ -713,7 +713,7 @@ msgid "{0, plural, one {# day left} other {# days left}}"
 msgstr "{0, plural, one {# day left} other {# days left}}"
 
 #: src/launch/LaunchLayer.tsx:149
-#: src/shell/TitleBar.tsx:108
+#: src/shell/TitleBar.tsx:111
 msgid "Close"
 msgstr "Close"
 
@@ -722,7 +722,7 @@ msgid "Adding…"
 msgstr "Adding…"
 
 #. placeholder {0}: mod?.name
-#: src/mods/parts.tsx:160
+#: src/mods/parts.tsx:161
 msgid "Remove {0} from this profile?"
 msgstr "Remove {0} from this profile?"
 

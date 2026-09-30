@@ -16,6 +16,8 @@ const RAIL = 56
 const DEFAULT_WIDTH = 220
 const NUDGE_PX = 16
 const SELECTED_WEIGHT = 600
+const INITIALS = 2
+const WHITESPACE = /\s+/
 
 const clamp = (w: number) => Math.min(MAX, Math.max(MIN, w))
 
@@ -34,6 +36,15 @@ function saveWidth(w: number) {
   } catch {
     // Storage can be blocked; the width then lasts for this session only.
   }
+}
+
+function initials(name: string): string {
+  const words = name.trim().split(WHITESPACE)
+  const chars =
+    words.length > 1
+      ? words.slice(0, INITIALS).map((w) => [...w][0] ?? '')
+      : [...name].slice(0, INITIALS)
+  return chars.join('').toUpperCase()
 }
 
 function ProfileButton({
@@ -66,11 +77,10 @@ function ProfileButton({
         '&:hover': { bgcolor: selected ? 'rgba(255,255,255,0.12)' : 'action.hover' },
         [compact]: {
           width: 40,
-          mb: '4px',
           p: 0,
           justifyContent: 'center',
-          border: '1px solid',
-          borderColor: selected ? 'primary.main' : 'transparent',
+          borderRadius: '8px',
+          bgcolor: selected ? 'rgba(255,255,255,0.14)' : 'transparent',
         },
       }}
     >
@@ -88,9 +98,14 @@ function ProfileButton({
       <Box
         component="span"
         aria-hidden={true}
-        sx={{ display: 'none', fontWeight: 700, [compact]: { display: 'inline' } }}
+        sx={{
+          display: 'none',
+          fontWeight: 700,
+          color: '#ffffff',
+          [compact]: { display: 'inline' },
+        }}
       >
-        {[...profile.name][0]?.toUpperCase()}
+        {initials(profile.name)}
       </Box>
     </ButtonBase>
   )
@@ -263,7 +278,7 @@ export function Sidebar({ game }: { game: string }) {
       <Box
         sx={{
           borderTop: '1px solid rgba(255,255,255,0.08)',
-          [compact]: { display: 'flex', justifyContent: 'center', p: 1, borderTop: 0 },
+          [compact]: { display: 'flex', borderTop: 0 },
         }}
       >
         <PlayControl game={game} />
