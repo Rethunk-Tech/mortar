@@ -12,8 +12,10 @@ import {
 } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { ChevronDown, Search, X } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import { useLaunch } from '../launch/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
@@ -25,6 +27,7 @@ import {
   modsOf,
   visible,
 } from './filter.ts'
+import { stepHistory } from './history.ts'
 import { useConsole } from './store.ts'
 import { VirtualLog } from './VirtualLog.tsx'
 
@@ -211,6 +214,105 @@ function Toggle({
   )
 }
 
+const NO_HISTORY: string[] = []
+const MONO = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace'
+
+function CommandLine({ game }: { game: string }) {
+  const { t } = useLingui()
+  const running = useLaunch((s) => s.status?.state === State.Running && s.status.game === game)
+  const history = useConsole((s) => s.history[game] ?? NO_HISTORY)
+  const send = useConsole((s) => s.send)
+  const [text, setText] = useState('')
+  // The history entry shown, or null while the user types their own line.
+  const [cursor, setCursor] = useState<number | null>(null)
+  const draft = useRef('')
+  const browse = (dir: -1 | 1) => {
+    if (cursor === null && dir === 1) {
+      return
+    }
+    const next = stepHistory(history, cursor ?? history.length, dir)
+    if (cursor === null) {
+      draft.current = text
+    }
+    if (next === history.length) {
+      setCursor(null)
+      setText(draft.current)
+    } else {
+      setCursor(next)
+      setText(history[next] ?? '')
+    }
+  }
+  const submit = () => {
+    if (text.trim() === '') {
+      return
+    }
+    send(game, text).then((sent) => {
+      if (sent) {
+        setText('')
+        setCursor(null)
+      }
+    })
+  }
+  return (
+    <Box
+      component="label"
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        height: 38,
+        mx: 2,
+        mb: 2,
+        px: 1.5,
+        flexShrink: 0,
+        bgcolor: 'rgba(0,0,0,0.5)',
+        border: '1px solid rgba(255,255,255,0.15)',
+        borderRadius: '6px',
+        fontFamily: MONO,
+        fontSize: 13,
+        color: running ? '#ffffff' : 'rgba(210,210,215,0.6)',
+      }}
+    >
+      <span aria-hidden={true}>{'>'}</span>
+      <Box
+        component="input"
+        aria-label={t`Console command`}
+        placeholder={
+          running ? t`Type a command, for example help` : t`Start the game to run commands`
+        }
+        disabled={!running}
+        value={text}
+        spellCheck={false}
+        autoComplete="off"
+        onChange={(e) => {
+          setText(e.target.value)
+          setCursor(null)
+        }}
+        onKeyDown={(e) => {
+          if (e.nativeEvent.isComposing) {
+            return
+          }
+          if (e.key === 'Enter') {
+            submit()
+          } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault()
+            browse(e.key === 'ArrowUp' ? -1 : 1)
+          }
+        }}
+        sx={{
+          flexGrow: 1,
+          minWidth: 0,
+          bgcolor: 'transparent',
+          border: 0,
+          color: 'inherit',
+          font: 'inherit',
+          outline: 'none',
+        }}
+      />
+    </Box>
+  )
+}
+
 const actionSx = {
   height: 32,
   whiteSpace: 'nowrap',
@@ -299,10 +401,10 @@ export function ConsoleTab({ game }: { game: string }) {
           flex: 1,
           minHeight: 0,
           mx: 2,
-          mb: 2,
+          mb: 1,
           bgcolor: 'rgba(0,0,0,0.5)',
           borderRadius: '6px',
-          fontFamily: 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace',
+          fontFamily: MONO,
           fontSize: 13,
           lineHeight: '23px',
           overflow: 'hidden',
@@ -320,6 +422,7 @@ export function ConsoleTab({ game }: { game: string }) {
           />
         )}
       </Box>
+      <CommandLine game={game} />
     </Box>
   )
 }

@@ -13,12 +13,15 @@ export const useLoader = create<{
   status: Status | null
   installing: boolean
   steps: string[]
+  // Why the last install failed; empty while one runs or after one succeeded.
+  error: string
   check: (game: string) => Promise<void>
   install: (game: string) => Promise<void>
 }>((set) => ({
   status: null,
   installing: false,
   steps: [],
+  error: '',
   check: async (game) => {
     set({ status: null })
     try {
@@ -27,13 +30,8 @@ export const useLoader = create<{
       // The game may not be installed; there is nothing to offer then.
     }
   },
+  // Progress and the outcome arrive as events, so an install Mortar starts by itself shows the same way.
   install: async (game) => {
-    set({ installing: true, steps: [] })
-    const off = Events.On('loader:progress', (event) => {
-      if (event.data.game === game) {
-        set((s) => ({ steps: [...s.steps, event.data.step] }))
-      }
-    })
     try {
       const status = await Install(game)
       set({ status })
@@ -44,9 +42,23 @@ export const useLoader = create<{
       useToasts
         .getState()
         .push({ kind: 'error', title: i18n._(msg`Could not install SMAPI`), body: String(e) })
-    } finally {
-      off()
-      set({ installing: false })
     }
   },
 }))
+
+export function initLoader() {
+  Events.On('loader:state', (event) => {
+    const { game, installing, error } = event.data
+    if (installing) {
+      useLoader.setState({ installing: true, steps: [], error: '' })
+      return
+    }
+    useLoader.setState({ installing: false, error })
+    if (!error) {
+      useLoader.getState().check(game)
+    }
+  })
+  Events.On('loader:progress', (event) => {
+    useLoader.setState((s) => ({ steps: [...s.steps, event.data.step] }))
+  })
+}

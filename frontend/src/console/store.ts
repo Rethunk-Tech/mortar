@@ -4,10 +4,14 @@ import type {
   Entry,
   Level,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
-import { Lines } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import {
+  Lines,
+  Send,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useToasts } from '../toasts/store.ts'
 import { DEFAULT_FILTERS, type Filters } from './filter.ts'
+import { pushCommand } from './history.ts'
 
 const lastSeq = (entries: Entry[]) => entries.at(-1)?.seq ?? 0
 
@@ -18,6 +22,8 @@ export const useConsole = create<{
   follow: boolean
   // Lines up to this seq were cleared from the view and stay hidden when the history is read again.
   cleared: number
+  // Commands sent per game, oldest first, kept in memory only.
+  history: Record<string, string[]>
   // Each request carries a fresh n so jumping to the same row twice scrolls twice.
   jump: { index: number; n: number } | null
   add: (entries: Entry[]) => void
@@ -25,6 +31,7 @@ export const useConsole = create<{
   clear: () => void
   jumpTo: (index: number) => void
   load: (game: string) => Promise<void>
+  send: (game: string, command: string) => Promise<boolean>
   setSearch: (search: string) => void
   toggleLevel: (level: Level) => void
   setMods: (mods: string[]) => void
@@ -37,6 +44,7 @@ export const useConsole = create<{
   timestamps: true,
   follow: true,
   cleared: 0,
+  history: {},
   jump: null,
   add: (entries) => {
     const seen = Math.max(lastSeq(get().entries), get().cleared)
@@ -62,6 +70,24 @@ export const useConsole = create<{
         body: String(e),
       })
     }
+  },
+  // Sending brings back the tail so the command's output scrolls into view.
+  send: async (game, command) => {
+    try {
+      await Send(game, command)
+    } catch (e) {
+      useToasts.getState().push({
+        kind: 'error',
+        title: i18n._(msg`Could not run the command`),
+        body: String(e),
+      })
+      return false
+    }
+    set((s) => ({
+      follow: true,
+      history: { ...s.history, [game]: pushCommand(s.history[game] ?? [], command) },
+    }))
+    return true
   },
   setSearch: (search) => set((s) => ({ filters: { ...s.filters, search } })),
   toggleLevel: (level) =>

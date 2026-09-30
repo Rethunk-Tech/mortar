@@ -14,7 +14,6 @@ import {
 import { useConsole } from '../console/store.ts'
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
-import { useLoader } from '../loader/store.ts'
 import { useToasts } from '../toasts/store.ts'
 
 const reportError = (title: string) => (e: unknown) => {
@@ -31,25 +30,6 @@ function failureBody(status: Status): string {
     )
   }
   return status.error
-}
-
-function notify(status: Status) {
-  const { push } = useToasts.getState()
-  if (status.state === State.NeedsLoader) {
-    push({
-      kind: 'warning',
-      title: i18n._(msg`SMAPI is missing or was replaced by a game update`),
-      action: {
-        label: i18n._(msg`Reinstall`),
-        run: () => {
-          useLoader
-            .getState()
-            .install(status.game)
-            .catch(reportError(i18n._(msg`Could not install SMAPI`)))
-        },
-      },
-    })
-  }
 }
 
 interface Failure {
@@ -88,8 +68,7 @@ export const useLaunch = create<{
     if (status.state === State.NoSteam) {
       set({ askDirect: { game: status.game, profile: status.profile } })
     }
-    notify(status)
-    // Failed, NoSteam and NeedsLoader are one-off announcements; the game itself is idle.
+    // Failed and NoSteam are one-off announcements; the game itself is idle.
     if (status.state === State.Running || status.state === State.Idle) {
       if (status.state === State.Running && get().status?.state === State.Launching) {
         useTab.getState().setTab('console')

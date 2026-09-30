@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, LinearProgress, Typography } from '@mui/material'
 import { System } from '@wailsio/runtime'
-import { Check, Clock, Copy, Download, Ellipsis, RefreshCw } from 'lucide-react'
+import { Check, Clock, Copy, Ellipsis, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { LaunchOptions } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { useLoader } from '../loader/store.ts'
@@ -161,10 +161,12 @@ export function SmapiStep({ gameDir, onDone }: { gameDir: string; onDone: () => 
   const installing = useLoader((s) => s.installing)
   const steps = useLoader((s) => s.steps)
   const check = useLoader((s) => s.check)
+  const error = useLoader((s) => s.error)
   const install = useLoader((s) => s.install)
   const [options, setOptions] = useState('')
   const [checked, setChecked] = useState(false)
   const entered = useRef(false)
+  const started = useRef(false)
 
   const readOptions = useCallback(
     // Steam's config is unreadable until the user has run Steam once, which reads as "not set yet".
@@ -188,6 +190,14 @@ export function SmapiStep({ gameDir, onDone }: { gameDir: string; onDone: () => 
       }
     }
   }, [checked, smapiReady, launchReady, onDone])
+
+  // The install starts by itself; a failure waits for Retry instead of looping.
+  useEffect(() => {
+    if (checked && !smapiReady && !installing && !started.current) {
+      started.current = true
+      install(STARDEW)
+    }
+  }, [checked, smapiReady, installing, install])
 
   if (!checked) {
     return null
@@ -226,7 +236,7 @@ export function SmapiStep({ gameDir, onDone }: { gameDir: string; onDone: () => 
   return (
     <Panel width={680}>
       <Typography sx={{ fontSize: 22, fontWeight: 700 }}>
-        {installing && latest ? t`Installing SMAPI ${latest}` : t`Install SMAPI`}
+        {latest ? t`Installing SMAPI ${latest}` : t`Installing SMAPI`}
       </Typography>
       <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>
         {windows
@@ -239,15 +249,21 @@ export function SmapiStep({ gameDir, onDone }: { gameDir: string; onDone: () => 
           <InstallLog steps={steps} installing={true} />
         </>
       ) : null}
-      <Button
-        variant="contained"
-        disabled={installing}
-        startIcon={<Download size={16} />}
-        onClick={() => install(STARDEW)}
-        sx={{ height: 46, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
-      >
-        {installing ? t`Installing…` : t`Install SMAPI`}
-      </Button>
+      {error && !installing ? (
+        <>
+          <Typography role="alert" sx={{ fontSize: 14, color: 'error.light' }}>
+            {error}
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<RefreshCw size={16} />}
+            onClick={() => install(STARDEW)}
+            sx={{ height: 46, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
+          >
+            {t`Retry`}
+          </Button>
+        </>
+      ) : null}
     </Panel>
   )
 }
