@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/loader"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
@@ -59,14 +60,14 @@ func TestBundledBuiltFromGameFolder(t *testing.T) {
 	}
 	Attach(svc, "stardew")
 	all, err := profiles.List("stardew")
-	if err != nil || len(all) != 1 || len(all[0].Entries) != 2 || all[0].Entries[0].Key != "smapi-4.5.2" || all[0].Entries[1].Key != "bridge-1.0.1" || all[0].Entries[1].Source.Kind != profile.SourceMortar {
+	if err != nil || len(all) != 1 || len(all[0].Entries) != 2 || all[0].Entries[0].Key != "smapi-4.5.2" || all[0].Entries[1].Key != bridgeKey() || all[0].Entries[1].Source.Kind != profile.SourceMortar {
 		t.Fatalf("existing profile = %+v, %v", all, err)
 	}
 	late, err := profiles.Create("stardew", "Late")
 	if err != nil || len(late.Entries) != 2 {
 		t.Fatalf("late = %+v, %v", late, err)
 	}
-	if _, err := os.Stat(filepath.Join(dir0(t, items, "bridge-1.0.1"), "MortarSmapiBridge", "manifest.json")); err != nil {
+	if _, err := os.Stat(filepath.Join(dir0(t, items, bridgeKey()), "MortarSmapiBridge", "manifest.json")); err != nil {
 		t.Fatal(err)
 	}
 	dir, err := items.Path("stardew", "smapi-4.5.2")
@@ -190,3 +191,5 @@ func TestInstallRefusesWhileTheGameRunsOutsideMortar(t *testing.T) {
 		t.Fatalf("err = %v, want a running refusal", err)
 	}
 }
+
+func bridgeKey() string { return store.BridgeKey(game.Find("stardew").BridgeVersion()) }
