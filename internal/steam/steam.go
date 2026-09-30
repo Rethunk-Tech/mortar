@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/andygrunwald/vdf"
 )
@@ -141,4 +143,48 @@ func parseVDF(path string) (map[string]any, error) {
 func isDir(p string) bool {
 	st, err := os.Stat(p)
 	return err == nil && st.IsDir()
+}
+
+// steamID64Base is the offset between a SteamID64 and the account number naming its userdata folder.
+const steamID64Base = 76561197960265728
+
+// LaunchOptions returns appID's launch options from the MostRecent account's localconfig.vdf, or "" when none are set.
+func (s Steam) LaunchOptions(appID string) (string, error) {
+	acct, err := s.CurrentAccount()
+	if err != nil {
+		return "", err
+	}
+	id64, err := strconv.ParseUint(acct.ID, 10, 64)
+	if err != nil || id64 < steamID64Base {
+		return "", fmt.Errorf("invalid Steam account id %q", acct.ID)
+	}
+	path := filepath.Join(s.Root, "userdata", strconv.FormatUint(id64-steamID64Base, 10), "config", "localconfig.vdf")
+	m, err := parseVDF(path)
+	if err != nil {
+		return "", err
+	}
+	node := m
+	for _, key := range []string{"UserLocalConfigStore", "Software", "Valve", "Steam", "apps", appID} {
+		next, ok := child(node, key)
+		if !ok {
+			return "", nil
+		}
+		node = next
+	}
+	for k, v := range node {
+		if s, ok := v.(string); ok && strings.EqualFold(k, "LaunchOptions") {
+			return s, nil
+		}
+	}
+	return "", nil
+}
+
+// child finds a nested section by key, ignoring case: Steam writes "Software" and "software" in different versions.
+func child(m map[string]any, key string) (map[string]any, bool) {
+	for k, v := range m {
+		if sub, ok := v.(map[string]any); ok && strings.EqualFold(k, key) {
+			return sub, true
+		}
+	}
+	return nil, false
 }

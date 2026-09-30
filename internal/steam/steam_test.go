@@ -87,3 +87,36 @@ func TestFixture(t *testing.T) {
 		t.Fatalf("missing hero = %q", got)
 	}
 }
+
+func TestLaunchOptions(t *testing.T) {
+	root := t.TempDir()
+	write := func(rel, body string) {
+		p := filepath.Join(root, rel)
+		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("config/loginusers.vdf", `"users" { "76561198000000001" { "AccountName" "a" "MostRecent" "0" } "76561198000000002" { "AccountName" "b" "MostRecent" "1" } }`)
+	s := Steam{Root: root}
+	if _, err := s.LaunchOptions("413150"); err == nil {
+		t.Fatal("missing localconfig.vdf should fail")
+	}
+	// 76561198000000002 - 76561197960265728 = 39734274
+	cfg := "userdata/39734274/config/localconfig.vdf"
+	write(cfg, `"UserLocalConfigStore" { "Software" { "Valve" { "Steam" { "apps" {
+		"413150" { "LaunchOptions" "\"C:\\Games\\Stardew Valley\\StardewModdingAPI.exe\" %command%" }
+		"1966720" { "LastPlayed" "1" } } } } } }`)
+	got, err := s.LaunchOptions("413150")
+	if err != nil || !strings.Contains(got, "StardewModdingAPI.exe") || !strings.Contains(got, "%command%") {
+		t.Fatalf("launch options = %q, %v", got, err)
+	}
+	if got, err := s.LaunchOptions("1966720"); err != nil || got != "" {
+		t.Fatalf("app without options = %q, %v", got, err)
+	}
+	if got, err := s.LaunchOptions("1"); err != nil || got != "" {
+		t.Fatalf("unknown app = %q, %v", got, err)
+	}
+}
