@@ -79,10 +79,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	loaders := loadersvc.NewService(home, store, items, profiles)
-	loadersvc.Attach(loaders, "stardew")
 	launches := launchsvc.NewService(home, store, profiles)
 	profiles.Running = launches.Running
+	loaders := loadersvc.NewService(home, store, items, profiles)
+	loadersvc.Attach(loaders, "stardew")
 	launches.EnsureLoader = func(ctx context.Context, id string) error {
 		_, err := loaders.Ensure(ctx, id)
 		return err
