@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"embed"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -159,6 +161,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	savesSvc.Launches = launches
 
 	nexusClient := nexus.New(version)
 	nexusSvc := nexussvc.NewService(store, nexusClient, modMeta)
@@ -228,6 +231,24 @@ func main() {
 	pick := &picker.Service{}
 	profileSvc := profile.NewService(profiles, home, store)
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
+	supportSvc := support.NewService(version, problemsSvc.Environment, home, profiles.ModsDir)
+	supportSvc.RecentLog = func(gameID, profileID string) string {
+		entries, err := launches.Lines(gameID, profileID)
+		if err != nil || len(entries) == 0 {
+			return ""
+		}
+		if len(entries) > 2000 {
+			entries = entries[len(entries)-2000:]
+		}
+		var b strings.Builder
+		for i, e := range entries {
+			if i > 0 {
+				b.WriteByte('\n')
+			}
+			fmt.Fprintf(&b, "[%s %s %s] %s", e.Time, e.Level, e.Mod, e.Message)
+		}
+		return b.String()
+	}
 	shareSvc = sharesvc.NewService(sharesvc.Deps{
 		Profiles: profiles,
 		Meta:     modMeta,
@@ -255,7 +276,7 @@ func main() {
 		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
 		application.NewService(savesSvc), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
 		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc),
-		application.NewService(support.NewService(version, problemsSvc.Environment, home, profiles.ModsDir)), application.NewService(updates),
+		application.NewService(supportSvc), application.NewService(updates),
 	} {
 		app.RegisterService(s)
 	}
@@ -272,6 +293,7 @@ func main() {
 	nexusSvc.App = app
 	nxmSvc.App = app
 	shareSvc.App = app
+	supportSvc.App = app
 	notifier.OnNotificationResponse(func(notifications.NotificationResult) {
 		window.Restore()
 		window.Focus()

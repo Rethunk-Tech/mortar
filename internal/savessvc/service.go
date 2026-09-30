@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -57,6 +58,9 @@ type Service struct {
 	settings *settings.Store
 	meta     *meta.Client
 	scanner  *saves.Scanner
+	// Launches, when set, refuses restore while the game is launching or running.
+	Launches *launchsvc.Service
+	busy     func() bool
 }
 
 // NewService reads saves from the Stardew Valley Saves folder and caches scans in <datadir>/cache.

@@ -2,8 +2,8 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
-import { ExternalLink, Plus, Power, X } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { ExternalLink, History, Plus, Power, X } from 'lucide-react'
+import { type ReactNode, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import type {
   Fit,
@@ -15,6 +15,7 @@ import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { BackupsDialog } from './BackupsDialog.tsx'
 import { useSaves } from './store.ts'
 
 const nowrap = { whiteSpace: 'nowrap' } as const
@@ -238,6 +239,7 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   const { t } = useLingui()
   const { fits, status, error: detail, load } = useSaves()
   const { name } = profile
+  const [backupsOpen, setBackupsOpen] = useState(false)
   let body: ReactNode = null
   if (status === 'error') {
     body = (
@@ -265,12 +267,23 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
-      <Typography sx={{ px: 2, pt: 1.5, pb: 0.75, fontSize: 13, lineHeight: 1.5 }}>
-        {t`Mortar reads each save for the mods it has used. You pick the save in the game; this is how well each one fits ${name}.`}
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 0.75 }}>
+        <Typography sx={{ flex: 1, minWidth: 0, fontSize: 13, lineHeight: 1.5 }}>
+          {t`Mortar reads each save for the mods it has used. You pick the save in the game; this is how well each one fits ${name}.`}
+        </Typography>
+        <Button
+          size="small"
+          startIcon={<History size={14} />}
+          onClick={() => setBackupsOpen(true)}
+          sx={nowrap}
+        >
+          {t`Save backups`}
+        </Button>
+      </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, px: 2, pt: 0.75, pb: 2 }}>
         {body}
       </Box>
+      <BackupsDialog open={backupsOpen} onClose={() => setBackupsOpen(false)} />
     </Box>
   )
 }
