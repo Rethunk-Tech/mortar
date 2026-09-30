@@ -2,13 +2,14 @@ import { create } from 'zustand'
 
 export type GameId = 'stardew'
 
-export type SettingsSection = 'game' | 'appearance' | 'about'
+export type SettingsSection = 'appearance' | 'data' | 'about'
 
 export type Route =
   | { name: 'game-select' }
   | { name: 'setup' }
   | { name: 'game'; game: GameId }
   | { name: 'profiles'; game: GameId }
+  | { name: 'game-settings'; game: GameId }
   | { name: 'settings'; section: SettingsSection; back: Route }
 
 export const useNav = create<{
@@ -18,6 +19,8 @@ export const useNav = create<{
   openSetup: () => void
   openProfiles: () => void
   closeProfiles: () => void
+  openGameSettings: () => void
+  closeGameSettings: () => void
   openSettings: (section?: SettingsSection) => void
   closeSettings: () => void
 }>((set) => ({
@@ -33,12 +36,20 @@ export const useNav = create<{
     set(({ route }) =>
       route.name === 'profiles' ? { route: { name: 'game', game: route.game } } : {},
     ),
+  openGameSettings: () =>
+    set(({ route }) =>
+      route.name === 'game' ? { route: { name: 'game-settings', game: route.game } } : {},
+    ),
+  closeGameSettings: () =>
+    set(({ route }) =>
+      route.name === 'game-settings' ? { route: { name: 'game', game: route.game } } : {},
+    ),
   openSettings: (section) =>
     set(({ route }) => ({
       route:
         route.name === 'settings'
           ? { ...route, section: section ?? route.section }
-          : { name: 'settings', section: section ?? 'game', back: route },
+          : { name: 'settings', section: section ?? 'appearance', back: route },
     })),
   closeSettings: () => set(({ route }) => (route.name === 'settings' ? { route: route.back } : {})),
 }))

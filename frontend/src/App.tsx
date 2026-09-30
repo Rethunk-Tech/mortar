@@ -8,6 +8,7 @@ import { GameSelect } from './games/GameSelect.tsx'
 import { loadGameStatus } from './games/status.ts'
 import { useNav } from './nav/store.ts'
 import { ProfilesPage } from './profiles/ProfilesPage.tsx'
+import { GameSettingsPage } from './settings/GameSettingsPage.tsx'
 import { SettingsPage } from './settings/SettingsPage.tsx'
 import { AppFrame } from './shell/AppFrame.tsx'
 import { useToasts } from './toasts/store.ts'
@@ -50,6 +51,7 @@ export function App() {
     <>
       <AppFrame>
         {route.name === 'settings' ? <SettingsPage section={route.section} /> : null}
+        {route.name === 'game-settings' ? <GameSettingsPage /> : null}
         {route.name === 'profiles' ? <ProfilesPage /> : null}
         {route.name === 'game' ? <MainScreen game={route.game} /> : null}
         {route.name === 'setup' ? <FirstRun /> : null}

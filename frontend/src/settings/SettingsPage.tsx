@@ -5,7 +5,7 @@ import { type ReactNode, useEffect } from 'react'
 import { type SettingsSection, useNav } from '../nav/store.ts'
 import { About } from './sections/About.tsx'
 import { Appearance } from './sections/Appearance.tsx'
-import { Game } from './sections/Game.tsx'
+import { Data } from './sections/Data.tsx'
 
 const ACTIVE_WEIGHT = 600
 
@@ -23,13 +23,13 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
     return () => globalThis.removeEventListener('keydown', onKey)
   }, [closeSettings])
   const sections: { id: SettingsSection; label: string }[] = [
-    { id: 'game', label: t`Game` },
     { id: 'appearance', label: t`Appearance` },
+    { id: 'data', label: t`Data` },
     { id: 'about', label: t`About` },
   ]
   const body: Record<SettingsSection, ReactNode> = {
-    game: <Game />,
     appearance: <Appearance />,
+    data: <Data />,
     about: <About />,
   }
   const current = sections.find((s) => s.id === section)

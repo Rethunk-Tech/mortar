@@ -1,11 +1,12 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
-import { Pencil, Plus } from 'lucide-react'
+import { Pencil, Plus, Settings2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConsoleTab, LogActions } from '../console/ConsoleTab.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
+import { useNav } from '../nav/store.ts'
 import { NotesTab } from '../notes/NotesTab.tsx'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -176,6 +177,8 @@ export function Detail() {
   const tab = useTab((s) => s.tab)
   const setTab = useTab((s) => s.setTab)
   const game = useProfiles((s) => s.game?.id ?? '')
+  const gameName = useProfiles((s) => s.game?.name ?? '')
+  const openGameSettings = useNav((s) => s.openGameSettings)
   const profile = profiles.find((p) => p.id === openId)
   const loadSaves = useSaves((s) => s.load)
   const profileId = profile?.id
@@ -255,6 +258,9 @@ export function Detail() {
         </Tabs>
         <Box sx={{ flexGrow: 1 }} />
         {tab === 'console' ? <LogActions /> : null}
+        <IconButton aria-label={t`${gameName} settings`} onClick={openGameSettings} sx={{ ml: 1 }}>
+          <Settings2 size={18} />
+        </IconButton>
       </Box>
       {tab === 'console' ? <ConsoleTab game={game} /> : null}
       {tab === 'notes' ? <NotesTab key={`notes-${profile.id}`} profile={profile} /> : null}

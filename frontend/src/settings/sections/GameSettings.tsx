@@ -1,12 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Link } from '@mui/material'
+import { Box, Button } from '@mui/material'
 import { Download, FolderOpen, Undo2 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
-import type { DataFolder as DataInfo } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
 import {
   ChooseGameFolder,
-  DataFolder,
-  OpenDataFolder,
   SetGameFolder,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { loadGameStatus } from '../../games/status.ts'
@@ -16,7 +13,6 @@ import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useSettings } from '../store.ts'
 
 const GAME = 'stardew'
-const BYTES_PER_MB = 1_000_000
 
 const outline = { whiteSpace: 'nowrap', flexShrink: 0, height: 42 }
 
@@ -161,31 +157,6 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
   )
 }
 
-function DataFolderInfo() {
-  const { t } = useLingui()
-  const [data, setData] = useState<DataInfo | null>(null)
-  useEffect(() => {
-    DataFolder().then(setData).catch(reportUnexpected)
-  }, [])
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-      <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Mortar's data`}</Box>
-      <Box sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 13, wordBreak: 'break-all' }}>
-        {data
-          ? t`${data.path} · ${(data.size / BYTES_PER_MB).toFixed(1)} MB · store, profiles, backups`
-          : t`Measuring…`}
-      </Box>
-      <Link
-        component="button"
-        onClick={() => OpenDataFolder().catch(reportUnexpected)}
-        sx={{ alignSelf: 'flex-start', fontSize: 13, whiteSpace: 'nowrap' }}
-      >
-        {t`Open folder`}
-      </Link>
-    </Box>
-  )
-}
-
 function GameBody() {
   const [folder, setFolder] = useState('')
   const [version, setVersion] = useState('')
@@ -206,13 +177,12 @@ function GameBody() {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <GameFolder folder={folder} versionNote={version ? ` · Stardew Valley ${version}` : ''} />
       <Smapi key={folder} onVersion={setVersion} />
-      <DataFolderInfo />
     </Box>
   )
 }
 
 // Remounting on an override change re-discovers the folder and re-checks SMAPI against it.
-export function Game() {
+export function GameSettings() {
   const override = useSettings((s) => s.gameFolders?.[GAME] ?? '')
   return <GameBody key={override} />
 }
