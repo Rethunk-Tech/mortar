@@ -24,7 +24,7 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
 
 ## Game Select
 
-Full-width banner rows stacked down the window, about 300px tall at 1080p, one per game. Each row shows the game's key art edge to edge under a solid dim layer (`rgba(0,0,0,0.4)`), with the game's logo image (Steam's `logo.png`) or its name; on the left the game name with "<loader> | <store>" under it ("SMAPI 4.5.2 | Steam"), and the profile count; on the right, square badges for its mod sources. Art is Steam's `library_hero.jpg` read at runtime, never bundled. In v1 Stardew Valley is the only live row; Lethal Company shows dimmed as coming later. Choosing a row opens its main screen; the title bar's game tab returns here.
+Full-width banner rows stacked down the window, about 300px tall at 1080p, one per game. Rows share the window's height equally. Each shows the game's key art edge to edge under a light solid dim layer, with plain text straight on the art kept legible by a text shadow, no panel behind it; the row that opens on click has a primary-colour left edge; on the left the game name with "<loader> | <store>" under it ("SMAPI 4.5.2 | Steam"), and the profile count; on the right, square badges for its mod sources. Art is Steam's `library_hero.jpg` read at runtime, never bundled. In v1 Stardew Valley is the only live row; Lethal Company shows dimmed as coming later. Choosing a row opens its main screen; the title bar's game tab returns here.
 
 ## Main screen
 
@@ -47,13 +47,14 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 
 ## Console tab
 
-- SMAPI's log as it is written, monospace, colour by level (trace dimmed, warn in warning colour, error in error colour), follow-tail on by default.
-- Filters by level and mod, copy, and **Get help**: shows the log with its local paths and asks before uploading it to smapi.io/log, then copies the link.
+- SMAPI's log as it is written, monospace, in columns: a level bar, time, level, mod and message; warnings and errors get a tinted row.
+- Filters: a search box, level toggles each with its line count (Trace off by default), a mod picker whose choices show as removable chips, "Showing X of Y lines" with Clear filters, and Jump to first error. Toggles for timestamps and follow-tail (on by default).
+- **Copy**, and **Get help**: shows the log with its local paths and asks before uploading it to smapi.io/log, then copies the link.
 - Before the first launch: a line saying the console fills when the game runs.
 
 ## Profile management
 
-A page, as Concrete's: a header with a back button, **New**, **Import** and **Recently deleted** (profiles in the 30-day trash, each with Restore) buttons, then every profile as a sortable row: drag handle, name (with a Hidden chip when hidden) and its summary, **Share**, and a ⋯ menu holding Rename, Duplicate, Hide from sidebar (or Show) and Delete. Reordering uses dnd-kit's sortable list with a drop indicator. Delete asks first and says the profile stays restorable for 30 days. **Share** copies the `https://mortar.rethunk.tech/stardew/p#...` link and always offers the `.mortar` file "with settings", and suggests it over the link above about 240 mods.
+A page, as Concrete's: a header with a back button, **New**, **Import** and **Recently deleted** (profiles in the 30-day trash, each with Restore) buttons, then every profile as a sortable row: drag handle, name (with a Hidden chip when hidden) and its summary, **Share**, and a ⋯ menu holding Rename, Duplicate, Hide from sidebar (or Show) and Delete. Reordering uses dnd-kit's sortable list with a drop indicator. Delete asks first and says the profile stays restorable for 30 days. **Share** opens a dialog with two tabs, **Link** and **.mortar file with settings**. The Link tab has the `https://mortar.rethunk.tech/stardew/p#...` link with Copy link, a meter of its length against Discord's 2,000 characters, Copy as a message, the included mods by source, and what is left out (local archives, switched-off mods). Beside it, a preview of the page the recipient sees. Over about 240 mods it suggests the file.
 
 ## Import
 
@@ -66,7 +67,7 @@ A wide "Import profile from…" dialog over the dimmed game screen, with tabs **
 
 ## Download queue
 
-A side sheet listing each item: waiting for your click (free accounts), downloading with progress, installing, done, or failed with a retry. For free accounts the head item has **Open download page**, and the next page opens when an item finishes. Premium accounts download without clicks. Closing the sheet keeps the queue running.
+A side sheet. The header gives totals (done, in progress, failed, left, size) over a progress bar split by state, with **Pause all**. Sections, top down: **Needs your click** (free accounts: the head item with Open download page; the next page opens when it finishes), **Failed** (with Retry failed; each row says why and has Retry and Skip on its right edge), **In progress** (size, speed and Cancel per row), **Up next** and **Done** (both collapsed to one line). Every row's action sits on its right edge. Premium accounts download without clicks. Closing the sheet keeps the queue running.
 
 ## First run
 
