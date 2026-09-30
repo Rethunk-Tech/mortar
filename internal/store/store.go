@@ -402,10 +402,7 @@ func (s *Store) Collect(referenced map[string][]string, now time.Time) error {
 			errs = append(errs, err)
 			continue
 		}
-		keep := map[string]bool{}
-		for _, k := range referenced[g.Name()] {
-			keep[k] = true
-		}
+		keep := keepSet(referenced[g.Name()])
 		next[g.Name()] = map[string]time.Time{}
 		for _, it := range items {
 			key := it.Name()
@@ -427,6 +424,73 @@ func (s *Store) Collect(referenced map[string][]string, now time.Time) error {
 		}
 	}
 	errs = append(errs, s.saveIndex(next))
+	return errors.Join(errs...)
+}
+
+func keepSet(keys []string) map[string]bool {
+	keep := make(map[string]bool, len(keys))
+	for _, k := range keys {
+		keep[k] = true
+	}
+	return keep
+}
+
+// Ref is one store folder named by game and key.
+type Ref struct {
+	Game string `json:"game"`
+	Key  string `json:"key"`
+}
+
+// Unreferenced lists folders Collect does not treat as in use, using the same keep set.
+func (s *Store) Unreferenced(referenced map[string][]string) ([]Ref, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	games, err := os.ReadDir(s.root)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, err
+	}
+	var out []Ref
+	for _, g := range games {
+		if !g.IsDir() || !game.Valid(g.Name()) {
+			continue
+		}
+		items, err := os.ReadDir(filepath.Join(s.root, g.Name()))
+		if err != nil {
+			return nil, err
+		}
+		keep := keepSet(referenced[g.Name()])
+		for _, it := range items {
+			key := it.Name()
+			if !it.IsDir() || strings.HasPrefix(key, tempPrefix) {
+				continue
+			}
+			if !keep[key] {
+				out = append(out, Ref{Game: g.Name(), Key: key})
+			}
+		}
+	}
+	return out, nil
+}
+
+// Remove deletes the given store folders and drops them from the index.
+func (s *Store) Remove(refs []Ref) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	idx, err := s.loadIndex()
+	if err != nil {
+		return err
+	}
+	var errs []error
+	for _, it := range refs {
+		if !game.Valid(it.Game) || strings.HasPrefix(it.Key, tempPrefix) || !keyPattern.MatchString(it.Key) {
+			continue
+		}
+		errs = append(errs, os.RemoveAll(filepath.Join(s.root, it.Game, it.Key)))
+		if idx[it.Game] != nil {
+			delete(idx[it.Game], it.Key)
+		}
+	}
+	errs = append(errs, s.saveIndex(idx))
 	return errors.Join(errs...)
 }
 

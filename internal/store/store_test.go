@@ -182,6 +182,32 @@ func TestCollect(t *testing.T) {
 	}
 }
 
+func TestUnreferencedKeepsReferenced(t *testing.T) {
+	s := newStore(t)
+	for _, k := range []string{"smapi-1", "smapi-2"} {
+		if err := s.AddDir("stardew", k, t.TempDir()); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.MkdirAll(filepath.Join(s.root, "stardew", ".tmp-left"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	got, err := s.Unreferenced(map[string][]string{"stardew": {"smapi-1"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 || got[0].Game != "stardew" || got[0].Key != "smapi-2" {
+		t.Fatalf("Unreferenced = %+v", got)
+	}
+	if err := s.Remove(got); err != nil {
+		t.Fatal(err)
+	}
+	kept := names(t, filepath.Join(s.root, "stardew"))
+	if len(kept) != 2 || kept[0] != ".tmp-left" || kept[1] != "smapi-1" {
+		t.Fatalf("after Remove = %v", kept)
+	}
+}
+
 func TestTouchAndCleanup(t *testing.T) {
 	s := newStore(t)
 	if err := s.AddDir("stardew", "smapi-1", t.TempDir()); err != nil {
