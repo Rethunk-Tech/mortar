@@ -160,8 +160,8 @@ func (l *System) Restore(previous string) error {
 func (l *System) dropDefault() error {
 	path := filepath.Join(l.configHome, "mimeapps.list")
 	// A dotfile manager's symlink is followed, so the rewrite lands in its target and the link stays.
-	if real, err := filepath.EvalSymlinks(path); err == nil {
-		path = real
+	if target, err := filepath.EvalSymlinks(path); err == nil {
+		path = target
 	}
 	b, err := fsx.ReadFile(path)
 	if errors.Is(err, fs.ErrNotExist) {

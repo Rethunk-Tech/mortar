@@ -191,11 +191,11 @@ func TestUpdateThatCannotRecordRestoresTheOldFolder(t *testing.T) {
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m})
 	writeFile(t, e.mods(p.ID), "a-1/A/config.json", "mine")
 	dir := filepath.Dir(e.mods(p.ID))
-	if err := os.Chmod(dir, 0o500); err != nil {
+	if err := fsx.Chmod(dir, 0o500); err != nil {
 		t.Fatal(err)
 	}
 	_, err := e.UpdateEntry("stardew", p.ID, "a-1", "a-2")
-	if cerr := os.Chmod(dir, 0o700); cerr != nil {
+	if cerr := fsx.Chmod(dir, 0o700); cerr != nil {
 		t.Fatal(cerr)
 	}
 	if err == nil {

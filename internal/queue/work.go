@@ -122,10 +122,10 @@ func (s *Service) step(ctx context.Context) bool {
 		it.State = StateWaitingClick
 		it.key, it.expires = "", 0
 	}
-	switch act {
-	case fetch:
+	if act == fetch {
 		it.State, it.Progress, it.Speed = StateDownloading, 0, 0
-	case install:
+	}
+	if act == install {
 		// Nothing is left to download, and Cancel does not reach an install under way.
 		it.State, it.Progress, it.Speed = StateInstalling, 100, 0
 	}
