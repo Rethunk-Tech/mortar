@@ -2,28 +2,29 @@ import { Events } from '@wailsio/runtime'
 
 type Data<E extends keyof Events.CustomEvents> = Events.CustomEvents[E]
 
-// Keeps a store on an evented value: subscribes, then fetches the current one. Sequence numbers let a fetch that
-// finishes after an event still apply; first marks the first value applied.
+type Subscribe<E extends keyof Events.CustomEvents> = (
+  name: E,
+  cb: (event: { data: Data<E> }) => void,
+) => void
+
+// Keeps a store on an evented value: subscribes, then fetches the current one.
+// A fetch that finishes after any event is dropped so a slower snapshot cannot rewind live state.
 export async function follow<E extends keyof Events.CustomEvents>(
   name: E,
   fetch: () => Promise<Data<E>>,
   apply: (next: Data<E>, first: boolean) => void,
+  subscribe: Subscribe<E> = (n, cb) => {
+    Events.On(n, cb)
+  },
 ): Promise<void> {
-  let seq = 0
-  let applied = 0
   let seen = false
-  Events.On(name, (event) => {
-    seq += 1
-    const n = seq
+  subscribe(name, (event) => {
     apply(event.data, !seen)
     seen = true
-    applied = n
   })
   const current = await fetch()
-  seq += 1
-  const n = seq
-  if (n > applied) {
-    apply(current, !seen)
+  if (!seen) {
+    apply(current, true)
     seen = true
   }
 }
