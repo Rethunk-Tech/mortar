@@ -8,11 +8,15 @@ function ignore() {
   return
 }
 
+function shouldRunStartupCheck(on: boolean | null | undefined): boolean {
+  return on !== false
+}
+
 export function useStartupChecks() {
   useEffect(() => {
     const run = async () => {
       const s = await Get()
-      if (s.checkModUpdatesOnStart !== false) {
+      if (shouldRunStartupCheck(s.checkModUpdatesOnStart)) {
         const last = s.lastProfile ?? {}
         await Promise.all(
           Object.entries(last)
@@ -20,7 +24,7 @@ export function useStartupChecks() {
             .map(([game, profile]) => Updates(game, profile ?? '').catch(ignore)),
         )
       }
-      if (s.tellWhenSmapiOut !== false) {
+      if (shouldRunStartupCheck(s.tellWhenSmapiOut)) {
         const game = s.lastGame || 'stardew'
         await useLoader.getState().check(game)
         maybeToastSmapi(game)
@@ -29,3 +33,5 @@ export function useStartupChecks() {
     run().catch(ignore)
   }, [])
 }
+
+export { shouldRunStartupCheck }
