@@ -1,11 +1,17 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Drawer, Tooltip, Typography, useMediaQuery } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import type {
   Mod,
+  ModInProfile,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { ProfilesWithMod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { compactQuery } from '../game/compact.ts'
+import { openModInProfile } from '../profiles/findMod.ts'
+import { useProfiles } from '../profiles/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useDescribe } from './describe.ts'
 import { useDetail } from './detail.ts'
 import {
@@ -138,6 +144,48 @@ function ProblemLine({ mod }: { mod: Mod }) {
   )
 }
 
+function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
+  const { t } = useLingui()
+  const game = useProfiles((s) => s.game?.id)
+  const [rows, setRows] = useState<ModInProfile[]>([])
+  useEffect(() => {
+    if (!game) {
+      return
+    }
+    ProfilesWithMod(game, mod.uniqueId)
+      .then((list) => setRows((list ?? []).filter((r) => r.profileId !== profile.id)))
+      .catch(reportUnexpected)
+  }, [game, mod.uniqueId, profile.id])
+  if (rows.length === 0) {
+    return null
+  }
+  return (
+    <Box>
+      <Typography sx={heading}>{t`Also in these profiles`}</Typography>
+      {rows.map((r) => (
+        <Button
+          key={r.profileId}
+          onClick={() =>
+            openModInProfile({ profileId: r.profileId, key: r.key, uniqueId: r.uniqueId })
+          }
+          sx={{
+            ...noWrap,
+            display: 'block',
+            width: '100%',
+            justifyContent: 'flex-start',
+            textAlign: 'left',
+            textTransform: 'none',
+            fontSize: 13,
+            px: 0.5,
+          }}
+        >
+          {`${r.profileName} · ${r.version} · ${r.enabled ? t`Enabled` : t`Switched off`}`}
+        </Button>
+      ))}
+    </Box>
+  )
+}
+
 function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   const { t } = useLingui()
   const all = useMods((s) => s.mods)
@@ -172,6 +220,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       {nexusId ? <NexusFields mod={mod} nexusId={nexusId} /> : null}
       <UpdateBanner mod={mod} />
       <ProblemLine mod={mod} />
+      <AlsoInProfiles mod={mod} profile={profile} />
       {others.length > 0 ? (
         <Box>
           <Typography sx={heading}>{t`In the same download`}</Typography>

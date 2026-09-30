@@ -165,6 +165,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
   const load = useMods((s) => s.load)
   const [query, setQuery] = useState('')
   useEffect(() => {
+    const pending = useDetail.getState().pendingId
     useMods.setState({
       mods: [],
       loaded: false,
@@ -174,9 +175,20 @@ export function ModsTab({ profile }: { profile: Profile }) {
       removing: null,
     })
     useUpdates.setState({ updates: null, reviewing: false })
-    useDetail.getState().show(null)
+    if (!pending) {
+      useDetail.getState().show(null)
+    }
     useContextMenu.getState().close()
-    load().catch(reportUnexpected)
+    load()
+      .then(() => {
+        const id = useDetail.getState().takePending()
+        if (!id) {
+          return
+        }
+        const mod = useMods.getState().mods.find((m) => modId(m) === id)
+        useDetail.getState().show(mod ?? null)
+      })
+      .catch(reportUnexpected)
   }, [load])
 
   if (userModCount(profile) === 0) {

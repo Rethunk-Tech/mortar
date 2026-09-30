@@ -29,9 +29,11 @@ import {
   DialogTitle,
   Divider,
   IconButton,
+  InputAdornment,
   Menu,
   MenuItem,
   type MenuItemProps,
+  TextField,
   Typography,
 } from '@mui/material'
 import {
@@ -46,6 +48,7 @@ import {
   Pencil,
   Plus,
   RotateCcw,
+  Search,
   Share2,
   Trash2,
 } from 'lucide-react'
@@ -63,6 +66,7 @@ import { openImport, openShare } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { userModCount } from './count.ts'
+import { findModInProfiles, openModInProfile } from './findMod.ts'
 import { GameModsDialog } from './GameModsDialog.tsx'
 import { useProfiles } from './store.ts'
 
@@ -409,6 +413,50 @@ function DeleteDialog({ deleting, onDone }: { deleting: Profile | null; onDone: 
   )
 }
 
+function FindModSearch({ profiles }: { profiles: Profile[] }) {
+  const { t } = useLingui()
+  const [query, setQuery] = useState('')
+  const hits = findModInProfiles(profiles, query)
+  return (
+    <Box sx={{ px: 2.5, pt: 1.5, flexShrink: 0 }}>
+      <TextField
+        size="small"
+        fullWidth={true}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder={t`Find a mod in all profiles`}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search size={16} aria-hidden={true} />
+              </InputAdornment>
+            ),
+          },
+        }}
+      />
+      {hits.length > 0 ? (
+        <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+          {hits.map((h) => (
+            <Button
+              key={`${h.profileId}/${h.key}/${h.uniqueId}`}
+              onClick={() => openModInProfile(h)}
+              sx={{
+                whiteSpace: 'nowrap',
+                justifyContent: 'flex-start',
+                textTransform: 'none',
+                fontSize: 13,
+              }}
+            >
+              {`${h.name} · ${h.uniqueId} · ${h.profileName} · ${h.version} · ${h.enabled ? t`Enabled` : t`Switched off`}`}
+            </Button>
+          ))}
+        </Box>
+      ) : null}
+    </Box>
+  )
+}
+
 export function ProfilesPage() {
   const { t } = useLingui()
   const closeProfiles = useNav((s) => s.closeProfiles)
@@ -500,6 +548,7 @@ export function ProfilesPage() {
           {t`New profile`}
         </Button>
       </Box>
+      <FindModSearch profiles={profiles} />
       <Box
         sx={{
           flex: 1,

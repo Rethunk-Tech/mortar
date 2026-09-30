@@ -54,18 +54,28 @@ function keyAfterRollBack(
 // The selected mod (by modId) shown in the sidebar, whether its details dialog is open, and what the dialog reads beyond the mod list.
 export const useDetail = create<{
   detailId: string
+  pendingId: string
   open: boolean
   extras: Extras | null
   show: (mod: Mod | null) => void
+  showAfterLoad: (mod: Pick<Mod, 'key' | 'uniqueId'>) => void
+  takePending: () => string
   setOpen: (isOpen: boolean) => void
   loadExtras: (mod: Mod) => Promise<void>
   rollBack: (mod: Mod) => Promise<void>
   resetConfig: (mod: Mod) => Promise<void>
 }>((set, get) => ({
   detailId: '',
+  pendingId: '',
   open: false,
   extras: null,
   show: (mod) => set((s) => ({ ...reshow(s, mod), open: false })),
+  showAfterLoad: (mod) => set({ pendingId: modId(mod) }),
+  takePending: () => {
+    const id = get().pendingId
+    set({ pendingId: '' })
+    return id
+  },
   setOpen: (isOpen) => set({ open: isOpen }),
   loadExtras: async (mod) => {
     const target = open()
