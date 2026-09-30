@@ -198,3 +198,25 @@ func TestChangelogsAreNewestFirstWhateverTheKeyOrder(t *testing.T) {
 		t.Fatalf("got %v, want %v", versions, want)
 	}
 }
+
+func TestLimitsHookCanReadTheBudget(t *testing.T) {
+	c := New("test")
+	got := make(chan Limits, 1)
+	c.SetLimitsHook(func(Limits) { got <- c.Limits() })
+	h := http.Header{}
+	h.Set("X-Rl-Daily-Remaining", "19000")
+	h.Set("X-Rl-Hourly-Remaining", "400")
+	done := make(chan struct{})
+	go func() {
+		c.record(h)
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("record deadlocked calling a hook that reads Limits")
+	}
+	if l := <-got; !l.Known || l.Daily.Remaining != 19000 {
+		t.Fatalf("hook read %+v", l)
+	}
+}

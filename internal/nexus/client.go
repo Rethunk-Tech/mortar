@@ -152,15 +152,17 @@ func (c *Client) record(h http.Header) {
 	}
 	dl, _ := get("X-Rl-Daily-Limit")
 	hl, _ := get("X-Rl-Hourly-Limit")
-	c.lim.mu.Lock()
-	defer c.lim.mu.Unlock()
-	c.lim.v = Limits{
+	v := Limits{
 		Known:  true,
 		Daily:  Window{Remaining: dr, Limit: dl, Reset: parseReset(h.Get("X-Rl-Daily-Reset"))},
 		Hourly: Window{Remaining: hr, Limit: hl, Reset: parseReset(h.Get("X-Rl-Hourly-Reset"))},
 	}
+	c.lim.mu.Lock()
+	c.lim.v = v
+	c.lim.mu.Unlock()
+	// The hook runs unlocked: it reads the budget back through Limits, which takes the same lock.
 	if c.onLimits != nil {
-		c.onLimits(c.lim.v)
+		c.onLimits(v)
 	}
 }
 
