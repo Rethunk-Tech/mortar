@@ -106,17 +106,6 @@ export function AppMenu() {
           <ListItemButton
             onClick={() => {
               close()
-              openSettings('about')
-            }}
-          >
-            <ListItemIcon>
-              <Info size={18} />
-            </ListItemIcon>
-            <ListItemText primary={t`About Mortar`} />
-          </ListItemButton>
-          <ListItemButton
-            onClick={() => {
-              close()
               openSettings('updates')
               useMortarUpdate.getState().check().catch(reportUnexpected)
             }}
@@ -126,6 +115,7 @@ export function AppMenu() {
             </ListItemIcon>
             <ListItemText primary={t`Check for updates`} />
           </ListItemButton>
+          <Divider />
           <ListItemButton
             onClick={() => {
               close()
@@ -140,13 +130,13 @@ export function AppMenu() {
           <ListItemButton
             onClick={() => {
               close()
-              Browser.OpenURL(SOURCE).catch(reportUnexpected)
+              saveDiagnostics(game, profile)
             }}
           >
             <ListItemIcon>
-              <Code2 size={18} />
+              <FileArchive size={18} />
             </ListItemIcon>
-            <ListItemText primary={t`Source code`} />
+            <ListItemText primary={t`Save diagnostics…`} />
           </ListItemButton>
           <ListItemButton
             onClick={() => {
@@ -159,16 +149,28 @@ export function AppMenu() {
             </ListItemIcon>
             <ListItemText primary={t`Report a bug`} />
           </ListItemButton>
+          <Divider />
           <ListItemButton
             onClick={() => {
               close()
-              saveDiagnostics(game, profile)
+              openSettings('about')
             }}
           >
             <ListItemIcon>
-              <FileArchive size={18} />
+              <Info size={18} />
             </ListItemIcon>
-            <ListItemText primary={t`Save diagnostics…`} />
+            <ListItemText primary={t`About Mortar`} />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              close()
+              Browser.OpenURL(SOURCE).catch(reportUnexpected)
+            }}
+          >
+            <ListItemIcon>
+              <Code2 size={18} />
+            </ListItemIcon>
+            <ListItemText primary={t`Source code`} />
           </ListItemButton>
           <Divider />
           <ListItemButton onClick={quit}>
