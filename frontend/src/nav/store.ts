@@ -2,7 +2,7 @@ import { create } from 'zustand'
 
 export type GameId = 'stardew'
 
-export type SettingsSection = 'appearance' | 'about'
+export type SettingsSection = 'game' | 'appearance' | 'about'
 
 export type Route =
   | { name: 'game-select' }
@@ -35,7 +35,7 @@ export const useNav = create<{
       route:
         route.name === 'settings'
           ? { ...route, section: section ?? route.section }
-          : { name: 'settings', section: section ?? 'appearance', back: route },
+          : { name: 'settings', section: section ?? 'game', back: route },
     })),
   closeSettings: () => set(({ route }) => (route.name === 'settings' ? { route: route.back } : {})),
 }))

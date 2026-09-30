@@ -1,10 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
 import { ArrowLeft } from 'lucide-react'
-import { useEffect } from 'react'
+import { type ReactNode, useEffect } from 'react'
 import { type SettingsSection, useNav } from '../nav/store.ts'
 import { About } from './sections/About.tsx'
 import { Appearance } from './sections/Appearance.tsx'
+import { Game } from './sections/Game.tsx'
 
 const ACTIVE_WEIGHT = 600
 
@@ -22,9 +23,15 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
     return () => globalThis.removeEventListener('keydown', onKey)
   }, [closeSettings])
   const sections: { id: SettingsSection; label: string }[] = [
+    { id: 'game', label: t`Game` },
     { id: 'appearance', label: t`Appearance` },
     { id: 'about', label: t`About` },
   ]
+  const body: Record<SettingsSection, ReactNode> = {
+    game: <Game />,
+    appearance: <Appearance />,
+    about: <About />,
+  }
   const current = sections.find((s) => s.id === section)
   return (
     <Box sx={{ height: '100%', display: 'grid', gridTemplateColumns: '200px minmax(0, 1fr)' }}>
@@ -98,7 +105,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
         <Typography component="h2" sx={{ fontSize: 22, fontWeight: 700 }}>
           {current?.label}
         </Typography>
-        {section === 'appearance' ? <Appearance /> : <About />}
+        {body[section]}
       </Box>
     </Box>
   )

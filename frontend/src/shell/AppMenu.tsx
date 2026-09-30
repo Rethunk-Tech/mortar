@@ -1,12 +1,24 @@
 import { useLingui } from '@lingui/react/macro'
-import { ButtonBase, Drawer, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
-import { Application } from '@wailsio/runtime'
-import { Info, LogOut, Settings } from 'lucide-react'
+import {
+  ButtonBase,
+  Divider,
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+} from '@mui/material'
+import { Application, Browser } from '@wailsio/runtime'
+import { Code2, FolderOpen, Info, LogOut, Settings } from 'lucide-react'
 import { useId, useState } from 'react'
+import { OpenDataFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { Logo } from '../brand/Logo.tsx'
 import { compact } from '../game/compact.ts'
 import { openSettings } from '../nav/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+
+const SOURCE = 'https://github.com/Rethunk-AI/mortar'
 
 export function AppMenu() {
   const { t } = useLingui()
@@ -86,6 +98,29 @@ export function AppMenu() {
             </ListItemIcon>
             <ListItemText primary={t`About Mortar`} />
           </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              close()
+              OpenDataFolder().catch(reportUnexpected)
+            }}
+          >
+            <ListItemIcon>
+              <FolderOpen size={18} />
+            </ListItemIcon>
+            <ListItemText primary={t`Open data folder`} />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              close()
+              Browser.OpenURL(SOURCE).catch(reportUnexpected)
+            }}
+          >
+            <ListItemIcon>
+              <Code2 size={18} />
+            </ListItemIcon>
+            <ListItemText primary={t`Source code`} />
+          </ListItemButton>
+          <Divider />
           <ListItemButton onClick={quit}>
             <ListItemIcon>
               <LogOut size={18} />

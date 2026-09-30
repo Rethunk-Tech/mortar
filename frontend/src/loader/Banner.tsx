@@ -1,7 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { Check, Download } from 'lucide-react'
+import { Download } from 'lucide-react'
 import { useEffect } from 'react'
+import { InstallSteps } from './InstallSteps.tsx'
 import { useLoader } from './store.ts'
 
 export function LoaderBanner({ game }: { game: string }) {
@@ -26,12 +27,6 @@ export function LoaderBanner({ game }: { game: string }) {
     message = t`SMAPI ${status.latest} is available`
     action = t`Update`
   }
-  const labels: Record<string, string> = {
-    downloaded: t`Downloaded`,
-    files: t`Files added`,
-    launcher: t`Launcher replaced`,
-    bundled: t`Bundled mods added`,
-  }
   return (
     <Box
       role="status"
@@ -51,24 +46,7 @@ export function LoaderBanner({ game }: { game: string }) {
         {message}
       </Typography>
       {installing ? (
-        <Box sx={{ display: 'flex', gap: 1.5, flexShrink: 0 }}>
-          {steps.map((step) => (
-            <Box
-              key={step}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                fontSize: 13,
-                color: 'text.secondary',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <Check size={14} />
-              {labels[step] ?? step}
-            </Box>
-          ))}
-        </Box>
+        <InstallSteps steps={steps} />
       ) : (
         <Button
           variant="contained"
