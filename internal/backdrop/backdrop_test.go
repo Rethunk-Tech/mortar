@@ -143,3 +143,26 @@ func TestCheck(t *testing.T) {
 		t.Errorf("jxl accepted = %v on %s", got, runtime.GOOS)
 	}
 }
+
+// A mode switch reaches the backdrop before the settings write does; the page's mode wins and nothing is cached.
+func TestRequestedModeWinsAndIsUncached(t *testing.T) {
+	dir := t.TempDir()
+	wall := write(t, dir, "wall.png", "desk")
+	sys := write(t, dir, "sys.webp", "system")
+	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusTeapot) })
+	stale := func() settings.Settings { return settings.Settings{Background: settings.BackgroundDesktop} }
+	h := Middleware(stale, sys, func() string { return wall })(next)
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?mode=image&v=", nil))
+	if rec.Body.String() != "system" {
+		t.Fatalf("mode=image served %q, want the default image", rec.Body.String())
+	}
+	if rec.Header().Get("Cache-Control") != "no-store" || rec.Header().Get("Last-Modified") != "" {
+		t.Fatalf("headers %v allow a stale revalidation", rec.Header())
+	}
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?mode=bogus", nil))
+	if rec.Body.String() != "desk" {
+		t.Fatalf("an unknown mode must fall back to settings, got %q", rec.Body.String())
+	}
+}

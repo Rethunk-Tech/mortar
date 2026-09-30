@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"time"
 
@@ -93,12 +94,18 @@ func Middleware(current func() settings.Settings, system string, desktop func() 
 				return
 			}
 			cur := current()
+			// The page names the mode it just chose, which can reach here before the settings write does. The image
+			// path is still read from settings only, never from the URL.
+			if m := r.URL.Query().Get("mode"); slices.Contains([]string{settings.BackgroundImage, settings.BackgroundDesktop, settings.BackgroundSolid}, m) {
+				cur.Background = m
+			}
 			if r.Method != http.MethodGet || cur.Background == settings.BackgroundSolid {
 				http.NotFound(w, r)
 				return
 			}
-			// The file behind the one URL changes with the mode and the desktop, so the webview must ask each time.
-			w.Header().Set("Cache-Control", "no-cache")
+			// The file behind the one URL changes with the mode and the desktop, and an older file's date would win a
+			// Last-Modified revalidation, so the local file is served uncached and undated.
+			w.Header().Set("Cache-Control", "no-store")
 			for _, path := range candidates(cur, system, desktop) {
 				if path == "" {
 					continue
@@ -108,12 +115,8 @@ func Middleware(current func() settings.Settings, system string, desktop func() 
 					continue
 				}
 				defer func() { _ = f.Close() }()
-				info, err := f.Stat()
-				if err != nil {
-					continue
-				}
 				w.Header().Set("Content-Type", typ)
-				http.ServeContent(w, r, "", info.ModTime(), f)
+				http.ServeContent(w, r, "", time.Time{}, f)
 				return
 			}
 			w.Header().Set("Content-Type", "image/jpeg")
