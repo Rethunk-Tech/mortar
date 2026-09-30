@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
 import { Pencil, Plus } from 'lucide-react'
@@ -29,7 +30,7 @@ function Hero({ profile }: { profile: Profile }) {
   const rename = useProfiles((s) => s.rename)
   const band = useMods((s) => s.view) === 'list'
   const [editing, setEditing] = useState(false)
-  const mods = (profile.entries ?? []).length
+  const mods = (profile.entries ?? []).reduce((n, e) => n + (e.mods ?? []).length, 0)
   const created = fmt(profile.created)
   const updated = fmt(profile.updated)
   return (
@@ -124,7 +125,8 @@ function Hero({ profile }: { profile: Profile }) {
           [compact]: { display: 'block' },
         }}
       >
-        {t`Created ${created} · Updated ${updated} · ${mods} mods`}
+        {t`Created ${created} · Updated ${updated}`} ·{' '}
+        {plural(mods, { one: '# mod', other: '# mods' })}
       </Typography>
     </Box>
   )

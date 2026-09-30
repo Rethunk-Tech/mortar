@@ -107,7 +107,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
                 onClick={() => setSelectedId(m.uniqueId)}
                 sx={{ cursor: 'pointer' }}
               >
-                <TableCell padding="checkbox">
+                <TableCell sx={{ width: 72, py: 0 }}>
                   <ModSwitch mod={m} />
                 </TableCell>
                 <TableCell padding="checkbox">

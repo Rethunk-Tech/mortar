@@ -7,7 +7,7 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#: src/game/Detail.tsx:114
+#: src/game/Detail.tsx:115
 msgid "Updated"
 msgstr "Updated"
 
@@ -93,7 +93,7 @@ msgstr "New profile"
 msgid "Takes effect when Mortar restarts"
 msgstr "Takes effect when Mortar restarts"
 
-#: src/game/Detail.tsx:96
+#: src/game/Detail.tsx:97
 msgid "Rename profile"
 msgstr "Rename profile"
 
@@ -113,7 +113,7 @@ msgstr "Stardew Valley is ConcernedApe's. Game art shown in Mortar is read from 
 msgid "Archive"
 msgstr "Archive"
 
-#: src/game/Detail.tsx:160
+#: src/game/Detail.tsx:161
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
 
@@ -124,10 +124,6 @@ msgstr "Could not open the file dialog"
 #: src/settings/sections/Appearance.tsx:25
 msgid "Sky"
 msgstr "Sky"
-
-#: src/game/Detail.tsx:127
-msgid "Created {created} · Updated {updated} · {mods} mods"
-msgstr "Created {created} · Updated {updated} · {mods} mods"
 
 #: src/mods/store.ts:69
 msgid "Could not read the mods"
@@ -149,7 +145,7 @@ msgstr "Stardew green"
 msgid "Resize sidebar"
 msgstr "Resize sidebar"
 
-#: src/game/Detail.tsx:113
+#: src/game/Detail.tsx:114
 msgid "Created"
 msgstr "Created"
 
@@ -196,6 +192,10 @@ msgstr "Could not add {0}"
 msgid "Installed"
 msgstr "Installed"
 
+#: src/game/Detail.tsx:128
+msgid "{mods, plural, one {# mod} other {# mods}}"
+msgstr "{mods, plural, one {# mod} other {# mods}}"
+
 #: src/loader/Banner.tsx:20
 msgid "SMAPI is not installed"
 msgstr "SMAPI is not installed"
@@ -213,7 +213,7 @@ msgstr "Enable {0}"
 msgid "About Mortar"
 msgstr "About Mortar"
 
-#: src/game/Detail.tsx:75
+#: src/game/Detail.tsx:76
 #: src/game/NewProfileDialog.tsx:47
 msgid "Profile name"
 msgstr "Profile name"
@@ -235,7 +235,7 @@ msgstr "Not found in your Steam library"
 msgid "Could not rename the profile"
 msgstr "Could not rename the profile"
 
-#: src/game/Detail.tsx:157
+#: src/game/Detail.tsx:158
 msgid "No profiles yet"
 msgstr "No profiles yet"
 
@@ -259,8 +259,12 @@ msgstr "Back"
 msgid "Not affiliated"
 msgstr "Not affiliated"
 
-#: src/game/Detail.tsx:115
-#: src/game/Detail.tsx:177
+#: src/game/Detail.tsx:128
+msgid "Created {created} · Updated {updated}"
+msgstr "Created {created} · Updated {updated}"
+
+#: src/game/Detail.tsx:116
+#: src/game/Detail.tsx:178
 msgid "Mods"
 msgstr "Mods"
 
@@ -318,7 +322,7 @@ msgstr "Default"
 msgid "UniqueID"
 msgstr "UniqueID"
 
-#: src/game/Detail.tsx:167
+#: src/game/Detail.tsx:168
 msgid "Create your first profile"
 msgstr "Create your first profile"
 
