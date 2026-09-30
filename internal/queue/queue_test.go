@@ -497,6 +497,17 @@ func TestDismissAndClearFinishedLeaveActiveItems(t *testing.T) {
 	}
 }
 
+func TestNewQueueClientTimesOutSlowHeaders(t *testing.T) {
+	s, err := New(Deps{Dir: t.TempDir(), Now: func() time.Time { return time.Unix(1, 0).UTC() }})
+	if err != nil {
+		t.Fatal(err)
+	}
+	tr, ok := s.d.HTTP.Transport.(*http.Transport)
+	if !ok || tr.ResponseHeaderTimeout != 20*time.Second {
+		t.Fatalf("queue HTTP client missing ResponseHeaderTimeout: %#v", s.d.HTTP)
+	}
+}
+
 func itemIDs(st State) []string {
 	ids := make([]string, len(st.Items))
 	for i, it := range st.Items {

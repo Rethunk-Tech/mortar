@@ -193,7 +193,12 @@ func New(d Deps) (*Service, error) {
 		d.Now = time.Now
 	}
 	if d.HTTP == nil {
-		d.HTTP = &http.Client{}
+		tr := &http.Transport{Proxy: http.ProxyFromEnvironment, ResponseHeaderTimeout: 20 * time.Second, TLSHandshakeTimeout: 10 * time.Second}
+		if dt, ok := http.DefaultTransport.(*http.Transport); ok {
+			tr = dt.Clone()
+			tr.ResponseHeaderTimeout = 20 * time.Second
+		}
+		d.HTTP = &http.Client{Transport: tr}
 	}
 	s := &Service{d: d, kick: make(chan struct{}, 1), cancels: map[string]context.CancelFunc{}}
 	b, err := os.ReadFile(filepath.Join(d.Dir, fileName))
