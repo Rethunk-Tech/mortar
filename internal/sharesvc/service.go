@@ -622,25 +622,27 @@ func (s *Service) queueChanged(st queue.State) {
 	}
 }
 
+// errRunning stops an apply that found the game running the profile, under the lock a launch takes.
+var errRunning = errors.New("the game is running the profile")
+
 // apply writes the config files whose mods are installed, and keeps the rest for later. While the game runs the
 // profile it waits for the next change.
 func (s *Service) apply(p *pending) {
-	if r := s.d.Profiles.Running; r != nil && r(p.Game, p.Profile) {
-		p.seen = ""
-		return
-	}
 	var written []string
 	var applyErr error
 	err := s.d.Profiles.InMods(p.Game, p.Profile, func(prof profile.Profile, modsDir string) error {
+		if r := s.d.Profiles.Running; r != nil && r(p.Game, p.Profile) {
+			return errRunning
+		}
 		entries := slices.DeleteFunc(slices.Clone(prof.Entries), func(e profile.Entry) bool { return !p.wants(e) })
 		written, applyErr = share.Apply(modsDir, entries, p.Configs)
 		return nil
 	})
+	if errors.Is(err, errRunning) || applyErr != nil {
+		p.seen = ""
+	}
 	if err != nil {
 		return
-	}
-	if applyErr != nil {
-		p.seen = ""
 	}
 	p.Configs = slices.DeleteFunc(p.Configs, func(c share.Config) bool {
 		return slices.ContainsFunc(written, func(id string) bool { return strings.EqualFold(id, c.UniqueID) })
