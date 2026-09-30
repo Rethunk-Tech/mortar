@@ -27,7 +27,12 @@ export function HeroCover({ game, profile }: { game: string; profile: Profile })
           setCovers({ stamp: updated, list: list ?? [] })
         }
       })
-      .catch(reportUnexpected)
+      .catch((e: unknown) => {
+        reportUnexpected(e)
+        if (live) {
+          setCovers({ stamp: updated, list: [] })
+        }
+      })
     return () => {
       live = false
     }
