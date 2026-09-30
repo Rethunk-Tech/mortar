@@ -77,6 +77,35 @@ func TestInstallArchive(t *testing.T) {
 	}
 }
 
+func TestInstallArchiveSameModVersionIsAReplace(t *testing.T) {
+	e := newEnv(t)
+	p, _ := e.Create("stardew", "P")
+	v1 := buildZip(t, "a-1.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
+	res, err := e.InstallArchive("stardew", p.ID, v1)
+	if err != nil || res.Updated || res.VersionChanged {
+		t.Fatalf("first %+v %v", res, err)
+	}
+	v2 := buildZip(t, "a-2.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/extra.txt": "x"})
+	res, err = e.InstallArchive("stardew", p.ID, v2)
+	if err != nil || !res.Updated || res.VersionChanged {
+		t.Fatalf("same version %+v %v", res, err)
+	}
+}
+
+func TestInstallArchiveNewModVersionIsAnUpdate(t *testing.T) {
+	e := newEnv(t)
+	p, _ := e.Create("stardew", "P")
+	v1 := buildZip(t, "a-1.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
+	if _, err := e.InstallArchive("stardew", p.ID, v1); err != nil {
+		t.Fatal(err)
+	}
+	v2 := buildZip(t, "a-2.zip", map[string]string{"A/manifest.json": `{"Name":"X.A","Author":"me","Version":"2.0.0","UniqueID":"X.A"}`})
+	res, err := e.InstallArchive("stardew", p.ID, v2)
+	if err != nil || !res.Updated || !res.VersionChanged {
+		t.Fatalf("new version %+v %v", res, err)
+	}
+}
+
 func TestInstallNexusKeepsTheSourceAndUpdatesInPlace(t *testing.T) {
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")

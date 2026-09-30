@@ -1232,6 +1232,12 @@ msgstr "File saved"
 msgid "Updated {0} in {1}"
 msgstr "Updated {0} in {1}"
 
+#. placeholder {0}: names.join(', ')
+#. placeholder {1}: profile.name
+#: src/install/store.ts
+msgid "Replaced {0} in {1}"
+msgstr "Replaced {0} in {1}"
+
 #: src/launch/StopDialog.tsx:32
 msgid "Stardew Valley will close now, and any progress since your last save is lost."
 msgstr "Stardew Valley will close now, and any progress since your last save is lost."

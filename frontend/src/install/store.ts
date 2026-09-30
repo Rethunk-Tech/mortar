@@ -94,7 +94,12 @@ export const useInstall = create<{
     set((s) => ({ pending: s.pending + paths.length }))
     for (const path of paths) {
       try {
-        const { profile: next, added, updated } = await InstallArchive(game.id, profile.id, path)
+        const {
+          profile: next,
+          added,
+          updated,
+          versionChanged,
+        } = await InstallArchive(game.id, profile.id, path)
         useProfiles.getState().replace(next)
         const names = added ?? []
         const entry = entryForNames(next, names)
@@ -103,11 +108,17 @@ export const useInstall = create<{
             dependentIds.push(mod.uniqueId)
           }
         }
+        let title: string
+        if (!updated) {
+          title = i18n._(msg`Added ${names.join(', ')} to ${profile.name}`)
+        } else if (versionChanged) {
+          title = i18n._(msg`Updated ${names.join(', ')} in ${profile.name}`)
+        } else {
+          title = i18n._(msg`Replaced ${names.join(', ')} in ${profile.name}`)
+        }
         push({
           kind: 'success',
-          title: updated
-            ? i18n._(msg`Updated ${names.join(', ')} in ${profile.name}`)
-            : i18n._(msg`Added ${names.join(', ')} to ${profile.name}`),
+          title,
           picture: entry?.source.picture ?? '',
           ...(entry
             ? {

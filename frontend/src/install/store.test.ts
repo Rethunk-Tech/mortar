@@ -8,10 +8,18 @@ import { useProfiles } from '../profiles/store.ts'
 import { useToasts } from '../toasts/store.ts'
 import { entryForNames, shouldConsiderMissing, undoArchiveInstall, useInstall } from './store.ts'
 
-const calls = { remove: [] as string[], roll: [] as string[] }
+const calls = {
+  remove: [] as string[],
+  roll: [] as string[],
+}
 
 mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts', () => ({
-  InstallArchive: async () => ({ profile: baseProfile(), added: ['SpaceCore'], updated: false }),
+  InstallArchive: async () => ({
+    profile: baseProfile(),
+    added: ['SpaceCore'],
+    updated: false,
+    versionChanged: false,
+  }),
   RemoveEntry: async (_game: string, _id: string, key: string) => {
     calls.remove.push(key)
     return baseProfile()

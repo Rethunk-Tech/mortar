@@ -19,6 +19,8 @@ type InstallResult struct {
 	Added   []string `json:"added"`
 	// Updated is true when the archive replaced a version of an entry already in the profile.
 	Updated bool `json:"updated"`
+	// VersionChanged is true when Updated and any replaced mod's version string differs.
+	VersionChanged bool `json:"versionChanged"`
 }
 
 // InstallError is a failed install. Its message is fit to show the user; Err keeps the typed cause.
@@ -100,11 +102,11 @@ func (s *Store) InstallStaged(game, id, key string, source Source) (InstallResul
 }
 
 func (s *Store) installKey(game, id, key string, source Source) (InstallResult, error) {
-	p, updated, err := s.placeKey(game, id, key, source)
+	p, updated, versionChanged, err := s.placeKey(game, id, key, source)
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
-	res := InstallResult{Profile: p, Added: []string{}, Updated: updated}
+	res := InstallResult{Profile: p, Added: []string{}, Updated: updated, VersionChanged: versionChanged}
 	for _, e := range p.Entries {
 		if e.Key == key {
 			for _, m := range e.Mods {
@@ -117,29 +119,54 @@ func (s *Store) installKey(game, id, key string, source Source) (InstallResult, 
 
 // placeKey adds key to the profile, or swaps it in for the one entry already holding its mods. The decision and the
 // change share one lock, so two concurrent installs of the same mod cannot both add an entry.
-func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, error) {
+func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if err := s.unlocked(game, id); err != nil {
-		return Profile{}, false, err
+		return Profile{}, false, false, err
 	}
 	held, err := s.holding(game, id, key)
 	if err != nil {
-		return Profile{}, false, err
+		return Profile{}, false, false, err
 	}
 	switch len(held) {
 	case 0:
 		p, err := s.addEntryLocked(game, id, key, source)
-		return p, false, err
+		return p, false, false, err
 	case 1:
+		old := held[0].Mods
 		p, err := s.moveToLocked(game, id, held[0].Key, key, &source)
-		return p, true, err
+		if err != nil {
+			return Profile{}, true, false, err
+		}
+		var neu []EntryMod
+		for _, e := range p.Entries {
+			if e.Key == key {
+				neu = e.Mods
+				break
+			}
+		}
+		return p, true, modsVersionChanged(old, neu), nil
 	}
 	labels := make([]string, len(held))
 	for i, e := range held {
 		labels[i] = entryLabel(e)
 	}
-	return Profile{}, false, &SpansEntriesError{Labels: labels}
+	return Profile{}, false, false, &SpansEntriesError{Labels: labels}
+}
+
+func modsVersionChanged(old, neu []EntryMod) bool {
+	prev := make(map[string]string, len(old))
+	for _, m := range old {
+		prev[strings.ToLower(m.UniqueID)] = m.Version
+	}
+	for _, m := range neu {
+		if prev[strings.ToLower(m.UniqueID)] != m.Version {
+			return true
+		}
+		delete(prev, strings.ToLower(m.UniqueID))
+	}
+	return len(prev) > 0
 }
 
 // holding returns the profile's entries that hold any mod of the store item key. An entry that is already key is a
