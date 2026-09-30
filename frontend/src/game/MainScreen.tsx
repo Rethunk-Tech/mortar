@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { LaunchLayer } from '../launch/LaunchLayer.tsx'
 import { LoaderBanner } from '../loader/Banner.tsx'
 import { useProfiles } from '../profiles/store.ts'
+import { QueueSheet } from '../queue/QueueSheet.tsx'
 import { Detail } from './Detail.tsx'
 import { Sidebar } from './Sidebar.tsx'
 
@@ -19,6 +20,7 @@ export function MainScreen({ game }: { game: string }) {
         <Detail />
       </Box>
       <LaunchLayer game={game} />
+      <QueueSheet />
     </Box>
   )
 }

@@ -8,6 +8,7 @@ import { PlayControl } from '../launch/PlayControl.tsx'
 import { useBadges } from '../mods/badges.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { QueueButton } from '../queue/QueueButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { compact } from './compact.ts'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
@@ -339,10 +340,13 @@ export function Sidebar({ game }: { game: string }) {
       </Box>
       <Box
         sx={{
+          display: 'flex',
+          flexDirection: 'column',
           borderTop: '1px solid rgba(255,255,255,0.08)',
-          [compact]: { display: 'flex', borderTop: 0 },
+          [compact]: { borderTop: 0 },
         }}
       >
+        <QueueButton />
         <PlayControl game={game} />
       </Box>
       <ResizeHandle width={width} onWidth={setWidth} />

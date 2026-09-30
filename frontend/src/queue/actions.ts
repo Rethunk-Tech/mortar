@@ -1,0 +1,67 @@
+import { msg, plural } from '@lingui/core/macro'
+import type { Request } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
+import { Add } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+import { i18n } from '../i18n/index.ts'
+import { openSettings } from '../nav/store.ts'
+import { useProfiles } from '../profiles/store.ts'
+import { useNexus } from '../settings/nexus.ts'
+import { useToasts } from '../toasts/store.ts'
+import { useQueue } from './store.ts'
+
+// What a caller says about a file; the rest is filled in.
+export type Want = Pick<Request, 'kind' | 'modId'> &
+  Partial<Pick<Request, 'fileId' | 'name' | 'fileName' | 'version' | 'currentKey'>>
+
+// The game and profile open now, or null when none is.
+export function target() {
+  const { game, openId } = useProfiles.getState()
+  return game && openId ? { game: game.id, profileId: openId } : null
+}
+
+// Queues files for the open profile. Signed out, nothing can download: say so and point at the sign-in instead.
+export async function download(reqs: Want[], showQueue = false): Promise<boolean> {
+  const toasts = useToasts.getState()
+  if (!useNexus.getState().signedIn) {
+    toasts.push({
+      kind: 'warning',
+      title: i18n._(msg`Sign in to Nexus Mods to download`),
+      body: i18n._(
+        msg`Downloads come from Nexus with your account, so Mortar needs your API key first.`,
+      ),
+      action: { label: i18n._(msg`Open settings`), run: () => openSettings('nexus') },
+    })
+    return false
+  }
+  const at = target()
+  if (!at) {
+    return false
+  }
+  try {
+    await Add(
+      reqs.map((r) => ({
+        fileId: 0,
+        name: '',
+        fileName: '',
+        version: '',
+        currentKey: '',
+        ...r,
+        ...at,
+      })),
+    )
+  } catch (e) {
+    toasts.push({ kind: 'error', title: i18n._(msg`Could not add the download`), body: String(e) })
+    return false
+  }
+  if (showQueue) {
+    useQueue.getState().setOpen(true)
+  } else {
+    toasts.push({
+      kind: 'info',
+      title: i18n._(
+        msg`${plural(reqs.length, { one: '# download added', other: '# downloads added' })}`,
+      ),
+      action: { label: i18n._(msg`Show`), run: () => useQueue.getState().setOpen(true) },
+    })
+  }
+  return true
+}

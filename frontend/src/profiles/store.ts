@@ -39,6 +39,7 @@ export const useProfiles = create<{
   create: (name: string) => Promise<void>
   rename: (id: string, name: string) => Promise<boolean>
   replace: (profile: Profile) => void
+  refresh: () => Promise<void>
   loadTrash: () => Promise<void>
   duplicate: (id: string) => Promise<void>
   setHidden: (id: string, hidden: boolean) => Promise<void>
@@ -95,6 +96,12 @@ export const useProfiles = create<{
     }
   },
   replace: (p) => set((s) => ({ profiles: s.profiles.map((x) => (x.id === p.id ? p : x)) })),
+  refresh: async () => {
+    const { game } = get()
+    if (game) {
+      set({ profiles: (await List(game.id)) ?? [] })
+    }
+  },
   loadTrash: async () => {
     const { game } = get()
     if (!game) {
