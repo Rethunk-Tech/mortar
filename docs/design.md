@@ -31,9 +31,36 @@ Concrete's look carries over unchanged apart from colour tokens:
 
 **Linux translucency (NOMAD, 2026-09-29): fix it upstream.** Wails v3's default GTK4 build leaves `setTransparent()` empty (`v3/pkg/application/linux_cgo.go:1418`), so the window paints opaque. Measured on GNOME Wayland (2026-09-29, beta.26, NOMAD judging by eye at 35% and 80% alpha): the stock GTK4 build is solid; the GTK3 build (`-tags gtk3`) and a patched GTK4 build are both see-through. The patch is about 15 lines in `setTransparent()`, following the `setFrameless` CSS-provider pattern beside it (`linux_cgo.go:1385-1412`): register once, through a `sync.Once`, a display-wide provider with `window.wails-transparent, window.wails-transparent > *:not(.titlebar):not(headerbar) { background: transparent; }`, then add the `wails-transparent` class to the window. Trap: a bare `window > *` selector also makes the system title bar transparent. This is a regression: Wails issue #4721 ("[v3] Linux Background Alpha Ignored") was fixed by PR #4722 in `linux_cgo.go` on 2025-11-22, while GTK3 was the default; when alpha.93 promoted GTK4 to the default, `linux_cgo.go` became the GTK4 path with an empty `setTransparent()` and the working code moved to `linux_cgo_gtk3.go`. No open issue or PR covers it (searched 2026-09-29). Mortar sends the fix to Wails as a PR citing #4721 and #4722 (read its CONTRIBUTING and AGENTS files first) and builds with `-tags gtk3` until it merges; GTK3 is removed in Wails v3.1. Blur comes only from a compositor that offers it, such as KDE; GNOME has none, so there the window shows the desktop through at 80% opacity without blur.
 
-**Frameless with a themed title bar (NOMAD, 2026-09-29),** as Concrete had: `Frameless: true` removes the system title bar, and the app draws its own, with drag, minimise, maximise and close. Measured on the patched GTK4 build: translucent, no system title bar, and a strip marked `--wails-draggable: drag` moves the window. Trap: dragging works only once the Wails runtime is loaded (`@wailsio/runtime` in the frontend, or `/wails/runtime.js`); without it the drag region does nothing. **Measure:** resize edges and window shadow on a frameless window under GNOME and KDE, and Acrylic with a frameless window on Windows.
+**Frameless with a themed title bar (NOMAD, 2026-09-29),** as Concrete had: `Frameless: true` removes the system title bar, and the app draws its own, with drag, minimise, maximise and close. Measured on the patched GTK4 build: translucent, no system title bar, and a strip marked `--wails-draggable: drag` moves the window. Trap: dragging works only once the Wails runtime is loaded (`@wailsio/runtime` in the frontend, or `/wails/runtime.js`); without it the drag region does nothing. Measured on GNOME: the frameless window resizes from its edges and corners but has no drop shadow, so the app draws its own edge, a 1 px light border and rounded corners in CSS, with the area outside the corners left transparent. **Measure:** the same under KDE, and Acrylic with a frameless window on Windows.
 
 ## Architecture
+
+### Layout
+
+One Go module and one Vite frontend, no workspaces:
+
+- `main.go`: Wails bootstrap: services, single instance, link router, updater, window options.
+- `internal/game`: the `Game` interface and shared types (mod identity, dependency, loader status); `internal/game/stardew` is the only implementation in v1.
+- `internal/steam`: Steam and library discovery (from Concrete's `src/app/steam/`), plus the Flatpak Steam variant.
+- `internal/archive`: safe extraction (from Concrete's `secureArchivePath` and `extractEntry`).
+- `internal/store`: downloads into the store, verifies and extracts them, and materialises profile folders by clone or copy.
+- `internal/profile`: `profile.json` read and write (atomic), per-mod toggles, save-to-profile tracking.
+- `internal/source/nexus`: API client (headers, rate limits), sign-in, `nxm://` parsing, the guided download queue.
+- `internal/source/github`: releases lookup and download.
+- `internal/meta`: SMAPI update API, the mod dataset lookups, and their caches.
+- `internal/share`: link encode and decode (Brotli payload, both link forms) and the `.mortar` file.
+- `internal/launch`: Steam and GOG launch, and the SMAPI log tail streamed to the frontend as events.
+- `frontend/`: React, MUI, zustand, the i18n library; pages as in Concrete (dashboard, profiles with list and detail, mod list), plus the console panel and the import dialog.
+
+Each `internal` area the UI calls is exposed as one Wails service. New Go dependencies, each measured as needed: `github.com/andybalholm/brotli` (pure Go; the standard library has no Brotli), `github.com/tailscale/hujson` (SMAPI manifests are JSON with comments and trailing commas), `github.com/andygrunwald/vdf` (Steam's `libraryfolders.vdf`, as Concrete used), and `github.com/zalando/go-keyring` (already a Wails dependency, and Maître's). Licences are checked before adding (MIT, BSD or Apache only).
+
+### Trust boundaries
+
+Everything arriving from outside is untrusted: `mortar://` and `nxm://` links, pasted `https://` links, `.mortar` files, mod archives and every API response. Rules:
+
+- Link and payload parsing rejects anything but the known forms, caps the encoded length (8 KB) and the decompressed size (64 KB) before parsing, so a crafted Brotli payload cannot expand without bound.
+- Archive extraction keeps every entry inside its destination and caps each entry at 256 MiB (from Concrete).
+- A link never starts a download or a launch by itself: importing always shows what will be installed and waits for the user.
 
 ### Per-game boundary
 
