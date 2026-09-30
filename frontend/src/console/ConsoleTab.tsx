@@ -342,7 +342,8 @@ export function ConsoleTab({ game }: { game: string }) {
   const rows = useVisible()
   // Launching another profile resets the log to it; this one's history is read again once that launch settles.
   const launchingOther = useLaunch(
-    (s) => s.status?.state === State.Launching && s.status.game === game && s.status.profile !== profile,
+    (s) =>
+      s.status?.state === State.Launching && s.status.game === game && s.status.profile !== profile,
   )
   const [loaded, setLoaded] = useState(false)
   useEffect(() => {

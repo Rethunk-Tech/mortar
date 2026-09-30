@@ -63,7 +63,10 @@ export const useImportDialog = create<{
   busy: false,
   open: ({ profileId = '', link = '', file = '' }) => {
     runs += 1
-    set({ request: { profileId, tab: file ? 'file' : 'link', seed: file || link, run: runs }, busy: false })
+    set({
+      request: { profileId, tab: file ? 'file' : 'link', seed: file || link, run: runs },
+      busy: false,
+    })
   },
   close: () => {
     set({ request: null, busy: false })
