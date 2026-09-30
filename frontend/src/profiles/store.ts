@@ -25,6 +25,7 @@ export const useProfiles = create<{
   open: (id: string) => void
   create: (name: string) => Promise<void>
   rename: (id: string, name: string) => Promise<boolean>
+  replace: (profile: Profile) => void
 }>((set, get) => ({
   game: null,
   profiles: [],
@@ -72,4 +73,5 @@ export const useProfiles = create<{
       return false
     }
   },
+  replace: (p) => set((s) => ({ profiles: s.profiles.map((x) => (x.id === p.id ? p : x)) })),
 }))

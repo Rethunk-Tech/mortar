@@ -3,6 +3,8 @@ import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
 import { Pencil, Plus } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { ModsTab } from '../mods/ModsTab.tsx'
+import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { compact } from './compact.ts'
 import { NameField } from './NameField.tsx'
@@ -25,6 +27,7 @@ function Hero({ profile }: { profile: Profile }) {
   const { t } = useLingui()
   const art = useProfiles((s) => s.game?.artUrl)
   const rename = useProfiles((s) => s.rename)
+  const band = useMods((s) => s.view) === 'list'
   const [editing, setEditing] = useState(false)
   const mods = (profile.entries ?? []).length
   const created = fmt(profile.created)
@@ -33,7 +36,7 @@ function Hero({ profile }: { profile: Profile }) {
     <Box
       sx={{
         position: 'relative',
-        height: 190,
+        height: band ? 96 : 190,
         flexShrink: 0,
         overflow: 'hidden',
         bgcolor: 'rgba(15,15,18,0.5)',
@@ -80,7 +83,7 @@ function Hero({ profile }: { profile: Profile }) {
             <Typography
               noWrap={true}
               sx={{
-                fontSize: 40,
+                fontSize: band ? 28 : 40,
                 fontWeight: 700,
                 lineHeight: 1.2,
                 textShadow: '0 0 18px rgba(255,255,255,0.45)',
@@ -99,7 +102,14 @@ function Hero({ profile }: { profile: Profile }) {
           </>
         )}
       </Box>
-      <Box sx={{ position: 'relative', display: 'flex', gap: 1, [compact]: { display: 'none' } }}>
+      <Box
+        sx={{
+          position: 'relative',
+          display: band ? 'none' : 'flex',
+          gap: 1,
+          [compact]: { display: 'none' },
+        }}
+      >
         <Card label={t`Created`} value={created} />
         <Card label={t`Updated`} value={updated} />
         <Card label={t`Mods`} value={String(mods)} />
@@ -108,7 +118,7 @@ function Hero({ profile }: { profile: Profile }) {
         noWrap={true}
         sx={{
           position: 'relative',
-          display: 'none',
+          display: band ? 'block' : 'none',
           fontSize: 14,
           color: 'text.secondary',
           [compact]: { display: 'block' },
@@ -166,14 +176,7 @@ export function Detail() {
       <Tabs value="mods" sx={{ px: 2, flexShrink: 0 }}>
         <Tab value="mods" label={<Trans>Mods</Trans>} />
       </Tabs>
-      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', p: 3 }}>
-        <Typography sx={{ fontSize: 20, fontWeight: 600 }}>
-          <Trans>No mods yet</Trans>
-        </Typography>
-        <Typography sx={{ color: 'text.secondary' }}>
-          <Trans>This profile has no mods yet.</Trans>
-        </Typography>
-      </Box>
+      <ModsTab key={profile.id} profile={profile} />
     </Box>
   )
 }
