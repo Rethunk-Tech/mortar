@@ -11,7 +11,7 @@ import {
 } from '@mui/material'
 import { Browser, Clipboard } from '@wailsio/runtime'
 import { Copy, ExternalLink, TriangleAlert } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   Log,
   Upload,
@@ -70,6 +70,8 @@ export function HelpDialog({ game }: { game: string }) {
   const open = useConsole((s) => s.helping)
   const setHelping = useConsole((s) => s.setHelping)
   const profile = useProfiles((s) => s.openId)
+  const openFor = useRef({ game, profile })
+  openFor.current = { game, profile }
   const [log, setLog] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [link, setLink] = useState('')
@@ -119,19 +121,26 @@ export function HelpDialog({ game }: { game: string }) {
     if (log === null || uploading) {
       return
     }
+    const started = openFor.current
     setUploading(true)
     Upload(log)
       .then((url) => {
+        if (openFor.current.game !== started.game || openFor.current.profile !== started.profile) {
+          return
+        }
         setLink(url)
         return copy(url)
       })
-      .catch((e: unknown) =>
+      .catch((e: unknown) => {
+        if (openFor.current.game !== started.game || openFor.current.profile !== started.profile) {
+          return
+        }
         useToasts.getState().push({
           kind: 'error',
           title: t`Could not upload the log`,
           body: errorMessage(e),
-        }),
-      )
+        })
+      })
       .finally(() => setUploading(false))
   }
 
