@@ -23,6 +23,11 @@
   "contains_adult_content": false,
   "status": "published",
   "available": true,
+  "endorsement": {
+    "endorse_status": "Endorsed",
+    "timestamp": 1,
+    "version": 1
+  },
   "user": {
     "member_id": 1552317,
     "member_group_id": 27,

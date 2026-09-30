@@ -115,6 +115,7 @@ func TestPageChangelogsCategories(t *testing.T) {
 	p, err := c.Page(ctx, 541)
 	if err != nil || p.ModID != 541 || p.Version != "1.55.0" || p.UploadedBy != "Pathoschild" || p.CategoryID != 10 ||
 		p.Downloads != 9915155 || p.UniqueDownloads != 3726255 || p.Adult || !p.Available || p.Status != "published" ||
+		p.Endorsement != "Endorsed" ||
 		!p.Created.Equal(time.Date(2016, 9, 19, 2, 37, 8, 0, time.UTC)) || !p.Updated.Equal(time.Date(2026, 3, 15, 2, 54, 41, 0, time.UTC)) ||
 		!strings.HasPrefix(p.Description, "See live info") {
 		t.Fatalf("page = %+v, %v", p, err)

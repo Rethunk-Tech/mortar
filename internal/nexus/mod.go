@@ -71,6 +71,8 @@ type Page struct {
 	Adult           bool      `json:"adult"`
 	Status          string    `json:"status"`
 	Available       bool      `json:"available"`
+	// Endorsement is the signed-in user's endorse_status (Endorsed, Abstained, Undecided); empty when Nexus omitted it.
+	Endorsement string `json:"endorsement"`
 }
 
 // Page fetches a mod page, uncached.
@@ -94,12 +96,23 @@ func (c *Client) Page(ctx context.Context, modID int) (Page, error) {
 		Adult           bool      `json:"contains_adult_content"`
 		Status          string    `json:"status"`
 		Available       bool      `json:"available"`
+		Endorsement     *struct {
+			Status string `json:"endorse_status"`
+		} `json:"endorsement"`
 	}
 	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s/mods/%d.json", Game, modID), false, &raw); err != nil {
 		return Page{}, err
 	}
-	p := Page(raw)
-	p.Created, p.Updated = p.Created.UTC(), p.Updated.UTC()
+	p := Page{
+		ModID: raw.ModID, Name: raw.Name, Summary: raw.Summary, Description: raw.Description,
+		PictureURL: raw.PictureURL, Version: raw.Version, Author: raw.Author, UploadedBy: raw.UploadedBy,
+		UploaderURL: raw.UploaderURL, CategoryID: raw.CategoryID, Endorsements: raw.Endorsements,
+		Downloads: raw.Downloads, UniqueDownloads: raw.UniqueDownloads, Created: raw.Created.UTC(),
+		Updated: raw.Updated.UTC(), Adult: raw.Adult, Status: raw.Status, Available: raw.Available,
+	}
+	if raw.Endorsement != nil {
+		p.Endorsement = raw.Endorsement.Status
+	}
 	return p, nil
 }
 

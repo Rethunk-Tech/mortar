@@ -81,14 +81,17 @@ type Client struct {
 	key      string
 	version  string
 	lim      *limiter
+	track    *trackedCache
 }
 
 // New returns a client that identifies itself as Mortar version.
-func New(version string) *Client { return &Client{version: version, lim: &limiter{}} }
+func New(version string) *Client {
+	return &Client{version: version, lim: &limiter{}, track: &trackedCache{}}
+}
 
-// WithKey returns a client that authenticates with key and shares c's rate-limit state.
+// WithKey returns a client that authenticates with key and shares c's rate-limit and tracked-list state.
 func (c *Client) WithKey(key string) *Client {
-	return &Client{HTTP: c.HTTP, BaseURL: c.BaseURL, CacheDir: c.CacheDir, Now: c.Now, key: key, version: c.version, lim: c.lim}
+	return &Client{HTTP: c.HTTP, BaseURL: c.BaseURL, CacheDir: c.CacheDir, Now: c.Now, key: key, version: c.version, lim: c.lim, track: c.track}
 }
 
 // Limits returns the budget from the latest response.
