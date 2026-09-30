@@ -21,7 +21,8 @@ const (
 	sourceMortar = "mortar"
 )
 
-// Update is a newer version SMAPI's API suggests for an installed mod. URL is the page to get it from.
+// Update is a newer version SMAPI's API suggests for an installed mod. URL is the page to get it from, and
+// NexusID that page's Nexus mod ID, 0 when the mod is not on Nexus.
 type Update struct {
 	Key       string `json:"key"`
 	UniqueID  string `json:"uniqueId"`
@@ -29,6 +30,7 @@ type Update struct {
 	Installed string `json:"installed"`
 	Version   string `json:"version"`
 	URL       string `json:"url"`
+	NexusID   int    `json:"nexusId"`
 }
 
 // UpdatesResult lists a profile's updates. Unknown is set when SMAPI's API could not be reached for some mod,
@@ -63,6 +65,7 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 			r.Updates = append(r.Updates, Update{
 				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
 				Installed: x.Version, Version: res.Suggested.Version, URL: res.Suggested.URL,
+				NexusID: nexusID(x.UpdateKeys),
 			})
 		}
 	}
@@ -147,4 +150,14 @@ func pageURL(keys []string) string {
 		}
 	}
 	return ""
+}
+
+// nexusID is the Nexus mod of the first update key that names one, or 0.
+func nexusID(keys []string) int {
+	for _, k := range keys {
+		if n, ok := nexusKey(k); ok {
+			return n
+		}
+	}
+	return 0
 }

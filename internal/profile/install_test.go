@@ -75,3 +75,30 @@ func TestInstallArchive(t *testing.T) {
 		t.Fatalf("unsafe err = %v", err)
 	}
 }
+
+func TestInstallNexusKeepsTheSourceAndUpdatesInPlace(t *testing.T) {
+	e := newEnv(t)
+	p, _ := e.Create("stardew", "P")
+	v1 := buildZip(t, "a-1.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
+	src := Source{Kind: "nexus", Name: "a-1.zip", ModID: 7, FileID: 1, Version: "1.0", Picture: "https://img/a.png", EndorsementCount: 3}
+	res, err := e.InstallNexus("stardew", p.ID, v1, src)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Updated || res.Profile.Entries[0].Key != "nexus-7-1" || res.Profile.Entries[0].Source != src {
+		t.Fatalf("first install: %+v", res)
+	}
+	v2 := buildZip(t, "a-2.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/extra.txt": "new"})
+	next := Source{Kind: "nexus", Name: "a-2.zip", ModID: 7, FileID: 2, Version: "2.0"}
+	res, err = e.InstallNexus("stardew", p.ID, v2, next)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !res.Updated || len(res.Profile.Entries) != 1 || res.Profile.Entries[0].Key != "nexus-7-2" || res.Profile.Entries[0].PreviousKey != "nexus-7-1" || res.Profile.Entries[0].Source != next {
+		t.Fatalf("update: %+v", res)
+	}
+	mods, err := e.UserMods("stardew", p.ID)
+	if err != nil || len(mods) != 1 || mods[0].Picture != "" {
+		t.Fatalf("mods %+v, %v", mods, err)
+	}
+}

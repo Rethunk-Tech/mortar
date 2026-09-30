@@ -30,6 +30,9 @@ type Mod struct {
 	Version  string   `json:"version"`
 	Enabled  bool     `json:"enabled"`
 	Siblings []string `json:"siblings"`
+	// Picture and Endorsements come from the mod's Nexus page and are empty for other sources.
+	Picture      string `json:"picture"`
+	Endorsements int    `json:"endorsements"`
 }
 
 func exists(p string) bool {
@@ -486,6 +489,7 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 			out = append(out, Mod{
 				Key: e.Key, UniqueID: m.UniqueID, Name: m.Name, Author: m.Author, Version: m.Version,
 				Enabled: !isDisabled(e, m), Siblings: sib,
+				Picture: e.Source.Picture, Endorsements: e.Source.EndorsementCount,
 			})
 		}
 	}

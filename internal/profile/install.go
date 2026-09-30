@@ -39,7 +39,23 @@ func (s *Store) InstallArchive(game, id, path string) (InstallResult, error) {
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
-	source := Source{Kind: "local", Name: filepath.Base(path)}
+	return s.installKey(game, id, key, Source{Kind: "local", Name: filepath.Base(path)})
+}
+
+// InstallNexus unpacks the archive at path into the store under the key of its Nexus file and adds it to the
+// profile, replacing the version of a mod the profile already holds.
+func (s *Store) InstallNexus(game, id, path string, source Source) (InstallResult, error) {
+	if err := s.unlocked(game, id); err != nil {
+		return InstallResult{}, err
+	}
+	key := store.NexusKey(source.ModID, source.FileID)
+	if err := s.items.AddArchiveKey(game, key, path); err != nil {
+		return InstallResult{}, installError(err)
+	}
+	return s.installKey(game, id, key, source)
+}
+
+func (s *Store) installKey(game, id, key string, source Source) (InstallResult, error) {
 	held, err := s.holding(game, id, key)
 	if err != nil {
 		return InstallResult{}, installError(err)

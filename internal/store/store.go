@@ -79,6 +79,15 @@ func LocalKey(sha256Hex string) string { return "local-" + sha256Hex }
 // SMAPIKey is the key of SMAPI's bundled-mods entry for a SMAPI version.
 func SMAPIKey(version string) string { return "smapi-" + version }
 
+// NexusKey is the key of a file downloaded from Nexus Mods.
+func NexusKey(modID, fileID int) string { return fmt.Sprintf("nexus-%d-%d", modID, fileID) }
+
+// NexusFile parses a NexusKey; ok is false for any other key.
+func NexusFile(key string) (modID, fileID int, ok bool) {
+	n, err := fmt.Sscanf(key, "nexus-%d-%d", &modID, &fileID)
+	return modID, fileID, err == nil && n == 2
+}
+
 // BridgeKey is the key of the bundled console bridge mod for a bridge version.
 func BridgeKey(version string) string { return "bridge-" + version }
 
@@ -125,21 +134,26 @@ func (s *Store) AddArchive(game, archivePath string) (string, error) {
 	if err != nil {
 		return "", &Error{Game: game, Err: err}
 	}
+	return key, s.AddArchiveKey(game, key, archivePath)
+}
+
+// AddArchiveKey extracts the archive into the store under key, for archives a source names itself. An existing
+// key is left as it is.
+func (s *Store) AddArchiveKey(game, key, archivePath string) error {
+	if _, err := s.itemDir(game, key); err != nil {
+		return err
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if dir, _ := s.itemDir(game, key); exists(dir) {
-		return key, s.touch(game, key)
+		return s.touch(game, key)
 	}
-	err = s.install(game, key, func(tmp string) error {
+	return s.install(game, key, func(tmp string) error {
 		return archive.Extract(archivePath, tmp, archive.Options{})
 	}, func() int64 {
 		n, _ := archive.DeclaredSize(archivePath)
 		return n
 	})
-	if err != nil {
-		return "", err
-	}
-	return key, nil
 }
 
 // AddDir copies srcDir into the store under key, for entries Mortar builds
@@ -184,6 +198,9 @@ func (s *Store) install(game, key string, fill func(tmp string) error, need func
 	}
 	return s.touch(game, key)
 }
+
+// IsDiskFull reports whether err is a write that ran out of space.
+func IsDiskFull(err error) bool { return diskFull(err) }
 
 func diskFull(err error) bool { return errors.Is(err, syscall.ENOSPC) || platformDiskFull(err) }
 

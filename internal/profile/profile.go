@@ -30,10 +30,17 @@ const (
 
 var idPattern = regexp.MustCompile(`^[0-9a-f]{16}$`)
 
-// Source says where an entry came from. Kind is "local" for an archive the user picked, Name its file name.
+// Source says where an entry came from. Kind is "local" for an archive the user picked, Name its file name, or
+// "nexus" for a Nexus file, which also names the mod, the file and its version, and holds the mod's picture and
+// endorsement count as fetched at install.
 type Source struct {
-	Kind string `json:"kind"`
-	Name string `json:"name"`
+	Kind             string `json:"kind"`
+	Name             string `json:"name"`
+	ModID            int    `json:"modId,omitempty"`
+	FileID           int    `json:"fileId,omitempty"`
+	Version          string `json:"version,omitempty"`
+	Picture          string `json:"picture,omitempty"`
+	EndorsementCount int    `json:"endorsementCount,omitempty"`
 }
 
 // EntryMod is one mod inside an entry. Folder holds its manifest.json, relative to mods/<key>/, in its
