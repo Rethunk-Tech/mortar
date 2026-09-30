@@ -26,11 +26,11 @@ Mortar finds a game, installs its mod loader, keeps each set of mods in its own 
 Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_HOME/mortar`, never under the Windows install folder (the uninstaller deletes that one recursively). Mortar's own state is JSON, each file written through a temp file and rename; no database. The Nexus key is in the OS keyring.
 
 - `settings.json`: game folders, the accent colour, the window background and its wallpaper path, the installed SMAPI version, the nxm handler state and the handler it replaced, dismissed save warnings.
-- `store/<game>/<key>/`: each downloaded archive, extracted once. Keys: `nexus-<mod id>-<file id>`, `github-<owner>-<repo>-<tag>-<asset>`, `local-<sha256 of the archive>`, `smapi-<version>` for SMAPI's bundled mods, and `bridge-<version>` for the Mortar SMAPI Bridge. One Nexus file can hold several SMAPI mods, so the key is the file.
+- `store/<game>/<key>/`: each downloaded archive, extracted once. Keys: `nexus-<mod id>-<file id>`, `github-<owner>-<repo>-<tag>-<asset>-<sha256 prefix>` (the hash of the exact names tells apart names the folding makes equal), `local-<sha256 of the archive>`, `smapi-<version>` for SMAPI's bundled mods, and `bridge-<version>` for the Mortar SMAPI Bridge. One Nexus file can hold several SMAPI mods, so the key is the file.
 - `store/index.json`: each store item's last use, meaning the last time any `profile.json` named it.
 - `profiles/<game>/<profile id>/profile.json`, and beside it `mods/`, the folder SMAPI is pointed at. Each entry is copied to `mods/<store key>/` exactly as extracted; SMAPI recurses until it finds a `manifest.json`.
 - `trash/`: deleted profiles, kept 30 days.
-- `backups/`: zips of the Saves folder taken before updates, the last five kept.
+- `backups/`: zips of the Saves folder taken before updates, the last five kept; one under ten minutes old stands in for a new one.
 - `cache/`: API responses, mod pictures and the dataset index.
 - `queue.json`: the download queue's state, without `nxm://` keys.
 
@@ -143,7 +143,7 @@ Sources: the API acceptable-use policy (help.nexusmods.com article 114), the SSO
 
 ## GitHub releases
 
-`internal/github` reads `/repos/<owner>/<repo>/releases` without sign-in. Answers are cached on disk for an hour and served stale when GitHub is unreachable. The unauthenticated limit is 60 calls an hour per IP, and a reached limit shows its retry time. An install or update takes the release's only archive asset, or asks when there are several; the download is capped at the archive extraction limit and stores as `github-<owner>-<repo>-<tag>-<asset>`. SMAPI's own release lookup uses the same client.
+`internal/github` reads `/repos/<owner>/<repo>/releases` without sign-in. Answers are cached on disk for an hour and served stale when GitHub is unreachable. The unauthenticated limit is 60 calls an hour per IP, and a reached limit shows its retry time. An install or update takes the release's only archive asset, or asks when there are several; the download is capped at the archive extraction limit and stores under its `github-` key. SMAPI's own release lookup uses the same client.
 
 **Trust:** a GitHub-sourced install counts as verified only when SMAPI's update API (`includeExtendedMetadata: true`) maps the manifest's `UniqueID` to the same repo. It is unknown when the API is unreachable, and never blocks.
 
