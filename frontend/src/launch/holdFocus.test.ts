@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { holdFocus } from './holdFocus.ts'
 
-type Fake = {
+interface Fake {
   inert: boolean
   kids: Fake[]
   parentElement: Fake | null
