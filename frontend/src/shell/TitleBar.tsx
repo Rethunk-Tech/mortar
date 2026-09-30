@@ -113,15 +113,17 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
         </Tab>
       )}
       <Box sx={{ flexGrow: 1 }} />
-      <WindowButton label={t`Minimise`} onClick={win.minimise}>
-        <Minus size={14} />
-      </WindowButton>
-      <WindowButton label={maximised ? t`Restore` : t`Maximise`} onClick={win.toggleMaximise}>
-        {maximised ? <Copy size={12} /> : <Square size={12} />}
-      </WindowButton>
-      <WindowButton label={t`Close`} onClick={win.close} danger={true}>
-        <X size={14} />
-      </WindowButton>
+      <Box data-window-controls="" sx={{ display: 'flex', alignItems: 'stretch' }}>
+        <WindowButton label={t`Minimise`} onClick={win.minimise}>
+          <Minus size={14} />
+        </WindowButton>
+        <WindowButton label={maximised ? t`Restore` : t`Maximise`} onClick={win.toggleMaximise}>
+          {maximised ? <Copy size={12} /> : <Square size={12} />}
+        </WindowButton>
+        <WindowButton label={t`Close`} onClick={win.close} danger={true}>
+          <X size={14} />
+        </WindowButton>
+      </Box>
     </Box>
   )
 }

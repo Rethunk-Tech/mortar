@@ -24,6 +24,7 @@ import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { holdFocus } from './holdFocus.ts'
 import { useLaunch } from './store.ts'
 
 const VISIBLE_LINES = 8
@@ -33,16 +34,21 @@ const SPINNER = 56
 const SPINNER_THICKNESS = 3.9
 const FULL = 100
 
+// Leave the frameless caption buttons clear so they stay clickable above the overlay.
+const CONTROLS_W = 140
+const CONTROLS_H = 40
+
 const scrim = {
-  position: 'absolute',
+  position: 'fixed',
   inset: 0,
-  zIndex: 5,
+  zIndex: 1200,
   bgcolor: 'rgba(0,0,0,0.80)',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
   p: 3,
+  clipPath: `polygon(0 0, calc(100% - ${CONTROLS_W}px) 0, calc(100% - ${CONTROLS_W}px) ${CONTROLS_H}px, 100% ${CONTROLS_H}px, 100% 100%, 0 100%)`,
 } as const
 
 function Spinner() {
@@ -58,21 +64,6 @@ function Spinner() {
       <CircularProgress size={SPINNER} thickness={SPINNER_THICKNESS} />
     </Box>
   )
-}
-
-// While the overlay is up, what it covers is inert so focus cannot reach it; a stable function so the ref runs once.
-function holdFocus(el: HTMLElement) {
-  const covered = [...(el.parentElement?.children ?? [])].filter(
-    (c): c is HTMLElement => c !== el && c instanceof HTMLElement && !c.inert,
-  )
-  for (const c of covered) {
-    c.inert = true
-  }
-  return () => {
-    for (const c of covered) {
-      c.inert = false
-    }
-  }
 }
 
 function Overlay({ game }: { game: string }) {
@@ -98,6 +89,17 @@ function Overlay({ game }: { game: string }) {
       aria-label={t`Launching ${name}`}
       sx={{ ...scrim, gap: 2 }}
     >
+      <Box
+        aria-hidden={true}
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: CONTROLS_W,
+          height: CONTROLS_H,
+          '--wails-draggable': 'drag',
+        }}
+      />
       <Spinner />
       <Typography sx={{ fontSize: 30, fontWeight: 700 }}>{t`Launching ${name}`}</Typography>
       <Typography sx={{ fontSize: 16 }}>
