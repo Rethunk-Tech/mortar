@@ -22,6 +22,7 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { EditConfigButton } from './ConfigEditor.tsx'
 import { useDetail } from './detail.ts'
 import { modId, siblingsOf } from './lookup.ts'
 import { NexusDetails } from './NexusDetails.tsx'
@@ -134,6 +135,7 @@ function Settings({
         <Typography sx={{ flex: 1, ...text }}>{label}</Typography>
         {hasConfig ? (
           <>
+            <EditConfigButton mod={mod} />
             <Button
               size="small"
               variant="outlined"
