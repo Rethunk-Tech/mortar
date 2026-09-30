@@ -1,11 +1,14 @@
 package loadersvc
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/loader"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/store"
@@ -53,15 +56,17 @@ func TestBundledBuiltFromGameFolder(t *testing.T) {
 	if err != nil || len(early.Entries) != 0 {
 		t.Fatalf("early = %+v, %v", early, err)
 	}
-	profiles.Bundled = BundledKey(svc)
-	SyncBundled(svc, "stardew")
+	Attach(svc, "stardew")
 	all, err := profiles.List("stardew")
-	if err != nil || len(all) != 1 || len(all[0].Entries) != 1 || all[0].Entries[0].Key != "smapi-4.5.2" {
+	if err != nil || len(all) != 1 || len(all[0].Entries) != 2 || all[0].Entries[0].Key != "smapi-4.5.2" || all[0].Entries[1].Key != "bridge-1.0.0" || all[0].Entries[1].Source.Kind != profile.SourceMortar {
 		t.Fatalf("existing profile = %+v, %v", all, err)
 	}
 	late, err := profiles.Create("stardew", "Late")
-	if err != nil || len(late.Entries) != 1 {
+	if err != nil || len(late.Entries) != 2 {
 		t.Fatalf("late = %+v, %v", late, err)
+	}
+	if _, err := os.Stat(filepath.Join(dir0(t, items, "bridge-1.0.0"), "MortarSmapiBridge", "manifest.json")); err != nil {
+		t.Fatal(err)
 	}
 	dir, err := items.Path("stardew", "smapi-4.5.2")
 	if err != nil {
@@ -74,5 +79,104 @@ func TestBundledBuiltFromGameFolder(t *testing.T) {
 	}
 	if set.Get().Loaders["stardew"] != "4.5.2" {
 		t.Fatalf("loaders = %v", set.Get().Loaders)
+	}
+}
+
+func dir0(t *testing.T, items *store.Store, key string) string {
+	t.Helper()
+	dir, err := items.Path("stardew", key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return dir
+}
+
+type ensureEnv struct {
+	svc      *Service
+	profiles *profile.Store
+	game     string
+	installs *atomic.Int32
+}
+
+// newEnsureEnv is a Stardew folder without SMAPI, whose installer is replaced by a counter: nothing real is installed.
+func newEnsureEnv(t *testing.T) ensureEnv {
+	t.Helper()
+	data := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", data)
+	t.Setenv("LOCALAPPDATA", data)
+	folder := t.TempDir()
+	put(t, filepath.Join(folder, "Stardew Valley.dll"), "x")
+	set, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := set.Update(func(v *settings.Settings) { v.GameFolders["stardew"] = folder }); err != nil {
+		t.Fatal(err)
+	}
+	items, err := store.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	profiles, err := profile.Open(items)
+	if err != nil {
+		t.Fatal(err)
+	}
+	svc := NewService(t.TempDir(), set, items, profiles)
+	var installs atomic.Int32
+	svc.run = func(context.Context, string) (loader.Status, error) {
+		installs.Add(1)
+		return loader.Status{Installed: true}, nil
+	}
+	Attach(svc, "stardew")
+	return ensureEnv{svc, profiles, folder, &installs}
+}
+
+func TestCreatingAProfileInstallsAMissingLoader(t *testing.T) {
+	e := newEnsureEnv(t)
+	if _, err := e.profiles.Create("stardew", "Main"); err != nil {
+		t.Fatal(err)
+	}
+	e.svc.background.Wait()
+	if got := e.installs.Load(); got != 1 {
+		t.Fatalf("installs = %d, want 1", got)
+	}
+}
+
+func TestStartupInstallsAMissingLoaderOnlyWhenProfilesExist(t *testing.T) {
+	e := newEnsureEnv(t)
+	EnsureExisting(e.svc, "stardew")
+	e.svc.background.Wait()
+	if got := e.installs.Load(); got != 0 {
+		t.Fatalf("no profiles yet, installs = %d", got)
+	}
+	if _, err := e.profiles.Create("stardew", "Main"); err != nil {
+		t.Fatal(err)
+	}
+	e.svc.background.Wait()
+	EnsureExisting(e.svc, "stardew")
+	e.svc.background.Wait()
+	if got := e.installs.Load(); got != 2 {
+		t.Fatalf("installs = %d, want 2 (creation and startup)", got)
+	}
+}
+
+func TestEnsureLeavesAWorkingLoaderAlone(t *testing.T) {
+	e := newEnsureEnv(t)
+	put(t, filepath.Join(e.game, "StardewValley-original"), "x")
+	put(t, filepath.Join(e.game, "StardewValley"), "#!/bin/sh\nexec StardewModdingAPI\n")
+	put(t, filepath.Join(e.game, "Mods", "ConsoleCommands", "manifest.json"), `{"Name": "Console Commands", "Version": "4.5.2", "UniqueId": "SMAPI.ConsoleCommands", "EntryDll": "ConsoleCommands.dll"}`)
+	if _, err := e.svc.Ensure(context.Background(), "stardew"); err != nil {
+		t.Fatal(err)
+	}
+	if got := e.installs.Load(); got != 0 {
+		t.Fatalf("installs = %d, want 0", got)
+	}
+	// A game update replaces the launcher: SMAPI is broken and is reinstalled.
+	put(t, filepath.Join(e.game, "StardewValley"), "native launcher")
+	if _, err := e.svc.Ensure(context.Background(), "stardew"); err != nil {
+		t.Fatal(err)
+	}
+	if got := e.installs.Load(); got != 1 {
+		t.Fatalf("installs = %d, want 1", got)
 	}
 }

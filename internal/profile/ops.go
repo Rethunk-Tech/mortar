@@ -148,8 +148,20 @@ func (e *NoModError) Error() string {
 	return fmt.Sprintf("%q holds no mod: no readable %s", e.Key, manifest.FileName)
 }
 
-// SourceSMAPI marks the entry holding the loader's own mods.
-const SourceSMAPI = "smapi"
+// SourceSMAPI marks the entry holding the loader's own mods, and SourceMortar the one holding Mortar's console
+// bridge. Both are in every profile and hidden from users.
+const (
+	SourceSMAPI  = "smapi"
+	SourceMortar = "mortar"
+)
+
+// Bundle is a store item every profile of a game holds: the loader's own mods or Mortar's bridge.
+type Bundle struct {
+	Key    string
+	Source Source
+}
+
+func isBundled(e Entry) bool { return e.Source.Kind == SourceSMAPI || e.Source.Kind == SourceMortar }
 
 // addTo copies the store item key into the profile's mods/ and records its entry, switching off the
 // mods in disabled that it holds. placed is the new folder, for the caller to remove if a later step fails.
@@ -208,10 +220,10 @@ func (s *Store) AddEntry(game, id, key string, source Source) (Profile, error) {
 	return p, s.items.Touch(game, key)
 }
 
-// ApplyBundled makes key the loader's bundled-mods entry in every profile of the game, replacing older ones
+// ApplyBundled makes b the game's bundled entry of its source kind in every profile, replacing older ones
 // and keeping each profile's switched-off mods off. Profiles that fail, including one the game is running, do not stop
 // the others.
-func (s *Store) ApplyBundled(game, key string) error {
+func (s *Store) ApplyBundled(game string, b Bundle) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	all, err := s.List(game)
@@ -228,7 +240,7 @@ func (s *Store) ApplyBundled(game, key string) error {
 		_, err := s.updateLocked(game, prof.ID, func(p *Profile, dir string) (err error) {
 			var disabled []string
 			for _, e := range slices.Backward(slices.Clone(p.Entries)) {
-				if e.Source.Kind != SourceSMAPI || e.Key == key {
+				if e.Source.Kind != b.Source.Kind || e.Key == b.Key {
 					continue
 				}
 				disabled = append(disabled, e.Disabled...)
@@ -236,10 +248,10 @@ func (s *Store) ApplyBundled(game, key string) error {
 					return err
 				}
 			}
-			if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key }) {
+			if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == b.Key }) {
 				return nil
 			}
-			placed, err = s.addTo(game, p, dir, key, Source{Kind: SourceSMAPI, Name: "SMAPI"}, disabled)
+			placed, err = s.addTo(game, p, dir, b.Key, b.Source, disabled)
 			return err
 		})
 		if err != nil && placed != "" {
@@ -247,7 +259,7 @@ func (s *Store) ApplyBundled(game, key string) error {
 		}
 		errs = append(errs, err)
 	}
-	if err := s.items.Touch(game, key); err != nil {
+	if err := s.items.Touch(game, b.Key); err != nil {
 		errs = append(errs, err)
 	}
 	return errors.Join(errs...)
@@ -286,8 +298,8 @@ func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
 		return Profile{}, err
 	}
 	return s.update(game, id, func(p *Profile, dir string) error {
-		if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && e.Source.Kind == SourceSMAPI }) {
-			return errors.New("SMAPI's bundled mods are needed by every profile and cannot be removed")
+		if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && isBundled(e) }) {
+			return errors.New("the bundled mods are needed by every profile and cannot be removed")
 		}
 		return removeFrom(p, dir, key)
 	})
@@ -445,7 +457,7 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 // Mods returns the profile's mods, first rebuilding any mods/ folder content that is missing from the store.
 func (s *Store) Mods(game, id string) ([]Mod, error) { return s.mods(game, id, true) }
 
-// UserMods is Mods without SMAPI's bundled mods, which every profile has and users never manage.
+// UserMods is Mods without the bundled mods (SMAPI's and the console bridge), which every profile has and users never manage.
 func (s *Store) UserMods(game, id string) ([]Mod, error) { return s.mods(game, id, false) }
 
 func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
@@ -461,7 +473,7 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 	}
 	out := []Mod{}
 	for _, e := range p.Entries {
-		if !bundled && e.Source.Kind == SourceSMAPI {
+		if !bundled && isBundled(e) {
 			continue
 		}
 		for _, m := range e.Mods {

@@ -14,8 +14,12 @@ import (
 // same hour, so a shorter one would only repeat its answers.
 const updatesTTL = time.Hour
 
-// sourceSMAPI marks the loader's bundled mods, which update with SMAPI and never show in the mod list.
-const sourceSMAPI = "smapi"
+// sourceSMAPI and sourceMortar mark the bundled mods (SMAPI's own and Mortar's bridge), which update with
+// their owner and never show in the mod list.
+const (
+	sourceSMAPI  = "smapi"
+	sourceMortar = "mortar"
+)
 
 // Update is a newer version SMAPI's API suggests for an installed mod. URL is the page to get it from.
 type Update struct {
@@ -41,7 +45,7 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 	req := meta.UpdateRequest{APIVersion: env.APIVersion, GameVersion: env.GameVersion, Platform: env.Platform}
 	var asked []Installed
 	for _, x := range mods {
-		if x.SourceKind == sourceSMAPI {
+		if x.SourceKind == sourceSMAPI || x.SourceKind == sourceMortar {
 			continue
 		}
 		asked = append(asked, x)

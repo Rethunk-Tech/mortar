@@ -79,6 +79,9 @@ func LocalKey(sha256Hex string) string { return "local-" + sha256Hex }
 // SMAPIKey is the key of SMAPI's bundled-mods entry for a SMAPI version.
 func SMAPIKey(version string) string { return "smapi-" + version }
 
+// BridgeKey is the key of the bundled console bridge mod for a bridge version.
+func BridgeKey(version string) string { return "bridge-" + version }
+
 func (s *Store) gameDir(id string) (string, error) {
 	if !game.Valid(id) {
 		return "", fmt.Errorf("unknown game %q", id)

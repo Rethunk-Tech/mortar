@@ -21,6 +21,16 @@ import (
 // ProgressEvent is emitted with a Progress after each install step.
 const ProgressEvent = "loader:progress"
 
+// StateEvent is emitted with a State when a loader install starts and when it ends.
+const StateEvent = "loader:state"
+
+// State says whether a game's loader install is running. Error is set on the event that ends a failed one.
+type State struct {
+	Game       string `json:"game"`
+	Installing bool   `json:"installing"`
+	Error      string `json:"error"`
+}
+
 // Progress says which install step just finished for a game.
 type Progress struct {
 	Game string      `json:"game"`
@@ -34,36 +44,95 @@ type Service struct {
 	items    *store.Store
 	profiles *profile.Store
 	busy     sync.Mutex
+	// background tracks installs started by ensureInBackground.
+	background sync.WaitGroup
+	// run installs or updates the loader with busy held; tests replace it.
+	run func(ctx context.Context, id string) (loader.Status, error)
 	// App is set after application.New so events can be emitted.
 	App *application.App
 }
 
 func NewService(home string, s *settings.Store, items *store.Store, profiles *profile.Store) *Service {
-	return &Service{home: home, settings: s, items: items, profiles: profiles}
+	svc := &Service{home: home, settings: s, items: items, profiles: profiles}
+	svc.run = svc.install
+	return svc
 }
 
-// BundledKey returns the hook profile.Store uses to find the loader's bundled mods for the game, or "" when
-// none are installed. It builds a missing store entry from the game folder first.
-func BundledKey(s *Service) func(string) string {
-	return func(id string) string {
-		key, err := s.ensureBundled(id)
-		if err != nil {
-			log.Printf("bundled mods for %s: %v", id, err)
-		}
-		return key
+// Attach wires the service into the profile store: every profile gets the game's bundled mods, and creating a
+// profile installs a missing loader in the background. It also syncs the bundled mods into the existing profiles.
+func Attach(s *Service, id string) {
+	s.profiles.Bundled = s.bundles
+	s.profiles.Created = s.ensureInBackground
+	SyncBundled(s, id)
+}
+
+// EnsureExisting installs the game's loader in the background when profiles exist and it is missing or broken.
+// Call it once s.App is set, so the install's progress reaches the window.
+func EnsureExisting(s *Service, id string) {
+	if all, err := s.profiles.List(id); err == nil && len(all) > 0 {
+		s.ensureInBackground(id)
 	}
+}
+
+// bundles returns the store items every profile of the game holds, building any that is missing.
+func (s *Service) bundles(id string) []profile.Bundle {
+	var out []profile.Bundle
+	if key, err := s.ensureBundled(id); err != nil {
+		log.Printf("bundled mods for %s: %v", id, err)
+	} else if key != "" {
+		out = append(out, profile.Bundle{Key: key, Source: profile.Source{Kind: profile.SourceSMAPI, Name: "SMAPI"}})
+	}
+	if b, err := s.ensureBridge(id); err != nil {
+		log.Printf("bridge for %s: %v", id, err)
+	} else if b.Key != "" {
+		out = append(out, b)
+	}
+	return out
 }
 
 // SyncBundled makes sure the game's bundled mods are in the store and in every profile. It never fails the
 // caller: the loader may be absent or the game not installed.
 func SyncBundled(s *Service, id string) {
-	key, err := s.ensureBundled(id)
-	if err == nil && key != "" {
-		err = s.profiles.ApplyBundled(id, key)
+	for _, b := range s.bundles(id) {
+		if err := s.profiles.ApplyBundled(id, b); err != nil {
+			log.Printf("bundled mods for %s: %v", id, err)
+		}
 	}
+}
+
+// ensureBridge returns the bundled console bridge's entry, adding it to the store first when it is missing.
+// The bridge needs neither the loader nor the game folder, so every profile has it from creation.
+func (s *Service) ensureBridge(id string) (profile.Bundle, error) {
+	g := game.Find(id)
+	if g == nil || g.BridgeVersion() == "" {
+		return profile.Bundle{}, nil
+	}
+	key := store.BridgeKey(g.BridgeVersion())
+	b := profile.Bundle{Key: key, Source: profile.Source{Kind: profile.SourceMortar, Name: "Mortar"}}
+	if _, err := s.items.Path(id, key); err == nil {
+		return b, nil
+	} else if !errors.Is(err, store.ErrNotFound) {
+		return profile.Bundle{}, err
+	}
+	tmp, err := os.MkdirTemp("", "mortar-bridge-")
 	if err != nil {
-		log.Printf("bundled mods for %s: %v", id, err)
+		return profile.Bundle{}, err
 	}
+	defer func() { _ = os.RemoveAll(tmp) }()
+	if err := g.ExtractBridge(tmp); err != nil {
+		return profile.Bundle{}, err
+	}
+	return b, s.items.AddDir(id, key, tmp)
+}
+
+// ensureInBackground installs the game's loader when it is missing or broken, without blocking the caller.
+// Failures are logged and announced with StateEvent; the game may simply not be installed.
+func (s *Service) ensureInBackground(id string) {
+	s.background.Go(func() {
+		if _, err := s.Ensure(context.Background(), id); err != nil {
+			log.Printf("loader for %s: %v", id, err)
+		}
+	})
 }
 
 // ensureBundled returns the store key of the installed loader's bundled mods, building the entry from the game
@@ -151,6 +220,30 @@ func (s *Service) Status(ctx context.Context, id string) (loader.Status, error) 
 
 // Install installs the loader or, when it is already there, updates it, then puts its bundled mods in every profile.
 func (s *Service) Install(ctx context.Context, id string) (loader.Status, error) {
+	if !s.busy.TryLock() {
+		return loader.Status{}, errors.New("a loader install is already running")
+	}
+	defer s.busy.Unlock()
+	return s.run(ctx, id)
+}
+
+// Ensure installs the loader when it is missing or broken, waiting for an install already running, and does
+// nothing when it is fine. A newer release is never applied here: an update can break mods, so the user does it.
+func (s *Service) Ensure(ctx context.Context, id string) (loader.Status, error) {
+	s.busy.Lock()
+	defer s.busy.Unlock()
+	st, err := s.LocalStatus(id)
+	if err != nil {
+		return loader.Status{}, err
+	}
+	if st.Installed && !st.Broken {
+		return st, nil
+	}
+	return s.run(ctx, id)
+}
+
+// install runs one install with busy held and announces its start and end.
+func (s *Service) install(ctx context.Context, id string) (st loader.Status, err error) {
 	g, dir, err := s.target(id)
 	if err != nil {
 		return loader.Status{}, err
@@ -158,21 +251,23 @@ func (s *Service) Install(ctx context.Context, id string) (loader.Status, error)
 	if s.profiles.AnyRunning(id) {
 		return loader.Status{}, fmt.Errorf("%s is running: close it before installing %s", g.Name(), g.LoaderName())
 	}
-	if !s.busy.TryLock() {
-		return loader.Status{}, errors.New("a loader install is already running")
-	}
-	defer s.busy.Unlock()
+	s.emit(StateEvent, State{Game: id, Installing: true})
+	defer func() {
+		state := State{Game: id}
+		if err != nil {
+			state.Error = err.Error()
+		}
+		s.emit(StateEvent, state)
+	}()
 	bundled := func(version, modsDir string) error {
 		key := store.SMAPIKey(version)
 		if err := s.items.AddDir(id, key, modsDir); err != nil {
 			return err
 		}
-		return s.profiles.ApplyBundled(id, key)
+		return s.profiles.ApplyBundled(id, profile.Bundle{Key: key, Source: profile.Source{Kind: profile.SourceSMAPI, Name: "SMAPI"}})
 	}
 	version, err := g.InstallLoader(ctx, dir, bundled, func(step loader.Step) {
-		if s.App != nil {
-			s.App.Event.Emit(ProgressEvent, Progress{Game: id, Step: step})
-		}
+		s.emit(ProgressEvent, Progress{Game: id, Step: step})
 	})
 	if err != nil {
 		return loader.Status{}, err
@@ -184,8 +279,12 @@ func (s *Service) Install(ctx context.Context, id string) (loader.Status, error)
 	if err != nil {
 		return loader.Status{}, err
 	}
-	if s.App != nil {
-		s.App.Event.Emit(settings.ChangedEvent, next)
-	}
+	s.emit(settings.ChangedEvent, next)
 	return s.Status(ctx, id)
+}
+
+func (s *Service) emit(name string, data any) {
+	if s.App != nil {
+		s.App.Event.Emit(name, data)
+	}
 }

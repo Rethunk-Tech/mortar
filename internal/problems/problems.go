@@ -24,7 +24,7 @@ type Meta interface {
 // Installed is one mod of the profile.
 type Installed struct {
 	Key string
-	// SourceKind is the entry's source: "local" for an archive, "smapi" for the loader's own mods, "nexus" for a download.
+	// SourceKind is the entry's source: "local" for an archive, "smapi" for the loader's own mods, "mortar" for the console bridge, "nexus" for a download.
 	SourceKind string
 	Enabled    bool
 	manifest.Manifest

@@ -54,6 +54,10 @@ type Loaders interface {
 	// CopyBundled copies the loader's own mods that are already in the install dir into dst, for a loader
 	// installed outside Mortar.
 	CopyBundled(dir, dst string) error
+	// BridgeVersion is the version of the console bridge mod Mortar bundles into every profile.
+	BridgeVersion() string
+	// ExtractBridge unpacks the bundled bridge mod into dst.
+	ExtractBridge(dst string) error
 	// InstallLoader installs or updates the loader in dir and returns its version.
 	InstallLoader(ctx context.Context, dir string, bundled loader.Bundled, progress func(loader.Step)) (string, error)
 }

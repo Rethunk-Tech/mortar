@@ -377,7 +377,7 @@ func TestApplyBundledReplacesAndKeepsDisabled(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := e.ApplyBundled("stardew", "smapi-1.0.0"); err != nil {
+	if err := e.ApplyBundled("stardew", smapiBundle("smapi-1.0.0")); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.AddEntry("stardew", a.ID, "local-x", Source{Kind: "local", Name: "x.zip"}); err != nil {
@@ -386,7 +386,7 @@ func TestApplyBundledReplacesAndKeepsDisabled(t *testing.T) {
 	if _, err := e.SetModEnabled("stardew", a.ID, "", "SMAPI.Backup", false); err != nil {
 		t.Fatal(err)
 	}
-	if err := e.ApplyBundled("stardew", "smapi-2.0.0"); err != nil {
+	if err := e.ApplyBundled("stardew", smapiBundle("smapi-2.0.0")); err != nil {
 		t.Fatal(err)
 	}
 	for _, id := range []string{a.ID, b.ID} {
@@ -419,7 +419,7 @@ func TestApplyBundledReplacesAndKeepsDisabled(t *testing.T) {
 	if got := names(t, e.mods(a.ID)); !slices.Equal(got, []string{"local-x", "smapi-2.0.0"}) {
 		t.Fatalf("old entry folder left behind: %v", got)
 	}
-	if err := e.ApplyBundled("stardew", "smapi-2.0.0"); err != nil {
+	if err := e.ApplyBundled("stardew", smapiBundle("smapi-2.0.0")); err != nil {
 		t.Fatalf("reapplying the same key: %v", err)
 	}
 }
@@ -427,7 +427,12 @@ func TestApplyBundledReplacesAndKeepsDisabled(t *testing.T) {
 func TestCreateGetsBundledEntry(t *testing.T) {
 	e := newEnv(t)
 	key := ""
-	e.Bundled = func(string) string { return key }
+	e.Bundled = func(string) []Bundle {
+		if key == "" {
+			return nil
+		}
+		return []Bundle{smapiBundle(key)}
+	}
 	p, err := e.Create("stardew", "before")
 	if err != nil || len(p.Entries) != 0 {
 		t.Fatalf("before install: %+v, %v", p, err)
@@ -456,7 +461,7 @@ func TestApplyBundledSkipsRunningProfile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := e.ApplyBundled("stardew", "smapi-1.0.0"); err != nil {
+	if err := e.ApplyBundled("stardew", smapiBundle("smapi-1.0.0")); err != nil {
 		t.Fatal(err)
 	}
 	e.Running = func(_, id string) bool { return id == busy.ID }
@@ -464,7 +469,7 @@ func TestApplyBundledSkipsRunningProfile(t *testing.T) {
 		t.Fatal("AnyRunning = false with a running profile")
 	}
 	var re *RunningError
-	if err := e.ApplyBundled("stardew", "smapi-2.0.0"); !errors.As(err, &re) {
+	if err := e.ApplyBundled("stardew", smapiBundle("smapi-2.0.0")); !errors.As(err, &re) {
 		t.Fatalf("err = %v, want a RunningError", err)
 	}
 	for id, want := range map[string]string{busy.ID: "smapi-1.0.0", idle.ID: "smapi-2.0.0"} {
