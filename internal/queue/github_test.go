@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-AI/mortar/internal/nxmsvc"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
@@ -209,5 +210,54 @@ func TestAddRefusesDotRepos(t *testing.T) {
 	}
 	if !validRepo("me/mod.cfg") {
 		t.Error("a dotted repo name was refused")
+	}
+}
+
+func TestConfirmSurvivesARestartAndItsInstallIgnoresCancel(t *testing.T) {
+	g := newGitHubFixture(t)
+	g.ok.Store(false)
+	g.start()
+	if _, err := g.s.Add([]Request{ghReq("2.0.0")}); err != nil {
+		t.Fatal(err)
+	}
+	id := g.wait("the confirmation", g.item(StateNeedsConfirm)).Items[0].ID
+
+	again, err := New(g.s.d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st := again.State().Items[0].State; st != StateNeedsConfirm {
+		t.Fatalf("after a restart the item is %s", st)
+	}
+	entered, release := make(chan struct{}), make(chan struct{})
+	again.d.InstallStaged = func(_, _, key string, _ profile.Source) (profile.InstallResult, error) {
+		close(entered)
+		<-release
+		if key != "github-key" {
+			return profile.InstallResult{}, fmt.Errorf("installed key %q", key)
+		}
+		return profile.InstallResult{}, nil
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+	Run(ctx, again, make(chan nxmsvc.Assignment))
+	again.Confirm(id)
+	<-entered
+	again.Cancel(id)
+	if st := again.State().Items[0].State; st != StateInstalling {
+		t.Fatalf("during the install the item is %s", st)
+	}
+	close(release)
+	deadline := time.Now().Add(5 * time.Second)
+	for again.State().Items[0].State != StateDone {
+		if time.Now().After(deadline) {
+			t.Fatalf("not done: %+v", again.State().Items[0])
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	if len(g.staged) != 1 {
+		t.Fatalf("downloaded %d times", len(g.staged))
 	}
 }

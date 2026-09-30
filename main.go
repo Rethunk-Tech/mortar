@@ -135,6 +135,7 @@ func main() {
 		},
 		GitHub:  &github.Client{},
 		OpenURL: func(url string) error { return app.Browser.OpenURL(url) },
+		Running: launches.Running,
 		Emit: func(name string, data any) {
 			if app != nil {
 				app.Event.Emit(name, data)

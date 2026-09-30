@@ -34,10 +34,11 @@ func (s *Service) usable(it *Item) bool {
 }
 
 // next decides what to do now, under the lock; a nil item means nothing. An item that can download goes first (premium, or holding a key
-// from a link); otherwise the head item waits for its click, unless one already does.
-func (s *Service) next() (*Item, action) {
+// from a link); otherwise the head item waits for its click, unless one already does. Items for a profile the game
+// runs stay queued, and held reports whether any did.
+func (s *Service) next() (it *Item, act action, held bool) {
 	if s.paused || s.until.After(s.d.Now()) {
-		return nil, resolve
+		return nil, resolve, false
 	}
 	premium := s.d.Premium()
 	var head *Item
@@ -47,18 +48,20 @@ func (s *Service) next() (*Item, action) {
 		case it.State == StateWaitingClick:
 			waiting = true
 		case it.State != StateQueued:
+		case s.d.Running != nil && s.d.Running(it.Game, it.Profile):
+			held = true
 		case it.Repo != "":
-			return it, s.forAsset(it)
+			return it, s.forAsset(it), held
 		case premium || s.usable(it):
-			return it, s.forFile(it, fetch)
+			return it, s.forFile(it, fetch), held
 		case head == nil:
 			head = it
 		}
 	}
 	if head == nil || waiting {
-		return nil, resolve
+		return nil, resolve, held
 	}
-	return head, s.forFile(head, click)
+	return head, s.forFile(head, click), held
 }
 
 // forFile is resolve while the item's file is not known yet.
@@ -80,14 +83,21 @@ func (s *Service) forAsset(it *Item) action {
 	return fetch
 }
 
+// heldRecheck is how often items held for a running profile are looked at again: nothing tells the queue when a
+// game stops.
+const heldRecheck = 5 * time.Second
+
 func (s *Service) run(ctx context.Context) {
 	for {
 		for s.step(ctx) {
 		}
 		var wake <-chan time.Time
 		s.mu.Lock()
+		_, _, held := s.next()
 		if d := s.until.Sub(s.d.Now()); d > 0 {
 			wake = time.After(d)
+		} else if held {
+			wake = time.After(heldRecheck)
 		}
 		s.mu.Unlock()
 		select {
@@ -102,7 +112,7 @@ func (s *Service) run(ctx context.Context) {
 
 func (s *Service) step(ctx context.Context) bool {
 	s.mu.Lock()
-	it, act := s.next()
+	it, act, _ := s.next()
 	if it == nil || ctx.Err() != nil {
 		s.mu.Unlock()
 		return false
@@ -112,8 +122,12 @@ func (s *Service) step(ctx context.Context) bool {
 		it.State = StateWaitingClick
 		it.key, it.expires = "", 0
 	}
-	if act == fetch || act == install {
+	switch act {
+	case fetch:
 		it.State, it.Progress, it.Speed = StateDownloading, 0, 0
+	case install:
+		// Nothing is left to download, and Cancel does not reach an install under way.
+		it.State, it.Progress, it.Speed = StateInstalling, 100, 0
 	}
 	itemCtx, cancel := context.WithCancel(ctx)
 	s.cancels[it.ID] = cancel

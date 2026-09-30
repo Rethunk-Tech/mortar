@@ -110,6 +110,13 @@ type Item struct {
 	staged string
 }
 
+// saved is queue.json: the state, and the staged key of each item that has one, so a restart still asks for
+// Confirm instead of downloading again. Staged keys stay out of State, which the window receives.
+type saved struct {
+	State
+	Staged map[string]string `json:"staged,omitempty"`
+}
+
 // State is the whole queue. LimitedUntil is the Unix time Nexus's rate limit lifts, 0 when it is not limiting.
 type State struct {
 	Items        []Item `json:"items"`
@@ -151,6 +158,8 @@ type Deps struct {
 	Verify        func(ctx context.Context, uniqueID, owner, repo string) (bool, error)
 	GitHub        *github.Client
 	OpenURL       func(url string) error
+	// Running reports whether the game runs the profile; its items wait until it stops. Nil means never.
+	Running func(game, profileID string) bool
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 	// Changed is called with the state after every change, from the goroutine that made it; nil means nothing.
@@ -163,8 +172,10 @@ type Deps struct {
 
 // Service is the download queue.
 type Service struct {
-	d     Deps
-	kick  chan struct{}
+	d    Deps
+	kick chan struct{}
+	// pub orders publishes, so queue.json and the window always end on the latest state.
+	pub   sync.Mutex
 	mu    sync.Mutex
 	items []*Item
 	// paused stops new downloads from starting; one under way finishes.
@@ -189,13 +200,16 @@ func New(d Deps) (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	var saved State
-	if err := json.Unmarshal(b, &saved); err != nil {
+	var file saved
+	if err := json.Unmarshal(b, &file); err != nil {
 		return nil, fmt.Errorf("read the download queue: %w", err)
 	}
-	s.paused = saved.Paused
-	for _, it := range saved.Items {
-		if slices.Contains([]string{StateDownloading, StateInstalling, StateWaitingClick, StateNeedsConfirm}, it.State) {
+	s.paused = file.Paused
+	for _, it := range file.Items {
+		if it.staged = file.Staged[it.ID]; it.State == StateNeedsConfirm && it.staged == "" {
+			it.State = StateQueued
+		}
+		if slices.Contains([]string{StateDownloading, StateInstalling, StateWaitingClick}, it.State) {
 			it.State, it.Progress, it.Speed = StateQueued, 0, 0
 		}
 		s.items = append(s.items, &it)
@@ -270,6 +284,8 @@ func finished(state string) bool {
 
 // publish tells the window; persist also writes queue.json, which progress ticks skip.
 func (s *Service) publish(persist bool) {
+	s.pub.Lock()
+	defer s.pub.Unlock()
 	s.mu.Lock()
 	if n := len(s.items); n > 0 {
 		var kept []*Item
@@ -293,7 +309,13 @@ func (s *Service) publish(persist bool) {
 	s.mu.Unlock()
 	if persist {
 		// A queue that cannot be saved still runs; it only starts over after a restart.
-		_ = datadir.WriteJSON(filepath.Join(s.d.Dir, fileName), st)
+		out := saved{State: st, Staged: map[string]string{}}
+		for _, it := range st.Items {
+			if it.staged != "" {
+				out.Staged[it.ID] = it.staged
+			}
+		}
+		_ = datadir.WriteJSON(filepath.Join(s.d.Dir, fileName), out)
 	}
 	if s.d.Emit != nil {
 		s.d.Emit(ChangedEvent, st)

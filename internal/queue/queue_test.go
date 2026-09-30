@@ -389,3 +389,21 @@ func TestNexusDownloadOverTheCapFails(t *testing.T) {
 	}
 	f.leftovers()
 }
+
+func TestItemsForARunningProfileWait(t *testing.T) {
+	f := newFixture(t)
+	var running atomic.Bool
+	running.Store(true)
+	f.s.d.Running = func(_, id string) bool { return id == "p1" && running.Load() }
+	f.start()
+	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(100 * time.Millisecond)
+	if st := f.s.State(); st.Items[0].State != StateQueued || len(f.installs) != 0 {
+		t.Fatalf("item for a running profile moved on: %+v", st.Items[0])
+	}
+	running.Store(false)
+	f.s.Resume()
+	f.wait("done", f.item(StateDone))
+}
