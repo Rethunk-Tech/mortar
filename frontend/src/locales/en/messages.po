@@ -23,6 +23,10 @@ msgstr "Translucent window"
 msgid "Copper"
 msgstr "Copper"
 
+#: src/shell/AppMenu.tsx:18
+msgid "Could not quit Mortar"
+msgstr "Could not quit Mortar"
+
 #: src/settings/sections/Appearance.tsx:120
 msgid "Takes effect when Mortar restarts"
 msgstr "Takes effect when Mortar restarts"
@@ -52,11 +56,11 @@ msgid "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild
 msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · open-source libraries listed in Licences."
 
 #: src/settings/sections/About.tsx:16
-#: src/shell/TitleBar.tsx:91
+#: src/shell/AppMenu.tsx:43
 msgid "Mortar"
 msgstr "Mortar"
 
-#: src/games/GameSelect.tsx:130
+#: src/games/GameSelect.tsx:137
 msgid "Installed"
 msgstr "Installed"
 
@@ -64,11 +68,15 @@ msgstr "Installed"
 msgid "Changes apply right away"
 msgstr "Changes apply right away"
 
-#: src/games/GameSelect.tsx:125
+#: src/shell/AppMenu.tsx:60
+msgid "About Mortar"
+msgstr "About Mortar"
+
+#: src/games/GameSelect.tsx:132
 msgid "After the first release"
 msgstr "After the first release"
 
-#: src/games/GameSelect.tsx:128
+#: src/games/GameSelect.tsx:135
 msgid "Not found in your Steam library"
 msgstr "Not found in your Steam library"
 
@@ -84,12 +92,12 @@ msgstr "Not affiliated"
 msgid "Warm and bold"
 msgstr "Warm and bold"
 
-#: src/games/GameSelect.tsx:143
+#: src/games/GameSelect.tsx:150
 msgid "Only a Flatpak Steam was found."
 msgstr "Only a Flatpak Steam was found."
 
 #: src/settings/sections/Appearance.tsx:98
-#: src/shell/TitleBar.tsx:98
+#: src/shell/TitleBar.tsx:91
 msgid "Stardew Valley"
 msgstr "Stardew Valley"
 
@@ -118,7 +126,7 @@ msgid "Moss"
 msgstr "Moss"
 
 #: src/App.tsx:27
-#: src/games/GameSelect.tsx:117
+#: src/games/GameSelect.tsx:124
 msgid "Could not read your games"
 msgstr "Could not read your games"
 
@@ -126,13 +134,21 @@ msgstr "Could not read your games"
 msgid "AGPL-3.0 · Rethunk-AI/mortar"
 msgstr "AGPL-3.0 · Rethunk-AI/mortar"
 
-#: src/shell/TitleBar.tsx:105
+#: src/shell/TitleBar.tsx:98
 msgid "Maximise"
 msgstr "Maximise"
 
-#: src/shell/TitleBar.tsx:94
+#: src/shell/TitleBar.tsx:87
 msgid "Game Select"
 msgstr "Game Select"
+
+#: src/shell/AppMenu.tsx:63
+msgid "Quit"
+msgstr "Quit"
+
+#: src/shell/AppMenu.tsx:26
+msgid "Mortar menu"
+msgstr "Mortar menu"
 
 #: src/settings/sections/About.tsx:24
 msgid "Built on"
@@ -143,10 +159,11 @@ msgid "Play"
 msgstr "Play"
 
 #: src/settings/SettingsDialog.tsx:29
+#: src/shell/AppMenu.tsx:52
 msgid "Settings"
 msgstr "Settings"
 
-#: src/shell/TitleBar.tsx:102
+#: src/shell/TitleBar.tsx:95
 msgid "Minimise"
 msgstr "Minimise"
 
@@ -163,11 +180,11 @@ msgstr "About"
 msgid "Accent colour"
 msgstr "Accent colour"
 
-#: src/games/GameSelect.tsx:145
+#: src/games/GameSelect.tsx:152
 msgid "Steam was not found."
 msgstr "Steam was not found."
 
-#: src/games/GameSelect.tsx:28
+#: src/games/GameSelect.tsx:29
 msgid "Could not save the last game"
 msgstr "Could not save the last game"
 
@@ -175,7 +192,7 @@ msgstr "Could not save the last game"
 msgid "Settings sections"
 msgstr "Settings sections"
 
-#: src/shell/TitleBar.tsx:105
+#: src/shell/TitleBar.tsx:98
 msgid "Restore"
 msgstr "Restore"
 
@@ -183,10 +200,10 @@ msgstr "Restore"
 msgid "Couldn't save that setting"
 msgstr "Couldn't save that setting"
 
-#: src/shell/TitleBar.tsx:108
+#: src/shell/TitleBar.tsx:101
 msgid "Close"
 msgstr "Close"
 
-#: src/games/GameSelect.tsx:141
+#: src/games/GameSelect.tsx:148
 msgid "Mortar supports Steam installed directly on the system."
 msgstr "Mortar supports Steam installed directly on the system."

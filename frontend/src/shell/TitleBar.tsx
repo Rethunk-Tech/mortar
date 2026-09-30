@@ -2,8 +2,8 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase } from '@mui/material'
 import { Copy, Minus, Square, X } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { Logo } from '../brand/Logo.tsx'
 import { useNav } from '../nav/store.ts'
+import { AppMenu } from './AppMenu.tsx'
 import { win } from './win.ts'
 
 const noDrag = { '--wails-draggable': 'no-drag' } as const
@@ -82,14 +82,7 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
         bgcolor: 'rgba(15,15,18,0.55)',
       }}
     >
-      <Box sx={{ width: 44, display: 'grid', placeItems: 'center', bgcolor: 'rgba(0,0,0,0.3)' }}>
-        <Logo size={20} />
-      </Box>
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', px: '14px', fontSize: 15, fontWeight: 600 }}
-      >
-        <Trans>Mortar</Trans>
-      </Box>
+      <AppMenu />
       <Tab active={route.name === 'game-select'} onClick={openGameSelect}>
         <Trans>Game Select</Trans>
       </Tab>
