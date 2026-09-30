@@ -5,7 +5,7 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
 ## Window
 
 - Frameless and translucent (see [design.md](design.md#look)): 1280×720 by default, 768×432 minimum, as Concrete.
-- The app draws its own title bar, 36px, marked `--wails-draggable: drag`: app name, the current game, and minimise, maximise and close on the right. Double-click maximises. The window has a 1px light border and rounded corners, since GNOME draws no shadow for a frameless window.
+- The app draws its own title bar, 36px, marked `--wails-draggable: drag`, as Concrete's did (NOMAD's screenshots, 2026-09-29): the logo in a darker square, the app name, then location tabs ("Game Select", or the current game) underlined in the primary colour, and minimise, maximise and close on the right. Double-click maximises. The window has a 1px light border and rounded corners, since GNOME draws no shadow for a frameless window.
 - `user-select: none` everywhere except text fields and the console.
 
 ## Surfaces and colour
@@ -19,6 +19,10 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
 
 - Open Sans (300, 400, 500, 700) from `@fontsource/open-sans`, `htmlFontSize` 18 with MUI's responsive font sizes, as Concrete.
 - Every string goes through Lingui.
+
+## Game Select
+
+Concrete's game chooser, from NOMAD's screenshots: full-width banner rows stacked down the window, about 300px tall at 1080p, one per game. Each row shows the game's key art bleeding edge to edge and fading to black on the left; on the left the game name with "<loader> | <store>" under it ("SMAPI 4.5.2 | Steam"), and the profile count; on the right, square badges for its mod sources. Art is Steam's `library_hero.jpg` read at runtime, never bundled. In v1 Stardew Valley is the only live row; Lethal Company shows dimmed as coming later. Choosing a row opens its main screen; the title bar's game tab returns here.
 
 ## Main screen
 
@@ -51,11 +55,12 @@ A page, as Concrete's: a header with a back button, **New**, **Import** and **Re
 
 ## Import
 
-Opening a link, pasting one, or opening a `.mortar` file shows one dialog before anything is downloaded:
+Concrete's import dialog, from NOMAD's screenshot: a wide "Import profile from…" dialog over the dimmed game screen, with tabs **Link**, **.mortar file** and **Archives**. Nothing downloads before the user confirms.
 
-- The profile's name and its mods, grouped: already installed, to download, dependencies added, checked after download (files the mod dataset lacks), and unavailable (with the Nexus page).
-- Problems found before download: missing dependencies (from the mod dataset) and mods broken for this game version (from SMAPI's update API).
-- **Import** creates the profile and fills the download queue; **Cancel** leaves nothing behind.
+- A dense five-column grid of mod tiles: icon, name, author, and on the right the mod's import state (installed, download, dependency, check later, unavailable) where Concrete showed the version.
+- A status bar: "Ready to import", the profile name, the mod count, the counts per state, and the approximate download size (the sum of each file's `size_kb` from Nexus).
+- Problems found before download: missing dependencies (from the mod dataset) and mods broken for this game version (from SMAPI's update API); for a free account, a line saying each download takes one click on Nexus.
+- **Reset** and **New profile from link**, which creates the profile and fills the download queue; closing leaves nothing behind.
 
 ## Download queue
 
