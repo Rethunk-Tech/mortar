@@ -4,6 +4,7 @@ import {
   alpha,
   Box,
   Button,
+  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
@@ -12,7 +13,16 @@ import {
   Typography,
 } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
-import { ArrowRight, ArrowUp, ExternalLink, ShieldCheck, X } from 'lucide-react'
+import {
+  ArrowRight,
+  ArrowUp,
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
+  ShieldCheck,
+  X,
+} from 'lucide-react'
+import { type ReactNode, useEffect, useState } from 'react'
 import type { Update } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
@@ -20,7 +30,9 @@ import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { changelogsBetween, mergeCachedDetails } from './changelogRange.ts'
 import { modId, sameId, siblingsOf, updateCount } from './lookup.ts'
+import { useNexusDetails } from './nexusDetails.ts'
 import { accent, paper } from './paper.ts'
 import { LetterTile } from './parts.tsx'
 import { useMods } from './store.ts'
@@ -69,6 +81,82 @@ const pendingUpdate = (items: Item[], profileId: string, u: Update) =>
     ? pendingFor(items, profileId, 0, u.githubRepo)
     : pendingFor(items, profileId, u.nexusId)
 
+function Fold({ title, children }: { title: string; children: ReactNode }) {
+  const [shown, setShown] = useState(false)
+  const Icon = shown ? ChevronDown : ChevronRight
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <Button
+        size="small"
+        onClick={() => setShown(!shown)}
+        startIcon={<Icon size={14} aria-hidden={true} />}
+        aria-expanded={shown}
+        sx={{
+          whiteSpace: 'nowrap',
+          fontSize: 12,
+          color: 'text.secondary',
+          fontWeight: 700,
+          textTransform: 'none',
+          alignSelf: 'flex-start',
+          px: 0.5,
+        }}
+      >
+        {title}
+      </Button>
+      <Collapse in={shown} unmountOnExit={true}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, pl: 1 }}>{children}</Box>
+      </Collapse>
+    </Box>
+  )
+}
+
+function Changes({ update }: { update: Update }) {
+  const { t } = useLingui()
+  const details = useNexusDetails((s) => s.byId[update.nexusId]?.details)
+  if (!update.nexusId) {
+    return null
+  }
+  if (!details) {
+    return (
+      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+        {t`Changelog is not cached yet.`}
+      </Typography>
+    )
+  }
+  const all = details.changelogs ?? []
+  const logs = changelogsBetween(all, update.installed, update.version)
+  if (all.length === 0) {
+    return (
+      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+        {t`This mod has no changelog.`}
+      </Typography>
+    )
+  }
+  if (logs.length === 0) {
+    return (
+      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+        {t`No changelog entries between these versions.`}
+      </Typography>
+    )
+  }
+  return (
+    <Fold
+      title={t`${plural(logs.length, { one: '# version of changes', other: '# versions of changes' })}`}
+    >
+      {logs.map((c) => (
+        <Box key={c.version}>
+          <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{c.version}</Typography>
+          <Typography
+            sx={{ fontSize: 13, pl: 2, whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}
+          >
+            {(c.notes ?? []).map((n) => `• ${n}`).join('\n')}
+          </Typography>
+        </Box>
+      ))}
+    </Fold>
+  )
+}
+
 function Row({ update, profileId }: { update: Update; profileId: string }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
@@ -109,6 +197,7 @@ function Row({ update, profileId }: { update: Update; profileId: string }) {
             {notes.join(' · ')}
           </Typography>
         ) : null}
+        <Changes update={update} />
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, whiteSpace: 'nowrap' }}>
         <Version>{update.installed}</Version>
@@ -198,6 +287,14 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   const close = () => setReviewing(false)
   const list = updates?.updates ?? []
   const items = useQueue((s) => s.state.items)
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    mergeCachedDetails(
+      (updates?.updates ?? []).filter((u) => u.nexusId > 0).map((u) => u.nexusId),
+    ).catch(reportUnexpected)
+  }, [open, updates])
   const wanted = list
     .filter((u) => downloadable(u) && !pendingUpdate(items, profile.id, u))
     .map(updateWant)
@@ -205,6 +302,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
     <Dialog
       open={open && list.length > 0}
       onClose={close}
+      transitionDuration={0}
       maxWidth={false}
       slotProps={{
         paper: { sx: { ...paper.sx, width: DIALOG_WIDTH, maxWidth: 'calc(100% - 32px)' } },
