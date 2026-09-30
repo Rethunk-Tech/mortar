@@ -51,6 +51,11 @@ func (s *Service) ImportGameMods(gameID string) (GameModsResult, error) {
 
 func (s *Service) List(game string) ([]Profile, error) { return s.store.List(game) }
 
+// ProfilesWithMod lists the profiles of game whose profile.json names uniqueID.
+func (s *Service) ProfilesWithMod(game, uniqueID string) ([]ModInProfile, error) {
+	return s.store.ProfilesWithMod(game, uniqueID)
+}
+
 func (s *Service) Create(game, name string) (Profile, error) { return s.store.Create(game, name) }
 
 func (s *Service) Rename(game, id, name string) (Profile, error) {
@@ -92,6 +97,14 @@ func (s *Service) ClearCover(game, id string) (Profile, error) { return s.store.
 func (s *Service) Covers(game, id string) ([]string, error) { return s.store.Covers(game, id) }
 
 func (s *Service) Duplicate(game, id string) (Profile, error) { return s.store.Duplicate(game, id) }
+
+// Diff compares two profiles of the same game by UniqueID.
+func (s *Service) Diff(game, aID, bID string) (Diff, error) { return s.store.Diff(game, aID, bID) }
+
+// CopyMods copies selected mods from one profile into another from the store, with no download.
+func (s *Service) CopyMods(game, fromID, toID string, uniqueIDs []string) (Profile, error) {
+	return s.store.CopyMods(game, fromID, toID, uniqueIDs)
+}
 
 // Delete moves the profile to the trash, where it stays restorable for 30 days.
 func (s *Service) Delete(game, id string) error { return s.store.Delete(game, id) }
