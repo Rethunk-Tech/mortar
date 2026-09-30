@@ -44,6 +44,7 @@ func (s *Store) moveTo(game, id, oldKey, newKey string, source *Source) (Profile
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	var sw swapped
 	p, err := s.updateLocked(game, id, func(p *Profile, dir string) error {
 		ei := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == oldKey })
 		if ei < 0 {
@@ -59,7 +60,8 @@ func (s *Store) moveTo(game, id, oldKey, newKey string, source *Source) (Profile
 				return &DuplicateError{Key: newKey, Label: entryLabel(e)}
 			}
 		}
-		ne, err := s.swapEntry(game, dir, p.Entries[ei], newKey)
+		ne, w, err := s.swapEntry(game, dir, p.Entries[ei], newKey)
+		sw = w
 		if err != nil {
 			return err
 		}
@@ -70,28 +72,30 @@ func (s *Store) moveTo(game, id, oldKey, newKey string, source *Source) (Profile
 		return nil
 	})
 	if err != nil {
-		return Profile{}, err
+		return Profile{}, errors.Join(err, sw.undo())
 	}
+	sw.commit()
 	return p, s.items.Touch(game, oldKey, newKey)
 }
 
 // swapEntry builds the target version's folder beside mods/, carries over the profile's files, and renames it
-// over the old one. It returns the entry as it stands afterwards.
-func (s *Store) swapEntry(game, dir string, e Entry, newKey string) (Entry, error) {
+// over the old one. It returns the entry as it stands afterwards, and the swap for the caller to commit once
+// profile.json records it or undo if that fails.
+func (s *Store) swapEntry(game, dir string, e Entry, newKey string) (Entry, swapped, error) {
 	oldSrc, err := s.items.Path(game, e.Key)
 	if err != nil {
-		return Entry{}, err
+		return Entry{}, swapped{}, err
 	}
 	newSrc, err := s.items.Path(game, newKey)
 	if err != nil {
-		return Entry{}, err
+		return Entry{}, swapped{}, err
 	}
 	found, err := manifest.Scan(newSrc)
 	if err != nil {
-		return Entry{}, err
+		return Entry{}, swapped{}, err
 	}
 	if len(found) == 0 {
-		return Entry{}, &NoModError{Key: newKey}
+		return Entry{}, swapped{}, &NoModError{Key: newKey}
 	}
 	ne := Entry{Key: newKey, PreviousKey: e.Key, Source: e.Source, Mods: entryMods(found), Disabled: []string{}}
 	for _, m := range ne.Mods {
@@ -100,26 +104,26 @@ func (s *Store) swapEntry(game, dir string, e Entry, newKey string) (Entry, erro
 		}
 	}
 	if err := s.saveBackup(game); err != nil {
-		return Entry{}, fmt.Errorf("back up saves: %w", err)
+		return Entry{}, swapped{}, fmt.Errorf("back up saves: %w", err)
 	}
 	modsDir := filepath.Join(dir, "mods")
 	if err := os.MkdirAll(modsDir, 0o700); err != nil {
-		return Entry{}, err
+		return Entry{}, swapped{}, err
 	}
 	tmp, err := os.MkdirTemp(modsDir, tempPrefix)
 	if err != nil {
-		return Entry{}, err
+		return Entry{}, swapped{}, err
 	}
-	err = fillUpdate(tmp, modsDir, oldSrc, newSrc, e, ne)
+	sw, err := fillUpdate(tmp, modsDir, oldSrc, newSrc, e, ne)
 	if err != nil {
-		return Entry{}, errors.Join(err, os.RemoveAll(tmp))
+		return Entry{}, swapped{}, errors.Join(err, os.RemoveAll(tmp))
 	}
-	return ne, nil
+	return ne, sw, nil
 }
 
-func fillUpdate(tmp, modsDir, oldSrc, newSrc string, e, ne Entry) error {
+func fillUpdate(tmp, modsDir, oldSrc, newSrc string, e, ne Entry) (swapped, error) {
 	if err := datadir.CopyTree(newSrc, tmp); err != nil {
-		return err
+		return swapped{}, err
 	}
 	for _, nm := range ne.Mods {
 		i := slices.IndexFunc(e.Mods, func(m EntryMod) bool { return sameID(m.UniqueID, nm.UniqueID) })
@@ -128,7 +132,7 @@ func fillUpdate(tmp, modsDir, oldSrc, newSrc string, e, ne Entry) error {
 		}
 		plain, dotted, err := pair(modsDir, e.Key, e.Mods[i].Folder)
 		if err != nil {
-			return err
+			return swapped{}, err
 		}
 		cur := plain
 		if !exists(cur) {
@@ -139,38 +143,64 @@ func fillUpdate(tmp, modsDir, oldSrc, newSrc string, e, ne Entry) error {
 		}
 		err = carryOver(cur, filepath.Join(oldSrc, filepath.FromSlash(e.Mods[i].Folder)), filepath.Join(tmp, filepath.FromSlash(nm.Folder)))
 		if err != nil {
-			return err
+			return swapped{}, err
 		}
 	}
 	final, err := materialize(tmp, ne)
 	if err != nil {
-		return err
+		return swapped{}, err
 	}
 	return replaceFolder(modsDir, e.Key, tmp, final)
 }
 
-// replaceFolder moves the old entry folder aside, renames tmp into place, and restores the old folder if that fails.
-func replaceFolder(modsDir, oldKey, tmp, final string) error {
+// asidePrefix names an entry folder moved out of the way during an update. Its suffix is the folder's own name,
+// so rebuild can put it back if Mortar stops before profile.json records the update.
+const asidePrefix = tempPrefix + "aside_"
+
+// swapped is an entry folder replaced on disk but not yet recorded in profile.json.
+type swapped struct{ old, aside, placed string }
+
+func (w swapped) commit() {
+	if w.aside != "" {
+		// A failed delete leaves a temp-prefixed folder, which the next rebuild sweeps.
+		_ = os.RemoveAll(w.aside)
+	}
+}
+
+func (w swapped) undo() error {
+	if w.placed == "" {
+		return nil
+	}
+	err := os.RemoveAll(w.placed)
+	if w.aside != "" {
+		err = errors.Join(err, os.Rename(w.aside, w.old))
+	}
+	return err
+}
+
+// replaceFolder moves the old entry folder aside and renames tmp into place, restoring the old folder if that fails.
+func replaceFolder(modsDir, oldKey, tmp, final string) (swapped, error) {
 	old := filepath.Join(modsDir, oldKey)
 	if !exists(old) {
 		old = filepath.Join(modsDir, "."+oldKey)
 	}
-	aside := tmp + ".old"
-	hadOld := exists(old)
-	if hadOld {
-		if err := os.Rename(old, aside); err != nil {
-			return err
+	w := swapped{old: old, placed: filepath.Join(modsDir, final)}
+	if exists(old) {
+		w.aside = filepath.Join(modsDir, asidePrefix+filepath.Base(old))
+		if err := os.RemoveAll(w.aside); err != nil {
+			return swapped{}, err
+		}
+		if err := os.Rename(old, w.aside); err != nil {
+			return swapped{}, err
 		}
 	}
-	if err := os.Rename(tmp, filepath.Join(modsDir, final)); err != nil {
-		if hadOld {
-			err = errors.Join(err, os.Rename(aside, old))
+	if err := os.Rename(tmp, w.placed); err != nil {
+		if w.aside != "" {
+			err = errors.Join(err, os.Rename(w.aside, old))
 		}
-		return err
+		return swapped{}, err
 	}
-	// A failed delete leaves a temp-prefixed folder, which the next rebuild sweeps.
-	_ = os.RemoveAll(aside)
-	return nil
+	return w, nil
 }
 
 // carryOver applies the three-way rule to every file of prof (the profile's mod folder), against old (the current

@@ -496,18 +496,34 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 	return out, nil
 }
 
-// rebuild recopies mods/ and any entry folder that is gone, and clears temp folders an interrupted run left.
+// rebuild recopies mods/ and any entry folder that is gone, puts back an entry folder an interrupted update left
+// aside, and clears temp folders and folders of entries profile.json does not record.
 func (s *Store) rebuild(game, dir string, p Profile) error {
 	modsDir := filepath.Join(dir, "mods")
 	if err := os.MkdirAll(modsDir, 0o700); err != nil {
 		return err
+	}
+	known := map[string]bool{}
+	for _, e := range p.Entries {
+		known[e.Key], known["."+e.Key] = true, true
+		if exists(filepath.Join(modsDir, e.Key)) || exists(filepath.Join(modsDir, "."+e.Key)) {
+			continue
+		}
+		for _, name := range []string{e.Key, "." + e.Key} {
+			if aside := filepath.Join(modsDir, asidePrefix+name); exists(aside) {
+				if err := os.Rename(aside, filepath.Join(modsDir, name)); err != nil {
+					return err
+				}
+				break
+			}
+		}
 	}
 	items, err := os.ReadDir(modsDir)
 	if err != nil {
 		return err
 	}
 	for _, it := range items {
-		if strings.HasPrefix(it.Name(), tempPrefix) {
+		if strings.HasPrefix(it.Name(), tempPrefix) || (it.IsDir() && !known[it.Name()]) {
 			if err := os.RemoveAll(filepath.Join(modsDir, it.Name())); err != nil {
 				return err
 			}

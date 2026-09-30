@@ -185,3 +185,47 @@ func TestUpdateBacksUpSavesAndHonoursLock(t *testing.T) {
 		t.Fatalf("backups = %v", got)
 	}
 }
+
+func TestUpdateThatCannotRecordRestoresTheOldFolder(t *testing.T) {
+	m := manifestJSON("me.a")
+	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m})
+	writeFile(t, e.mods(p.ID), "a-1/A/config.json", "mine")
+	dir := filepath.Dir(e.mods(p.ID))
+	if err := os.Chmod(dir, 0o500); err != nil {
+		t.Fatal(err)
+	}
+	_, err := e.UpdateEntry("stardew", p.ID, "a-1", "a-2")
+	if cerr := os.Chmod(dir, 0o700); cerr != nil {
+		t.Fatal(cerr)
+	}
+	if err == nil {
+		t.Fatal("update recorded into a read-only profile folder")
+	}
+	if got := names(t, e.mods(p.ID)); !slices.Equal(got, []string{"a-1"}) {
+		t.Fatalf("mods/ = %v", got)
+	}
+	if g := read(t, filepath.Join(e.mods(p.ID), "a-1", "A", "config.json")); g != "mine" {
+		t.Fatalf("config = %q", g)
+	}
+}
+
+func TestRebuildUndoesAnInterruptedUpdate(t *testing.T) {
+	m := manifestJSON("me.a")
+	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m})
+	writeFile(t, e.mods(p.ID), "a-1/A/config.json", "mine")
+	mods := e.mods(p.ID)
+	if err := os.Rename(filepath.Join(mods, "a-1"), filepath.Join(mods, asidePrefix+"a-1")); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, mods, "a-2/A/manifest.json", m)
+	writeFile(t, mods, ".a-3/A/manifest.json", m)
+	if _, err := e.Mods("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if got := names(t, mods); !slices.Equal(got, []string{"a-1"}) {
+		t.Fatalf("mods/ = %v", got)
+	}
+	if g := read(t, filepath.Join(mods, "a-1", "A", "config.json")); g != "mine" {
+		t.Fatalf("config = %q", g)
+	}
+}
