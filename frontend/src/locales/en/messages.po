@@ -19,6 +19,10 @@ msgstr "Sand"
 msgid "Dismiss"
 msgstr "Dismiss"
 
+#: src/loader/Banner.tsx:33
+msgid "Bundled mods added"
+msgstr "Bundled mods added"
+
 #: src/settings/sections/Appearance.tsx:117
 msgid "Translucent window"
 msgstr "Translucent window"
@@ -34,6 +38,10 @@ msgstr "Could not quit Mortar"
 #: src/game/NewProfileDialog.tsx:19
 msgid "Enter a name for the profile."
 msgstr "Enter a name for the profile."
+
+#: src/loader/Banner.tsx:31
+msgid "Files added"
+msgstr "Files added"
 
 #: src/game/NewProfileDialog.tsx:41
 #: src/game/Sidebar.tsx:162
@@ -106,9 +114,21 @@ msgstr "Cancel"
 msgid "Mortar"
 msgstr "Mortar"
 
+#: src/loader/store.ts:43
+msgid "Could not install SMAPI"
+msgstr "Could not install SMAPI"
+
+#: src/loader/Banner.tsx:27
+msgid "Update"
+msgstr "Update"
+
 #: src/games/GameSelect.tsx:145
 msgid "Installed"
 msgstr "Installed"
+
+#: src/loader/Banner.tsx:20
+msgid "SMAPI is not installed"
+msgstr "SMAPI is not installed"
 
 #: src/settings/sections/Appearance.tsx:104
 msgid "Changes apply right away"
@@ -238,12 +258,21 @@ msgstr "Built on"
 msgid "Play"
 msgstr "Play"
 
+#: src/loader/Banner.tsx:21
+msgid "Install"
+msgstr "Install"
+
 #: src/game/Sidebar.tsx:180
 #: src/settings/SettingsPage.tsx:42
 #: src/shell/AppMenu.tsx:74
 #: src/shell/TitleBar.tsx:98
 msgid "Settings"
 msgstr "Settings"
+
+#. placeholder {0}: status.version
+#: src/loader/store.ts:39
+msgid "SMAPI {0} is installed"
+msgstr "SMAPI {0} is installed"
 
 #: src/games/GameSelect.tsx:147
 msgid "{profileCount, plural, one {Installed · # profile} other {Installed · # profiles}}"
@@ -270,13 +299,26 @@ msgstr "Accent colour"
 msgid "Profiles"
 msgstr "Profiles"
 
+#: src/loader/Banner.tsx:30
+msgid "Downloaded"
+msgstr "Downloaded"
+
 #: src/games/GameSelect.tsx:165
 msgid "Steam was not found."
 msgstr "Steam was not found."
 
+#: src/loader/Banner.tsx:32
+msgid "Launcher replaced"
+msgstr "Launcher replaced"
+
 #: src/games/GameSelect.tsx:31
 msgid "Could not save the last game"
 msgstr "Could not save the last game"
+
+#. placeholder {0}: status.latest
+#: src/loader/Banner.tsx:26
+msgid "SMAPI {0} is available"
+msgstr "SMAPI {0} is available"
 
 #: src/game/Detail.tsx:171
 msgid "No mods yet"
@@ -285,6 +327,10 @@ msgstr "No mods yet"
 #: src/settings/SettingsPage.tsx:48
 msgid "Settings sections"
 msgstr "Settings sections"
+
+#: src/loader/Banner.tsx:24
+msgid "Reinstall"
+msgstr "Reinstall"
 
 #: src/shell/TitleBar.tsx:105
 msgid "Restore"
@@ -301,3 +347,7 @@ msgstr "Close"
 #: src/games/GameSelect.tsx:161
 msgid "Mortar supports Steam installed directly on the system."
 msgstr "Mortar supports Steam installed directly on the system."
+
+#: src/loader/Banner.tsx:23
+msgid "A game update replaced SMAPI's launcher"
+msgstr "A game update replaced SMAPI's launcher"

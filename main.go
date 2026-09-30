@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-AI/mortar/internal/loadersvc"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	modstore "github.com/Rethunk-AI/mortar/internal/store"
@@ -42,6 +43,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	profiles.Bundled = loadersvc.BundledKey(store)
+	loaders := loadersvc.NewService(home, store, items, profiles)
 	now := time.Now()
 	if err := profiles.PurgeTrash(now); err != nil {
 		log.Printf("purge trash: %v", err)
@@ -60,7 +63,7 @@ func main() {
 		Description: "Multi-game desktop mod manager",
 		Services: []application.Service{
 			application.NewService(svc), application.NewService(gamesSvc),
-			application.NewService(profile.NewService(profiles)),
+			application.NewService(profile.NewService(profiles)), application.NewService(loaders),
 		},
 		Assets: application.AssetOptions{
 			Handler:    application.AssetFileServerFS(assets),
@@ -76,6 +79,7 @@ func main() {
 	})
 
 	svc.App = app
+	loaders.App = app
 
 	// Wails fixes BackgroundType at window creation, so the stored value applies on restart.
 	background, colour := application.BackgroundTypeSolid, application.NewRGBA(25, 25, 30, 255)

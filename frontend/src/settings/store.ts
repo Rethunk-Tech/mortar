@@ -9,6 +9,7 @@ const defaults: Settings = {
   lastGame: '',
   lastProfile: {},
   gameFolders: {},
+  loaders: {},
 }
 
 export const useSettings = create<Settings>(() => defaults)
