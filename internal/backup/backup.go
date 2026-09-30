@@ -18,15 +18,32 @@ import (
 // Keep is how many backups are retained.
 const Keep = 5
 
+// MinGap is how recent the newest backup must be to stand in for a new one, so a run of updates cannot
+// evict every older backup with copies of the same saves.
+const MinGap = 10 * time.Minute
+
 const stamp = "2006-01-02T15-04-05.000"
 
 // Saves zips savesDir into backupsDir/<timestamp>.zip through a temp file and rename, then deletes all but the
-// newest Keep backups. It returns the zip's path, or "" when savesDir does not exist.
+// newest Keep backups. It returns the zip's path (the newest existing one when that is under MinGap old), or ""
+// when savesDir does not exist.
 func Saves(savesDir, backupsDir string, now time.Time) (string, error) {
 	if _, err := os.Stat(savesDir); errors.Is(err, fs.ErrNotExist) {
 		return "", nil
 	} else if err != nil {
 		return "", err
+	}
+	zips, err := list(backupsDir)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return "", err
+	}
+	if len(zips) > 0 {
+		newest := zips[len(zips)-1]
+		if t, err := time.Parse(stamp, strings.TrimSuffix(newest, ".zip")); err == nil {
+			if age := now.Sub(t); age >= 0 && age < MinGap {
+				return filepath.Join(backupsDir, newest), nil
+			}
+		}
 	}
 	if err := os.MkdirAll(backupsDir, 0o700); err != nil {
 		return "", err
@@ -84,11 +101,11 @@ func writeZip(w io.Writer, root string) error {
 	return errors.Join(err, zw.Close())
 }
 
-// prune removes the oldest backups beyond Keep; the timestamp names sort oldest first.
-func prune(dir string) error {
+// list returns the backups' names, oldest first: the timestamp names sort that way.
+func list(dir string) ([]string, error) {
 	items, err := os.ReadDir(dir)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	var zips []string
 	for _, it := range items {
@@ -97,6 +114,15 @@ func prune(dir string) error {
 		}
 	}
 	slices.Sort(zips)
+	return zips, nil
+}
+
+// prune removes the oldest backups beyond Keep.
+func prune(dir string) error {
+	zips, err := list(dir)
+	if err != nil {
+		return err
+	}
 	var errs []error
 	for _, n := range zips[:max(0, len(zips)-Keep)] {
 		errs = append(errs, os.Remove(filepath.Join(dir, n)))

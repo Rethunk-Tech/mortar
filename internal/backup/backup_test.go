@@ -23,7 +23,7 @@ func TestSavesZipsAndKeepsFive(t *testing.T) {
 	var last string
 	for i := range 7 {
 		var err error
-		if last, err = Saves(saves, out, start.Add(time.Duration(i)*time.Second)); err != nil {
+		if last, err = Saves(saves, out, start.Add(time.Duration(i)*MinGap)); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -52,5 +52,30 @@ func TestSavesSkipsMissingFolder(t *testing.T) {
 	}
 	if _, err := os.Stat(out); err == nil {
 		t.Fatal("backups folder created for nothing")
+	}
+}
+
+func TestSavesSkipsWhileTheNewestIsRecent(t *testing.T) {
+	saves := filepath.Join(t.TempDir(), "Saves")
+	if err := os.MkdirAll(saves, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	out := t.TempDir()
+	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	first, err := Saves(saves, out, start)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := 1; i < 8; i++ {
+		got, err := Saves(saves, out, start.Add(time.Duration(i)*time.Minute))
+		if err != nil || got != first {
+			t.Fatalf("backup %d = %q, %v; want the existing %q", i, got, err, first)
+		}
+	}
+	if _, err := Saves(saves, out, start.Add(MinGap)); err != nil {
+		t.Fatal(err)
+	}
+	if items, _ := os.ReadDir(out); len(items) != 2 {
+		t.Fatalf("%d backups, want 2", len(items))
 	}
 }
