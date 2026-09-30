@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { holdFocus } from './holdFocus.ts'
+import { holdFocus, launchEscHides } from './holdFocus.ts'
 
 interface Fake {
   inert: boolean
@@ -82,4 +82,10 @@ test('holdFocus inerts siblings and title-bar chrome but not window controls', (
   restore()
   expect(content.inert).toBe(false)
   expect(tab.inert).toBe(false)
+})
+
+test('Esc hides the launch overlay unless another dialog is open', () => {
+  expect(launchEscHides('Escape', 1)).toBe(true)
+  expect(launchEscHides('Escape', 2)).toBe(false)
+  expect(launchEscHides('Enter', 1)).toBe(false)
 })

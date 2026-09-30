@@ -42,3 +42,7 @@ export function holdFocus(el: HTMLElement) {
     }
   }
 }
+
+export function launchEscHides(key: string, dialogCount: number): boolean {
+  return key === 'Escape' && dialogCount <= 1
+}

@@ -25,7 +25,7 @@ import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { holdFocus } from './holdFocus.ts'
+import { holdFocus, launchEscHides } from './holdFocus.ts'
 import { useLaunch } from './store.ts'
 import { UpdateWarnDialog } from './UpdateWarnDialog.tsx'
 
@@ -77,7 +77,22 @@ function Overlay({ game }: { game: string }) {
   const setTab = useTab((s) => s.setTab)
   const hide = useLaunch((s) => s.hide)
   const hidden = useLaunch((s) => s.hidden)
-  if (status?.game !== game || status.state !== State.Launching || hidden) {
+  const overlayOpen = status?.game === game && status.state === State.Launching && !hidden
+  useEffect(() => {
+    if (!overlayOpen) {
+      return
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (!launchEscHides(e.key, document.querySelectorAll('[role="dialog"]').length)) {
+        return
+      }
+      e.preventDefault()
+      hide()
+    }
+    globalThis.addEventListener('keydown', onKey)
+    return () => globalThis.removeEventListener('keydown', onKey)
+  }, [hide, overlayOpen])
+  if (!overlayOpen) {
     return null
   }
   const profileName = profile?.name ?? ''
