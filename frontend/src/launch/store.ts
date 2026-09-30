@@ -12,6 +12,7 @@ import {
   Stop,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { useConsole } from '../console/store.ts'
+import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { useLoader } from '../loader/store.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -90,6 +91,9 @@ export const useLaunch = create<{
     notify(status)
     // Failed, NoSteam and NeedsLoader are one-off announcements; the game itself is idle.
     if (status.state === State.Running || status.state === State.Idle) {
+      if (status.state === State.Running && get().status?.state === State.Launching) {
+        useTab.getState().setTab('console')
+      }
       set({ status })
     } else {
       set({ status: { ...status, state: State.Idle } })
