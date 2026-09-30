@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -75,20 +76,16 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 	if i < 0 {
 		return fmt.Errorf("release %s of %s has no asset %s", it.Tag, it.Repo, it.Asset)
 	}
-	p := &progress{s: s, id: it.ID, total: assets[i].Size, last: s.d.Now()}
-	path, err := s.d.GitHub.Download(ctx, assets[i], func(done, total int64) {
-		if total > 0 {
-			p.total = total
-		}
-		p.set(done)
-	})
-	if err != nil {
+	if err := os.MkdirAll(filepath.Join(s.d.Dir, downloadsDir), 0o700); err != nil {
+		return err
+	}
+	path := destPath(s.d.Dir, it.ID, it.Asset)
+	if err := s.fetch(ctx, it, assets[i].URL, path); err != nil {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-		return s.diskError(err, assets[i].Size)
+		return err
 	}
-	defer func() { _ = os.Remove(path) }()
 	s.mu.Lock()
 	cur := s.find(it.ID)
 	if cur == nil || cur.State != StateDownloading {
@@ -103,6 +100,7 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 	if err != nil {
 		return err
 	}
+	dropDownload(path)
 	owner, repo, _ := strings.Cut(it.Repo, "/")
 	unverified := false
 	for _, id := range ids {

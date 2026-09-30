@@ -4,7 +4,9 @@ package github
 
 import (
 	"context"
+	"crypto/md5" // #nosec G501 -- Content-MD5 is MD5 by RFC 1864
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -111,45 +113,256 @@ func FetchReleases(ctx context.Context, hc *http.Client, url string) ([]Release,
 // Progress reports bytes received so far and the expected total (0 when unknown).
 type Progress func(done, total int64)
 
-// Download streams url to dest, failing when the body exceeds limit bytes.
-func Download(ctx context.Context, hc *http.Client, url, dest string, limit int64, progress Progress) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+const downloadRestarts = 3
+
+type resumeMeta struct {
+	ExpectedSize int64  `json:"expectedSize"`
+	ETag         string `json:"etag"`
+	URL          string `json:"url"`
+	Hash         string `json:"hash"`
+	MD5          string `json:"md5,omitempty"`
+}
+
+func resumeSidecar(path string) string { return path + ".resume.json" }
+
+func loadResume(path string) resumeMeta {
+	b, err := os.ReadFile(resumeSidecar(path))
 	if err != nil {
-		return err
+		return resumeMeta{}
 	}
+	var m resumeMeta
+	if json.Unmarshal(b, &m) != nil {
+		return resumeMeta{}
+	}
+	return m
+}
+
+func saveResume(path string, m resumeMeta) {
+	b, err := json.Marshal(m)
+	if err != nil {
+		return
+	}
+	_ = os.WriteFile(resumeSidecar(path), b, 0o600)
+}
+
+func dropDownload(path string) {
+	_ = os.Remove(path)
+	_ = os.Remove(resumeSidecar(path))
+}
+
+// Download streams url to dest, appending with Range when a partial and the server allow it, and
+// failing when the body exceeds limit bytes.
+func Download(ctx context.Context, hc *http.Client, url, dest string, limit int64, progress Progress) error {
 	if hc == nil {
 		hc = &http.Client{Timeout: 30 * time.Minute}
 	}
+	for n := 0; n <= downloadRestarts; n++ {
+		err, retry := downloadOnce(ctx, hc, url, dest, limit, progress)
+		if retry {
+			dropDownload(dest)
+			continue
+		}
+		return err
+	}
+	return fmt.Errorf("the download server sent a range Mortar could not resume")
+}
+
+func downloadOnce(ctx context.Context, hc *http.Client, url, dest string, limit int64, progress Progress) (err error, retry bool) {
+	meta := loadResume(dest)
+	if meta.URL == "" {
+		meta.URL = url
+	}
+	offset := int64(0)
+	if st, err := os.Stat(dest); err == nil {
+		offset = st.Size()
+	}
+	if meta.ExpectedSize > 0 && offset > meta.ExpectedSize {
+		dropDownload(dest)
+		offset = 0
+		meta = resumeMeta{URL: url}
+	}
+	if meta.ExpectedSize > 0 && offset == meta.ExpectedSize && offset > 0 {
+		return verifyDownload(dest, meta), false
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return err, false
+	}
+	if offset > 0 {
+		req.Header.Set("Range", fmt.Sprintf("bytes=%d-", offset))
+	}
 	resp, err := hc.Do(req)
 	if err != nil {
-		return err
+		return err, false
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if err := RateLimited(resp); err != nil {
-		return err
+		return err, false
 	}
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("server answered %s", resp.Status)
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		if offset > 0 {
+			dropDownload(dest)
+			offset = 0
+		}
+	case http.StatusPartialContent:
+		start, total, ok := parseContentRange(resp.Header.Get("Content-Range"))
+		if !ok || start != offset {
+			return nil, true
+		}
+		if total > 0 {
+			meta.ExpectedSize = total
+		}
+	case http.StatusUnauthorized, http.StatusForbidden, http.StatusGone:
+		return errors.New("the download link has expired"), false
+	case http.StatusRequestedRangeNotSatisfiable:
+		return nil, true
+	default:
+		return fmt.Errorf("server answered %s", resp.Status), false
+	}
+
+	tooLarge := fmt.Errorf("larger than %d MiB", limit>>20)
+	if etag := resp.Header.Get("ETag"); etag != "" {
+		if meta.ETag != "" && meta.ETag != etag && offset > 0 && resp.StatusCode == http.StatusPartialContent {
+			return nil, true
+		}
+		meta.ETag = etag
+	}
+	if h := hashFrom(resp.Header); h != "" {
+		meta.Hash = h
+	}
+	if v := strings.TrimSpace(resp.Header.Get("Content-MD5")); v != "" {
+		meta.MD5 = v
+	}
+	meta.URL = url
+	if resp.StatusCode == http.StatusOK && resp.ContentLength > 0 {
+		meta.ExpectedSize = resp.ContentLength
+	} else if resp.StatusCode == http.StatusPartialContent && meta.ExpectedSize == 0 && resp.ContentLength > 0 {
+		meta.ExpectedSize = offset + resp.ContentLength
+	}
+	if meta.ExpectedSize > limit {
+		return tooLarge, false
 	}
 	if resp.ContentLength > limit {
-		return fmt.Errorf("larger than %d MiB", limit>>20)
+		return tooLarge, false
 	}
-	out, err := fsx.Create(dest)
+
+	var f *os.File
+	if offset > 0 {
+		f, err = fsx.OpenFile(dest, os.O_WRONLY|os.O_APPEND, 0o600)
+	} else {
+		f, err = fsx.Create(dest)
+	}
+	if err != nil {
+		return err, false
+	}
+	defer func() { _ = f.Close() }()
+	saveResume(dest, meta)
+
+	var w io.Writer = f
+	if progress != nil {
+		total := meta.ExpectedSize
+		w = &progressWriter{w: f, done: offset, total: total, fn: progress}
+	}
+	n, err := io.Copy(w, io.LimitReader(resp.Body, limit+1-offset))
+	if err != nil {
+		if ctx.Err() != nil {
+			return ctx.Err(), false
+		}
+		return err, false
+	}
+	if offset+n > limit {
+		return tooLarge, false
+	}
+	if err := f.Close(); err != nil {
+		return err, false
+	}
+	st, err := os.Stat(dest)
+	if err != nil {
+		return err, false
+	}
+	if meta.ExpectedSize > 0 && st.Size() != meta.ExpectedSize {
+		dropDownload(dest)
+		return fmt.Errorf("the download size is %d bytes, not %d", st.Size(), meta.ExpectedSize), false
+	}
+	return verifyDownload(dest, meta), false
+}
+
+func parseContentRange(h string) (start, total int64, ok bool) {
+	h = strings.TrimSpace(strings.TrimPrefix(h, "bytes"))
+	rangePart, totalPart, found := strings.Cut(strings.TrimSpace(h), "/")
+	if !found {
+		return 0, 0, false
+	}
+	from, _, ok := strings.Cut(rangePart, "-")
+	if !ok {
+		return 0, 0, false
+	}
+	start, err := strconv.ParseInt(from, 10, 64)
+	if err != nil {
+		return 0, 0, false
+	}
+	if totalPart != "*" {
+		total, err = strconv.ParseInt(totalPart, 10, 64)
+		if err != nil {
+			return 0, 0, false
+		}
+	}
+	return start, total, true
+}
+
+func hashFrom(h http.Header) string {
+	if v := strings.TrimSpace(h.Get("X-Checksum-Sha256")); v != "" {
+		return "sha256:" + strings.ToLower(strings.TrimPrefix(v, "sha256:"))
+	}
+	return ""
+}
+
+func verifyDownload(path string, meta resumeMeta) error {
+	if meta.Hash == "" && meta.MD5 == "" {
+		return nil
+	}
+	f, err := fsx.Open(path)
 	if err != nil {
 		return err
 	}
-	var w io.Writer = out
-	if progress != nil {
-		w = &progressWriter{w: out, total: max(resp.ContentLength, 0), fn: progress}
+	defer func() { _ = f.Close() }()
+	if meta.Hash != "" {
+		kind, want, _ := strings.Cut(meta.Hash, ":")
+		if kind == "sha256" {
+			h := sha256.New()
+			if _, err := io.Copy(h, f); err != nil {
+				return err
+			}
+			if !strings.EqualFold(want, hex.EncodeToString(h.Sum(nil))) {
+				dropDownload(path)
+				return errors.New("the download did not match its checksum")
+			}
+			if _, err := f.Seek(0, io.SeekStart); err != nil {
+				return err
+			}
+		}
 	}
-	n, err := copyIdle(ctx, w, io.LimitReader(resp.Body, limit+1), downloadIdle)
-	if cerr := out.Close(); err == nil {
-		err = cerr
+	if meta.MD5 == "" {
+		return nil
 	}
-	if err == nil && n > limit {
-		err = fmt.Errorf("larger than %d MiB", limit>>20)
+	want, err := base64.StdEncoding.DecodeString(meta.MD5)
+	if err != nil {
+		dropDownload(path)
+		return fmt.Errorf("Content-MD5: %w", err)
 	}
-	return err
+	sum := md5.New() // #nosec G401 -- Content-MD5 is MD5 by RFC 1864
+	if _, err := io.Copy(sum, f); err != nil {
+		return err
+	}
+	got := sum.Sum(nil)
+	if len(want) != md5.Size || string(got) != string(want) {
+		dropDownload(path)
+		return errors.New("the download did not match its Content-MD5 checksum")
+	}
+	return nil
 }
 
 func copyIdle(ctx context.Context, dst io.Writer, src io.Reader, idle time.Duration) (int64, error) {

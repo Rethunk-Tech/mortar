@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -118,27 +120,50 @@ func TestDownload(t *testing.T) {
 	if b, _ := fsx.ReadFile(path); string(b) != "data" || last != 4 || !strings.HasSuffix(path, ".zip") {
 		t.Fatalf("file = %q, progress = %d, path = %s", b, last, path)
 	}
-	if err := Download(context.Background(), nil, c.APIBase, path, 3, nil); err == nil {
+	over := filepath.Join(t.TempDir(), "over.bin")
+	if err := Download(context.Background(), nil, c.APIBase, over, 3, nil); err == nil {
 		t.Fatal("body over the cap must fail")
 	}
 }
 
 func TestDownloadCancelsAStalledBody(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		if f, ok := w.(http.Flusher); ok {
-			f.Flush()
-		}
-		<-r.Context().Done()
-	}))
-	t.Cleanup(srv.Close)
 	old := downloadIdle
 	downloadIdle = 80 * time.Millisecond
 	t.Cleanup(func() { downloadIdle = old })
-	dest := filepath.Join(t.TempDir(), "stalled.bin")
-	err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil)
+	r, w := io.Pipe()
+	t.Cleanup(func() { _ = w.Close() })
+	_, err := copyIdle(context.Background(), io.Discard, r, downloadIdle)
 	if err == nil {
 		t.Fatal("stalled body must fail")
+	}
+}
+
+func TestDownloadResumesWithRangeWhenTheServerSupportsIt(t *testing.T) {
+	const body = "abcdefghij0123456789"
+	var sawRange atomic.Bool
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Range") != "bytes=10-" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		sawRange.Store(true)
+		w.Header().Set("Accept-Ranges", "bytes")
+		w.Header().Set("ETag", `"v1"`)
+		w.Header().Set("Content-Range", fmt.Sprintf("bytes 10-19/%d", len(body)))
+		w.WriteHeader(http.StatusPartialContent)
+		_, _ = io.WriteString(w, body[10:])
+	}))
+	t.Cleanup(srv.Close)
+	dest := filepath.Join(t.TempDir(), "m.zip")
+	if err := os.WriteFile(dest, []byte(body[:10]), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
+		t.Fatal(err)
+	}
+	got, err := fsx.ReadFile(dest)
+	if err != nil || string(got) != body || !sawRange.Load() {
+		t.Fatalf("got %q range %v err %v", got, sawRange.Load(), err)
 	}
 }
 

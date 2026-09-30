@@ -2,7 +2,9 @@ package queue
 
 import (
 	"context"
+	"crypto/md5" // #nosec G501 -- Content-MD5 is MD5 by RFC 1864
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -10,6 +12,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -104,6 +107,57 @@ func TestFetchVerifiesAChecksumFromTheSource(t *testing.T) {
 	if err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestFetchContentMD5(t *testing.T) {
+	const body = "abcdefghij0123456789"
+	sum := md5.Sum([]byte(body)) // #nosec G401 -- Content-MD5 is MD5 by RFC 1864
+	ok := base64.StdEncoding.EncodeToString(sum[:])
+
+	t.Run("match", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-MD5", ok)
+			w.Header().Set("Content-Length", fmt.Sprint(len(body)))
+			_, _ = io.WriteString(w, body)
+		}))
+		t.Cleanup(srv.Close)
+		s := rangeSvc(t, srv.Client())
+		path := destPath(s.d.Dir, "item", "m.zip")
+		if err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("mismatch", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-MD5", base64.StdEncoding.EncodeToString(make([]byte, md5.Size)))
+			w.Header().Set("Content-Length", fmt.Sprint(len(body)))
+			_, _ = io.WriteString(w, body)
+		}))
+		t.Cleanup(srv.Close)
+		s := rangeSvc(t, srv.Client())
+		path := destPath(s.d.Dir, "item", "m.zip")
+		err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path)
+		if err == nil || !strings.Contains(err.Error(), "Content-MD5") {
+			t.Fatalf("err = %v", err)
+		}
+		if _, stat := os.Stat(path); !os.IsNotExist(stat) {
+			t.Fatal("mismatch left the partial on disk")
+		}
+	})
+
+	t.Run("absent", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Length", fmt.Sprint(len(body)))
+			_, _ = io.WriteString(w, body)
+		}))
+		t.Cleanup(srv.Close)
+		s := rangeSvc(t, srv.Client())
+		path := destPath(s.d.Dir, "item", "m.zip")
+		if err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path); err != nil {
+			t.Fatal(err)
+		}
+	})
 }
 
 func TestTruncatedPartialResumesAfterRestart(t *testing.T) {
