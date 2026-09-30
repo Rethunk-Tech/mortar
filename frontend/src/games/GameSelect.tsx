@@ -6,10 +6,11 @@ import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/inter
 import { List } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { SetLastGame } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
+import { useLoader } from '../loader/store.ts'
 import { useNav } from '../nav/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { type GameStatus, loadGameStatus } from './status.ts'
+import { type GameStatus, loaderCaption, loadGameStatus } from './status.ts'
 
 type Game = GameInfo
 
@@ -23,9 +24,18 @@ const SMALL_FONT = 13
 const NORMAL_FONT = 15
 const shadow = '0 1px 2px rgba(0,0,0,0.9), 0 0 18px rgba(0,0,0,0.85)'
 
-function Row({ game, openable, note }: { game: Game; openable: boolean; note: string }) {
+function Row({
+  game,
+  openable,
+  note,
+  loader,
+}: {
+  game: Game
+  openable: boolean
+  note: string
+  loader: string
+}) {
   const { t } = useLingui()
-  const { loader } = game
   const open = () => {
     if (game.id !== 'stardew') {
       return
@@ -122,6 +132,11 @@ export function GameSelect() {
   const { t } = useLingui()
   const [status, setStatus] = useState<GameStatus | null>(null)
   const [profileCount, setProfileCount] = useState(0)
+  const loaderStatus = useLoader((s) => s.status)
+  const checkLoader = useLoader((s) => s.check)
+  useEffect(() => {
+    checkLoader('stardew')
+  }, [checkLoader])
   useEffect(() => {
     Promise.all([loadGameStatus(), List('stardew')])
       .then(([s, profiles]) => {
@@ -156,7 +171,13 @@ export function GameSelect() {
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {status.games.map((g) => (
-          <Row key={g.id} game={g} openable={g.available && g.installed} note={noteFor(g)} />
+          <Row
+            key={g.id}
+            game={g}
+            openable={g.available && g.installed}
+            note={noteFor(g)}
+            loader={loaderCaption(g.loader, g.id === 'stardew' ? loaderStatus : null)}
+          />
         ))}
       </Box>
       {status.steam !== 'found' && (
