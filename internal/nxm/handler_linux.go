@@ -11,6 +11,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
@@ -177,30 +178,7 @@ func (l *System) dropDefault() error {
 	if len(kept) == len(lines) {
 		return nil
 	}
-	return replaceFile(path, []byte(strings.Join(kept, "\n")))
-}
-
-// replaceFile writes data beside path and renames it over path, so a crash never leaves a truncated file.
-func replaceFile(path string, data []byte) (err error) {
-	f, err := os.CreateTemp(filepath.Dir(path), filepath.Base(path)+".*.tmp")
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err != nil {
-			err = errors.Join(err, os.Remove(f.Name()))
-		}
-	}()
-	if _, err = f.Write(data); err != nil {
-		return errors.Join(err, f.Close())
-	}
-	if err = f.Chmod(desktopPerm); err != nil {
-		return errors.Join(err, f.Close())
-	}
-	if err = f.Close(); err != nil {
-		return err
-	}
-	return os.Rename(f.Name(), path)
+	return datadir.WriteFile(path, []byte(strings.Join(kept, "\n")), desktopPerm)
 }
 
 const mimeXML = `<?xml version="1.0" encoding="UTF-8"?>
