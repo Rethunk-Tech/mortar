@@ -68,10 +68,16 @@ func registerEvents() {
 }
 
 func main() {
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
 	registerEvents()
 	home, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// application.New exits a second instance after forwarding its arguments, so it runs before anything that
@@ -123,7 +129,7 @@ func main() {
 
 	store, err = settings.Open()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	svc := settings.NewService(store)
 	svc.ValidateGameFolder = game.ValidateFolder
@@ -133,7 +139,7 @@ func main() {
 
 	items, err := modstore.Open()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	if err := items.Cleanup(); err != nil {
 		log.Printf("store cleanup: %v", err)
@@ -141,7 +147,7 @@ func main() {
 
 	profiles, err = profile.Open(items)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	launches := launchsvc.NewService(home, store, profiles)
 	profiles.Running = launches.Running
@@ -160,7 +166,7 @@ func main() {
 	modMeta := &meta.Client{}
 	savesSvc, err := savessvc.NewService(profiles, store, modMeta)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	savesSvc.Launches = launches
 
@@ -169,11 +175,11 @@ func main() {
 
 	exe, err := os.Executable()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	nxmHandler, err := nxm.New(exe)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	if err := nxmHandler.Refresh(); err != nil {
 		log.Printf("desktop entry: %v", err)
@@ -182,11 +188,11 @@ func main() {
 
 	dataDir, err := datadir.Dir()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	pictures = modpic.New(dataDir, &http.Client{Timeout: 30 * time.Second})
 	if err := nexusSvc.UseDataDir(dataDir); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	updates := &updatesvc.Service{}
 	emit := func(name string, data any) { app.Event.Emit(name, data) }
@@ -215,7 +221,7 @@ func main() {
 		Changed: func(st queue.State) { shareSvc.QueueChanged(st) },
 	})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	launches.Unlocked = func() { queue.NotifyUnlocked(queueSvc) }
 	nxmSvc.Route = queueSvc.Route
@@ -287,7 +293,7 @@ func main() {
 	}
 
 	if err := updatesvc.Configure(updates, app.Updater, version, updateKey); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	queue.Run(context.Background(), queueSvc, nxmSvc.Assigned)
 	svc.App = app
@@ -321,7 +327,5 @@ func main() {
 	})
 
 	closeReady()
-	if err := app.Run(); err != nil {
-		log.Fatal(err)
-	}
+	return app.Run()
 }
