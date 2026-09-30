@@ -10,16 +10,39 @@ afterEach(() => {
   useToasts.setState({ toasts: [] })
 })
 
-test('info and success dismiss after 5s; warning and error stay', () => {
+test('info and success dismiss after 5s; warning and error after 10s', () => {
   const { push } = useToasts.getState()
   push({ kind: 'info', title: 'a' })
   push({ kind: 'success', title: 'b' })
   push({ kind: 'warning', title: 'c' })
   push({ kind: 'error', title: 'd' })
   jest.advanceTimersByTime(4999)
-  expect(useToasts.getState().toasts).toHaveLength(4)
+  expect(useToasts.getState().toasts).toHaveLength(3)
   jest.advanceTimersByTime(1)
   expect(useToasts.getState().toasts.map((t) => t.title)).toEqual(['c', 'd'])
+  jest.advanceTimersByTime(5000)
+  expect(useToasts.getState().toasts).toHaveLength(0)
+})
+
+test('only the newest three show', () => {
+  const { push } = useToasts.getState()
+  for (const title of ['a', 'b', 'c', 'd']) {
+    push({ kind: 'error', title })
+  }
+  expect(useToasts.getState().toasts.map((t) => t.title)).toEqual(['b', 'c', 'd'])
+})
+
+test('hover holds a toast and leaving restarts its countdown', () => {
+  const { push, hold, release } = useToasts.getState()
+  const id = push({ kind: 'error', title: 'a' })
+  hold(id)
+  jest.advanceTimersByTime(60_000)
+  expect(useToasts.getState().toasts).toHaveLength(1)
+  release(id)
+  jest.advanceTimersByTime(9999)
+  expect(useToasts.getState().toasts).toHaveLength(1)
+  jest.advanceTimersByTime(1)
+  expect(useToasts.getState().toasts).toHaveLength(0)
 })
 
 test('toasts keep push order and dismiss removes one by id', () => {

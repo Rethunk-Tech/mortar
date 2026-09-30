@@ -13,9 +13,13 @@ const edge: Record<ToastKind, string> = {
 function ToastCard({ toast }: { toast: Toast }) {
   const { t } = useLingui()
   const dismiss = useToasts((s) => s.dismiss)
+  const hold = useToasts((s) => s.hold)
+  const release = useToasts((s) => s.release)
   const { action } = toast
   return (
     <Box
+      onMouseEnter={() => hold(toast.id)}
+      onMouseLeave={() => release(toast.id)}
       role={toast.kind === 'error' || toast.kind === 'warning' ? 'alert' : 'status'}
       sx={{
         display: 'flex',
