@@ -136,3 +136,21 @@ func TestRunSurfacesExitWhenLogIsUnchanged(t *testing.T) {
 		t.Fatalf("err = %v, want exit 7", err)
 	}
 }
+
+func TestRunIgnoresARelayExitingBeforeTheLog(t *testing.T) {
+	log := filepath.Join(t.TempDir(), "SMAPI-latest.txt")
+	done := make(chan error, 1)
+	done <- nil
+	go func() {
+		time.Sleep(30 * time.Millisecond)
+		_ = os.WriteFile(log, []byte("[08:43:28 INFO  SMAPI] started\n"), 0o600)
+	}()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	err := Run(ctx, func(string, string, ...string) (<-chan error, error) {
+		return done, nil
+	}, Command{LogFile: log, Failure: HintSteam, Relay: true}, fast, func([]string) {})
+	if err != nil {
+		t.Fatalf("err = %v, want the launch to count as started", err)
+	}
+}

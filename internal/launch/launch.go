@@ -83,6 +83,9 @@ type Command struct {
 	LogFile string
 	// Failure names the hint to give when the log never appears.
 	Failure Hint
+	// Relay marks a process that hands the launch to another and exits, such as `steam -applaunch`; its exit says
+	// nothing about the game, so only the log decides.
+	Relay bool
 }
 
 const clockSlack = 50 * time.Millisecond
@@ -135,6 +138,10 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 		case waitErr := <-exited:
 			if tail.poll() {
 				return started()
+			}
+			if c.Relay {
+				exited = nil
+				continue
 			}
 			return &ExitError{Code: waitCode(waitErr)}
 		case <-tick.C:

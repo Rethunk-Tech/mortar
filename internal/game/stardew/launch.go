@@ -76,12 +76,12 @@ func (g Game) command(goos string, req launch.Request, steamPath string) (launch
 		if opts, err := req.Steam.LaunchOptions(g.SteamAppID()); err == nil && !hasSMAPILine(opts) {
 			hint = launch.HintLaunchOptions
 		}
-		return launch.Command{Name: filepath.Join(req.Steam.Root, "steam.exe"), Args: append(appID, modsArgs...), Failure: hint}, nil
+		return launch.Command{Name: filepath.Join(req.Steam.Root, "steam.exe"), Args: append(appID, modsArgs...), Failure: hint, Relay: true}, nil
 	case steamPath == "":
 		return launch.Command{}, launch.ErrNoSteam
 	}
 	args := append(append(appID, "--skip-terminal", "--"), modsArgs...)
-	return launch.Command{Name: steamPath, Args: args, Failure: launch.HintSteam}, nil
+	return launch.Command{Name: steamPath, Args: args, Failure: launch.HintSteam, Relay: true}, nil
 }
 
 // hasSMAPILine reports whether Steam launch options run SMAPI in place of the game: `"<game>\StardewModdingAPI.exe" %command%`.
