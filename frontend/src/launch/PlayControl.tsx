@@ -71,7 +71,8 @@ export function PlayControl({ game }: { game: string }) {
             display: 'flex',
             flexDirection: 'column',
             gap: 0.75,
-            [compact]: { alignItems: 'center' },
+            p: 1,
+            [compact]: { alignItems: 'center', p: 0 },
           }}
         >
           <Box
@@ -128,9 +129,18 @@ export function PlayControl({ game }: { game: string }) {
         variant="contained"
         fullWidth={true}
         disabled={disabled}
-        startIcon={<Play size={16} />}
+        startIcon={<Play size={22} fill="currentColor" />}
         onClick={play}
-        sx={{ whiteSpace: 'nowrap', [compact]: { display: 'none' } }}
+        sx={{
+          height: 58,
+          borderRadius: 0,
+          fontSize: 22,
+          fontWeight: 700,
+          textTransform: 'none',
+          boxShadow: 'none',
+          whiteSpace: 'nowrap',
+          [compact]: { display: 'none' },
+        }}
       >
         {t`Play`}
       </Button>

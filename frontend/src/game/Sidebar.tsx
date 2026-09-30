@@ -247,7 +247,7 @@ export function Sidebar({ game }: { game: string }) {
           <Plus size={20} />
         </IconButton>
       </Box>
-      <Box sx={{ p: 1, [compact]: { display: 'flex', justifyContent: 'center' } }}>
+      <Box sx={{ [compact]: { display: 'flex', justifyContent: 'center', p: 1 } }}>
         <PlayControl game={game} />
       </Box>
       <ResizeHandle width={width} onWidth={setWidth} />
