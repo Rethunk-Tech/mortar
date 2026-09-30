@@ -7,13 +7,11 @@ import { useSettings } from '../settings/store.ts'
 import { TitleBar } from './TitleBar.tsx'
 import { win } from './win.ts'
 
-// Static opacity (a fade or filter would turn WebKitGTK's translucent window opaque): the wallpaper at this
-// alpha under the 0.8 surfaces leaves the desktop showing through.
-const BACKDROP_OPACITY = 0.35
+const TINT = 'rgba(25,25,30,0.8)'
 
 export function AppFrame({ children }: { children: ReactNode }) {
   const [maximised, setMaximised] = useState(false)
-  const showBackdrop = useSettings((s) => s.background === 'image')
+  const showBackdrop = useSettings((s) => s.background !== 'solid')
   const backdropImage = useSettings((s) => s.backgroundImage)
   const [frame, setFrame] = useState<HTMLElement | null>(null)
   useEffect(() => {
@@ -38,22 +36,32 @@ export function AppFrame({ children }: { children: ReactNode }) {
       }}
     >
       {showBackdrop ? (
-        <Box
-          component="img"
-          alt=""
-          draggable={false}
-          src={`/backdrop?v=${encodeURIComponent(backdropImage)}`}
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            zIndex: -1,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            opacity: BACKDROP_OPACITY,
-            pointerEvents: 'none',
-          }}
-        />
+        <>
+          <Box
+            component="img"
+            alt=""
+            draggable={false}
+            src={`/backdrop?v=${encodeURIComponent(backdropImage)}`}
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: -1,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              pointerEvents: 'none',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: -1,
+              bgcolor: TINT,
+              pointerEvents: 'none',
+            }}
+          />
+        </>
       ) : null}
       <TitleBar maximised={maximised} />
       <Box component="main" sx={{ flexGrow: 1, minHeight: 0 }}>

@@ -1,5 +1,6 @@
-// Package backdrop serves the wallpaper drawn behind the window: the user's image, else Fedora's system
-// wallpaper, else the copy bundled with Mortar.
+// Package backdrop serves the wallpaper drawn behind the window. The image mode serves the user's image,
+// else Fedora's system wallpaper, else the copy bundled with Mortar; the desktop mode tries the user's
+// desktop wallpaper first; the solid mode serves nothing.
 package backdrop
 
 import (
@@ -15,6 +16,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
 // Path is the URL the frontend loads the backdrop from.
@@ -73,19 +75,29 @@ func Check(path string) error {
 	return f.Close()
 }
 
-// Middleware serves GET /backdrop: user() if it names a servable image, else system, else the bundled copy.
-func Middleware(user func() string, system string) func(http.Handler) http.Handler {
+// candidates lists the files to try, in order, for the current settings.
+func candidates(cur settings.Settings, system string, desktop func() string) []string {
+	if cur.Background == settings.BackgroundDesktop {
+		return []string{desktop(), cur.BackgroundImage, system}
+	}
+	return []string{cur.BackgroundImage, system}
+}
+
+// Middleware serves GET /backdrop for the current settings: the first servable candidate, else the bundled
+// copy. Solid mode has no backdrop.
+func Middleware(current func() settings.Settings, system string, desktop func() string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path != Path {
 				next.ServeHTTP(w, r)
 				return
 			}
-			if r.Method != http.MethodGet {
+			cur := current()
+			if r.Method != http.MethodGet || cur.Background == settings.BackgroundSolid {
 				http.NotFound(w, r)
 				return
 			}
-			for _, path := range []string{user(), system} {
+			for _, path := range candidates(cur, system, desktop) {
 				if path == "" {
 					continue
 				}

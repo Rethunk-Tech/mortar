@@ -15,7 +15,7 @@ msgstr "No mods yet · created {created}"
 msgid "Updated"
 msgstr "Updated"
 
-#: src/settings/sections/Appearance.tsx:28
+#: src/settings/sections/Appearance.tsx:27
 msgid "Sand"
 msgstr "Sand"
 
@@ -72,7 +72,7 @@ msgstr "Its folder in this profile is deleted."
 msgid "Show files"
 msgstr "Show files"
 
-#: src/settings/sections/Appearance.tsx:125
+#: src/settings/sections/Appearance.tsx:124
 msgid "Solid"
 msgstr "Solid"
 
@@ -84,7 +84,7 @@ msgstr "Grid view"
 msgid "List view"
 msgstr "List view"
 
-#: src/settings/sections/Appearance.tsx:30
+#: src/settings/sections/Appearance.tsx:29
 msgid "Copper"
 msgstr "Copper"
 
@@ -128,10 +128,6 @@ msgstr "New profile"
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
 
-#: src/settings/sections/Appearance.tsx:158
-msgid "Takes effect when Mortar restarts"
-msgstr "Takes effect when Mortar restarts"
-
 #: src/game/Detail.tsx:120
 msgid "Rename profile"
 msgstr "Rename profile"
@@ -156,7 +152,7 @@ msgstr "Off"
 msgid "Archive"
 msgstr "Archive"
 
-#: src/settings/sections/Appearance.tsx:124
+#: src/settings/sections/Appearance.tsx:123
 msgid "Desktop"
 msgstr "Desktop"
 
@@ -172,7 +168,7 @@ msgstr "SMAPI is missing or was replaced by a game update"
 msgid "Could not open the file dialog"
 msgstr "Could not open the file dialog"
 
-#: src/settings/sections/Appearance.tsx:31
+#: src/settings/sections/Appearance.tsx:30
 msgid "Sky"
 msgstr "Sky"
 
@@ -184,7 +180,7 @@ msgstr "Could not read the mods"
 msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
 
-#: src/settings/sections/Appearance.tsx:96
+#: src/settings/sections/Appearance.tsx:95
 msgid "3 updates"
 msgstr "3 updates"
 
@@ -192,7 +188,7 @@ msgstr "3 updates"
 msgid "Stop the game?"
 msgstr "Stop the game?"
 
-#: src/settings/sections/Appearance.tsx:29
+#: src/settings/sections/Appearance.tsx:28
 msgid "Stardew green"
 msgstr "Stardew green"
 
@@ -233,7 +229,7 @@ msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschil
 msgid "Cancel"
 msgstr "Cancel"
 
-#: src/settings/sections/Appearance.tsx:142
+#: src/settings/sections/Appearance.tsx:141
 msgid "Choose image…"
 msgstr "Choose image…"
 
@@ -288,11 +284,11 @@ msgstr "{mods, plural, one {# mod} other {# mods}}"
 msgid "SMAPI is not installed"
 msgstr "SMAPI is not installed"
 
-#: src/settings/sections/Appearance.tsx:131
+#: src/settings/sections/Appearance.tsx:130
 msgid "Background preview"
 msgstr "Background preview"
 
-#: src/settings/sections/Appearance.tsx:107
+#: src/settings/sections/Appearance.tsx:106
 msgid "Changes apply right away"
 msgstr "Changes apply right away"
 
@@ -320,8 +316,8 @@ msgstr "Could not remove {0}"
 msgid "After the first release"
 msgstr "After the first release"
 
-#: src/settings/sections/Appearance.tsx:110
-#: src/settings/sections/Appearance.tsx:115
+#: src/settings/sections/Appearance.tsx:109
+#: src/settings/sections/Appearance.tsx:114
 msgid "Background"
 msgstr "Background"
 
@@ -329,7 +325,7 @@ msgstr "Background"
 msgid "Not found in your Steam library"
 msgstr "Not found in your Steam library"
 
-#: src/settings/sections/Appearance.tsx:123
+#: src/settings/sections/Appearance.tsx:122
 msgid "Image"
 msgstr "Image"
 
@@ -403,7 +399,7 @@ msgstr "Stop game"
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
-#: src/settings/sections/Appearance.tsx:30
+#: src/settings/sections/Appearance.tsx:29
 msgid "Warm and bold"
 msgstr "Warm and bold"
 
@@ -419,7 +415,7 @@ msgstr "Only a Flatpak Steam was found."
 msgid "SMAPI"
 msgstr "SMAPI"
 
-#: src/settings/sections/Appearance.tsx:152
+#: src/settings/sections/Appearance.tsx:151
 msgid "Reset to default"
 msgstr "Reset to default"
 
@@ -431,7 +427,7 @@ msgstr "Could not stop the game"
 msgid "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 
-#: src/settings/sections/Appearance.tsx:101
+#: src/settings/sections/Appearance.tsx:100
 msgid "Stardew Valley"
 msgstr "Stardew Valley"
 
@@ -477,7 +473,7 @@ msgstr "Steam was not found"
 msgid "Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 msgstr "Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 
-#: src/settings/sections/Appearance.tsx:28
+#: src/settings/sections/Appearance.tsx:27
 msgid "Default"
 msgstr "Default"
 
@@ -493,7 +489,7 @@ msgstr "{profileName} · {mods, plural, one {# mod} other {# mods}}"
 msgid "Create your first profile"
 msgstr "Create your first profile"
 
-#: src/settings/sections/Appearance.tsx:29
+#: src/settings/sections/Appearance.tsx:28
 msgid "Moss"
 msgstr "Moss"
 
@@ -585,7 +581,7 @@ msgstr "Remove"
 #: src/launch/PlayControl.tsx:146
 #: src/launch/PlayControl.tsx:149
 #: src/launch/PlayControl.tsx:150
-#: src/settings/sections/Appearance.tsx:94
+#: src/settings/sections/Appearance.tsx:93
 msgid "Play"
 msgstr "Play"
 
@@ -643,7 +639,7 @@ msgstr "Minimise"
 msgid "Drop to install into {0}"
 msgstr "Drop to install into {0}"
 
-#: src/settings/sections/Appearance.tsx:31
+#: src/settings/sections/Appearance.tsx:30
 msgid "Cool and calm"
 msgstr "Cool and calm"
 
@@ -663,8 +659,8 @@ msgstr "Author"
 msgid "Hide"
 msgstr "Hide"
 
-#: src/settings/sections/Appearance.tsx:35
-#: src/settings/sections/Appearance.tsx:38
+#: src/settings/sections/Appearance.tsx:34
+#: src/settings/sections/Appearance.tsx:37
 msgid "Accent colour"
 msgstr "Accent colour"
 
@@ -736,7 +732,7 @@ msgstr "Reinstall"
 msgid "Restore"
 msgstr "Restore"
 
-#: src/settings/sections/Appearance.tsx:25
+#: src/settings/sections/Appearance.tsx:24
 msgid "Couldn't save that setting"
 msgstr "Couldn't save that setting"
 

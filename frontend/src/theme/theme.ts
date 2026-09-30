@@ -24,7 +24,6 @@ export function createMortarTheme(accent: AccentName): Theme {
     components: {
       MuiCssBaseline: {
         styleOverrides: {
-          'html, body, #root': { background: 'transparent' },
           ':root': { '--title-bar': '36px', [compact]: { '--title-bar': '32px' } },
           '*': {
             scrollbarWidth: 'thin',
@@ -41,8 +40,6 @@ export function createMortarTheme(accent: AccentName): Theme {
         },
       },
       MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
-      // On WebKitGTK a fading or filtered full-window layer turns the translucent
-      // window opaque; a static tint keeps it translucent.
       MuiBackdrop: {
         defaultProps: { transitionDuration: 0 },
         styleOverrides: {

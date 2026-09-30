@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
 func write(t *testing.T, dir, name, body string) string {
@@ -19,13 +21,53 @@ func write(t *testing.T, dir, name, body string) string {
 	return p
 }
 
-func get(t *testing.T, user, system string) *httptest.ResponseRecorder {
+func none() string { return "" }
+
+func getMode(t *testing.T, mode, user, system string, desktop func() string) *httptest.ResponseRecorder {
 	t.Helper()
 	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusTeapot) })
-	h := Middleware(func() string { return user }, system)(next)
+	cur := func() settings.Settings { return settings.Settings{Background: mode, BackgroundImage: user} }
+	h := Middleware(cur, system, desktop)(next)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path, nil))
 	return rec
+}
+
+func get(t *testing.T, user, system string) *httptest.ResponseRecorder {
+	t.Helper()
+	return getMode(t, settings.BackgroundImage, user, system, none)
+}
+
+func TestDesktopMode(t *testing.T) {
+	dir := t.TempDir()
+	wall := write(t, dir, "wall.png", "desk")
+	mine := write(t, dir, "mine.png", "user")
+	sys := write(t, dir, "sys.webp", "system")
+	missing := filepath.Join(dir, "gone.png")
+	at := func(p string) func() string { return func() string { return p } }
+
+	cases := []struct {
+		name, desktop, body string
+	}{
+		{"desktop wallpaper wins", wall, "desk"},
+		{"image resolution when the desktop is unreadable", "", "user"},
+		{"image resolution when the desktop file is gone", missing, "user"},
+	}
+	for _, c := range cases {
+		rec := getMode(t, settings.BackgroundDesktop, mine, sys, at(c.desktop))
+		if rec.Code != http.StatusOK || rec.Body.String() != c.body {
+			t.Errorf("%s: %d %q", c.name, rec.Code, rec.Body.String())
+		}
+	}
+	if rec := getMode(t, settings.BackgroundImage, mine, sys, at(wall)); rec.Body.String() != "user" {
+		t.Errorf("image mode consulted the desktop: %q", rec.Body.String())
+	}
+}
+
+func TestSolidHasNoBackdrop(t *testing.T) {
+	if rec := getMode(t, settings.BackgroundSolid, "", "", none); rec.Code != http.StatusNotFound {
+		t.Fatalf("code %d", rec.Code)
+	}
 }
 
 func TestResolutionOrder(t *testing.T) {
@@ -59,7 +101,7 @@ func TestBundledIsJPEG(t *testing.T) {
 
 func TestOtherPathsPassThrough(t *testing.T) {
 	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusTeapot) })
-	h := Middleware(func() string { return "" }, "")(next)
+	h := Middleware(func() settings.Settings { return settings.Defaults() }, "", none)(next)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/backdrop/x", nil))
 	if rec.Code != http.StatusTeapot {

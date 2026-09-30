@@ -1,15 +1,15 @@
 import { ThemeProvider } from '@mui/material'
 import React from 'react'
 import { useSettings } from './settings/store.ts'
-import { buildTheme, isAccent } from './settings/theme.ts'
+import { isAccent } from './settings/theme.ts'
 import { defaultAccent } from './theme/accents.ts'
+import { createMortarTheme } from './theme/theme.ts'
 
 export function Themed({ children }: { children: React.ReactNode }) {
   const accent = useSettings((s) => s.accent)
-  const solid = useSettings((s) => s.background === 'solid')
   const theme = React.useMemo(
-    () => buildTheme(isAccent(accent) ? accent : defaultAccent, solid),
-    [accent, solid],
+    () => createMortarTheme(isAccent(accent) ? accent : defaultAccent),
+    [accent],
   )
   return <ThemeProvider theme={theme}>{children}</ThemeProvider>
 }

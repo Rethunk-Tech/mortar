@@ -87,7 +87,7 @@ func main() {
 			Handler: application.AssetFileServerFS(assets),
 			Middleware: application.ChainMiddleware(
 				game.ArtMiddleware(home),
-				backdrop.Middleware(func() string { return store.Get().BackgroundImage }, backdrop.SystemDefault),
+				backdrop.Middleware(store.Get, backdrop.SystemDefault, backdrop.DesktopWallpaper),
 			),
 		},
 		SingleInstance: &application.SingleInstanceOptions{
@@ -104,12 +104,6 @@ func main() {
 	launches.App = app
 	pick.App = app
 
-	// Wails fixes BackgroundType at window creation, so the stored value applies on restart.
-	background, colour := application.BackgroundTypeSolid, application.NewRGBA(25, 25, 30, 255)
-	if store.Get().Background != settings.BackgroundSolid {
-		background, colour = application.BackgroundTypeTranslucent, application.NewRGBA(25, 25, 30, 204)
-	}
-
 	window = app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:            "Mortar",
 		Width:            1280,
@@ -117,13 +111,10 @@ func main() {
 		MinWidth:         768,
 		MinHeight:        432,
 		Frameless:        true,
-		BackgroundType:   background,
-		BackgroundColour: colour,
-		Windows: application.WindowsWindow{
-			BackdropType: application.Acrylic,
-		},
-		EnableFileDrop: true,
-		URL:            "/",
+		BackgroundType:   application.BackgroundTypeSolid,
+		BackgroundColour: application.NewRGBA(25, 25, 30, 255),
+		EnableFileDrop:   true,
+		URL:              "/",
 	})
 	window.OnWindowEvent(events.Common.WindowFilesDropped, func(e *application.WindowEvent) {
 		app.Event.Emit(picker.DroppedEvent, e.Context().DroppedFiles())

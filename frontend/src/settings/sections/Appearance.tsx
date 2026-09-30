@@ -10,7 +10,7 @@ import {
 import { type AccentName, accents } from '../../theme/accents.ts'
 import { errorText } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
-import { useLaunchSolid, useSettings } from '../store.ts'
+import { useSettings } from '../store.ts'
 import { isAccent } from '../theme.ts'
 
 export function Appearance() {
@@ -18,7 +18,6 @@ export function Appearance() {
   const accent = useSettings((s) => s.accent)
   const background = useSettings((s) => s.background)
   const backgroundImage = useSettings((s) => s.backgroundImage)
-  const launchSolid = useLaunchSolid((s) => s.solid)
   const push = useToasts((s) => s.push)
   const reportFailure = (err: unknown) => {
     const body = errorText(err)
@@ -153,11 +152,6 @@ export function Appearance() {
           </Button>
         </Box>
       ) : null}
-      {launchSolid === (background === 'solid') ? null : (
-        <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
-          {t`Takes effect when Mortar restarts`}
-        </Box>
-      )}
     </Box>
   )
 }
