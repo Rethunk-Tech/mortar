@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
-import { type FocusEvent, type PointerEvent, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
 import { List } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { SetLastGame } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
@@ -20,32 +20,9 @@ const SOURCES: Record<string, string[]> = {
 const LONG_NAME = 8
 const SMALL_FONT = 13
 const NORMAL_FONT = 15
-const EASE = '700ms cubic-bezier(0.4, 0, 0.2, 1)'
-const EXPANDED_SHARE = 62
 const shadow = '0 1px 2px rgba(0,0,0,0.9), 0 0 18px rgba(0,0,0,0.85)'
 
-// Parallax input for the art: -1 at the row's top edge to 1 at its bottom, set straight on
-// the element so pointer movement never re-renders React.
-function trackPointer(e: PointerEvent<HTMLElement>) {
-  const r = e.currentTarget.getBoundingClientRect()
-  e.currentTarget.style.setProperty('--py', String(((e.clientY - r.top) / r.height) * 2 - 1))
-}
-
-function Row({
-  game,
-  openable,
-  note,
-  share,
-  expanded,
-  onActive,
-}: {
-  game: Game
-  openable: boolean
-  note: string
-  share: number
-  expanded: boolean
-  onActive: (on: boolean) => void
-}) {
+function Row({ game, openable, note }: { game: Game; openable: boolean; note: string }) {
   const { t } = useLingui()
   const { loader } = game
   const open = () => {
@@ -64,21 +41,16 @@ function Row({
       {game.artUrl ? (
         <Box
           component="img"
-          className="art"
           src={game.artUrl}
           alt=""
           sx={{
             position: 'absolute',
-            left: 0,
-            top: '-15%',
+            inset: 0,
             width: '100%',
-            height: '130%',
+            height: '100%',
             objectFit: 'cover',
             opacity: 0.72,
-            filter: `${openable ? '' : 'saturate(0.6) '}${expanded ? 'brightness(1.05) contrast(1.1)' : 'brightness(0.8) contrast(1)'}`,
-            scale: expanded ? 1.04 : 1,
-            transform: 'translateY(calc(var(--py, 0) * -10%))',
-            transition: `filter ${EASE}, scale ${EASE}, transform 150ms ease-out`,
+            filter: openable ? 'none' : 'saturate(0.6)',
           }}
         />
       ) : null}
@@ -91,31 +63,12 @@ function Row({
           }}
         />
       ) : null}
-      <Box
-        className="text"
-        sx={{
-          position: 'relative',
-          textShadow: shadow,
-          textAlign: 'left',
-          color: '#fff',
-          transform: expanded ? 'translateX(12px)' : 'none',
-          transition: `transform ${EASE}`,
-        }}
-      >
+      <Box sx={{ position: 'relative', textShadow: shadow, textAlign: 'left', color: '#fff' }}>
         <Typography sx={{ fontSize: 34, fontWeight: 600, lineHeight: 1.2 }}>{game.name}</Typography>
         <Typography sx={{ fontSize: 17 }}>{t`${loader} | Steam`}</Typography>
         <Typography sx={{ mt: '6px', fontSize: 16, fontWeight: 600 }}>{note}</Typography>
       </Box>
-      <Box
-        className="badges"
-        sx={{
-          position: 'relative',
-          display: 'flex',
-          gap: '14px',
-          transform: expanded ? 'translateX(-12px)' : 'none',
-          transition: `transform ${EASE}`,
-        }}
-      >
+      <Box sx={{ position: 'relative', display: 'flex', gap: '14px' }}>
         {(SOURCES[game.id] ?? []).map((name) => (
           <Box
             key={name}
@@ -140,41 +93,27 @@ function Row({
       </Box>
     </>
   )
-  const hover = {
-    onPointerEnter: () => onActive(true),
-    onPointerLeave: () => onActive(false),
-    onFocus: (e: FocusEvent<HTMLElement>) => onActive(e.currentTarget.matches(':focus-visible')),
-    onBlur: () => onActive(false),
-  }
   const sx = {
     position: 'relative',
-    flex: `0 0 ${share}%`,
-    minHeight: 72,
+    flex: '1 1 0',
+    minHeight: 0,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     px: '96px',
     overflow: 'hidden',
     bgcolor: game.artUrl ? 'transparent' : 'background.paper',
-    borderLeft: `${expanded ? 8 : 4}px solid`,
+    borderLeft: '4px solid',
     borderColor: openable ? 'primary.main' : 'transparent',
     borderTop: '1px solid rgba(0,0,0,0.8)',
     fontFamily: 'inherit',
-    transition: `flex-basis ${EASE}, border-left-width ${EASE}`,
-    '@media (prefers-reduced-motion: reduce)': {
-      transition: 'none',
-      '& .art, & .text, & .badges': { transition: 'none' },
-      '& .art': { transform: 'none' },
-    },
   } as const
   return openable ? (
-    <ButtonBase onClick={open} onPointerMove={trackPointer} {...hover} sx={sx}>
+    <ButtonBase onClick={open} sx={sx}>
       {content}
     </ButtonBase>
   ) : (
-    <Box onPointerMove={trackPointer} {...hover} sx={sx}>
-      {content}
-    </Box>
+    <Box sx={sx}>{content}</Box>
   )
 }
 
@@ -182,7 +121,6 @@ export function GameSelect() {
   const { t } = useLingui()
   const [status, setStatus] = useState<GameStatus | null>(null)
   const [profileCount, setProfileCount] = useState(0)
-  const [active, setActive] = useState<string | null>(null)
   useEffect(() => {
     Promise.all([loadGameStatus(), List('stardew')])
       .then(([s, profiles]) => {
@@ -213,26 +151,11 @@ export function GameSelect() {
       other: 'Installed · # profiles',
     })
   }
-  const count = status.games.length
-  const shareOf = (id: string) => {
-    if (active === null || count < 2) {
-      return 100 / count
-    }
-    return id === active ? EXPANDED_SHARE : (100 - EXPANDED_SHARE) / (count - 1)
-  }
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {status.games.map((g) => (
-          <Row
-            key={g.id}
-            game={g}
-            openable={g.available && g.installed}
-            note={noteFor(g)}
-            share={shareOf(g.id)}
-            expanded={active === g.id}
-            onActive={(on) => setActive((cur) => (on ? g.id : cur === g.id ? null : cur))}
-          />
+          <Row key={g.id} game={g} openable={g.available && g.installed} note={noteFor(g)} />
         ))}
       </Box>
       {status.steam !== 'found' && (
