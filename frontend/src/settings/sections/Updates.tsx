@@ -8,6 +8,7 @@ import { errorMessage, errorText, reportUnexpected } from '../../toasts/report.t
 import { useToasts } from '../../toasts/store.ts'
 import { useSettings } from '../store.ts'
 import { useMortarUpdate } from '../updates.ts'
+import { lastOpenedGame } from './lastOpenedGame.ts'
 
 const MIN_KEPT = 1
 const MAX_KEPT = 50
@@ -170,7 +171,7 @@ function BackupsKept() {
 
 export function Updates() {
   const { t } = useLingui()
-  const lastGame = useSettings((s) => s.lastGame)
+  const game = lastOpenedGame(useSettings((s) => s.lastGame))
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Mortar`}</Box>
@@ -179,14 +180,23 @@ export function Updates() {
       <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
         {t`Mod updates show on each profile's mod list, and SMAPI's in the game's settings.`}
       </Box>
-      {lastGame === 'stardew' ? (
-        <Link
-          component="button"
-          onClick={() => useNav.setState({ route: { name: 'game-settings', game: 'stardew' } })}
-          sx={{ alignSelf: 'flex-start', fontSize: 13, whiteSpace: 'nowrap' }}
-        >
-          {t`Open Stardew Valley settings`}
-        </Link>
+      {game ? (
+        <>
+          <Link
+            component="button"
+            onClick={() => useNav.getState().openGame(game)}
+            sx={{ alignSelf: 'flex-start', fontSize: 13, whiteSpace: 'nowrap' }}
+          >
+            {t`Review mod updates`}
+          </Link>
+          <Link
+            component="button"
+            onClick={() => useNav.setState({ route: { name: 'game-settings', game } })}
+            sx={{ alignSelf: 'flex-start', fontSize: 13, whiteSpace: 'nowrap' }}
+          >
+            {t`Open Stardew Valley settings`}
+          </Link>
+        </>
       ) : null}
       <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Save backups`}</Box>
       <BackupsKept />
