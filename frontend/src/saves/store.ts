@@ -8,6 +8,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { dropMissing } from './dropMissing.ts'
 
 interface State {
   key: string
@@ -43,13 +44,7 @@ export const useSaves = create<State>((set, get) => ({
   dismiss: async (folder, uniqueId) => {
     try {
       await Dismiss(folder, uniqueId)
-      set((s) => ({
-        fits: s.fits.map((f) =>
-          f.folder === folder
-            ? { ...f, missing: (f.missing ?? []).filter((m) => m.uniqueId !== uniqueId) }
-            : f,
-        ),
-      }))
+      set({ fits: dropMissing(get().fits, uniqueId, folder) })
     } catch (e) {
       reportUnexpected(e)
     }
@@ -63,8 +58,11 @@ export const useSaves = create<State>((set, get) => ({
     }
     try {
       useProfiles.getState().replace(await SetModEnabled(game, profile.id, key, uniqueId, true))
+      set((s) => ({ fits: dropMissing(s.fits, uniqueId) }))
     } catch (e) {
       reportUnexpected(e)
     }
   },
 }))
+
+export const getInitialState = () => useSaves.getInitialState()
