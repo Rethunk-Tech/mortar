@@ -482,6 +482,18 @@ func TestApplyBundledSkipsRunningProfile(t *testing.T) {
 			t.Errorf("profile %s entries = %+v, want only %s", id, p.Entries, want)
 		}
 	}
+	if err := e.ApplyBundledForStart("stardew", smapiBundle("smapi-2.0.0")); err != nil {
+		t.Fatalf("during start: %v", err)
+	}
+	for _, id := range []string{busy.ID, idle.ID} {
+		p, err := e.read("stardew", id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(p.Entries) != 1 || p.Entries[0].Key != "smapi-2.0.0" {
+			t.Errorf("profile %s entries = %+v, want smapi-2.0.0", id, p.Entries)
+		}
+	}
 }
 
 func TestRunningProfileIsLocked(t *testing.T) {

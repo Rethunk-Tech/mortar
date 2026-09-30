@@ -231,6 +231,16 @@ func (s *Store) addEntryLocked(game, id, key string, source Source) (Profile, er
 // and keeping each profile's switched-off mods off. Profiles that fail, including one the game is running, do not stop
 // the others.
 func (s *Store) ApplyBundled(game string, b Bundle) error {
+	return s.applyBundled(game, b, false)
+}
+
+// ApplyBundledForStart is ApplyBundled during Play's loader install: the profile is already marked running, but
+// bundled loader mods must still land. Other writes stay locked.
+func (s *Store) ApplyBundledForStart(game string, b Bundle) error {
+	return s.applyBundled(game, b, true)
+}
+
+func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	all, err := s.List(game)
@@ -239,9 +249,11 @@ func (s *Store) ApplyBundled(game string, b Bundle) error {
 	}
 	var errs []error
 	for _, prof := range all {
-		if err := s.unlocked(game, prof.ID); err != nil {
-			errs = append(errs, err)
-			continue
+		if !duringStart {
+			if err := s.unlocked(game, prof.ID); err != nil {
+				errs = append(errs, err)
+				continue
+			}
 		}
 		var placed string
 		_, err := s.updateLocked(game, prof.ID, func(p *Profile, dir string) (err error) {

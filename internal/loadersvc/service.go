@@ -272,12 +272,11 @@ func (s *Service) install(ctx context.Context, id string, fromStart bool) (st lo
 		if err := s.items.AddDir(id, key, modsDir); err != nil {
 			return err
 		}
+		apply := s.profiles.ApplyBundled
 		if fromStart {
-			prev := s.profiles.Running
-			s.profiles.Running = nil
-			defer func() { s.profiles.Running = prev }()
+			apply = s.profiles.ApplyBundledForStart
 		}
-		return s.profiles.ApplyBundled(id, profile.Bundle{Key: key, Source: profile.Source{Kind: profile.SourceSMAPI, Name: "SMAPI"}})
+		return apply(id, profile.Bundle{Key: key, Source: profile.Source{Kind: profile.SourceSMAPI, Name: "SMAPI"}})
 	}
 	version, err := g.InstallLoader(ctx, dir, bundled, func(step loader.Step) {
 		s.emit(ProgressEvent, Progress{Game: id, Step: step})
