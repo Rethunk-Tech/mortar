@@ -15,6 +15,10 @@ func (s *Service) Rename(game, id, name string) (Profile, error) {
 	return s.store.Rename(game, id, name)
 }
 
+func (s *Service) SetNotes(game, id, notes string) (Profile, error) {
+	return s.store.SetNotes(game, id, notes)
+}
+
 // AddEntry copies the store item key into the profile.
 func (s *Service) AddEntry(game, id, key string, source Source) (Profile, error) {
 	return s.store.AddEntry(game, id, key, source)

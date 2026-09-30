@@ -85,3 +85,28 @@ func TestModFolderRejectsUnknown(t *testing.T) {
 		t.Fatal("unknown mod accepted")
 	}
 }
+
+func TestSetNotes(t *testing.T) {
+	s := newStore(t)
+	p, err := s.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := s.SetNotes("stardew", p.ID, "co-op friday")
+	if err != nil || got.Notes != "co-op friday" {
+		t.Fatalf("set = %+v, %v", got, err)
+	}
+	all, err := s.List("stardew")
+	if err != nil || all[0].Notes != "co-op friday" {
+		t.Fatalf("list = %+v, %v", all, err)
+	}
+	if _, err := s.SetNotes("stardew", p.ID, strings.Repeat("é", MaxNotes+1)); err == nil {
+		t.Fatal("over-cap notes accepted")
+	}
+	if _, err := s.SetNotes("stardew", p.ID, strings.Repeat("é", MaxNotes)); err != nil {
+		t.Fatalf("notes at the cap: %v", err)
+	}
+	if _, err := s.SetNotes("stardew", "nope", "x"); err == nil {
+		t.Fatal("unknown profile accepted")
+	}
+}

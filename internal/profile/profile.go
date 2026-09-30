@@ -287,6 +287,20 @@ func (s *Store) Rename(game, id, name string) (Profile, error) {
 	})
 }
 
+// MaxNotes caps a profile's notes, in characters.
+const MaxNotes = 20000
+
+// SetNotes replaces the profile's notes. Notes never touch mods/, so a running game does not block it.
+func (s *Store) SetNotes(game, id, notes string) (Profile, error) {
+	if n := utf8.RuneCountInString(notes); n > MaxNotes {
+		return Profile{}, fmt.Errorf("notes are too long: %d characters, the limit is %d", n, MaxNotes)
+	}
+	return s.update(game, id, func(p *Profile, _ string) error {
+		p.Notes = notes
+		return nil
+	})
+}
+
 // update reads the profile under the lock, applies fn (given the profile folder), then writes it with a new updated time.
 func (s *Store) update(game, id string, fn func(p *Profile, dir string) error) (Profile, error) {
 	s.mu.Lock()
