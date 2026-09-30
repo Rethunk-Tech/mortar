@@ -8,6 +8,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/p
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { type Block, parseBBCode, safeUrl } from './bbcode.ts'
+import { NexusAccountActions } from './NexusAccountActions.tsx'
 import { useNexusEntry } from './nexusDetails.ts'
 import {
   currentFiles,
@@ -186,7 +187,17 @@ function Files({ details, fileId }: { details: Details; fileId: number }) {
   )
 }
 
-function Loaded({ details, mod, fileId }: { details: Details; mod: Mod; fileId: number }) {
+function Loaded({
+  details,
+  mod,
+  fileId,
+  modId,
+}: {
+  details: Details
+  mod: Mod
+  fileId: number
+  modId: number
+}) {
   const { t } = useLingui()
   const { page } = details
   const logs = details.changelogs ?? []
@@ -213,6 +224,7 @@ function Loaded({ details, mod, fileId }: { details: Details; mod: Mod; fileId: 
         <Typography sx={{ ...text, color: 'text.secondary' }}>{page.summary}</Typography>
       ) : null}
       <Facts details={details} mod={mod} />
+      <NexusAccountActions modId={modId} version={mod.version} endorsement={page.endorsement} />
       <Files details={details} fileId={fileId} />
       {logs.length > 0 ? (
         <Fold title={t`Recent changes`}>
@@ -241,7 +253,7 @@ export function NexusDetails({ mod, modId, fileId }: { mod: Mod; modId: number; 
   const signedIn = useNexus((s) => s.signedIn)
   const entry = useNexusEntry(modId)
   if (entry?.details) {
-    return <Loaded details={entry.details} mod={mod} fileId={fileId} />
+    return <Loaded details={entry.details} mod={mod} fileId={fileId} modId={modId} />
   }
   if (!entry) {
     return <Typography sx={muted}>{t`Reading the Nexus page…`}</Typography>

@@ -19,6 +19,7 @@ const page = (id: number): Details => ({
     uploaderUrl: '',
     categoryId: 0,
     endorsements: 0,
+    endorsement: '',
     downloads: 0,
     uniqueDownloads: 0,
     created: '',
