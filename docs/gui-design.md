@@ -15,6 +15,7 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
   - **Drawer foot:** the Nexus account, as the account name with a Premium or Free badge and Sign out, or "Not signed in" with Sign in, which opens Settings › Nexus Mods.
   - **Frame:** a 1px light border and rounded corners, since GNOME draws no shadow for a frameless window.
 - `user-select: none` everywhere except text fields and the console.
+- Menus (the mod menu, the app's other menus) use a dark paper, `rgba(28,28,34,0.99)`, with a 1px light border and 8px corners (`MuiMenu` in `theme/theme.ts`); items with an obvious icon carry a Lucide one.
 - Icons come from one set, Lucide (MIT), at 1.5-2px stroke; no hand-drawn or mixed icons.
 - Every focusable control shows a visible focus ring when reached by keyboard: a 2px outline in the primary colour, 2px outside the control.
 - Button and chip labels never wrap (`white-space: nowrap`); a long message gets its own full-width row, truncating with an ellipsis rather than squeezing the buttons beside it.
@@ -22,7 +23,7 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
 ## Surfaces and colour
 
 - No gradients anywhere, not as backgrounds, scrims over art, fallbacks or placeholder art (NOMAD, 2026-09-29): legibility over art comes from a solid layer with alpha, and a missing image becomes a solid tone. The one exception: an image's edge may fade to transparent via an alpha mask; no coloured gradients (NOMAD, 2026-09-30).
-- The window is solid, an opaque `rgb(25,25,30)` base. What shows behind the surfaces is the wallpaper backdrop under a static `rgba(25,25,30,0.8)` tint (NOMAD, 2026-09-30). Surfaces keep their alpha and composite over it: background `rgba(25,25,30,0.80)`, paper `rgba(50,50,60,0.80)`, the drawer and dialog paper `rgba(40,40,48,0.92)`; dialog and drawer backdrops a static `rgba(0,0,0,0.30)` that appears without a fade, the launch overlay `rgba(0,0,0,0.80)`.
+- The window is solid, an opaque `rgb(25,25,30)` base. What shows behind the surfaces is the wallpaper backdrop under a static `rgba(25,25,30,0.8)` tint (NOMAD, 2026-09-30). Surfaces keep their alpha and composite over it: background `rgba(25,25,30,0.80)`, paper `rgba(50,50,60,0.80)`, the drawer and dialog paper `rgba(40,40,48,0.92)`; dialog and drawer backdrops a static `rgba(0,0,0,0.30)`; dialogs and their backdrops open and close without a transition, the launch overlay `rgba(0,0,0,0.80)`.
 - **Background** (NOMAD, 2026-09-30), Settings › Appearance, a three-way toggle, all opaque and applied at once. Stored as `background` and `backgroundImage` in `settings.json`.
   - **Image** (the default): the chosen image, else the system Fedora wallpaper, else the bundled copy. Shows a preview with **Choose image…** (PNG, JPEG or WebP) and **Reset to default**.
   - **Desktop:** the user's own desktop wallpaper, read at runtime (GNOME `org.gnome.desktop.background` `picture-uri-dark` under the dark colour scheme, else `picture-uri`; Windows `SystemParametersInfo` `SPI_GETDESKWALLPAPER`, unmeasured until milestone 6), falling back to Image's choice when it cannot be read.
@@ -62,7 +63,7 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
     - **Text:** the profile name large and bold with a soft white glow, and always the same cards (Mods, Updated, Created) so the name sits at the same place for every profile, with no subtitle line.
   - A **Saves** card in the hero (NOMAD, 2026-09-29) with how many saves fit this profile ("2 of 4"), opening the **Saves** tab: each save in the Saves folder with its fit, "all mods present" or "has used N mods this profile lacks" with their names, from the save scan ([architecture.md](architecture.md#saves)); a mod can be dismissed for a save. Players pick their save inside the game, so this is where the check shows, before Play.
   - Tabs: **Mods** (default), **Saves**, **Notes**, **Console**, and a **Share** button at the end of the tab row.
-- **Launching** covers the window with the launch overlay: a spinner, "Launching Stardew Valley", and SMAPI's first log lines as they arrive (started, mods loading, mods it will skip), with Open console and Hide, until the game is up or the launch fails. While the game runs, the Play button becomes a Running status with the elapsed time and a **Stop game** button.
+- **Launching** covers the window with the launch overlay: a spinner, "Launching Stardew Valley", and SMAPI's first log lines as they arrive (started, mods loading, mods it will skip), with Open console and Hide, until the game is up or the launch fails. While the game runs, the Play button becomes a Running status with the elapsed time and a **Stop game** button, and the open profile's mod controls are locked ("Stop the game to change mods."): switching, removing, installing and dropping archives. While Mortar installs SMAPI by itself, Play reads "Installing SMAPI…".
 - **Minimum size (768×432):** the sidebar collapses to a rail of profile initials with Play at its foot, the hero gives way to a one-line header (name and counts), search and actions fold into icon buttons, and the mod grid drops to two columns.
 
 ## Mods tab
@@ -70,10 +71,10 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 - Two views, switched from the toolbar and remembered per user (NOMAD, 2026-09-29): **Grid** (default), and **List**, a table (switch, picture, name, author, source, status). Both share one details sidebar for the selected mod (NOMAD, 2026-09-30).
 - Grid: a responsive grid of mod cards (`minmax(300px, 1fr)`; the 300px details aside is always beside it at normal width, so the default 1280px window shows two columns and three appear from about 1470px at the default sidebar width; the minimum window, where the aside becomes a drawer, shows two).
 - A card: the mod's icon (its Nexus `picture_url`, fetched once when the mod is installed and cached on disk, in place of the letter tile; a letter tile when there is none, NOMAD 2026-09-29), its name, author and version from its manifest, and badges for an available update or a problem. The card view is deliberately simple: no switch (the enable toggle lives in the sidebar). Clicking a card selects it and fills the sidebar. One card per mod; Remove acts on the whole archive entry the mod came in (its confirm names the other mods in it).
-- **Mod menu** (NOMAD, 2026-09-30): right-clicking a card or a list row opens a native menu (Wails' `--custom-contextmenu` on the element, one Go-registered menu per state), and the card's ⋯ button opens the same list. Actions, from one list in `internal/modmenu`: Enable or Disable (the label follows the state), More details, Open on Nexus or Open on GitHub (by the page's host; only when the mod has a page), Show files, and after a separator Remove (absent for the bundled SMAPI entry; it opens the confirm dialog). The native menu's labels are the frontend's translated strings, sent to Go at startup (`SetLabels`) since Go has no Lingui; details and remove reach the window as events, the rest run in Go and emit a refresh.
-- Above the grid: a search field that filters by name, the problem summary with one-click fixes ([architecture.md](architecture.md#mod-data)), and buttons to add mods (open Nexus, or pick an archive). Dropping an archive anywhere on the window installs it into the open profile.
+- **Mod menu** (NOMAD, 2026-09-30): right-clicking a card or a list row opens Mortar's own menu (`ModMenu.tsx`), and so do the Menu key or Shift+F10 on a focused card or row; the card's ⋯ button opens the same list. Actions, from one list in `modActions.ts`: Enable or Disable (the label follows the state), More details, Open on Nexus or Open on GitHub (by the page's host; only when the mod has a page), Show files, and after a divider Remove, in red (absent for the bundled SMAPI entry; it opens the confirm dialog). Enable, Disable and Remove are disabled while the profile is locked.
+- Above the grid: a search field that filters by name, the problem summary with one-click fixes ([architecture.md](architecture.md#mod-data)), and buttons to add mods (open Nexus, or pick an archive). Dropping an archive on any page of the game (profiles, settings included) installs it into the open profile.
 - SMAPI's bundled Console Commands and Save Backup, and Mortar's console bridge, are installed in every profile and not shown, listed, counted or removable (NOMAD, 2026-09-30).
-- Empty (a new profile): "No mods yet", a line on how to add them, **Browse Nexus** and **Add archive**, a link to import a shared profile, and a note that archives can be dropped anywhere. The hero uses Steam's art.
+- Empty (a new profile): "No mods yet", a line on how to add them, **Browse Nexus** and **Add archive**, **Or import a shared profile**, and a note that archives can be dropped anywhere. The hero uses Steam's art.
 
 ## Mod detail
 
@@ -91,7 +92,7 @@ A plain text area for the profile's notes, saved automatically ("Saved · 2 min 
 ## In-between moments
 
 - **Dropping an archive:** while an archive is dragged over the window, a dashed drop zone filling the window 12px in from its edges says where it goes ("Drop to install into Cookie farm"), with the file name and the supported formats.
-- **A Nexus link while minimised:** a desktop notification says what is downloading and into which profile, with Show. An `nxm://` link Mortar did not ask for gets a desktop notification whose click (Show) raises the window, where a card at the top centre asks which profile: the open profile (primary), Other profile… (a menu of the others) or Ignore. The card also shows when the window is not minimised, and a refused link (wrong game, another account, expired, malformed) is a toast saying why.
+- **A Nexus link:** while a game's profile screen is open, the link installs into the open profile at once, with a toast naming the mod ("Downloading <mod> into <profile>"). On any other screen a dialog, "Install <mod>?", asks which profile: the open one (primary), Other profile… (a menu of the others) or Ignore; further links queue behind it. While the window is minimised a desktop notification says the same, and its click (Show) raises the window. The mod's name is its Nexus page title, with "Nexus mod <id>" when signed out or offline. A refused link (wrong game, another account, expired, malformed) is a toast saying why.
 - **Two copies of one mod:** a dialog shows both (source, version, what depends on it), preselects the newer or Nexus-sourced one, and switches the other off rather than deleting it; Decide later leaves both as a problem.
 
 ## Console tab
@@ -128,7 +129,7 @@ Update review offers **Update** per mod and **Update all**, with **Open page** k
 
 ## First run
 
-Only when no game is set up, never on later launches:
+Only when Stardew Valley is not found, or on a first launch (SMAPI never installed and no profiles); never otherwise:
 
 1. Find Stardew Valley in Steam and show what was found, with **Browse** for another folder; when nothing is found, say so, with Browse and a retry.
 2. Install SMAPI if it is missing: it starts by itself, unattended, with no button (NOMAD, 2026-09-30), and a failure shows its error with **Retry**. On Windows with Steam, show the launch-options line to paste into Stardew's Steam properties, with a copy button.
@@ -137,7 +138,7 @@ Only when no game is set up, never on later launches:
 
 ## Confirmations
 
-Short toasts, bottom right, stacked, each with a coloured edge by kind and a dismiss button, and an undo-style action where one exists: "Link copied", "SpaceCore installed" (Undo), "… rolled back" (Redo update), "Couldn't reach Nexus" (Retry now). A toast about a mod shows its picture.
+Short toasts, bottom right, stacked (at most three; the oldest goes first), each with a coloured edge by kind and a dismiss button, dismissing themselves after 5 s (10 s for errors and warnings), with hover pausing the countdown, and an undo-style action where one exists: "Link copied", "SpaceCore installed" (Undo), "… rolled back" (Redo update), "Couldn't reach Nexus" (Retry now). A toast about a mod shows its picture.
 
 ## Settings
 
@@ -145,7 +146,7 @@ Mortar's Settings holds only what is Mortar-wide, never one game's (NOMAD, 2026-
 
 - **Appearance** (first, and the one Settings opens on): accent colour and background.
 - **Data:** Mortar's data folder with its total size and an **Open folder** link.
-- **Nexus Mods:** the personal API key (saving it the first time asks whether Mortar should handle `nxm://` links), and the switch **Handle Nexus "Mod Manager Download" links**, which names the app that owns them now, asks before taking them, and gives them back when turned off.
+- **Nexus Mods:** the personal API key, or once signed in a green alert with the account name, a Premium or Free chip and **Sign out** inside it (saving it the first time asks whether Mortar should handle `nxm://` links), and the switch **Handle Nexus "Mod Manager Download" links**, which names the app that owns them now, asks before taking them, and gives them back when turned off.
 - **Updates** (milestone 6): mod, SMAPI and Mortar update checks; backups kept.
 - **About:** licences and credits, including SMAPI and the Stardew mod dataset (CC-BY-SA 4.0).
 
