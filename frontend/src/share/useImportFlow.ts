@@ -21,8 +21,9 @@ import { type ShownPreview, shownPreview } from './logic.ts'
 import { importAfterSignIn } from './store.ts'
 
 // Shows what an import filled: the open profile refreshed, or the new one opened on its game's page.
+// A new profile registers mortar:// and .mortar (idempotent): an import can arrive before first run finished,
+// including via the Nexus sign-in detour, which leaves the setup route behind.
 async function showImported(game: string, intoOpen: boolean, id: string) {
-  const setup = useNav.getState().route.name === 'setup'
   if (intoOpen) {
     await useProfiles.getState().refresh()
   } else {
@@ -30,8 +31,6 @@ async function showImported(game: string, intoOpen: boolean, id: string) {
     useProfiles.getState().open(id)
     await SetLastGame(game)
     useNav.getState().openGame('stardew')
-  }
-  if (setup) {
     RegisterLinks().catch(reportUnexpected)
   }
 }
