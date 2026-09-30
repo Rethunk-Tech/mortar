@@ -10,14 +10,19 @@ import {
   Assign,
   Ignore,
   Inbox,
+  NotificationIcon,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { SendNotification } from '../../bindings/github.com/wailsapp/wails/v3/pkg/services/notifications/notificationservice.ts'
+import {
+  RegisterNotificationCategory,
+  SendNotificationWithActions,
+} from '../../bindings/github.com/wailsapp/wails/v3/pkg/services/notifications/notificationservice.ts'
 import { i18n } from '../i18n/index.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { nxmShowCategory, nxmShowWithIcon } from './minimisedNotice.ts'
 import { directProfile, NXM_GAME } from './route.ts'
 
 const rejectionText = (reason: string): string => {
@@ -35,16 +40,18 @@ const rejectionText = (reason: string): string => {
   }
 }
 
-// A desktop notification stands in for the on-screen prompt while the window is minimised; clicking it brings the
-// window up.
+// A desktop notification stands in for the on-screen prompt while the window is minimised; clicking it or Show
+// raises the window (main.go OnNotificationResponse).
+const names = new Map<number, Promise<string>>()
+
 async function notify(arrival: Arrival, title: string, body: string) {
   if (!(await Window.IsMinimised())) {
     return
   }
-  await SendNotification({ id: `nxm-${arrival.id}`, title, body })
+  await RegisterNotificationCategory(nxmShowCategory(i18n._(msg`Show`)))
+  const icon = await NotificationIcon()
+  await SendNotificationWithActions(nxmShowWithIcon(arrival.id, title, body, icon))
 }
-
-const names = new Map<number, Promise<string>>()
 
 async function install(arrival: Arrival, profile: Profile) {
   try {
