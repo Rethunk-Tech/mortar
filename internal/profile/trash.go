@@ -200,7 +200,38 @@ func (s *Store) StoreKeys() (map[string][]string, error) {
 					out[g] = append(out[g], e.PreviousKey)
 				}
 			}
+			dir := filepath.Join(s.root, g, p.ID)
+			if _, err := os.Stat(filepath.Join(dir, fileName)); err != nil {
+				dir = filepath.Join(s.trash, g, p.ID)
+			}
+			events, err := readHistory(dir)
+			if err != nil {
+				return nil, err
+			}
+			for _, ev := range events {
+				for _, e := range ev.Entries {
+					out[g] = append(out[g], e.Key)
+					if e.PreviousKey != "" {
+						out[g] = append(out[g], e.PreviousKey)
+					}
+				}
+			}
 		}
+	}
+	for g, keys := range out {
+		seen := map[string]struct{}{}
+		var uniq []string
+		for _, k := range keys {
+			if k == "" {
+				continue
+			}
+			if _, ok := seen[k]; ok {
+				continue
+			}
+			seen[k] = struct{}{}
+			uniq = append(uniq, k)
+		}
+		out[g] = uniq
 	}
 	return out, nil
 }

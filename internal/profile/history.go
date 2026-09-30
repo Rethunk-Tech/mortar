@@ -120,22 +120,16 @@ func (s *Store) Revert(game, id, eventID string) (Profile, error) {
 
 func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries []Entry) error {
 	modsDir := filepath.Join(dir, "mods")
-	ents, err := os.ReadDir(modsDir)
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		return err
-	}
-	for _, ent := range ents {
-		if err := os.RemoveAll(filepath.Join(modsDir, ent.Name())); err != nil {
-			return err
-		}
-	}
-	if err := os.MkdirAll(modsDir, 0o700); err != nil {
+	staging := modsDir + ".new"
+	_ = os.RemoveAll(staging)
+	if err := os.MkdirAll(staging, 0o700); err != nil {
 		return err
 	}
 	p.Entries = []Entry{}
 	keys := make([]string, 0, len(entries)*2)
 	for _, e := range entries {
-		if err := s.place(game, modsDir, e); err != nil {
+		if err := s.place(game, staging, e); err != nil {
+			_ = os.RemoveAll(staging)
 			return err
 		}
 		p.Entries = append(p.Entries, e)
@@ -144,6 +138,25 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 			keys = append(keys, e.PreviousKey)
 		}
 	}
+	old := modsDir + ".old"
+	_ = os.RemoveAll(old)
+	if _, err := os.Stat(modsDir); err == nil {
+		if err := os.Rename(modsDir, old); err != nil {
+			_ = os.RemoveAll(staging)
+			return err
+		}
+	} else if !errors.Is(err, os.ErrNotExist) {
+		_ = os.RemoveAll(staging)
+		return err
+	}
+	if err := os.Rename(staging, modsDir); err != nil {
+		if _, statErr := os.Stat(old); statErr == nil {
+			_ = os.Rename(old, modsDir)
+		}
+		_ = os.RemoveAll(staging)
+		return err
+	}
+	_ = os.RemoveAll(old)
 	if s.items != nil && len(keys) > 0 {
 		return s.items.Touch(game, keys...)
 	}
@@ -191,10 +204,20 @@ func (s *Store) updateLockedAs(game, id, kind, label string, fn func(p *Profile,
 	return s.updateLocked(game, id, fn)
 }
 
-func (s *Store) setHistoryQuiet(q bool) {
+func (s *Store) setHistoryQuiet(id string, on bool) {
 	s.mu.Lock()
-	s.historyQuiet = q
-	s.mu.Unlock()
+	defer s.mu.Unlock()
+	if s.historyQuietIDs == nil {
+		s.historyQuietIDs = map[string]int{}
+	}
+	if on {
+		s.historyQuietIDs[id]++
+		return
+	}
+	s.historyQuietIDs[id]--
+	if s.historyQuietIDs[id] <= 0 {
+		delete(s.historyQuietIDs, id)
+	}
 }
 
 func (s *Store) recordSnapshot(game, id, kind, label string, count int) error {
@@ -295,20 +318,22 @@ func classifyHistory(before, after []Entry) HistoryEvent {
 			name = entryName(ae)
 			continue
 		}
-		name = entryName(ae)
 		switch {
 		case be.Key != ae.Key || entryVersion(be) != entryVersion(ae):
 			updated++
 			from = entryVersion(be)
 			to = entryVersion(ae)
+			name = entryName(ae)
 		case !equalStrings(be.Disabled, ae.Disabled):
 			if len(ae.Disabled) > len(be.Disabled) {
 				disabled++
 			} else {
 				enabled++
 			}
+			name = entryName(ae)
 		case be.Pinned != ae.Pinned:
 			pinned++
+			name = entryName(ae)
 			if ae.Pinned {
 				pinLabel = "Pinned " + name
 			} else {

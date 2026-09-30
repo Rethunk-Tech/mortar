@@ -274,6 +274,10 @@ func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 			}
 		}
 		var placed string
+		if s.historyQuietIDs == nil {
+			s.historyQuietIDs = map[string]int{}
+		}
+		s.historyQuietIDs[prof.ID]++
 		_, err := s.updateLocked(game, prof.ID, func(p *Profile, dir string) (err error) {
 			var disabled []string
 			for _, e := range slices.Backward(slices.Clone(p.Entries)) {
@@ -291,6 +295,10 @@ func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 			placed, err = s.addTo(game, p, dir, b.Key, b.Source, disabled)
 			return err
 		})
+		s.historyQuietIDs[prof.ID]--
+		if s.historyQuietIDs[prof.ID] <= 0 {
+			delete(s.historyQuietIDs, prof.ID)
+		}
 		if err != nil && placed != "" {
 			err = errors.Join(err, os.RemoveAll(placed))
 		}

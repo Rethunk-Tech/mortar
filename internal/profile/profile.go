@@ -126,10 +126,10 @@ type Store struct {
 	// Running reports whether the game is running this profile; nil means never.
 	Running func(game, id string) bool
 	// BackupsKept returns how many save backups to retain; nil means backup.DefaultKeep.
-	BackupsKept  func() int
-	historyKind  string
-	historyLabel string
-	historyQuiet bool
+	BackupsKept     func() int
+	historyKind     string
+	historyLabel    string
+	historyQuietIDs map[string]int
 }
 
 // RunningError is returned by operations that would change the mods/ folder of a profile its game is running.
@@ -191,7 +191,7 @@ func Open(items *store.Store) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Store{root: filepath.Join(dir, "profiles"), trash: filepath.Join(dir, "trash"), items: items}, nil
+	return &Store{root: filepath.Join(dir, "profiles"), trash: filepath.Join(dir, "trash"), items: items, historyQuietIDs: map[string]int{}}, nil
 }
 
 func cleanName(name string) (string, error) {
@@ -426,7 +426,7 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 	}
 	kind, label := s.historyKind, s.historyLabel
 	s.historyKind, s.historyLabel = "", ""
-	if !s.historyQuiet {
+	if s.historyQuietIDs[id] == 0 {
 		if err := recordHistory(dir, before, p.Entries, kind, label); err != nil {
 			return Profile{}, err
 		}

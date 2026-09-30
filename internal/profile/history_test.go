@@ -2,7 +2,10 @@ package profile
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
 	"reflect"
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/store"
@@ -182,5 +185,120 @@ func TestHistoryRevertRefusedWhileRunning(t *testing.T) {
 	_, err = e.Revert("stardew", p.ID, events[0].ID)
 	if _, ok := errors.AsType[*RunningError](err); !ok {
 		t.Fatalf("Revert = %v, want RunningError", err)
+	}
+}
+
+func TestClassifyHistoryNamesTheEntryThatChanged(t *testing.T) {
+	a := Entry{Key: "gmcm", Mods: []EntryMod{{UniqueID: "spacechase0.GenericModConfigMenu", Name: "Generic Mod Config Menu"}}}
+	b := Entry{Key: "npc", Mods: []EntryMod{{UniqueID: "Bouhm.NPCMapLocations", Name: "NPC Map Locations"}}}
+	before := []Entry{a, b}
+	after := []Entry{a, b}
+	after[0].Disabled = []string{"spacechase0.GenericModConfigMenu"}
+	got := classifyHistory(before, after)
+	if got.Kind != historyDisabled || got.Label != "Disabled Generic Mod Config Menu" {
+		t.Fatalf("got %+v", got)
+	}
+	got = classifyHistory(after, before)
+	if got.Kind != historyEnabled || got.Label != "Enabled Generic Mod Config Menu" {
+		t.Fatalf("re-enable got %+v", got)
+	}
+}
+
+func TestApplyBundledDoesNotRecordHistory(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "smapi-1.0.0", bundle())
+	p, err := e.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := e.ApplyBundled("stardew", smapiBundle("smapi-1.0.0")); err != nil {
+		t.Fatal(err)
+	}
+	events, err := e.History("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(events) != 0 {
+		t.Fatalf("bundled bookkeeping recorded history: %+v", events)
+	}
+}
+
+func TestHistoryQuietIsPerProfile(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	a, err := e.Create("stardew", "A")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := e.Create("stardew", "B")
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.setHistoryQuiet(a.ID, true)
+	if _, err := e.AddEntry("stardew", a.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.AddEntry("stardew", b.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	ha, err := e.History("stardew", a.ID)
+	if err != nil || len(ha) != 0 {
+		t.Fatalf("quiet profile history = %+v, %v", ha, err)
+	}
+	hb, err := e.History("stardew", b.ID)
+	if err != nil || len(hb) == 0 {
+		t.Fatalf("other profile history = %+v, %v", hb, err)
+	}
+}
+
+func TestStoreKeysIncludesHistorySnapshots(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	p, err := e.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.RemoveEntry("stardew", p.ID, "local-a"); err != nil {
+		t.Fatal(err)
+	}
+	keys, err := e.StoreKeys()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Contains(keys["stardew"], "local-a") {
+		t.Fatalf("history key missing from StoreKeys: %v", keys["stardew"])
+	}
+}
+
+func TestApplyEntrySnapshotKeepsModsWhenPlaceFails(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	p, err := e.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	dir, err := e.profileDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mods := filepath.Join(dir, "mods", "local-a")
+	if _, err := os.Stat(mods); err != nil {
+		t.Fatal(err)
+	}
+	cur, err := e.read("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := e.applyEntrySnapshot("stardew", &cur, dir, []Entry{{Key: "missing-key", Mods: []EntryMod{{UniqueID: "x"}}}}); err == nil {
+		t.Fatal("expected place to fail")
+	}
+	if _, err := os.Stat(mods); err != nil {
+		t.Fatal("mods/ was wiped after a failed snapshot apply")
 	}
 }
