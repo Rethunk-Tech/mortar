@@ -34,6 +34,20 @@ export function historyProfiles(entries: HistoryEntry[]): string[] {
   return [...new Set(entries.map((e) => e.profileId).filter(Boolean))]
 }
 
+export function makeGen() {
+  let n = 0
+  return {
+    stamp: () => {
+      n += 1
+      return n
+    },
+    is: (id: number) => id === n,
+    drop: () => {
+      n += 1
+    },
+  }
+}
+
 export function loadHistory(): Promise<HistoryEntry[]> {
   return History().then((rows) =>
     (rows ?? []).map((e) => ({

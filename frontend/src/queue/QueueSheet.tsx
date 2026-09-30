@@ -1,14 +1,20 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Drawer, IconButton, Typography } from '@mui/material'
 import { History as HistoryIcon, List, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   ClearFinished,
   Pause,
   Resume,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { emptyFilters, type HistoryEntry, type HistoryFilters, loadHistory } from './history.ts'
+import {
+  emptyFilters,
+  type HistoryEntry,
+  type HistoryFilters,
+  loadHistory,
+  makeGen,
+} from './history.ts'
 import { Body } from './QueueBody.tsx'
 import { HistoryList } from './QueueHistory.tsx'
 import { useQueue } from './store.ts'
@@ -114,6 +120,7 @@ export function QueueSheet() {
   const [view, setView] = useState<'queue' | 'history'>('queue')
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const [filters, setFilters] = useState<HistoryFilters>(emptyFilters)
+  const gen = useRef(makeGen())
   const close = () => {
     setView('queue')
     setOpen(false)
@@ -122,7 +129,17 @@ export function QueueSheet() {
     if (!open || view !== 'history') {
       return
     }
-    loadHistory().then(setHistory).catch(reportUnexpected)
+    const id = gen.current.stamp()
+    loadHistory()
+      .then((rows) => {
+        if (gen.current.is(id)) {
+          setHistory(rows)
+        }
+      })
+      .catch(reportUnexpected)
+    return () => {
+      gen.current.drop()
+    }
   }, [open, view])
   return (
     <Drawer
@@ -132,6 +149,7 @@ export function QueueSheet() {
       sx={{ top: 'var(--title-bar)' }}
       slotProps={{
         paper: {
+          role: 'dialog',
           sx: {
             width: WIDTH,
             maxWidth: '100%',
@@ -159,7 +177,10 @@ export function QueueSheet() {
             entries={history}
             filters={filters}
             onFilters={setFilters}
-            onCleared={() => setHistory([])}
+            onCleared={() => {
+              gen.current.drop()
+              setHistory([])
+            }}
           />
         ) : (
           <Body items={items} />

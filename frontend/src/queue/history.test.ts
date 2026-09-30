@@ -1,5 +1,11 @@
 import { expect, test } from 'bun:test'
-import { emptyFilters, filterHistory, type HistoryEntry, historyProfiles } from './history.ts'
+import {
+  emptyFilters,
+  filterHistory,
+  type HistoryEntry,
+  historyProfiles,
+  makeGen,
+} from './history.ts'
 
 const row = (over: Partial<HistoryEntry>): HistoryEntry => ({
   name: 'A',
@@ -38,4 +44,14 @@ test('filterHistory matches outcome and profile', () => {
 
 test('historyProfiles lists unique profile ids', () => {
   expect(historyProfiles([row({}), row({ profileId: 'p2' }), row({})])).toEqual(['p1', 'p2'])
+})
+
+test('makeGen ignores a result after clear or a newer load', () => {
+  const gen = makeGen()
+  const first = gen.stamp()
+  const second = gen.stamp()
+  expect(gen.is(first)).toBe(false)
+  expect(gen.is(second)).toBe(true)
+  gen.drop()
+  expect(gen.is(second)).toBe(false)
 })
