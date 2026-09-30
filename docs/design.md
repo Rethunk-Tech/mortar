@@ -28,6 +28,8 @@ Chosen from suggestion rounds; each lands as its own unit and moves to architect
 - **Nexus and downloads:** a requests-left meter; update-check toggles (mod updates at start, new SMAPI notice); endorse or track a mod; resume interrupted downloads; mark mods with new files or changes since last seen; a download history; clear finished downloads.
 - **App-wide:** a keyboard shortcuts page and shortcuts; a command palette (Ctrl+K); a notification history; empty-state tips on first open; a credits and licences page; save the console log to a file; "Keep the Nexus copy" in the duplicate dialog.
 
+- **More (NOMAD, 2026-09-30, second round):** a transitive dependency tree in the mod panel; group the list or grid by category, source or tag; copy the mod list as text; clickable mod names and paths in the Console; a profile change history with revert; a profile description; richer save cards (playtime, money, farm type, date); a warning after a game update for mods broken on the new version; play without mods; a launch history per profile; a crash summary naming the mods that logged errors; a storage page with clean-up of unused items; export and import of settings without secrets; a diagnostics bundle for bug reports.
+
 ## Build order
 
 After the go-ahead, each milestone ends with the gate green and NOMAD clicking through it on Linux. `docs/gui-design.md` is the canonical spec for the screens each milestone builds:
