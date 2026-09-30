@@ -51,6 +51,9 @@ type Loaders interface {
 	LoaderStatus(dir, recorded string) loader.Status
 	// LatestLoader returns the newest stable loader version.
 	LatestLoader(ctx context.Context) (string, error)
+	// CopyBundled copies the loader's own mods that are already in the install dir into dst, for a loader
+	// installed outside Mortar.
+	CopyBundled(dir, dst string) error
 	// InstallLoader installs or updates the loader in dir and returns its version.
 	InstallLoader(ctx context.Context, dir string, bundled loader.Bundled, progress func(loader.Step)) (string, error)
 }

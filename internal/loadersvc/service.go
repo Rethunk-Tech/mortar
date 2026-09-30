@@ -5,7 +5,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"maps"
+	"os"
 	"sync"
 
 	"github.com/Rethunk-AI/mortar/internal/game"
@@ -40,15 +42,70 @@ func NewService(home string, s *settings.Store, items *store.Store, profiles *pr
 	return &Service{home: home, settings: s, items: items, profiles: profiles}
 }
 
-// BundledKey returns the store key of the loader's bundled mods for the game, or "" before an install.
-func BundledKey(s *settings.Store) func(string) string {
+// BundledKey returns the hook profile.Store uses to find the loader's bundled mods for the game, or "" when
+// none are installed. It builds a missing store entry from the game folder first.
+func BundledKey(s *Service) func(string) string {
 	return func(id string) string {
-		v := s.Get().Loaders[id]
-		if v == "" {
-			return ""
+		key, err := s.ensureBundled(id)
+		if err != nil {
+			log.Printf("bundled mods for %s: %v", id, err)
 		}
-		return store.SMAPIKey(v)
+		return key
 	}
+}
+
+// SyncBundled makes sure the game's bundled mods are in the store and in every profile. It never fails the
+// caller: the loader may be absent or the game not installed.
+func SyncBundled(s *Service, id string) {
+	key, err := s.ensureBundled(id)
+	if err == nil && key != "" {
+		err = s.profiles.ApplyBundled(id, key)
+	}
+	if err != nil {
+		log.Printf("bundled mods for %s: %v", id, err)
+	}
+}
+
+// ensureBundled returns the store key of the installed loader's bundled mods, building the entry from the game
+// folder when the loader was installed outside Mortar. It returns "" when no loader is installed.
+func (s *Service) ensureBundled(id string) (string, error) {
+	st, err := s.LocalStatus(id)
+	if err != nil {
+		return "", err
+	}
+	if !st.Installed || st.Broken || st.Version == "" {
+		return "", nil
+	}
+	key := store.SMAPIKey(st.Version)
+	if _, err := s.items.Path(id, key); err == nil {
+		return key, nil
+	} else if !errors.Is(err, store.ErrNotFound) {
+		return "", err
+	}
+	g, dir, err := s.target(id)
+	if err != nil {
+		return "", err
+	}
+	tmp, err := os.MkdirTemp("", "mortar-bundled-")
+	if err != nil {
+		return "", err
+	}
+	defer func() { _ = os.RemoveAll(tmp) }()
+	if err := g.CopyBundled(dir, tmp); err != nil {
+		return "", err
+	}
+	if err := s.items.AddDir(id, key, tmp); err != nil {
+		return "", err
+	}
+	if s.settings.Get().Loaders[id] == "" {
+		if _, err := s.settings.Update(func(v *settings.Settings) {
+			v.Loaders = maps.Clone(v.Loaders)
+			v.Loaders[id] = st.Version
+		}); err != nil {
+			return "", err
+		}
+	}
+	return key, nil
 }
 
 func (s *Service) target(id string) (game.Game, string, error) {
@@ -66,14 +123,25 @@ func (s *Service) target(id string) (game.Game, string, error) {
 	return g, dir, nil
 }
 
-// Status reports the loader's state on disk and whether a newer release exists. A failed release lookup
-// only leaves Latest empty.
-func (s *Service) Status(ctx context.Context, id string) (loader.Status, error) {
+// LocalStatus reports the loader's state on disk without any network call.
+func (s *Service) LocalStatus(id string) (loader.Status, error) {
 	g, dir, err := s.target(id)
 	if err != nil {
 		return loader.Status{}, err
 	}
-	st := g.LoaderStatus(dir, s.settings.Get().Loaders[id])
+	return g.LoaderStatus(dir, s.settings.Get().Loaders[id]), nil
+}
+
+// Status is LocalStatus plus whether a newer release exists. A failed release lookup only leaves Latest empty.
+func (s *Service) Status(ctx context.Context, id string) (loader.Status, error) {
+	g, _, err := s.target(id)
+	if err != nil {
+		return loader.Status{}, err
+	}
+	st, err := s.LocalStatus(id)
+	if err != nil {
+		return loader.Status{}, err
+	}
 	if latest, err := g.LatestLoader(ctx); err == nil {
 		st.Latest = latest
 		st.UpdateAvailable = st.Installed && st.Version != "" && loader.Newer(latest, st.Version)

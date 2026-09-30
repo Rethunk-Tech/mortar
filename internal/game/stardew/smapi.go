@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"cmp"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 
 	"github.com/Rethunk-AI/mortar/internal/archive"
@@ -105,8 +107,36 @@ func (g Game) LoaderStatus(dir, recorded string) loader.Status {
 	}
 	logSMAPI, logGame := g.logVersions()
 	st.GameVersion = logGame
-	st.Version = cmp.Or(recorded, logSMAPI)
+	st.Version = cmp.Or(recorded, logSMAPI, bundledVersion(dir))
 	return st
+}
+
+// bundledMods are the mods the SMAPI installer places in Mods.
+var bundledMods = []string{"ConsoleCommands", "SaveBackup"}
+
+// bundledVersion reads the version from Console Commands' manifest, which the installer sets to SMAPI's own.
+func bundledVersion(dir string) string {
+	b, err := fsx.ReadFile(filepath.Join(dir, "Mods", bundledMods[0], "manifest.json"))
+	if err != nil {
+		return ""
+	}
+	var m struct {
+		Version string `json:"Version"`
+	}
+	if json.Unmarshal(b, &m) != nil {
+		return ""
+	}
+	return m.Version
+}
+
+// CopyBundled copies SMAPI's Console Commands and Save Backup from dir/Mods into dst.
+func (Game) CopyBundled(dir, dst string) error {
+	for _, name := range bundledMods {
+		if err := datadir.CopyTree(filepath.Join(dir, "Mods", name), filepath.Join(dst, name)); err != nil {
+			return fmt.Errorf("copy %s: %w", name, err)
+		}
+	}
+	return nil
 }
 
 // installer returns the folder and file name of the platform installer inside the extracted zip.

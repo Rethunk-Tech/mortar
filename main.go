@@ -61,8 +61,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	profiles.Bundled = loadersvc.BundledKey(store)
 	loaders := loadersvc.NewService(home, store, items, profiles)
+	profiles.Bundled = loadersvc.BundledKey(loaders)
+	loadersvc.SyncBundled(loaders, "stardew")
 	launches := launchsvc.NewService(home, store, profiles)
 	profiles.Running = launches.Running
 	now := time.Now()
