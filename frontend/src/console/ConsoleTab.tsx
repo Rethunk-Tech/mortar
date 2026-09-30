@@ -16,6 +16,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { useLaunch } from '../launch/store.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
@@ -335,11 +336,13 @@ export function ConsoleTab({ game }: { game: string }) {
   const follow = useConsole((s) => s.follow)
   const jump = useConsole((s) => s.jump)
   const { load, setMods, clearFilters, setTimestamps, setFollow } = useConsole.getState()
+  const profile = useProfiles((s) => s.openId)
   const rows = useVisible()
   const [loaded, setLoaded] = useState(false)
   useEffect(() => {
-    load(game).then(() => setLoaded(true))
-  }, [game, load])
+    setLoaded(false)
+    load(game, profile).then(() => setLoaded(true))
+  }, [game, profile, load])
   const total = entries.length
   let empty: string | null = null
   if (loaded && total === 0) {

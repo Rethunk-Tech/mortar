@@ -17,6 +17,7 @@ import {
   Upload,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
 import { paper } from '../mods/paper.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useConsole } from './store.ts'
@@ -68,6 +69,7 @@ export function HelpDialog({ game }: { game: string }) {
   const { t } = useLingui()
   const open = useConsole((s) => s.helping)
   const setHelping = useConsole((s) => s.setHelping)
+  const profile = useProfiles((s) => s.openId)
   const [log, setLog] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [link, setLink] = useState('')
@@ -79,7 +81,11 @@ export function HelpDialog({ game }: { game: string }) {
     }
     setLog(null)
     setLink('')
-    Log(game).then(setLog, (e: unknown) => {
+    if (!profile) {
+      setLog('')
+      return
+    }
+    Log(game, profile).then(setLog, (e: unknown) => {
       useToasts.getState().push({
         kind: 'error',
         title: t`Could not read the SMAPI log`,
@@ -87,7 +93,7 @@ export function HelpDialog({ game }: { game: string }) {
       })
       setHelping(false)
     })
-  }, [open, game, setHelping, t])
+  }, [open, game, profile, setHelping, t])
 
   const copy = (text: string) =>
     Clipboard.SetText(text).then(
@@ -117,7 +123,7 @@ export function HelpDialog({ game }: { game: string }) {
 
   let body: string | null = null
   if (log === '') {
-    body = t`SMAPI has not written a log yet. Start the game once, then try again.`
+    body = t`There is no SMAPI log for this profile yet. Play this profile once, then try again.`
   } else if (log === null) {
     body = t`Reading the log…`
   }

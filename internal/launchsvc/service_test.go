@@ -68,27 +68,60 @@ func TestRunningFollowsProcessesAndLocksProfile(t *testing.T) {
 	}
 }
 
-func TestLinesReadsLastSessionsLog(t *testing.T) {
+func TestLinesReadsTheProfilesLastLog(t *testing.T) {
 	cfg := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", cfg)
-	svc := NewService(t.TempDir(), nil, nil)
-	if got, err := svc.Lines("stardew"); err != nil || got == nil || len(got) != 0 {
+	home := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", filepath.Join(home, "data"))
+	items, err := store.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	profiles, err := profile.Open(items)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := profiles.Create("stardew", "A")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := profiles.Create("stardew", "B")
+	if err != nil {
+		t.Fatal(err)
+	}
+	svc := NewService(home, nil, profiles)
+	if got, err := svc.Lines("stardew", a.ID); err != nil || got == nil || len(got) != 0 {
 		t.Fatalf("no log yet: %v, %v", got, err)
 	}
 	dir := filepath.Join(cfg, "StardewValley", "ErrorLogs")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	log := "[19:43:46 INFO  SMAPI] hello\r\n[19:43:50 ERROR Mod] boom\n  at X\n"
+	modsA, _ := profiles.ModsDir("stardew", a.ID)
+	rel, _ := filepath.Rel(home, modsA)
+	log := "[19:43:46 INFO  SMAPI] Mods go here: ~/" + rel + "\r\n[19:43:50 ERROR Mod] boom\n  at X\n"
 	if err := os.WriteFile(filepath.Join(dir, "SMAPI-latest.txt"), []byte(log), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	got, err := svc.Lines("stardew")
+	got, err := svc.Lines("stardew", a.ID)
 	if err != nil || len(got) != 3 {
 		t.Fatalf("got %v, %v", got, err)
 	}
 	if got[1].Level != launch.Error || got[1].Mod != "Mod" || !got[2].Cont || got[2].Level != launch.Error || got[0].Seq >= got[1].Seq {
 		t.Fatalf("got %+v", got)
+	}
+	if got, err := svc.Lines("stardew", b.ID); err != nil || got == nil || len(got) != 0 {
+		t.Fatalf("profile B has no log: %v, %v", got, err)
+	}
+
+	buf := &launch.Buffer{}
+	buf.Add(launch.Entry{Message: "session"})
+	svc.logs["stardew"] = session{buf: buf, profile: b.ID}
+	if got, err := svc.Lines("stardew", b.ID); err != nil || len(got) != 1 {
+		t.Fatalf("profile B's session: %v, %v", got, err)
+	}
+	if got, err := svc.Lines("stardew", a.ID); err != nil || got == nil || len(got) != 0 {
+		t.Fatalf("B's session is not A's: %v, %v", got, err)
 	}
 }
 
@@ -122,7 +155,7 @@ func TestGameClosingEndsTheConsoleWithAMortarLine(t *testing.T) {
 		t.Fatal("the running process should mark the game running")
 	}
 	buf := &launch.Buffer{}
-	svc.logs["stardew"] = buf
+	svc.logs["stardew"] = session{buf: buf, profile: a.ID}
 	if err := os.RemoveAll(pid); err != nil {
 		t.Fatal(err)
 	}
@@ -265,7 +298,7 @@ func TestSendRunsThroughTheBridgeAndEchoesTheCommand(t *testing.T) {
 		t.Fatal(err)
 	}
 	buf := &launch.Buffer{}
-	svc.logs["stardew"] = buf
+	svc.logs["stardew"] = session{buf: buf, profile: p.ID}
 	svc.status["stardew"] = Status{Game: "stardew", State: Running, Profile: p.ID}
 	if err := svc.Send("stardew", "  help  "); err != nil {
 		t.Fatal(err)

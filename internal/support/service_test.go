@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -60,5 +62,30 @@ func TestUploadRejectsOversizeWithoutSending(t *testing.T) {
 	_, err := upload(t, func(http.ResponseWriter, *http.Request) { t.Error("request sent") }, strings.Repeat("x", MaxLog+1))
 	if err == nil {
 		t.Fatal("want an error")
+	}
+}
+
+func TestLogIsOnlyItsProfiles(t *testing.T) {
+	cfg := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", cfg)
+	dirs := map[string]string{"a": "/home/u/p/a/mods", "b": "/home/u/p/b/mods"}
+	s := NewService("1.2.3", func(string) problems.Environment { return problems.Environment{} }, "/home/u",
+		func(_, id string) (string, error) { return dirs[id], nil })
+	if got, err := s.Log("stardew", "a"); err != nil || got != "" {
+		t.Fatalf("no log yet: %q, %v", got, err)
+	}
+	dir := filepath.Join(cfg, "StardewValley", "ErrorLogs")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	log := "[05:00:01 INFO  SMAPI] Mods go here: ~/p/a/mods\n"
+	if err := os.WriteFile(filepath.Join(dir, "SMAPI-latest.txt"), []byte(log), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := s.Log("stardew", "a"); err != nil || got != log {
+		t.Fatalf("profile a: %q, %v", got, err)
+	}
+	if got, err := s.Log("stardew", "b"); err != nil || got != "" {
+		t.Fatalf("profile b: %q, %v", got, err)
 	}
 }

@@ -32,12 +32,17 @@ type Service struct {
 	base    string
 	version string
 	env     func(gameID string) problems.Environment
+	home    string
+	modsDir func(gameID, profileID string) (string, error)
 	client  *http.Client
 }
 
-// NewService takes Mortar's version and the environment reader the bug report quotes.
-func NewService(version string, env func(gameID string) problems.Environment) *Service {
-	return newService(smapiBase, version, env)
+// NewService takes Mortar's version, the environment reader the bug report quotes, and the user's home and profile
+// mods folders that tell whose the log is.
+func NewService(version string, env func(gameID string) problems.Environment, home string, modsDir func(gameID, profileID string) (string, error)) *Service {
+	s := newService(smapiBase, version, env)
+	s.home, s.modsDir = home, modsDir
+	return s
 }
 
 func newService(base, version string, env func(string) problems.Environment) *Service {
@@ -49,8 +54,8 @@ func newService(base, version string, env func(string) problems.Environment) *Se
 	}}
 }
 
-// Log returns the game's loader log as written on disk, or "" when there is none yet.
-func (s *Service) Log(gameID string) (string, error) {
+// Log returns the game's loader log as written on disk, or "" when there is none yet or it is another profile's.
+func (s *Service) Log(gameID, profileID string) (string, error) {
 	g := game.Find(gameID)
 	if g == nil {
 		return "", fmt.Errorf("unknown game %q", gameID)
@@ -69,7 +74,15 @@ func (s *Service) Log(gameID string) (string, error) {
 	if len(data) > MaxLog {
 		return "", fmt.Errorf("the log is %d MB, too large to upload", len(data)>>20)
 	}
-	return strings.ToValidUTF8(string(data), ""), nil
+	modsDir, err := s.modsDir(gameID, profileID)
+	if err != nil {
+		return "", err
+	}
+	text := strings.ToValidUTF8(string(data), "")
+	if !launch.LogOwnedBy(text, s.home, modsDir) {
+		return "", nil
+	}
+	return text, nil
 }
 
 // Upload posts the log to smapi.io and returns its page's link.

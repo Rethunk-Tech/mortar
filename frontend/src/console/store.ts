@@ -4,6 +4,7 @@ import type {
   Entry,
   Level,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import type { Lines as Batch } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import {
   Lines,
   Send,
@@ -17,6 +18,8 @@ import { pushCommand } from './history.ts'
 const lastSeq = (entries: Entry[]) => entries.at(-1)?.seq ?? 0
 
 export const useConsole = create<{
+  // The game and profile whose log is shown; lines of any other profile are ignored.
+  shown: { game: string; profile: string }
   entries: Entry[]
   filters: Filters
   timestamps: boolean
@@ -29,11 +32,11 @@ export const useConsole = create<{
   jump: { index: number; n: number } | null
   // The Get help dialog, opened from the Console tab or the sidebar's Support menu.
   helping: boolean
-  add: (entries: Entry[]) => void
+  add: (batch: Batch) => void
   reset: () => void
   clear: () => void
   jumpTo: (index: number) => void
-  load: (game: string) => Promise<void>
+  load: (game: string, profile: string) => Promise<void>
   send: (game: string, command: string) => Promise<boolean>
   setSearch: (search: string) => void
   toggleLevel: (level: Level) => void
@@ -43,6 +46,7 @@ export const useConsole = create<{
   setFollow: (on: boolean) => void
   setHelping: (on: boolean) => void
 }>((set, get) => ({
+  shown: { game: '', profile: '' },
   entries: [],
   filters: DEFAULT_FILTERS,
   timestamps: true,
@@ -51,9 +55,13 @@ export const useConsole = create<{
   history: {},
   jump: null,
   helping: false,
-  add: (entries) => {
+  add: ({ game, profile, entries }) => {
+    const { shown } = get()
+    if (game !== shown.game || profile !== shown.profile) {
+      return
+    }
     const seen = Math.max(lastSeq(get().entries), get().cleared)
-    const fresh = entries.filter((e) => e.seq > seen)
+    const fresh = (entries ?? []).filter((e) => e.seq > seen)
     if (fresh.length > 0) {
       set((s) => ({ entries: [...s.entries, ...fresh] }))
     }
@@ -62,10 +70,21 @@ export const useConsole = create<{
   clear: () =>
     set((s) => ({ entries: [], jump: null, cleared: Math.max(s.cleared, lastSeq(s.entries)) })),
   jumpTo: (index) => set((s) => ({ follow: false, jump: { index, n: (s.jump?.n ?? 0) + 1 } })),
-  // Lines that arrived while the history was loading are newer than it and are kept.
-  load: async (game) => {
+  // Showing another profile starts over; lines that arrived while the history was loading are newer than it and
+  // are kept.
+  load: async (game, profile) => {
+    const { shown } = get()
+    if (game !== shown.game || profile !== shown.profile) {
+      get().reset()
+      set({ shown: { game, profile } })
+    }
     try {
-      const history = ((await Lines(game)) ?? []).filter((e) => e.seq > get().cleared)
+      const lines = (await Lines(game, profile)) ?? []
+      const now = get().shown
+      if (now.game !== game || now.profile !== profile) {
+        return
+      }
+      const history = lines.filter((e) => e.seq > get().cleared)
       const after = lastSeq(history)
       set((s) => ({ entries: [...history, ...s.entries.filter((e) => e.seq > after)] }))
     } catch (e) {

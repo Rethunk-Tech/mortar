@@ -56,10 +56,17 @@ type Status struct {
 	Error   string      `json:"error"`
 }
 
-// Lines is a batch of new log entries, oldest first.
+// Lines is a batch of new log entries of the profile's session, oldest first.
 type Lines struct {
 	Game    string         `json:"game"`
+	Profile string         `json:"profile"`
 	Entries []launch.Entry `json:"entries"`
+}
+
+// session is the log of a launch Mortar made, and the profile it launched.
+type session struct {
+	buf     *launch.Buffer
+	profile string
 }
 
 // Service exposes launch, status and stop to the frontend.
@@ -73,7 +80,7 @@ type Service struct {
 	status   map[string]Status
 	watching map[string]bool
 	// logs holds the session Mortar launched, kept after the game exits so the console can show it.
-	logs map[string]*launch.Buffer
+	logs map[string]session
 	// stop ends the log follower of a launch when the game goes idle.
 	stop map[string]context.CancelFunc
 	// preparing marks games whose loader is being installed before launch.
@@ -89,7 +96,7 @@ func NewService(home string, s *settings.Store, profiles *profile.Store) *Servic
 	return &Service{
 		home: home, settings: s, profiles: profiles, procDir: procDirRun,
 		status: map[string]Status{}, watching: map[string]bool{},
-		logs: map[string]*launch.Buffer{}, stop: map[string]context.CancelFunc{}, preparing: map[string]bool{},
+		logs: map[string]session{}, stop: map[string]context.CancelFunc{}, preparing: map[string]bool{},
 		EnsureLoader: func(context.Context, string) error { return errors.New("the loader cannot be installed here") },
 	}
 }
@@ -315,7 +322,7 @@ func (s *Service) begin(g game.Game, profileID, dir, modsDir string, direct bool
 	ctx, cancel := context.WithCancel(context.Background())
 	buf := &launch.Buffer{}
 	s.mu.Lock()
-	s.logs[gameID], s.stop[gameID] = buf, cancel
+	s.logs[gameID], s.stop[gameID] = session{buf: buf, profile: profileID}, cancel
 	s.mu.Unlock()
 	s.set(Status{Game: gameID, State: Launching, Profile: profileID, Since: time.Now().UnixMilli()})
 	s.watch(g)
@@ -324,7 +331,7 @@ func (s *Service) begin(g game.Game, profileID, dir, modsDir string, direct bool
 }
 
 // collect parses log lines into buf and announces them, unless a newer launch has replaced buf.
-func (s *Service) collect(gameID string, buf *launch.Buffer) func([]string) {
+func (s *Service) collect(gameID, profileID string, buf *launch.Buffer) func([]string) {
 	var p launch.Parser
 	return func(lines []string) {
 		entries := make([]launch.Entry, 0, len(lines))
@@ -335,7 +342,7 @@ func (s *Service) collect(gameID string, buf *launch.Buffer) func([]string) {
 			}
 		}
 		s.mu.Lock()
-		current := s.logs[gameID] == buf
+		current := s.logs[gameID].buf == buf
 		s.mu.Unlock()
 		if !current {
 			return
@@ -343,22 +350,26 @@ func (s *Service) collect(gameID string, buf *launch.Buffer) func([]string) {
 		for _, e := range entries {
 			buf.Add(e)
 		}
-		s.emit(LineEvent, Lines{Game: gameID, Entries: entries})
+		s.emit(LineEvent, Lines{Game: gameID, Profile: profileID, Entries: entries})
 	}
 }
 
-// Lines returns the game's log, oldest first, at most launch.MaxLines: this session's when Mortar launched the
-// game, else the log file on disk, which is what the last session left after a crash.
-func (s *Service) Lines(gameID string) ([]launch.Entry, error) {
+// Lines returns the profile's log, oldest first, at most launch.MaxLines: this session's when Mortar launched the
+// game, else the log file on disk, which is what the last session left after a crash. It is empty when the log is
+// another profile's.
+func (s *Service) Lines(gameID, profileID string) ([]launch.Entry, error) {
 	g := game.Find(gameID)
 	if g == nil {
 		return nil, fmt.Errorf("unknown game %q", gameID)
 	}
 	s.mu.Lock()
-	buf := s.logs[gameID]
+	sess, ok := s.logs[gameID]
 	s.mu.Unlock()
-	if buf != nil {
-		return buf.Lines(), nil
+	if ok {
+		if sess.profile != profileID {
+			return []launch.Entry{}, nil
+		}
+		return sess.buf.Lines(), nil
 	}
 	path, err := g.LogFile()
 	if err != nil {
@@ -371,9 +382,17 @@ func (s *Service) Lines(gameID string) ([]launch.Entry, error) {
 	if err != nil {
 		return nil, err
 	}
+	modsDir, err := s.profiles.ModsDir(gameID, profileID)
+	if err != nil {
+		return nil, err
+	}
+	text := strings.ToValidUTF8(string(data), "")
+	if !launch.LogOwnedBy(text, s.home, modsDir) {
+		return []launch.Entry{}, nil
+	}
 	var p launch.Parser
 	var out launch.Buffer
-	for l := range strings.SplitSeq(strings.ToValidUTF8(string(data), ""), "\n") {
+	for l := range strings.SplitSeq(text, "\n") {
 		if l = strings.TrimRight(l, "\r"); l != "" {
 			if e, shown := p.Parse(l); shown {
 				e.Seq = s.seq.Add(1)
@@ -385,7 +404,7 @@ func (s *Service) Lines(gameID string) ([]launch.Entry, error) {
 }
 
 func (s *Service) run(ctx context.Context, g game.Game, profileID string, req launch.Request, buf *launch.Buffer) {
-	err := g.Launch(ctx, req, s.collect(g.ID(), buf))
+	err := g.Launch(ctx, req, s.collect(g.ID(), profileID, buf))
 	var f *launch.Failure
 	switch {
 	case err == nil:
@@ -441,20 +460,20 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 	if cur.Since > 0 {
 		msg += " after " + time.Since(time.UnixMilli(cur.Since)).Round(time.Second).String()
 	}
-	s.say(g.ID(), msg+".")
+	s.say(g.ID(), cur.Profile, msg+".")
 	s.set(Status{Game: g.ID(), State: Idle})
 }
 
-// say adds a console line of Mortar's own to the game's session.
-func (s *Service) say(gameID, msg string) {
+// say adds a console line of Mortar's own to the session of the profile the game runs.
+func (s *Service) say(gameID, profileID, msg string) {
 	e := launch.Entry{Seq: s.seq.Add(1), Time: time.Now().Format(time.TimeOnly), Level: launch.Info, Mod: "Mortar", Message: msg}
 	s.mu.Lock()
-	buf := s.logs[gameID]
+	sess, ok := s.logs[gameID]
 	s.mu.Unlock()
-	if buf != nil {
-		buf.Add(e)
+	if ok && sess.profile == profileID {
+		sess.buf.Add(e)
 	}
-	s.emit(LineEvent, Lines{Game: gameID, Entries: []launch.Entry{e}})
+	s.emit(LineEvent, Lines{Game: gameID, Profile: profileID, Entries: []launch.Entry{e}})
 }
 
 // Send runs a console command in the running game through the bridge mod in the running profile. The command
@@ -479,7 +498,7 @@ func (s *Service) Send(gameID, command string) error {
 	if err := bridge.Send(folder, command); err != nil {
 		return err
 	}
-	s.say(gameID, "> "+command)
+	s.say(gameID, cur.Profile, "> "+command)
 	return nil
 }
 

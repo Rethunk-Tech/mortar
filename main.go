@@ -187,7 +187,7 @@ func main() {
 			application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
 			application.NewService(savesSvc), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
 			application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc),
-			application.NewService(support.NewService(version, problemsSvc.Environment)),
+			application.NewService(support.NewService(version, problemsSvc.Environment, home, profiles.ModsDir)),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),

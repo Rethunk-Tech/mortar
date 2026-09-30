@@ -1,7 +1,9 @@
 package launch
 
 import (
+	"path/filepath"
 	"regexp"
+	"runtime"
 	"slices"
 	"strings"
 	"sync"
@@ -44,6 +46,38 @@ var suppressed = []string{
 	"Writing to the terminal is disabled because the --no-terminal argument was received. This usually means launching the terminal failed.",
 	"Error initializing the Galaxy API.",
 	"Galaxy SignInSteam failed with an exception:",
+}
+
+// ModsPath returns the mods folder SMAPI's log says it loaded, as SMAPI wrote it, and false when the log does not
+// say. SMAPI writes the home folder as ~ (`PathUtilities.AnonymizePathForDisplay`).
+func ModsPath(log string) (string, bool) {
+	for l := range strings.Lines(log) {
+		m := header.FindStringSubmatch(strings.TrimRight(l, "\r\n"))
+		if m == nil || strings.TrimSpace(m[3]) != "SMAPI" {
+			continue
+		}
+		if path, ok := strings.CutPrefix(m[4], "Mods go here: "); ok {
+			return path, true
+		}
+	}
+	return "", false
+}
+
+// LogOwnedBy reports whether log was written by SMAPI loading modsDir. home is the folder SMAPI shortened to ~.
+// A log that does not name its mods folder belongs to no one.
+func LogOwnedBy(log, home, modsDir string) bool {
+	path, ok := ModsPath(log)
+	if !ok {
+		return false
+	}
+	if rest, ok := strings.CutPrefix(path, "~"); ok && (rest == "" || rest[0] == '/' || rest[0] == '\\') {
+		path = home + rest
+	}
+	path, modsDir = filepath.Clean(path), filepath.Clean(modsDir)
+	if runtime.GOOS == "windows" {
+		return strings.EqualFold(path, modsDir)
+	}
+	return path == modsDir
 }
 
 // Parser turns log lines into entries, remembering the last header so continuation lines can inherit it.

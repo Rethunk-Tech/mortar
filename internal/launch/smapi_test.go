@@ -77,3 +77,38 @@ func TestParserHidesSuppressedMessageAndItsContinuations(t *testing.T) {
 		}
 	}
 }
+
+func TestModsPathReadsSMAPIsIntroLine(t *testing.T) {
+	cases := map[string]struct {
+		log  string
+		want string
+		ok   bool
+	}{
+		"home":     {"SMAPI 4.5.2 with Stardew Valley 1.6.15 on Unix\n[05:00:01 INFO  SMAPI] Mods go here: ~/p/mods\r\n", "~/p/mods", true},
+		"absolute": {"[05:00:01 INFO  SMAPI] Mods go here: /srv/p/mods\n", "/srv/p/mods", true},
+		"windows":  {"[05:00:01 INFO  SMAPI] Mods go here: ~\\AppData\\Roaming\\p\\mods\r\n", "~\\AppData\\Roaming\\p\\mods", true},
+		"a mod":    {"[05:00:01 INFO  Other] Mods go here: /x\n", "", false},
+		"missing":  {"[05:00:01 INFO  SMAPI] hello\n", "", false},
+	}
+	for name, c := range cases {
+		if got, ok := ModsPath(c.log); got != c.want || ok != c.ok {
+			t.Errorf("%s: got %q, %v", name, got, ok)
+		}
+	}
+}
+
+func TestLogOwnedByExpandsHome(t *testing.T) {
+	log := "[05:00:01 INFO  SMAPI] Mods go here: ~/p/a/mods/\n"
+	if !LogOwnedBy(log, "/home/u", "/home/u/p/a/mods") {
+		t.Error("profile a wrote the log")
+	}
+	if LogOwnedBy(log, "/home/u", "/home/u/p/b/mods") || LogOwnedBy(log, "/home/v", "/home/u/p/a/mods") {
+		t.Error("only profile a under /home/u wrote the log")
+	}
+	if !LogOwnedBy("[05:00:01 INFO  SMAPI] Mods go here: /srv/a\n", "/home/u", "/srv/a") {
+		t.Error("an absolute path compares as written")
+	}
+	if LogOwnedBy("[05:00:01 INFO  SMAPI] hello\n", "/home/u", "/home/u/p/a/mods") {
+		t.Error("a log without the line belongs to no profile")
+	}
+}

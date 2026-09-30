@@ -127,5 +127,5 @@ export const useLaunch = create<{
 
 export function initLaunch() {
   Events.On('launch:state', (event) => useLaunch.getState().apply(event.data))
-  Events.On('launch:line', (event) => useConsole.getState().add(event.data.entries ?? []))
+  Events.On('launch:line', (event) => useConsole.getState().add(event.data))
 }
