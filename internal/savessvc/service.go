@@ -40,16 +40,20 @@ type Lack struct {
 }
 
 // Fit is one save and what it has used that the profile lacks. Season is 0 (spring) to 3 (winter); Day is 0
-// when unknown. Played is when the save was last written, in Unix milliseconds.
+// when unknown. Played is when the save was last written, in Unix milliseconds. WhichFarm is Game1.whichFarm
+// (−1 when missing). MillisecondsPlayed and Money come from SaveGameInfo.
 type Fit struct {
-	Folder  string `json:"folder"`
-	Farm    string `json:"farm"`
-	Farmer  string `json:"farmer"`
-	Season  int    `json:"season"`
-	Day     int    `json:"day"`
-	Year    int    `json:"year"`
-	Played  int64  `json:"played"`
-	Missing []Lack `json:"missing"`
+	Folder             string `json:"folder"`
+	Farm               string `json:"farm"`
+	Farmer             string `json:"farmer"`
+	Season             int    `json:"season"`
+	Day                int    `json:"day"`
+	Year               int    `json:"year"`
+	Played             int64  `json:"played"`
+	WhichFarm          int    `json:"whichFarm"`
+	MillisecondsPlayed int64  `json:"millisecondsPlayed"`
+	Money              int    `json:"money"`
+	Missing            []Lack `json:"missing"`
 }
 
 // Service exposes the save scan to the frontend.
@@ -108,7 +112,8 @@ func (s *Service) Saves(game, profileID string) ([]Fit, error) {
 		lacks := saves.Lacking(in.Used, have, dismissed[in.Folder])
 		fits[i] = Fit{
 			Folder: in.Folder, Farm: in.Farm, Farmer: in.Farmer, Season: in.Season, Day: in.Day, Year: in.Year,
-			Played: in.Played, Missing: make([]Lack, len(lacks)),
+			Played: in.Played, WhichFarm: in.WhichFarm, MillisecondsPlayed: in.MillisecondsPlayed, Money: in.Money,
+			Missing: make([]Lack, len(lacks)),
 		}
 		for j, l := range lacks {
 			fits[i].Missing[j] = Lack{UniqueID: l.UniqueID, Name: l.UniqueID, Disabled: l.Disabled}

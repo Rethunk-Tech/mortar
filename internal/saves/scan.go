@@ -27,25 +27,46 @@ const (
 )
 
 // Info is what a scan learned about one save. Season is 0 (spring) to 3 (winter); Day is 0 when SaveGameInfo
-// did not say. Played is when the save was last written, in Unix milliseconds. Used holds lowercased UniqueIDs.
+// did not say. Played is when the save was last written, in Unix milliseconds. WhichFarm is Game1.whichFarm
+// (−1 when the tag is missing). MillisecondsPlayed and Money come from SaveGameInfo. Used holds lowercased UniqueIDs.
 type Info struct {
-	Folder string   `json:"folder"`
-	Farm   string   `json:"farm"`
-	Farmer string   `json:"farmer"`
-	Season int      `json:"season"`
-	Day    int      `json:"day"`
-	Year   int      `json:"year"`
-	Played int64    `json:"played"`
-	Used   []string `json:"used"`
+	Folder             string   `json:"folder"`
+	Farm               string   `json:"farm"`
+	Farmer             string   `json:"farmer"`
+	Season             int      `json:"season"`
+	Day                int      `json:"day"`
+	Year               int      `json:"year"`
+	Played             int64    `json:"played"`
+	WhichFarm          int      `json:"whichFarm"`
+	MillisecondsPlayed int64    `json:"millisecondsPlayed"`
+	Money              int      `json:"money"`
+	Used               []string `json:"used"`
 }
 
+// Farm layout ids as Stardew's Game1.whichFarm / Farm.*_layout (1.6): 0 Standard, 1 Riverland, 2 Forest,
+// 3 Hill-top (mountains_layout), 4 Wilderness (combat_layout), 5 Four Corners, 6 Beach, 7 Meadowlands.
+var farmNames = []string{
+	"Standard", "Riverland", "Forest", "Hill-top", "Wilderness", "Four Corners", "Beach", "Meadowlands",
+}
+
+func farmName(which int) string {
+	if which < 0 || which >= len(farmNames) {
+		return ""
+	}
+	return farmNames[which]
+}
+
+const scanRev = 1
+
 // stamp is what a cached result was computed from; any change recomputes it. Index is the dataset index's size,
-// because a newer index can recognise IDs an older one missed.
+// because a newer index can recognise IDs an older one missed. Rev is this parser's shape, so a new field
+// is not served from an older cache.
 type stamp struct {
 	Main  int64 `json:"main"`
 	Size  int64 `json:"size"`
 	Info  int64 `json:"info"`
 	Index int   `json:"index"`
+	Rev   int   `json:"rev"`
 }
 
 type cached struct {
@@ -131,7 +152,7 @@ func (s *Scanner) stampOf(folder string, index int) (st stamp, ok bool, err erro
 	if err != nil {
 		return st, false, err
 	}
-	st = stamp{Main: main.ModTime().UnixNano(), Size: main.Size(), Index: index}
+	st = stamp{Main: main.ModTime().UnixNano(), Size: main.Size(), Index: index, Rev: scanRev}
 	if fi, err := os.Stat(filepath.Join(s.Dir, folder, infoFile)); err == nil {
 		st.Info = fi.ModTime().UnixNano()
 	}
@@ -139,7 +160,7 @@ func (s *Scanner) stampOf(folder string, index int) (st stamp, ok bool, err erro
 }
 
 func (s *Scanner) read(folder string, index map[string][]meta.Ref) (Info, error) {
-	info := Info{Folder: folder, Used: []string{}}
+	info := Info{Folder: folder, WhichFarm: -1, Used: []string{}}
 	dir := filepath.Join(s.Dir, folder)
 	// A missing SaveGameInfo only costs the details it holds.
 	if b, err := fsx.ReadFile(filepath.Join(dir, infoFile)); err == nil {
@@ -155,9 +176,12 @@ func (s *Scanner) read(folder string, index map[string][]meta.Ref) (Info, error)
 		return info, err
 	}
 	defer func() { _ = f.Close() }()
-	keys, err := distinctKeys(f)
+	keys, which, hasFarm, err := distinctKeys(f)
 	if err != nil {
 		return info, err
+	}
+	if hasFarm {
+		info.WhichFarm = which
 	}
 	seen := map[string]struct{}{}
 	for k := range keys {
@@ -172,12 +196,18 @@ func (s *Scanner) read(folder string, index map[string][]meta.Ref) (Info, error)
 	return info, nil
 }
 
-// readInfo fills the farmer, farm and date from SaveGameInfo, whose root <Farmer> has them as direct children.
+// readInfo fills farmer, farm, date, money and playtime from SaveGameInfo (root <Farmer> direct children).
+// It stops once those tags have been seen so a large inventory is not fully walked.
 func readInfo(b []byte, info *Info) {
 	d := xml.NewDecoder(bytes.NewReader(bytes.TrimPrefix(b, []byte{0xEF, 0xBB, 0xBF})))
 	depth := 0
 	var field string
-	for {
+	var got uint8
+	const all uint8 = 1<<7 - 1
+	mark := func(bit uint8) {
+		got |= bit
+	}
+	for got != all {
 		tok, err := d.Token()
 		if err != nil {
 			return
@@ -197,14 +227,25 @@ func readInfo(b []byte, info *Info) {
 			switch field {
 			case "name":
 				info.Farmer = v
+				mark(1 << 0)
 			case "farmName":
 				info.Farm = v
+				mark(1 << 1)
 			case "seasonForSaveGame":
 				info.Season, _ = strconv.Atoi(v)
+				mark(1 << 2)
 			case "dayOfMonthForSaveGame":
 				info.Day, _ = strconv.Atoi(v)
+				mark(1 << 3)
 			case "yearForSaveGame":
 				info.Year, _ = strconv.Atoi(v)
+				mark(1 << 4)
+			case "money":
+				info.Money, _ = strconv.Atoi(v)
+				mark(1 << 5)
+			case "millisecondsPlayed":
+				info.MillisecondsPlayed, _ = strconv.ParseInt(v, 10, 64)
+				mark(1 << 6)
 			}
 			field = ""
 		}

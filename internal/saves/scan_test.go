@@ -60,9 +60,10 @@ func fixture(t *testing.T) (dir string) {
 	save := filepath.Join(dir, "Farm_1")
 	write(t, filepath.Join(save, "Farm_1"), "\xEF\xBB\xBF<SaveGame><modData>"+item("Sonozuki.MoreGrass/A")+item("Sonozuki.MoreGrass/B")+
 		item("Author.Mod_With_Under/x")+item("smapi/mod-data/spacechase0.jsonassets/ids")+item("Wood")+
-		"<item><key><string /></key></item></modData></SaveGame>")
+		"<item><key><string /></key></item></modData><whichFarm>1</whichFarm></SaveGame>")
 	write(t, filepath.Join(save, "SaveGameInfo"), "\xEF\xBB\xBF<Farmer><name>Ann</name><farmName>Sunny</farmName><items><Item><name>Axe</name></Item></items>"+
-		"<dayOfMonthForSaveGame>5</dayOfMonthForSaveGame><seasonForSaveGame>2</seasonForSaveGame><yearForSaveGame>3</yearForSaveGame></Farmer>")
+		"<dayOfMonthForSaveGame>5</dayOfMonthForSaveGame><seasonForSaveGame>2</seasonForSaveGame><yearForSaveGame>3</yearForSaveGame>"+
+		"<money>125300</money><millisecondsPlayed>151200000</millisecondsPlayed></Farmer>")
 	write(t, filepath.Join(dir, "NotASave", "other.txt"), "x")
 	return dir
 }
@@ -76,6 +77,7 @@ func TestScanReadsSaveAndCachesByMtime(t *testing.T) {
 	}
 	want := []Info{{
 		Folder: "Farm_1", Farm: "Sunny", Farmer: "Ann", Season: 2, Day: 5, Year: 3, Played: got[0].Played,
+		WhichFarm: 1, MillisecondsPlayed: 151200000, Money: 125300,
 		Used: []string{"author.mod_with_under", "sonozuki.moregrass", "spacechase0.jsonassets"},
 	}}
 	if !reflect.DeepEqual(got, want) {
@@ -112,6 +114,62 @@ func TestKeysSpanChunks(t *testing.T) {
 	got, err := (&Scanner{Dir: dir}).Scan(index)
 	if err != nil || !reflect.DeepEqual(got[0].Used, []string{"author.mod", "sonozuki.moregrass"}) {
 		t.Fatalf("scan = %+v, %v", got, err)
+	}
+}
+
+func TestFarmNameMatchesWhichFarm(t *testing.T) {
+	want := []string{"Standard", "Riverland", "Forest", "Hill-top", "Wilderness", "Four Corners", "Beach", "Meadowlands"}
+	for id, name := range want {
+		if got := farmName(id); got != name {
+			t.Errorf("farmName(%d) = %q, want %q", id, got, name)
+		}
+	}
+	if farmName(-1) != "" || farmName(8) != "" {
+		t.Fatal("unknown whichFarm must be empty")
+	}
+}
+
+func TestScanDoesNotWriteSaves(t *testing.T) {
+	dir := fixture(t)
+	main := filepath.Join(dir, "Farm_1", "Farm_1")
+	info := filepath.Join(dir, "Farm_1", "SaveGameInfo")
+	stMain, err := os.Stat(main)
+	if err != nil {
+		t.Fatal(err)
+	}
+	stInfo, err := os.Stat(info)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := (&Scanner{Dir: dir, CacheDir: t.TempDir()}).Scan(index); err != nil {
+		t.Fatal(err)
+	}
+	afterStMain, err := os.Stat(main)
+	if err != nil {
+		t.Fatal(err)
+	}
+	afterStInfo, err := os.Stat(info)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if afterStMain.Size() != stMain.Size() || afterStInfo.Size() != stInfo.Size() {
+		t.Fatal("scan changed save size")
+	}
+	if !afterStMain.ModTime().Equal(stMain.ModTime()) || !afterStInfo.ModTime().Equal(stInfo.ModTime()) {
+		t.Fatal("scan touched save mtime")
+	}
+}
+
+func TestWhichFarmSpansChunks(t *testing.T) {
+	pad := make([]byte, 1<<20-6)
+	for i := range pad {
+		pad[i] = 'x'
+	}
+	dir := t.TempDir()
+	write(t, filepath.Join(dir, "Big_3", "Big_3"), string(pad)+"<whichFarm>7</whichFarm>"+item("Author.Mod/x"))
+	got, err := (&Scanner{Dir: dir}).Scan(index)
+	if err != nil || got[0].WhichFarm != 7 || farmName(got[0].WhichFarm) != "Meadowlands" {
+		t.Fatalf("whichFarm = %+v, %v", got, err)
 	}
 }
 
