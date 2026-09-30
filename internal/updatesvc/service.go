@@ -49,11 +49,12 @@ type Service struct {
 	u    Updater
 	info Info
 
-	mu      sync.Mutex
-	cond    *sync.Cond
-	once    sync.Once
-	inCheck bool
-	found   *Release
+	mu        sync.Mutex
+	cond      *sync.Cond
+	once      sync.Once
+	inCheck   bool
+	inInstall bool
+	found     *Release
 }
 
 func (s *Service) lock() {
@@ -96,6 +97,9 @@ func (s *Service) Check(ctx context.Context) (*Release, error) {
 		return nil, errOff
 	}
 	s.lock()
+	for s.inInstall {
+		s.cond.Wait()
+	}
 	if s.found != nil && s.found.Staged {
 		r := *s.found
 		s.mu.Unlock()
@@ -130,16 +134,24 @@ func (s *Service) Check(ctx context.Context) (*Release, error) {
 
 // Install downloads, verifies and stages the release Check found; Restart applies it.
 func (s *Service) Install(ctx context.Context) error {
-	// Held throughout: a Check in between would point the updater at whatever release it found, signed or not.
 	s.lock()
-	defer s.mu.Unlock()
 	for s.inCheck {
 		s.cond.Wait()
 	}
 	if s.found == nil {
+		s.mu.Unlock()
 		return errNone
 	}
-	if err := s.u.DownloadAndInstall(ctx); err != nil {
+	s.inInstall = true
+	s.mu.Unlock()
+	err := s.u.DownloadAndInstall(ctx)
+	s.lock()
+	defer func() {
+		s.inInstall = false
+		s.cond.Broadcast()
+		s.mu.Unlock()
+	}()
+	if err != nil {
 		return err
 	}
 	s.found.Staged = true
@@ -152,6 +164,9 @@ func (s *Service) Restart(ctx context.Context) error {
 		return errOff
 	}
 	s.lock()
+	for s.inInstall || s.inCheck {
+		s.cond.Wait()
+	}
 	defer s.mu.Unlock()
 	return s.u.Restart(ctx)
 }

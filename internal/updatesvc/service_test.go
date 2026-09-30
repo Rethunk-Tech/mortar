@@ -151,6 +151,38 @@ func TestCheckDoesNotHoldTheLockForTheNetwork(t *testing.T) {
 	}
 }
 
+func TestInstallReleasesTheMutexDuringDownload(t *testing.T) {
+	hold := make(chan struct{})
+	started := make(chan struct{})
+	f := &stall{dlHold: hold, dlStart: started}
+	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
+	s := &Service{}
+	if err := configure(s, f, "1.0.0", []byte("key"), true); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	done := make(chan error, 1)
+	go func() { done <- s.Install(context.Background()) }()
+	<-started
+	locked := make(chan struct{})
+	go func() {
+		s.lock()
+		close(locked)
+		s.mu.Unlock()
+	}()
+	select {
+	case <-locked:
+	case <-time.After(time.Second):
+		t.Fatal("Install still holds the mutex during DownloadAndInstall")
+	}
+	close(hold)
+	if err := <-done; err != nil {
+		t.Fatal(err)
+	}
+}
+
 type stall struct {
 	fake
 	checkHold, checkStart, dlHold, dlStart chan struct{}
