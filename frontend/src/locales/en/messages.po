@@ -7,9 +7,17 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
+#: src/toasts/ToastHost.tsx:65
+msgid "Dismiss"
+msgstr "Dismiss"
+
 #: src/shell/TitleBar.tsx:91
 msgid "Mortar"
 msgstr "Mortar"
+
+#: src/toasts/ToastHost.tsx:81
+msgid "Notifications"
+msgstr "Notifications"
 
 #: src/shell/TitleBar.tsx:98
 msgid "Stardew Valley"

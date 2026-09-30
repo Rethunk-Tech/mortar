@@ -1,5 +1,11 @@
 import { AppFrame } from './shell/AppFrame.tsx'
+import { ToastHost } from './toasts/ToastHost.tsx'
 
 export function App() {
-  return <AppFrame>{null}</AppFrame>
+  return (
+    <>
+      <AppFrame>{null}</AppFrame>
+      <ToastHost />
+    </>
+  )
 }
