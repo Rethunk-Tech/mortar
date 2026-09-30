@@ -55,3 +55,20 @@ Then, per release:
 
 1. Set `const version` in `main.go` to the new version, gate, commit and push `main`.
 2. `git tag v1.2.3 && git push origin v1.2.3`. The tag must equal `main.go`'s version with a leading `v`, or the manifest step fails and nothing is published.
+
+## Publishing components
+
+`components.source.json` is the allowlisted input for the signed loader and bridge manifest. The generator resolves its GitHub releases, hashes each asset, refreshes the embedded fallback and verifies a signature when `MORTAR_UPDATE_KEY` names the private key file:
+
+```sh
+task components:refresh
+```
+
+The repository secret `MORTAR_UPDATE_KEY` contains the PEM contents, as for releases. Run the Components workflow manually from Actions, or dispatch it from a component release:
+
+```sh
+gh workflow run components.yml --repo Rethunk-AI/mortar
+gh api repos/Rethunk-AI/mortar/dispatches -f event_type=components
+```
+
+The workflow writes the secret to a temporary file, runs the generator with `GOTMPDIR=/var/tmp TMPDIR=/var/tmp`, creates the fixed `components` release when needed, and uploads `components.json` and `components.json.sig` with `--clobber`.
