@@ -183,6 +183,7 @@ After the go-ahead, each milestone ends with the gate green and NOMAD clicking t
 Not in the first release, each by NOMAD on 2026-09-29; re-weigh only when asked:
 
 - Lethal Company, as the second `Game` implementation ([lethal-company.md](lethal-company.md)).
+- Frosted glass on Linux (NOMAD, 2026-09-30), built when NOMAD's desktop runs GNOME 51. CSS cannot do it: `backdrop-filter` sees only the webview's pixels, and a full-window filter layer turns WebKitGTK's translucent window opaque. The compositor blurs behind the window through the Wayland protocol `ext-background-effect-v1` (Mutter from GNOME 51, KWin from Plasma 6.7; GTK 4.23.3 speaks it). Shape: in the `Rethunk-AI/wails` fork, beside `setTransparent()` in `v3/pkg/application/linux_cgo.go:1418`, bind `ext_background_effect_manager_v1` on Wayland, and when it advertises blur, set the toplevel `wl_surface`'s blur region to the whole window, updated on resize; a no-op elsewhere, and only while Appearance translucency is on. Accept when the desktop behind the window shows blurred on GNOME 51 and is unchanged on GNOME 50. Offer it upstream with the GTK4 transparency PR. Windows already blurs through Acrylic.
 - A hosted share service with short codes and share versioning (running costs).
 - Importing the game folder's existing `Mods` folder as a profile.
 - In-app mod search and browsing: Mortar links out to Nexus.
