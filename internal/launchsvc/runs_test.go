@@ -1,0 +1,153 @@
+package launchsvc
+
+import (
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-AI/mortar/internal/store"
+)
+
+func runEnv(t *testing.T) (*Service, profile.Profile, string, string) {
+	t.Helper()
+	cfg := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", cfg)
+	home := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", filepath.Join(home, "data"))
+	items, err := store.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	profiles, err := profile.Open(items)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p, err := profiles.Create("stardew", "A")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return NewService(home, nil, profiles), p, cfg, home
+}
+
+func writeOwnedLog(t *testing.T, cfg, home, modsDir, extra string) {
+	t.Helper()
+	dir := filepath.Join(cfg, "StardewValley", "ErrorLogs")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	rel, err := filepath.Rel(home, modsDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := "SMAPI 4.5.2 with Stardew Valley 1.6.15 build 24356 on Unix\n" +
+		"[19:43:46 INFO  SMAPI] Mods go here: ~/" + rel + "\n" + extra
+	if err := os.WriteFile(filepath.Join(dir, "SMAPI-latest.txt"), []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestRecordStoresOwnedLogAndBoundsHistory(t *testing.T) {
+	svc, p, cfg, home := runEnv(t)
+	mods, err := svc.profiles.ModsDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	g := game.Find("stardew")
+	writeOwnedLog(t, cfg, home, mods, "[19:43:50 ERROR Content Patcher] boom\n")
+	started := time.Now().Add(-2 * time.Second)
+	svc.record(g, p.ID, started, false)
+	runs, err := svc.Runs("stardew", p.ID)
+	if err != nil || len(runs) != 1 {
+		t.Fatalf("runs = %v, %v", runs, err)
+	}
+	got := runs[0]
+	if got.Outcome != launch.OutcomeRan || got.SMAPIVersion != "4.5.2" || got.GameVersion != "1.6.15" {
+		t.Fatalf("meta = %#v", got)
+	}
+	if got.Errors != 1 || got.Warnings != 0 || got.DurationMs < 1000 {
+		t.Fatalf("counts = %#v", got)
+	}
+	text, err := svc.RunLog("stardew", p.ID, got.ID)
+	if err != nil || !strings.Contains(text, "Content Patcher") || !strings.Contains(text, "Mods go here:") {
+		t.Fatalf("log = %q, %v", text, err)
+	}
+	lines, err := svc.RunLines("stardew", p.ID, got.ID)
+	if err != nil || len(lines) == 0 {
+		t.Fatalf("lines = %v, %v", lines, err)
+	}
+
+	other, err := svc.profiles.Create("stardew", "B")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if runs, err := svc.Runs("stardew", other.ID); err != nil || len(runs) != 0 {
+		t.Fatalf("other profile: %v, %v", runs, err)
+	}
+
+	for range maxRuns {
+		writeOwnedLog(t, cfg, home, mods, "[19:43:50 ERROR Content Patcher] n\n")
+		svc.record(g, p.ID, time.Now(), false)
+	}
+	runs, err = svc.Runs("stardew", p.ID)
+	if err != nil || len(runs) != maxRuns {
+		t.Fatalf("bounded = %d, %v", len(runs), err)
+	}
+	dir := runsDir(mods)
+	ents, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	txt := 0
+	for _, e := range ents {
+		if strings.HasSuffix(e.Name(), ".txt") {
+			txt++
+		}
+	}
+	if txt != maxRuns {
+		t.Fatalf("log files = %d", txt)
+	}
+}
+
+func TestRecordFailedLaunchAndUnownedLogUsesSession(t *testing.T) {
+	svc, p, cfg, _ := runEnv(t)
+	g := game.Find("stardew")
+	dir := filepath.Join(cfg, "StardewValley", "ErrorLogs")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "SMAPI-latest.txt"), []byte("[19:43:46 INFO  SMAPI] Mods go here: ~/someone-else\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	buf := &launch.Buffer{}
+	buf.Add(launch.Entry{Time: "19:43:50", Level: launch.Error, Mod: "Farm", Message: "broke"})
+	svc.logs["stardew"] = session{buf: buf, profile: p.ID}
+	svc.record(g, p.ID, time.Now(), true)
+	runs, err := svc.Runs("stardew", p.ID)
+	if err != nil || len(runs) != 1 || runs[0].Outcome != launch.OutcomeFailed {
+		t.Fatalf("failed = %#v, %v", runs, err)
+	}
+	text, err := svc.RunLog("stardew", p.ID, runs[0].ID)
+	if err != nil || !strings.Contains(text, "broke") || strings.Contains(text, "someone-else") {
+		t.Fatalf("must copy the session, not the other profile's log: %q, %v", text, err)
+	}
+}
+
+func TestClosedRunWithCrashMarksCrashed(t *testing.T) {
+	svc, p, cfg, home := runEnv(t)
+	mods, err := svc.profiles.ModsDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeOwnedLog(t, cfg, home, mods, "[19:43:51 ALERT SMAPI] The game crashed: boom\n")
+	g := game.Find("stardew")
+	svc.record(g, p.ID, time.Now(), false)
+	runs, err := svc.Runs("stardew", p.ID)
+	if err != nil || len(runs) != 1 || runs[0].Outcome != launch.OutcomeCrashed {
+		t.Fatalf("crashed = %#v, %v", runs, err)
+	}
+}

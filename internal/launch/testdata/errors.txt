@@ -1,0 +1,10 @@
+SMAPI 4.5.2 with Stardew Valley 1.6.15 build 24356 on Unix
+[19:43:46 INFO  SMAPI] Mods go here: ~/profiles/stardew/p/mods
+[19:43:47 WARN  SMAPI] Obsolete API
+[19:43:48 ERROR Content Patcher] patch failed: missing target
+[19:43:48 ERROR Content Patcher] another patch failed
+[19:43:49 ERROR Lookup Anything] null reference
+   at LookupAnything.Mod.OnRendered()
+[19:43:50 ERROR game] Error initializing the Galaxy API.
+TypeInitializationException: The type initializer for 'Galaxy.Api.GalaxyInstancePINVOKE' threw an exception.
+[19:43:51 ALERT SMAPI] The game crashed: System.NullReferenceException
