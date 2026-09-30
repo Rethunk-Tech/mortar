@@ -77,12 +77,23 @@ export const useQueue = create<{
   setOpen: (open) => set({ open }),
 }))
 
+// The first state seen, fetched or evented, is the silent baseline: items finished before startup are not news.
+// Nothing orders the fetch against events, so once an event has landed the fetch is dropped; any change after the
+// fetch's snapshot sends its own event anyway.
 export async function initQueue(): Promise<void> {
+  let baseline = false
   Events.On('queue:changed', (event) => {
     const prev = useQueue.getState().state
     const next = snapshot(event.data)
     useQueue.setState({ state: next })
-    announce(prev, next)
+    if (baseline) {
+      announce(prev, next)
+    }
+    baseline = true
   })
-  useQueue.setState({ state: snapshot(await fetchState()) })
+  const first = snapshot(await fetchState())
+  if (!baseline) {
+    baseline = true
+    useQueue.setState({ state: first })
+  }
 }
