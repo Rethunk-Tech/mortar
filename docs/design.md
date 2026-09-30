@@ -115,6 +115,4 @@ What a shared profile holds: name, game, and per mod its source reference (Nexus
 
 **Self-contained Brotli links; no hosted service in v1 (NOMAD, 2026-09-29).** A hosted share service, and share versioning with it, are parked for v2 to avoid running costs. The link carries the whole profile: `mortar://stardew/p/<payload>`, where the payload is compact JSON (`["<profile name>", [[<nexus mod id>, <nexus file id>], ...]]`), Brotli-compressed at quality 11 and base64url-encoded without padding. Measured on real mod IDs sampled from SMAPI's `StardewModDataset` (`dataset/indexes/pages by mod ID.json`, 2026-09-29), the whole link is 498 characters for 50 mods, 879 for 100 and 1,630 for 200, so profiles up to about 240 mods fit a 2,000-character Discord message. Including SMAPI `UniqueID`s pushes 100 mods to 3,435 characters, because those IDs barely compress, so the link carries none: the recipient reads each `UniqueID` from the downloaded mod's manifest and matches mods it already has through their `Nexus:` update keys. Brotli beats gzip by 12 to 15% at every size. A GitHub-hosted mod adds `"<owner>/<repo>@<tag>"` in place of the ID pair. Mod configs do not fit in a link and travel in an optional `.mortar` file (the same JSON plus configs, uncompressed zip).
 
-For Lethal Company, r2modman codes through Thunderstore stay supported for import and export alongside Mortar codes.
-
-
+For Lethal Company, r2modman codes through Thunderstore stay supported for import and export alongside Mortar links.
