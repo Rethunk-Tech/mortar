@@ -1,10 +1,11 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
+import { Box, Button, IconButton, Tab, Tabs, Tooltip, Typography } from '@mui/material'
 import { Pencil, Plus, RotateCcw, Settings2, Share2 } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConsoleTab, LogActions } from '../console/ConsoleTab.tsx'
+import { useBadges } from '../mods/badges.ts'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { useNav } from '../nav/store.ts'
 import { NotesTab } from '../notes/NotesTab.tsx'
@@ -14,7 +15,7 @@ import { SavesTab } from '../saves/SavesTab.tsx'
 import { useSaves } from '../saves/store.ts'
 import { openShare } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { compact } from './compact.ts'
+import { compact, compactMeta, saveFits } from './compact.ts'
 import { CoverButton, HeroCover } from './HeroCover.tsx'
 import { NameField } from './NameField.tsx'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
@@ -62,10 +63,20 @@ function Hero({ profile, game }: { profile: Profile; game: string }) {
   const mods = userModCount(profile)
   const setTab = useTab((s) => s.setTab)
   const fits = useSaves((s) => s.fits)
-  const fitting = fits.filter((f) => (f.missing ?? []).length === 0).length
-  const total = fits.length
+  const { fitting, total } = saveFits(fits)
   const created = fmt(profile.created)
   const updated = fmt(profile.updated)
+  const updates = useBadges((s) => s.byProfile[profile.id]?.updates ?? 0)
+  const problems = useBadges((s) => s.byProfile[profile.id]?.problems ?? 0)
+  const meta = compactMeta(mods, updates, problems).map((part) => {
+    if (part.kind === 'mods') {
+      return t`${plural(part.n, { one: '# mod', other: '# mods' })}`
+    }
+    if (part.kind === 'updates') {
+      return t`${plural(part.n, { one: '# update', other: '# updates' })}`
+    }
+    return t`${plural(part.n, { one: '# problem', other: '# problems' })}`
+  })
   return (
     <Box
       sx={{
@@ -146,18 +157,26 @@ function Hero({ profile, game }: { profile: Profile; game: string }) {
             noWrap={true}
             sx={{ display: 'none', fontSize: 12, [compact]: { display: 'block' } }}
           >
-            {t`${plural(mods, { one: '# mod', other: '# mods' })} · Updated ${updated}`}
+            {meta.join(' · ')}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1, [compact]: { display: 'none' } }}>
           <Card label={t`Mods`} value={String(mods)} />
-          {fits.length > 0 ? (
+          {total === 0 ? (
+            <Tooltip title={t`No saves were found`}>
+              <Card
+                label={t`Saves`}
+                value={t`${fitting} of ${total}`}
+                onClick={() => setTab('saves')}
+              />
+            </Tooltip>
+          ) : (
             <Card
               label={t`Saves`}
               value={t`${fitting} of ${total}`}
               onClick={() => setTab('saves')}
             />
-          ) : null}
+          )}
           <Card label={t`Updated`} value={updated} />
           <Card label={t`Created`} value={created} />
         </Box>
