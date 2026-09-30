@@ -36,19 +36,11 @@ export function createMortarTheme(accent: AccentName): Theme {
         },
       },
       MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
+      // On WebKitGTK any full-window backdrop layer (tint, filter or fade) turns the
+      // whole translucent window opaque, so backdrops only catch clicks.
       MuiBackdrop: {
-        styleOverrides: {
-          root: {
-            variants: [
-              // A dark overlay would compound with the translucent window toward opaque;
-              // dimming what is underneath keeps its alpha, so the desktop still shows.
-              {
-                props: { invisible: false },
-                style: { backgroundColor: 'transparent', backdropFilter: 'brightness(0.55)' },
-              },
-            ],
-          },
-        },
+        defaultProps: { transitionDuration: 0 },
+        styleOverrides: { root: { backgroundColor: 'transparent' } },
       },
       MuiButton: { styleOverrides: { root: { whiteSpace: 'nowrap' } } },
       MuiChip: { styleOverrides: { label: { whiteSpace: 'nowrap' } } },
