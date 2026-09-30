@@ -94,9 +94,11 @@ test('dismissing the game-update warning clears it', () => {
 })
 
 test('a polled Idle keeps preparation going; an announced one ends it', () => {
-  useLaunch.setState({ starting: true })
+  useLaunch.setState({ starting: true, startingProfile: 'p1' })
   useLaunch.getState().apply(status(State.Idle), true)
   expect(useLaunch.getState().starting).toBe(true)
+  expect(useLaunch.getState().startingProfile).toBe('p1')
   useLaunch.getState().apply(status(State.Idle))
   expect(useLaunch.getState().starting).toBe(false)
+  expect(useLaunch.getState().startingProfile).toBe('')
 })

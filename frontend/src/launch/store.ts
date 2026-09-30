@@ -70,7 +70,7 @@ interface UpdateWarn {
 
 async function startWithWarning(opts: {
   get: () => { starting: boolean }
-  set: (p: { starting?: boolean; updateWarn?: UpdateWarn | null }) => void
+  set: (p: { starting?: boolean; startingProfile?: string; updateWarn?: UpdateWarn | null }) => void
   game: string
   profile: string
   direct: boolean
@@ -78,12 +78,13 @@ async function startWithWarning(opts: {
   if (opts.get().starting) {
     return
   }
-  opts.set({ starting: true })
+  opts.set({ starting: true, startingProfile: opts.profile })
   try {
     const warning = await UpdateWarning(opts.game, opts.profile)
     if (warning.changed) {
       opts.set({
         starting: false,
+        startingProfile: '',
         updateWarn: {
           game: opts.game,
           profile: opts.profile,
@@ -96,32 +97,32 @@ async function startWithWarning(opts: {
       return
     }
   } catch (e) {
-    opts.set({ starting: false })
+    opts.set({ starting: false, startingProfile: '' })
     reportError(i18n._(msg`Could not check the game version`))(e)
     return
   }
   try {
     await Start(opts.game, opts.profile, opts.direct)
   } catch (e) {
-    opts.set({ starting: false })
+    opts.set({ starting: false, startingProfile: '' })
     reportError(i18n._(msg`Could not launch the game`))(e)
   }
 }
 
 async function startVanillaGame(opts: {
   get: () => { starting: boolean }
-  set: (p: { starting: boolean }) => void
+  set: (p: { starting: boolean; startingProfile?: string }) => void
   game: string
   direct: boolean
 }) {
   if (opts.get().starting) {
     return
   }
-  opts.set({ starting: true })
+  opts.set({ starting: true, startingProfile: '' })
   try {
     await StartVanilla(opts.game, opts.direct)
   } catch (e) {
-    opts.set({ starting: false })
+    opts.set({ starting: false, startingProfile: '' })
     reportError(i18n._(msg`Could not launch the game`))(e)
   }
 }
@@ -135,6 +136,7 @@ export const useLaunch = create<{
   stopping: boolean
   // Play was pressed and no launch:state has answered yet, which is when SMAPI installs first.
   starting: boolean
+  startingProfile: string
   crash: Crash | null
   // polled marks a status read by refresh() rather than announced by a launch:state event.
   apply: (status: Status, polled?: boolean) => void
@@ -158,11 +160,12 @@ export const useLaunch = create<{
   updateWarn: null,
   stopping: false,
   starting: false,
+  startingProfile: '',
   crash: null,
   apply: (status, polled = false) => {
     // A poll that lands before the first launch:state still reports Idle; only an event ends preparation.
     if (!polled || status.state !== State.Idle) {
-      set({ starting: false })
+      set({ starting: false, startingProfile: '' })
     }
     if (status.state === State.Launching) {
       if (resetConsole(status, get().status)) {
@@ -211,11 +214,11 @@ export const useLaunch = create<{
     if (!warn) {
       return
     }
-    set({ starting: true })
+    set({ starting: true, startingProfile: warn.profile })
     try {
       await Start(warn.game, warn.profile, warn.direct)
     } catch (e) {
-      set({ starting: false })
+      set({ starting: false, startingProfile: '' })
       reportError(i18n._(msg`Could not launch the game`))(e)
     }
   },

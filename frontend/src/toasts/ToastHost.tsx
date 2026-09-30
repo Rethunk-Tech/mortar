@@ -21,10 +21,11 @@ function ToastCard({ toast }: { toast: Toast }) {
   const hold = useToasts((s) => s.hold)
   const release = useToasts((s) => s.release)
   const status = useLaunch((s) => s.status)
-  const starting = useLaunch((s) => s.starting)
+  const startingProfile = useLaunch((s) => (s.starting ? s.startingProfile : ''))
   const [open, setOpen] = useState(false)
   const { action } = toast
-  const locked = action?.profileId !== undefined && isLocked(status, action.profileId, starting)
+  const locked =
+    action?.profileId !== undefined && isLocked(status, action.profileId, startingProfile)
   const lockHint = t`Stop the game to change mods.`
   const run = () => {
     if (locked || !action) {

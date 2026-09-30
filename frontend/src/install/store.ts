@@ -18,6 +18,11 @@ import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type MissingOffer, offersFor } from './missingDeps.ts'
 
+function startingProfile() {
+  const { starting, startingProfile: id } = useLaunch.getState()
+  return starting ? id : ''
+}
+
 const PATH_SEPARATOR = /[\\/]/
 
 const fileName = (path: string) => path.split(PATH_SEPARATOR).pop() ?? path
@@ -32,7 +37,7 @@ async function undoArchiveInstall(
   entryKey: string,
   updated: boolean,
 ) {
-  if (isLocked(useLaunch.getState().status, profileId, useLaunch.getState().starting)) {
+  if (isLocked(useLaunch.getState().status, profileId, startingProfile())) {
     return
   }
   try {
@@ -49,6 +54,18 @@ async function undoArchiveInstall(
     return
   }
   await useMods.getState().load()
+}
+
+function shouldConsiderMissing(openId: string, installedProfileId: string): boolean {
+  return openId === installedProfileId
+}
+
+async function maybeFinishInstall(profileId: string, dependentIds: string[]) {
+  if (!shouldConsiderMissing(useProfiles.getState().openId, profileId)) {
+    return
+  }
+  await useMods.getState().load()
+  considerMissing(dependentIds)
 }
 
 export const useInstall = create<{
@@ -68,7 +85,7 @@ export const useInstall = create<{
       routeGame(useNav.getState().route) === null ||
       !game ||
       !profile ||
-      isLocked(useLaunch.getState().status, openId, useLaunch.getState().starting)
+      isLocked(useLaunch.getState().status, openId, startingProfile())
     ) {
       return
     }
@@ -118,8 +135,7 @@ export const useInstall = create<{
         set((s) => ({ pending: s.pending - 1 }))
       }
     }
-    await useMods.getState().load()
-    considerMissing(dependentIds)
+    await maybeFinishInstall(profile.id, dependentIds)
   },
   pick: async () => {
     try {
@@ -145,4 +161,4 @@ export function considerMissing(dependentIds: readonly string[]) {
   useInstall.setState((s) => ({ offers: [...s.offers, ...next] }))
 }
 
-export { entryForNames, undoArchiveInstall }
+export { entryForNames, shouldConsiderMissing, undoArchiveInstall }

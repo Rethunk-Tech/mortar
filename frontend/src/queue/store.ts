@@ -74,7 +74,8 @@ function matchesItem(e: Entry, item: Pick<Item, 'modId' | 'name' | 'repo'>) {
 }
 
 function profileLocked(profileId: string) {
-  return isLocked(useLaunch.getState().status, profileId, useLaunch.getState().starting)
+  const { status, starting, startingProfile } = useLaunch.getState()
+  return isLocked(status, profileId, starting ? startingProfile : '')
 }
 
 function singleNexusFailure(failed: Item[]) {

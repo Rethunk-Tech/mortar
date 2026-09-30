@@ -19,9 +19,10 @@ const edge: Record<ToastHistoryItem['kind'], string> = {
 function HistoryRow({ item }: { item: ToastHistoryItem }) {
   const { t, i18n } = useLingui()
   const status = useLaunch((s) => s.status)
-  const starting = useLaunch((s) => s.starting)
+  const startingProfile = useLaunch((s) => (s.starting ? s.startingProfile : ''))
   const { action } = item
-  const locked = action?.profileId !== undefined && isLocked(status, action.profileId, starting)
+  const locked =
+    action?.profileId !== undefined && isLocked(status, action.profileId, startingProfile)
   const lockHint = t`Stop the game to change mods.`
   const state = historyActionState(action?.live, locked, lockHint)
   const run = () => {
@@ -102,6 +103,7 @@ export function HistoryButton() {
         transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         slotProps={{
           paper: {
+            role: 'dialog',
             sx: {
               width: 360,
               maxHeight: 440,

@@ -22,8 +22,13 @@ test('only a launching or running game on the open profile locks it', () => {
   expect(isLocked(null, 'a')).toBe(false)
 })
 
-test('Play pressed before Launching locks the open profile', () => {
-  expect(isLocked(status(State.Idle, 'a'), 'a', true)).toBe(true)
-  expect(isLocked(null, 'a', true)).toBe(true)
-  expect(isLocked(status(State.Idle, 'a'), 'a', false)).toBe(false)
+test('Play pressed before Launching locks the profile being started', () => {
+  expect(isLocked(status(State.Idle, 'a'), 'a', 'a')).toBe(true)
+  expect(isLocked(null, 'a', 'a')).toBe(true)
+  expect(isLocked(status(State.Idle, 'a'), 'a', '')).toBe(false)
+})
+
+test('Play without mods does not lock the open profile while starting', () => {
+  expect(isLocked(null, 'a', '')).toBe(false)
+  expect(isLocked(status(State.Idle, ''), 'a', '')).toBe(false)
 })
