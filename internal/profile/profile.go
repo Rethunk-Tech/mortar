@@ -92,6 +92,12 @@ type Profile struct {
 	Origin string `json:"origin,omitempty"`
 	// CopyOf is the source profile's name when Origin is OriginCopy.
 	CopyOf string `json:"copyOf,omitempty"`
+	// Color is a palette token from ProfileColors, or empty for the default sidebar mark.
+	Color string `json:"color,omitempty"`
+	// Icon is a Lucide name from ProfileIcons, or empty for the default profile mark.
+	Icon string `json:"icon,omitempty"`
+	// Description is a short blurb shown on the Profiles list and in the hero; at most MaxDescription runes.
+	Description string `json:"description,omitempty"`
 }
 
 // Store reads and writes profiles under one root folder.
@@ -283,6 +289,7 @@ func readAt(dir, id string) (Profile, error) {
 			p.Entries[i].Disabled = []string{}
 		}
 	}
+	sanitizeAppearance(&p)
 	return p, nil
 }
 
