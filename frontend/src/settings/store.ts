@@ -11,7 +11,7 @@ const apply = (next: Settings) => useSettings.setState(next)
 
 export async function initSettings(): Promise<void> {
   Events.On('settings:changed', (event) => {
-    apply(event.data as Settings)
+    apply(event.data)
   })
   apply(await Get())
 }
