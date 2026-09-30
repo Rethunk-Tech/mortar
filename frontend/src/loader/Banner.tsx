@@ -2,6 +2,8 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { Download } from 'lucide-react'
 import { useEffect } from 'react'
+import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import { useLaunch } from '../launch/store.ts'
 import { InstallSteps } from './InstallSteps.tsx'
 import { useLoader } from './store.ts'
 
@@ -12,6 +14,14 @@ export function LoaderBanner({ game }: { game: string }) {
   const steps = useLoader((s) => s.steps)
   const check = useLoader((s) => s.check)
   const install = useLoader((s) => s.install)
+  const pending = useLoader((s) => s.pending)
+  // SMAPI's files are in use while the game starts or runs.
+  const playing = useLaunch(
+    (s) =>
+      s.starting ||
+      (s.status?.game === game &&
+        (s.status.state === State.Launching || s.status.state === State.Running)),
+  )
   useEffect(() => {
     check(game)
   }, [game, check])
@@ -52,6 +62,7 @@ export function LoaderBanner({ game }: { game: string }) {
           variant="contained"
           size="small"
           startIcon={<Download size={16} />}
+          disabled={pending || playing}
           onClick={() => install(game)}
           sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
         >

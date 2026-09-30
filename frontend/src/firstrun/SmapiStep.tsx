@@ -163,6 +163,7 @@ export function SmapiStep({ gameDir, onDone }: { gameDir: string; onDone: () => 
   const check = useLoader((s) => s.check)
   const error = useLoader((s) => s.error)
   const install = useLoader((s) => s.install)
+  const pending = useLoader((s) => s.pending)
   const [options, setOptions] = useState('')
   const [checked, setChecked] = useState(false)
   const entered = useRef(false)
@@ -257,6 +258,7 @@ export function SmapiStep({ gameDir, onDone }: { gameDir: string; onDone: () => 
           <Button
             variant="contained"
             startIcon={<RefreshCw size={16} />}
+            disabled={pending}
             onClick={() => install(STARDEW)}
             sx={{ height: 46, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
           >

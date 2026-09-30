@@ -16,11 +16,15 @@ export const useLoader = create<{
   steps: string[]
   // Why the last install failed; empty while one runs or after one succeeded.
   error: string
+  // An install call is in flight; the loader:state event that sets installing lands after the click, so a second
+  // click could otherwise start another.
+  pending: boolean
   check: (game: string) => Promise<void>
   install: (game: string) => Promise<void>
-}>((set) => ({
+}>((set, get) => ({
   status: null,
   installing: false,
+  pending: false,
   steps: [],
   error: '',
   check: async (game) => {
@@ -33,6 +37,10 @@ export const useLoader = create<{
   },
   // Progress and the outcome arrive as events, so an install Mortar starts by itself shows the same way.
   install: async (game) => {
+    if (get().pending) {
+      return
+    }
+    set({ pending: true })
     try {
       const status = await Install(game)
       set({ status })
@@ -45,6 +53,8 @@ export const useLoader = create<{
       useToasts
         .getState()
         .push({ kind: 'error', title: i18n._(msg`Could not install SMAPI`), body })
+    } finally {
+      set({ pending: false })
     }
   },
 }))

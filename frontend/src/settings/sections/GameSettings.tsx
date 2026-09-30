@@ -98,6 +98,7 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
   const steps = useLoader((s) => s.steps)
   const check = useLoader((s) => s.check)
   const install = useLoader((s) => s.install)
+  const pending = useLoader((s) => s.pending)
   const refreshLaunch = useLaunch((s) => s.refresh)
   // SMAPI's files are in use while the game starts or runs.
   const playing = useLaunch(
@@ -106,15 +107,6 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
       (s.status?.game === GAME &&
         (s.status.state === State.Launching || s.status.state === State.Running)),
   )
-  // The loader:state event that swaps in the steps lands after the click, so a second click can slip in first.
-  const [pending, setPending] = useState(false)
-  const run = () => {
-    if (pending) {
-      return
-    }
-    setPending(true)
-    install(GAME).finally(() => setPending(false))
-  }
   useEffect(() => {
     check(GAME)
     // Settings can open before any game page has fetched whether the game runs.
@@ -146,7 +138,7 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
         variant="outlined"
         startIcon={<Download size={16} />}
         disabled={pending || playing}
-        onClick={run}
+        onClick={() => install(GAME)}
         sx={{ ...outline, height: 38 }}
       >
         {action}
