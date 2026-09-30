@@ -78,9 +78,14 @@ export const useSelection = create<
     const allowed = new Set(visibleIds)
     const { ids: current, anchor } = get()
     const ids = current.filter((id) => allowed.has(id))
-    set({
-      ids,
-      anchor: anchor !== null && allowed.has(anchor) ? anchor : (ids[0] ?? null),
-    })
+    const nextAnchor = anchor !== null && allowed.has(anchor) ? anchor : (ids[0] ?? null)
+    if (
+      ids.length === current.length &&
+      ids.every((id, i) => id === current[i]) &&
+      nextAnchor === anchor
+    ) {
+      return
+    }
+    set({ ids, anchor: nextAnchor })
   },
 }))

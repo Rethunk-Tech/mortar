@@ -35,3 +35,10 @@ test('select all covers only the visible filtered ids', () => {
   expect(selectAllRows(['x', 'y']).ids).toEqual(['x', 'y'])
   expect(clearSelection().ids).toEqual([])
 })
+
+test('prune does not replace state when every selected id is still visible', () => {
+  useSelection.setState({ ids: ['a', 'b'], anchor: 'a' })
+  const before = useSelection.getState()
+  useSelection.getState().prune(['a', 'b', 'c'])
+  expect(useSelection.getState()).toBe(before)
+})
