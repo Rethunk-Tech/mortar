@@ -33,6 +33,24 @@ const open = () => {
   return game && openId ? { game: game.id, id: openId } : null
 }
 
+async function redoUpdate(game: string, id: string, key: string) {
+  try {
+    useProfiles.getState().replace(await RollBack(game, id, key))
+  } catch (e) {
+    fail(i18n._(msg`Could not redo the update`))(e)
+    return
+  }
+  await useMods.getState().load()
+}
+
+function keyAfterRollBack(
+  entries: { key: string; mods?: { uniqueId: string }[] | null }[] | null | undefined,
+  uniqueId: string,
+  fallback: string,
+) {
+  return entries?.find((e) => (e.mods ?? []).some((m) => m.uniqueId === uniqueId))?.key ?? fallback
+}
+
 // The selected mod (by modId) shown in the sidebar, whether its details dialog is open, and what the dialog reads beyond the mod list.
 export const useDetail = create<{
   detailId: string
@@ -72,11 +90,26 @@ export const useDetail = create<{
       return
     }
     try {
-      useProfiles.getState().replace(await RollBack(target.game, target.id, mod.key))
+      const rolled = await RollBack(target.game, target.id, mod.key)
+      useProfiles.getState().replace(rolled)
     } catch (e) {
       fail(i18n._(msg`Could not roll back ${mod.name}`))(e)
       return
     }
+    const key = keyAfterRollBack(
+      useProfiles.getState().profiles.find((p) => p.id === target.id)?.entries,
+      mod.uniqueId,
+      mod.key,
+    )
+    useToasts.getState().push({
+      kind: 'success',
+      title: i18n._(msg`${mod.name} rolled back`),
+      picture: mod.picture,
+      action: {
+        label: i18n._(msg`Redo update`),
+        run: () => redoUpdate(target.game, target.id, key),
+      },
+    })
     set({ open: false, extras: null })
     await useMods.getState().load()
   },
@@ -93,3 +126,5 @@ export const useDetail = create<{
     await get().loadExtras(mod)
   },
 }))
+
+export { keyAfterRollBack }

@@ -1,11 +1,24 @@
 import { msg, plural } from '@lingui/core/macro'
 import { create } from 'zustand'
 import type {
+  Entry,
+  Profile,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import {
+  RemoveEntry,
+  RollBack,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import type {
   Item,
   State,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
-import { State as fetchState } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+import {
+  State as fetchState,
+  Retry,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { useLaunch } from '../launch/store.ts'
+import { isLocked } from '../mods/locked.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { follow } from '../shell/follow.ts'
@@ -20,8 +33,51 @@ const empty: Snapshot = { items: [], paused: false, limitedUntil: 0 }
 
 const show = () => useQueue.getState().setOpen(true)
 
+const shouldRollBack = (item: Pick<Item, 'kind'>) => item.kind === 'update'
+
+function entryForItem(profile: Profile | undefined, item: Pick<Item, 'modId' | 'name' | 'repo'>) {
+  return (profile?.entries ?? []).find((e) => matchesItem(e, item))
+}
+
+function matchesItem(e: Entry, item: Pick<Item, 'modId' | 'name' | 'repo'>) {
+  if (item.modId && e.source.modId === item.modId) {
+    return true
+  }
+  if (item.repo && e.source.repo === item.repo) {
+    return true
+  }
+  return (e.mods ?? []).some((m) => m.name === item.name)
+}
+
+function profileLocked(profileId: string) {
+  return isLocked(useLaunch.getState().status, profileId, useLaunch.getState().starting)
+}
+
+function singleNexusFailure(failed: Item[]) {
+  if (failed.length !== 1) {
+    return
+  }
+  const [item] = failed
+  return item && item.repo === '' ? item : undefined
+}
+
+async function undoInstall(item: Item, entry: Entry | undefined) {
+  if (!entry || profileLocked(item.profileId)) {
+    return
+  }
+  try {
+    const next = shouldRollBack(item)
+      ? await RollBack(item.game, item.profileId, entry.key)
+      : await RemoveEntry(item.game, item.profileId, entry.key)
+    useProfiles.getState().replace(next)
+  } catch {
+    return
+  }
+  await useMods.getState().load()
+}
+
 // Says what changed since the last state: installs land in the open profile's list, and failures are worth a nudge.
-function announce(prev: Snapshot, next: Snapshot) {
+async function announce(prev: Snapshot, next: Snapshot) {
   const before = new Map(prev.items.map((i) => [i.id, i.state]))
   const changed = (state: string) =>
     next.items.filter((i) => i.state === state && before.get(i.id) !== state)
@@ -30,20 +86,32 @@ function announce(prev: Snapshot, next: Snapshot) {
   const waiting = [...changed('needs-choice'), ...changed('needs-confirm')]
   const { game, refresh } = useProfiles.getState()
   if (done.some((i) => i.game === game?.id)) {
-    refresh()
+    await refresh()
       .then(() => useMods.getState().load())
       .catch(() => undefined)
   }
-  if (done.length > 0) {
-    const first = done[0]?.name ?? ''
+  if (done.length === 1) {
+    const [item] = done
+    if (item) {
+      const profile = useProfiles.getState().profiles.find((p) => p.id === item.profileId)
+      const entry = entryForItem(profile, item)
+      const first = item.name
+      useToasts.getState().push({
+        kind: 'success',
+        title: i18n._(msg`${first} installed`),
+        picture: entry?.source.picture ?? '',
+        action: {
+          label: i18n._(msg`Undo`),
+          run: () => undoInstall(item, entry),
+        },
+      })
+    }
+  } else if (done.length > 1) {
     useToasts.getState().push({
       kind: 'success',
-      title:
-        done.length === 1
-          ? i18n._(msg`${first} installed`)
-          : i18n._(
-              msg`${plural(done.length, { one: '# mod installed', other: '# mods installed' })}`,
-            ),
+      title: i18n._(
+        msg`${plural(done.length, { one: '# mod installed', other: '# mods installed' })}`,
+      ),
     })
   }
   if (waiting.length > 0) {
@@ -55,13 +123,25 @@ function announce(prev: Snapshot, next: Snapshot) {
       action: { label: i18n._(msg`Show`), run: show },
     })
   }
-  if (failed.length > 0) {
+  const nexusFail = singleNexusFailure(failed)
+  if (nexusFail) {
+    useToasts.getState().push({
+      kind: 'error',
+      title: i18n._(msg`Couldn't reach Nexus`),
+      body: nexusFail.error ?? '',
+      action: {
+        label: i18n._(msg`Retry now`),
+        run: () => Retry(nexusFail.id),
+      },
+    })
+  } else if (failed.length > 0) {
+    const [firstFail] = failed
     useToasts.getState().push({
       kind: 'error',
       title: i18n._(
         msg`${plural(failed.length, { one: '# download failed', other: '# downloads failed' })}`,
       ),
-      body: failed[0]?.error ?? '',
+      body: firstFail?.error ?? '',
       action: { label: i18n._(msg`Show`), run: show },
     })
   }
@@ -84,6 +164,8 @@ export const initQueue = () =>
     const next = snapshot(state)
     useQueue.setState({ state: next })
     if (!first) {
-      announce(prev, next)
+      announce(prev, next).catch(() => undefined)
     }
   })
+
+export { announce, entryForItem, shouldRollBack, singleNexusFailure, undoInstall }

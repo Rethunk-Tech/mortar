@@ -7,7 +7,7 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.useRealTimers()
-  useToasts.setState({ toasts: [] })
+  useToasts.setState(useToasts.getInitialState(), true)
 })
 
 test('info and success dismiss after 5s; warning and error after 10s', () => {
@@ -52,4 +52,18 @@ test('toasts keep push order and dismiss removes one by id', () => {
   expect(useToasts.getState().toasts.map((t) => t.title)).toEqual(['first', 'second'])
   dismiss(first)
   expect(useToasts.getState().toasts.map((t) => t.title)).toEqual(['second'])
+})
+
+test('a toast keeps its picture and action', () => {
+  const run = () => undefined
+  useToasts.getState().push({
+    kind: 'success',
+    title: 'SpaceCore installed',
+    picture: 'https://example.test/mod.png',
+    action: { label: 'Undo', run },
+  })
+  const [toast] = useToasts.getState().toasts
+  expect(toast?.picture).toBe('https://example.test/mod.png')
+  expect(toast?.action?.label).toBe('Undo')
+  expect(toast?.action?.run).toBe(run)
 })

@@ -1,6 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, IconButton } from '@mui/material'
+import { Box, ButtonBase, IconButton, Tooltip } from '@mui/material'
 import { X } from 'lucide-react'
+import { LetterTile } from '../mods/parts.tsx'
+import { useLocked } from '../mods/useLocked.ts'
 import { type Toast, type ToastKind, useToasts } from './store.ts'
 
 const edge: Record<ToastKind, string> = {
@@ -15,7 +17,16 @@ function ToastCard({ toast }: { toast: Toast }) {
   const dismiss = useToasts((s) => s.dismiss)
   const hold = useToasts((s) => s.hold)
   const release = useToasts((s) => s.release)
+  const locked = useLocked()
   const { action } = toast
+  const lockHint = t`Stop the game to change mods.`
+  const run = () => {
+    if (locked) {
+      return
+    }
+    action?.run()
+    dismiss(toast.id)
+  }
   return (
     <Box
       onMouseEnter={() => hold(toast.id)}
@@ -34,6 +45,9 @@ function ToastCard({ toast }: { toast: Toast }) {
         borderRadius: '8px',
       }}
     >
+      {toast.picture === undefined ? null : (
+        <LetterTile mod={{ uniqueId: toast.title, name: toast.title, picture: toast.picture }} />
+      )}
       <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
           {toast.title}
@@ -45,25 +59,27 @@ function ToastCard({ toast }: { toast: Toast }) {
         ) : null}
       </Box>
       {action ? (
-        <ButtonBase
-          onClick={() => {
-            action.run()
-            dismiss(toast.id)
-          }}
-          sx={{
-            height: 34,
-            px: '12px',
-            bgcolor: 'rgba(255,255,255,0.1)',
-            borderRadius: '6px',
-            color: '#ffffff',
-            fontSize: 13,
-            fontWeight: 600,
-            fontFamily: 'inherit',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {action.label}
-        </ButtonBase>
+        <Tooltip title={locked ? lockHint : ''}>
+          <span>
+            <ButtonBase
+              disabled={locked}
+              onClick={run}
+              sx={{
+                height: 34,
+                px: '12px',
+                bgcolor: 'rgba(255,255,255,0.1)',
+                borderRadius: '6px',
+                color: '#ffffff',
+                fontSize: 13,
+                fontWeight: 600,
+                fontFamily: 'inherit',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {action.label}
+            </ButtonBase>
+          </span>
+        </Tooltip>
       ) : null}
       <IconButton
         aria-label={t`Dismiss`}

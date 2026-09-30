@@ -14,6 +14,7 @@ export interface ToastInput {
   kind: ToastKind
   title: string
   body?: string
+  picture?: string
   action?: { label: string; run: () => void }
 }
 

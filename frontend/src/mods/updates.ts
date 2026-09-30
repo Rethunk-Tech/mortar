@@ -31,8 +31,12 @@ export const useUpdates = create<{
     } catch (e) {
       useToasts.getState().push({
         kind: 'error',
-        title: i18n._(msg`Could not check the mods for updates`),
+        title: i18n._(msg`Couldn't reach Nexus`),
         body: errorMessage(e),
+        action: {
+          label: i18n._(msg`Retry now`),
+          run: () => useUpdates.getState().load(),
+        },
       })
     }
   },
