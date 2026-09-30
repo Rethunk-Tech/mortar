@@ -34,6 +34,16 @@ func (s *Service) SetBackupsKept(n int) error {
 	return s.set(func(v *Settings) { v.BackupsKept = n })
 }
 
+// SetListColumns stores which Mods list-view columns are shown.
+func (s *Service) SetListColumns(ids []string) error {
+	return s.set(func(v *Settings) { v.ListColumns = ids })
+}
+
+// SetListSort stores the Mods list-view sort column and direction.
+func (s *Service) SetListSort(column, dir string) error {
+	return s.set(func(v *Settings) { v.ListSortColumn, v.ListSortDir = column, dir })
+}
+
 func (s *Service) SetBackground(background string) error {
 	return s.set(func(v *Settings) { v.Background = background })
 }
