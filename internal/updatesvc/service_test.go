@@ -117,6 +117,38 @@ func TestRestartWaitsUntilInstallHasStaged(t *testing.T) {
 	}
 }
 
+func TestRestartDoesNotHoldTheMutex(t *testing.T) {
+	s := &Service{}
+	f := &reenterRestart{s: s}
+	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
+	if err := configure(s, f, "1.0.0", []byte("key"), true); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	done := make(chan error, 1)
+	go func() { done <- s.Restart(context.Background()) }()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("Restart deadlocked holding the mutex")
+	}
+}
+
+type reenterRestart struct {
+	fake
+	s *Service
+}
+
+func (r *reenterRestart) Restart(ctx context.Context) error {
+	_, err := r.s.Check(ctx)
+	return err
+}
+
 func TestCheckDoesNotHoldTheLockForTheNetwork(t *testing.T) {
 	hold := make(chan struct{})
 	started := make(chan struct{})

@@ -167,6 +167,6 @@ func (s *Service) Restart(ctx context.Context) error {
 	for s.inInstall || s.inCheck {
 		s.cond.Wait()
 	}
-	defer s.mu.Unlock()
+	s.mu.Unlock()
 	return s.u.Restart(ctx)
 }
