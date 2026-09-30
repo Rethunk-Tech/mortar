@@ -26,6 +26,16 @@ type Manifest struct {
 	Version     string
 	UniqueID    string
 	Description string
+	UpdateKeys  []string
+	// Dependencies lists Dependencies[] and, as a required entry, the ContentPackFor framework.
+	Dependencies []Dependency
+}
+
+// Dependency is one mod another mod needs; Required defaults to true when the manifest omits IsRequired.
+type Dependency struct {
+	UniqueID       string
+	MinimumVersion string
+	Required       bool
 }
 
 // Parse reads a manifest tolerating a UTF-8 BOM, // and /* */ comments, trailing commas and any key casing.
@@ -41,11 +51,61 @@ func Parse(b []byte) (Manifest, error) {
 		Version:     version(field(raw, "version")),
 		UniqueID:    text(raw, "uniqueid"),
 		Description: text(raw, "description"),
+		UpdateKeys:  texts(field(raw, "updatekeys")),
 	}
+	m.Dependencies = dependencies(raw)
 	if m.UniqueID == "" {
 		return Manifest{}, errors.New("manifest has no UniqueID")
 	}
 	return m, nil
+}
+
+func texts(v json.RawMessage) []string {
+	var items []json.RawMessage
+	if json.Unmarshal(v, &items) != nil {
+		return nil
+	}
+	var out []string
+	for _, it := range items {
+		var s string
+		if json.Unmarshal(it, &s) == nil && strings.TrimSpace(s) != "" {
+			out = append(out, strings.TrimSpace(s))
+		}
+	}
+	return out
+}
+
+func dependency(v json.RawMessage) (Dependency, bool) {
+	var obj map[string]json.RawMessage
+	if json.Unmarshal(v, &obj) != nil {
+		return Dependency{}, false
+	}
+	d := Dependency{UniqueID: text(obj, "uniqueid"), MinimumVersion: text(obj, "minimumversion"), Required: true}
+	if b := field(obj, "isrequired"); b != nil {
+		var required bool
+		if json.Unmarshal(b, &required) == nil {
+			d.Required = required
+		}
+	}
+	return d, d.UniqueID != ""
+}
+
+// dependencies reads Dependencies[] and ContentPackFor, skipping entries without a UniqueID.
+func dependencies(raw map[string]json.RawMessage) []Dependency {
+	var out []Dependency
+	var items []json.RawMessage
+	if json.Unmarshal(field(raw, "dependencies"), &items) == nil {
+		for _, it := range items {
+			if d, ok := dependency(it); ok {
+				out = append(out, d)
+			}
+		}
+	}
+	if d, ok := dependency(field(raw, "contentpackfor")); ok {
+		d.Required = true
+		out = append(out, d)
+	}
+	return out
 }
 
 func field(raw map[string]json.RawMessage, name string) json.RawMessage {

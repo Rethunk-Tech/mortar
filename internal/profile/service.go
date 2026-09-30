@@ -33,8 +33,9 @@ func (s *Service) RemoveEntry(game, id, key string) (Profile, error) {
 	return s.store.RemoveEntry(game, id, key)
 }
 
-func (s *Service) SetModEnabled(game, id, uniqueID string, enabled bool) (Profile, error) {
-	return s.store.SetModEnabled(game, id, uniqueID, enabled)
+// SetModEnabled switches a mod of the entry key on or off.
+func (s *Service) SetModEnabled(game, id, key, uniqueID string, enabled bool) (Profile, error) {
+	return s.store.SetModEnabled(game, id, key, uniqueID, enabled)
 }
 
 func (s *Service) Duplicate(game, id string) (Profile, error) { return s.store.Duplicate(game, id) }
@@ -53,7 +54,7 @@ func (s *Service) SetHidden(game, id string, hidden bool) (Profile, error) {
 func (s *Service) Reorder(game string, ids []string) error { return s.store.Reorder(game, ids) }
 
 // Mods lists the profile's mods, rebuilding missing mod folders from the store first.
-func (s *Service) Mods(game, id string) ([]Mod, error) { return s.store.Mods(game, id) }
+func (s *Service) Mods(game, id string) ([]Mod, error) { return s.store.UserMods(game, id) }
 
 // ShowFiles opens the mod's folder in the system file manager.
 func (s *Service) ShowFiles(game, id, uniqueID string) error {

@@ -1,0 +1,386 @@
+// Package problems finds what is wrong with a profile's mods: dependencies that are missing, mods installed
+// twice, and mods SMAPI's API marks broken for the game version. It only reports; nothing here blocks a launch.
+package problems
+
+import (
+	"cmp"
+	"context"
+	"slices"
+	"strconv"
+	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-AI/mortar/internal/meta"
+)
+
+// Meta is the slice of meta.Client the checks use.
+type Meta interface {
+	Lookup(ctx context.Context, uniqueID string) ([]meta.Ref, error)
+	Page(ctx context.Context, id int) (meta.Page, error)
+	CheckUpdates(ctx context.Context, req meta.UpdateRequest) []meta.UpdateResult
+}
+
+// Installed is one mod of the profile.
+type Installed struct {
+	Key string
+	// SourceKind is the entry's source: "local" for an archive, "smapi" for the loader's own mods, "nexus" for a download.
+	SourceKind string
+	Enabled    bool
+	manifest.Manifest
+}
+
+// Environment says what the profile runs on, for the broken-mod check.
+type Environment struct {
+	GameVersion string
+	APIVersion  string
+	Platform    string
+}
+
+// Ref names a mod on the page that hosts it. FileID is 0 unless a Nexus file satisfying the requirement was found.
+type Ref struct {
+	Site     string `json:"site"`
+	PageID   int    `json:"pageId"`
+	PageName string `json:"pageName"`
+	URL      string `json:"url"`
+	FileID   int64  `json:"fileId"`
+	FileName string `json:"fileName"`
+	Version  string `json:"version"`
+}
+
+// Missing is a required dependency the profile does not satisfy. Reason is "absent", "disabled" or "outdated".
+// Where is nil when the dataset does not know the mod or could not be reached.
+type Missing struct {
+	DependentID      string `json:"dependentId"`
+	DependentName    string `json:"dependentName"`
+	UniqueID         string `json:"uniqueId"`
+	MinimumVersion   string `json:"minimumVersion"`
+	Reason           string `json:"reason"`
+	InstalledVersion string `json:"installedVersion"`
+	Where            *Ref   `json:"where"`
+}
+
+// Copy is one of two or more enabled copies of a mod. Needed and TooOld name the enabled mods that depend on the
+// UniqueID and whose MinimumVersion this copy meets or does not. Newest marks the highest version among the copies.
+type Copy struct {
+	Key     string   `json:"key"`
+	Name    string   `json:"name"`
+	Version string   `json:"version"`
+	Source  string   `json:"source"`
+	Nexus   bool     `json:"nexus"`
+	Newest  bool     `json:"newest"`
+	Needed  []string `json:"needed"`
+	TooOld  []string `json:"tooOld"`
+}
+
+// Duplicate is a UniqueID with several enabled copies.
+type Duplicate struct {
+	UniqueID string `json:"uniqueId"`
+	Name     string `json:"name"`
+	Copies   []Copy `json:"copies"`
+}
+
+// Broken is an enabled mod SMAPI's API marks "broken" or "obsolete"; BrokeIn is the game version that did it.
+type Broken struct {
+	Key      string `json:"key"`
+	UniqueID string `json:"uniqueId"`
+	Name     string `json:"name"`
+	Status   string `json:"status"`
+	BrokeIn  string `json:"brokeIn"`
+}
+
+// Result is everything found for one profile. Unknown is set when a lookup failed, so the lists may be short.
+type Result struct {
+	Missing    []Missing   `json:"missing"`
+	Duplicates []Duplicate `json:"duplicates"`
+	Broken     []Broken    `json:"broken"`
+	Unknown    bool        `json:"unknown"`
+}
+
+// Count is the number of problems, one per missing dependency, duplicate and broken mod.
+func (r Result) Count() int { return len(r.Missing) + len(r.Duplicates) + len(r.Broken) }
+
+func sameID(a, b string) bool { return strings.EqualFold(a, b) }
+
+// meets reports whether version satisfies minimum. What cannot be compared is taken as satisfied: SMAPI itself
+// only complains about versions it can order.
+func meets(version, minimum string) bool {
+	if minimum == "" {
+		return true
+	}
+	c, ok := meta.CompareVersions(version, minimum)
+	return !ok || c >= 0
+}
+
+// Check computes the problems of mods. Lookups that fail leave Unknown set and never return an error.
+func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Result {
+	enabled := slices.DeleteFunc(slices.Clone(mods), func(x Installed) bool { return !x.Enabled })
+	r := Result{Missing: []Missing{}, Duplicates: duplicates(enabled), Broken: []Broken{}}
+	missing := missingDeps(enabled, mods)
+	r.Unknown = fillWhere(ctx, m, enabled, missing)
+	r.Missing = missing
+	broken, unknown := brokenMods(ctx, m, env, enabled)
+	r.Broken = broken
+	r.Unknown = r.Unknown || unknown
+	return r
+}
+
+func missingDeps(enabled, all []Installed) []Missing {
+	out := []Missing{}
+	for _, d := range enabled {
+		for _, dep := range d.Dependencies {
+			if !dep.Required {
+				continue
+			}
+			miss := Missing{DependentID: d.UniqueID, DependentName: d.Name, UniqueID: dep.UniqueID, MinimumVersion: dep.MinimumVersion}
+			var installed []Installed
+			for _, x := range all {
+				if sameID(x.UniqueID, dep.UniqueID) {
+					installed = append(installed, x)
+				}
+			}
+			switch {
+			case len(installed) == 0:
+				miss.Reason = "absent"
+			case slices.ContainsFunc(installed, func(x Installed) bool { return x.Enabled && meets(x.Version, dep.MinimumVersion) }):
+				continue
+			case slices.ContainsFunc(installed, func(x Installed) bool { return x.Enabled }):
+				miss.Reason = "outdated"
+				miss.InstalledVersion = highest(installed)
+			case slices.ContainsFunc(installed, func(x Installed) bool { return meets(x.Version, dep.MinimumVersion) }):
+				miss.Reason = "disabled"
+			default:
+				miss.Reason = "outdated"
+				miss.InstalledVersion = highest(installed)
+			}
+			out = append(out, miss)
+		}
+	}
+	return out
+}
+
+func highest(mods []Installed) string {
+	best := mods[0].Version
+	for _, x := range mods[1:] {
+		if c, ok := meta.CompareVersions(x.Version, best); ok && c > 0 {
+			best = x.Version
+		}
+	}
+	return best
+}
+
+func duplicates(enabled []Installed) []Duplicate {
+	out := []Duplicate{}
+	seen := map[string]bool{}
+	for _, first := range enabled {
+		id := strings.ToLower(first.UniqueID)
+		if seen[id] {
+			continue
+		}
+		seen[id] = true
+		var group []Installed
+		for _, x := range enabled {
+			if sameID(x.UniqueID, first.UniqueID) {
+				group = append(group, x)
+			}
+		}
+		if len(group) < 2 {
+			continue
+		}
+		out = append(out, Duplicate{UniqueID: first.UniqueID, Name: first.Name, Copies: copies(group, enabled)})
+	}
+	return out
+}
+
+func copies(group, enabled []Installed) []Copy {
+	top := highest(group)
+	out := make([]Copy, len(group))
+	for i, g := range group {
+		c := Copy{Key: g.Key, Name: g.Name, Version: g.Version, Source: g.SourceKind, Nexus: g.SourceKind == "nexus", Needed: []string{}, TooOld: []string{}}
+		if cmpv, ok := meta.CompareVersions(g.Version, top); ok && cmpv == 0 {
+			c.Newest = true
+		}
+		for _, d := range enabled {
+			for _, dep := range d.Dependencies {
+				if !dep.Required || !sameID(dep.UniqueID, g.UniqueID) {
+					continue
+				}
+				if meets(g.Version, dep.MinimumVersion) {
+					c.Needed = append(c.Needed, d.Name)
+				} else {
+					c.TooOld = append(c.TooOld, d.Name)
+				}
+			}
+		}
+		out[i] = c
+	}
+	return out
+}
+
+func brokenMods(ctx context.Context, m Meta, env Environment, enabled []Installed) (broken []Broken, unknown bool) {
+	broken = []Broken{}
+	if len(enabled) == 0 {
+		return broken, false
+	}
+	req := meta.UpdateRequest{APIVersion: env.APIVersion, GameVersion: env.GameVersion, Platform: env.Platform}
+	for _, x := range enabled {
+		req.Mods = append(req.Mods, meta.InstalledMod{ID: x.UniqueID, UpdateKeys: x.UpdateKeys, Version: x.Version})
+	}
+	for i, res := range m.CheckUpdates(ctx, req) {
+		if !res.Known {
+			unknown = true
+			continue
+		}
+		if s := strings.ToLower(res.Compatibility); s == "broken" || s == "obsolete" {
+			x := enabled[i]
+			broken = append(broken, Broken{Key: x.Key, UniqueID: x.UniqueID, Name: x.Name, Status: s, BrokeIn: res.BrokeIn})
+		}
+	}
+	return broken, unknown
+}
+
+// fillWhere finds where each absent or outdated dependency can be had. It reports whether any lookup failed.
+func fillWhere(ctx context.Context, m Meta, enabled []Installed, missing []Missing) (unknown bool) {
+	type found struct {
+		ref *Ref
+		ok  bool
+	}
+	cache := map[string]found{}
+	for i := range missing {
+		x := &missing[i]
+		if x.Reason == "disabled" {
+			continue
+		}
+		dependent := slices.IndexFunc(enabled, func(e Installed) bool { return sameID(e.UniqueID, x.DependentID) })
+		var keys []string
+		if dependent >= 0 {
+			keys = enabled[dependent].UpdateKeys
+		}
+		k := strings.ToLower(x.UniqueID) + "|" + x.MinimumVersion + "|" + strings.Join(keys, ",")
+		f, hit := cache[k]
+		if !hit {
+			f.ref, f.ok = locate(ctx, m, x.UniqueID, x.MinimumVersion, keys)
+			cache[k] = f
+		}
+		x.Where = f.ref
+		unknown = unknown || !f.ok
+	}
+	return unknown
+}
+
+// nexusKey returns the page number of a "Nexus:1234" or "Nexus:1234@subkey" update key.
+func nexusKey(key string) (int, bool) {
+	site, rest, ok := strings.Cut(key, ":")
+	if !ok || !strings.EqualFold(strings.TrimSpace(site), "nexus") {
+		return 0, false
+	}
+	rest, _, _ = strings.Cut(rest, "@")
+	n, err := strconv.Atoi(strings.TrimSpace(rest))
+	return n, err == nil
+}
+
+func siteURL(r meta.Ref) string {
+	switch strings.ToLower(r.Site) {
+	case "nexus":
+		return "https://www.nexusmods.com/stardewvalley/mods/" + strconv.Itoa(r.ID)
+	case "curseforge":
+		return "https://www.curseforge.com/projects/" + strconv.Itoa(r.ID)
+	case "moddrop":
+		return "https://www.moddrop.com/stardew-valley/mods/" + strconv.Itoa(r.ID)
+	}
+	return ""
+}
+
+// locate names the page and file to get uniqueID from. ok is false when the dataset could not be read, as
+// opposed to reading it and finding the mod unlisted (nil, true).
+func locate(ctx context.Context, m Meta, uniqueID, minimum string, dependentKeys []string) (*Ref, bool) {
+	refs, err := m.Lookup(ctx, uniqueID)
+	if err != nil {
+		return nil, false
+	}
+	var nexus, other []meta.Ref
+	for _, r := range refs {
+		if strings.EqualFold(r.Site, "nexus") {
+			nexus = append(nexus, r)
+		} else if siteURL(r) != "" {
+			other = append(other, r)
+		}
+	}
+	if len(nexus) == 0 {
+		if len(other) == 0 {
+			return nil, true
+		}
+		return &Ref{Site: other[0].Site, PageID: other[0].ID, URL: siteURL(other[0])}, true
+	}
+	for _, k := range dependentKeys {
+		if n, ok := nexusKey(k); ok {
+			if i := slices.IndexFunc(nexus, func(r meta.Ref) bool { return r.ID == n }); i >= 0 {
+				nexus = []meta.Ref{nexus[i]}
+				break
+			}
+		}
+	}
+	var best *Ref
+	var bestTop string
+	ok := true
+	for _, r := range nexus {
+		page, err := m.Page(ctx, r.ID)
+		if err != nil {
+			ok = false
+			continue
+		}
+		cand, top := fileIn(page, r, uniqueID, minimum)
+		if cand == nil {
+			continue
+		}
+		if c, isOrdered := meta.CompareVersions(top, bestTop); best == nil || (isOrdered && c > 0) {
+			best, bestTop = cand, top
+		}
+	}
+	if best == nil {
+		return &Ref{Site: "Nexus", PageID: nexus[0].ID, URL: siteURL(nexus[0])}, ok
+	}
+	return best, ok
+}
+
+// fileIn picks the newest MAIN file of the page that holds uniqueID at a version meeting minimum. With none,
+// it still returns the page when some file holds the mod, so its link is worth showing; otherwise nil.
+// top is the highest version of the mod on the page, which ranks pages against each other.
+func fileIn(page meta.Page, r meta.Ref, uniqueID, minimum string) (ref *Ref, top string) {
+	pageRef := Ref{Site: "Nexus", PageID: r.ID, PageName: page.Name, URL: cmp.Or(page.PageURL, siteURL(r))}
+	var best *Ref
+	holds := false
+	for _, f := range page.Downloads {
+		for _, mod := range f.Mods {
+			if !sameID(mod.UniqueID, uniqueID) {
+				continue
+			}
+			if c, ok := meta.CompareVersions(mod.Version, top); !holds || (ok && c > 0) {
+				top = mod.Version
+			}
+			holds = true
+			if !strings.EqualFold(f.Type, "main") || !meets(mod.Version, minimum) {
+				continue
+			}
+			cand := pageRef
+			cand.FileID, cand.FileName, cand.Version = f.ID, f.FileName, mod.Version
+			if best == nil || newer(cand, *best) {
+				best = &cand
+			}
+		}
+	}
+	switch {
+	case best != nil:
+		return best, top
+	case holds:
+		return &pageRef, top
+	}
+	return nil, ""
+}
+
+// newer orders two files of one mod by version, then by file ID.
+func newer(a, b Ref) bool {
+	if c, ok := meta.CompareVersions(a.Version, b.Version); ok && c != 0 {
+		return c > 0
+	}
+	return a.FileID > b.FileID
+}

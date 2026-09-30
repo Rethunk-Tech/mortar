@@ -127,7 +127,7 @@ func TestToggleNestedAndRoot(t *testing.T) {
 	}
 	mods := e.mods(p.ID)
 
-	got, err := e.SetModEnabled("stardew", p.ID, "x.a", false)
+	got, err := e.SetModEnabled("stardew", p.ID, "", "x.a", false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -137,18 +137,18 @@ func TestToggleNestedAndRoot(t *testing.T) {
 	if !slices.Equal(names(t, filepath.Join(mods, "local-n", "W")), []string{".A", "B"}) {
 		t.Fatalf("W = %v", names(t, filepath.Join(mods, "local-n", "W")))
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "X.A", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "X.A", false); err != nil {
 		t.Fatalf("not idempotent: %v", err)
 	}
 
-	got, err = e.SetModEnabled("stardew", p.ID, "X.R", false)
+	got, err = e.SetModEnabled("stardew", p.ID, "", "X.R", false)
 	if err != nil || !slices.Equal(got.Entries[1].Disabled, []string{"X.R"}) {
 		t.Fatalf("root disable = %+v, %v", got, err)
 	}
 	if !slices.Equal(names(t, mods), []string{".local-r", "local-n"}) {
 		t.Fatalf("mods = %v", names(t, mods))
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "X.R", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "X.R", false); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.RemoveEntry("stardew", p.ID, "local-r"); err != nil {
@@ -158,13 +158,13 @@ func TestToggleNestedAndRoot(t *testing.T) {
 		t.Fatalf("after remove = %v", names(t, mods))
 	}
 
-	if _, err := e.SetModEnabled("stardew", p.ID, "X.A", true); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "X.A", true); err != nil {
 		t.Fatal(err)
 	}
 	if got, _ := e.read("stardew", p.ID); len(got.Entries[0].Disabled) != 0 || !slices.Equal(names(t, filepath.Join(mods, "local-n", "W")), []string{"A", "B"}) {
 		t.Fatalf("re-enable = %+v", got.Entries[0])
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "X.Nope", true); err == nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "X.Nope", true); err == nil {
 		t.Fatal("unknown mod accepted")
 	}
 	if _, err := e.RemoveEntry("stardew", p.ID, "local-r"); err == nil {
@@ -180,7 +180,7 @@ func TestRootToggleRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, on := range []bool{false, true, false, true} {
-		if _, err := e.SetModEnabled("stardew", p.ID, "X.R", on); err != nil {
+		if _, err := e.SetModEnabled("stardew", p.ID, "", "X.R", on); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -284,7 +284,7 @@ func TestRebuildAfterModsDeleted(t *testing.T) {
 		}
 	}
 	for _, id := range []string{"X.A", "X.R"} {
-		if _, err := e.SetModEnabled("stardew", p.ID, id, false); err != nil {
+		if _, err := e.SetModEnabled("stardew", p.ID, "", id, false); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -383,7 +383,7 @@ func TestApplyBundledReplacesAndKeepsDisabled(t *testing.T) {
 	if _, err := e.AddEntry("stardew", a.ID, "local-x", Source{Kind: "local", Name: "x.zip"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", a.ID, "SMAPI.Backup", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", a.ID, "", "SMAPI.Backup", false); err != nil {
 		t.Fatal(err)
 	}
 	if err := e.ApplyBundled("stardew", "smapi-2.0.0"); err != nil {
@@ -495,7 +495,7 @@ func TestRunningProfileIsLocked(t *testing.T) {
 	checks := map[string]error{}
 	_, checks["AddEntry"] = e.AddEntry("stardew", p.ID, "a-1.0", Source{})
 	_, checks["RemoveEntry"] = e.RemoveEntry("stardew", p.ID, "a-1.0")
-	_, checks["SetModEnabled"] = e.SetModEnabled("stardew", p.ID, "me.a", false)
+	_, checks["SetModEnabled"] = e.SetModEnabled("stardew", p.ID, "", "me.a", false)
 	checks["Delete"] = e.Delete("stardew", p.ID)
 	_, checks["InstallArchive"] = e.InstallArchive("stardew", p.ID, "/nonexistent.zip")
 	for name, err := range checks {
@@ -508,7 +508,7 @@ func TestRunningProfileIsLocked(t *testing.T) {
 	}
 
 	running = false
-	if _, err := e.SetModEnabled("stardew", p.ID, "me.a", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "me.a", false); err != nil {
 		t.Fatal(err)
 	}
 	dir, err := e.ModsDir("stardew", p.ID)

@@ -285,17 +285,26 @@ func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
 	if err := s.unlocked(game, id); err != nil {
 		return Profile{}, err
 	}
-	return s.update(game, id, func(p *Profile, dir string) error { return removeFrom(p, dir, key) })
+	return s.update(game, id, func(p *Profile, dir string) error {
+		if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && e.Source.Kind == SourceSMAPI }) {
+			return errors.New("SMAPI's bundled mods are needed by every profile and cannot be removed")
+		}
+		return removeFrom(p, dir, key)
+	})
 }
 
-// SetModEnabled switches a mod on or off by renaming its folder with or without a leading dot.
-func (s *Store) SetModEnabled(game, id, uniqueID string, enabled bool) (Profile, error) {
+// SetModEnabled switches a mod on or off by renaming its folder with or without a leading dot. key names the
+// entry holding it, which tells apart two copies of one UniqueID; an empty key means the first entry that has it.
+func (s *Store) SetModEnabled(game, id, key, uniqueID string, enabled bool) (Profile, error) {
 	if err := s.unlocked(game, id); err != nil {
 		return Profile{}, err
 	}
 	return s.update(game, id, func(p *Profile, dir string) error {
 		for ei := range p.Entries {
 			e := &p.Entries[ei]
+			if key != "" && e.Key != key {
+				continue
+			}
 			mi := slices.IndexFunc(e.Mods, func(m EntryMod) bool { return sameID(m.UniqueID, uniqueID) })
 			if mi < 0 {
 				continue
@@ -434,7 +443,12 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 }
 
 // Mods returns the profile's mods, first rebuilding any mods/ folder content that is missing from the store.
-func (s *Store) Mods(game, id string) ([]Mod, error) {
+func (s *Store) Mods(game, id string) ([]Mod, error) { return s.mods(game, id, true) }
+
+// UserMods is Mods without SMAPI's bundled mods, which every profile has and users never manage.
+func (s *Store) UserMods(game, id string) ([]Mod, error) { return s.mods(game, id, false) }
+
+func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	p, err := s.read(game, id)
@@ -447,6 +461,9 @@ func (s *Store) Mods(game, id string) ([]Mod, error) {
 	}
 	out := []Mod{}
 	for _, e := range p.Entries {
+		if !bundled && e.Source.Kind == SourceSMAPI {
+			continue
+		}
 		for _, m := range e.Mods {
 			sib := []string{}
 			for _, o := range e.Mods {

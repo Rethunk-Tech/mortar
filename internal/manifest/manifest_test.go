@@ -16,11 +16,17 @@ func TestParseLenient(t *testing.T) {
 	}{
 		"bom comments trailing commas": {
 			"\xef\xbb\xbf{\n  // the mod\n  \"Name\": \"Content Patcher\", /* inline */\n  \"Author\": \"Pathoschild\",\n  \"Version\": \"2.0.0\",\n  \"Description\": \"http://x // not a comment\",\n  \"UniqueID\": \"Pathoschild.ContentPatcher\",\n  \"Dependencies\": [ { \"UniqueID\": \"a\", }, ],\n}\n",
-			Manifest{"Content Patcher", "Pathoschild", "2.0.0", "Pathoschild.ContentPatcher", "http://x // not a comment"},
+			Manifest{Name: "Content Patcher", Author: "Pathoschild", Version: "2.0.0", UniqueID: "Pathoschild.ContentPatcher", Description: "http://x // not a comment", Dependencies: []Dependency{{UniqueID: "a", Required: true}}},
 		},
 		"lowercase keys": {
 			`{"name":"N","author":"A","version":"1.2","uniqueid":"A.N","description":"d"}`,
-			Manifest{"N", "A", "1.2", "A.N", "d"},
+			Manifest{Name: "N", Author: "A", Version: "1.2", UniqueID: "A.N", Description: "d"},
+		},
+		"dependencies and content pack": {
+			`{"UniqueID":"A.P","UpdateKeys":["Nexus:1"," ",7],"Dependencies":[{"UniqueID":"B.Req","MinimumVersion":"1.2-beta"},{"uniqueid":"B.Opt","isrequired":false},{"MinimumVersion":"1"},"junk"],"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher","MinimumVersion":"2.0"}}`,
+			Manifest{UniqueID: "A.P", UpdateKeys: []string{"Nexus:1"}, Dependencies: []Dependency{
+				{"B.Req", "1.2-beta", true}, {"B.Opt", "", false}, {"Pathoschild.ContentPatcher", "2.0", true},
+			}},
 		},
 		"legacy version object": {
 			`{"Name":"Old","Author":"A","UniqueID":"A.Old","Version":{"MajorVersion":1,"MinorVersion":2,"PatchVersion":3,"Build":"beta"}}`,
