@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { GameSettings } from './sections/GameSettings.tsx'
+import { shouldLeavePageOnEscape } from './shouldLeavePageOnEscape.ts'
 
 export function GameSettingsPage() {
   const { t } = useLingui()
@@ -12,7 +13,7 @@ export function GameSettingsPage() {
   const close = useNav((s) => s.closeGameSettings)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (shouldLeavePageOnEscape(e, document.querySelector('[role="dialog"]') !== null)) {
         close()
       }
     }

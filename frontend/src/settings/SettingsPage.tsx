@@ -8,6 +8,7 @@ import { Appearance } from './sections/Appearance.tsx'
 import { Data } from './sections/Data.tsx'
 import { NexusMods } from './sections/NexusMods.tsx'
 import { Updates } from './sections/Updates.tsx'
+import { shouldLeavePageOnEscape } from './shouldLeavePageOnEscape.ts'
 
 const ACTIVE_WEIGHT = 600
 
@@ -17,7 +18,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
   const setSection = useNav((s) => s.openSettings)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (shouldLeavePageOnEscape(e, document.querySelector('[role="dialog"]') !== null)) {
         closeSettings()
       }
     }
