@@ -400,6 +400,10 @@ func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
 	if err != nil {
 		return GameModsResult{}, err
 	}
+	created, err = s.SetOrigin(game, created.ID, OriginGameMods, "")
+	if err != nil {
+		return GameModsResult{}, errors.Join(err, s.Delete(game, created.ID))
+	}
 	res := GameModsResult{Profile: created, Outcomes: outcomesFrom(slots)}
 	for _, o := range res.Outcomes {
 		switch o.Status {

@@ -118,6 +118,7 @@ type session struct {
 	preview Preview
 	notes   string
 	configs []share.Config
+	origin  string
 	// target is the profile the preview was resolved against; refs are what it resolved.
 	target string
 	refs   []share.Ref
@@ -314,7 +315,7 @@ func (s *Service) PreviewLink(ctx context.Context, game, text, profileID string)
 	if err != nil {
 		return Preview{}, err
 	}
-	return s.preview(ctx, game, shared, "", nil, profileID)
+	return s.preview(ctx, game, shared, "", nil, profileID, profile.OriginLink)
 }
 
 // PreviewFile reads a .mortar file and resolves what it names.
@@ -323,10 +324,10 @@ func (s *Service) PreviewFile(ctx context.Context, game, file, profileID string)
 	if err != nil {
 		return Preview{}, err
 	}
-	return s.preview(ctx, game, pv.Shared, pv.Notes, pv.Configs, profileID)
+	return s.preview(ctx, game, pv.Shared, pv.Notes, pv.Configs, profileID, profile.OriginMortar)
 }
 
-func (s *Service) preview(ctx context.Context, game string, shared share.Shared, notes string, configs []share.Config, profileID string) (Preview, error) {
+func (s *Service) preview(ctx context.Context, game string, shared share.Shared, notes string, configs []share.Config, profileID, origin string) (Preview, error) {
 	s.mu.Lock()
 	s.gen++
 	gen := s.gen
@@ -345,7 +346,7 @@ func (s *Service) preview(ctx context.Context, game string, shared share.Shared,
 	s.mu.Lock()
 	if s.gen == gen {
 		s.current = &session{
-			id: pv.Session, game: game, preview: pv, notes: notes, configs: configs, target: profileID, refs: shared.Entries,
+			id: pv.Session, game: game, preview: pv, notes: notes, configs: configs, origin: origin, target: profileID, refs: shared.Entries,
 		}
 	}
 	s.mu.Unlock()
@@ -487,6 +488,13 @@ func (s *Service) Import(ctx context.Context, game, session, profileID string, e
 		p, err := s.d.Profiles.Create(game, profile.UniqueName(names, cur.preview.Name))
 		if err != nil {
 			return Result{}, err
+		}
+		if cur.origin != "" {
+			stamped, err := s.d.Profiles.SetOrigin(game, p.ID, cur.origin, "")
+			if err != nil {
+				return Result{}, errors.Join(err, s.d.Profiles.Delete(game, p.ID))
+			}
+			p = stamped
 		}
 		notes := joinNotes(cur.notes, unavailableNote(mods))
 		if utf8.RuneCountInString(notes) > profile.MaxNotes {

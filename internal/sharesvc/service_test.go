@@ -147,6 +147,41 @@ func TestImportGitHubOnlyNeedsNoSignIn(t *testing.T) {
 	if _, err := s.Import(context.Background(), "stardew", sessionOf(s), "", nil); err != nil || len(rec.reqs) != 1 || rec.reqs[0].Tag != "v1" {
 		t.Errorf("reqs = %+v, %v", rec.reqs, err)
 	}
+	all, err := s.d.Profiles.List("stardew")
+	if err != nil || len(all) != 1 || all[0].Origin != profile.OriginLink {
+		t.Errorf("origin = %+v, %v", all, err)
+	}
+}
+
+func TestImportFromMortarFileRecordsOrigin(t *testing.T) {
+	s, rec := newService(t, false)
+	src := profile.Profile{
+		Name: "From file",
+		Entries: []profile.Entry{
+			{
+				Key: "gh", Source: profile.Source{Kind: profile.KindGitHub, Repo: "o/r", Tag: "v1", Asset: "a.zip"},
+				Mods: []profile.EntryMod{{UniqueID: "G.Mod", Name: "Gee", Folder: "."}},
+			},
+		},
+	}
+	file := filepath.Join(t.TempDir(), "from.mortar")
+	f, err := os.Create(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := share.Write(f, src, t.TempDir()); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.PreviewFile(context.Background(), "stardew", file, ""); err != nil {
+		t.Fatal(err)
+	}
+	res, err := s.Import(context.Background(), "stardew", sessionOf(s), "", nil)
+	if err != nil || res.Profile.Origin != profile.OriginMortar || len(rec.reqs) != 1 {
+		t.Fatalf("import = %+v queued %d: %v", res.Profile, len(rec.reqs), err)
+	}
 }
 
 func TestImportRollsBackANewProfileWhenQueueingFails(t *testing.T) {
