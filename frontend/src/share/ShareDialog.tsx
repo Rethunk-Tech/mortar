@@ -1,8 +1,19 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Dialog, Divider, IconButton, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Dialog,
+  Divider,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Typography,
+} from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
-import { Copy, MessageSquare, Save, X } from 'lucide-react'
+import { Check, Copy, FileText, List, MessageSquare, Save, Type, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Saved } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
 import {
@@ -15,6 +26,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type MeterLevel, meter, type ShownInfo, shownInfo, suggestFile } from './logic.ts'
+import { formatModList, listItems, type ModListFormat } from './modList.ts'
 import { SharedMods } from './SharedMods.tsx'
 import { useShareDialog } from './store.ts'
 import { TabPills } from './TabPills.tsx'
@@ -250,6 +262,94 @@ function LinkTab({ info, onFile }: { info: ShownInfo; onFile: () => void }) {
   )
 }
 
+function copyText(text: string, done: string) {
+  Clipboard.SetText(text).then(
+    () => useToasts.getState().push({ kind: 'success', title: done }),
+    reportUnexpected,
+  )
+}
+
+function CopyModList() {
+  const { t } = useLingui()
+  const profileId = useShareDialog((s) => s.profileId)
+  const keys = useShareDialog((s) => s.keys)
+  const format = useShareDialog((s) => s.listFormat)
+  const setFormat = useShareDialog((s) => s.setListFormat)
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === profileId))
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const items = listItems(profile, keys)
+  const labels = { enabled: t`Enabled`, disabled: t`Disabled` }
+  const parts = formatModList(format, items, labels)
+  const options: { id: ModListFormat; label: string; icon: typeof FileText }[] = [
+    { id: 'markdown', label: t`Markdown`, icon: FileText },
+    { id: 'plain', label: t`Plain text`, icon: Type },
+    { id: 'discord', label: t`Discord`, icon: MessageSquare },
+  ]
+  return (
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
+      {format === 'discord' && parts.length > 1 ? (
+        parts.map((part) => (
+          <Button
+            key={part.id}
+            variant="outlined"
+            color="inherit"
+            startIcon={<Copy size={16} />}
+            onClick={() => copyText(part.text, t`Copied part ${part.n}`)}
+            sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
+          >
+            {t`Copy part ${part.n}`}
+          </Button>
+        ))
+      ) : (
+        <Button
+          variant="outlined"
+          color="inherit"
+          startIcon={<List size={16} />}
+          onClick={() => copyText(parts[0]?.text ?? '', t`Mod list copied`)}
+          sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
+        >
+          {t`Copy mod list`}
+        </Button>
+      )}
+      <Button
+        variant="outlined"
+        color="inherit"
+        aria-label={t`Mod list format`}
+        onClick={(e) => setAnchor(e.currentTarget)}
+        sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
+      >
+        {options.find((o) => o.id === format)?.label}
+      </Button>
+      <Menu
+        open={Boolean(anchor)}
+        anchorEl={anchor}
+        onClose={() => setAnchor(null)}
+        transitionDuration={0}
+        slotProps={{ paper }}
+      >
+        {options.map((o) => {
+          const Icon = o.icon
+          return (
+            <MenuItem
+              key={o.id}
+              selected={o.id === format}
+              onClick={() => {
+                setFormat(o.id)
+                setAnchor(null)
+              }}
+            >
+              <ListItemIcon>
+                {o.id === format ? <Check size={16} /> : <Icon size={16} />}
+              </ListItemIcon>
+              <ListItemText>{o.label}</ListItemText>
+            </MenuItem>
+          )
+        })}
+      </Menu>
+    </Box>
+  )
+}
+
 function FileTab({
   info,
   game,
@@ -368,6 +468,7 @@ export function ShareDialog() {
       open={profileId !== '' && info !== null}
       onClose={close}
       maxWidth={false}
+      transitionDuration={0}
       slotProps={{
         paper: {
           ...paper,
@@ -412,6 +513,7 @@ export function ShareDialog() {
                   {info.name}
                 </Typography>
               </Box>
+              <CopyModList />
               {tab === 'file' ? (
                 <IconButton aria-label={t`Close`} onClick={close} sx={{ alignSelf: 'flex-start' }}>
                   <X size={18} />

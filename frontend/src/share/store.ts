@@ -3,6 +3,7 @@ import { Discard } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sh
 import { openSettings, useNav } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import type { ModListFormat } from './modList.ts'
 
 let runs = 0
 
@@ -27,13 +28,17 @@ useNav.subscribe((state) => {
 export const useShareDialog = create<{
   profileId: string
   keys: string[]
+  listFormat: ModListFormat
   open: (profileId: string, keys?: string[]) => void
   close: () => void
+  setListFormat: (listFormat: ModListFormat) => void
 }>((set) => ({
   profileId: '',
   keys: [],
+  listFormat: 'markdown',
   open: (profileId, keys = []) => set({ profileId, keys }),
   close: () => set({ profileId: '', keys: [] }),
+  setListFormat: (listFormat) => set({ listFormat }),
 }))
 
 export const openShare = (profileId: string, keys: string[] = []) =>
