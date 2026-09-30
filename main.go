@@ -3,7 +3,9 @@ package main
 import (
 	"embed"
 	"log"
+	"os"
 
+	"github.com/Rethunk-AI/mortar/internal/games"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -18,14 +20,21 @@ func main() {
 	}
 	svc := settings.NewService(store)
 
+	home, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+	gamesSvc := games.NewService(home)
+
 	var window *application.WebviewWindow
 
 	app := application.New(application.Options{
 		Name:        "Mortar",
 		Description: "Multi-game desktop mod manager",
-		Services:    []application.Service{application.NewService(svc)},
+		Services:    []application.Service{application.NewService(svc), application.NewService(gamesSvc)},
 		Assets: application.AssetOptions{
-			Handler: application.AssetFileServerFS(assets),
+			Handler:    application.AssetFileServerFS(assets),
+			Middleware: gamesSvc.ArtMiddleware,
 		},
 		SingleInstance: &application.SingleInstanceOptions{
 			UniqueID: "tech.rethunk.mortar",
