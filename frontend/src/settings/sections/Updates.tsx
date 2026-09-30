@@ -1,10 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, CircularProgress, Link, TextField } from '@mui/material'
 import { Download, RefreshCw, RotateCcw } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { SetBackupsKept } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useNav } from '../../nav/store.ts'
-import { errorText, reportUnexpected } from '../../toasts/report.ts'
+import { errorMessage, errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { useSettings } from '../store.ts'
 import { useMortarUpdate } from '../updates.ts'
@@ -16,11 +16,26 @@ const button = { whiteSpace: 'nowrap', alignSelf: 'flex-start' }
 function MortarUpdate() {
   const { t } = useLingui()
   const { info, phase, release, error, load, check, install, restart } = useMortarUpdate()
-  useEffect(() => {
-    load().catch(reportUnexpected)
+  const [failed, setFailed] = useState('')
+  const read = useCallback(() => {
+    setFailed('')
+    load().catch((e: unknown) => setFailed(errorMessage(e)))
   }, [load])
+  useEffect(read, [read])
   if (!info) {
-    return null
+    return failed ? (
+      <Alert
+        severity="error"
+        action={
+          <Button color="inherit" size="small" onClick={read} sx={{ whiteSpace: 'nowrap' }}>
+            {t`Retry`}
+          </Button>
+        }
+        sx={{ fontSize: 14 }}
+      >
+        {t`Could not read this Mortar build's version: ${failed}`}
+      </Alert>
+    ) : null
   }
   if (info.off) {
     return (
