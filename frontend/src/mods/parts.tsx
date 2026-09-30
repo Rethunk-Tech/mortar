@@ -82,7 +82,7 @@ export function ShowFilesButton({ mod }: { mod: Mod }) {
   const showFiles = useMods((s) => s.showFiles)
   return (
     <Button
-      startIcon={<FolderOpen size={16} />}
+      variant="outlined"
       onClick={() => {
         showFiles(mod).catch(reportUnexpected)
       }}
@@ -96,7 +96,7 @@ export function RemoveButton({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const askRemove = useMods((s) => s.askRemove)
   return (
-    <Button color="error" startIcon={<Trash2 size={16} />} onClick={() => askRemove(mod)}>
+    <Button variant="outlined" color="error" onClick={() => askRemove(mod)}>
       {t`Remove`}
     </Button>
   )
