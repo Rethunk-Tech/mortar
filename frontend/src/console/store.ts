@@ -9,7 +9,7 @@ import { i18n } from '../i18n/index.ts'
 import { useToasts } from '../toasts/store.ts'
 import { DEFAULT_FILTERS, type Filters } from './filter.ts'
 
-const lastSeq = (entries: Entry[]) => entries[entries.length - 1]?.seq ?? 0
+const lastSeq = (entries: Entry[]) => entries.at(-1)?.seq ?? 0
 
 export const useConsole = create<{
   entries: Entry[]
