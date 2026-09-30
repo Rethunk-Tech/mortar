@@ -14,11 +14,11 @@ import (
 // Pinned by scripts/update-bridge.sh from github.com/Rethunk-AI/mortar-smapi-bridge, release
 // bridgeVersion, asset MortarSmapiBridge-<version>.zip, sha256 bridgeSHA256.
 const (
-	bridgeVersion = "1.0.0"
-	bridgeSHA256  = "e0286e859aac45755d4b1a7924472c87727cd98afd4855afb8b604fd74fa4675"
+	bridgeVersion = "1.0.1"
+	bridgeSHA256  = "b4c3c4edc7656ac4e259b7d6120f310d5bc541387466ae11a28538e4ef455fc1"
 )
 
-//go:embed vendor/MortarSmapiBridge-1.0.0.zip
+//go:embed vendor/MortarSmapiBridge-1.0.1.zip
 var bridgeZip []byte
 
 // BridgeVersion is the bundled Mortar SMAPI Bridge's version.

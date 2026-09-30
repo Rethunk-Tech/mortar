@@ -58,14 +58,14 @@ func TestBundledBuiltFromGameFolder(t *testing.T) {
 	}
 	Attach(svc, "stardew")
 	all, err := profiles.List("stardew")
-	if err != nil || len(all) != 1 || len(all[0].Entries) != 2 || all[0].Entries[0].Key != "smapi-4.5.2" || all[0].Entries[1].Key != "bridge-1.0.0" || all[0].Entries[1].Source.Kind != profile.SourceMortar {
+	if err != nil || len(all) != 1 || len(all[0].Entries) != 2 || all[0].Entries[0].Key != "smapi-4.5.2" || all[0].Entries[1].Key != "bridge-1.0.1" || all[0].Entries[1].Source.Kind != profile.SourceMortar {
 		t.Fatalf("existing profile = %+v, %v", all, err)
 	}
 	late, err := profiles.Create("stardew", "Late")
 	if err != nil || len(late.Entries) != 2 {
 		t.Fatalf("late = %+v, %v", late, err)
 	}
-	if _, err := os.Stat(filepath.Join(dir0(t, items, "bridge-1.0.0"), "MortarSmapiBridge", "manifest.json")); err != nil {
+	if _, err := os.Stat(filepath.Join(dir0(t, items, "bridge-1.0.1"), "MortarSmapiBridge", "manifest.json")); err != nil {
 		t.Fatal(err)
 	}
 	dir, err := items.Path("stardew", "smapi-4.5.2")
