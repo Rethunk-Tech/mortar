@@ -2,12 +2,14 @@
 package game
 
 import (
+	"context"
 	"net/http"
 	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/game/stardew"
+	"github.com/Rethunk-AI/mortar/internal/loader"
 	"github.com/Rethunk-AI/mortar/internal/steam"
 )
 
@@ -24,6 +26,12 @@ type Game interface {
 	ValidInstall(dir string) error
 	// Discover prefers a still-valid override folder over Steam (st is nil without Steam) and returns "" when not installed.
 	Discover(override string, st *steam.Steam) (string, error)
+	// LoaderStatus reports the loader's state in the install dir; recorded is the version Mortar installed, or "".
+	LoaderStatus(dir, recorded string) loader.Status
+	// LatestLoader returns the newest stable loader version.
+	LatestLoader(ctx context.Context) (string, error)
+	// InstallLoader installs or updates the loader in dir and returns its version.
+	InstallLoader(ctx context.Context, dir string, bundled loader.Bundled, progress func(loader.Step)) (string, error)
 }
 
 var games = []Game{stardew.Game{}}
@@ -35,7 +43,8 @@ var comingLater = []listing{
 	{"lethal", "Lethal Company", "1966720", "BepInEx 5"},
 }
 
-func byID(id string) Game {
+// Find returns the implemented game with this id, or nil.
+func Find(id string) Game {
 	for _, g := range games {
 		if g.ID() == id {
 			return g
@@ -46,7 +55,7 @@ func byID(id string) Game {
 
 // Valid reports whether id names a listed game.
 func Valid(id string) bool {
-	return byID(id) != nil || slices.ContainsFunc(comingLater, func(c listing) bool { return c.id == id })
+	return Find(id) != nil || slices.ContainsFunc(comingLater, func(c listing) bool { return c.id == id })
 }
 
 func knownApp(appID string) bool {

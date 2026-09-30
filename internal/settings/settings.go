@@ -25,11 +25,13 @@ type Settings struct {
 	LastProfile map[string]string `json:"lastProfile"`
 	// GameFolders maps a game id to a user-chosen install folder that wins over Steam discovery.
 	GameFolders map[string]string `json:"gameFolders"`
+	// Loaders maps a game id to the loader version Mortar installed.
+	Loaders map[string]string `json:"loaders"`
 }
 
 // Defaults returns the settings used when no valid file exists.
 func Defaults() Settings {
-	return Settings{Accent: "sand", Translucent: true, LastProfile: map[string]string{}, GameFolders: map[string]string{}}
+	return Settings{Accent: "sand", Translucent: true, LastProfile: map[string]string{}, GameFolders: map[string]string{}, Loaders: map[string]string{}}
 }
 
 // Store reads and writes settings.json under the user data folder.
@@ -57,6 +59,9 @@ func Open() (*Store, error) {
 	}
 	if s.cur.GameFolders == nil {
 		s.cur.GameFolders = map[string]string{}
+	}
+	if s.cur.Loaders == nil {
+		s.cur.Loaders = map[string]string{}
 	}
 	if !slices.Contains(accents, s.cur.Accent) {
 		s.cur.Accent = Defaults().Accent

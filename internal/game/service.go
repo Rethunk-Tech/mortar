@@ -67,9 +67,23 @@ func (s *Service) List() ([]GameInfo, error) {
 	return out, nil
 }
 
+// InstallDir returns id's install folder, or "" when the game is not installed.
+func InstallDir(home string, folders map[string]string, id string) (string, error) {
+	g := Find(id)
+	if g == nil {
+		return "", fmt.Errorf("unknown game %q", id)
+	}
+	st, status := steam.Locate(home)
+	var stp *steam.Steam
+	if status == steam.Found {
+		stp = &st
+	}
+	return g.Discover(folders[id], stp)
+}
+
 // ValidateFolder reports why dir cannot be id's install folder override; "" (clearing) is always valid.
 func ValidateFolder(id, dir string) error {
-	g := byID(id)
+	g := Find(id)
 	if g == nil {
 		return fmt.Errorf("unknown game %q", id)
 	}

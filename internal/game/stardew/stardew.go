@@ -3,6 +3,7 @@ package stardew
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -12,7 +13,17 @@ import (
 // marker ships in every install on every platform; the launcher name differs per OS.
 const marker = "Stardew Valley.dll"
 
-type Game struct{}
+// Game is Stardew Valley. The zero value talks to GitHub and uses Mortar's data and the user's config folder;
+// the fields exist so tests can point it elsewhere.
+type Game struct {
+	Client       *http.Client
+	ReleasesURL  string
+	DownloadBase string
+	// CacheDir holds the cached release lookup.
+	CacheDir string
+	// LogDir holds SMAPI-latest.txt.
+	LogDir string
+}
 
 func (Game) ID() string           { return "stardew" }
 func (Game) Name() string         { return "Stardew Valley" }
