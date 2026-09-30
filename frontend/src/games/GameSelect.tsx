@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { type PointerEvent, useEffect, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
 import { List } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { SetLastGame } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
@@ -20,7 +20,15 @@ const SOURCES: Record<string, string[]> = {
 const LONG_NAME = 8
 const SMALL_FONT = 13
 const NORMAL_FONT = 15
+const EASE = '350ms ease'
 const shadow = '0 1px 2px rgba(0,0,0,0.9), 0 0 18px rgba(0,0,0,0.85)'
+
+// Parallax input for the art: -1 at the row's top edge to 1 at its bottom, set straight on
+// the element so pointer movement never re-renders React.
+function trackPointer(e: PointerEvent<HTMLElement>) {
+  const r = e.currentTarget.getBoundingClientRect()
+  e.currentTarget.style.setProperty('--py', String(((e.clientY - r.top) / r.height) * 2 - 1))
+}
 
 function Row({ game, openable, note }: { game: Game; openable: boolean; note: string }) {
   const { t } = useLingui()
@@ -41,16 +49,20 @@ function Row({ game, openable, note }: { game: Game; openable: boolean; note: st
       {game.artUrl ? (
         <Box
           component="img"
+          className="art"
           src={game.artUrl}
           alt=""
           sx={{
             position: 'absolute',
-            inset: 0,
+            left: 0,
+            top: '-15%',
             width: '100%',
-            height: '100%',
+            height: '130%',
             objectFit: 'cover',
             opacity: 0.72,
-            filter: openable ? 'none' : 'saturate(0.6)',
+            filter: `${openable ? '' : 'saturate(0.6) '}brightness(0.8) contrast(1)`,
+            transform: 'translateY(calc(var(--py, 0) * -10%)) scale(1)',
+            transition: `filter ${EASE}, transform ${EASE}`,
           }}
         />
       ) : null}
@@ -63,12 +75,24 @@ function Row({ game, openable, note }: { game: Game; openable: boolean; note: st
           }}
         />
       ) : null}
-      <Box sx={{ position: 'relative', textShadow: shadow, textAlign: 'left', color: '#fff' }}>
+      <Box
+        className="text"
+        sx={{
+          position: 'relative',
+          textShadow: shadow,
+          textAlign: 'left',
+          color: '#fff',
+          transition: `transform ${EASE}`,
+        }}
+      >
         <Typography sx={{ fontSize: 34, fontWeight: 600, lineHeight: 1.2 }}>{game.name}</Typography>
         <Typography sx={{ fontSize: 17 }}>{t`${loader} | Steam`}</Typography>
         <Typography sx={{ mt: '6px', fontSize: 16, fontWeight: 600 }}>{note}</Typography>
       </Box>
-      <Box sx={{ position: 'relative', display: 'flex', gap: '14px' }}>
+      <Box
+        className="badges"
+        sx={{ position: 'relative', display: 'flex', gap: '14px', transition: `transform ${EASE}` }}
+      >
         {(SOURCES[game.id] ?? []).map((name) => (
           <Box
             key={name}
@@ -96,7 +120,7 @@ function Row({ game, openable, note }: { game: Game; openable: boolean; note: st
   const sx = {
     position: 'relative',
     flex: '1 1 0',
-    minHeight: 0,
+    minHeight: 72,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -107,13 +131,33 @@ function Row({ game, openable, note }: { game: Game; openable: boolean; note: st
     borderColor: openable ? 'primary.main' : 'transparent',
     borderTop: '1px solid rgba(0,0,0,0.8)',
     fontFamily: 'inherit',
+    transition: `flex-grow ${EASE}, border-left-width ${EASE}`,
+    '&:hover, &:focus-visible, &:focus-within': {
+      flexGrow: 3,
+      borderLeftWidth: 8,
+      '& .art': {
+        filter: `${openable ? '' : 'saturate(0.6) '}brightness(1.05) contrast(1.1)`,
+        transform: 'translateY(calc(var(--py, 0) * -10%)) scale(1.04)',
+      },
+      '& .text': { transform: 'translateX(12px)' },
+      '& .badges': { transform: 'translateX(-12px)' },
+    },
+    '@media (prefers-reduced-motion: reduce)': {
+      transition: 'none',
+      '& .art, & .text, & .badges': { transition: 'none' },
+      '& .art, &:hover .art, &:focus-visible .art, &:focus-within .art': {
+        transform: 'none',
+      },
+    },
   } as const
   return openable ? (
-    <ButtonBase onClick={open} sx={sx}>
+    <ButtonBase onClick={open} onPointerMove={trackPointer} sx={sx}>
       {content}
     </ButtonBase>
   ) : (
-    <Box sx={sx}>{content}</Box>
+    <Box onPointerMove={trackPointer} sx={sx}>
+      {content}
+    </Box>
   )
 }
 
