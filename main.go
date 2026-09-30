@@ -13,6 +13,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/backdrop"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/datasvc"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
@@ -280,6 +281,7 @@ func main() {
 		application.NewService(savesSvc), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
 		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc),
 		application.NewService(supportSvc), application.NewService(updates),
+		application.NewService(datasvc.NewService(items, profiles, queueSvc.StagedKeys)),
 	} {
 		app.RegisterService(s)
 	}
