@@ -5,6 +5,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { App } from './App.tsx'
 import { i18n } from './i18n/index.ts'
+import { initLaunch } from './launch/store.ts'
 import { initSettings, useSettings } from './settings/store.ts'
 import { buildTheme, isAccent } from './settings/theme.ts'
 import { defaultAccent } from './theme/accents.ts'
@@ -21,6 +22,7 @@ function Themed({ children }: { children: React.ReactNode }) {
 }
 
 initSettings().catch(console.error)
+initLaunch()
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

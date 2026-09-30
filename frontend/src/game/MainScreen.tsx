@@ -1,5 +1,6 @@
 import { Box } from '@mui/material'
 import { useEffect } from 'react'
+import { LaunchLayer } from '../launch/LaunchLayer.tsx'
 import { LoaderBanner } from '../loader/Banner.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { Detail } from './Detail.tsx'
@@ -11,12 +12,13 @@ export function MainScreen({ game }: { game: string }) {
     load(game)
   }, [game, load])
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
       <LoaderBanner game={game} />
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
-        <Sidebar />
+        <Sidebar game={game} />
         <Detail />
       </Box>
+      <LaunchLayer game={game} />
     </Box>
   )
 }

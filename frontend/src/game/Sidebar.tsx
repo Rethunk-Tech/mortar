@@ -2,6 +2,7 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { alpha, Box, ButtonBase, IconButton } from '@mui/material'
 import { ListOrdered, Plus, Settings } from 'lucide-react'
 import { type PointerEvent, useState } from 'react'
+import { PlayControl } from '../launch/PlayControl.tsx'
 import { openSettings, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { compact } from './compact.ts'
@@ -31,7 +32,7 @@ function saveWidth(w: number) {
   }
 }
 
-export function Sidebar() {
+export function Sidebar({ game }: { game: string }) {
   const { t } = useLingui()
   const allProfiles = useProfiles((s) => s.profiles)
   const profiles = allProfiles.filter((p) => !p.hidden)
@@ -168,6 +169,9 @@ export function Sidebar() {
           <Plus size={16} />
           <Trans>New profile</Trans>
         </ButtonBase>
+      </Box>
+      <Box sx={{ px: 1, pt: 1, [compact]: { display: 'flex', justifyContent: 'center' } }}>
+        <PlayControl game={game} />
       </Box>
       <Box
         sx={{
