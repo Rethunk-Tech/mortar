@@ -4,14 +4,11 @@ import { ImageOff, ImagePlus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { PickImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import {
-  ClearCover,
-  Covers,
-  SetCover,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { Covers } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { applyStagedCover, firstCoverSrc, hasPickedCover } from './cover.ts'
 
 // The first of the profile's covers that loads (picked, Nexus, Steam), else a solid tone.
 export function HeroCover({ game, profile }: { game: string; profile: Profile }) {
@@ -41,7 +38,7 @@ export function HeroCover({ game, profile }: { game: string; profile: Profile })
     return <Box sx={{ width: '100%', height: '100%', bgcolor: 'rgb(44,44,54)' }} />
   }
   const skip = failed.stamp === covers.stamp ? failed.urls : []
-  const src = covers.list.find((c) => !skip.includes(c))
+  const src = firstCoverSrc(covers.list, skip)
   return src ? (
     <Box
       component="img"
@@ -67,7 +64,10 @@ export function CoverButton({ game, profile }: { game: string; profile: Profile 
       return
     }
     try {
-      replace(await SetCover(game, profile.id, path))
+      const next = await applyStagedCover(game, profile.id, path)
+      if (next) {
+        replace(next)
+      }
     } catch (e) {
       useToasts
         .getState()
@@ -76,7 +76,10 @@ export function CoverButton({ game, profile }: { game: string; profile: Profile 
   }
   const automatic = async () => {
     close()
-    replace(await ClearCover(game, profile.id))
+    const next = await applyStagedCover(game, profile.id, null)
+    if (next) {
+      replace(next)
+    }
   }
   return (
     <>
@@ -95,7 +98,10 @@ export function CoverButton({ game, profile }: { game: string; profile: Profile 
           </ListItemIcon>
           <ListItemText>{t`Choose cover image…`}</ListItemText>
         </MenuItem>
-        <MenuItem disabled={!profile.cover} onClick={() => automatic().catch(reportUnexpected)}>
+        <MenuItem
+          disabled={!hasPickedCover(profile.cover, undefined)}
+          onClick={() => automatic().catch(reportUnexpected)}
+        >
           <ListItemIcon sx={{ color: 'inherit' }}>
             <ImageOff size={16} />
           </ListItemIcon>

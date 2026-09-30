@@ -11,8 +11,12 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { PickImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { applyStagedCover, hasPickedCover, type StagedCover } from '../game/cover.ts'
+import { HeroCover } from '../game/HeroCover.tsx'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import {
   clipDescription,
   colorHex,
@@ -35,10 +39,13 @@ export function EditProfileDialog({
   const { t } = useLingui()
   const setAppearance = useProfiles((s) => s.setAppearance)
   const setLaunchOptions = useProfiles((s) => s.setLaunchOptions)
+  const replace = useProfiles((s) => s.replace)
+  const gameId = useProfiles((s) => s.game?.id ?? '')
   const [color, setColor] = useState(profile.color ?? '')
   const [icon, setIcon] = useState(profile.icon ?? '')
   const [description, setDescription] = useState(profile.description ?? '')
   const [launchOptions, setLaunchOptionsField] = useState(profile.launchOptions ?? '')
+  const [stagedCover, setStagedCover] = useState<StagedCover>(undefined)
   const [optionsError, setOptionsError] = useState('')
   const [busy, setBusy] = useState(false)
   useEffect(() => {
@@ -47,6 +54,7 @@ export function EditProfileDialog({
       setIcon(profile.icon ?? '')
       setDescription(profile.description ?? '')
       setLaunchOptionsField(profile.launchOptions ?? '')
+      setStagedCover(undefined)
       setOptionsError('')
     }
   }, [open, profile.color, profile.description, profile.icon, profile.launchOptions])
@@ -67,6 +75,17 @@ export function EditProfileDialog({
         await setLaunchOptions(profile.id, launchOptions)
       } catch (e) {
         setOptionsError(e instanceof Error ? e.message : String(e))
+        return
+      }
+      try {
+        const next = await applyStagedCover(gameId, profile.id, stagedCover)
+        if (next) {
+          replace(next)
+        }
+      } catch (e) {
+        useToasts
+          .getState()
+          .push({ kind: 'error', title: t`Could not use that image`, body: errorMessage(e) })
         return
       }
       onClose()
@@ -126,6 +145,31 @@ export function EditProfileDialog({
                 <ProfileMark profile={{ ...profile, color, icon: name }} size={28} />
               </IconButton>
             ))}
+          </Box>
+          <Typography
+            sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}
+          >{t`Cover image`}</Typography>
+          <Box sx={{ width: 160, height: 90, borderRadius: '6px', overflow: 'hidden', mb: 1 }}>
+            {gameId ? <HeroCover game={gameId} profile={profile} /> : null}
+          </Box>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+            <Button
+              onClick={() => {
+                PickImage(t`Choose image…`)
+                  .then((path) => {
+                    if (path) {
+                      setStagedCover(path)
+                    }
+                  })
+                  .catch(reportUnexpected)
+              }}
+              sx={{ whiteSpace: 'nowrap' }}
+            >{t`Choose image…`}</Button>
+            <Button
+              disabled={!hasPickedCover(profile.cover, stagedCover)}
+              onClick={() => setStagedCover(null)}
+              sx={{ whiteSpace: 'nowrap' }}
+            >{t`Use the automatic cover`}</Button>
           </Box>
           <TextField
             fullWidth={true}
