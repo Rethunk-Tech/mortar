@@ -524,7 +524,13 @@ func (s *Service) Lines(gameID, profileID string) ([]launch.Entry, error) {
 	sess, ok := s.logs[gameID]
 	s.mu.Unlock()
 	if ok {
-		if sess.vanilla || sess.profile == profileID {
+		if sess.vanilla {
+			if profileID == "" {
+				return sess.buf.Lines(), nil
+			}
+			return []launch.Entry{}, nil
+		}
+		if sess.profile == profileID {
 			return sess.buf.Lines(), nil
 		}
 		return []launch.Entry{}, nil
