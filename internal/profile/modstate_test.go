@@ -86,6 +86,47 @@ func TestConfigPathStaysInTheModFolder(t *testing.T) {
 	}
 }
 
+func TestReadWriteConfigRoundTripAndLock(t *testing.T) {
+	m := manifestJSON("me.a")
+	e, p := updEnv(t, map[string]string{"A/manifest.json": m, "A/config.json": `{"z":1,"n":1.5}`}, map[string]string{"A/manifest.json": m + " "})
+	svc := NewService(e.Store, t.TempDir(), nil)
+	got, err := svc.ReadConfig("stardew", p.ID, "a-1", "me.a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != `{"z":1,"n":1.5}` {
+		t.Fatalf("read = %s", got)
+	}
+	if err := svc.WriteConfig("stardew", p.ID, "a-1", "me.a", `{"z":1,"n":1.5,"s":"ok"}`); err != nil {
+		t.Fatal(err)
+	}
+	got, err = svc.ReadConfig("stardew", p.ID, "a-1", "me.a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := `{
+  "z": 1,
+  "n": 1.5,
+  "s": "ok"
+}
+`
+	if got != want {
+		t.Fatalf("wrote:\n%s", got)
+	}
+	e.Running = func(_, id string) bool { return id == p.ID }
+	if err := svc.WriteConfig("stardew", p.ID, "a-1", "me.a", `{"z":2}`); err == nil {
+		t.Fatal("write while running")
+	} else if _, ok := err.(*RunningError); !ok {
+		t.Fatalf("err = %v, want RunningError", err)
+	}
+	if _, err := svc.ReadConfig("stardew", p.ID, "a-1", "nope.Mod"); err == nil {
+		t.Fatal("unknown mod read")
+	}
+	if err := svc.WriteConfig("stardew", p.ID, "a-1", "nope.Mod", `{}`); err == nil {
+		t.Fatal("unknown mod write")
+	}
+}
+
 func TestRollBackThroughService(t *testing.T) {
 	m := manifestJSON("me.a")
 	v2 := `{"Name":"me.a","Author":"me","Version":"2.0.0","UniqueID":"me.a"}`

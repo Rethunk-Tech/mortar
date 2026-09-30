@@ -8,7 +8,9 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/store"
@@ -22,11 +24,9 @@ func (s *Store) ConfigPath(game, id, key, uniqueID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	root := filepath.Clean(dir)
-	cfg := filepath.Join(root, configFile)
-	rel, err := filepath.Rel(root, cfg)
-	if err != nil || rel != configFile {
-		return "", fmt.Errorf("config.json is not in the mod folder")
+	cfg, err := configInMod(dir, configFile)
+	if err != nil {
+		return "", err
 	}
 	st, err := os.Stat(cfg)
 	if err != nil || st.IsDir() {
@@ -144,4 +144,56 @@ func (s *Store) ResetConfig(game, id, key, uniqueID string) error {
 		return nil
 	}
 	return err
+}
+
+// configInMod joins rel onto the mod folder and refuses anything that leaves it.
+func configInMod(modDir, rel string) (string, error) {
+	root := filepath.Clean(modDir)
+	if rel == "" {
+		rel = configFile
+	}
+	if filepath.IsAbs(rel) {
+		return "", fmt.Errorf("config.json is not in the mod folder")
+	}
+	cfg := filepath.Join(root, filepath.FromSlash(rel))
+	out, err := filepath.Rel(root, cfg)
+	if err != nil || filepath.IsAbs(out) || strings.HasPrefix(out, "..") || out != configFile {
+		return "", fmt.Errorf("config.json is not in the mod folder")
+	}
+	return cfg, nil
+}
+
+// ReadConfig returns the mod's config.json text.
+func (s *Store) ReadConfig(game, id, key, uniqueID string) (string, error) {
+	path, err := s.ConfigPath(game, id, key, uniqueID)
+	if err != nil {
+		return "", err
+	}
+	b, err := fsx.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+// WriteConfig replaces the mod's config.json atomically after checking JSON and the path.
+func (s *Store) WriteConfig(game, id, key, uniqueID, contents string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err := s.unlocked(game, id); err != nil {
+		return err
+	}
+	folder, err := s.modFolderLocked(game, id, key, uniqueID)
+	if err != nil {
+		return err
+	}
+	path, err := configInMod(folder, configFile)
+	if err != nil {
+		return err
+	}
+	rewritten, err := rewriteConfigJSON([]byte(contents))
+	if err != nil {
+		return fmt.Errorf("config.json is not valid JSON: %w", err)
+	}
+	return datadir.WriteFile(path, rewritten, 0o600)
 }

@@ -149,3 +149,13 @@ func (s *Service) ModState(game, id, key, uniqueID string) (ModState, error) {
 func (s *Service) ResetConfig(game, id, key, uniqueID string) error {
 	return s.store.ResetConfig(game, id, key, uniqueID)
 }
+
+// ReadConfig returns the mod's config.json text.
+func (s *Service) ReadConfig(game, id, key, uniqueID string) (string, error) {
+	return s.store.ReadConfig(game, id, key, uniqueID)
+}
+
+// WriteConfig replaces the mod's config.json atomically.
+func (s *Service) WriteConfig(game, id, key, uniqueID, contents string) error {
+	return s.store.WriteConfig(game, id, key, uniqueID, contents)
+}
