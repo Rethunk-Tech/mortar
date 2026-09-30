@@ -37,26 +37,34 @@ type Entry struct {
 // SMAPI writes `[HH:MM:SS LEVEL  Mod] message`, padding the level to five characters.
 var header = regexp.MustCompile(`^\[(\d\d:\d\d:\d\d) (TRACE|DEBUG|INFO|WARN|ERROR|ALERT) *([^\]]*)\] ?(.*)$`)
 
-// Parser turns log lines into entries, remembering the last header so continuation lines can inherit it.
-type Parser struct {
-	last Entry
-	seen bool
+// suppressed lists SMAPI messages Mortar never shows. Mortar passes --no-terminal on purpose and its Console replaces
+// the terminal, so SMAPI's complaint about having none only misleads.
+var suppressed = []string{
+	"Writing to the terminal is disabled because the --no-terminal argument was received. This usually means launching the terminal failed.",
 }
 
-// Parse returns the entry for one line. A line that is not a header continues the previous entry; with none yet it
-// stands alone as an INFO line.
-func (p *Parser) Parse(line string) Entry {
+// Parser turns log lines into entries, remembering the last header so continuation lines can inherit it.
+type Parser struct {
+	last   Entry
+	seen   bool
+	hidden bool
+}
+
+// Parse returns the entry for one line, and false when the line belongs to a suppressed message. A line that is not
+// a header continues the previous entry; with none yet it stands alone as an INFO line.
+func (p *Parser) Parse(line string) (Entry, bool) {
 	if m := header.FindStringSubmatch(line); m != nil {
 		p.last = Entry{Time: m[1], Level: Level(m[2]), Mod: strings.TrimSpace(m[3]), Message: m[4]}
 		p.seen = true
-		return p.last
+		p.hidden = slices.Contains(suppressed, p.last.Message)
+		return p.last, !p.hidden
 	}
 	if !p.seen {
-		return Entry{Level: Info, Message: line}
+		return Entry{Level: Info, Message: line}, true
 	}
 	e := p.last
 	e.Message, e.Cont = line, true
-	return e
+	return e, !p.hidden
 }
 
 // Buffer keeps the newest MaxLines entries.

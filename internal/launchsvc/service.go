@@ -283,10 +283,12 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 func (s *Service) collect(gameID string, buf *launch.Buffer) func([]string) {
 	var p launch.Parser
 	return func(lines []string) {
-		entries := make([]launch.Entry, len(lines))
-		for i, l := range lines {
-			entries[i] = p.Parse(l)
-			entries[i].Seq = s.seq.Add(1)
+		entries := make([]launch.Entry, 0, len(lines))
+		for _, l := range lines {
+			if e, shown := p.Parse(l); shown {
+				e.Seq = s.seq.Add(1)
+				entries = append(entries, e)
+			}
 		}
 		s.mu.Lock()
 		current := s.logs[gameID] == buf
@@ -329,9 +331,10 @@ func (s *Service) Lines(gameID string) ([]launch.Entry, error) {
 	var out launch.Buffer
 	for l := range strings.SplitSeq(strings.ToValidUTF8(string(data), ""), "\n") {
 		if l = strings.TrimRight(l, "\r"); l != "" {
-			e := p.Parse(l)
-			e.Seq = s.seq.Add(1)
-			out.Add(e)
+			if e, shown := p.Parse(l); shown {
+				e.Seq = s.seq.Add(1)
+				out.Add(e)
+			}
 		}
 	}
 	return out.Lines(), nil

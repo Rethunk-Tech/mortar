@@ -21,7 +21,7 @@ func TestParserLevelsModsAndContinuations(t *testing.T) {
 		{"[19:44:05 LOUD SMAPI] not a level", Entry{Time: "19:44:04", Level: Info, Mod: "SMAPI", Message: "[19:44:05 LOUD SMAPI] not a level", Cont: true}},
 	}
 	for _, c := range cases {
-		if got := p.Parse(c.line); got != c.want {
+		if got, shown := p.Parse(c.line); !shown || got != c.want {
 			t.Errorf("Parse(%q) = %+v, want %+v", c.line, got, c.want)
 		}
 	}
@@ -29,7 +29,7 @@ func TestParserLevelsModsAndContinuations(t *testing.T) {
 
 func TestParserHeaderlessFirstLine(t *testing.T) {
 	var p Parser
-	got := p.Parse("SMAPI 4.5.2 with Stardew Valley 1.6.15")
+	got, _ := p.Parse("SMAPI 4.5.2 with Stardew Valley 1.6.15")
 	if got.Level != Info || got.Cont || got.Mod != "" || got.Message != "SMAPI 4.5.2 with Stardew Valley 1.6.15" {
 		t.Fatalf("got %+v", got)
 	}
@@ -51,5 +51,23 @@ func TestBufferKeepsNewestMaxLines(t *testing.T) {
 	lines[0].Seq = -1
 	if b.Lines()[0].Seq == -1 {
 		t.Fatal("Lines must return a copy")
+	}
+}
+
+func TestParserHidesSuppressedMessageAndItsContinuations(t *testing.T) {
+	var p Parser
+	lines := []struct {
+		line  string
+		shown bool
+	}{
+		{"[19:43:46 INFO  SMAPI] Writing to the terminal is disabled because the --no-terminal argument was received. This usually means launching the terminal failed.", false},
+		{"   continued", false},
+		{"[19:43:47 INFO  SMAPI] Loaded 3 mods", true},
+		{"   continued", true},
+	}
+	for _, c := range lines {
+		if _, shown := p.Parse(c.line); shown != c.shown {
+			t.Errorf("Parse(%q) shown = %v, want %v", c.line, shown, c.shown)
+		}
 	}
 }
