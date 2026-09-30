@@ -18,10 +18,9 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", cfg)
 	home := t.TempDir()
 
+	apiKey := strings.Repeat("k", 24)
+	nxmKey := strings.Repeat("n", 20)
 	const (
-		apiKey  = "test-nexus-key-not-real"
-		userID  = 87654321
-		nxmKey  = "nxm-fixture-key-xyz"
 		notes   = "do-not-include-notes"
 		modName = "Content Patcher"
 		modVer  = "2.1.0"
@@ -31,13 +30,13 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 		"accent": "sand",
 		"nexusName": "FixtureUser",
 		"nexusUserId": 87654321,
-		"nexusKey": "test-nexus-key-not-real",
-		"apiKey": "test-nexus-key-not-real"
+		"nexusKey": "`+apiKey+`",
+		"apiKey": "`+apiKey+`"
 	}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(data, "queue.json"), []byte(`{
-		"items": [{"id": "i1", "name": "A mod", "key": "nxm-fixture-key-xyz", "expires": 99, "nxmKey": "nxm-fixture-key-xyz"}],
+		"items": [{"id": "i1", "name": "A mod", "key": "`+nxmKey+`", "expires": 99, "nxmKey": "`+nxmKey+`"}],
 		"paused": false,
 		"limitedUntil": 0
 	}`), 0o600); err != nil {
