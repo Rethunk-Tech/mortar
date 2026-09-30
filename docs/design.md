@@ -2,7 +2,7 @@
 
 This file holds only work that is decided but not built. Each item is written to be implemented cold: the shape, the evidence it rests on, the traps, and when it is done. When an item lands, delete it here; the code is the record of what exists. Screens and styling: [gui-design.md](gui-design.md). Lethal Company research for the second game: [lethal-company.md](lethal-company.md). Standing rules: [AGENTS.md](../AGENTS.md).
 
-Nothing is built yet. Implementation starts only on NOMAD's explicit go-ahead. Items marked **Measure** need a throwaway test first; those tests run outside this repo and only their results land here. Every decision below was made by NOMAD on 2026-09-29 unless it says otherwise, and every measurement was taken that day on NOMAD's Fedora (GNOME Wayland, btrfs) machine unless it says otherwise.
+Nothing is built yet. Implementation starts only on NOMAD's explicit go-ahead. Items marked **Measure** need a throwaway test first; those tests run outside this repo and only their results land here. Product decisions (scope, stack, look, sources, sharing, what is deferred) are NOMAD's, made on 2026-09-29; implementation details (storage layout, caps, carry-over rules, failure handling) were proposed during planning, reviewed in three audit passes, and follow from the evidence cited beside them. Every measurement was taken on 2026-09-29 on NOMAD's Fedora (GNOME Wayland, btrfs) machine unless it says otherwise.
 
 ## Product
 
