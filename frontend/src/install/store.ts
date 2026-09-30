@@ -3,12 +3,13 @@ import { create } from 'zustand'
 import { PickArchives } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import { InstallArchive } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { useLaunch } from '../launch/store.ts'
+import { isLocked } from '../mods/locked.ts'
 import { useMods } from '../mods/store.ts'
-import { useNav } from '../nav/store.ts'
+import { routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-
-const message = (e: unknown) => (e instanceof Error ? e.message : String(e))
 
 const PATH_SEPARATOR = /[\\/]/
 
@@ -23,7 +24,12 @@ export const useInstall = create<{
   install: async (paths) => {
     const { game, openId, profiles } = useProfiles.getState()
     const profile = profiles.find((p) => p.id === openId)
-    if (useNav.getState().route.name !== 'game' || !game || !profile) {
+    if (
+      routeGame(useNav.getState().route) === null ||
+      !game ||
+      !profile ||
+      isLocked(useLaunch.getState().status, openId)
+    ) {
       return
     }
     const { push } = useToasts.getState()
@@ -43,7 +49,7 @@ export const useInstall = create<{
         push({
           kind: 'error',
           title: i18n._(msg`Could not add ${fileName(path)}`),
-          body: message(e),
+          body: errorMessage(e),
         })
       } finally {
         set((s) => ({ pending: s.pending - 1 }))
@@ -61,7 +67,7 @@ export const useInstall = create<{
       useToasts.getState().push({
         kind: 'error',
         title: i18n._(msg`Could not open the file dialog`),
-        body: message(e),
+        body: errorMessage(e),
       })
     }
   },

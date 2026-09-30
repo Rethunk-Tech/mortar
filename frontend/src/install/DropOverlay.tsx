@@ -3,7 +3,8 @@ import { alpha, Box, Typography } from '@mui/material'
 import { Events } from '@wailsio/runtime'
 import { Download } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useNav } from '../nav/store.ts'
+import { useLocked } from '../mods/useLocked.ts'
+import { routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { openImport } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -17,9 +18,10 @@ const TINT_ALPHA = 0.08
 export function DropOverlay({ target }: { target: HTMLElement | null }) {
   const { t } = useLingui()
   const [dragging, setDragging] = useState(false)
-  const inGame = useNav((s) => s.route.name === 'game')
+  const inGame = useNav((s) => routeGame(s.route) !== null)
+  const locked = useLocked()
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
-  const ready = inGame && profile !== undefined
+  const ready = inGame && profile !== undefined && !locked
 
   useEffect(() => {
     if (!target) {
@@ -39,7 +41,7 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
           useInstall.getState().install(archives).catch(reportUnexpected)
         }
         if (mortar) {
-          const onGame = useNav.getState().route.name === 'game'
+          const onGame = routeGame(useNav.getState().route) !== null
           openImport({ profileId: onGame ? useProfiles.getState().openId : '', file: mortar })
         }
       }),
@@ -92,7 +94,7 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
           </>
         ) : (
           <Typography sx={{ fontSize: 38, fontWeight: 700 }}>
-            {t`Open a profile to install mods`}
+            {locked ? t`Stop the game to change mods` : t`Open a profile to install mods`}
           </Typography>
         )}
       </Box>

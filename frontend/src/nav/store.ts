@@ -12,6 +12,16 @@ export type Route =
   | { name: 'game-settings'; game: GameId }
   | { name: 'settings'; section: SettingsSection; back: Route }
 
+// The game a route belongs to, looking through Settings to the page it was opened from.
+export const routeGame = (route: Route): GameId | null => {
+  if (route.name === 'settings') {
+    return routeGame(route.back)
+  }
+  return route.name === 'game' || route.name === 'profiles' || route.name === 'game-settings'
+    ? route.game
+    : null
+}
+
 export const useNav = create<{
   route: Route
   openGame: (game: GameId) => void
