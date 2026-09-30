@@ -16,6 +16,8 @@ type Service struct {
 	App *application.App
 	// ValidateGameFolder vets a folder before it is stored; set before the app runs.
 	ValidateGameFolder func(game, dir string) error
+	// ValidateImage vets a wallpaper path before it is stored; set before the app runs.
+	ValidateImage func(path string) error
 }
 
 func NewService(store *Store) *Service { return &Service{store: store} }
@@ -26,8 +28,34 @@ func (s *Service) SetAccent(accent string) error {
 	return s.set(func(v *Settings) { v.Accent = accent })
 }
 
-func (s *Service) SetTranslucent(on bool) error {
-	return s.set(func(v *Settings) { v.Translucent = on })
+func (s *Service) SetBackground(background string) error {
+	return s.set(func(v *Settings) { v.Background = background })
+}
+
+// SetBackgroundImage stores path as the wallpaper, or restores the default one when path is empty.
+func (s *Service) SetBackgroundImage(path string) error {
+	if path != "" && s.ValidateImage != nil {
+		if err := s.ValidateImage(path); err != nil {
+			return err
+		}
+	}
+	return s.set(func(v *Settings) { v.BackgroundImage = path })
+}
+
+// ChooseBackgroundImage asks for an image and stores it as the wallpaper; cancelling changes nothing.
+func (s *Service) ChooseBackgroundImage() error {
+	d := s.App.Dialog.OpenFile().
+		SetTitle("Choose background image").
+		AddFilter("Images (PNG, JPEG, WebP)", "*.png;*.jpg;*.jpeg;*.webp").
+		AddFilter("All files", "*")
+	if w := s.App.Window.Current(); w != nil {
+		d.AttachToWindow(w)
+	}
+	path, err := d.PromptForSingleSelection()
+	if err != nil || path == "" {
+		return err
+	}
+	return s.SetBackgroundImage(path)
 }
 
 func (s *Service) SetLastGame(game string) error {

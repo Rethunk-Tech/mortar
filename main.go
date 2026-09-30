@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/backdrop"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/loadersvc"
@@ -37,6 +38,7 @@ func main() {
 	}
 	svc := settings.NewService(store)
 	svc.ValidateGameFolder = game.ValidateFolder
+	svc.ValidateImage = backdrop.Check
 
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -82,8 +84,11 @@ func main() {
 			application.NewService(profile.NewService(profiles)), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
 		},
 		Assets: application.AssetOptions{
-			Handler:    application.AssetFileServerFS(assets),
-			Middleware: game.ArtMiddleware(home),
+			Handler: application.AssetFileServerFS(assets),
+			Middleware: application.ChainMiddleware(
+				game.ArtMiddleware(home),
+				backdrop.Middleware(func() string { return store.Get().BackgroundImage }, backdrop.SystemDefault),
+			),
 		},
 		SingleInstance: &application.SingleInstanceOptions{
 			UniqueID: "tech.rethunk.mortar",
@@ -101,7 +106,7 @@ func main() {
 
 	// Wails fixes BackgroundType at window creation, so the stored value applies on restart.
 	background, colour := application.BackgroundTypeSolid, application.NewRGBA(25, 25, 30, 255)
-	if store.Get().Translucent {
+	if store.Get().Background != settings.BackgroundSolid {
 		background, colour = application.BackgroundTypeTranslucent, application.NewRGBA(25, 25, 30, 204)
 	}
 

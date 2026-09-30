@@ -14,13 +14,26 @@ import (
 
 const fileName = "settings.json"
 
-var accents = []string{"sand", "moss", "copper", "sky"}
+var (
+	accents     = []string{"sand", "moss", "copper", "sky"}
+	backgrounds = []string{BackgroundImage, BackgroundDesktop, BackgroundSolid}
+)
+
+// The window backgrounds: a wallpaper under the tint, the desktop showing through, or an opaque colour.
+const (
+	BackgroundImage   = "image"
+	BackgroundDesktop = "desktop"
+	BackgroundSolid   = "solid"
+)
 
 // Settings is the on-disk shape of settings.json.
 type Settings struct {
-	Accent      string `json:"accent"`
-	Translucent bool   `json:"translucent"`
-	LastGame    string `json:"lastGame"`
+	Accent string `json:"accent"`
+	// Background is one of the Background* constants.
+	Background string `json:"background"`
+	// BackgroundImage is the absolute path of the user's wallpaper; empty means the default one.
+	BackgroundImage string `json:"backgroundImage"`
+	LastGame        string `json:"lastGame"`
 	// LastProfile maps a game id to the id of the profile last open in it.
 	LastProfile map[string]string `json:"lastProfile"`
 	// GameFolders maps a game id to a user-chosen install folder that wins over Steam discovery.
@@ -31,7 +44,7 @@ type Settings struct {
 
 // Defaults returns the settings used when no valid file exists.
 func Defaults() Settings {
-	return Settings{Accent: "sand", Translucent: true, LastProfile: map[string]string{}, GameFolders: map[string]string{}, Loaders: map[string]string{}}
+	return Settings{Accent: "sand", Background: BackgroundImage, LastProfile: map[string]string{}, GameFolders: map[string]string{}, Loaders: map[string]string{}}
 }
 
 // Store reads and writes settings.json under the user data folder.
@@ -66,6 +79,9 @@ func Open() (*Store, error) {
 	if !slices.Contains(accents, s.cur.Accent) {
 		s.cur.Accent = Defaults().Accent
 	}
+	if !slices.Contains(backgrounds, s.cur.Background) {
+		s.cur.Background = Defaults().Background
+	}
 	return s, nil
 }
 
@@ -84,6 +100,9 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	fn(&next)
 	if !slices.Contains(accents, next.Accent) {
 		return s.cur, fmt.Errorf("unknown accent %q", next.Accent)
+	}
+	if !slices.Contains(backgrounds, next.Background) {
+		return s.cur, fmt.Errorf("unknown background %q", next.Background)
 	}
 	if err := datadir.WriteJSON(s.path, next); err != nil {
 		return s.cur, err
