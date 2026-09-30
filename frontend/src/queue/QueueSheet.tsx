@@ -1,13 +1,16 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Drawer, IconButton, Typography } from '@mui/material'
-import { X } from 'lucide-react'
+import { History as HistoryIcon, List, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import {
   ClearFinished,
   Pause,
   Resume,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { emptyFilters, type HistoryEntry, type HistoryFilters, loadHistory } from './history.ts'
 import { Body } from './QueueBody.tsx'
+import { HistoryList } from './QueueHistory.tsx'
 import { useQueue } from './store.ts'
 import { clockTime, megabytes, totals } from './totals.ts'
 
@@ -16,7 +19,15 @@ const GREEN = '#0cdf64'
 const BLUE = '#2b8bda'
 const RED = '#ff6b5f'
 
-function Header({ onClose }: { onClose: () => void }) {
+function Header({
+  onClose,
+  view,
+  onView,
+}: {
+  onClose: () => void
+  view: 'queue' | 'history'
+  onView: (view: 'queue' | 'history') => void
+}) {
   const { t } = useLingui()
   const { items, paused, limitedUntil } = useQueue((s) => s.state)
   const sum = totals(items)
@@ -29,13 +40,22 @@ function Header({ onClose }: { onClose: () => void }) {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pt: 2, pr: 1, pb: 1.25, pl: 2.5 }}>
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
           <Typography component="h2" sx={{ fontSize: 18, fontWeight: 700 }}>
-            {t`Downloads`}
+            {view === 'history' ? t`History` : t`Downloads`}
           </Typography>
           <Typography noWrap={true} sx={{ fontSize: 13 }}>
             {line}
           </Typography>
         </Box>
-        {finished.length > 0 ? (
+        <Button
+          variant="outlined"
+          color="inherit"
+          startIcon={view === 'history' ? <List size={14} /> : <HistoryIcon size={14} />}
+          onClick={() => onView(view === 'history' ? 'queue' : 'history')}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          {view === 'history' ? t`Queue` : t`History`}
+        </Button>
+        {finished.length > 0 && view === 'queue' ? (
           <Button
             variant="outlined"
             color="inherit"
@@ -91,7 +111,19 @@ export function QueueSheet() {
   const open = useQueue((s) => s.open)
   const setOpen = useQueue((s) => s.setOpen)
   const items = useQueue((s) => s.state.items)
-  const close = () => setOpen(false)
+  const [view, setView] = useState<'queue' | 'history'>('queue')
+  const [history, setHistory] = useState<HistoryEntry[]>([])
+  const [filters, setFilters] = useState<HistoryFilters>(emptyFilters)
+  const close = () => {
+    setView('queue')
+    setOpen(false)
+  }
+  useEffect(() => {
+    if (!open || view !== 'history') {
+      return
+    }
+    loadHistory().then(setHistory).catch(reportUnexpected)
+  }, [open, view])
   return (
     <Drawer
       anchor="right"
@@ -112,7 +144,7 @@ export function QueueSheet() {
         backdrop: { sx: { top: 'var(--title-bar)' } },
       }}
     >
-      <Header onClose={close} />
+      <Header onClose={close} view={view} onView={setView} />
       <Box
         sx={{
           display: 'flex',
@@ -122,7 +154,16 @@ export function QueueSheet() {
           overflowY: 'auto',
         }}
       >
-        <Body items={items} />
+        {view === 'history' ? (
+          <HistoryList
+            entries={history}
+            filters={filters}
+            onFilters={setFilters}
+            onCleared={() => setHistory([])}
+          />
+        ) : (
+          <Body items={items} />
+        )}
       </Box>
     </Drawer>
   )
