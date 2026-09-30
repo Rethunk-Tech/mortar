@@ -43,6 +43,9 @@ func (c *Client) Lookup(ctx context.Context, uniqueID string) ([]Ref, error) {
 	return byID[strings.ToLower(uniqueID)], nil
 }
 
+// Index returns the whole index, keyed by lowercased UniqueID. Callers must not modify it.
+func (c *Client) Index(ctx context.Context) (map[string][]Ref, error) { return c.loadIndex(ctx) }
+
 func (c *Client) loadIndex(ctx context.Context) (map[string][]Ref, error) {
 	c.index.mu.Lock()
 	defer c.index.mu.Unlock()

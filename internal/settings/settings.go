@@ -40,11 +40,13 @@ type Settings struct {
 	GameFolders map[string]string `json:"gameFolders"`
 	// Loaders maps a game id to the loader version Mortar installed.
 	Loaders map[string]string `json:"loaders"`
+	// Dismissed maps a save folder name to the UniqueIDs whose missing-mod warning the user dismissed for it.
+	Dismissed map[string][]string `json:"dismissed"`
 }
 
 // Defaults returns the settings used when no valid file exists.
 func Defaults() Settings {
-	return Settings{Accent: "sand", Background: BackgroundImage, LastProfile: map[string]string{}, GameFolders: map[string]string{}, Loaders: map[string]string{}}
+	return Settings{Accent: "sand", Background: BackgroundImage, LastProfile: map[string]string{}, GameFolders: map[string]string{}, Loaders: map[string]string{}, Dismissed: map[string][]string{}}
 }
 
 // Store reads and writes settings.json under the user data folder.
@@ -75,6 +77,9 @@ func Open() (*Store, error) {
 	}
 	if s.cur.Loaders == nil {
 		s.cur.Loaders = map[string]string{}
+	}
+	if s.cur.Dismissed == nil {
+		s.cur.Dismissed = map[string][]string{}
 	}
 	if !slices.Contains(accents, s.cur.Accent) {
 		s.cur.Accent = Defaults().Accent

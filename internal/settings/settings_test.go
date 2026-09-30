@@ -35,7 +35,7 @@ func TestDefaultsAndRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := s2.Get(); !reflect.DeepEqual(got, Settings{"moss", BackgroundSolid, "/pics/a.png", "lethal", map[string]string{}, map[string]string{}, map[string]string{}}) {
+	if got := s2.Get(); !reflect.DeepEqual(got, Settings{"moss", BackgroundSolid, "/pics/a.png", "lethal", map[string]string{}, map[string]string{}, map[string]string{}, map[string][]string{}}) {
 		t.Fatalf("round trip = %+v", got)
 	}
 	entries, _ := os.ReadDir(dir)
