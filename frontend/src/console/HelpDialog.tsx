@@ -18,7 +18,6 @@ import {
   Upload,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
 import { paper } from '../mods/paper.ts'
-import { useProfiles } from '../profiles/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useConsole } from './store.ts'
@@ -70,7 +69,7 @@ export function HelpDialog({ game }: { game: string }) {
   const { t } = useLingui()
   const open = useConsole((s) => s.helping)
   const setHelping = useConsole((s) => s.setHelping)
-  const profile = useProfiles((s) => s.openId)
+  const profile = useConsole((s) => s.shown.profile)
   const viewingRun = useConsole((s) => s.viewingRun)
   const openFor = useRef({ game, profile })
   openFor.current = { game, profile }

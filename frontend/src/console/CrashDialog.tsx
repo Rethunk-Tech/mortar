@@ -12,6 +12,7 @@ import { LifeBuoy, Terminal } from 'lucide-react'
 import { useTab } from '../game/tab.ts'
 import { useLaunch } from '../launch/store.ts'
 import { paper } from '../mods/paper.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { useConsole } from './store.ts'
 
 export function CrashDialog() {
@@ -51,6 +52,7 @@ export function CrashDialog() {
           variant="outlined"
           startIcon={<LifeBuoy size={16} />}
           onClick={() => {
+            useProfiles.getState().open(crash.profile)
             useConsole.getState().viewRun(crash.game, crash.profile, crash.runId)
             useConsole.getState().setHelping(true)
             dismiss()
@@ -63,6 +65,7 @@ export function CrashDialog() {
           variant="contained"
           startIcon={<Terminal size={16} />}
           onClick={() => {
+            useProfiles.getState().open(crash.profile)
             useTab.getState().setTab('console')
             useConsole.getState().viewRun(crash.game, crash.profile, crash.runId)
             dismiss()

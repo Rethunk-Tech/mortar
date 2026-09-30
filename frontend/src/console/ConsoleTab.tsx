@@ -353,13 +353,15 @@ export function ConsoleTab({ game }: { game: string }) {
   const follow = useConsole((s) => s.follow)
   const jump = useConsole((s) => s.jump)
   const { load, setMods, clearFilters, setTimestamps, setFollow } = useConsole.getState()
-  const profile = useProfiles((s) => s.openId)
+  const shown = useConsole((s) => s.shown)
   const rows = useVisible()
   const offerReinstall = entries.some((e) => incompatibleSMAPI(e.message))
   // Launching another profile resets the log to it; this one's history is read again once that launch settles.
   const launchingOther = useLaunch(
     (s) =>
-      s.status?.state === State.Launching && s.status.game === game && s.status.profile !== profile,
+      s.status?.state === State.Launching &&
+      s.status.game === game &&
+      s.status.profile !== shown.profile,
   )
   const [loaded, setLoaded] = useState(false)
   useEffect(() => {
@@ -368,7 +370,7 @@ export function ConsoleTab({ game }: { game: string }) {
     }
     let live = true
     setLoaded(false)
-    load(game, profile).then(() => {
+    load(shown.game || game, shown.profile).then(() => {
       if (live) {
         setLoaded(true)
       }
@@ -376,7 +378,7 @@ export function ConsoleTab({ game }: { game: string }) {
     return () => {
       live = false
     }
-  }, [game, profile, launchingOther, load])
+  }, [game, shown.game, shown.profile, launchingOther, load])
   const total = entries.length
   let empty: string | null = null
   if (loaded && total === 0) {
