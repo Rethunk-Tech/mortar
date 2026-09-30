@@ -17,6 +17,7 @@ import {
 import type { GameId } from '../nav/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { formatOutcomeDetail, formatPreviewRow, willImport } from './gameModsFormat.ts'
 import { useProfiles } from './store.ts'
 
 export function GameModsDialog({
@@ -31,6 +32,7 @@ export function GameModsDialog({
   onImported: (id: string) => void
 }) {
   const { t } = useLingui()
+  const switchedOff = t`switched off`
   const load = useProfiles((s) => s.load)
   const [mods, setMods] = useState<GameModPreview[]>([])
   const [error, setError] = useState('')
@@ -47,6 +49,7 @@ export function GameModsDialog({
         setError(errorMessage(e))
       })
   }, [open, game])
+  const importable = mods.filter((m) => willImport(m.status)).length
   const importMods = async () => {
     if (busy) {
       return
@@ -55,15 +58,17 @@ export function GameModsDialog({
     try {
       const res = await ImportGameMods(game)
       await load(game)
-      useToasts.getState().push({
-        kind: 'success',
-        title: t`Imported ${res.profile.name}`,
+      const detail = formatOutcomeDetail(res.outcomes ?? [])
+      const toast = {
+        kind: 'success' as const,
+        title: t`Created “${res.profile.name}”`,
         body: [
           plural(res.imported, { one: '# imported', other: '# imported' }),
           plural(res.skipped, { one: '# skipped', other: '# skipped' }),
           plural(res.failed, { one: '# failed', other: '# failed' }),
         ].join(' · '),
-      })
+      }
+      useToasts.getState().push(detail === '' ? toast : { ...toast, detail })
       onImported(res.profile.id)
       onClose()
     } catch (e) {
@@ -84,7 +89,7 @@ export function GameModsDialog({
         {error === '' ? (
           <>
             <Typography sx={{ mb: 1.5, color: 'text.secondary' }}>
-              {plural(mods.length, {
+              {plural(importable, {
                 one: '# mod will be copied into a new profile. The game folder is left as it is.',
                 other:
                   '# mods will be copied into a new profile. The game folder is left as it is.',
@@ -92,10 +97,10 @@ export function GameModsDialog({
             </Typography>
             {mods.map((m) => (
               <Typography
-                key={`${m.name}-${m.version}-${m.source}`}
+                key={`${m.name}-${m.version}-${m.source}-${m.status}-${m.reason}`}
                 sx={{ fontSize: 14, py: 0.25 }}
               >
-                {[m.name, m.version, m.source].join(' · ')}
+                {formatPreviewRow(m, switchedOff)}
               </Typography>
             ))}
           </>
@@ -104,10 +109,12 @@ export function GameModsDialog({
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>{t`Cancel`}</Button>
+        <Button onClick={onClose} sx={{ whiteSpace: 'nowrap' }}>
+          {t`Cancel`}
+        </Button>
         <Button
           variant="contained"
-          disabled={busy || mods.length === 0 || error !== ''}
+          disabled={busy || importable === 0 || error !== ''}
           onClick={() => importMods().catch(reportUnexpected)}
           sx={{ whiteSpace: 'nowrap' }}
         >

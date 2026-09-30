@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, IconButton, Tooltip } from '@mui/material'
-import { X } from 'lucide-react'
+import { ChevronDown, ChevronUp, X } from 'lucide-react'
+import { useState } from 'react'
 import { useLaunch } from '../launch/store.ts'
 import { isLocked } from '../mods/locked.ts'
 import { LetterTile } from '../mods/parts.tsx'
@@ -21,6 +22,7 @@ function ToastCard({ toast }: { toast: Toast }) {
   const release = useToasts((s) => s.release)
   const status = useLaunch((s) => s.status)
   const starting = useLaunch((s) => s.starting)
+  const [open, setOpen] = useState(false)
   const { action } = toast
   const locked = action?.profileId !== undefined && isLocked(status, action.profileId, starting)
   const lockHint = t`Stop the game to change mods.`
@@ -41,7 +43,7 @@ function ToastCard({ toast }: { toast: Toast }) {
       role={toast.kind === 'error' || toast.kind === 'warning' ? 'alert' : 'status'}
       sx={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         gap: '12px',
         minHeight: 60,
         p: '8px 8px 8px 12px',
@@ -64,7 +66,45 @@ function ToastCard({ toast }: { toast: Toast }) {
             {toast.body}
           </Box>
         ) : null}
+        {open && toast.detail ? (
+          <Box
+            component="pre"
+            sx={{
+              m: 0,
+              mt: '6px',
+              fontSize: 12,
+              fontFamily: 'inherit',
+              whiteSpace: 'pre-wrap',
+              color: 'rgba(235,235,240,0.95)',
+            }}
+          >
+            {toast.detail}
+          </Box>
+        ) : null}
       </Box>
+      {toast.detail ? (
+        <ButtonBase
+          onClick={() => setOpen((v) => !v)}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            height: 34,
+            px: '12px',
+            mt: '4px',
+            bgcolor: 'rgba(255,255,255,0.1)',
+            borderRadius: '6px',
+            color: '#ffffff',
+            fontSize: 13,
+            fontWeight: 600,
+            fontFamily: 'inherit',
+            whiteSpace: 'nowrap',
+            gap: '4px',
+          }}
+        >
+          {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          {open ? t`Hide details` : t`Details`}
+        </ButtonBase>
+      ) : null}
       {action ? (
         <Tooltip title={locked ? lockHint : ''}>
           <span>
