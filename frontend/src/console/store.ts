@@ -98,6 +98,10 @@ export const useConsole = create<{
     if (game !== shown.game || profile !== shown.profile) {
       get().reset(game, profile)
     }
+    // On a fresh start the Console can mount before the open profile is known; there is no log to ask for yet.
+    if (!profile) {
+      return
+    }
     try {
       const { viewingRun } = get()
       const lines =
