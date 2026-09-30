@@ -14,7 +14,7 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
 - No gradients anywhere, not as backgrounds, scrims over art, fallbacks or placeholder art (NOMAD, 2026-09-29): legibility over art comes from a solid translucent layer, and a missing image becomes a solid tone.
 - Surfaces are translucent so the backdrop shows through: background `rgba(25,25,30,0.80)`, paper `rgba(50,50,60,0.80)`, dialog backdrops `rgba(0,0,0,0.75)`, the launch overlay `rgba(0,0,0,0.80)`.
 - Text: primary `rgba(255,255,255,0.90)`, secondary `rgba(200,200,200,0.90)`. Links are secondary text with a dotted underline.
-- Status colours from Concrete: info `#2B8BDA`, success `#0CDF64`, warning `#F3B416`, error `#C70A0A`. The primary colour is Mortar's own, the same for every game (NOMAD, 2026-09-29), a warm sand tone replacing Lethal Company's amber `#e8982f`; the exact value is picked with NOMAD during milestone 1. Game colour appears only in hero art.
+- Status colours from Concrete: info `#2B8BDA`, success `#0CDF64`, warning `#F3B416`, error `#C70A0A`. The primary colour is the user's choice (NOMAD, 2026-09-29), in Settings › Appearance: Sand `#D6B17A` (the default), Moss `#93B86A`, Copper `#D98C5F` or Sky `#79AEDC`, applied at once everywhere the primary appears. It is the same for every game; game colour appears only in hero art. Appearance also has a switch to turn the window's translucency off for a solid background.
 - Scrollbars are themed: 0.5em, primary-dark track, primary thumb, primary-light on hover.
 
 ## Type
@@ -85,4 +85,4 @@ Short toasts, bottom right, stacked, each with a coloured edge by kind and a dis
 
 ## Settings
 
-A dialog with sections **Game** (folder, SMAPI version with Reinstall, Mortar's data folder and size), **Nexus Mods**, **Updates** (mod, SMAPI and Mortar update checks; backups kept) and **About**. In short: game folders, the Nexus personal API key (saving it the first time asks whether Mortar should handle `nxm://` links), whether Mortar handles `nxm://` links (asks before taking them from another manager, and gives them back when turned off), update checks, and About (licences and credits, including SMAPI and the Stardew mod dataset, CC-BY-SA 4.0).
+A dialog with sections **Game** (folder, SMAPI version with Reinstall, Mortar's data folder and size), **Nexus Mods**, **Updates** (mod, SMAPI and Mortar update checks; backups kept), **Appearance** (accent colour, translucency) and **About**. In short: game folders, the Nexus personal API key (saving it the first time asks whether Mortar should handle `nxm://` links), whether Mortar handles `nxm://` links (asks before taking them from another manager, and gives them back when turned off), update checks, and About (licences and credits, including SMAPI and the Stardew mod dataset, CC-BY-SA 4.0).

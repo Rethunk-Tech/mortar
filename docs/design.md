@@ -49,7 +49,7 @@ One Go module and one Vite frontend, no workspaces:
 
 Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_HOME/mortar`, never under the Windows install folder (the uninstaller deletes that one recursively). Mortar's own state is JSON, each file written through a temp file and rename; no database. The Nexus key is in the OS keyring.
 
-- `settings.json`: game folders, the installed SMAPI version, the nxm handler state and the handler it replaced, dismissed save warnings.
+- `settings.json`: game folders, the accent colour and translucency switch, the installed SMAPI version, the nxm handler state and the handler it replaced, dismissed save warnings.
 - `store/<game>/<key>/`: each downloaded archive, extracted once. Keys: `nexus-<mod id>-<file id>`, `github-<owner>-<repo>-<tag>-<asset>`, `local-<sha256 of the archive>`, and `smapi-<version>` for SMAPI's bundled mods. One Nexus file can hold several SMAPI mods, so the key is the file.
 - `store/index.json`: each store item's last use, meaning the last time any `profile.json` named it.
 - `profiles/<game>/<profile id>/profile.json`, and beside it `mods/`, the folder SMAPI is pointed at. Each entry is copied to `mods/<store key>/` exactly as extracted; SMAPI recurses until it finds a `manifest.json`.
