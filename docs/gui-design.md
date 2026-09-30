@@ -36,14 +36,15 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
   - A hero, 300px tall (200px below 900px wide), bleeding to the pane's edges: the profile's cover image dimmed (`blur(1px) brightness(0.75) opacity(0.5)`), the profile name large and bold with a soft white glow, and small cards for updated, created, mod count and problems. The cover is an image the user picked, else the Nexus picture of the profile's most-endorsed mod (`endorsement_count` from the mod endpoint), else Steam's own hero art for the game, read at runtime from `<Steam>/appcache/librarycache/413150/library_hero.jpg` (Steam also keeps a `library_hero_blur.jpg`; never bundled with Mortar), else a solid tone; never a random image (NOMAD, 2026-09-29).
   - A **Saves** card in the hero (NOMAD, 2026-09-29) with how many saves fit this profile ("2 of 4"), opening the **Saves** tab: each save in the Saves folder with its fit, "all mods present" or "has used N mods this profile lacks" with their names, from the save scan in design.md; a mod can be dismissed for a save. Players pick their save inside the game, so this is where the check shows, before Play.
   - Tabs: **Mods** (default), **Saves**, **Notes**, **Console**, and a **Share** button at the end of the tab row.
-- **Launching** covers the window with the launch overlay, a spinner and "Launching Stardew Valley" until SMAPI's log shows the game started or the launch fails.
+- **Launching** covers the window with the launch overlay: a spinner, "Launching Stardew Valley", and SMAPI's first log lines as they arrive (started, mods loading, mods it will skip), with Open console and Hide, until the game is up or the launch fails. While the game runs, the Play button becomes a Running status with the elapsed time and a **Stop game** button.
+- **Minimum size (768×432):** the sidebar collapses to a rail of profile initials with Play at its foot, the hero gives way to a one-line header (name and counts), search and actions fold into icon buttons, and the mod grid drops to two columns.
 
 ## Mods tab
 
 - A responsive grid of mod cards (`minmax(330px, 1fr)`; 250px below 900px wide, 240px below 700px).
 - A card: the mod's icon (its Nexus `picture_url`, fetched once when the mod is installed and cached on disk; a letter tile until it loads or when there is none, NOMAD 2026-09-29), its name, author and version from its manifest, an enable switch (the dot-folder toggle), and badges for an available update or a problem. One card per mod; its menu (open the Nexus page, update, roll back when there is a previous version, remove) acts on the whole archive entry the mod came in, and when that entry holds other mods the menu names them first.
 - Above the grid: a search field that filters by name, the problem summary with one-click fixes ([design.md](design.md#mod-data)), and buttons to add mods (open Nexus, or pick an archive). Dropping an archive anywhere on the window installs it into the open profile.
-- Empty: a short line and the same two add buttons.
+- Empty (a new profile): "No mods yet", a line on how to add them, **Browse Nexus** and **Add archive**, a link to import a shared profile, and a note that archives can be dropped anywhere. The hero uses Steam's art.
 
 ## Console tab
 
@@ -75,8 +76,13 @@ Only when no game is set up, never on later launches:
 
 1. Find Stardew Valley in Steam and show what was found, with **Browse** for another folder; when nothing is found, say so, with Browse and a retry.
 2. Install SMAPI if it is missing (one click, unattended). On Windows with Steam, show the launch-options line to paste into Stardew's Steam properties, with a copy button.
-3. Create the first profile: empty, or from a pasted share link, which asks for the Nexus sign-in first when the import needs downloads.
+   Installing SMAPI shows its progress as steps (downloaded, files added, launcher replaced, bundled mods added).
+3. Create the first profile: two cards, **Start empty** (with a name field) and **From a shared link** (with a link field, which asks for the Nexus sign-in first when the import needs downloads).
+
+## Confirmations
+
+Short toasts, bottom right, stacked, each with a coloured edge by kind and a dismiss button, and an undo-style action where one exists: "Link copied", "SpaceCore installed" (Undo), "… rolled back" (Redo update), "Couldn't reach Nexus" (Retry now). A toast about a mod shows its picture.
 
 ## Settings
 
-A dialog: game folders, the Nexus personal API key (saving it the first time asks whether Mortar should handle `nxm://` links), whether Mortar handles `nxm://` links (asks before taking them from another manager, and gives them back when turned off), update checks, and About (licences and credits, including SMAPI and the Stardew mod dataset, CC-BY-SA 4.0).
+A dialog with sections **Game** (folder, SMAPI version with Reinstall, Mortar's data folder and size), **Nexus Mods**, **Updates** (mod, SMAPI and Mortar update checks; backups kept) and **About**. In short: game folders, the Nexus personal API key (saving it the first time asks whether Mortar should handle `nxm://` links), whether Mortar handles `nxm://` links (asks before taking them from another manager, and gives them back when turned off), update checks, and About (licences and credits, including SMAPI and the Stardew mod dataset, CC-BY-SA 4.0).
