@@ -24,6 +24,10 @@ import { beginWork } from '../toasts/usePending.ts'
 import { type ShownPreview, shownPreview } from './logic.ts'
 import { importAfterSignIn, useImportDialog } from './store.ts'
 
+function shouldOpenQueueAfterImport(queued: number): boolean {
+  return queued > 0
+}
+
 // Shows what an import filled: the open profile refreshed, or the new one opened on its game's page.
 // A new profile registers mortar:// and .mortar (idempotent): an import can arrive before first run finished,
 // including via the Nexus sign-in detour, which leaves the setup route behind.
@@ -57,7 +61,7 @@ function announce(result: Result, intoOpen: boolean, sharedName: string | undefi
     title: queued > 0 ? i18n._(msg`Importing into ${name}`) : i18n._(msg`Imported ${name}`),
     body,
   })
-  if (queued > 0) {
+  if (shouldOpenQueueAfterImport(queued)) {
     useQueue.getState().setOpen(true)
   }
 }
@@ -211,3 +215,4 @@ export function useImportFlow(game: string, profileId: string, close: () => void
 }
 
 export type ImportFlow = ReturnType<typeof useImportFlow>
+export { shouldOpenQueueAfterImport }
