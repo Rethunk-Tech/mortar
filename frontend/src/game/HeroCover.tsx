@@ -33,7 +33,7 @@ export function HeroCover({ game, profile }: { game: string; profile: Profile })
     }
   }, [game, profile.id, updated])
   if (covers === null) {
-    return null
+    return <Box sx={{ width: '100%', height: '100%', bgcolor: 'rgb(44,44,54)' }} />
   }
   const skip = failed.stamp === covers.stamp ? failed.urls : []
   const src = covers.list.find((c) => !skip.includes(c))
