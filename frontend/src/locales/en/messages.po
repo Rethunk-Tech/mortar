@@ -153,7 +153,7 @@ msgid "Fedora 44 default wallpaper (f44-01-night) by the Fedora Design Team, CC-
 msgstr "Fedora 44 default wallpaper (f44-01-night) by the Fedora Design Team, CC-BY-SA-4.0."
 
 #: src/console/HelpDialog.tsx:61
-#: src/mods/ModDetail.tsx:142
+#: src/mods/ModDetail.tsx:143
 msgid "Open"
 msgstr "Open"
 
@@ -180,9 +180,17 @@ msgstr "Try my Mortar profile \"{0}\" for {gameName} ({mods}): {1}"
 msgid "Reorder {0}"
 msgstr "Reorder {0}"
 
+#: src/mods/NexusDetails.tsx:256
+msgid "Sign in to Nexus Mods in Settings to see more from this mod's page."
+msgstr "Sign in to Nexus Mods in Settings to see more from this mod's page."
+
 #: src/mods/ProblemBar.tsx:40
 msgid "Resolve"
 msgstr "Resolve"
+
+#: src/mods/NexusDetails.tsx:116
+msgid "Uploaded by"
+msgstr "Uploaded by"
 
 #: src/firstrun/ProfileStep.tsx:60
 msgid "Make your first profile"
@@ -234,7 +242,7 @@ msgstr "Steam's launch options for Stardew Valley lack the SMAPI line. In Steam,
 msgid "Start empty"
 msgstr "Start empty"
 
-#: src/mods/ModDetail.tsx:219
+#: src/mods/ModDetail.tsx:220
 msgid "· updates and rolls back with this mod"
 msgstr "· updates and rolls back with this mod"
 
@@ -272,7 +280,7 @@ msgstr "Import profile"
 msgid "From a shared link"
 msgstr "From a shared link"
 
-#: src/game/HeroCover.tsx:96
+#: src/game/HeroCover.tsx:97
 msgid "Use the automatic cover"
 msgstr "Use the automatic cover"
 
@@ -309,8 +317,8 @@ msgstr "Link length"
 msgid "Switched off in this profile"
 msgstr "Switched off in this profile"
 
-#: src/mods/ModDetail.tsx:103
-#: src/mods/ModDetail.tsx:191
+#: src/mods/ModDetail.tsx:104
+#: src/mods/ModDetail.tsx:192
 msgid "Roll back"
 msgstr "Roll back"
 
@@ -349,7 +357,7 @@ msgstr "Nothing is downloading. Updates, missing dependencies and links from Nex
 msgid "Could not add the download"
 msgstr "Could not add the download"
 
-#: src/mods/ModDetail.tsx:227
+#: src/mods/ModDetail.tsx:228
 msgid "Needed by"
 msgstr "Needed by"
 
@@ -431,6 +439,10 @@ msgstr "Queued"
 msgid "Skip {0}"
 msgstr "Skip {0}"
 
+#: src/mods/NexusDetails.tsx:110
+msgid "Latest on Nexus"
+msgstr "Latest on Nexus"
+
 #: src/game/NewProfileDialog.tsx:49
 #: src/game/Sidebar.tsx:350
 #: src/game/Sidebar.tsx:368
@@ -453,7 +465,7 @@ msgstr "Game folder"
 msgid "Installing SMAPI…"
 msgstr "Installing SMAPI…"
 
-#: src/console/HelpDialog.tsx:193
+#: src/console/HelpDialog.tsx:202
 msgid "Upload log"
 msgstr "Upload log"
 
@@ -529,12 +541,16 @@ msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschil
 msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
+#: src/mods/NexusDetails.tsx:247
+msgid "Reading the Nexus page…"
+msgstr "Reading the Nexus page…"
+
 #: src/saves/SavesTab.tsx:212
 msgid "All mods present"
 msgstr "All mods present"
 
 #: src/console/ConsoleTab.tsx:504
-#: src/console/HelpDialog.tsx:151
+#: src/console/HelpDialog.tsx:160
 #: src/game/SupportButton.tsx:34
 msgid "Get help"
 msgstr "Get help"
@@ -564,11 +580,15 @@ msgstr "A profile holds one set of mods for this game."
 msgid "Could not open the file dialog"
 msgstr "Could not open the file dialog"
 
+#: src/mods/NexusDetails.tsx:149
+msgid "Installed file"
+msgstr "Installed file"
+
 #: src/settings/sections/Appearance.tsx:30
 msgid "Sky"
 msgstr "Sky"
 
-#: src/console/HelpDialog.tsx:142
+#: src/console/HelpDialog.tsx:151
 msgid "Reading the log…"
 msgstr "Reading the log…"
 
@@ -583,6 +603,11 @@ msgstr "different file"
 #: src/settings/sections/Updates.tsx:51
 msgid "Mortar is up to date."
 msgstr "Mortar is up to date."
+
+#. placeholder {0}: others.length - FILES_SHOWN
+#: src/mods/NexusDetails.tsx:174
+msgid "And {0} more on the Nexus page"
+msgstr "And {0} more on the Nexus page"
 
 #: src/game/SupportButton.tsx:45
 msgid "Report a Mortar bug"
@@ -618,7 +643,7 @@ msgstr "{0, plural, one {# download added} other {# downloads added}}"
 msgid "Launch options copied"
 msgstr "Launch options copied"
 
-#: src/mods/ModDetail.tsx:125
+#: src/mods/ModDetail.tsx:126
 msgid "config.json, changed from the mod's own"
 msgstr "config.json, changed from the mod's own"
 
@@ -651,7 +676,7 @@ msgstr "Add {name} to this profile"
 msgid "Console"
 msgstr "Console"
 
-#: src/mods/ModDetail.tsx:252
+#: src/mods/ModDetail.tsx:253
 msgid "GitHub page"
 msgstr "GitHub page"
 
@@ -717,19 +742,19 @@ msgstr "Updated {names} in {0}"
 msgid "Could not launch the game"
 msgstr "Could not launch the game"
 
-#: src/mods/ModDetail.tsx:124
+#: src/mods/ModDetail.tsx:125
 msgid "config.json, as the mod ships it"
 msgstr "config.json, as the mod ships it"
 
-#: src/game/HeroCover.tsx:78
+#: src/game/HeroCover.tsx:79
 msgid "Cover image"
 msgstr "Cover image"
 
-#: src/console/HelpDialog.tsx:189
+#: src/console/HelpDialog.tsx:198
 #: src/game/NewProfileDialog.tsx:67
 #: src/launch/LaunchLayer.tsx:255
 #: src/launch/StopDialog.tsx:36
-#: src/mods/ModDetail.tsx:182
+#: src/mods/ModDetail.tsx:183
 #: src/mods/parts.tsx:195
 #: src/profiles/ProfilesPage.tsx:391
 #: src/settings/sections/nxmHandler.tsx:82
@@ -790,7 +815,7 @@ msgstr "You can also drop archives anywhere on the window."
 msgid "Needs your click"
 msgstr "Needs your click"
 
-#: src/console/HelpDialog.tsx:114
+#: src/console/HelpDialog.tsx:116
 #: src/share/ShareDialog.tsx:206
 msgid "Link copied"
 msgstr "Link copied"
@@ -833,7 +858,7 @@ msgid "Could not add {0}"
 msgstr "Could not add {0}"
 
 #: src/games/GameSelect.tsx:148
-#: src/mods/ModDetail.tsx:63
+#: src/mods/ModDetail.tsx:64
 #: src/share/ImportPreview.tsx:44
 msgid "Installed"
 msgstr "Installed"
@@ -906,6 +931,7 @@ msgstr "Choose your Stardew Valley folder"
 msgid "Added from an archive, so it only exists on this computer."
 msgstr "Added from an archive, so it only exists on this computer."
 
+#: src/mods/NexusDetails.tsx:126
 #: src/queue/QueueButton.tsx:17
 #: src/queue/QueueButton.tsx:36
 #: src/queue/QueueSheet.tsx:514
@@ -933,6 +959,10 @@ msgstr "Choose a file…"
 msgid "Background preview"
 msgstr "Background preview"
 
+#: src/mods/NexusDetails.tsx:129
+msgid "Created · updated"
+msgstr "Created · updated"
+
 #: src/settings/sections/Updates.tsx:55
 msgid "Restarting…"
 msgstr "Restarting…"
@@ -941,7 +971,7 @@ msgstr "Restarting…"
 msgid "Warn"
 msgstr "Warn"
 
-#: src/mods/ModDetail.tsx:206
+#: src/mods/ModDetail.tsx:207
 msgid "Needs"
 msgstr "Needs"
 
@@ -961,7 +991,7 @@ msgstr "Enable {0}"
 msgid "SMAPI {0} installed"
 msgstr "SMAPI {0} installed"
 
-#: src/console/HelpDialog.tsx:193
+#: src/console/HelpDialog.tsx:202
 msgid "Uploading…"
 msgstr "Uploading…"
 
@@ -1037,7 +1067,7 @@ msgstr "Ready to import"
 
 #. placeholder {0}: need.minimumVersion
 #. placeholder {1}: need.installedVersion
-#: src/mods/ModDetail.tsx:49
+#: src/mods/ModDetail.tsx:50
 msgid "Needs {0} or newer, has {1}"
 msgstr "Needs {0} or newer, has {1}"
 
@@ -1090,6 +1120,7 @@ msgstr "Trace"
 msgid "Data"
 msgstr "Data"
 
+#: src/mods/NexusDetails.tsx:125
 #: src/mods/Sidebar.tsx:111
 msgid "Endorsements"
 msgstr "Endorsements"
@@ -1132,7 +1163,7 @@ msgstr "Mortar {0} is available."
 msgid "{0, plural, one {# mod installed} other {# mods installed}}"
 msgstr "{0, plural, one {# mod installed} other {# mods installed}}"
 
-#: src/mods/ModDetail.tsx:126
+#: src/mods/ModDetail.tsx:127
 msgid "config.json, made by the mod"
 msgstr "config.json, made by the mod"
 
@@ -1211,16 +1242,16 @@ msgstr "Open data folder"
 msgid "Chosen by you"
 msgstr "Chosen by you"
 
-#: src/console/HelpDialog.tsx:166
+#: src/console/HelpDialog.tsx:175
 msgid "SMAPI log"
 msgstr "SMAPI log"
 
-#: src/mods/ModDetail.tsx:95
+#: src/mods/ModDetail.tsx:96
 msgid "Versions"
 msgstr "Versions"
 
 #. placeholder {0}: mod.name
-#: src/mods/ModDetail.tsx:172
+#: src/mods/ModDetail.tsx:173
 msgid "Roll back {0}?"
 msgstr "Roll back {0}?"
 
@@ -1283,7 +1314,7 @@ msgstr "View"
 msgid "Unavailable"
 msgstr "Unavailable"
 
-#: src/mods/ModDetail.tsx:178
+#: src/mods/ModDetail.tsx:179
 msgid "config.json is deleted, and the mod writes a fresh one with its own defaults the next time the game runs."
 msgstr "config.json is deleted, and the mod writes a fresh one with its own defaults the next time the game runs."
 
@@ -1305,6 +1336,11 @@ msgstr "Saving…"
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
+#. placeholder {0}: others.length
+#: src/mods/NexusDetails.tsx:162
+msgid "Current files on Nexus ({0})"
+msgstr "Current files on Nexus ({0})"
+
 #: src/settings/sections/GameSettings.tsx:130
 msgid "Installed and up to date"
 msgstr "Installed and up to date"
@@ -1313,7 +1349,11 @@ msgstr "Installed and up to date"
 msgid "New profile from file"
 msgstr "New profile from file"
 
-#: src/mods/ModDetail.tsx:230
+#: src/mods/NexusDetails.tsx:115
+msgid "Category"
+msgstr "Category"
+
+#: src/mods/ModDetail.tsx:231
 msgid "Nothing in this profile"
 msgstr "Nothing in this profile"
 
@@ -1346,6 +1386,12 @@ msgstr "Open Stardew Valley settings"
 msgid "No saves found yet."
 msgstr "No saves found yet."
 
+#. placeholder {0}: formatCount(page.downloads, i18n.locale)
+#. placeholder {1}: formatCount(page.uniqueDownloads, i18n.locale)
+#: src/mods/NexusDetails.tsx:127
+msgid "{0} · {1} unique"
+msgstr "{0} · {1} unique"
+
 #: src/settings/sections/GameSettings.tsx:59
 msgid "Not found"
 msgstr "Not found"
@@ -1354,6 +1400,11 @@ msgstr "Not found"
 #: src/mods/Sidebar.tsx:89
 msgid "SMAPI"
 msgstr "SMAPI"
+
+#. placeholder {0}: state.error ?? ''
+#: src/mods/NexusDetails.tsx:255
+msgid "Could not read the Nexus page: {0}"
+msgstr "Could not read the Nexus page: {0}"
 
 #: src/share/useImportFlow.ts:166
 msgid "Imported, but could not show the profile"
@@ -1391,7 +1442,7 @@ msgstr "Share profile"
 msgid "Stardew Valley"
 msgstr "Stardew Valley"
 
-#: src/game/HeroCover.tsx:59
+#: src/game/HeroCover.tsx:60
 msgid "Choose cover image"
 msgstr "Choose cover image"
 
@@ -1424,7 +1475,7 @@ msgstr "Open in Mortar"
 msgid "Download and install"
 msgstr "Download and install"
 
-#: src/console/HelpDialog.tsx:101
+#: src/console/HelpDialog.tsx:103
 #: src/console/store.ts:93
 msgid "Could not read the SMAPI log"
 msgstr "Could not read the SMAPI log"
@@ -1435,11 +1486,11 @@ msgid "Recently deleted"
 msgstr "Recently deleted"
 
 #. placeholder {0}: mod.name
-#: src/mods/ModDetail.tsx:177
+#: src/mods/ModDetail.tsx:178
 msgid "{0} goes back to {previous}, keeping its settings. Your saves are backed up first."
 msgstr "{0} goes back to {previous}, keeping its settings. Your saves are backed up first."
 
-#: src/console/HelpDialog.tsx:131
+#: src/console/HelpDialog.tsx:140
 msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
@@ -1459,7 +1510,7 @@ msgstr "Keep this one"
 msgid "How to share"
 msgstr "How to share"
 
-#: src/game/HeroCover.tsx:90
+#: src/game/HeroCover.tsx:91
 msgid "Choose cover image…"
 msgstr "Choose cover image…"
 
@@ -1487,7 +1538,7 @@ msgstr "The page reads the profile from the link itself. Nothing is uploaded or 
 msgid "Restart now"
 msgstr "Restart now"
 
-#: src/console/HelpDialog.tsx:140
+#: src/console/HelpDialog.tsx:149
 msgid "There is no SMAPI log for this profile yet. Play this profile once, then try again."
 msgstr "There is no SMAPI log for this profile yet. Play this profile once, then try again."
 
@@ -1540,6 +1591,10 @@ msgstr "Nexus link not used"
 msgid "Nexus mod {modId}"
 msgstr "Nexus mod {modId}"
 
+#: src/mods/NexusDetails.tsx:223
+msgid "Description"
+msgstr "Description"
+
 #: src/console/ConsoleTab.tsx:138
 msgid "No mods have logged yet"
 msgstr "No mods have logged yet"
@@ -1572,8 +1627,8 @@ msgstr "Message copied"
 msgid "Downloads come from Nexus with your account, so Mortar needs your API key first."
 msgstr "Downloads come from Nexus with your account, so Mortar needs your API key first."
 
-#: src/mods/ModDetail.tsx:145
-#: src/mods/ModDetail.tsx:191
+#: src/mods/ModDetail.tsx:146
+#: src/mods/ModDetail.tsx:192
 #: src/share/ImportFooter.tsx:80
 msgid "Reset"
 msgstr "Reset"
@@ -1673,7 +1728,7 @@ msgstr "Could not reset the settings of {0}"
 msgid "Could not read your games"
 msgstr "Could not read your games"
 
-#: src/mods/ModDetail.tsx:210
+#: src/mods/ModDetail.tsx:211
 msgid "Nothing"
 msgstr "Nothing"
 
@@ -1735,7 +1790,7 @@ msgstr "Free account: one click on Nexus per download"
 msgid "Log link"
 msgstr "Log link"
 
-#: src/console/HelpDialog.tsx:161
+#: src/console/HelpDialog.tsx:170
 msgid "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 msgstr "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 
@@ -1801,6 +1856,10 @@ msgstr "Pause all"
 msgid "Three steps and you are playing with mods."
 msgstr "Three steps and you are playing with mods."
 
+#: src/mods/NexusDetails.tsx:211
+msgid "Recent changes"
+msgstr "Recent changes"
+
 #: src/queue/QueueSheet.tsx:530
 msgid "Close downloads"
 msgstr "Close downloads"
@@ -1828,7 +1887,7 @@ msgstr "Premium"
 msgid "{profileName} has {0} more than once. SMAPI loads only one, so pick which to keep. The others are switched off, not deleted."
 msgstr "{profileName} has {0} more than once. SMAPI loads only one, so pick which to keep. The others are switched off, not deleted."
 
-#: src/mods/ModDetail.tsx:214
+#: src/mods/ModDetail.tsx:215
 #: src/mods/Sidebar.tsx:117
 msgid "In the same download"
 msgstr "In the same download"
@@ -1867,12 +1926,12 @@ msgstr "Mortar checks Steam's settings for it: not found yet."
 msgid "Check now"
 msgstr "Check now"
 
-#: src/console/HelpDialog.tsx:158
+#: src/console/HelpDialog.tsx:167
 msgid "Upload your SMAPI log to smapi.io, the Stardew modding community's log viewer, and share the link where you ask for help."
 msgstr "Upload your SMAPI log to smapi.io, the Stardew modding community's log viewer, and share the link where you ask for help."
 
 #. placeholder {0}: mod.name
-#: src/mods/ModDetail.tsx:172
+#: src/mods/ModDetail.tsx:173
 msgid "Reset the settings of {0}?"
 msgstr "Reset the settings of {0}?"
 
@@ -2000,7 +2059,7 @@ msgid "Someone sent you a Mortar link? You see what it holds first. Mods from Ne
 msgstr "Someone sent you a Mortar link? You see what it holds first. Mods from Nexus need your Nexus sign-in, which Mortar asks for then."
 
 #. placeholder {0}: mod.version
-#: src/mods/ModDetail.tsx:96
+#: src/mods/ModDetail.tsx:97
 msgid "{0} · in use"
 msgstr "{0} · in use"
 
@@ -2012,7 +2071,7 @@ msgstr "Dependency"
 msgid "All profiles are hidden"
 msgstr "All profiles are hidden"
 
-#: src/mods/ModDetail.tsx:131
+#: src/mods/ModDetail.tsx:132
 #: src/settings/SettingsPage.tsx:71
 #: src/shell/AppMenu.tsx:92
 #: src/shell/TitleBar.tsx:112
@@ -2108,6 +2167,10 @@ msgstr "Drop to install into {0}"
 msgid "Newer."
 msgstr "Newer."
 
+#: src/mods/NexusDetails.tsx:192
+msgid "Adult content"
+msgstr "Adult content"
+
 #: src/firstrun/FirstRun.tsx:96
 msgid "Install SMAPI"
 msgstr "Install SMAPI"
@@ -2156,7 +2219,7 @@ msgstr "Its source is not known."
 msgid "Author"
 msgstr "Author"
 
-#: src/game/HeroCover.tsx:68
+#: src/game/HeroCover.tsx:69
 msgid "Could not use that image"
 msgstr "Could not use that image"
 
@@ -2165,7 +2228,7 @@ msgid "Loading mods"
 msgstr "Loading mods"
 
 #. placeholder {0}: need.name
-#: src/mods/ModDetail.tsx:54
+#: src/mods/ModDetail.tsx:55
 msgid "{0} (optional)"
 msgstr "{0} (optional)"
 
@@ -2197,7 +2260,7 @@ msgstr "Accent colour"
 msgid "Profiles"
 msgstr "Profiles"
 
-#: src/mods/ModDetail.tsx:47
+#: src/mods/ModDetail.tsx:48
 msgid "Missing"
 msgstr "Missing"
 
@@ -2283,7 +2346,7 @@ msgstr "Installing"
 msgid "Could not save notes"
 msgstr "Could not save notes"
 
-#: src/mods/ModDetail.tsx:48
+#: src/mods/ModDetail.tsx:49
 msgid "Switched off"
 msgstr "Switched off"
 
@@ -2320,7 +2383,11 @@ msgstr "Handle links"
 msgid "SMAPI installed"
 msgstr "SMAPI installed"
 
-#: src/mods/ModDetail.tsx:252
+#: src/mods/NexusDetails.tsx:200
+msgid "Not available on Nexus"
+msgstr "Not available on Nexus"
+
+#: src/mods/ModDetail.tsx:253
 msgid "Nexus page"
 msgstr "Nexus page"
 
@@ -2504,9 +2571,9 @@ msgstr "{0, plural, one {# download needs your decision} other {# downloads need
 msgid "Version {0}"
 msgstr "Version {0}"
 
-#: src/console/HelpDialog.tsx:189
+#: src/console/HelpDialog.tsx:198
 #: src/launch/LaunchLayer.tsx:222
-#: src/mods/ModDetail.tsx:285
+#: src/mods/ModDetail.tsx:290
 #: src/mods/UpdateReview.tsx:237
 #: src/mods/UpdateReview.tsx:256
 #: src/share/ImportDialog.tsx:109
@@ -2570,7 +2637,7 @@ msgid "A game update replaced SMAPI's launcher"
 msgstr "A game update replaced SMAPI's launcher"
 
 #. placeholder {0}: state.previousVersion
-#: src/mods/ModDetail.tsx:100
+#: src/mods/ModDetail.tsx:101
 msgid "{0} · kept for rollback"
 msgstr "{0} · kept for rollback"
 
@@ -2578,8 +2645,8 @@ msgstr "{0} · kept for rollback"
 msgid "Decide later"
 msgstr "Decide later"
 
-#: src/mods/ModDetail.tsx:128
 #: src/mods/ModDetail.tsx:129
+#: src/mods/ModDetail.tsx:130
 msgid "No config.json yet"
 msgstr "No config.json yet"
 
