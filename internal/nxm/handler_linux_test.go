@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
@@ -270,5 +271,38 @@ func TestRefreshLeavesAnotherCopy(t *testing.T) {
 	desktop, _ := fsx.ReadFile(l.desktopPath())
 	if string(desktop) != string(registered) {
 		t.Errorf("another copy took the entry: %s", desktop)
+	}
+}
+
+func TestInstallIconsOutdatesAStaleIconCache(t *testing.T) {
+	l, _ := newLinux(t, "")
+	theme := filepath.Join(l.dataHome, "icons", "hicolor")
+	if err := os.MkdirAll(theme, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	cache := filepath.Join(theme, "icon-theme.cache")
+	if err := os.WriteFile(cache, []byte("stale"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	old := time.Now().Add(-time.Hour)
+	if err := os.Chtimes(theme, old, old); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(cache, time.Now(), time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.installIcons(); err != nil {
+		t.Fatal(err)
+	}
+	dir, err := os.Stat(theme)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := os.Stat(cache)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if dir.ModTime().Before(c.ModTime()) {
+		t.Fatalf("theme folder %v is older than its cache %v, so GTK would keep the stale cache", dir.ModTime(), c.ModTime())
 	}
 }

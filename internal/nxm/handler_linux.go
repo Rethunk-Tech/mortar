@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
@@ -21,6 +22,7 @@ const (
 	mortarMime  = "x-scheme-handler/mortar"
 	fileMime    = "application/x-mortar"
 	updateMIME  = "update-mime-database"
+	updateIcons = "gtk4-update-icon-cache"
 	xdgMime     = "/usr/bin/xdg-mime"
 	updateDB    = "update-desktop-database"
 	desktopPerm = 0o644
@@ -159,7 +161,21 @@ func (l *System) installIcons() error {
 	if err := fsx.WriteFile(png, iconPNG, desktopPerm); err != nil {
 		return err
 	}
-	return fsx.WriteFile(svg, iconSVG, desktopPerm)
+	if err := fsx.WriteFile(svg, iconSVG, desktopPerm); err != nil {
+		return err
+	}
+	// GTK trusts an icon-theme.cache that is newer than the theme folder, and writing into its subfolders does not
+	// touch the folder, so a cache another app left there would hide these icons.
+	theme := filepath.Join(l.dataHome, "icons", "hicolor")
+	now := time.Now()
+	if err := os.Chtimes(theme, now, now); err != nil {
+		return err
+	}
+	// A running shell may keep the cache it loaded; rebuilding it, when the tool exists, shows the icon at once.
+	if _, err := fsx.Stat(filepath.Join(theme, "icon-theme.cache")); err == nil {
+		_, _ = l.run(updateIcons, "-f", "-t", theme)
+	}
+	return nil
 }
 
 func (l *System) writeDesktop(withNxm bool) error {
