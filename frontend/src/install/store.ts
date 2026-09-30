@@ -56,6 +56,21 @@ async function undoArchiveInstall(
   await useMods.getState().load()
 }
 
+// Replacing a mod with the same version is not an update, so the toast says so.
+function installTitle(
+  mods: string,
+  profileName: string,
+  updated: boolean,
+  versionChanged: boolean,
+) {
+  if (!updated) {
+    return i18n._(msg`Added ${mods} to ${profileName}`)
+  }
+  return versionChanged
+    ? i18n._(msg`Updated ${mods} in ${profileName}`)
+    : i18n._(msg`Replaced ${mods} in ${profileName}`)
+}
+
 function shouldConsiderMissing(openId: string, installedProfileId: string): boolean {
   return openId === installedProfileId
 }
@@ -108,17 +123,9 @@ export const useInstall = create<{
             dependentIds.push(mod.uniqueId)
           }
         }
-        let title: string
-        if (!updated) {
-          title = i18n._(msg`Added ${names.join(', ')} to ${profile.name}`)
-        } else if (versionChanged) {
-          title = i18n._(msg`Updated ${names.join(', ')} in ${profile.name}`)
-        } else {
-          title = i18n._(msg`Replaced ${names.join(', ')} in ${profile.name}`)
-        }
         push({
           kind: 'success',
-          title,
+          title: installTitle(names.join(', '), profile.name, updated, versionChanged),
           picture: entry?.source.picture ?? '',
           ...(entry
             ? {
