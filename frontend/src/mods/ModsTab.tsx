@@ -174,6 +174,9 @@ export function ModsTab({ profile }: { profile: Profile }) {
       mods: [],
       loaded: false,
       loadError: '',
+      problems: null,
+      resolving: null,
+      removing: null,
     })
     useUpdates.setState({ updates: null, reviewing: false })
     useDetail.getState().show(null)
