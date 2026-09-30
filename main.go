@@ -82,7 +82,11 @@ func main() {
 	)
 	ready := make(chan struct{})
 	app := application.New(application.Options{
+		Name: "Mortar",
 		Icon: appIcon,
+		// The Wayland app_id comes from the program name and must equal the desktop entry's file name, mortar.desktop,
+		// for the shell to show Mortar's icon; a renamed AppImage would otherwise report its own file name.
+		Linux: application.LinuxOptions{ProgramName: "mortar"},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
 			Middleware: application.ChainMiddleware(
