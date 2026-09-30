@@ -1,0 +1,25 @@
+import { expect, test } from 'bun:test'
+import {
+  type Entry,
+  Level,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import { logFileName, saveLogText } from './save.ts'
+
+const line = (message: string): Entry => ({
+  seq: 1,
+  time: '19:43:50',
+  level: Level.Info,
+  mod: 'SMAPI',
+  message,
+  cont: false,
+})
+
+test('the default save name is SMAPI, the profile, and the date', () => {
+  expect(logFileName('Main', new Date(2026, 8, 30))).toBe('SMAPI-Main-2026-09-30.txt')
+  expect(logFileName('Farm/A', new Date(2026, 0, 2))).toBe('SMAPI-Farm-A-2026-01-02.txt')
+})
+
+test('the raw SMAPI log is saved when the profile owns it, else the console lines', () => {
+  expect(saveLogText('[SMAPI] hello', [line('parsed')])).toBe('[SMAPI] hello')
+  expect(saveLogText('', [line('parsed')])).toBe('[19:43:50 INFO  SMAPI] parsed')
+})

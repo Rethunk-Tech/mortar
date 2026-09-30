@@ -10,28 +10,16 @@ import {
   MenuItem,
   Typography,
 } from '@mui/material'
-import { Clipboard } from '@wailsio/runtime'
-import { ChevronDown, Download, LifeBuoy, Search, X } from 'lucide-react'
+import { ChevronDown, Download, Search, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
-import {
-  countByLevel,
-  firstError,
-  formatAll,
-  incompatibleSMAPI,
-  isFiltered,
-  LEVELS,
-  modsOf,
-  shownLog,
-  visible,
-} from './filter.ts'
+import { countByLevel, incompatibleSMAPI, isFiltered, LEVELS, modsOf } from './filter.ts'
 import { stepHistory } from './history.ts'
+import { useShownEntries, useVisible } from './logHooks.ts'
 import { canSendTo, useConsole } from './store.ts'
 import { VirtualLog } from './VirtualLog.tsx'
 
@@ -43,23 +31,6 @@ const dots: Record<Level, string> = {
   [Level.Warn]: '#F3B416',
   [Level.Error]: '#ff6b5f',
   [Level.Alert]: '#c792ea',
-}
-
-function useMine() {
-  return useConsole((s) => s.shown.profile) === useProfiles((s) => s.openId)
-}
-
-function useShownEntries() {
-  const entries = useConsole((s) => s.entries)
-  const mine = useMine()
-  return useMemo(() => shownLog(entries, mine), [mine, entries])
-}
-
-// A launch of another profile takes the log over; its lines are not this profile's to show.
-function useVisible() {
-  const entries = useShownEntries()
-  const filters = useConsole((s) => s.filters)
-  return useMemo(() => visible(entries, filters), [entries, filters])
 }
 
 function LevelToggles() {
@@ -336,13 +307,6 @@ function CommandLine({ game }: { game: string }) {
   )
 }
 
-const actionSx = {
-  height: 32,
-  whiteSpace: 'nowrap',
-  borderColor: 'rgba(255,255,255,0.22)',
-  color: '#ffffff',
-} as const
-
 function ReinstallLoader({ game }: { game: string }) {
   const { t } = useLingui()
   const install = useLoader((s) => s.install)
@@ -502,58 +466,6 @@ export function ConsoleTab({ game }: { game: string }) {
         )}
       </Box>
       <CommandLine game={game} />
-    </Box>
-  )
-}
-
-export function LogActions() {
-  const { t } = useLingui()
-  const rows = useVisible()
-  const { clear, jumpTo, setHelping } = useConsole.getState()
-  const firstErr = firstError(rows)
-  return (
-    <Box sx={{ display: 'flex', gap: 1 }}>
-      <Button
-        variant="outlined"
-        color="inherit"
-        disabled={firstErr < 0}
-        onClick={() => jumpTo(firstErr)}
-        sx={actionSx}
-      >
-        {t`Jump to first error`}
-      </Button>
-      <Button
-        variant="outlined"
-        color="inherit"
-        disabled={rows.length === 0}
-        onClick={clear}
-        sx={actionSx}
-      >
-        {t`Clear`}
-      </Button>
-      <Button
-        variant="outlined"
-        color="inherit"
-        disabled={rows.length === 0}
-        onClick={() => {
-          Clipboard.SetText(formatAll(rows)).then(
-            () => useToasts.getState().push({ kind: 'success', title: t`Log copied` }),
-            reportUnexpected,
-          )
-        }}
-        sx={actionSx}
-      >
-        {t`Copy`}
-      </Button>
-      <Button
-        variant="outlined"
-        color="inherit"
-        startIcon={<LifeBuoy size={16} />}
-        onClick={() => setHelping(true)}
-        sx={actionSx}
-      >
-        {t`Get help`}
-      </Button>
     </Box>
   )
 }
