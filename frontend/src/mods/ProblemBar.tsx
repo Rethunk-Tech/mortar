@@ -10,6 +10,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { useDescribe } from './describe.ts'
 import { type Problem, problemsOf, sameId } from './lookup.ts'
 import { useMods } from './store.ts'
+import { useLocked } from './useLocked.ts'
 
 const ROW_HEIGHT = 38
 const ROW_GAP = 6
@@ -22,11 +23,13 @@ function FixButton({ problem }: { problem: Problem }) {
   const resolve = useMods((s) => s.resolve)
   const queue = useQueue((s) => s.state.items)
   const profileId = useProfiles((s) => s.openId)
+  const locked = useLocked()
   const button = (label: string, onClick: () => void) => (
     <Button
       size="small"
       variant="contained"
       color="warning"
+      disabled={locked}
       onClick={onClick}
       sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
     >

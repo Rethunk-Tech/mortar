@@ -20,6 +20,7 @@ import { preselect } from './lookup.ts'
 import { paper } from './paper.ts'
 import { LetterTile } from './parts.tsx'
 import { useMods } from './store.ts'
+import { useLocked } from './useLocked.ts'
 
 function CopyOption({ copy, dup, differ }: { copy: Copy; dup: Duplicate; differ: boolean }) {
   const { t } = useLingui()
@@ -72,6 +73,7 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
   const { t } = useLingui()
   const resolve = useMods((s) => s.resolve)
   const keepCopy = useMods((s) => s.keepCopy)
+  const locked = useLocked()
   const copies = dup.copies ?? []
   const [keep, setKeep] = useState(preselect(copies))
   const differ = copies.some((c) => !c.newest)
@@ -104,6 +106,7 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
         </Button>
         <Button
           variant="contained"
+          disabled={locked}
           sx={{ whiteSpace: 'nowrap' }}
           onClick={() => {
             keepCopy(dup, keep).catch(reportUnexpected)

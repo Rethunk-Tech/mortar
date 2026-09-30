@@ -1,9 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { ChevronRight } from 'lucide-react'
+import { useLaunch } from '../launch/store.ts'
+import { isLocked } from '../mods/locked.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { Problems, StatusBar } from './ImportPreview.tsx'
 import type { ShownPreview, Summary } from './logic.ts'
+import { useImportDialog } from './store.ts'
 import type { ImportFlow } from './useImportFlow.ts'
 
 // The preview's problems, status bar and actions. Nothing downloads until one of the two import buttons is pressed.
@@ -23,6 +26,12 @@ export function ImportFooter({
   const { t } = useLingui()
   const needsSignIn = summary.fromNexus > 0 && !signedIn
   const canRun = !(flow.busy || needsSignIn)
+  // Adding into a profile the game holds would be refused; a new profile is still fine.
+  const targetId = useImportDialog((s) => s.request?.profileId ?? '')
+  const targetLocked = isLocked(
+    useLaunch((s) => s.status),
+    targetId,
+  )
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
       <Problems preview={preview} excluded={flow.excluded} onLeaveOut={flow.toggle} />
@@ -73,7 +82,7 @@ export function ImportFooter({
         {targetName ? (
           <Button
             variant="outlined"
-            disabled={!canRun}
+            disabled={!canRun || targetLocked}
             onClick={() => {
               flow.run(true).catch(reportUnexpected)
             }}

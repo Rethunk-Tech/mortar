@@ -178,6 +178,7 @@ export function RemoveDialog() {
   const mods = useMods((s) => s.mods)
   const askRemove = useMods((s) => s.askRemove)
   const remove = useMods((s) => s.remove)
+  const locked = useLocked()
   const others = mod ? siblingsOf(mods, mod).map((m) => m.name) : []
   const close = () => askRemove(null)
   return (
@@ -194,6 +195,7 @@ export function RemoveDialog() {
         <Button onClick={close}>{t`Cancel`}</Button>
         <Button
           color="error"
+          disabled={locked}
           onClick={() => {
             close()
             if (mod) {
