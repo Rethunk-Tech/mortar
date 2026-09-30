@@ -15,7 +15,7 @@ import { type Tab as TabId, useImportFlow } from './useImportFlow.ts'
 
 const dialogSx = {
   ...paper.sx,
-  bgcolor: 'rgba(34,34,40,0.97)',
+  bgcolor: 'rgb(34,34,40)',
   border: '1px solid rgba(255,255,255,0.1)',
   width: 'min(1180px, calc(100% - 72px))',
   maxHeight: 'none',
@@ -52,7 +52,6 @@ function Body({ request }: { request: ImportRequest }) {
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
-        height: hasMods ? 'min(680px, calc(100vh - 48px))' : 'auto',
         maxHeight: 'calc(100vh - 48px)',
       }}
     >
@@ -114,7 +113,7 @@ function Body({ request }: { request: ImportRequest }) {
         <>
           <Box
             sx={{
-              flex: hasMods ? 1 : 'none',
+              flex: '1 1 auto',
               minHeight: 0,
               overflowY: 'auto',
               p: 1,

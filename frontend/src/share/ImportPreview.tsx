@@ -113,7 +113,6 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
           borderRadius: '3px',
           fontSize: 11,
           fontWeight: 700,
-          textTransform: 'uppercase',
           whiteSpace: 'nowrap',
           bgcolor: CHIP[state].bg,
           color: CHIP[state].fg,
@@ -152,6 +151,12 @@ function ProblemRow({
   const tone = info
     ? { bg: 'rgba(43,139,218,0.12)', line: 'rgba(43,139,218,0.4)' }
     : { bg: 'rgba(243,180,22,0.12)', line: 'rgba(243,180,22,0.45)' }
+  let icon = <TriangleAlert size={16} color="#F3B416" />
+  if (problem.kind === 'free') {
+    icon = <Download size={16} color="#a3d3f7" />
+  } else if (info) {
+    icon = <Info size={16} color="#a3d3f7" />
+  }
   return (
     <Box
       sx={{
@@ -159,8 +164,7 @@ function ProblemRow({
         alignItems: 'center',
         gap: 1.25,
         height: 44,
-        pl: 1.5,
-        pr: info ? 1.5 : 1,
+        px: 1.5,
         minWidth: 0,
         bgcolor: tone.bg,
         border: `1px solid ${tone.line}`,
@@ -169,13 +173,7 @@ function ProblemRow({
         whiteSpace: 'nowrap',
       }}
     >
-      {problem.kind === 'free' ? (
-        <Download size={16} color="#a3d3f7" />
-      ) : info ? (
-        <Info size={16} color="#a3d3f7" />
-      ) : (
-        <TriangleAlert size={16} color="#F3B416" />
-      )}
+      {icon}
       <Box
         component="span"
         title={text}
@@ -202,6 +200,50 @@ function ProblemRow({
   )
 }
 
+function Pill({
+  bg,
+  fg,
+  dot,
+  children,
+}: {
+  bg: string
+  fg: string
+  dot: string
+  children: ReactNode
+}) {
+  return (
+    <Box
+      component="span"
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.75,
+        px: 1.25,
+        py: 0.5,
+        borderRadius: '12px',
+        fontSize: 13,
+        whiteSpace: 'nowrap',
+        bgcolor: bg,
+        color: fg,
+      }}
+    >
+      <Box component="span" sx={{ width: 8, height: 8, borderRadius: '4px', bgcolor: dot }} />
+      {children}
+    </Box>
+  )
+}
+
+function CountLabel({ state, count }: { state: ModState; count: number }) {
+  const { t } = useLingui()
+  return {
+    installed: t`${count} installed`,
+    download: t`${count} to download`,
+    dependency: plural(count, { one: '# dependency', other: '# dependencies' }),
+    later: t`${count} checked later`,
+    unavailable: t`${count} unavailable`,
+  }[state]
+}
+
 export function Tiles({
   mods,
   excluded,
@@ -212,7 +254,13 @@ export function Tiles({
   onToggle: (key: string) => void
 }) {
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '6px' }}>
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
+        gap: '6px',
+      }}
+    >
       {mods.map((m) => (
         <Tile key={m.key} mod={m} checked={!excluded.has(m.key)} onToggle={() => onToggle(m.key)} />
       ))}
@@ -323,48 +371,4 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
       </Box>
     </Box>
   )
-}
-
-function Pill({
-  bg,
-  fg,
-  dot,
-  children,
-}: {
-  bg: string
-  fg: string
-  dot: string
-  children: ReactNode
-}) {
-  return (
-    <Box
-      component="span"
-      sx={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 0.75,
-        px: 1.25,
-        py: 0.5,
-        borderRadius: '12px',
-        fontSize: 13,
-        whiteSpace: 'nowrap',
-        bgcolor: bg,
-        color: fg,
-      }}
-    >
-      <Box component="span" sx={{ width: 8, height: 8, borderRadius: '4px', bgcolor: dot }} />
-      {children}
-    </Box>
-  )
-}
-
-function CountLabel({ state, count }: { state: ModState; count: number }) {
-  const { t } = useLingui()
-  return {
-    installed: t`${count} installed`,
-    download: t`${count} to download`,
-    dependency: plural(count, { one: '# dependency', other: '# dependencies' }),
-    later: t`${count} checked later`,
-    unavailable: t`${count} unavailable`,
-  }[state]
 }

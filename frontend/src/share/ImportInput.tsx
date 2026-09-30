@@ -54,9 +54,8 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
               onChange={(e) => flow.setText(e.target.value)}
               slotProps={{
                 htmlInput: { 'aria-label': t`Share link`, spellCheck: false },
-                root: { sx: { userSelect: 'text', height: 44 } },
               }}
-              sx={{ '& .MuiInputBase-root': { height: 44 } }}
+              sx={{ userSelect: 'text', '& .MuiInputBase-root': { height: 44 } }}
             />
             <Button
               variant="outlined"
