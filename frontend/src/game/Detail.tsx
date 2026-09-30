@@ -49,35 +49,32 @@ function Hero({ profile }: { profile: Profile }) {
         height: 190,
         flexShrink: 0,
         overflow: 'hidden',
-        bgcolor: 'rgba(15,15,18,0.5)',
-        [compact]: { height: 52, borderBottom: '1px solid rgba(255,255,255,0.1)' },
+        [compact]: {
+          height: 52,
+          bgcolor: 'rgba(15,15,18,0.5)',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+        },
       }}
     >
-      {art ? (
-        <Box
-          component="img"
-          src={art}
-          alt=""
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            filter: 'blur(1px) brightness(0.75)',
-            opacity: 0.6,
-            [compact]: { display: 'none' },
-          }}
-        />
-      ) : null}
       <Box
         sx={{
           position: 'absolute',
           inset: 0,
-          bgcolor: 'rgba(20,20,24,0.50)',
+          maskImage: 'linear-gradient(to bottom, #000 60%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, #000 60%, transparent 100%)',
           [compact]: { display: 'none' },
         }}
-      />
+      >
+        {art ? (
+          <Box
+            component="img"
+            src={art}
+            alt=""
+            sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        ) : null}
+        <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(20,20,24,0.18)' }} />
+      </Box>
       <Box
         sx={{
           position: 'absolute',
@@ -126,11 +123,6 @@ function Hero({ profile }: { profile: Profile }) {
               </>
             )}
           </Box>
-          {mods === 0 ? (
-            <Typography sx={{ fontSize: 15, [compact]: { display: 'none' } }}>
-              {t`No mods yet · created ${created}`}
-            </Typography>
-          ) : null}
           <Typography
             noWrap={true}
             sx={{ display: 'none', fontSize: 12, [compact]: { display: 'block' } }}
@@ -138,7 +130,7 @@ function Hero({ profile }: { profile: Profile }) {
             {t`${plural(mods, { one: '# mod', other: '# mods' })} · Updated ${updated}`}
           </Typography>
         </Box>
-        <Box sx={{ display: mods > 0 ? 'flex' : 'none', gap: 1, [compact]: { display: 'none' } }}>
+        <Box sx={{ display: 'flex', gap: 1, [compact]: { display: 'none' } }}>
           <Card label={t`Mods`} value={String(mods)} />
           <Card label={t`Updated`} value={updated} />
           <Card label={t`Created`} value={created} />

@@ -7,11 +7,7 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#: src/game/Detail.tsx:131
-msgid "No mods yet · created {created}"
-msgstr "No mods yet · created {created}"
-
-#: src/game/Detail.tsx:143
+#: src/game/Detail.tsx:135
 msgid "Updated"
 msgstr "Updated"
 
@@ -128,7 +124,7 @@ msgstr "New profile"
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
 
-#: src/game/Detail.tsx:120
+#: src/game/Detail.tsx:117
 msgid "Rename profile"
 msgstr "Rename profile"
 
@@ -156,7 +152,7 @@ msgstr "Archive"
 msgid "Desktop"
 msgstr "Desktop"
 
-#: src/game/Detail.tsx:177
+#: src/game/Detail.tsx:169
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
 
@@ -205,7 +201,7 @@ msgstr "Could not duplicate the profile"
 msgid "Resize sidebar"
 msgstr "Resize sidebar"
 
-#: src/game/Detail.tsx:144
+#: src/game/Detail.tsx:136
 msgid "Created"
 msgstr "Created"
 
@@ -301,7 +297,7 @@ msgstr "Enable {0}"
 msgid "About Mortar"
 msgstr "About Mortar"
 
-#: src/game/Detail.tsx:98
+#: src/game/Detail.tsx:95
 #: src/game/NewProfileDialog.tsx:48
 #: src/profiles/ProfilesPage.tsx:154
 msgid "Profile name"
@@ -337,7 +333,7 @@ msgstr "Could not rename the profile"
 msgid "Could not save the profile order"
 msgstr "Could not save the profile order"
 
-#: src/game/Detail.tsx:175
+#: src/game/Detail.tsx:167
 msgid "No profiles yet"
 msgstr "No profiles yet"
 
@@ -374,8 +370,8 @@ msgstr "Could not check whether the game is running"
 msgid "Deleted profiles stay here for 30 days, mods and settings included."
 msgstr "Deleted profiles stay here for 30 days, mods and settings included."
 
-#: src/game/Detail.tsx:142
-#: src/game/Detail.tsx:219
+#: src/game/Detail.tsx:134
+#: src/game/Detail.tsx:211
 #: src/mods/ModList.tsx:116
 msgid "Mods"
 msgstr "Mods"
@@ -485,7 +481,7 @@ msgstr "UniqueID"
 msgid "{profileName} · {mods, plural, one {# mod} other {# mods}}"
 msgstr "{profileName} · {mods, plural, one {# mod} other {# mods}}"
 
-#: src/game/Detail.tsx:184
+#: src/game/Detail.tsx:176
 msgid "Create your first profile"
 msgstr "Create your first profile"
 
@@ -706,7 +702,7 @@ msgstr "Could not save the last game"
 msgid "SMAPI {0} is available"
 msgstr "SMAPI {0} is available"
 
-#: src/game/Detail.tsx:138
+#: src/game/Detail.tsx:130
 msgid "{mods, plural, one {# mod} other {# mods}} · Updated {updated}"
 msgstr "{mods, plural, one {# mod} other {# mods}} · Updated {updated}"
 
