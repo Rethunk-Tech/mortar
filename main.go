@@ -72,6 +72,39 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// application.New exits a second instance after forwarding its arguments, so it runs before anything that
+	// writes to disk: a second instance must not clean, collect or rewrite the running instance's data.
+	var (
+		nxmSvc   *nxmsvc.Service
+		shareSvc *sharesvc.Service
+		window   *application.WebviewWindow
+	)
+	ready := make(chan struct{})
+	app := application.New(application.Options{
+		Name:        "Mortar",
+		Description: "Multi-game desktop mod manager",
+		Assets: application.AssetOptions{
+			Handler: application.AssetFileServerFS(assets),
+			Middleware: application.ChainMiddleware(
+				game.ArtMiddleware(home),
+				backdrop.Middleware(store.Get, backdrop.SystemDefault, backdrop.DesktopWallpaper),
+			),
+		},
+		SingleInstance: &application.SingleInstanceOptions{
+			UniqueID: "tech.rethunk.mortar",
+			OnSecondInstanceLaunch: func(d application.SecondInstanceData) {
+				<-ready
+				// A minimised window stays down: the window sends a desktop notification whose click brings it up.
+				nxmLink := nxmSvc.Receive(d.Args)
+				if shareSvc.Receive(d.Args) || !nxmLink || !window.IsMinimised() {
+					window.Restore()
+					window.Focus()
+				}
+			},
+		},
+	})
+
 	gamesSvc := game.NewService(home, store)
 
 	items, err := modstore.Open()
@@ -126,15 +159,14 @@ func main() {
 	if err := nxmHandler.Refresh(); err != nil {
 		log.Printf("desktop entry: %v", err)
 	}
-	nxmSvc := nxmsvc.NewService(store, nxmHandler)
+	nxmSvc = nxmsvc.NewService(store, nxmHandler)
 
 	dataDir, err := datadir.Dir()
 	if err != nil {
 		log.Fatal(err)
 	}
-	var app *application.App
 	updates := &updatesvc.Service{}
-	var shareSvc *sharesvc.Service
+	emit := func(name string, data any) { app.Event.Emit(name, data) }
 	queueSvc, err := queue.New(queue.Deps{
 		Client:        func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },
 		Premium:       func() bool { return store.Get().NexusPremium },
@@ -147,11 +179,7 @@ func main() {
 		GitHub:  &github.Client{},
 		OpenURL: func(url string) error { return app.Browser.OpenURL(url) },
 		Running: launches.Running,
-		Emit: func(name string, data any) {
-			if app != nil {
-				app.Event.Emit(name, data)
-			}
-		},
+		Emit:    emit,
 		Dir:     dataDir,
 		Changed: func(st queue.State) { shareSvc.QueueChanged(st) },
 	})
@@ -159,10 +187,8 @@ func main() {
 		log.Fatal(err)
 	}
 	nxmSvc.Route = queueSvc.Route
-	nxmSvc.Receive(os.Args[1:])
 	notifier := notifications.New()
 
-	var window *application.WebviewWindow
 	pick := &picker.Service{}
 	profileSvc := profile.NewService(profiles)
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
@@ -181,44 +207,22 @@ func main() {
 		Env:      problemsSvc.Environment,
 		Queue:    queueSvc,
 		Dir:      dataDir,
-		Emit: func(name string, data any) {
-			if app != nil {
-				app.Event.Emit(name, data)
-			}
-		},
+		Emit:     emit,
 	})
+	// Queue changes reach shareSvc, so links are routed only once both exist.
+	nxmSvc.Receive(os.Args[1:])
 	shareSvc.Receive(os.Args[1:])
 	shareSvc.QueueChanged(queueSvc.State())
 
-	app = application.New(application.Options{
-		Name:        "Mortar",
-		Description: "Multi-game desktop mod manager",
-		Services: []application.Service{
-			application.NewService(svc), application.NewService(gamesSvc),
-			application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
-			application.NewService(savesSvc), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
-			application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc),
-			application.NewService(support.NewService(version, problemsSvc.Environment, home, profiles.ModsDir)), application.NewService(updates),
-		},
-		Assets: application.AssetOptions{
-			Handler: application.AssetFileServerFS(assets),
-			Middleware: application.ChainMiddleware(
-				game.ArtMiddleware(home),
-				backdrop.Middleware(store.Get, backdrop.SystemDefault, backdrop.DesktopWallpaper),
-			),
-		},
-		SingleInstance: &application.SingleInstanceOptions{
-			UniqueID: "tech.rethunk.mortar",
-			OnSecondInstanceLaunch: func(d application.SecondInstanceData) {
-				// A minimised window stays down: the window sends a desktop notification whose click brings it up.
-				nxmLink := nxmSvc.Receive(d.Args)
-				if shareSvc.Receive(d.Args) || !nxmLink || !window.IsMinimised() {
-					window.Restore()
-					window.Focus()
-				}
-			},
-		},
-	})
+	for _, s := range []application.Service{
+		application.NewService(svc), application.NewService(gamesSvc),
+		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
+		application.NewService(savesSvc), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
+		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc),
+		application.NewService(support.NewService(version, problemsSvc.Environment, home, profiles.ModsDir)), application.NewService(updates),
+	} {
+		app.RegisterService(s)
+	}
 
 	if err := updatesvc.Configure(updates, app.Updater, version, updateKey); err != nil {
 		log.Fatal(err)
@@ -253,6 +257,7 @@ func main() {
 		app.Event.Emit(picker.DroppedEvent, e.Context().DroppedFiles())
 	})
 
+	close(ready)
 	if err := app.Run(); err != nil {
 		log.Fatal(err)
 	}
