@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/steam"
 )
 
@@ -23,6 +24,10 @@ type Game struct {
 	CacheDir string
 	// LogDir holds SMAPI-latest.txt.
 	LogDir string
+	// Runner, LookPath and LaunchTiming default to the real command, exec.LookPath and 60 s.
+	Runner       launch.Runner
+	LookPath     func(string) (string, error)
+	LaunchTiming launch.Timing
 }
 
 func (Game) ID() string           { return "stardew" }

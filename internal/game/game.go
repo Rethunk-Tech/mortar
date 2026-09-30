@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/game/stardew"
+	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/loader"
 	"github.com/Rethunk-AI/mortar/internal/steam"
 )
@@ -30,6 +31,11 @@ type Game interface {
 	LoaderStatus(dir, recorded string) loader.Status
 	// LatestLoader returns the newest stable loader version.
 	LatestLoader(ctx context.Context) (string, error)
+	// ProcessName is the loader's executable, the process a running profile is found by.
+	ProcessName() string
+	// Launch starts the profile's mods folder and returns once the game has started, sending the loader's log
+	// lines to onLine. It returns launch.ErrNoSteam when there is no Steam and req.Direct is false.
+	Launch(ctx context.Context, req launch.Request, onLine func(string)) error
 	// InstallLoader installs or updates the loader in dir and returns its version.
 	InstallLoader(ctx context.Context, dir string, bundled loader.Bundled, progress func(loader.Step)) (string, error)
 }
