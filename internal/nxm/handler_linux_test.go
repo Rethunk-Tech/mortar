@@ -49,6 +49,17 @@ func TestRegisterThenRestorePreviousHandler(t *testing.T) {
 	if err != nil || !strings.Contains(string(b), `Exec="/opt/mortar/mortar" %u`) || !strings.Contains(string(b), "MimeType=x-scheme-handler/nxm;x-scheme-handler/mortar;application/x-mortar;") {
 		t.Fatalf("desktop file: %s, %v", b, err)
 	}
+	png, err := fsx.ReadFile(l.iconPNGPath())
+	if err != nil || len(png) == 0 || string(png) != string(iconPNG) {
+		t.Fatalf("hicolor png: %d, %v", len(png), err)
+	}
+	svg, err := fsx.ReadFile(l.iconSVGPath())
+	if err != nil || !strings.Contains(string(svg), `viewBox="0 0 1024 1024"`) {
+		t.Fatalf("hicolor svg: %s, %v", svg, err)
+	}
+	if l.NotificationIcon() != l.iconPNGPath() {
+		t.Fatalf("NotificationIcon: %q", l.NotificationIcon())
+	}
 	if owner, _ := l.Owner(); !owner.Mine {
 		t.Fatalf("owner after Register: %+v", owner)
 	}
@@ -145,6 +156,19 @@ func TestRegisterLinksIsIdempotentAndKeepsNxm(t *testing.T) {
 	}
 	if desktop, _ = fsx.ReadFile(l.desktopPath()); !strings.Contains(string(desktop), nxmMime) {
 		t.Errorf("RegisterLinks dropped nxm: %s", desktop)
+	}
+}
+
+func TestNotificationIconIsEmptyUntilTheDesktopEntryIsWritten(t *testing.T) {
+	l, _ := newLinux(t, "")
+	if l.NotificationIcon() != "" {
+		t.Fatalf("icon before first run: %q", l.NotificationIcon())
+	}
+	if err := l.RegisterLinks(); err != nil {
+		t.Fatal(err)
+	}
+	if l.NotificationIcon() != l.iconPNGPath() {
+		t.Fatalf("icon after RegisterLinks: %q", l.NotificationIcon())
 	}
 }
 

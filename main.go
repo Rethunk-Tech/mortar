@@ -39,6 +39,9 @@ const version = "0.0.1"
 //go:embed all:frontend/dist
 var assets embed.FS
 
+//go:embed build/appicon.png
+var appIcon []byte
+
 // updateKey verifies release signatures; its private half never enters the repository (docs/architecture.md § Release).
 //
 //go:embed build/updater/public.key
@@ -76,8 +79,7 @@ func main() {
 	)
 	ready := make(chan struct{})
 	app := application.New(application.Options{
-		Name:        "Mortar",
-		Description: "Multi-game desktop mod manager",
+		Icon: appIcon,
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
 			Middleware: application.ChainMiddleware(

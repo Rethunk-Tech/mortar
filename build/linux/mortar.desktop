@@ -1,10 +1,11 @@
 [Desktop Entry]
 Type=Application
-Name=mortar
+Name=Mortar
 Exec=mortar
 Icon=mortar
 Categories=Game;Utility;
+Comment=Multi-game desktop mod manager
 Terminal=false
-Keywords=wails
+Keywords=mod;manager;nexus;stardew;
 Version=1.0
 StartupNotify=false

@@ -125,9 +125,41 @@ Exec="%s" %%u
 Icon=mortar
 Terminal=false
 Categories=Game;Utility;
+Keywords=mod;manager;nexus;stardew;
 StartupWMClass=mortar
 MimeType=%s
 `, l.exe, mime)
+}
+
+func (l *System) iconPNGPath() string {
+	return filepath.Join(l.dataHome, "icons", "hicolor", "256x256", "apps", "mortar.png")
+}
+
+func (l *System) iconSVGPath() string {
+	return filepath.Join(l.dataHome, "icons", "hicolor", "scalable", "apps", "mortar.svg")
+}
+
+// NotificationIcon is the installed PNG, for notification attachments; empty until the desktop entry has been written.
+func (l *System) NotificationIcon() string {
+	path := l.iconPNGPath()
+	if _, err := fsx.Stat(path); err != nil {
+		return ""
+	}
+	return path
+}
+
+func (l *System) installIcons() error {
+	png, svg := l.iconPNGPath(), l.iconSVGPath()
+	if err := os.MkdirAll(filepath.Dir(png), 0o750); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(svg), 0o750); err != nil {
+		return err
+	}
+	if err := fsx.WriteFile(png, iconPNG, desktopPerm); err != nil {
+		return err
+	}
+	return fsx.WriteFile(svg, iconSVG, desktopPerm)
 }
 
 func (l *System) writeDesktop(withNxm bool) error {
@@ -139,6 +171,9 @@ func (l *System) writeDesktop(withNxm bool) error {
 		return err
 	}
 	if err := fsx.WriteFile(path, []byte(l.desktopFile(withNxm)), desktopPerm); err != nil {
+		return err
+	}
+	if err := l.installIcons(); err != nil {
 		return err
 	}
 	// A missing tool or a failure only leaves the cache stale; xdg-mime reads the file itself.
@@ -275,7 +310,7 @@ func execTarget(entry []byte) string {
 func (l *System) rewrite(current []byte) error {
 	withNxm := strings.Contains(string(current), nxmMime)
 	if string(current) == l.desktopFile(withNxm) {
-		return nil
+		return l.installIcons()
 	}
 	return l.writeDesktop(withNxm)
 }
