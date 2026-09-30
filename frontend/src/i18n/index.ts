@@ -1,7 +1,7 @@
-import { i18n } from '@lingui/core'
+import { i18n as global } from '@lingui/core'
 import { messages } from '../locales/en/messages.ts'
 
-i18n.load('en', messages)
-i18n.activate('en')
+global.load('en', messages)
+global.activate('en')
 
-export { i18n }
+export const i18n = global

@@ -1,6 +1,9 @@
 import { alpha, createTheme, responsiveFontSizes, type Theme } from '@mui/material/styles'
 import { type AccentName, accents } from './accents.ts'
 
+const THUMB_ALPHA = 0.45
+const THUMB_HOVER_ALPHA = 0.7
+const TRACK_ALPHA = 0.08
 const FONT = '"Open Sans", sans-serif'
 
 export function createMortarTheme(accent: AccentName): Theme {
@@ -23,15 +26,15 @@ export function createMortarTheme(accent: AccentName): Theme {
           'html, body, #root': { background: 'transparent' },
           '*': {
             scrollbarWidth: 'thin',
-            scrollbarColor: `${alpha(main, 0.45)} ${alpha(main, 0.08)}`,
+            scrollbarColor: `${alpha(main, THUMB_ALPHA)} ${alpha(main, TRACK_ALPHA)}`,
           },
           '*::-webkit-scrollbar': { width: '0.5em', height: '0.5em' },
-          '*::-webkit-scrollbar-track': { background: alpha(main, 0.08) },
+          '*::-webkit-scrollbar-track': { background: alpha(main, TRACK_ALPHA) },
           '*::-webkit-scrollbar-thumb': {
-            background: alpha(main, 0.45),
+            background: alpha(main, THUMB_ALPHA),
             borderRadius: '0.25em',
           },
-          '*::-webkit-scrollbar-thumb:hover': { background: alpha(main, 0.7) },
+          '*::-webkit-scrollbar-thumb:hover': { background: alpha(main, THUMB_HOVER_ALPHA) },
           ':focus-visible': { outline: `2px solid ${main}`, outlineOffset: 2 },
         },
       },

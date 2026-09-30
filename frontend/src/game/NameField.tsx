@@ -1,5 +1,6 @@
 import { TextField } from '@mui/material'
 import { useState } from 'react'
+import { reportUnexpected } from '../toasts/report.ts'
 
 // Enter submits, Esc or blur cancels; `onSubmit` reports whether the name was accepted.
 export function NameField({
@@ -29,7 +30,9 @@ export function NameField({
           e.stopPropagation()
           onCancel()
         } else if (e.key === 'Enter' && value.trim()) {
-          void onSubmit(value).then((ok) => ok && onCancel())
+          onSubmit(value)
+            .then((ok) => ok && onCancel())
+            .catch(reportUnexpected)
         }
       }}
       slotProps={{ htmlInput: { maxLength: 60, 'aria-label': label } }}

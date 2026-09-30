@@ -5,6 +5,7 @@ import {
   SetTranslucent,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { type AccentName, accents } from '../../theme/accents.ts'
+import { errorText } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { useSettings } from '../store.ts'
 import { isAccent } from '../theme.ts'
@@ -15,7 +16,7 @@ export function Appearance() {
   const translucent = useSettings((s) => s.translucent)
   const push = useToasts((s) => s.push)
   const reportFailure = (err: unknown) => {
-    const body = typeof err === 'string' ? err : err instanceof Error ? err.message : undefined
+    const body = errorText(err)
     push({ kind: 'error', title: t`Couldn't save that setting`, ...(body ? { body } : {}) })
   }
   const cards: { name: AccentName; label: string; note: string }[] = [

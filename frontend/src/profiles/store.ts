@@ -1,4 +1,4 @@
-import { t } from '@lingui/core/macro'
+import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
 import type {
@@ -18,6 +18,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { SetLastProfile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { loadGameStatus } from '../games/status.ts'
+import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'
 import { useToasts } from '../toasts/store.ts'
 
@@ -60,14 +61,14 @@ export const useProfiles = create<{
       const openId = profiles.find((p) => p.id === last && !p.hidden)?.id ?? firstVisible(profiles)
       set({ game: games.find((g) => g.id === gameId) ?? null, profiles, openId, loaded: true })
     } catch (e) {
-      fail(t`Could not read your profiles`)(e)
+      fail(i18n._(msg`Could not read your profiles`))(e)
     }
   },
   open: (id) => {
     const { game } = get()
     set({ openId: id })
     if (game) {
-      SetLastProfile(game.id, id).catch(fail(t`Could not save the open profile`))
+      SetLastProfile(game.id, id).catch(fail(i18n._(msg`Could not save the open profile`)))
     }
   },
   create: async (name) => {
@@ -89,7 +90,7 @@ export const useProfiles = create<{
       set((s) => ({ profiles: s.profiles.map((x) => (x.id === id ? p : x)) }))
       return true
     } catch (e) {
-      fail(t`Could not rename the profile`)(e)
+      fail(i18n._(msg`Could not rename the profile`))(e)
       return false
     }
   },
@@ -102,7 +103,7 @@ export const useProfiles = create<{
     try {
       set({ trash: (await ListTrash(game.id)) ?? [] })
     } catch (e) {
-      fail(t`Could not read recently deleted profiles`)(e)
+      fail(i18n._(msg`Could not read recently deleted profiles`))(e)
     }
   },
   duplicate: async (id) => {
@@ -114,7 +115,7 @@ export const useProfiles = create<{
       const p = await Duplicate(game.id, id)
       set({ profiles: (await List(game.id)) ?? [p] })
     } catch (e) {
-      fail(t`Could not duplicate the profile`)(e)
+      fail(i18n._(msg`Could not duplicate the profile`))(e)
     }
   },
   setHidden: async (id, hidden) => {
@@ -126,7 +127,7 @@ export const useProfiles = create<{
       get().replace(await SetHidden(game.id, id, hidden))
       get().ensureOpen()
     } catch (e) {
-      fail(t`Could not change the profile's visibility`)(e)
+      fail(i18n._(msg`Could not change the profile's visibility`))(e)
     }
   },
   remove: async (id) => {
@@ -139,7 +140,7 @@ export const useProfiles = create<{
       set((s) => ({ profiles: s.profiles.filter((x) => x.id !== id) }))
       get().ensureOpen()
     } catch (e) {
-      fail(t`Could not delete the profile`)(e)
+      fail(i18n._(msg`Could not delete the profile`))(e)
     }
     await get().loadTrash()
   },
@@ -153,7 +154,7 @@ export const useProfiles = create<{
       set({ profiles: (await List(game.id)) ?? [] })
       get().ensureOpen()
     } catch (e) {
-      fail(t`Could not restore the profile`)(e)
+      fail(i18n._(msg`Could not restore the profile`))(e)
     }
     await get().loadTrash()
   },
@@ -167,7 +168,7 @@ export const useProfiles = create<{
     try {
       await Reorder(game.id, ids)
     } catch (e) {
-      fail(t`Could not save the profile order`)(e)
+      fail(i18n._(msg`Could not save the profile order`))(e)
       set({ profiles })
     }
   },

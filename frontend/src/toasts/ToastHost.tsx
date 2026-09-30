@@ -34,13 +34,13 @@ function ToastCard({ toast }: { toast: Toast }) {
         <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
           {toast.title}
         </Box>
-        {toast.body && (
+        {toast.body ? (
           <Box component="span" sx={{ fontSize: 13, color: 'rgba(235,235,240,0.95)' }}>
             {toast.body}
           </Box>
-        )}
+        ) : null}
       </Box>
-      {action && (
+      {action ? (
         <ButtonBase
           onClick={() => {
             action.run()
@@ -60,7 +60,7 @@ function ToastCard({ toast }: { toast: Toast }) {
         >
           {action.label}
         </ButtonBase>
-      )}
+      ) : null}
       <IconButton
         aria-label={t`Dismiss`}
         onClick={() => dismiss(toast.id)}

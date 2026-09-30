@@ -16,14 +16,8 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compactQuery } from '../game/compact.ts'
-import {
-  LetterTile,
-  ModSwitch,
-  RemoveButton,
-  ShowFilesButton,
-  siblingsOf,
-  sourceKind,
-} from './parts.tsx'
+import { siblingsOf, sourceKind } from './lookup.ts'
+import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
 import { useMods } from './store.ts'
 
 function Field({ label, value }: { label: string; value: string }) {
@@ -74,8 +68,12 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   const narrow = useMediaQuery(compactQuery)
   const [selectedId, setSelectedId] = useState('')
   const selected = mods.find((m) => m.uniqueId === selectedId)
-  const kindLabel = (kind: string) =>
-    kind === 'smapi' ? t`SMAPI` : kind === 'local' ? t`Archive` : kind
+  const kindLabel = (kind: string) => {
+    if (kind === 'smapi') {
+      return t`SMAPI`
+    }
+    return kind === 'local' ? t`Archive` : kind
+  }
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', gap: 2 }}>
       <Box sx={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>

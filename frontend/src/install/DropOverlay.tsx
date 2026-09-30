@@ -5,12 +5,12 @@ import { Download } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useInstall } from './store.ts'
 
 // Wails toggles this class on the element carrying data-file-drop-target while a file drag is over it.
 const ACTIVE_CLASS = 'file-drop-target-active'
-
-export const dropTargetProps = { 'data-file-drop-target': '' }
+const TINT_ALPHA = 0.08
 
 export function DropOverlay({ target }: { target: HTMLElement | null }) {
   const [dragging, setDragging] = useState(false)
@@ -31,7 +31,10 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
   useEffect(
     () =>
       Events.On('files:dropped', (event) => {
-        void useInstall.getState().install(event.data ?? [])
+        useInstall
+          .getState()
+          .install(event.data ?? [])
+          .catch(reportUnexpected)
       }),
     [],
   )
@@ -51,7 +54,7 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
         pointerEvents: 'none',
         border: `2px dashed ${theme.palette.primary.main}`,
         borderRadius: '10px',
-        bgcolor: alpha(theme.palette.primary.main, 0.08),
+        bgcolor: alpha(theme.palette.primary.main, TINT_ALPHA),
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',

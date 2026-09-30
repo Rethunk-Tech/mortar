@@ -14,9 +14,8 @@ const defaults: Settings = {
 
 export const useSettings = create<Settings>(() => defaults)
 
-const apply = (next: Settings) => useSettings.setState(next)
-
 export async function initSettings(): Promise<void> {
+  const apply = (next: Settings) => useSettings.setState(next)
   Events.On('settings:changed', (event) => {
     apply(event.data)
   })

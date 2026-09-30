@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material'
 import { useState } from 'react'
 import { useProfiles } from '../profiles/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 
 export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLingui()
@@ -35,7 +36,7 @@ export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: ()
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          void submit()
+          submit().catch(reportUnexpected)
         }}
       >
         <DialogTitle>{t`New profile`}</DialogTitle>

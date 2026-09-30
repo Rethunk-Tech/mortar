@@ -40,8 +40,10 @@ import { compact } from '../game/compact.ts'
 import { NameField } from '../game/NameField.tsx'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { useNav } from '../nav/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useProfiles } from './store.ts'
 
+const DRAG_TINT_ALPHA = 0.24
 const panelSx = { bgcolor: 'background.paper', borderRadius: '6px' }
 const dialogPaper = { paper: { sx: { bgcolor: 'rgba(40,40,48,0.92)' } } }
 
@@ -85,7 +87,8 @@ function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) =
         ...panelSx,
         border: '2px solid',
         borderColor: isDragging ? 'primary.main' : 'transparent',
-        bgcolor: (th) => (isDragging ? alpha(th.palette.primary.main, 0.24) : 'background.paper'),
+        bgcolor: (th) =>
+          isDragging ? alpha(th.palette.primary.main, DRAG_TINT_ALPHA) : 'background.paper',
         position: 'relative',
         zIndex: isDragging ? 1 : 0,
       }}
@@ -135,10 +138,18 @@ function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) =
         <MenuItem onClick={choose(() => setRenaming(true))}>
           <Trans>Rename</Trans>
         </MenuItem>
-        <MenuItem onClick={choose(() => void duplicate(profile.id))}>
+        <MenuItem
+          onClick={choose(() => {
+            duplicate(profile.id).catch(reportUnexpected)
+          })}
+        >
           <Trans>Duplicate</Trans>
         </MenuItem>
-        <MenuItem onClick={choose(() => void setHidden(profile.id, !profile.hidden))}>
+        <MenuItem
+          onClick={choose(() => {
+            setHidden(profile.id, !profile.hidden).catch(reportUnexpected)
+          })}
+        >
           {profile.hidden ? <Trans>Show in sidebar</Trans> : <Trans>Hide from sidebar</Trans>}
         </MenuItem>
         <MenuItem onClick={choose(() => onDelete(profile))}>
@@ -185,7 +196,9 @@ function Trash() {
             <Button
               size="small"
               startIcon={<RotateCcw size={14} />}
-              onClick={() => void restore(item.id)}
+              onClick={() => {
+                restore(item.id).catch(reportUnexpected)
+              }}
               sx={{ whiteSpace: 'nowrap' }}
             >
               <Trans>Restore</Trans>
@@ -211,7 +224,7 @@ export function ProfilesPage() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
   useEffect(() => {
-    void loadTrash()
+    loadTrash().catch(reportUnexpected)
   }, [loadTrash])
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -219,15 +232,17 @@ export function ProfilesPage() {
         closeProfiles()
       }
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    globalThis.addEventListener('keydown', onKey)
+    return () => globalThis.removeEventListener('keydown', onKey)
   }, [closeProfiles])
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id) {
       return
     }
     const ids = profiles.map((p) => p.id)
-    void reorder(arrayMove(ids, ids.indexOf(String(active.id)), ids.indexOf(String(over.id))))
+    reorder(arrayMove(ids, ids.indexOf(String(active.id)), ids.indexOf(String(over.id)))).catch(
+      reportUnexpected,
+    )
   }
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -305,7 +320,7 @@ export function ProfilesPage() {
             color="error"
             onClick={() => {
               if (deleting) {
-                void remove(deleting.id)
+                remove(deleting.id).catch(reportUnexpected)
               }
               setDeleting(null)
             }}

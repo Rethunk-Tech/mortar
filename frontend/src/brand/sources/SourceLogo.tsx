@@ -1,11 +1,16 @@
 import { siGithub, siThunderstore } from 'simple-icons'
 import nexusmods from '../vendor/nexusmods.svg'
 
+const ICONS: Record<string, { path: string }> = {
+  GitHub: siGithub,
+  Thunderstore: siThunderstore,
+}
+
 export function SourceLogo({ name, size }: { name: string; size: number }) {
   if (name === 'Nexus') {
     return <img src={nexusmods} alt="" width={size} height={size} />
   }
-  const icon = name === 'GitHub' ? siGithub : name === 'Thunderstore' ? siThunderstore : null
+  const icon = ICONS[name]
   if (!icon) {
     return null
   }

@@ -1,4 +1,4 @@
-import { t } from '@lingui/core/macro'
+import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
@@ -7,10 +7,11 @@ import {
   SetModEnabled,
   ShowFiles,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useToasts } from '../toasts/store.ts'
 
-export type View = 'grid' | 'list'
+type View = 'grid' | 'list'
 
 const VIEW_KEY = 'mortar.modsView'
 
@@ -66,7 +67,7 @@ export const useMods = create<{
         set({ mods, loaded: true })
       }
     } catch (e) {
-      fail(t`Could not read the mods`)(e)
+      fail(i18n._(msg`Could not read the mods`))(e)
     }
   },
   setEnabled: async (mod, enabled) => {
@@ -85,7 +86,7 @@ export const useMods = create<{
         .replace(await SetModEnabled(target.game, target.id, mod.uniqueId, enabled))
     } catch (e) {
       flip(!enabled)
-      fail(t`Could not switch ${mod.name}`)(e)
+      fail(i18n._(msg`Could not switch ${mod.name}`))(e)
     }
   },
   askRemove: (removing) => set({ removing }),
@@ -97,7 +98,7 @@ export const useMods = create<{
     try {
       useProfiles.getState().replace(await RemoveEntry(target.game, target.id, mod.key))
     } catch (e) {
-      fail(t`Could not remove ${mod.name}`)(e)
+      fail(i18n._(msg`Could not remove ${mod.name}`))(e)
     }
     await get().load()
   },
@@ -109,7 +110,9 @@ export const useMods = create<{
     try {
       await ShowFiles(target.game, target.id, mod.uniqueId)
     } catch (e) {
-      fail(t`Could not open the folder of ${mod.name}`)(e)
+      fail(i18n._(msg`Could not open the folder of ${mod.name}`))(e)
     }
   },
 }))
+
+export type { View }

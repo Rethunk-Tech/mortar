@@ -17,6 +17,9 @@ const SOURCES: Record<string, string[]> = {
   lethal: ['Thunderstore'],
 }
 
+const LONG_NAME = 8
+const SMALL_FONT = 13
+const NORMAL_FONT = 15
 const shadow = '0 1px 2px rgba(0,0,0,0.9), 0 0 18px rgba(0,0,0,0.85)'
 
 function Row({ game, openable, note }: { game: Game; openable: boolean; note: string }) {
@@ -79,7 +82,7 @@ function Row({ game, openable, note }: { game: Game; openable: boolean; note: st
               justifyContent: 'center',
               gap: '8px',
               bgcolor: 'rgba(28,28,32,0.92)',
-              fontSize: name.length > 8 ? 13 : 15,
+              fontSize: name.length > LONG_NAME ? SMALL_FONT : NORMAL_FONT,
               fontWeight: 700,
               color: '#fff',
             }}

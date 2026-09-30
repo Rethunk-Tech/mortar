@@ -4,7 +4,7 @@ import {
   SteamStatus,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 
-export type GameStatus = {
+export interface GameStatus {
   games: GameInfo[]
   steam: Awaited<ReturnType<typeof SteamStatus>>
 }

@@ -1,7 +1,8 @@
 import { Box } from '@mui/material'
 import { Events } from '@wailsio/runtime'
 import { type ReactNode, useEffect, useState } from 'react'
-import { DropOverlay, dropTargetProps } from '../install/DropOverlay.tsx'
+import { DropOverlay } from '../install/DropOverlay.tsx'
+import { dropTargetProps } from '../install/dropTarget.ts'
 import { TitleBar } from './TitleBar.tsx'
 import { win } from './win.ts'
 

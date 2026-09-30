@@ -11,6 +11,7 @@ import {
 import { Browser } from '@wailsio/runtime'
 import { ExternalLink, FilePlus, LayoutGrid, List, Search } from 'lucide-react'
 import { useInstall } from '../install/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useMods, type View } from './store.ts'
 
 const NEXUS = 'https://www.nexusmods.com/stardewvalley/mods'
@@ -20,7 +21,9 @@ export function BrowseNexus({ variant }: { variant: 'contained' | 'outlined' }) 
     <Button
       variant={variant}
       startIcon={<ExternalLink size={16} />}
-      onClick={() => void Browser.OpenURL(NEXUS)}
+      onClick={() => {
+        Browser.OpenURL(NEXUS).catch(reportUnexpected)
+      }}
     >
       <Trans>Browse Nexus</Trans>
     </Button>
@@ -37,7 +40,9 @@ export function AddArchive({ variant }: { variant: 'contained' | 'outlined' }) {
       startIcon={
         installing ? <CircularProgress size={16} color="inherit" /> : <FilePlus size={16} />
       }
-      onClick={() => void pick()}
+      onClick={() => {
+        pick().catch(reportUnexpected)
+      }}
       sx={{ whiteSpace: 'nowrap' }}
     >
       {installing ? <Trans>Adding…</Trans> : <Trans>Add archive</Trans>}

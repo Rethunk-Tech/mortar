@@ -23,7 +23,6 @@
     "allowUnreachableCode": false,
     "noImplicitOverride": true,
     "moduleDetection": "force",
-    "erasableSyntaxOnly": true,
     "noUncheckedSideEffectImports": true,
     "esModuleInterop": true,
     "types": ["bun"]

@@ -16,8 +16,8 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
         closeSettings()
       }
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    globalThis.addEventListener('keydown', onKey)
+    return () => globalThis.removeEventListener('keydown', onKey)
   }, [closeSettings])
   const sections: { id: SettingsSection; label: string }[] = [
     { id: 'appearance', label: t`Appearance` },

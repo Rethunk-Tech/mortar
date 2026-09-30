@@ -16,23 +16,29 @@ import {
 } from '@mui/material'
 import { Ellipsis, FolderOpen, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import type {
-  Mod,
-  Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import { siblingsOf } from './lookup.ts'
 import { useMods } from './store.ts'
 
 const paper = { sx: { bgcolor: 'rgba(40,40,48,0.92)' } }
 
+const HASH_MULTIPLIER = 31
+const UINT32_BITS = 32
+const UINT32_RANGE = 2 ** UINT32_BITS
+const HUE_DEGREES = 360
+const TILE_FONT_RATIO = 0.5
+const DEFAULT_TILE_SIZE = 40
+
 function hash(s: string): number {
   let h = 0
   for (const c of s) {
-    h = (h * 31 + c.charCodeAt(0)) >>> 0
+    h = (h * HASH_MULTIPLIER + (c.codePointAt(0) ?? 0)) % UINT32_RANGE
   }
   return h
 }
 
-export function LetterTile({ mod, size = 40 }: { mod: Mod; size?: number }) {
+export function LetterTile({ mod, size = DEFAULT_TILE_SIZE }: { mod: Mod; size?: number }) {
   return (
     <Box
       aria-hidden={true}
@@ -44,8 +50,8 @@ export function LetterTile({ mod, size = 40 }: { mod: Mod; size?: number }) {
         display: 'grid',
         placeItems: 'center',
         fontWeight: 700,
-        fontSize: size * 0.5,
-        bgcolor: `hsl(${hash(mod.uniqueId.toLowerCase()) % 360} 35% 38% / 0.85)`,
+        fontSize: size * TILE_FONT_RATIO,
+        bgcolor: `hsl(${hash(mod.uniqueId.toLowerCase()) % HUE_DEGREES} 35% 38% / 0.85)`,
       }}
     >
       {(Array.from(mod.name)[0] ?? '?').toUpperCase()}
@@ -59,7 +65,9 @@ export function ModSwitch({ mod }: { mod: Mod }) {
   return (
     <Switch
       checked={mod.enabled}
-      onChange={(e) => void setEnabled(mod, e.target.checked)}
+      onChange={(e) => {
+        setEnabled(mod, e.target.checked).catch(reportUnexpected)
+      }}
       onClick={(e) => e.stopPropagation()}
       slotProps={{ input: { 'aria-label': t`Enable ${mod.name}` } }}
     />
@@ -69,7 +77,12 @@ export function ModSwitch({ mod }: { mod: Mod }) {
 export function ShowFilesButton({ mod }: { mod: Mod }) {
   const showFiles = useMods((s) => s.showFiles)
   return (
-    <Button startIcon={<FolderOpen size={16} />} onClick={() => void showFiles(mod)}>
+    <Button
+      startIcon={<FolderOpen size={16} />}
+      onClick={() => {
+        showFiles(mod).catch(reportUnexpected)
+      }}
+    >
       <Trans>Show files</Trans>
     </Button>
   )
@@ -106,7 +119,7 @@ export function ModMenu({ mod }: { mod: Mod }) {
         <MenuItem
           onClick={() => {
             close()
-            void showFiles(mod)
+            showFiles(mod).catch(reportUnexpected)
           }}
         >
           <ListItemIcon>
@@ -167,7 +180,7 @@ export function RemoveDialog() {
           onClick={() => {
             close()
             if (mod) {
-              void remove(mod)
+              remove(mod).catch(reportUnexpected)
             }
           }}
         >
@@ -177,9 +190,3 @@ export function RemoveDialog() {
     </Dialog>
   )
 }
-
-export const siblingsOf = (mods: Mod[], mod: Mod) =>
-  mods.filter((m) => m.key === mod.key && m.uniqueId !== mod.uniqueId)
-
-export const sourceKind = (profile: Profile, mod: Mod) =>
-  (profile.entries ?? []).find((e) => e.key === mod.key)?.source.kind ?? ''

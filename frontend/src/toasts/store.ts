@@ -1,21 +1,23 @@
 import { create } from 'zustand'
 
+const AUTO_DISMISS_MS = 5000
+
+let nextId = 1
+
 export type ToastKind = 'info' | 'success' | 'warning' | 'error'
 
-export type ToastInput = {
+export interface ToastInput {
   kind: ToastKind
   title: string
   body?: string
   action?: { label: string; run: () => void }
 }
 
-export type Toast = ToastInput & { id: number }
-
-const AUTO_DISMISS_MS = 5000
+export interface Toast extends ToastInput {
+  id: number
+}
 
 export const autoDismisses = (kind: ToastKind) => kind === 'info' || kind === 'success'
-
-let nextId = 1
 
 export const useToasts = create<{
   toasts: Toast[]
@@ -24,7 +26,8 @@ export const useToasts = create<{
 }>((set, get) => ({
   toasts: [],
   push: (input) => {
-    const id = nextId++
+    const id = nextId
+    nextId += 1
     set((s) => ({ toasts: [...s.toasts, { ...input, id }] }))
     if (autoDismisses(input.kind)) {
       setTimeout(() => get().dismiss(id), AUTO_DISMISS_MS)
