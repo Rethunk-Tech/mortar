@@ -26,16 +26,18 @@ import (
 const maxAsset = 2 << 30
 
 type options struct {
-	source  string
-	output  string
-	bundled string
-	public  string
+	source    string
+	output    string
+	bundled   string
+	signature string
+	public    string
 }
 
 func main() {
 	var o options
 	flag.StringVar(&o.source, "source", "components.source.json", "component source file")
 	flag.StringVar(&o.output, "output", "components.json", "resolved manifest path")
+	flag.StringVar(&o.signature, "signature", "components.json.sig", "detached signature path")
 	flag.StringVar(&o.bundled, "bundled", "internal/components/components.json", "embedded manifest path")
 	flag.StringVar(&o.public, "public-key", "build/updater/public.key", "Ed25519 public key path")
 	flag.Parse()
@@ -90,8 +92,7 @@ func run(ctx context.Context, o options) error {
 			return err
 		}
 		signature := ed25519.Sign(private, body)
-		sigPath := o.output + ".sig"
-		if err := os.WriteFile(filepath.Clean(sigPath), signature, 0o600); err != nil {
+		if err := writeIn(o.signature, signature); err != nil {
 			return fmt.Errorf("write component signature: %w", err)
 		}
 		public, err := os.ReadFile(o.public)
@@ -326,4 +327,14 @@ func fileSHA256(file string) (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+// writeIn writes data to path through an os.Root on its directory, so the write cannot leave that directory.
+func writeIn(path string, data []byte) error {
+	root, err := os.OpenRoot(filepath.Dir(path))
+	if err != nil {
+		return err
+	}
+	defer func() { _ = root.Close() }()
+	return root.WriteFile(filepath.Base(path), data, 0o600)
 }
