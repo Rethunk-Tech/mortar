@@ -27,7 +27,18 @@ const fail = (title: string) => (e: unknown) => {
   useToasts.getState().push({ kind: 'error', title, body: errorMessage(e) })
 }
 
+const visibleId = (profiles: Profile[], id: string | undefined) =>
+  profiles.find((p) => p.id === id && !p.hidden)?.id ?? ''
+
 const firstVisible = (profiles: Profile[]) => profiles.find((p) => !p.hidden)?.id ?? ''
+
+async function read(gameId: string, current: string) {
+  const [{ games }, list] = await Promise.all([loadGameStatus(), List(gameId)])
+  const profiles = list ?? []
+  const last = useSettings.getState().lastProfile?.[gameId]
+  const openId = visibleId(profiles, current) || visibleId(profiles, last) || firstVisible(profiles)
+  return { game: games.find((g) => g.id === gameId) ?? null, profiles, openId }
+}
 
 export const useProfiles = create<{
   game: GameInfo | null
@@ -35,6 +46,8 @@ export const useProfiles = create<{
   trash: TrashItem[]
   openId: string
   loaded: boolean
+  // The game whose last load failed, for Retry; empty when nothing failed.
+  failed: string
   load: (gameId: string) => Promise<void>
   open: (id: string) => void
   create: (name: string) => Promise<void>
@@ -55,15 +68,19 @@ export const useProfiles = create<{
   trash: [],
   openId: '',
   loaded: false,
+  failed: '',
   load: async (gameId) => {
-    set({ loaded: false })
+    // Coming back to the same game refreshes behind the screen instead of blanking it.
+    const same = get().loaded && get().game?.id === gameId
+    if (!same) {
+      set({ loaded: false, failed: '' })
+    }
     try {
-      const [{ games }, list] = await Promise.all([loadGameStatus(), List(gameId)])
-      const profiles = list ?? []
-      const last = useSettings.getState().lastProfile?.[gameId]
-      const openId = profiles.find((p) => p.id === last && !p.hidden)?.id ?? firstVisible(profiles)
-      set({ game: games.find((g) => g.id === gameId) ?? null, profiles, openId, loaded: true })
+      set({ ...(await read(gameId, same ? get().openId : '')), loaded: true, failed: '' })
     } catch (e) {
+      if (!same) {
+        set({ failed: gameId })
+      }
       fail(i18n._(msg`Could not read your profiles`))(e)
     }
   },

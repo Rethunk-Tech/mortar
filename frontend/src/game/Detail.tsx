@@ -1,8 +1,8 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
-import { Pencil, Plus, Settings2, Share2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Pencil, Plus, RotateCcw, Settings2, Share2 } from 'lucide-react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConsoleTab, LogActions } from '../console/ConsoleTab.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
@@ -18,6 +18,7 @@ import { compact } from './compact.ts'
 import { NameField } from './NameField.tsx'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
 import { type TabId, useTab } from './tab.ts'
+import { useRestoreFocus } from './useRestoreFocus.ts'
 
 const fmt = (iso: unknown) => new Date(String(iso)).toLocaleDateString()
 
@@ -56,10 +57,11 @@ function Hero({ profile }: { profile: Profile }) {
   const art = useProfiles((s) => s.game?.artUrl)
   const rename = useProfiles((s) => s.rename)
   const [editing, setEditing] = useState(false)
+  const pencil = useRef<HTMLButtonElement>(null)
+  useRestoreFocus(editing, pencil)
   const mods = userModCount(profile)
   const setTab = useTab((s) => s.setTab)
   const fits = useSaves((s) => s.fits)
-  const savesReady = useSaves((s) => s.status === 'ready')
   const fitting = fits.filter((f) => (f.missing ?? []).length === 0).length
   const total = fits.length
   const created = fmt(profile.created)
@@ -136,6 +138,7 @@ function Hero({ profile }: { profile: Profile }) {
                   {profile.name}
                 </Typography>
                 <IconButton
+                  ref={pencil}
                   aria-label={t`Rename profile`}
                   onClick={() => setEditing(true)}
                   size="small"
@@ -154,7 +157,7 @@ function Hero({ profile }: { profile: Profile }) {
         </Box>
         <Box sx={{ display: 'flex', gap: 1, [compact]: { display: 'none' } }}>
           <Card label={t`Mods`} value={String(mods)} />
-          {savesReady && fits.length > 0 ? (
+          {fits.length > 0 ? (
             <Card
               label={t`Saves`}
               value={t`${fitting} of ${total}`}
@@ -169,11 +172,33 @@ function Hero({ profile }: { profile: Profile }) {
   )
 }
 
+function Centered({ children }: { children: ReactNode }) {
+  return (
+    <Box
+      sx={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 1.5,
+        textAlign: 'center',
+        px: 3,
+      }}
+    >
+      {children}
+    </Box>
+  )
+}
+
 export function Detail() {
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
   const openId = useProfiles((s) => s.openId)
   const loaded = useProfiles((s) => s.loaded)
+  const failed = useProfiles((s) => s.failed)
+  const load = useProfiles((s) => s.load)
+  const openProfiles = useNav((s) => s.openProfiles)
   const [creating, setCreating] = useState(false)
   const tab = useTab((s) => s.tab)
   const setTab = useTab((s) => s.setTab)
@@ -191,22 +216,39 @@ export function Detail() {
     }
   }, [game, profileId, updated, loadSaves])
   if (!loaded) {
-    return null
+    return failed ? (
+      <Centered>
+        <Typography
+          sx={{ fontSize: 24, fontWeight: 600 }}
+        >{t`Could not read your profiles`}</Typography>
+        <Button
+          variant="contained"
+          startIcon={<RotateCcw size={16} />}
+          onClick={() => {
+            load(failed).catch(reportUnexpected)
+          }}
+        >
+          {t`Retry`}
+        </Button>
+      </Centered>
+    ) : null
+  }
+  if (!profile && profiles.length > 0) {
+    return (
+      <Centered>
+        <Typography sx={{ fontSize: 24, fontWeight: 600 }}>{t`All profiles are hidden`}</Typography>
+        <Typography sx={{ color: 'text.secondary' }}>
+          {t`Show one in the sidebar from Manage profiles.`}
+        </Typography>
+        <Button variant="contained" startIcon={<Settings2 size={16} />} onClick={openProfiles}>
+          {t`Manage profiles`}
+        </Button>
+      </Centered>
+    )
   }
   if (!profile) {
     return (
-      <Box
-        sx={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 1.5,
-          textAlign: 'center',
-          px: 3,
-        }}
-      >
+      <Centered>
         <Typography sx={{ fontSize: 24, fontWeight: 600 }}>{t`No profiles yet`}</Typography>
         <Typography sx={{ color: 'text.secondary' }}>
           {t`A profile holds one set of mods for this game.`}
@@ -219,7 +261,7 @@ export function Detail() {
           {t`Create your first profile`}
         </Button>
         <NewProfileDialog open={creating} onClose={() => setCreating(false)} />
-      </Box>
+      </Centered>
     )
   }
   return (
