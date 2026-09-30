@@ -27,6 +27,9 @@ func (e *InstallError) Unwrap() error { return e.Err }
 
 // InstallArchive unpacks the archive at path into the store and adds it to the profile as a local entry.
 func (s *Store) InstallArchive(game, id, path string) (InstallResult, error) {
+	if err := s.unlocked(game, id); err != nil {
+		return InstallResult{}, err
+	}
 	key, err := s.items.AddArchive(game, path)
 	if err != nil {
 		return InstallResult{}, installError(err)

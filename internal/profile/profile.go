@@ -74,6 +74,36 @@ type Store struct {
 	mu    sync.Mutex
 	// Bundled returns the store key of the loader's bundled mods for a game, or "" when there are none.
 	Bundled func(game string) string
+	// Running reports whether the game is running this profile; nil means never.
+	Running func(game, id string) bool
+}
+
+// RunningError is returned by operations that would change the mods/ folder of a profile its game is running.
+type RunningError struct{ Game string }
+
+func (e *RunningError) Error() string {
+	name := e.Game
+	if g := game.Find(e.Game); g != nil {
+		name = g.Name()
+	}
+	return name + " is running this profile: stop the game first"
+}
+
+// unlocked returns a *RunningError while the game is running the profile.
+func (s *Store) unlocked(game, id string) error {
+	if s.Running != nil && s.Running(game, id) {
+		return &RunningError{Game: game}
+	}
+	return nil
+}
+
+// ModsDir returns the absolute path of the profile's mods/ folder, the one passed to the game as its mods path.
+func (s *Store) ModsDir(game, id string) (string, error) {
+	dir, err := s.profileDir(game, id)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Abs(filepath.Join(dir, "mods"))
 }
 
 // Open returns a store rooted at <datadir>/profiles, with deleted profiles in <datadir>/trash.

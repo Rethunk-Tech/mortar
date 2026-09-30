@@ -189,6 +189,9 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 
 // AddEntry copies the store item key into the profile and records the mods it holds.
 func (s *Store) AddEntry(game, id, key string, source Source) (Profile, error) {
+	if err := s.unlocked(game, id); err != nil {
+		return Profile{}, err
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	var placed string
@@ -275,11 +278,17 @@ func removeFrom(p *Profile, dir, key string) error {
 
 // RemoveEntry deletes the entry's folder and drops it from the profile.
 func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
+	if err := s.unlocked(game, id); err != nil {
+		return Profile{}, err
+	}
 	return s.update(game, id, func(p *Profile, dir string) error { return removeFrom(p, dir, key) })
 }
 
 // SetModEnabled switches a mod on or off by renaming its folder with or without a leading dot.
 func (s *Store) SetModEnabled(game, id, uniqueID string, enabled bool) (Profile, error) {
+	if err := s.unlocked(game, id); err != nil {
+		return Profile{}, err
+	}
 	return s.update(game, id, func(p *Profile, dir string) error {
 		for ei := range p.Entries {
 			e := &p.Entries[ei]

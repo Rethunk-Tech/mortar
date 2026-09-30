@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"slices"
@@ -438,5 +439,44 @@ func TestCreateGetsBundledEntry(t *testing.T) {
 	key = "smapi-0.0.1"
 	if p, err = e.Create("stardew", "collected"); err != nil || len(p.Entries) != 0 {
 		t.Fatalf("missing store item must not block creation: %+v, %v", p, err)
+	}
+}
+
+func TestRunningProfileIsLocked(t *testing.T) {
+	e := newEnv(t)
+	p, err := e.Create("stardew", "Locked")
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.item(t, "a-1.0", map[string]string{"A/manifest.json": manifestJSON("me.a")})
+	if _, err := e.AddEntry("stardew", p.ID, "a-1.0", Source{Kind: "local", Name: "a.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	running := true
+	e.Running = func(game, id string) bool { return running && id == p.ID }
+
+	var re *RunningError
+	checks := map[string]error{}
+	_, checks["AddEntry"] = e.AddEntry("stardew", p.ID, "a-1.0", Source{})
+	_, checks["RemoveEntry"] = e.RemoveEntry("stardew", p.ID, "a-1.0")
+	_, checks["SetModEnabled"] = e.SetModEnabled("stardew", p.ID, "me.a", false)
+	checks["Delete"] = e.Delete("stardew", p.ID)
+	_, checks["InstallArchive"] = e.InstallArchive("stardew", p.ID, "/nonexistent.zip")
+	for name, err := range checks {
+		if !errors.As(err, &re) || !strings.Contains(err.Error(), "Stardew Valley is running this profile") {
+			t.Errorf("%s: err = %v, want a RunningError", name, err)
+		}
+	}
+	if _, err := e.Rename("stardew", p.ID, "Renamed"); err != nil {
+		t.Fatalf("rename does not touch mods/: %v", err)
+	}
+
+	running = false
+	if _, err := e.SetModEnabled("stardew", p.ID, "me.a", false); err != nil {
+		t.Fatal(err)
+	}
+	dir, err := e.ModsDir("stardew", p.ID)
+	if err != nil || dir != e.mods(p.ID) {
+		t.Fatalf("mods dir = %q, %v", dir, err)
 	}
 }
