@@ -136,7 +136,7 @@ func (s *Store) AddDir(game, key, srcDir string) error {
 	if dir, _ := s.itemDir(game, key); exists(dir) {
 		return s.touch(game, key)
 	}
-	return s.install(game, key, func(tmp string) error { return copyTree(srcDir, tmp) }, func() int64 { return dirSize(srcDir) })
+	return s.install(game, key, func(tmp string) error { return datadir.CopyTree(srcDir, tmp) }, func() int64 { return dirSize(srcDir) })
 }
 
 // install fills a temp folder beside the final one and renames it into place,
@@ -186,41 +186,6 @@ func hashKey(path string) (string, error) {
 		return "", err
 	}
 	return LocalKey(hex.EncodeToString(h.Sum(nil))), nil
-}
-
-func copyTree(src, dst string) error {
-	return filepath.WalkDir(src, func(p string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		rel, err := filepath.Rel(src, p)
-		if err != nil {
-			return err
-		}
-		target := filepath.Join(dst, rel)
-		switch {
-		case d.IsDir():
-			return os.MkdirAll(target, 0o755)
-		case !d.Type().IsRegular():
-			return fmt.Errorf("%s is not a regular file", p)
-		}
-		return copyFile(p, target)
-	})
-}
-
-func copyFile(src, dst string) (err error) {
-	in, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = in.Close() }()
-	out, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
-	if err != nil {
-		return err
-	}
-	defer func() { err = errors.Join(err, out.Close()) }()
-	_, err = io.Copy(out, in)
-	return err
 }
 
 func dirSize(dir string) (n int64) {
