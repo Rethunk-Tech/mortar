@@ -25,6 +25,8 @@ var (
 type Played struct {
 	Profile string `json:"profile"`
 	At      string `json:"at"`
+	// GameVersion is the Stardew version from the SMAPI log header of that launch.
+	GameVersion string `json:"gameVersion,omitempty"`
 }
 
 // The window backgrounds: the chosen wallpaper under the tint, the user's own desktop wallpaper under it, or an opaque colour.
@@ -68,6 +70,8 @@ type Settings struct {
 	// ListSortColumn and ListSortDir are the Mods list sort; unknown values become name ascending.
 	ListSortColumn string `json:"listSortColumn"`
 	ListSortDir    string `json:"listSortDir"`
+	// ListGroupBy is how the Mods tab groups the list and grid: none, category, source, or tag.
+	ListGroupBy string `json:"listGroupBy"`
 	// CheckModUpdatesOnStart is whether Mortar checks the last-opened profile of each game at startup.
 	// Nil or omitted means on.
 	CheckModUpdatesOnStart *bool `json:"checkModUpdatesOnStart"`
@@ -89,7 +93,7 @@ func Defaults() Settings {
 	return Settings{
 		Accent: "sand", Background: BackgroundImage, LastProfile: map[string]string{}, LastPlayed: map[string]Played{}, GameFolders: map[string]string{},
 		Loaders: map[string]string{}, Dismissed: map[string][]string{}, BackupsKept: backup.DefaultKeep,
-		ListColumns: slices.Clone(defaultListColumns), ListSortColumn: defaultListSortColumn, ListSortDir: defaultListSortDir,
+		ListColumns: slices.Clone(defaultListColumns), ListSortColumn: defaultListSortColumn, ListSortDir: defaultListSortDir, ListGroupBy: defaultListGroupBy,
 		CheckModUpdatesOnStart: on(), TellWhenSmapiOut: on(),
 	}
 }
@@ -205,7 +209,7 @@ func validLastPlayed(in map[string]Played) map[string]Played {
 }
 
 // RecordLastPlayed stores that profile as the last successful launch for game.
-func (s *Store) RecordLastPlayed(game, profile string, at time.Time) (Settings, error) {
+func (s *Store) RecordLastPlayed(game, profile string, at time.Time, gameVersion string) (Settings, error) {
 	if game == "" || profile == "" || at.IsZero() {
 		return s.Get(), nil
 	}
@@ -213,6 +217,11 @@ func (s *Store) RecordLastPlayed(game, profile string, at time.Time) (Settings, 
 		if cur.LastPlayed == nil {
 			cur.LastPlayed = map[string]Played{}
 		}
-		cur.LastPlayed[game] = Played{Profile: profile, At: at.UTC().Format(time.RFC3339)}
+		prev := cur.LastPlayed[game]
+		ver := gameVersion
+		if ver == "" {
+			ver = prev.GameVersion
+		}
+		cur.LastPlayed[game] = Played{Profile: profile, At: at.UTC().Format(time.RFC3339), GameVersion: ver}
 	})
 }

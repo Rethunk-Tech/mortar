@@ -16,6 +16,7 @@ import { CircleAlert, Copy } from 'lucide-react'
 import { useEffect } from 'react'
 import { Hint } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import { CrashDialog } from '../console/CrashDialog.tsx'
 import { format } from '../console/filter.ts'
 import { useConsole } from '../console/store.ts'
 import { launchLine } from '../firstrun/logic.ts'
@@ -26,6 +27,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { holdFocus } from './holdFocus.ts'
 import { useLaunch } from './store.ts'
+import { UpdateWarnDialog } from './UpdateWarnDialog.tsx'
 
 const VISIBLE_LINES = 8
 const LINE_HEIGHT = 21
@@ -279,6 +281,8 @@ export function LaunchLayer({ game }: { game: string }) {
       <Overlay game={game} />
       <Failure game={game} />
       <DirectDialog />
+      <CrashDialog />
+      <UpdateWarnDialog />
     </>
   )
 }

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-AI/mortar/internal/game/stardew"
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
@@ -148,6 +149,35 @@ func (s *Service) Updates(ctx context.Context, gameID, id string) (UpdatesResult
 		s.mu.Unlock()
 	}
 	return HideHeld(r, mods), nil
+}
+
+// UpdateWarning is the Play dialog after a game update: the last launched Stardew version versus the installed one.
+type UpdateWarning struct {
+	Changed   bool     `json:"changed"`
+	Recorded  string   `json:"recorded"`
+	Installed string   `json:"installed"`
+	Broken    []Broken `json:"broken"`
+}
+
+// UpdateWarning reports whether the installed game version differs from the last successful launch,
+// and which of this profile's mods the compatibility data marks broken for the installed version.
+func (s *Service) UpdateWarning(ctx context.Context, gameID, id string) (UpdateWarning, error) {
+	env := s.Environment(gameID)
+	recorded := s.settings.Get().LastPlayed[gameID].GameVersion
+	out := UpdateWarning{Recorded: recorded, Installed: env.GameVersion, Broken: []Broken{}}
+	if !stardew.GameVersionChanged(recorded, env.GameVersion) {
+		return out, nil
+	}
+	out.Changed = true
+	mods, err := s.installed(gameID, id)
+	if err != nil {
+		return UpdateWarning{}, err
+	}
+	out.Broken = Check(ctx, s.meta, env, mods).Broken
+	if out.Broken == nil {
+		out.Broken = []Broken{}
+	}
+	return out, nil
 }
 
 // Relations says what the mod key/uniqueID needs, which mods need it and where its page is.

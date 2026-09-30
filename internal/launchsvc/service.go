@@ -16,6 +16,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/bridge"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-AI/mortar/internal/game/stardew"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
@@ -69,6 +70,7 @@ type session struct {
 	buf     *launch.Buffer
 	profile string
 	vanilla bool
+	started time.Time
 }
 
 // Service exposes launch, status and stop to the frontend.
@@ -130,11 +132,26 @@ func (s *Service) set(st Status) {
 	s.mu.Unlock()
 	s.emit(StateEvent, st)
 	if st.State == Running && st.Profile != "" && s.settings != nil {
-		_, _ = s.settings.RecordLastPlayed(st.Game, st.Profile, time.Now())
+		_, _ = s.settings.RecordLastPlayed(st.Game, st.Profile, time.Now(), launchGameVersion(s, st.Game))
 	}
 	if stored.State == Idle && had && prev.State != Idle && s.Unlocked != nil {
 		s.Unlocked()
 	}
+}
+
+func launchGameVersion(s *Service, gameID string) string {
+	s.mu.Lock()
+	sess := s.logs[gameID]
+	s.mu.Unlock()
+	if sess.buf == nil {
+		return ""
+	}
+	for _, e := range sess.buf.Lines() {
+		if v := stardew.StardewVersionFromLog(e.Message); v != "" {
+			return v
+		}
+	}
+	return ""
 }
 
 func (s *Service) current(id string) Status {
@@ -443,15 +460,27 @@ func (s *Service) begin(g game.Game, profileID, dir, modsDir string, direct, van
 		return fmt.Errorf("%s is already running", g.Name())
 	}
 	req := launch.Request{InstallDir: dir, ModsDir: modsDir, Direct: direct, Vanilla: vanilla, Seen: s.seen(g)}
+	if !vanilla && profileID != "" {
+		opts, err := s.profiles.LaunchOptions(g.ID(), profileID)
+		if err != nil {
+			return err
+		}
+		extra, err := stardew.ParseLaunchOptions(opts)
+		if err != nil {
+			return err
+		}
+		req.ExtraArgs = extra
+	}
 	if st, status := steam.Locate(s.home); status == steam.Found {
 		req.Steam = &st
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	buf := &launch.Buffer{}
+	started := time.Now()
 	s.mu.Lock()
-	s.logs[gameID], s.stop[gameID] = session{buf: buf, profile: profileID, vanilla: vanilla}, cancel
+	s.logs[gameID], s.stop[gameID] = session{buf: buf, profile: profileID, vanilla: vanilla, started: started}, cancel
 	s.mu.Unlock()
-	s.set(Status{Game: gameID, State: Launching, Profile: profileID, Since: time.Now().UnixMilli()})
+	s.set(Status{Game: gameID, State: Launching, Profile: profileID, Since: started.UnixMilli()})
 	s.watch(g)
 	go s.run(ctx, g, profileID, req, buf)
 	return nil
@@ -546,10 +575,13 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, req la
 		if len(buf.Lines()) == 0 {
 			s.say(g.ID(), profileID, fmt.Sprintf("%s exited with code %d.", g.LoaderName(), exited.Code))
 		}
+		s.finishFailed(g, profileID, buf)
 		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Error: err.Error()})
 	case errors.As(err, &f):
+		s.finishFailed(g, profileID, buf)
 		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Hint: f.Hint, Error: f.Error()})
 	default:
+		s.finishFailed(g, profileID, buf)
 		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Error: err.Error()})
 	}
 }
@@ -604,7 +636,27 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 		msg += " after " + time.Since(time.UnixMilli(cur.Since)).Round(time.Second).String()
 	}
 	s.say(g.ID(), cur.Profile, msg+".")
+	s.mu.Lock()
+	sess, ok := s.logs[g.ID()]
+	s.mu.Unlock()
+	if ok && !sess.vanilla && cur.Profile != "" {
+		started := sess.started
+		if cur.Since > 0 {
+			started = time.UnixMilli(cur.Since)
+		}
+		s.record(g, cur.Profile, started, false)
+	}
 	s.set(Status{Game: g.ID(), State: Idle})
+}
+
+func (s *Service) finishFailed(g game.Game, profileID string, buf *launch.Buffer) {
+	s.mu.Lock()
+	sess, ok := s.logs[g.ID()]
+	s.mu.Unlock()
+	if !ok || sess.vanilla || sess.buf != buf || profileID == "" {
+		return
+	}
+	s.record(g, profileID, sess.started, true)
 }
 
 // say adds a console line of Mortar's own to the session of the profile the game runs.

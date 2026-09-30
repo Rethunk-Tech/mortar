@@ -78,6 +78,21 @@ test('a vanilla Mortar line shows on the open profile console', () => {
   expect(useConsole.getState().entries).toHaveLength(1)
 })
 
+test('dismissing the game-update warning clears it', () => {
+  useLaunch.setState({
+    updateWarn: {
+      game: 'stardew',
+      profile: 'p1',
+      direct: false,
+      recorded: '1.6.14',
+      installed: '1.6.15',
+      broken: [],
+    },
+  })
+  useLaunch.getState().dismissUpdateWarn()
+  expect(useLaunch.getState().updateWarn).toBeNull()
+})
+
 test('a polled Idle keeps preparation going; an announced one ends it', () => {
   useLaunch.setState({ starting: true })
   useLaunch.getState().apply(status(State.Idle), true)

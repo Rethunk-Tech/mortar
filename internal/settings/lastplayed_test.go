@@ -54,11 +54,17 @@ func TestRecordLastPlayed(t *testing.T) {
 		t.Fatal(err)
 	}
 	at := time.Date(2026, 9, 30, 16, 0, 0, 0, time.UTC)
-	if _, err := s.RecordLastPlayed("stardew", "prof-1", at); err != nil {
+	if _, err := s.RecordLastPlayed("stardew", "prof-1", at, "1.6.15"); err != nil {
 		t.Fatal(err)
 	}
 	got := s.Get().LastPlayed["stardew"]
-	if got.Profile != "prof-1" || got.At != "2026-09-30T16:00:00Z" {
+	if got.Profile != "prof-1" || got.At != "2026-09-30T16:00:00Z" || got.GameVersion != "1.6.15" {
 		t.Fatalf("got %#v", got)
+	}
+	if _, err := s.RecordLastPlayed("stardew", "prof-1", at, ""); err != nil {
+		t.Fatal(err)
+	}
+	if s.Get().LastPlayed["stardew"].GameVersion != "1.6.15" {
+		t.Fatal("empty version must keep the last recorded game version")
 	}
 }

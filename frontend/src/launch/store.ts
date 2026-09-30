@@ -3,6 +3,7 @@ import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import { Hint } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import {
+  type Crash,
   State,
   type Status,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
@@ -12,9 +13,13 @@ import {
   StartVanilla,
   Stop,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import type { Broken } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import { UpdateWarning } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import { useConsole } from '../console/store.ts'
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
+import { useNav } from '../nav/store.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
@@ -54,14 +59,25 @@ interface Failure {
   hint: Hint
 }
 
+export interface UpdateWarn {
+  game: string
+  profile: string
+  direct: boolean
+  recorded: string
+  installed: string
+  broken: Broken[]
+}
+
 export const useLaunch = create<{
   status: Status | null
   hidden: boolean
   failure: Failure | null
   askDirect: { game: string; profile: string } | null
+  updateWarn: UpdateWarn | null
   stopping: boolean
   // Play was pressed and no launch:state has answered yet, which is when SMAPI installs first.
   starting: boolean
+  crash: Crash | null
   // polled marks a status read by refresh() rather than announced by a launch:state event.
   apply: (status: Status, polled?: boolean) => void
   refresh: (game: string) => Promise<void>
@@ -69,15 +85,22 @@ export const useLaunch = create<{
   startVanilla: (game: string, direct: boolean) => Promise<void>
   hide: () => void
   dismissFailure: () => void
+  dismissCrash: () => void
+  setCrash: (crash: Crash) => void
+  dismissUpdateWarn: () => void
   answerDirect: (agreed: boolean) => Promise<void>
+  playAnyway: () => Promise<void>
+  openProblems: () => void
   stop: (game: string) => Promise<void>
 }>((set, get) => ({
   status: null,
   hidden: false,
   failure: null,
   askDirect: null,
+  updateWarn: null,
   stopping: false,
   starting: false,
+  crash: null,
   apply: (status, polled = false) => {
     // A poll that lands before the first launch:state still reports Idle; only an event ends preparation.
     if (!polled || status.state !== State.Idle) {
@@ -118,6 +141,25 @@ export const useLaunch = create<{
     }
   },
   start: async (game, profile, direct) => {
+    try {
+      const warning = await UpdateWarning(game, profile)
+      if (warning.changed) {
+        set({
+          updateWarn: {
+            game,
+            profile,
+            direct,
+            recorded: warning.recorded,
+            installed: warning.installed,
+            broken: warning.broken ?? [],
+          },
+        })
+        return
+      }
+    } catch (e) {
+      reportError(i18n._(msg`Could not check the game version`))(e)
+      return
+    }
     set({ starting: true })
     try {
       await Start(game, profile, direct)
@@ -137,6 +179,35 @@ export const useLaunch = create<{
   },
   hide: () => set({ hidden: true }),
   dismissFailure: () => set({ failure: null }),
+  dismissCrash: () => set({ crash: null }),
+  setCrash: (crash) => set({ crash }),
+  dismissUpdateWarn: () => set({ updateWarn: null }),
+  playAnyway: async () => {
+    const warn = get().updateWarn
+    set({ updateWarn: null })
+    if (!warn) {
+      return
+    }
+    set({ starting: true })
+    try {
+      await Start(warn.game, warn.profile, warn.direct)
+    } catch (e) {
+      set({ starting: false })
+      reportError(i18n._(msg`Could not launch the game`))(e)
+    }
+  },
+  openProblems: () => {
+    const warn = get().updateWarn
+    set({ updateWarn: null })
+    if (!warn) {
+      return
+    }
+    if (warn.game === 'stardew') {
+      useNav.getState().openGame('stardew')
+    }
+    useProfiles.getState().open(warn.profile)
+    useTab.getState().setTab('mods')
+  },
   answerDirect: async (agreed) => {
     const { askDirect } = get()
     set({ askDirect: null })
@@ -163,6 +234,7 @@ export const useLaunch = create<{
 export function initLaunch() {
   Events.On('launch:state', (event) => useLaunch.getState().apply(event.data))
   Events.On('launch:line', (event) => useConsole.getState().add(event.data))
+  Events.On('launch:crash', (event) => useLaunch.getState().setCrash(event.data))
 }
 
 export const overlayGame = (routeName: string, routeGame: string, statusGame: string) =>
