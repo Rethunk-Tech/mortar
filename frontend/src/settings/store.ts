@@ -5,7 +5,8 @@ import { Get } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settin
 
 const defaults: Settings = {
   accent: 'sand',
-  translucent: true,
+  background: 'image',
+  backgroundImage: '',
   lastGame: '',
   lastProfile: {},
   gameFolders: {},
@@ -14,10 +15,15 @@ const defaults: Settings = {
 
 export const useSettings = create<Settings>(() => defaults)
 
+// The window type is fixed when the window is created, so a switch to or from solid needs a restart.
+export const useLaunchSolid = create<{ solid: boolean }>(() => ({ solid: false }))
+
 export async function initSettings(): Promise<void> {
   const apply = (next: Settings) => useSettings.setState(next)
   Events.On('settings:changed', (event) => {
     apply(event.data)
   })
-  apply(await Get())
+  const loaded = await Get()
+  useLaunchSolid.setState({ solid: loaded.background === 'solid' })
+  apply(loaded)
 }

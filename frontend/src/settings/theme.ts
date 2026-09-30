@@ -9,9 +9,9 @@ export function isAccent(value: string): value is AccentName {
   return value in accents
 }
 
-export function buildTheme(accent: AccentName, translucent: boolean): Theme {
+export function buildTheme(accent: AccentName, solid: boolean): Theme {
   const base = createMortarTheme(accent)
-  if (translucent) {
+  if (!solid) {
     return base
   }
   return createTheme(base, {

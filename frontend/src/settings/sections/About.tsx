@@ -25,6 +25,10 @@ export function About() {
       <Box sx={body}>
         {t`SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · open-source libraries listed in Licences.`}
       </Box>
+      <Box sx={{ fontWeight: 600 }}>{t`Default background`}</Box>
+      <Box sx={body}>
+        {t`Fedora 44 default wallpaper (f44-01-night) by the Fedora Design Team, CC-BY-SA-4.0.`}
+      </Box>
       <Box sx={{ fontWeight: 600 }}>{t`Not affiliated`}</Box>
       <Box sx={body}>
         {t`Stardew Valley is ConcernedApe's. Game art shown in Mortar is read from your own Steam install. Nexus Mods and GitHub content belongs to its authors.`}

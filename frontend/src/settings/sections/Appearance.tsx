@@ -1,19 +1,24 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Chip, FormControlLabel, Switch } from '@mui/material'
+import { Box, Button, ButtonBase, Chip, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { ImagePlus, RotateCcw } from 'lucide-react'
 import {
+  ChooseBackgroundImage,
   SetAccent,
-  SetTranslucent,
+  SetBackground,
+  SetBackgroundImage,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { type AccentName, accents } from '../../theme/accents.ts'
 import { errorText } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
-import { useSettings } from '../store.ts'
+import { useLaunchSolid, useSettings } from '../store.ts'
 import { isAccent } from '../theme.ts'
 
 export function Appearance() {
   const { t } = useLingui()
   const accent = useSettings((s) => s.accent)
-  const translucent = useSettings((s) => s.translucent)
+  const background = useSettings((s) => s.background)
+  const backgroundImage = useSettings((s) => s.backgroundImage)
+  const launchSolid = useLaunchSolid((s) => s.solid)
   const push = useToasts((s) => s.push)
   const reportFailure = (err: unknown) => {
     const body = errorText(err)
@@ -102,23 +107,57 @@ export function Appearance() {
           {t`Changes apply right away`}
         </Box>
       </Box>
-      <Box>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={translucent}
-              onChange={(_, on) => {
-                SetTranslucent(on).catch(reportFailure)
-              }}
-            />
+      <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Background`}</Box>
+      <ToggleButtonGroup
+        exclusive={true}
+        size="small"
+        value={background}
+        aria-label={t`Background`}
+        onChange={(_, next: string | null) => {
+          if (next) {
+            SetBackground(next).catch(reportFailure)
           }
-          label={t`Translucent window (turn off for a solid background)`}
-          sx={{ '& .MuiFormControlLabel-label': { fontSize: 15 } }}
-        />
+        }}
+        sx={{ alignSelf: 'flex-start', '& .MuiToggleButton-root': { whiteSpace: 'nowrap' } }}
+      >
+        <ToggleButton value="image">{t`Image`}</ToggleButton>
+        <ToggleButton value="desktop">{t`Desktop`}</ToggleButton>
+        <ToggleButton value="solid">{t`Solid`}</ToggleButton>
+      </ToggleButtonGroup>
+      {background === 'image' ? (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Box
+            component="img"
+            alt={t`Background preview`}
+            src={`/backdrop?v=${encodeURIComponent(backgroundImage)}`}
+            sx={{ width: 160, height: 90, objectFit: 'cover', borderRadius: '6px' }}
+          />
+          <Button
+            variant="outlined"
+            startIcon={<ImagePlus size={16} />}
+            onClick={() => {
+              ChooseBackgroundImage().catch(reportFailure)
+            }}
+          >
+            {t`Choose image…`}
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<RotateCcw size={16} />}
+            disabled={backgroundImage === ''}
+            onClick={() => {
+              SetBackgroundImage('').catch(reportFailure)
+            }}
+          >
+            {t`Reset to default`}
+          </Button>
+        </Box>
+      ) : null}
+      {launchSolid === (background === 'solid') ? null : (
         <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
           {t`Takes effect when Mortar restarts`}
         </Box>
-      </Box>
+      )}
     </Box>
   )
 }
