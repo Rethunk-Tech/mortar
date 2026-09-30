@@ -5,8 +5,10 @@ package launchsvc
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/store"
@@ -78,5 +80,48 @@ func TestLinesReadsLastSessionsLog(t *testing.T) {
 	}
 	if got[1].Level != launch.Error || got[1].Mod != "Mod" || !got[2].Cont || got[2].Level != launch.Error || got[0].Seq >= got[1].Seq {
 		t.Fatalf("got %+v", got)
+	}
+}
+
+func TestGameClosingEndsTheConsoleWithAMortarLine(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	items, err := store.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	profiles, err := profile.Open(items)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := profiles.Create("stardew", "A")
+	if err != nil {
+		t.Fatal(err)
+	}
+	mods, _ := profiles.ModsDir("stardew", a.ID)
+	svc := NewService(t.TempDir(), nil, profiles)
+	svc.procDir = t.TempDir()
+	pid := filepath.Join(svc.procDir, "42")
+	if err := os.MkdirAll(pid, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	cmdline := "/g/StardewModdingAPI\x00--mods-path\x00" + mods + "\x00"
+	if err := os.WriteFile(filepath.Join(pid, "cmdline"), []byte(cmdline), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	g := game.Find("stardew")
+	if !svc.poll(g) || svc.current("stardew").State != Running {
+		t.Fatal("the running process should mark the game running")
+	}
+	buf := &launch.Buffer{}
+	svc.logs["stardew"] = buf
+	if err := os.RemoveAll(pid); err != nil {
+		t.Fatal(err)
+	}
+	if svc.poll(g) || svc.current("stardew").State != Idle {
+		t.Fatal("the game should be idle once its process is gone")
+	}
+	lines := buf.Lines()
+	if len(lines) != 1 || lines[0].Mod != "Mortar" || !strings.HasPrefix(lines[0].Message, "Stardew Valley closed") {
+		t.Fatalf("lines = %+v", lines)
 	}
 }

@@ -193,7 +193,7 @@ func (s *Service) poll(g game.Game) bool {
 		s.mu.Unlock()
 		s.set(Status{Game: g.ID(), State: Running, Profile: profileID, Since: sinceOr(began)})
 	case cur.State == Running && profileID == "":
-		s.set(Status{Game: g.ID(), State: Idle})
+		s.closed(g, cur, false)
 	}
 	return s.current(g.ID()).State != Idle
 }
@@ -380,6 +380,30 @@ func (s *Service) Stop(gameID string) error {
 	if err := errors.Join(errs...); err != nil {
 		return err
 	}
-	s.set(Status{Game: gameID, State: Idle})
+	s.closed(g, cur, true)
 	return nil
+}
+
+// closed ends the game's session with a console line of Mortar's own, so the log does not just stop, then marks
+// the game idle. It does nothing when a concurrent poll or Stop already closed the session.
+func (s *Service) closed(g game.Game, cur Status, stopped bool) {
+	if s.current(g.ID()).State != Running {
+		return
+	}
+	msg := g.Name() + " closed"
+	if stopped {
+		msg = g.Name() + " was stopped from Mortar"
+	}
+	if cur.Since > 0 {
+		msg += " after " + time.Since(time.UnixMilli(cur.Since)).Round(time.Second).String()
+	}
+	e := launch.Entry{Seq: s.seq.Add(1), Time: time.Now().Format(time.TimeOnly), Level: launch.Info, Mod: "Mortar", Message: msg + "."}
+	s.mu.Lock()
+	buf := s.logs[g.ID()]
+	s.mu.Unlock()
+	if buf != nil {
+		buf.Add(e)
+	}
+	s.emit(LineEvent, Lines{Game: g.ID(), Entries: []launch.Entry{e}})
+	s.set(Status{Game: g.ID(), State: Idle})
 }
