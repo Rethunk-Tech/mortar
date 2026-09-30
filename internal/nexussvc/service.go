@@ -93,3 +93,54 @@ func (s *Service) ModName(ctx context.Context, modID int) (string, error) {
 	m, err := c.Mod(ctx, modID)
 	return m.Name, err
 }
+
+func (s *Service) keyed() (*nexus.Client, error) {
+	return Authed(s.store, s.client)
+}
+
+// Endorse records the signed-in user's endorsement of modID at version.
+func (s *Service) Endorse(ctx context.Context, modID int, version string) (string, error) {
+	c, err := s.keyed()
+	if err != nil {
+		return "", err
+	}
+	status, err := c.Endorse(ctx, modID, version)
+	return string(status), err
+}
+
+// Abstain withdraws the signed-in user's endorsement of modID at version.
+func (s *Service) Abstain(ctx context.Context, modID int, version string) (string, error) {
+	c, err := s.keyed()
+	if err != nil {
+		return "", err
+	}
+	status, err := c.Abstain(ctx, modID, version)
+	return string(status), err
+}
+
+// TrackedMods is the signed-in user's tracked list (briefly cached in the Nexus client).
+func (s *Service) TrackedMods(ctx context.Context) ([]nexus.TrackedMod, error) {
+	c, err := s.keyed()
+	if err != nil {
+		return nil, err
+	}
+	return c.TrackedMods(ctx)
+}
+
+// Track starts tracking modID for the signed-in user.
+func (s *Service) Track(ctx context.Context, modID int) error {
+	c, err := s.keyed()
+	if err != nil {
+		return err
+	}
+	return c.Track(ctx, modID)
+}
+
+// Untrack stops tracking modID for the signed-in user.
+func (s *Service) Untrack(ctx context.Context, modID int) error {
+	c, err := s.keyed()
+	if err != nil {
+		return err
+	}
+	return c.Untrack(ctx, modID)
+}
