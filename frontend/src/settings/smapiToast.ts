@@ -20,13 +20,14 @@ export function maybeToastSmapi(game: string) {
   if (smapiToastShownToday(useSettings.getState().smapiToastAt)) {
     return
   }
-  const at = new Date().toISOString()
-  useSettings.setState({ smapiToastAt: at })
-  SetSmapiToastAt(at).catch(() => undefined)
   const { status } = useLoader.getState()
   if (!(status?.updateAvailable && status.latest)) {
     return
   }
+  // The day counts as used only once a toast is shown, so an offline start does not silence it.
+  const at = new Date().toISOString()
+  useSettings.setState({ smapiToastAt: at })
+  SetSmapiToastAt(at).catch(() => undefined)
   useToasts.getState().push({
     kind: 'info',
     title: i18n._(msg`SMAPI ${status.latest} is out`),
