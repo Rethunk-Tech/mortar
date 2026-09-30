@@ -11,7 +11,7 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
   - **Left:** the logo in a darker square and the app name, which open the app menu.
   - **Location tabs**, underlined in the primary colour: "Game Select", or the current game. First run shows a "Setup" tab. While Mortar's Settings page is open the game tab gives way to a "Settings" tab, and the game settings page keeps the game tab highlighted.
   - **Right:** minimise, maximise and close.
-  - **App menu**, a side drawer listing Settings, About Mortar, Open data folder, Source code (the AGPL-3.0 source offer, opening `https://github.com/Rethunk-AI/mortar`) and, after a divider, Quit. Check for updates and Report a bug join the list in milestone 6.
+  - **App menu**, a side drawer listing Settings, About Mortar, Open data folder, Source code (the AGPL-3.0 source offer, opening `https://github.com/Rethunk-AI/mortar`) and, after a divider, Quit. Report a bug opens a prefilled GitHub issue; Check for updates joins the list in milestone 6.
   - **Drawer foot:** the Nexus account, as the account name with a Premium or Free badge and Sign out, or "Not signed in" with Sign in, which opens Settings › Nexus Mods.
   - **Frame:** a 1px light border and rounded corners, since GNOME draws no shadow for a frameless window.
 - `user-select: none` everywhere except text fields and the console.
@@ -55,7 +55,7 @@ Full-width banner rows stacked down the window, one per game, about 300px tall a
 A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 
 - **Sidebar** (150-300px, resized from an 8px handle on its right edge, 2px primary right border): a "Profiles" header that opens profile management, then one row per profile in the user's order, the open one selected. Each row shows a problem or update badge when it has any.
-- **Bottom block** pinned under the sidebar: a **New profile** row at the foot of the list, icon buttons for Support (milestone 6; a menu: Get help, which opens the Console tab's upload, and Report a Mortar bug) and a Downloads icon that opens the download queue (with a count while it has items), then a full-width **Play** button in the primary colour. There is no Settings icon here (NOMAD, 2026-09-30): it displaced Play, and Settings stays in the app menu and on Ctrl+,.
+- **Bottom block** pinned under the sidebar: a **New profile** row at the foot of the list, icon buttons for Support (a menu: Get help, which opens the Console tab's upload, and Report a Mortar bug) and a Downloads icon that opens the download queue (with a count while it has items), then a full-width **Play** button in the primary colour. There is no Settings icon here (NOMAD, 2026-09-30): it displaced Play, and Settings stays in the app menu and on Ctrl+,.
 - **Detail pane** for the open profile:
   - A hero, 190px tall in every view and tab (NOMAD, 2026-09-30; only the minimum-size layout folds it to one line), bleeding to the pane's edges.
     - **Cover:** the profile's cover image at full opacity under a light solid dim layer (`rgba(20,20,24,0.18)`), its alpha fading to transparent over the bottom 40% by an alpha mask so the backdrop shows through into the tab row (the hero has no background of its own).
@@ -99,7 +99,7 @@ A plain text area for the profile's notes, saved automatically ("Saved · 2 min 
 
 - SMAPI's log as it is written, monospace, in columns: a level bar, time, level, mod and message; warnings and errors get a tinted row.
 - Filters: a search box, toggles for SMAPI's six levels (Trace, Debug, Info, Warn, Error, Alert; `Pathoschild/SMAPI` `src/SMAPI/LogLevel.cs`) each with its line count (Trace and Debug off by default), a mod picker whose choices show as removable chips, "Showing X of Y lines" with Clear filters, and Jump to first error. Toggles for timestamps and follow-tail (on by default).
-- **Copy**, and **Get help** (milestone 6): shows the log with its local paths and asks before uploading it to smapi.io/log, then copies the link.
+- **Copy**, and **Get help**: shows the log with its local paths and asks before uploading it to smapi.io/log, then copies the link and offers Open.
 - Before the first launch: a line saying the console fills when the game runs.
 - **Input line** at the bottom (monospace, prompt `>`): Enter sends the command to the running game through the Mortar SMAPI Bridge and echoes `> <command>` into the log as a Mortar line; the output arrives with SMAPI's own lines, and Follow is switched back on so it scrolls into view. Up and Down browse the last 100 commands of that game (in memory only). Disabled with the hint "Start the game to run commands" while the game is not running; a failed send shows a toast.
 

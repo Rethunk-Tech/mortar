@@ -13,7 +13,6 @@ Links, the Share dialog, the import preview, `.mortar` files and first run's lin
 
 ## Release (milestone 6)
 
-- **Support:** the Console tab's **Get help** uploads the current SMAPI log to smapi.io/log, the Stardew community's standard support tool, and copies the link; a second button opens a prefilled GitHub issue for Mortar's own bugs once the repo is public. The upload is `POST https://smapi.io/log` with a form-encoded body `input=<log text>`, no auth; the server answers with a redirect to `/log/<id>`, which is the link, and answers a failed or empty upload with HTTP 200 and its page, so success means a redirect and nothing else (`Pathoschild/SMAPI` `src/SMAPI.Web/Controllers/LogParserController.cs`). A SMAPI log holds local paths, including the user's name, and anyone with the link can read it, so Mortar shows the log and asks first.
 - **Packaging:** an AppImage on Linux, and on Windows an NSIS installer built with `INSTALL_SCOPE=user` (`build/windows/Taskfile.yml:83` passes `-DWAILS_INSTALL_SCOPE=user`), installing to `$LOCALAPPDATA\Programs\Mortar` without admin (`build/windows/nsis/project.nsi:71-72`).
 - **Not packaged:** no deb or rpm, since the updater cannot replace a root-owned binary; no Flatpak target exists in Wails.
 - **Windows** builds ship unsigned, so SmartScreen warns and the download page explains it.
@@ -37,7 +36,7 @@ After the go-ahead, each milestone ends with the gate green and NOMAD clicking t
 3. **Mod data.** Built.
 4. **Nexus.** Built.
 5. **Sharing.** Built except the static page.
-6. **Release.** smapi.io/log upload and the GitHub issue link, the updater patches and signed manifest, Settings › Updates, Check for updates and Report a bug in the app menu, Windows measurements and fixes, packaging, the repo made public.
+6. **Release.** The updater patches and signed manifest, Settings › Updates, Check for updates in the app menu, Windows measurements and fixes, packaging, the repo made public.
 
 ## Later
 
