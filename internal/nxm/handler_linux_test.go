@@ -12,17 +12,22 @@ import (
 )
 
 type recorder struct {
-	calls   []string
-	current string
-	byMime  map[string]string
+	calls     []string
+	current   string
+	byMime    map[string]string
+	queryFail map[string]bool
 }
 
 // run plays xdg-mime: query answers the current default, default changes it. Nothing touches the real system.
 func (r *recorder) run(name string, args ...string) (string, error) {
 	r.calls = append(r.calls, name+" "+strings.Join(args, " "))
 	if name == xdgMime && args[0] == "query" {
+		mime := args[len(args)-1]
+		if r.queryFail[mime] {
+			return "", errors.New("xdg-mime query failed")
+		}
 		if r.byMime != nil {
-			if v, ok := r.byMime[args[1]]; ok {
+			if v, ok := r.byMime[mime]; ok {
 				return v + "\n", nil
 			}
 		}
@@ -384,6 +389,54 @@ MimeType=x-scheme-handler/nxm;x-scheme-handler/mortar;application/x-mortar;
 	got, _ := fsx.ReadFile(mimeapps)
 	if strings.Contains(string(got), legacyDesktopID) || !strings.Contains(string(got), desktopID) {
 		t.Fatalf("mimeapps: %s", got)
+	}
+}
+
+func TestMigrateKeepsLegacyWhenMimeQueryFails(t *testing.T) {
+	l, r := newLinux(t, legacyDesktopID)
+	old := l.legacyDesktopPath()
+	if err := os.MkdirAll(filepath.Dir(old), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	oldFile := `[Desktop Entry]
+Type=Application
+Name=Mortar
+Comment=Multi-game desktop mod manager
+Exec="/opt/mortar/old" %u
+Icon=mortar
+Terminal=false
+Categories=Game;Utility;
+Keywords=mod;manager;nexus;stardew;
+StartupWMClass=mortar
+MimeType=x-scheme-handler/nxm;x-scheme-handler/mortar;application/x-mortar;
+`
+	if err := fsx.WriteFile(old, []byte(oldFile), desktopPerm); err != nil {
+		t.Fatal(err)
+	}
+	r.byMime = map[string]string{nxmMime: legacyDesktopID, fileMime: legacyDesktopID}
+	r.queryFail = map[string]bool{mortarMime: true}
+	r.current = legacyDesktopID
+	if err := os.MkdirAll(l.configHome, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	mimeapps := filepath.Join(l.configHome, "mimeapps.list")
+	body := "[Default Applications]\nx-scheme-handler/nxm=" + legacyDesktopID + ";\nx-scheme-handler/mortar=" + legacyDesktopID + ";\napplication/x-mortar=" + legacyDesktopID + ";\n"
+	if err := fsx.WriteFile(mimeapps, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.RegisterLinks(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(old); err != nil {
+		t.Fatalf("legacy desktop removed while a mime query failed: %v", err)
+	}
+	b, err := fsx.ReadFile(l.desktopPath())
+	if err != nil || !strings.Contains(string(b), `Exec="/opt/mortar/mortar"`) {
+		t.Fatalf("new desktop: %s, %v", b, err)
+	}
+	got, _ := fsx.ReadFile(mimeapps)
+	if !strings.Contains(string(got), "x-scheme-handler/mortar="+legacyDesktopID) {
+		t.Fatalf("mimeapps dropped the unconfirmed mortar mapping: %s", got)
 	}
 }
 

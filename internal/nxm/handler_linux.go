@@ -406,25 +406,30 @@ func (l *System) migrateLegacy() error {
 	if err := l.writeDesktop(withNxm); err != nil {
 		return err
 	}
-	move := []string{mortarMime, fileMime}
-	if l.mimeDefault(nxmMime) == legacyDesktopID {
-		if _, err := l.run(xdgMime, "default", desktopID, nxmMime); err != nil {
-			return fmt.Errorf("xdg-mime default: %w", err)
-		}
-		move = append(move, nxmMime)
+	mimes := []string{mortarMime, fileMime}
+	if withNxm {
+		mimes = append(mimes, nxmMime)
 	}
-	for _, mime := range []string{mortarMime, fileMime} {
-		if l.mimeDefault(mime) == legacyDesktopID {
+	move := make([]string, 0, len(mimes))
+	keepLegacy := false
+	for _, mime := range mimes {
+		switch def := l.mimeDefault(mime); def {
+		case "":
+			keepLegacy = true
+		case legacyDesktopID:
 			if _, err := l.run(xdgMime, "default", desktopID, mime); err != nil {
 				return fmt.Errorf("xdg-mime default: %w", err)
 			}
+			move = append(move, mime)
 		}
 	}
 	if err := l.retargetMimeapps(legacyDesktopID, desktopID, move); err != nil {
 		return err
 	}
-	if err := os.Remove(legacy); err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return err
+	if !keepLegacy {
+		if err := os.Remove(legacy); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
 	}
 	_, _ = l.run(updateDB, filepath.Dir(legacy))
 	return nil
