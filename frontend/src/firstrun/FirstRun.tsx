@@ -77,16 +77,14 @@ export function FirstRun() {
         pb: 3,
       }}
     >
-      {step === FIND ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-          <Typography component="h1" sx={{ fontSize: 40, fontWeight: 700 }}>
-            {t`Welcome to Mortar`}
-          </Typography>
-          <Typography
-            sx={{ fontSize: 17 }}
-          >{t`Three steps and you are playing with mods.`}</Typography>
-        </Box>
-      ) : null}
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+        <Typography component="h1" sx={{ fontSize: 40, fontWeight: 700 }}>
+          {t`Welcome to Mortar`}
+        </Typography>
+        <Typography
+          sx={{ fontSize: 17 }}
+        >{t`Three steps and you are playing with mods.`}</Typography>
+      </Box>
       <Box component="ol" sx={{ display: 'flex', gap: '10px', m: 0, p: 0, listStyle: 'none' }}>
         <Chip
           n={FIND}
