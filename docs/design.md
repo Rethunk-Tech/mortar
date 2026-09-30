@@ -181,6 +181,7 @@ After the go-ahead, each milestone ends with the gate green and NOMAD clicking t
 
 Not in the first release, each by NOMAD on 2026-09-29; re-weigh only when asked:
 
+- A hands-on test of updating a mod in place (dropping a newer archive over an older installed version: carry-over, `.mortar-old`, save backup, Roll back) (NOMAD, 2026-09-30, deferred to v2): the engine is built and unit-tested, but no older mod version was at hand to try it with.
 - Game Select hover in the style of Concrete's switcher, where the hovered game grows while the others become strips, with parallax and brightness shifts (NOMAD, 2026-09-30): eased `flex-grow` and `flex-basis` looked jumpy in WebKitGTK, so it was removed; revisit with a measured, transform-based approach.
 - Lethal Company, as the second `Game` implementation ([lethal-company.md](lethal-company.md)).
 - Translucent window, desktop showing through (NOMAD, 2026-09-30, deferred to v2). The see-through window looked wrong, so v1 is solid. The `Rethunk-AI/wails` fork's GTK4 `setTransparent()` fix (upstream wailsapp/wails#6197) makes it possible: stock GTK4 leaves `setTransparent()` empty (`v3/pkg/application/linux_cgo.go:1418`), and the fix registers a display-wide CSS provider that clears the window background except the title bar. Any fading or `backdrop-filter` full-window layer turns WebKitGTK's translucent window opaque; a static tint does not. Stacked alphas compound toward opaque, so images and overlays each need their own alpha. Frosted glass needs `ext-background-effect-v1`, below.
