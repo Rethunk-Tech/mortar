@@ -10,7 +10,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
-func TestSavesZipsAndKeepsFive(t *testing.T) {
+func TestSavesZipsAndKeepsTheChosenCount(t *testing.T) {
 	saves := filepath.Join(t.TempDir(), "Saves")
 	if err := os.MkdirAll(filepath.Join(saves, "Farm_1"), 0o750); err != nil {
 		t.Fatal(err)
@@ -23,13 +23,13 @@ func TestSavesZipsAndKeepsFive(t *testing.T) {
 	var last string
 	for i := range 7 {
 		var err error
-		if last, err = Saves(saves, out, start.Add(time.Duration(i)*MinGap)); err != nil {
+		if last, err = Saves(saves, out, 3, start.Add(time.Duration(i)*MinGap)); err != nil {
 			t.Fatal(err)
 		}
 	}
 	items, _ := os.ReadDir(out)
-	if len(items) != Keep {
-		t.Fatalf("%d files kept, want %d", len(items), Keep)
+	if len(items) != 3 {
+		t.Fatalf("%d files kept, want 3", len(items))
 	}
 	if _, err := os.Stat(filepath.Join(out, "2026-01-01T00-00-00.000.zip")); err == nil {
 		t.Fatal("oldest backup survived")
@@ -46,7 +46,7 @@ func TestSavesZipsAndKeepsFive(t *testing.T) {
 
 func TestSavesSkipsMissingFolder(t *testing.T) {
 	out := filepath.Join(t.TempDir(), "backups")
-	got, err := Saves(filepath.Join(t.TempDir(), "none"), out, time.Now())
+	got, err := Saves(filepath.Join(t.TempDir(), "none"), out, DefaultKeep, time.Now())
 	if err != nil || got != "" {
 		t.Fatalf("got %q, %v", got, err)
 	}
@@ -62,17 +62,17 @@ func TestSavesSkipsWhileTheNewestIsRecent(t *testing.T) {
 	}
 	out := t.TempDir()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	first, err := Saves(saves, out, start)
+	first, err := Saves(saves, out, DefaultKeep, start)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for i := 1; i < 8; i++ {
-		got, err := Saves(saves, out, start.Add(time.Duration(i)*time.Minute))
+		got, err := Saves(saves, out, DefaultKeep, start.Add(time.Duration(i)*time.Minute))
 		if err != nil || got != first {
 			t.Fatalf("backup %d = %q, %v; want the existing %q", i, got, err, first)
 		}
 	}
-	if _, err := Saves(saves, out, start.Add(MinGap)); err != nil {
+	if _, err := Saves(saves, out, DefaultKeep, start.Add(MinGap)); err != nil {
 		t.Fatal(err)
 	}
 	if items, _ := os.ReadDir(out); len(items) != 2 {

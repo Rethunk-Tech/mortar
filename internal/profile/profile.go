@@ -99,6 +99,8 @@ type Store struct {
 	Created func(game string)
 	// Running reports whether the game is running this profile; nil means never.
 	Running func(game, id string) bool
+	// BackupsKept returns how many save backups to retain; nil means backup.DefaultKeep.
+	BackupsKept func() int
 }
 
 // RunningError is returned by operations that would change the mods/ folder of a profile its game is running.

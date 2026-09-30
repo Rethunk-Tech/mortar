@@ -15,8 +15,8 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
-// Keep is how many backups are retained.
-const Keep = 5
+// DefaultKeep is how many backups are retained unless the user chose otherwise.
+const DefaultKeep = 5
 
 // MinGap is how recent the newest backup must be to stand in for a new one, so a run of updates cannot
 // evict every older backup with copies of the same saves.
@@ -25,9 +25,9 @@ const MinGap = 10 * time.Minute
 const stamp = "2006-01-02T15-04-05.000"
 
 // Saves zips savesDir into backupsDir/<timestamp>.zip through a temp file and rename, then deletes all but the
-// newest Keep backups. It returns the zip's path (the newest existing one when that is under MinGap old), or ""
+// newest keep backups. It returns the zip's path (the newest existing one when that is under MinGap old), or ""
 // when savesDir does not exist.
-func Saves(savesDir, backupsDir string, now time.Time) (string, error) {
+func Saves(savesDir, backupsDir string, keep int, now time.Time) (string, error) {
 	if _, err := os.Stat(savesDir); errors.Is(err, fs.ErrNotExist) {
 		return "", nil
 	} else if err != nil {
@@ -63,7 +63,7 @@ func Saves(savesDir, backupsDir string, now time.Time) (string, error) {
 	if err := os.Rename(tmp.Name(), dst); err != nil {
 		return "", errors.Join(err, os.Remove(tmp.Name()))
 	}
-	return dst, prune(backupsDir)
+	return dst, prune(backupsDir, keep)
 }
 
 func writeZip(w io.Writer, root string) error {
@@ -117,14 +117,14 @@ func list(dir string) ([]string, error) {
 	return zips, nil
 }
 
-// prune removes the oldest backups beyond Keep.
-func prune(dir string) error {
+// prune removes the oldest backups beyond keep.
+func prune(dir string, keep int) error {
 	zips, err := list(dir)
 	if err != nil {
 		return err
 	}
 	var errs []error
-	for _, n := range zips[:max(0, len(zips)-Keep)] {
+	for _, n := range zips[:max(0, len(zips)-keep)] {
 		errs = append(errs, os.Remove(filepath.Join(dir, n)))
 	}
 	return errors.Join(errs...)

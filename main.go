@@ -88,6 +88,7 @@ func main() {
 	}
 	launches := launchsvc.NewService(home, store, profiles)
 	profiles.Running = launches.Running
+	profiles.BackupsKept = func() int { return store.Get().BackupsKept }
 	loaders := loadersvc.NewService(home, store, items, profiles)
 	loadersvc.Attach(loaders, "stardew")
 	launches.EnsureLoader = func(ctx context.Context, id string) error {

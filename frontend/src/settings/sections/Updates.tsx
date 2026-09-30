@@ -1,9 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, CircularProgress, Link } from '@mui/material'
+import { Alert, Box, Button, CircularProgress, Link, TextField } from '@mui/material'
 import { Download, RefreshCw, RotateCcw } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { SetBackupsKept } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useNav } from '../../nav/store.ts'
-import { reportUnexpected } from '../../toasts/report.ts'
+import { errorText, reportUnexpected } from '../../toasts/report.ts'
+import { useToasts } from '../../toasts/store.ts'
 import { useSettings } from '../store.ts'
 import { useMortarUpdate } from '../updates.ts'
 
@@ -109,6 +111,46 @@ function MortarUpdate() {
   )
 }
 
+function BackupsKept() {
+  const { t } = useLingui()
+  const kept = useSettings((s) => s.backupsKept)
+  const push = useToasts((s) => s.push)
+  const [draft, setDraft] = useState(String(kept))
+  useEffect(() => setDraft(String(kept)), [kept])
+  const commit = () => {
+    const n = Number(draft)
+    if (!Number.isInteger(n) || n < 1 || n > 50) {
+      setDraft(String(kept))
+      return
+    }
+    if (n !== kept) {
+      SetBackupsKept(n).catch((err: unknown) => {
+        const body = errorText(err)
+        push({ kind: 'error', title: t`Couldn't save that setting`, ...(body ? { body } : {}) })
+        setDraft(String(kept))
+      })
+    }
+  }
+  return (
+    <TextField
+      type="number"
+      size="small"
+      label={t`Backups kept`}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+          e.target.blur()
+        }
+      }}
+      helperText={t`Saves are zipped before mods update; older backups beyond this many are deleted. 1 to 50.`}
+      slotProps={{ htmlInput: { min: 1, max: 50, step: 1 } }}
+      sx={{ alignSelf: 'flex-start', width: 320, mt: 1 }}
+    />
+  )
+}
+
 export function Updates() {
   const { t } = useLingui()
   const lastGame = useSettings((s) => s.lastGame)
@@ -129,6 +171,8 @@ export function Updates() {
           {t`Open Stardew Valley settings`}
         </Link>
       ) : null}
+      <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Save backups`}</Box>
+      <BackupsKept />
     </Box>
   )
 }

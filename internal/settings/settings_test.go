@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/backup"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
@@ -36,7 +37,7 @@ func TestDefaultsAndRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := s2.Get(); !reflect.DeepEqual(got, Settings{"moss", BackgroundSolid, "/pics/a.png", "lethal", map[string]string{}, map[string]string{}, map[string]string{}, map[string][]string{}, 0, "", false, true, "vortex.desktop", false}) {
+	if got := s2.Get(); !reflect.DeepEqual(got, Settings{"moss", BackgroundSolid, "/pics/a.png", "lethal", map[string]string{}, map[string]string{}, map[string]string{}, map[string][]string{}, 0, "", false, true, "vortex.desktop", false, backup.DefaultKeep}) {
 		t.Fatalf("round trip = %+v", got)
 	}
 	entries, _ := os.ReadDir(dir)
@@ -158,5 +159,27 @@ func TestDataFolderMeasures(t *testing.T) {
 	got, err := NewService(s).DataFolder()
 	if err != nil || got.Path != dir || got.Size != 42 {
 		t.Fatalf("DataFolder = %+v, %v", got, err)
+	}
+}
+
+func TestBackupsKeptRange(t *testing.T) {
+	s, dir := open(t)
+	for _, n := range []int{MinBackupsKept - 1, MaxBackupsKept + 1} {
+		if _, err := s.Update(func(v *Settings) { v.BackupsKept = n }); err == nil {
+			t.Fatalf("BackupsKept %d accepted", n)
+		}
+	}
+	if _, err := s.Update(func(v *Settings) { v.BackupsKept = MaxBackupsKept }); err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(filepath.Join(dir, fileName), []byte(`{"accent":"sand","background":"image","backupsKept":0}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s2, err := Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := s2.Get().BackupsKept; got != backup.DefaultKeep {
+		t.Fatalf("out-of-range file loaded as %d, want %d", got, backup.DefaultKeep)
 	}
 }

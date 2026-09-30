@@ -9,6 +9,7 @@ import (
 	"slices"
 	"sync"
 
+	"github.com/Rethunk-AI/mortar/internal/backup"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
 
@@ -51,11 +52,18 @@ type Settings struct {
 	NxmHandled  bool   `json:"nxmHandled"`
 	NxmPrevious string `json:"nxmPrevious"`
 	NxmAsked    bool   `json:"nxmAsked"`
+	// BackupsKept is how many save backups to retain, from MinBackupsKept to MaxBackupsKept.
+	BackupsKept int `json:"backupsKept"`
 }
+
+const (
+	MinBackupsKept = 1
+	MaxBackupsKept = 50
+)
 
 // Defaults returns the settings used when no valid file exists.
 func Defaults() Settings {
-	return Settings{Accent: "sand", Background: BackgroundImage, LastProfile: map[string]string{}, GameFolders: map[string]string{}, Loaders: map[string]string{}, Dismissed: map[string][]string{}}
+	return Settings{Accent: "sand", Background: BackgroundImage, LastProfile: map[string]string{}, GameFolders: map[string]string{}, Loaders: map[string]string{}, Dismissed: map[string][]string{}, BackupsKept: backup.DefaultKeep}
 }
 
 // Store reads and writes settings.json under the user data folder.
@@ -96,6 +104,9 @@ func Open() (*Store, error) {
 	if !slices.Contains(backgrounds, s.cur.Background) {
 		s.cur.Background = Defaults().Background
 	}
+	if s.cur.BackupsKept < MinBackupsKept || s.cur.BackupsKept > MaxBackupsKept {
+		s.cur.BackupsKept = Defaults().BackupsKept
+	}
 	return s, nil
 }
 
@@ -117,6 +128,9 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	}
 	if !slices.Contains(backgrounds, next.Background) {
 		return s.cur, fmt.Errorf("unknown background %q", next.Background)
+	}
+	if next.BackupsKept < MinBackupsKept || next.BackupsKept > MaxBackupsKept {
+		return s.cur, fmt.Errorf("backups kept must be %d to %d, got %d", MinBackupsKept, MaxBackupsKept, next.BackupsKept)
 	}
 	if err := datadir.WriteJSON(s.path, next); err != nil {
 		return s.cur, err

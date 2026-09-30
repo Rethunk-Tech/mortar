@@ -30,7 +30,7 @@ Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_
 - `store/index.json`: each store item's last use, meaning the last time any `profile.json` named it.
 - `profiles/<game>/<profile id>/profile.json`, and beside it `mods/`, the folder SMAPI is pointed at. Each entry is copied to `mods/<store key>/` exactly as extracted; SMAPI recurses until it finds a `manifest.json`.
 - `trash/`: deleted profiles, kept 30 days.
-- `backups/`: zips of the Saves folder taken before updates, the last five kept; one under ten minutes old stands in for a new one.
+- `backups/`: zips of the Saves folder taken before updates, as many kept as Settings › Updates says (`backupsKept` in `settings.json`, 1 to 50, default 5); one under ten minutes old stands in for a new one.
 - `cache/`: API responses, mod pictures and the dataset index.
 - `queue.json`: the download queue's state, without `nxm://` keys.
 

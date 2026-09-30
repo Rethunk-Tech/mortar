@@ -278,6 +278,10 @@ func (s *Store) saveBackup(game string) error {
 	if err != nil {
 		return err
 	}
-	_, err = backup.Saves(filepath.Join(cfg, "StardewValley", "Saves"), filepath.Join(filepath.Dir(s.root), "backups"), time.Now())
+	keep := backup.DefaultKeep
+	if s.BackupsKept != nil {
+		keep = s.BackupsKept()
+	}
+	_, err = backup.Saves(filepath.Join(cfg, "StardewValley", "Saves"), filepath.Join(filepath.Dir(s.root), "backups"), keep, time.Now())
 	return err
 }

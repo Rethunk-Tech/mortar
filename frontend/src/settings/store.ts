@@ -18,6 +18,7 @@ const defaults: Settings = {
   nxmHandled: false,
   nxmPrevious: '',
   nxmAsked: false,
+  backupsKept: 5,
 }
 
 export const useSettings = create<Settings>(() => defaults)

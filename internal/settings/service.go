@@ -29,6 +29,11 @@ func (s *Service) SetAccent(accent string) error {
 	return s.set(func(v *Settings) { v.Accent = accent })
 }
 
+// SetBackupsKept sets how many save backups to retain.
+func (s *Service) SetBackupsKept(n int) error {
+	return s.set(func(v *Settings) { v.BackupsKept = n })
+}
+
 func (s *Service) SetBackground(background string) error {
 	return s.set(func(v *Settings) { v.Background = background })
 }
