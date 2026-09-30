@@ -16,34 +16,39 @@ export const useSaveBackups = create<{
   load: () => Promise<void>
   restore: (name: string, folders: string[] | null) => Promise<void>
   openFolder: () => Promise<void>
-}>((set, get) => ({
-  items: [],
-  status: 'idle',
-  error: '',
-  load: async () => {
-    set({ status: 'loading', error: '' })
-    try {
-      const items = (await ListBackups()) ?? []
-      if (get().status === 'loading') {
-        set({ items, status: 'ready' })
+}>((set, get) => {
+  let latest = 0
+  return {
+    items: [],
+    status: 'idle',
+    error: '',
+    load: async () => {
+      latest += 1
+      const id = latest
+      set({ status: 'loading', error: '' })
+      try {
+        const items = (await ListBackups()) ?? []
+        if (id === latest) {
+          set({ items, status: 'ready' })
+        }
+      } catch (e) {
+        if (id === latest) {
+          set({ items: [], status: 'error', error: errorMessage(e) })
+        }
       }
-    } catch (e) {
-      if (get().status === 'loading') {
-        set({ items: [], status: 'error', error: errorMessage(e) })
+    },
+    restore: async (name, folders) => {
+      await RestoreBackup(name, folders)
+      await get().load()
+    },
+    openFolder: async () => {
+      try {
+        await OpenBackupsFolder()
+      } catch (e) {
+        reportUnexpected(e)
       }
-    }
-  },
-  restore: async (name, folders) => {
-    await RestoreBackup(name, folders)
-    await get().load()
-  },
-  openFolder: async () => {
-    try {
-      await OpenBackupsFolder()
-    } catch (e) {
-      reportUnexpected(e)
-    }
-  },
-}))
+    },
+  }
+})
 
 export const getInitialState = () => useSaveBackups.getInitialState()
