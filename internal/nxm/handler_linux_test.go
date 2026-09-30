@@ -167,7 +167,7 @@ func TestAnAppImageRegistersItselfAndMovesItsEntry(t *testing.T) {
 	}
 	r := &recorder{}
 	l.run = r.run
-	if err := l.Refresh(); err != nil {
+	if err := l.refresh(); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(l.desktopPath()); !os.IsNotExist(err) {
@@ -176,8 +176,22 @@ func TestAnAppImageRegistersItselfAndMovesItsEntry(t *testing.T) {
 	if err := l.Register(); err != nil {
 		t.Fatal(err)
 	}
+	registered, _ := fsx.ReadFile(l.desktopPath())
+
+	// Another copy of Mortar, such as a dev build, leaves the entry to the one it names.
+	l.exe = filepath.Join(dir, "dev", "mortar")
+	if err := l.refresh(); err != nil {
+		t.Fatal(err)
+	}
+	if desktop, _ := fsx.ReadFile(l.desktopPath()); string(desktop) != string(registered) {
+		t.Errorf("another copy took the entry: %s", desktop)
+	}
+
 	l.exe = filepath.Join(dir, "Apps", "Mortar.AppImage")
-	if err := l.Refresh(); err != nil {
+	if err := os.Remove(img); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.refresh(); err != nil {
 		t.Fatal(err)
 	}
 	desktop, _ := fsx.ReadFile(l.desktopPath())

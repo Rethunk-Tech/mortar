@@ -232,8 +232,18 @@ func (l *System) RegisterLinks() error {
 }
 
 // Refresh rewrites the desktop entry when Mortar has moved since it was written, as an AppImage does when the user
-// moves the file. Before first run has written the entry it writes nothing.
+// moves the file. Before first run has written the entry it writes nothing. Only a production build refreshes, so
+// a dev build or go run does not take the entry from the installed Mortar.
 func (l *System) Refresh() error {
+	if !production {
+		return nil
+	}
+	return l.refresh()
+}
+
+// refresh leaves an entry whose Exec target still exists to that copy of Mortar: a second one running beside it,
+// such as another AppImage, is not a move.
+func (l *System) refresh() error {
 	current, err := fsx.ReadFile(l.desktopPath())
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil
@@ -241,7 +251,24 @@ func (l *System) Refresh() error {
 	if err != nil {
 		return err
 	}
+	if target := execTarget(current); target != "" && target != l.exe {
+		if _, err := os.Stat(target); err == nil {
+			return nil
+		}
+	}
 	return l.rewrite(current)
+}
+
+// execTarget is the program the desktop entry runs, as desktopFile writes it, or "" when it holds no such line.
+func execTarget(entry []byte) string {
+	for line := range strings.SplitSeq(string(entry), "\n") {
+		if rest, ok := strings.CutPrefix(line, `Exec="`); ok {
+			if target, _, ok := strings.Cut(rest, `"`); ok {
+				return target
+			}
+		}
+	}
+	return ""
 }
 
 // rewrite writes the desktop entry unless current already is it, keeping the nxm scheme as current has it.
