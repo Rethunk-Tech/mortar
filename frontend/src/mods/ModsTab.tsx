@@ -11,6 +11,7 @@ import { compact } from '../game/compact.ts'
 import { useLaunch } from '../launch/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { dialogOpen } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
@@ -59,6 +60,9 @@ function SelectionKeys({ shown }: { shown: Mod[] }) {
       }
       const el = e.target
       if (el instanceof HTMLElement && el.closest('input, textarea, [contenteditable="true"]')) {
+        return
+      }
+      if (dialogOpen()) {
         return
       }
       if (e.key === 'Escape') {
