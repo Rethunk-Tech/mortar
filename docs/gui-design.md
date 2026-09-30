@@ -46,14 +46,14 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 
 ## Profile management
 
-A page, as Concrete's: a header with a back button, **New** and **Import** buttons, then every profile as a sortable row (drag handle, name, rename, duplicate, share, show or hide, delete). Reordering uses dnd-kit's sortable list with a drop indicator. Delete asks first. **Share** copies the `https://mortar.rethunk.tech/p#...` link and offers the `.mortar` file when the profile has configs or is over about 240 mods.
+A page, as Concrete's: a header with a back button, **New** and **Import** buttons, then every profile as a sortable row (drag handle, name, rename, duplicate, share, show or hide, delete). Reordering uses dnd-kit's sortable list with a drop indicator. Delete asks first. **Share** copies the `https://mortar.rethunk.tech/stardew/p#...` link and offers the `.mortar` file when the profile has configs or is over about 240 mods.
 
 ## Import
 
 Opening a link, pasting one, or opening a `.mortar` file shows one dialog before anything is downloaded:
 
 - The profile's name and its mods, grouped: already installed, to download, dependencies added, unavailable (with the Nexus page).
-- Problems found from the mod dataset (missing dependencies, broken for this game version).
+- Problems found before download: missing dependencies (from the mod dataset) and mods broken for this game version (from SMAPI's update API).
 - **Import** creates the profile and fills the download queue; **Cancel** leaves nothing behind.
 
 ## Download queue
@@ -66,7 +66,7 @@ Only when no game is set up, never on later launches:
 
 1. Find Stardew Valley (Steam, then GOG) and show what was found, with **Browse** for another folder.
 2. Install SMAPI if it is missing (one click, unattended).
-3. Create the first profile: empty, or from a pasted share link.
+3. Create the first profile: empty, or from a pasted share link, which asks for the Nexus sign-in first when the import needs downloads.
 
 ## Settings
 
