@@ -4,9 +4,9 @@ This file holds only work that is decided but not built. Each item is written to
 
 Items marked **Measure** need a throwaway test first; those tests run outside this repo and only their results land here. Measurements were taken as stated in architecture.md.
 
-## GitHub sources (milestone 4)
+## GitHub references in links
 
-The `internal/github` library is built ([architecture.md](architecture.md#github-releases)). Remaining: wire it into installs and updates. An `UpdateKeys` entry `GitHub:<owner>/<repo>` selects the source, update checks go through SMAPI's API first, and a GitHub reference in a link is marked unverified in the preview. After download, the mod installs only if the trust rule holds; otherwise the user sees the mismatch and decides.
+GitHub installs and updates are built ([architecture.md](architecture.md#github-releases)). Remaining: a GitHub reference in a share link is marked unverified in the import preview, since its trust rule can only run after download.
 
 ## Sharing (milestone 5)
 
@@ -43,7 +43,7 @@ After the go-ahead, each milestone ends with the gate green and NOMAD clicking t
 1. **Shell and look.** Remaining: when wailsapp/wails#6197 (GTK4 transparency) ships in a tagged v3 beta, pin that beta and drop the `Rethunk-AI/wails` replace in `go.mod`.
 2. **Stardew core.** Built.
 3. **Mod data.** Built.
-4. **Nexus.** Remaining: wiring GitHub sources into installs and updates. Built: personal-key sign-in, the Mortar drawer's account section, runtime `nxm://` registration and its notifications, the download queue.
+4. **Nexus.** Built.
 5. **Sharing.** Links, the Share dialog, the import preview, `.mortar` files, the static page, and first run's **From a shared link** card.
 6. **Release.** smapi.io/log upload and the GitHub issue link, the updater patches and signed manifest, Settings › Updates, Check for updates and Report a bug in the app menu, Windows measurements and fixes, packaging, the repo made public.
 
