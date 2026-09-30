@@ -27,14 +27,14 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 - **Sidebar** (150–300px, resized from an 8px handle on its right edge, 2px primary right border): a "Profiles" header that opens profile management, then one row per profile in the user's order, the open one selected. Each row shows a problem or update badge when it has any.
 - **Bottom block** pinned under the sidebar: icon buttons for Support, Settings and the download queue (with a count while it has items), then a full-width **Play** button in the primary colour.
 - **Detail pane** for the open profile:
-  - A hero, 300px tall (200px below 900px wide), bleeding to the pane's edges: the profile's cover image dimmed (`blur(1px) brightness(0.75) opacity(0.5)`), the profile name large and bold with a soft white glow, and small cards for updated, created, mod count and problems. The cover is an image the user picked, else the Nexus picture of the profile's most-endorsed mod (`endorsement_count` from the mod endpoint), never a random image (NOMAD, 2026-09-29).
+  - A hero, 300px tall (200px below 900px wide), bleeding to the pane's edges: the profile's cover image dimmed (`blur(1px) brightness(0.75) opacity(0.5)`), the profile name large and bold with a soft white glow, and small cards for updated, created, mod count and problems. The cover is an image the user picked, else Steam's own hero art for the game, read at runtime from `<Steam>/appcache/librarycache/413150/library_hero.jpg` (Steam also keeps a `library_hero_blur.jpg`; never bundled with Mortar), else the Nexus picture of the profile's most-endorsed mod (`endorsement_count` from the mod endpoint), never a random image (NOMAD, 2026-09-29).
   - Tabs: **Mods** (default), **Notes**, **Console**.
 - **Launching** covers the window with the launch overlay, a spinner and "Launching Stardew Valley" until SMAPI's log shows the game started or the launch fails.
 
 ## Mods tab
 
 - A responsive grid of mod cards (`minmax(330px, 1fr)`; 250px below 900px wide, 240px below 700px).
-- A card: the mod's icon (its Nexus `picture_url`, fetched once and cached on disk; a letter tile until it loads or when there is none, NOMAD 2026-09-29), its name, author and version, an enable switch (the dot-folder toggle), and badges for an available update or a problem. Its menu: open the Nexus page, update, roll back, remove.
+- A card: the mod's icon (its Nexus `picture_url`, fetched once when the mod is installed and cached on disk; a letter tile until it loads or when there is none, NOMAD 2026-09-29), its name, author and version, an enable switch (the dot-folder toggle), and badges for an available update or a problem. Its menu: open the Nexus page, update, roll back, remove.
 - Above the grid: a search field that filters by name, the problem summary with one-click fixes ([design.md](design.md#using-the-app)), and buttons to add mods (open Nexus, or pick an archive). Dropping an archive anywhere on the window installs it into the open profile.
 - Empty: a short line and the same two add buttons.
 
@@ -46,7 +46,7 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 
 ## Profile management
 
-A page, as Concrete's: a header with a back button, **New** and **Import** buttons, then every profile as a sortable row (drag handle, name, rename, duplicate, share, show or hide, delete). Reordering uses dnd-kit's sortable list with a drop indicator. Delete asks first. **Share** copies the `https://mortar.rethunk.tech/stardew/p#...` link and offers the `.mortar` file when the profile has configs or is over about 240 mods.
+A page, as Concrete's: a header with a back button, **New** and **Import** buttons, then every profile as a sortable row (drag handle, name, rename, duplicate, share, show or hide, delete). Reordering uses dnd-kit's sortable list with a drop indicator. Delete asks first. **Share** copies the `https://mortar.rethunk.tech/stardew/p#...` link and always offers the `.mortar` file "with settings", and suggests it over the link above about 240 mods.
 
 ## Import
 
@@ -64,10 +64,10 @@ A side sheet listing each item: waiting for your click (free accounts), download
 
 Only when no game is set up, never on later launches:
 
-1. Find Stardew Valley (Steam, then GOG) and show what was found, with **Browse** for another folder.
-2. Install SMAPI if it is missing (one click, unattended).
+1. Find Stardew Valley (Steam, then GOG) and show what was found, with **Browse** for another folder; when nothing is found, say so, with Browse and a retry.
+2. Install SMAPI if it is missing (one click, unattended). On Windows with Steam, show the launch-options line to paste into Stardew's Steam properties, with a copy button.
 3. Create the first profile: empty, or from a pasted share link, which asks for the Nexus sign-in first when the import needs downloads.
 
 ## Settings
 
-A dialog: game folders, the Nexus account (the personal key field while testing), whether Mortar handles `nxm://` links (asks before taking them from another manager), and update checks.
+A dialog: game folders, the Nexus personal API key, whether Mortar handles `nxm://` links (asks before taking them from another manager, and gives them back when turned off), update checks, and About (licences and credits, including SMAPI and the Stardew mod dataset, CC-BY-SA 4.0).
