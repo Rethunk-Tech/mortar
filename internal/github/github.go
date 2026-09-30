@@ -164,30 +164,42 @@ type idleReader struct {
 	cause func() error
 	r     io.Reader
 	idle  time.Duration
+	err   error
 }
 
 func (r *idleReader) Read(p []byte) (int, error) {
+	if r.err != nil {
+		return 0, r.err
+	}
 	if err := r.cause(); err != nil {
+		r.err = err
 		return 0, err
 	}
+	buf := make([]byte, len(p))
 	type result struct {
 		n   int
 		err error
 	}
 	ch := make(chan result, 1)
 	go func() {
-		n, err := r.r.Read(p)
+		n, err := r.r.Read(buf)
 		ch <- result{n, err}
 	}()
 	t := time.NewTimer(r.idle)
 	defer t.Stop()
 	select {
 	case <-r.done:
-		return 0, r.cause()
+		err := r.cause()
+		if err == nil {
+			err = context.Canceled
+		}
+		r.err = err
+		return 0, r.err
 	case <-t.C:
-		return 0, context.DeadlineExceeded
+		r.err = context.DeadlineExceeded
+		return 0, r.err
 	case got := <-ch:
-		return got.n, got.err
+		return copy(p, buf[:got.n]), got.err
 	}
 }
 
