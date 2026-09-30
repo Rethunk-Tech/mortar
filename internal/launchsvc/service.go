@@ -430,11 +430,17 @@ func (s *Service) Lines(gameID, profileID string) ([]launch.Entry, error) {
 func (s *Service) run(ctx context.Context, g game.Game, profileID string, req launch.Request, buf *launch.Buffer) {
 	err := g.Launch(ctx, req, s.collect(g.ID(), profileID, buf))
 	var f *launch.Failure
+	var exited *launch.ExitError
 	switch {
 	case err == nil:
 		s.set(Status{Game: g.ID(), State: Running, Profile: profileID, Since: time.Now().UnixMilli()})
 	case errors.Is(err, launch.ErrNoSteam):
 		s.set(Status{Game: g.ID(), State: NoSteam, Profile: profileID})
+	case errors.As(err, &exited):
+		if len(buf.Lines()) == 0 {
+			s.say(g.ID(), profileID, fmt.Sprintf("%s exited with code %d.", g.LoaderName(), exited.Code))
+		}
+		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Error: err.Error()})
 	case errors.As(err, &f):
 		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Hint: f.Hint, Error: f.Error()})
 	default:

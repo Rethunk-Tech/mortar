@@ -23,13 +23,13 @@ func TestRunStartsWhenLogRewritten(t *testing.T) {
 		t.Fatal(err)
 	}
 	var got []string
-	run := func(dir, name string, args ...string) error {
+	run := func(dir, name string, args ...string) (<-chan error, error) {
 		got = append([]string{dir, name}, args...)
 		go func() {
 			time.Sleep(30 * time.Millisecond)
 			_ = os.WriteFile(log, []byte("SMAPI 4.5.2 with Stardew Valley 1.6.15\nLoading mods\npartial"), 0o600)
 		}()
-		return nil
+		return make(chan error), nil
 	}
 	var mu sync.Mutex
 	var lines []string
@@ -70,7 +70,7 @@ func TestRunIgnoresStaleLog(t *testing.T) {
 	if err := os.Chtimes(log, old, old); err != nil {
 		t.Fatal(err)
 	}
-	err := Run(context.Background(), func(string, string, ...string) error { return nil }, Command{LogFile: log, Failure: HintSteam}, fast, func([]string) {})
+	err := Run(context.Background(), func(string, string, ...string) (<-chan error, error) { return make(chan error), nil }, Command{LogFile: log, Failure: HintSteam}, fast, func([]string) {})
 	var f *Failure
 	if !errors.As(err, &f) || f.Hint != HintSteam {
 		t.Fatalf("err = %v, want a steam-hint failure", err)
@@ -79,7 +79,7 @@ func TestRunIgnoresStaleLog(t *testing.T) {
 
 func TestRunStartError(t *testing.T) {
 	boom := errors.New("boom")
-	err := Run(context.Background(), func(string, string, ...string) error { return boom }, Command{Failure: HintLaunchOptions}, fast, nil)
+	err := Run(context.Background(), func(string, string, ...string) (<-chan error, error) { return nil, boom }, Command{Failure: HintLaunchOptions}, fast, nil)
 	var f *Failure
 	if !errors.As(err, &f) || !errors.Is(err, boom) || f.Hint != HintLaunchOptions {
 		t.Fatalf("err = %v", err)
@@ -88,7 +88,9 @@ func TestRunStartError(t *testing.T) {
 
 func TestRunKeepsFollowingUntilContextDone(t *testing.T) {
 	log := filepath.Join(t.TempDir(), "SMAPI-latest.txt")
-	run := func(string, string, ...string) error { return os.WriteFile(log, []byte("one\n"), 0o600) }
+	run := func(string, string, ...string) (<-chan error, error) {
+		return make(chan error), os.WriteFile(log, []byte("one\n"), 0o600)
+	}
 	var mu sync.Mutex
 	var lines []string
 	ctx, cancel := context.WithCancel(context.Background())
@@ -115,4 +117,22 @@ func TestRunKeepsFollowingUntilContextDone(t *testing.T) {
 		time.Sleep(5 * time.Millisecond)
 	}
 	t.Fatalf("lines = %q", lines)
+}
+
+type exitStatus struct{ code int }
+
+func (e *exitStatus) Error() string { return "exit" }
+func (e *exitStatus) ExitCode() int { return e.code }
+
+func TestRunSurfacesExitWhenLogIsUnchanged(t *testing.T) {
+	log := filepath.Join(t.TempDir(), "SMAPI-latest.txt")
+	done := make(chan error, 1)
+	done <- &exitStatus{code: 7}
+	err := Run(context.Background(), func(string, string, ...string) (<-chan error, error) {
+		return done, nil
+	}, Command{LogFile: log, Failure: HintSteam}, fast, func([]string) {})
+	var x *ExitError
+	if !errors.As(err, &x) || x.Code != 7 {
+		t.Fatalf("err = %v, want exit 7", err)
+	}
 }

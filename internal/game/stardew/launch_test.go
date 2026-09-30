@@ -107,9 +107,9 @@ func TestLaunch(t *testing.T) {
 		LogDir:       logDir,
 		LookPath:     func(string) (string, error) { return "/usr/bin/steam", nil },
 		LaunchTiming: launch.Timing{Timeout: 300 * time.Millisecond, Poll: 5 * time.Millisecond},
-		Runner: func(_, name string, args ...string) error {
+		Runner: func(_, name string, args ...string) (<-chan error, error) {
 			ran = append([]string{name}, args...)
-			return os.WriteFile(filepath.Join(logDir, "SMAPI-latest.txt"), []byte("SMAPI 4.5.2 with Stardew Valley 1.6.15\n"), 0o600)
+			return make(chan error), os.WriteFile(filepath.Join(logDir, "SMAPI-latest.txt"), []byte("SMAPI 4.5.2 with Stardew Valley 1.6.15\n"), 0o600)
 		},
 	}
 	var lines []string
@@ -127,7 +127,7 @@ func TestLaunch(t *testing.T) {
 	if err := os.Chtimes(filepath.Join(logDir, "SMAPI-latest.txt"), old, old); err != nil {
 		t.Fatal(err)
 	}
-	g.Runner = func(string, string, ...string) error { return nil }
+	g.Runner = func(string, string, ...string) (<-chan error, error) { return make(chan error), nil }
 	err := g.Launch(context.Background(), req, func([]string) {})
 	var f *launch.Failure
 	if !errors.As(err, &f) || f.Hint != launch.HintSteam {

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -28,6 +29,15 @@ const (
 // ErrNoSteam means there is no Steam to launch through; the user may choose to launch directly.
 var ErrNoSteam = errors.New("no Steam was found")
 
+// ExitError is a loader process that ended before it rewrote its log.
+type ExitError struct {
+	Code int
+}
+
+func (e *ExitError) Error() string {
+	return fmt.Sprintf("the loader exited with code %d", e.Code)
+}
+
 // Failure is a launch that did not start the game.
 type Failure struct {
 	Hint Hint
@@ -48,18 +58,20 @@ type Request struct {
 	Direct bool
 }
 
-// Runner starts a command and returns without waiting for it to finish.
-type Runner func(dir, name string, args ...string) error
+// Runner starts a command and returns without waiting for it to finish. exited receives the Wait
+// error (nil on a zero exit); nil means the runner will not report an exit.
+type Runner func(dir, name string, args ...string) (exited <-chan error, err error)
 
 // Start is the Runner that runs the real command, reaping it in the background.
-func Start(dir, name string, args ...string) error {
+func Start(dir, name string, args ...string) (<-chan error, error) {
 	cmd := exec.CommandContext(context.Background(), name, args...)
 	cmd.Dir = dir
 	if err := cmd.Start(); err != nil {
-		return err
+		return nil, err
 	}
-	go func() { _ = cmd.Wait() }()
-	return nil
+	done := make(chan error, 1)
+	go func() { done <- cmd.Wait() }()
+	return done, nil
 }
 
 // Command is one process to start, plus how to tell it worked.
@@ -97,7 +109,8 @@ func (t Timing) withDefaults() Timing {
 func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]string)) error {
 	tm = tm.withDefaults()
 	began := time.Now()
-	if err := run(c.Dir, c.Name, c.Args...); err != nil {
+	exited, err := run(c.Dir, c.Name, c.Args...)
+	if err != nil {
 		return &Failure{Hint: c.Failure, Err: err}
 	}
 	// File timestamps come from a coarse kernel clock that can trail time.Now by a few milliseconds.
@@ -106,19 +119,38 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 	defer deadline.Stop()
 	tick := time.NewTicker(tm.Poll)
 	defer tick.Stop()
+	started := func() error {
+		go follow(ctx, &tail, tm.Poll)
+		return nil
+	}
 	for {
 		if tail.poll() {
-			go follow(ctx, &tail, tm.Poll)
-			return nil
+			return started()
 		}
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-deadline.C:
 			return &Failure{Hint: c.Failure, Err: errors.New("the game did not start in time")}
+		case waitErr := <-exited:
+			if tail.poll() {
+				return started()
+			}
+			return &ExitError{Code: waitCode(waitErr)}
 		case <-tick.C:
 		}
 	}
+}
+
+func waitCode(err error) int {
+	if err == nil {
+		return 0
+	}
+	var c interface{ ExitCode() int }
+	if errors.As(err, &c) {
+		return c.ExitCode()
+	}
+	return 1
 }
 
 func follow(ctx context.Context, tail *tailer, every time.Duration) {
