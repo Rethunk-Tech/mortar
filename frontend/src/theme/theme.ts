@@ -36,7 +36,15 @@ export function createMortarTheme(accent: AccentName): Theme {
         },
       },
       MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
-      MuiBackdrop: { styleOverrides: { root: { backgroundColor: 'rgba(0,0,0,0.75)' } } },
+      MuiBackdrop: {
+        styleOverrides: {
+          root: {
+            variants: [
+              { props: { invisible: false }, style: { backgroundColor: 'rgba(0,0,0,0.3)' } },
+            ],
+          },
+        },
+      },
       MuiButton: { styleOverrides: { root: { whiteSpace: 'nowrap' } } },
       MuiChip: { styleOverrides: { label: { whiteSpace: 'nowrap' } } },
       MuiButtonBase: {

@@ -43,6 +43,7 @@ function Row({ game, openable, note }: { game: Game; openable: boolean; note: st
             width: '100%',
             height: '100%',
             objectFit: 'cover',
+            opacity: 0.72,
             filter: openable ? 'none' : 'saturate(0.6)',
           }}
         />
@@ -97,7 +98,7 @@ function Row({ game, openable, note }: { game: Game; openable: boolean; note: st
     justifyContent: 'space-between',
     px: '96px',
     overflow: 'hidden',
-    bgcolor: 'background.paper',
+    bgcolor: game.artUrl ? 'transparent' : 'background.paper',
     borderLeft: '4px solid',
     borderColor: openable ? 'primary.main' : 'transparent',
     borderTop: '1px solid rgba(0,0,0,0.8)',
