@@ -14,4 +14,4 @@ export const launchLine = (gameDir: string): string =>
   `"${gameDir}\\StardewModdingAPI.exe" %command%`
 
 export const launchOptionsSet = (options: string): boolean =>
-  options.toLowerCase().includes('stardewmoddingapi.exe')
+  options.toLowerCase().includes('stardewmoddingapi.exe') && options.includes('%command%')

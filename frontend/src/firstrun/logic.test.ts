@@ -15,6 +15,7 @@ test('launch options line points at SMAPI and is recognised once pasted', () => 
   expect(line).toBe('"C:\\Steam\\Stardew Valley\\StardewModdingAPI.exe" %command%')
   expect(launchOptionsSet(line)).toBe(true)
   expect(launchOptionsSet('"c:\\x\\stardewmoddingapi.EXE" %command%')).toBe(true)
+  expect(launchOptionsSet('"C:\\x\\StardewModdingAPI.exe"')).toBe(false)
   expect(launchOptionsSet('')).toBe(false)
   expect(launchOptionsSet('-novid %command%')).toBe(false)
 })
