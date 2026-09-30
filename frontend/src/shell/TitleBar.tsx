@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 import { compact } from '../game/compact.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { AppMenu } from './AppMenu.tsx'
 import { win } from './win.ts'
 
@@ -77,7 +78,11 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
   return (
     <Box
       component="header"
-      onDoubleClick={win.toggleMaximise}
+      onDoubleClick={(e) => {
+        if (e.target instanceof Element && !e.target.closest('button, a')) {
+          win.toggleMaximise().catch(reportUnexpected)
+        }
+      }}
       sx={{
         '--wails-draggable': 'drag',
         height: 'var(--title-bar)',

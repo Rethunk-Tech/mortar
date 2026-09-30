@@ -158,6 +158,7 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
 }
 
 function GameBody() {
+  const { t } = useLingui()
   const [folder, setFolder] = useState('')
   const [version, setVersion] = useState('')
   useEffect(() => {
@@ -175,7 +176,7 @@ function GameBody() {
   }, [])
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <GameFolder folder={folder} versionNote={version ? ` · Stardew Valley ${version}` : ''} />
+      <GameFolder folder={folder} versionNote={version ? t` · Stardew Valley ${version}` : ''} />
       <Smapi key={folder} onVersion={setVersion} />
     </Box>
   )

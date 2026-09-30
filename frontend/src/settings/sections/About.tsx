@@ -1,6 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box } from '@mui/material'
+import { Box, Link } from '@mui/material'
+import { Browser } from '@wailsio/runtime'
 import { Logo } from '../../brand/Logo.tsx'
+import { reportUnexpected } from '../../toasts/report.ts'
+
+const LICENCE = 'https://github.com/Rethunk-AI/mortar/blob/main/LICENSE'
 
 const body = { color: 'rgba(235,235,240,0.95)' }
 
@@ -23,7 +27,14 @@ export function About() {
       </Box>
       <Box sx={{ fontWeight: 600 }}>{t`Built on`}</Box>
       <Box sx={body}>
-        {t`SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · open-source libraries listed in Licences.`}
+        {t`SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · and open-source libraries under their own licences.`}{' '}
+        <Link
+          component="button"
+          onClick={() => Browser.OpenURL(LICENCE).catch(reportUnexpected)}
+          sx={{ fontSize: 'inherit', verticalAlign: 'baseline' }}
+        >
+          {t`Mortar's licence`}
+        </Link>
       </Box>
       <Box sx={{ fontWeight: 600 }}>{t`Default background`}</Box>
       <Box sx={body}>
