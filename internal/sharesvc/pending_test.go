@@ -233,3 +233,48 @@ func TestPendingKeepsUnappliedConfigsAfterTheQueueDrains(t *testing.T) {
 		t.Fatalf("pending dropped: %+v", s.pending)
 	}
 }
+
+func TestPendingAppliesAfterFinishedQueueRowsAreGone(t *testing.T) {
+	s, _ := newService(t, true)
+	s.d.Dir = t.TempDir()
+	prof, err := s.d.Profiles.Create("stardew", "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.pending = []*pending{{
+		Game: "stardew", Profile: prof.ID,
+		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
+		Configs: []share.Config{{UniqueID: "A.Mod", Path: "config.json", Data: []byte("a")}},
+	}}
+	res, err := s.d.Profiles.InstallNexus("stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var running atomic.Bool
+	running.Store(true)
+	s.d.Profiles.Running = func(string, string) bool { return running.Load() }
+	s.QueueChanged(queue.State{})
+	if len(s.pending) != 1 || len(s.pending[0].Configs) != 1 {
+		t.Fatalf("pending dropped while running with an empty queue: %+v", s.pending)
+	}
+	running.Store(false)
+	s.QueueChanged(queue.State{})
+	dir, err := s.d.Profiles.ModsDir("stardew", prof.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := fsx.ReadFile(filepath.Join(dir, res.Profile.Entries[0].Key, "Mod", "config.json"))
+	if err != nil || string(got) != "a" {
+		t.Fatalf("config after empty-queue apply = %q, %v", got, err)
+	}
+}
+
+func TestWantedFileItemMatchesGitHubAsset(t *testing.T) {
+	w := wantedFile{Repo: "o/r", Tag: "1", Asset: "a.zip"}
+	if !w.item(queue.Item{Repo: "o/r", Tag: "1", Asset: "a.zip"}) {
+		t.Fatal("same asset should match")
+	}
+	if w.item(queue.Item{Repo: "o/r", Tag: "1", Asset: "b.zip"}) {
+		t.Fatal("other asset from the same repo should not match")
+	}
+}

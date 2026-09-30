@@ -609,7 +609,8 @@ func (w wantedFile) entry(e profile.Entry) bool {
 
 func (w wantedFile) item(it queue.Item) bool {
 	if w.Repo != "" {
-		return strings.EqualFold(it.Repo, w.Repo)
+		return strings.EqualFold(it.Repo, w.Repo) && (w.Tag == "" || it.Tag == w.Tag) &&
+			(w.Asset == "" || it.Asset == w.Asset)
 	}
 	return it.ModID == w.ModID && it.FileID == w.FileID
 }
@@ -628,6 +629,29 @@ func (p *pending) wants(e profile.Entry) bool {
 	return slices.ContainsFunc(p.Wanted, func(w wantedFile) bool { return w.entry(e) })
 }
 
+func (s *Service) wantedInstalled(p *pending) bool {
+	if len(p.Wanted) == 0 {
+		return false
+	}
+	all, err := s.d.Profiles.List(p.Game)
+	if err != nil {
+		return false
+	}
+	var entries []profile.Entry
+	for _, pr := range all {
+		if pr.ID == p.Profile {
+			entries = pr.Entries
+			break
+		}
+	}
+	for _, w := range p.Wanted {
+		if !slices.ContainsFunc(entries, w.entry) {
+			return false
+		}
+	}
+	return true
+}
+
 // queueChanged runs on every queue change, progress ticks included, so it saves only when a pending import changed.
 func (s *Service) queueChanged(st queue.State) {
 	s.applyMu.Lock()
@@ -638,7 +662,6 @@ func (s *Service) queueChanged(st queue.State) {
 	changed := false
 	for _, p := range todo {
 		var done []string
-		open := 0
 		for _, it := range st.Items {
 			if it.Game != p.Game || it.Profile != p.Profile {
 				continue
@@ -646,20 +669,21 @@ func (s *Service) queueChanged(st queue.State) {
 			if it.State == queue.StateDone && slices.ContainsFunc(p.Wanted, func(w wantedFile) bool { return w.item(it) }) {
 				done = append(done, it.ID)
 			}
-			if !slices.Contains([]string{queue.StateDone, queue.StateSkipped, queue.StateCancelled}, it.State) {
-				open++
-			}
 		}
-		// The queue drops old finished items, so the set is compared, not its size.
+		// The queue drops old finished items, so apply also when every wanted file is already on the profile.
 		slices.Sort(done)
-		if seen := strings.Join(done, ","); len(done) > 0 && seen != p.seen && len(p.Configs) > 0 {
+		seen := strings.Join(done, ",")
+		if s.wantedInstalled(p) {
+			seen = "on-profile"
+		}
+		if len(p.Configs) > 0 && seen != p.seen && (len(done) > 0 || seen == "on-profile") {
 			p.seen = seen
 			before := len(p.Configs)
 			s.apply(p)
 			changed = changed || len(p.Configs) != before
 		}
-		// An apply the running game or a write error held back leaves seen empty, and the import waits.
-		if len(p.Configs) == 0 || (open == 0 && len(done) == 0) {
+		// Configs stay until they land; queue eviction must not drop them.
+		if len(p.Configs) == 0 {
 			s.mu.Lock()
 			s.pending = slices.DeleteFunc(s.pending, func(x *pending) bool { return x == p })
 			s.mu.Unlock()
