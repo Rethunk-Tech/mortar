@@ -19,6 +19,15 @@ Built: packaging, self-update, the signing key and Linux desktop integration ([a
 - The repo turns public at the first release and builds go on its GitHub Releases, since the updater's manifest and assets must be publicly downloadable.
 - **Measure on Windows:** how launch arguments order around `%command%`, and whether SMAPI needs `--no-terminal`; frameless window under KDE, and Acrylic with a frameless window; the desktop wallpaper read (`SPI_GETDESKWALLPAPER`); one real update through the updater, and `DisplayVersion` after it.
 
+## Gap-filling features (NOMAD, 2026-09-30)
+
+Chosen from suggestion rounds; each lands as its own unit and moves to architecture.md and gui-design.md when built.
+
+- **Mods tab:** a list view with more columns, a right-click header menu to show or hide them, and click-to-sort (persisted); bulk select in the list (enable, disable, remove, share the selection); which profiles use a mod, with search across profiles; a note or tag per mod; the Nexus changelog between the installed and latest version in Update review; pin a version or ignore one update; offer missing dependencies at install; a form editor for config.json; badges for mods that logged errors or warnings in the profile's last run.
+- **Profiles and Saves:** row summaries (updates, problems, origin); compare two profiles and copy mods across; browse and restore save backups; per-profile launch options; a colour or icon per profile; last played on Game Select with one-click Play; export and restore a whole profile as a zip.
+- **Nexus and downloads:** a requests-left meter; update-check toggles (mod updates at start, new SMAPI notice); endorse or track a mod; resume interrupted downloads; mark mods with new files or changes since last seen; a download history; clear finished downloads.
+- **App-wide:** a keyboard shortcuts page and shortcuts; a command palette (Ctrl+K); a notification history; empty-state tips on first open; a credits and licences page; save the console log to a file; "Keep the Nexus copy" in the duplicate dialog.
+
 ## Build order
 
 After the go-ahead, each milestone ends with the gate green and NOMAD clicking through it on Linux. `docs/gui-design.md` is the canonical spec for the screens each milestone builds:
