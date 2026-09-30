@@ -609,7 +609,7 @@ func (s *Service) queueChanged(st queue.State) {
 			s.apply(p)
 			changed = changed || len(p.Configs) != before
 		}
-		// An apply the running game held back leaves seen empty, and the import waits for the next change.
+		// An apply the running game or a write error held back leaves seen empty, and the import waits.
 		if len(p.Configs) == 0 || (open == 0 && (len(done) == 0 || p.seen != "")) {
 			s.mu.Lock()
 			s.pending = slices.DeleteFunc(s.pending, func(x *pending) bool { return x == p })
@@ -636,9 +636,9 @@ func (s *Service) apply(p *pending) {
 		}
 		entries := slices.DeleteFunc(slices.Clone(prof.Entries), func(e profile.Entry) bool { return !p.wants(e) })
 		written, applyErr = share.Apply(modsDir, entries, p.Configs)
-		return nil
+		return applyErr
 	})
-	if errors.Is(err, errRunning) || applyErr != nil {
+	if err != nil || applyErr != nil {
 		p.seen = ""
 	}
 	if err != nil {
@@ -657,17 +657,33 @@ const (
 	fileScheme    = "file://"
 )
 
+// fileURLPath turns a file:// URL into a filesystem path. Windows URLs are /C:/... after parse.
+func fileURLPath(arg string) string {
+	rest, ok := strings.CutPrefix(arg, fileScheme)
+	if !ok {
+		return arg
+	}
+	u, err := url.Parse(fileScheme + rest)
+	if err != nil {
+		return arg
+	}
+	path, err := url.PathUnescape(u.Path)
+	if err != nil {
+		path = u.Path
+	}
+	if len(path) >= 3 && path[0] == '/' && path[2] == ':' {
+		path = path[1:]
+	}
+	return filepath.FromSlash(path)
+}
+
 // classify says whether a launch argument is a share link or a .mortar file. It looks no further than the form:
 // the import dialog parses and previews it, and refuses what is not a share.
 func classify(arg string) (Arrival, bool) {
 	if strings.HasPrefix(arg, appLinkPrefix) || strings.HasPrefix(arg, webLinkPrefix) {
 		return Arrival{Kind: ArrivalLink, Value: arg}, true
 	}
-	if rest, ok := strings.CutPrefix(arg, fileScheme); ok {
-		if u, err := url.Parse(fileScheme + rest); err == nil {
-			arg = u.Path
-		}
-	}
+	arg = fileURLPath(arg)
 	if !strings.EqualFold(filepath.Ext(arg), ".mortar") {
 		return Arrival{}, false
 	}

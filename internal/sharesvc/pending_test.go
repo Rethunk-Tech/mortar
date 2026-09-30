@@ -161,3 +161,42 @@ func TestPendingWaitsWhileTheGameRunsTheProfile(t *testing.T) {
 		t.Fatalf("config after the game stopped = %q, %v", got, err)
 	}
 }
+
+func TestPendingRetriesAfterInModsWriteError(t *testing.T) {
+	s, _ := newService(t, true)
+	s.d.Dir = t.TempDir()
+	prof, err := s.d.Profiles.Create("stardew", "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.pending = []*pending{{
+		Game: "stardew", Profile: prof.ID,
+		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
+		Configs: []share.Config{{UniqueID: "A.Mod", Path: "config.json", Data: []byte("a")}},
+	}}
+	res, err := s.d.Profiles.InstallNexus("stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, err := s.d.Profiles.ModsDir("stardew", prof.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	modDir := filepath.Join(dir, res.Profile.Entries[0].Key, "Mod")
+	block := filepath.Join(modDir, "config.json")
+	if err := os.Mkdir(block, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	done := queue.State{Items: []queue.Item{{ID: "a", Game: "stardew", Profile: prof.ID, ModID: 100, FileID: 1, State: queue.StateDone}}}
+	s.QueueChanged(done)
+	if len(s.pending) != 1 || s.pending[0].seen != "" || len(s.pending[0].Configs) != 1 {
+		t.Fatalf("pending after write error = %+v", s.pending)
+	}
+	if err := os.Remove(block); err != nil {
+		t.Fatal(err)
+	}
+	s.QueueChanged(done)
+	if got, err := fsx.ReadFile(block); err != nil || string(got) != "a" {
+		t.Fatalf("config after retry = %q, %v", got, err)
+	}
+}
