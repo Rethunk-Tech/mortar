@@ -13,6 +13,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
   const [maximised, setMaximised] = useState(false)
   const showBackdrop = useSettings((s) => s.background !== 'solid')
   const backdropImage = useSettings((s) => s.backgroundImage)
+  const backdropMode = useSettings((s) => s.background)
   const [frame, setFrame] = useState<HTMLElement | null>(null)
   useEffect(() => {
     const sync = () => win.reportMaximised(setMaximised)
@@ -41,7 +42,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
             component="img"
             alt=""
             draggable={false}
-            src={`/backdrop?v=${encodeURIComponent(backdropImage)}`}
+            src={`/backdrop?mode=${backdropMode}&v=${encodeURIComponent(backdropImage)}`}
             sx={{
               position: 'absolute',
               inset: 0,

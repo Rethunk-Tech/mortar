@@ -97,6 +97,8 @@ func Middleware(current func() settings.Settings, system string, desktop func() 
 				http.NotFound(w, r)
 				return
 			}
+			// The file behind the one URL changes with the mode and the desktop, so the webview must ask each time.
+			w.Header().Set("Cache-Control", "no-cache")
 			for _, path := range candidates(cur, system, desktop) {
 				if path == "" {
 					continue
