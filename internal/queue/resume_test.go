@@ -265,3 +265,29 @@ func TestSweepKeepsPartialsForQueuedItems(t *testing.T) {
 		t.Fatal("orphan partial was kept")
 	}
 }
+
+func TestFetchGivesUpOnALoopingPartialRange(t *testing.T) {
+	var n atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		n.Add(1)
+		w.Header().Set("Content-Range", "bytes 1-9/10")
+		w.WriteHeader(http.StatusPartialContent)
+		_, _ = io.WriteString(w, "0123456789")
+	}))
+	t.Cleanup(srv.Close)
+	s := rangeSvc(t, srv.Client())
+	path := destPath(s.d.Dir, "item", "m.zip")
+	if err := os.WriteFile(path, []byte("PARTIAL!!"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	saveResume(path, resumeMeta{ExpectedSize: 10, ETag: `"v1"`, URL: srv.URL})
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	t.Cleanup(cancel)
+	err := s.fetch(ctx, Item{ID: "item"}, srv.URL, path)
+	if err == nil {
+		t.Fatal("expected a resume error")
+	}
+	if n.Load() > int32(fetchRestarts+2) {
+		t.Fatalf("requests = %d, livelock", n.Load())
+	}
+}

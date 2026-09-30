@@ -83,8 +83,22 @@ func (s *Service) sweepDownloads() {
 	}
 }
 
+const fetchRestarts = 3
+
 // fetch streams url to path, appending with Range when a partial and the server allow it.
 func (s *Service) fetch(ctx context.Context, it Item, url, path string) error {
+	for n := 0; n <= fetchRestarts; n++ {
+		err, retry := s.fetchOnce(ctx, it, url, path)
+		if retry {
+			dropDownload(path)
+			continue
+		}
+		return err
+	}
+	return fmt.Errorf("the download server sent a range Mortar could not resume")
+}
+
+func (s *Service) fetchOnce(ctx context.Context, it Item, url, path string) (err error, retry bool) {
 	meta := loadResume(path)
 	if meta.URL == "" {
 		meta.URL = url
@@ -99,19 +113,19 @@ func (s *Service) fetch(ctx context.Context, it Item, url, path string) error {
 		meta = resumeMeta{URL: url}
 	}
 	if meta.ExpectedSize > 0 && offset == meta.ExpectedSize && offset > 0 {
-		return verifyDownload(path, meta)
+		return verifyDownload(path, meta), false
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return err
+		return err, false
 	}
 	if offset > 0 {
 		req.Header.Set("Range", fmt.Sprintf("bytes=%d-", offset))
 	}
 	resp, err := s.d.HTTP.Do(req)
 	if err != nil {
-		return err
+		return err, false
 	}
 	defer func() { _ = resp.Body.Close() }()
 
@@ -124,27 +138,24 @@ func (s *Service) fetch(ctx context.Context, it Item, url, path string) error {
 	case http.StatusPartialContent:
 		start, total, ok := parseContentRange(resp.Header.Get("Content-Range"))
 		if !ok || start != offset {
-			dropDownload(path)
-			return s.fetch(ctx, it, url, path)
+			return nil, true
 		}
 		if total > 0 {
 			meta.ExpectedSize = total
 		}
 	case http.StatusUnauthorized, http.StatusForbidden, http.StatusGone:
-		return errLinkExpired
+		return errLinkExpired, false
 	case http.StatusRequestedRangeNotSatisfiable:
-		dropDownload(path)
-		return s.fetch(ctx, it, url, path)
+		return nil, true
 	default:
-		return fmt.Errorf("the download server answered %s", resp.Status)
+		return fmt.Errorf("the download server answered %s", resp.Status), false
 	}
 
 	const limit = archive.DefaultMaxTotalBytes
 	tooLarge := fmt.Errorf("the download is larger than %d MiB", limit>>20)
 	if etag := resp.Header.Get("ETag"); etag != "" {
 		if meta.ETag != "" && meta.ETag != etag && offset > 0 && resp.StatusCode == http.StatusPartialContent {
-			dropDownload(path)
-			return s.fetch(ctx, it, url, path)
+			return nil, true
 		}
 		meta.ETag = etag
 	}
@@ -158,10 +169,10 @@ func (s *Service) fetch(ctx context.Context, it Item, url, path string) error {
 		meta.ExpectedSize = offset + resp.ContentLength
 	}
 	if meta.ExpectedSize > limit {
-		return tooLarge
+		return tooLarge, false
 	}
 	if resp.ContentLength > limit {
-		return tooLarge
+		return tooLarge, false
 	}
 
 	var f *os.File
@@ -171,7 +182,7 @@ func (s *Service) fetch(ctx context.Context, it Item, url, path string) error {
 		f, err = fsx.Create(path)
 	}
 	if err != nil {
-		return s.diskError(err, meta.ExpectedSize)
+		return s.diskError(err, meta.ExpectedSize), false
 	}
 	defer func() { _ = f.Close() }()
 	saveResume(path, meta)
@@ -184,25 +195,25 @@ func (s *Service) fetch(ctx context.Context, it Item, url, path string) error {
 	n, err := io.Copy(f, io.TeeReader(io.LimitReader(resp.Body, limit+1-offset), p))
 	if err != nil {
 		if ctx.Err() != nil {
-			return ctx.Err()
+			return ctx.Err(), false
 		}
-		return s.diskError(err, total)
+		return s.diskError(err, total), false
 	}
 	if offset+n > limit {
-		return tooLarge
+		return tooLarge, false
 	}
 	if err := s.diskError(f.Close(), total); err != nil {
-		return err
+		return err, false
 	}
 	st, err := os.Stat(path)
 	if err != nil {
-		return err
+		return err, false
 	}
 	if meta.ExpectedSize > 0 && st.Size() != meta.ExpectedSize {
 		dropDownload(path)
-		return fmt.Errorf("the download size is %d bytes, not %d", st.Size(), meta.ExpectedSize)
+		return fmt.Errorf("the download size is %d bytes, not %d", st.Size(), meta.ExpectedSize), false
 	}
-	return verifyDownload(path, meta)
+	return verifyDownload(path, meta), false
 }
 
 func parseContentRange(h string) (start, total int64, ok bool) {
