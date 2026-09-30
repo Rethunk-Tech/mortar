@@ -14,10 +14,11 @@ import {
 import { useConsole } from '../console/store.ts'
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
+import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 const reportError = (title: string) => (e: unknown) => {
-  useToasts.getState().push({ kind: 'error', title, body: String(e) })
+  useToasts.getState().push({ kind: 'error', title, body: errorMessage(e) })
 }
 
 function failureBody(status: Status): string {
@@ -26,7 +27,7 @@ function failureBody(status: Status): string {
   }
   if (status.hint === Hint.HintLaunchOptions) {
     return i18n._(
-      msg`Steam's launch options for Stardew Valley lack the SMAPI line. Set them to "<game folder>\\StardewModdingAPI.exe" %command%.`,
+      msg`Steam's launch options for Stardew Valley lack the SMAPI line. In Steam, right-click the game, choose Properties, and paste this line into Launch Options.`,
     )
   }
   return status.error
@@ -35,6 +36,7 @@ function failureBody(status: Status): string {
 interface Failure {
   profile: string
   body: string
+  hint: Hint
 }
 
 export const useLaunch = create<{
@@ -43,6 +45,8 @@ export const useLaunch = create<{
   failure: Failure | null
   askDirect: { game: string; profile: string } | null
   stopping: boolean
+  // Play was pressed and no launch:state has answered yet, which is when SMAPI installs first.
+  starting: boolean
   apply: (status: Status) => void
   refresh: (game: string) => Promise<void>
   start: (game: string, profile: string, direct: boolean) => Promise<void>
@@ -56,21 +60,27 @@ export const useLaunch = create<{
   failure: null,
   askDirect: null,
   stopping: false,
+  starting: false,
   apply: (status) => {
+    set({ starting: false })
     if (status.state === State.Launching) {
       useConsole.getState().reset()
       set({ status, hidden: false, failure: null })
       return
     }
     if (status.state === State.Failed) {
-      set({ failure: { profile: status.profile, body: failureBody(status) } })
+      set({ failure: { profile: status.profile, body: failureBody(status), hint: status.hint } })
     }
     if (status.state === State.NoSteam) {
       set({ askDirect: { game: status.game, profile: status.profile } })
     }
     // Failed and NoSteam are one-off announcements; the game itself is idle.
     if (status.state === State.Running || status.state === State.Idle) {
-      if (status.state === State.Running && get().status?.state === State.Launching) {
+      if (
+        status.state === State.Running &&
+        get().status?.state === State.Launching &&
+        !get().hidden
+      ) {
         useTab.getState().setTab('console')
       }
       set({ status })
@@ -86,9 +96,11 @@ export const useLaunch = create<{
     }
   },
   start: async (game, profile, direct) => {
+    set({ starting: true })
     try {
       await Start(game, profile, direct)
     } catch (e) {
+      set({ starting: false })
       reportError(i18n._(msg`Could not launch the game`))(e)
     }
   },

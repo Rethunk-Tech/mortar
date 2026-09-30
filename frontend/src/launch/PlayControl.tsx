@@ -7,6 +7,7 @@ import {
   type Status,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { compact } from '../game/compact.ts'
+import { useLoader } from '../loader/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { StopDialog } from './StopDialog.tsx'
 import { useLaunch } from './store.ts'
@@ -54,6 +55,8 @@ export function PlayControl({ game }: { game: string }) {
   const { t } = useLingui()
   const status = useLaunch((s) => s.status)
   const stopping = useLaunch((s) => s.stopping)
+  const starting = useLaunch((s) => s.starting)
+  const installingLoader = useLoader((s) => s.installing)
   const start = useLaunch((s) => s.start)
   const openId = useProfiles((s) => s.openId)
   const profiles = useProfiles((s) => s.profiles)
@@ -94,6 +97,19 @@ export function PlayControl({ game }: { game: string }) {
               {time}
             </Typography>
           </Box>
+          {runningProfile && runningProfile.id !== openId ? (
+            <Typography
+              noWrap={true}
+              sx={{
+                px: 0.5,
+                fontSize: 12,
+                color: 'text.secondary',
+                [compact]: { display: 'none' },
+              }}
+            >
+              {t`Playing ${runningProfile.name}`}
+            </Typography>
+          ) : null}
           <Button
             variant="outlined"
             color="error"
@@ -121,7 +137,9 @@ export function PlayControl({ game }: { game: string }) {
     )
   }
 
-  const disabled = openId === '' || state === State.Launching
+  const busy = starting || installingLoader
+  const disabled = openId === '' || state === State.Launching || busy
+  const label = installingLoader ? t`Installing SMAPI…` : t`Play`
   const play = () => start(game, openId, false)
   return (
     <>
@@ -143,11 +161,11 @@ export function PlayControl({ game }: { game: string }) {
           [compact]: { display: 'none' },
         }}
       >
-        {t`Play`}
+        {label}
       </Button>
       <IconButton
-        aria-label={t`Play`}
-        title={t`Play`}
+        aria-label={label}
+        title={label}
         disabled={disabled}
         onClick={play}
         sx={{

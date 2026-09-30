@@ -11,14 +11,19 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
-import { CircleAlert } from 'lucide-react'
+import { Clipboard } from '@wailsio/runtime'
+import { CircleAlert, Copy } from 'lucide-react'
 import { useEffect } from 'react'
+import { Hint } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { format } from '../console/filter.ts'
 import { useConsole } from '../console/store.ts'
+import { launchLine } from '../firstrun/logic.ts'
 import { useTab } from '../game/tab.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { useLaunch } from './store.ts'
 
 const VISIBLE_LINES = 8
@@ -128,55 +133,87 @@ function Overlay({ game }: { game: string }) {
   )
 }
 
+function LaunchLine({ line }: { line: string }) {
+  const { t } = useLingui()
+  return (
+    <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          display: 'flex',
+          alignItems: 'center',
+          px: 1.5,
+          py: 0.75,
+          bgcolor: 'rgba(0,0,0,0.45)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          borderRadius: '6px',
+          fontFamily: 'monospace',
+          fontSize: 13,
+          wordBreak: 'break-all',
+          userSelect: 'text',
+        }}
+      >
+        {line}
+      </Box>
+      <Button
+        variant="outlined"
+        startIcon={<Copy size={16} />}
+        onClick={() => {
+          Clipboard.SetText(line).then(
+            () => useToasts.getState().push({ kind: 'success', title: t`Launch options copied` }),
+            reportUnexpected,
+          )
+        }}
+        sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+      >
+        {t`Copy`}
+      </Button>
+    </Box>
+  )
+}
+
 function Failure({ game }: { game: string }) {
   const { t } = useLingui()
-  const name = useProfiles((s) => s.game?.name ?? '')
+  const info = useProfiles((s) => s.game)
   const failure = useLaunch((s) => s.failure)
   const dismiss = useLaunch((s) => s.dismissFailure)
   const start = useLaunch((s) => s.start)
+  // The dialog unmounts with `failure`, so nothing fades out with stale text.
   if (!failure) {
     return null
   }
+  const name = info?.name ?? ''
+  const showLine = failure.hint === Hint.HintLaunchOptions && info?.installDir
   return (
-    <Box sx={scrim}>
-      <Box
-        role="alert"
-        sx={{
-          width: '100%',
-          maxWidth: 620,
-          boxSizing: 'border-box',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1.75,
-          p: 3,
-          bgcolor: 'rgba(38,38,46,0.98)',
-          border: '1px solid rgba(255,138,128,0.5)',
-          borderRadius: '8px',
-        }}
-      >
-        <Box
-          sx={{ display: 'flex', alignItems: 'center', gap: 1.25, fontSize: 22, fontWeight: 700 }}
+    <Dialog
+      open={true}
+      onClose={dismiss}
+      fullWidth={true}
+      maxWidth="sm"
+      slotProps={{ paper: { sx: { bgcolor: 'rgba(38,38,46,0.98)' } } }}
+    >
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+        <CircleAlert size={22} color="#ff9a90" aria-hidden={true} />
+        {t`${name} did not start`}
+      </DialogTitle>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
+        <DialogContentText>{failure.body}</DialogContentText>
+        {showLine ? <LaunchLine line={launchLine(info.installDir)} /> : null}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={dismiss}>{t`Close`}</Button>
+        <Button
+          variant="contained"
+          onClick={() => {
+            dismiss()
+            start(game, failure.profile, false)
+          }}
         >
-          <CircleAlert size={22} color="#ff9a90" aria-hidden={true} />
-          {t`${name} did not start`}
-        </Box>
-        <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>{failure.body}</Typography>
-        <Box sx={{ display: 'flex', gap: 1.25, justifyContent: 'flex-end' }}>
-          <Button variant="outlined" onClick={dismiss}>
-            {t`Close`}
-          </Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              dismiss()
-              start(game, failure.profile, false)
-            }}
-          >
-            {t`Try again`}
-          </Button>
-        </Box>
-      </Box>
-    </Box>
+          {t`Try again`}
+        </Button>
+      </DialogActions>
+    </Dialog>
   )
 }
 

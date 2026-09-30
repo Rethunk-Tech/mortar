@@ -7,6 +7,7 @@ import {
   Status as LoaderStatus,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/loadersvc/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 export const useLoader = create<{
@@ -39,9 +40,11 @@ export const useLoader = create<{
         .getState()
         .push({ kind: 'success', title: i18n._(msg`SMAPI ${status.version} is installed`) })
     } catch (e) {
+      const body = errorMessage(e)
+      set({ error: body })
       useToasts
         .getState()
-        .push({ kind: 'error', title: i18n._(msg`Could not install SMAPI`), body: String(e) })
+        .push({ kind: 'error', title: i18n._(msg`Could not install SMAPI`), body })
     }
   },
 }))
