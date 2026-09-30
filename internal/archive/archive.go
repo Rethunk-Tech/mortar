@@ -94,18 +94,37 @@ func Extract(archivePath, dest string, opts Options) error {
 		x.opts.MaxEntries = DefaultMaxEntries
 	}
 
-	switch {
-	case bytes.HasPrefix(head, []byte("PK\x03\x04")), bytes.HasPrefix(head, []byte("PK\x05\x06")):
+	switch detect(head) {
+	case fmtZip:
 		return x.zip(f, info.Size())
-	case bytes.HasPrefix(head, []byte("Rar!\x1a\x07\x00")), bytes.HasPrefix(head, []byte("Rar!\x1a\x07\x01\x00")):
+	case fmtRAR:
 		if _, err := f.Seek(0, io.SeekStart); err != nil {
 			return err
 		}
 		return x.rar(f)
-	case bytes.HasPrefix(head, []byte("7z\xbc\xaf\x27\x1c")):
+	case fmtSevenZip:
 		return x.sevenZip(f, info.Size())
 	}
 	return &Error{Reason: ErrUnsupportedFormat}
+}
+
+const (
+	fmtNone = iota
+	fmtZip
+	fmtRAR
+	fmtSevenZip
+)
+
+func detect(head []byte) int {
+	switch {
+	case bytes.HasPrefix(head, []byte("PK\x03\x04")), bytes.HasPrefix(head, []byte("PK\x05\x06")):
+		return fmtZip
+	case bytes.HasPrefix(head, []byte("Rar!\x1a\x07\x00")), bytes.HasPrefix(head, []byte("Rar!\x1a\x07\x01\x00")):
+		return fmtRAR
+	case bytes.HasPrefix(head, []byte("7z\xbc\xaf\x27\x1c")):
+		return fmtSevenZip
+	}
+	return fmtNone
 }
 
 type extractor struct {

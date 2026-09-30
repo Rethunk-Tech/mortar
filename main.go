@@ -8,6 +8,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
+	modstore "github.com/Rethunk-AI/mortar/internal/store"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -31,6 +32,14 @@ func main() {
 	profiles, err := profile.Open()
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	items, err := modstore.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := items.Cleanup(); err != nil {
+		log.Printf("store cleanup: %v", err)
 	}
 
 	var window *application.WebviewWindow
