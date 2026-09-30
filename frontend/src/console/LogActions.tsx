@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { Download, LifeBuoy } from 'lucide-react'
+import { RunLog } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { SaveFile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import { Log } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -24,6 +25,7 @@ export function LogActions() {
   const rows = useVisible()
   const entries = useShownEntries()
   const shown = useConsole((s) => s.shown)
+  const viewingRun = useConsole((s) => s.viewingRun)
   const cleared = useConsole((s) => s.cleared)
   const profileName = useProfiles(
     (s) => s.profiles.find((p) => p.id === shown.profile)?.name ?? shown.profile,
@@ -71,7 +73,10 @@ export function LogActions() {
         disabled={!canSave}
         startIcon={<Download size={16} />}
         onClick={() => {
-          Log(shown.game, shown.profile)
+          const rawLog = viewingRun
+            ? RunLog(shown.game, shown.profile, viewingRun)
+            : Log(shown.game, shown.profile)
+          rawLog
             .then((raw) => {
               const text = saveLogText(raw ?? '', entries)
               if (text === '') {

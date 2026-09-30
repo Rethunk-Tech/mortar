@@ -12,6 +12,7 @@ import {
 import { Browser, Clipboard } from '@wailsio/runtime'
 import { Copy, ExternalLink, TriangleAlert } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { RunLog } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import {
   Log,
   Upload,
@@ -70,6 +71,7 @@ export function HelpDialog({ game }: { game: string }) {
   const open = useConsole((s) => s.helping)
   const setHelping = useConsole((s) => s.setHelping)
   const profile = useProfiles((s) => s.openId)
+  const viewingRun = useConsole((s) => s.viewingRun)
   const openFor = useRef({ game, profile })
   openFor.current = { game, profile }
   const uploadGen = useRef(0)
@@ -90,7 +92,8 @@ export function HelpDialog({ game }: { game: string }) {
       return
     }
     let live = true
-    Log(game, profile).then(
+    const read = viewingRun ? RunLog(game, profile, viewingRun) : Log(game, profile)
+    read.then(
       (text) => {
         if (live) {
           setLog(text)
@@ -111,7 +114,7 @@ export function HelpDialog({ game }: { game: string }) {
     return () => {
       live = false
     }
-  }, [open, game, profile, setHelping, t])
+  }, [open, game, profile, viewingRun, setHelping, t])
 
   const copy = (text: string) =>
     Clipboard.SetText(text).then(
@@ -161,6 +164,7 @@ export function HelpDialog({ game }: { game: string }) {
     <Dialog
       open={open}
       onClose={uploading ? undefined : close}
+      transitionDuration={0}
       slotProps={{ paper: { sx: { ...paper.sx, width: 780, maxWidth: 'calc(100% - 32px)' } } }}
     >
       <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Get help`}</DialogTitle>

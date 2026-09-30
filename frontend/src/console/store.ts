@@ -11,6 +11,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import {
   Lines,
+  RunLines,
   Send,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { i18n } from '../i18n/index.ts'
@@ -40,11 +41,14 @@ export const useConsole = create<{
   jump: { index: number; n: number } | null
   // The Get help dialog, opened from the Console tab or the sidebar's Support menu.
   helping: boolean
+  // A recorded run's id, or empty while showing the live session.
+  viewingRun: string
   add: (batch: Batch) => void
   reset: (game: string, profile: string) => void
   clear: () => void
   jumpTo: (index: number) => void
   load: (game: string, profile: string) => Promise<void>
+  viewRun: (game: string, profile: string, runId: string) => void
   send: (game: string, command: string) => Promise<boolean>
   setSearch: (search: string) => void
   toggleLevel: (level: Level) => void
@@ -63,9 +67,10 @@ export const useConsole = create<{
   history: {},
   jump: null,
   helping: false,
+  viewingRun: '',
   add: ({ game, profile, entries }) => {
-    const { shown } = get()
-    if (game !== shown.game || (profile !== '' && profile !== shown.profile)) {
+    const { shown, viewingRun } = get()
+    if (viewingRun !== '' || game !== shown.game || (profile !== '' && profile !== shown.profile)) {
       return
     }
     const seen = Math.max(lastSeq(get().entries), get().cleared)
@@ -75,7 +80,14 @@ export const useConsole = create<{
     }
   },
   reset: (game, profile) =>
-    set({ shown: { game, profile }, entries: [], cleared: 0, jump: null, follow: true }),
+    set({
+      shown: { game, profile },
+      entries: [],
+      cleared: 0,
+      jump: null,
+      follow: true,
+      viewingRun: '',
+    }),
   clear: () =>
     set((s) => ({ entries: [], jump: null, cleared: Math.max(s.cleared, lastSeq(s.entries)) })),
   jumpTo: (index) => set((s) => ({ follow: false, jump: { index, n: (s.jump?.n ?? 0) + 1 } })),
@@ -87,9 +99,17 @@ export const useConsole = create<{
       get().reset(game, profile)
     }
     try {
-      const lines = (await Lines(game, profile)) ?? []
+      const { viewingRun } = get()
+      const lines =
+        (viewingRun === ''
+          ? await Lines(game, profile)
+          : await RunLines(game, profile, viewingRun)) ?? []
       const now = get().shown
-      if (now.game !== game || now.profile !== profile) {
+      if (now.game !== game || now.profile !== profile || get().viewingRun !== viewingRun) {
+        return
+      }
+      if (viewingRun !== '') {
+        set({ entries: lines })
         return
       }
       const history = lines.filter((e) => e.seq > get().cleared)
@@ -102,6 +122,19 @@ export const useConsole = create<{
         body: errorMessage(e),
       })
     }
+  },
+  viewRun: (game, profile, runId) => {
+    set({
+      shown: { game, profile },
+      viewingRun: runId,
+      entries: [],
+      cleared: 0,
+      jump: null,
+      follow: runId === '',
+    })
+    get()
+      .load(game, profile)
+      .then(() => undefined)
   },
   // Sending brings back the tail so the command's output scrolls into view.
   send: async (game, command) => {

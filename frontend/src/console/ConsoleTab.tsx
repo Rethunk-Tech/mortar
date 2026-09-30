@@ -21,6 +21,7 @@ import { countByLevel, incompatibleSMAPI, isFiltered, LEVELS, modsOf } from './f
 import { stepHistory } from './history.ts'
 import { LinkedLog } from './LinkedLog.tsx'
 import { useShownEntries, useVisible } from './logHooks.ts'
+import { RunsPicker } from './RunsPicker.tsx'
 import { canSendTo, useConsole } from './store.ts'
 
 const dots: Record<Level, string> = {
@@ -206,7 +207,8 @@ const MONO = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace'
 function CommandLine({ game }: { game: string }) {
   const { t } = useLingui()
   const openId = useProfiles((s) => s.openId)
-  const running = useLaunch((s) => canSendTo(s.status, game, openId))
+  const viewingRun = useConsole((s) => s.viewingRun)
+  const running = useLaunch((s) => canSendTo(s.status, game, openId)) && viewingRun === ''
   const history = useConsole((s) => s.history[game] ?? NO_HISTORY)
   const send = useConsole((s) => s.send)
   const [text, setText] = useState('')
@@ -442,6 +444,7 @@ export function ConsoleTab({ game }: { game: string }) {
         </Box>
       ) : null}
       {offerReinstall ? <ReinstallLoader game={game} /> : null}
+      <RunsPicker game={game} />
       <LinkedLog
         game={game}
         rows={rows}
