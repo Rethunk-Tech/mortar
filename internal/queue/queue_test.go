@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -35,6 +36,9 @@ type fixture struct {
 	opened   []string
 	installs []profile.Source
 	keys     []string
+	// published is the last state publish finished writing; waiting on it rather than State keeps a test from
+	// ending while queue.json is still being written.
+	published atomic.Pointer[State]
 }
 
 func (f *fixture) now() time.Time { return time.Unix(f.clock.Load(), 0).UTC() }
@@ -111,6 +115,7 @@ func newFixture(t *testing.T) *fixture {
 			return nil
 		},
 		HTTP: srv.Client(), Dir: f.dir, Now: f.now,
+		Changed: func(st State) { f.published.Store(&st) },
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -134,8 +139,8 @@ func (f *fixture) wait(what string, ok func(State) bool) State {
 	f.t.Helper()
 	deadline := time.Now().Add(5 * time.Second)
 	for time.Now().Before(deadline) {
-		if st := f.s.State(); ok(st) {
-			return st
+		if st := f.published.Load(); st != nil && ok(*st) {
+			return *st
 		}
 		time.Sleep(5 * time.Millisecond)
 	}
@@ -188,9 +193,17 @@ func TestFreeAccountWaitsForTheClickThenTakesTheLink(t *testing.T) {
 		t.Fatal(err)
 	}
 	f.wait("the click", f.item(StateWaitingClick))
+	f.wait("the page", func(State) bool {
+		f.mu.Lock()
+		defer f.mu.Unlock()
+		return len(f.opened) > 0
+	})
 	want := "https://www.nexusmods.com/stardewvalley/mods/1?tab=files&file_id=10&nmm=1"
-	if len(f.opened) != 1 || f.opened[0] != want {
-		t.Fatalf("opened %v", f.opened)
+	f.mu.Lock()
+	opened := slices.Clone(f.opened)
+	f.mu.Unlock()
+	if len(opened) != 1 || opened[0] != want {
+		t.Fatalf("opened %v", opened)
 	}
 	if f.s.Route(nxm.Link{ModID: 1, FileID: 99, Key: "k", Expires: f.now().Unix() + 600}) {
 		t.Error("a link for another file was taken")
