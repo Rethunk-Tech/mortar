@@ -22,19 +22,31 @@ import {
   Box,
   Button,
   ButtonBase,
-  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   IconButton,
   Menu,
   MenuItem,
+  type MenuItemProps,
   Typography,
 } from '@mui/material'
-import { ArrowLeft, GripVertical, MoreHorizontal, Plus, RotateCcw } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import {
+  ArrowLeft,
+  Copy,
+  Eye,
+  EyeOff,
+  GripVertical,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  RotateCcw,
+  Trash2,
+} from 'lucide-react'
+import { type ReactNode, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compact } from '../game/compact.ts'
 import { NameField } from '../game/NameField.tsx'
@@ -44,7 +56,31 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { useProfiles } from './store.ts'
 
 const DRAG_TINT_ALPHA = 0.24
-const panelSx = { bgcolor: 'background.paper', borderRadius: '6px' }
+const panelSx = { bgcolor: 'rgba(50,50,60,0.78)', borderRadius: '6px' }
+const menuPaper = {
+  paper: {
+    sx: {
+      width: 220,
+      p: 0.75,
+      bgcolor: 'rgba(28,28,34,0.99)',
+      border: '1px solid rgba(255,255,255,0.14)',
+      borderRadius: '8px',
+    },
+  },
+  list: { sx: { p: 0 } },
+}
+
+function Item({ icon, sx, children, ...props }: MenuItemProps & { icon: ReactNode }) {
+  return (
+    <MenuItem
+      {...props}
+      sx={{ height: 38, gap: '10px', px: '10px', borderRadius: '5px', fontSize: 14, ...sx }}
+    >
+      {icon}
+      {children}
+    </MenuItem>
+  )
+}
 const dialogPaper = { paper: { sx: { bgcolor: 'rgba(40,40,48,0.92)' } } }
 
 function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) => void }) {
@@ -80,15 +116,16 @@ function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) =
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1,
+        gap: 1.5,
+        height: 64,
         px: 1,
-        py: 1,
-        mb: 1,
+        boxSizing: 'border-box',
+        mb: '6px',
         ...panelSx,
         border: '2px solid',
         borderColor: isDragging ? 'primary.main' : 'transparent',
         bgcolor: (th) =>
-          isDragging ? alpha(th.palette.primary.main, DRAG_TINT_ALPHA) : 'background.paper',
+          isDragging ? alpha(th.palette.primary.main, DRAG_TINT_ALPHA) : panelSx.bgcolor,
         position: 'relative',
         zIndex: isDragging ? 1 : 0,
       }}
@@ -98,9 +135,16 @@ function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) =
         aria-label={t`Reorder ${profile.name}`}
         {...attributes}
         {...listeners}
-        sx={{ cursor: 'grab', touchAction: 'none' }}
+        sx={{
+          width: 32,
+          height: 44,
+          borderRadius: '6px',
+          color: 'text.secondary',
+          cursor: 'grab',
+          touchAction: 'none',
+        }}
       >
-        <GripVertical size={18} />
+        <GripVertical size={16} />
       </IconButton>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         {renaming ? (
@@ -113,10 +157,17 @@ function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) =
           />
         ) : (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography noWrap={true} sx={{ fontSize: 16, fontWeight: 600 }}>
+            <Typography noWrap={true} sx={{ fontSize: 17, fontWeight: 600 }}>
               {profile.name}
             </Typography>
-            {profile.hidden ? <Chip size="small" label={t`Hidden`} /> : null}
+            {profile.hidden ? (
+              <Box
+                component="span"
+                sx={{ px: 1, borderRadius: '10px', bgcolor: 'rgba(255,255,255,0.1)', fontSize: 12 }}
+              >
+                {t`Hidden`}
+              </Box>
+            ) : null}
           </Box>
         )}
         <Typography noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
@@ -125,7 +176,14 @@ function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) =
       </Box>
       <IconButton
         aria-label={t`Actions for ${profile.name}`}
+        aria-haspopup="menu"
         onClick={(e) => setAnchor(e.currentTarget)}
+        sx={{
+          width: 40,
+          height: 40,
+          borderRadius: '6px',
+          bgcolor: anchor ? 'rgba(255,255,255,0.1)' : 'transparent',
+        }}
       >
         <MoreHorizontal size={18} />
       </IconButton>
@@ -134,24 +192,35 @@ function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) =
         open={anchor !== null}
         onClose={() => setAnchor(null)}
         disableRestoreFocus={true}
-        slotProps={dialogPaper}
+        slotProps={menuPaper}
       >
-        <MenuItem onClick={choose(() => setRenaming(true))}>{t`Rename`}</MenuItem>
-        <MenuItem
+        <Item icon={<Pencil size={15} />} onClick={choose(() => setRenaming(true))}>
+          {t`Rename`}
+        </Item>
+        <Item
+          icon={<Copy size={15} />}
           onClick={choose(() => {
             duplicate(profile.id).catch(reportUnexpected)
           })}
         >
           {t`Duplicate`}
-        </MenuItem>
-        <MenuItem
+        </Item>
+        <Item
+          icon={profile.hidden ? <Eye size={15} /> : <EyeOff size={15} />}
           onClick={choose(() => {
             setHidden(profile.id, !profile.hidden).catch(reportUnexpected)
           })}
         >
           {profile.hidden ? t`Show in sidebar` : t`Hide from sidebar`}
-        </MenuItem>
-        <MenuItem onClick={choose(() => onDelete(profile))}>{t`Delete`}</MenuItem>
+        </Item>
+        <Divider sx={{ my: 0.5 }} />
+        <Item
+          icon={<Trash2 size={15} />}
+          onClick={choose(() => onDelete(profile))}
+          sx={{ color: '#ff9a90' }}
+        >
+          {t`Delete`}
+        </Item>
       </Menu>
     </Box>
   )
@@ -161,42 +230,52 @@ function Trash() {
   const { t } = useLingui()
   const trash = useProfiles((s) => s.trash)
   const restore = useProfiles((s) => s.restore)
-  if (trash.length === 0) {
-    return null
-  }
   return (
     <Box
-      component="section"
+      component="aside"
       aria-label={t`Recently deleted`}
       sx={{
-        ...panelSx,
-        width: 300,
-        flexShrink: 0,
-        alignSelf: 'flex-start',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1.25,
         p: 2,
-        [compact]: { width: 'auto', alignSelf: 'stretch' },
+        alignSelf: 'start',
+        bgcolor: 'rgba(40,40,48,0.78)',
+        borderRadius: '8px',
       }}
     >
-      <Typography component="h2" sx={{ fontSize: 15, fontWeight: 700, mb: 1 }}>
+      <Typography component="h2" sx={{ fontSize: 16, fontWeight: 700 }}>
         {t`Recently deleted`}
+      </Typography>
+      <Typography sx={{ fontSize: 13, lineHeight: 1.45 }}>
+        {t`Deleted profiles stay here for 30 days, mods and settings included.`}
       </Typography>
       {trash.map((item) => {
         const days = plural(item.daysLeft, { one: '# day left', other: '# days left' })
         return (
-          <Box key={item.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.75 }}>
+          <Box
+            key={item.id}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.25,
+              p: 1.5,
+              bgcolor: 'rgba(55,55,65,0.9)',
+              borderRadius: '6px',
+            }}
+          >
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography noWrap={true} sx={{ fontSize: 14 }}>
+              <Typography noWrap={true} sx={{ fontSize: 15, fontWeight: 600 }}>
                 {item.name}
               </Typography>
-              <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{days}</Typography>
+              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{days}</Typography>
             </Box>
             <Button
-              size="small"
+              variant="outlined"
               startIcon={<RotateCcw size={14} />}
               onClick={() => {
                 restore(item.id).catch(reportUnexpected)
               }}
-              sx={{ whiteSpace: 'nowrap' }}
             >
               {t`Restore`}
             </Button>
@@ -243,27 +322,37 @@ export function ProfilesPage() {
   }
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.5 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          height: 64,
+          flexShrink: 0,
+          px: 2.5,
+          bgcolor: 'background.paper',
+        }}
+      >
         <ButtonBase
           aria-label={t`Back`}
           onClick={closeProfiles}
           sx={{
-            width: 36,
-            height: 36,
+            width: 44,
+            height: 44,
             borderRadius: '6px',
             '&:hover': { bgcolor: 'action.hover' },
           }}
         >
           <ArrowLeft size={20} />
         </ButtonBase>
-        <Typography component="h1" sx={{ fontSize: 22, fontWeight: 600, flex: 1 }}>
+        <Typography component="h1" sx={{ fontSize: 26, fontWeight: 700, flex: 1 }}>
           {t`Profiles`}
         </Typography>
         <Button
           variant="contained"
           startIcon={<Plus size={16} />}
           onClick={() => setCreating(true)}
-          sx={{ whiteSpace: 'nowrap' }}
+          sx={{ height: 40, px: 2, fontSize: 14 }}
         >
           {t`New profile`}
         </Button>
@@ -273,11 +362,13 @@ export function ProfilesPage() {
           flex: 1,
           minHeight: 0,
           overflow: 'auto',
-          display: 'flex',
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1fr) 340px',
+          alignContent: 'start',
           gap: 2,
-          px: 2,
-          pb: 2,
-          [compact]: { flexDirection: 'column' },
+          px: 2.5,
+          py: 2,
+          [compact]: { gridTemplateColumns: 'minmax(0, 1fr)' },
         }}
       >
         <Box sx={{ flex: 1, minWidth: 0 }}>

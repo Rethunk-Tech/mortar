@@ -38,11 +38,11 @@ msgid "Dismiss"
 msgstr "Dismiss"
 
 #. placeholder {0}: profile.name
-#: src/profiles/ProfilesPage.tsx:98
+#: src/profiles/ProfilesPage.tsx:135
 msgid "Reorder {0}"
 msgstr "Reorder {0}"
 
-#: src/profiles/ProfilesPage.tsx:139
+#: src/profiles/ProfilesPage.tsx:198
 msgid "Rename"
 msgstr "Rename"
 
@@ -116,7 +116,7 @@ msgstr "Filter mods"
 #: src/game/NewProfileDialog.tsx:42
 #: src/game/Sidebar.tsx:241
 #: src/game/Sidebar.tsx:259
-#: src/profiles/ProfilesPage.tsx:268
+#: src/profiles/ProfilesPage.tsx:357
 msgid "New profile"
 msgstr "New profile"
 
@@ -188,8 +188,8 @@ msgstr "Stop the game?"
 msgid "Stardew green"
 msgstr "Stardew green"
 
-#: src/profiles/ProfilesPage.tsx:154
-#: src/profiles/ProfilesPage.tsx:321
+#: src/profiles/ProfilesPage.tsx:222
+#: src/profiles/ProfilesPage.tsx:412
 msgid "Delete"
 msgstr "Delete"
 
@@ -205,7 +205,7 @@ msgstr "Resize sidebar"
 msgid "Created"
 msgstr "Created"
 
-#: src/profiles/ProfilesPage.tsx:119
+#: src/profiles/ProfilesPage.tsx:168
 msgid "Hidden"
 msgstr "Hidden"
 
@@ -221,7 +221,7 @@ msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschil
 #: src/launch/LaunchLayer.tsx:184
 #: src/launch/StopDialog.tsx:36
 #: src/mods/parts.tsx:169
-#: src/profiles/ProfilesPage.tsx:310
+#: src/profiles/ProfilesPage.tsx:401
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -264,11 +264,11 @@ msgstr "Installed"
 msgid "Stardew Valley will close now, and any progress since your last save is lost."
 msgstr "Stardew Valley will close now, and any progress since your last save is lost."
 
-#: src/profiles/ProfilesPage.tsx:145
+#: src/profiles/ProfilesPage.tsx:206
 msgid "Duplicate"
 msgstr "Duplicate"
 
-#: src/profiles/ProfilesPage.tsx:67
+#: src/profiles/ProfilesPage.tsx:103
 msgid "{mods, plural, one {# mod} other {# mods}}"
 msgstr "{mods, plural, one {# mod} other {# mods}}"
 
@@ -291,7 +291,7 @@ msgstr "About Mortar"
 
 #: src/game/Detail.tsx:98
 #: src/game/NewProfileDialog.tsx:48
-#: src/profiles/ProfilesPage.tsx:110
+#: src/profiles/ProfilesPage.tsx:154
 msgid "Profile name"
 msgstr "Profile name"
 
@@ -332,7 +332,7 @@ msgstr "Create"
 msgid "Notifications"
 msgstr "Notifications"
 
-#: src/profiles/ProfilesPage.tsx:248
+#: src/profiles/ProfilesPage.tsx:337
 #: src/settings/SettingsPage.tsx:45
 msgid "Back"
 msgstr "Back"
@@ -348,6 +348,10 @@ msgstr "Not affiliated"
 #: src/launch/store.ts:117
 msgid "Could not check whether the game is running"
 msgstr "Could not check whether the game is running"
+
+#: src/profiles/ProfilesPage.tsx:251
+msgid "Deleted profiles stay here for 30 days, mods and settings included."
+msgstr "Deleted profiles stay here for 30 days, mods and settings included."
 
 #: src/game/Detail.tsx:136
 #: src/game/Detail.tsx:224
@@ -370,7 +374,7 @@ msgstr "View"
 msgid "Stop game"
 msgstr "Stop game"
 
-#: src/profiles/ProfilesPage.tsx:306
+#: src/profiles/ProfilesPage.tsx:397
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
@@ -402,8 +406,8 @@ msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was add
 msgid "Stardew Valley"
 msgstr "Stardew Valley"
 
-#: src/profiles/ProfilesPage.tsx:170
-#: src/profiles/ProfilesPage.tsx:181
+#: src/profiles/ProfilesPage.tsx:236
+#: src/profiles/ProfilesPage.tsx:248
 msgid "Recently deleted"
 msgstr "Recently deleted"
 
@@ -432,7 +436,7 @@ msgstr "Something went wrong"
 msgid "Couldn't close the window"
 msgstr "Couldn't close the window"
 
-#: src/profiles/ProfilesPage.tsx:285
+#: src/profiles/ProfilesPage.tsx:376
 msgid "No profiles yet."
 msgstr "No profiles yet."
 
@@ -477,7 +481,7 @@ msgstr "Open a profile to install mods"
 msgid "AGPL-3.0 · Rethunk-AI/mortar"
 msgstr "AGPL-3.0 · Rethunk-AI/mortar"
 
-#: src/profiles/ProfilesPage.tsx:152
+#: src/profiles/ProfilesPage.tsx:214
 msgid "Show in sidebar"
 msgstr "Show in sidebar"
 
@@ -486,7 +490,7 @@ msgid "Running"
 msgstr "Running"
 
 #. placeholder {0}: profile.name
-#: src/profiles/ProfilesPage.tsx:127
+#: src/profiles/ProfilesPage.tsx:178
 msgid "Actions for {0}"
 msgstr "Actions for {0}"
 
@@ -553,7 +557,7 @@ msgid "Play"
 msgstr "Play"
 
 #. placeholder {0}: deleting?.name ?? ''
-#: src/profiles/ProfilesPage.tsx:303
+#: src/profiles/ProfilesPage.tsx:394
 msgid "Delete {0}?"
 msgstr "Delete {0}?"
 
@@ -561,7 +565,7 @@ msgstr "Delete {0}?"
 msgid "Created {created} · Updated {updated} · {mods, plural, one {# mod} other {# mods}}"
 msgstr "Created {created} · Updated {updated} · {mods, plural, one {# mod} other {# mods}}"
 
-#: src/profiles/ProfilesPage.tsx:152
+#: src/profiles/ProfilesPage.tsx:214
 msgid "Hide from sidebar"
 msgstr "Hide from sidebar"
 
@@ -636,7 +640,7 @@ msgid "Accent colour"
 msgstr "Accent colour"
 
 #: src/game/Sidebar.tsx:192
-#: src/profiles/ProfilesPage.tsx:260
+#: src/profiles/ProfilesPage.tsx:349
 msgid "Profiles"
 msgstr "Profiles"
 
@@ -685,7 +689,7 @@ msgstr "No mods yet"
 msgid "Settings sections"
 msgstr "Settings sections"
 
-#: src/profiles/ProfilesPage.tsx:123
+#: src/profiles/ProfilesPage.tsx:174
 msgid "{modsLabel} · Updated {updated}"
 msgstr "{modsLabel} · Updated {updated}"
 
@@ -694,7 +698,7 @@ msgstr "{modsLabel} · Updated {updated}"
 msgid "Reinstall"
 msgstr "Reinstall"
 
-#: src/profiles/ProfilesPage.tsx:201
+#: src/profiles/ProfilesPage.tsx:280
 #: src/shell/TitleBar.tsx:105
 msgid "Restore"
 msgstr "Restore"
@@ -704,7 +708,7 @@ msgid "Couldn't save that setting"
 msgstr "Couldn't save that setting"
 
 #. placeholder {0}: item.daysLeft
-#: src/profiles/ProfilesPage.tsx:184
+#: src/profiles/ProfilesPage.tsx:254
 msgid "{0, plural, one {# day left} other {# days left}}"
 msgstr "{0, plural, one {# day left} other {# days left}}"
 
