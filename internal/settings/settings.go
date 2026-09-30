@@ -42,6 +42,10 @@ type Settings struct {
 	Loaders map[string]string `json:"loaders"`
 	// Dismissed maps a save folder name to the UniqueIDs whose missing-mod warning the user dismissed for it.
 	Dismissed map[string][]string `json:"dismissed"`
+	// The signed-in Nexus account, for display only; the API key lives in the keyring. Zero NexusUserID means signed out.
+	NexusUserID  int    `json:"nexusUserId"`
+	NexusName    string `json:"nexusName"`
+	NexusPremium bool   `json:"nexusPremium"`
 }
 
 // Defaults returns the settings used when no valid file exists.

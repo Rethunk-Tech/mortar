@@ -7,15 +7,18 @@ require (
 	github.com/bodgit/sevenzip v1.6.5
 	github.com/nwaples/rardecode/v2 v2.4.1
 	github.com/wailsapp/wails/v3 v3.0.0-beta.26
+	github.com/zalando/go-keyring v0.2.6
 	golang.org/x/sys v0.46.0
 )
 
 require (
+	al.essio.dev/pkg/shellescape v1.6.0 // indirect
 	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/andybalholm/brotli v1.2.2 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect
 	github.com/bodgit/windows v1.0.1 // indirect
 	github.com/coder/websocket v1.8.14 // indirect
+	github.com/danieljoos/wincred v1.2.3 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect

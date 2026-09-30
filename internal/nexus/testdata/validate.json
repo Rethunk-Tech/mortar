@@ -1,0 +1,9 @@
+{
+  "user_id": 1234567,
+  "key": "REDACTED",
+  "name": "TestAccount",
+  "is_premium": false,
+  "is_supporter": false,
+  "email": "test@example.invalid",
+  "profile_url": "https://forums.nexusmods.com/uploads/profile/photo-1234567.png"
+}

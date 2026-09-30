@@ -1,0 +1,47 @@
+{
+  "files": [
+    {
+      "id": [3001, 1303],
+      "uid": 1,
+      "file_id": 3001,
+      "name": "Content Patcher",
+      "version": "2.0.0",
+      "category_id": 1,
+      "category_name": "MAIN",
+      "is_primary": true,
+      "size": 2048,
+      "file_name": "Content Patcher-541-2-0-0.zip",
+      "uploaded_timestamp": 1,
+      "uploaded_time": "2024-01-01T00:00:00.000+00:00",
+      "mod_version": "2.0.0",
+      "external_virus_scan_url": "",
+      "description": "",
+      "size_kb": 2048,
+      "size_in_bytes": 2097152,
+      "changelog_html": null,
+      "content_preview_link": ""
+    },
+    {
+      "id": [2000, 1303],
+      "uid": 2,
+      "file_id": 2000,
+      "name": "Content Patcher",
+      "version": "1.9.0",
+      "category_id": 4,
+      "category_name": null,
+      "is_primary": false,
+      "size": 1024,
+      "file_name": "Content Patcher-541-1-9-0.zip",
+      "uploaded_timestamp": 1,
+      "uploaded_time": "2023-01-01T00:00:00.000+00:00",
+      "mod_version": "1.9.0",
+      "external_virus_scan_url": "",
+      "description": "",
+      "size_kb": 1024,
+      "size_in_bytes": 1048576,
+      "changelog_html": null,
+      "content_preview_link": ""
+    }
+  ],
+  "file_updates": []
+}
