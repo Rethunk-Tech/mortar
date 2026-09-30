@@ -370,3 +370,12 @@ func TestANewProfileFromAPreviewOfTheOpenOneGetsItsMods(t *testing.T) {
 		t.Fatalf("queued %+v", rec.reqs)
 	}
 }
+
+func TestInDirResolvesOnlyRelativePaths(t *testing.T) {
+	abs := filepath.Join(t.TempDir(), "a.mortar")
+	got := InDir([]string{"farm.mortar", abs, "mortar://stardew/p/abc", "file://" + abs}, filepath.FromSlash("/home/u"))
+	want := []string{filepath.Join(filepath.FromSlash("/home/u"), "farm.mortar"), abs, "mortar://stardew/p/abc", "file://" + abs}
+	if !slices.Equal(got, want) {
+		t.Errorf("InDir = %q", got)
+	}
+}

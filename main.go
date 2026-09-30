@@ -99,7 +99,7 @@ func main() {
 				<-ready
 				// A minimised window stays down: the window sends a desktop notification whose click brings it up.
 				nxmLink := nxmSvc.Receive(d.Args)
-				if shareSvc.Receive(d.Args) || !nxmLink || !window.IsMinimised() {
+				if shareSvc.Receive(sharesvc.InDir(d.Args, d.WorkingDir)) || !nxmLink || !window.IsMinimised() {
 					window.Restore()
 					window.Focus()
 				}

@@ -677,6 +677,18 @@ func classify(arg string) (Arrival, bool) {
 	return Arrival{Kind: ArrivalFile, Value: arg}, true
 }
 
+// InDir resolves the relative paths among a second launch's arguments against that launch's working folder, which
+// is not this process's.
+func InDir(args []string, dir string) []string {
+	out := slices.Clone(args)
+	for i, a := range out {
+		if dir != "" && a != "" && !strings.Contains(a, "://") && !filepath.IsAbs(a) {
+			out[i] = filepath.Join(dir, a)
+		}
+	}
+	return out
+}
+
 // Receive picks the share links and .mortar files out of launch arguments, from a cold start or a second launch,
 // and hands each to the window's import dialog. It reports whether there were any.
 func (s *Service) Receive(args []string) bool {
