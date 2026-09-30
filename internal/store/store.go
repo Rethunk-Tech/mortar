@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"syscall"
@@ -156,6 +157,19 @@ func (s *Store) AddArchiveKey(game, key, archivePath string) error {
 	})
 }
 
+// AddHashedDir copies srcDir into the store under a local key of its contents, or returns the existing
+// key when the same tree is already there.
+func (s *Store) AddHashedDir(game, srcDir string) (string, error) {
+	if _, err := s.gameDir(game); err != nil {
+		return "", err
+	}
+	key, err := hashDir(srcDir)
+	if err != nil {
+		return "", &Error{Game: game, Err: err}
+	}
+	return key, s.AddDir(game, key, srcDir)
+}
+
 // AddDir copies srcDir into the store under key, for entries Mortar builds
 // itself. An existing key is left as it is.
 func (s *Store) AddDir(game, key, srcDir string) error {
@@ -207,6 +221,49 @@ func diskFull(err error) bool { return errors.Is(err, syscall.ENOSPC) || platfor
 func exists(p string) bool {
 	_, err := os.Stat(p)
 	return err == nil
+}
+
+func hashDir(root string) (string, error) {
+	var files []string
+	err := filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+		if !d.Type().IsRegular() {
+			return fmt.Errorf("%s is not a regular file", p)
+		}
+		rel, err := filepath.Rel(root, p)
+		if err != nil {
+			return err
+		}
+		files = append(files, filepath.ToSlash(rel))
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+	slices.Sort(files)
+	h := sha256.New()
+	for _, rel := range files {
+		if _, err := io.WriteString(h, rel); err != nil {
+			return "", err
+		}
+		h.Write([]byte{0})
+		f, err := fsx.Open(filepath.Join(root, filepath.FromSlash(rel)))
+		if err != nil {
+			return "", err
+		}
+		_, copyErr := io.Copy(h, f)
+		closeErr := f.Close()
+		if err := errors.Join(copyErr, closeErr); err != nil {
+			return "", err
+		}
+		h.Write([]byte{0})
+	}
+	return LocalKey(hex.EncodeToString(h.Sum(nil))), nil
 }
 
 func hashKey(path string) (string, error) {

@@ -1,11 +1,53 @@
 package profile
 
-import "github.com/Rethunk-AI/mortar/internal/datadir"
+import (
+	"fmt"
+	"path/filepath"
+
+	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-AI/mortar/internal/settings"
+)
 
 // Service exposes the store to the frontend.
-type Service struct{ store *Store }
+type Service struct {
+	store    *Store
+	home     string
+	settings *settings.Store
+}
 
-func NewService(store *Store) *Service { return &Service{store: store} }
+func NewService(store *Store, home string, settings *settings.Store) *Service {
+	return &Service{store: store, home: home, settings: settings}
+}
+
+func (s *Service) gameModsDir(id string) (string, error) {
+	dir, err := game.InstallDir(s.home, s.settings.Get().GameFolders, id)
+	if err != nil {
+		return "", err
+	}
+	if dir == "" {
+		return "", fmt.Errorf("%s is not installed", id)
+	}
+	return filepath.Join(dir, "Mods"), nil
+}
+
+// PreviewGameMods lists mods in the game folder's Mods that ImportGameMods would copy.
+func (s *Service) PreviewGameMods(gameID string) (GameModsPreview, error) {
+	dir, err := s.gameModsDir(gameID)
+	if err != nil {
+		return GameModsPreview{}, err
+	}
+	return s.store.PreviewGameMods(dir)
+}
+
+// ImportGameMods copies the game folder's Mods into a new profile without changing that folder.
+func (s *Service) ImportGameMods(gameID string) (GameModsResult, error) {
+	dir, err := s.gameModsDir(gameID)
+	if err != nil {
+		return GameModsResult{}, err
+	}
+	return s.store.ImportGameMods(gameID, dir)
+}
 
 func (s *Service) List(game string) ([]Profile, error) { return s.store.List(game) }
 

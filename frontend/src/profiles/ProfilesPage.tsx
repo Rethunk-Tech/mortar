@@ -40,6 +40,7 @@ import {
   Download,
   Eye,
   EyeOff,
+  FolderInput,
   GripVertical,
   MoreHorizontal,
   Pencil,
@@ -62,6 +63,7 @@ import { openImport, openShare } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { userModCount } from './count.ts'
+import { GameModsDialog } from './GameModsDialog.tsx'
 import { useProfiles } from './store.ts'
 
 const DRAG_TINT_ALPHA = 0.24
@@ -410,10 +412,13 @@ function DeleteDialog({ deleting, onDone }: { deleting: Profile | null; onDone: 
 export function ProfilesPage() {
   const { t } = useLingui()
   const closeProfiles = useNav((s) => s.closeProfiles)
+  const game = useNav((s) => (s.route.name === 'profiles' ? s.route.game : 'stardew'))
   const profiles = useProfiles((s) => s.profiles)
   const reorder = useProfiles((s) => s.reorder)
   const loadTrash = useProfiles((s) => s.loadTrash)
   const [creating, setCreating] = useState(false)
+  const [importingGameMods, setImportingGameMods] = useState(false)
+  const openProfile = useProfiles((s) => s.open)
   const [deleting, setDeleting] = useState<Profile | null>(null)
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -471,6 +476,15 @@ export function ProfilesPage() {
         <Button
           variant="outlined"
           color="inherit"
+          startIcon={<FolderInput size={16} />}
+          onClick={() => setImportingGameMods(true)}
+          sx={{ height: 40, px: 2, fontSize: 14, whiteSpace: 'nowrap' }}
+        >
+          {t`Import from the game's Mods folder`}
+        </Button>
+        <Button
+          variant="outlined"
+          color="inherit"
           startIcon={<Download size={16} />}
           onClick={() => openImport()}
           sx={{ height: 40, px: 2, fontSize: 14 }}
@@ -519,6 +533,15 @@ export function ProfilesPage() {
         <Trash />
       </Box>
       <NewProfileDialog open={creating} onClose={() => setCreating(false)} />
+      <GameModsDialog
+        open={importingGameMods}
+        game={game}
+        onClose={() => setImportingGameMods(false)}
+        onImported={(id) => {
+          openProfile(id)
+          closeProfiles()
+        }}
+      />
       <DeleteDialog deleting={deleting} onDone={() => setDeleting(null)} />
     </Box>
   )

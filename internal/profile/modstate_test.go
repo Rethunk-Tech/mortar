@@ -31,7 +31,7 @@ func TestModStateAndResetConfig(t *testing.T) {
 	e, p := updEnv(t,
 		map[string]string{"A/manifest.json": m, "A/config.json": "shipped"},
 		map[string]string{"A/manifest.json": m + " "})
-	svc := NewService(e.Store)
+	svc := NewService(e.Store, t.TempDir(), nil)
 	state := func() ModState {
 		t.Helper()
 		st, err := svc.ModState("stardew", p.ID, "a-1", "me.a")
@@ -80,7 +80,7 @@ func TestConfigPathStaysInTheModFolder(t *testing.T) {
 	if rel, err := filepath.Rel(filepath.Join(e.mods(p.ID), "a-1", "A"), got); err != nil || rel != "config.json" {
 		t.Fatalf("escaped the mod folder: %s", got)
 	}
-	svc := NewService(e.Store)
+	svc := NewService(e.Store, t.TempDir(), nil)
 	if err := svc.OpenConfig("stardew", p.ID, "a-1", "nope.Mod"); err == nil {
 		t.Fatal("unknown mod opened")
 	}
@@ -90,7 +90,7 @@ func TestRollBackThroughService(t *testing.T) {
 	m := manifestJSON("me.a")
 	v2 := `{"Name":"me.a","Author":"me","Version":"2.0.0","UniqueID":"me.a"}`
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": v2})
-	svc := NewService(e.Store)
+	svc := NewService(e.Store, t.TempDir(), nil)
 	if _, err := svc.UpdateEntry("stardew", p.ID, "a-1", "a-2"); err != nil {
 		t.Fatal(err)
 	}

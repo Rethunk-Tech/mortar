@@ -106,7 +106,7 @@ A plain text area for the profile's notes, saved automatically ("Saved · 2 min 
 
 ## Profile management
 
-A page, as Concrete's: a header with a back button, **Import** and **New profile**; beside the list, a **Recently deleted** panel (profiles in the 30-day trash, each with its days left and Restore).
+A page, as Concrete's: a header with a back button, **Import from the game's Mods folder**, **Import** and **New profile**; beside the list, a **Recently deleted** panel (profiles in the 30-day trash, each with its days left and Restore). **Import from the game's Mods folder** opens a preview of name, version and source, then creates a profile named "Imported mods" and opens it.
 
 - **Rows:** every profile as a sortable row: drag handle, name (with a Hidden chip when hidden) and its summary, **Share**, and a ⋯ menu holding Rename, Duplicate, Hide from sidebar (or Show) and Delete. Reordering uses dnd-kit's sortable list with a drop indicator.
 - **Delete** asks first and says the profile stays restorable for 30 days.
@@ -135,7 +135,7 @@ Only when Stardew Valley is not found, or on a first launch (SMAPI never install
 1. Find Stardew Valley in Steam and show what was found, with **Browse** for another folder; when nothing is found, say so, with Browse and a retry.
 2. Install SMAPI if it is missing: it starts by itself, unattended, with no button (NOMAD, 2026-09-30), and a failure shows its error with **Retry**. On Windows with Steam, show the launch-options line to paste into Stardew's Steam properties, with a copy button.
    Installing SMAPI shows its progress as steps (downloaded, files added, launcher replaced, bundled mods added).
-3. Create the first profile: two cards, **Start empty** (with a name field) and **From a shared link** (with a link field, which asks for the Nexus sign-in first when the import needs downloads).
+3. Create the first profile: when the game's `Mods` folder holds mods to import, three cards, **Import from the game's Mods folder** first (preview, then a new "Imported mods" profile), **Start empty** (with a name field) and **From a shared link** (with a link field, which asks for the Nexus sign-in first when the import needs downloads). Otherwise the two cards Start empty and From a shared link.
 
 ## Confirmations
 

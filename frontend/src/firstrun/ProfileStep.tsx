@@ -1,14 +1,18 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
-import { Link2, Plus } from 'lucide-react'
-import { useState } from 'react'
+import { FolderInput, Link2, Plus } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { RegisterLinks } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/service.ts'
-import { Create } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import {
+  Create,
+  PreviewGameMods,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import {
   SetLastGame,
   SetLastProfile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useNav } from '../nav/store.ts'
+import { GameModsDialog } from '../profiles/GameModsDialog.tsx'
 import { openImport } from '../share/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { STARDEW } from './needed.ts'
@@ -30,6 +34,13 @@ export function ProfileStep() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [link, setLink] = useState('')
+  const [gameMods, setGameMods] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
+  useEffect(() => {
+    PreviewGameMods(STARDEW)
+      .then((p) => setGameMods((p.mods ?? []).length > 0))
+      .catch(() => setGameMods(false))
+  }, [])
   const submit = async () => {
     const trimmed = name.trim()
     if (!trimmed) {
@@ -59,14 +70,41 @@ export function ProfileStep() {
       <Typography sx={{ textAlign: 'center', fontSize: 24, fontWeight: 700 }}>
         {t`Make your first profile`}
       </Typography>
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 2 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: gameMods ? 'repeat(3, minmax(0, 1fr))' : 'repeat(2, minmax(0, 1fr))',
+          gap: 2,
+        }}
+      >
+        {gameMods ? (
+          <Box sx={cardSx('primary.main')}>
+            <Box sx={{ color: 'primary.main', display: 'flex' }}>
+              <FolderInput size={28} />
+            </Box>
+            <Typography sx={{ fontSize: 18, fontWeight: 700 }}>
+              {t`Import from the game's Mods folder`}
+            </Typography>
+            <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
+              {t`Copy the mods already in Stardew Valley's Mods folder into a new profile. Nothing in the game folder is moved or changed.`}
+            </Typography>
+            <Box sx={{ flex: 1 }} />
+            <Button
+              variant="contained"
+              onClick={() => setImportOpen(true)}
+              sx={{ height: 46, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
+            >
+              {t`Preview import`}
+            </Button>
+          </Box>
+        ) : null}
         <Box
           component="form"
           onSubmit={(e) => {
             e.preventDefault()
             submit().catch(reportUnexpected)
           }}
-          sx={cardSx('primary.main')}
+          sx={cardSx(gameMods ? 'transparent' : 'primary.main')}
         >
           <Box sx={{ color: 'primary.main', display: 'flex' }}>
             <Plus size={28} />
@@ -131,6 +169,17 @@ export function ProfileStep() {
           </Button>
         </Box>
       </Box>
+      <GameModsDialog
+        open={importOpen}
+        game={STARDEW}
+        onClose={() => setImportOpen(false)}
+        onImported={(id) => {
+          Promise.all([SetLastGame(STARDEW), SetLastProfile(STARDEW, id)])
+            .then(() => useNav.getState().openGame(STARDEW))
+            .catch(reportUnexpected)
+          RegisterLinks().catch(reportUnexpected)
+        }}
+      />
     </Box>
   )
 }

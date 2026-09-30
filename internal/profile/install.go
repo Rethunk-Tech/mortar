@@ -43,6 +43,18 @@ func (s *Store) InstallArchive(game, id, path string) (InstallResult, error) {
 	return s.installKey(game, id, key, Source{Kind: KindLocal, Name: filepath.Base(path)})
 }
 
+// InstallFolder copies the folder at path into the store under a content key and adds it to the profile as a local entry.
+func (s *Store) InstallFolder(game, id, path string) (InstallResult, error) {
+	if err := s.unlocked(game, id); err != nil {
+		return InstallResult{}, err
+	}
+	key, err := s.items.AddHashedDir(game, path)
+	if err != nil {
+		return InstallResult{}, installError(err)
+	}
+	return s.installKey(game, id, key, Source{Kind: KindLocal, Name: filepath.Base(path)})
+}
+
 // InstallNexus unpacks the archive at path into the store under the key of its Nexus file and adds it to the
 // profile, replacing the version of a mod the profile already holds.
 func (s *Store) InstallNexus(game, id, path string, source Source) (InstallResult, error) {

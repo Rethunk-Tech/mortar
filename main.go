@@ -222,7 +222,7 @@ func main() {
 	notifier := notifications.New()
 
 	pick := &picker.Service{}
-	profileSvc := profile.NewService(profiles)
+	profileSvc := profile.NewService(profiles, home, store)
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
 	shareSvc = sharesvc.NewService(sharesvc.Deps{
 		Profiles: profiles,
