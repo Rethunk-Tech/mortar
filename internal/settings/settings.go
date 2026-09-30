@@ -73,6 +73,8 @@ type Settings struct {
 	CheckModUpdatesOnStart *bool `json:"checkModUpdatesOnStart"`
 	// TellWhenSmapiOut is whether Mortar toasts when a newer SMAPI exists. Nil or omitted means on.
 	TellWhenSmapiOut *bool `json:"tellWhenSmapiOut"`
+	// TipsSeen is the empty-state tips the user has dismissed (mods, saves, console, share).
+	TipsSeen []string `json:"tipsSeen"`
 }
 
 const (
@@ -136,6 +138,7 @@ func Open() (*Store, error) {
 	}
 	normalizeToggles(&s.cur)
 	normalizeList(&s.cur)
+	normalizeTips(&s.cur)
 	return s, nil
 }
 
@@ -166,7 +169,11 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	if err := validateList(next); err != nil {
 		return s.cur, err
 	}
+	if err := validateTips(next); err != nil {
+		return s.cur, err
+	}
 	normalizeList(&next)
+	normalizeTips(&next)
 	if err := datadir.WriteJSON(s.path, next); err != nil {
 		return s.cur, err
 	}
