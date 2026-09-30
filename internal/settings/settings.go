@@ -20,7 +20,7 @@ var (
 	backgrounds = []string{BackgroundImage, BackgroundDesktop, BackgroundSolid}
 )
 
-// The window backgrounds: a wallpaper under the tint, the desktop showing through, or an opaque colour.
+// The window backgrounds: the chosen wallpaper under the tint, the user's own desktop wallpaper under it, or an opaque colour.
 const (
 	BackgroundImage   = "image"
 	BackgroundDesktop = "desktop"
