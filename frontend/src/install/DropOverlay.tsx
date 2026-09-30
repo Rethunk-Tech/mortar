@@ -5,7 +5,9 @@ import { Download } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { openImport } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { splitDropped } from './dropped.ts'
 import { useInstall } from './store.ts'
 
 // Wails toggles this class on the element carrying data-file-drop-target while a file drag is over it.
@@ -32,10 +34,14 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
   useEffect(
     () =>
       Events.On('files:dropped', (event) => {
-        useInstall
-          .getState()
-          .install(event.data ?? [])
-          .catch(reportUnexpected)
+        const { archives, mortar } = splitDropped(event.data ?? [])
+        if (archives.length > 0) {
+          useInstall.getState().install(archives).catch(reportUnexpected)
+        }
+        if (mortar) {
+          const onGame = useNav.getState().route.name === 'game'
+          openImport({ profileId: onGame ? useProfiles.getState().openId : '', file: mortar })
+        }
       }),
     [],
   )

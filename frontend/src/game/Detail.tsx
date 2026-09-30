@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
-import { Pencil, Plus, Settings2 } from 'lucide-react'
+import { Pencil, Plus, Settings2, Share2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConsoleTab, LogActions } from '../console/ConsoleTab.tsx'
@@ -12,6 +12,7 @@ import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { SavesTab } from '../saves/SavesTab.tsx'
 import { useSaves } from '../saves/store.ts'
+import { openShare } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { compact } from './compact.ts'
 import { NameField } from './NameField.tsx'
@@ -258,6 +259,15 @@ export function Detail() {
         </Tabs>
         <Box sx={{ flexGrow: 1 }} />
         {tab === 'console' ? <LogActions /> : null}
+        <Button
+          variant="outlined"
+          color="inherit"
+          startIcon={<Share2 size={16} />}
+          onClick={() => openShare(profile.id)}
+          sx={{ ml: 1, whiteSpace: 'nowrap' }}
+        >
+          {t`Share`}
+        </Button>
         <IconButton aria-label={t`${gameName} settings`} onClick={openGameSettings} sx={{ ml: 1 }}>
           <Settings2 size={18} />
         </IconButton>

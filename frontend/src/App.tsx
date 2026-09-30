@@ -11,6 +11,8 @@ import { ArrivalDialog } from './nxm/ArrivalDialog.tsx'
 import { ProfilesPage } from './profiles/ProfilesPage.tsx'
 import { GameSettingsPage } from './settings/GameSettingsPage.tsx'
 import { SettingsPage } from './settings/SettingsPage.tsx'
+import { ImportDialog } from './share/ImportDialog.tsx'
+import { ShareDialog } from './share/ShareDialog.tsx'
 import { AppFrame } from './shell/AppFrame.tsx'
 import { useToasts } from './toasts/store.ts'
 import { ToastHost } from './toasts/ToastHost.tsx'
@@ -59,6 +61,8 @@ export function App() {
         {ready && route.name === 'game-select' ? <GameSelect /> : null}
       </AppFrame>
       <ArrivalDialog />
+      <ShareDialog />
+      <ImportDialog />
       <ToastHost />
     </>
   )
