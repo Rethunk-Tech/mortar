@@ -2,6 +2,7 @@
 package modpic
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -12,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
@@ -206,8 +208,9 @@ func Middleware(cache func() *Cache) func(http.Handler) http.Handler {
 				return
 			}
 			w.Header().Set("Content-Type", typ)
+			w.Header().Set("X-Content-Type-Options", "nosniff")
 			w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
-			_, _ = w.Write(b)
+			http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(b))
 		})
 	}
 }
