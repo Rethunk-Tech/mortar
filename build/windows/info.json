@@ -1,15 +1,15 @@
 {
-	"fixed": {
-		"file_version": "0.0.1"
-	},
-	"info": {
-		"0000": {
-			"ProductVersion": "0.0.1",
-			"CompanyName": "Rethunk.Tech",
-			"FileDescription": "Multi-game desktop mod manager",
-			"LegalCopyright": "(c) 2026, Rethunk.Tech",
-			"ProductName": "Mortar",
-			"Comments": ""
-		}
-	}
+  "fixed": {
+    "file_version": "0.0.1"
+  },
+  "info": {
+    "0000": {
+      "ProductVersion": "0.0.1",
+      "CompanyName": "Rethunk.Tech",
+      "FileDescription": "Multi-game desktop mod manager",
+      "LegalCopyright": "(c) 2026, Rethunk.Tech",
+      "ProductName": "Mortar",
+      "Comments": ""
+    }
+  }
 }
