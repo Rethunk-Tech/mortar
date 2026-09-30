@@ -478,7 +478,7 @@ func (s *Service) Cancel(id string) {
 func (s *Service) end(id, to string, from ...string) {
 	s.mu.Lock()
 	if it := s.find(id); it != nil && slices.Contains(from, it.State) {
-		it.State, it.Progress, it.Speed, it.key = to, 0, 0, ""
+		it.State, it.Progress, it.Speed, it.key, it.staged = to, 0, 0, "", ""
 		if cancel := s.cancels[id]; cancel != nil {
 			cancel()
 		}

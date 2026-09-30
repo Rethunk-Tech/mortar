@@ -293,3 +293,17 @@ func TestAStagedKeyIsKeptAndALostOneDownloadsAgain(t *testing.T) {
 		t.Fatalf("downloaded %d times, want 2", len(g.staged))
 	}
 }
+
+func TestSkippingAConfirmationReleasesItsStagedKey(t *testing.T) {
+	g := newGitHubFixture(t)
+	g.ok.Store(false)
+	g.start()
+	if _, err := g.s.Add([]Request{ghReq("2.0.0")}); err != nil {
+		t.Fatal(err)
+	}
+	id := g.wait("the confirmation", g.item(StateNeedsConfirm)).Items[0].ID
+	g.s.Skip(id)
+	if keys := g.s.StagedKeys(); len(keys) != 0 {
+		t.Fatalf("a skipped item keeps its staged key: %v", keys)
+	}
+}
