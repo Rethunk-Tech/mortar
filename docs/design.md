@@ -171,7 +171,7 @@ Go tests run against local HTTP test servers replaying recorded Nexus, GitHub, S
 
 After the go-ahead, each milestone ends with the gate green and NOMAD clicking through it on Linux. The screens each milestone builds are the mid-fi mocks (private canvas "Mortar screens (mid-fi)"; `docs/gui-design.md` is the canonical spec):
 
-1. **Shell and look.** Remaining: the GTK4 transparency PR to Wails, from `Rethunk-AI/wails` branch `mortar/v3.0.0-beta.26`.
+1. **Shell and look.** Remaining: when wailsapp/wails#6197 (GTK4 transparency) ships in a tagged v3 beta, pin that beta and drop the `Rethunk-AI/wails` replace in `go.mod`.
 2. **Stardew core.** SMAPI install and updates (GitHub releases), bundled mods, profiles (duplicate, delete to trash, toggle, copy into `mods/`), installing from a picked or dropped archive (the drop overlay), the Grid and List views, profile management, first run (all steps), launch with success detection and the Launching screen (the Windows path is written here and measured in milestone 6), the Console tab, and the Notes tab.
 3. **Mod data.** Manifest scanning, dependency and problem checks (with the duplicate resolver), SMAPI API update checks and Update review, mod detail, update and rollback with carry-over and save backups, the dataset, the save scan and the Saves tab.
 4. **Nexus.** Personal-key sign-in (Settings › Nexus Mods), runtime `nxm://` registration and its notifications, the guided download queue, GitHub mod sources.
