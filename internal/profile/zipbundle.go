@@ -45,13 +45,13 @@ func (s *Store) ExportZip(game, id, dest, mortarVersion string) error {
 		s.mu.Unlock()
 		return err
 	}
+	p.Entries = cloneEntries(p.Entries)
+	s.mu.Unlock()
 	snap, err := os.MkdirTemp(filepath.Dir(dir), "mortar-export-*")
 	if err != nil {
-		s.mu.Unlock()
 		return err
 	}
 	err = snapshotProfileExport(dir, snap, p)
-	s.mu.Unlock()
 	defer func() { _ = os.RemoveAll(snap) }()
 	if err != nil {
 		return err
