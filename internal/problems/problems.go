@@ -1,5 +1,6 @@
 // Package problems finds what is wrong with a profile's mods: dependencies that are missing, mods installed
-// twice, and mods SMAPI's API marks broken for the game version. It only reports; nothing here blocks a launch.
+// twice, and mods SMAPI's API marks broken for the game version. It also reports the updates SMAPI's API
+// suggests and how one mod relates to the others. It only reports; nothing here blocks a launch.
 package problems
 
 import (
@@ -132,30 +133,37 @@ func missingDeps(enabled, all []Installed) []Missing {
 				continue
 			}
 			miss := Missing{DependentID: d.UniqueID, DependentName: d.Name, UniqueID: dep.UniqueID, MinimumVersion: dep.MinimumVersion}
-			var installed []Installed
-			for _, x := range all {
-				if sameID(x.UniqueID, dep.UniqueID) {
-					installed = append(installed, x)
-				}
-			}
-			switch {
-			case len(installed) == 0:
-				miss.Reason = "absent"
-			case slices.ContainsFunc(installed, func(x Installed) bool { return x.Enabled && meets(x.Version, dep.MinimumVersion) }):
+			reason, installedVersion := depState(all, dep)
+			if reason == "" {
 				continue
-			case slices.ContainsFunc(installed, func(x Installed) bool { return x.Enabled }):
-				miss.Reason = "outdated"
-				miss.InstalledVersion = highest(installed)
-			case slices.ContainsFunc(installed, func(x Installed) bool { return meets(x.Version, dep.MinimumVersion) }):
-				miss.Reason = "disabled"
-			default:
-				miss.Reason = "outdated"
-				miss.InstalledVersion = highest(installed)
 			}
+			miss.Reason, miss.InstalledVersion = reason, installedVersion
 			out = append(out, miss)
 		}
 	}
 	return out
+}
+
+// depState says why the mods in all do not satisfy dep: "absent", "disabled" or "outdated", with the highest
+// installed version for the last. An empty reason means the dependency is met.
+func depState(all []Installed, dep manifest.Dependency) (reason, installedVersion string) {
+	var installed []Installed
+	for _, x := range all {
+		if sameID(x.UniqueID, dep.UniqueID) {
+			installed = append(installed, x)
+		}
+	}
+	switch {
+	case len(installed) == 0:
+		return "absent", ""
+	case slices.ContainsFunc(installed, func(x Installed) bool { return x.Enabled && meets(x.Version, dep.MinimumVersion) }):
+		return "", ""
+	case slices.ContainsFunc(installed, func(x Installed) bool { return x.Enabled }):
+		return "outdated", highest(installed)
+	case slices.ContainsFunc(installed, func(x Installed) bool { return meets(x.Version, dep.MinimumVersion) }):
+		return "disabled", ""
+	}
+	return "outdated", highest(installed)
 }
 
 func highest(mods []Installed) string {
