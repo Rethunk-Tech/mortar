@@ -210,3 +210,26 @@ func TestPendingRetriesAfterInModsWriteError(t *testing.T) {
 		t.Fatalf("config after retry = %q, %v", got, err)
 	}
 }
+
+func TestPendingKeepsUnappliedConfigsAfterTheQueueDrains(t *testing.T) {
+	s, _ := newService(t, true)
+	s.d.Dir = t.TempDir()
+	prof, err := s.d.Profiles.Create("stardew", "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.pending = []*pending{{
+		Game: "stardew", Profile: prof.ID,
+		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
+		Configs: []share.Config{{UniqueID: "Ghost.Mod", Path: "config.json", Data: []byte("g")}},
+	}}
+	if _, err := s.d.Profiles.InstallNexus("stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}); err != nil {
+		t.Fatal(err)
+	}
+	s.QueueChanged(queue.State{Items: []queue.Item{
+		{ID: "a", Game: "stardew", Profile: prof.ID, ModID: 100, FileID: 1, State: queue.StateDone},
+	}})
+	if len(s.pending) != 1 || len(s.pending[0].Configs) != 1 || s.pending[0].Configs[0].UniqueID != "Ghost.Mod" {
+		t.Fatalf("pending dropped: %+v", s.pending)
+	}
+}

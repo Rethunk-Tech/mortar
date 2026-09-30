@@ -614,7 +614,7 @@ func (s *Service) queueChanged(st queue.State) {
 			changed = changed || len(p.Configs) != before
 		}
 		// An apply the running game or a write error held back leaves seen empty, and the import waits.
-		if len(p.Configs) == 0 || (open == 0 && (len(done) == 0 || p.seen != "")) {
+		if len(p.Configs) == 0 || (open == 0 && len(done) == 0) {
 			s.mu.Lock()
 			s.pending = slices.DeleteFunc(s.pending, func(x *pending) bool { return x == p })
 			s.mu.Unlock()
