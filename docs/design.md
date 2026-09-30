@@ -52,7 +52,7 @@ One Go module and one Vite frontend, no workspaces:
 - `internal/launch`: Steam and GOG launch, and the SMAPI log tail streamed to the frontend as events.
 - `frontend/`: React, MUI, zustand, the i18n library; pages as in Concrete (dashboard, profiles with list and detail, mod list), plus the console panel and the import dialog.
 
-Each `internal` area the UI calls is exposed as one Wails service. New Go dependencies, each measured as needed: `github.com/andybalholm/brotli` (pure Go; the standard library has no Brotli), `github.com/tailscale/hujson` (SMAPI manifests are JSON with comments and trailing commas), `github.com/andygrunwald/vdf` (Steam's `libraryfolders.vdf`, as Concrete used), and `github.com/zalando/go-keyring` (already a Wails dependency, and Maître's). Licences are checked before adding (MIT, BSD or Apache only).
+Each `internal` area the UI calls is exposed as one Wails service. New Go dependencies, each measured as needed: `github.com/andybalholm/brotli` (pure Go; the standard library has no Brotli), `github.com/tailscale/hujson` (SMAPI manifests are JSON with comments and trailing commas), `github.com/andygrunwald/vdf` (Steam's `libraryfolders.vdf`, as Concrete used), and `github.com/zalando/go-keyring` (already a Wails dependency, and Maître's). Licences checked 2026-09-29: brotli MIT, hujson BSD-3-Clause, vdf MIT, go-keyring MIT, all maintained (pushed July to September 2026). i18n uses Lingui, as Maître does.
 
 ### Trust boundaries
 
@@ -159,6 +159,17 @@ What a shared profile holds: name, game, and per mod its source reference (Nexus
 **Self-contained Brotli links; no hosted service in v1 (NOMAD, 2026-09-29).** A hosted share service, and share versioning with it, are parked for v2 to avoid running costs. The link carries the whole profile: `mortar://stardew/p/<payload>`, where the payload is compact JSON (`["<profile name>", [[<nexus mod id>, <nexus file id>], ...]]`), Brotli-compressed at quality 11 and base64url-encoded without padding. Measured on real mod IDs sampled from SMAPI's `StardewModDataset` (`dataset/indexes/pages by mod ID.json`, 2026-09-29), the whole link is 498 characters for 50 mods, 879 for 100 and 1,630 for 200, so profiles up to about 240 mods fit a 2,000-character Discord message. Including SMAPI `UniqueID`s pushes 100 mods to 3,435 characters, because those IDs barely compress, so the link carries none: the recipient reads each `UniqueID` from the downloaded mod's manifest and matches mods it already has through their `Nexus:` update keys. Brotli beats gzip by 12 to 15% at every size. A GitHub-hosted mod adds `"<owner>/<repo>@<tag>"` in place of the ID pair. Mod configs do not fit in a link and travel in an optional `.mortar` file (the same JSON plus configs, uncompressed zip).
 
 For Lethal Company, r2modman codes through Thunderstore stay supported for import and export alongside Mortar links.
+
+## Build order
+
+After the go-ahead, each milestone ends with the gate green and NOMAD clicking through it on Linux:
+
+1. **Shell and look.** Wails v3 app (pinned beta, `-tags gtk3` on Linux), frameless translucent window with the themed title bar, Concrete's theme and layout with placeholder-free empty states, Lingui wired in. In parallel: the GTK4 transparency PR to Wails.
+2. **Stardew core.** Steam and GOG discovery, SMAPI detect, install and update prompt, profiles (create, clone-or-copy materialise, per-mod toggles), manual zip install, launch through Steam with `-- --mods-path --skip-terminal`, and the in-app SMAPI console.
+3. **Mod metadata.** Manifest scanning, dependency and problem checks, SMAPI API update checks with per-profile prompts and rollback, dataset lookups.
+4. **Nexus.** Personal-key sign-in for testing, `nxm://` registration (asking before taking it over), the guided download queue, GitHub releases. Then email Nexus with this testing build to register the app, and ask about OAuth and Collections.
+5. **Sharing.** Link encode and decode, the import flow with the full dependency preview, the `.mortar` file, and the static page at `mortar.rethunk.tech`.
+6. **Release.** smapi.io/log upload and the GitHub issue link, self-update with signed releases, Windows measurements and fixes, packaging (NSIS, AppImage, deb, rpm), the repo turned public.
 
 ## Later
 
