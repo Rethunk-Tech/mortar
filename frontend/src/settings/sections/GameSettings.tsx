@@ -2,11 +2,13 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
 import { Download, FolderOpen, Undo2 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
+import { State } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import {
   ChooseGameFolder,
   SetGameFolder,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { loadGameStatus } from '../../games/status.ts'
+import { useLaunch } from '../../launch/store.ts'
 import { InstallSteps } from '../../loader/InstallSteps.tsx'
 import { useLoader } from '../../loader/store.ts'
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
@@ -96,6 +98,22 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
   const steps = useLoader((s) => s.steps)
   const check = useLoader((s) => s.check)
   const install = useLoader((s) => s.install)
+  // SMAPI's files are in use while the game starts or runs.
+  const playing = useLaunch(
+    (s) =>
+      s.starting ||
+      (s.status?.game === GAME &&
+        (s.status.state === State.Launching || s.status.state === State.Running)),
+  )
+  // The loader:state event that swaps in the steps lands after the click, so a second click can slip in first.
+  const [pending, setPending] = useState(false)
+  const run = () => {
+    if (pending) {
+      return
+    }
+    setPending(true)
+    install(GAME).finally(() => setPending(false))
+  }
   useEffect(() => {
     check(GAME)
   }, [check])
@@ -124,7 +142,8 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
       <Button
         variant="outlined"
         startIcon={<Download size={16} />}
-        onClick={() => install(GAME)}
+        disabled={pending || playing}
+        onClick={run}
         sx={{ ...outline, height: 38 }}
       >
         {action}
