@@ -267,7 +267,9 @@ function DirectDialog() {
 export function LaunchLayer({ game }: { game: string }) {
   const refresh = useLaunch((s) => s.refresh)
   useEffect(() => {
-    refresh(game)
+    if (game) {
+      refresh(game)
+    }
   }, [game, refresh])
   return (
     <>

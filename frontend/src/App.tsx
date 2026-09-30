@@ -6,6 +6,8 @@ import { firstRunNeeded } from './firstrun/needed.ts'
 import { MainScreen } from './game/MainScreen.tsx'
 import { GameSelect } from './games/GameSelect.tsx'
 import { loadGameStatus } from './games/status.ts'
+import { LaunchLayer } from './launch/LaunchLayer.tsx'
+import { overlayGame, useLaunch } from './launch/store.ts'
 import { useNav } from './nav/store.ts'
 import { ArrivalDialog } from './nxm/ArrivalDialog.tsx'
 import { ProfilesPage } from './profiles/ProfilesPage.tsx'
@@ -21,6 +23,11 @@ import { ToastHost } from './toasts/ToastHost.tsx'
 export function App() {
   const { t } = useLingui()
   const route = useNav((s) => s.route)
+  const game = overlayGame(
+    route.name,
+    route.name === 'game' ? route.game : '',
+    useLaunch((s) => s.status?.game ?? ''),
+  )
   const [ready, setReady] = useState(false)
   useEffect(() => {
     Promise.all([Get(), loadGameStatus()])
@@ -61,6 +68,7 @@ export function App() {
         {route.name === 'setup' ? <FirstRun /> : null}
         {ready && route.name === 'game-select' ? <GameSelect /> : null}
       </AppFrame>
+      <LaunchLayer game={game} />
       <ArrivalDialog />
       <ShareDialog />
       <ImportDialog />

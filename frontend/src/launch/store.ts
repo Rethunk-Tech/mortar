@@ -142,3 +142,6 @@ export function initLaunch() {
   Events.On('launch:state', (event) => useLaunch.getState().apply(event.data))
   Events.On('launch:line', (event) => useConsole.getState().add(event.data))
 }
+
+export const overlayGame = (routeName: string, routeGame: string, statusGame: string) =>
+  routeName === 'game' ? routeGame : statusGame

@@ -1,6 +1,5 @@
 import { Box } from '@mui/material'
 import { useEffect } from 'react'
-import { LaunchLayer } from '../launch/LaunchLayer.tsx'
 import { LoaderBanner } from '../loader/Banner.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { QueueSheet } from '../queue/QueueSheet.tsx'
@@ -19,7 +18,6 @@ export function MainScreen({ game }: { game: string }) {
         <Sidebar game={game} />
         <Detail />
       </Box>
-      <LaunchLayer game={game} />
       <QueueSheet />
     </Box>
   )

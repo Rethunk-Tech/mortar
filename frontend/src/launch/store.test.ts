@@ -6,7 +6,7 @@ import {
   type Status,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { useConsole } from '../console/store.ts'
-import { useLaunch } from './store.ts'
+import { overlayGame, useLaunch } from './store.ts'
 
 const status = (state: State, profile = 'p1'): Status => ({
   game: 'stardew',
@@ -26,6 +26,12 @@ const line = (seq: number): Lines => ({
 beforeEach(() => {
   useLaunch.setState(useLaunch.getInitialState(), true)
   useConsole.setState(useConsole.getInitialState(), true)
+})
+
+test('the launch overlay keeps the launching game when the route is not the game', () => {
+  expect(overlayGame('game', 'stardew', '')).toBe('stardew')
+  expect(overlayGame('settings', '', 'stardew')).toBe('stardew')
+  expect(overlayGame('settings', '', '')).toBe('')
 })
 
 test('a launch shows its own log even when the console tab never loaded', () => {
