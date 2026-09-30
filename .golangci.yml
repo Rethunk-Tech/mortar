@@ -55,18 +55,13 @@ linters:
     - usetesting
     - wastedassign
     - zerologlint
-  # Mortar only. It launches the game, its loader installer and the OS file manager, so a
-  # subprocess named by a variable is the product; the Game registry returns its interface by
-  # design; and the Wails fork is a remote replace.
+  # Mortar only. It launches Steam, the SMAPI installer and the OS file manager, so a subprocess
+  # named by a variable is the product; gosec has no per-call option for that.
   exclusions:
     rules:
       - path: ^internal/(launch/launch|game/stardew/smapi|profile/open)\.go$
         linters: [gosec]
         text: G204
-      - path: ^internal/(game/game|loadersvc/service)\.go$
-        linters: [ireturn]
-      - path: ^go\.mod$
-        linters: [gomoddirectives]
   settings:
     # canon go-golangci-lint-00008
     govet:
@@ -87,9 +82,12 @@ linters:
         - error
         - generic
         - stdlib
+        - github.com/Rethunk-AI/mortar/internal/game.Game
     # canon go-golangci-lint-00011
     gomoddirectives:
       replace-local: true
+      replace-allow-list:
+        - github.com/wailsapp/wails/v3
     # canon go-golangci-lint-00009
     gocritic:
       disabled-tags:

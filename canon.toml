@@ -8,3 +8,9 @@ reconciled = "canon v0.1.0-poc"
 # (launch.Hint, launchsvc.State, loader.Step, steam.Status), and erasableSyntaxOnly rejects enums.
 # The fork's models.ts.tmpl has no const-object option, and generated files are overwritten on every build.
 "ts-typescript-00006" = "wails-generated bindings contain TS enums; fix belongs in the Rethunk-AI/wails generator template"
+# internal/game/game.go Find and internal/loadersvc/service.go target return game.Game, the registry
+# interface every game implements; ireturn's allow list names it (go.mod's Wails v3 replace, the Rethunk-AI fork
+# with the GTK4 transparency fix, upstream PR wailsapp/wails#6197, is allowed via gomoddirectives.replace-allow-list;
+# G204 is excluded only in launch.go, smapi.go and open.go, whose commands are fixed names or paths
+# built from validated install and profile dirs, never user strings).
+"go-golangci-lint-00013" = "the game registry returns the game.Game interface by design; allow adds github.com/Rethunk-AI/mortar/internal/game.Game"
