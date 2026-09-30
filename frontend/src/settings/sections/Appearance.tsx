@@ -83,7 +83,6 @@ export function Appearance() {
       >
         <Button
           variant="contained"
-          disableElevation={true}
           tabIndex={-1}
           sx={{ width: 140, height: 44, fontSize: 17, fontWeight: 700 }}
         >
@@ -113,7 +112,8 @@ export function Appearance() {
               }}
             />
           }
-          label={t`Translucent window`}
+          label={t`Translucent window (turn off for a solid background)`}
+          sx={{ '& .MuiFormControlLabel-label': { fontSize: 15 } }}
         />
         <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
           {t`Takes effect when Mortar restarts`}

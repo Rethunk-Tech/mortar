@@ -6,6 +6,8 @@ import { type SettingsSection, useNav } from '../nav/store.ts'
 import { About } from './sections/About.tsx'
 import { Appearance } from './sections/Appearance.tsx'
 
+const ACTIVE_WEIGHT = 600
+
 export function SettingsPage({ section }: { section: SettingsSection }) {
   const { t } = useLingui()
   const closeSettings = useNav((s) => s.closeSettings)
@@ -23,55 +25,80 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
     { id: 'appearance', label: t`Appearance` },
     { id: 'about', label: t`About` },
   ]
+  const current = sections.find((s) => s.id === section)
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.5 }}>
-        <ButtonBase
-          aria-label={t`Back`}
-          onClick={closeSettings}
-          sx={{
-            width: 36,
-            height: 36,
-            borderRadius: '6px',
-            '&:hover': { bgcolor: 'action.hover' },
-          }}
-        >
-          <ArrowLeft size={20} />
-        </ButtonBase>
-        <Typography component="h1" sx={{ fontSize: 22, fontWeight: 600 }}>
-          {t`Settings`}
-        </Typography>
-      </Box>
-      <Box sx={{ flex: 1, minHeight: 0, display: 'flex', gap: 3, px: 2, pb: 2 }}>
-        <Box
-          component="nav"
-          aria-label={t`Settings sections`}
-          sx={{ width: 160, flexShrink: 0, display: 'flex', flexDirection: 'column' }}
-        >
-          {sections.map((s) => (
+    <Box sx={{ height: '100%', display: 'grid', gridTemplateColumns: '200px minmax(0, 1fr)' }}>
+      <Box
+        component="nav"
+        aria-label={t`Settings sections`}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '2px',
+          px: 1,
+          py: 2,
+          bgcolor: 'rgba(30,30,36,0.8)',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pb: 1.25 }}>
+          <ButtonBase
+            aria-label={t`Back`}
+            onClick={closeSettings}
+            sx={{
+              width: 36,
+              height: 36,
+              flexShrink: 0,
+              borderRadius: '6px',
+              '&:hover': { bgcolor: 'action.hover' },
+            }}
+          >
+            <ArrowLeft size={20} />
+          </ButtonBase>
+          <Typography component="h1" sx={{ fontSize: 20, fontWeight: 700 }}>
+            {t`Settings`}
+          </Typography>
+        </Box>
+        {sections.map((s) => {
+          const active = section === s.id
+          return (
             <ButtonBase
               key={s.id}
               onClick={() => setSection(s.id)}
-              aria-current={section === s.id ? 'page' : undefined}
+              aria-current={active ? 'page' : undefined}
               sx={{
                 justifyContent: 'flex-start',
                 height: 38,
                 px: '12px',
+                borderRadius: '6px',
                 fontSize: 14,
+                fontWeight: active ? ACTIVE_WEIGHT : 'normal',
                 fontFamily: 'inherit',
                 whiteSpace: 'nowrap',
-                borderLeft: '2px solid',
-                borderColor: section === s.id ? 'primary.main' : 'transparent',
-                color: section === s.id ? '#ffffff' : 'rgba(210,210,215,0.92)',
+                bgcolor: active ? 'rgba(255,255,255,0.12)' : 'transparent',
+                color: active ? '#ffffff' : 'rgba(225,225,230,0.95)',
+                '&:hover': { bgcolor: active ? 'rgba(255,255,255,0.12)' : 'action.hover' },
               }}
             >
               {s.label}
             </ButtonBase>
-          ))}
-        </Box>
-        <Box sx={{ flexGrow: 1, minWidth: 0, overflow: 'auto', pt: 1 }}>
-          {section === 'appearance' ? <Appearance /> : <About />}
-        </Box>
+          )
+        })}
+      </Box>
+      <Box
+        sx={{
+          minWidth: 0,
+          overflow: 'auto',
+          px: 3.5,
+          py: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+        }}
+      >
+        <Typography component="h2" sx={{ fontSize: 22, fontWeight: 700 }}>
+          {current?.label}
+        </Typography>
+        {section === 'appearance' ? <Appearance /> : <About />}
       </Box>
     </Box>
   )

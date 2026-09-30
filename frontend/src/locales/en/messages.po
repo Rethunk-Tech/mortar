@@ -68,9 +68,9 @@ msgstr "Its folder in this profile is deleted."
 msgid "Show files"
 msgstr "Show files"
 
-#: src/settings/sections/Appearance.tsx:116
-msgid "Translucent window"
-msgstr "Translucent window"
+#: src/settings/sections/Appearance.tsx:115
+msgid "Translucent window (turn off for a solid background)"
+msgstr "Translucent window (turn off for a solid background)"
 
 #: src/mods/Toolbar.tsx:115
 msgid "Grid view"
@@ -132,7 +132,7 @@ msgstr "Takes effect when Mortar restarts"
 msgid "Rename profile"
 msgstr "Rename profile"
 
-#: src/settings/SettingsPage.tsx:23
+#: src/settings/SettingsPage.tsx:25
 msgid "Appearance"
 msgstr "Appearance"
 
@@ -176,7 +176,7 @@ msgstr "Could not read the mods"
 msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
 
-#: src/settings/sections/Appearance.tsx:92
+#: src/settings/sections/Appearance.tsx:91
 msgid "3 updates"
 msgstr "3 updates"
 
@@ -276,7 +276,7 @@ msgstr "{mods, plural, one {# mod} other {# mods}}"
 msgid "SMAPI is not installed"
 msgstr "SMAPI is not installed"
 
-#: src/settings/sections/Appearance.tsx:103
+#: src/settings/sections/Appearance.tsx:102
 msgid "Changes apply right away"
 msgstr "Changes apply right away"
 
@@ -333,7 +333,7 @@ msgid "Notifications"
 msgstr "Notifications"
 
 #: src/profiles/ProfilesPage.tsx:248
-#: src/settings/SettingsPage.tsx:30
+#: src/settings/SettingsPage.tsx:45
 msgid "Back"
 msgstr "Back"
 
@@ -398,7 +398,7 @@ msgstr "Could not stop the game"
 msgid "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 
-#: src/settings/sections/Appearance.tsx:97
+#: src/settings/sections/Appearance.tsx:96
 msgid "Stardew Valley"
 msgstr "Stardew Valley"
 
@@ -548,7 +548,7 @@ msgstr "Remove"
 #: src/launch/PlayControl.tsx:146
 #: src/launch/PlayControl.tsx:149
 #: src/launch/PlayControl.tsx:150
-#: src/settings/sections/Appearance.tsx:90
+#: src/settings/sections/Appearance.tsx:89
 msgid "Play"
 msgstr "Play"
 
@@ -573,7 +573,7 @@ msgstr "Install"
 msgid "Select a mod to see its details."
 msgstr "Select a mod to see its details."
 
-#: src/settings/SettingsPage.tsx:42
+#: src/settings/SettingsPage.tsx:58
 #: src/shell/AppMenu.tsx:74
 #: src/shell/TitleBar.tsx:98
 msgid "Settings"
@@ -614,7 +614,7 @@ msgstr "Drop to install into {0}"
 msgid "Cool and calm"
 msgstr "Cool and calm"
 
-#: src/settings/SettingsPage.tsx:24
+#: src/settings/SettingsPage.tsx:26
 msgid "About"
 msgstr "About"
 
@@ -681,7 +681,7 @@ msgstr "SMAPI {0} is available"
 msgid "No mods yet"
 msgstr "No mods yet"
 
-#: src/settings/SettingsPage.tsx:48
+#: src/settings/SettingsPage.tsx:33
 msgid "Settings sections"
 msgstr "Settings sections"
 
