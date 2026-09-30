@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="dark" />
+    <title>Download Mortar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;700&display=swap"
+    />
+    <style>
+      :root {
+        --base: rgb(25, 25, 30);
+        --paper: rgb(38, 38, 44);
+        --text: rgba(255, 255, 255, 0.9);
+        --muted: rgba(200, 200, 200, 0.9);
+        --sand: rgb(214, 177, 122);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--base);
+        color: var(--text);
+        font-family: "Open Sans", system-ui, sans-serif;
+        line-height: 1.5;
+      }
+      main {
+        max-width: 34rem;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        color: var(--sand);
+      }
+      header span {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: var(--text);
+      }
+      .card {
+        background: var(--paper);
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-top: 1.5rem;
+      }
+      html.os-linux .linux,
+      html.os-windows .windows {
+        box-shadow: inset 0 0 0 2px var(--sand);
+      }
+      h1 {
+        margin: 0 0 0.75rem;
+        font-size: 1.5rem;
+        font-weight: 500;
+      }
+      h2 {
+        margin: 0 0 0.75rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--sand);
+      }
+      p {
+        margin: 0 0 0.75rem;
+      }
+      p:last-child {
+        margin-bottom: 0;
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      code,
+      pre {
+        font-family: ui-monospace, monospace;
+        font-size: 0.9rem;
+      }
+      pre {
+        margin: 0.75rem 0;
+        padding: 0.75rem;
+        background: var(--base);
+        border-radius: 6px;
+        overflow-x: auto;
+      }
+      ol {
+        margin: 0.75rem 0 0;
+        padding-left: 1.25rem;
+      }
+      li {
+        margin: 0.35rem 0;
+      }
+      a {
+        color: var(--muted);
+        text-decoration: underline dotted;
+      }
+      .btn {
+        display: inline-block;
+        margin: 0.5rem 0 0.75rem;
+        padding: 0.7rem 1.25rem;
+        border-radius: 6px;
+        background: var(--sand);
+        color: var(--base);
+        font-weight: 700;
+        text-decoration: none;
+      }
+      footer {
+        margin-top: 1.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 64 64"
+          aria-hidden="true"
+          fill="currentColor"
+        >
+          <rect x="6" y="12" width="24" height="11" rx="2" />
+          <rect x="34" y="12" width="24" height="11" rx="2" />
+          <rect x="6" y="27" width="10" height="11" rx="2" />
+          <rect x="20" y="27" width="24" height="11" rx="2" />
+          <rect x="48" y="27" width="10" height="11" rx="2" />
+          <rect x="6" y="42" width="24" height="11" rx="2" />
+          <rect x="34" y="42" width="24" height="11" rx="2" />
+        </svg>
+        <span>Mortar</span>
+      </header>
+      <section class="card">
+        <h1>Download</h1>
+        <p>
+          Mortar finds a game, installs its mod loader, keeps each set of mods
+          in its own profile, and launches the game with the chosen profile.
+        </p>
+        <p>
+          The first release is for Stardew Valley on Linux and Windows. Mortar
+          never re-hosts mod files; downloads come from each mod's own source.
+        </p>
+      </section>
+      <section class="card linux">
+        <h2>Linux</h2>
+        <p>
+          Download the AppImage, mark it executable, and run it. The first run
+          registers a desktop entry, icon, and handlers for
+          <code>mortar://</code> links and <code>.mortar</code> files.
+        </p>
+        <a
+          class="btn"
+          href="https://github.com/Rethunk-AI/mortar/releases/latest/download/mortar-linux-x86_64.AppImage"
+          >Download AppImage</a
+        >
+        <pre>
+chmod +x mortar-linux-x86_64.AppImage
+./mortar-linux-x86_64.AppImage</pre>
+      </section>
+      <section class="card windows">
+        <h2>Windows</h2>
+        <p>
+          Download the installer. It installs for your user under
+          <code>%LOCALAPPDATA%\Programs\Mortar</code> and does not need
+          administrator rights.
+        </p>
+        <a
+          class="btn"
+          href="https://github.com/Rethunk-AI/mortar/releases/latest/download/mortar-amd64-installer.exe"
+          >Download installer</a
+        >
+        <p>
+          Builds are unsigned. Microsoft Defender SmartScreen may show “Windows
+          protected your PC”. Click “More info”, then “Run anyway”.
+        </p>
+        <p class="muted">
+          There is no paid code-signing certificate yet. Once the repository is
+          public, you can inspect the source at
+          <a href="https://github.com/Rethunk-AI/mortar"
+            >github.com/Rethunk-AI/mortar</a
+          >.
+        </p>
+      </section>
+      <footer class="muted">
+        <a href="https://github.com/Rethunk-AI/mortar">Source</a>
+        ·
+        <a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a>
+      </footer>
+    </main>
+    <script>
+      "use strict";
+      const windowsRe = /Windows/i;
+      const linuxRe = /Linux/i;
+      (() => {
+        const ua = navigator.userAgent;
+        if (windowsRe.test(ua)) {
+          document.documentElement.classList.add("os-windows");
+        } else if (linuxRe.test(ua)) {
+          document.documentElement.classList.add("os-linux");
+        }
+      })();
+    </script>
+  </body>
+</html>
