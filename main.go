@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/backdrop"
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/loadersvc"
@@ -20,6 +21,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/picker"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-AI/mortar/internal/queue"
 	"github.com/Rethunk-AI/mortar/internal/savessvc"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	modstore "github.com/Rethunk-AI/mortar/internal/store"
@@ -42,6 +44,7 @@ func registerEvents() {
 	application.RegisterEvent[[]string](picker.DroppedEvent)
 	application.RegisterEvent[settings.Settings](settings.ChangedEvent)
 	application.RegisterEvent[nexussvc.Account](nexussvc.ChangedEvent)
+	application.RegisterEvent[queue.State](queue.ChangedEvent)
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
 	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
 	application.RegisterEvent[modmenu.Target](modmenu.DetailsEvent)
@@ -103,7 +106,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	nexusSvc := nexussvc.NewService(store, nexus.New(version))
+	nexusClient := nexus.New(version)
+	nexusSvc := nexussvc.NewService(store, nexusClient)
 
 	exe, err := os.Executable()
 	if err != nil {
@@ -114,6 +118,28 @@ func main() {
 		log.Fatal(err)
 	}
 	nxmSvc := nxmsvc.NewService(store, nxmHandler)
+
+	dataDir, err := datadir.Dir()
+	if err != nil {
+		log.Fatal(err)
+	}
+	var app *application.App
+	queueSvc, err := queue.New(queue.Deps{
+		Client:  func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },
+		Premium: func() bool { return store.Get().NexusPremium },
+		Install: profiles.InstallNexus,
+		OpenURL: func(url string) error { return app.Browser.OpenURL(url) },
+		Emit: func(name string, data any) {
+			if app != nil {
+				app.Event.Emit(name, data)
+			}
+		},
+		Dir: dataDir,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	nxmSvc.Route = queueSvc.Route
 	nxmSvc.Receive(os.Args[1:])
 	notifier := notifications.New()
 
@@ -124,14 +150,14 @@ func main() {
 
 	menuSvc := &modmenu.Service{}
 
-	app := application.New(application.Options{
+	app = application.New(application.Options{
 		Name:        "Mortar",
 		Description: "Multi-game desktop mod manager",
 		Services: []application.Service{
 			application.NewService(svc), application.NewService(gamesSvc),
 			application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
 			application.NewService(savesSvc), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
-			application.NewService(problemsSvc), application.NewService(menuSvc),
+			application.NewService(problemsSvc), application.NewService(menuSvc), application.NewService(queueSvc),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -152,6 +178,7 @@ func main() {
 		},
 	})
 
+	queue.Run(context.Background(), queueSvc, nxmSvc.Assigned)
 	svc.App = app
 	loaders.App = app
 	launches.App = app

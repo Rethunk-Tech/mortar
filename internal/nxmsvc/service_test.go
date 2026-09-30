@@ -119,3 +119,16 @@ func TestIgnoreDropsTheArrival(t *testing.T) {
 		t.Error("ignored link survived")
 	}
 }
+
+func TestReceiveRoutesALinkTheQueueWaitsFor(t *testing.T) {
+	s := newService(t, &fakeHandler{})
+	s.Route = func(l nxm.Link) bool { return l.FileID == 9 }
+	s.Receive([]string{
+		"nxm://stardewvalley/mods/5/files/9?key=k&expires=1000600&user_id=42",
+		"nxm://stardewvalley/mods/5/files/8?key=k&expires=1000600&user_id=42",
+	})
+	in := s.Inbox()
+	if len(in.Arrivals) != 1 || in.Arrivals[0].Link.FileID != 8 {
+		t.Fatalf("a routed link became an arrival, or the other did not: %+v", in)
+	}
+}

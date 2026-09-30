@@ -54,6 +54,9 @@ type Service struct {
 	App *application.App
 	// Assigned carries links the user matched to a profile.
 	Assigned chan Assignment
+	// Route is offered every accepted link first and reports whether the download queue was waiting for it; nil
+	// means never. A routed link never becomes an arrival.
+	Route func(nxm.Link) bool
 
 	mu         sync.Mutex
 	nextID     int
@@ -81,6 +84,9 @@ func (s *Service) Receive(args []string) bool {
 		}
 		found = true
 		link, err := nxm.Parse(arg, s.store.Get().NexusUserID, s.now())
+		if err == nil && s.Route != nil && s.Route(link) {
+			continue
+		}
 		s.mu.Lock()
 		s.nextID++
 		id := s.nextID

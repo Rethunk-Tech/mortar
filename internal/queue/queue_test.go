@@ -1,0 +1,373 @@
+package queue
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"testing"
+	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-AI/mortar/internal/nxm"
+	"github.com/Rethunk-AI/mortar/internal/nxmsvc"
+	"github.com/Rethunk-AI/mortar/internal/profile"
+)
+
+const payload = "archive bytes"
+
+type fixture struct {
+	t        *testing.T
+	s        *Service
+	dir      string
+	premium  atomic.Bool
+	cdn      http.HandlerFunc
+	limitNow atomic.Bool
+	clock    atomic.Int64
+	mu       sync.Mutex
+	opened   []string
+	installs []profile.Source
+	keys     []string
+}
+
+func (f *fixture) now() time.Time { return time.Unix(f.clock.Load(), 0).UTC() }
+
+func newFixture(t *testing.T) *fixture {
+	t.Helper()
+	f := &fixture{t: t, dir: t.TempDir()}
+	f.clock.Store(1_000_000)
+	f.premium.Store(true)
+	var srv *httptest.Server
+	mux := http.NewServeMux()
+	mux.HandleFunc("/v1/games/stardewvalley/mods/1/files.json", func(w http.ResponseWriter, _ *http.Request) {
+		f.headers(w)
+		fmt.Fprint(w, `{"files":[
+			{"file_id":10,"file_name":"a-1.0.zip","version":"1.0","category_name":"MAIN","size_kb":3,"is_primary":true},
+			{"file_id":11,"file_name":"a-2.0.zip","version":"2.0","category_name":"MAIN","size_kb":4},
+			{"file_id":12,"file_name":"a-2.0-alt.zip","version":"2.0","category_name":"OPTIONAL","size_kb":4}]}`)
+	})
+	mux.HandleFunc("/v1/games/stardewvalley/mods/1.json", func(w http.ResponseWriter, _ *http.Request) {
+		f.headers(w)
+		fmt.Fprint(w, `{"name":"Alpha","author":"me","picture_url":"https://img/a.png","endorsement_count":7}`)
+	})
+	mux.HandleFunc("/v1/games/stardewvalley/mods/1/files/", func(w http.ResponseWriter, r *http.Request) {
+		if f.limitNow.Load() {
+			reset := f.now().Add(time.Hour).Format(time.RFC3339)
+			w.Header().Set("X-Rl-Daily-Remaining", "0")
+			w.Header().Set("X-Rl-Hourly-Remaining", "0")
+			w.Header().Set("X-Rl-Daily-Reset", reset)
+			w.Header().Set("X-Rl-Hourly-Reset", reset)
+			w.WriteHeader(http.StatusTooManyRequests)
+			return
+		}
+		if key := r.URL.Query().Get("key"); key != "" {
+			f.mu.Lock()
+			f.keys = append(f.keys, key)
+			f.mu.Unlock()
+		} else if !f.premium.Load() {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		f.headers(w)
+		fmt.Fprintf(w, `[{"name":"CDN","URI":%q}]`, srv.URL+"/cdn/file.zip")
+	})
+	mux.HandleFunc("/cdn/file.zip", func(w http.ResponseWriter, r *http.Request) {
+		if f.cdn != nil {
+			f.cdn(w, r)
+			return
+		}
+		fmt.Fprint(w, payload)
+	})
+	srv = httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	c := nexus.New("test")
+	c.BaseURL, c.CacheDir, c.HTTP, c.Now = srv.URL, t.TempDir(), srv.Client(), f.now
+	client := c.WithKey("secret")
+	s, err := New(Deps{
+		Client:  func() (*nexus.Client, error) { return client, nil },
+		Premium: f.premium.Load,
+		Install: func(_, _, path string, src profile.Source) (profile.InstallResult, error) {
+			b, err := fsx.ReadFile(path)
+			if err != nil || string(b) != payload {
+				return profile.InstallResult{}, fmt.Errorf("installer read %q: %w", b, err)
+			}
+			f.mu.Lock()
+			f.installs = append(f.installs, src)
+			f.mu.Unlock()
+			return profile.InstallResult{}, nil
+		},
+		OpenURL: func(u string) error {
+			f.mu.Lock()
+			f.opened = append(f.opened, u)
+			f.mu.Unlock()
+			return nil
+		},
+		HTTP: srv.Client(), Dir: f.dir, Now: f.now,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.s = s
+	return f
+}
+
+func (f *fixture) headers(w http.ResponseWriter) {
+	w.Header().Set("X-Rl-Daily-Remaining", "500")
+	w.Header().Set("X-Rl-Hourly-Remaining", "100")
+}
+
+func (f *fixture) start() {
+	ctx, cancel := context.WithCancel(context.Background())
+	f.t.Cleanup(cancel)
+	Run(ctx, f.s, make(chan nxmsvc.Assignment))
+}
+
+func (f *fixture) wait(what string, ok func(State) bool) State {
+	f.t.Helper()
+	deadline := time.Now().Add(5 * time.Second)
+	for time.Now().Before(deadline) {
+		if st := f.s.State(); ok(st) {
+			return st
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	f.t.Fatalf("timed out waiting for %s: %+v", what, f.s.State())
+	return State{}
+}
+
+func (f *fixture) item(state string) func(State) bool {
+	return func(st State) bool { return len(st.Items) > 0 && st.Items[0].State == state }
+}
+
+func (f *fixture) leftovers() {
+	f.t.Helper()
+	if entries, _ := os.ReadDir(filepath.Join(f.dir, downloadsDir)); len(entries) != 0 {
+		f.t.Errorf("temp downloads left behind: %v", entries)
+	}
+}
+
+func req(fileID int) Request {
+	return Request{Kind: KindInstall, Game: "stardew", Profile: "p1", ModID: 1, FileID: fileID}
+}
+
+func TestPremiumDownloadsAndInstallsWithoutClicks(t *testing.T) {
+	f := newFixture(t)
+	f.start()
+	if _, err := f.s.Add([]Request{req(10), {Kind: KindUpdate, Game: "stardew", Profile: "p1", ModID: 1, Version: "2.0", CurrentKey: "nexus-1-10"}}); err != nil {
+		t.Fatal(err)
+	}
+	st := f.wait("both done", func(st State) bool {
+		return len(st.Items) == 2 && st.Items[0].State == StateDone && st.Items[1].State == StateDone
+	})
+	if st.Items[1].FileID != 11 || st.Items[1].FileName != "a-2.0.zip" || st.Items[0].Name != "Alpha" {
+		t.Errorf("update resolved or named wrongly: %+v", st.Items)
+	}
+	src := f.installs[0]
+	if src.Kind != "nexus" || src.ModID != 1 || src.FileID != 10 || src.Picture != "https://img/a.png" || src.EndorsementCount != 7 || src.Name != "a-1.0.zip" {
+		t.Errorf("source %+v", src)
+	}
+	if len(f.opened) != 0 {
+		t.Errorf("a premium download opened pages: %v", f.opened)
+	}
+	f.leftovers()
+}
+
+func TestFreeAccountWaitsForTheClickThenTakesTheLink(t *testing.T) {
+	f := newFixture(t)
+	f.premium.Store(false)
+	f.start()
+	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	f.wait("the click", f.item(StateWaitingClick))
+	want := "https://www.nexusmods.com/stardewvalley/mods/1?tab=files&file_id=10&nmm=1"
+	if len(f.opened) != 1 || f.opened[0] != want {
+		t.Fatalf("opened %v", f.opened)
+	}
+	if f.s.Route(nxm.Link{ModID: 1, FileID: 99, Key: "k", Expires: f.now().Unix() + 600}) {
+		t.Error("a link for another file was taken")
+	}
+	if !f.s.Route(nxm.Link{ModID: 1, FileID: 10, Key: "k", Expires: f.now().Unix() + 600}) {
+		t.Fatal("the waiting item did not take its link")
+	}
+	f.wait("done", f.item(StateDone))
+	if len(f.keys) != 1 || f.keys[0] != "k" {
+		t.Errorf("download link was asked with keys %v", f.keys)
+	}
+}
+
+func TestExpiredKeyReopensThePage(t *testing.T) {
+	f := newFixture(t)
+	f.premium.Store(false)
+	f.start()
+	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	f.wait("the click", f.item(StateWaitingClick))
+	f.s.Route(nxm.Link{ModID: 1, FileID: 10, Key: "old", Expires: f.now().Unix() + 1})
+	f.wait("the page again", func(State) bool {
+		f.mu.Lock()
+		defer f.mu.Unlock()
+		return len(f.opened) == 2
+	})
+	if got := f.s.State().Items[0].State; got != StateWaitingClick {
+		t.Errorf("state %s", got)
+	}
+}
+
+func TestRateLimitPausesUntilTheReset(t *testing.T) {
+	f := newFixture(t)
+	f.limitNow.Store(true)
+	f.start()
+	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	st := f.wait("the limit", func(st State) bool { return st.LimitedUntil != 0 })
+	if st.LimitedUntil != f.now().Add(time.Hour).Unix() || st.Items[0].State != StateQueued {
+		t.Fatalf("state %+v", st)
+	}
+	f.limitNow.Store(false)
+	f.clock.Add(3601)
+	f.s.poke()
+	f.wait("done after the reset", f.item(StateDone))
+}
+
+func TestFailedRetrySkipAndCancel(t *testing.T) {
+	f := newFixture(t)
+	var fail atomic.Bool
+	fail.Store(true)
+	block := make(chan struct{})
+	var hold atomic.Bool
+	f.cdn = func(w http.ResponseWriter, r *http.Request) {
+		if hold.Load() {
+			w.WriteHeader(http.StatusOK)
+			_ = http.NewResponseController(w).Flush()
+
+			select {
+			case <-r.Context().Done():
+			case <-block:
+			}
+			return
+		}
+		if fail.Load() {
+			http.Error(w, "no", http.StatusInternalServerError)
+			return
+		}
+		fmt.Fprint(w, payload)
+	}
+	t.Cleanup(func() { close(block) })
+	f.start()
+	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	st := f.wait("failure", f.item(StateFailed))
+	if !strings.Contains(st.Items[0].Error, "500") {
+		t.Errorf("error %q", st.Items[0].Error)
+	}
+	fail.Store(false)
+	f.s.Retry(st.Items[0].ID)
+	f.wait("done after retry", f.item(StateDone))
+
+	fail.Store(true)
+	if _, err := f.s.Add([]Request{req(11)}); err != nil {
+		t.Fatal(err)
+	}
+	st = f.wait("second failure", func(st State) bool { return len(st.Items) == 2 && st.Items[1].State == StateFailed })
+	f.s.Skip(st.Items[1].ID)
+	f.wait("skipped", func(st State) bool { return st.Items[1].State == StateSkipped })
+
+	hold.Store(true)
+	if _, err := f.s.Add([]Request{req(12)}); err != nil {
+		t.Fatal(err)
+	}
+	st = f.wait("downloading", func(st State) bool { return len(st.Items) == 3 && st.Items[2].State == StateDownloading })
+	f.s.Cancel(st.Items[2].ID)
+	f.wait("cancelled", func(st State) bool { return st.Items[2].State == StateCancelled })
+	time.Sleep(50 * time.Millisecond)
+	f.leftovers()
+	if len(f.installs) != 1 {
+		t.Errorf("installs %d", len(f.installs))
+	}
+}
+
+func TestPauseHoldsBackNewDownloads(t *testing.T) {
+	f := newFixture(t)
+	f.start()
+	f.s.Pause()
+	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(50 * time.Millisecond)
+	if st := f.s.State(); !st.Paused || st.Items[0].State != StateQueued {
+		t.Fatalf("state %+v", st)
+	}
+	f.s.Resume()
+	f.wait("done", f.item(StateDone))
+}
+
+func TestQueueSurvivesARestart(t *testing.T) {
+	f := newFixture(t)
+	f.s.Pause()
+	if _, err := f.s.Add([]Request{req(10), req(11)}); err != nil {
+		t.Fatal(err)
+	}
+	f.s.items[0].State = StateDownloading
+	f.s.publish(true)
+	f.s.items[0].key = "never-saved"
+	again, err := New(f.s.d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	st := again.State()
+	if !st.Paused || len(st.Items) != 2 || st.Items[0].State != StateQueued || st.Items[0].FileID != 10 {
+		t.Fatalf("restored %+v", st)
+	}
+	if raw, _ := os.ReadFile(filepath.Join(f.dir, fileName)); strings.Contains(string(raw), "never-saved") {
+		t.Error("a download key was written to disk")
+	}
+}
+
+func TestSignedOutRefusesToQueue(t *testing.T) {
+	f := newFixture(t)
+	f.s.d.Client = func() (*nexus.Client, error) { return nil, fmt.Errorf("sign in") }
+	if _, err := f.s.Add([]Request{req(10)}); err == nil {
+		t.Fatal("queued while signed out")
+	}
+}
+
+func TestChooseFile(t *testing.T) {
+	files := []nexus.File{
+		{FileID: 1, Version: "1.0", Category: "MAIN", IsPrimary: true},
+		{FileID: 2, Version: "2.0", Category: "OPTIONAL"},
+		{FileID: 3, Version: "2.0.0", Category: "MAIN"},
+		{FileID: 4, Version: "3.0", Category: "OPTIONAL", IsPrimary: false},
+	}
+	tests := []struct {
+		name    string
+		version string
+		current int
+		want    int
+	}{
+		{"main file at the version, equal by SMAPI's ordering", "2.0", 1, 3},
+		{"never an optional file", "3.0", 1, 1},
+		{"no version falls to the primary", "", 1, 1},
+		{"the profile already uses an optional file", "2.0", 4, 2},
+		{"an optional user still gets main when optional lacks the version", "1.0", 4, 1},
+	}
+	for _, tc := range tests {
+		got, ok := ChooseFile(files, tc.version, tc.current)
+		if !ok || got.FileID != tc.want {
+			t.Errorf("%s: got %d, %v, want %d", tc.name, got.FileID, ok, tc.want)
+		}
+	}
+	if _, ok := ChooseFile([]nexus.File{{FileID: 9, Category: "OPTIONAL"}}, "1.0", 0); ok {
+		t.Error("an optional file was chosen for a profile that has none")
+	}
+}
