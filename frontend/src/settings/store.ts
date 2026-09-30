@@ -1,7 +1,7 @@
-import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import type { Settings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
 import { Get } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { follow } from '../shell/follow.ts'
 
 const defaults: Settings = {
   accent: 'sand',
@@ -23,10 +23,5 @@ const defaults: Settings = {
 
 export const useSettings = create<Settings>(() => defaults)
 
-export async function initSettings(): Promise<void> {
-  const apply = (next: Settings) => useSettings.setState(next)
-  Events.On('settings:changed', (event) => {
-    apply(event.data)
-  })
-  apply(await Get())
-}
+export const initSettings = () =>
+  follow('settings:changed', Get, (next) => useSettings.setState(next))

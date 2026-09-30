@@ -1,5 +1,4 @@
 import { msg, plural } from '@lingui/core/macro'
-import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import type {
   Item,
@@ -9,6 +8,7 @@ import { State as fetchState } from '../../bindings/github.com/Rethunk-AI/mortar
 import { i18n } from '../i18n/index.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { follow } from '../shell/follow.ts'
 import { useToasts } from '../toasts/store.ts'
 
 // The binding types a Go slice as nullable; the store keeps it a list.
@@ -78,22 +78,12 @@ export const useQueue = create<{
 }))
 
 // The first state seen, fetched or evented, is the silent baseline: items finished before startup are not news.
-// Nothing orders the fetch against events, so once an event has landed the fetch is dropped; any change after the
-// fetch's snapshot sends its own event anyway.
-export async function initQueue(): Promise<void> {
-  let baseline = false
-  Events.On('queue:changed', (event) => {
+export const initQueue = () =>
+  follow('queue:changed', fetchState, (state, first) => {
     const prev = useQueue.getState().state
-    const next = snapshot(event.data)
+    const next = snapshot(state)
     useQueue.setState({ state: next })
-    if (baseline) {
+    if (!first) {
       announce(prev, next)
     }
-    baseline = true
   })
-  const first = snapshot(await fetchState())
-  if (!baseline) {
-    baseline = true
-    useQueue.setState({ state: first })
-  }
-}
