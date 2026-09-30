@@ -114,9 +114,11 @@ func TestLaunch(t *testing.T) {
 	}
 	var lines []string
 	req := launch.Request{ModsDir: mods, Steam: &steam.Steam{Root: t.TempDir()}}
-	if err := g.Launch(context.Background(), req, func(l string) { lines = append(lines, l) }); err != nil {
+	ctx, cancel := context.WithCancel(context.Background())
+	if err := g.Launch(ctx, req, func(l []string) { lines = append(lines, l...) }); err != nil {
 		t.Fatal(err)
 	}
+	cancel()
 	if ran[0] != "/usr/bin/steam" || len(lines) != 1 {
 		t.Fatalf("ran %v, lines %q", ran, lines)
 	}
@@ -126,7 +128,7 @@ func TestLaunch(t *testing.T) {
 		t.Fatal(err)
 	}
 	g.Runner = func(string, string, ...string) error { return nil }
-	err := g.Launch(context.Background(), req, func(string) {})
+	err := g.Launch(context.Background(), req, func([]string) {})
 	var f *launch.Failure
 	if !errors.As(err, &f) || f.Hint != launch.HintSteam {
 		t.Fatalf("err = %v, want a steam-hint failure", err)

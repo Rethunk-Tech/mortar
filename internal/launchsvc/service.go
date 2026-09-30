@@ -5,9 +5,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -19,7 +23,8 @@ import (
 const (
 	// StateEvent is emitted with a Status whenever a game's launch state changes.
 	StateEvent = "launch:state"
-	// LineEvent is emitted with a Line for each log line the game writes while a launch is waiting.
+	// LineEvent is emitted with a Lines for each batch of log lines the game writes, from the moment the launch
+	// counts as started until the game exits.
 	LineEvent = "launch:line"
 
 	pollEvery  = 2 * time.Second
@@ -50,10 +55,10 @@ type Status struct {
 	Error   string      `json:"error"`
 }
 
-// Line is one line of the game's log.
-type Line struct {
-	Game string `json:"game"`
-	Line string `json:"line"`
+// Lines is a batch of new log entries, oldest first.
+type Lines struct {
+	Game    string         `json:"game"`
+	Entries []launch.Entry `json:"entries"`
 }
 
 // Service exposes launch, status and stop to the frontend.
@@ -66,6 +71,11 @@ type Service struct {
 	mu       sync.Mutex
 	status   map[string]Status
 	watching map[string]bool
+	// logs holds the session Mortar launched, kept after the game exits so the console can show it.
+	logs map[string]*launch.Buffer
+	// stop ends the log follower of a launch when the game goes idle.
+	stop map[string]context.CancelFunc
+	seq  atomic.Int64
 	// App is set after application.New so events can be emitted.
 	App *application.App
 }
@@ -74,6 +84,7 @@ func NewService(home string, s *settings.Store, profiles *profile.Store) *Servic
 	return &Service{
 		home: home, settings: s, profiles: profiles, procDir: procDirRun,
 		status: map[string]Status{}, watching: map[string]bool{},
+		logs: map[string]*launch.Buffer{}, stop: map[string]context.CancelFunc{},
 	}
 }
 
@@ -93,6 +104,10 @@ func (s *Service) set(st Status) {
 	}
 	s.mu.Lock()
 	s.status[st.Game] = stored
+	if stored.State == Idle && s.stop[st.Game] != nil {
+		s.stop[st.Game]()
+		delete(s.stop, st.Game)
+	}
 	s.mu.Unlock()
 	s.emit(StateEvent, st)
 }
@@ -172,6 +187,10 @@ func (s *Service) poll(g game.Game) bool {
 	switch {
 	case cur.State == Launching:
 	case cur.State == Idle && profileID != "":
+		// A game Mortar did not start has its own log; the last session's buffer is stale.
+		s.mu.Lock()
+		delete(s.logs, g.ID())
+		s.mu.Unlock()
 		s.set(Status{Game: g.ID(), State: Running, Profile: profileID, Since: sinceOr(began)})
 	case cur.State == Running && profileID == "":
 		s.set(Status{Game: g.ID(), State: Idle})
@@ -249,14 +268,77 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 	if st, status := steam.Locate(s.home); status == steam.Found {
 		req.Steam = &st
 	}
+	ctx, cancel := context.WithCancel(context.Background())
+	buf := &launch.Buffer{}
+	s.mu.Lock()
+	s.logs[gameID], s.stop[gameID] = buf, cancel
+	s.mu.Unlock()
 	s.set(Status{Game: gameID, State: Launching, Profile: profileID, Since: time.Now().UnixMilli()})
 	s.watch(g)
-	go s.run(g, profileID, req)
+	go s.run(ctx, g, profileID, req, buf)
 	return nil
 }
 
-func (s *Service) run(g game.Game, profileID string, req launch.Request) {
-	err := g.Launch(context.Background(), req, func(line string) { s.emit(LineEvent, Line{Game: g.ID(), Line: line}) })
+// collect parses log lines into buf and announces them, unless a newer launch has replaced buf.
+func (s *Service) collect(gameID string, buf *launch.Buffer) func([]string) {
+	var p launch.Parser
+	return func(lines []string) {
+		entries := make([]launch.Entry, len(lines))
+		for i, l := range lines {
+			entries[i] = p.Parse(l)
+			entries[i].Seq = s.seq.Add(1)
+		}
+		s.mu.Lock()
+		current := s.logs[gameID] == buf
+		s.mu.Unlock()
+		if !current {
+			return
+		}
+		for _, e := range entries {
+			buf.Add(e)
+		}
+		s.emit(LineEvent, Lines{Game: gameID, Entries: entries})
+	}
+}
+
+// Lines returns the game's log, oldest first, at most launch.MaxLines: this session's when Mortar launched the
+// game, else the log file on disk, which is what the last session left after a crash.
+func (s *Service) Lines(gameID string) ([]launch.Entry, error) {
+	g := game.Find(gameID)
+	if g == nil {
+		return nil, fmt.Errorf("unknown game %q", gameID)
+	}
+	s.mu.Lock()
+	buf := s.logs[gameID]
+	s.mu.Unlock()
+	if buf != nil {
+		return buf.Lines(), nil
+	}
+	path, err := g.LogFile()
+	if err != nil {
+		return nil, err
+	}
+	data, err := fsx.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return []launch.Entry{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var p launch.Parser
+	var out launch.Buffer
+	for l := range strings.SplitSeq(strings.ToValidUTF8(string(data), ""), "\n") {
+		if l = strings.TrimRight(l, "\r"); l != "" {
+			e := p.Parse(l)
+			e.Seq = s.seq.Add(1)
+			out.Add(e)
+		}
+	}
+	return out.Lines(), nil
+}
+
+func (s *Service) run(ctx context.Context, g game.Game, profileID string, req launch.Request, buf *launch.Buffer) {
+	err := g.Launch(ctx, req, s.collect(g.ID(), buf))
 	var f *launch.Failure
 	switch {
 	case err == nil:

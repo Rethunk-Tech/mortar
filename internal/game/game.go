@@ -58,8 +58,11 @@ type Loaders interface {
 // Launcher starts a game.
 type Launcher interface {
 	// Launch starts the profile's mods folder and returns once the game has started, sending the loader's log
-	// lines to onLine. It returns launch.ErrNoSteam when there is no Steam and req.Direct is false.
-	Launch(ctx context.Context, req launch.Request, onLine func(string)) error
+	// lines to onLines in batches until ctx is done. It returns launch.ErrNoSteam when there is no Steam and
+	// req.Direct is false.
+	Launch(ctx context.Context, req launch.Request, onLines func([]string)) error
+	// LogFile is the loader's log, which outlives the game.
+	LogFile() (string, error)
 }
 
 var games = []Game{stardew.Game{}}

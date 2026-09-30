@@ -91,22 +91,24 @@ func (t Timing) withDefaults() Timing {
 	return t
 }
 
-// Run starts c and waits for its log file to be rewritten after the start, sending each new log line to onLine
-// as it appears. It returns a *Failure when the log does not change within the timeout.
-func Run(ctx context.Context, run Runner, c Command, tm Timing, onLine func(string)) error {
+// Run starts c and waits for its log file to be rewritten after the start, sending each batch of new log lines to
+// onLines as it appears. It returns a *Failure when the log does not change within the timeout. Once the game has
+// started, the log keeps being followed until ctx is done, with one last read then; ctx must outlive the game.
+func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]string)) error {
 	tm = tm.withDefaults()
 	began := time.Now()
 	if err := run(c.Dir, c.Name, c.Args...); err != nil {
 		return &Failure{Hint: c.Failure, Err: err}
 	}
 	// File timestamps come from a coarse kernel clock that can trail time.Now by a few milliseconds.
-	tail := tailer{path: c.LogFile, since: began.Add(-clockSlack), onLine: onLine}
+	tail := tailer{path: c.LogFile, since: began.Add(-clockSlack), onLines: onLines}
 	deadline := time.NewTimer(tm.Timeout)
 	defer deadline.Stop()
 	tick := time.NewTicker(tm.Poll)
 	defer tick.Stop()
 	for {
 		if tail.poll() {
+			go follow(ctx, &tail, tm.Poll)
 			return nil
 		}
 		select {
@@ -119,12 +121,26 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLine func(stri
 	}
 }
 
+func follow(ctx context.Context, tail *tailer, every time.Duration) {
+	tick := time.NewTicker(every)
+	defer tick.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			tail.poll()
+			return
+		case <-tick.C:
+			tail.poll()
+		}
+	}
+}
+
 // tailer reads a log from the start once its mtime is newer than since, handing over complete lines.
 type tailer struct {
-	path   string
-	since  time.Time
-	onLine func(string)
-	offset int64
+	path    string
+	since   time.Time
+	onLines func([]string)
+	offset  int64
 	// rest is a trailing partial line, held until its newline arrives.
 	rest string
 }
@@ -153,10 +169,14 @@ func (t *tailer) poll() bool {
 	t.offset += int64(len(data))
 	lines := strings.Split(t.rest+string(bytes.ToValidUTF8(data, nil)), "\n")
 	t.rest = lines[len(lines)-1]
+	var batch []string
 	for _, l := range lines[:len(lines)-1] {
 		if l = strings.TrimRight(l, "\r"); l != "" {
-			t.onLine(l)
+			batch = append(batch, l)
 		}
+	}
+	if len(batch) > 0 {
+		t.onLines(batch)
 	}
 	return true
 }

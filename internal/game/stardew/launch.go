@@ -14,10 +14,19 @@ import (
 // ProcessName is the executable of the running loader.
 func (Game) ProcessName() string { return smapiMarker }
 
+// LogFile is SMAPI-latest.txt, which SMAPI rewrites on each start.
+func (g Game) LogFile() (string, error) {
+	dir, err := g.logDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(dir, "SMAPI-latest.txt"), nil
+}
+
 // Launch starts SMAPI on req.ModsDir and returns once SMAPI has rewritten its log, sending the log's lines to
-// onLine. It returns launch.ErrNoSteam when there is no Steam to launch through and req.Direct is false.
-func (g Game) Launch(ctx context.Context, req launch.Request, onLine func(string)) error {
-	logDir, err := g.logDir()
+// onLines until ctx is done. It returns launch.ErrNoSteam when there is no Steam to launch through and req.Direct is false.
+func (g Game) Launch(ctx context.Context, req launch.Request, onLines func([]string)) error {
+	logFile, err := g.LogFile()
 	if err != nil {
 		return err
 	}
@@ -30,12 +39,12 @@ func (g Game) Launch(ctx context.Context, req launch.Request, onLine func(string
 	if err != nil {
 		return err
 	}
-	cmd.LogFile = filepath.Join(logDir, "SMAPI-latest.txt")
+	cmd.LogFile = logFile
 	run := g.Runner
 	if run == nil {
 		run = launch.Start
 	}
-	return launch.Run(ctx, run, cmd, g.LaunchTiming, onLine)
+	return launch.Run(ctx, run, cmd, g.LaunchTiming, onLines)
 }
 
 // command builds the process to start. steamPath is the `steam` found on PATH, "" when there is none.
