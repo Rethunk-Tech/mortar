@@ -17,7 +17,7 @@ import {
   Tooltip,
 } from '@mui/material'
 import { ChevronDown, Copy, Eye, EyeOff } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import {
   OverlayURL,
   RegenerateOverlayToken,
@@ -69,6 +69,16 @@ function copyText(text: string, push: Push, copied: string, failCopy: string) {
     },
   )
 }
+
+const WORLD_FIELDS: ReadonlySet<string> = new Set([
+  'location',
+  'season',
+  'day',
+  'year',
+  'time',
+  'date',
+  'weather',
+])
 
 function OverlayFieldLabel({ field }: { field: (typeof OVERLAY_FIELDS)[number] }) {
   const { t } = useLingui()
@@ -147,52 +157,63 @@ function OverlayValues({
         push({ kind: 'error', title: failCopy, ...(body ? { body } : {}) })
       })
   }
-  const rows: { key: string; field?: (typeof OVERLAY_FIELDS)[number] }[] = [
-    { key: 'all' },
-    ...OVERLAY_FIELDS.map((field) => ({ key: field, field })),
+  type Field = (typeof OVERLAY_FIELDS)[number]
+  const groups: { title: string; fields: Field[] }[] = [
+    { title: t`World`, fields: OVERLAY_FIELDS.filter((f) => WORLD_FIELDS.has(f)) },
+    {
+      title: t`Player`,
+      fields: OVERLAY_FIELDS.filter((f) => !(WORLD_FIELDS.has(f) || f.startsWith('skill.'))),
+    },
+    { title: t`Skills`, fields: OVERLAY_FIELDS.filter((f) => f.startsWith('skill.')) },
   ]
+  const overall = overlayPreview(snapshot, undefined).kind
+  const status = overall === 'value' ? '' : previewLine(overall, '', idle, wait)
+  const row = (key: string, label: ReactNode, field?: Field) => {
+    const preview = overlayPreview(snapshot, field)
+    return (
+      <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: 32 }}>
+        <Box sx={{ width: 140, flexShrink: 0, fontSize: 13 }}>{label}</Box>
+        <Box
+          sx={{
+            flexGrow: 1,
+            minWidth: 0,
+            fontSize: 13,
+            color: 'rgba(225,225,230,0.95)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {preview.kind === 'value' ? preview.text : '\u2014'}
+        </Box>
+        <Tooltip title={copiedKey === key ? copied : t`Copy OBS URL`} placement="top">
+          <IconButton
+            size="small"
+            aria-label={t`Copy OBS URL`}
+            disabled={!token}
+            onClick={() => copyRow(field, key)}
+          >
+            <Copy size={16} />
+          </IconButton>
+        </Tooltip>
+      </Box>
+    )
+  }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-      <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Values`}</Box>
-      {rows.map((row) => {
-        const preview = overlayPreview(snapshot, row.field)
-        const line = previewLine(
-          preview.kind,
-          preview.kind === 'value' ? preview.text : '',
-          idle,
-          wait,
-        )
-        return (
-          <Box key={row.key} sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: 32 }}>
-            <Box sx={{ width: 140, flexShrink: 0, fontSize: 13 }}>
-              {row.field ? <OverlayFieldLabel field={row.field} /> : t`All values`}
-            </Box>
-            <Box
-              sx={{
-                flexGrow: 1,
-                minWidth: 0,
-                fontSize: 13,
-                color: 'rgba(225,225,230,0.95)',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {line}
-            </Box>
-            <Tooltip title={copiedKey === row.key ? copied : t`Copy OBS URL`} placement="top">
-              <IconButton
-                size="small"
-                aria-label={t`Copy OBS URL`}
-                disabled={!token}
-                onClick={() => copyRow(row.field, row.key)}
-              >
-                <Copy size={16} />
-              </IconButton>
-            </Tooltip>
+      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+        <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Values`}</Box>
+        {status ? <Box sx={{ fontSize: 12, color: 'text.secondary' }}>{status}</Box> : null}
+      </Box>
+      {row('all', t`All values`)}
+      {groups.map((g) => (
+        <Box key={g.title} sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Box sx={{ fontSize: 12, fontWeight: 600, color: 'text.secondary', mt: 1 }}>
+            {g.title}
           </Box>
-        )
-      })}
+          {g.fields.map((f) => row(f, <OverlayFieldLabel field={f} />, f))}
+        </Box>
+      ))}
     </Box>
   )
 }
@@ -467,9 +488,9 @@ export function StreamOverlay() {
             push={push}
           />
           <OverlayHowTo push={push} copied={copied} failCopy={failCopy} />
+          <OverlayConnection port={port} token={token} push={push} fail={fail} />
         </>
       ) : null}
-      <OverlayConnection port={port} token={token} push={push} fail={fail} />
     </Box>
   )
 }

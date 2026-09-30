@@ -156,7 +156,7 @@ msgstr "Could not change the profile's visibility"
 msgid "Saved · just now"
 msgstr "Saved · just now"
 
-#: src/settings/sections/StreamOverlay.tsx:328
+#: src/settings/sections/StreamOverlay.tsx:349
 msgid "Show token"
 msgstr "Show token"
 
@@ -338,7 +338,7 @@ msgstr "Mod list copied"
 msgid "· updates and rolls back with this mod"
 msgstr "· updates and rolls back with this mod"
 
-#: src/settings/sections/StreamOverlay.tsx:85
+#: src/settings/sections/StreamOverlay.tsx:95
 msgid "Year"
 msgstr "Year"
 
@@ -379,7 +379,7 @@ msgstr "{name} is marked obsolete and may not work with this game version."
 msgid "All outcomes"
 msgstr "All outcomes"
 
-#: src/settings/sections/StreamOverlay.tsx:101
+#: src/settings/sections/StreamOverlay.tsx:111
 msgid "Fishing skill"
 msgstr "Fishing skill"
 
@@ -505,8 +505,8 @@ msgstr "Nothing in the queue needs a decision."
 msgid "Copy mod list"
 msgstr "Copy mod list"
 
-#: src/settings/sections/StreamOverlay.tsx:272
-#: src/settings/sections/StreamOverlay.tsx:417
+#: src/settings/sections/StreamOverlay.tsx:293
+#: src/settings/sections/StreamOverlay.tsx:438
 msgid "Copied"
 msgstr "Copied"
 
@@ -752,7 +752,7 @@ msgstr "Group by"
 msgid "Keep the Nexus copy"
 msgstr "Keep the Nexus copy"
 
-#: src/settings/sections/StreamOverlay.tsx:415
+#: src/settings/sections/StreamOverlay.tsx:436
 msgid "Load a save to see values"
 msgstr "Load a save to see values"
 
@@ -843,7 +843,7 @@ msgstr "Nothing to remove."
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
 
-#: src/settings/sections/StreamOverlay.tsx:336
+#: src/settings/sections/StreamOverlay.tsx:357
 msgid "Copy token"
 msgstr "Copy token"
 
@@ -997,8 +997,8 @@ msgstr "Not checked yet."
 msgid "Disable"
 msgstr "Disable"
 
-#: src/settings/sections/StreamOverlay.tsx:273
-#: src/settings/sections/StreamOverlay.tsx:418
+#: src/settings/sections/StreamOverlay.tsx:294
+#: src/settings/sections/StreamOverlay.tsx:439
 msgid "Could not copy"
 msgstr "Could not copy"
 
@@ -1019,7 +1019,7 @@ msgstr "Open a .mortar file someone sent you. You see what it holds before anyth
 msgid "Could not duplicate the profile"
 msgstr "Could not duplicate the profile"
 
-#: src/settings/sections/StreamOverlay.tsx:226
+#: src/settings/sections/StreamOverlay.tsx:247
 msgid "Copy CSS"
 msgstr "Copy CSS"
 
@@ -1088,7 +1088,7 @@ msgstr "Cover image"
 #: src/settings/sections/Data.tsx:106
 #: src/settings/sections/Data.tsx:253
 #: src/settings/sections/nxmHandler.tsx:101
-#: src/settings/sections/StreamOverlay.tsx:250
+#: src/settings/sections/StreamOverlay.tsx:271
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -1169,7 +1169,7 @@ msgstr " · Stardew Valley {version}"
 msgid "Disabled"
 msgstr "Disabled"
 
-#: src/settings/sections/StreamOverlay.tsx:438
+#: src/settings/sections/StreamOverlay.tsx:459
 msgid "Show live game info in OBS. Changes apply the next time you press Play."
 msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 
@@ -1306,7 +1306,7 @@ msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile 
 msgid "Meadowlands farm"
 msgstr "Meadowlands farm"
 
-#: src/settings/sections/StreamOverlay.tsx:298
+#: src/settings/sections/StreamOverlay.tsx:319
 msgid "Connection"
 msgstr "Connection"
 
@@ -1430,7 +1430,7 @@ msgstr "Warn"
 msgid "Needs"
 msgstr "Needs"
 
-#: src/settings/sections/StreamOverlay.tsx:156
+#: src/settings/sections/StreamOverlay.tsx:205
 msgid "Values"
 msgstr "Values"
 
@@ -1593,7 +1593,7 @@ msgid "Needs {0} or newer, has {1}"
 msgstr "Needs {0} or newer, has {1}"
 
 #: src/commandPalette/CommandPalette.tsx:166
-#: src/settings/sections/StreamOverlay.tsx:436
+#: src/settings/sections/StreamOverlay.tsx:457
 msgid "Stream overlay"
 msgstr "Stream overlay"
 
@@ -1613,11 +1613,11 @@ msgstr "Not found in your Steam library"
 msgid "Updates are unknown: SMAPI's update service could not be reached."
 msgstr "Updates are unknown: SMAPI's update service could not be reached."
 
-#: src/settings/sections/StreamOverlay.tsx:83
+#: src/settings/sections/StreamOverlay.tsx:93
 msgid "Day"
 msgstr "Day"
 
-#: src/settings/sections/StreamOverlay.tsx:99
+#: src/settings/sections/StreamOverlay.tsx:109
 msgid "Farming skill"
 msgstr "Farming skill"
 
@@ -1716,11 +1716,11 @@ msgstr "Could not save the open profile"
 msgid "Create"
 msgstr "Create"
 
-#: src/settings/sections/StreamOverlay.tsx:168
+#: src/settings/sections/StreamOverlay.tsx:208
 msgid "All values"
 msgstr "All values"
 
-#: src/settings/sections/StreamOverlay.tsx:304
+#: src/settings/sections/StreamOverlay.tsx:325
 msgid "Port"
 msgstr "Port"
 
@@ -1748,7 +1748,7 @@ msgstr "config.json, made by the mod"
 msgid "Mortar {0} is ready. Restart Mortar to finish updating."
 msgstr "Mortar {0} is ready. Restart Mortar to finish updating."
 
-#: src/settings/sections/StreamOverlay.tsx:416
+#: src/settings/sections/StreamOverlay.tsx:437
 msgid "Start the game to see values"
 msgstr "Start the game to see values"
 
@@ -1799,7 +1799,7 @@ msgstr "Notifications"
 msgid "This download's mod is not known to come from {0}."
 msgstr "This download's mod is not known to come from {0}."
 
-#: src/settings/sections/StreamOverlay.tsx:97
+#: src/settings/sections/StreamOverlay.tsx:107
 msgid "Stamina"
 msgstr "Stamina"
 
@@ -2032,8 +2032,8 @@ msgstr "{0} · {1} errors"
 msgid "Installed and up to date"
 msgstr "Installed and up to date"
 
-#: src/settings/sections/StreamOverlay.tsx:253
-#: src/settings/sections/StreamOverlay.tsx:354
+#: src/settings/sections/StreamOverlay.tsx:274
+#: src/settings/sections/StreamOverlay.tsx:375
 msgid "Regenerate token"
 msgstr "Regenerate token"
 
@@ -2224,7 +2224,7 @@ msgstr "Summer"
 msgid "Restore this backup?"
 msgstr "Restore this backup?"
 
-#: src/settings/sections/StreamOverlay.tsx:87
+#: src/settings/sections/StreamOverlay.tsx:97
 msgid "Time"
 msgstr "Time"
 
@@ -2336,7 +2336,7 @@ msgstr "New since you last looked"
 msgid "Tell when SMAPI is out: {from} → {to}"
 msgstr "Tell when SMAPI is out: {from} → {to}"
 
-#: src/settings/sections/StreamOverlay.tsx:93
+#: src/settings/sections/StreamOverlay.tsx:103
 msgid "Weather"
 msgstr "Weather"
 
@@ -2361,8 +2361,8 @@ msgstr "Downloading {name} into {profileName}"
 msgid "Clean up"
 msgstr "Clean up"
 
-#: src/settings/sections/StreamOverlay.tsx:183
-#: src/settings/sections/StreamOverlay.tsx:186
+#: src/settings/sections/StreamOverlay.tsx:189
+#: src/settings/sections/StreamOverlay.tsx:192
 msgid "Copy OBS URL"
 msgstr "Copy OBS URL"
 
@@ -2390,7 +2390,7 @@ msgstr "There is no SMAPI log for this profile yet. Play this profile once, then
 msgid "Save log"
 msgstr "Save log"
 
-#: src/settings/sections/StreamOverlay.tsx:89
+#: src/settings/sections/StreamOverlay.tsx:99
 msgid "Date"
 msgstr "Date"
 
@@ -2421,7 +2421,7 @@ msgstr "This session"
 msgid "Other profile…"
 msgstr "Other profile…"
 
-#: src/settings/sections/StreamOverlay.tsx:328
+#: src/settings/sections/StreamOverlay.tsx:349
 msgid "Hide token"
 msgstr "Hide token"
 
@@ -2492,11 +2492,11 @@ msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the ne
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
-#: src/settings/sections/StreamOverlay.tsx:91
+#: src/settings/sections/StreamOverlay.tsx:101
 msgid "Money"
 msgstr "Money"
 
-#: src/settings/sections/StreamOverlay.tsx:244
+#: src/settings/sections/StreamOverlay.tsx:265
 msgid "Regenerate token?"
 msgstr "Regenerate token?"
 
@@ -2653,7 +2653,7 @@ msgstr "Moss"
 msgid "Tags"
 msgstr "Tags"
 
-#: src/settings/sections/StreamOverlay.tsx:107
+#: src/settings/sections/StreamOverlay.tsx:117
 msgid "Combat skill"
 msgstr "Combat skill"
 
@@ -2663,7 +2663,7 @@ msgstr "Open the page of {name}"
 
 #: src/mods/ModMenu.tsx:46
 #: src/mods/SelectionBar.tsx:50
-#: src/settings/sections/StreamOverlay.tsx:449
+#: src/settings/sections/StreamOverlay.tsx:470
 msgid "Enable"
 msgstr "Enable"
 
@@ -2671,6 +2671,10 @@ msgstr "Enable"
 #: src/settings/sections/nxmHandler.tsx:101
 msgid "Not now"
 msgstr "Not now"
+
+#: src/settings/sections/StreamOverlay.tsx:167
+msgid "Skills"
+msgstr "Skills"
 
 #. placeholder {0}: mod.name
 #: src/mods/detail.ts:142
@@ -2738,7 +2742,7 @@ msgstr "AGPL-3.0 · Rethunk-AI/mortar"
 msgid "and {0} more"
 msgstr "and {0} more"
 
-#: src/settings/sections/StreamOverlay.tsx:246
+#: src/settings/sections/StreamOverlay.tsx:267
 msgid "Existing OBS sources stop working until their URLs are copied again."
 msgstr "Existing OBS sources stop working until their URLs are copied again."
 
@@ -2923,7 +2927,7 @@ msgstr "{name} did not start"
 msgid "Mortar checks Steam's settings for it: not found yet."
 msgstr "Mortar checks Steam's settings for it: not found yet."
 
-#: src/settings/sections/StreamOverlay.tsx:457
+#: src/settings/sections/StreamOverlay.tsx:478
 msgid "Show labels"
 msgstr "Show labels"
 
@@ -3017,7 +3021,7 @@ msgstr "Remove"
 msgid "Play"
 msgstr "Play"
 
-#: src/settings/sections/StreamOverlay.tsx:109
+#: src/settings/sections/StreamOverlay.tsx:119
 msgid "Luck skill"
 msgstr "Luck skill"
 
@@ -3095,7 +3099,7 @@ msgstr "Required"
 msgid "Redo update"
 msgstr "Redo update"
 
-#: src/settings/sections/StreamOverlay.tsx:319
+#: src/settings/sections/StreamOverlay.tsx:340
 msgid "Token"
 msgstr "Token"
 
@@ -3120,7 +3124,7 @@ msgstr "Someone sent you a Mortar link? You see what it holds first. Mods from N
 msgid "{0} · in use"
 msgstr "{0} · in use"
 
-#: src/settings/sections/StreamOverlay.tsx:105
+#: src/settings/sections/StreamOverlay.tsx:115
 msgid "Mining skill"
 msgstr "Mining skill"
 
@@ -3238,7 +3242,7 @@ msgstr "Tag"
 msgid "Couldn't reach Nexus"
 msgstr "Couldn't reach Nexus"
 
-#: src/settings/sections/StreamOverlay.tsx:95
+#: src/settings/sections/StreamOverlay.tsx:105
 msgid "Health"
 msgstr "Health"
 
@@ -3299,6 +3303,10 @@ msgstr "Could not roll back {0}"
 #: src/game/Detail.tsx:431
 msgid "Saves"
 msgstr "Saves"
+
+#: src/settings/sections/StreamOverlay.tsx:162
+msgid "World"
+msgstr "World"
 
 #: src/queue/QueueSheet.tsx:81
 msgid "Resume"
@@ -3385,7 +3393,8 @@ msgstr "Hide details"
 msgid "Accent colour"
 msgstr "Accent colour"
 
-#: src/settings/sections/StreamOverlay.tsx:79
+#: src/settings/sections/StreamOverlay.tsx:89
+#: src/settings/sections/StreamOverlay.tsx:164
 msgid "Player"
 msgstr "Player"
 
@@ -3455,7 +3464,7 @@ msgstr "Seen tips: {from} → {to}"
 msgid "Saved · {n, plural, one {# day ago} other {# days ago}}"
 msgstr "Saved · {n, plural, one {# day ago} other {# days ago}}"
 
-#: src/settings/sections/StreamOverlay.tsx:213
+#: src/settings/sections/StreamOverlay.tsx:234
 msgid "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
 msgstr "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
 
@@ -3470,7 +3479,7 @@ msgstr "Steam was not found."
 msgid "Source"
 msgstr "Source"
 
-#: src/settings/sections/StreamOverlay.tsx:103
+#: src/settings/sections/StreamOverlay.tsx:113
 msgid "Foraging skill"
 msgstr "Foraging skill"
 
@@ -3486,7 +3495,7 @@ msgstr "Download progress"
 msgid "This is not a Mod Manager Download link from Nexus."
 msgstr "This is not a Mod Manager Download link from Nexus."
 
-#: src/settings/sections/StreamOverlay.tsx:77
+#: src/settings/sections/StreamOverlay.tsx:87
 msgid "Location"
 msgstr "Location"
 
@@ -3628,7 +3637,7 @@ msgstr "Clear"
 msgid "Handle links"
 msgstr "Handle links"
 
-#: src/settings/sections/StreamOverlay.tsx:81
+#: src/settings/sections/StreamOverlay.tsx:91
 msgid "Season"
 msgstr "Season"
 
@@ -3862,7 +3871,7 @@ msgid "Open settings"
 msgstr "Open settings"
 
 #: src/settings/sections/Appearance.tsx:25
-#: src/settings/sections/StreamOverlay.tsx:414
+#: src/settings/sections/StreamOverlay.tsx:435
 #: src/settings/sections/Updates.tsx:161
 #: src/settings/sections/Updates.tsx:203
 #: src/tips/TipBanner.tsx:44
