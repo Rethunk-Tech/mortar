@@ -55,7 +55,7 @@ msgstr "Updated"
 #: src/mods/LockedNote.tsx:9
 #: src/saves/SavesTab.tsx:66
 #: src/saves/SavesTab.tsx:86
-#: src/toasts/ToastHost.tsx:26
+#: src/toasts/ToastHost.tsx:28
 msgid "Stop the game to change mods."
 msgstr "Stop the game to change mods."
 
@@ -146,7 +146,7 @@ msgstr "Update available: {0} → {1}"
 msgid "{0, plural, one {# update} other {# updates}}"
 msgstr "{0, plural, one {# update} other {# updates}}"
 
-#: src/toasts/ToastHost.tsx:92
+#: src/toasts/ToastHost.tsx:132
 msgid "Dismiss"
 msgstr "Dismiss"
 
@@ -244,6 +244,10 @@ msgstr "Steam's launch options for Stardew Valley lack the SMAPI line. In Steam,
 msgid "Start empty"
 msgstr "Start empty"
 
+#: src/profiles/GameModsDialog.tsx:35
+msgid "switched off"
+msgstr "switched off"
+
 #: src/mods/ModDetail.tsx:225
 msgid "· updates and rolls back with this mod"
 msgstr "· updates and rolls back with this mod"
@@ -282,7 +286,7 @@ msgid "Use the automatic cover"
 msgstr "Use the automatic cover"
 
 #. placeholder {0}: res.failed
-#: src/profiles/GameModsDialog.tsx:64
+#: src/profiles/GameModsDialog.tsx:68
 msgid "{0, plural, one {# failed} other {# failed}}"
 msgstr "{0, plural, one {# failed} other {# failed}}"
 
@@ -543,6 +547,11 @@ msgstr "Stardew Valley is ConcernedApe's. Game art shown in Mortar is read from 
 msgid "{count} checked later"
 msgstr "{count} checked later"
 
+#. placeholder {0}: res.profile.name
+#: src/profiles/GameModsDialog.tsx:64
+msgid "Created “{0}”"
+msgstr "Created “{0}”"
+
 #: src/settings/sections/About.tsx:30
 msgid "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · and open-source libraries under their own licences."
 msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · and open-source libraries under their own licences."
@@ -577,11 +586,6 @@ msgstr "Off"
 #: src/mods/Sidebar.tsx:149
 msgid "Archive"
 msgstr "Archive"
-
-#. placeholder {0}: res.profile.name
-#: src/profiles/GameModsDialog.tsx:60
-msgid "Imported {0}"
-msgstr "Imported {0}"
 
 #: src/settings/sections/Appearance.tsx:123
 msgid "Desktop"
@@ -770,7 +774,7 @@ msgstr "Cover image"
 #: src/launch/StopDialog.tsx:36
 #: src/mods/ModDetail.tsx:188
 #: src/mods/parts.tsx:195
-#: src/profiles/GameModsDialog.tsx:107
+#: src/profiles/GameModsDialog.tsx:113
 #: src/profiles/ProfilesPage.tsx:393
 #: src/settings/sections/nxmHandler.tsx:101
 msgid "Cancel"
@@ -1105,11 +1109,6 @@ msgstr "Ready to import"
 msgid "Needs {0} or newer, has {1}"
 msgstr "Needs {0} or newer, has {1}"
 
-#. placeholder {0}: mods.length
-#: src/profiles/GameModsDialog.tsx:87
-msgid "{0, plural, one {# mod will be copied into a new profile. The game folder is left as it is.} other {# mods will be copied into a new profile. The game folder is left as it is.}}"
-msgstr "{0, plural, one {# mod will be copied into a new profile. The game folder is left as it is.} other {# mods will be copied into a new profile. The game folder is left as it is.}}"
-
 #: src/saves/SavesTab.tsx:61
 msgid "Add to this profile"
 msgstr "Add to this profile"
@@ -1239,11 +1238,11 @@ msgid "Saves are zipped before mods update; older backups beyond this many are d
 msgstr "Saves are zipped before mods update; older backups beyond this many are deleted. {MIN_KEPT} to {MAX_KEPT}."
 
 #. placeholder {0}: res.skipped
-#: src/profiles/GameModsDialog.tsx:63
+#: src/profiles/GameModsDialog.tsx:67
 msgid "{0, plural, one {# skipped} other {# skipped}}"
 msgstr "{0, plural, one {# skipped} other {# skipped}}"
 
-#: src/toasts/ToastHost.tsx:108
+#: src/toasts/ToastHost.tsx:148
 msgid "Notifications"
 msgstr "Notifications"
 
@@ -1484,7 +1483,7 @@ msgstr "Could not stop the game"
 msgid "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 
-#: src/profiles/GameModsDialog.tsx:114
+#: src/profiles/GameModsDialog.tsx:121
 #: src/profiles/ProfilesPage.tsx:492
 msgid "Import"
 msgstr "Import"
@@ -2093,6 +2092,10 @@ msgstr "{0} done · {1} in progress · {2} failed · {3} left"
 msgid "Hide from sidebar"
 msgstr "Hide from sidebar"
 
+#: src/profiles/GameModsDialog.tsx:92
+msgid "{importable, plural, one {# mod will be copied into a new profile. The game folder is left as it is.} other {# mods will be copied into a new profile. The game folder is left as it is.}}"
+msgstr "{importable, plural, one {# mod will be copied into a new profile. The game folder is left as it is.} other {# mods will be copied into a new profile. The game folder is left as it is.}}"
+
 #. placeholder {0}: counts.problems
 #. placeholder {0}: part.n
 #: src/game/Detail.tsx:78
@@ -2218,6 +2221,10 @@ msgstr "{0} needs a newer version than this."
 msgid "Couldn't reach Nexus"
 msgstr "Couldn't reach Nexus"
 
+#: src/toasts/ToastHost.tsx:105
+msgid "Details"
+msgstr "Details"
+
 #: src/mods/UpdateReview.tsx:179
 msgid "{count, plural, one {# update is available} other {# updates are available}}"
 msgstr "{count, plural, one {# update is available} other {# updates are available}}"
@@ -2323,6 +2330,10 @@ msgstr "Show one in the sidebar from Manage profiles."
 #: src/launch/LaunchLayer.tsx:148
 msgid "Hide"
 msgstr "Hide"
+
+#: src/toasts/ToastHost.tsx:105
+msgid "Hide details"
+msgstr "Hide details"
 
 #: src/settings/sections/Appearance.tsx:34
 #: src/settings/sections/Appearance.tsx:37
@@ -2508,7 +2519,7 @@ msgid "{n} GitHub"
 msgstr "{n} GitHub"
 
 #: src/firstrun/ProfileStep.tsx:86
-#: src/profiles/GameModsDialog.tsx:82
+#: src/profiles/GameModsDialog.tsx:87
 #: src/profiles/ProfilesPage.tsx:483
 msgid "Import from the game's Mods folder"
 msgstr "Import from the game's Mods folder"
@@ -2547,7 +2558,7 @@ msgid "{0, plural, one {# update} other {# updates}} for {1}"
 msgstr "{0, plural, one {# update} other {# updates}} for {1}"
 
 #. placeholder {0}: res.imported
-#: src/profiles/GameModsDialog.tsx:62
+#: src/profiles/GameModsDialog.tsx:66
 msgid "{0, plural, one {# imported} other {# imported}}"
 msgstr "{0, plural, one {# imported} other {# imported}}"
 
