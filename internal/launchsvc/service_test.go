@@ -339,3 +339,44 @@ func TestConcurrentStartsLaunchOnce(t *testing.T) {
 		t.Fatalf("%d of two concurrent Starts refused, want 1", refused.Load())
 	}
 }
+
+func TestStartWithAnInstalledLoaderWaitsForEnsureLoader(t *testing.T) {
+	svc, p := startEnv(t)
+	folder := svc.settings.Get().GameFolders["stardew"]
+	if err := os.WriteFile(filepath.Join(folder, "StardewValley-original"), []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(folder, "StardewValley"), []byte("exec StardewModdingAPI"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	asked, release := make(chan struct{}), make(chan struct{})
+	svc.EnsureLoader = func(context.Context, string) error {
+		close(asked)
+		<-release
+		return errors.New("update failed")
+	}
+	if err := svc.Start("stardew", p.ID, false); err != nil {
+		t.Fatal(err)
+	}
+	<-asked
+	if st := svc.current("stardew"); st.State != Idle {
+		t.Fatalf("launched while the loader was being updated: %v", st.State)
+	}
+	close(release)
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		svc.mu.Lock()
+		busy := svc.preparing["stardew"]
+		svc.mu.Unlock()
+		if !busy {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("still preparing")
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if st := svc.current("stardew"); st.State != Idle {
+		t.Fatalf("state after a failed update = %v", st.State)
+	}
+}

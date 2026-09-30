@@ -264,30 +264,13 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 	if busy {
 		return fmt.Errorf("%s is already running", g.Name())
 	}
-	async := false
-	defer func() {
-		if !async {
-			s.donePreparing(gameID)
-		}
-	}()
-	dir, err := game.InstallDir(s.home, s.settings.Get().GameFolders, gameID)
+	dir, modsDir, err := s.target(g, profileID)
 	if err != nil {
+		s.donePreparing(gameID)
 		return err
 	}
-	if dir == "" {
-		return fmt.Errorf("%s is not installed", g.Name())
-	}
-	if _, err := s.profiles.Mods(gameID, profileID); err != nil {
-		return err
-	}
-	modsDir, err := s.profiles.ModsDir(gameID, profileID)
-	if err != nil {
-		return err
-	}
-	if st := g.LoaderStatus(dir, s.settings.Get().Loaders[gameID]); st.Installed && !st.Broken {
-		return s.begin(g, profileID, dir, modsDir, direct)
-	}
-	async = true
+	// Even an installed loader goes through EnsureLoader: it waits out an update in progress, which would
+	// otherwise launch the game on half-replaced files.
 	go func() {
 		defer s.donePreparing(gameID)
 		err := s.EnsureLoader(context.Background(), gameID)
@@ -301,6 +284,22 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 		}
 	}()
 	return nil
+}
+
+// target returns the game's install folder and the profile's mods folder.
+func (s *Service) target(g game.Game, profileID string) (dir, modsDir string, err error) {
+	dir, err = game.InstallDir(s.home, s.settings.Get().GameFolders, g.ID())
+	if err != nil {
+		return "", "", err
+	}
+	if dir == "" {
+		return "", "", fmt.Errorf("%s is not installed", g.Name())
+	}
+	if _, err := s.profiles.Mods(g.ID(), profileID); err != nil {
+		return "", "", err
+	}
+	modsDir, err = s.profiles.ModsDir(g.ID(), profileID)
+	return dir, modsDir, err
 }
 
 func (s *Service) donePreparing(gameID string) {
