@@ -29,6 +29,7 @@ test('lists the installed file first, then current files newest first', () => {
     file(2, 'MAIN', '2024-01-01T00:00:00Z'),
     file(3, 'OPTIONAL', '2025-01-01T00:00:00Z'),
     file(4, 'ARCHIVED', '2026-01-01T00:00:00Z'),
+    file(5, '', '2026-02-01T00:00:00Z'),
   ]
   expect(currentFiles(files, 1).map((f) => f.fileId)).toEqual([1, 3, 2])
   expect(currentFiles(files, 9).map((f) => f.fileId)).toEqual([3, 2])

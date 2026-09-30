@@ -8,10 +8,12 @@ import (
 	"html"
 	"os"
 	"path/filepath"
+	"slices"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/meta"
 )
 
 // Mod is the display data of a mod page.
@@ -107,8 +109,8 @@ type Changelog struct {
 	Notes   []string `json:"notes"`
 }
 
-// Changelogs returns a mod's last limit changelog versions, newest first. Nexus lists versions oldest first as
-// object keys, which a map would lose, so the object is read token by token; a mod with none answers [].
+// Changelogs returns a mod's limit newest changelog versions. The versions are object keys, which a map would
+// lose along with duplicates, so the object is read token by token; a mod with none answers [].
 func (c *Client) Changelogs(ctx context.Context, modID, limit int) ([]Changelog, error) {
 	var raw json.RawMessage
 	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s/mods/%d/changelogs.json", Game, modID), false, &raw); err != nil {
@@ -143,11 +145,19 @@ func parseChangelogs(raw []byte, limit int) ([]Changelog, error) {
 			all = append(all, Changelog{Version: v, Notes: notes})
 		}
 	}
-	out := make([]Changelog, 0, min(limit, len(all)))
-	for i := len(all) - 1; i >= 0 && len(out) < limit; i-- {
-		out = append(out, all[i])
-	}
-	return out, nil
+	// Nexus's key order is not reliably chronological, so versions are ordered by value; one that is not a
+	// version keeps its place after the ones that are.
+	slices.Reverse(all)
+	slices.SortStableFunc(all, func(a, b Changelog) int {
+		c, ok := meta.CompareVersions(b.Version, a.Version)
+		if !ok {
+			_, okA := meta.CompareVersions(a.Version, a.Version)
+			_, okB := meta.CompareVersions(b.Version, b.Version)
+			return boolRank(okB) - boolRank(okA)
+		}
+		return c
+	})
+	return all[:min(limit, len(all))], nil
 }
 
 // Categories maps the game's category IDs to their names.
@@ -166,4 +176,11 @@ func (c *Client) Categories(ctx context.Context) (map[int]string, error) {
 		out[cat.ID] = cat.Name
 	}
 	return out, nil
+}
+
+func boolRank(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
 }

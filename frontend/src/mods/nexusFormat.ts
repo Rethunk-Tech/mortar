@@ -3,7 +3,8 @@ import type { File } from '../../bindings/github.com/Rethunk-AI/mortar/internal/
 const KB_PER_MB = 1024
 // Go's zero time, sent for a date Nexus left out.
 const FIRST_YEAR = 1970
-const retired = new Set(['OLD_VERSION', 'ARCHIVED', 'DELETED'])
+// Nexus leaves the category out on many old files, so only these count as current.
+const current = new Set(['MAIN', 'UPDATE', 'OPTIONAL', 'MISCELLANEOUS'])
 
 export const formatSize = (kb: number, locale: string) =>
   kb < KB_PER_MB
@@ -29,7 +30,7 @@ export const currentFiles = (files: File[], installedId: number) => {
   const byNewest = (a: File, b: File) => b.uploaded.localeCompare(a.uploaded)
   const installed = files.find((f) => f.fileId === installedId)
   const others = files
-    .filter((f) => f.fileId !== installedId && !retired.has(f.category))
+    .filter((f) => f.fileId !== installedId && current.has(f.category))
     .sort(byNewest)
   return installed ? [installed, ...others] : others
 }

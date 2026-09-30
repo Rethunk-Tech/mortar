@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -179,5 +180,20 @@ func TestRefusesAtFloor(t *testing.T) {
 	c.Now = func() time.Time { return t0.Add(2 * time.Hour) }
 	if _, err := c.Files(context.Background(), 541); err != nil {
 		t.Fatalf("after reset = %v", err)
+	}
+}
+
+func TestChangelogsAreNewestFirstWhateverTheKeyOrder(t *testing.T) {
+	raw := []byte(`{"3.5.2":["c"],"1.0":["a"],"not a version":["x"],"2.2.1":["b"],"1.44":["d"]}`)
+	got, err := parseChangelogs(raw, 4)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var versions []string
+	for _, c := range got {
+		versions = append(versions, c.Version)
+	}
+	if want := []string{"3.5.2", "2.2.1", "1.44", "1.0"}; !slices.Equal(versions, want) {
+		t.Fatalf("got %v, want %v", versions, want)
 	}
 }
