@@ -7,6 +7,10 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
+#: src/game/Detail.tsx:104
+msgid "Updated"
+msgstr "Updated"
+
 #: src/settings/sections/Appearance.tsx:22
 msgid "Sand"
 msgstr "Sand"
@@ -27,9 +31,18 @@ msgstr "Copper"
 msgid "Could not quit Mortar"
 msgstr "Could not quit Mortar"
 
+#: src/game/Sidebar.tsx:162
+#: src/game/Sidebar.tsx:174
+msgid "New profile"
+msgstr "New profile"
+
 #: src/settings/sections/Appearance.tsx:120
 msgid "Takes effect when Mortar restarts"
 msgstr "Takes effect when Mortar restarts"
+
+#: src/game/Detail.tsx:93
+msgid "Rename profile"
+msgstr "Rename profile"
 
 #: src/settings/SettingsPage.tsx:23
 msgid "Appearance"
@@ -39,9 +52,25 @@ msgstr "Appearance"
 msgid "Stardew Valley is ConcernedApe's. Game art shown in Mortar is read from your own Steam install. Nexus Mods and GitHub content belongs to its authors."
 msgstr "Stardew Valley is ConcernedApe's. Game art shown in Mortar is read from your own Steam install. Nexus Mods and GitHub content belongs to its authors."
 
+#: src/game/Detail.tsx:150
+msgid "A profile holds one set of mods for this game."
+msgstr "A profile holds one set of mods for this game."
+
 #: src/settings/sections/Appearance.tsx:25
 msgid "Sky"
 msgstr "Sky"
+
+#: src/game/Detail.tsx:174
+msgid "This profile has no mods yet."
+msgstr "This profile has no mods yet."
+
+#: src/game/Detail.tsx:117
+msgid "Created {created} · Updated {updated} · {mods} mods"
+msgstr "Created {created} · Updated {updated} · {mods} mods"
+
+#: src/profiles/store.ts:42
+msgid "Could not read your profiles"
+msgstr "Could not read your profiles"
 
 #: src/settings/sections/Appearance.tsx:93
 msgid "3 updates"
@@ -50,6 +79,14 @@ msgstr "3 updates"
 #: src/settings/sections/Appearance.tsx:23
 msgid "Stardew green"
 msgstr "Stardew green"
+
+#: src/game/Sidebar.tsx:187
+msgid "Resize sidebar"
+msgstr "Resize sidebar"
+
+#: src/game/Detail.tsx:103
+msgid "Created"
+msgstr "Created"
 
 #: src/settings/sections/About.tsx:27
 msgid "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · open-source libraries listed in Licences."
@@ -60,7 +97,7 @@ msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschil
 msgid "Mortar"
 msgstr "Mortar"
 
-#: src/games/GameSelect.tsx:138
+#: src/games/GameSelect.tsx:145
 msgid "Installed"
 msgstr "Installed"
 
@@ -68,17 +105,34 @@ msgstr "Installed"
 msgid "Changes apply right away"
 msgstr "Changes apply right away"
 
-#: src/shell/AppMenu.tsx:76
+#: src/shell/AppMenu.tsx:85
 msgid "About Mortar"
 msgstr "About Mortar"
 
-#: src/games/GameSelect.tsx:133
+#: src/game/Detail.tsx:72
+#: src/game/NewProfile.tsx:25
+msgid "Profile name"
+msgstr "Profile name"
+
+#: src/games/GameSelect.tsx:139
 msgid "After the first release"
 msgstr "After the first release"
 
-#: src/games/GameSelect.tsx:136
+#: src/games/GameSelect.tsx:142
 msgid "Not found in your Steam library"
 msgstr "Not found in your Steam library"
+
+#: src/profiles/store.ts:77
+msgid "Could not rename the profile"
+msgstr "Could not rename the profile"
+
+#: src/game/Detail.tsx:147
+msgid "No profiles yet"
+msgstr "No profiles yet"
+
+#: src/profiles/store.ts:49
+msgid "Could not save the open profile"
+msgstr "Could not save the open profile"
 
 #: src/toasts/ToastHost.tsx:81
 msgid "Notifications"
@@ -92,16 +146,20 @@ msgstr "Back"
 msgid "Not affiliated"
 msgstr "Not affiliated"
 
+#: src/game/Detail.tsx:105
+#: src/game/Detail.tsx:167
+msgid "Mods"
+msgstr "Mods"
+
 #: src/settings/sections/Appearance.tsx:24
 msgid "Warm and bold"
 msgstr "Warm and bold"
 
-#: src/games/GameSelect.tsx:151
+#: src/games/GameSelect.tsx:163
 msgid "Only a Flatpak Steam was found."
 msgstr "Only a Flatpak Steam was found."
 
 #: src/settings/sections/Appearance.tsx:98
-#: src/shell/TitleBar.tsx:91
 msgid "Stardew Valley"
 msgstr "Stardew Valley"
 
@@ -125,12 +183,16 @@ msgstr "Couldn't close the window"
 msgid "Default"
 msgstr "Default"
 
+#: src/game/Detail.tsx:157
+msgid "Create your first profile"
+msgstr "Create your first profile"
+
 #: src/settings/sections/Appearance.tsx:23
 msgid "Moss"
 msgstr "Moss"
 
-#: src/App.tsx:27
-#: src/games/GameSelect.tsx:125
+#: src/App.tsx:28
+#: src/games/GameSelect.tsx:131
 msgid "Could not read your games"
 msgstr "Could not read your games"
 
@@ -138,20 +200,20 @@ msgstr "Could not read your games"
 msgid "AGPL-3.0 · Rethunk-AI/mortar"
 msgstr "AGPL-3.0 · Rethunk-AI/mortar"
 
-#: src/shell/TitleBar.tsx:103
+#: src/shell/TitleBar.tsx:105
 msgid "Maximise"
 msgstr "Maximise"
 
-#: src/shell/TitleBar.tsx:87
+#: src/shell/TitleBar.tsx:89
 msgid "Game Select"
 msgstr "Game Select"
 
-#: src/shell/AppMenu.tsx:82
+#: src/shell/AppMenu.tsx:91
 msgid "Quit"
 msgstr "Quit"
 
 #: src/shell/AppMenu.tsx:28
-#: src/shell/AppMenu.tsx:55
+#: src/shell/AppMenu.tsx:64
 msgid "Mortar menu"
 msgstr "Mortar menu"
 
@@ -163,13 +225,18 @@ msgstr "Built on"
 msgid "Play"
 msgstr "Play"
 
+#: src/game/Sidebar.tsx:180
 #: src/settings/SettingsPage.tsx:42
-#: src/shell/AppMenu.tsx:65
-#: src/shell/TitleBar.tsx:96
+#: src/shell/AppMenu.tsx:74
+#: src/shell/TitleBar.tsx:98
 msgid "Settings"
 msgstr "Settings"
 
-#: src/shell/TitleBar.tsx:100
+#: src/games/GameSelect.tsx:147
+msgid "{profileCount, plural, one {Installed · # profile} other {Installed · # profiles}}"
+msgstr "{profileCount, plural, one {Installed · # profile} other {Installed · # profiles}}"
+
+#: src/shell/TitleBar.tsx:102
 msgid "Minimise"
 msgstr "Minimise"
 
@@ -186,19 +253,31 @@ msgstr "About"
 msgid "Accent colour"
 msgstr "Accent colour"
 
-#: src/games/GameSelect.tsx:153
+#: src/game/Sidebar.tsx:81
+msgid "Profiles"
+msgstr "Profiles"
+
+#: src/profiles/store.ts:63
+msgid "Could not create the profile"
+msgstr "Could not create the profile"
+
+#: src/games/GameSelect.tsx:165
 msgid "Steam was not found."
 msgstr "Steam was not found."
 
-#: src/games/GameSelect.tsx:29
+#: src/games/GameSelect.tsx:31
 msgid "Could not save the last game"
 msgstr "Could not save the last game"
+
+#: src/game/Detail.tsx:171
+msgid "No mods yet"
+msgstr "No mods yet"
 
 #: src/settings/SettingsPage.tsx:48
 msgid "Settings sections"
 msgstr "Settings sections"
 
-#: src/shell/TitleBar.tsx:103
+#: src/shell/TitleBar.tsx:105
 msgid "Restore"
 msgstr "Restore"
 
@@ -206,10 +285,10 @@ msgstr "Restore"
 msgid "Couldn't save that setting"
 msgstr "Couldn't save that setting"
 
-#: src/shell/TitleBar.tsx:106
+#: src/shell/TitleBar.tsx:108
 msgid "Close"
 msgstr "Close"
 
-#: src/games/GameSelect.tsx:149
+#: src/games/GameSelect.tsx:161
 msgid "Mortar supports Steam installed directly on the system."
 msgstr "Mortar supports Steam installed directly on the system."

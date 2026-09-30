@@ -3,6 +3,7 @@ import { Box, ButtonBase } from '@mui/material'
 import { Copy, Minus, Square, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useNav } from '../nav/store.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { AppMenu } from './AppMenu.tsx'
 import { win } from './win.ts'
 
@@ -69,6 +70,7 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
   const route = useNav((s) => s.route)
   const openGame = useNav((s) => s.openGame)
   const openGameSelect = useNav((s) => s.openGameSelect)
+  const gameName = useProfiles((s) => s.game?.name)
   return (
     <Box
       component="header"
@@ -88,7 +90,7 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
       </Tab>
       {route.name === 'game' && (
         <Tab active={true} onClick={() => openGame(route.game)}>
-          <Trans>Stardew Valley</Trans>
+          {gameName}
         </Tab>
       )}
       {route.name === 'settings' && (

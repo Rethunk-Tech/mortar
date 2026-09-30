@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { useEffect, useState } from 'react'
 import { Get } from '../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { MainScreen } from './game/MainScreen.tsx'
 import { GameSelect } from './games/GameSelect.tsx'
 import { loadGameStatus } from './games/status.ts'
 import { useNav } from './nav/store.ts'
@@ -42,6 +43,7 @@ export function App() {
     <>
       <AppFrame>
         {route.name === 'settings' ? <SettingsPage section={route.section} /> : null}
+        {route.name === 'game' ? <MainScreen game={route.game} /> : null}
         {ready && route.name === 'game-select' ? <GameSelect /> : null}
       </AppFrame>
       <ToastHost />

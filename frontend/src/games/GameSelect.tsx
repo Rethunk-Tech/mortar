@@ -1,7 +1,9 @@
+import { plural } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/games/models.ts'
+import { List } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { SetLastGame } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { useNav } from '../nav/store.ts'
@@ -116,9 +118,13 @@ function Row({ game, openable, note }: { game: Game; openable: boolean; note: st
 export function GameSelect() {
   const { t } = useLingui()
   const [status, setStatus] = useState<GameStatus | null>(null)
+  const [profileCount, setProfileCount] = useState(0)
   useEffect(() => {
-    loadGameStatus()
-      .then(setStatus)
+    Promise.all([loadGameStatus(), List('stardew')])
+      .then(([s, profiles]) => {
+        setStatus(s)
+        setProfileCount(profiles?.length ?? 0)
+      })
       .catch((e: unknown) =>
         useToasts
           .getState()
@@ -135,7 +141,13 @@ export function GameSelect() {
     if (!g.installed) {
       return t`Not found in your Steam library`
     }
-    return t`Installed`
+    if (g.id !== 'stardew') {
+      return t`Installed`
+    }
+    return plural(profileCount, {
+      one: 'Installed · # profile',
+      other: 'Installed · # profiles',
+    })
   }
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
