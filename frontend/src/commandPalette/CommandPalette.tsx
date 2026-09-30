@@ -158,7 +158,7 @@ export function CommandPalette() {
       shortcutLabels,
       labels: {
         play: t`Play`,
-        updates: t`Check for updates`,
+        updates: t`Check for mod updates`,
         downloads: t`Open Downloads`,
         import: t`Import`,
         share: t`Share`,

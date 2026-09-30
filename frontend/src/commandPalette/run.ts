@@ -6,7 +6,6 @@ import { openModInProfile } from '../profiles/findMod.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { SHORTCUTS, type ShortcutId } from '../settings/shortcuts.ts'
-import { useMortarUpdate } from '../settings/updates.ts'
 import { openImport, openShare } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useCommandPalette } from './store.ts'
@@ -67,8 +66,7 @@ function runAction(id: string): void {
     return
   }
   if (id === 'action:updates') {
-    useNav.getState().openSettings('updates')
-    useMortarUpdate.getState().check().catch(reportUnexpected)
+    useUpdates.getState().load().catch(reportUnexpected)
     return
   }
   if (id === 'action:downloads') {
