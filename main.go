@@ -132,12 +132,6 @@ func main() {
 	if err := profiles.PurgeTrash(now); err != nil {
 		log.Printf("purge trash: %v", err)
 	}
-	// An unreadable profile.json stops collection: its keys are unknown, and their items must not be deleted.
-	if keys, err := profiles.StoreKeys(); err != nil {
-		log.Printf("store collect skipped: %v", err)
-	} else if err := items.Collect(keys, now); err != nil {
-		log.Printf("store collect: %v", err)
-	}
 
 	modMeta := &meta.Client{}
 	savesSvc, err := savessvc.NewService(profiles, store, modMeta)
@@ -187,6 +181,17 @@ func main() {
 		log.Fatal(err)
 	}
 	nxmSvc.Route = queueSvc.Route
+	// An unreadable profile.json stops collection: its keys are unknown, and their items must not be deleted.
+	if keys, err := profiles.StoreKeys(); err != nil {
+		log.Printf("store collect skipped: %v", err)
+	} else {
+		for g, staged := range queueSvc.StagedKeys() {
+			keys[g] = append(keys[g], staged...)
+		}
+		if err := items.Collect(keys, now); err != nil {
+			log.Printf("store collect: %v", err)
+		}
+	}
 	notifier := notifications.New()
 
 	pick := &picker.Service{}

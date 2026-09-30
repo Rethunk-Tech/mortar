@@ -408,6 +408,19 @@ func (s *Service) Route(link nxm.Link) bool {
 	return true
 }
 
+// StagedKeys lists, per game, the store keys of downloads staged for Confirm, which the store must keep.
+func (s *Service) StagedKeys() map[string][]string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := map[string][]string{}
+	for _, it := range s.items {
+		if it.staged != "" {
+			out[it.Game] = append(out[it.Game], it.staged)
+		}
+	}
+	return out
+}
+
 // Retry queues a failed item again.
 func (s *Service) Retry(id string) { s.retry(func(it *Item) bool { return it.ID == id }) }
 

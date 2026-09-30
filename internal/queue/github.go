@@ -11,6 +11,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
 // release finds the stable release an item names and its archive assets.
@@ -126,7 +127,15 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 }
 
 // installStaged installs what Confirm released. The user has decided, so nothing is verified again.
+// A staged key the store no longer holds is dropped, so Retry downloads the file again.
 func (s *Service) installStaged(it Item) error {
 	_, err := s.d.InstallStaged(it.Game, it.Profile, it.staged, sourceOf(it))
+	if errors.Is(err, store.ErrNotFound) {
+		s.mu.Lock()
+		if cur := s.find(it.ID); cur != nil {
+			cur.staged = ""
+		}
+		s.mu.Unlock()
+	}
 	return s.finish(it.ID, err, false)
 }

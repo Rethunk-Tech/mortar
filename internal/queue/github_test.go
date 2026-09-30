@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/nxmsvc"
 	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
 type ghFixture struct {
@@ -259,5 +260,36 @@ func TestConfirmSurvivesARestartAndItsInstallIgnoresCancel(t *testing.T) {
 	defer g.mu.Unlock()
 	if len(g.staged) != 1 {
 		t.Fatalf("downloaded %d times", len(g.staged))
+	}
+}
+
+func TestAStagedKeyIsKeptAndALostOneDownloadsAgain(t *testing.T) {
+	g := newGitHubFixture(t)
+	g.ok.Store(false)
+	g.start()
+	if _, err := g.s.Add([]Request{ghReq("2.0.0")}); err != nil {
+		t.Fatal(err)
+	}
+	id := g.wait("the confirmation", g.item(StateNeedsConfirm)).Items[0].ID
+	if keys := g.s.StagedKeys()["stardew"]; len(keys) != 1 || keys[0] != "github-key" {
+		t.Fatalf("staged keys %v", keys)
+	}
+	install := g.s.d.InstallStaged
+	g.s.d.InstallStaged = func(game, _, key string, _ profile.Source) (profile.InstallResult, error) {
+		return profile.InstallResult{}, &store.Error{Game: game, Key: key, Err: store.ErrNotFound}
+	}
+	g.s.Confirm(id)
+	g.wait("the failure", g.item(StateFailed))
+	if keys := g.s.StagedKeys(); len(keys) != 0 {
+		t.Fatalf("a lost staged key is still kept: %v", keys)
+	}
+	g.s.d.InstallStaged = install
+	g.ok.Store(true)
+	g.s.Retry(id)
+	g.wait("done", g.item(StateDone))
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	if len(g.staged) != 2 {
+		t.Fatalf("downloaded %d times, want 2", len(g.staged))
 	}
 }
