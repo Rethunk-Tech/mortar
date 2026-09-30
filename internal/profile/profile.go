@@ -1,0 +1,191 @@
+// Package profile stores each profile as <datadir>/profiles/<game>/<id>/profile.json beside its mods/ folder.
+package profile
+
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"regexp"
+	"slices"
+	"strings"
+	"time"
+	"unicode/utf8"
+
+	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/games"
+)
+
+const (
+	fileName = "profile.json"
+	maxName  = 60
+)
+
+var idPattern = regexp.MustCompile(`^[0-9a-f]{16}$`)
+
+// Entry is one mod archive in a profile.
+type Entry struct {
+	Key         string   `json:"key"`
+	PreviousKey string   `json:"previousKey"`
+	Disabled    []string `json:"disabled"`
+}
+
+// Profile is the on-disk shape of profile.json.
+type Profile struct {
+	ID      string    `json:"id"`
+	Name    string    `json:"name"`
+	Notes   string    `json:"notes"`
+	Cover   string    `json:"cover"`
+	Order   int       `json:"order"`
+	Hidden  bool      `json:"hidden"`
+	Created time.Time `json:"created"`
+	Updated time.Time `json:"updated"`
+	Entries []Entry   `json:"entries"`
+}
+
+// Store reads and writes profiles under one root folder.
+type Store struct{ root string }
+
+// Open returns a store rooted at <datadir>/profiles.
+func Open() (*Store, error) {
+	dir, err := datadir.Dir()
+	if err != nil {
+		return nil, err
+	}
+	return &Store{root: filepath.Join(dir, "profiles")}, nil
+}
+
+func cleanName(name string) (string, error) {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return "", errors.New("profile name is empty")
+	}
+	if utf8.RuneCountInString(name) > maxName {
+		return "", fmt.Errorf("profile name is longer than %d characters", maxName)
+	}
+	return name, nil
+}
+
+func (s *Store) gameDir(game string) (string, error) {
+	if !games.Valid(game) {
+		return "", fmt.Errorf("unknown game %q", game)
+	}
+	return filepath.Join(s.root, game), nil
+}
+
+func (s *Store) profileDir(game, id string) (string, error) {
+	dir, err := s.gameDir(game)
+	if err != nil {
+		return "", err
+	}
+	if !idPattern.MatchString(id) {
+		return "", fmt.Errorf("invalid profile id %q", id)
+	}
+	return filepath.Join(dir, id), nil
+}
+
+// List returns the game's profiles ordered by their order field.
+func (s *Store) List(game string) ([]Profile, error) {
+	dir, err := s.gameDir(game)
+	if err != nil {
+		return nil, err
+	}
+	dirs, err := os.ReadDir(dir)
+	if errors.Is(err, os.ErrNotExist) {
+		return []Profile{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	out := []Profile{}
+	for _, d := range dirs {
+		if !d.IsDir() || !idPattern.MatchString(d.Name()) {
+			continue
+		}
+		p, err := s.read(game, d.Name())
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, p)
+	}
+	slices.SortFunc(out, func(a, b Profile) int {
+		if a.Order != b.Order {
+			return a.Order - b.Order
+		}
+		return a.Created.Compare(b.Created)
+	})
+	return out, nil
+}
+
+func (s *Store) read(game, id string) (Profile, error) {
+	dir, err := s.profileDir(game, id)
+	if err != nil {
+		return Profile{}, err
+	}
+	b, err := os.ReadFile(filepath.Join(dir, fileName))
+	if err != nil {
+		return Profile{}, err
+	}
+	var p Profile
+	if err := json.Unmarshal(b, &p); err != nil {
+		return Profile{}, fmt.Errorf("read profile %s: %w", id, err)
+	}
+	if p.Entries == nil {
+		p.Entries = []Entry{}
+	}
+	return p, nil
+}
+
+// Create adds an empty profile, with its mods/ folder, after the existing ones.
+func (s *Store) Create(game, name string) (Profile, error) {
+	name, err := cleanName(name)
+	if err != nil {
+		return Profile{}, err
+	}
+	existing, err := s.List(game)
+	if err != nil {
+		return Profile{}, err
+	}
+	var raw [8]byte
+	if _, err := rand.Read(raw[:]); err != nil {
+		return Profile{}, err
+	}
+	id := hex.EncodeToString(raw[:])
+	dir, err := s.profileDir(game, id)
+	if err != nil {
+		return Profile{}, err
+	}
+	if err := os.MkdirAll(filepath.Join(dir, "mods"), 0o700); err != nil {
+		return Profile{}, err
+	}
+	now := time.Now().UTC().Truncate(time.Second)
+	p := Profile{ID: id, Name: name, Order: len(existing), Created: now, Updated: now, Entries: []Entry{}}
+	if len(existing) > 0 {
+		p.Order = existing[len(existing)-1].Order + 1
+	}
+	if err := datadir.WriteJSON(filepath.Join(dir, fileName), p); err != nil {
+		return Profile{}, errors.Join(err, os.RemoveAll(dir))
+	}
+	return p, nil
+}
+
+// Rename changes a profile's name and touches its updated time.
+func (s *Store) Rename(game, id, name string) (Profile, error) {
+	name, err := cleanName(name)
+	if err != nil {
+		return Profile{}, err
+	}
+	p, err := s.read(game, id)
+	if err != nil {
+		return Profile{}, err
+	}
+	dir, err := s.profileDir(game, id)
+	if err != nil {
+		return Profile{}, err
+	}
+	p.Name, p.Updated = name, time.Now().UTC().Truncate(time.Second)
+	return p, datadir.WriteJSON(filepath.Join(dir, fileName), p)
+}

@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/Rethunk-AI/mortar/internal/games"
+	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -26,12 +27,20 @@ func main() {
 	}
 	gamesSvc := games.NewService(home)
 
+	profiles, err := profile.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	var window *application.WebviewWindow
 
 	app := application.New(application.Options{
 		Name:        "Mortar",
 		Description: "Multi-game desktop mod manager",
-		Services:    []application.Service{application.NewService(svc), application.NewService(gamesSvc)},
+		Services: []application.Service{
+			application.NewService(svc), application.NewService(gamesSvc),
+			application.NewService(profile.NewService(profiles)),
+		},
 		Assets: application.AssetOptions{
 			Handler:    application.AssetFileServerFS(assets),
 			Middleware: games.ArtMiddleware(home),

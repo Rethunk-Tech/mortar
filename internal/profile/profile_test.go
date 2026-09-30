@@ -1,0 +1,76 @@
+package profile
+
+import (
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+func newStore(t *testing.T) *Store {
+	t.Helper()
+	return &Store{root: filepath.Join(t.TempDir(), "profiles")}
+}
+
+func TestCreateListRename(t *testing.T) {
+	s := newStore(t)
+	if got, err := s.List("stardew"); err != nil || len(got) != 0 {
+		t.Fatalf("empty list = %v, %v", got, err)
+	}
+	a, err := s.Create("stardew", "  Cookie farm ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := s.Create("stardew", "Second")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a.Name != "Cookie farm" || b.Order <= a.Order {
+		t.Fatalf("created = %+v, %+v", a, b)
+	}
+	if fi, err := os.Stat(filepath.Join(s.root, "stardew", a.ID, "mods")); err != nil || !fi.IsDir() {
+		t.Fatalf("mods folder: %v", err)
+	}
+	renamed, err := s.Rename("stardew", a.ID, "Renamed")
+	if err != nil || renamed.Name != "Renamed" {
+		t.Fatalf("rename = %+v, %v", renamed, err)
+	}
+	got, err := s.List("stardew")
+	if err != nil || len(got) != 2 || got[0].ID != a.ID || got[0].Name != "Renamed" || got[1].ID != b.ID {
+		t.Fatalf("list = %+v, %v", got, err)
+	}
+	raw, _ := os.ReadFile(filepath.Join(s.root, "stardew", a.ID, fileName))
+	if !strings.Contains(string(raw), `"entries": []`) {
+		t.Fatalf("json: %s", raw)
+	}
+}
+
+func TestRejects(t *testing.T) {
+	s := newStore(t)
+	p, err := s.Create("stardew", "ok")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"", "   ", strings.Repeat("x", 61)} {
+		if _, err := s.Create("stardew", name); err == nil {
+			t.Errorf("Create(%q) accepted", name)
+		}
+		if _, err := s.Rename("stardew", p.ID, name); err == nil {
+			t.Errorf("Rename(%q) accepted", name)
+		}
+	}
+	if _, err := s.Create("stardew", strings.Repeat("é", 60)); err != nil {
+		t.Errorf("60 runes rejected: %v", err)
+	}
+	if _, err := s.Create("nope", "x"); err == nil {
+		t.Error("unknown game accepted")
+	}
+	if _, err := s.List("../etc"); err == nil {
+		t.Error("traversal game accepted")
+	}
+	for _, id := range []string{"..", "../stardew", "../../x", "", p.ID + "/.."} {
+		if _, err := s.Rename("stardew", id, "x"); err == nil {
+			t.Errorf("Rename id %q accepted", id)
+		}
+	}
+}

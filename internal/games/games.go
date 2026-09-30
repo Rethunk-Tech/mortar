@@ -21,6 +21,16 @@ var registry = []def{
 	{"lethal", "Lethal Company", "1966720", "BepInEx 5", false},
 }
 
+// Valid reports whether id names a registry game.
+func Valid(id string) bool {
+	for _, d := range registry {
+		if d.id == id {
+			return true
+		}
+	}
+	return false
+}
+
 // GameInfo is one registry row with its Steam state.
 type GameInfo struct {
 	ID         string `json:"id"`

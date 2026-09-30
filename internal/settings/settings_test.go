@@ -3,6 +3,7 @@ package settings
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -20,7 +21,7 @@ func open(t *testing.T) (*Store, string) {
 
 func TestDefaultsAndRoundTrip(t *testing.T) {
 	s, dir := open(t)
-	if got := s.Get(); got != Defaults() {
+	if got := s.Get(); !reflect.DeepEqual(got, Defaults()) {
 		t.Fatalf("defaults = %+v", got)
 	}
 	if _, err := s.Update(func(v *Settings) { v.Accent, v.Translucent, v.LastGame = "moss", false, "lethal" }); err != nil {
@@ -30,7 +31,7 @@ func TestDefaultsAndRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := s2.Get(); got != (Settings{"moss", false, "lethal"}) {
+	if got := s2.Get(); !reflect.DeepEqual(got, Settings{"moss", false, "lethal", map[string]string{}}) {
 		t.Fatalf("round trip = %+v", got)
 	}
 	entries, _ := os.ReadDir(dir)
@@ -69,7 +70,7 @@ func TestCorruptFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if s2.Get() != Defaults() {
+	if !reflect.DeepEqual(s2.Get(), Defaults()) {
 		t.Fatalf("corrupt = %+v", s2.Get())
 	}
 	_ = s

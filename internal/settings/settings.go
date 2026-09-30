@@ -3,7 +3,6 @@ package settings
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -22,11 +21,13 @@ type Settings struct {
 	Accent      string `json:"accent"`
 	Translucent bool   `json:"translucent"`
 	LastGame    string `json:"lastGame"`
+	// LastProfile maps a game id to the id of the profile last open in it.
+	LastProfile map[string]string `json:"lastProfile"`
 }
 
 // Defaults returns the settings used when no valid file exists.
 func Defaults() Settings {
-	return Settings{Accent: "sand", Translucent: true}
+	return Settings{Accent: "sand", Translucent: true, LastProfile: map[string]string{}}
 }
 
 // Store reads and writes settings.json under the user data folder.
@@ -48,6 +49,9 @@ func Open() (*Store, error) {
 		if json.Unmarshal(b, &loaded) == nil {
 			s.cur = loaded
 		}
+	}
+	if s.cur.LastProfile == nil {
+		s.cur.LastProfile = map[string]string{}
 	}
 	if !slices.Contains(accents, s.cur.Accent) {
 		s.cur.Accent = Defaults().Accent
@@ -71,35 +75,9 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	if !slices.Contains(accents, next.Accent) {
 		return s.cur, fmt.Errorf("unknown accent %q", next.Accent)
 	}
-	if err := writeAtomic(s.path, next); err != nil {
+	if err := datadir.WriteJSON(s.path, next); err != nil {
 		return s.cur, err
 	}
 	s.cur = next
 	return next, nil
-}
-
-func writeAtomic(path string, v Settings) (err error) {
-	b, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		return err
-	}
-	f, err := os.CreateTemp(filepath.Dir(path), fileName+".*.tmp")
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err != nil {
-			err = errors.Join(err, os.Remove(f.Name()))
-		}
-	}()
-	if _, err = f.Write(b); err != nil {
-		return errors.Join(err, f.Close())
-	}
-	if err = f.Sync(); err != nil {
-		return errors.Join(err, f.Close())
-	}
-	if err = f.Close(); err != nil {
-		return err
-	}
-	return os.Rename(f.Name(), path)
 }

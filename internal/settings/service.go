@@ -1,6 +1,10 @@
 package settings
 
-import "github.com/wailsapp/wails/v3/pkg/application"
+import (
+	"maps"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
+)
 
 // ChangedEvent is emitted with the new Settings after every successful setter.
 const ChangedEvent = "settings:changed"
@@ -30,6 +34,16 @@ func (s *Service) SetTranslucent(on bool) error {
 
 func (s *Service) SetLastGame(game string) error {
 	return s.set(func(v *Settings) { v.LastGame = game })
+}
+
+func (s *Service) SetLastProfile(game, id string) error {
+	return s.set(func(v *Settings) {
+		v.LastProfile = maps.Clone(v.LastProfile)
+		if v.LastProfile == nil {
+			v.LastProfile = map[string]string{}
+		}
+		v.LastProfile[game] = id
+	})
 }
 
 func (s *Service) set(fn func(*Settings)) error {
