@@ -142,7 +142,7 @@ func main() {
 	}
 
 	nexusClient := nexus.New(version)
-	nexusSvc := nexussvc.NewService(store, nexusClient)
+	nexusSvc := nexussvc.NewService(store, nexusClient, modMeta)
 
 	exe, err := os.Executable()
 	if err != nil {
@@ -164,9 +164,16 @@ func main() {
 	updates := &updatesvc.Service{}
 	emit := func(name string, data any) { app.Event.Emit(name, data) }
 	queueSvc, err := queue.New(queue.Deps{
-		Client:        func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },
-		Premium:       func() bool { return store.Get().NexusPremium },
-		Install:       profiles.InstallNexus,
+		Client:  func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },
+		Premium: func() bool { return store.Get().NexusPremium },
+		Install: func(game, profileID, path string, src profile.Source) (profile.InstallResult, error) {
+			res, err := profiles.InstallNexus(game, profileID, path, src)
+			if err == nil {
+				// Warm the detail dialog's cache while the account is known to be signed in and online.
+				go func() { _, _ = nexusSvc.Details(context.Background(), src.ModID) }()
+			}
+			return res, err
+		},
 		Stage:         profiles.StageGitHub,
 		InstallStaged: profiles.InstallStaged,
 		Verify: func(ctx context.Context, uniqueID, owner, repo string) (bool, error) {

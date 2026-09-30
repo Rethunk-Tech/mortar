@@ -80,9 +80,9 @@ func writeEntry[T any](path string, e entry[T]) {
 	}
 }
 
-// cached returns the entry at path while it is younger than ttl, else fetches; a failed fetch falls back to a
+// Cached returns the entry at path while it is younger than ttl, else fetches; a failed fetch falls back to a
 // stale entry, and only errors when there is none.
-func cached[T any](c *Client, name string, ttl time.Duration, fetch func() (T, error)) (T, error) {
+func Cached[T any](c *Client, name string, ttl time.Duration, fetch func() (T, error)) (T, error) {
 	path, err := c.cachePath(name)
 	if err != nil {
 		return fetch()

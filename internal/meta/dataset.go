@@ -52,7 +52,7 @@ func (c *Client) loadIndex(ctx context.Context) (map[string][]Ref, error) {
 	if c.index.byID != nil && c.now().Sub(c.index.fetched) < datasetTTL {
 		return c.index.byID, nil
 	}
-	byID, err := cached(c, indexFile, datasetTTL, func() (map[string][]Ref, error) { return c.fetchIndex(ctx) })
+	byID, err := Cached(c, indexFile, datasetTTL, func() (map[string][]Ref, error) { return c.fetchIndex(ctx) })
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ type Dependency struct {
 
 // Page returns Nexus mod page id, from cache while younger than a month.
 func (c *Client) Page(ctx context.Context, id int) (Page, error) {
-	return cached(c, "dataset-nexus-"+strconv.Itoa(id)+".json", datasetTTL, func() (Page, error) {
+	return Cached(c, "dataset-nexus-"+strconv.Itoa(id)+".json", datasetTTL, func() (Page, error) {
 		base := c.PageBase
 		if base == "" {
 			base = defaultPageBase

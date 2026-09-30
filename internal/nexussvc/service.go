@@ -7,6 +7,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/secret"
 	"github.com/Rethunk-AI/mortar/internal/settings"
@@ -30,12 +31,14 @@ type Account struct {
 type Service struct {
 	store  *settings.Store
 	client *nexus.Client
+	meta   *meta.Client
 	// App is set after application.New so sign-in and sign-out can emit events.
 	App *application.App
 }
 
-func NewService(store *settings.Store, client *nexus.Client) *Service {
-	return &Service{store: store, client: client}
+// NewService keeps mod page details in m's cache.
+func NewService(store *settings.Store, client *nexus.Client, m *meta.Client) *Service {
+	return &Service{store: store, client: client, meta: m}
 }
 
 // Account describes the current sign-in.
