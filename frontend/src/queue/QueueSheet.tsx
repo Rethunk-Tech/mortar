@@ -14,6 +14,7 @@ import {
   RetryFailed,
   Skip,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+import { accent } from '../mods/paper.ts'
 import { LetterTile } from '../mods/parts.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -147,7 +148,7 @@ function Callout({
         flexDirection: 'column',
         gap: '10px',
         p: '14px',
-        bgcolor: 'rgba(214,177,122,0.14)',
+        bgcolor: accent.fill,
         border: '1px solid',
         borderColor: 'primary.main',
         borderRadius: '8px',
