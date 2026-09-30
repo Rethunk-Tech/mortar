@@ -1,15 +1,17 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { ButtonBase, Menu, MenuItem } from '@mui/material'
+import { ButtonBase, Drawer, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import { Application } from '@wailsio/runtime'
-import { useState } from 'react'
+import { Info, LogOut, Settings } from 'lucide-react'
+import { useId, useState } from 'react'
 import { Logo } from '../brand/Logo.tsx'
 import { openSettings } from '../nav/store.ts'
 import { useToasts } from '../toasts/store.ts'
 
 export function AppMenu() {
   const { t } = useLingui()
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
-  const close = () => setAnchor(null)
+  const drawerId = useId()
+  const [open, setOpen] = useState(false)
+  const close = () => setOpen(false)
   const quit = () => {
     close()
     Application.Quit().catch((e: unknown) =>
@@ -24,9 +26,9 @@ export function AppMenu() {
     <>
       <ButtonBase
         aria-label={t`Mortar menu`}
-        aria-haspopup="menu"
-        aria-expanded={anchor ? true : undefined}
-        onClick={(e) => setAnchor(e.currentTarget)}
+        aria-expanded={open}
+        aria-controls={open ? drawerId : undefined}
+        onClick={() => setOpen(true)}
         sx={{
           '--wails-draggable': 'no-drag',
           gap: '10px',
@@ -42,27 +44,45 @@ export function AppMenu() {
         <Logo size={20} />
         <Trans>Mortar</Trans>
       </ButtonBase>
-      <Menu anchorEl={anchor} open={anchor !== null} onClose={close}>
-        <MenuItem
-          onClick={() => {
-            close()
-            openSettings()
-          }}
-        >
-          <Trans>Settings</Trans>
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            close()
-            openSettings('about')
-          }}
-        >
-          <Trans>About Mortar</Trans>
-        </MenuItem>
-        <MenuItem onClick={quit}>
-          <Trans>Quit</Trans>
-        </MenuItem>
-      </Menu>
+      <Drawer
+        id={drawerId}
+        anchor="left"
+        open={open}
+        onClose={close}
+        sx={{ top: 36 }}
+        slotProps={{ paper: { sx: { width: 280, top: 36, height: 'calc(100% - 36px)' } } }}
+      >
+        <List component="nav" aria-label={t`Mortar menu`}>
+          <ListItemButton
+            onClick={() => {
+              close()
+              openSettings()
+            }}
+          >
+            <ListItemIcon>
+              <Settings size={18} />
+            </ListItemIcon>
+            <ListItemText primary={<Trans>Settings</Trans>} />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              close()
+              openSettings('about')
+            }}
+          >
+            <ListItemIcon>
+              <Info size={18} />
+            </ListItemIcon>
+            <ListItemText primary={<Trans>About Mortar</Trans>} />
+          </ListItemButton>
+          <ListItemButton onClick={quit}>
+            <ListItemIcon>
+              <LogOut size={18} />
+            </ListItemIcon>
+            <ListItemText primary={<Trans>Quit</Trans>} />
+          </ListItemButton>
+        </List>
+      </Drawer>
     </>
   )
 }

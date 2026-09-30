@@ -23,7 +23,7 @@ msgstr "Translucent window"
 msgid "Copper"
 msgstr "Copper"
 
-#: src/shell/AppMenu.tsx:18
+#: src/shell/AppMenu.tsx:20
 msgid "Could not quit Mortar"
 msgstr "Could not quit Mortar"
 
@@ -56,7 +56,7 @@ msgid "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild
 msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · open-source libraries listed in Licences."
 
 #: src/settings/sections/About.tsx:16
-#: src/shell/AppMenu.tsx:43
+#: src/shell/AppMenu.tsx:45
 msgid "Mortar"
 msgstr "Mortar"
 
@@ -68,7 +68,7 @@ msgstr "Installed"
 msgid "Changes apply right away"
 msgstr "Changes apply right away"
 
-#: src/shell/AppMenu.tsx:60
+#: src/shell/AppMenu.tsx:76
 msgid "About Mortar"
 msgstr "About Mortar"
 
@@ -146,11 +146,12 @@ msgstr "Maximise"
 msgid "Game Select"
 msgstr "Game Select"
 
-#: src/shell/AppMenu.tsx:63
+#: src/shell/AppMenu.tsx:82
 msgid "Quit"
 msgstr "Quit"
 
-#: src/shell/AppMenu.tsx:26
+#: src/shell/AppMenu.tsx:28
+#: src/shell/AppMenu.tsx:55
 msgid "Mortar menu"
 msgstr "Mortar menu"
 
@@ -163,7 +164,7 @@ msgid "Play"
 msgstr "Play"
 
 #: src/settings/SettingsPage.tsx:42
-#: src/shell/AppMenu.tsx:52
+#: src/shell/AppMenu.tsx:65
 #: src/shell/TitleBar.tsx:96
 msgid "Settings"
 msgstr "Settings"

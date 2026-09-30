@@ -7,7 +7,7 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
 - **Logo (NOMAD, 2026-09-29):** the running-bond mark, seven rounded bricks in three courses, filled in the primary colour; used in the title bar at 20px, as the app icon on a dark rounded square, and in notifications.
 
 - Frameless and translucent (see [design.md](design.md#look)): 1280×720 by default, 768×432 minimum, as Concrete.
-- The app draws its own title bar, 36px, marked `--wails-draggable: drag`: the logo in a darker square, the app name, then location tabs ("Game Select", or the current game) underlined in the primary colour, and minimise, maximise and close on the right. Double-click maximises. The window has a 1px light border and rounded corners, since GNOME draws no shadow for a frameless window.
+- The app draws its own title bar, 36px, marked `--wails-draggable: drag`: the logo in a darker square, the app name, then location tabs ("Game Select", or the current game) underlined in the primary colour, and minimise, maximise and close on the right. The logo and app name open the app menu, a side drawer with Settings, About Mortar and Quit. Double-click maximises. The window has a 1px light border and rounded corners, since GNOME draws no shadow for a frameless window.
 - `user-select: none` everywhere except text fields and the console.
 - Icons come from one set, Lucide (MIT), at 1.5–2px stroke; no hand-drawn or mixed icons.
 - Every focusable control shows a visible focus ring when reached by keyboard: a 2px outline in the primary colour, 2px outside the control.
