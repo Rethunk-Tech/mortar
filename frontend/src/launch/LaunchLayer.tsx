@@ -60,6 +60,21 @@ function Spinner() {
   )
 }
 
+// While the overlay is up, what it covers is inert so focus cannot reach it; a stable function so the ref runs once.
+function holdFocus(el: HTMLElement) {
+  const covered = [...(el.parentElement?.children ?? [])].filter(
+    (c): c is HTMLElement => c !== el && c instanceof HTMLElement && !c.inert,
+  )
+  for (const c of covered) {
+    c.inert = true
+  }
+  return () => {
+    for (const c of covered) {
+      c.inert = false
+    }
+  }
+}
+
 function Overlay({ game }: { game: string }) {
   const { t } = useLingui()
   const name = useProfiles((s) => s.game?.name ?? '')
@@ -77,6 +92,7 @@ function Overlay({ game }: { game: string }) {
   const shown = entries.slice(-VISIBLE_LINES)
   return (
     <Box
+      ref={holdFocus}
       role="dialog"
       aria-modal={true}
       aria-label={t`Launching ${name}`}
@@ -117,6 +133,7 @@ function Overlay({ game }: { game: string }) {
       <Box sx={{ display: 'flex', gap: 1.25 }}>
         <Button
           variant="outlined"
+          autoFocus={true}
           onClick={() => {
             setTab('console')
             hide()
