@@ -359,7 +359,7 @@ export function ShareDialog() {
           ...paper,
           sx: {
             ...paper.sx,
-            bgcolor: 'rgba(36,36,44,0.98)',
+            bgcolor: 'rgb(36,36,44)',
             border: '1px solid rgba(255,255,255,0.12)',
             width: 'min(980px, calc(100% - 48px))',
             height: 'min(620px, calc(100% - 48px))',

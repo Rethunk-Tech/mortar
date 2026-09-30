@@ -191,7 +191,7 @@ function Failure({ game }: { game: string }) {
       onClose={dismiss}
       fullWidth={true}
       maxWidth="sm"
-      slotProps={{ paper: { sx: { bgcolor: 'rgba(38,38,46,0.98)' } } }}
+      slotProps={{ paper: { sx: { bgcolor: 'rgb(38,38,46)' } } }}
     >
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
         <CircleAlert size={22} color="#ff9a90" aria-hidden={true} />
@@ -225,7 +225,7 @@ function DirectDialog() {
     <Dialog
       open={ask !== null}
       onClose={() => answer(false)}
-      slotProps={{ paper: { sx: { bgcolor: 'rgba(40,40,48,0.92)', maxWidth: 440 } } }}
+      slotProps={{ paper: { sx: { bgcolor: 'rgb(40,40,48)', maxWidth: 440 } } }}
     >
       <DialogTitle>{t`Steam was not found`}</DialogTitle>
       <DialogContent>

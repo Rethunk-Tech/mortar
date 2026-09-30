@@ -24,7 +24,7 @@ export function StopDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      slotProps={{ paper: { sx: { bgcolor: 'rgba(40,40,48,0.92)', maxWidth: 420 } } }}
+      slotProps={{ paper: { sx: { bgcolor: 'rgb(40,40,48)', maxWidth: 420 } } }}
     >
       <DialogTitle>{t`Stop the game?`}</DialogTitle>
       <DialogContent>

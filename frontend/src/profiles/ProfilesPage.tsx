@@ -80,7 +80,7 @@ function Item({ icon, sx, children, ...props }: MenuItemProps & { icon: ReactNod
     </MenuItem>
   )
 }
-const dialogPaper = { paper: { sx: { bgcolor: 'rgba(40,40,48,0.92)' } } }
+const dialogPaper = { paper: { sx: { bgcolor: 'rgb(40,40,48)' } } }
 
 function RowMenu({
   profile,

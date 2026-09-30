@@ -542,7 +542,7 @@ export function QueueSheet() {
             maxWidth: '100%',
             top: 'var(--title-bar)',
             height: 'calc(100% - var(--title-bar))',
-            bgcolor: 'rgba(34,34,42,0.98)',
+            bgcolor: 'rgb(34,34,42)',
             borderLeft: '1px solid rgba(255,255,255,0.12)',
           },
         },
