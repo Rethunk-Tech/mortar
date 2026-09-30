@@ -135,12 +135,19 @@ func TestCheckDoesNotHoldTheLockForTheNetwork(t *testing.T) {
 		errc <- err
 	}()
 	<-started
-	if err := s.Install(context.Background()); !errors.Is(err, errNone) {
-		t.Fatalf("Install during Check: %v, want errNone", err)
+	installed := make(chan error, 1)
+	go func() { installed <- s.Install(context.Background()) }()
+	select {
+	case err := <-installed:
+		t.Fatalf("Install returned during Check: %v", err)
+	case <-time.After(50 * time.Millisecond):
 	}
 	close(hold)
 	if err := <-errc; err != nil {
 		t.Fatal(err)
+	}
+	if err := <-installed; err != nil || !f.downloaded {
+		t.Fatalf("install after check: %v, downloaded %v", err, f.downloaded)
 	}
 }
 

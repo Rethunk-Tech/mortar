@@ -49,8 +49,16 @@ type Service struct {
 	u    Updater
 	info Info
 
-	mu    sync.Mutex
-	found *Release
+	mu      sync.Mutex
+	cond    *sync.Cond
+	once    sync.Once
+	inCheck bool
+	found   *Release
+}
+
+func (s *Service) lock() {
+	s.once.Do(func() { s.cond = sync.NewCond(&s.mu) })
+	s.mu.Lock()
 }
 
 // Configure points s at u, which reads ManifestURL and trusts only publicKey. It is a function rather than a method
@@ -87,16 +95,21 @@ func (s *Service) Check(ctx context.Context) (*Release, error) {
 	if s.info.Off != "" {
 		return nil, errOff
 	}
-	s.mu.Lock()
+	s.lock()
 	if s.found != nil && s.found.Staged {
 		r := *s.found
 		s.mu.Unlock()
 		return &r, nil
 	}
+	s.inCheck = true
 	s.mu.Unlock()
 	rel, err := s.u.Check(ctx)
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.lock()
+	defer func() {
+		s.inCheck = false
+		s.cond.Broadcast()
+		s.mu.Unlock()
+	}()
 	if s.found != nil && s.found.Staged {
 		r := *s.found
 		return &r, nil
@@ -118,8 +131,11 @@ func (s *Service) Check(ctx context.Context) (*Release, error) {
 // Install downloads, verifies and stages the release Check found; Restart applies it.
 func (s *Service) Install(ctx context.Context) error {
 	// Held throughout: a Check in between would point the updater at whatever release it found, signed or not.
-	s.mu.Lock()
+	s.lock()
 	defer s.mu.Unlock()
+	for s.inCheck {
+		s.cond.Wait()
+	}
 	if s.found == nil {
 		return errNone
 	}
@@ -135,7 +151,7 @@ func (s *Service) Restart(ctx context.Context) error {
 	if s.info.Off != "" {
 		return errOff
 	}
-	s.mu.Lock()
+	s.lock()
 	defer s.mu.Unlock()
 	return s.u.Restart(ctx)
 }
