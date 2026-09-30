@@ -85,14 +85,28 @@ export function HelpDialog({ game }: { game: string }) {
       setLog('')
       return
     }
-    Log(game, profile).then(setLog, (e: unknown) => {
-      useToasts.getState().push({
-        kind: 'error',
-        title: t`Could not read the SMAPI log`,
-        body: errorMessage(e),
-      })
-      setHelping(false)
-    })
+    let live = true
+    Log(game, profile).then(
+      (text) => {
+        if (live) {
+          setLog(text)
+        }
+      },
+      (e: unknown) => {
+        if (!live) {
+          return
+        }
+        useToasts.getState().push({
+          kind: 'error',
+          title: t`Could not read the SMAPI log`,
+          body: errorMessage(e),
+        })
+        setHelping(false)
+      },
+    )
+    return () => {
+      live = false
+    }
   }, [open, game, profile, setHelping, t])
 
   const copy = (text: string) =>
@@ -131,7 +145,7 @@ export function HelpDialog({ game }: { game: string }) {
   return (
     <Dialog
       open={open}
-      onClose={close}
+      onClose={uploading ? undefined : close}
       slotProps={{ paper: { sx: { ...paper.sx, width: 780, maxWidth: 'calc(100% - 32px)' } } }}
     >
       <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Get help`}</DialogTitle>
@@ -171,7 +185,7 @@ export function HelpDialog({ game }: { game: string }) {
         )}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button variant="outlined" onClick={close} sx={button}>
+        <Button variant="outlined" disabled={uploading} onClick={close} sx={button}>
           {link || !log ? t`Close` : t`Cancel`}
         </Button>
         {log && !link ? (
