@@ -6,16 +6,35 @@ import {
   ButtonBase,
   CircularProgress,
   InputAdornment,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
   TextField,
+  Tooltip,
   useMediaQuery,
 } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
-import { ExternalLink, Filter, LayoutGrid, List, Plus, Search } from 'lucide-react'
+import {
+  Ban,
+  ExternalLink,
+  Filter,
+  FolderTree,
+  LayoutGrid,
+  Library,
+  List,
+  Plus,
+  Search,
+  Tag,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { SetListGroupBy } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
 import { useInstall } from '../install/store.ts'
+import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { onFilterFocus } from './filterFocus.ts'
+import { type GroupBy, sanitizeListGroupBy } from './group.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -39,6 +58,59 @@ const viewButton = (active: boolean) => ({
   color: active ? '#ffffff' : 'text.secondary',
   '&:hover': { bgcolor: active ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.08)' },
 })
+
+function persistGroupBy(by: GroupBy) {
+  useSettings.setState({ listGroupBy: by })
+  SetListGroupBy(by).catch(reportUnexpected)
+}
+
+function GroupByControl() {
+  const { t } = useLingui()
+  const by = sanitizeListGroupBy(useSettings((s) => s.listGroupBy))
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const tagHint = t`A mod with several tags appears under its first tag.`
+  return (
+    <>
+      <Button
+        variant="outlined"
+        aria-label={t`Group by`}
+        startIcon={<FolderTree size={14} />}
+        onClick={(e) => setAnchor(e.currentTarget)}
+        sx={iconWhenCompact}
+      >
+        <span className="label">{t`Group by`}</span>
+      </Button>
+      <Menu
+        open={anchor !== null}
+        anchorEl={anchor}
+        onClose={() => setAnchor(null)}
+        transitionDuration={0}
+      >
+        {[
+          { id: 'none' as const, label: t`None`, Icon: Ban },
+          { id: 'category' as const, label: t`Category`, Icon: FolderTree },
+          { id: 'source' as const, label: t`Source`, Icon: Library },
+          { id: 'tag' as const, label: t`Tag`, Icon: Tag, hint: tagHint },
+        ].map((item) => (
+          <Tooltip key={item.id} title={item.hint ?? ''} placement="right">
+            <MenuItem
+              selected={by === item.id}
+              onClick={() => {
+                persistGroupBy(item.id)
+                setAnchor(null)
+              }}
+            >
+              <ListItemIcon>
+                <item.Icon size={16} aria-hidden={true} />
+              </ListItemIcon>
+              <ListItemText>{item.label}</ListItemText>
+            </MenuItem>
+          </Tooltip>
+        ))}
+      </Menu>
+    </>
+  )
+}
 
 export function BrowseNexus({
   variant,
@@ -155,6 +227,7 @@ export function Toolbar({
           <List size={15} />
         </ButtonBase>
       </Box>
+      <GroupByControl />
       {fieldOpen ? (
         <TextField
           size="small"

@@ -24,9 +24,17 @@ import { compactQuery } from '../game/compact.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useDetail } from './detail.ts'
+import {
+  emptyGroupLabel,
+  firstTag,
+  type GroupBy,
+  groupSorted,
+  sanitizeListGroupBy,
+} from './group.ts'
 import { ListColumnMenu } from './ListColumnMenu.tsx'
 import {
   columnMenuFromEvent,
+  compareListRows,
   DEFAULT_VISIBLE_LIST_COLUMNS,
   type ListColumnId,
   type ListRow,
@@ -34,11 +42,12 @@ import {
   nextListSort,
   sanitizeListColumns,
   sanitizeListSort,
-  sortListRows,
   toggleListColumn,
   visibleListColumns,
 } from './listColumns.ts'
-import { kindLabel, modId, nexusIdOf, sourceKind } from './lookup.ts'
+import { toListRow } from './listRows.ts'
+import { modId, nexusIdOf } from './lookup.ts'
+import { ModsGroupHeader } from './ModsGroupHeader.tsx'
 import { contextMenuProps } from './menu.ts'
 import { primeDetails, useNexusDetails, useNexusFresh } from './nexusDetails.ts'
 import { formatCount, formatDate, isNewer } from './nexusFormat.ts'
@@ -85,6 +94,8 @@ function headerLabel(id: ListColumnId, t: ReturnType<typeof useLingui>['t']): st
       return t`Needs`
     case 'status':
       return t`Status`
+    case 'notes':
+      return t`Notes and tags`
     default:
       return id
   }
@@ -235,6 +246,10 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string) {
           </Box>
         </Cell>
       )
+    case 'notes': {
+      const text = [row.note, row.tags.join(', ')].filter((part) => part !== '').join(' · ')
+      return <ValueCell key="notes" text={dash(text)} />
+    }
     default:
       return null
   }
@@ -320,32 +335,6 @@ function persistSort(column: ListColumnId, dir: 'asc' | 'desc') {
   SetListSort(column, dir).catch(reportUnexpected)
 }
 
-function toListRow(
-  m: Mod,
-  profile: Profile,
-  byId: Record<number, { details?: ListRow['details'] } | undefined>,
-  t: ReturnType<typeof useLingui>['t'],
-): ListRow {
-  const entry = (profile.entries ?? []).find((e) => e.key === m.key)
-  const source = kindLabel(sourceKind(profile, m), {
-    archive: t`Archive`,
-    nexus: t`Nexus Mods`,
-    github: t`GitHub`,
-  })
-  const details = byId[nexusIdOf(profile, m)]?.details
-  const row: ListRow = {
-    mod: m,
-    added: entry?.added ?? '',
-    pinned: Boolean(entry?.pinned),
-    source,
-    status: m.enabled ? t`Enabled` : t`Off`,
-  }
-  if (details) {
-    row.details = details
-  }
-  return row
-}
-
 function HeaderCells({
   cols,
   sort,
@@ -381,17 +370,34 @@ function HeaderCells({
   return cells
 }
 
+function rowGroupKey(by: GroupBy, row: ListRow): string {
+  if (by === 'category') {
+    return row.details?.category ?? ''
+  }
+  if (by === 'source') {
+    return row.source
+  }
+  if (by === 'tag') {
+    return firstTag(row.tags)
+  }
+  return ''
+}
+
 export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   const { t, i18n } = useLingui()
   const narrow = useMediaQuery(compactQuery)
   const listColumns = useSettings((s) => s.listColumns)
   const listSortColumn = useSettings((s) => s.listSortColumn)
   const listSortDir = useSettings((s) => s.listSortDir)
+  const groupBy = sanitizeListGroupBy(useSettings((s) => s.listGroupBy))
   const visible = sanitizeListColumns(listColumns)
   const cols = visibleListColumns(listColumns, narrow)
   const sort = sanitizeListSort(listSortColumn ?? '', listSortDir ?? '')
   const [menu, setMenu] = useState<{ top: number; left: number } | null>(null)
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   const byId = useNexusDetails((s) => s.byId)
+
+  const tagHint = t`A mod with several tags appears under its first tag.`
 
   useEffect(() => {
     primeDetails(mods.map((m) => nexusIdOf(profile, m)).filter((id) => id > 0)).catch(
@@ -399,13 +405,20 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
     )
   }, [mods, profile])
 
-  const rows = sortListRows(
+  const groups = groupSorted(
     mods.map((m) => toListRow(m, profile, byId, t)),
-    sort,
+    groupBy,
+    (row) => rowGroupKey(groupBy, row),
+    (a, b) => compareListRows(a, b, sort),
   )
-  const orderedIds = rows.map((r) => modId(r.mod))
+  const orderedIds = groups.flatMap((g) => g.items.map((r) => modId(r.mod)))
   const onMenu = (e: MouseEvent) => setMenu(columnMenuFromEvent(e))
   const grid = listGridColumns(cols)
+  const emptyLabel = emptyGroupLabel(groupBy, {
+    category: t`Uncategorised`,
+    source: t`Unknown source`,
+    tag: t`Untagged`,
+  })
 
   return (
     <Box sx={{ minWidth: 0, minHeight: 0, overflowY: 'auto' }}>
@@ -438,17 +451,39 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((r, i) => (
-            <ModRow
-              key={modId(r.mod)}
-              row={r}
-              striped={i % 2 === 1}
-              cols={cols}
-              locale={i18n.locale}
-              orderedIds={orderedIds}
-              profile={profile}
-            />
-          ))}
+          {groups.map((group) => {
+            const open = collapsed[group.key] !== true
+            return (
+              <Box key={group.key || 'none'} component="div">
+                {groupBy === 'none' ? null : (
+                  <TableRow sx={{ display: 'block' }}>
+                    <TableCell sx={{ p: 0, border: 0, display: 'block' }}>
+                      <ModsGroupHeader
+                        label={group.key || emptyLabel}
+                        count={group.items.length}
+                        open={open}
+                        onToggle={() => setCollapsed((cur) => ({ ...cur, [group.key]: open }))}
+                        {...(groupBy === 'tag' ? { hint: tagHint } : {})}
+                      />
+                    </TableCell>
+                  </TableRow>
+                )}
+                {open
+                  ? group.items.map((r, i) => (
+                      <ModRow
+                        key={modId(r.mod)}
+                        row={r}
+                        striped={i % 2 === 1}
+                        cols={cols}
+                        locale={i18n.locale}
+                        orderedIds={orderedIds}
+                        profile={profile}
+                      />
+                    ))
+                  : null}
+              </Box>
+            )
+          })}
         </TableBody>
       </Table>
       <ListColumnMenu

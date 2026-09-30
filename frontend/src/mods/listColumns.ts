@@ -17,6 +17,7 @@ const LIST_COLUMN_IDS = [
   'installed',
   'needs',
   'status',
+  'notes',
 ] as const
 
 type ListColumnId = (typeof LIST_COLUMN_IDS)[number]
@@ -44,6 +45,7 @@ const NARROW_HIDE_LIST_COLUMNS: readonly ListColumnId[] = [
   'updated',
   'installed',
   'needs',
+  'notes',
 ]
 
 type ListSortDir = 'asc' | 'desc'
@@ -76,6 +78,7 @@ const LIST_COLUMN_WIDTH: Record<ListColumnId, string> = {
   installed: '110px',
   needs: '140px',
   status: '100px',
+  notes: '160px',
 }
 
 interface ListRow {
@@ -83,6 +86,8 @@ interface ListRow {
   added: string
   source: string
   status: string
+  note: string
+  tags: string[]
   pinned?: boolean
   details?: Details
 }
@@ -215,6 +220,11 @@ function yearMissing(ms: number): boolean {
   return Number.isNaN(ms) || new Date(ms).getUTCFullYear() < FIRST_YEAR
 }
 
+function notesText(row: ListRow): string {
+  const tags = row.tags.join(', ')
+  return [row.note, tags].filter((part) => part !== '').join(' · ')
+}
+
 function compareListRows(a: ListRow, b: ListRow, sort: ListColumnSort): number {
   const { column, dir } = sort
   let primary = 0
@@ -299,6 +309,12 @@ function compareListRows(a: ListRow, b: ListRow, sort: ListColumnSort): number {
     case 'status':
       primary = missingLast(!a.status, !b.status, dir, cmpText(a.status, b.status))
       break
+    case 'notes': {
+      const av = notesText(a)
+      const bv = notesText(b)
+      primary = missingLast(!av, !bv, dir, cmpText(av, bv))
+      break
+    }
     default:
       primary = 0
   }

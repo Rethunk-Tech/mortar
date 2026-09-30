@@ -33,6 +33,8 @@ function columnLabel(id: ListColumnId, t: ReturnType<typeof useLingui>['t']): st
       return t`Needs`
     case 'status':
       return t`Status`
+    case 'notes':
+      return t`Notes and tags`
     default:
       return id
   }

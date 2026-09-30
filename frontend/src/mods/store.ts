@@ -14,6 +14,7 @@ import {
   OpenConfig,
   RemoveEntries,
   RemoveEntry,
+  SetEntryNoteTags,
   SetModEnabled,
   SetModsEnabled,
   SetPinned,
@@ -187,6 +188,7 @@ export const useMods = create<{
   setEnabledMany: (mods: Mod[], enabled: boolean) => Promise<void>
   setPinned: (mod: Mod, pinned: boolean) => Promise<void>
   setSkipVersion: (mod: Mod, version: string) => Promise<void>
+  setNoteTags: (mod: Mod, note: string, tags: string[]) => Promise<void>
   askRemove: (mod: Mod | readonly Mod[] | null) => void
   remove: (mod: Mod) => Promise<void>
   removeMany: (mods: Mod[]) => Promise<void>
@@ -266,6 +268,19 @@ export const useMods = create<{
       return
     }
     await useUpdates.getState().load()
+  },
+  setNoteTags: async (mod, note, tags) => {
+    const target = open()
+    if (!target) {
+      return
+    }
+    try {
+      useProfiles
+        .getState()
+        .replace(await SetEntryNoteTags(target.game, target.id, mod.key, note, tags))
+    } catch (e) {
+      fail(i18n._(msg`Could not save the note and tags for ${mod.name}`))(e)
+    }
   },
   askRemove: (mod) => set({ removing: removingOf(mod) }),
   remove: (mod) => dropMod(get, mod),

@@ -34,6 +34,8 @@ const row = (over: Partial<ListRow> & { name: string }): ListRow => {
     added: over.added ?? '',
     source: over.source ?? '',
     status: over.status ?? '',
+    note: over.note ?? '',
+    tags: over.tags ?? [],
   }
   if (over.details) {
     out.details = over.details

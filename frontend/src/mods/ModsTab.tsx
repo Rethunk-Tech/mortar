@@ -7,22 +7,23 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compact } from '../game/compact.ts'
-import { useSettings } from '../settings/store.ts'
 import { userModCount } from '../profiles/count.ts'
+import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { DuplicateDialog } from './DuplicateDialog.tsx'
 import { useDetail } from './detail.ts'
+import { emptyGroupLabel, firstTag, groupSorted, sanitizeListGroupBy } from './group.ts'
 import { LockedNote } from './LockedNote.tsx'
-import { firstTag, groupSorted, sanitizeListGroupBy } from './group.ts'
-import { entryOf, kindLabel, modId, nexusIdOf } from './lookup.ts'
-import { ModDetail } from './ModDetail.tsx'
-import { ModList, toListRow } from './ModList.tsx'
-import { ModsGroupHeader } from './ModsGroupHeader.tsx'
-import { ModContextMenu, ModMenu } from './ModMenu.tsx'
-import { contextMenuProps, useContextMenu } from './menu.ts'
 import { compareListRows, sanitizeListSort } from './listColumns.ts'
+import { toListRow } from './listRows.ts'
+import { entryOf, modId, nexusIdOf } from './lookup.ts'
+import { ModDetail } from './ModDetail.tsx'
+import { ModList } from './ModList.tsx'
+import { ModContextMenu, ModMenu } from './ModMenu.tsx'
+import { ModsGroupHeader } from './ModsGroupHeader.tsx'
+import { contextMenuProps, useContextMenu } from './menu.ts'
 import { primeDetails, useNexusDetails, useNexusFresh } from './nexusDetails.ts'
 import { ProblemBar } from './ProblemBar.tsx'
 import { LetterTile, PinBadge, ProblemBadge, RemoveDialog, UpdateBadge } from './parts.tsx'
@@ -182,27 +183,26 @@ function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
     (a, b) => compareListRows(a, b, sort),
   )
   const orderedIds = groups.flatMap((g) => g.items.map((r) => modId(r.mod)))
-  const emptyLabel =
-    groupBy === 'category'
-      ? t`Uncategorised`
-      : groupBy === 'source'
-        ? t`Unknown source`
-        : t`Untagged`
+  const emptyLabel = emptyGroupLabel(groupBy, {
+    category: t`Uncategorised`,
+    source: t`Unknown source`,
+    tag: t`Untagged`,
+  })
   return (
     <Box sx={{ minHeight: 0, overflowY: 'auto' }}>
       {groups.map((group) => {
         const open = collapsed[group.key] !== true
         return (
           <Box key={group.key || 'none'}>
-            {groupBy !== 'none' ? (
+            {groupBy === 'none' ? null : (
               <ModsGroupHeader
                 label={group.key || emptyLabel}
                 count={group.items.length}
                 open={open}
-                hint={groupBy === 'tag' ? tagHint : undefined}
                 onToggle={() => setCollapsed((cur) => ({ ...cur, [group.key]: open }))}
+                {...(groupBy === 'tag' ? { hint: tagHint } : {})}
               />
-            ) : null}
+            )}
             {open ? (
               <Box
                 sx={{
