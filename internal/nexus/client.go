@@ -82,6 +82,7 @@ type Client struct {
 	version  string
 	lim      *limiter
 	track    *trackedCache
+	onLimits func(Limits)
 }
 
 // New returns a client that identifies itself as Mortar version.
@@ -91,7 +92,12 @@ func New(version string) *Client {
 
 // WithKey returns a client that authenticates with key and shares c's rate-limit and tracked-list state.
 func (c *Client) WithKey(key string) *Client {
-	return &Client{HTTP: c.HTTP, BaseURL: c.BaseURL, CacheDir: c.CacheDir, Now: c.Now, key: key, version: c.version, lim: c.lim, track: c.track}
+	return &Client{HTTP: c.HTTP, BaseURL: c.BaseURL, CacheDir: c.CacheDir, Now: c.Now, key: key, version: c.version, lim: c.lim, track: c.track, onLimits: c.onLimits}
+}
+
+// SetLimitsHook is called after a response updates the rate-limit budget.
+func (c *Client) SetLimitsHook(fn func(Limits)) {
+	c.onLimits = fn
 }
 
 // Limits returns the budget from the latest response.
@@ -152,6 +158,9 @@ func (c *Client) record(h http.Header) {
 		Known:  true,
 		Daily:  Window{Remaining: dr, Limit: dl, Reset: parseReset(h.Get("X-Rl-Daily-Reset"))},
 		Hourly: Window{Remaining: hr, Limit: hl, Reset: parseReset(h.Get("X-Rl-Hourly-Reset"))},
+	}
+	if c.onLimits != nil {
+		c.onLimits(c.lim.v)
 	}
 }
 
