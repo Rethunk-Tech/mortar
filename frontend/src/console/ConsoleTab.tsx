@@ -8,7 +8,6 @@ import {
   FormControlLabel,
   Menu,
   MenuItem,
-  Typography,
 } from '@mui/material'
 import { ChevronDown, Download, Search, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -19,9 +18,9 @@ import { useLoader } from '../loader/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { countByLevel, incompatibleSMAPI, isFiltered, LEVELS, modsOf } from './filter.ts'
 import { stepHistory } from './history.ts'
+import { LinkedLog } from './LinkedLog.tsx'
 import { useShownEntries, useVisible } from './logHooks.ts'
 import { canSendTo, useConsole } from './store.ts'
-import { VirtualLog } from './VirtualLog.tsx'
 
 const dots: Record<Level, string> = {
   [Level.$zero]: 'transparent',
@@ -439,32 +438,15 @@ export function ConsoleTab({ game }: { game: string }) {
         </Box>
       ) : null}
       {offerReinstall ? <ReinstallLoader game={game} /> : null}
-      <Box
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          mx: 2,
-          mb: 1,
-          bgcolor: 'rgba(0,0,0,0.5)',
-          borderRadius: '6px',
-          fontFamily: MONO,
-          fontSize: 13,
-          lineHeight: '23px',
-          overflow: 'hidden',
-        }}
-      >
-        {empty ? (
-          <Typography sx={{ p: 2, font: 'inherit', color: 'text.secondary' }}>{empty}</Typography>
-        ) : (
-          <VirtualLog
-            rows={rows}
-            timestamps={timestamps}
-            follow={follow}
-            onUnfollow={() => setFollow(false)}
-            jump={jump}
-          />
-        )}
-      </Box>
+      <LinkedLog
+        game={game}
+        rows={rows}
+        timestamps={timestamps}
+        follow={follow}
+        jump={jump}
+        empty={empty}
+        onUnfollow={() => setFollow(false)}
+      />
       <CommandLine game={game} />
     </Box>
   )

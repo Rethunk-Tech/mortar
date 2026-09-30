@@ -1,9 +1,16 @@
 import { Box } from '@mui/material'
-import { useLayoutEffect, useRef, useState } from 'react'
+import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   type Entry,
   Level,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import {
+  type ConsoleLink,
+  type ConsoleLinkRoots,
+  type InstalledMod,
+  linksForModColumn,
+  linksInText,
+} from './consoleLinks.ts'
 
 // 13px monospace at line-height 1.75.
 const ROW = 23
@@ -56,8 +63,84 @@ const looks: Record<Level, Look> = {
 
 const cell = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'pre' } as const
 
-function Row({ entry, timestamps }: { entry: Entry; timestamps: boolean }) {
+const linkSx = {
+  all: 'unset',
+  cursor: 'pointer',
+  textDecoration: 'underline',
+  textUnderlineOffset: '2px',
+  color: 'inherit',
+} as const
+
+function Linked({
+  text,
+  links,
+  onMod,
+  onPath,
+}: {
+  text: string
+  links: ConsoleLink[]
+  onMod: (uniqueID: string) => void
+  onPath: (path: string) => void
+}) {
+  if (links.length === 0) {
+    return text
+  }
+  const parts: ReactNode[] = []
+  let at = 0
+  for (const link of links) {
+    if (link.start > at) {
+      parts.push(text.slice(at, link.start))
+    }
+    const label = text.slice(link.start, link.end)
+    parts.push(
+      <Box
+        key={`${link.kind}-${link.start}`}
+        component="button"
+        type="button"
+        onClick={() => {
+          if (link.kind === 'mod') {
+            onMod(link.uniqueID)
+          } else {
+            onPath(link.path)
+          }
+        }}
+        sx={linkSx}
+      >
+        {label}
+      </Box>,
+    )
+    at = link.end
+  }
+  if (at < text.length) {
+    parts.push(text.slice(at))
+  }
+  return parts
+}
+
+function Row({
+  entry,
+  timestamps,
+  mods,
+  roots,
+  onMod,
+  onPath,
+}: {
+  entry: Entry
+  timestamps: boolean
+  mods: readonly InstalledMod[]
+  roots: ConsoleLinkRoots
+  onMod: (uniqueID: string) => void
+  onPath: (path: string) => void
+}) {
   const look = looks[entry.level]
+  const modLinks = useMemo(
+    () => (entry.cont ? [] : linksForModColumn(entry.mod, mods)),
+    [entry.cont, entry.mod, mods],
+  )
+  const messageLinks = useMemo(
+    () => linksInText(entry.message, mods, roots),
+    [entry.message, mods, roots],
+  )
   return (
     <Box
       sx={{
@@ -79,9 +162,15 @@ function Row({ entry, timestamps }: { entry: Entry; timestamps: boolean }) {
       <Box sx={{ ...cell, color: look.color, fontWeight: 500 }}>
         {entry.cont ? '' : entry.level}
       </Box>
-      <Box sx={{ ...cell, color: 'rgba(214,214,220,0.95)' }}>{entry.cont ? '' : entry.mod}</Box>
+      <Box sx={{ ...cell, color: 'rgba(214,214,220,0.95)' }}>
+        {entry.cont ? (
+          ''
+        ) : (
+          <Linked text={entry.mod} links={modLinks} onMod={onMod} onPath={onPath} />
+        )}
+      </Box>
       <Box sx={{ ...cell, color: look.text }} title={entry.message}>
-        {entry.message}
+        <Linked text={entry.message} links={messageLinks} onMod={onMod} onPath={onPath} />
       </Box>
     </Box>
   )
@@ -94,6 +183,10 @@ export function VirtualLog({
   follow,
   onUnfollow,
   jump,
+  mods,
+  roots,
+  onMod,
+  onPath,
 }: {
   rows: Entry[]
   timestamps: boolean
@@ -101,6 +194,10 @@ export function VirtualLog({
   onUnfollow: () => void
   // Each request carries a fresh n so jumping to the same row twice scrolls twice.
   jump: { index: number; n: number } | null
+  mods: readonly InstalledMod[]
+  roots: ConsoleLinkRoots
+  onMod: (uniqueID: string) => void
+  onPath: (path: string) => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const [top, setTop] = useState(0)
@@ -150,7 +247,15 @@ export function VirtualLog({
       <Box sx={{ height: rows.length * ROW, position: 'relative' }}>
         <Box sx={{ transform: `translateY(${start * ROW}px)` }}>
           {rows.slice(start, end).map((entry) => (
-            <Row key={entry.seq} entry={entry} timestamps={timestamps} />
+            <Row
+              key={entry.seq}
+              entry={entry}
+              timestamps={timestamps}
+              mods={mods}
+              roots={roots}
+              onMod={onMod}
+              onPath={onPath}
+            />
           ))}
         </Box>
       </Box>
