@@ -6,7 +6,7 @@ Items marked **Measure** need a throwaway test first; those tests run outside th
 
 ## Sharing (milestone 5): the static page deploy
 
-Links, the Share dialog, the import preview, `.mortar` files and first run's link card are built ([architecture.md](architecture.md#sharing)), and so is the page's source (`site/stardew/p/`). Remaining: deploying it at `https://mortar.rethunk.tech/stardew/p`.
+Links, the Share dialog, the import preview, `.mortar` files and first run's link card are built ([architecture.md](architecture.md#sharing)), and so is the page's source (`site/stardew/p/`). Remaining: deploying it at `https://mortar.rethunk.tech/stardew/p`, held back on purpose until the first release is ready (NOMAD, 2026-09-30).
 
 - **Deploy:** `site/stardew/p/index.html` in this repo, as a DigitalOcean App Platform static site (free tier: three static apps); `rethunk.tech` is on DigitalOcean's nameservers, and `maitre.rethunk.tech` is already a CNAME to an App Platform app, so the subdomain is set up the same way. The page shows two buttons, since it cannot tell whether a scheme handler exists: open in Mortar (`mortar://stardew/p/<payload>`) and download Mortar, which also copies the link so the importer can take it after installing.
 - **Done when** the link opens the page on the live domain, its button opens Mortar's Import with the link filled in, and no request the page makes carries the fragment.
