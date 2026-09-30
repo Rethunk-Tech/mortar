@@ -1,2 +1,1 @@
-/*eslint-disable*/ import type { Messages } from '@lingui/core'
-export const messages = JSON.parse('{"e6PCvY":["Mortar"]}') as Messages
+/*eslint-disable*/import type{Messages}from"@lingui/core";export const messages=JSON.parse("{\"S73Pil\":[\"Maximise\"],\"S9djYL\":[\"Game Select\"],\"UT0mS8\":[\"Minimise\"],\"e6PCvY\":[\"Mortar\"],\"lckJ_3\":[\"Stardew Valley\"],\"yKu_3Y\":[\"Restore\"],\"yz7wBu\":[\"Close\"]}")as Messages;

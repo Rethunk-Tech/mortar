@@ -1,10 +1,5 @@
-import { Trans } from '@lingui/react/macro'
-import { Typography } from '@mui/material'
+import { AppFrame } from './shell/AppFrame.tsx'
 
 export function App() {
-  return (
-    <Typography variant="h5" component="h1">
-      <Trans>Mortar</Trans>
-    </Typography>
-  )
+  return <AppFrame>{null}</AppFrame>
 }

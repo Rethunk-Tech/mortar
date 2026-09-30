@@ -7,6 +7,30 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#: src/App.tsx:7
+#: src/shell/TitleBar.tsx:91
 msgid "Mortar"
 msgstr "Mortar"
+
+#: src/shell/TitleBar.tsx:98
+msgid "Stardew Valley"
+msgstr "Stardew Valley"
+
+#: src/shell/TitleBar.tsx:105
+msgid "Maximise"
+msgstr "Maximise"
+
+#: src/shell/TitleBar.tsx:94
+msgid "Game Select"
+msgstr "Game Select"
+
+#: src/shell/TitleBar.tsx:102
+msgid "Minimise"
+msgstr "Minimise"
+
+#: src/shell/TitleBar.tsx:105
+msgid "Restore"
+msgstr "Restore"
+
+#: src/shell/TitleBar.tsx:108
+msgid "Close"
+msgstr "Close"
