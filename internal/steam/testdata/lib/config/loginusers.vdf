@@ -1,0 +1,15 @@
+"users"
+{
+	"76561190000000001"
+	{
+		"AccountName"		"olduser"
+		"PersonaName"		"Old"
+		"MostRecent"		"0"
+	}
+	"76561190000000002"
+	{
+		"AccountName"		"newuser"
+		"PersonaName"		"New"
+		"MostRecent"		"1"
+	}
+}
