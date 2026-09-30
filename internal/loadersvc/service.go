@@ -8,14 +8,11 @@ import (
 	"log"
 	"maps"
 	"os"
-	"path/filepath"
 	"sync"
 
-	"github.com/Rethunk-AI/mortar/internal/bridge"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/loader"
-	"github.com/Rethunk-AI/mortar/internal/overlay"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/store"
@@ -126,10 +123,6 @@ func (s *Service) ensureBridge(id string) (profile.Bundle, error) {
 	}
 	defer func() { _ = os.RemoveAll(tmp) }()
 	if err := g.ExtractBridge(tmp); err != nil {
-		return profile.Bundle{}, err
-	}
-	st := s.settings.Get()
-	if err := overlay.WriteBridgeConfig(filepath.Join(tmp, bridge.ModFolder), st.OverlayEnabled, st.OverlayPort, st.OverlayToken); err != nil {
 		return profile.Bundle{}, err
 	}
 	return b, s.items.AddDir(id, key, tmp)
