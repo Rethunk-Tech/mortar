@@ -26,7 +26,7 @@ import { LetterTile, ModSwitch, ProblemBadge, UpdateBadge } from './parts.tsx'
 const SELECTED_ALPHA = 0.14
 const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const
 
-const COLUMNS = '46px 26px minmax(0,1fr) 130px 80px 130px 100px'
+const COLUMNS = '46px 26px minmax(0,1fr) 130px 100px 130px 100px'
 const rowSx = {
   display: 'grid',
   gridTemplateColumns: COLUMNS,
@@ -56,6 +56,11 @@ function ModRow({ mod: m, striped, profile }: { mod: Mod; striped: boolean; prof
   const { t } = useLingui()
   const selectedId = useDetail((s) => s.detailId)
   const show = useDetail((s) => s.show)
+  const source = kindLabel(sourceKind(profile, m), {
+    archive: t`Archive`,
+    nexus: t`Nexus Mods`,
+    github: t`GitHub`,
+  })
   return (
     <TableRow
       hover={true}
@@ -82,14 +87,14 @@ function ModRow({ mod: m, striped, profile }: { mod: Mod; striped: boolean; prof
       <Cell>
         <LetterTile mod={m} size={26} />
       </Cell>
-      <Cell sx={{ ...ellipsis, fontWeight: 500 }}>{m.name}</Cell>
-      <Cell sx={{ ...ellipsis, color: 'text.secondary', ...hideCompact }}>{m.author}</Cell>
-      <Cell sx={{ color: 'text.secondary', ...hideCompact }}>
-        {kindLabel(sourceKind(profile, m), {
-          archive: t`Archive`,
-          nexus: t`Nexus Mods`,
-          github: t`GitHub`,
-        })}
+      <Cell title={m.name} sx={{ ...ellipsis, fontWeight: 500 }}>
+        {m.name}
+      </Cell>
+      <Cell title={m.author} sx={{ ...ellipsis, color: 'text.secondary', ...hideCompact }}>
+        {m.author}
+      </Cell>
+      <Cell title={source} sx={{ ...ellipsis, color: 'text.secondary', ...hideCompact }}>
+        {source}
       </Cell>
       <CategoryCell nexusId={nexusIdOf(profile, m)} />
       <Cell
