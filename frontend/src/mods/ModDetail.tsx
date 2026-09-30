@@ -24,6 +24,7 @@ import type {
 import { reportUnexpected } from '../toasts/report.ts'
 import { useDetail } from './detail.ts'
 import { modId, siblingsOf } from './lookup.ts'
+import { NexusDetails } from './NexusDetails.tsx'
 import { heading, paper } from './paper.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
@@ -268,6 +269,7 @@ function Details({ mod, profile }: { mod: Mod; profile: Profile }) {
     }
   }, [mod, updated, loadExtras])
   const mine = extras?.id === modId(mod) ? extras : null
+  const source = (profile.entries ?? []).find((e) => e.key === mod.key)?.source
   return (
     <Dialog
       open={true}
@@ -279,6 +281,9 @@ function Details({ mod, profile }: { mod: Mod; profile: Profile }) {
       <DialogTitle>{mod.name}</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <PageLink url={mine?.relations.pageUrl ?? ''} />
+        {source?.kind === 'nexus' && source.modId ? (
+          <NexusDetails mod={mod} modId={source.modId} fileId={source.fileId ?? 0} />
+        ) : null}
         <Body mod={mod} relations={mine?.relations} state={mine?.state} ask={setConfirming} />
       </DialogContent>
       <DialogActions>
