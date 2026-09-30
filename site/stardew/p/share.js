@@ -1,6 +1,6 @@
 import init, { DecompressStream } from '../../vendor/brotli-dec-wasm/brotli_dec_wasm.js'
 
-const MAX_ENCODED = 8_192
+const MAX_ENCODED = 8192
 const MAX_DECODED = 65_536
 const VERSION = 1
 const REPO = /^[\w.-]+\/[\w.-]+$/
