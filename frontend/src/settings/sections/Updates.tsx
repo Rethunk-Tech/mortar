@@ -63,11 +63,12 @@ function MortarUpdate() {
     idle: t`Not checked yet.`,
     checking: t`Checking for updates…`,
     current: t`Mortar is up to date.`,
+    none: t`No release is published yet.`,
     available: t`Mortar ${release?.version ?? ''} is available.`,
     installing: t`Downloading and verifying Mortar ${release?.version ?? ''}…`,
     ready: t`Mortar ${release?.version ?? ''} is ready. Restart Mortar to finish updating.`,
     restarting: t`Restarting…`,
-    error: t`Could not update: ${error}`,
+    error,
   }
   let action = (
     <Button

@@ -12,12 +12,13 @@ import (
 type fake struct {
 	cfg        *updater.Config
 	rel        *updater.Release
+	err        error
 	downloaded bool
 }
 
 func (f *fake) Init(cfg updater.Config) error { f.cfg = &cfg; return nil }
 func (f *fake) Check(context.Context) (*updater.Release, error) {
-	return f.rel, nil
+	return f.rel, f.err
 }
 func (f *fake) DownloadAndInstall(context.Context) error { f.downloaded = true; return nil }
 func (f *fake) Restart(context.Context) error            { return nil }
@@ -234,4 +235,61 @@ func (s *stall) DownloadAndInstall(ctx context.Context) error {
 		<-s.dlHold
 	}
 	return s.fake.DownloadAndInstall(ctx)
+}
+
+func TestClassifyCheckError(t *testing.T) {
+	for _, c := range []struct {
+		err  error
+		want error
+	}{
+		{errors.New("updater: all providers failed: endpoint: endpoint: fetch manifest: Get \"https://github.com/Rethunk-AI/mortar/releases/latest/download/manifest.json\": wsarecv: A connection attempt failed"), errUnreachable},
+		{errors.New("Get \"https://github.com/...\": i/o timeout"), errUnreachable},
+		{errors.New("endpoint: manifest request failed: HTTP 404"), errNoRelease},
+		{errors.New("endpoint: decode manifest: unexpected end of JSON"), errCheckFailed},
+	} {
+		if got := classifyCheckError(c.err); !errors.Is(got, c.want) {
+			t.Errorf("classify(%q) = %v, want %v", c.err, got, c.want)
+		}
+	}
+}
+
+func TestCheckNetworkErrorHidesTheGoChain(t *testing.T) {
+	f := &fake{err: errors.New("updater: all providers failed: endpoint: fetch manifest: Get ...: wsarecv: connection timed out")}
+	s := &Service{}
+	if err := configure(s, f, "1.0.0", []byte("key"), true); err != nil {
+		t.Fatal(err)
+	}
+	rel, err := s.Check(context.Background())
+	if rel != nil || !errors.Is(err, errUnreachable) {
+		t.Fatalf("check = %+v, %v", rel, err)
+	}
+	if err.Error() != errUnreachable.Error() {
+		t.Fatalf("leaked detail: %v", err)
+	}
+}
+
+func TestCheckMissingManifestIsNotUpToDate(t *testing.T) {
+	f := &fake{}
+	s := &Service{}
+	if err := configure(s, f, "1.0.0", []byte("key"), true); err != nil {
+		t.Fatal(err)
+	}
+	s.empty = func(context.Context) error { return errors.New("HTTP 404") }
+	rel, err := s.Check(context.Background())
+	if rel != nil || !errors.Is(err, errNoRelease) {
+		t.Fatalf("missing manifest = %+v, %v", rel, err)
+	}
+}
+
+func TestCheckNilReleaseIsCurrentWhenTheManifestExists(t *testing.T) {
+	f := &fake{}
+	s := &Service{}
+	if err := configure(s, f, "1.0.0", []byte("key"), true); err != nil {
+		t.Fatal(err)
+	}
+	s.empty = func(context.Context) error { return nil }
+	rel, err := s.Check(context.Background())
+	if rel != nil || err != nil {
+		t.Fatalf("current = %+v, %v", rel, err)
+	}
 }

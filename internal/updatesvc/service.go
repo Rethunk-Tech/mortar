@@ -4,6 +4,9 @@ package updatesvc
 import (
 	"context"
 	"errors"
+	"log"
+	"net"
+	"net/http"
 	"strings"
 	"sync"
 
@@ -39,15 +42,20 @@ type Release struct {
 }
 
 var (
-	errOff      = errors.New("updates are off in development builds")
-	errUnsigned = errors.New("the update is not signed, so Mortar will not install it")
-	errNone     = errors.New("no update to install; check for updates first")
+	errOff         = errors.New("updates are off in development builds")
+	errUnsigned    = errors.New("the update is not signed, so Mortar will not install it")
+	errNone        = errors.New("no update to install; check for updates first")
+	errUnreachable = errors.New("unreachable")
+	errNoRelease   = errors.New("none")
+	errCheckFailed = errors.New("failed")
 )
 
 // Service is the updater as the window sees it.
 type Service struct {
 	u    Updater
 	info Info
+	// empty runs when Check finds no newer release, so a missing manifest is not reported as up to date.
+	empty func(context.Context) error
 
 	mu        sync.Mutex
 	cond      *sync.Cond
@@ -66,7 +74,13 @@ func (s *Service) lock() {
 // so the binding generator does not hand it to the window. Outside a production build, or for a dev version, u is
 // left unconfigured and every call reports updates as off.
 func Configure(s *Service, u Updater, version string, publicKey []byte) error {
-	return configure(s, u, version, publicKey, production && !application.System.IsServer())
+	if err := configure(s, u, version, publicKey, production && !application.System.IsServer()); err != nil {
+		return err
+	}
+	if s.info.Off == "" {
+		s.empty = checkPublished
+	}
+	return nil
 }
 
 func configure(s *Service, u Updater, version string, publicKey []byte, production bool) error {
@@ -108,6 +122,10 @@ func (s *Service) Check(ctx context.Context) (*Release, error) {
 	s.inCheck = true
 	s.mu.Unlock()
 	rel, err := s.u.Check(ctx)
+	var missing error
+	if err == nil && rel == nil && s.empty != nil {
+		missing = s.empty(ctx)
+	}
 	s.lock()
 	defer func() {
 		s.inCheck = false
@@ -118,8 +136,17 @@ func (s *Service) Check(ctx context.Context) (*Release, error) {
 		r := *s.found
 		return &r, nil
 	}
-	if err != nil || rel == nil {
+	if err != nil {
+		log.Printf("updater check: %v", err)
 		s.found = nil
+		return nil, classifyCheckError(err)
+	}
+	if rel == nil {
+		s.found = nil
+		if missing != nil {
+			log.Printf("updater check: %v", missing)
+			return nil, classifyCheckError(missing)
+		}
 		return nil, err
 	}
 	// The verifier accepts a digest alone, and a digest proves nothing about who published the release.
@@ -169,4 +196,49 @@ func (s *Service) Restart(ctx context.Context) error {
 	}
 	s.mu.Unlock()
 	return s.u.Restart(ctx)
+}
+
+func classifyCheckError(err error) error {
+	if err == nil {
+		return nil
+	}
+	if errors.Is(err, errUnreachable) || errors.Is(err, errNoRelease) || errors.Is(err, errCheckFailed) {
+		return err
+	}
+	var ne net.Error
+	if errors.As(err, &ne) && ne.Timeout() {
+		return errUnreachable
+	}
+	if _, ok := errors.AsType[*net.DNSError](err); ok {
+		return errUnreachable
+	}
+	msg := strings.ToLower(err.Error())
+	switch {
+	case strings.Contains(msg, "404"), strings.Contains(msg, "not found"):
+		return errNoRelease
+	case strings.Contains(msg, "timeout"), strings.Contains(msg, "timed out"), strings.Contains(msg, "i/o timeout"),
+		strings.Contains(msg, "deadline exceeded"), strings.Contains(msg, "wsarecv"), strings.Contains(msg, "wsasend"),
+		strings.Contains(msg, "connection refused"), strings.Contains(msg, "connection reset"),
+		strings.Contains(msg, "no such host"), strings.Contains(msg, "network is unreachable"),
+		strings.Contains(msg, "temporary failure in name resolution"), strings.Contains(msg, "dial tcp"):
+		return errUnreachable
+	default:
+		return errCheckFailed
+	}
+}
+
+func checkPublished(ctx context.Context) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ManifestURL, nil)
+	if err != nil {
+		return nil
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode == http.StatusNotFound {
+		return errNoRelease
+	}
+	return nil
 }

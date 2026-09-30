@@ -1,3 +1,4 @@
+import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
 import type {
   Info,
@@ -9,17 +10,33 @@ import {
   Install,
   Restart,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/updatesvc/service.ts'
+import { i18n } from '../i18n/index.ts'
 import { errorMessage } from '../toasts/report.ts'
 
-export type Phase =
+type Phase =
   | 'idle'
   | 'checking'
   | 'current'
+  | 'none'
   | 'available'
   | 'installing'
   | 'ready'
   | 'restarting'
   | 'error'
+
+function checkFailure(e: unknown): { phase: Phase; error: string } {
+  const raw = errorMessage(e)
+  if (raw === 'none') {
+    return { phase: 'none', error: '' }
+  }
+  if (raw === 'unreachable') {
+    return {
+      phase: 'error',
+      error: i18n._(msg`Could not reach GitHub. Check your connection and try again.`),
+    }
+  }
+  return { phase: 'error', error: i18n._(msg`Could not check for updates.`) }
+}
 
 // Mortar's own update, held here so the app menu's Check for updates and Settings › Updates share one check.
 export const useMortarUpdate = create<{
@@ -35,12 +52,18 @@ export const useMortarUpdate = create<{
   const run = async (
     busy: Phase,
     step: () => Promise<Partial<{ phase: Phase; release: Release | null }>>,
+    fail?: (e: unknown) => { phase: Phase; error: string },
   ) => {
     set({ phase: busy, error: '' })
     try {
       set(await step())
     } catch (e) {
-      set({ phase: 'error', error: errorMessage(e) })
+      set(
+        fail?.(e) ?? {
+          phase: 'error',
+          error: i18n._(msg`Could not update: ${errorMessage(e)}`),
+        },
+      )
     }
   }
   return {
@@ -57,16 +80,23 @@ export const useMortarUpdate = create<{
       await get().load()
       const { info, phase } = get()
       // An update already found or staged stays on offer; checking again would hide Install or Restart now.
-      if (info?.off || (phase !== 'idle' && phase !== 'current' && phase !== 'error')) {
+      if (
+        info?.off ||
+        (phase !== 'idle' && phase !== 'current' && phase !== 'none' && phase !== 'error')
+      ) {
         return
       }
-      await run('checking', async () => {
-        const release = await Check()
-        if (!release) {
-          return { release, phase: 'current' }
-        }
-        return { release, phase: release.staged ? 'ready' : 'available' }
-      })
+      await run(
+        'checking',
+        async () => {
+          const release = await Check()
+          if (!release) {
+            return { release, phase: 'current' }
+          }
+          return { release, phase: release.staged ? 'ready' : 'available' }
+        },
+        checkFailure,
+      )
     },
     install: () => {
       if (get().phase !== 'available') {
@@ -86,3 +116,5 @@ export const useMortarUpdate = create<{
 })
 
 export const getInitialState = () => useMortarUpdate.getInitialState()
+
+export type { Phase }
