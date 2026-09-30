@@ -93,7 +93,6 @@ func run() error {
 	)
 	ready := make(chan struct{})
 	closeReady := sync.OnceFunc(func() { close(ready) })
-	defer closeReady()
 	app := application.New(application.Options{
 		Name: "Mortar",
 		Icon: appIcon,
@@ -118,6 +117,9 @@ func run() error {
 			UniqueID: "tech.rethunk.mortar",
 			OnSecondInstanceLaunch: func(d application.SecondInstanceData) {
 				<-ready
+				if window == nil || nxmSvc == nil || shareSvc == nil {
+					return
+				}
 				// A minimised window stays down: the window sends a desktop notification whose click brings it up.
 				nxmLink := nxmSvc.Receive(d.Args)
 				if shareSvc.Receive(sharesvc.InDir(d.Args, d.WorkingDir)) || !nxmLink || !window.IsMinimised() {
@@ -297,7 +299,9 @@ func run() error {
 	if err := updatesvc.Configure(updates, app.Updater, version, updateKey); err != nil {
 		return err
 	}
-	queue.Run(context.Background(), queueSvc, nxmSvc.Assigned)
+	queueCtx, stopQueue := context.WithCancel(context.Background())
+	defer stopQueue()
+	queue.Run(queueCtx, queueSvc, nxmSvc.Assigned)
 	svc.App = app
 	loaders.App = app
 	profileSvc.App = app
@@ -330,5 +334,7 @@ func run() error {
 	})
 
 	closeReady()
-	return app.Run()
+	err = app.Run()
+	stopQueue()
+	return err
 }
