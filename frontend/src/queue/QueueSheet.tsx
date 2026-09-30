@@ -50,17 +50,17 @@ const tile = (i: Item) => ({
   picture: '',
 })
 
-// The item's name with the profile it installs into beside it.
+// The item's name with the profile it installs into under it; the sheet is too narrow to fit both on one line.
 function Title({ item, size }: { item: Item; size: number }) {
   const { t } = useLingui()
   const profile = useProfiles((s) => profileOf(item, s.game?.id, s.profiles))
   return (
-    <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, minWidth: 0 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
       <Typography noWrap={true} sx={{ fontSize: size, fontWeight: 600 }}>
         {item.name || item.fileName}
       </Typography>
       {profile === null ? null : (
-        <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary', flexShrink: 0 }}>
+        <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
           {profile ? t`into ${profile}` : t`into a deleted profile`}
         </Typography>
       )}
@@ -169,7 +169,7 @@ function Callout({
           </Typography>
           <Title item={item} size={16} />
         </Box>
-        {actions}
+        <Box sx={{ flexShrink: 0 }}>{actions}</Box>
       </Box>
       <Typography sx={{ fontSize: 13, lineHeight: 1.45 }}>{text}</Typography>
       {children}
