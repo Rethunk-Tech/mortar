@@ -34,6 +34,16 @@ func (s *Service) SetBackupsKept(n int) error {
 	return s.set(func(v *Settings) { v.BackupsKept = n })
 }
 
+// SetCheckModUpdatesOnStart sets whether startup checks the last-opened profile of each game.
+func (s *Service) SetCheckModUpdatesOnStart(on bool) error {
+	return s.set(func(v *Settings) { v.CheckModUpdatesOnStart = &on })
+}
+
+// SetTellWhenSmapiOut sets whether Mortar toasts when a newer SMAPI exists.
+func (s *Service) SetTellWhenSmapiOut(on bool) error {
+	return s.set(func(v *Settings) { v.TellWhenSmapiOut = &on })
+}
+
 // SetListColumns stores which Mods list-view columns are shown.
 func (s *Service) SetListColumns(ids []string) error {
 	return s.set(func(v *Settings) { v.ListColumns = ids })

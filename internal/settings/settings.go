@@ -68,6 +68,11 @@ type Settings struct {
 	// ListSortColumn and ListSortDir are the Mods list sort; unknown values become name ascending.
 	ListSortColumn string `json:"listSortColumn"`
 	ListSortDir    string `json:"listSortDir"`
+	// CheckModUpdatesOnStart is whether Mortar checks the last-opened profile of each game at startup.
+	// Nil or omitted means on.
+	CheckModUpdatesOnStart *bool `json:"checkModUpdatesOnStart"`
+	// TellWhenSmapiOut is whether Mortar toasts when a newer SMAPI exists. Nil or omitted means on.
+	TellWhenSmapiOut *bool `json:"tellWhenSmapiOut"`
 }
 
 const (
@@ -76,11 +81,14 @@ const (
 )
 
 // Defaults returns the settings used when no valid file exists.
+func on() *bool { v := true; return &v }
+
 func Defaults() Settings {
 	return Settings{
 		Accent: "sand", Background: BackgroundImage, LastProfile: map[string]string{}, LastPlayed: map[string]Played{}, GameFolders: map[string]string{},
 		Loaders: map[string]string{}, Dismissed: map[string][]string{}, BackupsKept: backup.DefaultKeep,
 		ListColumns: slices.Clone(defaultListColumns), ListSortColumn: defaultListSortColumn, ListSortDir: defaultListSortDir,
+		CheckModUpdatesOnStart: on(), TellWhenSmapiOut: on(),
 	}
 }
 
@@ -126,6 +134,7 @@ func Open() (*Store, error) {
 	if s.cur.BackupsKept < MinBackupsKept || s.cur.BackupsKept > MaxBackupsKept {
 		s.cur.BackupsKept = Defaults().BackupsKept
 	}
+	normalizeToggles(&s.cur)
 	normalizeList(&s.cur)
 	return s, nil
 }
@@ -153,6 +162,7 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 		return s.cur, fmt.Errorf("backups kept must be %d to %d, got %d", MinBackupsKept, MaxBackupsKept, next.BackupsKept)
 	}
 	next.LastPlayed = validLastPlayed(next.LastPlayed)
+	normalizeToggles(&next)
 	if err := validateList(next); err != nil {
 		return s.cur, err
 	}
@@ -162,6 +172,15 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	}
 	s.cur = next
 	return next, nil
+}
+
+func normalizeToggles(s *Settings) {
+	if s.CheckModUpdatesOnStart == nil {
+		s.CheckModUpdatesOnStart = on()
+	}
+	if s.TellWhenSmapiOut == nil {
+		s.TellWhenSmapiOut = on()
+	}
 }
 
 func validLastPlayed(in map[string]Played) map[string]Played {

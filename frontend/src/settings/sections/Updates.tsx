@@ -1,8 +1,21 @@
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, CircularProgress, Link, TextField } from '@mui/material'
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  FormControlLabel,
+  Link,
+  Switch,
+  TextField,
+} from '@mui/material'
 import { Download, RefreshCw, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
-import { SetBackupsKept } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import {
+  SetBackupsKept,
+  SetCheckModUpdatesOnStart,
+  SetTellWhenSmapiOut,
+} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useNav } from '../../nav/store.ts'
 import { errorMessage, errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
@@ -169,14 +182,49 @@ function BackupsKept() {
   )
 }
 
+function persistToggle(
+  run: () => Promise<void>,
+  push: ReturnType<typeof useToasts.getState>['push'],
+  title: string,
+) {
+  run().catch((err: unknown) => {
+    const body = errorText(err)
+    push({ kind: 'error', title, ...(body ? { body } : {}) })
+  })
+}
+
 export function Updates() {
   const { t } = useLingui()
   const game = lastOpenedGame(useSettings((s) => s.lastGame))
+  const checkModUpdatesOnStart = useSettings((s) => s.checkModUpdatesOnStart)
+  const tellWhenSmapiOut = useSettings((s) => s.tellWhenSmapiOut)
+  const push = useToasts((s) => s.push)
+  const fail = t`Couldn't save that setting`
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Mortar`}</Box>
       <MortarUpdate />
       <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Mods and SMAPI`}</Box>
+      <FormControlLabel
+        sx={{ m: 0, alignItems: 'center' }}
+        control={
+          <Switch
+            checked={checkModUpdatesOnStart !== false}
+            onChange={(_, on) => persistToggle(() => SetCheckModUpdatesOnStart(on), push, fail)}
+          />
+        }
+        label={t`Check for mod updates when Mortar starts`}
+      />
+      <FormControlLabel
+        sx={{ m: 0, alignItems: 'center' }}
+        control={
+          <Switch
+            checked={tellWhenSmapiOut !== false}
+            onChange={(_, on) => persistToggle(() => SetTellWhenSmapiOut(on), push, fail)}
+          />
+        }
+        label={t`Tell me when a new SMAPI is out`}
+      />
       <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
         {t`Mod updates show on each profile's mod list, and SMAPI's in the game's settings.`}
       </Box>

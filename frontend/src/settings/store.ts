@@ -19,6 +19,8 @@ const defaults: Settings = {
   nxmHandled: false,
   nxmPrevious: '',
   nxmAsked: false,
+  checkModUpdatesOnStart: true,
+  tellWhenSmapiOut: true,
   backupsKept: 5,
   listColumns: ['on', 'name', 'version', 'author', 'source', 'category', 'status'],
   listSortColumn: 'name',
