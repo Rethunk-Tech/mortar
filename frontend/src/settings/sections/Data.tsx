@@ -12,7 +12,7 @@ import {
   Link,
 } from '@mui/material'
 import { Download, FolderOpen, Trash2, Upload } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   Usage as DiskUse,
   Preview,
@@ -33,10 +33,10 @@ import {
 import { paper } from '../../mods/paper.ts'
 import { formatBytes } from '../../saves/backupFormat.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
+import { beginUsageLoad } from '../usageLoad.ts'
 
 const nowrap = { whiteSpace: 'nowrap' } as const
 const mono = { fontFamily: '"IBM Plex Mono", monospace', fontSize: 13 } as const
-const PROGRESS_MS = 80
 
 function Row({ label, size }: { label: string; size: number }) {
   return (
@@ -129,27 +129,26 @@ export function Data() {
   const [preview, setPreview] = useState<Preview | null>(null)
   const [importPreview, setImportPreview] = useState<ImportPreview | null>(null)
   const [busy, setBusy] = useState(false)
-  const load = useCallback(() => {
+  const stopRef = useRef<() => void>(() => {
+    return
+  })
+  const restart = useCallback(() => {
+    stopRef.current()
     setUsage(null)
-    const tick = globalThis.setInterval(() => {
-      UsageProgress()
-        .then((p) => {
-          if (p.measuring) {
-            setBytes(p.bytes)
-          }
-        })
-        .catch(() => undefined)
-    }, PROGRESS_MS)
-    Usage()
-      .then(setUsage)
-      .catch(reportUnexpected)
-      .finally(() => {
-        globalThis.clearInterval(tick)
-      })
+    stopRef.current = beginUsageLoad({
+      usage: Usage,
+      progress: UsageProgress,
+      setBytes,
+      setUsage,
+      onError: reportUnexpected,
+    })
   }, [])
   useEffect(() => {
-    load()
-  }, [load])
+    restart()
+    return () => {
+      stopRef.current()
+    }
+  }, [restart])
   const openPreview = () => {
     CleanupPreview().then(setPreview).catch(reportUnexpected)
   }
@@ -158,7 +157,7 @@ export function Data() {
     Cleanup()
       .then(() => {
         setPreview(null)
-        load()
+        restart()
       })
       .catch(reportUnexpected)
       .finally(() => setBusy(false))
