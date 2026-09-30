@@ -79,6 +79,8 @@ type Settings struct {
 	TellWhenSmapiOut *bool `json:"tellWhenSmapiOut"`
 	// TipsSeen is the empty-state tips the user has dismissed (mods, saves, console, share).
 	TipsSeen []string `json:"tipsSeen"`
+	// SmapiToastAt is when Mortar last showed the SMAPI-update toast (RFC3339). Empty means never.
+	SmapiToastAt string `json:"smapiToastAt"`
 }
 
 const (

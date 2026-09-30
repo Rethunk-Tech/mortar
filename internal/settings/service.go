@@ -65,6 +65,11 @@ func (s *Service) SetTipsSeen(ids []string) error {
 	return s.set(func(v *Settings) { v.TipsSeen = ids })
 }
 
+// SetSmapiToastAt stores when Mortar last showed the SMAPI-update toast.
+func (s *Service) SetSmapiToastAt(at string) error {
+	return s.set(func(v *Settings) { v.SmapiToastAt = at })
+}
+
 func (s *Service) SetBackground(background string) error {
 	return s.set(func(v *Settings) { v.Background = background })
 }

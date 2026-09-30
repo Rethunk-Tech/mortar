@@ -27,6 +27,7 @@ const defaults: Settings = {
   listSortDir: 'asc',
   listGroupBy: 'none',
   tipsSeen: [],
+  smapiToastAt: '',
 }
 
 export const useSettings = create<Settings>(() => defaults)
