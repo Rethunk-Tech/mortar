@@ -17,7 +17,8 @@ Platforms are Windows and Linux. macOS is out: fleet CI has no macOS runners, an
 - **Go services:** each backend area is a Wails service (`application.NewService`, optional `ServiceStartup`/`ServiceShutdown`), so its exported methods are bound to TypeScript.
 - **Single instance:** `Options.SingleInstance` with `OnSecondInstanceLaunch`, which receives the second launch's `Args`. Links reach the app two ways: `events.Common.ApplicationLaunchedWithUrl` on a cold start, and `SecondInstanceData.Args` when the app is already running. Both paths feed one link router.
 - **Link schemes:** `protocols:` in `build/config.yml` registers `mortar://` and `nxm://`. The NSIS installer and MSIX manifest register them on Windows. On Linux, `desktop.tmpl` emits `MimeType=x-scheme-handler/...`. Trap: the default Linux Taskfile's `generate:dotdesktop` calls `wails3 generate .desktop` without `-mimetype`, so the AppImage would not register the schemes until that task is changed.
-- **Self-update:** the built-in updater (`app.Updater`, `pkg/updater`) with the GitHub releases provider. It requires a signing key pair; the public key ships in the app.
+- **Self-update:** the built-in updater (`app.Updater`, `pkg/updater`) with the GitHub releases provider. It requires a signing key pair; the public key ships in the app. Releases go on `Rethunk-AI/mortar`'s GitHub Releases, and the repo turns public at the first release (NOMAD, 2026-09-29), since the updater reads only public releases.
+- **Tests (NOMAD, 2026-09-29):** Go tests run against local HTTP test servers that replay recorded Nexus, GitHub, SMAPI API and dataset responses, inside the 10 s warm / 30 s cold gate budget. A separate opt-in smoke test copies a real Stardew install to scratch space, installs SMAPI with `--no-prompt`, and launches a profile, reading `SMAPI-latest.txt` for the loaded mods, as the planning tests did.
 - **Packaging:** NSIS on Windows; AppImage, deb and rpm on Linux. There is no Flatpak target in Wails. The first release ships unsigned on Windows (NOMAD, 2026-09-29: no signing costs yet), so SmartScreen shows an unknown-publisher warning and the download page says how to get past it. Steam Deck is not a v1 target (NOMAD, 2026-09-29).
 
 ## Look
@@ -48,7 +49,7 @@ Stardew Valley is the first implementation and ships alone in the first release;
 
 ### Storage
 
-All Mortar data lives in the user data directory (`%LOCALAPPDATA%\Mortar`, `$XDG_DATA_HOME/mortar`):
+All Mortar data lives in the user data directory (`%LOCALAPPDATA%\Mortar`, `$XDG_DATA_HOME/mortar`). Mortar's own state is JSON files (NOMAD, 2026-09-29): one `profile.json` per profile, `settings.json`, and cache files, each written atomically through a temp file and rename; no database. Secrets (the Nexus key) live in the OS keyring.
 
 - `store/<game>/<mod-id>/<version>/`: each downloaded mod version, extracted once.
 - `profiles/<game>/<profile-id>/`: the profile's own mod tree plus `profile.json`.
