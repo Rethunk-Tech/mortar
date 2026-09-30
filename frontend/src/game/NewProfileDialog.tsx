@@ -38,7 +38,7 @@ export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: ()
     <Dialog
       open={open}
       onClose={close}
-      slotProps={{ paper: { sx: { bgcolor: 'rgba(40,40,48,0.92)', minWidth: 360 } } }}
+      slotProps={{ paper: { sx: { bgcolor: 'rgb(40,40,48)', minWidth: 360 } } }}
     >
       <form
         onSubmit={(e) => {
