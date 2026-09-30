@@ -123,6 +123,16 @@ func TestLinesReadsTheProfilesLastLog(t *testing.T) {
 	if got, err := svc.Lines("stardew", a.ID); err != nil || got == nil || len(got) != 0 {
 		t.Fatalf("B's session is not A's: %v, %v", got, err)
 	}
+
+	buf = &launch.Buffer{}
+	buf.Add(launch.Entry{Message: "Started without mods"})
+	svc.logs["stardew"] = session{buf: buf, vanilla: true}
+	if got, err := svc.Lines("stardew", a.ID); err != nil || got == nil || len(got) != 0 {
+		t.Fatalf("vanilla session leaked to a profile: %v, %v", got, err)
+	}
+	if got, err := svc.Lines("stardew", ""); err != nil || len(got) != 1 || got[0].Message != "Started without mods" {
+		t.Fatalf("empty profile id should see the vanilla session: %v, %v", got, err)
+	}
 }
 
 func TestGameClosingEndsTheConsoleWithAMortarLine(t *testing.T) {
@@ -411,5 +421,28 @@ func TestAProcessWithoutACommandLineLocksEveryProfileUnlessMortarLaunchedIt(t *t
 	}
 	if credited(bare, "/a", "a", "", true) || credited(withArgs, "/a", "a", "", true) {
 		t.Fatal("a vanilla launch locks no profile")
+	}
+}
+
+func TestStartLoaderUsesAppLifetime(t *testing.T) {
+	svc, p := startEnv(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	svc.life = ctx
+	saw := make(chan context.Context, 1)
+	svc.EnsureLoader = func(ctx context.Context, _ string, _ bool) error {
+		saw <- ctx
+		return ctx.Err()
+	}
+	if err := svc.Start("stardew", p.ID, true); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case got := <-saw:
+		if got.Err() == nil {
+			t.Fatal("EnsureLoader ran with a live context")
+		}
+	case <-time.After(time.Second):
+		t.Fatal("EnsureLoader was not called")
 	}
 }
