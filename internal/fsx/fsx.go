@@ -28,6 +28,13 @@ func Create(path string) (*os.File, error) {
 	return in(path, func(r *os.Root, name string) (*os.File, error) { return r.Create(name) })
 }
 
+// OpenFile opens path with flag and perm, still through the parent root.
+func OpenFile(path string, flag int, perm os.FileMode) (*os.File, error) {
+	return in(path, func(r *os.Root, name string) (*os.File, error) {
+		return r.OpenFile(name, flag, perm)
+	})
+}
+
 // CreateExcl creates path with perm and fails if it already exists.
 func CreateExcl(path string, perm os.FileMode) (*os.File, error) {
 	return in(path, func(r *os.Root, name string) (*os.File, error) {

@@ -108,6 +108,8 @@ type Item struct {
 	expires int64
 	// staged is the store key of a downloaded GitHub asset that waits for Confirm, or that Confirm released.
 	staged string
+	// started is when this attempt left the queue for a fetch; it is not persisted.
+	started time.Time
 }
 
 // saved is queue.json: the state, and the staged key of each item that has one, so a restart still asks for
@@ -184,7 +186,8 @@ type Service struct {
 	cancels map[string]context.CancelFunc
 }
 
-// New reads the saved queue: what was under way starts over, and a file waiting for a click is clicked again.
+// New reads the saved queue: what was under way is queued again so a partial file can resume, and a file
+// waiting for a click is clicked again.
 func New(d Deps) (*Service, error) {
 	if d.Now == nil {
 		d.Now = time.Now
@@ -219,7 +222,7 @@ func New(d Deps) (*Service, error) {
 
 // Run works the queue until ctx ends, and feeds it the links the user assigned to a profile.
 func Run(ctx context.Context, s *Service, assigned <-chan nxmsvc.Assignment) {
-	_ = os.RemoveAll(filepath.Join(s.d.Dir, downloadsDir))
+	s.sweepDownloads()
 	go s.run(ctx)
 	go func() {
 		for {
@@ -515,8 +518,11 @@ func (s *Service) Cancel(id string) {
 }
 
 func (s *Service) end(id, to string, from ...string) {
+	var rec *Item
 	s.mu.Lock()
 	if it := s.find(id); it != nil && slices.Contains(from, it.State) {
+		snap := *it
+		rec = &snap
 		it.State, it.Progress, it.Speed, it.key, it.staged = to, 0, 0, "", ""
 		if cancel := s.cancels[id]; cancel != nil {
 			cancel()
@@ -524,6 +530,12 @@ func (s *Service) end(id, to string, from ...string) {
 	}
 	s.mu.Unlock()
 	s.publish(true)
+	if rec != nil {
+		if to == StateCancelled || to == StateSkipped {
+			dropDownload(destPath(s.d.Dir, rec.ID, rec.FileName))
+		}
+		s.recordHistory(rec, to)
+	}
 	s.poke()
 }
 

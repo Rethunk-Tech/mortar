@@ -5,14 +5,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/archive"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -124,6 +120,9 @@ func (s *Service) step(ctx context.Context) bool {
 	}
 	if act == fetch {
 		it.State, it.Progress, it.Speed = StateDownloading, 0, 0
+		if it.started.IsZero() {
+			it.started = s.d.Now()
+		}
 	}
 	if act == install {
 		// Nothing is left to download, and Cancel does not reach an install under way.
@@ -190,8 +189,16 @@ func (s *Service) settle(id string, err error) {
 		it.State, it.Error = StateFailed, err.Error()
 	}
 	reopen := it.State == StateWaitingClick
+	var rec *Item
+	if it.State == StateFailed {
+		snap := *it
+		rec = &snap
+	}
 	s.mu.Unlock()
 	s.publish(true)
+	if rec != nil {
+		s.recordHistory(rec, StateFailed)
+	}
 	if reopen {
 		// An expired key, or a premium-only answer: the page gives a fresh one.
 		if err := s.OpenPage(id); err != nil {
@@ -269,10 +276,25 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	if err := os.MkdirAll(filepath.Join(s.d.Dir, downloadsDir), 0o700); err != nil {
 		return err
 	}
-	path := filepath.Join(s.d.Dir, downloadsDir, it.ID+filepath.Ext(it.FileName))
-	defer func() { _ = os.Remove(path) }()
-	if err := s.fetch(ctx, it, links[0].URI, path); err != nil {
-		return err
+	path := destPath(s.d.Dir, it.ID, it.FileName)
+	uri := links[0].URI
+	var fetchErr error
+	for attempt := range 2 {
+		fetchErr = s.fetch(ctx, it, uri, path)
+		if fetchErr == nil || !errors.Is(fetchErr, errLinkExpired) || attempt == 1 {
+			break
+		}
+		links, err = c.DownloadLinks(ctx, it.ModID, it.FileID, key, expires)
+		if err != nil {
+			return err
+		}
+		if len(links) == 0 {
+			return errors.New("the download has no link")
+		}
+		uri = links[0].URI
+	}
+	if fetchErr != nil {
+		return fetchErr
 	}
 	s.mu.Lock()
 	cur := s.find(it.ID)
@@ -287,7 +309,11 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		Kind: profile.KindNexus, Name: it.FileName, ModID: it.ModID, FileID: it.FileID, Version: it.Version,
 		Picture: mod.PictureURL, EndorsementCount: mod.EndorsementCount,
 	})
-	return s.finish(it.ID, err, false)
+	err = s.finish(it.ID, err, false)
+	if err == nil {
+		dropDownload(path)
+	}
+	return err
 }
 
 // finish marks an item done after its install, which a mod already in the profile does not fail.
@@ -297,54 +323,18 @@ func (s *Service) finish(id string, err error, unverified bool) error {
 		return err
 	}
 	s.mu.Lock()
+	var rec *Item
 	if cur := s.find(id); cur != nil {
+		snap := *cur
+		rec = &snap
 		cur.State, cur.Progress, cur.key, cur.staged, cur.Unverified = StateDone, 100, "", "", unverified
 	}
 	s.mu.Unlock()
 	s.publish(true)
+	if rec != nil {
+		s.recordHistory(rec, StateDone)
+	}
 	return nil
-}
-
-// fetch streams the file to path, reporting progress about every progressEvery.
-func (s *Service) fetch(ctx context.Context, it Item, url, path string) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return err
-	}
-	resp, err := s.d.HTTP.Do(req)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("the download server answered %s", resp.Status)
-	}
-	const limit = archive.DefaultMaxTotalBytes
-	tooLarge := fmt.Errorf("the download is larger than %d MiB", limit>>20)
-	if resp.ContentLength > limit {
-		return tooLarge
-	}
-	total := resp.ContentLength
-	if total <= 0 {
-		total = it.SizeKB << 10
-	}
-	f, err := fsx.Create(path)
-	if err != nil {
-		return s.diskError(err, total)
-	}
-	defer func() { _ = f.Close() }()
-	p := &progress{s: s, id: it.ID, total: total, last: s.d.Now()}
-	n, err := io.Copy(f, io.TeeReader(io.LimitReader(resp.Body, limit+1), p))
-	if err != nil {
-		if ctx.Err() != nil {
-			return ctx.Err()
-		}
-		return s.diskError(err, total)
-	}
-	if n > limit {
-		return tooLarge
-	}
-	return s.diskError(f.Close(), total)
 }
 
 func (s *Service) diskError(err error, total int64) error {
