@@ -16,6 +16,7 @@ import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/laun
 import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { TipBanner } from '../tips/TipBanner.tsx'
 import { countByLevel, incompatibleSMAPI, isFiltered, LEVELS, modsOf } from './filter.ts'
 import { stepHistory } from './history.ts'
 import { LinkedLog } from './LinkedLog.tsx'
@@ -383,6 +384,9 @@ export function ConsoleTab({ game }: { game: string }) {
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <TipBanner tip="console">
+        {t`Filter by level or mod, and use Get help to share this log.`}
+      </TipBanner>
       <Box
         sx={{
           display: 'flex',

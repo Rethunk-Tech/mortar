@@ -23,6 +23,7 @@ import {
 import { Logo } from '../brand/Logo.tsx'
 import { heading, paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { TipBanner } from '../tips/TipBanner.tsx'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type MeterLevel, meter, type ShownInfo, shownInfo, suggestFile } from './logic.ts'
@@ -496,6 +497,9 @@ export function ShareDialog() {
           }}
         >
           <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
+            <TipBanner tip="share">
+              {t`A share link names this profile and the Nexus or GitHub files in it, not the archives.`}
+            </TipBanner>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, p: '20px 24px 0' }}>
               {art ? (
                 <Box

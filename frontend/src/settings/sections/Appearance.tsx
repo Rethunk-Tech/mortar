@@ -6,6 +6,7 @@ import {
   SetAccent,
   SetBackground,
   SetBackgroundImage,
+  SetTipsSeen,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { type AccentName, accents } from '../../theme/accents.ts'
 import { errorText } from '../../toasts/report.ts'
@@ -152,6 +153,14 @@ export function Appearance() {
           </Button>
         </Box>
       ) : null}
+      <Button
+        variant="outlined"
+        onClick={() => {
+          SetTipsSeen([]).catch(reportFailure)
+        }}
+      >
+        {t`Show tips again`}
+      </Button>
     </Box>
   )
 }

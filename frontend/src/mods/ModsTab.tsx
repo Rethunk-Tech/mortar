@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Card, CircularProgress, Typography } from '@mui/material'
+import { Box, Button, ButtonBase, Card, Chip, CircularProgress, Typography } from '@mui/material'
 import { Download } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
@@ -7,18 +7,23 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compact } from '../game/compact.ts'
+import { useSettings } from '../settings/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { openImport } from '../share/store.ts'
+import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { DuplicateDialog } from './DuplicateDialog.tsx'
 import { useDetail } from './detail.ts'
 import { LockedNote } from './LockedNote.tsx'
-import { modId, nexusIdOf } from './lookup.ts'
+import { firstTag, groupSorted, sanitizeListGroupBy } from './group.ts'
+import { entryOf, kindLabel, modId, nexusIdOf } from './lookup.ts'
 import { ModDetail } from './ModDetail.tsx'
-import { ModList } from './ModList.tsx'
+import { ModList, toListRow } from './ModList.tsx'
+import { ModsGroupHeader } from './ModsGroupHeader.tsx'
 import { ModContextMenu, ModMenu } from './ModMenu.tsx'
 import { contextMenuProps, useContextMenu } from './menu.ts'
-import { useNexusFresh } from './nexusDetails.ts'
+import { compareListRows, sanitizeListSort } from './listColumns.ts'
+import { primeDetails, useNexusDetails, useNexusFresh } from './nexusDetails.ts'
 import { ProblemBar } from './ProblemBar.tsx'
 import { LetterTile, PinBadge, ProblemBadge, RemoveDialog, UpdateBadge } from './parts.tsx'
 import { SelectionBar } from './SelectionBar.tsx'
@@ -75,6 +80,7 @@ function ModCard({
   const id = modId(m)
   const marked = selectedIds.includes(id) || (selectedIds.length === 0 && id === selectedId)
   const fresh = useNexusFresh(nexusIdOf(profile, m))
+  const tag = firstTag(entryOf(profile, m.key)?.tags)
   return (
     <Card
       {...contextMenuProps(m)}
@@ -138,29 +144,90 @@ function ModCard({
       <PinBadge mod={m} />
       <UpdateBadge mod={m} />
       <ProblemBadge mod={m} />
+      {tag ? <Chip size="small" label={tag} sx={{ maxWidth: 96 }} /> : null}
       <ModMenu mod={m} />
     </Card>
   )
 }
 
 function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
-  const orderedIds = shown.map((m) => modId(m))
+  const { t } = useLingui()
+  const groupBy = sanitizeListGroupBy(useSettings((s) => s.listGroupBy))
+  const listSortColumn = useSettings((s) => s.listSortColumn)
+  const listSortDir = useSettings((s) => s.listSortDir)
+  const sort = sanitizeListSort(listSortColumn ?? '', listSortDir ?? '')
+  const byId = useNexusDetails((s) => s.byId)
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
+  const tagHint = t`A mod with several tags appears under its first tag.`
+  useEffect(() => {
+    primeDetails(shown.map((m) => nexusIdOf(profile, m)).filter((id) => id > 0)).catch(
+      reportUnexpected,
+    )
+  }, [shown, profile])
+  const groups = groupSorted(
+    shown.map((m) => toListRow(m, profile, byId, t)),
+    groupBy,
+    (row) => {
+      if (groupBy === 'category') {
+        return row.details?.category ?? ''
+      }
+      if (groupBy === 'source') {
+        return row.source
+      }
+      if (groupBy === 'tag') {
+        return firstTag(row.tags)
+      }
+      return ''
+    },
+    (a, b) => compareListRows(a, b, sort),
+  )
+  const orderedIds = groups.flatMap((g) => g.items.map((r) => modId(r.mod)))
+  const emptyLabel =
+    groupBy === 'category'
+      ? t`Uncategorised`
+      : groupBy === 'source'
+        ? t`Unknown source`
+        : t`Untagged`
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-        gap: '6px',
-        px: 2,
-        pt: '4px',
-        pb: 1.75,
-        overflowY: 'auto',
-        alignContent: 'start',
-      }}
-    >
-      {shown.map((m) => (
-        <ModCard key={modId(m)} mod={m} orderedIds={orderedIds} profile={profile} />
-      ))}
+    <Box sx={{ minHeight: 0, overflowY: 'auto' }}>
+      {groups.map((group) => {
+        const open = collapsed[group.key] !== true
+        return (
+          <Box key={group.key || 'none'}>
+            {groupBy !== 'none' ? (
+              <ModsGroupHeader
+                label={group.key || emptyLabel}
+                count={group.items.length}
+                open={open}
+                hint={groupBy === 'tag' ? tagHint : undefined}
+                onToggle={() => setCollapsed((cur) => ({ ...cur, [group.key]: open }))}
+              />
+            ) : null}
+            {open ? (
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                  gap: '6px',
+                  px: 2,
+                  pt: '4px',
+                  pb: 1.75,
+                  alignContent: 'start',
+                }}
+              >
+                {group.items.map((r) => (
+                  <ModCard
+                    key={modId(r.mod)}
+                    mod={r.mod}
+                    orderedIds={orderedIds}
+                    profile={profile}
+                  />
+                ))}
+              </Box>
+            ) : null}
+          </Box>
+        )
+      })}
     </Box>
   )
 }
@@ -264,6 +331,9 @@ export function ModsTab({ profile }: { profile: Profile }) {
         }}
       >
         <Typography sx={{ fontSize: 26, fontWeight: 700 }}>{t`No mods yet`}</Typography>
+        <TipBanner tip="mods">
+          {t`Drop archives anywhere on the window, or Browse Nexus to find mods.`}
+        </TipBanner>
         <Typography sx={{ maxWidth: 520, fontSize: 15, lineHeight: 1.5 }}>
           {t`Add mods from an archive you downloaded, or find them on Nexus.`}
         </Typography>
@@ -306,6 +376,9 @@ export function ModsTab({ profile }: { profile: Profile }) {
     <Box
       sx={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
     >
+      <TipBanner tip="mods">
+        {t`Drop archives anywhere on the window, or Browse Nexus to find mods.`}
+      </TipBanner>
       <ProblemBar />
       <UpdateBar />
       <Toolbar query={query} onQuery={setQuery} total={mods.length} />

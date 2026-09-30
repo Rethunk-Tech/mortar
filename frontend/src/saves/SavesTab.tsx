@@ -13,6 +13,7 @@ import { useLocked } from '../mods/useLocked.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
+import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { BackupsDialog } from './BackupsDialog.tsx'
@@ -284,6 +285,9 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+      <TipBanner tip="saves">
+        {t`Saves stay in one folder for every profile. This tab shows how well each save fits this one.`}
+      </TipBanner>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 0.75 }}>
         <Typography sx={{ flex: 1, minWidth: 0, fontSize: 13, lineHeight: 1.5 }}>
           {t`Mortar reads each save for the mods it has used. You pick the save in the game; this is how well each one fits ${name}.`}

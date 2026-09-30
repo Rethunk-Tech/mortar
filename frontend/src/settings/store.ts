@@ -25,6 +25,8 @@ const defaults: Settings = {
   listColumns: ['on', 'name', 'version', 'author', 'source', 'category', 'status'],
   listSortColumn: 'name',
   listSortDir: 'asc',
+  listGroupBy: 'none',
+  tipsSeen: [],
 }
 
 export const useSettings = create<Settings>(() => defaults)
