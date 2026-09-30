@@ -167,6 +167,7 @@ func main() {
 		Premium:  func() bool { return store.Get().NexusPremium },
 		Env:      problemsSvc.Environment,
 		Queue:    queueSvc,
+		Dir:      dataDir,
 		Emit: func(name string, data any) {
 			if app != nil {
 				app.Event.Emit(name, data)
@@ -174,6 +175,7 @@ func main() {
 		},
 	})
 	shareSvc.Receive(os.Args[1:])
+	shareSvc.QueueChanged(queueSvc.State())
 
 	app = application.New(application.Options{
 		Name:        "Mortar",

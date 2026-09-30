@@ -69,6 +69,8 @@ type Deps struct {
 	Premium  func() bool
 	Env      func(game string) problems.Environment
 	Queue    Queue
+	// Dir is the data folder holding pending-configs.json; empty keeps pending imports in memory only.
+	Dir string
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 }
@@ -82,6 +84,8 @@ type Service struct {
 	// once its downloads are settled. It is a field so the window cannot call it; wire it to queue.Deps.Changed.
 	QueueChanged func(queue.State)
 
+	// applyMu serialises queueChanged, which edits the pending imports and saves them.
+	applyMu sync.Mutex
 	mu      sync.Mutex
 	nextID  int
 	inbox   []Arrival
@@ -92,6 +96,7 @@ type Service struct {
 // NewService returns the service.
 func NewService(d Deps) *Service {
 	s := &Service{d: d}
+	s.pending = loadPending(d.Dir)
 	s.QueueChanged = s.queueChanged
 	return s
 }
@@ -445,8 +450,9 @@ func (s *Service) Import(game, profileID string, exclude []string) (Result, erro
 	res.Queued = len(reqs)
 	if len(cur.configs) > 0 && len(reqs) > 0 {
 		s.mu.Lock()
-		s.pending = append(s.pending, &pending{game: game, profile: profileID, wanted: wanted, configs: cur.configs})
+		s.pending = append(s.pending, &pending{Game: game, Profile: profileID, Wanted: wanted, Configs: cur.configs})
 		s.mu.Unlock()
+		s.savePending()
 	}
 	s.Discard()
 	return res, nil
@@ -456,52 +462,60 @@ func (s *Service) Import(game, profileID string, exclude []string) (Result, erro
 
 // wantedFile names a file an import queued, as the profile's entry for it will record its source.
 type wantedFile struct {
-	modID, fileID    int
-	repo, tag, asset string
+	ModID  int    `json:"modId"`
+	FileID int    `json:"fileId"`
+	Repo   string `json:"repo"`
+	Tag    string `json:"tag"`
+	Asset  string `json:"asset"`
 }
 
 func wantedOf(m Mod) wantedFile {
-	return wantedFile{modID: m.ModID, fileID: m.FileID, repo: m.Repo, tag: m.Tag, asset: m.Asset}
+	return wantedFile{ModID: m.ModID, FileID: m.FileID, Repo: m.Repo, Tag: m.Tag, Asset: m.Asset}
 }
 
 func (w wantedFile) entry(e profile.Entry) bool {
-	if w.repo != "" {
-		return e.Source.Kind == profile.KindGitHub && strings.EqualFold(e.Source.Repo, w.repo) && (w.tag == "" || e.Source.Tag == w.tag) &&
-			(w.asset == "" || e.Source.Asset == w.asset)
+	if w.Repo != "" {
+		return e.Source.Kind == profile.KindGitHub && strings.EqualFold(e.Source.Repo, w.Repo) && (w.Tag == "" || e.Source.Tag == w.Tag) &&
+			(w.Asset == "" || e.Source.Asset == w.Asset)
 	}
-	return e.Source.Kind == profile.KindNexus && e.Source.ModID == w.modID && e.Source.FileID == w.fileID
+	return e.Source.Kind == profile.KindNexus && e.Source.ModID == w.ModID && e.Source.FileID == w.FileID
 }
 
 func (w wantedFile) item(it queue.Item) bool {
-	if w.repo != "" {
-		return strings.EqualFold(it.Repo, w.repo)
+	if w.Repo != "" {
+		return strings.EqualFold(it.Repo, w.Repo)
 	}
-	return it.ModID == w.modID && it.FileID == w.fileID
+	return it.ModID == w.ModID && it.FileID == w.FileID
 }
 
 // pending is a .mortar file's config files waiting for the mods they belong to.
 type pending struct {
-	game, profile string
-	wanted        []wantedFile
-	configs       []share.Config
-	seen          int
+	Game    string         `json:"game"`
+	Profile string         `json:"profile"`
+	Wanted  []wantedFile   `json:"wanted"`
+	Configs []share.Config `json:"configs"`
+	// seen counts the finished downloads already applied; it starts over with the process.
+	seen int
 }
 
 func (p *pending) wants(e profile.Entry) bool {
-	return slices.ContainsFunc(p.wanted, func(w wantedFile) bool { return w.entry(e) })
+	return slices.ContainsFunc(p.Wanted, func(w wantedFile) bool { return w.entry(e) })
 }
 
 func (s *Service) queueChanged(st queue.State) {
+	s.applyMu.Lock()
+	defer s.applyMu.Unlock()
+	defer s.savePending()
 	s.mu.Lock()
 	todo := slices.Clone(s.pending)
 	s.mu.Unlock()
 	for _, p := range todo {
 		done, open := 0, 0
 		for _, it := range st.Items {
-			if it.Game != p.game || it.Profile != p.profile {
+			if it.Game != p.Game || it.Profile != p.Profile {
 				continue
 			}
-			if it.State == queue.StateDone && slices.ContainsFunc(p.wanted, func(w wantedFile) bool { return w.item(it) }) {
+			if it.State == queue.StateDone && slices.ContainsFunc(p.Wanted, func(w wantedFile) bool { return w.item(it) }) {
 				done++
 			}
 			if !slices.Contains([]string{queue.StateDone, queue.StateSkipped, queue.StateCancelled}, it.State) {
@@ -512,7 +526,7 @@ func (s *Service) queueChanged(st queue.State) {
 			p.seen = done
 			s.apply(p)
 		}
-		if open == 0 || len(p.configs) == 0 {
+		if open == 0 || len(p.Configs) == 0 {
 			s.mu.Lock()
 			s.pending = slices.DeleteFunc(s.pending, func(x *pending) bool { return x == p })
 			s.mu.Unlock()
@@ -523,24 +537,24 @@ func (s *Service) queueChanged(st queue.State) {
 // apply writes the config files whose mods are installed, and keeps the rest for later. While the game runs the
 // profile it waits for the next change.
 func (s *Service) apply(p *pending) {
-	if r := s.d.Profiles.Running; r != nil && r(p.game, p.profile) {
+	if r := s.d.Profiles.Running; r != nil && r(p.Game, p.Profile) {
 		p.seen = 0
 		return
 	}
-	prof, err := s.find(p.game, p.profile)
+	prof, err := s.find(p.Game, p.Profile)
 	if err != nil {
 		return
 	}
-	modsDir, err := s.d.Profiles.ModsDir(p.game, p.profile)
+	modsDir, err := s.d.Profiles.ModsDir(p.Game, p.Profile)
 	if err != nil {
 		return
 	}
 	entries := slices.DeleteFunc(slices.Clone(prof.Entries), func(e profile.Entry) bool { return !p.wants(e) })
-	written, err := share.Apply(modsDir, entries, p.configs)
+	written, err := share.Apply(modsDir, entries, p.Configs)
 	if err != nil {
 		p.seen = 0
 	}
-	p.configs = slices.DeleteFunc(p.configs, func(c share.Config) bool {
+	p.Configs = slices.DeleteFunc(p.Configs, func(c share.Config) bool {
 		return slices.ContainsFunc(written, func(id string) bool { return strings.EqualFold(id, c.UniqueID) })
 	})
 }
