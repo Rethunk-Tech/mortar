@@ -16,6 +16,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { changeStillLatest } from '../toasts/history.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { type MissingOffer, offersFor } from './missingDeps.ts'
 
 const PATH_SEPARATOR = /[\\/]/
 
@@ -52,10 +53,14 @@ async function undoArchiveInstall(
 
 export const useInstall = create<{
   pending: number
+  offers: MissingOffer[]
+  dismissOffer: () => void
   install: (paths: string[]) => Promise<void>
   pick: () => Promise<void>
 }>((set, get) => ({
   pending: 0,
+  offers: [],
+  dismissOffer: () => set((s) => ({ offers: s.offers.slice(1) })),
   install: async (paths) => {
     const { game, openId, profiles } = useProfiles.getState()
     const profile = profiles.find((p) => p.id === openId)
@@ -68,6 +73,7 @@ export const useInstall = create<{
       return
     }
     const { push } = useToasts.getState()
+    const dependentIds: string[] = []
     set((s) => ({ pending: s.pending + paths.length }))
     for (const path of paths) {
       try {
@@ -75,6 +81,11 @@ export const useInstall = create<{
         useProfiles.getState().replace(next)
         const names = added ?? []
         const entry = entryForNames(next, names)
+        for (const mod of entry?.mods ?? []) {
+          if (mod.uniqueId) {
+            dependentIds.push(mod.uniqueId)
+          }
+        }
         push({
           kind: 'success',
           title: updated
@@ -108,6 +119,7 @@ export const useInstall = create<{
       }
     }
     await useMods.getState().load()
+    considerMissing(dependentIds)
   },
   pick: async () => {
     try {
@@ -124,5 +136,13 @@ export const useInstall = create<{
     }
   },
 }))
+
+export function considerMissing(dependentIds: readonly string[]) {
+  const next = offersFor(dependentIds, useMods.getState().problems)
+  if (next.length === 0) {
+    return
+  }
+  useInstall.setState((s) => ({ offers: [...s.offers, ...next] }))
+}
 
 export { entryForNames, undoArchiveInstall }

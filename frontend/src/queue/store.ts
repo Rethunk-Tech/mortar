@@ -17,6 +17,7 @@ import {
   Retry,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { considerMissing } from '../install/store.ts'
 import { useLaunch } from '../launch/store.ts'
 import { isLocked } from '../mods/locked.ts'
 import { useMods } from '../mods/store.ts'
@@ -126,6 +127,16 @@ async function announce(prev: Snapshot, next: Snapshot) {
       .then(() => useMods.getState().load())
       .catch(() => undefined)
   }
+  const dependentIds: string[] = []
+  for (const item of done) {
+    const profile = useProfiles.getState().profiles.find((p) => p.id === item.profileId)
+    for (const mod of entryForItem(profile, item)?.mods ?? []) {
+      if (mod.uniqueId) {
+        dependentIds.push(mod.uniqueId)
+      }
+    }
+  }
+  considerMissing(dependentIds)
   if (done.length === 1) {
     const [item] = done
     if (item) {

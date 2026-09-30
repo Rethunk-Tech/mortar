@@ -6,7 +6,7 @@ import { useLaunch } from '../launch/store.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useToasts } from '../toasts/store.ts'
-import { entryForNames, undoArchiveInstall } from './store.ts'
+import { entryForNames, undoArchiveInstall, useInstall } from './store.ts'
 
 const calls = { remove: [] as string[], roll: [] as string[] }
 
@@ -48,6 +48,7 @@ beforeEach(() => {
   calls.remove = []
   calls.roll = []
   useToasts.setState(useToasts.getInitialState(), true)
+  useInstall.setState(useInstall.getInitialState(), true)
   useLaunch.setState(useLaunch.getInitialState(), true)
   useMods.setState({ ...useMods.getInitialState(), load: async () => undefined }, true)
   useProfiles.setState(

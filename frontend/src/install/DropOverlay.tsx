@@ -9,6 +9,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { openImport } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { splitDropped } from './dropped.ts'
+import { MissingDepsDialog } from './MissingDepsDialog.tsx'
 import { useInstall } from './store.ts'
 
 // Wails toggles this class on the element carrying data-file-drop-target while a file drag is over it.
@@ -48,56 +49,58 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
     [],
   )
 
-  if (!dragging) {
-    return null
-  }
   return (
-    <Box
-      sx={(theme) => ({
-        position: 'absolute',
-        top: 'var(--title-bar)',
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: theme.zIndex.modal,
-        pointerEvents: 'none',
-        bgcolor: 'rgba(0,0,0,0.30)',
-      })}
-    >
-      <Box
-        sx={(theme) => ({
-          position: 'absolute',
-          inset: 12,
-          border: `3px dashed ${theme.palette.primary.main}`,
-          borderRadius: '16px',
-          bgcolor: alpha(theme.palette.primary.main, TINT_ALPHA),
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 2,
-          textAlign: 'center',
-          p: 3,
-        })}
-      >
-        <Box sx={{ color: 'primary.main', display: 'flex' }}>
-          <Download size={80} strokeWidth={1.8} />
+    <>
+      <MissingDepsDialog />
+      {dragging ? (
+        <Box
+          sx={(theme) => ({
+            position: 'absolute',
+            top: 'var(--title-bar)',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: theme.zIndex.modal,
+            pointerEvents: 'none',
+            bgcolor: 'rgba(0,0,0,0.30)',
+          })}
+        >
+          <Box
+            sx={(theme) => ({
+              position: 'absolute',
+              inset: 12,
+              border: `3px dashed ${theme.palette.primary.main}`,
+              borderRadius: '16px',
+              bgcolor: alpha(theme.palette.primary.main, TINT_ALPHA),
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 2,
+              textAlign: 'center',
+              p: 3,
+            })}
+          >
+            <Box sx={{ color: 'primary.main', display: 'flex' }}>
+              <Download size={80} strokeWidth={1.8} />
+            </Box>
+            {ready ? (
+              <>
+                <Typography sx={{ fontSize: 38, fontWeight: 700 }}>
+                  {t`Drop to install into ${profile.name}`}
+                </Typography>
+                <Typography sx={{ maxWidth: 640, fontSize: 15, lineHeight: 1.5 }}>
+                  {t`Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added.`}
+                </Typography>
+              </>
+            ) : (
+              <Typography sx={{ fontSize: 38, fontWeight: 700 }}>
+                {locked ? t`Stop the game to change mods` : t`Open a profile to install mods`}
+              </Typography>
+            )}
+          </Box>
         </Box>
-        {ready ? (
-          <>
-            <Typography sx={{ fontSize: 38, fontWeight: 700 }}>
-              {t`Drop to install into ${profile.name}`}
-            </Typography>
-            <Typography sx={{ maxWidth: 640, fontSize: 15, lineHeight: 1.5 }}>
-              {t`Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added.`}
-            </Typography>
-          </>
-        ) : (
-          <Typography sx={{ fontSize: 38, fontWeight: 700 }}>
-            {locked ? t`Stop the game to change mods` : t`Open a profile to install mods`}
-          </Typography>
-        )}
-      </Box>
-    </Box>
+      ) : null}
+    </>
   )
 }
