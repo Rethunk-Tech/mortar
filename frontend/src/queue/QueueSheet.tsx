@@ -157,7 +157,13 @@ function Callout({
         <LetterTile mod={tile(item)} size={44} />
         <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           <Typography
-            sx={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', color: 'primary.main' }}
+            sx={{
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              color: 'primary.main',
+            }}
           >
             {label}
           </Typography>
@@ -177,7 +183,7 @@ function Click({ item }: { item: Item }) {
   return (
     <Callout
       item={item}
-      label={t`NEEDS YOUR CLICK`}
+      label={t`Needs your click`}
       text={t`Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page.`}
       actions={
         <Button
@@ -213,7 +219,7 @@ function Choice({ item }: { item: Item }) {
   return (
     <Callout
       item={item}
-      label={t`CHOOSE A FILE`}
+      label={t`Choose a file`}
       text={t`${item.repo} ${item.tag} has several archives. Which one should Mortar install?`}
       actions={<SkipButton item={item} />}
     >
@@ -238,7 +244,7 @@ function Confirmation({ item }: { item: Item }) {
   return (
     <Callout
       item={item}
-      label={t`CHECK THIS DOWNLOAD`}
+      label={t`Check this download`}
       text={t`This download's mod is not known to come from ${item.repo}.`}
       actions={
         <>
