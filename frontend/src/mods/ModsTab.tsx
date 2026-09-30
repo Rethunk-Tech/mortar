@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Card, Typography } from '@mui/material'
+import { Box, ButtonBase, Card, Typography } from '@mui/material'
 import { Download } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
@@ -7,19 +7,32 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compact } from '../game/compact.ts'
+import { userModCount } from '../profiles/count.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { DuplicateDialog } from './DuplicateDialog.tsx'
+import { useDetail } from './detail.ts'
 import { modId } from './lookup.ts'
+import { ModDetail } from './ModDetail.tsx'
 import { ModList } from './ModList.tsx'
 import { ProblemBar } from './ProblemBar.tsx'
-import { LetterTile, ModMenu, ModSwitch, ProblemBadge, RemoveDialog } from './parts.tsx'
+import {
+  LetterTile,
+  ModMenu,
+  ModSwitch,
+  ProblemBadge,
+  RemoveDialog,
+  UpdateBadge,
+} from './parts.tsx'
 import { useMods, type View } from './store.ts'
 import { AddArchive, BrowseNexus, Toolbar } from './Toolbar.tsx'
+import { UpdateBar, UpdateReview } from './UpdateReview.tsx'
+import { useUpdates } from './updates.ts'
 
 const OFF_OPACITY = 0.6
 
 function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; view: View }) {
   const { t } = useLingui()
+  const openDetail = useDetail((s) => s.show)
   if (shown.length === 0) {
     return (
       <Typography
@@ -57,23 +70,41 @@ function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; vi
             [compact]: { height: 50, '& .tile': { width: 38, height: 38, fontSize: 19 } },
           }}
         >
-          <LetterTile mod={m} />
-          <Box
+          <ButtonBase
+            aria-label={t`Details of ${m.name}`}
+            onClick={() => openDetail(m)}
             sx={{
               flex: 1,
               minWidth: 0,
-              pl: '10px',
-              borderLeft: '1px solid rgba(255,255,255,0.12)',
-              opacity: m.enabled ? 1 : OFF_OPACITY,
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              justifyContent: 'flex-start',
+              textAlign: 'left',
+              fontFamily: 'inherit',
+              color: 'inherit',
             }}
           >
-            <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 600 }}>
-              {m.name}
-            </Typography>
-            <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
-              {`${m.author} · ${m.version}`}
-            </Typography>
-          </Box>
+            <LetterTile mod={m} />
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                pl: '10px',
+                borderLeft: '1px solid rgba(255,255,255,0.12)',
+                opacity: m.enabled ? 1 : OFF_OPACITY,
+              }}
+            >
+              <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 600 }}>
+                {m.name}
+              </Typography>
+              <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
+                {`${m.author} · ${m.version}`}
+              </Typography>
+            </Box>
+          </ButtonBase>
+          <UpdateBadge mod={m} />
           <ProblemBadge mod={m} />
           <ModSwitch mod={m} />
           <ModMenu mod={m} />
@@ -90,11 +121,16 @@ export function ModsTab({ profile }: { profile: Profile }) {
   const load = useMods((s) => s.load)
   const [query, setQuery] = useState('')
   useEffect(() => {
-    useMods.setState({ mods: [], loaded: false })
+    useMods.setState({
+      mods: [],
+      loaded: false,
+    })
+    useUpdates.setState({ updates: null, reviewing: false })
+    useDetail.getState().show(null)
     load().catch(reportUnexpected)
   }, [load])
 
-  if ((profile.entries ?? []).length === 0) {
+  if (userModCount(profile) === 0) {
     return (
       <Box
         sx={{
@@ -141,10 +177,15 @@ export function ModsTab({ profile }: { profile: Profile }) {
     (m) => !q || m.name.toLowerCase().includes(q) || m.author.toLowerCase().includes(q),
   )
   return (
-    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+    <Box
+      sx={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
+    >
       <ProblemBar />
+      <UpdateBar />
       <Toolbar query={query} onQuery={setQuery} total={mods.length} />
       <ModsBody profile={profile} shown={shown} view={view} />
+      <ModDetail profile={profile} />
+      <UpdateReview profile={profile} />
       <RemoveDialog />
       <DuplicateDialog profileName={profile.name} />
     </Box>

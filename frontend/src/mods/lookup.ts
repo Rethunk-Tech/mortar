@@ -4,6 +4,8 @@ import type {
   Duplicate,
   Missing,
   Result,
+  Update,
+  UpdatesResult,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import type {
   Mod,
@@ -57,3 +59,14 @@ export function preselect(copies: Copy[]): string {
   const pool = newest.length > 0 ? newest : copies
   return (pool.find((c) => c.nexus) ?? pool[0])?.key ?? ''
 }
+
+export const problemCount = (result: Result | null): number => problemsOf(result).length
+
+export const updateCount = (result: UpdatesResult | null): number => (result?.updates ?? []).length
+
+// The update SMAPI's API suggests for this very copy of a mod, if any.
+export const updateFor = (
+  result: UpdatesResult | null,
+  mod: Pick<Mod, 'key' | 'uniqueId'>,
+): Update | undefined =>
+  (result?.updates ?? []).find((u) => u.key === mod.key && sameId(u.uniqueId, mod.uniqueId))

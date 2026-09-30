@@ -15,7 +15,9 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useToasts } from '../toasts/store.ts'
-import { modId } from './lookup.ts'
+import { useBadges } from './badges.ts'
+import { modId, problemCount } from './lookup.ts'
+import { useUpdates } from './updates.ts'
 
 type View = 'grid' | 'list'
 
@@ -83,7 +85,7 @@ export const useMods = create<{
       fail(i18n._(msg`Could not read the mods`))(e)
       return
     }
-    await get().loadProblems()
+    await Promise.all([get().loadProblems(), useUpdates.getState().load()])
   },
   loadProblems: async () => {
     const target = open()
@@ -95,6 +97,7 @@ export const useMods = create<{
       if (open()?.id === target.id) {
         set({ problems })
       }
+      useBadges.getState().patch(target.id, { problems: problemCount(problems) })
     } catch (e) {
       fail(i18n._(msg`Could not check the mods for problems`))(e)
     }

@@ -15,14 +15,15 @@ import {
   Switch,
   Tooltip,
 } from '@mui/material'
-import { Ellipsis, FolderOpen, Trash2, TriangleAlert } from 'lucide-react'
+import { ArrowUp, Ellipsis, FolderOpen, Trash2, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useDescribe } from './describe.ts'
-import { concerns, problemsOf, siblingsOf } from './lookup.ts'
+import { concerns, problemsOf, siblingsOf, updateFor } from './lookup.ts'
 import { paper } from './paper.ts'
 import { useMods } from './store.ts'
+import { useUpdates } from './updates.ts'
 
 const HASH_MULTIPLIER = 31
 const UINT32_BITS = 32
@@ -90,6 +91,26 @@ export function ProblemBadge({ mod }: { mod: Mod }) {
   )
 }
 
+export function UpdateBadge({ mod }: { mod: Mod }) {
+  const { t } = useLingui()
+  const update = useUpdates((s) => updateFor(s.updates, mod))
+  if (!update) {
+    return null
+  }
+  const text = t`Update available: ${update.installed} → ${update.version}`
+  return (
+    <Tooltip title={text}>
+      <Box
+        role="img"
+        aria-label={text}
+        sx={{ display: 'flex', flexShrink: 0, color: 'primary.main' }}
+      >
+        <ArrowUp size={16} />
+      </Box>
+    </Tooltip>
+  )
+}
+
 export function ModSwitch({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const setEnabled = useMods((s) => s.setEnabled)
@@ -112,6 +133,7 @@ export function ShowFilesButton({ mod }: { mod: Mod }) {
   return (
     <Button
       variant="outlined"
+      sx={{ whiteSpace: 'nowrap' }}
       onClick={() => {
         showFiles(mod).catch(reportUnexpected)
       }}
@@ -125,7 +147,12 @@ export function RemoveButton({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const askRemove = useMods((s) => s.askRemove)
   return (
-    <Button variant="outlined" color="error" onClick={() => askRemove(mod)}>
+    <Button
+      variant="outlined"
+      color="error"
+      sx={{ whiteSpace: 'nowrap' }}
+      onClick={() => askRemove(mod)}
+    >
       {t`Remove`}
     </Button>
   )

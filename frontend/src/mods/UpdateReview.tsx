@@ -1,0 +1,226 @@
+import { plural } from '@lingui/core/macro'
+import { useLingui } from '@lingui/react/macro'
+import {
+  alpha,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Typography,
+} from '@mui/material'
+import { Browser } from '@wailsio/runtime'
+import { ArrowRight, ArrowUp, ExternalLink, ShieldCheck, X } from 'lucide-react'
+import type { Update } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import { modId, sameId, siblingsOf, updateCount } from './lookup.ts'
+import { accent, paper } from './paper.ts'
+import { LetterTile } from './parts.tsx'
+import { useMods } from './store.ts'
+import { useUpdates } from './updates.ts'
+
+const MONO = '"IBM Plex Mono", monospace'
+const ROW_TILE = 48
+const MEDIUM = 500
+const DIALOG_WIDTH = 760
+const ICON_TILE = 44
+const ICON_FILL = 0.18
+
+function Version({ children, isNew }: { children: string; isNew?: boolean }) {
+  return (
+    <Box
+      component="span"
+      sx={{
+        px: 1,
+        py: '3px',
+        borderRadius: '4px',
+        fontFamily: MONO,
+        fontSize: 13,
+        fontWeight: isNew ? MEDIUM : 'normal',
+        color: isNew ? 'primary.main' : 'text.primary',
+        bgcolor: isNew ? accent.chip : 'rgba(255,255,255,0.08)',
+      }}
+    >
+      {children}
+    </Box>
+  )
+}
+
+function Row({ update }: { update: Update }) {
+  const { t } = useLingui()
+  const mods = useMods((s) => s.mods)
+  const mod = mods.find((m) => m.key === update.key && sameId(m.uniqueId, update.uniqueId))
+  const notes = [
+    ...(mod ? siblingsOf(mods, mod).map((o) => t`Also updates ${o.name} (same download)`) : []),
+    ...(mod && !mod.enabled ? [t`Switched off in this profile`] : []),
+  ]
+  return (
+    <Box
+      role="listitem"
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: `${ROW_TILE}px minmax(0, 1fr) auto auto`,
+        gap: '14px',
+        alignItems: 'center',
+        px: 3,
+        py: 1.75,
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+      }}
+    >
+      <LetterTile mod={{ uniqueId: update.uniqueId, name: update.name }} size={ROW_TILE} />
+      <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '3px' }}>
+        <Typography sx={{ fontSize: 16, fontWeight: 600, overflowWrap: 'anywhere' }}>
+          {update.name}
+        </Typography>
+        {notes.length > 0 ? (
+          <Typography
+            sx={{
+              alignSelf: 'flex-start',
+              px: 1,
+              borderRadius: '10px',
+              bgcolor: 'rgba(255,255,255,0.08)',
+              fontSize: 12,
+            }}
+          >
+            {notes.join(' · ')}
+          </Typography>
+        ) : null}
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, whiteSpace: 'nowrap' }}>
+        <Version>{update.installed}</Version>
+        <ArrowRight size={14} aria-hidden={true} />
+        <Version isNew={true}>{update.version}</Version>
+      </Box>
+      {update.url ? (
+        <Button
+          variant="outlined"
+          endIcon={<ExternalLink size={12} />}
+          onClick={() => Browser.OpenURL(update.url).catch(reportUnexpected)}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          {t`Open page`}
+        </Button>
+      ) : (
+        <span />
+      )}
+    </Box>
+  )
+}
+
+export function UpdateBar() {
+  const { t } = useLingui()
+  const updates = useUpdates((s) => s.updates)
+  const setReviewing = useUpdates((s) => s.setReviewing)
+  const count = updateCount(updates)
+  if (count === 0) {
+    return updates?.unknown ? (
+      <Typography sx={{ mx: 2, mt: 1, fontSize: 12, color: 'text.secondary' }}>
+        {t`Updates are unknown: SMAPI's update service could not be reached.`}
+      </Typography>
+    ) : null
+  }
+  return (
+    <Box
+      sx={{
+        mx: 2,
+        mt: 1.25,
+        minHeight: 38,
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.25,
+        pl: 1.5,
+        pr: 0.75,
+        fontSize: 14,
+        bgcolor: accent.fill,
+        border: '1px solid',
+        borderColor: accent.line,
+        borderRadius: '6px',
+      }}
+    >
+      <Box component="span" sx={{ display: 'flex', flexShrink: 0, color: 'primary.main' }}>
+        <ArrowUp size={16} aria-hidden={true} />
+      </Box>
+      <Typography noWrap={true} sx={{ flex: 1, minWidth: 0, fontSize: 14 }}>
+        {t`${plural(count, { one: '# update is available', other: '# updates are available' })}`}
+      </Typography>
+      <Button
+        size="small"
+        variant="contained"
+        onClick={() => setReviewing(true)}
+        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+      >
+        {t`Review`}
+      </Button>
+    </Box>
+  )
+}
+
+export function UpdateReview({ profile }: { profile: Profile }) {
+  const { t } = useLingui()
+  const open = useUpdates((s) => s.reviewing)
+  const updates = useUpdates((s) => s.updates)
+  const setReviewing = useUpdates((s) => s.setReviewing)
+  const close = () => setReviewing(false)
+  const list = updates?.updates ?? []
+  return (
+    <Dialog
+      open={open && list.length > 0}
+      onClose={close}
+      maxWidth={false}
+      slotProps={{
+        paper: { sx: { ...paper.sx, width: DIALOG_WIDTH, maxWidth: 'calc(100% - 32px)' } },
+      }}
+    >
+      <DialogTitle component="div" sx={{ display: 'flex', alignItems: 'center', gap: 1.75, p: 3 }}>
+        <Box
+          sx={{
+            width: ICON_TILE,
+            height: ICON_TILE,
+            display: 'grid',
+            placeItems: 'center',
+            borderRadius: '10px',
+            color: 'primary.main',
+            bgcolor: (th) => alpha(th.palette.primary.main, ICON_FILL),
+          }}
+        >
+          <ArrowUp size={22} aria-hidden={true} />
+        </Box>
+        <Box sx={{ flexGrow: 1 }}>
+          <Typography component="h2" sx={{ fontSize: 22, fontWeight: 700 }}>
+            {t`${plural(list.length, { one: '# update', other: '# updates' })} for ${profile.name}`}
+          </Typography>
+          <Typography sx={{ fontSize: 13 }}>
+            {updates?.unknown
+              ? t`Some mods could not be checked, so more updates may show up later.`
+              : t`Checked with SMAPI's update service`}
+          </Typography>
+        </Box>
+        <IconButton aria-label={t`Close`} onClick={close}>
+          <X size={16} />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent sx={{ p: 0, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        <Box role="list">
+          {list.map((u) => (
+            <Row key={modId(u)} update={u} />
+          ))}
+        </Box>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, py: 2, gap: 1.5, bgcolor: 'rgba(0,0,0,0.2)' }}>
+        <Box sx={{ color: '#a3d3f7', display: 'flex' }}>
+          <ShieldCheck size={18} aria-hidden={true} />
+        </Box>
+        <Typography sx={{ flex: 1, fontSize: 13, lineHeight: 1.45 }}>
+          {t`Download a mod's new archive from its page and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details.`}
+        </Typography>
+        <Button variant="outlined" onClick={close} sx={{ whiteSpace: 'nowrap' }}>
+          {t`Close`}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}

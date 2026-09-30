@@ -23,11 +23,12 @@ func TestCheckUpdates(t *testing.T) {
 	bundled := mod("smapi-4", "SMAPI.ConsoleCommands", "4.0.0", true)
 	bundled.SourceKind = "smapi"
 	off := mod("k2", "me.off", "1.0.0", false)
-	rm := &recordingMeta{fakeMeta: fakeMeta{compat: map[string]meta.UpdateResult{
+	rm := &recordingMeta{}
+	rm.compat = map[string]meta.UpdateResult{
 		"me.a":   {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://example.test/a"}},
 		"me.off": {Known: true, Suggested: &meta.Update{Version: "1.1.0", URL: "https://example.test/off"}},
 		"me.b":   {Known: true},
-	}}}
+	}
 	env := Environment{GameVersion: "1.6.15", APIVersion: "4.3.2", Platform: "Linux"}
 	got := CheckUpdates(context.Background(), rm, env, []Installed{bundled, mod("k1", "me.a", "1.0.0", true), mod("k3", "me.b", "1.0.0", true), off})
 	want := []Update{

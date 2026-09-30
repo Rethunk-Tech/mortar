@@ -97,7 +97,7 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
           {t`Game Select`}
         </Tab>
       )}
-      {route.name === 'game' && (
+      {(route.name === 'game' || route.name === 'profiles') && (
         <Tab active={true} onClick={() => openGame(route.game)}>
           {gameName}
         </Tab>

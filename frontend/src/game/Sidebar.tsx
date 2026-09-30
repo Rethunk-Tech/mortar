@@ -1,11 +1,14 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, IconButton } from '@mui/material'
 import { ChevronRight, ListOrdered, Plus } from 'lucide-react'
-import { type PointerEvent, useState } from 'react'
+import { type PointerEvent, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { PlayControl } from '../launch/PlayControl.tsx'
+import { useBadges } from '../mods/badges.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { compact } from './compact.ts'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
 
@@ -47,6 +50,53 @@ function initials(name: string): string {
   return chars.join('').toUpperCase()
 }
 
+const PROBLEM_MARK = '!'
+
+const pill = {
+  flexShrink: 0,
+  ml: 0.5,
+  px: '7px',
+  py: '1px',
+  borderRadius: '10px',
+  color: '#1b1a17',
+  fontSize: 12,
+  fontWeight: 700,
+  [compact]: { position: 'absolute', top: 1, right: 1, ml: 0, px: '4px', fontSize: 10 },
+} as const
+
+function Badges({ profile }: { profile: Profile }) {
+  const { t } = useLingui()
+  const counts = useBadges((s) => s.byProfile[profile.id])
+  return (
+    <>
+      {counts && counts.updates > 0 ? (
+        <Box
+          component="span"
+          role="img"
+          aria-label={t`${plural(counts.updates, { one: '# update', other: '# updates' })}`}
+          sx={{ ...pill, bgcolor: 'primary.main' }}
+        >
+          {counts.updates}
+        </Box>
+      ) : null}
+      {counts && counts.problems > 0 ? (
+        <Box
+          component="span"
+          role="img"
+          aria-label={t`${plural(counts.problems, { one: '# problem', other: '# problems' })}`}
+          sx={{
+            ...pill,
+            bgcolor: 'warning.main',
+            [compact]: { ...pill[compact], right: 'auto', left: 1 },
+          }}
+        >
+          {PROBLEM_MARK}
+        </Box>
+      ) : null}
+    </>
+  )
+}
+
 function ProfileButton({
   profile,
   selected,
@@ -67,6 +117,7 @@ function ProfileButton({
         height: 40,
         justifyContent: 'flex-start',
         px: '10px',
+        position: 'relative',
         borderRadius: '6px',
         fontFamily: 'inherit',
         fontSize: 14,
@@ -87,6 +138,8 @@ function ProfileButton({
       <Box
         component="span"
         sx={{
+          flex: 1,
+          minWidth: 0,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
@@ -95,6 +148,7 @@ function ProfileButton({
       >
         {profile.name}
       </Box>
+      <Badges profile={profile} />
       <Box
         component="span"
         aria-hidden={true}
@@ -170,6 +224,14 @@ export function Sidebar({ game }: { game: string }) {
   const open = useProfiles((s) => s.open)
   const [width, setWidth] = useState(storedWidth)
   const [creating, setCreating] = useState(false)
+  const loadBadges = useBadges((s) => s.loadAll)
+  // A profile's badges follow its mods, which change with `updated`.
+  const stamp = profiles.map((p) => `${p.id}:${String(p.updated)}`).join(',')
+  useEffect(() => {
+    if (stamp) {
+      loadBadges(game, allProfiles).catch(reportUnexpected)
+    }
+  }, [game, stamp, allProfiles, loadBadges])
 
   return (
     <Box

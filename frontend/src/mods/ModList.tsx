@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import {
   alpha,
   Box,
+  Button,
   Drawer,
   Table,
   TableBody,
@@ -18,8 +19,17 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compact, compactQuery } from '../game/compact.ts'
+import { useDetail } from './detail.ts'
 import { modId, siblingsOf, sourceKind } from './lookup.ts'
-import { LetterTile, ModSwitch, ProblemBadge, RemoveButton, ShowFilesButton } from './parts.tsx'
+import { heading } from './paper.ts'
+import {
+  LetterTile,
+  ModSwitch,
+  ProblemBadge,
+  RemoveButton,
+  ShowFilesButton,
+  UpdateBadge,
+} from './parts.tsx'
 import { useMods } from './store.ts'
 
 const SELECTED_ALPHA = 0.14
@@ -35,14 +45,6 @@ const rowSx = {
   [compact]: { gridTemplateColumns: '46px 26px minmax(0,1fr) 80px' },
 }
 const hideCompact = { [compact]: { display: 'none' } }
-
-const heading = {
-  fontSize: 12,
-  fontWeight: 700,
-  letterSpacing: '0.06em',
-  textTransform: 'uppercase',
-  color: 'text.secondary',
-} as const
 
 const cellBase = { p: 0, border: 0, fontSize: 'inherit', color: 'inherit' } as const
 
@@ -63,6 +65,7 @@ function Inspector({ mod, source }: { mod: Mod; source: string }) {
   const { t } = useLingui()
   const all = useMods((s) => s.mods)
   const others = siblingsOf(all, mod)
+  const openDetail = useDetail((s) => s.show)
   return (
     <Box sx={{ p: 1.75, display: 'flex', flexDirection: 'column', gap: 1.25, minHeight: '100%' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -90,6 +93,9 @@ function Inspector({ mod, source }: { mod: Mod; source: string }) {
         </Box>
       ) : null}
       <Box sx={{ flexGrow: 1 }} />
+      <Button variant="contained" onClick={() => openDetail(mod)} sx={{ whiteSpace: 'nowrap' }}>
+        {t`More details`}
+      </Button>
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1 }}>
         <ShowFilesButton mod={mod} />
         <RemoveButton mod={mod} />
@@ -183,6 +189,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     <ProblemBadge mod={m} />
+                    <UpdateBadge mod={m} />
                     {m.enabled ? t`Enabled` : t`Off`}
                   </Box>
                 </Cell>
