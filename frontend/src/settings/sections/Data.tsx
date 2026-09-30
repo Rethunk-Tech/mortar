@@ -9,7 +9,7 @@ import {
   LinearProgress,
   Link,
 } from '@mui/material'
-import { FolderOpen, Trash2 } from 'lucide-react'
+import { Download, FolderOpen, Trash2, Upload } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import type {
   Usage as DiskUse,
@@ -21,7 +21,13 @@ import {
   Usage,
   UsageProgress,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
-import { OpenDataFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import type { ImportPreview } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
+import {
+  ApplyImportedSettings,
+  ExportSettings,
+  OpenDataFolder,
+  PreviewImportSettings,
+} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { paper } from '../../mods/paper.ts'
 import { formatBytes } from '../../saves/backupFormat.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
@@ -41,11 +47,85 @@ function Row({ label, size }: { label: string; size: number }) {
   )
 }
 
+function changeLine(t: ReturnType<typeof useLingui>['t'], field: string, from: string, to: string) {
+  switch (field) {
+    case 'accent':
+      return t`Accent: ${from} → ${to}`
+    case 'background':
+      return t`Background: ${from} → ${to}`
+    case 'lastGame':
+      return t`Last game: ${from} → ${to}`
+    case 'backupsKept':
+      return t`Backups kept: ${from} → ${to}`
+    case 'listColumns':
+      return t`List columns: ${from} → ${to}`
+    case 'listSortColumn':
+      return t`List sort: ${from} → ${to}`
+    case 'listSortDir':
+      return t`List sort direction: ${from} → ${to}`
+    case 'listGroupBy':
+      return t`List grouping: ${from} → ${to}`
+    case 'checkModUpdatesOnStart':
+      return t`Check mod updates on start: ${from} → ${to}`
+    case 'tellWhenSmapiOut':
+      return t`Tell when SMAPI is out: ${from} → ${to}`
+    case 'tipsSeen':
+      return t`Seen tips: ${from} → ${to}`
+    default:
+      return t`${field}: ${from} → ${to}`
+  }
+}
+
+function ImportSettingsDialog({
+  preview,
+  onClose,
+}: {
+  preview: ImportPreview | null
+  onClose: () => void
+}) {
+  const { t } = useLingui()
+  const changes = preview?.changes ?? []
+  return (
+    <Dialog open={preview !== null} onClose={onClose} transitionDuration={0} slotProps={{ paper }}>
+      <DialogTitle>{t`Import settings`}</DialogTitle>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 360 }}>
+        {changes.length === 0 ? (
+          <Box sx={{ fontSize: 13 }}>{t`Nothing would change.`}</Box>
+        ) : (
+          changes.map((c) => (
+            <Box key={c.field} sx={{ fontSize: 13 }}>
+              {changeLine(t, c.field, c.from, c.to)}
+            </Box>
+          ))
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} sx={nowrap}>
+          {t`Cancel`}
+        </Button>
+        <Button
+          onClick={() => {
+            if (!preview?.raw) {
+              return
+            }
+            ApplyImportedSettings(preview.raw).then(onClose).catch(reportUnexpected)
+          }}
+          disabled={changes.length === 0}
+          sx={nowrap}
+        >
+          {t`Import`}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
 export function Data() {
   const { t } = useLingui()
   const [usage, setUsage] = useState<DiskUse | null>(null)
   const [bytes, setBytes] = useState(0)
   const [preview, setPreview] = useState<Preview | null>(null)
+  const [importPreview, setImportPreview] = useState<ImportPreview | null>(null)
   const [busy, setBusy] = useState(false)
   const load = useCallback(() => {
     setUsage(null)
@@ -102,6 +182,30 @@ export function Data() {
           {t`Open folder`}
         </Link>
       </Box>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        <Button
+          onClick={() => ExportSettings().catch(reportUnexpected)}
+          startIcon={<Download size={16} />}
+          sx={{ alignSelf: 'flex-start', ...nowrap }}
+        >
+          {t`Export settings…`}
+        </Button>
+        <Button
+          onClick={() => {
+            PreviewImportSettings()
+              .then((next) => {
+                if (next.raw) {
+                  setImportPreview(next)
+                }
+              })
+              .catch(reportUnexpected)
+          }}
+          startIcon={<Upload size={16} />}
+          sx={{ alignSelf: 'flex-start', ...nowrap }}
+        >
+          {t`Import settings…`}
+        </Button>
+      </Box>
       {usage ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: 480 }}>
           {(usage.profiles ?? []).map((p) => (
@@ -156,6 +260,7 @@ export function Data() {
           </Button>
         </DialogActions>
       </Dialog>
+      <ImportSettingsDialog preview={importPreview} onClose={() => setImportPreview(null)} />
     </Box>
   )
 }

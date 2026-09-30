@@ -4,6 +4,7 @@ import (
 	"maps"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -52,6 +53,16 @@ func (s *Service) SetListColumns(ids []string) error {
 // SetListSort stores the Mods list-view sort column and direction.
 func (s *Service) SetListSort(column, dir string) error {
 	return s.set(func(v *Settings) { v.ListSortColumn, v.ListSortDir = column, dir })
+}
+
+// SetListGroupBy stores how the Mods tab groups the list and grid.
+func (s *Service) SetListGroupBy(by string) error {
+	return s.set(func(v *Settings) { v.ListGroupBy = by })
+}
+
+// SetTipsSeen stores which empty-state tips the user has dismissed.
+func (s *Service) SetTipsSeen(ids []string) error {
+	return s.set(func(v *Settings) { v.TipsSeen = ids })
 }
 
 func (s *Service) SetBackground(background string) error {
@@ -157,6 +168,61 @@ func (s *Service) OpenDataFolder() error {
 		return err
 	}
 	return datadir.Open(dir)
+}
+
+// ExportSettings writes a redacted settings JSON through the native save dialog. It returns "" when cancelled.
+func (s *Service) ExportSettings() (string, error) {
+	body, err := MarshalExport(s.store.Get())
+	if err != nil {
+		return "", err
+	}
+	d := s.App.Dialog.SaveFile()
+	d.SetOptions(&application.SaveFileDialogOptions{Title: "Export settings", Filename: "mortar-settings.json"})
+	d.AddFilter("JSON", "*.json")
+	d.AddFilter("All files", "*")
+	if w := s.App.Window.Current(); w != nil {
+		d.AttachToWindow(w)
+	}
+	path, err := d.PromptForSingleSelection()
+	if err != nil || path == "" {
+		return path, err
+	}
+	return path, fsx.WriteFile(path, body, 0o600)
+}
+
+// PreviewImportSettings opens a JSON file, validates it, and returns what would change. Empty Raw means cancelled.
+func (s *Service) PreviewImportSettings() (ImportPreview, error) {
+	d := s.App.Dialog.OpenFile().
+		SetTitle("Import settings").
+		AddFilter("JSON", "*.json").
+		AddFilter("All files", "*")
+	if w := s.App.Window.Current(); w != nil {
+		d.AttachToWindow(w)
+	}
+	path, err := d.PromptForSingleSelection()
+	if err != nil || path == "" {
+		return ImportPreview{}, err
+	}
+	b, err := fsx.ReadFile(path)
+	if err != nil {
+		return ImportPreview{}, err
+	}
+	p, present, err := ParseExport(b)
+	if err != nil {
+		return ImportPreview{}, err
+	}
+	return ImportPreview{Raw: string(b), Changes: previewChanges(s.store.Get(), p, present)}, nil
+}
+
+// ApplyImportedSettings applies a previously previewed export. Unknown fields stay ignored.
+func (s *Service) ApplyImportedSettings(raw string) error {
+	p, present, err := ParseExport([]byte(raw))
+	if err != nil {
+		return err
+	}
+	return s.set(func(v *Settings) {
+		ApplyExport(v, p, present)
+	})
 }
 
 func (s *Service) set(fn func(*Settings)) error {
