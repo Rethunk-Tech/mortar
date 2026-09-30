@@ -28,3 +28,13 @@ bun run gate    # runs the steps in package.json's gate script; stops at the fir
 ```
 
 The pre-push hook runs the same command. CI repeats it, then builds, only on `v*` tags or by manual dispatch.
+
+## Release
+
+```sh
+wails3 task linux:create:appimage     # bin/mortar-linux-x86_64.AppImage
+wails3 build GOOS=windows             # bin/mortar.exe
+MORTAR_UPDATE_KEY=/path/to/updater.key wails3 task release:manifest VERSION=1.2.3
+```
+
+`release:manifest` refuses a `VERSION` other than `main.go`'s `version`, copies `bin/mortar.exe` to `bin/mortar-windows-amd64.exe`, and writes `bin/manifest.json` signed with the private key `MORTAR_UPDATE_KEY` names, then verifies it against `build/updater/public.key`. Attach both assets and `manifest.json` to the `v1.2.3` GitHub release; the app reads the manifest from the latest release. Where the key lives: [docs/architecture.md](docs/architecture.md#release).

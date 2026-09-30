@@ -62,6 +62,9 @@ tasks:
       - cp "{{.APP_BINARY}}" "{{.APP_NAME}}"
       - cp ../../appicon.png "{{.APP_NAME}}.png"
       - wails3 generate appimage -binary "{{.APP_NAME}}" -icon {{.ICON}} -desktopfile {{.DESKTOP_FILE}} -outputdir {{.OUTPUT_DIR}} -builddir {{.ROOT_DIR}}/build/linux/appimage/build
+      # The updater's manifest matches this release asset name.
+      - mv "{{.OUTPUT_DIR}}/{{.APP_NAME}}-x86_64.AppImage" "{{.OUTPUT_DIR}}/{{.APP_NAME}}-linux-x86_64.AppImage"
+      - rm "{{.APP_NAME}}" "{{.APP_NAME}}.png"
     vars:
       APP_NAME: '{{.APP_NAME}}'
       APP_BINARY: '../../../bin/{{.APP_NAME}}'
