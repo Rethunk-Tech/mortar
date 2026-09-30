@@ -12,6 +12,8 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/loadersvc"
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/modmenu"
+	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-AI/mortar/internal/nexussvc"
 	"github.com/Rethunk-AI/mortar/internal/picker"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -21,6 +23,9 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
+
+// version is the app version sent to Nexus; keep it equal to build/config.yml.
+const version = "0.0.1"
 
 //go:embed all:frontend/dist
 var assets embed.FS
@@ -32,6 +37,7 @@ func registerEvents() {
 	application.RegisterEvent[loadersvc.Progress](loadersvc.ProgressEvent)
 	application.RegisterEvent[[]string](picker.DroppedEvent)
 	application.RegisterEvent[settings.Settings](settings.ChangedEvent)
+	application.RegisterEvent[nexussvc.Account](nexussvc.ChangedEvent)
 	application.RegisterEvent[modmenu.Target](modmenu.DetailsEvent)
 	application.RegisterEvent[modmenu.Target](modmenu.RemoveEvent)
 	application.RegisterEvent[profile.Profile](modmenu.ChangedEvent)
@@ -88,6 +94,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	nexusSvc := nexussvc.NewService(store, nexus.New(version))
+
 	var window *application.WebviewWindow
 	pick := &picker.Service{}
 	profileSvc := profile.NewService(profiles)
@@ -99,7 +107,7 @@ func main() {
 		Services: []application.Service{
 			application.NewService(svc), application.NewService(gamesSvc),
 			application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
-			application.NewService(savesSvc),
+			application.NewService(savesSvc), application.NewService(nexusSvc),
 			application.NewService(problemsSvc), application.NewService(&modmenu.Service{}),
 		},
 		Assets: application.AssetOptions{
@@ -122,6 +130,7 @@ func main() {
 	loaders.App = app
 	launches.App = app
 	pick.App = app
+	nexusSvc.App = app
 	modmenu.Register(app, modmenu.Backend{
 		SetEnabled: func(t modmenu.Target, enabled bool) (profile.Profile, error) {
 			return profileSvc.SetModEnabled(t.Game, t.Profile, t.Key, t.UniqueID, enabled)
