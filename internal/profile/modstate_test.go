@@ -9,7 +9,7 @@ import (
 func TestModFolderByKeyPicksTheCopy(t *testing.T) {
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m + " "})
-	if _, err := e.AddEntry("stardew", p.ID, "a-2", Source{Kind: "local"}); err != nil {
+	if _, err := e.AddEntry("stardew", p.ID, "a-2", Source{Kind: KindLocal}); err != nil {
 		t.Fatal(err)
 	}
 	for _, key := range []string{"a-1", "a-2"} {

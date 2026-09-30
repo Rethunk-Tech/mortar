@@ -8,29 +8,25 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
 // updatesTTL bounds how long a profile's updates are served without asking again; meta.Client caches for the
 // same hour, so a shorter one would only repeat its answers.
 const updatesTTL = time.Hour
 
-// sourceSMAPI and sourceMortar mark the bundled mods (SMAPI's own and Mortar's bridge), which update with
-// their owner and never show in the mod list.
-const (
-	sourceSMAPI  = "smapi"
-	sourceMortar = "mortar"
-)
-
 // Update is a newer version SMAPI's API suggests for an installed mod. URL is the page to get it from, and
-// NexusID that page's Nexus mod ID, 0 when the mod is not on Nexus.
+// NexusID that page's Nexus mod ID, 0 when the mod is not on Nexus. GitHubRepo is "owner/repo" when the mod's
+// update key and the suggested update both name a GitHub repository, so the release can be installed directly.
 type Update struct {
-	Key       string `json:"key"`
-	UniqueID  string `json:"uniqueId"`
-	Name      string `json:"name"`
-	Installed string `json:"installed"`
-	Version   string `json:"version"`
-	URL       string `json:"url"`
-	NexusID   int    `json:"nexusId"`
+	Key        string `json:"key"`
+	UniqueID   string `json:"uniqueId"`
+	Name       string `json:"name"`
+	Installed  string `json:"installed"`
+	Version    string `json:"version"`
+	URL        string `json:"url"`
+	NexusID    int    `json:"nexusId"`
+	GitHubRepo string `json:"githubRepo"`
 }
 
 // UpdatesResult lists a profile's updates. Unknown is set when SMAPI's API could not be reached for some mod,
@@ -47,7 +43,7 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 	req := meta.UpdateRequest{APIVersion: env.APIVersion, GameVersion: env.GameVersion, Platform: env.Platform}
 	var asked []Installed
 	for _, x := range mods {
-		if x.SourceKind == sourceSMAPI || x.SourceKind == sourceMortar {
+		if x.SourceKind == profile.SourceSMAPI || x.SourceKind == profile.SourceMortar {
 			continue
 		}
 		asked = append(asked, x)
@@ -65,7 +61,7 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 			r.Updates = append(r.Updates, Update{
 				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
 				Installed: x.Version, Version: res.Suggested.Version, URL: res.Suggested.URL,
-				NexusID: nexusID(x.UpdateKeys),
+				NexusID: nexusID(x.UpdateKeys), GitHubRepo: githubUpdate(x.UpdateKeys, res.Suggested.URL),
 			})
 		}
 	}
@@ -144,9 +140,8 @@ func pageURL(keys []string) string {
 		if n, ok := nexusKey(k); ok {
 			return siteURL(meta.Ref{Site: "Nexus", ID: n})
 		}
-		site, rest, ok := strings.Cut(k, ":")
-		if ok && strings.EqualFold(strings.TrimSpace(site), "github") && strings.Count(rest, "/") == 1 {
-			return "https://github.com/" + strings.TrimSpace(rest)
+		if repo, ok := githubKey(k); ok {
+			return "https://github.com/" + repo
 		}
 	}
 	return ""
@@ -160,4 +155,24 @@ func nexusID(keys []string) int {
 		}
 	}
 	return 0
+}
+
+// githubKey is the "owner/repo" of a "GitHub:owner/repo" update key.
+func githubKey(key string) (string, bool) {
+	site, rest, ok := strings.Cut(key, ":")
+	rest = strings.TrimSpace(rest)
+	return rest, ok && strings.EqualFold(strings.TrimSpace(site), "github") && strings.Count(rest, "/") == 1
+}
+
+// githubUpdate is the repository of the first GitHub update key, provided the suggested update lives on GitHub too.
+func githubUpdate(keys []string, url string) string {
+	if !strings.HasPrefix(strings.ToLower(url), "https://github.com/") {
+		return ""
+	}
+	for _, k := range keys {
+		if repo, ok := githubKey(k); ok {
+			return repo
+		}
+	}
+	return ""
 }

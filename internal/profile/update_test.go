@@ -31,7 +31,7 @@ func updEnv(t *testing.T, v1, v2 map[string]string) (env, Profile) {
 	}
 	e.item(t, "a-1", v1)
 	e.item(t, "a-2", v2)
-	if _, err := e.AddEntry("stardew", p.ID, "a-1", Source{Kind: "local", Name: "a.zip"}); err != nil {
+	if _, err := e.AddEntry("stardew", p.ID, "a-1", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
 		t.Fatal(err)
 	}
 	return e, p

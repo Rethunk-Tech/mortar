@@ -8,6 +8,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
 type fakeMeta struct {
@@ -44,7 +45,7 @@ func (f fakeMeta) CheckUpdates(_ context.Context, req meta.UpdateRequest) []meta
 }
 
 func mod(key, id, version string, enabled bool, deps ...manifest.Dependency) Installed {
-	m := Installed{Key: key, SourceKind: "local", Enabled: enabled}
+	m := Installed{Key: key, SourceKind: profile.KindLocal, Enabled: enabled}
 	m.Name, m.UniqueID, m.Version, m.Dependencies = id, id, version, deps
 	return m
 }
@@ -141,6 +142,12 @@ func TestWhere(t *testing.T) {
 			fakeMeta{refs: map[string][]meta.Ref{"B": {{Site: "CurseForge", ID: 7}}}},
 			dependent(),
 			&Ref{Site: "CurseForge", PageID: 7, URL: "https://www.curseforge.com/projects/7"}, false,
+		},
+		{
+			"github repo from SMAPI's API, ahead of other sites",
+			fakeMeta{refs: map[string][]meta.Ref{"B": {{Site: "CurseForge", ID: 7}}}, compat: map[string]meta.UpdateResult{"B": {GitHubRepo: "me/b"}}},
+			dependent(),
+			&Ref{Site: "GitHub", GitHub: "me/b", URL: "https://github.com/me/b"}, false,
 		},
 		{"not in dataset", fakeMeta{}, dependent(), nil, false},
 		{"dataset unreachable", fakeMeta{lookupErr: errors.New("offline")}, dependent(), nil, true},

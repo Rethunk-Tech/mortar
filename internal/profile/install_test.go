@@ -44,7 +44,7 @@ func TestInstallArchive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(res.Added) != 2 || res.Added[0] != "X.A" || res.Profile.Entries[0].Source != (Source{Kind: "local", Name: "Pack.zip"}) {
+	if len(res.Added) != 2 || res.Added[0] != "X.A" || res.Profile.Entries[0].Source != (Source{Kind: KindLocal, Name: "Pack.zip"}) {
 		t.Fatalf("result = %+v", res)
 	}
 
@@ -80,7 +80,7 @@ func TestInstallNexusKeepsTheSourceAndUpdatesInPlace(t *testing.T) {
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	v1 := buildZip(t, "a-1.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
-	src := Source{Kind: "nexus", Name: "a-1.zip", ModID: 7, FileID: 1, Version: "1.0", Picture: "https://img/a.png", EndorsementCount: 3}
+	src := Source{Kind: KindNexus, Name: "a-1.zip", ModID: 7, FileID: 1, Version: "1.0", Picture: "https://img/a.png", EndorsementCount: 3}
 	res, err := e.InstallNexus("stardew", p.ID, v1, src)
 	if err != nil {
 		t.Fatal(err)
@@ -89,7 +89,7 @@ func TestInstallNexusKeepsTheSourceAndUpdatesInPlace(t *testing.T) {
 		t.Fatalf("first install: %+v", res)
 	}
 	v2 := buildZip(t, "a-2.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/extra.txt": "new"})
-	next := Source{Kind: "nexus", Name: "a-2.zip", ModID: 7, FileID: 2, Version: "2.0"}
+	next := Source{Kind: KindNexus, Name: "a-2.zip", ModID: 7, FileID: 2, Version: "2.0"}
 	res, err = e.InstallNexus("stardew", p.ID, v2, next)
 	if err != nil {
 		t.Fatal(err)
@@ -100,5 +100,26 @@ func TestInstallNexusKeepsTheSourceAndUpdatesInPlace(t *testing.T) {
 	mods, err := e.UserMods("stardew", p.ID)
 	if err != nil || len(mods) != 1 || mods[0].Picture != "" {
 		t.Fatalf("mods %+v, %v", mods, err)
+	}
+}
+
+func TestStageThenInstallGitHubKeepsTheTypedSource(t *testing.T) {
+	e := newEnv(t)
+	p, _ := e.Create("stardew", "P")
+	zip := buildZip(t, "mod.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
+	src := Source{Kind: KindGitHub, Name: "mod.zip", Version: "1.0", Repo: "Me/Mod", Tag: "v1.0", Asset: "mod.zip"}
+	key, ids, err := e.StageGitHub("stardew", src, zip)
+	if err != nil || key != "github-me-mod-v1.0-mod.zip" || len(ids) != 1 || ids[0] != "X.A" {
+		t.Fatalf("stage = %q, %v, %v", key, ids, err)
+	}
+	if got, _ := e.List("stardew"); len(got[0].Entries) != 0 {
+		t.Fatal("staging changed the profile")
+	}
+	if _, err := e.InstallStaged("stardew", p.ID, key, src); err != nil {
+		t.Fatal(err)
+	}
+	got, err := e.List("stardew")
+	if err != nil || got[0].Entries[0].Source != src {
+		t.Fatalf("source after a round trip through profile.json: %+v, %v", got, err)
 	}
 }

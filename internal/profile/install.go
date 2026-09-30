@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/archive"
+	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
@@ -39,7 +40,7 @@ func (s *Store) InstallArchive(game, id, path string) (InstallResult, error) {
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
-	return s.installKey(game, id, key, Source{Kind: "local", Name: filepath.Base(path)})
+	return s.installKey(game, id, key, Source{Kind: KindLocal, Name: filepath.Base(path)})
 }
 
 // InstallNexus unpacks the archive at path into the store under the key of its Nexus file and adds it to the
@@ -51,6 +52,37 @@ func (s *Store) InstallNexus(game, id, path string, source Source) (InstallResul
 	key := store.NexusKey(source.ModID, source.FileID)
 	if err := s.items.AddArchiveKey(game, key, path); err != nil {
 		return InstallResult{}, installError(err)
+	}
+	return s.installKey(game, id, key, source)
+}
+
+// StageGitHub unpacks the archive at path into the store under the key of its GitHub asset and returns the key with
+// the UniqueIDs of the mods it holds, so the source can be checked before anything lands in a profile.
+func (s *Store) StageGitHub(game string, source Source, path string) (key string, uniqueIDs []string, err error) {
+	owner, repo, _ := strings.Cut(source.Repo, "/")
+	key = github.Key(owner, repo, source.Tag, source.Asset)
+	if err := s.items.AddArchiveKey(game, key, path); err != nil {
+		return "", nil, installError(err)
+	}
+	dir, err := s.items.Path(game, key)
+	if err != nil {
+		return "", nil, installError(err)
+	}
+	found, err := manifest.Scan(dir)
+	if err != nil {
+		return "", nil, installError(err)
+	}
+	for _, m := range found {
+		uniqueIDs = append(uniqueIDs, m.UniqueID)
+	}
+	return key, uniqueIDs, nil
+}
+
+// InstallStaged adds the store item key, staged by StageGitHub, to the profile, replacing the version of a mod the
+// profile already holds.
+func (s *Store) InstallStaged(game, id, key string, source Source) (InstallResult, error) {
+	if err := s.unlocked(game, id); err != nil {
+		return InstallResult{}, err
 	}
 	return s.installKey(game, id, key, source)
 }

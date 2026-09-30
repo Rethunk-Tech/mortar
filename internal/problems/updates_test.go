@@ -43,6 +43,21 @@ func TestCheckUpdates(t *testing.T) {
 	}
 }
 
+func TestCheckUpdatesNamesTheGitHubRepo(t *testing.T) {
+	gh := mod("k1", "me.a", "1.0.0", true)
+	gh.UpdateKeys = []string{"Nexus:5", "GitHub:me/a"}
+	elsewhere := mod("k2", "me.b", "1.0.0", true)
+	elsewhere.UpdateKeys = []string{"GitHub:me/b"}
+	rm := fakeMeta{compat: map[string]meta.UpdateResult{
+		"me.a": {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://github.com/me/a/releases/tag/2.0.0"}},
+		"me.b": {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://www.nexusmods.com/stardewvalley/mods/9"}},
+	}}
+	got := CheckUpdates(context.Background(), rm, Environment{}, []Installed{gh, elsewhere}).Updates
+	if len(got) != 2 || got[0].GitHubRepo != "me/a" || got[0].NexusID != 5 || got[1].GitHubRepo != "" {
+		t.Fatalf("got %+v", got)
+	}
+}
+
 func TestCheckUpdatesUnknownNeverBlocks(t *testing.T) {
 	got := CheckUpdates(context.Background(), fakeMeta{updatesOff: true}, Environment{}, []Installed{mod("k1", "me.a", "1.0.0", true)})
 	if !got.Unknown || len(got.Updates) != 0 {

@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
 // Meta is the slice of meta.Client the checks use.
@@ -38,8 +39,10 @@ type Environment struct {
 }
 
 // Ref names a mod on the page that hosts it. FileID is 0 unless a Nexus file satisfying the requirement was found.
+// GitHub is "owner/repo" when Site is "GitHub".
 type Ref struct {
 	Site     string `json:"site"`
+	GitHub   string `json:"github"`
 	PageID   int    `json:"pageId"`
 	PageName string `json:"pageName"`
 	URL      string `json:"url"`
@@ -203,7 +206,7 @@ func copies(group, enabled []Installed) []Copy {
 	top := highest(group)
 	out := make([]Copy, len(group))
 	for i, g := range group {
-		c := Copy{Key: g.Key, Name: g.Name, Version: g.Version, Source: g.SourceKind, Nexus: g.SourceKind == "nexus", Needed: []string{}, TooOld: []string{}}
+		c := Copy{Key: g.Key, Name: g.Name, Version: g.Version, Source: g.SourceKind, Nexus: g.SourceKind == profile.KindNexus, Needed: []string{}, TooOld: []string{}}
 		if cmpv, ok := meta.CompareVersions(g.Version, top); ok && cmpv == 0 {
 			c.Newest = true
 		}
@@ -314,6 +317,9 @@ func locate(ctx context.Context, m Meta, uniqueID, minimum string, dependentKeys
 		}
 	}
 	if len(nexus) == 0 {
+		if repo := githubRepo(ctx, m, uniqueID); repo != "" {
+			return &Ref{Site: "GitHub", GitHub: repo, URL: "https://github.com/" + repo}, true
+		}
 		if len(other) == 0 {
 			return nil, true
 		}
@@ -348,6 +354,18 @@ func locate(ctx context.Context, m Meta, uniqueID, minimum string, dependentKeys
 		return &Ref{Site: "Nexus", PageID: nexus[0].ID, URL: siteURL(nexus[0])}, ok
 	}
 	return best, ok
+}
+
+// githubRepo is the repository SMAPI's update API records for uniqueID, or "".
+func githubRepo(ctx context.Context, m Meta, uniqueID string) string {
+	got := m.CheckUpdates(ctx, meta.UpdateRequest{Mods: []meta.InstalledMod{{ID: uniqueID}}})
+	if len(got) != 1 || !got[0].Known {
+		return ""
+	}
+	if repo, ok := githubKey("github:" + got[0].GitHubRepo); ok {
+		return repo
+	}
+	return ""
 }
 
 // fileIn picks the newest MAIN file of the page that holds uniqueID at a version meeting minimum. With none,

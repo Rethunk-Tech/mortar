@@ -82,7 +82,7 @@ func TestAddEntryScansAndRejectsDuplicates(t *testing.T) {
 		"Pack/.off/manifest.json": manifestJSON("X.Off"),
 	})
 	p, _ := e.Create("stardew", "P")
-	got, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: "local", Name: "a.zip"})
+	got, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -380,7 +380,7 @@ func TestApplyBundledReplacesAndKeepsDisabled(t *testing.T) {
 	if err := e.ApplyBundled("stardew", smapiBundle("smapi-1.0.0")); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.AddEntry("stardew", a.ID, "local-x", Source{Kind: "local", Name: "x.zip"}); err != nil {
+	if _, err := e.AddEntry("stardew", a.ID, "local-x", Source{Kind: KindLocal, Name: "x.zip"}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.SetModEnabled("stardew", a.ID, "", "SMAPI.Backup", false); err != nil {
@@ -490,7 +490,7 @@ func TestRunningProfileIsLocked(t *testing.T) {
 		t.Fatal(err)
 	}
 	e.item(t, "a-1.0", map[string]string{"A/manifest.json": manifestJSON("me.a")})
-	if _, err := e.AddEntry("stardew", p.ID, "a-1.0", Source{Kind: "local", Name: "a.zip"}); err != nil {
+	if _, err := e.AddEntry("stardew", p.ID, "a-1.0", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
 		t.Fatal(err)
 	}
 	running := true

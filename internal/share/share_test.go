@@ -21,20 +21,20 @@ import (
 func nexus(key string, mod, file int, disabled ...string) profile.Entry {
 	return profile.Entry{
 		Key:      key,
-		Source:   profile.Source{Kind: "nexus", ModID: mod, FileID: file},
+		Source:   profile.Source{Kind: profile.KindNexus, ModID: mod, FileID: file},
 		Mods:     []profile.EntryMod{{UniqueID: "A." + key, Folder: "."}},
 		Disabled: disabled,
 	}
 }
 
 func sample() profile.Profile {
-	gh := profile.Entry{Key: "gh", Source: profile.Source{Kind: KindGitHub, Name: "owner/repo@v1.2.3/mod-1.2.3.zip"}}
+	gh := profile.Entry{Key: "gh", Source: profile.Source{Kind: profile.KindGitHub, Repo: "owner/repo", Tag: "v1.2.3", Asset: "mod-1.2.3.zip"}}
 	return profile.Profile{Name: "Farm 🌾", Notes: "n", Entries: []profile.Entry{
 		{Key: "smapi-4.1", Source: profile.Source{Kind: profile.SourceSMAPI}},
 		{Key: "bridge-1", Source: profile.Source{Kind: profile.SourceMortar}},
 		nexus("one", 541, 1000),
 		nexus("off", 7, 8, "A.off"),
-		{Key: "loc.zip", Source: profile.Source{Kind: "local", Name: "loc.zip"}},
+		{Key: "loc.zip", Source: profile.Source{Kind: profile.KindLocal, Name: "loc.zip"}},
 		gh,
 		nexus("two", 2, 3),
 	}}
@@ -196,8 +196,8 @@ func TestBundledNeverListed(t *testing.T) {
 
 func TestLeftOutReasons(t *testing.T) {
 	p := profile.Profile{Name: "x", Entries: []profile.Entry{
-		{Key: "a", Source: profile.Source{Kind: "nexus"}},
-		{Key: "b", Source: profile.Source{Kind: KindGitHub, Name: "bad name"}},
+		{Key: "a", Source: profile.Source{Kind: profile.KindNexus}},
+		{Key: "b", Source: profile.Source{Kind: profile.KindGitHub, Repo: "bad name"}},
 		{Key: "c", Source: profile.Source{Kind: "weird"}},
 	}}
 	res, err := Encode(p)

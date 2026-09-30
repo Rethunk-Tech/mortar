@@ -13,7 +13,7 @@ func TestBundledModsAreHiddenAndKept(t *testing.T) {
 	if err := e.ApplyBundled("stardew", smapiBundle("smapi-1.0.0")); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-x", Source{Kind: "local", Name: "x.zip"}); err != nil {
+	if _, err := e.AddEntry("stardew", p.ID, "local-x", Source{Kind: KindLocal, Name: "x.zip"}); err != nil {
 		t.Fatal(err)
 	}
 	user, err := e.UserMods("stardew", p.ID)

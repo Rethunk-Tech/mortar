@@ -22,8 +22,6 @@ import (
 const (
 	// FormatVersion is the payload's leading number.
 	FormatVersion = 1
-	// KindGitHub is the profile.Source kind of a GitHub release asset; its Name holds "<owner>/<repo>@<tag>/<asset>".
-	KindGitHub = "github"
 
 	MaxEncoded    = 8 << 10
 	MaxDecoded    = 64 << 10
@@ -194,19 +192,19 @@ func (s Shared) payload() (string, error) {
 // refOf maps an enabled, non-bundled entry to its Ref, or says why it cannot be shared.
 func refOf(e profile.Entry) (Ref, string) {
 	switch e.Source.Kind {
-	case "nexus":
+	case profile.KindNexus:
 		r := Ref{ModID: e.Source.ModID, FileID: e.Source.FileID}
 		if !r.valid() {
 			return Ref{}, "no Nexus file recorded"
 		}
 		return r, ""
-	case KindGitHub:
-		r := Ref{GitHub: e.Source.Name}
+	case profile.KindGitHub:
+		r := Ref{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset}
 		if !r.valid() {
 			return Ref{}, "no GitHub release asset recorded"
 		}
 		return r, ""
-	case "local":
+	case profile.KindLocal:
 		return Ref{}, "local archive"
 	default:
 		return Ref{}, "unknown source"
