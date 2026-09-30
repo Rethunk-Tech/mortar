@@ -6,7 +6,7 @@
   ],
   "scripts": {
     "lint": "biome check --error-on-warnings . && golangci-lint run",
-    "bindings": "wails3 generate bindings -ts",
+    "bindings": "wails3 generate bindings -clean=true -ts -i",
     "typecheck": "bun run bindings && bun run --cwd frontend tsc --noEmit",
     "test": "go test -race ./... && bun test",
     "vet": "go vet ./...",

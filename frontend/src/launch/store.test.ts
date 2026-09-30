@@ -1,7 +1,7 @@
 import { beforeEach, expect, test } from 'bun:test'
-import { Entry, Hint } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import { Hint, Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import {
-  Lines,
+  type Lines,
   State,
   type Status,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
@@ -17,8 +17,11 @@ const status = (state: State, profile = 'p1'): Status => ({
   error: '',
 })
 
-const line = (seq: number) =>
-  new Lines({ game: 'stardew', profile: 'p1', entries: [new Entry({ seq })] })
+const line = (seq: number): Lines => ({
+  game: 'stardew',
+  profile: 'p1',
+  entries: [{ seq, time: '', level: Level.Info, mod: '', message: '', cont: false }],
+})
 
 beforeEach(() => {
   useLaunch.setState(useLaunch.getInitialState(), true)
