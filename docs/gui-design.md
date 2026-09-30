@@ -48,16 +48,17 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 
 ## Mods tab
 
-- Two views, switched from the toolbar and remembered per user (NOMAD, 2026-09-29): **Grid** (default), and **List**, a table (switch, picture, name, author, source, status) with an inspector for the selected mod on the right.
+- Two views, switched from the toolbar and remembered per user (NOMAD, 2026-09-29): **Grid** (default), and **List**, a table (switch, picture, name, author, source, status). Both share one details sidebar for the selected mod (NOMAD, 2026-09-30).
 - Grid: a responsive grid of mod cards (`minmax(300px, 1fr)`: three columns at the default window, two at the minimum).
-- A card: the mod's icon (its Nexus `picture_url`, fetched once when the mod is installed and cached on disk; a letter tile until it loads or when there is none, NOMAD 2026-09-29), its name, author and version from its manifest, an enable switch (the dot-folder toggle), and badges for an available update or a problem. One card per mod; its menu (open the Nexus page, update, roll back when there is a previous version, remove) acts on the whole archive entry the mod came in, and when that entry holds other mods the menu names them first.
+- A card: the mod's icon (its Nexus `picture_url`, fetched once when the mod is installed and cached on disk; a letter tile until it loads or when there is none, NOMAD 2026-09-29), its name, author and version from its manifest, and badges for an available update or a problem. The card view is deliberately simple: no switch (the enable toggle lives in the sidebar). Clicking a card selects it and fills the sidebar. One card per mod; its menu (open the Nexus page, update, roll back when there is a previous version, remove) acts on the whole archive entry the mod came in, and when that entry holds other mods the menu names them first.
 - Above the grid: a search field that filters by name, the problem summary with one-click fixes ([design.md](design.md#mod-data)), and buttons to add mods (open Nexus, or pick an archive). Dropping an archive anywhere on the window installs it into the open profile.
 - SMAPI's bundled Console Commands and Save Backup are installed in every profile and not shown, listed, counted or removable (NOMAD, 2026-09-30).
 - Empty (a new profile): "No mods yet", a line on how to add them, **Browse Nexus** and **Add archive**, a link to import a shared profile, and a note that archives can be dropped anywhere. The hero uses Steam's art.
 
 ## Mod detail
 
-Clicking a card opens a panel on the right (List view's inspector links to the same content): picture, name, author and Nexus page, the enable switch, an update banner, **Needs** (each dependency and whether it is installed), **In the same download** (mods that update and roll back together), **Versions** (the one in use and the one kept for rollback, with Roll back), **Settings** (`config.json`, whether it was changed, Open and Reset), **Needed by**, and Show files and Remove from profile.
+- **Sidebar** (both views, 300px on the right; a right drawer below 960px): the mod's letter tile, name, author · source, the enable toggle at the top right (its aria-label states the mod; no "Enabled in" text), Version, UniqueID, the update banner and the problem line when there are any, the mods from the same download, and at the foot **More details** (primary), **Show files** and **Remove**. Remove is absent for the bundled SMAPI entry. Selecting the selected mod again keeps its fetched data.
+- **More details** opens a modal dialog titled with the mod's name and closed with **Close**: the page link (GitHub or Nexus), **Needs** (each dependency and whether it is installed), **In the same download** (mods that update and roll back together), **Versions** (the one in use and the one kept for rollback, with Roll back, which asks first), **Settings** (`config.json`, whether it was changed, Open and Reset, which asks first) and **Needed by**.
 
 ## Saves tab
 

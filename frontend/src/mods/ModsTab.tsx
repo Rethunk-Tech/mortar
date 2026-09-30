@@ -15,14 +15,8 @@ import { modId } from './lookup.ts'
 import { ModDetail } from './ModDetail.tsx'
 import { ModList } from './ModList.tsx'
 import { ProblemBar } from './ProblemBar.tsx'
-import {
-  LetterTile,
-  ModMenu,
-  ModSwitch,
-  ProblemBadge,
-  RemoveDialog,
-  UpdateBadge,
-} from './parts.tsx'
+import { LetterTile, ModMenu, ProblemBadge, RemoveDialog, UpdateBadge } from './parts.tsx'
+import { ModSidebar } from './Sidebar.tsx'
 import { useMods, type View } from './store.ts'
 import { AddArchive, BrowseNexus, Toolbar } from './Toolbar.tsx'
 import { UpdateBar, UpdateReview } from './UpdateReview.tsx'
@@ -30,19 +24,10 @@ import { useUpdates } from './updates.ts'
 
 const OFF_OPACITY = 0.6
 
-function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; view: View }) {
+function Cards({ shown }: { shown: Mod[] }) {
   const { t } = useLingui()
   const openDetail = useDetail((s) => s.show)
-  if (shown.length === 0) {
-    return (
-      <Typography
-        sx={{ px: 2, color: 'text.secondary' }}
-      >{t`No mods match your search.`}</Typography>
-    )
-  }
-  if (view === 'list') {
-    return <ModList profile={profile} mods={shown} />
-  }
+  const selectedId = useDetail((s) => s.detailId)
   return (
     <Box
       sx={{
@@ -67,6 +52,8 @@ function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; vi
             gap: '10px',
             minWidth: 0,
             borderRadius: '6px',
+            outline: modId(m) === selectedId ? '1px solid' : 'none',
+            outlineColor: 'primary.main',
             [compact]: { height: 50, '& .tile': { width: 38, height: 38, fontSize: 19 } },
           }}
         >
@@ -106,10 +93,26 @@ function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; vi
           </ButtonBase>
           <UpdateBadge mod={m} />
           <ProblemBadge mod={m} />
-          <ModSwitch mod={m} />
           <ModMenu mod={m} />
         </Card>
       ))}
+    </Box>
+  )
+}
+
+function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; view: View }) {
+  const { t } = useLingui()
+  if (shown.length === 0) {
+    return (
+      <Typography
+        sx={{ px: 2, color: 'text.secondary' }}
+      >{t`No mods match your search.`}</Typography>
+    )
+  }
+  return (
+    <Box sx={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto' }}>
+      {view === 'list' ? <ModList profile={profile} mods={shown} /> : <Cards shown={shown} />}
+      <ModSidebar profile={profile} />
     </Box>
   )
 }

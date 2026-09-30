@@ -1,0 +1,185 @@
+import { useLingui } from '@lingui/react/macro'
+import { Box, Button, Drawer, Typography, useMediaQuery } from '@mui/material'
+import { TriangleAlert } from 'lucide-react'
+import type {
+  Mod,
+  Profile,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { compactQuery } from '../game/compact.ts'
+import { useDescribe } from './describe.ts'
+import { useDetail } from './detail.ts'
+import {
+  concerns,
+  kindLabel,
+  modId,
+  problemsOf,
+  siblingsOf,
+  sourceKind,
+  updateFor,
+} from './lookup.ts'
+import { accent, heading } from './paper.ts'
+import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
+import { useMods } from './store.ts'
+import { useUpdates } from './updates.ts'
+
+const noWrap = { whiteSpace: 'nowrap' } as const
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <Box>
+      <Typography sx={heading}>{label}</Typography>
+      <Typography sx={{ fontSize: 13, overflowWrap: 'anywhere' }}>{value}</Typography>
+    </Box>
+  )
+}
+
+function UpdateBanner({ mod }: { mod: Mod }) {
+  const { t } = useLingui()
+  const update = useUpdates((s) => updateFor(s.updates, mod))
+  const setReviewing = useUpdates((s) => s.setReviewing)
+  if (!update) {
+    return null
+  }
+  return (
+    <Box
+      sx={{
+        px: 1.5,
+        py: 0.75,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        borderRadius: '6px',
+        bgcolor: accent.fill,
+        border: '1px solid',
+        borderColor: accent.line,
+      }}
+    >
+      <Typography sx={{ flex: 1, fontSize: 13 }}>
+        {t`Update available: ${update.installed} → ${update.version}`}
+      </Typography>
+      <Button size="small" variant="contained" onClick={() => setReviewing(true)} sx={noWrap}>
+        {t`Update`}
+      </Button>
+    </Box>
+  )
+}
+
+function ProblemLine({ mod }: { mod: Mod }) {
+  const describe = useDescribe()
+  const result = useMods((s) => s.problems)
+  const mine = problemsOf(result).filter((p) => concerns(p, mod))
+  if (mine.length === 0) {
+    return null
+  }
+  return (
+    <Box sx={{ display: 'flex', gap: 1, color: 'warning.main' }}>
+      <TriangleAlert size={16} style={{ flexShrink: 0, marginTop: 2 }} aria-hidden={true} />
+      <Typography sx={{ fontSize: 13 }}>{mine.map(describe).join(' ')}</Typography>
+    </Box>
+  )
+}
+
+function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
+  const { t } = useLingui()
+  const all = useMods((s) => s.mods)
+  const others = siblingsOf(all, mod)
+  const setOpen = useDetail((s) => s.setOpen)
+  const kind = sourceKind(profile, mod)
+  const source = kindLabel(kind, t`SMAPI`, t`Archive`)
+  return (
+    <Box sx={{ p: 1.75, display: 'flex', flexDirection: 'column', gap: 1.25, minHeight: '100%' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <LetterTile mod={mod} size={52} />
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography sx={{ fontSize: 16, fontWeight: 700, overflowWrap: 'anywhere' }}>
+            {mod.name}
+          </Typography>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+            {`${mod.author} · ${source}`}
+          </Typography>
+        </Box>
+        <ModSwitch mod={mod} />
+      </Box>
+      <Field label={t`Version`} value={mod.version} />
+      <Field label={t`UniqueID`} value={mod.uniqueId} />
+      <UpdateBanner mod={mod} />
+      <ProblemLine mod={mod} />
+      {others.length > 0 ? (
+        <Box>
+          <Typography sx={heading}>{t`In the same download`}</Typography>
+          {others.map((o) => (
+            <Typography key={o.uniqueId} sx={{ fontSize: 13 }}>
+              {o.name}
+            </Typography>
+          ))}
+        </Box>
+      ) : null}
+      <Box sx={{ flexGrow: 1 }} />
+      <Button variant="contained" onClick={() => setOpen(true)} sx={noWrap}>
+        {t`More details`}
+      </Button>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: kind === 'smapi' ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+          gap: 1,
+        }}
+      >
+        <ShowFilesButton mod={mod} />
+        {kind === 'smapi' ? null : <RemoveButton mod={mod} />}
+      </Box>
+    </Box>
+  )
+}
+
+// The one details sidebar of both views: an aside at the window's normal width, a right drawer below 960px.
+export function ModSidebar({ profile }: { profile: Profile }) {
+  const { t } = useLingui()
+  const narrow = useMediaQuery(compactQuery)
+  const mods = useMods((s) => s.mods)
+  const detailId = useDetail((s) => s.detailId)
+  const show = useDetail((s) => s.show)
+  const selected = mods.find((m) => modId(m) === detailId)
+  if (narrow) {
+    return (
+      <Drawer
+        anchor="right"
+        open={selected !== undefined}
+        onClose={() => show(null)}
+        sx={{ top: 'var(--title-bar)' }}
+        slotProps={{
+          paper: {
+            sx: {
+              width: 320,
+              top: 'var(--title-bar)',
+              height: 'calc(100% - var(--title-bar))',
+              bgcolor: 'rgba(40,40,48,0.92)',
+            },
+          },
+        }}
+      >
+        {selected ? <Inspector mod={selected} profile={profile} /> : null}
+      </Drawer>
+    )
+  }
+  return (
+    <Box
+      aria-label={t`Selected mod`}
+      component="aside"
+      sx={{
+        width: 300,
+        overflowY: 'auto',
+        bgcolor: 'rgba(40,40,48,0.72)',
+        borderLeft: '1px solid rgba(255,255,255,0.1)',
+      }}
+    >
+      {selected ? (
+        <Inspector mod={selected} profile={profile} />
+      ) : (
+        <Typography sx={{ p: 1.75, fontSize: 13, color: 'text.secondary' }}>
+          {t`Select a mod to see its details.`}
+        </Typography>
+      )}
+    </Box>
+  )
+}

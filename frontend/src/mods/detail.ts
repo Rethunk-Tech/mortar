@@ -32,18 +32,22 @@ const open = () => {
   return game && openId ? { game: game.id, id: openId } : null
 }
 
-// The mod whose detail panel is open, by modId, with what the panel reads beyond the mod list.
+// The selected mod (by modId) shown in the sidebar, whether its details dialog is open, and what the dialog reads beyond the mod list.
 export const useDetail = create<{
   detailId: string
+  open: boolean
   extras: Extras | null
   show: (mod: Mod | null) => void
+  setOpen: (isOpen: boolean) => void
   loadExtras: (mod: Mod) => Promise<void>
   rollBack: (mod: Mod) => Promise<void>
   resetConfig: (mod: Mod) => Promise<void>
 }>((set, get) => ({
   detailId: '',
+  open: false,
   extras: null,
-  show: (mod) => set((s) => reshow(s, mod)),
+  show: (mod) => set((s) => ({ ...reshow(s, mod), open: false })),
+  setOpen: (isOpen) => set({ open: isOpen }),
   loadExtras: async (mod) => {
     const target = open()
     if (!target) {
@@ -72,7 +76,7 @@ export const useDetail = create<{
       fail(i18n._(msg`Could not roll back ${mod.name}`))(e)
       return
     }
-    set({ detailId: '', extras: null })
+    set({ open: false, extras: null })
     await useMods.getState().load()
   },
   resetConfig: async (mod) => {
