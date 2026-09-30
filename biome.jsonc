@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!.claude", "!**/bindings"]
+    "includes": ["**", "!.claude", "!**/bindings", "!**/locales/*/messages.ts"]
   },
   "formatter": {
     "indentStyle": "space",

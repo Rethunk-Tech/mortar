@@ -77,6 +77,22 @@ msgstr "Warm and bold"
 msgid "Stardew Valley"
 msgstr "Stardew Valley"
 
+#: src/shell/win.ts:11
+msgid "Couldn't minimise the window"
+msgstr "Couldn't minimise the window"
+
+#: src/shell/win.ts:12
+msgid "Couldn't resize the window"
+msgstr "Couldn't resize the window"
+
+#: src/shell/win.ts:15
+msgid "Couldn't read the window state"
+msgstr "Couldn't read the window state"
+
+#: src/shell/win.ts:13
+msgid "Couldn't close the window"
+msgstr "Couldn't close the window"
+
 #: src/settings/sections/Appearance.tsx:22
 msgid "Default"
 msgstr "Default"

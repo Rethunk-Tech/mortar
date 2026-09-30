@@ -1,14 +1,17 @@
+import { t } from '@lingui/core/macro'
 import { Window } from '@wailsio/runtime'
+import { useToasts } from '../toasts/store.ts'
 
-const logFailure = (action: string) => (err: unknown) => {
-  console.error(`window: ${action} failed`, err)
+const reportFailure = (title: string) => (err: unknown) => {
+  const body = err instanceof Error ? err.message : typeof err === 'string' ? err : undefined
+  useToasts.getState().push({ kind: 'error', title, ...(body ? { body } : {}) })
 }
 
 export const win = {
-  minimise: () => Window.Minimise().catch(logFailure('minimise')),
-  toggleMaximise: () => Window.ToggleMaximise().catch(logFailure('toggle maximise')),
-  close: () => Window.Close().catch(logFailure('close')),
+  minimise: () => Window.Minimise().catch(reportFailure(t`Couldn't minimise the window`)),
+  toggleMaximise: () => Window.ToggleMaximise().catch(reportFailure(t`Couldn't resize the window`)),
+  close: () => Window.Close().catch(reportFailure(t`Couldn't close the window`)),
   reportMaximised: (report: (maximised: boolean) => void): void => {
-    Window.IsMaximised().then(report, logFailure('read maximised state'))
+    Window.IsMaximised().then(report, reportFailure(t`Couldn't read the window state`))
   },
 }
