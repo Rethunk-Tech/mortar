@@ -11,6 +11,7 @@ import {
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   Mods,
+  OpenConfig,
   RemoveEntry,
   SetModEnabled,
   ShowFiles,
@@ -60,6 +61,7 @@ export const useMods = create<{
   askRemove: (mod: Mod | null) => void
   remove: (mod: Mod) => Promise<void>
   showFiles: (mod: Mod) => Promise<void>
+  openConfig: (mod: Mod) => Promise<void>
   resolve: (dup: Duplicate | null) => void
   keepCopy: (dup: Duplicate, keepKey: string) => Promise<void>
 }>((set, get) => ({
@@ -159,6 +161,17 @@ export const useMods = create<{
       await ShowFiles(target.game, target.id, mod.key, mod.uniqueId)
     } catch (e) {
       fail(i18n._(msg`Could not open the folder of ${mod.name}`))(e)
+    }
+  },
+  openConfig: async (mod) => {
+    const target = open()
+    if (!target) {
+      return
+    }
+    try {
+      await OpenConfig(target.game, target.id, mod.key, mod.uniqueId)
+    } catch (e) {
+      fail(i18n._(msg`Could not open config.json of ${mod.name}`))(e)
     }
   },
   resolve: (resolving) => set({ resolving }),

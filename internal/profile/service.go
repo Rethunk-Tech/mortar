@@ -76,6 +76,15 @@ func (s *Service) ShowFiles(game, id, key, uniqueID string) error {
 	return datadir.Open(dir)
 }
 
+// OpenConfig opens the mod's config.json with the default app.
+func (s *Service) OpenConfig(game, id, key, uniqueID string) error {
+	path, err := s.store.ConfigPath(game, id, key, uniqueID)
+	if err != nil {
+		return err
+	}
+	return datadir.Open(path)
+}
+
 // ModState reads the mod's rollback target and the state of its config.json.
 func (s *Service) ModState(game, id, key, uniqueID string) (ModState, error) {
 	return s.store.ModState(game, id, key, uniqueID)

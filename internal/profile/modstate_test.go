@@ -62,6 +62,30 @@ func TestModStateAndResetConfig(t *testing.T) {
 	}
 }
 
+func TestConfigPathStaysInTheModFolder(t *testing.T) {
+	m := manifestJSON("me.a")
+	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m + " "})
+	if _, err := e.ConfigPath("stardew", p.ID, "a-1", "me.a"); err == nil {
+		t.Fatal("missing config.json opened")
+	}
+	writeFile(t, e.mods(p.ID), "a-1/A/config.json", "mine")
+	got, err := e.ConfigPath("stardew", p.ID, "a-1", "me.a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := filepath.Join(e.mods(p.ID), "a-1", "A", "config.json")
+	if got != want {
+		t.Fatalf("ConfigPath = %s, want %s", got, want)
+	}
+	if rel, err := filepath.Rel(filepath.Join(e.mods(p.ID), "a-1", "A"), got); err != nil || rel != "config.json" {
+		t.Fatalf("escaped the mod folder: %s", got)
+	}
+	svc := NewService(e.Store)
+	if err := svc.OpenConfig("stardew", p.ID, "a-1", "nope.Mod"); err == nil {
+		t.Fatal("unknown mod opened")
+	}
+}
+
 func TestRollBackThroughService(t *testing.T) {
 	m := manifestJSON("me.a")
 	v2 := `{"Name":"me.a","Author":"me","Version":"2.0.0","UniqueID":"me.a"}`

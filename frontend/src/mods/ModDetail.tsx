@@ -119,7 +119,7 @@ function Settings({
   ask: () => void
 }) {
   const { t } = useLingui()
-  const showFiles = useMods((s) => s.showFiles)
+  const openConfig = useMods((s) => s.openConfig)
   const locked = useLocked()
   const labels: Record<string, string> = {
     default: t`config.json, as the mod ships it`,
@@ -137,7 +137,7 @@ function Settings({
             <Button
               size="small"
               variant="outlined"
-              onClick={() => showFiles(mod).catch(reportUnexpected)}
+              onClick={() => openConfig(mod).catch(reportUnexpected)}
               sx={noWrap}
             >
               {t`Open`}
@@ -168,7 +168,12 @@ function Confirm({
   const resetConfig = useDetail((s) => s.resetConfig)
   const rolling = confirming === 'rollback'
   return (
-    <Dialog open={confirming !== null} onClose={onClose} slotProps={{ paper }}>
+    <Dialog
+      open={confirming !== null}
+      onClose={onClose}
+      transitionDuration={0}
+      slotProps={{ paper }}
+    >
       <DialogTitle>
         {rolling ? t`Roll back ${mod.name}?` : t`Reset the settings of ${mod.name}?`}
       </DialogTitle>
@@ -276,6 +281,7 @@ function Details({ mod, profile }: { mod: Mod; profile: Profile }) {
       onClose={() => setOpen(false)}
       fullWidth={true}
       maxWidth="sm"
+      transitionDuration={0}
       slotProps={{ paper }}
     >
       <DialogTitle>{mod.name}</DialogTitle>

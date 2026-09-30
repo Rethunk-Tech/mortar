@@ -3,6 +3,7 @@ package profile
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -14,6 +15,25 @@ import (
 )
 
 const configFile = "config.json"
+
+// ConfigPath is the mod's config.json, only if that file sits in the profile's mod folder.
+func (s *Store) ConfigPath(game, id, key, uniqueID string) (string, error) {
+	dir, err := s.ModFolder(game, id, key, uniqueID)
+	if err != nil {
+		return "", err
+	}
+	root := filepath.Clean(dir)
+	cfg := filepath.Join(root, configFile)
+	rel, err := filepath.Rel(root, cfg)
+	if err != nil || rel != configFile {
+		return "", fmt.Errorf("config.json is not in the mod folder")
+	}
+	st, err := os.Stat(cfg)
+	if err != nil || st.IsDir() {
+		return "", fmt.Errorf("config.json is missing")
+	}
+	return cfg, nil
+}
 
 // Config states, where a store item that is gone counts as shipping none: "none" when the mod has no config.json (yet), "default" when it is byte for byte the one the
 // mod ships, "changed" when it differs from the shipped one, and "generated" when the mod ships none, so the
