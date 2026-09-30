@@ -1,7 +1,13 @@
-import { expect, test } from 'bun:test'
+import { beforeEach, expect, test } from 'bun:test'
 import { useNav } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { importAfterSignIn, useImportDialog } from './store.ts'
+
+beforeEach(() => {
+  useNav.setState(useNav.getInitialState(), true)
+  useNexus.setState(useNexus.getInitialState(), true)
+  useImportDialog.setState(useImportDialog.getInitialState(), true)
+})
 
 const signOut = () => useNexus.setState({ signedIn: false })
 const signIn = () => useNexus.setState({ signedIn: true })
@@ -22,7 +28,6 @@ test('import reopens with the same link once the sign-in succeeds', () => {
 
 test('leaving settings without signing in cancels the return to import', () => {
   signOut()
-  useImportDialog.setState({ request: null })
   useNav.getState().openGame('stardew')
   importAfterSignIn({ link: 'x' })
   useNav.getState().closeSettings()
