@@ -1,5 +1,4 @@
 import { msg, plural } from '@lingui/core/macro'
-import { useLingui } from '@lingui/react/macro'
 import { useCallback, useRef, useState } from 'react'
 import { RegisterLinks } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/service.ts'
 import { SetLastGame } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
@@ -21,6 +20,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { beginWork } from '../toasts/usePending.ts'
 import { type ShownPreview, shownPreview } from './logic.ts'
 import { importAfterSignIn, useImportDialog } from './store.ts'
 
@@ -62,11 +62,28 @@ function announce(result: Result, intoOpen: boolean, sharedName: string | undefi
   }
 }
 
+async function afterImport(
+  game: string,
+  intoOpen: boolean,
+  result: Result,
+  previewName: string | undefined,
+) {
+  try {
+    await showImported(game, intoOpen, result.profile.id)
+    announce(result, intoOpen, previewName)
+  } catch (e) {
+    useToasts.getState().push({
+      kind: 'error',
+      title: i18n._(msg`Imported, but could not show the profile`),
+      body: errorMessage(e),
+    })
+  }
+}
+
 export type Tab = 'link' | 'file'
 
 // The import dialog's state: what was typed or picked, the preview it produced and the mods unticked.
 export function useImportFlow(game: string, profileId: string, close: () => void) {
-  const { t } = useLingui()
   const [tab, setTab] = useState<Tab>('link')
   const [text, setText] = useState('')
   const [path, setPath] = useState('')
@@ -74,9 +91,9 @@ export function useImportFlow(game: string, profileId: string, close: () => void
   const [excluded, setExcluded] = useState<ReadonlySet<string>>(new Set())
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-
   // Each preview or reset takes a new number; a result for an older one arrived after it was overtaken.
   const latest = useRef(0)
+  const importing = useRef(false)
   const show = useCallback(async (pending: Promise<Preview>) => {
     const n = latest.current + 1
     latest.current = n
@@ -143,38 +160,27 @@ export function useImportFlow(game: string, profileId: string, close: () => void
       return next
     })
 
-  // Creates the profile (or fills the open one) and queues the downloads; this is the only place anything starts.
   const run = async (intoOpen: boolean) => {
-    setBusy(true)
-    const opened = useImportDialog.getState().request?.run
-    const target = intoOpen ? profileId : ''
-    let result: Result
-    try {
-      result = await Import(game, preview?.session ?? '', target, [...excluded])
-    } catch (e) {
-      setError(errorMessage(e))
-      setBusy(false)
+    if (!beginWork(importing)) {
       return
     }
-    // The import already happened, so a failure to show it is not an import failure and a retry would fail.
+    setBusy(true)
+    const opened = useImportDialog.getState().request?.run
     try {
-      await showImported(game, intoOpen, result.profile.id)
-      announce(result, intoOpen, preview?.name)
-    } catch (e) {
-      useToasts.getState().push({
-        kind: 'error',
-        title: t`Imported, but could not show the profile`,
-        body: errorMessage(e),
-      })
-    } finally {
-      setBusy(false)
-      // Import may have been opened again for another link meanwhile; that one stays open.
+      const result = await Import(game, preview?.session ?? '', intoOpen ? profileId : '', [
+        ...excluded,
+      ])
+      await afterImport(game, intoOpen, result, preview?.name)
       if (useImportDialog.getState().request?.run === opened) {
         close()
       }
+    } catch (e) {
+      setError(errorMessage(e))
+    } finally {
+      importing.current = false
+      setBusy(false)
     }
   }
-
   // The dialog closes for Nexus settings and comes back with this link or file after sign-in.
   const signIn = () => {
     close()
