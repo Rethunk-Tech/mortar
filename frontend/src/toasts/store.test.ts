@@ -68,3 +68,48 @@ test('a toast keeps its picture and action', () => {
   expect(toast?.action?.run).toBe(run)
   expect(toast?.action?.profileId).toBe('p1')
 })
+
+test('history keeps the last 200 toasts newest first after they leave the stack', () => {
+  const { push } = useToasts.getState()
+  for (let i = 0; i < 201; i += 1) {
+    push({ kind: 'info', title: `n${i}`, body: `b${i}` })
+  }
+  jest.advanceTimersByTime(5000)
+  const { history, unread, toasts } = useToasts.getState()
+  expect(toasts).toHaveLength(0)
+  expect(history).toHaveLength(200)
+  expect(history[0]?.title).toBe('n200')
+  expect(history[0]?.body).toBe('b200')
+  expect(history[0]?.kind).toBe('info')
+  expect(typeof history[0]?.at).toBe('number')
+  expect(history.at(-1)?.title).toBe('n1')
+  expect(unread).toBe(200)
+})
+
+test('history keeps actions and Clear drops the list', () => {
+  const run = () => undefined
+  let latest = true
+  useToasts.getState().push({
+    kind: 'success',
+    title: 'SpaceCore installed',
+    action: {
+      label: 'Undo',
+      run,
+      profileId: 'p1',
+      live: () =>
+        latest
+          ? { disabled: false }
+          : { disabled: true, reason: 'This is no longer the latest change to that mod.' },
+    },
+  })
+  const [item] = useToasts.getState().history
+  expect(item?.action?.run).toBe(run)
+  expect(item?.action?.live?.()).toEqual({ disabled: false })
+  latest = false
+  expect(item?.action?.live?.().disabled).toBe(true)
+  useToasts.getState().markRead()
+  expect(useToasts.getState().unread).toBe(0)
+  useToasts.getState().clearHistory()
+  expect(useToasts.getState().history).toEqual([])
+  expect(useToasts.getState().unread).toBe(0)
+})

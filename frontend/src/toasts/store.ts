@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { HISTORY_CAP, type HistoryActionState, prependHistory } from './history.ts'
 
 const QUICK_MS = 5000
 const SLOW_MS = 10_000
@@ -10,21 +11,33 @@ let nextId = 1
 
 export type ToastKind = 'info' | 'success' | 'warning' | 'error'
 
+export interface ToastAction {
+  label: string
+  run: () => unknown
+  profileId?: string
+  live?: () => HistoryActionState
+}
+
 export interface ToastInput {
   kind: ToastKind
   title: string
   body?: string
   detail?: string
   picture?: string
-  action?: {
-    label: string
-    run: () => unknown
-    profileId?: string
-  }
+  action?: ToastAction
 }
 
 export interface Toast extends ToastInput {
   id: number
+}
+
+export interface ToastHistoryItem {
+  id: number
+  at: number
+  kind: ToastKind
+  title: string
+  body?: string
+  action?: ToastAction
 }
 
 // Failures stay longer: they are read, not glanced at.
@@ -33,10 +46,14 @@ export const lifetime = (kind: ToastKind) =>
 
 export const useToasts = create<{
   toasts: Toast[]
+  history: ToastHistoryItem[]
+  unread: number
   push: (toast: ToastInput) => number
   dismiss: (id: number) => void
   hold: (id: number) => void
   release: (id: number) => void
+  markRead: () => void
+  clearHistory: () => void
 }>((set, get) => {
   const arm = (id: number, kind: ToastKind) => {
     clearTimeout(timers.get(id))
@@ -47,6 +64,8 @@ export const useToasts = create<{
   }
   return {
     toasts: [],
+    history: [],
+    unread: 0,
     push: (input) => {
       const id = nextId
       nextId += 1
@@ -55,7 +74,19 @@ export const useToasts = create<{
         clearTimeout(timers.get(gone.id))
         timers.delete(gone.id)
       }
-      set({ toasts: kept.slice(-MAX_SHOWN) })
+      const item: ToastHistoryItem = {
+        id,
+        at: Date.now(),
+        kind: input.kind,
+        title: input.title,
+        ...(input.body === undefined ? {} : { body: input.body }),
+        ...(input.action === undefined ? {} : { action: input.action }),
+      }
+      set({
+        toasts: kept.slice(-MAX_SHOWN),
+        history: prependHistory(get().history, item),
+        unread: Math.min(HISTORY_CAP, get().unread + 1),
+      })
       arm(id, input.kind)
       return id
     },
@@ -72,5 +103,7 @@ export const useToasts = create<{
         arm(id, toast.kind)
       }
     },
+    markRead: () => set({ unread: 0 }),
+    clearHistory: () => set({ history: [], unread: 0 }),
   }
 })
