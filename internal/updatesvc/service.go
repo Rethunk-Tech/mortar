@@ -34,6 +34,8 @@ type Info struct {
 type Release struct {
 	Version string `json:"version"`
 	Notes   string `json:"notes"`
+	// Staged is set once Install has downloaded the release; only Restart is left.
+	Staged bool `json:"staged"`
 }
 
 var (
@@ -48,7 +50,7 @@ type Service struct {
 	info Info
 
 	mu    sync.Mutex
-	found bool
+	found *Release
 }
 
 // Configure points s at u, which reads ManifestURL and trusts only publicKey. It is a function rather than a method
@@ -79,14 +81,19 @@ func configure(s *Service, u Updater, version string, publicKey []byte, producti
 // Info returns the running version and whether updates are checked.
 func (s *Service) Info() Info { return s.info }
 
-// Check asks the manifest for a newer release; nil means Mortar is up to date.
+// Check asks the manifest for a newer release; nil means Mortar is up to date. Once a release is staged it is
+// returned as is, so a later check cannot discard it before Restart.
 func (s *Service) Check(ctx context.Context) (*Release, error) {
 	if s.info.Off != "" {
 		return nil, errOff
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.found = false
+	if s.found != nil && s.found.Staged {
+		r := *s.found
+		return &r, nil
+	}
+	s.found = nil
 	rel, err := s.u.Check(ctx)
 	if err != nil || rel == nil {
 		return nil, err
@@ -95,8 +102,9 @@ func (s *Service) Check(ctx context.Context) (*Release, error) {
 	if rel.Verification == nil || len(rel.Verification.Signature) == 0 {
 		return nil, errUnsigned
 	}
-	s.found = true
-	return &Release{Version: rel.Version, Notes: rel.Notes}, nil
+	s.found = &Release{Version: rel.Version, Notes: rel.Notes}
+	r := *s.found
+	return &r, nil
 }
 
 // Install downloads, verifies and stages the release Check found; Restart applies it.
@@ -104,10 +112,18 @@ func (s *Service) Install(ctx context.Context) error {
 	s.mu.Lock()
 	found := s.found
 	s.mu.Unlock()
-	if !found {
+	if found == nil {
 		return errNone
 	}
-	return s.u.DownloadAndInstall(ctx)
+	if err := s.u.DownloadAndInstall(ctx); err != nil {
+		return err
+	}
+	s.mu.Lock()
+	if s.found == found {
+		s.found.Staged = true
+	}
+	s.mu.Unlock()
+	return nil
 }
 
 // Restart quits Mortar, replaces it with the staged update and starts the new version.

@@ -59,3 +59,22 @@ func TestOnlyASignedReleaseInstalls(t *testing.T) {
 		t.Fatalf("install: %v, downloaded %v", err, f.downloaded)
 	}
 }
+
+func TestCheckKeepsAStagedRelease(t *testing.T) {
+	f := &fake{rel: &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}}
+	s := &Service{}
+	if err := configure(s, f, "1.0.0", []byte("key"), true); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Install(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	f.rel = nil
+	rel, err := s.Check(context.Background())
+	if err != nil || rel == nil || rel.Version != "1.1.0" || !rel.Staged {
+		t.Fatalf("check after install: %+v, %v", rel, err)
+	}
+}

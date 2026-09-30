@@ -56,12 +56,16 @@ export const useMortarUpdate = create<{
     check: async () => {
       await get().load()
       const { info, phase } = get()
-      if (info?.off || phase === 'checking' || phase === 'installing' || phase === 'restarting') {
+      // An update already found or staged stays on offer; checking again would hide Install or Restart now.
+      if (info?.off || (phase !== 'idle' && phase !== 'current' && phase !== 'error')) {
         return
       }
       await run('checking', async () => {
         const release = await Check()
-        return { release, phase: release ? 'available' : 'current' }
+        if (!release) {
+          return { release, phase: 'current' }
+        }
+        return { release, phase: release.staged ? 'ready' : 'available' }
       })
     },
     install: () =>
