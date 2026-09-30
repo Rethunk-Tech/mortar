@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Dialog, IconButton, Typography } from '@mui/material'
+import { Box, Dialog, IconButton, Tab, Tabs, Typography } from '@mui/material'
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
 import { paper } from '../mods/paper.ts'
@@ -11,15 +11,16 @@ import { ImportInput } from './ImportInput.tsx'
 import { Tiles } from './ImportPreview.tsx'
 import { summarize } from './logic.ts'
 import { type ImportRequest, useImportDialog } from './store.ts'
-import { TabPills } from './TabPills.tsx'
-import { useImportFlow } from './useImportFlow.ts'
+import { type Tab as TabId, useImportFlow } from './useImportFlow.ts'
 
 const dialogSx = {
   ...paper.sx,
-  width: 'min(1180px, calc(100% - 48px))',
-  height: 'min(680px, calc(100% - 48px))',
+  bgcolor: 'rgba(34,34,40,0.97)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  width: 'min(1180px, calc(100% - 72px))',
+  maxHeight: 'none',
   overflow: 'hidden',
-  borderRadius: '10px',
+  borderRadius: '6px',
 }
 
 function Body({ request }: { request: ImportRequest }) {
@@ -42,58 +43,103 @@ function Body({ request }: { request: ImportRequest }) {
   }, [request, setTab, setText, previewLink, previewFile])
 
   const { preview } = flow
+  const hasMods = preview !== null && preview.mods.length > 0
   return (
     <Box
       role="dialog"
       aria-label={t`Import profile`}
-      sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 0,
+        height: hasMods ? 'min(680px, calc(100vh - 48px))' : 'auto',
+        maxHeight: 'calc(100vh - 48px)',
+      }}
     >
       <Box
         sx={{
           display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          p: '16px 20px',
+          alignItems: 'stretch',
+          height: 46,
+          flexShrink: 0,
           borderBottom: '1px solid rgba(255,255,255,0.1)',
         }}
       >
-        <Typography sx={{ fontSize: 20, fontWeight: 700, whiteSpace: 'nowrap' }}>
+        <Typography
+          component="h2"
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            px: '18px',
+            minWidth: 200,
+            fontSize: 17,
+            whiteSpace: 'nowrap',
+          }}
+        >
           {t`Import profile from…`}
         </Typography>
-        <TabPills
-          upper={true}
+        <Tabs
           value={flow.tab}
-          onChange={(next) => {
+          onChange={(_, next: TabId) => {
             flow.reset()
             setTab(next)
           }}
-          label={t`Where the profile comes from`}
-          options={[
-            { value: 'link', label: t`Link` },
-            { value: 'file', label: t`.mortar file` },
-          ]}
-        />
-        <Box sx={{ flex: 1 }} />
-        <IconButton aria-label={t`Close`} onClick={flow.dismiss}>
-          <X size={18} />
+          aria-label={t`Where the profile comes from`}
+          sx={{
+            flexGrow: 1,
+            minHeight: 46,
+            '& .MuiTab-root': {
+              flex: 1,
+              maxWidth: 'none',
+              minHeight: 46,
+              fontSize: 13,
+              fontWeight: 600,
+              color: 'text.secondary',
+              '&.Mui-selected': { color: 'primary.main', fontWeight: 700 },
+            },
+          }}
+        >
+          <Tab value="link" label={t`Link`} />
+          <Tab value="file" label={t`.mortar file`} />
+        </Tabs>
+        <IconButton
+          aria-label={t`Close`}
+          onClick={flow.dismiss}
+          sx={{ width: 50, borderRadius: 0, flexShrink: 0 }}
+        >
+          <X size={16} />
         </IconButton>
       </Box>
-      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', p: 2 }}>
-        {preview ? (
-          <Tiles mods={preview.mods} excluded={flow.excluded} onToggle={flow.toggle} />
-        ) : (
-          <ImportInput flow={flow} />
-        )}
-      </Box>
       {preview ? (
-        <ImportFooter
-          flow={flow}
-          preview={preview}
-          summary={summarize(preview.mods, flow.excluded)}
-          targetName={targetName ?? ''}
-          signedIn={signedIn}
-        />
-      ) : null}
+        <>
+          <Box
+            sx={{
+              flex: hasMods ? 1 : 'none',
+              minHeight: 0,
+              overflowY: 'auto',
+              p: 1,
+              bgcolor: 'rgba(0,0,0,0.2)',
+            }}
+          >
+            {hasMods ? (
+              <Tiles mods={preview.mods} excluded={flow.excluded} onToggle={flow.toggle} />
+            ) : (
+              <Typography sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
+                {t`This profile has no mods to download`}
+              </Typography>
+            )}
+          </Box>
+          <ImportFooter
+            flow={flow}
+            preview={preview}
+            summary={summarize(preview.mods, flow.excluded)}
+            targetName={targetName ?? ''}
+            signedIn={signedIn}
+          />
+        </>
+      ) : (
+        <ImportInput flow={flow} />
+      )}
     </Box>
   )
 }

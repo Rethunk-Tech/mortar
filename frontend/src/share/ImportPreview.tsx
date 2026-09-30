@@ -2,7 +2,8 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, Typography } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
-import { CircleAlert, Info, TriangleAlert } from 'lucide-react'
+import { Download, Info, TriangleAlert } from 'lucide-react'
+import type { ReactNode } from 'react'
 import type {
   Mod,
   Problem,
@@ -57,21 +58,24 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
     mod.different ? t`different file` : '',
     mod.unverified ? t`unverified until downloaded` : '',
   ].filter(Boolean)
+  const byline = [mod.author, ...notes].filter(Boolean).join(' · ')
   return (
     <Box
       sx={{
         display: 'flex',
         alignItems: 'center',
         gap: 1,
-        p: 1,
+        height: 52,
+        pr: 1,
         minWidth: 0,
-        bgcolor: 'rgba(55,55,65,0.9)',
-        borderRadius: '6px',
+        bgcolor: 'rgba(60,60,70,0.9)',
+        borderRadius: '3px',
+        overflow: 'hidden',
         opacity: checked || state === 'unavailable' ? 1 : DIMMED,
       }}
     >
-      <Box sx={{ position: 'relative', display: 'flex' }}>
-        <LetterTile mod={{ uniqueId: mod.key, name: mod.name }} size={40} />
+      <Box sx={{ position: 'relative', display: 'flex', flexShrink: 0 }}>
+        <LetterTile mod={{ uniqueId: mod.key, name: mod.name }} size={52} />
         <Checkbox
           size="small"
           checked={checked && !fixed}
@@ -80,30 +84,35 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
           slotProps={{ input: { 'aria-label': t`Include ${mod.name}` } }}
           sx={{
             position: 'absolute',
-            top: -8,
-            left: -8,
-            p: 0.25,
-            bgcolor: 'rgba(20,20,24,0.8)',
-            borderRadius: '4px',
+            top: 3,
+            left: 3,
+            p: 0,
+            bgcolor: 'rgba(20,20,24,0.75)',
+            borderRadius: '3px',
+            '& .MuiSvgIcon-root': { fontSize: 16 },
           }}
         />
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 600 }} title={mod.name}>
+        <Typography noWrap={true} sx={{ fontSize: 13, lineHeight: 1.4 }} title={mod.name}>
           {mod.name}
         </Typography>
-        <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
-          {[mod.author, ...notes].filter(Boolean).join(' · ')}
+        <Typography
+          noWrap={true}
+          sx={{ fontSize: 12, lineHeight: 1.4, color: 'text.secondary' }}
+          title={byline}
+        >
+          {byline}
         </Typography>
       </Box>
       <Box
         sx={{
-          px: 1,
-          py: 0.25,
-          borderRadius: '4px',
+          flexShrink: 0,
+          px: 0.75,
+          py: '1px',
+          borderRadius: '3px',
           fontSize: 11,
           fontWeight: 700,
-          letterSpacing: '0.04em',
           textTransform: 'uppercase',
           whiteSpace: 'nowrap',
           bgcolor: CHIP[state].bg,
@@ -134,27 +143,44 @@ function ProblemRow({
     'no-file': t`${name} has no file Mortar can use in place of the one shared`,
     broken: t`${name} is broken for ${detail}`,
     missing: t`${name} needs ${detail}, which Mortar cannot install`,
-    free: t`Free account: each Nexus download takes one click on Nexus`,
+    free: t`Free account: one click on Nexus per download`,
   }
   const text =
     texts[problem.kind] ??
     t`Some files could not be checked against Nexus, so a few may differ from what was shared.`
-  const warn = problem.kind === 'free' || problem.kind === 'unconfirmed'
+  const info = problem.kind === 'free' || problem.kind === 'unconfirmed'
+  const tone = info
+    ? { bg: 'rgba(43,139,218,0.12)', line: 'rgba(43,139,218,0.4)' }
+    : { bg: 'rgba(243,180,22,0.12)', line: 'rgba(243,180,22,0.45)' }
   return (
     <Box
       sx={{
         display: 'flex',
         alignItems: 'center',
         gap: 1.25,
-        px: 1.5,
-        py: 0.75,
-        bgcolor: 'rgba(0,0,0,0.25)',
-        borderRadius: '6px',
+        height: 44,
+        pl: 1.5,
+        pr: info ? 1.5 : 1,
+        minWidth: 0,
+        bgcolor: tone.bg,
+        border: `1px solid ${tone.line}`,
+        borderRadius: '4px',
         fontSize: 13,
+        whiteSpace: 'nowrap',
       }}
     >
-      {warn ? <Info size={16} color="#2B8BDA" /> : <TriangleAlert size={16} color="#F3B416" />}
-      <Box component="span" sx={{ flex: 1, minWidth: 0 }}>
+      {problem.kind === 'free' ? (
+        <Download size={16} color="#a3d3f7" />
+      ) : info ? (
+        <Info size={16} color="#a3d3f7" />
+      ) : (
+        <TriangleAlert size={16} color="#F3B416" />
+      )}
+      <Box
+        component="span"
+        title={text}
+        sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
+      >
         {text}
       </Box>
       {problem.url ? (
@@ -186,9 +212,7 @@ export function Tiles({
   onToggle: (key: string) => void
 }) {
   return (
-    <Box
-      sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 1 }}
-    >
+    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '6px' }}>
       {mods.map((m) => (
         <Tile key={m.key} mod={m} checked={!excluded.has(m.key)} onToggle={() => onToggle(m.key)} />
       ))}
@@ -210,7 +234,16 @@ export function Problems({
     return null
   }
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+        gap: '6px',
+        p: '8px 8px 0',
+        maxHeight: 142,
+        overflowY: 'auto',
+      }}
+    >
       {shown.map((p) => (
         <ProblemRow
           key={`${p.kind}-${p.key}-${p.detail}-${p.name}`}
@@ -224,60 +257,114 @@ export function Problems({
 
 export function StatusBar({ preview, summary }: { preview: ShownPreview; summary: Summary }) {
   const { t } = useLingui()
-  const label = useStateLabel()
-  const size = formatSize(summary.sizeKb)
   const total = preview.mods.length
   const ready = summary.toImport > 0
+  const mods = plural(total, { one: '# mod', other: '# mods' })
+  const size = formatSize(summary.sizeKb)
+  const settings = plural(preview.settings, {
+    one: 'with # settings file, written once its mod is installed',
+    other: 'with # settings files, written once their mods are installed',
+  })
   const counts = MOD_STATES.filter((s) => summary.counts[s] > 0)
+  const detail = [
+    ready ? t`${mods} · about ${size} to download` : mods,
+    preview.settings > 0 ? settings : '',
+  ]
+    .filter(Boolean)
+    .join(' · ')
   return (
     <Box
       sx={{
         display: 'flex',
-        flexDirection: 'column',
-        gap: 0.75,
-        p: 1.5,
-        bgcolor: 'rgba(0,0,0,0.3)',
-        borderRadius: '8px',
+        alignItems: 'center',
+        gap: '18px',
+        m: 1,
+        minHeight: 52,
+        px: '18px',
+        py: 0.5,
+        bgcolor: '#0e1116',
+        borderRadius: '4px',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, flexWrap: 'wrap' }}>
-        <Box
-          sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: 15, fontWeight: 700 }}
-        >
-          <CircleAlert size={18} />
-          {ready ? t`Ready to import` : t`Nothing to download`}
-        </Box>
-        <Typography sx={{ fontWeight: 600 }}>{preview.name}</Typography>
-        <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-          {ready
-            ? t`${plural(total, { one: '# mod', other: '# mods' })} · about ${size} to download`
-            : plural(total, { one: '# mod', other: '# mods' })}
-        </Typography>
-        {preview.settings > 0 ? (
-          <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-            {plural(preview.settings, {
-              one: 'with # settings file, written once its mod is installed',
-              other: 'with # settings files, written once their mods are installed',
-            })}
-          </Typography>
-        ) : null}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.25,
+          fontSize: 16,
+          color: '#a3d3f7',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        <Info size={18} />
+        {ready ? t`Ready to import` : t`Nothing to download`}
       </Box>
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', fontSize: 13 }}>
+      <Box sx={{ width: '1px', height: 24, bgcolor: 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
+      <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <Typography noWrap={true} sx={{ fontSize: 16, fontWeight: 600 }} title={preview.name}>
+          {preview.name}
+        </Typography>
+        <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }} title={detail}>
+          {detail}
+        </Typography>
+      </Box>
+      <Box sx={{ flex: 1 }} />
+      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
         {counts.map((s) => (
-          <Box
-            key={s}
-            component="span"
-            sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}
-          >
-            <Box
-              component="span"
-              sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: DOT[s] }}
-            />
-            {summary.counts[s]} {label(s).toLowerCase()}
-          </Box>
+          <Pill key={s} bg={CHIP[s].bg} fg={CHIP[s].fg} dot={DOT[s]}>
+            <CountLabel state={s} count={summary.counts[s]} />
+          </Pill>
         ))}
-        {summary.leftOut > 0 ? <Box component="span">{t`${summary.leftOut} left out`}</Box> : null}
+        {summary.leftOut > 0 ? (
+          <Pill bg="rgba(200,200,200,0.14)" fg="#e0e0e0" dot="#bdbdbd">
+            {t`${summary.leftOut} left out`}
+          </Pill>
+        ) : null}
       </Box>
     </Box>
   )
+}
+
+function Pill({
+  bg,
+  fg,
+  dot,
+  children,
+}: {
+  bg: string
+  fg: string
+  dot: string
+  children: ReactNode
+}) {
+  return (
+    <Box
+      component="span"
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.75,
+        px: 1.25,
+        py: 0.5,
+        borderRadius: '12px',
+        fontSize: 13,
+        whiteSpace: 'nowrap',
+        bgcolor: bg,
+        color: fg,
+      }}
+    >
+      <Box component="span" sx={{ width: 8, height: 8, borderRadius: '4px', bgcolor: dot }} />
+      {children}
+    </Box>
+  )
+}
+
+function CountLabel({ state, count }: { state: ModState; count: number }) {
+  const { t } = useLingui()
+  return {
+    installed: t`${count} installed`,
+    download: t`${count} to download`,
+    dependency: plural(count, { one: '# dependency', other: '# dependencies' }),
+    later: t`${count} checked later`,
+    unavailable: t`${count} unavailable`,
+  }[state]
 }

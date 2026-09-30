@@ -288,7 +288,6 @@ export function Detail() {
               px: '14px',
               fontSize: 14,
               fontWeight: 400,
-              textTransform: 'none',
               color: 'text.secondary',
               '&.Mui-selected': { color: '#ffffff', fontWeight: 600 },
             },

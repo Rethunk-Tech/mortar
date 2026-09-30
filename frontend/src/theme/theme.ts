@@ -60,6 +60,7 @@ export function createMortarTheme(accent: AccentName): Theme {
           },
         },
       },
+      MuiTab: { styleOverrides: { root: { textTransform: 'none', whiteSpace: 'nowrap' } } },
       MuiToggleButton: {
         styleOverrides: { root: { textTransform: 'none', whiteSpace: 'nowrap' } },
       },

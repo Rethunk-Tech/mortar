@@ -24,15 +24,7 @@ export function ImportFooter({
   const needsSignIn = summary.fromNexus > 0 && !signedIn
   const canRun = !(flow.busy || needsSignIn)
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 1,
-        p: 2,
-        borderTop: '1px solid rgba(255,255,255,0.1)',
-      }}
-    >
+    <Box sx={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
       <Problems preview={preview} excluded={flow.excluded} onLeaveOut={flow.toggle} />
       {needsSignIn ? (
         <Box
@@ -40,10 +32,11 @@ export function ImportFooter({
             display: 'flex',
             alignItems: 'center',
             gap: 1.5,
+            m: '8px 8px 0',
             p: 1.25,
             bgcolor: 'rgba(43,139,218,0.16)',
             border: '1px solid rgba(43,139,218,0.5)',
-            borderRadius: '6px',
+            borderRadius: '4px',
             fontSize: 13,
           }}
         >
@@ -55,12 +48,26 @@ export function ImportFooter({
       ) : null}
       <StatusBar preview={preview} summary={summary} />
       {flow.error ? (
-        <Typography role="alert" sx={{ fontSize: 14, color: 'error.light' }}>
+        <Typography role="alert" sx={{ px: 1, pb: 1, fontSize: 14, color: 'error.light' }}>
           {flow.error}
         </Typography>
       ) : null}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-        <Button variant="outlined" color="inherit" onClick={flow.reset} disabled={flow.busy}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: targetName ? '1fr 1fr 2fr' : '1fr 2fr',
+          gap: 1,
+          px: 1,
+          pb: 1,
+        }}
+      >
+        <Button
+          variant="outlined"
+          color="inherit"
+          onClick={flow.reset}
+          disabled={flow.busy}
+          sx={{ height: 40 }}
+        >
           {t`Reset`}
         </Button>
         {targetName ? (
@@ -70,6 +77,7 @@ export function ImportFooter({
             onClick={() => {
               flow.run(true).catch(reportUnexpected)
             }}
+            sx={{ height: 40 }}
           >
             {t`Add to ${targetName}`}
           </Button>
@@ -81,6 +89,7 @@ export function ImportFooter({
           onClick={() => {
             flow.run(false).catch(reportUnexpected)
           }}
+          sx={{ height: 40 }}
         >
           {flow.tab === 'file' ? t`New profile from file` : t`New profile from link`}
         </Button>

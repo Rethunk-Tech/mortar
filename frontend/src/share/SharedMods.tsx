@@ -1,14 +1,23 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
-import { heading } from '../mods/paper.ts'
 import type { ShownInfo } from './logic.ts'
 
-const SEPARATOR = ' · '
+const SHOWN_NAMES = 30
 
-// What a share holds, by source, and what it leaves out and why.
-export function SharedMods({ info }: { info: ShownInfo }) {
+const nameChip = {
+  px: 1.25,
+  py: 0.5,
+  borderRadius: '4px',
+  bgcolor: 'rgba(60,60,70,0.9)',
+  fontSize: 13,
+  whiteSpace: 'nowrap',
+} as const
+
+// What a share holds, by source, and what it leaves out and why. `notIn` names where the left-out mods are missing from.
+export function SharedMods({ info, notIn }: { info: ShownInfo; notIn: string }) {
   const { t } = useLingui()
-  const source = (id: string) => (id === 'github' ? t`GitHub` : t`Nexus Mods`)
+  const source = (id: string, n: number) => (id === 'github' ? t`${n} GitHub` : t`${n} Nexus`)
   const reason = (id: string) => {
     switch (id) {
       case 'local':
@@ -19,46 +28,78 @@ export function SharedMods({ info }: { info: ShownInfo }) {
         return t`Its source is not known.`
     }
   }
+  const names = info.groups.flatMap((g) =>
+    g.mods.map((name) => ({ key: `${g.source}-${name}`, name })),
+  )
+  const shown = names.slice(0, SHOWN_NAMES)
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      {info.groups.map((g) => (
-        <Box key={g.source}>
-          <Typography sx={{ ...heading, mb: 0.75 }}>
-            {t`${source(g.source)} (${g.mods.length})`}
+    <>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, p: '16px 24px' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexWrap: 'wrap' }}>
+          <Typography sx={{ fontSize: 15, fontWeight: 600 }}>
+            {plural(names.length, { one: '# mod included', other: '# mods included' })}
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-            {g.mods.map((name) => (
-              <Box
-                key={name}
-                sx={{
-                  px: 1.25,
-                  py: 0.5,
-                  borderRadius: '12px',
-                  bgcolor: 'rgba(255,255,255,0.1)',
-                  fontSize: 13,
-                }}
-              >
-                {name}
-              </Box>
-            ))}
-          </Box>
-        </Box>
-      ))}
-      {info.leftOut.length > 0 ? (
-        <Box>
-          <Typography sx={{ ...heading, mb: 0.75 }}>{t`Left out`}</Typography>
-          {info.leftOut.map((o) => (
-            <Typography
-              key={`${o.name}-${o.reason}`}
-              sx={{ fontSize: 13, color: 'text.secondary' }}
+          {info.groups.map((g) => (
+            <Box
+              key={g.source}
+              component="span"
+              sx={{
+                px: 1,
+                py: '2px',
+                borderRadius: '10px',
+                bgcolor: 'rgba(255,255,255,0.08)',
+                fontSize: 12,
+              }}
             >
-              <b>{o.name}</b>
-              {SEPARATOR}
-              {reason(o.reason)}
-            </Typography>
+              {source(g.source, g.mods.length)}
+            </Box>
+          ))}
+        </Box>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+          {shown.map((m) => (
+            <Box key={m.key} component="span" sx={nameChip}>
+              {m.name}
+            </Box>
+          ))}
+          {names.length > shown.length ? (
+            <Box component="span" sx={{ px: 1.25, py: 0.5, fontSize: 13, color: 'text.secondary' }}>
+              {t`and ${names.length - shown.length} more`}
+            </Box>
+          ) : null}
+        </Box>
+      </Box>
+      {info.leftOut.length > 0 ? (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+            m: '0 24px 18px',
+            p: '12px 14px',
+            bgcolor: 'rgba(243,180,22,0.1)',
+            border: '1px solid rgba(243,180,22,0.4)',
+            borderRadius: '6px',
+          }}
+        >
+          <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{notIn}</Typography>
+          {info.leftOut.map((o) => (
+            <Box
+              key={`${o.name}-${o.reason}`}
+              sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 13 }}
+            >
+              <Box
+                component="span"
+                sx={{ px: 1, py: '2px', borderRadius: '4px', bgcolor: 'rgba(0,0,0,0.3)' }}
+              >
+                {o.name}
+              </Box>
+              <Box component="span" sx={{ color: 'text.secondary' }}>
+                {reason(o.reason)}
+              </Box>
+            </Box>
           ))}
         </Box>
       ) : null}
-    </Box>
+    </>
   )
 }

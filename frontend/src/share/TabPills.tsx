@@ -6,13 +6,11 @@ export function TabPills<T extends string>({
   onChange,
   options,
   label,
-  upper = false,
 }: {
   value: T
   onChange: (value: T) => void
   options: { value: T; label: string }[]
   label: string
-  upper?: boolean
 }) {
   return (
     <Box
@@ -34,8 +32,6 @@ export function TabPills<T extends string>({
             borderRadius: '6px',
             fontSize: 14,
             fontWeight: 400,
-            textTransform: upper ? 'uppercase' : 'none',
-            whiteSpace: 'nowrap',
             color: 'text.secondary',
             '&.Mui-selected': {
               color: '#ffffff',

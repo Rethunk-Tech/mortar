@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { useCallback, useState } from 'react'
 import { RegisterLinks } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/service.ts'
@@ -106,12 +107,24 @@ export function useImportFlow(game: string, profileId: string, close: () => void
         RegisterLinks().catch(reportUnexpected)
       }
       const { name } = result.profile
+      const { queued } = result
+      const renamed = !intoOpen && preview !== null && name !== preview.name
+      const body = [
+        queued > 0
+          ? plural(queued, { one: '# download queued', other: '# downloads queued' })
+          : t`Nothing to download`,
+        renamed ? t`A profile with that name already exists, so this one is "${name}"` : '',
+      ]
+        .filter(Boolean)
+        .join('. ')
       useToasts.getState().push({
         kind: 'info',
-        title: t`Importing into ${name}`,
-        body: t`${result.queued} downloads queued`,
+        title: queued > 0 ? t`Importing into ${name}` : t`Imported ${name}`,
+        body,
       })
-      useQueue.getState().setOpen(true)
+      if (queued > 0) {
+        useQueue.getState().setOpen(true)
+      }
       close()
     } catch (e) {
       setError(errorMessage(e))
