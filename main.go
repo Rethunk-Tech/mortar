@@ -34,7 +34,7 @@ func main() {
 		Services:    []application.Service{application.NewService(svc), application.NewService(gamesSvc)},
 		Assets: application.AssetOptions{
 			Handler:    application.AssetFileServerFS(assets),
-			Middleware: gamesSvc.ArtMiddleware,
+			Middleware: games.ArtMiddleware(home),
 		},
 		SingleInstance: &application.SingleInstanceOptions{
 			UniqueID: "tech.rethunk.mortar",

@@ -29,7 +29,8 @@ func home(t *testing.T) string {
 }
 
 func TestListAndArt(t *testing.T) {
-	svc := NewService(home(t))
+	h0 := home(t)
+	svc := NewService(h0)
 	list, err := svc.List()
 	if err != nil || len(list) != 2 {
 		t.Fatalf("list = %v, %v", list, err)
@@ -41,7 +42,7 @@ func TestListAndArt(t *testing.T) {
 		t.Fatalf("lethal = %+v", g)
 	}
 
-	h := svc.ArtMiddleware(http.NotFoundHandler())
+	h := ArtMiddleware(h0)(http.NotFoundHandler())
 	for path, want := range map[string]int{
 		"/steam-art/413150":  http.StatusOK,
 		"/steam-art/1966720": http.StatusNotFound,

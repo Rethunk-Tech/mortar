@@ -68,33 +68,35 @@ func (s *Service) List() ([]GameInfo, error) {
 }
 
 // ArtMiddleware serves GET /steam-art/<appid> for registry games only, from Steam's cached hero image.
-func (s *Service) ArtMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		id, ok := strings.CutPrefix(r.URL.Path, artPrefix)
-		if !ok {
-			next.ServeHTTP(w, r)
-			return
-		}
-		if r.Method != http.MethodGet || !s.knownApp(id) {
-			http.NotFound(w, r)
-			return
-		}
-		st, status := steam.Locate(s.home)
-		if status != steam.Found {
-			http.NotFound(w, r)
-			return
-		}
-		path := st.HeroArt(id)
-		if path == "" {
-			http.NotFound(w, r)
-			return
-		}
-		w.Header().Set("Content-Type", "image/jpeg")
-		http.ServeFile(w, r, path)
-	})
+func ArtMiddleware(home string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			id, ok := strings.CutPrefix(r.URL.Path, artPrefix)
+			if !ok {
+				next.ServeHTTP(w, r)
+				return
+			}
+			if r.Method != http.MethodGet || !knownApp(id) {
+				http.NotFound(w, r)
+				return
+			}
+			st, status := steam.Locate(home)
+			if status != steam.Found {
+				http.NotFound(w, r)
+				return
+			}
+			path := st.HeroArt(id)
+			if path == "" {
+				http.NotFound(w, r)
+				return
+			}
+			w.Header().Set("Content-Type", "image/jpeg")
+			http.ServeFile(w, r, path)
+		})
+	}
 }
 
-func (s *Service) knownApp(id string) bool {
+func knownApp(id string) bool {
 	if _, err := strconv.ParseUint(id, 10, 32); err != nil {
 		return false
 	}
