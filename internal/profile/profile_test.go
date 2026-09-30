@@ -81,7 +81,7 @@ func TestModFolderRejectsUnknown(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.ModFolder("stardew", p.ID, "nope.Mod"); err == nil {
+	if _, err := s.ModFolder("stardew", p.ID, "", "nope.Mod"); err == nil {
 		t.Fatal("unknown mod accepted")
 	}
 }

@@ -514,7 +514,8 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 }
 
 // ModFolder returns the mod's folder inside the profile, under whichever name (plain or dot-prefixed) it has now.
-func (s *Store) ModFolder(game, id, uniqueID string) (string, error) {
+// key names the entry holding it, which tells apart two copies of one UniqueID; an empty key means the first entry that has it.
+func (s *Store) ModFolder(game, id, key, uniqueID string) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	p, err := s.read(game, id)
@@ -523,6 +524,9 @@ func (s *Store) ModFolder(game, id, uniqueID string) (string, error) {
 	}
 	dir, _ := s.profileDir(game, id)
 	for _, e := range p.Entries {
+		if key != "" && e.Key != key {
+			continue
+		}
 		for _, m := range e.Mods {
 			if !sameID(m.UniqueID, uniqueID) {
 				continue

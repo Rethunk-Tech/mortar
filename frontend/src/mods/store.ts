@@ -139,7 +139,7 @@ export const useMods = create<{
       return
     }
     try {
-      await ShowFiles(target.game, target.id, mod.uniqueId)
+      await ShowFiles(target.game, target.id, mod.key, mod.uniqueId)
     } catch (e) {
       fail(i18n._(msg`Could not open the folder of ${mod.name}`))(e)
     }
