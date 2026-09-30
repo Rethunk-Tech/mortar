@@ -1,0 +1,227 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": ["**", "!.claude", "!**/bindings"]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "asNeeded",
+      "trailingCommas": "all"
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "linter": {
+    "rules": {
+      "preset": "all",
+      "style": {
+        "noNonNullAssertion": "error",
+        "useImportType": "error",
+        "noExcessiveLinesPerFile": {
+          "level": "on",
+          "options": {
+            "maxLines": 500
+          }
+        },
+        "noIncrementDecrement": {
+          "level": "on",
+          "options": {
+            "allowForLoopAfterthoughts": true
+          }
+        },
+        "useFilenamingConvention": {
+          "level": "on",
+          "options": {
+            "strictCase": false,
+            "filenameCases": ["camelCase", "PascalCase", "kebab-case", "export"]
+          }
+        },
+        "useNamingConvention": {
+          "level": "on",
+          "options": {
+            "strictCase": false,
+            "conventions": [
+              {
+                "selector": {
+                  "kind": "objectLiteralProperty"
+                },
+                "match": "_?\\$?(.+)",
+                "formats": ["camelCase", "snake_case", "CONSTANT_CASE", "PascalCase"]
+              },
+              {
+                "selector": {
+                  "kind": "typeProperty"
+                },
+                "match": "_?\\$?(.+)",
+                "formats": ["camelCase", "snake_case", "CONSTANT_CASE"]
+              }
+            ]
+          }
+        },
+        "noJsxLiterals": "off"
+      },
+      "complexity": {
+        "noExcessiveLinesPerFunction": {
+          "level": "on",
+          "options": {
+            "maxLines": 100,
+            "skipBlankLines": true,
+            "skipIifes": true
+          }
+        },
+        "noUselessReturn": "off",
+        "noExcessiveCognitiveComplexity": {
+          "level": "on",
+          "options": {
+            "maxAllowedComplexity": 25
+          }
+        }
+      },
+      "correctness": {
+        "useImportExtensions": "on",
+        "noUnresolvedImports": "off",
+        "noSolidDestructuredProps": "off",
+        "useQwikValidLexicalScope": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noReactSpecificProps": "off",
+        "noUnnecessaryConditions": "off"
+      },
+      "security": {
+        "noSecrets": {
+          "level": "on",
+          "options": {
+            "entropyThreshold": 55
+          }
+        }
+      },
+      "nursery": {
+        "noFloatingPromises": "error",
+        "noMisusedPromises": "error"
+      },
+      "performance": {
+        "noAwaitInLoops": "off",
+        "noJsxPropsBind": "off",
+        "useSolidForComponent": "off"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/__tests__/**",
+        "**/test/**"
+      ],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noExcessiveCognitiveComplexity": {
+              "level": "on",
+              "options": {
+                "maxAllowedComplexity": 30
+              }
+            },
+            "noExcessiveLinesPerFunction": {
+              "level": "on",
+              "options": {
+                "maxLines": 150,
+                "skipBlankLines": true,
+                "skipIifes": true
+              }
+            }
+          },
+          "correctness": {
+            "noNodejsModules": "off",
+            "noProcessGlobal": "off",
+            "noUnresolvedImports": "off"
+          },
+          "performance": {
+            "noNamespaceImport": "off",
+            "useTopLevelRegex": "off"
+          },
+          "security": {
+            "noSecrets": "off"
+          },
+          "style": {
+            "noExcessiveLinesPerFile": {
+              "level": "on",
+              "options": {
+                "maxLines": 1500
+              }
+            },
+            "noMagicNumbers": "off",
+            "noProcessEnv": "off",
+            "useComponentExportOnlyModules": "off"
+          },
+          "suspicious": {
+            "noBitwiseOperators": "off",
+            "noConsole": "off",
+            "noMisplacedAssertion": "off",
+            "noSkippedTests": "off",
+            "useAwait": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "**/*.config.js",
+        "**/*.config.mjs",
+        "**/*.config.ts",
+        "**/scripts/**",
+        "tools/**"
+      ],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noNodejsModules": "off",
+            "noProcessGlobal": "off",
+            "noUnresolvedImports": "off"
+          },
+          "performance": {
+            "useTopLevelRegex": "off"
+          },
+          "style": {
+            "noDefaultExport": "off",
+            "noProcessEnv": "off"
+          },
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.d.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    }
+  ]
+}
