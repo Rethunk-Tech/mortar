@@ -1,0 +1,132 @@
+[
+  {
+    "name": "Mortar",
+    "licence": "AGPL-3.0",
+    "url": "https://github.com/Rethunk-AI/mortar"
+  },
+  {
+    "name": "Mortar SMAPI Bridge",
+    "licence": "AGPL-3.0",
+    "url": "https://github.com/Rethunk-AI/mortar-smapi-bridge"
+  },
+  {
+    "name": "SMAPI",
+    "licence": "LGPL-3.0",
+    "url": "https://smapi.io/"
+  },
+  {
+    "name": "Fedora 44 default wallpaper (f44-01-night)",
+    "licence": "CC-BY-SA-4.0",
+    "url": "https://fedoraproject.org/wiki/F44_Artwork"
+  },
+  {
+    "name": "@dnd-kit/core",
+    "licence": "MIT",
+    "url": "https://github.com/clauderic/dnd-kit"
+  },
+  {
+    "name": "@dnd-kit/sortable",
+    "licence": "MIT",
+    "url": "https://github.com/clauderic/dnd-kit"
+  },
+  {
+    "name": "@dnd-kit/utilities",
+    "licence": "MIT",
+    "url": "https://github.com/clauderic/dnd-kit"
+  },
+  {
+    "name": "@emotion/react",
+    "licence": "MIT",
+    "url": "https://github.com/emotion-js/emotion/tree/main/packages/react"
+  },
+  {
+    "name": "@emotion/styled",
+    "licence": "MIT",
+    "url": "https://github.com/emotion-js/emotion/tree/main/packages/styled"
+  },
+  {
+    "name": "@fontsource/open-sans",
+    "licence": "OFL-1.1",
+    "url": "https://fontsource.org/fonts/open-sans"
+  },
+  {
+    "name": "@lingui/core",
+    "licence": "MIT",
+    "url": "https://lingui.dev"
+  },
+  {
+    "name": "@lingui/react",
+    "licence": "MIT",
+    "url": "https://lingui.dev"
+  },
+  {
+    "name": "@mui/material",
+    "licence": "MIT",
+    "url": "https://mui.com/material-ui/"
+  },
+  {
+    "name": "@wailsio/runtime",
+    "licence": "MIT",
+    "url": "https://v3.wails.io"
+  },
+  {
+    "name": "lucide-react",
+    "licence": "ISC",
+    "url": "https://lucide.dev"
+  },
+  {
+    "name": "react",
+    "licence": "MIT",
+    "url": "https://react.dev/"
+  },
+  {
+    "name": "react-dom",
+    "licence": "MIT",
+    "url": "https://react.dev/"
+  },
+  {
+    "name": "simple-icons",
+    "licence": "CC0-1.0",
+    "url": "https://simpleicons.org"
+  },
+  {
+    "name": "zustand",
+    "licence": "MIT",
+    "url": "https://github.com/pmndrs/zustand"
+  },
+  {
+    "name": "github.com/andybalholm/brotli",
+    "licence": "MIT",
+    "url": "https://github.com/andybalholm/brotli"
+  },
+  {
+    "name": "github.com/andygrunwald/vdf",
+    "licence": "MIT",
+    "url": "https://github.com/andygrunwald/vdf"
+  },
+  {
+    "name": "github.com/bodgit/sevenzip",
+    "licence": "BSD-3-Clause",
+    "url": "https://github.com/bodgit/sevenzip"
+  },
+  {
+    "name": "github.com/nwaples/rardecode/v2",
+    "licence": "BSD-2-Clause",
+    "url": "https://github.com/nwaples/rardecode"
+  },
+  {
+    "name": "github.com/wailsapp/wails/v3",
+    "licence": "MIT",
+    "url": "https://github.com/wailsapp/wails"
+  },
+  {
+    "name": "github.com/zalando/go-keyring",
+    "licence": "MIT",
+    "url": "https://github.com/zalando/go-keyring"
+  },
+  {
+    "name": "golang.org/x/sys",
+    "licence": "BSD-3-Clause",
+    "url": "https://pkg.go.dev/golang.org/x/sys"
+  }
+]

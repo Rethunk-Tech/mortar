@@ -3,6 +3,7 @@ import { Box, Link } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
 import { Logo } from '../../brand/Logo.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
+import credits from '../generated/credits.json' with { type: 'json' }
 
 const LICENCE = 'https://github.com/Rethunk-AI/mortar/blob/main/LICENSE'
 
@@ -39,6 +40,21 @@ export function About() {
       <Box sx={{ fontWeight: 600 }}>{t`Default background`}</Box>
       <Box sx={body}>
         {t`Fedora 44 default wallpaper (f44-01-night) by the Fedora Design Team, CC-BY-SA-4.0.`}
+      </Box>
+      <Box sx={{ fontWeight: 600 }}>{t`Credits`}</Box>
+      <Box sx={{ ...body, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        {credits.map((entry) => (
+          <Box key={entry.name} sx={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            <Link
+              component="button"
+              onClick={() => Browser.OpenURL(entry.url).catch(reportUnexpected)}
+              sx={{ fontSize: 'inherit', verticalAlign: 'baseline' }}
+            >
+              {entry.name}
+            </Link>
+            <Box component="span">{`· ${entry.licence}`}</Box>
+          </Box>
+        ))}
       </Box>
       <Box sx={{ fontWeight: 600 }}>{t`Not affiliated`}</Box>
       <Box sx={body}>

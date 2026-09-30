@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build:dev": "tsc && vite build --minify false --mode development",
-    "build": "tsc && vite build --mode production",
+    "build:dev": "bun ../scripts/gen-credits.ts && tsc && vite build --minify false --mode development",
+    "build": "bun ../scripts/gen-credits.ts && tsc && vite build --mode production",
     "preview": "vite preview",
     "i18n:extract": "lingui extract --clean",
     "i18n:compile": "lingui compile --typescript"
