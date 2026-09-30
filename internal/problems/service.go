@@ -91,7 +91,10 @@ func (s *Service) installed(gameID, id string) ([]Installed, error) {
 	}
 	mods := make([]Installed, len(installed))
 	for i, m := range installed {
-		mods[i] = Installed{Key: m.Key, SourceKind: m.Source.Kind, Enabled: m.Enabled, Manifest: m.Manifest}
+		mods[i] = Installed{
+			Key: m.Key, SourceKind: m.Source.Kind, Enabled: m.Enabled,
+			Pinned: m.Pinned, SkipVersion: m.SkipVersion, Manifest: m.Manifest,
+		}
 	}
 	return mods, nil
 }
@@ -136,7 +139,7 @@ func (s *Service) Updates(ctx context.Context, gameID, id string) (UpdatesResult
 	c, ok := s.updates[key]
 	s.mu.Unlock()
 	if ok && c.fingerprint == fp && time.Since(c.at) < updatesTTL {
-		return c.result, nil
+		return HideHeld(c.result, mods), nil
 	}
 	r := CheckUpdates(ctx, s.meta, env, mods)
 	if !r.Unknown {
@@ -144,7 +147,7 @@ func (s *Service) Updates(ctx context.Context, gameID, id string) (UpdatesResult
 		s.updates[key] = cachedUpdates{fp, time.Now(), r}
 		s.mu.Unlock()
 	}
-	return r, nil
+	return HideHeld(r, mods), nil
 }
 
 // Relations says what the mod key/uniqueID needs, which mods need it and where its page is.

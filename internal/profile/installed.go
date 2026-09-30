@@ -9,9 +9,11 @@ import (
 
 // Installed is one mod of a profile with its manifest as it stands in mods/.
 type Installed struct {
-	Key     string
-	Source  Source
-	Enabled bool
+	Key         string
+	Source      Source
+	Enabled     bool
+	Pinned      bool
+	SkipVersion string
 	manifest.Manifest
 }
 
@@ -48,7 +50,10 @@ func (s *Store) Installed(game, id string) ([]Installed, error) {
 			if err != nil {
 				continue
 			}
-			out = append(out, Installed{Key: e.Key, Source: e.Source, Enabled: enabled, Manifest: mf})
+			out = append(out, Installed{
+				Key: e.Key, Source: e.Source, Enabled: enabled,
+				Pinned: e.Pinned, SkipVersion: e.SkipVersion, Manifest: mf,
+			})
 		}
 	}
 	return out, nil

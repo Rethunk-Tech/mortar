@@ -58,6 +58,24 @@ func TestCheckUpdatesNamesTheGitHubRepo(t *testing.T) {
 	}
 }
 
+func TestHideHeldDropsPinnedAndSkipped(t *testing.T) {
+	r := UpdatesResult{Updates: []Update{
+		{Key: "pin", Version: "2.0.0"},
+		{Key: "skip", Version: "2.0.0"},
+		{Key: "later", Version: "2.1.0"},
+		{Key: "open", Version: "2.0.0"},
+	}}
+	got := HideHeld(r, []Installed{
+		{Key: "pin", Pinned: true},
+		{Key: "skip", SkipVersion: "2.0.0"},
+		{Key: "later", SkipVersion: "2.0.0"},
+		{Key: "open"},
+	})
+	if len(got.Updates) != 2 || got.Updates[0].Key != "later" || got.Updates[1].Key != "open" {
+		t.Fatalf("got %+v", got.Updates)
+	}
+}
+
 func TestCheckUpdatesUnknownNeverBlocks(t *testing.T) {
 	got := CheckUpdates(context.Background(), fakeMeta{updatesOff: true}, Environment{}, []Installed{mod("k1", "me.a", "1.0.0", true)})
 	if !got.Unknown || len(got.Updates) != 0 {

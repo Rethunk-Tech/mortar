@@ -26,8 +26,10 @@ type Meta interface {
 type Installed struct {
 	Key string
 	// SourceKind is the entry's source: "local" for an archive, "smapi" for the loader's own mods, "mortar" for the console bridge, "nexus" for a download.
-	SourceKind string
-	Enabled    bool
+	SourceKind  string
+	Enabled     bool
+	Pinned      bool
+	SkipVersion string
 	manifest.Manifest
 }
 

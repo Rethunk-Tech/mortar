@@ -74,6 +74,10 @@ type Entry struct {
 	Disabled    []string   `json:"disabled"`
 	// Added is when this entry was put in the profile; zero for entries written before the field existed.
 	Added time.Time `json:"added,omitempty"`
+	// Pinned keeps this entry on its current version; Mortar offers no update while it is true.
+	Pinned bool `json:"pinned,omitempty"`
+	// SkipVersion is one newer version to hide; a later version is offered again.
+	SkipVersion string `json:"skipVersion,omitempty"`
 }
 
 // Profile is the on-disk shape of profile.json.

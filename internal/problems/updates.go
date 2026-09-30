@@ -68,6 +68,28 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 	return r
 }
 
+// HideHeld drops updates the profile has pinned or skipped for that exact newer version.
+func HideHeld(r UpdatesResult, mods []Installed) UpdatesResult {
+	byKey := make(map[string]Installed, len(mods))
+	for _, m := range mods {
+		byKey[m.Key] = m
+	}
+	kept := make([]Update, 0, len(r.Updates))
+	for _, u := range r.Updates {
+		m, ok := byKey[u.Key]
+		if !ok {
+			kept = append(kept, u)
+			continue
+		}
+		hold := profile.Entry{Pinned: m.Pinned, SkipVersion: m.SkipVersion}
+		if hold.OffersUpdate(u.Version) {
+			kept = append(kept, u)
+		}
+	}
+	r.Updates = kept
+	return r
+}
+
 // Need is one dependency of a mod and whether the profile meets it. State is "ok", "absent", "disabled" or
 // "outdated"; Name is the installed mod's name, or the UniqueID when there is none.
 type Need struct {
