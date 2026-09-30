@@ -6,14 +6,14 @@ Items marked **Measure** need a throwaway test first; those tests run outside th
 
 ## Sharing (milestone 5): the static page deploy
 
-Links, the Share dialog, the import preview, `.mortar` files and first run's link card are built ([architecture.md](architecture.md#sharing)), and so is the page's source (`site/stardew/p/`) and the download page (`site/download/`). Remaining: deploying both at `https://mortar.rethunk.tech/stardew/p` and `https://mortar.rethunk.tech/download/`, held back on purpose until the first release is ready (NOMAD, 2026-09-30).
+Remaining: deploying `site/stardew/p/` and `site/download/` at `https://mortar.rethunk.tech/stardew/p` and `https://mortar.rethunk.tech/download/`, held back on purpose until the first release is ready (NOMAD, 2026-09-30). How sharing works: [architecture.md](architecture.md#sharing).
 
 - **Deploy:** `site/stardew/p/index.html` and `site/download/index.html` in this repo, as a DigitalOcean App Platform static site (free tier: three static apps); `rethunk.tech` is on DigitalOcean's nameservers, and `maitre.rethunk.tech` is already a CNAME to an App Platform app, so the subdomain is set up the same way. The share page shows two buttons, since it cannot tell whether a scheme handler exists: open in Mortar (`mortar://stardew/p/<payload>`) and Get Mortar (`/download/`), which also copies the link so the importer can take it after installing.
 - **Done when** the link opens the page on the live domain, its button opens Mortar's Import with the link filled in, and no request the page makes carries the fragment.
 
 ## Release (milestone 6)
 
-Built: packaging, self-update, the signing key and Linux desktop integration ([architecture.md](architecture.md#release)). Remaining:
+Remaining ([architecture.md](architecture.md#release)):
 
 - The updater fixes are offered upstream as wailsapp/wails#6200 (EXDEV staging), #6201 (AppImage) and #6202 (OnUpdateApplied, draft pending a WEP); Mortar pins the fork until they ship in a tagged v3 beta; then pin that beta and drop the `Rethunk-AI/wails` replace in `go.mod`. wailsapp/wails#6197 (GTK4 transparency) does not gate this: it only serves the translucent window below.
 - The repo turns public at the first release and builds go on its GitHub Releases, since the updater's manifest and assets must be publicly downloadable.
@@ -23,12 +23,8 @@ Built: packaging, self-update, the signing key and Linux desktop integration ([a
 
 After the go-ahead, each milestone ends with the gate green and NOMAD clicking through it on Linux. `docs/gui-design.md` is the canonical spec for the screens each milestone builds:
 
-1. **Shell and look.** Built.
-2. **Stardew core.** Built.
-3. **Mod data.** Built.
-4. **Nexus.** Built.
-5. **Sharing.** Built except the static page.
-6. **Release.** Built except Windows measurements and fixes, and the repo made public.
+1. **Sharing.** Deploy the static pages.
+2. **Release.** Windows measurements and fixes, and the repo made public.
 
 ## Later
 
