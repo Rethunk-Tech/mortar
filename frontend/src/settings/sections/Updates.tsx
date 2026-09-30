@@ -9,6 +9,8 @@ import { useToasts } from '../../toasts/store.ts'
 import { useSettings } from '../store.ts'
 import { useMortarUpdate } from '../updates.ts'
 
+const MIN_KEPT = 1
+const MAX_KEPT = 50
 const button = { whiteSpace: 'nowrap', alignSelf: 'flex-start' }
 
 function MortarUpdate() {
@@ -119,7 +121,7 @@ function BackupsKept() {
   useEffect(() => setDraft(String(kept)), [kept])
   const commit = () => {
     const n = Number(draft)
-    if (!Number.isInteger(n) || n < 1 || n > 50) {
+    if (!Number.isInteger(n) || n < MIN_KEPT || n > MAX_KEPT) {
       setDraft(String(kept))
       return
     }
@@ -144,8 +146,8 @@ function BackupsKept() {
           e.target.blur()
         }
       }}
-      helperText={t`Saves are zipped before mods update; older backups beyond this many are deleted. 1 to 50.`}
-      slotProps={{ htmlInput: { min: 1, max: 50, step: 1 } }}
+      helperText={t`Saves are zipped before mods update; older backups beyond this many are deleted. ${MIN_KEPT} to ${MAX_KEPT}.`}
+      slotProps={{ htmlInput: { min: MIN_KEPT, max: MAX_KEPT, step: 1 } }}
       sx={{ alignSelf: 'flex-start', width: 320, mt: 1 }}
     />
   )
