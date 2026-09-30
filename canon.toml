@@ -1,9 +1,6 @@
 reconciled = "canon v0.1.0-poc"
 
 [deviations]
-# NOMAD ruling 2026-09-30: 80 findings, every one a JSX conditional. Ternaries are React JSX's
-# branching idiom; if/else rewrites lengthen components with no defect class caught.
-"ts-biome-00006 style/noTernary" = "ternaries are React JSX's branching idiom; noNestedTernary stays on"
 # wails3 generate bindings emits `export enum` for every Go named-string type with constants
 # (launch.Hint, launchsvc.State, loader.Step, steam.Status), and erasableSyntaxOnly rejects enums.
 # The fork's models.ts.tmpl has no const-object option, and generated files are overwritten on every build.
