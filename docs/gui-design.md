@@ -7,6 +7,8 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
 - Frameless and translucent (see [design.md](design.md#look)): 1280×720 by default, 768×432 minimum, as Concrete.
 - The app draws its own title bar, 36px, marked `--wails-draggable: drag`: the logo in a darker square, the app name, then location tabs ("Game Select", or the current game) underlined in the primary colour, and minimise, maximise and close on the right. Double-click maximises. The window has a 1px light border and rounded corners, since GNOME draws no shadow for a frameless window.
 - `user-select: none` everywhere except text fields and the console.
+- Icons come from one set, Lucide (MIT), at 1.5–2px stroke; no hand-drawn or mixed icons.
+- Every focusable control shows a visible focus ring when reached by keyboard: a 2px outline in the primary colour, 2px outside the control.
 - Button and chip labels never wrap (`white-space: nowrap`); a long message gets its own full-width row, truncating with an ellipsis rather than squeezing the buttons beside it.
 
 ## Surfaces and colour
@@ -41,10 +43,29 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 
 ## Mods tab
 
-- A responsive grid of mod cards (`minmax(330px, 1fr)`; 250px below 900px wide, 240px below 700px).
+- Two views, switched from the toolbar and remembered per user (NOMAD, 2026-09-29): **Grid** (default), and **List**, a table (switch, picture, name, author, source, status) with an inspector for the selected mod on the right. The hero shrinks to a 96px band in List view to fit more rows.
+- Grid: a responsive grid of mod cards (`minmax(330px, 1fr)`; 250px below 900px wide, 240px below 700px).
 - A card: the mod's icon (its Nexus `picture_url`, fetched once when the mod is installed and cached on disk; a letter tile until it loads or when there is none, NOMAD 2026-09-29), its name, author and version from its manifest, an enable switch (the dot-folder toggle), and badges for an available update or a problem. One card per mod; its menu (open the Nexus page, update, roll back when there is a previous version, remove) acts on the whole archive entry the mod came in, and when that entry holds other mods the menu names them first.
 - Above the grid: a search field that filters by name, the problem summary with one-click fixes ([design.md](design.md#mod-data)), and buttons to add mods (open Nexus, or pick an archive). Dropping an archive anywhere on the window installs it into the open profile.
 - Empty (a new profile): "No mods yet", a line on how to add them, **Browse Nexus** and **Add archive**, a link to import a shared profile, and a note that archives can be dropped anywhere. The hero uses Steam's art.
+
+## Mod detail
+
+Clicking a card opens a panel on the right (List view's inspector links to the same content): picture, name, author and Nexus page, the enable switch, an update banner, **Needs** (each dependency and whether it is installed), **In the same download** (mods that update and roll back together), **Versions** (the one in use and the one kept for rollback, with Roll back), **Settings** (`config.json`, whether it was changed, Open and Reset), **Needed by**, and Show files and Remove from profile.
+
+## Saves tab
+
+Every save in the Saves folder with its fit for this profile: a coloured edge and a chip ("All mods present", "Has used N mods it lacks"), the mods it has used as removable chips (dismissing one for that save), and Add to this profile for mods Mortar can install. A line explains that the save is picked inside the game.
+
+## Notes tab
+
+A plain text area for the profile's notes, saved automatically ("Saved · 2 min ago"); notes travel in the `.mortar` file but not in links.
+
+## In-between moments
+
+- **Dropping an archive:** while an archive is dragged over the window, a dashed drop zone says where it goes ("Drop to install into Cookie farm"), with the file name and the supported formats.
+- **A Nexus link while minimised:** a desktop notification says what is downloading and into which profile, with Show. An `nxm://` link Mortar did not ask for gets a notification with the open profile, Other profile… and Ignore.
+- **Two copies of one mod:** a dialog shows both (source, version, what depends on it), preselects the newer or Nexus-sourced one, and switches the other off rather than deleting it; Decide later leaves both as a problem.
 
 ## Console tab
 
