@@ -8,10 +8,12 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/loadersvc"
+	"github.com/Rethunk-AI/mortar/internal/picker"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	modstore "github.com/Rethunk-AI/mortar/internal/store"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 //go:embed all:frontend/dist
@@ -57,13 +59,14 @@ func main() {
 	}
 
 	var window *application.WebviewWindow
+	pick := &picker.Service{}
 
 	app := application.New(application.Options{
 		Name:        "Mortar",
 		Description: "Multi-game desktop mod manager",
 		Services: []application.Service{
 			application.NewService(svc), application.NewService(gamesSvc),
-			application.NewService(profile.NewService(profiles)), application.NewService(loaders),
+			application.NewService(profile.NewService(profiles)), application.NewService(loaders), application.NewService(pick),
 		},
 		Assets: application.AssetOptions{
 			Handler:    application.AssetFileServerFS(assets),
@@ -80,6 +83,7 @@ func main() {
 
 	svc.App = app
 	loaders.App = app
+	pick.App = app
 
 	// Wails fixes BackgroundType at window creation, so the stored value applies on restart.
 	background, colour := application.BackgroundTypeSolid, application.NewRGBA(25, 25, 30, 255)
@@ -99,7 +103,11 @@ func main() {
 		Windows: application.WindowsWindow{
 			BackdropType: application.Acrylic,
 		},
-		URL: "/",
+		EnableFileDrop: true,
+		URL:            "/",
+	})
+	window.OnWindowEvent(events.Common.WindowFilesDropped, func(e *application.WindowEvent) {
+		app.Event.Emit(picker.DroppedEvent, e.Context().DroppedFiles())
 	})
 
 	if err := app.Run(); err != nil {

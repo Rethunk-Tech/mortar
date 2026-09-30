@@ -2,13 +2,15 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
+  CircularProgress,
   InputAdornment,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
-import { ExternalLink, LayoutGrid, List, Search } from 'lucide-react'
+import { ExternalLink, FilePlus, LayoutGrid, List, Search } from 'lucide-react'
+import { useInstall } from '../install/store.ts'
 import { useMods, type View } from './store.ts'
 
 const NEXUS = 'https://www.nexusmods.com/stardewvalley/mods'
@@ -21,6 +23,24 @@ export function BrowseNexus({ variant }: { variant: 'contained' | 'outlined' }) 
       onClick={() => void Browser.OpenURL(NEXUS)}
     >
       <Trans>Browse Nexus</Trans>
+    </Button>
+  )
+}
+
+export function AddArchive({ variant }: { variant: 'contained' | 'outlined' }) {
+  const installing = useInstall((s) => s.pending > 0)
+  const pick = useInstall((s) => s.pick)
+  return (
+    <Button
+      variant={variant}
+      disabled={installing}
+      startIcon={
+        installing ? <CircularProgress size={16} color="inherit" /> : <FilePlus size={16} />
+      }
+      onClick={() => void pick()}
+      sx={{ whiteSpace: 'nowrap' }}
+    >
+      {installing ? <Trans>Adding…</Trans> : <Trans>Add archive</Trans>}
     </Button>
   )
 }
@@ -62,6 +82,7 @@ export function Toolbar({ query, onQuery }: { query: string; onQuery: (q: string
         </ToggleButton>
       </ToggleButtonGroup>
       <Box sx={{ flex: 1 }} />
+      <AddArchive variant="outlined" />
       <BrowseNexus variant="outlined" />
     </Box>
   )

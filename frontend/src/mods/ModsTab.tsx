@@ -5,7 +5,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import { ModList } from './ModList.tsx'
 import { LetterTile, ModMenu, ModSwitch, RemoveDialog } from './parts.tsx'
 import { useMods } from './store.ts'
-import { BrowseNexus, Toolbar } from './Toolbar.tsx'
+import { AddArchive, BrowseNexus, Toolbar } from './Toolbar.tsx'
 
 export function ModsTab({ profile }: { profile: Profile }) {
   const mods = useMods((s) => s.mods)
@@ -28,7 +28,13 @@ export function ModsTab({ profile }: { profile: Profile }) {
         <Typography sx={{ color: 'text.secondary' }}>
           <Trans>Add mods from an archive you downloaded, or find them on Nexus.</Trans>
         </Typography>
-        <BrowseNexus variant="contained" />
+        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+          <AddArchive variant="contained" />
+          <BrowseNexus variant="outlined" />
+        </Box>
+        <Typography sx={{ color: 'text.secondary' }}>
+          <Trans>You can also drop archives anywhere on the window.</Trans>
+        </Typography>
       </Box>
     )
   }
