@@ -27,6 +27,8 @@ Prerequisites, build and gate: [HUMANS.md](HUMANS.md).
 | Decided work not yet built | [docs/design.md](docs/design.md) |
 | Screens and styling | [docs/gui-design.md](docs/gui-design.md) |
 | Run, build, gate | [HUMANS.md](HUMANS.md) |
+| Contributing | [CONTRIBUTING.md](CONTRIBUTING.md) |
+| Security policy | [SECURITY.md](SECURITY.md) |
 | Rules for agents | [AGENTS.md](AGENTS.md) |
 | Licence | [LICENSE](LICENSE) |
 

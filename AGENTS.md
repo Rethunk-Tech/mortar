@@ -4,11 +4,11 @@ Mortar is a multi-game desktop mod manager: game discovery, mod loader install, 
 
 ## Milestones
 
-Milestone 1 (shell and look) is approved (NOMAD, 2026-09-29) and Milestone 2 (Stardew core) (NOMAD, 2026-09-30), per `docs/design.md` § Build order. On 2026-09-30 NOMAD authorized working on through later milestones until the next visual deliverable, self-testing in the Wails dev server's browser view (short of launching the game), and handing over batches with many things to test.
+Work follows [docs/design.md](docs/design.md) § Build order. Agents continue into the next milestone until the next visual deliverable, self-test in the Wails dev server's browser view (never launching the game), and hand NOMAD batched test lists.
 
 ## Decided
 
-- Wails v3, pinned to one exact beta and upgraded on purpose. React, TypeScript and MUI on Vite; never Next.js.
+- Wails v3, pinned to one exact beta in `go.mod` (currently the Rethunk-AI fork, see its `replace`) and upgraded on purpose. React, TypeScript and MUI on Vite; never Next.js.
 - The look carries over from Concrete: a solid window (base `rgb(25,25,30)`) with a wallpaper backdrop under a static `rgba(25,25,30,0.8)` tint, frameless with a themed title bar, and an MUI dark theme whose paper and background are 80% opaque over it. Only the colour tokens change. The Concrete-style translucent window is deferred to v2 (design.md § Later).
 - One Go `Game` interface holds everything that differs per game: install discovery, loader install, mod source, manifest identity, and profile launch. Everything else is shared. Stardew Valley is the first implementation, Lethal Company the second.
 - Share links name their game: `https://mortar.rethunk.tech/<game>/p#<payload>`, handed to the app as `mortar://<game>/p/<payload>`.
