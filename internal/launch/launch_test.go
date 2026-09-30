@@ -38,9 +38,7 @@ func TestRunStartsWhenLogRewritten(t *testing.T) {
 		defer mu.Unlock()
 		return slices.Clone(lines)
 	}
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	err := Run(ctx, run, Command{Dir: "/g", Name: "steam", Args: []string{"-applaunch", "1"}, LogFile: log}, fast, func(l []string) {
+	err := Run(t.Context(), run, Command{Dir: "/g", Name: "steam", Args: []string{"-applaunch", "1"}, LogFile: log}, fast, func(l []string) {
 		mu.Lock()
 		lines = append(lines, l...)
 		mu.Unlock()
