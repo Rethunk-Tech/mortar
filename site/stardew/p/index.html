@@ -22,25 +22,71 @@
         --sand: rgb(214, 177, 122);
         --error: rgb(199, 10, 10);
       }
-      * { box-sizing: border-box; }
+      * {
+        box-sizing: border-box;
+      }
       body {
         margin: 0;
         min-height: 100vh;
         background: var(--base);
         color: var(--text);
-        font-family: 'Open Sans', system-ui, sans-serif;
+        font-family: "Open Sans", system-ui, sans-serif;
         line-height: 1.5;
       }
-      main { max-width: 34rem; margin: 0 auto; padding: 2rem 1rem; }
-      header { display: flex; align-items: center; gap: 0.6rem; color: var(--sand); }
-      header span { font-weight: 700; font-size: 1.25rem; color: var(--text); }
-      .card { background: var(--paper); border-radius: 8px; padding: 1.25rem; margin-top: 1.5rem; }
-      .title { margin: 0; font-size: 1.5rem; font-weight: 500; overflow-wrap: anywhere; }
-      .muted { color: var(--muted); font-size: 0.9rem; }
-      ul { list-style: none; margin: 1rem 0 0; padding: 0; max-height: 45vh; overflow: auto; }
-      li { padding: 0.3rem 0; border-top: 1px solid rgba(255, 255, 255, 0.08); overflow-wrap: anywhere; }
-      a { color: var(--muted); text-decoration: underline dotted; }
-      .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.25rem; }
+      main {
+        max-width: 34rem;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        color: var(--sand);
+      }
+      header span {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: var(--text);
+      }
+      .card {
+        background: var(--paper);
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-top: 1.5rem;
+      }
+      .title {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 500;
+        overflow-wrap: anywhere;
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      ul {
+        list-style: none;
+        margin: 1rem 0 0;
+        padding: 0;
+        max-height: 45vh;
+        overflow: auto;
+      }
+      li {
+        padding: 0.3rem 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        overflow-wrap: anywhere;
+      }
+      a {
+        color: var(--muted);
+        text-decoration: underline dotted;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+      }
       .btn {
         display: inline-block;
         padding: 0.7rem 1.25rem;
@@ -50,8 +96,14 @@
         font-weight: 700;
         text-decoration: none;
       }
-      .btn.alt { background: transparent; color: var(--sand); border: 1px solid var(--sand); }
-      #error { border-left: 4px solid var(--error); }
+      .btn.alt {
+        background: transparent;
+        color: var(--sand);
+        border: 1px solid var(--sand);
+      }
+      #error {
+        border-left: 4px solid var(--error);
+      }
       .card[hidden],
       .btn[hidden] {
         display: none;
@@ -61,7 +113,13 @@
   <body>
     <main>
       <header>
-        <svg width="32" height="32" viewBox="0 0 64 64" aria-hidden="true" fill="currentColor">
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 64 64"
+          aria-hidden="true"
+          fill="currentColor"
+        >
           <rect x="6" y="12" width="24" height="11" rx="2" />
           <rect x="34" y="12" width="24" height="11" rx="2" />
           <rect x="6" y="27" width="10" height="11" rx="2" />
@@ -73,21 +131,38 @@
         <span>Mortar</span>
       </header>
       <p id="error" class="card" hidden></p>
-      <noscript><p class="card">This page needs JavaScript to read the shared profile.</p></noscript>
+      <noscript
+        ><p class="card">
+          This page needs JavaScript to read the shared profile.
+        </p></noscript
+      >
       <section id="profile" class="card" hidden>
         <p class="muted">Stardew Valley profile shared with you</p>
         <p id="name" class="title"></p>
-        <p class="muted"><span id="count"></span>. Mortar resolves mod names when you import.</p>
+        <p class="muted">
+          <span id="count"></span>. Mortar resolves mod names when you import.
+        </p>
         <ul id="list"></ul>
       </section>
       <div class="actions">
-        <a id="open" class="btn" href="mortar://stardew/p/" hidden>Open in Mortar</a>
-        <a id="download" class="btn alt" href="https://github.com/Rethunk-AI/mortar/releases" hidden>Download Mortar</a>
+        <a id="open" class="btn" href="mortar://stardew/p/" hidden
+          >Open in Mortar</a
+        >
+        <a
+          id="download"
+          class="btn alt"
+          href="https://github.com/Rethunk-AI/mortar/releases"
+          hidden
+          >Get Mortar</a
+        >
       </div>
       <p id="copied" class="muted" hidden>
         Link copied. After installing Mortar, paste it into Import.
       </p>
-      <p class="muted">Everything on this page happens in your browser; the profile is never sent anywhere.</p>
+      <p class="muted">
+        Everything on this page happens in your browser; the profile is never
+        sent anywhere.
+      </p>
     </main>
     <script type="module" src="app.js"></script>
   </body>
