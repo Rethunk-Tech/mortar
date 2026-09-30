@@ -12,8 +12,8 @@ func TestLaunchOptions(t *testing.T) {
 	if _, err := svc.LaunchOptions("nope"); err == nil {
 		t.Fatal("unknown game should fail")
 	}
-	if got, err := svc.LaunchOptions("stardew"); err != nil || got != "" {
-		t.Fatalf("unreadable config = %q, %v", got, err)
+	if _, err := svc.LaunchOptions("stardew"); err == nil {
+		t.Fatal("unreadable config should fail")
 	}
 	if got, err := NewService(t.TempDir(), testStore(t)).LaunchOptions("stardew"); err != nil || got != "" {
 		t.Fatalf("no steam = %q, %v", got, err)

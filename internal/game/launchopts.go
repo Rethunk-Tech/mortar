@@ -6,8 +6,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/steam"
 )
 
-// LaunchOptions returns the launch options Steam holds for the game, or "" when none are set, Steam is
-// missing or its config cannot be read: all mean the user still has to set them.
+// LaunchOptions returns the launch options Steam holds for the game, or "" when none are set or Steam is missing.
 func (s *Service) LaunchOptions(id string) (string, error) {
 	g := Find(id)
 	if g == nil {
@@ -17,9 +16,5 @@ func (s *Service) LaunchOptions(id string) (string, error) {
 	if status != steam.Found {
 		return "", nil
 	}
-	opts, err := st.LaunchOptions(g.SteamAppID())
-	if err != nil {
-		return "", nil
-	}
-	return opts, nil
+	return st.LaunchOptions(g.SteamAppID())
 }
