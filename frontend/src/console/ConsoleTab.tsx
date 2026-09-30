@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
-import { ChevronDown, Search, X } from 'lucide-react'
+import { ChevronDown, LifeBuoy, Search, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
@@ -226,6 +226,8 @@ function CommandLine({ game }: { game: string }) {
   // The history entry shown, or null while the user types their own line.
   const [cursor, setCursor] = useState<number | null>(null)
   const draft = useRef('')
+  // Enter pressed again before Send answers must not run the command twice.
+  const sending = useRef(false)
   const browse = (dir: -1 | 1) => {
     if (cursor === null && dir === 1) {
       return
@@ -243,15 +245,20 @@ function CommandLine({ game }: { game: string }) {
     }
   }
   const submit = () => {
-    if (text.trim() === '') {
+    if (text.trim() === '' || sending.current) {
       return
     }
-    send(game, text).then((sent) => {
-      if (sent) {
-        setText('')
-        setCursor(null)
-      }
-    })
+    sending.current = true
+    send(game, text)
+      .then((sent) => {
+        if (sent) {
+          setText('')
+          setCursor(null)
+        }
+      })
+      .finally(() => {
+        sending.current = false
+      })
   }
   return (
     <Box
@@ -430,7 +437,7 @@ export function ConsoleTab({ game }: { game: string }) {
 export function LogActions() {
   const { t } = useLingui()
   const rows = useVisible()
-  const { clear, jumpTo } = useConsole.getState()
+  const { clear, jumpTo, setHelping } = useConsole.getState()
   const firstErr = firstError(rows)
   return (
     <Box sx={{ display: 'flex', gap: 1 }}>
@@ -465,6 +472,15 @@ export function LogActions() {
         sx={actionSx}
       >
         {t`Copy`}
+      </Button>
+      <Button
+        variant="outlined"
+        color="inherit"
+        startIcon={<LifeBuoy size={16} />}
+        onClick={() => setHelping(true)}
+        sx={actionSx}
+      >
+        {t`Get help`}
       </Button>
     </Box>
   )

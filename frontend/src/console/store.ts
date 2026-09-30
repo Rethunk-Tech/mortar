@@ -27,6 +27,8 @@ export const useConsole = create<{
   history: Record<string, string[]>
   // Each request carries a fresh n so jumping to the same row twice scrolls twice.
   jump: { index: number; n: number } | null
+  // The Get help dialog, opened from the Console tab or the sidebar's Support menu.
+  helping: boolean
   add: (entries: Entry[]) => void
   reset: () => void
   clear: () => void
@@ -39,6 +41,7 @@ export const useConsole = create<{
   clearFilters: () => void
   setTimestamps: (on: boolean) => void
   setFollow: (on: boolean) => void
+  setHelping: (on: boolean) => void
 }>((set, get) => ({
   entries: [],
   filters: DEFAULT_FILTERS,
@@ -47,6 +50,7 @@ export const useConsole = create<{
   cleared: 0,
   history: {},
   jump: null,
+  helping: false,
   add: (entries) => {
     const seen = Math.max(lastSeq(get().entries), get().cleared)
     const fresh = entries.filter((e) => e.seq > seen)
@@ -104,4 +108,5 @@ export const useConsole = create<{
   clearFilters: () => set({ filters: DEFAULT_FILTERS }),
   setTimestamps: (timestamps) => set({ timestamps }),
   setFollow: (follow) => set({ follow }),
+  setHelping: (helping) => set({ helping }),
 }))
