@@ -5,19 +5,30 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { App } from './App.tsx'
 import { i18n } from './i18n/index.ts'
+import { initSettings, useSettings } from './settings/store.ts'
+import { buildTheme, isAccent } from './settings/theme.ts'
 import { defaultAccent } from './theme/accents.ts'
 import './theme/fonts.ts'
-import { createMortarTheme } from './theme/theme.ts'
 
-const theme = createMortarTheme(defaultAccent)
+function Themed({ children }: { children: React.ReactNode }) {
+  const accent = useSettings((s) => s.accent)
+  const translucent = useSettings((s) => s.translucent)
+  const theme = React.useMemo(
+    () => buildTheme(isAccent(accent) ? accent : defaultAccent, translucent),
+    [accent, translucent],
+  )
+  return <ThemeProvider theme={theme}>{children}</ThemeProvider>
+}
+
+initSettings().catch(console.error)
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <I18nProvider i18n={i18n}>
-      <ThemeProvider theme={theme}>
+      <Themed>
         <CssBaseline />
         <App />
-      </ThemeProvider>
+      </Themed>
     </I18nProvider>
   </React.StrictMode>,
 )
