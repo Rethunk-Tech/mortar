@@ -7,6 +7,7 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
 - Frameless and translucent (see [design.md](design.md#look)): 1280×720 by default, 768×432 minimum, as Concrete.
 - The app draws its own title bar, 36px, marked `--wails-draggable: drag`: the logo in a darker square, the app name, then location tabs ("Game Select", or the current game) underlined in the primary colour, and minimise, maximise and close on the right. Double-click maximises. The window has a 1px light border and rounded corners, since GNOME draws no shadow for a frameless window.
 - `user-select: none` everywhere except text fields and the console.
+- Button and chip labels never wrap (`white-space: nowrap`); a long message gets its own full-width row, truncating with an ellipsis rather than squeezing the buttons beside it.
 
 ## Surfaces and colour
 
@@ -52,7 +53,7 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 
 ## Profile management
 
-A page, as Concrete's: a header with a back button, **New**, **Import** and **Recently deleted** (profiles in the 30-day trash, each with Restore) buttons, then every profile as a sortable row (drag handle, name, rename, duplicate, share, show or hide, delete). Reordering uses dnd-kit's sortable list with a drop indicator. Delete asks first and says the profile stays restorable for 30 days. **Share** copies the `https://mortar.rethunk.tech/stardew/p#...` link and always offers the `.mortar` file "with settings", and suggests it over the link above about 240 mods.
+A page, as Concrete's: a header with a back button, **New**, **Import** and **Recently deleted** (profiles in the 30-day trash, each with Restore) buttons, then every profile as a sortable row: drag handle, name (with a Hidden chip when hidden) and its summary, **Share**, and a ⋯ menu holding Rename, Duplicate, Hide from sidebar (or Show) and Delete. Reordering uses dnd-kit's sortable list with a drop indicator. Delete asks first and says the profile stays restorable for 30 days. **Share** copies the `https://mortar.rethunk.tech/stardew/p#...` link and always offers the `.mortar` file "with settings", and suggests it over the link above about 240 mods.
 
 ## Import
 
@@ -60,7 +61,7 @@ A wide "Import profile from…" dialog over the dimmed game screen, with tabs **
 
 - A dense five-column grid of mod tiles: icon, name, author, and on the right the mod's import state (installed, download, dependency, check later, unavailable) in place of a version number.
 - A status bar: "Ready to import", the profile name, the mod count, the counts per state, and the approximate download size (the sum of each file's `size_kb` from Nexus).
-- Problems found before download: missing dependencies (from the mod dataset) and mods broken for this game version (from SMAPI's update API); for a free account, a line saying each download takes one click on Nexus.
+- Problems found before download, one compact item each with its own action: a mod removed from Nexus (with its page), a mod broken for this game version (from SMAPI's update API, with Leave out), missing dependencies (from the mod dataset); and for a free account, an item saying each download takes one click on Nexus.
 - **Reset** and **New profile from link**, which creates the profile and fills the download queue; closing leaves nothing behind.
 
 ## Download queue
