@@ -66,6 +66,11 @@ func (s *Service) SetNotes(game, id, notes string) (Profile, error) {
 	return s.store.SetNotes(game, id, notes)
 }
 
+// SetAppearance replaces a profile's colour, icon and short description.
+func (s *Service) SetAppearance(game, id, color, icon, description string) (Profile, error) {
+	return s.store.SetAppearance(game, id, color, icon, description)
+}
+
 // AddEntry copies the store item key into the profile.
 func (s *Service) AddEntry(game, id, key string, source Source) (Profile, error) {
 	return s.store.AddEntry(game, id, key, source)
@@ -80,9 +85,17 @@ func (s *Service) RemoveEntry(game, id, key string) (Profile, error) {
 	return s.store.RemoveEntry(game, id, key)
 }
 
+func (s *Service) RemoveEntries(game, id string, keys []string) (Profile, error) {
+	return s.store.RemoveEntries(game, id, keys)
+}
+
 // SetModEnabled switches a mod of the entry key on or off.
 func (s *Service) SetModEnabled(game, id, key, uniqueID string, enabled bool) (Profile, error) {
 	return s.store.SetModEnabled(game, id, key, uniqueID, enabled)
+}
+
+func (s *Service) SetModsEnabled(game, id string, mods []EnableRef, enabled bool) (Profile, error) {
+	return s.store.SetModsEnabled(game, id, mods, enabled)
 }
 
 // SetCover copies the image at path into the profile as its hero cover.
@@ -158,4 +171,14 @@ func (s *Service) ReadConfig(game, id, key, uniqueID string) (string, error) {
 // WriteConfig replaces the mod's config.json atomically.
 func (s *Service) WriteConfig(game, id, key, uniqueID, contents string) error {
 	return s.store.WriteConfig(game, id, key, uniqueID, contents)
+}
+
+// SetPinned records whether the entry stays on its current version.
+func (s *Service) SetPinned(game, id, key string, pinned bool) (Profile, error) {
+	return s.store.SetPinned(game, id, key, pinned)
+}
+
+// SetSkipVersion hides that exact newer version, or clears the skip when version is empty.
+func (s *Service) SetSkipVersion(game, id, key, version string) (Profile, error) {
+	return s.store.SetSkipVersion(game, id, key, version)
 }

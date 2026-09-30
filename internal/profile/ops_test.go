@@ -179,6 +179,41 @@ func TestToggleNestedAndRoot(t *testing.T) {
 	}
 }
 
+func TestSetModsEnabledAndRemoveEntriesOneWrite(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
+	p, _ := e.Create("stardew", "P")
+	for _, k := range []string{"local-a", "local-b"} {
+		if _, err := e.AddEntry("stardew", p.ID, k, Source{}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	got, err := e.SetModsEnabled("stardew", p.ID, []EnableRef{
+		{Key: "local-a", UniqueID: "Me.A"},
+		{Key: "local-b", UniqueID: "Me.B"},
+	}, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(got.Entries[0].Disabled, []string{"Me.A"}) || !slices.Equal(got.Entries[1].Disabled, []string{"Me.B"}) {
+		t.Fatalf("disabled = %+v", got.Entries)
+	}
+	if !slices.Equal(names(t, e.mods(p.ID)), []string{".local-a", ".local-b"}) {
+		t.Fatalf("mods = %v", names(t, e.mods(p.ID)))
+	}
+	got, err = e.RemoveEntries("stardew", p.ID, []string{"local-a", "local-b"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Entries) != 0 {
+		t.Fatalf("entries = %+v", got.Entries)
+	}
+	if names := names(t, e.mods(p.ID)); len(names) != 0 {
+		t.Fatalf("mods left = %v", names)
+	}
+}
+
 func TestRootToggleRoundTrip(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-r", map[string]string{"manifest.json": manifestJSON("X.R")})
@@ -519,7 +554,9 @@ func TestRunningProfileIsLocked(t *testing.T) {
 	checks := map[string]error{}
 	_, checks["AddEntry"] = e.AddEntry("stardew", p.ID, "a-1.0", Source{})
 	_, checks["RemoveEntry"] = e.RemoveEntry("stardew", p.ID, "a-1.0")
+	_, checks["RemoveEntries"] = e.RemoveEntries("stardew", p.ID, []string{"a-1.0"})
 	_, checks["SetModEnabled"] = e.SetModEnabled("stardew", p.ID, "", "me.a", false)
+	_, checks["SetModsEnabled"] = e.SetModsEnabled("stardew", p.ID, []EnableRef{{Key: "a-1.0", UniqueID: "me.a"}}, false)
 	checks["Delete"] = e.Delete("stardew", p.ID)
 	_, checks["InstallArchive"] = e.InstallArchive("stardew", p.ID, "/nonexistent.zip")
 	for name, err := range checks {
@@ -583,8 +620,13 @@ func TestRunningIsCheckedUnderTheLock(t *testing.T) {
 		"AddEntry":      func() error { _, err := s.AddEntry("stardew", p.ID, "k", Source{}); return err },
 		"UpdateEntry":   func() error { _, err := s.UpdateEntry("stardew", p.ID, "a", "b"); return err },
 		"RemoveEntry":   func() error { _, err := s.RemoveEntry("stardew", p.ID, "k"); return err },
+		"RemoveEntries": func() error { _, err := s.RemoveEntries("stardew", p.ID, []string{"k"}); return err },
 		"SetModEnabled": func() error { _, err := s.SetModEnabled("stardew", p.ID, "", "x", false); return err },
-		"Delete":        func() error { return s.Delete("stardew", p.ID) },
+		"SetModsEnabled": func() error {
+			_, err := s.SetModsEnabled("stardew", p.ID, []EnableRef{{UniqueID: "x"}}, false)
+			return err
+		},
+		"Delete": func() error { return s.Delete("stardew", p.ID) },
 	}
 	for name, op := range ops {
 		var re *RunningError

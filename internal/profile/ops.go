@@ -36,6 +36,12 @@ type Mod struct {
 	Needs        []string `json:"needs,omitempty"`
 }
 
+// EnableRef names one mod to switch, matching SetModEnabled's key and UniqueID.
+type EnableRef struct {
+	Key      string `json:"key"`
+	UniqueID string `json:"uniqueId"`
+}
+
 func exists(p string) bool {
 	_, err := os.Lstat(p)
 	return err == nil
@@ -318,6 +324,26 @@ func removeFrom(p *Profile, dir, key string) error {
 	return nil
 }
 
+// RemoveEntries deletes each named entry's folder and drops it from the profile, one write.
+func (s *Store) RemoveEntries(game, id string, keys []string) (Profile, error) {
+	return s.updateMods(game, id, func(p *Profile, dir string) error {
+		seen := map[string]bool{}
+		for _, key := range keys {
+			if seen[key] {
+				continue
+			}
+			seen[key] = true
+			if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && isBundled(e) }) {
+				return errors.New("the bundled mods are needed by every profile and cannot be removed")
+			}
+			if err := removeFrom(p, dir, key); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 // updateMods is update for changes to the mods/ folder, refused while the game runs the profile. The check holds the
 // lock so that a launch, which reads the profile under it, sees either the whole change or none of it.
 func (s *Store) updateMods(game, id string, fn func(p *Profile, dir string) error) (Profile, error) {
@@ -339,33 +365,49 @@ func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
 	})
 }
 
+func applyEnabled(p *Profile, dir, key, uniqueID string, enabled bool) error {
+	for ei := range p.Entries {
+		e := &p.Entries[ei]
+		if key != "" && e.Key != key {
+			continue
+		}
+		mi := slices.IndexFunc(e.Mods, func(m EntryMod) bool { return sameID(m.UniqueID, uniqueID) })
+		if mi < 0 {
+			continue
+		}
+		plain, dotted, err := ModPaths(filepath.Join(dir, "mods"), e.Key, e.Mods[mi].Folder)
+		if err != nil {
+			return err
+		}
+		if err := flip(plain, dotted, enabled); err != nil {
+			return err
+		}
+		e.Disabled = slices.DeleteFunc(e.Disabled, func(x string) bool { return sameID(x, uniqueID) })
+		if !enabled {
+			e.Disabled = append(e.Disabled, e.Mods[mi].UniqueID)
+		}
+		return nil
+	}
+	return fmt.Errorf("no mod %q in this profile", uniqueID)
+}
+
 // SetModEnabled switches a mod on or off by renaming its folder with or without a leading dot. key names the
 // entry holding it, which tells apart two copies of one UniqueID; an empty key means the first entry that has it.
 func (s *Store) SetModEnabled(game, id, key, uniqueID string, enabled bool) (Profile, error) {
 	return s.updateMods(game, id, func(p *Profile, dir string) error {
-		for ei := range p.Entries {
-			e := &p.Entries[ei]
-			if key != "" && e.Key != key {
-				continue
-			}
-			mi := slices.IndexFunc(e.Mods, func(m EntryMod) bool { return sameID(m.UniqueID, uniqueID) })
-			if mi < 0 {
-				continue
-			}
-			plain, dotted, err := ModPaths(filepath.Join(dir, "mods"), e.Key, e.Mods[mi].Folder)
-			if err != nil {
+		return applyEnabled(p, dir, key, uniqueID, enabled)
+	})
+}
+
+// SetModsEnabled switches each named mod on or off in one profile write.
+func (s *Store) SetModsEnabled(game, id string, mods []EnableRef, enabled bool) (Profile, error) {
+	return s.updateMods(game, id, func(p *Profile, dir string) error {
+		for _, m := range mods {
+			if err := applyEnabled(p, dir, m.Key, m.UniqueID, enabled); err != nil {
 				return err
 			}
-			if err := flip(plain, dotted, enabled); err != nil {
-				return err
-			}
-			e.Disabled = slices.DeleteFunc(e.Disabled, func(x string) bool { return sameID(x, uniqueID) })
-			if !enabled {
-				e.Disabled = append(e.Disabled, e.Mods[mi].UniqueID)
-			}
-			return nil
 		}
-		return fmt.Errorf("no mod %q in this profile", uniqueID)
+		return nil
 	})
 }
 
