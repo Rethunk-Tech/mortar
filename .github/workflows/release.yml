@@ -52,6 +52,10 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # main.go embeds frontend/dist, so Go's typecheck in the gate needs it built.
+      - name: Frontend build
+        run: bun run bindings && bun run --cwd frontend build
+
       - name: Offline gate
         run: bun run gate
 
