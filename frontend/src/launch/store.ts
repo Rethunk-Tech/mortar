@@ -64,8 +64,17 @@ export const useLaunch = create<{
   apply: (status) => {
     set({ starting: false })
     if (status.state === State.Launching) {
-      useConsole.getState().reset()
-      set({ status, hidden: false, failure: null })
+      // A status refresh during the same launch must keep its log and a hidden overlay hidden.
+      const prev = get().status
+      const same =
+        prev?.state === State.Launching &&
+        prev.game === status.game &&
+        prev.profile === status.profile
+      if (!same) {
+        useConsole.getState().reset(status.game, status.profile)
+        set({ hidden: false, failure: null })
+      }
+      set({ status })
       return
     }
     if (status.state === State.Failed) {

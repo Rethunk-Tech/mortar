@@ -33,7 +33,7 @@ export const useConsole = create<{
   // The Get help dialog, opened from the Console tab or the sidebar's Support menu.
   helping: boolean
   add: (batch: Batch) => void
-  reset: () => void
+  reset: (game: string, profile: string) => void
   clear: () => void
   jumpTo: (index: number) => void
   load: (game: string, profile: string) => Promise<void>
@@ -66,7 +66,8 @@ export const useConsole = create<{
       set((s) => ({ entries: [...s.entries, ...fresh] }))
     }
   },
-  reset: () => set({ entries: [], cleared: 0, jump: null, follow: true }),
+  reset: (game, profile) =>
+    set({ shown: { game, profile }, entries: [], cleared: 0, jump: null, follow: true }),
   clear: () =>
     set((s) => ({ entries: [], jump: null, cleared: Math.max(s.cleared, lastSeq(s.entries)) })),
   jumpTo: (index) => set((s) => ({ follow: false, jump: { index, n: (s.jump?.n ?? 0) + 1 } })),
@@ -75,8 +76,7 @@ export const useConsole = create<{
   load: async (game, profile) => {
     const { shown } = get()
     if (game !== shown.game || profile !== shown.profile) {
-      get().reset()
-      set({ shown: { game, profile } })
+      get().reset(game, profile)
     }
     try {
       const lines = (await Lines(game, profile)) ?? []
