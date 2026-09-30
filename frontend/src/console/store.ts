@@ -4,7 +4,11 @@ import type {
   Entry,
   Level,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
-import type { Lines as Batch } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import {
+  type Lines as Batch,
+  State,
+  type Status,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import {
   Lines,
   Send,
@@ -16,6 +20,10 @@ import { DEFAULT_FILTERS, type Filters } from './filter.ts'
 import { pushCommand } from './history.ts'
 
 const lastSeq = (entries: Entry[]) => entries.at(-1)?.seq ?? 0
+
+export function canSendTo(status: Status | null, game: string, openId: string) {
+  return status?.state === State.Running && status.game === game && status.profile === openId
+}
 
 export const useConsole = create<{
   // The game and profile whose log is shown; lines of any other profile are ignored.

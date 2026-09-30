@@ -11,6 +11,7 @@ import {
   incompatibleSMAPI,
   isFiltered,
   modsOf,
+  shownLog,
   visible,
 } from './filter.ts'
 
@@ -68,6 +69,11 @@ test('formatAll writes SMAPI lines, continuations bare', () => {
   expect(formatAll(log.slice(2, 5))).toBe(
     '[19:43:50 WARN  SMAPI] obsolete API\n[19:43:50 ERROR Love of Cooking] Failed to load:\n  needs SpaceCore',
   )
+})
+
+test('shownLog is empty when the open profile does not own the log', () => {
+  expect(shownLog(log, true)).toBe(log)
+  expect(shownLog(log, false)).toEqual([])
 })
 
 test('incompatible SMAPI is the max-version Oops line from SMAPI itself', () => {

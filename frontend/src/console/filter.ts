@@ -20,6 +20,10 @@ export const DEFAULT_FILTERS: Filters = {
   mods: [],
 }
 
+export function shownLog(entries: Entry[], mine: boolean): Entry[] {
+  return mine ? entries : []
+}
+
 export function countByLevel(entries: Entry[]): Map<Level, number> {
   const counts = new Map<Level, number>(LEVELS.map((l) => [l, 0]))
   for (const e of entries) {

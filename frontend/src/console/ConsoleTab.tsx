@@ -28,10 +28,11 @@ import {
   isFiltered,
   LEVELS,
   modsOf,
+  shownLog,
   visible,
 } from './filter.ts'
 import { stepHistory } from './history.ts'
-import { useConsole } from './store.ts'
+import { canSendTo, useConsole } from './store.ts'
 import { VirtualLog } from './VirtualLog.tsx'
 
 const dots: Record<Level, string> = {
@@ -44,17 +45,26 @@ const dots: Record<Level, string> = {
   [Level.Alert]: '#c792ea',
 }
 
+function useMine() {
+  return useConsole((s) => s.shown.profile) === useProfiles((s) => s.openId)
+}
+
+function useShownEntries() {
+  const entries = useConsole((s) => s.entries)
+  const mine = useMine()
+  return useMemo(() => shownLog(entries, mine), [mine, entries])
+}
+
 // A launch of another profile takes the log over; its lines are not this profile's to show.
 function useVisible() {
-  const entries = useConsole((s) => s.entries)
+  const entries = useShownEntries()
   const filters = useConsole((s) => s.filters)
-  const mine = useConsole((s) => s.shown.profile) === useProfiles((s) => s.openId)
-  return useMemo(() => (mine ? visible(entries, filters) : []), [mine, entries, filters])
+  return useMemo(() => visible(entries, filters), [entries, filters])
 }
 
 function LevelToggles() {
   const { t } = useLingui()
-  const entries = useConsole((s) => s.entries)
+  const entries = useShownEntries()
   const on = useConsole((s) => s.filters.levels)
   const toggle = useConsole((s) => s.toggleLevel)
   const counts = useMemo(() => countByLevel(entries), [entries])
@@ -114,7 +124,7 @@ function LevelToggles() {
 
 function ModPicker() {
   const { t } = useLingui()
-  const entries = useConsole((s) => s.entries)
+  const entries = useShownEntries()
   const picked = useConsole((s) => s.filters.mods)
   const setMods = useConsole((s) => s.setMods)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
@@ -224,7 +234,8 @@ const MONO = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace'
 
 function CommandLine({ game }: { game: string }) {
   const { t } = useLingui()
-  const running = useLaunch((s) => s.status?.state === State.Running && s.status.game === game)
+  const openId = useProfiles((s) => s.openId)
+  const running = useLaunch((s) => canSendTo(s.status, game, openId))
   const history = useConsole((s) => s.history[game] ?? NO_HISTORY)
   const send = useConsole((s) => s.send)
   const [text, setText] = useState('')
@@ -370,7 +381,7 @@ function ReinstallLoader({ game }: { game: string }) {
 
 export function ConsoleTab({ game }: { game: string }) {
   const { t } = useLingui()
-  const entries = useConsole((s) => s.entries)
+  const entries = useShownEntries()
   const filters = useConsole((s) => s.filters)
   const timestamps = useConsole((s) => s.timestamps)
   const follow = useConsole((s) => s.follow)
