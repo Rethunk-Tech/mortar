@@ -15,7 +15,7 @@ import {
   Typography,
 } from '@mui/material'
 import { ChevronDown, Pencil } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   ReadConfig,
@@ -217,32 +217,50 @@ export function ConfigEditor({
   const [tree, setTree] = useState<ConfigNode | null>(null)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
+  const readGen = useRef(0)
   useEffect(() => {
     if (!open) {
+      readGen.current += 1
+      setTree(null)
+      setError('')
+      setSaved(false)
       return
     }
     const target = openTarget()
     if (!target) {
       return
     }
+    readGen.current += 1
+    const seq = readGen.current
     setSaved(false)
     ReadConfig(target.game, target.id, mod.key, mod.uniqueId)
       .then((raw) => {
+        if (seq !== readGen.current) {
+          return
+        }
         setError('')
         setTree(parseConfig(raw))
       })
       .catch((e: unknown) => {
+        if (seq !== readGen.current) {
+          return
+        }
         setTree(null)
         setError(e instanceof Error ? e.message : String(e))
       })
   }, [open, mod.key, mod.uniqueId])
   const save = () => {
+    const seq = readGen.current
     const target = openTarget()
     if (!(target && tree)) {
       return
     }
     WriteConfig(target.game, target.id, mod.key, mod.uniqueId, stringifyConfig(tree))
-      .then(() => setSaved(true))
+      .then(() => {
+        if (seq === readGen.current) {
+          setSaved(true)
+        }
+      })
       .catch(reportUnexpected)
   }
   return (
