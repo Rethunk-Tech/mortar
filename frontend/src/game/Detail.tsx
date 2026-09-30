@@ -1,5 +1,5 @@
 import { plural } from '@lingui/core/macro'
-import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
 import { Pencil, Plus } from 'lucide-react'
 import { useState } from 'react'
@@ -123,14 +123,14 @@ function Hero({ profile }: { profile: Profile }) {
           [compact]: { display: 'block' },
         }}
       >
-        {t`Created ${created} · Updated ${updated}`} ·{' '}
-        {plural(mods, { one: '# mod', other: '# mods' })}
+        {t`Created ${created} · Updated ${updated} · ${plural(mods, { one: '# mod', other: '# mods' })}`}
       </Typography>
     </Box>
   )
 }
 
 export function Detail() {
+  const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
   const openId = useProfiles((s) => s.openId)
   const loaded = useProfiles((s) => s.loaded)
@@ -153,18 +153,16 @@ export function Detail() {
           px: 3,
         }}
       >
-        <Typography sx={{ fontSize: 24, fontWeight: 600 }}>
-          <Trans>No profiles yet</Trans>
-        </Typography>
+        <Typography sx={{ fontSize: 24, fontWeight: 600 }}>{t`No profiles yet`}</Typography>
         <Typography sx={{ color: 'text.secondary' }}>
-          <Trans>A profile holds one set of mods for this game.</Trans>
+          {t`A profile holds one set of mods for this game.`}
         </Typography>
         <Button
           variant="contained"
           startIcon={<Plus size={16} />}
           onClick={() => setCreating(true)}
         >
-          <Trans>Create your first profile</Trans>
+          {t`Create your first profile`}
         </Button>
         <NewProfileDialog open={creating} onClose={() => setCreating(false)} />
       </Box>
@@ -174,7 +172,7 @@ export function Detail() {
     <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
       <Hero key={`hero-${profile.id}`} profile={profile} />
       <Tabs value="mods" sx={{ px: 2, flexShrink: 0 }}>
-        <Tab value="mods" label={<Trans>Mods</Trans>} />
+        <Tab value="mods" label={t`Mods`} />
       </Tabs>
       <ModsTab key={`mods-${profile.id}`} profile={profile} />
     </Box>

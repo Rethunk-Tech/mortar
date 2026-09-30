@@ -1,4 +1,4 @@
-import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Chip, FormControlLabel, Switch } from '@mui/material'
 import {
   SetAccent,
@@ -27,9 +27,7 @@ export function Appearance() {
   ]
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Box sx={{ fontSize: 14, fontWeight: 600 }}>
-        <Trans>Accent colour</Trans>
-      </Box>
+      <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Accent colour`}</Box>
       <Box
         role="radiogroup"
         aria-label={t`Accent colour`}
@@ -89,20 +87,20 @@ export function Appearance() {
           tabIndex={-1}
           sx={{ width: 140, height: 44, fontSize: 17, fontWeight: 700 }}
         >
-          <Trans>Play</Trans>
+          {t`Play`}
         </Button>
         <Chip label={t`3 updates`} color="primary" size="small" sx={{ fontWeight: 700 }} />
         <Box
           component="span"
           sx={{ py: '6px', borderBottom: '2px solid', borderColor: 'primary.main', fontSize: 14 }}
         >
-          <Trans>Stardew Valley</Trans>
+          {t`Stardew Valley`}
         </Box>
         <Box
           component="span"
           sx={{ flexGrow: 1, textAlign: 'right', fontSize: 13, color: 'rgba(225,225,230,0.95)' }}
         >
-          <Trans>Changes apply right away</Trans>
+          {t`Changes apply right away`}
         </Box>
       </Box>
       <Box>
@@ -118,7 +116,7 @@ export function Appearance() {
           label={t`Translucent window`}
         />
         <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
-          <Trans>Takes effect when Mortar restarts</Trans>
+          {t`Takes effect when Mortar restarts`}
         </Box>
       </Box>
     </Box>

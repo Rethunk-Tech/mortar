@@ -1,4 +1,4 @@
-import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Drawer,
@@ -48,7 +48,7 @@ function Inspector({ mod }: { mod: Mod }) {
       {others.length > 0 ? (
         <Box>
           <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-            <Trans>In the same download</Trans>
+            {t`In the same download`}
           </Typography>
           {others.map((o) => (
             <Typography key={o.uniqueId}>{o.name}</Typography>
@@ -82,18 +82,10 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
             <TableRow>
               <TableCell padding="checkbox" />
               <TableCell padding="checkbox" />
-              <TableCell>
-                <Trans>Name</Trans>
-              </TableCell>
-              <TableCell>
-                <Trans>Author</Trans>
-              </TableCell>
-              <TableCell>
-                <Trans>Source</Trans>
-              </TableCell>
-              <TableCell>
-                <Trans>Status</Trans>
-              </TableCell>
+              <TableCell>{t`Name`}</TableCell>
+              <TableCell>{t`Author`}</TableCell>
+              <TableCell>{t`Source`}</TableCell>
+              <TableCell>{t`Status`}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -153,7 +145,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
             <Inspector mod={selected} />
           ) : (
             <Typography sx={{ p: 2, color: 'text.secondary' }}>
-              <Trans>Select a mod to see its details.</Trans>
+              {t`Select a mod to see its details.`}
             </Typography>
           )}
         </Box>

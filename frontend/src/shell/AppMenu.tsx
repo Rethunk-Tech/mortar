@@ -1,4 +1,4 @@
-import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import { ButtonBase, Drawer, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import { Application } from '@wailsio/runtime'
 import { Info, LogOut, Settings } from 'lucide-react'
@@ -42,7 +42,7 @@ export function AppMenu() {
         }}
       >
         <Logo size={20} />
-        <Trans>Mortar</Trans>
+        {t`Mortar`}
       </ButtonBase>
       <Drawer
         id={drawerId}
@@ -71,7 +71,7 @@ export function AppMenu() {
             <ListItemIcon>
               <Settings size={18} />
             </ListItemIcon>
-            <ListItemText primary={<Trans>Settings</Trans>} />
+            <ListItemText primary={t`Settings`} />
           </ListItemButton>
           <ListItemButton
             onClick={() => {
@@ -82,13 +82,13 @@ export function AppMenu() {
             <ListItemIcon>
               <Info size={18} />
             </ListItemIcon>
-            <ListItemText primary={<Trans>About Mortar</Trans>} />
+            <ListItemText primary={t`About Mortar`} />
           </ListItemButton>
           <ListItemButton onClick={quit}>
             <ListItemIcon>
               <LogOut size={18} />
             </ListItemIcon>
-            <ListItemText primary={<Trans>Quit</Trans>} />
+            <ListItemText primary={t`Quit`} />
           </ListItemButton>
         </List>
       </Drawer>

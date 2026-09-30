@@ -1,5 +1,5 @@
 import { plural } from '@lingui/core/macro'
-import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
@@ -24,6 +24,7 @@ const shadow = '0 1px 2px rgba(0,0,0,0.9), 0 0 18px rgba(0,0,0,0.85)'
 
 function Row({ game, openable, note }: { game: Game; openable: boolean; note: string }) {
   const { t } = useLingui()
+  const { loader } = game
   const open = () => {
     if (game.id !== 'stardew') {
       return
@@ -64,9 +65,7 @@ function Row({ game, openable, note }: { game: Game; openable: boolean; note: st
       ) : null}
       <Box sx={{ position: 'relative', textShadow: shadow, textAlign: 'left', color: '#fff' }}>
         <Typography sx={{ fontSize: 34, fontWeight: 600, lineHeight: 1.2 }}>{game.name}</Typography>
-        <Typography sx={{ fontSize: 17 }}>
-          {game.loader} <span style={{ opacity: 0.6 }}>|</span> Steam
-        </Typography>
+        <Typography sx={{ fontSize: 17 }}>{t`${loader} | Steam`}</Typography>
         <Typography sx={{ mt: '6px', fontSize: 16, fontWeight: 600 }}>{note}</Typography>
       </Box>
       <Box sx={{ position: 'relative', display: 'flex', gap: '14px' }}>
@@ -161,12 +160,10 @@ export function GameSelect() {
       </Box>
       {status.steam !== 'found' && (
         <Typography noWrap={true} sx={{ px: 2, py: 0.75, fontSize: 14, color: 'text.secondary' }}>
-          <Trans>Mortar supports Steam installed directly on the system.</Trans>{' '}
-          {status.steam === 'flatpak-only' ? (
-            <Trans>Only a Flatpak Steam was found.</Trans>
-          ) : (
-            <Trans>Steam was not found.</Trans>
-          )}
+          {t`Mortar supports Steam installed directly on the system.`}{' '}
+          {status.steam === 'flatpak-only'
+            ? t`Only a Flatpak Steam was found.`
+            : t`Steam was not found.`}
         </Typography>
       )}
     </Box>

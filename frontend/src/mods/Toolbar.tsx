@@ -1,4 +1,4 @@
-import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
@@ -17,6 +17,7 @@ import { useMods, type View } from './store.ts'
 const NEXUS = 'https://www.nexusmods.com/stardewvalley/mods'
 
 export function BrowseNexus({ variant }: { variant: 'contained' | 'outlined' }) {
+  const { t } = useLingui()
   return (
     <Button
       variant={variant}
@@ -25,12 +26,13 @@ export function BrowseNexus({ variant }: { variant: 'contained' | 'outlined' }) 
         Browser.OpenURL(NEXUS).catch(reportUnexpected)
       }}
     >
-      <Trans>Browse Nexus</Trans>
+      {t`Browse Nexus`}
     </Button>
   )
 }
 
 export function AddArchive({ variant }: { variant: 'contained' | 'outlined' }) {
+  const { t } = useLingui()
   const installing = useInstall((s) => s.pending > 0)
   const pick = useInstall((s) => s.pick)
   return (
@@ -45,7 +47,7 @@ export function AddArchive({ variant }: { variant: 'contained' | 'outlined' }) {
       }}
       sx={{ whiteSpace: 'nowrap' }}
     >
-      {installing ? <Trans>Adding…</Trans> : <Trans>Add archive</Trans>}
+      {installing ? t`Adding…` : t`Add archive`}
     </Button>
   )
 }

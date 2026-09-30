@@ -1,4 +1,4 @@
-import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
 import { ArrowLeft } from 'lucide-react'
 import { useEffect } from 'react'
@@ -39,7 +39,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
           <ArrowLeft size={20} />
         </ButtonBase>
         <Typography component="h1" sx={{ fontSize: 22, fontWeight: 600 }}>
-          <Trans>Settings</Trans>
+          {t`Settings`}
         </Typography>
       </Box>
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex', gap: 3, px: 2, pb: 2 }}>

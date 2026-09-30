@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import { alpha, Box, Typography } from '@mui/material'
 import { Events } from '@wailsio/runtime'
 import { Download } from 'lucide-react'
@@ -13,6 +13,7 @@ const ACTIVE_CLASS = 'file-drop-target-active'
 const TINT_ALPHA = 0.08
 
 export function DropOverlay({ target }: { target: HTMLElement | null }) {
+  const { t } = useLingui()
   const [dragging, setDragging] = useState(false)
   const inGame = useNav((s) => s.route.name === 'game')
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
@@ -68,17 +69,15 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
       {ready ? (
         <>
           <Typography sx={{ fontSize: 24, fontWeight: 600 }}>
-            <Trans>Drop to install into {profile.name}</Trans>
+            {t`Drop to install into ${profile.name}`}
           </Typography>
           <Typography sx={{ color: 'text.secondary' }}>
-            <Trans>
-              Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added.
-            </Trans>
+            {t`Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added.`}
           </Typography>
         </>
       ) : (
         <Typography sx={{ fontSize: 24, fontWeight: 600 }}>
-          <Trans>Open a profile to install mods</Trans>
+          {t`Open a profile to install mods`}
         </Typography>
       )}
     </Box>

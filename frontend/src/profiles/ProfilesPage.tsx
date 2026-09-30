@@ -16,7 +16,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { plural } from '@lingui/core/macro'
-import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import {
   alpha,
   Box,
@@ -136,26 +136,22 @@ function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) =
         disableRestoreFocus={true}
         slotProps={dialogPaper}
       >
-        <MenuItem onClick={choose(() => setRenaming(true))}>
-          <Trans>Rename</Trans>
-        </MenuItem>
+        <MenuItem onClick={choose(() => setRenaming(true))}>{t`Rename`}</MenuItem>
         <MenuItem
           onClick={choose(() => {
             duplicate(profile.id).catch(reportUnexpected)
           })}
         >
-          <Trans>Duplicate</Trans>
+          {t`Duplicate`}
         </MenuItem>
         <MenuItem
           onClick={choose(() => {
             setHidden(profile.id, !profile.hidden).catch(reportUnexpected)
           })}
         >
-          {profile.hidden ? <Trans>Show in sidebar</Trans> : <Trans>Hide from sidebar</Trans>}
+          {profile.hidden ? t`Show in sidebar` : t`Hide from sidebar`}
         </MenuItem>
-        <MenuItem onClick={choose(() => onDelete(profile))}>
-          <Trans>Delete</Trans>
-        </MenuItem>
+        <MenuItem onClick={choose(() => onDelete(profile))}>{t`Delete`}</MenuItem>
       </Menu>
     </Box>
   )
@@ -182,7 +178,7 @@ function Trash() {
       }}
     >
       <Typography component="h2" sx={{ fontSize: 15, fontWeight: 700, mb: 1 }}>
-        <Trans>Recently deleted</Trans>
+        {t`Recently deleted`}
       </Typography>
       {trash.map((item) => {
         const days = plural(item.daysLeft, { one: '# day left', other: '# days left' })
@@ -202,7 +198,7 @@ function Trash() {
               }}
               sx={{ whiteSpace: 'nowrap' }}
             >
-              <Trans>Restore</Trans>
+              {t`Restore`}
             </Button>
           </Box>
         )
@@ -261,7 +257,7 @@ export function ProfilesPage() {
           <ArrowLeft size={20} />
         </ButtonBase>
         <Typography component="h1" sx={{ fontSize: 22, fontWeight: 600, flex: 1 }}>
-          <Trans>Profiles</Trans>
+          {t`Profiles`}
         </Typography>
         <Button
           variant="contained"
@@ -269,7 +265,7 @@ export function ProfilesPage() {
           onClick={() => setCreating(true)}
           sx={{ whiteSpace: 'nowrap' }}
         >
-          <Trans>New profile</Trans>
+          {t`New profile`}
         </Button>
       </Box>
       <Box
@@ -286,9 +282,7 @@ export function ProfilesPage() {
       >
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {profiles.length === 0 ? (
-            <Typography sx={{ color: 'text.secondary' }}>
-              <Trans>No profiles yet.</Trans>
-            </Typography>
+            <Typography sx={{ color: 'text.secondary' }}>{t`No profiles yet.`}</Typography>
           ) : (
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
               <SortableContext
@@ -309,13 +303,11 @@ export function ProfilesPage() {
         <DialogTitle>{t`Delete ${deleting?.name ?? ''}?`}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            <Trans>The profile stays restorable for 30 days from Recently deleted.</Trans>
+            {t`The profile stays restorable for 30 days from Recently deleted.`}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleting(null)}>
-            <Trans>Cancel</Trans>
-          </Button>
+          <Button onClick={() => setDeleting(null)}>{t`Cancel`}</Button>
           <Button
             variant="contained"
             color="error"
@@ -326,7 +318,7 @@ export function ProfilesPage() {
               setDeleting(null)
             }}
           >
-            <Trans>Delete</Trans>
+            {t`Delete`}
           </Button>
         </DialogActions>
       </Dialog>

@@ -1,4 +1,4 @@
-import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
@@ -75,6 +75,7 @@ export function ModSwitch({ mod }: { mod: Mod }) {
 }
 
 export function ShowFilesButton({ mod }: { mod: Mod }) {
+  const { t } = useLingui()
   const showFiles = useMods((s) => s.showFiles)
   return (
     <Button
@@ -83,16 +84,17 @@ export function ShowFilesButton({ mod }: { mod: Mod }) {
         showFiles(mod).catch(reportUnexpected)
       }}
     >
-      <Trans>Show files</Trans>
+      {t`Show files`}
     </Button>
   )
 }
 
 export function RemoveButton({ mod }: { mod: Mod }) {
+  const { t } = useLingui()
   const askRemove = useMods((s) => s.askRemove)
   return (
     <Button color="error" startIcon={<Trash2 size={16} />} onClick={() => askRemove(mod)}>
-      <Trans>Remove</Trans>
+      {t`Remove`}
     </Button>
   )
 }
@@ -125,9 +127,7 @@ export function ModMenu({ mod }: { mod: Mod }) {
           <ListItemIcon>
             <FolderOpen size={16} />
           </ListItemIcon>
-          <ListItemText>
-            <Trans>Show files</Trans>
-          </ListItemText>
+          <ListItemText>{t`Show files`}</ListItemText>
         </MenuItem>
         <MenuItem
           onClick={() => {
@@ -138,9 +138,7 @@ export function ModMenu({ mod }: { mod: Mod }) {
           <ListItemIcon>
             <Trash2 size={16} />
           </ListItemIcon>
-          <ListItemText>
-            <Trans>Remove</Trans>
-          </ListItemText>
+          <ListItemText>{t`Remove`}</ListItemText>
         </MenuItem>
       </Menu>
     </>
@@ -148,6 +146,7 @@ export function ModMenu({ mod }: { mod: Mod }) {
 }
 
 export function RemoveDialog() {
+  const { t } = useLingui()
   const mod = useMods((s) => s.removing)
   const mods = useMods((s) => s.mods)
   const askRemove = useMods((s) => s.askRemove)
@@ -156,25 +155,16 @@ export function RemoveDialog() {
   const close = () => askRemove(null)
   return (
     <Dialog open={mod !== null} onClose={close} slotProps={{ paper }}>
-      <DialogTitle>
-        <Trans>Remove {mod?.name} from this profile?</Trans>
-      </DialogTitle>
+      <DialogTitle>{t`Remove ${mod?.name} from this profile?`}</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          {others.length > 0 ? (
-            <Trans>
-              It came in one download with {others.join(', ')}, and all of them are removed
-              together.
-            </Trans>
-          ) : (
-            <Trans>Its folder in this profile is deleted.</Trans>
-          )}
+          {others.length > 0
+            ? t`It came in one download with ${others.join(', ')}, and all of them are removed together.`
+            : t`Its folder in this profile is deleted.`}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={close}>
-          <Trans>Cancel</Trans>
-        </Button>
+        <Button onClick={close}>{t`Cancel`}</Button>
         <Button
           color="error"
           onClick={() => {
@@ -184,7 +174,7 @@ export function RemoveDialog() {
             }
           }}
         >
-          <Trans>Remove</Trans>
+          {t`Remove`}
         </Button>
       </DialogActions>
     </Dialog>

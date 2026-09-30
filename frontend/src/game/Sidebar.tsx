@@ -1,4 +1,4 @@
-import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import { alpha, Box, ButtonBase, IconButton } from '@mui/material'
 import { ListOrdered, Plus } from 'lucide-react'
 import { type PointerEvent, useState } from 'react'
@@ -190,7 +190,7 @@ export function Sidebar({ game }: { game: string }) {
           [compact]: { display: 'none' },
         }}
       >
-        <Trans>Profiles</Trans>
+        {t`Profiles`}
       </ButtonBase>
       <Box
         sx={{
@@ -225,7 +225,7 @@ export function Sidebar({ game }: { game: string }) {
           }}
         >
           <Plus size={16} />
-          <Trans>New profile</Trans>
+          {t`New profile`}
         </ButtonBase>
       </Box>
       <Box

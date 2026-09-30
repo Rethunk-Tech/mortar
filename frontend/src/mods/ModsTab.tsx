@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import { Box, Card, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import type {
@@ -12,12 +12,9 @@ import { useMods, type View } from './store.ts'
 import { AddArchive, BrowseNexus, Toolbar } from './Toolbar.tsx'
 
 function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; view: View }) {
+  const { t } = useLingui()
   if (shown.length === 0) {
-    return (
-      <Typography sx={{ color: 'text.secondary' }}>
-        <Trans>No mods match your search.</Trans>
-      </Typography>
-    )
+    return <Typography sx={{ color: 'text.secondary' }}>{t`No mods match your search.`}</Typography>
   }
   if (view === 'list') {
     return <ModList profile={profile} mods={shown} />
@@ -58,6 +55,7 @@ function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; vi
 }
 
 export function ModsTab({ profile }: { profile: Profile }) {
+  const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const view = useMods((s) => s.view)
   const load = useMods((s) => s.load)
@@ -72,18 +70,16 @@ export function ModsTab({ profile }: { profile: Profile }) {
       <Box
         sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1.5 }}
       >
-        <Typography sx={{ fontSize: 20, fontWeight: 600 }}>
-          <Trans>No mods yet</Trans>
-        </Typography>
+        <Typography sx={{ fontSize: 20, fontWeight: 600 }}>{t`No mods yet`}</Typography>
         <Typography sx={{ color: 'text.secondary' }}>
-          <Trans>Add mods from an archive you downloaded, or find them on Nexus.</Trans>
+          {t`Add mods from an archive you downloaded, or find them on Nexus.`}
         </Typography>
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
           <AddArchive variant="contained" />
           <BrowseNexus variant="outlined" />
         </Box>
         <Typography sx={{ color: 'text.secondary' }}>
-          <Trans>You can also drop archives anywhere on the window.</Trans>
+          {t`You can also drop archives anywhere on the window.`}
         </Typography>
       </Box>
     )

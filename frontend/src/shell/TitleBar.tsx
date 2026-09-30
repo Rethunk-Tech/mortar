@@ -1,4 +1,4 @@
-import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase } from '@mui/material'
 import { Copy, Minus, Square, X } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -86,7 +86,7 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
     >
       <AppMenu />
       <Tab active={route.name === 'game-select'} onClick={openGameSelect}>
-        <Trans>Game Select</Trans>
+        {t`Game Select`}
       </Tab>
       {route.name === 'game' && (
         <Tab active={true} onClick={() => openGame(route.game)}>
@@ -95,7 +95,7 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
       )}
       {route.name === 'settings' && (
         <Tab active={true} onClick={() => undefined}>
-          <Trans>Settings</Trans>
+          {t`Settings`}
         </Tab>
       )}
       <Box sx={{ flexGrow: 1 }} />
