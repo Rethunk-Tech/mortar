@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stardew Valley overlay</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font:
+          24px system-ui,
+          sans-serif;
+      }
+      body {
+        margin: 0;
+        padding: 1rem;
+        background: #17202b;
+      }
+      #status {
+        opacity: 0.8;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 2rem;
+      }
+      .skills {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.25rem 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="status">Waiting for game state…</div>
+    <div id="state" hidden>
+      <div class="row">
+        <strong id="player"></strong><span id="location"></span>
+      </div>
+      <div class="row"><span id="date"></span><span id="time"></span></div>
+      <div class="row"><span id="money"></span><span id="weather"></span></div>
+      <div class="row"><span id="health"></span><span id="stamina"></span></div>
+      <h3>Skills</h3>
+      <div id="skills" class="skills"></div>
+    </div>
+    <script>
+      const params = new URLSearchParams(location.search);
+      const token = params.get("token") || "";
+      const port = params.get("port") || "8123";
+      const endpoint = `http://127.0.0.1:${encodeURIComponent(port)}/state?token=${encodeURIComponent(token)}`;
+      const status = document.querySelector("#status");
+      const state = document.querySelector("#state");
+
+      function text(selector, value) {
+        document.querySelector(selector).textContent = value;
+      }
+
+      async function poll() {
+        try {
+          const response = await fetch(endpoint, { cache: "no-store" });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          text("#player", data.playerName);
+          text("#location", data.location);
+          text("#date", `${data.season} ${data.day}, Year ${data.year}`);
+          text("#time", data.timeOfDay);
+          text("#money", `${data.money}g`);
+          text("#weather", data.weather);
+          text("#health", `Health ${data.health}/${data.maxHealth}`);
+          text(
+            "#stamina",
+            `Stamina ${Math.round(data.stamina)}/${data.maxStamina}`,
+          );
+          const skills = document.querySelector("#skills");
+          skills.replaceChildren();
+          for (const [name, level] of Object.entries(data.skills)) {
+            const item = document.createElement("span");
+            item.textContent = `${name}: ${level}`;
+            skills.append(item);
+          }
+          status.hidden = true;
+          state.hidden = false;
+        } catch (error) {
+          status.hidden = false;
+          state.hidden = true;
+          status.textContent = `Overlay unavailable: ${error.message}`;
+        }
+      }
+
+      poll();
+      setInterval(poll, 1000);
+    </script>
+  </body>
+</html>

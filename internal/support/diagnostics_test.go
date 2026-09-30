@@ -38,6 +38,7 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 		"backgroundImage": bg,
 		"gameFolders":     map[string]string{"stardew": gameFolder},
 		"lastPlayed":      map[string]any{"stardew": map[string]any{"profile": "Cozy Farm", "at": "2026-09-30T12:00:00Z"}},
+		"overlayToken":    "overlay-secret-token",
 	}
 	rawSettings, err := json.Marshal(settingsIn)
 	if err != nil {
@@ -102,7 +103,7 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 
 	files := zipNames(t, saved)
 	blob := files["settings.json"] + files["profiles.json"] + files["queue.json"] + files["README.txt"] + files["build.json"] + files["smapi-latest.txt"] + files["console.txt"]
-	for _, secret := range []string{apiKey, nxmKey, notes, "FixtureUser"} {
+	for _, secret := range []string{apiKey, nxmKey, notes, "FixtureUser", "overlay-secret-token"} {
 		if strings.Contains(blob, secret) {
 			t.Errorf("zip still contains %q", secret)
 		}
@@ -141,6 +142,9 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 	}
 	if _, ok := settings["nexusKey"]; ok {
 		t.Error("nexusKey key should be removed")
+	}
+	if _, ok := settings["overlayToken"]; ok {
+		t.Error("overlayToken should be removed")
 	}
 	if settings["backgroundImage"] != filepath.Join("~", "Pictures", "wall.png") &&
 		settings["backgroundImage"] != "~/Pictures/wall.png" {

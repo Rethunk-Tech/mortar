@@ -17,7 +17,8 @@
       "!**/vendor",
       "!.claude",
       "!**/bindings",
-      "!**/locales/*/messages.ts"
+      "!**/locales/*/messages.ts",
+      "!**/internal/overlay/overlay.html"
     ]
   },
   "formatter": {

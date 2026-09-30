@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/game/stardew"
 	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-AI/mortar/internal/overlay"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/steam"
@@ -484,6 +485,10 @@ func (s *Service) begin(g game.Game, profileID, dir, modsDir string, direct, van
 	}
 	req := launch.Request{InstallDir: dir, ModsDir: modsDir, Direct: direct, Vanilla: vanilla, Seen: s.seen(g)}
 	if !vanilla && profileID != "" {
+		st := s.settings.Get()
+		if err := overlay.ApplyToMods(modsDir, st.OverlayEnabled, st.OverlayPort, st.OverlayToken); err != nil {
+			return err
+		}
 		opts, err := s.profiles.LaunchOptions(g.ID(), profileID)
 		if err != nil {
 			return err

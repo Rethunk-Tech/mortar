@@ -28,6 +28,9 @@ const defaults: Settings = {
   listGroupBy: 'none',
   tipsSeen: [],
   smapiToastAt: '',
+  overlayEnabled: false,
+  overlayPort: 8123,
+  overlayToken: '',
 }
 
 export const useSettings = create<Settings>(() => defaults)

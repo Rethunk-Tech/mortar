@@ -15,6 +15,7 @@ const sections = new Set<SettingsSection>([
   'data',
   'nexus',
   'updates',
+  'overlay',
   'shortcuts',
   'about',
 ])

@@ -58,7 +58,7 @@ msgstr "You started this download on Nexus. Choose the profile it goes into."
 msgid "Could not switch the selected mods"
 msgstr "Could not switch the selected mods"
 
-#: src/commandPalette/CommandPalette.tsx:166
+#: src/commandPalette/CommandPalette.tsx:167
 msgid "Open profile"
 msgstr "Open profile"
 
@@ -139,6 +139,10 @@ msgstr "Remove {0} mods from this profile?"
 #: src/settings/sections/NexusMods.tsx:83
 msgid "Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them."
 msgstr "Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them."
+
+#: src/settings/sections/StreamOverlay.tsx:113
+msgid "Overlay URL copied"
+msgstr "Overlay URL copied"
 
 #: src/share/ShareDialog.tsx:255
 msgid "Use a file"
@@ -441,6 +445,10 @@ msgstr "Roll back"
 msgid "Not in the file"
 msgstr "Not in the file"
 
+#: src/settings/sections/StreamOverlay.tsx:129
+msgid "Regenerate"
+msgstr "Regenerate"
+
 #: src/mods/UpdateReview.tsx:333
 msgid "Some mods could not be checked, so more updates may show up later."
 msgstr "Some mods could not be checked, so more updates may show up later."
@@ -573,7 +581,7 @@ msgstr "Found in your Steam library"
 msgid "{name} was removed from Nexus"
 msgstr "{name} was removed from Nexus"
 
-#: src/commandPalette/CommandPalette.tsx:138
+#: src/commandPalette/CommandPalette.tsx:139
 #: src/settings/sections/Shortcuts.tsx:9
 msgid "Focus the Mods filter"
 msgstr "Focus the Mods filter"
@@ -582,6 +590,7 @@ msgstr "Focus the Mods filter"
 #: src/queue/actions.ts:76
 #: src/queue/store.ts:183
 #: src/queue/store.ts:206
+#: src/settings/sections/StreamOverlay.tsx:96
 msgid "Show"
 msgstr "Show"
 
@@ -604,7 +613,7 @@ msgstr "Skip {0}"
 msgid "Latest on Nexus"
 msgstr "Latest on Nexus"
 
-#: src/commandPalette/CommandPalette.tsx:165
+#: src/commandPalette/CommandPalette.tsx:166
 #: src/game/NewProfileDialog.tsx:49
 #: src/game/Sidebar.tsx:369
 #: src/game/Sidebar.tsx:387
@@ -702,7 +711,7 @@ msgid "{length} of {limit} characters · fits one Discord message"
 msgstr "{length} of {limit} characters · fits one Discord message"
 
 #: src/commandPalette/CommandPalette.tsx:129
-#: src/settings/SettingsPage.tsx:30
+#: src/settings/SettingsPage.tsx:31
 msgid "Appearance"
 msgstr "Appearance"
 
@@ -817,6 +826,10 @@ msgstr "Nothing to remove."
 #: src/game/Detail.tsx:388
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
+
+#: src/settings/sections/StreamOverlay.tsx:105
+msgid "Copy token"
+msgstr "Copy token"
 
 #: src/install/store.ts:167
 msgid "Could not open the file dialog"
@@ -950,7 +963,7 @@ msgstr "Stop the game?"
 msgid "Stardew green"
 msgstr "Stardew green"
 
-#: src/commandPalette/CommandPalette.tsx:162
+#: src/commandPalette/CommandPalette.tsx:163
 msgid "Open Downloads"
 msgstr "Open Downloads"
 
@@ -968,8 +981,13 @@ msgstr "Not checked yet."
 msgid "Disable"
 msgstr "Disable"
 
-#: src/commandPalette/CommandPalette.tsx:133
-#: src/settings/SettingsPage.tsx:34
+#: src/settings/sections/StreamOverlay.tsx:55
+#: src/settings/sections/StreamOverlay.tsx:116
+msgid "Could not copy"
+msgstr "Could not copy"
+
+#: src/commandPalette/CommandPalette.tsx:134
+#: src/settings/SettingsPage.tsx:36
 msgid "Shortcuts"
 msgstr "Shortcuts"
 
@@ -1019,7 +1037,7 @@ msgstr "Could not launch the game"
 msgid "Review mod updates"
 msgstr "Review mod updates"
 
-#: src/commandPalette/CommandPalette.tsx:139
+#: src/commandPalette/CommandPalette.tsx:140
 #: src/settings/sections/Shortcuts.tsx:10
 msgid "Play the open profile"
 msgstr "Play the open profile"
@@ -1187,8 +1205,8 @@ msgstr "Drop archives anywhere on the window, or Browse Nexus to find mods."
 msgid "{mods} · about {size} to download"
 msgstr "{mods} · about {size} to download"
 
-#: src/commandPalette/CommandPalette.tsx:227
 #: src/commandPalette/CommandPalette.tsx:228
+#: src/commandPalette/CommandPalette.tsx:229
 msgid "Search actions and destinations"
 msgstr "Search actions and destinations"
 
@@ -1271,7 +1289,7 @@ msgstr "Game found"
 msgid "None of this profile's mods are marked broken for the new version."
 msgstr "None of this profile's mods are marked broken for the new version."
 
-#: src/commandPalette/CommandPalette.tsx:141
+#: src/commandPalette/CommandPalette.tsx:142
 #: src/settings/sections/Shortcuts.tsx:12
 msgid "Open Settings"
 msgstr "Open Settings"
@@ -1449,7 +1467,7 @@ msgstr "Pinned at this version"
 msgid "Open console"
 msgstr "Open console"
 
-#: src/commandPalette/CommandPalette.tsx:167
+#: src/commandPalette/CommandPalette.tsx:168
 msgid "Open mod"
 msgstr "Open mod"
 
@@ -1537,6 +1555,11 @@ msgstr "Ready to import"
 msgid "Needs {0} or newer, has {1}"
 msgstr "Needs {0} or newer, has {1}"
 
+#: src/commandPalette/CommandPalette.tsx:133
+#: src/settings/SettingsPage.tsx:35
+msgid "Stream overlay"
+msgstr "Stream overlay"
+
 #: src/saves/SavesTab.tsx:64
 msgid "Add to this profile"
 msgstr "Add to this profile"
@@ -1578,7 +1601,7 @@ msgstr "{0} copies of {1}"
 msgid "Copy"
 msgstr "Copy"
 
-#: src/commandPalette/CommandPalette.tsx:137
+#: src/commandPalette/CommandPalette.tsx:138
 #: src/settings/sections/Shortcuts.tsx:8
 msgid "Open the command palette"
 msgstr "Open the command palette"
@@ -1596,7 +1619,7 @@ msgid "Trace"
 msgstr "Trace"
 
 #: src/commandPalette/CommandPalette.tsx:130
-#: src/settings/SettingsPage.tsx:31
+#: src/settings/SettingsPage.tsx:32
 msgid "Data"
 msgstr "Data"
 
@@ -1643,6 +1666,10 @@ msgstr "Could not save the open profile"
 #: src/game/NewProfileDialog.tsx:69
 msgid "Create"
 msgstr "Create"
+
+#: src/settings/sections/StreamOverlay.tsx:74
+msgid "Port"
+msgstr "Port"
 
 #. placeholder {0}: mod.name
 #: src/mods/store.ts:307
@@ -1724,7 +1751,7 @@ msgid "Request counts appear after Mortar talks to Nexus."
 msgstr "Request counts appear after Mortar talks to Nexus."
 
 #: src/profiles/ProfilesPage.tsx:241
-#: src/settings/SettingsPage.tsx:62
+#: src/settings/SettingsPage.tsx:65
 msgid "Back"
 msgstr "Back"
 
@@ -2078,7 +2105,7 @@ msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was add
 msgid "Four Corners farm"
 msgstr "Four Corners farm"
 
-#: src/commandPalette/CommandPalette.tsx:163
+#: src/commandPalette/CommandPalette.tsx:164
 #: src/profiles/GameModsDialog.tsx:157
 #: src/profiles/ProfilesPage.tsx:271
 #: src/settings/sections/Data.tsx:118
@@ -2148,6 +2175,10 @@ msgstr "No update checks, and it can't go in a share link."
 #: src/mods/ModDependencyTree.tsx:106
 msgid "Optional"
 msgstr "Optional"
+
+#: src/settings/sections/StreamOverlay.tsx:102
+msgid "Token copied"
+msgstr "Token copied"
 
 #: src/share/ShareDialog.tsx:151
 msgid "Open in Mortar"
@@ -2286,6 +2317,10 @@ msgstr "Store"
 #: src/share/ImportPreview.tsx:45
 msgid "Download"
 msgstr "Download"
+
+#: src/settings/sections/StreamOverlay.tsx:133
+msgid "The change applies at the next launch."
+msgstr "The change applies at the next launch."
 
 #. placeholder {0}: mod.name
 #: src/mods/store.ts:296
@@ -2532,6 +2567,7 @@ msgstr "Open the page of {name}"
 
 #: src/mods/ModMenu.tsx:46
 #: src/mods/SelectionBar.tsx:50
+#: src/settings/sections/StreamOverlay.tsx:69
 msgid "Enable"
 msgstr "Enable"
 
@@ -2611,7 +2647,7 @@ msgid "Stop the game to change mods"
 msgstr "Stop the game to change mods"
 
 #: src/commandPalette/CommandPalette.tsx:132
-#: src/settings/SettingsPage.tsx:33
+#: src/settings/SettingsPage.tsx:34
 msgid "Updates"
 msgstr "Updates"
 
@@ -2870,7 +2906,7 @@ msgstr "Built on"
 msgid "Remove"
 msgstr "Remove"
 
-#: src/commandPalette/CommandPalette.tsx:160
+#: src/commandPalette/CommandPalette.tsx:161
 #: src/games/GameSelect.tsx:176
 #: src/launch/PlayControl.tsx:148
 #: src/settings/sections/Appearance.tsx:94
@@ -2900,6 +2936,10 @@ msgstr "Beach farm"
 #: src/profiles/EditProfileDialog.tsx:270
 msgid "Save"
 msgstr "Save"
+
+#: src/settings/sections/StreamOverlay.tsx:121
+msgid "Copy overlay URL"
+msgstr "Copy overlay URL"
 
 #: src/mods/DuplicateDialog.tsx:29
 msgid "From Nexus"
@@ -2951,6 +2991,10 @@ msgstr "Required"
 msgid "Redo update"
 msgstr "Redo update"
 
+#: src/settings/sections/StreamOverlay.tsx:89
+msgid "Token"
+msgstr "Token"
+
 #: src/saves/SavesTab.tsx:136
 msgid "Dismiss {name} for this save"
 msgstr "Dismiss {name} for this save"
@@ -2980,9 +3024,9 @@ msgstr "Dependency"
 msgid "All profiles are hidden"
 msgstr "All profiles are hidden"
 
-#: src/commandPalette/CommandPalette.tsx:168
+#: src/commandPalette/CommandPalette.tsx:169
 #: src/mods/ModDetail.tsx:133
-#: src/settings/SettingsPage.tsx:75
+#: src/settings/SettingsPage.tsx:78
 #: src/shell/AppMenu.tsx:104
 #: src/shell/TitleBar.tsx:112
 msgid "Settings"
@@ -3128,8 +3172,8 @@ msgstr "Install SMAPI"
 msgid "Cool and calm"
 msgstr "Cool and calm"
 
-#: src/commandPalette/CommandPalette.tsx:134
-#: src/settings/SettingsPage.tsx:35
+#: src/commandPalette/CommandPalette.tsx:135
+#: src/settings/SettingsPage.tsx:37
 msgid "About"
 msgstr "About"
 
@@ -3217,6 +3261,7 @@ msgid "Show one in the sidebar from Manage profiles."
 msgstr "Show one in the sidebar from Manage profiles."
 
 #: src/launch/LaunchLayer.tsx:165
+#: src/settings/sections/StreamOverlay.tsx:96
 msgid "Hide"
 msgstr "Hide"
 
@@ -3414,12 +3459,12 @@ msgstr "Icon"
 #: src/commandPalette/CommandPalette.tsx:131
 #: src/mods/listRows.ts:18
 #: src/mods/Sidebar.tsx:254
-#: src/settings/SettingsPage.tsx:32
+#: src/settings/SettingsPage.tsx:33
 #: src/shell/NexusAccount.tsx:24
 msgid "Nexus Mods"
 msgstr "Nexus Mods"
 
-#: src/commandPalette/CommandPalette.tsx:142
+#: src/commandPalette/CommandPalette.tsx:143
 #: src/settings/sections/Shortcuts.tsx:13
 msgid "Close dialog or clear selection"
 msgstr "Close dialog or clear selection"
@@ -3626,7 +3671,7 @@ msgstr "{season} {day}, year {year}"
 msgid "Mortar downloads and installs a mod when you click Mod Manager Download on Nexus."
 msgstr "Mortar downloads and installs a mod when you click Mod Manager Download on Nexus."
 
-#: src/settings/SettingsPage.tsx:50
+#: src/settings/SettingsPage.tsx:53
 msgid "Settings sections"
 msgstr "Settings sections"
 
@@ -3686,6 +3731,7 @@ msgid "Open settings"
 msgstr "Open settings"
 
 #: src/settings/sections/Appearance.tsx:25
+#: src/settings/sections/StreamOverlay.tsx:36
 #: src/settings/sections/Updates.tsx:160
 #: src/settings/sections/Updates.tsx:202
 #: src/tips/TipBanner.tsx:44
@@ -3731,8 +3777,8 @@ msgstr "Version {0}"
 msgid "Close"
 msgstr "Close"
 
-#: src/commandPalette/CommandPalette.tsx:140
-#: src/commandPalette/CommandPalette.tsx:161
+#: src/commandPalette/CommandPalette.tsx:141
+#: src/commandPalette/CommandPalette.tsx:162
 #: src/settings/sections/Shortcuts.tsx:11
 msgid "Check for mod updates"
 msgstr "Check for mod updates"
@@ -3776,7 +3822,7 @@ msgstr "SMAPI not installed yet"
 msgid "On"
 msgstr "On"
 
-#: src/commandPalette/CommandPalette.tsx:164
+#: src/commandPalette/CommandPalette.tsx:165
 #: src/game/Detail.tsx:444
 #: src/profiles/ProfileRow.tsx:310
 msgid "Share"

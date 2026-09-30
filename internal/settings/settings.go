@@ -81,6 +81,11 @@ type Settings struct {
 	TipsSeen []string `json:"tipsSeen"`
 	// SmapiToastAt is when Mortar last showed the SMAPI-update toast (RFC3339). Empty means never.
 	SmapiToastAt string `json:"smapiToastAt"`
+	// OverlayEnabled, OverlayPort and OverlayToken are the Mortar SMAPI Bridge stream overlay.
+	// OverlayToken is a secret: never log it.
+	OverlayEnabled bool   `json:"overlayEnabled"`
+	OverlayPort    int    `json:"overlayPort"`
+	OverlayToken   string `json:"overlayToken"`
 }
 
 const (
@@ -97,6 +102,7 @@ func Defaults() Settings {
 		Loaders: map[string]string{}, Dismissed: map[string][]string{}, BackupsKept: backup.DefaultKeep,
 		ListColumns: slices.Clone(defaultListColumns), ListSortColumn: defaultListSortColumn, ListSortDir: defaultListSortDir, ListGroupBy: defaultListGroupBy,
 		CheckModUpdatesOnStart: on(), TellWhenSmapiOut: on(),
+		OverlayPort: DefaultOverlayPort,
 	}
 }
 
@@ -145,6 +151,7 @@ func Open() (*Store, error) {
 	normalizeToggles(&s.cur)
 	normalizeList(&s.cur)
 	normalizeTips(&s.cur)
+	normalizeOverlay(&s.cur)
 	return s, nil
 }
 
@@ -176,6 +183,9 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 		return s.cur, err
 	}
 	if err := validateTips(next); err != nil {
+		return s.cur, err
+	}
+	if err := validateOverlay(next); err != nil {
 		return s.cur, err
 	}
 	normalizeList(&next)

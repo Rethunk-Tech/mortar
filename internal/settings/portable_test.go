@@ -17,6 +17,9 @@ func TestExportOmitsSecretsAndMachineFields(t *testing.T) {
 	s.LastProfile = map[string]string{"stardew": "abc"}
 	s.LastPlayed = map[string]Played{"stardew": {Profile: "abc", At: "2026-01-01T00:00:00Z"}}
 	s.BackgroundImage = "/home/u/wall.png"
+	s.OverlayEnabled = true
+	s.OverlayPort = 9000
+	s.OverlayToken = "overlay-secret-token"
 	b, err := MarshalExport(s)
 	if err != nil {
 		t.Fatal(err)
@@ -35,13 +38,14 @@ func TestExportOmitsSecretsAndMachineFields(t *testing.T) {
 		"nexusName", "nexusUserId", "nexusPremium", "gameFolders", "loaders",
 		"lastProfile", "lastPlayed", "backgroundImage", "dismissed",
 		"nxmHandled", "nxmPrevious", "nxmAsked",
+		"overlayToken", "overlayEnabled", "overlayPort",
 	} {
 		if _, ok := m[k]; ok {
 			t.Fatalf("exported %s: %s", k, b)
 		}
 	}
 	raw := string(b)
-	for _, secret := range []string{"NOMAD", "/games/Stardew", "abc", "/home/u/wall"} {
+	for _, secret := range []string{"NOMAD", "/games/Stardew", "abc", "/home/u/wall", "overlay-secret-token"} {
 		if strings.Contains(raw, secret) {
 			t.Fatalf("export still holds %q: %s", secret, raw)
 		}

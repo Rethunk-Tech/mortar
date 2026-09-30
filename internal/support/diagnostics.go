@@ -98,6 +98,7 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 	removed := []string{
 		"Nexus API key (not read from the keyring; stripped if present in settings.json)",
 		"nexusName, nexusUserId, and nexusPremium",
+		"overlayToken",
 		"absolute paths under the home directory (written as ~)",
 		"nxm download keys and expiry on queue items",
 		"profile notes",
@@ -263,6 +264,8 @@ func redactSettings(raw []byte, home string) []byte {
 	delete(m, "nexusKey")
 	delete(m, "apiKey")
 	delete(m, "nexusApiKey")
+	delete(m, "overlayToken")
+	delete(m, "OverlayToken")
 	redactHomePaths(m, home)
 	return jsonIndent(m)
 }

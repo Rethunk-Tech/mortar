@@ -2,7 +2,14 @@ import { create } from 'zustand'
 
 export type GameId = 'stardew'
 
-export type SettingsSection = 'appearance' | 'data' | 'nexus' | 'updates' | 'shortcuts' | 'about'
+export type SettingsSection =
+  | 'appearance'
+  | 'data'
+  | 'nexus'
+  | 'updates'
+  | 'overlay'
+  | 'shortcuts'
+  | 'about'
 
 export type Route =
   | { name: 'game-select' }
