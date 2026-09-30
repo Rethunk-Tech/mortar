@@ -91,20 +91,21 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 	}
 	included := []string{
 		"build.json: Mortar version, OS, architecture, Go, and Wails/WebKit when known",
-		"settings.json: settings with Nexus account fields cleared and API keys removed",
+		"settings.json: settings with Nexus account fields cleared, API keys removed, and home-directory paths written as ~",
 		"profiles.json: profiles with mod names, versions and sources",
 		"queue.json: download queue without nxm keys",
 	}
 	removed := []string{
 		"Nexus API key (not read from the keyring; stripped if present in settings.json)",
-		"nexusName and nexusUserId",
+		"nexusName, nexusUserId, and nexusPremium",
+		"absolute paths under the home directory (written as ~)",
 		"nxm download keys and expiry on queue items",
 		"profile notes",
 	}
 
 	files := map[string][]byte{
 		"build.json":    jsonIndent(buildInfo(s.version)),
-		"settings.json": redactSettings(readFile(filepath.Join(dir, "settings.json"))),
+		"settings.json": redactSettings(readFile(filepath.Join(dir, "settings.json")), s.home),
 		"profiles.json": jsonIndent(collectProfiles(filepath.Join(dir, "profiles"))),
 		"queue.json":    redactQueue(readFile(filepath.Join(dir, "queue.json"))),
 	}
@@ -248,7 +249,7 @@ func jsonIndent(v any) []byte {
 	return b
 }
 
-func redactSettings(raw []byte) []byte {
+func redactSettings(raw []byte, home string) []byte {
 	m := map[string]any{}
 	if len(raw) > 0 {
 		_ = json.Unmarshal(raw, &m)
@@ -258,10 +259,52 @@ func redactSettings(raw []byte) []byte {
 	}
 	m["nexusName"] = ""
 	m["nexusUserId"] = 0
+	delete(m, "nexusPremium")
 	delete(m, "nexusKey")
 	delete(m, "apiKey")
 	delete(m, "nexusApiKey")
+	redactHomePaths(m, home)
 	return jsonIndent(m)
+}
+
+func redactHomePaths(v any, home string) {
+	switch x := v.(type) {
+	case map[string]any:
+		for k, child := range x {
+			if s, ok := child.(string); ok {
+				x[k] = hideHome(s, home)
+				continue
+			}
+			redactHomePaths(child, home)
+		}
+	case []any:
+		for i, child := range x {
+			if s, ok := child.(string); ok {
+				x[i] = hideHome(s, home)
+				continue
+			}
+			redactHomePaths(child, home)
+		}
+	}
+}
+
+func hideHome(s, home string) string {
+	if home == "" || s == "" {
+		return s
+	}
+	for _, h := range []string{home, filepath.ToSlash(home), filepath.FromSlash(home)} {
+		h = strings.TrimRight(h, `/\`)
+		if h == "" {
+			continue
+		}
+		if s == h {
+			return "~"
+		}
+		if strings.HasPrefix(s, h+"/") || strings.HasPrefix(s, h+`\`) {
+			return "~" + s[len(h):]
+		}
+	}
+	return s
 }
 
 func redactQueue(raw []byte) []byte {

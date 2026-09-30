@@ -26,13 +26,24 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 		modVer  = "2.1.0"
 	)
 
-	if err := os.WriteFile(filepath.Join(data, "settings.json"), []byte(`{
-		"accent": "sand",
-		"nexusName": "FixtureUser",
-		"nexusUserId": 87654321,
-		"nexusKey": "`+apiKey+`",
-		"apiKey": "`+apiKey+`"
-	}`), 0o600); err != nil {
+	gameFolder := filepath.Join(home, "Games", "Stardew Valley")
+	bg := filepath.Join(home, "Pictures", "wall.png")
+	settingsIn := map[string]any{
+		"accent":          "sand",
+		"nexusName":       "FixtureUser",
+		"nexusUserId":     87654321,
+		"nexusPremium":    true,
+		"nexusKey":        apiKey,
+		"apiKey":          apiKey,
+		"backgroundImage": bg,
+		"gameFolders":     map[string]string{"stardew": gameFolder},
+		"lastPlayed":      map[string]any{"stardew": map[string]any{"profile": "Cozy Farm", "at": "2026-09-30T12:00:00Z"}},
+	}
+	rawSettings, err := json.Marshal(settingsIn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(data, "settings.json"), rawSettings, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(data, "queue.json"), []byte(`{
@@ -125,8 +136,25 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 	if settings["nexusUserId"] != float64(0) {
 		t.Errorf("nexusUserId %v", settings["nexusUserId"])
 	}
+	if _, ok := settings["nexusPremium"]; ok {
+		t.Error("nexusPremium should be removed")
+	}
 	if _, ok := settings["nexusKey"]; ok {
 		t.Error("nexusKey key should be removed")
+	}
+	if settings["backgroundImage"] != filepath.Join("~", "Pictures", "wall.png") &&
+		settings["backgroundImage"] != "~/Pictures/wall.png" {
+		t.Errorf("backgroundImage %v", settings["backgroundImage"])
+	}
+	folders, _ := settings["gameFolders"].(map[string]any)
+	gotFolder, _ := folders["stardew"].(string)
+	if gotFolder != filepath.Join("~", "Games", "Stardew Valley") && gotFolder != "~/Games/Stardew Valley" {
+		t.Errorf("gameFolders.stardew %q", gotFolder)
+	}
+	played, _ := settings["lastPlayed"].(map[string]any)
+	entry, _ := played["stardew"].(map[string]any)
+	if entry["profile"] != "Cozy Farm" {
+		t.Errorf("lastPlayed profile %v", entry["profile"])
 	}
 	if _, ok := settings["accent"]; !ok {
 		t.Error("settings lost accent")
