@@ -43,7 +43,7 @@ One Go module and one Vite frontend, no workspaces:
 - `main.go`: Wails bootstrap: services, single instance, link router, updater, window options.
 - `internal/game`: the `Game` interface and shared types (mod identity, dependency, loader status); `internal/game/stardew` is the only implementation in v1.
 - `internal/steam`: Steam and library discovery (from Concrete's `src/app/steam/`).
-- `internal/archive`: safe extraction of zip, RAR and 7z (from Concrete's `secureArchivePath` and `extractEntry`). Across the mod dataset, mods' latest main files are 73.0% zip, 13.1% RAR and 3.1% 7z (measured 2026-09-29), so zip alone would fail about one mod in six.
+- `internal/archive`: safe extraction of zip, RAR and 7z (from Concrete's `secureArchivePath` and `extractEntry`). Concrete's repository declares no licence (GitHub reports `NOASSERTION`); its code is NOMAD's, so what Mortar takes from it (this and `internal/steam`) is relicensed under GPL-3.0 by its owner, and the commit that brings it in says so. Across the mod dataset, mods' latest main files are 73.0% zip, 13.1% RAR and 3.1% 7z (measured 2026-09-29), so zip alone would fail about one mod in six.
 - `internal/store`: downloads into the store, verifies and extracts them, and materialises profile folders by copying.
 - `internal/profile`: `profile.json` read and write (atomic), per-mod toggles, and the save scan that finds which mods a save used.
 - `internal/source/nexus`: API client (headers, rate limits), sign-in, `nxm://` parsing, the guided download queue.
