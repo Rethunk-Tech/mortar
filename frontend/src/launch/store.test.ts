@@ -59,6 +59,25 @@ test('launching another profile starts over', () => {
   expect(useConsole.getState().shown).toEqual({ game: 'stardew', profile: 'p2' })
 })
 
+test('a vanilla Mortar line shows on the open profile console', () => {
+  useConsole.getState().reset('stardew', 'p1')
+  useConsole.getState().add({
+    game: 'stardew',
+    profile: '',
+    entries: [
+      {
+        seq: 1,
+        time: '',
+        level: Level.Info,
+        mod: 'Mortar',
+        message: 'Started without mods',
+        cont: false,
+      },
+    ],
+  })
+  expect(useConsole.getState().entries).toHaveLength(1)
+})
+
 test('a polled Idle keeps preparation going; an announced one ends it', () => {
   useLaunch.setState({ starting: true })
   useLaunch.getState().apply(status(State.Idle), true)

@@ -65,7 +65,7 @@ export const useConsole = create<{
   helping: false,
   add: ({ game, profile, entries }) => {
     const { shown } = get()
-    if (game !== shown.game || profile !== shown.profile) {
+    if (game !== shown.game || (profile !== '' && profile !== shown.profile)) {
       return
     }
     const seen = Math.max(lastSeq(get().entries), get().cleared)

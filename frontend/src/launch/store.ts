@@ -9,6 +9,7 @@ import {
 import {
   Status as LaunchStatus,
   Start,
+  StartVanilla,
   Stop,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { useConsole } from '../console/store.ts'
@@ -16,6 +17,20 @@ import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+
+function resetConsole(status: Status, prev: Status | null) {
+  const same =
+    prev?.state === State.Launching && prev.game === status.game && prev.profile === status.profile
+  if (same) {
+    return false
+  }
+  const keep =
+    status.profile === '' && prev?.game === status.game
+      ? (useConsole.getState().shown.profile ?? '')
+      : status.profile
+  useConsole.getState().reset(status.game, keep || status.profile)
+  return true
+}
 
 const reportError = (title: string) => (e: unknown) => {
   useToasts.getState().push({ kind: 'error', title, body: errorMessage(e) })
@@ -51,6 +66,7 @@ export const useLaunch = create<{
   apply: (status: Status, polled?: boolean) => void
   refresh: (game: string) => Promise<void>
   start: (game: string, profile: string, direct: boolean) => Promise<void>
+  startVanilla: (game: string, direct: boolean) => Promise<void>
   hide: () => void
   dismissFailure: () => void
   answerDirect: (agreed: boolean) => Promise<void>
@@ -68,14 +84,7 @@ export const useLaunch = create<{
       set({ starting: false })
     }
     if (status.state === State.Launching) {
-      // A status refresh during the same launch must keep its log and a hidden overlay hidden.
-      const prev = get().status
-      const same =
-        prev?.state === State.Launching &&
-        prev.game === status.game &&
-        prev.profile === status.profile
-      if (!same) {
-        useConsole.getState().reset(status.game, status.profile)
+      if (resetConsole(status, get().status)) {
         set({ hidden: false, failure: null })
       }
       set({ status })
@@ -117,13 +126,26 @@ export const useLaunch = create<{
       reportError(i18n._(msg`Could not launch the game`))(e)
     }
   },
+  startVanilla: async (game, direct) => {
+    set({ starting: true })
+    try {
+      await StartVanilla(game, direct)
+    } catch (e) {
+      set({ starting: false })
+      reportError(i18n._(msg`Could not launch the game`))(e)
+    }
+  },
   hide: () => set({ hidden: true }),
   dismissFailure: () => set({ failure: null }),
   answerDirect: async (agreed) => {
     const { askDirect } = get()
     set({ askDirect: null })
     if (agreed && askDirect) {
-      await get().start(askDirect.game, askDirect.profile, true)
+      if (askDirect.profile === '') {
+        await get().startVanilla(askDirect.game, true)
+      } else {
+        await get().start(askDirect.game, askDirect.profile, true)
+      }
     }
   },
   stop: async (game) => {

@@ -244,12 +244,15 @@ function DirectDialog() {
     <Dialog
       open={ask !== null}
       onClose={() => answer(false)}
+      transitionDuration={0}
       slotProps={{ paper: { sx: { bgcolor: 'rgb(40,40,48)', maxWidth: 440 } } }}
     >
       <DialogTitle>{t`Steam was not found`}</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          {t`Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`}
+          {ask?.profile === ''
+            ? t`Mortar can start Stardew Valley directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`
+            : t`Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`}
         </DialogContentText>
       </DialogContent>
       <DialogActions>

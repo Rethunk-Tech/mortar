@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Typography } from '@mui/material'
-import { Play, Square } from 'lucide-react'
+import { Square } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
   State,
@@ -11,6 +11,7 @@ import { useLoader } from '../loader/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { StopDialog } from './StopDialog.tsx'
 import { useLaunch } from './store.ts'
+import { VanillaPlay } from './VanillaPlay.tsx'
 
 const MS = 1000
 const MINUTE = 60
@@ -138,47 +139,14 @@ export function PlayControl({ game }: { game: string }) {
   }
 
   const busy = starting || installingLoader
-  const disabled = openId === '' || state === State.Launching || busy
-  const label = installingLoader ? t`Installing SMAPI…` : t`Play`
-  const play = () => start(game, openId, false)
+  const launching = state === State.Launching
   return (
-    <>
-      <Button
-        variant="contained"
-        fullWidth={true}
-        disabled={disabled}
-        startIcon={<Play size={22} fill="currentColor" />}
-        onClick={play}
-        sx={{
-          height: 58,
-          borderRadius: 0,
-          fontSize: 22,
-          fontWeight: 700,
-          textTransform: 'none',
-          boxShadow: 'none',
-          whiteSpace: 'nowrap',
-          '& .MuiButton-startIcon': { mr: '10px' },
-          [compact]: { display: 'none' },
-        }}
-      >
-        {label}
-      </Button>
-      <IconButton
-        aria-label={label}
-        title={label}
-        disabled={disabled}
-        onClick={play}
-        sx={{
-          display: 'none',
-          borderRadius: 0,
-          bgcolor: 'primary.main',
-          color: 'primary.contrastText',
-          '&:hover': { bgcolor: 'primary.dark' },
-          [compact]: { display: 'flex', width: '100%', height: 50 },
-        }}
-      >
-        <Play size={20} fill="currentColor" />
-      </IconButton>
-    </>
+    <VanillaPlay
+      game={game}
+      playDisabled={openId === '' || launching || busy}
+      vanillaDisabled={launching || busy}
+      label={installingLoader ? t`Installing SMAPI…` : t`Play`}
+      play={() => start(game, openId, false)}
+    />
   )
 }
