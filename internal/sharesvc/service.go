@@ -113,12 +113,13 @@ func NewService(d Deps) *Service {
 
 // session is the preview the dialog is showing, kept so Import acts on exactly what was shown.
 type session struct {
-	id      string
-	game    string
-	preview Preview
-	notes   string
-	configs []share.Config
-	origin  string
+	id          string
+	game        string
+	preview     Preview
+	notes       string
+	description string
+	configs     []share.Config
+	origin      string
 	// target is the profile the preview was resolved against; refs are what it resolved.
 	target string
 	refs   []share.Ref
@@ -196,13 +197,32 @@ func reasonOf(e profile.Entry) string {
 	return "unknown"
 }
 
-// Share builds the link of a profile, and what it holds and leaves out.
-func (s *Service) Share(game, profileID string) (Info, error) {
+func withEntryKeys(p profile.Profile, keys []string) profile.Profile {
+	if len(keys) == 0 {
+		return p
+	}
+	want := make(map[string]bool, len(keys))
+	for _, k := range keys {
+		want[k] = true
+	}
+	out := p
+	entries := make([]profile.Entry, 0, len(keys))
+	for _, e := range p.Entries {
+		if want[e.Key] {
+			entries = append(entries, e)
+		}
+	}
+	out.Entries = entries
+	return out
+}
+
+// Share builds the link of a profile, and what it holds and leaves out. keys, when set, keeps only those entries.
+func (s *Service) Share(game, profileID string, keys []string) (Info, error) {
 	p, err := s.find(game, profileID)
 	if err != nil {
 		return Info{}, err
 	}
-	return describe(p)
+	return describe(withEntryKeys(p, keys))
 }
 
 func describe(p profile.Profile) (Info, error) {
@@ -256,11 +276,12 @@ type Saved struct {
 var fileNameUnsafe = strings.NewReplacer("/", "-", "\\", "-", ":", "-", "*", "-", "?", "-", "\"", "-", "<", "-", ">", "-", "|", "-")
 
 // SaveFile asks where to save the profile as a .mortar file, and writes it there.
-func (s *Service) SaveFile(game, profileID string) (Saved, error) {
+func (s *Service) SaveFile(game, profileID string, keys []string) (Saved, error) {
 	p, err := s.find(game, profileID)
 	if err != nil {
 		return Saved{}, err
 	}
+	p = withEntryKeys(p, keys)
 	modsDir, err := s.d.Profiles.ModsDir(game, profileID)
 	if err != nil {
 		return Saved{}, err
@@ -324,7 +345,16 @@ func (s *Service) PreviewFile(ctx context.Context, game, file, profileID string)
 	if err != nil {
 		return Preview{}, err
 	}
-	return s.preview(ctx, game, pv.Shared, pv.Notes, pv.Configs, profileID, profile.OriginMortar)
+	out, err := s.preview(ctx, game, pv.Shared, pv.Notes, pv.Configs, profileID, profile.OriginMortar)
+	if err != nil {
+		return Preview{}, err
+	}
+	s.mu.Lock()
+	if s.current != nil && s.current.id == out.Session {
+		s.current.description = pv.Description
+	}
+	s.mu.Unlock()
+	return out, nil
 }
 
 func (s *Service) preview(ctx context.Context, game string, shared share.Shared, notes string, configs []share.Config, profileID, origin string) (Preview, error) {
@@ -506,6 +536,13 @@ func (s *Service) Import(ctx context.Context, game, session, profileID string, e
 				return Result{}, errors.Join(err, s.d.Profiles.Delete(game, p.ID))
 			}
 			p = withNotes
+		}
+		if cur.description != "" {
+			withDesc, err := s.d.Profiles.SetAppearance(game, p.ID, "", "", cur.description)
+			if err != nil {
+				return Result{}, errors.Join(err, s.d.Profiles.Delete(game, p.ID))
+			}
+			p = withDesc
 		}
 		res.Profile = p
 		profileID = p.ID

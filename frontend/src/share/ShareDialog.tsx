@@ -250,14 +250,24 @@ function LinkTab({ info, onFile }: { info: ShownInfo; onFile: () => void }) {
   )
 }
 
-function FileTab({ info, game, profileId }: { info: ShownInfo; game: string; profileId: string }) {
+function FileTab({
+  info,
+  game,
+  profileId,
+  keys,
+}: {
+  info: ShownInfo
+  game: string
+  profileId: string
+  keys: string[]
+}) {
   const { t } = useLingui()
   const [saved, setSaved] = useState<Saved | null>(null)
   const [busy, setBusy] = useState(false)
   const save = async () => {
     setBusy(true)
     try {
-      const result = await SaveFile(game, profileId)
+      const result = await SaveFile(game, profileId, keys)
       if (result.path) {
         setSaved(result)
         useToasts.getState().push({ kind: 'success', title: t`File saved` })
@@ -319,6 +329,7 @@ function FileTab({ info, game, profileId }: { info: ShownInfo; game: string; pro
 export function ShareDialog() {
   const { t } = useLingui()
   const profileId = useShareDialog((s) => s.profileId)
+  const keys = useShareDialog((s) => s.keys)
   const close = useShareDialog((s) => s.close)
   const game = useProfiles((s) => s.game?.id ?? 'stardew')
   const art = useProfiles((s) => s.game?.artUrl)
@@ -331,7 +342,7 @@ export function ShareDialog() {
     let stale = false
     setInfo(null)
     setTab('link')
-    Share(game, profileId).then(
+    Share(game, profileId, keys).then(
       (next) => {
         if (!stale) {
           setInfo(shownInfo(next))
@@ -351,7 +362,7 @@ export function ShareDialog() {
     return () => {
       stale = true
     }
-  }, [profileId, game, close, t])
+  }, [profileId, keys, game, close, t])
   return (
     <Dialog
       open={profileId !== '' && info !== null}
@@ -420,7 +431,9 @@ export function ShareDialog() {
             </Box>
             <Box sx={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
               {tab === 'link' ? <LinkTab info={info} onFile={() => setTab('file')} /> : null}
-              {tab === 'file' ? <FileTab info={info} game={game} profileId={profileId} /> : null}
+              {tab === 'file' ? (
+                <FileTab info={info} game={game} profileId={profileId} keys={keys} />
+              ) : null}
             </Box>
           </Box>
           {tab === 'link' ? <PagePreview info={info} onClose={close} /> : null}

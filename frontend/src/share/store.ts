@@ -26,15 +26,18 @@ useNav.subscribe((state) => {
 
 export const useShareDialog = create<{
   profileId: string
-  open: (profileId: string) => void
+  keys: string[]
+  open: (profileId: string, keys?: string[]) => void
   close: () => void
 }>((set) => ({
   profileId: '',
-  open: (profileId) => set({ profileId }),
-  close: () => set({ profileId: '' }),
+  keys: [],
+  open: (profileId, keys = []) => set({ profileId, keys }),
+  close: () => set({ profileId: '', keys: [] }),
 }))
 
-export const openShare = (profileId: string) => useShareDialog.getState().open(profileId)
+export const openShare = (profileId: string, keys: string[] = []) =>
+  useShareDialog.getState().open(profileId, keys)
 
 export interface ImportOptions {
   // The profile "Add to" would fill, when the import was opened from one.

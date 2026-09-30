@@ -282,6 +282,13 @@ func TestDescribeGroupsAndLeftOut(t *testing.T) {
 	if !slices.Equal(info.LeftOut, wantLeft) {
 		t.Errorf("left out = %+v", info.LeftOut)
 	}
+	subset, err := describe(withEntryKeys(p, []string{"a"}))
+	if err != nil || subset.Count != 1 {
+		t.Fatalf("subset = %+v, %v", subset, err)
+	}
+	if len(subset.Groups) != 1 || !slices.Equal(subset.Groups[0].Mods, []string{"Alpha"}) {
+		t.Errorf("subset groups = %+v", subset.Groups)
+	}
 }
 
 func sessionOf(s *Service) string {
