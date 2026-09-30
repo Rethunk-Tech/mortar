@@ -54,16 +54,19 @@ export interface ImportRequest {
 
 export const useImportDialog = create<{
   request: ImportRequest | null
+  // An import is running; the dialog stays open until it finishes.
+  busy: boolean
   open: (options: ImportOptions) => void
   close: () => void
 }>((set) => ({
   request: null,
+  busy: false,
   open: ({ profileId = '', link = '', file = '' }) => {
     runs += 1
-    set({ request: { profileId, tab: file ? 'file' : 'link', seed: file || link, run: runs } })
+    set({ request: { profileId, tab: file ? 'file' : 'link', seed: file || link, run: runs }, busy: false })
   },
   close: () => {
-    set({ request: null })
+    set({ request: null, busy: false })
     Discard().catch(reportUnexpected)
   },
 }))

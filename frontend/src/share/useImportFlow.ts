@@ -22,7 +22,7 @@ import { useQueue } from '../queue/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type ShownPreview, shownPreview } from './logic.ts'
-import { importAfterSignIn } from './store.ts'
+import { importAfterSignIn, useImportDialog } from './store.ts'
 
 // Shows what an import filled: the open profile refreshed, or the new one opened on its game's page.
 // A new profile registers mortar:// and .mortar (idempotent): an import can arrive before first run finished,
@@ -146,6 +146,7 @@ export function useImportFlow(game: string, profileId: string, close: () => void
   // Creates the profile (or fills the open one) and queues the downloads; this is the only place anything starts.
   const run = async (intoOpen: boolean) => {
     setBusy(true)
+    const opened = useImportDialog.getState().request?.run
     const target = intoOpen ? profileId : ''
     let result: Result
     try {
@@ -167,7 +168,10 @@ export function useImportFlow(game: string, profileId: string, close: () => void
       })
     } finally {
       setBusy(false)
-      close()
+      // Import may have been opened again for another link meanwhile; that one stays open.
+      if (useImportDialog.getState().request?.run === opened) {
+        close()
+      }
     }
   }
 

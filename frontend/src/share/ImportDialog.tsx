@@ -42,6 +42,10 @@ function Body({ request }: { request: ImportRequest }) {
     }
   }, [request, setTab, setText, previewLink, previewFile])
 
+  useEffect(() => {
+    useImportDialog.setState({ busy: flow.busy })
+  }, [flow.busy])
+
   const { preview } = flow
   const hasMods = preview !== null && preview.mods.length > 0
   return (
@@ -104,6 +108,7 @@ function Body({ request }: { request: ImportRequest }) {
         <IconButton
           aria-label={t`Close`}
           onClick={flow.dismiss}
+          disabled={flow.busy}
           sx={{ width: 50, borderRadius: 0, flexShrink: 0 }}
         >
           <X size={16} />
@@ -146,10 +151,11 @@ function Body({ request }: { request: ImportRequest }) {
 export function ImportDialog() {
   const request = useImportDialog((s) => s.request)
   const dismiss = useImportDialog((s) => s.close)
+  const busy = useImportDialog((s) => s.busy)
   return (
     <Dialog
       open={request !== null}
-      onClose={dismiss}
+      onClose={busy ? undefined : dismiss}
       maxWidth={false}
       slotProps={{ paper: { ...paper, sx: dialogSx } }}
     >
