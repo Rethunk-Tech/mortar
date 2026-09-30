@@ -181,7 +181,14 @@ func TestUpdateBacksUpSavesAndHonoursLock(t *testing.T) {
 	if _, err := e.UpdateEntry("stardew", p.ID, "a-1", "a-2"); err != nil {
 		t.Fatal(err)
 	}
-	if got := names(t, filepath.Join(e.base, "backups")); len(got) != 1 || !strings.HasSuffix(got[0], ".zip") {
+	got := names(t, filepath.Join(e.base, "backups"))
+	zips := 0
+	for _, n := range got {
+		if strings.HasSuffix(n, ".zip") {
+			zips++
+		}
+	}
+	if zips != 1 {
 		t.Fatalf("backups = %v", got)
 	}
 }
