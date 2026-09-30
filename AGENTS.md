@@ -2,9 +2,9 @@
 
 Mortar is a multi-game desktop mod manager: game discovery, mod loader install, per-profile mod sets, launch, and profiles shared as links. [docs/design.md](docs/design.md) holds decided work not yet built, pruned as it lands; screen layout and styling rules: @docs/gui-design.md; Lethal Company research: [docs/lethal-company.md](docs/lethal-company.md).
 
-## Planning phase
+## Milestones
 
-No code, scaffolding, generated project files or worker dispatch until NOMAD gives an explicit go-ahead. Until then the work is research, testing decisions against evidence, and question rounds, recorded in `docs/design.md`.
+Milestone 1 (shell and look, `docs/design.md` § Build order) is approved (NOMAD, 2026-09-29). Every later milestone needs NOMAD's explicit go-ahead before any of its code is written.
 
 ## Decided
 
