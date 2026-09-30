@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { useEffect, useState } from 'react'
 import { Get } from '../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { GameSelect } from './games/GameSelect.tsx'
@@ -9,6 +10,7 @@ import { useToasts } from './toasts/store.ts'
 import { ToastHost } from './toasts/ToastHost.tsx'
 
 export function App() {
+  const { t } = useLingui()
   const route = useNav((s) => s.route)
   const [ready, setReady] = useState(false)
   useEffect(() => {
@@ -22,10 +24,10 @@ export function App() {
       .catch((e: unknown) =>
         useToasts
           .getState()
-          .push({ kind: 'error', title: 'Could not read your games', body: String(e) }),
+          .push({ kind: 'error', title: t`Could not read your games`, body: String(e) }),
       )
       .finally(() => setReady(true))
-  }, [])
+  }, [t])
   return (
     <>
       <AppFrame>{ready && route.name === 'game-select' ? <GameSelect /> : null}</AppFrame>

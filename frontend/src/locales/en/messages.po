@@ -56,7 +56,7 @@ msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschil
 msgid "Mortar"
 msgstr "Mortar"
 
-#: src/games/GameSelect.tsx:129
+#: src/games/GameSelect.tsx:130
 msgid "Installed"
 msgstr "Installed"
 
@@ -64,11 +64,11 @@ msgstr "Installed"
 msgid "Changes apply right away"
 msgstr "Changes apply right away"
 
-#: src/games/GameSelect.tsx:124
+#: src/games/GameSelect.tsx:125
 msgid "After the first release"
 msgstr "After the first release"
 
-#: src/games/GameSelect.tsx:127
+#: src/games/GameSelect.tsx:128
 msgid "Not found in your Steam library"
 msgstr "Not found in your Steam library"
 
@@ -84,7 +84,7 @@ msgstr "Not affiliated"
 msgid "Warm and bold"
 msgstr "Warm and bold"
 
-#: src/games/GameSelect.tsx:142
+#: src/games/GameSelect.tsx:143
 msgid "Only a Flatpak Steam was found."
 msgstr "Only a Flatpak Steam was found."
 
@@ -117,7 +117,8 @@ msgstr "Default"
 msgid "Moss"
 msgstr "Moss"
 
-#: src/games/GameSelect.tsx:116
+#: src/App.tsx:27
+#: src/games/GameSelect.tsx:117
 msgid "Could not read your games"
 msgstr "Could not read your games"
 
@@ -162,9 +163,13 @@ msgstr "About"
 msgid "Accent colour"
 msgstr "Accent colour"
 
-#: src/games/GameSelect.tsx:144
+#: src/games/GameSelect.tsx:145
 msgid "Steam was not found."
 msgstr "Steam was not found."
+
+#: src/games/GameSelect.tsx:28
+msgid "Could not save the last game"
+msgstr "Could not save the last game"
 
 #: src/settings/SettingsDialog.tsx:34
 msgid "Settings sections"
@@ -182,6 +187,6 @@ msgstr "Couldn't save that setting"
 msgid "Close"
 msgstr "Close"
 
-#: src/games/GameSelect.tsx:140
+#: src/games/GameSelect.tsx:141
 msgid "Mortar supports Steam installed directly on the system."
 msgstr "Mortar supports Steam installed directly on the system."

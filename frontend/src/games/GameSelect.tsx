@@ -17,6 +17,7 @@ const SOURCES: Record<string, string[]> = {
 const shadow = '0 1px 2px rgba(0,0,0,0.9), 0 0 18px rgba(0,0,0,0.85)'
 
 function Row({ game, openable, note }: { game: Game; openable: boolean; note: string }) {
+  const { t } = useLingui()
   const open = () => {
     if (game.id !== 'stardew') {
       return
@@ -24,7 +25,7 @@ function Row({ game, openable, note }: { game: Game; openable: boolean; note: st
     SetLastGame(game.id).catch((e: unknown) =>
       useToasts
         .getState()
-        .push({ kind: 'error', title: 'Could not save the last game', body: String(e) }),
+        .push({ kind: 'error', title: t`Could not save the last game`, body: String(e) }),
     )
     useNav.getState().openGame(game.id)
   }
