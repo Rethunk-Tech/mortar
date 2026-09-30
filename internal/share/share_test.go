@@ -29,7 +29,7 @@ func nexus(key string, mod, file int, disabled ...string) profile.Entry {
 
 func sample() profile.Profile {
 	gh := profile.Entry{Key: "gh", Source: profile.Source{Kind: profile.KindGitHub, Repo: "owner/repo", Tag: "v1.2.3", Asset: "mod-1.2.3.zip"}}
-	return profile.Profile{Name: "Farm 🌾", Notes: "n", Entries: []profile.Entry{
+	return profile.Profile{Name: "Farm 🌾", Notes: "n", Description: "co-op Fridays", Entries: []profile.Entry{
 		{Key: "smapi-4.1", Source: profile.Source{Kind: profile.SourceSMAPI}},
 		{Key: "bridge-1", Source: profile.Source{Kind: profile.SourceMortar}},
 		nexus("one", 541, 1000),
@@ -254,7 +254,7 @@ func TestMortarFileRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if pv.Name != "Farm 🌾" || pv.Notes != "n" || len(pv.Entries) != 3 {
+	if pv.Name != "Farm 🌾" || pv.Notes != "n" || pv.Description != "co-op Fridays" || len(pv.Entries) != 3 {
 		t.Errorf("preview = %+v", pv)
 	}
 	got := map[string]string{}
@@ -264,6 +264,23 @@ func TestMortarFileRoundTrip(t *testing.T) {
 	want := map[string]string{"A.one/config.json": `{"a":1}`, "A.one/data/deep.JSON": `{"b":2}`, "A.two/config.json": `{"c":3}`, "A.gh/config.json": `{"g":1}`}
 	if fmt.Sprint(got) != fmt.Sprint(want) {
 		t.Errorf("configs = %v, want %v", got, want)
+	}
+}
+
+func TestEncodeOmitsDescription(t *testing.T) {
+	with := sample()
+	without := sample()
+	without.Description = ""
+	a, err := Encode(with)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := Encode(without)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a.Payload != b.Payload {
+		t.Fatal("description changed the share link payload")
 	}
 }
 

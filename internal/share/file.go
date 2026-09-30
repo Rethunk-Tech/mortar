@@ -52,17 +52,19 @@ type Config struct {
 // Preview is what reading a .mortar file yields. The apply step writes Configs only into installed mod folders.
 type Preview struct {
 	Shared
-	Notes     string
-	UniqueIDs []string
-	Configs   []Config
+	Notes       string
+	Description string
+	UniqueIDs   []string
+	Configs     []Config
 }
 
 type fileDoc struct {
-	Version   int             `json:"version"`
-	Name      string          `json:"name"`
-	Notes     string          `json:"notes"`
-	Entries   json.RawMessage `json:"entries"`
-	UniqueIDs []string        `json:"uniqueIds"`
+	Version     int             `json:"version"`
+	Name        string          `json:"name"`
+	Notes       string          `json:"notes"`
+	Description string          `json:"description,omitempty"`
+	Entries     json.RawMessage `json:"entries"`
+	UniqueIDs   []string        `json:"uniqueIds"`
 }
 
 func validSegment(s string) bool {
@@ -87,9 +89,9 @@ func validUniqueID(id string) bool {
 	return len(id) <= maxUniqueID && uniqueID.MatchString(id) && !reserved.MatchString(id)
 }
 
-// Write writes the profile as a .mortar zip: profile.json with the link's entries plus name and notes, and the
-// .json files of each enabled mod's folder under configs/<UniqueID>/. modsDir is the profile's mods/ folder.
-// Config files that are over the caps or have unusual names are skipped and returned as paths.
+// Write writes the profile as a .mortar zip: profile.json with the link's entries plus name, notes and
+// description, and the .json files of each enabled mod's folder under configs/<UniqueID>/. modsDir is the
+// profile's mods/ folder. Config files that are over the caps or have unusual names are skipped and returned as paths.
 func Write(w io.Writer, p profile.Profile, modsDir string) (skipped []string, err error) {
 	s, _, _ := Collect(p)
 	zw := zip.NewWriter(w)
@@ -97,12 +99,18 @@ func Write(w io.Writer, p profile.Profile, modsDir string) (skipped []string, er
 	if err != nil {
 		return nil, err
 	}
-	doc := fileDoc{Version: FormatVersion, Name: s.Name, Notes: p.Notes, Entries: entries, UniqueIDs: []string{}}
+	doc := fileDoc{
+		Version: FormatVersion, Name: s.Name, Notes: p.Notes, Description: p.Description,
+		Entries: entries, UniqueIDs: []string{},
+	}
 	if err := checkShared(s); err != nil {
 		return nil, err
 	}
 	if utf8.RuneCountInString(p.Notes) > profile.MaxNotes {
 		return nil, fmt.Errorf("%w: notes are too long", ErrBadFile)
+	}
+	if utf8.RuneCountInString(p.Description) > profile.MaxDescription {
+		return nil, fmt.Errorf("%w: description is too long", ErrBadFile)
 	}
 	var configs []Config
 	for _, e := range p.Entries {
@@ -328,12 +336,15 @@ func parseFileDoc(raw []byte) (Preview, error) {
 	if err != nil {
 		return Preview{}, err
 	}
-	pv := Preview{Name: d.Name, Entries: entries, Notes: d.Notes, UniqueIDs: d.UniqueIDs}
+	pv := Preview{Name: d.Name, Entries: entries, Notes: d.Notes, Description: d.Description, UniqueIDs: d.UniqueIDs}
 	if err := checkShared(pv.Shared); err != nil {
 		return Preview{}, err
 	}
 	if utf8.RuneCountInString(d.Notes) > profile.MaxNotes {
 		return Preview{}, fmt.Errorf("%w: notes are too long", ErrBadFile)
+	}
+	if utf8.RuneCountInString(d.Description) > profile.MaxDescription {
+		return Preview{}, fmt.Errorf("%w: description is too long", ErrBadFile)
 	}
 	if len(d.UniqueIDs) > MaxConfigFiles {
 		return Preview{}, fmt.Errorf("%w: too many mods", ErrBadFile)
