@@ -16,6 +16,7 @@ import { pendingFor } from '../queue/totals.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { BackupsDialog } from './BackupsDialog.tsx'
+import { goldText, hoursPlayed } from './card.ts'
 import { useSaves } from './store.ts'
 
 const nowrap = { whiteSpace: 'nowrap' } as const
@@ -180,7 +181,23 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
   const season = seasons[fit.season] ?? ''
   const { day, year } = fit
   const date = day > 0 ? t`${season} ${day}, year ${year}` : ''
-  const meta = [fit.farmer, date, t`last played ${played}`].filter(Boolean).join(' · ')
+  const kinds = [
+    t`Standard farm`,
+    t`Riverland farm`,
+    t`Forest farm`,
+    t`Hill-top farm`,
+    t`Wilderness farm`,
+    t`Four Corners farm`,
+    t`Beach farm`,
+    t`Meadowlands farm`,
+  ]
+  const kind = kinds[fit.whichFarm] ?? ''
+  const hours = hoursPlayed(fit.millisecondsPlayed)
+  const play = hours > 0 ? t`${hours}h played` : ''
+  const gold = fit.money ? goldText(fit.money) : ''
+  const meta = [fit.farmer, kind, date, play, gold, t`last played ${played}`]
+    .filter(Boolean)
+    .join(' · ')
   const color = ok ? 'success.main' : 'warning.main'
   return (
     <Box
