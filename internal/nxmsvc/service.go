@@ -180,6 +180,15 @@ func (s *Service) Disable() error {
 // done. Running it again is harmless.
 func (s *Service) RegisterLinks() error { return s.handler.RegisterLinks() }
 
+// NotificationIcon is the PNG to attach to a desktop notification, or empty when it has not been installed.
+func (s *Service) NotificationIcon() string {
+	type withIcon interface{ NotificationIcon() string }
+	if h, ok := s.handler.(withIcon); ok {
+		return h.NotificationIcon()
+	}
+	return ""
+}
+
 // DeclineOffer records that the user was asked and said not now.
 func (s *Service) DeclineOffer() error {
 	return s.record(func(v *settings.Settings) { v.NxmAsked = true })
