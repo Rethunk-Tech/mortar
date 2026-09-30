@@ -84,7 +84,7 @@ A page, as Concrete's: a header with a back button, **Import** and **New profile
 
 ## Import
 
-A wide "Import profile from…" dialog over the dimmed game screen, with tabs **Link**, **.mortar file** and **Archives**. Nothing downloads before the user confirms.
+A wide "Import profile from…" dialog over the dimmed game screen, with tabs **Link** and **.mortar file** (NOMAD, 2026-09-29: archives go into an existing profile through Add archive or a drop, not through Import). Nothing downloads before the user confirms.
 
 - A dense five-column grid of mod tiles: icon, name, author, and on the right the mod's import state (installed, download, dependency, check later, unavailable) in place of a version number.
 - A status bar: "Ready to import", the profile name, the mod count, the counts per state, and the approximate download size (the sum of each file's `size_kb` from Nexus).
