@@ -83,7 +83,7 @@ func TestImportCreatesNothingBeforeConfirmAndQueuesAvailable(t *testing.T) {
 		t.Fatalf("preview changed something: %d profiles, %d requests", len(all), len(rec.reqs))
 	}
 	skip := byKey(pv.Mods, Mod{ModID: 700}).Key
-	res, err := s.Import("stardew", "", []string{skip})
+	res, err := s.Import("stardew", sessionOf(s), "", []string{skip})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,7 +104,7 @@ func TestImportCreatesNothingBeforeConfirmAndQueuesAvailable(t *testing.T) {
 	if !strings.Contains(res.Profile.Notes, "Nexus mod 500") || !strings.Contains(res.Profile.Notes, "/mods/500") {
 		t.Errorf("notes = %q", res.Profile.Notes)
 	}
-	if _, err := s.Import("stardew", "", nil); !errors.Is(err, ErrNoPreview) {
+	if _, err := s.Import("stardew", sessionOf(s), "", nil); !errors.Is(err, ErrNoPreview) {
 		t.Errorf("second import = %v", err)
 	}
 }
@@ -117,7 +117,7 @@ func TestImportNamesAClashingProfileWithANumber(t *testing.T) {
 	if _, err := s.PreviewLink(context.Background(), "stardew", link(t, "Cozy co-op", share.Ref{ModID: 100, FileID: 1}), ""); err != nil {
 		t.Fatal(err)
 	}
-	res, err := s.Import("stardew", "", nil)
+	res, err := s.Import("stardew", sessionOf(s), "", nil)
 	if err != nil || res.Profile.Name != "Cozy co-op (2)" {
 		t.Fatalf("import = %q, %v", res.Profile.Name, err)
 	}
@@ -129,7 +129,7 @@ func TestImportNeedsSignInForNexusAndCreatesNothing(t *testing.T) {
 	if _, err := s.PreviewLink(context.Background(), "stardew", text, ""); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.Import("stardew", "", nil); !errors.Is(err, ErrSignedOut) {
+	if _, err := s.Import("stardew", sessionOf(s), "", nil); !errors.Is(err, ErrSignedOut) {
 		t.Fatalf("err = %v", err)
 	}
 	if all, _ := s.d.Profiles.List("stardew"); len(all) != 0 || len(rec.reqs) != 0 {
@@ -143,7 +143,7 @@ func TestImportGitHubOnlyNeedsNoSignIn(t *testing.T) {
 	if _, err := s.PreviewLink(context.Background(), "stardew", text, ""); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.Import("stardew", "", nil); err != nil || len(rec.reqs) != 1 || rec.reqs[0].Tag != "v1" {
+	if _, err := s.Import("stardew", sessionOf(s), "", nil); err != nil || len(rec.reqs) != 1 || rec.reqs[0].Tag != "v1" {
 		t.Errorf("reqs = %+v, %v", rec.reqs, err)
 	}
 }
@@ -155,7 +155,7 @@ func TestImportRollsBackANewProfileWhenQueueingFails(t *testing.T) {
 	if _, err := s.PreviewLink(context.Background(), "stardew", text, ""); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.Import("stardew", "", nil); err == nil {
+	if _, err := s.Import("stardew", sessionOf(s), "", nil); err == nil {
 		t.Fatal("import succeeded")
 	}
 	if all, _ := s.d.Profiles.List("stardew"); len(all) != 0 {
@@ -170,7 +170,7 @@ func TestDiscardLeavesNothingToImport(t *testing.T) {
 		t.Fatal(err)
 	}
 	s.Discard()
-	if _, err := s.Import("stardew", "", nil); !errors.Is(err, ErrNoPreview) {
+	if _, err := s.Import("stardew", sessionOf(s), "", nil); !errors.Is(err, ErrNoPreview) {
 		t.Errorf("err = %v", err)
 	}
 }
@@ -245,5 +245,61 @@ func TestDescribeGroupsAndLeftOut(t *testing.T) {
 	wantLeft := []Omitted{{Name: "mine.zip", Reason: "local"}, {Name: "Beta", Reason: "off"}}
 	if !slices.Equal(info.LeftOut, wantLeft) {
 		t.Errorf("left out = %+v", info.LeftOut)
+	}
+}
+
+func sessionOf(s *Service) string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.current == nil {
+		return ""
+	}
+	return s.current.id
+}
+
+func TestImportActsOnlyOnTheShownPreviewAndOnlyOnce(t *testing.T) {
+	s, rec := newService(t, true)
+	first, err := s.PreviewLink(context.Background(), "stardew", link(t, "First", share.Ref{ModID: 100, FileID: 1}), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := s.PreviewLink(context.Background(), "stardew", link(t, "Second", share.Ref{ModID: 600, FileID: 6}), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Import("stardew", first.Session, "", nil); !errors.Is(err, ErrStalePreview) {
+		t.Fatalf("import of a replaced preview = %v", err)
+	}
+	res, err := s.Import("stardew", second.Session, "", nil)
+	if err != nil || res.Profile.Name != "Second" {
+		t.Fatalf("import = %+v, %v", res, err)
+	}
+	if _, err := s.Import("stardew", second.Session, "", nil); !errors.Is(err, ErrNoPreview) {
+		t.Fatalf("second submit = %v", err)
+	}
+	if all, _ := s.d.Profiles.List("stardew"); len(all) != 1 || len(rec.reqs) != 1 {
+		t.Fatalf("%d profiles, %d requests", len(all), len(rec.reqs))
+	}
+}
+
+func TestImportLeavesTheConfigOfModsTheProfileHas(t *testing.T) {
+	s, _ := newService(t, true)
+	prof, err := s.d.Profiles.Create("stardew", "Mine")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.d.Profiles.InstallNexus("stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}); err != nil {
+		t.Fatal(err)
+	}
+	s.current = &session{
+		id: "s", game: "stardew",
+		preview: Preview{Mods: []Mod{{Key: "a", ModID: 100, FileID: 2}, {Key: "b", ModID: 600, FileID: 6}}},
+		configs: []share.Config{{UniqueID: "a.mod", Path: "config.json"}, {UniqueID: "B.Mod", Path: "config.json"}},
+	}
+	if _, err := s.Import("stardew", "s", prof.ID, nil); err != nil {
+		t.Fatal(err)
+	}
+	if len(s.pending) != 1 || len(s.pending[0].Configs) != 1 || s.pending[0].Configs[0].UniqueID != "B.Mod" {
+		t.Fatalf("pending = %+v", s.pending)
 	}
 }

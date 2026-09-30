@@ -3,6 +3,7 @@ package sharesvc
 import (
 	"archive/zip"
 	"errors"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -57,7 +58,7 @@ func TestPendingConfigsSurviveARestart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	done := queue.Item{Game: "stardew", Profile: prof.ID, ModID: 100, FileID: 1, State: queue.StateDone}
+	done := queue.Item{ID: "a", Game: "stardew", Profile: prof.ID, ModID: 100, FileID: 1, State: queue.StateDone}
 	second.QueueChanged(queue.State{Items: []queue.Item{done}})
 
 	dir, err := second.d.Profiles.ModsDir("stardew", prof.ID)
@@ -74,5 +75,54 @@ func TestPendingConfigsSurviveARestart(t *testing.T) {
 	}
 	if again := NewService(first.d); len(again.pending) != 0 {
 		t.Fatalf("settled import came back after another restart")
+	}
+}
+
+func TestPendingAppliesWhenTheDoneSetChangesAndSavesOnlyOnChange(t *testing.T) {
+	s, _ := newService(t, true)
+	s.d.Dir = t.TempDir()
+	prof, err := s.d.Profiles.Create("stardew", "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.pending = []*pending{{
+		Game: "stardew", Profile: prof.ID,
+		Wanted: []wantedFile{{ModID: 100, FileID: 1}, {ModID: 200, FileID: 2}, {ModID: 300, FileID: 3}},
+		Configs: []share.Config{
+			{UniqueID: "A.Mod", Path: "config.json", Data: []byte("a")},
+			{UniqueID: "B.Mod", Path: "config.json", Data: []byte("b")},
+		},
+	}}
+	s.savePending()
+	file := filepath.Join(s.d.Dir, pendingFile)
+	open := queue.Item{ID: "c", Game: "stardew", Profile: prof.ID, ModID: 300, FileID: 3, State: queue.StateDownloading}
+
+	// A progress tick changes nothing and writes nothing.
+	if err := os.Remove(file); err != nil {
+		t.Fatal(err)
+	}
+	s.QueueChanged(queue.State{Items: []queue.Item{open}})
+	if _, err := os.Stat(file); err == nil {
+		t.Fatal("pending imports saved on a change that touched none")
+	}
+
+	install := func(id string, modID, fileID int) string {
+		res, err := s.d.Profiles.InstallNexus("stardew", prof.ID, modZip(t, id), profile.Source{Kind: profile.KindNexus, ModID: modID, FileID: fileID})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return res.Profile.Entries[len(res.Profile.Entries)-1].Key
+	}
+	install("A.Mod", 100, 1)
+	s.QueueChanged(queue.State{Items: []queue.Item{{ID: "a", Game: "stardew", Profile: prof.ID, ModID: 100, FileID: 1, State: queue.StateDone}, open}})
+	// The queue dropped "a" as an old finished item while "b" finished: one done either way.
+	bKey := install("B.Mod", 200, 2)
+	s.QueueChanged(queue.State{Items: []queue.Item{{ID: "b", Game: "stardew", Profile: prof.ID, ModID: 200, FileID: 2, State: queue.StateDone}, open}})
+	dir, err := s.d.Profiles.ModsDir("stardew", prof.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, err := fsx.ReadFile(filepath.Join(dir, bKey, "Mod", "config.json")); err != nil || string(got) != "b" {
+		t.Fatalf("config of the later mod = %q, %v", got, err)
 	}
 }

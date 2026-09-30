@@ -20,6 +20,22 @@ import { useToasts } from '../toasts/store.ts'
 import { type ShownPreview, shownPreview } from './logic.ts'
 import { importAfterSignIn } from './store.ts'
 
+// Shows what an import filled: the open profile refreshed, or the new one opened on its game's page.
+async function showImported(game: string, intoOpen: boolean, id: string) {
+  const setup = useNav.getState().route.name === 'setup'
+  if (intoOpen) {
+    await useProfiles.getState().refresh()
+  } else {
+    await useProfiles.getState().load(game)
+    useProfiles.getState().open(id)
+    await SetLastGame(game)
+    useNav.getState().openGame('stardew')
+  }
+  if (setup) {
+    RegisterLinks().catch(reportUnexpected)
+  }
+}
+
 export type Tab = 'link' | 'file'
 
 // The import dialog's state: what was typed or picked, the preview it produced and the mods unticked.
@@ -93,19 +109,8 @@ export function useImportFlow(game: string, profileId: string, close: () => void
     setBusy(true)
     try {
       const target = intoOpen ? profileId : ''
-      const result = await Import(game, target, [...excluded])
-      const setup = useNav.getState().route.name === 'setup'
-      if (intoOpen) {
-        await useProfiles.getState().refresh()
-      } else {
-        await useProfiles.getState().load(game)
-        useProfiles.getState().open(result.profile.id)
-        await SetLastGame(game)
-        useNav.getState().openGame('stardew')
-      }
-      if (setup) {
-        RegisterLinks().catch(reportUnexpected)
-      }
+      const result = await Import(game, preview?.session ?? '', target, [...excluded])
+      await showImported(game, intoOpen, result.profile.id)
       const { name } = result.profile
       const { queued } = result
       const renamed = !intoOpen && preview !== null && name !== preview.name

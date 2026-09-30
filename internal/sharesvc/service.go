@@ -6,6 +6,8 @@ package sharesvc
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/url"
@@ -16,7 +18,7 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -42,6 +44,8 @@ const filePerm = 0o644
 var (
 	// ErrNoPreview means Import was asked for without a preview to act on.
 	ErrNoPreview = errors.New("there is nothing to import: open a link or file first")
+	// ErrStalePreview means Import named a preview other than the one the service holds.
+	ErrStalePreview = errors.New("the preview changed: check it again before importing")
 	// ErrSignedOut means the import has Nexus downloads and no account is signed in.
 	ErrSignedOut = errors.New("sign in to Nexus Mods before importing mods from Nexus")
 )
@@ -103,6 +107,7 @@ func NewService(d Deps) *Service {
 
 // session is the preview the dialog is showing, kept so Import acts on exactly what was shown.
 type session struct {
+	id      string
 	game    string
 	preview Preview
 	notes   string
@@ -268,7 +273,7 @@ func (s *Service) SaveFile(game, profileID string) (Saved, error) {
 	if err != nil {
 		return Saved{}, err
 	}
-	if err := fsx.WriteFile(dest, buf.Bytes(), filePerm); err != nil {
+	if err := datadir.WriteFile(dest, buf.Bytes(), filePerm); err != nil {
 		return Saved{}, err
 	}
 	return Saved{Path: dest, Skipped: append([]string{}, skipped...)}, nil
@@ -327,12 +332,14 @@ func (s *Service) preview(ctx context.Context, game string, shared share.Shared,
 		}
 	}
 	mods, probs := r.resolve(ctx, shared.Entries)
+	var raw [8]byte
+	_, _ = rand.Read(raw[:])
 	pv := Preview{
-		Name: shared.Name, Notes: notes, Settings: len(configs), Mods: mods, Problems: probs,
+		Session: hex.EncodeToString(raw[:]), Name: shared.Name, Notes: notes, Settings: len(configs), Mods: mods, Problems: probs,
 		SignedIn: r.signedIn, Premium: r.premium,
 	}
 	s.mu.Lock()
-	s.current = &session{game: game, preview: pv, notes: notes, configs: configs}
+	s.current = &session{id: pv.Session, game: game, preview: pv, notes: notes, configs: configs}
 	s.mu.Unlock()
 	return pv, nil
 }
@@ -389,16 +396,33 @@ func joinNotes(parts ...string) string {
 	return strings.Join(kept, "\n\n")
 }
 
-// Import queues everything the preview lists as available, except the excluded keys, into profileID, or into a
-// new profile named as the share (with " (2)" and so on when that name is taken) when profileID is empty. Mods the preview marked unavailable are listed in the
-// new profile's notes. A .mortar file's config files are written once their mods are installed.
-func (s *Service) Import(game, profileID string, exclude []string) (Result, error) {
+// Import queues everything the preview named session lists as available, except the excluded keys, into
+// profileID, or into a new profile named as the share (with " (2)" and so on when that name is taken) when profileID
+// is empty. Mods the preview marked unavailable are listed in the new profile's notes. A .mortar file's config files
+// are written once their mods are installed, except for mods the profile already had, whose config is the user's.
+func (s *Service) Import(game, session, profileID string, exclude []string) (res Result, err error) {
 	s.mu.Lock()
 	cur := s.current
-	s.mu.Unlock()
-	if cur == nil || cur.game != game {
+	switch {
+	case cur == nil || cur.game != game:
+		s.mu.Unlock()
 		return Result{}, ErrNoPreview
+	case cur.id != session:
+		s.mu.Unlock()
+		return Result{}, ErrStalePreview
 	}
+	// Taking the preview makes a second submit of it fail instead of creating a second profile.
+	s.current = nil
+	s.mu.Unlock()
+	defer func() {
+		if err != nil {
+			s.mu.Lock()
+			if s.current == nil {
+				s.current = cur
+			}
+			s.mu.Unlock()
+		}
+	}()
 	var reqs []queue.Request
 	var wanted []wantedFile
 	for _, m := range cur.preview.Mods {
@@ -411,7 +435,7 @@ func (s *Service) Import(game, profileID string, exclude []string) (Result, erro
 	if slices.ContainsFunc(reqs, func(r queue.Request) bool { return r.Repo == "" }) && !s.d.SignedIn() {
 		return Result{}, ErrSignedOut
 	}
-	var res Result
+	configs := cur.configs
 	created := profileID == ""
 	if created {
 		existing, err := s.d.Profiles.List(game)
@@ -431,9 +455,11 @@ func (s *Service) Import(game, profileID string, exclude []string) (Result, erro
 			notes = string([]rune(notes)[:profile.MaxNotes])
 		}
 		if notes != "" {
-			if p, err = s.d.Profiles.SetNotes(game, p.ID, notes); err != nil {
-				return Result{}, err
+			withNotes, err := s.d.Profiles.SetNotes(game, p.ID, notes)
+			if err != nil {
+				return Result{}, errors.Join(err, s.d.Profiles.Delete(game, p.ID))
 			}
+			p = withNotes
 		}
 		res.Profile = p
 		profileID = p.ID
@@ -443,6 +469,7 @@ func (s *Service) Import(game, profileID string, exclude []string) (Result, erro
 			return Result{}, err
 		}
 		res.Profile = p
+		configs = slices.DeleteFunc(slices.Clone(configs), func(c share.Config) bool { return holds(p, c.UniqueID) })
 	}
 	for i := range reqs {
 		reqs[i].Profile = profileID
@@ -456,14 +483,19 @@ func (s *Service) Import(game, profileID string, exclude []string) (Result, erro
 		}
 	}
 	res.Queued = len(reqs)
-	if len(cur.configs) > 0 && len(reqs) > 0 {
+	if len(configs) > 0 && len(reqs) > 0 {
 		s.mu.Lock()
-		s.pending = append(s.pending, &pending{Game: game, Profile: profileID, Wanted: wanted, Configs: cur.configs})
+		s.pending = append(s.pending, &pending{Game: game, Profile: profileID, Wanted: wanted, Configs: configs})
 		s.mu.Unlock()
 		s.savePending()
 	}
-	s.Discard()
 	return res, nil
+}
+
+func holds(p profile.Profile, uniqueID string) bool {
+	return slices.ContainsFunc(p.Entries, func(e profile.Entry) bool {
+		return slices.ContainsFunc(e.Mods, func(m profile.EntryMod) bool { return strings.EqualFold(m.UniqueID, uniqueID) })
+	})
 }
 
 // --- Config files ---
@@ -502,43 +534,54 @@ type pending struct {
 	Profile string         `json:"profile"`
 	Wanted  []wantedFile   `json:"wanted"`
 	Configs []share.Config `json:"configs"`
-	// seen counts the finished downloads already applied; it starts over with the process.
-	seen int
+	// seen is the set of finished downloads the configs were last applied for; it starts over with the process.
+	seen string
 }
 
 func (p *pending) wants(e profile.Entry) bool {
 	return slices.ContainsFunc(p.Wanted, func(w wantedFile) bool { return w.entry(e) })
 }
 
+// queueChanged runs on every queue change, progress ticks included, so it saves only when a pending import changed.
 func (s *Service) queueChanged(st queue.State) {
 	s.applyMu.Lock()
 	defer s.applyMu.Unlock()
-	defer s.savePending()
 	s.mu.Lock()
 	todo := slices.Clone(s.pending)
 	s.mu.Unlock()
+	changed := false
 	for _, p := range todo {
-		done, open := 0, 0
+		var done []string
+		open := 0
 		for _, it := range st.Items {
 			if it.Game != p.Game || it.Profile != p.Profile {
 				continue
 			}
 			if it.State == queue.StateDone && slices.ContainsFunc(p.Wanted, func(w wantedFile) bool { return w.item(it) }) {
-				done++
+				done = append(done, it.ID)
 			}
 			if !slices.Contains([]string{queue.StateDone, queue.StateSkipped, queue.StateCancelled}, it.State) {
 				open++
 			}
 		}
-		if done > p.seen {
-			p.seen = done
+		// The queue drops old finished items, so the set is compared, not its size.
+		slices.Sort(done)
+		if seen := strings.Join(done, ","); len(done) > 0 && seen != p.seen && len(p.Configs) > 0 {
+			p.seen = seen
+			before := len(p.Configs)
 			s.apply(p)
+			changed = changed || len(p.Configs) != before
 		}
-		if open == 0 || len(p.Configs) == 0 {
+		// An apply the running game held back leaves seen empty, and the import waits for the next change.
+		if len(p.Configs) == 0 || (open == 0 && (len(done) == 0 || p.seen != "")) {
 			s.mu.Lock()
 			s.pending = slices.DeleteFunc(s.pending, func(x *pending) bool { return x == p })
 			s.mu.Unlock()
+			changed = true
 		}
+	}
+	if changed {
+		s.savePending()
 	}
 }
 
@@ -546,7 +589,7 @@ func (s *Service) queueChanged(st queue.State) {
 // profile it waits for the next change.
 func (s *Service) apply(p *pending) {
 	if r := s.d.Profiles.Running; r != nil && r(p.Game, p.Profile) {
-		p.seen = 0
+		p.seen = ""
 		return
 	}
 	prof, err := s.find(p.Game, p.Profile)
@@ -560,7 +603,7 @@ func (s *Service) apply(p *pending) {
 	entries := slices.DeleteFunc(slices.Clone(prof.Entries), func(e profile.Entry) bool { return !p.wants(e) })
 	written, err := share.Apply(modsDir, entries, p.Configs)
 	if err != nil {
-		p.seen = 0
+		p.seen = ""
 	}
 	p.Configs = slices.DeleteFunc(p.Configs, func(c share.Config) bool {
 		return slices.ContainsFunc(written, func(id string) bool { return strings.EqualFold(id, c.UniqueID) })
