@@ -5,7 +5,6 @@ import { Pencil, Plus } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ModsTab } from '../mods/ModsTab.tsx'
-import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { compact } from './compact.ts'
 import { NameField } from './NameField.tsx'
@@ -28,7 +27,6 @@ function Hero({ profile }: { profile: Profile }) {
   const { t } = useLingui()
   const art = useProfiles((s) => s.game?.artUrl)
   const rename = useProfiles((s) => s.rename)
-  const band = useMods((s) => s.view) === 'list'
   const [editing, setEditing] = useState(false)
   const mods = (profile.entries ?? []).reduce((n, e) => n + (e.mods ?? []).length, 0)
   const created = fmt(profile.created)
@@ -37,7 +35,7 @@ function Hero({ profile }: { profile: Profile }) {
     <Box
       sx={{
         position: 'relative',
-        height: band ? 96 : 190,
+        height: 190,
         flexShrink: 0,
         overflow: 'hidden',
         bgcolor: 'rgba(15,15,18,0.5)',
@@ -84,7 +82,7 @@ function Hero({ profile }: { profile: Profile }) {
             <Typography
               noWrap={true}
               sx={{
-                fontSize: band ? 28 : 40,
+                fontSize: 40,
                 fontWeight: 700,
                 lineHeight: 1.2,
                 textShadow: '0 0 18px rgba(255,255,255,0.45)',
@@ -106,7 +104,7 @@ function Hero({ profile }: { profile: Profile }) {
       <Box
         sx={{
           position: 'relative',
-          display: band ? 'none' : 'flex',
+          display: 'flex',
           gap: 1,
           [compact]: { display: 'none' },
         }}
@@ -119,7 +117,7 @@ function Hero({ profile }: { profile: Profile }) {
         noWrap={true}
         sx={{
           position: 'relative',
-          display: band ? 'block' : 'none',
+          display: 'none',
           fontSize: 14,
           color: 'text.secondary',
           [compact]: { display: 'block' },
