@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
@@ -225,6 +226,10 @@ type Mod struct {
 // subfolders whose names start with a dot. A manifest that does not parse is skipped, as SMAPI reports it
 // as invalid rather than loading it.
 func Scan(root string) ([]Mod, error) {
+	base, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		return nil, err
+	}
 	var mods []Mod
 	var walk func(dir, rel string) error
 	walk = func(dir, rel string) error {
@@ -243,14 +248,18 @@ func Scan(root string) ([]Mod, error) {
 			return err
 		}
 		for _, it := range items {
-			if !it.IsDir() || strings.HasPrefix(it.Name(), ".") {
+			if strings.HasPrefix(it.Name(), ".") {
+				continue
+			}
+			child := filepath.Join(dir, it.Name())
+			if !datadir.RealDirUnder(base, child) {
 				continue
 			}
 			next := it.Name()
 			if rel != "." {
 				next = rel + "/" + next
 			}
-			if err := walk(filepath.Join(dir, it.Name()), next); err != nil {
+			if err := walk(child, next); err != nil {
 				return err
 			}
 		}

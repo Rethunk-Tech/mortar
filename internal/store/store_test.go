@@ -218,3 +218,38 @@ func TestDeclaredSize(t *testing.T) {
 		t.Fatalf("size = %d, %v", n, err)
 	}
 }
+
+func TestAddHashedDirCopiesInTreeSymlinksAndRejectsEscapes(t *testing.T) {
+	s := newStore(t)
+	src := t.TempDir()
+	if err := fsx.WriteFile(filepath.Join(src, "a.txt"), []byte("a"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(src, "a.txt"), filepath.Join(src, "b.txt")); err != nil {
+		t.Fatal(err)
+	}
+	key, err := s.AddHashedDir("stardew", src)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, err := s.Path("stardew", key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := fsx.ReadFile(filepath.Join(dir, "b.txt"))
+	if err != nil || string(got) != "a" {
+		t.Fatalf("hashed symlink = %q, %v", got, err)
+	}
+
+	escaped := t.TempDir()
+	outside := filepath.Join(t.TempDir(), "secret")
+	if err := fsx.WriteFile(outside, []byte("no"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(outside, filepath.Join(escaped, "link")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.AddHashedDir("stardew", escaped); err == nil {
+		t.Fatal("escaped symlink hashed")
+	}
+}

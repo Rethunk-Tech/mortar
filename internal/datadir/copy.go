@@ -7,14 +7,38 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 // CopyTree copies the regular files and folders under src into dst (which may exist), file by file with io.Copy, which
-// the OS clones where the filesystem can. Anything else, such as a symlink, is an error.
+// the OS clones where the filesystem can. Directory junctions and symlink directories are not followed. Symlink files
+// are copied by content when they still resolve under src, and are an error when they escape.
 func CopyTree(src, dst string) error {
-	return filepath.WalkDir(src, func(p string, d fs.DirEntry, err error) error {
+	root, err := filepath.EvalSymlinks(src)
+	if err != nil {
+		return err
+	}
+	return filepath.WalkDir(src, func(p string, _ fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		info, err := os.Lstat(p)
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			if p != src && !RealDirUnder(root, p) {
+				return fs.SkipDir
+			}
+			rel, err := filepath.Rel(src, p)
+			if err != nil {
+				return err
+			}
+			return os.MkdirAll(filepath.Join(dst, rel), 0o750)
+		}
+		resolved, err := filepath.EvalSymlinks(p)
 		if err != nil {
 			return err
 		}
@@ -23,14 +47,58 @@ func CopyTree(src, dst string) error {
 			return err
 		}
 		target := filepath.Join(dst, rel)
-		switch {
-		case d.IsDir():
-			return os.MkdirAll(target, 0o750)
-		case !d.Type().IsRegular():
+		if info.Mode()&os.ModeSymlink != 0 {
+			st, err := os.Stat(resolved)
+			if err != nil {
+				return err
+			}
+			if st.IsDir() {
+				return nil
+			}
+			if !UnderRoot(root, resolved) {
+				return fmt.Errorf("%s escapes %s", p, src)
+			}
+			return CopyFile(resolved, target)
+		}
+		if !info.Mode().IsRegular() {
 			return fmt.Errorf("%s is not a regular file", p)
+		}
+		if !UnderRoot(root, resolved) {
+			return fmt.Errorf("%s escapes %s", p, src)
 		}
 		return CopyFile(p, target)
 	})
+}
+
+// UnderRoot reports whether p is root or a path still inside it after both have been cleaned.
+func UnderRoot(root, p string) bool {
+	root = filepath.Clean(root)
+	p = filepath.Clean(p)
+	if root == p {
+		return true
+	}
+	return strings.HasPrefix(p, root+string(os.PathSeparator))
+}
+
+// RealDirUnder reports whether p is a directory whose own path still resolves under root, not a symlink
+// directory or a junction/reparse that points somewhere else.
+func RealDirUnder(root, p string) bool {
+	info, err := os.Lstat(p)
+	if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+		return false
+	}
+	resolved, err := filepath.EvalSymlinks(p)
+	if err != nil {
+		return false
+	}
+	parent, err := filepath.EvalSymlinks(filepath.Dir(p))
+	if err != nil {
+		return false
+	}
+	if filepath.Clean(resolved) != filepath.Clean(filepath.Join(parent, filepath.Base(p))) {
+		return false
+	}
+	return UnderRoot(root, resolved)
 }
 
 // CopyFile copies the regular file src to dst, which must not exist yet.

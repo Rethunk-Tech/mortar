@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/meta"
@@ -265,12 +266,17 @@ func scanGameMods(modsDir string) ([]gameModSlot, error) {
 	if err != nil {
 		return nil, err
 	}
+	root, err := filepath.EvalSymlinks(modsDir)
+	if err != nil {
+		return nil, err
+	}
 	var slots []gameModSlot
 	for _, it := range entries {
-		if !it.IsDir() {
+		child := filepath.Join(modsDir, it.Name())
+		if !datadir.RealDirUnder(root, child) {
 			continue
 		}
-		slot, keep := classifyFolder(filepath.Join(modsDir, it.Name()), it.Name())
+		slot, keep := classifyFolder(child, it.Name())
 		if !keep {
 			continue
 		}

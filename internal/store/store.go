@@ -224,35 +224,64 @@ func exists(p string) bool {
 }
 
 func hashDir(root string) (string, error) {
-	var files []string
-	err := filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
+	base, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		return "", err
+	}
+	type hashed struct{ rel, open string }
+	var files []hashed
+	err = filepath.WalkDir(root, func(p string, _ fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() {
+		info, err := os.Lstat(p)
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			if p != root && !datadir.RealDirUnder(base, p) {
+				return fs.SkipDir
+			}
 			return nil
 		}
-		if !d.Type().IsRegular() {
-			return fmt.Errorf("%s is not a regular file", p)
+		resolved, err := filepath.EvalSymlinks(p)
+		if err != nil {
+			return err
+		}
+		if !datadir.UnderRoot(base, resolved) {
+			return fmt.Errorf("%s escapes %s", p, root)
 		}
 		rel, err := filepath.Rel(root, p)
 		if err != nil {
 			return err
 		}
-		files = append(files, filepath.ToSlash(rel))
+		open := p
+		if info.Mode()&os.ModeSymlink != 0 {
+			st, err := os.Stat(resolved)
+			if err != nil {
+				return err
+			}
+			if st.IsDir() {
+				return nil
+			}
+			open = resolved
+		} else if !info.Mode().IsRegular() {
+			return fmt.Errorf("%s is not a regular file", p)
+		}
+		files = append(files, hashed{rel: filepath.ToSlash(rel), open: open})
 		return nil
 	})
 	if err != nil {
 		return "", err
 	}
-	slices.Sort(files)
+	slices.SortFunc(files, func(a, b hashed) int { return strings.Compare(a.rel, b.rel) })
 	h := sha256.New()
-	for _, rel := range files {
-		if _, err := io.WriteString(h, rel); err != nil {
+	for _, file := range files {
+		if _, err := io.WriteString(h, file.rel); err != nil {
 			return "", err
 		}
 		h.Write([]byte{0})
-		f, err := fsx.Open(filepath.Join(root, filepath.FromSlash(rel)))
+		f, err := fsx.Open(file.open)
 		if err != nil {
 			return "", err
 		}

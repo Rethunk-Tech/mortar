@@ -91,3 +91,17 @@ func TestScan(t *testing.T) {
 		t.Fatalf("root scan = %+v, %v", got, err)
 	}
 }
+
+func TestScanSkipsASymlinkDirectory(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, "Pack/manifest.json", `{"UniqueID":"A.Pack"}`)
+	outside := t.TempDir()
+	write(t, outside, "manifest.json", `{"UniqueID":"A.Outside"}`)
+	if err := os.Symlink(outside, filepath.Join(root, "Innocent")); err != nil {
+		t.Fatal(err)
+	}
+	got, err := Scan(root)
+	if err != nil || len(got) != 1 || got[0].UniqueID != "A.Pack" {
+		t.Fatalf("scan = %+v, %v", got, err)
+	}
+}

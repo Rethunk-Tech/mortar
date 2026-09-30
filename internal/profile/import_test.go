@@ -261,3 +261,21 @@ func TestInstallFolderUsesTheSameStorePathAsAnArchive(t *testing.T) {
 		t.Fatalf("install folder: %+v %v", res, err)
 	}
 }
+
+func TestPreviewGameModsSkipsASymlinkDirectory(t *testing.T) {
+	e := newEnv(t)
+	mods := filepath.Join(t.TempDir(), "Mods")
+	putGameMod(t, mods, "Loud/manifest.json", `{"Name":"Loud","Version":"1.0.0","UniqueID":"Me.Loud"}`)
+	outside := t.TempDir()
+	putGameMod(t, outside, "manifest.json", `{"Name":"Docs","Version":"1.0.0","UniqueID":"Me.Docs"}`)
+	if err := os.Symlink(outside, filepath.Join(mods, "Innocent")); err != nil {
+		t.Fatal(err)
+	}
+	preview, err := e.PreviewGameMods(mods)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(preview.Mods) != 1 || preview.Mods[0].Name != "Loud" {
+		t.Fatalf("preview = %+v", preview.Mods)
+	}
+}
