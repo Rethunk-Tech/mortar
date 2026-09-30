@@ -103,6 +103,37 @@ func (s *Service) RunLines(gameID, profileID, runID string) ([]launch.Entry, err
 	return entries, nil
 }
 
+// RunIssues is ERROR/ALERT and WARN counts per installed mod from one recorded run.
+type RunIssues struct {
+	RunID string                `json:"runId"`
+	Mods  []launch.ModRunIssues `json:"mods"`
+}
+
+// LastRunIssues attributes the newest completed run's SMAPI log to user mods.
+func (s *Service) LastRunIssues(gameID, profileID string) (RunIssues, error) {
+	runs, err := s.Runs(gameID, profileID)
+	if err != nil {
+		return RunIssues{}, err
+	}
+	if len(runs) == 0 {
+		return RunIssues{Mods: []launch.ModRunIssues{}}, nil
+	}
+	run := runs[0]
+	text, err := s.RunLog(gameID, profileID, run.ID)
+	if err != nil {
+		return RunIssues{}, err
+	}
+	installed, err := s.profiles.UserMods(gameID, profileID)
+	if err != nil {
+		return RunIssues{}, err
+	}
+	refs := make([]launch.ModRef, len(installed))
+	for i, m := range installed {
+		refs[i] = launch.ModRef{Name: m.Name, UniqueID: m.UniqueID}
+	}
+	return RunIssues{RunID: run.ID, Mods: launch.AttributeLog(text, refs)}, nil
+}
+
 func (s *Service) runFile(gameID, profileID, runID string) (string, error) {
 	if game.Find(gameID) == nil {
 		return "", fmt.Errorf("unknown game %q", gameID)

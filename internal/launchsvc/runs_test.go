@@ -76,6 +76,10 @@ func TestRecordStoresOwnedLogAndBoundsHistory(t *testing.T) {
 	if err != nil || !strings.Contains(text, "Content Patcher") || !strings.Contains(text, "Mods go here:") {
 		t.Fatalf("log = %q, %v", text, err)
 	}
+	issues, err := svc.LastRunIssues("stardew", p.ID)
+	if err != nil || issues.RunID != got.ID || len(issues.Mods) != 0 {
+		t.Fatalf("no installed user mod must map; issues = %#v, %v", issues, err)
+	}
 	lines, err := svc.RunLines("stardew", p.ID, got.ID)
 	if err != nil || len(lines) == 0 {
 		t.Fatalf("lines = %v, %v", lines, err)
