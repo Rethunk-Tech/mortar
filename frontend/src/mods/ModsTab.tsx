@@ -8,6 +8,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compact } from '../game/compact.ts'
 import { userModCount } from '../profiles/count.ts'
+import { openImport } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { DuplicateDialog } from './DuplicateDialog.tsx'
 import { useDetail } from './detail.ts'
@@ -218,6 +219,13 @@ export function ModsTab({ profile }: { profile: Profile }) {
           <Download size={16} aria-hidden={true} />
           {t`You can also drop archives anywhere on the window.`}
         </Box>
+        <Button
+          variant="text"
+          onClick={() => openImport({ profileId: profile.id })}
+          sx={{ textDecoration: 'underline' }}
+        >
+          {t`Or import a shared profile`}
+        </Button>
       </Box>
     )
   }

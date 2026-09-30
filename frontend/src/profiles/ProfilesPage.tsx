@@ -37,6 +37,7 @@ import {
 import {
   ArrowLeft,
   Copy,
+  Download,
   Eye,
   EyeOff,
   GripVertical,
@@ -44,14 +45,17 @@ import {
   Pencil,
   Plus,
   RotateCcw,
+  Share2,
   Trash2,
 } from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compact } from '../game/compact.ts'
 import { NameField } from '../game/NameField.tsx'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
+import { useRestoreFocus } from '../game/useRestoreFocus.ts'
 import { useNav } from '../nav/store.ts'
+import { openImport, openShare } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { userModCount } from './count.ts'
 import { useProfiles } from './store.ts'
@@ -78,13 +82,91 @@ function Item({ icon, sx, children, ...props }: MenuItemProps & { icon: ReactNod
 }
 const dialogPaper = { paper: { sx: { bgcolor: 'rgba(40,40,48,0.92)' } } }
 
+function RowMenu({
+  profile,
+  anchor,
+  onClose,
+  onRename,
+  onDelete,
+  returnFocus,
+}: {
+  profile: Profile
+  anchor: HTMLElement | null
+  onClose: () => void
+  onRename: () => void
+  onDelete: (p: Profile) => void
+  returnFocus: () => void
+}) {
+  const { t } = useLingui()
+  const duplicate = useProfiles((s) => s.duplicate)
+  const setHidden = useProfiles((s) => s.setHidden)
+  // An action that moves focus itself (rename, delete) turns the return to the ⋯ button off.
+  const refocus = useRef(true)
+  const choose =
+    (run: () => void, keepFocus = true) =>
+    () => {
+      refocus.current = keepFocus
+      onClose()
+      run()
+    }
+  return (
+    <Menu
+      anchorEl={anchor}
+      open={anchor !== null}
+      onClose={() => {
+        refocus.current = true
+        onClose()
+      }}
+      disableRestoreFocus={true}
+      slotProps={{
+        ...menuPaper,
+        transition: {
+          onExited: () => {
+            if (refocus.current) {
+              returnFocus()
+            }
+          },
+        },
+      }}
+    >
+      <Item icon={<Pencil size={15} />} onClick={choose(onRename, false)}>
+        {t`Rename`}
+      </Item>
+      <Item
+        icon={<Copy size={15} />}
+        onClick={choose(() => {
+          duplicate(profile.id).catch(reportUnexpected)
+        })}
+      >
+        {t`Duplicate`}
+      </Item>
+      <Item
+        icon={profile.hidden ? <Eye size={15} /> : <EyeOff size={15} />}
+        onClick={choose(() => {
+          setHidden(profile.id, !profile.hidden).catch(reportUnexpected)
+        })}
+      >
+        {profile.hidden ? t`Show in sidebar` : t`Hide from sidebar`}
+      </Item>
+      <Divider sx={{ my: 0.5 }} />
+      <Item
+        icon={<Trash2 size={15} />}
+        onClick={choose(() => onDelete(profile), false)}
+        sx={{ color: '#ff9a90' }}
+      >
+        {t`Delete`}
+      </Item>
+    </Menu>
+  )
+}
+
 function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) => void }) {
   const { t } = useLingui()
   const rename = useProfiles((s) => s.rename)
-  const duplicate = useProfiles((s) => s.duplicate)
-  const setHidden = useProfiles((s) => s.setHidden)
   const [renaming, setRenaming] = useState(false)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const more = useRef<HTMLButtonElement>(null)
+  useRestoreFocus(renaming, more)
   const {
     attributes,
     listeners,
@@ -97,10 +179,6 @@ function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) =
   const mods = userModCount(profile)
   const modsLabel = plural(mods, { one: '# mod', other: '# mods' })
   const updated = new Date(String(profile.updated)).toLocaleDateString()
-  const choose = (run: () => void) => () => {
-    setAnchor(null)
-    run()
-  }
   return (
     <Box
       ref={setNodeRef}
@@ -169,7 +247,19 @@ function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) =
           {t`${modsLabel} · Updated ${updated}`}
         </Typography>
       </Box>
+      <Button
+        variant="outlined"
+        color="inherit"
+        startIcon={<Share2 size={15} />}
+        aria-label={t`Share ${profile.name}`}
+        onClick={() => openShare(profile.id)}
+        sx={{ height: 40, whiteSpace: 'nowrap' }}
+      >
+        {t`Share`}
+      </Button>
       <IconButton
+        ref={more}
+        data-actions={profile.id}
         aria-label={t`Actions for ${profile.name}`}
         aria-haspopup="menu"
         onClick={(e) => setAnchor(e.currentTarget)}
@@ -182,41 +272,14 @@ function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) =
       >
         <MoreHorizontal size={18} />
       </IconButton>
-      <Menu
-        anchorEl={anchor}
-        open={anchor !== null}
+      <RowMenu
+        profile={profile}
+        anchor={anchor}
         onClose={() => setAnchor(null)}
-        disableRestoreFocus={true}
-        slotProps={menuPaper}
-      >
-        <Item icon={<Pencil size={15} />} onClick={choose(() => setRenaming(true))}>
-          {t`Rename`}
-        </Item>
-        <Item
-          icon={<Copy size={15} />}
-          onClick={choose(() => {
-            duplicate(profile.id).catch(reportUnexpected)
-          })}
-        >
-          {t`Duplicate`}
-        </Item>
-        <Item
-          icon={profile.hidden ? <Eye size={15} /> : <EyeOff size={15} />}
-          onClick={choose(() => {
-            setHidden(profile.id, !profile.hidden).catch(reportUnexpected)
-          })}
-        >
-          {profile.hidden ? t`Show in sidebar` : t`Hide from sidebar`}
-        </Item>
-        <Divider sx={{ my: 0.5 }} />
-        <Item
-          icon={<Trash2 size={15} />}
-          onClick={choose(() => onDelete(profile))}
-          sx={{ color: '#ff9a90' }}
-        >
-          {t`Delete`}
-        </Item>
-      </Menu>
+        onRename={() => setRenaming(true)}
+        onDelete={onDelete}
+        returnFocus={() => more.current?.focus()}
+      />
     </Box>
   )
 }
@@ -281,12 +344,65 @@ function Trash() {
   )
 }
 
+function DeleteDialog({ deleting, onDone }: { deleting: Profile | null; onDone: () => void }) {
+  const { t } = useLingui()
+  const profiles = useProfiles((s) => s.profiles)
+  const remove = useProfiles((s) => s.remove)
+  // The row whose ⋯ button takes focus once the dialog has closed: this one, or a neighbour when it is deleted.
+  const focusAfter = useRef('')
+  const close = (focusId: string) => {
+    focusAfter.current = focusId
+    onDone()
+  }
+  const cancel = () => close(deleting?.id ?? '')
+  return (
+    <Dialog
+      open={deleting !== null}
+      onClose={cancel}
+      slotProps={{
+        ...dialogPaper,
+        transition: {
+          onExited: () => {
+            document
+              .querySelector<HTMLElement>(
+                `[data-actions="${globalThis.CSS.escape(focusAfter.current)}"]`,
+              )
+              ?.focus()
+          },
+        },
+      }}
+    >
+      <DialogTitle>{t`Delete ${deleting?.name ?? ''}?`}</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          {t`The profile stays restorable for 30 days from Recently deleted.`}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={cancel}>{t`Cancel`}</Button>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={() => {
+            if (deleting) {
+              const at = profiles.findIndex((p) => p.id === deleting.id)
+              close((profiles[at + 1] ?? profiles[at - 1])?.id ?? '')
+              remove(deleting.id).catch(reportUnexpected)
+            }
+          }}
+        >
+          {t`Delete`}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
 export function ProfilesPage() {
   const { t } = useLingui()
   const closeProfiles = useNav((s) => s.closeProfiles)
   const profiles = useProfiles((s) => s.profiles)
   const reorder = useProfiles((s) => s.reorder)
-  const remove = useProfiles((s) => s.remove)
   const loadTrash = useProfiles((s) => s.loadTrash)
   const [creating, setCreating] = useState(false)
   const [deleting, setDeleting] = useState<Profile | null>(null)
@@ -344,6 +460,15 @@ export function ProfilesPage() {
           {t`Profiles`}
         </Typography>
         <Button
+          variant="outlined"
+          color="inherit"
+          startIcon={<Download size={16} />}
+          onClick={() => openImport()}
+          sx={{ height: 40, px: 2, fontSize: 14 }}
+        >
+          {t`Import`}
+        </Button>
+        <Button
           variant="contained"
           startIcon={<Plus size={16} />}
           onClick={() => setCreating(true)}
@@ -385,29 +510,7 @@ export function ProfilesPage() {
         <Trash />
       </Box>
       <NewProfileDialog open={creating} onClose={() => setCreating(false)} />
-      <Dialog open={deleting !== null} onClose={() => setDeleting(null)} slotProps={dialogPaper}>
-        <DialogTitle>{t`Delete ${deleting?.name ?? ''}?`}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t`The profile stays restorable for 30 days from Recently deleted.`}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleting(null)}>{t`Cancel`}</Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => {
-              if (deleting) {
-                remove(deleting.id).catch(reportUnexpected)
-              }
-              setDeleting(null)
-            }}
-          >
-            {t`Delete`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog deleting={deleting} onDone={() => setDeleting(null)} />
     </Box>
   )
 }
