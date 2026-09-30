@@ -23,7 +23,7 @@ func TestSavesZipsAndKeepsTheChosenCount(t *testing.T) {
 	var last string
 	for i := range 7 {
 		var err error
-		if last, err = Saves(saves, out, 3, start.Add(time.Duration(i)*MinGap)); err != nil {
+		if last, err = Saves(saves, out, 3, start.Add(time.Duration(i)*MinGap), Cause{}); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -46,7 +46,7 @@ func TestSavesZipsAndKeepsTheChosenCount(t *testing.T) {
 
 func TestSavesSkipsMissingFolder(t *testing.T) {
 	out := filepath.Join(t.TempDir(), "backups")
-	got, err := Saves(filepath.Join(t.TempDir(), "none"), out, DefaultKeep, time.Now())
+	got, err := Saves(filepath.Join(t.TempDir(), "none"), out, DefaultKeep, time.Now(), Cause{})
 	if err != nil || got != "" {
 		t.Fatalf("got %q, %v", got, err)
 	}
@@ -65,17 +65,17 @@ func TestSavesSkipsWhileTheNewestIsRecent(t *testing.T) {
 	if err := os.Chtimes(saves, start.Add(-time.Hour), start.Add(-time.Hour)); err != nil {
 		t.Fatal(err)
 	}
-	first, err := Saves(saves, out, DefaultKeep, start)
+	first, err := Saves(saves, out, DefaultKeep, start, Cause{})
 	if err != nil {
 		t.Fatal(err)
 	}
 	for i := 1; i < 8; i++ {
-		got, err := Saves(saves, out, DefaultKeep, start.Add(time.Duration(i)*time.Minute))
+		got, err := Saves(saves, out, DefaultKeep, start.Add(time.Duration(i)*time.Minute), Cause{})
 		if err != nil || got != first {
 			t.Fatalf("backup %d = %q, %v; want the existing %q", i, got, err, first)
 		}
 	}
-	if _, err := Saves(saves, out, DefaultKeep, start.Add(MinGap)); err != nil {
+	if _, err := Saves(saves, out, DefaultKeep, start.Add(MinGap), Cause{}); err != nil {
 		t.Fatal(err)
 	}
 	if items, _ := os.ReadDir(out); len(items) != 2 {
@@ -100,7 +100,7 @@ func TestSavesBacksUpAgainWhenASaveChangedAndSweepsCrashedTemps(t *testing.T) {
 	if err := os.Chtimes(crashed, start.Add(-time.Hour), start.Add(-time.Hour)); err != nil {
 		t.Fatal(err)
 	}
-	first, err := Saves(saves, out, DefaultKeep, start)
+	first, err := Saves(saves, out, DefaultKeep, start, Cause{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -114,7 +114,7 @@ func TestSavesBacksUpAgainWhenASaveChangedAndSweepsCrashedTemps(t *testing.T) {
 	if err := os.Chtimes(farm, start.Add(time.Minute), start.Add(time.Minute)); err != nil {
 		t.Fatal(err)
 	}
-	got, err := Saves(saves, out, DefaultKeep, start.Add(2*time.Minute))
+	got, err := Saves(saves, out, DefaultKeep, start.Add(2*time.Minute), Cause{})
 	if err != nil || got == first {
 		t.Fatalf("backup after a save changed = %q, %v; want a new one", got, err)
 	}
@@ -127,10 +127,10 @@ func TestABackwardsClockKeepsTheNewZip(t *testing.T) {
 	}
 	out := t.TempDir()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	if _, err := Saves(saves, out, 1, start.Add(time.Hour)); err != nil {
+	if _, err := Saves(saves, out, 1, start.Add(time.Hour), Cause{}); err != nil {
 		t.Fatal(err)
 	}
-	got, err := Saves(saves, out, 1, start)
+	got, err := Saves(saves, out, 1, start, Cause{})
 	if err != nil {
 		t.Fatal(err)
 	}

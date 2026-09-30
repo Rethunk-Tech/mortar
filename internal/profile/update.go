@@ -64,7 +64,7 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 				return &DuplicateError{Key: newKey, Label: entryLabel(e)}
 			}
 		}
-		ne, w, err := s.swapEntry(game, dir, p.Entries[ei], newKey)
+		ne, w, err := s.swapEntry(game, id, dir, p.Entries[ei], newKey)
 		sw = w
 		if err != nil {
 			return err
@@ -85,7 +85,7 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 // swapEntry builds the target version's folder beside mods/, carries over the profile's files, and renames it
 // over the old one. It returns the entry as it stands afterwards, and the swap for the caller to commit once
 // profile.json records it or undo if that fails.
-func (s *Store) swapEntry(game, dir string, e Entry, newKey string) (Entry, swapped, error) {
+func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string) (Entry, swapped, error) {
 	oldSrc, err := s.items.Path(game, e.Key)
 	if err != nil {
 		return Entry{}, swapped{}, err
@@ -107,7 +107,7 @@ func (s *Store) swapEntry(game, dir string, e Entry, newKey string) (Entry, swap
 			ne.Disabled = append(ne.Disabled, m.UniqueID)
 		}
 	}
-	if err := s.saveBackup(game); err != nil {
+	if err := s.saveBackup(game, id); err != nil {
 		return Entry{}, swapped{}, fmt.Errorf("back up saves: %w", err)
 	}
 	modsDir := filepath.Join(dir, "mods")
@@ -274,7 +274,7 @@ func copyOver(src, dst string) error {
 }
 
 // saveBackup zips the game's Saves folder into <datadir>/backups. Games without a Saves folder need none.
-func (s *Store) saveBackup(game string) error {
+func (s *Store) saveBackup(game, profileID string) error {
 	if game != "stardew" {
 		return nil
 	}
@@ -286,6 +286,6 @@ func (s *Store) saveBackup(game string) error {
 	if s.BackupsKept != nil {
 		keep = s.BackupsKept()
 	}
-	_, err = backup.Saves(filepath.Join(cfg, "StardewValley", "Saves"), filepath.Join(filepath.Dir(s.root), "backups"), keep, time.Now())
+	_, err = backup.Saves(filepath.Join(cfg, "StardewValley", "Saves"), filepath.Join(filepath.Dir(s.root), "backups"), keep, time.Now(), backup.Cause{Profile: profileID, Kind: backup.KindUpdate})
 	return err
 }

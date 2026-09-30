@@ -3,6 +3,7 @@ package backup
 
 import (
 	"archive/zip"
+	"encoding/json"
 	"errors"
 	"io"
 	"io/fs"
@@ -14,6 +15,18 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
+
+// KindUpdate and KindRestore are Cause.Kind values written beside a zip.
+const (
+	KindUpdate  = "update"
+	KindRestore = "restore"
+)
+
+// Cause is why a backup was made, stored as a sidecar next to the zip so older timestamp-only names still parse.
+type Cause struct {
+	Profile string `json:"profile,omitempty"`
+	Kind    string `json:"kind,omitempty"`
+}
 
 // DefaultKeep is how many backups are retained unless the user chose otherwise.
 const DefaultKeep = 5
@@ -27,7 +40,7 @@ const stamp = "2006-01-02T15-04-05.000"
 // Saves zips savesDir into backupsDir/<timestamp>.zip through a temp file and rename, then deletes all but the
 // newest keep backups and temp files a crash left. It returns the zip's path (the newest existing one when that is
 // under MinGap old and nothing in savesDir changed since), or "" when savesDir does not exist.
-func Saves(savesDir, backupsDir string, keep int, now time.Time) (string, error) {
+func Saves(savesDir, backupsDir string, keep int, now time.Time, cause Cause) (string, error) {
 	if _, err := os.Stat(savesDir); errors.Is(err, fs.ErrNotExist) {
 		return "", nil
 	} else if err != nil {
@@ -74,7 +87,37 @@ func Saves(savesDir, backupsDir string, keep int, now time.Time) (string, error)
 	if err := os.Rename(tmp.Name(), dst); err != nil {
 		return "", errors.Join(err, os.Remove(tmp.Name()))
 	}
+	if err := writeCause(dst, cause); err != nil {
+		return dst, errors.Join(err, prune(backupsDir, keep, now))
+	}
 	return dst, prune(backupsDir, keep, now)
+}
+
+func writeCause(zipPath string, cause Cause) error {
+	if cause == (Cause{}) {
+		return nil
+	}
+	b, err := json.Marshal(cause)
+	if err != nil {
+		return err
+	}
+	return fsx.WriteFile(causePath(zipPath), b, 0o600)
+}
+
+func causePath(zipPath string) string {
+	return strings.TrimSuffix(zipPath, ".zip") + ".json"
+}
+
+func readCause(zipPath string) Cause {
+	b, err := fsx.ReadFile(causePath(zipPath))
+	if err != nil {
+		return Cause{}
+	}
+	var c Cause
+	if json.Unmarshal(b, &c) != nil {
+		return Cause{}
+	}
+	return c
 }
 
 // lastChange is the newest modification time in the tree; a folder's covers the files removed from it.
@@ -156,7 +199,11 @@ func prune(dir string, keep int, now time.Time) error {
 	}
 	var errs []error
 	for _, n := range zips[:max(0, len(zips)-keep)] {
-		errs = append(errs, os.Remove(filepath.Join(dir, n)))
+		p := filepath.Join(dir, n)
+		errs = append(errs, os.Remove(p))
+		if err := os.Remove(causePath(p)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			errs = append(errs, err)
+		}
 	}
 	tmps, err := filepath.Glob(filepath.Join(dir, "backup-*.tmp"))
 	if err != nil {
