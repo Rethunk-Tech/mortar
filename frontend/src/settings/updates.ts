@@ -68,11 +68,15 @@ export const useMortarUpdate = create<{
         return { release, phase: release.staged ? 'ready' : 'available' }
       })
     },
-    install: () =>
-      run('installing', async () => {
+    install: () => {
+      if (get().phase !== 'available') {
+        return Promise.resolve()
+      }
+      return run('installing', async () => {
         await Install()
         return { phase: 'ready' }
-      }),
+      })
+    },
     restart: () =>
       run('restarting', async () => {
         await Restart()
@@ -80,3 +84,5 @@ export const useMortarUpdate = create<{
       }),
   }
 })
+
+export const getInitialState = () => useMortarUpdate.getInitialState()
