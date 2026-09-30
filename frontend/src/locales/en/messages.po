@@ -7,7 +7,11 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#: src/game/Detail.tsx:130
+#: src/game/Detail.tsx:131
+msgid "No mods yet · created {created}"
+msgstr "No mods yet · created {created}"
+
+#: src/game/Detail.tsx:137
 msgid "Updated"
 msgstr "Updated"
 
@@ -24,8 +28,8 @@ msgstr "Could not change the profile's visibility"
 msgid "It came in one download with {0}, and all of them are removed together."
 msgstr "It came in one download with {0}, and all of them are removed together."
 
-#: src/mods/Toolbar.tsx:70
-#: src/mods/Toolbar.tsx:77
+#: src/mods/Toolbar.tsx:76
+#: src/mods/Toolbar.tsx:83
 msgid "Add archive"
 msgstr "Add archive"
 
@@ -68,11 +72,11 @@ msgstr "Show files"
 msgid "Translucent window"
 msgstr "Translucent window"
 
-#: src/mods/Toolbar.tsx:109
+#: src/mods/Toolbar.tsx:115
 msgid "Grid view"
 msgstr "Grid view"
 
-#: src/mods/Toolbar.tsx:117
+#: src/mods/Toolbar.tsx:123
 msgid "List view"
 msgstr "List view"
 
@@ -101,11 +105,11 @@ msgstr "Enter a name for the profile."
 msgid "Files added"
 msgstr "Files added"
 
-#: src/mods/Toolbar.tsx:40
+#: src/mods/Toolbar.tsx:42
 msgid "Open Nexus"
 msgstr "Open Nexus"
 
-#: src/mods/Toolbar.tsx:131
+#: src/mods/Toolbar.tsx:137
 msgid "Filter mods"
 msgstr "Filter mods"
 
@@ -124,7 +128,7 @@ msgstr "Launch without Steam"
 msgid "Takes effect when Mortar restarts"
 msgstr "Takes effect when Mortar restarts"
 
-#: src/game/Detail.tsx:119
+#: src/game/Detail.tsx:120
 msgid "Rename profile"
 msgstr "Rename profile"
 
@@ -132,7 +136,7 @@ msgstr "Rename profile"
 msgid "Appearance"
 msgstr "Appearance"
 
-#: src/mods/ModsTab.tsx:97
+#: src/mods/ModsTab.tsx:107
 msgid "Add mods from an archive you downloaded, or find them on Nexus."
 msgstr "Add mods from an archive you downloaded, or find them on Nexus."
 
@@ -148,7 +152,7 @@ msgstr "Off"
 msgid "Archive"
 msgstr "Archive"
 
-#: src/game/Detail.tsx:175
+#: src/game/Detail.tsx:182
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
 
@@ -197,7 +201,7 @@ msgstr "Could not duplicate the profile"
 msgid "Resize sidebar"
 msgstr "Resize sidebar"
 
-#: src/game/Detail.tsx:131
+#: src/game/Detail.tsx:138
 msgid "Created"
 msgstr "Created"
 
@@ -231,7 +235,7 @@ msgstr "Mortar"
 msgid "Could not install SMAPI"
 msgstr "Could not install SMAPI"
 
-#: src/mods/ModsTab.tsx:104
+#: src/mods/ModsTab.tsx:127
 msgid "You can also drop archives anywhere on the window."
 msgstr "You can also drop archives anywhere on the window."
 
@@ -285,7 +289,7 @@ msgstr "Enable {0}"
 msgid "About Mortar"
 msgstr "About Mortar"
 
-#: src/game/Detail.tsx:97
+#: src/game/Detail.tsx:98
 #: src/game/NewProfileDialog.tsx:48
 #: src/profiles/ProfilesPage.tsx:110
 msgid "Profile name"
@@ -312,7 +316,7 @@ msgstr "Could not rename the profile"
 msgid "Could not save the profile order"
 msgstr "Could not save the profile order"
 
-#: src/game/Detail.tsx:173
+#: src/game/Detail.tsx:180
 msgid "No profiles yet"
 msgstr "No profiles yet"
 
@@ -345,8 +349,8 @@ msgstr "Not affiliated"
 msgid "Could not check whether the game is running"
 msgstr "Could not check whether the game is running"
 
-#: src/game/Detail.tsx:129
-#: src/game/Detail.tsx:217
+#: src/game/Detail.tsx:136
+#: src/game/Detail.tsx:224
 #: src/mods/ModList.tsx:116
 msgid "Mods"
 msgstr "Mods"
@@ -356,7 +360,7 @@ msgstr "Mods"
 msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
-#: src/mods/Toolbar.tsx:99
+#: src/mods/Toolbar.tsx:105
 msgid "View"
 msgstr "View"
 
@@ -444,7 +448,7 @@ msgstr "Default"
 msgid "UniqueID"
 msgstr "UniqueID"
 
-#: src/game/Detail.tsx:182
+#: src/game/Detail.tsx:189
 msgid "Create your first profile"
 msgstr "Create your first profile"
 
@@ -502,7 +506,7 @@ msgstr "Could not restore the profile"
 msgid "Quit"
 msgstr "Quit"
 
-#: src/mods/Toolbar.tsx:94
+#: src/mods/Toolbar.tsx:100
 msgid "Filter {total, plural, one {# mod} other {# mods}}"
 msgstr "Filter {total, plural, one {# mod} other {# mods}}"
 
@@ -541,7 +545,7 @@ msgstr "Play"
 msgid "Delete {0}?"
 msgstr "Delete {0}?"
 
-#: src/game/Detail.tsx:142
+#: src/game/Detail.tsx:149
 msgid "Created {created} · Updated {updated} · {mods, plural, one {# mod} other {# mods}}"
 msgstr "Created {created} · Updated {updated} · {mods, plural, one {# mod} other {# mods}}"
 
@@ -624,7 +628,7 @@ msgstr "Accent colour"
 msgid "Profiles"
 msgstr "Profiles"
 
-#: src/mods/ModsTab.tsx:22
+#: src/mods/ModsTab.tsx:23
 msgid "No mods match your search."
 msgstr "No mods match your search."
 
@@ -644,7 +648,7 @@ msgstr "Source"
 msgid "Steam's launch options for Stardew Valley lack the SMAPI line. Set them to \"<game folder>\\StardewModdingAPI.exe\" %command%."
 msgstr "Steam's launch options for Stardew Valley lack the SMAPI line. Set them to \"<game folder>\\StardewModdingAPI.exe\" %command%."
 
-#: src/mods/Toolbar.tsx:40
+#: src/mods/Toolbar.tsx:42
 msgid "Browse Nexus"
 msgstr "Browse Nexus"
 
@@ -665,7 +669,7 @@ msgstr "Could not save the last game"
 msgid "SMAPI {0} is available"
 msgstr "SMAPI {0} is available"
 
-#: src/mods/ModsTab.tsx:95
+#: src/mods/ModsTab.tsx:105
 msgid "No mods yet"
 msgstr "No mods yet"
 
@@ -700,7 +704,7 @@ msgstr "{0, plural, one {# day left} other {# days left}}"
 msgid "Close"
 msgstr "Close"
 
-#: src/mods/Toolbar.tsx:77
+#: src/mods/Toolbar.tsx:83
 msgid "Adding…"
 msgstr "Adding…"
 

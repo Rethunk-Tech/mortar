@@ -32,15 +32,18 @@ const viewButton = (active: boolean) => ({
 export function BrowseNexus({
   variant,
   toolbar = false,
+  size,
 }: {
   variant: 'contained' | 'outlined'
   toolbar?: boolean
+  size?: 'large'
 }) {
   const { t } = useLingui()
   const label = toolbar ? t`Open Nexus` : t`Browse Nexus`
   return (
     <Button
       variant={variant}
+      size={size}
       aria-label={label}
       startIcon={<ExternalLink size={14} />}
       onClick={() => {
@@ -56,9 +59,11 @@ export function BrowseNexus({
 export function AddArchive({
   variant,
   toolbar = false,
+  size,
 }: {
   variant: 'contained' | 'outlined'
   toolbar?: boolean
+  size?: 'large'
 }) {
   const { t } = useLingui()
   const installing = useInstall((s) => s.pending > 0)
@@ -66,6 +71,7 @@ export function AddArchive({
   return (
     <Button
       variant={variant}
+      size={size}
       disabled={installing}
       aria-label={t`Add archive`}
       startIcon={installing ? <CircularProgress size={14} color="inherit" /> : <Plus size={14} />}

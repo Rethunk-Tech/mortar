@@ -90,42 +90,49 @@ function Hero({ profile }: { profile: Profile }) {
           [compact]: { top: 0, bottom: 0, left: 16, right: 16, alignItems: 'center' },
         }}
       >
-        <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 1 }}>
-          {editing ? (
-            <NameField
-              initial={profile.name}
-              label={t`Profile name`}
-              onSubmit={(name) =>
-                name.trim() === profile.name ? Promise.resolve(true) : rename(profile.id, name)
-              }
-              onCancel={() => setEditing(false)}
-            />
-          ) : (
-            <>
-              <Typography
-                noWrap={true}
-                sx={{
-                  fontSize: 44,
-                  fontWeight: 700,
-                  lineHeight: 1.1,
-                  color: '#ffffff',
-                  textShadow: '0 0 32px rgba(255,255,255,0.45)',
-                  [compact]: { fontSize: 22 },
-                }}
-              >
-                {profile.name}
-              </Typography>
-              <IconButton
-                aria-label={t`Rename profile`}
-                onClick={() => setEditing(true)}
-                size="small"
-              >
-                <Pencil size={16} />
-              </IconButton>
-            </>
-          )}
+        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {editing ? (
+              <NameField
+                initial={profile.name}
+                label={t`Profile name`}
+                onSubmit={(name) =>
+                  name.trim() === profile.name ? Promise.resolve(true) : rename(profile.id, name)
+                }
+                onCancel={() => setEditing(false)}
+              />
+            ) : (
+              <>
+                <Typography
+                  noWrap={true}
+                  sx={{
+                    fontSize: 44,
+                    fontWeight: 700,
+                    lineHeight: 1.1,
+                    color: '#ffffff',
+                    textShadow: '0 0 32px rgba(255,255,255,0.45)',
+                    [compact]: { fontSize: 22 },
+                  }}
+                >
+                  {profile.name}
+                </Typography>
+                <IconButton
+                  aria-label={t`Rename profile`}
+                  onClick={() => setEditing(true)}
+                  size="small"
+                >
+                  <Pencil size={16} />
+                </IconButton>
+              </>
+            )}
+          </Box>
+          {mods === 0 ? (
+            <Typography sx={{ fontSize: 15, [compact]: { display: 'none' } }}>
+              {t`No mods yet · created ${created}`}
+            </Typography>
+          ) : null}
         </Box>
-        <Box sx={{ display: 'flex', gap: 1, [compact]: { display: 'none' } }}>
+        <Box sx={{ display: mods > 0 ? 'flex' : 'none', gap: 1, [compact]: { display: 'none' } }}>
           <Card label={t`Mods`} value={String(mods)} />
           <Card label={t`Updated`} value={updated} />
           <Card label={t`Created`} value={created} />

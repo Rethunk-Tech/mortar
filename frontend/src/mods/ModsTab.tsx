@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Card, Typography } from '@mui/material'
+import { Download } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
   Mod,
@@ -90,19 +91,41 @@ export function ModsTab({ profile }: { profile: Profile }) {
   if ((profile.entries ?? []).length === 0) {
     return (
       <Box
-        sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1.5 }}
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 2.25,
+          px: 3,
+          textAlign: 'center',
+        }}
       >
-        <Typography sx={{ fontSize: 20, fontWeight: 600 }}>{t`No mods yet`}</Typography>
-        <Typography sx={{ color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 26, fontWeight: 700 }}>{t`No mods yet`}</Typography>
+        <Typography sx={{ maxWidth: 520, fontSize: 15, lineHeight: 1.5 }}>
           {t`Add mods from an archive you downloaded, or find them on Nexus.`}
         </Typography>
-        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-          <AddArchive variant="contained" />
-          <BrowseNexus variant="outlined" />
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
+          <BrowseNexus variant="contained" size="large" />
+          <AddArchive variant="outlined" size="large" />
         </Box>
-        <Typography sx={{ color: 'text.secondary' }}>
+        <Box
+          sx={{
+            mt: 1.5,
+            px: 1.75,
+            py: 1.25,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.25,
+            fontSize: 14,
+            border: '1px dashed rgba(255,255,255,0.25)',
+            borderRadius: '8px',
+          }}
+        >
+          <Download size={16} aria-hidden={true} />
           {t`You can also drop archives anywhere on the window.`}
-        </Typography>
+        </Box>
       </Box>
     )
   }
