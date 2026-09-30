@@ -133,6 +133,7 @@ function Row({ profile, onDelete }: { profile: Profile; onDelete: (p: Profile) =
         anchorEl={anchor}
         open={anchor !== null}
         onClose={() => setAnchor(null)}
+        disableRestoreFocus={true}
         slotProps={dialogPaper}
       >
         <MenuItem onClick={choose(() => setRenaming(true))}>

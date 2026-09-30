@@ -172,11 +172,11 @@ export function Detail() {
   }
   return (
     <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-      <Hero key={profile.id} profile={profile} />
+      <Hero key={`hero-${profile.id}`} profile={profile} />
       <Tabs value="mods" sx={{ px: 2, flexShrink: 0 }}>
         <Tab value="mods" label={<Trans>Mods</Trans>} />
       </Tabs>
-      <ModsTab key={profile.id} profile={profile} />
+      <ModsTab key={`mods-${profile.id}`} profile={profile} />
     </Box>
   )
 }
