@@ -8,16 +8,18 @@ import (
 const (
 	defaultListSortColumn = "name"
 	defaultListSortDir    = "asc"
+	defaultListGroupBy    = "none"
 )
 
 var (
 	knownListColumns = []string{
 		"on", "name", "version", "latest", "uniqueId", "author", "source", "category",
-		"endorsements", "downloads", "updated", "installed", "needs", "status",
+		"endorsements", "downloads", "updated", "installed", "needs", "status", "notes",
 	}
 	defaultListColumns = []string{"on", "name", "version", "author", "source", "category", "status"}
 	lockedListColumns  = []string{"on", "name"}
 	listSortDirs       = []string{"asc", "desc"}
+	listGroupBys       = []string{"none", "category", "source", "tag"}
 )
 
 func knownListColumn(id string) bool {
@@ -62,6 +64,13 @@ func sanitizeListSort(column, dir string) (string, string) {
 	return column, dir
 }
 
+func sanitizeListGroupBy(by string) string {
+	if !slices.Contains(listGroupBys, by) {
+		return defaultListGroupBy
+	}
+	return by
+}
+
 func validateList(s Settings) error {
 	for _, id := range s.ListColumns {
 		if !knownListColumn(id) {
@@ -74,10 +83,14 @@ func validateList(s Settings) error {
 	if s.ListSortDir != "" && !slices.Contains(listSortDirs, s.ListSortDir) {
 		return fmt.Errorf("unknown list sort direction %q", s.ListSortDir)
 	}
+	if s.ListGroupBy != "" && !slices.Contains(listGroupBys, s.ListGroupBy) {
+		return fmt.Errorf("unknown list group %q", s.ListGroupBy)
+	}
 	return nil
 }
 
 func normalizeList(s *Settings) {
 	s.ListColumns = sanitizeListColumns(s.ListColumns)
 	s.ListSortColumn, s.ListSortDir = sanitizeListSort(s.ListSortColumn, s.ListSortDir)
+	s.ListGroupBy = sanitizeListGroupBy(s.ListGroupBy)
 }

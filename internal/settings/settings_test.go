@@ -38,7 +38,7 @@ func TestDefaultsAndRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := Settings{"moss", BackgroundSolid, "/pics/a.png", "lethal", map[string]string{}, map[string]Played{}, map[string]string{}, map[string]string{}, map[string][]string{}, 0, "", false, true, "vortex.desktop", false, backup.DefaultKeep, slices.Clone(defaultListColumns), defaultListSortColumn, defaultListSortDir, on(), on()}
+	want := Settings{"moss", BackgroundSolid, "/pics/a.png", "lethal", map[string]string{}, map[string]Played{}, map[string]string{}, map[string]string{}, map[string][]string{}, 0, "", false, true, "vortex.desktop", false, backup.DefaultKeep, slices.Clone(defaultListColumns), defaultListSortColumn, defaultListSortDir, defaultListGroupBy, on(), on(), nil}
 	if got := s2.Get(); !reflect.DeepEqual(got, want) {
 		t.Fatalf("round trip = %+v", got)
 	}
@@ -188,7 +188,7 @@ func TestBackupsKeptRange(t *testing.T) {
 
 func TestListColumns(t *testing.T) {
 	s, dir := open(t)
-	if got := s.Get(); !slices.Equal(got.ListColumns, defaultListColumns) || got.ListSortColumn != defaultListSortColumn || got.ListSortDir != defaultListSortDir {
+	if got := s.Get(); !slices.Equal(got.ListColumns, defaultListColumns) || got.ListSortColumn != defaultListSortColumn || got.ListSortDir != defaultListSortDir || got.ListGroupBy != defaultListGroupBy {
 		t.Fatalf("defaults = %+v", got)
 	}
 	if _, err := s.Update(func(v *Settings) { v.ListColumns = []string{"on", "name", "nope"} }); err == nil {
@@ -199,24 +199,27 @@ func TestListColumns(t *testing.T) {
 	}
 	next := []string{"on", "name", "version"}
 	if _, err := s.Update(func(v *Settings) {
-		v.ListColumns, v.ListSortColumn, v.ListSortDir = next, "author", "desc"
+		v.ListColumns, v.ListSortColumn, v.ListSortDir, v.ListGroupBy = next, "author", "desc", "tag"
 	}); err != nil {
 		t.Fatal(err)
 	}
-	if got := s.Get(); !slices.Equal(got.ListColumns, next) || got.ListSortColumn != "author" || got.ListSortDir != "desc" {
+	if got := s.Get(); !slices.Equal(got.ListColumns, next) || got.ListSortColumn != "author" || got.ListSortDir != "desc" || got.ListGroupBy != "tag" {
 		t.Fatalf("set = %+v", got)
 	}
 	if _, err := s.Update(func(v *Settings) { v.ListSortColumn = "nope" }); err == nil {
 		t.Fatal("unknown sort column accepted")
 	}
-	if err := os.WriteFile(filepath.Join(dir, fileName), []byte(`{"accent":"sand","background":"image","listColumns":["nope","name"],"listSortColumn":"nope","listSortDir":"up"}`), 0o600); err != nil {
+	if _, err := s.Update(func(v *Settings) { v.ListGroupBy = "nope" }); err == nil {
+		t.Fatal("unknown group accepted")
+	}
+	if err := os.WriteFile(filepath.Join(dir, fileName), []byte(`{"accent":"sand","background":"image","listColumns":["nope","name"],"listSortColumn":"nope","listSortDir":"up","listGroupBy":"nope"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s2, err := Open()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := s2.Get(); !slices.Equal(got.ListColumns, []string{"on", "name"}) || got.ListSortColumn != defaultListSortColumn || got.ListSortDir != defaultListSortDir {
+	if got := s2.Get(); !slices.Equal(got.ListColumns, []string{"on", "name"}) || got.ListSortColumn != defaultListSortColumn || got.ListSortDir != defaultListSortDir || got.ListGroupBy != defaultListGroupBy {
 		t.Fatalf("load = %+v", got)
 	}
 	if err := os.WriteFile(filepath.Join(dir, fileName), []byte(`{"accent":"sand","background":"image"}`), 0o600); err != nil {
