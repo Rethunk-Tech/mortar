@@ -1,34 +1,48 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Dialog, DialogContent, DialogTitle } from '@mui/material'
-import { useEffect, useId } from 'react'
-import { type SettingsSection, useSettingsDialog } from './SettingsDialogStore.ts'
+import { Box, ButtonBase, Typography } from '@mui/material'
+import { ArrowLeft } from 'lucide-react'
+import { useEffect } from 'react'
+import { type SettingsSection, useNav } from '../nav/store.ts'
 import { About } from './sections/About.tsx'
 import { Appearance } from './sections/Appearance.tsx'
 
-export function SettingsDialog() {
+export function SettingsPage({ section }: { section: SettingsSection }) {
   const { t } = useLingui()
-  const titleId = useId()
-  const { open, section, close, setSection, openSettings } = useSettingsDialog()
+  const closeSettings = useNav((s) => s.closeSettings)
+  const setSection = useNav((s) => s.openSettings)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === ',') {
-        e.preventDefault()
-        openSettings()
+      if (e.key === 'Escape') {
+        closeSettings()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [openSettings])
+  }, [closeSettings])
   const sections: { id: SettingsSection; label: string }[] = [
     { id: 'appearance', label: t`Appearance` },
     { id: 'about', label: t`About` },
   ]
   return (
-    <Dialog open={open} onClose={close} fullWidth={true} maxWidth="md" aria-labelledby={titleId}>
-      <DialogTitle id={titleId}>
-        <Trans>Settings</Trans>
-      </DialogTitle>
-      <DialogContent sx={{ display: 'flex', gap: 3, minHeight: 360 }}>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.5 }}>
+        <ButtonBase
+          aria-label={t`Back`}
+          onClick={closeSettings}
+          sx={{
+            width: 36,
+            height: 36,
+            borderRadius: '6px',
+            '&:hover': { bgcolor: 'action.hover' },
+          }}
+        >
+          <ArrowLeft size={20} />
+        </ButtonBase>
+        <Typography component="h1" sx={{ fontSize: 22, fontWeight: 600 }}>
+          <Trans>Settings</Trans>
+        </Typography>
+      </Box>
+      <Box sx={{ flex: 1, minHeight: 0, display: 'flex', gap: 3, px: 2, pb: 2 }}>
         <Box
           component="nav"
           aria-label={t`Settings sections`}
@@ -55,10 +69,10 @@ export function SettingsDialog() {
             </ButtonBase>
           ))}
         </Box>
-        <Box sx={{ flexGrow: 1, minWidth: 0, pt: 1 }}>
+        <Box sx={{ flexGrow: 1, minWidth: 0, overflow: 'auto', pt: 1 }}>
           {section === 'appearance' ? <Appearance /> : <About />}
         </Box>
-      </DialogContent>
-    </Dialog>
+      </Box>
+    </Box>
   )
 }

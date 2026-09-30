@@ -4,7 +4,7 @@ import { Get } from '../bindings/github.com/Rethunk-AI/mortar/internal/settings/
 import { GameSelect } from './games/GameSelect.tsx'
 import { loadGameStatus } from './games/status.ts'
 import { useNav } from './nav/store.ts'
-import { SettingsDialog } from './settings/SettingsDialog.tsx'
+import { SettingsPage } from './settings/SettingsPage.tsx'
 import { AppFrame } from './shell/AppFrame.tsx'
 import { useToasts } from './toasts/store.ts'
 import { ToastHost } from './toasts/ToastHost.tsx'
@@ -28,11 +28,23 @@ export function App() {
       )
       .finally(() => setReady(true))
   }, [t])
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === ',') {
+        e.preventDefault()
+        useNav.getState().openSettings()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
   return (
     <>
-      <AppFrame>{ready && route.name === 'game-select' ? <GameSelect /> : null}</AppFrame>
+      <AppFrame>
+        {route.name === 'settings' ? <SettingsPage section={route.section} /> : null}
+        {ready && route.name === 'game-select' ? <GameSelect /> : null}
+      </AppFrame>
       <ToastHost />
-      <SettingsDialog />
     </>
   )
 }

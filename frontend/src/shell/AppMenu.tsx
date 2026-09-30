@@ -3,7 +3,7 @@ import { ButtonBase, Menu, MenuItem } from '@mui/material'
 import { Application } from '@wailsio/runtime'
 import { useState } from 'react'
 import { Logo } from '../brand/Logo.tsx'
-import { openSettings } from '../settings/SettingsDialogStore.ts'
+import { openSettings } from '../nav/store.ts'
 import { useToasts } from '../toasts/store.ts'
 
 export function AppMenu() {

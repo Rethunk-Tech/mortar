@@ -91,6 +91,11 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
           <Trans>Stardew Valley</Trans>
         </Tab>
       )}
+      {route.name === 'settings' && (
+        <Tab active={true} onClick={() => undefined}>
+          <Trans>Settings</Trans>
+        </Tab>
+      )}
       <Box sx={{ flexGrow: 1 }} />
       <WindowButton label={t`Minimise`} onClick={win.minimise}>
         <Minus size={14} />
