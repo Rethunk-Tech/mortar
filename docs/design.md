@@ -4,16 +4,9 @@ This file holds only work that is decided but not built. Each item is written to
 
 Items marked **Measure** need a throwaway test first; those tests run outside this repo and only their results land here. Measurements were taken as stated in architecture.md.
 
-## Nexus download queue (milestone 4)
-
-- **Guided queue for free accounts:** an import or a profile's missing files run a queue. Mortar opens each missing file's download page in turn, `https://www.nexusmods.com/stardewvalley/mods/<id>?tab=files&file_id=<file id>&nmm=1`, the URL Vortex opens for free accounts (`Nexus-Mods/Vortex` `src/renderer/src/extensions/nexus_integration/eventHandlers.ts`), takes the `nxm://` link from the user's click, downloads and installs it, and opens the next. An expired key reopens its page. Premium accounts download without clicks (facts: [architecture.md](architecture.md#nexus-mods)).
-- **Failure:** Nexus unreachable or erroring pauses the queue and retries with backoff; a reached rate limit waits for the reset time and shows it.
-- **`nxm://` routing:** a valid link (rules in [architecture.md](architecture.md#trust-boundaries)) whose mod and file match a waiting queue item completes that item instead of showing the arrival card.
-- Screen: [gui-design.md](gui-design.md#download-queue).
-
 ## GitHub sources (milestone 4)
 
-An `UpdateKeys` entry `GitHub:<owner>/<repo>` maps to `/repos/<owner>/<repo>/releases`, read without sign-in (60 calls an hour per IP, so results are cached, update checks go through SMAPI's API first, and a reached limit shows its retry time). An install or update takes the release's only archive asset, or asks when there are several. A GitHub reference in a link is marked unverified in the preview; after download, the mod installs only if SMAPI's update API (`includeExtendedMetadata: true`) gives the manifest's `UniqueID` the same `metadata.gitHubRepo`, otherwise the user sees the mismatch and decides. GitHub being unreachable degrades the feature and never blocks.
+The `internal/github` library is built ([architecture.md](architecture.md#github-releases)). Remaining: wire it into installs and updates. An `UpdateKeys` entry `GitHub:<owner>/<repo>` selects the source, update checks go through SMAPI's API first, and a GitHub reference in a link is marked unverified in the preview. After download, the mod installs only if the trust rule holds; otherwise the user sees the mismatch and decides.
 
 ## Sharing (milestone 5)
 
@@ -50,7 +43,7 @@ After the go-ahead, each milestone ends with the gate green and NOMAD clicking t
 1. **Shell and look.** Remaining: when wailsapp/wails#6197 (GTK4 transparency) ships in a tagged v3 beta, pin that beta and drop the `Rethunk-AI/wails` replace in `go.mod`.
 2. **Stardew core.** Built.
 3. **Mod data.** Built.
-4. **Nexus.** Remaining: the guided download queue and its queue icon, GitHub mod sources. Built: personal-key sign-in, the Mortar drawer's account section, runtime `nxm://` registration and its notifications.
+4. **Nexus.** Remaining: wiring GitHub sources into installs and updates. Built: personal-key sign-in, the Mortar drawer's account section, runtime `nxm://` registration and its notifications, the download queue.
 5. **Sharing.** Links, the Share dialog, the import preview, `.mortar` files, the static page, and first run's **From a shared link** card.
 6. **Release.** smapi.io/log upload and the GitHub issue link, the updater patches and signed manifest, Settings › Updates, Check for updates and Report a bug in the app menu, Windows measurements and fixes, packaging, the repo made public.
 
