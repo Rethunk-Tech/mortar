@@ -568,7 +568,7 @@ msgstr "Check again"
 msgid "different file"
 msgstr "different file"
 
-#: src/settings/sections/Updates.tsx:32
+#: src/settings/sections/Updates.tsx:34
 msgid "Mortar is up to date."
 msgstr "Mortar is up to date."
 
@@ -576,7 +576,7 @@ msgstr "Mortar is up to date."
 msgid "Report a Mortar bug"
 msgstr "Report a Mortar bug"
 
-#: src/settings/sections/Updates.tsx:121
+#: src/settings/sections/Updates.tsx:163
 msgid "Mod updates show on each profile's mod list, and SMAPI's in the game's settings."
 msgstr "Mod updates show on each profile's mod list, and SMAPI's in the game's settings."
 
@@ -652,7 +652,7 @@ msgstr "Stardew green"
 msgid "Delete"
 msgstr "Delete"
 
-#: src/settings/sections/Updates.tsx:30
+#: src/settings/sections/Updates.tsx:32
 msgid "Not checked yet."
 msgstr "Not checked yet."
 
@@ -761,7 +761,7 @@ msgid " · Stardew Valley {version}"
 msgstr " · Stardew Valley {version}"
 
 #: src/settings/sections/About.tsx:21
-#: src/settings/sections/Updates.tsx:117
+#: src/settings/sections/Updates.tsx:159
 #: src/shell/AppMenu.tsx:63
 msgid "Mortar"
 msgstr "Mortar"
@@ -915,7 +915,7 @@ msgstr "Choose a file…"
 msgid "Background preview"
 msgstr "Background preview"
 
-#: src/settings/sections/Updates.tsx:36
+#: src/settings/sections/Updates.tsx:38
 msgid "Restarting…"
 msgstr "Restarting…"
 
@@ -1101,7 +1101,7 @@ msgid "Create"
 msgstr "Create"
 
 #. placeholder {0}: release?.version ?? ''
-#: src/settings/sections/Updates.tsx:33
+#: src/settings/sections/Updates.tsx:35
 msgid "Mortar {0} is available."
 msgstr "Mortar {0} is available."
 
@@ -1115,7 +1115,7 @@ msgid "config.json, made by the mod"
 msgstr "config.json, made by the mod"
 
 #. placeholder {0}: release?.version ?? ''
-#: src/settings/sections/Updates.tsx:35
+#: src/settings/sections/Updates.tsx:37
 msgid "Mortar {0} is ready. Restart Mortar to finish updating."
 msgstr "Mortar {0} is ready. Restart Mortar to finish updating."
 
@@ -1311,7 +1311,11 @@ msgstr "Times"
 msgid "Only a Flatpak Steam was found."
 msgstr "Only a Flatpak Steam was found."
 
-#: src/settings/sections/Updates.tsx:129
+#: src/settings/sections/Updates.tsx:147
+msgid "Saves are zipped before mods update; older backups beyond this many are deleted. 1 to 50."
+msgstr "Saves are zipped before mods update; older backups beyond this many are deleted. 1 to 50."
+
+#: src/settings/sections/Updates.tsx:171
 msgid "Open Stardew Valley settings"
 msgstr "Open Stardew Valley settings"
 
@@ -1385,7 +1389,7 @@ msgstr "No update checks, and it can't go in a share link."
 msgid "Open in Mortar"
 msgstr "Open in Mortar"
 
-#: src/settings/sections/Updates.tsx:58
+#: src/settings/sections/Updates.tsx:60
 msgid "Download and install"
 msgstr "Download and install"
 
@@ -1444,7 +1448,7 @@ msgstr "Downloading {name} into {profileName}"
 msgid "The page reads the profile from the link itself. Nothing is uploaded or stored on a server."
 msgstr "The page reads the profile from the link itself. Nothing is uploaded or stored on a server."
 
-#: src/settings/sections/Updates.tsx:70
+#: src/settings/sections/Updates.tsx:72
 msgid "Restart now"
 msgstr "Restart now"
 
@@ -1708,13 +1712,17 @@ msgstr "Open download page"
 msgid "Handle Nexus download links?"
 msgstr "Handle Nexus download links?"
 
-#: src/settings/sections/Updates.tsx:119
+#: src/settings/sections/Updates.tsx:161
 msgid "Mods and SMAPI"
 msgstr "Mods and SMAPI"
 
 #: src/firstrun/SmapiStep.tsx:244
 msgid "SMAPI is the loader every Stardew mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 msgstr "SMAPI is the loader every Stardew mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
+
+#: src/settings/sections/Updates.tsx:138
+msgid "Backups kept"
+msgstr "Backups kept"
 
 #: src/share/ShareDialog.tsx:239
 msgid "A .mortar file suits a profile this size better, and carries your mod settings too."
@@ -1816,7 +1824,7 @@ msgstr "{name} did not start"
 msgid "Mortar checks Steam's settings for it: not found yet."
 msgstr "Mortar checks Steam's settings for it: not found yet."
 
-#: src/settings/sections/Updates.tsx:47
+#: src/settings/sections/Updates.tsx:49
 msgid "Check now"
 msgstr "Check now"
 
@@ -1861,6 +1869,10 @@ msgstr "Details of {0}"
 #: src/mods/Toolbar.tsx:102
 msgid "Filter {total, plural, one {# mod} other {# mods}}"
 msgstr "Filter {total, plural, one {# mod} other {# mods}}"
+
+#: src/settings/sections/Updates.tsx:174
+msgid "Save backups"
+msgstr "Save backups"
 
 #: src/shell/AppMenu.tsx:45
 #: src/shell/AppMenu.tsx:82
@@ -2032,7 +2044,7 @@ msgid "Minimise"
 msgstr "Minimise"
 
 #. placeholder {0}: info.version
-#: src/settings/sections/Updates.tsx:78
+#: src/settings/sections/Updates.tsx:80
 msgid "Installed: Mortar {0}"
 msgstr "Installed: Mortar {0}"
 
@@ -2076,7 +2088,7 @@ msgid "Steam may not be running or signed in. Start Steam, sign in and try again
 msgstr "Steam may not be running or signed in. Start Steam, sign in and try again."
 
 #. placeholder {0}: info.version
-#: src/settings/sections/Updates.tsx:24
+#: src/settings/sections/Updates.tsx:26
 msgid "This is a development build of Mortar {0}, so it does not check for updates."
 msgstr "This is a development build of Mortar {0}, so it does not check for updates."
 
@@ -2222,7 +2234,7 @@ msgid "{count} installed"
 msgstr "{count} installed"
 
 #. placeholder {0}: release?.version ?? ''
-#: src/settings/sections/Updates.tsx:34
+#: src/settings/sections/Updates.tsx:36
 msgid "Downloading and verifying Mortar {0}…"
 msgstr "Downloading and verifying Mortar {0}…"
 
@@ -2366,7 +2378,7 @@ msgstr "Open Nexus settings"
 msgid "Reinstall"
 msgstr "Reinstall"
 
-#: src/settings/sections/Updates.tsx:31
+#: src/settings/sections/Updates.tsx:33
 msgid "Checking for updates…"
 msgstr "Checking for updates…"
 
@@ -2388,6 +2400,7 @@ msgid "Open settings"
 msgstr "Open settings"
 
 #: src/settings/sections/Appearance.tsx:24
+#: src/settings/sections/Updates.tsx:129
 msgid "Couldn't save that setting"
 msgstr "Couldn't save that setting"
 
@@ -2497,7 +2510,7 @@ msgstr "No config.json yet"
 msgid "{gameName} settings"
 msgstr "{gameName} settings"
 
-#: src/settings/sections/Updates.tsx:37
+#: src/settings/sections/Updates.tsx:39
 msgid "Could not update: {error}"
 msgstr "Could not update: {error}"
 
