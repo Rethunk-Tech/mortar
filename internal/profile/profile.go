@@ -158,6 +158,26 @@ func cleanName(name string) (string, error) {
 	return name, nil
 }
 
+// UniqueName returns name when no taken name equals it (ignoring case), else "name (2)", "name (3)" and so on with the
+// first number that is free. A long name is cut so the result still fits maxName.
+func UniqueName(taken []string, name string) string {
+	name = strings.TrimSpace(name)
+	used := func(n string) bool {
+		return slices.ContainsFunc(taken, func(t string) bool { return strings.EqualFold(strings.TrimSpace(t), n) })
+	}
+	if !used(name) {
+		return name
+	}
+	for n := 2; ; n++ {
+		suffix := fmt.Sprintf(" (%d)", n)
+		runes := []rune(name)
+		candidate := string(runes[:min(len(runes), maxName-len(suffix))]) + suffix
+		if !used(candidate) {
+			return candidate
+		}
+	}
+}
+
 func (s *Store) gameDir(id string) (string, error) {
 	if !game.Valid(id) {
 		return "", fmt.Errorf("unknown game %q", id)

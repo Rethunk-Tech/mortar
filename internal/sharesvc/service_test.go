@@ -109,6 +109,20 @@ func TestImportCreatesNothingBeforeConfirmAndQueuesAvailable(t *testing.T) {
 	}
 }
 
+func TestImportNamesAClashingProfileWithANumber(t *testing.T) {
+	s, _ := newService(t, true)
+	if _, err := s.d.Profiles.Create("stardew", "Cozy co-op"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.PreviewLink(context.Background(), "stardew", link(t, "Cozy co-op", share.Ref{ModID: 100, FileID: 1}), ""); err != nil {
+		t.Fatal(err)
+	}
+	res, err := s.Import("stardew", "", nil)
+	if err != nil || res.Profile.Name != "Cozy co-op (2)" {
+		t.Fatalf("import = %q, %v", res.Profile.Name, err)
+	}
+}
+
 func TestImportNeedsSignInForNexusAndCreatesNothing(t *testing.T) {
 	s, rec := newService(t, false)
 	text := link(t, "Cozy", share.Ref{ModID: 100, FileID: 1})

@@ -390,7 +390,7 @@ func joinNotes(parts ...string) string {
 }
 
 // Import queues everything the preview lists as available, except the excluded keys, into profileID, or into a
-// new profile named as the share when profileID is empty. Mods the preview marked unavailable are listed in the
+// new profile named as the share (with " (2)" and so on when that name is taken) when profileID is empty. Mods the preview marked unavailable are listed in the
 // new profile's notes. A .mortar file's config files are written once their mods are installed.
 func (s *Service) Import(game, profileID string, exclude []string) (Result, error) {
 	s.mu.Lock()
@@ -414,7 +414,15 @@ func (s *Service) Import(game, profileID string, exclude []string) (Result, erro
 	var res Result
 	created := profileID == ""
 	if created {
-		p, err := s.d.Profiles.Create(game, cur.preview.Name)
+		existing, err := s.d.Profiles.List(game)
+		if err != nil {
+			return Result{}, err
+		}
+		names := make([]string, len(existing))
+		for i, e := range existing {
+			names[i] = e.Name
+		}
+		p, err := s.d.Profiles.Create(game, profile.UniqueName(names, cur.preview.Name))
 		if err != nil {
 			return Result{}, err
 		}
