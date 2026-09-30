@@ -159,9 +159,24 @@ Sources: Gale (`Kesomannen/gale`), r2modmanPlus (`ebkr/r2modmanPlus`), the Thund
 
 What a shared profile holds: name, game, and per mod its source reference (Nexus mod and file ID, `<owner>/<repo>@<tag>` for GitHub, or `Namespace-Name-Version` for Thunderstore). Mod configs only in the `.mortar` file.
 
-**Self-contained Brotli links; no hosted service in v1 (NOMAD, 2026-09-29).** A hosted share service, and share versioning with it, are parked for v2 to avoid running costs. The link carries the whole profile: `mortar://stardew/p/<payload>`, where the payload is compact JSON (`["<profile name>", [[<nexus mod id>, <nexus file id>], ...]]`), Brotli-compressed at quality 11 and base64url-encoded without padding. Measured on real mod IDs sampled from SMAPI's `StardewModDataset` (`dataset/indexes/pages by mod ID.json`, 2026-09-29), the whole link is 498 characters for 50 mods, 879 for 100 and 1,630 for 200, so profiles up to about 240 mods fit a 2,000-character Discord message. Including SMAPI `UniqueID`s pushes 100 mods to 3,435 characters, because those IDs barely compress, so the link carries none: the recipient reads each `UniqueID` from the downloaded mod's manifest and matches mods it already has through their `Nexus:` update keys. Brotli beats gzip by 12 to 15% at every size. A GitHub-hosted mod adds `"<owner>/<repo>@<tag>"` in place of the ID pair. Mod configs do not fit in a link and travel in an optional `.mortar` file (the same JSON plus configs, uncompressed zip).
+**Self-contained Brotli links; no hosted service in v1 (NOMAD, 2026-09-29).** A hosted share service, and share versioning with it, are parked for v2 to avoid running costs. The link carries the whole profile: `mortar://stardew/p/<payload>`, where the payload is compact JSON (`[1, "<profile name>", [[<nexus mod id>, <nexus file id>], ...]]`, the leading number being the format version, so an older Mortar that meets a newer format says to update instead of misreading it), Brotli-compressed at quality 11 and base64url-encoded without padding. Measured on real mod IDs sampled from SMAPI's `StardewModDataset` (`dataset/indexes/pages by mod ID.json`, 2026-09-29), the whole link is 498 characters for 50 mods, 879 for 100 and 1,630 for 200, so profiles up to about 240 mods fit a 2,000-character Discord message. Including SMAPI `UniqueID`s pushes 100 mods to 3,435 characters, because those IDs barely compress, so the link carries none: the recipient reads each `UniqueID` from the downloaded mod's manifest and matches mods it already has through their `Nexus:` update keys. Brotli beats gzip by 12 to 15% at every size. A GitHub-hosted mod adds `"<owner>/<repo>@<tag>"` in place of the ID pair. Mod configs do not fit in a link and travel in an optional `.mortar` file (the same JSON plus configs, uncompressed zip).
 
 For Lethal Company, r2modman codes through Thunderstore stay supported for import and export alongside Mortar links.
+
+## Failure behaviour
+
+Mortar works offline once mods are installed: nothing external is needed to open, edit or launch a profile. For each outside failure:
+
+- **Nexus unreachable or erroring:** the download queue pauses and retries with backoff; everything else keeps working. **Rate limit reached:** the queue pauses until the reset time in the `x-rl-*` headers and shows it.
+- **An `nxm://` key expired** before its download started: that item reopens the mod's files page for a fresh click.
+- **SMAPI update API, mod dataset or GitHub unreachable or changed:** the affected feature degrades, never blocks. Update checks show "unknown"; an import preview says dependencies are checked after download, and manifests are read then; GitHub's anonymous limit (60 an hour) shows its retry time.
+- **A download is cut off or corrupt:** extraction goes to a temp folder on the store's volume and is renamed into the store only when every entry extracted and passed its zip checksum; failure deletes the temp folder and the item can be retried. **Disk full** fails the same way, saying how much space the item needs.
+- **A mod in a shared profile is gone from Nexus:** the import preview marks it unavailable with its page link and installs the rest.
+- **A game update overwrote SMAPI's Linux launcher:** detected at startup and before launch (the `StardewValley` file is no longer SMAPI's), with the reinstall prompt.
+- **The game is running:** its profile's folder is locked against changes (Windows locks loaded files anyway); edits wait until the game exits.
+- **Steam is missing or not running:** `-applaunch` starts Steam when it is installed; when it is not, a Steam copy can still launch directly through SMAPI, without the overlay, after the user agrees.
+- **Mortar quits mid-operation:** every write is temp-file-then-rename, and startup removes leftover temp folders. A profile folder deleted outside Mortar is rebuilt from the store, since `profile.json` is the record.
+- **SMAPI exits before writing its log:** the console shows the launch command's own result instead.
 
 ## Build order
 
