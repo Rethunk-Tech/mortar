@@ -27,7 +27,7 @@ export const useLastRun = create<{
       const byId: Record<string, ModRunIssues> = {}
       for (const row of got.mods ?? []) {
         if (row.uniqueId !== '') {
-          byId[row.uniqueId] = row
+          byId[row.uniqueId.toLowerCase()] = row
         }
       }
       set({ runId: got.runId ?? '', byId })
@@ -40,7 +40,7 @@ export const useLastRun = create<{
 }))
 
 export function lastRunOf(mod: Mod): ModRunIssues | undefined {
-  return useLastRun.getState().byId[mod.uniqueId]
+  return useLastRun.getState().byId[mod.uniqueId.toLowerCase()]
 }
 
 export function showLastRunInConsole(game: string, profileId: string, mod: Mod) {

@@ -22,10 +22,12 @@ test('last-run badges clear when the store is reset to the initial state', () =>
   useLastRun.setState({
     runId: 'r1',
     byId: {
-      [uniqueId]: { name: 'Content Patcher', uniqueId, errors: 2, warnings: 1 },
+      [uniqueId.toLowerCase()]: { name: 'Content Patcher', uniqueId, errors: 2, warnings: 1 },
     },
   })
   expect(lastRunOf(mod(uniqueId))?.errors).toBe(2)
+  expect(lastRunOf(mod(uniqueId.toLowerCase()))?.errors).toBe(2)
+  expect(lastRunOf(mod('pathoschild.contentpatcher'))?.errors).toBe(2)
   useLastRun.setState(useLastRun.getInitialState(), true)
   expect(lastRunOf(mod(uniqueId))).toBeUndefined()
 })
