@@ -16,6 +16,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/problems"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 const (
@@ -35,6 +36,15 @@ type Service struct {
 	home    string
 	modsDir func(gameID, profileID string) (string, error)
 	client  *http.Client
+
+	// Dir is the user data folder. Nil uses datadir.Dir. Tests point it at a temp fixture.
+	Dir func() (string, error)
+	// SaveZip writes the diagnostics zip after the user picks a path. Nil uses App's save dialog.
+	SaveZip func(title, filename string, data []byte) (string, error)
+	// RecentLog is in-memory log lines when Mortar has no log file. Nil means none.
+	RecentLog func(gameID, profileID string) string
+	// App is set after application.New so SaveDiagnostics can show the save dialog.
+	App *application.App
 }
 
 // NewService takes Mortar's version, the environment reader the bug report quotes, and the user's home and profile
