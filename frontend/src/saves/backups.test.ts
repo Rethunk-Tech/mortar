@@ -1,8 +1,7 @@
 import { expect, mock, test } from 'bun:test'
-import type { Backup } from '../../bindings/github.com/Rethunk-AI/mortar/internal/backup/models.ts'
 
-let restored: { name: string; folders: string[] | null } | undefined
-const firstBackup: Backup = {
+let restored: { name: string; folders: string[] | null } = { name: '', folders: null }
+const firstBackup = {
   name: '2026-07-01T00-00-00.000.zip',
   at: Date.parse('2026-07-01T00:00:00.000Z'),
   size: 2048,
@@ -10,7 +9,7 @@ const firstBackup: Backup = {
   kind: 'update',
   saves: [{ folder: 'Farm_1', farm: 'Sunny' }],
 }
-const listed: Backup[] = [firstBackup]
+const listed = [firstBackup]
 
 mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts', () => ({
   ListBackups: async () => listed,
@@ -31,7 +30,7 @@ test('load fills backups newest as returned', async () => {
 })
 
 test('restore asks for the chosen zip and folders then reloads', async () => {
-  restored = undefined
+  restored = { name: '', folders: null }
   useSaveBackups.setState({ ...getInitialState(), items: listed, status: 'ready' }, true)
   await useSaveBackups.getState().restore(firstBackup.name, ['Farm_1'])
   expect(restored).toEqual({ name: firstBackup.name, folders: ['Farm_1'] })
