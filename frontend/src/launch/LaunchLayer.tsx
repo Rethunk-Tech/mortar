@@ -14,6 +14,9 @@ import {
 import { CircleAlert } from 'lucide-react'
 import { useEffect } from 'react'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import { format } from '../console/filter.ts'
+import { useConsole } from '../console/store.ts'
+import { useTab } from '../game/tab.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useLaunch } from './store.ts'
 
@@ -55,7 +58,8 @@ function Overlay({ game }: { game: string }) {
   const { t } = useLingui()
   const name = useProfiles((s) => s.game?.name ?? '')
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
-  const lines = useLaunch((s) => s.lines)
+  const entries = useConsole((s) => s.entries)
+  const setTab = useTab((s) => s.setTab)
   const hide = useLaunch((s) => s.hide)
   const status = useLaunch((s) => s.status)
   const hidden = useLaunch((s) => s.hidden)
@@ -64,7 +68,7 @@ function Overlay({ game }: { game: string }) {
   }
   const profileName = profile?.name ?? ''
   const mods = (profile?.entries ?? []).reduce((n, e) => n + (e.mods ?? []).length, 0)
-  const shown = lines.slice(-VISIBLE_LINES)
+  const shown = entries.slice(-VISIBLE_LINES)
   return (
     <Box
       role="dialog"
@@ -96,17 +100,29 @@ function Overlay({ game }: { game: string }) {
       >
         {shown.map((line, i) => (
           <Typography
-            key={line.id}
+            key={line.seq}
             noWrap={true}
             sx={{ font: 'inherit', color: i === shown.length - 1 ? '#ffffff' : 'inherit' }}
           >
-            {line.text}
+            {format(line)}
           </Typography>
         ))}
       </Box>
-      <Button variant="outlined" onClick={hide}>
-        {t`Hide`}
-      </Button>
+      <Box sx={{ display: 'flex', gap: 1.25 }}>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            setTab('console')
+            hide()
+          }}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          {t`Open console`}
+        </Button>
+        <Button variant="outlined" onClick={hide}>
+          {t`Hide`}
+        </Button>
+      </Box>
     </Box>
   )
 }

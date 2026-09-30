@@ -4,11 +4,13 @@ import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
 import { Pencil, Plus } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { ConsoleTab, CopyLog } from '../console/ConsoleTab.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { compact } from './compact.ts'
 import { NameField } from './NameField.tsx'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
+import { type TabId, useTab } from './tab.ts'
 
 const fmt = (iso: unknown) => new Date(String(iso)).toLocaleDateString()
 
@@ -146,6 +148,9 @@ export function Detail() {
   const openId = useProfiles((s) => s.openId)
   const loaded = useProfiles((s) => s.loaded)
   const [creating, setCreating] = useState(false)
+  const tab = useTab((s) => s.tab)
+  const setTab = useTab((s) => s.setTab)
+  const game = useProfiles((s) => s.game?.id ?? '')
   const profile = profiles.find((p) => p.id === openId)
   if (!loaded) {
     return null
@@ -192,7 +197,8 @@ export function Detail() {
         }}
       >
         <Tabs
-          value="mods"
+          value={tab}
+          onChange={(_, value: TabId) => setTab(value)}
           sx={{
             minHeight: 44,
             '& .MuiTabs-indicator': { height: 2 },
@@ -209,9 +215,16 @@ export function Detail() {
           }}
         >
           <Tab value="mods" label={t`Mods`} />
+          <Tab value="console" label={t`Console`} />
         </Tabs>
+        <Box sx={{ flexGrow: 1 }} />
+        {tab === 'console' ? <CopyLog /> : null}
       </Box>
-      <ModsTab key={`mods-${profile.id}`} profile={profile} />
+      {tab === 'console' ? (
+        <ConsoleTab game={game} />
+      ) : (
+        <ModsTab key={`mods-${profile.id}`} profile={profile} />
+      )}
     </Box>
   )
 }

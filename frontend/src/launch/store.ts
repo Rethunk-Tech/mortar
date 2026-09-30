@@ -11,11 +11,10 @@ import {
   Start,
   Stop,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { useConsole } from '../console/store.ts'
 import { i18n } from '../i18n/index.ts'
 import { useLoader } from '../loader/store.ts'
 import { useToasts } from '../toasts/store.ts'
-
-const MAX_LINES = 200
 
 const reportError = (title: string) => (e: unknown) => {
   useToasts.getState().push({ kind: 'error', title, body: String(e) })
@@ -57,22 +56,13 @@ interface Failure {
   body: string
 }
 
-interface Line {
-  id: number
-  text: string
-}
-
-let lastLineId = 0
-
 export const useLaunch = create<{
   status: Status | null
-  lines: Line[]
   hidden: boolean
   failure: Failure | null
   askDirect: { game: string; profile: string } | null
   stopping: boolean
   apply: (status: Status) => void
-  addLine: (text: string) => void
   refresh: (game: string) => Promise<void>
   start: (game: string, profile: string, direct: boolean) => Promise<void>
   hide: () => void
@@ -81,14 +71,14 @@ export const useLaunch = create<{
   stop: (game: string) => Promise<void>
 }>((set, get) => ({
   status: null,
-  lines: [],
   hidden: false,
   failure: null,
   askDirect: null,
   stopping: false,
   apply: (status) => {
     if (status.state === State.Launching) {
-      set({ status, lines: [], hidden: false, failure: null })
+      useConsole.getState().reset()
+      set({ status, hidden: false, failure: null })
       return
     }
     if (status.state === State.Failed) {
@@ -104,11 +94,6 @@ export const useLaunch = create<{
     } else {
       set({ status: { ...status, state: State.Idle } })
     }
-  },
-  addLine: (text) => {
-    lastLineId += 1
-    const line = { id: lastLineId, text }
-    set((s) => ({ lines: [...s.lines, line].slice(-MAX_LINES) }))
   },
   refresh: async (game) => {
     try {
@@ -147,5 +132,5 @@ export const useLaunch = create<{
 
 export function initLaunch() {
   Events.On('launch:state', (event) => useLaunch.getState().apply(event.data))
-  Events.On('launch:line', (event) => useLaunch.getState().addLine(event.data.line))
+  Events.On('launch:line', (event) => useConsole.getState().add(event.data.entries ?? []))
 }
