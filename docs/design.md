@@ -9,6 +9,7 @@ Nothing is built yet. Implementation starts only on NOMAD's explicit go-ahead. I
 Mortar finds a game, installs its mod loader, keeps each set of mods in its own profile, and launches the game with the chosen profile. A profile is shared as a link, and opening the link on another machine produces the same mods, with every dependency checked before anything downloads.
 
 - **What matters:** Mortar working for NOMAD's own use with a personal Nexus API key. Registering the app with Nexus is not a v1 goal.
+- **Licence:** AGPL-3.0 (NOMAD, 2026-09-29): the same as GPL-3.0 for the desktop app, and it already covers a hosted share service if one is built here later.
 - **Scope of the first release:** Stardew Valley only, on Windows and Linux, from Steam or GOG. macOS is out (fleet CI has no macOS runners, and Wails does not cross-compile to it). Everything deferred is listed under Later.
 
 ## Stack
@@ -18,7 +19,7 @@ Mortar finds a game, installs its mod loader, keeps each set of mods in its own 
 - **Go services:** each backend area the UI calls is one Wails service (`application.NewService`, optional `ServiceStartup`/`ServiceShutdown`), so its exported methods are bound to TypeScript.
 - **Single instance:** `Options.SingleInstance` with `OnSecondInstanceLaunch`. A link reaches the app as `events.Common.ApplicationLaunchedWithUrl` on a cold start (fired when the only argument contains `://`, `application_linux.go:73-83`) or in `SecondInstanceData.Args` when it is already running. Both feed one link router.
 - **New Go dependencies** (licences checked, all maintained): `github.com/andybalholm/brotli` (MIT; the standard library has no Brotli), `github.com/nwaples/rardecode` (BSD-2-Clause) and `github.com/bodgit/sevenzip` (BSD-3-Clause) for RAR and 7z, `github.com/tailscale/hujson` (BSD-3-Clause; SMAPI manifests are JSON with comments and trailing commas), `github.com/andygrunwald/vdf` (MIT; Steam's `libraryfolders.vdf`, as Concrete used), `github.com/zalando/go-keyring` (MIT; already a Wails dependency, and Maître's).
-- **Code from Concrete** (NOMAD's): `src/app/steam/` becomes `internal/steam`, and `secureArchivePath` and `extractEntry` (`src/app/launcher/DoLaunchGame.go`) seed `internal/archive`, under Mortar's GPL-3.0.
+- **Code from Concrete** (NOMAD's): `src/app/steam/` becomes `internal/steam`, and `secureArchivePath` and `extractEntry` (`src/app/launcher/DoLaunchGame.go`) seed `internal/archive`, under Mortar's AGPL-3.0.
 
 ## Look
 

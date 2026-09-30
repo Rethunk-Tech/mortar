@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Licence](https://img.shields.io/badge/licence-GPL--3.0-blue) ![Stack](https://img.shields.io/badge/stack-Go%20%7C%20Wails%20v3%20%7C%20React%20%7C%20MUI-blue)
+![Licence](https://img.shields.io/badge/licence-AGPL--3.0-blue) ![Stack](https://img.shields.io/badge/stack-Go%20%7C%20Wails%20v3%20%7C%20React%20%7C%20MUI-blue)
 
 </div>
 
@@ -23,4 +23,4 @@ Stardew Valley (SMAPI, Nexus Mods) comes first and Lethal Company (BepInEx, Thun
 
 ## Licence
 
-Licensed under the [GNU General Public License v3.0](LICENSE).
+Licensed under the [GNU Affero General Public License v3.0](LICENSE).
