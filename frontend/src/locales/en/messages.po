@@ -258,7 +258,7 @@ msgstr "Its folder in this profile is deleted."
 msgid "You started this download on Nexus, but there is no Stardew Valley profile to put it in yet."
 msgstr "You started this download on Nexus, but there is no Stardew Valley profile to put it in yet."
 
-#: src/mods/ModMenu.tsx:58
+#: src/mods/ModMenu.tsx:50
 #: src/mods/parts.tsx:159
 msgid "Show files"
 msgstr "Show files"
@@ -328,7 +328,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/firstrun/FindStep.tsx:164
 #: src/firstrun/SmapiStep.tsx:265
 #: src/game/Detail.tsx:244
-#: src/mods/ModsTab.tsx:138
+#: src/mods/ModsTab.tsx:137
 #: src/notes/NotesTab.tsx:39
 #: src/queue/QueueSheet.tsx:308
 #: src/saves/SavesTab.tsx:247
@@ -365,7 +365,7 @@ msgid "Page"
 msgstr "Page"
 
 #: src/firstrun/ProfileStep.tsx:82
-#: src/mods/ModList.tsx:145
+#: src/mods/ModList.tsx:149
 msgid "Name"
 msgstr "Name"
 
@@ -386,7 +386,7 @@ msgid "Paste a Mortar link. You see what it holds before anything downloads."
 msgstr "Paste a Mortar link. You see what it holds before anything downloads."
 
 #. placeholder {0}: mod.name
-#: src/mods/ModMenu.tsx:117
+#: src/mods/ModMenu.tsx:107
 msgid "More actions for {0}"
 msgstr "More actions for {0}"
 
@@ -467,7 +467,7 @@ msgstr "Installing SMAPI…"
 msgid "Upload log"
 msgstr "Upload log"
 
-#: src/mods/ModsTab.tsx:230
+#: src/mods/ModsTab.tsx:225
 msgid "Or import a shared profile"
 msgstr "Or import a shared profile"
 
@@ -520,7 +520,7 @@ msgstr "Appearance"
 msgid "Imported {name}"
 msgstr "Imported {name}"
 
-#: src/mods/ModsTab.tsx:203
+#: src/mods/ModsTab.tsx:198
 msgid "Add mods from an archive you downloaded, or find them on Nexus."
 msgstr "Add mods from an archive you downloaded, or find them on Nexus."
 
@@ -562,12 +562,12 @@ msgstr "Get help"
 msgid "New profile from link"
 msgstr "New profile from link"
 
-#: src/mods/ModList.tsx:106
+#: src/mods/ModList.tsx:110
 msgid "Off"
 msgstr "Off"
 
-#: src/mods/ModList.tsx:90
-#: src/mods/Sidebar.tsx:150
+#: src/mods/ModList.tsx:60
+#: src/mods/Sidebar.tsx:149
 msgid "Archive"
 msgstr "Archive"
 
@@ -700,7 +700,7 @@ msgstr "Delete"
 msgid "Not checked yet."
 msgstr "Not checked yet."
 
-#: src/mods/ModMenu.tsx:36
+#: src/mods/ModMenu.tsx:28
 msgid "Disable"
 msgstr "Disable"
 
@@ -817,7 +817,7 @@ msgstr "{0} {1} has several archives. Which one should Mortar install?"
 msgid "Could not install SMAPI"
 msgstr "Could not install SMAPI"
 
-#: src/mods/ModsTab.tsx:223
+#: src/mods/ModsTab.tsx:218
 msgid "You can also drop archives anywhere on the window."
 msgstr "You can also drop archives anywhere on the window."
 
@@ -830,7 +830,7 @@ msgstr "Needs your click"
 msgid "Link copied"
 msgstr "Link copied"
 
-#: src/mods/Sidebar.tsx:168
+#: src/mods/Sidebar.tsx:167
 msgid "Version"
 msgstr "Version"
 
@@ -1036,7 +1036,7 @@ msgstr "You started this download on Nexus. Show Mortar to choose the profile it
 msgid "Open console"
 msgstr "Open console"
 
-#: src/mods/ModMenu.tsx:49
+#: src/mods/ModMenu.tsx:41
 msgid "Open on GitHub"
 msgstr "Open on GitHub"
 
@@ -1142,7 +1142,7 @@ msgid "Data"
 msgstr "Data"
 
 #: src/mods/NexusDetails.tsx:125
-#: src/mods/Sidebar.tsx:171
+#: src/mods/Sidebar.tsx:170
 msgid "Endorsements"
 msgstr "Endorsements"
 
@@ -1234,7 +1234,7 @@ msgstr "This download's mod is not known to come from {0}."
 msgid "Back"
 msgstr "Back"
 
-#: src/mods/Sidebar.tsx:236
+#: src/mods/Sidebar.tsx:235
 msgid "Selected mod"
 msgstr "Selected mod"
 
@@ -1319,7 +1319,7 @@ msgstr "Notes for {0}"
 #: src/console/ConsoleTab.tsx:131
 #: src/game/Detail.tsx:164
 #: src/game/Detail.tsx:309
-#: src/mods/ModList.tsx:123
+#: src/mods/ModList.tsx:127
 msgid "Mods"
 msgstr "Mods"
 
@@ -1379,7 +1379,7 @@ msgstr "Installed and up to date"
 msgid "New profile from file"
 msgstr "New profile from file"
 
-#: src/mods/ModList.tsx:148
+#: src/mods/ModList.tsx:152
 #: src/mods/NexusDetails.tsx:115
 #: src/mods/Sidebar.tsx:87
 msgid "Category"
@@ -1428,11 +1428,6 @@ msgstr "{0} · {1} unique"
 msgid "Not found"
 msgstr "Not found"
 
-#: src/mods/ModList.tsx:89
-#: src/mods/Sidebar.tsx:149
-msgid "SMAPI"
-msgstr "SMAPI"
-
 #. placeholder {0}: entry.error ?? ''
 #: src/mods/NexusDetails.tsx:245
 msgid "Could not read the Nexus page: {0}"
@@ -1478,8 +1473,8 @@ msgstr "Stardew Valley"
 msgid "Choose cover image"
 msgstr "Choose cover image"
 
-#: src/mods/ModMenu.tsx:41
-#: src/mods/Sidebar.tsx:188
+#: src/mods/ModMenu.tsx:33
+#: src/mods/Sidebar.tsx:187
 msgid "More details"
 msgstr "More details"
 
@@ -1595,7 +1590,7 @@ msgstr "Has used:"
 msgid "Found in Steam"
 msgstr "Found in Steam"
 
-#: src/mods/ModsTab.tsx:136
+#: src/mods/ModsTab.tsx:135
 msgid "Could not read the mods: {loadError}"
 msgstr "Could not read the mods: {loadError}"
 
@@ -1717,7 +1712,7 @@ msgstr "Debug"
 msgid "Default"
 msgstr "Default"
 
-#: src/mods/Sidebar.tsx:169
+#: src/mods/Sidebar.tsx:168
 msgid "UniqueID"
 msgstr "UniqueID"
 
@@ -1742,7 +1737,7 @@ msgstr "Moss"
 msgid "Open the page of {name}"
 msgstr "Open the page of {name}"
 
-#: src/mods/ModMenu.tsx:36
+#: src/mods/ModMenu.tsx:28
 msgid "Enable"
 msgstr "Enable"
 
@@ -1788,7 +1783,7 @@ msgstr "Open folder"
 msgid "Default background"
 msgstr "Default background"
 
-#: src/mods/ModMenu.tsx:49
+#: src/mods/ModMenu.tsx:41
 #: src/saves/SavesTab.tsx:111
 msgid "Open on Nexus"
 msgstr "Open on Nexus"
@@ -1876,8 +1871,8 @@ msgstr "Added {0} to {1}"
 msgid "Running"
 msgstr "Running"
 
-#: src/mods/ModList.tsx:92
-#: src/mods/Sidebar.tsx:152
+#: src/mods/ModList.tsx:62
+#: src/mods/Sidebar.tsx:151
 msgid "GitHub"
 msgstr "GitHub"
 
@@ -1911,7 +1906,7 @@ msgstr "Sign in to Nexus Mods to download"
 msgid "Up next: {0} and {more} more"
 msgstr "Up next: {0} and {more} more"
 
-#: src/mods/ModList.tsx:106
+#: src/mods/ModList.tsx:110
 msgid "Enabled"
 msgstr "Enabled"
 
@@ -1926,7 +1921,7 @@ msgid "{profileName} has {0} more than once. SMAPI loads only one, so pick which
 msgstr "{profileName} has {0} more than once. SMAPI loads only one, so pick which to keep. The others are switched off, not deleted."
 
 #: src/mods/ModDetail.tsx:220
-#: src/mods/Sidebar.tsx:178
+#: src/mods/Sidebar.tsx:177
 msgid "In the same download"
 msgstr "In the same download"
 
@@ -1998,7 +1993,7 @@ msgid "Quit"
 msgstr "Quit"
 
 #. placeholder {0}: m.name
-#: src/mods/ModsTab.tsx:54
+#: src/mods/ModsTab.tsx:53
 msgid "Details of {0}"
 msgstr "Details of {0}"
 
@@ -2028,7 +2023,7 @@ msgstr "Running {time}"
 msgid "Built on"
 msgstr "Built on"
 
-#: src/mods/ModMenu.tsx:63
+#: src/mods/ModMenu.tsx:55
 #: src/mods/parts.tsx:176
 #: src/mods/parts.tsx:212
 msgid "Remove"
@@ -2086,7 +2081,7 @@ msgstr "Could not verify its source"
 msgid "Install"
 msgstr "Install"
 
-#: src/mods/Sidebar.tsx:249
+#: src/mods/Sidebar.tsx:248
 msgid "Select a mod to see its details."
 msgstr "Select a mod to see its details."
 
@@ -2154,7 +2149,7 @@ msgstr "SMAPI {0} is installed"
 msgid "Could not delete the profile"
 msgstr "Could not delete the profile"
 
-#: src/mods/ModList.tsx:149
+#: src/mods/ModList.tsx:153
 msgid "Status"
 msgstr "Status"
 
@@ -2266,7 +2261,7 @@ msgstr "{counts} · {0} MB"
 msgid "Its source is not known."
 msgstr "Its source is not known."
 
-#: src/mods/ModList.tsx:146
+#: src/mods/ModList.tsx:150
 msgid "Author"
 msgstr "Author"
 
@@ -2274,7 +2269,7 @@ msgstr "Author"
 msgid "Could not use that image"
 msgstr "Could not use that image"
 
-#: src/mods/ModsTab.tsx:143
+#: src/mods/ModsTab.tsx:142
 msgid "Loading mods"
 msgstr "Loading mods"
 
@@ -2315,7 +2310,7 @@ msgstr "Profiles"
 msgid "Missing"
 msgstr "Missing"
 
-#: src/mods/ModsTab.tsx:151
+#: src/mods/ModsTab.tsx:150
 msgid "No mods match your search."
 msgstr "No mods match your search."
 
@@ -2350,7 +2345,7 @@ msgstr "Saved · {n, plural, one {# day ago} other {# days ago}}"
 msgid "Steam was not found."
 msgstr "Steam was not found."
 
-#: src/mods/ModList.tsx:147
+#: src/mods/ModList.tsx:151
 msgid "Source"
 msgstr "Source"
 
@@ -2407,8 +2402,8 @@ msgstr "Could not save notes"
 msgid "Switched off"
 msgstr "Switched off"
 
-#: src/mods/ModList.tsx:91
-#: src/mods/Sidebar.tsx:151
+#: src/mods/ModList.tsx:61
+#: src/mods/Sidebar.tsx:150
 #: src/settings/SettingsPage.tsx:31
 #: src/shell/NexusAccount.tsx:24
 msgid "Nexus Mods"
@@ -2532,7 +2527,7 @@ msgstr "Share {0}"
 msgid "Support"
 msgstr "Support"
 
-#: src/mods/ModsTab.tsx:201
+#: src/mods/ModsTab.tsx:196
 msgid "No mods yet"
 msgstr "No mods yet"
 
@@ -2664,7 +2659,7 @@ msgstr "Remove {0} from this profile?"
 msgid "SMAPI not installed yet"
 msgstr "SMAPI not installed yet"
 
-#: src/mods/ModList.tsx:143
+#: src/mods/ModList.tsx:147
 msgid "On"
 msgstr "On"
 
