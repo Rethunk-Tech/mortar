@@ -16,3 +16,4 @@ func (System) Owner() (Owner, error) { return Owner{}, errUnsupported }
 func (System) Register() error       { return errUnsupported }
 func (System) Restore(string) error  { return errUnsupported }
 func (System) RegisterLinks() error  { return nil }
+func (System) Refresh() error        { return nil }

@@ -147,3 +147,41 @@ func TestRegisterLinksIsIdempotentAndKeepsNxm(t *testing.T) {
 		t.Errorf("RegisterLinks dropped nxm: %s", desktop)
 	}
 }
+
+func TestAnAppImageRegistersItselfAndMovesItsEntry(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", filepath.Join(dir, "data"))
+	t.Setenv("XDG_CONFIG_HOME", filepath.Join(dir, "config"))
+	img := filepath.Join(dir, "Mortar.AppImage")
+	if err := fsx.WriteFile(img, nil, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("APPIMAGE", img)
+	t.Setenv("APPDIR", "/tmp/.mount_Mortar")
+	l, err := New("/tmp/.mount_Mortar/usr/bin/mortar")
+	if err != nil || l.exe != img {
+		t.Fatalf("exe %q, %v", l.exe, err)
+	}
+	if other, _ := New("/usr/bin/steam"); other.exe != "/usr/bin/steam" {
+		t.Errorf("a child outside the mount took the AppImage path: %q", other.exe)
+	}
+	r := &recorder{}
+	l.run = r.run
+	if err := l.Refresh(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(l.desktopPath()); !os.IsNotExist(err) {
+		t.Fatalf("Refresh wrote an entry before first run: %v", err)
+	}
+	if err := l.Register(); err != nil {
+		t.Fatal(err)
+	}
+	l.exe = filepath.Join(dir, "Apps", "Mortar.AppImage")
+	if err := l.Refresh(); err != nil {
+		t.Fatal(err)
+	}
+	desktop, _ := fsx.ReadFile(l.desktopPath())
+	if !strings.Contains(string(desktop), `Exec="`+l.exe+`" %u`) || !strings.Contains(string(desktop), nxmMime) {
+		t.Errorf("moved entry: %s", desktop)
+	}
+}

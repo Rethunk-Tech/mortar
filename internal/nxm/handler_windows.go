@@ -85,3 +85,6 @@ func (w *System) Restore(previous string) error {
 
 // RegisterLinks does nothing: the installer registers the mortar scheme and the .mortar file type.
 func (w *System) RegisterLinks() error { return nil }
+
+// Refresh does nothing: the installer fixes where Mortar lives.
+func (w *System) Refresh() error { return nil }

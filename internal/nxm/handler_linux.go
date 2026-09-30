@@ -35,20 +35,33 @@ type System struct {
 	run                  Runner
 }
 
-// New returns the handler for this system, registering exe.
+// New returns the handler for this system, registering exe, or the AppImage file exe runs from.
 func New(exe string) (*System, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
 	}
 	l := &System{
-		exe: exe, dataHome: baseDir("XDG_DATA_HOME", filepath.Join(home, ".local", "share")),
+		exe: appImageOr(exe), dataHome: baseDir("XDG_DATA_HOME", filepath.Join(home, ".local", "share")),
 		configHome: baseDir("XDG_CONFIG_HOME", filepath.Join(home, ".config")), run: execRun,
 	}
 	for d := range strings.SplitSeq(baseDir("XDG_DATA_DIRS", "/usr/local/share:/usr/share"), ":") {
 		l.dataDirs = append(l.dataDirs, filepath.Join(d, "applications"))
 	}
 	return l, nil
+}
+
+// appImageOr returns $APPIMAGE when exe runs from that AppImage's mount, which vanishes on exit. A child started from
+// an AppImage inherits APPIMAGE, hence the check that exe lives under $APPDIR.
+func appImageOr(exe string) string {
+	img, mount := os.Getenv("APPIMAGE"), os.Getenv("APPDIR")
+	if img == "" || mount == "" || !strings.HasPrefix(exe, filepath.Clean(mount)+string(filepath.Separator)) {
+		return exe
+	}
+	if info, err := fsx.Stat(img); err != nil || !info.Mode().IsRegular() {
+		return exe
+	}
+	return img
 }
 
 func baseDir(env, fallback string) string {
@@ -207,11 +220,8 @@ func (l *System) RegisterLinks() error {
 		_, _ = l.run(updateMIME, filepath.Join(l.dataHome, "mime"))
 	}
 	current, _ := fsx.ReadFile(l.desktopPath())
-	withNxm := strings.Contains(string(current), nxmMime)
-	if string(current) != l.desktopFile(withNxm) {
-		if err := l.writeDesktop(withNxm); err != nil {
-			return err
-		}
+	if err := l.rewrite(current); err != nil {
+		return err
 	}
 	for _, mime := range []string{mortarMime, fileMime} {
 		if _, err := l.run(xdgMime, "default", desktopID, mime); err != nil {
@@ -219,4 +229,26 @@ func (l *System) RegisterLinks() error {
 		}
 	}
 	return nil
+}
+
+// Refresh rewrites the desktop entry when Mortar has moved since it was written, as an AppImage does when the user
+// moves the file. Before first run has written the entry it writes nothing.
+func (l *System) Refresh() error {
+	current, err := fsx.ReadFile(l.desktopPath())
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	return l.rewrite(current)
+}
+
+// rewrite writes the desktop entry unless current already is it, keeping the nxm scheme as current has it.
+func (l *System) rewrite(current []byte) error {
+	withNxm := strings.Contains(string(current), nxmMime)
+	if string(current) == l.desktopFile(withNxm) {
+		return nil
+	}
+	return l.writeDesktop(withNxm)
 }

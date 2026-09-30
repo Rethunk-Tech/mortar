@@ -55,3 +55,8 @@ func WriteFile(path string, data []byte, perm os.FileMode) error {
 	})
 	return err
 }
+
+// Stat describes path.
+func Stat(path string) (os.FileInfo, error) {
+	return in(path, func(r *os.Root, name string) (os.FileInfo, error) { return r.Stat(name) })
+}
