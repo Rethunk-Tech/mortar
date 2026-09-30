@@ -16,7 +16,7 @@ import { SendNotification } from '../../bindings/github.com/wailsapp/wails/v3/pk
 import { i18n } from '../i18n/index.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { directProfile, NXM_GAME } from './route.ts'
 
@@ -46,8 +46,7 @@ async function notify(arrival: Arrival, title: string, body: string) {
 
 const names = new Map<number, Promise<string>>()
 
-async function install(arrival: Arrival, profile: Profile) {
-  await Assign(arrival.id, NXM_GAME, profile.id)
+async function announce(arrival: Arrival, profile: Profile) {
   const name = await modName(arrival.link.modId)
   const profileName = profile.name
   const title = i18n._(msg`Downloading ${name} into ${profileName}`)
@@ -110,7 +109,18 @@ export async function initNxm(): Promise<void> {
     const { game, openId, profiles } = useProfiles.getState()
     const direct = directProfile(useNav.getState().route, game?.id, openId, profiles)
     if (direct) {
-      install(a, direct).catch(reportUnexpected)
+      // Assign failed, so nothing downloads; the prompt keeps the link so another profile can take it.
+      Assign(a.id, NXM_GAME, direct.id).then(
+        () => announce(a, direct).catch(reportUnexpected),
+        (e) => {
+          useToasts.getState().push({
+            kind: 'error',
+            title: i18n._(msg`Could not start the Nexus download`),
+            body: errorMessage(e),
+          })
+          useNxm.getState().add(a)
+        },
+      )
       return
     }
     useNxm.getState().add(a)
