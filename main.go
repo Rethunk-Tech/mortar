@@ -60,14 +60,6 @@ func registerEvents() {
 
 func main() {
 	registerEvents()
-	store, err := settings.Open()
-	if err != nil {
-		log.Fatal(err)
-	}
-	svc := settings.NewService(store)
-	svc.ValidateGameFolder = game.ValidateFolder
-	svc.ValidateImage = backdrop.Check
-
 	home, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal(err)
@@ -76,6 +68,7 @@ func main() {
 	// application.New exits a second instance after forwarding its arguments, so it runs before anything that
 	// writes to disk: a second instance must not clean, collect or rewrite the running instance's data.
 	var (
+		store    *settings.Store
 		nxmSvc   *nxmsvc.Service
 		shareSvc *sharesvc.Service
 		window   *application.WebviewWindow
@@ -90,7 +83,12 @@ func main() {
 			Middleware: application.ChainMiddleware(
 				game.ArtMiddleware(home),
 				profile.CoverMiddleware(func() *profile.Store { return profiles }),
-				backdrop.Middleware(store.Get, backdrop.SystemDefault, backdrop.DesktopWallpaper),
+				backdrop.Middleware(func() settings.Settings {
+					if store == nil {
+						return settings.Defaults()
+					}
+					return store.Get()
+				}, backdrop.SystemDefault, backdrop.DesktopWallpaper),
 			),
 		},
 		SingleInstance: &application.SingleInstanceOptions{
@@ -106,6 +104,14 @@ func main() {
 			},
 		},
 	})
+
+	store, err = settings.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+	svc := settings.NewService(store)
+	svc.ValidateGameFolder = game.ValidateFolder
+	svc.ValidateImage = backdrop.Check
 
 	gamesSvc := game.NewService(home, store)
 
@@ -126,8 +132,8 @@ func main() {
 	profiles.BackupsKept = func() int { return store.Get().BackupsKept }
 	loaders := loadersvc.NewService(home, store, items, profiles)
 	loadersvc.Attach(loaders, "stardew")
-	launches.EnsureLoader = func(ctx context.Context, id string) error {
-		_, err := loaders.Ensure(ctx, id)
+	launches.EnsureLoader = func(ctx context.Context, id string, fromStart bool) error {
+		_, err := loaders.Ensure(ctx, id, fromStart)
 		return err
 	}
 	now := time.Now()
