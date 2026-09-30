@@ -75,7 +75,8 @@ export function modName(modId: number): Promise<string> {
 export const useNxm = create<{
   arrivals: Arrival[]
   add: (arrival: Arrival) => void
-  choose: (id: number, profile: string) => void
+  // Rejects when Mortar refuses the download; the arrival stays for the prompt to show why.
+  choose: (id: number, profile: string) => Promise<void>
   dismiss: (id: number) => void
 }>((set) => ({
   arrivals: [],
@@ -83,9 +84,9 @@ export const useNxm = create<{
     set((s) =>
       s.arrivals.some((a) => a.id === arrival.id) ? s : { arrivals: [...s.arrivals, arrival] },
     ),
-  choose: (id, profile) => {
+  choose: async (id, profile) => {
+    await Assign(id, NXM_GAME, profile)
     set((s) => ({ arrivals: s.arrivals.filter((a) => a.id !== id) }))
-    Assign(id, NXM_GAME, profile).catch(reportUnexpected)
   },
   dismiss: (id) => {
     set((s) => ({ arrivals: s.arrivals.filter((a) => a.id !== id) }))

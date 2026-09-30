@@ -9,13 +9,15 @@ import {
   Menu,
   MenuItem,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { Arrival } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { List } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { paper } from '../mods/paper.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { NXM_GAME } from './route.ts'
 import { fallbackName, modName, useNxm } from './store.ts'
 
@@ -40,15 +42,42 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const dismiss = useNxm((s) => s.dismiss)
   const lastId = useSettings((s) => s.lastProfile?.[NXM_GAME])
   const name = useModName(arrival.link.modId)
-  const [profiles, setProfiles] = useState<Profile[]>([])
+  // New profile creates in the game the profiles store has open, so it is offered only when that is this game.
+  const canCreate = useProfiles((s) => s.game?.id === NXM_GAME)
+  const [profiles, setProfiles] = useState<Profile[] | null>(null)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
-  useEffect(() => {
+  const [creating, setCreating] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const load = useCallback(() => {
     List(NXM_GAME)
       .then((list) => setProfiles((list ?? []).filter((p) => !p.hidden)))
-      .catch(reportUnexpected)
+      .catch((e: unknown) => {
+        setProfiles([])
+        reportUnexpected(e)
+      })
   }, [])
-  const open = profiles.find((p) => p.id === lastId) ?? profiles[0]
-  const others = profiles.filter((p) => p.id !== open?.id)
+  useEffect(load, [load])
+  const open = profiles?.find((p) => p.id === lastId) ?? profiles?.[0]
+  const others = profiles?.filter((p) => p.id !== open?.id) ?? []
+  const pick = (profile: string) => {
+    if (busy) {
+      return
+    }
+    setBusy(true)
+    setError('')
+    choose(arrival.id, profile)
+      .catch((e: unknown) => setError(errorMessage(e)))
+      .finally(() => setBusy(false))
+  }
+  let text = t`You started this download on Nexus. Choose the profile it goes into.`
+  if (profiles === null) {
+    text = t`Loading profiles…`
+  } else if (profiles.length === 0) {
+    text = canCreate
+      ? t`You started this download on Nexus. There is no profile to put it in yet; create one first.`
+      : t`You started this download on Nexus, but there is no Stardew Valley profile to put it in yet.`
+  }
   return (
     <Dialog
       open={true}
@@ -61,20 +90,28 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
     >
       <DialogTitle>{t`Install ${name}?`}</DialogTitle>
       <DialogContent>
-        <DialogContentText>
-          {t`You started this download on Nexus. Choose the profile it goes into.`}
-        </DialogContentText>
+        <DialogContentText>{text}</DialogContentText>
+        {error ? (
+          <DialogContentText color="error" sx={{ mt: 1 }}>
+            {error}
+          </DialogContentText>
+        ) : null}
       </DialogContent>
       <DialogActions>
         <Button onClick={() => dismiss(arrival.id)}>{t`Ignore`}</Button>
         {others.length > 0 ? (
-          <Button variant="outlined" onClick={(e) => setAnchor(e.currentTarget)}>
+          <Button variant="outlined" disabled={busy} onClick={(e) => setAnchor(e.currentTarget)}>
             {t`Other profile…`}
           </Button>
         ) : null}
         {open ? (
-          <Button variant="contained" onClick={() => choose(arrival.id, open.id)}>
+          <Button variant="contained" disabled={busy} onClick={() => pick(open.id)}>
             {open.name}
+          </Button>
+        ) : null}
+        {profiles?.length === 0 && canCreate ? (
+          <Button variant="contained" onClick={() => setCreating(true)}>
+            {t`New profile`}
           </Button>
         ) : null}
       </DialogActions>
@@ -84,13 +121,20 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
             key={p.id}
             onClick={() => {
               setAnchor(null)
-              choose(arrival.id, p.id)
+              pick(p.id)
             }}
           >
             {p.name}
           </MenuItem>
         ))}
       </Menu>
+      <NewProfileDialog
+        open={creating}
+        onClose={() => {
+          setCreating(false)
+          load()
+        }}
+      />
     </Dialog>
   )
 }
