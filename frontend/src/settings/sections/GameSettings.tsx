@@ -98,6 +98,7 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
   const steps = useLoader((s) => s.steps)
   const check = useLoader((s) => s.check)
   const install = useLoader((s) => s.install)
+  const refreshLaunch = useLaunch((s) => s.refresh)
   // SMAPI's files are in use while the game starts or runs.
   const playing = useLaunch(
     (s) =>
@@ -116,7 +117,9 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
   }
   useEffect(() => {
     check(GAME)
-  }, [check])
+    // Settings can open before any game page has fetched whether the game runs.
+    refreshLaunch(GAME)
+  }, [check, refreshLaunch])
   const gameVersion = status?.gameVersion ?? ''
   useEffect(() => {
     onVersion(gameVersion)
