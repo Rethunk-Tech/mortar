@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/archive"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
@@ -304,6 +305,11 @@ func (s *Service) fetch(ctx context.Context, it Item, url, path string) error {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("the download server answered %s", resp.Status)
 	}
+	const limit = archive.DefaultMaxTotalBytes
+	tooLarge := fmt.Errorf("the download is larger than %d MiB", limit>>20)
+	if resp.ContentLength > limit {
+		return tooLarge
+	}
 	total := resp.ContentLength
 	if total <= 0 {
 		total = it.SizeKB << 10
@@ -314,11 +320,15 @@ func (s *Service) fetch(ctx context.Context, it Item, url, path string) error {
 	}
 	defer func() { _ = f.Close() }()
 	p := &progress{s: s, id: it.ID, total: total, last: s.d.Now()}
-	if _, err := io.Copy(f, io.TeeReader(resp.Body, p)); err != nil {
+	n, err := io.Copy(f, io.TeeReader(io.LimitReader(resp.Body, limit+1), p))
+	if err != nil {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
 		return s.diskError(err, total)
+	}
+	if n > limit {
+		return tooLarge
 	}
 	return s.diskError(f.Close(), total)
 }

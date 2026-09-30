@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/archive"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/nxm"
@@ -370,4 +371,21 @@ func TestChooseFile(t *testing.T) {
 	if _, ok := ChooseFile([]nexus.File{{FileID: 9, Category: "OPTIONAL"}}, "1.0", 0); ok {
 		t.Error("an optional file was chosen for a profile that has none")
 	}
+}
+
+func TestNexusDownloadOverTheCapFails(t *testing.T) {
+	f := newFixture(t)
+	f.cdn = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Length", fmt.Sprint(archive.DefaultMaxTotalBytes+1))
+		fmt.Fprint(w, payload)
+	}
+	f.start()
+	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	st := f.wait("failed", f.item(StateFailed))
+	if !strings.Contains(st.Items[0].Error, "larger than") || len(f.installs) != 0 {
+		t.Fatalf("item %+v installs %v", st.Items[0], f.installs)
+	}
+	f.leftovers()
 }
