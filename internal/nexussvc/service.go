@@ -40,9 +40,11 @@ type Service struct {
 // NewService keeps mod page details in m's cache.
 func NewService(store *settings.Store, client *nexus.Client, m *meta.Client) *Service {
 	s := &Service{store: store, client: client, meta: m}
-	client.SetLimitsHook(func(nexus.Limits) {
+	client.SetLimitsHook(func(lim nexus.Limits) {
 		if s.App != nil {
-			s.App.Event.Emit(ChangedEvent, s.Account())
+			a := s.Account()
+			a.Limits = lim
+			s.App.Event.Emit(ChangedEvent, a)
 		}
 	})
 	return s
