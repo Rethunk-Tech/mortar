@@ -164,20 +164,27 @@ type UpdateWarning struct {
 func (s *Service) UpdateWarning(ctx context.Context, gameID, id string) (UpdateWarning, error) {
 	env := s.Environment(gameID)
 	recorded := s.settings.Get().LastPlayed[gameID].GameVersion
-	out := UpdateWarning{Recorded: recorded, Installed: env.GameVersion, Broken: []Broken{}}
 	if !stardew.GameVersionChanged(recorded, env.GameVersion) {
-		return out, nil
+		return versionChangeWarning(recorded, env.GameVersion, nil), nil
 	}
-	out.Changed = true
 	mods, err := s.installed(gameID, id)
 	if err != nil {
 		return UpdateWarning{}, err
 	}
-	out.Broken = Check(ctx, s.meta, env, mods).Broken
-	if out.Broken == nil {
-		out.Broken = []Broken{}
+	return versionChangeWarning(recorded, env.GameVersion, Check(ctx, s.meta, env, mods).Broken), nil
+}
+
+func versionChangeWarning(recorded, installed string, broken []Broken) UpdateWarning {
+	out := UpdateWarning{Recorded: recorded, Installed: installed, Broken: []Broken{}}
+	if !stardew.GameVersionChanged(recorded, installed) {
+		return out
 	}
-	return out, nil
+	out.Changed = true
+	if broken == nil {
+		return out
+	}
+	out.Broken = broken
+	return out
 }
 
 // Relations says what the mod key/uniqueID needs, which mods need it and where its page is.
