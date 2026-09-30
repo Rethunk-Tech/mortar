@@ -73,13 +73,20 @@ func TestRestoreWithoutPreviousDropsOurDefault(t *testing.T) {
 	if err := os.MkdirAll(l.configHome, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(list, []byte("[Default Applications]\nx-scheme-handler/nxm=mortar.desktop\ntext/html=a.desktop\n"), 0o600); err != nil {
+	real := filepath.Join(l.configHome, "dotfiles.list")
+	if err := fsx.WriteFile(real, []byte("[Default Applications]\nx-scheme-handler/nxm=mortar.desktop;\ntext/html=a.desktop\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(real, list); err != nil {
 		t.Fatal(err)
 	}
 	if err := l.Restore(""); err != nil {
 		t.Fatal(err)
 	}
-	b, _ := fsx.ReadFile(list)
+	if fi, err := os.Lstat(list); err != nil || fi.Mode()&os.ModeSymlink == 0 {
+		t.Errorf("mimeapps.list symlink replaced: %v", err)
+	}
+	b, _ := fsx.ReadFile(real)
 	if string(b) != "[Default Applications]\ntext/html=a.desktop\n" {
 		t.Errorf("mimeapps.list: %q", b)
 	}

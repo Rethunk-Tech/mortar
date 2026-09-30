@@ -158,6 +158,10 @@ func (l *System) Restore(previous string) error {
 // dropDefault removes Mortar's line from the user's mimeapps.list: xdg-mime cannot unset a default.
 func (l *System) dropDefault() error {
 	path := filepath.Join(l.configHome, "mimeapps.list")
+	// A dotfile manager's symlink is followed, so the rewrite lands in its target and the link stays.
+	if real, err := filepath.EvalSymlinks(path); err == nil {
+		path = real
+	}
 	b, err := fsx.ReadFile(path)
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil
@@ -167,12 +171,36 @@ func (l *System) dropDefault() error {
 	}
 	lines := strings.Split(string(b), "\n")
 	kept := slices.DeleteFunc(slices.Clone(lines), func(s string) bool {
-		return strings.TrimSpace(s) == nxmMime+"="+desktopID
+		k, v, ok := strings.Cut(strings.TrimSpace(s), "=")
+		return ok && k == nxmMime && strings.TrimSuffix(v, ";") == desktopID
 	})
 	if len(kept) == len(lines) {
 		return nil
 	}
-	return fsx.WriteFile(path, []byte(strings.Join(kept, "\n")), desktopPerm)
+	return replaceFile(path, []byte(strings.Join(kept, "\n")))
+}
+
+// replaceFile writes data beside path and renames it over path, so a crash never leaves a truncated file.
+func replaceFile(path string, data []byte) (err error) {
+	f, err := os.CreateTemp(filepath.Dir(path), filepath.Base(path)+".*.tmp")
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			err = errors.Join(err, os.Remove(f.Name()))
+		}
+	}()
+	if _, err = f.Write(data); err != nil {
+		return errors.Join(err, f.Close())
+	}
+	if err = f.Chmod(desktopPerm); err != nil {
+		return errors.Join(err, f.Close())
+	}
+	if err = f.Close(); err != nil {
+		return err
+	}
+	return os.Rename(f.Name(), path)
 }
 
 const mimeXML = `<?xml version="1.0" encoding="UTF-8"?>
