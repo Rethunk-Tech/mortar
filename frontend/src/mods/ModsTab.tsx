@@ -11,9 +11,10 @@ import { userModCount } from '../profiles/count.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { DuplicateDialog } from './DuplicateDialog.tsx'
 import { useDetail } from './detail.ts'
-import { modId } from './lookup.ts'
+import { modId, sourceKind } from './lookup.ts'
 import { ModDetail } from './ModDetail.tsx'
 import { ModList } from './ModList.tsx'
+import { useContextMenuSx, useModMenuEvents } from './menu.ts'
 import { ProblemBar } from './ProblemBar.tsx'
 import { LetterTile, ModMenu, ProblemBadge, RemoveDialog, UpdateBadge } from './parts.tsx'
 import { ModSidebar } from './Sidebar.tsx'
@@ -24,10 +25,71 @@ import { useUpdates } from './updates.ts'
 
 const OFF_OPACITY = 0.6
 
-function Cards({ shown }: { shown: Mod[] }) {
+function ModCard({ mod: m, profile }: { mod: Mod; profile: Profile }) {
   const { t } = useLingui()
   const openDetail = useDetail((s) => s.show)
   const selectedId = useDetail((s) => s.detailId)
+  const removable = sourceKind(profile, m) !== 'smapi'
+  const menuSx = useContextMenuSx(m, removable)
+  return (
+    <Card
+      sx={{
+        height: 64,
+        pl: 1,
+        pr: 0.75,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        minWidth: 0,
+        borderRadius: '6px',
+        outline: modId(m) === selectedId ? '1px solid' : 'none',
+        outlineColor: 'primary.main',
+        ...menuSx,
+        [compact]: { height: 50, '& .tile': { width: 38, height: 38, fontSize: 19 } },
+      }}
+    >
+      <ButtonBase
+        aria-label={t`Details of ${m.name}`}
+        onClick={() => openDetail(m)}
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          justifyContent: 'flex-start',
+          textAlign: 'left',
+          fontFamily: 'inherit',
+          color: 'inherit',
+        }}
+      >
+        <LetterTile mod={m} />
+        <Box
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            pl: '10px',
+            borderLeft: '1px solid rgba(255,255,255,0.12)',
+            opacity: m.enabled ? 1 : OFF_OPACITY,
+          }}
+        >
+          <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 600 }}>
+            {m.name}
+          </Typography>
+          <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
+            {`${m.author} · ${m.version}`}
+          </Typography>
+        </Box>
+      </ButtonBase>
+      <UpdateBadge mod={m} />
+      <ProblemBadge mod={m} />
+      <ModMenu mod={m} removable={removable} />
+    </Card>
+  )
+}
+
+function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
   return (
     <Box
       sx={{
@@ -41,60 +103,7 @@ function Cards({ shown }: { shown: Mod[] }) {
       }}
     >
       {shown.map((m) => (
-        <Card
-          key={modId(m)}
-          sx={{
-            height: 64,
-            pl: 1,
-            pr: 0.75,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            minWidth: 0,
-            borderRadius: '6px',
-            outline: modId(m) === selectedId ? '1px solid' : 'none',
-            outlineColor: 'primary.main',
-            [compact]: { height: 50, '& .tile': { width: 38, height: 38, fontSize: 19 } },
-          }}
-        >
-          <ButtonBase
-            aria-label={t`Details of ${m.name}`}
-            onClick={() => openDetail(m)}
-            sx={{
-              flex: 1,
-              minWidth: 0,
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              justifyContent: 'flex-start',
-              textAlign: 'left',
-              fontFamily: 'inherit',
-              color: 'inherit',
-            }}
-          >
-            <LetterTile mod={m} />
-            <Box
-              sx={{
-                flex: 1,
-                minWidth: 0,
-                pl: '10px',
-                borderLeft: '1px solid rgba(255,255,255,0.12)',
-                opacity: m.enabled ? 1 : OFF_OPACITY,
-              }}
-            >
-              <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 600 }}>
-                {m.name}
-              </Typography>
-              <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
-                {`${m.author} · ${m.version}`}
-              </Typography>
-            </Box>
-          </ButtonBase>
-          <UpdateBadge mod={m} />
-          <ProblemBadge mod={m} />
-          <ModMenu mod={m} />
-        </Card>
+        <ModCard key={modId(m)} mod={m} profile={profile} />
       ))}
     </Box>
   )
@@ -111,7 +120,11 @@ function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; vi
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto' }}>
-      {view === 'list' ? <ModList profile={profile} mods={shown} /> : <Cards shown={shown} />}
+      {view === 'list' ? (
+        <ModList profile={profile} mods={shown} />
+      ) : (
+        <Cards shown={shown} profile={profile} />
+      )}
       <ModSidebar profile={profile} />
     </Box>
   )
@@ -123,6 +136,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
   const view = useMods((s) => s.view)
   const load = useMods((s) => s.load)
   const [query, setQuery] = useState('')
+  useModMenuEvents()
   useEffect(() => {
     useMods.setState({
       mods: [],

@@ -4,7 +4,10 @@ import type {
   Duplicate,
   Result,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import { Problems } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
+import {
+  Pages,
+  Problems,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   Mods,
@@ -43,6 +46,7 @@ const open = () => {
 export const useMods = create<{
   mods: Mod[]
   loaded: boolean
+  pages: Record<string, string | undefined>
   view: View
   removing: Mod | null
   problems: Result | null
@@ -59,6 +63,7 @@ export const useMods = create<{
 }>((set, get) => ({
   mods: [],
   loaded: false,
+  pages: {},
   view: storedView(),
   removing: null,
   problems: null,
@@ -77,9 +82,12 @@ export const useMods = create<{
       return
     }
     try {
-      const mods = (await Mods(target.game, target.id)) ?? []
+      const [mods, pages] = await Promise.all([
+        Mods(target.game, target.id),
+        Pages(target.game, target.id),
+      ])
       if (open()?.id === target.id) {
-        set({ mods, loaded: true })
+        set({ mods: mods ?? [], pages: pages ?? {}, loaded: true })
       }
     } catch (e) {
       fail(i18n._(msg`Could not read the mods`))(e)

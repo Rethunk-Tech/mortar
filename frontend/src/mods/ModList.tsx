@@ -16,6 +16,7 @@ import type {
 import { compact } from '../game/compact.ts'
 import { useDetail } from './detail.ts'
 import { kindLabel, modId, sourceKind } from './lookup.ts'
+import { useContextMenuSx } from './menu.ts'
 import { heading } from './paper.ts'
 import { LetterTile, ModSwitch, ProblemBadge, UpdateBadge } from './parts.tsx'
 
@@ -39,10 +40,60 @@ function Cell({ sx, ...props }: TableCellProps) {
   return <TableCell {...props} sx={{ ...cellBase, ...sx }} />
 }
 
-export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
+function ModRow({ mod: m, striped, profile }: { mod: Mod; striped: boolean; profile: Profile }) {
   const { t } = useLingui()
   const selectedId = useDetail((s) => s.detailId)
   const show = useDetail((s) => s.show)
+  const menuSx = useContextMenuSx(m, sourceKind(profile, m) !== 'smapi')
+  return (
+    <TableRow
+      hover={true}
+      selected={modId(m) === selectedId}
+      onClick={() => show(m)}
+      sx={{
+        ...rowSx,
+        ...menuSx,
+        height: 36,
+        fontSize: 14,
+        cursor: 'pointer',
+        bgcolor: (th) => {
+          if (modId(m) === selectedId) {
+            return alpha(th.palette.primary.main, SELECTED_ALPHA)
+          }
+          return striped ? 'rgba(255,255,255,0.03)' : 'transparent'
+        },
+      }}
+    >
+      <Cell>
+        <ModSwitch mod={m} />
+      </Cell>
+      <Cell>
+        <LetterTile mod={m} size={26} />
+      </Cell>
+      <Cell sx={{ ...ellipsis, fontWeight: 500 }}>{m.name}</Cell>
+      <Cell sx={{ ...ellipsis, color: 'text.secondary', ...hideCompact }}>{m.author}</Cell>
+      <Cell sx={{ color: 'text.secondary', ...hideCompact }}>
+        {kindLabel(sourceKind(profile, m), t`SMAPI`, t`Archive`)}
+      </Cell>
+      <Cell
+        sx={{
+          fontSize: 13,
+          whiteSpace: 'nowrap',
+          color: m.enabled ? 'text.primary' : 'text.secondary',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+          <ProblemBadge mod={m} />
+          <UpdateBadge mod={m} />
+          {m.enabled ? t`Enabled` : t`Off`}
+        </Box>
+      </Cell>
+    </TableRow>
+  )
+}
+
+export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
+  const { t } = useLingui()
   return (
     <Box sx={{ minWidth: 0, minHeight: 0, overflowY: 'auto' }}>
       <Table
@@ -76,49 +127,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
         </TableHead>
         <TableBody>
           {mods.map((m, i) => (
-            <TableRow
-              key={modId(m)}
-              hover={true}
-              selected={modId(m) === selectedId}
-              onClick={() => show(m)}
-              sx={{
-                ...rowSx,
-                height: 36,
-                fontSize: 14,
-                cursor: 'pointer',
-                bgcolor: (th) => {
-                  if (modId(m) === selectedId) {
-                    return alpha(th.palette.primary.main, SELECTED_ALPHA)
-                  }
-                  return i % 2 ? 'rgba(255,255,255,0.03)' : 'transparent'
-                },
-              }}
-            >
-              <Cell>
-                <ModSwitch mod={m} />
-              </Cell>
-              <Cell>
-                <LetterTile mod={m} size={26} />
-              </Cell>
-              <Cell sx={{ ...ellipsis, fontWeight: 500 }}>{m.name}</Cell>
-              <Cell sx={{ ...ellipsis, color: 'text.secondary', ...hideCompact }}>{m.author}</Cell>
-              <Cell sx={{ color: 'text.secondary', ...hideCompact }}>
-                {kindLabel(sourceKind(profile, m), t`SMAPI`, t`Archive`)}
-              </Cell>
-              <Cell
-                sx={{
-                  fontSize: 13,
-                  whiteSpace: 'nowrap',
-                  color: m.enabled ? 'text.primary' : 'text.secondary',
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                  <ProblemBadge mod={m} />
-                  <UpdateBadge mod={m} />
-                  {m.enabled ? t`Enabled` : t`Off`}
-                </Box>
-              </Cell>
-            </TableRow>
+            <ModRow key={modId(m)} mod={m} striped={i % 2 === 1} profile={profile} />
           ))}
         </TableBody>
       </Table>

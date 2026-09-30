@@ -86,3 +86,13 @@ func TestPageURL(t *testing.T) {
 		}
 	}
 }
+
+func TestPagesKeysByEntryAndID(t *testing.T) {
+	with, without := Installed{Key: "k1"}, Installed{Key: "k2"}
+	with.UniqueID, with.UpdateKeys = "me.a", []string{"GitHub:me/repo"}
+	without.UniqueID = "me.b"
+	got := Pages([]Installed{with, without})
+	if len(got) != 1 || got["k1/me.a"] != "https://github.com/me/repo" {
+		t.Fatalf("got %v", got)
+	}
+}

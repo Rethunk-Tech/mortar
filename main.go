@@ -11,6 +11,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/loadersvc"
 	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-AI/mortar/internal/modmenu"
 	"github.com/Rethunk-AI/mortar/internal/picker"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -31,6 +32,10 @@ func registerEvents() {
 	application.RegisterEvent[loadersvc.Progress](loadersvc.ProgressEvent)
 	application.RegisterEvent[[]string](picker.DroppedEvent)
 	application.RegisterEvent[settings.Settings](settings.ChangedEvent)
+	application.RegisterEvent[modmenu.Target](modmenu.DetailsEvent)
+	application.RegisterEvent[modmenu.Target](modmenu.RemoveEvent)
+	application.RegisterEvent[profile.Profile](modmenu.ChangedEvent)
+	application.RegisterEvent[string](modmenu.FailedEvent)
 }
 
 func main() {
@@ -85,15 +90,17 @@ func main() {
 
 	var window *application.WebviewWindow
 	pick := &picker.Service{}
+	profileSvc := profile.NewService(profiles)
+	problemsSvc := problems.NewService(home, store, profiles, modMeta)
 
 	app := application.New(application.Options{
 		Name:        "Mortar",
 		Description: "Multi-game desktop mod manager",
 		Services: []application.Service{
 			application.NewService(svc), application.NewService(gamesSvc),
-			application.NewService(profile.NewService(profiles)), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
+			application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
 			application.NewService(savesSvc),
-			application.NewService(problems.NewService(home, store, profiles, modMeta)),
+			application.NewService(problemsSvc), application.NewService(&modmenu.Service{}),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -115,6 +122,20 @@ func main() {
 	loaders.App = app
 	launches.App = app
 	pick.App = app
+	modmenu.Register(app, modmenu.Backend{
+		SetEnabled: func(t modmenu.Target, enabled bool) (profile.Profile, error) {
+			return profileSvc.SetModEnabled(t.Game, t.Profile, t.Key, t.UniqueID, enabled)
+		},
+		ShowFiles: func(t modmenu.Target) error {
+			return profileSvc.ShowFiles(t.Game, t.Profile, t.Key, t.UniqueID)
+		},
+		PageURL: func(t modmenu.Target) (string, error) {
+			r, err := problemsSvc.Relations(t.Game, t.Profile, t.Key, t.UniqueID)
+			return r.PageURL, err
+		},
+		OpenURL: app.Browser.OpenURL,
+		Emit:    app.Event.Emit,
+	})
 
 	window = app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:            "Mortar",

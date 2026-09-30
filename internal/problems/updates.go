@@ -120,6 +120,17 @@ func Relate(mods []Installed, key, uniqueID string) (r Relations, ok bool) {
 	return r, true
 }
 
+// Pages maps "key/uniqueId" to the page of each mod whose update keys name one.
+func Pages(mods []Installed) map[string]string {
+	out := map[string]string{}
+	for _, m := range mods {
+		if u := pageURL(m.UpdateKeys); u != "" {
+			out[m.Key+"/"+m.UniqueID] = u
+		}
+	}
+	return out
+}
+
 // pageURL is the page of the first update key that names one: a Nexus mod or a GitHub repository.
 func pageURL(keys []string) string {
 	for _, k := range keys {

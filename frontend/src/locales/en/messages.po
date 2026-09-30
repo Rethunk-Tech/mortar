@@ -46,7 +46,7 @@ msgid "Could not change the profile's visibility"
 msgstr "Could not change the profile's visibility"
 
 #. placeholder {0}: others.join(', ')
-#: src/mods/parts.tsx:221
+#: src/mods/parts.tsx:262
 msgid "It came in one download with {0}, and all of them are removed together."
 msgstr "It came in one download with {0}, and all of them are removed together."
 
@@ -69,7 +69,7 @@ msgstr "Notes"
 
 #. placeholder {0}: update.installed
 #. placeholder {1}: update.version
-#: src/mods/parts.tsx:100
+#: src/mods/parts.tsx:121
 #: src/mods/Sidebar.tsx:58
 msgid "Update available: {0} → {1}"
 msgstr "Update available: {0} → {1}"
@@ -138,12 +138,12 @@ msgstr "Added {names} to {0}"
 msgid "Bundled with SMAPI"
 msgstr "Bundled with SMAPI"
 
-#: src/mods/parts.tsx:222
+#: src/mods/parts.tsx:263
 msgid "Its folder in this profile is deleted."
 msgstr "Its folder in this profile is deleted."
 
-#: src/mods/parts.tsx:141
-#: src/mods/parts.tsx:189
+#: src/mods/parts.tsx:162
+#: src/mods/parts.tsx:198
 msgid "Show files"
 msgstr "Show files"
 
@@ -199,7 +199,7 @@ msgid "Needed by"
 msgstr "Needed by"
 
 #: src/firstrun/ProfileStep.tsx:75
-#: src/mods/ModList.tsx:71
+#: src/mods/ModList.tsx:122
 msgid "Name"
 msgstr "Name"
 
@@ -216,7 +216,7 @@ msgid "Could not quit Mortar"
 msgstr "Could not quit Mortar"
 
 #. placeholder {0}: mod.name
-#: src/mods/parts.tsx:170
+#: src/mods/parts.tsx:214
 msgid "More actions for {0}"
 msgstr "More actions for {0}"
 
@@ -271,11 +271,15 @@ msgstr "One step in Steam"
 msgid "Rename profile"
 msgstr "Rename profile"
 
+#: src/mods/menu.ts:81
+msgid "Could not run that action"
+msgstr "Could not run that action"
+
 #: src/settings/SettingsPage.tsx:26
 msgid "Appearance"
 msgstr "Appearance"
 
-#: src/mods/ModsTab.tsx:152
+#: src/mods/ModsTab.tsx:166
 msgid "Add mods from an archive you downloaded, or find them on Nexus."
 msgstr "Add mods from an archive you downloaded, or find them on Nexus."
 
@@ -295,11 +299,11 @@ msgstr "The console fills when the game runs."
 msgid "All mods present"
 msgstr "All mods present"
 
-#: src/mods/ModList.tsx:118
+#: src/mods/ModList.tsx:88
 msgid "Off"
 msgstr "Off"
 
-#: src/mods/ModList.tsx:106
+#: src/mods/ModList.tsx:76
 #: src/mods/Sidebar.tsx:88
 msgid "Archive"
 msgstr "Archive"
@@ -344,7 +348,7 @@ msgstr "Launch options copied"
 msgid "config.json, changed from the mod's own"
 msgstr "config.json, changed from the mod's own"
 
-#: src/mods/store.ts:85
+#: src/mods/store.ts:93
 msgid "Could not read the mods"
 msgstr "Could not read the mods"
 
@@ -380,6 +384,10 @@ msgstr "Stardew green"
 #: src/profiles/ProfilesPage.tsx:413
 msgid "Delete"
 msgstr "Delete"
+
+#: src/mods/parts.tsx:195
+msgid "Disable"
+msgstr "Disable"
 
 #: src/profiles/store.ts:118
 msgid "Could not duplicate the profile"
@@ -418,7 +426,7 @@ msgstr "config.json, as the mod ships it"
 #: src/launch/LaunchLayer.tsx:201
 #: src/launch/StopDialog.tsx:36
 #: src/mods/ModDetail.tsx:179
-#: src/mods/parts.tsx:226
+#: src/mods/parts.tsx:267
 #: src/profiles/ProfilesPage.tsx:402
 msgid "Cancel"
 msgstr "Cancel"
@@ -449,7 +457,7 @@ msgstr "Mortar"
 msgid "Could not install SMAPI"
 msgstr "Could not install SMAPI"
 
-#: src/mods/ModsTab.tsx:172
+#: src/mods/ModsTab.tsx:186
 msgid "You can also drop archives anywhere on the window."
 msgstr "You can also drop archives anywhere on the window."
 
@@ -540,7 +548,7 @@ msgid "Changes apply right away"
 msgstr "Changes apply right away"
 
 #. placeholder {0}: mod.name
-#: src/mods/parts.tsx:125
+#: src/mods/parts.tsx:146
 msgid "Enable {0}"
 msgstr "Enable {0}"
 
@@ -565,8 +573,12 @@ msgstr "Open console"
 msgid "Profile name"
 msgstr "Profile name"
 
+#: src/mods/parts.tsx:197
+msgid "Open mod page"
+msgstr "Open mod page"
+
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:135
+#: src/mods/store.ts:143
 msgid "Could not remove {0}"
 msgstr "Could not remove {0}"
 
@@ -621,7 +633,7 @@ msgstr "Copy"
 msgid "Image"
 msgstr "Image"
 
-#: src/mods/parts.tsx:85
+#: src/mods/parts.tsx:106
 msgid "Problem: {text}"
 msgstr "Problem: {text}"
 
@@ -684,7 +696,7 @@ msgid "Selected mod"
 msgstr "Selected mod"
 
 #. placeholder {0}: dup.name
-#: src/mods/store.ts:163
+#: src/mods/store.ts:171
 msgid "Could not switch off the other copy of {0}"
 msgstr "Could not switch off the other copy of {0}"
 
@@ -735,7 +747,7 @@ msgstr "Deleted profiles stay here for 30 days, mods and settings included."
 msgid "Stardew Valley {0}"
 msgstr "Stardew Valley {0}"
 
-#: src/mods/store.ts:102
+#: src/mods/store.ts:110
 msgid "Could not check the mods for problems"
 msgstr "Could not check the mods for problems"
 
@@ -752,12 +764,12 @@ msgstr "Notes for {0}"
 #: src/console/ConsoleTab.tsx:123
 #: src/game/Detail.tsx:155
 #: src/game/Detail.tsx:254
-#: src/mods/ModList.tsx:49
+#: src/mods/ModList.tsx:100
 msgid "Mods"
 msgstr "Mods"
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:121
+#: src/mods/store.ts:129
 msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
@@ -824,7 +836,7 @@ msgstr "No saves found yet."
 msgid "Not found"
 msgstr "Not found"
 
-#: src/mods/ModList.tsx:106
+#: src/mods/ModList.tsx:76
 #: src/mods/Sidebar.tsx:88
 msgid "SMAPI"
 msgstr "SMAPI"
@@ -845,6 +857,7 @@ msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was add
 msgid "Stardew Valley"
 msgstr "Stardew Valley"
 
+#: src/mods/parts.tsx:196
 #: src/mods/Sidebar.tsx:119
 msgid "More details"
 msgstr "More details"
@@ -888,7 +901,7 @@ msgid "Follow"
 msgstr "Follow"
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:147
+#: src/mods/store.ts:155
 msgid "Could not open the folder of {0}"
 msgstr "Could not open the folder of {0}"
 
@@ -985,6 +998,10 @@ msgstr "Create your first profile"
 msgid "Moss"
 msgstr "Moss"
 
+#: src/mods/parts.tsx:195
+msgid "Enable"
+msgstr "Enable"
+
 #. placeholder {0}: mod.name
 #: src/mods/detail.ts:90
 msgid "Could not reset the settings of {0}"
@@ -1052,7 +1069,7 @@ msgstr "Actions for {0}"
 msgid "Three steps and you are playing with mods."
 msgstr "Three steps and you are playing with mods."
 
-#: src/mods/ModList.tsx:118
+#: src/mods/ModList.tsx:88
 msgid "Enabled"
 msgstr "Enabled"
 
@@ -1118,7 +1135,7 @@ msgid "Quit"
 msgstr "Quit"
 
 #. placeholder {0}: m.name
-#: src/mods/ModsTab.tsx:61
+#: src/mods/ModsTab.tsx:52
 msgid "Details of {0}"
 msgstr "Details of {0}"
 
@@ -1143,9 +1160,9 @@ msgstr "Running {time}"
 msgid "Built on"
 msgstr "Built on"
 
-#: src/mods/parts.tsx:156
-#: src/mods/parts.tsx:200
-#: src/mods/parts.tsx:236
+#: src/mods/parts.tsx:177
+#: src/mods/parts.tsx:199
+#: src/mods/parts.tsx:277
 msgid "Remove"
 msgstr "Remove"
 
@@ -1234,7 +1251,7 @@ msgstr "SMAPI {0} is installed"
 msgid "Could not delete the profile"
 msgstr "Could not delete the profile"
 
-#: src/mods/ModList.tsx:74
+#: src/mods/ModList.tsx:125
 msgid "Status"
 msgstr "Status"
 
@@ -1300,7 +1317,7 @@ msgstr "Saves"
 msgid "Steam may not be running or signed in. Start Steam, sign in and try again."
 msgstr "Steam may not be running or signed in. Start Steam, sign in and try again."
 
-#: src/mods/ModList.tsx:72
+#: src/mods/ModList.tsx:123
 msgid "Author"
 msgstr "Author"
 
@@ -1327,7 +1344,7 @@ msgstr "Profiles"
 msgid "Missing"
 msgstr "Missing"
 
-#: src/mods/ModsTab.tsx:109
+#: src/mods/ModsTab.tsx:118
 msgid "No mods match your search."
 msgstr "No mods match your search."
 
@@ -1353,7 +1370,7 @@ msgstr "Saved · {n, plural, one {# day ago} other {# days ago}}"
 msgid "Steam was not found."
 msgstr "Steam was not found."
 
-#: src/mods/ModList.tsx:73
+#: src/mods/ModList.tsx:124
 msgid "Source"
 msgstr "Source"
 
@@ -1440,7 +1457,7 @@ msgstr "{mods, plural, one {# mod} other {# mods}} · Updated {updated}"
 msgid "{0, plural, one {# update} other {# updates}} for {1}"
 msgstr "{0, plural, one {# update} other {# updates}} for {1}"
 
-#: src/mods/ModsTab.tsx:150
+#: src/mods/ModsTab.tsx:164
 msgid "No mods yet"
 msgstr "No mods yet"
 
@@ -1512,7 +1529,7 @@ msgid "Adding…"
 msgstr "Adding…"
 
 #. placeholder {0}: mod?.name
-#: src/mods/parts.tsx:217
+#: src/mods/parts.tsx:258
 msgid "Remove {0} from this profile?"
 msgstr "Remove {0} from this profile?"
 
@@ -1520,7 +1537,7 @@ msgstr "Remove {0} from this profile?"
 msgid "SMAPI not installed yet"
 msgstr "SMAPI not installed yet"
 
-#: src/mods/ModList.tsx:69
+#: src/mods/ModList.tsx:120
 msgid "On"
 msgstr "On"
 

@@ -159,3 +159,12 @@ func (s *Service) Relations(gameID, id, key, uniqueID string) (Relations, error)
 	}
 	return r, nil
 }
+
+// Pages says where each mod's page is, keyed "key/uniqueId"; mods without a known page are left out.
+func (s *Service) Pages(gameID, id string) (map[string]string, error) {
+	mods, err := s.installed(gameID, id)
+	if err != nil {
+		return nil, err
+	}
+	return Pages(mods), nil
+}
