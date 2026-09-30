@@ -16,7 +16,7 @@ Links, the Share dialog, the import preview, `.mortar` files and first run's lin
 Built: packaging, self-update, the signing key and Linux desktop integration ([architecture.md](architecture.md#release)). Remaining:
 
 - **Windows** builds ship unsigned, so SmartScreen warns and the download page explains it.
-- The updater fixes in the `Rethunk-AI/wails` fork go upstream as a second PR.
+- The updater fixes are offered upstream as wailsapp/wails#6200 (EXDEV staging), #6201 (AppImage) and #6202 (OnUpdateApplied, draft pending a WEP); Mortar pins the fork until they ship.
 - Settings › Updates: the backups-kept setting ([gui-design.md](gui-design.md#settings)).
 - The repo turns public at the first release and builds go on its GitHub Releases, since the updater's manifest and assets must be publicly downloadable.
 - **CI:** Linux runners only: Wails builds Windows from Linux (`wails3 build GOOS=windows`, `Rethunk-AI/wails` `docs/mpress/content/guides/build/building.md:21-29`; only macOS and Linux targets need Docker), and the NSIS installer is built with `makensis`. The release workflow builds both, runs `wails3 task release:manifest` with the private key from a secret, and attaches the assets and `manifest.json` to the tag's release.
