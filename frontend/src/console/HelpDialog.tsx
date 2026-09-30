@@ -72,12 +72,14 @@ export function HelpDialog({ game }: { game: string }) {
   const profile = useProfiles((s) => s.openId)
   const openFor = useRef({ game, profile })
   openFor.current = { game, profile }
+  const uploadGen = useRef(0)
   const [log, setLog] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [link, setLink] = useState('')
   const close = () => setHelping(false)
 
   useEffect(() => {
+    uploadGen.current += 1
     if (!open) {
       return
     }
@@ -118,21 +120,21 @@ export function HelpDialog({ game }: { game: string }) {
     )
 
   const upload = () => {
+    const token = uploadGen.current
     if (log === null || uploading) {
       return
     }
-    const started = openFor.current
     setUploading(true)
     Upload(log)
       .then((url) => {
-        if (openFor.current.game !== started.game || openFor.current.profile !== started.profile) {
+        if (uploadGen.current !== token) {
           return
         }
         setLink(url)
         return copy(url)
       })
       .catch((e: unknown) => {
-        if (openFor.current.game !== started.game || openFor.current.profile !== started.profile) {
+        if (uploadGen.current !== token) {
           return
         }
         useToasts.getState().push({
@@ -141,7 +143,11 @@ export function HelpDialog({ game }: { game: string }) {
           body: errorMessage(e),
         })
       })
-      .finally(() => setUploading(false))
+      .finally(() => {
+        if (uploadGen.current === token) {
+          setUploading(false)
+        }
+      })
   }
 
   let body: string | null = null
