@@ -13,8 +13,10 @@ const status = (state: State, profile: string): Status => ({
   error: '',
 })
 
-test('only a running game on the open profile locks it', () => {
+test('only a launching or running game on the open profile locks it', () => {
+  expect(isLocked(status(State.Launching, 'a'), 'a')).toBe(true)
   expect(isLocked(status(State.Running, 'a'), 'a')).toBe(true)
+  expect(isLocked(status(State.Launching, 'b'), 'a')).toBe(false)
   expect(isLocked(status(State.Running, 'b'), 'a')).toBe(false)
   expect(isLocked(status(State.Idle, 'a'), 'a')).toBe(false)
   expect(isLocked(null, 'a')).toBe(false)
