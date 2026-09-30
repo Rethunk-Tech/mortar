@@ -188,12 +188,11 @@ const initNexusSeen = () =>
     .then((snap) => {
       const byId: Record<number, SeenWatermark | undefined> = {}
       for (const [key, entry] of Object.entries(snap ?? {})) {
-        if (!entry) {
-          continue
-        }
-        byId[Number(key)] = {
-          newestFileUnix: entry.newestFileUnix,
-          newestChange: entry.newestChange,
+        if (entry) {
+          byId[Number(key)] = {
+            newestFileUnix: entry.newestFileUnix,
+            newestChange: entry.newestChange,
+          }
         }
       }
       useNexusSeen.setState({ byId })
