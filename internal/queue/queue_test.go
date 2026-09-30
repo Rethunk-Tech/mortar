@@ -438,3 +438,13 @@ func TestARejectedLinkCanBeRetried(t *testing.T) {
 	f.s.Retry(it.ID)
 	f.wait("done", f.item(StateDone))
 }
+
+func TestAddValidatesTheWholeBatch(t *testing.T) {
+	f := newFixture(t)
+	if _, err := f.s.Add([]Request{req(10), {Kind: KindInstall, Game: "stardew", ModID: 1, FileID: 11}}); err == nil {
+		t.Fatal("expected error")
+	}
+	if st := f.s.State(); len(st.Items) != 0 {
+		t.Fatalf("partial add: %+v", st.Items)
+	}
+}

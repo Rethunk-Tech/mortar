@@ -372,13 +372,14 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 			return nil, err
 		}
 	}
+	for _, r := range reqs {
+		if r.Game == "" || r.Profile == "" || (r.ModID <= 0 && !validRepo(r.Repo)) {
+			return nil, errors.New("choose a mod and a profile for the download")
+		}
+	}
 	out := make([]Item, 0, len(reqs))
 	s.mu.Lock()
 	for _, r := range reqs {
-		if r.Game == "" || r.Profile == "" || (r.ModID <= 0 && !validRepo(r.Repo)) {
-			s.mu.Unlock()
-			return nil, errors.New("choose a mod and a profile for the download")
-		}
 		if i := slices.IndexFunc(s.items, func(it *Item) bool { return sameDownload(it, r) }); i >= 0 {
 			it := s.items[i]
 			if it.State == StateFailed {
