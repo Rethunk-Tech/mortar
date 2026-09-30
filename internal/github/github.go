@@ -4,6 +4,8 @@ package github
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -178,10 +180,17 @@ func (c *Client) now() time.Time {
 
 var nonKey = regexp.MustCompile(`[^a-z0-9.]+`)
 
+// maxSlug bounds the readable part of a key, keeping the folder name under the file system's limit.
+const maxSlug = 100
+
 // Key is the store key of a GitHub asset: github-<owner>-<repo>-<tag>-<asset>, lower-cased with every other
-// character run folded to a dash so it satisfies the store's key rules.
+// character run folded to a dash so it satisfies the store's key rules, then a hash of the exact names, since the
+// folding alone maps a-b/c and a/b-c to one key.
 func Key(owner, repo, tag, asset string) string {
-	return "github-" + strings.Trim(nonKey.ReplaceAllString(strings.ToLower(strings.Join([]string{owner, repo, tag, asset}, "-")), "-"), "-")
+	slug := nonKey.ReplaceAllString(strings.ToLower(strings.Join([]string{owner, repo, tag, asset}, "-")), "-")
+	slug = strings.Trim(slug[:min(len(slug), maxSlug)], "-")
+	sum := sha256.Sum256([]byte(strings.ToLower(owner+"/"+repo) + "@" + tag + "/" + asset))
+	return "github-" + slug + "-" + hex.EncodeToString(sum[:6])
 }
 
 type cacheEntry struct {
@@ -204,7 +213,7 @@ func (c *Client) Releases(ctx context.Context, owner, repo string) ([]Release, e
 		}
 		dir = filepath.Join(d, "cache")
 	}
-	path := filepath.Join(dir, Key(owner, repo, "", "")+"releases.json")
+	path := filepath.Join(dir, Key(owner, repo, "", "")+"-releases.json")
 	var old cacheEntry
 	if b, err := fsx.ReadFile(path); err == nil && json.Unmarshal(b, &old) != nil {
 		old = cacheEntry{}

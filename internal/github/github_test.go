@@ -124,8 +124,17 @@ func TestDownload(t *testing.T) {
 
 func TestKey(t *testing.T) {
 	k := Key("Pathoschild", "StardewMods", "v2.1.0", "Mod (Final) 2.1.0.zip")
-	if k != "github-pathoschild-stardewmods-v2.1.0-mod-final-2.1.0.zip" {
+	if !strings.HasPrefix(k, "github-pathoschild-stardewmods-v2.1.0-mod-final-2.1.0.zip-") {
 		t.Fatalf("key = %q", k)
+	}
+	if Key("a-b", "c", "t", "x.zip") == Key("a", "b-c", "t", "x.zip") {
+		t.Fatal("owner/repo split folded into one key")
+	}
+	if Key("Me", "Mod", "t", "x.zip") != Key("me", "mod", "t", "x.zip") {
+		t.Fatal("GitHub names are case-insensitive but keyed apart")
+	}
+	if long := Key(strings.Repeat("o", 39), strings.Repeat("r", 100), strings.Repeat("t", 100), strings.Repeat("a", 200)); len(long) > 128 {
+		t.Fatalf("key is %d bytes", len(long))
 	}
 	if !regexp.MustCompile(`^[a-z0-9][a-z0-9.-]*$`).MatchString(Key("_a", "b_", "", "?")) {
 		t.Fatal("key breaks the store's rules")

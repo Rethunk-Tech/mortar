@@ -200,3 +200,14 @@ func TestGitHubRequestsNeedNoSignInButAValidRepo(t *testing.T) {
 		t.Fatalf("signed out: %v", err)
 	}
 }
+
+func TestAddRefusesDotRepos(t *testing.T) {
+	for _, repo := range []string{"me/..", "./mod", "../..", "me/."} {
+		if validRepo(repo) {
+			t.Errorf("validRepo(%q) = true", repo)
+		}
+	}
+	if !validRepo("me/mod.cfg") {
+		t.Error("a dotted repo name was refused")
+	}
+}

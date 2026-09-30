@@ -10,6 +10,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 
 	"github.com/Rethunk-AI/mortar/internal/archive"
+	"github.com/Rethunk-AI/mortar/internal/github"
 )
 
 func buildZip(t *testing.T, name string, files map[string]string) string {
@@ -109,7 +110,7 @@ func TestStageThenInstallGitHubKeepsTheTypedSource(t *testing.T) {
 	zip := buildZip(t, "mod.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	src := Source{Kind: KindGitHub, Name: "mod.zip", Version: "1.0", Repo: "Me/Mod", Tag: "v1.0", Asset: "mod.zip"}
 	key, ids, err := e.StageGitHub("stardew", src, zip)
-	if err != nil || key != "github-me-mod-v1.0-mod.zip" || len(ids) != 1 || ids[0] != "X.A" {
+	if err != nil || key != github.Key("Me", "Mod", "v1.0", "mod.zip") || len(ids) != 1 || ids[0] != "X.A" {
 		t.Fatalf("stage = %q, %v, %v", key, ids, err)
 	}
 	if got, _ := e.List("stardew"); len(got[0].Entries) != 0 {

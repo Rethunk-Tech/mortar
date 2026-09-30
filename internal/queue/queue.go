@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -57,6 +58,12 @@ const (
 
 // repoPattern is a GitHub "owner/repo"; it also keeps anything but a name out of the API URL.
 var repoPattern = regexp.MustCompile(`^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$`)
+
+// validRepo also refuses "." and "..", which the pattern admits but would move the API URL's path.
+func validRepo(repo string) bool {
+	owner, name, _ := strings.Cut(repo, "/")
+	return repoPattern.MatchString(repo) && strings.Trim(owner, ".") != "" && strings.Trim(name, ".") != ""
+}
 
 const (
 	fileName        = "queue.json"
@@ -323,7 +330,7 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 	out := make([]Item, 0, len(reqs))
 	s.mu.Lock()
 	for _, r := range reqs {
-		if r.Game == "" || r.Profile == "" || (r.ModID <= 0 && !repoPattern.MatchString(r.Repo)) {
+		if r.Game == "" || r.Profile == "" || (r.ModID <= 0 && !validRepo(r.Repo)) {
 			s.mu.Unlock()
 			return nil, errors.New("choose a mod and a profile for the download")
 		}

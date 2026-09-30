@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"slices"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -89,7 +90,13 @@ func validName(name string) bool {
 
 func (r Ref) valid() bool {
 	if r.GitHub != "" {
-		return r.ModID == 0 && r.FileID == 0 && githubRef.MatchString(r.GitHub)
+		if r.ModID != 0 || r.FileID != 0 || !githubRef.MatchString(r.GitHub) {
+			return false
+		}
+		// All-dot names pass the pattern but would walk the API URL's path or the download's file name.
+		repo, tag, asset := r.GitHubParts()
+		owner, name, _ := strings.Cut(repo, "/")
+		return !slices.ContainsFunc([]string{owner, name, tag, asset}, func(p string) bool { return strings.Trim(p, ".") == "" })
 	}
 	return r.ModID > 0 && r.ModID <= maxID && r.FileID > 0 && r.FileID <= maxID
 }
