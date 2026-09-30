@@ -2,13 +2,14 @@ import { useLingui } from '@lingui/react/macro'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material'
 import { useState } from 'react'
 import { useProfiles } from '../profiles/store.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 
 export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLingui()
   const create = useProfiles((s) => s.create)
   const [name, setName] = useState('')
   const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
   const close = () => {
     setName('')
     setError('')
@@ -16,15 +17,21 @@ export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: ()
   }
   const submit = async () => {
     const trimmed = name.trim()
+    if (busy) {
+      return
+    }
     if (!trimmed) {
       setError(t`Enter a name for the profile.`)
       return
     }
+    setBusy(true)
     try {
       await create(trimmed)
       close()
     } catch (e) {
-      setError(String(e))
+      setError(errorMessage(e))
+    } finally {
+      setBusy(false)
     }
   }
   return (
@@ -58,7 +65,7 @@ export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: ()
         </DialogContent>
         <DialogActions>
           <Button onClick={close}>{t`Cancel`}</Button>
-          <Button type="submit" variant="contained">
+          <Button type="submit" variant="contained" disabled={busy}>
             {t`Create`}
           </Button>
         </DialogActions>

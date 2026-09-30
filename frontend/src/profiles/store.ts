@@ -20,10 +20,11 @@ import { SetLastProfile } from '../../bindings/github.com/Rethunk-AI/mortar/inte
 import { loadGameStatus } from '../games/status.ts'
 import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'
+import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 const fail = (title: string) => (e: unknown) => {
-  useToasts.getState().push({ kind: 'error', title, body: String(e) })
+  useToasts.getState().push({ kind: 'error', title, body: errorMessage(e) })
 }
 
 const firstVisible = (profiles: Profile[]) => profiles.find((p) => !p.hidden)?.id ?? ''
@@ -37,6 +38,7 @@ export const useProfiles = create<{
   load: (gameId: string) => Promise<void>
   open: (id: string) => void
   create: (name: string) => Promise<void>
+  // Rejects with the reason when the name is refused, for the field to show.
   rename: (id: string, name: string) => Promise<boolean>
   replace: (profile: Profile) => void
   refresh: () => Promise<void>
@@ -86,14 +88,9 @@ export const useProfiles = create<{
     if (!game) {
       return false
     }
-    try {
-      const p = await Rename(game.id, id, name)
-      set((s) => ({ profiles: s.profiles.map((x) => (x.id === id ? p : x)) }))
-      return true
-    } catch (e) {
-      fail(i18n._(msg`Could not rename the profile`))(e)
-      return false
-    }
+    const p = await Rename(game.id, id, name)
+    set((s) => ({ profiles: s.profiles.map((x) => (x.id === id ? p : x)) }))
+    return true
   },
   replace: (p) => set((s) => ({ profiles: s.profiles.map((x) => (x.id === p.id ? p : x)) })),
   refresh: async () => {
