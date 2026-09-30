@@ -353,3 +353,90 @@ func TestHiddenReorderAndStoreKeys(t *testing.T) {
 		t.Fatalf("keys = %v, %v", keys, err)
 	}
 }
+
+func bundle(id string) map[string]string {
+	return map[string]string{
+		"ConsoleCommands/manifest.json": manifestJSON(id + ".Console"),
+		"SaveBackup/manifest.json":      manifestJSON(id + ".Backup"),
+	}
+}
+
+func TestApplyBundledReplacesAndKeepsDisabled(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "smapi-1.0.0", bundle("SMAPI"))
+	e.item(t, "smapi-2.0.0", bundle("SMAPI"))
+	e.item(t, "local-x", map[string]string{"manifest.json": manifestJSON("Other")})
+	a, err := e.Create("stardew", "a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := e.Create("stardew", "b")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := e.ApplyBundled("stardew", "smapi-1.0.0"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.AddEntry("stardew", a.ID, "local-x", Source{Kind: "local", Name: "x.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.SetModEnabled("stardew", a.ID, "SMAPI.Backup", false); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.ApplyBundled("stardew", "smapi-2.0.0"); err != nil {
+		t.Fatal(err)
+	}
+	for _, id := range []string{a.ID, b.ID} {
+		p, err := e.read("stardew", id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var keys []string
+		for _, en := range p.Entries {
+			keys = append(keys, en.Key)
+			if en.Key == "smapi-2.0.0" && en.Source.Kind != SourceSMAPI {
+				t.Fatalf("source = %+v", en.Source)
+			}
+		}
+		want := []string{"smapi-2.0.0"}
+		if id == a.ID {
+			want = []string{"local-x", "smapi-2.0.0"}
+		}
+		if !slices.Equal(keys, want) {
+			t.Fatalf("%s entries = %v, want %v", id, keys, want)
+		}
+	}
+	got := names(t, filepath.Join(e.mods(a.ID), "smapi-2.0.0"))
+	if !slices.Equal(got, []string{".SaveBackup", "ConsoleCommands"}) {
+		t.Fatalf("a's bundled folders = %v (disabled state lost)", got)
+	}
+	if got := names(t, filepath.Join(e.mods(b.ID), "smapi-2.0.0")); !slices.Equal(got, []string{"ConsoleCommands", "SaveBackup"}) {
+		t.Fatalf("b's bundled folders = %v", got)
+	}
+	if got := names(t, e.mods(a.ID)); !slices.Equal(got, []string{"local-x", "smapi-2.0.0"}) {
+		t.Fatalf("old entry folder left behind: %v", got)
+	}
+	if err := e.ApplyBundled("stardew", "smapi-2.0.0"); err != nil {
+		t.Fatalf("reapplying the same key: %v", err)
+	}
+}
+
+func TestCreateGetsBundledEntry(t *testing.T) {
+	e := newEnv(t)
+	key := ""
+	e.Bundled = func(string) string { return key }
+	p, err := e.Create("stardew", "before")
+	if err != nil || len(p.Entries) != 0 {
+		t.Fatalf("before install: %+v, %v", p, err)
+	}
+	e.item(t, "smapi-1.0.0", bundle("SMAPI"))
+	key = "smapi-1.0.0"
+	p, err = e.Create("stardew", "after")
+	if err != nil || len(p.Entries) != 1 || p.Entries[0].Source.Kind != SourceSMAPI {
+		t.Fatalf("after install: %+v, %v", p, err)
+	}
+	key = "smapi-0.0.1"
+	if p, err = e.Create("stardew", "collected"); err != nil || len(p.Entries) != 0 {
+		t.Fatalf("missing store item must not block creation: %+v, %v", p, err)
+	}
+}

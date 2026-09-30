@@ -72,6 +72,8 @@ type Store struct {
 	trash string
 	items *store.Store
 	mu    sync.Mutex
+	// Bundled returns the store key of the loader's bundled mods for a game, or "" when there are none.
+	Bundled func(game string) string
 }
 
 // Open returns a store rooted at <datadir>/profiles, with deleted profiles in <datadir>/trash.
@@ -176,8 +178,29 @@ func readAt(dir, id string) (Profile, error) {
 	return p, nil
 }
 
-// Create adds an empty profile, with its mods/ folder, after the existing ones.
+// Create adds a profile holding only the loader's bundled mods, if any are installed, after the existing ones.
 func (s *Store) Create(game, name string) (Profile, error) {
+	p, err := s.create(game, name)
+	if err != nil || s.Bundled == nil {
+		return p, err
+	}
+	key := s.Bundled(game)
+	if key == "" {
+		return p, nil
+	}
+	withBundled, err := s.AddEntry(game, p.ID, key, Source{Kind: SourceSMAPI, Name: "SMAPI"})
+	if errors.Is(err, store.ErrNotFound) {
+		// The item was collected while no profile used it; the next install adds it again.
+		return p, nil
+	}
+	if err != nil {
+		dir, _ := s.profileDir(game, p.ID)
+		return Profile{}, errors.Join(err, os.RemoveAll(dir))
+	}
+	return withBundled, nil
+}
+
+func (s *Store) create(game, name string) (Profile, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	name, err := cleanName(name)

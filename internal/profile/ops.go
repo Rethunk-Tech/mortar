@@ -134,39 +134,53 @@ func entryMods(found []manifest.Mod) []EntryMod {
 	return out
 }
 
+// SourceSMAPI marks the entry holding the loader's own mods.
+const SourceSMAPI = "smapi"
+
+// addTo copies the store item key into the profile's mods/ and records its entry, switching off the
+// mods in disabled that it holds. placed is the new folder, for the caller to remove if a later step fails.
+func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, disabled []string) (placed string, err error) {
+	for _, e := range p.Entries {
+		if e.Key == key {
+			return "", fmt.Errorf("%q is already in this profile as %s", key, entryLabel(e))
+		}
+	}
+	src, err := s.items.Path(game, key)
+	if err != nil {
+		return "", err
+	}
+	found, err := manifest.Scan(src)
+	if err != nil {
+		return "", err
+	}
+	if len(found) == 0 {
+		return "", fmt.Errorf("%q holds no mod: no readable %s", key, manifest.FileName)
+	}
+	e := Entry{Key: key, Source: source, Mods: entryMods(found), Disabled: []string{}}
+	for _, m := range e.Mods {
+		if hasID(disabled, m.UniqueID) {
+			e.Disabled = append(e.Disabled, m.UniqueID)
+		}
+	}
+	modsDir := filepath.Join(dir, "mods")
+	if err := os.MkdirAll(modsDir, 0o700); err != nil {
+		return "", err
+	}
+	if err := s.place(game, modsDir, e); err != nil {
+		return "", err
+	}
+	p.Entries = append(p.Entries, e)
+	return filepath.Join(modsDir, key), nil
+}
+
 // AddEntry copies the store item key into the profile and records the mods it holds.
 func (s *Store) AddEntry(game, id, key string, source Source) (Profile, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	var placed string
-	p, err := s.updateLocked(game, id, func(p *Profile, dir string) error {
-		for _, e := range p.Entries {
-			if e.Key == key {
-				return fmt.Errorf("%q is already in this profile as %s", key, entryLabel(e))
-			}
-		}
-		src, err := s.items.Path(game, key)
-		if err != nil {
-			return err
-		}
-		found, err := manifest.Scan(src)
-		if err != nil {
-			return err
-		}
-		if len(found) == 0 {
-			return fmt.Errorf("%q holds no mod: no readable %s", key, manifest.FileName)
-		}
-		e := Entry{Key: key, Source: source, Mods: entryMods(found), Disabled: []string{}}
-		modsDir := filepath.Join(dir, "mods")
-		if err := os.MkdirAll(modsDir, 0o700); err != nil {
-			return err
-		}
-		if err := s.place(game, modsDir, e); err != nil {
-			return err
-		}
-		placed = filepath.Join(modsDir, key)
-		p.Entries = append(p.Entries, e)
-		return nil
+	p, err := s.updateLocked(game, id, func(p *Profile, dir string) (err error) {
+		placed, err = s.addTo(game, p, dir, key, source, nil)
+		return err
 	})
 	if err != nil {
 		if placed != "" {
@@ -175,6 +189,47 @@ func (s *Store) AddEntry(game, id, key string, source Source) (Profile, error) {
 		return Profile{}, err
 	}
 	return p, s.items.Touch(game, key)
+}
+
+// ApplyBundled makes key the loader's bundled-mods entry in every profile of the game, replacing older ones
+// and keeping each profile's switched-off mods off. Profiles that fail do not stop the others.
+func (s *Store) ApplyBundled(game, key string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	all, err := s.List(game)
+	if err != nil {
+		return err
+	}
+	var errs []error
+	for _, prof := range all {
+		var placed string
+		_, err := s.updateLocked(game, prof.ID, func(p *Profile, dir string) (err error) {
+			var disabled []string
+			for i := len(p.Entries) - 1; i >= 0; i-- {
+				e := p.Entries[i]
+				if e.Source.Kind != SourceSMAPI || e.Key == key {
+					continue
+				}
+				disabled = append(disabled, e.Disabled...)
+				if err := removeFrom(p, dir, e.Key); err != nil {
+					return err
+				}
+			}
+			if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key }) {
+				return nil
+			}
+			placed, err = s.addTo(game, p, dir, key, Source{Kind: SourceSMAPI, Name: "SMAPI"}, disabled)
+			return err
+		})
+		if err != nil && placed != "" {
+			err = errors.Join(err, os.RemoveAll(placed))
+		}
+		errs = append(errs, err)
+	}
+	if err := s.items.Touch(game, key); err != nil {
+		errs = append(errs, err)
+	}
+	return errors.Join(errs...)
 }
 
 func entryLabel(e Entry) string {
@@ -188,22 +243,25 @@ func entryLabel(e Entry) string {
 	return strings.Join(names, ", ")
 }
 
+// removeFrom deletes the entry's folder and drops it from the profile.
+func removeFrom(p *Profile, dir, key string) error {
+	i := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == key })
+	if i < 0 {
+		return fmt.Errorf("%q is not in this profile", key)
+	}
+	modsDir := filepath.Join(dir, "mods")
+	for _, name := range []string{key, "." + key} {
+		if err := os.RemoveAll(filepath.Join(modsDir, name)); err != nil {
+			return err
+		}
+	}
+	p.Entries = slices.Delete(p.Entries, i, i+1)
+	return nil
+}
+
 // RemoveEntry deletes the entry's folder and drops it from the profile.
 func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
-	return s.update(game, id, func(p *Profile, dir string) error {
-		i := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == key })
-		if i < 0 {
-			return fmt.Errorf("%q is not in this profile", key)
-		}
-		modsDir := filepath.Join(dir, "mods")
-		for _, name := range []string{key, "." + key} {
-			if err := os.RemoveAll(filepath.Join(modsDir, name)); err != nil {
-				return err
-			}
-		}
-		p.Entries = slices.Delete(p.Entries, i, i+1)
-		return nil
-	})
+	return s.update(game, id, func(p *Profile, dir string) error { return removeFrom(p, dir, key) })
 }
 
 // SetModEnabled switches a mod on or off by renaming its folder with or without a leading dot.
