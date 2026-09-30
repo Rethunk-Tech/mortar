@@ -27,6 +27,118 @@ import {
 import { ProfileMark } from './ProfileMark.tsx'
 import { useProfiles } from './store.ts'
 
+const PATH_SEPARATORS = /[\\/]/
+
+// The cover choice is staged here and applied by the dialog's Save.
+function CoverField({
+  gameId,
+  profile,
+  staged,
+  onStage,
+}: {
+  gameId: string
+  profile: Profile
+  staged: StagedCover
+  onStage: (next: StagedCover) => void
+}) {
+  const { t } = useLingui()
+  const pickedName = typeof staged === 'string' ? (staged.split(PATH_SEPARATORS).pop() ?? '') : ''
+  return (
+    <>
+      <Typography
+        sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}
+      >{t`Cover image`}</Typography>
+      <Box sx={{ width: 160, height: 90, borderRadius: '6px', overflow: 'hidden', mb: 1 }}>
+        {gameId ? <HeroCover game={gameId} profile={profile} /> : null}
+      </Box>
+      {staged === undefined ? null : (
+        <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 1 }}>
+          {staged === null
+            ? t`The automatic cover is used after Save.`
+            : t`${pickedName} is used after Save.`}
+        </Typography>
+      )}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+        <Button
+          onClick={() => {
+            PickImage(t`Choose image…`)
+              .then((path) => {
+                if (path) {
+                  onStage(path)
+                }
+              })
+              .catch(reportUnexpected)
+          }}
+          sx={{ whiteSpace: 'nowrap' }}
+        >{t`Choose image…`}</Button>
+        <Button
+          disabled={!hasPickedCover(profile.cover, staged)}
+          onClick={() => onStage(null)}
+          sx={{ whiteSpace: 'nowrap' }}
+        >{t`Use the automatic cover`}</Button>
+      </Box>
+    </>
+  )
+}
+
+function AppearancePickers({
+  profile,
+  color,
+  icon,
+  onColor,
+  onIcon,
+}: {
+  profile: Profile
+  color: string
+  icon: string
+  onColor: (next: string) => void
+  onIcon: (next: string) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <>
+      <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Colour`}</Typography>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
+        {PROFILE_COLORS.map((token) => (
+          <IconButton
+            key={token}
+            aria-label={token}
+            aria-pressed={color === token}
+            onClick={() => onColor(color === token ? '' : token)}
+            sx={{
+              width: 32,
+              height: 32,
+              bgcolor: colorHex(token),
+              outline: color === token ? '2px solid #fff' : '2px solid transparent',
+              outlineOffset: 1,
+              '&:hover': { bgcolor: colorHex(token) },
+            }}
+          />
+        ))}
+      </Box>
+      <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Icon`}</Typography>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
+        {PROFILE_ICONS.map((name) => (
+          <IconButton
+            key={name}
+            aria-label={name}
+            aria-pressed={icon === name}
+            onClick={() => onIcon(icon === name ? '' : name)}
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: '6px',
+              bgcolor: icon === name ? 'rgba(255,255,255,0.12)' : 'transparent',
+            }}
+          >
+            <ProfileMark profile={{ ...profile, color, icon: name }} size={28} />
+          </IconButton>
+        ))}
+      </Box>
+    </>
+  )
+}
+
 export function EditProfileDialog({
   profile,
   open,
@@ -108,69 +220,19 @@ export function EditProfileDialog({
       >
         <DialogTitle>{t`Edit profile`}</DialogTitle>
         <DialogContent>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Colour`}</Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
-            {PROFILE_COLORS.map((token) => (
-              <IconButton
-                key={token}
-                aria-label={token}
-                aria-pressed={color === token}
-                onClick={() => setColor(color === token ? '' : token)}
-                sx={{
-                  width: 32,
-                  height: 32,
-                  bgcolor: colorHex(token),
-                  outline: color === token ? '2px solid #fff' : '2px solid transparent',
-                  outlineOffset: 1,
-                  '&:hover': { bgcolor: colorHex(token) },
-                }}
-              />
-            ))}
-          </Box>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Icon`}</Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
-            {PROFILE_ICONS.map((name) => (
-              <IconButton
-                key={name}
-                aria-label={name}
-                aria-pressed={icon === name}
-                onClick={() => setIcon(icon === name ? '' : name)}
-                sx={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: '6px',
-                  bgcolor: icon === name ? 'rgba(255,255,255,0.12)' : 'transparent',
-                }}
-              >
-                <ProfileMark profile={{ ...profile, color, icon: name }} size={28} />
-              </IconButton>
-            ))}
-          </Box>
-          <Typography
-            sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}
-          >{t`Cover image`}</Typography>
-          <Box sx={{ width: 160, height: 90, borderRadius: '6px', overflow: 'hidden', mb: 1 }}>
-            {gameId ? <HeroCover game={gameId} profile={profile} /> : null}
-          </Box>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-            <Button
-              onClick={() => {
-                PickImage(t`Choose image…`)
-                  .then((path) => {
-                    if (path) {
-                      setStagedCover(path)
-                    }
-                  })
-                  .catch(reportUnexpected)
-              }}
-              sx={{ whiteSpace: 'nowrap' }}
-            >{t`Choose image…`}</Button>
-            <Button
-              disabled={!hasPickedCover(profile.cover, stagedCover)}
-              onClick={() => setStagedCover(null)}
-              sx={{ whiteSpace: 'nowrap' }}
-            >{t`Use the automatic cover`}</Button>
-          </Box>
+          <AppearancePickers
+            profile={profile}
+            color={color}
+            icon={icon}
+            onColor={setColor}
+            onIcon={setIcon}
+          />
+          <CoverField
+            gameId={gameId}
+            profile={profile}
+            staged={stagedCover}
+            onStage={setStagedCover}
+          />
           <TextField
             fullWidth={true}
             margin="dense"
