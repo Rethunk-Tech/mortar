@@ -6,17 +6,20 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/bridge"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/steam"
+	"github.com/Rethunk-AI/mortar/internal/store"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -39,10 +42,9 @@ const (
 	Idle      State = "idle"
 	Launching State = "launching"
 	Running   State = "running"
-	// Failed, NoSteam and NeedsLoader are only ever emitted: the stored state returns to Idle.
-	Failed      State = "failed"
-	NoSteam     State = "no-steam"
-	NeedsLoader State = "needs-loader"
+	// Failed and NoSteam are only ever emitted: the stored state returns to Idle.
+	Failed  State = "failed"
+	NoSteam State = "no-steam"
 )
 
 // Status is a game's launch state. Profile and Since (Unix milliseconds) are set while launching or running.
@@ -75,16 +77,21 @@ type Service struct {
 	logs map[string]*launch.Buffer
 	// stop ends the log follower of a launch when the game goes idle.
 	stop map[string]context.CancelFunc
-	seq  atomic.Int64
+	// preparing marks games whose loader is being installed before launch.
+	preparing map[string]bool
+	seq       atomic.Int64
 	// App is set after application.New so events can be emitted.
 	App *application.App
+	// EnsureLoader installs the game's loader when it is missing or broken. Start calls it before launching.
+	EnsureLoader func(ctx context.Context, gameID string) error
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store) *Service {
 	return &Service{
 		home: home, settings: s, profiles: profiles, procDir: procDirRun,
 		status: map[string]Status{}, watching: map[string]bool{},
-		logs: map[string]*launch.Buffer{}, stop: map[string]context.CancelFunc{},
+		logs: map[string]*launch.Buffer{}, stop: map[string]context.CancelFunc{}, preparing: map[string]bool{},
+		EnsureLoader: func(context.Context, string) error { return errors.New("the loader cannot be installed here") },
 	}
 }
 
@@ -94,11 +101,11 @@ func (s *Service) emit(name string, data any) {
 	}
 }
 
-// set records st and announces it. Failed, NoSteam and NeedsLoader are announced but not kept.
+// set records st and announces it. Failed and NoSteam are announced but not kept.
 func (s *Service) set(st Status) {
 	stored := st
 	switch st.State {
-	case Failed, NoSteam, NeedsLoader:
+	case Failed, NoSteam:
 		stored = Status{Game: st.Game, State: Idle}
 	case Idle, Launching, Running:
 	}
@@ -233,14 +240,17 @@ func (s *Service) Status(gameID string) (Status, error) {
 	return s.current(gameID), nil
 }
 
-// Start launches the profile. Its outcome arrives as StateEvents: Launching, then Running or Failed, or NeedsLoader
-// when the loader is missing or broken, or NoSteam when the user must first agree to launch without Steam (direct).
+// Start launches the profile. Its outcome arrives as StateEvents: Launching, then Running or Failed, or NoSteam
+// when the user must first agree to launch without Steam (direct). A missing or broken loader is installed first.
 func (s *Service) Start(gameID, profileID string, direct bool) error {
 	g := game.Find(gameID)
 	if g == nil {
 		return fmt.Errorf("unknown game %q", gameID)
 	}
-	if cur := s.current(gameID); cur.State == Launching || cur.State == Running {
+	s.mu.Lock()
+	busy := s.preparing[gameID]
+	s.mu.Unlock()
+	if cur := s.current(gameID); busy || cur.State == Launching || cur.State == Running {
 		return fmt.Errorf("%s is already running", g.Name())
 	}
 	dir, err := game.InstallDir(s.home, s.settings.Get().GameFolders, gameID)
@@ -250,10 +260,6 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 	if dir == "" {
 		return fmt.Errorf("%s is not installed", g.Name())
 	}
-	if st := g.LoaderStatus(dir, s.settings.Get().Loaders[gameID]); !st.Installed || st.Broken {
-		s.set(Status{Game: gameID, State: NeedsLoader})
-		return nil
-	}
 	if _, err := s.profiles.Mods(gameID, profileID); err != nil {
 		return err
 	}
@@ -261,6 +267,32 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 	if err != nil {
 		return err
 	}
+	if st := g.LoaderStatus(dir, s.settings.Get().Loaders[gameID]); st.Installed && !st.Broken {
+		return s.begin(g, profileID, dir, modsDir, direct)
+	}
+	s.mu.Lock()
+	s.preparing[gameID] = true
+	s.mu.Unlock()
+	go func() {
+		err := s.EnsureLoader(context.Background(), gameID)
+		s.mu.Lock()
+		delete(s.preparing, gameID)
+		s.mu.Unlock()
+		if err != nil {
+			err = fmt.Errorf("could not install %s: %w", g.LoaderName(), err)
+		} else {
+			err = s.begin(g, profileID, dir, modsDir, direct)
+		}
+		if err != nil {
+			s.set(Status{Game: gameID, State: Failed, Profile: profileID, Error: err.Error()})
+		}
+	}()
+	return nil
+}
+
+// begin starts the launch once the loader is in place.
+func (s *Service) begin(g game.Game, profileID, dir, modsDir string, direct bool) error {
+	gameID := g.ID()
 	if other, _ := s.find(g); other != "" {
 		return fmt.Errorf("%s is already running", g.Name())
 	}
@@ -397,13 +429,47 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 	if cur.Since > 0 {
 		msg += " after " + time.Since(time.UnixMilli(cur.Since)).Round(time.Second).String()
 	}
-	e := launch.Entry{Seq: s.seq.Add(1), Time: time.Now().Format(time.TimeOnly), Level: launch.Info, Mod: "Mortar", Message: msg + "."}
+	s.say(g.ID(), msg+".")
+	s.set(Status{Game: g.ID(), State: Idle})
+}
+
+// say adds a console line of Mortar's own to the game's session.
+func (s *Service) say(gameID, msg string) {
+	e := launch.Entry{Seq: s.seq.Add(1), Time: time.Now().Format(time.TimeOnly), Level: launch.Info, Mod: "Mortar", Message: msg}
 	s.mu.Lock()
-	buf := s.logs[g.ID()]
+	buf := s.logs[gameID]
 	s.mu.Unlock()
 	if buf != nil {
 		buf.Add(e)
 	}
-	s.emit(LineEvent, Lines{Game: g.ID(), Entries: []launch.Entry{e}})
-	s.set(Status{Game: g.ID(), State: Idle})
+	s.emit(LineEvent, Lines{Game: gameID, Entries: []launch.Entry{e}})
+}
+
+// Send runs a console command in the running game through the bridge mod in the running profile. The command
+// is echoed into the console; its output arrives with the game's own log.
+func (s *Service) Send(gameID, command string) error {
+	g := game.Find(gameID)
+	if g == nil {
+		return fmt.Errorf("unknown game %q", gameID)
+	}
+	command = strings.TrimSpace(command)
+	if command == "" {
+		return errors.New("enter a command")
+	}
+	cur := s.current(gameID)
+	if cur.State != Running {
+		return fmt.Errorf("%s is not running", g.Name())
+	}
+	if g.BridgeVersion() == "" {
+		return fmt.Errorf("%s has no console bridge", g.Name())
+	}
+	modsDir, err := s.profiles.ModsDir(gameID, cur.Profile)
+	if err != nil {
+		return err
+	}
+	if err := bridge.Send(filepath.Join(modsDir, store.BridgeKey(g.BridgeVersion()), bridge.ModFolder), command); err != nil {
+		return err
+	}
+	s.say(gameID, "> "+command)
+	return nil
 }

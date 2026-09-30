@@ -28,3 +28,9 @@ func Terminate(pid int, grace time.Duration) error {
 	}
 	return nil
 }
+
+// Alive reports whether a process with this pid exists.
+func Alive(pid int) bool {
+	err := syscall.Kill(pid, 0)
+	return err == nil || errors.Is(err, syscall.EPERM)
+}
