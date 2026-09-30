@@ -16,4 +16,4 @@ Milestone 1 (shell and look) is approved (NOMAD, 2026-09-29) and Milestone 2 (St
 
 ## Verify
 
-`bun run gate` is the offline gate: Biome, golangci-lint, `tsc --noEmit`, `go vet` and `go test`, stopping at the first failure. The pre-push hook runs it. CI runs it plus `wails3 build` only on `v*` release tags (or manual dispatch); pushes to `main` spend no CI minutes.
+`bun run gate` is the offline gate (steps: [HUMANS.md](HUMANS.md) § Gate). Pushes to `main` spend no CI minutes: CI runs on `v*` release tags or manual dispatch only.
