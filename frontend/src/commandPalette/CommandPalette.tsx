@@ -12,10 +12,11 @@ import {
   Share2,
   User,
 } from 'lucide-react'
-import { type KeyboardEvent, type ReactNode, useState } from 'react'
+import { type KeyboardEvent, type ReactNode, useEffect, useRef, useState } from 'react'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { paper } from '../mods/paper.ts'
 import type { SettingsSection } from '../nav/store.ts'
+import { userModEntries } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { SHORTCUTS, type ShortcutId } from '../settings/shortcuts.ts'
 import { buildPaletteItems } from './items.ts'
@@ -90,6 +91,31 @@ function PaletteRows({
   )
 }
 
+function usePaletteWindow(open: boolean) {
+  const searchRef = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    const focus = requestAnimationFrame(() => {
+      searchRef.current?.focus()
+    })
+    const onEsc = (e: globalThis.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        e.stopPropagation()
+        useCommandPalette.getState().setOpen(false)
+      }
+    }
+    globalThis.addEventListener('keydown', onEsc, true)
+    return () => {
+      cancelAnimationFrame(focus)
+      globalThis.removeEventListener('keydown', onEsc, true)
+    }
+  }, [open])
+  return searchRef
+}
+
 export function CommandPalette() {
   const { t } = useLingui()
   const open = useCommandPalette((s) => s.open)
@@ -98,6 +124,7 @@ export function CommandPalette() {
   const openId = useProfiles((s) => s.openId)
   const [query, setQuery] = useState('')
   const [index, setIndex] = useState(0)
+  const searchRef = usePaletteWindow(open)
   const sections: { id: SettingsSection; label: string }[] = [
     { id: 'appearance', label: t`Appearance` },
     { id: 'data', label: t`Data` },
@@ -115,7 +142,7 @@ export function CommandPalette() {
     dismiss: t`Close dialog or clear selection`,
   }
   const profile = profiles.find((p) => p.id === openId)
-  const mods = (profile?.entries ?? []).flatMap((entry) =>
+  const mods = userModEntries(profile?.entries).flatMap((entry) =>
     (entry.mods ?? []).map((mod) => ({
       key: entry.key,
       uniqueId: mod.uniqueId,
@@ -154,9 +181,14 @@ export function CommandPalette() {
   }
   const pick = (id: string) => {
     runPaletteItem(id)
-    reset()
+    close()
   }
   const onKey = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      close()
+      return
+    }
     if (e.key === 'ArrowDown') {
       e.preventDefault()
       setIndex((i) => (shown.length === 0 ? 0 : (i + 1) % shown.length))
@@ -184,6 +216,7 @@ export function CommandPalette() {
         }}
       >
         <TextField
+          inputRef={searchRef}
           autoFocus={true}
           fullWidth={true}
           value={query}
