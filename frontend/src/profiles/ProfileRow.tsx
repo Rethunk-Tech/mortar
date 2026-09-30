@@ -1,0 +1,296 @@
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { plural } from '@lingui/core/macro'
+import { useLingui } from '@lingui/react/macro'
+import {
+  alpha,
+  Box,
+  Button,
+  Divider,
+  IconButton,
+  Menu,
+  MenuItem,
+  type MenuItemProps,
+  Typography,
+} from '@mui/material'
+import {
+  Copy,
+  Eye,
+  EyeOff,
+  GitCompare,
+  GripVertical,
+  MoreHorizontal,
+  Pencil,
+  Share2,
+  Trash2,
+} from 'lucide-react'
+import { type ReactNode, useRef, useState } from 'react'
+import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { NameField } from '../game/NameField.tsx'
+import { useRestoreFocus } from '../game/useRestoreFocus.ts'
+import { useBadges } from '../mods/badges.ts'
+import { openShare } from '../share/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import { userModCount } from './count.ts'
+import { useProfiles } from './store.ts'
+import { joinSummary, knownCount, originLine } from './summary.ts'
+
+const DRAG_TINT_ALPHA = 0.24
+const panelSx = { bgcolor: 'rgba(50,50,60,0.78)', borderRadius: '6px' }
+const menuPaper = {
+  paper: {
+    sx: { width: 220, p: 0.75 },
+  },
+  list: { sx: { p: 0 } },
+}
+
+function Item({ icon, sx, children, ...props }: MenuItemProps & { icon: ReactNode }) {
+  return (
+    <MenuItem
+      {...props}
+      sx={{ height: 38, gap: '10px', px: '10px', borderRadius: '5px', fontSize: 14, ...sx }}
+    >
+      {icon}
+      {children}
+    </MenuItem>
+  )
+}
+
+function RowMenu({
+  profile,
+  anchor,
+  onClose,
+  onRename,
+  onDelete,
+  onCompare,
+  canCompare,
+  returnFocus,
+}: {
+  profile: Profile
+  anchor: HTMLElement | null
+  onClose: () => void
+  onRename: () => void
+  onDelete: (p: Profile) => void
+  onCompare: () => void
+  canCompare: boolean
+  returnFocus: () => void
+}) {
+  const { t } = useLingui()
+  const duplicate = useProfiles((s) => s.duplicate)
+  const setHidden = useProfiles((s) => s.setHidden)
+  // An action that moves focus itself (rename, delete) turns the return to the ⋯ button off.
+  const refocus = useRef(true)
+  const choose =
+    (run: () => void, keepFocus = true) =>
+    () => {
+      refocus.current = keepFocus
+      onClose()
+      run()
+    }
+  return (
+    <Menu
+      anchorEl={anchor}
+      open={anchor !== null}
+      onClose={() => {
+        refocus.current = true
+        onClose()
+      }}
+      disableRestoreFocus={true}
+      slotProps={{
+        ...menuPaper,
+        transition: {
+          onExited: () => {
+            if (refocus.current) {
+              returnFocus()
+            }
+          },
+        },
+      }}
+    >
+      <Item icon={<Pencil size={15} />} onClick={choose(onRename, false)}>
+        {t`Rename`}
+      </Item>
+      <Item
+        icon={<Copy size={15} />}
+        onClick={choose(() => {
+          duplicate(profile.id).catch(reportUnexpected)
+        })}
+      >
+        {t`Duplicate`}
+      </Item>
+      <Item icon={<GitCompare size={15} />} disabled={!canCompare} onClick={choose(onCompare)}>
+        {t`Compare with…`}
+      </Item>
+      <Item
+        icon={profile.hidden ? <Eye size={15} /> : <EyeOff size={15} />}
+        onClick={choose(() => {
+          setHidden(profile.id, !profile.hidden).catch(reportUnexpected)
+        })}
+      >
+        {profile.hidden ? t`Show in sidebar` : t`Hide from sidebar`}
+      </Item>
+      <Divider sx={{ my: 0.5 }} />
+      <Item
+        icon={<Trash2 size={15} />}
+        onClick={choose(() => onDelete(profile), false)}
+        sx={{ color: '#ff9a90' }}
+      >
+        {t`Delete`}
+      </Item>
+    </Menu>
+  )
+}
+
+function useRowSummary(profile: Profile): string {
+  const { t } = useLingui()
+  const mods = userModCount(profile)
+  const modsLabel = plural(mods, { one: '# mod', other: '# mods' })
+  const badge = useBadges((s) => s.byProfile[profile.id])
+  const updatesLabel = plural(badge?.updates ?? 0, { one: '# update', other: '# updates' })
+  const problemsLabel = plural(badge?.problems ?? 0, { one: '# problem', other: '# problems' })
+  return joinSummary([
+    modsLabel,
+    knownCount(badge?.updates, updatesLabel),
+    knownCount(badge?.problems, problemsLabel),
+    originLine(profile.origin, profile.copyOf, {
+      link: t`imported from a link`,
+      mortar: t`imported from a .mortar file`,
+      gameMods: t`imported from the game's Mods folder`,
+      copy: (name) => t`copy of ${name}`,
+    }),
+  ])
+}
+
+export function ProfileRow({
+  profile,
+  onDelete,
+  onCompare,
+  canCompare,
+}: {
+  profile: Profile
+  onDelete: (p: Profile) => void
+  onCompare: (p: Profile) => void
+  canCompare: boolean
+}) {
+  const { t } = useLingui()
+  const rename = useProfiles((s) => s.rename)
+  const [renaming, setRenaming] = useState(false)
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const more = useRef<HTMLButtonElement>(null)
+  useRestoreFocus(renaming, more)
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: profile.id })
+  const summary = useRowSummary(profile)
+  return (
+    <Box
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform && { ...transform, x: 0 }),
+        transition,
+      }}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        height: 64,
+        px: 1,
+        boxSizing: 'border-box',
+        mb: '6px',
+        ...panelSx,
+        border: '2px solid',
+        borderColor: isDragging ? 'primary.main' : 'transparent',
+        bgcolor: (th) =>
+          isDragging ? alpha(th.palette.primary.main, DRAG_TINT_ALPHA) : panelSx.bgcolor,
+        position: 'relative',
+        zIndex: isDragging ? 1 : 0,
+      }}
+    >
+      <IconButton
+        ref={setActivatorNodeRef}
+        aria-label={t`Reorder ${profile.name}`}
+        {...attributes}
+        {...listeners}
+        sx={{
+          width: 32,
+          height: 44,
+          borderRadius: '6px',
+          color: 'text.secondary',
+          cursor: 'grab',
+          touchAction: 'none',
+        }}
+      >
+        <GripVertical size={16} />
+      </IconButton>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        {renaming ? (
+          <NameField
+            size="small"
+            initial={profile.name}
+            label={t`Profile name`}
+            onSubmit={(name) => rename(profile.id, name)}
+            onCancel={() => setRenaming(false)}
+          />
+        ) : (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography noWrap={true} sx={{ fontSize: 17, fontWeight: 600 }}>
+              {profile.name}
+            </Typography>
+            {profile.hidden ? (
+              <Box
+                component="span"
+                sx={{ px: 1, borderRadius: '10px', bgcolor: 'rgba(255,255,255,0.1)', fontSize: 12 }}
+              >
+                {t`Hidden`}
+              </Box>
+            ) : null}
+          </Box>
+        )}
+        <Typography noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
+          {summary}
+        </Typography>
+      </Box>
+      <Button
+        variant="outlined"
+        color="inherit"
+        startIcon={<Share2 size={15} />}
+        aria-label={t`Share ${profile.name}`}
+        onClick={() => openShare(profile.id)}
+        sx={{ height: 40, whiteSpace: 'nowrap' }}
+      >
+        {t`Share`}
+      </Button>
+      <IconButton
+        ref={more}
+        data-actions={profile.id}
+        aria-label={t`Actions for ${profile.name}`}
+        aria-haspopup="menu"
+        onClick={(e) => setAnchor(e.currentTarget)}
+        sx={{
+          width: 40,
+          height: 40,
+          borderRadius: '6px',
+          bgcolor: anchor ? 'rgba(255,255,255,0.1)' : 'transparent',
+        }}
+      >
+        <MoreHorizontal size={18} />
+      </IconButton>
+      <RowMenu
+        profile={profile}
+        anchor={anchor}
+        onClose={() => setAnchor(null)}
+        onRename={() => setRenaming(true)}
+        onDelete={onDelete}
+        onCompare={() => onCompare(profile)}
+        canCompare={canCompare}
+        returnFocus={() => more.current?.focus()}
+      />
+    </Box>
+  )
+}
