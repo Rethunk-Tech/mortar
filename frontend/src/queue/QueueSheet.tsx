@@ -510,7 +510,9 @@ function Header({ onClose }: { onClose: () => void }) {
   const { t } = useLingui()
   const { items, paused, limitedUntil } = useQueue((s) => s.state)
   const sum = totals(items)
-  const line = t`${sum.done} done · ${sum.active} in progress · ${sum.failed} failed · ${sum.left} left · ${megabytes(sum.sizeKb)} MB`
+  const counts = t`${sum.done} done · ${sum.active} in progress · ${sum.failed} failed · ${sum.left} left`
+  const line = sum.sizeKb > 0 ? t`${counts} · ${megabytes(sum.sizeKb)} MB` : counts
+  const idle = !paused && sum.active === 0 && sum.left === 0
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pt: 2, pr: 1, pb: 1.25, pl: 2.5 }}>
@@ -522,14 +524,16 @@ function Header({ onClose }: { onClose: () => void }) {
             {line}
           </Typography>
         </Box>
-        <Button
-          variant="outlined"
-          color="inherit"
-          onClick={() => (paused ? Resume() : Pause()).catch(reportUnexpected)}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
-          {paused ? t`Resume` : t`Pause all`}
-        </Button>
+        {idle ? null : (
+          <Button
+            variant="outlined"
+            color="inherit"
+            onClick={() => (paused ? Resume() : Pause()).catch(reportUnexpected)}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            {paused ? t`Resume` : t`Pause all`}
+          </Button>
+        )}
         <IconButton aria-label={t`Close downloads`} onClick={onClose}>
           <X size={16} />
         </IconButton>

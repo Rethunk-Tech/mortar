@@ -665,15 +665,6 @@ msgstr "Not checked yet."
 msgid "Disable"
 msgstr "Disable"
 
-#. placeholder {0}: sum.done
-#. placeholder {1}: sum.active
-#. placeholder {2}: sum.failed
-#. placeholder {3}: sum.left
-#. placeholder {4}: megabytes(sum.sizeKb)
-#: src/queue/QueueSheet.tsx:513
-msgid "{0} done · {1} in progress · {2} failed · {3} left · {4} MB"
-msgstr "{0} done · {1} in progress · {2} failed · {3} left · {4} MB"
-
 #: src/settings/sections/nxmHandler.tsx:58
 msgid "Should Mortar open Nexus \"Mod Manager Download\" links, so a click on Nexus starts the download here?"
 msgstr "Should Mortar open Nexus \"Mod Manager Download\" links, so a click on Nexus starts the download here?"
@@ -809,7 +800,7 @@ msgid "Update"
 msgstr "Update"
 
 #. placeholder {0}: clockTime(limitedUntil)
-#: src/queue/QueueSheet.tsx:558
+#: src/queue/QueueSheet.tsx:562
 msgid "Nexus or GitHub has limited requests for now. Downloads go on at {0}."
 msgstr "Nexus or GitHub has limited requests for now. Downloads go on at {0}."
 
@@ -894,7 +885,7 @@ msgstr "Added from an archive, so it only exists on this computer."
 
 #: src/queue/QueueButton.tsx:17
 #: src/queue/QueueButton.tsx:36
-#: src/queue/QueueSheet.tsx:519
+#: src/queue/QueueSheet.tsx:521
 msgid "Downloads"
 msgstr "Downloads"
 
@@ -1762,7 +1753,7 @@ msgstr "GitHub"
 msgid "Actions for {0}"
 msgstr "Actions for {0}"
 
-#: src/queue/QueueSheet.tsx:531
+#: src/queue/QueueSheet.tsx:534
 msgid "Pause all"
 msgstr "Pause all"
 
@@ -1770,7 +1761,7 @@ msgstr "Pause all"
 msgid "Three steps and you are playing with mods."
 msgstr "Three steps and you are playing with mods."
 
-#: src/queue/QueueSheet.tsx:533
+#: src/queue/QueueSheet.tsx:537
 msgid "Close downloads"
 msgstr "Close downloads"
 
@@ -1929,6 +1920,14 @@ msgstr "Delete {0}?"
 #: src/mods/DuplicateDialog.tsx:28
 msgid "From Nexus"
 msgstr "From Nexus"
+
+#. placeholder {0}: sum.done
+#. placeholder {1}: sum.active
+#. placeholder {2}: sum.failed
+#. placeholder {3}: sum.left
+#: src/queue/QueueSheet.tsx:513
+msgid "{0} done · {1} in progress · {2} failed · {3} left"
+msgstr "{0} done · {1} in progress · {2} failed · {3} left"
 
 #: src/profiles/ProfilesPage.tsx:149
 msgid "Hide from sidebar"
@@ -2091,7 +2090,7 @@ msgstr "Could not roll back {0}"
 msgid "Saves"
 msgstr "Saves"
 
-#: src/queue/QueueSheet.tsx:531
+#: src/queue/QueueSheet.tsx:534
 msgid "Resume"
 msgstr "Resume"
 
@@ -2103,6 +2102,11 @@ msgstr "Steam may not be running or signed in. Start Steam, sign in and try agai
 #: src/settings/sections/Updates.tsx:28
 msgid "This is a development build of Mortar {0}, so it does not check for updates."
 msgstr "This is a development build of Mortar {0}, so it does not check for updates."
+
+#. placeholder {0}: megabytes(sum.sizeKb)
+#: src/queue/QueueSheet.tsx:514
+msgid "{counts} · {0} MB"
+msgstr "{counts} · {0} MB"
 
 #: src/share/SharedMods.tsx:28
 msgid "Its source is not known."
@@ -2187,7 +2191,7 @@ msgstr "Steam was not found."
 msgid "Source"
 msgstr "Source"
 
-#: src/queue/QueueSheet.tsx:539
+#: src/queue/QueueSheet.tsx:543
 msgid "Download progress"
 msgstr "Download progress"
 
