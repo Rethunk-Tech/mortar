@@ -13,3 +13,7 @@ Milestone 1 (shell and look, `docs/design.md` § Build order) is approved (NOMAD
 - One Go `Game` interface holds everything that differs per game: install discovery, loader install, mod source, manifest identity, and profile launch. Everything else is shared. Stardew Valley is the first implementation, Lethal Company the second.
 - Share links name their game: `https://mortar.rethunk.tech/<game>/p#<payload>`, handed to the app as `mortar://<game>/p/<payload>`.
 - Mortar never re-hosts mod files; downloads come from each mod's own source.
+
+## Verify
+
+`bun run gate` is the offline gate: Biome, golangci-lint, `tsc --noEmit`, `go vet` and `go test`, stopping at the first failure. The pre-push hook runs it. CI runs it plus `wails3 build` only on `v*` release tags (or manual dispatch); pushes to `main` spend no CI minutes.
