@@ -89,8 +89,14 @@ func NexusFile(key string) (modID, fileID int, ok bool) {
 	return modID, fileID, err == nil && n == 2
 }
 
-// BridgeKey is the key of the bundled console bridge mod for a bridge version.
-func BridgeKey(version string) string { return "bridge-" + version }
+// BridgeKey is the key of the bundled console bridge mod for a version and, when supplied, its asset hash.
+func BridgeKey(version string, hashes ...string) string {
+	key := "bridge-" + version
+	if len(hashes) > 0 && len(hashes[0]) >= 12 {
+		key += "-" + strings.ToLower(hashes[0][:12])
+	}
+	return key
+}
 
 func (s *Store) gameDir(id string) (string, error) {
 	if !game.Valid(id) {

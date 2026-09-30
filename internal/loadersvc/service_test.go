@@ -1,15 +1,21 @@
 package loadersvc
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/loader"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
@@ -24,6 +30,44 @@ func put(t *testing.T, path, body string) {
 	if err := fsx.WriteFile(path, []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func bridgeClient(t *testing.T) (*components.Client, string) {
+	t.Helper()
+	var archive bytes.Buffer
+	writer := zip.NewWriter(&archive)
+	for name, body := range map[string]string{
+		"MortarSmapiBridge/manifest.json":         `{"Name":"Mortar SMAPI Bridge","Version":"1.1.0","UniqueID":"Rethunk.MortarSmapiBridge","EntryDll":"MortarSmapiBridge.dll"}`,
+		"MortarSmapiBridge/MortarSmapiBridge.dll": "bridge",
+	} {
+		entry, err := writer.Create(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := entry.Write([]byte(body)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	sum := sha256.Sum256(archive.Bytes())
+	hash := hex.EncodeToString(sum[:])
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write(archive.Bytes())
+	}))
+	t.Cleanup(srv.Close)
+	client := components.NewClient(srv.Client())
+	client.GitHubBaseURL = srv.URL
+	client.SetManifest(components.Manifest{
+		Serial: 1,
+		Components: []components.Component{{
+			Game: "stardew", Name: "bridge", Kind: "bridge",
+			Source: components.Source{Host: "github.com", Owner: "Rethunk-AI", Repo: "mortar-smapi-bridge"},
+			Tag:    "v1.1.0", Asset: "MortarSmapiBridge-1.1.0.zip", Version: "1.1.0", SHA256: hash,
+		}},
+	})
+	return client, hash
 }
 
 // SMAPI installed by hand: no settings value, no log, only the installer's Mods folder.
@@ -53,21 +97,22 @@ func TestBundledBuiltFromGameFolder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	svc := NewService(t.TempDir(), set, items, profiles)
+	client, bridgeHash := bridgeClient(t)
+	svc := NewService(t.TempDir(), set, items, profiles, client)
 	early, err := profiles.Create("stardew", "Early")
 	if err != nil || len(early.Entries) != 0 {
 		t.Fatalf("early = %+v, %v", early, err)
 	}
 	Attach(svc, "stardew")
 	all, err := profiles.List("stardew")
-	if err != nil || len(all) != 1 || len(all[0].Entries) != 2 || all[0].Entries[0].Key != "smapi-4.5.2" || all[0].Entries[1].Key != bridgeKey() || all[0].Entries[1].Source.Kind != profile.SourceMortar {
+	if err != nil || len(all) != 1 || len(all[0].Entries) != 2 || all[0].Entries[0].Key != "smapi-4.5.2" || all[0].Entries[1].Key != store.BridgeKey("1.1.0", bridgeHash) || all[0].Entries[1].Source.Kind != profile.SourceMortar {
 		t.Fatalf("existing profile = %+v, %v", all, err)
 	}
 	late, err := profiles.Create("stardew", "Late")
 	if err != nil || len(late.Entries) != 2 {
 		t.Fatalf("late = %+v, %v", late, err)
 	}
-	if _, err := os.Stat(filepath.Join(dir0(t, items, bridgeKey()), "MortarSmapiBridge", "manifest.json")); err != nil {
+	if _, err := os.Stat(filepath.Join(dir0(t, items, store.BridgeKey("1.1.0", bridgeHash)), "MortarSmapiBridge", "manifest.json")); err != nil {
 		t.Fatal(err)
 	}
 	dir, err := items.Path("stardew", "smapi-4.5.2")
@@ -191,5 +236,3 @@ func TestInstallRefusesWhileTheGameRunsOutsideMortar(t *testing.T) {
 		t.Fatalf("err = %v, want a running refusal", err)
 	}
 }
-
-func bridgeKey() string { return store.BridgeKey(game.Find("stardew").BridgeVersion()) }

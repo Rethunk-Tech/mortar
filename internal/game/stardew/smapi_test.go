@@ -45,7 +45,7 @@ func TestLatestFromRecordedResponseIsCached(t *testing.T) {
 		_, _ = w.Write(recorded(t))
 	}))
 	defer srv.Close()
-	g := Game{ReleasesURL: srv.URL, CacheDir: t.TempDir()}
+	g := Game{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}
 	for range 2 {
 		v, err := g.LatestLoader(context.Background())
 		if err != nil || v != "4.5.2" {
@@ -70,7 +70,7 @@ func TestLatestSkipsPrereleaseAndUsesStaleCacheOnFailure(t *testing.T) {
 		_, _ = w.Write([]byte(body))
 	}))
 	defer srv.Close()
-	g := Game{ReleasesURL: srv.URL, CacheDir: t.TempDir()}
+	g := Game{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}
 	if v, err := g.LatestLoader(context.Background()); err != nil || v != "4.8.0" {
 		t.Fatalf("latest = %q, %v", v, err)
 	}
@@ -85,7 +85,7 @@ func TestLatestSkipsPrereleaseAndUsesStaleCacheOnFailure(t *testing.T) {
 	if v, err := g.LatestLoader(context.Background()); err != nil || v != "4.8.0" {
 		t.Fatalf("stale fallback = %q, %v", v, err)
 	}
-	if _, err := (Game{ReleasesURL: srv.URL, CacheDir: t.TempDir()}).LatestLoader(context.Background()); err == nil {
+	if _, err := (Game{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}).LatestLoader(context.Background()); err == nil {
 		t.Fatal("no cache and a failing API must error")
 	}
 }
@@ -97,7 +97,7 @@ func TestRateLimitMessage(t *testing.T) {
 		http.Error(w, `{"message":"API rate limit exceeded"}`, http.StatusForbidden)
 	}))
 	defer srv.Close()
-	_, err := Game{ReleasesURL: srv.URL, CacheDir: t.TempDir()}.LatestLoader(context.Background())
+	_, err := Game{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}.LatestLoader(context.Background())
 	if err == nil || !strings.Contains(err.Error(), "rate limit") || !strings.Contains(err.Error(), "try again after") {
 		t.Fatalf("err = %v", err)
 	}
@@ -197,7 +197,7 @@ func fakeSMAPI(t *testing.T, script string) Game {
 	})
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
-	return Game{ReleasesURL: srv.URL + "/releases", DownloadBase: srv.URL + "/dl", CacheDir: t.TempDir(), LogDir: t.TempDir()}
+	return Game{ReleasesURL: srv.URL + "/releases", DownloadBase: srv.URL + "/dl", AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir(), LogDir: t.TempDir()}
 }
 
 const okScript = `#!/bin/sh

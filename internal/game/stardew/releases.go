@@ -11,18 +11,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/github"
 )
 
 const (
-	releasesURL  = "https://api.github.com/repos/Pathoschild/SMAPI/releases?per_page=10"
-	downloadBase = "https://github.com/Pathoschild/SMAPI/releases/download"
-	cacheFile    = "smapi-release.json"
-	cacheTTL     = time.Hour
-	apiTimeout   = 8 * time.Second
-	// maxInstaller bounds the download; the 4.5.2 installer is 42 MB.
+	cacheFile  = "smapi-release.json"
+	cacheTTL   = time.Hour
+	apiTimeout = 8 * time.Second
+	// maxInstaller bounds the installer download.
 	maxInstaller = 512 << 20
 )
 
@@ -33,7 +32,27 @@ type cachedRelease struct {
 	Version string    `json:"version"`
 }
 
-func installerAsset(version string) string { return "SMAPI-" + version + "-installer.zip" }
+func (g Game) loaderComponent() (components.Component, bool) {
+	client := g.Components
+	if client == nil {
+		client = configuredComponents
+	}
+	if client == nil {
+		return components.Component{}, false
+	}
+	return client.Component(g.ID(), "smapi")
+}
+
+func (g Game) installerAsset(version string) string {
+	if component, ok := g.loaderComponent(); ok {
+		return component.Asset
+	}
+	pattern := g.AssetPattern
+	if pattern == "" {
+		return ""
+	}
+	return strings.ReplaceAll(pattern, "{version}", version)
+}
 
 func (g Game) cachePath() (string, error) {
 	dir := g.CacheDir
@@ -69,6 +88,9 @@ func writeCache(path string, c cachedRelease) error {
 // LatestLoader returns the newest stable SMAPI version that ships an installer. A response younger than an hour
 // is reused, and a stale one stands in when the lookup fails.
 func (g Game) LatestLoader(ctx context.Context) (string, error) {
+	if component, ok := g.loaderComponent(); ok {
+		return component.Version, nil
+	}
 	path, err := g.cachePath()
 	if err != nil {
 		return "", err
@@ -92,7 +114,7 @@ func (g Game) LatestLoader(ctx context.Context) (string, error) {
 func (g Game) fetchLatest(ctx context.Context) (string, error) {
 	url := g.ReleasesURL
 	if url == "" {
-		url = releasesURL
+		return "", errors.New("SMAPI component manifest is not configured")
 	}
 	all, err := github.FetchReleases(ctx, g.Client, url)
 	if err != nil {
@@ -104,7 +126,7 @@ func (g Game) fetchLatest(ctx context.Context) (string, error) {
 			continue
 		}
 		for _, a := range r.Assets {
-			if a.Name == installerAsset(v) {
+			if a.Name == g.installerAsset(v) {
 				return v, nil
 			}
 		}
@@ -114,11 +136,25 @@ func (g Game) fetchLatest(ctx context.Context) (string, error) {
 
 // download saves the release installer to dest.
 func (g Game) download(ctx context.Context, version, dest string) error {
+	if component, ok := g.loaderComponent(); ok {
+		client := g.Components
+		if client == nil {
+			client = configuredComponents
+		}
+		if err := client.Download(ctx, component, dest); err != nil {
+			return fmt.Errorf("download SMAPI %s: %w", version, err)
+		}
+		return nil
+	}
 	base := g.DownloadBase
 	if base == "" {
-		base = downloadBase
+		return errors.New("SMAPI component manifest is not configured")
 	}
-	url := base + "/" + version + "/" + installerAsset(version)
+	asset := g.installerAsset(version)
+	if asset == "" {
+		return errors.New("SMAPI component asset pattern is not configured")
+	}
+	url := base + "/" + version + "/" + asset
 	if err := github.Download(ctx, g.Client, url, dest, maxInstaller, nil); err != nil {
 		return fmt.Errorf("download SMAPI %s: %w", version, err)
 	}

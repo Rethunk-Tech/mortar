@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/steam"
 )
@@ -14,12 +15,14 @@ import (
 // marker ships in every install on every platform; the launcher name differs per OS.
 const marker = "Stardew Valley.dll"
 
-// Game is Stardew Valley. The zero value talks to GitHub and uses Mortar's data and the user's config folder;
-// the fields exist so tests can point it elsewhere.
+// Game is Stardew Valley. The configured component client supplies loader releases; the other fields exist so
+// tests can point network and filesystem operations elsewhere.
 type Game struct {
 	Client       *http.Client
+	Components   *components.Client
 	ReleasesURL  string
 	DownloadBase string
+	AssetPattern string
 	// CacheDir holds the cached release lookup.
 	CacheDir string
 	// LogDir holds SMAPI-latest.txt.
@@ -29,6 +32,11 @@ type Game struct {
 	LookPath     func(string) (string, error)
 	LaunchTiming launch.Timing
 }
+
+var configuredComponents *components.Client
+
+// ConfigureComponents selects the verified component manifest used by this game.
+func ConfigureComponents(client *components.Client) { configuredComponents = client }
 
 func (Game) ID() string           { return "stardew" }
 func (Game) Name() string         { return "Stardew Valley" }

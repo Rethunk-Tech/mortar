@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/backdrop"
+	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
 	"github.com/Rethunk-AI/mortar/internal/game"
@@ -167,7 +168,13 @@ func run() error {
 	launches := launchsvc.NewService(home, store, profiles)
 	profiles.Running = launches.Running
 	profiles.BackupsKept = func() int { return store.Get().BackupsKept }
-	loaders := loadersvc.NewService(home, store, items, profiles)
+	modMeta := &meta.Client{CacheDir: filepath.Join(dataDir, "cache")}
+	componentClient := components.NewClient(&http.Client{Timeout: 30 * time.Second})
+	if _, err := componentClient.Load(context.Background(), modMeta, updateKey); err != nil {
+		log.Printf("components manifest unavailable; using bundled copy: %v", err)
+	}
+	game.ConfigureComponents(componentClient)
+	loaders := loadersvc.NewService(home, store, items, profiles, componentClient)
 	loadersvc.Attach(loaders, "stardew")
 	launches.EnsureLoader = func(ctx context.Context, id string, fromStart bool) error {
 		_, err := loaders.Ensure(ctx, id, fromStart)
@@ -178,7 +185,6 @@ func run() error {
 		log.Printf("purge trash: %v", err)
 	}
 
-	modMeta := &meta.Client{}
 	savesSvc, err := savessvc.NewService(profiles, store, modMeta)
 	if err != nil {
 		return err

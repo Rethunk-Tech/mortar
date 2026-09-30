@@ -8,8 +8,11 @@ import (
 	"log"
 	"maps"
 	"os"
+	"path/filepath"
 	"sync"
 
+	"github.com/Rethunk-AI/mortar/internal/archive"
+	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/loader"
@@ -40,11 +43,12 @@ type Progress struct {
 
 // Service exposes loader status and install to the frontend.
 type Service struct {
-	home     string
-	settings *settings.Store
-	items    *store.Store
-	profiles *profile.Store
-	busy     sync.Mutex
+	home       string
+	settings   *settings.Store
+	items      *store.Store
+	profiles   *profile.Store
+	components *components.Client
+	busy       sync.Mutex
 	// background tracks installs started by ensureInBackground.
 	background sync.WaitGroup
 	// run installs or updates the loader with busy held; tests replace it.
@@ -55,8 +59,13 @@ type Service struct {
 	procDir string
 }
 
-func NewService(home string, s *settings.Store, items *store.Store, profiles *profile.Store) *Service {
-	svc := &Service{home: home, settings: s, items: items, profiles: profiles, procDir: "/proc"}
+func NewService(home string, s *settings.Store, items *store.Store, profiles *profile.Store, clients ...*components.Client) *Service {
+	var client *components.Client
+	if len(clients) > 0 {
+		client = clients[0]
+	}
+	svc := &Service{home: home, settings: s, items: items, profiles: profiles, components: client, procDir: "/proc"}
+	game.ConfigureComponents(client)
 	svc.run = svc.install
 	return svc
 }
@@ -103,14 +112,17 @@ func SyncBundled(s *Service, id string) {
 	}
 }
 
-// ensureBridge returns the bundled console bridge's entry, adding it to the store first when it is missing.
+// ensureBridge returns the manifest's console bridge entry, adding it to the store first when it is missing.
 // The bridge needs neither the loader nor the game folder, so every profile has it from creation.
 func (s *Service) ensureBridge(id string) (profile.Bundle, error) {
-	g := game.Find(id)
-	if g == nil || g.BridgeVersion() == "" {
+	if s.components == nil {
 		return profile.Bundle{}, nil
 	}
-	key := store.BridgeKey(g.BridgeVersion())
+	component, ok := s.components.Component(id, "bridge")
+	if !ok || component.Kind != "bridge" {
+		return profile.Bundle{}, nil
+	}
+	key := store.BridgeKey(component.Version, component.SHA256)
 	b := profile.Bundle{Key: key, Source: profile.Source{Kind: profile.SourceMortar, Name: "Mortar"}}
 	if _, err := s.items.Path(id, key); err == nil {
 		return b, nil
@@ -122,10 +134,18 @@ func (s *Service) ensureBridge(id string) (profile.Bundle, error) {
 		return profile.Bundle{}, err
 	}
 	defer func() { _ = os.RemoveAll(tmp) }()
-	if err := g.ExtractBridge(tmp); err != nil {
+	archivePath := filepath.Join(tmp, "bridge.zip")
+	if err := s.components.Download(context.Background(), component, archivePath); err != nil {
 		return profile.Bundle{}, err
 	}
-	return b, s.items.AddDir(id, key, tmp)
+	unpacked := filepath.Join(tmp, "unpacked")
+	if err := os.Mkdir(unpacked, 0o700); err != nil {
+		return profile.Bundle{}, err
+	}
+	if err := archive.Extract(archivePath, unpacked, archive.Options{}); err != nil {
+		return profile.Bundle{}, err
+	}
+	return b, s.items.AddDir(id, key, unpacked)
 }
 
 // ensureInBackground installs the game's loader when it is missing or broken, without blocking the caller.
