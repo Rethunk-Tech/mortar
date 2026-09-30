@@ -83,8 +83,9 @@ type Service struct {
 	logs map[string]session
 	// stop ends the log follower of a launch when the game goes idle.
 	stop map[string]context.CancelFunc
-	// preparing marks games whose loader is being installed before launch.
-	preparing map[string]bool
+	// preparing holds games being readied for launch: their loader checked or installed, then the profile, which
+	// is recorded once the loader is in place (an install must still reach it) and from then counts as running.
+	preparing map[string]string
 	seq       atomic.Int64
 	// App is set after application.New so events can be emitted.
 	App *application.App
@@ -96,7 +97,7 @@ func NewService(home string, s *settings.Store, profiles *profile.Store) *Servic
 	return &Service{
 		home: home, settings: s, profiles: profiles, procDir: procDirRun,
 		status: map[string]Status{}, watching: map[string]bool{},
-		logs: map[string]session{}, stop: map[string]context.CancelFunc{}, preparing: map[string]bool{},
+		logs: map[string]session{}, stop: map[string]context.CancelFunc{}, preparing: map[string]string{},
 		EnsureLoader: func(context.Context, string) error { return errors.New("the loader cannot be installed here") },
 	}
 }
@@ -157,7 +158,10 @@ func (s *Service) Running(gameID, profileID string) bool {
 	if g == nil {
 		return false
 	}
-	if cur := s.current(gameID); cur.State == Launching && cur.Profile == profileID {
+	s.mu.Lock()
+	cur, prep := s.status[gameID], s.preparing[gameID]
+	s.mu.Unlock()
+	if prep == profileID || (cur.State == Launching && cur.Profile == profileID) {
 		return true
 	}
 	dir, err := s.profiles.ModsDir(gameID, profileID)
@@ -256,9 +260,10 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 	// preparing is claimed under the same lock as the check, so two Starts cannot both pass it.
 	s.mu.Lock()
 	cur := s.status[gameID]
-	busy := s.preparing[gameID] || cur.State == Launching || cur.State == Running
+	_, busy := s.preparing[gameID]
+	busy = busy || cur.State == Launching || cur.State == Running
 	if !busy {
-		s.preparing[gameID] = true
+		s.preparing[gameID] = ""
 	}
 	s.mu.Unlock()
 	if busy {
@@ -277,7 +282,14 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 		if err != nil {
 			err = fmt.Errorf("could not install %s: %w", g.LoaderName(), err)
 		} else {
-			err = s.begin(g, profileID, dir, modsDir, direct)
+			s.mu.Lock()
+			s.preparing[gameID] = profileID
+			s.mu.Unlock()
+			// Reading the profile takes its lock, so a change to its mods already under way finishes first; any
+			// later one sees the profile as running.
+			if _, err = s.profiles.Mods(gameID, profileID); err == nil {
+				err = s.begin(g, profileID, dir, modsDir, direct)
+			}
 		}
 		if err != nil {
 			s.set(Status{Game: gameID, State: Failed, Profile: profileID, Error: err.Error()})

@@ -39,11 +39,11 @@ func (s *Store) RollBack(game, id, key string) (Profile, error) {
 // moveTo switches an entry to another store item. An empty newKey means the entry's previous key. A source
 // replaces the entry's own.
 func (s *Store) moveTo(game, id, oldKey, newKey string, source *Source) (Profile, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if err := s.unlocked(game, id); err != nil {
 		return Profile{}, err
 	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
 	var sw swapped
 	p, err := s.updateLocked(game, id, func(p *Profile, dir string) error {
 		ei := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == oldKey })

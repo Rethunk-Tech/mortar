@@ -204,11 +204,11 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 
 // AddEntry copies the store item key into the profile and records the mods it holds.
 func (s *Store) AddEntry(game, id, key string, source Source) (Profile, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if err := s.unlocked(game, id); err != nil {
 		return Profile{}, err
 	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
 	var placed string
 	p, err := s.updateLocked(game, id, func(p *Profile, dir string) (err error) {
 		placed, err = s.addTo(game, p, dir, key, source, nil)
@@ -295,12 +295,20 @@ func removeFrom(p *Profile, dir, key string) error {
 	return nil
 }
 
-// RemoveEntry deletes the entry's folder and drops it from the profile.
-func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
+// updateMods is update for changes to the mods/ folder, refused while the game runs the profile. The check holds the
+// lock so that a launch, which reads the profile under it, sees either the whole change or none of it.
+func (s *Store) updateMods(game, id string, fn func(p *Profile, dir string) error) (Profile, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if err := s.unlocked(game, id); err != nil {
 		return Profile{}, err
 	}
-	return s.update(game, id, func(p *Profile, dir string) error {
+	return s.updateLocked(game, id, fn)
+}
+
+// RemoveEntry deletes the entry's folder and drops it from the profile.
+func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
+	return s.updateMods(game, id, func(p *Profile, dir string) error {
 		if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && isBundled(e) }) {
 			return errors.New("the bundled mods are needed by every profile and cannot be removed")
 		}
@@ -311,10 +319,7 @@ func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
 // SetModEnabled switches a mod on or off by renaming its folder with or without a leading dot. key names the
 // entry holding it, which tells apart two copies of one UniqueID; an empty key means the first entry that has it.
 func (s *Store) SetModEnabled(game, id, key, uniqueID string, enabled bool) (Profile, error) {
-	if err := s.unlocked(game, id); err != nil {
-		return Profile{}, err
-	}
-	return s.update(game, id, func(p *Profile, dir string) error {
+	return s.updateMods(game, id, func(p *Profile, dir string) error {
 		for ei := range p.Entries {
 			e := &p.Entries[ei]
 			if key != "" && e.Key != key {

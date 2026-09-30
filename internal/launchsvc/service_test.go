@@ -221,7 +221,7 @@ func TestStartInstallsAMissingLoaderBeforeLaunching(t *testing.T) {
 	deadline := time.Now().Add(5 * time.Second)
 	for {
 		svc.mu.Lock()
-		busy := svc.preparing["stardew"]
+		_, busy := svc.preparing["stardew"]
 		svc.mu.Unlock()
 		if !busy {
 			break
@@ -366,7 +366,7 @@ func TestStartWithAnInstalledLoaderWaitsForEnsureLoader(t *testing.T) {
 	deadline := time.Now().Add(5 * time.Second)
 	for {
 		svc.mu.Lock()
-		busy := svc.preparing["stardew"]
+		_, busy := svc.preparing["stardew"]
 		svc.mu.Unlock()
 		if !busy {
 			break
@@ -378,5 +378,22 @@ func TestStartWithAnInstalledLoaderWaitsForEnsureLoader(t *testing.T) {
 	}
 	if st := svc.current("stardew"); st.State != Idle {
 		t.Fatalf("state after a failed update = %v", st.State)
+	}
+}
+
+func TestAProfileReadiedForLaunchIsRunning(t *testing.T) {
+	svc, p := startEnv(t)
+	other, err := svc.profiles.Create("stardew", "B")
+	if err != nil {
+		t.Fatal(err)
+	}
+	svc.procDir = t.TempDir()
+	svc.preparing["stardew"] = ""
+	if svc.Running("stardew", p.ID) {
+		t.Fatal("a profile is not locked while its loader is still being checked")
+	}
+	svc.preparing["stardew"] = p.ID
+	if !svc.Running("stardew", p.ID) || svc.Running("stardew", other.ID) {
+		t.Fatal("only the readied profile is running")
 	}
 }

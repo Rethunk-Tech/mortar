@@ -545,3 +545,32 @@ func TestUnreadableTrashedProfileBlocksOnlyItself(t *testing.T) {
 		t.Fatal("StoreKeys ignored an unreadable trashed profile")
 	}
 }
+
+// A running check made before the lock lets a launch start between the check and the change.
+func TestRunningIsCheckedUnderTheLock(t *testing.T) {
+	s := newStore(t)
+	p, err := s.Create("stardew", "A")
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.Running = func(string, string) bool {
+		if s.mu.TryLock() {
+			s.mu.Unlock()
+			t.Error("running checked without the store lock")
+		}
+		return true
+	}
+	ops := map[string]func() error{
+		"AddEntry":      func() error { _, err := s.AddEntry("stardew", p.ID, "k", Source{}); return err },
+		"UpdateEntry":   func() error { _, err := s.UpdateEntry("stardew", p.ID, "a", "b"); return err },
+		"RemoveEntry":   func() error { _, err := s.RemoveEntry("stardew", p.ID, "k"); return err },
+		"SetModEnabled": func() error { _, err := s.SetModEnabled("stardew", p.ID, "", "x", false); return err },
+		"Delete":        func() error { return s.Delete("stardew", p.ID) },
+	}
+	for name, op := range ops {
+		var re *RunningError
+		if err := op(); !errors.As(err, &re) {
+			t.Errorf("%s: err = %v, want RunningError", name, err)
+		}
+	}
+}
