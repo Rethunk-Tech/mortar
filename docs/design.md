@@ -18,7 +18,7 @@ Platforms are Windows and Linux. macOS is out: fleet CI has no macOS runners, an
 - **Single instance:** `Options.SingleInstance` with `OnSecondInstanceLaunch`, which receives the second launch's `Args`. Links reach the app two ways: `events.Common.ApplicationLaunchedWithUrl` on a cold start, and `SecondInstanceData.Args` when the app is already running. Both paths feed one link router.
 - **Link schemes:** `protocols:` in `build/config.yml` registers `mortar://` and `nxm://`. The NSIS installer and MSIX manifest register them on Windows. On Linux, `desktop.tmpl` emits `MimeType=x-scheme-handler/...`. Trap: the default Linux Taskfile's `generate:dotdesktop` calls `wails3 generate .desktop` without `-mimetype`, so the AppImage would not register the schemes until that task is changed.
 - **Self-update:** the built-in updater (`app.Updater`, `pkg/updater`) with the GitHub releases provider. It requires a signing key pair; the public key ships in the app.
-- **Packaging:** NSIS on Windows; AppImage, deb and rpm on Linux. There is no Flatpak target in Wails.
+- **Packaging:** NSIS on Windows; AppImage, deb and rpm on Linux. There is no Flatpak target in Wails. The first release ships unsigned on Windows (NOMAD, 2026-09-29: no signing costs yet), so SmartScreen shows an unknown-publisher warning and the download page says how to get past it. Steam Deck is not a v1 target (NOMAD, 2026-09-29).
 
 ## Look
 
@@ -60,7 +60,7 @@ All Mortar data lives in the user data directory (`%LOCALAPPDATA%\Mortar`, `$XDG
 
 Sources: SMAPI's `docs/technical/smapi.md`, `docs/technical/web.md`, `src/SMAPI.Toolkit/Serialization/Models/Manifest.cs` and `ModScanner.cs`; the Stardew Valley wiki's Modding pages.
 
-- **Discovery:** Steam app `413150`. The wiki lists default game folders for Steam, GOG and the Xbox app on Windows, and Steam and GOG on Linux.
+- **Discovery:** Steam app `413150`. On Linux, Steam may be the Flatpak (`~/.var/app/com.valvesoftware.Steam/.local/share/Steam`); then launching goes through `flatpak run com.valvesoftware.Steam -applaunch ...` instead of `steam`, and saves sit under that Flatpak's `.config`. **Measure:** that the `--` arguments survive the Flatpak launch. The wiki lists default game folders for Steam, GOG and the Xbox app on Windows, and Steam and GOG on Linux.
 - **SMAPI install and update:** download the release installer (latest 4.5.2, needs Stardew 1.6.14 or later) and run it unattended with `--install --no-prompt --game-path "<dir>"` (measured on Linux: exit 0, no prompts, launcher replaced, bundled mods added). Running it again updates SMAPI. On Linux the installer renames the game's `StardewValley` to `StardewValley-original` and puts its launcher in its place, so a game update breaks SMAPI. Mortar detects that at startup and offers the reinstall.
 - **Profiles:** SMAPI takes `--mods-path <path>`, or the `SMAPI_MODS_PATH` environment variable (`smapi.md:40-59`); on Linux the argument must follow `--` (see Launch below). Paths may be absolute. Measured on Linux: `SMAPI_MODS_PATH=<absolute path>` set on the game's `StardewValley` launcher loads mods from that folder.
 - **Bundled mods:** a profile folder replaces `Mods/`, so SMAPI's bundled Console Commands and Save Backup mods must be placed into every profile.
@@ -117,7 +117,7 @@ Sources: Gale (`Kesomannen/gale`), r2modmanPlus (`ebkr/r2modmanPlus`), the Thund
 
 ## Share links
 
-A link names its game: `mortar://<game>/...`. It must open the importer whether Mortar is running or not.
+**Links go through a static page (NOMAD, 2026-09-29).** Discord makes only `http://`, `https://` and `discord://` links clickable and dropped every other scheme, `steam://` included (Discord community posts 14574789338135 and 25441082215447), so a bare `mortar://` link would be dead text there. A shared link is `https://mortar.rethunk.tech/p#<payload>`. The page is static (a DigitalOcean App Platform static site, free tier) and reads the payload after `#`, which browsers never send to the server, so no profile data reaches or is logged by any server. It hands the link to the app as `mortar://stardew/p/<payload>` and, when nothing answers, offers the download. The app also accepts the `https://` form pasted into its import box, and offers to import when it finds a Mortar link on the clipboard. It must open the importer whether Mortar is running or not.
 
 What a shared profile holds: name, game, and per mod its source reference (Nexus mod and file ID, `<owner>/<repo>@<tag>` for GitHub, or `Namespace-Name-Version` for Thunderstore). Mod configs only in the `.mortar` file.
 
