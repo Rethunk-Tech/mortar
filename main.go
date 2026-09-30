@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/loadersvc"
 	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-AI/mortar/internal/modpic"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/nexussvc"
 	"github.com/Rethunk-AI/mortar/internal/nxm"
@@ -76,6 +78,7 @@ func main() {
 		shareSvc *sharesvc.Service
 		window   *application.WebviewWindow
 		profiles *profile.Store
+		pictures *modpic.Cache
 	)
 	ready := make(chan struct{})
 	app := application.New(application.Options{
@@ -85,6 +88,7 @@ func main() {
 			Middleware: application.ChainMiddleware(
 				game.ArtMiddleware(home),
 				profile.CoverMiddleware(func() *profile.Store { return profiles }),
+				modpic.Middleware(func() *modpic.Cache { return pictures }),
 				backdrop.Middleware(func() settings.Settings {
 					if store == nil {
 						return settings.Defaults()
@@ -169,6 +173,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	pictures = modpic.New(dataDir, &http.Client{Timeout: 30 * time.Second})
 	updates := &updatesvc.Service{}
 	emit := func(name string, data any) { app.Event.Emit(name, data) }
 	queueSvc, err := queue.New(queue.Deps{
@@ -179,6 +184,7 @@ func main() {
 			if err == nil {
 				// Warm the detail dialog's cache while the account is known to be signed in and online.
 				go func() { _, _ = nexusSvc.Details(context.Background(), src.ModID) }()
+				go pictures.Ensure(context.Background(), src.Picture)
 			}
 			return res, err
 		},

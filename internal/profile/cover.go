@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-AI/mortar/internal/modpic"
 )
 
 // CoverPath is the URL prefix a picked cover is served under, as <CoverPath><game>/<profile id>.
@@ -120,6 +121,9 @@ func Covers(gameID string, p Profile) []string {
 		}
 	}
 	if picture != "" {
+		if local := modpic.AssetURL(picture); local != "" {
+			out = append(out, local)
+		}
 		out = append(out, picture)
 	}
 	if g := game.Find(gameID); g != nil {
