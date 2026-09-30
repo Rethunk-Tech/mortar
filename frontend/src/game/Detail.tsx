@@ -35,6 +35,7 @@ import { NotesTab } from '../notes/NotesTab.tsx'
 import { userModCount } from '../profiles/count.ts'
 import { EditProfileDialog } from '../profiles/EditProfileDialog.tsx'
 import { HistoryDialog } from '../profiles/HistoryDialog.tsx'
+import { ProfileMark } from '../profiles/ProfileMark.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { SavesTab } from '../saves/SavesTab.tsx'
 import { useSaves } from '../saves/store.ts'
@@ -149,6 +150,16 @@ function HeroName({ profile, game, meta }: { profile: Profile; game: string; met
           />
         ) : (
           <>
+            {profile.color || profile.icon ? (
+              <>
+                <Box sx={{ flexShrink: 0, [compact]: { display: 'none' } }}>
+                  <ProfileMark profile={profile} size={44} />
+                </Box>
+                <Box sx={{ display: 'none', flexShrink: 0, [compact]: { display: 'block' } }}>
+                  <ProfileMark profile={profile} size={18} />
+                </Box>
+              </>
+            ) : null}
             <Typography
               noWrap={true}
               sx={{
