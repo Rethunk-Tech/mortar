@@ -31,8 +31,9 @@ type Mod struct {
 	Enabled  bool     `json:"enabled"`
 	Siblings []string `json:"siblings"`
 	// Picture and Endorsements come from the mod's Nexus page and are empty for other sources.
-	Picture      string `json:"picture"`
-	Endorsements int    `json:"endorsements"`
+	Picture      string   `json:"picture"`
+	Endorsements int      `json:"endorsements"`
+	Needs        []string `json:"needs,omitempty"`
 }
 
 func exists(p string) bool {
@@ -132,7 +133,13 @@ func (s *Store) place(game, modsDir string, e Entry) error {
 func entryMods(found []manifest.Mod) []EntryMod {
 	out := make([]EntryMod, len(found))
 	for i, m := range found {
-		out[i] = EntryMod{UniqueID: m.UniqueID, Version: m.Version, Name: m.Name, Author: m.Author, Folder: m.Folder}
+		needs := make([]string, 0, len(m.Dependencies))
+		for _, d := range m.Dependencies {
+			if d.UniqueID != "" {
+				needs = append(needs, d.UniqueID)
+			}
+		}
+		out[i] = EntryMod{UniqueID: m.UniqueID, Version: m.Version, Name: m.Name, Author: m.Author, Folder: m.Folder, Needs: needs}
 	}
 	return out
 }
@@ -185,7 +192,7 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 	if len(found) == 0 {
 		return "", &NoModError{Key: key}
 	}
-	e := Entry{Key: key, Source: source, Mods: entryMods(found), Disabled: []string{}}
+	e := Entry{Key: key, Source: source, Mods: entryMods(found), Disabled: []string{}, Added: time.Now().UTC()}
 	for _, m := range e.Mods {
 		if hasID(disabled, m.UniqueID) {
 			e.Disabled = append(e.Disabled, m.UniqueID)
@@ -437,6 +444,7 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 	now := time.Now().UTC().Truncate(time.Second)
 	dup := src
 	dup.ID, dup.Name, dup.Created, dup.Updated = newID, name, now, now
+	dup.Origin, dup.CopyOf = OriginCopy, src.Name
 	dup.Entries = slices.Clone(src.Entries)
 
 	if err := os.MkdirAll(gdir, 0o700); err != nil {
@@ -516,7 +524,7 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 			out = append(out, Mod{
 				Key: e.Key, UniqueID: m.UniqueID, Name: m.Name, Author: m.Author, Version: m.Version,
 				Enabled: !isDisabled(e, m), Siblings: sib,
-				Picture: e.Source.Picture, Endorsements: e.Source.EndorsementCount,
+				Picture: e.Source.Picture, Endorsements: e.Source.EndorsementCount, Needs: m.Needs,
 			})
 		}
 	}

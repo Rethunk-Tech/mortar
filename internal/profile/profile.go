@@ -57,11 +57,12 @@ type Source struct {
 // EntryMod is one mod inside an entry. Folder holds its manifest.json, relative to mods/<key>/, in its
 // enabled (not dot-prefixed) form; "." is the entry's own folder.
 type EntryMod struct {
-	UniqueID string `json:"uniqueId"`
-	Version  string `json:"version"`
-	Name     string `json:"name"`
-	Author   string `json:"author"`
-	Folder   string `json:"folder"`
+	UniqueID string   `json:"uniqueId"`
+	Version  string   `json:"version"`
+	Name     string   `json:"name"`
+	Author   string   `json:"author"`
+	Folder   string   `json:"folder"`
+	Needs    []string `json:"needs,omitempty"`
 }
 
 // Entry is one mod archive in a profile. Disabled lists the UniqueIDs switched off.
@@ -71,6 +72,8 @@ type Entry struct {
 	Source      Source     `json:"source"`
 	Mods        []EntryMod `json:"mods"`
 	Disabled    []string   `json:"disabled"`
+	// Added is when this entry was put in the profile; zero for entries written before the field existed.
+	Added time.Time `json:"added,omitempty"`
 }
 
 // Profile is the on-disk shape of profile.json.
@@ -84,6 +87,11 @@ type Profile struct {
 	Created time.Time `json:"created"`
 	Updated time.Time `json:"updated"`
 	Entries []Entry   `json:"entries"`
+	// Origin is how the profile was created when that is known: OriginLink, OriginMortar,
+	// OriginGameMods, or OriginCopy. Empty for a profile made with New profile.
+	Origin string `json:"origin,omitempty"`
+	// CopyOf is the source profile's name when Origin is OriginCopy.
+	CopyOf string `json:"copyOf,omitempty"`
 }
 
 // Store reads and writes profiles under one root folder.

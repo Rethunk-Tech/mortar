@@ -91,6 +91,12 @@ func TestAddEntryScansAndRejectsDuplicates(t *testing.T) {
 	if en.Source.Name != "a.zip" || len(en.Mods) != 2 || en.Mods[0].Folder != "Pack/A" || en.Mods[1].UniqueID != "X.B" {
 		t.Fatalf("entry = %+v", en)
 	}
+	if en.Added.IsZero() || time.Since(en.Added) > time.Minute {
+		t.Fatalf("added = %v", en.Added)
+	}
+	if en.Mods[0].Needs == nil || en.Mods[1].Needs == nil {
+		t.Fatalf("needs = %+v", en.Mods)
+	}
 	if _, err := os.Stat(filepath.Join(e.mods(p.ID), "local-a", "Pack", "A", "manifest.json")); err != nil {
 		t.Fatal(err)
 	}
