@@ -24,26 +24,48 @@ const reads = new Map<number, Promise<void>>()
 // the rate-limit budget reaches its floor.
 let line = Promise.resolve()
 const queued = new Set<number>()
+const waiting = new Set<number>()
 
 const enqueue = (id: number) => {
   if (queued.has(id) || reads.has(id)) {
     return
   }
+  if (!useNexus.getState().signedIn) {
+    waiting.add(id)
+    return
+  }
+  waiting.delete(id)
   queued.add(id)
   line = line.then(async () => {
     queued.delete(id)
     if (useNexus.getState().signedIn) {
       await loadDetails(id)
+    } else {
+      waiting.add(id)
     }
   })
 }
 
-// Nexus page details by Nexus mod ID, shared by the sidebar, the list and the details dialog.
-export const useNexusDetails = create<{ byId: Record<number, Entry | undefined> }>(() => ({
+const useNexusDetails = create<{ byId: Record<number, Entry | undefined> }>(() => ({
   byId: {},
 }))
 
-export const loadDetails = (id: number) => {
+useNexus.subscribe((s, prev) => {
+  if (s.signedIn && !prev.signedIn) {
+    const ids = [...waiting]
+    waiting.clear()
+    for (const id of ids) {
+      enqueue(id)
+    }
+    for (const [key, entry] of Object.entries(useNexusDetails.getState().byId)) {
+      if (!entry?.details) {
+        enqueue(Number(key))
+      }
+    }
+  }
+})
+
+const loadDetails = (id: number) => {
   let read = reads.get(id)
   if (!read) {
     read = readDetails(id).then(
@@ -59,9 +81,9 @@ export const loadDetails = (id: number) => {
 }
 
 // Shows what is cached for every mod at once, then reads the missing ones one at a time.
-export const primeDetails = async (ids: number[]) => {
+const primeDetails = async (ids: number[]) => {
   const { byId } = useNexusDetails.getState()
-  const unknown = [...new Set(ids)].filter((id) => !byId[id])
+  const unknown = [...new Set(ids)].filter((id) => !byId[id]?.details)
   if (unknown.length === 0) {
     return
   }
@@ -84,7 +106,7 @@ export const primeDetails = async (ids: number[]) => {
 }
 
 // The entry for one mod, read on first use; undefined while the first read is on its way.
-export const useNexusEntry = (id: number) => {
+const useNexusEntry = (id: number) => {
   useEffect(() => {
     if (id) {
       loadDetails(id).catch(reportUnexpected)
@@ -92,3 +114,5 @@ export const useNexusEntry = (id: number) => {
   }, [id])
   return useNexusDetails((s) => s.byId[id])
 }
+
+export { loadDetails, primeDetails, useNexusDetails, useNexusEntry }
