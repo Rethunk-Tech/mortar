@@ -1,12 +1,13 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
+import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/games/models.ts'
 import { SetLastGame } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useNav } from '../nav/store.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type GameStatus, loadGameStatus } from './status.ts'
 
-type Game = GameStatus['games'][number]
+type Game = GameInfo
 
 const SOURCES: Record<string, string[]> = {
   stardew: ['Nexus', 'GitHub'],
