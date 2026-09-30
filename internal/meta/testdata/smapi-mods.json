@@ -1,0 +1,31 @@
+[
+  {
+    "id": "Pathoschild.ContentPatcher",
+    "suggestedUpdate": {
+      "version": "2.9.1",
+      "url": "https://www.nexusmods.com/stardewvalley/mods/1915"
+    },
+    "metadata": {
+      "id": ["Pathoschild.ContentPatcher"],
+      "name": "Content Patcher",
+      "nexusID": 1915,
+      "curseForgeID": 309243,
+      "modDropID": 470174,
+      "gitHubRepo": "Pathoschild/StardewMods",
+      "main": {
+        "version": "2.9.1",
+        "url": "https://www.nexusmods.com/stardewvalley/mods/1915"
+      },
+      "compatibilityStatus": "Ok",
+      "compatibilitySummary": "use latest version."
+    },
+    "errors": []
+  },
+  {
+    "id": "Nope.Nothing",
+    "metadata": {
+      "id": []
+    },
+    "errors": []
+  }
+]
