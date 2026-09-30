@@ -35,6 +35,9 @@ type Identity interface {
 	ModSources() []string
 	// ProcessName is the loader's executable, the process a running profile is found by.
 	ProcessName() string
+	// GameProcesses are the executables of the game with or without its loader; any of them running blocks a
+	// loader install, whoever started it.
+	GameProcesses() []string
 }
 
 // Installs finds and validates a game's install folder.

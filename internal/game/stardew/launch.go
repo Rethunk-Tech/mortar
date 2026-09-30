@@ -14,6 +14,11 @@ import (
 // ProcessName is the executable of the running loader.
 func (Game) ProcessName() string { return smapiMarker }
 
+// GameProcesses covers SMAPI, the vanilla game's native executable, and the launcher names either install leaves.
+func (Game) GameProcesses() []string {
+	return []string{smapiMarker, "Stardew Valley", linuxLauncher, linuxOriginal}
+}
+
 // LogFile is SMAPI-latest.txt, which SMAPI rewrites on each start.
 func (g Game) LogFile() (string, error) {
 	dir, err := g.logDir()

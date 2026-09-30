@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/loader"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
@@ -50,10 +51,12 @@ type Service struct {
 	run func(ctx context.Context, id string) (loader.Status, error)
 	// App is set after application.New so events can be emitted.
 	App *application.App
+	// procDir is where running processes are listed on Linux; tests point it at a fake.
+	procDir string
 }
 
 func NewService(home string, s *settings.Store, items *store.Store, profiles *profile.Store) *Service {
-	svc := &Service{home: home, settings: s, items: items, profiles: profiles}
+	svc := &Service{home: home, settings: s, items: items, profiles: profiles, procDir: "/proc"}
 	svc.run = svc.install
 	return svc
 }
@@ -248,7 +251,11 @@ func (s *Service) install(ctx context.Context, id string) (st loader.Status, err
 	if err != nil {
 		return loader.Status{}, err
 	}
-	if s.profiles.AnyRunning(id) {
+	running, err := s.gameRunning(g)
+	if err != nil {
+		return loader.Status{}, err
+	}
+	if running || s.profiles.AnyRunning(id) {
 		return loader.Status{}, fmt.Errorf("%s is running: close it before installing %s", g.Name(), g.LoaderName())
 	}
 	s.emit(StateEvent, State{Game: id, Installing: true})
@@ -281,6 +288,20 @@ func (s *Service) install(ctx context.Context, id string) (st loader.Status, err
 	}
 	s.emit(settings.ChangedEvent, next)
 	return s.Status(ctx, id)
+}
+
+// gameRunning reports whether any process of the game runs, with or without its loader and however it was started.
+func (s *Service) gameRunning(g game.Game) (bool, error) {
+	for _, name := range g.GameProcesses() {
+		procs, err := launch.Processes(s.procDir, name)
+		if err != nil {
+			return false, fmt.Errorf("check for a running %s: %w", g.Name(), err)
+		}
+		if len(procs) > 0 {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func (s *Service) emit(name string, data any) {

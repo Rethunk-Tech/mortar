@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"testing"
 
@@ -178,5 +179,14 @@ func TestEnsureLeavesAWorkingLoaderAlone(t *testing.T) {
 	}
 	if got := e.installs.Load(); got != 1 {
 		t.Fatalf("installs = %d, want 1", got)
+	}
+}
+
+func TestInstallRefusesWhileTheGameRunsOutsideMortar(t *testing.T) {
+	e := newEnsureEnv(t)
+	e.svc.procDir = t.TempDir()
+	put(t, filepath.Join(e.svc.procDir, "4242", "cmdline"), "/games/Stardew Valley/Stardew Valley\x00")
+	if _, err := e.svc.install(context.Background(), "stardew"); err == nil || !strings.Contains(err.Error(), "is running") {
+		t.Fatalf("err = %v, want a running refusal", err)
 	}
 }
