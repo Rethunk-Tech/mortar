@@ -1,8 +1,8 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { alpha, Box, ButtonBase, IconButton, Typography } from '@mui/material'
-import { Plus, Settings } from 'lucide-react'
+import { alpha, Box, ButtonBase, IconButton } from '@mui/material'
+import { ListOrdered, Plus, Settings } from 'lucide-react'
 import { type PointerEvent, useState } from 'react'
-import { openSettings } from '../nav/store.ts'
+import { openSettings, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { compact } from './compact.ts'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
@@ -33,7 +33,9 @@ function saveWidth(w: number) {
 
 export function Sidebar() {
   const { t } = useLingui()
-  const profiles = useProfiles((s) => s.profiles)
+  const allProfiles = useProfiles((s) => s.profiles)
+  const profiles = allProfiles.filter((p) => !p.hidden)
+  const openProfiles = useNav((s) => s.openProfiles)
   const openId = useProfiles((s) => s.openId)
   const open = useProfiles((s) => s.open)
   const [width, setWidth] = useState(storedWidth)
@@ -66,8 +68,10 @@ export function Sidebar() {
         [compact]: { width: RAIL },
       }}
     >
-      <Typography
+      <ButtonBase
+        onClick={openProfiles}
         sx={{
+          justifyContent: 'flex-start',
           px: 2,
           py: 1.25,
           fontSize: 14,
@@ -75,11 +79,14 @@ export function Sidebar() {
           textTransform: 'uppercase',
           letterSpacing: 1,
           color: 'text.secondary',
+          fontFamily: 'inherit',
+          whiteSpace: 'nowrap',
+          '&:hover': { bgcolor: 'action.hover' },
           [compact]: { display: 'none' },
         }}
       >
         <Trans>Profiles</Trans>
-      </Typography>
+      </ButtonBase>
       <Box
         sx={{
           flex: 1,
@@ -170,6 +177,13 @@ export function Sidebar() {
           [compact]: { flexDirection: 'column', gap: 0.5 },
         }}
       >
+        <IconButton
+          aria-label={t`Manage profiles`}
+          onClick={openProfiles}
+          sx={{ display: 'none', [compact]: { display: 'inline-flex' } }}
+        >
+          <ListOrdered size={20} />
+        </IconButton>
         <IconButton
           aria-label={t`New profile`}
           onClick={() => setCreating(true)}
