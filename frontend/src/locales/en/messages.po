@@ -56,9 +56,21 @@ msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschil
 msgid "Mortar"
 msgstr "Mortar"
 
+#: src/games/GameSelect.tsx:128
+msgid "Installed"
+msgstr "Installed"
+
 #: src/settings/sections/Appearance.tsx:104
 msgid "Changes apply right away"
 msgstr "Changes apply right away"
+
+#: src/games/GameSelect.tsx:123
+msgid "After the first release"
+msgstr "After the first release"
+
+#: src/games/GameSelect.tsx:126
+msgid "Not found in your Steam library"
+msgstr "Not found in your Steam library"
 
 #: src/toasts/ToastHost.tsx:81
 msgid "Notifications"
@@ -71,6 +83,10 @@ msgstr "Not affiliated"
 #: src/settings/sections/Appearance.tsx:24
 msgid "Warm and bold"
 msgstr "Warm and bold"
+
+#: src/games/GameSelect.tsx:141
+msgid "Only a Flatpak Steam was found."
+msgstr "Only a Flatpak Steam was found."
 
 #: src/settings/sections/Appearance.tsx:98
 #: src/shell/TitleBar.tsx:98
@@ -100,6 +116,10 @@ msgstr "Default"
 #: src/settings/sections/Appearance.tsx:23
 msgid "Moss"
 msgstr "Moss"
+
+#: src/games/GameSelect.tsx:115
+msgid "Could not read your games"
+msgstr "Could not read your games"
 
 #: src/settings/sections/About.tsx:19
 msgid "AGPL-3.0 · Rethunk-AI/mortar"
@@ -142,6 +162,10 @@ msgstr "About"
 msgid "Accent colour"
 msgstr "Accent colour"
 
+#: src/games/GameSelect.tsx:143
+msgid "Steam was not found."
+msgstr "Steam was not found."
+
 #: src/settings/SettingsDialog.tsx:34
 msgid "Settings sections"
 msgstr "Settings sections"
@@ -157,3 +181,7 @@ msgstr "Couldn't save that setting"
 #: src/shell/TitleBar.tsx:108
 msgid "Close"
 msgstr "Close"
+
+#: src/games/GameSelect.tsx:139
+msgid "Mortar supports Steam installed directly on the system."
+msgstr "Mortar supports Steam installed directly on the system."
