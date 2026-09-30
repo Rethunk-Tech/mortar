@@ -398,7 +398,7 @@ msgstr "SMAPI"
 msgid "Could not stop the game"
 msgstr "Could not stop the game"
 
-#: src/install/DropOverlay.tsx:75
+#: src/install/DropOverlay.tsx:85
 msgid "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 
@@ -473,7 +473,7 @@ msgstr "Moss"
 msgid "Could not read your games"
 msgstr "Could not read your games"
 
-#: src/install/DropOverlay.tsx:80
+#: src/install/DropOverlay.tsx:90
 msgid "Open a profile to install mods"
 msgstr "Open a profile to install mods"
 
@@ -610,7 +610,7 @@ msgid "Minimise"
 msgstr "Minimise"
 
 #. placeholder {0}: profile.name
-#: src/install/DropOverlay.tsx:72
+#: src/install/DropOverlay.tsx:82
 msgid "Drop to install into {0}"
 msgstr "Drop to install into {0}"
 

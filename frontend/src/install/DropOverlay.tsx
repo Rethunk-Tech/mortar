@@ -11,6 +11,7 @@ import { useInstall } from './store.ts'
 // Wails toggles this class on the element carrying data-file-drop-target while a file drag is over it.
 const ACTIVE_CLASS = 'file-drop-target-active'
 const TINT_ALPHA = 0.08
+const TITLE_BAR = 36
 
 export function DropOverlay({ target }: { target: HTMLElement | null }) {
   const { t } = useLingui()
@@ -47,39 +48,49 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
     <Box
       sx={(theme) => ({
         position: 'absolute',
-        top: 48,
-        left: 12,
-        right: 12,
-        bottom: 12,
+        top: TITLE_BAR,
+        left: 0,
+        right: 0,
+        bottom: 0,
         zIndex: theme.zIndex.modal,
         pointerEvents: 'none',
-        border: `2px dashed ${theme.palette.primary.main}`,
-        borderRadius: '10px',
-        bgcolor: alpha(theme.palette.primary.main, TINT_ALPHA),
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 1.5,
-        textAlign: 'center',
-        p: 3,
+        bgcolor: 'rgba(0,0,0,0.30)',
       })}
     >
-      <Download size={64} />
-      {ready ? (
-        <>
-          <Typography sx={{ fontSize: 24, fontWeight: 600 }}>
-            {t`Drop to install into ${profile.name}`}
+      <Box
+        sx={(theme) => ({
+          position: 'absolute',
+          inset: 12,
+          border: `3px dashed ${theme.palette.primary.main}`,
+          borderRadius: '16px',
+          bgcolor: alpha(theme.palette.primary.main, TINT_ALPHA),
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 2,
+          textAlign: 'center',
+          p: 3,
+        })}
+      >
+        <Box sx={{ color: 'primary.main', display: 'flex' }}>
+          <Download size={80} strokeWidth={1.8} />
+        </Box>
+        {ready ? (
+          <>
+            <Typography sx={{ fontSize: 38, fontWeight: 700 }}>
+              {t`Drop to install into ${profile.name}`}
+            </Typography>
+            <Typography sx={{ maxWidth: 640, fontSize: 15, lineHeight: 1.5 }}>
+              {t`Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added.`}
+            </Typography>
+          </>
+        ) : (
+          <Typography sx={{ fontSize: 38, fontWeight: 700 }}>
+            {t`Open a profile to install mods`}
           </Typography>
-          <Typography sx={{ color: 'text.secondary' }}>
-            {t`Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added.`}
-          </Typography>
-        </>
-      ) : (
-        <Typography sx={{ fontSize: 24, fontWeight: 600 }}>
-          {t`Open a profile to install mods`}
-        </Typography>
-      )}
+        )}
+      </Box>
     </Box>
   )
 }
