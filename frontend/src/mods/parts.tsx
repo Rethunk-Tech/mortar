@@ -69,13 +69,7 @@ export function LetterTile({
           component="img"
           alt=""
           src={`/mod-picture/?u=${encodeURIComponent(picture)}`}
-          onError={(e) => {
-            if (e.currentTarget.src.includes('/mod-picture/')) {
-              e.currentTarget.src = picture
-              return
-            }
-            setFailed(picture)
-          }}
+          onError={() => setFailed(picture)}
           sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />
       ) : (
