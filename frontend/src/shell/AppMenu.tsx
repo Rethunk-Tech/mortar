@@ -9,12 +9,13 @@ import {
   ListItemText,
 } from '@mui/material'
 import { Application, Browser } from '@wailsio/runtime'
-import { Bug, Code2, FolderOpen, Info, LogOut, Settings } from 'lucide-react'
+import { Bug, Code2, FolderOpen, Info, LogOut, RefreshCw, Settings } from 'lucide-react'
 import { useId, useState } from 'react'
 import { OpenDataFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { Logo } from '../brand/Logo.tsx'
 import { compact } from '../game/compact.ts'
 import { openSettings, routeGame, useNav } from '../nav/store.ts'
+import { useMortarUpdate } from '../settings/updates.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { NexusAccount } from './NexusAccount.tsx'
@@ -100,6 +101,18 @@ export function AppMenu() {
               <Info size={18} />
             </ListItemIcon>
             <ListItemText primary={t`About Mortar`} />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              close()
+              openSettings('updates')
+              useMortarUpdate.getState().check().catch(reportUnexpected)
+            }}
+          >
+            <ListItemIcon>
+              <RefreshCw size={18} />
+            </ListItemIcon>
+            <ListItemText primary={t`Check for updates`} />
           </ListItemButton>
           <ListItemButton
             onClick={() => {

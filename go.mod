@@ -31,7 +31,8 @@ require (
 	github.com/stangelandcl/ppmd v0.1.1 // indirect
 	github.com/ulikunitz/xz v0.5.15 // indirect
 	go4.org v0.0.0-20260112195520-a5071408f32f // indirect
+	golang.org/x/mod v0.37.0 // indirect
 	golang.org/x/text v0.40.0 // indirect
 )
 
-replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-beta.26.0.20260930064122-e4e3df8ac9ad
+replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-beta.26.0.20260930124554-1a75a02e2f63

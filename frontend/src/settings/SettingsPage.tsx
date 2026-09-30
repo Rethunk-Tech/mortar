@@ -7,6 +7,7 @@ import { About } from './sections/About.tsx'
 import { Appearance } from './sections/Appearance.tsx'
 import { Data } from './sections/Data.tsx'
 import { NexusMods } from './sections/NexusMods.tsx'
+import { Updates } from './sections/Updates.tsx'
 
 const ACTIVE_WEIGHT = 600
 
@@ -27,12 +28,14 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
     { id: 'appearance', label: t`Appearance` },
     { id: 'data', label: t`Data` },
     { id: 'nexus', label: t`Nexus Mods` },
+    { id: 'updates', label: t`Updates` },
     { id: 'about', label: t`About` },
   ]
   const body: Record<SettingsSection, ReactNode> = {
     appearance: <Appearance />,
     data: <Data />,
     nexus: <NexusMods />,
+    updates: <Updates />,
     about: <About />,
   }
   const current = sections.find((s) => s.id === section)

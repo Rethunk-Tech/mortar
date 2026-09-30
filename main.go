@@ -27,6 +27,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/sharesvc"
 	modstore "github.com/Rethunk-AI/mortar/internal/store"
 	"github.com/Rethunk-AI/mortar/internal/support"
+	"github.com/Rethunk-AI/mortar/internal/updatesvc"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/services/notifications"
@@ -37,6 +38,11 @@ const version = "0.0.1"
 
 //go:embed all:frontend/dist
 var assets embed.FS
+
+// updateKey verifies release signatures; its private half never enters the repository (docs/architecture.md § Release).
+//
+//go:embed build/updater/public.key
+var updateKey []byte
 
 // registerEvents declares the custom events for the binding generator and the runtime's payload checks.
 func registerEvents() {
@@ -116,6 +122,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if err := nxmHandler.Refresh(); err != nil {
+		log.Printf("desktop entry: %v", err)
+	}
 	nxmSvc := nxmsvc.NewService(store, nxmHandler)
 
 	dataDir, err := datadir.Dir()
@@ -123,6 +132,7 @@ func main() {
 		log.Fatal(err)
 	}
 	var app *application.App
+	updates := &updatesvc.Service{}
 	var shareSvc *sharesvc.Service
 	queueSvc, err := queue.New(queue.Deps{
 		Client:        func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },
@@ -187,7 +197,7 @@ func main() {
 			application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
 			application.NewService(savesSvc), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
 			application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc),
-			application.NewService(support.NewService(version, problemsSvc.Environment, home, profiles.ModsDir)),
+			application.NewService(support.NewService(version, problemsSvc.Environment, home, profiles.ModsDir)), application.NewService(updates),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -209,6 +219,9 @@ func main() {
 		},
 	})
 
+	if err := updatesvc.Configure(updates, app.Updater, version, updateKey); err != nil {
+		log.Fatal(err)
+	}
 	queue.Run(context.Background(), queueSvc, nxmSvc.Assigned)
 	svc.App = app
 	loaders.App = app
