@@ -3,7 +3,7 @@ import { Box, Button, Typography } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
 import { TriangleAlert } from 'lucide-react'
 import { useProfiles } from '../profiles/store.ts'
-import { download } from '../queue/actions.ts'
+import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -62,10 +62,23 @@ function FixButton({ problem }: { problem: Problem }) {
       {t`Open page`}
     </Button>
   )
-  if (where.site !== 'Nexus' || where.pageId <= 0) {
+  const github = where.site === 'GitHub' && where.github !== ''
+  if (!github && (where.site !== 'Nexus' || where.pageId <= 0)) {
     return open
   }
-  const queued = pendingFor(queue, profileId, where.pageId)
+  const queued = github
+    ? pendingFor(queue, profileId, 0, where.github)
+    : pendingFor(queue, profileId, where.pageId)
+  const want: Want = github
+    ? { kind: 'dependency', repo: where.github, name: where.github }
+    : {
+        kind: 'dependency',
+        modId: where.pageId,
+        fileId: where.fileId,
+        name: where.pageName,
+        fileName: where.fileName,
+        version: where.version,
+      }
   return (
     <>
       {open}
@@ -74,18 +87,7 @@ function FixButton({ problem }: { problem: Problem }) {
         variant="contained"
         color="warning"
         disabled={queued}
-        onClick={() =>
-          download([
-            {
-              kind: 'dependency',
-              modId: where.pageId,
-              fileId: where.fileId,
-              name: where.pageName,
-              fileName: where.fileName,
-              version: where.version,
-            },
-          ]).catch(reportUnexpected)
-        }
+        onClick={() => download([want]).catch(reportUnexpected)}
         sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
       >
         {queued ? t`Queued` : t`Add`}

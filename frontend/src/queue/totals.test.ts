@@ -18,6 +18,11 @@ const item = (state: string, sizeKb = 0, modId = 1): Item => ({
   progress: 0,
   speed: 0,
   error: '',
+  repo: '',
+  tag: '',
+  asset: '',
+  assets: [],
+  unverified: false,
 })
 
 test('totals count each state and split the bar over what was asked for', () => {
@@ -41,6 +46,14 @@ test('a failed download can be queued again but a waiting one cannot', () => {
   expect(pendingFor([item('failed')], 'p', 1)).toBe(false)
   expect(pendingFor([item('waiting-click')], 'p', 1)).toBe(true)
   expect(pendingFor([item('queued')], 'q', 1)).toBe(false)
+})
+
+test('a GitHub mod is pending by its repo, not by mod id', () => {
+  const gh = { ...item('needs-choice', 0, 0), repo: 'me/mod' }
+  expect(pendingFor([gh], 'p', 0, 'me/mod')).toBe(true)
+  expect(pendingFor([gh], 'p', 0, 'me/other')).toBe(false)
+  expect(pendingFor([gh], 'p', 1)).toBe(false)
+  expect(pendingFor([item('queued')], 'p', 1, 'me/mod')).toBe(false)
 })
 
 test('sizes show one decimal until 10 MB', () => {

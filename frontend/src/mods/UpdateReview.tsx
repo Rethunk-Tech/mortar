@@ -15,6 +15,7 @@ import { Browser } from '@wailsio/runtime'
 import { ArrowRight, ArrowUp, ExternalLink, ShieldCheck, X } from 'lucide-react'
 import type { Update } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
@@ -52,19 +53,27 @@ function Version({ children, isNew }: { children: string; isNew?: boolean }) {
   )
 }
 
+// A mod whose update lives on GitHub comes from there; otherwise the update is a Nexus file.
 const updateWant = (u: Update): Want => ({
   kind: 'update',
-  modId: u.nexusId,
+  ...(u.githubRepo ? { repo: u.githubRepo } : { modId: u.nexusId }),
   name: u.name,
   version: u.version,
   currentKey: u.key,
 })
 
+const downloadable = (u: Update) => u.githubRepo !== '' || u.nexusId > 0
+
+const pendingUpdate = (items: Item[], profileId: string, u: Update) =>
+  u.githubRepo
+    ? pendingFor(items, profileId, 0, u.githubRepo)
+    : pendingFor(items, profileId, u.nexusId)
+
 function Row({ update, profileId }: { update: Update; profileId: string }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const mod = mods.find((m) => m.key === update.key && sameId(m.uniqueId, update.uniqueId))
-  const queued = useQueue((s) => pendingFor(s.state.items, profileId, update.nexusId))
+  const queued = useQueue((s) => pendingUpdate(s.state.items, profileId, update))
   const notes = [
     ...(mod ? siblingsOf(mods, mod).map((o) => t`Also updates ${o.name} (same download)`) : []),
     ...(mod && !mod.enabled ? [t`Switched off in this profile`] : []),
@@ -117,7 +126,7 @@ function Row({ update, profileId }: { update: Update; profileId: string }) {
             {t`Open page`}
           </Button>
         ) : null}
-        {update.nexusId > 0 ? (
+        {downloadable(update) ? (
           <Button
             variant="contained"
             disabled={queued}
@@ -190,7 +199,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   const list = updates?.updates ?? []
   const items = useQueue((s) => s.state.items)
   const wanted = list
-    .filter((u) => u.nexusId > 0 && !pendingFor(items, profile.id, u.nexusId))
+    .filter((u) => downloadable(u) && !pendingUpdate(items, profile.id, u))
     .map(updateWant)
   return (
     <Dialog
@@ -241,7 +250,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
           <ShieldCheck size={18} aria-hidden={true} />
         </Box>
         <Typography sx={{ flex: 1, fontSize: 13, lineHeight: 1.45 }}>
-          {t`Update downloads a mod's new file from Nexus. For other pages, download the archive and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details.`}
+          {t`Update downloads a mod's new file from Nexus or GitHub. For other pages, download the archive and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details.`}
         </Typography>
         <Button variant="outlined" onClick={close} sx={{ whiteSpace: 'nowrap' }}>
           {t`Close`}

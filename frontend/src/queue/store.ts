@@ -27,6 +27,7 @@ function announce(prev: Snapshot, next: Snapshot) {
     next.items.filter((i) => i.state === state && before.get(i.id) !== state)
   const done = changed('done')
   const failed = changed('failed')
+  const waiting = [...changed('needs-choice'), ...changed('needs-confirm')]
   const { game, refresh } = useProfiles.getState()
   if (done.some((i) => i.game === game?.id)) {
     refresh()
@@ -43,6 +44,15 @@ function announce(prev: Snapshot, next: Snapshot) {
           : i18n._(
               msg`${plural(done.length, { one: '# mod installed', other: '# mods installed' })}`,
             ),
+    })
+  }
+  if (waiting.length > 0) {
+    useToasts.getState().push({
+      kind: 'info',
+      title: i18n._(
+        msg`${plural(waiting.length, { one: '# download needs your decision', other: '# downloads need your decision' })}`,
+      ),
+      action: { label: i18n._(msg`Show`), run: show },
     })
   }
   if (failed.length > 0) {

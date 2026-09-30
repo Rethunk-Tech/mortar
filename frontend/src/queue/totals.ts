@@ -24,8 +24,11 @@ export const isLeft = (i: Item) => !['done', 'skipped', 'cancelled'].includes(i.
 // A file that is queued or under way for this mod in this profile; a failed one does not count, so it can be added again.
 export const isPending = (i: Item) => isLeft(i) && i.state !== 'failed'
 
-export const pendingFor = (items: Item[], profileId: string, modId: number) =>
-  items.some((i) => isPending(i) && i.profileId === profileId && i.modId === modId)
+// A GitHub mod is named by its repo, with a modId of 0; a Nexus mod by its modId and an empty repo.
+export const pendingFor = (items: Item[], profileId: string, modId: number, repo = '') =>
+  items.some(
+    (i) => isPending(i) && i.profileId === profileId && i.modId === modId && i.repo === repo,
+  )
 
 export function totals(items: Item[]): Totals {
   const counted = items.filter((i) => i.state !== 'skipped' && i.state !== 'cancelled')

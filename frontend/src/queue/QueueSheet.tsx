@@ -5,6 +5,8 @@ import { type ReactNode, useState } from 'react'
 import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
 import {
   Cancel,
+  Choose,
+  Confirm,
   OpenPage,
   Pause,
   Resume,
@@ -40,8 +42,8 @@ const ROW = {
 const NAME_MAX = 3
 
 const tile = (i: Item) => ({
-  uniqueId: String(i.modId),
-  name: i.name || String(i.modId),
+  uniqueId: i.repo || String(i.modId),
+  name: i.name || i.repo || String(i.modId),
   picture: '',
 })
 
@@ -105,8 +107,20 @@ const detail = {
   textOverflow: 'ellipsis',
 } as const
 
-function Click({ item }: { item: Item }) {
-  const { t } = useLingui()
+// A card for an item that waits for the user, with its own actions on the right and any choices under the text.
+function Callout({
+  item,
+  label,
+  text,
+  actions,
+  children,
+}: {
+  item: Item
+  label: string
+  text: string
+  actions: ReactNode
+  children?: ReactNode
+}) {
   return (
     <Box
       sx={{
@@ -126,12 +140,28 @@ function Click({ item }: { item: Item }) {
           <Typography
             sx={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', color: 'primary.main' }}
           >
-            {t`NEEDS YOUR CLICK`}
+            {label}
           </Typography>
           <Typography noWrap={true} sx={{ fontSize: 16, fontWeight: 600 }}>
             {item.name || item.fileName}
           </Typography>
         </Box>
+        {actions}
+      </Box>
+      <Typography sx={{ fontSize: 13, lineHeight: 1.45 }}>{text}</Typography>
+      {children}
+    </Box>
+  )
+}
+
+function Click({ item }: { item: Item }) {
+  const { t } = useLingui()
+  return (
+    <Callout
+      item={item}
+      label={t`NEEDS YOUR CLICK`}
+      text={t`Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page.`}
+      actions={
         <Button
           variant="contained"
           onClick={() => OpenPage(item.id).catch(reportUnexpected)}
@@ -139,11 +169,68 @@ function Click({ item }: { item: Item }) {
         >
           {t`Open download page`}
         </Button>
-      </Box>
-      <Typography sx={{ fontSize: 13, lineHeight: 1.45 }}>
-        {t`Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page.`}
-      </Typography>
-    </Box>
+      }
+    />
+  )
+}
+
+function SkipButton({ item }: { item: Item }) {
+  const { t } = useLingui()
+  return (
+    <Button
+      variant="outlined"
+      color="inherit"
+      onClick={() => Skip(item.id).catch(reportUnexpected)}
+      sx={{ whiteSpace: 'nowrap' }}
+    >
+      {t`Skip`}
+    </Button>
+  )
+}
+
+function Choice({ item }: { item: Item }) {
+  const { t } = useLingui()
+  return (
+    <Callout
+      item={item}
+      label={t`CHOOSE A FILE`}
+      text={t`${item.repo} ${item.tag} has several archives. Which one should Mortar install?`}
+      actions={<SkipButton item={item} />}
+    >
+      {(item.assets ?? []).map((asset) => (
+        <Button
+          key={asset}
+          variant="outlined"
+          onClick={() => Choose(item.id, asset).catch(reportUnexpected)}
+          sx={{ justifyContent: 'flex-start', textTransform: 'none', overflowWrap: 'anywhere' }}
+        >
+          {asset}
+        </Button>
+      ))}
+    </Callout>
+  )
+}
+
+function Confirmation({ item }: { item: Item }) {
+  const { t } = useLingui()
+  return (
+    <Callout
+      item={item}
+      label={t`CHECK THIS DOWNLOAD`}
+      text={t`This download's mod is not known to come from ${item.repo}.`}
+      actions={
+        <>
+          <SkipButton item={item} />
+          <Button
+            variant="contained"
+            onClick={() => Confirm(item.id).catch(reportUnexpected)}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            {t`Install anyway`}
+          </Button>
+        </>
+      }
+    />
   )
 }
 
@@ -298,11 +385,22 @@ const names = (items: Item[]) =>
 function Body({ items }: { items: Item[] }) {
   const { t } = useLingui()
   const click = items.filter((i) => i.state === 'waiting-click')
+  const choose = items.filter((i) => i.state === 'needs-choice')
+  const confirm = items.filter((i) => i.state === 'needs-confirm')
   const failed = items.filter((i) => i.state === 'failed')
   const active = items.filter(isActive)
   const next = items.filter((i) => i.state === 'queued')
   const done = items.filter((i) => i.state === 'done')
-  if (click.length + failed.length + active.length + next.length + done.length === 0) {
+  if (
+    click.length +
+      choose.length +
+      confirm.length +
+      failed.length +
+      active.length +
+      next.length +
+      done.length ===
+    0
+  ) {
     return (
       <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
         {t`Nothing is downloading. Updates, missing dependencies and links from Nexus land here.`}
@@ -314,6 +412,12 @@ function Body({ items }: { items: Item[] }) {
     <>
       {click.map((i) => (
         <Click key={i.id} item={i} />
+      ))}
+      {choose.map((i) => (
+        <Choice key={i.id} item={i} />
+      ))}
+      {confirm.map((i) => (
+        <Confirmation key={i.id} item={i} />
       ))}
       <Failed items={failed} />
       {active.length > 0 ? <SectionTitle>{t`In progress (${active.length})`}</SectionTitle> : null}
@@ -353,7 +457,9 @@ function Body({ items }: { items: Item[] }) {
         >
           {done.map((i) => (
             <Typography key={i.id} sx={{ px: '10px', fontSize: 13 }}>
-              {i.name || i.fileName}
+              {i.unverified
+                ? t`${i.name || i.fileName} (could not verify its source)`
+                : i.name || i.fileName}
             </Typography>
           ))}
         </Fold>
@@ -411,7 +517,7 @@ function Header({ onClose }: { onClose: () => void }) {
       </Box>
       {limitedUntil > 0 ? (
         <Typography sx={{ mx: 2.5, mt: 1, fontSize: 13, color: 'warning.main' }}>
-          {t`Nexus has limited requests for now. Downloads go on at ${clockTime(limitedUntil)}.`}
+          {t`Nexus or GitHub has limited requests for now. Downloads go on at ${clockTime(limitedUntil)}.`}
         </Typography>
       ) : null}
     </>

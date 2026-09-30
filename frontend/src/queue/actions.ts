@@ -9,8 +9,10 @@ import { useToasts } from '../toasts/store.ts'
 import { useQueue } from './store.ts'
 
 // What a caller says about a file; the rest is filled in.
-export type Want = Pick<Request, 'kind' | 'modId'> &
-  Partial<Pick<Request, 'fileId' | 'name' | 'fileName' | 'version' | 'currentKey'>>
+export type Want = Pick<Request, 'kind'> &
+  Partial<
+    Pick<Request, 'modId' | 'fileId' | 'name' | 'fileName' | 'version' | 'currentKey' | 'repo'>
+  >
 
 // The game and profile open now, or null when none is.
 export function target() {
@@ -18,10 +20,11 @@ export function target() {
   return game && openId ? { game: game.id, profileId: openId } : null
 }
 
-// Queues files for the open profile. Signed out, nothing can download: say so and point at the sign-in instead.
+// Queues files for the open profile. Nexus files cannot download while signed out: say so and point at the
+// sign-in instead. GitHub needs no account.
 export async function download(reqs: Want[], showQueue = false): Promise<boolean> {
   const toasts = useToasts.getState()
-  if (!useNexus.getState().signedIn) {
+  if (!useNexus.getState().signedIn && reqs.some((r) => !r.repo)) {
     toasts.push({
       kind: 'warning',
       title: i18n._(msg`Sign in to Nexus Mods to download`),
@@ -39,6 +42,10 @@ export async function download(reqs: Want[], showQueue = false): Promise<boolean
   try {
     await Add(
       reqs.map((r) => ({
+        modId: 0,
+        repo: '',
+        tag: '',
+        asset: '',
         fileId: 0,
         name: '',
         fileName: '',

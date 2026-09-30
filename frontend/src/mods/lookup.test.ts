@@ -53,6 +53,7 @@ test('an update belongs to one copy of a mod', () => {
     version: '2',
     url: '',
     nexusId: 0,
+    githubRepo: '',
   }
   const result = { updates: [update], unknown: false }
   expect(updateCount(result)).toBe(1)
