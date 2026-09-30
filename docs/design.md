@@ -117,7 +117,7 @@ Saves live in one folder, `%APPDATA%\StardewValley\Saves` or `~/.config/StardewV
 - **Mod dataset:** SMAPI's `Pathoschild/StardewModDataset` (MIT or CC-BY-SA 4.0, published with explicit permission from Nexus Mods, CurseForge and ModDrop, refreshed near the end of each month, 0.x with no version tags) records each Nexus mod page's current files with the SMAPI manifests inside them (`Downloads[].Mods[]`, `SizeInBytes`), not every file: Content Patcher has 2 there against 170 on Nexus. Mortar fetches one page's entry when needed from `https://raw.githubusercontent.com/Pathoschild/StardewModDataset/main/dataset/data/Nexus/<mod id / 1000>/<mod id>.json`, and the `UniqueID` index (`dataset/indexes/pages by mod ID.json`, 1.5 MB, 28,634 IDs) monthly. Parsing is lenient; a file it lacks is checked after download.
 - **Update checks:** `POST https://smapi.io/api/v4.0.0/mods` with each mod's ID, `UpdateKeys` and installed version, plus `apiVersion`, `gameVersion` and `platform`, returns `suggestedUpdate`, which Mortar takes as given; `compatibilityStatus` and `brokeIn` come only with `includeExtendedMetadata: true`. The API is public, unauthenticated and officially unreleased, so results are cached and failures never block. Updates show as a count per profile and are applied only by the user.
 - **Dependencies:** `Dependencies[]` (`UniqueID`, `MinimumVersion`, `IsRequired` defaulting to true) plus `ContentPackFor` as a required dependency on its framework mod, all by `UniqueID`. For a missing one, Mortar prefers the Nexus page named in its own `UpdateKeys`, else the page whose files hold it at the highest version (3,793 IDs appear on several pages), and takes the newest `MAIN` file satisfying `MinimumVersion`. One found only on CurseForge or ModDrop is listed with its page link, to install from a downloaded archive.
-- **Problems** warn and never block: missing dependencies, duplicate `UniqueID`s, and mods SMAPI's API marks broken for the game version, each with a one-click fix.
+- **Problems** warn and never block: missing dependencies, duplicate `UniqueID`s (resolved in a dialog that keeps one copy and switches the other off), and mods SMAPI's API marks broken for the game version, each with a one-click fix.
 
 ## Nexus Mods
 
@@ -169,13 +169,13 @@ Go tests run against local HTTP test servers replaying recorded Nexus, GitHub, S
 
 ## Build order
 
-After the go-ahead, each milestone ends with the gate green and NOMAD clicking through it on Linux:
+After the go-ahead, each milestone ends with the gate green and NOMAD clicking through it on Linux. The screens each milestone builds are the mid-fi mocks (private canvas "Mortar screens (mid-fi)"; `docs/gui-design.md` is the canonical spec):
 
-1. **Shell and look.** Wails v3 app on patched GTK4, frameless translucent window with the themed title bar, Concrete's theme and layout with real empty states, Lingui. In parallel: the GTK4 transparency PR to Wails.
-2. **Stardew core.** Steam discovery, SMAPI install and updates (GitHub releases), bundled mods, profiles (create, duplicate, delete to trash, toggle, copy into `mods/`), installing from a picked or dropped archive, launch with success detection (the Windows path is written here and measured in milestone 6), and the console.
-3. **Mod data.** Manifest scanning, dependency and problem checks, SMAPI API update checks, update and rollback with carry-over and save backups, the dataset, the save scan.
-4. **Nexus.** Personal-key sign-in, runtime `nxm://` registration, the guided download queue, GitHub mod sources.
-5. **Sharing.** Links, the import preview, `.mortar` files, and the static page.
+1. **Shell and look.** Wails v3 app on patched GTK4, frameless translucent window with the themed title bar and running-bond logo, the theme with the Appearance settings (accent colour, translucency), the main screen's layout with its empty state, Game Select, the minimum-size layout, toasts, Lingui. In parallel: the GTK4 transparency PR to Wails.
+2. **Stardew core.** Steam discovery, SMAPI install and updates (GitHub releases), bundled mods, profiles (create, duplicate, delete to trash, toggle, copy into `mods/`), installing from a picked or dropped archive (the drop overlay), the Grid and List views, profile management, first run (all steps), launch with success detection and the Launching screen (the Windows path is written here and measured in milestone 6), the Console tab, and the Notes tab.
+3. **Mod data.** Manifest scanning, dependency and problem checks (with the duplicate resolver), SMAPI API update checks and Update review, mod detail, update and rollback with carry-over and save backups, the dataset, the save scan and the Saves tab.
+4. **Nexus.** Personal-key sign-in (Settings › Nexus Mods), runtime `nxm://` registration and its notifications, the guided download queue, GitHub mod sources.
+5. **Sharing.** Links, the Share dialog, the import preview, `.mortar` files, and the static page.
 6. **Release.** smapi.io/log upload and the GitHub issue link, the updater patches and signed manifest, Windows measurements and fixes, packaging, the repo made public.
 
 ## Later
