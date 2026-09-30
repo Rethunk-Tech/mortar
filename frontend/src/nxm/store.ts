@@ -111,7 +111,6 @@ export const useNxm = create<{
     Ignore(id).catch(reportUnexpected)
   },
 }))
-
 export async function initNxm(): Promise<void> {
   const seen = new Set<number>()
   const reject = (r: Rejection) => {
