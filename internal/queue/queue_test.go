@@ -448,3 +448,59 @@ func TestAddValidatesTheWholeBatch(t *testing.T) {
 		t.Fatalf("partial add: %+v", st.Items)
 	}
 }
+
+func TestDismissAndClearFinishedLeaveActiveItems(t *testing.T) {
+	f := newFixture(t)
+	f.s.mu.Lock()
+	f.s.items = []*Item{
+		{ID: "queued", Name: "q", State: StateQueued, Game: "stardew"},
+		{ID: "active", Name: "a", State: StateDownloading, Game: "stardew"},
+		{ID: "done", Name: "d", State: StateDone, Game: "stardew", staged: "staged-key"},
+		{ID: "fail", Name: "f", State: StateFailed, Game: "stardew"},
+		{ID: "skip", Name: "s", State: StateSkipped, Game: "stardew"},
+		{ID: "cancel", Name: "c", State: StateCancelled, Game: "stardew"},
+		{ID: "choice", Name: "ch", State: StateNeedsChoice, Game: "stardew"},
+	}
+	f.s.mu.Unlock()
+	f.s.Dismiss("queued")
+	f.s.Dismiss("active")
+	f.s.Dismiss("choice")
+	if ids := itemIDs(f.s.State()); len(ids) != 7 {
+		t.Fatalf("dismissed a live item: %v", ids)
+	}
+	f.s.Dismiss("done")
+	if slices.Contains(itemIDs(f.s.State()), "done") {
+		t.Fatal("done still present")
+	}
+	if keys := f.s.StagedKeys(); len(keys) != 0 {
+		t.Fatalf("staged keys %v", keys)
+	}
+	f.s.ClearFinished()
+	got := itemIDs(f.s.State())
+	if !slices.Equal(got, []string{"queued", "active", "choice"}) {
+		t.Fatalf("after clear: %v", got)
+	}
+	b, err := os.ReadFile(filepath.Join(f.dir, fileName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(b)
+	for _, want := range []string{"queued", "active", "choice"} {
+		if !strings.Contains(text, want) {
+			t.Errorf("queue.json missing %s", want)
+		}
+	}
+	for _, drop := range []string{`"id": "fail"`, `"id": "skip"`, `"id": "cancel"`, `"id": "done"`} {
+		if strings.Contains(text, drop) {
+			t.Errorf("queue.json still has %s", drop)
+		}
+	}
+}
+
+func itemIDs(st State) []string {
+	ids := make([]string, len(st.Items))
+	for i, it := range st.Items {
+		ids[i] = it.ID
+	}
+	return ids
+}

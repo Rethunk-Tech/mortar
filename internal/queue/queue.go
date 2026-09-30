@@ -461,6 +461,27 @@ func (s *Service) retry(match func(*Item) bool) {
 	s.poke()
 }
 
+func dismissable(state string) bool {
+	return state == StateDone || state == StateFailed || state == StateSkipped || state == StateCancelled
+}
+
+// Dismiss removes one finished item. Queued and in-progress items are left alone.
+func (s *Service) Dismiss(id string) {
+	s.drop(func(it *Item) bool { return it.ID == id && dismissable(it.State) })
+}
+
+// ClearFinished removes every done, failed, cancelled or skipped item.
+func (s *Service) ClearFinished() {
+	s.drop(func(it *Item) bool { return dismissable(it.State) })
+}
+
+func (s *Service) drop(match func(*Item) bool) {
+	s.mu.Lock()
+	s.items = slices.DeleteFunc(s.items, match)
+	s.mu.Unlock()
+	s.publish(true)
+}
+
 // Skip drops an item that has not started, that failed, or that waits for the user.
 func (s *Service) Skip(id string) {
 	s.end(id, StateSkipped, StateFailed, StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm)
