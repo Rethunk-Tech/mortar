@@ -4,8 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"slices"
+	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/archive"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
@@ -13,6 +16,8 @@ import (
 type InstallResult struct {
 	Profile Profile  `json:"profile"`
 	Added   []string `json:"added"`
+	// Updated is true when the archive replaced a version of an entry already in the profile.
+	Updated bool `json:"updated"`
 }
 
 // InstallError is a failed install. Its message is fit to show the user; Err keeps the typed cause.
@@ -34,11 +39,28 @@ func (s *Store) InstallArchive(game, id, path string) (InstallResult, error) {
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
-	p, err := s.AddEntry(game, id, key, Source{Kind: "local", Name: filepath.Base(path)})
+	source := Source{Kind: "local", Name: filepath.Base(path)}
+	held, err := s.holding(game, id, key)
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
-	res := InstallResult{Profile: p, Added: []string{}}
+	var p Profile
+	switch len(held) {
+	case 0:
+		p, err = s.AddEntry(game, id, key, source)
+	case 1:
+		p, err = s.moveTo(game, id, held[0].Key, key, &source)
+	default:
+		labels := make([]string, len(held))
+		for i, e := range held {
+			labels[i] = entryLabel(e)
+		}
+		err = &SpansEntriesError{Labels: labels}
+	}
+	if err != nil {
+		return InstallResult{}, installError(err)
+	}
+	res := InstallResult{Profile: p, Added: []string{}, Updated: len(held) == 1}
 	for _, e := range p.Entries {
 		if e.Key == key {
 			for _, m := range e.Mods {
@@ -49,8 +71,41 @@ func (s *Store) InstallArchive(game, id, path string) (InstallResult, error) {
 	return res, nil
 }
 
+// holding returns the profile's entries that hold any mod of the store item key. An entry that is already key is a
+// DuplicateError.
+func (s *Store) holding(game, id, key string) ([]Entry, error) {
+	src, err := s.items.Path(game, key)
+	if err != nil {
+		return nil, err
+	}
+	found, err := manifest.Scan(src)
+	if err != nil {
+		return nil, err
+	}
+	if len(found) == 0 {
+		return nil, &NoModError{Key: key}
+	}
+	p, err := s.read(game, id)
+	if err != nil {
+		return nil, err
+	}
+	var held []Entry
+	for _, e := range p.Entries {
+		if e.Key == key {
+			return nil, &DuplicateError{Key: key, Label: entryLabel(e)}
+		}
+		if slices.ContainsFunc(e.Mods, func(m EntryMod) bool {
+			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return sameID(f.UniqueID, m.UniqueID) })
+		}) {
+			held = append(held, e)
+		}
+	}
+	return held, nil
+}
+
 func installError(err error) error {
 	var dup *DuplicateError
+	var span *SpansEntriesError
 	var full *store.DiskFullError
 	var msg string
 	switch {
@@ -69,6 +124,8 @@ func installError(err error) error {
 		msg = fmt.Sprintf("Not enough disk space: about %d MB is needed", full.NeedMB)
 	case errors.As(err, &dup):
 		msg = fmt.Sprintf("%s is already in this profile", dup.Label)
+	case errors.As(err, &span):
+		msg = fmt.Sprintf("This archive's mods are in several entries of this profile (%s): remove all but one, then install again", strings.Join(span.Labels, "; "))
 	case errors.As(err, new(*NoModError)):
 		msg = "No SMAPI mod was found in this archive"
 	default:
