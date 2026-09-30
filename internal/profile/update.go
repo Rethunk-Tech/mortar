@@ -54,7 +54,8 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 		if ei < 0 {
 			return fmt.Errorf("%q is not in this profile", oldKey)
 		}
-		if newKey == "" {
+		rollBack := newKey == ""
+		if rollBack {
 			if newKey = p.Entries[ei].PreviousKey; newKey == "" {
 				return fmt.Errorf("%q has no previous version to roll back to", oldKey)
 			}
@@ -69,8 +70,11 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 		if err != nil {
 			return err
 		}
-		if source != nil {
+		switch {
+		case source != nil:
 			ne.Source = *source
+		case rollBack && p.Entries[ei].PreviousSource != nil:
+			ne.Source = *p.Entries[ei].PreviousSource
 		}
 		p.Entries[ei] = ne
 		return nil
@@ -101,7 +105,12 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string) (Entry, 
 	if len(found) == 0 {
 		return Entry{}, swapped{}, &NoModError{Key: newKey}
 	}
-	ne := Entry{Key: newKey, PreviousKey: e.Key, Source: e.Source, Mods: entryMods(found), Disabled: []string{}}
+	// The entry carries over what the user set on it; only what belongs to one version changes.
+	prevSource := e.Source
+	ne := e
+	ne.Key, ne.PreviousKey, ne.PreviousSource = newKey, e.Key, &prevSource
+	ne.Mods, ne.Disabled, ne.SkipVersion = entryMods(found), []string{}, ""
+	ne.Tags = slices.Clone(e.Tags)
 	for _, m := range ne.Mods {
 		if hasID(e.Disabled, m.UniqueID) {
 			ne.Disabled = append(ne.Disabled, m.UniqueID)

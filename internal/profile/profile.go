@@ -69,11 +69,13 @@ type EntryMod struct {
 
 // Entry is one mod archive in a profile. Disabled lists the UniqueIDs switched off.
 type Entry struct {
-	Key         string     `json:"key"`
-	PreviousKey string     `json:"previousKey"`
-	Source      Source     `json:"source"`
-	Mods        []EntryMod `json:"mods"`
-	Disabled    []string   `json:"disabled"`
+	Key         string `json:"key"`
+	PreviousKey string `json:"previousKey"`
+	Source      Source `json:"source"`
+	// PreviousSource is where the PreviousKey version came from, so a roll back restores it with the files.
+	PreviousSource *Source    `json:"previousSource,omitempty"`
+	Mods           []EntryMod `json:"mods"`
+	Disabled       []string   `json:"disabled"`
 	// Added is when this entry was put in the profile; zero for entries written before the field existed.
 	Added time.Time `json:"added,omitzero"`
 	// Pinned keeps this entry on its current version; Mortar offers no update while it is true.

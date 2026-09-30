@@ -236,3 +236,30 @@ func TestRebuildUndoesAnInterruptedUpdate(t *testing.T) {
 		t.Fatalf("config = %q", g)
 	}
 }
+
+func TestUpdateKeepsEntrySettingsAndRollBackRestoresSource(t *testing.T) {
+	m := manifestJSON("me.a")
+	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m})
+	p, err := e.SetEntryNoteTags("stardew", p.ID, "a-1", "keep me", []string{"ui"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	first := p.Entries[0].Source
+	replacing := Source{Kind: KindLocal, Name: "a-newer.zip"}
+	got, err := e.moveTo("stardew", p.ID, "a-1", "a-2", &replacing)
+	if err != nil {
+		t.Fatal(err)
+	}
+	en := got.Entries[0]
+	if en.Note != "keep me" || !slices.Equal(en.Tags, []string{"ui"}) || en.Source != replacing {
+		t.Fatalf("updated = %+v", en)
+	}
+	back, err := e.RollBack("stardew", p.ID, "a-2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	en = back.Entries[0]
+	if en.Key != "a-1" || en.Source != first || en.Note != "keep me" || en.PreviousSource == nil || *en.PreviousSource != replacing {
+		t.Fatalf("rolled back = %+v", en)
+	}
+}
