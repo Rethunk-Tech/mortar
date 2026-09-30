@@ -4,6 +4,7 @@ package nxmsvc
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"sync"
 	"time"
 
@@ -114,29 +115,21 @@ func (s *Service) Inbox() Inbox {
 	return in
 }
 
-func (s *Service) take(id int) (Arrival, bool) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	for i, a := range s.arrivals {
-		if a.ID == id {
-			s.arrivals = append(s.arrivals[:i], s.arrivals[i+1:]...)
-			return a, true
-		}
-	}
-	return Arrival{}, false
-}
-
 // Assign hands the arrival to the download queue for the profile.
 func (s *Service) Assign(id int, game, profile string) error {
 	if game == "" || profile == "" {
 		return errors.New("choose a profile for the download")
 	}
-	a, ok := s.take(id)
-	if !ok {
+	// The arrival leaves the inbox only once the queue took it, so a full queue leaves it there to assign again.
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	i := slices.IndexFunc(s.arrivals, func(a Arrival) bool { return a.ID == id })
+	if i < 0 {
 		return fmt.Errorf("link %d is no longer waiting", id)
 	}
 	select {
-	case s.Assigned <- Assignment{Link: a.Link, Game: game, Profile: profile}:
+	case s.Assigned <- Assignment{Link: s.arrivals[i].Link, Game: game, Profile: profile}:
+		s.arrivals = slices.Delete(s.arrivals, i, i+1)
 		return nil
 	default:
 		return errors.New("too many downloads are waiting")
@@ -144,7 +137,11 @@ func (s *Service) Assign(id int, game, profile string) error {
 }
 
 // Ignore drops the arrival.
-func (s *Service) Ignore(id int) { s.take(id) }
+func (s *Service) Ignore(id int) {
+	s.mu.Lock()
+	s.arrivals = slices.DeleteFunc(s.arrivals, func(a Arrival) bool { return a.ID == id })
+	s.mu.Unlock()
+}
 
 // Owner names the app that handles nxm links now, or is empty when none does or Mortar already does.
 func (s *Service) Owner() (string, error) {

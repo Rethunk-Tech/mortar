@@ -137,3 +137,20 @@ func TestReceiveRoutesALinkTheQueueWaitsFor(t *testing.T) {
 		t.Fatalf("a routed link became an arrival, or the other did not: %+v", in)
 	}
 }
+
+func TestAFullQueueKeepsTheArrival(t *testing.T) {
+	s := newService(t, &fakeHandler{})
+	s.Assigned = make(chan Assignment)
+	s.Receive([]string{"nxm://stardewvalley/mods/5/files/9?key=k&expires=1000600&user_id=42"})
+	id := s.Inbox().Arrivals[0].ID
+	if err := s.Assign(id, "stardew", "p1"); err == nil {
+		t.Fatal("assigned into a full queue")
+	}
+	s.Assigned = make(chan Assignment, 1)
+	if err := s.Assign(id, "stardew", "p1"); err != nil {
+		t.Fatalf("retry: %v", err)
+	}
+	if len(s.Inbox().Arrivals) != 0 || len(s.Assigned) != 1 {
+		t.Error("retried arrival not handed over")
+	}
+}
