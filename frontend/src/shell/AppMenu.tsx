@@ -9,15 +9,16 @@ import {
   ListItemText,
 } from '@mui/material'
 import { Application, Browser } from '@wailsio/runtime'
-import { Code2, FolderOpen, Info, LogOut, Settings } from 'lucide-react'
+import { Bug, Code2, FolderOpen, Info, LogOut, Settings } from 'lucide-react'
 import { useId, useState } from 'react'
 import { OpenDataFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { Logo } from '../brand/Logo.tsx'
 import { compact } from '../game/compact.ts'
-import { openSettings } from '../nav/store.ts'
+import { openSettings, routeGame, useNav } from '../nav/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { NexusAccount } from './NexusAccount.tsx'
+import { reportBug } from './reportBug.ts'
 
 const SOURCE = 'https://github.com/Rethunk-AI/mortar'
 
@@ -25,6 +26,7 @@ export function AppMenu() {
   const { t } = useLingui()
   const drawerId = useId()
   const [open, setOpen] = useState(false)
+  const game = useNav((s) => routeGame(s.route) ?? '')
   const close = () => setOpen(false)
   const quit = () => {
     close()
@@ -120,6 +122,17 @@ export function AppMenu() {
               <Code2 size={18} />
             </ListItemIcon>
             <ListItemText primary={t`Source code`} />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              close()
+              reportBug(game)
+            }}
+          >
+            <ListItemIcon>
+              <Bug size={18} />
+            </ListItemIcon>
+            <ListItemText primary={t`Report a bug`} />
           </ListItemButton>
           <Divider />
           <ListItemButton onClick={quit}>

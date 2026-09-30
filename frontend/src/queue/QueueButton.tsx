@@ -5,7 +5,7 @@ import { compact } from '../game/compact.ts'
 import { useQueue } from './store.ts'
 import { totals } from './totals.ts'
 
-// The queue's entry in the sidebar's bottom block: an icon row that grows a Support button beside it later.
+// The queue's entry in the sidebar's bottom block, beside the Support button.
 export function QueueButton() {
   const { t } = useLingui()
   const left = useQueue((s) => totals(s.state.items).left)

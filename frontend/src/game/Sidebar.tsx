@@ -4,6 +4,7 @@ import { Box, ButtonBase, IconButton } from '@mui/material'
 import { ChevronRight, ListOrdered, Plus } from 'lucide-react'
 import { type PointerEvent, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { HelpDialog } from '../console/HelpDialog.tsx'
 import { PlayControl } from '../launch/PlayControl.tsx'
 import { useBadges } from '../mods/badges.ts'
 import { useNav } from '../nav/store.ts'
@@ -12,6 +13,7 @@ import { QueueButton } from '../queue/QueueButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { compact } from './compact.ts'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
+import { SupportButton } from './SupportButton.tsx'
 
 const MIN = 150
 const MAX = 300
@@ -216,6 +218,35 @@ function ResizeHandle({ width, onWidth }: { width: number; onWidth: (w: number) 
   )
 }
 
+// Downloads and Support icons over the Play button, pinned under the profile list.
+function BottomBlock({ game }: { game: string }) {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        borderTop: '1px solid rgba(255,255,255,0.08)',
+        [compact]: { borderTop: 0 },
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          pr: '6px',
+          [compact]: { flexDirection: 'column', pr: 0 },
+        }}
+      >
+        <Box sx={{ flex: 1, alignSelf: 'stretch' }}>
+          <QueueButton />
+        </Box>
+        <SupportButton game={game} />
+      </Box>
+      <PlayControl game={game} />
+    </Box>
+  )
+}
+
 export function Sidebar({ game }: { game: string }) {
   const { t } = useLingui()
   const allProfiles = useProfiles((s) => s.profiles)
@@ -338,19 +369,10 @@ export function Sidebar({ game }: { game: string }) {
           <Plus size={20} />
         </IconButton>
       </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
-          [compact]: { borderTop: 0 },
-        }}
-      >
-        <QueueButton />
-        <PlayControl game={game} />
-      </Box>
+      <BottomBlock game={game} />
       <ResizeHandle width={width} onWidth={setWidth} />
       <NewProfileDialog open={creating} onClose={() => setCreating(false)} />
+      <HelpDialog game={game} />
     </Box>
   )
 }
