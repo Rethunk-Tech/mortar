@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/updater"
 )
@@ -77,4 +78,89 @@ func TestCheckKeepsAStagedRelease(t *testing.T) {
 	if err != nil || rel == nil || rel.Version != "1.1.0" || !rel.Staged {
 		t.Fatalf("check after install: %+v, %v", rel, err)
 	}
+}
+
+func TestRestartWaitsUntilInstallHasStaged(t *testing.T) {
+	hold := make(chan struct{})
+	started := make(chan struct{})
+	f := &stall{
+		dlHold:  hold,
+		dlStart: started,
+	}
+	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
+	s := &Service{}
+	if err := configure(s, f, "1.0.0", []byte("key"), true); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	done := make(chan error, 1)
+	go func() { done <- s.Install(context.Background()) }()
+	<-started
+	restarted := make(chan error, 1)
+	go func() { restarted <- s.Restart(context.Background()) }()
+	select {
+	case err := <-restarted:
+		t.Fatalf("Restart returned before Install finished: %v", err)
+	case <-time.After(50 * time.Millisecond):
+	}
+	if f.downloaded {
+		t.Fatal("download finished before the hold was released")
+	}
+	close(hold)
+	if err := <-done; err != nil {
+		t.Fatal(err)
+	}
+	if err := <-restarted; err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCheckDoesNotHoldTheLockForTheNetwork(t *testing.T) {
+	hold := make(chan struct{})
+	started := make(chan struct{})
+	f := &stall{
+		checkHold:  hold,
+		checkStart: started,
+	}
+	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
+	s := &Service{}
+	if err := configure(s, f, "1.0.0", []byte("key"), true); err != nil {
+		t.Fatal(err)
+	}
+	errc := make(chan error, 1)
+	go func() {
+		_, err := s.Check(context.Background())
+		errc <- err
+	}()
+	<-started
+	if err := s.Install(context.Background()); !errors.Is(err, errNone) {
+		t.Fatalf("Install during Check: %v, want errNone", err)
+	}
+	close(hold)
+	if err := <-errc; err != nil {
+		t.Fatal(err)
+	}
+}
+
+type stall struct {
+	fake
+	checkHold, checkStart, dlHold, dlStart chan struct{}
+}
+
+func (s *stall) Check(ctx context.Context) (*updater.Release, error) {
+	if s.checkStart != nil {
+		close(s.checkStart)
+		<-s.checkHold
+	}
+	return s.fake.Check(ctx)
+}
+
+func (s *stall) DownloadAndInstall(ctx context.Context) error {
+	if s.dlStart != nil {
+		close(s.dlStart)
+		<-s.dlHold
+	}
+	return s.fake.DownloadAndInstall(ctx)
 }

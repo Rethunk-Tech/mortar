@@ -88,18 +88,26 @@ func (s *Service) Check(ctx context.Context) (*Release, error) {
 		return nil, errOff
 	}
 	s.mu.Lock()
+	if s.found != nil && s.found.Staged {
+		r := *s.found
+		s.mu.Unlock()
+		return &r, nil
+	}
+	s.mu.Unlock()
+	rel, err := s.u.Check(ctx)
+	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.found != nil && s.found.Staged {
 		r := *s.found
 		return &r, nil
 	}
-	s.found = nil
-	rel, err := s.u.Check(ctx)
 	if err != nil || rel == nil {
+		s.found = nil
 		return nil, err
 	}
 	// The verifier accepts a digest alone, and a digest proves nothing about who published the release.
 	if rel.Verification == nil || len(rel.Verification.Signature) == 0 {
+		s.found = nil
 		return nil, errUnsigned
 	}
 	s.found = &Release{Version: rel.Version, Notes: rel.Notes}
@@ -127,5 +135,7 @@ func (s *Service) Restart(ctx context.Context) error {
 	if s.info.Off != "" {
 		return errOff
 	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	return s.u.Restart(ctx)
 }
