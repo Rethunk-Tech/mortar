@@ -339,6 +339,9 @@ export function ShareDialog() {
         }
       },
       (e: unknown) => {
+        if (stale) {
+          return
+        }
         useToasts
           .getState()
           .push({ kind: 'error', title: t`Could not build the link`, body: errorMessage(e) })
