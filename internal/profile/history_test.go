@@ -302,3 +302,49 @@ func TestApplyEntrySnapshotKeepsModsWhenPlaceFails(t *testing.T) {
 		t.Fatal("mods/ was wiped after a failed snapshot apply")
 	}
 }
+
+func TestRevertRestoresLiveModsWhenProfileJSONFails(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	p, err := e.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	mods, err := e.ModsDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var cfg string
+	err = filepath.WalkDir(mods, func(fp string, d os.DirEntry, walkErr error) error {
+		if walkErr != nil || d.IsDir() {
+			return walkErr
+		}
+		if d.Name() == "manifest.json" {
+			cfg = filepath.Join(filepath.Dir(fp), "config.json")
+			return os.WriteFile(cfg, []byte(`{"keep":true}`), 0o600)
+		}
+		return nil
+	})
+	if err != nil || cfg == "" {
+		t.Fatalf("seed config.json: %v", err)
+	}
+	_, err = e.updateLocked("stardew", p.ID, func(p *Profile, dir string) error {
+		if err := e.applyEntrySnapshot("stardew", p, dir, nil); err != nil {
+			return err
+		}
+		path := filepath.Join(dir, fileName)
+		if err := os.Remove(path); err != nil {
+			return err
+		}
+		return os.Mkdir(path, 0o700)
+	})
+	if err == nil {
+		t.Fatal("expected profile.json write to fail")
+	}
+	if b, readErr := os.ReadFile(cfg); readErr != nil || string(b) != `{"keep":true}` {
+		t.Fatalf("live config lost: %q, %v", b, readErr)
+	}
+}

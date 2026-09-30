@@ -156,11 +156,23 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 		_ = os.RemoveAll(staging)
 		return err
 	}
-	_ = os.RemoveAll(old)
 	if s.items != nil && len(keys) > 0 {
-		return s.items.Touch(game, keys...)
+		if err := s.items.Touch(game, keys...); err != nil {
+			restoreModsOld(dir)
+			return err
+		}
 	}
 	return nil
+}
+
+func restoreModsOld(dir string) {
+	modsDir := filepath.Join(dir, "mods")
+	old := modsDir + ".old"
+	if _, err := os.Stat(old); err != nil {
+		return
+	}
+	_ = os.RemoveAll(modsDir)
+	_ = os.Rename(old, modsDir)
 }
 
 func (s *Store) missingStoreKeys(game string, entries []Entry) ([]string, error) {

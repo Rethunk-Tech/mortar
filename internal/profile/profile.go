@@ -422,8 +422,10 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 	p.Updated = time.Now().UTC().Truncate(time.Second)
 	if err := datadir.WriteJSON(filepath.Join(dir, fileName), p); err != nil {
 		s.historyKind, s.historyLabel = "", ""
+		restoreModsOld(dir)
 		return Profile{}, err
 	}
+	_ = os.RemoveAll(filepath.Join(dir, "mods") + ".old")
 	kind, label := s.historyKind, s.historyLabel
 	s.historyKind, s.historyLabel = "", ""
 	if s.historyQuietIDs[id] == 0 {
