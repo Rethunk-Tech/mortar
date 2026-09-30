@@ -16,6 +16,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"time"
 	"unicode/utf8"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
@@ -97,11 +98,14 @@ type Service struct {
 	// gen counts previews started and discards, so a preview that finishes after a newer one does not replace it.
 	gen     int
 	pending []*pending
+	retry   *time.Timer
+	lastQ   queue.State
+	recheck time.Duration
 }
 
 // NewService returns the service.
 func NewService(d Deps) *Service {
-	s := &Service{d: d}
+	s := &Service{d: d, recheck: 5 * time.Second}
 	s.pending = loadPending(d.Dir)
 	s.QueueChanged = s.queueChanged
 	return s
@@ -620,6 +624,35 @@ func (s *Service) queueChanged(st queue.State) {
 	if changed {
 		s.savePending()
 	}
+	s.armPendingRetry(st)
+}
+
+func (s *Service) armPendingRetry(st queue.State) {
+	s.mu.Lock()
+	s.lastQ = st
+	waiting := slices.ContainsFunc(s.pending, func(p *pending) bool { return len(p.Configs) > 0 })
+	if !waiting {
+		if s.retry != nil {
+			s.retry.Stop()
+			s.retry = nil
+		}
+		s.mu.Unlock()
+		return
+	}
+	if s.retry != nil {
+		s.mu.Unlock()
+		return
+	}
+	s.retry = time.AfterFunc(s.recheck, s.retryPending)
+	s.mu.Unlock()
+}
+
+func (s *Service) retryPending() {
+	s.mu.Lock()
+	s.retry = nil
+	st := s.lastQ
+	s.mu.Unlock()
+	s.queueChanged(st)
 }
 
 // errRunning stops an apply that found the game running the profile, under the lock a launch takes.
@@ -657,7 +690,7 @@ const (
 	fileScheme    = "file://"
 )
 
-// fileURLPath turns a file:// URL into a filesystem path. Windows URLs are /C:/... after parse.
+// fileURLPath turns a file:// URL into a filesystem path. Windows drive URLs are /C:/... after parse; a host is a UNC share.
 func fileURLPath(arg string) string {
 	rest, ok := strings.CutPrefix(arg, fileScheme)
 	if !ok {
@@ -670,6 +703,9 @@ func fileURLPath(arg string) string {
 	path, err := url.PathUnescape(u.Path)
 	if err != nil {
 		path = u.Path
+	}
+	if u.Host != "" {
+		return filepath.FromSlash(`\\` + u.Host + path)
 	}
 	if len(path) >= 3 && path[0] == '/' && path[2] == ':' {
 		path = path[1:]

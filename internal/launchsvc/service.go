@@ -91,6 +91,8 @@ type Service struct {
 	// EnsureLoader installs the game's loader when it is missing or broken. Start calls it before launching.
 	// fromStart is true when Play requested the install, so a preparing claim for this Start must not skip it.
 	EnsureLoader func(ctx context.Context, gameID string, fromStart bool) error
+	// Unlocked is called when a game is no longer launching or running, so the queue can retry work it held.
+	Unlocked func()
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store) *Service {
@@ -117,6 +119,7 @@ func (s *Service) set(st Status) {
 	case Idle, Launching, Running:
 	}
 	s.mu.Lock()
+	prev, had := s.status[st.Game]
 	s.status[st.Game] = stored
 	if stored.State == Idle && s.stop[st.Game] != nil {
 		s.stop[st.Game]()
@@ -124,6 +127,9 @@ func (s *Service) set(st Status) {
 	}
 	s.mu.Unlock()
 	s.emit(StateEvent, st)
+	if stored.State == Idle && had && prev.State != Idle && s.Unlocked != nil {
+		s.Unlocked()
+	}
 }
 
 func (s *Service) current(id string) Status {
@@ -330,7 +336,11 @@ func (s *Service) target(g game.Game, profileID string) (dir, modsDir string, er
 func (s *Service) donePreparing(gameID string) {
 	s.mu.Lock()
 	delete(s.preparing, gameID)
+	st := s.status[gameID]
 	s.mu.Unlock()
+	if st.State != Launching && st.State != Running && s.Unlocked != nil {
+		s.Unlocked()
+	}
 }
 
 // begin starts the launch once the loader is in place.

@@ -5,7 +5,9 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -144,15 +146,23 @@ func TestPendingWaitsWhileTheGameRunsTheProfile(t *testing.T) {
 		t.Fatal(err)
 	}
 	done := queue.State{Items: []queue.Item{{ID: "a", Game: "stardew", Profile: prof.ID, ModID: 100, FileID: 1, State: queue.StateDone}}}
-	running := true
-	s.d.Profiles.Running = func(string, string) bool { return running }
+	var running atomic.Bool
+	running.Store(true)
+	s.d.Profiles.Running = func(string, string) bool { return running.Load() }
+	s.recheck = time.Hour
 	s.QueueChanged(done)
 	if len(s.pending) != 1 || s.pending[0].seen != "" || len(s.pending[0].Configs) != 1 {
 		t.Fatalf("pending while running = %+v", s.pending)
 	}
 
-	running = false
-	s.QueueChanged(done)
+	running.Store(false)
+	s.mu.Lock()
+	if s.retry != nil {
+		s.retry.Stop()
+		s.retry = nil
+	}
+	s.mu.Unlock()
+	s.retryPending()
 	dir, err := s.d.Profiles.ModsDir("stardew", prof.ID)
 	if err != nil {
 		t.Fatal(err)

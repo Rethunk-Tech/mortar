@@ -83,8 +83,8 @@ func (s *Service) forAsset(it *Item) action {
 	return fetch
 }
 
-// heldRecheck is how often items held for a running profile are looked at again: nothing tells the queue when a
-// game stops.
+// heldRecheck is how often items held for a running profile are looked at again. Launch also republishes the
+// queue when a profile unlocks.
 const heldRecheck = 5 * time.Second
 
 func (s *Service) run(ctx context.Context) {

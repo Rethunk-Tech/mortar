@@ -207,6 +207,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	launches.Unlocked = func() { queue.NotifyUnlocked(queueSvc) }
 	nxmSvc.Route = queueSvc.Route
 	// An unreadable profile.json stops collection: its keys are unknown, and their items must not be deleted.
 	if keys, err := profiles.StoreKeys(); err != nil {
