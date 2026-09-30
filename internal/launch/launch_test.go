@@ -152,3 +152,16 @@ func TestRunIgnoresARelayExitingBeforeTheLog(t *testing.T) {
 		t.Fatalf("err = %v, want the launch to count as started", err)
 	}
 }
+
+func TestRunSurfacesARelayNonZeroExit(t *testing.T) {
+	log := filepath.Join(t.TempDir(), "SMAPI-latest.txt")
+	done := make(chan error, 1)
+	done <- &exitStatus{code: 1}
+	err := Run(context.Background(), func(string, string, ...string) (<-chan error, error) {
+		return done, nil
+	}, Command{LogFile: log, Failure: HintSteam, Relay: true}, fast, func([]string) {})
+	var x *ExitError
+	if !errors.As(err, &x) || x.Code != 1 {
+		t.Fatalf("err = %v, want exit 1", err)
+	}
+}

@@ -83,8 +83,8 @@ type Command struct {
 	LogFile string
 	// Failure names the hint to give when the log never appears.
 	Failure Hint
-	// Relay marks a process that hands the launch to another and exits, such as `steam -applaunch`; its exit says
-	// nothing about the game, so only the log decides.
+	// Relay marks a process that hands the launch to another and exits 0, such as `steam -applaunch`; a zero exit
+	// says nothing about the game, so only the log decides. A non-zero exit is still a failure.
 	Relay bool
 }
 
@@ -139,7 +139,7 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 			if tail.poll() {
 				return started()
 			}
-			if c.Relay {
+			if c.Relay && waitErr == nil {
 				exited = nil
 				continue
 			}
