@@ -64,6 +64,12 @@ func TestParserHidesSuppressedMessageAndItsContinuations(t *testing.T) {
 		{"   continued", false},
 		{"[19:43:47 INFO  SMAPI] Loaded 3 mods", true},
 		{"   continued", true},
+		{"[04:00:28 ERROR game] Error initializing the Galaxy API.", false},
+		{"TypeInitializationException: The type initializer for 'Galaxy.Api.GalaxyInstancePINVOKE' threw an exception.", false},
+		{"[04:00:28 TRACE game] Signing into GalaxySDK", true},
+		{"[04:00:28 ERROR game] Galaxy SignInSteam failed with an exception:", false},
+		{"   at Galaxy.Api.GalaxyInstance.User()", false},
+		{"[04:00:29 ERROR SomeMod] A real error", true},
 	}
 	for _, c := range lines {
 		if _, shown := p.Parse(c.line); shown != c.shown {

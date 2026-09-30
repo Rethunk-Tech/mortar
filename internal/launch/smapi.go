@@ -37,10 +37,13 @@ type Entry struct {
 // SMAPI writes `[HH:MM:SS LEVEL  Mod] message`, padding the level to five characters.
 var header = regexp.MustCompile(`^\[(\d\d:\d\d:\d\d) (TRACE|DEBUG|INFO|WARN|ERROR|ALERT) *([^\]]*)\] ?(.*)$`)
 
-// suppressed lists SMAPI messages Mortar never shows. Mortar passes --no-terminal on purpose and its Console replaces
-// the terminal, so SMAPI's complaint about having none only misleads.
+// suppressed lists log messages Mortar never shows, with their continuation lines. Mortar passes --no-terminal on
+// purpose and its Console replaces the terminal, so SMAPI's complaint about having none only misleads. The game's
+// own GOG Galaxy start-up fails on Steam launches and reads like a broken mod when it is neither.
 var suppressed = []string{
 	"Writing to the terminal is disabled because the --no-terminal argument was received. This usually means launching the terminal failed.",
+	"Error initializing the Galaxy API.",
+	"Galaxy SignInSteam failed with an exception:",
 }
 
 // Parser turns log lines into entries, remembering the last header so continuation lines can inherit it.
