@@ -1,0 +1,20 @@
+# App Platform spec for the share page at mortar.rethunk.tech. Static site: App Platform
+# offers no response-header setting for static sites, so the page carries its own
+# robots and referrer meta tags and the fleet header set (no HSTS, no CSP) is not applied.
+name: mortar-site
+region: sfo
+alerts:
+  - rule: DEPLOYMENT_FAILED
+  - rule: DOMAIN_FAILED
+domains:
+  - domain: mortar.rethunk.tech
+    type: PRIMARY
+    zone: rethunk.tech
+static_sites:
+  - name: site
+    github:
+      repo: Rethunk-AI/mortar
+      branch: main
+      deploy_on_push: false
+    source_dir: site
+    catchall_document: stardew/p/index.html
