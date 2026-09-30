@@ -106,7 +106,7 @@ A plain text area for the profile's notes, saved automatically ("Saved · 2 min 
 
 ## Profile management
 
-A page, as Concrete's: a header with a back button, **Import from the game's Mods folder**, **Import** and **New profile**; beside the list, a **Recently deleted** panel (profiles in the 30-day trash, each with its days left and Restore). **Import from the game's Mods folder** opens a preview of name, version and source, then creates a profile named "Imported mods" and opens it.
+A page, as Concrete's: a header with a back button, **Import from the game's Mods folder**, **Import** and **New profile**; beside the list, a **Recently deleted** panel (profiles in the 30-day trash, each with its days left and Restore). **Import from the game's Mods folder** opens a preview of name, version and source (switched-off copies marked "(switched off)", skipped and failed folders with their reason; SMAPI's bundled mods and Mortar's bridge omitted), then creates a profile named "Imported mods", opens it, and toasts **Created “Imported mods”** with imported/skipped/failed counts and an expandable Details list of skip and fail reasons.
 
 - **Rows:** every profile as a sortable row: drag handle, name (with a Hidden chip when hidden) and its summary, **Share**, and a ⋯ menu holding Rename, Duplicate, Hide from sidebar (or Show) and Delete. Reordering uses dnd-kit's sortable list with a drop indicator.
 - **Delete** asks first and says the profile stays restorable for 30 days.
