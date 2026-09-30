@@ -114,6 +114,9 @@ type session struct {
 	preview Preview
 	notes   string
 	configs []share.Config
+	// target is the profile the preview was resolved against; refs are what it resolved.
+	target string
+	refs   []share.Ref
 }
 
 func (s *Service) emit(name string, data any) {
@@ -324,18 +327,9 @@ func (s *Service) preview(ctx context.Context, game string, shared share.Shared,
 	s.gen++
 	gen := s.gen
 	s.mu.Unlock()
-	r := &resolver{
-		meta: s.d.Meta, files: s.d.Files, signedIn: s.d.SignedIn(), premium: s.d.Premium(), env: s.d.Env(game),
-	}
-	if profileID != "" {
-		p, err := s.find(game, profileID)
-		if err != nil {
-			return Preview{}, err
-		}
-		r.target = p.Entries
-		if r.installed, err = s.d.Profiles.Installed(game, profileID); err != nil {
-			return Preview{}, err
-		}
+	r, err := s.resolverFor(game, profileID)
+	if err != nil {
+		return Preview{}, err
 	}
 	mods, probs := r.resolve(ctx, shared.Entries)
 	var raw [8]byte
@@ -346,10 +340,31 @@ func (s *Service) preview(ctx context.Context, game string, shared share.Shared,
 	}
 	s.mu.Lock()
 	if s.gen == gen {
-		s.current = &session{id: pv.Session, game: game, preview: pv, notes: notes, configs: configs}
+		s.current = &session{
+			id: pv.Session, game: game, preview: pv, notes: notes, configs: configs, target: profileID, refs: shared.Entries,
+		}
 	}
 	s.mu.Unlock()
 	return pv, nil
+}
+
+// resolverFor resolves against profileID, whose mods count as installed, or against nothing when it is empty.
+func (s *Service) resolverFor(game, profileID string) (*resolver, error) {
+	r := &resolver{
+		meta: s.d.Meta, files: s.d.Files, signedIn: s.d.SignedIn(), premium: s.d.Premium(), env: s.d.Env(game),
+	}
+	if profileID == "" {
+		return r, nil
+	}
+	p, err := s.find(game, profileID)
+	if err != nil {
+		return nil, err
+	}
+	r.target = p.Entries
+	if r.installed, err = s.d.Profiles.Installed(game, profileID); err != nil {
+		return nil, err
+	}
+	return r, nil
 }
 
 // Discard forgets the preview; closing the import dialog leaves nothing behind.
@@ -409,7 +424,9 @@ func joinNotes(parts ...string) string {
 // profileID, or into a new profile named as the share (with " (2)" and so on when that name is taken) when profileID
 // is empty. Mods the preview marked unavailable are listed in the new profile's notes. A .mortar file's config files
 // are written once their mods are installed, except for mods the profile already had, whose config is the user's.
-func (s *Service) Import(game, session, profileID string, exclude []string) (res Result, err error) {
+// A preview resolved against another profile than profileID is resolved again, so a new profile made from a preview
+// of the open one still gets the mods the open one has.
+func (s *Service) Import(ctx context.Context, game, session, profileID string, exclude []string) (res Result, err error) {
 	s.mu.Lock()
 	cur := s.current
 	switch {
@@ -432,9 +449,17 @@ func (s *Service) Import(game, session, profileID string, exclude []string) (res
 			s.mu.Unlock()
 		}
 	}()
+	mods := cur.preview.Mods
+	if profileID != cur.target {
+		r, err := s.resolverFor(game, profileID)
+		if err != nil {
+			return Result{}, err
+		}
+		mods, _ = r.resolve(ctx, cur.refs)
+	}
 	var reqs []queue.Request
 	var wanted []wantedFile
-	for _, m := range cur.preview.Mods {
+	for _, m := range mods {
 		if slices.Contains(exclude, m.Key) || m.State == StateInstalled || m.State == StateUnavailable {
 			continue
 		}
@@ -459,7 +484,7 @@ func (s *Service) Import(game, session, profileID string, exclude []string) (res
 		if err != nil {
 			return Result{}, err
 		}
-		notes := joinNotes(cur.notes, unavailableNote(cur.preview.Mods))
+		notes := joinNotes(cur.notes, unavailableNote(mods))
 		if utf8.RuneCountInString(notes) > profile.MaxNotes {
 			notes = string([]rune(notes)[:profile.MaxNotes])
 		}
