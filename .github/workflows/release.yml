@@ -1,5 +1,9 @@
-name: Release gate
+name: Release
 
+# A v* tag builds, signs and publishes the release; a manual dispatch runs the same build and signing as a
+# dry run and publishes nothing. One job: the Windows build cross-compiles from Linux and reuses this job's
+# toolchains, module cache and frontend build, and the manifest needs both platforms' binaries, so a second
+# job would repeat the setup and add an artifact hand-off for no wall-clock gain worth the minutes.
 on:
   push:
     tags: ["v*"]
@@ -10,30 +14,37 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  gate:
+  release:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - name: GTK4 and WebKitGTK 6.0 headers
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev
+      - name: GTK4, WebKitGTK 6.0 and NSIS
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev nsis
 
       - name: Setup Go
         uses: Rethunk-Tech/gh-actions/setup-go@99dfb9093ab089d28f76d8036322a7c062259e76 # v1.13
         with:
           go-version-file: go.mod
 
+      # go.mod replaces wailsapp/wails/v3 with the Rethunk-AI fork, and `go install module@version` ignores
+      # replace directives, so the CLI is built inside the fork's own module at the exact version go.mod pins.
       - name: Go tools
         run: |
+          go mod download github.com/wailsapp/wails/v3
+          wails_dir="$(go list -m -f '{{.Replace.Dir}}' github.com/wailsapp/wails/v3)"
+          (cd "$wails_dir" && go build -o "$(go env GOPATH)/bin/wails3" ./cmd/wails3)
           go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
-          go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.26
+          go install golang.org/x/vuln/cmd/govulncheck@v1.7.0
 
       - name: Setup Bun
         uses: Rethunk-Tech/gh-actions/setup-bun@99dfb9093ab089d28f76d8036322a7c062259e76 # v1.13
@@ -44,5 +55,34 @@ jobs:
       - name: Offline gate
         run: bun run gate
 
-      - name: Build
-        run: wails3 build
+      - name: Linux AppImage
+        run: wails3 task linux:create:appimage
+
+      - name: Windows exe and installer
+        run: wails3 task windows:package INSTALL_SCOPE=user
+
+      - name: Signed manifest
+        env:
+          UPDATE_KEY: ${{ secrets.MORTAR_UPDATE_KEY }}
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          if [ "$REF_TYPE" = tag ]; then
+            version="${REF_NAME#v}"
+          else
+            version="$(sed -n 's/^const version = "\(.*\)"$/\1/p' main.go)"
+          fi
+          umask 077
+          key="$RUNNER_TEMP/updater.key"
+          trap 'rm -f "$key"' EXIT
+          printf '%s\n' "$UPDATE_KEY" >"$key"
+          MORTAR_UPDATE_KEY="$key" wails3 task release:manifest VERSION="$version"
+
+      - name: Publish release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: >
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes
+          bin/mortar-linux-x86_64.AppImage bin/mortar-windows-amd64.exe bin/mortar-amd64-installer.exe bin/manifest.json

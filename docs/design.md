@@ -19,7 +19,6 @@ Built: packaging, self-update, the signing key and Linux desktop integration ([a
 - The updater fixes are offered upstream as wailsapp/wails#6200 (EXDEV staging), #6201 (AppImage) and #6202 (OnUpdateApplied, draft pending a WEP); Mortar pins the fork until they ship.
 - Settings › Updates: the backups-kept setting ([gui-design.md](gui-design.md#settings)).
 - The repo turns public at the first release and builds go on its GitHub Releases, since the updater's manifest and assets must be publicly downloadable.
-- **CI:** Linux runners only: Wails builds Windows from Linux (`wails3 build GOOS=windows`, `Rethunk-AI/wails` `docs/mpress/content/guides/build/building.md:21-29`; only macOS and Linux targets need Docker), and the NSIS installer is built with `makensis`. The release workflow builds both, runs `wails3 task release:manifest` with the private key from a secret, and attaches the assets and `manifest.json` to the tag's release.
 - **Measure on Windows:** how launch arguments order around `%command%`, and whether SMAPI needs `--no-terminal`; frameless window under KDE, and Acrylic with a frameless window; the desktop wallpaper read (`SPI_GETDESKWALLPAPER`); one real update through the updater, and `DisplayVersion` after it.
 
 ## Build order
@@ -31,7 +30,7 @@ After the go-ahead, each milestone ends with the gate green and NOMAD clicking t
 3. **Mod data.** Built.
 4. **Nexus.** Built.
 5. **Sharing.** Built except the static page.
-6. **Release.** Built except Windows measurements and fixes, the backups-kept setting, the CI release workflow, and the repo made public.
+6. **Release.** Built except Windows measurements and fixes, the backups-kept setting, and the repo made public.
 
 ## Later
 
