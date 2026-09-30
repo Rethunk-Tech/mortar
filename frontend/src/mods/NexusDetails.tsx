@@ -2,14 +2,14 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, Collapse, Link, Typography } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
 import { ChevronDown, ChevronRight, TriangleAlert } from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import type { Details } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/models.ts'
-import { Details as readDetails } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { useNexus } from '../settings/nexus.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { type Block, parseBBCode, safeUrl } from './bbcode.ts'
-import { currentFiles, formatCount, formatDate, formatSize } from './nexusFormat.ts'
+import { useNexusEntry } from './nexusDetails.ts'
+import { currentFiles, formatCount, formatDate, formatSize, isNewer } from './nexusFormat.ts'
 import { heading } from './paper.ts'
 
 const text = { fontSize: 13 } as const
@@ -104,7 +104,7 @@ function Facts({ details, mod }: { details: Details; mod: Mod }) {
   const { t, i18n } = useLingui()
   const { page, category } = details
   const uploader = safeUrl(page.uploaderUrl)
-  const newer = page.version !== '' && page.version !== mod.version
+  const newer = isNewer(page.version, mod.version)
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 1.5 }}>
       <Fact label={t`Latest on Nexus`}>
@@ -232,27 +232,17 @@ function Loaded({ details, mod, fileId }: { details: Details; mod: Mod; fileId: 
 export function NexusDetails({ mod, modId, fileId }: { mod: Mod; modId: number; fileId: number }) {
   const { t } = useLingui()
   const signedIn = useNexus((s) => s.signedIn)
-  const [state, setState] = useState<{ id: number; details?: Details; error?: string } | null>(null)
-  useEffect(() => {
-    let current = true
-    readDetails(modId).then(
-      (details) => current && setState({ id: modId, details }),
-      (e: unknown) => current && setState({ id: modId, error: errorMessage(e) }),
-    )
-    return () => {
-      current = false
-    }
-  }, [modId])
-  if (state?.id !== modId) {
-    return <Typography sx={muted}>{t`Reading the Nexus page…`}</Typography>
+  const entry = useNexusEntry(modId)
+  if (entry?.details) {
+    return <Loaded details={entry.details} mod={mod} fileId={fileId} />
   }
-  if (state.details) {
-    return <Loaded details={state.details} mod={mod} fileId={fileId} />
+  if (!entry) {
+    return <Typography sx={muted}>{t`Reading the Nexus page…`}</Typography>
   }
   return (
     <Typography sx={muted}>
       {signedIn
-        ? t`Could not read the Nexus page: ${state.error ?? ''}`
+        ? t`Could not read the Nexus page: ${entry.error ?? ''}`
         : t`Sign in to Nexus Mods in Settings to see more from this mod's page.`}
     </Typography>
   )

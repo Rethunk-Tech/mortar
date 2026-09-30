@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { File } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
-import { currentFiles, formatCount, formatDate, formatSize } from './nexusFormat.ts'
+import { currentFiles, formatCount, formatDate, formatSize, isNewer } from './nexusFormat.ts'
 
 test('formats sizes, counts and dates, leaving out a missing date', () => {
   expect(formatSize(617, 'en')).toBe('617 kB')
@@ -33,4 +33,11 @@ test('lists the installed file first, then current files newest first', () => {
   ]
   expect(currentFiles(files, 1).map((f) => f.fileId)).toEqual([1, 3, 2])
   expect(currentFiles(files, 9).map((f) => f.fileId)).toEqual([3, 2])
+})
+
+test('a version is newer by its numbers, ignoring a leading v', () => {
+  expect(isNewer('1.10.0', '1.9.2')).toBe(true)
+  expect(isNewer('v1.8.2', '1.8.2')).toBe(false)
+  expect(isNewer('1.8.1', '1.8.2')).toBe(false)
+  expect(isNewer('', '1.0')).toBe(false)
 })

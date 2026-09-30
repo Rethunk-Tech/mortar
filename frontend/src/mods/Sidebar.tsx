@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Drawer, Typography, useMediaQuery } from '@mui/material'
+import { Box, Button, Drawer, Tooltip, Typography, useMediaQuery } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
 import type {
   Mod,
@@ -12,11 +12,14 @@ import {
   concerns,
   kindLabel,
   modId,
+  nexusIdOf,
   problemsOf,
   siblingsOf,
   sourceKind,
   updateFor,
 } from './lookup.ts'
+import { useNexusEntry } from './nexusDetails.ts'
+import { formatCount, formatDate, isNewer } from './nexusFormat.ts'
 import { accent, heading } from './paper.ts'
 import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
 import { useMods } from './store.ts'
@@ -30,6 +33,62 @@ function Field({ label, value }: { label: string; value: string }) {
       <Typography sx={heading}>{label}</Typography>
       <Typography sx={{ fontSize: 13, overflowWrap: 'anywhere' }}>{value}</Typography>
     </Box>
+  )
+}
+
+// A value cut to its lines, the whole of it in a tooltip.
+function Clipped({ label, value, lines = 1, accented = false }: ClippedProps) {
+  return (
+    <Box sx={{ minWidth: 0 }}>
+      <Typography sx={heading}>{label}</Typography>
+      <Tooltip title={value} placement="left">
+        <Typography
+          sx={{
+            fontSize: 13,
+            color: accented ? 'primary.main' : undefined,
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: lines,
+            overflowWrap: 'anywhere',
+          }}
+        >
+          {value}
+        </Typography>
+      </Tooltip>
+    </Box>
+  )
+}
+
+interface ClippedProps {
+  label: string
+  value: string
+  lines?: number
+  accented?: boolean
+}
+
+// What the cached Nexus page adds; nothing until the details arrive, so the rest of the panel never waits on them.
+function NexusFields({ mod, nexusId }: { mod: Mod; nexusId: number }) {
+  const { t, i18n } = useLingui()
+  const details = useNexusEntry(nexusId)?.details
+  if (!details) {
+    return null
+  }
+  const { page, category } = details
+  return (
+    <>
+      {page.summary ? <Clipped label={t`Summary`} value={page.summary} lines={2} /> : null}
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1.25 }}>
+        <Clipped
+          label={t`Latest on Nexus`}
+          value={page.version || '—'}
+          accented={isNewer(page.version, mod.version)}
+        />
+        <Clipped label={t`Category`} value={category || '—'} />
+        <Clipped label={t`Downloads`} value={formatCount(page.downloads, i18n.locale)} />
+        <Clipped label={t`Updated`} value={formatDate(page.updated, i18n.locale) || '—'} />
+      </Box>
+    </>
   )
 }
 
@@ -85,6 +144,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   const others = siblingsOf(all, mod)
   const setOpen = useDetail((s) => s.setOpen)
   const kind = sourceKind(profile, mod)
+  const nexusId = nexusIdOf(profile, mod)
   const source = kindLabel(kind, {
     smapi: t`SMAPI`,
     archive: t`Archive`,
@@ -110,6 +170,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       {mod.endorsements > 0 ? (
         <Field label={t`Endorsements`} value={mod.endorsements.toLocaleString()} />
       ) : null}
+      {nexusId ? <NexusFields mod={mod} nexusId={nexusId} /> : null}
       <UpdateBanner mod={mod} />
       <ProblemLine mod={mod} />
       {others.length > 0 ? (

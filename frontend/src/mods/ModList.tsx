@@ -9,21 +9,24 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
+import { useEffect } from 'react'
 import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compact } from '../game/compact.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useDetail } from './detail.ts'
-import { kindLabel, modId, sourceKind } from './lookup.ts'
+import { kindLabel, modId, nexusIdOf, sourceKind } from './lookup.ts'
 import { contextMenuProps } from './menu.ts'
+import { primeDetails, useNexusDetails } from './nexusDetails.ts'
 import { heading } from './paper.ts'
 import { LetterTile, ModSwitch, ProblemBadge, UpdateBadge } from './parts.tsx'
 
 const SELECTED_ALPHA = 0.14
 const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const
 
-const COLUMNS = '46px 26px minmax(0,1fr) 130px 80px 100px'
+const COLUMNS = '46px 26px minmax(0,1fr) 130px 80px 130px 100px'
 const rowSx = {
   display: 'grid',
   gridTemplateColumns: COLUMNS,
@@ -38,6 +41,15 @@ const cellBase = { p: 0, border: 0, fontSize: 'inherit', color: 'inherit' } as c
 
 function Cell({ sx, ...props }: TableCellProps) {
   return <TableCell {...props} sx={{ ...cellBase, ...sx }} />
+}
+
+function CategoryCell({ nexusId }: { nexusId: number }) {
+  const category = useNexusDetails((s) => s.byId[nexusId]?.details?.category) ?? ''
+  return (
+    <Cell title={category} sx={{ ...ellipsis, color: 'text.secondary', ...hideCompact }}>
+      {category || '—'}
+    </Cell>
+  )
 }
 
 function ModRow({ mod: m, striped, profile }: { mod: Mod; striped: boolean; profile: Profile }) {
@@ -80,6 +92,7 @@ function ModRow({ mod: m, striped, profile }: { mod: Mod; striped: boolean; prof
           github: t`GitHub`,
         })}
       </Cell>
+      <CategoryCell nexusId={nexusIdOf(profile, m)} />
       <Cell
         sx={{
           fontSize: 13,
@@ -99,6 +112,11 @@ function ModRow({ mod: m, striped, profile }: { mod: Mod; striped: boolean; prof
 
 export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   const { t } = useLingui()
+  useEffect(() => {
+    primeDetails(mods.map((m) => nexusIdOf(profile, m)).filter((id) => id > 0)).catch(
+      reportUnexpected,
+    )
+  }, [mods, profile])
   return (
     <Box sx={{ minWidth: 0, minHeight: 0, overflowY: 'auto' }}>
       <Table
@@ -127,6 +145,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
             <Cell>{t`Name`}</Cell>
             <Cell sx={hideCompact}>{t`Author`}</Cell>
             <Cell sx={hideCompact}>{t`Source`}</Cell>
+            <Cell sx={hideCompact}>{t`Category`}</Cell>
             <Cell>{t`Status`}</Cell>
           </TableRow>
         </TableHead>

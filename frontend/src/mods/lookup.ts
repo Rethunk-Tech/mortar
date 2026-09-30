@@ -18,6 +18,12 @@ export const siblingsOf = (mods: Mod[], mod: Mod) =>
 export const sourceKind = (profile: Profile, mod: Mod) =>
   (profile.entries ?? []).find((e) => e.key === mod.key)?.source.kind ?? ''
 
+// The Nexus mod ID a mod was installed from, or 0 for any other source.
+export const nexusIdOf = (profile: Profile, mod: Mod) => {
+  const source = (profile.entries ?? []).find((e) => e.key === mod.key)?.source
+  return source?.kind === 'nexus' ? (source.modId ?? 0) : 0
+}
+
 export const kindLabel = (
   kind: string,
   labels: { smapi: string; archive: string; nexus: string; github: string },
