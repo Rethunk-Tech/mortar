@@ -46,7 +46,19 @@ async function notify(arrival: Arrival, title: string, body: string) {
 
 const names = new Map<number, Promise<string>>()
 
-async function announce(arrival: Arrival, profile: Profile) {
+async function install(arrival: Arrival, profile: Profile) {
+  try {
+    await Assign(arrival.id, NXM_GAME, profile.id)
+  } catch (e) {
+    // Nothing downloads, so the prompt keeps the link for another profile to take.
+    useToasts.getState().push({
+      kind: 'error',
+      title: i18n._(msg`Could not start the Nexus download`),
+      body: errorMessage(e),
+    })
+    useNxm.getState().add(arrival)
+    return
+  }
   const name = await modName(arrival.link.modId)
   const profileName = profile.name
   const title = i18n._(msg`Downloading ${name} into ${profileName}`)
@@ -109,18 +121,7 @@ export async function initNxm(): Promise<void> {
     const { game, openId, profiles } = useProfiles.getState()
     const direct = directProfile(useNav.getState().route, game?.id, openId, profiles)
     if (direct) {
-      // Assign failed, so nothing downloads; the prompt keeps the link so another profile can take it.
-      Assign(a.id, NXM_GAME, direct.id).then(
-        () => announce(a, direct).catch(reportUnexpected),
-        (e) => {
-          useToasts.getState().push({
-            kind: 'error',
-            title: i18n._(msg`Could not start the Nexus download`),
-            body: errorMessage(e),
-          })
-          useNxm.getState().add(a)
-        },
-      )
+      install(a, direct).catch(reportUnexpected)
       return
     }
     useNxm.getState().add(a)
