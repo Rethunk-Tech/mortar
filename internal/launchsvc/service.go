@@ -127,6 +127,9 @@ func (s *Service) set(st Status) {
 	}
 	s.mu.Unlock()
 	s.emit(StateEvent, st)
+	if st.State == Running && st.Profile != "" && s.settings != nil {
+		_, _ = s.settings.RecordLastPlayed(st.Game, st.Profile, time.Now())
+	}
 	if stored.State == Idle && had && prev.State != Idle && s.Unlocked != nil {
 		s.Unlocked()
 	}
