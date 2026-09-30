@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/backdrop"
@@ -81,6 +82,8 @@ func main() {
 		pictures *modpic.Cache
 	)
 	ready := make(chan struct{})
+	closeReady := sync.OnceFunc(func() { close(ready) })
+	defer closeReady()
 	app := application.New(application.Options{
 		Name: "Mortar",
 		Icon: appIcon,
@@ -290,7 +293,7 @@ func main() {
 		app.Event.Emit(picker.DroppedEvent, e.Context().DroppedFiles())
 	})
 
-	close(ready)
+	closeReady()
 	if err := app.Run(); err != nil {
 		log.Fatal(err)
 	}
