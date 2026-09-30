@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, Chip, TextField } from '@mui/material'
+import { Alert, Box, Button, Chip, FormControlLabel, Switch, TextField } from '@mui/material'
 import { Check, LogIn, LogOut } from 'lucide-react'
 import { type SubmitEvent, useId, useState } from 'react'
 import {
@@ -8,11 +8,13 @@ import {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useNexus } from '../nexus.ts'
+import { useNxmHandler } from './nxmHandler.tsx'
 
 export function NexusMods() {
   const { t } = useLingui()
   const keyId = useId()
   const { signedIn, name, premium } = useNexus()
+  const nxm = useNxmHandler()
   const [key, setKey] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -21,7 +23,10 @@ export function NexusMods() {
     setBusy(true)
     setError(null)
     SignIn(key)
-      .then(() => setKey(''))
+      .then(() => {
+        setKey('')
+        nxm.offer()
+      })
       .catch((err: unknown) => setError(errorText(err) ?? t`Could not sign in`))
       .finally(() => setBusy(false))
   }
@@ -53,6 +58,14 @@ export function NexusMods() {
             {t`Free accounts need one click on Nexus for every download. Mortar opens each file's page in turn and takes the download from your click.`}
           </Box>
         )}
+        <FormControlLabel
+          control={<Switch checked={nxm.handled} onChange={(_, on) => nxm.toggle(on)} />}
+          label={t`Handle Nexus "Mod Manager Download" links`}
+        />
+        <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
+          {t`Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them.`}
+        </Box>
+        {nxm.dialog}
         <Button
           variant="outlined"
           startIcon={<LogOut size={16} />}

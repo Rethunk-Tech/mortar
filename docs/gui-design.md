@@ -53,7 +53,7 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 - A card: the mod's icon (its Nexus `picture_url`, fetched once when the mod is installed and cached on disk; a letter tile until it loads or when there is none, NOMAD 2026-09-29), its name, author and version from its manifest, and badges for an available update or a problem. The card view is deliberately simple: no switch (the enable toggle lives in the sidebar). Clicking a card selects it and fills the sidebar. One card per mod; Remove acts on the whole archive entry the mod came in (its confirm names the other mods in it).
 - **Mod menu** (NOMAD, 2026-09-30): right-clicking a card or a list row opens a native menu (Wails' `--custom-contextmenu` on the element, one Go-registered menu per state), and the card's ⋯ button opens the same list. Actions, from one list in `internal/modmenu`: Enable or Disable (the label follows the state), More details, Open on Nexus or Open on GitHub (by the page's host; only when the mod has a page), Show files, and after a separator Remove (absent for the bundled SMAPI entry; it opens the confirm dialog). The native menu's labels are the frontend's translated strings, sent to Go at startup (`SetLabels`) since Go has no Lingui; details and remove reach the window as events, the rest run in Go and emit a refresh.
 - Above the grid: a search field that filters by name, the problem summary with one-click fixes ([design.md](design.md#mod-data)), and buttons to add mods (open Nexus, or pick an archive). Dropping an archive anywhere on the window installs it into the open profile.
-- SMAPI's bundled Console Commands and Save Backup are installed in every profile and not shown, listed, counted or removable (NOMAD, 2026-09-30).
+- SMAPI's bundled Console Commands and Save Backup, and Mortar's console bridge, are installed in every profile and not shown, listed, counted or removable (NOMAD, 2026-09-30).
 - Empty (a new profile): "No mods yet", a line on how to add them, **Browse Nexus** and **Add archive**, a link to import a shared profile, and a note that archives can be dropped anywhere. The hero uses Steam's art.
 
 ## Mod detail
@@ -72,7 +72,7 @@ A plain text area for the profile's notes, saved automatically ("Saved · 2 min 
 ## In-between moments
 
 - **Dropping an archive:** while an archive is dragged over the window, a dashed drop zone filling the window 12px in from its edges says where it goes ("Drop to install into Cookie farm"), with the file name and the supported formats.
-- **A Nexus link while minimised:** a desktop notification says what is downloading and into which profile, with Show. An `nxm://` link Mortar did not ask for gets a notification with the open profile, Other profile… and Ignore.
+- **A Nexus link while minimised:** a desktop notification says what is downloading and into which profile, with Show. An `nxm://` link Mortar did not ask for gets a desktop notification whose click (Show) raises the window, where a card at the top centre asks which profile: the open profile (primary), Other profile… (a menu of the others) or Ignore. The card also shows when the window is not minimised, and a refused link (wrong game, another account, expired, malformed) is a toast saying why.
 - **Two copies of one mod:** a dialog shows both (source, version, what depends on it), preselects the newer or Nexus-sourced one, and switches the other off rather than deleting it; Decide later leaves both as a problem.
 
 ## Console tab
@@ -81,6 +81,7 @@ A plain text area for the profile's notes, saved automatically ("Saved · 2 min 
 - Filters: a search box, toggles for SMAPI's six levels (Trace, Debug, Info, Warn, Error, Alert; `src/SMAPI/LogLevel.cs`) each with its line count (Trace and Debug off by default), a mod picker whose choices show as removable chips, "Showing X of Y lines" with Clear filters, and Jump to first error. Toggles for timestamps and follow-tail (on by default).
 - **Copy**, and **Get help**: shows the log with its local paths and asks before uploading it to smapi.io/log, then copies the link.
 - Before the first launch: a line saying the console fills when the game runs.
+- **Input line** at the bottom (monospace, prompt `>`): Enter sends the command to the running game through the Mortar SMAPI Bridge and echoes `> <command>` into the log as a Mortar line; the output arrives with SMAPI's own lines, and Follow is switched back on so it scrolls into view. Up and Down browse the last 100 commands of that game (in memory only). Disabled with the hint "Start the game to run commands" while the game is not running; a failed send shows a toast.
 
 ## Profile management
 
@@ -104,7 +105,7 @@ A side sheet. The header gives totals (done, in progress, failed, left, size) ov
 Only when no game is set up, never on later launches:
 
 1. Find Stardew Valley in Steam and show what was found, with **Browse** for another folder; when nothing is found, say so, with Browse and a retry.
-2. Install SMAPI if it is missing (one click, unattended). On Windows with Steam, show the launch-options line to paste into Stardew's Steam properties, with a copy button.
+2. Install SMAPI if it is missing: it starts by itself, unattended, with no button (NOMAD, 2026-09-30), and a failure shows its error with **Retry**. On Windows with Steam, show the launch-options line to paste into Stardew's Steam properties, with a copy button.
    Installing SMAPI shows its progress as steps (downloaded, files added, launcher replaced, bundled mods added).
 3. Create the first profile: two cards, **Start empty** (with a name field) and **From a shared link** (with a link field, which asks for the Nexus sign-in first when the import needs downloads).
 
@@ -114,6 +115,6 @@ Short toasts, bottom right, stacked, each with a coloured edge by kind and a dis
 
 ## Settings
 
-Mortar's Settings holds only what is Mortar-wide, never one game's (NOMAD, 2026-09-30). It is a full page with a back button (Esc also returns), reached from the app menu and Ctrl+,, with a section list on the left and the section beside it; while it is open the title bar shows a "Settings" tab and no game tab. Sections: **Appearance** (first, and the one Settings opens on: accent colour, background), **Data** (Mortar's data folder with its total size and an **Open folder** link), **Nexus Mods**, **Updates** (mod, SMAPI and Mortar update checks; backups kept) and **About** (licences and credits, including SMAPI and the Stardew mod dataset, CC-BY-SA 4.0). In short: the Nexus personal API key (saving it the first time asks whether Mortar should handle `nxm://` links), whether Mortar handles `nxm://` links (asks before taking them from another manager, and gives them back when turned off), and update checks.
+Mortar's Settings holds only what is Mortar-wide, never one game's (NOMAD, 2026-09-30). It is a full page with a back button (Esc also returns), reached from the app menu and Ctrl+,, with a section list on the left and the section beside it; while it is open the title bar shows a "Settings" tab and no game tab. Sections: **Appearance** (first, and the one Settings opens on: accent colour, background), **Data** (Mortar's data folder with its total size and an **Open folder** link), **Nexus Mods**, **Updates** (mod, SMAPI and Mortar update checks; backups kept) and **About** (licences and credits, including SMAPI and the Stardew mod dataset, CC-BY-SA 4.0). In short: the Nexus personal API key (saving it the first time asks whether Mortar should handle `nxm://` links), whether Mortar handles `nxm://` links (the switch **Handle Nexus "Mod Manager Download" links**; it names the app that owns them now and asks before taking them, and gives them back when turned off), and update checks.
 
 **Game settings** are per game and live on their own page, opened from the game screen by a settings icon button (Lucide Settings2, labelled "Stardew Valley settings") at the right of the tab row. The page is titled "Stardew Valley settings", has a back button to the game (Esc also returns), and the title bar keeps the game tab highlighted. It holds the game folder, found in Steam or chosen, with **Browse…** (a folder dialog, checked before it is saved, with an inline error when the folder is not a Stardew install) and **Use Steam's** while a chosen folder overrides Steam; and the installed SMAPI version with Install, Reinstall or Update, showing the same step checks as the banner.

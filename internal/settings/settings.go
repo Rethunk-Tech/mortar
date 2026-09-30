@@ -46,6 +46,11 @@ type Settings struct {
 	NexusUserID  int    `json:"nexusUserId"`
 	NexusName    string `json:"nexusName"`
 	NexusPremium bool   `json:"nexusPremium"`
+	// NxmHandled is whether Mortar is registered for nxm:// links, and NxmPrevious the owner it took them from (empty
+	// when there was none), which turning the setting off restores. NxmAsked is whether the user has been offered it.
+	NxmHandled  bool   `json:"nxmHandled"`
+	NxmPrevious string `json:"nxmPrevious"`
+	NxmAsked    bool   `json:"nxmAsked"`
 }
 
 // Defaults returns the settings used when no valid file exists.

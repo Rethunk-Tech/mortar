@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"log"
 	"os"
@@ -14,6 +15,8 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/modmenu"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/nexussvc"
+	"github.com/Rethunk-AI/mortar/internal/nxm"
+	"github.com/Rethunk-AI/mortar/internal/nxmsvc"
 	"github.com/Rethunk-AI/mortar/internal/picker"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -22,6 +25,7 @@ import (
 	modstore "github.com/Rethunk-AI/mortar/internal/store"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/wailsapp/wails/v3/pkg/services/notifications"
 )
 
 // version is the app version sent to Nexus; keep it equal to build/config.yml.
@@ -38,6 +42,8 @@ func registerEvents() {
 	application.RegisterEvent[[]string](picker.DroppedEvent)
 	application.RegisterEvent[settings.Settings](settings.ChangedEvent)
 	application.RegisterEvent[nexussvc.Account](nexussvc.ChangedEvent)
+	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
+	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
 	application.RegisterEvent[modmenu.Target](modmenu.DetailsEvent)
 	application.RegisterEvent[modmenu.Target](modmenu.RemoveEvent)
 	application.RegisterEvent[profile.Profile](modmenu.ChangedEvent)
@@ -73,10 +79,13 @@ func main() {
 		log.Fatal(err)
 	}
 	loaders := loadersvc.NewService(home, store, items, profiles)
-	profiles.Bundled = loadersvc.BundledKey(loaders)
-	loadersvc.SyncBundled(loaders, "stardew")
+	loadersvc.Attach(loaders, "stardew")
 	launches := launchsvc.NewService(home, store, profiles)
 	profiles.Running = launches.Running
+	launches.EnsureLoader = func(ctx context.Context, id string) error {
+		_, err := loaders.Ensure(ctx, id)
+		return err
+	}
 	now := time.Now()
 	if err := profiles.PurgeTrash(now); err != nil {
 		log.Printf("purge trash: %v", err)
@@ -96,6 +105,18 @@ func main() {
 
 	nexusSvc := nexussvc.NewService(store, nexus.New(version))
 
+	exe, err := os.Executable()
+	if err != nil {
+		log.Fatal(err)
+	}
+	nxmHandler, err := nxm.New(exe)
+	if err != nil {
+		log.Fatal(err)
+	}
+	nxmSvc := nxmsvc.NewService(store, nxmHandler)
+	nxmSvc.Receive(os.Args[1:])
+	notifier := notifications.New()
+
 	var window *application.WebviewWindow
 	pick := &picker.Service{}
 	profileSvc := profile.NewService(profiles)
@@ -109,7 +130,7 @@ func main() {
 		Services: []application.Service{
 			application.NewService(svc), application.NewService(gamesSvc),
 			application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
-			application.NewService(savesSvc), application.NewService(nexusSvc),
+			application.NewService(savesSvc), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
 			application.NewService(problemsSvc), application.NewService(menuSvc),
 		},
 		Assets: application.AssetOptions{
@@ -121,9 +142,12 @@ func main() {
 		},
 		SingleInstance: &application.SingleInstanceOptions{
 			UniqueID: "tech.rethunk.mortar",
-			OnSecondInstanceLaunch: func(application.SecondInstanceData) {
-				window.Restore()
-				window.Focus()
+			OnSecondInstanceLaunch: func(d application.SecondInstanceData) {
+				// A minimised window stays down: the window sends a desktop notification whose click brings it up.
+				if !nxmSvc.Receive(d.Args) || !window.IsMinimised() {
+					window.Restore()
+					window.Focus()
+				}
 			},
 		},
 	})
@@ -131,8 +155,14 @@ func main() {
 	svc.App = app
 	loaders.App = app
 	launches.App = app
+	loadersvc.EnsureExisting(loaders, "stardew")
 	pick.App = app
 	nexusSvc.App = app
+	nxmSvc.App = app
+	notifier.OnNotificationResponse(func(notifications.NotificationResult) {
+		window.Restore()
+		window.Focus()
+	})
 	menuSvc.Register(app, modmenu.Backend{
 		SetEnabled: func(t modmenu.Target, enabled bool) (profile.Profile, error) {
 			return profileSvc.SetModEnabled(t.Game, t.Profile, t.Key, t.UniqueID, enabled)

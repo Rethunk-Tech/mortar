@@ -12,7 +12,7 @@ import { modId } from './lookup.ts'
 import { useMods } from './store.ts'
 
 // The state that decides a mod's actions, and the name of the native menu registered for it (modmenu.MenuID).
-export type PageHost = 'nexus' | 'github' | ''
+type PageHost = 'nexus' | 'github' | ''
 
 interface MenuState {
   enabled: boolean
@@ -22,9 +22,6 @@ interface MenuState {
 
 const flag = (on: boolean, yes: string, no: string) => (on ? yes : no)
 
-export const menuId = (s: MenuState) =>
-  `mod-menu-${flag(s.enabled, 'on', 'off')}-${s.host || 'nopage'}-${flag(s.removable, 'remove', 'keep')}`
-
 // Mod pages are on Nexus or GitHub only.
 const hostOf = (url: string | undefined): PageHost => {
   if (!url) {
@@ -32,6 +29,9 @@ const hostOf = (url: string | undefined): PageHost => {
   }
   return new URL(url).hostname === 'github.com' ? 'github' : 'nexus'
 }
+
+export const menuId = (s: MenuState) =>
+  `mod-menu-${flag(s.enabled, 'on', 'off')}-${s.host || 'nopage'}-${flag(s.removable, 'remove', 'keep')}`
 
 export function useMenuState(mod: Mod, removable: boolean): MenuState {
   const host = useMods((s) => hostOf(s.pages[modId(mod)]))

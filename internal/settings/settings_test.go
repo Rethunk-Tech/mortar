@@ -28,6 +28,7 @@ func TestDefaultsAndRoundTrip(t *testing.T) {
 	}
 	if _, err := s.Update(func(v *Settings) {
 		v.Accent, v.Background, v.BackgroundImage, v.LastGame = "moss", BackgroundSolid, "/pics/a.png", "lethal"
+		v.NxmHandled, v.NxmPrevious = true, "vortex.desktop"
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +36,7 @@ func TestDefaultsAndRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := s2.Get(); !reflect.DeepEqual(got, Settings{"moss", BackgroundSolid, "/pics/a.png", "lethal", map[string]string{}, map[string]string{}, map[string]string{}, map[string][]string{}, 0, "", false}) {
+	if got := s2.Get(); !reflect.DeepEqual(got, Settings{"moss", BackgroundSolid, "/pics/a.png", "lethal", map[string]string{}, map[string]string{}, map[string]string{}, map[string][]string{}, 0, "", false, true, "vortex.desktop", false}) {
 		t.Fatalf("round trip = %+v", got)
 	}
 	entries, _ := os.ReadDir(dir)

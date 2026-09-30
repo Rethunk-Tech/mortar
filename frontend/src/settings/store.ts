@@ -15,6 +15,9 @@ const defaults: Settings = {
   nexusUserId: 0,
   nexusName: '',
   nexusPremium: false,
+  nxmHandled: false,
+  nxmPrevious: '',
+  nxmAsked: false,
 }
 
 export const useSettings = create<Settings>(() => defaults)

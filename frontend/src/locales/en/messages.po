@@ -16,6 +16,10 @@ msgstr "Mod: {mod}"
 msgid "Browse…"
 msgstr "Browse…"
 
+#: src/nxm/ArrivalCards.tsx:57
+msgid "You started this download on Nexus. Choose the profile it goes into."
+msgstr "You started this download on Nexus. Choose the profile it goes into."
+
 #: src/firstrun/SmapiStep.tsx:229
 msgid "Installing SMAPI {latest}"
 msgstr "Installing SMAPI {latest}"
@@ -33,6 +37,10 @@ msgstr "Updated"
 msgid "Could not check the mods for updates"
 msgstr "Could not check the mods for updates"
 
+#: src/nxm/store.ts:21
+msgid "Mortar takes Stardew Valley links only."
+msgstr "Mortar takes Stardew Valley links only."
+
 #: src/mods/describe.ts:20
 msgid "{name} broke in {brokeIn}."
 msgstr "{name} broke in {brokeIn}."
@@ -40,6 +48,15 @@ msgstr "{name} broke in {brokeIn}."
 #: src/settings/sections/Appearance.tsx:27
 msgid "Sand"
 msgstr "Sand"
+
+#. placeholder {0}: prompt.owner
+#: src/settings/sections/nxmHandler.tsx:61
+msgid "{0} opens these links now. Mortar takes them over and gives them back when you turn this off in Settings."
+msgstr "{0} opens these links now. Mortar takes them over and gives them back when you turn this off in Settings."
+
+#: src/settings/sections/NexusMods.tsx:66
+msgid "Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them."
+msgstr "Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them."
 
 #: src/profiles/store.ts:130
 msgid "Could not change the profile's visibility"
@@ -104,7 +121,7 @@ msgstr "Resolve"
 msgid "Make your first profile"
 msgstr "Make your first profile"
 
-#: src/settings/sections/NexusMods.tsx:48
+#: src/settings/sections/NexusMods.tsx:53
 #: src/shell/NexusAccount.tsx:33
 msgid "Free"
 msgstr "Free"
@@ -169,7 +186,7 @@ msgstr "Grid view"
 msgid "Review"
 msgstr "Review"
 
-#: src/settings/sections/NexusMods.tsx:95
+#: src/settings/sections/NexusMods.tsx:108
 #: src/shell/NexusAccount.tsx:59
 msgid "Sign in"
 msgstr "Sign in"
@@ -282,6 +299,10 @@ msgstr "Your notes for this profile, for example: Friday co-op profile. Keep eve
 msgid "One step in Steam"
 msgstr "One step in Steam"
 
+#: src/settings/sections/NexusMods.tsx:63
+msgid "Handle Nexus \"Mod Manager Download\" links"
+msgstr "Handle Nexus \"Mod Manager Download\" links"
+
 #: src/game/Detail.tsx:138
 msgid "Rename profile"
 msgstr "Rename profile"
@@ -347,6 +368,10 @@ msgstr "Sky"
 msgid "Check again"
 msgstr "Check again"
 
+#: src/nxm/store.ts:25
+msgid "The link was made for another Nexus account than the one signed in."
+msgstr "The link was made for another Nexus account than the one signed in."
+
 #: src/notes/NotesTab.tsx:52
 msgid "Saved · {n, plural, one {# hour ago} other {# hours ago}}"
 msgstr "Saved · {n, plural, one {# hour ago} other {# hours ago}}"
@@ -371,7 +396,7 @@ msgstr "Could not read the mods"
 msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
 
-#: src/settings/sections/NexusMods.tsx:25
+#: src/settings/sections/NexusMods.tsx:30
 msgid "Could not sign in"
 msgstr "Could not sign in"
 
@@ -408,6 +433,10 @@ msgstr "Delete"
 #: src/mods/parts.tsx:195
 msgid "Disable"
 msgstr "Disable"
+
+#: src/settings/sections/nxmHandler.tsx:58
+msgid "Should Mortar open Nexus \"Mod Manager Download\" links, so a click on Nexus starts the download here?"
+msgstr "Should Mortar open Nexus \"Mod Manager Download\" links, so a click on Nexus starts the download here?"
 
 #: src/profiles/store.ts:118
 msgid "Could not duplicate the profile"
@@ -448,6 +477,7 @@ msgstr "config.json, as the mod ships it"
 #: src/mods/ModDetail.tsx:179
 #: src/mods/parts.tsx:267
 #: src/profiles/ProfilesPage.tsx:402
+#: src/settings/sections/nxmHandler.tsx:82
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -513,6 +543,11 @@ msgstr "Installed"
 msgid "Stardew Valley will close now, and any progress since your last save is lost."
 msgstr "Stardew Valley will close now, and any progress since your last save is lost."
 
+#. placeholder {0}: prompt.owner
+#: src/settings/sections/nxmHandler.tsx:68
+msgid "Take Nexus links from {0}?"
+msgstr "Take Nexus links from {0}?"
+
 #: src/profiles/ProfilesPage.tsx:207
 msgid "Duplicate"
 msgstr "Duplicate"
@@ -538,7 +573,7 @@ msgstr "Also updates {0} (same download)"
 msgid "Log copied"
 msgstr "Log copied"
 
-#: src/settings/sections/NexusMods.tsx:64
+#: src/settings/sections/NexusMods.tsx:77
 #: src/shell/NexusAccount.tsx:47
 msgid "Sign out"
 msgstr "Sign out"
@@ -584,9 +619,17 @@ msgstr "Enable {0}"
 msgid "SMAPI {0} installed"
 msgstr "SMAPI {0} installed"
 
+#: src/nxm/ArrivalCards.tsx:81
+msgid "Ignore"
+msgstr "Ignore"
+
 #: src/shell/AppMenu.tsx:100
 msgid "About Mortar"
 msgstr "About Mortar"
+
+#: src/nxm/store.ts:42
+msgid "You started this download on Nexus. Show Mortar to choose the profile it goes into."
+msgstr "You started this download on Nexus. Show Mortar to choose the profile it goes into."
 
 #: src/launch/LaunchLayer.tsx:121
 msgid "Open console"
@@ -620,7 +663,7 @@ msgstr "Remove filter {mod}"
 msgid "After the first release"
 msgstr "After the first release"
 
-#: src/settings/sections/NexusMods.tsx:99
+#: src/settings/sections/NexusMods.tsx:112
 msgid "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 msgstr "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 
@@ -802,6 +845,10 @@ msgstr "Mods"
 msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
+#: src/settings/sections/nxmHandler.tsx:41
+msgid "Could not change how Nexus links open"
+msgstr "Could not change how Nexus links open"
+
 #: src/shell/AppMenu.tsx:122
 msgid "Source code"
 msgstr "Source code"
@@ -896,6 +943,10 @@ msgstr "More details"
 msgid "Choose the folder that holds Stardew Valley instead."
 msgstr "Choose the folder that holds Stardew Valley instead."
 
+#: src/nxm/store.ts:23
+msgid "The link has expired. Click Mod Manager Download on Nexus again."
+msgstr "The link has expired. Click Mod Manager Download on Nexus again."
+
 #: src/saves/SavesTab.tsx:90
 msgid "Summer"
 msgstr "Summer"
@@ -935,6 +986,10 @@ msgstr "Follow"
 msgid "Could not open the folder of {0}"
 msgstr "Could not open the folder of {0}"
 
+#: src/nxm/ArrivalCards.tsx:77
+msgid "Other profile…"
+msgstr "Other profile…"
+
 #: src/saves/SavesTab.tsx:141
 msgid "Has used:"
 msgstr "Has used:"
@@ -954,6 +1009,10 @@ msgstr "Couldn't read the window state"
 #: src/saves/SavesTab.tsx:64
 msgid "Open {name} on Nexus"
 msgstr "Open {name} on Nexus"
+
+#: src/nxm/store.ts:78
+msgid "Nexus link not used"
+msgstr "Nexus link not used"
 
 #: src/console/ConsoleTab.tsx:132
 msgid "No mods have logged yet"
@@ -988,7 +1047,7 @@ msgstr "Spring"
 msgid "Couldn't close the window"
 msgstr "Couldn't close the window"
 
-#: src/settings/sections/NexusMods.tsx:53
+#: src/settings/sections/NexusMods.tsx:58
 msgid "Free accounts need one click on Nexus for every download. Mortar opens each file's page in turn and takes the download from your click."
 msgstr "Free accounts need one click on Nexus for every download. Mortar opens each file's page in turn and takes the download from your click."
 
@@ -999,6 +1058,10 @@ msgstr "No profiles yet."
 #: src/launch/LaunchLayer.tsx:193
 msgid "Steam was not found"
 msgstr "Steam was not found"
+
+#: src/nxm/store.ts:27
+msgid "Sign in to Nexus Mods in Settings before downloading from a link."
+msgstr "Sign in to Nexus Mods in Settings before downloading from a link."
 
 #: src/launch/LaunchLayer.tsx:196
 msgid "Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
@@ -1037,12 +1100,16 @@ msgstr "Moss"
 msgid "Enable"
 msgstr "Enable"
 
+#: src/settings/sections/nxmHandler.tsx:82
+msgid "Not now"
+msgstr "Not now"
+
 #. placeholder {0}: mod.name
 #: src/mods/detail.ts:90
 msgid "Could not reset the settings of {0}"
 msgstr "Could not reset the settings of {0}"
 
-#: src/App.tsx:36
+#: src/App.tsx:37
 #: src/games/GameSelect.tsx:133
 msgid "Could not read your games"
 msgstr "Could not read your games"
@@ -1080,6 +1147,10 @@ msgstr "AGPL-3.0 · Rethunk-AI/mortar"
 msgid "Switch on {name} in this profile"
 msgstr "Switch on {name} in this profile"
 
+#: src/settings/sections/nxmHandler.tsx:67
+msgid "Handle Nexus download links?"
+msgstr "Handle Nexus download links?"
+
 #: src/firstrun/SmapiStep.tsx:234
 msgid "SMAPI is the loader every Stardew mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 msgstr "SMAPI is the loader every Stardew mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
@@ -1109,7 +1180,7 @@ msgstr "Three steps and you are playing with mods."
 msgid "Enabled"
 msgstr "Enabled"
 
-#: src/settings/sections/NexusMods.tsx:48
+#: src/settings/sections/NexusMods.tsx:53
 #: src/shell/NexusAccount.tsx:33
 msgid "Premium"
 msgstr "Premium"
@@ -1377,6 +1448,10 @@ msgstr "Hide"
 msgid "Accent colour"
 msgstr "Accent colour"
 
+#: src/nxm/ArrivalCards.tsx:29
+msgid "Unexpected Nexus link"
+msgstr "Unexpected Nexus link"
+
 #: src/game/Sidebar.tsx:269
 #: src/profiles/ProfilesPage.tsx:350
 msgid "Profiles"
@@ -1420,6 +1495,10 @@ msgstr "Source"
 msgid "Download a mod's new archive from its page and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details."
 msgstr "Download a mod's new archive from its page and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details."
 
+#: src/nxm/store.ts:29
+msgid "This is not a Mod Manager Download link from Nexus."
+msgstr "This is not a Mod Manager Download link from Nexus."
+
 #: src/launch/store.ts:30
 msgid "Steam's launch options for Stardew Valley lack the SMAPI line. Set them to \"<game folder>\\StardewModdingAPI.exe\" %command%."
 msgstr "Steam's launch options for Stardew Valley lack the SMAPI line. Set them to \"<game folder>\\StardewModdingAPI.exe\" %command%."
@@ -1428,7 +1507,7 @@ msgstr "Steam's launch options for Stardew Valley lack the SMAPI line. Set them 
 msgid "Browse Nexus"
 msgstr "Browse Nexus"
 
-#: src/settings/sections/NexusMods.tsx:44
+#: src/settings/sections/NexusMods.tsx:49
 msgid "Signed in as {name}"
 msgstr "Signed in as {name}"
 
@@ -1457,6 +1536,10 @@ msgstr "Nexus Mods"
 #: src/console/ConsoleTab.tsx:350
 msgid "Clear"
 msgstr "Clear"
+
+#: src/settings/sections/nxmHandler.tsx:91
+msgid "Handle links"
+msgstr "Handle links"
 
 #: src/firstrun/FirstRun.tsx:96
 msgid "SMAPI installed"
@@ -1520,6 +1603,10 @@ msgstr "Reading your saves…"
 msgid "{season} {day}, year {year}"
 msgstr "{season} {day}, year {year}"
 
+#: src/settings/sections/nxmHandler.tsx:59
+msgid "Mortar downloads and installs a mod when you click Mod Manager Download on Nexus."
+msgstr "Mortar downloads and installs a mod when you click Mod Manager Download on Nexus."
+
 #: src/settings/SettingsPage.tsx:43
 msgid "Settings sections"
 msgstr "Settings sections"
@@ -1549,9 +1636,19 @@ msgstr "Stardew Valley was not found in Steam. Browse to its folder."
 msgid "Restore"
 msgstr "Restore"
 
+#. placeholder {0}: arrival.link.modId
+#: src/nxm/ArrivalCards.tsx:54
+#: src/nxm/store.ts:40
+msgid "Mortar · Install Nexus mod {0}?"
+msgstr "Mortar · Install Nexus mod {0}?"
+
 #: src/settings/sections/Appearance.tsx:24
 msgid "Couldn't save that setting"
 msgstr "Couldn't save that setting"
+
+#: src/settings/sections/nxmHandler.tsx:91
+msgid "Take over"
+msgstr "Take over"
 
 #. placeholder {0}: item.daysLeft
 #: src/profiles/ProfilesPage.tsx:255
@@ -1624,6 +1721,6 @@ msgstr "No config.json yet"
 msgid "{gameName} settings"
 msgstr "{gameName} settings"
 
-#: src/settings/sections/NexusMods.tsx:76
+#: src/settings/sections/NexusMods.tsx:89
 msgid "Personal API key"
 msgstr "Personal API key"
