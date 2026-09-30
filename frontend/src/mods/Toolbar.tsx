@@ -1,9 +1,18 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, CircularProgress, InputAdornment, TextField } from '@mui/material'
+import {
+  Box,
+  Button,
+  ButtonBase,
+  CircularProgress,
+  InputAdornment,
+  TextField,
+  useMediaQuery,
+} from '@mui/material'
 import { Browser } from '@wailsio/runtime'
-import { ExternalLink, LayoutGrid, List, Plus, Search } from 'lucide-react'
-import { compact } from '../game/compact.ts'
+import { ExternalLink, Filter, LayoutGrid, List, Plus, Search } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
 import { useInstall } from '../install/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useMods } from './store.ts'
@@ -99,7 +108,21 @@ export function Toolbar({
   const { t } = useLingui()
   const view = useMods((s) => s.view)
   const setView = useMods((s) => s.setView)
+  const narrow = useMediaQuery(compactQuery)
+  const [expanded, setExpanded] = useState(false)
+  const fieldOpen = searchFieldOpen(narrow, expanded, query)
+  const inputRef = useRef<HTMLInputElement>(null)
   const placeholder = t`Filter ${plural(total, { one: '# mod', other: '# mods' })}`
+  const collapseIfEmpty = () => {
+    if (query === '') {
+      setExpanded(false)
+    }
+  }
+  useEffect(() => {
+    if (expanded) {
+      inputRef.current?.focus()
+    }
+  }, [expanded])
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1.25, flexShrink: 0 }}>
       <Box
@@ -130,30 +153,66 @@ export function Toolbar({
           <List size={15} />
         </ButtonBase>
       </Box>
-      <TextField
-        size="small"
-        value={query}
-        onChange={(e) => onQuery(e.target.value)}
-        placeholder={placeholder}
-        slotProps={{
-          htmlInput: { 'aria-label': t`Filter mods` },
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search size={14} />
-              </InputAdornment>
-            ),
-            sx: {
-              height: 36,
-              fontSize: 13,
-              borderRadius: '6px',
-              bgcolor: 'rgba(0,0,0,0.30)',
-              '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.15)' },
+      {fieldOpen ? (
+        <TextField
+          size="small"
+          value={query}
+          onChange={(e) => onQuery(e.target.value)}
+          onBlur={collapseIfEmpty}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              collapseIfEmpty()
+            }
+          }}
+          placeholder={placeholder}
+          inputRef={inputRef}
+          slotProps={{
+            htmlInput: { 'aria-label': t`Filter mods` },
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search size={14} />
+                </InputAdornment>
+              ),
+              sx: {
+                height: 36,
+                fontSize: 13,
+                borderRadius: '6px',
+                bgcolor: 'rgba(0,0,0,0.30)',
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.15)' },
+              },
             },
-          },
-        }}
-        sx={{ flex: 1, minWidth: 0 }}
-      />
+          }}
+          sx={{ flex: 1, minWidth: 0 }}
+        />
+      ) : (
+        <Box sx={{ flex: 1, minWidth: 0 }} />
+      )}
+      {narrow ? (
+        <Button
+          variant="outlined"
+          aria-label={t`Filter mods`}
+          aria-expanded={fieldOpen}
+          onClick={() => setExpanded(true)}
+          sx={{ minWidth: 36, px: 0, position: 'relative' }}
+        >
+          <Filter size={14} />
+          {query === '' ? null : (
+            <Box
+              aria-hidden={true}
+              sx={{
+                position: 'absolute',
+                top: 6,
+                right: 6,
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                bgcolor: 'primary.main',
+              }}
+            />
+          )}
+        </Button>
+      ) : null}
       <BrowseNexus variant="outlined" toolbar={true} />
       <AddArchive variant="outlined" toolbar={true} />
     </Box>
