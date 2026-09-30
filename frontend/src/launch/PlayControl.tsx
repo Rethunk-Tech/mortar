@@ -139,6 +139,7 @@ export function PlayControl({ game }: { game: string }) {
           textTransform: 'none',
           boxShadow: 'none',
           whiteSpace: 'nowrap',
+          '& .MuiButton-startIcon': { mr: '10px' },
           [compact]: { display: 'none' },
         }}
       >

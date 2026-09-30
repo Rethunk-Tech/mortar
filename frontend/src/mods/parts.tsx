@@ -28,7 +28,8 @@ const UINT32_BITS = 32
 const UINT32_RANGE = 2 ** UINT32_BITS
 const HUE_DEGREES = 360
 const TILE_FONT_RATIO = 0.5
-const DEFAULT_TILE_SIZE = 40
+const DEFAULT_TILE_SIZE = 48
+const SMALL_TILE = 32
 
 function hash(s: string): number {
   let h = 0
@@ -46,7 +47,7 @@ export function LetterTile({ mod, size = DEFAULT_TILE_SIZE }: { mod: Mod; size?:
         width: size,
         height: size,
         flexShrink: 0,
-        borderRadius: '8px',
+        borderRadius: size < SMALL_TILE ? '4px' : '6px',
         display: 'grid',
         placeItems: 'center',
         fontWeight: 700,
@@ -64,6 +65,7 @@ export function ModSwitch({ mod }: { mod: Mod }) {
   const setEnabled = useMods((s) => s.setEnabled)
   return (
     <Switch
+      size="small"
       checked={mod.enabled}
       onChange={(e) => {
         setEnabled(mod, e.target.checked).catch(reportUnexpected)

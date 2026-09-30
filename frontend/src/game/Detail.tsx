@@ -14,11 +14,22 @@ const fmt = (iso: unknown) => new Date(String(iso)).toLocaleDateString()
 
 function Card({ label, value }: { label: string; value: string }) {
   return (
-    <Box sx={{ px: 1.5, py: 0.75, bgcolor: 'rgba(28,28,32,0.6)', borderRadius: '6px' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        px: 1.5,
+        py: 1,
+        bgcolor: 'rgba(40,40,48,0.85)',
+        borderRadius: '6px',
+      }}
+    >
       <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'nowrap' }}>
         {label}
       </Typography>
-      <Typography sx={{ fontSize: 15, fontWeight: 600, whiteSpace: 'nowrap' }}>{value}</Typography>
+      <Typography sx={{ fontSize: 18, fontWeight: 700, lineHeight: 1.4, whiteSpace: 'nowrap' }}>
+        {value}
+      </Typography>
     </Box>
   )
 }
@@ -39,13 +50,7 @@ function Hero({ profile }: { profile: Profile }) {
         flexShrink: 0,
         overflow: 'hidden',
         bgcolor: 'rgba(15,15,18,0.5)',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end',
-        gap: 1.5,
-        px: 3,
-        py: 2,
-        [compact]: { height: 56, flexDirection: 'row', alignItems: 'center', gap: 2, py: 0 },
+        [compact]: { height: 56 },
       }}
     >
       {art ? (
@@ -60,71 +65,83 @@ function Hero({ profile }: { profile: Profile }) {
             height: '100%',
             objectFit: 'cover',
             filter: 'blur(1px) brightness(0.75)',
-            opacity: 0.5,
+            opacity: 0.6,
             [compact]: { display: 'none' },
           }}
         />
       ) : null}
       <Box
-        sx={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}
-      >
-        {editing ? (
-          <NameField
-            initial={profile.name}
-            label={t`Profile name`}
-            onSubmit={(name) =>
-              name.trim() === profile.name ? Promise.resolve(true) : rename(profile.id, name)
-            }
-            onCancel={() => setEditing(false)}
-          />
-        ) : (
-          <>
-            <Typography
-              noWrap={true}
-              sx={{
-                fontSize: 40,
-                fontWeight: 700,
-                lineHeight: 1.2,
-                textShadow: '0 0 18px rgba(255,255,255,0.45)',
-                [compact]: { fontSize: 22 },
-              }}
-            >
-              {profile.name}
-            </Typography>
-            <IconButton
-              aria-label={t`Rename profile`}
-              onClick={() => setEditing(true)}
-              size="small"
-            >
-              <Pencil size={16} />
-            </IconButton>
-          </>
-        )}
-      </Box>
-      <Box
         sx={{
-          position: 'relative',
-          display: 'flex',
-          gap: 1,
+          position: 'absolute',
+          inset: 0,
+          bgcolor: 'rgba(20,20,24,0.50)',
           [compact]: { display: 'none' },
         }}
-      >
-        <Card label={t`Created`} value={created} />
-        <Card label={t`Updated`} value={updated} />
-        <Card label={t`Mods`} value={String(mods)} />
-      </Box>
-      <Typography
-        noWrap={true}
+      />
+      <Box
         sx={{
-          position: 'relative',
-          display: 'none',
-          fontSize: 14,
-          color: 'text.secondary',
-          [compact]: { display: 'block' },
+          position: 'absolute',
+          left: 24,
+          right: 24,
+          bottom: 16,
+          display: 'flex',
+          alignItems: 'flex-end',
+          gap: 2,
+          [compact]: { top: 0, bottom: 0, left: 16, right: 16, alignItems: 'center' },
         }}
       >
-        {t`Created ${created} · Updated ${updated} · ${plural(mods, { one: '# mod', other: '# mods' })}`}
-      </Typography>
+        <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 1 }}>
+          {editing ? (
+            <NameField
+              initial={profile.name}
+              label={t`Profile name`}
+              onSubmit={(name) =>
+                name.trim() === profile.name ? Promise.resolve(true) : rename(profile.id, name)
+              }
+              onCancel={() => setEditing(false)}
+            />
+          ) : (
+            <>
+              <Typography
+                noWrap={true}
+                sx={{
+                  fontSize: 44,
+                  fontWeight: 700,
+                  lineHeight: 1.1,
+                  color: '#ffffff',
+                  textShadow: '0 0 32px rgba(255,255,255,0.45)',
+                  [compact]: { fontSize: 22 },
+                }}
+              >
+                {profile.name}
+              </Typography>
+              <IconButton
+                aria-label={t`Rename profile`}
+                onClick={() => setEditing(true)}
+                size="small"
+              >
+                <Pencil size={16} />
+              </IconButton>
+            </>
+          )}
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1, [compact]: { display: 'none' } }}>
+          <Card label={t`Mods`} value={String(mods)} />
+          <Card label={t`Updated`} value={updated} />
+          <Card label={t`Created`} value={created} />
+        </Box>
+        <Typography
+          noWrap={true}
+          sx={{
+            display: 'none',
+            fontSize: 14,
+            color: 'text.secondary',
+            [compact]: { display: 'block' },
+          }}
+        >
+          {t`Created ${created} · Updated ${updated} · ${plural(mods, { one: '# mod', other: '# mods' })}`}
+        </Typography>
+      </Box>
     </Box>
   )
 }
@@ -171,9 +188,35 @@ export function Detail() {
   return (
     <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
       <Hero key={`hero-${profile.id}`} profile={profile} />
-      <Tabs value="mods" sx={{ px: 2, flexShrink: 0 }}>
-        <Tab value="mods" label={t`Mods`} />
-      </Tabs>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          px: 2,
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          flexShrink: 0,
+        }}
+      >
+        <Tabs
+          value="mods"
+          sx={{
+            minHeight: 44,
+            '& .MuiTabs-indicator': { height: 2 },
+            '& .MuiTab-root': {
+              minHeight: 44,
+              minWidth: 0,
+              px: '14px',
+              fontSize: 14,
+              fontWeight: 400,
+              textTransform: 'none',
+              color: 'text.secondary',
+              '&.Mui-selected': { color: '#ffffff', fontWeight: 600 },
+            },
+          }}
+        >
+          <Tab value="mods" label={t`Mods`} />
+        </Tabs>
+      </Box>
       <ModsTab key={`mods-${profile.id}`} profile={profile} />
     </Box>
   )

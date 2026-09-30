@@ -1,10 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import {
+  alpha,
   Box,
   Drawer,
   Table,
   TableBody,
   TableCell,
+  type TableCellProps,
   TableHead,
   TableRow,
   Typography,
@@ -15,47 +17,80 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { compactQuery } from '../game/compact.ts'
+import { compact, compactQuery } from '../game/compact.ts'
 import { siblingsOf, sourceKind } from './lookup.ts'
 import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
 import { useMods } from './store.ts'
 
+const SELECTED_ALPHA = 0.14
+const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const
+
+const COLUMNS = '46px 26px minmax(0,1fr) 130px 80px 100px'
+const rowSx = {
+  display: 'grid',
+  gridTemplateColumns: COLUMNS,
+  gap: '10px',
+  alignItems: 'center',
+  px: 2,
+  [compact]: { gridTemplateColumns: '46px 26px minmax(0,1fr) 80px' },
+}
+const hideCompact = { [compact]: { display: 'none' } }
+
+const heading = {
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: '0.06em',
+  textTransform: 'uppercase',
+  color: 'text.secondary',
+} as const
+
+const cellBase = { p: 0, border: 0, fontSize: 'inherit', color: 'inherit' } as const
+
+function Cell({ sx, ...props }: TableCellProps) {
+  return <TableCell {...props} sx={{ ...cellBase, ...sx }} />
+}
+
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <Box>
-      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{label}</Typography>
-      <Typography sx={{ overflowWrap: 'anywhere' }}>{value}</Typography>
+      <Typography sx={heading}>{label}</Typography>
+      <Typography sx={{ fontSize: 13, overflowWrap: 'anywhere' }}>{value}</Typography>
     </Box>
   )
 }
 
-function Inspector({ mod }: { mod: Mod }) {
+function Inspector({ mod, source }: { mod: Mod; source: string }) {
   const { t } = useLingui()
   const all = useMods((s) => s.mods)
   const others = siblingsOf(all, mod)
   return (
-    <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+    <Box sx={{ p: 1.75, display: 'flex', flexDirection: 'column', gap: 1.25, minHeight: '100%' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <LetterTile mod={mod} size={48} />
-        <Typography sx={{ flex: 1, fontSize: 20, fontWeight: 600, overflowWrap: 'anywhere' }}>
-          {mod.name}
-        </Typography>
+        <LetterTile mod={mod} size={52} />
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography sx={{ fontSize: 16, fontWeight: 700, overflowWrap: 'anywhere' }}>
+            {mod.name}
+          </Typography>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+            {`${mod.author} · ${source}`}
+          </Typography>
+        </Box>
         <ModSwitch mod={mod} />
       </Box>
-      <Field label={t`Author`} value={mod.author} />
       <Field label={t`Version`} value={mod.version} />
       <Field label={t`UniqueID`} value={mod.uniqueId} />
       {others.length > 0 ? (
         <Box>
-          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-            {t`In the same download`}
-          </Typography>
+          <Typography sx={heading}>{t`In the same download`}</Typography>
           {others.map((o) => (
-            <Typography key={o.uniqueId}>{o.name}</Typography>
+            <Typography key={o.uniqueId} sx={{ fontSize: 13 }}>
+              {o.name}
+            </Typography>
           ))}
         </Box>
       ) : null}
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+      <Box sx={{ flexGrow: 1 }} />
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1 }}>
         <ShowFilesButton mod={mod} />
         <RemoveButton mod={mod} />
       </Box>
@@ -75,38 +110,79 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
     return kind === 'local' ? t`Archive` : kind
   }
   return (
-    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', gap: 2 }}>
-      <Box sx={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
-        <Table size="small" stickyHeader={true}>
+    <Box sx={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto' }}>
+      <Box sx={{ minWidth: 0, minHeight: 0, overflowY: 'auto' }}>
+        <Table
+          aria-label={t`Mods`}
+          stickyHeader={true}
+          sx={{
+            display: 'block',
+            '& thead, & tbody': { display: 'block' },
+          }}
+        >
           <TableHead>
-            <TableRow>
-              <TableCell padding="checkbox" />
-              <TableCell padding="checkbox" />
-              <TableCell>{t`Name`}</TableCell>
-              <TableCell>{t`Author`}</TableCell>
-              <TableCell>{t`Source`}</TableCell>
-              <TableCell>{t`Status`}</TableCell>
+            <TableRow
+              sx={{
+                ...rowSx,
+                height: 30,
+                position: 'sticky',
+                top: 0,
+                zIndex: 1,
+                bgcolor: 'rgba(25,25,30,0.9)',
+                ...heading,
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
+              <Cell>{t`On`}</Cell>
+              <Cell />
+              <Cell>{t`Name`}</Cell>
+              <Cell sx={hideCompact}>{t`Author`}</Cell>
+              <Cell sx={hideCompact}>{t`Source`}</Cell>
+              <Cell>{t`Status`}</Cell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {mods.map((m) => (
+            {mods.map((m, i) => (
               <TableRow
                 key={m.uniqueId}
                 hover={true}
                 selected={m.uniqueId === selected?.uniqueId}
                 onClick={() => setSelectedId(m.uniqueId)}
-                sx={{ cursor: 'pointer' }}
+                sx={{
+                  ...rowSx,
+                  height: 36,
+                  fontSize: 14,
+                  cursor: 'pointer',
+                  bgcolor: (th) => {
+                    if (m.uniqueId === selected?.uniqueId) {
+                      return alpha(th.palette.primary.main, SELECTED_ALPHA)
+                    }
+                    return i % 2 ? 'rgba(255,255,255,0.03)' : 'transparent'
+                  },
+                }}
               >
-                <TableCell sx={{ width: 72, py: 0 }}>
+                <Cell>
                   <ModSwitch mod={m} />
-                </TableCell>
-                <TableCell padding="checkbox">
-                  <LetterTile mod={m} size={28} />
-                </TableCell>
-                <TableCell>{m.name}</TableCell>
-                <TableCell>{m.author}</TableCell>
-                <TableCell>{kindLabel(sourceKind(profile, m))}</TableCell>
-                <TableCell>{m.enabled ? t`Enabled` : t`Disabled`}</TableCell>
+                </Cell>
+                <Cell>
+                  <LetterTile mod={m} size={26} />
+                </Cell>
+                <Cell sx={{ ...ellipsis, fontWeight: 500 }}>{m.name}</Cell>
+                <Cell sx={{ ...ellipsis, color: 'text.secondary', ...hideCompact }}>
+                  {m.author}
+                </Cell>
+                <Cell sx={{ color: 'text.secondary', ...hideCompact }}>
+                  {kindLabel(sourceKind(profile, m))}
+                </Cell>
+                <Cell
+                  sx={{
+                    fontSize: 13,
+                    whiteSpace: 'nowrap',
+                    color: m.enabled ? 'text.primary' : 'text.secondary',
+                  }}
+                >
+                  {m.enabled ? t`Enabled` : t`Off`}
+                </Cell>
               </TableRow>
             ))}
           </TableBody>
@@ -129,22 +205,25 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
             },
           }}
         >
-          {selected ? <Inspector mod={selected} /> : null}
+          {selected ? (
+            <Inspector mod={selected} source={kindLabel(sourceKind(profile, selected))} />
+          ) : null}
         </Drawer>
       ) : (
         <Box
+          aria-label={t`Selected mod`}
+          component="aside"
           sx={{
-            width: 320,
-            flexShrink: 0,
+            width: 300,
             overflowY: 'auto',
-            bgcolor: 'background.paper',
-            borderRadius: '6px',
+            bgcolor: 'rgba(40,40,48,0.72)',
+            borderLeft: '1px solid rgba(255,255,255,0.1)',
           }}
         >
           {selected ? (
-            <Inspector mod={selected} />
+            <Inspector mod={selected} source={kindLabel(sourceKind(profile, selected))} />
           ) : (
-            <Typography sx={{ p: 2, color: 'text.secondary' }}>
+            <Typography sx={{ p: 1.75, fontSize: 13, color: 'text.secondary' }}>
               {t`Select a mod to see its details.`}
             </Typography>
           )}

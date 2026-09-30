@@ -11,10 +11,16 @@ import { LetterTile, ModMenu, ModSwitch, RemoveDialog } from './parts.tsx'
 import { useMods, type View } from './store.ts'
 import { AddArchive, BrowseNexus, Toolbar } from './Toolbar.tsx'
 
+const OFF_OPACITY = 0.6
+
 function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; view: View }) {
   const { t } = useLingui()
   if (shown.length === 0) {
-    return <Typography sx={{ color: 'text.secondary' }}>{t`No mods match your search.`}</Typography>
+    return (
+      <Typography
+        sx={{ px: 2, color: 'text.secondary' }}
+      >{t`No mods match your search.`}</Typography>
+    )
   }
   if (view === 'list') {
     return <ModList profile={profile} mods={shown} />
@@ -24,7 +30,9 @@ function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; vi
       sx={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-        gap: 2,
+        gap: '6px',
+        px: 2,
+        pb: 1.75,
         overflowY: 'auto',
         alignContent: 'start',
       }}
@@ -32,18 +40,32 @@ function ModsBody({ profile, shown, view }: { profile: Profile; shown: Mod[]; vi
       {shown.map((m) => (
         <Card
           key={m.uniqueId}
-          sx={{ p: 1.5, display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}
+          sx={{
+            height: 64,
+            pl: 1,
+            pr: 0.75,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            minWidth: 0,
+            borderRadius: '6px',
+          }}
         >
           <LetterTile mod={m} />
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography noWrap={true} sx={{ fontWeight: 600 }}>
+          <Box
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              pl: '10px',
+              borderLeft: '1px solid rgba(255,255,255,0.12)',
+              opacity: m.enabled ? 1 : OFF_OPACITY,
+            }}
+          >
+            <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 600 }}>
               {m.name}
             </Typography>
-            <Typography noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
-              {m.author}
-            </Typography>
-            <Typography noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
-              {m.version}
+            <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
+              {`${m.author} · ${m.version}`}
             </Typography>
           </Box>
           <ModSwitch mod={m} />
@@ -90,8 +112,8 @@ export function ModsTab({ profile }: { profile: Profile }) {
     (m) => !q || m.name.toLowerCase().includes(q) || m.author.toLowerCase().includes(q),
   )
   return (
-    <Box sx={{ p: 3, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-      <Toolbar query={query} onQuery={setQuery} />
+    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <Toolbar query={query} onQuery={setQuery} total={mods.length} />
       <ModsBody profile={profile} shown={shown} view={view} />
       <RemoveDialog />
     </Box>

@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import { alpha, Box, ButtonBase, IconButton } from '@mui/material'
-import { ListOrdered, Plus } from 'lucide-react'
+import { Box, ButtonBase, IconButton } from '@mui/material'
+import { ChevronRight, ListOrdered, Plus } from 'lucide-react'
 import { type PointerEvent, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { PlayControl } from '../launch/PlayControl.tsx'
@@ -15,7 +15,7 @@ const KEY = 'mortar.sidebarWidth'
 const RAIL = 56
 const DEFAULT_WIDTH = 220
 const NUDGE_PX = 16
-const SELECTED_ALPHA = 0.16
+const SELECTED_WEIGHT = 600
 
 const clamp = (w: number) => Math.min(MAX, Math.max(MIN, w))
 
@@ -53,24 +53,22 @@ function ProfileButton({
       title={profile.name}
       sx={{
         width: '100%',
+        height: 40,
         justifyContent: 'flex-start',
-        px: 2,
-        py: 1,
+        px: '10px',
+        borderRadius: '6px',
         fontFamily: 'inherit',
-        fontSize: 15,
+        fontSize: 14,
+        fontWeight: selected ? SELECTED_WEIGHT : 'normal',
         textAlign: 'left',
-        borderLeft: '3px solid',
-        borderColor: selected ? 'primary.main' : 'transparent',
-        bgcolor: (th) =>
-          selected ? alpha(th.palette.primary.main, SELECTED_ALPHA) : 'transparent',
-        '&:hover': { bgcolor: 'action.hover' },
+        color: selected ? '#ffffff' : 'rgba(255,255,255,0.88)',
+        bgcolor: selected ? 'rgba(255,255,255,0.12)' : 'transparent',
+        '&:hover': { bgcolor: selected ? 'rgba(255,255,255,0.12)' : 'action.hover' },
         [compact]: {
           width: 40,
-          height: 40,
           mb: '4px',
           p: 0,
           justifyContent: 'center',
-          borderRadius: '6px',
           border: '1px solid',
           borderColor: selected ? 'primary.main' : 'transparent',
         },
@@ -176,13 +174,14 @@ export function Sidebar({ game }: { game: string }) {
       <ButtonBase
         onClick={openProfiles}
         sx={{
-          justifyContent: 'flex-start',
-          px: 2,
-          py: 1.25,
-          fontSize: 14,
+          justifyContent: 'space-between',
+          height: 40,
+          flexShrink: 0,
+          px: '14px',
+          fontSize: 12,
           fontWeight: 700,
           textTransform: 'uppercase',
-          letterSpacing: 1,
+          letterSpacing: '0.08em',
           color: 'text.secondary',
           fontFamily: 'inherit',
           whiteSpace: 'nowrap',
@@ -191,13 +190,25 @@ export function Sidebar({ game }: { game: string }) {
         }}
       >
         {t`Profiles`}
+        <ChevronRight size={14} aria-hidden={true} />
       </ButtonBase>
       <Box
         sx={{
           flex: 1,
           minHeight: 0,
           overflowY: 'auto',
-          [compact]: { pt: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+          px: '6px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '2px',
+          [compact]: {
+            pt: 1,
+            px: 0,
+            gap: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          },
         }}
       >
         {profiles.map((p) => (
@@ -212,12 +223,14 @@ export function Sidebar({ game }: { game: string }) {
           onClick={() => setCreating(true)}
           sx={{
             width: '100%',
+            height: 40,
+            flexShrink: 0,
             justifyContent: 'flex-start',
             gap: 1,
-            px: 2,
-            py: 1,
+            px: '10px',
+            borderRadius: '6px',
             fontFamily: 'inherit',
-            fontSize: 15,
+            fontSize: 14,
             whiteSpace: 'nowrap',
             color: 'primary.main',
             '&:hover': { bgcolor: 'action.hover' },
@@ -247,7 +260,12 @@ export function Sidebar({ game }: { game: string }) {
           <Plus size={20} />
         </IconButton>
       </Box>
-      <Box sx={{ [compact]: { display: 'flex', justifyContent: 'center', p: 1 } }}>
+      <Box
+        sx={{
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          [compact]: { display: 'flex', justifyContent: 'center', p: 1, borderTop: 0 },
+        }}
+      >
         <PlayControl game={game} />
       </Box>
       <ResizeHandle width={width} onWidth={setWidth} />

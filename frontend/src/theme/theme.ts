@@ -51,7 +51,38 @@ export function createMortarTheme(accent: AccentName): Theme {
           },
         },
       },
-      MuiButton: { styleOverrides: { root: { whiteSpace: 'nowrap' } } },
+      MuiButton: {
+        defaultProps: { disableElevation: true },
+        styleOverrides: {
+          root: {
+            whiteSpace: 'nowrap',
+            textTransform: 'none',
+            borderRadius: 6,
+            fontSize: 13,
+            fontWeight: 500,
+            lineHeight: 1.4,
+            height: 36,
+            padding: '0 12px',
+          },
+          sizeSmall: { height: 28, padding: '0 10px' },
+          sizeLarge: { height: 44, padding: '0 20px', fontSize: 15 },
+          startIcon: { marginLeft: 0, marginRight: 6 },
+          contained: { fontWeight: 700 },
+        },
+        variants: [
+          {
+            props: { variant: 'outlined', color: 'primary' },
+            style: {
+              color: '#ffffff',
+              borderColor: 'rgba(255,255,255,0.22)',
+              '&:hover': {
+                borderColor: 'rgba(255,255,255,0.4)',
+                backgroundColor: 'rgba(255,255,255,0.06)',
+              },
+            },
+          },
+        ],
+      },
       MuiChip: { styleOverrides: { label: { whiteSpace: 'nowrap' } } },
       MuiButtonBase: {
         styleOverrides: {
