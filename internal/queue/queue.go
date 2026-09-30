@@ -146,7 +146,9 @@ type Deps struct {
 	OpenURL       func(url string) error
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
-	HTTP *http.Client
+	// Changed is called with the state after every change, from the goroutine that made it; nil means nothing.
+	Changed func(State)
+	HTTP    *http.Client
 	// Dir is the data folder holding queue.json and the downloads folder; it must be on the store's volume.
 	Dir string
 	Now func() time.Time
@@ -288,6 +290,9 @@ func (s *Service) publish(persist bool) {
 	}
 	if s.d.Emit != nil {
 		s.d.Emit(ChangedEvent, st)
+	}
+	if s.d.Changed != nil {
+		s.d.Changed(st)
 	}
 }
 

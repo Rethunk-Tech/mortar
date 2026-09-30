@@ -18,6 +18,8 @@ const (
 	desktopID   = "mortar.desktop"
 	nxmMime     = "x-scheme-handler/nxm"
 	mortarMime  = "x-scheme-handler/mortar"
+	fileMime    = "application/x-mortar"
+	updateMIME  = "update-mime-database"
 	xdgMime     = "/usr/bin/xdg-mime"
 	updateDB    = "update-desktop-database"
 	desktopPerm = 0o644
@@ -97,7 +99,7 @@ func desktopName(path string) string {
 // desktopFile is the user-level entry. It lists the nxm scheme only while Mortar handles it, so a system that
 // picks a default from advertised types never picks Mortar once the user has switched it off.
 func (l *System) desktopFile(withNxm bool) string {
-	mime := mortarMime + ";"
+	mime := mortarMime + ";" + fileMime + ";"
 	if withNxm {
 		mime = nxmMime + ";" + mime
 	}
@@ -171,4 +173,44 @@ func (l *System) dropDefault() error {
 		return nil
 	}
 	return fsx.WriteFile(path, []byte(strings.Join(kept, "\n")), desktopPerm)
+}
+
+const mimeXML = `<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-mortar">
+    <comment>Mortar profile</comment>
+    <glob pattern="*.mortar"/>
+    <sub-class-of type="application/zip"/>
+  </mime-type>
+</mime-info>
+`
+
+// RegisterLinks makes Mortar the app for mortar:// links and .mortar files: it writes the file type's MIME
+// definition and the desktop entry, and sets both defaults. Running it again changes nothing. The nxm scheme is
+// left as it is.
+func (l *System) RegisterLinks() error {
+	xml := filepath.Join(l.dataHome, "mime", "packages", "mortar.xml")
+	if err := os.MkdirAll(filepath.Dir(xml), 0o750); err != nil {
+		return err
+	}
+	if b, err := fsx.ReadFile(xml); err != nil || string(b) != mimeXML {
+		if err := fsx.WriteFile(xml, []byte(mimeXML), desktopPerm); err != nil {
+			return err
+		}
+		// A missing tool leaves the type unknown until the next database update; the desktop entry still works.
+		_, _ = l.run(updateMIME, filepath.Join(l.dataHome, "mime"))
+	}
+	current, _ := fsx.ReadFile(l.desktopPath())
+	withNxm := strings.Contains(string(current), nxmMime)
+	if string(current) != l.desktopFile(withNxm) {
+		if err := l.writeDesktop(withNxm); err != nil {
+			return err
+		}
+	}
+	for _, mime := range []string{mortarMime, fileMime} {
+		if _, err := l.run(xdgMime, "default", desktopID, mime); err != nil {
+			return fmt.Errorf("xdg-mime default: %w", err)
+		}
+	}
+	return nil
 }

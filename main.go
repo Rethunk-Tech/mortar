@@ -24,6 +24,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/queue"
 	"github.com/Rethunk-AI/mortar/internal/savessvc"
 	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-AI/mortar/internal/sharesvc"
 	modstore "github.com/Rethunk-AI/mortar/internal/store"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -47,6 +48,7 @@ func registerEvents() {
 	application.RegisterEvent[queue.State](queue.ChangedEvent)
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
 	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
+	application.RegisterEvent[sharesvc.Arrival](sharesvc.ArrivedEvent)
 }
 
 func main() {
@@ -120,6 +122,7 @@ func main() {
 		log.Fatal(err)
 	}
 	var app *application.App
+	var shareSvc *sharesvc.Service
 	queueSvc, err := queue.New(queue.Deps{
 		Client:        func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },
 		Premium:       func() bool { return store.Get().NexusPremium },
@@ -136,7 +139,8 @@ func main() {
 				app.Event.Emit(name, data)
 			}
 		},
-		Dir: dataDir,
+		Dir:     dataDir,
+		Changed: func(st queue.State) { shareSvc.QueueChanged(st) },
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -149,6 +153,27 @@ func main() {
 	pick := &picker.Service{}
 	profileSvc := profile.NewService(profiles)
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
+	shareSvc = sharesvc.NewService(sharesvc.Deps{
+		Profiles: profiles,
+		Meta:     modMeta,
+		Files: func(ctx context.Context, modID int) ([]nexus.File, error) {
+			c, err := nexussvc.Authed(store, nexusClient)
+			if err != nil {
+				return nil, err
+			}
+			return c.Files(ctx, modID)
+		},
+		SignedIn: func() bool { return store.Get().NexusUserID != 0 },
+		Premium:  func() bool { return store.Get().NexusPremium },
+		Env:      problemsSvc.Environment,
+		Queue:    queueSvc,
+		Emit: func(name string, data any) {
+			if app != nil {
+				app.Event.Emit(name, data)
+			}
+		},
+	})
+	shareSvc.Receive(os.Args[1:])
 
 	app = application.New(application.Options{
 		Name:        "Mortar",
@@ -157,7 +182,7 @@ func main() {
 			application.NewService(svc), application.NewService(gamesSvc),
 			application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
 			application.NewService(savesSvc), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
-			application.NewService(problemsSvc), application.NewService(queueSvc),
+			application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -170,7 +195,8 @@ func main() {
 			UniqueID: "tech.rethunk.mortar",
 			OnSecondInstanceLaunch: func(d application.SecondInstanceData) {
 				// A minimised window stays down: the window sends a desktop notification whose click brings it up.
-				if !nxmSvc.Receive(d.Args) || !window.IsMinimised() {
+				nxmLink := nxmSvc.Receive(d.Args)
+				if shareSvc.Receive(d.Args) || !nxmLink || !window.IsMinimised() {
 					window.Restore()
 					window.Focus()
 				}
@@ -186,6 +212,7 @@ func main() {
 	pick.App = app
 	nexusSvc.App = app
 	nxmSvc.App = app
+	shareSvc.App = app
 	notifier.OnNotificationResponse(func(notifications.NotificationResult) {
 		window.Restore()
 		window.Focus()

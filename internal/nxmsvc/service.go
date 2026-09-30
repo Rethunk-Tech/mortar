@@ -179,6 +179,10 @@ func (s *Service) Disable() error {
 	return s.record(func(v *settings.Settings) { v.NxmHandled, v.NxmPrevious = false, "" })
 }
 
+// RegisterLinks makes Mortar the app for mortar:// links and .mortar files; the window calls it once first run is
+// done. Running it again is harmless.
+func (s *Service) RegisterLinks() error { return s.handler.RegisterLinks() }
+
 // DeclineOffer records that the user was asked and said not now.
 func (s *Service) DeclineOffer() error {
 	return s.record(func(v *settings.Settings) { v.NxmAsked = true })

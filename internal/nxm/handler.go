@@ -15,6 +15,9 @@ type Handler interface {
 	Register() error
 	// Restore hands the scheme back to previous, the ID of the owner before Mortar, or leaves it unowned when empty.
 	Restore(previous string) error
+	// RegisterLinks makes Mortar the app for mortar:// links and .mortar files where the installer did not, and
+	// changes nothing when it already is.
+	RegisterLinks() error
 }
 
 // Runner runs a command and returns its standard output.

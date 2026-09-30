@@ -52,8 +52,8 @@ func platform() string {
 	return "Linux"
 }
 
-// environment reads the versions from the game's logs; without an install they stay empty.
-func (s *Service) environment(id string) Environment {
+// Environment reads the versions from the game's logs; without an install they stay empty.
+func (s *Service) Environment(id string) Environment {
 	env := Environment{Platform: platform()}
 	g := game.Find(id)
 	if g == nil {
@@ -103,7 +103,7 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	if err != nil {
 		return Result{}, err
 	}
-	env := s.environment(gameID)
+	env := s.Environment(gameID)
 	fp := fingerprint(env, mods)
 	key := gameID + "/" + id
 	s.mu.Lock()
@@ -129,7 +129,7 @@ func (s *Service) Updates(ctx context.Context, gameID, id string) (UpdatesResult
 	if err != nil {
 		return UpdatesResult{}, err
 	}
-	env := s.environment(gameID)
+	env := s.Environment(gameID)
 	fp := fingerprint(env, mods)
 	key := gameID + "/" + id
 	s.mu.Lock()

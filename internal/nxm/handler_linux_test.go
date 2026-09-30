@@ -20,7 +20,7 @@ func (r *recorder) run(name string, args ...string) (string, error) {
 	if name == xdgMime && args[0] == "query" {
 		return r.current + "\n", nil
 	}
-	if name == xdgMime && args[0] == "default" {
+	if name == xdgMime && args[0] == "default" && args[2] == nxmMime {
 		r.current = args[1]
 	}
 	return "", nil
@@ -46,7 +46,7 @@ func TestRegisterThenRestorePreviousHandler(t *testing.T) {
 		t.Fatalf("default is %q after Register", r.current)
 	}
 	b, err := fsx.ReadFile(l.desktopPath())
-	if err != nil || !strings.Contains(string(b), `Exec="/opt/mortar/mortar" %u`) || !strings.Contains(string(b), "MimeType=x-scheme-handler/nxm;x-scheme-handler/mortar;") {
+	if err != nil || !strings.Contains(string(b), `Exec="/opt/mortar/mortar" %u`) || !strings.Contains(string(b), "MimeType=x-scheme-handler/nxm;x-scheme-handler/mortar;application/x-mortar;") {
 		t.Fatalf("desktop file: %s, %v", b, err)
 	}
 	if owner, _ := l.Owner(); !owner.Mine {
@@ -95,5 +95,48 @@ func TestRegisterRefusesAPathItCannotQuote(t *testing.T) {
 	l.exe = `/opt/mor"tar`
 	if err := l.Register(); err == nil || len(r.calls) != 0 {
 		t.Errorf("err %v, calls %v", err, r.calls)
+	}
+}
+
+func TestRegisterLinksIsIdempotentAndKeepsNxm(t *testing.T) {
+	l, r := newLinux(t, "vortex.desktop")
+	if err := l.RegisterLinks(); err != nil {
+		t.Fatal(err)
+	}
+	xml, err := fsx.ReadFile(filepath.Join(l.dataHome, "mime", "packages", "mortar.xml"))
+	if err != nil || !strings.Contains(string(xml), `<glob pattern="*.mortar"/>`) {
+		t.Fatalf("mime xml: %s, %v", xml, err)
+	}
+	desktop, _ := fsx.ReadFile(l.desktopPath())
+	if strings.Contains(string(desktop), nxmMime) || !strings.Contains(string(desktop), "MimeType=x-scheme-handler/mortar;application/x-mortar;") {
+		t.Fatalf("desktop file: %s", desktop)
+	}
+	if r.current != "vortex.desktop" {
+		t.Errorf("RegisterLinks took the nxm default: %q", r.current)
+	}
+	want := []string{
+		updateMIME + " " + filepath.Join(l.dataHome, "mime"),
+		updateDB + " " + filepath.Dir(l.desktopPath()),
+		xdgMime + " default " + desktopID + " " + mortarMime,
+		xdgMime + " default " + desktopID + " " + fileMime,
+	}
+	if strings.Join(r.calls, "\n") != strings.Join(want, "\n") {
+		t.Errorf("calls = %q", r.calls)
+	}
+	r.calls = nil
+	if err := l.RegisterLinks(); err != nil {
+		t.Fatal(err)
+	}
+	if len(r.calls) != 2 {
+		t.Errorf("a second run only sets the defaults again, calls = %q", r.calls)
+	}
+	if err := l.Register(); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.RegisterLinks(); err != nil {
+		t.Fatal(err)
+	}
+	if desktop, _ = fsx.ReadFile(l.desktopPath()); !strings.Contains(string(desktop), nxmMime) {
+		t.Errorf("RegisterLinks dropped nxm: %s", desktop)
 	}
 }

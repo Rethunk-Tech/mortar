@@ -15,3 +15,4 @@ var errUnsupported = errors.New("handling nxm links is not supported on this sys
 func (System) Owner() (Owner, error) { return Owner{}, errUnsupported }
 func (System) Register() error       { return errUnsupported }
 func (System) Restore(string) error  { return errUnsupported }
+func (System) RegisterLinks() error  { return nil }

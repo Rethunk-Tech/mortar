@@ -91,7 +91,7 @@ func validUniqueID(id string) bool {
 // .json files of each enabled mod's folder under configs/<UniqueID>/. modsDir is the profile's mods/ folder.
 // Config files that are over the caps or have unusual names are skipped and returned as paths.
 func Write(w io.Writer, p profile.Profile, modsDir string) (skipped []string, err error) {
-	s, _ := collect(p)
+	s, _, _ := Collect(p)
 	zw := zip.NewWriter(w)
 	entries, err := json.Marshal(s.Entries)
 	if err != nil {

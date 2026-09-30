@@ -72,6 +72,13 @@ type Result struct {
 	LeftOut []LeftOut
 }
 
+// GitHubParts splits a GitHub ref into its "owner/repo", tag and asset name.
+func (r Ref) GitHubParts() (repo, tag, asset string) {
+	repo, rest, _ := strings.Cut(r.GitHub, "@")
+	tag, asset, _ = strings.Cut(rest, "/")
+	return repo, tag, asset
+}
+
 var githubRef = regexp.MustCompile(`^[A-Za-z0-9-]{1,39}/[A-Za-z0-9._-]{1,100}@[A-Za-z0-9._+-]{1,100}/[A-Za-z0-9._+~()-]{1,200}$`)
 
 func validName(name string) bool {
@@ -237,13 +244,16 @@ func containsFold(ids []string, id string) bool {
 	return false
 }
 
-// collect splits a profile into what a link can carry and the enabled entries it cannot.
-// Bundled and switched-off entries are in neither.
-func collect(p profile.Profile) (Shared, []LeftOut) {
-	s := Shared{Name: p.Name, Entries: []Ref{}}
-	var left []LeftOut
+// Collect splits a profile into what a link can carry and the enabled entries it cannot; off holds the keys of
+// the switched-off entries. Bundled entries are in none of them.
+func Collect(p profile.Profile) (s Shared, left []LeftOut, off []string) {
+	s = Shared{Name: p.Name, Entries: []Ref{}}
 	for _, e := range p.Entries {
-		if bundled(e) || !enabled(e) {
+		if bundled(e) {
+			continue
+		}
+		if !enabled(e) {
+			off = append(off, e.Key)
 			continue
 		}
 		r, why := refOf(e)
@@ -253,12 +263,12 @@ func collect(p profile.Profile) (Shared, []LeftOut) {
 		}
 		s.Entries = append(s.Entries, r)
 	}
-	return s, left
+	return s, left, off
 }
 
 // Encode turns a profile into its share links.
 func Encode(p profile.Profile) (Result, error) {
-	s, left := collect(p)
+	s, left, _ := Collect(p)
 	payload, err := s.payload()
 	if err != nil {
 		return Result{}, err

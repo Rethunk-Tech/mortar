@@ -26,6 +26,11 @@ func (f *fakeHandler) Register() error {
 	return nil
 }
 
+func (f *fakeHandler) RegisterLinks() error {
+	f.registry = append(f.registry, "links")
+	return nil
+}
+
 func (f *fakeHandler) Restore(previous string) error {
 	f.owner = nxm.Owner{ID: previous, Name: previous, Mine: false}
 	f.registry = append(f.registry, "restore:"+previous)

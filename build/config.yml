@@ -16,6 +16,14 @@ protocols:
   - scheme: mortar
     description: Mortar link
 
+fileAssociations:
+  - ext: mortar
+    name: Mortar profile
+    description: Mortar profile
+    iconName: appicon
+    role: Editor
+    mimeType: application/x-mortar
+
 # Dev mode configuration
 dev_mode:
   root_path: .
