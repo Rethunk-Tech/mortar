@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"log"
 	"os"
 	"path/filepath"
 	"slices"
@@ -72,13 +73,17 @@ func (s *Store) trashed(gameID string) ([]TrashItem, error) {
 		if !d.IsDir() || !idPattern.MatchString(d.Name()) {
 			continue
 		}
+		// One unreadable trashed profile must not hide or keep the others; StoreKeys still fails on it, so its
+		// store items are never collected.
 		info, err := d.Info()
 		if err != nil {
-			return nil, err
+			log.Printf("trashed profile %s/%s skipped: %v", gameID, d.Name(), err)
+			continue
 		}
 		p, err := readAt(filepath.Join(dir, d.Name()), d.Name())
 		if err != nil {
-			return nil, err
+			log.Printf("trashed profile %s/%s skipped: %v", gameID, d.Name(), err)
+			continue
 		}
 		out = append(out, TrashItem{ID: p.ID, Name: p.Name, DeletedAt: info.ModTime().UTC()})
 	}

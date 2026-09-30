@@ -521,3 +521,27 @@ func TestRunningProfileIsLocked(t *testing.T) {
 		t.Fatalf("mods dir = %q, %v", dir, err)
 	}
 }
+
+func TestUnreadableTrashedProfileBlocksOnlyItself(t *testing.T) {
+	e := newEnv(t)
+	good, _ := e.Create("stardew", "Good")
+	bad, _ := e.Create("stardew", "Bad")
+	for _, id := range []string{good.ID, bad.ID} {
+		if err := e.Delete("stardew", id); err != nil {
+			t.Fatal(err)
+		}
+	}
+	writeFile(t, filepath.Join(e.trash, "stardew", bad.ID), fileName, "{not json")
+	if tr, err := e.ListTrash("stardew"); err != nil || len(tr) != 1 || tr[0].ID != good.ID {
+		t.Fatalf("trash = %+v, %v", tr, err)
+	}
+	if err := e.PurgeTrash(time.Now().Add(31 * 24 * time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(e.trash, "stardew", good.ID)); err == nil {
+		t.Fatal("readable expired profile was not purged")
+	}
+	if _, err := e.StoreKeys(); err == nil {
+		t.Fatal("StoreKeys ignored an unreadable trashed profile")
+	}
+}
