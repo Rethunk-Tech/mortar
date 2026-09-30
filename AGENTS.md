@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Mortar is a multi-game desktop mod manager: game discovery, mod loader install, per-profile mod sets, launch, and profiles shared as links. [docs/design.md](docs/design.md) holds decided work not yet built, pruned as it lands.
+Mortar is a multi-game desktop mod manager: game discovery, mod loader install, per-profile mod sets, launch, and profiles shared as links. [docs/design.md](docs/design.md) holds decided work not yet built, pruned as it lands; screen layout and styling rules: @docs/gui-design.md.
 
 ## Planning phase
 

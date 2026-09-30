@@ -17,6 +17,7 @@ Stardew Valley (SMAPI, Nexus Mods) comes first and Lethal Company (BepInEx, Thun
 | Topic | Location |
 | --- | --- |
 | Decided work not yet built | [docs/design.md](docs/design.md) |
+| Screens and styling | [docs/gui-design.md](docs/gui-design.md) |
 | Rules for agents | [AGENTS.md](AGENTS.md) |
 | Licence | [LICENSE](LICENSE) |
 
