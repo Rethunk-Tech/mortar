@@ -309,11 +309,11 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		Kind: profile.KindNexus, Name: it.FileName, ModID: it.ModID, FileID: it.FileID, Version: it.Version,
 		Picture: mod.PictureURL, EndorsementCount: mod.EndorsementCount,
 	})
-	err = s.finish(it.ID, err, false)
-	if err == nil {
+	var dup *profile.DuplicateError
+	if err == nil || errors.As(err, &dup) {
 		dropDownload(path)
 	}
-	return err
+	return s.finish(it.ID, err, false)
 }
 
 // finish marks an item done after its install, which a mod already in the profile does not fail.
