@@ -3,6 +3,9 @@ package profile
 import (
 	"archive/zip"
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"io"
 	"os"
@@ -213,5 +216,67 @@ func writeRawZip(t *testing.T, dest string, files map[string][]byte) {
 	}
 	if err := os.Rename(f.Name(), dest); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestExportZipOmitsRunsAndHistory(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("X.A")})
+	p, err := e.Create("stardew", "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	dir, err := e.profileDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(dir, "runs"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "runs", "SMAPI-latest.txt"), []byte("/home/user/game"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	zipPath := filepath.Join(t.TempDir(), "p.zip")
+	if err := e.ExportZip("stardew", p.ID, zipPath, "0.0.1"); err != nil {
+		t.Fatal(err)
+	}
+	zr, err := zip.OpenReader(zipPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = zr.Close() }()
+	for _, f := range zr.File {
+		if strings.HasPrefix(f.Name, "runs/") || f.Name == historyFile {
+			t.Fatalf("export included %s", f.Name)
+		}
+	}
+}
+
+func TestRestoreZipIgnoresAbsoluteCover(t *testing.T) {
+	e := newEnv(t)
+	img := filepath.Join(t.TempDir(), "c.png")
+	if err := os.WriteFile(img, pngHeader, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := json.Marshal(Profile{Name: "FromZip", Cover: img})
+	if err != nil {
+		t.Fatal(err)
+	}
+	sum := sha256.Sum256(raw)
+	man, err := json.Marshal(zipManifest{MortarVersion: "0.0.1", Files: map[string]string{zipProfileName: hex.EncodeToString(sum[:])}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	zipPath := filepath.Join(t.TempDir(), "abs.zip")
+	writeRawZip(t, zipPath, map[string][]byte{zipProfileName: raw, zipManifestName: man})
+	got, err := e.RestoreZip("stardew", zipPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Cover != "" {
+		t.Fatalf("absolute cover was applied: %q", got.Cover)
 	}
 }

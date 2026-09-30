@@ -41,7 +41,18 @@ func (s *Store) ExportZip(game, id, dest, mortarVersion string) error {
 		return err
 	}
 	dir, err := s.profileDir(game, id)
+	if err != nil {
+		s.mu.Unlock()
+		return err
+	}
+	snap, err := os.MkdirTemp(filepath.Dir(dir), "mortar-export-*")
+	if err != nil {
+		s.mu.Unlock()
+		return err
+	}
+	err = snapshotProfileExport(dir, snap, p)
 	s.mu.Unlock()
+	defer func() { _ = os.RemoveAll(snap) }()
 	if err != nil {
 		return err
 	}
@@ -49,7 +60,7 @@ func (s *Store) ExportZip(game, id, dest, mortarVersion string) error {
 	if err != nil {
 		return err
 	}
-	err = writeProfileZip(tmp, mortarVersion, dir, p)
+	err = writeProfileZip(tmp, mortarVersion, snap, p)
 	if err == nil {
 		err = tmp.Sync()
 	}
@@ -73,6 +84,55 @@ func zipModName(rel string, skip map[string]bool) (string, bool) {
 		return zipModsPrefix + key, true
 	}
 	return zipModsPrefix + key + "/" + more, true
+}
+
+func snapshotProfileExport(src, dst string, p Profile) error {
+	skip := map[string]bool{}
+	for _, e := range p.Entries {
+		if isBundled(e) {
+			skip[e.Key] = true
+		}
+	}
+	return filepath.WalkDir(src, func(fp string, d fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		rel, err := filepath.Rel(src, fp)
+		if err != nil {
+			return err
+		}
+		rel = filepath.ToSlash(rel)
+		if rel == "." {
+			return nil
+		}
+		if rel == historyFile || rel == "runs" || strings.HasPrefix(rel, "runs/") {
+			if d.IsDir() {
+				return fs.SkipDir
+			}
+			return nil
+		}
+		if strings.HasPrefix(rel, zipModsPrefix) {
+			_, keep := zipModName(rel, skip)
+			if !keep {
+				if d.IsDir() {
+					return fs.SkipDir
+				}
+				return nil
+			}
+		}
+		dest := filepath.Join(dst, filepath.FromSlash(rel))
+		if d.IsDir() {
+			return os.MkdirAll(dest, 0o700)
+		}
+		b, err := fsx.ReadFile(fp)
+		if err != nil {
+			return err
+		}
+		if err := os.MkdirAll(filepath.Dir(dest), 0o700); err != nil {
+			return err
+		}
+		return fsx.WriteFile(dest, b, 0o600)
+	})
 }
 
 func writeProfileZip(w io.Writer, mortarVersion, profileDir string, p Profile) error {
@@ -117,6 +177,12 @@ func writeProfileZip(w io.Writer, mortarVersion, profileDir string, p Profile) e
 			return err
 		}
 		rel = filepath.ToSlash(rel)
+		if rel == historyFile || rel == "runs" || strings.HasPrefix(rel, "runs/") {
+			if d.IsDir() {
+				return fs.SkipDir
+			}
+			return nil
+		}
 		if rel == zipManifestName {
 			return nil
 		}
@@ -209,7 +275,7 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 			return Profile{}, err
 		}
 	}
-	if src.Cover != "" {
+	if src.Cover != "" && filepath.IsLocal(src.Cover) {
 		cover := filepath.Join(tmp, src.Cover)
 		if exists(cover) {
 			out, err = s.SetCover(game, created.ID, cover)
@@ -219,8 +285,8 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 		}
 	}
 	stage := filepath.Join(tmp, "stage")
-	s.setHistoryQuiet(true)
-	defer s.setHistoryQuiet(false)
+	s.setHistoryQuiet(created.ID, true)
+	defer s.setHistoryQuiet(created.ID, false)
 	restored := 0
 	for _, e := range src.Entries {
 		if isBundled(e) {
