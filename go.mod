@@ -1,6 +1,6 @@
 module github.com/Rethunk-AI/mortar
 
-go 1.25.0
+go 1.27.1
 
 require (
 	github.com/andygrunwald/vdf v1.1.0

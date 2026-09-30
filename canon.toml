@@ -1,0 +1,6 @@
+reconciled = "canon v0.1.0-poc"
+
+[deviations]
+# NOMAD ruling 2026-09-30: 80 findings, every one a JSX conditional. Ternaries are React JSX's
+# branching idiom; if/else rewrites lengthen components with no defect class caught.
+"ts-biome-00006 style/noTernary" = "ternaries are React JSX's branching idiom; noNestedTernary stays on"

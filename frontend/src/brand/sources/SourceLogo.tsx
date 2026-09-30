@@ -1,5 +1,5 @@
 import { siGithub, siThunderstore } from 'simple-icons'
-import nexusmods from './nexusmods.svg'
+import nexusmods from '../vendor/nexusmods.svg'
 
 export function SourceLogo({ name, size }: { name: string; size: number }) {
   if (name === 'Nexus') {

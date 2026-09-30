@@ -5,12 +5,13 @@
     "frontend"
   ],
   "scripts": {
-    "lint": "biome check . && golangci-lint run",
+    "lint": "biome check --error-on-warnings . && golangci-lint run",
     "bindings": "wails3 generate bindings -ts",
     "typecheck": "bun run bindings && bun run --cwd frontend tsc --noEmit",
-    "test": "go test ./... && bun test",
+    "test": "go test -race ./... && bun test",
     "vet": "go vet ./...",
-    "gate": "bun run lint && bun run typecheck && bun run vet && bun run test"
+    "gate": "bun run lint && bun run typecheck && bun run vet && bun run test && bun run vuln",
+    "vuln": "govulncheck ./..."
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14"

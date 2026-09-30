@@ -6,7 +6,19 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!.claude", "!**/bindings", "!**/locales/*/messages.ts"]
+    "includes": [
+      "**",
+      "!**/*.dc.html",
+      "!**/*.min.js",
+      "!**/database.types.ts",
+      "!**/design/doc-page.js",
+      "!**/design/support.js",
+      "!**/generated",
+      "!**/vendor",
+      "!.claude",
+      "!**/bindings",
+      "!**/locales/*/messages.ts"
+    ]
   },
   "formatter": {
     "indentStyle": "space",
@@ -15,6 +27,7 @@
     "lineWidth": 100
   },
   "javascript": {
+    "globals": ["Bun"],
     "formatter": {
       "quoteStyle": "single",
       "semicolons": "asNeeded",
@@ -75,7 +88,8 @@
             ]
           }
         },
-        "noJsxLiterals": "off"
+        "noJsxLiterals": "off",
+        "noTernary": "off"
       },
       "complexity": {
         "noExcessiveLinesPerFunction": {
@@ -119,6 +133,7 @@
       },
       "performance": {
         "noAwaitInLoops": "off",
+        "noImgElement": "off",
         "noJsxPropsBind": "off",
         "useSolidForComponent": "off"
       }
