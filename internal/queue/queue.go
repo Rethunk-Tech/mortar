@@ -1,9 +1,10 @@
-// Package queue downloads Nexus files one at a time and installs each into its profile. A premium account
-// downloads straight away; a free one is walked through Nexus's own download page, one click per file, and the
-// nxm:// link that click produces supplies the download key.
+// Package queue downloads Nexus files and GitHub release assets one at a time and installs each into its profile.
+// A premium account downloads straight away; a free one is walked through Nexus's own download page, one click per
+// file, and the nxm:// link that click produces supplies the download key. GitHub needs no account.
 package queue
 
 import (
+	"cmp"
 	"context"
 	"crypto/rand"
 	"encoding/hex"
@@ -14,11 +15,13 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"sync"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/nxm"
 	"github.com/Rethunk-AI/mortar/internal/nxmsvc"
@@ -36,8 +39,12 @@ const (
 	KindDependency = "dependency"
 )
 
-// Where an item stands. Done, Skipped and Cancelled are final; Failed waits for Retry or Skip.
+// Where an item stands. Done, Skipped and Cancelled are final; Failed waits for Retry or Skip; NeedsChoice waits
+// for Choose (a release with several archives) and NeedsConfirm for Confirm or Skip (a download SMAPI's update API
+// does not tie to its repository).
 const (
+	StateNeedsChoice  = "needs-choice"
+	StateNeedsConfirm = "needs-confirm"
 	StateWaitingClick = "waiting-click"
 	StateQueued       = "queued"
 	StateDownloading  = "downloading"
@@ -47,6 +54,9 @@ const (
 	StateSkipped      = "skipped"
 	StateCancelled    = "cancelled"
 )
+
+// repoPattern is a GitHub "owner/repo"; it also keeps anything but a name out of the API URL.
+var repoPattern = regexp.MustCompile(`^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$`)
 
 const (
 	fileName        = "queue.json"
@@ -59,8 +69,10 @@ const (
 )
 
 // Item is one file to download and install. FileID is 0 until the file is chosen from the mod's files (an update
-// wants the file at a version; Current is the file the profile has now). Progress is a percentage and Speed
-// bytes per second.
+// wants the file at a version; Current is the file the profile has now). A GitHub item has Repo ("owner/repo")
+// instead of ModID; its Tag and Asset are filled in from the release, and Assets lists the choices while it
+// waits in StateNeedsChoice. Unverified marks an installed asset whose source SMAPI's API could not check.
+// Progress is a percentage and Speed bytes per second.
 type Item struct {
 	ID       string  `json:"id"`
 	Kind     string  `json:"kind"`
@@ -78,9 +90,17 @@ type Item struct {
 	Speed    int64   `json:"speed"`
 	Error    string  `json:"error"`
 
+	Repo       string   `json:"repo"`
+	Tag        string   `json:"tag"`
+	Asset      string   `json:"asset"`
+	Assets     []string `json:"assets"`
+	Unverified bool     `json:"unverified"`
+
 	// The key and expiry of an nxm:// link supply a free account's download; they are never written to disk.
 	key     string
 	expires int64
+	// staged is the store key of a downloaded GitHub asset that waits for Confirm, or that Confirm released.
+	staged string
 }
 
 // State is the whole queue. LimitedUntil is the Unix time Nexus's rate limit lifts, 0 when it is not limiting.
@@ -91,7 +111,8 @@ type State struct {
 }
 
 // Request asks for one file. FileID may be 0 to have Mortar choose by Version. CurrentKey is the store key of the
-// entry an update replaces.
+// entry an update replaces. A GitHub request names Repo instead of ModID, and Tag or Version selects the release
+// (the newest stable one when both are empty); Asset may be empty when the release has just one archive.
 type Request struct {
 	Kind       string `json:"kind"`
 	Game       string `json:"game"`
@@ -102,6 +123,9 @@ type Request struct {
 	FileName   string `json:"fileName"`
 	Version    string `json:"version"`
 	CurrentKey string `json:"currentKey"`
+	Repo       string `json:"repo"`
+	Tag        string `json:"tag"`
+	Asset      string `json:"asset"`
 
 	key     string
 	expires int64
@@ -113,7 +137,13 @@ type Deps struct {
 	Client  func() (*nexus.Client, error)
 	Premium func() bool
 	Install func(game, profileID, path string, source profile.Source) (profile.InstallResult, error)
-	OpenURL func(url string) error
+	// Stage unpacks a downloaded GitHub asset into the store and returns the UniqueIDs of its mods; InstallStaged
+	// then adds it to the profile. Between the two, Verify checks the source.
+	Stage         func(game string, source profile.Source, path string) (key string, uniqueIDs []string, err error)
+	InstallStaged func(game, profileID, key string, source profile.Source) (profile.InstallResult, error)
+	Verify        func(ctx context.Context, uniqueID, owner, repo string) (bool, error)
+	GitHub        *github.Client
+	OpenURL       func(url string) error
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 	HTTP *http.Client
@@ -156,7 +186,7 @@ func New(d Deps) (*Service, error) {
 	}
 	s.paused = saved.Paused
 	for _, it := range saved.Items {
-		if it.State == StateDownloading || it.State == StateInstalling || it.State == StateWaitingClick {
+		if slices.Contains([]string{StateDownloading, StateInstalling, StateWaitingClick, StateNeedsConfirm}, it.State) {
 			it.State, it.Progress, it.Speed = StateQueued, 0, 0
 		}
 		s.items = append(s.items, &it)
@@ -270,8 +300,8 @@ func (s *Service) find(id string) *Item {
 	return nil
 }
 
-// Add queues files. It refuses while signed out, since nothing could be downloaded. A file already waiting in
-// the same profile is not queued twice, and a failed one is retried.
+// Add queues files. It refuses a Nexus file while signed out, since nothing could be downloaded. A file already
+// waiting in the same profile is not queued twice, and a failed one is retried.
 func (s *Service) Add(reqs []Request) ([]Item, error) {
 	for i := range reqs {
 		reqs[i].key, reqs[i].expires = "", 0
@@ -280,18 +310,20 @@ func (s *Service) Add(reqs []Request) ([]Item, error) {
 }
 
 func (s *Service) add(reqs []Request) ([]Item, error) {
-	if _, err := s.d.Client(); err != nil {
-		return nil, err
+	if slices.ContainsFunc(reqs, func(r Request) bool { return r.Repo == "" }) {
+		if _, err := s.d.Client(); err != nil {
+			return nil, err
+		}
 	}
 	out := make([]Item, 0, len(reqs))
 	s.mu.Lock()
 	for _, r := range reqs {
-		if r.Game == "" || r.Profile == "" || r.ModID <= 0 {
+		if r.Game == "" || r.Profile == "" || (r.ModID <= 0 && !repoPattern.MatchString(r.Repo)) {
 			s.mu.Unlock()
 			return nil, errors.New("choose a mod and a profile for the download")
 		}
 		if i := slices.IndexFunc(s.items, func(it *Item) bool {
-			return !finished(it.State) && it.Game == r.Game && it.Profile == r.Profile && it.ModID == r.ModID && it.FileID == r.FileID
+			return !finished(it.State) && it.Game == r.Game && it.Profile == r.Profile && it.ModID == r.ModID && it.FileID == r.FileID && it.Repo == r.Repo
 		}); i >= 0 {
 			it := s.items[i]
 			if it.State == StateFailed {
@@ -306,6 +338,10 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 		it := &Item{
 			ID: newID(), Kind: r.Kind, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
 			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
+			Repo: r.Repo, Tag: r.Tag, Asset: r.Asset,
+		}
+		if it.Repo != "" {
+			it.Name = cmp.Or(it.Name, it.Repo)
 		}
 		if id, file, ok := store.NexusFile(r.CurrentKey); ok && id == r.ModID {
 			it.Current = file
@@ -356,9 +392,31 @@ func (s *Service) retry(match func(*Item) bool) {
 	s.poke()
 }
 
-// Skip drops an item that has not started, or that failed.
+// Skip drops an item that has not started, that failed, or that waits for the user.
 func (s *Service) Skip(id string) {
-	s.end(id, StateSkipped, StateFailed, StateQueued, StateWaitingClick)
+	s.end(id, StateSkipped, StateFailed, StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm)
+}
+
+// Choose picks the asset of an item waiting in StateNeedsChoice.
+func (s *Service) Choose(id, asset string) {
+	s.mu.Lock()
+	if it := s.find(id); it != nil && it.State == StateNeedsChoice && slices.Contains(it.Assets, asset) {
+		it.State, it.Asset, it.Assets = StateQueued, asset, nil
+	}
+	s.mu.Unlock()
+	s.publish(true)
+	s.poke()
+}
+
+// Confirm installs an item waiting in StateNeedsConfirm although its source could not be tied to its repository.
+func (s *Service) Confirm(id string) {
+	s.mu.Lock()
+	if it := s.find(id); it != nil && it.State == StateNeedsConfirm {
+		it.State = StateQueued
+	}
+	s.mu.Unlock()
+	s.publish(true)
+	s.poke()
 }
 
 // Cancel stops an item, including a download under way. An install cannot be interrupted.

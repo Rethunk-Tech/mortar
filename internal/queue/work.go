@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/store"
@@ -23,6 +24,7 @@ const (
 	resolve action = iota
 	click
 	fetch
+	install
 )
 
 // usable is a download key that has not expired.
@@ -44,6 +46,8 @@ func (s *Service) next() (*Item, action) {
 		case it.State == StateWaitingClick:
 			waiting = true
 		case it.State != StateQueued:
+		case it.Repo != "":
+			return it, s.forAsset(it)
 		case premium || s.usable(it):
 			return it, s.forFile(it, fetch)
 		case head == nil:
@@ -62,6 +66,17 @@ func (s *Service) forFile(it *Item, then action) action {
 		return resolve
 	}
 	return then
+}
+
+// forAsset is resolve while the release and asset are not chosen, and install once the download is staged.
+func (s *Service) forAsset(it *Item) action {
+	switch {
+	case it.staged != "":
+		return install
+	case it.Asset == "" || it.Tag == "":
+		return resolve
+	}
+	return fetch
 }
 
 func (s *Service) run(ctx context.Context) {
@@ -96,7 +111,7 @@ func (s *Service) step(ctx context.Context) bool {
 		it.State = StateWaitingClick
 		it.key, it.expires = "", 0
 	}
-	if act == fetch {
+	if act == fetch || act == install {
 		it.State, it.Progress, it.Speed = StateDownloading, 0, 0
 	}
 	itemCtx, cancel := context.WithCancel(ctx)
@@ -118,6 +133,8 @@ func (s *Service) step(ctx context.Context) bool {
 		s.settle(snap.ID, s.resolve(itemCtx, snap))
 	case fetch:
 		s.settle(snap.ID, s.download(itemCtx, snap))
+	case install:
+		s.settle(snap.ID, s.installStaged(snap))
 	}
 	return true
 }
@@ -131,6 +148,7 @@ func (s *Service) settle(id string, err error) {
 		return
 	}
 	var limit *nexus.RateLimitError
+	var ghLimit *github.RateLimitError
 	var full *store.DiskFullError
 	switch {
 	case errors.Is(err, context.Canceled):
@@ -138,6 +156,12 @@ func (s *Service) settle(id string, err error) {
 	case errors.As(err, &limit):
 		it.State, it.Progress, it.Speed = StateQueued, 0, 0
 		s.until = limit.Reset
+		if !s.until.After(s.d.Now()) {
+			s.until = s.d.Now().Add(defaultBackoff)
+		}
+	case errors.As(err, &ghLimit):
+		it.State, it.Progress, it.Speed = StateQueued, 0, 0
+		s.until = ghLimit.Reset
 		if !s.until.After(s.d.Now()) {
 			s.until = s.d.Now().Add(defaultBackoff)
 		}
@@ -163,6 +187,9 @@ func (s *Service) settle(id string, err error) {
 
 // resolve fills in the file an item names, or chooses it by version.
 func (s *Service) resolve(ctx context.Context, it Item) error {
+	if it.Repo != "" {
+		return s.resolveGitHub(ctx, it)
+	}
 	c, err := s.d.Client()
 	if err != nil {
 		return err
@@ -194,6 +221,9 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 }
 
 func (s *Service) download(ctx context.Context, it Item) error {
+	if it.Repo != "" {
+		return s.downloadGitHub(ctx, it)
+	}
 	c, err := s.d.Client()
 	if err != nil {
 		return err
@@ -239,16 +269,21 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	s.mu.Unlock()
 	s.publish(true)
 	_, err = s.d.Install(it.Game, it.Profile, path, profile.Source{
-		Kind: "nexus", Name: it.FileName, ModID: it.ModID, FileID: it.FileID, Version: it.Version,
+		Kind: profile.KindNexus, Name: it.FileName, ModID: it.ModID, FileID: it.FileID, Version: it.Version,
 		Picture: mod.PictureURL, EndorsementCount: mod.EndorsementCount,
 	})
+	return s.finish(it.ID, err, false)
+}
+
+// finish marks an item done after its install, which a mod already in the profile does not fail.
+func (s *Service) finish(id string, err error, unverified bool) error {
 	var dup *profile.DuplicateError
 	if err != nil && !errors.As(err, &dup) {
 		return err
 	}
 	s.mu.Lock()
-	if cur := s.find(it.ID); cur != nil {
-		cur.State, cur.Progress, cur.key = StateDone, 100, ""
+	if cur := s.find(id); cur != nil {
+		cur.State, cur.Progress, cur.key, cur.staged, cur.Unverified = StateDone, 100, "", "", unverified
 	}
 	s.mu.Unlock()
 	s.publish(true)
@@ -305,10 +340,16 @@ type progress struct {
 }
 
 func (p *progress) Write(b []byte) (int, error) {
-	p.n += int64(len(b))
+	p.set(p.n + int64(len(b)))
+	return len(b), nil
+}
+
+// set records n bytes received in all.
+func (p *progress) set(n int64) {
+	p.n = n
 	now := p.s.d.Now()
 	if now.Sub(p.last) < progressEvery {
-		return len(b), nil
+		return
 	}
 	speed := int64(float64(p.n-p.from) / now.Sub(p.last).Seconds())
 	p.from, p.last = p.n, now
@@ -321,5 +362,4 @@ func (p *progress) Write(b []byte) (int, error) {
 	}
 	p.s.mu.Unlock()
 	p.s.publish(false)
-	return len(b), nil
 }

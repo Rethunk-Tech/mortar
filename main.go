@@ -10,6 +10,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/backdrop"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/loadersvc"
 	"github.com/Rethunk-AI/mortar/internal/meta"
@@ -125,9 +126,15 @@ func main() {
 	}
 	var app *application.App
 	queueSvc, err := queue.New(queue.Deps{
-		Client:  func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },
-		Premium: func() bool { return store.Get().NexusPremium },
-		Install: profiles.InstallNexus,
+		Client:        func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },
+		Premium:       func() bool { return store.Get().NexusPremium },
+		Install:       profiles.InstallNexus,
+		Stage:         profiles.StageGitHub,
+		InstallStaged: profiles.InstallStaged,
+		Verify: func(ctx context.Context, uniqueID, owner, repo string) (bool, error) {
+			return github.Verify(ctx, modMeta, uniqueID, owner, repo)
+		},
+		GitHub:  &github.Client{},
 		OpenURL: func(url string) error { return app.Browser.OpenURL(url) },
 		Emit: func(name string, data any) {
 			if app != nil {
