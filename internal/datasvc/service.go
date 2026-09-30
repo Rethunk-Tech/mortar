@@ -2,6 +2,9 @@
 package datasvc
 
 import (
+	"os"
+	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -69,7 +72,39 @@ func (s *Service) Cleanup() error {
 	if err != nil {
 		return err
 	}
-	return Apply(dir, s.items, preview)
+	return s.applyPreview(dir, preview)
+}
+
+func (s *Service) applyPreview(root string, preview Preview) error {
+	var refs []store.Ref
+	for _, it := range preview.Items {
+		if it.Kind == "store" {
+			game, key, ok := strings.Cut(strings.TrimPrefix(it.Rel, "store/"), "/")
+			if !ok {
+				continue
+			}
+			keep, err := s.referenced()
+			if err != nil {
+				return err
+			}
+			if slices.Contains(keep[game], key) {
+				continue
+			}
+			abs, confErr := confined(root, it.Rel)
+			if confErr != nil {
+				continue
+			}
+			_ = os.RemoveAll(abs)
+			refs = append(refs, store.Ref{Game: game, Key: key})
+			continue
+		}
+		abs, confErr := confined(root, it.Rel)
+		if confErr != nil {
+			continue
+		}
+		_ = os.RemoveAll(abs)
+	}
+	return s.items.Remove(refs)
 }
 
 func (s *Service) referenced() (map[string][]string, error) {

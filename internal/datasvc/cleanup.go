@@ -138,12 +138,22 @@ func Select(root string, items *store.Store, referenced map[string][]string, now
 	return out, nil
 }
 
-// Apply deletes exactly the listed relative paths and drops matching store index entries.
-func Apply(root string, items *store.Store, preview Preview) error {
+// Apply deletes the listed relative paths except store keys still in keep, and drops matching index entries.
+func Apply(root string, items *store.Store, preview Preview, keep map[string][]string) error {
+	named := map[string]map[string]bool{}
+	for g, keys := range keep {
+		named[g] = map[string]bool{}
+		for _, k := range keys {
+			named[g][k] = true
+		}
+	}
 	var refs []store.Ref
 	for _, it := range preview.Items {
 		if it.Kind == "store" {
 			game, key, ok := strings.Cut(strings.TrimPrefix(it.Rel, "store/"), "/")
+			if ok && named[game][key] {
+				continue
+			}
 			if ok {
 				refs = append(refs, store.Ref{Game: game, Key: key})
 			}

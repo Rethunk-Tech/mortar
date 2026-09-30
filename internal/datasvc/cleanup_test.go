@@ -66,7 +66,7 @@ func TestSelectKeepsReferencedAndApplyRemovesTheRest(t *testing.T) {
 	if kinds["store"] != 1 || kinds["cache"] != 1 || kinds["temp"] != 1 {
 		t.Fatalf("kinds = %v items = %+v", kinds, preview.Items)
 	}
-	if err := Apply(root, items, preview); err != nil {
+	if err := Apply(root, items, preview, map[string][]string{"stardew": {"keep"}}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(filepath.Join(root, "store", "stardew", "keep", "x", "a.bin")); err != nil {
@@ -83,5 +83,36 @@ func TestSelectKeepsReferencedAndApplyRemovesTheRest(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(root, "cache", ".tmp-empty")); !os.IsNotExist(err) {
 		t.Fatal("empty temp remains")
+	}
+}
+
+func TestApplySkipsAStoreKeyThatBecameReferenced(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	items, err := store.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	root, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	gone := filepath.Join(root, "store", "stardew", "gone")
+	if err := os.MkdirAll(gone, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(gone, "b.bin"), []byte("gone!"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)
+	preview, err := Select(root, items, map[string][]string{}, now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := Apply(root, items, preview, map[string][]string{"stardew": {"gone"}}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(gone, "b.bin")); err != nil {
+		t.Fatal("store item referenced after preview was removed")
 	}
 }
