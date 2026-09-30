@@ -195,9 +195,17 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
     if (!game) {
       return
     }
+    let live = true
     ProfilesWithMod(game, mod.uniqueId)
-      .then((list) => setRows((list ?? []).filter((r) => r.profileId !== profile.id)))
+      .then((list) => {
+        if (live) {
+          setRows((list ?? []).filter((r) => r.profileId !== profile.id))
+        }
+      })
       .catch(reportUnexpected)
+    return () => {
+      live = false
+    }
   }, [game, mod.uniqueId, profile.id])
   if (rows.length === 0) {
     return null

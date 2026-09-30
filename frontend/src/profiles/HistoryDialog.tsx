@@ -39,10 +39,18 @@ export function HistoryDialog({
     if (!(open && game)) {
       return
     }
+    let live = true
     setError('')
     History(game.id, profileId)
-      .then((list) => setEvents(list ?? []))
+      .then((list) => {
+        if (live) {
+          setEvents(list ?? [])
+        }
+      })
       .catch(reportUnexpected)
+    return () => {
+      live = false
+    }
   }, [open, game, profileId])
   const revertTo = async (id: string) => {
     if (!game) {
