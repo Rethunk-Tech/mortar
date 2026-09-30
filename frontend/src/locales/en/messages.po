@@ -37,7 +37,7 @@ msgstr "Dismiss"
 msgid "Reorder {0}"
 msgstr "Reorder {0}"
 
-#: src/profiles/ProfilesPage.tsx:139
+#: src/profiles/ProfilesPage.tsx:140
 msgid "Rename"
 msgstr "Rename"
 
@@ -98,8 +98,8 @@ msgstr "Files added"
 
 #: src/game/NewProfileDialog.tsx:42
 #: src/game/Sidebar.tsx:228
-#: src/game/Sidebar.tsx:250
-#: src/profiles/ProfilesPage.tsx:271
+#: src/game/Sidebar.tsx:246
+#: src/profiles/ProfilesPage.tsx:272
 msgid "New profile"
 msgstr "New profile"
 
@@ -167,8 +167,8 @@ msgstr "Stop the game?"
 msgid "Stardew green"
 msgstr "Stardew green"
 
-#: src/profiles/ProfilesPage.tsx:156
-#: src/profiles/ProfilesPage.tsx:328
+#: src/profiles/ProfilesPage.tsx:157
+#: src/profiles/ProfilesPage.tsx:329
 msgid "Delete"
 msgstr "Delete"
 
@@ -200,7 +200,7 @@ msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschil
 #: src/launch/LaunchLayer.tsx:94
 #: src/launch/StopDialog.tsx:36
 #: src/mods/parts.tsx:176
-#: src/profiles/ProfilesPage.tsx:316
+#: src/profiles/ProfilesPage.tsx:317
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -247,7 +247,7 @@ msgstr "Installed"
 msgid "Stardew Valley will close now, and any progress since your last save is lost."
 msgstr "Stardew Valley will close now, and any progress since your last save is lost."
 
-#: src/profiles/ProfilesPage.tsx:146
+#: src/profiles/ProfilesPage.tsx:147
 msgid "Duplicate"
 msgstr "Duplicate"
 
@@ -316,7 +316,7 @@ msgstr "Create"
 msgid "Notifications"
 msgstr "Notifications"
 
-#: src/profiles/ProfilesPage.tsx:251
+#: src/profiles/ProfilesPage.tsx:252
 #: src/settings/SettingsPage.tsx:30
 msgid "Back"
 msgstr "Back"
@@ -349,7 +349,7 @@ msgstr "Could not switch {0}"
 msgid "Stop game"
 msgstr "Stop game"
 
-#: src/profiles/ProfilesPage.tsx:311
+#: src/profiles/ProfilesPage.tsx:312
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
@@ -377,8 +377,8 @@ msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was add
 msgid "Stardew Valley"
 msgstr "Stardew Valley"
 
-#: src/profiles/ProfilesPage.tsx:173
-#: src/profiles/ProfilesPage.tsx:184
+#: src/profiles/ProfilesPage.tsx:174
+#: src/profiles/ProfilesPage.tsx:185
 msgid "Recently deleted"
 msgstr "Recently deleted"
 
@@ -407,7 +407,7 @@ msgstr "Something went wrong"
 msgid "Couldn't close the window"
 msgstr "Couldn't close the window"
 
-#: src/profiles/ProfilesPage.tsx:289
+#: src/profiles/ProfilesPage.tsx:290
 msgid "No profiles yet."
 msgstr "No profiles yet."
 
@@ -453,7 +453,7 @@ msgstr "Search mods"
 msgid "AGPL-3.0 · Rethunk-AI/mortar"
 msgstr "AGPL-3.0 · Rethunk-AI/mortar"
 
-#: src/profiles/ProfilesPage.tsx:153
+#: src/profiles/ProfilesPage.tsx:154
 msgid "Show in sidebar"
 msgstr "Show in sidebar"
 
@@ -521,11 +521,11 @@ msgid "Play"
 msgstr "Play"
 
 #. placeholder {0}: deleting?.name ?? ''
-#: src/profiles/ProfilesPage.tsx:308
+#: src/profiles/ProfilesPage.tsx:309
 msgid "Delete {0}?"
 msgstr "Delete {0}?"
 
-#: src/profiles/ProfilesPage.tsx:153
+#: src/profiles/ProfilesPage.tsx:154
 msgid "Hide from sidebar"
 msgstr "Hide from sidebar"
 
@@ -537,7 +537,6 @@ msgstr "Install"
 msgid "Select a mod to see its details."
 msgstr "Select a mod to see its details."
 
-#: src/game/Sidebar.tsx:256
 #: src/settings/SettingsPage.tsx:42
 #: src/shell/AppMenu.tsx:74
 #: src/shell/TitleBar.tsx:98
@@ -602,7 +601,7 @@ msgid "Accent colour"
 msgstr "Accent colour"
 
 #: src/game/Sidebar.tsx:193
-#: src/profiles/ProfilesPage.tsx:263
+#: src/profiles/ProfilesPage.tsx:264
 msgid "Profiles"
 msgstr "Profiles"
 
@@ -664,7 +663,7 @@ msgstr "{modsLabel} · Updated {updated}"
 msgid "Reinstall"
 msgstr "Reinstall"
 
-#: src/profiles/ProfilesPage.tsx:204
+#: src/profiles/ProfilesPage.tsx:205
 #: src/shell/TitleBar.tsx:105
 msgid "Restore"
 msgstr "Restore"
@@ -674,7 +673,7 @@ msgid "Couldn't save that setting"
 msgstr "Couldn't save that setting"
 
 #. placeholder {0}: item.daysLeft
-#: src/profiles/ProfilesPage.tsx:187
+#: src/profiles/ProfilesPage.tsx:188
 msgid "{0, plural, one {# day left} other {# days left}}"
 msgstr "{0, plural, one {# day left} other {# days left}}"
 

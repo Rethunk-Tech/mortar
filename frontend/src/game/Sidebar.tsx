@@ -1,10 +1,10 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { alpha, Box, ButtonBase, IconButton } from '@mui/material'
-import { ListOrdered, Plus, Settings } from 'lucide-react'
+import { ListOrdered, Plus } from 'lucide-react'
 import { type PointerEvent, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { PlayControl } from '../launch/PlayControl.tsx'
-import { openSettings, useNav } from '../nav/store.ts'
+import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { compact } from './compact.ts'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
@@ -228,34 +228,27 @@ export function Sidebar({ game }: { game: string }) {
           <Trans>New profile</Trans>
         </ButtonBase>
       </Box>
-      <Box sx={{ px: 1, pt: 1, [compact]: { display: 'flex', justifyContent: 'center' } }}>
-        <PlayControl game={game} />
-      </Box>
       <Box
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          p: 1,
-          [compact]: { flexDirection: 'column', gap: 0.5 },
+          display: 'none',
+          [compact]: {
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 0.5,
+            pt: 1,
+          },
         }}
       >
-        <IconButton
-          aria-label={t`Manage profiles`}
-          onClick={openProfiles}
-          sx={{ display: 'none', [compact]: { display: 'inline-flex' } }}
-        >
+        <IconButton aria-label={t`Manage profiles`} onClick={openProfiles}>
           <ListOrdered size={20} />
         </IconButton>
-        <IconButton
-          aria-label={t`New profile`}
-          onClick={() => setCreating(true)}
-          sx={{ display: 'none', [compact]: { display: 'inline-flex' } }}
-        >
+        <IconButton aria-label={t`New profile`} onClick={() => setCreating(true)}>
           <Plus size={20} />
         </IconButton>
-        <IconButton aria-label={t`Settings`} onClick={() => openSettings()}>
-          <Settings size={20} />
-        </IconButton>
+      </Box>
+      <Box sx={{ p: 1, [compact]: { display: 'flex', justifyContent: 'center' } }}>
+        <PlayControl game={game} />
       </Box>
       <ResizeHandle width={width} onWidth={setWidth} />
       <NewProfileDialog open={creating} onClose={() => setCreating(false)} />
