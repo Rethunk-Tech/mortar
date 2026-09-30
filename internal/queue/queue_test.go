@@ -420,3 +420,21 @@ func TestItemsForARunningProfileWait(t *testing.T) {
 	f.s.Resume()
 	f.wait("done", f.item(StateDone))
 }
+
+func TestARejectedLinkCanBeRetried(t *testing.T) {
+	f := newFixture(t)
+	client := f.s.d.Client
+	f.s.d.Client = func() (*nexus.Client, error) { return nil, fmt.Errorf("sign in") }
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+	assigned := make(chan nxmsvc.Assignment)
+	Run(ctx, f.s, assigned)
+	assigned <- nxmsvc.Assignment{Link: nxm.Link{ModID: 1, FileID: 10}, Game: "stardew", Profile: "p1"}
+	it := f.wait("the rejection", f.item(StateFailed)).Items[0]
+	if it.Game != "stardew" || it.Profile != "p1" || it.FileID != 10 {
+		t.Fatalf("rejected item %+v", it)
+	}
+	f.s.d.Client = client
+	f.s.Retry(it.ID)
+	f.wait("done", f.item(StateDone))
+}

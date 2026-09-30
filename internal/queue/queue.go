@@ -227,22 +227,26 @@ func Run(ctx context.Context, s *Service, assigned <-chan nxmsvc.Assignment) {
 			case <-ctx.Done():
 				return
 			case a := <-assigned:
-				_, err := s.add([]Request{{
+				r := Request{
 					Kind: KindInstall, Game: a.Game, Profile: a.Profile, ModID: a.Link.ModID, FileID: a.Link.FileID,
 					key: a.Link.Key, expires: a.Link.Expires,
-				}})
-				if err != nil {
-					s.reject(a.Link.ModID, err)
+				}
+				if _, err := s.add([]Request{r}); err != nil {
+					s.reject(r, err)
 				}
 			}
 		}
 	}()
 }
 
-// reject shows a link that could not be queued as a failed entry, since there is no item to blame.
-func (s *Service) reject(modID int, err error) {
+// reject shows a link that could not be queued as a failed entry, since there is no item to blame. It keeps the
+// request so that Retry can download it once the cause is fixed.
+func (s *Service) reject(r Request, err error) {
 	s.mu.Lock()
-	s.items = append(s.items, &Item{ID: newID(), Kind: KindInstall, ModID: modID, State: StateFailed, Error: err.Error()})
+	s.items = append(s.items, &Item{
+		ID: newID(), Kind: r.Kind, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
+		State: StateFailed, Error: err.Error(), key: r.key, expires: r.expires,
+	})
 	s.mu.Unlock()
 	s.publish(true)
 }
