@@ -3,7 +3,13 @@ import { create } from 'zustand'
 import type { Settings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
 import { Get } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 
-const defaults: Settings = { accent: 'sand', translucent: true, lastGame: '', lastProfile: {} }
+const defaults: Settings = {
+  accent: 'sand',
+  translucent: true,
+  lastGame: '',
+  lastProfile: {},
+  gameFolders: {},
+}
 
 export const useSettings = create<Settings>(() => defaults)
 

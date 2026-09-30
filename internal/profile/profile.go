@@ -16,7 +16,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/games"
+	"github.com/Rethunk-AI/mortar/internal/game"
 )
 
 const (
@@ -69,11 +69,11 @@ func cleanName(name string) (string, error) {
 	return name, nil
 }
 
-func (s *Store) gameDir(game string) (string, error) {
-	if !games.Valid(game) {
-		return "", fmt.Errorf("unknown game %q", game)
+func (s *Store) gameDir(id string) (string, error) {
+	if !game.Valid(id) {
+		return "", fmt.Errorf("unknown game %q", id)
 	}
-	return filepath.Join(s.root, game), nil
+	return filepath.Join(s.root, id), nil
 }
 
 func (s *Store) profileDir(game, id string) (string, error) {

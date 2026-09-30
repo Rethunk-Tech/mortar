@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/Rethunk-AI/mortar/internal/games"
+	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -20,12 +20,13 @@ func main() {
 		log.Fatal(err)
 	}
 	svc := settings.NewService(store)
+	svc.ValidateGameFolder = game.ValidateFolder
 
 	home, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal(err)
 	}
-	gamesSvc := games.NewService(home)
+	gamesSvc := game.NewService(home, store)
 
 	profiles, err := profile.Open()
 	if err != nil {
@@ -43,7 +44,7 @@ func main() {
 		},
 		Assets: application.AssetOptions{
 			Handler:    application.AssetFileServerFS(assets),
-			Middleware: games.ArtMiddleware(home),
+			Middleware: game.ArtMiddleware(home),
 		},
 		SingleInstance: &application.SingleInstanceOptions{
 			UniqueID: "tech.rethunk.mortar",

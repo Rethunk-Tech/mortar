@@ -1,8 +1,8 @@
-import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/games/models.ts'
+import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
 import {
   List,
   SteamStatus,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/games/service.ts'
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 
 export type GameStatus = {
   games: GameInfo[]

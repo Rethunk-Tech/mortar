@@ -1,6 +1,6 @@
 import { t } from '@lingui/core/macro'
 import { create } from 'zustand'
-import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/games/models.ts'
+import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   Create,
