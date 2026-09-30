@@ -15,7 +15,6 @@ const sections = new Set<SettingsSection>([
   'data',
   'nexus',
   'updates',
-  'overlay',
   'shortcuts',
   'about',
 ])
@@ -87,6 +86,13 @@ function runAction(id: string): void {
   }
   if (id === 'action:new-profile') {
     useCommandPalette.getState().setCreating(true)
+    return
+  }
+  if (id === 'action:stream-overlay') {
+    const nav = useNav.getState()
+    nav.closeSettings()
+    nav.closeProfiles()
+    nav.openGameSettings()
   }
 }
 

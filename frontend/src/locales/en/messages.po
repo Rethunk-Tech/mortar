@@ -20,7 +20,7 @@ msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
 #: src/firstrun/FindStep.tsx:65
-#: src/settings/sections/GameSettings.tsx:67
+#: src/settings/sections/GameSettings.tsx:68
 msgid "Browse…"
 msgstr "Browse…"
 
@@ -71,7 +71,7 @@ msgid "Installing SMAPI {latest}"
 msgstr "Installing SMAPI {latest}"
 
 #. placeholder {0}: status.version
-#: src/settings/sections/GameSettings.tsx:126
+#: src/settings/sections/GameSettings.tsx:127
 msgid "SMAPI {0}"
 msgstr "SMAPI {0}"
 
@@ -144,10 +144,6 @@ msgstr "Remove {0} mods from this profile?"
 msgid "Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them."
 msgstr "Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them."
 
-#: src/settings/sections/StreamOverlay.tsx:113
-msgid "Overlay URL copied"
-msgstr "Overlay URL copied"
-
 #: src/share/ShareDialog.tsx:255
 msgid "Use a file"
 msgstr "Use a file"
@@ -159,6 +155,10 @@ msgstr "Could not change the profile's visibility"
 #: src/notes/NotesTab.tsx:48
 msgid "Saved · just now"
 msgstr "Saved · just now"
+
+#: src/settings/sections/StreamOverlay.tsx:328
+msgid "Show token"
+msgstr "Show token"
 
 #: src/mods/Toolbar.tsx:160
 #: src/mods/Toolbar.tsx:167
@@ -338,6 +338,10 @@ msgstr "Mod list copied"
 msgid "· updates and rolls back with this mod"
 msgstr "· updates and rolls back with this mod"
 
+#: src/settings/sections/StreamOverlay.tsx:85
+msgid "Year"
+msgstr "Year"
+
 #: src/mods/DuplicateDialog.tsx:31
 msgid "Bundled with SMAPI"
 msgstr "Bundled with SMAPI"
@@ -374,6 +378,10 @@ msgstr "{name} is marked obsolete and may not work with this game version."
 #: src/queue/QueueHistory.tsx:71
 msgid "All outcomes"
 msgstr "All outcomes"
+
+#: src/settings/sections/StreamOverlay.tsx:101
+msgid "Fishing skill"
+msgstr "Fishing skill"
 
 #: src/share/ImportDialog.tsx:54
 msgid "Import profile"
@@ -449,10 +457,6 @@ msgstr "Roll back"
 msgid "Not in the file"
 msgstr "Not in the file"
 
-#: src/settings/sections/StreamOverlay.tsx:129
-msgid "Regenerate"
-msgstr "Regenerate"
-
 #: src/mods/UpdateReview.tsx:333
 msgid "Some mods could not be checked, so more updates may show up later."
 msgstr "Some mods could not be checked, so more updates may show up later."
@@ -500,6 +504,11 @@ msgstr "Nothing in the queue needs a decision."
 #: src/share/ShareDialog.tsx:312
 msgid "Copy mod list"
 msgstr "Copy mod list"
+
+#: src/settings/sections/StreamOverlay.tsx:272
+#: src/settings/sections/StreamOverlay.tsx:417
+msgid "Copied"
+msgstr "Copied"
 
 #: src/share/ImportPreview.tsx:186
 msgid "Page"
@@ -585,7 +594,7 @@ msgstr "Found in your Steam library"
 msgid "{name} was removed from Nexus"
 msgstr "{name} was removed from Nexus"
 
-#: src/commandPalette/CommandPalette.tsx:139
+#: src/commandPalette/CommandPalette.tsx:138
 #: src/settings/sections/Shortcuts.tsx:9
 msgid "Focus the Mods filter"
 msgstr "Focus the Mods filter"
@@ -594,7 +603,6 @@ msgstr "Focus the Mods filter"
 #: src/queue/actions.ts:76
 #: src/queue/store.ts:183
 #: src/queue/store.ts:206
-#: src/settings/sections/StreamOverlay.tsx:96
 msgid "Show"
 msgstr "Show"
 
@@ -617,7 +625,7 @@ msgstr "Skip {0}"
 msgid "Latest on Nexus"
 msgstr "Latest on Nexus"
 
-#: src/commandPalette/CommandPalette.tsx:166
+#: src/commandPalette/CommandPalette.tsx:165
 #: src/game/NewProfileDialog.tsx:49
 #: src/game/Sidebar.tsx:369
 #: src/game/Sidebar.tsx:387
@@ -631,8 +639,8 @@ msgid "Not signed in"
 msgstr "Not signed in"
 
 #: src/firstrun/FindStep.tsx:125
-#: src/settings/sections/GameSettings.tsx:37
-#: src/settings/sections/GameSettings.tsx:42
+#: src/settings/sections/GameSettings.tsx:38
+#: src/settings/sections/GameSettings.tsx:43
 msgid "Game folder"
 msgstr "Game folder"
 
@@ -715,7 +723,7 @@ msgid "{length} of {limit} characters · fits one Discord message"
 msgstr "{length} of {limit} characters · fits one Discord message"
 
 #: src/commandPalette/CommandPalette.tsx:129
-#: src/settings/SettingsPage.tsx:31
+#: src/settings/SettingsPage.tsx:30
 msgid "Appearance"
 msgstr "Appearance"
 
@@ -743,6 +751,10 @@ msgstr "Group by"
 #: src/mods/DuplicateDialog.tsx:129
 msgid "Keep the Nexus copy"
 msgstr "Keep the Nexus copy"
+
+#: src/settings/sections/StreamOverlay.tsx:415
+msgid "Load a save to see values"
+msgstr "Load a save to see values"
 
 #: src/console/CrashDialog.tsx:34
 msgid "Stardew Valley closed with errors"
@@ -831,7 +843,7 @@ msgstr "Nothing to remove."
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
 
-#: src/settings/sections/StreamOverlay.tsx:105
+#: src/settings/sections/StreamOverlay.tsx:336
 msgid "Copy token"
 msgstr "Copy token"
 
@@ -967,7 +979,7 @@ msgstr "Stop the game?"
 msgid "Stardew green"
 msgstr "Stardew green"
 
-#: src/commandPalette/CommandPalette.tsx:163
+#: src/commandPalette/CommandPalette.tsx:162
 msgid "Open Downloads"
 msgstr "Open Downloads"
 
@@ -985,13 +997,13 @@ msgstr "Not checked yet."
 msgid "Disable"
 msgstr "Disable"
 
-#: src/settings/sections/StreamOverlay.tsx:55
-#: src/settings/sections/StreamOverlay.tsx:116
+#: src/settings/sections/StreamOverlay.tsx:273
+#: src/settings/sections/StreamOverlay.tsx:418
 msgid "Could not copy"
 msgstr "Could not copy"
 
-#: src/commandPalette/CommandPalette.tsx:134
-#: src/settings/SettingsPage.tsx:36
+#: src/commandPalette/CommandPalette.tsx:133
+#: src/settings/SettingsPage.tsx:34
 msgid "Shortcuts"
 msgstr "Shortcuts"
 
@@ -1006,6 +1018,10 @@ msgstr "Open a .mortar file someone sent you. You see what it holds before anyth
 #: src/profiles/store.ts:85
 msgid "Could not duplicate the profile"
 msgstr "Could not duplicate the profile"
+
+#: src/settings/sections/StreamOverlay.tsx:226
+msgid "Copy CSS"
+msgstr "Copy CSS"
 
 #: src/console/CrashDialog.tsx:37
 msgid "The SMAPI log has errors."
@@ -1041,7 +1057,7 @@ msgstr "Could not launch the game"
 msgid "Review mod updates"
 msgstr "Review mod updates"
 
-#: src/commandPalette/CommandPalette.tsx:140
+#: src/commandPalette/CommandPalette.tsx:139
 #: src/settings/sections/Shortcuts.tsx:10
 msgid "Play the open profile"
 msgstr "Play the open profile"
@@ -1072,6 +1088,7 @@ msgstr "Cover image"
 #: src/settings/sections/Data.tsx:106
 #: src/settings/sections/Data.tsx:253
 #: src/settings/sections/nxmHandler.tsx:101
+#: src/settings/sections/StreamOverlay.tsx:250
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -1144,13 +1161,17 @@ msgstr "Summary"
 msgid "A profile with only SMAPI. Add mods from Nexus or from archives."
 msgstr "A profile with only SMAPI. Add mods from Nexus or from archives."
 
-#: src/settings/sections/GameSettings.tsx:193
+#: src/settings/sections/GameSettings.tsx:194
 msgid " · Stardew Valley {version}"
 msgstr " · Stardew Valley {version}"
 
 #: src/share/ShareDialog.tsx:282
 msgid "Disabled"
 msgstr "Disabled"
+
+#: src/settings/sections/StreamOverlay.tsx:438
+msgid "Show live game info in OBS. Changes apply the next time you press Play."
+msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 
 #: src/settings/sections/About.tsx:28
 #: src/settings/sections/Updates.tsx:206
@@ -1225,7 +1246,7 @@ msgstr "last played {played}"
 #: src/loader/Banner.tsx:38
 #: src/mods/Sidebar.tsx:142
 #: src/mods/UpdateReview.tsx:226
-#: src/settings/sections/GameSettings.tsx:127
+#: src/settings/sections/GameSettings.tsx:128
 #: src/settings/smapiToast.ts:34
 msgid "Update"
 msgstr "Update"
@@ -1285,6 +1306,10 @@ msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile 
 msgid "Meadowlands farm"
 msgstr "Meadowlands farm"
 
+#: src/settings/sections/StreamOverlay.tsx:298
+msgid "Connection"
+msgstr "Connection"
+
 #: src/firstrun/FirstRun.tsx:91
 msgid "Game found"
 msgstr "Game found"
@@ -1293,7 +1318,7 @@ msgstr "Game found"
 msgid "None of this profile's mods are marked broken for the new version."
 msgstr "None of this profile's mods are marked broken for the new version."
 
-#: src/commandPalette/CommandPalette.tsx:142
+#: src/commandPalette/CommandPalette.tsx:141
 #: src/settings/sections/Shortcuts.tsx:12
 msgid "Open Settings"
 msgstr "Open Settings"
@@ -1370,7 +1395,7 @@ msgid "Could not read this Mortar build's version: {failed}"
 msgstr "Could not read this Mortar build's version: {failed}"
 
 #: src/loader/Banner.tsx:31
-#: src/settings/sections/GameSettings.tsx:119
+#: src/settings/sections/GameSettings.tsx:120
 msgid "SMAPI is not installed"
 msgstr "SMAPI is not installed"
 
@@ -1404,6 +1429,10 @@ msgstr "Warn"
 #: src/mods/ModList.tsx:89
 msgid "Needs"
 msgstr "Needs"
+
+#: src/settings/sections/StreamOverlay.tsx:156
+msgid "Values"
+msgstr "Values"
 
 #: src/settings/sections/Appearance.tsx:107
 msgid "Changes apply right away"
@@ -1563,8 +1592,8 @@ msgstr "Ready to import"
 msgid "Needs {0} or newer, has {1}"
 msgstr "Needs {0} or newer, has {1}"
 
-#: src/commandPalette/CommandPalette.tsx:133
-#: src/settings/SettingsPage.tsx:35
+#: src/commandPalette/CommandPalette.tsx:166
+#: src/settings/sections/StreamOverlay.tsx:436
 msgid "Stream overlay"
 msgstr "Stream overlay"
 
@@ -1583,6 +1612,14 @@ msgstr "Not found in your Steam library"
 #: src/mods/UpdateReview.tsx:243
 msgid "Updates are unknown: SMAPI's update service could not be reached."
 msgstr "Updates are unknown: SMAPI's update service could not be reached."
+
+#: src/settings/sections/StreamOverlay.tsx:83
+msgid "Day"
+msgstr "Day"
+
+#: src/settings/sections/StreamOverlay.tsx:99
+msgid "Farming skill"
+msgstr "Farming skill"
 
 #: src/game/Detail.tsx:62
 msgid "Profile menu"
@@ -1613,7 +1650,7 @@ msgstr "{0} copies of {1}"
 msgid "Copy"
 msgstr "Copy"
 
-#: src/commandPalette/CommandPalette.tsx:138
+#: src/commandPalette/CommandPalette.tsx:137
 #: src/settings/sections/Shortcuts.tsx:8
 msgid "Open the command palette"
 msgstr "Open the command palette"
@@ -1631,7 +1668,7 @@ msgid "Trace"
 msgstr "Trace"
 
 #: src/commandPalette/CommandPalette.tsx:130
-#: src/settings/SettingsPage.tsx:32
+#: src/settings/SettingsPage.tsx:31
 msgid "Data"
 msgstr "Data"
 
@@ -1679,7 +1716,11 @@ msgstr "Could not save the open profile"
 msgid "Create"
 msgstr "Create"
 
-#: src/settings/sections/StreamOverlay.tsx:74
+#: src/settings/sections/StreamOverlay.tsx:168
+msgid "All values"
+msgstr "All values"
+
+#: src/settings/sections/StreamOverlay.tsx:304
 msgid "Port"
 msgstr "Port"
 
@@ -1707,11 +1748,15 @@ msgstr "config.json, made by the mod"
 msgid "Mortar {0} is ready. Restart Mortar to finish updating."
 msgstr "Mortar {0} is ready. Restart Mortar to finish updating."
 
+#: src/settings/sections/StreamOverlay.tsx:416
+msgid "Start the game to see values"
+msgstr "Start the game to see values"
+
 #: src/console/ConsoleTab.tsx:275
 msgid "Console command"
 msgstr "Console command"
 
-#: src/settings/sections/GameSettings.tsx:27
+#: src/settings/sections/GameSettings.tsx:28
 msgid "That folder cannot be used"
 msgstr "That folder cannot be used"
 
@@ -1754,6 +1799,10 @@ msgstr "Notifications"
 msgid "This download's mod is not known to come from {0}."
 msgstr "This download's mod is not known to come from {0}."
 
+#: src/settings/sections/StreamOverlay.tsx:97
+msgid "Stamina"
+msgstr "Stamina"
+
 #: src/profiles/ProfileRow.tsx:188
 msgid "imported from a link"
 msgstr "imported from a link"
@@ -1763,7 +1812,7 @@ msgid "Request counts appear after Mortar talks to Nexus."
 msgstr "Request counts appear after Mortar talks to Nexus."
 
 #: src/profiles/ProfilesPage.tsx:241
-#: src/settings/SettingsPage.tsx:65
+#: src/settings/SettingsPage.tsx:62
 msgid "Back"
 msgstr "Back"
 
@@ -1822,7 +1871,7 @@ msgstr "Not affiliated"
 msgid "Open data folder"
 msgstr "Open data folder"
 
-#: src/settings/sections/GameSettings.tsx:31
+#: src/settings/sections/GameSettings.tsx:32
 msgid "Chosen by you"
 msgstr "Chosen by you"
 
@@ -1979,9 +2028,14 @@ msgstr "Current files on Nexus ({0})"
 msgid "{0} · {1} errors"
 msgstr "{0} · {1} errors"
 
-#: src/settings/sections/GameSettings.tsx:130
+#: src/settings/sections/GameSettings.tsx:131
 msgid "Installed and up to date"
 msgstr "Installed and up to date"
+
+#: src/settings/sections/StreamOverlay.tsx:253
+#: src/settings/sections/StreamOverlay.tsx:354
+msgid "Regenerate token"
+msgstr "Regenerate token"
 
 #: src/share/ImportFooter.tsx:103
 msgid "New profile from file"
@@ -2068,7 +2122,7 @@ msgstr "No saves found yet."
 msgid "{0} · {1} unique"
 msgstr "{0} · {1} unique"
 
-#: src/settings/sections/GameSettings.tsx:59
+#: src/settings/sections/GameSettings.tsx:60
 msgid "Not found"
 msgstr "Not found"
 
@@ -2122,7 +2176,7 @@ msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was add
 msgid "Four Corners farm"
 msgstr "Four Corners farm"
 
-#: src/commandPalette/CommandPalette.tsx:164
+#: src/commandPalette/CommandPalette.tsx:163
 #: src/profiles/GameModsDialog.tsx:157
 #: src/profiles/ProfilesPage.tsx:271
 #: src/settings/sections/Data.tsx:118
@@ -2170,6 +2224,10 @@ msgstr "Summer"
 msgid "Restore this backup?"
 msgstr "Restore this backup?"
 
+#: src/settings/sections/StreamOverlay.tsx:87
+msgid "Time"
+msgstr "Time"
+
 #: src/launch/store.ts:101
 msgid "Could not check the game version"
 msgstr "Could not check the game version"
@@ -2192,10 +2250,6 @@ msgstr "No update checks, and it can't go in a share link."
 #: src/mods/ModDependencyTree.tsx:106
 msgid "Optional"
 msgstr "Optional"
-
-#: src/settings/sections/StreamOverlay.tsx:102
-msgid "Token copied"
-msgstr "Token copied"
 
 #: src/share/ShareDialog.tsx:151
 msgid "Open in Mortar"
@@ -2282,6 +2336,10 @@ msgstr "New since you last looked"
 msgid "Tell when SMAPI is out: {from} → {to}"
 msgstr "Tell when SMAPI is out: {from} → {to}"
 
+#: src/settings/sections/StreamOverlay.tsx:93
+msgid "Weather"
+msgstr "Weather"
+
 #: src/console/ConsoleTab.tsx:417
 msgid "Follow"
 msgstr "Follow"
@@ -2302,6 +2360,11 @@ msgstr "Downloading {name} into {profileName}"
 #: src/settings/sections/Data.tsx:260
 msgid "Clean up"
 msgstr "Clean up"
+
+#: src/settings/sections/StreamOverlay.tsx:183
+#: src/settings/sections/StreamOverlay.tsx:186
+msgid "Copy OBS URL"
+msgstr "Copy OBS URL"
 
 #: src/profiles/EditProfileDialog.tsx:262
 msgid "Extra SMAPI arguments for this profile. Mortar sets --mods-path itself."
@@ -2327,6 +2390,10 @@ msgstr "There is no SMAPI log for this profile yet. Play this profile once, then
 msgid "Save log"
 msgstr "Save log"
 
+#: src/settings/sections/StreamOverlay.tsx:89
+msgid "Date"
+msgstr "Date"
+
 #: src/settings/sections/Data.tsx:215
 msgid "Store"
 msgstr "Store"
@@ -2334,10 +2401,6 @@ msgstr "Store"
 #: src/share/ImportPreview.tsx:45
 msgid "Download"
 msgstr "Download"
-
-#: src/settings/sections/StreamOverlay.tsx:133
-msgid "The change applies at the next launch."
-msgstr "The change applies at the next launch."
 
 #. placeholder {0}: mod.name
 #: src/mods/store.ts:296
@@ -2358,11 +2421,15 @@ msgstr "This session"
 msgid "Other profile…"
 msgstr "Other profile…"
 
+#: src/settings/sections/StreamOverlay.tsx:328
+msgid "Hide token"
+msgstr "Hide token"
+
 #: src/saves/SavesTab.tsx:246
 msgid "Has used:"
 msgstr "Has used:"
 
-#: src/settings/sections/GameSettings.tsx:33
+#: src/settings/sections/GameSettings.tsx:34
 msgid "Found in Steam"
 msgstr "Found in Steam"
 
@@ -2425,6 +2492,14 @@ msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the ne
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
+#: src/settings/sections/StreamOverlay.tsx:91
+msgid "Money"
+msgstr "Money"
+
+#: src/settings/sections/StreamOverlay.tsx:244
+msgid "Regenerate token?"
+msgstr "Regenerate token?"
+
 #: src/mods/ModMenu.tsx:73
 #: src/mods/Sidebar.tsx:277
 msgid "Unpin"
@@ -2472,7 +2547,7 @@ msgstr "Export settings…"
 msgid "Reset"
 msgstr "Reset"
 
-#: src/settings/sections/GameSettings.tsx:76
+#: src/settings/sections/GameSettings.tsx:77
 msgid "Use Steam's"
 msgstr "Use Steam's"
 
@@ -2578,13 +2653,17 @@ msgstr "Moss"
 msgid "Tags"
 msgstr "Tags"
 
+#: src/settings/sections/StreamOverlay.tsx:107
+msgid "Combat skill"
+msgstr "Combat skill"
+
 #: src/saves/SavesTab.tsx:124
 msgid "Open the page of {name}"
 msgstr "Open the page of {name}"
 
 #: src/mods/ModMenu.tsx:46
 #: src/mods/SelectionBar.tsx:50
-#: src/settings/sections/StreamOverlay.tsx:69
+#: src/settings/sections/StreamOverlay.tsx:449
 msgid "Enable"
 msgstr "Enable"
 
@@ -2659,12 +2738,16 @@ msgstr "AGPL-3.0 · Rethunk-AI/mortar"
 msgid "and {0} more"
 msgstr "and {0} more"
 
+#: src/settings/sections/StreamOverlay.tsx:246
+msgid "Existing OBS sources stop working until their URLs are copied again."
+msgstr "Existing OBS sources stop working until their URLs are copied again."
+
 #: src/install/DropOverlay.tsx:98
 msgid "Stop the game to change mods"
 msgstr "Stop the game to change mods"
 
 #: src/commandPalette/CommandPalette.tsx:132
-#: src/settings/SettingsPage.tsx:34
+#: src/settings/SettingsPage.tsx:33
 msgid "Updates"
 msgstr "Updates"
 
@@ -2840,6 +2923,10 @@ msgstr "{name} did not start"
 msgid "Mortar checks Steam's settings for it: not found yet."
 msgstr "Mortar checks Steam's settings for it: not found yet."
 
+#: src/settings/sections/StreamOverlay.tsx:457
+msgid "Show labels"
+msgstr "Show labels"
+
 #: src/settings/sections/Updates.tsx:81
 msgid "Check now"
 msgstr "Check now"
@@ -2923,12 +3010,16 @@ msgstr "Built on"
 msgid "Remove"
 msgstr "Remove"
 
-#: src/commandPalette/CommandPalette.tsx:161
+#: src/commandPalette/CommandPalette.tsx:160
 #: src/games/GameSelect.tsx:176
 #: src/launch/PlayControl.tsx:148
 #: src/settings/sections/Appearance.tsx:94
 msgid "Play"
 msgstr "Play"
+
+#: src/settings/sections/StreamOverlay.tsx:109
+msgid "Luck skill"
+msgstr "Luck skill"
 
 #: src/mods/describe.ts:26
 msgid "{dependentName} needs {dep}, which is switched off."
@@ -2953,10 +3044,6 @@ msgstr "Beach farm"
 #: src/profiles/EditProfileDialog.tsx:270
 msgid "Save"
 msgstr "Save"
-
-#: src/settings/sections/StreamOverlay.tsx:121
-msgid "Copy overlay URL"
-msgstr "Copy overlay URL"
 
 #: src/mods/DuplicateDialog.tsx:29
 msgid "From Nexus"
@@ -2992,7 +3079,7 @@ msgid "Could not verify its source"
 msgstr "Could not verify its source"
 
 #: src/loader/Banner.tsx:32
-#: src/settings/sections/GameSettings.tsx:121
+#: src/settings/sections/GameSettings.tsx:122
 msgid "Install"
 msgstr "Install"
 
@@ -3008,7 +3095,7 @@ msgstr "Required"
 msgid "Redo update"
 msgstr "Redo update"
 
-#: src/settings/sections/StreamOverlay.tsx:89
+#: src/settings/sections/StreamOverlay.tsx:319
 msgid "Token"
 msgstr "Token"
 
@@ -3033,6 +3120,10 @@ msgstr "Someone sent you a Mortar link? You see what it holds first. Mods from N
 msgid "{0} · in use"
 msgstr "{0} · in use"
 
+#: src/settings/sections/StreamOverlay.tsx:105
+msgid "Mining skill"
+msgstr "Mining skill"
+
 #: src/share/ImportPreview.tsx:46
 msgid "Dependency"
 msgstr "Dependency"
@@ -3043,7 +3134,7 @@ msgstr "All profiles are hidden"
 
 #: src/commandPalette/CommandPalette.tsx:169
 #: src/mods/ModDetail.tsx:133
-#: src/settings/SettingsPage.tsx:78
+#: src/settings/SettingsPage.tsx:75
 #: src/shell/AppMenu.tsx:104
 #: src/shell/TitleBar.tsx:112
 msgid "Settings"
@@ -3147,6 +3238,10 @@ msgstr "Tag"
 msgid "Couldn't reach Nexus"
 msgstr "Couldn't reach Nexus"
 
+#: src/settings/sections/StreamOverlay.tsx:95
+msgid "Health"
+msgstr "Health"
+
 #: src/toasts/ToastHost.tsx:106
 msgid "Details"
 msgstr "Details"
@@ -3189,8 +3284,8 @@ msgstr "Install SMAPI"
 msgid "Cool and calm"
 msgstr "Cool and calm"
 
-#: src/commandPalette/CommandPalette.tsx:135
-#: src/settings/SettingsPage.tsx:37
+#: src/commandPalette/CommandPalette.tsx:134
+#: src/settings/SettingsPage.tsx:35
 msgid "About"
 msgstr "About"
 
@@ -3278,7 +3373,6 @@ msgid "Show one in the sidebar from Manage profiles."
 msgstr "Show one in the sidebar from Manage profiles."
 
 #: src/launch/LaunchLayer.tsx:165
-#: src/settings/sections/StreamOverlay.tsx:96
 msgid "Hide"
 msgstr "Hide"
 
@@ -3290,6 +3384,10 @@ msgstr "Hide details"
 #: src/settings/sections/Appearance.tsx:38
 msgid "Accent colour"
 msgstr "Accent colour"
+
+#: src/settings/sections/StreamOverlay.tsx:79
+msgid "Player"
+msgstr "Player"
 
 #: src/game/Sidebar.tsx:320
 #: src/profiles/ProfilesPage.tsx:253
@@ -3357,6 +3455,10 @@ msgstr "Seen tips: {from} → {to}"
 msgid "Saved · {n, plural, one {# day ago} other {# days ago}}"
 msgstr "Saved · {n, plural, one {# day ago} other {# days ago}}"
 
+#: src/settings/sections/StreamOverlay.tsx:213
+msgid "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
+msgstr "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
+
 #: src/firstrun/FindStep.tsx:152
 #: src/games/GameSelect.tsx:271
 msgid "Steam was not found."
@@ -3367,6 +3469,10 @@ msgstr "Steam was not found."
 #: src/mods/Toolbar.tsx:92
 msgid "Source"
 msgstr "Source"
+
+#: src/settings/sections/StreamOverlay.tsx:103
+msgid "Foraging skill"
+msgstr "Foraging skill"
 
 #: src/mods/SelectionBar.tsx:80
 msgid "Share selection"
@@ -3379,6 +3485,10 @@ msgstr "Download progress"
 #: src/nxm/store.ts:39
 msgid "This is not a Mod Manager Download link from Nexus."
 msgstr "This is not a Mod Manager Download link from Nexus."
+
+#: src/settings/sections/StreamOverlay.tsx:77
+msgid "Location"
+msgstr "Location"
 
 #: src/launch/SmapiWarnDialog.tsx:31
 msgid "Stardew Valley's Steam launch options run SMAPI in place of the game. Steam will still start SMAPI unless that launch option is removed. Mortar will not change it."
@@ -3476,12 +3586,12 @@ msgstr "Icon"
 #: src/commandPalette/CommandPalette.tsx:131
 #: src/mods/listRows.ts:18
 #: src/mods/Sidebar.tsx:254
-#: src/settings/SettingsPage.tsx:33
+#: src/settings/SettingsPage.tsx:32
 #: src/shell/NexusAccount.tsx:24
 msgid "Nexus Mods"
 msgstr "Nexus Mods"
 
-#: src/commandPalette/CommandPalette.tsx:143
+#: src/commandPalette/CommandPalette.tsx:142
 #: src/settings/sections/Shortcuts.tsx:13
 msgid "Close dialog or clear selection"
 msgstr "Close dialog or clear selection"
@@ -3517,6 +3627,10 @@ msgstr "Clear"
 #: src/settings/sections/nxmHandler.tsx:110
 msgid "Handle links"
 msgstr "Handle links"
+
+#: src/settings/sections/StreamOverlay.tsx:81
+msgid "Season"
+msgstr "Season"
 
 #: src/firstrun/FirstRun.tsx:96
 msgid "SMAPI installed"
@@ -3561,7 +3675,7 @@ msgstr "Could not save the last game"
 
 #. placeholder {0}: status.latest
 #: src/loader/Banner.tsx:37
-#: src/settings/sections/GameSettings.tsx:129
+#: src/settings/sections/GameSettings.tsx:130
 msgid "SMAPI {0} is available"
 msgstr "SMAPI {0} is available"
 
@@ -3688,7 +3802,7 @@ msgstr "{season} {day}, year {year}"
 msgid "Mortar downloads and installs a mod when you click Mod Manager Download on Nexus."
 msgstr "Mortar downloads and installs a mod when you click Mod Manager Download on Nexus."
 
-#: src/settings/SettingsPage.tsx:53
+#: src/settings/SettingsPage.tsx:50
 msgid "Settings sections"
 msgstr "Settings sections"
 
@@ -3715,8 +3829,8 @@ msgstr "Open Nexus settings"
 
 #: src/console/ConsoleTab.tsx:342
 #: src/loader/Banner.tsx:35
-#: src/settings/sections/GameSettings.tsx:124
-#: src/settings/sections/GameSettings.tsx:127
+#: src/settings/sections/GameSettings.tsx:125
+#: src/settings/sections/GameSettings.tsx:128
 msgid "Reinstall"
 msgstr "Reinstall"
 
@@ -3724,7 +3838,7 @@ msgstr "Reinstall"
 msgid "Checking for updates…"
 msgstr "Checking for updates…"
 
-#: src/settings/sections/GameSettings.tsx:29
+#: src/settings/sections/GameSettings.tsx:30
 msgid "Stardew Valley was not found in Steam. Browse to its folder."
 msgstr "Stardew Valley was not found in Steam. Browse to its folder."
 
@@ -3748,7 +3862,7 @@ msgid "Open settings"
 msgstr "Open settings"
 
 #: src/settings/sections/Appearance.tsx:25
-#: src/settings/sections/StreamOverlay.tsx:36
+#: src/settings/sections/StreamOverlay.tsx:414
 #: src/settings/sections/Updates.tsx:161
 #: src/settings/sections/Updates.tsx:203
 #: src/tips/TipBanner.tsx:44
@@ -3794,8 +3908,8 @@ msgstr "Version {0}"
 msgid "Close"
 msgstr "Close"
 
-#: src/commandPalette/CommandPalette.tsx:141
-#: src/commandPalette/CommandPalette.tsx:162
+#: src/commandPalette/CommandPalette.tsx:140
+#: src/commandPalette/CommandPalette.tsx:161
 #: src/settings/sections/Shortcuts.tsx:11
 msgid "Check for mod updates"
 msgstr "Check for mod updates"
@@ -3839,7 +3953,7 @@ msgstr "SMAPI not installed yet"
 msgid "On"
 msgstr "On"
 
-#: src/commandPalette/CommandPalette.tsx:165
+#: src/commandPalette/CommandPalette.tsx:164
 #: src/game/Detail.tsx:444
 #: src/profiles/ProfileRow.tsx:310
 msgid "Share"
@@ -3875,7 +3989,7 @@ msgid "Reading backups…"
 msgstr "Reading backups…"
 
 #: src/loader/Banner.tsx:34
-#: src/settings/sections/GameSettings.tsx:123
+#: src/settings/sections/GameSettings.tsx:124
 msgid "A game update replaced SMAPI's launcher"
 msgstr "A game update replaced SMAPI's launcher"
 

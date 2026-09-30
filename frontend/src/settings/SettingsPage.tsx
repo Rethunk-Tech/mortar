@@ -8,7 +8,6 @@ import { Appearance } from './sections/Appearance.tsx'
 import { Data } from './sections/Data.tsx'
 import { NexusMods } from './sections/NexusMods.tsx'
 import { Shortcuts } from './sections/Shortcuts.tsx'
-import { StreamOverlay } from './sections/StreamOverlay.tsx'
 import { Updates } from './sections/Updates.tsx'
 import { shouldLeavePageOnEscape } from './shouldLeavePageOnEscape.ts'
 
@@ -32,7 +31,6 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
     { id: 'data', label: t`Data` },
     { id: 'nexus', label: t`Nexus Mods` },
     { id: 'updates', label: t`Updates` },
-    { id: 'overlay', label: t`Stream overlay` },
     { id: 'shortcuts', label: t`Shortcuts` },
     { id: 'about', label: t`About` },
   ]
@@ -41,7 +39,6 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
     data: <Data />,
     nexus: <NexusMods />,
     updates: <Updates />,
-    overlay: <StreamOverlay />,
     shortcuts: <Shortcuts />,
     about: <About />,
   }

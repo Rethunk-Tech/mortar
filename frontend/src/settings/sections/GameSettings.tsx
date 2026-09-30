@@ -13,6 +13,7 @@ import { InstallSteps } from '../../loader/InstallSteps.tsx'
 import { useLoader } from '../../loader/store.ts'
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useSettings } from '../store.ts'
+import { StreamOverlay } from './StreamOverlay.tsx'
 
 const GAME = 'stardew'
 
@@ -192,6 +193,7 @@ function GameBody() {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <GameFolder folder={folder} versionNote={version ? t` · Stardew Valley ${version}` : ''} />
       <Smapi key={folder} onVersion={setVersion} />
+      <StreamOverlay />
     </Box>
   )
 }

@@ -130,7 +130,6 @@ export function CommandPalette() {
     { id: 'data', label: t`Data` },
     { id: 'nexus', label: t`Nexus Mods` },
     { id: 'updates', label: t`Updates` },
-    { id: 'overlay', label: t`Stream overlay` },
     { id: 'shortcuts', label: t`Shortcuts` },
     { id: 'about', label: t`About` },
   ]
@@ -164,6 +163,7 @@ export function CommandPalette() {
         import: t`Import`,
         share: t`Share`,
         newProfile: t`New profile`,
+        streamOverlay: t`Stream overlay`,
         profileHint: t`Open profile`,
         modHint: t`Open mod`,
         settingsHint: t`Settings`,

@@ -9,6 +9,7 @@ export interface PaletteLabels {
   import: string
   share: string
   newProfile: string
+  streamOverlay: string
   profileHint: string
   modHint: string
   settingsHint: string
@@ -55,6 +56,7 @@ export function buildPaletteItems(input: {
     { id: 'action:import', kind: 'action', label: labels.import },
     { id: 'action:share', kind: 'action', label: labels.share },
     { id: 'action:new-profile', kind: 'action', label: labels.newProfile },
+    { id: 'action:stream-overlay', kind: 'action', label: labels.streamOverlay },
   )
   for (const row of shortcuts) {
     items.push({
