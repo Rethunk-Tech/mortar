@@ -18,6 +18,11 @@ func (s *Service) AddEntry(game, id, key string, source Source) (Profile, error)
 	return s.store.AddEntry(game, id, key, source)
 }
 
+// InstallArchive unpacks the archive at path into the store and adds it to the profile.
+func (s *Service) InstallArchive(game, id, path string) (InstallResult, error) {
+	return s.store.InstallArchive(game, id, path)
+}
+
 func (s *Service) RemoveEntry(game, id, key string) (Profile, error) {
 	return s.store.RemoveEntry(game, id, key)
 }

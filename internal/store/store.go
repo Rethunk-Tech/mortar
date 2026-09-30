@@ -41,6 +41,18 @@ func (e *Error) Error() string { return fmt.Sprintf("store %s/%s: %v", e.Game, e
 
 func (e *Error) Unwrap() error { return e.Err }
 
+// DiskFullError is a write that ran out of space; NeedMB is the free space the item needs.
+type DiskFullError struct {
+	NeedMB int64
+	Err    error
+}
+
+func (e *DiskFullError) Error() string {
+	return fmt.Sprintf("disk full: this item needs about %d MB free: %v", e.NeedMB, e.Err)
+}
+
+func (e *DiskFullError) Unwrap() error { return e.Err }
+
 // ErrNotFound reports a key the store does not hold.
 var ErrNotFound = errors.New("not in the store")
 
@@ -161,7 +173,7 @@ func (s *Store) install(game, key string, fill func(tmp string) error, need func
 	}
 	if err != nil {
 		if diskFull(err) {
-			err = fmt.Errorf("disk full: this item needs about %d MB free: %w", need()>>20+1, err)
+			err = &DiskFullError{NeedMB: need()>>20 + 1, Err: err}
 		}
 		return &Error{Game: game, Key: key, Err: err}
 	}

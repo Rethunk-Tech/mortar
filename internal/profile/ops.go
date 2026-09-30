@@ -134,6 +134,20 @@ func entryMods(found []manifest.Mod) []EntryMod {
 	return out
 }
 
+// DuplicateError reports an entry the profile already holds; Label names its mods.
+type DuplicateError struct{ Key, Label string }
+
+func (e *DuplicateError) Error() string {
+	return fmt.Sprintf("%q is already in this profile as %s", e.Key, e.Label)
+}
+
+// NoModError reports a store item without a readable manifest.
+type NoModError struct{ Key string }
+
+func (e *NoModError) Error() string {
+	return fmt.Sprintf("%q holds no mod: no readable %s", e.Key, manifest.FileName)
+}
+
 // SourceSMAPI marks the entry holding the loader's own mods.
 const SourceSMAPI = "smapi"
 
@@ -142,7 +156,7 @@ const SourceSMAPI = "smapi"
 func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, disabled []string) (placed string, err error) {
 	for _, e := range p.Entries {
 		if e.Key == key {
-			return "", fmt.Errorf("%q is already in this profile as %s", key, entryLabel(e))
+			return "", &DuplicateError{Key: key, Label: entryLabel(e)}
 		}
 	}
 	src, err := s.items.Path(game, key)
@@ -154,7 +168,7 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 		return "", err
 	}
 	if len(found) == 0 {
-		return "", fmt.Errorf("%q holds no mod: no readable %s", key, manifest.FileName)
+		return "", &NoModError{Key: key}
 	}
 	e := Entry{Key: key, Source: source, Mods: entryMods(found), Disabled: []string{}}
 	for _, m := range e.Mods {
