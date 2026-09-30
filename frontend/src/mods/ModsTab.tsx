@@ -19,8 +19,10 @@ import { ModList } from './ModList.tsx'
 import { ModContextMenu, ModMenu } from './ModMenu.tsx'
 import { contextMenuProps, useContextMenu } from './menu.ts'
 import { ProblemBar } from './ProblemBar.tsx'
-import { LetterTile, ProblemBadge, RemoveDialog, UpdateBadge } from './parts.tsx'
+import { LetterTile, PinBadge, ProblemBadge, RemoveDialog, UpdateBadge } from './parts.tsx'
+import { SelectionBar } from './SelectionBar.tsx'
 import { ModSidebar } from './Sidebar.tsx'
+import { useSelection } from './selection.ts'
 import { useMods, type View } from './store.ts'
 import { AddArchive, BrowseNexus, Toolbar } from './Toolbar.tsx'
 import { UpdateBar, UpdateReview } from './UpdateReview.tsx'
@@ -28,10 +30,41 @@ import { useUpdates } from './updates.ts'
 
 const OFF_OPACITY = 0.6
 
-function ModCard({ mod: m }: { mod: Mod }) {
+function SelectionKeys({ shown }: { shown: Mod[] }) {
+  useEffect(() => {
+    useSelection.getState().prune(shown.map((m) => modId(m)))
+  }, [shown])
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.defaultPrevented) {
+        return
+      }
+      const el = e.target
+      if (el instanceof HTMLElement && el.closest('input, textarea, [contenteditable="true"]')) {
+        return
+      }
+      if (e.key === 'Escape') {
+        useSelection.getState().clear()
+        return
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+        e.preventDefault()
+        useSelection.getState().selectAll(shown.map((m) => modId(m)))
+      }
+    }
+    globalThis.addEventListener('keydown', onKey)
+    return () => globalThis.removeEventListener('keydown', onKey)
+  }, [shown])
+  return null
+}
+
+function ModCard({ mod: m, orderedIds }: { mod: Mod; orderedIds: readonly string[] }) {
   const { t } = useLingui()
   const openDetail = useDetail((s) => s.show)
   const selectedId = useDetail((s) => s.detailId)
+  const selectedIds = useSelection((s) => s.ids)
+  const id = modId(m)
+  const marked = selectedIds.includes(id) || (selectedIds.length === 0 && id === selectedId)
   return (
     <Card
       {...contextMenuProps(m)}
@@ -44,14 +77,22 @@ function ModCard({ mod: m }: { mod: Mod }) {
         gap: '10px',
         minWidth: 0,
         borderRadius: '6px',
-        outline: modId(m) === selectedId ? '1px solid' : 'none',
+        outline: marked ? '1px solid' : 'none',
         outlineColor: 'primary.main',
         [compact]: { height: 50, '& .tile': { width: 38, height: 38, fontSize: 19 } },
       }}
     >
       <ButtonBase
         aria-label={t`Details of ${m.name}`}
-        onClick={() => openDetail(m)}
+        onMouseDown={(e) => {
+          if (e.shiftKey) {
+            e.preventDefault()
+          }
+        }}
+        onClick={(e) => {
+          useSelection.getState().click(orderedIds, id, e)
+          openDetail(m)
+        }}
         sx={{
           '&.Mui-focusVisible': { outlineOffset: '-2px' },
           flex: 1,
@@ -84,6 +125,7 @@ function ModCard({ mod: m }: { mod: Mod }) {
           </Typography>
         </Box>
       </ButtonBase>
+      <PinBadge mod={m} />
       <UpdateBadge mod={m} />
       <ProblemBadge mod={m} />
       <ModMenu mod={m} />
@@ -92,6 +134,7 @@ function ModCard({ mod: m }: { mod: Mod }) {
 }
 
 function Cards({ shown }: { shown: Mod[] }) {
+  const orderedIds = shown.map((m) => modId(m))
   return (
     <Box
       sx={{
@@ -106,7 +149,7 @@ function Cards({ shown }: { shown: Mod[] }) {
       }}
     >
       {shown.map((m) => (
-        <ModCard key={modId(m)} mod={m} />
+        <ModCard key={modId(m)} mod={m} orderedIds={orderedIds} />
       ))}
     </Box>
   )
@@ -172,13 +215,14 @@ export function ModsTab({ profile }: { profile: Profile }) {
       loadError: '',
       problems: null,
       resolving: null,
-      removing: null,
+      removing: [],
     })
     useUpdates.setState({ updates: null, reviewing: false })
     if (!pending) {
       useDetail.getState().show(null)
     }
     useContextMenu.getState().close()
+    useSelection.getState().clear()
     load()
       .then(() => {
         const id = useDetail.getState().takePending()
@@ -252,6 +296,8 @@ export function ModsTab({ profile }: { profile: Profile }) {
       <UpdateBar />
       <Toolbar query={query} onQuery={setQuery} total={mods.length} />
       <LockedNote />
+      <SelectionKeys shown={shown} />
+      <SelectionBar profileId={profile.id} mods={shown} />
       <ModsBody profile={profile} shown={shown} view={view} query={q} />
       <ModDetail profile={profile} />
       <UpdateReview profile={profile} />

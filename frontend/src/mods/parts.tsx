@@ -7,15 +7,20 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
   Switch,
   Tooltip,
 } from '@mui/material'
-import { ArrowUp, TriangleAlert } from 'lucide-react'
+import { ArrowUp, Ban, Pin, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useDescribe } from './describe.ts'
-import { concerns, problemsOf, siblingsOf, updateFor } from './lookup.ts'
+import { concerns, entryOf, modId, problemsOf, siblingsOf, updateFor } from './lookup.ts'
 import { paper } from './paper.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
@@ -101,23 +106,77 @@ export function ProblemBadge({ mod }: { mod: Mod }) {
   )
 }
 
-export function UpdateBadge({ mod }: { mod: Mod }) {
+export function PinBadge({ mod }: { mod: Mod }) {
   const { t } = useLingui()
-  const update = useUpdates((s) => updateFor(s.updates, mod))
-  if (!update) {
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  if (!entryOf(profile, mod.key)?.pinned) {
     return null
   }
-  const text = t`Update available: ${update.installed} → ${update.version}`
+  const text = t`Pinned at this version`
   return (
     <Tooltip title={text}>
       <Box
         role="img"
         aria-label={text}
-        sx={{ display: 'flex', flexShrink: 0, color: 'primary.main' }}
+        sx={{ display: 'flex', flexShrink: 0, color: 'text.secondary' }}
       >
-        <ArrowUp size={16} />
+        <Pin size={16} />
       </Box>
     </Tooltip>
+  )
+}
+
+export function UpdateBadge({ mod }: { mod: Mod }) {
+  const { t } = useLingui()
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const update = useUpdates((s) => updateFor(s.updates, mod, profile))
+  const setSkipVersion = useMods((s) => s.setSkipVersion)
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  if (!update) {
+    return null
+  }
+  const text = t`Update available: ${update.installed} → ${update.version}`
+  return (
+    <>
+      <Tooltip title={text}>
+        <Box
+          role="button"
+          tabIndex={0}
+          aria-label={text}
+          sx={{ display: 'flex', flexShrink: 0, color: 'primary.main', cursor: 'pointer' }}
+          onClick={(e) => {
+            e.stopPropagation()
+            setAnchor(e.currentTarget)
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              setAnchor(e.currentTarget)
+            }
+          }}
+        >
+          <ArrowUp size={16} />
+        </Box>
+      </Tooltip>
+      <Menu
+        open={anchor !== null}
+        anchorEl={anchor}
+        onClose={() => setAnchor(null)}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <MenuItem
+          onClick={() => {
+            setAnchor(null)
+            setSkipVersion(mod, update.version).catch(reportUnexpected)
+          }}
+        >
+          <ListItemIcon>
+            <Ban size={16} />
+          </ListItemIcon>
+          <ListItemText>{t`Skip this update`}</ListItemText>
+        </MenuItem>
+      </Menu>
+    </>
   )
 }
 
@@ -174,22 +233,37 @@ export function RemoveButton({ mod }: { mod: Mod }) {
 
 export function RemoveDialog() {
   const { t } = useLingui()
-  const mod = useMods((s) => s.removing)
+  const removing = useMods((s) => s.removing)
   const mods = useMods((s) => s.mods)
   const askRemove = useMods((s) => s.askRemove)
-  const remove = useMods((s) => s.remove)
+  const removeMany = useMods((s) => s.removeMany)
   const locked = useLocked()
-  const others = mod ? siblingsOf(mods, mod).map((m) => m.name) : []
+  const one = removing.length === 1 ? removing[0] : null
+  const extra = [
+    ...new Set(
+      removing.flatMap((m) =>
+        siblingsOf(mods, m)
+          .filter((s) => !removing.some((x) => modId(x) === modId(s)))
+          .map((s) => s.name),
+      ),
+    ),
+  ]
   const close = () => askRemove(null)
+  let body = t`Their folders in this profile are deleted.`
+  if (extra.length > 0) {
+    body = t`Mods from the same download are removed together: ${extra.join(', ')}.`
+  } else if (one) {
+    body = t`Its folder in this profile is deleted.`
+  }
   return (
-    <Dialog open={mod !== null} onClose={close} slotProps={{ paper }}>
-      <DialogTitle>{t`Remove ${mod?.name} from this profile?`}</DialogTitle>
+    <Dialog open={removing.length > 0} onClose={close} slotProps={{ paper }}>
+      <DialogTitle>
+        {one
+          ? t`Remove ${one.name} from this profile?`
+          : t`Remove ${removing.length} mods from this profile?`}
+      </DialogTitle>
       <DialogContent>
-        <DialogContentText>
-          {others.length > 0
-            ? t`It came in one download with ${others.join(', ')}, and all of them are removed together.`
-            : t`Its folder in this profile is deleted.`}
-        </DialogContentText>
+        <DialogContentText>{body}</DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button onClick={close}>{t`Cancel`}</Button>
@@ -198,8 +272,8 @@ export function RemoveDialog() {
           disabled={locked}
           onClick={() => {
             close()
-            if (mod) {
-              remove(mod).catch(reportUnexpected)
+            if (removing.length > 0) {
+              removeMany(removing).catch(reportUnexpected)
             }
           }}
         >

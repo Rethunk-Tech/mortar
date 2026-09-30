@@ -10,7 +10,7 @@ import {
   TableRow,
   useMediaQuery,
 } from '@mui/material'
-import { ArrowDown, ArrowUp } from 'lucide-react'
+import { ArrowDown, ArrowUp, Pin } from 'lucide-react'
 import { type MouseEvent, type ReactNode, useEffect, useState } from 'react'
 import type {
   Mod,
@@ -43,7 +43,8 @@ import { contextMenuProps } from './menu.ts'
 import { primeDetails, useNexusDetails } from './nexusDetails.ts'
 import { formatCount, formatDate, isNewer } from './nexusFormat.ts'
 import { heading } from './paper.ts'
-import { LetterTile, ModSwitch, ProblemBadge, UpdateBadge } from './parts.tsx'
+import { LetterTile, ModSwitch, PinBadge, ProblemBadge, UpdateBadge } from './parts.tsx'
+import { useSelection } from './selection.ts'
 
 const SELECTED_ALPHA = 0.14
 const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const
@@ -162,7 +163,16 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string) {
         </Cell>
       )
     case 'version':
-      return <ValueCell key="version" text={dash(m.version)} />
+      return (
+        <Cell key="version" title={dash(m.version)} sx={{ ...ellipsis, color: 'text.secondary' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+            <Box component="span" sx={{ ...ellipsis, fontVariantNumeric: 'tabular-nums' }}>
+              {dash(m.version)}
+            </Box>
+            {row.pinned ? <Pin size={14} aria-hidden={true} /> : null}
+          </Box>
+        </Cell>
+      )
     case 'latest': {
       const latest = page?.version ?? ''
       return (
@@ -216,6 +226,7 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string) {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
+            <PinBadge mod={m} />
             <ProblemBadge mod={m} />
             <UpdateBadge mod={m} />
             <Box component="span" title={row.status} sx={ellipsis}>
@@ -234,22 +245,37 @@ function ModRow({
   striped,
   cols,
   locale,
+  orderedIds,
 }: {
   row: ListRow
   striped: boolean
   cols: readonly ListColumnId[]
   locale: string
+  orderedIds: readonly string[]
 }) {
-  const selectedId = useDetail((s) => s.detailId)
+  const detailId = useDetail((s) => s.detailId)
+  const selectedIds = useSelection((s) => s.ids)
   const show = useDetail((s) => s.show)
   const m = row.mod
+  const rowId = modId(m)
+  const marked = selectedIds.includes(rowId) || (selectedIds.length === 0 && rowId === detailId)
+  const menu = contextMenuProps(m)
   return (
     <TableRow
       hover={true}
-      selected={modId(m) === selectedId}
-      onClick={() => show(m)}
+      selected={marked}
+      onMouseDown={(e) => {
+        if (e.shiftKey) {
+          e.preventDefault()
+        }
+      }}
+      onClick={(e) => {
+        useSelection.getState().click(orderedIds, rowId, e)
+        show(m)
+      }}
       tabIndex={0}
-      {...contextMenuProps(m)}
+      {...menu}
+      onKeyDown={menu.onKeyDown}
       sx={{
         display: 'grid',
         gridTemplateColumns: listGridColumns(cols),
@@ -260,7 +286,7 @@ function ModRow({
         fontSize: 14,
         cursor: 'pointer',
         bgcolor: (th) => {
-          if (modId(m) === selectedId) {
+          if (marked) {
             return alpha(th.palette.primary.main, SELECTED_ALPHA)
           }
           return striped ? 'rgba(255,255,255,0.03)' : 'transparent'
@@ -307,6 +333,7 @@ function toListRow(
   const row: ListRow = {
     mod: m,
     added: entry?.added ?? '',
+    pinned: Boolean(entry?.pinned),
     source,
     status: m.enabled ? t`Enabled` : t`Off`,
   }
@@ -373,6 +400,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
     mods.map((m) => toListRow(m, profile, byId, t)),
     sort,
   )
+  const orderedIds = rows.map((r) => modId(r.mod))
   const onMenu = (e: MouseEvent) => setMenu(columnMenuFromEvent(e))
   const grid = listGridColumns(cols)
 
@@ -414,6 +442,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
               striped={i % 2 === 1}
               cols={cols}
               locale={i18n.locale}
+              orderedIds={orderedIds}
             />
           ))}
         </TableBody>
