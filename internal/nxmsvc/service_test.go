@@ -79,6 +79,40 @@ func TestEnableRecordsPreviousOwnerAndDisableRestoresIt(t *testing.T) {
 	}
 }
 
+func TestReleaseLinksRestoresTheRecordedHandler(t *testing.T) {
+	h := &fakeHandler{owner: nxm.Owner{ID: "vortex.desktop", Name: "Vortex"}}
+	s := newService(t, h)
+	if err := s.Enable(); err != nil {
+		t.Fatal(err)
+	}
+	if err := ReleaseLinks(s.store, h); err != nil {
+		t.Fatal(err)
+	}
+	if got := s.store.Get(); got.NxmHandled || got.NxmPrevious != "" || h.owner.ID != "vortex.desktop" {
+		t.Fatalf("after ReleaseLinks: %+v, owner %+v", got, h.owner)
+	}
+	if len(h.registry) < 2 || h.registry[len(h.registry)-1] != "restore:vortex.desktop" {
+		t.Fatalf("registry calls %q", h.registry)
+	}
+}
+
+func TestReleaseLinksRemovesTheKeyWhenNoneWasRecorded(t *testing.T) {
+	h := &fakeHandler{}
+	s := newService(t, h)
+	if err := s.Enable(); err != nil {
+		t.Fatal(err)
+	}
+	if err := ReleaseLinks(s.store, h); err != nil {
+		t.Fatal(err)
+	}
+	if h.owner.ID != "" || s.store.Get().NxmHandled {
+		t.Fatalf("after ReleaseLinks with no previous: owner %+v, settings %+v", h.owner, s.store.Get())
+	}
+	if h.registry[len(h.registry)-1] != "restore:" {
+		t.Fatalf("registry calls %q", h.registry)
+	}
+}
+
 func TestFailedRegisterChangesNothing(t *testing.T) {
 	h := &fakeHandler{failNext: true}
 	s := newService(t, h)

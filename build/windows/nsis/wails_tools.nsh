@@ -219,9 +219,15 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
 !macroend
 
 !macro APP_UNASSOCIATE EXT FILECLASS
-  ; Backup the previously associated file class
+  ; Restore the previously associated file class, then drop the extension key when nothing else owns it.
   ReadRegStr $R0 SHELL_CONTEXT "Software\Classes\.${EXT}" `${FILECLASS}_backup`
   WriteRegStr SHELL_CONTEXT "Software\Classes\.${EXT}" "" "$R0"
+  DeleteRegValue SHELL_CONTEXT "Software\Classes\.${EXT}" `${FILECLASS}_backup`
+  ReadRegStr $R1 SHELL_CONTEXT "Software\Classes\.${EXT}" ""
+  ${If} $R1 == ""
+  ${OrIf} $R1 == "${FILECLASS}"
+    DeleteRegKey SHELL_CONTEXT "Software\Classes\.${EXT}"
+  ${EndIf}
 
   DeleteRegKey SHELL_CONTEXT `Software\Classes\${FILECLASS}`
 !macroend
@@ -229,7 +235,7 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
 !macro wails.associateFiles
     ; Create file associations
     
-      !insertmacro APP_ASSOCIATE "mortar" "Mortar profile" "Mortar profile" "$INSTDIR\${PRODUCT_EXECUTABLE},0" "Open with ${INFO_PRODUCTNAME}" "$INSTDIR\${PRODUCT_EXECUTABLE} $\"%1$\""
+      !insertmacro APP_ASSOCIATE "mortar" "Mortar profile" "Mortar profile" "$INSTDIR\${PRODUCT_EXECUTABLE},0" "Open with ${INFO_PRODUCTNAME}" `"$INSTDIR\${PRODUCT_EXECUTABLE}" "%1"`
     
 !macroend
 
@@ -247,7 +253,7 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
   WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}\DefaultIcon" "" "${ICON}"
   WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}\shell" "" ""
   WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}\shell\open" "" ""
-  WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}\shell\open\command" "" "${COMMAND}"
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}\shell\open\command" "" `${COMMAND}`
 !macroend
 
 !macro CUSTOM_PROTOCOL_UNASSOCIATE PROTOCOL
@@ -257,7 +263,7 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
 !macro wails.associateCustomProtocols
     ; Create custom protocols associations
     
-      !insertmacro CUSTOM_PROTOCOL_ASSOCIATE "mortar" "Mortar link" "$INSTDIR\${PRODUCT_EXECUTABLE},0" "$INSTDIR\${PRODUCT_EXECUTABLE} $\"%1$\""
+      !insertmacro CUSTOM_PROTOCOL_ASSOCIATE "mortar" "Mortar link" "$INSTDIR\${PRODUCT_EXECUTABLE},0" `"$INSTDIR\${PRODUCT_EXECUTABLE}" "%1"`
     
 !macroend
 

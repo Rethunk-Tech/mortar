@@ -170,6 +170,15 @@ func (s *Service) Enable() error {
 
 // Disable gives nxm links back to the recorded owner.
 func (s *Service) Disable() error {
+	return release(s)
+}
+
+// ReleaseLinks restores the nxm handler recorded in settings, the same path Settings uses when the toggle is turned off.
+func ReleaseLinks(store *settings.Store, handler nxm.Handler) error {
+	return release(NewService(store, handler))
+}
+
+func release(s *Service) error {
 	if err := s.handler.Restore(s.store.Get().NxmPrevious); err != nil {
 		return err
 	}

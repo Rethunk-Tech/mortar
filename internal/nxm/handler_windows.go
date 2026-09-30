@@ -8,11 +8,6 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
-const (
-	classKey   = `Software\Classes\nxm`
-	commandKey = classKey + `\shell\open\command`
-)
-
 // System is the system's registration of the nxm scheme.
 type System struct{ exe string }
 
@@ -59,6 +54,14 @@ func (w *System) Register() error {
 	if err := k.SetStringValue("URL Protocol", ""); err != nil {
 		return err
 	}
+	icon, _, err := registry.CreateKey(registry.CURRENT_USER, classKey+`\DefaultIcon`, registry.SET_VALUE)
+	if err != nil {
+		return err
+	}
+	defer icon.Close()
+	if err := icon.SetStringValue("", defaultIcon(w.exe)); err != nil {
+		return err
+	}
 	return setCommand(w.command())
 }
 
@@ -75,7 +78,7 @@ func (w *System) Restore(previous string) error {
 	if previous != "" {
 		return setCommand(previous)
 	}
-	for _, key := range []string{commandKey, classKey + `\shell\open`, classKey + `\shell`, classKey} {
+	for _, key := range []string{classKey + `\DefaultIcon`, commandKey, classKey + `\shell\open`, classKey + `\shell`, classKey} {
 		if err := registry.DeleteKey(registry.CURRENT_USER, key); err != nil && !errors.Is(err, registry.ErrNotExist) {
 			return fmt.Errorf("delete %s: %w", key, err)
 		}

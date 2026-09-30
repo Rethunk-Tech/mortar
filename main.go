@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -75,6 +76,9 @@ func main() {
 }
 
 func run() error {
+	if len(os.Args) > 1 && os.Args[1] == "--release-links" {
+		return releaseLinks()
+	}
 	registerEvents()
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -94,12 +98,19 @@ func run() error {
 	ready := make(chan struct{})
 	closeReady := sync.OnceFunc(func() { close(ready) })
 	defer closeReady()
+	dataDir, err := datadir.Dir()
+	if err != nil {
+		return err
+	}
 	app := application.New(application.Options{
 		Name: "Mortar",
 		Icon: appIcon,
 		// ApplicationID is the GtkApplication / Wayland app_id and the Linux desktop file id. It must not equal
 		// UniqueID: both become D-Bus names, and GApplication also owns ApplicationID on the session bus.
 		Linux: application.LinuxOptions{ApplicationID: "tech.rethunk.Mortar"},
+		Windows: application.WindowsOptions{
+			WebviewUserDataPath: filepath.Join(dataDir, "webview"),
+		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
 			Middleware: application.ChainMiddleware(
@@ -190,10 +201,6 @@ func run() error {
 	}
 	nxmSvc = nxmsvc.NewService(store, nxmHandler)
 
-	dataDir, err := datadir.Dir()
-	if err != nil {
-		return err
-	}
 	pictures = modpic.New(dataDir, &http.Client{Timeout: 30 * time.Second})
 	if err := nexusSvc.UseDataDir(dataDir); err != nil {
 		return err
@@ -339,4 +346,20 @@ func run() error {
 	err = app.Run()
 	stopQueue()
 	return err
+}
+
+func releaseLinks() error {
+	store, err := settings.Open()
+	if err != nil {
+		return err
+	}
+	exe, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	h, err := nxm.New(exe)
+	if err != nil {
+		return err
+	}
+	return nxmsvc.ReleaseLinks(store, h)
 }

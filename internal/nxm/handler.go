@@ -22,3 +22,5 @@ type Handler interface {
 
 // Runner runs a command and returns its standard output.
 type Runner func(name string, args ...string) (string, error)
+
+func defaultIcon(exe string) string { return exe + ",0" }
