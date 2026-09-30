@@ -34,7 +34,9 @@ Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_
 - `cache/`: API responses, mod pictures and the dataset index.
 - `queue.json`: the download queue's state, without `nxm://` keys.
 
-`profile.json`: `id`, `name`, `notes`, `cover` (a path or empty), `order`, `hidden`, `created`, `updated`, and `entries[]`, each with `key`, `previousKey` (for rollback, or empty), the source reference used in share links, the mods it holds (`UniqueID`, version, the folder holding its `manifest.json`), and `disabled`, the `UniqueID`s switched off. The store keeps every item a profile names as `key` or `previousKey` and deletes the rest 30 days after their last use.
+`profile.json`: `id`, `name`, `notes`, `cover` (`cover.png`, `cover.jpg` or `cover.webp` beside it, or empty), `order`, `hidden`, `created`, `updated`, and `entries[]`, each with `key`, `previousKey` (for rollback, or empty), the source reference used in share links, the mods it holds (`UniqueID`, version, the folder holding its `manifest.json`), and `disabled`, the `UniqueID`s switched off. The store keeps every item a profile names as `key` or `previousKey` and deletes the rest 30 days after their last use.
+
+**Hero cover** (`internal/profile/cover.go`): Choose cover image… in the hero's image menu copies the picked file into the profile folder; its type is sniffed from its content (PNG, JPEG or WebP, at most 16 MB) and the original path is never kept. Duplicate copies it with the profile. `Covers` lists what the hero tries, in order: the picked cover, served by `CoverMiddleware` at `/profile-cover/<game>/<id>` (the game and id are validated, and only the three fixed file names are opened), then the `picture` of the profile's Nexus entry with the highest `endorsementCount` as stored at install (no new call; the frontend loads it as mod cards do), then Steam's art at `/steam-art/<appid>`. The frontend moves on when one fails to load and shows a solid tone after the last.
 
 ## Profile operations
 
@@ -117,6 +119,7 @@ Saves live in one folder, `%APPDATA%\StardewValley\Saves` or `~/.config/StardewV
 - **Matching:** Mortar scans the save's `<key><string>...</string></key>` entries and, ignoring case, takes for each key the longest prefix ending at a `/`, `_` or `.` boundary that is a `UniqueID` in the mod dataset's index. Splitting at the first `_` would be wrong: 1,413 IDs contain `_`, and for 81 of them the part before it is another mod's ID; 1,081 have no dot.
 - **Cost:** measured on one of NOMAD's saves: 65 MB, 330,748 keys, 32 mods in 0.43 s. Results are cached by the save file's modification time.
 - **Limits:** mods that keep no per-save data leave no trace, and keys outlive a mod removed on purpose, so the warning says "this save has used", and each mod can be dismissed for that save.
+- **Getting a lacking mod:** each one is located as Problems locates a missing dependency (`problems.Locate`); a Nexus page or a GitHub repository gets Add to this profile, which queues it into the open profile, and any other page an Open link. Switching on a mod the profile has switched off is locked while the profile is launching or running.
 
 ### Mod data
 

@@ -2,17 +2,40 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
-import { ExternalLink, Power, X } from 'lucide-react'
+import { ExternalLink, Plus, Power, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import type {
   Fit,
   Lack,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
+import { useLocked } from '../mods/useLocked.ts'
+import { download, type Want } from '../queue/actions.ts'
+import { useQueue } from '../queue/store.ts'
+import { pendingFor } from '../queue/totals.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useSaves } from './store.ts'
 
 const nowrap = { whiteSpace: 'nowrap' } as const
+
+// What the queue needs to add the mod, when Mortar can install it: a Nexus page or a GitHub repository.
+function wantFor(lack: Lack): Want | null {
+  const { where } = lack
+  if (where?.site === 'GitHub' && where.github) {
+    return { kind: 'install', repo: where.github, name: where.github }
+  }
+  if (where?.site === 'Nexus' && where.pageId > 0) {
+    return {
+      kind: 'install',
+      modId: where.pageId,
+      fileId: where.fileId,
+      name: lack.name,
+      fileName: where.fileName,
+      version: where.version,
+    }
+  }
+  return null
+}
 
 function LackChip({
   fit,
@@ -29,6 +52,13 @@ function LackChip({
   const { name } = lack
   const dismiss = useSaves((s) => s.dismiss)
   const enable = useSaves((s) => s.enable)
+  const locked = useLocked()
+  const want = lack.disabled ? null : wantFor(lack)
+  const queued = useQueue((s) =>
+    want ? pendingFor(s.state.items, profile.id, want.modId ?? 0, want.repo ?? '') : false,
+  )
+  const url = lack.where?.url ?? ''
+  const nexusPage = lack.where?.site === 'Nexus'
   return (
     <Box
       sx={{
@@ -45,25 +75,44 @@ function LackChip({
         {lack.disabled ? t`${name} (switched off)` : lack.name}
       </Typography>
       {lack.disabled ? (
-        <Tooltip title={t`Switch on in this profile`}>
-          <IconButton
-            size="small"
-            aria-label={t`Switch on ${name} in this profile`}
-            onClick={() => {
-              enable(game, profile, lack.uniqueId).catch(reportUnexpected)
-            }}
-          >
-            <Power size={14} />
-          </IconButton>
+        <Tooltip title={locked ? t`Stop the game to change mods.` : t`Switch on in this profile`}>
+          <span>
+            <IconButton
+              size="small"
+              disabled={locked}
+              aria-label={t`Switch on ${name} in this profile`}
+              onClick={() => {
+                enable(game, profile, lack.uniqueId).catch(reportUnexpected)
+              }}
+            >
+              <Power size={14} />
+            </IconButton>
+          </span>
         </Tooltip>
       ) : null}
-      {!lack.disabled && lack.url ? (
-        <Tooltip title={t`Open on Nexus`}>
+      {want ? (
+        <Tooltip title={queued ? t`Queued` : t`Add to this profile`}>
+          <span>
+            <IconButton
+              size="small"
+              disabled={queued}
+              aria-label={t`Add ${name} to this profile`}
+              onClick={() => {
+                download([want]).catch(reportUnexpected)
+              }}
+            >
+              <Plus size={14} />
+            </IconButton>
+          </span>
+        </Tooltip>
+      ) : null}
+      {!(lack.disabled || want) && url ? (
+        <Tooltip title={nexusPage ? t`Open on Nexus` : t`Open page`}>
           <IconButton
             size="small"
-            aria-label={t`Open ${name} on Nexus`}
+            aria-label={nexusPage ? t`Open ${name} on Nexus` : t`Open the page of ${name}`}
             onClick={() => {
-              Browser.OpenURL(lack.url).catch(reportUnexpected)
+              Browser.OpenURL(url).catch(reportUnexpected)
             }}
           >
             <ExternalLink size={14} />

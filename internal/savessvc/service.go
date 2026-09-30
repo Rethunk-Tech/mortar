@@ -2,6 +2,7 @@
 package savessvc
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"log"
@@ -9,32 +10,32 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/saves"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
 const (
-	nexusMod    = "https://www.nexusmods.com/stardewvalley/mods/"
 	nameTimeout = 15 * time.Second
 	nameWorkers = 8
 )
 
-// Lack is a mod the save has used that the profile does not run. Name falls back to the UniqueID and URL is the
-// mod's Nexus page, both from the mod dataset; URL is empty when the dataset lists no Nexus page.
+// Lack is a mod the save has used that the profile does not run. Name falls back to the UniqueID. Where is the page
+// to get it from, found the way a missing dependency's is, and nil when the mod is unknown or the dataset could not
+// be reached; a Nexus page or a GitHub repository in it can be queued into the profile.
 type Lack struct {
 	UniqueID string `json:"uniqueId"`
 	Name     string `json:"name"`
 	// Disabled means the profile has the mod switched off; otherwise it is absent.
-	Disabled bool   `json:"disabled"`
-	URL      string `json:"url"`
+	Disabled bool          `json:"disabled"`
+	Where    *problems.Ref `json:"where"`
 }
 
 // Fit is one save and what it has used that the profile lacks. Season is 0 (spring) to 3 (winter); Day is 0
@@ -110,22 +111,25 @@ func (s *Service) Saves(game, profileID string) ([]Fit, error) {
 			wanted[l.UniqueID] = true
 		}
 	}
-	names := s.describe(ctx, index, wanted)
+	names := s.describe(ctx, wanted)
 	for i := range fits {
 		for j := range fits[i].Missing {
 			if d, ok := names[fits[i].Missing[j].UniqueID]; ok {
-				fits[i].Missing[j].Name, fits[i].Missing[j].URL = d.name, d.url
+				fits[i].Missing[j].Name, fits[i].Missing[j].Where = d.name, d.where
 			}
 		}
 	}
 	return fits, nil
 }
 
-type described struct{ name, url string }
+type described struct {
+	name  string
+	where *problems.Ref
+}
 
-// describe looks up the display name and Nexus page of each UniqueID. A page that cannot be fetched leaves the
+// describe looks up the display name and the page of each UniqueID. A page that cannot be fetched leaves the
 // UniqueID as the name, so an offline machine still gets a usable list.
-func (s *Service) describe(ctx context.Context, index map[string][]meta.Ref, ids map[string]bool) map[string]described {
+func (s *Service) describe(ctx context.Context, ids map[string]bool) map[string]described {
 	ctx, cancel := context.WithTimeout(ctx, nameTimeout)
 	defer cancel()
 	var mu sync.Mutex
@@ -133,27 +137,22 @@ func (s *Service) describe(ctx context.Context, index map[string][]meta.Ref, ids
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, nameWorkers)
 	for id := range ids {
-		i := slices.IndexFunc(index[id], func(r meta.Ref) bool { return r.Site == "Nexus" })
-		if i < 0 {
-			continue
-		}
-		ref := index[id][i]
 		wg.Go(func() {
 			sem <- struct{}{}
 			defer func() { <-sem }()
-			d := described{url: nexusMod + strconv.Itoa(ref.ID)}
-			if page, err := s.meta.Page(ctx, ref.ID); err == nil {
-				d.name = page.Name
-				for _, f := range page.Downloads {
-					for _, m := range f.Mods {
-						if strings.EqualFold(m.UniqueID, id) && m.Name != "" {
-							d.name = m.Name
+			where, _ := problems.Locate(ctx, s.meta, id, "", nil)
+			d := described{name: id, where: where}
+			if where != nil && where.Site == "Nexus" {
+				if page, err := s.meta.Page(ctx, where.PageID); err == nil {
+					d.name = cmp.Or(page.Name, id)
+					for _, f := range page.Downloads {
+						for _, m := range f.Mods {
+							if strings.EqualFold(m.UniqueID, id) && m.Name != "" {
+								d.name = m.Name
+							}
 						}
 					}
 				}
-			}
-			if d.name == "" {
-				d.name = id
 			}
 			mu.Lock()
 			out[id] = d

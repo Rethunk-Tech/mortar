@@ -269,7 +269,7 @@ func fillWhere(ctx context.Context, m Meta, enabled []Installed, missing []Missi
 		k := strings.ToLower(x.UniqueID) + "|" + x.MinimumVersion + "|" + strings.Join(keys, ",")
 		f, hit := cache[k]
 		if !hit {
-			f.ref, f.ok = locate(ctx, m, x.UniqueID, x.MinimumVersion, keys)
+			f.ref, f.ok = Locate(ctx, m, x.UniqueID, x.MinimumVersion, keys)
 			cache[k] = f
 		}
 		x.Where = f.ref
@@ -301,9 +301,9 @@ func siteURL(r meta.Ref) string {
 	return ""
 }
 
-// locate names the page and file to get uniqueID from. ok is false when the dataset could not be read, as
+// Locate names the page and file to get uniqueID from. ok is false when the dataset could not be read, as
 // opposed to reading it and finding the mod unlisted (nil, true).
-func locate(ctx context.Context, m Meta, uniqueID, minimum string, dependentKeys []string) (*Ref, bool) {
+func Locate(ctx context.Context, m Meta, uniqueID, minimum string, dependentKeys []string) (*Ref, bool) {
 	refs, err := m.Lookup(ctx, uniqueID)
 	if err != nil {
 		return nil, false
