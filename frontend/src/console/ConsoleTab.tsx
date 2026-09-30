@@ -1,4 +1,3 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -212,20 +211,26 @@ function Toggle({
   )
 }
 
+const actionSx = {
+  height: 32,
+  whiteSpace: 'nowrap',
+  borderColor: 'rgba(255,255,255,0.22)',
+  color: '#ffffff',
+} as const
+
 export function ConsoleTab({ game }: { game: string }) {
   const { t } = useLingui()
   const entries = useConsole((s) => s.entries)
   const filters = useConsole((s) => s.filters)
   const timestamps = useConsole((s) => s.timestamps)
   const follow = useConsole((s) => s.follow)
+  const jump = useConsole((s) => s.jump)
   const { load, setMods, clearFilters, setTimestamps, setFollow } = useConsole.getState()
   const rows = useVisible()
   const [loaded, setLoaded] = useState(false)
-  const [jump, setJump] = useState<{ index: number; n: number } | null>(null)
   useEffect(() => {
     load(game).then(() => setLoaded(true))
   }, [game, load])
-  const firstErr = firstError(rows)
   const total = entries.length
   let empty: string | null = null
   if (loaded && total === 0) {
@@ -254,33 +259,30 @@ export function ConsoleTab({ game }: { game: string }) {
         <Toggle label={t`Times`} checked={timestamps} onChange={setTimestamps} />
         <Toggle label={t`Follow`} checked={follow} onChange={setFollow} />
       </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          gap: 1,
-          px: 2,
-          pb: 1,
-          flexShrink: 0,
-          fontSize: 13,
-          whiteSpace: 'nowrap',
-        }}
-      >
-        <span>
-          {t`Showing ${rows.length} of ${plural(total, { one: '# line', other: '# lines' })}`}
-        </span>
-        {filters.mods.map((mod) => (
-          <Chip
-            key={mod}
-            size="small"
-            label={t`Mod: ${mod}`}
-            onDelete={() => setMods(filters.mods.filter((m) => m !== mod))}
-            deleteIcon={<X size={14} aria-label={t`Remove filter ${mod}`} />}
-            sx={{ bgcolor: 'rgba(255,255,255,0.1)', fontSize: 13 }}
-          />
-        ))}
-        {isFiltered(filters) ? (
+      {isFiltered(filters) ? (
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 1,
+            px: 2,
+            pb: 1,
+            flexShrink: 0,
+            fontSize: 13,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {filters.mods.map((mod) => (
+            <Chip
+              key={mod}
+              size="small"
+              label={t`Mod: ${mod}`}
+              onDelete={() => setMods(filters.mods.filter((m) => m !== mod))}
+              deleteIcon={<X size={14} aria-label={t`Remove filter ${mod}`} />}
+              sx={{ bgcolor: 'rgba(255,255,255,0.1)', fontSize: 13 }}
+            />
+          ))}
           <Button
             size="small"
             variant="text"
@@ -290,26 +292,8 @@ export function ConsoleTab({ game }: { game: string }) {
           >
             {t`Clear filters`}
           </Button>
-        ) : null}
-        <Box sx={{ flexGrow: 1 }} />
-        <Button
-          variant="outlined"
-          size="small"
-          disabled={firstErr < 0}
-          onClick={() => {
-            setFollow(false)
-            setJump((j) => ({ index: firstErr, n: (j?.n ?? 0) + 1 }))
-          }}
-          sx={{
-            bgcolor: 'rgba(255,138,128,0.14)',
-            borderColor: 'rgba(255,138,128,0.45)',
-            color: '#ffb3ab',
-            '&:hover': { bgcolor: 'rgba(255,138,128,0.22)', borderColor: 'rgba(255,138,128,0.6)' },
-          }}
-        >
-          {t`Jump to first error`}
-        </Button>
-      </Box>
+        </Box>
+      ) : null}
       <Box
         sx={{
           flex: 1,
@@ -340,23 +324,45 @@ export function ConsoleTab({ game }: { game: string }) {
   )
 }
 
-export function CopyLog() {
+export function LogActions() {
   const { t } = useLingui()
   const rows = useVisible()
+  const { clear, jumpTo } = useConsole.getState()
+  const firstErr = firstError(rows)
   return (
-    <Button
-      variant="outlined"
-      color="inherit"
-      disabled={rows.length === 0}
-      onClick={() => {
-        Clipboard.SetText(formatAll(rows)).then(
-          () => useToasts.getState().push({ kind: 'success', title: t`Log copied` }),
-          reportUnexpected,
-        )
-      }}
-      sx={{ height: 32, borderColor: 'rgba(255,255,255,0.22)', color: '#ffffff' }}
-    >
-      {t`Copy`}
-    </Button>
+    <Box sx={{ display: 'flex', gap: 1 }}>
+      <Button
+        variant="outlined"
+        color="inherit"
+        disabled={firstErr < 0}
+        onClick={() => jumpTo(firstErr)}
+        sx={actionSx}
+      >
+        {t`Jump to first error`}
+      </Button>
+      <Button
+        variant="outlined"
+        color="inherit"
+        disabled={rows.length === 0}
+        onClick={clear}
+        sx={actionSx}
+      >
+        {t`Clear`}
+      </Button>
+      <Button
+        variant="outlined"
+        color="inherit"
+        disabled={rows.length === 0}
+        onClick={() => {
+          Clipboard.SetText(formatAll(rows)).then(
+            () => useToasts.getState().push({ kind: 'success', title: t`Log copied` }),
+            reportUnexpected,
+          )
+        }}
+        sx={actionSx}
+      >
+        {t`Copy`}
+      </Button>
+    </Box>
   )
 }

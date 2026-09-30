@@ -16,8 +16,14 @@ export const useConsole = create<{
   filters: Filters
   timestamps: boolean
   follow: boolean
+  // Lines up to this seq were cleared from the view and stay hidden when the history is read again.
+  cleared: number
+  // Each request carries a fresh n so jumping to the same row twice scrolls twice.
+  jump: { index: number; n: number } | null
   add: (entries: Entry[]) => void
   reset: () => void
+  clear: () => void
+  jumpTo: (index: number) => void
   load: (game: string) => Promise<void>
   setSearch: (search: string) => void
   toggleLevel: (level: Level) => void
@@ -30,18 +36,23 @@ export const useConsole = create<{
   filters: DEFAULT_FILTERS,
   timestamps: true,
   follow: true,
+  cleared: 0,
+  jump: null,
   add: (entries) => {
-    const seen = lastSeq(get().entries)
+    const seen = Math.max(lastSeq(get().entries), get().cleared)
     const fresh = entries.filter((e) => e.seq > seen)
     if (fresh.length > 0) {
       set((s) => ({ entries: [...s.entries, ...fresh] }))
     }
   },
-  reset: () => set({ entries: [] }),
+  reset: () => set({ entries: [], cleared: 0, jump: null, follow: true }),
+  clear: () =>
+    set((s) => ({ entries: [], jump: null, cleared: Math.max(s.cleared, lastSeq(s.entries)) })),
+  jumpTo: (index) => set((s) => ({ follow: false, jump: { index, n: (s.jump?.n ?? 0) + 1 } })),
   // Lines that arrived while the history was loading are newer than it and are kept.
   load: async (game) => {
     try {
-      const history = (await Lines(game)) ?? []
+      const history = ((await Lines(game)) ?? []).filter((e) => e.seq > get().cleared)
       const after = lastSeq(history)
       set((s) => ({ entries: [...history, ...s.entries.filter((e) => e.seq > after)] }))
     } catch (e) {

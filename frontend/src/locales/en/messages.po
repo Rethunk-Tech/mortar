@@ -7,7 +7,7 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#: src/console/ConsoleTab.tsx:277
+#: src/console/ConsoleTab.tsx:280
 msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
@@ -59,7 +59,7 @@ msgstr "Saved · just now"
 msgid "Add archive"
 msgstr "Add archive"
 
-#: src/console/ConsoleTab.tsx:234
+#: src/console/ConsoleTab.tsx:239
 msgid "No lines match the filters."
 msgstr "No lines match the filters."
 
@@ -288,7 +288,7 @@ msgstr "Dismiss for this save"
 msgid "Stardew Valley is ConcernedApe's. Game art shown in Mortar is read from your own Steam install. Nexus Mods and GitHub content belongs to its authors."
 msgstr "Stardew Valley is ConcernedApe's. Game art shown in Mortar is read from your own Steam install. Nexus Mods and GitHub content belongs to its authors."
 
-#: src/console/ConsoleTab.tsx:232
+#: src/console/ConsoleTab.tsx:237
 msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
@@ -312,7 +312,7 @@ msgstr "Desktop"
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
 
-#: src/launch/store.ts:40
+#: src/launch/store.ts:41
 msgid "SMAPI is missing or was replaced by a game update"
 msgstr "SMAPI is missing or was replaced by a game update"
 
@@ -352,7 +352,7 @@ msgstr "Could not read the mods"
 msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
 
-#: src/console/ConsoleTab.tsx:58
+#: src/console/ConsoleTab.tsx:57
 msgid "Info"
 msgstr "Info"
 
@@ -402,7 +402,7 @@ msgstr "Hidden"
 msgid "Updated {names} in {0}"
 msgstr "Updated {names} in {0}"
 
-#: src/launch/store.ts:109
+#: src/launch/store.ts:113
 msgid "Could not launch the game"
 msgstr "Could not launch the game"
 
@@ -440,7 +440,7 @@ msgstr "Installing…"
 msgid "Mortar"
 msgstr "Mortar"
 
-#: src/launch/store.ts:47
+#: src/launch/store.ts:48
 #: src/loader/store.ts:46
 msgid "Could not install SMAPI"
 msgstr "Could not install SMAPI"
@@ -502,7 +502,7 @@ msgstr "{mods, plural, one {# mod} other {# mods}}"
 msgid "Also updates {0} (same download)"
 msgstr "Also updates {0} (same download)"
 
-#: src/console/ConsoleTab.tsx:353
+#: src/console/ConsoleTab.tsx:358
 msgid "Log copied"
 msgstr "Log copied"
 
@@ -523,7 +523,7 @@ msgstr "{dependentName} needs {dep}, which this profile lacks."
 msgid "Background preview"
 msgstr "Background preview"
 
-#: src/console/ConsoleTab.tsx:59
+#: src/console/ConsoleTab.tsx:58
 msgid "Warn"
 msgstr "Warn"
 
@@ -571,7 +571,7 @@ msgstr "Could not remove {0}"
 msgid "{0} is installed twice, and SMAPI loads only one."
 msgstr "{0} is installed twice, and SMAPI loads only one."
 
-#: src/console/ConsoleTab.tsx:279
+#: src/console/ConsoleTab.tsx:282
 msgid "Remove filter {mod}"
 msgstr "Remove filter {mod}"
 
@@ -608,7 +608,7 @@ msgstr "Updates are unknown: SMAPI's update service could not be reached."
 msgid "{0} copies of {1}"
 msgstr "{0} copies of {1}"
 
-#: src/console/ConsoleTab.tsx:359
+#: src/console/ConsoleTab.tsx:364
 #: src/firstrun/SmapiStep.tsx:116
 msgid "Copy"
 msgstr "Copy"
@@ -621,7 +621,7 @@ msgstr "Image"
 msgid "Problem: {text}"
 msgstr "Problem: {text}"
 
-#: src/console/ConsoleTab.tsx:56
+#: src/console/ConsoleTab.tsx:55
 msgid "Trace"
 msgstr "Trace"
 
@@ -706,11 +706,11 @@ msgstr "Versions"
 msgid "Roll back {0}?"
 msgstr "Roll back {0}?"
 
-#: src/launch/store.ts:102
+#: src/launch/store.ts:106
 msgid "Could not check whether the game is running"
 msgstr "Could not check whether the game is running"
 
-#: src/console/ConsoleTab.tsx:66
+#: src/console/ConsoleTab.tsx:65
 msgid "Levels"
 msgstr "Levels"
 
@@ -727,8 +727,8 @@ msgstr "Stardew Valley {0}"
 msgid "Could not check the mods for problems"
 msgstr "Could not check the mods for problems"
 
+#: src/console/ConsoleTab.tsx:175
 #: src/console/ConsoleTab.tsx:176
-#: src/console/ConsoleTab.tsx:177
 msgid "Search the log"
 msgstr "Search the log"
 
@@ -737,7 +737,7 @@ msgstr "Search the log"
 msgid "Notes for {0}"
 msgstr "Notes for {0}"
 
-#: src/console/ConsoleTab.tsx:124
+#: src/console/ConsoleTab.tsx:123
 #: src/game/Detail.tsx:154
 #: src/game/Detail.tsx:251
 #: src/mods/ModList.tsx:122
@@ -795,7 +795,7 @@ msgstr "Try again"
 msgid "Stardew Valley was not found"
 msgstr "Stardew Valley was not found"
 
-#: src/console/ConsoleTab.tsx:254
+#: src/console/ConsoleTab.tsx:259
 msgid "Times"
 msgstr "Times"
 
@@ -820,7 +820,7 @@ msgstr "SMAPI"
 msgid "Reset to default"
 msgstr "Reset to default"
 
-#: src/launch/store.ts:126
+#: src/launch/store.ts:130
 msgid "Could not stop the game"
 msgstr "Could not stop the game"
 
@@ -848,7 +848,7 @@ msgstr "Summer"
 msgid "No update checks, and it can't go in a share link."
 msgstr "No update checks, and it can't go in a share link."
 
-#: src/console/store.ts:50
+#: src/console/store.ts:61
 msgid "Could not read the SMAPI log"
 msgstr "Could not read the SMAPI log"
 
@@ -874,7 +874,7 @@ msgstr "Keep this one"
 msgid "Couldn't minimise the window"
 msgstr "Couldn't minimise the window"
 
-#: src/console/ConsoleTab.tsx:255
+#: src/console/ConsoleTab.tsx:260
 msgid "Follow"
 msgstr "Follow"
 
@@ -912,7 +912,7 @@ msgstr "Couldn't read the window state"
 msgid "Open {name} on Nexus"
 msgstr "Open {name} on Nexus"
 
-#: src/console/ConsoleTab.tsx:133
+#: src/console/ConsoleTab.tsx:132
 msgid "No mods have logged yet"
 msgstr "No mods have logged yet"
 
@@ -961,7 +961,7 @@ msgstr "Mortar can start SMAPI directly instead. The Steam overlay and Steam's p
 msgid "Checked with SMAPI's update service"
 msgstr "Checked with SMAPI's update service"
 
-#: src/console/ConsoleTab.tsx:57
+#: src/console/ConsoleTab.tsx:56
 msgid "Debug"
 msgstr "Debug"
 
@@ -1105,7 +1105,7 @@ msgstr "Reset the settings of {0}?"
 msgid "Switch off"
 msgstr "Switch off"
 
-#: src/console/ConsoleTab.tsx:60
+#: src/console/ConsoleTab.tsx:59
 msgid "Error"
 msgstr "Error"
 
@@ -1129,11 +1129,6 @@ msgstr "Details of {0}"
 #: src/mods/Toolbar.tsx:100
 msgid "Filter {total, plural, one {# mod} other {# mods}}"
 msgstr "Filter {total, plural, one {# mod} other {# mods}}"
-
-#. placeholder {0}: rows.length
-#: src/console/ConsoleTab.tsx:271
-msgid "Showing {0} of {total, plural, one {# line} other {# lines}}"
-msgstr "Showing {0} of {total, plural, one {# line} other {# lines}}"
 
 #: src/shell/AppMenu.tsx:41
 #: src/shell/AppMenu.tsx:78
@@ -1226,7 +1221,7 @@ msgstr "Launching {name}"
 msgid "{fitting} of {total}"
 msgstr "{fitting} of {total}"
 
-#: src/console/ConsoleTab.tsx:291
+#: src/console/ConsoleTab.tsx:293
 msgid "Clear filters"
 msgstr "Clear filters"
 
@@ -1309,7 +1304,7 @@ msgstr "Saves"
 msgid "Mod details"
 msgstr "Mod details"
 
-#: src/launch/store.ts:25
+#: src/launch/store.ts:26
 msgid "Steam may not be running or signed in. Start Steam, sign in and try again."
 msgstr "Steam may not be running or signed in. Start Steam, sign in and try again."
 
@@ -1353,7 +1348,7 @@ msgstr "Downloaded"
 msgid "Switch on in this profile"
 msgstr "Switch on in this profile"
 
-#: src/console/ConsoleTab.tsx:310
+#: src/console/ConsoleTab.tsx:341
 msgid "Jump to first error"
 msgstr "Jump to first error"
 
@@ -1374,7 +1369,7 @@ msgstr "Source"
 msgid "Download a mod's new archive from its page and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details."
 msgstr "Download a mod's new archive from its page and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details."
 
-#: src/launch/store.ts:29
+#: src/launch/store.ts:30
 msgid "Steam's launch options for Stardew Valley lack the SMAPI line. Set them to \"<game folder>\\StardewModdingAPI.exe\" %command%."
 msgstr "Steam's launch options for Stardew Valley lack the SMAPI line. Set them to \"<game folder>\\StardewModdingAPI.exe\" %command%."
 
@@ -1398,6 +1393,10 @@ msgstr "Could not save notes"
 #: src/mods/ModDetail.tsx:53
 msgid "Switched off"
 msgstr "Switched off"
+
+#: src/console/ConsoleTab.tsx:350
+msgid "Clear"
+msgstr "Clear"
 
 #: src/firstrun/FirstRun.tsx:96
 msgid "SMAPI installed"
@@ -1474,7 +1473,7 @@ msgstr "{modsLabel} · Updated {updated}"
 msgid "Has used {0, plural, one {# mod it lacks} other {# mods it lacks}}"
 msgstr "Has used {0, plural, one {# mod it lacks} other {# mods it lacks}}"
 
-#: src/launch/store.ts:42
+#: src/launch/store.ts:43
 #: src/loader/Banner.tsx:25
 #: src/settings/sections/Game.tsx:115
 #: src/settings/sections/Game.tsx:118
@@ -1532,7 +1531,7 @@ msgstr "SMAPI not installed yet"
 msgid "On"
 msgstr "On"
 
-#: src/console/ConsoleTab.tsx:61
+#: src/console/ConsoleTab.tsx:60
 msgid "Alert"
 msgstr "Alert"
 

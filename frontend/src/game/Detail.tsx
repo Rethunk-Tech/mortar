@@ -4,7 +4,7 @@ import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
 import { Pencil, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { ConsoleTab, CopyLog } from '../console/ConsoleTab.tsx'
+import { ConsoleTab, LogActions } from '../console/ConsoleTab.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { NotesTab } from '../notes/NotesTab.tsx'
 import { userModCount } from '../profiles/count.ts'
@@ -254,7 +254,7 @@ export function Detail() {
           <Tab value="console" label={t`Console`} />
         </Tabs>
         <Box sx={{ flexGrow: 1 }} />
-        {tab === 'console' ? <CopyLog /> : null}
+        {tab === 'console' ? <LogActions /> : null}
       </Box>
       {tab === 'console' ? <ConsoleTab game={game} /> : null}
       {tab === 'notes' ? <NotesTab key={`notes-${profile.id}`} profile={profile} /> : null}
