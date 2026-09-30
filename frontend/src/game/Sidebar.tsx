@@ -10,6 +10,7 @@ import { useBadges } from '../mods/badges.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { QueueButton } from '../queue/QueueButton.tsx'
+import { HistoryButton } from '../toasts/HistoryButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { compact } from './compact.ts'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
@@ -218,7 +219,7 @@ function ResizeHandle({ width, onWidth }: { width: number; onWidth: (w: number) 
   )
 }
 
-// Downloads and Support icons over the Play button, pinned under the profile list.
+// Downloads, notifications and Support over the Play button, pinned under the profile list.
 function BottomBlock({ game }: { game: string }) {
   return (
     <Box
@@ -240,6 +241,7 @@ function BottomBlock({ game }: { game: string }) {
         <Box sx={{ flex: 1, alignSelf: 'stretch' }}>
           <QueueButton />
         </Box>
+        <HistoryButton />
         <SupportButton game={game} />
       </Box>
       <PlayControl game={game} />
