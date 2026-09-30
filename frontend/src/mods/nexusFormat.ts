@@ -11,6 +11,8 @@ const VERSION =
 
 const ATOI = /^[+-]?\d+$/
 
+const CHANGELOG_CAP = 5
+
 const atoi = (s: string) => (ATOI.test(s) ? Number(s) : null)
 
 const sign = (n: number) => {
@@ -125,3 +127,5 @@ export const isNewer = (latest: string, installed: string) => {
   const cmp = compareVersions(latest, installed)
   return cmp !== null && cmp > 0
 }
+
+export const recentChangelogs = <T>(logs: T[]) => logs.slice(0, CHANGELOG_CAP)

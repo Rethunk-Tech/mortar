@@ -9,7 +9,14 @@ import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { type Block, parseBBCode, safeUrl } from './bbcode.ts'
 import { useNexusEntry } from './nexusDetails.ts'
-import { currentFiles, formatCount, formatDate, formatSize, isNewer } from './nexusFormat.ts'
+import {
+  currentFiles,
+  formatCount,
+  formatDate,
+  formatSize,
+  isNewer,
+  recentChangelogs,
+} from './nexusFormat.ts'
 import { heading } from './paper.ts'
 
 const text = { fontSize: 13 } as const
@@ -209,7 +216,7 @@ function Loaded({ details, mod, fileId }: { details: Details; mod: Mod; fileId: 
       <Files details={details} fileId={fileId} />
       {logs.length > 0 ? (
         <Fold title={t`Recent changes`}>
-          {logs.map((c) => (
+          {recentChangelogs(logs).map((c) => (
             <Box key={c.version}>
               <Typography sx={{ ...text, fontWeight: BOLD }}>{c.version}</Typography>
               <Typography sx={{ ...text, pl: 2, whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}>

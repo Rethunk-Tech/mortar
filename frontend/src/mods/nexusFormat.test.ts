@@ -1,6 +1,13 @@
 import { expect, test } from 'bun:test'
 import type { File } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
-import { currentFiles, formatCount, formatDate, formatSize, isNewer } from './nexusFormat.ts'
+import {
+  currentFiles,
+  formatCount,
+  formatDate,
+  formatSize,
+  isNewer,
+  recentChangelogs,
+} from './nexusFormat.ts'
 
 test('formats sizes, counts and dates, leaving out a missing date', () => {
   expect(formatSize(617, 'en')).toBe('617 kB')
@@ -62,4 +69,9 @@ test('a release outranks its pre-releases, matching SMAPI CompareVersions', () =
   for (const bad of ['', '1', 'abc', '1.x']) {
     expect(isNewer(bad, '1.0')).toBe(false)
   }
+})
+
+test('recent changes keep the newest five versions', () => {
+  const logs = [1, 2, 3, 4, 5, 6].map((n) => ({ version: `${n}` }))
+  expect(recentChangelogs(logs).map((c) => c.version)).toEqual(['1', '2', '3', '4', '5'])
 })
