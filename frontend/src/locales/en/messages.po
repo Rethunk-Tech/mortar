@@ -1,0 +1,12 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-09-29 23:51-0700\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+
+#: src/App.tsx:7
+msgid "Mortar"
+msgstr "Mortar"

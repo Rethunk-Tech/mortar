@@ -7,7 +7,9 @@
     "dev": "vite",
     "build:dev": "tsc && vite build --minify false --mode development",
     "build": "tsc && vite build --mode production",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "i18n:extract": "lingui extract --clean",
+    "i18n:compile": "lingui compile --typescript"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
