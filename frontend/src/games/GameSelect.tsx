@@ -46,13 +46,15 @@ function Row({ game, openable, note }: { game: Game; openable: boolean; note: st
           }}
         />
       ) : null}
-      <Box
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          bgcolor: openable ? 'rgba(0,0,0,0.28)' : 'rgba(0,0,0,0.55)',
-        }}
-      />
+      {game.artUrl ? (
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            bgcolor: openable ? 'rgba(0,0,0,0.28)' : 'rgba(0,0,0,0.55)',
+          }}
+        />
+      ) : null}
       <Box sx={{ position: 'relative', textShadow: shadow, textAlign: 'left', color: '#fff' }}>
         <Typography sx={{ fontSize: 34, fontWeight: 600, lineHeight: 1.2 }}>{game.name}</Typography>
         <Typography sx={{ fontSize: 17 }}>
@@ -90,7 +92,7 @@ function Row({ game, openable, note }: { game: Game; openable: boolean; note: st
     justifyContent: 'space-between',
     px: '96px',
     overflow: 'hidden',
-    bgcolor: 'rgb(28,28,32)',
+    bgcolor: 'background.paper',
     borderLeft: '4px solid',
     borderColor: openable ? 'primary.main' : 'transparent',
     borderTop: '1px solid rgba(0,0,0,0.8)',
