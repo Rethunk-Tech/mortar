@@ -56,7 +56,7 @@ msgid "Could not check the mods for updates"
 msgstr "Could not check the mods for updates"
 
 #: src/mods/LockedNote.tsx:9
-#: src/saves/SavesTab.tsx:78
+#: src/saves/SavesTab.tsx:79
 msgid "Stop the game to change mods."
 msgstr "Stop the game to change mods."
 
@@ -328,7 +328,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/mods/ModsTab.tsx:138
 #: src/notes/NotesTab.tsx:39
 #: src/queue/QueueSheet.tsx:308
-#: src/saves/SavesTab.tsx:218
+#: src/saves/SavesTab.tsx:247
 #: src/settings/sections/Updates.tsx:31
 msgid "Retry"
 msgstr "Retry"
@@ -421,7 +421,7 @@ msgstr "Show"
 
 #: src/mods/ProblemBar.tsx:96
 #: src/mods/UpdateReview.tsx:136
-#: src/saves/SavesTab.tsx:94
+#: src/saves/SavesTab.tsx:95
 msgid "Queued"
 msgstr "Queued"
 
@@ -509,7 +509,7 @@ msgstr "Imported {name}"
 msgid "Add mods from an archive you downloaded, or find them on Nexus."
 msgstr "Add mods from an archive you downloaded, or find them on Nexus."
 
-#: src/saves/SavesTab.tsx:122
+#: src/saves/SavesTab.tsx:123
 msgid "Dismiss for this save"
 msgstr "Dismiss for this save"
 
@@ -529,7 +529,7 @@ msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschil
 msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
-#: src/saves/SavesTab.tsx:184
+#: src/saves/SavesTab.tsx:212
 msgid "All mods present"
 msgstr "All mods present"
 
@@ -604,7 +604,7 @@ msgstr "Saved · {n, plural, one {# hour ago} other {# hours ago}}"
 msgid "{gameName} · {mods}"
 msgstr "{gameName} · {mods}"
 
-#: src/saves/SavesTab.tsx:75
+#: src/saves/SavesTab.tsx:76
 msgid "{name} (switched off)"
 msgstr "{name} (switched off)"
 
@@ -643,7 +643,7 @@ msgstr "Info"
 msgid "3 updates"
 msgstr "3 updates"
 
-#: src/saves/SavesTab.tsx:99
+#: src/saves/SavesTab.tsx:100
 msgid "Add {name} to this profile"
 msgstr "Add {name} to this profile"
 
@@ -807,7 +807,7 @@ msgstr "{mods} · about {size} to download"
 msgid "Could not read recently deleted profiles"
 msgstr "Could not read recently deleted profiles"
 
-#: src/saves/SavesTab.tsx:146
+#: src/saves/SavesTab.tsx:174
 msgid "last played {played}"
 msgstr "last played {played}"
 
@@ -1041,7 +1041,7 @@ msgstr "Ready to import"
 msgid "Needs {0} or newer, has {1}"
 msgstr "Needs {0} or newer, has {1}"
 
-#: src/saves/SavesTab.tsx:94
+#: src/saves/SavesTab.tsx:95
 msgid "Add to this profile"
 msgstr "Add to this profile"
 
@@ -1151,7 +1151,7 @@ msgstr "That folder cannot be used"
 
 #: src/mods/ProblemBar.tsx:65
 #: src/mods/UpdateReview.tsx:126
-#: src/saves/SavesTab.tsx:110
+#: src/saves/SavesTab.tsx:111
 msgid "Open page"
 msgstr "Open page"
 
@@ -1186,7 +1186,7 @@ msgstr "Selected mod"
 msgid "Could not switch off the other copy of {0}"
 msgstr "Could not switch off the other copy of {0}"
 
-#: src/saves/SavesTab.tsx:232
+#: src/saves/SavesTab.tsx:261
 msgid "Mortar reads each save for the mods it has used. You pick the save in the game; this is how well each one fits {name}."
 msgstr "Mortar reads each save for the mods it has used. You pick the save in the game; this is how well each one fits {name}."
 
@@ -1342,7 +1342,7 @@ msgstr "Only a Flatpak Steam was found."
 msgid "Open Stardew Valley settings"
 msgstr "Open Stardew Valley settings"
 
-#: src/saves/SavesTab.tsx:225
+#: src/saves/SavesTab.tsx:254
 msgid "No saves found yet."
 msgstr "No saves found yet."
 
@@ -1408,7 +1408,7 @@ msgstr "Choose the folder that holds Stardew Valley instead."
 msgid "The link has expired. Click Mod Manager Download on Nexus again."
 msgstr "The link has expired. Click Mod Manager Download on Nexus again."
 
-#: src/saves/SavesTab.tsx:139
+#: src/saves/SavesTab.tsx:167
 msgid "Summer"
 msgstr "Summer"
 
@@ -1504,7 +1504,7 @@ msgstr "Could not open the folder of {0}"
 msgid "Other profile…"
 msgstr "Other profile…"
 
-#: src/saves/SavesTab.tsx:190
+#: src/saves/SavesTab.tsx:219
 msgid "Has used:"
 msgstr "Has used:"
 
@@ -1528,7 +1528,7 @@ msgstr "Couldn't resize the window"
 msgid "Couldn't read the window state"
 msgstr "Couldn't read the window state"
 
-#: src/saves/SavesTab.tsx:113
+#: src/saves/SavesTab.tsx:114
 msgid "Open {name} on Nexus"
 msgstr "Open {name} on Nexus"
 
@@ -1560,7 +1560,7 @@ msgstr "unverified until downloaded"
 msgid "Something went wrong"
 msgstr "Something went wrong"
 
-#: src/saves/SavesTab.tsx:139
+#: src/saves/SavesTab.tsx:167
 msgid "Winter"
 msgstr "Winter"
 
@@ -1582,7 +1582,7 @@ msgstr "Reset"
 msgid "Use Steam's"
 msgstr "Use Steam's"
 
-#: src/saves/SavesTab.tsx:139
+#: src/saves/SavesTab.tsx:167
 msgid "Spring"
 msgstr "Spring"
 
@@ -1651,7 +1651,7 @@ msgstr "Create your first profile"
 msgid "Moss"
 msgstr "Moss"
 
-#: src/saves/SavesTab.tsx:113
+#: src/saves/SavesTab.tsx:114
 msgid "Open the page of {name}"
 msgstr "Open the page of {name}"
 
@@ -1702,7 +1702,7 @@ msgid "Default background"
 msgstr "Default background"
 
 #: src/mods/ModMenu.tsx:49
-#: src/saves/SavesTab.tsx:110
+#: src/saves/SavesTab.tsx:111
 msgid "Open on Nexus"
 msgstr "Open on Nexus"
 
@@ -1739,7 +1739,7 @@ msgstr "Log link"
 msgid "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 msgstr "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 
-#: src/saves/SavesTab.tsx:83
+#: src/saves/SavesTab.tsx:84
 msgid "Switch on {name} in this profile"
 msgstr "Switch on {name} in this profile"
 
@@ -1991,7 +1991,7 @@ msgstr "Install"
 msgid "Select a mod to see its details."
 msgstr "Select a mod to see its details."
 
-#: src/saves/SavesTab.tsx:125
+#: src/saves/SavesTab.tsx:126
 msgid "Dismiss {name} for this save"
 msgstr "Dismiss {name} for this save"
 
@@ -2037,7 +2037,7 @@ msgstr "{fitting} of {total}"
 msgid "Clear filters"
 msgstr "Clear filters"
 
-#: src/saves/SavesTab.tsx:209
+#: src/saves/SavesTab.tsx:238
 msgid "Could not read your saves: {detail}"
 msgstr "Could not read your saves: {detail}"
 
@@ -2169,6 +2169,11 @@ msgstr "Loading mods"
 msgid "{0} (optional)"
 msgstr "{0} (optional)"
 
+#. placeholder {0}: wants.length
+#: src/saves/SavesTab.tsx:160
+msgid "Add all {0}"
+msgstr "Add all {0}"
+
 #. placeholder {0}: mod.name
 #: src/share/ImportPreview.tsx:84
 msgid "Include {0}"
@@ -2210,7 +2215,7 @@ msgstr "Downloaded"
 msgid "{0} left out"
 msgstr "{0} left out"
 
-#: src/saves/SavesTab.tsx:78
+#: src/saves/SavesTab.tsx:79
 msgid "Switch on in this profile"
 msgstr "Switch on in this profile"
 
@@ -2367,7 +2372,7 @@ msgstr "Check this download"
 msgid "Save…"
 msgstr "Save…"
 
-#: src/saves/SavesTab.tsx:139
+#: src/saves/SavesTab.tsx:167
 msgid "Fall"
 msgstr "Fall"
 
@@ -2411,7 +2416,7 @@ msgstr "Support"
 msgid "No mods yet"
 msgstr "No mods yet"
 
-#: src/saves/SavesTab.tsx:223
+#: src/saves/SavesTab.tsx:252
 msgid "Reading your saves…"
 msgstr "Reading your saves…"
 
@@ -2419,7 +2424,7 @@ msgstr "Reading your saves…"
 msgid "Copy link"
 msgstr "Copy link"
 
-#: src/saves/SavesTab.tsx:145
+#: src/saves/SavesTab.tsx:173
 msgid "{season} {day}, year {year}"
 msgstr "{season} {day}, year {year}"
 
@@ -2436,7 +2441,7 @@ msgid "{modsLabel} · Updated {updated}"
 msgstr "{modsLabel} · Updated {updated}"
 
 #. placeholder {0}: missing.length
-#: src/saves/SavesTab.tsx:185
+#: src/saves/SavesTab.tsx:213
 msgid "Has used {0, plural, one {# mod it lacks} other {# mods it lacks}}"
 msgstr "Has used {0, plural, one {# mod it lacks} other {# mods it lacks}}"
 

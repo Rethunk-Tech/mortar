@@ -14,6 +14,7 @@ import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { useSaves } from './store.ts'
 
 const nowrap = { whiteSpace: 'nowrap' } as const
@@ -134,6 +135,33 @@ function LackChip({
   )
 }
 
+// Queues every mod the save has used that Mortar can install and the queue does not already hold for the profile.
+function AddAll({ missing, profile }: { missing: Lack[]; profile: Profile }) {
+  const { t } = useLingui()
+  const [pending, run] = usePending()
+  const items = useQueue((s) => s.state.items)
+  const wants = missing
+    .map((lack) => (lack.disabled ? null : wantFor(lack)))
+    .filter((want): want is Want => want !== null)
+    .filter((want) => !pendingFor(items, profile.id, want.modId ?? 0, want.repo ?? ''))
+  if (wants.length < 2) {
+    return null
+  }
+  return (
+    <Button
+      size="small"
+      variant="outlined"
+      color="inherit"
+      startIcon={<Plus size={14} />}
+      disabled={pending}
+      onClick={() => run(() => download(wants))}
+      sx={nowrap}
+    >
+      {t`Add all ${wants.length}`}
+    </Button>
+  )
+}
+
 function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: string }) {
   const { t } = useLingui()
   const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
@@ -184,6 +212,7 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
             ? t`All mods present`
             : t`Has used ${plural(missing.length, { one: '# mod it lacks', other: '# mods it lacks' })}`}
         </Box>
+        {ok ? null : <AddAll missing={missing} profile={profile} />}
       </Box>
       {ok ? null : (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
