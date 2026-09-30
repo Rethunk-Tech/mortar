@@ -59,13 +59,71 @@ interface Failure {
   hint: Hint
 }
 
-export interface UpdateWarn {
+interface UpdateWarn {
   game: string
   profile: string
   direct: boolean
   recorded: string
   installed: string
   broken: Broken[]
+}
+
+async function startWithWarning(opts: {
+  get: () => { starting: boolean }
+  set: (p: { starting?: boolean; updateWarn?: UpdateWarn | null }) => void
+  game: string
+  profile: string
+  direct: boolean
+}) {
+  if (opts.get().starting) {
+    return
+  }
+  opts.set({ starting: true })
+  try {
+    const warning = await UpdateWarning(opts.game, opts.profile)
+    if (warning.changed) {
+      opts.set({
+        starting: false,
+        updateWarn: {
+          game: opts.game,
+          profile: opts.profile,
+          direct: opts.direct,
+          recorded: warning.recorded,
+          installed: warning.installed,
+          broken: warning.broken ?? [],
+        },
+      })
+      return
+    }
+  } catch (e) {
+    opts.set({ starting: false })
+    reportError(i18n._(msg`Could not check the game version`))(e)
+    return
+  }
+  try {
+    await Start(opts.game, opts.profile, opts.direct)
+  } catch (e) {
+    opts.set({ starting: false })
+    reportError(i18n._(msg`Could not launch the game`))(e)
+  }
+}
+
+async function startVanillaGame(opts: {
+  get: () => { starting: boolean }
+  set: (p: { starting: boolean }) => void
+  game: string
+  direct: boolean
+}) {
+  if (opts.get().starting) {
+    return
+  }
+  opts.set({ starting: true })
+  try {
+    await StartVanilla(opts.game, opts.direct)
+  } catch (e) {
+    opts.set({ starting: false })
+    reportError(i18n._(msg`Could not launch the game`))(e)
+  }
 }
 
 export const useLaunch = create<{
@@ -140,43 +198,8 @@ export const useLaunch = create<{
       reportError(i18n._(msg`Could not check whether the game is running`))(e)
     }
   },
-  start: async (game, profile, direct) => {
-    try {
-      const warning = await UpdateWarning(game, profile)
-      if (warning.changed) {
-        set({
-          updateWarn: {
-            game,
-            profile,
-            direct,
-            recorded: warning.recorded,
-            installed: warning.installed,
-            broken: warning.broken ?? [],
-          },
-        })
-        return
-      }
-    } catch (e) {
-      reportError(i18n._(msg`Could not check the game version`))(e)
-      return
-    }
-    set({ starting: true })
-    try {
-      await Start(game, profile, direct)
-    } catch (e) {
-      set({ starting: false })
-      reportError(i18n._(msg`Could not launch the game`))(e)
-    }
-  },
-  startVanilla: async (game, direct) => {
-    set({ starting: true })
-    try {
-      await StartVanilla(game, direct)
-    } catch (e) {
-      set({ starting: false })
-      reportError(i18n._(msg`Could not launch the game`))(e)
-    }
-  },
+  start: (game, profile, direct) => startWithWarning({ get, set, game, profile, direct }),
+  startVanilla: (game, direct) => startVanillaGame({ get, set, game, direct }),
   hide: () => set({ hidden: true }),
   dismissFailure: () => set({ failure: null }),
   dismissCrash: () => set({ crash: null }),
