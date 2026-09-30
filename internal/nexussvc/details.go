@@ -27,8 +27,7 @@ type Details struct {
 // Details returns a mod page's details from the cache under <datadir>/cache/nexus, refetching once they are a day
 // old. Signed out, rate-limited or offline, it serves what is cached however old, and errors only with nothing.
 func (s *Service) Details(ctx context.Context, modID int) (Details, error) {
-	name := fmt.Sprintf("nexus/details-%s-%d.json", nexus.Game, modID)
-	return meta.Cached(s.meta, name, detailsTTL, func() (Details, error) {
+	return meta.Cached(s.meta, detailsName(modID), detailsTTL, func() (Details, error) {
 		c, err := Authed(s.store, s.client)
 		if err != nil {
 			return Details{}, err
@@ -51,4 +50,18 @@ func (s *Service) Details(ctx context.Context, modID int) (Details, error) {
 		})
 		return Details{Page: page, Category: cats[page.CategoryID], Files: files, Changelogs: logs}, nil
 	})
+}
+
+func detailsName(modID int) string { return fmt.Sprintf("nexus/details-%s-%d.json", nexus.Game, modID) }
+
+// CachedDetails returns whatever details are cached for modIDs, however old, without a network call, so a list of
+// many mods can show them without a burst of requests. Uncached mods are absent from the map.
+func (s *Service) CachedDetails(modIDs []int) map[int]Details {
+	out := make(map[int]Details, len(modIDs))
+	for _, id := range modIDs {
+		if d, ok := meta.Peek[Details](s.meta, detailsName(id)); ok {
+			out[id] = d
+		}
+	}
+	return out
 }

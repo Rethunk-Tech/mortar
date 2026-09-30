@@ -103,6 +103,17 @@ func Cached[T any](c *Client, name string, ttl time.Duration, fetch func() (T, e
 	return v, nil
 }
 
+// Peek returns the entry at path however old, without fetching.
+func Peek[T any](c *Client, name string) (T, bool) {
+	path, err := c.cachePath(name)
+	if err != nil {
+		var zero T
+		return zero, false
+	}
+	e, ok := readEntry[T](path)
+	return e.Value, ok
+}
+
 // do sends req and returns at most limit bytes of a 200 response body.
 func (c *Client) do(req *http.Request, limit int64) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(req.Context(), requestTimeout)

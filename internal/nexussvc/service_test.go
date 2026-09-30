@@ -130,6 +130,10 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 		t.Fatal(err)
 	}
 	now = now.Add(48 * time.Hour)
+	if got := s.CachedDetails([]int{541, 999}); len(got) != 1 || got[541].Category != "User Interface" ||
+		hits.Load() != 4 {
+		t.Fatalf("cached details = %+v, hits %d", got, hits.Load())
+	}
 	if d, err := s.Details(ctx, 541); err != nil || d.Page.Name != "Lookup Anything" || hits.Load() != 4 {
 		t.Fatalf("stale signed-out details = %+v, %v, hits %d", d.Page, err, hits.Load())
 	}
