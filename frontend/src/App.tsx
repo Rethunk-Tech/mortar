@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { useEffect, useState } from 'react'
 import { Get } from '../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { CommandPalette } from './commandPalette/CommandPalette.tsx'
 import { FirstRun } from './firstrun/FirstRun.tsx'
 import { firstRunNeeded } from './firstrun/needed.ts'
 import { MainScreen } from './game/MainScreen.tsx'
@@ -64,6 +65,7 @@ export function App() {
       </AppFrame>
       <LaunchLayer game={game} />
       <ArrivalDialog />
+      <CommandPalette />
       <ShareDialog />
       <ImportDialog />
       <ToastHost />

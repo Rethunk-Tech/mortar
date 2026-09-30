@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useCommandPalette } from '../commandPalette/store.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
 import { requestFilterFocus } from '../mods/filterFocus.ts'
 import { useUpdates } from '../mods/updates.ts'
@@ -17,6 +18,10 @@ export function useAppShortcuts() {
         return
       }
       e.preventDefault()
+      if (id === 'command-palette') {
+        useCommandPalette.getState().setOpen(true)
+        return
+      }
       if (id === 'filter-mods') {
         requestFilterFocus()
         return
