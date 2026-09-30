@@ -11,7 +11,7 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
   - **Left:** the logo in a darker square and the app name, which open the app menu.
   - **Location tabs**, underlined in the primary colour: "Game Select", or the current game. First run shows a "Setup" tab. While Mortar's Settings page is open the game tab gives way to a "Settings" tab, and the game settings page keeps the game tab highlighted.
   - **Right:** minimise, maximise and close.
-  - **App menu**, a side drawer listing Settings, About Mortar, Open data folder, Source code (the AGPL-3.0 source offer, opening `https://github.com/Rethunk-AI/mortar`) and, after a divider, Quit. Report a bug opens a prefilled GitHub issue; Check for updates joins the list in milestone 6.
+  - **App menu**, a side drawer listing Settings, About Mortar, Open data folder, Source code (the AGPL-3.0 source offer, opening `https://github.com/Rethunk-AI/mortar`) and, after a divider, Quit. Report a bug opens a prefilled GitHub issue; Check for updates opens Settings › Updates and checks at once.
   - **Drawer foot:** the Nexus account, as the account name with a Premium or Free badge and Sign out, or "Not signed in" with Sign in, which opens Settings › Nexus Mods.
   - **Frame:** a 1px light border and rounded corners, since GNOME draws no shadow for a frameless window.
 - `user-select: none` everywhere except text fields and the console.
@@ -147,7 +147,7 @@ Mortar's Settings holds only what is Mortar-wide, never one game's (NOMAD, 2026-
 - **Appearance** (first, and the one Settings opens on): accent colour and background.
 - **Data:** Mortar's data folder with its total size and an **Open folder** link.
 - **Nexus Mods:** the personal API key, or once signed in a green alert with the account name, a Premium or Free chip and **Sign out** inside it (saving it the first time asks whether Mortar should handle `nxm://` links), and the switch **Handle Nexus "Mod Manager Download" links**, which names the app that owns them now, asks before taking them, and gives them back when turned off.
-- **Updates** (milestone 6): mod, SMAPI and Mortar update checks; backups kept.
+- **Updates:** the installed Mortar version, the check's state and **Check now**, then **Download and install** and **Restart now** as the update progresses; a development build says it does not check. Mod and SMAPI updates stay where they are (each profile's mod list, the game settings), linked from here. Backups kept.
 - **About:** licences and credits, including SMAPI and the Stardew mod dataset (CC-BY-SA 4.0).
 
 **Game settings** are per game and live on their own page, opened from the game screen by a settings icon button (Lucide Settings2, labelled "Stardew Valley settings") at the right of the tab row. The page is titled "Stardew Valley settings", has a back button to the game (Esc also returns), and the title bar keeps the game tab highlighted. It holds the game folder, found in Steam or chosen, with **Browse…** (a folder dialog, checked before it is saved, with an inline error when the folder is not a Stardew install) and **Use Steam's** while a chosen folder overrides Steam; and the installed SMAPI version with Install, Reinstall or Update, showing the same step checks as the banner.

@@ -13,19 +13,14 @@ Links, the Share dialog, the import preview, `.mortar` files and first run's lin
 
 ## Release (milestone 6)
 
-- **Packaging:** an AppImage on Linux, and on Windows an NSIS installer built with `INSTALL_SCOPE=user` (`build/windows/Taskfile.yml:83` passes `-DWAILS_INSTALL_SCOPE=user`), installing to `$LOCALAPPDATA\Programs\Mortar` without admin (`build/windows/nsis/project.nsi:71-72`).
-- **Not packaged:** no deb or rpm, since the updater cannot replace a root-owned binary; no Flatpak target exists in Wails.
+Built: packaging, self-update, the signing key and Linux desktop integration ([architecture.md](architecture.md#release)). Remaining:
+
 - **Windows** builds ship unsigned, so SmartScreen warns and the download page explains it.
-- **Linux desktop integration:** nothing installs an AppImage's embedded `.desktop` file. First run already writes `~/.local/share/applications/mortar.desktop` and the `.mortar` MIME type ([architecture.md](architecture.md#sharing)); remaining is `Exec=<resolved AppImage path> %u` from `$APPIMAGE` instead of `os.Executable()` (desktop files do not expand variables), rewritten when the AppImage moves.
-- **Self-update:** Wails' updater (`app.Updater`, `pkg/updater`) with the `endpoint` provider reading a signed `manifest.json` published as a GitHub release asset, fetched from the fixed URL `https://github.com/Rethunk-AI/mortar/releases/latest/download/manifest.json` (`wails3 updater genkey`, `sign` and `manifest`, `Rethunk-AI/wails` `v3/internal/commands/updater_tool.go`). The public key ships in the app. Assets are named `mortar-linux-x86_64.AppImage` and `mortar-windows-amd64.exe`.
-- **Why not the GitHub provider:** it verifies no signature, only an optional checksum asset (`v3/pkg/updater/providers/github/github.go:51-55`).
-- **Three traps need patches to the updater**, sent upstream as a second PR:
-  - It stages in `os.MkdirTemp("")` (`v3/pkg/updater/download.go:28`) and then does a plain `os.Rename` (`helper_unix.go:26-30`), which fails across filesystems, and `/tmp` is tmpfs on Fedora, so it must stage beside the target or copy on `EXDEV`.
-  - It targets and spawns its helper from `selfExecutable()` (`updater.go:407`, `spawn.go:12-14`), which is `os.Executable()` and inside an AppImage is the read-only mount, so both must use `$APPIMAGE`.
-  - After an update on Windows, `DisplayVersion` under the uninstall key is stale, so Mortar rewrites it.
+- The updater fixes in the `Rethunk-AI/wails` fork go upstream as a second PR.
+- Settings › Updates: the backups-kept setting ([gui-design.md](gui-design.md#settings)).
 - The repo turns public at the first release and builds go on its GitHub Releases, since the updater's manifest and assets must be publicly downloadable.
-- **CI:** Linux runners only: Wails builds Windows from Linux (`wails3 build GOOS=windows`, `Rethunk-AI/wails` `docs/mpress/content/guides/build/building.md:21-29`; only macOS and Linux targets need Docker), and the NSIS installer is built with `makensis`.
-- **Measure on Windows:** how launch arguments order around `%command%`, and whether SMAPI needs `--no-terminal`; frameless window under KDE, and Acrylic with a frameless window; the desktop wallpaper read (`SPI_GETDESKWALLPAPER`).
+- **CI:** Linux runners only: Wails builds Windows from Linux (`wails3 build GOOS=windows`, `Rethunk-AI/wails` `docs/mpress/content/guides/build/building.md:21-29`; only macOS and Linux targets need Docker), and the NSIS installer is built with `makensis`. The release workflow builds both, runs `wails3 task release:manifest` with the private key from a secret, and attaches the assets and `manifest.json` to the tag's release.
+- **Measure on Windows:** how launch arguments order around `%command%`, and whether SMAPI needs `--no-terminal`; frameless window under KDE, and Acrylic with a frameless window; the desktop wallpaper read (`SPI_GETDESKWALLPAPER`); one real update through the updater, and `DisplayVersion` after it.
 
 ## Build order
 
@@ -36,7 +31,7 @@ After the go-ahead, each milestone ends with the gate green and NOMAD clicking t
 3. **Mod data.** Built.
 4. **Nexus.** Built.
 5. **Sharing.** Built except the static page.
-6. **Release.** The updater patches and signed manifest, Settings › Updates, Check for updates in the app menu, Windows measurements and fixes, packaging, the repo made public.
+6. **Release.** Built except Windows measurements and fixes, the backups-kept setting, the CI release workflow, and the repo made public.
 
 ## Later
 
