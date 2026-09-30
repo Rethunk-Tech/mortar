@@ -7,7 +7,7 @@ import {
   Saves,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorText, reportUnexpected } from '../toasts/report.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 
 interface State {
   key: string
@@ -26,7 +26,9 @@ export const useSaves = create<State>((set, get) => ({
   error: '',
   load: async (game, profileId, stamp) => {
     const key = `${game}/${profileId}/${stamp}`
-    set({ key, status: 'loading', error: '' })
+    // A reload of the same profile keeps its rows on screen; another profile's rows never show.
+    const same = get().key.startsWith(`${game}/${profileId}/`)
+    set({ key, fits: same ? get().fits : [], status: 'loading', error: '' })
     try {
       const fits = (await Saves(game, profileId)) ?? []
       if (get().key === key) {
@@ -34,7 +36,7 @@ export const useSaves = create<State>((set, get) => ({
       }
     } catch (e) {
       if (get().key === key) {
-        set({ fits: [], status: 'error', error: errorText(e) ?? String(e) })
+        set({ fits: [], status: 'error', error: errorMessage(e) })
       }
     }
   },
