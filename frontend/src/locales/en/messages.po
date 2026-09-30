@@ -120,7 +120,7 @@ msgstr "Filter mods"
 msgid "New profile"
 msgstr "New profile"
 
-#: src/launch/LaunchLayer.tsx:97
+#: src/launch/LaunchLayer.tsx:187
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
 
@@ -156,7 +156,7 @@ msgstr "Archive"
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
 
-#: src/launch/store.ts:47
+#: src/launch/store.ts:41
 msgid "SMAPI is missing or was replaced by a game update"
 msgstr "SMAPI is missing or was replaced by a game update"
 
@@ -209,7 +209,7 @@ msgstr "Created"
 msgid "Hidden"
 msgstr "Hidden"
 
-#: src/launch/store.ts:119
+#: src/launch/store.ts:124
 msgid "Could not launch the game"
 msgstr "Could not launch the game"
 
@@ -218,7 +218,7 @@ msgid "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild
 msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · open-source libraries listed in Licences."
 
 #: src/game/NewProfileDialog.tsx:60
-#: src/launch/LaunchLayer.tsx:94
+#: src/launch/LaunchLayer.tsx:184
 #: src/launch/StopDialog.tsx:36
 #: src/mods/parts.tsx:169
 #: src/profiles/ProfilesPage.tsx:310
@@ -230,7 +230,7 @@ msgstr "Cancel"
 msgid "Mortar"
 msgstr "Mortar"
 
-#: src/launch/store.ts:54
+#: src/launch/store.ts:48
 #: src/loader/store.ts:46
 msgid "Could not install SMAPI"
 msgstr "Could not install SMAPI"
@@ -345,7 +345,7 @@ msgstr "Selected mod"
 msgid "Not affiliated"
 msgstr "Not affiliated"
 
-#: src/launch/store.ts:112
+#: src/launch/store.ts:117
 msgid "Could not check whether the game is running"
 msgstr "Could not check whether the game is running"
 
@@ -378,6 +378,10 @@ msgstr "The profile stays restorable for 30 days from Recently deleted."
 msgid "Warm and bold"
 msgstr "Warm and bold"
 
+#: src/launch/LaunchLayer.tsx:158
+msgid "Try again"
+msgstr "Try again"
+
 #: src/games/GameSelect.tsx:165
 msgid "Only a Flatpak Steam was found."
 msgstr "Only a Flatpak Steam was found."
@@ -386,7 +390,7 @@ msgstr "Only a Flatpak Steam was found."
 msgid "SMAPI"
 msgstr "SMAPI"
 
-#: src/launch/store.ts:135
+#: src/launch/store.ts:141
 msgid "Could not stop the game"
 msgstr "Could not stop the game"
 
@@ -432,11 +436,11 @@ msgstr "Couldn't close the window"
 msgid "No profiles yet."
 msgstr "No profiles yet."
 
-#: src/launch/LaunchLayer.tsx:86
+#: src/launch/LaunchLayer.tsx:176
 msgid "Steam was not found"
 msgstr "Steam was not found"
 
-#: src/launch/LaunchLayer.tsx:89
+#: src/launch/LaunchLayer.tsx:179
 msgid "Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 msgstr "Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 
@@ -447,6 +451,10 @@ msgstr "Default"
 #: src/mods/ModList.tsx:81
 msgid "UniqueID"
 msgstr "UniqueID"
+
+#: src/launch/LaunchLayer.tsx:78
+msgid "{profileName} · {mods, plural, one {# mod} other {# mods}}"
+msgstr "{profileName} · {mods, plural, one {# mod} other {# mods}}"
 
 #: src/game/Detail.tsx:189
 msgid "Create your first profile"
@@ -497,6 +505,10 @@ msgstr "Maximise"
 #: src/shell/TitleBar.tsx:89
 msgid "Game Select"
 msgstr "Game Select"
+
+#: src/launch/LaunchLayer.tsx:144
+msgid "{name} did not start"
+msgstr "{name} did not start"
 
 #: src/profiles/store.ts:157
 msgid "Could not restore the profile"
@@ -567,8 +579,8 @@ msgstr "Select a mod to see its details."
 msgid "Settings"
 msgstr "Settings"
 
-#: src/launch/LaunchLayer.tsx:35
-#: src/launch/LaunchLayer.tsx:50
+#: src/launch/LaunchLayer.tsx:72
+#: src/launch/LaunchLayer.tsx:76
 msgid "Launching {name}"
 msgstr "Launching {name}"
 
@@ -614,7 +626,7 @@ msgstr "Steam may not be running or signed in. Start Steam, sign in and try agai
 msgid "Author"
 msgstr "Author"
 
-#: src/launch/LaunchLayer.tsx:70
+#: src/launch/LaunchLayer.tsx:108
 msgid "Hide"
 msgstr "Hide"
 
@@ -656,10 +668,6 @@ msgstr "Browse Nexus"
 msgid "Launcher replaced"
 msgstr "Launcher replaced"
 
-#: src/launch/store.ts:41
-msgid "Stardew Valley did not start"
-msgstr "Stardew Valley did not start"
-
 #: src/games/GameSelect.tsx:35
 msgid "Could not save the last game"
 msgstr "Could not save the last game"
@@ -681,7 +689,7 @@ msgstr "Settings sections"
 msgid "{modsLabel} · Updated {updated}"
 msgstr "{modsLabel} · Updated {updated}"
 
-#: src/launch/store.ts:49
+#: src/launch/store.ts:43
 #: src/loader/Banner.tsx:24
 msgid "Reinstall"
 msgstr "Reinstall"
@@ -700,6 +708,7 @@ msgstr "Couldn't save that setting"
 msgid "{0, plural, one {# day left} other {# days left}}"
 msgstr "{0, plural, one {# day left} other {# days left}}"
 
+#: src/launch/LaunchLayer.tsx:149
 #: src/shell/TitleBar.tsx:108
 msgid "Close"
 msgstr "Close"

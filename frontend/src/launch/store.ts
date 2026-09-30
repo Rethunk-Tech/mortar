@@ -35,13 +35,7 @@ function failureBody(status: Status): string {
 
 function notify(status: Status) {
   const { push } = useToasts.getState()
-  if (status.state === State.Failed) {
-    push({
-      kind: 'error',
-      title: i18n._(msg`Stardew Valley did not start`),
-      body: failureBody(status),
-    })
-  } else if (status.state === State.NeedsLoader) {
+  if (status.state === State.NeedsLoader) {
     push({
       kind: 'warning',
       title: i18n._(msg`SMAPI is missing or was replaced by a game update`),
@@ -58,6 +52,11 @@ function notify(status: Status) {
   }
 }
 
+interface Failure {
+  profile: string
+  body: string
+}
+
 interface Line {
   id: number
   text: string
@@ -69,6 +68,7 @@ export const useLaunch = create<{
   status: Status | null
   lines: Line[]
   hidden: boolean
+  failure: Failure | null
   askDirect: { game: string; profile: string } | null
   stopping: boolean
   apply: (status: Status) => void
@@ -76,18 +76,23 @@ export const useLaunch = create<{
   refresh: (game: string) => Promise<void>
   start: (game: string, profile: string, direct: boolean) => Promise<void>
   hide: () => void
+  dismissFailure: () => void
   answerDirect: (agreed: boolean) => Promise<void>
   stop: (game: string) => Promise<void>
 }>((set, get) => ({
   status: null,
   lines: [],
   hidden: false,
+  failure: null,
   askDirect: null,
   stopping: false,
   apply: (status) => {
     if (status.state === State.Launching) {
-      set({ status, lines: [], hidden: false })
+      set({ status, lines: [], hidden: false, failure: null })
       return
+    }
+    if (status.state === State.Failed) {
+      set({ failure: { profile: status.profile, body: failureBody(status) } })
     }
     if (status.state === State.NoSteam) {
       set({ askDirect: { game: status.game, profile: status.profile } })
@@ -120,6 +125,7 @@ export const useLaunch = create<{
     }
   },
   hide: () => set({ hidden: true }),
+  dismissFailure: () => set({ failure: null }),
   answerDirect: async (agreed) => {
     const { askDirect } = get()
     set({ askDirect: null })
