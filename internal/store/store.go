@@ -116,8 +116,22 @@ func (s *Store) itemDir(id, key string) (string, error) {
 	return filepath.Join(dir, key), nil
 }
 
-// Path returns the item's folder, or ErrNotFound.
+// Path returns the folder to copy into a profile: the item, or the stored content
+// root when that relative path still exists inside the item.
 func (s *Store) Path(game, key string) (string, error) {
+	dir, err := s.folder(game, key)
+	if err != nil {
+		return "", err
+	}
+	if rel := contentRoot(dir); rel != "" {
+		if sub, ok := resolveRoot(dir, rel); ok {
+			return sub, nil
+		}
+	}
+	return dir, nil
+}
+
+func (s *Store) folder(game, key string) (string, error) {
 	dir, err := s.itemDir(game, key)
 	if err != nil {
 		return "", err
@@ -208,6 +222,7 @@ func (s *Store) install(game, key string, fill func(tmp string) error, need func
 		}
 	}()
 	if err = fill(tmp); err == nil {
+		stripJunk(tmp)
 		err = os.Rename(tmp, final)
 	}
 	if err != nil {

@@ -279,3 +279,56 @@ func TestAddHashedDirCopiesInTreeSymlinksAndRejectsEscapes(t *testing.T) {
 		t.Fatal("escaped symlink hashed")
 	}
 }
+
+func TestAddArchiveStripsJunkFolders(t *testing.T) {
+	s := newStore(t)
+	p := buildZip(t, map[string]string{
+		"__MACOSX/foo/manifest.json": `{"UniqueID":"Junk.A"}`,
+		"Good/manifest.json":         `{"UniqueID":"Good.A"}`,
+		"thumbs/Thumbs.db":           "x",
+	})
+	key, err := s.AddArchive("stardew", p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, err := s.Path("stardew", key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := names(t, dir)
+	if strings.Contains(strings.Join(got, ","), "__MACOSX") || strings.Contains(strings.Join(got, ","), "thumbs") {
+		t.Fatalf("junk left in %v", got)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "Good", "manifest.json")); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestPathUsesStoredRootWhenPresent(t *testing.T) {
+	s := newStore(t)
+	p := buildZip(t, map[string]string{"Outer/Mod/manifest.json": `{"UniqueID":"M.A"}`, "readme.txt": "x"})
+	key, err := s.AddArchive("stardew", p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SetRoot("stardew", key, "Outer/Mod"); err != nil {
+		t.Fatal(err)
+	}
+	dir, err := s.Path("stardew", key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if filepath.Base(dir) != "Mod" {
+		t.Fatalf("path = %s", dir)
+	}
+	if err := os.RemoveAll(dir); err != nil {
+		t.Fatal(err)
+	}
+	dir, err = s.Path("stardew", key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if filepath.Base(dir) == "Mod" {
+		t.Fatalf("missing root still used %s", dir)
+	}
+}
