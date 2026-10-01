@@ -227,7 +227,7 @@ msgstr "{0, plural, one {# update} other {# updates}}"
 msgid "Add tool…"
 msgstr "Add tool…"
 
-#: src/mods/ListColumnMenu.tsx:55
+#: src/mods/ListColumnMenu.tsx:57
 msgid "Updated on Nexus"
 msgstr "Updated on Nexus"
 
@@ -598,7 +598,7 @@ msgstr "Page"
 
 #: src/firstrun/ProfileStep.tsx:120
 #: src/mods/CategoryEditor.tsx:36
-#: src/mods/ListColumnMenu.tsx:46
+#: src/mods/ListColumnMenu.tsx:48
 #: src/tools/ToolEditorDialog.tsx:78
 msgid "Name"
 msgstr "Name"
@@ -728,7 +728,7 @@ msgstr "Queued"
 msgid "Skip {0}"
 msgstr "Skip {0}"
 
-#: src/mods/ListColumnMenu.tsx:48
+#: src/mods/ListColumnMenu.tsx:50
 #: src/mods/NexusDetails.tsx:125
 #: src/mods/Sidebar.tsx:120
 msgid "Latest on Nexus"
@@ -1456,7 +1456,7 @@ msgstr "None"
 msgid "Link copied"
 msgstr "Link copied"
 
-#: src/mods/ListColumnMenu.tsx:47
+#: src/mods/ListColumnMenu.tsx:49
 #: src/mods/Sidebar.tsx:334
 msgid "Version"
 msgstr "Version"
@@ -1522,7 +1522,7 @@ msgid "Working directory"
 msgstr "Working directory"
 
 #: src/games/GameSelect.tsx:266
-#: src/mods/ListColumnMenu.tsx:56
+#: src/mods/ListColumnMenu.tsx:58
 #: src/mods/ModDetail.tsx:65
 #: src/share/ImportPreview.tsx:44
 msgid "Installed"
@@ -1643,7 +1643,7 @@ msgstr "Could not check for updates."
 msgid "Added from an archive, so it only exists on this computer."
 msgstr "Added from an archive, so it only exists on this computer."
 
-#: src/mods/ListColumnMenu.tsx:54
+#: src/mods/ListColumnMenu.tsx:56
 #: src/mods/NexusDetails.tsx:141
 #: src/mods/Sidebar.tsx:128
 #: src/queue/QueueButton.tsx:17
@@ -1689,7 +1689,7 @@ msgstr "Restarting…"
 msgid "Warn"
 msgstr "Warn"
 
-#: src/mods/ListColumnMenu.tsx:57
+#: src/mods/ListColumnMenu.tsx:59
 #: src/mods/ModDependencyTree.tsx:202
 #: src/mods/ModDetail.tsx:214
 msgid "Needs"
@@ -1953,7 +1953,7 @@ msgstr "Trace"
 msgid "Data"
 msgstr "Data"
 
-#: src/mods/ListColumnMenu.tsx:53
+#: src/mods/ListColumnMenu.tsx:55
 #: src/mods/NexusDetails.tsx:140
 #: src/mods/Sidebar.tsx:353
 msgid "Endorsements"
@@ -2336,7 +2336,7 @@ msgstr "The profile stays restorable for 30 days from Recently deleted."
 msgid "{who} all edit {target}.{winner}"
 msgstr "{who} all edit {target}.{winner}"
 
-#: src/mods/ListColumnMenu.tsx:59
+#: src/mods/ListColumnMenu.tsx:61
 msgid "Notes and tags"
 msgstr "Notes and tags"
 
@@ -2364,7 +2364,7 @@ msgstr "Regenerate token"
 msgid "New profile from file"
 msgstr "New profile from file"
 
-#: src/mods/ListColumnMenu.tsx:52
+#: src/mods/ListColumnMenu.tsx:54
 #: src/mods/NexusDetails.tsx:130
 #: src/mods/Sidebar.tsx:125
 #: src/mods/Toolbar.tsx:101
@@ -2515,7 +2515,7 @@ msgstr "Four Corners farm"
 msgid "Import"
 msgstr "Import"
 
-#: src/mods/ListColumnMenu.tsx:265
+#: src/mods/ListColumnMenu.tsx:300
 msgid "Reset to default columns"
 msgstr "Reset to default columns"
 
@@ -3058,7 +3058,7 @@ msgstr "Debug"
 msgid "Default"
 msgstr "Default"
 
-#: src/mods/ListColumnMenu.tsx:49
+#: src/mods/ListColumnMenu.tsx:51
 #: src/mods/Sidebar.tsx:351
 msgid "UniqueID"
 msgstr "UniqueID"
@@ -3780,7 +3780,7 @@ msgstr "Could not delete the profile"
 msgid "Include pre-release mod versions"
 msgstr "Include pre-release mod versions"
 
-#: src/mods/ListColumnMenu.tsx:58
+#: src/mods/ListColumnMenu.tsx:60
 #: src/mods/Toolbar.tsx:100
 msgid "Status"
 msgstr "Status"
@@ -3954,7 +3954,7 @@ msgstr "Its source is not known."
 msgid "{name} is obsolete: {summary}"
 msgstr "{name} is obsolete: {summary}"
 
-#: src/mods/ListColumnMenu.tsx:50
+#: src/mods/ListColumnMenu.tsx:52
 #: src/mods/Toolbar.tsx:105
 msgid "Author"
 msgstr "Author"
@@ -4130,7 +4130,7 @@ msgstr "Steam was not found."
 msgid "Framework"
 msgstr "Framework"
 
-#: src/mods/ListColumnMenu.tsx:51
+#: src/mods/ListColumnMenu.tsx:53
 #: src/mods/Toolbar.tsx:102
 msgid "Source"
 msgstr "Source"
@@ -4210,7 +4210,7 @@ msgstr "{loader} | {store} · {lastLine}"
 msgid "Could not redo the update"
 msgstr "Could not redo the update"
 
-#: src/mods/ListColumnMenu.tsx:60
+#: src/mods/ListColumnMenu.tsx:62
 msgid "Last run"
 msgstr "Last run"
 
@@ -4699,7 +4699,7 @@ msgstr "Remove {0} from this profile?"
 msgid "SMAPI not installed yet"
 msgstr "SMAPI not installed yet"
 
-#: src/mods/ListColumnMenu.tsx:45
+#: src/mods/ListColumnMenu.tsx:47
 msgid "On"
 msgstr "On"
 
