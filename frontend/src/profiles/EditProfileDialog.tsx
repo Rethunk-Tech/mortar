@@ -297,7 +297,7 @@ function ProfileFields({
         }
         slotProps={{ root: { sx: { userSelect: 'text' } } }}
       />
-      <GameSettings value={gameSettings} onChange={onGameSettings} />
+      <GameSettings profileId={profile.id} value={gameSettings} onChange={onGameSettings} />
     </DialogContent>
   )
 }

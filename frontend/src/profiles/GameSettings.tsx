@@ -1,8 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import {
+  Button,
   FormControl,
   FormControlLabel,
   InputLabel,
+  Menu,
   MenuItem,
   Select,
   Slider,
@@ -11,15 +13,147 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useId } from 'react'
+import { type MouseEvent, useCallback, useId, useState } from 'react'
+import type { Settings as BackendGameSettings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/gamesettings/models.ts'
+import { GameSettings as FetchGameSettings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import { useProfiles } from './store.ts'
 
 const PERCENT_MIN = 0
 const PERCENT_MAX = 100
 const PERCENT_DEFAULT = 100
 
 interface GameSettingsProps {
+  profileId: string
   value: GameSettingsValues | null
   onChange: (value: GameSettingsValues | null) => void
+}
+
+function formSettingsFromBackend(value: BackendGameSettings): GameSettingsValues | null {
+  const next: GameSettingsValues = {}
+  if (
+    value.windowMode === 'windowed' ||
+    value.windowMode === 'fullscreen' ||
+    value.windowMode === 'borderless'
+  ) {
+    next.windowMode = value.windowMode
+  }
+  if (value.displayIndex !== undefined && value.displayIndex !== null) {
+    next.displayIndex = value.displayIndex
+  }
+  if (value.preferredResolutionX !== undefined && value.preferredResolutionX !== null) {
+    next.preferredResolutionX = value.preferredResolutionX
+  }
+  if (value.preferredResolutionY !== undefined && value.preferredResolutionY !== null) {
+    next.preferredResolutionY = value.preferredResolutionY
+  }
+  if (value.fullscreenResolutionX !== undefined && value.fullscreenResolutionX !== null) {
+    next.fullscreenResolutionX = value.fullscreenResolutionX
+  }
+  if (value.fullscreenResolutionY !== undefined && value.fullscreenResolutionY !== null) {
+    next.fullscreenResolutionY = value.fullscreenResolutionY
+  }
+  if (value.zoomLevel !== undefined && value.zoomLevel !== null) {
+    next.zoomLevel = value.zoomLevel
+  }
+  if (value.uiScale !== undefined && value.uiScale !== null) {
+    next.uiScale = value.uiScale
+  }
+  if (value.startMuted !== undefined && value.startMuted !== null) {
+    next.startMuted = value.startMuted
+  }
+  if (value.musicVolumeLevel !== undefined && value.musicVolumeLevel !== null) {
+    next.musicVolumeLevel = value.musicVolumeLevel
+  }
+  if (value.soundVolumeLevel !== undefined && value.soundVolumeLevel !== null) {
+    next.soundVolumeLevel = value.soundVolumeLevel
+  }
+  return Object.keys(next).length === 0 ? null : next
+}
+
+interface CopySource {
+  id: string
+  name: string
+}
+
+interface CopyFromProfileProps {
+  gameId: string
+  profileId: string
+  onCopy: (value: GameSettingsValues) => void
+}
+
+function CopyFromProfileMenu({ gameId, profileId, onCopy }: CopyFromProfileProps) {
+  const { t } = useLingui()
+  const profiles = useProfiles((s) => s.profiles)
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const [sources, setSources] = useState<CopySource[]>([])
+  const [loading, setLoading] = useState(false)
+
+  const loadSources = useCallback(async () => {
+    if (!gameId) {
+      setSources([])
+      return
+    }
+    setLoading(true)
+    const candidates = profiles.filter((p) => p.id !== profileId)
+    const found: CopySource[] = []
+    await Promise.all(
+      candidates.map(async (profile) => {
+        try {
+          const raw = await FetchGameSettings(gameId, profile.id)
+          if (formSettingsFromBackend(raw) !== null) {
+            found.push({ id: profile.id, name: profile.name })
+          }
+        } catch (error) {
+          reportUnexpected(error)
+        }
+      }),
+    )
+    found.sort((a, b) => a.name.localeCompare(b.name))
+    setSources(found)
+    setLoading(false)
+  }, [gameId, profileId, profiles])
+
+  const openMenu = (event: MouseEvent<HTMLButtonElement>) => {
+    setAnchor(event.currentTarget)
+    loadSources().catch(reportUnexpected)
+  }
+
+  const closeMenu = () => {
+    setAnchor(null)
+  }
+
+  const pickSource = (sourceId: string) => {
+    closeMenu()
+    FetchGameSettings(gameId, sourceId)
+      .then((raw) => {
+        const next = formSettingsFromBackend(raw)
+        if (next !== null) {
+          onCopy(next)
+        }
+      })
+      .catch(reportUnexpected)
+  }
+
+  return (
+    <>
+      <Button disabled={!gameId} size="small" onClick={openMenu}>
+        {t`Copy from profile…`}
+      </Button>
+      <Menu anchorEl={anchor} open={anchor !== null} onClose={closeMenu}>
+        {loading && <MenuItem disabled={true}>{t`Loading…`}</MenuItem>}
+        {!loading && sources.length === 0 && (
+          <MenuItem disabled={true}>{t`No other profiles with overrides`}</MenuItem>
+        )}
+        {!loading &&
+          sources.map((source) => (
+            <MenuItem key={source.id} onClick={() => pickSource(source.id)}>
+              {source.name}
+            </MenuItem>
+          ))}
+      </Menu>
+    </>
+  )
 }
 
 interface NumberFieldProps {
@@ -112,8 +246,9 @@ function PercentageField({ disabled, kind, value, onChange }: PercentageFieldPro
   )
 }
 
-export function GameSettings({ value, onChange }: GameSettingsProps) {
+export function GameSettings({ profileId, value, onChange }: GameSettingsProps) {
   const { t } = useLingui()
+  const gameId = useProfiles((s) => s.game?.id ?? '')
   const disabled = value === null
 
   function updateField<K extends keyof GameSettingsValues>(
@@ -139,7 +274,14 @@ export function GameSettings({ value, onChange }: GameSettingsProps) {
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h6">{t`Game settings`}</Typography>
+      <Stack alignItems="center" direction="row" justifyContent="space-between">
+        <Typography variant="h6">{t`Game settings`}</Typography>
+        <CopyFromProfileMenu
+          gameId={gameId}
+          profileId={profileId}
+          onCopy={(next) => onChange(next)}
+        />
+      </Stack>
       <FormControlLabel
         control={
           <Switch

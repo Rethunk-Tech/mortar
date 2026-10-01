@@ -42,7 +42,7 @@ msgstr "Hidden on Nexus · {0}"
 msgid "{0, plural, one {# mod included} other {# mods included}}"
 msgstr "{0, plural, one {# mod included} other {# mods included}}"
 
-#: src/profiles/GameSettings.tsx:374
+#: src/profiles/GameSettings.tsx:373
 msgid "Start muted"
 msgstr "Start muted"
 
@@ -385,7 +385,7 @@ msgstr "· updates and rolls back with this mod"
 msgid "Year"
 msgstr "Year"
 
-#: src/profiles/GameSettings.tsx:205
+#: src/profiles/GameSettings.tsx:204
 msgid "Fullscreen"
 msgstr "Fullscreen"
 
@@ -468,7 +468,7 @@ msgid "From a shared link"
 msgstr "From a shared link"
 
 #: src/game/HeroCover.tsx:108
-#: src/profiles/EditProfileDialog.tsx:116
+#: src/profiles/EditProfileDialog.tsx:159
 msgid "Use the automatic cover"
 msgstr "Use the automatic cover"
 
@@ -614,7 +614,7 @@ msgstr "Failed"
 msgid "{name} is marked broken for this game version."
 msgstr "{name} is marked broken for this game version."
 
-#: src/profiles/EditProfileDialog.tsx:96
+#: src/profiles/EditProfileDialog.tsx:139
 msgid "{pickedName} is used after Save."
 msgstr "{pickedName} is used after Save."
 
@@ -630,7 +630,7 @@ msgstr "Could not quit Mortar"
 msgid "Paste a Mortar link. You see what it holds before anything downloads."
 msgstr "Paste a Mortar link. You see what it holds before anything downloads."
 
-#: src/profiles/GameSettings.tsx:335
+#: src/profiles/GameSettings.tsx:334
 msgid "Fullscreen resolution width"
 msgstr "Fullscreen resolution width"
 
@@ -769,7 +769,7 @@ msgid "Skipped"
 msgstr "Skipped"
 
 #: src/game/Detail.tsx:186
-#: src/profiles/EditProfileDialog.tsx:354
+#: src/profiles/EditProfileDialog.tsx:397
 #: src/profiles/ProfileRow.tsx:126
 msgid "Edit profile"
 msgstr "Edit profile"
@@ -972,7 +972,7 @@ msgstr "Sky"
 msgid "Keep my changes"
 msgstr "Keep my changes"
 
-#: src/profiles/GameSettings.tsx:345
+#: src/profiles/GameSettings.tsx:344
 msgid "Fullscreen resolution height"
 msgstr "Fullscreen resolution height"
 
@@ -997,7 +997,7 @@ msgstr "Mortar is up to date."
 msgid "And {0} more on the Nexus page"
 msgstr "And {0} more on the Nexus page"
 
-#: src/profiles/GameSettings.tsx:279
+#: src/profiles/GameSettings.tsx:278
 msgid "Game settings"
 msgstr "Game settings"
 
@@ -1207,7 +1207,7 @@ msgid "config.json, as the mod ships it"
 msgstr "config.json, as the mod ships it"
 
 #: src/game/HeroCover.tsx:87
-#: src/profiles/EditProfileDialog.tsx:88
+#: src/profiles/EditProfileDialog.tsx:131
 msgid "Cover image"
 msgstr "Cover image"
 
@@ -1224,7 +1224,7 @@ msgstr "Cover image"
 #: src/mods/ModDetail.tsx:190
 #: src/mods/parts.tsx:352
 #: src/profiles/CompareDialog.tsx:59
-#: src/profiles/EditProfileDialog.tsx:374
+#: src/profiles/EditProfileDialog.tsx:417
 #: src/profiles/GameModsDialog.tsx:149
 #: src/profiles/ProfilesPage.tsx:149
 #: src/saves/BackupsDialog.tsx:248
@@ -1251,8 +1251,8 @@ msgstr "Standard farm"
 msgid "{field}: {from} → {to}"
 msgstr "{field}: {from} → {to}"
 
-#: src/profiles/EditProfileDialog.tsx:102
-#: src/profiles/EditProfileDialog.tsx:111
+#: src/profiles/EditProfileDialog.tsx:145
+#: src/profiles/EditProfileDialog.tsx:154
 #: src/settings/sections/Appearance.tsx:190
 msgid "Choose image…"
 msgstr "Choose image…"
@@ -1705,7 +1705,7 @@ msgstr "Could not remove {0}"
 msgid "{0} is installed twice, and SMAPI loads only one."
 msgstr "{0} is installed twice, and SMAPI loads only one."
 
-#: src/profiles/EditProfileDialog.tsx:245
+#: src/profiles/EditProfileDialog.tsx:288
 msgid "Launch options"
 msgstr "Launch options"
 
@@ -1726,7 +1726,7 @@ msgstr "After the first release"
 msgid "Trash"
 msgstr "Trash"
 
-#: src/profiles/EditProfileDialog.tsx:95
+#: src/profiles/EditProfileDialog.tsx:138
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
@@ -1771,7 +1771,7 @@ msgstr "Add to this profile"
 msgid "Retry failed"
 msgstr "Retry failed"
 
-#: src/profiles/GameSettings.tsx:225
+#: src/profiles/GameSettings.tsx:224
 msgid "Zoom ({value}%)"
 msgstr "Zoom ({value}%)"
 
@@ -2299,7 +2299,7 @@ msgstr "Add a tag"
 msgid "Open Stardew Valley settings"
 msgstr "Open Stardew Valley settings"
 
-#: src/profiles/EditProfileDialog.tsx:138
+#: src/profiles/EditProfileDialog.tsx:181
 msgid "Colour"
 msgstr "Colour"
 
@@ -2599,7 +2599,7 @@ msgstr "Copy OBS URL"
 msgid "Command copied"
 msgstr "Command copied"
 
-#: src/profiles/EditProfileDialog.tsx:253
+#: src/profiles/EditProfileDialog.tsx:296
 msgid "Extra SMAPI arguments for this profile. Mortar sets --mods-path itself."
 msgstr "Extra SMAPI arguments for this profile. Mortar sets --mods-path itself."
 
@@ -2623,7 +2623,7 @@ msgstr "There is no SMAPI log for this profile yet. Play this profile once, then
 msgid "Save log"
 msgstr "Save log"
 
-#: src/profiles/GameSettings.tsx:204
+#: src/profiles/GameSettings.tsx:203
 msgid "Windowed"
 msgstr "Windowed"
 
@@ -2663,7 +2663,7 @@ msgstr "This session"
 msgid "Other profile…"
 msgstr "Other profile…"
 
-#: src/profiles/GameSettings.tsx:313
+#: src/profiles/GameSettings.tsx:312
 msgid "Windowed resolution width"
 msgstr "Windowed resolution width"
 
@@ -2683,7 +2683,7 @@ msgstr "Found in Steam"
 msgid "Could not read the mods: {loadError}"
 msgstr "Could not read the mods: {loadError}"
 
-#: src/profiles/GameSettings.tsx:147
+#: src/profiles/GameSettings.tsx:146
 msgid "No other profiles with overrides"
 msgstr "No other profiles with overrides"
 
@@ -2739,7 +2739,7 @@ msgid "Could not pin {0}"
 msgstr "Could not pin {0}"
 
 #: src/mods/NexusDetails.tsx:278
-#: src/profiles/EditProfileDialog.tsx:233
+#: src/profiles/EditProfileDialog.tsx:276
 msgid "Description"
 msgstr "Description"
 
@@ -3027,12 +3027,12 @@ msgstr "Open folder"
 msgid "Default background"
 msgstr "Default background"
 
-#: src/profiles/GameSettings.tsx:145
+#: src/profiles/GameSettings.tsx:144
 msgid "Loading…"
 msgstr "Loading…"
 
-#: src/profiles/GameSettings.tsx:193
-#: src/profiles/GameSettings.tsx:196
+#: src/profiles/GameSettings.tsx:192
+#: src/profiles/GameSettings.tsx:195
 msgid "Window mode"
 msgstr "Window mode"
 
@@ -3050,7 +3050,7 @@ msgstr "Open on Nexus"
 msgid "Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods."
 msgstr "Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods."
 
-#: src/profiles/GameSettings.tsx:229
+#: src/profiles/GameSettings.tsx:228
 msgid "Music volume ({value}%)"
 msgstr "Music volume ({value}%)"
 
@@ -3100,7 +3100,7 @@ msgstr "Updated by your package manager"
 msgid "These profiles have the same mods."
 msgstr "These profiles have the same mods."
 
-#: src/profiles/GameSettings.tsx:293
+#: src/profiles/GameSettings.tsx:292
 msgid "Use my normal settings"
 msgstr "Use my normal settings"
 
@@ -3156,7 +3156,7 @@ msgstr "Preview"
 msgid "Show in sidebar"
 msgstr "Show in sidebar"
 
-#: src/profiles/GameSettings.tsx:206
+#: src/profiles/GameSettings.tsx:205
 msgid "Borderless"
 msgstr "Borderless"
 
@@ -3441,7 +3441,7 @@ msgid "Beach farm"
 msgstr "Beach farm"
 
 #: src/mods/ConfigEditor.tsx:291
-#: src/profiles/EditProfileDialog.tsx:381
+#: src/profiles/EditProfileDialog.tsx:424
 #: src/tools/ToolEditorDialog.tsx:116
 msgid "Save"
 msgstr "Save"
@@ -3775,7 +3775,7 @@ msgid "Import settings"
 msgstr "Import settings"
 
 #: src/game/HeroCover.tsx:74
-#: src/profiles/EditProfileDialog.tsx:333
+#: src/profiles/EditProfileDialog.tsx:376
 msgid "Could not use that image"
 msgstr "Could not use that image"
 
@@ -3828,7 +3828,7 @@ msgstr "Hide details"
 msgid "Accent colour"
 msgstr "Accent colour"
 
-#: src/profiles/GameSettings.tsx:203
+#: src/profiles/GameSettings.tsx:202
 msgid "Use normal setting"
 msgstr "Use normal setting"
 
@@ -4040,7 +4040,7 @@ msgstr "No changelog entries between these versions."
 msgid "Also in these profiles"
 msgstr "Also in these profiles"
 
-#: src/profiles/EditProfileDialog.tsx:157
+#: src/profiles/EditProfileDialog.tsx:200
 msgid "Icon"
 msgstr "Icon"
 
@@ -4148,7 +4148,7 @@ msgstr "Could not save the last game"
 msgid "SMAPI {0} is available"
 msgstr "SMAPI {0} is available"
 
-#: src/profiles/GameSettings.tsx:304
+#: src/profiles/GameSettings.tsx:303
 msgid "Display"
 msgstr "Display"
 
@@ -4172,7 +4172,7 @@ msgstr "Loading profiles…"
 msgid "Measuring…"
 msgstr "Measuring…"
 
-#: src/profiles/GameSettings.tsx:323
+#: src/profiles/GameSettings.tsx:322
 msgid "Windowed resolution height"
 msgstr "Windowed resolution height"
 
@@ -4332,7 +4332,7 @@ msgstr "Reinstall"
 msgid "Checking for updates…"
 msgstr "Checking for updates…"
 
-#: src/profiles/GameSettings.tsx:227
+#: src/profiles/GameSettings.tsx:226
 msgid "UI scale ({value}%)"
 msgstr "UI scale ({value}%)"
 
@@ -4549,7 +4549,7 @@ msgstr "Skipped ({0}): {1}"
 msgid "Install anyway"
 msgstr "Install anyway"
 
-#: src/profiles/GameSettings.tsx:223
+#: src/profiles/GameSettings.tsx:222
 msgid "Sound volume ({value}%)"
 msgstr "Sound volume ({value}%)"
 
