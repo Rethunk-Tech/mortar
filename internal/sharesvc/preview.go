@@ -95,6 +95,7 @@ type Preview struct {
 const (
 	SiteNexus  = "nexus"
 	SiteGitHub = "github"
+	SiteLocal  = "local"
 )
 
 const (

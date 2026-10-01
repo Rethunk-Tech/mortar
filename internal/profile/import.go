@@ -27,12 +27,14 @@ const configFileName = "config.json"
 
 // GameModPreview is one row PreviewGameMods shows: a mod to copy, or a skipped or failed folder.
 type GameModPreview struct {
-	Name     string `json:"name"`
-	Version  string `json:"version,omitempty"`
-	Source   string `json:"source,omitempty"`
-	Status   string `json:"status"`
-	Reason   string `json:"reason,omitempty"`
-	Disabled bool   `json:"disabled,omitempty"`
+	UniqueID   string `json:"uniqueID,omitempty"`
+	Name       string `json:"name"`
+	Version    string `json:"version,omitempty"`
+	Source     string `json:"source,omitempty"`
+	NexusModID int    `json:"nexusModID,omitempty"`
+	Status     string `json:"status"`
+	Reason     string `json:"reason,omitempty"`
+	Disabled   bool   `json:"disabled,omitempty"`
 }
 
 // GameModsPreview is the list PreviewGameMods returns, including skips and failures.
@@ -54,6 +56,13 @@ type GameModsResult struct {
 	Imported int              `json:"imported"`
 	Skipped  int              `json:"skipped"`
 	Failed   int              `json:"failed"`
+}
+
+// ExternalMod is one folder selected from an external mod manager's profile.
+type ExternalMod struct {
+	SourcePath string `json:"sourcePath"`
+	UniqueID   string `json:"uniqueID"`
+	Enabled    bool   `json:"enabled"`
 }
 
 type gameModFolder struct {
@@ -292,8 +301,8 @@ func previewMod(f gameModFolder, m manifest.Mod) GameModPreview {
 		name = m.UniqueID
 	}
 	return GameModPreview{
-		Name: name, Version: m.Version, Source: sourceLabel(f.source),
-		Status: outcomeImported, Disabled: f.disabled,
+		UniqueID: m.UniqueID, Name: name, Version: m.Version, Source: sourceLabel(f.source),
+		NexusModID: f.source.ModID, Status: outcomeImported, Disabled: f.disabled,
 	}
 }
 
@@ -354,31 +363,31 @@ func carryConfig(srcRoot, destDir, folder string) error {
 	return fsx.WriteFile(filepath.Join(destDir, configFileName), b, 0o600)
 }
 
-func (s *Store) importFolder(game, id string, f gameModFolder) error {
+func (s *Store) importFolder(game, id string, f gameModFolder) (string, error) {
 	key, err := s.items.AddHashedDir(game, f.dir)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if _, err := s.AddEntry(game, id, key, f.source); err != nil {
-		return err
+		return "", err
 	}
 	if f.disabled {
 		for _, m := range f.mods {
 			if _, err := s.SetModEnabled(game, id, key, m.UniqueID, false); err != nil {
-				return err
+				return "", err
 			}
 		}
 	}
 	for _, m := range f.mods {
 		dest, err := s.ModFolder(game, id, key, m.UniqueID)
 		if err != nil {
-			return err
+			return "", err
 		}
 		if err := carryConfig(f.dir, dest, m.Folder); err != nil {
-			return err
+			return "", err
 		}
 	}
-	return nil
+	return key, nil
 }
 
 // ImportGameMods copies each importable folder under modsDir into the store and a new "Imported mods" profile.
@@ -420,7 +429,7 @@ func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
 			continue
 		}
 		outcome := GameModOutcome{Name: slot.folder.label, Status: outcomeImported}
-		if err := s.importFolder(game, created.ID, slot.folder); err != nil {
+		if _, err := s.importFolder(game, created.ID, slot.folder); err != nil {
 			outcome.Status, outcome.Reason = outcomeFailed, err.Error()
 			if ie, ok := errors.AsType[*InstallError](err); ok {
 				outcome.Reason = ie.Msg
@@ -445,4 +454,43 @@ func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
 		}
 	}
 	return res, nil
+}
+
+// ImportExternalMods copies the selected external-manager folders into an existing profile.
+func (s *Store) ImportExternalMods(game, id string, mods []ExternalMod) error {
+	enabled := make(map[string]bool, len(mods))
+	paths := make(map[string]bool, len(mods))
+	for _, mod := range mods {
+		if mod.SourcePath == "" {
+			continue
+		}
+		paths[filepath.Clean(mod.SourcePath)] = true
+		enabled[strings.ToLower(mod.UniqueID)] = mod.Enabled
+	}
+	var slots []gameModSlot
+	for path := range paths {
+		name := filepath.Base(path)
+		slot, keep := classifyFolder(path, name)
+		if keep {
+			slots = append(slots, slot)
+		}
+	}
+	resolveDuplicates(slots)
+	for _, slot := range slots {
+		if !slot.ready {
+			continue
+		}
+		key, err := s.importFolder(game, id, slot.folder)
+		if err != nil {
+			return err
+		}
+		for _, mod := range slot.folder.mods {
+			if want, ok := enabled[strings.ToLower(mod.UniqueID)]; ok {
+				if _, err := s.SetModEnabled(game, id, key, mod.UniqueID, want); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
 }

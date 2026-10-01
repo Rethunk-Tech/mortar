@@ -20,6 +20,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/migrate"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -121,8 +122,9 @@ type session struct {
 	configs     []share.Config
 	origin      string
 	// target is the profile the preview was resolved against; refs are what it resolved.
-	target string
-	refs   []share.Ref
+	target   string
+	refs     []share.Ref
+	external []migrate.ModPreview
 }
 
 func (s *Service) emit(name string, data any) {
@@ -357,6 +359,61 @@ func (s *Service) PreviewFile(ctx context.Context, game, file, profileID string)
 	return out, nil
 }
 
+// PreviewExternal resolves missing external mods through the normal import resolver and keeps staged folders local.
+func (s *Service) PreviewExternal(ctx context.Context, game string, external migrate.ProfilePreview, profileID string) (Preview, error) {
+	var refs []share.Ref
+	for _, mod := range external.Mods {
+		if mod.SourcePath == "" && mod.NexusModID > 0 {
+			refs = append(refs, share.Ref{ModID: mod.NexusModID})
+		}
+	}
+	out, err := s.preview(ctx, game, share.Shared{Name: external.Name, Entries: refs}, "", nil, profileID, "")
+	if err != nil {
+		return Preview{}, err
+	}
+	local := externalLocalMods(external.Mods)
+	out.Mods = append(local, out.Mods...)
+	s.mu.Lock()
+	if s.current != nil && s.current.id == out.Session {
+		s.current.preview.Mods = append(local, s.current.preview.Mods...)
+		s.current.external = slices.Clone(external.Mods)
+	}
+	s.mu.Unlock()
+	return out, nil
+}
+
+func externalLocalMods(mods []migrate.ModPreview) []Mod {
+	out := make([]Mod, 0, len(mods))
+	for i, mod := range mods {
+		if mod.SourcePath != "" {
+			name := mod.Name
+			if name == "" {
+				name = mod.UniqueID
+			}
+			out = append(out, Mod{
+				Key: externalKey(i), Site: SiteLocal, Name: name, Version: mod.Version,
+				State: StateDownload, UniqueIDs: []string{mod.UniqueID},
+			})
+			continue
+		}
+		if mod.NexusModID == 0 {
+			name := mod.Name
+			if name == "" {
+				name = mod.UniqueID
+			}
+			out = append(out, Mod{
+				Key: externalKey(i), Site: SiteLocal, Name: name, Version: mod.Version,
+				State: StateUnavailable, Reason: ReasonNoFile, UniqueIDs: []string{mod.UniqueID},
+			})
+		}
+	}
+	return out
+}
+
+func externalKey(index int) string {
+	return fmt.Sprintf("external:%d", index)
+}
+
 func (s *Service) preview(ctx context.Context, game string, shared share.Shared, notes string, configs []share.Config, profileID, origin string) (Preview, error) {
 	s.mu.Lock()
 	s.gen++
@@ -496,11 +553,23 @@ func (s *Service) Import(ctx context.Context, game, session, profileID string, e
 			return Result{}, err
 		}
 		mods, _ = r.resolve(ctx, cur.refs)
+		mods = append(externalLocalMods(cur.external), mods...)
 	}
 	var reqs []queue.Request
 	var wanted []wantedFile
+	var local []profile.ExternalMod
+	external := make(map[string]migrate.ModPreview, len(cur.external))
+	for i, mod := range cur.external {
+		external[externalKey(i)] = mod
+	}
 	for _, m := range mods {
 		if slices.Contains(exclude, m.Key) || m.State == StateInstalled || m.State == StateUnavailable {
+			continue
+		}
+		if m.Site == SiteLocal {
+			if mod, ok := external[m.Key]; ok {
+				local = append(local, profile.ExternalMod{SourcePath: mod.SourcePath, UniqueID: mod.UniqueID, Enabled: mod.Enabled})
+			}
 			continue
 		}
 		reqs = append(reqs, requestFor(game, "", m))
@@ -558,6 +627,17 @@ func (s *Service) Import(ctx context.Context, game, session, profileID string, e
 		}
 		res.Profile = p
 		configs = slices.DeleteFunc(slices.Clone(configs), func(c share.Config) bool { return holds(p, c.UniqueID) })
+	}
+	if len(local) > 0 {
+		if err := s.d.Profiles.ImportExternalMods(game, profileID, local); err != nil {
+			if created {
+				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
+			}
+			return Result{}, err
+		}
+		if p, err := s.find(game, profileID); err == nil {
+			res.Profile = p
+		}
 	}
 	for i := range reqs {
 		reqs[i].Profile = profileID
