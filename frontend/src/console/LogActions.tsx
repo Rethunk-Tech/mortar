@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button } from '@mui/material'
+import { Box } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
-import { Download, LifeBuoy } from 'lucide-react'
+import { CircleAlert, Copy, Download, Eraser, LifeBuoy } from 'lucide-react'
 import { RunLog } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { SaveFile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import { Log } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
@@ -9,16 +9,10 @@ import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { firstError, formatAll } from './filter.ts'
+import { IconAction } from './IconAction.tsx'
 import { useShownEntries, useVisible } from './logHooks.ts'
 import { logFileName, saveLogText } from './save.ts'
 import { useConsole } from './store.ts'
-
-const actionSx = {
-  height: 32,
-  whiteSpace: 'nowrap',
-  borderColor: 'rgba(255,255,255,0.22)',
-  color: '#ffffff',
-} as const
 
 export function LogActions() {
   const { t } = useLingui()
@@ -34,28 +28,22 @@ export function LogActions() {
   const firstErr = firstError(rows)
   const canSave = entries.length > 0 || cleared > 0
   return (
-    <Box sx={{ display: 'flex', gap: 1 }}>
-      <Button
-        variant="outlined"
-        color="inherit"
+    <Box sx={{ display: 'flex', gap: 0.75 }}>
+      <IconAction
+        label={t`Jump to first error`}
+        icon={<CircleAlert size={16} />}
         disabled={firstErr < 0}
         onClick={() => jumpTo(firstErr)}
-        sx={actionSx}
-      >
-        {t`Jump to first error`}
-      </Button>
-      <Button
-        variant="outlined"
-        color="inherit"
+      />
+      <IconAction
+        label={t`Clear`}
+        icon={<Eraser size={16} />}
         disabled={rows.length === 0}
         onClick={clear}
-        sx={actionSx}
-      >
-        {t`Clear`}
-      </Button>
-      <Button
-        variant="outlined"
-        color="inherit"
+      />
+      <IconAction
+        label={t`Copy`}
+        icon={<Copy size={16} />}
         disabled={rows.length === 0}
         onClick={() => {
           Clipboard.SetText(formatAll(rows)).then(
@@ -63,15 +51,11 @@ export function LogActions() {
             reportUnexpected,
           )
         }}
-        sx={actionSx}
-      >
-        {t`Copy`}
-      </Button>
-      <Button
-        variant="outlined"
-        color="inherit"
+      />
+      <IconAction
+        label={t`Save log…`}
+        icon={<Download size={16} />}
         disabled={!canSave}
-        startIcon={<Download size={16} />}
         onClick={() => {
           const rawLog = viewingRun
             ? RunLog(shown.game, shown.profile, viewingRun)
@@ -86,19 +70,12 @@ export function LogActions() {
             })
             .catch(reportUnexpected)
         }}
-        sx={actionSx}
-      >
-        {t`Save log…`}
-      </Button>
-      <Button
-        variant="outlined"
-        color="inherit"
-        startIcon={<LifeBuoy size={16} />}
+      />
+      <IconAction
+        label={t`Get help`}
+        icon={<LifeBuoy size={16} />}
         onClick={() => setHelping(true)}
-        sx={actionSx}
-      >
-        {t`Get help`}
-      </Button>
+      />
     </Box>
   )
 }

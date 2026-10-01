@@ -1,15 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  ButtonBase,
-  Checkbox,
-  Chip,
-  FormControlLabel,
-  Menu,
-  MenuItem,
-} from '@mui/material'
-import { ChevronDown, Download, Search, X } from 'lucide-react'
+import { Box, Button, ButtonBase, Checkbox, Chip, Menu, MenuItem } from '@mui/material'
+import { ArrowDownToLine, ChevronDown, Clock, Download, Search, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
@@ -19,6 +10,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { countByLevel, incompatibleSMAPI, isFiltered, LEVELS, modsOf } from './filter.ts'
 import { stepHistory } from './history.ts'
+import { IconAction } from './IconAction.tsx'
 import { LinkedLog } from './LinkedLog.tsx'
 import { useShownEntries, useVisible } from './logHooks.ts'
 import { RunsPicker } from './RunsPicker.tsx'
@@ -178,26 +170,6 @@ function SearchBox() {
         }}
       />
     </Box>
-  )
-}
-
-function Toggle({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string
-  checked: boolean
-  onChange: (on: boolean) => void
-}) {
-  return (
-    <FormControlLabel
-      control={
-        <Checkbox size="small" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      }
-      label={label}
-      sx={{ m: 0, whiteSpace: 'nowrap', '& .MuiFormControlLabel-label': { fontSize: 13 } }}
-    />
   )
 }
 
@@ -413,8 +385,18 @@ export function ConsoleTab({ game }: { game: string }) {
         <LevelToggles />
         <ModPicker />
         <Box sx={{ flexGrow: 1 }} />
-        <Toggle label={t`Times`} checked={timestamps} onChange={setTimestamps} />
-        <Toggle label={t`Follow`} checked={follow} onChange={setFollow} />
+        <IconAction
+          label={t`Show times`}
+          icon={<Clock size={16} />}
+          pressed={timestamps}
+          onClick={() => setTimestamps(!timestamps)}
+        />
+        <IconAction
+          label={t`Follow new lines`}
+          icon={<ArrowDownToLine size={16} />}
+          pressed={follow}
+          onClick={() => setFollow(!follow)}
+        />
       </Box>
       {isFiltered(filters) ? (
         <Box
