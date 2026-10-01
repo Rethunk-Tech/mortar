@@ -1,72 +1,21 @@
 import { useLingui } from '@lingui/react/macro'
 import {
-  Box,
   Button,
-  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
-import type {
-  Diff,
-  DiffSide,
-  Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import {
-  CopyMods,
-  Diff as loadDiff,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { useMemo } from 'react'
+import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { CopyMods } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { CompareBody } from './CompareBody.tsx'
+import { compareProfiles } from './compare.ts'
 import { useProfiles } from './store.ts'
 
-const paper = { paper: { sx: { minWidth: 480 } } }
-
-function sideLabel(side: DiffSide): string {
-  const on = side.enabled ? '' : ' · off'
-  return `${side.name} ${side.version}${on}`
-}
-
-function Section({
-  title,
-  rows,
-  selected,
-  onToggle,
-}: {
-  title: string
-  rows: DiffSide[]
-  selected: Set<string>
-  onToggle: (id: string) => void
-}) {
-  if (rows.length === 0) {
-    return null
-  }
-  return (
-    <Box sx={{ mb: 1.5 }}>
-      <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 0.5, color: 'text.secondary' }}>
-        {title}
-      </Typography>
-      {rows.map((row) => (
-        <FormControlLabel
-          key={row.uniqueId}
-          sx={{ display: 'flex', ml: 0, mr: 0 }}
-          control={
-            <Checkbox
-              size="small"
-              checked={selected.has(row.uniqueId)}
-              onChange={() => onToggle(row.uniqueId)}
-            />
-          }
-          label={<Typography sx={{ fontSize: 14 }}>{sideLabel(row)}</Typography>}
-        />
-      ))}
-    </Box>
-  )
-}
+const paper = { paper: { sx: { minWidth: 520, maxWidth: 720 } } }
 
 export function PickCompareDialog({
   from,
@@ -78,7 +27,6 @@ export function PickCompareDialog({
   onClose: () => void
 }) {
   const { t } = useLingui()
-  // Filtering inside the selector would hand zustand a new array on every render and loop forever.
   const all = useProfiles((s) => s.profiles)
   const profiles = all.filter((p) => p.id !== from?.id)
   return (
@@ -125,57 +73,31 @@ export function CompareDialog({
 }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
+  const listed = useProfiles((s) => s.profiles)
   const refresh = useProfiles((s) => s.refresh)
-  const [diff, setDiff] = useState<Diff | null>(null)
-  const [selected, setSelected] = useState<Set<string>>(new Set())
   const aId = a?.id ?? ''
   const bId = b?.id ?? ''
-  const [pending, run] = usePending()
   const open = aId !== '' && bId !== ''
-  useEffect(() => {
-    if (!(game && aId && bId)) {
-      setDiff(null)
-      setSelected(new Set())
-      return
+  const profileA = listed.find((p) => p.id === aId) ?? a
+  const profileB = listed.find((p) => p.id === bId) ?? b
+  const diff = useMemo(() => {
+    if (!(profileA && profileB)) {
+      return null
     }
-    let live = true
-    loadDiff(game, aId, bId)
-      .then((d) => {
-        if (live) {
-          setDiff(d)
-        }
-      })
-      .catch(reportUnexpected)
-    return () => {
-      live = false
-    }
-  }, [game, aId, bId])
-  const toggle = (id: string) =>
-    setSelected((cur) => {
-      const next = new Set(cur)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
-      return next
-    })
-  const onlyA = diff?.onlyA ?? []
-  const onlyB = diff?.onlyB ?? []
-  const changed = diff?.changed ?? []
-  const idsA = [...onlyA.map((m) => m.uniqueId), ...changed.map((p) => p.uniqueId)]
-  const idsB = [...onlyB.map((m) => m.uniqueId), ...changed.map((p) => p.uniqueId)]
-  const copy = (from: Profile, to: Profile, pool: string[]) => {
-    const ids = pool.filter((id) => selected.has(id))
-    if (ids.length === 0) {
-      return
-    }
+    return compareProfiles(profileA, profileB)
+  }, [profileA, profileB])
+  const [pending, run] = usePending()
+
+  const copyOne = (from: Profile, to: Profile, uniqueId: string) => {
     run(async () => {
-      await CopyMods(game, from.id, to.id, ids)
+      await CopyMods(game, from.id, to.id, [uniqueId])
       await refresh()
-      setDiff(await loadDiff(game, a?.id ?? '', b?.id ?? ''))
     })
   }
+
+  const aName = profileA?.name ?? ''
+  const bName = profileB?.name ?? ''
+
   return (
     <Dialog
       open={open}
@@ -183,69 +105,22 @@ export function CompareDialog({
       transitionDuration={0}
       slotProps={paper}
     >
-      <DialogTitle>{t`Compare ${a?.name ?? ''} and ${b?.name ?? ''}`}</DialogTitle>
+      <DialogTitle>{t`Compare ${aName} and ${bName}`}</DialogTitle>
       <DialogContent>
-        <Section
-          title={t`Only in ${a?.name ?? ''}`}
-          rows={onlyA}
-          selected={selected}
-          onToggle={toggle}
-        />
-        <Section
-          title={t`Only in ${b?.name ?? ''}`}
-          rows={onlyB}
-          selected={selected}
-          onToggle={toggle}
-        />
-        {changed.length > 0 ? (
-          <Box sx={{ mb: 1.5 }}>
-            <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 0.5, color: 'text.secondary' }}>
-              {t`Different version or enabled state`}
-            </Typography>
-            {changed.map((row) => (
-              <FormControlLabel
-                key={row.uniqueId}
-                sx={{ display: 'flex', ml: 0, mr: 0, alignItems: 'flex-start' }}
-                control={
-                  <Checkbox
-                    size="small"
-                    checked={selected.has(row.uniqueId)}
-                    onChange={() => toggle(row.uniqueId)}
-                  />
-                }
-                label={
-                  <Typography sx={{ fontSize: 14 }}>
-                    {t`${row.name}: ${sideLabel(row.a)} → ${sideLabel(row.b)}`}
-                  </Typography>
-                }
-              />
-            ))}
-          </Box>
-        ) : null}
-        {onlyA.length === 0 && onlyB.length === 0 && changed.length === 0 && diff !== null ? (
-          <Typography
-            sx={{ color: 'text.secondary' }}
-          >{t`These profiles have the same mods.`}</Typography>
+        {diff && profileA && profileB ? (
+          <CompareBody
+            diff={diff}
+            profileA={profileA}
+            profileB={profileB}
+            aName={aName}
+            bName={bName}
+            pending={pending}
+            onCopy={copyOne}
+          />
         ) : null}
       </DialogContent>
       <DialogActions>
-        <Button
-          disabled={pending || !idsA.some((id) => selected.has(id))}
-          onClick={() => a && b && copy(a, b, idsA)}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
-          {t`Copy selected to ${b?.name ?? ''}`}
-        </Button>
-        <Button
-          disabled={pending || !idsB.some((id) => selected.has(id))}
-          onClick={() => a && b && copy(b, a, idsB)}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
-          {t`Copy selected to ${a?.name ?? ''}`}
-        </Button>
-        <Button onClick={onClose} disabled={pending}>
-          {t`Close`}
-        </Button>
+        <Button onClick={onClose} disabled={pending}>{t`Close`}</Button>
       </DialogActions>
     </Dialog>
   )
