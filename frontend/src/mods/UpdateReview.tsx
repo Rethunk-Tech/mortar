@@ -4,6 +4,7 @@ import {
   alpha,
   Box,
   Button,
+  Checkbox,
   Collapse,
   Dialog,
   DialogActions,
@@ -24,7 +25,10 @@ import {
 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import type { Update } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type {
+  Mod,
+  Profile,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
@@ -85,6 +89,11 @@ const updateWant = (u: Update): Want => ({
 })
 
 const downloadable = (u: Update) => installableUpdate(u)
+
+const installedCaution = (mods: Mod[], u: Update): string => {
+  const mod = mods.find((m) => m.key === u.key && sameId(m.uniqueId, u.uniqueId))
+  return mod?.updateCautionMessage?.trim() ?? ''
+}
 
 const pendingUpdate = (items: Item[], profileId: string, u: Update) =>
   u.githubRepo
@@ -167,7 +176,19 @@ function Changes({ update }: { update: Update }) {
   )
 }
 
-function Row({ update, profileId }: { update: Update; profileId: string }) {
+function Row({
+  update,
+  profileId,
+  caution,
+  acked,
+  onAck,
+}: {
+  update: Update
+  profileId: string
+  caution: string
+  acked: boolean
+  onAck: (on: boolean) => void
+}) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const mod = mods.find((m) => m.key === update.key && sameId(m.uniqueId, update.uniqueId))
@@ -182,7 +203,9 @@ function Row({ update, profileId }: { update: Update; profileId: string }) {
       role="listitem"
       sx={{
         display: 'grid',
-        gridTemplateColumns: `${ROW_TILE}px minmax(0, 1fr) auto auto`,
+        gridTemplateColumns: caution
+          ? `${ROW_TILE}px minmax(0, 1fr) auto auto auto`
+          : `${ROW_TILE}px minmax(0, 1fr) auto auto`,
         gap: '14px',
         alignItems: 'center',
         px: 3,
@@ -208,6 +231,11 @@ function Row({ update, profileId }: { update: Update; profileId: string }) {
             {notes.join(' · ')}
           </Typography>
         ) : null}
+        {caution ? (
+          <Typography sx={{ fontSize: 12, color: 'warning.main', overflowWrap: 'anywhere' }}>
+            {caution}
+          </Typography>
+        ) : null}
         <Changes update={update} />
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, whiteSpace: 'nowrap' }}>
@@ -229,7 +257,7 @@ function Row({ update, profileId }: { update: Update; profileId: string }) {
         {downloadable(update) ? (
           <Button
             variant="contained"
-            disabled={queued}
+            disabled={queued || (caution !== '' && !acked)}
             onClick={() => download([updateWant(update)]).catch(reportUnexpected)}
             sx={{ whiteSpace: 'nowrap' }}
           >
@@ -237,6 +265,14 @@ function Row({ update, profileId }: { update: Update; profileId: string }) {
           </Button>
         ) : null}
       </Box>
+      {caution ? (
+        <Checkbox
+          checked={acked}
+          onChange={(_, on) => onAck(on)}
+          inputProps={{ 'aria-label': t`Confirm update for ${update.name}` }}
+          sx={{ justifySelf: 'center' }}
+        />
+      ) : null}
     </Box>
   )
 }
@@ -303,6 +339,8 @@ export function UpdateReview({ profile }: { profile: Profile }) {
     listedAgainstNexus(u, byId[u.nexusId]?.details?.page),
   )
   const items = useQueue((s) => s.state.items)
+  const mods = useMods((s) => s.mods)
+  const [acked, setAcked] = useState<Record<string, boolean>>({})
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
     const id = globalThis.setInterval(() => setNow(Date.now()), TICK_MS)
@@ -316,8 +354,12 @@ export function UpdateReview({ profile }: { profile: Profile }) {
       (updates?.updates ?? []).filter((u) => u.nexusId > 0).map((u) => u.nexusId),
     ).catch(reportUnexpected)
   }, [open, updates])
+  const cautionOk = (u: Update) => {
+    const caution = installedCaution(mods, u)
+    return caution === '' || acked[modId(u)] === true
+  }
   const wanted = list
-    .filter((u) => downloadable(u) && !pendingUpdate(items, profile.id, u))
+    .filter((u) => downloadable(u) && !pendingUpdate(items, profile.id, u) && cautionOk(u))
     .map(updateWant)
   return (
     <Dialog
@@ -357,9 +399,20 @@ export function UpdateReview({ profile }: { profile: Profile }) {
       </DialogTitle>
       <DialogContent sx={{ p: 0, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
         <Box role="list">
-          {list.map((u) => (
-            <Row key={modId(u)} update={u} profileId={profile.id} />
-          ))}
+          {list.map((u) => {
+            const caution = installedCaution(mods, u)
+            const id = modId(u)
+            return (
+              <Row
+                key={id}
+                update={u}
+                profileId={profile.id}
+                caution={caution}
+                acked={acked[id] === true}
+                onAck={(on) => setAcked((prev) => ({ ...prev, [id]: on }))}
+              />
+            )
+          })}
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, py: 2, gap: 1.5, bgcolor: 'rgba(0,0,0,0.2)' }}>
