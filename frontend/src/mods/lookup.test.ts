@@ -60,6 +60,7 @@ test("drift on an entry flags that entry's mods for status grouping", () => {
     duplicates: [],
     broken: [],
     assetConflicts: [],
+    runErrors: [],
     drift: [drift],
     unknown: false,
   }
@@ -86,10 +87,21 @@ test('problems and updates are counted per finding', () => {
       duplicates: [{ uniqueId: 'me.a', name: 'A', copies: [] }],
       broken: [{ key: 'k', uniqueId: 'me.b', name: 'B', status: 'broken', brokeIn: '' }],
       assetConflicts: [],
+      runErrors: [
+        {
+          key: 'k2',
+          uniqueId: 'me.c',
+          name: 'C',
+          count: 1,
+          first: 'err',
+          severe: false,
+          runId: 'run-1',
+        },
+      ],
       drift: [{ kind: DriftKind.DriftChanged, folder: 'k', key: 'k' }],
       unknown: false,
     }),
-  ).toBe(3)
+  ).toBe(4)
   expect(updateCount(null)).toBe(0)
 })
 

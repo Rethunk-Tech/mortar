@@ -72,6 +72,13 @@ export function useDescribe(): Describe {
         return describeAsset(p)
       case 'missing':
         return describeMissing(p)
+      case 'runError': {
+        const { name, first, count } = p.runError
+        if (first !== '') {
+          return t`${name} logged an error in the last run: ${first}`
+        }
+        return t`${name} logged ${count} errors in the last run.`
+      }
       default:
         return ''
     }

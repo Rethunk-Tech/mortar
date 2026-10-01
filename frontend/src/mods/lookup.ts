@@ -5,6 +5,7 @@ import type {
   Duplicate,
   Missing,
   Result,
+  RunError,
   Update,
   UpdatesResult,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
@@ -62,6 +63,7 @@ export type Problem =
   | { kind: 'missing'; missing: Missing }
   | { kind: 'duplicate'; duplicate: Duplicate }
   | { kind: 'asset'; asset: AssetConflict }
+  | { kind: 'runError'; runError: RunError }
 
 export const problemsOf = (result: Result | null): Problem[] =>
   result
@@ -72,6 +74,7 @@ export const problemsOf = (result: Result | null): Problem[] =>
         ...(result.broken ?? []).map((broken): Problem => ({ kind: 'broken', broken })),
         ...(result.missing ?? []).map((missing): Problem => ({ kind: 'missing', missing })),
         ...(result.assetConflicts ?? []).map((asset): Problem => ({ kind: 'asset', asset })),
+        ...(result.runErrors ?? []).map((runError): Problem => ({ kind: 'runError', runError })),
       ]
     : []
 
@@ -96,6 +99,9 @@ export function concerns(p: Problem, mod: Mod): boolean {
   }
   if (p.kind === 'asset') {
     return (p.asset.packIds ?? []).some((id) => sameId(id, mod.uniqueId))
+  }
+  if (p.kind === 'runError') {
+    return p.runError.key === mod.key && sameId(p.runError.uniqueId, mod.uniqueId)
   }
   return sameId(p.missing.dependentId, mod.uniqueId)
 }

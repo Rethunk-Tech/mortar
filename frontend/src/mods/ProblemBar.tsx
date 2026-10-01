@@ -16,6 +16,7 @@ import {
   RestoreDriftEntry,
   RevertDriftEntry,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { useConsole } from '../console/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
@@ -89,6 +90,41 @@ function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string }) {
   )
 }
 
+function RunErrorButtons({
+  runError,
+  button,
+}: {
+  runError: Extract<Problem, { kind: 'runError' }>['runError']
+  button: (label: string, onClick: () => void) => ReactNode
+}) {
+  const { t } = useLingui()
+  const mods = useMods((s) => s.mods)
+  const setEnabled = useMods((s) => s.setEnabled)
+  const mod = mods.find((m) => m.key === runError.key && sameId(m.uniqueId, runError.uniqueId))
+  const openHelp = () => {
+    const { game, openId } = useProfiles.getState()
+    if (!(game && openId) || runError.runId === '') {
+      return
+    }
+    useConsole.getState().viewRun(game.id, openId, runError.runId)
+    useConsole.getState().setHelping(true)
+  }
+  return (
+    <>
+      {mod ? button(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected)) : null}
+      <Button
+        size="small"
+        color="warning"
+        variant="outlined"
+        onClick={openHelp}
+        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+      >
+        {t`Get help`}
+      </Button>
+    </>
+  )
+}
+
 function FixButton({ problem }: { problem: Problem }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
@@ -109,6 +145,9 @@ function FixButton({ problem }: { problem: Problem }) {
       {label}
     </Button>
   )
+  if (problem.kind === 'runError') {
+    return <RunErrorButtons runError={problem.runError} button={button} />
+  }
   if (problem.kind === 'duplicate') {
     return button(t`Resolve`, () => resolve(problem.duplicate))
   }
@@ -343,7 +382,8 @@ export function ProblemBar() {
         {problems.map((p) => {
           const info =
             (p.kind === 'asset' && p.asset.kind === 'edit') ||
-            (p.kind === 'broken' && p.broken.status === 'abandoned')
+            (p.kind === 'broken' && p.broken.status === 'abandoned') ||
+            (p.kind === 'runError' && !p.runError.severe)
           return (
             <Box
               key={JSON.stringify(p)}
