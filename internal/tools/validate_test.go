@@ -8,8 +8,8 @@ import (
 
 func TestValidateExecutable(t *testing.T) {
 	dir := t.TempDir()
-	file := filepath.Join(dir, "tool")
-	if err := os.WriteFile(file, []byte("x"), 0o755); err != nil {
+	file := filepath.Clean(filepath.Join(dir, "tool"))
+	if err := os.WriteFile(file, []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := validateTool(Tool{Name: "a", Executable: file}); err != nil {
@@ -18,7 +18,8 @@ func TestValidateExecutable(t *testing.T) {
 	if err := validateTool(Tool{Name: "a", Executable: dir}); err == nil {
 		t.Fatal("directory should fail")
 	}
-	if err := validateTool(Tool{Name: "a", Executable: filepath.Join(dir, "missing")}); err == nil {
+	missing := filepath.Clean(filepath.Join(dir, "missing"))
+	if err := validateTool(Tool{Name: "a", Executable: missing}); err == nil {
 		t.Fatal("missing should fail")
 	}
 }

@@ -1,3 +1,4 @@
+// Package tools stores per-game external programs and launches them for a profile.
 package tools
 
 import (
@@ -42,7 +43,7 @@ func (s *Store) load(game string) ([]Tool, error) {
 	if err != nil {
 		return nil, err
 	}
-	b, err := os.ReadFile(path)
+	b, err := os.ReadFile(filepath.Clean(path))
 	if errors.Is(err, os.ErrNotExist) {
 		return []Tool{}, nil
 	}
@@ -120,7 +121,7 @@ func (s *Store) Update(game string, t Tool) error {
 	return s.save(game, tools)
 }
 
-func (s *Store) Remove(game string, id string) error {
+func (s *Store) Remove(game, id string) error {
 	tools, err := s.load(game)
 	if err != nil {
 		return err

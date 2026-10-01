@@ -40,7 +40,7 @@ func (s *Service) Update(game string, t Tool) error {
 	return s.store.Update(game, t)
 }
 
-func (s *Service) Remove(game string, id string) error {
+func (s *Service) Remove(game, id string) error {
 	return s.store.Remove(game, id)
 }
 
