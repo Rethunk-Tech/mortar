@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/meta"
@@ -172,14 +173,53 @@ func missingDeps(enabled, all []Installed) []Missing {
 	return out
 }
 
+// fetchAll calls fetch for every id, a few at a time: a cold profile needs one Nexus round trip per page, and
+// doing them one by one kept the first check after a start busy for many seconds. failed reports any error.
+func fetchAll[T any](ctx context.Context, ids []int, fetch func(context.Context, int) (T, error)) (got map[int]T, failed bool) {
+	got = make(map[int]T, len(ids))
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, 8)
+	for _, id := range ids {
+		wg.Add(1)
+		sem <- struct{}{}
+		go func() {
+			defer wg.Done()
+			defer func() { <-sem }()
+			v, err := fetch(ctx, id)
+			mu.Lock()
+			defer mu.Unlock()
+			if err != nil {
+				failed = true
+				return
+			}
+			got[id] = v
+		}()
+	}
+	wg.Wait()
+	return got, failed
+}
+
 func listedRequirements(ctx context.Context, m Meta, enabled, all []Installed) ([]Missing, bool) {
 	out := []Missing{}
-	unknown := false
-	requirementsByPage := map[int][]meta.Requirement{}
-	seenPages := map[int]bool{}
+	var pageIDs []int
+	for _, d := range enabled {
+		if pageID, ok := nexusEntryPage(d.Key); ok && !slices.Contains(pageIDs, pageID) {
+			pageIDs = append(pageIDs, pageID)
+		}
+	}
+	requirementsByPage, unknown := fetchAll(ctx, pageIDs, m.PageRequirements)
+	var reqIDs []int
+	for _, reqs := range requirementsByPage {
+		for _, req := range reqs {
+			if !slices.Contains(reqIDs, req.ModID) {
+				reqIDs = append(reqIDs, req.ModID)
+			}
+		}
+	}
+	pages, pagesUnknown := fetchAll(ctx, reqIDs, m.Page)
+	unknown = unknown || pagesUnknown
 	seenEntries := map[string]bool{}
-	pages := map[int]meta.Page{}
-	pageKnown := map[int]bool{}
 
 	for _, d := range enabled {
 		pageID, ok := nexusEntryPage(d.Key)
@@ -191,29 +231,12 @@ func listedRequirements(ctx context.Context, m Meta, enabled, all []Installed) (
 			continue
 		}
 		seenEntries[entryKey] = true
-		if !seenPages[pageID] {
-			var err error
-			requirementsByPage[pageID], err = m.PageRequirements(ctx, pageID)
-			seenPages[pageID] = true
-			if err != nil {
-				unknown = true
-				continue
-			}
-		}
 		seenRequirements := map[int]bool{}
 		for _, req := range requirementsByPage[pageID] {
 			if seenRequirements[req.ModID] {
 				continue
 			}
 			seenRequirements[req.ModID] = true
-			if !pageKnown[req.ModID] {
-				page, err := m.Page(ctx, req.ModID)
-				if err != nil {
-					unknown = true
-				} else {
-					pages[req.ModID], pageKnown[req.ModID] = page, true
-				}
-			}
 			page, hasPage := pages[req.ModID]
 			if hasPage && manifestHasRequirement(all, d.Key, page) {
 				continue

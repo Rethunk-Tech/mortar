@@ -71,7 +71,7 @@ msgstr "{n} Nexus"
 msgid "You started this download on Nexus. Choose the profile it goes into."
 msgstr "You started this download on Nexus. Choose the profile it goes into."
 
-#: src/mods/store.ts:158
+#: src/mods/store.ts:164
 msgid "Could not switch the selected mods"
 msgstr "Could not switch the selected mods"
 
@@ -232,9 +232,9 @@ msgid "Updated on Nexus"
 msgstr "Updated on Nexus"
 
 #: src/console/CrashDialog.tsx:76
-#: src/mods/ProblemBar.tsx:189
-#: src/mods/ProblemBar.tsx:216
-#: src/mods/ProblemBar.tsx:232
+#: src/mods/ProblemBar.tsx:146
+#: src/mods/ProblemBar.tsx:213
+#: src/mods/ProblemBar.tsx:240
 #: src/tips/TipBanner.tsx:36
 #: src/tips/TipBanner.tsx:39
 #: src/toasts/ToastHost.tsx:133
@@ -290,7 +290,7 @@ msgstr "Sign in to Nexus Mods in Settings to see more from this mod's page."
 msgid "Only in {bName}"
 msgstr "Only in {bName}"
 
-#: src/mods/ProblemBar.tsx:153
+#: src/mods/ProblemBar.tsx:177
 msgid "Resolve"
 msgstr "Resolve"
 
@@ -534,8 +534,8 @@ msgstr "Roll back"
 msgid "Not in the file"
 msgstr "Not in the file"
 
-#: src/mods/store.ts:190
-#: src/mods/store.ts:207
+#: src/mods/store.ts:196
+#: src/mods/store.ts:213
 msgid "Could not dismiss the warning"
 msgstr "Could not dismiss the warning"
 
@@ -684,7 +684,7 @@ msgstr "Enter a name for the profile."
 msgid "Files added"
 msgstr "Files added"
 
-#: src/mods/ProblemBar.tsx:316
+#: src/mods/ProblemBar.tsx:324
 msgid "Forget"
 msgstr "Forget"
 
@@ -1025,7 +1025,7 @@ msgstr "Different version"
 msgid "Sky"
 msgstr "Sky"
 
-#: src/mods/ProblemBar.tsx:330
+#: src/mods/ProblemBar.tsx:338
 msgid "Keep my changes"
 msgstr "Keep my changes"
 
@@ -1158,11 +1158,11 @@ msgstr "Update available"
 msgid "GitHub page"
 msgstr "GitHub page"
 
-#: src/mods/ProblemBar.tsx:166
+#: src/mods/ProblemBar.tsx:190
 msgid "Replace with {replaceName}"
 msgstr "Replace with {replaceName}"
 
-#: src/mods/describe.ts:68
+#: src/mods/describe.ts:70
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 
@@ -1562,7 +1562,7 @@ msgstr "{name} has no file Mortar can use in place of the one shared"
 msgid "Duplicate"
 msgstr "Duplicate"
 
-#: src/mods/describe.ts:74
+#: src/mods/describe.ts:76
 msgid "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 
@@ -1670,7 +1670,7 @@ msgstr "Could not read this Mortar build's version: {failed}"
 msgid "SMAPI is not installed"
 msgstr "SMAPI is not installed"
 
-#: src/mods/describe.ts:76
+#: src/mods/describe.ts:78
 msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
 
@@ -1815,7 +1815,7 @@ msgid "Add a value"
 msgstr "Add a value"
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:238
+#: src/mods/store.ts:244
 msgid "Could not remove {0}"
 msgstr "Could not remove {0}"
 
@@ -1824,7 +1824,7 @@ msgid "Mods in this category will move to Uncategorized."
 msgstr "Mods in this category will move to Uncategorized."
 
 #. placeholder {0}: p.duplicate.name
-#: src/mods/describe.ts:82
+#: src/mods/describe.ts:84
 msgid "{0} is installed twice, and SMAPI loads only one."
 msgstr "{0} is installed twice, and SMAPI loads only one."
 
@@ -1902,7 +1902,7 @@ msgstr "Zoom ({value}%)"
 msgid "Updates are unknown: SMAPI's update service could not be reached."
 msgstr "Updates are unknown: SMAPI's update service could not be reached."
 
-#: src/mods/describe.ts:94
+#: src/mods/describe.ts:96
 msgid "{name} logged {count} errors in the last run."
 msgstr "{name} logged {count} errors in the last run."
 
@@ -2012,7 +2012,7 @@ msgstr "Could not save the open profile"
 
 #. placeholder {0}: d.key
 #: src/mods/describe.ts:15
-#: src/mods/ProblemBar.tsx:363
+#: src/mods/ProblemBar.tsx:371
 msgid "{0} was removed from this profile's mods folder."
 msgstr "{0} was removed from this profile's mods folder."
 
@@ -2033,7 +2033,7 @@ msgid "Port"
 msgstr "Port"
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:379
+#: src/mods/store.ts:388
 msgid "Could not open config.json of {0}"
 msgstr "Could not open config.json of {0}"
 
@@ -2066,7 +2066,7 @@ msgstr "That folder cannot be used"
 #: src/console/BisectDialog.tsx:147
 #: src/mods/ModDependencyTree.tsx:55
 #: src/mods/ProblemBar.tsx:56
-#: src/mods/ProblemBar.tsx:176
+#: src/mods/ProblemBar.tsx:200
 #: src/mods/Sidebar.tsx:187
 #: src/mods/UpdateReview.tsx:254
 #: src/saves/SavesTab.tsx:121
@@ -2090,7 +2090,7 @@ msgstr "Saves are zipped before mods update; older backups beyond this many are 
 msgid "{0, plural, one {# skipped} other {# skipped}}"
 msgstr "{0, plural, one {# skipped} other {# skipped}}"
 
-#: src/mods/store.ts:173
+#: src/mods/store.ts:179
 msgid "Could not remove the selected mods"
 msgstr "Could not remove the selected mods"
 
@@ -2153,7 +2153,7 @@ msgid "Open in editor"
 msgstr "Open in editor"
 
 #. placeholder {0}: dup.name
-#: src/mods/store.ts:397
+#: src/mods/store.ts:406
 msgid "Could not switch off the other copy of {0}"
 msgstr "Could not switch off the other copy of {0}"
 
@@ -2246,7 +2246,7 @@ msgstr "Stardew Valley {0}"
 msgid "{who} all load {target}.{winner}"
 msgstr "{who} all load {target}.{winner}"
 
-#: src/mods/store.ts:120
+#: src/mods/store.ts:126
 msgid "Could not check the mods for problems"
 msgstr "Could not check the mods for problems"
 
@@ -2273,7 +2273,7 @@ msgstr "Restore {0}"
 msgid "One argument per line. Placeholders: {game}, {mods}, {saves}, {profile}."
 msgstr "One argument per line. Placeholders: {game}, {mods}, {saves}, {profile}."
 
-#: src/mods/ProblemBar.tsx:339
+#: src/mods/ProblemBar.tsx:347
 msgid "Revert"
 msgstr "Revert"
 
@@ -2290,7 +2290,7 @@ msgid "Mods"
 msgstr "Mods"
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:306
+#: src/mods/store.ts:315
 msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
@@ -2443,7 +2443,7 @@ msgstr "Open Stardew Valley settings"
 msgid "Colour"
 msgstr "Colour"
 
-#: src/mods/store.ts:224
+#: src/mods/store.ts:230
 msgid "Could not dismiss the overlap"
 msgstr "Could not dismiss the overlap"
 
@@ -2666,7 +2666,7 @@ msgid "Import settings…"
 msgstr "Import settings…"
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:337
+#: src/mods/store.ts:346
 msgid "Could not skip the update for {0}"
 msgstr "Could not skip the update for {0}"
 
@@ -2683,8 +2683,8 @@ msgid "Game"
 msgstr "Game"
 
 #: src/mods/ModDependencyTree.tsx:85
-#: src/mods/ProblemBar.tsx:237
-#: src/mods/ProblemBar.tsx:250
+#: src/mods/ProblemBar.tsx:138
+#: src/mods/ProblemBar.tsx:258
 msgid "Add"
 msgstr "Add"
 
@@ -2797,7 +2797,7 @@ msgid "Download"
 msgstr "Download"
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:368
+#: src/mods/store.ts:377
 msgid "Could not open the folder of {0}"
 msgstr "Could not open the folder of {0}"
 
@@ -2808,7 +2808,7 @@ msgid "Edit {0}"
 msgstr "Edit {0}"
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:336
+#: src/mods/store.ts:345
 msgid "Could not show the skipped update for {0}"
 msgstr "Could not show the skipped update for {0}"
 
@@ -2893,12 +2893,12 @@ msgstr "Checked with SMAPI's update service · just now"
 
 #. placeholder {0}: d.folder
 #: src/mods/describe.ts:12
-#: src/mods/ProblemBar.tsx:360
+#: src/mods/ProblemBar.tsx:368
 msgid "{0} is in this profile's mods folder and is not an installed entry."
 msgstr "{0} is in this profile's mods folder and is not an installed entry."
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:320
+#: src/mods/store.ts:329
 msgid "Could not pin {0}"
 msgstr "Could not pin {0}"
 
@@ -2915,7 +2915,7 @@ msgstr "No mods have logged yet"
 msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
-#: src/mods/ProblemBar.tsx:442
+#: src/mods/ProblemBar.tsx:457
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
@@ -2969,7 +2969,7 @@ msgstr "Winter"
 msgid "Manage tools"
 msgstr "Manage tools"
 
-#: src/mods/describe.ts:92
+#: src/mods/describe.ts:94
 msgid "{name} logged an error in the last run: {first}"
 msgstr "{name} logged an error in the last run: {first}"
 
@@ -3420,7 +3420,7 @@ msgid "{profileName} has {0} more than once. SMAPI loads only one, so pick which
 msgstr "{profileName} has {0} more than once. SMAPI loads only one, so pick which to keep. The others are switched off, not deleted."
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:320
+#: src/mods/store.ts:329
 msgid "Could not unpin {0}"
 msgstr "Could not unpin {0}"
 
@@ -3518,8 +3518,8 @@ msgstr "Install {name}?"
 
 #: src/console/BisectDialog.tsx:148
 #: src/mods/ProblemBar.tsx:114
-#: src/mods/ProblemBar.tsx:194
-#: src/mods/ProblemBar.tsx:207
+#: src/mods/ProblemBar.tsx:218
+#: src/mods/ProblemBar.tsx:231
 msgid "Switch off"
 msgstr "Switch off"
 
@@ -3586,7 +3586,7 @@ msgstr "Built on"
 #: src/mods/ModMenu.tsx:165
 #: src/mods/parts.tsx:312
 #: src/mods/parts.tsx:363
-#: src/mods/ProblemBar.tsx:292
+#: src/mods/ProblemBar.tsx:300
 #: src/mods/SelectionBar.tsx:71
 msgid "Remove"
 msgstr "Remove"
@@ -3614,7 +3614,7 @@ msgstr "Luck skill"
 msgid "Import from…"
 msgstr "Import from…"
 
-#: src/mods/describe.ts:71
+#: src/mods/describe.ts:73
 msgid "{dependentName} needs {dep}, which is switched off."
 msgstr "{dependentName} needs {dep}, which is switched off."
 
@@ -3679,7 +3679,7 @@ msgstr "{0, plural, one {# problem} other {# problems}}"
 msgid "Could not verify its source"
 msgstr "Could not verify its source"
 
-#: src/mods/describe.ts:67
+#: src/mods/describe.ts:69
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement."
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
@@ -3709,6 +3709,10 @@ msgstr "Redo update"
 #: src/settings/sections/StreamOverlay.tsx:340
 msgid "Token"
 msgstr "Token"
+
+#: src/mods/ProblemBar.tsx:399
+msgid "Checking the mods for problems…"
+msgstr "Checking the mods for problems…"
 
 #: src/saves/SavesTab.tsx:136
 msgid "Dismiss {name} for this save"
@@ -4259,7 +4263,7 @@ msgid "Switched off"
 msgstr "Switched off"
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:354
+#: src/mods/store.ts:363
 msgid "Could not save the note and tags for {0}"
 msgstr "Could not save the note and tags for {0}"
 
@@ -4452,7 +4456,7 @@ msgstr "Changelog is not cached yet."
 msgid "Could not endorse"
 msgstr "Could not endorse"
 
-#: src/mods/ProblemBar.tsx:244
+#: src/mods/ProblemBar.tsx:252
 msgid "Switch on"
 msgstr "Switch on"
 
@@ -4592,7 +4596,7 @@ msgstr "Checking for updates…"
 msgid "UI scale ({value}%)"
 msgstr "UI scale ({value}%)"
 
-#: src/mods/ProblemBar.tsx:307
+#: src/mods/ProblemBar.tsx:315
 #: src/profiles/ProfilesPage.tsx:79
 #: src/saves/BackupsDialog.tsx:99
 #: src/saves/BackupsDialog.tsx:268
@@ -4645,7 +4649,7 @@ msgstr "{0, plural, one {# download needs your decision} other {# downloads need
 
 #. placeholder {0}: d.key
 #: src/mods/describe.ts:17
-#: src/mods/ProblemBar.tsx:365
+#: src/mods/ProblemBar.tsx:373
 msgid "{0} was changed outside Mortar."
 msgstr "{0} was changed outside Mortar."
 
@@ -4814,7 +4818,7 @@ msgstr "Install anyway"
 msgid "Sound volume ({value}%)"
 msgstr "Sound volume ({value}%)"
 
-#: src/mods/ProblemBar.tsx:283
+#: src/mods/ProblemBar.tsx:291
 msgid "Adopt"
 msgstr "Adopt"
 

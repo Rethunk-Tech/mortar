@@ -105,15 +105,21 @@ async function loadMods(
   await Promise.all([get().loadProblems(), useUpdates.getState().load()])
 }
 
-async function loadModProblems(set: (p: { problems: Result | null }) => void) {
+async function loadModProblems(
+  set: (p: { problems: Result | null; problemsFor?: string }) => void,
+  get: () => { problemsFor: string },
+) {
   const target = open()
   if (!target) {
     return
   }
+  if (get().problemsFor !== target.id) {
+    set({ problems: null })
+  }
   try {
     const problems = await Problems(target.game, target.id)
     if (open()?.id === target.id) {
-      set({ problems })
+      set({ problems, problemsFor: target.id })
     }
     useBadges.getState().patch(target.id, { problems: problemCount(problems) })
   } catch (e) {
@@ -249,6 +255,8 @@ export const useMods = create<{
   view: View
   removing: Mod[]
   problems: Result | null
+  // problemsFor is the profile problems belongs to, so another profile's result is never shown as this one's.
+  problemsFor: string
   resolving: Duplicate | null
   setView: (view: View) => void
   load: () => Promise<void>
@@ -276,6 +284,7 @@ export const useMods = create<{
   view: storedView(),
   removing: [],
   problems: null,
+  problemsFor: '',
   resolving: null,
   setView: (view) => {
     set({ view })
@@ -286,7 +295,7 @@ export const useMods = create<{
     }
   },
   load: () => loadMods(set, get),
-  loadProblems: () => loadModProblems(set),
+  loadProblems: () => loadModProblems(set, get),
   setEnabled: async (mod, enabled) => {
     const target = open()
     if (!target) {

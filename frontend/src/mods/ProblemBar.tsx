@@ -393,7 +393,14 @@ export function ProblemBar() {
       document.removeEventListener('visibilitychange', onVisible)
     }
   }, [loadProblems])
-  if (problems.length === 0 && !result?.unknown) {
+  if (result === null) {
+    return (
+      <Typography sx={{ mx: 2, mt: 1.25, fontSize: 13, color: 'text.secondary' }}>
+        {t`Checking the mods for problems…`}
+      </Typography>
+    )
+  }
+  if (problems.length === 0 && !result.unknown) {
     return null
   }
   return (
