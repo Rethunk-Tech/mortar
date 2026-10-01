@@ -44,6 +44,7 @@ Not in the first release, each by NOMAD on 2026-09-29; re-weigh only when asked:
 - In-app mod search and browsing: Mortar links out to Nexus.
 - CurseForge (needs an API key application) and ModDrop (no documented download API) as sources; the Xbox app version; Lutris; Steam Deck.
 - Windows code signing.
+- macOS, as Stardrop ships for x64 and arm64: needs an Apple developer account for signing and notarization, Mac Steam paths and nxm registration, and a Mac to test on (NOMAD, 2026-10-01).
 - More interface languages than English, as Stardrop (17+), MO2 and r2modman ship; every string already goes through Lingui (NOMAD, 2026-10-01: English only for v1).
 - A light theme, as in Stardrop and Vortex, built once the design system is revisited (MUI stays for now; Tailwind and shadcn were raised) (NOMAD, 2026-10-01).
 - An external tools list, as in Vortex and MO2: register tools such as xnbcli, Tiled or a save editor and launch them from Mortar with the game's paths (NOMAD, 2026-10-01).
