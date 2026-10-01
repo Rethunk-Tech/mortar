@@ -151,7 +151,9 @@ type Store struct {
 	// Running reports whether the game is running this profile; nil means never.
 	Running func(game, id string) bool
 	// BackupsKept returns how many save backups to retain; nil means backup.DefaultKeep.
-	BackupsKept     func() int
+	BackupsKept func() int
+	// NewModsEnabled reports whether newly installed entries start enabled; nil means enabled.
+	NewModsEnabled  func() bool
 	historyKind     string
 	historyLabel    string
 	historyQuietIDs map[string]int

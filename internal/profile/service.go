@@ -25,6 +25,7 @@ type Service struct {
 }
 
 func NewService(store *Store, home string, settings *settings.Store) *Service {
+	store.NewModsEnabled = func() bool { return settings.Get().NewModsEnabled() }
 	return &Service{store: store, home: home, settings: settings}
 }
 
