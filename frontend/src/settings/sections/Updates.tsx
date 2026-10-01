@@ -51,6 +51,13 @@ function MortarUpdate() {
       </Alert>
     ) : null
   }
+  if (info.off === 'packaged') {
+    return (
+      <Alert severity="info" sx={{ fontSize: 14 }}>
+        {t`Updated by your package manager`}
+      </Alert>
+    )
+  }
   if (info.off) {
     return (
       <Alert severity="info" sx={{ fontSize: 14 }}>

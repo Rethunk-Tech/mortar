@@ -44,6 +44,9 @@ import (
 // version is the app version sent to Nexus; keep it equal to build/config.yml.
 const version = "0.0.1"
 
+// packaged is set by nfpm, Flatpak and AUR builds (`-X main.packaged=deb`) so the self-updater stays off.
+var packaged string
+
 //go:embed all:frontend/dist
 var assets embed.FS
 
@@ -299,18 +302,25 @@ func run() error {
 	shareSvc.Receive(sharesvc.InDir(os.Args[1:], sharesvc.LaunchDir()))
 	shareSvc.QueueChanged(queueSvc.State())
 
+	dataSvc := datasvc.NewService(items, profiles, queueSvc.StagedKeys)
+	dataSvc.Busy = func() bool {
+		st, err := launches.Status("stardew")
+		return err == nil && (st.State == launchsvc.Launching || st.State == launchsvc.Running)
+	}
+	dataSvc.Restart = datasvc.RestartSelf
+
 	for _, s := range []application.Service{
 		application.NewService(svc), application.NewService(gamesSvc),
 		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
 		application.NewService(savesSvc), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
 		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc),
 		application.NewService(supportSvc), application.NewService(updates),
-		application.NewService(datasvc.NewService(items, profiles, queueSvc.StagedKeys)),
+		application.NewService(dataSvc),
 	} {
 		app.RegisterService(s)
 	}
 
-	if err := updatesvc.Configure(updates, app.Updater, version, updateKey); err != nil {
+	if err := updatesvc.Configure(updates, app.Updater, version, updateKey, packaged); err != nil {
 		return err
 	}
 	queueCtx, stopQueue := context.WithCancel(context.Background())

@@ -29,7 +29,8 @@ type Updater interface {
 // Info is what Settings shows before any check.
 type Info struct {
 	Version string `json:"version"`
-	// Off is "dev" when this build never checks for updates: a development or server build, or a dev version.
+	// Off is "dev" when this build never checks for updates (development, server, or a dev version)
+	// and "packaged" when a distro package owns updates.
 	Off string `json:"off"`
 }
 
@@ -71,10 +72,10 @@ func (s *Service) lock() {
 }
 
 // Configure points s at u, which reads ManifestURL and trusts only publicKey. It is a function rather than a method
-// so the binding generator does not hand it to the window. Outside a production build, or for a dev version, u is
-// left unconfigured and every call reports updates as off.
-func Configure(s *Service, u Updater, version string, publicKey []byte) error {
-	if err := configure(s, u, version, publicKey, production && !application.System.IsServer()); err != nil {
+// so the binding generator does not hand it to the window. Outside a production build, for a dev version, or when
+// packaged is set (nfpm, Flatpak, AUR), u is left unconfigured and every call reports updates as off.
+func Configure(s *Service, u Updater, version string, publicKey []byte, packaged string) error {
+	if err := configure(s, u, version, publicKey, production && !application.System.IsServer(), packaged); err != nil {
 		return err
 	}
 	if s.info.Off == "" {
@@ -83,8 +84,12 @@ func Configure(s *Service, u Updater, version string, publicKey []byte) error {
 	return nil
 }
 
-func configure(s *Service, u Updater, version string, publicKey []byte, production bool) error {
+func configure(s *Service, u Updater, version string, publicKey []byte, production bool, packaged string) error {
 	s.u, s.info = u, Info{Version: version}
+	if packaged != "" {
+		s.info.Off = "packaged"
+		return nil
+	}
 	if !production || strings.Contains(version, "dev") {
 		s.info.Off = "dev"
 		return nil

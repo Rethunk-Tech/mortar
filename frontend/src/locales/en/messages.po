@@ -3351,6 +3351,10 @@ msgstr "Steam may not be running or signed in. Start Steam, sign in and try agai
 
 #. placeholder {0}: info.version
 #: src/settings/sections/Updates.tsx:57
+#: src/settings/sections/Updates.tsx:58
+msgid "Updated by your package manager"
+msgstr "Updated by your package manager"
+
 msgid "This is a development build of Mortar {0}, so it does not check for updates."
 msgstr "This is a development build of Mortar {0}, so it does not check for updates."
 
