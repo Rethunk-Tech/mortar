@@ -63,6 +63,35 @@ function entryForItem(profile: Profile | undefined, item: Pick<Item, 'modId' | '
   return (profile?.entries ?? []).find((e) => matchesItem(e, item))
 }
 
+function unblockedDependent(
+  missing: { uniqueId: string; dependentName: string }[] | null | undefined,
+  installedIds: string[],
+): string | undefined {
+  if (!missing || installedIds.length === 0) {
+    return
+  }
+  const ids = new Set(installedIds.map((id) => id.toLowerCase()))
+  return missing.find((m) => ids.has(m.uniqueId.toLowerCase()))?.dependentName
+}
+
+const MS_PER_SEC = 1000
+
+function retryWaitSeconds(until: number, now = Date.now()): number {
+  return Math.max(1, until - Math.floor(now / MS_PER_SEC))
+}
+
+function queueErrorDetail(error: string): string | undefined {
+  return error === '' ? undefined : error
+}
+
+function downloadFailCopy(error: string): { body: string; detail?: string } {
+  const detail = queueErrorDetail(error)
+  return {
+    body: i18n._(msg`The download could not finish. Retry or skip it from the queue.`),
+    ...(detail === undefined ? {} : { detail }),
+  }
+}
+
 function matchesItem(e: Entry, item: Pick<Item, 'modId' | 'name' | 'repo'>) {
   if (item.modId && e.source.modId === item.modId) {
     return true
@@ -114,6 +143,46 @@ function installUndo(item: Item, entry: Entry | undefined) {
   }
 }
 
+function pushDownloadFailures(failed: Item[]) {
+  const nexusFail = singleNexusFailure(failed)
+  if (nexusFail) {
+    useToasts.getState().push({
+      kind: 'error',
+      title: i18n._(msg`Couldn't reach Nexus`),
+      ...downloadFailCopy(nexusFail.error ?? ''),
+      action: {
+        label: i18n._(msg`Retry now`),
+        run: () => Retry(nexusFail.id),
+        live: () => retryLive(nexusFail.id),
+      },
+    })
+    return
+  }
+  if (failed.length === 0) {
+    return
+  }
+  const [firstFail] = failed
+  useToasts.getState().push({
+    kind: 'error',
+    title: i18n._(
+      msg`${plural(failed.length, { one: '# download failed', other: '# downloads failed' })}`,
+    ),
+    ...downloadFailCopy(firstFail?.error ?? ''),
+    action: { label: i18n._(msg`Show`), run: show, live: showLive },
+  })
+}
+
+function pushRateLimitPause(prev: Snapshot, next: Snapshot) {
+  if (next.limitedUntil > 0 && next.limitedUntil !== prev.limitedUntil) {
+    const n = retryWaitSeconds(next.limitedUntil)
+    useToasts.getState().push({
+      kind: 'warning',
+      title: i18n._(msg`Downloads paused`),
+      body: i18n._(msg`Downloads paused. Retrying in ${n} s.`),
+    })
+  }
+}
+
 async function announce(prev: Snapshot, next: Snapshot) {
   const before = new Map(prev.items.map((i) => [i.id, i.state]))
   const changed = (state: string) =>
@@ -121,6 +190,7 @@ async function announce(prev: Snapshot, next: Snapshot) {
   const done = changed('done')
   const failed = changed('failed')
   const waiting = [...changed('needs-choice'), ...changed('needs-confirm')]
+  const blocked = useMods.getState().problems?.missing
   const { game, refresh, load } = useProfiles.getState()
   const games = [...new Set(done.map((i) => i.game))]
   for (const id of games) {
@@ -138,6 +208,7 @@ async function announce(prev: Snapshot, next: Snapshot) {
     }
   }
   considerMissing(dependentIds)
+  const unblocked = unblockedDependent(blocked, dependentIds)
   if (done.length === 1) {
     const [item] = done
     if (item) {
@@ -148,6 +219,7 @@ async function announce(prev: Snapshot, next: Snapshot) {
       useToasts.getState().push({
         kind: 'success',
         title: i18n._(msg`${first} installed`),
+        ...(unblocked ? { body: i18n._(msg`${unblocked} can load now.`) } : {}),
         ...(extra
           ? {
               picture: extra.picture,
@@ -183,29 +255,8 @@ async function announce(prev: Snapshot, next: Snapshot) {
       action: { label: i18n._(msg`Show`), run: show, live: showLive },
     })
   }
-  const nexusFail = singleNexusFailure(failed)
-  if (nexusFail) {
-    useToasts.getState().push({
-      kind: 'error',
-      title: i18n._(msg`Couldn't reach Nexus`),
-      body: nexusFail.error ?? '',
-      action: {
-        label: i18n._(msg`Retry now`),
-        run: () => Retry(nexusFail.id),
-        live: () => retryLive(nexusFail.id),
-      },
-    })
-  } else if (failed.length > 0) {
-    const [firstFail] = failed
-    useToasts.getState().push({
-      kind: 'error',
-      title: i18n._(
-        msg`${plural(failed.length, { one: '# download failed', other: '# downloads failed' })}`,
-      ),
-      body: firstFail?.error ?? '',
-      action: { label: i18n._(msg`Show`), run: show, live: showLive },
-    })
-  }
+  pushDownloadFailures(failed)
+  pushRateLimitPause(prev, next)
 }
 
 export const useQueue = create<{
@@ -229,4 +280,15 @@ export const initQueue = () =>
     }
   })
 
-export { announce, entryForItem, installUndo, shouldRollBack, singleNexusFailure, undoInstall }
+export {
+  announce,
+  downloadFailCopy,
+  entryForItem,
+  installUndo,
+  queueErrorDetail,
+  retryWaitSeconds,
+  shouldRollBack,
+  singleNexusFailure,
+  unblockedDependent,
+  undoInstall,
+}

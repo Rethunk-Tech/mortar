@@ -12,8 +12,11 @@ import { useProfiles } from '../profiles/store.ts'
 import {
   entryForItem,
   installUndo,
+  queueErrorDetail,
+  retryWaitSeconds,
   shouldRollBack,
   singleNexusFailure,
+  unblockedDependent,
   undoInstall,
 } from './store.ts'
 
@@ -151,4 +154,26 @@ test('a lone Nexus download failure is the one retried', () => {
   expect(
     singleNexusFailure([item({ id: 'a', state: 'failed' }), item({ id: 'b', state: 'failed' })]),
   ).toBeUndefined()
+})
+
+test('a finished download names the dependent it unblocks', () => {
+  expect(
+    unblockedDependent(
+      [{ uniqueId: 'SpaceCore', dependentName: 'Love of Cooking' }],
+      ['spacecore'],
+    ),
+  ).toBe('Love of Cooking')
+  expect(
+    unblockedDependent([{ uniqueId: 'SpaceCore', dependentName: 'Love of Cooking' }], []),
+  ).toBeUndefined()
+})
+
+test('queue failures keep the raw error for details only', () => {
+  expect(queueErrorDetail('dial tcp timeout')).toBe('dial tcp timeout')
+  expect(queueErrorDetail('')).toBeUndefined()
+})
+
+test('rate-limit retry wait is at least one second', () => {
+  expect(retryWaitSeconds(1_700_000_012, 1_700_000_000_000)).toBe(12)
+  expect(retryWaitSeconds(1_700_000_000, 1_700_000_500_000)).toBe(1)
 })

@@ -44,6 +44,13 @@ async function redoUpdate(game: string, id: string, key: string) {
   await useMods.getState().load()
 }
 
+function versionAfterRollBack(
+  entries: { mods?: { uniqueId: string; version: string }[] | null }[] | null | undefined,
+  uniqueId: string,
+): string | undefined {
+  return entries?.flatMap((e) => e.mods ?? []).find((m) => m.uniqueId === uniqueId)?.version
+}
+
 function keyAfterRollBack(
   entries: { key: string; mods?: { uniqueId: string }[] | null }[] | null | undefined,
   uniqueId: string,
@@ -107,14 +114,13 @@ export const useDetail = create<{
       fail(i18n._(msg`Could not roll back ${mod.name}`))(e)
       return
     }
-    const key = keyAfterRollBack(
-      useProfiles.getState().profiles.find((p) => p.id === target.id)?.entries,
-      mod.uniqueId,
-      mod.key,
-    )
+    const next = useProfiles.getState().profiles.find((p) => p.id === target.id)
+    const backTo = versionAfterRollBack(next?.entries, mod.uniqueId)
+    const key = keyAfterRollBack(next?.entries, mod.uniqueId, mod.key)
     useToasts.getState().push({
       kind: 'success',
       title: i18n._(msg`${mod.name} rolled back`),
+      ...(backTo ? { body: i18n._(msg`Back to ${backTo}. Saves untouched.`) } : {}),
       picture: mod.picture,
       action: {
         label: i18n._(msg`Redo update`),
@@ -145,4 +151,4 @@ export const useDetail = create<{
   },
 }))
 
-export { keyAfterRollBack }
+export { keyAfterRollBack, versionAfterRollBack }
