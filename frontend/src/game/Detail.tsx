@@ -41,6 +41,7 @@ import { SavesTab } from '../saves/SavesTab.tsx'
 import { useSaves } from '../saves/store.ts'
 import { openShare } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { ToolsMenu } from '../tools/ToolsMenu.tsx'
 import { compact, compactMeta, saveFits } from './compact.ts'
 import { CoverButton, HeroCover } from './HeroCover.tsx'
 import { NameField } from './NameField.tsx'
@@ -434,6 +435,7 @@ export function Detail() {
         </Tabs>
         <Box sx={{ flexGrow: 1 }} />
         {tab === 'console' ? <LogActions /> : null}
+        <ToolsMenu game={game} profileID={profile.id} />
         <Button
           variant="outlined"
           color="inherit"
