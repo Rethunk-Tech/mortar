@@ -42,12 +42,20 @@ export function useDescribe(): Describe {
   }
 
   const describeAsset = (p: Extract<Problem, { kind: 'asset' }>): string => {
-    const { names, target, kind } = p.asset
+    const { names, target, kind, winnerName, overridden } = p.asset
     const who = (names ?? []).join(', ')
-    if (kind === 'load') {
-      return t`${who} all load ${target}; only one wins.`
+    let winner = ''
+    if (winnerName === 'unclear') {
+      winner = t` The winner is unclear.`
+    } else if (winnerName) {
+      const losers = (overridden ?? []).join(', ')
+      winner =
+        losers === '' ? t` ${winnerName} wins.` : t` ${winnerName} wins; ${losers} overridden.`
     }
-    return t`${who} all edit ${target}; the result depends on order.`
+    if (kind === 'load') {
+      return t`${who} all load ${target}.${winner}`
+    }
+    return t`${who} all edit ${target}.${winner}`
   }
 
   const describeMissing = (p: Extract<Problem, { kind: 'missing' }>): string => {

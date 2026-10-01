@@ -24,46 +24,57 @@ const (
 // AssetConflict is two or more enabled Content Patcher packs that Load the same target (hard)
 // or EditImage/EditMap the same target (soft). EditData on the same target is not a conflict.
 type AssetConflict struct {
-	Kind    string   `json:"kind"` // "load" (hard) or "edit" (soft)
-	Target  string   `json:"target"`
-	PackIDs []string `json:"packIds"`
-	Names   []string `json:"names"`
-	Keys    []string `json:"keys"`
+	Kind       string   `json:"kind"` // "load" (hard) or "edit" (soft)
+	Target     string   `json:"target"`
+	PackIDs    []string `json:"packIds"`
+	Names      []string `json:"names"`
+	Keys       []string `json:"keys"`
+	WinnerID   string   `json:"winnerId"`
+	WinnerName string   `json:"winnerName"`
+	Overridden []string `json:"overridden"`
 }
 
 type packHit struct {
-	id   string
-	name string
-	key  string
+	id       string
+	name     string
+	key      string
+	priority string
 }
 
 type cachedPack struct {
-	mtime time.Time
-	load  []string
-	edit  []string
-	skips int
+	mtime        time.Time
+	load         []string
+	edit         []string
+	loadPriority map[string]string
+	editPriority map[string]string
+	skips        int
 }
 
 var packCache sync.Map // folder path -> cachedPack
 
 func contentPackTargets(mod Installed) (load, edit []string, skips int) {
+	load, edit, _, _, skips = contentPackTargetsWithPriority(mod)
+	return load, edit, skips
+}
+
+func contentPackTargetsWithPriority(mod Installed) (load, edit []string, loadPriority, editPriority map[string]string, skips int) {
 	if !mod.Enabled || mod.Folder == "" || !isContentPatcherPack(mod.Folder) {
-		return nil, nil, 0
+		return nil, nil, nil, nil, 0
 	}
 	root := filepath.Clean(mod.Folder)
 	info, err := os.Stat(filepath.Join(root, "content.json"))
 	if err != nil {
-		return nil, nil, 0
+		return nil, nil, nil, nil, 0
 	}
 	if c, ok := packCache.Load(root); ok {
 		got, ok := c.(cachedPack)
 		if ok && got.mtime.Equal(info.ModTime()) {
-			return got.load, got.edit, got.skips
+			return got.load, got.edit, got.loadPriority, got.editPriority, got.skips
 		}
 	}
-	load, edit, skips = scanContentFile(root, "content.json", map[string]bool{})
-	packCache.Store(root, cachedPack{mtime: info.ModTime(), load: load, edit: edit, skips: skips})
-	return load, edit, skips
+	load, edit, loadPriority, editPriority, skips = scanContentFile(root, "content.json", map[string]bool{})
+	packCache.Store(root, cachedPack{mtime: info.ModTime(), load: load, edit: edit, loadPriority: loadPriority, editPriority: editPriority, skips: skips})
+	return load, edit, loadPriority, editPriority, skips
 }
 
 func isContentPatcherPack(folder string) bool {
@@ -97,27 +108,29 @@ func isContentPatcherPack(folder string) bool {
 	return false
 }
 
-func scanContentFile(root, rel string, seen map[string]bool) (load, edit []string, skips int) {
+func scanContentFile(root, rel string, seen map[string]bool) (load, edit []string, loadPriority, editPriority map[string]string, skips int) {
 	rel = filepath.ToSlash(rel)
 	key := strings.ToLower(rel)
 	if rel == "" || seen[key] {
-		return nil, nil, 0
+		return nil, nil, nil, nil, 0
 	}
 	seen[key] = true
 	abs, ok := inside(root, rel)
 	if !ok {
-		return nil, nil, 0
+		return nil, nil, nil, nil, 0
 	}
 	raw, err := fsx.ReadFile(abs)
 	if err != nil {
-		return nil, nil, 0
+		return nil, nil, nil, nil, 0
 	}
 	var doc struct {
 		Changes []cpChange `json:"Changes"`
 	}
 	if err := json.Unmarshal(stripJSONNoise(raw), &doc); err != nil {
-		return nil, nil, 0
+		return nil, nil, nil, nil, 0
 	}
+	loadPriority = map[string]string{}
+	editPriority = map[string]string{}
 	for _, ch := range doc.Changes {
 		action := strings.TrimSpace(ch.Action)
 		if strings.EqualFold(action, "Include") {
@@ -126,9 +139,15 @@ func scanContentFile(root, rel string, seen map[string]bool) (load, edit []strin
 					skips++
 					continue
 				}
-				l, e, s := scanContentFile(root, from, seen)
+				l, e, lp, ep, s := scanContentFile(root, from, seen)
 				load = append(load, l...)
 				edit = append(edit, e...)
+				for target, priority := range lp {
+					loadPriority[target] = strongerContentPatcherPriority(loadPriority[target], priority, "load")
+				}
+				for target, priority := range ep {
+					editPriority[target] = strongerContentPatcherPriority(editPriority[target], priority, "edit")
+				}
 				skips += s
 			}
 			continue
@@ -142,6 +161,8 @@ func scanContentFile(root, rel string, seen map[string]bool) (load, edit []strin
 					continue
 				}
 				load = append(load, normalizeTarget(t))
+				target := normalizeTarget(t)
+				loadPriority[target] = strongerContentPatcherPriority(loadPriority[target], ch.Priority, "load")
 			}
 		case strings.EqualFold(action, kindEditImage), strings.EqualFold(action, kindEditMap):
 			for _, t := range targets {
@@ -150,16 +171,19 @@ func scanContentFile(root, rel string, seen map[string]bool) (load, edit []strin
 					continue
 				}
 				edit = append(edit, normalizeTarget(t))
+				target := normalizeTarget(t)
+				editPriority[target] = strongerContentPatcherPriority(editPriority[target], ch.Priority, "edit")
 			}
 		}
 	}
-	return load, edit, skips
+	return load, edit, loadPriority, editPriority, skips
 }
 
 type cpChange struct {
 	Action   string `json:"Action"`
 	Target   string `json:"Target"`
 	FromFile string `json:"FromFile"`
+	Priority string `json:"Priority"`
 }
 
 func splitTargets(s string) []string {
@@ -282,15 +306,17 @@ func assetConflicts(mods []Installed) []AssetConflict {
 	loadAt := map[string][]packHit{}
 	editAt := map[string][]packHit{}
 	for _, mod := range mods {
-		load, edit, _ := contentPackTargets(mod)
+		load, edit, loadPriority, editPriority, _ := contentPackTargetsWithPriority(mod)
 		hit := packHit{id: mod.UniqueID, name: mod.Name, key: mod.Key}
 		for _, t := range load {
 			if !hasPack(loadAt[t], hit.id) {
+				hit.priority = loadPriority[t]
 				loadAt[t] = append(loadAt[t], hit)
 			}
 		}
 		for _, t := range edit {
 			if !hasPack(editAt[t], hit.id) {
+				hit.priority = editPriority[t]
 				editAt[t] = append(editAt[t], hit)
 			}
 		}
@@ -328,7 +354,71 @@ func conflictOf(kind, target string, hits []packHit) AssetConflict {
 	for i, h := range hits {
 		c.PackIDs[i], c.Names[i], c.Keys[i] = h.id, h.name, h.key
 	}
+	best := -1
+	bestRank := -1
+	tied := false
+	exclusive := 0
+	for i, hit := range hits {
+		rank := contentPatcherPriority(kind, hit.priority)
+		if kind == "load" && strings.EqualFold(strings.TrimSpace(hit.priority), "exclusive") {
+			exclusive++
+		}
+		if rank > bestRank {
+			best, bestRank, tied = i, rank, false
+		} else if rank == bestRank {
+			tied = true
+		}
+	}
+	if best >= 0 && !tied && exclusive < 2 {
+		c.WinnerID, c.WinnerName = hits[best].id, hits[best].name
+		for i, h := range hits {
+			if i != best {
+				c.Overridden = append(c.Overridden, h.name)
+			}
+		}
+	} else {
+		c.WinnerName = "unclear"
+	}
 	return c
+}
+
+func contentPatcherPriority(kind, priority string) int {
+	priority = strings.ToLower(strings.TrimSpace(priority))
+	if kind == "load" {
+		if priority == "" {
+			priority = "exclusive"
+		}
+		switch priority {
+		case "low":
+			return 0
+		case "medium":
+			return 1000
+		case "high":
+			return 2000
+		case "exclusive":
+			return 3000
+		}
+		return 1000
+	}
+	if priority == "" {
+		priority = "default"
+	}
+	switch priority {
+	case "early":
+		return 0
+	case "default":
+		return 1000
+	case "late":
+		return 2000
+	}
+	return 1000
+}
+
+func strongerContentPatcherPriority(current, candidate, kind string) string {
+	if contentPatcherPriority(kind, candidate) >= contentPatcherPriority(kind, current) {
+		return strings.TrimSpace(candidate)
+	}
+	return strings.TrimSpace(current)
 }
 
 func dismissBucket(gameID, profileID string) string {
