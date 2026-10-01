@@ -26,6 +26,11 @@ contents:
     file_info:
       owner: root
       group: root
+  - src: build/linux/tech.rethunk.Mortar.metainfo.xml
+    dst: /usr/share/metainfo/tech.rethunk.Mortar.metainfo.xml
+    file_info:
+      owner: root
+      group: root
   - src: build/linux/icons/tech.rethunk.Mortar-512.png
     dst: /usr/share/icons/hicolor/512x512/apps/tech.rethunk.Mortar.png
     file_info:

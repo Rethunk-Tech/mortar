@@ -18,7 +18,8 @@ modules:
     build-commands:
       - install -Dm755 mortar-packaged /app/bin/mortar
       - install -Dm644 tech.rethunk.Mortar.desktop /app/share/applications/tech.rethunk.Mortar.desktop
-      - install -Dm644 mortar.xml /app/share/mime/packages/mortar.xml
+      - install -Dm644 mortar.xml /app/share/mime/packages/tech.rethunk.Mortar.xml
+      - install -Dm644 tech.rethunk.Mortar.metainfo.xml /app/share/metainfo/tech.rethunk.Mortar.metainfo.xml
       - install -Dm644 tech.rethunk.Mortar-512.png /app/share/icons/hicolor/512x512/apps/tech.rethunk.Mortar.png
       - install -Dm644 tech.rethunk.Mortar-256.png /app/share/icons/hicolor/256x256/apps/tech.rethunk.Mortar.png
       - install -Dm644 appicon.svg /app/share/icons/hicolor/scalable/apps/tech.rethunk.Mortar.svg
@@ -29,6 +30,8 @@ modules:
         path: ../tech.rethunk.Mortar.desktop
       - type: file
         path: ../mime/mortar.xml
+      - type: file
+        path: ../tech.rethunk.Mortar.metainfo.xml
       - type: file
         path: ../icons/tech.rethunk.Mortar-512.png
       - type: file
