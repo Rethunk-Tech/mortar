@@ -296,7 +296,7 @@ func run() error {
 	})
 	// Queue changes reach shareSvc, so links are routed only once both exist.
 	nxmSvc.Receive(os.Args[1:])
-	shareSvc.Receive(os.Args[1:])
+	shareSvc.Receive(sharesvc.InDir(os.Args[1:], sharesvc.LaunchDir()))
 	shareSvc.QueueChanged(queueSvc.State())
 
 	for _, s := range []application.Service{

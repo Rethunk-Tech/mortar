@@ -798,6 +798,15 @@ func classify(arg string) (Arrival, bool) {
 	return Arrival{Kind: ArrivalFile, Value: arg}, true
 }
 
+// LaunchDir is the folder the user launched Mortar from when that is not this process's working folder: an AppImage's
+// AppRun changes into the bundle so WebKitGTK finds its helpers, and records the user's folder in OWD.
+func LaunchDir() string {
+	if os.Getenv("APPDIR") == "" {
+		return ""
+	}
+	return os.Getenv("OWD")
+}
+
 // InDir resolves the relative paths among a second launch's arguments against that launch's working folder, which
 // is not this process's.
 func InDir(args []string, dir string) []string {
