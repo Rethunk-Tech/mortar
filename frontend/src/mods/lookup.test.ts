@@ -1,8 +1,14 @@
 import { expect, test } from 'bun:test'
 import type { Copy } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import {
+  type Drift,
+  DriftKind,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import {
+  entryHasDrift,
   installableUpdate,
   listedAgainstNexus,
+  modStatusProblem,
   nexusKeepKey,
   offersUpdate,
   preselect,
@@ -46,6 +52,32 @@ test('preselect falls back to Nexus, then the first, when versions are unknown',
   expect(preselect([])).toBe('')
 })
 
+test("drift on an entry flags that entry's mods for status grouping", () => {
+  const mod = { key: 'k', uniqueId: 'me.a', name: 'A', enabled: true }
+  const drift: Drift = { kind: DriftKind.DriftChanged, folder: 'k', key: 'k' }
+  const result = {
+    missing: [],
+    duplicates: [],
+    broken: [],
+    assetConflicts: [],
+    drift: [drift],
+    unknown: false,
+  }
+  expect(
+    modStatusProblem(
+      result,
+      mod as import('../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts').Mod,
+    ),
+  ).toBe(true)
+  expect(entryHasDrift(result, 'k')).toBe(true)
+  expect(
+    entryHasDrift(
+      { ...result, drift: [{ ...drift, kind: DriftKind.DriftUnknown, key: 'loose' }] },
+      'k',
+    ),
+  ).toBe(false)
+})
+
 test('problems and updates are counted per finding', () => {
   expect(problemCount(null)).toBe(0)
   expect(
@@ -54,9 +86,10 @@ test('problems and updates are counted per finding', () => {
       duplicates: [{ uniqueId: 'me.a', name: 'A', copies: [] }],
       broken: [{ key: 'k', uniqueId: 'me.b', name: 'B', status: 'broken', brokeIn: '' }],
       assetConflicts: [],
+      drift: [{ kind: DriftKind.DriftChanged, folder: 'k', key: 'k' }],
       unknown: false,
     }),
-  ).toBe(2)
+  ).toBe(3)
   expect(updateCount(null)).toBe(0)
 })
 

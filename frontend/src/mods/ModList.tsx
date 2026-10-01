@@ -47,7 +47,7 @@ import {
   visibleListColumns,
 } from './listColumns.ts'
 import { toListRow } from './listRows.ts'
-import { concerns, modId, nexusIdOf, problemsOf, updateFor } from './lookup.ts'
+import { modId, modStatusProblem, nexusIdOf, updateFor } from './lookup.ts'
 import { ModsGroupHeader } from './ModsGroupHeader.tsx'
 import { contextMenuProps } from './menu.ts'
 import { primeDetails, useNexusDetails, useNexusFresh } from './nexusDetails.ts'
@@ -426,7 +426,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
     groupBy,
     (row) =>
       rowGroupKey(groupBy, row, {
-        hasProblem: problemsOf(problems).some((p) => concerns(p, row.mod)),
+        hasProblem: modStatusProblem(problems, row.mod),
         hasUpdate: Boolean(updateFor(updates, row.mod, profile)),
         names,
       }),

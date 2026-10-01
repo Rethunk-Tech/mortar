@@ -32,7 +32,7 @@ import { LockedNote } from './LockedNote.tsx'
 import { useLastRun } from './lastRun.ts'
 import { compareListRows, sanitizeListSort } from './listColumns.ts'
 import { toListRow } from './listRows.ts'
-import { concerns, entryOf, modId, nexusIdOf, problemsOf, updateFor } from './lookup.ts'
+import { entryOf, modId, modStatusProblem, nexusIdOf, updateFor } from './lookup.ts'
 import { ModDetail } from './ModDetail.tsx'
 import { ModList } from './ModList.tsx'
 import { ModContextMenu, ModMenu } from './ModMenu.tsx'
@@ -204,7 +204,7 @@ function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
     groupBy,
     (row) =>
       rowGroupKey(groupBy, row, {
-        hasProblem: problemsOf(problems).some((p) => concerns(p, row.mod)),
+        hasProblem: modStatusProblem(problems, row.mod),
         hasUpdate: Boolean(updateFor(updates, row.mod, profile)),
         names,
       }),

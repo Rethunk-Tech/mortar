@@ -1,5 +1,9 @@
 import { expect, test } from 'bun:test'
-import type { Entry } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type {
+  Entry,
+  Mod,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { DriftKind } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { useSettings } from '../settings/store.ts'
 import {
   firstTag,
@@ -12,6 +16,7 @@ import {
   statusGroupKey,
   takeTags,
 } from './group.ts'
+import { modStatusProblem } from './lookup.ts'
 
 const entry = (over: Partial<Entry> & Pick<Entry, 'key'>): Entry => {
   const out: Entry = {
@@ -83,6 +88,28 @@ test('groups by first tag, empty last, sort within groups', () => {
   )
   expect(none).toHaveLength(1)
   expect(none[0]?.items.map((i) => i.name)).toEqual(['Ann', 'Bob', 'Una', 'Zed'])
+})
+
+test('status grouping puts drift-affected entries in Problems', () => {
+  const mod = { key: 'k', uniqueId: 'me.a', name: 'A', enabled: true }
+  const result = {
+    missing: [],
+    duplicates: [],
+    broken: [],
+    assetConflicts: [],
+    drift: [{ kind: DriftKind.DriftChanged, folder: 'k', key: 'k' }],
+    unknown: false,
+  }
+  const fullMod = mod as Mod
+  expect(modStatusProblem(result, fullMod)).toBe(true)
+  const row = { source: '', tags: [], mod: fullMod }
+  expect(
+    rowGroupKey('status', row, {
+      hasProblem: modStatusProblem(result, fullMod),
+      hasUpdate: false,
+      names: new Map(),
+    }),
+  ).toBe('problems')
 })
 
 test('status grouping uses Problems, Update available, Enabled, Disabled', () => {

@@ -75,6 +75,12 @@ export const problemsOf = (result: Result | null): Problem[] =>
       ]
     : []
 
+export const entryHasDrift = (result: Result | null, key: string): boolean =>
+  (result?.drift ?? []).some((d) => d.kind !== 'unknown' && d.key === key)
+
+export const modStatusProblem = (result: Result | null, mod: Mod): boolean =>
+  problemsOf(result).some((p) => concerns(p, mod)) || entryHasDrift(result, mod.key)
+
 export const sameId = (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
 
 // A card is flagged for a broken mod, for each copy of a duplicate, and for the dependent of a missing dependency.
@@ -106,7 +112,8 @@ export function nexusKeepKey(copies: Copy[]): string | null {
   return nexus.length === 1 ? (nexus[0]?.key ?? null) : null
 }
 
-export const problemCount = (result: Result | null): number => problemsOf(result).length
+export const problemCount = (result: Result | null): number =>
+  problemsOf(result).length + (result?.drift?.length ?? 0)
 
 export const offersUpdate = (
   entry: { pinned?: boolean; skipVersion?: string } | undefined,
