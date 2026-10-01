@@ -11,6 +11,7 @@ import {
   incompatibleSMAPI,
   isFiltered,
   modsOf,
+  showingCounts,
   shownLog,
   visible,
 } from './filter.ts'
@@ -50,6 +51,11 @@ test('mod filter keeps only the picked mods', () => {
   const rows = visible(log, { ...DEFAULT_FILTERS, mods: ['SMAPI', 'Cooking'] })
   expect(rows.map((r) => r.message)).toEqual(['Loaded 42 mods', 'obsolete API', 'hello'])
   expect(modsOf(log)).toEqual(['Cooking', 'Love of Cooking', 'SMAPI'])
+})
+
+test('showingCounts is omitted when every line is visible', () => {
+  expect(showingCounts(5, 5)).toBeNull()
+  expect(showingCounts(5, 2)).toEqual({ shown: 2, total: 5 })
 })
 
 test('isFiltered is false only for the defaults', () => {
