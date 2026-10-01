@@ -8,7 +8,7 @@ import (
 const (
 	defaultListSortColumn = "name"
 	defaultListSortDir    = "asc"
-	defaultListGroupBy    = "none"
+	defaultListGroupBy    = "status"
 )
 
 var (
@@ -19,7 +19,7 @@ var (
 	defaultListColumns = []string{"on", "name", "version", "author", "source", "category", "status"}
 	lockedListColumns  = []string{"on", "name"}
 	listSortDirs       = []string{"asc", "desc"}
-	listGroupBys       = []string{"none", "category", "source", "tag"}
+	listGroupBys       = []string{"none", "status", "category", "source", "tag", "framework", "author"}
 )
 
 func knownListColumn(id string) bool {

@@ -12,11 +12,13 @@ import {
   MenuItem,
   TextField,
   Tooltip,
+  Typography,
   useMediaQuery,
 } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
 import {
   Ban,
+  Download,
   ExternalLink,
   Filter,
   FolderTree,
@@ -25,13 +27,17 @@ import {
   List,
   Plus,
   Search,
+  Settings2,
   Tag,
+  User,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { SetListGroupBy } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
 import { useInstall } from '../install/store.ts'
 import { useSettings } from '../settings/store.ts'
+import { openImport } from '../share/store.ts'
+import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { onFilterFocus } from './filterFocus.ts'
 import { type GroupBy, sanitizeListGroupBy } from './group.ts'
@@ -88,9 +94,12 @@ function GroupByControl() {
       >
         {[
           { id: 'none' as const, label: t`None`, Icon: Ban },
+          { id: 'status' as const, label: t`Status`, Icon: FolderTree },
           { id: 'category' as const, label: t`Category`, Icon: FolderTree },
           { id: 'source' as const, label: t`Source`, Icon: Library },
           { id: 'tag' as const, label: t`Tag`, Icon: Tag, hint: tagHint },
+          { id: 'framework' as const, label: t`Framework`, Icon: FolderTree },
+          { id: 'author' as const, label: t`Author`, Icon: User },
         ].map((item) => (
           <Tooltip key={item.id} title={item.hint ?? ''} placement="right">
             <MenuItem
@@ -173,10 +182,14 @@ export function Toolbar({
   query,
   onQuery,
   total,
+  configurableOnly,
+  onConfigurable,
 }: {
   query: string
   onQuery: (q: string) => void
   total: number
+  configurableOnly: boolean
+  onConfigurable: (on: boolean) => void
 }) {
   const { t } = useLingui()
   const view = useMods((s) => s.view)
@@ -228,6 +241,19 @@ export function Toolbar({
         </ButtonBase>
       </Box>
       <GroupByControl />
+      <Button
+        variant="outlined"
+        aria-label={t`Configurable`}
+        aria-pressed={configurableOnly}
+        startIcon={<Settings2 size={14} />}
+        onClick={() => onConfigurable(!configurableOnly)}
+        sx={{
+          ...iconWhenCompact,
+          bgcolor: configurableOnly ? 'rgba(255,255,255,0.16)' : undefined,
+        }}
+      >
+        <span className="label">{t`Configurable`}</span>
+      </Button>
       {fieldOpen ? (
         <TextField
           size="small"
@@ -290,6 +316,59 @@ export function Toolbar({
       ) : null}
       <BrowseNexus variant="outlined" toolbar={true} />
       <AddArchive variant="outlined" toolbar={true} />
+    </Box>
+  )
+}
+
+export function EmptyMods({ profileId }: { profileId: string }) {
+  const { t } = useLingui()
+  return (
+    <Box
+      sx={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 2.25,
+        px: 3,
+        textAlign: 'center',
+      }}
+    >
+      <Typography sx={{ fontSize: 26, fontWeight: 700 }}>{t`No mods yet`}</Typography>
+      <TipBanner tip="mods">
+        {t`Drop archives anywhere on the window, or Browse Nexus to find mods.`}
+      </TipBanner>
+      <Typography sx={{ maxWidth: 520, fontSize: 15, lineHeight: 1.5 }}>
+        {t`Add mods from an archive you downloaded, or find them on Nexus.`}
+      </Typography>
+      <Box sx={{ display: 'flex', gap: 1.5 }}>
+        <BrowseNexus variant="contained" size="large" />
+        <AddArchive variant="outlined" size="large" />
+      </Box>
+      <Box
+        sx={{
+          mt: 1.5,
+          px: 1.75,
+          py: 1.25,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.25,
+          fontSize: 14,
+          border: '1px dashed rgba(255,255,255,0.25)',
+          borderRadius: '8px',
+        }}
+      >
+        <Download size={16} aria-hidden={true} />
+        {t`You can also drop archives anywhere on the window.`}
+      </Box>
+      <Button
+        variant="text"
+        onClick={() => openImport({ profileId })}
+        sx={{ textDecoration: 'underline' }}
+      >
+        {t`Or import a shared profile`}
+      </Button>
     </Box>
   )
 }

@@ -1,5 +1,8 @@
 import type { Details } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { SetListColumns } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { useSettings } from '../settings/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { lastRunOf } from './lastRun.ts'
 import { isNewer } from './nexusFormat.ts'
 
@@ -155,10 +158,22 @@ function visibleListColumns(
   saved: readonly string[] | null | undefined,
   narrow: boolean,
 ): ListColumnId[] {
-  const shown = new Set(sanitizeListColumns(saved))
-  return LIST_COLUMN_IDS.filter(
-    (id) => shown.has(id) && !(narrow && NARROW_HIDE_LIST_COLUMNS.includes(id)),
+  return sanitizeListColumns(saved).filter(
+    (id) => !(narrow && NARROW_HIDE_LIST_COLUMNS.includes(id)),
   )
+}
+
+function moveListColumn(ids: readonly ListColumnId[], from: number, to: number): ListColumnId[] {
+  if (from === to || from < 0 || to < 0 || from >= ids.length || to >= ids.length) {
+    return [...ids]
+  }
+  const next = [...ids]
+  const [item] = next.splice(from, 1)
+  if (item === undefined) {
+    return [...ids]
+  }
+  next.splice(to, 0, item)
+  return next
 }
 
 function listGridColumns(cols: readonly ListColumnId[]): string {
@@ -366,6 +381,11 @@ function columnMenuFromEvent(e: {
   return { top: e.clientY, left: e.clientX }
 }
 
+function persistColumns(ids: ListColumnId[]) {
+  useSettings.setState({ listColumns: ids })
+  SetListColumns(ids).catch(reportUnexpected)
+}
+
 export type { ListColumnId, ListColumnSort, ListRow, ListSortDir }
 export {
   columnMenuFromEvent,
@@ -376,8 +396,10 @@ export {
   LIST_COLUMN_WIDTH,
   LOCKED_LIST_COLUMNS,
   listGridColumns,
+  moveListColumn,
   NARROW_HIDE_LIST_COLUMNS,
   nextListSort,
+  persistColumns,
   sanitizeListColumns,
   sanitizeListSort,
   sortListRows,

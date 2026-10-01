@@ -209,6 +209,15 @@ func TestListColumns(t *testing.T) {
 	if _, err := s.Update(func(v *Settings) { v.ListSortColumn = "nope" }); err == nil {
 		t.Fatal("unknown sort column accepted")
 	}
+	if _, err := s.Update(func(v *Settings) { v.ListGroupBy = "status" }); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Update(func(v *Settings) { v.ListGroupBy = "framework" }); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Update(func(v *Settings) { v.ListGroupBy = "author" }); err != nil {
+		t.Fatal(err)
+	}
 	if _, err := s.Update(func(v *Settings) { v.ListGroupBy = "nope" }); err == nil {
 		t.Fatal("unknown group accepted")
 	}

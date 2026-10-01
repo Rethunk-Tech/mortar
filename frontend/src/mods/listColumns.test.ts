@@ -7,6 +7,7 @@ import {
   DEFAULT_LIST_COLUMN_SORT,
   DEFAULT_VISIBLE_LIST_COLUMNS,
   type ListRow,
+  moveListColumn,
   nextListSort,
   sanitizeListColumns,
   sanitizeListSort,
@@ -160,4 +161,16 @@ test('compares numbers, versions, dates and text, with missing last in both dire
   expect(compareListRows(a, b, { column: 'installed', dir: 'asc' })).toBeGreaterThan(0)
   const sorted = sortListRows([a, missing, b], { column: 'name', dir: 'asc' })
   expect(sorted.map((r) => r.mod.name)).toEqual(['Alpha', 'Beta', 'Zed'])
+})
+
+test('keeps saved column order and moves a header', () => {
+  const saved = ['on', 'author', 'name', 'status'] as const
+  expect(visibleListColumns(saved, false)).toEqual(['on', 'author', 'name', 'status'])
+  expect(moveListColumn(['on', 'name', 'author', 'status'], 3, 1)).toEqual([
+    'on',
+    'status',
+    'name',
+    'author',
+  ])
+  expect(moveListColumn(['on', 'name'], 0, 0)).toEqual(['on', 'name'])
 })

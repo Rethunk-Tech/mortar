@@ -72,7 +72,7 @@ type Settings struct {
 	// ListSortColumn and ListSortDir are the Mods list sort; unknown values become name ascending.
 	ListSortColumn string `json:"listSortColumn"`
 	ListSortDir    string `json:"listSortDir"`
-	// ListGroupBy is how the Mods tab groups the list and grid: none, category, source, or tag.
+	// ListGroupBy is how the Mods tab groups the list and grid: none, status, category, source, tag, framework, or author.
 	ListGroupBy string `json:"listGroupBy"`
 	// CheckModUpdatesOnStart is whether Mortar checks the last-opened profile of each game at startup.
 	// Nil or omitted means on.

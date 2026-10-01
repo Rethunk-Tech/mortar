@@ -26,7 +26,7 @@ const defaults: Settings = {
   listColumns: ['on', 'name', 'version', 'author', 'source', 'category', 'status'],
   listSortColumn: 'name',
   listSortDir: 'asc',
-  listGroupBy: 'none',
+  listGroupBy: 'status',
   tipsSeen: [],
   smapiToastAt: '',
   overlayEnabled: false,

@@ -4,19 +4,27 @@ const MAX_ENTRY_NOTE = 500
 const MAX_ENTRY_TAGS = 8
 const MAX_ENTRY_TAG = 24
 
-const GROUP_BY_IDS = ['none', 'category', 'source', 'tag'] as const
+const GROUP_BY_IDS = ['none', 'status', 'category', 'source', 'tag', 'framework', 'author'] as const
+
+const STATUS_GROUP_ORDER = ['problems', 'update', 'enabled', 'disabled'] as const
+
+const SMAPI_MODS_GROUP = 'smapi'
 
 type GroupBy = (typeof GROUP_BY_IDS)[number]
+type StatusGroup = (typeof STATUS_GROUP_ORDER)[number]
 
 function emptyGroupLabel(
   by: GroupBy,
-  labels: { category: string; source: string; tag: string },
+  labels: { category: string; source: string; tag: string; author: string },
 ): string {
   if (by === 'category') {
     return labels.category
   }
   if (by === 'source') {
     return labels.source
+  }
+  if (by === 'author') {
+    return labels.author
   }
   return labels.tag
 }
@@ -70,10 +78,64 @@ function profileTags(entries: readonly Entry[] | null | undefined): string[] {
 }
 
 function sanitizeListGroupBy(by: string | null | undefined): GroupBy {
-  if (by === 'category' || by === 'source' || by === 'tag' || by === 'none') {
+  if (
+    by === 'category' ||
+    by === 'source' ||
+    by === 'tag' ||
+    by === 'none' ||
+    by === 'status' ||
+    by === 'framework' ||
+    by === 'author'
+  ) {
     return by
   }
-  return 'none'
+  return 'status'
+}
+
+function statusGroupKey(hasProblem: boolean, hasUpdate: boolean, enabled: boolean): StatusGroup {
+  if (hasProblem) {
+    return 'problems'
+  }
+  if (hasUpdate) {
+    return 'update'
+  }
+  if (enabled) {
+    return 'enabled'
+  }
+  return 'disabled'
+}
+
+function idKey(id: string): string {
+  return id.trim().toLowerCase()
+}
+
+function firstRequiredNeed(
+  uniqueId: string,
+  needs: readonly string[] | null | undefined,
+  optional: readonly string[] | null | undefined,
+): string {
+  const skip = new Set((optional ?? []).map(idKey))
+  skip.add(idKey(uniqueId))
+  for (const raw of needs ?? []) {
+    const id = raw.trim()
+    if (id !== '' && !skip.has(idKey(id))) {
+      return id
+    }
+  }
+  return ''
+}
+
+function frameworkGroupKey(
+  contentPackFor: string | null | undefined,
+  uniqueId: string,
+  names: ReadonlyMap<string, string>,
+): string {
+  const packFor = contentPackFor?.trim() ?? ''
+  if (packFor === '' || idKey(packFor) === idKey(uniqueId)) {
+    return SMAPI_MODS_GROUP
+  }
+  const name = names.get(idKey(packFor))?.trim() ?? ''
+  return name === '' ? packFor : name
 }
 
 interface Group<T> {
@@ -102,23 +164,187 @@ function groupSorted<T>(
     }
   }
   const keys = [...buckets.keys()]
-  const named = keys
-    .filter((k) => k !== '')
-    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }))
-  const order = keys.includes('') ? [...named, ''] : named
+  const order = orderedGroupKeys(by, keys)
   return order.map((key) => ({ key, items: sortedByKey(buckets.get(key) ?? []) }))
 }
 
-export type { Group, GroupBy }
+const COLLAPSED_PREFIX = 'mortar.modsCollapsed.'
+
+function loadCollapsed(game: string): Record<string, boolean> {
+  if (game === '') {
+    return {}
+  }
+  try {
+    const raw = localStorage.getItem(COLLAPSED_PREFIX + game)
+    if (!raw) {
+      return {}
+    }
+    const parsed: unknown = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return {}
+    }
+    const out: Record<string, boolean> = {}
+    for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
+      if (value === true) {
+        out[key] = true
+      }
+    }
+    return out
+  } catch {
+    return {}
+  }
+}
+
+function persistCollapsed(game: string, collapsed: Record<string, boolean>) {
+  if (game === '') {
+    return
+  }
+  const keys = Object.keys(collapsed).filter((k) => collapsed[k])
+  try {
+    if (keys.length === 0) {
+      localStorage.removeItem(COLLAPSED_PREFIX + game)
+      return
+    }
+    const stored: Record<string, true> = {}
+    for (const key of keys) {
+      stored[key] = true
+    }
+    localStorage.setItem(COLLAPSED_PREFIX + game, JSON.stringify(stored))
+  } catch {
+    // Storage can be blocked; collapse then lasts for this session only.
+  }
+}
+
+function toggleCollapsed(
+  game: string,
+  cur: Record<string, boolean>,
+  key: string,
+  open: boolean,
+): Record<string, boolean> {
+  const next = { ...cur, [key]: open }
+  persistCollapsed(game, next)
+  return next
+}
+
+function installedNames(mods: readonly { uniqueId: string; name: string }[]): Map<string, string> {
+  return new Map(mods.map((m) => [idKey(m.uniqueId), m.name] as const))
+}
+
+interface GroupRow {
+  source: string
+  tags: readonly string[]
+  details?: { category?: string }
+  mod: {
+    uniqueId: string
+    author: string
+    enabled: boolean
+    needs?: string[] | null
+    optional?: string[] | null
+  }
+}
+
+function rowGroupKey(
+  by: GroupBy,
+  row: GroupRow,
+  ctx: {
+    hasProblem: boolean
+    hasUpdate: boolean
+    names: ReadonlyMap<string, string>
+  },
+): string {
+  if (by === 'category') {
+    return row.details?.category ?? ''
+  }
+  if (by === 'source') {
+    return row.source
+  }
+  if (by === 'tag') {
+    return firstTag(row.tags)
+  }
+  if (by === 'author') {
+    return row.mod.author.trim()
+  }
+  if (by === 'status') {
+    return statusGroupKey(ctx.hasProblem, ctx.hasUpdate, row.mod.enabled)
+  }
+  if (by === 'framework') {
+    return frameworkGroupKey(
+      firstRequiredNeed(row.mod.uniqueId, row.mod.needs, row.mod.optional),
+      row.mod.uniqueId,
+      ctx.names,
+    )
+  }
+  return ''
+}
+
+function groupHeading(
+  by: GroupBy,
+  key: string,
+  labels: {
+    empty: string
+    problems: string
+    update: string
+    enabled: string
+    disabled: string
+    smapi: string
+  },
+): string {
+  if (by === 'status') {
+    if (key === 'problems') {
+      return labels.problems
+    }
+    if (key === 'update') {
+      return labels.update
+    }
+    if (key === 'enabled') {
+      return labels.enabled
+    }
+    return labels.disabled
+  }
+  if (by === 'framework' && key === SMAPI_MODS_GROUP) {
+    return labels.smapi
+  }
+  return key || labels.empty
+}
+
+function orderedGroupKeys(by: GroupBy, keys: readonly string[]): string[] {
+  if (by === 'status') {
+    return STATUS_GROUP_ORDER.filter((k) => keys.includes(k))
+  }
+  const named = keys
+    .filter((k) => k !== '' && k !== SMAPI_MODS_GROUP)
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }))
+  const tail: string[] = []
+  if (keys.includes(SMAPI_MODS_GROUP)) {
+    tail.push(SMAPI_MODS_GROUP)
+  }
+  if (keys.includes('')) {
+    tail.push('')
+  }
+  return [...named, ...tail]
+}
+
+export type { Group, GroupBy, StatusGroup }
 export {
   emptyGroupLabel,
+  firstRequiredNeed,
   firstTag,
+  frameworkGroupKey,
   GROUP_BY_IDS,
+  groupHeading,
   groupSorted,
+  installedNames,
+  loadCollapsed,
   MAX_ENTRY_NOTE,
   MAX_ENTRY_TAG,
   MAX_ENTRY_TAGS,
+  persistCollapsed,
   profileTags,
+  rowGroupKey,
+  SMAPI_MODS_GROUP,
+  STATUS_GROUP_ORDER,
   sanitizeListGroupBy,
+  statusGroupKey,
   takeTags,
+  toggleCollapsed,
 }
