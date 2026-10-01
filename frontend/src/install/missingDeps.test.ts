@@ -37,6 +37,9 @@ const absent = (over: Partial<Missing> = {}): Missing => ({
   reason: 'absent',
   installedVersion: '',
   where: ref(),
+  listed: false,
+  note: '',
+  optional: false,
   ...over,
 })
 
@@ -101,11 +104,31 @@ test('offersFor uses Problems absent rows for the installed dependents', () => {
           uniqueId: 'Off.Mod',
           reason: 'disabled',
           where: null,
+          listed: false,
+          note: '',
+          optional: false,
         }),
         absent({ dependentId: 'Other.Mod', dependentName: 'Other', uniqueId: 'Skip.Me' }),
       ]),
     ),
   ).toEqual([{ dependentName: 'A Mod', missing: [absent()] }])
+})
+
+test('offersFor excludes optional listed requirements', () => {
+  expect(
+    offersFor(
+      ['A.Mod'],
+      result([
+        absent({ listed: true, note: 'For a variant', optional: true }),
+        absent({ listed: true, optional: false, uniqueId: 'Required.Listed' }),
+      ]),
+    ),
+  ).toEqual([
+    {
+      dependentName: 'A Mod',
+      missing: [absent({ listed: true, optional: false, uniqueId: 'Required.Listed' })],
+    },
+  ])
 })
 
 test('Add them queues through the same Want the Problems bar uses', () => {

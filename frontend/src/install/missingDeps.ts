@@ -85,7 +85,11 @@ function offersFor(dependentIds: readonly string[], result: Result | null): Miss
   }
   const groups = new Map<string, MissingOffer>()
   for (const missing of result?.missing ?? []) {
-    if (missing.reason === 'absent' && dependentIds.some((id) => sameId(id, missing.dependentId))) {
+    if (
+      missing.reason === 'absent' &&
+      !(missing.listed && missing.optional) &&
+      dependentIds.some((id) => sameId(id, missing.dependentId))
+    ) {
       const key = missing.dependentId.toLowerCase()
       const group = groups.get(key)
       if (group) {

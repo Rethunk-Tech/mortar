@@ -125,6 +125,30 @@ function RunErrorButtons({
   )
 }
 
+function ListedButtons({
+  missing,
+  dismiss,
+}: {
+  missing: Extract<Problem, { kind: 'missing' }>['missing']
+  dismiss: (uniqueId: string) => Promise<void>
+}) {
+  const { t } = useLingui()
+  return (
+    <>
+      {missing.where ? <WhereButtons where={missing.where} addLabel={t`Add`} /> : null}
+      <Button
+        size="small"
+        color="info"
+        variant="outlined"
+        onClick={() => dismiss(missing.uniqueId).catch(reportUnexpected)}
+        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+      >
+        {t`Dismiss`}
+      </Button>
+    </>
+  )
+}
+
 function FixButton({ problem }: { problem: Problem }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
@@ -132,6 +156,7 @@ function FixButton({ problem }: { problem: Problem }) {
   const resolve = useMods((s) => s.resolve)
   const dismissAsset = useMods((s) => s.dismissAsset)
   const dismissAbandoned = useMods((s) => s.dismissAbandoned)
+  const dismissListed = useMods((s) => s.dismissListed)
   const locked = useLocked()
   const button = (label: string, onClick: () => void) => (
     <Button
@@ -219,6 +244,9 @@ function FixButton({ problem }: { problem: Problem }) {
     )
   }
   const { missing } = problem
+  if (missing.listed) {
+    return <ListedButtons missing={missing} dismiss={dismissListed} />
+  }
   if (missing.reason === 'disabled') {
     const off = mods.find((m) => !m.enabled && sameId(m.uniqueId, missing.uniqueId))
     return off ? button(t`Switch on`, () => setEnabled(off, true).catch(reportUnexpected)) : null
@@ -383,6 +411,7 @@ export function ProblemBar() {
           const info =
             (p.kind === 'asset' && p.asset.kind === 'edit') ||
             (p.kind === 'broken' && p.broken.status === 'abandoned') ||
+            (p.kind === 'missing' && p.missing.listed) ||
             (p.kind === 'runError' && !p.runError.severe)
           return (
             <Box

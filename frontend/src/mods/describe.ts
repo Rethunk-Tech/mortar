@@ -60,7 +60,15 @@ export function useDescribe(): Describe {
 
   const describeMissing = (p: Extract<Problem, { kind: 'missing' }>): string => {
     const { dependentName, minimumVersion, installedVersion, reason } = p.missing
-    const dep = nameOf(p.missing.uniqueId)
+    const dep = p.missing.listed
+      ? p.missing.where?.pageName?.trim() || nameOf(p.missing.uniqueId)
+      : nameOf(p.missing.uniqueId)
+    if (p.missing.listed) {
+      const note = p.missing.note.trim()
+      return note === ''
+        ? t`${dependentName}'s Nexus page lists ${dep} as a requirement.`
+        : t`${dependentName}'s Nexus page lists ${dep} as a requirement: ${note}`
+    }
     if (reason === 'disabled') {
       return t`${dependentName} needs ${dep}, which is switched off.`
     }
