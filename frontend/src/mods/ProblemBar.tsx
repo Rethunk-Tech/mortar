@@ -2,8 +2,11 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
 import { TriangleAlert } from 'lucide-react'
-import { useEffect } from 'react'
-import type { Result } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import { type ReactNode, useEffect } from 'react'
+import type {
+  Ref,
+  Result,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import type { Drift } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   AdoptDriftFolder,
@@ -33,67 +36,14 @@ type Row = Problem | { kind: 'drift'; drift: Drift }
 const driftRows = (result: Result | null): Row[] =>
   (result?.drift ?? []).map((drift) => ({ kind: 'drift' as const, drift }))
 
-function FixButton({ problem }: { problem: Problem }) {
+function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string }) {
   const { t } = useLingui()
-  const mods = useMods((s) => s.mods)
-  const setEnabled = useMods((s) => s.setEnabled)
-  const resolve = useMods((s) => s.resolve)
-  const dismissAsset = useMods((s) => s.dismissAsset)
   const queue = useQueue((s) => s.state.items)
   const profileId = useProfiles((s) => s.openId)
-  const locked = useLocked()
-  const button = (label: string, onClick: () => void) => (
-    <Button
-      size="small"
-      variant="contained"
-      color="warning"
-      disabled={locked}
-      onClick={onClick}
-      sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
-    >
-      {label}
-    </Button>
-  )
-  if (problem.kind === 'duplicate') {
-    return button(t`Resolve`, () => resolve(problem.duplicate))
-  }
-  if (problem.kind === 'broken') {
-    const { broken } = problem
-    const mod = mods.find((m) => m.key === broken.key && sameId(m.uniqueId, broken.uniqueId))
-    return mod ? button(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected)) : null
-  }
-  if (problem.kind === 'asset') {
-    const key = problem.asset.keys?.[0]
-    const id = problem.asset.packIds?.[0]
-    const mod = mods.find((m) => m.key === key && (id === undefined || sameId(m.uniqueId, id)))
-    const dismiss = dismissAsset
-    return (
-      <>
-        {mod ? button(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected)) : null}
-        {problem.asset.kind === 'edit' ? (
-          <Button
-            size="small"
-            color="info"
-            variant="outlined"
-            onClick={() => dismiss(problem.asset).catch(reportUnexpected)}
-            sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
-          >
-            {t`Dismiss`}
-          </Button>
-        ) : null}
-      </>
-    )
-  }
-  const { missing } = problem
-  if (missing.reason === 'disabled') {
-    const off = mods.find((m) => !m.enabled && sameId(m.uniqueId, missing.uniqueId))
-    return off ? button(t`Switch on`, () => setEnabled(off, true).catch(reportUnexpected)) : null
-  }
-  const { where } = missing
-  if (!where?.url) {
+  const { url } = where
+  if (!url) {
     return null
   }
-  const { url } = where
   const open = (
     <Button
       size="small"
@@ -133,10 +83,112 @@ function FixButton({ problem }: { problem: Problem }) {
         onClick={() => download([want]).catch(reportUnexpected)}
         sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
       >
-        {queued ? t`Queued` : t`Add`}
+        {queued ? t`Queued` : (addLabel ?? '')}
       </Button>
     </>
   )
+}
+
+function FixButton({ problem }: { problem: Problem }) {
+  const { t } = useLingui()
+  const mods = useMods((s) => s.mods)
+  const setEnabled = useMods((s) => s.setEnabled)
+  const resolve = useMods((s) => s.resolve)
+  const dismissAsset = useMods((s) => s.dismissAsset)
+  const dismissAbandoned = useMods((s) => s.dismissAbandoned)
+  const locked = useLocked()
+  const button = (label: string, onClick: () => void) => (
+    <Button
+      size="small"
+      variant="contained"
+      color="warning"
+      disabled={locked}
+      onClick={onClick}
+      sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+    >
+      {label}
+    </Button>
+  )
+  if (problem.kind === 'duplicate') {
+    return button(t`Resolve`, () => resolve(problem.duplicate))
+  }
+  if (problem.kind === 'broken') {
+    const { broken } = problem
+    const mod = mods.find((m) => m.key === broken.key && sameId(m.uniqueId, broken.uniqueId))
+    const where = broken.replacement
+    const replaceName =
+      where?.pageName?.trim() ||
+      where?.github?.trim() ||
+      where?.fileName?.trim() ||
+      (where && where.pageId > 0 ? String(where.pageId) : '')
+    let replace: ReactNode = null
+    if (where && replaceName !== '') {
+      replace = <WhereButtons where={where} addLabel={t`Replace with ${replaceName}`} />
+    } else if (where?.url) {
+      replace = (
+        <Button
+          size="small"
+          color="warning"
+          variant="outlined"
+          onClick={() => Browser.OpenURL(where.url).catch(reportUnexpected)}
+          sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        >
+          {t`Open page`}
+        </Button>
+      )
+    }
+    const dismiss =
+      broken.status === 'abandoned' ? (
+        <Button
+          size="small"
+          color="info"
+          variant="outlined"
+          onClick={() => dismissAbandoned(broken.uniqueId).catch(reportUnexpected)}
+          sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        >
+          {t`Dismiss`}
+        </Button>
+      ) : null
+    return (
+      <>
+        {mod ? button(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected)) : null}
+        {replace}
+        {dismiss}
+      </>
+    )
+  }
+  if (problem.kind === 'asset') {
+    const key = problem.asset.keys?.[0]
+    const id = problem.asset.packIds?.[0]
+    const mod = mods.find((m) => m.key === key && (id === undefined || sameId(m.uniqueId, id)))
+    const dismiss = dismissAsset
+    return (
+      <>
+        {mod ? button(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected)) : null}
+        {problem.asset.kind === 'edit' ? (
+          <Button
+            size="small"
+            color="info"
+            variant="outlined"
+            onClick={() => dismiss(problem.asset).catch(reportUnexpected)}
+            sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
+            {t`Dismiss`}
+          </Button>
+        ) : null}
+      </>
+    )
+  }
+  const { missing } = problem
+  if (missing.reason === 'disabled') {
+    const off = mods.find((m) => !m.enabled && sameId(m.uniqueId, missing.uniqueId))
+    return off ? button(t`Switch on`, () => setEnabled(off, true).catch(reportUnexpected)) : null
+  }
+  const { where } = missing
+  if (!where) {
+    return null
+  }
+  return <WhereButtons where={where} addLabel={t`Add`} />
 }
 
 function DriftButtons({ drift }: { drift: Drift }) {
@@ -289,7 +341,9 @@ export function ProblemBar() {
         }}
       >
         {problems.map((p) => {
-          const info = p.kind === 'asset' && p.asset.kind === 'edit'
+          const info =
+            (p.kind === 'asset' && p.asset.kind === 'edit') ||
+            (p.kind === 'broken' && p.broken.status === 'abandoned')
           return (
             <Box
               key={JSON.stringify(p)}

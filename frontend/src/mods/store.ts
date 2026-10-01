@@ -6,6 +6,7 @@ import type {
   Result,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import {
+  DismissAbandonedMod,
   DismissAssetConflict,
   Pages,
   Problems,
@@ -174,6 +175,23 @@ async function dropMods(get: () => { load: () => Promise<void> }, mods: Mod[]) {
   useSelection.getState().clear()
 }
 
+async function dismissAbandonedMod(
+  get: () => { loadProblems: () => Promise<void> },
+  uniqueId: string,
+) {
+  const target = open()
+  if (!target) {
+    return
+  }
+  try {
+    await DismissAbandonedMod(target.game, target.id, uniqueId)
+  } catch (e) {
+    fail(i18n._(msg`Could not dismiss the warning`))(e)
+    return
+  }
+  await get().loadProblems()
+}
+
 async function dismissAssetConflict(
   get: () => { loadProblems: () => Promise<void> },
   conflict: AssetConflict,
@@ -230,6 +248,7 @@ export const useMods = create<{
   resolve: (dup: Duplicate | null) => void
   keepCopy: (dup: Duplicate, keepKey: string) => Promise<void>
   dismissAsset: (conflict: AssetConflict) => Promise<void>
+  dismissAbandoned: (uniqueId: string) => Promise<void>
 }>((set, get) => ({
   mods: [],
   loaded: false,
@@ -362,6 +381,7 @@ export const useMods = create<{
     await get().load()
   },
   dismissAsset: (conflict) => dismissAssetConflict(get, conflict),
+  dismissAbandoned: (uniqueId) => dismissAbandonedMod(get, uniqueId),
 }))
 
 export type { View }

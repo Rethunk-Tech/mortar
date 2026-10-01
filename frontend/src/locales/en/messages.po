@@ -105,6 +105,10 @@ msgstr "Stop the game to change mods."
 msgid "Mortar takes Stardew Valley links only."
 msgstr "Mortar takes Stardew Valley links only."
 
+#: src/mods/describe.ts:40
+msgid "{name} broke in {brokeIn}."
+msgstr "{name} broke in {brokeIn}."
+
 #: src/share/ShareDialog.tsx:379
 msgid "Could not save the file"
 msgstr "Could not save the file"
@@ -436,6 +440,10 @@ msgstr "Show files"
 msgid "More play options"
 msgstr "More play options"
 
+#: src/mods/describe.ts:37
+msgid "{name} is marked obsolete and may not work with this game version."
+msgstr "{name} is marked obsolete and may not work with this game version."
+
 #: src/queue/QueueHistory.tsx:71
 msgid "All outcomes"
 msgstr "All outcomes"
@@ -443,6 +451,10 @@ msgstr "All outcomes"
 #: src/settings/sections/StreamOverlay.tsx:111
 msgid "Fishing skill"
 msgstr "Fishing skill"
+
+#: src/mods/describe.ts:50
+msgid "{who} all edit {target}; the result depends on order."
+msgstr "{who} all edit {target}; the result depends on order."
 
 #: src/share/ImportDialog.tsx:56
 msgid "Import profile"
@@ -608,6 +620,10 @@ msgstr "Got it"
 #: src/queue/QueueHistory.tsx:32
 msgid "Failed"
 msgstr "Failed"
+
+#: src/mods/describe.ts:41
+msgid "{name} is marked broken for this game version."
+msgstr "{name} is marked broken for this game version."
 
 #: src/profiles/EditProfileDialog.tsx:139
 msgid "{pickedName} is used after Save."
@@ -1009,6 +1025,10 @@ msgstr "And {0} more on the Nexus page"
 msgid "Game settings"
 msgstr "Game settings"
 
+#: src/mods/describe.ts:32
+msgid "{name} is marked abandoned and may no longer be maintained."
+msgstr "{name} is marked abandoned and may no longer be maintained."
+
 #: src/game/SupportButton.tsx:45
 msgid "Report a Mortar bug"
 msgstr "Report a Mortar bug"
@@ -1263,6 +1283,10 @@ msgstr "Standard farm"
 msgid "{field}: {from} → {to}"
 msgstr "{field}: {from} → {to}"
 
+#: src/mods/describe.ts:31
+msgid "{name} is abandoned: {summary}"
+msgstr "{name} is abandoned: {summary}"
+
 #: src/profiles/EditProfileDialog.tsx:145
 #: src/profiles/EditProfileDialog.tsx:154
 #: src/settings/sections/Appearance.tsx:190
@@ -1477,6 +1501,10 @@ msgstr "{name} has no file Mortar can use in place of the one shared"
 msgid "Duplicate"
 msgstr "Duplicate"
 
+#: src/mods/describe.ts:60
+msgid "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
+msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
+
 #: src/settings/sections/Updates.tsx:231
 msgid "Include beta releases"
 msgstr "Include beta releases"
@@ -1576,6 +1604,10 @@ msgstr "Could not read this Mortar build's version: {failed}"
 #: src/settings/sections/GameSettings.tsx:289
 msgid "SMAPI is not installed"
 msgstr "SMAPI is not installed"
+
+#: src/mods/describe.ts:62
+msgid "{dependentName} needs {dep}, which this profile lacks."
+msgstr "{dependentName} needs {dep}, which this profile lacks."
 
 #: src/share/ImportInput.tsx:29
 msgid "Choose a file…"
@@ -1712,6 +1744,11 @@ msgstr "Add a value"
 #: src/mods/store.ts:220
 msgid "Could not remove {0}"
 msgstr "Could not remove {0}"
+
+#. placeholder {0}: p.duplicate.name
+#: src/mods/describe.ts:68
+msgid "{0} is installed twice, and SMAPI loads only one."
+msgstr "{0} is installed twice, and SMAPI loads only one."
 
 #: src/profiles/EditProfileDialog.tsx:288
 msgid "Launch options"
@@ -1891,6 +1928,7 @@ msgid "Could not save the open profile"
 msgstr "Could not save the open profile"
 
 #. placeholder {0}: d.key
+#: src/mods/describe.ts:15
 #: src/mods/ProblemBar.tsx:304
 msgid "{0} was removed from this profile's mods folder."
 msgstr "{0} was removed from this profile's mods folder."
@@ -2743,6 +2781,7 @@ msgid "Checked with SMAPI's update service · just now"
 msgstr "Checked with SMAPI's update service · just now"
 
 #. placeholder {0}: d.folder
+#: src/mods/describe.ts:12
 #: src/mods/ProblemBar.tsx:301
 msgid "{0} is in this profile's mods folder and is not an installed entry."
 msgstr "{0} is in this profile's mods folder and is not an installed entry."
@@ -2890,6 +2929,10 @@ msgstr "Mortar can start SMAPI directly instead. The Steam overlay and Steam's p
 #: src/mods/NexusAccountActions.tsx:99
 msgid "Endorse"
 msgstr "Endorse"
+
+#: src/mods/describe.ts:48
+msgid "{who} all load {target}; only one wins."
+msgstr "{who} all load {target}; only one wins."
 
 #: src/share/ImportPreview.tsx:47
 msgid "Check later"
@@ -3435,6 +3478,10 @@ msgstr "Luck skill"
 msgid "Import from…"
 msgstr "Import from…"
 
+#: src/mods/describe.ts:57
+msgid "{dependentName} needs {dep}, which is switched off."
+msgstr "{dependentName} needs {dep}, which is switched off."
+
 #. placeholder {0}: done.length
 #. placeholder {1}: names(done)
 #: src/queue/QueueBody.tsx:425
@@ -3782,6 +3829,10 @@ msgstr "{counts} · {0} MB"
 #: src/share/SharedMods.tsx:28
 msgid "Its source is not known."
 msgstr "Its source is not known."
+
+#: src/mods/describe.ts:36
+msgid "{name} is obsolete: {summary}"
+msgstr "{name} is obsolete: {summary}"
 
 #: src/mods/ListColumnMenu.tsx:32
 #: src/mods/Toolbar.tsx:102
@@ -4426,6 +4477,7 @@ msgid "{0, plural, one {# download needs your decision} other {# downloads need 
 msgstr "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 
 #. placeholder {0}: d.key
+#: src/mods/describe.ts:17
 #: src/mods/ProblemBar.tsx:306
 msgid "{0} was changed outside Mortar."
 msgstr "{0} was changed outside Mortar."
