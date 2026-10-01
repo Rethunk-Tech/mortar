@@ -30,7 +30,7 @@ func TestCheckUpdates(t *testing.T) {
 		"me.b":   {Known: true},
 	}
 	env := Environment{GameVersion: "1.6.15", APIVersion: "4.3.2", Platform: "Linux"}
-	got := CheckUpdates(context.Background(), rm, env, []Installed{bundled, mod("k1", "me.a", "1.0.0", true), mod("k3", "me.b", "1.0.0", true), off})
+	got := CheckUpdates(context.Background(), rm, env, []Installed{bundled, mod("k1", "me.a", "1.0.0", true), mod("k3", "me.b", "1.0.0", true), off}, false)
 	want := []Update{
 		{Key: "k1", UniqueID: "me.a", Name: "me.a", Installed: "1.0.0", Version: "2.0.0", URL: "https://example.test/a"},
 		{Key: "k2", UniqueID: "me.off", Name: "me.off", Installed: "1.0.0", Version: "1.1.0", URL: "https://example.test/off"},
@@ -52,7 +52,7 @@ func TestCheckUpdatesNamesTheGitHubRepo(t *testing.T) {
 		"me.a": {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://github.com/me/a/releases/tag/2.0.0"}},
 		"me.b": {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://www.nexusmods.com/stardewvalley/mods/9"}},
 	}}
-	got := CheckUpdates(context.Background(), rm, Environment{}, []Installed{gh, elsewhere}).Updates
+	got := CheckUpdates(context.Background(), rm, Environment{}, []Installed{gh, elsewhere}, false).Updates
 	if len(got) != 2 || got[0].GitHubRepo != "me/a" || got[0].NexusID != 5 || got[1].GitHubRepo != "" {
 		t.Fatalf("got %+v", got)
 	}
@@ -65,7 +65,7 @@ func TestCheckUpdatesIncludesUnofficialWithoutReplacingSuggested(t *testing.T) {
 			Unofficial: &meta.Update{Version: "2.1.0-unofficial.1-x", URL: "https://smapi.io/u"},
 		},
 	}}
-	got := CheckUpdates(context.Background(), rm, Environment{}, []Installed{mod("k1", "me.a", "1.0.0", true)}).Updates
+	got := CheckUpdates(context.Background(), rm, Environment{}, []Installed{mod("k1", "me.a", "1.0.0", true)}, false).Updates
 	if len(got) != 2 || got[0].Unofficial || got[0].Version != "2.0.0" || !got[1].Unofficial || got[1].Version != "2.1.0-unofficial.1-x" {
 		t.Fatalf("got %+v", got)
 	}
@@ -83,20 +83,56 @@ func TestHideHeldDropsPinnedAndSkipped(t *testing.T) {
 		{Key: "skip", SkipVersion: "2.0.0"},
 		{Key: "later", SkipVersion: "2.0.0"},
 		{Key: "open"},
-	})
+	}, true)
 	if len(got.Updates) != 2 || got.Updates[0].Key != "later" || got.Updates[1].Key != "open" {
 		t.Fatalf("got %+v", got.Updates)
 	}
 }
 
 func TestCheckUpdatesUnknownNeverBlocks(t *testing.T) {
-	got := CheckUpdates(context.Background(), fakeMeta{updatesOff: true}, Environment{}, []Installed{mod("k1", "me.a", "1.0.0", true)})
+	got := CheckUpdates(context.Background(), fakeMeta{updatesOff: true}, Environment{}, []Installed{mod("k1", "me.a", "1.0.0", true)}, false)
 	if !got.Unknown || len(got.Updates) != 0 {
 		t.Fatalf("got %+v", got)
 	}
-	none := CheckUpdates(context.Background(), fakeMeta{}, Environment{}, nil)
+	none := CheckUpdates(context.Background(), fakeMeta{}, Environment{}, nil, false)
 	if none.Unknown || none.Updates == nil {
 		t.Fatalf("empty = %+v", none)
+	}
+}
+
+func TestCheckUpdatesEnabledOnlySkipsDisabled(t *testing.T) {
+	rm := &recordingMeta{}
+	rm.compat = map[string]meta.UpdateResult{
+		"me.on":  {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://example.test/on"}},
+		"me.off": {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://example.test/off"}},
+	}
+	mods := []Installed{
+		mod("k1", "me.on", "1.0.0", true),
+		mod("k2", "me.off", "1.0.0", false),
+	}
+	got := CheckUpdates(context.Background(), rm, Environment{}, mods, true)
+	if len(rm.got.Mods) != 1 || rm.got.Mods[0].ID != "me.on" {
+		t.Fatalf("asked %+v", rm.got)
+	}
+	if len(got.Updates) != 1 || got.Updates[0].UniqueID != "me.on" {
+		t.Fatalf("got %+v", got)
+	}
+}
+
+func TestHideHeldDropsPrereleaseUnlessInstalledIsPrerelease(t *testing.T) {
+	r := UpdatesResult{Updates: []Update{
+		{Key: "stable", Installed: "1.0.0", Version: "2.0.0-beta", URL: "https://example.test/beta"},
+		{Key: "beta", Installed: "1.0.0-beta", Version: "2.0.0-beta", URL: "https://example.test/beta2"},
+		{Key: "release", Installed: "1.0.0", Version: "2.0.0", URL: "https://example.test/stable"},
+	}}
+	mods := []Installed{{Key: "stable"}, {Key: "beta"}, {Key: "release"}}
+	got := HideHeld(r, mods, false)
+	if len(got.Updates) != 2 || got.Updates[0].Key != "beta" || got.Updates[1].Key != "release" {
+		t.Fatalf("got %+v", got.Updates)
+	}
+	gotAll := HideHeld(r, mods, true)
+	if len(gotAll.Updates) != 3 {
+		t.Fatalf("include prerelease = %+v", gotAll.Updates)
 	}
 }
 

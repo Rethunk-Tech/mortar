@@ -2,6 +2,7 @@ package problems
 
 import (
 	"context"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -14,6 +15,12 @@ import (
 // updatesTTL bounds how long a profile's updates are served without asking again; meta.Client caches for the
 // same hour, so a shorter one would only repeat its answers.
 const updatesTTL = time.Hour
+
+var semverPrerelease = regexp.MustCompile(`^[vV]?(\d+)\.(\d+)(?:\.(\d+))?(?:\.(\d+))?-([0-9A-Za-z].*)$`)
+
+func hasPrerelease(version string) bool {
+	return semverPrerelease.MatchString(strings.TrimSpace(version))
+}
 
 // Update is a newer version SMAPI's API suggests for an installed mod. URL is the page to get it from, and
 // NexusID that page's Nexus mod ID, 0 when the mod is not on Nexus. GitHubRepo is "owner/repo" when the mod's
@@ -39,12 +46,15 @@ type UpdatesResult struct {
 
 // CheckUpdates asks SMAPI's API about every user mod (the bundled ones update with SMAPI). It never returns
 // an error: a failed lookup leaves Unknown set.
-func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed) UpdatesResult {
+func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed, enabledOnly bool) UpdatesResult {
 	r := UpdatesResult{Updates: []Update{}}
 	req := meta.UpdateRequest{APIVersion: env.APIVersion, GameVersion: env.GameVersion, Platform: env.Platform}
 	var asked []Installed
 	for _, x := range mods {
 		if x.SourceKind == profile.SourceSMAPI || x.SourceKind == profile.SourceMortar {
+			continue
+		}
+		if enabledOnly && !x.Enabled {
 			continue
 		}
 		asked = append(asked, x)
@@ -85,8 +95,9 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 	return r
 }
 
-// HideHeld drops updates the profile has pinned or skipped for that exact newer version.
-func HideHeld(r UpdatesResult, mods []Installed) UpdatesResult {
+// HideHeld drops updates the profile has pinned or skipped for that exact newer version, and prerelease
+// versions when includePrerelease is false unless the installed version is itself a prerelease.
+func HideHeld(r UpdatesResult, mods []Installed, includePrerelease bool) UpdatesResult {
 	byKey := make(map[string]Installed, len(mods))
 	for _, m := range mods {
 		byKey[m.Key] = m
@@ -95,13 +106,20 @@ func HideHeld(r UpdatesResult, mods []Installed) UpdatesResult {
 	for _, u := range r.Updates {
 		m, ok := byKey[u.Key]
 		if !ok {
+			if !includePrerelease && hasPrerelease(u.Version) && !hasPrerelease(u.Installed) {
+				continue
+			}
 			kept = append(kept, u)
 			continue
 		}
 		hold := profile.Entry{Pinned: m.Pinned, SkipVersion: m.SkipVersion, IgnoreUpdates: m.IgnoreUpdates}
-		if hold.OffersUpdate(u.Version) {
-			kept = append(kept, u)
+		if !hold.OffersUpdate(u.Version) {
+			continue
 		}
+		if !includePrerelease && hasPrerelease(u.Version) && !hasPrerelease(u.Installed) {
+			continue
+		}
+		kept = append(kept, u)
 	}
 	r.Updates = kept
 	return r

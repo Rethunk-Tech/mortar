@@ -190,15 +190,20 @@ func (s *Service) Updates(ctx context.Context, gameID, id string) (UpdatesResult
 	c, ok := s.updates[key]
 	s.mu.Unlock()
 	if ok && c.fingerprint == fp && time.Since(c.at) < updatesTTL {
-		return HideHeld(c.result, mods), nil
+		return hideUpdates(c.result, mods, s.settings.Get()), nil
 	}
-	r := CheckUpdates(ctx, s.meta, env, mods)
+	set := s.settings.Get()
+	r := CheckUpdates(ctx, s.meta, env, mods, set.CheckOnlyEnabledMods)
 	if !r.Unknown {
 		s.mu.Lock()
 		s.updates[key] = cachedUpdates{fp, time.Now(), r}
 		s.mu.Unlock()
 	}
-	return HideHeld(r, mods), nil
+	return hideUpdates(r, mods, set), nil
+}
+
+func hideUpdates(r UpdatesResult, mods []Installed, set settings.Settings) UpdatesResult {
+	return HideHeld(r, mods, set.IncludePrereleaseModVersions)
 }
 
 // UpdateWarning is the Play dialog after a game update: the last launched Stardew version versus the installed one.
