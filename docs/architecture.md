@@ -102,6 +102,7 @@ Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_
 - **Update or roll back** an entry: copy the target version from the store into a fresh folder, then carry over what the mod or the user wrote, by comparing three copies of each file: the profile's, the store's copy of the current version, and the target version.
   - A file only the profile's copy has (such as `config.json` or mod data) is carried over.
   - A file the profile changed is carried over when the target version ships it unchanged from the current version. When the target version changed it too, the target's file wins and the profile's copy is kept beside it as `<name>.mortar-old`.
+  - When the target version's manifest sets `DeleteOldVersion` (Stardrop's name, read case-insensitively like other manifest keys), carry-over applies only to user-written files such as `config.json`, not to other files the profile changed from the old version.
   - Keep the leading dot on disabled folders; then swap `key` and `previousKey` and remove the old folder.
   - Before updating a profile, zip the Saves folder into `backups/`: NOMAD's 803 MB of saves zip to 20 MB in 3.0 s, so five backups cost about 100 MB.
 
