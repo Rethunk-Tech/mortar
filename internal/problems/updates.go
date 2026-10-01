@@ -98,7 +98,7 @@ func HideHeld(r UpdatesResult, mods []Installed) UpdatesResult {
 			kept = append(kept, u)
 			continue
 		}
-		hold := profile.Entry{Pinned: m.Pinned, SkipVersion: m.SkipVersion}
+		hold := profile.Entry{Pinned: m.Pinned, SkipVersion: m.SkipVersion, IgnoreUpdates: m.IgnoreUpdates}
 		if hold.OffersUpdate(u.Version) {
 			kept = append(kept, u)
 		}

@@ -83,13 +83,16 @@ type EntryMod struct {
 	Needs    []string `json:"needs,omitempty"`
 	// Optional is the UniqueIDs in Needs whose manifest listed IsRequired as false.
 	Optional []string `json:"optional,omitempty"`
+	// ContentPackFor is the manifest ContentPackFor UniqueID when the mod is a content pack.
+	ContentPackFor string `json:"contentPackFor,omitempty"`
 }
 
 // Entry is one mod archive in a profile. Disabled lists the UniqueIDs switched off.
 type Entry struct {
-	Key         string `json:"key"`
-	PreviousKey string `json:"previousKey"`
-	Source      Source `json:"source"`
+	IgnoreUpdates bool   `json:"ignoreUpdates,omitempty"`
+	Key           string `json:"key"`
+	PreviousKey   string `json:"previousKey"`
+	Source        Source `json:"source"`
 	// PreviousSource is where the PreviousKey version came from, so a roll back restores it with the files.
 	PreviousSource *Source    `json:"previousSource,omitempty"`
 	Mods           []EntryMod `json:"mods"`
