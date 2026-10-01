@@ -72,6 +72,7 @@ func registerEvents() {
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
 	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
 	application.RegisterEvent[sharesvc.Arrival](sharesvc.ArrivedEvent)
+	application.RegisterEvent[launchsvc.NoticeClick](launchsvc.NoticeClickEvent)
 	application.RegisterEvent[updatesvc.Release](updatesvc.StagedEvent)
 }
 
@@ -356,9 +357,13 @@ func run() error {
 	nxmSvc.App = app
 	shareSvc.App = app
 	supportSvc.App = app
-	notifier.OnNotificationResponse(func(notifications.NotificationResult) {
+	notifier.OnNotificationResponse(func(result notifications.NotificationResult) {
 		window.Restore()
 		window.Focus()
+		gameID, profileID := launchsvc.NoticeProfileFromResponse(result.Response.ID, result.Response.UserInfo)
+		if profileID != "" && gameID != "" {
+			app.Event.Emit(launchsvc.NoticeClickEvent, launchsvc.NoticeClick{Game: gameID, Profile: profileID})
+		}
 	})
 
 	window = app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -378,31 +383,82 @@ func run() error {
 	})
 
 	var tray *application.SystemTray
+	var trayMenu *application.Menu
+	refreshTrayMenu := func() {
+		if trayMenu == nil {
+			return
+		}
+		trayMenu.Clear()
+		trayMenu.Add("Show Mortar").OnClick(func(*application.Context) {
+			window.Restore()
+			window.Show().Focus()
+		})
+		st, _ := launches.Status("stardew")
+		running := st.State == launchsvc.Launching || st.State == launchsvc.Running
+		gameName := "Stardew Valley"
+		if g := game.Find("stardew"); g != nil {
+			gameName = g.Name()
+		}
+		if running {
+			trayMenu.Add(gameName + " is running").SetEnabled(false)
+		}
+		recent, _ := launches.RecentLaunches("stardew", 3)
+		for _, row := range recent {
+			item := trayMenu.Add("Play " + row.Name)
+			if running {
+				item.SetEnabled(false)
+			} else {
+				profileID := row.ProfileID
+				item.OnClick(func(*application.Context) {
+					_ = launches.Start("stardew", profileID, false)
+				})
+			}
+		}
+		trayMenu.AddSeparator()
+		trayMenu.Add("Quit").OnClick(func(*application.Context) {
+			app.Quit()
+		})
+		trayMenu.Update()
+	}
 	syncTray := func() {
 		if !store.Get().KeepInTray {
 			if tray != nil {
 				tray.Destroy()
 				tray = nil
+				trayMenu = nil
 			}
 			return
 		}
-		if tray != nil {
-			return
+		if tray == nil {
+			tray = app.SystemTray.New().SetIcon(appIcon)
+			trayMenu = app.NewMenu()
+			tray.SetMenu(trayMenu)
+			tray.OnClick(func() {
+				window.Restore()
+				window.Show().Focus()
+			})
+			launches.NotifyRunEnd = func(n launchsvc.RunEndNotice) {
+				id := fmt.Sprintf("run-end-%s-%d", n.Profile, time.Now().UnixNano())
+				opts := notifications.NotificationOptions{
+					ID:    id,
+					Title: n.Title,
+					Body:  n.Body,
+					Data:  map[string]any{"game": n.Game, "profile": n.Profile},
+				}
+				if icon := nxmSvc.NotificationIcon(); icon != "" {
+					opts.Attachments = []notifications.NotificationAttachment{
+						{ID: "icon", Path: icon, Type: "appLogoOverride"},
+					}
+				}
+				if err := notifier.SendNotification(opts); err != nil {
+					log.Printf("run-end notification: %v", err)
+				}
+			}
+			app.Event.On(launchsvc.StateEvent, func(*application.CustomEvent) {
+				refreshTrayMenu()
+			})
 		}
-		tray = app.SystemTray.New().SetIcon(appIcon)
-		menu := app.NewMenu()
-		menu.Add("Show Mortar").OnClick(func(*application.Context) {
-			window.Restore()
-			window.Show().Focus()
-		})
-		menu.Add("Quit").OnClick(func(*application.Context) {
-			app.Quit()
-		})
-		tray.SetMenu(menu)
-		tray.OnClick(func() {
-			window.Restore()
-			window.Show().Focus()
-		})
+		refreshTrayMenu()
 	}
 	window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
 		if !store.Get().KeepInTray {

@@ -15,6 +15,7 @@ import { initSettings } from './settings/store.ts'
 import { initShare } from './share/arrivals.ts'
 import { Themed } from './Themed.tsx'
 import { reportUnexpected } from './toasts/report.ts'
+import { initTrayNoticeClick } from './tray/noticeClick.ts'
 import { initMortarUpdateBackground } from './updates/background.ts'
 import './theme/fonts.ts'
 
@@ -23,6 +24,7 @@ initMortarUpdateBackground()
 initNexus().catch(reportUnexpected)
 initNexusSeen().catch(reportUnexpected)
 initLaunch()
+initTrayNoticeClick()
 initLoader()
 initNxm().catch(reportUnexpected)
 initQueue().catch(reportUnexpected)
