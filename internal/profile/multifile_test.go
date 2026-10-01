@@ -94,14 +94,32 @@ func TestAddUpdateRemoveMultiFileEntry(t *testing.T) {
 		t.Fatalf("extras after primary update: %v", err)
 	}
 
-	if _, err := e.RemoveEntry("stardew", p.ID, store.NexusKey(7, 3)); err != nil {
+	writeFile(t, filepath.Join(e.mods(p.ID), store.NexusKey(7, 3), "extra-new", "C"), "config.json", "extra-save")
+	got, err = e.RollBack("stardew", p.ID, store.NexusKey(7, 3))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Entries[0].Key != entryKey || !slices.Equal(got.Entries[0].ExtraStoreKeys, []string{"extra-new"}) {
+		t.Fatalf("rollback entry: %+v", got.Entries[0])
+	}
+	if !hasMod(got.Entries[0], "X.A") || !hasMod(got.Entries[0], "X.C") {
+		t.Fatalf("rollback mods: %+v", got.Entries[0].Mods)
+	}
+	if b := read(t, filepath.Join(e.mods(p.ID), entryKey, "extra-new", "C", "config.json")); b != "extra-save" {
+		t.Fatalf("extra carry-over after rollback = %q", b)
+	}
+	if _, err := os.Stat(filepath.Join(e.mods(p.ID), entryKey, "A", "manifest.json")); err != nil {
+		t.Fatalf("primary after rollback: %v", err)
+	}
+
+	if _, err := e.RemoveEntry("stardew", p.ID, entryKey); err != nil {
 		t.Fatal(err)
 	}
 	left, err := e.read("stardew", p.ID)
 	if err != nil || len(left.Entries) != 0 {
 		t.Fatalf("remove: %+v %v", left.Entries, err)
 	}
-	if _, err := os.Stat(filepath.Join(e.mods(p.ID), store.NexusKey(7, 3))); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(e.mods(p.ID), entryKey)); !os.IsNotExist(err) {
 		t.Fatalf("entry folder after remove: %v", err)
 	}
 }

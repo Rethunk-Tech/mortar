@@ -89,7 +89,15 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 	if err := s.RecordModsSnapshot(game, id); err != nil {
 		return Profile{}, err
 	}
-	return p, s.items.Touch(game, oldKey, newKey)
+	keys := []string{oldKey, newKey}
+	for _, e := range p.Entries {
+		if e.Key == newKey {
+			keys = append(keys, e.ExtraStoreKeys...)
+			keys = append(keys, e.PreviousExtraStoreKeys...)
+			break
+		}
+	}
+	return p, s.items.Touch(game, keys...)
 }
 
 // swapEntry builds the target version's folder beside mods/, carries over the profile's files, and renames it
@@ -133,6 +141,13 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 	prevSource := e.Source
 	ne := e
 	ne.Key, ne.PreviousKey, ne.PreviousSource = newKey, e.Key, &prevSource
+	if newKey == e.PreviousKey && len(e.PreviousExtraStoreKeys) > 0 {
+		ne.ExtraStoreKeys = slices.Clone(e.PreviousExtraStoreKeys)
+		ne.PreviousExtraStoreKeys = slices.Clone(e.ExtraStoreKeys)
+	} else if len(e.ExtraStoreKeys) > 0 {
+		ne.PreviousExtraStoreKeys = slices.Clone(e.ExtraStoreKeys)
+		ne.ExtraStoreKeys = slices.Clone(e.ExtraStoreKeys)
+	}
 	ne.Mods, ne.Disabled, ne.SkipVersion = entryMods(found), []string{}, ""
 	ne.Tags = slices.Clone(e.Tags)
 	ne.Fomod = cloneFomod(choices)
@@ -152,14 +167,14 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 	if err != nil {
 		return Entry{}, swapped{}, err
 	}
-	sw, err := fillUpdate(tmp, modsDir, oldSrc, newSrc, e, ne, found)
+	sw, err := fillUpdate(s, game, id, tmp, modsDir, oldSrc, newSrc, e, &ne, found)
 	if err != nil {
 		return Entry{}, swapped{}, errors.Join(err, os.RemoveAll(tmp))
 	}
 	return ne, sw, nil
 }
 
-func fillUpdate(tmp, modsDir, oldSrc, newSrc string, e, ne Entry, newManifests []manifest.Mod) (swapped, error) {
+func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry, ne *Entry, newManifests []manifest.Mod) (swapped, error) {
 	if err := datadir.CopyTree(newSrc, tmp); err != nil {
 		return swapped{}, err
 	}
@@ -185,7 +200,21 @@ func fillUpdate(tmp, modsDir, oldSrc, newSrc string, e, ne Entry, newManifests [
 			return swapped{}, err
 		}
 	}
-	final, err := materialize(tmp, ne)
+	if len(ne.ExtraStoreKeys) > 0 {
+		if err := s.fillExtrasUpdate(game, id, modsDir, e.Key, tmp, e, *ne); err != nil {
+			return swapped{}, err
+		}
+		if err := s.refreshEntryMods(ne, tmp); err != nil {
+			return swapped{}, err
+		}
+		ne.Disabled = ne.Disabled[:0]
+		for _, m := range ne.Mods {
+			if hasID(e.Disabled, m.UniqueID) {
+				ne.Disabled = append(ne.Disabled, m.UniqueID)
+			}
+		}
+	}
+	final, err := materialize(tmp, *ne)
 	if err != nil {
 		return swapped{}, err
 	}

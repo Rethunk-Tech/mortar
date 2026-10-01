@@ -113,6 +113,8 @@ type Entry struct {
 	Fomod map[string]map[string][]string `json:"fomod,omitempty"`
 	// ExtraStoreKeys are further store items from the same Nexus page, each copied to mods/<key>/<extra>/.
 	ExtraStoreKeys []string `json:"extraStoreKeys,omitempty"`
+	// PreviousExtraStoreKeys parallels ExtraStoreKeys after an update or roll back, for restoring each extra file.
+	PreviousExtraStoreKeys []string `json:"previousExtraStoreKeys,omitempty"`
 }
 
 // Profile is the on-disk shape of profile.json.

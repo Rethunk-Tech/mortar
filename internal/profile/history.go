@@ -206,6 +206,16 @@ func (s *Store) missingStoreKeys(game string, entries []Entry) ([]string, error)
 		if err := add(e.PreviousKey); err != nil {
 			return nil, err
 		}
+		for _, k := range e.ExtraStoreKeys {
+			if err := add(k); err != nil {
+				return nil, err
+			}
+		}
+		for _, k := range e.PreviousExtraStoreKeys {
+			if err := add(k); err != nil {
+				return nil, err
+			}
+		}
 	}
 	return missing, nil
 }
@@ -279,6 +289,8 @@ func cloneEntries(in []Entry) []Entry {
 		e.Disabled = append([]string(nil), e.Disabled...)
 		e.Tags = append([]string(nil), e.Tags...)
 		e.Fomod = cloneFomod(e.Fomod)
+		e.ExtraStoreKeys = append([]string(nil), e.ExtraStoreKeys...)
+		e.PreviousExtraStoreKeys = append([]string(nil), e.PreviousExtraStoreKeys...)
 		out[i] = e
 	}
 	return out

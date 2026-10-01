@@ -98,11 +98,15 @@ func (s *Store) UpdateExtra(game, id, entryKey, oldExtra, newExtra string) (Prof
 			return &DuplicateError{Key: newExtra, Label: entryLabel(*e)}
 		}
 		entryDir := liveEntryDir(filepath.Join(dir, "mods"), e.Key)
-		if err := os.RemoveAll(filepath.Join(entryDir, oldExtra)); err != nil {
+		e.PreviousExtraStoreKeys = growPreviousExtras(*e)
+		e.PreviousExtraStoreKeys[xi] = oldExtra
+		if err := s.fillOneExtraUpdate(game, p.ID, entryDir, entryDir, oldExtra, newExtra, *e); err != nil {
 			return err
 		}
-		if err := s.copyExtraInto(game, p.ID, entryDir, newExtra, nil); err != nil {
-			return err
+		if oldExtra != newExtra {
+			if err := os.RemoveAll(filepath.Join(entryDir, oldExtra)); err != nil {
+				return err
+			}
 		}
 		e.ExtraStoreKeys[xi] = newExtra
 		return s.refreshEntryMods(e, entryDir)
@@ -116,37 +120,80 @@ func (s *Store) UpdateExtra(game, id, entryKey, oldExtra, newExtra string) (Prof
 	return p, s.items.Touch(game, newExtra)
 }
 
-// UpdateMultiFile swaps the entry's primary store item, then recopies every extra into the new folder.
+// UpdateMultiFile swaps the entry's primary store item and every extra as one unit.
 func (s *Store) UpdateMultiFile(game, id, oldKey, newKey string, source *Source) (Profile, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
-		return Profile{}, err
-	}
-	p, err := s.moveToLocked(game, id, oldKey, newKey, source)
-	if err != nil {
-		return Profile{}, err
-	}
-	key := newKey
-	if key == "" {
-		for _, e := range p.Entries {
-			if e.PreviousKey == oldKey {
-				key = e.Key
-				break
-			}
+	return s.moveTo(game, id, oldKey, newKey, source)
+}
+
+func (s *Store) fillExtrasUpdate(game, id, modsDir, oldEntryKey, tmp string, e, ne Entry) error {
+	oldDir := liveEntryDir(modsDir, oldEntryKey)
+	for i, newKey := range ne.ExtraStoreKeys {
+		oldProfKey := newKey
+		if i < len(e.ExtraStoreKeys) {
+			oldProfKey = e.ExtraStoreKeys[i]
+		}
+		if err := s.fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey, e); err != nil {
+			return err
 		}
 	}
-	p, err = s.updateLocked(game, id, func(p *Profile, dir string) error {
-		ei := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == key })
-		if ei < 0 {
-			return fmt.Errorf("%q is not in this profile", key)
+	for _, stale := range e.ExtraStoreKeys {
+		if slices.Contains(ne.ExtraStoreKeys, stale) {
+			continue
 		}
-		return s.placeExtras(game, p.ID, dir, &p.Entries[ei])
-	})
-	if err != nil {
-		return Profile{}, err
+		_ = os.RemoveAll(filepath.Join(tmp, stale))
 	}
-	return p, s.RecordModsSnapshot(game, id)
+	return nil
+}
+
+func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey string, e Entry) error {
+	extraSrc, extraTmp, err := s.layoutItem(game, id, newKey, nil)
+	if extraTmp != "" {
+		defer func() { _ = os.RemoveAll(extraTmp) }()
+	}
+	if err != nil {
+		return err
+	}
+	found, err := manifest.Scan(extraSrc)
+	if err != nil {
+		return err
+	}
+	if len(found) == 0 {
+		return &NoModError{Key: newKey}
+	}
+	scratch, err := os.MkdirTemp(tmp, tempPrefix)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = os.RemoveAll(scratch) }()
+	if err := datadir.CopyTree(extraSrc, scratch); err != nil {
+		return err
+	}
+	profRoot := filepath.Join(oldDir, oldProfKey)
+	oldPrefix := filepath.ToSlash(oldProfKey) + "/"
+	for _, om := range e.Mods {
+		oldFolder := filepath.ToSlash(om.Folder)
+		if !strings.HasPrefix(oldFolder, oldPrefix) {
+			continue
+		}
+		if !slices.ContainsFunc(found, func(m manifest.Mod) bool { return sameID(m.UniqueID, om.UniqueID) }) {
+			continue
+		}
+		rel := strings.TrimPrefix(oldFolder, oldPrefix)
+		cur := filepath.Join(profRoot, filepath.FromSlash(rel))
+		if !exists(cur) {
+			continue
+		}
+		configOnly := deleteOldVersion(found, om.UniqueID)
+		err = carryOverWalk(cur, filepath.Join(extraSrc, filepath.FromSlash(rel)), filepath.Join(scratch, filepath.FromSlash(rel)), configOnly)
+		if err != nil {
+			return err
+		}
+	}
+	dest := filepath.Join(tmp, newKey)
+	if err := os.RemoveAll(dest); err != nil {
+		return err
+	}
+	return os.Rename(scratch, dest)
 }
 
 // InstallNexusExtra unpacks a Nexus archive into the store and adds it as an extra file of entryKey.
@@ -192,18 +239,12 @@ func (s *Store) InstallNexusExtra(game, id, entryKey, path string, source Source
 	return res, nil
 }
 
-func (s *Store) placeExtras(game, id, dir string, e *Entry) error {
-	if len(e.ExtraStoreKeys) == 0 {
-		return nil
+func growPreviousExtras(e Entry) []string {
+	out := append([]string(nil), e.PreviousExtraStoreKeys...)
+	for len(out) < len(e.ExtraStoreKeys) {
+		out = append(out, e.ExtraStoreKeys[len(out)])
 	}
-	entryDir := liveEntryDir(filepath.Join(dir, "mods"), e.Key)
-	for _, extra := range e.ExtraStoreKeys {
-		_ = os.RemoveAll(filepath.Join(entryDir, extra))
-		if err := s.copyExtraInto(game, id, entryDir, extra, nil); err != nil {
-			return err
-		}
-	}
-	return s.refreshEntryMods(e, entryDir)
+	return out
 }
 
 func (s *Store) copyExtraInto(game, id, entryDir, extraKey string, choices map[string]map[string][]string) error {
