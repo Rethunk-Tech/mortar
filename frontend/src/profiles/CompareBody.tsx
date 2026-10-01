@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Collapse, IconButton, Typography } from '@mui/material'
+import { Box, Collapse, IconButton, Tooltip, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
@@ -32,14 +32,16 @@ function IdenticalList({ rows }: { rows: ComparePair[] }) {
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-        <IconButton
-          size="small"
-          aria-expanded={open}
-          aria-label={t`Identical mods`}
-          onClick={() => setOpen((v) => !v)}
-        >
-          {open ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-        </IconButton>
+        <Tooltip title={t`Identical mods`}>
+          <IconButton
+            size="small"
+            aria-expanded={open}
+            aria-label={t`Identical mods`}
+            onClick={() => setOpen((v) => !v)}
+          >
+            {open ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+          </IconButton>
+        </Tooltip>
         <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'text.secondary' }}>
           {t`Identical (${rows.length})`}
         </Typography>

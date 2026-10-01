@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, IconButton, Typography } from '@mui/material'
+import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material'
 import { RotateCcw, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
@@ -303,12 +303,14 @@ function Failed({ items }: { items: Item[] }) {
               >
                 {t`Retry`}
               </Button>
-              <IconButton
-                aria-label={t`Dismiss ${i.name}`}
-                onClick={() => Dismiss(i.id).catch(reportUnexpected)}
-              >
-                <X size={14} />
-              </IconButton>
+              <Tooltip title={t`Dismiss ${i.name}`}>
+                <IconButton
+                  aria-label={t`Dismiss ${i.name}`}
+                  onClick={() => Dismiss(i.id).catch(reportUnexpected)}
+                >
+                  <X size={14} />
+                </IconButton>
+              </Tooltip>
             </>
           }
         />
@@ -336,12 +338,14 @@ function Active({ item }: { item: Item }) {
         </Box>
       </Box>
       {downloading ? (
-        <IconButton
-          aria-label={t`Cancel ${item.name}`}
-          onClick={() => Cancel(item.id).catch(reportUnexpected)}
-        >
-          <X size={14} />
-        </IconButton>
+        <Tooltip title={t`Cancel ${item.name}`}>
+          <IconButton
+            aria-label={t`Cancel ${item.name}`}
+            onClick={() => Cancel(item.id).catch(reportUnexpected)}
+          >
+            <X size={14} />
+          </IconButton>
+        </Tooltip>
       ) : null}
     </Box>
   )
@@ -411,12 +415,14 @@ export function Body({ items }: { items: Item[] }) {
                 <Typography sx={{ ...detail, color: 'text.secondary' }}>{i.fileName}</Typography>
               }
               actions={
-                <IconButton
-                  aria-label={t`Skip ${i.name}`}
-                  onClick={() => Skip(i.id).catch(reportUnexpected)}
-                >
-                  <X size={14} />
-                </IconButton>
+                <Tooltip title={t`Skip ${i.name}`}>
+                  <IconButton
+                    aria-label={t`Skip ${i.name}`}
+                    onClick={() => Skip(i.id).catch(reportUnexpected)}
+                  >
+                    <X size={14} />
+                  </IconButton>
+                </Tooltip>
               }
             />
           ))}
@@ -441,12 +447,14 @@ export function Body({ items }: { items: Item[] }) {
                 ) : null
               }
               actions={
-                <IconButton
-                  aria-label={t`Dismiss ${i.name}`}
-                  onClick={() => Dismiss(i.id).catch(reportUnexpected)}
-                >
-                  <X size={14} />
-                </IconButton>
+                <Tooltip title={t`Dismiss ${i.name}`}>
+                  <IconButton
+                    aria-label={t`Dismiss ${i.name}`}
+                    onClick={() => Dismiss(i.id).catch(reportUnexpected)}
+                  >
+                    <X size={14} />
+                  </IconButton>
+                </Tooltip>
               }
             />
           ))}
@@ -465,12 +473,14 @@ export function Body({ items }: { items: Item[] }) {
                 </Typography>
               }
               actions={
-                <IconButton
-                  aria-label={t`Dismiss ${i.name}`}
-                  onClick={() => Dismiss(i.id).catch(reportUnexpected)}
-                >
-                  <X size={14} />
-                </IconButton>
+                <Tooltip title={t`Dismiss ${i.name}`}>
+                  <IconButton
+                    aria-label={t`Dismiss ${i.name}`}
+                    onClick={() => Dismiss(i.id).catch(reportUnexpected)}
+                  >
+                    <X size={14} />
+                  </IconButton>
+                </Tooltip>
               }
             />
           ))}

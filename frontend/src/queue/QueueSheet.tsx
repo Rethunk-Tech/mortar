@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Drawer, IconButton, Typography } from '@mui/material'
+import { Box, Button, Drawer, IconButton, Tooltip, Typography } from '@mui/material'
 import { History as HistoryIcon, List, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -81,9 +81,11 @@ function Header({
             {paused ? t`Resume` : t`Pause all`}
           </Button>
         )}
-        <IconButton aria-label={t`Close downloads`} onClick={onClose}>
-          <X size={16} />
-        </IconButton>
+        <Tooltip title={t`Close downloads`}>
+          <IconButton aria-label={t`Close downloads`} onClick={onClose}>
+            <X size={16} />
+          </IconButton>
+        </Tooltip>
       </Box>
       <Box
         role="progressbar"

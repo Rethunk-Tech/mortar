@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
+import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip } from '@mui/material'
 import { Bug, LifeBuoy } from 'lucide-react'
 import { useState } from 'react'
 import { useConsole } from '../console/store.ts'
@@ -12,14 +12,16 @@ export function SupportButton({ game }: { game: string }) {
   const close = () => setAnchor(null)
   return (
     <>
-      <IconButton
-        aria-label={t`Support`}
-        aria-haspopup="menu"
-        onClick={(e) => setAnchor(e.currentTarget)}
-        sx={{ width: 40, height: 40, borderRadius: '6px' }}
-      >
-        <LifeBuoy size={18} />
-      </IconButton>
+      <Tooltip title={t`Support`}>
+        <IconButton
+          aria-label={t`Support`}
+          aria-haspopup="menu"
+          onClick={(e) => setAnchor(e.currentTarget)}
+          sx={{ width: 40, height: 40, borderRadius: '6px' }}
+        >
+          <LifeBuoy size={18} />
+        </IconButton>
+      </Tooltip>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={close}>
         <MenuItem
           onClick={() => {

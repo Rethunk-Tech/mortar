@@ -10,6 +10,7 @@ import {
   ListItemText,
   Menu,
   MenuItem,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
@@ -104,9 +105,11 @@ function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }
     >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Typography sx={{ ...heading, flex: 1 }}>{t`What they see`}</Typography>
-        <IconButton aria-label={t`Close`} onClick={onClose} sx={{ width: 40, height: 40 }}>
-          <X size={16} />
-        </IconButton>
+        <Tooltip title={t`Close`}>
+          <IconButton aria-label={t`Close`} onClick={onClose} sx={{ width: 40, height: 40 }}>
+            <X size={16} />
+          </IconButton>
+        </Tooltip>
       </Box>
       <Box
         sx={{
@@ -519,9 +522,15 @@ export function ShareDialog() {
               </Box>
               <CopyModList />
               {tab === 'file' ? (
-                <IconButton aria-label={t`Close`} onClick={close} sx={{ alignSelf: 'flex-start' }}>
-                  <X size={18} />
-                </IconButton>
+                <Tooltip title={t`Close`}>
+                  <IconButton
+                    aria-label={t`Close`}
+                    onClick={close}
+                    sx={{ alignSelf: 'flex-start' }}
+                  >
+                    <X size={18} />
+                  </IconButton>
+                </Tooltip>
               ) : null}
             </Box>
             <Box sx={{ m: '18px 24px 0', display: 'flex' }}>

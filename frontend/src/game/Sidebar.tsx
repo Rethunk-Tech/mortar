@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, IconButton } from '@mui/material'
+import { Box, ButtonBase, IconButton, Tooltip } from '@mui/material'
 import { ChevronRight, ListOrdered, Plus } from 'lucide-react'
 import { type PointerEvent, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
@@ -381,12 +381,16 @@ export function Sidebar({ game }: { game: string }) {
           },
         }}
       >
-        <IconButton aria-label={t`Manage profiles`} onClick={openProfiles}>
-          <ListOrdered size={20} />
-        </IconButton>
-        <IconButton aria-label={t`New profile`} onClick={() => setCreating(true)}>
-          <Plus size={20} />
-        </IconButton>
+        <Tooltip title={t`Manage profiles`}>
+          <IconButton aria-label={t`Manage profiles`} onClick={openProfiles}>
+            <ListOrdered size={20} />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title={t`New profile`}>
+          <IconButton aria-label={t`New profile`} onClick={() => setCreating(true)}>
+            <Plus size={20} />
+          </IconButton>
+        </Tooltip>
       </Box>
       <BottomBlock game={game} />
       <ResizeHandle width={width} onWidth={setWidth} />

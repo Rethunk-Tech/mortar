@@ -8,6 +8,7 @@ import {
   DialogTitle,
   IconButton,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -181,39 +182,41 @@ function AppearancePickers({
       <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Colour`}</Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
         {PROFILE_COLORS.map((token) => (
-          <IconButton
-            key={token}
-            aria-label={token}
-            aria-pressed={color === token}
-            onClick={() => onColor(color === token ? '' : token)}
-            sx={{
-              width: 32,
-              height: 32,
-              bgcolor: colorHex(token),
-              outline: color === token ? '2px solid #fff' : '2px solid transparent',
-              outlineOffset: 1,
-              '&:hover': { bgcolor: colorHex(token) },
-            }}
-          />
+          <Tooltip key={token} title={token}>
+            <IconButton
+              aria-label={token}
+              aria-pressed={color === token}
+              onClick={() => onColor(color === token ? '' : token)}
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: colorHex(token),
+                outline: color === token ? '2px solid #fff' : '2px solid transparent',
+                outlineOffset: 1,
+                '&:hover': { bgcolor: colorHex(token) },
+              }}
+            />
+          </Tooltip>
         ))}
       </Box>
       <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Icon`}</Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
         {PROFILE_ICONS.map((name) => (
-          <IconButton
-            key={name}
-            aria-label={name}
-            aria-pressed={icon === name}
-            onClick={() => onIcon(icon === name ? '' : name)}
-            sx={{
-              width: 36,
-              height: 36,
-              borderRadius: '6px',
-              bgcolor: icon === name ? 'rgba(255,255,255,0.12)' : 'transparent',
-            }}
-          >
-            <ProfileMark profile={{ ...profile, color, icon: name }} size={28} />
-          </IconButton>
+          <Tooltip key={name} title={name}>
+            <IconButton
+              aria-label={name}
+              aria-pressed={icon === name}
+              onClick={() => onIcon(icon === name ? '' : name)}
+              sx={{
+                width: 36,
+                height: 36,
+                borderRadius: '6px',
+                bgcolor: icon === name ? 'rgba(255,255,255,0.12)' : 'transparent',
+              }}
+            >
+              <ProfileMark profile={{ ...profile, color, icon: name }} size={28} />
+            </IconButton>
+          </Tooltip>
         ))}
       </Box>
     </>

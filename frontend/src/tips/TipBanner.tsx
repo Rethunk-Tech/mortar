@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, IconButton, Typography } from '@mui/material'
+import { Box, IconButton, Tooltip, Typography } from '@mui/material'
 import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { SetTipsSeen } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
@@ -33,23 +33,25 @@ export function TipBanner({ tip, children }: { tip: TipId; children: ReactNode }
       <Typography sx={{ flex: 1, minWidth: 0, fontSize: 13, lineHeight: 1.5 }}>
         {children}
       </Typography>
-      <IconButton
-        size="small"
-        aria-label={t`Dismiss`}
-        onClick={() => {
-          SetTipsSeen([...(seen ?? []), tip]).catch((err: unknown) => {
-            const body = errorText(err)
-            useToasts.getState().push({
-              kind: 'error',
-              title: t`Couldn't save that setting`,
-              ...(body ? { body } : {}),
+      <Tooltip title={t`Dismiss`}>
+        <IconButton
+          size="small"
+          aria-label={t`Dismiss`}
+          onClick={() => {
+            SetTipsSeen([...(seen ?? []), tip]).catch((err: unknown) => {
+              const body = errorText(err)
+              useToasts.getState().push({
+                kind: 'error',
+                title: t`Couldn't save that setting`,
+                ...(body ? { body } : {}),
+              })
             })
-          })
-        }}
-        sx={{ whiteSpace: 'nowrap' }}
-      >
-        <X size={14} />
-      </IconButton>
+          }}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          <X size={14} />
+        </IconButton>
+      </Tooltip>
     </Box>
   )
 }

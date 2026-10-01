@@ -9,6 +9,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  Tooltip,
 } from '@mui/material'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
@@ -43,20 +44,24 @@ export function ToolsManageDialog({
                 key={tool.id}
                 secondaryAction={
                   <>
-                    <IconButton
-                      edge="end"
-                      aria-label={t`Edit ${tool.name}`}
-                      onClick={() => setEditing(tool)}
-                    >
-                      <Pencil size={16} />
-                    </IconButton>
-                    <IconButton
-                      edge="end"
-                      aria-label={t`Remove ${tool.name}`}
-                      onClick={() => remove(game, tool.id).catch(reportUnexpected)}
-                    >
-                      <Trash2 size={16} />
-                    </IconButton>
+                    <Tooltip title={t`Edit ${tool.name}`}>
+                      <IconButton
+                        edge="end"
+                        aria-label={t`Edit ${tool.name}`}
+                        onClick={() => setEditing(tool)}
+                      >
+                        <Pencil size={16} />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={t`Remove ${tool.name}`}>
+                      <IconButton
+                        edge="end"
+                        aria-label={t`Remove ${tool.name}`}
+                        onClick={() => remove(game, tool.id).catch(reportUnexpected)}
+                      >
+                        <Trash2 size={16} />
+                      </IconButton>
+                    </Tooltip>
                   </>
                 }
               >

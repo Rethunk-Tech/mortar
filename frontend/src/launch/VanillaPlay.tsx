@@ -12,6 +12,7 @@ import {
   ListItemText,
   Menu,
   MenuItem,
+  Tooltip,
 } from '@mui/material'
 import { System } from '@wailsio/runtime'
 import { ChevronDown, Gamepad2, Play } from 'lucide-react'
@@ -132,23 +133,27 @@ export function VanillaPlay({
           <ChevronDown size={18} />
         </Button>
       </ButtonGroup>
-      <IconButton
-        aria-label={label}
-        title={label}
-        disabled={playDisabled}
-        onClick={play}
-        onContextMenu={onContext}
-        sx={{
-          display: 'none',
-          borderRadius: 0,
-          bgcolor: 'primary.main',
-          color: 'primary.contrastText',
-          '&:hover': { bgcolor: 'primary.dark' },
-          [compact]: { display: 'flex', width: '100%', height: 50 },
-        }}
-      >
-        <Play size={20} fill="currentColor" />
-      </IconButton>
+      <Tooltip title={label}>
+        <span>
+          <IconButton
+            aria-label={label}
+            title={label}
+            disabled={playDisabled}
+            onClick={play}
+            onContextMenu={onContext}
+            sx={{
+              display: 'none',
+              borderRadius: 0,
+              bgcolor: 'primary.main',
+              color: 'primary.contrastText',
+              '&:hover': { bgcolor: 'primary.dark' },
+              [compact]: { display: 'flex', width: '100%', height: 50 },
+            }}
+          >
+            <Play size={20} fill="currentColor" />
+          </IconButton>
+        </span>
+      </Tooltip>
       <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
         <MenuItem disabled={vanillaDisabled} onClick={playVanilla}>
           <ListItemIcon>

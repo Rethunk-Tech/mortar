@@ -1,5 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
-import { Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
+import {
+  Divider,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Tooltip,
+} from '@mui/material'
 import {
   Ban,
   Ellipsis,
@@ -264,16 +272,18 @@ export function ModMenu({ mod }: { mod: Mod }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   return (
     <>
-      <IconButton
-        aria-label={t`More actions for ${mod.name}`}
-        size="small"
-        onClick={(e) => {
-          e.stopPropagation()
-          setAnchor(e.currentTarget)
-        }}
-      >
-        <Ellipsis size={18} />
-      </IconButton>
+      <Tooltip title={t`More actions for ${mod.name}`}>
+        <IconButton
+          aria-label={t`More actions for ${mod.name}`}
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation()
+            setAnchor(e.currentTarget)
+          }}
+        >
+          <Ellipsis size={18} />
+        </IconButton>
+      </Tooltip>
       {anchor ? (
         <ModActionMenu mod={mod} anchor={{ el: anchor }} onClose={() => setAnchor(null)} />
       ) : null}

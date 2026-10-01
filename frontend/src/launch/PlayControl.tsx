@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, IconButton, Typography } from '@mui/material'
+import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material'
 import { Square } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
@@ -122,16 +122,20 @@ export function PlayControl({ game }: { game: string }) {
           >
             {t`Stop game`}
           </Button>
-          <IconButton
-            aria-label={t`Stop game`}
-            title={t`Running ${time}`}
-            color="error"
-            disabled={stopping}
-            onClick={() => setConfirming(true)}
-            sx={{ display: 'none', [compact]: { display: 'inline-flex' } }}
-          >
-            <Square size={20} />
-          </IconButton>
+          <Tooltip title={t`Stop game`}>
+            <span>
+              <IconButton
+                aria-label={t`Stop game`}
+                title={t`Running ${time}`}
+                color="error"
+                disabled={stopping}
+                onClick={() => setConfirming(true)}
+                sx={{ display: 'none', [compact]: { display: 'inline-flex' } }}
+              >
+                <Square size={20} />
+              </IconButton>
+            </span>
+          </Tooltip>
         </Box>
         <StopDialog open={confirming} game={game} onClose={() => setConfirming(false)} />
       </>

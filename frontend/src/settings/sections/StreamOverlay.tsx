@@ -344,23 +344,29 @@ function OverlayConnection({
               input: {
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      aria-label={shown ? t`Hide token` : t`Show token`}
-                      onClick={() => setShown((v) => !v)}
-                      edge="end"
-                    >
-                      {shown ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      aria-label={t`Copy token`}
-                      disabled={!token}
-                      onClick={() => copyText(token, push, copied, failCopy)}
-                      edge="end"
-                    >
-                      <Copy size={16} />
-                    </IconButton>
+                    <Tooltip title={shown ? t`Hide token` : t`Show token`}>
+                      <IconButton
+                        size="small"
+                        aria-label={shown ? t`Hide token` : t`Show token`}
+                        onClick={() => setShown((v) => !v)}
+                        edge="end"
+                      >
+                        {shown ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={t`Copy token`}>
+                      <span>
+                        <IconButton
+                          size="small"
+                          aria-label={t`Copy token`}
+                          disabled={!token}
+                          onClick={() => copyText(token, push, copied, failCopy)}
+                          edge="end"
+                        >
+                          <Copy size={16} />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
                   </InputAdornment>
                 ),
               },

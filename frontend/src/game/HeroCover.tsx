@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
+import { Box, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip } from '@mui/material'
 import { ImageOff, ImagePlus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { PickImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
@@ -83,14 +83,16 @@ export function CoverButton({ game, profile }: { game: string; profile: Profile 
   }
   return (
     <>
-      <IconButton
-        aria-label={t`Cover image`}
-        aria-haspopup="menu"
-        onClick={(e) => setAnchor(e.currentTarget)}
-        size="small"
-      >
-        <ImagePlus size={16} />
-      </IconButton>
+      <Tooltip title={t`Cover image`}>
+        <IconButton
+          aria-label={t`Cover image`}
+          aria-haspopup="menu"
+          onClick={(e) => setAnchor(e.currentTarget)}
+          size="small"
+        >
+          <ImagePlus size={16} />
+        </IconButton>
+      </Tooltip>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={close}>
         <MenuItem onClick={() => choose().catch(reportUnexpected)}>
           <ListItemIcon sx={{ color: 'inherit' }}>

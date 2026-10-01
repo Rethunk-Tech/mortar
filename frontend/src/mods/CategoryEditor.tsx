@@ -8,6 +8,7 @@ import {
   DialogTitle,
   IconButton,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { Plus, Trash2 } from 'lucide-react'
@@ -39,25 +40,28 @@ function CategoryRow({
       />
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, pt: 0.5, maxWidth: 180 }}>
         {PROFILE_COLORS.map((token) => (
-          <IconButton
-            key={token}
-            aria-label={token}
-            aria-pressed={row.color === token}
-            size="small"
-            onClick={() => onChange({ ...row, color: row.color === token ? '' : token })}
-            sx={{
-              width: 28,
-              height: 28,
-              bgcolor: colorHex(token),
-              outline: row.color === token ? '2px solid #fff' : '2px solid transparent',
-              outlineOffset: 1,
-            }}
-          />
+          <Tooltip key={token} title={token}>
+            <IconButton
+              aria-label={token}
+              aria-pressed={row.color === token}
+              size="small"
+              onClick={() => onChange({ ...row, color: row.color === token ? '' : token })}
+              sx={{
+                width: 28,
+                height: 28,
+                bgcolor: colorHex(token),
+                outline: row.color === token ? '2px solid #fff' : '2px solid transparent',
+                outlineOffset: 1,
+              }}
+            />
+          </Tooltip>
         ))}
       </Box>
-      <IconButton aria-label={t`Delete category`} onClick={onDelete} size="small">
-        <Trash2 size={16} />
-      </IconButton>
+      <Tooltip title={t`Delete category`}>
+        <IconButton aria-label={t`Delete category`} onClick={onDelete} size="small">
+          <Trash2 size={16} />
+        </IconButton>
+      </Tooltip>
     </Box>
   )
 }

@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Dialog, IconButton, Tab, Tabs, Typography } from '@mui/material'
+import { Box, Dialog, IconButton, Tab, Tabs, Tooltip, Typography } from '@mui/material'
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
 import { paper } from '../mods/paper.ts'
@@ -107,14 +107,18 @@ function Body({ request }: { request: ImportRequest }) {
           <Tab value="link" label={t`Link`} disabled={flow.busy} />
           <Tab value="file" label={t`.mortar file`} disabled={flow.busy} />
         </Tabs>
-        <IconButton
-          aria-label={t`Close`}
-          onClick={flow.dismiss}
-          disabled={flow.busy}
-          sx={{ width: 50, borderRadius: 0, flexShrink: 0 }}
-        >
-          <X size={16} />
-        </IconButton>
+        <Tooltip title={t`Close`}>
+          <span>
+            <IconButton
+              aria-label={t`Close`}
+              onClick={flow.dismiss}
+              disabled={flow.busy}
+              sx={{ width: 50, borderRadius: 0, flexShrink: 0 }}
+            >
+              <X size={16} />
+            </IconButton>
+          </span>
+        </Tooltip>
       </Box>
       {preview ? (
         <>

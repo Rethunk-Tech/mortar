@@ -247,22 +247,24 @@ export function ProfileRow({
         zIndex: isDragging ? 1 : 0,
       }}
     >
-      <IconButton
-        ref={setActivatorNodeRef}
-        aria-label={t`Reorder ${profile.name}`}
-        {...attributes}
-        {...listeners}
-        sx={{
-          width: 32,
-          height: 44,
-          borderRadius: '6px',
-          color: 'text.secondary',
-          cursor: 'grab',
-          touchAction: 'none',
-        }}
-      >
-        <GripVertical size={16} />
-      </IconButton>
+      <Tooltip title={t`Reorder ${profile.name}`}>
+        <IconButton
+          ref={setActivatorNodeRef}
+          aria-label={t`Reorder ${profile.name}`}
+          {...attributes}
+          {...listeners}
+          sx={{
+            width: 32,
+            height: 44,
+            borderRadius: '6px',
+            color: 'text.secondary',
+            cursor: 'grab',
+            touchAction: 'none',
+          }}
+        >
+          <GripVertical size={16} />
+        </IconButton>
+      </Tooltip>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         {renaming ? (
           <NameField
@@ -309,21 +311,23 @@ export function ProfileRow({
       >
         {t`Share`}
       </Button>
-      <IconButton
-        ref={more}
-        data-actions={profile.id}
-        aria-label={t`Actions for ${profile.name}`}
-        aria-haspopup="menu"
-        onClick={(e) => setAnchor(e.currentTarget)}
-        sx={{
-          width: 40,
-          height: 40,
-          borderRadius: '6px',
-          bgcolor: anchor ? 'rgba(255,255,255,0.1)' : 'transparent',
-        }}
-      >
-        <MoreHorizontal size={18} />
-      </IconButton>
+      <Tooltip title={t`Actions for ${profile.name}`}>
+        <IconButton
+          ref={more}
+          data-actions={profile.id}
+          aria-label={t`Actions for ${profile.name}`}
+          aria-haspopup="menu"
+          onClick={(e) => setAnchor(e.currentTarget)}
+          sx={{
+            width: 40,
+            height: 40,
+            borderRadius: '6px',
+            bgcolor: anchor ? 'rgba(255,255,255,0.1)' : 'transparent',
+          }}
+        >
+          <MoreHorizontal size={18} />
+        </IconButton>
+      </Tooltip>
       <RowMenu
         profile={profile}
         anchor={anchor}
