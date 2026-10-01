@@ -7,19 +7,33 @@ const (
 	commandKey = classKey + `\shell\open\command`
 )
 
-func previousID(cmd, icon string) string {
+// previous is what the nxm key held before Mortar took it over. Saved as "command\nicon\nname"; a value saved
+// with fewer lines restores only the parts it holds.
+type previous struct {
+	cmd, icon, name  string
+	hasIcon, hasName bool
+}
+
+func previousID(cmd, icon, name string) string {
 	if cmd == "" {
 		return ""
 	}
-	return cmd + "\n" + icon
+	return cmd + "\n" + icon + "\n" + name
 }
 
-func splitPrevious(previous string) (cmd, icon string, restoreIcon bool) {
-	if previous == "" {
-		return "", "", false
+func splitPrevious(saved string) previous {
+	if saved == "" {
+		return previous{}
 	}
-	cmd, icon, restoreIcon = strings.Cut(previous, "\n")
-	return cmd, icon, restoreIcon
+	parts := strings.SplitN(saved, "\n", 3)
+	p := previous{cmd: parts[0], hasIcon: len(parts) > 1, hasName: len(parts) > 2}
+	if p.hasIcon {
+		p.icon = parts[1]
+	}
+	if p.hasName {
+		p.name = parts[2]
+	}
+	return p
 }
 
 // memReg is an injectable HKCU\Software\Classes tree for tests (path → value name → data).
@@ -48,14 +62,17 @@ func (m memReg) restore(previous string) {
 		}
 		return
 	}
-	cmd, icon, restoreIcon := splitPrevious(previous)
-	m.set(commandKey, "", cmd)
-	if !restoreIcon {
+	p := splitPrevious(previous)
+	m.set(commandKey, "", p.cmd)
+	if p.hasName {
+		m.set(classKey, "", p.name)
+	}
+	if !p.hasIcon {
 		return
 	}
-	if icon == "" {
+	if p.icon == "" {
 		delete(m, classKey+`\DefaultIcon`)
 		return
 	}
-	m.set(classKey+`\DefaultIcon`, "", icon)
+	m.set(classKey+`\DefaultIcon`, "", p.icon)
 }

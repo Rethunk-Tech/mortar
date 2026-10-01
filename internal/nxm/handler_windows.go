@@ -32,7 +32,7 @@ func (w *System) Owner() (Owner, error) {
 	if cmd == "" {
 		return Owner{}, nil
 	}
-	return Owner{ID: previousID(cmd, readIcon()), Name: exeOf(cmd), Mine: cmd == w.command()}, nil
+	return Owner{ID: previousID(cmd, readIcon(), readName()), Name: exeOf(cmd), Mine: cmd == w.command()}, nil
 }
 
 // exeOf is the program of an open command, for showing to the user.
@@ -108,20 +108,48 @@ func (w *System) Restore(previous string) error {
 		}
 		return nil
 	}
-	cmd, icon, restoreIcon := splitPrevious(previous)
-	if err := setCommand(cmd); err != nil {
+	p := splitPrevious(previous)
+	if err := setCommand(p.cmd); err != nil {
 		return err
 	}
-	if !restoreIcon {
+	if p.hasName {
+		if err := setName(p.name); err != nil {
+			return err
+		}
+	}
+	if !p.hasIcon {
 		return nil
 	}
-	if icon == "" {
+	if p.icon == "" {
 		if err := registry.DeleteKey(registry.CURRENT_USER, classKey+`\DefaultIcon`); err != nil && !errors.Is(err, registry.ErrNotExist) {
 			return err
 		}
 		return nil
 	}
-	return setIcon(icon)
+	return setIcon(p.icon)
+}
+
+// readName returns the nxm key's own default value, the protocol's display name.
+func readName() string {
+	k, err := registry.OpenKey(registry.CURRENT_USER, classKey, registry.QUERY_VALUE)
+	if err != nil {
+		return ""
+	}
+	defer k.Close()
+	v, _, err := k.GetStringValue("")
+	if err != nil {
+		return ""
+	}
+	return v
+}
+
+func setName(name string) error {
+	k, _, err := registry.CreateKey(registry.CURRENT_USER, classKey, registry.SET_VALUE)
+	if err != nil {
+		return err
+	}
+	defer k.Close()
+	return k.SetStringValue("", name)
 }
 
 // RegisterLinks does nothing: the installer registers the mortar scheme and the .mortar file type.
