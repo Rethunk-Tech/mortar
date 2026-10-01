@@ -1,0 +1,27 @@
+# Maintainer: Rethunk.Tech <https://github.com/Rethunk-AI/mortar>
+pkgname=mortar-bin
+pkgver=0.0.1
+pkgrel=1
+pkgdesc='Desktop mod manager for Stardew Valley'
+arch=('x86_64')
+url='https://github.com/Rethunk-AI/mortar'
+license=('AGPL-3.0-only')
+depends=('webkitgtk-6.0')
+provides=('mortar')
+conflicts=('mortar')
+source=(
+  "mortar-linux-amd64::https://github.com/Rethunk-AI/mortar/releases/download/v${pkgver}/mortar-linux-amd64"
+  "https://github.com/Rethunk-AI/mortar/archive/refs/tags/v${pkgver}.tar.gz"
+)
+sha256sums=(
+  'SKIP'
+  'SKIP'
+)
+
+package() {
+  install -Dm755 mortar-linux-amd64 "${pkgdir}/usr/bin/mortar"
+  install -Dm644 "mortar-${pkgver}/build/linux/tech.rethunk.Mortar.desktop" \
+    "${pkgdir}/usr/share/applications/tech.rethunk.Mortar.desktop"
+  install -Dm644 "mortar-${pkgver}/build/appicon.png" \
+    "${pkgdir}/usr/share/icons/hicolor/1024x1024/apps/tech.rethunk.Mortar.png"
+}
