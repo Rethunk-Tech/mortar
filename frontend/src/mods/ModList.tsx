@@ -58,6 +58,7 @@ import {
   LastRunBadge,
   LetterTile,
   ModSwitch,
+  NexusGoneBadge,
   PinBadge,
   ProblemBadge,
   UpdateBadge,
@@ -234,6 +235,7 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string) {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
             <PinBadge mod={m} />
             <ProblemBadge mod={m} />
+            <NexusGoneBadge mod={m} />
             <UpdateBadge mod={m} />
             <Box component="span" title={row.status} sx={ellipsis}>
               {row.status}

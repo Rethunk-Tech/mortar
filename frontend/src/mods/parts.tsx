@@ -22,8 +22,10 @@ import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useDescribe } from './describe.ts'
 import { useLastRun } from './lastRun.ts'
-import { concerns, entryOf, modId, problemsOf, siblingsOf, updateFor } from './lookup.ts'
+import { concerns, entryOf, modId, nexusIdOf, problemsOf, siblingsOf, updateFor } from './lookup.ts'
 import { NewDot } from './NewSince.tsx'
+import { useNexusEntry } from './nexusDetails.ts'
+import { goneCaption, nexusPageMark, offersNexusDownload } from './nexusMark.ts'
 import { paper } from './paper.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
@@ -113,6 +115,34 @@ export function ProblemBadge({ mod }: { mod: Mod }) {
   )
 }
 
+export function NexusGoneBadge({ mod }: { mod: Mod }) {
+  const { t } = useLingui()
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const nexusId = profile ? nexusIdOf(profile, mod) : 0
+  const page = useNexusEntry(nexusId)?.details?.page
+  const mark = nexusPageMark(page?.status, page?.available, page?.updated, page?.created)
+  if (mark.kind === '') {
+    return null
+  }
+  const text = goneCaption(mark, {
+    hidden: t`Hidden on Nexus`,
+    hiddenDated: t`Hidden on Nexus · ${mark.date}`,
+    removed: t`Removed from Nexus`,
+    removedDated: t`Removed from Nexus · ${mark.date}`,
+  })
+  return (
+    <Tooltip title={text}>
+      <Box
+        role="img"
+        aria-label={text}
+        sx={{ display: 'flex', flexShrink: 0, color: 'warning.main' }}
+      >
+        <Ban size={16} />
+      </Box>
+    </Tooltip>
+  )
+}
+
 export function LastRunBadge({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const hit = useLastRun((s) => s.byId[mod.uniqueId])
@@ -176,12 +206,19 @@ export function UpdateBadge({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
   const update = useUpdates((s) => updateFor(s.updates, mod, profile))
+  const nexusId = profile ? nexusIdOf(profile, mod) : 0
+  const page = useNexusEntry(nexusId)?.details?.page
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   if (!update) {
     return null
   }
-  const text = t`Update available: ${update.installed} → ${update.version}`
+  if (update.nexusId > 0 && !offersNexusDownload(page?.status, page?.available)) {
+    return null
+  }
+  const text = update.unofficial
+    ? t`Unofficial update available: ${update.version}`
+    : t`Update available: ${update.installed} → ${update.version}`
   return (
     <>
       <Tooltip title={text}>

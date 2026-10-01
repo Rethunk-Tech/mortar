@@ -1,6 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Drawer, Tooltip, Typography, useMediaQuery } from '@mui/material'
+import { Box, Button, Drawer, Link, Tooltip, Typography, useMediaQuery } from '@mui/material'
+import { Browser } from '@wailsio/runtime'
 import { TriangleAlert } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
@@ -23,14 +24,17 @@ import {
   modId,
   nexusIdOf,
   problemsOf,
+  sameId,
   siblingsOf,
   sourceKind,
   updateFor,
+  visibleUpdates,
 } from './lookup.ts'
 import { ModDependencyTree } from './ModDependencyTree.tsx'
 import { ModNoteTags } from './ModNoteTags.tsx'
 import { useLookedSnapshot, useNexusEntry, useNexusFresh } from './nexusDetails.ts'
 import { formatCount, formatDate, isNewer } from './nexusFormat.ts'
+import { goneCaption, nexusPageMark, offersNexusDownload } from './nexusMark.ts'
 import { accent, heading } from './paper.ts'
 import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
 import { useMods } from './store.ts'
@@ -87,8 +91,18 @@ function NexusFields({ mod, nexusId }: { mod: Mod; nexusId: number }) {
     return null
   }
   const { page, category } = details
+  const gone = nexusPageMark(page.status, page.available, page.updated, page.created)
+  const goneLabel = goneCaption(gone, {
+    hidden: t`Hidden on Nexus`,
+    hiddenDated: t`Hidden on Nexus · ${gone.date}`,
+    removed: t`Removed from Nexus`,
+    removedDated: t`Removed from Nexus · ${gone.date}`,
+  })
   return (
     <>
+      {goneLabel ? (
+        <Typography sx={{ fontSize: 13, color: 'warning.main' }}>{goneLabel}</Typography>
+      ) : null}
       {page.summary ? <Clipped label={t`Summary`} value={page.summary} lines={2} /> : null}
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1.25 }}>
         <Clipped
@@ -107,10 +121,22 @@ function NexusFields({ mod, nexusId }: { mod: Mod; nexusId: number }) {
 function UpdateBanner({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
-  const update = useUpdates((s) => updateFor(s.updates, mod, profile))
+  const nexusId = profile ? nexusIdOf(profile, mod) : 0
+  const details = useNexusEntry(nexusId)?.details
+  const raw = useUpdates((s) => s.updates)
   const setReviewing = useUpdates((s) => s.setReviewing)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
-  if (!update) {
+  const mine = visibleUpdates(raw, profile).filter(
+    (u) => u.key === mod.key && sameId(u.uniqueId, mod.uniqueId),
+  )
+  const unofficial = mine.find((u) => u.unofficial)
+  const update = mine.find((u) => !u.unofficial)
+  const blocked =
+    Boolean(update) &&
+    (update?.nexusId ?? 0) > 0 &&
+    !offersNexusDownload(details?.page.status, details?.page.available)
+  const official = blocked ? undefined : update
+  if (!(official || unofficial)) {
     return null
   }
   return (
@@ -127,17 +153,40 @@ function UpdateBanner({ mod }: { mod: Mod }) {
         borderColor: accent.line,
       }}
     >
-      <Typography sx={{ flex: 1, fontSize: 13 }}>
-        {t`Update available: ${update.installed} → ${update.version}`}
-      </Typography>
-      <Button
-        size="small"
-        variant="outlined"
-        onClick={() => setSkipVersion(mod, update.version).catch(reportUnexpected)}
-        sx={noWrap}
-      >
-        {t`Skip this update`}
-      </Button>
+      <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+        {official ? (
+          <Typography sx={{ fontSize: 13 }}>
+            {t`Update available: ${official.installed} → ${official.version}`}
+          </Typography>
+        ) : null}
+        {unofficial ? (
+          <Typography sx={{ fontSize: 13 }}>
+            {t`Unofficial update available: ${unofficial.version}`}
+            {unofficial.url ? (
+              <>
+                {' '}
+                <Link
+                  component="button"
+                  onClick={() => Browser.OpenURL(unofficial.url).catch(reportUnexpected)}
+                  sx={{ fontSize: 13 }}
+                >
+                  {t`Open page`}
+                </Link>
+              </>
+            ) : null}
+          </Typography>
+        ) : null}
+      </Box>
+      {official ? (
+        <Button
+          size="small"
+          variant="outlined"
+          onClick={() => setSkipVersion(mod, official.version).catch(reportUnexpected)}
+          sx={noWrap}
+        >
+          {t`Skip this update`}
+        </Button>
+      ) : null}
       <Button size="small" variant="contained" onClick={() => setReviewing(true)} sx={noWrap}>
         {t`Update`}
       </Button>

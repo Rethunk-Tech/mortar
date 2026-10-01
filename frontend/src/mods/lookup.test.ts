@@ -1,6 +1,8 @@
 import { expect, test } from 'bun:test'
 import type { Copy } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import {
+  installableUpdate,
+  listedAgainstNexus,
   nexusKeepKey,
   offersUpdate,
   preselect,
@@ -67,6 +69,7 @@ test('an update belongs to one copy of a mod', () => {
     url: '',
     nexusId: 0,
     githubRepo: '',
+    unofficial: false,
   }
   const result = { updates: [update], unknown: false }
   expect(updateCount(result)).toBe(1)
@@ -88,6 +91,7 @@ test('a pin or skipped version hides that update', () => {
     url: '',
     nexusId: 0,
     githubRepo: '',
+    unofficial: false,
   }
   const result = { updates: [update], unknown: false }
   const pinned = {
@@ -120,4 +124,22 @@ test('reshow keeps the loaded extras when the open mod is shown again', () => {
   expect(reshow(open, { key: 'a', uniqueId: 'b' })).toEqual(open)
   expect(reshow(open, { key: 'a', uniqueId: 'c' })).toEqual({ detailId: 'a/c', extras: null })
   expect(reshow(open, null)).toEqual({ detailId: '', extras: null })
+})
+
+test('a removed Nexus page and unofficial versions are not installed by Update all', () => {
+  const row = {
+    key: 'k',
+    uniqueId: 'me.a',
+    name: 'A',
+    installed: '1',
+    version: '2',
+    url: '',
+    nexusId: 1,
+    githubRepo: '',
+    unofficial: false,
+  }
+  expect(listedAgainstNexus(row, { status: 'published', available: true })).toBe(true)
+  expect(listedAgainstNexus(row, { status: 'deleted', available: true })).toBe(false)
+  expect(installableUpdate({ ...row, unofficial: true, githubRepo: 'a/b', nexusId: 0 })).toBe(false)
+  expect(installableUpdate({ ...row, unofficial: false, githubRepo: 'a/b', nexusId: 0 })).toBe(true)
 })

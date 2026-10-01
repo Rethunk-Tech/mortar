@@ -24,6 +24,7 @@ import {
   isNewer,
   recentChangelogs,
 } from './nexusFormat.ts'
+import { goneCaption, nexusPageMark } from './nexusMark.ts'
 import { heading } from './paper.ts'
 
 const text = { fontSize: 13 } as const
@@ -223,20 +224,33 @@ function Loaded({
   const looked = useLookedSnapshot(modId, details)
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      {page.adult || !page.available ? (
+      {page.adult ||
+      nexusPageMark(page.status, page.available, page.updated, page.created).kind !== '' ? (
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
           {page.adult ? (
             <Chip size="small" color="warning" variant="outlined" label={t`Adult content`} />
           ) : null}
-          {page.available ? null : (
-            <Chip
-              size="small"
-              color="warning"
-              variant="outlined"
-              icon={<TriangleAlert size={14} aria-hidden={true} />}
-              label={t`Not available on Nexus`}
-            />
-          )}
+          {(() => {
+            const mark = nexusPageMark(page.status, page.available, page.updated, page.created)
+            const labelled = goneCaption(mark, {
+              hidden: t`Hidden on Nexus`,
+              hiddenDated: t`Hidden on Nexus · ${mark.date}`,
+              removed: t`Removed from Nexus`,
+              removedDated: t`Removed from Nexus · ${mark.date}`,
+            })
+            if (labelled === '') {
+              return null
+            }
+            return (
+              <Chip
+                size="small"
+                color="warning"
+                variant="outlined"
+                icon={<TriangleAlert size={14} aria-hidden={true} />}
+                label={labelled}
+              />
+            )
+          })()}
         </Box>
       ) : null}
       {page.summary ? (

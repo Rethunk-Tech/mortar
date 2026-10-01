@@ -34,6 +34,7 @@ import { ProblemBar } from './ProblemBar.tsx'
 import {
   LastRunBadge,
   LetterTile,
+  NexusGoneBadge,
   PinBadge,
   ProblemBadge,
   RemoveDialog,
@@ -159,6 +160,7 @@ function ModCard({
       </ButtonBase>
       <PinBadge mod={m} />
       <UpdateBadge mod={m} />
+      <NexusGoneBadge mod={m} />
       <ProblemBadge mod={m} />
       <LastRunBadge mod={m} />
       {tag ? <Chip size="small" label={tag} sx={{ maxWidth: 96 }} /> : null}

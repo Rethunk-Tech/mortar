@@ -11,6 +11,7 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { offersNexusDownload } from './nexusMark.ts'
 
 export const siblingsOf = (mods: Mod[], mod: Mod) =>
   mods.filter((m) => m.key === mod.key && m.uniqueId !== mod.uniqueId)
@@ -114,6 +115,19 @@ export const offersUpdate = (
 
 export const visibleUpdates = (result: UpdatesResult | null, profile?: Profile | null): Update[] =>
   (result?.updates ?? []).filter((u) => offersUpdate(entryOf(profile, u.key), u.version))
+
+export const listedAgainstNexus = (
+  u: Update,
+  page?: { status?: string; available?: boolean },
+): boolean => {
+  if (u.nexusId > 0 && page && !offersNexusDownload(page.status, page.available)) {
+    return false
+  }
+  return true
+}
+
+export const installableUpdate = (u: Update): boolean =>
+  !u.unofficial && (u.githubRepo !== '' || u.nexusId > 0)
 
 export const updateCount = (result: UpdatesResult | null, profile?: Profile | null): number =>
   visibleUpdates(result, profile).length
