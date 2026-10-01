@@ -6,6 +6,7 @@ import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/laun
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
+import { onFilterFocus } from '../mods/filterFocus.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
@@ -135,6 +136,8 @@ function SearchBox() {
   const { t } = useLingui()
   const search = useConsole((s) => s.filters.search)
   const setSearch = useConsole((s) => s.setSearch)
+  const input = useRef<HTMLInputElement>(null)
+  useEffect(() => onFilterFocus(() => input.current?.focus()), [])
   return (
     <Box
       component="label"
@@ -155,6 +158,7 @@ function SearchBox() {
       <Search size={14} aria-hidden={true} />
       <Box
         component="input"
+        ref={input}
         aria-label={t`Search the log`}
         placeholder={t`Search the log`}
         value={search}
@@ -385,6 +389,7 @@ export function ConsoleTab({ game }: { game: string }) {
         <SearchBox />
         <LevelToggles />
         <ModPicker />
+        <RunsPicker game={game} />
         <IconAction
           label={t`Show times`}
           icon={<Clock size={16} />}
@@ -434,7 +439,6 @@ export function ConsoleTab({ game }: { game: string }) {
         </Box>
       ) : null}
       {offerReinstall ? <ReinstallLoader game={game} /> : null}
-      <RunsPicker game={game} />
       <LinkedLog
         game={game}
         rows={rows}

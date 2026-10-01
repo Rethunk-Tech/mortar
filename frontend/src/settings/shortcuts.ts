@@ -27,7 +27,7 @@ export interface TypingTarget {
 /** Single table for key handling and Settings › Shortcuts. */
 export const SHORTCUTS: readonly Shortcut[] = [
   { id: 'command-palette', keys: 'Ctrl+K', label: 'Open the command palette', always: false },
-  { id: 'filter-mods', keys: 'Ctrl+F', label: 'Focus the Mods filter', always: false },
+  { id: 'filter-mods', keys: 'Ctrl+F', label: 'Focus the search', always: false },
   { id: 'play', keys: 'Ctrl+P', label: 'Play the open profile', always: false },
   { id: 'check-updates', keys: 'F5', label: 'Check for mod updates', always: false },
   { id: 'open-settings', keys: 'Ctrl+,', label: 'Open Settings', always: false },

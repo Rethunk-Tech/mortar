@@ -6,7 +6,7 @@ export function Shortcuts() {
   const { t } = useLingui()
   const labels: Record<(typeof SHORTCUTS)[number]['id'], string> = {
     'command-palette': t`Open the command palette`,
-    'filter-mods': t`Focus the Mods filter`,
+    'filter-mods': t`Focus the search`,
     play: t`Play the open profile`,
     'check-updates': t`Check for mod updates`,
     'open-settings': t`Open Settings`,

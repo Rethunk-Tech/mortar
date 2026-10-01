@@ -59,23 +59,13 @@ export function RunsPicker({ game }: { game: string }) {
     button = selected ? label(selected) : t`Past run`
   }
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pb: 1, flexShrink: 0 }}>
-      <Box
-        sx={{
-          fontSize: 12,
-          fontWeight: 700,
-          letterSpacing: '0.06em',
-          textTransform: 'uppercase',
-          color: 'text.secondary',
-        }}
-      >
-        {t`Runs`}
-      </Box>
+    <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
       <Button
         variant="outlined"
         color="inherit"
         startIcon={<History size={14} />}
         endIcon={<ChevronDown size={12} />}
+        aria-label={t`Runs: ${button}`}
         onClick={(e) => setAnchor(e.currentTarget)}
         sx={{ height: 34, borderColor: 'rgba(255,255,255,0.2)', color: '#ffffff' }}
       >

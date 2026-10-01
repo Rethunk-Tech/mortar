@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
+  Divider,
   IconButton,
   ListItemIcon,
   ListItemText,
@@ -60,14 +61,16 @@ function HeroMenu({ profile }: { profile: Profile }) {
   const close = () => setAnchor(null)
   return (
     <>
-      <IconButton
-        aria-label={t`Profile menu`}
-        aria-haspopup="menu"
-        onClick={(e) => setAnchor(e.currentTarget)}
-        size="small"
-      >
-        <MoreHorizontal size={16} />
-      </IconButton>
+      <Tooltip title={t`Profile menu`}>
+        <IconButton
+          aria-label={t`Profile menu`}
+          aria-haspopup="menu"
+          onClick={(e) => setAnchor(e.currentTarget)}
+          size="small"
+        >
+          <MoreHorizontal size={16} />
+        </IconButton>
+      </Tooltip>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={close} transitionDuration={0}>
         <MenuItem
           onClick={() => {
@@ -175,21 +178,25 @@ function HeroName({ profile, game, meta }: { profile: Profile; game: string; met
             >
               {profile.name}
             </Typography>
-            <IconButton
-              ref={pencil}
-              aria-label={t`Rename profile`}
-              onClick={() => setEditing(true)}
-              size="small"
-            >
-              <Pencil size={16} />
-            </IconButton>
-            <IconButton
-              aria-label={t`Edit profile`}
-              onClick={() => setEditingProfile(true)}
-              size="small"
-            >
-              <Palette size={16} />
-            </IconButton>
+            <Tooltip title={t`Rename profile`}>
+              <IconButton
+                ref={pencil}
+                aria-label={t`Rename profile`}
+                onClick={() => setEditing(true)}
+                size="small"
+              >
+                <Pencil size={16} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t`Edit profile`}>
+              <IconButton
+                aria-label={t`Edit profile`}
+                onClick={() => setEditingProfile(true)}
+                size="small"
+              >
+                <Palette size={16} />
+              </IconButton>
+            </Tooltip>
             <CoverButton game={game} profile={profile} />
             <HeroMenu profile={profile} />
           </>
@@ -439,7 +446,12 @@ export function Detail() {
         </Tabs>
         <Box sx={{ flexGrow: 1 }} />
         <Box sx={{ display: 'flex', gap: 0.75 }}>
-          {tab === 'console' ? <LogActions /> : null}
+          {tab === 'console' ? (
+            <>
+              <LogActions />
+              <Divider orientation="vertical" flexItem={true} sx={{ mx: 0.5 }} />
+            </>
+          ) : null}
           <ToolsMenu game={game} profileID={profile.id} />
           <IconAction
             label={t`Share`}
