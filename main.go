@@ -35,6 +35,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/sharesvc"
 	modstore "github.com/Rethunk-AI/mortar/internal/store"
 	"github.com/Rethunk-AI/mortar/internal/support"
+	"github.com/Rethunk-AI/mortar/internal/tools"
 	"github.com/Rethunk-AI/mortar/internal/updatesvc"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -302,6 +303,11 @@ func run() error {
 	shareSvc.Receive(sharesvc.InDir(os.Args[1:], sharesvc.LaunchDir()))
 	shareSvc.QueueChanged(queueSvc.State())
 
+	toolsSvc, err := tools.NewService(home, store, profiles)
+	if err != nil {
+		return err
+	}
+
 	dataSvc := datasvc.NewService(items, profiles, queueSvc.StagedKeys)
 	dataSvc.Busy = func() bool {
 		st, err := launches.Status("stardew")
@@ -315,7 +321,7 @@ func run() error {
 		application.NewService(savesSvc), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
 		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc),
 		application.NewService(supportSvc), application.NewService(updates),
-		application.NewService(dataSvc),
+		application.NewService(dataSvc), application.NewService(toolsSvc),
 	} {
 		app.RegisterService(s)
 	}
