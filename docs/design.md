@@ -18,7 +18,6 @@ Remaining ([architecture.md](architecture.md#release)):
 - The updater fixes are offered upstream as wailsapp/wails#6200 (EXDEV staging), #6201 (AppImage) and #6202 (OnUpdateApplied, draft pending a WEP); Mortar pins the fork until they ship in a tagged v3 beta; then pin that beta and drop the `Rethunk-AI/wails` replace in `go.mod`. wailsapp/wails#6197 (GTK4 transparency) does not gate this: it only serves the translucent window below.
 - The repo turns public at the first release and builds go on its GitHub Releases, since the updater's manifest and assets must be publicly downloadable.
 - **Measure on Windows:** how launch arguments order around `%command%`, and whether SMAPI needs `--no-terminal`; one real update through the updater, and `DisplayVersion` after it.
-- **Self-contained Linux AppImage:** on Fedora 44 KDE live without WebKitGTK 6 the AppImage aborts: the bundled `libwebkitgtk-6.0.so.4` looks for `WebKitNetworkProcess` at its compiled-in `/usr/libexec/webkitgtk-6.0`, not in the AppDir (measured 2026-10-01; release builds ignore `WEBKIT_EXEC_PATH`). Fix it in the `Rethunk-AI/wails` fork's `wails3 generate appimage` and offer it upstream. Done when the AppImage starts on a clean Fedora KDE live session with no WebKitGTK installed.
 
 ## Build order
 
