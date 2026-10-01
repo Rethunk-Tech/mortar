@@ -46,13 +46,14 @@ type Update struct {
 // UpdateResult is the answer for one mod. Known is false when SMAPI's API could not be reached and no cached
 // answer exists: the caller shows "unknown", never an error. A known result with no Suggested has no update.
 type UpdateResult struct {
-	ID            string  `json:"id"`
-	Known         bool    `json:"known"`
-	Suggested     *Update `json:"suggested,omitempty"`
-	Unofficial    *Update `json:"unofficial,omitempty"`
-	Compatibility string  `json:"compatibility,omitempty"`
-	BrokeIn       string  `json:"brokeIn,omitempty"`
-	GitHubRepo    string  `json:"gitHubRepo,omitempty"`
+	ID                   string  `json:"id"`
+	Known                bool    `json:"known"`
+	Suggested            *Update `json:"suggested,omitempty"`
+	Unofficial           *Update `json:"unofficial,omitempty"`
+	Compatibility        string  `json:"compatibility,omitempty"`
+	CompatibilitySummary string  `json:"compatibilitySummary,omitempty"`
+	BrokeIn              string  `json:"brokeIn,omitempty"`
+	GitHubRepo           string  `json:"gitHubRepo,omitempty"`
 }
 
 type apiRequest struct {
@@ -90,12 +91,13 @@ type apiMod struct {
 	ID              string     `json:"id"`
 	SuggestedUpdate *apiUpdate `json:"suggestedUpdate"`
 	Metadata        *struct {
-		GitHubRepo          string     `json:"gitHubRepo"`
-		CompatibilityStatus string     `json:"compatibilityStatus"`
-		BrokeIn             string     `json:"brokeIn"`
-		Unofficial          *apiUpdate `json:"unofficial"`
-		UnofficialUpdate    *apiUpdate `json:"unofficialUpdate"`
-		UnofficialForSmapi  *apiUpdate `json:"unofficialForSmapi"`
+		GitHubRepo           string     `json:"gitHubRepo"`
+		CompatibilityStatus  string     `json:"compatibilityStatus"`
+		CompatibilitySummary string     `json:"compatibilitySummary"`
+		BrokeIn              string     `json:"brokeIn"`
+		Unofficial           *apiUpdate `json:"unofficial"`
+		UnofficialUpdate     *apiUpdate `json:"unofficialUpdate"`
+		UnofficialForSmapi   *apiUpdate `json:"unofficialForSmapi"`
 	} `json:"metadata"`
 }
 
@@ -197,7 +199,9 @@ func (c *Client) askUpdates(ctx context.Context, req UpdateRequest, mods []Insta
 	for _, a := range answers {
 		r := UpdateResult{ID: a.ID, Known: true, Suggested: a.SuggestedUpdate.asUpdate()}
 		if a.Metadata != nil {
-			r.Compatibility, r.BrokeIn, r.GitHubRepo = a.Metadata.CompatibilityStatus, a.Metadata.BrokeIn, a.Metadata.GitHubRepo
+			r.Compatibility = a.Metadata.CompatibilityStatus
+			r.CompatibilitySummary = a.Metadata.CompatibilitySummary
+			r.BrokeIn, r.GitHubRepo = a.Metadata.BrokeIn, a.Metadata.GitHubRepo
 			r.Unofficial = firstUnofficial(a.Metadata.UnofficialUpdate, a.Metadata.Unofficial, a.Metadata.UnofficialForSmapi)
 		}
 		if r.Unofficial == nil && a.SuggestedUpdate != nil {
