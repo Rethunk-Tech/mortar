@@ -13,22 +13,6 @@ type Process struct {
 	Start time.Time
 }
 
-// runs reports whether args start the program name, directly or through dotnet or mono.
-func runs(args []string, name string) bool {
-	is := func(a string) bool {
-		base := filepath.Base(a)
-		return strings.EqualFold(strings.TrimSuffix(strings.TrimSuffix(base, ".exe"), ".dll"), name)
-	}
-	if len(args) == 0 {
-		return false
-	}
-	if is(args[0]) {
-		return true
-	}
-	host := filepath.Base(args[0])
-	return (host == "dotnet" || host == "mono") && len(args) > 1 && is(args[1])
-}
-
 // UsesModsPath reports whether p was started with --mods-path pointing at modsDir. It is false when the
 // platform gave no command line: see Process.Args.
 func (p Process) UsesModsPath(modsDir string) bool {

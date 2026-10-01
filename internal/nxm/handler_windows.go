@@ -24,7 +24,7 @@ func (w *System) Owner() (Owner, error) {
 	if err != nil {
 		return Owner{}, err
 	}
-	defer k.Close()
+	defer func() { _ = k.Close() }()
 	cmd, _, err := k.GetStringValue("")
 	if err != nil && !errors.Is(err, registry.ErrNotExist) {
 		return Owner{}, err
@@ -50,7 +50,7 @@ func (w *System) Register() error {
 	if err != nil {
 		return err
 	}
-	defer k.Close()
+	defer func() { _ = k.Close() }()
 	if err := k.SetStringValue("", "URL:NXM Protocol"); err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (w *System) Register() error {
 	if err != nil {
 		return err
 	}
-	defer icon.Close()
+	defer func() { _ = icon.Close() }()
 	if err := icon.SetStringValue("", defaultIcon(w.exe)); err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func setCommand(cmd string) error {
 	if err != nil {
 		return err
 	}
-	defer k.Close()
+	defer func() { _ = k.Close() }()
 	return k.SetStringValue("", cmd)
 }
 
@@ -82,7 +82,7 @@ func readIcon() string {
 	if err != nil {
 		return ""
 	}
-	defer k.Close()
+	defer func() { _ = k.Close() }()
 	v, _, err := k.GetStringValue("")
 	if err != nil {
 		return ""
@@ -95,7 +95,7 @@ func setIcon(icon string) error {
 	if err != nil {
 		return err
 	}
-	defer k.Close()
+	defer func() { _ = k.Close() }()
 	return k.SetStringValue("", icon)
 }
 
@@ -135,7 +135,7 @@ func readName() string {
 	if err != nil {
 		return ""
 	}
-	defer k.Close()
+	defer func() { _ = k.Close() }()
 	v, _, err := k.GetStringValue("")
 	if err != nil {
 		return ""
@@ -148,7 +148,7 @@ func setName(name string) error {
 	if err != nil {
 		return err
 	}
-	defer k.Close()
+	defer func() { _ = k.Close() }()
 	return k.SetStringValue("", name)
 }
 

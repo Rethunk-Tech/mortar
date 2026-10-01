@@ -13,6 +13,22 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
+// runs reports whether args start the program name, directly or through dotnet or mono.
+func runs(args []string, name string) bool {
+	is := func(a string) bool {
+		base := filepath.Base(a)
+		return strings.EqualFold(strings.TrimSuffix(strings.TrimSuffix(base, ".exe"), ".dll"), name)
+	}
+	if len(args) == 0 {
+		return false
+	}
+	if is(args[0]) {
+		return true
+	}
+	host := filepath.Base(args[0])
+	return (host == "dotnet" || host == "mono") && len(args) > 1 && is(args[1])
+}
+
 // Processes lists running processes whose executable is name, from procDir (/proc) on Linux.
 func Processes(procDir, name string) ([]Process, error) {
 	entries, err := os.ReadDir(procDir)
