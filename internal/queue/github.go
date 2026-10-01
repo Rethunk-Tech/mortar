@@ -131,6 +131,20 @@ func (s *Service) installStaged(it Item) error {
 	if it.fomod != nil {
 		src = src.WithFomod(it.fomod)
 	}
+	if it.chosenRoot != "" {
+		if it.Remap != nil {
+			src = it.Remap.Source
+		}
+		res, err := s.d.InstallRemap(it.Game, it.Profile, it.staged, it.chosenRoot, src)
+		if errors.Is(err, store.ErrNotFound) {
+			s.mu.Lock()
+			if cur := s.find(it.ID); cur != nil {
+				cur.staged, cur.chosenRoot = "", ""
+			}
+			s.mu.Unlock()
+		}
+		return s.afterInstall(it.ID, res, err, false)
+	}
 	res, err := s.d.InstallStaged(it.Game, it.Profile, it.staged, src)
 	if errors.Is(err, store.ErrNotFound) {
 		s.mu.Lock()

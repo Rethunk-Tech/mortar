@@ -231,6 +231,7 @@ func run() error {
 		},
 		Stage:         profiles.StageGitHub,
 		InstallStaged: profiles.InstallStaged,
+		InstallRemap:  profiles.InstallRemap,
 		Verify: func(ctx context.Context, uniqueID, owner, repo string) (bool, error) {
 			return github.Verify(ctx, modMeta, uniqueID, owner, repo)
 		},

@@ -13,6 +13,7 @@ import {
   RetryFailed,
   Skip,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+import { QueueNeedsRoot } from '../install/QueueNeedsRoot.tsx'
 import { accent } from '../mods/paper.ts'
 import { LetterTile } from '../mods/parts.tsx'
 import { useProfiles } from '../profiles/store.ts'
@@ -350,6 +351,7 @@ export function Body({ items }: { items: Item[] }) {
   const click = items.filter((i) => i.state === 'waiting-click')
   const choose = items.filter((i) => i.state === 'needs-choice')
   const confirm = items.filter((i) => i.state === 'needs-confirm')
+  const needsRoot = items.some((i) => i.state === 'needs-root')
   const failed = items.filter((i) => i.state === 'failed')
   const active = items.filter(isActive)
   const next = items.filter((i) => i.state === 'queued')
@@ -359,6 +361,7 @@ export function Body({ items }: { items: Item[] }) {
     click.length +
       choose.length +
       confirm.length +
+      (needsRoot ? 1 : 0) +
       failed.length +
       active.length +
       next.length +
@@ -384,6 +387,7 @@ export function Body({ items }: { items: Item[] }) {
       {confirm.map((i) => (
         <Confirmation key={i.id} item={i} />
       ))}
+      <QueueNeedsRoot items={items} />
       <Failed items={failed} />
       {active.length > 0 ? <SectionTitle>{t`In progress (${active.length})`}</SectionTitle> : null}
       {active.map((i) => (

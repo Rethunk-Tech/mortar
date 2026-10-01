@@ -42,11 +42,13 @@ const (
 
 // Where an item stands. Done, Skipped and Cancelled are final; Failed waits for Retry or Skip; NeedsChoice waits
 // for Choose (a release with several archives), NeedsConfirm for Confirm or Skip (a download SMAPI's update API
-// does not tie to its repository), and NeedsFomod for AnswerFomod (a store item with a FOMOD installer).
+// does not tie to its repository), NeedsFomod for AnswerFomod (a store item with a FOMOD installer), and
+// NeedsRoot for AnswerRoot (an extracted archive with no SMAPI manifest until the user picks a folder).
 const (
 	StateNeedsChoice  = "needs-choice"
 	StateNeedsConfirm = "needs-confirm"
 	StateNeedsFomod   = "needs-fomod"
+	StateNeedsRoot    = "needs-root"
 	StateWaitingClick = "waiting-click"
 	StateQueued       = "queued"
 	StateDownloading  = "downloading"
@@ -98,20 +100,23 @@ type Item struct {
 	Speed    int64   `json:"speed"`
 	Error    string  `json:"error"`
 
-	Repo       string   `json:"repo"`
-	Tag        string   `json:"tag"`
-	Asset      string   `json:"asset"`
-	Assets     []string `json:"assets"`
-	Unverified bool     `json:"unverified"`
-	FomodKey   string   `json:"fomodKey,omitempty"`
+	Repo       string            `json:"repo"`
+	Tag        string            `json:"tag"`
+	Asset      string            `json:"asset"`
+	Assets     []string          `json:"assets"`
+	Unverified bool              `json:"unverified"`
+	FomodKey   string            `json:"fomodKey,omitempty"`
+	Remap      *profile.RemapAsk `json:"remap,omitempty"`
 
 	// The key and expiry of an nxm:// link supply a free account's download; they are never written to disk.
 	key     string
 	expires int64
 	// staged is the store key of a downloaded GitHub asset that waits for Confirm, or that Confirm released,
-	// or of a Nexus install waiting for FOMOD choices.
+	// or of a Nexus install waiting for FOMOD choices, or of a download waiting for a content root.
 	staged string
 	fomod  map[string]map[string][]string
+	// chosenRoot is the folder AnswerRoot picked for a staged item; it is not persisted.
+	chosenRoot string
 	// started is when this attempt left the queue for a fetch; it is not persisted.
 	started time.Time
 }
@@ -161,6 +166,7 @@ type Deps struct {
 	// then adds it to the profile. Between the two, Verify checks the source.
 	Stage         func(game string, source profile.Source, path string) (key string, uniqueIDs []string, err error)
 	InstallStaged func(game, profileID, key string, source profile.Source) (profile.InstallResult, error)
+	InstallRemap  func(game, profileID, key, root string, source profile.Source) (profile.InstallResult, error)
 	Verify        func(ctx context.Context, uniqueID, owner, repo string) (bool, error)
 	GitHub        *github.Client
 	OpenURL       func(url string) error
@@ -227,6 +233,9 @@ func New(d Deps) (*Service, error) {
 			} else {
 				it.FomodKey = it.staged
 			}
+		}
+		if it.State == StateNeedsRoot && it.staged == "" {
+			it.State = StateQueued
 		}
 		if slices.Contains([]string{StateDownloading, StateInstalling, StateWaitingClick}, it.State) {
 			it.State, it.Progress, it.Speed = StateQueued, 0, 0
@@ -506,7 +515,7 @@ func (s *Service) drop(match func(*Item) bool) {
 
 // Skip drops an item that has not started, that failed, or that waits for the user.
 func (s *Service) Skip(id string) {
-	s.end(id, StateSkipped, StateFailed, StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod)
+	s.end(id, StateSkipped, StateFailed, StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot)
 }
 
 // Choose picks the asset of an item waiting in StateNeedsChoice.
@@ -540,6 +549,35 @@ func (s *Service) AnswerFomod(id string, choices map[string]map[string][]string)
 	s.mu.Unlock()
 	s.publish(true)
 	s.poke()
+}
+
+// AnswerRoot installs an item waiting in StateNeedsRoot with the chosen content folder.
+func (s *Service) AnswerRoot(id, root string) {
+	s.mu.Lock()
+	if it := s.find(id); it != nil && it.State == StateNeedsRoot && it.staged != "" {
+		it.State, it.chosenRoot = StateQueued, root
+	}
+	s.mu.Unlock()
+	s.publish(true)
+	s.poke()
+}
+
+// FailRoot marks an item waiting in StateNeedsRoot as failed when the user cancels the folder picker.
+func (s *Service) FailRoot(id string) {
+	const msg = "No mod folder was chosen for this archive"
+	s.mu.Lock()
+	var rec *Item
+	if it := s.find(id); it != nil && it.State == StateNeedsRoot {
+		snap := *it
+		rec = &snap
+		it.State, it.Error = StateFailed, msg
+		it.staged, it.Remap, it.chosenRoot = "", nil, ""
+	}
+	s.mu.Unlock()
+	s.publish(true)
+	if rec != nil {
+		s.recordHistory(rec, StateFailed)
+	}
 }
 
 // Cancel stops an item, including a download under way. An install cannot be interrupted.

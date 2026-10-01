@@ -355,6 +355,10 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		s.pauseFomod(it.ID, res.Fomod.Key)
 		return nil
 	}
+	if err == nil && res.Remap != nil {
+		s.pauseRoot(it.ID, res.Remap)
+		return nil
+	}
 	return s.finish(it.ID, err, false)
 }
 
@@ -367,9 +371,25 @@ func (s *Service) pauseFomod(id, key string) {
 	s.publish(true)
 }
 
+func (s *Service) pauseRoot(id string, ask *profile.RemapAsk) {
+	if ask == nil {
+		return
+	}
+	s.mu.Lock()
+	if cur := s.find(id); cur != nil {
+		cur.State, cur.Progress, cur.staged, cur.Remap = StateNeedsRoot, 0, ask.Key, ask
+	}
+	s.mu.Unlock()
+	s.publish(true)
+}
+
 func (s *Service) afterInstall(id string, res profile.InstallResult, err error, unverified bool) error {
 	if err == nil && res.Fomod != nil {
 		s.pauseFomod(id, res.Fomod.Key)
+		return nil
+	}
+	if err == nil && res.Remap != nil {
+		s.pauseRoot(id, res.Remap)
 		return nil
 	}
 	return s.finish(id, err, unverified)

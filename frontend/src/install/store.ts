@@ -12,6 +12,10 @@ import {
   RemoveEntry,
   RollBack,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import {
+  AnswerRoot,
+  FailRoot,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { useFomod } from '../fomod/store.ts'
 import { i18n } from '../i18n/index.ts'
 import { useLaunch } from '../launch/store.ts'
@@ -20,7 +24,7 @@ import { useMods } from '../mods/store.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { changeStillLatest } from '../toasts/history.ts'
-import { errorMessage } from '../toasts/report.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type MissingOffer, offersFor } from './missingDeps.ts'
 
@@ -155,13 +159,73 @@ async function installOneArchive(
   })
 }
 
-export interface RemapSession {
+interface RemapSession {
   game: string
   profileId: string
   profileName: string
   key: string
   source: Source
   ask: RemapAsk
+  queueId?: string
+}
+
+async function afterDroppedRemap(
+  session: RemapSession,
+  res: Awaited<ReturnType<typeof InstallRemap>>,
+) {
+  if (res.remap) {
+    useInstall.setState({
+      remap: { ...session, key: res.remap.key, source: res.remap.source, ask: res.remap },
+    })
+    return
+  }
+  if (res.fomod) {
+    useFomod.getState().open({
+      game: session.game,
+      profileId: session.profileId,
+      key: res.fomod.key,
+      source: res.fomod.source,
+      ask: res.fomod,
+    })
+    return
+  }
+  const next = res.profile
+  useProfiles.getState().replace(next)
+  const names = res.added ?? []
+  const landed = entryForNames(next, names)
+  useToasts.getState().push({
+    kind: 'success',
+    title: installTitle(
+      names.join(', '),
+      session.profileName,
+      res.updated ?? false,
+      res.versionChanged ?? false,
+    ),
+    picture: landed?.source.picture ?? '',
+    ...(landed
+      ? {
+          action: {
+            label: i18n._(msg`Undo`),
+            run: () =>
+              undoArchiveInstall(session.game, session.profileId, landed.key, res.updated ?? false),
+            profileId: session.profileId,
+            live: () =>
+              changeStillLatest(
+                useProfiles.getState().profiles.find((p) => p.id === session.profileId),
+                landed.key,
+                (landed.mods ?? []).map((m) => m.uniqueId),
+              ),
+          },
+        }
+      : {}),
+  })
+  const ids: string[] = []
+  for (const mod of landed?.mods ?? []) {
+    if (mod.uniqueId) {
+      ids.push(mod.uniqueId)
+    }
+  }
+  await maybeFinishInstall(session.profileId, ids)
 }
 
 export const useInstall = create<{
@@ -180,74 +244,31 @@ export const useInstall = create<{
   remap: null,
   dismissOffer: () => set((s) => ({ offers: s.offers.slice(1) })),
   openRemap: (remap) => set({ remap }),
-  closeRemap: () => set({ remap: null }),
+  closeRemap: () => {
+    const session = get().remap
+    if (session?.queueId) {
+      FailRoot(session.queueId).catch(reportUnexpected)
+    }
+    set({ remap: null })
+  },
   chooseRoot: (root) => {
     const session = get().remap
     if (!session) {
       return
     }
     set({ remap: null })
-    InstallRemap(session.game, session.profileId, session.key, root, session.source)
-      .then(async (res) => {
-        if (res.remap) {
-          set({
-            remap: { ...session, key: res.remap.key, source: res.remap.source, ask: res.remap },
-          })
-          return
-        }
-        if (res.fomod) {
-          useFomod.getState().open({
-            game: session.game,
-            profileId: session.profileId,
-            key: res.fomod.key,
-            source: res.fomod.source,
-            ask: res.fomod,
-          })
-          return
-        }
-        const next = res.profile
-        useProfiles.getState().replace(next)
-        const names = res.added ?? []
-        const landed = entryForNames(next, names)
+    if (session.queueId) {
+      AnswerRoot(session.queueId, root).catch((e) => {
         useToasts.getState().push({
-          kind: 'success',
-          title: installTitle(
-            names.join(', '),
-            session.profileName,
-            res.updated ?? false,
-            res.versionChanged ?? false,
-          ),
-          picture: landed?.source.picture ?? '',
-          ...(landed
-            ? {
-                action: {
-                  label: i18n._(msg`Undo`),
-                  run: () =>
-                    undoArchiveInstall(
-                      session.game,
-                      session.profileId,
-                      landed.key,
-                      res.updated ?? false,
-                    ),
-                  profileId: session.profileId,
-                  live: () =>
-                    changeStillLatest(
-                      useProfiles.getState().profiles.find((p) => p.id === session.profileId),
-                      landed.key,
-                      (landed.mods ?? []).map((m) => m.uniqueId),
-                    ),
-                },
-              }
-            : {}),
+          kind: 'error',
+          title: i18n._(msg`Could not add the chosen folder`),
+          body: errorMessage(e),
         })
-        const ids: string[] = []
-        for (const mod of landed?.mods ?? []) {
-          if (mod.uniqueId) {
-            ids.push(mod.uniqueId)
-          }
-        }
-        await maybeFinishInstall(session.profileId, ids)
       })
+      return
+    }
+    InstallRemap(session.game, session.profileId, session.key, root, session.source)
+      .then((res) => afterDroppedRemap(session, res))
       .catch((e) => {
         useToasts.getState().push({
           kind: 'error',
@@ -309,4 +330,5 @@ export function considerMissing(dependentIds: readonly string[]) {
   useInstall.setState((s) => ({ offers: [...s.offers, ...next] }))
 }
 
+export type { RemapSession }
 export { entryForNames, shouldConsiderMissing, undoArchiveInstall }
