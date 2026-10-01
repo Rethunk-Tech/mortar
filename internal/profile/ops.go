@@ -31,10 +31,11 @@ type Mod struct {
 	Enabled  bool     `json:"enabled"`
 	Siblings []string `json:"siblings"`
 	// Picture and Endorsements come from the mod's Nexus page and are empty for other sources.
-	Picture      string   `json:"picture"`
-	Endorsements int      `json:"endorsements"`
-	Needs        []string `json:"needs,omitempty"`
-	Optional     []string `json:"optional,omitempty"`
+	Picture        string   `json:"picture"`
+	Endorsements   int      `json:"endorsements"`
+	Needs          []string `json:"needs,omitempty"`
+	Optional       []string `json:"optional,omitempty"`
+	ContentPackFor string   `json:"contentPackFor,omitempty"`
 }
 
 // EnableRef names one mod to switch, matching SetModEnabled's key and UniqueID.
@@ -159,7 +160,10 @@ func entryMods(found []manifest.Mod) []EntryMod {
 				}
 			}
 		}
-		out[i] = EntryMod{UniqueID: m.UniqueID, Version: m.Version, Name: m.Name, Author: m.Author, Folder: m.Folder, Needs: needs, Optional: optional}
+		out[i] = EntryMod{
+			UniqueID: m.UniqueID, Version: m.Version, Name: m.Name, Author: m.Author, Folder: m.Folder,
+			Needs: needs, Optional: optional, ContentPackFor: m.ContentPackFor,
+		}
 	}
 	return out
 }
@@ -614,7 +618,8 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 			out = append(out, Mod{
 				Key: e.Key, UniqueID: m.UniqueID, Name: m.Name, Author: m.Author, Version: m.Version,
 				Enabled: !isDisabled(e, m), Siblings: sib,
-				Picture: e.Source.Picture, Endorsements: e.Source.EndorsementCount, Needs: m.Needs, Optional: m.Optional,
+				Picture: e.Source.Picture, Endorsements: e.Source.EndorsementCount,
+				Needs: m.Needs, Optional: m.Optional, ContentPackFor: m.ContentPackFor,
 			})
 		}
 	}
