@@ -1,45 +1,57 @@
 import { expect, test } from 'bun:test'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type {
+  Entry,
+  EntryMod,
+  Profile,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compareProfiles } from './compare.ts'
 
-function profile(entries: Profile['entries'], id = 'p', name = 'Profile'): Profile {
-  return {
-    id,
-    name,
-    entries,
-    hidden: false,
-    color: 'teal',
-    icon: 'sprout',
-  }
+const profile = (partial: Partial<Profile> & Pick<Profile, 'id' | 'name'>): Profile => ({
+  notes: '',
+  cover: '',
+  order: 0,
+  hidden: false,
+  created: '',
+  updated: '',
+  entries: null,
+  ...partial,
+})
+
+function mod(uniqueId: string, name: string, version: string): EntryMod {
+  return { uniqueId, name, version, author: '', folder: '.' }
 }
 
-function entry(
-  key: string,
-  mods: { uniqueId: string; name: string; version: string }[],
-  disabled: string[] = [],
-) {
+function entry(key: string, mods: EntryMod[], disabled: string[] | null = null): Entry {
   return {
     key,
     previousKey: '',
-    source: { kind: 'nexus', modId: 1 },
-    mods: mods.map((m) => ({ ...m, folder: '.' })),
+    source: { kind: 'nexus', name: 'mod.zip', modId: 1 },
+    mods,
     disabled,
   }
 }
 
 test('compare splits version, enabled, and identical mods in both profiles', () => {
-  const a = profile([
-    entry('only-a', [{ uniqueId: 'Me.OnlyA', name: 'Only A', version: '1.0' }]),
-    entry('ver', [{ uniqueId: 'Me.Ver', name: 'Version', version: '1.0' }]),
-    entry('en', [{ uniqueId: 'Me.En', name: 'Enabled', version: '2.0' }], ['Me.En']),
-    entry('same', [{ uniqueId: 'Me.Same', name: 'Same', version: '3.0' }]),
-  ])
-  const b = profile([
-    entry('only-b', [{ uniqueId: 'Me.OnlyB', name: 'Only B', version: '1.0' }]),
-    entry('ver-b', [{ uniqueId: 'Me.Ver', name: 'Version', version: '2.0' }]),
-    entry('en-b', [{ uniqueId: 'Me.En', name: 'Enabled', version: '2.0' }]),
-    entry('same-b', [{ uniqueId: 'Me.Same', name: 'Same', version: '3.0' }]),
-  ])
+  const a = profile({
+    id: 'a',
+    name: 'A',
+    entries: [
+      entry('only-a', [mod('Me.OnlyA', 'Only A', '1.0')]),
+      entry('ver', [mod('Me.Ver', 'Version', '1.0')]),
+      entry('en', [mod('Me.En', 'Enabled', '2.0')], ['Me.En']),
+      entry('same', [mod('Me.Same', 'Same', '3.0')]),
+    ],
+  })
+  const b = profile({
+    id: 'b',
+    name: 'B',
+    entries: [
+      entry('only-b', [mod('Me.OnlyB', 'Only B', '1.0')]),
+      entry('ver-b', [mod('Me.Ver', 'Version', '2.0')]),
+      entry('en-b', [mod('Me.En', 'Enabled', '2.0')]),
+      entry('same-b', [mod('Me.Same', 'Same', '3.0')]),
+    ],
+  })
 
   const d = compareProfiles(a, b)
   expect(d.onlyA.map((m) => m.uniqueId)).toEqual(['Me.OnlyA'])
@@ -50,10 +62,16 @@ test('compare splits version, enabled, and identical mods in both profiles', () 
 })
 
 test('a mod with both version and enabled differences appears in both diff groups', () => {
-  const a = profile([entry('x', [{ uniqueId: 'Me.Both', name: 'Both', version: '1.0' }])])
-  const b = profile([
-    entry('y', [{ uniqueId: 'Me.Both', name: 'Both', version: '2.0' }], ['Me.Both']),
-  ])
+  const a = profile({
+    id: 'a',
+    name: 'A',
+    entries: [entry('x', [mod('Me.Both', 'Both', '1.0')])],
+  })
+  const b = profile({
+    id: 'b',
+    name: 'B',
+    entries: [entry('y', [mod('Me.Both', 'Both', '2.0')], ['Me.Both'])],
+  })
   const d = compareProfiles(a, b)
   expect(d.differentVersion.map((p) => p.uniqueId)).toEqual(['Me.Both'])
   expect(d.differentEnabled.map((p) => p.uniqueId)).toEqual(['Me.Both'])
