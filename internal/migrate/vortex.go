@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 const vortexGame = "stardewvalley"
@@ -40,7 +42,7 @@ func vortexProfiles(root, fallbackModsPath string) ([]ProfilePreview, string, er
 	modsPath := vortexModsPath(root, fallbackModsPath, state)
 	out := make([]ProfilePreview, 0, len(profiles))
 	for _, profile := range profiles {
-		preview, err := vortexPreviewState(root, modsPath, state, profile.ID)
+		preview, err := vortexPreviewState(modsPath, state, profile.ID)
 		if err != nil {
 			return nil, "", err
 		}
@@ -55,10 +57,10 @@ func vortexPreview(root, fallbackModsPath, id string) (ProfilePreview, error) {
 		return ProfilePreview{}, err
 	}
 	modsPath := vortexModsPath(root, fallbackModsPath, state)
-	return vortexPreviewState(root, modsPath, state, id)
+	return vortexPreviewState(modsPath, state, id)
 }
 
-func vortexPreviewState(root, modsPath string, state map[string]json.RawMessage, id string) (ProfilePreview, error) {
+func vortexPreviewState(modsPath string, state map[string]json.RawMessage, id string) (ProfilePreview, error) {
 	profiles := vortexProfileList(state)
 	var selected *vortexProfile
 	for i := range profiles {
@@ -68,7 +70,7 @@ func vortexPreviewState(root, modsPath string, state map[string]json.RawMessage,
 		}
 	}
 	if selected == nil {
-		return ProfilePreview{}, fmt.Errorf("Vortex profile %s not found", id)
+		return ProfilePreview{}, errors.New("Vortex profile " + id + " not found")
 	}
 	mods := vortexModList(state)
 	byID := make(map[string]vortexMod, len(mods))
@@ -141,7 +143,7 @@ func readVortexState(root string) (map[string]json.RawMessage, error) {
 		if info.IsDir() {
 			continue
 		}
-		data, err := os.ReadFile(path)
+		data, err := fsx.ReadFile(path)
 		if err == nil {
 			state, parseErr := parseVortexJSON(data)
 			if parseErr == nil {
@@ -207,7 +209,9 @@ func vortexProfileList(state map[string]json.RawMessage) []vortexProfile {
 			continue
 		}
 		for nestedID, nestedValue := range nested {
-			json.Unmarshal(nestedValue, &profile)
+			if err := json.Unmarshal(nestedValue, &profile); err != nil {
+				continue
+			}
 			if !strings.EqualFold(profile.GameID, vortexGame) {
 				continue
 			}
@@ -303,7 +307,9 @@ func rawInt(values map[string]json.RawMessage, key string) int {
 	}
 	var text string
 	if json.Unmarshal(raw, &text) == nil {
-		fmt.Sscan(text, &number)
+		if _, err := fmt.Sscan(text, &number); err != nil {
+			return 0
+		}
 	}
 	return number
 }

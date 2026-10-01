@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
@@ -59,7 +60,7 @@ func stardropPreview(profilesDir, modsPath, id string) (ProfilePreview, error) {
 }
 
 func stardropPreviewFile(path, id, modsPath string) (ProfilePreview, error) {
-	data, err := os.ReadFile(path)
+	data, err := fsx.ReadFile(path)
 	if err != nil {
 		return ProfilePreview{}, err
 	}
@@ -86,7 +87,7 @@ func stardropPreviewFile(path, id, modsPath string) (ProfilePreview, error) {
 
 func stardropModsPath(dataDir, fallback string) string {
 	path := fallback
-	data, err := os.ReadFile(filepath.Join(dataDir, "Settings.json"))
+	data, err := fsx.ReadFile(filepath.Join(dataDir, "Settings.json"))
 	if err == nil {
 		var settings struct {
 			ModFolderPath   string `json:"ModFolderPath"`
