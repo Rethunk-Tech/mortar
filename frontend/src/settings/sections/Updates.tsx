@@ -14,6 +14,7 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   SetBackupsKept,
   SetCheckModUpdatesOnStart,
+  SetIncludeBetaReleases,
   SetTellWhenSmapiOut,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useNav } from '../../nav/store.ts'
@@ -206,12 +207,23 @@ export function Updates() {
   const game = lastOpenedGame(useSettings((s) => s.lastGame))
   const checkModUpdatesOnStart = useSettings((s) => s.checkModUpdatesOnStart)
   const tellWhenSmapiOut = useSettings((s) => s.tellWhenSmapiOut)
+  const includeBetaReleases = useSettings((s) => s.includeBetaReleases)
   const push = useToasts((s) => s.push)
   const fail = t`Couldn't save that setting`
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Mortar`}</Box>
       <MortarUpdate />
+      <FormControlLabel
+        sx={{ m: 0, alignItems: 'center' }}
+        control={
+          <Switch
+            checked={includeBetaReleases}
+            onChange={(_, on) => persistToggle(() => SetIncludeBetaReleases(on), push, fail)}
+          />
+        }
+        label={t`Include beta releases`}
+      />
       <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Mods and SMAPI`}</Box>
       <FormControlLabel
         sx={{ m: 0, alignItems: 'center' }}

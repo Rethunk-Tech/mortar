@@ -22,6 +22,8 @@ const defaults: Settings = {
   nxmAsked: false,
   checkModUpdatesOnStart: true,
   tellWhenSmapiOut: true,
+  keepInTray: false,
+  includeBetaReleases: false,
   backupsKept: 5,
   listColumns: ['on', 'name', 'version', 'author', 'source', 'category', 'status'],
   listSortColumn: 'name',

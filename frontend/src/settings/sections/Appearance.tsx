@@ -1,11 +1,21 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Chip, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import {
+  Box,
+  Button,
+  ButtonBase,
+  Chip,
+  FormControlLabel,
+  Switch,
+  ToggleButton,
+  ToggleButtonGroup,
+} from '@mui/material'
 import { ImagePlus, RotateCcw } from 'lucide-react'
 import {
   ChooseBackgroundImage,
   SetAccent,
   SetBackground,
   SetBackgroundImage,
+  SetKeepInTray,
   SetTipsSeen,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { type AccentName, accents } from '../../theme/accents.ts'
@@ -13,6 +23,42 @@ import { errorText } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { useSettings } from '../store.ts'
 import { isAccent } from '../theme.ts'
+
+function KeepInTraySwitch() {
+  const { t } = useLingui()
+  const keepInTray = useSettings((s) => s.keepInTray)
+  const push = useToasts((s) => s.push)
+  const reportFailure = (err: unknown) => {
+    const body = errorText(err)
+    push({ kind: 'error', title: t`Couldn't save that setting`, ...(body ? { body } : {}) })
+  }
+  return (
+    <FormControlLabel
+      sx={{ m: 0, alignItems: 'flex-start' }}
+      control={
+        <Switch
+          checked={keepInTray}
+          onChange={(_, on) => {
+            SetKeepInTray(on).catch(reportFailure)
+          }}
+        />
+      }
+      label={
+        <Box>
+          <Box component="span" sx={{ display: 'block', fontSize: 14 }}>
+            {t`Keep Mortar in the tray`}
+          </Box>
+          <Box
+            component="span"
+            sx={{ display: 'block', fontSize: 13, color: 'rgba(225,225,230,0.95)' }}
+          >
+            {t`Closing the window hides Mortar instead of quitting. On GNOME you may need the AppIndicator extension to see the tray icon.`}
+          </Box>
+        </Box>
+      }
+    />
+  )
+}
 
 export function Appearance() {
   const { t } = useLingui()
@@ -32,6 +78,8 @@ export function Appearance() {
   ]
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Window`}</Box>
+      <KeepInTraySwitch />
       <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Accent colour`}</Box>
       <Box
         role="radiogroup"
