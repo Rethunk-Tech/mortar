@@ -15,6 +15,7 @@ tasks:
           EXTRA_TAGS: '{{.EXTRA_TAGS}}'
           OBFUSCATED: '{{.OBFUSCATED}}'
           GARBLE_ARGS: '{{.GARBLE_ARGS}}'
+          PACKAGED: '{{.PACKAGED}}'
 
   build:native:
     summary: Builds the application natively on Linux
@@ -37,9 +38,10 @@ tasks:
     cmds:
       - '{{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{end}} {{.BUILD_FLAGS}} -o {{.OUTPUT}}'
     vars:
-      BUILD_FLAGS: '{{if eq .DEV "true"}}{{if or .EXTRA_TAGS (eq .OBFUSCATED "true")}}-tags {{if eq .OBFUSCATED "true"}}wails_obfuscated{{if .EXTRA_TAGS}},{{end}}{{end}}{{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s"{{end}}'
+      BUILD_FLAGS: '{{if eq .DEV "true"}}{{if or .EXTRA_TAGS (eq .OBFUSCATED "true")}}-tags {{if eq .OBFUSCATED "true"}}wails_obfuscated{{if .EXTRA_TAGS}},{{end}}{{end}}{{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s{{if .PACKAGED}} -X main.packaged={{.PACKAGED}}{{end}}"{{end}}'
       DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
+      PACKAGED: '{{.PACKAGED}}'
     env:
       GOOS: linux
       CGO_ENABLED: 1
@@ -71,6 +73,38 @@ tasks:
       ICON: '{{.APP_NAME}}.png'
       DESKTOP_FILE: '../{{.APP_NAME}}.desktop'
       OUTPUT_DIR: '../../../bin'
+
+  nfpm:
+    summary: Builds .deb, .rpm and Arch packages (self-updater off)
+    deps:
+      - task: build
+        vars:
+          PACKAGED: deb
+          OUTPUT: '{{.BIN_DIR}}/mortar-packaged'
+    cmds:
+      - |
+        set -euo pipefail
+        VERSION="$(sed -n 's/^const version = "\(.*\)"$/\1/p' main.go)"
+        export VERSION
+        nfpm package --config build/linux/nfpm/nfpm.yaml --packager deb --target "bin/mortar_${VERSION}_amd64.deb"
+        nfpm package --config build/linux/nfpm/nfpm.yaml --packager rpm --target "bin/mortar-${VERSION}-1.x86_64.rpm"
+        nfpm package --config build/linux/nfpm/nfpm.yaml --packager archlinux --target "bin/mortar-${VERSION}-1-x86_64.pkg.tar.zst"
+        cp -a "{{.BIN_DIR}}/mortar-packaged" "{{.BIN_DIR}}/mortar-linux-amd64"
+
+  flatpak:
+    summary: Builds a single-file Flatpak bundle (self-updater off)
+    deps:
+      - task: build
+        vars:
+          PACKAGED: deb
+          OUTPUT: '{{.BIN_DIR}}/mortar-packaged'
+    cmds:
+      - |
+        set -euo pipefail
+        dest="${PWD}/bin/mortar-linux-x86_64.flatpak"
+        mkdir -p bin
+        flatpak-builder --user --force-clean --install-deps-from=flathub --repo=/var/tmp/mortar-flatpak-repo /var/tmp/mortar-flatpak-build build/linux/flatpak/tech.rethunk.Mortar.yml
+        flatpak build-bundle /var/tmp/mortar-flatpak-repo "$dest" tech.rethunk.Mortar
 
   generate:dotdesktop:
     summary: Generates a `.desktop` file

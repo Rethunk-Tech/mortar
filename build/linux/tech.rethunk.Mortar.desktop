@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Mortar
+Exec=mortar
+Icon=tech.rethunk.Mortar
+Categories=Game;Utility;
+Comment=Multi-game desktop mod manager
+Terminal=false
+Keywords=mod;manager;nexus;stardew;
+Version=1.0
+StartupNotify=false
+StartupWMClass=tech.rethunk.Mortar
