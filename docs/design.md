@@ -44,6 +44,7 @@ Not in the first release, each by NOMAD on 2026-09-29; re-weigh only when asked:
 - In-app mod search and browsing: Mortar links out to Nexus.
 - CurseForge (needs an API key application) and ModDrop (no documented download API) as sources; the Xbox app version; Lutris; Steam Deck.
 - Windows code signing.
+- A light theme, as in Stardrop and Vortex, built once the design system is revisited (MUI stays for now; Tailwind and shadcn were raised) (NOMAD, 2026-10-01).
 - An external tools list, as in Vortex and MO2: register tools such as xnbcli, Tiled or a save editor and launch them from Mortar with the game's paths (NOMAD, 2026-10-01).
 - Per-profile save isolation.
 - Registering Mortar with Nexus (SSO slug; ask then about OAuth, which Vortex uses via `nxm://oauth/callback`, and Collections), and a mode for users without an API key: an `nxm://` link cannot become a download without API authentication (HTTP 401 without a key, measured), so that mode would pick up manual downloads from the Downloads folder by their manifests, with confirmation.
