@@ -49,8 +49,14 @@ tasks:
         msg: "MORTAR_UPDATE_KEY must name the updater's private key file"
       - sh: grep -q 'const version = "{{.VERSION}}"' main.go
         msg: "main.go's version is not {{.VERSION}}; an app built from it would offer itself the same update"
-      - sh: test -f bin/mortar-linux-x86_64.AppImage && test -f bin/mortar-linux-aarch64.AppImage && test -f bin/mortar-windows-amd64.exe
-        msg: "need both Linux AppImages and the Windows exe: linux:create:appimage on amd64 and arm64, and windows:package"
+      - sh: test -f bin/mortar-linux-x86_64.AppImage && test -f bin/mortar-windows-amd64.exe
+        msg: "need the amd64 AppImage and Windows exe; include mortar-linux-aarch64.AppImage when the arm64 job has produced it"
     cmds:
-      - wails3 updater manifest -version {{.VERSION}} -key "$MORTAR_UPDATE_KEY" -url-prefix https://github.com/Rethunk-AI/mortar/releases/download/v{{.VERSION}} -output bin/manifest.json bin/mortar-linux-x86_64.AppImage bin/mortar-linux-aarch64.AppImage bin/mortar-windows-amd64.exe
+      - |
+        set -euo pipefail
+        assets=(bin/mortar-linux-x86_64.AppImage bin/mortar-windows-amd64.exe)
+        if [[ -f bin/mortar-linux-aarch64.AppImage ]]; then
+          assets+=(bin/mortar-linux-aarch64.AppImage)
+        fi
+        wails3 updater manifest -version {{.VERSION}} -key "$MORTAR_UPDATE_KEY" -url-prefix https://github.com/Rethunk-AI/mortar/releases/download/v{{.VERSION}} -output bin/manifest.json "${assets[@]}"
       - wails3 updater verify -manifest bin/manifest.json -publickey build/updater/public.key

@@ -1,9 +1,8 @@
 name: Release
 
-# A v* tag builds, signs and publishes the release; a manual dispatch runs the same build and signing as a
-# dry run and publishes nothing. Linux amd64 still cross-compiles Windows in the same job so those binaries
-# exist before signing; linux arm64 is a second matrix leg because GitHub only offers that arch on
-# ubuntu-24.04-arm. The signed manifest is assembled after both legs so it can name both AppImages.
+# A v* tag builds, signs and publishes the release; a manual dispatch runs the amd64 (+ Windows) build and
+# signing as a dry run and publishes nothing. Linux arm64 is a second matrix leg on tags only
+# (ubuntu-24.04-arm). The signed manifest is assembled after both tag legs so it can name both AppImages.
 on:
   push:
     tags: ["v*"]
@@ -17,27 +16,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+    steps:
+      - id: set
+        run: |
+          amd64='{"runner":"ubuntu-latest","goarch":"amd64","appimage_arch":"x86_64","deb_arch":"amd64","rpm_arch":"x86_64","pkg_arch":"x86_64","windows":true,"flatpak":true}'
+          arm64='{"runner":"ubuntu-24.04-arm","goarch":"arm64","appimage_arch":"aarch64","deb_arch":"arm64","rpm_arch":"aarch64","pkg_arch":"aarch64","windows":false,"flatpak":false}'
+          if [ "${{ github.ref_type }}" = tag ]; then
+            echo "matrix={\"include\":[$amd64,$arm64]}" >>"$GITHUB_OUTPUT"
+          else
+            echo "matrix={\"include\":[$amd64]}" >>"$GITHUB_OUTPUT"
+          fi
+
   release:
+    needs: plan
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - runner: ubuntu-latest
-            goarch: amd64
-            appimage_arch: x86_64
-            deb_arch: amd64
-            rpm_arch: x86_64
-            pkg_arch: x86_64
-            windows: true
-            flatpak: true
-          - runner: ubuntu-24.04-arm
-            goarch: arm64
-            appimage_arch: aarch64
-            deb_arch: arm64
-            rpm_arch: aarch64
-            pkg_arch: aarch64
-            windows: false
-            flatpak: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 40
     env:
@@ -104,7 +102,22 @@ jobs:
           wails3 task windows:package INSTALL_SCOPE=user
           cp bin/mortar.exe bin/mortar-windows-amd64.exe
 
+      - name: Signed manifest
+        if: matrix.windows && github.ref_type != 'tag'
+        env:
+          UPDATE_KEY: ${{ secrets.MORTAR_UPDATE_KEY }}
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          version="$(sed -n 's/^const version = "\(.*\)"$/\1/p' main.go)"
+          umask 077
+          key="$RUNNER_TEMP/updater.key"
+          trap 'rm -f "$key"' EXIT
+          printf '%s\n' "$UPDATE_KEY" >"$key"
+          MORTAR_UPDATE_KEY="$key" wails3 task release:manifest VERSION="$version"
+
       - name: Stage artifacts
+        if: github.ref_type == 'tag'
         run: |
           mkdir -p out
           cp "bin/mortar-linux-${{ matrix.appimage_arch }}.AppImage" out/
@@ -120,6 +133,7 @@ jobs:
           fi
 
       - name: Upload artifacts
+        if: github.ref_type == 'tag'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: mortar-linux-${{ matrix.goarch }}
@@ -128,6 +142,7 @@ jobs:
 
   finalize:
     needs: release
+    if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
