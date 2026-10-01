@@ -220,8 +220,12 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 		return "", &NoModError{Key: key}
 	}
 	e := Entry{Key: key, Source: source, Mods: entryMods(found), Disabled: []string{}, Added: time.Now().UTC(), Fomod: cloneFomod(source.fomodMap())}
+	startEnabled := true
+	if s.NewModsEnabled != nil {
+		startEnabled = s.NewModsEnabled()
+	}
 	for _, m := range e.Mods {
-		if hasID(disabled, m.UniqueID) {
+		if hasID(disabled, m.UniqueID) || !startEnabled {
 			e.Disabled = append(e.Disabled, m.UniqueID)
 		}
 	}
