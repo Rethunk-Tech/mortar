@@ -6,6 +6,8 @@ import (
 	"strings"
 	"unicode/utf16"
 	"unicode/utf8"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 const configName = "moduleconfig.xml"
@@ -62,7 +64,7 @@ func findAtDepth(dir string, depth int) (string, error) {
 }
 
 func readXMLBytes(path string) ([]byte, error) {
-	raw, err := os.ReadFile(path)
+	raw, err := fsx.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

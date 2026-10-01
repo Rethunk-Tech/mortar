@@ -29,11 +29,7 @@ func applyOp(srcRoot, destRoot string, op Op) error {
 	}
 	dest := op.Destination
 	if dest == "" {
-		if op.Folder {
-			dest = filepath.Base(filepath.Clean(filepath.FromSlash(strings.ReplaceAll(op.Source, "\\", "/"))))
-		} else {
-			dest = filepath.Base(filepath.Clean(filepath.FromSlash(strings.ReplaceAll(op.Source, "\\", "/"))))
-		}
+		dest = filepath.Base(filepath.Clean(filepath.FromSlash(strings.ReplaceAll(op.Source, "\\", "/"))))
 	}
 	to, err := under(destRoot, dest)
 	if err != nil {

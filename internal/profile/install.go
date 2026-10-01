@@ -106,8 +106,7 @@ func (s *Store) InstallStaged(game, id, key string, source Source) (InstallResul
 
 func (s *Store) installKey(game, id, key string, source Source) (InstallResult, error) {
 	p, updated, versionChanged, err := s.placeKey(game, id, key, source)
-	var need *NeedChoicesError
-	if errors.As(err, &need) {
+	if need, ok := errors.AsType[*NeedChoicesError](err); ok {
 		cur, rerr := s.read(game, id)
 		if rerr != nil {
 			cur = Profile{}

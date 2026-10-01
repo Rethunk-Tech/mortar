@@ -55,13 +55,16 @@ func (s *Store) fileIndex(modsDir string) fomod.FileIndex {
 		if err != nil || d.IsDir() {
 			return err
 		}
-		rel, err := filepath.Rel(modsDir, p)
-		if err != nil {
-			return nil
+		root := filepath.Clean(modsDir)
+		clean := filepath.Clean(p)
+		sep := string(os.PathSeparator)
+		if clean != root && !strings.HasPrefix(clean, root+sep) {
+			return fmt.Errorf("mod file %q is not under %s", p, modsDir)
 		}
+		rel := strings.TrimPrefix(clean, root+sep)
 		name := filepath.Base(p)
 		inactive := false
-		for _, part := range strings.Split(filepath.ToSlash(rel), "/") {
+		for part := range strings.SplitSeq(filepath.ToSlash(rel), "/") {
 			if strings.HasPrefix(part, ".") {
 				inactive = true
 				break
@@ -88,12 +91,13 @@ func (s *Store) fileIndex(modsDir string) fomod.FileIndex {
 	}
 }
 
-func (s *Store) fomodOf(game, key string) (fomod.Config, string, bool, error) {
+func (s *Store) fomodOf(game, key string) (fomod.Config, bool, error) {
 	dir, err := s.items.Path(game, key)
 	if err != nil {
-		return fomod.Config{}, "", false, err
+		return fomod.Config{}, false, err
 	}
-	return fomod.Open(dir)
+	cfg, _, ok, err := fomod.Open(dir)
+	return cfg, ok, err
 }
 
 func askFrom(cfg fomod.Config, key string, source Source, oldKey string, choices map[string]map[string][]string, files fomod.FileIndex) FomodAsk {
@@ -117,7 +121,7 @@ func askFrom(cfg fomod.Config, key string, source Source, oldKey string, choices
 }
 
 func (s *Store) fomodAsk(game, id, key string, source Source, oldKey string, choices map[string]map[string][]string) (FomodAsk, bool, error) {
-	cfg, _, ok, err := s.fomodOf(game, key)
+	cfg, ok, err := s.fomodOf(game, key)
 	if err != nil || !ok {
 		return FomodAsk{}, false, err
 	}
@@ -132,7 +136,7 @@ func (s *Store) fomodAsk(game, id, key string, source Source, oldKey string, cho
 	return askFrom(cfg, key, source, oldKey, choices, files), true, nil
 }
 
-func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][]string) (src string, tmp string, err error) {
+func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][]string) (src, tmp string, err error) {
 	root, err := s.items.Path(game, key)
 	if err != nil {
 		return "", "", err
@@ -196,7 +200,7 @@ func (s *Store) FomodPreview(game, id, key string, choices map[string]map[string
 		return FomodAsk{}, err
 	}
 	if ask.Key == "" {
-		cfg, _, ok, err := s.fomodOf(game, key)
+		cfg, ok, err := s.fomodOf(game, key)
 		if err != nil || !ok {
 			return FomodAsk{}, err
 		}

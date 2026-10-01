@@ -1,7 +1,8 @@
 package fomod
 
 import (
-	"bytes"
+	"encoding/binary"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,7 +11,22 @@ import (
 
 func loadFixture(t *testing.T, name string) Config {
 	t.Helper()
-	b, err := os.ReadFile(filepath.Join("testdata", name))
+	var (
+		b   []byte
+		err error
+	)
+	switch name {
+	case "choose-one.xml":
+		b, err = fs.ReadFile(os.DirFS("testdata"), "choose-one.xml")
+	case "flags.xml":
+		b, err = fs.ReadFile(os.DirFS("testdata"), "flags.xml")
+	case "required.xml":
+		b, err = fs.ReadFile(os.DirFS("testdata"), "required.xml")
+	case "folder.xml":
+		b, err = fs.ReadFile(os.DirFS("testdata"), "folder.xml")
+	default:
+		t.Fatalf("unknown fixture %s", name)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,7 +88,7 @@ func TestFolderApply(t *testing.T) {
 	if err := Apply(src, dst, Resolve(cfg, nil, nil)); err != nil {
 		t.Fatal(err)
 	}
-	got, err := os.ReadFile(filepath.Join(dst, "mod", "a.txt"))
+	got, err := fs.ReadFile(os.DirFS(dst), filepath.ToSlash(filepath.Join("mod", "a.txt")))
 	if err != nil || string(got) != "ok" {
 		t.Fatalf("got %q %v", got, err)
 	}
@@ -85,14 +101,13 @@ func TestFindConfigDepthAndUTF16(t *testing.T) {
 		t.Fatal(err)
 	}
 	u := utf16.Encode([]rune(`<?xml version="1.0"?><config><moduleName>Wide</moduleName></config>`))
-	var buf bytes.Buffer
-	buf.Write([]byte{0xFF, 0xFE})
-	for _, r := range u {
-		buf.WriteByte(byte(r))
-		buf.WriteByte(byte(r >> 8))
+	raw := make([]byte, 2+len(u)*2)
+	raw[0], raw[1] = 0xFF, 0xFE
+	for i, r := range u {
+		binary.LittleEndian.PutUint16(raw[2+i*2:], r)
 	}
 	path := filepath.Join(dir, "ModuleConfig.xml")
-	if err := os.WriteFile(path, buf.Bytes(), 0o600); err != nil {
+	if err := os.WriteFile(path, raw, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	got, err := FindConfig(root)

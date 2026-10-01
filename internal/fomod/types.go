@@ -1,3 +1,4 @@
+// Package fomod parses ModuleConfig.xml and resolves which files a FOMOD installer copies.
 package fomod
 
 const (
