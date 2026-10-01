@@ -139,7 +139,8 @@ function SearchBox() {
     <Box
       component="label"
       sx={{
-        width: 240,
+        flex: '1 1 240px',
+        minWidth: 160,
         display: 'flex',
         alignItems: 'center',
         gap: 1,
@@ -384,7 +385,6 @@ export function ConsoleTab({ game }: { game: string }) {
         <SearchBox />
         <LevelToggles />
         <ModPicker />
-        <Box sx={{ flexGrow: 1 }} />
         <IconAction
           label={t`Show times`}
           icon={<Clock size={16} />}
