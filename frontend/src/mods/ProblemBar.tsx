@@ -21,6 +21,7 @@ function FixButton({ problem }: { problem: Problem }) {
   const mods = useMods((s) => s.mods)
   const setEnabled = useMods((s) => s.setEnabled)
   const resolve = useMods((s) => s.resolve)
+  const dismissAsset = useMods((s) => s.dismissAsset)
   const queue = useQueue((s) => s.state.items)
   const profileId = useProfiles((s) => s.openId)
   const locked = useLocked()
@@ -43,6 +44,28 @@ function FixButton({ problem }: { problem: Problem }) {
     const { broken } = problem
     const mod = mods.find((m) => m.key === broken.key && sameId(m.uniqueId, broken.uniqueId))
     return mod ? button(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected)) : null
+  }
+  if (problem.kind === 'asset') {
+    const key = problem.asset.keys?.[0]
+    const id = problem.asset.packIds?.[0]
+    const mod = mods.find((m) => m.key === key && (id === undefined || sameId(m.uniqueId, id)))
+    const dismiss = dismissAsset
+    return (
+      <>
+        {mod ? button(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected)) : null}
+        {problem.asset.kind === 'edit' ? (
+          <Button
+            size="small"
+            color="info"
+            variant="outlined"
+            onClick={() => dismiss(problem.asset).catch(reportUnexpected)}
+            sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
+            {t`Dismiss`}
+          </Button>
+        ) : null}
+      </>
+    )
   }
   const { missing } = problem
   if (missing.reason === 'disabled') {
@@ -118,33 +141,39 @@ export function ProblemBar() {
           overflowY: 'auto',
         }}
       >
-        {problems.map((p) => (
-          <Box
-            key={JSON.stringify(p)}
-            role="alert"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.25,
-              minHeight: ROW_HEIGHT,
-              flexShrink: 0,
-              pl: 1.5,
-              pr: 0.75,
-              fontSize: 14,
-              bgcolor: 'rgba(243,180,22,0.14)',
-              border: '1px solid rgba(243,180,22,0.5)',
-              borderRadius: '6px',
-            }}
-          >
-            <Box component="span" sx={{ display: 'flex', flexShrink: 0, color: 'warning.main' }}>
-              <TriangleAlert size={16} aria-hidden={true} />
+        {problems.map((p) => {
+          const info = p.kind === 'asset' && p.asset.kind === 'edit'
+          return (
+            <Box
+              key={JSON.stringify(p)}
+              role="alert"
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.25,
+                minHeight: ROW_HEIGHT,
+                flexShrink: 0,
+                pl: 1.5,
+                pr: 0.75,
+                fontSize: 14,
+                bgcolor: info ? 'rgba(56,189,248,0.12)' : 'rgba(243,180,22,0.14)',
+                border: info ? '1px solid rgba(56,189,248,0.45)' : '1px solid rgba(243,180,22,0.5)',
+                borderRadius: '6px',
+              }}
+            >
+              <Box
+                component="span"
+                sx={{ display: 'flex', flexShrink: 0, color: info ? 'info.main' : 'warning.main' }}
+              >
+                <TriangleAlert size={16} aria-hidden={true} />
+              </Box>
+              <Typography noWrap={true} sx={{ flex: 1, minWidth: 0, fontSize: 14 }}>
+                {describe(p)}
+              </Typography>
+              <FixButton problem={p} />
             </Box>
-            <Typography noWrap={true} sx={{ flex: 1, minWidth: 0, fontSize: 14 }}>
-              {describe(p)}
-            </Typography>
-            <FixButton problem={p} />
-          </Box>
-        ))}
+          )
+        })}
       </Box>
       {result?.unknown ? (
         <Typography sx={{ mt: 0.5, fontSize: 12, color: 'text.secondary' }}>

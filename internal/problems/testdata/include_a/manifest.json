@@ -1,0 +1,6 @@
+{
+  "Name": "Include A",
+  "UniqueID": "Fixture.IncludeA",
+  "Version": "1.0.0",
+  "ContentPackFor": { "UniqueID": "Pathoschild.ContentPatcher" }
+}

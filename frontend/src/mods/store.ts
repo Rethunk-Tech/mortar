@@ -1,10 +1,12 @@
 import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
 import type {
+  AssetConflict,
   Duplicate,
   Result,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import {
+  DismissAssetConflict,
   Pages,
   Problems,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
@@ -172,6 +174,23 @@ async function dropMods(get: () => { load: () => Promise<void> }, mods: Mod[]) {
   useSelection.getState().clear()
 }
 
+async function dismissAssetConflict(
+  get: () => { loadProblems: () => Promise<void> },
+  conflict: AssetConflict,
+) {
+  const target = open()
+  if (!target) {
+    return
+  }
+  try {
+    await DismissAssetConflict(target.game, target.id, conflict.kind, conflict.target)
+  } catch (e) {
+    fail(i18n._(msg`Could not dismiss the overlap`))(e)
+    return
+  }
+  await get().loadProblems()
+}
+
 async function dropMod(get: () => { load: () => Promise<void> }, mod: Mod) {
   const target = open()
   if (!target) {
@@ -210,6 +229,7 @@ export const useMods = create<{
   openConfig: (mod: Mod) => Promise<void>
   resolve: (dup: Duplicate | null) => void
   keepCopy: (dup: Duplicate, keepKey: string) => Promise<void>
+  dismissAsset: (conflict: AssetConflict) => Promise<void>
 }>((set, get) => ({
   mods: [],
   loaded: false,
@@ -341,6 +361,7 @@ export const useMods = create<{
     set({ resolving: null })
     await get().load()
   },
+  dismissAsset: (conflict) => dismissAssetConflict(get, conflict),
 }))
 
 export type { View }

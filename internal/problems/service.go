@@ -3,7 +3,12 @@ package problems
 import (
 	"context"
 	"errors"
+	"maps"
+	"os"
+	"path/filepath"
 	"runtime"
+	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -78,6 +83,11 @@ func fingerprint(env Environment, mods []Installed) string {
 		if m.Enabled {
 			b.WriteString("|on")
 		}
+		if m.Folder != "" {
+			if info, err := os.Stat(filepath.Join(m.Folder, "content.json")); err == nil {
+				b.WriteString("|" + strconv.FormatInt(info.ModTime().UnixNano(), 10))
+			}
+		}
 		for _, d := range m.Dependencies {
 			b.WriteString("|" + d.UniqueID + ">=" + d.MinimumVersion)
 		}
@@ -95,6 +105,11 @@ func (s *Service) installed(gameID, id string) ([]Installed, error) {
 		mods[i] = Installed{
 			Key: m.Key, SourceKind: m.Source.Kind, Enabled: m.Enabled,
 			Pinned: m.Pinned, SkipVersion: m.SkipVersion, Manifest: m.Manifest,
+		}
+		if m.Enabled {
+			if folder, err := s.profiles.ModFolder(gameID, id, m.Key, m.UniqueID); err == nil {
+				mods[i].Folder = folder
+			}
 		}
 	}
 	return mods, nil
@@ -114,7 +129,7 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	c, ok := s.cache[key]
 	s.mu.Unlock()
 	if ok && c.fingerprint == fp {
-		return c.result, nil
+		return s.withDismissed(gameID, id, c.result), nil
 	}
 	r := Check(ctx, s.meta, env, mods)
 	if !r.Unknown {
@@ -122,7 +137,30 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 		s.cache[key] = cached{fp, r}
 		s.mu.Unlock()
 	}
-	return r, nil
+	return s.withDismissed(gameID, id, r), nil
+}
+
+func (s *Service) withDismissed(gameID, id string, r Result) Result {
+	r.AssetConflicts = hideDismissed(r.AssetConflicts, s.settings.Get().Dismissed[dismissBucket(gameID, id)])
+	return r
+}
+
+// DismissAssetConflict hides a soft (edit) Content Patcher overlap for this profile until it is gone.
+func (s *Service) DismissAssetConflict(_ context.Context, gameID, id, kind, target string) error {
+	if kind != "edit" || target == "" {
+		return errors.New("only overlapping image or map edits can be dismissed")
+	}
+	token := dismissToken(kind, target)
+	bucket := dismissBucket(gameID, id)
+	_, err := s.settings.Update(func(v *settings.Settings) {
+		if slices.Contains(v.Dismissed[bucket], token) {
+			return
+		}
+		next := maps.Clone(v.Dismissed)
+		next[bucket] = append(slices.Clone(v.Dismissed[bucket]), token)
+		v.Dismissed = next
+	})
+	return err
 }
 
 // Updates lists the newer versions SMAPI's API suggests for the profile's mods. The answer is kept for an hour

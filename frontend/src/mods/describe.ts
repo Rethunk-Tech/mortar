@@ -20,6 +20,14 @@ export function useDescribe() {
         ? t`${name} broke in ${brokeIn}.`
         : t`${name} is marked broken for this game version.`
     }
+    if (p.kind === 'asset') {
+      const { names, target, kind } = p.asset
+      const who = (names ?? []).join(', ')
+      if (kind === 'load') {
+        return t`${who} all load ${target}; only one wins.`
+      }
+      return t`${who} all edit ${target}; the result depends on order.`
+    }
     const { dependentName, minimumVersion, installedVersion, reason } = p.missing
     const dep = nameOf(p.missing.uniqueId)
     if (reason === 'disabled') {

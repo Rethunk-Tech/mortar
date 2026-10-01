@@ -1,0 +1,6 @@
+{
+  "Name": "Token A",
+  "UniqueID": "Fixture.TokenA",
+  "Version": "1.0.0",
+  "ContentPackFor": { "UniqueID": "Pathoschild.ContentPatcher" }
+}

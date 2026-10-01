@@ -1,0 +1,7 @@
+{
+  "Changes": [
+    { "Action": "EditMap", "Target": "Maps/Town" },
+    { "Action": "EditImage", "Target": "tilesheets/crops" },
+    { "Action": "EditData", "Target": "Data/NPCDispositions" }
+  ]
+}

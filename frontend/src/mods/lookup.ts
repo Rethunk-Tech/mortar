@@ -1,4 +1,5 @@
 import type {
+  AssetConflict,
   Broken,
   Copy,
   Duplicate,
@@ -60,6 +61,7 @@ export type Problem =
   | { kind: 'broken'; broken: Broken }
   | { kind: 'missing'; missing: Missing }
   | { kind: 'duplicate'; duplicate: Duplicate }
+  | { kind: 'asset'; asset: AssetConflict }
 
 export const problemsOf = (result: Result | null): Problem[] =>
   result
@@ -69,6 +71,7 @@ export const problemsOf = (result: Result | null): Problem[] =>
         ),
         ...(result.broken ?? []).map((broken): Problem => ({ kind: 'broken', broken })),
         ...(result.missing ?? []).map((missing): Problem => ({ kind: 'missing', missing })),
+        ...(result.assetConflicts ?? []).map((asset): Problem => ({ kind: 'asset', asset })),
       ]
     : []
 
@@ -84,6 +87,9 @@ export function concerns(p: Problem, mod: Mod): boolean {
       sameId(p.duplicate.uniqueId, mod.uniqueId) &&
       (p.duplicate.copies ?? []).some((c) => c.key === mod.key)
     )
+  }
+  if (p.kind === 'asset') {
+    return (p.asset.packIds ?? []).some((id) => sameId(id, mod.uniqueId))
   }
   return sameId(p.missing.dependentId, mod.uniqueId)
 }

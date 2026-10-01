@@ -1,0 +1,123 @@
+package problems
+
+import (
+	"context"
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"runtime"
+	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+)
+
+func testdataPack(t *testing.T, name string) Installed {
+	t.Helper()
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("no caller")
+	}
+	folder := filepath.Join(filepath.Dir(file), "testdata", name)
+	raw, err := fsx.ReadFile(filepath.Join(folder, "manifest.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	id := name
+	var doc map[string]any
+	if json.Unmarshal(stripJSONNoise(raw), &doc) == nil {
+		if u, ok := doc["UniqueID"].(string); ok {
+			id = u
+		}
+	}
+	m := Installed{Key: name, Enabled: true, Folder: folder}
+	m.Name, m.UniqueID = id, id
+	return m
+}
+
+func TestAssetConflicts(t *testing.T) {
+	loadA := testdataPack(t, "load_a")
+	loadB := testdataPack(t, "load_b")
+	editA := testdataPack(t, "edit_a")
+	editB := testdataPack(t, "edit_b")
+	tokenA := testdataPack(t, "token_a")
+	tokenB := testdataPack(t, "token_b")
+	inc := testdataPack(t, "include_a")
+	includePeer := testdataPack(t, "include_b")
+
+	t.Run("Load/Load conflict", func(t *testing.T) {
+		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{loadA, loadB})
+		if len(got.AssetConflicts) != 1 || got.AssetConflicts[0].Kind != "load" || got.AssetConflicts[0].Target != "portraits/farmer" {
+			t.Fatalf("got %+v", got.AssetConflicts)
+		}
+	})
+	t.Run("EditImage overlap", func(t *testing.T) {
+		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{editA, editB})
+		if len(got.AssetConflicts) != 1 || got.AssetConflicts[0].Kind != "edit" || got.AssetConflicts[0].Target != "tilesheets/crops" {
+			t.Fatalf("got %+v", got.AssetConflicts)
+		}
+	})
+	t.Run("EditData not reported", func(t *testing.T) {
+		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{editA, editB})
+		for _, c := range got.AssetConflicts {
+			if c.Target == "data/npcdispositions" {
+				t.Fatalf("EditData reported: %+v", c)
+			}
+		}
+	})
+	t.Run("tokenized target skipped", func(t *testing.T) {
+		_, _, skips := contentPackTargets(tokenA)
+		if skips != 1 {
+			t.Fatalf("skips = %d", skips)
+		}
+		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{tokenA, tokenB})
+		if len(got.AssetConflicts) != 0 {
+			t.Fatalf("tokenized conflicted: %+v", got.AssetConflicts)
+		}
+	})
+	t.Run("Include followed", func(t *testing.T) {
+		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{inc, includePeer})
+		if len(got.AssetConflicts) != 1 || got.AssetConflicts[0].Target != "maps/springobjects" {
+			t.Fatalf("got %+v", got.AssetConflicts)
+		}
+	})
+}
+
+func TestContentPatcherJSONNoise(t *testing.T) {
+	dir := t.TempDir()
+	folder := filepath.Join(dir, "Pack.Noise")
+	if err := os.MkdirAll(filepath.Join(folder, "patches"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(filepath.Join(folder, "manifest.json"), []byte(`{"Name":"N","UniqueID":"Pack.Noise","Version":"1","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(filepath.Join(folder, "content.json"), []byte(`{
+		// comment
+		"Changes": [
+			{ "Action": "Include", "FromFile": "patches/extra.json", },
+		]
+	}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(filepath.Join(folder, "patches", "extra.json"), []byte(`{"Changes":[{"Action":"Load","Target":"Maps/springobjects"}]}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	peer := testdataPack(t, "include_b")
+	mod := Installed{Key: "noise", Enabled: true, Folder: folder}
+	mod.Name, mod.UniqueID = "Pack.Noise", "Pack.Noise"
+	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{mod, peer})
+	if len(got.AssetConflicts) != 1 || got.AssetConflicts[0].Target != "maps/springobjects" {
+		t.Fatalf("got %+v", got.AssetConflicts)
+	}
+}
+
+func TestHideDismissedSoftOnly(t *testing.T) {
+	in := []AssetConflict{
+		{Kind: "load", Target: "a"},
+		{Kind: "edit", Target: "b"},
+	}
+	got := hideDismissed(in, []string{dismissToken("edit", "b"), dismissToken("load", "a")})
+	if len(got) != 1 || got[0].Kind != "load" {
+		t.Fatalf("got %+v", got)
+	}
+}

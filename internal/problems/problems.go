@@ -30,6 +30,8 @@ type Installed struct {
 	Enabled     bool
 	Pinned      bool
 	SkipVersion string
+	// Folder is the mod's directory in the profile, used to read Content Patcher content.json.
+	Folder string
 	manifest.Manifest
 }
 
@@ -96,14 +98,17 @@ type Broken struct {
 
 // Result is everything found for one profile. Unknown is set when a lookup failed, so the lists may be short.
 type Result struct {
-	Missing    []Missing   `json:"missing"`
-	Duplicates []Duplicate `json:"duplicates"`
-	Broken     []Broken    `json:"broken"`
-	Unknown    bool        `json:"unknown"`
+	Missing        []Missing       `json:"missing"`
+	Duplicates     []Duplicate     `json:"duplicates"`
+	Broken         []Broken        `json:"broken"`
+	AssetConflicts []AssetConflict `json:"assetConflicts"`
+	Unknown        bool            `json:"unknown"`
 }
 
-// Count is the number of problems, one per missing dependency, duplicate and broken mod.
-func (r Result) Count() int { return len(r.Missing) + len(r.Duplicates) + len(r.Broken) }
+// Count is the number of problems, one per missing dependency, duplicate, broken mod and asset conflict.
+func (r Result) Count() int {
+	return len(r.Missing) + len(r.Duplicates) + len(r.Broken) + len(r.AssetConflicts)
+}
 
 func sameID(a, b string) bool { return strings.EqualFold(a, b) }
 
@@ -120,7 +125,12 @@ func meets(version, minimum string) bool {
 // Check computes the problems of mods. Lookups that fail leave Unknown set and never return an error.
 func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Result {
 	enabled := slices.DeleteFunc(slices.Clone(mods), func(x Installed) bool { return !x.Enabled })
-	r := Result{Missing: []Missing{}, Duplicates: duplicates(enabled), Broken: []Broken{}}
+	r := Result{
+		Missing:        []Missing{},
+		Duplicates:     duplicates(enabled),
+		Broken:         []Broken{},
+		AssetConflicts: assetConflicts(enabled),
+	}
 	missing := missingDeps(enabled, mods)
 	r.Unknown = fillWhere(ctx, m, enabled, missing)
 	r.Missing = missing

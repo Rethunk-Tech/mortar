@@ -1,0 +1,6 @@
+{
+  "Name": "Edit B",
+  "UniqueID": "Fixture.EditB",
+  "Version": "1.0.0",
+  "ContentPackFor": { "UniqueID": "Pathoschild.ContentPatcher" }
+}

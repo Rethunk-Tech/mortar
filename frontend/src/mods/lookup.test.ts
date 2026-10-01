@@ -53,6 +53,7 @@ test('problems and updates are counted per finding', () => {
       missing: [],
       duplicates: [{ uniqueId: 'me.a', name: 'A', copies: [] }],
       broken: [{ key: 'k', uniqueId: 'me.b', name: 'B', status: 'broken', brokeIn: '' }],
+      assetConflicts: [],
       unknown: false,
     }),
   ).toBe(2)
