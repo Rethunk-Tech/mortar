@@ -22,8 +22,8 @@ export const useTools = create<State>((set, get) => ({
   tools: [],
   loadedGame: '',
   load: async (game) => {
-    const tools = await List(game)
-    set({ tools, loadedGame: game })
+    const listed = await List(game)
+    set({ tools: listed ?? [], loadedGame: game })
   },
   add: async (game, tool) => {
     const saved = await Add(game, tool)

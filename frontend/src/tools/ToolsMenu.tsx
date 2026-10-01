@@ -79,7 +79,9 @@ export function ToolsMenu({ game, profileID }: { game: string; profileID: string
         open={addOpen}
         initial={null}
         onClose={() => setAddOpen(false)}
-        onSave={(tool) => add(game, tool)}
+        onSave={async (tool) => {
+          await add(game, tool)
+        }}
       />
       <ToolsManageDialog game={game} open={manageOpen} onClose={() => setManageOpen(false)} />
     </>

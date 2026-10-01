@@ -5,7 +5,7 @@ import { PickExecutable } from '../../bindings/github.com/Rethunk-AI/mortar/inte
 import type { Tool } from '../../bindings/github.com/Rethunk-AI/mortar/internal/tools/models.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
-function argsToText(args: string[] | undefined): string {
+function argsToText(args: string[] | null | undefined): string {
   return (args ?? []).join('\n')
 }
 
