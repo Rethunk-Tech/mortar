@@ -88,7 +88,7 @@ msgstr "Installing SMAPI {latest}"
 msgid "SMAPI {0}"
 msgstr "SMAPI {0}"
 
-#: src/game/Detail.tsx:302
+#: src/game/Detail.tsx:303
 #: src/mods/Sidebar.tsx:129
 msgid "Updated"
 msgstr "Updated"
@@ -149,7 +149,7 @@ msgstr "{0} opens these links now. Mortar takes them over and gives them back wh
 msgid "The download could not finish. Retry or skip it from the queue."
 msgstr "The download could not finish. Retry or skip it from the queue."
 
-#: src/game/Detail.tsx:80
+#: src/game/Detail.tsx:81
 #: src/profiles/HistoryDialog.tsx:77
 #: src/profiles/ProfileRow.tsx:129
 #: src/queue/QueueSheet.tsx:49
@@ -200,7 +200,7 @@ msgstr "Add archive"
 msgid "No lines match the filters."
 msgstr "No lines match the filters."
 
-#: src/game/Detail.tsx:433
+#: src/game/Detail.tsx:434
 msgid "Notes"
 msgstr "Notes"
 
@@ -216,13 +216,13 @@ msgstr "Update available: {0} → {1}"
 #. placeholder {0}: badge?.updates ?? 0
 #. placeholder {0}: counts.updates
 #. placeholder {0}: part.n
-#: src/game/Detail.tsx:242
+#: src/game/Detail.tsx:243
 #: src/game/Sidebar.tsx:81
 #: src/profiles/ProfileRow.tsx:181
 msgid "{0, plural, one {# update} other {# updates}}"
 msgstr "{0, plural, one {# update} other {# updates}}"
 
-#: src/tools/ToolsMenu.tsx:64
+#: src/tools/ToolsMenu.tsx:62
 msgid "Add tool…"
 msgstr "Add tool…"
 
@@ -544,7 +544,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 
 #: src/firstrun/FindStep.tsx:175
 #: src/firstrun/SmapiStep.tsx:265
-#: src/game/Detail.tsx:366
+#: src/game/Detail.tsx:367
 #: src/mods/ModsTab.tsx:302
 #: src/notes/NotesTab.tsx:39
 #: src/queue/QueueBody.tsx:304
@@ -793,7 +793,7 @@ msgstr "One step in Steam"
 msgid "Skipped"
 msgstr "Skipped"
 
-#: src/game/Detail.tsx:186
+#: src/game/Detail.tsx:187
 #: src/profiles/EditProfileDialog.tsx:397
 #: src/profiles/ProfileRow.tsx:126
 msgid "Edit profile"
@@ -831,7 +831,7 @@ msgstr "Notes travel in a shared .mortar file, not in a share link."
 msgid "Check only enabled mods: {from} → {to}"
 msgstr "Check only enabled mods: {from} → {to}"
 
-#: src/game/Detail.tsx:179
+#: src/game/Detail.tsx:180
 msgid "Rename profile"
 msgstr "Rename profile"
 
@@ -983,7 +983,7 @@ msgstr "Desktop"
 msgid "Nothing to remove."
 msgstr "Nothing to remove."
 
-#: src/game/Detail.tsx:389
+#: src/game/Detail.tsx:390
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
 
@@ -1095,7 +1095,7 @@ msgstr "Launch options copied"
 msgid "config.json, changed from the mod's own"
 msgstr "config.json, changed from the mod's own"
 
-#: src/game/Detail.tsx:358
+#: src/game/Detail.tsx:359
 #: src/profiles/store.ts:163
 msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
@@ -1124,7 +1124,7 @@ msgstr "Add {name} to this profile"
 msgid "Past run"
 msgstr "Past run"
 
-#: src/game/Detail.tsx:434
+#: src/game/Detail.tsx:435
 msgid "Console"
 msgstr "Console"
 
@@ -1226,7 +1226,7 @@ msgstr "The SMAPI log has errors."
 msgid "Resize sidebar"
 msgstr "Resize sidebar"
 
-#: src/game/Detail.tsx:303
+#: src/game/Detail.tsx:304
 msgid "Created"
 msgstr "Created"
 
@@ -1740,7 +1740,7 @@ msgstr "Could not run the command"
 msgid "About Mortar"
 msgstr "About Mortar"
 
-#: src/game/Detail.tsx:288
+#: src/game/Detail.tsx:289
 msgid "No saves were found"
 msgstr "No saves were found"
 
@@ -1764,7 +1764,7 @@ msgstr "Open mod"
 msgid "Open on GitHub"
 msgstr "Open on GitHub"
 
-#: src/game/Detail.tsx:146
+#: src/game/Detail.tsx:147
 #: src/game/NewProfileDialog.tsx:51
 #: src/profiles/ProfileRow.tsx:271
 msgid "Profile name"
@@ -1874,7 +1874,7 @@ msgstr "Day"
 msgid "Farming skill"
 msgstr "Farming skill"
 
-#: src/game/Detail.tsx:63
+#: src/game/Detail.tsx:64
 msgid "Profile menu"
 msgstr "Profile menu"
 
@@ -1960,7 +1960,7 @@ msgstr "You started this download on Nexus. There is no profile to put it in yet
 msgid "{name} settings"
 msgstr "{name} settings"
 
-#: src/game/Detail.tsx:387
+#: src/game/Detail.tsx:388
 msgid "No profiles yet"
 msgstr "No profiles yet"
 
@@ -2237,8 +2237,8 @@ msgid "Notes for {0}"
 msgstr "Notes for {0}"
 
 #: src/console/ConsoleTab.tsx:105
-#: src/game/Detail.tsx:286
-#: src/game/Detail.tsx:431
+#: src/game/Detail.tsx:287
+#: src/game/Detail.tsx:432
 #: src/mods/ModList.tsx:320
 msgid "Mods"
 msgstr "Mods"
@@ -2892,7 +2892,7 @@ msgid "Winter"
 msgstr "Winter"
 
 #: src/tools/ToolsManageDialog.tsx:38
-#: src/tools/ToolsMenu.tsx:75
+#: src/tools/ToolsMenu.tsx:73
 msgid "Manage tools"
 msgstr "Manage tools"
 
@@ -3023,7 +3023,7 @@ msgstr "{0, plural, one {with # settings file, written once its mod is installed
 msgid "Problems"
 msgstr "Problems"
 
-#: src/game/Detail.tsx:396
+#: src/game/Detail.tsx:397
 msgid "Create your first profile"
 msgstr "Create your first profile"
 
@@ -3383,7 +3383,7 @@ msgstr "GOG via Heroic"
 msgid "Find the game"
 msgstr "Find the game"
 
-#: src/game/Detail.tsx:91
+#: src/game/Detail.tsx:92
 #: src/profiles/ProfileRow.tsx:145
 msgid "Export profile…"
 msgstr "Export profile…"
@@ -3481,7 +3481,7 @@ msgstr "Save backups"
 msgid "Mortar menu"
 msgstr "Mortar menu"
 
-#: src/game/Detail.tsx:379
+#: src/game/Detail.tsx:380
 #: src/game/Sidebar.tsx:384
 msgid "Manage profiles"
 msgstr "Manage profiles"
@@ -3580,7 +3580,7 @@ msgstr "Keep Mortar in the tray"
 #. placeholder {0}: badge?.problems ?? 0
 #. placeholder {0}: counts.problems
 #. placeholder {0}: part.n
-#: src/game/Detail.tsx:244
+#: src/game/Detail.tsx:245
 #: src/game/Sidebar.tsx:91
 #: src/profiles/ProfileRow.tsx:182
 msgid "{0, plural, one {# problem} other {# problems}}"
@@ -3650,7 +3650,7 @@ msgstr "Mining skill"
 msgid "Dependency"
 msgstr "Dependency"
 
-#: src/game/Detail.tsx:374
+#: src/game/Detail.tsx:375
 msgid "All profiles are hidden"
 msgstr "All profiles are hidden"
 
@@ -3688,8 +3688,8 @@ msgstr "{0} needs {1}"
 msgid "Markdown"
 msgstr "Markdown"
 
-#: src/game/Detail.tsx:291
-#: src/game/Detail.tsx:298
+#: src/game/Detail.tsx:292
+#: src/game/Detail.tsx:299
 msgid "{fitting} of {total}"
 msgstr "{fitting} of {total}"
 
@@ -3847,9 +3847,9 @@ msgstr "About"
 msgid "Could not roll back {0}"
 msgstr "Could not roll back {0}"
 
-#: src/game/Detail.tsx:290
-#: src/game/Detail.tsx:297
-#: src/game/Detail.tsx:432
+#: src/game/Detail.tsx:291
+#: src/game/Detail.tsx:298
+#: src/game/Detail.tsx:433
 msgid "Saves"
 msgstr "Saves"
 
@@ -3939,7 +3939,7 @@ msgstr "Include {0}"
 msgid "Local-only mods kept: {0}"
 msgstr "Local-only mods kept: {0}"
 
-#: src/game/Detail.tsx:376
+#: src/game/Detail.tsx:377
 msgid "Show one in the sidebar from Manage profiles."
 msgstr "Show one in the sidebar from Manage profiles."
 
@@ -4106,7 +4106,7 @@ msgstr "Gets update checks."
 
 #. placeholder {0}: info.count
 #. placeholder {0}: part.n
-#: src/game/Detail.tsx:239
+#: src/game/Detail.tsx:240
 #: src/share/ShareDialog.tsx:91
 #: src/share/ShareDialog.tsx:183
 msgid "{0, plural, one {# mod} other {# mods}}"
@@ -4246,7 +4246,7 @@ msgstr "Season"
 msgid "SMAPI installed"
 msgstr "SMAPI installed"
 
-#: src/tools/ToolsMenu.tsx:37
+#: src/tools/ToolsMenu.tsx:32
 msgid "Tools"
 msgstr "Tools"
 
@@ -4617,7 +4617,7 @@ msgid "On"
 msgstr "On"
 
 #: src/commandPalette/CommandPalette.tsx:164
-#: src/game/Detail.tsx:446
+#: src/game/Detail.tsx:442
 #: src/profiles/ProfileRow.tsx:310
 msgid "Share"
 msgstr "Share"
@@ -4687,7 +4687,7 @@ msgstr "Forest farm"
 msgid "Import from {0}…"
 msgstr "Import from {0}…"
 
-#: src/game/Detail.tsx:448
+#: src/game/Detail.tsx:447
 msgid "{gameName} settings"
 msgstr "{gameName} settings"
 
