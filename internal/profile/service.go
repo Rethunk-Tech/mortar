@@ -172,8 +172,24 @@ func (s *Service) SetHidden(game, id string, hidden bool) (Profile, error) {
 
 func (s *Service) Reorder(game string, ids []string) error { return s.store.Reorder(game, ids) }
 
-// Mods lists the profile's mods, rebuilding missing mod folders from the store first.
-func (s *Service) Mods(game, id string) ([]Mod, error) { return s.store.UserMods(game, id) }
+// Mods lists the profile's mods. Unknown folders are parked so rebuild does not delete them; missing entry folders stay missing so drift can offer Restore.
+func (s *Service) Mods(game, id string) ([]Mod, error) {
+	missing, err := s.store.missingEntryFolders(game, id)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.store.parkUnknownMods(game, id); err != nil {
+		return nil, err
+	}
+	mods, err := s.store.UserMods(game, id)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.store.unplaceKeys(game, id, missing); err != nil {
+		return nil, err
+	}
+	return mods, nil
+}
 
 // ShowFiles opens the folder of the mod in entry key in the system file manager.
 func (s *Service) ShowFiles(game, id, key, uniqueID string) error {
