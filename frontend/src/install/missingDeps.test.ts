@@ -8,6 +8,7 @@ import {
   missingRequired,
   offersFor,
   requiredUniqueIds,
+  stillMissing,
   wantOf,
   wantsOf,
 } from './missingDeps.ts'
@@ -122,4 +123,13 @@ test('Add them queues through the same Want the Problems bar uses', () => {
   expect(andList(['Content Patcher', 'Lookup Anything'])).toBe(
     'Content Patcher and Lookup Anything',
   )
+})
+
+test('an offer drops deps the live problems no longer list', () => {
+  const meep = absent({ uniqueId: 'Spiderbuttons.MEEP' })
+  const core = absent({ uniqueId: 'spacechase0.SpaceCore' })
+  const offer = { dependentName: 'A Mod', missing: [meep, core] }
+  expect(stillMissing(offer, null)).toEqual([meep, core])
+  expect(stillMissing(offer, result([core]))).toEqual([core])
+  expect(stillMissing(offer, result([]))).toEqual([])
 })

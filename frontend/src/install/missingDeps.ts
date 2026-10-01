@@ -100,6 +100,20 @@ function offersFor(dependentIds: readonly string[], result: Result | null): Miss
   return [...groups.values()].filter((g) => g.missing.length > 0)
 }
 
+function stillMissing(offer: MissingOffer, result: Result | null): Missing[] {
+  if (!result) {
+    return offer.missing
+  }
+  return offer.missing.filter((m) =>
+    (result.missing ?? []).some(
+      (r) =>
+        r.reason === 'absent' &&
+        sameId(r.dependentId, m.dependentId) &&
+        sameId(r.uniqueId, m.uniqueId),
+    ),
+  )
+}
+
 function wantOf(missing: Missing): Want | null {
   const { where } = missing
   if (!where?.url) {
@@ -138,4 +152,13 @@ function wantsOf(missing: Missing[]): Want[] {
 }
 
 export type { MissingOffer, ProfileLike }
-export { andList, depName, missingRequired, offersFor, requiredUniqueIds, wantOf, wantsOf }
+export {
+  andList,
+  depName,
+  missingRequired,
+  offersFor,
+  requiredUniqueIds,
+  stillMissing,
+  wantOf,
+  wantsOf,
+}
