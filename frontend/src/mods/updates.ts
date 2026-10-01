@@ -1,21 +1,57 @@
-import { msg } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { create } from 'zustand'
 import type { UpdatesResult } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { Updates } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { ago } from '../notes/ago.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useBadges } from './badges.ts'
 import { updateCount } from './lookup.ts'
 
+export function checkedWhen(at: number | null, now: number) {
+  if (at === null) {
+    return null
+  }
+  return ago(now - at)
+}
+
+export function checkedWithSmapi(at: number | null, now: number, unknown: boolean): string {
+  if (unknown) {
+    return i18n._(msg`Some mods could not be checked, so more updates may show up later.`)
+  }
+  if (at === null) {
+    return i18n._(msg`Checked with SMAPI's update service`)
+  }
+  const { unit, n } = ago(now - at)
+  if (unit === 'now') {
+    return i18n._(msg`Checked with SMAPI's update service · just now`)
+  }
+  if (unit === 'minute') {
+    return i18n._(
+      msg`Checked with SMAPI's update service · ${plural(n, { one: '# minute ago', other: '# minutes ago' })}`,
+    )
+  }
+  if (unit === 'hour') {
+    return i18n._(
+      msg`Checked with SMAPI's update service · ${plural(n, { one: '# hour ago', other: '# hours ago' })}`,
+    )
+  }
+  return i18n._(
+    msg`Checked with SMAPI's update service · ${plural(n, { one: '# day ago', other: '# days ago' })}`,
+  )
+}
+
 export const useUpdates = create<{
   updates: UpdatesResult | null
+  checkedAt: number | null
   reviewing: boolean
   load: () => Promise<void>
   setReviewing: (reviewing: boolean) => void
 }>((set) => ({
   updates: null,
+  checkedAt: null,
   reviewing: false,
   load: async () => {
     const { game, openId } = useProfiles.getState()
@@ -25,7 +61,7 @@ export const useUpdates = create<{
     try {
       const updates = await Updates(game.id, openId)
       if (useProfiles.getState().openId === openId) {
-        set({ updates })
+        set({ updates, checkedAt: Date.now() })
       }
       const profile = useProfiles.getState().profiles.find((p) => p.id === openId)
       useBadges.getState().patch(openId, { updates: updateCount(updates, profile) })

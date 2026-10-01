@@ -37,7 +37,7 @@ import { useNexusDetails } from './nexusDetails.ts'
 import { accent, paper } from './paper.ts'
 import { LetterTile } from './parts.tsx'
 import { useMods } from './store.ts'
-import { useUpdates } from './updates.ts'
+import { checkedWithSmapi, useUpdates } from './updates.ts'
 
 const MONO = '"IBM Plex Mono", monospace'
 const ROW_TILE = 48
@@ -45,6 +45,7 @@ const MEDIUM = 500
 const DIALOG_WIDTH = 760
 const ICON_TILE = 44
 const ICON_FILL = 0.18
+const TICK_MS = 60_000
 
 function Version({ children, isNew }: { children: string; isNew?: boolean }) {
   return (
@@ -285,10 +286,16 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   const { t } = useLingui()
   const open = useUpdates((s) => s.reviewing)
   const updates = useUpdates((s) => s.updates)
+  const checkedAt = useUpdates((s) => s.checkedAt)
   const setReviewing = useUpdates((s) => s.setReviewing)
   const close = () => setReviewing(false)
   const list = visibleUpdates(updates, profile)
   const items = useQueue((s) => s.state.items)
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const id = globalThis.setInterval(() => setNow(Date.now()), TICK_MS)
+    return () => globalThis.clearInterval(id)
+  }, [])
   useEffect(() => {
     if (!open) {
       return
@@ -329,9 +336,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
             {t`${plural(list.length, { one: '# update', other: '# updates' })} for ${profile.name}`}
           </Typography>
           <Typography sx={{ fontSize: 13 }}>
-            {updates?.unknown
-              ? t`Some mods could not be checked, so more updates may show up later.`
-              : t`Checked with SMAPI's update service`}
+            {checkedWithSmapi(checkedAt, now, updates?.unknown === true)}
           </Typography>
         </Box>
         <IconButton aria-label={t`Close`} onClick={close}>
