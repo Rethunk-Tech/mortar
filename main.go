@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/backdrop"
+	"github.com/Rethunk-AI/mortar/internal/bisect"
 	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
@@ -177,6 +178,7 @@ func run() error {
 	}
 	launches := launchsvc.NewService(home, store, profiles)
 	profiles.Running = launches.Running
+	bisectSvc := bisect.NewService(profiles, launches)
 	profiles.BackupsKept = func() int { return store.Get().BackupsKept }
 	modMeta := &meta.Client{CacheDir: filepath.Join(dataDir, "cache")}
 	componentClient := components.NewClient(&http.Client{Timeout: 30 * time.Second})
@@ -347,7 +349,7 @@ func run() error {
 		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
 		application.NewService(savesSvc), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
 		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc),
-		application.NewService(supportSvc), application.NewService(updates),
+		application.NewService(supportSvc), application.NewService(updates), application.NewService(bisectSvc),
 		application.NewService(dataSvc), application.NewService(toolsSvc),
 	} {
 		app.RegisterService(s)

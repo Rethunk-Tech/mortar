@@ -341,6 +341,10 @@ func (s *Service) Status(gameID string) (Status, error) {
 // Start launches the profile. Its outcome arrives as StateEvents: Launching, then Running or Failed, or NoSteam
 // when the user must first agree to launch without Steam (direct). A missing or broken loader is installed first.
 func (s *Service) Start(gameID, profileID string, direct bool) error {
+	return s.start(context.Background(), gameID, profileID, direct)
+}
+
+func (s *Service) start(parent context.Context, gameID, profileID string, direct bool) error {
 	g := game.Find(gameID)
 	if g == nil {
 		return fmt.Errorf("unknown game %q", gameID)
@@ -366,7 +370,7 @@ func (s *Service) Start(gameID, profileID string, direct bool) error {
 	// otherwise launch the game on half-replaced files.
 	go func() {
 		defer s.donePreparing(gameID)
-		ctx, cancel := context.WithCancel(context.Background())
+		ctx, cancel := context.WithCancel(parent)
 		defer cancel()
 		// Checked before the watcher starts, so a quit that already happened cancels before EnsureLoader runs.
 		select {
