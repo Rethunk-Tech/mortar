@@ -65,14 +65,16 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 				return &DuplicateError{Key: newKey, Label: entryLabel(e)}
 			}
 		}
-		ne, w, err := s.swapEntry(game, id, dir, p.Entries[ei], newKey)
+		ne, w, err := s.swapEntry(game, id, dir, p.Entries[ei], newKey, source)
 		sw = w
 		if err != nil {
 			return err
 		}
 		switch {
 		case source != nil:
-			ne.Source = *source
+			out := *source
+			out.fomod = nil
+			ne.Source = out
 		case rollBack && p.Entries[ei].PreviousSource != nil:
 			ne.Source = *p.Entries[ei].PreviousSource
 		}
@@ -89,12 +91,31 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 // swapEntry builds the target version's folder beside mods/, carries over the profile's files, and renames it
 // over the old one. It returns the entry as it stands afterwards, and the swap for the caller to commit once
 // profile.json records it or undo if that fails.
-func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string) (Entry, swapped, error) {
-	oldSrc, err := s.items.Path(game, e.Key)
+func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *Source) (Entry, swapped, error) {
+	choices := e.Fomod
+	if source != nil && source.fomod != nil {
+		choices = source.fomodMap()
+	}
+	if ask, need, err := s.fomodAsk(game, id, newKey, e.Source, e.Key, choices); err != nil {
+		return Entry{}, swapped{}, err
+	} else if need {
+		if source != nil {
+			ask.Source = *source
+			ask.Source.fomod = nil
+		}
+		return Entry{}, swapped{}, &NeedChoicesError{Ask: ask}
+	}
+	oldSrc, oldTmp, err := s.layoutItem(game, id, e.Key, e.Fomod)
+	if oldTmp != "" {
+		defer func() { _ = os.RemoveAll(oldTmp) }()
+	}
 	if err != nil {
 		return Entry{}, swapped{}, err
 	}
-	newSrc, err := s.items.Path(game, newKey)
+	newSrc, newTmp, err := s.layoutItem(game, id, newKey, choices)
+	if newTmp != "" {
+		defer func() { _ = os.RemoveAll(newTmp) }()
+	}
 	if err != nil {
 		return Entry{}, swapped{}, err
 	}
@@ -105,12 +126,12 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string) (Entry, 
 	if len(found) == 0 {
 		return Entry{}, swapped{}, &NoModError{Key: newKey}
 	}
-	// The entry carries over what the user set on it; only what belongs to one version changes.
 	prevSource := e.Source
 	ne := e
 	ne.Key, ne.PreviousKey, ne.PreviousSource = newKey, e.Key, &prevSource
 	ne.Mods, ne.Disabled, ne.SkipVersion = entryMods(found), []string{}, ""
 	ne.Tags = slices.Clone(e.Tags)
+	ne.Fomod = cloneFomod(choices)
 	for _, m := range ne.Mods {
 		if hasID(e.Disabled, m.UniqueID) {
 			ne.Disabled = append(ne.Disabled, m.UniqueID)

@@ -41,11 +41,12 @@ const (
 )
 
 // Where an item stands. Done, Skipped and Cancelled are final; Failed waits for Retry or Skip; NeedsChoice waits
-// for Choose (a release with several archives) and NeedsConfirm for Confirm or Skip (a download SMAPI's update API
-// does not tie to its repository).
+// for Choose (a release with several archives), NeedsConfirm for Confirm or Skip (a download SMAPI's update API
+// does not tie to its repository), and NeedsFomod for AnswerFomod (a store item with a FOMOD installer).
 const (
 	StateNeedsChoice  = "needs-choice"
 	StateNeedsConfirm = "needs-confirm"
+	StateNeedsFomod   = "needs-fomod"
 	StateWaitingClick = "waiting-click"
 	StateQueued       = "queued"
 	StateDownloading  = "downloading"
@@ -102,12 +103,15 @@ type Item struct {
 	Asset      string   `json:"asset"`
 	Assets     []string `json:"assets"`
 	Unverified bool     `json:"unverified"`
+	FomodKey   string   `json:"fomodKey,omitempty"`
 
 	// The key and expiry of an nxm:// link supply a free account's download; they are never written to disk.
 	key     string
 	expires int64
-	// staged is the store key of a downloaded GitHub asset that waits for Confirm, or that Confirm released.
+	// staged is the store key of a downloaded GitHub asset that waits for Confirm, or that Confirm released,
+	// or of a Nexus install waiting for FOMOD choices.
 	staged string
+	fomod  map[string]map[string][]string
 	// started is when this attempt left the queue for a fetch; it is not persisted.
 	started time.Time
 }
@@ -216,6 +220,13 @@ func New(d Deps) (*Service, error) {
 	for _, it := range file.Items {
 		if it.staged = file.Staged[it.ID]; it.State == StateNeedsConfirm && it.staged == "" {
 			it.State = StateQueued
+		}
+		if it.State == StateNeedsFomod {
+			if it.staged == "" {
+				it.State = StateQueued
+			} else {
+				it.FomodKey = it.staged
+			}
 		}
 		if slices.Contains([]string{StateDownloading, StateInstalling, StateWaitingClick}, it.State) {
 			it.State, it.Progress, it.Speed = StateQueued, 0, 0
@@ -495,7 +506,7 @@ func (s *Service) drop(match func(*Item) bool) {
 
 // Skip drops an item that has not started, that failed, or that waits for the user.
 func (s *Service) Skip(id string) {
-	s.end(id, StateSkipped, StateFailed, StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm)
+	s.end(id, StateSkipped, StateFailed, StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod)
 }
 
 // Choose picks the asset of an item waiting in StateNeedsChoice.
@@ -514,6 +525,17 @@ func (s *Service) Confirm(id string) {
 	s.mu.Lock()
 	if it := s.find(id); it != nil && it.State == StateNeedsConfirm {
 		it.State = StateQueued
+	}
+	s.mu.Unlock()
+	s.publish(true)
+	s.poke()
+}
+
+// AnswerFomod installs an item waiting in StateNeedsFomod with the chosen plugins.
+func (s *Service) AnswerFomod(id string, choices map[string]map[string][]string) {
+	s.mu.Lock()
+	if it := s.find(id); it != nil && it.State == StateNeedsFomod && it.staged != "" {
+		it.State, it.fomod, it.FomodKey = StateQueued, choices, it.staged
 	}
 	s.mu.Unlock()
 	s.publish(true)

@@ -3,6 +3,7 @@ package profile
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -21,6 +22,8 @@ type InstallResult struct {
 	Updated bool `json:"updated"`
 	// VersionChanged is true when Updated and any replaced mod's version string differs.
 	VersionChanged bool `json:"versionChanged"`
+	// Fomod is set when the store item has install options and they have not been chosen yet.
+	Fomod *FomodAsk `json:"fomod,omitempty"`
 }
 
 // InstallError is a failed install. Its message is fit to show the user; Err keeps the typed cause.
@@ -103,6 +106,16 @@ func (s *Store) InstallStaged(game, id, key string, source Source) (InstallResul
 
 func (s *Store) installKey(game, id, key string, source Source) (InstallResult, error) {
 	p, updated, versionChanged, err := s.placeKey(game, id, key, source)
+	var need *NeedChoicesError
+	if errors.As(err, &need) {
+		cur, rerr := s.read(game, id)
+		if rerr != nil {
+			cur = Profile{}
+		}
+		need.Ask.Key = key
+		need.Ask.Source = source
+		return InstallResult{Profile: cur, Added: []string{}, Fomod: &need.Ask}, nil
+	}
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
@@ -125,7 +138,12 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 	if err := s.unlocked(game, id); err != nil {
 		return Profile{}, false, false, err
 	}
-	held, err := s.holding(game, id, key)
+	if ask, need, err := s.fomodAsk(game, id, key, source, "", source.fomodMap()); err != nil {
+		return Profile{}, false, false, err
+	} else if need {
+		return Profile{}, false, false, &NeedChoicesError{Ask: ask}
+	}
+	held, err := s.holding(game, id, key, source.fomodMap())
 	if err != nil {
 		return Profile{}, false, false, err
 	}
@@ -171,8 +189,11 @@ func modsVersionChanged(old, neu []EntryMod) bool {
 
 // holding returns the profile's entries that hold any mod of the store item key. An entry that is already key is a
 // DuplicateError.
-func (s *Store) holding(game, id, key string) ([]Entry, error) {
-	src, err := s.items.Path(game, key)
+func (s *Store) holding(game, id, key string, choices map[string]map[string][]string) ([]Entry, error) {
+	src, tmp, err := s.layoutItem(game, id, key, choices)
+	if tmp != "" {
+		defer func() { _ = os.RemoveAll(tmp) }()
+	}
 	if err != nil {
 		return nil, err
 	}

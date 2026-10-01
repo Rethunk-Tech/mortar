@@ -120,25 +120,28 @@ func materialize(tmp string, e Entry) (string, error) {
 
 // place copies the store item for e into mods/ through a temp sibling and renames it into position.
 func (s *Store) place(game, modsDir string, e Entry) error {
-	src, err := s.items.Path(game, e.Key)
+	src, tmp, err := s.layoutItem(game, filepath.Base(filepath.Dir(modsDir)), e.Key, e.Fomod)
+	if tmp != "" {
+		defer func() { _ = os.RemoveAll(tmp) }()
+	}
 	if err != nil {
 		return err
 	}
-	tmp, err := os.MkdirTemp(modsDir, tempPrefix)
+	scratch, err := os.MkdirTemp(modsDir, tempPrefix)
 	if err != nil {
 		return err
 	}
 	final, err := func() (string, error) {
-		if err := datadir.CopyTree(src, tmp); err != nil {
+		if err := datadir.CopyTree(src, scratch); err != nil {
 			return "", err
 		}
-		return materialize(tmp, e)
+		return materialize(scratch, e)
 	}()
 	if err == nil {
-		err = os.Rename(tmp, filepath.Join(modsDir, final))
+		err = os.Rename(scratch, filepath.Join(modsDir, final))
 	}
 	if err != nil {
-		return errors.Join(err, os.RemoveAll(tmp))
+		return errors.Join(err, os.RemoveAll(scratch))
 	}
 	return nil
 }
@@ -198,7 +201,10 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 			return "", &DuplicateError{Key: key, Label: entryLabel(e)}
 		}
 	}
-	src, err := s.items.Path(game, key)
+	src, tmp, err := s.layoutItem(game, p.ID, key, source.fomodMap())
+	if tmp != "" {
+		defer func() { _ = os.RemoveAll(tmp) }()
+	}
 	if err != nil {
 		return "", err
 	}
@@ -209,7 +215,7 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 	if len(found) == 0 {
 		return "", &NoModError{Key: key}
 	}
-	e := Entry{Key: key, Source: source, Mods: entryMods(found), Disabled: []string{}, Added: time.Now().UTC()}
+	e := Entry{Key: key, Source: source, Mods: entryMods(found), Disabled: []string{}, Added: time.Now().UTC(), Fomod: cloneFomod(source.fomodMap())}
 	for _, m := range e.Mods {
 		if hasID(disabled, m.UniqueID) {
 			e.Disabled = append(e.Disabled, m.UniqueID)

@@ -278,6 +278,7 @@ func cloneEntries(in []Entry) []Entry {
 		e.Mods = append([]EntryMod(nil), e.Mods...)
 		e.Disabled = append([]string(nil), e.Disabled...)
 		e.Tags = append([]string(nil), e.Tags...)
+		e.Fomod = cloneFomod(e.Fomod)
 		out[i] = e
 	}
 	return out

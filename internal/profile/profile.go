@@ -52,6 +52,24 @@ type Source struct {
 	Repo             string `json:"repo,omitempty"`
 	Tag              string `json:"tag,omitempty"`
 	Asset            string `json:"asset,omitempty"`
+	fomod            *fomodChoices
+}
+
+type fomodChoices struct {
+	m map[string]map[string][]string
+}
+
+// WithFomod returns a copy that carries FOMOD plugin choices into InstallStaged.
+func (s Source) WithFomod(choices map[string]map[string][]string) Source {
+	s.fomod = &fomodChoices{m: choices}
+	return s
+}
+
+func (s Source) fomodMap() map[string]map[string][]string {
+	if s.fomod == nil {
+		return nil
+	}
+	return s.fomod.m
 }
 
 // EntryMod is one mod inside an entry. Folder holds its manifest.json, relative to mods/<key>/, in its
@@ -86,6 +104,8 @@ type Entry struct {
 	Note string `json:"note,omitempty"`
 	// Tags are per-entry labels in this profile, at most MaxEntryTags of MaxEntryTag characters each.
 	Tags []string `json:"tags,omitempty"`
+	// Fomod is the chosen plugin names per install step and group, replayed on update and roll back.
+	Fomod map[string]map[string][]string `json:"fomod,omitempty"`
 }
 
 // Profile is the on-disk shape of profile.json.

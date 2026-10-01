@@ -120,14 +120,18 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 			return nil
 		}
 	}
-	_, err = s.d.InstallStaged(it.Game, it.Profile, key, source)
-	return s.finish(it.ID, err, unverified)
+	res, err := s.d.InstallStaged(it.Game, it.Profile, key, source)
+	return s.afterInstall(it.ID, res, err, unverified)
 }
 
 // installStaged installs what Confirm released. The user has decided, so nothing is verified again.
 // A staged key the store no longer holds is dropped, so Retry downloads the file again.
 func (s *Service) installStaged(it Item) error {
-	_, err := s.d.InstallStaged(it.Game, it.Profile, it.staged, sourceOf(it))
+	src := sourceOf(it)
+	if it.fomod != nil {
+		src = src.WithFomod(it.fomod)
+	}
+	res, err := s.d.InstallStaged(it.Game, it.Profile, it.staged, src)
 	if errors.Is(err, store.ErrNotFound) {
 		s.mu.Lock()
 		if cur := s.find(it.ID); cur != nil {
@@ -135,5 +139,5 @@ func (s *Service) installStaged(it Item) error {
 		}
 		s.mu.Unlock()
 	}
-	return s.finish(it.ID, err, false)
+	return s.afterInstall(it.ID, res, err, false)
 }

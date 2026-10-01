@@ -79,6 +79,9 @@ func (s *Service) runningOf(items []*Item) map[string]bool {
 
 // forFile is resolve while the item's file is not known yet.
 func (s *Service) forFile(it *Item, then action) action {
+	if it.staged != "" {
+		return install
+	}
 	if it.FileID == 0 || it.FileName == "" {
 		return resolve
 	}
@@ -340,7 +343,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	cur.State, cur.Progress, cur.Speed = StateInstalling, 100, 0
 	s.mu.Unlock()
 	s.publish(true)
-	_, err = s.d.Install(it.Game, it.Profile, path, profile.Source{
+	res, err := s.d.Install(it.Game, it.Profile, path, profile.Source{
 		Kind: profile.KindNexus, Name: it.FileName, ModID: it.ModID, FileID: it.FileID, Version: it.Version,
 		Picture: mod.PictureURL, EndorsementCount: mod.EndorsementCount,
 	})
@@ -348,7 +351,28 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	if err == nil || errors.As(err, &dup) {
 		dropDownload(path)
 	}
+	if err == nil && res.Fomod != nil {
+		s.pauseFomod(it.ID, res.Fomod.Key)
+		return nil
+	}
 	return s.finish(it.ID, err, false)
+}
+
+func (s *Service) pauseFomod(id, key string) {
+	s.mu.Lock()
+	if cur := s.find(id); cur != nil {
+		cur.State, cur.Progress, cur.staged, cur.FomodKey = StateNeedsFomod, 0, key, key
+	}
+	s.mu.Unlock()
+	s.publish(true)
+}
+
+func (s *Service) afterInstall(id string, res profile.InstallResult, err error, unverified bool) error {
+	if err == nil && res.Fomod != nil {
+		s.pauseFomod(id, res.Fomod.Key)
+		return nil
+	}
+	return s.finish(id, err, unverified)
 }
 
 // finish marks an item done after its install, which a mod already in the profile does not fail.

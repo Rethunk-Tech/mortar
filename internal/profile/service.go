@@ -99,6 +99,21 @@ func (s *Service) AddEntry(game, id, key string, source Source) (Profile, error)
 	return s.store.AddEntry(game, id, key, source)
 }
 
+// FomodPreview is the FOMOD wizard for a store item, given the choices so far.
+func (s *Service) FomodPreview(game, id, key string, choices map[string]map[string][]string) (FomodAsk, error) {
+	return s.store.FomodPreview(game, id, key, choices)
+}
+
+// FomodImage reads a file from the store item for the wizard; paths outside it are refused.
+func (s *Service) FomodImage(game, key, rel string) ([]byte, error) {
+	return s.store.FomodImage(game, key, rel)
+}
+
+// InstallFomod copies the store item into the profile using the chosen FOMOD plugins.
+func (s *Service) InstallFomod(game, id, key string, source Source, choices map[string]map[string][]string) (InstallResult, error) {
+	return s.store.InstallFomod(game, id, key, source, choices)
+}
+
 // InstallArchive unpacks the archive at path into the store and adds it to the profile.
 func (s *Service) InstallArchive(game, id, path string) (InstallResult, error) {
 	return s.store.InstallArchive(game, id, path)
