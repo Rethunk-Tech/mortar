@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
+  Chip,
   Divider,
   IconButton,
   ListItemIcon,
@@ -31,6 +32,9 @@ import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { LogActions } from '../console/LogActions.tsx'
 import { useBadges } from '../mods/badges.ts'
 import { ModsTab } from '../mods/ModsTab.tsx'
+import { ProblemsTab } from '../mods/ProblemsTab.tsx'
+import { problemCount } from '../mods/problemGroups.ts'
+import { useMods } from '../mods/store.ts'
 import { useNav } from '../nav/store.ts'
 import { NotesTab } from '../notes/NotesTab.tsx'
 import { userModCount } from '../profiles/count.ts'
@@ -348,6 +352,8 @@ export function Detail() {
   const [creating, setCreating] = useState(false)
   const tab = useTab((s) => s.tab)
   const setTab = useTab((s) => s.setTab)
+  const problemsResult = useMods((s) => s.problems)
+  const problemsTabCount = problemsResult === null ? null : problemCount(problemsResult)
   const game = useProfiles((s) => s.game?.id ?? '')
   const gameName = useProfiles((s) => s.game?.name ?? '')
   const openGameSettings = useNav((s) => s.openGameSettings)
@@ -440,6 +446,24 @@ export function Detail() {
           }}
         >
           <Tab value="mods" label={t`Mods`} />
+          <Tab
+            value="problems"
+            label={
+              <Box
+                component="span"
+                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}
+              >
+                {t`Problems`}
+                {problemsTabCount !== null && problemsTabCount > 0 ? (
+                  <Chip
+                    size="small"
+                    label={problemsTabCount}
+                    sx={{ height: 20, fontSize: 12, fontWeight: 600 }}
+                  />
+                ) : null}
+              </Box>
+            }
+          />
           <Tab value="saves" label={t`Saves`} />
           <Tab value="notes" label={t`Notes`} />
           <Tab value="console" label={t`Console`} />
@@ -469,6 +493,7 @@ export function Detail() {
       {tab === 'notes' ? <NotesTab key={`notes-${profile.id}`} profile={profile} /> : null}
       {tab === 'saves' ? <SavesTab profile={profile} game={game} /> : null}
       {tab === 'mods' ? <ModsTab key={`mods-${profile.id}`} profile={profile} /> : null}
+      {tab === 'problems' ? <ProblemsTab key={`problems-${profile.id}`} /> : null}
     </Box>
   )
 }
