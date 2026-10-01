@@ -29,7 +29,10 @@ func (w *System) Owner() (Owner, error) {
 	if err != nil && !errors.Is(err, registry.ErrNotExist) {
 		return Owner{}, err
 	}
-	return Owner{ID: cmd, Name: exeOf(cmd), Mine: cmd == w.command()}, nil
+	if cmd == "" {
+		return Owner{}, nil
+	}
+	return Owner{ID: previousID(cmd, readIcon()), Name: exeOf(cmd), Mine: cmd == w.command()}, nil
 }
 
 // exeOf is the program of an open command, for showing to the user.
@@ -74,16 +77,51 @@ func setCommand(cmd string) error {
 	return k.SetStringValue("", cmd)
 }
 
+func readIcon() string {
+	k, err := registry.OpenKey(registry.CURRENT_USER, classKey+`\DefaultIcon`, registry.QUERY_VALUE)
+	if err != nil {
+		return ""
+	}
+	defer k.Close()
+	v, _, err := k.GetStringValue("")
+	if err != nil {
+		return ""
+	}
+	return v
+}
+
+func setIcon(icon string) error {
+	k, _, err := registry.CreateKey(registry.CURRENT_USER, classKey+`\DefaultIcon`, registry.SET_VALUE)
+	if err != nil {
+		return err
+	}
+	defer k.Close()
+	return k.SetStringValue("", icon)
+}
+
 func (w *System) Restore(previous string) error {
-	if previous != "" {
-		return setCommand(previous)
-	}
-	for _, key := range []string{classKey + `\DefaultIcon`, commandKey, classKey + `\shell\open`, classKey + `\shell`, classKey} {
-		if err := registry.DeleteKey(registry.CURRENT_USER, key); err != nil && !errors.Is(err, registry.ErrNotExist) {
-			return fmt.Errorf("delete %s: %w", key, err)
+	if previous == "" {
+		for _, key := range []string{classKey + `\DefaultIcon`, commandKey, classKey + `\shell\open`, classKey + `\shell`, classKey} {
+			if err := registry.DeleteKey(registry.CURRENT_USER, key); err != nil && !errors.Is(err, registry.ErrNotExist) {
+				return fmt.Errorf("delete %s: %w", key, err)
+			}
 		}
+		return nil
 	}
-	return nil
+	cmd, icon, restoreIcon := splitPrevious(previous)
+	if err := setCommand(cmd); err != nil {
+		return err
+	}
+	if !restoreIcon {
+		return nil
+	}
+	if icon == "" {
+		if err := registry.DeleteKey(registry.CURRENT_USER, classKey+`\DefaultIcon`); err != nil && !errors.Is(err, registry.ErrNotExist) {
+			return err
+		}
+		return nil
+	}
+	return setIcon(icon)
 }
 
 // RegisterLinks does nothing: the installer registers the mortar scheme and the .mortar file type.

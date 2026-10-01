@@ -1,9 +1,26 @@
 package nxm
 
+import "strings"
+
 const (
 	classKey   = `Software\Classes\nxm`
 	commandKey = classKey + `\shell\open\command`
 )
+
+func previousID(cmd, icon string) string {
+	if cmd == "" {
+		return ""
+	}
+	return cmd + "\n" + icon
+}
+
+func splitPrevious(previous string) (cmd, icon string, restoreIcon bool) {
+	if previous == "" {
+		return "", "", false
+	}
+	cmd, icon, restoreIcon = strings.Cut(previous, "\n")
+	return cmd, icon, restoreIcon
+}
 
 // memReg is an injectable HKCU\Software\Classes tree for tests (path → value name → data).
 type memReg map[string]map[string]string
@@ -25,11 +42,20 @@ func (m memReg) register(exe string) {
 }
 
 func (m memReg) restore(previous string) {
-	if previous != "" {
-		m.set(commandKey, "", previous)
+	if previous == "" {
+		for _, key := range []string{classKey + `\DefaultIcon`, commandKey, classKey + `\shell\open`, classKey + `\shell`, classKey} {
+			delete(m, key)
+		}
 		return
 	}
-	for _, key := range []string{classKey + `\DefaultIcon`, commandKey, classKey + `\shell\open`, classKey + `\shell`, classKey} {
-		delete(m, key)
+	cmd, icon, restoreIcon := splitPrevious(previous)
+	m.set(commandKey, "", cmd)
+	if !restoreIcon {
+		return
 	}
+	if icon == "" {
+		delete(m, classKey+`\DefaultIcon`)
+		return
+	}
+	m.set(classKey+`\DefaultIcon`, "", icon)
 }

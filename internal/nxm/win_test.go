@@ -14,13 +14,26 @@ func TestRegisterWritesDefaultIconAtExe(t *testing.T) {
 	}
 }
 
-func TestRestorePreviousKeepsTheHandlerCommand(t *testing.T) {
+func TestRestorePreviousPutsCommandAndDefaultIconBack(t *testing.T) {
 	m := memReg{}
 	m.register(`C:\Mortar\mortar.exe`)
-	prev := `"C:\Vortex\Vortex.exe" "%1"`
-	m.restore(prev)
-	if got := m[commandKey][""]; got != prev {
+	cmd := `"C:\Vortex\Vortex.exe" "%1"`
+	icon := `C:\Vortex\Vortex.exe,0`
+	m.restore(previousID(cmd, icon))
+	if got := m[commandKey][""]; got != cmd {
 		t.Fatalf("command = %q", got)
+	}
+	if got := m[classKey+`\DefaultIcon`][""]; got != icon {
+		t.Fatalf("DefaultIcon = %q", got)
+	}
+}
+
+func TestRestorePreviousWithoutIconDropsMortarsDefaultIcon(t *testing.T) {
+	m := memReg{}
+	m.register(`C:\Mortar\mortar.exe`)
+	m.restore(previousID(`"C:\Vortex\Vortex.exe" "%1"`, ""))
+	if _, ok := m[classKey+`\DefaultIcon`]; ok {
+		t.Fatalf("DefaultIcon still set: %v", m[classKey+`\DefaultIcon`])
 	}
 }
 
