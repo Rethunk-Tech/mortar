@@ -37,6 +37,33 @@ func updEnv(t *testing.T, v1, v2 map[string]string) (env, Profile) {
 	return e, p
 }
 
+func TestUpdateDeleteOldVersionCarriesConfigOnly(t *testing.T) {
+	m := manifestJSON("me.a")
+	mNew := strings.TrimSuffix(m, `, /* c */}`) + `,"DeleteOldVersion":true}`
+	e, p := updEnv(t,
+		map[string]string{"A/manifest.json": m, "A/tweaked.json": "v1", "A/both.json": "v1"},
+		map[string]string{"A/manifest.json": mNew, "A/tweaked.json": "v1", "A/both.json": "v2"})
+	writeFile(t, e.mods(p.ID), "a-1/A/config.json", "mine")
+	writeFile(t, e.mods(p.ID), "a-1/A/tweaked.json", "mine")
+	writeFile(t, e.mods(p.ID), "a-1/A/both.json", "mine")
+
+	if _, err := e.UpdateEntry("stardew", p.ID, "a-1", "a-2"); err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(e.mods(p.ID), "a-2", "A")
+	want := map[string]string{
+		"config.json": "mine", "tweaked.json": "v1", "both.json": "v2",
+	}
+	for rel, body := range want {
+		if g := read(t, filepath.Join(dir, rel)); g != body {
+			t.Errorf("%s = %q, want %q", rel, g, body)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(dir, "both.json.mortar-old")); err == nil {
+		t.Error("DeleteOldVersion kept a conflict copy")
+	}
+}
+
 func TestCarryOverMatrix(t *testing.T) {
 	m := manifestJSON("me.a")
 	e, p := updEnv(t,

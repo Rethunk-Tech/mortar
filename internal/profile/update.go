@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/backup"
@@ -148,14 +149,14 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 	if err != nil {
 		return Entry{}, swapped{}, err
 	}
-	sw, err := fillUpdate(tmp, modsDir, oldSrc, newSrc, e, ne)
+	sw, err := fillUpdate(tmp, modsDir, oldSrc, newSrc, e, ne, found)
 	if err != nil {
 		return Entry{}, swapped{}, errors.Join(err, os.RemoveAll(tmp))
 	}
 	return ne, sw, nil
 }
 
-func fillUpdate(tmp, modsDir, oldSrc, newSrc string, e, ne Entry) (swapped, error) {
+func fillUpdate(tmp, modsDir, oldSrc, newSrc string, e, ne Entry, newManifests []manifest.Mod) (swapped, error) {
 	if err := datadir.CopyTree(newSrc, tmp); err != nil {
 		return swapped{}, err
 	}
@@ -175,7 +176,8 @@ func fillUpdate(tmp, modsDir, oldSrc, newSrc string, e, ne Entry) (swapped, erro
 		if !exists(cur) {
 			continue
 		}
-		err = carryOver(cur, filepath.Join(oldSrc, filepath.FromSlash(e.Mods[i].Folder)), filepath.Join(tmp, filepath.FromSlash(nm.Folder)))
+		configOnly := deleteOldVersion(newManifests, nm.UniqueID)
+		err = carryOverWalk(cur, filepath.Join(oldSrc, filepath.FromSlash(e.Mods[i].Folder)), filepath.Join(tmp, filepath.FromSlash(nm.Folder)), configOnly)
 		if err != nil {
 			return swapped{}, err
 		}
@@ -240,6 +242,10 @@ func replaceFolder(modsDir, oldKey, tmp, final string) (swapped, error) {
 // carryOver applies the three-way rule to every file of prof (the profile's mod folder), against old (the current
 // version in the store) and target (the new copy being built).
 func carryOver(prof, old, target string) error {
+	return carryOverWalk(prof, old, target, false)
+}
+
+func carryOverWalk(prof, old, target string, configOnly bool) error {
 	return filepath.WalkDir(prof, func(p string, d fs.DirEntry, err error) error {
 		if err != nil || !d.Type().IsRegular() {
 			return err
@@ -247,6 +253,9 @@ func carryOver(prof, old, target string) error {
 		rel, err := filepath.Rel(prof, p)
 		if err != nil {
 			return err
+		}
+		if configOnly && !isUserWritten(rel) {
+			return nil
 		}
 		oldP, newP := filepath.Join(old, rel), filepath.Join(target, rel)
 		inOld := exists(oldP)
@@ -301,6 +310,15 @@ func copyOver(src, dst string) error {
 		return err
 	}
 	return fsx.WriteFile(dst, b, 0o600)
+}
+
+func deleteOldVersion(found []manifest.Mod, uniqueID string) bool {
+	for _, m := range found {
+		if strings.EqualFold(m.UniqueID, uniqueID) {
+			return m.DeleteOldVersion
+		}
+	}
+	return false
 }
 
 // saveBackup zips the game's Saves folder into <datadir>/backups. Games without a Saves folder need none.
