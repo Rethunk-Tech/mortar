@@ -88,13 +88,15 @@ type Duplicate struct {
 	Copies   []Copy `json:"copies"`
 }
 
-// Broken is an enabled mod SMAPI's API marks "broken" or "obsolete"; BrokeIn is the game version that did it.
+// Broken is an enabled mod SMAPI's API marks broken, obsolete or abandoned for the game version.
 type Broken struct {
-	Key      string `json:"key"`
-	UniqueID string `json:"uniqueId"`
-	Name     string `json:"name"`
-	Status   string `json:"status"`
-	BrokeIn  string `json:"brokeIn"`
+	Key         string `json:"key"`
+	UniqueID    string `json:"uniqueId"`
+	Name        string `json:"name"`
+	Status      string `json:"status"`
+	BrokeIn     string `json:"brokeIn"`
+	Summary     string `json:"summary,omitempty"`
+	Replacement *Ref   `json:"replacement,omitempty"`
 }
 
 // Result is everything found for one profile. Unknown is set when a lookup failed, so the lists may be short.
@@ -256,10 +258,14 @@ func brokenMods(ctx context.Context, m Meta, env Environment, enabled []Installe
 			unknown = true
 			continue
 		}
-		if s := strings.ToLower(res.Compatibility); s == "broken" || s == "obsolete" {
-			x := enabled[i]
-			broken = append(broken, Broken{Key: x.Key, UniqueID: x.UniqueID, Name: x.Name, Status: s, BrokeIn: res.BrokeIn})
+		s := strings.ToLower(res.Compatibility)
+		if s != "broken" && s != "obsolete" && s != "abandoned" {
+			continue
 		}
+		x := enabled[i]
+		b := Broken{Key: x.Key, UniqueID: x.UniqueID, Name: x.Name, Status: s, BrokeIn: res.BrokeIn, Summary: res.CompatibilitySummary}
+		b.Replacement = replacementFromSummary(ctx, m, x.UpdateKeys, res.CompatibilitySummary)
+		broken = append(broken, b)
 	}
 	return broken, unknown
 }

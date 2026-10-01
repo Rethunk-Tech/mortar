@@ -196,7 +196,10 @@ func TestBroken(t *testing.T) {
 	}}
 	mods := []Installed{mod("a", "A", "1", true), mod("b", "B", "1", true), mod("c", "C", "1", true), mod("d", "D", "1", false)}
 	got := Check(context.Background(), m, Environment{}, mods)
-	want := []Broken{{"a", "A", "A", "broken", "Stardew Valley 1.6"}, {"c", "C", "C", "obsolete", ""}}
+	want := []Broken{
+		{Key: "a", UniqueID: "A", Name: "A", Status: "broken", BrokeIn: "Stardew Valley 1.6"},
+		{Key: "c", UniqueID: "C", Name: "C", Status: "obsolete"},
+	}
 	if !reflect.DeepEqual(got.Broken, want) || got.Unknown {
 		t.Fatalf("broken = %+v, unknown = %v", got.Broken, got.Unknown)
 	}

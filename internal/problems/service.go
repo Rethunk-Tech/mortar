@@ -153,8 +153,29 @@ func (s *Service) withDrift(gameID, id string, r Result) (Result, error) {
 }
 
 func (s *Service) withDismissed(gameID, id string, r Result) Result {
-	r.AssetConflicts = hideDismissed(r.AssetConflicts, s.settings.Get().Dismissed[dismissBucket(gameID, id)])
+	tokens := s.settings.Get().Dismissed[dismissBucket(gameID, id)]
+	r.AssetConflicts = hideDismissed(r.AssetConflicts, tokens)
+	r.Broken = hideDismissedBroken(r.Broken, tokens)
 	return r
+}
+
+// DismissAbandonedMod hides an abandoned-mod info row for this profile until the mod is gone.
+func (s *Service) DismissAbandonedMod(_ context.Context, gameID, id, uniqueID string) error {
+	uniqueID = strings.TrimSpace(uniqueID)
+	if uniqueID == "" {
+		return errors.New("missing mod id")
+	}
+	token := dismissToken("abandoned", strings.ToLower(uniqueID))
+	bucket := dismissBucket(gameID, id)
+	_, err := s.settings.Update(func(v *settings.Settings) {
+		if slices.Contains(v.Dismissed[bucket], token) {
+			return
+		}
+		next := maps.Clone(v.Dismissed)
+		next[bucket] = append(slices.Clone(v.Dismissed[bucket]), token)
+		v.Dismissed = next
+	})
+	return err
 }
 
 // DismissAssetConflict hides a soft (edit) Content Patcher overlap for this profile until it is gone.

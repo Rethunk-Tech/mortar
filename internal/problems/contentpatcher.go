@@ -339,6 +339,24 @@ func dismissToken(kind, target string) string {
 	return kind + "\t" + target
 }
 
+func hideDismissedBroken(broken []Broken, tokens []string) []Broken {
+	if len(tokens) == 0 {
+		return broken
+	}
+	skip := map[string]bool{}
+	for _, t := range tokens {
+		skip[t] = true
+	}
+	out := []Broken{}
+	for _, b := range broken {
+		if b.Status == "abandoned" && skip[dismissToken("abandoned", strings.ToLower(b.UniqueID))] {
+			continue
+		}
+		out = append(out, b)
+	}
+	return out
+}
+
 func hideDismissed(conflicts []AssetConflict, tokens []string) []AssetConflict {
 	if len(tokens) == 0 {
 		return conflicts
