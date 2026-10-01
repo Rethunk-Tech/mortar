@@ -75,6 +75,9 @@ EOF
   done
   printf '%s\n' "$stamp_ver" >"$stamp"
 fi
+# Ubuntu's usrmerge /lib symlink comes from base-files, which is not extracted, so the
+# ELF interpreter path /lib/ld-linux-aarch64.so.1 needs its own link for qemu -L.
+[[ -e "$sysroot/lib/ld-linux-aarch64.so.1" ]] || ln -s ../usr/lib/ld-linux-aarch64.so.1 "$sysroot/lib/ld-linux-aarch64.so.1"
 
 export GOOS=linux
 export GOARCH=arm64
@@ -82,11 +85,11 @@ export CGO_ENABLED=1
 export PKG_CONFIG_SYSROOT_DIR="$sysroot"
 export PKG_CONFIG_LIBDIR="$sysroot/usr/lib/aarch64-linux-gnu/pkgconfig:$sysroot/usr/share/pkgconfig"
 export PKG_CONFIG_PATH=""
-export CC="zig cc -target aarch64-linux-gnu.2.39 --sysroot=$sysroot"
-export CXX="zig c++ -target aarch64-linux-gnu.2.39 --sysroot=$sysroot"
-export CGO_CFLAGS="--sysroot=$sysroot"
-export CGO_CXXFLAGS="--sysroot=$sysroot"
-export CGO_LDFLAGS="--sysroot=$sysroot -L$sysroot/usr/lib/aarch64-linux-gnu"
+# zig ships the target glibc itself; giving it --sysroot as well makes it prefix the
+# sysroot onto pkg-config's already-prefixed -L paths and find no GTK libraries.
+export CC="zig cc -target aarch64-linux-gnu.2.39"
+export CXX="zig c++ -target aarch64-linux-gnu.2.39"
+export CGO_LDFLAGS="-L$sysroot/usr/lib/aarch64-linux-gnu -Wl,-rpath-link,$sysroot/usr/lib/aarch64-linux-gnu -Wl,-rpath-link,$sysroot/lib/aarch64-linux-gnu"
 
 if ! pkg-config --exists gtk4 webkitgtk-6.0; then
   pkg-config --print-errors --exists gtk4 webkitgtk-6.0
