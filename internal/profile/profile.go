@@ -107,6 +107,8 @@ type Entry struct {
 	Note string `json:"note,omitempty"`
 	// Tags are per-entry labels in this profile, at most MaxEntryTags of MaxEntryTag characters each.
 	Tags []string `json:"tags,omitempty"`
+	// CategoryOverride is the primary category for grouping: a custom category id or a Nexus category name.
+	CategoryOverride string `json:"categoryOverride,omitempty"`
 	// Fomod is the chosen plugin names per install step and group, replayed on update and roll back.
 	Fomod map[string]map[string][]string `json:"fomod,omitempty"`
 }

@@ -287,3 +287,18 @@ func (s *Service) RestoreFromZip(game string) (Profile, error) {
 func (s *Service) SetEntryNoteTags(game, id, key, note string, tags []string) (Profile, error) {
 	return s.store.SetEntryNoteTags(game, id, key, note, tags)
 }
+
+// ListCustomCategories returns custom mod categories stored for game.
+func (s *Service) ListCustomCategories(game string) ([]CustomCategory, error) {
+	return s.store.ListCustomCategories(game)
+}
+
+// SaveCustomCategories replaces custom mod categories for game.
+func (s *Service) SaveCustomCategories(game string, categories []CustomCategory) ([]CustomCategory, error) {
+	return s.store.SaveCustomCategories(game, categories)
+}
+
+// SetEntryCategory sets or clears an entry's primary category override.
+func (s *Service) SetEntryCategory(game, id, key, override string) (Profile, error) {
+	return s.store.SetEntryCategory(game, id, key, override)
+}
