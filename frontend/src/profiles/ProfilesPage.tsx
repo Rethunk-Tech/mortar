@@ -41,6 +41,7 @@ import { openImport } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { CompareDialog, PickCompareDialog } from './CompareDialog.tsx'
+import { ExternalImportMenu } from './ExternalImportMenu.tsx'
 import { findModInProfiles, openModInProfile } from './findMod.ts'
 import { GameModsDialog } from './GameModsDialog.tsx'
 import { ProfileRow } from './ProfileRow.tsx'
@@ -209,12 +210,14 @@ function FindModSearch({ profiles }: { profiles: Profile[] }) {
 }
 
 function ProfilesHeader({
+  game,
   onBack,
   onImportGame,
   onImport,
   onRestoreZip,
   onCreate,
 }: {
+  game: string
   onBack: () => void
   onImportGame: () => void
   onImport: () => void
@@ -267,6 +270,7 @@ function ProfilesHeader({
       >
         {t`Import`}
       </Button>
+      <ExternalImportMenu game={game} />
       <Button
         variant="outlined"
         color="inherit"
@@ -330,6 +334,7 @@ export function ProfilesPage() {
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <ProfilesHeader
+        game={game}
         onBack={closeProfiles}
         onImportGame={() => setImportingGameMods(true)}
         onImport={() => openImport()}

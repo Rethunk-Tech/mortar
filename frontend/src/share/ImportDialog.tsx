@@ -29,18 +29,20 @@ function Body({ request }: { request: ImportRequest }) {
   const game = useProfiles((s) => s.game?.id ?? 'stardew')
   const targetName = useProfiles((s) => s.profiles.find((p) => p.id === request.profileId)?.name)
   const signedIn = useNexus((s) => s.signedIn)
-  const flow = useImportFlow(game, request.profileId, close)
-  const { setTab, setText, previewLink, previewFile } = flow
+  const flow = useImportFlow(game, request.profileId, close, request.external)
+  const { setTab, setText, previewLink, previewFile, previewExternal } = flow
 
   useEffect(() => {
     setTab(request.tab)
-    if (request.seed && request.tab === 'link') {
+    if (request.external) {
+      previewExternal(request.external).catch(reportUnexpected)
+    } else if (request.seed && request.tab === 'link') {
       setText(request.seed)
       previewLink(request.seed).catch(reportUnexpected)
     } else if (request.seed) {
       previewFile(request.seed).catch(reportUnexpected)
     }
-  }, [request, setTab, setText, previewLink, previewFile])
+  }, [request, setTab, setText, previewLink, previewFile, previewExternal])
 
   useEffect(() => {
     useImportDialog.setState({ busy: flow.busy })

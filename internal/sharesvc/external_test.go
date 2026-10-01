@@ -13,7 +13,7 @@ func TestExternalLocalModsKeepProfileStateForImport(t *testing.T) {
 	if len(mods) != 1 {
 		t.Fatalf("mods = %#v", mods)
 	}
-	if mods[0].Site != SiteLocal || mods[0].State != StateDownload || mods[0].Key != "external:0" {
+	if mods[0].Site != SiteLocal || mods[0].State != StateDownload || mods[0].Key != "external:0" || mods[0].Enabled {
 		t.Fatalf("mod = %#v", mods[0])
 	}
 	if len(mods[0].UniqueIDs) != 1 || mods[0].UniqueIDs[0] != "Example.Mod" {

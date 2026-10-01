@@ -54,6 +54,7 @@ type Mod struct {
 	Author     string   `json:"author"`
 	Version    string   `json:"version"`
 	State      string   `json:"state"`
+	Enabled    bool     `json:"enabled"`
 	Reason     string   `json:"reason"`
 	ModID      int      `json:"modId"`
 	FileID     int      `json:"fileId"`

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { ProfilePreview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/migrate/models.ts'
 import { Discard } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
 import { openSettings, useNav } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -50,6 +51,7 @@ export interface ImportOptions {
   // A link or a .mortar file's path to preview at once.
   link?: string
   file?: string
+  external?: ProfilePreview
 }
 
 export interface ImportRequest {
@@ -58,6 +60,7 @@ export interface ImportRequest {
   seed: string
   // Changes on every open, so opening again with the same seed previews again.
   run: number
+  external?: ProfilePreview
 }
 
 export const useImportDialog = create<{
@@ -69,10 +72,16 @@ export const useImportDialog = create<{
 }>((set) => ({
   request: null,
   busy: false,
-  open: ({ profileId = '', link = '', file = '' }) => {
+  open: ({ profileId = '', link = '', file = '', external }) => {
     runs += 1
     set({
-      request: { profileId, tab: file ? 'file' : 'link', seed: file || link, run: runs },
+      request: {
+        profileId,
+        tab: file ? 'file' : 'link',
+        seed: file || link,
+        run: runs,
+        ...(external ? { external } : {}),
+      },
       busy: false,
     })
   },

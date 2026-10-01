@@ -8,6 +8,8 @@ Product decisions (scope, stack, look, sources) are NOMAD's, made on 2026-09-29;
 
 Mortar finds a game, installs its mod loader, keeps each set of mods in its own profile, and launches the game with the chosen profile.
 
+External profile import is available for Stardrop and Vortex when their default data is present. Stardrop profiles are read from the platform application-data `Stardrop/Data/Profiles` folder and match `EnabledModIds` against manifests in the configured game `Mods` folder. Vortex profiles are read from its `state.v2` persistent JSON representation; each profile's `modState` is matched to the extracted staging folder. Present folders are copied into Mortar's store, while missing Nexus mods enter the same share-import resolver and download queue.
+
 - **What matters:** Mortar working for NOMAD's own use with a personal Nexus API key. Registering the app with Nexus is not a v1 goal.
 - **Licence:** AGPL-3.0 (NOMAD, 2026-09-29): the same as GPL-3.0 for the desktop app, and it covers a hosted share service.
 - **Scope of the first release:** Stardew Valley only, on Windows and Linux, from Steam (including Flatpak Steam on Linux), GOG Galaxy / the GOG offline installer, and Heroic's GOG library on Linux. macOS is out (fleet CI has no macOS runners, and Wails does not cross-compile to it).

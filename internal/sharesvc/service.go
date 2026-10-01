@@ -392,7 +392,7 @@ func externalLocalMods(mods []migrate.ModPreview) []Mod {
 			}
 			out = append(out, Mod{
 				Key: externalKey(i), Site: SiteLocal, Name: name, Version: mod.Version,
-				State: StateDownload, UniqueIDs: []string{mod.UniqueID},
+				State: StateDownload, Enabled: mod.Enabled, UniqueIDs: []string{mod.UniqueID},
 			})
 			continue
 		}
@@ -403,7 +403,7 @@ func externalLocalMods(mods []migrate.ModPreview) []Mod {
 			}
 			out = append(out, Mod{
 				Key: externalKey(i), Site: SiteLocal, Name: name, Version: mod.Version,
-				State: StateUnavailable, Reason: ReasonNoFile, UniqueIDs: []string{mod.UniqueID},
+				State: StateUnavailable, Enabled: mod.Enabled, Reason: ReasonNoFile, UniqueIDs: []string{mod.UniqueID},
 			})
 		}
 	}

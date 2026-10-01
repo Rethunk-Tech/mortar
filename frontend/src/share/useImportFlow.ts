@@ -1,5 +1,6 @@
 import { msg, plural } from '@lingui/core/macro'
 import { useCallback, useRef, useState } from 'react'
+import type { ProfilePreview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/migrate/models.ts'
 import { RegisterLinks } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/service.ts'
 import { SetLastGame } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import type {
@@ -10,6 +11,7 @@ import {
   Discard,
   Import,
   PickFile,
+  PreviewExternal,
   PreviewFile,
   PreviewLink,
   ReadClipboard,
@@ -23,10 +25,32 @@ import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { beginWork } from '../toasts/usePending.ts'
 import { type ShownPreview, shownPreview } from './logic.ts'
-import { importAfterSignIn, useImportDialog } from './store.ts'
+import { type ImportOptions, importAfterSignIn, useImportDialog } from './store.ts'
 
 function shouldOpenQueueAfterImport(queued: number): boolean {
   return queued > 0
+}
+
+function signInOptions(options: {
+  profileId: string
+  external: ProfilePreview | undefined
+  tab: Tab
+  path: string
+  text: string
+}): ImportOptions {
+  const { profileId, external, tab, path, text } = options
+  if (external) {
+    return { profileId, external }
+  }
+  return tab === 'file' ? { profileId, file: path } : { profileId, link: text }
+}
+
+function toggleExcluded(previous: ReadonlySet<string>, key: string): ReadonlySet<string> {
+  const next = new Set(previous)
+  if (!next.delete(key)) {
+    next.add(key)
+  }
+  return next
 }
 
 // Shows what an import filled: the open profile refreshed, or the new one opened on its game's page.
@@ -88,7 +112,12 @@ async function afterImport(
 export type Tab = 'link' | 'file'
 
 // The import dialog's state: what was typed or picked, the preview it produced and the mods unticked.
-export function useImportFlow(game: string, profileId: string, close: () => void) {
+export function useImportFlow(
+  game: string,
+  profileId: string,
+  close: () => void,
+  external: ProfilePreview | undefined,
+) {
   const [tab, setTab] = useState<Tab>('link')
   const [text, setText] = useState('')
   const [path, setPath] = useState('')
@@ -97,7 +126,6 @@ export function useImportFlow(game: string, profileId: string, close: () => void
   const [error, setError] = useState('')
   const [previewBusy, setPreviewBusy] = useState(false)
   const [importBusy, setImportBusy] = useState(false)
-  // Each preview or reset takes a new number; a result for an older one arrived after it was overtaken.
   const latest = useRef(0)
   const importing = useRef(false)
   const show = useCallback(async (pending: Promise<Preview>) => {
@@ -134,8 +162,11 @@ export function useImportFlow(game: string, profileId: string, close: () => void
     },
     [game, profileId, show],
   )
+  const previewExternal = useCallback(
+    (value: ProfilePreview) => show(PreviewExternal(game, value, profileId)),
+    [game, profileId, show],
+  )
 
-  // The clipboard is read only here, when the user presses Paste.
   const paste = async () => {
     const clip = await ReadClipboard()
     setText(clip)
@@ -157,14 +188,7 @@ export function useImportFlow(game: string, profileId: string, close: () => void
     setText('')
     setPath('')
   }
-  const toggle = (key: string) =>
-    setExcluded((prev) => {
-      const next = new Set(prev)
-      if (!next.delete(key)) {
-        next.add(key)
-      }
-      return next
-    })
+  const toggle = (key: string) => setExcluded((prev) => toggleExcluded(prev, key))
 
   const run = async (intoOpen: boolean, replace = false) => {
     if (!beginWork(importing)) {
@@ -189,10 +213,9 @@ export function useImportFlow(game: string, profileId: string, close: () => void
       setImportBusy(false)
     }
   }
-  // The dialog closes for Nexus settings and comes back with this link or file after sign-in.
   const signIn = () => {
     close()
-    importAfterSignIn({ profileId, ...(tab === 'file' ? { file: path } : { link: text }) })
+    importAfterSignIn(signInOptions({ profileId, external, tab, path, text }))
   }
 
   return {
@@ -207,6 +230,7 @@ export function useImportFlow(game: string, profileId: string, close: () => void
     busy: previewBusy || importBusy,
     previewLink,
     previewFile,
+    previewExternal,
     paste,
     pick,
     reset,
