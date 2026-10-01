@@ -1,0 +1,60 @@
+package migrate
+
+import (
+	"path/filepath"
+	"testing"
+)
+
+func TestDetectsStardropProfileAndReadsGameMods(t *testing.T) {
+	home := filepath.Join("testdata", "stardrop", "home")
+	mods := filepath.Join("testdata", "stardrop", "game", "Mods")
+
+	sources, err := Detect(home, mods)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(sources) != 1 || sources[0].Kind != KindStardrop {
+		t.Fatalf("sources = %#v", sources)
+	}
+	preview, err := Preview(home, mods, KindStardrop, "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(preview.Mods) != 1 {
+		t.Fatalf("mods = %#v", preview.Mods)
+	}
+	mod := preview.Mods[0]
+	if mod.UniqueID != "Example.Mod" || mod.Name != "Example Mod" || mod.Version != "1.2.3" || !mod.Enabled || mod.NexusModID != 123 {
+		t.Fatalf("mod = %#v", mod)
+	}
+	if mod.SourcePath == "" {
+		t.Fatal("Stardrop mod has no source path")
+	}
+}
+
+func TestDetectsVortexProfileAndReadsStagingMods(t *testing.T) {
+	home := filepath.Join("testdata", "vortex", "home")
+	mods := filepath.Join(home, ".config", "Vortex", "game", "mods")
+
+	sources, err := Detect(home, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(sources) != 1 || sources[0].Kind != KindVortex {
+		t.Fatalf("sources = %#v", sources)
+	}
+	preview, err := Preview(home, mods, KindVortex, "profile-1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(preview.Mods) != 1 {
+		t.Fatalf("mods = %#v", preview.Mods)
+	}
+	mod := preview.Mods[0]
+	if mod.UniqueID != "Example.Mod" || mod.Name != "Example Mod" || mod.Version != "1.2.3" || !mod.Enabled || mod.NexusModID != 123 {
+		t.Fatalf("mod = %#v", mod)
+	}
+	if mod.SourcePath == "" {
+		t.Fatal("Vortex mod has no source path")
+	}
+}

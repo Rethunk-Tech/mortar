@@ -1,0 +1,5 @@
+{
+  "Name": "Farm",
+  "EnabledModIds": ["Example.Mod"],
+  "ModData": []
+}
