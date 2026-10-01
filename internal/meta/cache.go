@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
@@ -28,6 +29,10 @@ type Client struct {
 	UpdatesURL string
 	Now        func() time.Time
 	index      indexMemo
+	// updatesMu serializes update checks so concurrent profiles share one fetch and one cache write.
+	updatesMu sync.Mutex
+	// updatesPause holds off smapi.io after a failed ask; until then stale cache or unknown is served.
+	updatesPause time.Time
 }
 
 func (c *Client) client() *http.Client {

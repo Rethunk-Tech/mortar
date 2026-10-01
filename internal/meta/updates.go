@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -14,8 +15,12 @@ const (
 	updatesTTL        = time.Hour
 	updatesFile       = "smapi-updates.json"
 	updatesBatch      = 100
+	updatesBackoff    = 5 * time.Minute
 	maxUpdates        = 16 << 20
 )
+
+// errUpdatesPaused stands in for a failed ask while smapi.io is being given a rest.
+var errUpdatesPaused = errors.New("update checks paused after a failed request")
 
 // UpdateRequest describes the installed environment and mods to check.
 type UpdateRequest struct {
@@ -101,6 +106,8 @@ func (r UpdateRequest) key(m InstalledMod) string {
 // CheckUpdates returns one result per requested mod, in order. Answers younger than an hour come from cache;
 // the rest are asked in batches, and a batch that fails falls back to stale cache, else unknown.
 func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateResult {
+	c.updatesMu.Lock()
+	defer c.updatesMu.Unlock()
 	path, pathErr := c.cachePath(updatesFile)
 	var store map[string]entry[UpdateResult]
 	if pathErr == nil {
@@ -128,7 +135,14 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 		for j, i := range batch {
 			asked[j] = req.Mods[i]
 		}
-		got, err := c.askUpdates(ctx, req, asked)
+		var got map[string]UpdateResult
+		err := errUpdatesPaused
+		if !now.Before(c.updatesPause) {
+			got, err = c.askUpdates(ctx, req, asked)
+			if err != nil {
+				c.updatesPause = now.Add(updatesBackoff)
+			}
+		}
 		for j, i := range batch {
 			k := req.key(req.Mods[i])
 			switch {

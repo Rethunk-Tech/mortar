@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -250,5 +251,36 @@ func TestCompareVersions(t *testing.T) {
 		if _, ok := CompareVersions(bad, "1.0"); ok {
 			t.Errorf("%q should not parse", bad)
 		}
+	}
+}
+
+func TestCheckUpdatesSharesConcurrentAndPausesAfterFailure(t *testing.T) {
+	var down atomic.Bool
+	var hits atomic.Int32
+	c := server(t, &down, &hits)
+	var wg sync.WaitGroup
+	for range 5 {
+		wg.Go(func() { c.CheckUpdates(context.Background(), cpRequest) })
+	}
+	wg.Wait()
+	if n := hits.Load(); n != 1 {
+		t.Fatalf("concurrent checks of the same mods asked %d times, want 1", n)
+	}
+
+	cold := &Client{HTTP: c.HTTP, CacheDir: t.TempDir(), UpdatesURL: c.UpdatesURL}
+	now := time.Now()
+	cold.Now = func() time.Time { return now }
+	down.Store(true)
+	cold.CheckUpdates(context.Background(), cpRequest)
+	before := hits.Load()
+	now = now.Add(time.Minute)
+	cold.CheckUpdates(context.Background(), cpRequest)
+	if hits.Load() != before {
+		t.Fatal("a failed ask must pause further asks")
+	}
+	down.Store(false)
+	now = now.Add(updatesBackoff)
+	if got := cold.CheckUpdates(context.Background(), cpRequest); !got[0].Known {
+		t.Fatalf("ask after the pause should succeed: %+v", got[0])
 	}
 }
