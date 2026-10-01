@@ -30,6 +30,17 @@ import { modId, problemCount } from './lookup.ts'
 import { useSelection } from './selection.ts'
 import { useUpdates } from './updates.ts'
 
+function announceAlso(names: string[] | null | undefined) {
+  const also = (names ?? []).filter(Boolean)
+  if (also.length === 0) {
+    return
+  }
+  useToasts.getState().push({
+    kind: 'info',
+    title: i18n._(msg`Also enabled ${also.join(', ')}`),
+  })
+}
+
 type View = 'grid' | 'list'
 
 const VIEW_KEY = 'mortar.modsView'
@@ -128,7 +139,10 @@ async function enableMany(
         target.id,
         mods.map((m) => ({ key: m.key, uniqueId: m.uniqueId })),
         enabled,
-      ),
+      ).then((r) => {
+        announceAlso(r.alsoEnabled)
+        return r.profile
+      }),
     )
   } catch (e) {
     set((s) => ({
@@ -226,9 +240,9 @@ export const useMods = create<{
       }))
     flip(enabled)
     try {
-      useProfiles
-        .getState()
-        .replace(await SetModEnabled(target.game, target.id, mod.key, mod.uniqueId, enabled))
+      const got = await SetModEnabled(target.game, target.id, mod.key, mod.uniqueId, enabled)
+      useProfiles.getState().replace(got.profile)
+      announceAlso(got.alsoEnabled)
     } catch (e) {
       flip(!enabled)
       fail(i18n._(msg`Could not switch ${mod.name}`))(e)
@@ -317,7 +331,9 @@ export const useMods = create<{
       for (const c of (dup.copies ?? []).filter((x) => x.key !== keepKey)) {
         useProfiles
           .getState()
-          .replace(await SetModEnabled(target.game, target.id, c.key, dup.uniqueId, false))
+          .replace(
+            (await SetModEnabled(target.game, target.id, c.key, dup.uniqueId, false)).profile,
+          )
       }
     } catch (e) {
       fail(i18n._(msg`Could not switch off the other copy of ${dup.name}`))(e)

@@ -57,7 +57,9 @@ export const useSaves = create<State>((set, get) => ({
       return
     }
     try {
-      useProfiles.getState().replace(await SetModEnabled(game, profile.id, key, uniqueId, true))
+      useProfiles
+        .getState()
+        .replace((await SetModEnabled(game, profile.id, key, uniqueId, true)).profile)
       set((s) => ({ fits: dropMissing(s.fits, uniqueId) }))
     } catch (e) {
       reportUnexpected(e)

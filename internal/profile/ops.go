@@ -43,6 +43,12 @@ type EnableRef struct {
 	UniqueID string `json:"uniqueId"`
 }
 
+// EnableResult is a profile after switching mods, plus required dependencies turned on with them.
+type EnableResult struct {
+	Profile     Profile  `json:"profile"`
+	AlsoEnabled []string `json:"alsoEnabled"`
+}
+
 func exists(p string) bool {
 	_, err := os.Lstat(p)
 	return err == nil
@@ -407,21 +413,44 @@ func applyEnabled(p *Profile, dir, key, uniqueID string, enabled bool) error {
 // SetModEnabled switches a mod on or off by renaming its folder with or without a leading dot. key names the
 // entry holding it, which tells apart two copies of one UniqueID; an empty key means the first entry that has it.
 func (s *Store) SetModEnabled(game, id, key, uniqueID string, enabled bool) (Profile, error) {
-	return s.updateMods(game, id, func(p *Profile, dir string) error {
-		return applyEnabled(p, dir, key, uniqueID, enabled)
+	p, _, err := s.enableMod(game, id, key, uniqueID, enabled)
+	return p, err
+}
+
+func (s *Store) enableMod(game, id, key, uniqueID string, enabled bool) (Profile, []string, error) {
+	var also []string
+	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
+		if err := applyEnabled(p, dir, key, uniqueID, enabled); err != nil {
+			return err
+		}
+		if enabled {
+			also = enableRequired(p, dir, uniqueID)
+		}
+		return nil
 	})
+	return p, also, err
 }
 
 // SetModsEnabled switches each named mod on or off in one profile write.
 func (s *Store) SetModsEnabled(game, id string, mods []EnableRef, enabled bool) (Profile, error) {
-	return s.updateMods(game, id, func(p *Profile, dir string) error {
+	p, _, err := s.enableMods(game, id, mods, enabled)
+	return p, err
+}
+
+func (s *Store) enableMods(game, id string, mods []EnableRef, enabled bool) (Profile, []string, error) {
+	var also []string
+	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
 		for _, m := range mods {
 			if err := applyEnabled(p, dir, m.Key, m.UniqueID, enabled); err != nil {
 				return err
 			}
+			if enabled {
+				also = append(also, enableRequired(p, dir, m.UniqueID)...)
+			}
 		}
 		return nil
 	})
+	return p, also, err
 }
 
 // SetHidden hides or shows a profile in the list.
