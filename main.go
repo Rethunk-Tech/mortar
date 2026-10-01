@@ -320,7 +320,9 @@ func run() error {
 		app.RegisterService(s)
 	}
 
-	if err := updatesvc.Configure(updates, app.Updater, version, updateKey, packaged); err != nil {
+	if err := updatesvc.Configure(updates, app.Updater, version, updateKey, packaged, func() bool {
+		return store.Get().IncludeBetaReleases
+	}); err != nil {
 		return err
 	}
 	queueCtx, stopQueue := context.WithCancel(context.Background())
@@ -359,6 +361,45 @@ func run() error {
 	})
 	window.OnWindowEvent(events.Common.WindowFilesDropped, func(e *application.WindowEvent) {
 		app.Event.Emit(picker.DroppedEvent, e.Context().DroppedFiles())
+	})
+
+	var tray *application.SystemTray
+	syncTray := func() {
+		if !store.Get().KeepInTray {
+			if tray != nil {
+				tray.Destroy()
+				tray = nil
+			}
+			return
+		}
+		if tray != nil {
+			return
+		}
+		tray = app.SystemTray.New().SetIcon(appIcon)
+		menu := app.NewMenu()
+		menu.Add("Show Mortar").OnClick(func(*application.Context) {
+			window.Restore()
+			window.Show().Focus()
+		})
+		menu.Add("Quit").OnClick(func(*application.Context) {
+			app.Quit()
+		})
+		tray.SetMenu(menu)
+		tray.OnClick(func() {
+			window.Restore()
+			window.Show().Focus()
+		})
+	}
+	window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+		if !store.Get().KeepInTray {
+			return
+		}
+		window.Hide()
+		e.Cancel()
+	})
+	syncTray()
+	app.Event.On(settings.ChangedEvent, func(*application.CustomEvent) {
+		syncTray()
 	})
 
 	closeReady()
