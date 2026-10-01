@@ -100,7 +100,9 @@ type Service struct {
 	EnsureLoader func(ctx context.Context, gameID string, fromStart bool) error
 	// Unlocked is called when a game is no longer launching or running, so the queue can retry work it held.
 	Unlocked func()
-	quit     <-chan struct{}
+	// NotifyRunEnd sends a desktop notification when a Mortar-started run ends; main sets this from the tray wiring.
+	NotifyRunEnd func(RunEndNotice)
+	quit         <-chan struct{}
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store) *Service {
@@ -722,6 +724,14 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 		started := sess.started
 		if cur.Since > 0 {
 			started = time.UnixMilli(cur.Since)
+		}
+		if s.NotifyRunEnd != nil {
+			modsDir, err := s.profiles.ModsDir(g.ID(), cur.Profile)
+			if err == nil {
+				stats := launch.Summarize(s.runText(g, cur.Profile, modsDir))
+				title, body := RunEndNotificationText(g.Name(), stats)
+				s.NotifyRunEnd(RunEndNotice{Game: g.ID(), Profile: cur.Profile, Title: title, Body: body})
+			}
 		}
 		s.record(g, cur.Profile, started, false)
 	}
