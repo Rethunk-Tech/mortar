@@ -59,19 +59,27 @@ var (
 	errCheckFailed = errors.New("failed")
 )
 
+// WhatsNew is shown once after Mortar starts on a newer version than last run.
+type WhatsNew struct {
+	Version string `json:"version"`
+	Notes   string `json:"notes"`
+}
+
 // Service is the updater as the window sees it.
 type Service struct {
 	u    Updater
 	info Info
+	dir  string
 	// empty runs when Check finds no newer release, so a missing manifest is not reported as up to date.
 	empty func(context.Context) error
 
-	mu        sync.Mutex
-	cond      *sync.Cond
-	once      sync.Once
-	inCheck   bool
-	inInstall bool
-	found     *Release
+	mu            sync.Mutex
+	cond          *sync.Cond
+	once          sync.Once
+	inCheck       bool
+	inInstall     bool
+	found         *Release
+	restartChosen bool
 }
 
 func (s *Service) lock() {
@@ -82,7 +90,8 @@ func (s *Service) lock() {
 // Configure points s at u, which reads ManifestURL and trusts only publicKey. It is a function rather than a method
 // so the binding generator does not hand it to the window. Outside a production build, for a dev version, or when
 // packaged is set (nfpm, Flatpak, AUR), u is left unconfigured and every call reports updates as off.
-func Configure(s *Service, u Updater, version string, publicKey []byte, packaged string, includeBeta func() bool) error {
+func Configure(s *Service, u Updater, version string, publicKey []byte, packaged string, includeBeta func() bool, dataDir string) error {
+	s.dir = dataDir
 	if err := configure(s, u, version, publicKey, production && !application.System.IsServer(), packaged, includeBeta); err != nil {
 		return err
 	}
@@ -215,8 +224,41 @@ func (s *Service) Restart(ctx context.Context) error {
 	for s.inInstall || s.inCheck {
 		s.cond.Wait()
 	}
+	s.restartChosen = true
 	s.mu.Unlock()
 	return s.u.Restart(ctx)
+}
+
+// WhatsNew returns release notes when this build is newer than the last one Mortar ran; offline returns empty.
+func (s *Service) WhatsNew(ctx context.Context) (WhatsNew, error) {
+	var none WhatsNew
+	if s.info.Off != "" || s.dir == "" {
+		return none, nil
+	}
+	cur := s.info.Version
+	last, err := readLastRun(s.dir)
+	if err != nil {
+		return none, err
+	}
+	if !upgraded(cur, last) {
+		if last != cur {
+			_ = writeLastRun(s.dir, cur)
+		}
+		return none, nil
+	}
+	notes, noteErr := mortarReleaseNotes(ctx, cur)
+	if noteErr != nil {
+		return none, noteErr
+	}
+	return WhatsNew{Version: cur, Notes: notes}, nil
+}
+
+// AckWhatsNew records that the user saw this version's notes.
+func (s *Service) AckWhatsNew() error {
+	if s.dir == "" {
+		return nil
+	}
+	return writeLastRun(s.dir, s.info.Version)
 }
 
 func classifyCheckError(err error) error {

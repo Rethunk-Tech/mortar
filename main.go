@@ -72,6 +72,7 @@ func registerEvents() {
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
 	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
 	application.RegisterEvent[sharesvc.Arrival](sharesvc.ArrivedEvent)
+	application.RegisterEvent[updatesvc.Release](updatesvc.StagedEvent)
 }
 
 func main() {
@@ -107,6 +108,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	updates := &updatesvc.Service{}
 	app := application.New(application.Options{
 		Name: "Mortar",
 		Icon: appIcon,
@@ -129,6 +131,9 @@ func run() error {
 					return store.Get()
 				}, backdrop.SystemDefault, backdrop.DesktopWallpaper),
 			),
+		},
+		OnShutdown: func() {
+			_ = updates.ApplyOnQuit(context.Background())
 		},
 		SingleInstance: &application.SingleInstanceOptions{
 			UniqueID: "tech.rethunk.mortar",
@@ -215,7 +220,6 @@ func run() error {
 	if err := nexusSvc.UseDataDir(dataDir); err != nil {
 		return err
 	}
-	updates := &updatesvc.Service{}
 	emit := func(name string, data any) { app.Event.Emit(name, data) }
 	queueSvc, err := queue.New(queue.Deps{
 		Client:  func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },
@@ -329,9 +333,12 @@ func run() error {
 
 	if err := updatesvc.Configure(updates, app.Updater, version, updateKey, packaged, func() bool {
 		return store.Get().IncludeBetaReleases
-	}); err != nil {
+	}, dataDir); err != nil {
 		return err
 	}
+	updateCtx, stopUpdates := context.WithCancel(context.Background())
+	defer stopUpdates()
+	updates.StartBackground(updateCtx, emit)
 	queueCtx, stopQueue := context.WithCancel(context.Background())
 	launchsvc.SetLife(launches, queueCtx)
 	waitQueue := queue.Run(queueCtx, queueSvc, nxmSvc.Assigned)
