@@ -45,6 +45,7 @@ jobs:
           (cd "$wails_dir" && go build -o "$(go env GOPATH)/bin/wails3" ./cmd/wails3)
           go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
           go install golang.org/x/vuln/cmd/govulncheck@v1.7.0
+          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.47.0
 
       - name: Setup Bun
         uses: Rethunk-Tech/gh-actions/setup-bun@99dfb9093ab089d28f76d8036322a7c062259e76 # v1.13
@@ -61,6 +62,15 @@ jobs:
 
       - name: Linux AppImage
         run: wails3 task linux:create:appimage
+
+      - name: Linux deb, rpm and Arch packages
+        run: sudo apt-get install -y --no-install-recommends rpm && wails3 task linux:nfpm
+
+      - name: Linux Flatpak
+        run: |
+          sudo apt-get install -y --no-install-recommends flatpak flatpak-builder
+          sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          wails3 task linux:flatpak
 
       - name: Windows exe and installer
         run: wails3 task windows:package INSTALL_SCOPE=user
@@ -87,6 +97,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
-        run: >
-          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes
-          bin/mortar-linux-x86_64.AppImage bin/mortar-windows-amd64.exe bin/mortar-amd64-installer.exe bin/manifest.json
+        run: |
+          version="${TAG#v}"
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes \
+            bin/mortar-linux-x86_64.AppImage \
+            bin/mortar-linux-amd64 \
+            "bin/mortar_${version}_amd64.deb" \
+            "bin/mortar-${version}-1.x86_64.rpm" \
+            "bin/mortar-${version}-1-x86_64.pkg.tar.zst" \
+            bin/mortar-linux-x86_64.flatpak \
+            bin/mortar-windows-amd64.exe \
+            bin/mortar-amd64-installer.exe \
+            bin/manifest.json
