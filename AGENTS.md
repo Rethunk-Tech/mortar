@@ -16,4 +16,4 @@ Agents self-test everything they can: in the Wails dev server's browser view, an
 
 ## Verify
 
-`bun run gate` is the offline gate (steps: [HUMANS.md](HUMANS.md) § Gate). Pushes to `main` spend no CI minutes: CI runs on `v*` release tags or manual dispatch only.
+Bindings: `bun run bindings`; Lingui catalogs: `bun run --cwd frontend i18n:extract && bun run --cwd frontend i18n:compile`. Taskfile tasks run as `wails3 task <name>`; there is no standalone `task` binary. `bun run gate` is the offline gate (steps: [HUMANS.md](HUMANS.md) § Gate). Pushes to `main` spend no CI minutes: CI runs on `v*` release tags or manual dispatch only.
