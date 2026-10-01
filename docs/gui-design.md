@@ -12,6 +12,8 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
   - **Location tabs**, underlined in the primary colour: "Game Select", or the current game. First run shows a "Setup" tab. While Mortar's Settings page is open the game tab gives way to a "Settings" tab, and the game settings page keeps the game tab highlighted.
   - **Right:** minimise, maximise and close.
   - **App menu**, a side drawer in four groups split by dividers: Settings and Check for updates (opens Settings › Updates and checks at once); Open data folder, Save diagnostics… (a redacted zip for a bug report through the native save dialog, FileArchive icon) and Report a bug (a prefilled GitHub issue); About Mortar and Source code (the AGPL-3.0 source offer, opening `https://github.com/Rethunk-AI/mortar`); then Quit.
+  - **Mortar update ready:** when a background self-update is staged, a full-width info banner under the title bar says the update applies when Mortar closes and offers **Restart now** (same action as Settings › Updates).
+  - **What's new:** after an upgrade, a dialog once per version shows that release's GitHub notes with **Got it**; offline skips until a later start ([architecture.md](architecture.md#release)).
   - **Drawer foot:** the Nexus account, as the account name with a Premium or Free badge and Sign out, or "Not signed in" with Sign in, which opens Settings › Nexus Mods.
   - **Frame:** a 1px light border and rounded corners, since GNOME draws no shadow for a frameless window.
 - `user-select: none` everywhere except text fields and the console.
