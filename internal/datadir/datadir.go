@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
@@ -49,10 +50,16 @@ func defaultDir() (string, error) {
 	return filepath.Join(home, ".local", "share", "mortar"), nil
 }
 
+// errRealDataInTest stops a test from reading or writing the user's real Mortar data.
+var errRealDataInTest = fmt.Errorf("tests must point XDG_DATA_HOME (LOCALAPPDATA on Windows) at a temporary folder")
+
 func resolve() (string, error) {
 	def, err := defaultDir()
 	if err != nil {
 		return "", err
+	}
+	if testing.Testing() && !underTemp(def) {
+		return "", errRealDataInTest
 	}
 	b, err := fsx.ReadFile(filepath.Join(def, PointerName))
 	if err != nil {
@@ -66,4 +73,9 @@ func resolve() (string, error) {
 		return def, nil
 	}
 	return p, nil
+}
+
+func underTemp(dir string) bool {
+	rel, err := filepath.Rel(os.TempDir(), dir)
+	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
 }
