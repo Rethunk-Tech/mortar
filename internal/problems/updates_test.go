@@ -58,6 +58,19 @@ func TestCheckUpdatesNamesTheGitHubRepo(t *testing.T) {
 	}
 }
 
+func TestCheckUpdatesIncludesUnofficialWithoutReplacingSuggested(t *testing.T) {
+	rm := fakeMeta{compat: map[string]meta.UpdateResult{
+		"me.a": {
+			Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://n.test/a"},
+			Unofficial: &meta.Update{Version: "2.1.0-unofficial.1-x", URL: "https://smapi.io/u"},
+		},
+	}}
+	got := CheckUpdates(context.Background(), rm, Environment{}, []Installed{mod("k1", "me.a", "1.0.0", true)}).Updates
+	if len(got) != 2 || got[0].Unofficial || got[0].Version != "2.0.0" || !got[1].Unofficial || got[1].Version != "2.1.0-unofficial.1-x" {
+		t.Fatalf("got %+v", got)
+	}
+}
+
 func TestHideHeldDropsPinnedAndSkipped(t *testing.T) {
 	r := UpdatesResult{Updates: []Update{
 		{Key: "pin", Version: "2.0.0"},

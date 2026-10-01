@@ -32,7 +32,15 @@ import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { changelogsBetween, mergeCachedDetails } from './changelogRange.ts'
-import { modId, sameId, siblingsOf, updateCount, visibleUpdates } from './lookup.ts'
+import {
+  installableUpdate,
+  listedAgainstNexus,
+  modId,
+  sameId,
+  siblingsOf,
+  updateCount,
+  visibleUpdates,
+} from './lookup.ts'
 import { useNexusDetails } from './nexusDetails.ts'
 import { accent, paper } from './paper.ts'
 import { LetterTile } from './parts.tsx'
@@ -76,7 +84,7 @@ const updateWant = (u: Update): Want => ({
   currentKey: u.key,
 })
 
-const downloadable = (u: Update) => u.githubRepo !== '' || u.nexusId > 0
+const downloadable = (u: Update) => installableUpdate(u)
 
 const pendingUpdate = (items: Item[], profileId: string, u: Update) =>
   u.githubRepo
@@ -167,6 +175,7 @@ function Row({ update, profileId }: { update: Update; profileId: string }) {
   const notes = [
     ...(mod ? siblingsOf(mods, mod).map((o) => t`Also updates ${o.name} (same download)`) : []),
     ...(mod && !mod.enabled ? [t`Switched off in this profile`] : []),
+    ...(update.unofficial ? [t`Unofficial`] : []),
   ]
   return (
     <Box
@@ -184,7 +193,7 @@ function Row({ update, profileId }: { update: Update; profileId: string }) {
       <LetterTile mod={{ uniqueId: update.uniqueId, name: update.name }} size={ROW_TILE} />
       <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '3px' }}>
         <Typography sx={{ fontSize: 16, fontWeight: 600, overflowWrap: 'anywhere' }}>
-          {update.name}
+          {update.unofficial ? t`Unofficial update available: ${update.version}` : update.name}
         </Typography>
         {notes.length > 0 ? (
           <Typography
@@ -289,7 +298,10 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   const checkedAt = useUpdates((s) => s.checkedAt)
   const setReviewing = useUpdates((s) => s.setReviewing)
   const close = () => setReviewing(false)
-  const list = visibleUpdates(updates, profile)
+  const byId = useNexusDetails((s) => s.byId)
+  const list = visibleUpdates(updates, profile).filter((u) =>
+    listedAgainstNexus(u, byId[u.nexusId]?.details?.page),
+  )
   const items = useQueue((s) => s.state.items)
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {

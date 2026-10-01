@@ -27,6 +27,7 @@ type Update struct {
 	URL        string `json:"url"`
 	NexusID    int    `json:"nexusId"`
 	GitHubRepo string `json:"githubRepo"`
+	Unofficial bool   `json:"unofficial"`
 }
 
 // UpdatesResult lists a profile's updates. Unknown is set when SMAPI's API could not be reached for some mod,
@@ -62,6 +63,22 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
 				Installed: x.Version, Version: res.Suggested.Version, URL: res.Suggested.URL,
 				NexusID: nexusID(x.UpdateKeys), GitHubRepo: githubUpdate(x.UpdateKeys, res.Suggested.URL),
+			})
+			if res.Unofficial != nil {
+				r.Updates = append(r.Updates, Update{
+					Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
+					Installed: x.Version, Version: res.Unofficial.Version, URL: res.Unofficial.URL,
+					NexusID: nexusID(x.UpdateKeys), GitHubRepo: githubUpdate(x.UpdateKeys, res.Unofficial.URL),
+					Unofficial: true,
+				})
+			}
+		case res.Unofficial != nil:
+			x := asked[i]
+			r.Updates = append(r.Updates, Update{
+				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
+				Installed: x.Version, Version: res.Unofficial.Version, URL: res.Unofficial.URL,
+				NexusID: nexusID(x.UpdateKeys), GitHubRepo: githubUpdate(x.UpdateKeys, res.Unofficial.URL),
+				Unofficial: true,
 			})
 		}
 	}

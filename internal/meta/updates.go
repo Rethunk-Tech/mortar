@@ -44,6 +44,7 @@ type UpdateResult struct {
 	ID            string  `json:"id"`
 	Known         bool    `json:"known"`
 	Suggested     *Update `json:"suggested,omitempty"`
+	Unofficial    *Update `json:"unofficial,omitempty"`
 	Compatibility string  `json:"compatibility,omitempty"`
 	BrokeIn       string  `json:"brokeIn,omitempty"`
 	GitHubRepo    string  `json:"gitHubRepo,omitempty"`
@@ -57,13 +58,39 @@ type apiRequest struct {
 	IncludeExtendedMetadata bool           `json:"includeExtendedMetadata"`
 }
 
+type apiUpdate struct {
+	Version            string     `json:"version"`
+	URL                string     `json:"url"`
+	Unofficial         *apiUpdate `json:"unofficial"`
+	UnofficialForSmapi *apiUpdate `json:"unofficialForSmapi"`
+}
+
+func (u *apiUpdate) asUpdate() *Update {
+	if u == nil || strings.TrimSpace(u.Version) == "" {
+		return nil
+	}
+	return &Update{Version: u.Version, URL: u.URL}
+}
+
+func firstUnofficial(parts ...*apiUpdate) *Update {
+	for _, p := range parts {
+		if got := p.asUpdate(); got != nil {
+			return got
+		}
+	}
+	return nil
+}
+
 type apiMod struct {
-	ID              string  `json:"id"`
-	SuggestedUpdate *Update `json:"suggestedUpdate"`
+	ID              string     `json:"id"`
+	SuggestedUpdate *apiUpdate `json:"suggestedUpdate"`
 	Metadata        *struct {
-		GitHubRepo          string `json:"gitHubRepo"`
-		CompatibilityStatus string `json:"compatibilityStatus"`
-		BrokeIn             string `json:"brokeIn"`
+		GitHubRepo          string     `json:"gitHubRepo"`
+		CompatibilityStatus string     `json:"compatibilityStatus"`
+		BrokeIn             string     `json:"brokeIn"`
+		Unofficial          *apiUpdate `json:"unofficial"`
+		UnofficialUpdate    *apiUpdate `json:"unofficialUpdate"`
+		UnofficialForSmapi  *apiUpdate `json:"unofficialForSmapi"`
 	} `json:"metadata"`
 }
 
@@ -154,9 +181,13 @@ func (c *Client) askUpdates(ctx context.Context, req UpdateRequest, mods []Insta
 	}
 	out := make(map[string]UpdateResult, len(answers))
 	for _, a := range answers {
-		r := UpdateResult{ID: a.ID, Known: true, Suggested: a.SuggestedUpdate}
+		r := UpdateResult{ID: a.ID, Known: true, Suggested: a.SuggestedUpdate.asUpdate()}
 		if a.Metadata != nil {
 			r.Compatibility, r.BrokeIn, r.GitHubRepo = a.Metadata.CompatibilityStatus, a.Metadata.BrokeIn, a.Metadata.GitHubRepo
+			r.Unofficial = firstUnofficial(a.Metadata.UnofficialUpdate, a.Metadata.Unofficial, a.Metadata.UnofficialForSmapi)
+		}
+		if r.Unofficial == nil && a.SuggestedUpdate != nil {
+			r.Unofficial = firstUnofficial(a.SuggestedUpdate.Unofficial, a.SuggestedUpdate.UnofficialForSmapi)
 		}
 		out[strings.ToLower(a.ID)] = r
 	}
