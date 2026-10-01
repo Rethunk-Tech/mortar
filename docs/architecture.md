@@ -114,7 +114,7 @@ Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_
 
 Everything from outside is untrusted: links, `.mortar` files, archives, API responses. Share links and `.mortar` files have their own caps and rules in [Sharing](#sharing).
 
-- Extraction keeps every entry inside its destination; caps each entry at 256 MiB, the archive at 2 GiB extracted and 20,000 entries; rejects symlink entries, Windows reserved names (`CON`, `NUL`, ...), `:` in names, and names that differ only by case.
+- Extraction keeps every entry inside its destination; caps each entry at 256 MiB, decoder dictionaries and PPMd memory at 256 MiB, the archive at 2 GiB extracted and 20,000 entries; rejects symlink entries, Windows reserved names (`CON`, `NUL`, ...), `:` in names, and names that differ only by case.
 - An `nxm://` link is taken only in the exact form `nxm://stardewvalley/mods/<mod id>/files/<file id>?key=<key>&expires=<unix>&user_id=<id>`, unexpired, and for the signed-in account's `user_id`; anything else is refused with the reason. A link Mortar was not waiting for asks which profile it is for before anything downloads.
 
 ## Failure behaviour
