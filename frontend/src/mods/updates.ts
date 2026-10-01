@@ -10,14 +10,14 @@ import { useToasts } from '../toasts/store.ts'
 import { useBadges } from './badges.ts'
 import { updateCount } from './lookup.ts'
 
-export function checkedWhen(at: number | null, now: number) {
+function checkedWhen(at: number | null, now: number) {
   if (at === null) {
     return null
   }
   return ago(now - at)
 }
 
-export function checkedWithSmapi(at: number | null, now: number, unknown: boolean): string {
+function checkedWithSmapi(at: number | null, now: number, unknown: boolean): string {
   if (unknown) {
     return i18n._(msg`Some mods could not be checked, so more updates may show up later.`)
   }
@@ -43,7 +43,14 @@ export function checkedWithSmapi(at: number | null, now: number, unknown: boolea
   )
 }
 
-export const useUpdates = create<{
+const MS_PER_HOUR = 3_600_000
+let hourlyTimer: ReturnType<typeof setInterval> | undefined
+
+function ignoreRecheckError() {
+  return
+}
+
+const useUpdates = create<{
   updates: UpdatesResult | null
   checkedAt: number | null
   reviewing: boolean
@@ -79,3 +86,22 @@ export const useUpdates = create<{
   },
   setReviewing: (reviewing) => set({ reviewing }),
 }))
+
+function syncHourlyRecheck() {
+  const { game, openId } = useProfiles.getState()
+  if (hourlyTimer !== undefined) {
+    clearInterval(hourlyTimer)
+    hourlyTimer = undefined
+  }
+  if (!(game && openId)) {
+    return
+  }
+  hourlyTimer = setInterval(() => {
+    useUpdates.getState().load().catch(ignoreRecheckError)
+  }, MS_PER_HOUR)
+}
+
+useProfiles.subscribe(syncHourlyRecheck)
+syncHourlyRecheck()
+
+export { checkedWhen, checkedWithSmapi, useUpdates }
