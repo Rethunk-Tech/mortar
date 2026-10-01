@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
 func testdataPack(t *testing.T, name string) Installed {
@@ -44,6 +45,39 @@ func TestAssetConflicts(t *testing.T) {
 	inc := testdataPack(t, "include_a")
 	includePeer := testdataPack(t, "include_b")
 
+	t.Run("edits by packs that name each other are intended", func(t *testing.T) {
+		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{testdataPack(t, "aware_a"), editB})
+		if len(got.AssetConflicts) != 0 {
+			t.Fatalf("got %+v", got.AssetConflicts)
+		}
+		got = Check(context.Background(), fakeMeta{}, Environment{}, []Installed{testdataPack(t, "aware_a"), editA})
+		if len(got.AssetConflicts) != 1 {
+			t.Fatalf("unaware pair not reported: %+v", got.AssetConflicts)
+		}
+	})
+	t.Run("packs from one entry or a declared dependency are intended", func(t *testing.T) {
+		a, b := editA, editB
+		b.Key = a.Key
+		if got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{a, b}); len(got.AssetConflicts) != 0 {
+			t.Fatalf("same entry reported: %+v", got.AssetConflicts)
+		}
+		b = editB
+		b.Dependencies = []manifest.Dependency{{UniqueID: a.UniqueID}}
+		if got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{a, b}); len(got.AssetConflicts) != 0 {
+			t.Fatalf("dependency reported: %+v", got.AssetConflicts)
+		}
+	})
+	t.Run("HasMod conditions gate patches", func(t *testing.T) {
+		gated := testdataPack(t, "gated_a")
+		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{gated, loadB, editA})
+		if len(got.AssetConflicts) != 0 {
+			t.Fatalf("gated patches reported: %+v", got.AssetConflicts)
+		}
+		got = Check(context.Background(), fakeMeta{}, Environment{}, []Installed{gated, loadA})
+		if len(got.AssetConflicts) != 1 || got.AssetConflicts[0].Target != "portraits/farmer" {
+			t.Fatalf("HasMod false with the mod absent should apply: %+v", got.AssetConflicts)
+		}
+	})
 	t.Run("Load/Load conflict", func(t *testing.T) {
 		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{loadA, loadB})
 		if len(got.AssetConflicts) != 1 || got.AssetConflicts[0].Kind != "load" || got.AssetConflicts[0].Target != "portraits/farmer" {

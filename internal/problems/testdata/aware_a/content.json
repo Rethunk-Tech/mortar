@@ -1,0 +1,10 @@
+{
+  "Changes": [
+    { "Action": "EditImage", "Target": "TileSheets/crops" },
+    {
+      "Action": "EditData",
+      "Target": "Data/Events/Beach",
+      "When": { "HasMod |contains=Fixture.EditB": true }
+    }
+  ]
+}

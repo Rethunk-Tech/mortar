@@ -1,0 +1,14 @@
+{
+  "Changes": [
+    {
+      "Action": "Load",
+      "Target": "Portraits/Farmer",
+      "When": { "HasMod |contains=Fixture.LoadB": false }
+    },
+    {
+      "Action": "EditImage",
+      "Target": "TileSheets/crops",
+      "When": { "HasMod": "Fixture.Absent, Fixture.AlsoAbsent" }
+    }
+  ]
+}

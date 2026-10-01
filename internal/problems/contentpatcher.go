@@ -2,9 +2,11 @@ package problems
 
 import (
 	"encoding/json"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -39,42 +41,77 @@ type packHit struct {
 	name     string
 	key      string
 	priority string
+	mentions map[string]bool
+}
+
+// cpPatch is one Load or EditImage/EditMap change with the HasMod conditions that gate it.
+type cpPatch struct {
+	kind     string // "load" or "edit"
+	target   string
+	priority string
+	when     cpWhen
+}
+
+// cpWhen holds a change's HasMod conditions: each anyOf group needs one of its mods
+// present, and no noneOf mod may be present. Other conditions are treated as met.
+type cpWhen struct {
+	anyOf  [][]string
+	noneOf []string
+}
+
+func (w cpWhen) with(o cpWhen) cpWhen {
+	return cpWhen{anyOf: append(slices.Clone(w.anyOf), o.anyOf...), noneOf: append(slices.Clone(w.noneOf), o.noneOf...)}
+}
+
+func (w cpWhen) holds(present map[string]bool) bool {
+	for _, group := range w.anyOf {
+		if !slices.ContainsFunc(group, func(id string) bool { return present[id] }) {
+			return false
+		}
+	}
+	return !slices.ContainsFunc(w.noneOf, func(id string) bool { return present[id] })
 }
 
 type cachedPack struct {
-	mtime        time.Time
-	load         []string
-	edit         []string
-	loadPriority map[string]string
-	editPriority map[string]string
-	skips        int
+	mtime    time.Time
+	patches  []cpPatch
+	mentions map[string]bool
+	skips    int
 }
 
 var packCache sync.Map // folder path -> cachedPack
 
 func contentPackTargets(mod Installed) (load, edit []string, skips int) {
-	load, edit, _, _, skips = contentPackTargetsWithPriority(mod)
-	return load, edit, skips
+	pack := readContentPack(mod)
+	for _, p := range pack.patches {
+		if p.kind == "load" {
+			load = append(load, p.target)
+		} else {
+			edit = append(edit, p.target)
+		}
+	}
+	return load, edit, pack.skips
 }
 
-func contentPackTargetsWithPriority(mod Installed) (load, edit []string, loadPriority, editPriority map[string]string, skips int) {
+func readContentPack(mod Installed) cachedPack {
 	if !mod.Enabled || mod.Folder == "" || !isContentPatcherPack(mod.Folder) {
-		return nil, nil, nil, nil, 0
+		return cachedPack{}
 	}
 	root := filepath.Clean(mod.Folder)
 	info, err := os.Stat(filepath.Join(root, "content.json"))
 	if err != nil {
-		return nil, nil, nil, nil, 0
+		return cachedPack{}
 	}
 	if c, ok := packCache.Load(root); ok {
 		got, ok := c.(cachedPack)
 		if ok && got.mtime.Equal(info.ModTime()) {
-			return got.load, got.edit, got.loadPriority, got.editPriority, got.skips
+			return got
 		}
 	}
-	load, edit, loadPriority, editPriority, skips = scanContentFile(root, "content.json", map[string]bool{})
-	packCache.Store(root, cachedPack{mtime: info.ModTime(), load: load, edit: edit, loadPriority: loadPriority, editPriority: editPriority, skips: skips})
-	return load, edit, loadPriority, editPriority, skips
+	pack := cachedPack{mtime: info.ModTime(), mentions: map[string]bool{}}
+	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
+	packCache.Store(root, pack)
+	return pack
 }
 
 func isContentPatcherPack(folder string) bool {
@@ -108,82 +145,131 @@ func isContentPatcherPack(folder string) bool {
 	return false
 }
 
-func scanContentFile(root, rel string, seen map[string]bool) (load, edit []string, loadPriority, editPriority map[string]string, skips int) {
+func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack *cachedPack) {
 	rel = filepath.ToSlash(rel)
 	key := strings.ToLower(rel)
 	if rel == "" || seen[key] {
-		return nil, nil, nil, nil, 0
+		return
 	}
 	seen[key] = true
 	abs, ok := inside(root, rel)
 	if !ok {
-		return nil, nil, nil, nil, 0
+		return
 	}
 	raw, err := fsx.ReadFile(abs)
 	if err != nil {
-		return nil, nil, nil, nil, 0
+		return
 	}
 	var doc struct {
 		Changes []cpChange `json:"Changes"`
 	}
 	if err := json.Unmarshal(stripJSONNoise(raw), &doc); err != nil {
-		return nil, nil, nil, nil, 0
+		return
 	}
-	loadPriority = map[string]string{}
-	editPriority = map[string]string{}
 	for _, ch := range doc.Changes {
 		action := strings.TrimSpace(ch.Action)
-		if strings.EqualFold(action, "Include") {
+		when := outer.with(parseWhen(ch.When, pack.mentions))
+		var kind string
+		switch {
+		case strings.EqualFold(action, "Include"):
 			for _, from := range splitTargets(ch.FromFile) {
 				if hasToken(from) {
-					skips++
+					pack.skips++
 					continue
 				}
-				l, e, lp, ep, s := scanContentFile(root, from, seen)
-				load = append(load, l...)
-				edit = append(edit, e...)
-				for target, priority := range lp {
-					loadPriority[target] = strongerContentPatcherPriority(loadPriority[target], priority, "load")
-				}
-				for target, priority := range ep {
-					editPriority[target] = strongerContentPatcherPriority(editPriority[target], priority, "edit")
-				}
-				skips += s
+				scanContentFile(root, from, seen, when, pack)
 			}
 			continue
-		}
-		targets := splitTargets(ch.Target)
-		switch {
 		case strings.EqualFold(action, kindLoad):
-			for _, t := range targets {
-				if hasToken(t) {
-					skips++
-					continue
-				}
-				load = append(load, normalizeTarget(t))
-				target := normalizeTarget(t)
-				loadPriority[target] = strongerContentPatcherPriority(loadPriority[target], ch.Priority, "load")
-			}
+			kind = "load"
 		case strings.EqualFold(action, kindEditImage), strings.EqualFold(action, kindEditMap):
-			for _, t := range targets {
-				if hasToken(t) {
-					skips++
-					continue
-				}
-				edit = append(edit, normalizeTarget(t))
-				target := normalizeTarget(t)
-				editPriority[target] = strongerContentPatcherPriority(editPriority[target], ch.Priority, "edit")
+			kind = "edit"
+		default:
+			continue
+		}
+		for _, t := range splitTargets(ch.Target) {
+			if hasToken(t) {
+				pack.skips++
+				continue
 			}
+			pack.patches = append(pack.patches, cpPatch{kind: kind, target: normalizeTarget(t), priority: strings.TrimSpace(ch.Priority), when: when})
 		}
 	}
-	return load, edit, loadPriority, editPriority, skips
+}
+
+// parseWhen reads the HasMod conditions of a When block and records every mod they name.
+// It understands "HasMod": "A, B" and "HasMod |contains=A, B": true/false.
+func parseWhen(raw map[string]json.RawMessage, mentions map[string]bool) cpWhen {
+	var w cpWhen
+	for k, v := range raw {
+		name, arg, _ := strings.Cut(k, "|")
+		if !strings.EqualFold(strings.TrimSpace(name), "hasmod") {
+			continue
+		}
+		arg = strings.TrimSpace(arg)
+		if arg == "" {
+			var ids []string
+			if !condValues(v, &ids) {
+				continue
+			}
+			w.anyOf = append(w.anyOf, note(ids, mentions))
+			continue
+		}
+		param, list, ok := strings.Cut(arg, "=")
+		if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) {
+			continue
+		}
+		ids := note(splitTargets(list), mentions)
+		var flags []string
+		if !condValues(v, &flags) || len(flags) != 1 {
+			continue
+		}
+		switch strings.ToLower(flags[0]) {
+		case "true":
+			w.anyOf = append(w.anyOf, ids)
+		case "false":
+			w.noneOf = append(w.noneOf, ids...)
+		}
+	}
+	return w
+}
+
+// condValues reads a condition value given as a string, comma list, bool or array; false when it holds a token.
+func condValues(v json.RawMessage, out *[]string) bool {
+	var str string
+	var b bool
+	var arr []string
+	switch {
+	case json.Unmarshal(v, &str) == nil:
+	case json.Unmarshal(v, &b) == nil:
+		str = strconv.FormatBool(b)
+	case json.Unmarshal(v, &arr) == nil:
+		str = strings.Join(arr, ",")
+	default:
+		return false
+	}
+	if hasToken(str) {
+		return false
+	}
+	*out = splitTargets(str)
+	return len(*out) > 0
+}
+
+func note(ids []string, mentions map[string]bool) []string {
+	out := make([]string, len(ids))
+	for i, id := range ids {
+		out[i] = strings.ToLower(id)
+		mentions[out[i]] = true
+	}
+	return out
 }
 
 type cpChange struct {
-	Action   string `json:"Action"`
-	Target   string `json:"Target"`
-	FromFile string `json:"FromFile"`
-	Priority string `json:"Priority"`
+	Action   string                     `json:"Action"`
+	Target   string                     `json:"Target"`
+	FromFile string                     `json:"FromFile"`
+	Priority string                     `json:"Priority"`
+	When     map[string]json.RawMessage `json:"When"`
 }
 
 func splitTargets(s string) []string {
@@ -303,33 +389,41 @@ func stripJSONNoise(b []byte) []byte {
 }
 
 func assetConflicts(mods []Installed) []AssetConflict {
-	loadAt := map[string][]packHit{}
-	editAt := map[string][]packHit{}
+	present := map[string]bool{}
 	for _, mod := range mods {
-		load, edit, loadPriority, editPriority, _ := contentPackTargetsWithPriority(mod)
-		hit := packHit{id: mod.UniqueID, name: mod.Name, key: mod.Key}
-		for _, t := range load {
-			if !hasPack(loadAt[t], hit.id) {
-				hit.priority = loadPriority[t]
-				loadAt[t] = append(loadAt[t], hit)
-			}
+		if mod.Enabled {
+			present[strings.ToLower(mod.UniqueID)] = true
 		}
-		for _, t := range edit {
-			if !hasPack(editAt[t], hit.id) {
-				hit.priority = editPriority[t]
-				editAt[t] = append(editAt[t], hit)
+	}
+	at := map[string]map[string][]packHit{"load": {}, "edit": {}}
+	for _, mod := range mods {
+		pack := readContentPack(mod)
+		knows := maps.Clone(pack.mentions)
+		for _, d := range mod.Dependencies {
+			if knows == nil {
+				knows = map[string]bool{}
 			}
+			knows[strings.ToLower(d.UniqueID)] = true
+		}
+		for _, p := range pack.patches {
+			if !p.when.holds(present) {
+				continue
+			}
+			hits := at[p.kind][p.target]
+			i := slices.IndexFunc(hits, func(h packHit) bool { return sameID(h.id, mod.UniqueID) })
+			if i < 0 {
+				at[p.kind][p.target] = append(hits, packHit{id: mod.UniqueID, name: mod.Name, key: mod.Key, priority: p.priority, mentions: knows})
+				continue
+			}
+			hits[i].priority = strongerContentPatcherPriority(hits[i].priority, p.priority, p.kind)
 		}
 	}
 	out := []AssetConflict{}
-	for t, hits := range loadAt {
-		if len(hits) >= 2 {
-			out = append(out, conflictOf("load", t, hits))
-		}
-	}
-	for t, hits := range editAt {
-		if len(hits) >= 2 {
-			out = append(out, conflictOf("edit", t, hits))
+	for kind, targets := range at {
+		for t, hits := range targets {
+			if len(hits) >= 2 && (kind == "load" || !allAware(hits)) {
+				out = append(out, conflictOf(kind, t, hits))
+			}
 		}
 	}
 	slices.SortFunc(out, func(a, b AssetConflict) int {
@@ -344,8 +438,17 @@ func assetConflicts(mods []Installed) []AssetConflict {
 	return out
 }
 
-func hasPack(hits []packHit, id string) bool {
-	return slices.ContainsFunc(hits, func(h packHit) bool { return sameID(h.id, id) })
+// allAware reports whether every pair of packs editing one target was built to work together:
+// they ship in one entry, or one names the other as a dependency or in a HasMod condition.
+func allAware(hits []packHit) bool {
+	for i := range hits {
+		for j := i + 1; j < len(hits); j++ {
+			if hits[i].key != hits[j].key && !hits[i].mentions[strings.ToLower(hits[j].id)] && !hits[j].mentions[strings.ToLower(hits[i].id)] {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func conflictOf(kind, target string, hits []packHit) AssetConflict {
