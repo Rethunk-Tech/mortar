@@ -15,7 +15,7 @@ msgstr "Mortar's licence"
 msgid "Show tips again"
 msgstr "Show tips again"
 
-#: src/console/ConsoleTab.tsx:437
+#: src/console/ConsoleTab.tsx:419
 msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
@@ -196,7 +196,7 @@ msgstr "Show token"
 msgid "Add archive"
 msgstr "Add archive"
 
-#: src/console/ConsoleTab.tsx:393
+#: src/console/ConsoleTab.tsx:365
 msgid "No lines match the filters."
 msgstr "No lines match the filters."
 
@@ -263,7 +263,7 @@ msgstr "Installing SMAPI"
 msgid "Not in the link"
 msgstr "Not in the link"
 
-#: src/console/ConsoleTab.tsx:277
+#: src/console/ConsoleTab.tsx:249
 msgid "Type a command, for example help"
 msgstr "Type a command, for example help"
 
@@ -366,7 +366,7 @@ msgstr "Steam's launch options for Stardew Valley lack the SMAPI line. In Steam,
 msgid "Find a mod in all profiles"
 msgstr "Find a mod in all profiles"
 
-#: src/console/ConsoleTab.tsx:398
+#: src/console/ConsoleTab.tsx:370
 msgid "Filter by level or mod, and use Get help to share this log."
 msgstr "Filter by level or mod, and use Get help to share this log."
 
@@ -694,6 +694,10 @@ msgstr "Replaced {mods} in {profileName}"
 msgid "Filter mods"
 msgstr "Filter mods"
 
+#: src/console/ConsoleTab.tsx:395
+msgid "Follow new lines"
+msgstr "Follow new lines"
+
 #: src/share/ImportPreview.tsx:142
 msgid "{name} was removed from Nexus"
 msgstr "{name} was removed from Nexus"
@@ -794,7 +798,7 @@ msgstr "Skipped"
 msgid "Edit profile"
 msgstr "Edit profile"
 
-#: src/console/ConsoleTab.tsx:277
+#: src/console/ConsoleTab.tsx:249
 msgid "Start the game to run commands"
 msgstr "Start the game to run commands"
 
@@ -909,7 +913,7 @@ msgstr "Created “{0}”"
 msgid "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · and open-source libraries under their own licences."
 msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · and open-source libraries under their own licences."
 
-#: src/console/ConsoleTab.tsx:391
+#: src/console/ConsoleTab.tsx:363
 msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
@@ -923,7 +927,7 @@ msgstr "All mods present"
 
 #: src/console/CrashDialog.tsx:62
 #: src/console/HelpDialog.tsx:169
-#: src/console/LogActions.tsx:100
+#: src/console/LogActions.tsx:75
 #: src/game/SupportButton.tsx:34
 #: src/mods/ProblemBar.tsx:122
 msgid "Get help"
@@ -1103,7 +1107,7 @@ msgstr "Could not sign in"
 msgid "Report a bug"
 msgstr "Report a bug"
 
-#: src/console/ConsoleTab.tsx:47
+#: src/console/ConsoleTab.tsx:39
 msgid "Info"
 msgstr "Info"
 
@@ -1576,7 +1580,7 @@ msgstr "{mods, plural, one {# mod} other {# mods}}"
 msgid "Also updates {0} (same download)"
 msgstr "Also updates {0} (same download)"
 
-#: src/console/LogActions.tsx:62
+#: src/console/LogActions.tsx:50
 msgid "Log copied"
 msgstr "Log copied"
 
@@ -1658,7 +1662,7 @@ msgstr "Created · updated"
 msgid "Restarting…"
 msgstr "Restarting…"
 
-#: src/console/ConsoleTab.tsx:48
+#: src/console/ConsoleTab.tsx:40
 msgid "Warn"
 msgstr "Warn"
 
@@ -1792,7 +1796,7 @@ msgstr "Launch options"
 msgid "Up next: {0}"
 msgstr "Up next: {0}"
 
-#: src/console/ConsoleTab.tsx:439
+#: src/console/ConsoleTab.tsx:421
 msgid "Remove filter {mod}"
 msgstr "Remove filter {mod}"
 
@@ -1896,7 +1900,7 @@ msgid "Different enabled state"
 msgstr "Different enabled state"
 
 #: src/console/HelpDialog.tsx:53
-#: src/console/LogActions.tsx:68
+#: src/console/LogActions.tsx:45
 #: src/firstrun/SmapiStep.tsx:116
 #: src/launch/LaunchLayer.tsx:210
 #: src/settings/sections/GameSettings.tsx:232
@@ -1916,7 +1920,7 @@ msgstr "Image"
 msgid "Problem: {text}"
 msgstr "Problem: {text}"
 
-#: src/console/ConsoleTab.tsx:45
+#: src/console/ConsoleTab.tsx:37
 msgid "Trace"
 msgstr "Trace"
 
@@ -2009,7 +2013,7 @@ msgstr "config.json, made by the mod"
 msgid "Start the game to see values"
 msgstr "Start the game to see values"
 
-#: src/console/ConsoleTab.tsx:275
+#: src/console/ConsoleTab.tsx:247
 msgid "Console command"
 msgstr "Console command"
 
@@ -2178,7 +2182,7 @@ msgstr "Could not check whether the game is running"
 msgid "Track"
 msgstr "Track"
 
-#: src/console/ConsoleTab.tsx:55
+#: src/console/ConsoleTab.tsx:47
 msgid "Levels"
 msgstr "Levels"
 
@@ -2199,8 +2203,8 @@ msgstr "Stardew Valley {0}"
 msgid "Could not check the mods for problems"
 msgstr "Could not check the mods for problems"
 
-#: src/console/ConsoleTab.tsx:165
-#: src/console/ConsoleTab.tsx:166
+#: src/console/ConsoleTab.tsx:157
+#: src/console/ConsoleTab.tsx:158
 msgid "Search the log"
 msgstr "Search the log"
 
@@ -2231,7 +2235,7 @@ msgstr "Revert"
 msgid "Notes for {0}"
 msgstr "Notes for {0}"
 
-#: src/console/ConsoleTab.tsx:113
+#: src/console/ConsoleTab.tsx:105
 #: src/game/Detail.tsx:286
 #: src/game/Detail.tsx:431
 #: src/mods/ModList.tsx:320
@@ -2357,10 +2361,6 @@ msgstr "Could not list backups: {error}"
 #: src/settings/sections/Data.tsx:76
 msgid "Check mod updates on start: {from} → {to}"
 msgstr "Check mod updates on start: {from} → {to}"
-
-#: src/console/ConsoleTab.tsx:416
-msgid "Times"
-msgstr "Times"
 
 #: src/firstrun/ProfileStep.tsx:89
 msgid "Copy the mods already in Stardew Valley's Mods folder into a new profile. Nothing in the game folder is moved or changed."
@@ -2657,10 +2657,6 @@ msgstr "Tell when SMAPI is out: {from} → {to}"
 msgid "Weather"
 msgstr "Weather"
 
-#: src/console/ConsoleTab.tsx:417
-msgid "Follow"
-msgstr "Follow"
-
 #: src/mods/NexusAccountActions.tsx:152
 msgid "Could not untrack"
 msgstr "Could not untrack"
@@ -2708,7 +2704,7 @@ msgstr "Restart now"
 msgid "There is no SMAPI log for this profile yet. Play this profile once, then try again."
 msgstr "There is no SMAPI log for this profile yet. Play this profile once, then try again."
 
-#: src/console/LogActions.tsx:85
+#: src/console/LogActions.tsx:69
 msgid "Save log"
 msgstr "Save log"
 
@@ -2833,7 +2829,7 @@ msgstr "Could not pin {0}"
 msgid "Description"
 msgstr "Description"
 
-#: src/console/ConsoleTab.tsx:122
+#: src/console/ConsoleTab.tsx:114
 msgid "No mods have logged yet"
 msgstr "No mods have logged yet"
 
@@ -2995,7 +2991,7 @@ msgstr "A profile with that name already exists, so this one is \"{name}\""
 msgid "Clear history"
 msgstr "Clear history"
 
-#: src/console/ConsoleTab.tsx:46
+#: src/console/ConsoleTab.tsx:38
 msgid "Debug"
 msgstr "Debug"
 
@@ -3430,7 +3426,7 @@ msgstr "Install {name}?"
 msgid "Switch off"
 msgstr "Switch off"
 
-#: src/console/ConsoleTab.tsx:49
+#: src/console/ConsoleTab.tsx:41
 msgid "Error"
 msgstr "Error"
 
@@ -3688,7 +3684,7 @@ msgstr "Markdown"
 msgid "{fitting} of {total}"
 msgstr "{fitting} of {total}"
 
-#: src/console/ConsoleTab.tsx:450
+#: src/console/ConsoleTab.tsx:432
 msgid "Clear filters"
 msgstr "Clear filters"
 
@@ -4011,7 +4007,7 @@ msgstr "Could not build the link"
 msgid "{0, plural, one {# warning} other {# warnings}}"
 msgstr "{0, plural, one {# warning} other {# warnings}}"
 
-#: src/console/LogActions.tsx:45
+#: src/console/LogActions.tsx:33
 msgid "Jump to first error"
 msgstr "Jump to first error"
 
@@ -4223,7 +4219,7 @@ msgstr "A share link names this profile and the Nexus or GitHub files in it, not
 msgid "{hours}h played"
 msgstr "{hours}h played"
 
-#: src/console/LogActions.tsx:54
+#: src/console/LogActions.tsx:39
 #: src/mods/SelectionBar.tsx:83
 #: src/toasts/HistoryButton.tsx:136
 msgid "Clear"
@@ -4375,6 +4371,10 @@ msgstr "{0} of {1} MB · {2} MB/s"
 msgid "into a deleted profile"
 msgstr "into a deleted profile"
 
+#: src/console/ConsoleTab.tsx:389
+msgid "Show times"
+msgstr "Show times"
+
 #: src/mods/updates.ts:33
 msgid "Checked with SMAPI's update service · {n, plural, one {# minute ago} other {# minutes ago}}"
 msgstr "Checked with SMAPI's update service · {n, plural, one {# minute ago} other {# minutes ago}}"
@@ -4394,7 +4394,7 @@ msgstr "{0, plural, one {# imported} other {# imported}}"
 msgid "Get Mortar"
 msgstr "Get Mortar"
 
-#: src/console/LogActions.tsx:91
+#: src/console/LogActions.tsx:56
 msgid "Save log…"
 msgstr "Save log…"
 
@@ -4463,7 +4463,7 @@ msgstr "Has used {0, plural, one {# mod it lacks} other {# mods it lacks}}"
 msgid "Open Nexus settings"
 msgstr "Open Nexus settings"
 
-#: src/console/ConsoleTab.tsx:342
+#: src/console/ConsoleTab.tsx:314
 #: src/loader/Banner.tsx:35
 #: src/settings/sections/GameSettings.tsx:294
 #: src/settings/sections/GameSettings.tsx:297
@@ -4628,7 +4628,7 @@ msgstr "Before a restore"
 msgid "The game was updated"
 msgstr "The game was updated"
 
-#: src/console/ConsoleTab.tsx:50
+#: src/console/ConsoleTab.tsx:42
 msgid "Alert"
 msgstr "Alert"
 
