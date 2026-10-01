@@ -11,11 +11,12 @@ import (
 )
 
 type fake struct {
-	cfg        *updater.Config
-	rel        *updater.Release
-	err        error
-	downloaded bool
-	restarted  bool
+	cfg           *updater.Config
+	rel           *updater.Release
+	err           error
+	downloaded    bool
+	restarted     bool
+	appliedOnExit bool
 }
 
 func (f *fake) Init(cfg updater.Config) error { f.cfg = &cfg; return nil }
@@ -25,6 +26,11 @@ func (f *fake) Check(context.Context) (*updater.Release, error) {
 func (f *fake) DownloadAndInstall(context.Context) error { f.downloaded = true; return nil }
 func (f *fake) Restart(context.Context) error {
 	f.restarted = true
+	return nil
+}
+
+func (f *fake) ApplyOnExit(context.Context) error {
+	f.appliedOnExit = true
 	return nil
 }
 

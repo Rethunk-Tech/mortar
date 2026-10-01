@@ -12,7 +12,7 @@ func (s *Service) ShouldApplyOnQuit() bool {
 	return s.found != nil && s.found.Staged && !s.restartChosen
 }
 
-// ApplyOnQuit swaps in a staged update as Mortar exits. No-op when ShouldApplyOnQuit is false.
+// ApplyOnQuit swaps in a staged update after Mortar exits, without reopening it. No-op when ShouldApplyOnQuit is false.
 func (s *Service) ApplyOnQuit(ctx context.Context) error {
 	s.lock()
 	if s.info.Off != "" || s.found == nil || !s.found.Staged || s.restartChosen {
@@ -21,5 +21,5 @@ func (s *Service) ApplyOnQuit(ctx context.Context) error {
 	}
 	s.restartChosen = true
 	s.mu.Unlock()
-	return s.u.Restart(ctx)
+	return s.u.ApplyOnExit(ctx)
 }

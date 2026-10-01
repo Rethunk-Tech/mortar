@@ -32,6 +32,7 @@ type Updater interface {
 	Check(ctx context.Context) (*updater.Release, error)
 	DownloadAndInstall(ctx context.Context) error
 	Restart(ctx context.Context) error
+	ApplyOnExit(ctx context.Context) error
 }
 
 // Info is what Settings shows before any check.
