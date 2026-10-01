@@ -1,6 +1,7 @@
 package nxm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -165,7 +166,7 @@ func (w *System) ForwardOther(link, previous string) error {
 	if err != nil {
 		return err
 	}
-	out, err := exec.Command(name, args...).CombinedOutput()
+	out, err := exec.CommandContext(context.Background(), name, args...).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%w: %s", err, strings.TrimSpace(string(out)))
 	}

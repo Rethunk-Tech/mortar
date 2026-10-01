@@ -269,7 +269,7 @@ function Row({
         <Checkbox
           checked={acked}
           onChange={(_, on) => onAck(on)}
-          inputProps={{ 'aria-label': t`Confirm update for ${update.name}` }}
+          slotProps={{ input: { 'aria-label': t`Confirm update for ${update.name}` } }}
           sx={{ justifySelf: 'center' }}
         />
       ) : null}

@@ -55,11 +55,11 @@ linters:
     - usetesting
     - wastedassign
     - zerologlint
-  # Mortar only. It launches Steam, the SMAPI installer, the OS file manager, gsettings and xdg-mime, so a subprocess
+  # Mortar only. It launches Steam, the SMAPI installer, the OS file manager, gsettings, xdg-mime and the nxm handler it replaced, so a subprocess
   # named by a variable is the product; gosec has no per-call option for that.
   exclusions:
     rules:
-      - path: ^internal/(launch/launch|game/stardew/smapi|datadir/open|backdrop/desktop|nxm/handler_linux|steam/steam)\.go$
+      - path: ^internal/(launch/launch|game/stardew/smapi|datadir/open|backdrop/desktop|nxm/handler_linux|nxm/handler_windows|steam/steam)\.go$
         linters: [gosec]
         text: G204
   settings:

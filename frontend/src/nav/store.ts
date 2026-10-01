@@ -2,6 +2,8 @@ import { create } from 'zustand'
 
 export type GameId = 'stardew'
 
+export const isGameId = (game: string): game is GameId => game === 'stardew'
+
 export type SettingsSection = 'appearance' | 'data' | 'nexus' | 'updates' | 'shortcuts' | 'about'
 
 export type Route =
