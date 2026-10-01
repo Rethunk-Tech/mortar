@@ -126,7 +126,7 @@ func (s *Store) fomodOf(game, key string) (fomod.Config, bool, error) {
 	return cfg, ok, err
 }
 
-func askFrom(gameID string, cfg fomod.Config, key string, source Source, oldKey string, choices map[string]map[string][]string, eval fomod.EvalContext) FomodAsk {
+func askFrom(cfg fomod.Config, key string, source Source, oldKey string, choices map[string]map[string][]string, eval fomod.EvalContext) FomodAsk {
 	flags := fomod.FlagsFrom(cfg, choices, eval)
 	ask := FomodAsk{Key: key, Source: source, OldKey: oldKey, ModuleName: cfg.ModuleName, Choices: choices}
 	for _, st := range fomod.VisibleSteps(cfg, flags, eval) {
@@ -159,7 +159,7 @@ func (s *Store) fomodAsk(game, id, key string, source Source, oldKey string, cho
 	if fomod.Match(cfg, choices, eval) {
 		return FomodAsk{}, false, nil
 	}
-	return askFrom(game, cfg, key, source, oldKey, choices, eval), true, nil
+	return askFrom(cfg, key, source, oldKey, choices, eval), true, nil
 }
 
 func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][]string) (src, tmp string, err error) {
@@ -177,7 +177,7 @@ func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][
 	}
 	eval := s.fomodEval(game, s.fileIndex(modsDir))
 	if !fomod.Match(cfg, choices, eval) {
-		return "", "", &NeedChoicesError{Ask: askFrom(game, cfg, key, Source{}, "", choices, eval)}
+		return "", "", &NeedChoicesError{Ask: askFrom(cfg, key, Source{}, "", choices, eval)}
 	}
 	tmp, err = os.MkdirTemp("", "mortar-fomod-")
 	if err != nil {
@@ -234,7 +234,7 @@ func (s *Store) FomodPreview(game, id, key string, choices map[string]map[string
 		if err != nil {
 			return FomodAsk{}, err
 		}
-		ask = askFrom(game, cfg, key, src, "", choices, s.fomodEval(game, s.fileIndex(modsDir)))
+		ask = askFrom(cfg, key, src, "", choices, s.fomodEval(game, s.fileIndex(modsDir)))
 	}
 	return ask, nil
 }

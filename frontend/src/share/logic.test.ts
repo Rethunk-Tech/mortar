@@ -28,6 +28,7 @@ const mod = (key: string, state: string, sizeKb: number, site = 'nexus'): Mod =>
   different: false,
   unverified: false,
   uniqueIds: [],
+  enabled: true,
 })
 
 test('the meter fills up to the limit and warns before it', () => {

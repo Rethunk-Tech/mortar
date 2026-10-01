@@ -26,16 +26,25 @@ func thumbsOnly(dir string) bool {
 }
 
 func stripJunk(root string) {
-	_ = filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
-		if err != nil || p == root || !d.IsDir() {
+	r, err := os.OpenRoot(root)
+	if err != nil {
+		return
+	}
+	defer func() { _ = r.Close() }()
+	var junk []string
+	_ = fs.WalkDir(r.FS(), ".", func(p string, d fs.DirEntry, err error) error {
+		if err != nil || p == "." || !d.IsDir() {
 			return err
 		}
 		if junkDir(d.Name()) {
-			_ = os.RemoveAll(p)
+			junk = append(junk, p)
 			return fs.SkipDir
 		}
 		return nil
 	})
+	for _, p := range junk {
+		_ = r.RemoveAll(p)
+	}
 	var dirs []string
 	_ = filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
 		if err == nil && d.IsDir() {
