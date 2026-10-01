@@ -31,11 +31,12 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string, di
 		case Launching:
 			started = true
 		case Running:
-			started = true
 			if err := s.Stop(gameID); err != nil {
 				return false, launch.Summary{}, err
 			}
 			return true, launch.Summary{}, nil
+		case NoSteam:
+			return false, launch.Summary{}, errors.New("the crash check needs a direct launch")
 		case Failed:
 			if !started {
 				return false, launch.Summary{}, fmt.Errorf("bisect launch failed: %s", status.Error)

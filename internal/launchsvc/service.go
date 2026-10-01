@@ -392,7 +392,7 @@ func (s *Service) start(parent context.Context, gameID, profileID string, direct
 			// Reading the profile takes its lock, so a change to its mods already under way finishes first; any
 			// later one sees the profile as running.
 			if _, err = s.profiles.Mods(gameID, profileID); err == nil {
-				err = s.begin(g, profileID, dir, modsDir, direct, false)
+				err = s.begin(ctx, g, profileID, dir, modsDir, direct, false)
 			}
 		}
 		if err != nil {
@@ -452,7 +452,7 @@ func (s *Service) StartVanilla(gameID string, direct bool) error {
 	}
 	go func() {
 		defer s.donePreparing(gameID)
-		if err := s.begin(g, "", dir, "", direct, true); err != nil {
+		if err := s.begin(context.Background(), g, "", dir, "", direct, true); err != nil {
 			s.set(Status{Game: gameID, State: Failed, Error: err.Error()})
 		}
 	}()
@@ -486,7 +486,7 @@ func (s *Service) donePreparing(gameID string) {
 }
 
 // begin starts the launch once the loader is in place.
-func (s *Service) begin(g game.Game, profileID, dir, modsDir string, direct, vanilla bool) error {
+func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDir string, direct, vanilla bool) error {
 	gameID := g.ID()
 	if ps, err := s.gameProcs(g); err == nil && len(ps) > 0 {
 		return fmt.Errorf("%s is already running", g.Name())
@@ -534,7 +534,7 @@ func (s *Service) begin(g game.Game, profileID, dir, modsDir string, direct, van
 			return err
 		}
 	}
-	ctx, cancel := context.WithCancel(context.Background())
+	runCtx, cancel := context.WithCancel(ctx)
 	buf := &launch.Buffer{}
 	started := time.Now()
 	s.mu.Lock()
@@ -552,7 +552,7 @@ func (s *Service) begin(g game.Game, profileID, dir, modsDir string, direct, van
 		s.say(gameID, profileID, "startup_preferences is missing; skipped profile game settings.")
 	}
 	s.watch(g)
-	go s.run(ctx, g, profileID, req, buf)
+	go s.run(runCtx, g, profileID, req, buf)
 	return nil
 }
 

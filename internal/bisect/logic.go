@@ -1,8 +1,10 @@
+// Package bisect finds a crashing mod by testing dependency-aware subsets.
 package bisect
 
 import (
 	"context"
 	"errors"
+	"slices"
 	"sort"
 )
 
@@ -164,11 +166,8 @@ func DisableClosure(mods []Mod, seeds []string) []string {
 			pending = append(pending, groups[mod.Group]...)
 		}
 		for _, candidate := range mods {
-			for _, dependency := range candidate.Dependencies {
-				if dependency == id {
-					pending = append(pending, candidate.ID)
-					break
-				}
+			if slices.Contains(candidate.Dependencies, id) {
+				pending = append(pending, candidate.ID)
 			}
 		}
 	}

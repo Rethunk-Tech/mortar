@@ -3,6 +3,7 @@ package bisect
 import (
 	"context"
 	"reflect"
+	"slices"
 	"testing"
 )
 
@@ -48,10 +49,8 @@ func TestFindUsesFakeRunnerToNarrowFailingGroup(t *testing.T) {
 	var tested [][]string
 	got, err := find(context.Background(), mods, func(_ context.Context, disabled []string) (bool, error) {
 		tested = append(tested, append([]string(nil), disabled...))
-		for _, id := range disabled {
-			if id == "pack" {
-				return false, nil
-			}
+		if slices.Contains(disabled, "pack") {
+			return false, nil
 		}
 		return true, nil
 	}, nil)

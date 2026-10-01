@@ -58,7 +58,6 @@ type job struct {
 	tempID  string
 	mods    []profile.Mod
 	refs    []profile.EnableRef
-	ctx     context.Context
 	cancel  context.CancelFunc
 }
 
@@ -111,18 +110,17 @@ func (s *Service) Start(gameID, profileID string) (string, error) {
 		tempID:  temp.ID,
 		mods:    candidates,
 		refs:    refs,
-		ctx:     ctx,
 		cancel:  cancel,
 	}
 	s.mu.Lock()
 	s.jobs[id] = j
 	s.mu.Unlock()
 	s.setStatus(Status{ID: id, Game: gameID, Profile: profileID, State: StateStarting, ModsLeft: len(candidates)})
-	go s.run(j)
+	go s.run(ctx, j)
 	return id, nil
 }
 
-func (s *Service) run(j *job) {
+func (s *Service) run(ctx context.Context, j *job) {
 	defer j.cancel()
 	defer func() {
 		_ = s.profiles.Delete(j.game, j.tempID)
@@ -139,7 +137,7 @@ func (s *Service) run(j *job) {
 		})
 		byID[id] = mod
 	}
-	found, err := find(j.ctx, mods, func(ctx context.Context, disabled []string) (bool, error) {
+	found, err := find(ctx, mods, func(ctx context.Context, disabled []string) (bool, error) {
 		if _, err := s.profiles.SetModsEnabled(j.game, j.tempID, j.refs, true); err != nil {
 			return false, err
 		}
