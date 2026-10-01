@@ -59,16 +59,6 @@ export function visible(entries: Entry[], f: Filters): Entry[] {
   )
 }
 
-export function showingCounts(
-  total: number,
-  shown: number,
-): { shown: number; total: number } | null {
-  if (shown === total) {
-    return null
-  }
-  return { shown, total }
-}
-
 export function firstError(rows: Entry[]): number {
   return rows.findIndex((e) => e.level === Level.Error && !e.cont)
 }

@@ -8,7 +8,6 @@ import {
   FormControlLabel,
   Menu,
   MenuItem,
-  Typography,
 } from '@mui/material'
 import { ChevronDown, Download, Search, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -18,14 +17,7 @@ import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
-import {
-  countByLevel,
-  incompatibleSMAPI,
-  isFiltered,
-  LEVELS,
-  modsOf,
-  showingCounts,
-} from './filter.ts'
+import { countByLevel, incompatibleSMAPI, isFiltered, LEVELS, modsOf } from './filter.ts'
 import { stepHistory } from './history.ts'
 import { LinkedLog } from './LinkedLog.tsx'
 import { useShownEntries, useVisible } from './logHooks.ts'
@@ -370,7 +362,6 @@ export function ConsoleTab({ game }: { game: string }) {
     : { game, profile: openId }
   const rows = useVisible()
   const offerReinstall = entries.some((e) => incompatibleSMAPI(e.message))
-  const counts = showingCounts(entries.length, rows.length)
   // Launching another profile resets the log to it; this one's history is read again once that launch settles.
   const launchingOther = useLaunch(
     (s) =>
@@ -421,11 +412,6 @@ export function ConsoleTab({ game }: { game: string }) {
         <SearchBox />
         <LevelToggles />
         <ModPicker />
-        {counts ? (
-          <Typography sx={{ fontSize: 13, color: 'text.secondary', whiteSpace: 'nowrap' }}>
-            {t`Showing ${counts.shown} of ${counts.total} lines`}
-          </Typography>
-        ) : null}
         <Box sx={{ flexGrow: 1 }} />
         <Toggle label={t`Times`} checked={timestamps} onChange={setTimestamps} />
         <Toggle label={t`Follow`} checked={follow} onChange={setFollow} />
