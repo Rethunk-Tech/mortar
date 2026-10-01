@@ -452,6 +452,9 @@ func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
 		if err := s.recordSnapshot(game, created.ID, historyImported, fmt.Sprintf("Imported %d mods", res.Imported), res.Imported); err != nil {
 			return res, err
 		}
+		if err := s.RecordModsSnapshot(game, created.ID); err != nil {
+			return res, err
+		}
 	}
 	return res, nil
 }
@@ -492,5 +495,5 @@ func (s *Store) ImportExternalMods(game, id string, mods []ExternalMod) error {
 			}
 		}
 	}
-	return nil
+	return s.RecordModsSnapshot(game, id)
 }

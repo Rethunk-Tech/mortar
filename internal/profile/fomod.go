@@ -261,6 +261,9 @@ func (s *Store) InstallFomod(game, id, key string, source Source, choices map[st
 					}
 				}
 			}
+			if err := s.RecordModsSnapshot(game, id); err != nil {
+				return InstallResult{}, err
+			}
 			return res, nil
 		}
 	}

@@ -147,3 +147,22 @@ func TestScanModsDriftOnProfile(t *testing.T) {
 		t.Fatalf("profile scan = %#v", got)
 	}
 }
+
+func TestInstallThenScanReportsNoDrift(t *testing.T) {
+	e := newEnv(t)
+	p, err := e.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	zip := buildZip(t, "mod.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
+	if _, err := e.InstallArchive("stardew", p.ID, zip); err != nil {
+		t.Fatal(err)
+	}
+	got, err := e.ScanModsDrift("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 0 {
+		t.Fatalf("after Mortar install: %#v", got)
+	}
+}

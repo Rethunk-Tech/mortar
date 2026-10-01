@@ -86,6 +86,9 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 		return Profile{}, errors.Join(err, sw.undo())
 	}
 	sw.commit()
+	if err := s.RecordModsSnapshot(game, id); err != nil {
+		return Profile{}, err
+	}
 	return p, s.items.Touch(game, oldKey, newKey)
 }
 

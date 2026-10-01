@@ -362,7 +362,7 @@ func removeFrom(p *Profile, dir, key string) error {
 
 // RemoveEntries deletes each named entry's folder and drops it from the profile, one write.
 func (s *Store) RemoveEntries(game, id string, keys []string) (Profile, error) {
-	return s.updateMods(game, id, func(p *Profile, dir string) error {
+	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
 		seen := map[string]bool{}
 		for _, key := range keys {
 			if seen[key] {
@@ -378,6 +378,13 @@ func (s *Store) RemoveEntries(game, id string, keys []string) (Profile, error) {
 		}
 		return nil
 	})
+	if err != nil {
+		return Profile{}, err
+	}
+	if err := s.RecordModsSnapshot(game, id); err != nil {
+		return Profile{}, err
+	}
+	return p, nil
 }
 
 // updateMods is update for changes to the mods/ folder, refused while the game runs the profile. The check holds the
@@ -393,12 +400,19 @@ func (s *Store) updateMods(game, id string, fn func(p *Profile, dir string) erro
 
 // RemoveEntry deletes the entry's folder and drops it from the profile.
 func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
-	return s.updateMods(game, id, func(p *Profile, dir string) error {
+	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
 		if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && isBundled(e) }) {
 			return errors.New("the bundled mods are needed by every profile and cannot be removed")
 		}
 		return removeFrom(p, dir, key)
 	})
+	if err != nil {
+		return Profile{}, err
+	}
+	if err := s.RecordModsSnapshot(game, id); err != nil {
+		return Profile{}, err
+	}
+	return p, nil
 }
 
 func applyEnabled(p *Profile, dir, key, uniqueID string, enabled bool) error {

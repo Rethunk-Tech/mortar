@@ -137,6 +137,9 @@ func (s *Store) installKey(game, id, key string, source Source) (InstallResult, 
 			}
 		}
 	}
+	if err := s.RecordModsSnapshot(game, id); err != nil {
+		return InstallResult{}, err
+	}
 	return res, nil
 }
 
