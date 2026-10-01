@@ -102,8 +102,8 @@ export function CompareBody({
       aName={aName}
       bName={bName}
       pending={pending}
-      copyToB={direction === 'toB' ? () => onCopy(from, to, side.uniqueId) : undefined}
-      copyToA={direction === 'toA' ? () => onCopy(from, to, side.uniqueId) : undefined}
+      {...(direction === 'toB' ? { copyToB: () => onCopy(from, to, side.uniqueId) } : {})}
+      {...(direction === 'toA' ? { copyToA: () => onCopy(from, to, side.uniqueId) } : {})}
     />
   )
 
