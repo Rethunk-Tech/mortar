@@ -2,6 +2,7 @@ import {
   closestCenter,
   DndContext,
   type DragOverEvent,
+  DragOverlay,
   KeyboardSensor,
   MeasuringStrategy,
   PointerSensor,
@@ -18,6 +19,7 @@ import { i18n, type MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
+  Box,
   Divider,
   ListItemIcon,
   ListItemText,
@@ -28,7 +30,7 @@ import {
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { ArrowDown, ArrowUp, Check, RotateCcw } from 'lucide-react'
-import { type MouseEvent, type ReactNode, useRef } from 'react'
+import { type MouseEvent, type ReactNode, useRef, useState } from 'react'
 import { SetListSort } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -125,6 +127,33 @@ function HeaderCell({
   )
 }
 
+// The ghost follows the pointer while the real header already sits where it will drop.
+function HeaderGhost({ label }: { label: string }) {
+  return (
+    <Box
+      sx={(theme) => ({
+        display: 'inline-flex',
+        alignItems: 'center',
+        height: 30,
+        px: 1.5,
+        borderRadius: '6px',
+        border: `1px solid ${theme.palette.primary.main}`,
+        bgcolor: 'rgba(28,28,34,0.95)',
+        color: '#ffffff',
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: '0.06em',
+        textTransform: 'uppercase',
+        whiteSpace: 'nowrap',
+        cursor: 'grabbing',
+        boxShadow: '0 6px 18px rgba(0,0,0,0.45)',
+      })}
+    >
+      {label}
+    </Box>
+  )
+}
+
 function persistSort(column: ListColumnId, dir: 'asc' | 'desc') {
   useSettings.setState({ listSortColumn: column, listSortDir: dir })
   SetListSort(column, dir).catch(reportUnexpected)
@@ -151,6 +180,7 @@ function HeaderCells({
   )
   // The click that ends a drag must not also re-sort by the dragged column.
   const dragged = useRef(false)
+  const [lifted, setLifted] = useState<ListColumnId | null>(null)
   const onSort = (col: ListColumnId) => {
     if (dragged.current) {
       return
@@ -169,6 +199,7 @@ function HeaderCells({
     }
   }
   const settle = () => {
+    setLifted(null)
     setTimeout(() => {
       dragged.current = false
     }, 0)
@@ -195,8 +226,9 @@ function HeaderCells({
       sensors={sensors}
       collisionDetection={closestCenter}
       measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
-      onDragStart={() => {
+      onDragStart={({ active }) => {
         dragged.current = true
+        setLifted(active.id as ListColumnId)
       }}
       onDragOver={onDragOver}
       onDragEnd={() => {
@@ -211,6 +243,9 @@ function HeaderCells({
       <SortableContext items={[...cols]} strategy={horizontalListSortingStrategy}>
         {cells}
       </SortableContext>
+      <DragOverlay dropAnimation={null}>
+        {lifted ? <HeaderGhost label={columnLabel(lifted)} /> : null}
+      </DragOverlay>
     </DndContext>
   )
 }

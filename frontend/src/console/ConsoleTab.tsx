@@ -142,8 +142,8 @@ function SearchBox() {
     <Box
       component="label"
       sx={{
-        flex: '1 1 240px',
-        minWidth: 160,
+        flex: '1 1 120px',
+        minWidth: 120,
         display: 'flex',
         alignItems: 'center',
         gap: 1,
