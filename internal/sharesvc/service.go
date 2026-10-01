@@ -373,6 +373,11 @@ func (s *Service) preview(ctx context.Context, game string, shared share.Shared,
 		Session: hex.EncodeToString(raw[:]), Name: shared.Name, Notes: notes, Settings: len(configs), Mods: mods, Problems: probs,
 		SignedIn: r.signedIn, Premium: r.premium,
 	}
+	if profileID != "" {
+		if p, err := s.find(game, profileID); err == nil {
+			pv.Replace = PlanReplace(p, mods)
+		}
+	}
 	s.mu.Lock()
 	if s.gen == gen {
 		s.current = &session{
@@ -576,6 +581,35 @@ func (s *Service) Import(ctx context.Context, game, session, profileID string, e
 		s.applyMu.Unlock()
 	}
 	return res, nil
+}
+
+// Replace makes profileID match the preview: missing mods are queued as Import does, entries not in the share
+// are removed, and local-only mods not in the share are kept. profileID must be the preview's target.
+func (s *Service) Replace(ctx context.Context, game, session, profileID string, exclude []string) (Result, error) {
+	if profileID == "" {
+		return Result{}, errors.New("replace needs a profile")
+	}
+	s.mu.Lock()
+	cur := s.current
+	s.mu.Unlock()
+	if cur == nil || cur.game != game || cur.id != session {
+		if cur == nil || cur.game != game {
+			return Result{}, ErrNoPreview
+		}
+		return Result{}, ErrStalePreview
+	}
+	mods := cur.preview.Mods
+	p, err := s.find(game, profileID)
+	if err != nil {
+		return Result{}, err
+	}
+	plan := PlanReplace(p, mods)
+	if len(plan.RemoveKeys) > 0 {
+		if _, err := s.d.Profiles.RemoveEntries(game, profileID, plan.RemoveKeys); err != nil {
+			return Result{}, err
+		}
+	}
+	return s.Import(ctx, game, session, profileID, exclude)
 }
 
 func holds(p profile.Profile, uniqueID string) bool {

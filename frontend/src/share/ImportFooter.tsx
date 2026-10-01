@@ -1,8 +1,18 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
+} from '@mui/material'
 import { ChevronRight } from 'lucide-react'
+import { useState } from 'react'
 import { useLaunch } from '../launch/store.ts'
 import { isLocked } from '../mods/locked.ts'
+import { paper } from '../mods/paper.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { Problems, StatusBar } from './ImportPreview.tsx'
 import type { ShownPreview, Summary } from './logic.ts'
@@ -26,7 +36,7 @@ export function ImportFooter({
   const { t } = useLingui()
   const needsSignIn = summary.fromNexus > 0 && !signedIn
   const canRun = !(flow.busy || needsSignIn)
-  // Adding into a profile the game holds would be refused; a new profile is still fine.
+  const [askReplace, setAskReplace] = useState(false)
   const targetId = useImportDialog((s) => s.request?.profileId ?? '')
   const targetLocked = isLocked(
     useLaunch((s) => s.status),
@@ -64,7 +74,7 @@ export function ImportFooter({
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: targetName ? '1fr 1fr 2fr' : '1fr 2fr',
+          gridTemplateColumns: targetName ? '1fr 1fr 1fr 2fr' : '1fr 2fr',
           gap: 1,
           px: 1,
           pb: 1,
@@ -91,6 +101,16 @@ export function ImportFooter({
             {t`Add to ${targetName}`}
           </Button>
         ) : null}
+        {targetName ? (
+          <Button
+            variant="outlined"
+            disabled={!canRun || targetLocked}
+            onClick={() => setAskReplace(true)}
+            sx={{ height: 40 }}
+          >
+            {t`Replace ${targetName}`}
+          </Button>
+        ) : null}
         <Button
           variant="contained"
           endIcon={<ChevronRight size={14} />}
@@ -103,6 +123,40 @@ export function ImportFooter({
           {flow.tab === 'file' ? t`New profile from file` : t`New profile from link`}
         </Button>
       </Box>
+      <Dialog
+        open={askReplace}
+        onClose={() => setAskReplace(false)}
+        transitionDuration={0}
+        slotProps={{ paper }}
+      >
+        <DialogTitle>{t`Replace ${targetName}?`}</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 360 }}>
+          {(preview.replace?.remove ?? []).length > 0 ? (
+            <Typography sx={{ fontSize: 13 }}>
+              {t`These will be removed: ${(preview.replace?.remove ?? []).join(', ')}`}
+            </Typography>
+          ) : (
+            <Typography sx={{ fontSize: 13 }}>{t`Nothing will be removed.`}</Typography>
+          )}
+          {(preview.replace?.keepLocal ?? []).length > 0 ? (
+            <Typography sx={{ fontSize: 13 }}>
+              {t`Local-only mods kept: ${(preview.replace?.keepLocal ?? []).join(', ')}`}
+            </Typography>
+          ) : null}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAskReplace(false)}>{t`Cancel`}</Button>
+          <Button
+            color="error"
+            onClick={() => {
+              setAskReplace(false)
+              flow.runReplace().catch(reportUnexpected)
+            }}
+          >
+            {t`Replace ${targetName}`}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

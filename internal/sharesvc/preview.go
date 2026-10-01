@@ -80,14 +80,15 @@ type Problem struct {
 // Preview is what an import would do. Settings counts the config files a .mortar file carries.
 type Preview struct {
 	// Session names this preview; Import takes it back so it acts on exactly what the dialog shows.
-	Session  string    `json:"session"`
-	Name     string    `json:"name"`
-	Notes    string    `json:"notes"`
-	Settings int       `json:"settings"`
-	Mods     []Mod     `json:"mods"`
-	Problems []Problem `json:"problems"`
-	SignedIn bool      `json:"signedIn"`
-	Premium  bool      `json:"premium"`
+	Session  string      `json:"session"`
+	Name     string      `json:"name"`
+	Notes    string      `json:"notes"`
+	Settings int         `json:"settings"`
+	Mods     []Mod       `json:"mods"`
+	Problems []Problem   `json:"problems"`
+	SignedIn bool        `json:"signedIn"`
+	Premium  bool        `json:"premium"`
+	Replace  ReplacePlan `json:"replace"`
 }
 
 // Site names of a Mod.

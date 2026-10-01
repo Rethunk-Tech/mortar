@@ -13,6 +13,7 @@ import {
   PreviewFile,
   PreviewLink,
   ReadClipboard,
+  Replace,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useNav } from '../nav/store.ts'
@@ -165,17 +166,19 @@ export function useImportFlow(game: string, profileId: string, close: () => void
       return next
     })
 
-  const run = async (intoOpen: boolean) => {
+  const run = async (intoOpen: boolean, replace = false) => {
     if (!beginWork(importing)) {
       return
     }
     setImportBusy(true)
     const opened = useImportDialog.getState().request?.run
     try {
-      const result = await Import(game, preview?.session ?? '', intoOpen ? profileId : '', [
-        ...excluded,
-      ])
-      await afterImport(game, intoOpen, result, preview?.name)
+      const session = preview?.session ?? ''
+      const skip = [...excluded]
+      const result = replace
+        ? await Replace(game, session, profileId, skip)
+        : await Import(game, session, intoOpen ? profileId : '', skip)
+      await afterImport(game, replace || intoOpen, result, preview?.name)
       if (useImportDialog.getState().request?.run === opened) {
         close()
       }
@@ -210,6 +213,7 @@ export function useImportFlow(game: string, profileId: string, close: () => void
     dismiss: close,
     toggle,
     run,
+    runReplace: () => run(true, true),
     signIn,
   }
 }
