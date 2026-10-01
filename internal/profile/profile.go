@@ -111,6 +111,8 @@ type Entry struct {
 	CategoryOverride string `json:"categoryOverride,omitempty"`
 	// Fomod is the chosen plugin names per install step and group, replayed on update and roll back.
 	Fomod map[string]map[string][]string `json:"fomod,omitempty"`
+	// ExtraStoreKeys are further store items from the same Nexus page, each copied to mods/<key>/<extra>/.
+	ExtraStoreKeys []string `json:"extraStoreKeys,omitempty"`
 }
 
 // Profile is the on-disk shape of profile.json.
