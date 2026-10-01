@@ -41,7 +41,6 @@ import {
   type ListColumnId,
   type ListRow,
   listGridColumns,
-  moveListColumn,
   persistColumns,
   sanitizeListColumns,
   sanitizeListSort,
@@ -279,7 +278,9 @@ function ModListTable({
   cols,
   sort,
   onMenu,
-  onDropColumn,
+  onPreview,
+  onCommit,
+  onCancel,
   groups,
   groupBy,
   headingFor,
@@ -298,7 +299,9 @@ function ModListTable({
   cols: readonly ListColumnId[]
   sort: ReturnType<typeof sanitizeListSort>
   onMenu: (e: MouseEvent) => void
-  onDropColumn: (from: ListColumnId, to: ListColumnId) => void
+  onPreview: (order: ListColumnId[]) => void
+  onCommit: () => void
+  onCancel: () => void
   groups: { key: string; items: ListRow[] }[]
   groupBy: ReturnType<typeof sanitizeListGroupBy>
   headingFor: (key: string) => string
@@ -341,7 +344,14 @@ function ModListTable({
               borderBottom: '1px solid rgba(255,255,255,0.08)',
             }}
           >
-            <HeaderCells cols={cols} sort={sort} onMenu={onMenu} onDropColumn={onDropColumn} />
+            <HeaderCells
+              cols={cols}
+              sort={sort}
+              onMenu={onMenu}
+              onPreview={onPreview}
+              onCommit={onCommit}
+              onCancel={onCancel}
+            />
           </TableRow>
         </TableHead>
         <TableBody>
@@ -401,7 +411,10 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   const listSortDir = useSettings((s) => s.listSortDir)
   const groupBy = sanitizeListGroupBy(useSettings((s) => s.listGroupBy))
   const visible = sanitizeListColumns(listColumns)
-  const cols = visibleListColumns(listColumns, narrow)
+  const settled = visibleListColumns(listColumns, narrow)
+  // While a header is dragged the table shows this order, so every row moves with it.
+  const [preview, setPreview] = useState<ListColumnId[] | null>(null)
+  const cols = preview ?? settled
   const sort = sanitizeListSort(listSortColumn ?? '', listSortDir ?? '')
   const [menu, setMenu] = useState<{ top: number; left: number } | null>(null)
   const gameId = useProfiles((s) => s.game?.id) ?? ''
@@ -455,17 +468,13 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
       disabled: t`Disabled`,
       smapi: t`SMAPI mods`,
     })
-  const onDropColumn = (from: ListColumnId, to: ListColumnId) => {
-    const fromI = cols.indexOf(from)
-    const toI = cols.indexOf(to)
-    if (fromI < 0 || toI < 0) {
-      return
+  const onCommit = () => {
+    if (preview) {
+      persistColumns([...preview, ...visible.filter((id) => !preview.includes(id))])
     }
-    persistColumns([
-      ...moveListColumn(cols, fromI, toI),
-      ...visible.filter((id) => !cols.includes(id)),
-    ])
+    setPreview(null)
   }
+  const onCancel = () => setPreview(null)
 
   return (
     <ModListTable
@@ -473,7 +482,9 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
       cols={cols}
       sort={sort}
       onMenu={onMenu}
-      onDropColumn={onDropColumn}
+      onPreview={setPreview}
+      onCommit={onCommit}
+      onCancel={onCancel}
       groups={groups}
       groupBy={groupBy}
       headingFor={headingFor}

@@ -1,3 +1,19 @@
+import {
+  closestCenter,
+  DndContext,
+  type DragOverEvent,
+  KeyboardSensor,
+  MeasuringStrategy,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  horizontalListSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from '@dnd-kit/sortable'
 import { i18n, type MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
@@ -10,8 +26,9 @@ import {
   TableCell,
   type TableCellProps,
 } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import { ArrowDown, ArrowUp, Check, RotateCcw } from 'lucide-react'
-import type { DragEvent, MouseEvent, ReactNode } from 'react'
+import { type MouseEvent, type ReactNode, useRef } from 'react'
 import { SetListSort } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -19,6 +36,7 @@ import {
   LIST_COLUMN_IDS,
   type ListColumnId,
   LOCKED_LIST_COLUMNS,
+  moveListColumn,
   nextListSort,
   type sanitizeListSort,
 } from './listColumns.ts'
@@ -46,6 +64,15 @@ function columnLabel(id: ListColumnId): string {
   return i18n._(COLUMN_LABELS[id])
 }
 
+const DRAG_TINT = 0.16
+
+function headerCursor(id: ListColumnId, isDragging: boolean): string {
+  if (isDragging) {
+    return 'grabbing'
+  }
+  return id === 'on' ? 'grab' : 'pointer'
+}
+
 const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const
 const cellBase = { p: 0, border: 0, fontSize: 'inherit', color: 'inherit' } as const
 
@@ -60,7 +87,6 @@ function HeaderCell({
   sortDir,
   onSort,
   onMenu,
-  onDropColumn,
 }: {
   id: ListColumnId
   label: string
@@ -68,41 +94,29 @@ function HeaderCell({
   sortDir: 'asc' | 'desc'
   onSort: (id: ListColumnId) => void
   onMenu: (e: MouseEvent) => void
-  onDropColumn: (from: ListColumnId, to: ListColumnId) => void
 }) {
   const active = id !== 'on' && sortColumn === id
-  const onDragStart = (e: DragEvent) => {
-    e.dataTransfer.setData('text/plain', id)
-    e.dataTransfer.effectAllowed = 'move'
-  }
-  const onDragOver = (e: DragEvent) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-  }
-  const onDrop = (e: DragEvent) => {
-    e.preventDefault()
-    const from = e.dataTransfer.getData('text/plain')
-    if (from !== '' && from !== id) {
-      onDropColumn(from as ListColumnId, id)
-    }
-  }
+  // No transform: the column order itself changes while dragging, so rows move with the header.
+  const { attributes, listeners, setNodeRef, isDragging } = useSortable({ id })
   return (
     <Cell
+      ref={setNodeRef}
       title={label}
-      draggable={true}
-      onDragStart={onDragStart}
-      onDragOver={onDragOver}
-      onDrop={onDrop}
+      {...attributes}
+      {...listeners}
       onClick={id === 'on' ? undefined : () => onSort(id)}
       onContextMenu={onMenu}
-      sx={{
+      sx={(theme) => ({
         ...ellipsis,
-        cursor: id === 'on' ? 'grab' : 'pointer',
+        cursor: headerCursor(id, isDragging),
         userSelect: 'none',
         display: 'flex',
         alignItems: 'center',
         gap: 0.5,
-      }}
+        borderRadius: '4px',
+        outline: isDragging ? `1px solid ${theme.palette.primary.main}` : 'none',
+        bgcolor: isDragging ? alpha(theme.palette.primary.main, DRAG_TINT) : 'transparent',
+      })}
     >
       {label}
       {active && sortDir === 'asc' ? <ArrowUp size={12} aria-hidden={true} /> : null}
@@ -120,16 +134,44 @@ function HeaderCells({
   cols,
   sort,
   onMenu,
-  onDropColumn,
+  onPreview,
+  onCommit,
+  onCancel,
 }: {
   cols: readonly ListColumnId[]
   sort: ReturnType<typeof sanitizeListSort>
   onMenu: (e: MouseEvent) => void
-  onDropColumn: (from: ListColumnId, to: ListColumnId) => void
+  onPreview: (order: ListColumnId[]) => void
+  onCommit: () => void
+  onCancel: () => void
 }) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
+  // The click that ends a drag must not also re-sort by the dragged column.
+  const dragged = useRef(false)
   const onSort = (col: ListColumnId) => {
+    if (dragged.current) {
+      return
+    }
     const next = nextListSort(sort, col)
     persistSort(next.column, next.dir)
+  }
+  const onDragOver = ({ active, over }: DragOverEvent) => {
+    if (!over || active.id === over.id) {
+      return
+    }
+    const from = cols.indexOf(active.id as ListColumnId)
+    const to = cols.indexOf(over.id as ListColumnId)
+    if (from >= 0 && to >= 0) {
+      onPreview(moveListColumn(cols, from, to))
+    }
+  }
+  const settle = () => {
+    setTimeout(() => {
+      dragged.current = false
+    }, 0)
   }
   const cells: ReactNode[] = []
   for (const id of cols) {
@@ -145,11 +187,32 @@ function HeaderCells({
         sortDir={sort.dir}
         onSort={onSort}
         onMenu={onMenu}
-        onDropColumn={onDropColumn}
       />,
     )
   }
-  return cells
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
+      onDragStart={() => {
+        dragged.current = true
+      }}
+      onDragOver={onDragOver}
+      onDragEnd={() => {
+        onCommit()
+        settle()
+      }}
+      onDragCancel={() => {
+        onCancel()
+        settle()
+      }}
+    >
+      <SortableContext items={[...cols]} strategy={horizontalListSortingStrategy}>
+        {cells}
+      </SortableContext>
+    </DndContext>
+  )
 }
 
 function ListColumnMenu({
