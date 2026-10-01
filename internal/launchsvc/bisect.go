@@ -4,22 +4,31 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/launch"
 )
 
-const bisectRunTimeout = 3 * time.Minute
+const (
+	bisectRunTimeout   = 3 * time.Minute
+	bisectStartupGrace = 3 * time.Second
+)
 
 // RunForBisect launches one profile and returns whether it reached a healthy running state.
 func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string, direct bool) (bool, launch.Summary, error) {
 	runCtx, cancel := context.WithTimeout(ctx, bisectRunTimeout)
 	defer cancel()
+	beforeRunID, _, err := s.LastRunSummary(gameID, profileID)
+	if err != nil {
+		return false, launch.Summary{}, err
+	}
 	if err := s.start(runCtx, gameID, profileID, direct); err != nil {
 		return false, launch.Summary{}, err
 	}
 
 	started := false
+	var runningSince time.Time
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 	for {
@@ -31,21 +40,42 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string, di
 		case Launching:
 			started = true
 		case Running:
-			if err := s.Stop(gameID); err != nil {
+			started = true
+			lines, err := s.Lines(gameID, profileID)
+			if err != nil {
 				return false, launch.Summary{}, err
 			}
-			return true, launch.Summary{}, nil
+			if bisectStartupFailure(lines) {
+				if err := s.Stop(gameID); err != nil {
+					return false, launch.Summary{}, err
+				}
+				return false, launch.Summary{}, nil
+			}
+			if runningSince.IsZero() {
+				runningSince = time.Now()
+			}
+			// SMAPI reports skipped startup mods after the process is Running, so allow its
+			// initial log batch to arrive before treating Running as a healthy title screen.
+			if time.Since(runningSince) >= bisectStartupGrace {
+				if err := s.Stop(gameID); err != nil {
+					return false, launch.Summary{}, err
+				}
+				return true, launch.Summary{}, nil
+			}
 		case NoSteam:
 			return false, launch.Summary{}, errors.New("the crash check needs a direct launch")
 		case Failed:
 			if !started {
 				return false, launch.Summary{}, fmt.Errorf("bisect launch failed: %s", status.Error)
 			}
-			_, summary, err := s.LastRunSummary(gameID, profileID)
+			runID, summary, err := s.LastRunSummary(gameID, profileID)
+			if runID == beforeRunID {
+				return false, summary, err
+			}
 			return summaryHealthy(summary), summary, err
 		case Idle:
-			if started {
-				_, summary, err := s.LastRunSummary(gameID, profileID)
+			runID, summary, err := s.LastRunSummary(gameID, profileID)
+			if (started || runID != "") && runID != beforeRunID {
 				return summaryHealthy(summary), summary, err
 			}
 		}
@@ -60,6 +90,23 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string, di
 		case <-ticker.C:
 		}
 	}
+}
+
+func bisectStartupFailure(lines []launch.Entry) bool {
+	for _, entry := range lines {
+		if entry.Level == launch.Alert {
+			return true
+		}
+		if entry.Level != launch.Error {
+			continue
+		}
+		message := strings.ToLower(entry.Message)
+		if strings.Contains(message, "steam achievements") {
+			continue
+		}
+		return true
+	}
+	return false
 }
 
 func summaryHealthy(summary launch.Summary) bool {
