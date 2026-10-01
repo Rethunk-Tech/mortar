@@ -40,7 +40,10 @@ export function createMortarTheme(accent: AccentName): Theme {
         },
       },
       MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
-      MuiDialog: { defaultProps: { transitionDuration: 0 } },
+      MuiDialog: {
+        defaultProps: { transitionDuration: 0 },
+        styleOverrides: { paper: { backgroundColor: 'rgb(40,40,48)' } },
+      },
       MuiBackdrop: {
         defaultProps: { transitionDuration: 0 },
         styleOverrides: {

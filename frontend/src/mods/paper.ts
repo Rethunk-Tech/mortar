@@ -13,7 +13,7 @@ export const accent = {
   chip: tint(ACCENT_CHIP),
 }
 
-export const paper = { sx: { bgcolor: 'rgb(40,40,48)' } }
+export const paper = { sx: {} }
 
 export const heading = {
   fontSize: 12,

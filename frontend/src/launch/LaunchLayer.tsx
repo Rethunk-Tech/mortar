@@ -262,7 +262,7 @@ function DirectDialog() {
       open={ask !== null}
       onClose={() => answer(false)}
       transitionDuration={0}
-      slotProps={{ paper: { sx: { bgcolor: 'rgb(40,40,48)', maxWidth: 440 } } }}
+      slotProps={{ paper: { sx: { maxWidth: 440 } } }}
     >
       <DialogTitle>{t`Steam was not found`}</DialogTitle>
       <DialogContent>

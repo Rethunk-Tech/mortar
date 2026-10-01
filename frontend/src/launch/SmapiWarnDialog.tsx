@@ -23,7 +23,7 @@ export function SmapiWarnDialog({
       open={open}
       onClose={onClose}
       transitionDuration={0}
-      slotProps={{ paper: { sx: { bgcolor: 'rgb(40,40,48)', maxWidth: 440 } } }}
+      slotProps={{ paper: { sx: { maxWidth: 440 } } }}
     >
       <DialogTitle>{t`Steam will still start SMAPI`}</DialogTitle>
       <DialogContent>

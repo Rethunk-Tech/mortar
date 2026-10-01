@@ -23,7 +23,7 @@ export function UpdateWarnDialog() {
       open={warn !== null}
       onClose={cancel}
       transitionDuration={0}
-      slotProps={{ paper: { sx: { bgcolor: 'rgb(40,40,48)', maxWidth: 480 } } }}
+      slotProps={{ paper: { sx: { maxWidth: 480 } } }}
     >
       <DialogTitle>{t`The game was updated`}</DialogTitle>
       <DialogContent>

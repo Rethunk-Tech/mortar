@@ -210,7 +210,7 @@ export function EditProfileDialog({
       open={open}
       onClose={onClose}
       transitionDuration={0}
-      slotProps={{ paper: { sx: { bgcolor: 'rgb(40,40,48)', minWidth: 400 } } }}
+      slotProps={{ paper: { sx: { minWidth: 400 } } }}
     >
       <form
         onSubmit={(e) => {

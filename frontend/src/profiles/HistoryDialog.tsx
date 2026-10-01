@@ -72,7 +72,7 @@ export function HistoryDialog({
       open={open}
       onClose={onClose}
       transitionDuration={0}
-      slotProps={{ paper: { sx: { bgcolor: 'rgb(40,40,48)', minWidth: 440 } } }}
+      slotProps={{ paper: { sx: { minWidth: 440 } } }}
     >
       <DialogTitle>{t`History`}</DialogTitle>
       <DialogContent>

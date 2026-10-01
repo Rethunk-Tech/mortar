@@ -12,6 +12,11 @@ describe('createMortarTheme', () => {
     expect(root).toEqual({ backgroundImage: 'none' })
   })
 
+  test('dialog paper is solid', () => {
+    const paper = createMortarTheme('sand').components?.MuiDialog?.styleOverrides?.paper
+    expect(paper).toEqual({ backgroundColor: 'rgb(40,40,48)' })
+  })
+
   test('links are secondary text with a dotted underline', () => {
     const root = createMortarTheme('sand').components?.MuiLink?.styleOverrides?.root
     expect(root).toEqual({

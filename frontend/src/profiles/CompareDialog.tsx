@@ -24,7 +24,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useProfiles } from './store.ts'
 
-const paper = { paper: { sx: { bgcolor: 'rgb(40,40,48)', minWidth: 480 } } }
+const paper = { paper: { sx: { minWidth: 480 } } }
 
 function sideLabel(side: DiffSide): string {
   const on = side.enabled ? '' : ' · off'

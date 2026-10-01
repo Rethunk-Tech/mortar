@@ -21,11 +21,7 @@ export function StopDialog({
   const { t } = useLingui()
   const stop = useLaunch((s) => s.stop)
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      slotProps={{ paper: { sx: { bgcolor: 'rgb(40,40,48)', maxWidth: 420 } } }}
-    >
+    <Dialog open={open} onClose={onClose} slotProps={{ paper: { sx: { maxWidth: 420 } } }}>
       <DialogTitle>{t`Stop the game?`}</DialogTitle>
       <DialogContent>
         <DialogContentText>

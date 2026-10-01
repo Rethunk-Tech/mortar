@@ -169,7 +169,7 @@ export function VanillaPlay({
         open={linuxDirect}
         onClose={() => setLinuxDirect(false)}
         transitionDuration={0}
-        slotProps={{ paper: { sx: { bgcolor: 'rgb(40,40,48)', maxWidth: 440 } } }}
+        slotProps={{ paper: { sx: { maxWidth: 440 } } }}
       >
         <DialogTitle>{t`Play without Steam overlay`}</DialogTitle>
         <DialogContent>

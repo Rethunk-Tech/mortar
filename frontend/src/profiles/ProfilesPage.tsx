@@ -46,8 +46,6 @@ import { GameModsDialog } from './GameModsDialog.tsx'
 import { ProfileRow } from './ProfileRow.tsx'
 import { useProfiles } from './store.ts'
 
-const dialogPaper = { paper: { sx: { bgcolor: 'rgb(40,40,48)' } } }
-
 function TrashRow({ item }: { item: TrashItem }) {
   const { t } = useLingui()
   const restore = useProfiles((s) => s.restore)
@@ -129,7 +127,6 @@ function DeleteDialog({ deleting, onDone }: { deleting: Profile | null; onDone: 
       open={deleting !== null}
       onClose={cancel}
       slotProps={{
-        ...dialogPaper,
         transition: {
           onExited: () => {
             document
