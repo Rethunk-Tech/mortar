@@ -15,9 +15,11 @@ import { initSettings } from './settings/store.ts'
 import { initShare } from './share/arrivals.ts'
 import { Themed } from './Themed.tsx'
 import { reportUnexpected } from './toasts/report.ts'
+import { initMortarUpdateBackground } from './updates/background.ts'
 import './theme/fonts.ts'
 
 initSettings().catch(reportUnexpected)
+initMortarUpdateBackground()
 initNexus().catch(reportUnexpected)
 initNexusSeen().catch(reportUnexpected)
 initLaunch()

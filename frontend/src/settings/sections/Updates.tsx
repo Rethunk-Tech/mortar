@@ -77,7 +77,7 @@ function MortarUpdate() {
     none: t`No release is published yet.`,
     available: t`Mortar ${release?.version ?? ''} is available.`,
     installing: t`Downloading and verifying Mortar ${release?.version ?? ''}…`,
-    ready: t`Mortar ${release?.version ?? ''} is ready. Restart Mortar to finish updating.`,
+    ready: t`Update ready — applies when you close Mortar.`,
     restarting: t`Restarting…`,
     error,
   }

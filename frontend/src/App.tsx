@@ -23,6 +23,8 @@ import { AppFrame } from './shell/AppFrame.tsx'
 import { errorMessage } from './toasts/report.ts'
 import { useToasts } from './toasts/store.ts'
 import { ToastHost } from './toasts/ToastHost.tsx'
+import { UpdateReadyBanner } from './updates/UpdateReadyBanner.tsx'
+import { WhatsNewDialog } from './updates/WhatsNewDialog.tsx'
 
 export function App() {
   useAppShortcuts()
@@ -57,6 +59,7 @@ export function App() {
   return (
     <>
       <AppFrame>
+        <UpdateReadyBanner />
         {route.name === 'settings' ? <SettingsPage section={route.section} /> : null}
         {route.name === 'game-settings' ? <GameSettingsPage /> : null}
         {route.name === 'profiles' ? <ProfilesPage /> : null}
@@ -70,6 +73,7 @@ export function App() {
       <CommandPalette />
       <ShareDialog />
       <ImportDialog />
+      <WhatsNewDialog />
       <ToastHost />
     </>
   )

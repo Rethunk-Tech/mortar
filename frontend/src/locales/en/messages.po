@@ -46,7 +46,7 @@ msgstr "{0, plural, one {# mod included} other {# mods included}}"
 msgid "Start muted"
 msgstr "Start muted"
 
-#: src/settings/updates.ts:35
+#: src/settings/updates.ts:36
 msgid "Could not reach GitHub. Check your connection and try again."
 msgstr "Could not reach GitHub. Check your connection and try again."
 
@@ -606,6 +606,10 @@ msgstr "Total"
 #: src/settings/sections/GameSettings.tsx:240
 msgid "Grant Flatpak Steam access?"
 msgstr "Grant Flatpak Steam access?"
+
+#: src/updates/WhatsNewDialog.tsx:53
+msgid "Got it"
+msgstr "Got it"
 
 #: src/console/RunsPicker.tsx:48
 #: src/queue/QueueHistory.tsx:32
@@ -1554,7 +1558,7 @@ msgstr "{count, plural, one {# dependency} other {# dependencies}}"
 msgid "Choose your Stardew Valley folder"
 msgstr "Choose your Stardew Valley folder"
 
-#: src/settings/updates.ts:38
+#: src/settings/updates.ts:39
 msgid "Could not check for updates."
 msgstr "Could not check for updates."
 
@@ -1942,11 +1946,6 @@ msgstr "{0, plural, one {# mod installed} other {# mods installed}}"
 msgid "config.json, made by the mod"
 msgstr "config.json, made by the mod"
 
-#. placeholder {0}: release?.version ?? ''
-#: src/settings/sections/Updates.tsx:80
-msgid "Mortar {0} is ready. Restart Mortar to finish updating."
-msgstr "Mortar {0} is ready. Restart Mortar to finish updating."
-
 #: src/settings/sections/StreamOverlay.tsx:437
 msgid "Start the game to see values"
 msgstr "Start the game to see values"
@@ -2094,7 +2093,7 @@ msgid "SMAPI log"
 msgstr "SMAPI log"
 
 #. placeholder {0}: errorMessage(e)
-#: src/settings/updates.ts:64
+#: src/settings/updates.ts:65
 msgid "Could not update: {0}"
 msgstr "Could not update: {0}"
 
@@ -2641,6 +2640,7 @@ msgid "The page reads the profile from the link itself. Nothing is uploaded or s
 msgstr "The page reads the profile from the link itself. Nothing is uploaded or stored on a server."
 
 #: src/settings/sections/Updates.tsx:115
+#: src/updates/UpdateReadyBanner.tsx:30
 msgid "Restart now"
 msgstr "Restart now"
 
@@ -3013,7 +3013,7 @@ msgstr "Enable mods when installed"
 msgid "Could not reset the settings of {0}"
 msgstr "Could not reset the settings of {0}"
 
-#: src/App.tsx:53
+#: src/App.tsx:55
 #: src/games/GameSelect.tsx:252
 msgid "Could not read your games"
 msgstr "Could not read your games"
@@ -3167,6 +3167,11 @@ msgstr "SMAPI is the loader every Stardew mod needs. It goes into the game folde
 #: src/settings/sections/Updates.tsx:181
 msgid "Backups kept"
 msgstr "Backups kept"
+
+#: src/settings/sections/Updates.tsx:80
+#: src/updates/UpdateReadyBanner.tsx:34
+msgid "Update ready — applies when you close Mortar."
+msgstr "Update ready — applies when you close Mortar."
 
 #: src/share/ShareDialog.tsx:252
 msgid "A .mortar file suits a profile this size better, and carries your mod settings too."
@@ -4050,6 +4055,11 @@ msgstr "Installing"
 #: src/notes/NotesTab.tsx:37
 msgid "Could not save notes"
 msgstr "Could not save notes"
+
+#. placeholder {0}: payload?.version ?? ''
+#: src/updates/WhatsNewDialog.tsx:42
+msgid "What's new in Mortar {0}"
+msgstr "What's new in Mortar {0}"
 
 #: src/mods/ModDependencyTree.tsx:113
 #: src/mods/ModDetail.tsx:50
