@@ -105,13 +105,14 @@ type Result struct {
 	Duplicates     []Duplicate     `json:"duplicates"`
 	Broken         []Broken        `json:"broken"`
 	AssetConflicts []AssetConflict `json:"assetConflicts"`
+	RunErrors      []RunError      `json:"runErrors"`
 	Drift          []profile.Drift `json:"drift,omitempty"`
 	Unknown        bool            `json:"unknown"`
 }
 
-// Count is the number of problems, one per missing dependency, duplicate, broken mod and asset conflict.
+// Count is the number of problems, one per missing dependency, duplicate, broken mod, asset conflict and last-run error.
 func (r Result) Count() int {
-	return len(r.Missing) + len(r.Duplicates) + len(r.Broken) + len(r.AssetConflicts) + len(r.Drift)
+	return len(r.Missing) + len(r.Duplicates) + len(r.Broken) + len(r.AssetConflicts) + len(r.RunErrors) + len(r.Drift)
 }
 
 func sameID(a, b string) bool { return strings.EqualFold(a, b) }

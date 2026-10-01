@@ -1,0 +1,69 @@
+package problems
+
+import (
+	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/launch"
+)
+
+func installedMod(key, name, id string, enabled bool) Installed {
+	m := Installed{Key: key, Enabled: enabled}
+	m.Name, m.UniqueID = name, id
+	return m
+}
+
+func TestRunErrorsFromSummary(t *testing.T) {
+	mods := []Installed{
+		installedMod("a", "Alpha", "author.alpha", true),
+		installedMod("b", "Beta", "author.beta", false),
+	}
+	summary := launch.Summary{
+		Crashed: true,
+		Mods: []launch.ModError{
+			{Mod: "Alpha", Count: 2, First: "first error"},
+			{Mod: "Beta", Count: 1, First: "off"},
+			{Mod: "Unknown", Count: 1, First: "skip"},
+		},
+	}
+	got := RunErrorsFromSummary("run-1", summary, mods)
+	if len(got) != 1 {
+		t.Fatalf("got %d problems, want 1: %#v", len(got), got)
+	}
+	row := got[0]
+	if row.Key != "a" || row.UniqueID != "author.alpha" || row.Count != 2 || row.First != "first error" {
+		t.Fatalf("row = %#v", row)
+	}
+	if !row.Severe || row.RunID != "run-1" {
+		t.Fatalf("severe/run = %v %q", row.Severe, row.RunID)
+	}
+}
+
+func TestRunErrorsFromSummary_cleanRun(t *testing.T) {
+	mods := []Installed{installedMod("a", "Alpha", "author.alpha", true)}
+	got := RunErrorsFromSummary("run-2", launch.Summary{}, mods)
+	if len(got) != 0 {
+		t.Fatalf("clean run: %#v", got)
+	}
+}
+
+func TestRunErrorsFromSummary_infoWhenNoCrash(t *testing.T) {
+	mods := []Installed{installedMod("a", "Alpha", "author.alpha", true)}
+	summary := launch.Summary{
+		Mods: []launch.ModError{{Mod: "author.alpha", Count: 1, First: "oops"}},
+	}
+	got := RunErrorsFromSummary("run-3", summary, mods)
+	if len(got) != 1 || got[0].Severe {
+		t.Fatalf("want info-level: %#v", got)
+	}
+}
+
+func TestRunErrorsFromSummary_matchByUniqueID(t *testing.T) {
+	mods := []Installed{installedMod("k", "Display Name", "me.mod", true)}
+	summary := launch.Summary{
+		Mods: []launch.ModError{{Mod: "me.mod", Count: 1, First: "x"}},
+	}
+	got := RunErrorsFromSummary("r", summary, mods)
+	if len(got) != 1 || got[0].Key != "k" {
+		t.Fatalf("match by id: %#v", got)
+	}
+}

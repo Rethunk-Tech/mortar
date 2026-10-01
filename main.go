@@ -269,6 +269,7 @@ func run() error {
 	profileSvc := profile.NewService(profiles, home, store)
 	profileSvc.Version = version
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
+	problemsSvc.Runs = launches
 	supportSvc := support.NewService(version, problemsSvc.Environment, home, profiles.ModsDir)
 	supportSvc.RecentLog = func(gameID, profileID string) string {
 		entries, err := launches.Lines(gameID, profileID)

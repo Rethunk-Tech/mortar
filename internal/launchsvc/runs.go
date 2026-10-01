@@ -109,6 +109,23 @@ type RunIssues struct {
 	Mods  []launch.ModRunIssues `json:"mods"`
 }
 
+// LastRunSummary returns the newest recorded run's id and what its SMAPI log reports.
+func (s *Service) LastRunSummary(gameID, profileID string) (string, launch.Summary, error) {
+	runs, err := s.Runs(gameID, profileID)
+	if err != nil {
+		return "", launch.Summary{}, err
+	}
+	if len(runs) == 0 {
+		return "", launch.Summary{}, nil
+	}
+	run := runs[0]
+	text, err := s.RunLog(gameID, profileID, run.ID)
+	if err != nil {
+		return "", launch.Summary{}, err
+	}
+	return run.ID, launch.Summarize(text), nil
+}
+
 // LastRunIssues attributes the newest completed run's SMAPI log to user mods.
 func (s *Service) LastRunIssues(gameID, profileID string) (RunIssues, error) {
 	runs, err := s.Runs(gameID, profileID)

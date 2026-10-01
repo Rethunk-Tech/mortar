@@ -26,6 +26,7 @@ type Service struct {
 	settings *settings.Store
 	profiles *profile.Store
 	meta     Meta
+	Runs     RunReader
 
 	mu      sync.Mutex
 	cache   map[string]cached
@@ -75,9 +76,9 @@ func (s *Service) Environment(id string) Environment {
 	return env
 }
 
-func fingerprint(env Environment, mods []Installed) string {
+func fingerprint(env Environment, mods []Installed, runID string) string {
 	var b strings.Builder
-	b.WriteString(env.GameVersion + "|" + env.APIVersion)
+	b.WriteString(env.GameVersion + "|" + env.APIVersion + "|run:" + runID)
 	for _, m := range mods {
 		b.WriteString("\n" + m.Key + "|" + m.UniqueID + "|" + m.Version + "|" + m.Name)
 		if m.Enabled {
@@ -123,7 +124,14 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 		return Result{}, err
 	}
 	env := s.Environment(gameID)
-	fp := fingerprint(env, mods)
+	runID := ""
+	if s.Runs != nil {
+		lastID, _, err := s.Runs.LastRunSummary(gameID, id)
+		if err == nil {
+			runID = lastID
+		}
+	}
+	fp := fingerprint(env, mods, runID)
 	key := gameID + "/" + id
 	s.mu.Lock()
 	c, ok := s.cache[key]
@@ -132,6 +140,14 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 		return s.withDrift(gameID, id, s.withDismissed(gameID, id, c.result))
 	}
 	r := Check(ctx, s.meta, env, mods)
+	if s.Runs != nil && runID != "" {
+		_, summary, err := s.Runs.LastRunSummary(gameID, id)
+		if err == nil {
+			r.RunErrors = RunErrorsFromSummary(runID, summary, mods)
+		}
+	} else if r.RunErrors == nil {
+		r.RunErrors = []RunError{}
+	}
 	if !r.Unknown {
 		s.mu.Lock()
 		s.cache[key] = cached{fp, r}
@@ -205,7 +221,7 @@ func (s *Service) Updates(ctx context.Context, gameID, id string) (UpdatesResult
 		return UpdatesResult{}, err
 	}
 	env := s.Environment(gameID)
-	fp := fingerprint(env, mods)
+	fp := fingerprint(env, mods, "")
 	key := gameID + "/" + id
 	s.mu.Lock()
 	c, ok := s.updates[key]
