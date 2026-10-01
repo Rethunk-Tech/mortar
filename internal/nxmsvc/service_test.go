@@ -37,6 +37,11 @@ func (f *fakeHandler) Restore(previous string) error {
 	return nil
 }
 
+func (f *fakeHandler) ForwardOther(link, previous string) error {
+	f.registry = append(f.registry, "forward:"+previous+":"+link)
+	return nil
+}
+
 func newService(t *testing.T, h *fakeHandler) *Service {
 	t.Helper()
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
@@ -62,7 +67,7 @@ func TestEnableRecordsPreviousOwnerAndDisableRestoresIt(t *testing.T) {
 	if err := s.Enable(); err != nil {
 		t.Fatal(err)
 	}
-	if got := s.store.Get(); !got.NxmHandled || got.NxmPrevious != "vortex.desktop" || !got.NxmAsked {
+	if got := s.store.Get(); !got.NxmHandled || got.NxmPrevious != "vortex.desktop" || got.NxmPreviousName != "Vortex" || !got.NxmAsked {
 		t.Fatalf("settings after Enable: %+v", got)
 	}
 	if name, _ := s.Owner(); name != "" {
@@ -118,6 +123,28 @@ func TestFailedRegisterChangesNothing(t *testing.T) {
 	s := newService(t, h)
 	if err := s.Enable(); err == nil || s.store.Get().NxmHandled {
 		t.Fatalf("err %v, settings %+v", err, s.store.Get())
+	}
+}
+
+func TestReceiveForwardsOtherGameLinks(t *testing.T) {
+	h := &fakeHandler{}
+	s := newService(t, h)
+	if _, err := s.store.Update(func(v *settings.Settings) {
+		v.NxmPrevious = "vortex.desktop"
+		on := true
+		v.NxmRedirectOtherGames = &on
+	}); err != nil {
+		t.Fatal(err)
+	}
+	link := "nxm://skyrim/mods/5/files/9?key=k&expires=1000600&user_id=42"
+	if !s.Receive([]string{link}) {
+		t.Fatal("expected nxm link")
+	}
+	if len(s.Inbox().Rejections) != 0 || len(s.Inbox().Arrivals) != 0 {
+		t.Fatalf("other-game link should forward, not inbox: %+v", s.Inbox())
+	}
+	if len(h.registry) != 1 || h.registry[0] != "forward:vortex.desktop:"+link {
+		t.Fatalf("registry %q", h.registry)
 	}
 }
 

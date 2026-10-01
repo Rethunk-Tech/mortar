@@ -29,6 +29,8 @@ type Portable struct {
 	CheckOnlyEnabledMods         bool     `json:"checkOnlyEnabledMods"`
 	EnableModsWhenInstalled      *bool    `json:"enableModsWhenInstalled"`
 	TipsSeen                     []string `json:"tipsSeen"`
+	NexusPreferredDownloadServer string   `json:"nexusPreferredDownloadServer"`
+	NxmRedirectOtherGames        *bool    `json:"nxmRedirectOtherGames"`
 }
 
 // Change is one field that import would replace.
@@ -49,6 +51,7 @@ var portableFields = []string{
 	"listColumns", "listSortColumn", "listSortDir", "listGroupBy",
 	"checkModUpdatesOnStart", "tellWhenSmapiOut", "keepInTray", "includeBetaReleases",
 	"includePrereleaseModVersions", "checkOnlyEnabledMods", "enableModsWhenInstalled", "tipsSeen",
+	"nexusPreferredDownloadServer", "nxmRedirectOtherGames",
 }
 
 // MarshalExport writes a versioned JSON of s without secrets or machine-specific fields.
@@ -71,6 +74,8 @@ func MarshalExport(s Settings) ([]byte, error) {
 		CheckOnlyEnabledMods:         s.CheckOnlyEnabledMods,
 		EnableModsWhenInstalled:      s.EnableModsWhenInstalled,
 		TipsSeen:                     slices.Clone(s.TipsSeen),
+		NexusPreferredDownloadServer: s.NexusPreferredDownloadServer,
+		NxmRedirectOtherGames:        s.NxmRedirectOtherGames,
 	}
 	return json.MarshalIndent(p, "", "  ")
 }
@@ -144,6 +149,12 @@ func ParseExport(b []byte) (Portable, map[string]struct{}, error) {
 	if _, ok := present["tipsSeen"]; ok {
 		overlay.TipsSeen = p.TipsSeen
 	}
+	if _, ok := present["nexusPreferredDownloadServer"]; ok {
+		overlay.NexusPreferredDownloadServer = p.NexusPreferredDownloadServer
+	}
+	if _, ok := present["nxmRedirectOtherGames"]; ok {
+		overlay.NxmRedirectOtherGames = p.NxmRedirectOtherGames
+	}
 	overlay = sanitizePortable(overlay)
 	if _, ok := present["accent"]; ok {
 		p.Accent = overlay.Accent
@@ -192,6 +203,12 @@ func ParseExport(b []byte) (Portable, map[string]struct{}, error) {
 	}
 	if _, ok := present["tipsSeen"]; ok {
 		p.TipsSeen = overlay.TipsSeen
+	}
+	if _, ok := present["nexusPreferredDownloadServer"]; ok {
+		p.NexusPreferredDownloadServer = overlay.NexusPreferredDownloadServer
+	}
+	if _, ok := present["nxmRedirectOtherGames"]; ok {
+		p.NxmRedirectOtherGames = overlay.NxmRedirectOtherGames
 	}
 	return p, present, nil
 }
@@ -246,6 +263,12 @@ func ApplyExport(cur *Settings, p Portable, present map[string]struct{}) {
 	if _, ok := present["tipsSeen"]; ok {
 		cur.TipsSeen = slices.Clone(p.TipsSeen)
 	}
+	if _, ok := present["nexusPreferredDownloadServer"]; ok {
+		cur.NexusPreferredDownloadServer = p.NexusPreferredDownloadServer
+	}
+	if _, ok := present["nxmRedirectOtherGames"]; ok {
+		cur.NxmRedirectOtherGames = p.NxmRedirectOtherGames
+	}
 }
 
 func sanitizePortable(s Settings) Settings {
@@ -261,6 +284,7 @@ func sanitizePortable(s Settings) Settings {
 	normalizeToggles(&s)
 	normalizeList(&s)
 	normalizeTips(&s)
+	normalizeNexus(&s)
 	return s
 }
 
@@ -318,6 +342,13 @@ func fieldText(s Settings, field string) string {
 		return boolText(s.EnableModsWhenInstalled)
 	case "tipsSeen":
 		return strings.Join(s.TipsSeen, ", ")
+	case "nexusPreferredDownloadServer":
+		if s.NexusPreferredDownloadServer == "" {
+			return "automatic"
+		}
+		return s.NexusPreferredDownloadServer
+	case "nxmRedirectOtherGames":
+		return strconv.FormatBool(s.RedirectOtherGames())
 	default:
 		return ""
 	}

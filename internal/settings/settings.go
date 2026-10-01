@@ -65,6 +65,14 @@ type Settings struct {
 	NxmHandled  bool   `json:"nxmHandled"`
 	NxmPrevious string `json:"nxmPrevious"`
 	NxmAsked    bool   `json:"nxmAsked"`
+	// NxmPreviousName is the display name of NxmPrevious when Mortar took over the scheme.
+	NxmPreviousName string `json:"nxmPreviousName"`
+	// NxmRedirectOtherGames sends nxm:// links for other games to NxmPrevious when on.
+	NxmRedirectOtherGames *bool `json:"nxmRedirectOtherGames"`
+	// NexusPreferredDownloadServer is a seen download_link.json short_name, or empty for Automatic.
+	NexusPreferredDownloadServer string `json:"nexusPreferredDownloadServer"`
+	// NexusSeenDownloadServers lists short_name values Mortar has seen from Nexus.
+	NexusSeenDownloadServers []string `json:"nexusSeenDownloadServers"`
 	// BackupsKept is how many save backups to retain, from MinBackupsKept to MaxBackupsKept.
 	BackupsKept int `json:"backupsKept"`
 	// ListColumns is the Mods list-view columns that are shown. Unknown ids are dropped; an empty list is the default.
@@ -112,7 +120,7 @@ func Defaults() Settings {
 	return Settings{
 		Accent: "sand", Background: BackgroundImage, LastProfile: map[string]string{}, LastPlayed: map[string]Played{}, GameFolders: map[string]string{},
 		GameStores: map[string]string{},
-		Loaders:    map[string]string{}, Dismissed: map[string][]string{}, BackupsKept: backup.DefaultKeep,
+		Loaders:    map[string]string{}, Dismissed: map[string][]string{}, NexusSeenDownloadServers: []string{}, BackupsKept: backup.DefaultKeep,
 		ListColumns: slices.Clone(defaultListColumns), ListSortColumn: defaultListSortColumn, ListSortDir: defaultListSortDir, ListGroupBy: defaultListGroupBy,
 		CheckModUpdatesOnStart: on(), TellWhenSmapiOut: on(), EnableModsWhenInstalled: on(),
 		OverlayPort: DefaultOverlayPort,
@@ -169,6 +177,7 @@ func Open() (*Store, error) {
 	normalizeList(&s.cur)
 	normalizeTips(&s.cur)
 	normalizeOverlay(&s.cur)
+	normalizeNexus(&s.cur)
 	return s, nil
 }
 
@@ -206,8 +215,12 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	if err := validateOverlay(next); err != nil {
 		return s.cur, err
 	}
+	if err := validateNexus(next); err != nil {
+		return s.cur, err
+	}
 	normalizeList(&next)
 	normalizeTips(&next)
+	normalizeNexus(&next)
 	if err := datadir.WriteJSON(s.path, next); err != nil {
 		return s.cur, err
 	}

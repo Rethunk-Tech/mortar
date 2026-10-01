@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/nxm"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -84,6 +85,14 @@ func (s *Service) Receive(args []string) bool {
 			continue
 		}
 		found = true
+		if game, gerr := nxm.LinkGame(arg); gerr == nil && game != nexus.Game {
+			cur := s.store.Get()
+			if cur.NxmPrevious != "" && cur.RedirectOtherGames() {
+				if err := s.handler.ForwardOther(arg, cur.NxmPrevious); err == nil {
+					continue
+				}
+			}
+		}
 		link, err := nxm.Parse(arg, s.store.Get().NexusUserID, s.now())
 		if err == nil && s.Route != nil && s.Route(link) {
 			continue
@@ -159,13 +168,17 @@ func (s *Service) Enable() error {
 		return err
 	}
 	previous := s.store.Get().NxmPrevious
+	prevName := s.store.Get().NxmPreviousName
 	if !o.Mine {
 		previous = o.ID
+		prevName = o.Name
 	}
 	if err := s.handler.Register(); err != nil {
 		return err
 	}
-	return s.record(func(v *settings.Settings) { v.NxmHandled, v.NxmPrevious, v.NxmAsked = true, previous, true })
+	return s.record(func(v *settings.Settings) {
+		v.NxmHandled, v.NxmPrevious, v.NxmPreviousName, v.NxmAsked = true, previous, prevName, true
+	})
 }
 
 // Disable gives nxm links back to the recorded owner.
@@ -182,7 +195,7 @@ func release(s *Service) error {
 	if err := s.handler.Restore(s.store.Get().NxmPrevious); err != nil {
 		return err
 	}
-	return s.record(func(v *settings.Settings) { v.NxmHandled, v.NxmPrevious = false, "" })
+	return s.record(func(v *settings.Settings) { v.NxmHandled, v.NxmPrevious, v.NxmPreviousName = false, "", "" })
 }
 
 // RegisterLinks makes Mortar the app for mortar:// links and .mortar files; the window calls it once first run is

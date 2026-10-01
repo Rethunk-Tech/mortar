@@ -276,6 +276,15 @@ func (s *Service) ApplyImportedSettings(raw string) error {
 	})
 }
 
+func (s *Service) SetNexusPreferredDownloadServer(shortName string) error {
+	return s.set(func(v *Settings) { v.NexusPreferredDownloadServer = shortName })
+}
+
+// SetNxmRedirectOtherGames sets whether non-Stardew nxm links go to the previous handler.
+func (s *Service) SetNxmRedirectOtherGames(on bool) error {
+	return s.set(func(v *Settings) { v.NxmRedirectOtherGames = &on })
+}
+
 func (s *Service) set(fn func(*Settings)) error {
 	next, err := s.store.Update(fn)
 	if err != nil {

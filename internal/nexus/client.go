@@ -297,8 +297,9 @@ func (c *Client) Files(ctx context.Context, modID int) ([]File, error) {
 
 // Link is one download mirror.
 type Link struct {
-	Name string `json:"name"`
-	URI  string `json:"uri"`
+	Name      string `json:"name"`
+	ShortName string `json:"shortName"`
+	URI       string `json:"uri"`
 }
 
 // DownloadLinks asks for a file's download mirrors. Premium accounts pass no key; a free account passes the key
@@ -309,15 +310,16 @@ func (c *Client) DownloadLinks(ctx context.Context, modID, fileID int, key strin
 		path += "?" + url.Values{"key": {key}, "expires": {strconv.FormatInt(expires, 10)}}.Encode()
 	}
 	var raw []struct {
-		Name string `json:"name"`
-		URI  string `json:"URI"`
+		Name      string `json:"name"`
+		ShortName string `json:"short_name"`
+		URI       string `json:"URI"`
 	}
 	if err := c.get(ctx, path, true, &raw); err != nil {
 		return nil, err
 	}
 	links := make([]Link, len(raw))
 	for i, l := range raw {
-		links[i] = Link{Name: l.Name, URI: l.URI}
+		links[i] = Link{Name: l.Name, ShortName: l.ShortName, URI: l.URI}
 	}
-	return links, nil
+	return applyDownloadPreferences(links), nil
 }

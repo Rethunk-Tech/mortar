@@ -3,6 +3,7 @@ package nxm
 import (
 	"errors"
 	"fmt"
+	"os/exec"
 	"strings"
 
 	"golang.org/x/sys/windows/registry"
@@ -157,3 +158,16 @@ func (w *System) RegisterLinks() error { return nil }
 
 // Refresh does nothing: the installer fixes where Mortar lives.
 func (w *System) Refresh() error { return nil }
+
+// ForwardOther runs the saved open command with link in place of %1.
+func (w *System) ForwardOther(link, previous string) error {
+	name, args, err := WindowsForwardArgv(previous, link)
+	if err != nil {
+		return err
+	}
+	out, err := exec.Command(name, args...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%w: %s", err, strings.TrimSpace(string(out)))
+	}
+	return nil
+}

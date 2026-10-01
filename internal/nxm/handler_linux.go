@@ -126,10 +126,8 @@ func (l *System) Owner() (Owner, error) {
 
 // appName is the Name= of the desktop file, or the file's id without its extension.
 func (l *System) appName(id string) string {
-	for _, dir := range append([]string{filepath.Join(l.dataHome, "applications")}, l.dataDirs...) {
-		if name := desktopName(filepath.Join(dir, id)); name != "" {
-			return name
-		}
+	if name, err := l.desktopEntryField(id, desktopName); err == nil {
+		return name
 	}
 	return strings.TrimSuffix(id, ".desktop")
 }
@@ -145,6 +143,28 @@ func desktopName(path string) string {
 		}
 	}
 	return ""
+}
+
+func desktopExec(path string) string {
+	b, err := fsx.ReadFile(path)
+	if err != nil {
+		return ""
+	}
+	for line := range strings.SplitSeq(string(b), "\n") {
+		if exec, ok := strings.CutPrefix(line, "Exec="); ok {
+			return exec
+		}
+	}
+	return ""
+}
+
+func (l *System) desktopEntryField(id string, read func(string) string) (string, error) {
+	for _, dir := range append([]string{filepath.Join(l.dataHome, "applications")}, l.dataDirs...) {
+		if v := read(filepath.Join(dir, id)); v != "" {
+			return v, nil
+		}
+	}
+	return "", fmt.Errorf("desktop entry %q not found", id)
 }
 
 // desktopFile is the user-level entry. It lists the nxm scheme only while Mortar handles it, so a system that
@@ -261,6 +281,18 @@ func (l *System) Restore(previous string) error {
 		return nil
 	}
 	return l.dropDefault()
+}
+
+// ForwardOther runs the previous handler's desktop entry on link.
+func (l *System) ForwardOther(link, previous string) error {
+	name, args, err := LinuxForwardArgv(previous, link, func(id string) (string, error) {
+		return l.desktopEntryField(id, desktopExec)
+	})
+	if err != nil {
+		return err
+	}
+	_, err = l.run(name, args...)
+	return err
 }
 
 // dropDefault removes Mortar's line from the user's mimeapps.list: xdg-mime cannot unset a default.
