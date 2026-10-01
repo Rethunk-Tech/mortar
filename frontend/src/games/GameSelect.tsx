@@ -147,7 +147,27 @@ function Row({
     useNav.getState().openGame(game.id)
     start(game.id, lastPlayedId, false).then(() => undefined)
   }
-  const loaderLine = lastLine ? t`${loader} | Steam · ${lastLine}` : t`${loader} | Steam`
+  const storeName = (id: string) => {
+    if (id === 'flatpak-steam') {
+      return t`Flatpak Steam`
+    }
+    if (id === 'gog') {
+      return t`GOG`
+    }
+    if (id === 'gog-heroic') {
+      return t`GOG via Heroic`
+    }
+    return t`Steam`
+  }
+  const store = game.store ? storeName(game.store) : ''
+  let loaderLine = loader
+  if (store && lastLine) {
+    loaderLine = t`${loader} | ${store} · ${lastLine}`
+  } else if (store) {
+    loaderLine = t`${loader} | ${store}`
+  } else if (lastLine) {
+    loaderLine = t`${loader} · ${lastLine}`
+  }
   const content = (
     <>
       {game.artUrl ? <Art src={game.artUrl} openable={openable} /> : null}
@@ -237,7 +257,7 @@ export function GameSelect() {
       return t`After the first release`
     }
     if (!g.installed) {
-      return t`Not found in your Steam library`
+      return t`Not found`
     }
     if (g.id !== 'stardew') {
       return t`Installed`
@@ -263,11 +283,11 @@ export function GameSelect() {
           />
         ))}
       </Box>
-      {status.steam !== 'found' && (
+      {status.steam !== 'found' && !status.games.some((g) => g.available && g.installed) && (
         <Typography noWrap={true} sx={{ px: 2, py: 0.75, fontSize: 14, color: 'text.secondary' }}>
-          {t`Mortar supports Steam installed directly on the system.`}{' '}
+          {t`Mortar looks for Stardew Valley in Steam, Flatpak Steam, GOG and Heroic.`}{' '}
           {status.steam === 'flatpak-only'
-            ? t`Only a Flatpak Steam was found.`
+            ? t`Only a Flatpak Steam was found, with no game in its library.`
             : t`Steam was not found.`}
         </Typography>
       )}

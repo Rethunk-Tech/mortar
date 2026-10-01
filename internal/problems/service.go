@@ -61,7 +61,7 @@ func (s *Service) Environment(id string) Environment {
 		return env
 	}
 	set := s.settings.Get()
-	dir, err := game.InstallDir(s.home, set.GameFolders, id)
+	dir, err := game.InstallDir(s.home, set, id)
 	if err != nil || dir == "" {
 		return env
 	}

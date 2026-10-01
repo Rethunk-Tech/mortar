@@ -48,8 +48,10 @@ type Settings struct {
 	LastProfile map[string]string `json:"lastProfile"`
 	// LastPlayed maps a game id to the profile last launched to Running and when (RFC3339).
 	LastPlayed map[string]Played `json:"lastPlayed"`
-	// GameFolders maps a game id to a user-chosen install folder that wins over Steam discovery.
+	// GameFolders maps a game id to a user-chosen install folder that wins over discovery.
 	GameFolders map[string]string `json:"gameFolders"`
+	// GameStores maps a game id to the chosen store when several installs were found.
+	GameStores map[string]string `json:"gameStores"`
 	// Loaders maps a game id to the loader version Mortar installed.
 	Loaders map[string]string `json:"loaders"`
 	// Dismissed maps a save folder name to the UniqueIDs whose missing-mod warning the user dismissed for it.
@@ -99,7 +101,8 @@ func on() *bool { v := true; return &v }
 func Defaults() Settings {
 	return Settings{
 		Accent: "sand", Background: BackgroundImage, LastProfile: map[string]string{}, LastPlayed: map[string]Played{}, GameFolders: map[string]string{},
-		Loaders: map[string]string{}, Dismissed: map[string][]string{}, BackupsKept: backup.DefaultKeep,
+		GameStores: map[string]string{},
+		Loaders:    map[string]string{}, Dismissed: map[string][]string{}, BackupsKept: backup.DefaultKeep,
 		ListColumns: slices.Clone(defaultListColumns), ListSortColumn: defaultListSortColumn, ListSortDir: defaultListSortDir, ListGroupBy: defaultListGroupBy,
 		CheckModUpdatesOnStart: on(), TellWhenSmapiOut: on(),
 		OverlayPort: DefaultOverlayPort,
@@ -133,6 +136,10 @@ func Open() (*Store, error) {
 	if s.cur.GameFolders == nil {
 		s.cur.GameFolders = map[string]string{}
 	}
+	if s.cur.GameStores == nil {
+		s.cur.GameStores = map[string]string{}
+	}
+	normalizeStores(&s.cur)
 	if s.cur.Loaders == nil {
 		s.cur.Loaders = map[string]string{}
 	}
@@ -178,6 +185,7 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 		return s.cur, fmt.Errorf("backups kept must be %d to %d, got %d", MinBackupsKept, MaxBackupsKept, next.BackupsKept)
 	}
 	next.LastPlayed = validLastPlayed(next.LastPlayed)
+	normalizeStores(&next)
 	normalizeToggles(&next)
 	if err := validateList(next); err != nil {
 		return s.cur, err
@@ -195,6 +203,20 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	}
 	s.cur = next
 	return next, nil
+}
+
+func normalizeStores(s *Settings) {
+	if s.GameStores == nil {
+		s.GameStores = map[string]string{}
+		return
+	}
+	for game, store := range s.GameStores {
+		switch store {
+		case "steam", "flatpak-steam", "gog", "gog-heroic":
+		default:
+			delete(s.GameStores, game)
+		}
+	}
 }
 
 func normalizeToggles(s *Settings) {

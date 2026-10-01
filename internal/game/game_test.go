@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/settings"
@@ -48,7 +49,7 @@ func TestListAndArt(t *testing.T) {
 	if err != nil || len(list) != 2 {
 		t.Fatalf("list = %v, %v", list, err)
 	}
-	if g := list[0]; g.ID != "stardew" || !g.Installed || g.ArtURL != "/steam-art/413150" || !g.Available {
+	if g := list[0]; g.ID != "stardew" || !g.Installed || g.ArtURL != "/steam-art/413150" || !g.Available || g.Store != StoreSteam {
 		t.Fatalf("stardew = %+v", g)
 	}
 	if g := list[1]; g.Installed || g.ArtURL != "" || g.Available {
@@ -112,6 +113,47 @@ func TestDiscoveryPrecedence(t *testing.T) {
 		if err != nil || list[0].InstallDir != tc.want {
 			t.Errorf("%s: dir = %q (%v), want %q", name, list[0].InstallDir, err, tc.want)
 		}
+	}
+}
+
+func TestGOGAndPreferredStore(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("GOG offline path is a Linux home tree")
+	}
+	h := t.TempDir()
+	gogDir := filepath.Join(h, "GOG Games", "Stardew Valley", "game")
+	if err := os.MkdirAll(gogDir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(gogDir, "Stardew Valley.dll"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	store := testStore(t)
+	list, err := NewService(h, store).List()
+	if err != nil || list[0].InstallDir != gogDir || list[0].Store != StoreGOG {
+		t.Fatalf("gog only = %+v, %v", list[0], err)
+	}
+
+	h2 := home(t)
+	steamDir := filepath.Join(h2, ".local", "share", "Steam", "steamapps", "common", "Stardew Valley")
+	gog2 := filepath.Join(h2, "GOG Games", "Stardew Valley", "game")
+	if err := os.MkdirAll(gog2, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(gog2, "Stardew Valley.dll"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	store2 := testStore(t)
+	list, err = NewService(h2, store2).List()
+	if err != nil || list[0].InstallDir != steamDir || list[0].Store != StoreSteam || len(list[0].Installs) < 2 {
+		t.Fatalf("both default steam = %+v, %v", list[0], err)
+	}
+	if _, err := store2.Update(func(s *settings.Settings) { s.GameStores["stardew"] = StoreGOG }); err != nil {
+		t.Fatal(err)
+	}
+	list, err = NewService(h2, store2).List()
+	if err != nil || list[0].InstallDir != gog2 || list[0].Store != StoreGOG {
+		t.Fatalf("preferred gog = %+v, %v", list[0], err)
 	}
 }
 

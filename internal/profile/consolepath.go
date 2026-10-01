@@ -60,7 +60,8 @@ func (s *Service) OpenConsolePath(gameID, id, path string) error {
 	}
 	roots := []string{mods}
 	if s.settings != nil {
-		if dir, err := game.InstallDir(s.home, s.settings.Get().GameFolders, gameID); err == nil && dir != "" {
+		cur := s.settings.Get()
+		if dir, err := game.InstallDir(s.home, cur, gameID); err == nil && dir != "" {
 			roots = append(roots, dir)
 		}
 	}

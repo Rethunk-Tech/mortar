@@ -31,6 +31,10 @@ type Game struct {
 	Runner       launch.Runner
 	LookPath     func(string) (string, error)
 	LaunchTiming launch.Timing
+	// DataDir is Mortar's data folder, used to check Flatpak Steam filesystem access; empty means datadir.Dir.
+	DataDir string
+	// FlatpakShow is `flatpak override --user --show` for Steam; nil means the real command.
+	FlatpakShow func() (string, error)
 }
 
 var configuredComponents *components.Client

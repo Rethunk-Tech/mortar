@@ -1,10 +1,11 @@
-// Package steam locates a directly installed Steam, its libraries, installed apps and current account.
+// Package steam locates Steam (native or Flatpak), its libraries, installed apps and current account.
 package steam
 
 import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -23,9 +24,21 @@ const (
 	NotFound    Status = "not-found"
 )
 
-// Steam is a directly installed Steam rooted at Root.
+// Kind is how Steam is installed.
+type Kind string
+
+const (
+	KindNative  Kind = ""
+	KindFlatpak Kind = "flatpak"
+)
+
+// FlatpakID is Flathub's Steam application id.
+const FlatpakID = "com.valvesoftware.Steam"
+
+// Steam is a Steam install rooted at Root.
 type Steam struct {
 	Root string
+	Kind Kind
 }
 
 // Account is a Steam login from config/loginusers.vdf.
@@ -35,17 +48,82 @@ type Account struct {
 	PersonaName string
 }
 
-// Locate finds Steam for the given home directory. A Flatpak Steam is reported but never returned.
-func Locate(home string) (Steam, Status) {
+// FlatpakRoot is Flatpak Steam's Steam directory under home.
+func FlatpakRoot(home string) string {
+	return filepath.Join(home, ".var", "app", FlatpakID, ".local", "share", "Steam")
+}
+
+// LocateAll returns every usable Steam, native first, then Flatpak.
+func LocateAll(home string) []Steam {
+	var out []Steam
 	for _, root := range candidates(home) {
 		if isDir(filepath.Join(root, "steamapps")) {
-			return Steam{Root: root}, Found
+			out = append(out, Steam{Root: root, Kind: KindNative})
 		}
 	}
-	if isDir(filepath.Join(home, ".var", "app", "com.valvesoftware.Steam", ".local", "share", "Steam")) {
+	if fp := FlatpakRoot(home); isDir(filepath.Join(fp, "steamapps")) {
+		out = append(out, Steam{Root: fp, Kind: KindFlatpak})
+	}
+	return out
+}
+
+// Locate finds Steam for the given home directory. Native Steam wins when both exist.
+func Locate(home string) (Steam, Status) {
+	if all := LocateAll(home); len(all) > 0 {
+		return all[0], Found
+	}
+	if isDir(FlatpakRoot(home)) {
 		return Steam{}, FlatpakOnly
 	}
 	return Steam{}, NotFound
+}
+
+// OverrideCommand is the exact flatpak override that grants Steam read-only access to dataDir.
+func OverrideCommand(dataDir string) string {
+	return "flatpak override --user --filesystem=" + dataDir + ":ro " + FlatpakID
+}
+
+// HasFilesystem reports whether `flatpak override --user --show` grants dataDir.
+func HasFilesystem(show, dataDir string) bool {
+	dataDir = filepath.Clean(dataDir)
+	for line := range strings.SplitSeq(show, "\n") {
+		key, val, ok := strings.Cut(strings.TrimSpace(line), "=")
+		if !ok || !strings.EqualFold(strings.TrimSpace(key), "filesystems") {
+			continue
+		}
+		for part := range strings.SplitSeq(val, ";") {
+			part = strings.TrimSpace(part)
+			if part == "" {
+				continue
+			}
+			path, _, _ := strings.Cut(part, ":")
+			path = strings.TrimSpace(path)
+			switch path {
+			case "home", "host":
+				return true
+			}
+			if filepath.Clean(path) == dataDir {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+var runFlatpak = func(args ...string) ([]byte, error) {
+	return exec.Command("flatpak", args...).Output()
+}
+
+// ShowOverride is `flatpak override --user --show` for Steam. Tests replace runFlatpak.
+func ShowOverride() (string, error) {
+	out, err := runFlatpak("override", "--user", "--show", FlatpakID)
+	return string(out), err
+}
+
+// GrantFilesystem runs the user override that grants Steam read-only access to dataDir.
+func GrantFilesystem(dataDir string) error {
+	_, err := runFlatpak("override", "--user", "--filesystem="+dataDir+":ro", FlatpakID)
+	return err
 }
 
 // Libraries returns the library folder paths listed in libraryfolders.vdf.

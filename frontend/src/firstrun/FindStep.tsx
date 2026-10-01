@@ -110,12 +110,21 @@ export function FindStep({
     .filter(Boolean)
     .join(' · ')
 
+  let foundCaption = t`Found in Steam`
+  if (game?.store === 'flatpak-steam') {
+    foundCaption = t`Found in Flatpak Steam`
+  } else if (game?.store === 'gog') {
+    foundCaption = t`Found in GOG`
+  } else if (game?.store === 'gog-heroic') {
+    foundCaption = t`Found in GOG via Heroic`
+  }
+
   return (
     <Panel width={640}>
       <Hero game={game} />
       {found ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <Typography sx={{ fontSize: 13 }}>{t`Found in your Steam library`}</Typography>
+          <Typography sx={{ fontSize: 13 }}>{foundCaption}</Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <TextField
               value={dir}
@@ -146,9 +155,9 @@ export function FindStep({
             </Typography>
           </Box>
           <Typography sx={{ fontSize: 14 }}>
-            {t`Mortar supports Steam installed directly on the system.`}{' '}
+            {t`Mortar looks for Stardew Valley in Steam, Flatpak Steam, GOG and Heroic.`}{' '}
             {status.steam === 'flatpak-only'
-              ? t`Only a Flatpak Steam was found.`
+              ? t`Only a Flatpak Steam was found, with no game in its library.`
               : t`Steam was not found.`}{' '}
             {t`Choose the folder that holds Stardew Valley instead.`}
           </Typography>

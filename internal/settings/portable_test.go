@@ -13,6 +13,7 @@ func TestExportOmitsSecretsAndMachineFields(t *testing.T) {
 	s.NexusUserID = 99
 	s.NexusPremium = true
 	s.GameFolders = map[string]string{"stardew": "/games/Stardew Valley"}
+	s.GameStores = map[string]string{"stardew": "steam"}
 	s.Loaders = map[string]string{"stardew": "4.5.2"}
 	s.LastProfile = map[string]string{"stardew": "abc"}
 	s.LastPlayed = map[string]Played{"stardew": {Profile: "abc", At: "2026-01-01T00:00:00Z"}}
@@ -35,7 +36,7 @@ func TestExportOmitsSecretsAndMachineFields(t *testing.T) {
 		t.Fatalf("accent = %v", m["accent"])
 	}
 	for _, k := range []string{
-		"nexusName", "nexusUserId", "nexusPremium", "gameFolders", "loaders",
+		"nexusName", "nexusUserId", "nexusPremium", "gameFolders", "gameStores", "loaders",
 		"lastProfile", "lastPlayed", "backgroundImage", "dismissed",
 		"nxmHandled", "nxmPrevious", "nxmAsked",
 		"overlayToken", "overlayEnabled", "overlayPort",

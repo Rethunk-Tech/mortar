@@ -8,7 +8,9 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-AI/mortar/internal/steam"
 )
 
 // ProcessName is the executable of the running loader.
@@ -37,7 +39,8 @@ func (g Game) Launch(ctx context.Context, req launch.Request, onLines func([]str
 		lookPath = exec.LookPath
 	}
 	steamPath, _ := lookPath("steam")
-	cmd, err := g.command(runtime.GOOS, req, steamPath)
+	flatpakPath, _ := lookPath("flatpak")
+	cmd, err := g.command(runtime.GOOS, req, steamPath, flatpakPath)
 	if err != nil {
 		return err
 	}
@@ -57,8 +60,8 @@ func (g Game) Launch(ctx context.Context, req launch.Request, onLines func([]str
 	return launch.Run(ctx, run, cmd, g.LaunchTiming, onLines)
 }
 
-// command builds the process to start. steamPath is the `steam` found on PATH, "" when there is none.
-func (g Game) command(goos string, req launch.Request, steamPath string) (launch.Command, error) {
+// command builds the process to start. steamPath and flatpakPath are LookPath results, "" when missing.
+func (g Game) command(goos string, req launch.Request, steamPath, flatpakPath string) (launch.Command, error) {
 	if req.Vanilla {
 		return g.vanillaCommand(goos, req)
 	}
@@ -85,10 +88,39 @@ func (g Game) command(goos string, req launch.Request, steamPath string) (launch
 			hint = launch.HintLaunchOptions
 		}
 		return launch.Command{Name: filepath.Join(req.Steam.Root, "steam.exe"), Args: append(appID, smapiArgs...), Failure: hint, Relay: true}, nil
+	case req.Steam.Kind == steam.KindFlatpak:
+		if flatpakPath == "" {
+			return launch.Command{}, launch.ErrNoSteam
+		}
+		hint := launch.HintSteam
+		if !g.flatpakCanReadMods() {
+			hint = launch.HintFlatpakFS
+		}
+		args := append([]string{"run", steam.FlatpakID}, append(appID, smapiArgs...)...)
+		return launch.Command{Name: flatpakPath, Args: args, Failure: hint, Relay: true}, nil
 	case steamPath == "":
 		return launch.Command{}, launch.ErrNoSteam
 	}
 	return launch.Command{Name: steamPath, Args: append(appID, smapiArgs...), Failure: launch.HintSteam, Relay: true}, nil
+}
+
+func (g Game) flatpakCanReadMods() bool {
+	show := g.FlatpakShow
+	if show == nil {
+		show = steam.ShowOverride
+	}
+	out, err := show()
+	if err != nil {
+		return false
+	}
+	dir := g.DataDir
+	if dir == "" {
+		dir, err = datadir.Dir()
+		if err != nil {
+			return false
+		}
+	}
+	return steam.HasFilesystem(out, dir)
 }
 
 func (g Game) vanillaCommand(goos string, req launch.Request) (launch.Command, error) {

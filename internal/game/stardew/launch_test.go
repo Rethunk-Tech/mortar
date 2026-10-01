@@ -14,110 +14,132 @@ import (
 )
 
 func TestCommand(t *testing.T) {
-	g := Game{}
+	g := Game{
+		DataDir:     t.TempDir(),
+		FlatpakShow: func() (string, error) { return "", nil },
+	}
 	mods := filepath.FromSlash("/data/profiles/stardew/abc/mods")
 	st := &steam.Steam{Root: filepath.FromSlash("/steam")}
+	fp := &steam.Steam{Root: filepath.FromSlash("/flatpak-steam"), Kind: steam.KindFlatpak}
 	dir := filepath.FromSlash("/games/Stardew Valley")
 	for _, tc := range []struct {
-		name  string
-		goos  string
-		req   launch.Request
-		steam string
-		want  []string
-		err   error
+		name    string
+		goos    string
+		req     launch.Request
+		steam   string
+		flatpak string
+		want    []string
+		err     error
+		hint    launch.Hint
 	}{
 		{
 			"linux steam", "linux",
 			launch.Request{ModsDir: mods, Steam: st},
-			"/usr/bin/steam",
+			"/usr/bin/steam", "",
 			[]string{"/usr/bin/steam", "-applaunch", "413150", "--skip-terminal", "--", "--mods-path", mods},
-			nil,
+			nil, launch.HintSteam,
 		},
 		{
 			"linux steam extra", "linux",
 			launch.Request{ModsDir: mods, Steam: st, ExtraArgs: []string{"--developer-mode"}},
-			"/usr/bin/steam",
+			"/usr/bin/steam", "",
 			[]string{"/usr/bin/steam", "-applaunch", "413150", "--skip-terminal", "--", "--mods-path", mods, "--developer-mode"},
-			nil,
+			nil, launch.HintSteam,
+		},
+		{
+			"linux flatpak", "linux",
+			launch.Request{ModsDir: mods, Steam: fp},
+			"", "/usr/bin/flatpak",
+			[]string{"/usr/bin/flatpak", "run", "com.valvesoftware.Steam", "-applaunch", "413150", "--skip-terminal", "--", "--mods-path", mods},
+			nil, launch.HintFlatpakFS,
 		},
 		{
 			"windows steam", "windows",
 			launch.Request{ModsDir: mods, Steam: st},
-			"",
+			"", "",
 			[]string{filepath.Join(st.Root, "steam.exe"), "-applaunch", "413150", "--mods-path", mods},
-			nil,
+			nil, launch.HintSteam,
 		},
 		{
 			"windows steam extra", "windows",
 			launch.Request{ModsDir: mods, Steam: st, ExtraArgs: []string{"--developer-mode"}},
-			"",
+			"", "",
 			[]string{filepath.Join(st.Root, "steam.exe"), "-applaunch", "413150", "--mods-path", mods, "--developer-mode"},
-			nil,
+			nil, launch.HintSteam,
 		},
 		{
 			"linux direct", "linux",
 			launch.Request{ModsDir: mods, InstallDir: dir, Direct: true},
-			"",
+			"", "",
 			[]string{filepath.Join(dir, "StardewValley"), "--skip-terminal", "--", "--mods-path", mods},
-			nil,
+			nil, "",
 		},
 		{
 			"windows direct", "windows",
 			launch.Request{ModsDir: mods, InstallDir: dir, Direct: true},
-			"",
+			"", "",
 			[]string{filepath.Join(dir, "StardewModdingAPI.exe"), "--mods-path", mods},
-			nil,
+			nil, "",
 		},
 		{
 			"linux steam vanilla", "linux",
 			launch.Request{Vanilla: true, Steam: st, InstallDir: dir},
-			"/usr/bin/steam",
+			"/usr/bin/steam", "",
 			[]string{filepath.Join(dir, "StardewValley-original")},
-			nil,
+			nil, "",
 		},
 		{
 			"windows steam vanilla", "windows",
 			launch.Request{Vanilla: true, Steam: st},
-			"",
+			"", "",
 			[]string{filepath.Join(st.Root, "steam.exe"), "-applaunch", "413150"},
-			nil,
+			nil, launch.HintSteam,
 		},
 		{
 			"linux direct vanilla", "linux",
 			launch.Request{Vanilla: true, InstallDir: dir, Direct: true},
-			"",
+			"", "",
 			[]string{filepath.Join(dir, "StardewValley-original")},
-			nil,
+			nil, "",
 		},
 		{
 			"windows direct vanilla", "windows",
 			launch.Request{Vanilla: true, InstallDir: dir, Direct: true},
-			"",
+			"", "",
 			[]string{filepath.Join(dir, "Stardew Valley.exe")},
-			nil,
+			nil, "",
 		},
-		{"no steam", "linux", launch.Request{ModsDir: mods}, "/usr/bin/steam", nil, launch.ErrNoSteam},
-		{"steam not on PATH", "linux", launch.Request{ModsDir: mods, Steam: st}, "", nil, launch.ErrNoSteam},
+		{"no steam", "linux", launch.Request{ModsDir: mods}, "/usr/bin/steam", "", nil, launch.ErrNoSteam, ""},
+		{"steam not on PATH", "linux", launch.Request{ModsDir: mods, Steam: st}, "", "", nil, launch.ErrNoSteam, ""},
+		{"flatpak not on PATH", "linux", launch.Request{ModsDir: mods, Steam: fp}, "", "", nil, launch.ErrNoSteam, ""},
 		{
 			"linux vanilla without steam", "linux",
 			launch.Request{Vanilla: true, InstallDir: dir},
-			"",
+			"", "",
 			[]string{filepath.Join(dir, "StardewValley-original")},
-			nil,
+			nil, "",
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			c, err := g.command(tc.goos, tc.req, tc.steam)
+			c, err := g.command(tc.goos, tc.req, tc.steam, tc.flatpak)
 			if !errors.Is(err, tc.err) {
 				t.Fatalf("err = %v, want %v", err, tc.err)
 			}
 			if tc.want != nil && !slices.Equal(append([]string{c.Name}, c.Args...), tc.want) {
 				t.Fatalf("command = %v %v, want %v", c.Name, c.Args, tc.want)
 			}
+			if tc.want != nil && tc.hint != "" && c.Failure != tc.hint {
+				t.Fatalf("hint = %q, want %q", c.Failure, tc.hint)
+			}
 		})
 	}
-	if _, err := g.command("linux", launch.Request{ModsDir: "mods", Steam: st}, "/usr/bin/steam"); err == nil {
+	if _, err := g.command("linux", launch.Request{ModsDir: "mods", Steam: st}, "/usr/bin/steam", ""); err == nil {
 		t.Fatal("a relative mods path must be refused")
+	}
+	g.FlatpakShow = func() (string, error) { return "filesystems=" + g.DataDir + ":ro;", nil }
+	c, err := g.command("linux", launch.Request{ModsDir: mods, Steam: fp}, "", "/usr/bin/flatpak")
+	if err != nil || c.Failure != launch.HintSteam {
+		t.Fatalf("granted override: hint = %q, err = %v", c.Failure, err)
 	}
 }
 
@@ -138,12 +160,12 @@ func TestWindowsHint(t *testing.T) {
 	if abs, _ := filepath.Abs(req.ModsDir); !filepath.IsAbs(abs) {
 		t.Skip("no absolute path")
 	}
-	c, err := Game{}.command("windows", req, "")
+	c, err := Game{}.command("windows", req, "", "")
 	if err != nil || c.Failure != launch.HintLaunchOptions {
 		t.Fatalf("missing line: hint = %q, err = %v", c.Failure, err)
 	}
 	write("userdata/39734274/config/localconfig.vdf", `"UserLocalConfigStore" { "Software" { "Valve" { "Steam" { "apps" { "413150" { "LaunchOptions" "\"C:\\Stardew Valley\\StardewModdingAPI.exe\" %command%" } } } } } }`)
-	if c, _ = (Game{}).command("windows", req, ""); c.Failure != launch.HintSteam {
+	if c, _ = (Game{}).command("windows", req, "", ""); c.Failure != launch.HintSteam {
 		t.Fatalf("line present: hint = %q", c.Failure)
 	}
 }

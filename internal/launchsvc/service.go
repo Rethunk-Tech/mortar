@@ -433,7 +433,7 @@ func (s *Service) StartVanilla(gameID string, direct bool) error {
 	if busy {
 		return fmt.Errorf("%s is already running", g.Name())
 	}
-	dir, err := game.InstallDir(s.home, s.settings.Get().GameFolders, g.ID())
+	dir, err := game.InstallDir(s.home, s.settings.Get(), g.ID())
 	if err != nil {
 		s.donePreparing(gameID)
 		return err
@@ -453,7 +453,7 @@ func (s *Service) StartVanilla(gameID string, direct bool) error {
 
 // target returns the game's install folder and the profile's mods folder.
 func (s *Service) target(g game.Game, profileID string) (dir, modsDir string, err error) {
-	dir, err = game.InstallDir(s.home, s.settings.Get().GameFolders, g.ID())
+	dir, err = game.InstallDir(s.home, s.settings.Get(), g.ID())
 	if err != nil {
 		return "", "", err
 	}
@@ -499,8 +499,24 @@ func (s *Service) begin(g game.Game, profileID, dir, modsDir string, direct, van
 		}
 		req.ExtraArgs = extra
 	}
+	cur := s.settings.Get()
+	_, store, _, err := game.Resolve(s.home, cur, g.ID())
+	if err != nil {
+		return err
+	}
+	if store == game.StoreGOG || store == game.StoreGOGHeroic {
+		req.Direct = true
+	}
 	if st, status := steam.Locate(s.home); status == steam.Found {
 		req.Steam = &st
+	}
+	if store == game.StoreFlatpakSteam {
+		for _, one := range steam.LocateAll(s.home) {
+			if one.Kind == steam.KindFlatpak {
+				req.Steam = &one
+				break
+			}
+		}
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	buf := &launch.Buffer{}

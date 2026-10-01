@@ -205,7 +205,7 @@ func (s *Service) target(id string) (game.Game, string, error) {
 	if g == nil {
 		return nil, "", fmt.Errorf("unknown game %q", id)
 	}
-	dir, err := game.InstallDir(s.home, s.settings.Get().GameFolders, id)
+	dir, err := game.InstallDir(s.home, s.settings.Get(), id)
 	if err != nil {
 		return nil, "", err
 	}

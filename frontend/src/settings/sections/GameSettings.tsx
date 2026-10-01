@@ -1,17 +1,36 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button } from '@mui/material'
-import { Download, FolderOpen, Undo2 } from 'lucide-react'
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+} from '@mui/material'
+import { Clipboard } from '@wailsio/runtime'
+import { Copy, Download, FolderOpen, Undo2 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
+import type { FoundInstall } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
+import {
+  GrantSteamAccess,
+  SteamAccess,
+} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { State } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import {
   ChooseGameFolder,
   SetGameFolder,
+  SetGameStore,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { loadGameStatus } from '../../games/status.ts'
 import { useLaunch } from '../../launch/store.ts'
 import { InstallSteps } from '../../loader/InstallSteps.tsx'
 import { useLoader } from '../../loader/store.ts'
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
+import { useToasts } from '../../toasts/store.ts'
 import { useSettings } from '../store.ts'
 import { StreamOverlay } from './StreamOverlay.tsx'
 
@@ -19,23 +38,81 @@ const GAME = 'stardew'
 
 const outline = { whiteSpace: 'nowrap', flexShrink: 0, height: 42 }
 
-function GameFolder({ folder, versionNote }: { folder: string; versionNote: string }) {
+function StoreLabel({ store }: { store: string }) {
+  const { t } = useLingui()
+  if (store === 'flatpak-steam') {
+    return t`Flatpak Steam`
+  }
+  if (store === 'gog') {
+    return t`GOG`
+  }
+  if (store === 'gog-heroic') {
+    return t`GOG via Heroic`
+  }
+  return t`Steam`
+}
+
+function GameFolder({
+  folder,
+  versionNote,
+  store,
+  installs,
+  onRefresh,
+}: {
+  folder: string
+  versionNote: string
+  store: string
+  installs: FoundInstall[]
+  onRefresh: () => void
+}) {
   const { t } = useLingui()
   const override = useSettings((s) => s.gameFolders?.[GAME] ?? '')
   const [error, setError] = useState('')
   const change = (run: Promise<void>) => {
     setError('')
-    run.catch((e: unknown) => setError(errorText(e) ?? t`That folder cannot be used`))
+    run
+      .then(onRefresh)
+      .catch((e: unknown) => setError(errorText(e) ?? t`That folder cannot be used`))
   }
-  let source = t`Stardew Valley was not found in Steam. Browse to its folder.`
+  let foundIn = t`Steam`
+  if (store === 'flatpak-steam') {
+    foundIn = t`Flatpak Steam`
+  } else if (store === 'gog') {
+    foundIn = t`GOG`
+  } else if (store === 'gog-heroic') {
+    foundIn = t`GOG via Heroic`
+  }
+  let source = t`Stardew Valley was not found. Browse to its folder.`
   if (override) {
     source = t`Chosen by you`
   } else if (folder) {
-    source = t`Found in Steam`
+    source = t`Found in ${foundIn}`
   }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
       <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Game folder`}</Box>
+      {installs.length > 1 ? (
+        <RadioGroup
+          value={override ? '' : store}
+          onChange={(e) =>
+            change(SetGameFolder(GAME, '').then(() => SetGameStore(GAME, e.target.value)))
+          }
+        >
+          {installs.map((item) => (
+            <FormControlLabel
+              key={`${item.store}:${item.dir}`}
+              value={item.store}
+              control={<Radio size="small" />}
+              label={
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                  <StoreLabel store={item.store} />
+                  <Box sx={{ fontSize: 12, color: 'rgba(225,225,230,0.95)' }}>{item.dir}</Box>
+                </Box>
+              }
+            />
+          ))}
+        </RadioGroup>
+      ) : null}
       <Box sx={{ display: 'flex', gap: 1 }}>
         <Box
           role="textbox"
@@ -74,7 +151,7 @@ function GameFolder({ folder, versionNote }: { folder: string; versionNote: stri
             onClick={() => change(SetGameFolder(GAME, ''))}
             sx={outline}
           >
-            {t`Use Steam's`}
+            {t`Use discovered`}
           </Button>
         ) : null}
       </Box>
@@ -92,6 +169,95 @@ function GameFolder({ folder, versionNote }: { folder: string; versionNote: stri
   )
 }
 
+function FlatpakAccess() {
+  const { t } = useLingui()
+  const [cmd, setCmd] = useState('')
+  const [needed, setNeeded] = useState(false)
+  const [granted, setGranted] = useState(false)
+  const [ask, setAsk] = useState(false)
+  const load = () => {
+    SteamAccess()
+      .then((a) => {
+        setCmd(a.command)
+        setNeeded(a.needed)
+        setGranted(a.granted)
+      })
+      .catch(reportUnexpected)
+  }
+  useEffect(load, [])
+  if (!needed || granted) {
+    return null
+  }
+  return (
+    <>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Flatpak Steam cannot read your mods`}</Box>
+        <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
+          {t`Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods.`}
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+          <Box
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              px: 1.5,
+              py: 0.75,
+              bgcolor: 'rgba(0,0,0,0.45)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '6px',
+              fontFamily: 'monospace',
+              fontSize: 13,
+              wordBreak: 'break-all',
+              userSelect: 'text',
+            }}
+          >
+            {cmd}
+          </Box>
+          <Button
+            variant="outlined"
+            startIcon={<Copy size={16} />}
+            onClick={() => {
+              Clipboard.SetText(cmd).then(
+                () => useToasts.getState().push({ kind: 'success', title: t`Command copied` }),
+                reportUnexpected,
+              )
+            }}
+            sx={outline}
+          >
+            {t`Copy`}
+          </Button>
+          <Button variant="contained" onClick={() => setAsk(true)} sx={outline}>
+            {t`Grant access`}
+          </Button>
+        </Box>
+      </Box>
+      <Dialog open={ask} onClose={() => setAsk(false)} transitionDuration={0}>
+        <DialogTitle>{t`Grant Flatpak Steam access?`}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t`This runs the command below once for your user. Steam will then be able to read Mortar's data folder.`}
+          </DialogContentText>
+          <Box sx={{ mt: 1.5, fontFamily: 'monospace', fontSize: 13, userSelect: 'text' }}>
+            {cmd}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAsk(false)}>{t`Cancel`}</Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setAsk(false)
+              GrantSteamAccess().then(load, reportUnexpected)
+            }}
+          >
+            {t`Grant access`}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  )
+}
+
 function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
   const { t } = useLingui()
   const status = useLoader((s) => s.status)
@@ -101,7 +267,6 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
   const install = useLoader((s) => s.install)
   const pending = useLoader((s) => s.pending)
   const refreshLaunch = useLaunch((s) => s.refresh)
-  // SMAPI's files are in use while the game starts or runs.
   const playing = useLaunch(
     (s) =>
       s.starting ||
@@ -110,7 +275,6 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
   )
   useEffect(() => {
     check(GAME)
-    // Settings can open before any game page has fetched whether the game runs.
     refreshLaunch(GAME)
   }, [check, refreshLaunch])
   const gameVersion = status?.gameVersion ?? ''
@@ -175,31 +339,38 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
 function GameBody() {
   const { t } = useLingui()
   const [folder, setFolder] = useState('')
+  const [store, setStore] = useState('')
+  const [installs, setInstalls] = useState<FoundInstall[]>([])
   const [version, setVersion] = useState('')
-  useEffect(() => {
-    let live = true
+  const load = () => {
     loadGameStatus()
       .then((s) => {
-        if (live) {
-          setFolder(s.games.find((g) => g.id === GAME)?.installDir ?? '')
-        }
+        const g = s.games.find((x) => x.id === GAME)
+        setFolder(g?.installDir ?? '')
+        setStore(g?.store ?? '')
+        setInstalls(g?.installs ?? [])
       })
       .catch(reportUnexpected)
-    return () => {
-      live = false
-    }
-  }, [])
+  }
+  useEffect(load, [])
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <GameFolder folder={folder} versionNote={version ? t` · Stardew Valley ${version}` : ''} />
+      <GameFolder
+        folder={folder}
+        store={store}
+        installs={installs}
+        onRefresh={load}
+        versionNote={version ? t` · Stardew Valley ${version}` : ''}
+      />
+      <FlatpakAccess />
       <Smapi key={folder} onVersion={setVersion} />
       <StreamOverlay />
     </Box>
   )
 }
 
-// Remounting on an override change re-discovers the folder and re-checks SMAPI against it.
 export function GameSettings() {
   const override = useSettings((s) => s.gameFolders?.[GAME] ?? '')
-  return <GameBody key={override} />
+  const chosen = useSettings((s) => s.gameStores?.[GAME] ?? '')
+  return <GameBody key={`${override}:${chosen}`} />
 }

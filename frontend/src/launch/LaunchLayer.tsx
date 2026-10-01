@@ -13,7 +13,11 @@ import {
 } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { CircleAlert, Copy } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import {
+  GrantSteamAccess,
+  SteamAccess,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { Hint } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { CrashDialog } from '../console/CrashDialog.tsx'
@@ -209,6 +213,48 @@ function LaunchLine({ line }: { line: string }) {
   )
 }
 
+function FlatpakGrant() {
+  const { t } = useLingui()
+  const [cmd, setCmd] = useState('')
+  const [ask, setAsk] = useState(false)
+  useEffect(() => {
+    SteamAccess()
+      .then((a) => setCmd(a.command))
+      .catch(reportUnexpected)
+  }, [])
+  if (!cmd) {
+    return null
+  }
+  return (
+    <>
+      <LaunchLine line={cmd} />
+      <Button variant="outlined" onClick={() => setAsk(true)} sx={{ whiteSpace: 'nowrap' }}>
+        {t`Grant access`}
+      </Button>
+      <Dialog open={ask} onClose={() => setAsk(false)} transitionDuration={0}>
+        <DialogTitle>{t`Grant Flatpak Steam access?`}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t`This runs the command below once for your user. Steam will then be able to read Mortar's data folder.`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAsk(false)}>{t`Cancel`}</Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setAsk(false)
+              GrantSteamAccess().catch(reportUnexpected)
+            }}
+          >
+            {t`Grant access`}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  )
+}
+
 function Failure({ game }: { game: string }) {
   const { t } = useLingui()
   const info = useProfiles((s) => s.game)
@@ -221,6 +267,7 @@ function Failure({ game }: { game: string }) {
   }
   const name = info?.name ?? ''
   const showLine = failure.hint === Hint.HintLaunchOptions && info?.installDir
+  const showFlatpak = failure.hint === Hint.HintFlatpakFS
   return (
     <Dialog
       open={true}
@@ -236,6 +283,7 @@ function Failure({ game }: { game: string }) {
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
         <DialogContentText>{failure.body}</DialogContentText>
         {showLine ? <LaunchLine line={launchLine(info.installDir)} /> : null}
+        {showFlatpak ? <FlatpakGrant /> : null}
       </DialogContent>
       <DialogActions>
         <Button onClick={dismiss}>{t`Close`}</Button>

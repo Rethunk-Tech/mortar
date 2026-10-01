@@ -127,12 +127,13 @@ func ArtMiddleware(home string) func(http.Handler) http.Handler {
 				http.NotFound(w, r)
 				return
 			}
-			st, status := steam.Locate(home)
-			if status != steam.Found {
-				http.NotFound(w, r)
-				return
+			path := ""
+			for _, one := range steam.LocateAll(home) {
+				path = one.HeroArt(id)
+				if path != "" {
+					break
+				}
 			}
-			path := st.HeroArt(id)
 			if path == "" {
 				http.NotFound(w, r)
 				return

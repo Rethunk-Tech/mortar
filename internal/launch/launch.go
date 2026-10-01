@@ -24,6 +24,8 @@ const (
 	HintSteam Hint = "steam"
 	// HintLaunchOptions: Steam's launch options for the game lack the loader's line.
 	HintLaunchOptions Hint = "launch-options"
+	// HintFlatpakFS: Flatpak Steam cannot read Mortar's data folder until a filesystem override is granted.
+	HintFlatpakFS Hint = "flatpak-fs"
 )
 
 // ErrNoSteam means there is no Steam to launch through; the user may choose to launch directly.

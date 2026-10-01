@@ -11,6 +11,7 @@ const defaults: Settings = {
   lastProfile: {},
   lastPlayed: {},
   gameFolders: {},
+  gameStores: {},
   loaders: {},
   dismissed: {},
   nexusUserId: 0,

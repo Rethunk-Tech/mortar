@@ -10,7 +10,7 @@ Mortar finds a game, installs its mod loader, keeps each set of mods in its own 
 
 - **What matters:** Mortar working for NOMAD's own use with a personal Nexus API key. Registering the app with Nexus is not a v1 goal.
 - **Licence:** AGPL-3.0 (NOMAD, 2026-09-29): the same as GPL-3.0 for the desktop app, and it covers a hosted share service.
-- **Scope of the first release:** Stardew Valley only, on Windows and Linux, from a Steam client installed directly on the system (NOMAD, 2026-09-29: no GOG, Heroic, Lutris or Flatpak Steam in v1). macOS is out (fleet CI has no macOS runners, and Wails does not cross-compile to it).
+- **Scope of the first release:** Stardew Valley only, on Windows and Linux, from Steam (including Flatpak Steam on Linux), GOG Galaxy / the GOG offline installer, and Heroic's GOG library on Linux. macOS is out (fleet CI has no macOS runners, and Wails does not cross-compile to it).
 
 ## Stack
 
@@ -53,7 +53,8 @@ Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_
 - `lastGame` (empty): the game last opened; any id.
 - `lastProfile` (`{}`): game id to the id of the profile last open in it.
 - `lastPlayed` (`{}`): game id to `{profile, at, gameVersion}`. `at` is RFC3339 and recorded when a launch reaches Running; `gameVersion` is Stardew's version from that launch's SMAPI log header, and the previous value stays when the log showed none. An entry with an empty game, profile or time, or a time that does not parse, is dropped.
-- `gameFolders` (`{}`): game id to an install folder the user chose, which wins over Steam discovery; checked as a game install when set, and emptied to go back to Steam's.
+- `gameFolders` (`{}`): game id to an install folder the user chose, which wins over store discovery; checked as a game install when set, and emptied to go back to discovery.
+- `gameStores` (`{}`): game id to the store to use when several installs are found (`steam`, `flatpak-steam`, `gog`, `gog-heroic`); an unknown value is dropped on load.
 - `loaders` (`{}`): game id to the loader version Mortar installed.
 - `dismissed` (`{}`): save folder name to the `UniqueID`s whose missing-mod warning was dismissed for it.
 - `nexusUserId` (0), `nexusName` (empty), `nexusPremium` (false): the signed-in account, for display; a zero id means signed out.
@@ -68,7 +69,7 @@ Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_
 - `tipsSeen` (empty): the empty-state tips dismissed, from `mods`, `saves`, `console` and `share`; an unknown id is refused on write and dropped on load, as are duplicates.
 - `overlayEnabled` (false), `overlayPort` (8123), `overlayToken` (empty): the Mortar SMAPI Bridge stream overlay. Port is 1024–65535; an out-of-range value is refused on write and becomes 8123 on load. The token is 32 random bytes as hex, created on first enable and on Regenerate. It is a secret: it is never logged, never exported, and stripped from diagnostics.
 
-**Export and import:** Settings › Data writes `accent`, `background`, `lastGame`, `backupsKept`, the four `list*` fields, both update toggles and `tipsSeen` as `{"version": 1, ...}` through the native save dialog. Import reads such a file, refuses any other version, ignores unknown fields, sanitises each present value as a load does, and applies it only after a preview of what would change. The Nexus fields, `gameFolders`, `loaders`, `lastProfile`, `lastPlayed`, `backgroundImage`, `dismissed`, the `nxm` fields and `overlayToken` (with overlay enabled/port) are never exported, and the keyring is never read.
+**Export and import:** Settings › Data writes `accent`, `background`, `lastGame`, `backupsKept`, the four `list*` fields, both update toggles and `tipsSeen` as `{"version": 1, ...}` through the native save dialog. Import reads such a file, refuses any other version, ignores unknown fields, sanitises each present value as a load does, and applies it only after a preview of what would change. The Nexus fields, `gameFolders`, `gameStores`, `loaders`, `lastProfile`, `lastPlayed`, `backgroundImage`, `dismissed`, the `nxm` fields and `overlayToken` (with overlay enabled/port) are never exported, and the keyring is never read.
 
 **Disk use and clean-up:** Settings › Data walks the data folder in the background without following symlinks and reports each live profile's `mods/` folder, then the store, cache, save backups, trash and the total. **Clean up unused** previews, then deletes exactly the listed items: store items no live or trash profile, `previousKey`, history snapshot key or staged queue item names (the keep set the 30-day sweep uses, here without its 30-day grace), cache files older than their fetch lifetime (mod page details, categories, the dataset, SMAPI's update answers, GitHub releases), and leftover temp folders. A store key a profile names after the preview is re-checked and kept. Mod pictures have no lifetime and are counted but never cleaned.
 
@@ -124,7 +125,7 @@ Sources: `Pathoschild/SMAPI` `docs/technical/smapi.md`, `docs/technical/web.md`,
 
 ### Finding the game
 
-Steam app `413150`, through `libraryfolders.vdf`; a machine can hold several Steam accounts (NOMAD's has two `userdata` folders), so per-account files such as `localconfig.vdf` are read for the account marked `MostRecent` in `config/loginusers.vdf`. Only a directly installed Steam is supported; Mortar says so when it finds only a Flatpak Steam, whose sandbox could not read Mortar's data folder anyway (Flathub's manifest grants no home access). When nothing is found, first run says so and offers Browse and a retry.
+Steam app `413150`, through `libraryfolders.vdf`; a machine can hold several Steam accounts (NOMAD's has two `userdata` folders), so per-account files such as `localconfig.vdf` are read for the account marked `MostRecent` in `config/loginusers.vdf`. Native Steam is preferred when both it and Flatpak Steam exist. Flatpak Steam is `~/.var/app/com.valvesoftware.Steam/.local/share/Steam` and is launched with `flatpak run com.valvesoftware.Steam` and the same `-applaunch` arguments as native Linux Steam. Its sandbox cannot read Mortar's data folder until the user grants `flatpak override --user --filesystem=<data dir>:ro com.valvesoftware.Steam` (copy or Grant access). GOG is found from GOG Galaxy on Windows (`HKLM\SOFTWARE\WOW6432Node\GOG.com\Games\1453375253` `path`), the offline installer defaults (`C:\GOG Games\Stardew Valley` and `Program Files (x86)\GOG Galaxy\Games\Stardew Valley` on Windows, `~/GOG Games/Stardew Valley/game` on Linux), and Heroic on Linux (`~/.config/heroic/gog_store/installed.json`, `appName` `1453375253`). GOG launches start SMAPI directly with `--mods-path`. When several installs are found, Stardew settings lists each with its store (Steam, Flatpak Steam, GOG, GOG via Heroic) and the choice is `gameStores` in `settings.json`; Game Select and first run name the store in use. A user-chosen folder in `gameFolders` still wins. When nothing is found, first run says so and offers Browse and a retry.
 
 ### SMAPI
 
@@ -145,7 +146,7 @@ Steam app `413150`, through `libraryfolders.vdf`; a machine can hold several Ste
 
 ### Launch
 
-Launch goes through `steam -applaunch <appid> <args>`: Steam passes the arguments after the app ID to the game, which keeps the overlay, achievements and playtime tracking.
+Launch goes through `steam -applaunch <appid> <args>` for Steam copies: Steam passes the arguments after the app ID to the game, which keeps the overlay, achievements and playtime tracking. A GOG or Heroic copy starts SMAPI directly (the Direct path). Flatpak Steam is `flatpak run com.valvesoftware.Steam -applaunch 413150 --skip-terminal -- --mods-path <dir>`. A launch through Flatpak Steam that times out while the override is missing uses the filesystem-access hint.
 
 - **Linux:** `steam -applaunch 413150 --skip-terminal -- --mods-path <absolute path to the profile's mods/>`. SMAPI's launcher script reads its own flags only before `--` and forwards only what follows it (`Pathoschild/SMAPI` `src/SMAPI.Installer/assets/unix-launcher.sh`, the argument loop), which is why SMAPI's docs say arguments do not work on Linux. `--skip-terminal` makes the script start SMAPI with `--no-terminal`; SMAPI still writes its log file then (`docs/technical/smapi.md:46`). Measured: without `--` the path is ignored; with it SMAPI loads the profile, including through NOMAD's real Steam client, where the game reached the main menu. Without `--skip-terminal` the launcher opened its console in `xterm`, unreadably small.
 - **Windows:** Steam starts `Stardew Valley.exe`, not SMAPI, so first run shows the line `"<game>\StardewModdingAPI.exe" %command%` to paste into Stardew's Steam launch options once, with a copy button; Mortar reads `LaunchOptions` from `localconfig.vdf`: first run warns up front when the line is missing, and at Play the options choose the failure hint shown if the launch times out. It never writes that file (Steam rewrites it while running). Mortar then adds `--mods-path <path>` after the app ID.

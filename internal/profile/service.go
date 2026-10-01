@@ -29,7 +29,7 @@ func NewService(store *Store, home string, settings *settings.Store) *Service {
 }
 
 func (s *Service) gameModsDir(id string) (string, error) {
-	dir, err := game.InstallDir(s.home, s.settings.Get().GameFolders, id)
+	dir, err := game.InstallDir(s.home, s.settings.Get(), id)
 	if err != nil {
 		return "", err
 	}
@@ -113,12 +113,14 @@ func (s *Service) RemoveEntries(game, id string, keys []string) (Profile, error)
 }
 
 // SetModEnabled switches a mod of the entry key on or off.
-func (s *Service) SetModEnabled(game, id, key, uniqueID string, enabled bool) (Profile, error) {
-	return s.store.SetModEnabled(game, id, key, uniqueID, enabled)
+func (s *Service) SetModEnabled(game, id, key, uniqueID string, enabled bool) (EnableResult, error) {
+	p, also, err := s.store.enableMod(game, id, key, uniqueID, enabled)
+	return EnableResult{Profile: p, AlsoEnabled: also}, err
 }
 
-func (s *Service) SetModsEnabled(game, id string, mods []EnableRef, enabled bool) (Profile, error) {
-	return s.store.SetModsEnabled(game, id, mods, enabled)
+func (s *Service) SetModsEnabled(game, id string, mods []EnableRef, enabled bool) (EnableResult, error) {
+	p, also, err := s.store.enableMods(game, id, mods, enabled)
+	return EnableResult{Profile: p, AlsoEnabled: also}, err
 }
 
 // SetCover copies the image at path into the profile as its hero cover.

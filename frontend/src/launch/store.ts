@@ -45,6 +45,11 @@ function failureBody(status: Status): string {
   if (status.hint === Hint.HintSteam) {
     return i18n._(msg`Steam may not be running or signed in. Start Steam, sign in and try again.`)
   }
+  if (status.hint === Hint.HintFlatpakFS) {
+    return i18n._(
+      msg`Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › Stardew Valley) or SMAPI will not see this profile.`,
+    )
+  }
   if (status.hint === Hint.HintLaunchOptions) {
     return i18n._(
       msg`Steam's launch options for Stardew Valley lack the SMAPI line. In Steam, right-click the game, choose Properties, and paste this line into Launch Options.`,

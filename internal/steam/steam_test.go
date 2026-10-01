@@ -39,11 +39,13 @@ func TestLocate(t *testing.T) {
 		name string
 		home string
 		want Status
+		kind Kind
 	}{
-		{"share", mk(".local/share/Steam/steamapps"), Found},
-		{"dot steam", mk(".steam/steam/steamapps"), Found},
-		{"flatpak only", mk(".var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps"), FlatpakOnly},
-		{"missing", t.TempDir(), NotFound},
+		{"share", mk(".local/share/Steam/steamapps"), Found, KindNative},
+		{"dot steam", mk(".steam/steam/steamapps"), Found, KindNative},
+		{"flatpak steam", mk(".var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps"), Found, KindFlatpak},
+		{"flatpak only", mk(".var/app/com.valvesoftware.Steam/.local/share/Steam"), FlatpakOnly, KindNative},
+		{"missing", t.TempDir(), NotFound, KindNative},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			s, got := Locate(tc.home)
@@ -53,7 +55,25 @@ func TestLocate(t *testing.T) {
 			if got != Found && s.Root != "" {
 				t.Fatalf("root = %q for %s", s.Root, got)
 			}
+			if got == Found && s.Kind != tc.kind {
+				t.Fatalf("kind = %q, want %q", s.Kind, tc.kind)
+			}
+			if got == Found && s.Root == "" {
+				t.Fatal("found with empty root")
+			}
 		})
+	}
+	both := mk(".local/share/Steam/steamapps")
+	if err := os.MkdirAll(filepath.Join(both, ".var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	s, st := Locate(both)
+	if st != Found || s.Kind != KindNative {
+		t.Fatalf("native wins: %+v %s", s, st)
+	}
+	all := LocateAll(both)
+	if len(all) != 2 || all[0].Kind != KindNative || all[1].Kind != KindFlatpak {
+		t.Fatalf("all = %#v", all)
 	}
 }
 

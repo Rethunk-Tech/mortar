@@ -21,12 +21,8 @@ Remaining ([architecture.md](architecture.md#release)):
 
 ## More stores and Linux packages (NOMAD, 2026-10-01)
 
-Moved into v1 from § Later after a comparison with Vortex, Mod Organizer 2, Stardrop, r2modman and Gale; replaces the "Steam installed directly only" line of architecture.md § Scope once built.
-
-- **Flatpak Steam (Linux):** `internal/steam/steam.go:38` reports a Flatpak Steam as `FlatpakOnly` and refuses it. Find it at `~/.var/app/com.valvesoftware.Steam/.local/share/Steam` (libraryfolders.vdf as for native Steam), launch with `flatpak run com.valvesoftware.Steam -applaunch 413150 -- --mods-path <dir>`. Trap: the Steam sandbox only sees paths it is granted; Mortar's data folder (`~/.local/share/mortar`) is outside it, so SMAPI cannot read the profile's mods. Either the user grants it once (`flatpak override --user --filesystem=~/.local/share/mortar com.valvesoftware.Steam`, shown with a copy button, as Gale's FAQ does) or Mortar does it after asking. Measure which works on Fedora before choosing; the SMAPI installer must also run against the Flatpak game folder (`~/.var/app/.../steamapps/common/Stardew Valley`).
-- **GOG:** discovery from GOG Galaxy (Windows registry `HKLM\SOFTWARE\WOW6432Node\GOG.com\Games\1453375253`, `path` value) and the GOG offline installer's default folders on Windows and Linux (`~/GOG Games/Stardew Valley/game`); Heroic's GOG library (`~/.config/heroic/gog_store/installed.json`) on Linux. GOG has no launcher argument path, so Play starts SMAPI directly (the existing Direct launch: `StardewModdingAPI.exe` / the Linux launcher with `--mods-path`). The SMAPI installer takes the GOG game folder as `--game-path`.
-- **Game Select / settings:** the found install shows its store (Steam, Flatpak Steam, GOG); when several are found the Stardew settings page lets the user pick one, stored per game in settings.
-- **Done when** a Flatpak-Steam Fedora and a GOG install (Windows VM and Linux) each run a profile end to end, and each package installs and starts on its distro in a VM.
+- **Linux packages:** besides the AppImage, CI builds a `.deb`, an `.rpm` and an Arch package with nfpm from the same binary and desktop entry, a Flatpak (manifest in `build/linux/flatpak/`, built in CI as a single-file bundle; Flathub submission is NOMAD's), and an AUR `PKGBUILD` (in `build/linux/aur/`, published to the AUR by NOMAD). Packaged installs turn the self-updater off and say updates come from the package manager (detected from the install path or a build tag), since a package cannot be replaced without root.
+- **Done when** each package installs and starts on its distro in a VM.
 
 ## Build order
 
@@ -46,7 +42,7 @@ Not in the first release, each by NOMAD on 2026-09-29; re-weigh only when asked:
 - Frosted glass on Linux (NOMAD, 2026-09-30), built when NOMAD's desktop runs GNOME 51. CSS cannot do it: `backdrop-filter` sees only the webview's pixels, and a full-window filter layer turns WebKitGTK's translucent window opaque. The compositor blurs behind the window through the Wayland protocol `ext-background-effect-v1` (Mutter from GNOME 51, KWin from Plasma 6.7; GTK 4.23.3 speaks it). Shape: in the `Rethunk-AI/wails` fork, beside `setTransparent()` in `v3/pkg/application/linux_cgo.go`, bind `ext_background_effect_manager_v1` on Wayland, and when it advertises blur, set the toplevel `wl_surface`'s blur region to the whole window, updated on resize; a no-op elsewhere, and only while the translucent window is on. Accept when the desktop behind the window shows blurred on GNOME 51 and is unchanged on GNOME 50. Offer it upstream with the GTK4 transparency PR. Windows already blurs through Acrylic.
 - A hosted share service with short codes and share versioning (running costs).
 - In-app mod search and browsing: Mortar links out to Nexus.
-- CurseForge (needs an API key application) and ModDrop (no documented download API) as sources; the Xbox app version; GOG and launchers such as Heroic and Lutris; Steam Deck; Flatpak Steam.
+- CurseForge (needs an API key application) and ModDrop (no documented download API) as sources; the Xbox app version; Lutris; Steam Deck.
 - Windows code signing.
 - Per-profile save isolation.
 - Registering Mortar with Nexus (SSO slug; ask then about OAuth, which Vortex uses via `nxm://oauth/callback`, and Collections), and a mode for users without an API key: an `nxm://` link cannot become a download without API authentication (HTTP 401 without a key, measured), so that mode would pick up manual downloads from the Downloads folder by their manifests, with confirmation.
