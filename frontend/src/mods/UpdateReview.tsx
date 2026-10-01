@@ -368,6 +368,8 @@ export function UpdateReview({ profile }: { profile: Profile }) {
         </Box>
         <Typography sx={{ flex: 1, fontSize: 13, lineHeight: 1.45 }}>
           {t`Update downloads a mod's new file from Nexus or GitHub. For other pages, download the archive and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details.`}
+          <br />
+          {t`Mortar checks for updates at startup, when you press F5, and at most once an hour while it is running.`}
         </Typography>
         <Button variant="outlined" onClick={close} sx={{ whiteSpace: 'nowrap' }}>
           {t`Close`}
