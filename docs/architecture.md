@@ -68,7 +68,7 @@ Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_
 - `listGroupBy` (`none`): `none`, `category`, `source` or `tag`.
 - `checkModUpdatesOnStart` (true): check the last-opened profile of each game for updates at startup. Missing or null means true.
 - `tellWhenSmapiOut` (true): toast when a newer SMAPI exists, at most once a day. Missing or null means true.
-- `keepInTray` (false): when on, closing the window hides Mortar and a system-tray icon remains; when off, close quits as usual.
+- `keepInTray` (false): when on, closing the window closes it while Mortar keeps running behind a system-tray icon, and showing Mortar builds a new window (Wayland lets no app restore a hidden window's position, so a fresh window is placed by the compositor as new); when off, close quits. Quitting on the last window is turned off in the Wails options for Linux and Windows so this choice stays Mortar's.
 - `includeBetaReleases` (false): when on, Mortar's self-update check also offers signed manifests from GitHub prereleases; when off, only the latest stable release manifest is used.
 - `includePrereleaseModVersions` (false): when off, an offered mod update whose version has a semver prerelease tag is hidden unless the installed version is itself a prerelease.
 - `checkOnlyEnabledMods` (false): when on, disabled mods are omitted from the request sent to SMAPI's update API.

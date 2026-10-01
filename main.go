@@ -100,8 +100,10 @@ func run() error {
 		nxmSvc   *nxmsvc.Service
 		shareSvc *sharesvc.Service
 		window   *application.WebviewWindow
-		profiles *profile.Store
-		pictures *modpic.Cache
+		// showWindow brings Mortar's window up, building a new one when closing to the tray removed it.
+		showWindow func()
+		profiles   *profile.Store
+		pictures   *modpic.Cache
 	)
 	ready := make(chan struct{})
 	closeReady := sync.OnceFunc(func() { close(ready) })
@@ -116,9 +118,11 @@ func run() error {
 		Icon: appIcon,
 		// ApplicationID is the GtkApplication / Wayland app_id and the Linux desktop file id. It must not equal
 		// UniqueID: both become D-Bus names, and GApplication also owns ApplicationID on the session bus.
-		Linux: application.LinuxOptions{ApplicationID: "tech.rethunk.Mortar"},
+		// Mortar decides itself whether closing the last window quits or leaves it in the tray.
+		Linux: application.LinuxOptions{ApplicationID: "tech.rethunk.Mortar", DisableQuitOnLastWindowClosed: true},
 		Windows: application.WindowsOptions{
-			WebviewUserDataPath: filepath.Join(dataDir, "webview"),
+			WebviewUserDataPath:           filepath.Join(dataDir, "webview"),
+			DisableQuitOnLastWindowClosed: true,
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -147,8 +151,7 @@ func run() error {
 				// A minimised window stays down: the window sends a desktop notification whose click brings it up.
 				nxmLink := nxmSvc.Receive(d.Args)
 				if shareSvc.Receive(sharesvc.InDir(d.Args, d.WorkingDir)) || !nxmLink || !window.IsMinimised() {
-					window.Restore()
-					window.Focus()
+					showWindow()
 				}
 			},
 		},
@@ -381,29 +384,56 @@ func run() error {
 	shareSvc.App = app
 	supportSvc.App = app
 	notifier.OnNotificationResponse(func(result notifications.NotificationResult) {
-		window.Restore()
-		window.Focus()
+		showWindow()
 		gameID, profileID := launchsvc.NoticeProfileFromResponse(result.Response.ID, result.Response.UserInfo)
 		if profileID != "" && gameID != "" {
 			app.Event.Emit(launchsvc.NoticeClickEvent, launchsvc.NoticeClick{Game: gameID, Profile: profileID})
 		}
 	})
 
-	window = app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:            "Mortar",
-		Width:            1280,
-		Height:           720,
-		MinWidth:         768,
-		MinHeight:        432,
-		Frameless:        true,
-		BackgroundType:   application.BackgroundTypeSolid,
-		BackgroundColour: application.NewRGBA(25, 25, 30, 255),
-		EnableFileDrop:   true,
-		URL:              "/",
-	})
-	window.OnWindowEvent(events.Common.WindowFilesDropped, func(e *application.WindowEvent) {
-		app.Event.Emit(picker.DroppedEvent, e.Context().DroppedFiles())
-	})
+	var windowMu sync.Mutex
+	windowGone := false
+	newWindow := func() *application.WebviewWindow {
+		w := app.Window.NewWithOptions(application.WebviewWindowOptions{
+			Title:            "Mortar",
+			Width:            1280,
+			Height:           720,
+			MinWidth:         768,
+			MinHeight:        432,
+			Frameless:        true,
+			BackgroundType:   application.BackgroundTypeSolid,
+			BackgroundColour: application.NewRGBA(25, 25, 30, 255),
+			EnableFileDrop:   true,
+			URL:              "/",
+		})
+		w.OnWindowEvent(events.Common.WindowFilesDropped, func(e *application.WindowEvent) {
+			app.Event.Emit(picker.DroppedEvent, e.Context().DroppedFiles())
+		})
+		// Wayland gives an app no say over where a re-shown window goes, so closing to the tray
+		// destroys the window and showing builds a fresh one that the compositor places as new.
+		w.RegisterHook(events.Common.WindowClosing, func(*application.WindowEvent) {
+			if !store.Get().KeepInTray {
+				app.Quit()
+				return
+			}
+			windowMu.Lock()
+			windowGone = true
+			windowMu.Unlock()
+		})
+		return w
+	}
+	window = newWindow()
+	showWindow = func() {
+		windowMu.Lock()
+		defer windowMu.Unlock()
+		if windowGone {
+			window = newWindow()
+			windowGone = false
+			return
+		}
+		window.Restore()
+		window.Show().Focus()
+	}
 
 	var tray *application.SystemTray
 	var trayMenu *application.Menu
@@ -413,8 +443,7 @@ func run() error {
 		}
 		trayMenu.Clear()
 		trayMenu.Add("Show Mortar").OnClick(func(*application.Context) {
-			window.Restore()
-			window.Show().Focus()
+			showWindow()
 		})
 		st, _ := launches.Status("stardew")
 		running := st.State == launchsvc.Launching || st.State == launchsvc.Running
@@ -457,8 +486,7 @@ func run() error {
 			trayMenu = app.NewMenu()
 			tray.SetMenu(trayMenu)
 			tray.OnClick(func() {
-				window.Restore()
-				window.Show().Focus()
+				showWindow()
 			})
 			launches.NotifyRunEnd = func(n launchsvc.RunEndNotice) {
 				id := fmt.Sprintf("run-end-%s-%d", n.Profile, time.Now().UnixNano())
@@ -483,13 +511,6 @@ func run() error {
 		}
 		refreshTrayMenu()
 	}
-	window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
-		if !store.Get().KeepInTray {
-			return
-		}
-		window.Hide()
-		e.Cancel()
-	})
 	syncTray()
 	app.Event.On(settings.ChangedEvent, func(*application.CustomEvent) {
 		syncTray()
