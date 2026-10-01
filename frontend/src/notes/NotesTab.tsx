@@ -115,6 +115,12 @@ export function NotesTab({ profile }: { profile: Profile }) {
 
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 1, p: 2 }}>
+      <Box component="aside" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{t`About notes`}</Typography>
+        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          {t`Notes travel in a shared .mortar file, not in a share link.`}
+        </Typography>
+      </Box>
       <TextField
         multiline={true}
         fullWidth={true}
