@@ -2,6 +2,17 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
 import { TriangleAlert } from 'lucide-react'
+import { useEffect } from 'react'
+import type { Result } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { Drift } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import {
+  AdoptDriftFolder,
+  ForgetDriftEntry,
+  KeepDriftChanges,
+  RemoveDriftFolder,
+  RestoreDriftEntry,
+  RevertDriftEntry,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
@@ -15,6 +26,12 @@ import { useLocked } from './useLocked.ts'
 const ROW_HEIGHT = 38
 const ROW_GAP = 6
 const VISIBLE_ROWS = 3
+const FOCUS_DEBOUNCE_MS = 400
+
+type Row = Problem | { kind: 'drift'; drift: Drift }
+
+const driftRows = (result: Result | null): Row[] =>
+  (result?.drift ?? []).map((drift) => ({ kind: 'drift' as const, drift }))
 
 function FixButton({ problem }: { problem: Problem }) {
   const { t } = useLingui()
@@ -122,11 +139,141 @@ function FixButton({ problem }: { problem: Problem }) {
   )
 }
 
+function DriftButtons({ drift }: { drift: Drift }) {
+  const { t } = useLingui()
+  const load = useMods((s) => s.load)
+  const loadProblems = useMods((s) => s.loadProblems)
+  const replace = useProfiles((s) => s.replace)
+  const locked = useLocked()
+  const target = () => {
+    const { game, openId } = useProfiles.getState()
+    return game && openId ? { game: game.id, id: openId } : null
+  }
+  const run = (work: () => Promise<unknown>) => {
+    work()
+      .then(() => Promise.all([load(), loadProblems()]))
+      .catch(reportUnexpected)
+  }
+  const button = (label: string, onClick: () => void) => (
+    <Button
+      size="small"
+      variant="contained"
+      color="warning"
+      disabled={locked}
+      onClick={onClick}
+      sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+    >
+      {label}
+    </Button>
+  )
+  if (drift.kind === 'unknown') {
+    return (
+      <>
+        {button(t`Adopt`, () =>
+          run(async () => {
+            const open = target()
+            if (!open) {
+              return
+            }
+            replace(await AdoptDriftFolder(open.game, open.id, drift.folder))
+          }),
+        )}
+        {button(t`Remove`, () =>
+          run(async () => {
+            const open = target()
+            if (!open) {
+              return
+            }
+            await RemoveDriftFolder(open.game, open.id, drift.folder)
+          }),
+        )}
+      </>
+    )
+  }
+  if (drift.kind === 'deleted') {
+    return (
+      <>
+        {button(t`Restore`, () =>
+          run(async () => {
+            const open = target()
+            if (!open) {
+              return
+            }
+            replace(await RestoreDriftEntry(open.game, open.id, drift.key))
+          }),
+        )}
+        {button(t`Forget`, () =>
+          run(async () => {
+            const open = target()
+            if (!open) {
+              return
+            }
+            replace(await ForgetDriftEntry(open.game, open.id, drift.key))
+          }),
+        )}
+      </>
+    )
+  }
+  return (
+    <>
+      {button(t`Keep my changes`, () =>
+        run(async () => {
+          const open = target()
+          if (!open) {
+            return
+          }
+          await KeepDriftChanges(open.game, open.id, drift.key)
+        }),
+      )}
+      {button(t`Revert`, () =>
+        run(async () => {
+          const open = target()
+          if (!open) {
+            return
+          }
+          replace(await RevertDriftEntry(open.game, open.id, drift.key))
+        }),
+      )}
+    </>
+  )
+}
+
 export function ProblemBar() {
   const { t } = useLingui()
   const describe = useDescribe()
   const result = useMods((s) => s.problems)
-  const problems = problemsOf(result)
+  const loadProblems = useMods((s) => s.loadProblems)
+  const problems = [...problemsOf(result), ...driftRows(result)]
+  const describeDrift = (d: Drift) => {
+    if (d.kind === 'unknown') {
+      return t`${d.folder} is in this profile's mods folder and is not an installed entry.`
+    }
+    if (d.kind === 'deleted') {
+      return t`${d.key} was removed from this profile's mods folder.`
+    }
+    return t`${d.key} was changed outside Mortar.`
+  }
+  useEffect(() => {
+    let timer: ReturnType<typeof globalThis.setTimeout> | undefined
+    const scan = () => {
+      globalThis.clearTimeout(timer)
+      timer = globalThis.setTimeout(() => {
+        loadProblems().catch(reportUnexpected)
+      }, FOCUS_DEBOUNCE_MS)
+    }
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        scan()
+      }
+    }
+    globalThis.addEventListener('focus', scan)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      globalThis.clearTimeout(timer)
+      globalThis.removeEventListener('focus', scan)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [loadProblems])
   if (problems.length === 0 && !result?.unknown) {
     return null
   }
@@ -168,9 +315,9 @@ export function ProblemBar() {
                 <TriangleAlert size={16} aria-hidden={true} />
               </Box>
               <Typography noWrap={true} sx={{ flex: 1, minWidth: 0, fontSize: 14 }}>
-                {describe(p)}
+                {p.kind === 'drift' ? describeDrift(p.drift) : describe(p)}
               </Typography>
-              <FixButton problem={p} />
+              {p.kind === 'drift' ? <DriftButtons drift={p.drift} /> : <FixButton problem={p} />}
             </Box>
           )
         })}
