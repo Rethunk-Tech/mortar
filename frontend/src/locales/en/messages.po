@@ -573,7 +573,6 @@ msgstr "Could not add the download"
 msgid "Needed by"
 msgstr "Needed by"
 
-#: src/install/MergeCallout.tsx:78
 #: src/install/NeedsRootCallout.tsx:80
 #: src/queue/QueueBody.tsx:208
 msgid "Skip"
@@ -846,6 +845,10 @@ msgstr "Could not start the Nexus download"
 #: src/share/ShareDialog.tsx:59
 msgid "{length} of {limit} characters · fits one Discord message"
 msgstr "{length} of {limit} characters · fits one Discord message"
+
+#: src/install/MergeCallout.tsx:34
+msgid "Install together"
+msgstr "Install together"
 
 #: src/tools/ToolEditorDialog.tsx:75
 msgid "Add tool"
@@ -1724,6 +1727,11 @@ msgstr "Stop the game before moving the data folder."
 msgid "Cache"
 msgstr "Cache"
 
+#. placeholder {0}: ask.label
+#: src/install/MergeCallout.tsx:72
+msgid "This file comes from the same Nexus page as {0}. Install it together with that mod so they update as one, or as a separate mod."
+msgstr "This file comes from the same Nexus page as {0}. Install it together with that mod so they update as one, or as a separate mod."
+
 #. placeholder {0}: smapi.version
 #. placeholder {0}: status.version
 #: src/firstrun/FindStep.tsx:108
@@ -1748,6 +1756,10 @@ msgstr "Uploading…"
 #: src/nxm/ArrivalDialog.tsx:102
 msgid "Ignore"
 msgstr "Ignore"
+
+#: src/install/MergeCallout.tsx:64
+msgid "Another file from a mod you have"
+msgstr "Another file from a mod you have"
 
 #: src/firstrun/FindStep.tsx:160
 #: src/games/GameSelect.tsx:291
@@ -2308,10 +2320,6 @@ msgstr "config.json is deleted, and the mod writes a fresh one with its own defa
 msgid "Could not export the profile"
 msgstr "Could not export the profile"
 
-#: src/install/MergeCallout.tsx:64
-msgid "This Nexus page is already in the profile"
-msgstr "This Nexus page is already in the profile"
-
 #: src/launch/PlayControl.tsx:123
 #: src/launch/PlayControl.tsx:125
 #: src/launch/PlayControl.tsx:128
@@ -2534,6 +2542,10 @@ msgstr "Stardew Valley"
 #: src/game/HeroCover.tsx:62
 msgid "Choose cover image"
 msgstr "Choose cover image"
+
+#: src/install/MergeCallout.tsx:44
+msgid "Install separately"
+msgstr "Install separately"
 
 #: src/settings/sections/About.tsx:50
 msgid "Credits"
@@ -3115,7 +3127,7 @@ msgstr "Enable"
 msgid "Choose the mod folder"
 msgstr "Choose the mod folder"
 
-#: src/install/MissingDepsDialog.tsx:25
+#: src/install/MissingDepsDialog.tsx:34
 #: src/settings/sections/nxmHandler.tsx:101
 msgid "Not now"
 msgstr "Not now"
@@ -3146,10 +3158,6 @@ msgstr "{0, plural, one {# day ago} other {# days ago}}"
 #: src/mods/ModDetail.tsx:218
 msgid "Nothing"
 msgstr "Nothing"
-
-#: src/install/MergeCallout.tsx:44
-msgid "Separate entry"
-msgstr "Separate entry"
 
 #: src/install/DropOverlay.tsx:100
 msgid "Open a profile to install mods"
@@ -3429,6 +3437,10 @@ msgstr "Maximise"
 #: src/shell/TitleBar.tsx:102
 msgid "Game Select"
 msgstr "Game Select"
+
+#: src/install/MergeCallout.tsx:81
+msgid "Don't install"
+msgstr "Don't install"
 
 #: src/profiles/ProfileRow.tsx:191
 msgid "copy of {name}"
@@ -3746,7 +3758,7 @@ msgstr "Launching {name}"
 
 #. placeholder {0}: offer.dependentName
 #. placeholder {1}: andList(names)
-#: src/install/MissingDepsDialog.tsx:22
+#: src/install/MissingDepsDialog.tsx:31
 msgid "{0} needs {1}"
 msgstr "{0} needs {1}"
 
@@ -4528,11 +4540,6 @@ msgstr "Settings sections"
 msgid "Backups kept: {from} → {to}"
 msgstr "Backups kept: {from} → {to}"
 
-#. placeholder {0}: ask.label
-#: src/install/MergeCallout.tsx:34
-msgid "Add to {0}"
-msgstr "Add to {0}"
-
 #: src/launch/SmapiWarnDialog.tsx:28
 msgid "Steam will still start SMAPI"
 msgstr "Steam will still start SMAPI"
@@ -4761,7 +4768,7 @@ msgstr "Decide later"
 msgid "No config.json yet"
 msgstr "No config.json yet"
 
-#: src/install/MissingDepsDialog.tsx:37
+#: src/install/MissingDepsDialog.tsx:46
 msgid "Add them"
 msgstr "Add them"
 

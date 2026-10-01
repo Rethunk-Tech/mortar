@@ -31,7 +31,7 @@ export function MergeCallout({ item }: { item: Item }) {
       onClick={() => run(() => AnswerMerge(item.id, true))}
       sx={{ whiteSpace: 'nowrap' }}
     >
-      {t`Add to ${ask.label}`}
+      {t`Install together`}
     </Button>
   )
   const separate = (
@@ -41,7 +41,7 @@ export function MergeCallout({ item }: { item: Item }) {
       onClick={() => run(() => AnswerMerge(item.id, false))}
       sx={{ whiteSpace: 'nowrap' }}
     >
-      {t`Separate entry`}
+      {t`Install separately`}
     </Button>
   )
   return (
@@ -61,13 +61,16 @@ export function MergeCallout({ item }: { item: Item }) {
         <LetterTile mod={tile(item)} size={44} />
         <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           <Typography sx={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.04em' }}>
-            {t`This Nexus page is already in the profile`}
+            {t`Another file from a mod you have`}
           </Typography>
           <Typography noWrap={true} sx={{ fontSize: 15, fontWeight: 600 }}>
-            {item.name || item.fileName}
+            {item.fileName || item.name}
           </Typography>
         </Box>
       </Box>
+      <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+        {t`This file comes from the same Nexus page as ${ask.label}. Install it together with that mod so they update as one, or as a separate mod.`}
+      </Typography>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', flexWrap: 'wrap' }}>
         <Button
           variant="outlined"
@@ -75,7 +78,7 @@ export function MergeCallout({ item }: { item: Item }) {
           onClick={() => Skip(item.id).catch(reportUnexpected)}
           sx={{ whiteSpace: 'nowrap' }}
         >
-          {t`Skip`}
+          {t`Don't install`}
         </Button>
         {addFirst ? (
           <>
