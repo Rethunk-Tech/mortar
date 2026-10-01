@@ -84,6 +84,60 @@ async function maybeFinishInstall(profileId: string, dependentIds: string[]) {
   considerMissing(dependentIds)
 }
 
+async function installOneArchive(
+  game: { id: string },
+  profile: Profile,
+  path: string,
+  dependentIds: string[],
+) {
+  const { push } = useToasts.getState()
+  const {
+    profile: next,
+    added,
+    updated,
+    versionChanged,
+    fomod,
+  } = await InstallArchive(game.id, profile.id, path)
+  if (fomod) {
+    useFomod.getState().open({
+      game: game.id,
+      profileId: profile.id,
+      key: fomod.key,
+      source: fomod.source,
+      ask: fomod,
+    })
+    return
+  }
+  useProfiles.getState().replace(next)
+  const names = added ?? []
+  const landed = entryForNames(next, names)
+  for (const mod of landed?.mods ?? []) {
+    if (mod.uniqueId) {
+      dependentIds.push(mod.uniqueId)
+    }
+  }
+  push({
+    kind: 'success',
+    title: installTitle(names.join(', '), profile.name, updated, versionChanged),
+    picture: landed?.source.picture ?? '',
+    ...(landed
+      ? {
+          action: {
+            label: i18n._(msg`Undo`),
+            run: () => undoArchiveInstall(game.id, profile.id, landed.key, updated),
+            profileId: profile.id,
+            live: () =>
+              changeStillLatest(
+                useProfiles.getState().profiles.find((p) => p.id === profile.id),
+                landed.key,
+                (landed.mods ?? []).map((m) => m.uniqueId),
+              ),
+          },
+        }
+      : {}),
+  })
+}
+
 export const useInstall = create<{
   pending: number
   offers: MissingOffer[]
@@ -110,51 +164,7 @@ export const useInstall = create<{
     set((s) => ({ pending: s.pending + paths.length }))
     for (const path of paths) {
       try {
-        const {
-          profile: next,
-          added,
-          updated,
-          versionChanged,
-          fomod,
-        } = await InstallArchive(game.id, profile.id, path)
-        if (fomod) {
-          useFomod.getState().open({
-            game: game.id,
-            profileId: profile.id,
-            key: fomod.key,
-            source: fomod.source,
-            ask: fomod,
-          })
-        } else {
-          useProfiles.getState().replace(next)
-          const names = added ?? []
-          const landed = entryForNames(next, names)
-          for (const mod of landed?.mods ?? []) {
-            if (mod.uniqueId) {
-              dependentIds.push(mod.uniqueId)
-            }
-          }
-          push({
-            kind: 'success',
-            title: installTitle(names.join(', '), profile.name, updated, versionChanged),
-            picture: landed?.source.picture ?? '',
-            ...(landed
-              ? {
-                  action: {
-                    label: i18n._(msg`Undo`),
-                    run: () => undoArchiveInstall(game.id, profile.id, landed.key, updated),
-                    profileId: profile.id,
-                    live: () =>
-                      changeStillLatest(
-                        useProfiles.getState().profiles.find((p) => p.id === profile.id),
-                        landed.key,
-                        (landed.mods ?? []).map((m) => m.uniqueId),
-                      ),
-                  },
-                }
-              : {}),
-          })
-        }
+        await installOneArchive(game, profile, path, dependentIds)
       } catch (e) {
         push({
           kind: 'error',
