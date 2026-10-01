@@ -225,11 +225,13 @@ func New(d Deps) (*Service, error) {
 	return s, nil
 }
 
-// Run works the queue until ctx ends, and feeds it the links the user assigned to a profile.
-func Run(ctx context.Context, s *Service, assigned <-chan nxmsvc.Assignment) {
+// Run works the queue until ctx ends, and feeds it the links the user assigned to a profile. The returned wait
+// blocks until both workers have stopped after ctx ends, so nothing writes the queue's files after it returns.
+func Run(ctx context.Context, s *Service, assigned <-chan nxmsvc.Assignment) (wait func()) {
 	s.sweepDownloads()
-	go s.run(ctx)
-	go func() {
+	var wg sync.WaitGroup
+	wg.Go(func() { s.run(ctx) })
+	wg.Go(func() {
 		for {
 			select {
 			case <-ctx.Done():
@@ -244,7 +246,8 @@ func Run(ctx context.Context, s *Service, assigned <-chan nxmsvc.Assignment) {
 				}
 			}
 		}
-	}()
+	})
+	return wg.Wait
 }
 
 // reject shows a link that could not be queued as a failed entry, since there is no item to blame. It keeps the

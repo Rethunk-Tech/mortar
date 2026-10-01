@@ -314,9 +314,12 @@ func run() error {
 		return err
 	}
 	queueCtx, stopQueue := context.WithCancel(context.Background())
-	defer stopQueue()
 	launchsvc.SetLife(launches, queueCtx)
-	queue.Run(queueCtx, queueSvc, nxmSvc.Assigned)
+	waitQueue := queue.Run(queueCtx, queueSvc, nxmSvc.Assigned)
+	defer func() {
+		stopQueue()
+		waitQueue()
+	}()
 	svc.App = app
 	loaders.App = app
 	profileSvc.App = app

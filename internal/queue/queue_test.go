@@ -131,8 +131,11 @@ func (f *fixture) headers(w http.ResponseWriter) {
 
 func (f *fixture) start() {
 	ctx, cancel := context.WithCancel(context.Background())
-	f.t.Cleanup(cancel)
-	Run(ctx, f.s, make(chan nxmsvc.Assignment))
+	wait := Run(ctx, f.s, make(chan nxmsvc.Assignment))
+	f.t.Cleanup(func() {
+		cancel()
+		wait()
+	})
 }
 
 func (f *fixture) wait(what string, ok func(State) bool) State {
@@ -426,9 +429,12 @@ func TestARejectedLinkCanBeRetried(t *testing.T) {
 	client := f.s.d.Client
 	f.s.d.Client = func() (*nexus.Client, error) { return nil, fmt.Errorf("sign in") }
 	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(cancel)
 	assigned := make(chan nxmsvc.Assignment)
-	Run(ctx, f.s, assigned)
+	wait := Run(ctx, f.s, assigned)
+	t.Cleanup(func() {
+		cancel()
+		wait()
+	})
 	assigned <- nxmsvc.Assignment{Link: nxm.Link{ModID: 1, FileID: 10}, Game: "stardew", Profile: "p1"}
 	it := f.wait("the rejection", f.item(StateFailed)).Items[0]
 	if it.Game != "stardew" || it.Profile != "p1" || it.FileID != 10 {
