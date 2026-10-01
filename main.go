@@ -237,6 +237,26 @@ func run() error {
 		Stage:         profiles.StageGitHub,
 		InstallStaged: profiles.InstallStaged,
 		InstallRemap:  profiles.InstallRemap,
+		SamePage: func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool) {
+			all, err := profiles.List(game)
+			if err != nil {
+				return profile.MergeAsk{}, false
+			}
+			for _, p := range all {
+				if p.ID == profileID {
+					return profile.SamePageAsk(p, modID, fileID, category)
+				}
+			}
+			return profile.MergeAsk{}, false
+		},
+		InstallExtra: func(game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error) {
+			res, err := profiles.InstallNexusExtra(game, profileID, entryKey, path, src)
+			if err == nil {
+				go func() { _, _ = nexusSvc.Details(context.Background(), src.ModID) }()
+				go pictures.Ensure(context.Background(), src.Picture)
+			}
+			return res, err
+		},
 		Verify: func(ctx context.Context, uniqueID, owner, repo string) (bool, error) {
 			return github.Verify(ctx, modMeta, uniqueID, owner, repo)
 		},

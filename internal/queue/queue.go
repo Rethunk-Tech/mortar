@@ -49,6 +49,7 @@ const (
 	StateNeedsConfirm = "needs-confirm"
 	StateNeedsFomod   = "needs-fomod"
 	StateNeedsRoot    = "needs-root"
+	StateNeedsMerge   = "needs-merge"
 	StateWaitingClick = "waiting-click"
 	StateQueued       = "queued"
 	StateDownloading  = "downloading"
@@ -107,6 +108,9 @@ type Item struct {
 	Unverified bool              `json:"unverified"`
 	FomodKey   string            `json:"fomodKey,omitempty"`
 	Remap      *profile.RemapAsk `json:"remap,omitempty"`
+	Category   string            `json:"category,omitempty"`
+	Merge      *profile.MergeAsk `json:"merge,omitempty"`
+	MergeAdd   bool              `json:"mergeAdd,omitempty"`
 
 	// The key and expiry of an nxm:// link supply a free account's download; they are never written to disk.
 	key     string
@@ -114,7 +118,11 @@ type Item struct {
 	// staged is the store key of a downloaded GitHub asset that waits for Confirm, or that Confirm released,
 	// or of a Nexus install waiting for FOMOD choices, or of a download waiting for a content root.
 	staged string
-	fomod  map[string]map[string][]string
+	// readyZip means the Nexus archive is already on disk and the next step is install (or the merge choice).
+	readyZip bool
+	picture  string
+	endorsed int
+	fomod    map[string]map[string][]string
 	// chosenRoot is the folder AnswerRoot picked for a staged item; it is not persisted.
 	chosenRoot string
 	// started is when this attempt left the queue for a fetch; it is not persisted.
@@ -167,9 +175,13 @@ type Deps struct {
 	Stage         func(game string, source profile.Source, path string) (key string, uniqueIDs []string, err error)
 	InstallStaged func(game, profileID, key string, source profile.Source) (profile.InstallResult, error)
 	InstallRemap  func(game, profileID, key, root string, source profile.Source) (profile.InstallResult, error)
-	Verify        func(ctx context.Context, uniqueID, owner, repo string) (bool, error)
-	GitHub        *github.Client
-	OpenURL       func(url string) error
+	// SamePage reports an existing profile entry from this Nexus mod page when the incoming file is another file on it.
+	SamePage func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool)
+	// InstallExtra adds a downloaded Nexus file to an existing same-page entry.
+	InstallExtra func(game, profileID, entryKey, path string, source profile.Source) (profile.InstallResult, error)
+	Verify       func(ctx context.Context, uniqueID, owner, repo string) (bool, error)
+	GitHub       *github.Client
+	OpenURL      func(url string) error
 	// Running reports whether the game runs the profile; its items wait until it stops. Nil means never.
 	Running func(game, profileID string) bool
 	// Emit is nil in tests that do not watch events.
@@ -236,6 +248,9 @@ func New(d Deps) (*Service, error) {
 		}
 		if it.State == StateNeedsRoot && it.staged == "" {
 			it.State = StateQueued
+		}
+		if it.State == StateNeedsMerge {
+			it.readyZip = true
 		}
 		if slices.Contains([]string{StateDownloading, StateInstalling, StateWaitingClick}, it.State) {
 			it.State, it.Progress, it.Speed = StateQueued, 0, 0
@@ -515,7 +530,7 @@ func (s *Service) drop(match func(*Item) bool) {
 
 // Skip drops an item that has not started, that failed, or that waits for the user.
 func (s *Service) Skip(id string) {
-	s.end(id, StateSkipped, StateFailed, StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot)
+	s.end(id, StateSkipped, StateFailed, StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge)
 }
 
 // Choose picks the asset of an item waiting in StateNeedsChoice.
@@ -556,6 +571,17 @@ func (s *Service) AnswerRoot(id, root string) {
 	s.mu.Lock()
 	if it := s.find(id); it != nil && it.State == StateNeedsRoot && it.staged != "" {
 		it.State, it.chosenRoot = StateQueued, root
+	}
+	s.mu.Unlock()
+	s.publish(true)
+	s.poke()
+}
+
+// AnswerMerge installs an item waiting in StateNeedsMerge, either into the existing same-page entry or as its own.
+func (s *Service) AnswerMerge(id string, add bool) {
+	s.mu.Lock()
+	if it := s.find(id); it != nil && it.State == StateNeedsMerge && it.readyZip {
+		it.State, it.MergeAdd = StateQueued, add
 	}
 	s.mu.Unlock()
 	s.publish(true)

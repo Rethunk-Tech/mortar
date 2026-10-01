@@ -25,17 +25,19 @@ import (
 const payload = "archive bytes"
 
 type fixture struct {
-	t        *testing.T
-	s        *Service
-	dir      string
-	premium  atomic.Bool
-	cdn      http.HandlerFunc
-	limitNow atomic.Bool
-	clock    atomic.Int64
-	mu       sync.Mutex
-	opened   []string
-	installs []profile.Source
-	keys     []string
+	t            *testing.T
+	s            *Service
+	dir          string
+	premium      atomic.Bool
+	cdn          http.HandlerFunc
+	limitNow     atomic.Bool
+	clock        atomic.Int64
+	mu           sync.Mutex
+	opened       []string
+	installs     []profile.Source
+	keys         []string
+	samePage     func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool)
+	installExtra func(game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error)
 	// published is the last state publish finished writing; waiting on it rather than State keeps a test from
 	// ending while queue.json is still being written.
 	published atomic.Pointer[State]
@@ -107,6 +109,18 @@ func newFixture(t *testing.T) *fixture {
 			f.installs = append(f.installs, src)
 			f.mu.Unlock()
 			return profile.InstallResult{}, nil
+		},
+		SamePage: func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool) {
+			if f.samePage == nil {
+				return profile.MergeAsk{}, false
+			}
+			return f.samePage(game, profileID, modID, fileID, category)
+		},
+		InstallExtra: func(game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error) {
+			if f.installExtra == nil {
+				return profile.InstallResult{}, fmt.Errorf("unexpected extra install of %s", entryKey)
+			}
+			return f.installExtra(game, profileID, entryKey, path, src)
 		},
 		OpenURL: func(u string) error {
 			f.mu.Lock()

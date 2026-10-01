@@ -79,7 +79,7 @@ func (s *Service) runningOf(items []*Item) map[string]bool {
 
 // forFile is resolve while the item's file is not known yet.
 func (s *Service) forFile(it *Item, then action) action {
-	if it.staged != "" {
+	if it.staged != "" || it.readyZip {
 		return install
 	}
 	if it.FileID == 0 || it.FileName == "" {
@@ -276,6 +276,7 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 	if cur := s.find(it.ID); cur != nil {
 		cur.FileID, cur.FileName, cur.SizeKB = file.FileID, cmp.Or(file.FileName, fmt.Sprintf("file-%d", file.FileID)), file.SizeKB
 		cur.Version = cmp.Or(cur.Version, file.Version)
+		cur.Category = cmp.Or(cur.Category, file.Category)
 	}
 	return nil
 }
@@ -293,8 +294,11 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	if m, merr := c.Mod(ctx, it.ModID); merr == nil {
 		mod = m
 		s.mu.Lock()
-		if cur := s.find(it.ID); cur != nil && cur.Name == "" {
-			cur.Name = m.Name
+		if cur := s.find(it.ID); cur != nil {
+			if cur.Name == "" {
+				cur.Name = m.Name
+			}
+			cur.picture, cur.endorsed = m.PictureURL, m.EndorsementCount
 		}
 		s.mu.Unlock()
 	}
@@ -340,26 +344,21 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		s.mu.Unlock()
 		return context.Canceled
 	}
-	cur.State, cur.Progress, cur.Speed = StateInstalling, 100, 0
+	cur.State, cur.Progress, cur.Speed, cur.readyZip = StateInstalling, 100, 0, true
+	if cur.Category == "" {
+		cur.Category = fileCategory(ctx, c, it)
+	}
+	if it.Kind != KindUpdate && s.d.SamePage != nil {
+		if ask, ok := s.d.SamePage(it.Game, it.Profile, it.ModID, it.FileID, cur.Category); ok {
+			cur.State, cur.Merge, cur.MergeAdd = StateNeedsMerge, &ask, false
+			s.mu.Unlock()
+			s.publish(true)
+			return nil
+		}
+	}
 	s.mu.Unlock()
 	s.publish(true)
-	res, err := s.d.Install(it.Game, it.Profile, path, profile.Source{
-		Kind: profile.KindNexus, Name: it.FileName, ModID: it.ModID, FileID: it.FileID, Version: it.Version,
-		Picture: mod.PictureURL, EndorsementCount: mod.EndorsementCount,
-	})
-	var dup *profile.DuplicateError
-	if err == nil || errors.As(err, &dup) {
-		dropDownload(path)
-	}
-	if err == nil && res.Fomod != nil {
-		s.pauseFomod(it.ID, res.Fomod.Key)
-		return nil
-	}
-	if err == nil && res.Remap != nil {
-		s.pauseRoot(it.ID, res.Remap)
-		return nil
-	}
-	return s.finish(it.ID, err, false)
+	return s.installNexusPath(it, path, mod)
 }
 
 func (s *Service) pauseFomod(id, key string) {

@@ -127,6 +127,9 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 // installStaged installs what Confirm released. The user has decided, so nothing is verified again.
 // A staged key the store no longer holds is dropped, so Retry downloads the file again.
 func (s *Service) installStaged(it Item) error {
+	if ok, err := s.installReadyZip(it); ok || err != nil {
+		return err
+	}
 	src := sourceOf(it)
 	if it.fomod != nil {
 		src = src.WithFomod(it.fomod)
