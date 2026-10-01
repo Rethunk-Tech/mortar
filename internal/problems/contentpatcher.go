@@ -550,6 +550,24 @@ func hideDismissedBroken(broken []Broken, tokens []string) []Broken {
 	return out
 }
 
+func hideDismissedListed(missing []Missing, tokens []string) []Missing {
+	if len(tokens) == 0 {
+		return missing
+	}
+	skip := map[string]bool{}
+	for _, t := range tokens {
+		skip[t] = true
+	}
+	out := []Missing{}
+	for _, m := range missing {
+		if m.Listed && skip[dismissToken("listed", strings.ToLower(m.UniqueID))] {
+			continue
+		}
+		out = append(out, m)
+	}
+	return out
+}
+
 func hideDismissed(conflicts []AssetConflict, tokens []string) []AssetConflict {
 	if len(tokens) == 0 {
 		return conflicts

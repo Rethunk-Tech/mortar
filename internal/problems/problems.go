@@ -19,6 +19,7 @@ import (
 type Meta interface {
 	Lookup(ctx context.Context, uniqueID string) ([]meta.Ref, error)
 	Page(ctx context.Context, id int) (meta.Page, error)
+	PageRequirements(ctx context.Context, pageID int) ([]meta.Requirement, error)
 	CheckUpdates(ctx context.Context, req meta.UpdateRequest) []meta.UpdateResult
 }
 
@@ -65,6 +66,9 @@ type Missing struct {
 	MinimumVersion   string `json:"minimumVersion"`
 	Reason           string `json:"reason"`
 	InstalledVersion string `json:"installedVersion"`
+	Listed           bool   `json:"listed"`
+	Note             string `json:"note"`
+	Optional         bool   `json:"optional"`
 	Where            *Ref   `json:"where"`
 }
 
@@ -138,7 +142,10 @@ func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Resul
 		Drift:          []profile.Drift{},
 	}
 	missing := missingDeps(enabled, mods)
+	listed, listedUnknown := listedRequirements(ctx, m, enabled, mods)
+	missing = append(missing, listed...)
 	r.Unknown = fillWhere(ctx, m, enabled, missing)
+	r.Unknown = r.Unknown || listedUnknown
 	r.Missing = missing
 	broken, unknown := brokenMods(ctx, m, env, enabled)
 	r.Broken = broken
@@ -163,6 +170,191 @@ func missingDeps(enabled, all []Installed) []Missing {
 		}
 	}
 	return out
+}
+
+func listedRequirements(ctx context.Context, m Meta, enabled, all []Installed) ([]Missing, bool) {
+	out := []Missing{}
+	unknown := false
+	requirementsByPage := map[int][]meta.Requirement{}
+	seenPages := map[int]bool{}
+	seenEntries := map[string]bool{}
+	pages := map[int]meta.Page{}
+	pageKnown := map[int]bool{}
+
+	for _, d := range enabled {
+		pageID, ok := nexusEntryPage(d.Key)
+		if !ok {
+			continue
+		}
+		entryKey := strings.ToLower(d.Key)
+		if seenEntries[entryKey] {
+			continue
+		}
+		seenEntries[entryKey] = true
+		if !seenPages[pageID] {
+			var err error
+			requirementsByPage[pageID], err = m.PageRequirements(ctx, pageID)
+			seenPages[pageID] = true
+			if err != nil {
+				unknown = true
+				continue
+			}
+		}
+		seenRequirements := map[int]bool{}
+		for _, req := range requirementsByPage[pageID] {
+			if seenRequirements[req.ModID] {
+				continue
+			}
+			seenRequirements[req.ModID] = true
+			if !pageKnown[req.ModID] {
+				page, err := m.Page(ctx, req.ModID)
+				if err != nil {
+					unknown = true
+				} else {
+					pages[req.ModID], pageKnown[req.ModID] = page, true
+				}
+			}
+			page, hasPage := pages[req.ModID]
+			if hasPage && manifestHasRequirement(all, d.Key, page) {
+				continue
+			}
+			reason, satisfied := listedDepState(all, req.ModID, page, hasPage)
+			if satisfied && reason == "" {
+				continue
+			}
+			uniqueID := "nexus:" + strconv.Itoa(req.ModID)
+			if hasPage {
+				if id := mainUniqueID(page); id != "" {
+					uniqueID = id
+				}
+			}
+			miss := Missing{
+				DependentID:   d.UniqueID,
+				DependentName: d.Name,
+				UniqueID:      uniqueID,
+				Reason:        reason,
+				Listed:        true,
+				Note:          req.Notes,
+				Optional:      optionalRequirement(req.Notes),
+			}
+			if miss.Reason == "" {
+				miss.Reason = "absent"
+			}
+			pageName := page.Name
+			if pageName == "" {
+				pageName = req.Name
+			}
+			pageRef := &Ref{
+				Site:     "Nexus",
+				PageID:   req.ModID,
+				PageName: pageName,
+				URL:      "https://www.nexusmods.com/stardewvalley/mods/" + strconv.Itoa(req.ModID),
+			}
+			if uniqueID == "nexus:"+strconv.Itoa(req.ModID) {
+				miss.Where = pageRef
+			} else if located, ok := Locate(ctx, m, uniqueID, "", d.UpdateKeys); located != nil {
+				miss.Where = located
+				unknown = unknown || !ok
+			} else {
+				miss.Where = pageRef
+				unknown = unknown || !ok
+			}
+			out = append(out, miss)
+		}
+	}
+	return out, unknown
+}
+
+func nexusEntryPage(key string) (int, bool) {
+	if !strings.HasPrefix(strings.ToLower(key), "nexus-") {
+		return 0, false
+	}
+	rest := key[len("nexus-"):]
+	page, _, ok := strings.Cut(rest, "-")
+	if !ok {
+		return 0, false
+	}
+	n, err := strconv.Atoi(page)
+	return n, err == nil
+}
+
+func listedDepState(all []Installed, pageID int, page meta.Page, pageKnown bool) (string, bool) {
+	prefix := "nexus-" + strconv.Itoa(pageID) + "-"
+	disabled := false
+	for _, x := range all {
+		matches := strings.HasPrefix(strings.ToLower(x.Key), prefix)
+		if !matches && pageKnown {
+			for _, file := range page.Downloads {
+				for _, mod := range file.Mods {
+					if sameID(x.UniqueID, mod.UniqueID) {
+						matches = true
+						break
+					}
+				}
+				if matches {
+					break
+				}
+			}
+		}
+		if !matches {
+			continue
+		}
+		if x.Enabled {
+			return "", true
+		}
+		disabled = true
+	}
+	if disabled {
+		return "disabled", false
+	}
+	return "absent", false
+}
+
+func manifestHasRequirement(all []Installed, entryKey string, page meta.Page) bool {
+	for _, d := range all {
+		if !d.Enabled || !sameID(d.Key, entryKey) {
+			continue
+		}
+		for _, dep := range d.Dependencies {
+			if !dep.Required {
+				continue
+			}
+			for _, file := range page.Downloads {
+				for _, mod := range file.Mods {
+					if sameID(dep.UniqueID, mod.UniqueID) {
+						return true
+					}
+				}
+			}
+		}
+	}
+	return false
+}
+
+func mainUniqueID(page meta.Page) string {
+	for _, file := range page.Downloads {
+		if !strings.EqualFold(file.Type, "main") {
+			continue
+		}
+		for _, mod := range file.Mods {
+			if mod.UniqueID != "" {
+				return mod.UniqueID
+			}
+		}
+	}
+	return ""
+}
+
+func optionalRequirement(note string) bool {
+	note = strings.ToLower(strings.TrimSpace(note))
+	return strings.Contains(note, "optional") ||
+		strings.Contains(note, "recommended") ||
+		strings.Contains(note, "not strictly") ||
+		(strings.HasPrefix(note, "for") && (len(note) == 3 || !isWordByte(note[3])))
+}
+
+func isWordByte(b byte) bool {
+	return (b >= 'a' && b <= 'z') || (b >= '0' && b <= '9') || b == '_'
 }
 
 // depState says why the mods in all do not satisfy dep: "absent", "disabled" or "outdated", with the highest
@@ -281,6 +473,9 @@ func fillWhere(ctx context.Context, m Meta, enabled []Installed, missing []Missi
 	for i := range missing {
 		x := &missing[i]
 		if x.Reason == "disabled" {
+			continue
+		}
+		if x.Where != nil {
 			continue
 		}
 		dependent := slices.IndexFunc(enabled, func(e Installed) bool { return sameID(e.UniqueID, x.DependentID) })

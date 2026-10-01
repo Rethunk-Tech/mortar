@@ -172,6 +172,7 @@ func (s *Service) withDismissed(gameID, id string, r Result) Result {
 	tokens := s.settings.Get().Dismissed[dismissBucket(gameID, id)]
 	r.AssetConflicts = hideDismissed(r.AssetConflicts, tokens)
 	r.Broken = hideDismissedBroken(r.Broken, tokens)
+	r.Missing = hideDismissedListed(r.Missing, tokens)
 	return r
 }
 
@@ -182,6 +183,25 @@ func (s *Service) DismissAbandonedMod(_ context.Context, gameID, id, uniqueID st
 		return errors.New("missing mod id")
 	}
 	token := dismissToken("abandoned", strings.ToLower(uniqueID))
+	bucket := dismissBucket(gameID, id)
+	_, err := s.settings.Update(func(v *settings.Settings) {
+		if slices.Contains(v.Dismissed[bucket], token) {
+			return
+		}
+		next := maps.Clone(v.Dismissed)
+		next[bucket] = append(slices.Clone(v.Dismissed[bucket]), token)
+		v.Dismissed = next
+	})
+	return err
+}
+
+// DismissListedRequirement hides a Nexus-listed requirement for this profile until it is gone.
+func (s *Service) DismissListedRequirement(_ context.Context, gameID, id, uniqueID string) error {
+	uniqueID = strings.TrimSpace(uniqueID)
+	if uniqueID == "" {
+		return errors.New("missing requirement id")
+	}
+	token := dismissToken("listed", strings.ToLower(uniqueID))
 	bucket := dismissBucket(gameID, id)
 	_, err := s.settings.Update(func(v *settings.Settings) {
 		if slices.Contains(v.Dismissed[bucket], token) {
