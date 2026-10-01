@@ -24,6 +24,8 @@ type InstallResult struct {
 	VersionChanged bool `json:"versionChanged"`
 	// Fomod is set when the store item has install options and they have not been chosen yet.
 	Fomod *FomodAsk `json:"fomod,omitempty"`
+	// Remap is set when the archive has no SMAPI-reachable manifest and the user must pick a folder.
+	Remap *RemapAsk `json:"remap,omitempty"`
 }
 
 // InstallError is a failed install. Its message is fit to show the user; Err keeps the typed cause.
@@ -115,6 +117,15 @@ func (s *Store) installKey(game, id, key string, source Source) (InstallResult, 
 		need.Ask.Source = source
 		return InstallResult{Profile: cur, Added: []string{}, Fomod: &need.Ask}, nil
 	}
+	if need, ok := errors.AsType[*NeedRootError](err); ok {
+		cur, rerr := s.read(game, id)
+		if rerr != nil {
+			cur = Profile{}
+		}
+		need.Ask.Key = key
+		need.Ask.Source = source
+		return InstallResult{Profile: cur, Added: []string{}, Remap: &need.Ask}, nil
+	}
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
@@ -141,6 +152,15 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 		return Profile{}, false, false, err
 	} else if need {
 		return Profile{}, false, false, &NeedChoicesError{Ask: ask}
+	}
+	if _, hasFomod, err := s.fomodOf(game, key); err != nil {
+		return Profile{}, false, false, err
+	} else if !hasFomod {
+		if ask, need, err := s.remapAsk(game, key); err != nil {
+			return Profile{}, false, false, err
+		} else if need {
+			return Profile{}, false, false, &NeedRootError{Ask: ask}
+		}
 	}
 	held, err := s.holding(game, id, key, source.fomodMap())
 	if err != nil {

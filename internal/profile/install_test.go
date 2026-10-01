@@ -56,9 +56,9 @@ func TestInstallArchive(t *testing.T) {
 	}
 
 	empty := buildZip(t, "Empty.zip", map[string]string{"readme.txt": "x"})
-	_, err = e.InstallArchive("stardew", p.ID, empty)
-	if !errors.As(err, &ie) || ie.Msg != "No SMAPI mod was found in this archive" {
-		t.Fatalf("no manifest err = %v", err)
+	res, err = e.InstallArchive("stardew", p.ID, empty)
+	if err != nil || res.Remap == nil {
+		t.Fatalf("loose files ask = %+v, %v", res, err)
 	}
 
 	txt := filepath.Join(t.TempDir(), "notes.txt")
