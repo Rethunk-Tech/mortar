@@ -3,12 +3,14 @@ package fomod
 import (
 	"slices"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/meta"
 )
 
 // PluginType is the effective type of a plugin under flags and file dependencies.
-func PluginType(p Plugin, flags map[string]string, files FileIndex) string {
+func PluginType(p Plugin, flags map[string]string, ctx EvalContext) string {
 	for _, pat := range p.Patterns {
-		if pat.Type.Eval(flags, files) {
+		if pat.Type.Eval(flags, ctx) {
 			return normType(pat.Name)
 		}
 	}
@@ -34,7 +36,7 @@ func normType(s string) string {
 }
 
 // Eval reports whether the composite dependency holds.
-func (c Composite) Eval(flags map[string]string, files FileIndex) bool {
+func (c Composite) Eval(flags map[string]string, ctx EvalContext) bool {
 	or := strings.EqualFold(c.Operator, "Or")
 	n := len(c.Files) + len(c.Flags) + len(c.Games) + len(c.Nested)
 	if n == 0 {
@@ -47,7 +49,7 @@ func (c Composite) Eval(flags map[string]string, files FileIndex) bool {
 		return !v
 	}
 	for _, f := range c.Files {
-		if ok(fileOK(f, files)) {
+		if ok(fileOK(f, ctx.Files)) {
 			return or
 		}
 	}
@@ -56,18 +58,28 @@ func (c Composite) Eval(flags map[string]string, files FileIndex) bool {
 			return or
 		}
 	}
-	for range c.Games {
-		// Bethesda FOMODs compare a game version string; Stardew has no equivalent here, so the check fails.
-		if ok(false) {
+	for _, g := range c.Games {
+		if ok(gameDepOK(ctx.GameVersion, g.Version)) {
 			return or
 		}
 	}
 	for _, n := range c.Nested {
-		if ok(n.Eval(flags, files)) {
+		if ok(n.Eval(flags, ctx)) {
 			return or
 		}
 	}
 	return !or
+}
+
+func gameDepOK(installed, minimum string) bool {
+	if minimum == "" {
+		return true
+	}
+	if installed == "" {
+		return false
+	}
+	c, ok := meta.CompareVersions(installed, minimum)
+	return !ok || c >= 0
 }
 
 func fileOK(d FileDep, files FileIndex) bool {
@@ -83,10 +95,10 @@ func fileOK(d FileDep, files FileIndex) bool {
 }
 
 // VisibleSteps are install steps whose visible condition holds.
-func VisibleSteps(cfg Config, flags map[string]string, files FileIndex) []Step {
+func VisibleSteps(cfg Config, flags map[string]string, ctx EvalContext) []Step {
 	var out []Step
 	for _, s := range cfg.Steps {
-		if s.Visible.Eval(flags, files) {
+		if s.Visible.Eval(flags, ctx) {
 			out = append(out, s)
 		}
 	}
@@ -94,10 +106,10 @@ func VisibleSteps(cfg Config, flags map[string]string, files FileIndex) []Step {
 }
 
 // FlagsFrom returns condition flags set by the selected plugins, in step order.
-func FlagsFrom(cfg Config, choices Choices, files FileIndex) map[string]string {
+func FlagsFrom(cfg Config, choices Choices, ctx EvalContext) map[string]string {
 	flags := map[string]string{}
 	for _, s := range cfg.Steps {
-		if !s.Visible.Eval(flags, files) {
+		if !s.Visible.Eval(flags, ctx) {
 			continue
 		}
 		for _, g := range s.Groups {
@@ -138,10 +150,10 @@ func selected(choices Choices, step, group string, g Group) []string {
 }
 
 // Match reports whether choices still name plugins that exist and satisfy each visible group's type.
-func Match(cfg Config, choices Choices, files FileIndex) bool {
+func Match(cfg Config, choices Choices, ctx EvalContext) bool {
 	flags := map[string]string{}
 	for _, s := range cfg.Steps {
-		if !s.Visible.Eval(flags, files) {
+		if !s.Visible.Eval(flags, ctx) {
 			continue
 		}
 		for _, g := range s.Groups {
@@ -154,7 +166,7 @@ func Match(cfg Config, choices Choices, files FileIndex) bool {
 				if !ok {
 					return false
 				}
-				if PluginType(p, flags, files) == TypeNotUsable {
+				if PluginType(p, flags, ctx) == TypeNotUsable {
 					return false
 				}
 			}
@@ -186,12 +198,12 @@ func groupOK(g Group, names []string) bool {
 }
 
 // Resolve lists file operations for required files, selected plugins, and matching conditional installs.
-func Resolve(cfg Config, choices Choices, files FileIndex) []Op {
+func Resolve(cfg Config, choices Choices, ctx EvalContext) []Op {
 	var ops []Op
 	ops = append(ops, cfg.Required...)
 	flags := map[string]string{}
 	for _, s := range cfg.Steps {
-		if !s.Visible.Eval(flags, files) {
+		if !s.Visible.Eval(flags, ctx) {
 			continue
 		}
 		for _, g := range s.Groups {
@@ -208,7 +220,7 @@ func Resolve(cfg Config, choices Choices, files FileIndex) []Op {
 		}
 	}
 	for _, c := range cfg.Conditionals {
-		if c.When.Eval(flags, files) {
+		if c.When.Eval(flags, ctx) {
 			ops = append(ops, c.Files...)
 		}
 	}

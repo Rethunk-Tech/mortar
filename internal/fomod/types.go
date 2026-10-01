@@ -37,6 +37,12 @@ type Op struct {
 // FileIndex reports a dependency file's state in the profile's mods folder.
 type FileIndex func(name string) string
 
+// EvalContext holds inputs for FOMOD dependency checks.
+type EvalContext struct {
+	Files       FileIndex
+	GameVersion string
+}
+
 // Config is a parsed ModuleConfig.xml.
 type Config struct {
 	ModuleName   string

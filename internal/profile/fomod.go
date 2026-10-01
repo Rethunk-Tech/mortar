@@ -10,7 +10,9 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/fomod"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
@@ -91,6 +93,30 @@ func (s *Store) fileIndex(modsDir string) fomod.FileIndex {
 	}
 }
 
+func (s *Store) fomodEval(gameID string, files fomod.FileIndex) fomod.EvalContext {
+	return fomod.EvalContext{Files: files, GameVersion: s.installedGameVersion(gameID)}
+}
+
+func (s *Store) installedGameVersion(gameID string) string {
+	g := game.Find(gameID)
+	if g == nil {
+		return ""
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	sett, err := settings.Open()
+	if err != nil {
+		return ""
+	}
+	dir, err := game.InstallDir(home, sett.Get(), gameID)
+	if err != nil || dir == "" {
+		return ""
+	}
+	return g.LoaderStatus(dir, sett.Get().Loaders[gameID]).GameVersion
+}
+
 func (s *Store) fomodOf(game, key string) (fomod.Config, bool, error) {
 	dir, err := s.items.Path(game, key)
 	if err != nil {
@@ -100,17 +126,17 @@ func (s *Store) fomodOf(game, key string) (fomod.Config, bool, error) {
 	return cfg, ok, err
 }
 
-func askFrom(cfg fomod.Config, key string, source Source, oldKey string, choices map[string]map[string][]string, files fomod.FileIndex) FomodAsk {
-	flags := fomod.FlagsFrom(cfg, choices, files)
+func askFrom(gameID string, cfg fomod.Config, key string, source Source, oldKey string, choices map[string]map[string][]string, eval fomod.EvalContext) FomodAsk {
+	flags := fomod.FlagsFrom(cfg, choices, eval)
 	ask := FomodAsk{Key: key, Source: source, OldKey: oldKey, ModuleName: cfg.ModuleName, Choices: choices}
-	for _, st := range fomod.VisibleSteps(cfg, flags, files) {
+	for _, st := range fomod.VisibleSteps(cfg, flags, eval) {
 		step := FomodStep{Name: st.Name}
 		for _, g := range st.Groups {
 			gr := FomodGroup{Name: g.Name, Type: g.Type}
 			for _, p := range g.Plugins {
 				gr.Plugins = append(gr.Plugins, FomodPlugin{
 					Name: p.Name, Description: p.Description, Image: p.Image,
-					Type: fomod.PluginType(p, flags, files),
+					Type: fomod.PluginType(p, flags, eval),
 				})
 			}
 			step.Groups = append(step.Groups, gr)
@@ -129,11 +155,11 @@ func (s *Store) fomodAsk(game, id, key string, source Source, oldKey string, cho
 	if err != nil {
 		return FomodAsk{}, false, err
 	}
-	files := s.fileIndex(modsDir)
-	if fomod.Match(cfg, choices, files) {
+	eval := s.fomodEval(game, s.fileIndex(modsDir))
+	if fomod.Match(cfg, choices, eval) {
 		return FomodAsk{}, false, nil
 	}
-	return askFrom(cfg, key, source, oldKey, choices, files), true, nil
+	return askFrom(game, cfg, key, source, oldKey, choices, eval), true, nil
 }
 
 func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][]string) (src, tmp string, err error) {
@@ -149,15 +175,15 @@ func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][
 	if err != nil {
 		return "", "", err
 	}
-	files := s.fileIndex(modsDir)
-	if !fomod.Match(cfg, choices, files) {
-		return "", "", &NeedChoicesError{Ask: askFrom(cfg, key, Source{}, "", choices, files)}
+	eval := s.fomodEval(game, s.fileIndex(modsDir))
+	if !fomod.Match(cfg, choices, eval) {
+		return "", "", &NeedChoicesError{Ask: askFrom(game, cfg, key, Source{}, "", choices, eval)}
 	}
 	tmp, err = os.MkdirTemp("", "mortar-fomod-")
 	if err != nil {
 		return "", "", err
 	}
-	if err := fomod.Apply(root, tmp, fomod.Resolve(cfg, choices, files)); err != nil {
+	if err := fomod.Apply(root, tmp, fomod.Resolve(cfg, choices, eval)); err != nil {
 		_ = os.RemoveAll(tmp)
 		return "", "", err
 	}
@@ -208,7 +234,7 @@ func (s *Store) FomodPreview(game, id, key string, choices map[string]map[string
 		if err != nil {
 			return FomodAsk{}, err
 		}
-		ask = askFrom(cfg, key, src, "", choices, s.fileIndex(modsDir))
+		ask = askFrom(game, cfg, key, src, "", choices, s.fomodEval(game, s.fileIndex(modsDir)))
 	}
 	return ask, nil
 }

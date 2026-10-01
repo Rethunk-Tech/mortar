@@ -39,25 +39,25 @@ func loadFixture(t *testing.T, name string) Config {
 
 func TestChooseOne(t *testing.T) {
 	cfg := loadFixture(t, "choose-one.xml")
-	ops := Resolve(cfg, Choices{"Options": {"Pack": {"Beta"}}}, nil)
+	ops := Resolve(cfg, Choices{"Options": {"Pack": {"Beta"}}}, EvalContext{})
 	if len(ops) != 1 || ops[0].Source != "beta/manifest.json" {
 		t.Fatalf("ops = %+v", ops)
 	}
-	if Match(cfg, Choices{"Options": {"Pack": {"Nope"}}}, nil) {
+	if Match(cfg, Choices{"Options": {"Pack": {"Nope"}}}, EvalContext{}) {
 		t.Fatal("vanished choice matched")
 	}
-	if !Match(cfg, Choices{"Options": {"Pack": {"Alpha"}}}, nil) {
+	if !Match(cfg, Choices{"Options": {"Pack": {"Alpha"}}}, EvalContext{}) {
 		t.Fatal("alpha should match")
 	}
 }
 
 func TestFlagsConditionalInstall(t *testing.T) {
 	cfg := loadFixture(t, "flags.xml")
-	on := Resolve(cfg, Choices{"Pick": {"Mode": {"On"}}}, nil)
+	on := Resolve(cfg, Choices{"Pick": {"Mode": {"On"}}}, EvalContext{})
 	if len(on) != 1 || on[0].Source != "extra.txt" {
 		t.Fatalf("flag on: %+v", on)
 	}
-	off := Resolve(cfg, Choices{"Pick": {"Mode": {"Off"}}}, nil)
+	off := Resolve(cfg, Choices{"Pick": {"Mode": {"Off"}}}, EvalContext{})
 	if len(off) != 0 {
 		t.Fatalf("flag off: %+v", off)
 	}
@@ -65,11 +65,11 @@ func TestFlagsConditionalInstall(t *testing.T) {
 
 func TestRequiredFiles(t *testing.T) {
 	cfg := loadFixture(t, "required.xml")
-	none := Resolve(cfg, Choices{"More": {"Extra": nil}}, nil)
+	none := Resolve(cfg, Choices{"More": {"Extra": nil}}, EvalContext{})
 	if len(none) != 1 || none[0].Source != "core.txt" {
 		t.Fatalf("required only: %+v", none)
 	}
-	both := Resolve(cfg, Choices{"More": {"Extra": {"Addon"}}}, nil)
+	both := Resolve(cfg, Choices{"More": {"Extra": {"Addon"}}}, EvalContext{})
 	if len(both) != 2 {
 		t.Fatalf("with addon: %+v", both)
 	}
@@ -85,7 +85,7 @@ func TestFolderApply(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(src, "pack", "a.txt"), []byte("ok"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := Apply(src, dst, Resolve(cfg, nil, nil)); err != nil {
+	if err := Apply(src, dst, Resolve(cfg, nil, EvalContext{})); err != nil {
 		t.Fatal(err)
 	}
 	got, err := fs.ReadFile(os.DirFS(dst), filepath.ToSlash(filepath.Join("mod", "a.txt")))
@@ -131,7 +131,7 @@ func TestFileDependencyUnmetWithoutIndex(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(VisibleSteps(cfg, nil, nil)) != 0 {
+	if len(VisibleSteps(cfg, nil, EvalContext{})) != 0 {
 		t.Fatal("missing file should hide the step")
 	}
 	files := FileIndex(func(name string) string {
@@ -140,7 +140,43 @@ func TestFileDependencyUnmetWithoutIndex(t *testing.T) {
 		}
 		return FileMissing
 	})
-	if len(VisibleSteps(cfg, nil, files)) != 1 {
+	if len(VisibleSteps(cfg, nil, EvalContext{Files: files})) != 1 {
 		t.Fatal("present file should show the step")
+	}
+}
+
+func TestGameDependencyUnknownVersionUnmet(t *testing.T) {
+	cfg, err := Parse([]byte(`<config><moduleName>D</moduleName>
+		<installSteps><installStep name="S"><visible>
+			<gameDependency version="1.6.0"/>
+		</visible><optionalFileGroups><group name="G" type="SelectAny">
+			<plugins><plugin name="P"><files><file source="p.txt" destination="p.txt"/></files>
+			<typeDescriptor><type name="Optional"/></typeDescriptor></plugin></plugins>
+		</group></optionalFileGroups></installStep></installSteps></config>`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(VisibleSteps(cfg, nil, EvalContext{})) != 0 {
+		t.Fatal("unknown game version should hide the step")
+	}
+}
+
+func TestGameDependencyMetWhenInstalledVersionSufficient(t *testing.T) {
+	cfg, err := Parse([]byte(`<config><moduleName>D</moduleName>
+		<installSteps><installStep name="S"><visible>
+			<gameDependency version="1.6.0"/>
+		</visible><optionalFileGroups><group name="G" type="SelectAny">
+			<plugins><plugin name="P"><files><file source="p.txt" destination="p.txt"/></files>
+			<typeDescriptor><type name="Optional"/></typeDescriptor></plugin></plugins>
+		</group></optionalFileGroups></installStep></installSteps></config>`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := EvalContext{GameVersion: "1.6.15"}
+	if len(VisibleSteps(cfg, nil, ctx)) != 1 {
+		t.Fatal("installed game version should satisfy minimum")
+	}
+	if len(VisibleSteps(cfg, nil, EvalContext{GameVersion: "1.5.0"})) != 0 {
+		t.Fatal("older game version should not satisfy minimum")
 	}
 }
