@@ -13,7 +13,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { type MouseEvent, useCallback, useId, useState } from 'react'
+import { type MouseEvent, type ReactNode, useCallback, useId, useState } from 'react'
 import type { Settings as BackendGameSettings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/gamesettings/models.ts'
 import { GameSettings as FetchGameSettings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -135,22 +135,26 @@ function CopyFromProfileMenu({ gameId, profileId, onCopy }: CopyFromProfileProps
       .catch(reportUnexpected)
   }
 
+  let menuBody: ReactNode = null
+  if (loading) {
+    menuBody = <MenuItem disabled={true}>{t`Loading…`}</MenuItem>
+  } else if (sources.length === 0) {
+    menuBody = <MenuItem disabled={true}>{t`No other profiles with overrides`}</MenuItem>
+  } else {
+    menuBody = sources.map((source) => (
+      <MenuItem key={source.id} onClick={() => pickSource(source.id)}>
+        {source.name}
+      </MenuItem>
+    ))
+  }
+
   return (
     <>
       <Button disabled={!gameId} size="small" onClick={openMenu}>
         {t`Copy from profile…`}
       </Button>
       <Menu anchorEl={anchor} open={anchor !== null} onClose={closeMenu}>
-        {loading && <MenuItem disabled={true}>{t`Loading…`}</MenuItem>}
-        {!loading && sources.length === 0 && (
-          <MenuItem disabled={true}>{t`No other profiles with overrides`}</MenuItem>
-        )}
-        {!loading &&
-          sources.map((source) => (
-            <MenuItem key={source.id} onClick={() => pickSource(source.id)}>
-              {source.name}
-            </MenuItem>
-          ))}
+        {menuBody}
       </Menu>
     </>
   )
@@ -184,6 +188,16 @@ interface WindowModeFieldProps {
   onChange: (value: WindowMode | undefined) => void
 }
 
+function parseWindowMode(selected: string): WindowMode | undefined {
+  if (selected === '') {
+    return undefined
+  }
+  if (selected === 'windowed' || selected === 'fullscreen' || selected === 'borderless') {
+    return selected
+  }
+  return undefined
+}
+
 function WindowModeField({ disabled, value, onChange }: WindowModeFieldProps) {
   const { t } = useLingui()
   const labelId = useId()
@@ -195,8 +209,7 @@ function WindowModeField({ disabled, value, onChange }: WindowModeFieldProps) {
         label={t`Window mode`}
         value={value ?? ''}
         onChange={(event) => {
-          const selected = String(event.target.value)
-          onChange(selected === '' ? undefined : (selected as WindowMode))
+          onChange(parseWindowMode(String(event.target.value)))
         }}
       >
         <MenuItem value="">{t`Use normal setting`}</MenuItem>
@@ -246,10 +259,14 @@ function PercentageField({ disabled, kind, value, onChange }: PercentageFieldPro
   )
 }
 
-export function GameSettings({ profileId, value, onChange }: GameSettingsProps) {
+interface ProfileGameSettingsFieldsProps {
+  disabled: boolean
+  value: GameSettingsValues | null
+  onChange: (value: GameSettingsValues | null) => void
+}
+
+function ProfileGameSettingsFields({ disabled, value, onChange }: ProfileGameSettingsFieldsProps) {
   const { t } = useLingui()
-  const gameId = useProfiles((s) => s.game?.id ?? '')
-  const disabled = value === null
 
   function updateField<K extends keyof GameSettingsValues>(
     field: K,
@@ -273,15 +290,7 @@ export function GameSettings({ profileId, value, onChange }: GameSettingsProps) 
   }
 
   return (
-    <Stack spacing={2}>
-      <Stack alignItems="center" direction="row" justifyContent="space-between">
-        <Typography variant="h6">{t`Game settings`}</Typography>
-        <CopyFromProfileMenu
-          gameId={gameId}
-          profileId={profileId}
-          onCopy={(next) => onChange(next)}
-        />
-      </Stack>
+    <>
       <FormControlLabel
         control={
           <Switch
@@ -384,6 +393,26 @@ export function GameSettings({ profileId, value, onChange }: GameSettingsProps) 
         value={value?.soundVolumeLevel ?? PERCENT_DEFAULT}
         onChange={(next) => updateField('soundVolumeLevel', next)}
       />
+    </>
+  )
+}
+
+export function GameSettings({ profileId, value, onChange }: GameSettingsProps) {
+  const { t } = useLingui()
+  const gameId = useProfiles((s) => s.game?.id ?? '')
+  const disabled = value === null
+
+  return (
+    <Stack spacing={2}>
+      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="h6">{t`Game settings`}</Typography>
+        <CopyFromProfileMenu
+          gameId={gameId}
+          profileId={profileId}
+          onCopy={(next) => onChange(next)}
+        />
+      </Stack>
+      <ProfileGameSettingsFields disabled={disabled} value={value} onChange={onChange} />
     </Stack>
   )
 }
