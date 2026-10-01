@@ -20,9 +20,12 @@ import type {
 import {
   Cleanup,
   CleanupPreview,
+  MoveDataFolder,
   Usage,
   UsageProgress,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
+import { State } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import type { ImportPreview } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
 import {
   ApplyImportedSettings,
@@ -30,9 +33,11 @@ import {
   OpenDataFolder,
   PreviewImportSettings,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { useLaunch } from '../../launch/store.ts'
 import { paper } from '../../mods/paper.ts'
 import { formatBytes } from '../../saves/backupFormat.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
+import { useToasts } from '../../toasts/store.ts'
 import { beginUsageLoad } from '../usageLoad.ts'
 
 const nowrap = { whiteSpace: 'nowrap' } as const
@@ -122,6 +127,38 @@ function ImportSettingsDialog({
   )
 }
 
+function MoveDataLink() {
+  const { t } = useLingui()
+  return (
+    <Link
+      component="button"
+      onClick={() => {
+        const st = useLaunch.getState().status
+        if (st?.state === State.Launching || st?.state === State.Running) {
+          useToasts.getState().push({
+            kind: 'error',
+            title: t`Stop the game before moving the data folder.`,
+          })
+          return
+        }
+        PickFolder(t`Move data folder…`)
+          .then((dest) => (dest ? MoveDataFolder(dest) : Promise.resolve()))
+          .catch(reportUnexpected)
+      }}
+      sx={{
+        alignSelf: 'flex-start',
+        fontSize: 13,
+        ...nowrap,
+        display: 'inline-flex',
+        gap: 0.75,
+        alignItems: 'center',
+      }}
+    >
+      {t`Move data folder…`}
+    </Link>
+  )
+}
+
 export function Data() {
   const { t } = useLingui()
   const [usage, setUsage] = useState<DiskUse | null>(null)
@@ -182,6 +219,7 @@ export function Data() {
           <FolderOpen size={14} />
           {t`Open folder`}
         </Link>
+        <MoveDataLink />
       </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
         <Button

@@ -6,7 +6,13 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
+
+// PointerName is the file in the default data folder that names a relocated data folder.
+const PointerName = "data-location"
 
 // Dir returns the user data folder, creating it (0700) if needed.
 func Dir() (string, error) {
@@ -20,7 +26,12 @@ func Dir() (string, error) {
 	return dir, nil
 }
 
-func resolve() (string, error) {
+// DefaultDir is the OS default location, ignoring a relocation pointer.
+func DefaultDir() (string, error) {
+	return defaultDir()
+}
+
+func defaultDir() (string, error) {
 	if runtime.GOOS == "windows" {
 		base := os.Getenv("LOCALAPPDATA")
 		if base == "" {
@@ -36,4 +47,23 @@ func resolve() (string, error) {
 		return "", fmt.Errorf("resolve home: %w", err)
 	}
 	return filepath.Join(home, ".local", "share", "mortar"), nil
+}
+
+func resolve() (string, error) {
+	def, err := defaultDir()
+	if err != nil {
+		return "", err
+	}
+	b, err := fsx.ReadFile(filepath.Join(def, PointerName))
+	if err != nil {
+		if os.IsNotExist(err) {
+			return def, nil
+		}
+		return "", err
+	}
+	p := strings.TrimSpace(string(b))
+	if p == "" {
+		return def, nil
+	}
+	return p, nil
 }

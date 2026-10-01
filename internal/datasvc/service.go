@@ -2,6 +2,7 @@
 package datasvc
 
 import (
+	"errors"
 	"os"
 	"slices"
 	"strings"
@@ -20,6 +21,10 @@ type Service struct {
 	staged   func() map[string][]string
 	mu       sync.Mutex
 	progress Progress
+	// Busy is true while the game is launching or running; nil means never busy.
+	Busy func() bool
+	// Restart starts Mortar again after a successful move; nil skips that in tests.
+	Restart func() error
 }
 
 // NewService measures and cleans the data folder using the store's Collect keep set.
@@ -124,4 +129,31 @@ func (s *Service) setProgress(p Progress) {
 	s.mu.Lock()
 	s.progress = p
 	s.mu.Unlock()
+}
+
+var errGameRunning = errors.New("stop the game before moving the data folder")
+
+// MoveDataFolder copies the data folder to dest, verifies it, points the default location at dest, removes the old copy, and restarts.
+func (s *Service) MoveDataFolder(dest string) error {
+	if dest == "" {
+		return errors.New("no folder chosen")
+	}
+	if s.Busy != nil && s.Busy() {
+		return errGameRunning
+	}
+	src, err := datadir.Dir()
+	if err != nil {
+		return err
+	}
+	def, err := datadir.DefaultDir()
+	if err != nil {
+		return err
+	}
+	if err := datadir.Relocate(src, dest, def); err != nil {
+		return err
+	}
+	if s.Restart != nil {
+		return s.Restart()
+	}
+	return nil
 }

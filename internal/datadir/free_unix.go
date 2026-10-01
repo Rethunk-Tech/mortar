@@ -1,0 +1,16 @@
+//go:build unix
+
+package datadir
+
+import (
+	"golang.org/x/sys/unix"
+)
+
+func freeBytes(path string) (int64, error) {
+	var st unix.Statfs_t
+	if err := unix.Statfs(path, &st); err != nil {
+		return 0, err
+	}
+	//nolint:gosec // Statfs block counts are non-negative and fit a signed byte total.
+	return int64(st.Bavail) * st.Bsize, nil
+}
