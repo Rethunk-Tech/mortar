@@ -1,40 +1,36 @@
 package lutris
 
 import (
+	_ "embed"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
+
+//go:embed testdata/gog-linux.yml
+var fixtureGogLinux []byte
+
+//go:embed testdata/steam-runner.yml
+var fixtureSteamRunner []byte
 
 func TestInstallFromFixture(t *testing.T) {
 	dir := t.TempDir()
-	if err := os.WriteFile(filepath.Join(dir, "Stardew Valley.dll"), nil, 0o600); err != nil {
+	if err := fsx.WriteFile(filepath.Join(dir, "Stardew Valley.dll"), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	text, err := os.ReadFile(filepath.Join("testdata", "gog-linux.yml"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	replaced := strings.ReplaceAll(string(text), "/home/player/Games/Stardew Valley", dir)
-	// strings.Replace
-	got, err := installFromFile(writeTempYml(t, replaced))
+	replaced := strings.ReplaceAll(string(fixtureGogLinux), "/home/player/Games/Stardew Valley", dir)
+	got, err := installFromYAML(replaced)
 	if err != nil || got != dir {
 		t.Fatalf("install = %q, %v", got, err)
 	}
-	steam, err := installFromFile(filepath.Join("testdata", "steam-runner.yml"))
+	steam, err := installFromYAML(string(fixtureSteamRunner))
 	if err != nil || steam != "" {
 		t.Fatalf("steam runner = %q, %v", steam, err)
 	}
-}
-
-func writeTempYml(t *testing.T, body string) string {
-	path := filepath.Join(t.TempDir(), "game.yml")
-	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	return path
 }
 
 func TestLocateLinux(t *testing.T) {
@@ -50,11 +46,11 @@ func TestLocateLinux(t *testing.T) {
 	if err := os.MkdirAll(install, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(install, "Stardew Valley.dll"), nil, 0o600); err != nil {
+	if err := fsx.WriteFile(filepath.Join(install, "Stardew Valley.dll"), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	yml := "game_slug: stardew-valley\nscript:\n  runner: linux\ngame:\n  working_dir: " + install + "\n"
-	if err := os.WriteFile(filepath.Join(games, "stardew.yml"), []byte(yml), 0o600); err != nil {
+	if err := fsx.WriteFile(filepath.Join(games, "stardew.yml"), []byte(yml), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	found := Locate(home)

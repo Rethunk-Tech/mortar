@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 const (
@@ -45,8 +47,7 @@ func Locate(home string) []Install {
 			if ent.IsDir() || !strings.HasSuffix(ent.Name(), ".yml") {
 				continue
 			}
-			path := filepath.Join(dir, ent.Name())
-			gameDir, err := installFromFile(path)
+			gameDir, err := installFromConfig(dir, ent.Name())
 			if err != nil || gameDir == "" {
 				continue
 			}
@@ -67,12 +68,15 @@ func gameConfigDirs(home string) []string {
 	}
 }
 
-func installFromFile(path string) (string, error) {
-	b, err := os.ReadFile(path)
+func installFromConfig(gamesDir, name string) (string, error) {
+	b, err := fsx.ReadFile(filepath.Join(gamesDir, name))
 	if err != nil {
 		return "", err
 	}
-	text := string(b)
+	return installFromYAML(string(b))
+}
+
+func installFromYAML(text string) (string, error) {
 	if reRunnerSteam.MatchString(text) {
 		return "", nil
 	}
@@ -131,6 +135,6 @@ func gogGameDir(dir string) string {
 }
 
 func hasMarker(dir string) bool {
-	st, err := os.Stat(filepath.Join(dir, marker))
+	st, err := fsx.Stat(filepath.Join(dir, marker))
 	return err == nil && st.Mode().IsRegular()
 }
