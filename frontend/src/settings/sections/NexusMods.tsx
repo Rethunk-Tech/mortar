@@ -1,14 +1,31 @@
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, Chip, FormControlLabel, Switch, TextField } from '@mui/material'
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  FormControl,
+  FormControlLabel,
+  InputLabel,
+  MenuItem,
+  Select,
+  Switch,
+  TextField,
+} from '@mui/material'
 import { Check, LogIn, LogOut } from 'lucide-react'
 import { type SubmitEvent, useId, useState } from 'react'
 import {
   SignIn,
   SignOut,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
+import {
+  SetNexusPreferredDownloadServer,
+  SetNxmRedirectOtherGames,
+} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { NexusMeter } from '../NexusMeter.tsx'
 import { useNexus } from '../nexus.ts'
+import { useSettings } from '../store.ts'
 import { useNxmHandler } from './nxmHandler.tsx'
 import { nxmOwnerName } from './nxmOwnerName.ts'
 
@@ -16,9 +33,16 @@ export function NexusMods() {
   const { t } = useLingui()
 
   const keyId = useId()
+  const serverId = useId()
   const { signedIn, name, premium } = useNexus()
   const nxm = useNxmHandler()
+  const preferredServer = useSettings((s) => s.nexusPreferredDownloadServer)
+  const seenServers = useSettings((s) => s.nexusSeenDownloadServers)
+  const nxmPrevious = useSettings((s) => s.nxmPrevious)
+  const nxmPreviousName = useSettings((s) => s.nxmPreviousName)
+  const redirectOther = useSettings((s) => s.nxmRedirectOtherGames ?? nxmPrevious !== '')
   const owner = nxmOwnerName(nxm.handled, nxm.owner)
+  const redirectName = nxmOwnerName(true, nxmPreviousName || nxmPrevious)
   const [key, setKey] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -70,6 +94,26 @@ export function NexusMods() {
           </Box>
         )}
         <NexusMeter />
+        {seenServers && seenServers.length > 0 ? (
+          <FormControl size="small" fullWidth={true}>
+            <InputLabel id={serverId}>{t`Preferred download server`}</InputLabel>
+            <Select
+              labelId={serverId}
+              label={t`Preferred download server`}
+              value={preferredServer}
+              onChange={(e) => {
+                SetNexusPreferredDownloadServer(String(e.target.value)).catch(reportUnexpected)
+              }}
+            >
+              <MenuItem value="">{t`Automatic`}</MenuItem>
+              {seenServers?.map((server) => (
+                <MenuItem key={server} value={server}>
+                  {server}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        ) : null}
         <FormControlLabel
           control={<Switch checked={nxm.handled} onChange={(_, on) => nxm.toggle(on)} />}
           label={t`Handle Nexus "Mod Manager Download" links`}
@@ -78,6 +122,17 @@ export function NexusMods() {
           <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
             {t`${owner} opens these links now.`}
           </Box>
+        ) : null}
+        {nxm.handled && nxmPrevious ? (
+          <FormControlLabel
+            control={
+              <Switch
+                checked={redirectOther}
+                onChange={(_, on) => SetNxmRedirectOtherGames(on).catch(reportUnexpected)}
+              />
+            }
+            label={t`Send other games' links to ${redirectName}`}
+          />
         ) : null}
         <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
           {t`Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them.`}
