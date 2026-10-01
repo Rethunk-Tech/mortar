@@ -17,7 +17,7 @@ Remaining ([architecture.md](architecture.md#release)):
 
 - The updater fixes are offered upstream as wailsapp/wails#6200 (EXDEV staging), #6201 (AppImage) and #6202 (OnUpdateApplied, draft pending a WEP); Mortar pins the fork until they ship in a tagged v3 beta; then pin that beta and drop the `Rethunk-AI/wails` replace in `go.mod`. wailsapp/wails#6197 (GTK4 transparency) does not gate this: it only serves the translucent window below.
 - The repo turns public at the first release and builds go on its GitHub Releases, since the updater's manifest and assets must be publicly downloadable.
-- **Measure on Windows:** how launch arguments order around `%command%`, and whether SMAPI needs `--no-terminal`; frameless window under KDE, and Acrylic with a frameless window; the desktop wallpaper read (`SPI_GETDESKWALLPAPER`); one real update through the updater, and `DisplayVersion` after it.
+- **Measure on Windows:** how launch arguments order around `%command%`, and whether SMAPI needs `--no-terminal`; frameless window under KDE, and Acrylic with a frameless window; one real update through the updater, and `DisplayVersion` after it.
 
 ## Build order
 
