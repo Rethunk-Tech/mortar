@@ -13,6 +13,9 @@ func TestToggleDefaultsOn(t *testing.T) {
 	if d.TellWhenSmapiOut == nil || !*d.TellWhenSmapiOut {
 		t.Fatal("tellWhenSmapiOut default is on")
 	}
+	if d.EnableModsWhenInstalled == nil || !*d.EnableModsWhenInstalled {
+		t.Fatal("enableModsWhenInstalled default is on")
+	}
 }
 
 func TestOmittedTogglesNormalizeOn(t *testing.T) {
@@ -26,6 +29,9 @@ func TestOmittedTogglesNormalizeOn(t *testing.T) {
 	normalizeToggles(&s)
 	if !*s.CheckModUpdatesOnStart || !*s.TellWhenSmapiOut {
 		t.Fatal("omitted toggles become on")
+	}
+	if !*s.EnableModsWhenInstalled {
+		t.Fatal("omitted enableModsWhenInstalled becomes on")
 	}
 }
 

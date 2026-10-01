@@ -83,6 +83,12 @@ type Settings struct {
 	KeepInTray bool `json:"keepInTray"`
 	// IncludeBetaReleases offers Mortar prereleases from GitHub when checking for updates.
 	IncludeBetaReleases bool `json:"includeBetaReleases"`
+	// IncludePrereleaseModVersions offers mod updates whose version has a semver prerelease tag. Default off.
+	IncludePrereleaseModVersions bool `json:"includePrereleaseModVersions"`
+	// CheckOnlyEnabledMods limits SMAPI update checks to enabled mods when on. Default off.
+	CheckOnlyEnabledMods bool `json:"checkOnlyEnabledMods"`
+	// EnableModsWhenInstalled is whether new profile entries start with their mods enabled. Nil or omitted means on.
+	EnableModsWhenInstalled *bool `json:"enableModsWhenInstalled"`
 	// TipsSeen is the empty-state tips the user has dismissed (mods, saves, console, share).
 	TipsSeen []string `json:"tipsSeen"`
 	// SmapiToastAt is when Mortar last showed the SMAPI-update toast (RFC3339). Empty means never.
@@ -108,7 +114,7 @@ func Defaults() Settings {
 		GameStores: map[string]string{},
 		Loaders:    map[string]string{}, Dismissed: map[string][]string{}, BackupsKept: backup.DefaultKeep,
 		ListColumns: slices.Clone(defaultListColumns), ListSortColumn: defaultListSortColumn, ListSortDir: defaultListSortDir, ListGroupBy: defaultListGroupBy,
-		CheckModUpdatesOnStart: on(), TellWhenSmapiOut: on(),
+		CheckModUpdatesOnStart: on(), TellWhenSmapiOut: on(), EnableModsWhenInstalled: on(),
 		OverlayPort: DefaultOverlayPort,
 	}
 }
@@ -230,6 +236,14 @@ func normalizeToggles(s *Settings) {
 	if s.TellWhenSmapiOut == nil {
 		s.TellWhenSmapiOut = on()
 	}
+	if s.EnableModsWhenInstalled == nil {
+		s.EnableModsWhenInstalled = on()
+	}
+}
+
+// NewModsEnabled is whether newly installed profile entries should start enabled.
+func (s Settings) NewModsEnabled() bool {
+	return s.EnableModsWhenInstalled == nil || *s.EnableModsWhenInstalled
 }
 
 func validLastPlayed(in map[string]Played) map[string]Played {

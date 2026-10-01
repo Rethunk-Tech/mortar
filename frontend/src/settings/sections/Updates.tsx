@@ -14,7 +14,10 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   SetBackupsKept,
   SetCheckModUpdatesOnStart,
+  SetCheckOnlyEnabledMods,
+  SetEnableModsWhenInstalled,
   SetIncludeBetaReleases,
+  SetIncludePrereleaseModVersions,
   SetTellWhenSmapiOut,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useNav } from '../../nav/store.ts'
@@ -208,6 +211,9 @@ export function Updates() {
   const checkModUpdatesOnStart = useSettings((s) => s.checkModUpdatesOnStart)
   const tellWhenSmapiOut = useSettings((s) => s.tellWhenSmapiOut)
   const includeBetaReleases = useSettings((s) => s.includeBetaReleases)
+  const includePrereleaseModVersions = useSettings((s) => s.includePrereleaseModVersions)
+  const checkOnlyEnabledMods = useSettings((s) => s.checkOnlyEnabledMods)
+  const enableModsWhenInstalled = useSettings((s) => s.enableModsWhenInstalled)
   const push = useToasts((s) => s.push)
   const fail = t`Couldn't save that setting`
   return (
@@ -239,11 +245,43 @@ export function Updates() {
         sx={{ m: 0, alignItems: 'center' }}
         control={
           <Switch
+            checked={includePrereleaseModVersions}
+            onChange={(_, on) =>
+              persistToggle(() => SetIncludePrereleaseModVersions(on), push, fail)
+            }
+          />
+        }
+        label={t`Include pre-release mod versions`}
+      />
+      <FormControlLabel
+        sx={{ m: 0, alignItems: 'center' }}
+        control={
+          <Switch
+            checked={checkOnlyEnabledMods}
+            onChange={(_, on) => persistToggle(() => SetCheckOnlyEnabledMods(on), push, fail)}
+          />
+        }
+        label={t`Check only enabled mods`}
+      />
+      <FormControlLabel
+        sx={{ m: 0, alignItems: 'center' }}
+        control={
+          <Switch
             checked={tellWhenSmapiOut !== false}
             onChange={(_, on) => persistToggle(() => SetTellWhenSmapiOut(on), push, fail)}
           />
         }
         label={t`Tell me when a new SMAPI is out`}
+      />
+      <FormControlLabel
+        sx={{ m: 0, alignItems: 'center' }}
+        control={
+          <Switch
+            checked={enableModsWhenInstalled !== false}
+            onChange={(_, on) => persistToggle(() => SetEnableModsWhenInstalled(on), push, fail)}
+          />
+        }
+        label={t`Enable mods when installed`}
       />
       <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
         {t`Mod updates show on each profile's mod list, and SMAPI's in the game's settings.`}

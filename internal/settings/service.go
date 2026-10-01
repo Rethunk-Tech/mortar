@@ -56,6 +56,21 @@ func (s *Service) SetIncludeBetaReleases(on bool) error {
 	return s.set(func(v *Settings) { v.IncludeBetaReleases = on })
 }
 
+// SetIncludePrereleaseModVersions sets whether offered mod updates may include semver prereleases.
+func (s *Service) SetIncludePrereleaseModVersions(on bool) error {
+	return s.set(func(v *Settings) { v.IncludePrereleaseModVersions = on })
+}
+
+// SetCheckOnlyEnabledMods sets whether SMAPI update checks skip disabled mods.
+func (s *Service) SetCheckOnlyEnabledMods(on bool) error {
+	return s.set(func(v *Settings) { v.CheckOnlyEnabledMods = on })
+}
+
+// SetEnableModsWhenInstalled sets whether newly installed entries start with mods enabled.
+func (s *Service) SetEnableModsWhenInstalled(on bool) error {
+	return s.set(func(v *Settings) { v.EnableModsWhenInstalled = &on })
+}
+
 // SetListColumns stores which Mods list-view columns are shown.
 func (s *Service) SetListColumns(ids []string) error {
 	return s.set(func(v *Settings) { v.ListColumns = ids })

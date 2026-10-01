@@ -74,6 +74,12 @@ function changeLine(field: string, from: string, to: string) {
       return i18n._(msg`List grouping: ${from} → ${to}`)
     case 'checkModUpdatesOnStart':
       return i18n._(msg`Check mod updates on start: ${from} → ${to}`)
+    case 'includePrereleaseModVersions':
+      return i18n._(msg`Include pre-release mod versions: ${from} → ${to}`)
+    case 'checkOnlyEnabledMods':
+      return i18n._(msg`Check only enabled mods: ${from} → ${to}`)
+    case 'enableModsWhenInstalled':
+      return i18n._(msg`Enable mods when installed: ${from} → ${to}`)
     case 'tellWhenSmapiOut':
       return i18n._(msg`Tell when SMAPI is out: ${from} → ${to}`)
     case 'tipsSeen':

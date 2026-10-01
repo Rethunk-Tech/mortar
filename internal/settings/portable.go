@@ -12,20 +12,23 @@ const exportVersion = 1
 
 // Portable is settings.json minus secrets and machine-specific or personal fields.
 type Portable struct {
-	Version                int      `json:"version"`
-	Accent                 string   `json:"accent"`
-	Background             string   `json:"background"`
-	LastGame               string   `json:"lastGame"`
-	BackupsKept            int      `json:"backupsKept"`
-	ListColumns            []string `json:"listColumns"`
-	ListSortColumn         string   `json:"listSortColumn"`
-	ListSortDir            string   `json:"listSortDir"`
-	ListGroupBy            string   `json:"listGroupBy"`
-	CheckModUpdatesOnStart *bool    `json:"checkModUpdatesOnStart"`
-	TellWhenSmapiOut       *bool    `json:"tellWhenSmapiOut"`
-	KeepInTray             bool     `json:"keepInTray"`
-	IncludeBetaReleases    bool     `json:"includeBetaReleases"`
-	TipsSeen               []string `json:"tipsSeen"`
+	Version                      int      `json:"version"`
+	Accent                       string   `json:"accent"`
+	Background                   string   `json:"background"`
+	LastGame                     string   `json:"lastGame"`
+	BackupsKept                  int      `json:"backupsKept"`
+	ListColumns                  []string `json:"listColumns"`
+	ListSortColumn               string   `json:"listSortColumn"`
+	ListSortDir                  string   `json:"listSortDir"`
+	ListGroupBy                  string   `json:"listGroupBy"`
+	CheckModUpdatesOnStart       *bool    `json:"checkModUpdatesOnStart"`
+	TellWhenSmapiOut             *bool    `json:"tellWhenSmapiOut"`
+	KeepInTray                   bool     `json:"keepInTray"`
+	IncludeBetaReleases          bool     `json:"includeBetaReleases"`
+	IncludePrereleaseModVersions bool     `json:"includePrereleaseModVersions"`
+	CheckOnlyEnabledMods         bool     `json:"checkOnlyEnabledMods"`
+	EnableModsWhenInstalled      *bool    `json:"enableModsWhenInstalled"`
+	TipsSeen                     []string `json:"tipsSeen"`
 }
 
 // Change is one field that import would replace.
@@ -44,26 +47,30 @@ type ImportPreview struct {
 var portableFields = []string{
 	"accent", "background", "lastGame", "backupsKept",
 	"listColumns", "listSortColumn", "listSortDir", "listGroupBy",
-	"checkModUpdatesOnStart", "tellWhenSmapiOut", "keepInTray", "includeBetaReleases", "tipsSeen",
+	"checkModUpdatesOnStart", "tellWhenSmapiOut", "keepInTray", "includeBetaReleases",
+	"includePrereleaseModVersions", "checkOnlyEnabledMods", "enableModsWhenInstalled", "tipsSeen",
 }
 
 // MarshalExport writes a versioned JSON of s without secrets or machine-specific fields.
 func MarshalExport(s Settings) ([]byte, error) {
 	p := Portable{
-		Version:                exportVersion,
-		Accent:                 s.Accent,
-		Background:             s.Background,
-		LastGame:               s.LastGame,
-		BackupsKept:            s.BackupsKept,
-		ListColumns:            slices.Clone(s.ListColumns),
-		ListSortColumn:         s.ListSortColumn,
-		ListSortDir:            s.ListSortDir,
-		ListGroupBy:            s.ListGroupBy,
-		CheckModUpdatesOnStart: s.CheckModUpdatesOnStart,
-		TellWhenSmapiOut:       s.TellWhenSmapiOut,
-		KeepInTray:             s.KeepInTray,
-		IncludeBetaReleases:    s.IncludeBetaReleases,
-		TipsSeen:               slices.Clone(s.TipsSeen),
+		Version:                      exportVersion,
+		Accent:                       s.Accent,
+		Background:                   s.Background,
+		LastGame:                     s.LastGame,
+		BackupsKept:                  s.BackupsKept,
+		ListColumns:                  slices.Clone(s.ListColumns),
+		ListSortColumn:               s.ListSortColumn,
+		ListSortDir:                  s.ListSortDir,
+		ListGroupBy:                  s.ListGroupBy,
+		CheckModUpdatesOnStart:       s.CheckModUpdatesOnStart,
+		TellWhenSmapiOut:             s.TellWhenSmapiOut,
+		KeepInTray:                   s.KeepInTray,
+		IncludeBetaReleases:          s.IncludeBetaReleases,
+		IncludePrereleaseModVersions: s.IncludePrereleaseModVersions,
+		CheckOnlyEnabledMods:         s.CheckOnlyEnabledMods,
+		EnableModsWhenInstalled:      s.EnableModsWhenInstalled,
+		TipsSeen:                     slices.Clone(s.TipsSeen),
 	}
 	return json.MarshalIndent(p, "", "  ")
 }
@@ -125,6 +132,15 @@ func ParseExport(b []byte) (Portable, map[string]struct{}, error) {
 	if _, ok := present["includeBetaReleases"]; ok {
 		overlay.IncludeBetaReleases = p.IncludeBetaReleases
 	}
+	if _, ok := present["includePrereleaseModVersions"]; ok {
+		overlay.IncludePrereleaseModVersions = p.IncludePrereleaseModVersions
+	}
+	if _, ok := present["checkOnlyEnabledMods"]; ok {
+		overlay.CheckOnlyEnabledMods = p.CheckOnlyEnabledMods
+	}
+	if _, ok := present["enableModsWhenInstalled"]; ok {
+		overlay.EnableModsWhenInstalled = p.EnableModsWhenInstalled
+	}
 	if _, ok := present["tipsSeen"]; ok {
 		overlay.TipsSeen = p.TipsSeen
 	}
@@ -164,6 +180,15 @@ func ParseExport(b []byte) (Portable, map[string]struct{}, error) {
 	}
 	if _, ok := present["includeBetaReleases"]; ok {
 		p.IncludeBetaReleases = overlay.IncludeBetaReleases
+	}
+	if _, ok := present["includePrereleaseModVersions"]; ok {
+		p.IncludePrereleaseModVersions = overlay.IncludePrereleaseModVersions
+	}
+	if _, ok := present["checkOnlyEnabledMods"]; ok {
+		p.CheckOnlyEnabledMods = overlay.CheckOnlyEnabledMods
+	}
+	if _, ok := present["enableModsWhenInstalled"]; ok {
+		p.EnableModsWhenInstalled = overlay.EnableModsWhenInstalled
 	}
 	if _, ok := present["tipsSeen"]; ok {
 		p.TipsSeen = overlay.TipsSeen
@@ -208,6 +233,15 @@ func ApplyExport(cur *Settings, p Portable, present map[string]struct{}) {
 	}
 	if _, ok := present["includeBetaReleases"]; ok {
 		cur.IncludeBetaReleases = p.IncludeBetaReleases
+	}
+	if _, ok := present["includePrereleaseModVersions"]; ok {
+		cur.IncludePrereleaseModVersions = p.IncludePrereleaseModVersions
+	}
+	if _, ok := present["checkOnlyEnabledMods"]; ok {
+		cur.CheckOnlyEnabledMods = p.CheckOnlyEnabledMods
+	}
+	if _, ok := present["enableModsWhenInstalled"]; ok {
+		cur.EnableModsWhenInstalled = p.EnableModsWhenInstalled
 	}
 	if _, ok := present["tipsSeen"]; ok {
 		cur.TipsSeen = slices.Clone(p.TipsSeen)
@@ -276,6 +310,12 @@ func fieldText(s Settings, field string) string {
 		return strconv.FormatBool(s.KeepInTray)
 	case "includeBetaReleases":
 		return strconv.FormatBool(s.IncludeBetaReleases)
+	case "includePrereleaseModVersions":
+		return strconv.FormatBool(s.IncludePrereleaseModVersions)
+	case "checkOnlyEnabledMods":
+		return strconv.FormatBool(s.CheckOnlyEnabledMods)
+	case "enableModsWhenInstalled":
+		return boolText(s.EnableModsWhenInstalled)
 	case "tipsSeen":
 		return strings.Join(s.TipsSeen, ", ")
 	default:
