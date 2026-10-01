@@ -4,6 +4,11 @@ includes:
   common: ../Taskfile.yml
 
 tasks:
+  build:arm64:
+    summary: Cross-compiles linux/arm64 (zig cc + Ubuntu 24.04 sysroot, no binfmt)
+    cmds:
+      - bash build/linux/cross-arm64.sh
+
   build:
     summary: Builds the application for Linux (CGO, native host only)
     cmds:

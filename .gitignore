@@ -1,4 +1,5 @@
 .task
+tmp/
 bin
 frontend/dist
 node_modules
