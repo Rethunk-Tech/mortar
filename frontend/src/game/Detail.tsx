@@ -262,8 +262,8 @@ function Hero({ profile, game }: { profile: Profile; game: string }) {
         sx={{
           position: 'absolute',
           inset: 0,
-          maskImage: 'linear-gradient(to bottom, #000 60%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, #000 60%, transparent 100%)',
+          maskImage: HERO_FADE,
+          WebkitMaskImage: HERO_FADE,
           [compact]: { display: 'none' },
         }}
       >
@@ -326,6 +326,9 @@ function Centered({ children }: { children: ReactNode }) {
     </Box>
   )
 }
+
+// The cover stays opaque until its bottom fifth, so it fades out right at the top of the tab row.
+const HERO_FADE = 'linear-gradient(to bottom, #000 80%, transparent 100%)'
 
 export function Detail() {
   const { t } = useLingui()
