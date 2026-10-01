@@ -14,19 +14,46 @@ contents:
     dst: /usr/bin/mortar
     file_info:
       mode: 0755
+      owner: root
+      group: root
   - src: build/linux/tech.rethunk.Mortar.desktop
     dst: /usr/share/applications/tech.rethunk.Mortar.desktop
-  - src: build/appicon.png
-    dst: /usr/share/icons/hicolor/1024x1024/apps/tech.rethunk.Mortar.png
+    file_info:
+      owner: root
+      group: root
+  - src: build/linux/mime/mortar.xml
+    dst: /usr/share/mime/packages/mortar.xml
+    file_info:
+      owner: root
+      group: root
+  - src: build/linux/icons/tech.rethunk.Mortar-512.png
+    dst: /usr/share/icons/hicolor/512x512/apps/tech.rethunk.Mortar.png
+    file_info:
+      owner: root
+      group: root
+  - src: build/linux/icons/tech.rethunk.Mortar-256.png
+    dst: /usr/share/icons/hicolor/256x256/apps/tech.rethunk.Mortar.png
+    file_info:
+      owner: root
+      group: root
+  - src: build/appicon.svg
+    dst: /usr/share/icons/hicolor/scalable/apps/tech.rethunk.Mortar.svg
+    file_info:
+      owner: root
+      group: root
 overrides:
   deb:
     depends:
       - libwebkitgtk-6.0-4
+      - xdg-utils
   rpm:
     depends:
       - webkitgtk6.0
+      - xdg-utils
   archlinux:
     depends:
       - webkitgtk-6.0
+      - xdg-utils
 depends:
   - webkitgtk-6.0
+  - xdg-utils

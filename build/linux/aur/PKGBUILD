@@ -6,12 +6,12 @@ pkgdesc='Desktop mod manager for Stardew Valley'
 arch=('x86_64')
 url='https://github.com/Rethunk-AI/mortar'
 license=('AGPL-3.0-only')
-depends=('webkitgtk-6.0')
+depends=('webkitgtk-6.0' 'xdg-utils')
 provides=('mortar')
 conflicts=('mortar')
 source=(
   "mortar-linux-amd64::https://github.com/Rethunk-AI/mortar/releases/download/v${pkgver}/mortar-linux-amd64"
-  "https://github.com/Rethunk-AI/mortar/archive/refs/tags/v${pkgver}.tar.gz"
+  "mortar-${pkgver}.tar.gz::https://github.com/Rethunk-AI/mortar/archive/refs/tags/v${pkgver}.tar.gz"
 )
 sha256sums=(
   'SKIP'
@@ -22,6 +22,12 @@ package() {
   install -Dm755 mortar-linux-amd64 "${pkgdir}/usr/bin/mortar"
   install -Dm644 "mortar-${pkgver}/build/linux/tech.rethunk.Mortar.desktop" \
     "${pkgdir}/usr/share/applications/tech.rethunk.Mortar.desktop"
-  install -Dm644 "mortar-${pkgver}/build/appicon.png" \
-    "${pkgdir}/usr/share/icons/hicolor/1024x1024/apps/tech.rethunk.Mortar.png"
+  install -Dm644 "mortar-${pkgver}/build/linux/mime/mortar.xml" \
+    "${pkgdir}/usr/share/mime/packages/mortar.xml"
+  install -Dm644 "mortar-${pkgver}/build/linux/icons/tech.rethunk.Mortar-512.png" \
+    "${pkgdir}/usr/share/icons/hicolor/512x512/apps/tech.rethunk.Mortar.png"
+  install -Dm644 "mortar-${pkgver}/build/linux/icons/tech.rethunk.Mortar-256.png" \
+    "${pkgdir}/usr/share/icons/hicolor/256x256/apps/tech.rethunk.Mortar.png"
+  install -Dm644 "mortar-${pkgver}/build/appicon.svg" \
+    "${pkgdir}/usr/share/icons/hicolor/scalable/apps/tech.rethunk.Mortar.svg"
 }
