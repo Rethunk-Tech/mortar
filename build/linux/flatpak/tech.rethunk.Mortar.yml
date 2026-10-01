@@ -1,0 +1,27 @@
+app-id: tech.rethunk.Mortar
+runtime: org.gnome.Platform
+runtime-version: "48"
+sdk: org.gnome.Sdk
+command: mortar
+finish-args:
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --filesystem=xdg-data/Steam
+  - --filesystem=~/.var/app/com.valvesoftware.Steam
+  - --filesystem=xdg-data/mortar
+modules:
+  - name: mortar
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 mortar-packaged /app/bin/mortar
+      - install -Dm644 tech.rethunk.Mortar.desktop /app/share/applications/tech.rethunk.Mortar.desktop
+      - install -Dm644 appicon.png /app/share/icons/hicolor/1024x1024/apps/tech.rethunk.Mortar.png
+    sources:
+      - type: file
+        path: ../../../bin/mortar-packaged
+      - type: file
+        path: ../tech.rethunk.Mortar.desktop
+      - type: file
+        path: ../../appicon.png
