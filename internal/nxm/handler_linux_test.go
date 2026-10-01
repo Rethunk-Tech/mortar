@@ -440,6 +440,82 @@ MimeType=x-scheme-handler/nxm;x-scheme-handler/mortar;application/x-mortar;
 	}
 }
 
+func TestPackagedRegisterLinksSkipsUserDesktop(t *testing.T) {
+	packaged = "deb"
+	t.Cleanup(func() { packaged = "" })
+	l, r := newLinux(t, "vortex.desktop")
+	if err := l.RegisterLinks(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("packaged RegisterLinks wrote a user desktop entry")
+	}
+	if _, err := os.Stat(filepath.Join(l.dataHome, "mime", "packages", "mortar.xml")); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("packaged RegisterLinks wrote MIME XML")
+	}
+	if _, err := os.Stat(l.iconPNGPath()); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("packaged RegisterLinks wrote icons")
+	}
+	want := []string{
+		xdgMime + " default " + desktopID + " " + mortarMime,
+		xdgMime + " default " + desktopID + " " + fileMime,
+	}
+	if strings.Join(r.calls, "\n") != strings.Join(want, "\n") {
+		t.Errorf("calls = %q", r.calls)
+	}
+}
+
+func TestPackagedRefreshSkipsUserDesktop(t *testing.T) {
+	packaged = "deb"
+	t.Cleanup(func() { packaged = "" })
+	l, r := newLinux(t, "")
+	if err := l.refresh(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("packaged refresh wrote a user desktop entry")
+	}
+	if len(r.calls) != 2 {
+		t.Errorf("refresh still sets packaged mime defaults, calls = %q", r.calls)
+	}
+}
+
+func TestPackagedRegisterSetsNxmDefaultWithoutWriting(t *testing.T) {
+	packaged = "deb"
+	t.Cleanup(func() { packaged = "" })
+	l, r := newLinux(t, "vortex.desktop")
+	if err := l.Register(); err != nil {
+		t.Fatal(err)
+	}
+	if r.current != desktopID {
+		t.Fatalf("default is %q after packaged Register", r.current)
+	}
+	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("packaged Register wrote a user desktop entry")
+	}
+}
+
+func TestFlatpakSkipsXdgMime(t *testing.T) {
+	packaged = "flatpak"
+	t.Cleanup(func() { packaged = "" })
+	l, r := newLinux(t, "")
+	if err := l.Register(); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.RegisterLinks(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := l.Owner(); err != nil {
+		t.Fatal(err)
+	}
+	if len(r.calls) != 0 {
+		t.Errorf("flatpak ran xdg-mime: %q", r.calls)
+	}
+	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("flatpak wrote a user desktop entry")
+	}
+}
+
 func TestForeignOldDesktopIsLeftAlone(t *testing.T) {
 	l, _ := newLinux(t, legacyDesktopID)
 	old := l.legacyDesktopPath()

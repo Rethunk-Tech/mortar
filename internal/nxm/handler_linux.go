@@ -30,6 +30,30 @@ const (
 	desktopPerm     = 0o644
 )
 
+// packaged is set by `-X github.com/Rethunk-AI/mortar/internal/nxm.packaged=` from the same PACKAGED
+// value as main.packaged (deb, flatpak, …).
+var packaged string
+
+func skipUserDesktop() bool { return packaged != "" }
+
+func skipXdgMime() bool {
+	if packaged == "flatpak" {
+		return true
+	}
+	_, err := os.Stat("/.flatpak-info")
+	return err == nil
+}
+
+func (l *System) setDefault(mime string) error {
+	if skipXdgMime() {
+		return nil
+	}
+	if _, err := l.run(xdgMime, "default", desktopID, mime); err != nil {
+		return fmt.Errorf("xdg-mime default: %w", err)
+	}
+	return nil
+}
+
 // System is the system's registration of the nxm scheme.
 type System struct {
 	exe string
@@ -89,6 +113,9 @@ func (l *System) legacyDesktopPath() string {
 }
 
 func (l *System) Owner() (Owner, error) {
+	if skipXdgMime() {
+		return Owner{}, nil
+	}
 	out, err := l.run(xdgMime, "query", "default", nxmMime)
 	if err != nil {
 		return Owner{}, fmt.Errorf("xdg-mime query: %w", err)
@@ -206,23 +233,28 @@ func (l *System) writeDesktop(withNxm bool) error {
 }
 
 func (l *System) Register() error {
+	if skipUserDesktop() {
+		return l.setDefault(nxmMime)
+	}
 	if err := l.migrateLegacy(); err != nil {
 		return err
 	}
 	if err := l.writeDesktop(true); err != nil {
 		return err
 	}
-	if _, err := l.run(xdgMime, "default", desktopID, nxmMime); err != nil {
-		return fmt.Errorf("xdg-mime default: %w", err)
-	}
-	return nil
+	return l.setDefault(nxmMime)
 }
 
 func (l *System) Restore(previous string) error {
-	if err := l.writeDesktop(false); err != nil {
-		return err
+	if !skipUserDesktop() {
+		if err := l.writeDesktop(false); err != nil {
+			return err
+		}
 	}
 	if previous != "" {
+		if skipXdgMime() {
+			return nil
+		}
 		if _, err := l.run(xdgMime, "default", previous, nxmMime); err != nil {
 			return fmt.Errorf("xdg-mime default: %w", err)
 		}
@@ -270,6 +302,14 @@ const mimeXML = `<?xml version="1.0" encoding="UTF-8"?>
 // definition and the desktop entry, and sets both defaults. Running it again changes nothing. The nxm scheme is
 // left as it is.
 func (l *System) RegisterLinks() error {
+	if skipUserDesktop() {
+		for _, mime := range []string{mortarMime, fileMime} {
+			if err := l.setDefault(mime); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
 	if err := l.migrateLegacy(); err != nil {
 		return err
 	}
@@ -289,8 +329,8 @@ func (l *System) RegisterLinks() error {
 		return err
 	}
 	for _, mime := range []string{mortarMime, fileMime} {
-		if _, err := l.run(xdgMime, "default", desktopID, mime); err != nil {
-			return fmt.Errorf("xdg-mime default: %w", err)
+		if err := l.setDefault(mime); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -300,7 +340,7 @@ func (l *System) RegisterLinks() error {
 // moves the file. When no entry exists yet it registers mortar:// and .mortar so a skipped first run still gets
 // those. Only a production build refreshes, so a dev build or go run does not take the entry from the installed Mortar.
 func (l *System) Refresh() error {
-	if !production {
+	if !production || skipUserDesktop() {
 		return nil
 	}
 	return l.refresh()
@@ -348,6 +388,9 @@ func oursLegacyDesktop(entry []byte, exe string) bool {
 }
 
 func (l *System) mimeDefault(mime string) string {
+	if skipXdgMime() {
+		return ""
+	}
 	out, err := l.run(xdgMime, "query", "default", mime)
 	if err != nil {
 		return ""
@@ -417,8 +460,8 @@ func (l *System) migrateLegacy() error {
 		case "":
 			keepLegacy = true
 		case legacyDesktopID:
-			if _, err := l.run(xdgMime, "default", desktopID, mime); err != nil {
-				return fmt.Errorf("xdg-mime default: %w", err)
+			if err := l.setDefault(mime); err != nil {
+				return err
 			}
 			move = append(move, mime)
 		}
