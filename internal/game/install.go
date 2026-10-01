@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Rethunk-AI/mortar/internal/gog"
+	"github.com/Rethunk-AI/mortar/internal/lutris"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/steam"
 )
@@ -13,6 +14,7 @@ const (
 	StoreFlatpakSteam = "flatpak-steam"
 	StoreGOG          = gog.StoreGOG
 	StoreGOGHeroic    = gog.StoreHeroic
+	StoreLutris       = lutris.StoreLutris
 )
 
 // FoundInstall is one discovered game folder and the store it came from.
@@ -21,7 +23,7 @@ type FoundInstall struct {
 	Dir   string `json:"dir"`
 }
 
-var storeOrder = []string{StoreSteam, StoreFlatpakSteam, StoreGOG, StoreGOGHeroic}
+var storeOrder = []string{StoreSteam, StoreFlatpakSteam, StoreGOG, StoreGOGHeroic, StoreLutris}
 
 func collect(g Game, home string) []FoundInstall {
 	var all []FoundInstall
@@ -49,6 +51,9 @@ func collect(g Game, home string) []FoundInstall {
 	}
 	for _, in := range gog.Locate(home) {
 		add(in.Store, in.Dir)
+	}
+	for _, in := range lutris.Locate(home) {
+		add(StoreLutris, in.Dir)
 	}
 	return all
 }

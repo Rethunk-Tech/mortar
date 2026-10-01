@@ -1,0 +1,7 @@
+game_slug: stardew-valley
+name: Stardew Valley
+slug: stardew-valley-steam
+script:
+  runner: steam
+  game:
+    appid: "413150"

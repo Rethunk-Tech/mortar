@@ -1,0 +1,9 @@
+game_slug: stardew-valley
+name: Stardew Valley
+slug: stardew-valley-abc123
+game:
+  exe: /home/player/Games/Stardew Valley/Stardew Valley
+  working_dir: /home/player/Games/Stardew Valley
+  slug: stardew-valley
+script:
+  runner: linux

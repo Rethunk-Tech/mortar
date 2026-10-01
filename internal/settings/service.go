@@ -148,7 +148,7 @@ func (s *Service) SetGameFolder(game, dir string) error {
 // SetGameStore stores the chosen store for game, or clears it when store is empty.
 func (s *Service) SetGameStore(game, store string) error {
 	switch store {
-	case "", "steam", "flatpak-steam", "gog", "gog-heroic":
+	case "", "steam", "flatpak-steam", "gog", "gog-heroic", "lutris":
 	default:
 		return fmt.Errorf("unknown store %q", store)
 	}

@@ -506,7 +506,7 @@ func (s *Service) begin(g game.Game, profileID, dir, modsDir string, direct, van
 	if err != nil {
 		return err
 	}
-	if store == game.StoreGOG || store == game.StoreGOGHeroic {
+	if store == game.StoreGOG || store == game.StoreGOGHeroic || store == game.StoreLutris {
 		req.Direct = true
 	}
 	if st, status := steam.Locate(s.home); status == steam.Found {
