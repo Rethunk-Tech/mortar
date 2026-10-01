@@ -28,6 +28,8 @@ type Manifest struct {
 	UniqueID    string
 	Description string
 	UpdateKeys  []string
+	// ContentPackFor is the ContentPackFor framework UniqueID when the manifest declares one.
+	ContentPackFor string
 	// Dependencies lists Dependencies[] and, as a required entry, the ContentPackFor framework.
 	Dependencies []Dependency
 }
@@ -53,6 +55,9 @@ func Parse(b []byte) (Manifest, error) {
 		UniqueID:    text(raw, "uniqueid"),
 		Description: text(raw, "description"),
 		UpdateKeys:  texts(field(raw, "updatekeys")),
+	}
+	if d, ok := dependency(field(raw, "contentpackfor")); ok {
+		m.ContentPackFor = d.UniqueID
 	}
 	m.Dependencies = dependencies(raw)
 	if m.UniqueID == "" {

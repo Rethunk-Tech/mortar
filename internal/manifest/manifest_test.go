@@ -24,9 +24,12 @@ func TestParseLenient(t *testing.T) {
 		},
 		"dependencies and content pack": {
 			`{"UniqueID":"A.P","UpdateKeys":["Nexus:1"," ",7],"Dependencies":[{"UniqueID":"B.Req","MinimumVersion":"1.2-beta"},{"uniqueid":"B.Opt","isrequired":false},{"MinimumVersion":"1"},"junk"],"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher","MinimumVersion":"2.0"}}`,
-			Manifest{UniqueID: "A.P", UpdateKeys: []string{"Nexus:1"}, Dependencies: []Dependency{
-				{"B.Req", "1.2-beta", true}, {"B.Opt", "", false}, {"Pathoschild.ContentPatcher", "2.0", true},
-			}},
+			Manifest{
+				UniqueID: "A.P", UpdateKeys: []string{"Nexus:1"}, ContentPackFor: "Pathoschild.ContentPatcher",
+				Dependencies: []Dependency{
+					{"B.Req", "1.2-beta", true}, {"B.Opt", "", false}, {"Pathoschild.ContentPatcher", "2.0", true},
+				},
+			},
 		},
 		"legacy version object": {
 			`{"Name":"Old","Author":"A","UniqueID":"A.Old","Version":{"MajorVersion":1,"MinorVersion":2,"PatchVersion":3,"Build":"beta"}}`,
