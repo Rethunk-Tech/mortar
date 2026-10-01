@@ -459,10 +459,6 @@ msgstr "All outcomes"
 msgid "Fishing skill"
 msgstr "Fishing skill"
 
-#: src/mods/describe.ts:50
-msgid "{who} all edit {target}; the result depends on order."
-msgstr "{who} all edit {target}; the result depends on order."
-
 #: src/share/ImportDialog.tsx:56
 msgid "Import profile"
 msgstr "Import profile"
@@ -1333,7 +1329,7 @@ msgstr "{name} is abandoned: {summary}"
 msgid "Choose image…"
 msgstr "Choose image…"
 
-#: src/console/BisectDialog.tsx:154
+#: src/console/BisectDialog.tsx:156
 msgid "Stopping…"
 msgstr "Stopping…"
 
@@ -1405,7 +1401,7 @@ msgstr " · Stardew Valley {version}"
 msgid "Disabled"
 msgstr "Disabled"
 
-#: src/console/BisectDialog.tsx:120
+#: src/console/BisectDialog.tsx:118
 msgid "{names} seems to cause the crash"
 msgstr "{names} seems to cause the crash"
 
@@ -1437,7 +1433,7 @@ msgstr "Could not install SMAPI"
 msgid "You can also drop archives anywhere on the window."
 msgstr "You can also drop archives anywhere on the window."
 
-#: src/console/BisectDialog.tsx:122
+#: src/console/BisectDialog.tsx:119
 msgid "The original profile was not changed."
 msgstr "The original profile was not changed."
 
@@ -1557,7 +1553,7 @@ msgstr "{name} has no file Mortar can use in place of the one shared"
 msgid "Duplicate"
 msgstr "Duplicate"
 
-#: src/mods/describe.ts:60
+#: src/mods/describe.ts:68
 msgid "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 
@@ -1594,7 +1590,7 @@ msgstr "Choose a file"
 msgid "Mortar starts the unmodded game directly so SMAPI's Linux launcher is not used. The Steam overlay and Steam's playtime tracking will not work. Steam still supplies the API if it is running."
 msgstr "Mortar starts the unmodded game directly so SMAPI's Linux launcher is not used. The Steam overlay and Steam's playtime tracking will not work. Steam still supplies the API if it is running."
 
-#: src/console/BisectDialog.tsx:113
+#: src/console/BisectDialog.tsx:168
 msgid "Finding the mod causing the crash"
 msgstr "Finding the mod causing the crash"
 
@@ -1665,7 +1661,7 @@ msgstr "Could not read this Mortar build's version: {failed}"
 msgid "SMAPI is not installed"
 msgstr "SMAPI is not installed"
 
-#: src/mods/describe.ts:62
+#: src/mods/describe.ts:70
 msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
 
@@ -1810,7 +1806,7 @@ msgid "Mods in this category will move to Uncategorized."
 msgstr "Mods in this category will move to Uncategorized."
 
 #. placeholder {0}: p.duplicate.name
-#: src/mods/describe.ts:68
+#: src/mods/describe.ts:76
 msgid "{0} is installed twice, and SMAPI loads only one."
 msgstr "{0} is installed twice, and SMAPI loads only one."
 
@@ -1888,7 +1884,7 @@ msgstr "Zoom ({value}%)"
 msgid "Updates are unknown: SMAPI's update service could not be reached."
 msgstr "Updates are unknown: SMAPI's update service could not be reached."
 
-#: src/mods/describe.ts:80
+#: src/mods/describe.ts:88
 msgid "{name} logged {count} errors in the last run."
 msgstr "{name} logged {count} errors in the last run."
 
@@ -2228,6 +2224,10 @@ msgstr "Deleted profiles stay here for 30 days, mods and settings included."
 msgid "Stardew Valley {0}"
 msgstr "Stardew Valley {0}"
 
+#: src/mods/describe.ts:56
+msgid "{who} all load {target}.{winner}"
+msgstr "{who} all load {target}.{winner}"
+
 #: src/mods/store.ts:119
 msgid "Could not check the mods for problems"
 msgstr "Could not check the mods for problems"
@@ -2332,6 +2332,10 @@ msgstr "Saving…"
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
+#: src/mods/describe.ts:58
+msgid "{who} all edit {target}.{winner}"
+msgstr "{who} all edit {target}.{winner}"
+
 #: src/mods/ListColumnMenu.tsx:59
 msgid "Notes and tags"
 msgstr "Notes and tags"
@@ -2399,6 +2403,10 @@ msgstr "Check mod updates on start: {from} → {to}"
 #: src/firstrun/ProfileStep.tsx:89
 msgid "Copy the mods already in Stardew Valley's Mods folder into a new profile. Nothing in the game folder is moved or changed."
 msgstr "Copy the mods already in Stardew Valley's Mods folder into a new profile. Nothing in the game folder is moved or changed."
+
+#: src/mods/describe.ts:49
+msgid " The winner is unclear."
+msgstr " The winner is unclear."
 
 #: src/launch/VanillaPlay.tsx:179
 msgid "Play without Steam overlay"
@@ -2586,7 +2594,7 @@ msgstr "This pack has files that always install."
 msgid "Optional"
 msgstr "Optional"
 
-#: src/console/BisectDialog.tsx:128
+#: src/console/BisectDialog.tsx:125
 msgid "Crash finding failed."
 msgstr "Crash finding failed."
 
@@ -2678,7 +2686,7 @@ msgstr "How to share"
 msgid "Choose cover image…"
 msgstr "Choose cover image…"
 
-#: src/console/BisectDialog.tsx:126
+#: src/console/BisectDialog.tsx:123
 msgid "Crash finding was stopped."
 msgstr "Crash finding was stopped."
 
@@ -2811,6 +2819,10 @@ msgstr "Has used:"
 msgid "Found in Steam"
 msgstr "Found in Steam"
 
+#: src/mods/describe.ts:53
+msgid " {winnerName} wins; {losers} overridden."
+msgstr " {winnerName} wins; {losers} overridden."
+
 #: src/mods/ModsTab.tsx:300
 msgid "Could not read the mods: {loadError}"
 msgstr "Could not read the mods: {loadError}"
@@ -2938,7 +2950,7 @@ msgstr "Winter"
 msgid "Manage tools"
 msgstr "Manage tools"
 
-#: src/mods/describe.ts:78
+#: src/mods/describe.ts:86
 msgid "{name} logged an error in the last run: {first}"
 msgstr "{name} logged an error in the last run: {first}"
 
@@ -3017,10 +3029,6 @@ msgstr "Mortar can start SMAPI directly instead. The Steam overlay and Steam's p
 #: src/mods/NexusAccountActions.tsx:99
 msgid "Endorse"
 msgstr "Endorse"
-
-#: src/mods/describe.ts:48
-msgid "{who} all load {target}; only one wins."
-msgstr "{who} all load {target}; only one wins."
 
 #: src/share/ImportPreview.tsx:47
 msgid "Check later"
@@ -3435,7 +3443,7 @@ msgstr "GOG via Heroic"
 #. placeholder {0}: status.step
 #. placeholder {1}: status.total
 #. placeholder {2}: status.modsLeft
-#: src/console/BisectDialog.tsx:132
+#: src/console/BisectDialog.tsx:130
 msgid "Step {0} of ~{1}, {2} mods left"
 msgstr "Step {0} of ~{1}, {2} mods left"
 
@@ -3587,7 +3595,7 @@ msgstr "Luck skill"
 msgid "Import from…"
 msgstr "Import from…"
 
-#: src/mods/describe.ts:57
+#: src/mods/describe.ts:65
 msgid "{dependentName} needs {dep}, which is switched off."
 msgstr "{dependentName} needs {dep}, which is switched off."
 
@@ -4009,7 +4017,7 @@ msgstr "Hide"
 msgid "Hide details"
 msgstr "Hide details"
 
-#: src/console/BisectDialog.tsx:117
+#: src/console/BisectDialog.tsx:114
 msgid "Preparing a temporary copy of this profile…"
 msgstr "Preparing a temporary copy of this profile…"
 
@@ -4017,6 +4025,10 @@ msgstr "Preparing a temporary copy of this profile…"
 #: src/settings/sections/Appearance.tsx:86
 msgid "Accent colour"
 msgstr "Accent colour"
+
+#: src/mods/describe.ts:53
+msgid " {winnerName} wins."
+msgstr " {winnerName} wins."
 
 #: src/profiles/GameSettings.tsx:215
 msgid "Use normal setting"
@@ -4543,7 +4555,7 @@ msgstr "Has used {0, plural, one {# mod it lacks} other {# mods it lacks}}"
 msgid "Open Nexus settings"
 msgstr "Open Nexus settings"
 
-#: src/console/BisectDialog.tsx:154
+#: src/console/BisectDialog.tsx:156
 msgid "Stop"
 msgstr "Stop"
 
@@ -4625,7 +4637,7 @@ msgid "Version {0}"
 msgstr "Version {0}"
 
 #: src/console/BisectDialog.tsx:141
-#: src/console/BisectDialog.tsx:151
+#: src/console/BisectDialog.tsx:152
 #: src/console/HelpDialog.tsx:207
 #: src/launch/LaunchLayer.tsx:289
 #: src/mods/CategoryEditor.tsx:143
