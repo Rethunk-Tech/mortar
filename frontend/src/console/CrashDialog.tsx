@@ -10,7 +10,7 @@ import {
 } from '@mui/material'
 import { LifeBuoy, Terminal } from 'lucide-react'
 import { useState } from 'react'
-import * as Bisect from '../../bindings/github.com/Rethunk-AI/mortar/internal/bisect/service.js'
+import { Start as StartBisect } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bisect/service.ts'
 import { useTab } from '../game/tab.ts'
 import { useLaunch } from '../launch/store.ts'
 import { paper } from '../mods/paper.ts'
@@ -39,7 +39,7 @@ export function CrashDialog() {
   const canBisect = crash.mods === null || crash.mods.length === 0
   const startBisect = async () => {
     try {
-      const id = await Bisect.Start(crash.game, crash.profile)
+      const id = await StartBisect(crash.game, crash.profile)
       setBisectJob({ id, game: crash.game, profile: crash.profile })
       setBisectError(null)
       dismiss()
@@ -69,17 +69,17 @@ export function CrashDialog() {
               </Box>
             ))
           )}
-          {bisectError && <Typography color="error">{bisectError}</Typography>}
+          {bisectError ? <Typography color="error">{bisectError}</Typography> : null}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
           <Button onClick={dismiss} sx={{ whiteSpace: 'nowrap' }}>
             {t`Dismiss`}
           </Button>
-          {canBisect && (
-            <Button onClick={() => void startBisect()} sx={{ whiteSpace: 'nowrap' }}>
+          {canBisect ? (
+            <Button onClick={startBisect} sx={{ whiteSpace: 'nowrap' }}>
               {t`Find the mod causing this`}
             </Button>
-          )}
+          ) : null}
           <Button
             variant="outlined"
             startIcon={<LifeBuoy size={16} />}
@@ -108,14 +108,14 @@ export function CrashDialog() {
           </Button>
         </DialogActions>
       </Dialog>
-      {bisectJob && (
+      {bisectJob ? (
         <BisectDialog
           game={bisectJob.game}
           profile={bisectJob.profile}
           jobID={bisectJob.id}
           onClose={() => setBisectJob(null)}
         />
-      )}
+      ) : null}
     </>
   )
 }

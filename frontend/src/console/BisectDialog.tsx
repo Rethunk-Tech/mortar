@@ -8,17 +8,23 @@ import {
   LinearProgress,
   Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
-import * as Bisect from '../../bindings/github.com/Rethunk-AI/mortar/internal/bisect/service.js'
+import { type ReactNode, useEffect, useState } from 'react'
+import {
+  Status,
+  Stop,
+  SwitchOff,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/bisect/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 
-type ModResult = {
+const pollDelayMs = 500
+
+interface ModResult {
   key: string
   uniqueId: string
   name: string
 }
 
-type BisectStatus = {
+interface BisectStatus {
   state: string
   step: number
   total: number
@@ -29,7 +35,7 @@ type BisectStatus = {
   error?: string
 }
 
-type Props = {
+interface Props {
   game: string
   profile: string
   jobID: string | null
@@ -47,16 +53,16 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
       return
     }
     let active = true
-    let timer: number | undefined
+    let timer: ReturnType<typeof globalThis.setTimeout> | undefined
     const poll = async () => {
       try {
-        const next = (await Bisect.Status(jobID)) as BisectStatus
+        const next = (await Status(jobID)) as BisectStatus
         if (!active) {
           return
         }
         setStatus(next)
         if (next.state === 'starting' || next.state === 'running') {
-          timer = window.setTimeout(() => void poll(), 500)
+          timer = globalThis.setTimeout(poll, pollDelayMs)
         }
       } catch (error) {
         if (active) {
@@ -70,11 +76,11 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
         }
       }
     }
-    void poll()
+    poll().catch(() => undefined)
     return () => {
       active = false
       if (timer !== undefined) {
-        window.clearTimeout(timer)
+        globalThis.clearTimeout(timer)
       }
     }
   }, [jobID])
@@ -86,7 +92,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
     }
     setStopping(true)
     try {
-      await Bisect.Stop(jobID)
+      await Stop(jobID)
     } finally {
       setStopping(false)
     }
@@ -94,7 +100,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
 
   const switchOff = async () => {
     const mods = status?.result?.mods ?? []
-    await Promise.all(mods.map((mod) => Bisect.SwitchOff(game, profile, mod.key, mod.uniqueId)))
+    await Promise.all(mods.map((mod) => SwitchOff(game, profile, mod.key, mod.uniqueId)))
     useProfiles.getState().open(profile)
     onClose()
   }
@@ -103,6 +109,55 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
   const stopped = status?.state === 'stopped'
   const failed = status?.state === 'failed'
   const names = status?.result?.mods.map((mod) => mod.name).join(' + ') ?? ''
+  let content: ReactNode
+  if (status === null || status.state === 'starting') {
+    content = <Typography>{t`Preparing a temporary copy of this profile…`}</Typography>
+  } else if (done) {
+    content = (
+      <>
+        <Typography sx={{ fontWeight: 700 }}>{t`${names} seems to cause the crash`}</Typography>
+        <Typography color="text.secondary">{t`The original profile was not changed.`}</Typography>
+      </>
+    )
+  } else if (stopped) {
+    content = <Typography>{t`Crash finding was stopped.`}</Typography>
+  } else if (failed) {
+    content = <Typography color="error">{status.error || t`Crash finding failed.`}</Typography>
+  } else {
+    content = (
+      <>
+        <Typography>
+          {t`Step ${status.step} of ~${status.total}, ${status.modsLeft} mods left`}
+        </Typography>
+        <LinearProgress />
+      </>
+    )
+  }
+
+  let actions: ReactNode
+  if (done) {
+    actions = (
+      <>
+        <Button onClick={onClose}>{t`Close`}</Button>
+        <Button
+          onClick={() => {
+            useProfiles.getState().open(profile)
+            onClose()
+          }}
+        >{t`Open page`}</Button>
+        <Button variant="contained" onClick={switchOff}>{t`Switch off`}</Button>
+      </>
+    )
+  } else if (stopped || failed) {
+    actions = <Button onClick={onClose}>{t`Close`}</Button>
+  } else {
+    actions = (
+      <Button onClick={stop} disabled={stopping}>
+        {stopping ? t`Stopping…` : t`Stop`}
+      </Button>
+    )
+  }
+
   return (
     <Dialog
       open={jobID !== null}
@@ -113,48 +168,9 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
         {t`Finding the mod causing the crash`}
       </DialogTitle>
       <DialogContent sx={{ minWidth: 440, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        {status === null || status.state === 'starting' ? (
-          <Typography>{t`Preparing a temporary copy of this profile…`}</Typography>
-        ) : done ? (
-          <>
-            <Typography sx={{ fontWeight: 700 }}>{t`${names} seems to cause the crash`}</Typography>
-            <Typography color="text.secondary">
-              {t`The original profile was not changed.`}
-            </Typography>
-          </>
-        ) : stopped ? (
-          <Typography>{t`Crash finding was stopped.`}</Typography>
-        ) : failed ? (
-          <Typography color="error">{status.error || t`Crash finding failed.`}</Typography>
-        ) : (
-          <>
-            <Typography>
-              {t`Step ${status.step} of ~${status.total}, ${status.modsLeft} mods left`}
-            </Typography>
-            <LinearProgress />
-          </>
-        )}
+        {content}
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        {done ? (
-          <>
-            <Button onClick={onClose}>{t`Close`}</Button>
-            <Button
-              onClick={() => {
-                useProfiles.getState().open(profile)
-                onClose()
-              }}
-            >{t`Open page`}</Button>
-            <Button variant="contained" onClick={() => void switchOff()}>{t`Switch off`}</Button>
-          </>
-        ) : stopped || failed ? (
-          <Button onClick={onClose}>{t`Close`}</Button>
-        ) : (
-          <Button onClick={() => void stop()} disabled={stopping}>
-            {stopping ? t`Stopping…` : t`Stop`}
-          </Button>
-        )}
-      </DialogActions>
+      <DialogActions sx={{ px: 3, pb: 2.5 }}>{actions}</DialogActions>
     </Dialog>
   )
 }
