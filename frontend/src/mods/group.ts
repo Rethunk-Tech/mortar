@@ -240,6 +240,7 @@ interface GroupRow {
     enabled: boolean
     needs?: string[] | null
     optional?: string[] | null
+    contentPackFor?: string | null
   }
 }
 
@@ -268,11 +269,7 @@ function rowGroupKey(
     return statusGroupKey(ctx.hasProblem, ctx.hasUpdate, row.mod.enabled)
   }
   if (by === 'framework') {
-    return frameworkGroupKey(
-      firstRequiredNeed(row.mod.uniqueId, row.mod.needs, row.mod.optional),
-      row.mod.uniqueId,
-      ctx.names,
-    )
+    return frameworkGroupKey(row.mod.contentPackFor, row.mod.uniqueId, ctx.names)
   }
   return ''
 }

@@ -6,6 +6,7 @@ import {
   frameworkGroupKey,
   groupSorted,
   profileTags,
+  rowGroupKey,
   SMAPI_MODS_GROUP,
   sanitizeListGroupBy,
   statusGroupKey,
@@ -108,6 +109,23 @@ test('status grouping uses Problems, Update available, Enabled, Disabled', () =>
     ['enabled', ['Also ok', 'Ok']],
     ['disabled', ['Off']],
   ])
+})
+
+test('framework grouping uses contentPackFor when the pack has other required dependencies', () => {
+  const names = new Map([['pathoschild.contentpatcher', 'Content Patcher']])
+  const ctx = { hasProblem: false, hasUpdate: false, names }
+  const row = {
+    source: '',
+    tags: [],
+    mod: {
+      uniqueId: 'Author.Pack',
+      author: '',
+      enabled: true,
+      needs: ['B.Req', 'Pathoschild.ContentPatcher'],
+      contentPackFor: 'Pathoschild.ContentPatcher',
+    },
+  }
+  expect(rowGroupKey('framework', row, ctx)).toBe('Content Patcher')
 })
 
 test('framework grouping names installed frameworks and keeps UniqueID when missing', () => {
