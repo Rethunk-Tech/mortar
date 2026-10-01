@@ -68,10 +68,12 @@ type Lines struct {
 
 // session is the log of a launch Mortar made, and the profile it launched.
 type session struct {
-	buf     *launch.Buffer
-	profile string
-	vanilla bool
-	started time.Time
+	buf             *launch.Buffer
+	profile         string
+	vanilla         bool
+	started         time.Time
+	restore         *settingsRestore
+	settingsMissing bool
 }
 
 // Service exposes launch, status and stop to the frontend.
@@ -518,13 +520,31 @@ func (s *Service) begin(g game.Game, profileID, dir, modsDir string, direct, van
 			}
 		}
 	}
+	var restore *settingsRestore
+	var settingsMissing bool
+	if !vanilla && profileID != "" {
+		restore, settingsMissing, err = s.prepareGameSettings(g.ID(), profileID)
+		if err != nil {
+			return err
+		}
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 	buf := &launch.Buffer{}
 	started := time.Now()
 	s.mu.Lock()
-	s.logs[gameID], s.stop[gameID] = session{buf: buf, profile: profileID, vanilla: vanilla, started: started}, cancel
+	s.logs[gameID], s.stop[gameID] = session{
+		buf:             buf,
+		profile:         profileID,
+		vanilla:         vanilla,
+		started:         started,
+		restore:         restore,
+		settingsMissing: settingsMissing,
+	}, cancel
 	s.mu.Unlock()
 	s.set(Status{Game: gameID, State: Launching, Profile: profileID, Since: started.UnixMilli()})
+	if settingsMissing {
+		s.say(gameID, profileID, "startup_preferences is missing; skipped profile game settings.")
+	}
 	s.watch(g)
 	go s.run(ctx, g, profileID, req, buf)
 	return nil
@@ -611,6 +631,14 @@ func (s *Service) Lines(gameID, profileID string) ([]launch.Entry, error) {
 
 func (s *Service) run(ctx context.Context, g game.Game, profileID string, req launch.Request, buf *launch.Buffer) {
 	err := g.Launch(ctx, req, s.collect(g.ID(), profileID, buf))
+	if err != nil {
+		s.mu.Lock()
+		sess := s.logs[g.ID()]
+		s.mu.Unlock()
+		if sess.buf == buf && sess.profile == profileID {
+			s.restoreGameSettings(sess.restore)
+		}
+	}
 	var f *launch.Failure
 	var exited *launch.ExitError
 	switch {
@@ -690,6 +718,7 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 	sess, ok := s.logs[g.ID()]
 	s.mu.Unlock()
 	if ok && !sess.vanilla && cur.Profile != "" {
+		s.restoreGameSettings(sess.restore)
 		started := sess.started
 		if cur.Since > 0 {
 			started = time.UnixMilli(cur.Since)
