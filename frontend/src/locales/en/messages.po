@@ -41,7 +41,7 @@ msgstr "Hidden on Nexus · {0}"
 msgid "{0, plural, one {# mod included} other {# mods included}}"
 msgstr "{0, plural, one {# mod included} other {# mods included}}"
 
-#: src/profiles/GameSettings.tsx:221
+#: src/profiles/GameSettings.tsx:231
 msgid "Start muted"
 msgstr "Start muted"
 
@@ -366,7 +366,7 @@ msgstr "· updates and rolls back with this mod"
 msgid "Year"
 msgstr "Year"
 
-#: src/profiles/GameSettings.tsx:98
+#: src/profiles/GameSettings.tsx:70
 msgid "Fullscreen"
 msgstr "Fullscreen"
 
@@ -453,7 +453,7 @@ msgid "From a shared link"
 msgstr "From a shared link"
 
 #: src/game/HeroCover.tsx:108
-#: src/profiles/EditProfileDialog.tsx:126
+#: src/profiles/EditProfileDialog.tsx:159
 msgid "Use the automatic cover"
 msgstr "Use the automatic cover"
 
@@ -598,7 +598,7 @@ msgstr "Failed"
 msgid "{name} is marked broken for this game version."
 msgstr "{name} is marked broken for this game version."
 
-#: src/profiles/EditProfileDialog.tsx:106
+#: src/profiles/EditProfileDialog.tsx:139
 msgid "{pickedName} is used after Save."
 msgstr "{pickedName} is used after Save."
 
@@ -610,7 +610,7 @@ msgstr "Could not quit Mortar"
 msgid "Paste a Mortar link. You see what it holds before anything downloads."
 msgstr "Paste a Mortar link. You see what it holds before anything downloads."
 
-#: src/profiles/GameSettings.tsx:153
+#: src/profiles/GameSettings.tsx:192
 msgid "Fullscreen resolution width"
 msgstr "Fullscreen resolution width"
 
@@ -745,7 +745,7 @@ msgid "Skipped"
 msgstr "Skipped"
 
 #: src/game/Detail.tsx:185
-#: src/profiles/EditProfileDialog.tsx:310
+#: src/profiles/EditProfileDialog.tsx:397
 #: src/profiles/ProfileRow.tsx:126
 msgid "Edit profile"
 msgstr "Edit profile"
@@ -935,7 +935,7 @@ msgstr "Sky"
 msgid "Keep my changes"
 msgstr "Keep my changes"
 
-#: src/profiles/GameSettings.tsx:167
+#: src/profiles/GameSettings.tsx:202
 msgid "Fullscreen resolution height"
 msgstr "Fullscreen resolution height"
 
@@ -960,7 +960,7 @@ msgstr "Mortar is up to date."
 msgid "And {0} more on the Nexus page"
 msgstr "And {0} more on the Nexus page"
 
-#: src/profiles/GameSettings.tsx:63
+#: src/profiles/GameSettings.tsx:142
 msgid "Game settings"
 msgstr "Game settings"
 
@@ -1170,7 +1170,7 @@ msgid "config.json, as the mod ships it"
 msgstr "config.json, as the mod ships it"
 
 #: src/game/HeroCover.tsx:87
-#: src/profiles/EditProfileDialog.tsx:98
+#: src/profiles/EditProfileDialog.tsx:131
 msgid "Cover image"
 msgstr "Cover image"
 
@@ -1187,7 +1187,7 @@ msgstr "Cover image"
 #: src/mods/ModDetail.tsx:190
 #: src/mods/parts.tsx:352
 #: src/profiles/CompareDialog.tsx:111
-#: src/profiles/EditProfileDialog.tsx:358
+#: src/profiles/EditProfileDialog.tsx:417
 #: src/profiles/GameModsDialog.tsx:149
 #: src/profiles/ProfilesPage.tsx:149
 #: src/saves/BackupsDialog.tsx:248
@@ -1213,8 +1213,8 @@ msgstr "Standard farm"
 msgid "{field}: {from} → {to}"
 msgstr "{field}: {from} → {to}"
 
-#: src/profiles/EditProfileDialog.tsx:112
-#: src/profiles/EditProfileDialog.tsx:121
+#: src/profiles/EditProfileDialog.tsx:145
+#: src/profiles/EditProfileDialog.tsx:154
 #: src/settings/sections/Appearance.tsx:190
 msgid "Choose image…"
 msgstr "Choose image…"
@@ -1343,10 +1343,6 @@ msgstr "Unknown"
 #: src/mods/Toolbar.tsx:340
 msgid "Drop archives anywhere on the window, or Browse Nexus to find mods."
 msgstr "Drop archives anywhere on the window, or Browse Nexus to find mods."
-
-#: src/profiles/GameSettings.tsx:137
-#~ msgid "Resolution height"
-#~ msgstr "Resolution height"
 
 #: src/share/ImportPreview.tsx:319
 msgid "{mods} · about {size} to download"
@@ -1674,7 +1670,7 @@ msgstr "{0} is installed twice, and SMAPI loads only one."
 msgid "Copy selected to {0}"
 msgstr "Copy selected to {0}"
 
-#: src/profiles/EditProfileDialog.tsx:342
+#: src/profiles/EditProfileDialog.tsx:288
 msgid "Launch options"
 msgstr "Launch options"
 
@@ -1695,7 +1691,7 @@ msgstr "After the first release"
 msgid "Trash"
 msgstr "Trash"
 
-#: src/profiles/EditProfileDialog.tsx:105
+#: src/profiles/EditProfileDialog.tsx:138
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
@@ -1739,6 +1735,10 @@ msgstr "Add to this profile"
 #: src/queue/QueueBody.tsx:278
 msgid "Retry failed"
 msgstr "Retry failed"
+
+#: src/profiles/GameSettings.tsx:90
+msgid "Zoom ({value}%)"
+msgstr "Zoom ({value}%)"
 
 #: src/mods/UpdateReview.tsx:253
 msgid "Updates are unknown: SMAPI's update service could not be reached."
@@ -2252,7 +2252,7 @@ msgstr "Add a tag"
 msgid "Open Stardew Valley settings"
 msgstr "Open Stardew Valley settings"
 
-#: src/profiles/EditProfileDialog.tsx:148
+#: src/profiles/EditProfileDialog.tsx:181
 msgid "Colour"
 msgstr "Colour"
 
@@ -2494,10 +2494,6 @@ msgstr "How to share"
 msgid "Choose cover image…"
 msgstr "Choose cover image…"
 
-#: src/profiles/GameSettings.tsx:123
-#~ msgid "Resolution width"
-#~ msgstr "Resolution width"
-
 #: src/shell/win.ts:13
 msgid "Couldn't minimise the window"
 msgstr "Couldn't minimise the window"
@@ -2535,11 +2531,6 @@ msgstr "Mods from the same download are removed together: {0}."
 msgid "Downloading {name} into {profileName}"
 msgstr "Downloading {name} into {profileName}"
 
-#. placeholder {0}: value?.uiScale ?? 100
-#: src/profiles/GameSettings.tsx:198
-msgid "UI scale ({0}%)"
-msgstr "UI scale ({0}%)"
-
 #: src/settings/sections/Data.tsx:298
 msgid "Clean up"
 msgstr "Clean up"
@@ -2553,7 +2544,7 @@ msgstr "Copy OBS URL"
 msgid "Command copied"
 msgstr "Command copied"
 
-#: src/profiles/EditProfileDialog.tsx:351
+#: src/profiles/EditProfileDialog.tsx:296
 msgid "Extra SMAPI arguments for this profile. Mortar sets --mods-path itself."
 msgstr "Extra SMAPI arguments for this profile. Mortar sets --mods-path itself."
 
@@ -2577,7 +2568,7 @@ msgstr "There is no SMAPI log for this profile yet. Play this profile once, then
 msgid "Save log"
 msgstr "Save log"
 
-#: src/profiles/GameSettings.tsx:95
+#: src/profiles/GameSettings.tsx:69
 msgid "Windowed"
 msgstr "Windowed"
 
@@ -2612,7 +2603,7 @@ msgstr "This session"
 msgid "Other profile…"
 msgstr "Other profile…"
 
-#: src/profiles/GameSettings.tsx:123
+#: src/profiles/GameSettings.tsx:170
 msgid "Windowed resolution width"
 msgstr "Windowed resolution width"
 
@@ -2680,7 +2671,7 @@ msgid "Could not pin {0}"
 msgstr "Could not pin {0}"
 
 #: src/mods/NexusDetails.tsx:278
-#: src/profiles/EditProfileDialog.tsx:330
+#: src/profiles/EditProfileDialog.tsx:276
 msgid "Description"
 msgstr "Description"
 
@@ -2955,8 +2946,8 @@ msgstr "Open folder"
 msgid "Default background"
 msgstr "Default background"
 
-#: src/profiles/GameSettings.tsx:76
-#: src/profiles/GameSettings.tsx:80
+#: src/profiles/GameSettings.tsx:58
+#: src/profiles/GameSettings.tsx:61
 msgid "Window mode"
 msgstr "Window mode"
 
@@ -2973,6 +2964,10 @@ msgstr "Open on Nexus"
 #: src/settings/sections/GameSettings.tsx:196
 msgid "Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods."
 msgstr "Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods."
+
+#: src/profiles/GameSettings.tsx:94
+msgid "Music volume ({value}%)"
+msgstr "Music volume ({value}%)"
 
 #: src/settings/sections/About.tsx:31
 msgid "AGPL-3.0 · Rethunk-AI/mortar"
@@ -3020,7 +3015,7 @@ msgstr "Updated by your package manager"
 msgid "These profiles have the same mods."
 msgstr "These profiles have the same mods."
 
-#: src/profiles/GameSettings.tsx:72
+#: src/profiles/GameSettings.tsx:150
 msgid "Use my normal settings"
 msgstr "Use my normal settings"
 
@@ -3076,7 +3071,7 @@ msgstr "Preview"
 msgid "Show in sidebar"
 msgstr "Show in sidebar"
 
-#: src/profiles/GameSettings.tsx:101
+#: src/profiles/GameSettings.tsx:71
 msgid "Borderless"
 msgstr "Borderless"
 
@@ -3352,7 +3347,7 @@ msgid "Beach farm"
 msgstr "Beach farm"
 
 #: src/mods/ConfigEditor.tsx:291
-#: src/profiles/EditProfileDialog.tsx:365
+#: src/profiles/EditProfileDialog.tsx:424
 msgid "Save"
 msgstr "Save"
 
@@ -3444,11 +3439,6 @@ msgstr "Someone sent you a Mortar link? You see what it holds first. Mods from N
 #: src/mods/ModDetail.tsx:98
 msgid "{0} · in use"
 msgstr "{0} · in use"
-
-#. placeholder {0}: value?.musicVolumeLevel ?? 100
-#: src/profiles/GameSettings.tsx:225
-msgid "Music volume ({0}%)"
-msgstr "Music volume ({0}%)"
 
 #: src/settings/sections/StreamOverlay.tsx:115
 msgid "Mining skill"
@@ -3583,11 +3573,6 @@ msgstr "Tag"
 msgid "Couldn't reach Nexus"
 msgstr "Couldn't reach Nexus"
 
-#. placeholder {0}: value?.soundVolumeLevel ?? 100
-#: src/profiles/GameSettings.tsx:242
-msgid "Sound volume ({0}%)"
-msgstr "Sound volume ({0}%)"
-
 #: src/settings/sections/StreamOverlay.tsx:105
 msgid "Health"
 msgstr "Health"
@@ -3695,7 +3680,7 @@ msgid "Import settings"
 msgstr "Import settings"
 
 #: src/game/HeroCover.tsx:74
-#: src/profiles/EditProfileDialog.tsx:289
+#: src/profiles/EditProfileDialog.tsx:376
 msgid "Could not use that image"
 msgstr "Could not use that image"
 
@@ -3748,7 +3733,7 @@ msgstr "Hide details"
 msgid "Accent colour"
 msgstr "Accent colour"
 
-#: src/profiles/GameSettings.tsx:92
+#: src/profiles/GameSettings.tsx:68
 msgid "Use normal setting"
 msgstr "Use normal setting"
 
@@ -3961,7 +3946,7 @@ msgstr "No changelog entries between these versions."
 msgid "Also in these profiles"
 msgstr "Also in these profiles"
 
-#: src/profiles/EditProfileDialog.tsx:167
+#: src/profiles/EditProfileDialog.tsx:200
 msgid "Icon"
 msgstr "Icon"
 
@@ -4065,7 +4050,7 @@ msgstr "Could not save the last game"
 msgid "SMAPI {0} is available"
 msgstr "SMAPI {0} is available"
 
-#: src/profiles/GameSettings.tsx:108
+#: src/profiles/GameSettings.tsx:161
 msgid "Display"
 msgstr "Display"
 
@@ -4089,7 +4074,7 @@ msgstr "Loading profiles…"
 msgid "Measuring…"
 msgstr "Measuring…"
 
-#: src/profiles/GameSettings.tsx:137
+#: src/profiles/GameSettings.tsx:180
 msgid "Windowed resolution height"
 msgstr "Windowed resolution height"
 
@@ -4220,11 +4205,6 @@ msgstr "Backups kept: {from} → {to}"
 msgid "Steam will still start SMAPI"
 msgstr "Steam will still start SMAPI"
 
-#. placeholder {0}: value?.zoomLevel ?? 100
-#: src/profiles/GameSettings.tsx:181
-msgid "Zoom ({0}%)"
-msgstr "Zoom ({0}%)"
-
 #: src/profiles/ProfileRow.tsx:189
 msgid "imported from a .mortar file"
 msgstr "imported from a .mortar file"
@@ -4253,6 +4233,10 @@ msgstr "Reinstall"
 #: src/settings/sections/Updates.tsx:72
 msgid "Checking for updates…"
 msgstr "Checking for updates…"
+
+#: src/profiles/GameSettings.tsx:92
+msgid "UI scale ({value}%)"
+msgstr "UI scale ({value}%)"
 
 #: src/mods/ProblemBar.tsx:196
 #: src/profiles/ProfilesPage.tsx:79
@@ -4461,6 +4445,10 @@ msgstr "Skipped ({0}): {1}"
 #: src/queue/QueueBody.tsx:253
 msgid "Install anyway"
 msgstr "Install anyway"
+
+#: src/profiles/GameSettings.tsx:88
+msgid "Sound volume ({value}%)"
+msgstr "Sound volume ({value}%)"
 
 #: src/mods/ProblemBar.tsx:172
 msgid "Adopt"
