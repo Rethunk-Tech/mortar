@@ -46,6 +46,16 @@ func (s *Service) SetTellWhenSmapiOut(on bool) error {
 	return s.set(func(v *Settings) { v.TellWhenSmapiOut = &on })
 }
 
+// SetKeepInTray sets whether closing the window hides Mortar to the system tray.
+func (s *Service) SetKeepInTray(on bool) error {
+	return s.set(func(v *Settings) { v.KeepInTray = on })
+}
+
+// SetIncludeBetaReleases sets whether Mortar update checks include GitHub prereleases.
+func (s *Service) SetIncludeBetaReleases(on bool) error {
+	return s.set(func(v *Settings) { v.IncludeBetaReleases = on })
+}
+
 // SetListColumns stores which Mods list-view columns are shown.
 func (s *Service) SetListColumns(ids []string) error {
 	return s.set(func(v *Settings) { v.ListColumns = ids })

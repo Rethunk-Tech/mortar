@@ -23,6 +23,8 @@ type Portable struct {
 	ListGroupBy            string   `json:"listGroupBy"`
 	CheckModUpdatesOnStart *bool    `json:"checkModUpdatesOnStart"`
 	TellWhenSmapiOut       *bool    `json:"tellWhenSmapiOut"`
+	KeepInTray             bool     `json:"keepInTray"`
+	IncludeBetaReleases    bool     `json:"includeBetaReleases"`
 	TipsSeen               []string `json:"tipsSeen"`
 }
 
@@ -42,7 +44,7 @@ type ImportPreview struct {
 var portableFields = []string{
 	"accent", "background", "lastGame", "backupsKept",
 	"listColumns", "listSortColumn", "listSortDir", "listGroupBy",
-	"checkModUpdatesOnStart", "tellWhenSmapiOut", "tipsSeen",
+	"checkModUpdatesOnStart", "tellWhenSmapiOut", "keepInTray", "includeBetaReleases", "tipsSeen",
 }
 
 // MarshalExport writes a versioned JSON of s without secrets or machine-specific fields.
@@ -59,6 +61,8 @@ func MarshalExport(s Settings) ([]byte, error) {
 		ListGroupBy:            s.ListGroupBy,
 		CheckModUpdatesOnStart: s.CheckModUpdatesOnStart,
 		TellWhenSmapiOut:       s.TellWhenSmapiOut,
+		KeepInTray:             s.KeepInTray,
+		IncludeBetaReleases:    s.IncludeBetaReleases,
 		TipsSeen:               slices.Clone(s.TipsSeen),
 	}
 	return json.MarshalIndent(p, "", "  ")
@@ -115,6 +119,12 @@ func ParseExport(b []byte) (Portable, map[string]struct{}, error) {
 	if _, ok := present["tellWhenSmapiOut"]; ok {
 		overlay.TellWhenSmapiOut = p.TellWhenSmapiOut
 	}
+	if _, ok := present["keepInTray"]; ok {
+		overlay.KeepInTray = p.KeepInTray
+	}
+	if _, ok := present["includeBetaReleases"]; ok {
+		overlay.IncludeBetaReleases = p.IncludeBetaReleases
+	}
 	if _, ok := present["tipsSeen"]; ok {
 		overlay.TipsSeen = p.TipsSeen
 	}
@@ -148,6 +158,12 @@ func ParseExport(b []byte) (Portable, map[string]struct{}, error) {
 	}
 	if _, ok := present["tellWhenSmapiOut"]; ok {
 		p.TellWhenSmapiOut = overlay.TellWhenSmapiOut
+	}
+	if _, ok := present["keepInTray"]; ok {
+		p.KeepInTray = overlay.KeepInTray
+	}
+	if _, ok := present["includeBetaReleases"]; ok {
+		p.IncludeBetaReleases = overlay.IncludeBetaReleases
 	}
 	if _, ok := present["tipsSeen"]; ok {
 		p.TipsSeen = overlay.TipsSeen
@@ -186,6 +202,12 @@ func ApplyExport(cur *Settings, p Portable, present map[string]struct{}) {
 	}
 	if _, ok := present["tellWhenSmapiOut"]; ok {
 		cur.TellWhenSmapiOut = p.TellWhenSmapiOut
+	}
+	if _, ok := present["keepInTray"]; ok {
+		cur.KeepInTray = p.KeepInTray
+	}
+	if _, ok := present["includeBetaReleases"]; ok {
+		cur.IncludeBetaReleases = p.IncludeBetaReleases
 	}
 	if _, ok := present["tipsSeen"]; ok {
 		cur.TipsSeen = slices.Clone(p.TipsSeen)
@@ -250,6 +272,10 @@ func fieldText(s Settings, field string) string {
 		return boolText(s.CheckModUpdatesOnStart)
 	case "tellWhenSmapiOut":
 		return boolText(s.TellWhenSmapiOut)
+	case "keepInTray":
+		return strconv.FormatBool(s.KeepInTray)
+	case "includeBetaReleases":
+		return strconv.FormatBool(s.IncludeBetaReleases)
 	case "tipsSeen":
 		return strings.Join(s.TipsSeen, ", ")
 	default:

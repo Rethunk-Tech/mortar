@@ -79,6 +79,10 @@ type Settings struct {
 	CheckModUpdatesOnStart *bool `json:"checkModUpdatesOnStart"`
 	// TellWhenSmapiOut is whether Mortar toasts when a newer SMAPI exists. Nil or omitted means on.
 	TellWhenSmapiOut *bool `json:"tellWhenSmapiOut"`
+	// KeepInTray keeps Mortar in the system tray when the window is closed.
+	KeepInTray bool `json:"keepInTray"`
+	// IncludeBetaReleases offers Mortar prereleases from GitHub when checking for updates.
+	IncludeBetaReleases bool `json:"includeBetaReleases"`
 	// TipsSeen is the empty-state tips the user has dismissed (mods, saves, console, share).
 	TipsSeen []string `json:"tipsSeen"`
 	// SmapiToastAt is when Mortar last showed the SMAPI-update toast (RFC3339). Empty means never.
