@@ -15,6 +15,7 @@ type fake struct {
 	rel        *updater.Release
 	err        error
 	downloaded bool
+	restarted  bool
 }
 
 func (f *fake) Init(cfg updater.Config) error { f.cfg = &cfg; return nil }
@@ -22,7 +23,10 @@ func (f *fake) Check(context.Context) (*updater.Release, error) {
 	return f.rel, f.err
 }
 func (f *fake) DownloadAndInstall(context.Context) error { f.downloaded = true; return nil }
-func (f *fake) Restart(context.Context) error            { return nil }
+func (f *fake) Restart(context.Context) error {
+	f.restarted = true
+	return nil
+}
 
 func TestDevBuildsAndVersionsNeverCheck(t *testing.T) {
 	for _, c := range []struct {
