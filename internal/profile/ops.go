@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
@@ -36,6 +37,8 @@ type Mod struct {
 	Needs          []string `json:"needs,omitempty"`
 	Optional       []string `json:"optional,omitempty"`
 	ContentPackFor string   `json:"contentPackFor,omitempty"`
+	// UpdateCautionMessage comes from the installed manifest.json (Stardrop update hint).
+	UpdateCautionMessage string `json:"updateCautionMessage,omitempty"`
 }
 
 // EnableRef names one mod to switch, matching SetModEnabled's key and UniqueID.
@@ -608,6 +611,7 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 		return nil, err
 	}
 	out := []Mod{}
+	modsDir := filepath.Join(dir, "mods")
 	for _, e := range p.Entries {
 		if !bundled && isBundled(e) {
 			continue
@@ -619,11 +623,24 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 					sib = append(sib, o.UniqueID)
 				}
 			}
+			caution := ""
+			if plain, dotted, err := ModPaths(modsDir, e.Key, m.Folder); err == nil {
+				folder := plain
+				if isDisabled(e, m) {
+					folder = dotted
+				}
+				if b, err := fsx.ReadFile(filepath.Join(folder, manifest.FileName)); err == nil {
+					if mf, err := manifest.Parse(b); err == nil {
+						caution = mf.UpdateCautionMessage
+					}
+				}
+			}
 			out = append(out, Mod{
 				Key: e.Key, UniqueID: m.UniqueID, Name: m.Name, Author: m.Author, Version: m.Version,
 				Enabled: !isDisabled(e, m), Siblings: sib,
 				Picture: e.Source.Picture, Endorsements: e.Source.EndorsementCount,
 				Needs: m.Needs, Optional: m.Optional, ContentPackFor: m.ContentPackFor,
+				UpdateCautionMessage: caution,
 			})
 		}
 	}
