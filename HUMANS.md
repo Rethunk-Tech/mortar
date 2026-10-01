@@ -68,7 +68,7 @@ CI only attaches a single-file `.flatpak` for people who sideload. Listing on Fl
 1. [Flathub app requirements](https://docs.flathub.org/docs/for-app-authors/requirements): AppStream metainfo (`tech.rethunk.Mortar.metainfo.xml`), 128×128 and 256×256 icons, screenshots, AGPL-3.0 license text.
 2. Fork [flathub/flathub](https://github.com/flathub/flathub), open a PR that adds `tech.rethunk.Mortar`, then maintain the app repo Flathub creates.
 3. Build from source inside the GNOME SDK (or keep the file-source binary and accept Flathub review of that choice). The GitHub bundle is not what Flathub builds.
-4. finish-args grant network, Wayland/X11, DRI, `~/.local/share/Steam`, Flatpak Steam's data, `~/.local/share/mortar`, and the single-instance bus name.
+4. finish-args grant network, Wayland/X11, DRI, native and Flatpak Steam libraries, read-only Heroic (`xdg-config/heroic`) and Lutris game configs (`xdg-data/lutris`), read-write Flatpak Lutris and Heroic app data, default `~/GOG Games` and `~/Games/Heroic` install trees, `xdg-data/mortar`, and the single-instance bus name.
 
 ### AUR mortar-bin (NOMAD)
 

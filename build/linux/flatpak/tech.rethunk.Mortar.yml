@@ -10,6 +10,12 @@ finish-args:
   - --device=dri
   - --filesystem=xdg-data/Steam
   - --filesystem=~/.var/app/com.valvesoftware.Steam
+  - --filesystem=xdg-config/heroic:ro
+  - --filesystem=xdg-data/lutris:ro
+  - --filesystem=~/.var/app/net.lutris.Lutris
+  - --filesystem=~/.var/app/com.heroicgameslauncher.hgl
+  - --filesystem=~/GOG Games
+  - --filesystem=~/Games/Heroic
   - --filesystem=xdg-data/mortar
   - --own-name=tech.rethunk.mortar.SingleInstance
 modules:
