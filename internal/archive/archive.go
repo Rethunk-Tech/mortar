@@ -163,6 +163,9 @@ func (x *extractor) zip(r io.ReaderAt, size int64) error {
 }
 
 func (x *extractor) sevenZip(r io.ReaderAt, size int64) error {
+	if err := checkSevenZipLimits(r, size); err != nil {
+		return wrap("", err)
+	}
 	zr, err := sevenzip.NewReader(r, size)
 	if err != nil {
 		return wrap("", err)
@@ -183,7 +186,8 @@ func (x *extractor) sevenZip(r io.ReaderAt, size int64) error {
 }
 
 func (x *extractor) rar(r io.Reader) error {
-	rr, err := rardecode.NewReader(r)
+	// A larger RAR window cannot produce an entry larger than the extraction cap.
+	rr, err := rardecode.NewReader(r, rardecode.MaxDictionarySize(DefaultMaxEntryBytes))
 	if err != nil {
 		return wrap("", err)
 	}
