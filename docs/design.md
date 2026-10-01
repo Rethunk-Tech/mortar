@@ -4,14 +4,14 @@ This file holds only work that is decided but not built. Each item is written to
 
 Items marked **Measure** need a throwaway test first; those tests run outside this repo and only their results land here. Measurements were taken as stated in architecture.md.
 
-## Sharing (milestone 5): the static page deploy
+## Sharing: the static page deploy
 
 Remaining: deploying `site/stardew/p/` and `site/download/` at `https://mortar.rethunk.tech/stardew/p` and `https://mortar.rethunk.tech/download/`, held back on purpose until the first release is ready (NOMAD, 2026-09-30). How sharing works: [architecture.md](architecture.md#sharing).
 
 - **Deploy:** `site/stardew/p/index.html` and `site/download/index.html` in this repo, as a DigitalOcean App Platform static site (free tier: three static apps); `rethunk.tech` is on DigitalOcean's nameservers, and `maitre.rethunk.tech` is already a CNAME to an App Platform app, so the subdomain is set up the same way. The share page shows two buttons, since it cannot tell whether a scheme handler exists: open in Mortar (`mortar://stardew/p/<payload>`) and Get Mortar (`/download/`), which also copies the link so the importer can take it after installing.
 - **Done when** the link opens the page on the live domain, its button opens Mortar's Import with the link filled in, and no request the page makes carries the fragment.
 
-## Release (milestone 6)
+## Release
 
 Remaining ([architecture.md](architecture.md#release)):
 
@@ -19,17 +19,18 @@ Remaining ([architecture.md](architecture.md#release)):
 - The repo turns public at the first release and builds go on its GitHub Releases, since the updater's manifest and assets must be publicly downloadable.
 - **Measure on Windows:** how launch arguments order around `%command%`, and whether SMAPI needs `--no-terminal`; one real update through the updater, and `DisplayVersion` after it.
 
-## More stores and Linux packages (NOMAD, 2026-10-01)
+## Queued for v1
 
-- **Linux packages:** besides the AppImage, CI builds a `.deb`, an `.rpm` and an Arch package with nfpm from the same binary and desktop entry, a Flatpak (manifest in `build/linux/flatpak/`, built in CI as a single-file bundle; Flathub submission is NOMAD's), and an AUR `PKGBUILD` (in `build/linux/aur/`, published to the AUR by NOMAD). Packaged installs turn the self-updater off and say updates come from the package manager (detected from the install path or a build tag), since a package cannot be replaced without root.
-- **Done when** each package installs and starts on its distro in a VM.
+Decided with NOMAD on 2026-10-01 from the competitor review (Vortex, MO2, Stardrop, r2modman, Gale); each is one landable unit.
 
-## Build order
-
-After the go-ahead, each milestone ends with the gate green and NOMAD clicking through it on Linux. `docs/gui-design.md` is the canonical spec for the screens each milestone builds:
-
-1. **Sharing.** Deploy the static pages.
-2. **Release.** Windows measurements and fixes, and the repo made public.
+- **Installs:** multi-file installs from one Nexus page as one entry; variant folders in one archive (sibling folders with the same `UniqueID`) ask which variant, remembered per entry; queue downloads (Nexus, GitHub) open the root picker the way dropped archives do; shares and `.mortar` files carry FOMOD choices and the chosen archive root and replay them on import; Update review re-offers FOMOD options when an update's config changes them.
+- **Problems:** the last run's erroring mods as problems with Switch off and Get help; Content Patcher conflicts name the winning pack (`Priority` Early, Default, Late, then load order); SMAPI's abandoned status with its suggested replacement and Add; the outside-edit snapshot refreshed after install, update, rollback and import, and outside edits counted in the problem badge and the Problems status group; a crash bisect helper that halves the mods in a temporary copy of the profile and relaunches until one culprit is left.
+- **Updates:** a pre-release toggle, checking only enabled mods, an hourly re-check while Mortar runs, and enabling mods on install as a setting; the author hints `UpdateCautionMessage` and `DeleteOldVersion`; Mortar's own update downloaded in the background and applied on quit, then What's new once.
+- **Library:** custom categories with a primary category per mod; a preferred Nexus download server; per-game nxm redirect to the previous handler; an extra folder to scan for mods, a toggle to show dot-hidden mods, and asking before deleting old files on update; import from Stardrop and Vortex keeps each mod's `config.json`; new folders in the game's own `Mods` folder offered for moving into a profile.
+- **Tray:** Play for recent profiles, the game's running state, and a notification with the crash summary when a run ends.
+- **Packages:** an aarch64 Flatpak bundle, if `flatpak-builder` can build it without a registered emulator; the Flatpak granted read access to GOG, Heroic and Lutris install locations so those stores are found inside the sandbox.
+- **Self-test:** update a mod in place with an older GitHub release in a copied game folder, checking carry-over, `.mortar-old`, the save backup and Roll back.
+- **CurseForge** as a third source, after the repository is public: apply for a 3rd-party API key with the application text NOMAD approved, then build it without caching API data, with a User-Agent on every request, and honouring each author's distribution setting.
 
 ## Later
 

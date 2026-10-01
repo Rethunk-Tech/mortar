@@ -2,9 +2,9 @@
 
 Mortar is a desktop mod manager, built for several games but supporting only Stardew Valley in v1: game discovery, mod loader install, per-profile mod sets, launch, and profiles shared as links. [docs/architecture.md](docs/architecture.md) holds how it works (storage, profile semantics, Stardew and Nexus facts); [docs/design.md](docs/design.md) holds decided work not yet built, pruned as it lands; screen layout and styling rules: @docs/gui-design.md; Lethal Company research: [docs/lethal-company.md](docs/lethal-company.md).
 
-## Milestones
+## Testing
 
-Work follows [docs/design.md](docs/design.md) § Build order. Agents continue into the next milestone until the next visual deliverable, self-test in the Wails dev server's browser view (never launching the game), and hand NOMAD batched test lists.
+Agents self-test everything they can: in the Wails dev server's browser view, and with the real game when a test needs it, always against a copied game folder (never a symlink) and stopped by its recorded PID. NOMAD gets only the tests that need a human: a store login, owned games, hardware or a real desktop session.
 
 ## Decided
 

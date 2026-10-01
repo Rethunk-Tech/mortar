@@ -37,15 +37,29 @@ The pre-push hook runs the same command. CI repeats it in the release workflow, 
 wails3 task linux:create:appimage     # bin/mortar-linux-x86_64.AppImage
 wails3 task linux:nfpm                # .deb, .rpm, Arch package, bin/mortar-linux-amd64
 wails3 task linux:flatpak             # bin/mortar-linux-x86_64.flatpak (needs flatpak-builder)
+wails3 task linux:build:arm64         # bin/mortar-linux-arm64 and its .deb, .rpm, Arch package
 wails3 build GOOS=windows             # bin/mortar.exe
 MORTAR_UPDATE_KEY=/path/to/updater.key wails3 task release:manifest VERSION=1.2.3
 ```
 
-`release:manifest` refuses a `VERSION` other than `main.go`'s `version`, copies `bin/mortar.exe` to `bin/mortar-windows-amd64.exe`, and writes `bin/manifest.json` signed with the private key `MORTAR_UPDATE_KEY` names, then verifies it against `build/updater/public.key`. Attach the AppImage, Windows exe, installer, `manifest.json`, packaged Linux files and Flatpak bundle to the `v1.2.3` GitHub release; the app reads the manifest from the latest release (AppImage and Windows only). Where the key lives: [docs/architecture.md](docs/architecture.md#release).
+`linux:build:arm64` cross-compiles on an x86_64 machine with no emulator registered: it needs `zig`, `docker` (to download the arm64 Ubuntu packages it links against, extracted under `tmp/`), `nfpm` and `qemu-aarch64`, which checks that every shared library resolves. The arm64 AppImage is built only in CI.
+
+`release:manifest` refuses a `VERSION` other than `main.go`'s `version`, copies `bin/mortar.exe` to `bin/mortar-windows-amd64.exe`, and writes `bin/manifest.json` signed with the private key `MORTAR_UPDATE_KEY` names, then verifies it against `build/updater/public.key`. The app reads the manifest from the latest release, or the latest pre-release when Settings › Updates includes beta releases; packaged Linux installs leave updating to the package manager. Where the key lives: [docs/architecture.md](docs/architecture.md#release).
 
 ### Cutting a release in CI
 
-`.github/workflows/release.yml` does all of the above on a `v*` tag: it runs the gate, builds the AppImage, nfpm packages, Flatpak bundle, `bin/mortar.exe` and the per-user NSIS installer (`bin/mortar-amd64-installer.exe`), signs `manifest.json`, and publishes the GitHub release with those files. A manual dispatch (Actions › Release › Run workflow) runs the same build and signing for `main.go`'s version and publishes nothing.
+`.github/workflows/release.yml` runs on a `v*` tag: the gate, then the AppImage, nfpm packages, Flatpak bundle, `bin/mortar.exe` and the per-user NSIS installer (`bin/mortar-amd64-installer.exe`) on x86_64, the AppImage and nfpm packages again on an `ubuntu-24.04-arm` runner, the signed `manifest.json`, and the GitHub release with all of those files. A manual dispatch (Actions › Release › Run workflow) builds and signs x86_64 only, for `main.go`'s version, and publishes nothing.
+
+CI reads the repository secret `MORTAR_UPDATE_KEY`, which holds the private key file's PEM contents, not its path:
+
+```sh
+gh secret set MORTAR_UPDATE_KEY --repo Rethunk-AI/mortar < ~/.config/mortar-release/updater.key
+```
+
+Per release:
+
+1. Set `const version` in `main.go` to the new version, gate, commit and push `main`.
+2. `git tag v1.2.3 && git push origin v1.2.3`. The tag must equal `main.go`'s version with a leading `v`, or the manifest step fails and nothing is published.
 
 ### Flathub (NOMAD)
 
@@ -54,33 +68,22 @@ CI only attaches a single-file `.flatpak` for people who sideload. Listing on Fl
 1. [Flathub app requirements](https://docs.flathub.org/docs/for-app-authors/requirements): AppStream metainfo (`tech.rethunk.Mortar.metainfo.xml`), 128×128 and 256×256 icons, screenshots, AGPL-3.0 license text.
 2. Fork [flathub/flathub](https://github.com/flathub/flathub), open a PR that adds `tech.rethunk.Mortar`, then maintain the app repo Flathub creates.
 3. Build from source inside the GNOME SDK (or keep the file-source binary and accept Flathub review of that choice). The GitHub bundle is not what Flathub builds.
-4. finish-args already grant network, Wayland/X11, DRI, `~/.local/share/Steam`, Flatpak Steam's data, and `~/.local/share/mortar`.
+4. finish-args grant network, Wayland/X11, DRI, `~/.local/share/Steam`, Flatpak Steam's data, `~/.local/share/mortar`, and the single-instance bus name.
 
 ### AUR mortar-bin (NOMAD)
 
-`build/linux/aur/PKGBUILD` and `.SRCINFO` install `mortar-linux-amd64` from the GitHub release plus the tagged desktop entry and icon. Publishing:
+`build/linux/aur/PKGBUILD` and `.SRCINFO` install `mortar-linux-amd64` or `mortar-linux-arm64` from the GitHub release, plus the tagged desktop entry and icon. Publishing:
 
 1. `git clone ssh://aur@aur.archlinux.org/mortar-bin.git`
 2. Copy `PKGBUILD` and `.SRCINFO` in, set `pkgver` to the tag, run `updpkgsums` and `makepkg --printsrcinfo > .SRCINFO`.
 3. `git add PKGBUILD .SRCINFO && git commit -m "mortar-bin $pkgver" && git push`
-
-Add the repository secret `MORTAR_UPDATE_KEY` holding the full contents of the private key file (PEM, as generated), not its path:
-
-```sh
-gh secret set MORTAR_UPDATE_KEY --repo Rethunk-AI/mortar < ~/.config/mortar-release/updater.key
-```
-
-Then, per release:
-
-1. Set `const version` in `main.go` to the new version, gate, commit and push `main`.
-2. `git tag v1.2.3 && git push origin v1.2.3`. The tag must equal `main.go`'s version with a leading `v`, or the manifest step fails and nothing is published.
 
 ## Publishing components
 
 `components.source.json` is the allowlisted input for the signed loader and bridge manifest. The generator resolves its GitHub releases, hashes each asset, refreshes the embedded fallback and verifies a signature when `MORTAR_UPDATE_KEY` names the private key file:
 
 ```sh
-task components:refresh
+wails3 task components:refresh
 ```
 
 The repository secret `MORTAR_UPDATE_KEY` contains the PEM contents, as for releases. Run the Components workflow manually from Actions, or dispatch it from a component release:
