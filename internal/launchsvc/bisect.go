@@ -41,11 +41,11 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string, di
 				return false, launch.Summary{}, fmt.Errorf("bisect launch failed: %s", status.Error)
 			}
 			_, summary, err := s.LastRunSummary(gameID, profileID)
-			return false, summary, err
+			return summaryHealthy(summary), summary, err
 		case Idle:
 			if started {
 				_, summary, err := s.LastRunSummary(gameID, profileID)
-				return false, summary, err
+				return summaryHealthy(summary), summary, err
 			}
 		}
 
@@ -59,6 +59,10 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string, di
 		case <-ticker.C:
 		}
 	}
+}
+
+func summaryHealthy(summary launch.Summary) bool {
+	return !summary.Crashed && summary.Errors == 0
 }
 
 func (s *Service) stopBisectRun(gameID string) error {
