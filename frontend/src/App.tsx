@@ -4,6 +4,7 @@ import { Get } from '../bindings/github.com/Rethunk-AI/mortar/internal/settings/
 import { CommandPalette } from './commandPalette/CommandPalette.tsx'
 import { FirstRun } from './firstrun/FirstRun.tsx'
 import { firstRunNeeded } from './firstrun/needed.ts'
+import { FomodDialog } from './fomod/Dialog.tsx'
 import { MainScreen } from './game/MainScreen.tsx'
 import { GameSelect } from './games/GameSelect.tsx'
 import { loadGameStatus } from './games/status.ts'
@@ -65,6 +66,7 @@ export function App() {
       </AppFrame>
       <LaunchLayer game={game} />
       <ArrivalDialog />
+      <FomodDialog />
       <CommandPalette />
       <ShareDialog />
       <ImportDialog />

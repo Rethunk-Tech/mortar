@@ -5,20 +5,31 @@ import {
   Ellipsis,
   ExternalLink,
   Eye,
+  FileJson,
   FolderOpen,
   Info,
   Pin,
   PinOff,
   Power,
   PowerOff,
+  Settings2,
   Trash2,
 } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
-import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type {
+  Mod,
+  Profile,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import {
+  FomodPreview,
+  ModsDir,
+  OpenConsolePath,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { useFomod } from '../fomod/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useDetail } from './detail.ts'
-import { modId, updateFor } from './lookup.ts'
+import { entryOf, modId, updateFor } from './lookup.ts'
 import { type MenuAnchor, openPage, useContextMenu, useMenuState } from './menu.ts'
 import { type ModAction, modActions } from './modActions.ts'
 import { useMods } from './store.ts'
@@ -26,6 +37,42 @@ import { useUpdates } from './updates.ts'
 import { useLocked } from './useLocked.ts'
 
 const ICON_SIZE = 16
+const TRAILING_SEP = /[/\\]+$/
+
+function openFomodReinstall(gameId: string, profile: Profile, key: string) {
+  const entry = (profile.entries ?? []).find((e) => e.key === key)
+  if (!entry) {
+    return
+  }
+  FomodPreview(gameId, profile.id, entry.key, entry.fomod ?? {})
+    .then((ask) =>
+      useFomod.getState().open({
+        game: gameId,
+        profileId: profile.id,
+        key: entry.key,
+        source: entry.source,
+        ask,
+      }),
+    )
+    .catch(reportUnexpected)
+}
+
+function openManifestOf(mod: Mod, profile: Profile | undefined) {
+  const { game: currentGame, openId } = useProfiles.getState()
+  const gameId = currentGame?.id
+  if (!(gameId && openId)) {
+    return
+  }
+  const folder =
+    (entryOf(profile, mod.key)?.mods ?? []).find((m) => m.uniqueId === mod.uniqueId)?.folder ?? '.'
+  const nested = folder !== '' && folder !== '.'
+  const rel = nested ? `${folder}/manifest.json` : 'manifest.json'
+  ModsDir(gameId, openId)
+    .then((dir) =>
+      OpenConsolePath(gameId, openId, `${dir.replace(TRAILING_SEP, '')}/${mod.key}/${rel}`),
+    )
+    .catch(reportUnexpected)
+}
 
 function ModMenuItems({ mod, close }: { mod: Mod; close: () => void }) {
   const { t } = useLingui()
@@ -40,8 +87,14 @@ function ModMenuItems({ mod, close }: { mod: Mod; close: () => void }) {
   const state = useMenuState(mod)
   const locked = useLocked()
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const game = useProfiles((s) => s.game)
   const update = useUpdates((s) => updateFor(s.updates, mod, profile))
-  const items: Record<ModAction, { label: string; icon: ReactNode; run: () => void }> = {
+  const entry = (profile?.entries ?? []).find((e) => e.key === mod.key)
+  const hasFomod = Boolean(entry?.fomod && Object.keys(entry.fomod).length > 0)
+  const items: Record<
+    ModAction | 'reinstall',
+    { label: string; icon: ReactNode; run: () => void }
+  > = {
     toggle: {
       label: mod.enabled ? t`Disable` : t`Enable`,
       icon: mod.enabled ? <PowerOff size={ICON_SIZE} /> : <Power size={ICON_SIZE} />,
@@ -68,6 +121,16 @@ function ModMenuItems({ mod, close }: { mod: Mod; close: () => void }) {
       label: t`Show files`,
       icon: <FolderOpen size={ICON_SIZE} />,
       run: () => showFiles(mod).catch(reportUnexpected),
+    },
+    reinstall: {
+      label: t`Reinstall with options…`,
+      icon: <Settings2 size={ICON_SIZE} />,
+      run: () => {
+        if (!(game && profile && entry)) {
+          return
+        }
+        openFomodReinstall(game.id, profile, entry.key)
+      },
     },
     pin: {
       label: state.pinned ? t`Unpin` : t`Pin this version`,
@@ -99,6 +162,33 @@ function ModMenuItems({ mod, close }: { mod: Mod; close: () => void }) {
       <ListItemIcon sx={{ color: 'inherit' }}>{items[a].icon}</ListItemIcon>
       <ListItemText>{items[a].label}</ListItemText>
     </MenuItem>,
+    a === 'files' && hasFomod ? (
+      <MenuItem
+        key="reinstall"
+        disabled={locked}
+        onClick={() => {
+          close()
+          items.reinstall.run()
+        }}
+      >
+        <ListItemIcon sx={{ color: 'inherit' }}>{items.reinstall.icon}</ListItemIcon>
+        <ListItemText>{items.reinstall.label}</ListItemText>
+      </MenuItem>
+    ) : null,
+    a === 'files' ? (
+      <MenuItem
+        key="manifest"
+        onClick={() => {
+          close()
+          openManifestOf(mod, profile)
+        }}
+      >
+        <ListItemIcon sx={{ color: 'inherit' }}>
+          <FileJson size={ICON_SIZE} />
+        </ListItemIcon>
+        <ListItemText>{t`Open manifest.json`}</ListItemText>
+      </MenuItem>
+    ) : null,
   ])
 }
 

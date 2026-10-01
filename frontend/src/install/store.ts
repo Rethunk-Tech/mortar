@@ -7,6 +7,7 @@ import {
   RemoveEntry,
   RollBack,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { useFomod } from '../fomod/store.ts'
 import { i18n } from '../i18n/index.ts'
 import { useLaunch } from '../launch/store.ts'
 import { isLocked } from '../mods/locked.ts'
@@ -114,35 +115,46 @@ export const useInstall = create<{
           added,
           updated,
           versionChanged,
+          fomod,
         } = await InstallArchive(game.id, profile.id, path)
-        useProfiles.getState().replace(next)
-        const names = added ?? []
-        const entry = entryForNames(next, names)
-        for (const mod of entry?.mods ?? []) {
-          if (mod.uniqueId) {
-            dependentIds.push(mod.uniqueId)
+        if (fomod) {
+          useFomod.getState().open({
+            game: game.id,
+            profileId: profile.id,
+            key: fomod.key,
+            source: fomod.source,
+            ask: fomod,
+          })
+        } else {
+          useProfiles.getState().replace(next)
+          const names = added ?? []
+          const landed = entryForNames(next, names)
+          for (const mod of landed?.mods ?? []) {
+            if (mod.uniqueId) {
+              dependentIds.push(mod.uniqueId)
+            }
           }
+          push({
+            kind: 'success',
+            title: installTitle(names.join(', '), profile.name, updated, versionChanged),
+            picture: landed?.source.picture ?? '',
+            ...(landed
+              ? {
+                  action: {
+                    label: i18n._(msg`Undo`),
+                    run: () => undoArchiveInstall(game.id, profile.id, landed.key, updated),
+                    profileId: profile.id,
+                    live: () =>
+                      changeStillLatest(
+                        useProfiles.getState().profiles.find((p) => p.id === profile.id),
+                        landed.key,
+                        (landed.mods ?? []).map((m) => m.uniqueId),
+                      ),
+                  },
+                }
+              : {}),
+          })
         }
-        push({
-          kind: 'success',
-          title: installTitle(names.join(', '), profile.name, updated, versionChanged),
-          picture: entry?.source.picture ?? '',
-          ...(entry
-            ? {
-                action: {
-                  label: i18n._(msg`Undo`),
-                  run: () => undoArchiveInstall(game.id, profile.id, entry.key, updated),
-                  profileId: profile.id,
-                  live: () =>
-                    changeStillLatest(
-                      useProfiles.getState().profiles.find((p) => p.id === profile.id),
-                      entry.key,
-                      (entry.mods ?? []).map((m) => m.uniqueId),
-                    ),
-                },
-              }
-            : {}),
-        })
       } catch (e) {
         push({
           kind: 'error',
