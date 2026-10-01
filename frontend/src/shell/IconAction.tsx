@@ -1,5 +1,5 @@
 import { IconButton, Tooltip } from '@mui/material'
-import type { ReactNode } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 
 const BORDER = 'rgba(255,255,255,0.22)'
 
@@ -9,12 +9,14 @@ export function IconAction({
   onClick,
   disabled = false,
   pressed,
+  menu = false,
 }: {
   label: string
   icon: ReactNode
-  onClick: () => void
+  onClick: (e: MouseEvent<HTMLElement>) => void
   disabled?: boolean
   pressed?: boolean
+  menu?: boolean
 }) {
   const on = pressed === true
   return (
@@ -24,6 +26,7 @@ export function IconAction({
         <IconButton
           aria-label={label}
           aria-pressed={pressed}
+          aria-haspopup={menu ? 'menu' : undefined}
           disabled={disabled}
           onClick={onClick}
           sx={{

@@ -1,7 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, Divider, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
+import { Divider, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
 import { Play, Plus, Settings2, Wrench } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useTools } from './store.ts'
 import { ToolEditorDialog } from './ToolEditorDialog.tsx'
@@ -27,15 +28,12 @@ export function ToolsMenu({ game, profileID }: { game: string; profileID: string
 
   return (
     <>
-      <Button
-        variant="outlined"
-        color="inherit"
-        startIcon={<Wrench size={16} />}
+      <IconAction
+        label={t`Tools`}
+        icon={<Wrench size={16} />}
+        menu={true}
         onClick={(e) => setAnchor(e.currentTarget)}
-        sx={{ ml: 1, whiteSpace: 'nowrap' }}
-      >
-        {t`Tools`}
-      </Button>
+      />
       <Menu open={anchor !== null} anchorEl={anchor} onClose={close} transitionDuration={0}>
         {tools.map((tool) => (
           <MenuItem

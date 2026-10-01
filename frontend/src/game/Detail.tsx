@@ -40,6 +40,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { SavesTab } from '../saves/SavesTab.tsx'
 import { useSaves } from '../saves/store.ts'
 import { openShare } from '../share/store.ts'
+import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { ToolsMenu } from '../tools/ToolsMenu.tsx'
 import { compact, compactMeta, saveFits } from './compact.ts'
@@ -434,20 +435,20 @@ export function Detail() {
           <Tab value="console" label={t`Console`} />
         </Tabs>
         <Box sx={{ flexGrow: 1 }} />
-        {tab === 'console' ? <LogActions /> : null}
-        <ToolsMenu game={game} profileID={profile.id} />
-        <Button
-          variant="outlined"
-          color="inherit"
-          startIcon={<Share2 size={16} />}
-          onClick={() => openShare(profile.id)}
-          sx={{ ml: 1, whiteSpace: 'nowrap' }}
-        >
-          {t`Share`}
-        </Button>
-        <IconButton aria-label={t`${gameName} settings`} onClick={openGameSettings} sx={{ ml: 1 }}>
-          <Settings2 size={18} />
-        </IconButton>
+        <Box sx={{ display: 'flex', gap: 0.75 }}>
+          {tab === 'console' ? <LogActions /> : null}
+          <ToolsMenu game={game} profileID={profile.id} />
+          <IconAction
+            label={t`Share`}
+            icon={<Share2 size={16} />}
+            onClick={() => openShare(profile.id)}
+          />
+          <IconAction
+            label={t`${gameName} settings`}
+            icon={<Settings2 size={16} />}
+            onClick={openGameSettings}
+          />
+        </Box>
       </Box>
       {tab === 'console' ? <ConsoleTab game={game} /> : null}
       {tab === 'notes' ? <NotesTab key={`notes-${profile.id}`} profile={profile} /> : null}
