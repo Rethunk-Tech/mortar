@@ -31,7 +31,7 @@ func TestDevBuildsAndVersionsNeverCheck(t *testing.T) {
 	}{{"1.0.0", false}, {"1.1.0-dev", true}} {
 		f := &fake{}
 		s := &Service{}
-		err := configure(s, f, c.version, nil, c.production, "")
+		err := configure(s, f, c.version, nil, c.production, "", nil)
 		if err != nil || s.Info().Off != "dev" || f.cfg != nil {
 			t.Fatalf("%+v: off %q, configured %v, %v", c, s.Info().Off, f.cfg != nil, err)
 		}
@@ -44,7 +44,7 @@ func TestDevBuildsAndVersionsNeverCheck(t *testing.T) {
 func TestPackagedBuildsNeverCheck(t *testing.T) {
 	f := &fake{}
 	s := &Service{}
-	err := configure(s, f, "1.0.0", []byte("key"), true, "deb")
+	err := configure(s, f, "1.0.0", []byte("key"), true, "deb", nil)
 	if err != nil || s.Info().Off != "packaged" || f.cfg != nil {
 		t.Fatalf("off %q, configured %v, %v", s.Info().Off, f.cfg != nil, err)
 	}
@@ -56,7 +56,7 @@ func TestPackagedBuildsNeverCheck(t *testing.T) {
 func TestOnlyASignedReleaseInstalls(t *testing.T) {
 	f := &fake{rel: &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Digest: []byte{1}}}}
 	s := &Service{}
-	err := configure(s, f, "1.0.0", []byte("key"), true, "")
+	err := configure(s, f, "1.0.0", []byte("key"), true, "", nil)
 	if err != nil || f.cfg == nil || f.cfg.CurrentVersion != "1.0.0" || string(f.cfg.PublicKey) != "key" {
 		t.Fatalf("configured %+v, %v", f.cfg, err)
 	}
@@ -78,7 +78,7 @@ func TestOnlyASignedReleaseInstalls(t *testing.T) {
 func TestCheckKeepsAStagedRelease(t *testing.T) {
 	f := &fake{rel: &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}}
 	s := &Service{}
-	if err := configure(s, f, "1.0.0", []byte("key"), true, ""); err != nil {
+	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := s.Check(context.Background()); err != nil {
@@ -103,7 +103,7 @@ func TestRestartWaitsUntilInstallHasStaged(t *testing.T) {
 	}
 	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
 	s := &Service{}
-	if err := configure(s, f, "1.0.0", []byte("key"), true, ""); err != nil {
+	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := s.Check(context.Background()); err != nil {
@@ -135,7 +135,7 @@ func TestRestartDoesNotHoldTheMutex(t *testing.T) {
 	s := &Service{}
 	f := &reenterRestart{s: s}
 	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
-	if err := configure(s, f, "1.0.0", []byte("key"), true, ""); err != nil {
+	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := s.Check(context.Background()); err != nil {
@@ -172,7 +172,7 @@ func TestCheckDoesNotHoldTheLockForTheNetwork(t *testing.T) {
 	}
 	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
 	s := &Service{}
-	if err := configure(s, f, "1.0.0", []byte("key"), true, ""); err != nil {
+	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
 		t.Fatal(err)
 	}
 	errc := make(chan error, 1)
@@ -203,7 +203,7 @@ func TestInstallReleasesTheMutexDuringDownload(t *testing.T) {
 	f := &stall{dlHold: hold, dlStart: started}
 	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
 	s := &Service{}
-	if err := configure(s, f, "1.0.0", []byte("key"), true, ""); err != nil {
+	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := s.Check(context.Background()); err != nil {
@@ -269,7 +269,7 @@ func TestClassifyCheckError(t *testing.T) {
 func TestCheckNetworkErrorHidesTheGoChain(t *testing.T) {
 	f := &fake{err: errors.New("updater: all providers failed: endpoint: fetch manifest: Get ...: wsarecv: connection timed out")}
 	s := &Service{}
-	if err := configure(s, f, "1.0.0", []byte("key"), true, ""); err != nil {
+	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
 		t.Fatal(err)
 	}
 	rel, err := s.Check(context.Background())
@@ -284,7 +284,7 @@ func TestCheckNetworkErrorHidesTheGoChain(t *testing.T) {
 func TestCheckMissingManifestIsNotUpToDate(t *testing.T) {
 	f := &fake{}
 	s := &Service{}
-	if err := configure(s, f, "1.0.0", []byte("key"), true, ""); err != nil {
+	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
 		t.Fatal(err)
 	}
 	s.empty = func(context.Context) error { return errors.New("HTTP 404") }
@@ -297,7 +297,7 @@ func TestCheckMissingManifestIsNotUpToDate(t *testing.T) {
 func TestCheckNilReleaseIsCurrentWhenTheManifestExists(t *testing.T) {
 	f := &fake{}
 	s := &Service{}
-	if err := configure(s, f, "1.0.0", []byte("key"), true, ""); err != nil {
+	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
 		t.Fatal(err)
 	}
 	s.empty = func(context.Context) error { return nil }
