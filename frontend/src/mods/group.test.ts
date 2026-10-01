@@ -6,10 +6,12 @@ import type {
 import { DriftKind } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { useSettings } from '../settings/store.ts'
 import {
+  customCategoryById,
   firstTag,
   frameworkGroupKey,
   groupSorted,
   profileTags,
+  resolvedCategoryLabel,
   rowGroupKey,
   SMAPI_MODS_GROUP,
   sanitizeListGroupBy,
@@ -104,13 +106,39 @@ test('status grouping puts drift-affected entries in Problems', () => {
   const fullMod = mod as Mod
   expect(modStatusProblem(result, fullMod)).toBe(true)
   const row = { source: '', tags: [], mod: fullMod }
+  const emptyCustom = customCategoryById([])
   expect(
     rowGroupKey('status', row, {
       hasProblem: modStatusProblem(result, fullMod),
       hasUpdate: false,
       names: new Map(),
+      customById: emptyCustom,
     }),
   ).toBe('problems')
+})
+
+test('category grouping uses entry override before Nexus', () => {
+  const custom = customCategoryById([{ id: 'abc123', name: 'My QoL', color: 'teal' }])
+  const row = {
+    source: '',
+    tags: [],
+    categoryOverride: 'abc123',
+    details: { category: 'User Interface' },
+    mod: {
+      uniqueId: 'A.Mod',
+      author: '',
+      enabled: true,
+    },
+  }
+  expect(
+    rowGroupKey('category', row, {
+      hasProblem: false,
+      hasUpdate: false,
+      names: new Map(),
+      customById: custom,
+    }),
+  ).toBe('My QoL')
+  expect(resolvedCategoryLabel('Crops', 'User Interface', custom)).toBe('Crops')
 })
 
 test('status grouping uses Problems, Update available, Enabled, Disabled', () => {
@@ -141,7 +169,7 @@ test('status grouping uses Problems, Update available, Enabled, Disabled', () =>
 
 test('framework grouping uses contentPackFor when the pack has other required dependencies', () => {
   const names = new Map([['pathoschild.contentpatcher', 'Content Patcher']])
-  const ctx = { hasProblem: false, hasUpdate: false, names }
+  const ctx = { hasProblem: false, hasUpdate: false, names, customById: customCategoryById([]) }
   const row = {
     source: '',
     tags: [],

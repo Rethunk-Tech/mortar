@@ -15,9 +15,11 @@ import { dialogOpen } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { useCustomCategories } from './customCategories.ts'
 import { DuplicateDialog } from './DuplicateDialog.tsx'
 import { useDetail } from './detail.ts'
 import {
+  customCategoryById,
   emptyGroupLabel,
   firstTag,
   groupHeading,
@@ -185,6 +187,8 @@ function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
   const listSortDir = useSettings((s) => s.listSortDir)
   const sort = sanitizeListSort(listSortColumn ?? '', listSortDir ?? '')
   const byId = useNexusDetails((s) => s.byId)
+  const customCategories = useCustomCategories((s) => s.categories)
+  const customById = customCategoryById(customCategories)
   const gameId = useProfiles((s) => s.game?.id) ?? ''
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => loadCollapsed(gameId))
   const problems = useMods((s) => s.problems)
@@ -200,13 +204,14 @@ function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
   }, [shown, profile])
   const names = installedNames(shown)
   const groups = groupSorted(
-    shown.map((m) => toListRow(m, profile, byId)),
+    shown.map((m) => toListRow(m, profile, byId, customCategories)),
     groupBy,
     (row) =>
       rowGroupKey(groupBy, row, {
         hasProblem: modStatusProblem(problems, row.mod),
         hasUpdate: Boolean(updateFor(updates, row.mod, profile)),
         names,
+        customById,
       }),
     (a, b) => compareListRows(a, b, sort),
   )
@@ -333,6 +338,13 @@ export function ModsTab({ profile }: { profile: Profile }) {
   const [configurableOnly, setConfigurableOnly] = useState(false)
   const [configurableIds, setConfigurableIds] = useState<Record<string, boolean>>({})
   const extras = useDetail((s) => s.extras)
+  useEffect(() => {
+    if (!gameId) {
+      return
+    }
+    useCustomCategories.getState().load(gameId).catch(reportUnexpected)
+  }, [gameId])
+
   useEffect(() => {
     if (!gameId || launchState === State.Launching || launchState === State.Running) {
       return

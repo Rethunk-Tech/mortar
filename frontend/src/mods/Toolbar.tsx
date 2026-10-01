@@ -5,6 +5,7 @@ import {
   Button,
   ButtonBase,
   CircularProgress,
+  Divider,
   InputAdornment,
   ListItemIcon,
   ListItemText,
@@ -39,6 +40,7 @@ import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { CategoryEditorDialog } from './CategoryEditor.tsx'
 import { onFilterFocus } from './filterFocus.ts'
 import { type GroupBy, sanitizeListGroupBy } from './group.ts'
 import { useMods } from './store.ts'
@@ -74,6 +76,7 @@ function GroupByControl() {
   const { t } = useLingui()
   const by = sanitizeListGroupBy(useSettings((s) => s.listGroupBy))
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const [editorOpen, setEditorOpen] = useState(false)
   const tagHint = t`A mod with several tags appears under its first tag.`
   return (
     <>
@@ -116,7 +119,20 @@ function GroupByControl() {
             </MenuItem>
           </Tooltip>
         ))}
+        <Divider />
+        <MenuItem
+          onClick={() => {
+            setAnchor(null)
+            setEditorOpen(true)
+          }}
+        >
+          <ListItemIcon>
+            <Settings2 size={16} aria-hidden={true} />
+          </ListItemIcon>
+          <ListItemText>{t`Edit categories…`}</ListItemText>
+        </MenuItem>
       </Menu>
+      <CategoryEditorDialog open={editorOpen} onClose={() => setEditorOpen(false)} />
     </>
   )
 }

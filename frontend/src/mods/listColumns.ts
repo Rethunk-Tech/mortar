@@ -95,6 +95,8 @@ interface ListRow {
   status: string
   note: string
   tags: string[]
+  categoryOverride?: string
+  categoryLabel: string
   pinned?: boolean
   details?: Details
 }
@@ -291,8 +293,8 @@ function compareListRows(a: ListRow, b: ListRow, sort: ListColumnSort): number {
       primary = missingLast(!a.source, !b.source, dir, cmpText(a.source, b.source))
       break
     case 'category': {
-      const av = a.details?.category ?? ''
-      const bv = b.details?.category ?? ''
+      const av = a.categoryLabel
+      const bv = b.categoryLabel
       primary = missingLast(!av, !bv, dir, cmpText(av, bv))
       break
     }

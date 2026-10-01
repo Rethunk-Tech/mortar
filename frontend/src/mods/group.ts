@@ -1,4 +1,7 @@
-import type { Entry } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type {
+  CustomCategory,
+  Entry,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 
 const MAX_ENTRY_NOTE = 500
 const MAX_ENTRY_TAGS = 8
@@ -230,9 +233,32 @@ function installedNames(mods: readonly { uniqueId: string; name: string }[]): Ma
   return new Map(mods.map((m) => [idKey(m.uniqueId), m.name] as const))
 }
 
+function customCategoryById(
+  categories: readonly CustomCategory[],
+): ReadonlyMap<string, CustomCategory> {
+  return new Map(categories.map((c) => [c.id, c] as const))
+}
+
+function resolvedCategoryLabel(
+  categoryOverride: string | undefined,
+  nexusCategory: string | undefined,
+  customById: ReadonlyMap<string, CustomCategory>,
+): string {
+  const override = categoryOverride?.trim() ?? ''
+  if (override !== '') {
+    const custom = customById.get(override)
+    if (custom) {
+      return custom.name
+    }
+    return override
+  }
+  return nexusCategory?.trim() ?? ''
+}
+
 interface GroupRow {
   source: string
   tags: readonly string[]
+  categoryOverride?: string
   details?: { category?: string }
   mod: {
     uniqueId: string
@@ -251,10 +277,11 @@ function rowGroupKey(
     hasProblem: boolean
     hasUpdate: boolean
     names: ReadonlyMap<string, string>
+    customById: ReadonlyMap<string, CustomCategory>
   },
 ): string {
   if (by === 'category') {
-    return row.details?.category ?? ''
+    return resolvedCategoryLabel(row.categoryOverride, row.details?.category, ctx.customById)
   }
   if (by === 'source') {
     return row.source
@@ -323,6 +350,7 @@ function orderedGroupKeys(by: GroupBy, keys: readonly string[]): string[] {
 
 export type { Group, GroupBy, StatusGroup }
 export {
+  customCategoryById,
   emptyGroupLabel,
   firstRequiredNeed,
   firstTag,
@@ -337,6 +365,7 @@ export {
   MAX_ENTRY_TAGS,
   persistCollapsed,
   profileTags,
+  resolvedCategoryLabel,
   rowGroupKey,
   SMAPI_MODS_GROUP,
   STATUS_GROUP_ORDER,

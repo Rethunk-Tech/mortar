@@ -20,8 +20,10 @@ import { compactQuery } from '../game/compact.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { useCustomCategories } from './customCategories.ts'
 import { useDetail } from './detail.ts'
 import {
+  customCategoryById,
   emptyGroupLabel,
   groupHeading,
   groupSorted,
@@ -143,7 +145,7 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string) {
         uniqueId: dash(m.uniqueId),
         author: dash(m.author),
         source: dash(row.source),
-        category: dash(row.details?.category ?? ''),
+        category: dash(row.categoryLabel),
         updated: dash(formatDate(page?.updated ?? '', locale)),
         installed: dash(formatDate(row.added, locale)),
         notes: dash(notes),
@@ -405,6 +407,8 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   const gameId = useProfiles((s) => s.game?.id) ?? ''
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => loadCollapsed(gameId))
   const byId = useNexusDetails((s) => s.byId)
+  const customCategories = useCustomCategories((s) => s.categories)
+  const customById = customCategoryById(customCategories)
   const problems = useMods((s) => s.problems)
   const updates = useUpdates((s) => s.updates)
 
@@ -422,13 +426,14 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
 
   const names = installedNames(mods)
   const groups = groupSorted(
-    mods.map((m) => toListRow(m, profile, byId)),
+    mods.map((m) => toListRow(m, profile, byId, customCategories)),
     groupBy,
     (row) =>
       rowGroupKey(groupBy, row, {
         hasProblem: modStatusProblem(problems, row.mod),
         hasUpdate: Boolean(updateFor(updates, row.mod, profile)),
         names,
+        customById,
       }),
     (a, b) => compareListRows(a, b, sort),
   )

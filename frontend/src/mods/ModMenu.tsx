@@ -7,6 +7,7 @@ import {
   Eye,
   FileJson,
   FolderOpen,
+  FolderTree,
   Info,
   Pin,
   PinOff,
@@ -28,10 +29,12 @@ import {
 import { useFomod } from '../fomod/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { SetCategoryDialog } from './CategoryEditor.tsx'
 import { useDetail } from './detail.ts'
-import { entryOf, modId, updateFor } from './lookup.ts'
+import { entryOf, modId, nexusIdOf, updateFor } from './lookup.ts'
 import { type MenuAnchor, openPage, useContextMenu, useMenuState } from './menu.ts'
 import { type ModAction, modActions } from './modActions.ts'
+import { useNexusDetails } from './nexusDetails.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
 import { useLocked } from './useLocked.ts'
@@ -74,7 +77,15 @@ function openManifestOf(mod: Mod, profile: Profile | undefined) {
     .catch(reportUnexpected)
 }
 
-function ModMenuItems({ mod, close }: { mod: Mod; close: () => void }) {
+function ModMenuItems({
+  mod,
+  close,
+  onSetCategory,
+}: {
+  mod: Mod
+  close: () => void
+  onSetCategory: () => void
+}) {
   const { t } = useLingui()
   const showFiles = useMods((s) => s.showFiles)
   const askRemove = useMods((s) => s.askRemove)
@@ -189,6 +200,20 @@ function ModMenuItems({ mod, close }: { mod: Mod; close: () => void }) {
         <ListItemText>{t`Open manifest.json`}</ListItemText>
       </MenuItem>
     ) : null,
+    a === 'files' ? (
+      <MenuItem
+        key="category"
+        onClick={() => {
+          close()
+          onSetCategory()
+        }}
+      >
+        <ListItemIcon sx={{ color: 'inherit' }}>
+          <FolderTree size={ICON_SIZE} />
+        </ListItemIcon>
+        <ListItemText>{t`Set category…`}</ListItemText>
+      </MenuItem>
+    ) : null,
   ])
 }
 
@@ -201,17 +226,35 @@ function ModActionMenu({
   anchor: MenuAnchor
   onClose: () => void
 }) {
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const byId = useNexusDetails((s) => s.byId)
+  const entry = (profile?.entries ?? []).find((e) => e.key === mod.key)
+  const nexusCategory =
+    profile === undefined ? '' : (byId[nexusIdOf(profile, mod)]?.details?.category ?? '')
+  const [categoryOpen, setCategoryOpen] = useState(false)
   const position =
     'el' in anchor ? {} : { anchorReference: 'anchorPosition' as const, anchorPosition: anchor }
   return (
-    <Menu
-      open={true}
-      onClose={onClose}
-      anchorEl={'el' in anchor ? anchor.el : undefined}
-      {...position}
-    >
-      <ModMenuItems mod={mod} close={onClose} />
-    </Menu>
+    <>
+      <Menu
+        open={!categoryOpen}
+        onClose={onClose}
+        anchorEl={'el' in anchor ? anchor.el : undefined}
+        {...position}
+      >
+        <ModMenuItems mod={mod} close={onClose} onSetCategory={() => setCategoryOpen(true)} />
+      </Menu>
+      <SetCategoryDialog
+        open={categoryOpen}
+        onClose={() => {
+          setCategoryOpen(false)
+          onClose()
+        }}
+        modKey={mod.key}
+        nexusCategory={nexusCategory}
+        currentOverride={entry?.categoryOverride ?? ''}
+      />
+    </>
   )
 }
 

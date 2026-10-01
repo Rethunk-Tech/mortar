@@ -37,6 +37,7 @@ const row = (over: Partial<ListRow> & { name: string }): ListRow => {
     status: over.status ?? '',
     note: over.note ?? '',
     tags: over.tags ?? [],
+    categoryLabel: over.categoryLabel ?? '',
   }
   if (over.details) {
     out.details = over.details

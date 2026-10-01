@@ -14,8 +14,10 @@ import { compactQuery } from '../game/compact.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { useCustomCategories } from './customCategories.ts'
 import { useDescribe } from './describe.ts'
 import { useDetail } from './detail.ts'
+import { customCategoryById, resolvedCategoryLabel } from './group.ts'
 import { showLastRunInConsole, useLastRun } from './lastRun.ts'
 import {
   concerns,
@@ -83,8 +85,17 @@ interface ClippedProps {
 }
 
 // What the cached Nexus page adds; nothing until the details arrive, so the rest of the panel never waits on them.
-function NexusFields({ mod, nexusId }: { mod: Mod; nexusId: number }) {
+function NexusFields({
+  mod,
+  nexusId,
+  categoryOverride,
+}: {
+  mod: Mod
+  nexusId: number
+  categoryOverride: string
+}) {
   const { t, i18n } = useLingui()
+  const customById = customCategoryById(useCustomCategories((s) => s.categories))
   const details = useNexusEntry(nexusId)?.details
   useLookedSnapshot(nexusId, details)
   if (!details) {
@@ -110,7 +121,10 @@ function NexusFields({ mod, nexusId }: { mod: Mod; nexusId: number }) {
           value={page.version || '—'}
           accented={isNewer(page.version, mod.version)}
         />
-        <Clipped label={t`Category`} value={category || '—'} />
+        <Clipped
+          label={t`Category`}
+          value={resolvedCategoryLabel(categoryOverride, category, customById) || '—'}
+        />
         <Clipped label={t`Downloads`} value={formatCount(page.downloads, i18n.locale)} />
         <Clipped label={t`Updated`} value={formatDate(page.updated, i18n.locale) || '—'} />
       </Box>
@@ -338,7 +352,14 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       {mod.endorsements > 0 ? (
         <Field label={t`Endorsements`} value={mod.endorsements.toLocaleString()} />
       ) : null}
-      {nexusId ? <NexusFields key={nexusId} mod={mod} nexusId={nexusId} /> : null}
+      {nexusId ? (
+        <NexusFields
+          key={nexusId}
+          mod={mod}
+          nexusId={nexusId}
+          categoryOverride={entry?.categoryOverride ?? ''}
+        />
+      ) : null}
       <UpdateBanner mod={mod} />
       <ProblemLine mod={mod} />
       <LastRunLine mod={mod} profile={profile} />
