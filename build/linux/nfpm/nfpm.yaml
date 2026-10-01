@@ -1,5 +1,5 @@
 name: mortar
-arch: amd64
+arch: ${NFPM_ARCH}
 platform: linux
 version: ${VERSION}
 release: "1"

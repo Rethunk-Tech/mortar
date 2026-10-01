@@ -3,23 +3,31 @@ pkgname=mortar-bin
 pkgver=0.0.1
 pkgrel=1
 pkgdesc='Desktop mod manager for Stardew Valley'
-arch=('x86_64')
+arch=('x86_64' 'aarch64')
 url='https://github.com/Rethunk-AI/mortar'
 license=('AGPL-3.0-only')
 depends=('webkitgtk-6.0' 'xdg-utils')
 provides=('mortar')
 conflicts=('mortar')
 source=(
-  "mortar-linux-amd64::https://github.com/Rethunk-AI/mortar/releases/download/v${pkgver}/mortar-linux-amd64"
   "mortar-${pkgver}.tar.gz::https://github.com/Rethunk-AI/mortar/archive/refs/tags/v${pkgver}.tar.gz"
 )
-sha256sums=(
-  'SKIP'
-  'SKIP'
+source_x86_64=(
+  "mortar-linux-amd64::https://github.com/Rethunk-AI/mortar/releases/download/v${pkgver}/mortar-linux-amd64"
 )
+source_aarch64=(
+  "mortar-linux-arm64::https://github.com/Rethunk-AI/mortar/releases/download/v${pkgver}/mortar-linux-arm64"
+)
+sha256sums=('SKIP')
+sha256sums_x86_64=('SKIP')
+sha256sums_aarch64=('SKIP')
 
 package() {
-  install -Dm755 mortar-linux-amd64 "${pkgdir}/usr/bin/mortar"
+  local bin=mortar-linux-amd64
+  if [[ $CARCH == aarch64 ]]; then
+    bin=mortar-linux-arm64
+  fi
+  install -Dm755 "$bin" "${pkgdir}/usr/bin/mortar"
   install -Dm644 "mortar-${pkgver}/build/linux/tech.rethunk.Mortar.desktop" \
     "${pkgdir}/usr/share/applications/tech.rethunk.Mortar.desktop"
   install -Dm644 "mortar-${pkgver}/build/linux/mime/mortar.xml" \
