@@ -18,6 +18,14 @@ import (
 // ManifestURL is the signed update manifest attached to the latest GitHub release.
 const ManifestURL = "https://github.com/Rethunk-AI/mortar/releases/latest/download/manifest.json"
 
+// linuxAppImage is the GitHub release asset the signed manifest lists for this GOARCH.
+func linuxAppImage(goarch string) string {
+	if goarch == "arm64" {
+		return "mortar-linux-aarch64.AppImage"
+	}
+	return "mortar-linux-x86_64.AppImage"
+}
+
 // Updater is the part of app.Updater the service drives.
 type Updater interface {
 	Init(cfg updater.Config) error
