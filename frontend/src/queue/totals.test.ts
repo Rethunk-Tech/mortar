@@ -23,6 +23,9 @@ const item = (state: string, sizeKb = 0, modId = 1): Item => ({
   asset: '',
   assets: [],
   unverified: false,
+  category: '',
+  merge: null,
+  mergeAdd: false,
 })
 
 test('totals count each state and split the bar over what was asked for', () => {

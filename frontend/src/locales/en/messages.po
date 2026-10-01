@@ -55,7 +55,7 @@ msgid "Could not open the folder"
 msgstr "Could not open the folder"
 
 #. placeholder {0}: items.length
-#: src/queue/QueueBody.tsx:283
+#: src/queue/QueueBody.tsx:284
 msgid "Failed ({0})"
 msgstr "Failed ({0})"
 
@@ -132,7 +132,7 @@ msgid "Sand"
 msgstr "Sand"
 
 #. placeholder {0}: failed.length
-#: src/queue/store.ts:168
+#: src/queue/store.ts:172
 msgid "{0, plural, one {# download failed} other {# downloads failed}}"
 msgstr "{0, plural, one {# download failed} other {# downloads failed}}"
 
@@ -145,7 +145,7 @@ msgstr "{name} needs {detail}, which Mortar cannot install"
 msgid "{0} opens these links now. Mortar takes them over and gives them back when you turn this off in Settings."
 msgstr "{0} opens these links now. Mortar takes them over and gives them back when you turn this off in Settings."
 
-#: src/queue/store.ts:90
+#: src/queue/store.ts:94
 msgid "The download could not finish. Retry or skip it from the queue."
 msgstr "The download could not finish. Retry or skip it from the queue."
 
@@ -547,7 +547,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/game/Detail.tsx:366
 #: src/mods/ModsTab.tsx:302
 #: src/notes/NotesTab.tsx:39
-#: src/queue/QueueBody.tsx:303
+#: src/queue/QueueBody.tsx:304
 #: src/saves/SavesTab.tsx:275
 #: src/settings/sections/Updates.tsx:49
 msgid "Retry"
@@ -561,7 +561,7 @@ msgstr "Copper"
 msgid "Mortar's data"
 msgstr "Mortar's data"
 
-#: src/queue/QueueBody.tsx:374
+#: src/queue/QueueBody.tsx:377
 msgid "Nothing is downloading. Updates, missing dependencies and links from Nexus land here."
 msgstr "Nothing is downloading. Updates, missing dependencies and links from Nexus land here."
 
@@ -574,12 +574,13 @@ msgstr "Could not add the download"
 msgid "Needed by"
 msgstr "Needed by"
 
+#: src/install/MergeCallout.tsx:78
 #: src/install/NeedsRootCallout.tsx:80
-#: src/queue/QueueBody.tsx:207
+#: src/queue/QueueBody.tsx:208
 msgid "Skip"
 msgstr "Skip"
 
-#: src/queue/store.ts:49
+#: src/queue/store.ts:53
 msgid "Nothing in the queue needs a decision."
 msgstr "Nothing in the queue needs a decision."
 
@@ -709,8 +710,8 @@ msgstr "Focus the Mods filter"
 
 #: src/nxm/store.ts:51
 #: src/queue/actions.ts:76
-#: src/queue/store.ts:171
-#: src/queue/store.ts:255
+#: src/queue/store.ts:175
+#: src/queue/store.ts:263
 msgid "Show"
 msgstr "Show"
 
@@ -722,7 +723,7 @@ msgid "Queued"
 msgstr "Queued"
 
 #. placeholder {0}: i.name
-#: src/queue/QueueBody.tsx:411
+#: src/queue/QueueBody.tsx:415
 msgid "Skip {0}"
 msgstr "Skip {0}"
 
@@ -787,7 +788,7 @@ msgstr "Your notes for this profile, for example: Friday co-op profile. Keep eve
 msgid "One step in Steam"
 msgstr "One step in Steam"
 
-#: src/queue/QueueBody.tsx:460
+#: src/queue/QueueBody.tsx:464
 #: src/queue/QueueHistory.tsx:34
 msgid "Skipped"
 msgstr "Skipped"
@@ -804,7 +805,7 @@ msgstr "Start the game to run commands"
 
 #: src/install/store.ts:147
 #: src/install/store.ts:208
-#: src/queue/store.ts:227
+#: src/queue/store.ts:235
 msgid "Undo"
 msgstr "Undo"
 
@@ -818,7 +819,7 @@ msgstr "Stardew Valley is now {0}. This profile last launched on {1}."
 msgid "Handle Nexus \"Mod Manager Download\" links"
 msgstr "Handle Nexus \"Mod Manager Download\" links"
 
-#: src/queue/store.ts:221
+#: src/queue/store.ts:229
 msgid "{first} installed"
 msgstr "{first} installed"
 
@@ -1339,7 +1340,7 @@ msgstr "Done"
 msgid "Accent: {from} → {to}"
 msgstr "Accent: {from} → {to}"
 
-#: src/queue/store.ts:180
+#: src/queue/store.ts:184
 msgid "Downloads paused"
 msgstr "Downloads paused"
 
@@ -1362,7 +1363,7 @@ msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
 #. placeholder {0}: active.length
-#: src/queue/QueueBody.tsx:392
+#: src/queue/QueueBody.tsx:396
 msgid "In progress ({0})"
 msgstr "In progress ({0})"
 
@@ -1402,7 +1403,7 @@ msgstr "Mortar"
 
 #. placeholder {0}: item.repo
 #. placeholder {1}: item.tag
-#: src/queue/QueueBody.tsx:219
+#: src/queue/QueueBody.tsx:220
 msgid "{0} {1} has several archives. Which one should Mortar install?"
 msgstr "{0} {1} has several archives. Which one should Mortar install?"
 
@@ -1423,7 +1424,7 @@ msgstr "You can also drop archives anywhere on the window."
 msgid "These will be removed: {0}"
 msgstr "These will be removed: {0}"
 
-#: src/queue/QueueBody.tsx:182
+#: src/queue/QueueBody.tsx:183
 msgid "Needs your click"
 msgstr "Needs your click"
 
@@ -1563,7 +1564,7 @@ msgstr "None of this profile's mods are marked broken for the new version."
 msgid "Open Settings"
 msgstr "Open Settings"
 
-#: src/queue/QueueBody.tsx:218
+#: src/queue/QueueBody.tsx:219
 msgid "Choose a file"
 msgstr "Choose a file"
 
@@ -1792,7 +1793,7 @@ msgid "Launch options"
 msgstr "Launch options"
 
 #. placeholder {0}: names(next)
-#: src/queue/QueueBody.tsx:399
+#: src/queue/QueueBody.tsx:403
 msgid "Up next: {0}"
 msgstr "Up next: {0}"
 
@@ -1849,7 +1850,7 @@ msgstr "Stream overlay"
 msgid "Add to this profile"
 msgstr "Add to this profile"
 
-#: src/queue/QueueBody.tsx:279
+#: src/queue/QueueBody.tsx:280
 msgid "Retry failed"
 msgstr "Retry failed"
 
@@ -2001,7 +2002,7 @@ msgid "Mortar {0} is available."
 msgstr "Mortar {0} is available."
 
 #. placeholder {0}: done.length
-#: src/queue/store.ts:245
+#: src/queue/store.ts:253
 msgid "{0, plural, one {# mod installed} other {# mods installed}}"
 msgstr "{0, plural, one {# mod installed} other {# mods installed}}"
 
@@ -2062,7 +2063,7 @@ msgid "Notifications"
 msgstr "Notifications"
 
 #. placeholder {0}: item.repo
-#: src/queue/QueueBody.tsx:244
+#: src/queue/QueueBody.tsx:245
 msgid "This download's mod is not known to come from {0}."
 msgstr "This download's mod is not known to come from {0}."
 
@@ -2101,7 +2102,7 @@ msgstr "config.json"
 msgid "{0} (profile)"
 msgstr "{0} (profile)"
 
-#: src/queue/store.ts:55
+#: src/queue/store.ts:59
 msgid "That download is no longer waiting to retry."
 msgstr "That download is no longer waiting to retry."
 
@@ -2279,6 +2280,10 @@ msgstr "config.json is deleted, and the mod writes a fresh one with its own defa
 msgid "Could not export the profile"
 msgstr "Could not export the profile"
 
+#: src/install/MergeCallout.tsx:64
+msgid "This Nexus page is already in the profile"
+msgstr "This Nexus page is already in the profile"
+
 #: src/launch/PlayControl.tsx:123
 #: src/launch/PlayControl.tsx:126
 #: src/launch/StopDialog.tsx:42
@@ -2286,7 +2291,7 @@ msgid "Stop game"
 msgstr "Stop game"
 
 #: src/install/NeedsRootCallout.tsx:28
-#: src/queue/QueueBody.tsx:60
+#: src/queue/QueueBody.tsx:61
 msgid "into {profile}"
 msgstr "into {profile}"
 
@@ -2527,9 +2532,9 @@ msgid "Could not check the game version"
 msgstr "Could not check the game version"
 
 #. placeholder {0}: i.name
-#: src/queue/QueueBody.tsx:306
-#: src/queue/QueueBody.tsx:441
-#: src/queue/QueueBody.tsx:465
+#: src/queue/QueueBody.tsx:307
+#: src/queue/QueueBody.tsx:445
+#: src/queue/QueueBody.tsx:469
 msgid "Dismiss {0}"
 msgstr "Dismiss {0}"
 
@@ -2833,7 +2838,7 @@ msgstr "Description"
 msgid "No mods have logged yet"
 msgstr "No mods have logged yet"
 
-#: src/queue/QueueBody.tsx:183
+#: src/queue/QueueBody.tsx:184
 msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
@@ -3088,6 +3093,10 @@ msgstr "{0, plural, one {# day ago} other {# days ago}}"
 msgid "Nothing"
 msgstr "Nothing"
 
+#: src/install/MergeCallout.tsx:44
+msgid "Separate entry"
+msgstr "Separate entry"
+
 #: src/install/DropOverlay.tsx:100
 msgid "Open a profile to install mods"
 msgstr "Open a profile to install mods"
@@ -3205,7 +3214,7 @@ msgstr "The log holds folder paths from this computer, which can include your us
 msgid "Switch on {name} in this profile"
 msgstr "Switch on {name} in this profile"
 
-#: src/queue/QueueBody.tsx:191
+#: src/queue/QueueBody.tsx:192
 msgid "Open download page"
 msgstr "Open download page"
 
@@ -3309,7 +3318,7 @@ msgid "Sign in to Nexus Mods to download"
 msgstr "Sign in to Nexus Mods to download"
 
 #. placeholder {0}: names(next)
-#: src/queue/QueueBody.tsx:399
+#: src/queue/QueueBody.tsx:403
 msgid "Up next: {0} and {more} more"
 msgstr "Up next: {0} and {more} more"
 
@@ -3522,7 +3531,7 @@ msgstr "{dependentName} needs {dep}, which is switched off."
 
 #. placeholder {0}: done.length
 #. placeholder {1}: names(done)
-#: src/queue/QueueBody.tsx:425
+#: src/queue/QueueBody.tsx:429
 msgid "Done ({0}): {1}"
 msgstr "Done ({0}): {1}"
 
@@ -3577,7 +3586,7 @@ msgstr "Keep Mortar in the tray"
 msgid "{0, plural, one {# problem} other {# problems}}"
 msgstr "{0, plural, one {# problem} other {# problems}}"
 
-#: src/queue/QueueBody.tsx:435
+#: src/queue/QueueBody.tsx:439
 msgid "Could not verify its source"
 msgstr "Could not verify its source"
 
@@ -3770,7 +3779,7 @@ msgid "Tag"
 msgstr "Tag"
 
 #: src/mods/updates.ts:78
-#: src/queue/store.ts:151
+#: src/queue/store.ts:155
 msgid "Couldn't reach Nexus"
 msgstr "Couldn't reach Nexus"
 
@@ -3979,7 +3988,7 @@ msgstr "No mods match your search."
 msgid "Downloaded"
 msgstr "Downloaded"
 
-#: src/queue/QueueBody.tsx:460
+#: src/queue/QueueBody.tsx:464
 #: src/queue/QueueHistory.tsx:36
 msgid "Cancelled"
 msgstr "Cancelled"
@@ -4129,7 +4138,7 @@ msgstr "Could not redo the update"
 msgid "Last run"
 msgstr "Last run"
 
-#: src/queue/QueueBody.tsx:324
+#: src/queue/QueueBody.tsx:325
 msgid "Installing"
 msgstr "Installing"
 
@@ -4207,7 +4216,7 @@ msgid "Flatpak Steam cannot read your mods"
 msgstr "Flatpak Steam cannot read your mods"
 
 #. placeholder {0}: item.name
-#: src/queue/QueueBody.tsx:339
+#: src/queue/QueueBody.tsx:340
 msgid "Cancel {0}"
 msgstr "Cancel {0}"
 
@@ -4293,7 +4302,7 @@ msgstr "Display"
 msgid "Welcome to Mortar"
 msgstr "Welcome to Mortar"
 
-#: src/queue/store.ts:222
+#: src/queue/store.ts:230
 msgid "{unblocked} can load now."
 msgstr "{unblocked} can load now."
 
@@ -4325,7 +4334,7 @@ msgstr "just now"
 msgid "{n} GitHub"
 msgstr "{n} GitHub"
 
-#: src/queue/store.ts:181
+#: src/queue/store.ts:185
 msgid "Downloads paused. Retrying in {n} s."
 msgstr "Downloads paused. Retrying in {n} s."
 
@@ -4347,7 +4356,7 @@ msgstr "Could not endorse"
 msgid "Switch on"
 msgstr "Switch on"
 
-#: src/queue/QueueBody.tsx:243
+#: src/queue/QueueBody.tsx:244
 msgid "Check this download"
 msgstr "Check this download"
 
@@ -4362,12 +4371,12 @@ msgstr "Fall"
 #. placeholder {0}: megabytes(downloadedKb(item))
 #. placeholder {1}: megabytes(item.sizeKb)
 #. placeholder {2}: megabytesPerSecond(item.speed)
-#: src/queue/QueueBody.tsx:323
+#: src/queue/QueueBody.tsx:324
 msgid "{0} of {1} MB · {2} MB/s"
 msgstr "{0} of {1} MB · {2} MB/s"
 
 #: src/install/NeedsRootCallout.tsx:28
-#: src/queue/QueueBody.tsx:60
+#: src/queue/QueueBody.tsx:61
 msgid "into a deleted profile"
 msgstr "into a deleted profile"
 
@@ -4440,6 +4449,11 @@ msgstr "Settings sections"
 #: src/settings/sections/Data.tsx:66
 msgid "Backups kept: {from} → {to}"
 msgstr "Backups kept: {from} → {to}"
+
+#. placeholder {0}: ask.label
+#: src/install/MergeCallout.tsx:34
+msgid "Add to {0}"
+msgstr "Add to {0}"
 
 #: src/launch/SmapiWarnDialog.tsx:28
 msgid "Steam will still start SMAPI"
@@ -4525,7 +4539,7 @@ msgid "Update all"
 msgstr "Update all"
 
 #. placeholder {0}: waiting.length
-#: src/queue/store.ts:253
+#: src/queue/store.ts:261
 msgid "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 msgstr "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 
@@ -4642,7 +4656,7 @@ msgid "A game update replaced SMAPI's launcher"
 msgstr "A game update replaced SMAPI's launcher"
 
 #: src/mods/updates.ts:81
-#: src/queue/store.ts:154
+#: src/queue/store.ts:158
 msgid "Retry now"
 msgstr "Retry now"
 
@@ -4683,11 +4697,11 @@ msgstr "Set category…"
 
 #. placeholder {0}: dropped.length
 #. placeholder {1}: names(dropped)
-#: src/queue/QueueBody.tsx:452
+#: src/queue/QueueBody.tsx:456
 msgid "Skipped ({0}): {1}"
 msgstr "Skipped ({0}): {1}"
 
-#: src/queue/QueueBody.tsx:254
+#: src/queue/QueueBody.tsx:255
 msgid "Install anyway"
 msgstr "Install anyway"
 

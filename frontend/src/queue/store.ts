@@ -41,7 +41,11 @@ function showLive(): HistoryActionState {
   } = useQueue.getState()
   if (
     items.some(
-      (i) => i.state === 'needs-choice' || i.state === 'needs-confirm' || i.state === 'failed',
+      (i) =>
+        i.state === 'needs-choice' ||
+        i.state === 'needs-confirm' ||
+        i.state === 'needs-merge' ||
+        i.state === 'failed',
     )
   ) {
     return { disabled: false }
@@ -189,7 +193,11 @@ async function announce(prev: Snapshot, next: Snapshot) {
     next.items.filter((i) => i.state === state && before.get(i.id) !== state)
   const done = changed('done')
   const failed = changed('failed')
-  const waiting = [...changed('needs-choice'), ...changed('needs-confirm')]
+  const waiting = [
+    ...changed('needs-choice'),
+    ...changed('needs-confirm'),
+    ...changed('needs-merge'),
+  ]
   const blocked = useMods.getState().problems?.missing
   const { game, refresh, load } = useProfiles.getState()
   const games = [...new Set(done.map((i) => i.game))]

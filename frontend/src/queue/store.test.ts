@@ -76,6 +76,9 @@ const item = (over: Partial<Item> = {}): Item => ({
   asset: '',
   assets: null,
   unverified: false,
+  category: '',
+  merge: null,
+  mergeAdd: false,
   ...over,
 })
 
