@@ -117,6 +117,8 @@ export function FindStep({
     foundCaption = t`Found in GOG`
   } else if (game?.store === 'gog-heroic') {
     foundCaption = t`Found in GOG via Heroic`
+  } else if (game?.store === 'lutris') {
+    foundCaption = t`Found in Lutris`
   }
 
   return (
@@ -155,7 +157,7 @@ export function FindStep({
             </Typography>
           </Box>
           <Typography sx={{ fontSize: 14 }}>
-            {t`Mortar looks for Stardew Valley in Steam, Flatpak Steam, GOG and Heroic.`}{' '}
+            {t`Mortar looks for Stardew Valley in Steam, Flatpak Steam, GOG, Heroic and Lutris.`}{' '}
             {status.steam === 'flatpak-only'
               ? t`Only a Flatpak Steam was found, with no game in its library.`
               : t`Steam was not found.`}{' '}

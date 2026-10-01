@@ -157,6 +157,9 @@ function Row({
     if (id === 'gog-heroic') {
       return t`GOG via Heroic`
     }
+    if (id === 'lutris') {
+      return t`Lutris`
+    }
     return t`Steam`
   }
   const store = game.store ? storeName(game.store) : ''
@@ -285,7 +288,7 @@ export function GameSelect() {
       </Box>
       {status.steam !== 'found' && !status.games.some((g) => g.available && g.installed) && (
         <Typography noWrap={true} sx={{ px: 2, py: 0.75, fontSize: 14, color: 'text.secondary' }}>
-          {t`Mortar looks for Stardew Valley in Steam, Flatpak Steam, GOG and Heroic.`}{' '}
+          {t`Mortar looks for Stardew Valley in Steam, Flatpak Steam, GOG, Heroic and Lutris.`}{' '}
           {status.steam === 'flatpak-only'
             ? t`Only a Flatpak Steam was found, with no game in its library.`
             : t`Steam was not found.`}

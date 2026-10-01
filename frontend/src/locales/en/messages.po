@@ -42,7 +42,7 @@ msgstr "Hidden on Nexus · {0}"
 msgid "{0, plural, one {# mod included} other {# mods included}}"
 msgstr "{0, plural, one {# mod included} other {# mods included}}"
 
-#: src/profiles/GameSettings.tsx:373
+#: src/profiles/GameSettings.tsx:382
 msgid "Start muted"
 msgstr "Start muted"
 
@@ -385,7 +385,7 @@ msgstr "· updates and rolls back with this mod"
 msgid "Year"
 msgstr "Year"
 
-#: src/profiles/GameSettings.tsx:204
+#: src/profiles/GameSettings.tsx:217
 msgid "Fullscreen"
 msgstr "Fullscreen"
 
@@ -532,7 +532,7 @@ msgstr "Not in the file"
 msgid "Some mods could not be checked, so more updates may show up later."
 msgstr "Some mods could not be checked, so more updates may show up later."
 
-#: src/firstrun/FindStep.tsx:173
+#: src/firstrun/FindStep.tsx:175
 #: src/firstrun/SmapiStep.tsx:265
 #: src/game/Detail.tsx:366
 #: src/mods/ModsTab.tsx:297
@@ -630,7 +630,7 @@ msgstr "Could not quit Mortar"
 msgid "Paste a Mortar link. You see what it holds before anything downloads."
 msgstr "Paste a Mortar link. You see what it holds before anything downloads."
 
-#: src/profiles/GameSettings.tsx:334
+#: src/profiles/GameSettings.tsx:343
 msgid "Fullscreen resolution width"
 msgstr "Fullscreen resolution width"
 
@@ -721,7 +721,7 @@ msgstr "New profile"
 msgid "Not signed in"
 msgstr "Not signed in"
 
-#: src/firstrun/FindStep.tsx:134
+#: src/firstrun/FindStep.tsx:136
 #: src/settings/sections/GameSettings.tsx:98
 #: src/settings/sections/GameSettings.tsx:125
 msgid "Game folder"
@@ -827,6 +827,7 @@ msgstr "Appearance"
 msgid "Ran"
 msgstr "Ran"
 
+#: src/games/GameSelect.tsx:161
 #: src/settings/sections/GameSettings.tsx:53
 #: src/settings/sections/GameSettings.tsx:88
 msgid "Lutris"
@@ -972,7 +973,7 @@ msgstr "Sky"
 msgid "Keep my changes"
 msgstr "Keep my changes"
 
-#: src/profiles/GameSettings.tsx:344
+#: src/profiles/GameSettings.tsx:353
 msgid "Fullscreen resolution height"
 msgstr "Fullscreen resolution height"
 
@@ -997,7 +998,7 @@ msgstr "Mortar is up to date."
 msgid "And {0} more on the Nexus page"
 msgstr "And {0} more on the Nexus page"
 
-#: src/profiles/GameSettings.tsx:278
+#: src/profiles/GameSettings.tsx:408
 msgid "Game settings"
 msgstr "Game settings"
 
@@ -1433,7 +1434,7 @@ msgstr "Edit"
 msgid "Working directory"
 msgstr "Working directory"
 
-#: src/games/GameSelect.tsx:263
+#: src/games/GameSelect.tsx:266
 #: src/mods/ListColumnMenu.tsx:38
 #: src/mods/ModDetail.tsx:65
 #: src/share/ImportPreview.tsx:44
@@ -1653,6 +1654,11 @@ msgstr "Uploading…"
 msgid "Ignore"
 msgstr "Ignore"
 
+#: src/firstrun/FindStep.tsx:160
+#: src/games/GameSelect.tsx:291
+msgid "Mortar looks for Stardew Valley in Steam, Flatpak Steam, GOG, Heroic and Lutris."
+msgstr "Mortar looks for Stardew Valley in Steam, Flatpak Steam, GOG, Heroic and Lutris."
+
 #: src/console/store.ts:150
 msgid "Could not run the command"
 msgstr "Could not run the command"
@@ -1718,7 +1724,7 @@ msgstr "Up next: {0}"
 msgid "Remove filter {mod}"
 msgstr "Remove filter {mod}"
 
-#: src/games/GameSelect.tsx:257
+#: src/games/GameSelect.tsx:260
 msgid "After the first release"
 msgstr "After the first release"
 
@@ -1771,7 +1777,7 @@ msgstr "Add to this profile"
 msgid "Retry failed"
 msgstr "Retry failed"
 
-#: src/profiles/GameSettings.tsx:224
+#: src/profiles/GameSettings.tsx:237
 msgid "Zoom ({value}%)"
 msgstr "Zoom ({value}%)"
 
@@ -1950,6 +1956,10 @@ msgstr "Open page"
 #: src/share/ImportPreview.tsx:241
 msgid "{count} to download"
 msgstr "{count} to download"
+
+#: src/firstrun/FindStep.tsx:121
+msgid "Found in Lutris"
+msgstr "Found in Lutris"
 
 #: src/settings/sections/Updates.tsx:187
 msgid "Saves are zipped before mods update; older backups beyond this many are deleted. {MIN_KEPT} to {MAX_KEPT}."
@@ -2262,7 +2272,7 @@ msgstr "{0, plural, one {# version of changes} other {# versions of changes}}"
 msgid "Try again"
 msgstr "Try again"
 
-#: src/firstrun/FindStep.tsx:154
+#: src/firstrun/FindStep.tsx:156
 msgid "Stardew Valley was not found"
 msgstr "Stardew Valley was not found"
 
@@ -2317,7 +2327,7 @@ msgstr "No saves found yet."
 msgid "{0} · {1} unique"
 msgstr "{0} · {1} unique"
 
-#: src/games/GameSelect.tsx:260
+#: src/games/GameSelect.tsx:263
 #: src/settings/sections/GameSettings.tsx:142
 msgid "Not found"
 msgstr "Not found"
@@ -2418,7 +2428,7 @@ msgstr "Credits"
 msgid "More details"
 msgstr "More details"
 
-#: src/firstrun/FindStep.tsx:162
+#: src/firstrun/FindStep.tsx:164
 msgid "Choose the folder that holds Stardew Valley instead."
 msgstr "Choose the folder that holds Stardew Valley instead."
 
@@ -2532,8 +2542,8 @@ msgstr "Game"
 msgid "Add"
 msgstr "Add"
 
-#: src/firstrun/FindStep.tsx:160
-#: src/games/GameSelect.tsx:290
+#: src/firstrun/FindStep.tsx:162
+#: src/games/GameSelect.tsx:293
 msgid "Only a Flatpak Steam was found, with no game in its library."
 msgstr "Only a Flatpak Steam was found, with no game in its library."
 
@@ -2623,7 +2633,7 @@ msgstr "There is no SMAPI log for this profile yet. Play this profile once, then
 msgid "Save log"
 msgstr "Save log"
 
-#: src/profiles/GameSettings.tsx:203
+#: src/profiles/GameSettings.tsx:216
 msgid "Windowed"
 msgstr "Windowed"
 
@@ -2663,7 +2673,7 @@ msgstr "This session"
 msgid "Other profile…"
 msgstr "Other profile…"
 
-#: src/profiles/GameSettings.tsx:312
+#: src/profiles/GameSettings.tsx:321
 msgid "Windowed resolution width"
 msgstr "Windowed resolution width"
 
@@ -2683,7 +2693,7 @@ msgstr "Found in Steam"
 msgid "Could not read the mods: {loadError}"
 msgstr "Could not read the mods: {loadError}"
 
-#: src/profiles/GameSettings.tsx:146
+#: src/profiles/GameSettings.tsx:142
 msgid "No other profiles with overrides"
 msgstr "No other profiles with overrides"
 
@@ -2936,11 +2946,6 @@ msgstr "Create your first profile"
 msgid "Moss"
 msgstr "Moss"
 
-#: src/firstrun/FindStep.tsx:158
-#: src/games/GameSelect.tsx:288
-msgid "Mortar looks for Stardew Valley in Steam, Flatpak Steam, GOG and Heroic."
-msgstr "Mortar looks for Stardew Valley in Steam, Flatpak Steam, GOG and Heroic."
-
 #: src/mods/ModNoteTags.tsx:51
 #: src/mods/ModNoteTags.tsx:76
 msgid "Tags"
@@ -2986,7 +2991,7 @@ msgid "Could not reset the settings of {0}"
 msgstr "Could not reset the settings of {0}"
 
 #: src/App.tsx:53
-#: src/games/GameSelect.tsx:249
+#: src/games/GameSelect.tsx:252
 msgid "Could not read your games"
 msgstr "Could not read your games"
 
@@ -3027,12 +3032,12 @@ msgstr "Open folder"
 msgid "Default background"
 msgstr "Default background"
 
-#: src/profiles/GameSettings.tsx:144
+#: src/profiles/GameSettings.tsx:140
 msgid "Loading…"
 msgstr "Loading…"
 
-#: src/profiles/GameSettings.tsx:192
-#: src/profiles/GameSettings.tsx:195
+#: src/profiles/GameSettings.tsx:206
+#: src/profiles/GameSettings.tsx:209
 msgid "Window mode"
 msgstr "Window mode"
 
@@ -3050,7 +3055,7 @@ msgstr "Open on Nexus"
 msgid "Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods."
 msgstr "Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods."
 
-#: src/profiles/GameSettings.tsx:228
+#: src/profiles/GameSettings.tsx:241
 msgid "Music volume ({value}%)"
 msgstr "Music volume ({value}%)"
 
@@ -3100,7 +3105,7 @@ msgstr "Updated by your package manager"
 msgid "These profiles have the same mods."
 msgstr "These profiles have the same mods."
 
-#: src/profiles/GameSettings.tsx:292
+#: src/profiles/GameSettings.tsx:301
 msgid "Use my normal settings"
 msgstr "Use my normal settings"
 
@@ -3156,7 +3161,7 @@ msgstr "Preview"
 msgid "Show in sidebar"
 msgstr "Show in sidebar"
 
-#: src/profiles/GameSettings.tsx:205
+#: src/profiles/GameSettings.tsx:218
 msgid "Borderless"
 msgstr "Borderless"
 
@@ -3178,7 +3183,7 @@ msgstr "Actions for {0}"
 msgid "Pause all"
 msgstr "Pause all"
 
-#: src/profiles/GameSettings.tsx:141
+#: src/profiles/GameSettings.tsx:154
 msgid "Copy from profile…"
 msgstr "Copy from profile…"
 
@@ -3318,7 +3323,7 @@ msgstr "Upload your SMAPI log to smapi.io, the Stardew modding community's log v
 msgid "Reset the settings of {0}?"
 msgstr "Reset the settings of {0}?"
 
-#: src/games/GameSelect.tsx:167
+#: src/games/GameSelect.tsx:170
 msgid "{loader} | {store}"
 msgstr "{loader} | {store}"
 
@@ -3352,7 +3357,7 @@ msgstr "No changes yet"
 msgid "Quit"
 msgstr "Quit"
 
-#: src/games/GameSelect.tsx:169
+#: src/games/GameSelect.tsx:172
 msgid "{loader} · {lastLine}"
 msgstr "{loader} · {lastLine}"
 
@@ -3407,7 +3412,7 @@ msgid "Compare {aName} and {bName}"
 msgstr "Compare {aName} and {bName}"
 
 #: src/commandPalette/CommandPalette.tsx:160
-#: src/games/GameSelect.tsx:196
+#: src/games/GameSelect.tsx:199
 #: src/launch/PlayControl.tsx:148
 #: src/settings/sections/Appearance.tsx:142
 msgid "Play"
@@ -3547,7 +3552,7 @@ msgstr "Dependency"
 msgid "All profiles are hidden"
 msgstr "All profiles are hidden"
 
-#: src/games/GameSelect.tsx:160
+#: src/games/GameSelect.tsx:163
 #: src/settings/sections/GameSettings.tsx:55
 #: src/settings/sections/GameSettings.tsx:80
 msgid "Steam"
@@ -3641,7 +3646,7 @@ msgid "Saved to {0}"
 msgstr "Saved to {0}"
 
 #. placeholder {0}: profiles.length
-#: src/games/GameSelect.tsx:265
+#: src/games/GameSelect.tsx:268
 msgid "{0, plural, one {Installed · # profile} other {Installed · # profiles}}"
 msgstr "{0, plural, one {Installed · # profile} other {Installed · # profiles}}"
 
@@ -3828,7 +3833,7 @@ msgstr "Hide details"
 msgid "Accent colour"
 msgstr "Accent colour"
 
-#: src/profiles/GameSettings.tsx:202
+#: src/profiles/GameSettings.tsx:215
 msgid "Use normal setting"
 msgstr "Use normal setting"
 
@@ -3913,8 +3918,8 @@ msgstr "Stardew Valley was not found. Browse to its folder."
 msgid "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
 msgstr "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
 
-#: src/firstrun/FindStep.tsx:161
-#: src/games/GameSelect.tsx:291
+#: src/firstrun/FindStep.tsx:163
+#: src/games/GameSelect.tsx:294
 msgid "Steam was not found."
 msgstr "Steam was not found."
 
@@ -3994,7 +3999,7 @@ msgstr "List columns: {from} → {to}"
 msgid "Broke in {0}"
 msgstr "Broke in {0}"
 
-#: src/games/GameSelect.tsx:165
+#: src/games/GameSelect.tsx:168
 msgid "{loader} | {store} · {lastLine}"
 msgstr "{loader} | {store} · {lastLine}"
 
@@ -4117,7 +4122,7 @@ msgstr "Last game: {from} → {to}"
 msgid "Compare with…"
 msgstr "Compare with…"
 
-#: src/firstrun/FindStep.tsx:189
+#: src/firstrun/FindStep.tsx:191
 #: src/firstrun/SmapiStep.tsx:150
 #: src/firstrun/SmapiStep.tsx:229
 msgid "Continue"
@@ -4148,7 +4153,7 @@ msgstr "Could not save the last game"
 msgid "SMAPI {0} is available"
 msgstr "SMAPI {0} is available"
 
-#: src/profiles/GameSettings.tsx:303
+#: src/profiles/GameSettings.tsx:312
 msgid "Display"
 msgstr "Display"
 
@@ -4172,7 +4177,7 @@ msgstr "Loading profiles…"
 msgid "Measuring…"
 msgstr "Measuring…"
 
-#: src/profiles/GameSettings.tsx:322
+#: src/profiles/GameSettings.tsx:331
 msgid "Windowed resolution height"
 msgstr "Windowed resolution height"
 
@@ -4332,7 +4337,7 @@ msgstr "Reinstall"
 msgid "Checking for updates…"
 msgstr "Checking for updates…"
 
-#: src/profiles/GameSettings.tsx:226
+#: src/profiles/GameSettings.tsx:239
 msgid "UI scale ({value}%)"
 msgstr "UI scale ({value}%)"
 
@@ -4549,7 +4554,7 @@ msgstr "Skipped ({0}): {1}"
 msgid "Install anyway"
 msgstr "Install anyway"
 
-#: src/profiles/GameSettings.tsx:222
+#: src/profiles/GameSettings.tsx:235
 msgid "Sound volume ({value}%)"
 msgstr "Sound volume ({value}%)"
 
