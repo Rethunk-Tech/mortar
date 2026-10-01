@@ -32,6 +32,10 @@ type Manifest struct {
 	ContentPackFor string
 	// Dependencies lists Dependencies[] and, as a required entry, the ContentPackFor framework.
 	Dependencies []Dependency
+	// UpdateCautionMessage is shown at update time when Stardrop or Mortar cannot read the new version's manifest yet.
+	UpdateCautionMessage string
+	// DeleteOldVersion tells Mortar to carry over only user-written config (such as config.json), not other edited files.
+	DeleteOldVersion bool
 }
 
 // Dependency is one mod another mod needs; Required defaults to true when the manifest omits IsRequired.
@@ -49,12 +53,14 @@ func Parse(b []byte) (Manifest, error) {
 		return Manifest{}, fmt.Errorf("invalid manifest: %w", err)
 	}
 	m := Manifest{
-		Name:        text(raw, "name"),
-		Author:      text(raw, "author"),
-		Version:     version(field(raw, "version")),
-		UniqueID:    text(raw, "uniqueid"),
-		Description: text(raw, "description"),
-		UpdateKeys:  texts(field(raw, "updatekeys")),
+		Name:                 text(raw, "name"),
+		Author:               text(raw, "author"),
+		Version:              version(field(raw, "version")),
+		UniqueID:             text(raw, "uniqueid"),
+		Description:          text(raw, "description"),
+		UpdateKeys:           texts(field(raw, "updatekeys")),
+		UpdateCautionMessage: text(raw, "updatecautionmessage"),
+		DeleteOldVersion:     boolean(field(raw, "deleteoldversion")),
 	}
 	if d, ok := dependency(field(raw, "contentpackfor")); ok {
 		m.ContentPackFor = d.UniqueID
@@ -129,6 +135,12 @@ func text(raw map[string]json.RawMessage, name string) string {
 		return ""
 	}
 	return strings.TrimSpace(s)
+}
+
+func boolean(v json.RawMessage) bool {
+	var b bool
+	_ = json.Unmarshal(v, &b)
+	return b
 }
 
 // version accepts a string or SMAPI's legacy {MajorVersion, MinorVersion, PatchVersion, Build} object.

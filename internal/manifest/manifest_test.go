@@ -35,6 +35,10 @@ func TestParseLenient(t *testing.T) {
 			`{"Name":"Old","Author":"A","UniqueID":"A.Old","Version":{"MajorVersion":1,"MinorVersion":2,"PatchVersion":3,"Build":"beta"}}`,
 			Manifest{Name: "Old", Author: "A", Version: "1.2.3-beta", UniqueID: "A.Old"},
 		},
+		"update hints case insensitive": {
+			`{"UniqueID":"A.B","UpdateCautionMessage":"Read the release notes","DELETEOLDVERSION":true}`,
+			Manifest{UniqueID: "A.B", UpdateCautionMessage: "Read the release notes", DeleteOldVersion: true},
+		},
 		"escaped quote in string": {
 			`{"Name":"Say \"hi\" // ok","UniqueID":"A.B","Version":"1.0"}`,
 			Manifest{Name: `Say "hi" // ok`, Version: "1.0", UniqueID: "A.B"},
