@@ -49,6 +49,9 @@ function StoreLabel({ store }: { store: string }) {
   if (store === 'gog-heroic') {
     return t`GOG via Heroic`
   }
+  if (store === 'lutris') {
+    return t`Lutris`
+  }
   return t`Steam`
 }
 
@@ -81,6 +84,8 @@ function GameFolder({
     foundIn = t`GOG`
   } else if (store === 'gog-heroic') {
     foundIn = t`GOG via Heroic`
+  } else if (store === 'lutris') {
+    foundIn = t`Lutris`
   }
   let source = t`Stardew Valley was not found. Browse to its folder.`
   if (override) {
