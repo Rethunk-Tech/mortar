@@ -26,10 +26,11 @@ type Meta interface {
 type Installed struct {
 	Key string
 	// SourceKind is the entry's source: "local" for an archive, "smapi" for the loader's own mods, "mortar" for the console bridge, "nexus" for a download.
-	SourceKind  string
-	Enabled     bool
-	Pinned      bool
-	SkipVersion string
+	SourceKind    string
+	Enabled       bool
+	Pinned        bool
+	SkipVersion   string
+	IgnoreUpdates bool
 	// Folder is the mod's directory in the profile, used to read Content Patcher content.json.
 	Folder string
 	manifest.Manifest
@@ -102,12 +103,13 @@ type Result struct {
 	Duplicates     []Duplicate     `json:"duplicates"`
 	Broken         []Broken        `json:"broken"`
 	AssetConflicts []AssetConflict `json:"assetConflicts"`
+	Drift          []profile.Drift `json:"drift,omitempty"`
 	Unknown        bool            `json:"unknown"`
 }
 
 // Count is the number of problems, one per missing dependency, duplicate, broken mod and asset conflict.
 func (r Result) Count() int {
-	return len(r.Missing) + len(r.Duplicates) + len(r.Broken) + len(r.AssetConflicts)
+	return len(r.Missing) + len(r.Duplicates) + len(r.Broken) + len(r.AssetConflicts) + len(r.Drift)
 }
 
 func sameID(a, b string) bool { return strings.EqualFold(a, b) }
@@ -130,6 +132,7 @@ func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Resul
 		Duplicates:     duplicates(enabled),
 		Broken:         []Broken{},
 		AssetConflicts: assetConflicts(enabled),
+		Drift:          []profile.Drift{},
 	}
 	missing := missingDeps(enabled, mods)
 	r.Unknown = fillWhere(ctx, m, enabled, missing)

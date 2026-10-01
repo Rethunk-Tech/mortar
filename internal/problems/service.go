@@ -104,7 +104,7 @@ func (s *Service) installed(gameID, id string) ([]Installed, error) {
 	for i, m := range installed {
 		mods[i] = Installed{
 			Key: m.Key, SourceKind: m.Source.Kind, Enabled: m.Enabled,
-			Pinned: m.Pinned, SkipVersion: m.SkipVersion, Manifest: m.Manifest,
+			Pinned: m.Pinned, SkipVersion: m.SkipVersion, IgnoreUpdates: m.IgnoreUpdates, Manifest: m.Manifest,
 		}
 		if m.Enabled {
 			if folder, err := s.profiles.ModFolder(gameID, id, m.Key, m.UniqueID); err == nil {
@@ -129,7 +129,7 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	c, ok := s.cache[key]
 	s.mu.Unlock()
 	if ok && c.fingerprint == fp {
-		return s.withDismissed(gameID, id, c.result), nil
+		return s.withDrift(gameID, id, s.withDismissed(gameID, id, c.result))
 	}
 	r := Check(ctx, s.meta, env, mods)
 	if !r.Unknown {
@@ -137,7 +137,19 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 		s.cache[key] = cached{fp, r}
 		s.mu.Unlock()
 	}
-	return s.withDismissed(gameID, id, r), nil
+	return s.withDrift(gameID, id, s.withDismissed(gameID, id, r))
+}
+
+func (s *Service) withDrift(gameID, id string, r Result) (Result, error) {
+	drift, err := s.profiles.ScanModsDrift(gameID, id)
+	if err != nil {
+		return Result{}, err
+	}
+	if drift == nil {
+		drift = []profile.Drift{}
+	}
+	r.Drift = drift
+	return r, nil
 }
 
 func (s *Service) withDismissed(gameID, id string, r Result) Result {
