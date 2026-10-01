@@ -10,6 +10,7 @@ import { openImport } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { splitDropped } from './dropped.ts'
 import { MissingDepsDialog } from './MissingDepsDialog.tsx'
+import { RemapDialog } from './RemapDialog.tsx'
 import { useInstall } from './store.ts'
 
 // Wails toggles this class on the element carrying data-file-drop-target while a file drag is over it.
@@ -52,6 +53,7 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
   return (
     <>
       <MissingDepsDialog />
+      <RemapDialog />
       {dragging ? (
         <Box
           sx={(theme) => ({

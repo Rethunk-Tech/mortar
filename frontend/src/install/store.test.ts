@@ -20,6 +20,12 @@ mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/profile/servic
     updated: false,
     versionChanged: false,
   }),
+  InstallRemap: async () => ({
+    profile: baseProfile(),
+    added: ['SpaceCore'],
+    updated: false,
+    versionChanged: false,
+  }),
   RemoveEntry: async (_game: string, _id: string, key: string) => {
     calls.remove.push(key)
     return baseProfile()
