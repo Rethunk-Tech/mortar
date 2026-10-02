@@ -32,7 +32,7 @@ import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { LogActions } from '../console/LogActions.tsx'
 import { useBadges } from '../mods/badges.ts'
 import { ModsTab } from '../mods/ModsTab.tsx'
-import { ProblemsTab } from '../mods/ProblemsTab.tsx'
+import { ProblemActions, ProblemsTab } from '../mods/ProblemsTab.tsx'
 import { problemCount } from '../mods/problemGroups.ts'
 import { useMods } from '../mods/store.ts'
 import { useNav } from '../nav/store.ts'
@@ -470,6 +470,12 @@ export function Detail() {
         </Tabs>
         <Box sx={{ flexGrow: 1 }} />
         <Box sx={{ display: 'flex', gap: 0.75 }}>
+          {tab === 'problems' ? (
+            <>
+              <ProblemActions />
+              <Divider orientation="vertical" flexItem={true} sx={{ mx: 0.5 }} />
+            </>
+          ) : null}
           {tab === 'console' ? (
             <>
               <LogActions />

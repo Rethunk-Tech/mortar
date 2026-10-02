@@ -95,11 +95,43 @@ function ProblemRow({ row }: { row: Row }) {
   )
 }
 
-export function ProblemsTab() {
+// ProblemActions sits in the profile's tab row while the Problems tab is open, like the Console's log actions.
+export function ProblemActions() {
   const { t } = useLingui()
   const result = useMods((s) => s.problems)
   const sectionTitle = useSectionTitle()
   const rowText = useRowText()
+  const sections = result === null ? [] : problemSections(result)
+  return (
+    <IconAction
+      label={t`Copy all problems`}
+      icon={<Copy size={16} />}
+      disabled={sections.length === 0}
+      onClick={() => {
+        const text = sections
+          .map((section) =>
+            [
+              sectionTitle(section.id),
+              ...section.rows.map((row) => {
+                const { text: line, note } = rowText(row)
+                return note === '' ? `- ${line}` : `- ${line}\n  ${note}`
+              }),
+            ].join('\n'),
+          )
+          .join('\n\n')
+        Clipboard.SetText(text).then(
+          () => useToasts.getState().push({ kind: 'success', title: t`Problems copied` }),
+          reportUnexpected,
+        )
+      }}
+    />
+  )
+}
+
+export function ProblemsTab() {
+  const { t } = useLingui()
+  const result = useMods((s) => s.problems)
+  const sectionTitle = useSectionTitle()
   useLoadProblemsOnFocus()
 
   if (result === null) {
@@ -126,31 +158,6 @@ export function ProblemsTab() {
         gap: 2,
       }}
     >
-      {sections.length > 0 ? (
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: -1 }}>
-          <IconAction
-            label={t`Copy all problems`}
-            icon={<Copy size={16} />}
-            onClick={() => {
-              const text = sections
-                .map((section) =>
-                  [
-                    sectionTitle(section.id),
-                    ...section.rows.map((row) => {
-                      const { text: line, note } = rowText(row)
-                      return note === '' ? `- ${line}` : `- ${line}\n  ${note}`
-                    }),
-                  ].join('\n'),
-                )
-                .join('\n\n')
-              Clipboard.SetText(text).then(
-                () => useToasts.getState().push({ kind: 'success', title: t`Problems copied` }),
-                reportUnexpected,
-              )
-            }}
-          />
-        </Box>
-      ) : null}
       {empty ? (
         <Typography
           sx={{ fontSize: 14, color: 'text.secondary' }}
