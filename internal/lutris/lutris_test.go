@@ -17,17 +17,20 @@ var fixtureGogLinux []byte
 //go:embed testdata/steam-runner.yml
 var fixtureSteamRunner []byte
 
+// testGame is a game the way a Game implementation describes it to the Lutris locator.
+var testGame = Game{Slug: "stardew-valley", Keyword: "stardew", Marker: "Stardew Valley.dll"}
+
 func TestInstallFromFixture(t *testing.T) {
 	dir := t.TempDir()
 	if err := fsx.WriteFile(filepath.Join(dir, "Stardew Valley.dll"), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	replaced := strings.ReplaceAll(string(fixtureGogLinux), "/home/player/Games/Stardew Valley", dir)
-	got, err := installFromYAML(replaced)
+	got, err := newMatcher(testGame).installFromYAML(replaced)
 	if err != nil || got != dir {
 		t.Fatalf("install = %q, %v", got, err)
 	}
-	steam, err := installFromYAML(string(fixtureSteamRunner))
+	steam, err := newMatcher(testGame).installFromYAML(string(fixtureSteamRunner))
 	if err != nil || steam != "" {
 		t.Fatalf("steam runner = %q, %v", steam, err)
 	}
@@ -53,7 +56,7 @@ func TestLocateLinux(t *testing.T) {
 	if err := fsx.WriteFile(filepath.Join(games, "stardew.yml"), []byte(yml), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	found := Locate(home)
+	found := Locate(home, testGame)
 	if len(found) != 1 || found[0].Dir != install {
 		t.Fatalf("Locate = %+v", found)
 	}

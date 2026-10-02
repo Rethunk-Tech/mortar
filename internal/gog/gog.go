@@ -1,4 +1,4 @@
-// Package gog locates Stardew Valley from GOG Galaxy, the offline installer, and Heroic.
+// Package gog locates a game installed from GOG: by GOG Galaxy, the offline installer, Heroic or Minigalaxy.
 package gog
 
 import (
@@ -12,16 +12,23 @@ import (
 )
 
 const (
-	// AppID is Stardew Valley's GOG product id.
-	AppID = "1453375253"
 	// StoreGOG is a GOG Galaxy or offline-installer copy.
 	StoreGOG = "gog"
 	// StoreHeroic is a copy Heroic installed from GOG.
 	StoreHeroic = "gog-heroic"
 	// StoreMinigalaxy is a copy Minigalaxy installed from GOG.
 	StoreMinigalaxy = "gog-minigalaxy"
-	marker          = "Stardew Valley.dll"
 )
+
+// Game identifies one game to the GOG locators.
+type Game struct {
+	// ProductID is the game's GOG product id, as Galaxy's registry and Heroic's installed.json name it.
+	ProductID string
+	// Folder is the folder name GOG installers and Minigalaxy give the game inside a games folder.
+	Folder string
+	// Marker is a file every install of the game holds, at its root or one "game" folder down.
+	Marker string
+}
 
 // Install is one GOG-sourced game folder.
 type Install struct {
@@ -37,12 +44,12 @@ type Roots struct {
 	Minigalaxy []string
 }
 
-// Locate finds GOG Stardew folders under home (and Windows Galaxy / default paths), the user's own folders first.
-func Locate(home string, r Roots) []Install {
+// Locate finds g's GOG folders under home (and Windows Galaxy / default paths), the user's own folders first.
+func Locate(home string, g Game, r Roots) []Install {
 	var out []Install
 	seen := map[string]struct{}{}
 	add := func(dir, store string) {
-		dir = gameDir(dir)
+		dir = GameDir(dir, g.Marker)
 		if dir == "" {
 			return
 		}
@@ -52,15 +59,15 @@ func Locate(home string, r Roots) []Install {
 		seen[dir] = struct{}{}
 		out = append(out, Install{Dir: dir, Store: store})
 	}
-	add(galaxyPath(), StoreGOG)
+	add(galaxyPath(g.ProductID), StoreGOG)
 	for _, dir := range MinigalaxyInstallDirs(home, r.Minigalaxy...) {
-		add(filepath.Join(dir, "Stardew Valley"), StoreMinigalaxy)
+		add(filepath.Join(dir, g.Folder), StoreMinigalaxy)
 	}
 	for _, dir := range OfflineDirs(home, r) {
-		add(filepath.Join(dir, "Stardew Valley"), StoreGOG)
+		add(filepath.Join(dir, g.Folder), StoreGOG)
 	}
 	for _, cfg := range HeroicDirs(home, r.Heroic...) {
-		for _, dir := range heroicInstalls(cfg) {
+		for _, dir := range heroicInstalls(cfg, g.ProductID) {
 			add(dir, StoreHeroic)
 		}
 	}
@@ -129,20 +136,18 @@ func HeroicDirs(home string, custom ...string) []string {
 	)
 }
 
-func gameDir(dir string) string {
-	if hasMarker(dir) {
-		return dir
+// GameDir is dir when it holds marker, else its "game" subfolder when that does (GOG's offline layout), else "".
+func GameDir(dir, marker string) string {
+	if dir == "" {
+		return ""
 	}
-	nested := filepath.Join(dir, "game")
-	if hasMarker(nested) {
-		return nested
+	dir = filepath.Clean(dir)
+	for _, d := range []string{dir, filepath.Join(dir, "game")} {
+		if st, err := os.Stat(filepath.Join(d, marker)); err == nil && st.Mode().IsRegular() {
+			return d
+		}
 	}
 	return ""
-}
-
-func hasMarker(dir string) bool {
-	st, err := os.Stat(filepath.Join(dir, marker))
-	return err == nil && st.Mode().IsRegular()
 }
 
 type heroicGame struct {
@@ -150,7 +155,7 @@ type heroicGame struct {
 	InstallPath string `json:"install_path"`
 }
 
-func heroicInstalls(cfg string) []string {
+func heroicInstalls(cfg, productID string) []string {
 	path := filepath.Join(cfg, "gog_store", "installed.json")
 	b, err := fsx.ReadFile(path)
 	if err != nil {
@@ -178,7 +183,7 @@ func heroicInstalls(cfg string) []string {
 	}
 	var dirs []string
 	for _, g := range games {
-		if g.AppName != AppID {
+		if g.AppName != productID {
 			continue
 		}
 		dirs = append(dirs, g.InstallPath)

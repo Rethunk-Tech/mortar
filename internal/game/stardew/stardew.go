@@ -7,6 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-AI/mortar/internal/gog"
+	"github.com/Rethunk-AI/mortar/internal/lutris"
+
 	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/steam"
@@ -42,9 +45,19 @@ var configuredComponents *components.Client
 // ConfigureComponents selects the verified component manifest used by this game.
 func ConfigureComponents(client *components.Client) { configuredComponents = client }
 
-func (Game) ID() string           { return "stardew" }
-func (Game) Name() string         { return "Stardew Valley" }
-func (Game) SteamAppID() string   { return "413150" }
+func (Game) ID() string         { return "stardew" }
+func (Game) Name() string       { return "Stardew Valley" }
+func (Game) SteamAppID() string { return "413150" }
+
+// GOG names Stardew Valley to the GOG locators: its GOG product id and the folder GOG installers use.
+func (Game) GOG() gog.Game {
+	return gog.Game{ProductID: "1453375253", Folder: "Stardew Valley", Marker: marker}
+}
+
+// Lutris names Stardew Valley to the Lutris locator.
+func (Game) Lutris() lutris.Game {
+	return lutris.Game{Slug: "stardew-valley", Keyword: "stardew", Marker: marker}
+}
 func (Game) LoaderName() string   { return "SMAPI" }
 func (Game) ModSources() []string { return []string{"nexus", "github"} }
 

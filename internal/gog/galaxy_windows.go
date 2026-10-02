@@ -35,8 +35,8 @@ func GalaxyDir() string {
 // lookupGalaxy is the Galaxy registry read; tests replace it so they never touch the real registry.
 var lookupGalaxy = readGalaxyRegistry
 
-func readGalaxyRegistry() string {
-	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\WOW6432Node\GOG.com\Games\`+AppID, registry.QUERY_VALUE)
+func readGalaxyRegistry(productID string) string {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\WOW6432Node\GOG.com\Games\`+productID, registry.QUERY_VALUE)
 	if err != nil {
 		return ""
 	}
@@ -48,4 +48,4 @@ func readGalaxyRegistry() string {
 	return p
 }
 
-func galaxyPath() string { return lookupGalaxy() }
+func galaxyPath(productID string) string { return lookupGalaxy(productID) }

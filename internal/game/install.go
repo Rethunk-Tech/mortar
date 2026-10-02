@@ -63,10 +63,10 @@ func collect(g Game, home string, s settings.Settings) []FoundInstall {
 		}
 		add(store, dir)
 	}
-	for _, in := range gog.Locate(home, gog.Roots{Heroic: roots(s, LauncherHeroic), Games: roots(s, LauncherGOG), Minigalaxy: roots(s, LauncherMinigalaxy)}) {
+	for _, in := range gog.Locate(home, g.GOG(), gog.Roots{Heroic: roots(s, LauncherHeroic), Games: roots(s, LauncherGOG), Minigalaxy: roots(s, LauncherMinigalaxy)}) {
 		add(in.Store, in.Dir)
 	}
-	for _, in := range lutris.Locate(home, roots(s, LauncherLutris)...) {
+	for _, in := range lutris.Locate(home, g.Lutris(), roots(s, LauncherLutris)...) {
 		add(StoreLutris, in.Dir)
 	}
 	return all

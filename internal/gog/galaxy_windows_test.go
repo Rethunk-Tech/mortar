@@ -10,9 +10,9 @@ import (
 func TestGalaxyRegistrySeam(t *testing.T) {
 	dir := t.TempDir()
 	writeGame(t, dir)
-	lookupGalaxy = func() string { return dir }
+	lookupGalaxy = func(string) string { return dir }
 	t.Cleanup(func() { lookupGalaxy = readGalaxyRegistry })
-	got := Locate(t.TempDir(), Roots{})
+	got := Locate(t.TempDir(), testGame, Roots{})
 	if len(got) == 0 || got[0].Dir != dir || got[0].Store != StoreGOG {
 		t.Fatalf("galaxy = %#v", got)
 	}
@@ -23,9 +23,9 @@ func TestWindowsOfflineProgramFiles(t *testing.T) {
 	dir := filepath.Join(pf, "GOG Galaxy", "Games", "Stardew Valley")
 	writeGame(t, dir)
 	t.Setenv("ProgramFiles(x86)", pf)
-	lookupGalaxy = func() string { return "" }
+	lookupGalaxy = func(string) string { return "" }
 	t.Cleanup(func() { lookupGalaxy = readGalaxyRegistry })
-	got := Locate(t.TempDir(), Roots{})
+	got := Locate(t.TempDir(), testGame, Roots{})
 	found := false
 	for _, in := range got {
 		if in.Dir == dir && in.Store == StoreGOG {

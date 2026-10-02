@@ -7,12 +7,15 @@ import (
 	"testing"
 )
 
+// testGame is a game the way a Game implementation describes it to the GOG locators.
+var testGame = Game{ProductID: "1453375253", Folder: "Stardew Valley", Marker: "Stardew Valley.dll"}
+
 func writeGame(t *testing.T, dir string) {
 	t.Helper()
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, marker), []byte("dll"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, testGame.Marker), []byte("dll"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -31,7 +34,7 @@ func TestLocateLinuxOfflineAndHeroic(t *testing.T) {
 	if err := os.WriteFile(cfg, []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	got := Locate(home, Roots{})
+	got := Locate(home, testGame, Roots{})
 	var offlineHit, heroicHit bool
 	for _, in := range got {
 		if in.Dir == offline && in.Store == StoreGOG {
@@ -61,7 +64,7 @@ func TestHeroicKeyedJSONAndNestedGame(t *testing.T) {
 	if err := os.WriteFile(cfg, []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	got := Locate(home, Roots{})
+	got := Locate(home, testGame, Roots{})
 	var found Install
 	for _, in := range got {
 		if in.Store == StoreHeroic {
@@ -75,7 +78,7 @@ func TestHeroicKeyedJSONAndNestedGame(t *testing.T) {
 }
 
 func TestLocateIgnoresMissing(t *testing.T) {
-	if got := Locate(t.TempDir(), Roots{}); len(got) != 0 {
+	if got := Locate(t.TempDir(), testGame, Roots{}); len(got) != 0 {
 		t.Fatalf("got %#v", got)
 	}
 }
@@ -91,7 +94,7 @@ func TestMinigalaxyInstallDirFromItsConfig(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(cfg, "config.json"), []byte(`{"install_dir": "`+filepath.ToSlash(lib)+`"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	got := Locate(home, Roots{})
+	got := Locate(home, testGame, Roots{})
 	if len(got) != 1 || got[0].Store != StoreMinigalaxy || got[0].Dir != filepath.Join(lib, "Stardew Valley") {
 		t.Fatalf("got %#v", got)
 	}
@@ -107,7 +110,7 @@ func TestMinigalaxyFolderIsNotAlsoGOGs(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(cfg, "config.json"), []byte(`{}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if got := Locate(home, Roots{}); len(got) != 1 || got[0].Store != StoreMinigalaxy {
+	if got := Locate(home, testGame, Roots{}); len(got) != 1 || got[0].Store != StoreMinigalaxy {
 		t.Fatalf("one install, credited to Minigalaxy: %#v", got)
 	}
 	if dirs := OfflineDirs(home, Roots{}); len(dirs) != 0 {

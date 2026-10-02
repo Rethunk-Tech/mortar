@@ -1,4 +1,4 @@
-// Package lutris finds Stardew Valley installs registered in Lutris on Linux.
+// Package lutris finds a game's installs registered in Lutris on Linux.
 package lutris
 
 import (
@@ -10,33 +10,57 @@ import (
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/gog"
 )
 
 const (
-	// StoreLutris is a Stardew install discovered from Lutris game configs.
+	// StoreLutris is an install discovered from Lutris game configs.
 	StoreLutris = "lutris"
-	marker      = "Stardew Valley.dll"
 )
 
 var (
 	reRunnerSteam = regexp.MustCompile(`(?m)^\s*runner:\s*steam\s*$`)
-	reGameSlug    = regexp.MustCompile(`(?m)^game_slug:\s*stardew-valley\s*$`)
-	reSlug        = regexp.MustCompile(`(?m)^slug:\s*stardew-valley(?:-[0-9a-f]+)?\s*$`)
-	reGameSlugIn  = regexp.MustCompile(`(?m)^\s+slug:\s*stardew-valley\s*$`)
 	reExe         = regexp.MustCompile(`(?m)^\s*exe:\s*(.+)\s*$`)
 	reWorkDir     = regexp.MustCompile(`(?m)^\s*working_dir:\s*(.+)\s*$`)
 )
+
+// Game identifies one game to the Lutris locator.
+type Game struct {
+	// Slug is the game's Lutris slug (stardew-valley).
+	Slug string
+	// Keyword is a lowercase word an executable path of the game contains, for configs without the slug.
+	Keyword string
+	// Marker is a file every install of the game holds, at its root or one "game" folder down.
+	Marker string
+}
+
+// matcher recognises one game's Lutris configs.
+type matcher struct {
+	g                      Game
+	gameSlug, slug, slugIn *regexp.Regexp
+}
+
+func newMatcher(g Game) matcher {
+	q := regexp.QuoteMeta(g.Slug)
+	return matcher{
+		g:        g,
+		gameSlug: regexp.MustCompile(`(?m)^game_slug:\s*` + q + `\s*$`),
+		slug:     regexp.MustCompile(`(?m)^slug:\s*` + q + `(?:-[0-9a-f]+)?\s*$`),
+		slugIn:   regexp.MustCompile(`(?m)^\s+slug:\s*` + q + `\s*$`),
+	}
+}
 
 // Install is one Lutris-sourced game folder.
 type Install struct {
 	Dir string
 }
 
-// Locate finds Stardew folders from Lutris YAML configs under home and in the user's own config folders.
-func Locate(home string, extra ...string) []Install {
+// Locate finds g's folders from Lutris YAML configs under home and in the user's own config folders.
+func Locate(home string, g Game, extra ...string) []Install {
 	if runtime.GOOS != "linux" {
 		return nil
 	}
+	m := newMatcher(g)
 	var out []Install
 	seen := map[string]struct{}{}
 	for _, dir := range ConfigDirs(home, extra...) {
@@ -48,7 +72,7 @@ func Locate(home string, extra ...string) []Install {
 			if ent.IsDir() || !strings.HasSuffix(ent.Name(), ".yml") {
 				continue
 			}
-			gameDir, err := installFromConfig(dir, ent.Name())
+			gameDir, err := m.installFromConfig(dir, ent.Name())
 			if err != nil || gameDir == "" {
 				continue
 			}
@@ -71,73 +95,53 @@ func ConfigDirs(home string, extra ...string) []string {
 	)
 }
 
-func installFromConfig(gamesDir, name string) (string, error) {
+func (m matcher) installFromConfig(gamesDir, name string) (string, error) {
 	b, err := fsx.ReadFile(filepath.Join(gamesDir, name))
 	if err != nil {
 		return "", err
 	}
-	return installFromYAML(string(b))
+	return m.installFromYAML(string(b))
 }
 
-func installFromYAML(text string) (string, error) {
+func (m matcher) installFromYAML(text string) (string, error) {
 	if reRunnerSteam.MatchString(text) {
 		return "", nil
 	}
-	if !matchesStardew(text) {
+	if !m.matches(text) {
 		return "", nil
 	}
-	return resolveDir(text), nil
+	return m.resolveDir(text), nil
 }
 
-func matchesStardew(text string) bool {
-	if reGameSlug.MatchString(text) || reSlug.MatchString(text) || reGameSlugIn.MatchString(text) {
+func (m matcher) matches(text string) bool {
+	if m.gameSlug.MatchString(text) || m.slug.MatchString(text) || m.slugIn.MatchString(text) {
 		return true
 	}
-	lower := strings.ToLower(text)
-	if strings.Contains(lower, "stardew") {
-		for _, m := range reExe.FindAllStringSubmatch(text, -1) {
-			if strings.Contains(strings.ToLower(strings.Trim(m[1], `"'`)), "stardew") {
-				return true
-			}
+	if m.g.Keyword == "" || !strings.Contains(strings.ToLower(text), m.g.Keyword) {
+		return false
+	}
+	for _, e := range reExe.FindAllStringSubmatch(text, -1) {
+		if strings.Contains(strings.ToLower(strings.Trim(e[1], `"'`)), m.g.Keyword) {
+			return true
 		}
 	}
 	return false
 }
 
-func resolveDir(text string) string {
-	if m := reWorkDir.FindStringSubmatch(text); len(m) == 2 {
-		if dir := gogGameDir(strings.Trim(m[1], `"'`)); dir != "" {
+func (m matcher) resolveDir(text string) string {
+	if w := reWorkDir.FindStringSubmatch(text); len(w) == 2 {
+		if dir := gog.GameDir(strings.Trim(w[1], `"'`), m.g.Marker); dir != "" {
 			return dir
 		}
 	}
-	for _, m := range reExe.FindAllStringSubmatch(text, -1) {
-		exe := strings.Trim(m[1], `"'`)
-		if dir := gogGameDir(filepath.Dir(exe)); dir != "" {
+	for _, e := range reExe.FindAllStringSubmatch(text, -1) {
+		exe := strings.Trim(e[1], `"'`)
+		if dir := gog.GameDir(filepath.Dir(exe), m.g.Marker); dir != "" {
 			return dir
 		}
-		if dir := gogGameDir(exe); dir != "" {
+		if dir := gog.GameDir(exe, m.g.Marker); dir != "" {
 			return dir
 		}
 	}
 	return ""
-}
-
-func gogGameDir(dir string) string {
-	if dir == "" {
-		return ""
-	}
-	dir = filepath.Clean(dir)
-	if hasMarker(dir) {
-		return dir
-	}
-	nested := filepath.Join(dir, "game")
-	if hasMarker(nested) {
-		return nested
-	}
-	return ""
-}
-
-func hasMarker(dir string) bool {
-	st, err := fsx.Stat(filepath.Join(dir, marker))
-	return err == nil && st.Mode().IsRegular()
 }
