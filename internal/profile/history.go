@@ -132,6 +132,21 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 			_ = os.RemoveAll(staging)
 			return err
 		}
+		live := liveEntryDir(modsDir, e.Key)
+		if exists(live) {
+			old, tmp, err := s.layoutItem(game, p.ID, e.Key, e.Fomod)
+			if tmp != "" {
+				defer func() { _ = os.RemoveAll(tmp) }()
+			}
+			if err != nil {
+				_ = os.RemoveAll(staging)
+				return err
+			}
+			if err := carryOverWalk(live, old, liveEntryDir(staging, e.Key), false); err != nil {
+				_ = os.RemoveAll(staging)
+				return err
+			}
+		}
 		p.Entries = append(p.Entries, e)
 		keys = append(keys, e.Key)
 		if e.PreviousKey != "" {

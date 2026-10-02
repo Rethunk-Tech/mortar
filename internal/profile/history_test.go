@@ -115,6 +115,35 @@ func TestHistoryRevertRestoresEntries(t *testing.T) {
 	}
 }
 
+func TestHistoryRevertCarriesModifiedConfig(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{
+		"manifest.json": manifestJSON("Me.A"),
+		"config.json":   "shipped",
+	})
+	p, err := e.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	afterAdd, err := e.History("stardew", p.ID)
+	if err != nil || len(afterAdd) == 0 {
+		t.Fatalf("history after add: %v %v", afterAdd, err)
+	}
+	writeFile(t, e.mods(p.ID), "local-a/config.json", "mine")
+	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "Me.A", false); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.Revert("stardew", p.ID, afterAdd[0].ID); err != nil {
+		t.Fatal(err)
+	}
+	if got := read(t, filepath.Join(e.mods(p.ID), "local-a", "config.json")); got != "mine" {
+		t.Fatalf("config after revert = %q, want mine", got)
+	}
+}
+
 func TestHistoryRevertMissingStoreKeys(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
