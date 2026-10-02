@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -13,7 +14,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/backup"
 	"github.com/Rethunk-AI/mortar/internal/bridge"
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/game/stardew"
@@ -601,6 +604,9 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 		if err != nil {
 			return err
 		}
+		if err := s.backupChangedSaves(g.ID(), profileID); err != nil {
+			log.Printf("save backup before launch: %v", err)
+		}
 	}
 	runCtx, cancel := context.WithCancel(ctx)
 	buf := &launch.Buffer{}
@@ -622,6 +628,52 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 	s.watch(g)
 	go s.run(runCtx, g, profileID, req, buf)
 	return nil
+}
+
+func (s *Service) backupChangedSaves(gameID, profileID string) error {
+	events, err := s.profiles.History(gameID, profileID)
+	if err != nil {
+		return err
+	}
+	runs, err := s.Runs(gameID, profileID)
+	if err != nil {
+		return err
+	}
+	var lastRun time.Time
+	if len(runs) > 0 {
+		lastRun, err = time.Parse(time.RFC3339Nano, runs[0].Started)
+		if err != nil {
+			return err
+		}
+	}
+	if !changedSinceLastRun(events, lastRun) {
+		return nil
+	}
+	cfg, err := os.UserConfigDir()
+	if err != nil {
+		return err
+	}
+	base, err := datadir.Dir()
+	if err != nil {
+		return err
+	}
+	_, err = backup.Saves(
+		filepath.Join(cfg, "StardewValley", "Saves"),
+		filepath.Join(base, "backups"),
+		s.settings.Get().BackupsKept,
+		time.Now(),
+		backup.Cause{Profile: profileID, Kind: backup.KindUpdate},
+	)
+	return err
+}
+
+func changedSinceLastRun(events []profile.HistoryEvent, lastRun time.Time) bool {
+	for _, event := range events {
+		if event.At.After(lastRun) {
+			return true
+		}
+	}
+	return false
 }
 
 // collect parses log lines into buf and announces them, unless a newer launch has replaced buf.

@@ -135,7 +135,11 @@ function NexusModsSignedIn({
         </Box>
       </Alert>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Tracked mods`}</Box>
+        <Box sx={{ fontSize: 14, fontWeight: 600 }}>
+          {trackedCount === null
+            ? t`Tracked mods`
+            : t`Tracked mods (${trackedCount} for ${game?.name ?? ''})`}
+        </Box>
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
           <Button
             variant="outlined"

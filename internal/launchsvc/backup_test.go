@@ -1,0 +1,37 @@
+package launchsvc
+
+import (
+	"testing"
+	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/profile"
+)
+
+func TestChangedSinceLastRun(t *testing.T) {
+	lastRun := time.Date(2026, 10, 2, 12, 0, 0, 0, time.UTC)
+	event := func(at time.Time) profile.HistoryEvent {
+		return profile.HistoryEvent{At: at}
+	}
+	tests := []struct {
+		name   string
+		events []profile.HistoryEvent
+		want   bool
+	}{
+		{name: "no events", want: false},
+		{name: "older event", events: []profile.HistoryEvent{event(lastRun.Add(-time.Second))}, want: false},
+		{name: "same time", events: []profile.HistoryEvent{event(lastRun)}, want: false},
+		{name: "newer event", events: []profile.HistoryEvent{event(lastRun.Add(time.Second))}, want: true},
+		{name: "no previous run", events: []profile.HistoryEvent{event(lastRun)}, want: true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			previous := lastRun
+			if test.name == "no previous run" {
+				previous = time.Time{}
+			}
+			if got := changedSinceLastRun(test.events, previous); got != test.want {
+				t.Fatalf("changedSinceLastRun() = %t, want %t", got, test.want)
+			}
+		})
+	}
+}
