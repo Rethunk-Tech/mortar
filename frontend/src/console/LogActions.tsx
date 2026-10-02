@@ -3,8 +3,10 @@ import { Box } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { CircleAlert, Copy, Download, Eraser, FileSearch, LifeBuoy } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
-import { RunLog } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import {
+  RunLog,
+  Runs,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { SaveFile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import { Log } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
 import { useProfiles } from '../profiles/store.ts'

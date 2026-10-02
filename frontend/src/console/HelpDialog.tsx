@@ -27,6 +27,16 @@ import { useConsole } from './store.ts'
 
 const MONO = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace'
 const button = { whiteSpace: 'nowrap' } as const
+const homePath = /\/home\/([^/\\\s]+)/
+
+function anonymize(log: string): string {
+  const user = log.match(homePath)?.[1]
+  return user
+    ? log
+        .replaceAll(new RegExp(`/home/${user}`, 'g'), '~')
+        .replaceAll(new RegExp(`\\b${user}\\b`, 'g'), '<user>')
+    : log
+}
 
 function LinkRow({ link, onCopy }: { link: string; onCopy: () => void }) {
   const { t } = useLingui()
@@ -67,6 +77,22 @@ function LinkRow({ link, onCopy }: { link: string; onCopy: () => void }) {
   )
 }
 
+function HideUserName({
+  checked,
+  onChange,
+}: {
+  checked: boolean
+  onChange: (value: boolean) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <FormControlLabel
+      control={<Switch checked={checked} onChange={(_, value) => onChange(value)} />}
+      label={t`Hide my user name`}
+    />
+  )
+}
+
 // Shows the SMAPI log as it is on disk and uploads it to smapi.io only once the user confirms.
 export function HelpDialog({ game }: { game: string }) {
   const { t } = useLingui()
@@ -82,7 +108,6 @@ export function HelpDialog({ game }: { game: string }) {
   const [link, setLink] = useState('')
   const [hideUserName, setHideUserName] = useState(true)
   const close = () => setHelping(false)
-
   useEffect(() => {
     uploadGen.current += 1
     if (!open) {
@@ -131,14 +156,7 @@ export function HelpDialog({ game }: { game: string }) {
       return
     }
     setUploading(true)
-    const home = log.match(/\/home\/([^/\\\s]+)/)?.[1]
-    const uploaded =
-      hideUserName && home
-        ? log
-            .replaceAll(new RegExp(`/home/${home}`, 'g'), '~')
-            .replaceAll(new RegExp(`\\b${home}\\b`, 'g'), '<user>')
-        : log
-    Upload(uploaded)
+    Upload(hideUserName ? anonymize(log) : log)
       .then((url) => {
         if (uploadGen.current !== token) {
           return
@@ -212,15 +230,7 @@ export function HelpDialog({ game }: { game: string }) {
                 outline: 'none',
               }}
             />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={hideUserName}
-                  onChange={(_, checked) => setHideUserName(checked)}
-                />
-              }
-              label={t`Hide my user name`}
-            />
+            <HideUserName checked={hideUserName} onChange={setHideUserName} />
             {link ? <LinkRow link={link} onCopy={() => copy(link)} /> : null}
           </>
         )}
