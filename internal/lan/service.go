@@ -4,6 +4,7 @@ package lan
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -32,7 +33,8 @@ const (
 	ArrivedEvent = "lan:arrived"
 
 	serviceType     = "_mortar._tcp"
-	maxPayloadBytes = 1 << 20
+	maxPayloadBytes = share.MaxFileBytes
+	maxRequestBytes = maxPayloadBytes*4/3 + 4096
 	rateLimit       = 10 * time.Second
 	peerTTL         = 6 * time.Second
 	httpTimeout     = 5 * time.Second
@@ -106,6 +108,7 @@ type shareRequest struct {
 	Sender     string `json:"sender"`
 	Game       string `json:"game"`
 	Payload    string `json:"payload"`
+	Version    string `json:"version"`
 	Nonce      string `json:"nonce,omitempty"`
 	Proof      string `json:"proof,omitempty"`
 	SenderPort int    `json:"senderPort"`
@@ -333,7 +336,7 @@ func (s *Service) Peers() []Peer {
 	return out
 }
 
-// Send sends a profile's share link to a discovered peer.
+// Send sends a profile's .mortar payload to a discovered peer.
 func (s *Service) Send(peerID, game, profileID string) error {
 	s.mu.RLock()
 	enabled := s.enabled
@@ -344,22 +347,16 @@ func (s *Service) Send(peerID, game, profileID string) error {
 	if s.deps.Shares == nil {
 		return errors.New("LAN sharing is unavailable")
 	}
-	info, err := s.deps.Shares.Share(game, profileID, nil)
+	payload, _, err := s.deps.Shares.ExportBytes(game, profileID, nil)
 	if err != nil {
 		return err
-	}
-	if info.App == "" {
-		return errors.New("this profile is too large to send as a link")
-	}
-	payload, ok := strings.CutPrefix(info.App, "mortar://stardew/p/")
-	if !ok || payload == "" {
-		return errors.New("could not build a profile share link")
 	}
 	return s.sendPayload(peerID, game, payload)
 }
 
-func (s *Service) sendPayload(peerID, game, payload string) error {
-	if _, err := validateRequest(shareRequest{Sender: s.name, Game: game, Payload: payload}); err != nil {
+func (s *Service) sendPayload(peerID, game string, payload []byte) error {
+	encoded := base64.RawStdEncoding.EncodeToString(payload)
+	if _, err := validateRequest(shareRequest{Sender: s.name, Game: game, Payload: encoded, Version: protocolVersion}); err != nil {
 		return err
 	}
 	hello, err := s.hello(peerID)
@@ -369,12 +366,13 @@ func (s *Service) sendPayload(peerID, game, payload string) error {
 	request := shareRequest{
 		Sender:     s.name,
 		Game:       game,
-		Payload:    payload,
+		Payload:    encoded,
+		Version:    protocolVersion,
 		Nonce:      hello.Nonce,
 		SenderPort: s.port(),
 	}
 	if key := s.nexusKey(); key != "" {
-		request.Proof = hmacProof(key, hello.Nonce, payload)
+		request.Proof = hmacProof(key, hello.Nonce, encoded)
 	}
 	body, err := json.Marshal(request)
 	if err != nil {
@@ -439,6 +437,9 @@ func (s *Service) hello(peerID string) (helloResponse, error) {
 	}
 	if hello.Nonce == "" {
 		return helloResponse{}, errors.New("LAN peer returned no handshake nonce")
+	}
+	if hello.Version != protocolVersion {
+		return helloResponse{}, errors.New("update Mortar on the other computer")
 	}
 	return hello, nil
 }
@@ -526,7 +527,7 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 	s.nonces[nonce] = nonceRecord{peer: peer, expires: now.Add(nonceTTL)}
 	s.mu.Unlock()
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(helloResponse{Name: s.name, Version: s.deps.Version, Nonce: nonce})
+	_ = json.NewEncoder(w).Encode(helloResponse{Name: s.name, Version: protocolVersion, Nonce: nonce})
 }
 
 func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
@@ -534,11 +535,11 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	if r.ContentLength > maxPayloadBytes+4096 {
+	if r.ContentLength > maxRequestBytes {
 		http.Error(w, "request is too large", http.StatusRequestEntityTooLarge)
 		return
 	}
-	r.Body = http.MaxBytesReader(w, r.Body, maxPayloadBytes+4096)
+	r.Body = http.MaxBytesReader(w, r.Body, maxRequestBytes)
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "request is too large", http.StatusRequestEntityTooLarge)
@@ -655,18 +656,24 @@ func validateRequest(request shareRequest) (share.Shared, error) {
 	if request.Game != "stardew" {
 		return share.Shared{}, errors.New("game is invalid")
 	}
-	if len(request.Payload) > maxPayloadBytes {
-		return share.Shared{}, errPayloadTooLarge
+	if request.Version != protocolVersion {
+		return share.Shared{}, errors.New("update Mortar on the other computer")
 	}
-	if request.Payload == "" || request.Payload != strings.TrimSpace(request.Payload) ||
-		strings.ContainsAny(request.Payload, "/:#?") {
+	raw, err := base64.RawStdEncoding.DecodeString(request.Payload)
+	if err != nil {
 		return share.Shared{}, errInvalidPayload
 	}
-	shared, err := share.Parse(request.Payload)
+	if len(raw) > maxPayloadBytes {
+		return share.Shared{}, errPayloadTooLarge
+	}
+	if request.Payload == "" || request.Payload != strings.TrimSpace(request.Payload) {
+		return share.Shared{}, errInvalidPayload
+	}
+	pv, err := share.ReadBytes(raw)
 	if err != nil {
 		return share.Shared{}, fmt.Errorf("%w: %w", errInvalidPayload, err)
 	}
-	return shared, nil
+	return pv.Shared, nil
 }
 
 func (s *Service) allowReceive(peer string) bool {

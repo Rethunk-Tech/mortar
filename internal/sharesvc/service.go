@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -327,6 +328,25 @@ func (s *Service) SaveFile(game, profileID string, keys []string) (Saved, error)
 	return Saved{Path: dest, Skipped: append([]string{}, skipped...)}, nil
 }
 
+// ExportBytes writes the profile's .mortar payload in memory.
+func (s *Service) ExportBytes(game, profileID string, keys []string) ([]byte, []string, error) {
+	p, err := s.find(game, profileID)
+	if err != nil {
+		return nil, nil, err
+	}
+	p = withEntryKeys(p, keys)
+	modsDir, err := s.d.Profiles.ModsDir(game, profileID)
+	if err != nil {
+		return nil, nil, err
+	}
+	var buf bytes.Buffer
+	skipped, err := share.Write(&buf, p, modsDir)
+	if err != nil {
+		return nil, nil, err
+	}
+	return buf.Bytes(), skipped, nil
+}
+
 // --- Import ---
 
 // PickFile asks for a .mortar file and returns its path, or "" when the dialog is cancelled.
@@ -372,6 +392,33 @@ func (s *Service) PreviewFile(ctx context.Context, game, file, profileID string)
 	}
 	s.mu.Unlock()
 	return out, nil
+}
+
+// PreviewBytes reads a .mortar file received in memory and resolves what it names.
+func (s *Service) previewBytes(ctx context.Context, game string, data []byte, profileID string) (Preview, error) {
+	pv, err := share.ReadBytes(data)
+	if err != nil {
+		return Preview{}, err
+	}
+	out, err := s.preview(ctx, game, pv.Shared, pv.Notes, pv.Configs, profileID, profile.OriginMortar)
+	if err != nil {
+		return Preview{}, err
+	}
+	s.mu.Lock()
+	if s.current != nil && s.current.id == out.Session {
+		s.current.description = pv.Description
+	}
+	s.mu.Unlock()
+	return out, nil
+}
+
+// PreviewData reads a base64-encoded .mortar payload received from another Mortar.
+func (s *Service) PreviewData(ctx context.Context, game, encoded, profileID string) (Preview, error) {
+	data, err := base64.RawStdEncoding.DecodeString(encoded)
+	if err != nil {
+		return Preview{}, fmt.Errorf("%w: invalid payload", share.ErrBadFile)
+	}
+	return s.previewBytes(ctx, game, data, profileID)
 }
 
 // PreviewExternal resolves missing external mods through the normal import resolver and keeps staged folders local.

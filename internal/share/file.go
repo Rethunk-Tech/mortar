@@ -2,6 +2,7 @@ package share
 
 import (
 	"archive/zip"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -239,6 +240,18 @@ func Read(file string) (Preview, error) {
 	}
 	defer func() { _ = f.Close() }()
 	zr, err := zip.NewReader(f, info.Size())
+	if err != nil {
+		return Preview{}, fmt.Errorf("%w: not a zip", ErrBadFile)
+	}
+	return readZip(zr)
+}
+
+// ReadBytes reads a .mortar zip from memory.
+func ReadBytes(raw []byte) (Preview, error) {
+	if len(raw) > MaxFileBytes {
+		return Preview{}, fmt.Errorf("%w: file is larger than %d MiB", ErrBadFile, MaxFileBytes>>20)
+	}
+	zr, err := zip.NewReader(bytes.NewReader(raw), int64(len(raw)))
 	if err != nil {
 		return Preview{}, fmt.Errorf("%w: not a zip", ErrBadFile)
 	}

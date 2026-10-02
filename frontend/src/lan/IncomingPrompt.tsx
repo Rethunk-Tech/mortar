@@ -45,7 +45,6 @@ export function IncomingPrompt() {
     return null
   }
 
-  const link = `mortar://${incoming.game}/p/${incoming.payload}`
   const decline = () => {
     setChoosing(false)
     removeFirst()
@@ -67,7 +66,7 @@ export function IncomingPrompt() {
       }
       setTransferring(false)
     }
-    openImport(profileId ? { profileId, link } : { link })
+    openImport(profileId ? { profileId, data: incoming.payload } : { data: incoming.payload })
     removeFirst()
   }
 

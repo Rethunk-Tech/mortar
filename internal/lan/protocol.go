@@ -14,6 +14,8 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
+const protocolVersion = "2"
+
 type nonceRecord struct {
 	peer    string
 	expires time.Time

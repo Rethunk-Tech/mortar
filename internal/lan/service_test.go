@@ -3,8 +3,10 @@ package lan
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net"
 	"net/http/httptest"
 	"os"
@@ -22,16 +24,17 @@ import (
 
 func testPayload(t *testing.T) string {
 	t.Helper()
-	encoded, err := share.Encode(profile.Profile{Name: "Farm friends"})
+	var buf bytes.Buffer
+	_, err := share.Write(&buf, profile.Profile{Name: "Farm friends"}, t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
-	return encoded.Payload
+	return base64.RawStdEncoding.EncodeToString(buf.Bytes())
 }
 
 func TestValidateRequest(t *testing.T) {
 	payload := testPayload(t)
-	shared, err := validateRequest(shareRequest{Sender: "Alex", Game: "stardew", Payload: payload})
+	shared, err := validateRequest(shareRequest{Sender: "Alex", Game: "stardew", Payload: payload, Version: protocolVersion})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,9 +43,9 @@ func TestValidateRequest(t *testing.T) {
 	}
 
 	for _, request := range []shareRequest{
-		{Sender: "Alex", Game: "stardew", Payload: "mortar://stardew/p/" + payload},
+		{Sender: "Alex", Game: "stardew", Payload: "not-base64"},
 		{Sender: "Alex", Game: "other", Payload: payload},
-		{Sender: "Alex", Game: "stardew", Payload: "not a payload"},
+		{Sender: "Alex", Game: "stardew", Payload: payload, Version: "1"},
 	} {
 		if _, err := validateRequest(request); err == nil {
 			t.Fatalf("validateRequest(%+v) accepted invalid input", request)
@@ -54,7 +57,8 @@ func TestValidateRequestCapsPayload(t *testing.T) {
 	_, err := validateRequest(shareRequest{
 		Sender:  "Alex",
 		Game:    "stardew",
-		Payload: strings.Repeat("A", maxPayloadBytes+1),
+		Payload: base64.RawStdEncoding.EncodeToString(make([]byte, maxPayloadBytes+1)),
+		Version: protocolVersion,
 	})
 	if !errors.Is(err, errPayloadTooLarge) {
 		t.Fatalf("error = %v, want %v", err, errPayloadTooLarge)
@@ -106,7 +110,7 @@ func TestShareRateLimit(t *testing.T) {
 		}
 		arrivals = append(arrivals, arrival)
 	}})
-	body, err := json.Marshal(shareRequest{Sender: "Alex", Game: "stardew", Payload: payload})
+	body, err := json.Marshal(shareRequest{Sender: "Alex", Game: "stardew", Payload: payload, Version: protocolVersion})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -171,14 +175,14 @@ func TestLoopbackTransfer(t *testing.T) {
 	receiverServer := httptest.NewServer(receiver.handler())
 	defer receiverServer.Close()
 
-	encoded, err := share.Encode(profile.Profile{
+	var payload bytes.Buffer
+	if _, err := share.Write(&payload, profile.Profile{
 		Name:    "Farm friends",
 		Entries: []profile.Entry{{Key: "mod", Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 2}}},
-	})
-	if err != nil {
+	}, t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
-	if err := sender.sendPayload(strings.TrimPrefix(receiverServer.URL, "http://"), "stardew", encoded.Payload); err != nil {
+	if err := sender.sendPayload(strings.TrimPrefix(receiverServer.URL, "http://"), "stardew", payload.Bytes()); err != nil {
 		t.Fatal(err)
 	}
 	var arrival Arrival
@@ -207,7 +211,10 @@ func TestLoopbackTransfer(t *testing.T) {
 }
 
 func TestLoopbackSendReceive(t *testing.T) {
-	payload := testPayload(t)
+	payload, err := base64.RawStdEncoding.DecodeString(testPayload(t))
+	if err != nil {
+		t.Fatal(err)
+	}
 	arrivals := make(chan Arrival, 1)
 	service := NewService(Deps{Emit: func(_ string, data any) {
 		arrival, ok := data.(Arrival)
@@ -230,6 +237,59 @@ func TestLoopbackSendReceive(t *testing.T) {
 		}
 	case <-time.After(2 * time.Second):
 		t.Fatal("timed out waiting for arrival")
+	}
+}
+
+func TestLoopbackLargeMortarRoundTrip(t *testing.T) {
+	modsDir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(modsDir, "mod-000"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(modsDir, "mod-000", "config.json"), []byte(`{"enabled":true}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	source := profile.Source{Kind: profile.KindNexus, ModID: 1, FileID: 1}
+	entries := make([]profile.Entry, 600)
+	for i := range entries {
+		entries[i] = profile.Entry{
+			Key:    fmt.Sprintf("mod-%03d", i),
+			Source: source,
+			Mods:   []profile.EntryMod{{UniqueID: fmt.Sprintf("mod.%03d", i), Folder: "."}},
+		}
+	}
+	original := profile.Profile{
+		Name:        "Large farm",
+		Notes:       "Keep this note.",
+		Description: "Profile settings survive LAN transfer.",
+		Entries:     entries,
+	}
+	var archive bytes.Buffer
+	if _, err := share.Write(&archive, original, modsDir); err != nil {
+		t.Fatal(err)
+	}
+	arrivals := make(chan Arrival, 1)
+	service := NewService(Deps{Emit: func(_ string, data any) {
+		arrivals <- data.(Arrival)
+	}})
+	server := httptest.NewServer(service.handler())
+	defer server.Close()
+	if err := service.sendPayload(strings.TrimPrefix(server.URL, "http://"), "stardew", archive.Bytes()); err != nil {
+		t.Fatal(err)
+	}
+	arrival := <-arrivals
+	raw, err := base64.RawStdEncoding.DecodeString(arrival.Payload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	received, err := share.ReadBytes(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if received.Name != original.Name || received.Notes != original.Notes || received.Description != original.Description {
+		t.Fatalf("profile metadata = %#v, want %#v", received, original)
+	}
+	if len(received.Entries) != len(original.Entries) || len(received.Configs) != 1 {
+		t.Fatalf("received %d entries and %d configs, want %d entries and 1 config", len(received.Entries), len(received.Configs), len(original.Entries))
 	}
 }
 

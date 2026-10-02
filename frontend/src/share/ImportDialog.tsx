@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Dialog, IconButton, Tab, Tabs, Tooltip, Typography } from '@mui/material'
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
+import { PreviewData } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
 import { paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -59,16 +60,18 @@ function Body({ request }: { request: ImportRequest }) {
   const { setTab, setText, previewLink, previewFile, previewExternal } = flow
 
   useEffect(() => {
-    setTab(request.tab)
+    setTab(request.tab === 'link' ? 'link' : 'file')
     if (request.external) {
       previewExternal(request.external).catch(reportUnexpected)
     } else if (request.seed && request.tab === 'link') {
       setText(request.seed)
       previewLink(request.seed).catch(reportUnexpected)
+    } else if (request.seed && request.tab === 'data') {
+      PreviewData(game, request.seed, request.profileId).catch(reportUnexpected)
     } else if (request.seed) {
       previewFile(request.seed).catch(reportUnexpected)
     }
-  }, [request, setTab, setText, previewLink, previewFile, previewExternal])
+  }, [request, setTab, setText, previewLink, previewFile, previewExternal, game])
 
   useEffect(() => {
     useImportDialog.setState({ busy: flow.busy })
