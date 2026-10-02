@@ -32,6 +32,7 @@ export function ProfileContextMenu({
         anchorReference="anchorPosition"
         anchorPosition={position ?? undefined}
         transitionDuration={0}
+        keepMounted={true}
       >
         <ProfileMenuItem
           icon={<Pencil size={16} />}

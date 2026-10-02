@@ -63,7 +63,14 @@ function HeroMenu({ profile }: { profile: Profile }) {
           <MoreHorizontal size={16} />
         </IconButton>
       </Tooltip>
-      <Menu open={anchor !== null} anchorEl={anchor} onClose={close} transitionDuration={0}>
+      {/* Kept mounted: the items own dialogs (Send, Compare, Delete) that must outlive the closed menu. */}
+      <Menu
+        open={anchor !== null}
+        anchorEl={anchor}
+        onClose={close}
+        transitionDuration={0}
+        keepMounted={true}
+      >
         <MoreMenuItems profile={profile} close={close} onHistory={() => setHistoryOpen(true)} />
       </Menu>
       <HistoryDialog
