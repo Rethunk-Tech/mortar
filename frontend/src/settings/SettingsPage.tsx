@@ -132,7 +132,11 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
         >
           {current?.label}
         </Typography>
-        {body[section]}
+        <Box
+          sx={{ width: '100%', maxWidth: 760, bgcolor: 'rgba(0,0,0,0.25)', borderRadius: 1, p: 2 }}
+        >
+          {body[section]}
+        </Box>
       </Box>
     </Box>
   )
