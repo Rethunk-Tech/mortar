@@ -252,6 +252,8 @@ func (s *Service) settle(id string, err error) {
 		it.State, it.Progress, it.Speed, it.key = StateWaitingClick, 0, 0, ""
 	case errors.Is(err, nexus.ErrUnauthorized):
 		it.State, it.Error = StateFailed, "Nexus rejected your API key: sign in again in Settings"
+	case errors.Is(err, nexus.ErrQuarantined):
+		it.State, it.Error = StateFailed, "Nexus has quarantined this file; Mortar will not download it"
 	case errors.As(err, &full):
 		it.State, it.Error = StateFailed, fmt.Sprintf("Not enough disk space: about %d MB is needed", full.NeedMB)
 	default:
@@ -289,7 +291,18 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 	if err != nil {
 		return err
 	}
+	statuses, _ := c.ScanStatuses(ctx, it.ModID)
 	var file nexus.File
+	if it.FileID != 0 && statuses[it.FileID] == "QUARANTINED" {
+		return nexus.ErrQuarantined
+	}
+	safe := files[:0]
+	for _, candidate := range files {
+		if statuses[candidate.FileID] != "QUARANTINED" {
+			safe = append(safe, candidate)
+		}
+	}
+	files = safe
 	if it.FileID != 0 {
 		file = fileByID(files, it.FileID)
 		if it.Latest {

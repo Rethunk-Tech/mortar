@@ -3,6 +3,7 @@
 package nexus
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -35,6 +36,8 @@ var (
 	ErrUnauthorized = errors.New("nexus rejected the API key")
 	// ErrPremiumRequired means a download link needs the key and expires from an nxm:// link, or a premium account.
 	ErrPremiumRequired = errors.New("nexus requires a premium account or an nxm:// link for this download")
+	// ErrQuarantined means Nexus will not allow the file to be downloaded.
+	ErrQuarantined = errors.New("nexus file quarantined")
 )
 
 // RateLimitError is a refused or rejected call; Reset is when the exhausted window renews.
@@ -82,17 +85,19 @@ type Client struct {
 	version  string
 	lim      *limiter
 	track    *trackedCache
+	scanMu   *sync.Mutex
+	scans    map[int]map[int]string
 	onLimits func(Limits)
 }
 
 // New returns a client that identifies itself as Mortar version.
 func New(version string) *Client {
-	return &Client{version: version, lim: &limiter{}, track: &trackedCache{}}
+	return &Client{version: version, lim: &limiter{}, track: &trackedCache{}, scanMu: &sync.Mutex{}, scans: map[int]map[int]string{}}
 }
 
 // WithKey returns a client that authenticates with key and shares c's rate-limit and tracked-list state.
 func (c *Client) WithKey(key string) *Client {
-	return &Client{HTTP: c.HTTP, BaseURL: c.BaseURL, CacheDir: c.CacheDir, Now: c.Now, key: key, version: c.version, lim: c.lim, track: c.track, onLimits: c.onLimits}
+	return &Client{HTTP: c.HTTP, BaseURL: c.BaseURL, CacheDir: c.CacheDir, Now: c.Now, key: key, version: c.version, lim: c.lim, track: c.track, scanMu: c.scanMu, scans: c.scans, onLimits: c.onLimits}
 }
 
 // SetLimitsHook is called after a response updates the rate-limit budget.
@@ -262,6 +267,70 @@ type File struct {
 	Uploaded    time.Time `json:"uploaded"`
 	// ReplacedBy is the file the author uploaded as this one's update (Nexus file_updates), or 0.
 	ReplacedBy int `json:"replacedBy"`
+}
+
+const stardewValleyGameID = 1303
+
+// ScanStatuses returns Nexus's v2 virus-scan status for each file. Results are cached for this client.
+func (c *Client) ScanStatuses(ctx context.Context, modID int) (map[int]string, error) {
+	c.scanMu.Lock()
+	if statuses, ok := c.scans[modID]; ok {
+		c.scanMu.Unlock()
+		return statuses, nil
+	}
+	c.scanMu.Unlock()
+
+	body, err := json.Marshal(map[string]string{
+		"query": fmt.Sprintf("{ modFiles(modId: %d, gameId: %d) { fileId scannedV2 } }", modID, stardewValleyGameID),
+	})
+	if err != nil {
+		return nil, err
+	}
+	base := c.BaseURL
+	if base == "" {
+		base = BaseURL
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, base+"/v2/graphql", bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Apikey", c.key)
+	req.Header.Set("Application-Name", "Mortar")
+	req.Header.Set("Application-Version", c.version)
+	req.Header.Set("User-Agent", "Mortar/"+c.version)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+	hc := c.HTTP
+	if hc == nil {
+		hc = http.DefaultClient
+	}
+	resp, err := hc.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode != http.StatusOK {
+		return nil, &StatusError{Code: resp.StatusCode, Status: resp.Status}
+	}
+	var raw struct {
+		Data struct {
+			Files []struct {
+				FileID  int    `json:"fileId"`
+				Scanned string `json:"scannedV2"`
+			} `json:"modFiles"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(io.LimitReader(resp.Body, maxBody)).Decode(&raw); err != nil {
+		return nil, err
+	}
+	statuses := make(map[int]string, len(raw.Data.Files))
+	for _, file := range raw.Data.Files {
+		statuses[file.FileID] = file.Scanned
+	}
+	c.scanMu.Lock()
+	c.scans[modID] = statuses
+	c.scanMu.Unlock()
+	return statuses, nil
 }
 
 // Files lists every file of a mod.
