@@ -1,7 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, ButtonBase, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
-import { Copy, ShieldCheck, TriangleAlert } from 'lucide-react'
+import { ChevronDown, ChevronRight, Copy, ShieldCheck, TriangleAlert } from 'lucide-react'
+import { useState } from 'react'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
@@ -153,6 +154,50 @@ function useOpenProblems() {
   return useMods((s) => (s.problemsFor === openId ? s.problems : null))
 }
 
+// ProblemSection lists one kind of problem; harmless overlaps start collapsed so real problems lead.
+function ProblemSection({
+  title,
+  rows,
+  collapsible,
+}: {
+  title: string
+  rows: Row[]
+  collapsible: boolean
+}) {
+  const { t } = useLingui()
+  const [open, setOpen] = useState(!collapsible)
+  const count = rows.length
+  const label = collapsible ? t`${title} · ${count}` : title
+  const heading = (
+    <Typography component="span" sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
+      {label}
+    </Typography>
+  )
+  return (
+    <Box>
+      {collapsible ? (
+        <ButtonBase
+          onClick={() => setOpen(!open)}
+          aria-expanded={open}
+          sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1, borderRadius: '4px' }}
+        >
+          {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          {heading}
+        </ButtonBase>
+      ) : (
+        <Box sx={{ mb: 1 }}>{heading}</Box>
+      )}
+      {open ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {rows.map((row) => (
+            <ProblemRow key={JSON.stringify(row)} row={row} />
+          ))}
+        </Box>
+      ) : null}
+    </Box>
+  )
+}
+
 // ProblemActions sits in the profile's tab row while the Problems tab is open, like the Console's log actions.
 export function ProblemActions() {
   const { t } = useLingui()
@@ -244,16 +289,12 @@ export function ProblemsTab() {
         </EmptyState>
       ) : (
         sections.map((section) => (
-          <Box key={section.id}>
-            <Typography sx={{ mb: 1, fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
-              {sectionTitle(section.id)}
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {section.rows.map((row) => (
-                <ProblemRow key={JSON.stringify(row)} row={row} />
-              ))}
-            </Box>
-          </Box>
+          <ProblemSection
+            key={section.id}
+            title={sectionTitle(section.id)}
+            rows={section.rows}
+            collapsible={section.id === 'cosmetic'}
+          />
         ))
       )}
       {cleanup.length === 0 ? null : (

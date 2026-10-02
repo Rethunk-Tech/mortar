@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Chip, Divider, Tab, Tabs, Tooltip, Typography } from '@mui/material'
+import { Box, Button, Chip, Divider, Tab, Tabs, Typography } from '@mui/material'
 import { Plus, RotateCcw, Settings2, Share2 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
@@ -199,21 +199,11 @@ function Hero({ profile, game }: { profile: Profile; game: string }) {
         <HeroName profile={profile} meta={meta} />
         <Box sx={{ display: 'flex', gap: 1, [compact]: { display: 'none' } }}>
           <Card label={t`Mods`} value={String(mods)} />
-          {total === 0 ? (
-            <Tooltip title={t`No saves were found`}>
-              <Card
-                label={t`Saves`}
-                value={t`${fitting} of ${total}`}
-                onClick={() => setTab('saves')}
-              />
-            </Tooltip>
-          ) : (
-            <Card
-              label={t`Saves`}
-              value={t`${fitting} of ${total}`}
-              onClick={() => setTab('saves')}
-            />
-          )}
+          <Card
+            label={t`Saves`}
+            value={total === 0 ? t`None` : t`${fitting} of ${total}`}
+            onClick={() => setTab('saves')}
+          />
           <Card label={t`Updated`} value={updated} />
           <Card label={t`Created`} value={created} />
         </Box>

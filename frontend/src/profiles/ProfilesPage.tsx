@@ -158,16 +158,18 @@ function Trash() {
       {trash.map((item) => (
         <TrashRow key={item.id} item={item} />
       ))}
-      <Button
-        variant="outlined"
-        color="error"
-        startIcon={<Trash2 size={14} />}
-        disabled={trash.length === 0 || pending}
-        onClick={() => setConfirming(true)}
-        sx={{ alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
-      >
-        {t`Empty trash`}
-      </Button>
+      {trash.length === 0 ? null : (
+        <Button
+          variant="outlined"
+          color="error"
+          startIcon={<Trash2 size={14} />}
+          disabled={pending}
+          onClick={() => setConfirming(true)}
+          sx={{ alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
+        >
+          {t`Empty trash`}
+        </Button>
+      )}
       <Dialog open={confirming} onClose={() => setConfirming(false)}>
         <DialogTitle>{t`Empty trash?`}</DialogTitle>
         <DialogContent>
