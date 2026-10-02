@@ -258,7 +258,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	} else if stats.Crashed {
 		outcome = launch.OutcomeCrashed
 	}
-	id := fmt.Sprintf("%s-%d", ended.UTC().Format("20060102T150405"), ended.UnixNano())
+	id := fmt.Sprintf("%s-%d", started.UTC().Format("20060102T150405"), started.UnixNano())
 	dir := runsDir(modsDir)
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return

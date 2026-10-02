@@ -1,8 +1,18 @@
 package launchsvc
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/game"
 )
 
 // PerformanceRow is one parsed row from SMAPI's performance report.
@@ -12,6 +22,19 @@ type PerformanceRow struct {
 	PeakMs    float64 `json:"peakMs"`
 	Calls     float64 `json:"calls"`
 }
+
+type SavedReport struct {
+	ID    string           `json:"id"`
+	RunID string           `json:"runId,omitempty"`
+	At    string           `json:"at"`
+	Rows  []PerformanceRow `json:"rows"`
+}
+
+type performanceReportsIndex struct {
+	Reports []SavedReport `json:"reports"`
+}
+
+const maxPerformanceReports = 20
 
 // ParsePerformanceReport parses the pipe-delimited tables emitted by SMAPI's performance commands.
 func ParsePerformanceReport(lines []string) []PerformanceRow {
@@ -49,6 +72,88 @@ func ParsePerformanceReport(lines []string) []PerformanceRow {
 // PerformanceReport exposes the pure parser to the console panel.
 func (s *Service) PerformanceReport(lines []string) []PerformanceRow {
 	return ParsePerformanceReport(lines)
+}
+
+func (s *Service) SavePerformanceReport(gameID, profileID string, rows []PerformanceRow) (SavedReport, error) {
+	if game.Find(gameID) == nil {
+		return SavedReport{}, fmt.Errorf("unknown game %q", gameID)
+	}
+	if len(rows) == 0 {
+		return SavedReport{}, errors.New("cannot save an empty performance report")
+	}
+	modsDir, err := s.profiles.ModsDir(gameID, profileID)
+	if err != nil {
+		return SavedReport{}, err
+	}
+	now := time.Now().UTC()
+	report := SavedReport{
+		ID:    fmt.Sprintf("%s-%d", now.Format("20060102T150405"), now.UnixNano()),
+		RunID: s.activeRunID(gameID, profileID),
+		At:    now.Format(time.RFC3339Nano),
+		Rows:  append([]PerformanceRow(nil), rows...),
+	}
+	dir := runsDir(modsDir)
+	index, err := readPerformanceReports(dir)
+	if err != nil {
+		return SavedReport{}, err
+	}
+	index.Reports = append([]SavedReport{report}, index.Reports...)
+	if len(index.Reports) > maxPerformanceReports {
+		index.Reports = index.Reports[:maxPerformanceReports]
+	}
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		return SavedReport{}, err
+	}
+	if err := datadir.WriteJSON(filepath.Join(dir, "performance.json"), index); err != nil {
+		return SavedReport{}, err
+	}
+	return report, nil
+}
+
+func (s *Service) PerformanceReports(gameID, profileID string) ([]SavedReport, error) {
+	if game.Find(gameID) == nil {
+		return nil, fmt.Errorf("unknown game %q", gameID)
+	}
+	modsDir, err := s.profiles.ModsDir(gameID, profileID)
+	if err != nil {
+		return nil, err
+	}
+	index, err := readPerformanceReports(runsDir(modsDir))
+	if err != nil {
+		return nil, err
+	}
+	return index.Reports, nil
+}
+
+func readPerformanceReports(dir string) (performanceReportsIndex, error) {
+	data, err := fsx.ReadFile(filepath.Join(dir, "performance.json"))
+	if errors.Is(err, os.ErrNotExist) {
+		return performanceReportsIndex{Reports: []SavedReport{}}, nil
+	}
+	if err != nil {
+		return performanceReportsIndex{}, err
+	}
+	var index performanceReportsIndex
+	if err := json.Unmarshal(data, &index); err != nil {
+		return performanceReportsIndex{}, err
+	}
+	if index.Reports == nil {
+		index.Reports = []SavedReport{}
+	}
+	return index, nil
+}
+
+func (s *Service) activeRunID(gameID, profileID string) string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if status, ok := s.status[gameID]; !ok || (status.State != Launching && status.State != Running) || status.Profile != profileID {
+		return ""
+	}
+	session, ok := s.logs[gameID]
+	if !ok || session.profile != profileID || session.started.IsZero() {
+		return ""
+	}
+	return fmt.Sprintf("%s-%d", session.started.UTC().Format("20060102T150405"), session.started.UnixNano())
 }
 
 type performanceColumns struct {

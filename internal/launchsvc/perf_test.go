@@ -39,3 +39,27 @@ func TestParsePerformanceReportSummary(t *testing.T) {
 		t.Fatalf("ParsePerformanceReport() = %#v, want %#v", got, want)
 	}
 }
+
+func TestPerformanceReportsPersistAndPrune(t *testing.T) {
+	svc, profile, _, _ := runEnv(t)
+	rows := []PerformanceRow{{Name: "A", AverageMs: 1.25, PeakMs: 2, Calls: 3}}
+	for i := 0; i < 21; i++ {
+		saved, err := svc.SavePerformanceReport("stardew", profile.ID, rows)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if saved.ID == "" || saved.At == "" {
+			t.Fatalf("saved report missing metadata: %#v", saved)
+		}
+	}
+	reports, err := svc.PerformanceReports("stardew", profile.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(reports) != 20 {
+		t.Fatalf("got %d reports, want 20", len(reports))
+	}
+	if !reflect.DeepEqual(reports[0].Rows, rows) {
+		t.Fatalf("rows = %#v, want %#v", reports[0].Rows, rows)
+	}
+}
