@@ -268,11 +268,11 @@ func TestSwitchOffOnlySuggestsNonClashingAllowedValue(t *testing.T) {
 	t.Fatalf("expected a safe setting fix for %s: %#v", first.UniqueID, conflicts[0].Fixes)
 }
 
-func TestIncludedBlankLoadsUseTheIncludingFilePath(t *testing.T) {
+func TestIncludedBlankLoadsUsePackRootPath(t *testing.T) {
 	root := t.TempDir()
 	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"Include","FromFile":"nested/content.json"}]}`)
 	writeRegressionFile(t, root, "nested/content.json", `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"blank.json","Priority":"low"}]}`)
-	writeRegressionFile(t, root, "nested/blank.json", "{\r\n// empty\r\n}")
+	writeRegressionFile(t, root, "blank.json", "{\r\n// empty\r\n}")
 	writeRegressionFile(t, root, "manifest.json", `{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
 	mod := Installed{Key: "included", Enabled: true, Folder: root, UniqueID: "Included.Blank", Name: "Included Blank"}
 
@@ -282,6 +282,53 @@ func TestIncludedBlankLoadsUseTheIncludingFilePath(t *testing.T) {
 	if len(conflicts) != 1 || !conflicts[0].Cosmetic {
 		t.Fatalf("included blank load should be cosmetic: %#v", conflicts)
 	}
+}
+
+func TestEquivalentLoadsAreNotConflicts(t *testing.T) {
+	first := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"a.json"}]}`, map[string]string{
+		"a.json": `{}`,
+	})
+	second := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"b.json"}]}`, map[string]string{
+		"b.json": "{\n}",
+	})
+	if conflicts := assetConflicts([]Installed{first, second}); len(conflicts) != 0 {
+		t.Fatalf("equivalent loads should not conflict: %#v", conflicts)
+	}
+}
+
+func TestIdenticalImageEditsAreNotConflicts(t *testing.T) {
+	first := syntheticImagePack(t, "first.png", []byte("same image"))
+	second := syntheticImagePack(t, "second.png", []byte("same image"))
+	if conflicts := assetConflicts([]Installed{first, second}); len(conflicts) != 0 {
+		t.Fatalf("identical image edits should not conflict: %#v", conflicts)
+	}
+}
+
+func TestDeadLowPriorityLoadOffersDefaultSetting(t *testing.T) {
+	loser := settingPack(t, `{"FarmCaveChange":{"Default":false,"AllowValues":"false, true"}}`,
+		`[{"Action":"Load","Target":"Maps/FarmCave","FromFile":"loser.json","Priority":"Low","When":{"FarmCaveChange":true}}]`,
+		`{"FarmCaveChange":true}`)
+	writeRegressionFile(t, loser.Folder, "loser.json", `{"Tile":1}`)
+	winner := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/FarmCave","FromFile":"winner.json","Priority":"High"}]}`, map[string]string{
+		"winner.json": `{"Tile":2}`,
+	})
+	conflicts, settings := assetConflictResults([]Installed{loser, winner})
+	if len(conflicts) != 0 || len(settings) != 1 {
+		t.Fatalf("expected dead-setting hint instead of cosmetic conflict, got %#v %#v", conflicts, settings)
+	}
+	if settings[0].Field != "FarmCaveChange" || settings[0].Current != "true" ||
+		len(settings[0].Suggested) != 1 || settings[0].Suggested[0] != "false" {
+		t.Fatalf("unexpected dead-setting hint: %#v", settings[0])
+	}
+}
+
+func syntheticImagePack(t *testing.T, file string, source []byte) Installed {
+	t.Helper()
+	root := t.TempDir()
+	writeRegressionFile(t, root, "manifest.json", `{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"LooseSprites/Cursors","FromFile":"`+file+`","ToArea":{"X":2,"Y":3,"Width":18,"Height":20}}]}`)
+	writeRegressionFile(t, root, file, string(source))
+	return Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)}
 }
 
 func TestBareDynamicTokenWhenMergesSpouseCondition(t *testing.T) {

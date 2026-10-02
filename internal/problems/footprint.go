@@ -1,6 +1,7 @@
 package problems
 
 import (
+	"bytes"
 	"compress/gzip"
 	"compress/zlib"
 	"encoding/base64"
@@ -736,6 +737,9 @@ func editsClash(a, b []cpPatch) (clash, minor bool) {
 	for _, x := range a {
 		for _, y := range b {
 			if mapOverlayHasUnknownLayer(x, y) {
+				continue
+			}
+			if x.image && y.image && len(x.imageSource) > 0 && bytes.Equal(x.imageSource, y.imageSource) && x.imageFromArea == y.imageFromArea {
 				continue
 			}
 			if x.image && y.image && strings.EqualFold(strings.TrimSpace(x.patchMode), "overlay") && strings.EqualFold(strings.TrimSpace(y.patchMode), "overlay") {

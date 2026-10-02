@@ -179,12 +179,13 @@ func meets(version, minimum string) bool {
 // Check computes the problems of mods. Lookups that fail leave Unknown set and never return an error.
 func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Result {
 	enabled := slices.DeleteFunc(slices.Clone(mods), func(x Installed) bool { return !x.Enabled })
+	conflicts, conflictSettings := assetConflictResults(enabled)
 	r := Result{
 		Missing:        []Missing{},
 		Duplicates:     duplicates(enabled),
 		Broken:         []Broken{},
-		AssetConflicts: assetConflicts(enabled),
-		Settings:       compatibilitySettings(enabled),
+		AssetConflicts: conflicts,
+		Settings:       append(compatibilitySettings(enabled), conflictSettings...),
 		Cleanup:        cleanupHints(mods),
 		Drift:          []profile.Drift{},
 	}

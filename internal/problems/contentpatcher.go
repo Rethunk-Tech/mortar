@@ -8,6 +8,7 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strconv"
 	"strings"
@@ -75,16 +76,18 @@ type packHit struct {
 
 // cpPatch is one Load or EditImage/EditMap change with the HasMod conditions that gate it.
 type cpPatch struct {
-	kind      string // "load" or "edit"
-	target    string
-	fromFile  string
-	priority  string
-	patchMode string
-	when      cpWhen
-	shapes    []cpShape           // what an edit writes; see editShapes
-	spouse    string              // the spouse the change requires, or ""
-	places    map[string][]string // literal values the change requires of placeTokens
-	image     bool                // an EditImage change, which only changes how something looks
+	kind          string // "load" or "edit"
+	target        string
+	fromFile      string
+	priority      string
+	patchMode     string
+	when          cpWhen
+	shapes        []cpShape           // what an edit writes; see editShapes
+	spouse        string              // the spouse the change requires, or ""
+	places        map[string][]string // literal values the change requires of placeTokens
+	image         bool                // an EditImage change, which only changes how something looks
+	imageSource   []byte
+	imageFromArea string
 	// tokenValue is a dynamic token's value; a token that yields a picker value only when a mod is
 	// installed is how a pack says which mod that value is for.
 	tokenName  string
@@ -364,6 +367,8 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 				kind: kind, target: normalizeTarget(t), fromFile: ch.FromFile, priority: strings.TrimSpace(priority),
 				patchMode: strings.TrimSpace(ch.PatchMode), when: when,
 				shapes: shapes, spouse: when.spouse, places: when.places, image: strings.EqualFold(action, kindEditImage),
+				imageSource:   imageSource(root, ch.FromFile, strings.EqualFold(action, kindEditImage)),
+				imageFromArea: string(stripJSONNoise(ch.FromArea)),
 			})
 		}
 	}
@@ -595,27 +600,16 @@ func splitTargets(s string) []string {
 	return out
 }
 
-func contentReference(base, rel string) string {
+func contentReference(_, rel string) string {
 	rel = strings.ReplaceAll(strings.TrimSpace(rel), "\\", "/")
 	if rel == "" {
 		return ""
 	}
-	return filepath.ToSlash(filepath.Clean(filepath.Join(filepath.Dir(filepath.FromSlash(base)), filepath.FromSlash(rel))))
+	return filepath.ToSlash(filepath.Clean(filepath.FromSlash(rel)))
 }
 
-func contentSourceReference(root, base, rel string) string {
-	reference := contentReference(base, rel)
-	if hasToken(rel) {
-		return reference
-	}
-	if _, ok := caseInsensitivePath(root, reference); ok {
-		return reference
-	}
-	rootReference := contentReference("content.json", rel)
-	if _, ok := caseInsensitivePath(root, rootReference); ok {
-		return rootReference
-	}
-	return reference
+func contentSourceReference(_, _, rel string) string {
+	return contentReference("content.json", rel)
 }
 
 func hasToken(s string) bool {
@@ -724,6 +718,11 @@ func stripJSONNoise(b []byte) []byte {
 }
 
 func assetConflicts(mods []Installed) []AssetConflict {
+	conflicts, _ := assetConflictResults(mods)
+	return conflicts
+}
+
+func assetConflictResults(mods []Installed) ([]AssetConflict, []SettingHint) {
 	present := map[string]bool{}
 	for _, mod := range mods {
 		if mod.Enabled {
@@ -779,6 +778,7 @@ func assetConflicts(mods []Installed) []AssetConflict {
 		}
 	}
 	out := []AssetConflict{}
+	settings := []SettingHint{}
 	for kind, targets := range at {
 		for t, hits := range targets {
 			cosmetic := false
@@ -790,7 +790,15 @@ func assetConflicts(mods []Installed) []AssetConflict {
 			if len(hits) >= 2 {
 				c := conflictOf(kind, t, hits)
 				if kind == "load" {
-					c.Cosmetic = harmlessLoads(hits, c)
+					if allLoadFilesBlank(hits, t) || allLoadFilesIdentical(hits, t) {
+						continue
+					}
+					var hint *SettingHint
+					c.Cosmetic, hint = harmlessLoads(hits, c)
+					if hint != nil {
+						settings = append(settings, *hint)
+						continue
+					}
 				}
 				if kind == "edit" {
 					c.Cosmetic = cosmetic
@@ -814,7 +822,7 @@ func assetConflicts(mods []Installed) []AssetConflict {
 		}
 		return strings.Compare(a.Target, b.Target)
 	})
-	return out
+	return out, settings
 }
 
 func clashingLoads(hits []packHit) (out []packHit) {
@@ -987,32 +995,33 @@ func dependencyLoadWinner(hits []packHit, tied []int) (int, bool) {
 	return right, true
 }
 
-func harmlessLoads(hits []packHit, conflict AssetConflict) bool {
+func harmlessLoads(hits []packHit, conflict AssetConflict) (bool, *SettingHint) {
 	if len(hits) < 2 {
-		return false
+		return false, nil
 	}
 	if conflict.WinnerName == "CP applies neither" {
-		return false
+		return false, nil
 	}
 	if allLoadFilesIdentical(hits, conflict.Target) {
-		return true
+		return true, nil
 	}
 	winner := slices.IndexFunc(hits, func(h packHit) bool { return sameID(h.id, conflict.WinnerID) })
 	if winner < 0 {
 		for _, hit := range hits {
 			for _, load := range hit.loads {
 				if !loadFileBlank(hit, load, conflict.Target) {
-					return false
+					return false, nil
 				}
 			}
 		}
-		return true
+		return true, nil
 	}
 
 	winnerBlank := true
 	for _, load := range hits[winner].loads {
 		winnerBlank = winnerBlank && loadFileBlank(hits[winner], load, conflict.Target)
 	}
+	var hint *SettingHint
 	for i, hit := range hits {
 		if i == winner {
 			continue
@@ -1030,21 +1039,49 @@ func harmlessLoads(hits []packHit, conflict AssetConflict) bool {
 				continue
 			}
 			if winnerBlank {
-				return false
+				return false, settingForDeadLoad(hit, load, hits[winner], conflict)
 			}
 			if !loadPriorityDecided(hits, conflict) {
-				return false
+				return false, nil
 			}
 			if hitPriority("load", hit) > -1000 && !hit.mentions[strings.ToLower(hits[winner].id)] {
-				return false
+				return false, nil
+			}
+			if candidate := settingForDeadLoad(hit, load, hits[winner], conflict); candidate != nil {
+				hint = candidate
 			}
 		}
 	}
-	return true
+	return true, hint
+}
+
+func settingForDeadLoad(hit packHit, load cpPatch, winner packHit, conflict AssetConflict) *SettingHint {
+	if hitPriority("load", hit) > -1000 {
+		return nil
+	}
+	for _, condition := range load.when.config {
+		schema, ok := hit.schema[strings.ToLower(condition.field)]
+		if !ok || schema.defaultValue == "" {
+			continue
+		}
+		current := hit.config[strings.ToLower(condition.field)]
+		if current == "" {
+			current = schema.defaultValue
+		}
+		if current == schema.defaultValue || !configHolds([]cpConfig{condition}, hit.schema, hit.config) {
+			continue
+		}
+		return &SettingHint{
+			Key: hit.key, UniqueID: hit.id, Name: hit.name, Field: schema.key,
+			Current: current, Suggested: []string{schema.defaultValue},
+			Description: "This setting has no effect because " + winner.name + " loads " + conflict.Target + " over it.",
+		}
+	}
+	return nil
 }
 
 func allLoadFilesIdentical(hits []packHit, target string) bool {
-	var reference []byte
+	var reference any
 	found := false
 	for _, hit := range hits {
 		for _, load := range hit.loads {
@@ -1052,12 +1089,28 @@ func allLoadFilesIdentical(hits []packHit, target string) bool {
 			if !ok {
 				return false
 			}
-			raw = stripJSONNoise(raw)
+			value, isJSON := loadJSONValue(raw)
+			if !isJSON {
+				value = raw
+			}
 			if !found {
-				reference, found = raw, true
+				reference, found = value, true
 				continue
 			}
-			if !bytes.Equal(reference, raw) {
+			if !reflect.DeepEqual(reference, value) {
+				return false
+			}
+		}
+	}
+	return found
+}
+
+func allLoadFilesBlank(hits []packHit, target string) bool {
+	found := false
+	for _, hit := range hits {
+		for _, load := range hit.loads {
+			found = true
+			if !loadFileBlank(hit, load, target) {
 				return false
 			}
 		}
@@ -1102,7 +1155,23 @@ func loadFilesEqual(a packHit, ap cpPatch, b packHit, bp cpPatch, target string)
 		return false
 	}
 	right, ok := loadFileBytes(b, bp, target)
-	return ok && bytes.Equal(stripJSONNoise(left), stripJSONNoise(right))
+	if !ok {
+		return false
+	}
+	leftValue, leftJSON := loadJSONValue(left)
+	rightValue, rightJSON := loadJSONValue(right)
+	if leftJSON && rightJSON {
+		return reflect.DeepEqual(leftValue, rightValue)
+	}
+	return bytes.Equal(left, right)
+}
+
+func loadJSONValue(raw []byte) (any, bool) {
+	var value any
+	if json.Unmarshal(stripJSONNoise(raw), &value) != nil {
+		return nil, false
+	}
+	return value, true
 }
 
 func loadFileBytes(hit packHit, load cpPatch, target string) ([]byte, bool) {
@@ -1171,6 +1240,17 @@ func readPackPath(root, rel string) ([]byte, bool) {
 	defer func() { _ = file.Close() }()
 	raw, err := io.ReadAll(file)
 	return raw, err == nil
+}
+
+func imageSource(root, rel string, image bool) []byte {
+	if !image {
+		return nil
+	}
+	raw, ok := readPackPath(root, rel)
+	if !ok {
+		return nil
+	}
+	return raw
 }
 
 func caseInsensitivePath(root, rel string) (string, bool) {
