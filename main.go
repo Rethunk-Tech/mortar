@@ -206,6 +206,10 @@ func run() error {
 		return err
 	}
 	launches := launchsvc.NewService(home, store, profiles)
+	gamesSvc.Running = func(id string) bool {
+		st, err := launches.Status(id)
+		return err == nil && (st.State == launchsvc.Running || st.State == launchsvc.Launching)
+	}
 	profiles.Running = launches.Running
 	bisectSvc := bisect.NewService(profiles, launches)
 	profiles.BackupsKept = func() int { return store.Get().BackupsKept }

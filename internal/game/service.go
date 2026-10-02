@@ -35,7 +35,8 @@ type SteamAccess struct {
 type Service struct {
 	home    string
 	store   *settings.Store
-	running func(string) bool
+	// Running reports whether the game is running; Reset refuses while it is. Nil means never.
+	Running func(gameID string) bool
 }
 
 func NewService(home string, store *settings.Store) *Service {
@@ -45,7 +46,7 @@ func NewService(home string, store *settings.Store) *Service {
 // ResetInstall removes only a validated game install, after refusing active games
 // and paths that could erase the user's home or filesystem.
 func (s *Service) ResetInstall(id string) error {
-	if s.running != nil && s.running(id) {
+	if s.Running != nil && s.Running(id) {
 		return fmt.Errorf("cannot reset %s while it is running", id)
 	}
 	dir, err := InstallDir(s.home, s.store.Get(), id)
