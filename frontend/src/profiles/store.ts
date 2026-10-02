@@ -13,6 +13,8 @@ import {
   ExportProfile,
   List,
   ListTrash,
+  Purge,
+  PurgeTrash,
   Rename,
   Reorder,
   Restore,
@@ -121,6 +123,47 @@ async function applyLaunchSettings(
   }
 }
 
+async function purgeProfile(
+  get: () => { game: GameInfo | null; loadTrash: () => Promise<void> },
+  id: string,
+) {
+  const { game } = get()
+  if (!game) {
+    return
+  }
+  await Purge(game.id, id)
+  await get().loadTrash()
+}
+
+async function purgeAllTrash(get: () => { game: GameInfo | null; loadTrash: () => Promise<void> }) {
+  const { game } = get()
+  if (!game) {
+    return
+  }
+  await PurgeTrash(game.id)
+  await get().loadTrash()
+}
+
+async function restoreProfile(
+  get: () => {
+    game: GameInfo | null
+    profiles: Profile[]
+    ensureOpen: () => void
+    loadTrash: () => Promise<void>
+  },
+  set: (patch: { profiles: Profile[] }) => void,
+  id: string,
+) {
+  const { game } = get()
+  if (!game) {
+    return
+  }
+  await Restore(game.id, id)
+  set({ profiles: (await List(game.id)) ?? [] })
+  get().ensureOpen()
+  await get().loadTrash()
+}
+
 async function read(gameId: string, current: string) {
   const [{ games }, list] = await Promise.all([loadGameStatus(), List(gameId)])
   const profiles = list ?? []
@@ -154,6 +197,8 @@ export const useProfiles = create<{
   setHidden: (id: string, hidden: boolean) => Promise<void>
   remove: (id: string) => Promise<void>
   restore: (id: string) => Promise<void>
+  purge: (id: string) => Promise<void>
+  purgeTrash: () => Promise<void>
   reorder: (ids: string[]) => Promise<void>
   ensureOpen: () => void
 }>((set, get) => ({
@@ -266,18 +311,25 @@ export const useProfiles = create<{
     await get().loadTrash()
   },
   restore: async (id) => {
-    const { game } = get()
-    if (!game) {
-      return
-    }
     try {
-      await Restore(game.id, id)
-      set({ profiles: (await List(game.id)) ?? [] })
-      get().ensureOpen()
+      await restoreProfile(get, set, id)
     } catch (e) {
       fail(i18n._(msg`Could not restore the profile`))(e)
     }
-    await get().loadTrash()
+  },
+  purge: async (id) => {
+    try {
+      await purgeProfile(get, id)
+    } catch (e) {
+      fail(i18n._(msg`Could not permanently delete the profile`))(e)
+    }
+  },
+  purgeTrash: async () => {
+    try {
+      await purgeAllTrash(get)
+    } catch (e) {
+      fail(i18n._(msg`Could not empty the trash`))(e)
+    }
   },
   reorder: async (ids) => {
     const { game, profiles } = get()

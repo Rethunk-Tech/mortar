@@ -36,6 +36,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useLaunch } from '../../launch/store.ts'
 import { paper } from '../../mods/paper.ts'
+import { useNav } from '../../nav/store.ts'
 import { formatBytes } from '../../saves/backupFormat.ts'
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
@@ -205,6 +206,7 @@ function MoveDataButton() {
 
 export function Data() {
   const { t } = useLingui()
+  const openProfiles = useNav((s) => s.openProfiles)
   const [usage, setUsage] = useState<DiskUse | null>(null)
   const [bytes, setBytes] = useState(0)
   const [preview, setPreview] = useState<Preview | null>(null)
@@ -303,7 +305,14 @@ export function Data() {
           <Row label={t`Store`} size={usage.store} />
           <Row label={t`Cache`} size={usage.cache} />
           <Row label={t`Save backups`} size={usage.backups} />
-          <Row label={t`Trash`} size={usage.trash} />
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}
+          >
+            <Row label={t`Trash`} size={usage.trash} />
+            <Button size="small" onClick={openProfiles} sx={{ ...nowrap, flexShrink: 0 }}>
+              {t`Manage deleted profiles`}
+            </Button>
+          </Box>
           <Row label={t`Total`} size={usage.total} />
         </Box>
       ) : (

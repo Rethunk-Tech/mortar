@@ -28,7 +28,16 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { ArrowLeft, Download, FileUp, FolderInput, Plus, RotateCcw, Search } from 'lucide-react'
+import {
+  ArrowLeft,
+  Download,
+  FileUp,
+  FolderInput,
+  Plus,
+  RotateCcw,
+  Search,
+  Trash2,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type {
   Profile,
@@ -51,7 +60,9 @@ import { useProfiles } from './store.ts'
 function TrashRow({ item }: { item: TrashItem }) {
   const { t } = useLingui()
   const restore = useProfiles((s) => s.restore)
+  const purge = useProfiles((s) => s.purge)
   const [pending, run] = usePending()
+  const [confirming, setConfirming] = useState(false)
   const days = plural(item.daysLeft, { one: '# day left', other: '# days left' })
   return (
     <Box
@@ -79,6 +90,35 @@ function TrashRow({ item }: { item: TrashItem }) {
       >
         {t`Restore`}
       </Button>
+      <Button
+        variant="outlined"
+        color="error"
+        startIcon={<Trash2 size={14} />}
+        disabled={pending}
+        onClick={() => setConfirming(true)}
+        sx={{ whiteSpace: 'nowrap' }}
+      >
+        {t`Delete permanently`}
+      </Button>
+      <Dialog open={confirming} onClose={() => setConfirming(false)}>
+        <DialogTitle>{t`Delete ${item.name} permanently?`}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{t`This cannot be undone.`}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirming(false)}>{t`Cancel`}</Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => {
+              setConfirming(false)
+              run(() => purge(item.id))
+            }}
+          >
+            {t`Delete permanently`}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }
@@ -86,6 +126,9 @@ function TrashRow({ item }: { item: TrashItem }) {
 function Trash() {
   const { t } = useLingui()
   const trash = useProfiles((s) => s.trash)
+  const purgeTrash = useProfiles((s) => s.purgeTrash)
+  const [confirming, setConfirming] = useState(false)
+  const [pending, run] = usePending()
   return (
     <Box
       component="aside"
@@ -109,6 +152,35 @@ function Trash() {
       {trash.map((item) => (
         <TrashRow key={item.id} item={item} />
       ))}
+      <Button
+        variant="outlined"
+        color="error"
+        startIcon={<Trash2 size={14} />}
+        disabled={trash.length === 0 || pending}
+        onClick={() => setConfirming(true)}
+        sx={{ alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
+      >
+        {t`Empty trash`}
+      </Button>
+      <Dialog open={confirming} onClose={() => setConfirming(false)}>
+        <DialogTitle>{t`Empty trash?`}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{t`This cannot be undone.`}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirming(false)}>{t`Cancel`}</Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => {
+              setConfirming(false)
+              run(purgeTrash)
+            }}
+          >
+            {t`Empty trash`}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

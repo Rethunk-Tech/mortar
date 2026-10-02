@@ -183,6 +183,10 @@ func (s *Service) ListTrash(game string) ([]TrashItem, error) { return s.store.L
 
 func (s *Service) Restore(game, id string) (Profile, error) { return s.store.Restore(game, id) }
 
+func (s *Service) Purge(game, id string) error { return s.store.Purge(game, id) }
+
+func (s *Service) PurgeTrash(game string) error { return s.store.PurgeTrash(game) }
+
 func (s *Service) SetHidden(game, id string, hidden bool) (Profile, error) {
 	return s.store.SetHidden(game, id, hidden)
 }

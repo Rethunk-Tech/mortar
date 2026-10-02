@@ -315,6 +315,46 @@ func TestTrashRestorePurge(t *testing.T) {
 	}
 }
 
+func TestPurgeTrash(t *testing.T) {
+	e := newEnv(t)
+	p, err := e.Create("stardew", "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := e.Delete("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	outside := filepath.Join(e.root, "outside")
+	if err := os.MkdirAll(outside, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.Purge("stardew", "../outside"); err == nil {
+		t.Fatal("bad id accepted")
+	}
+	if err := e.Purge("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if exists(filepath.Join(e.root, "trash", "stardew", p.ID)) {
+		t.Fatal("purged profile remains")
+	}
+	if !exists(outside) {
+		t.Fatal("purge escaped trash")
+	}
+	q, err := e.Create("stardew", "Q")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := e.Delete("stardew", q.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.PurgeTrash("stardew"); err != nil {
+		t.Fatal(err)
+	}
+	if trash, err := e.ListTrash("stardew"); err != nil || len(trash) != 0 {
+		t.Fatalf("trash after empty = %+v, %v", trash, err)
+	}
+}
+
 func TestRebuildAfterModsDeleted(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-n", map[string]string{"W/A/manifest.json": manifestJSON("X.A"), "W/B/manifest.json": manifestJSON("X.B")})

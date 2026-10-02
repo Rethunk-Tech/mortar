@@ -138,8 +138,71 @@ func (s *Store) Restore(gameID, id string) (Profile, error) {
 	return s.read(gameID, id)
 }
 
-// PurgeTrash deletes trashed profiles deleted more than 30 days before now.
-func (s *Store) PurgeTrash(now time.Time) error {
+// Purge permanently removes one trashed profile.
+func (s *Store) Purge(gameID, id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	dir, err := s.trashDir(gameID, id)
+	if err != nil {
+		return err
+	}
+	info, err := os.Lstat(dir)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("refusing to purge symlink %q", id)
+	}
+	return os.RemoveAll(dir)
+}
+
+func (s *Store) purgeTrash(gameID string) error {
+	if !game.Valid(gameID) {
+		return fmt.Errorf("unknown game %q", gameID)
+	}
+	dir := filepath.Join(s.trash, gameID)
+	items, err := os.ReadDir(dir)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	var errs []error
+	for _, item := range items {
+		if !item.IsDir() || !idPattern.MatchString(item.Name()) {
+			continue
+		}
+		info, err := os.Lstat(filepath.Join(dir, item.Name()))
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		if info.Mode()&os.ModeSymlink != 0 {
+			errs = append(errs, fmt.Errorf("refusing to purge symlink %q", item.Name()))
+			continue
+		}
+		errs = append(errs, os.RemoveAll(filepath.Join(dir, item.Name())))
+	}
+	return errors.Join(errs...)
+}
+
+// PurgeTrash permanently removes all trashed profiles for a game. A time.Time
+// argument is retained for the startup expiry sweep.
+func (s *Store) PurgeTrash(target any) error {
+	if gameID, ok := target.(string); ok {
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		return s.purgeTrash(gameID)
+	}
+	now, ok := target.(time.Time)
+	if !ok {
+		return fmt.Errorf("invalid trash purge target")
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	games, err := os.ReadDir(s.trash)
