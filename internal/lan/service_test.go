@@ -269,7 +269,12 @@ func TestLoopbackLargeMortarRoundTrip(t *testing.T) {
 	}
 	arrivals := make(chan Arrival, 1)
 	service := NewService(Deps{Emit: func(_ string, data any) {
-		arrivals <- data.(Arrival)
+		arrival, ok := data.(Arrival)
+		if !ok {
+			t.Errorf("event data type = %T, want Arrival", data)
+			return
+		}
+		arrivals <- arrival
 	}})
 	server := httptest.NewServer(service.handler())
 	defer server.Close()
