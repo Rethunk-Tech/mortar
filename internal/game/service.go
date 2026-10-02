@@ -33,8 +33,8 @@ type SteamAccess struct {
 
 // Service exposes the games to the frontend.
 type Service struct {
-	home    string
-	store   *settings.Store
+	home  string
+	store *settings.Store
 	// Running reports whether the game is running; Reset refuses while it is. Nil means never.
 	Running func(gameID string) bool
 }

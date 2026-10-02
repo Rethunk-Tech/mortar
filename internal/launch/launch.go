@@ -75,12 +75,13 @@ type Runner func(dir, name string, args ...string) (exited <-chan error, err err
 
 // Start is the Runner that runs the real command, reaping it in the background.
 func Start(dir, name string, args ...string) (<-chan error, error) {
-	return StartWithEnv(nil, dir, name, args...)
+	return StartWithEnv(context.Background(), nil, dir, name, args...)
 }
 
-// StartWithEnv starts a process with additional environment variables.
-func StartWithEnv(env []string, dir, name string, args ...string) (<-chan error, error) {
-	cmd := exec.CommandContext(context.Background(), name, args...)
+// StartWithEnv starts a process with additional environment variables; ctx ending kills it, so a game the caller
+// does not want tied to its request passes a context without cancellation.
+func StartWithEnv(ctx context.Context, env []string, dir, name string, args ...string) (<-chan error, error) {
+	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Dir = dir
 	if len(env) > 0 {
 		cmd.Env = append(os.Environ(), env...)

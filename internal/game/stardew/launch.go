@@ -56,7 +56,7 @@ func (g Game) Launch(ctx context.Context, req launch.Request, onLines func([]str
 	run := g.Runner
 	if run == nil {
 		run = func(dir, name string, args ...string) (<-chan error, error) {
-			return launch.StartWithEnv(cmd.Env, dir, name, args...)
+			return launch.StartWithEnv(context.WithoutCancel(ctx), cmd.Env, dir, name, args...)
 		}
 	}
 	return launch.Run(ctx, run, cmd, g.LaunchTiming, onLines)
