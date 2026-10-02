@@ -120,7 +120,9 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 			return nil
 		}
 	}
+	s.installMu.Lock()
 	res, err := s.d.InstallStaged(it.Game, it.Profile, key, source)
+	s.installMu.Unlock()
 	return s.afterInstall(it.ID, res, err, unverified)
 }
 
@@ -138,7 +140,9 @@ func (s *Service) installStaged(it Item) error {
 		if it.Remap != nil {
 			src = it.Remap.Source
 		}
+		s.installMu.Lock()
 		res, err := s.d.InstallRemap(it.Game, it.Profile, it.staged, it.chosenRoot, src)
+		s.installMu.Unlock()
 		if errors.Is(err, store.ErrNotFound) {
 			s.mu.Lock()
 			if cur := s.find(it.ID); cur != nil {
@@ -148,7 +152,9 @@ func (s *Service) installStaged(it Item) error {
 		}
 		return s.afterInstall(it.ID, res, err, false)
 	}
+	s.installMu.Lock()
 	res, err := s.d.InstallStaged(it.Game, it.Profile, it.staged, src)
+	s.installMu.Unlock()
 	if errors.Is(err, store.ErrNotFound) {
 		s.mu.Lock()
 		if cur := s.find(it.ID); cur != nil {

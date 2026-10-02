@@ -219,9 +219,12 @@ type Service struct {
 	mu    sync.Mutex
 	items []*Item
 	// paused stops new downloads from starting; one under way finishes.
-	paused  bool
-	until   time.Time
-	cancels map[string]context.CancelFunc
+	paused       bool
+	until        time.Time
+	cancels      map[string]context.CancelFunc
+	installMu    sync.Mutex
+	premiumFetch chan struct{}
+	freeFetch    chan struct{}
 }
 
 // New reads the saved queue: what was under way is queued again so a partial file can resume, and a file
@@ -238,7 +241,10 @@ func New(d Deps) (*Service, error) {
 		}
 		d.HTTP = &http.Client{Transport: tr, Timeout: 30 * time.Minute}
 	}
-	s := &Service{d: d, kick: make(chan struct{}, 1), cancels: map[string]context.CancelFunc{}}
+	s := &Service{
+		d: d, kick: make(chan struct{}, 1), cancels: map[string]context.CancelFunc{},
+		premiumFetch: make(chan struct{}, 3), freeFetch: make(chan struct{}, 1),
+	}
 	b, err := os.ReadFile(filepath.Join(d.Dir, fileName))
 	if errors.Is(err, fs.ErrNotExist) {
 		return s, nil
@@ -568,7 +574,7 @@ func (s *Service) RetryFailed() { s.retry(func(*Item) bool { return true }) }
 func (s *Service) retry(match func(*Item) bool) {
 	s.mu.Lock()
 	for _, it := range s.items {
-		if it.State == StateFailed && match(it) {
+		if (it.State == StateFailed || it.State == StateSkipped) && match(it) {
 			it.State, it.Error = StateQueued, ""
 		}
 	}
@@ -601,6 +607,37 @@ func (s *Service) drop(match func(*Item) bool) {
 // Skip drops an item that has not started, that failed, or that waits for the user.
 func (s *Service) Skip(id string) {
 	s.end(id, StateSkipped, StateFailed, StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge)
+}
+
+// SkipAll skips every item that has not started.
+func (s *Service) SkipAll() {
+	s.mu.Lock()
+	var ids []string
+	for _, it := range s.items {
+		if slices.Contains([]string{StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge}, it.State) {
+			ids = append(ids, it.ID)
+		}
+	}
+	s.mu.Unlock()
+	for _, id := range ids {
+		s.Skip(id)
+	}
+}
+
+// SkipProfile skips every not-yet-started item for a profile.
+func (s *Service) SkipProfile(game, profileID string) {
+	s.mu.Lock()
+	var ids []string
+	for _, it := range s.items {
+		if it.Game == game && it.Profile == profileID &&
+			slices.Contains([]string{StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge}, it.State) {
+			ids = append(ids, it.ID)
+		}
+	}
+	s.mu.Unlock()
+	for _, id := range ids {
+		s.Skip(id)
+	}
 }
 
 // Choose picks the asset of an item waiting in StateNeedsChoice.

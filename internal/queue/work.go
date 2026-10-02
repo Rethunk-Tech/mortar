@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/github"
@@ -105,35 +106,23 @@ func (s *Service) forAsset(it *Item) action {
 const heldRecheck = 5 * time.Second
 
 func (s *Service) run(ctx context.Context) {
-	for {
-		for s.step(ctx) {
-		}
-		var wake <-chan time.Time
-		s.mu.Lock()
-		var queued []*Item
-		for _, it := range s.items {
-			if it.State == StateQueued || it.State == StateWaitingClick {
-				queued = append(queued, it)
+	var workers sync.WaitGroup
+	for range 3 {
+		workers.Go(func() {
+			for ctx.Err() == nil {
+				if s.step(ctx) {
+					continue
+				}
+				select {
+				case <-ctx.Done():
+				case <-s.kick:
+				case <-time.After(heldRecheck):
+				}
 			}
-		}
-		s.mu.Unlock()
-		running := s.runningOf(queued)
-		s.mu.Lock()
-		_, _, held := s.next(running)
-		if d := s.until.Sub(s.d.Now()); d > 0 {
-			wake = time.After(d)
-		} else if held {
-			wake = time.After(heldRecheck)
-		}
-		s.mu.Unlock()
-		select {
-		case <-ctx.Done():
-			return
-		case <-s.kick:
-		case <-wake:
-			s.publish(false)
-		}
+		})
 	}
+	<-ctx.Done()
+	workers.Wait()
 }
 
 // obsolete lists queued Nexus items the profile already holds at that file or newer, read under the lock. Only an
@@ -327,7 +316,25 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 	return nil
 }
 
+func (s *Service) fetchSlot(ctx context.Context, it Item) (func(), error) {
+	slot := s.freeFetch
+	if it.Repo != "" || s.d.Premium() {
+		slot = s.premiumFetch
+	}
+	select {
+	case slot <- struct{}{}:
+		return func() { <-slot }, nil
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+}
+
 func (s *Service) download(ctx context.Context, it Item) error {
+	release, err := s.fetchSlot(ctx, it)
+	if err != nil {
+		return err
+	}
+	defer release()
 	if it.Repo != "" {
 		return s.downloadGitHub(ctx, it)
 	}
