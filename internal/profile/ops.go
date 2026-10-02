@@ -550,6 +550,14 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 	}
 	srcDir, _ := s.profileDir(game, id)
 	gdir, _ := s.gameDir(game)
+	all, err := s.List(game)
+	if err != nil {
+		return Profile{}, err
+	}
+	taken := make([]string, 0, len(all))
+	for _, p := range all {
+		taken = append(taken, p.Name)
+	}
 	var raw [8]byte
 	if _, err := rand.Read(raw[:]); err != nil {
 		return Profile{}, err
@@ -558,7 +566,8 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 	dstDir, _ := s.profileDir(game, newID)
 
 	const suffix = " copy"
-	name := string([]rune(src.Name)[:min(len([]rune(src.Name)), maxName-len(suffix))]) + suffix
+	runes := []rune(src.Name)
+	name := UniqueName(taken, string(runes[:min(len(runes), maxName-len(suffix))])+suffix)
 	now := time.Now().UTC().Truncate(time.Second)
 	dup := src
 	dup.ID, dup.Name, dup.Created, dup.Updated = newID, name, now, now
@@ -592,7 +601,7 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 		return Profile{}, errors.Join(err, os.RemoveAll(tmp))
 	}
 
-	all, err := s.List(game)
+	all, err = s.List(game)
 	if err != nil {
 		return Profile{}, err
 	}

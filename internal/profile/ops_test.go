@@ -264,6 +264,25 @@ func TestDuplicateIsIndependent(t *testing.T) {
 	}
 }
 
+func TestDuplicateUsesUniqueProfileName(t *testing.T) {
+	s := newStore(t)
+	source, err := s.Create("stardew", "A")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Create("stardew", "A copy"); err != nil {
+		t.Fatal(err)
+	}
+
+	dup, err := s.Duplicate("stardew", source.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if dup.Name != "A copy (2)" {
+		t.Fatalf("duplicate name = %q", dup.Name)
+	}
+}
+
 func TestTrashRestorePurge(t *testing.T) {
 	e := newEnv(t)
 	a, _ := e.Create("stardew", "A")
