@@ -51,19 +51,19 @@ func Is(args []string) bool {
 type caller func(method string, p control.Params, out any, timeout time.Duration) error
 
 type cmd struct {
-	version string
-	call    caller
-	out     io.Writer
-	errOut  io.Writer
-	json    bool
-	all     bool
-	unused  bool
-	yesFlag bool
-	wait    bool
-	run     string
-	game    string
-	profile string
-	args    []string
+	version     string
+	call        caller
+	out         io.Writer
+	errOut      io.Writer
+	json        bool
+	all         bool
+	unused      bool
+	yesFlag     bool
+	wait        bool
+	run         string
+	game        string
+	profileFlag string
+	args        []string
 }
 
 // refusedError is a destructive action blocked until the user passes --yes: exit 2 with the message only.
@@ -134,9 +134,9 @@ func (c *cmd) parse(args []string) error {
 				return usageError{"--profile needs a profile name"}
 			}
 			i++
-			c.profile = args[i]
+			c.profileFlag = args[i]
 		case strings.HasPrefix(a, "--profile="):
-			c.profile = strings.TrimPrefix(a, "--profile=")
+			c.profileFlag = strings.TrimPrefix(a, "--profile=")
 		case a == "--game":
 			if i+1 >= len(args) {
 				return usageError{"--game needs a game id"}
@@ -957,7 +957,7 @@ func (c *cmd) logs(p control.Params) error {
 
 func (c *cmd) searchLogs(query string) error {
 	var result launchsvc.RunSearch
-	if err := c.call("logs.search", control.Params{Game: "stardew", Profile: c.profile, Query: query}, &result, readTimeout); err != nil {
+	if err := c.call("logs.search", control.Params{Game: "stardew", Profile: c.profileFlag, Query: query}, &result, readTimeout); err != nil {
 		return err
 	}
 	return c.emit(result, func() {
