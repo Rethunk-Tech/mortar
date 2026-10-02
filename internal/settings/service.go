@@ -202,7 +202,7 @@ func (s *Service) ConfirmLaunchers() error {
 // SetGameStore stores the chosen store for game, or clears it when store is empty.
 func (s *Service) SetGameStore(game, store string) error {
 	switch store {
-	case "", "steam", "flatpak-steam", "gog", "gog-heroic", "lutris":
+	case "", "steam", "flatpak-steam", "gog", "gog-heroic", "gog-minigalaxy", "lutris":
 	default:
 		return fmt.Errorf("unknown store %q", store)
 	}

@@ -28,6 +28,7 @@ import {
   SetTellWhenSmapiOut,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { loadGameStatus } from '../../games/status.ts'
+import { storeName } from '../../games/storeName.ts'
 import { useLaunch } from '../../launch/store.ts'
 import { InstallSteps } from '../../loader/InstallSteps.tsx'
 import { useLoader } from '../../loader/store.ts'
@@ -42,19 +43,8 @@ const outline = { whiteSpace: 'nowrap', flexShrink: 0, height: 42 }
 
 function StoreLabel({ store }: { store: string }) {
   const { t } = useLingui()
-  if (store === 'flatpak-steam') {
-    return t`Flatpak Steam`
-  }
-  if (store === 'gog') {
-    return t`GOG`
-  }
-  if (store === 'gog-heroic') {
-    return t`GOG via Heroic`
-  }
-  if (store === 'lutris') {
-    return t`Lutris`
-  }
-  return t`Steam`
+  const named = storeName(store)
+  return named ? t(named) : t`Steam`
 }
 
 function GameFolder({
@@ -79,16 +69,8 @@ function GameFolder({
       .then(onRefresh)
       .catch((e: unknown) => setError(errorText(e) ?? t`That folder cannot be used`))
   }
-  let foundIn = t`Steam`
-  if (store === 'flatpak-steam') {
-    foundIn = t`Flatpak Steam`
-  } else if (store === 'gog') {
-    foundIn = t`GOG`
-  } else if (store === 'gog-heroic') {
-    foundIn = t`GOG via Heroic`
-  } else if (store === 'lutris') {
-    foundIn = t`Lutris`
-  }
+  const known = storeName(store)
+  const foundIn = known ? t(known) : t`Steam`
   let source = t`Stardew Valley was not found. Browse to its folder.`
   if (override) {
     source = t`Chosen by you`

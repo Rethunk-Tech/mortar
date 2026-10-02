@@ -79,3 +79,38 @@ func TestLocateIgnoresMissing(t *testing.T) {
 		t.Fatalf("got %#v", got)
 	}
 }
+
+func TestMinigalaxyInstallDirFromItsConfig(t *testing.T) {
+	home := t.TempDir()
+	lib := filepath.Join(home, "Games", "GOG")
+	writeGame(t, filepath.Join(lib, "Stardew Valley"))
+	cfg := filepath.Join(home, ".var", "app", "io.github.sharkwouter.Minigalaxy", "config", "minigalaxy")
+	if err := os.MkdirAll(cfg, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(cfg, "config.json"), []byte(`{"install_dir": "`+filepath.ToSlash(lib)+`"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got := Locate(home, Roots{})
+	if len(got) != 1 || got[0].Store != StoreMinigalaxy || got[0].Dir != filepath.Join(lib, "Stardew Valley") {
+		t.Fatalf("got %#v", got)
+	}
+}
+
+func TestMinigalaxyFolderIsNotAlsoGOGs(t *testing.T) {
+	home := t.TempDir()
+	writeGame(t, filepath.Join(home, "GOG Games", "Stardew Valley"))
+	cfg := filepath.Join(home, ".config", "minigalaxy")
+	if err := os.MkdirAll(cfg, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(cfg, "config.json"), []byte(`{}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := Locate(home, Roots{}); len(got) != 1 || got[0].Store != StoreMinigalaxy {
+		t.Fatalf("one install, credited to Minigalaxy: %#v", got)
+	}
+	if dirs := OfflineDirs(home, Roots{}); len(dirs) != 0 {
+		t.Fatalf("Minigalaxy's default folder must leave GOG's list: %v", dirs)
+	}
+}

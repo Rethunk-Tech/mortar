@@ -9,6 +9,7 @@ import type {
 import { PickFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import { SetGameFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { gameArt } from '../games/art.ts'
+import { storeName } from '../games/storeName.ts'
 import { useLoader } from '../loader/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { Panel } from './Panel.tsx'
@@ -58,23 +59,6 @@ function Hero({ game, dim }: { game: GameInfo; dim?: boolean }) {
       </Typography>
     </Box>
   )
-}
-
-function storeCaption(store: string, t: (s: TemplateStringsArray) => string): string {
-  switch (store) {
-    case 'flatpak-steam':
-      return t`Found in Steam (Flatpak)`
-    case 'gog':
-      return t`Found in GOG`
-    case 'gog-heroic':
-      return t`Found in Heroic`
-    case 'lutris':
-      return t`Found in Lutris`
-    case 'steam':
-      return t`Found in Steam`
-    default:
-      return t`Folder chosen by you`
-  }
 }
 
 // Where Mortar looked: each launcher, whether it was found, and whether it holds this game.
@@ -127,6 +111,8 @@ export function FindStep({
   const check = useLoader((s) => s.check)
   const [error, setError] = useState('')
   const dir = game.installDir
+  const named = storeName(game.store)
+  const caption = named ? t`Found in ${t(named)}` : t`Folder chosen by you`
   useRefreshOnFocus(refresh, !found)
   useEffect(() => {
     if (dir) {
@@ -162,7 +148,7 @@ export function FindStep({
       <Hero game={game} dim={!found} />
       {found ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <Typography sx={{ fontSize: 13 }}>{storeCaption(game.store, t)}</Typography>
+          <Typography sx={{ fontSize: 13 }}>{caption}</Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <TextField
               value={dir}

@@ -1,5 +1,6 @@
 import { Box } from '@mui/material'
 import { siFlatpak, siGogdotcom, siHeroicgameslauncher, siLutris, siSteam } from 'simple-icons'
+import minigalaxy from '../vendor/minigalaxy.png'
 
 const ICONS: Record<string, { path: string }> = {
   steam: siSteam,
@@ -24,7 +25,23 @@ function Mark({ path, size, fill }: { path: string; size: number; fill: string }
   )
 }
 
+// Raster marks, drawn as a white silhouette to match the vector ones.
+const IMAGES: Record<string, string> = { minigalaxy }
+
 export function LauncherLogo({ id, size }: { id: string; size: number }) {
+  const image = IMAGES[id]
+  if (image) {
+    return (
+      <Box
+        component="img"
+        src={image}
+        alt=""
+        width={size}
+        height={size}
+        sx={{ filter: 'brightness(0) invert(1)' }}
+      />
+    )
+  }
   const icon = ICONS[id]
   if (!icon) {
     return null

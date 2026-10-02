@@ -250,6 +250,11 @@ function buildCredits(): CreditEntry[] {
       url: 'https://smapi.io/',
     },
     {
+      name: 'Minigalaxy icon',
+      licence: 'GPL-3.0',
+      url: 'https://github.com/sharkwouter/minigalaxy',
+    },
+    {
       name: 'Fedora 44 default wallpaper (f44-01-night)',
       licence: 'CC-BY-SA-4.0',
       url: 'https://fedoraproject.org/wiki/F44_Artwork',

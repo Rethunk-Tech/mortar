@@ -21,6 +21,7 @@ import { useToasts } from '../toasts/store.ts'
 import { gameArt } from './art.ts'
 import { relativePlay } from './lastPlayed.ts'
 import { type GameStatus, loaderCaption, loadGameStatus } from './status.ts'
+import { storeName } from './storeName.ts'
 
 type Game = GameInfo
 
@@ -154,22 +155,8 @@ function Row({
     useNav.getState().openGame(game.id)
     start(game.id, lastPlayedId, false).then(() => undefined)
   }
-  const storeName = (id: string) => {
-    if (id === 'flatpak-steam') {
-      return t`Flatpak Steam`
-    }
-    if (id === 'gog') {
-      return t`GOG`
-    }
-    if (id === 'gog-heroic') {
-      return t`GOG via Heroic`
-    }
-    if (id === 'lutris') {
-      return t`Lutris`
-    }
-    return t`Steam`
-  }
-  const store = game.store ? storeName(game.store) : ''
+  const named = game.store ? storeName(game.store) : null
+  const store = named ? t(named) : ''
   let loaderLine = loader
   if (store && lastLine) {
     loaderLine = t`${loader} | ${store} · ${lastLine}`

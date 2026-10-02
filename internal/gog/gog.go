@@ -18,7 +18,9 @@ const (
 	StoreGOG = "gog"
 	// StoreHeroic is a copy Heroic installed from GOG.
 	StoreHeroic = "gog-heroic"
-	marker      = "Stardew Valley.dll"
+	// StoreMinigalaxy is a copy Minigalaxy installed from GOG.
+	StoreMinigalaxy = "gog-minigalaxy"
+	marker          = "Stardew Valley.dll"
 )
 
 // Install is one GOG-sourced game folder.
@@ -31,6 +33,8 @@ type Install struct {
 type Roots struct {
 	Heroic []string
 	Games  []string
+	// Minigalaxy are Minigalaxy install folders the user added.
+	Minigalaxy []string
 }
 
 // Locate finds GOG Stardew folders under home (and Windows Galaxy / default paths), the user's own folders first.
@@ -49,7 +53,10 @@ func Locate(home string, r Roots) []Install {
 		out = append(out, Install{Dir: dir, Store: store})
 	}
 	add(galaxyPath(), StoreGOG)
-	for _, dir := range GamesDirs(home, r.Games...) {
+	for _, dir := range MinigalaxyInstallDirs(home, r.Minigalaxy...) {
+		add(filepath.Join(dir, "Stardew Valley"), StoreMinigalaxy)
+	}
+	for _, dir := range OfflineDirs(home, r) {
 		add(filepath.Join(dir, "Stardew Valley"), StoreGOG)
 	}
 	for _, cfg := range HeroicDirs(home, r.Heroic...) {
@@ -67,6 +74,43 @@ func GamesDirs(home string, custom ...string) []string {
 		return append(out, windowsGamesDirs()...)
 	}
 	return append(out, filepath.Join(home, "GOG Games"))
+}
+
+// OfflineDirs are the GOG games folders not owned by Minigalaxy, which installs into a folder that is often GOG's
+// default too; a folder is credited to one launcher only.
+func OfflineDirs(home string, r Roots) []string {
+	mini := MinigalaxyInstallDirs(home, r.Minigalaxy...)
+	return slices.DeleteFunc(GamesDirs(home, r.Games...), func(d string) bool { return slices.Contains(mini, d) })
+}
+
+// MinigalaxyConfigDirs are Minigalaxy's config folders (native, then Flatpak).
+func MinigalaxyConfigDirs(home string) []string {
+	return []string{
+		filepath.Join(home, ".config", "minigalaxy"),
+		filepath.Join(home, ".var", "app", "io.github.sharkwouter.Minigalaxy", "config", "minigalaxy"),
+	}
+}
+
+// MinigalaxyInstallDirs are the folders Minigalaxy installs games into: the user's own first, then each config's
+// install_dir (its default, ~/GOG Games, when the config does not set one).
+func MinigalaxyInstallDirs(home string, custom ...string) []string {
+	out := slices.Clone(custom)
+	for _, cfg := range MinigalaxyConfigDirs(home) {
+		b, err := fsx.ReadFile(filepath.Join(cfg, "config.json"))
+		if err != nil {
+			continue
+		}
+		var c struct {
+			InstallDir string `json:"install_dir"`
+		}
+		if json.Unmarshal(b, &c) != nil || c.InstallDir == "" {
+			c.InstallDir = filepath.Join(home, "GOG Games")
+		}
+		if !slices.Contains(out, c.InstallDir) {
+			out = append(out, c.InstallDir)
+		}
+	}
+	return out
 }
 
 // HeroicDirs are Heroic's config folders (native, then Flatpak), the user's own first.

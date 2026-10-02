@@ -14,6 +14,7 @@ const (
 	StoreFlatpakSteam = "flatpak-steam"
 	StoreGOG          = gog.StoreGOG
 	StoreGOGHeroic    = gog.StoreHeroic
+	StoreMinigalaxy   = gog.StoreMinigalaxy
 	StoreLutris       = lutris.StoreLutris
 )
 
@@ -23,7 +24,7 @@ type FoundInstall struct {
 	Dir   string `json:"dir"`
 }
 
-var storeOrder = []string{StoreSteam, StoreFlatpakSteam, StoreGOG, StoreGOGHeroic, StoreLutris}
+var storeOrder = []string{StoreSteam, StoreFlatpakSteam, StoreGOG, StoreGOGHeroic, StoreMinigalaxy, StoreLutris}
 
 // Launcher ids, each the source of one or more stores' installs.
 const (
@@ -32,6 +33,7 @@ const (
 	LauncherHeroic       = "heroic"
 	LauncherLutris       = "lutris"
 	LauncherGOG          = "gog"
+	LauncherMinigalaxy   = "minigalaxy"
 )
 
 // roots are the folders the user added for a launcher.
@@ -61,7 +63,7 @@ func collect(g Game, home string, s settings.Settings) []FoundInstall {
 		}
 		add(store, dir)
 	}
-	for _, in := range gog.Locate(home, gog.Roots{Heroic: roots(s, LauncherHeroic), Games: roots(s, LauncherGOG)}) {
+	for _, in := range gog.Locate(home, gog.Roots{Heroic: roots(s, LauncherHeroic), Games: roots(s, LauncherGOG), Minigalaxy: roots(s, LauncherMinigalaxy)}) {
 		add(in.Store, in.Dir)
 	}
 	for _, in := range lutris.Locate(home, roots(s, LauncherLutris)...) {

@@ -38,13 +38,14 @@ type StoreAppGame struct {
 // storeLauncher maps each install's store to the launcher that reported it.
 var storeLauncher = map[string]string{
 	StoreSteam: LauncherSteam, StoreFlatpakSteam: LauncherFlatpakSteam, StoreGOGHeroic: LauncherHeroic,
-	StoreLutris: LauncherLutris, StoreGOG: LauncherGOG,
+	StoreLutris: LauncherLutris, StoreGOG: LauncherGOG, StoreMinigalaxy: LauncherMinigalaxy,
 }
 
 type launcherSpec struct {
 	id, name string
-	// looked lists the folders searched for this launcher, the user's own first.
-	looked func(home string, custom []string) []string
+	// looked lists the folders searched for this launcher, the user's own first; added holds every launcher's added
+	// folders, since one launcher's folder can rule out another's.
+	looked func(home string, added map[string][]string) []string
 	// usable reports whether a folder is this launcher's.
 	usable func(dir string) bool
 }
@@ -63,32 +64,45 @@ func launcherSpecs(goos string) []launcherSpec {
 	steamDir := func(dir string) bool { return isDir(filepath.Join(dir, "steamapps")) }
 	specs := []launcherSpec{{
 		id: LauncherSteam, name: "Steam", usable: steamDir,
-		looked: func(home string, custom []string) []string { return steam.Roots(home, custom...) },
+		looked: func(home string, added map[string][]string) []string {
+			return steam.Roots(home, added[LauncherSteam]...)
+		},
 	}}
 	if goos == "linux" {
 		specs = append(specs, launcherSpec{
 			id: LauncherFlatpakSteam, name: "Steam (Flatpak)", usable: steamDir,
-			looked: func(home string, _ []string) []string { return []string{steam.FlatpakRoot(home)} },
+			looked: func(home string, _ map[string][]string) []string { return []string{steam.FlatpakRoot(home)} },
 		})
 	}
 	specs = append(specs, launcherSpec{
 		id: LauncherHeroic, name: "Heroic", usable: func(dir string) bool { return isDir(filepath.Join(dir, "gog_store")) },
-		looked: func(home string, custom []string) []string { return gog.HeroicDirs(home, custom...) },
+		looked: func(home string, added map[string][]string) []string {
+			return gog.HeroicDirs(home, added[LauncherHeroic]...)
+		},
 	})
 	if goos == "linux" {
 		specs = append(specs, launcherSpec{
 			id: LauncherLutris, name: "Lutris", usable: isDir,
-			looked: func(home string, custom []string) []string { return lutris.ConfigDirs(home, custom...) },
+			looked: func(home string, added map[string][]string) []string {
+				return lutris.ConfigDirs(home, added[LauncherLutris]...)
+			},
+		}, launcherSpec{
+			id: LauncherMinigalaxy, name: "Minigalaxy", usable: isDir,
+			looked: func(home string, added map[string][]string) []string {
+				return withCustom(added[LauncherMinigalaxy], gog.MinigalaxyConfigDirs(home)...)
+			},
 		})
 	}
 	gogSpec := launcherSpec{
 		id: LauncherGOG, name: "GOG", usable: isDir,
-		looked: func(home string, custom []string) []string { return gog.GamesDirs(home, custom...) },
+		looked: func(home string, added map[string][]string) []string {
+			return gog.OfflineDirs(home, gog.Roots{Games: added[LauncherGOG], Minigalaxy: added[LauncherMinigalaxy]})
+		},
 	}
 	if goos == "windows" {
 		gogSpec.name = "GOG Galaxy"
-		gogSpec.looked = func(home string, custom []string) []string {
-			return append(withCustom(custom, gog.GalaxyDir()), gog.GamesDirs(home)...)
+		gogSpec.looked = func(home string, added map[string][]string) []string {
+			return append(withCustom(added[LauncherGOG], gog.GalaxyDir()), gog.GamesDirs(home)...)
 		}
 	}
 	return append(specs, gogSpec)
@@ -107,7 +121,7 @@ func Launchers(home string, s settings.Settings) ([]StoreApp, error) {
 	for _, spec := range launcherSpecs(runtime.GOOS) {
 		custom := s.LauncherRoots[spec.id]
 		l := StoreApp{
-			ID: spec.id, Name: spec.name, Looked: spec.looked(home, custom), Games: byLauncher[spec.id],
+			ID: spec.id, Name: spec.name, Looked: spec.looked(home, s.LauncherRoots), Games: byLauncher[spec.id],
 			Roots: []string{}, Custom: slices.Clone(custom),
 		}
 		if l.Games == nil {

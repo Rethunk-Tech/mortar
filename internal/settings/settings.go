@@ -242,7 +242,7 @@ func normalizeStores(s *Settings) {
 	}
 	for game, store := range s.GameStores {
 		switch store {
-		case "steam", "flatpak-steam", "gog", "gog-heroic", "lutris":
+		case "steam", "flatpak-steam", "gog", "gog-heroic", "gog-minigalaxy", "lutris":
 		default:
 			delete(s.GameStores, game)
 		}

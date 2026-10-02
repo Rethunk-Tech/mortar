@@ -513,7 +513,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 	if err != nil {
 		return err
 	}
-	if store == game.StoreGOG || store == game.StoreGOGHeroic || store == game.StoreLutris {
+	if store == game.StoreGOG || store == game.StoreGOGHeroic || store == game.StoreMinigalaxy || store == game.StoreLutris {
 		req.Direct = true
 	}
 	if st, status := steam.Locate(s.home); status == steam.Found {
