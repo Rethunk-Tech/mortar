@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Typography } from '@mui/material'
+import { Box, ButtonBase, CircularProgress, Typography } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
 import { useTab } from '../game/tab.ts'
 import { useDescribe, useDescribeDrift } from './describe.ts'
@@ -21,9 +21,26 @@ export function ProblemBar() {
   useLoadProblemsOnFocus()
   if (result === null) {
     return (
-      <Typography sx={{ mx: 2, mt: 1.25, fontSize: 13, color: 'text.secondary' }}>
-        {t`Checking the mods for problems…`}
-      </Typography>
+      <Box
+        role="status"
+        sx={{
+          mx: 2,
+          mt: 1.25,
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.25,
+          height: 38,
+          px: 1.5,
+          color: 'text.secondary',
+          bgcolor: 'rgba(255,255,255,0.06)',
+          border: '1px solid rgba(255,255,255,0.16)',
+          borderRadius: '6px',
+        }}
+      >
+        <CircularProgress size={16} color="inherit" />
+        <Typography sx={{ fontSize: 14 }}>{t`Checking the mods for problems…`}</Typography>
+      </Box>
     )
   }
   if (problems.length === 0 && !result.unknown) {

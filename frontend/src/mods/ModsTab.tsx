@@ -6,7 +6,6 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { ModState as ReadModState } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { compact } from '../game/compact.ts'
 import { useLaunch } from '../launch/store.ts'
 import { userModCount } from '../profiles/count.ts'
@@ -257,7 +256,7 @@ function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
                   gap: '6px',
                   px: 2,
                   pt: '4px',
-                  pb: 1.75,
+                  pb: 0,
                   alignContent: 'start',
                 }}
               >
@@ -352,9 +351,6 @@ export function ModsTab({ profile }: { profile: Profile }) {
   const gameId = useProfiles((s) => s.game?.id)
   const launchState = useLaunch((s) => s.status?.state)
   const [query, setQuery] = useState('')
-  const [configurableOnly, setConfigurableOnly] = useState(false)
-  const [configurableIds, setConfigurableIds] = useState<Record<string, boolean>>({})
-  const extras = useDetail((s) => s.extras)
   useEffect(() => {
     if (!gameId) {
       return
@@ -401,39 +397,6 @@ export function ModsTab({ profile }: { profile: Profile }) {
       .catch(reportUnexpected)
   }, [load, profile.id])
 
-  useEffect(() => {
-    if (!(configurableOnly && gameId)) {
-      return
-    }
-    let cancelled = false
-    Promise.all(
-      mods.map(async (m) => {
-        try {
-          const state = await ReadModState(gameId, profile.id, m.key, m.uniqueId)
-          return [modId(m), state.config !== ''] as const
-        } catch {
-          return [modId(m), false] as const
-        }
-      }),
-    )
-      .then((rows) => {
-        if (cancelled) {
-          return
-        }
-        const next: Record<string, boolean> = {}
-        for (const [id, on] of rows) {
-          if (on) {
-            next[id] = true
-          }
-        }
-        setConfigurableIds(next)
-      })
-      .catch(reportUnexpected)
-    return () => {
-      cancelled = true
-    }
-  }, [configurableOnly, gameId, profile.id, mods])
-
   if (userModCount(profile) === 0) {
     return <EmptyMods profileId={profile.id} />
   }
@@ -443,14 +406,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
     if (q && !m.name.toLowerCase().includes(q) && !m.author.toLowerCase().includes(q)) {
       return false
     }
-    if (!configurableOnly) {
-      return true
-    }
-    const id = modId(m)
-    if (extras?.id === id && extras.state.config !== '') {
-      return true
-    }
-    return configurableIds[id] === true
+    return true
   })
   return (
     <Box
@@ -461,13 +417,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
       </TipBanner>
       <ProblemBar />
       <UpdateBar />
-      <Toolbar
-        query={query}
-        onQuery={setQuery}
-        total={mods.length}
-        configurableOnly={configurableOnly}
-        onConfigurable={setConfigurableOnly}
-      />
+      <Toolbar query={query} onQuery={setQuery} total={mods.length} />
       <LockedNote />
       <SelectionKeys shown={shown} />
       <SelectionBar profileId={profile.id} mods={shown} />

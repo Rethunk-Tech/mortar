@@ -198,14 +198,10 @@ export function Toolbar({
   query,
   onQuery,
   total,
-  configurableOnly,
-  onConfigurable,
 }: {
   query: string
   onQuery: (q: string) => void
   total: number
-  configurableOnly: boolean
-  onConfigurable: (on: boolean) => void
 }) {
   const { t } = useLingui()
   const view = useMods((s) => s.view)
@@ -260,19 +256,6 @@ export function Toolbar({
         </ButtonBase>
       </Box>
       <GroupByControl />
-      <Button
-        variant="outlined"
-        aria-label={t`Configurable`}
-        aria-pressed={configurableOnly}
-        startIcon={<Settings2 size={14} />}
-        onClick={() => onConfigurable(!configurableOnly)}
-        sx={{
-          ...iconWhenCompact,
-          bgcolor: configurableOnly ? 'rgba(255,255,255,0.16)' : undefined,
-        }}
-      >
-        <span className="label">{t`Configurable`}</span>
-      </Button>
       {fieldOpen ? (
         <TextField
           size="small"
