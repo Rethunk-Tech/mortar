@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -70,6 +71,13 @@ func (s *Store) remapAsk(game, id, key string) (RemapAsk, bool, error) {
 	if err != nil {
 		return RemapAsk{}, false, err
 	}
+	rawXNB, err := hasRawXNB(dir)
+	if err != nil {
+		return RemapAsk{}, false, err
+	}
+	if len(found) == 0 && rawXNB {
+		return RemapAsk{}, false, &rawXNBError{Key: key}
+	}
 	vars := variants(found)
 	if len(found) > 0 && len(vars) == 0 {
 		return RemapAsk{}, false, nil
@@ -84,6 +92,27 @@ func (s *Store) remapAsk(game, id, key string) (RemapAsk, bool, error) {
 		return RemapAsk{}, false, err
 	}
 	return RemapAsk{Key: key, Tree: tree, Variants: vars}, true, nil
+}
+
+func hasRawXNB(root string) (bool, error) {
+	found := false
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if found {
+			return fs.SkipAll
+		}
+		if !d.IsDir() && strings.EqualFold(filepath.Ext(path), ".xnb") {
+			found = true
+			return fs.SkipAll
+		}
+		return nil
+	})
+	if err != nil && !errors.Is(err, fs.SkipAll) {
+		return false, err
+	}
+	return found, nil
 }
 
 // variants returns one folder per copy of each mod the archive holds more than once, since SMAPI refuses to load a

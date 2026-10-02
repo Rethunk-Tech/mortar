@@ -9,6 +9,13 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
+func TestHasRawXNBReportsWalkErrors(t *testing.T) {
+	_, err := hasRawXNB(filepath.Join(t.TempDir(), "missing"))
+	if err == nil {
+		t.Fatal("hasRawXNB returned nil error for a missing root")
+	}
+}
+
 func TestRemapJunkWrapperSkippedSilently(t *testing.T) {
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
