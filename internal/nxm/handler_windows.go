@@ -10,11 +10,12 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
-// System is the system's registration of the nxm scheme.
-type System struct{ exe string }
+// System is the system's registration of the nxm scheme. software is the HKCU key the browsers' native messaging
+// keys live under.
+type System struct{ exe, software string }
 
 // New returns the handler for this system, registering exe.
-func New(exe string) (*System, error) { return &System{exe: exe}, nil }
+func New(exe string) (*System, error) { return &System{exe: exe, software: "Software"}, nil }
 
 func (w *System) command() string { return `"` + w.exe + `" "%1"` }
 
@@ -48,6 +49,9 @@ func exeOf(cmd string) string {
 }
 
 func (w *System) Register() error {
+	if err := w.WriteNativeHosts(); err != nil {
+		return err
+	}
 	k, _, err := registry.CreateKey(registry.CURRENT_USER, classKey, registry.SET_VALUE)
 	if err != nil {
 		return err
@@ -102,6 +106,9 @@ func setIcon(icon string) error {
 }
 
 func (w *System) Restore(previous string) error {
+	if err := w.removeNativeHosts(); err != nil {
+		return err
+	}
 	if previous == "" {
 		for _, key := range []string{classKey + `\DefaultIcon`, commandKey, classKey + `\shell\open`, classKey + `\shell`, classKey} {
 			if err := registry.DeleteKey(registry.CURRENT_USER, key); err != nil && !errors.Is(err, registry.ErrNotExist) {
