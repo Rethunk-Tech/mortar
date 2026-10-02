@@ -33,3 +33,18 @@ func TestDismissHidesModForThatSaveOnly(t *testing.T) {
 		t.Fatalf("dismissed twice: %v", d["Farm_1"])
 	}
 }
+
+func TestLastGapIsTheNewestSaveOnly(t *testing.T) {
+	older := Fit{Folder: "Old_1", Played: 1, Missing: []Lack{{UniqueID: "a.mod"}}}
+	newer := Fit{Folder: "New_2", Played: 2}
+	if _, ok := lastGap([]Fit{older, newer}); ok {
+		t.Fatal("an older save's gap must not warn when the newest save has everything")
+	}
+	newer.Missing = []Lack{{UniqueID: "b.mod"}}
+	if fit, ok := lastGap([]Fit{older, newer}); !ok || fit.Folder != "New_2" {
+		t.Fatalf("got %+v %v", fit, ok)
+	}
+	if _, ok := lastGap(nil); ok {
+		t.Fatal("no saves, no warning")
+	}
+}

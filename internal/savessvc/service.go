@@ -171,6 +171,31 @@ func (s *Service) describe(ctx context.Context, ids map[string]bool) map[string]
 	return out
 }
 
+// LastSaveGap is the most recently written save when it uses mods the profile lacks or has switched off, the save
+// the game most likely loads next; ok is false when that save has everything or there are no saves.
+func (s *Service) LastSaveGap(ctx context.Context, game, profileID string) (fit Fit, ok bool, err error) {
+	fits, err := s.Saves(ctx, game, profileID)
+	if err != nil {
+		return Fit{}, false, err
+	}
+	fit, ok = lastGap(fits)
+	return fit, ok, nil
+}
+
+// lastGap is the most recently written save and whether it lacks mods.
+func lastGap(fits []Fit) (Fit, bool) {
+	if len(fits) == 0 {
+		return Fit{}, false
+	}
+	last := fits[0]
+	for _, f := range fits[1:] {
+		if f.Played > last.Played {
+			last = f
+		}
+	}
+	return last, len(last.Missing) > 0
+}
+
 // Dismiss stops warning about uniqueID for the save folder.
 func (s *Service) Dismiss(saveFolder, uniqueID string) error {
 	if saveFolder == "" || uniqueID == "" {

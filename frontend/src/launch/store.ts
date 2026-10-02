@@ -15,10 +15,12 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import type { Broken } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { UpdateWarning } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
+import type { Fit } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
+import { LastSaveGap } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { useConsole } from '../console/store.ts'
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
-import { useNav } from '../nav/store.ts'
+import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -73,9 +75,22 @@ interface UpdateWarn {
   broken: Broken[]
 }
 
+// SaveWarn is the newest save when it uses mods the profile lacks or has switched off.
+interface SaveWarn {
+  game: string
+  profile: string
+  direct: boolean
+  save: Fit
+}
+
 async function startWithWarning(opts: {
   get: () => { starting: boolean }
-  set: (p: { starting?: boolean; startingProfile?: string; updateWarn?: UpdateWarn | null }) => void
+  set: (p: {
+    starting?: boolean
+    startingProfile?: string
+    updateWarn?: UpdateWarn | null
+    saveWarn?: SaveWarn | null
+  }) => void
   game: string
   profile: string
   direct: boolean
@@ -105,6 +120,19 @@ async function startWithWarning(opts: {
     opts.set({ starting: false, startingProfile: '' })
     reportError(i18n._(msg`Could not check the game version`))(e)
     return
+  }
+  try {
+    const [save, gap] = await LastSaveGap(opts.game, opts.profile)
+    if (gap) {
+      opts.set({
+        starting: false,
+        startingProfile: '',
+        saveWarn: { game: opts.game, profile: opts.profile, direct: opts.direct, save },
+      })
+      return
+    }
+  } catch {
+    // An unreadable save never blocks Play; the Saves tab shows the same check.
   }
   try {
     await Start(opts.game, opts.profile, opts.direct)
@@ -138,6 +166,7 @@ export const useLaunch = create<{
   failure: Failure | null
   askDirect: { game: string; profile: string } | null
   updateWarn: UpdateWarn | null
+  saveWarn: SaveWarn | null
   stopping: boolean
   // Play was pressed and no launch:state has answered yet, which is when SMAPI installs first.
   starting: boolean
@@ -153,6 +182,8 @@ export const useLaunch = create<{
   dismissCrash: () => void
   setCrash: (crash: Crash) => void
   dismissUpdateWarn: () => void
+  dismissSaveWarn: () => void
+  openSaves: () => void
   answerDirect: (agreed: boolean) => Promise<void>
   playAnyway: () => Promise<void>
   openProblems: () => void
@@ -163,6 +194,7 @@ export const useLaunch = create<{
   failure: null,
   askDirect: null,
   updateWarn: null,
+  saveWarn: null,
   stopping: false,
   starting: false,
   startingProfile: '',
@@ -213,9 +245,22 @@ export const useLaunch = create<{
   dismissCrash: () => set({ crash: null }),
   setCrash: (crash) => set({ crash }),
   dismissUpdateWarn: () => set({ updateWarn: null }),
+  dismissSaveWarn: () => set({ saveWarn: null }),
+  openSaves: () => {
+    const warn = get().saveWarn
+    set({ saveWarn: null })
+    if (!warn) {
+      return
+    }
+    if (isGameId(warn.game)) {
+      useNav.getState().openGame(warn.game)
+    }
+    useProfiles.getState().open(warn.profile)
+    useTab.getState().setTab('saves')
+  },
   playAnyway: async () => {
-    const warn = get().updateWarn
-    set({ updateWarn: null })
+    const warn = get().updateWarn ?? get().saveWarn
+    set({ updateWarn: null, saveWarn: null })
     if (!warn) {
       return
     }
