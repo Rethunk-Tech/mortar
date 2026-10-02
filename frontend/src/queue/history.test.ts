@@ -12,6 +12,8 @@ const row = (over: Partial<HistoryEntry>): HistoryEntry => ({
   version: '1.0',
   source: 'nexus',
   profileId: 'p1',
+  game: 'stardew',
+  modId: 0,
   size: 100,
   started: 1,
   finished: 2,

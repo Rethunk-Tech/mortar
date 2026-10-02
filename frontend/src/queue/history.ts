@@ -5,6 +5,8 @@ export interface HistoryEntry {
   version: string
   source: string
   profileId: string
+  game: string
+  modId: number
   size: number
   started: number
   finished: number
@@ -55,6 +57,8 @@ export function loadHistory(): Promise<HistoryEntry[]> {
       version: e.version ?? '',
       source: e.source ?? '',
       profileId: e.profileId ?? '',
+      game: e.game ?? '',
+      modId: e.modId ?? 0,
       size: e.size ?? 0,
       started: e.started ?? 0,
       finished: e.finished ?? 0,

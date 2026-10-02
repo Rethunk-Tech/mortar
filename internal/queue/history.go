@@ -20,6 +20,8 @@ type HistoryEntry struct {
 	Version  string `json:"version"`
 	Source   string `json:"source"`
 	Profile  string `json:"profileId"`
+	Game     string `json:"game"`
+	ModID    int    `json:"modId"`
 	Size     int64  `json:"size"`
 	Started  int64  `json:"started"`
 	Finished int64  `json:"finished"`
@@ -69,7 +71,7 @@ func (s *Service) recordHistory(it *Item, outcome string) {
 	size := it.SizeKB << 10
 	entry := HistoryEntry{
 		Name: name, Version: it.Version, Source: src, Profile: it.Profile,
-		Size: size, Started: started, Finished: now, Outcome: outcome,
+		Game: it.Game, ModID: it.ModID, Size: size, Started: started, Finished: now, Outcome: outcome,
 	}
 	s.pub.Lock()
 	defer s.pub.Unlock()

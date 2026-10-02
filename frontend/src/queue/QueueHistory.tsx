@@ -1,8 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, FormControl, IconButton, MenuItem, Select, Tooltip, Typography } from '@mui/material'
-import { CircleCheck, CircleX, Download, Filter, Trash2, User } from 'lucide-react'
+import { ArrowUpRight, CircleCheck, CircleX, Download, Filter, Trash2, User } from 'lucide-react'
 import { ClearHistory } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { When } from '../i18n/When.tsx'
+import { showInProfile } from '../mods/revealMod.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -124,28 +125,43 @@ export function HistoryList({
           .map((e) => (
             <Box
               key={`${e.started}-${e.finished}-${e.name}-${e.profileId}-${e.outcome}`}
-              sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, py: 0.75 }}
+              sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.75 }}
             >
-              <Typography
-                noWrap={true}
-                title={`${e.name}${e.version ? ` ${e.version}` : ''}`}
-                sx={{ fontSize: 14, fontWeight: 600 }}
+              <Box
+                sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}
               >
-                {e.name}
-                {e.version ? ` ${e.version}` : ''}
-              </Typography>
-              <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
-                <OutcomeText outcome={e.outcome} />
-                {` · ${e.source}`}
-                {e.profileId ? ` · ${nameOf(e.profileId)}` : ''}
-                {e.size > 0 ? ` · ${megabytes(sizeKb(e.size))} MB` : ''}
-                {e.finished ? (
-                  <>
-                    {t` · `}
-                    <When value={e.finished * millisecondsPerSecond} withTime={true} />
-                  </>
-                ) : null}
-              </Typography>
+                <Typography
+                  noWrap={true}
+                  title={`${e.name}${e.version ? ` ${e.version}` : ''}`}
+                  sx={{ fontSize: 14, fontWeight: 600 }}
+                >
+                  {e.name}
+                  {e.version ? ` ${e.version}` : ''}
+                </Typography>
+                <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
+                  <OutcomeText outcome={e.outcome} />
+                  {` · ${e.source}`}
+                  {e.profileId ? ` · ${nameOf(e.profileId)}` : ''}
+                  {e.size > 0 ? ` · ${megabytes(sizeKb(e.size))} MB` : ''}
+                  {e.finished ? (
+                    <>
+                      {t` · `}
+                      <When value={e.finished * millisecondsPerSecond} withTime={true} />
+                    </>
+                  ) : null}
+                </Typography>
+              </Box>
+              {e.game && profiles.some((p) => p.id === e.profileId) ? (
+                <Tooltip title={t`Show in profile`}>
+                  <IconButton
+                    size="small"
+                    aria-label={t`Show ${e.name} in its profile`}
+                    onClick={() => showInProfile(e.game, e.profileId, e.modId, e.name)}
+                  >
+                    <ArrowUpRight size={16} />
+                  </IconButton>
+                </Tooltip>
+              ) : null}
             </Box>
           ))
       )}
