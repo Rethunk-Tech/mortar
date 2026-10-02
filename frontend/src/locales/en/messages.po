@@ -3944,7 +3944,7 @@ msgstr "Remove {dir}"
 msgid "Plain text"
 msgstr "Plain text"
 
-#: src/console/PerformancePanel.tsx:433
+#: src/console/PerformancePanel.tsx:434
 msgid "Report copied"
 msgstr "Report copied"
 
@@ -5932,6 +5932,10 @@ msgstr "Adopt"
 #: src/launch/SaveWarnDialog.tsx:40
 msgid "Not in this profile"
 msgstr "Not in this profile"
+
+#: src/queue/QueueHistory.tsx:144
+msgid " · "
+msgstr " · "
 
 #: src/launchers/LauncherList.tsx:111
 msgid "Mortar looked in:"
