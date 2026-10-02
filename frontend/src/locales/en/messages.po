@@ -20,7 +20,7 @@ msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
 #: src/settings/sections/GameSettings.tsx:136
-#: src/tools/ToolEditorDialog.tsx:90
+#: src/tools/ToolEditorDialog.tsx:93
 msgid "Browse…"
 msgstr "Browse…"
 
@@ -87,7 +87,7 @@ msgstr "Installing SMAPI {latest}"
 msgid "SMAPI {0}"
 msgstr "SMAPI {0}"
 
-#: src/game/Detail.tsx:379
+#: src/game/Detail.tsx:377
 #: src/mods/Sidebar.tsx:129
 msgid "Updated"
 msgstr "Updated"
@@ -213,7 +213,7 @@ msgstr "Add archive"
 msgid "No lines match the filters."
 msgstr "No lines match the filters."
 
-#: src/game/Detail.tsx:530
+#: src/game/Detail.tsx:528
 msgid "Notes"
 msgstr "Notes"
 
@@ -221,7 +221,7 @@ msgstr "Notes"
 msgid "Cosmetic or harmless"
 msgstr "Cosmetic or harmless"
 
-#: src/game/Detail.tsx:155
+#: src/game/Detail.tsx:153
 msgid "Could not add it to Steam"
 msgstr "Could not add it to Steam"
 
@@ -237,7 +237,7 @@ msgstr "Update available: {0} → {1}"
 #. placeholder {0}: badge?.updates ?? 0
 #. placeholder {0}: counts.updates
 #. placeholder {0}: part.n
-#: src/game/Detail.tsx:319
+#: src/game/Detail.tsx:317
 #: src/game/Sidebar.tsx:81
 #: src/profiles/ProfileRow.tsx:181
 msgid "{0, plural, one {# update} other {# updates}}"
@@ -593,7 +593,7 @@ msgid "Some mods could not be checked, so more updates may show up later."
 msgstr "Some mods could not be checked, so more updates may show up later."
 
 #: src/firstrun/SmapiStep.tsx:305
-#: src/game/Detail.tsx:445
+#: src/game/Detail.tsx:443
 #: src/mods/ModsTab.tsx:302
 #: src/notes/NotesTab.tsx:39
 #: src/queue/QueueBody.tsx:307
@@ -653,7 +653,7 @@ msgstr "Page"
 #: src/firstrun/ProfileStep.tsx:119
 #: src/mods/CategoryEditor.tsx:36
 #: src/mods/ListColumnMenu.tsx:48
-#: src/tools/ToolEditorDialog.tsx:78
+#: src/tools/ToolEditorDialog.tsx:81
 msgid "Name"
 msgstr "Name"
 
@@ -845,7 +845,7 @@ msgstr "Or import a shared profile"
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
 
-#: src/tools/ToolEditorDialog.tsx:49
+#: src/tools/ToolEditorDialog.tsx:52
 msgid "Choose executable"
 msgstr "Choose executable"
 
@@ -866,9 +866,9 @@ msgstr "One step in Steam"
 msgid "Skipped"
 msgstr "Skipped"
 
+#: src/game/Detail.tsx:258
 #: src/game/Detail.tsx:260
-#: src/game/Detail.tsx:262
-#: src/profiles/EditProfileDialog.tsx:447
+#: src/profiles/EditProfileDialog.tsx:443
 #: src/profiles/ProfileRow.tsx:126
 msgid "Edit profile"
 msgstr "Edit profile"
@@ -905,8 +905,8 @@ msgstr "Notes travel in a shared .mortar file, not in a share link."
 msgid "Check only enabled mods: {from} → {to}"
 msgstr "Check only enabled mods: {from} → {to}"
 
-#: src/game/Detail.tsx:250
-#: src/game/Detail.tsx:253
+#: src/game/Detail.tsx:248
+#: src/game/Detail.tsx:251
 msgid "Rename profile"
 msgstr "Rename profile"
 
@@ -922,7 +922,7 @@ msgstr "{length} of {limit} characters · fits one Discord message"
 msgid "Install together"
 msgstr "Install together"
 
-#: src/tools/ToolEditorDialog.tsx:75
+#: src/tools/ToolEditorDialog.tsx:78
 msgid "Add tool"
 msgstr "Add tool"
 
@@ -1065,7 +1065,7 @@ msgstr "Desktop"
 msgid "Nothing to remove."
 msgstr "Nothing to remove."
 
-#: src/game/Detail.tsx:468
+#: src/game/Detail.tsx:466
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
 
@@ -1188,7 +1188,7 @@ msgstr "{0}'s farm ({1}) was last played with mods this profile does not have on
 msgid "config.json, changed from the mod's own"
 msgstr "config.json, changed from the mod's own"
 
-#: src/game/Detail.tsx:437
+#: src/game/Detail.tsx:435
 #: src/profiles/store.ts:178
 msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
@@ -1217,7 +1217,7 @@ msgstr "Add {name} to this profile"
 msgid "Past run"
 msgstr "Past run"
 
-#: src/game/Detail.tsx:531
+#: src/game/Detail.tsx:529
 msgid "Console"
 msgstr "Console"
 
@@ -1331,7 +1331,7 @@ msgstr "The SMAPI log has errors."
 msgid "Resize sidebar"
 msgstr "Resize sidebar"
 
-#: src/game/Detail.tsx:380
+#: src/game/Detail.tsx:378
 msgid "Created"
 msgstr "Created"
 
@@ -1397,7 +1397,7 @@ msgstr "Cover image"
 #: src/mods/ModDetail.tsx:190
 #: src/mods/parts.tsx:352
 #: src/profiles/CompareDialog.tsx:59
-#: src/profiles/EditProfileDialog.tsx:471
+#: src/profiles/EditProfileDialog.tsx:467
 #: src/profiles/GameModsDialog.tsx:149
 #: src/profiles/ProfilesPage.tsx:149
 #: src/saves/BackupsDialog.tsx:248
@@ -1408,7 +1408,7 @@ msgstr "Cover image"
 #: src/settings/sections/nxmHandler.tsx:101
 #: src/settings/sections/StreamOverlay.tsx:271
 #: src/share/ImportFooter.tsx:148
-#: src/tools/ToolEditorDialog.tsx:110
+#: src/tools/ToolEditorDialog.tsx:113
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -1656,7 +1656,7 @@ msgstr "Could not add {0}"
 msgid "Edit"
 msgstr "Edit"
 
-#: src/tools/ToolEditorDialog.tsx:102
+#: src/tools/ToolEditorDialog.tsx:105
 msgid "Working directory"
 msgstr "Working directory"
 
@@ -1722,6 +1722,10 @@ msgstr "Launch environment"
 #: src/launch/UpdateWarnDialog.tsx:46
 msgid "None of this profile's mods are marked broken for the new version."
 msgstr "None of this profile's mods are marked broken for the new version."
+
+#: src/tools/ToolEditorDialog.tsx:102
+msgid "One argument per line. Placeholders: {placeholders}."
+msgstr "One argument per line. Placeholders: {placeholders}."
 
 #: src/commandPalette/CommandPalette.tsx:142
 #: src/settings/sections/Shortcuts.tsx:12
@@ -1919,7 +1923,7 @@ msgstr "Could not run the command"
 msgid "About Mortar"
 msgstr "About Mortar"
 
-#: src/game/Detail.tsx:365
+#: src/game/Detail.tsx:363
 msgid "No saves were found"
 msgstr "No saves were found"
 
@@ -1943,7 +1947,7 @@ msgstr "Open mod"
 msgid "Open on GitHub"
 msgstr "Open on GitHub"
 
-#: src/game/Detail.tsx:219
+#: src/game/Detail.tsx:217
 #: src/game/NewProfileDialog.tsx:51
 #: src/profiles/ProfileRow.tsx:273
 msgid "Profile name"
@@ -2167,7 +2171,7 @@ msgstr "{name} settings"
 msgid "Copy all problems"
 msgstr "Copy all problems"
 
-#: src/game/Detail.tsx:466
+#: src/game/Detail.tsx:464
 msgid "No profiles yet"
 msgstr "No profiles yet"
 
@@ -2435,10 +2439,6 @@ msgstr "{0, plural, one {# mod selected} other {# mods selected}}"
 msgid "Restore {0}"
 msgstr "Restore {0}"
 
-#: src/tools/ToolEditorDialog.tsx:99
-msgid "One argument per line. Placeholders: {game}, {mods}, {saves}, {profile}."
-msgstr "One argument per line. Placeholders: {game}, {mods}, {saves}, {profile}."
-
 #: src/mods/problemFixButtons.tsx:445
 msgid "Revert"
 msgstr "Revert"
@@ -2449,8 +2449,8 @@ msgid "Notes for {0}"
 msgstr "Notes for {0}"
 
 #: src/console/ConsoleTab.tsx:106
-#: src/game/Detail.tsx:363
-#: src/game/Detail.tsx:510
+#: src/game/Detail.tsx:361
+#: src/game/Detail.tsx:508
 #: src/mods/ModList.tsx:323
 #: src/settings/sections/General.tsx:69
 #: src/settings/sections/Updates.tsx:187
@@ -2712,7 +2712,7 @@ msgstr "Import"
 msgid "Reset to default columns"
 msgstr "Reset to default columns"
 
-#: src/tools/ToolEditorDialog.tsx:75
+#: src/tools/ToolEditorDialog.tsx:78
 msgid "Edit tool"
 msgstr "Edit tool"
 
@@ -3052,7 +3052,7 @@ msgstr "No other profiles with overrides"
 msgid "Switched off in this profile."
 msgstr "Switched off in this profile."
 
-#: src/tools/ToolEditorDialog.tsx:84
+#: src/tools/ToolEditorDialog.tsx:87
 msgid "Executable"
 msgstr "Executable"
 
@@ -3206,7 +3206,7 @@ msgstr "Reset"
 msgid "Spring"
 msgstr "Spring"
 
-#: src/tools/ToolEditorDialog.tsx:93
+#: src/tools/ToolEditorDialog.tsx:96
 msgid "Arguments"
 msgstr "Arguments"
 
@@ -3299,13 +3299,13 @@ msgstr "{profileName} · {mods, plural, one {# mod} other {# mods}}"
 msgid "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 msgstr "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 
-#: src/game/Detail.tsx:518
+#: src/game/Detail.tsx:516
 #: src/mods/ModList.tsx:465
 #: src/mods/ModsTab.tsx:228
 msgid "Problems"
 msgstr "Problems"
 
-#: src/game/Detail.tsx:475
+#: src/game/Detail.tsx:473
 msgid "Create your first profile"
 msgstr "Create your first profile"
 
@@ -3799,7 +3799,7 @@ msgstr "Save backups"
 msgid "Mortar menu"
 msgstr "Mortar menu"
 
-#: src/game/Detail.tsx:458
+#: src/game/Detail.tsx:456
 #: src/game/Sidebar.tsx:384
 #: src/game/Sidebar.tsx:385
 msgid "Manage profiles"
@@ -3876,8 +3876,8 @@ msgstr "Beach farm"
 
 #: src/mods/CategoryEditor.tsx:149
 #: src/mods/ConfigEditor.tsx:291
-#: src/profiles/EditProfileDialog.tsx:478
-#: src/tools/ToolEditorDialog.tsx:116
+#: src/profiles/EditProfileDialog.tsx:474
+#: src/tools/ToolEditorDialog.tsx:119
 msgid "Save"
 msgstr "Save"
 
@@ -3908,7 +3908,7 @@ msgstr "Keep Mortar in the tray"
 #. placeholder {0}: badge?.problems ?? 0
 #. placeholder {0}: counts.problems
 #. placeholder {0}: part.n
-#: src/game/Detail.tsx:321
+#: src/game/Detail.tsx:319
 #: src/game/Sidebar.tsx:91
 #: src/mods/ProblemBar.tsx:37
 #: src/profiles/ProfileRow.tsx:182
@@ -3980,7 +3980,7 @@ msgstr "Mining skill"
 msgid "Dependency"
 msgstr "Dependency"
 
-#: src/game/Detail.tsx:453
+#: src/game/Detail.tsx:451
 msgid "All profiles are hidden"
 msgstr "All profiles are hidden"
 
@@ -4019,8 +4019,8 @@ msgstr "{0} needs {1}"
 msgid "Markdown"
 msgstr "Markdown"
 
-#: src/game/Detail.tsx:368
-#: src/game/Detail.tsx:375
+#: src/game/Detail.tsx:366
+#: src/game/Detail.tsx:373
 msgid "{fitting} of {total}"
 msgstr "{fitting} of {total}"
 
@@ -4188,9 +4188,9 @@ msgstr "About"
 msgid "Could not roll back {0}"
 msgstr "Could not roll back {0}"
 
-#: src/game/Detail.tsx:367
-#: src/game/Detail.tsx:374
-#: src/game/Detail.tsx:529
+#: src/game/Detail.tsx:365
+#: src/game/Detail.tsx:372
+#: src/game/Detail.tsx:527
 msgid "Saves"
 msgstr "Saves"
 
@@ -4239,7 +4239,7 @@ msgid "Import settings"
 msgstr "Import settings"
 
 #: src/game/HeroCover.tsx:74
-#: src/profiles/EditProfileDialog.tsx:426
+#: src/profiles/EditProfileDialog.tsx:423
 msgid "Could not use that image"
 msgstr "Could not use that image"
 
@@ -4287,7 +4287,7 @@ msgstr "Include {0}"
 msgid "Local-only mods kept: {0}"
 msgstr "Local-only mods kept: {0}"
 
-#: src/game/Detail.tsx:455
+#: src/game/Detail.tsx:453
 msgid "Show one in the sidebar from Manage profiles."
 msgstr "Show one in the sidebar from Manage profiles."
 
@@ -4482,7 +4482,7 @@ msgstr "Gets update checks."
 
 #. placeholder {0}: info.count
 #. placeholder {0}: part.n
-#: src/game/Detail.tsx:316
+#: src/game/Detail.tsx:314
 #: src/share/ShareDialog.tsx:92
 #: src/share/ShareDialog.tsx:186
 msgid "{0, plural, one {# mod} other {# mods}}"
@@ -4765,7 +4765,7 @@ msgstr "Fall"
 msgid "{0} of {1} MB · {2} MB/s"
 msgstr "{0} of {1} MB · {2} MB/s"
 
-#: src/game/Detail.tsx:164
+#: src/game/Detail.tsx:162
 msgid "Add this profile to Steam"
 msgstr "Add this profile to Steam"
 
@@ -4919,7 +4919,7 @@ msgstr "Restore all"
 msgid "This profile is too large for a link."
 msgstr "This profile is too large for a link."
 
-#: src/tools/ToolEditorDialog.tsx:106
+#: src/tools/ToolEditorDialog.tsx:109
 msgid "Leave empty to use the game folder. Same placeholders as arguments."
 msgstr "Leave empty to use the game folder. Same placeholders as arguments."
 
@@ -5038,7 +5038,7 @@ msgid "On"
 msgstr "On"
 
 #: src/commandPalette/CommandPalette.tsx:165
-#: src/game/Detail.tsx:549
+#: src/game/Detail.tsx:547
 #: src/profiles/ProfileRow.tsx:312
 msgid "Share"
 msgstr "Share"
@@ -5112,7 +5112,7 @@ msgstr "Forest farm"
 msgid "Import from {0}…"
 msgstr "Import from {0}…"
 
-#: src/game/Detail.tsx:554
+#: src/game/Detail.tsx:552
 msgid "{gameName} settings"
 msgstr "{gameName} settings"
 

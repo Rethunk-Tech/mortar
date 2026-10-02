@@ -5,6 +5,9 @@ import { PickExecutable } from '../../bindings/github.com/Rethunk-AI/mortar/inte
 import type { Tool } from '../../bindings/github.com/Rethunk-AI/mortar/internal/tools/models.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
+// The tokens Mortar substitutes in a tool's arguments; passed as a value so Lingui does not read them as variables.
+const placeholders = '{game}, {mods}, {saves}, {profile}'
+
 function argsToText(args: string[] | null | undefined): string {
   return (args ?? []).join('\n')
 }
@@ -96,7 +99,7 @@ export function ToolEditorDialog({ open, initial, onClose, onSave }: Props) {
           fullWidth={true}
           multiline={true}
           minRows={2}
-          helperText={t`One argument per line. Placeholders: {game}, {mods}, {saves}, {profile}.`}
+          helperText={t`One argument per line. Placeholders: ${placeholders}.`}
         />
         <TextField
           label={t`Working directory`}
