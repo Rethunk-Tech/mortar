@@ -1,6 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import {
+  Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -9,10 +11,17 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Typography,
 } from '@mui/material'
 import { useState } from 'react'
+import {
+  CancelTransfer,
+  Transfer,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/lan/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { openImport } from '../share/store.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { useIncomingShares } from './incoming.ts'
 
 export function IncomingPrompt() {
@@ -20,7 +29,12 @@ export function IncomingPrompt() {
   const incoming = useIncomingShares((state) => state.items[0])
   const removeFirst = useIncomingShares((state) => state.removeFirst)
   const profiles = useProfiles((state) => state.profiles)
+  const progress = useIncomingShares((state) =>
+    incoming ? state.progress[incoming.id] : undefined,
+  )
   const [choosing, setChoosing] = useState(false)
+  const [transferring, setTransferring] = useState(false)
+  const [transferError, setTransferError] = useState('')
 
   if (!incoming) {
     return null
@@ -32,29 +46,73 @@ export function IncomingPrompt() {
     removeFirst()
   }
   const compare = (profileId: string) => {
+    accept(profileId).catch(reportUnexpected)
+  }
+  const accept = async (profileId = '') => {
     setChoosing(false)
+    setTransferError('')
+    if (incoming.sameAccount) {
+      setTransferring(true)
+      try {
+        await Transfer(incoming.id)
+      } catch (error) {
+        setTransferring(false)
+        setTransferError(errorMessage(error))
+        return
+      }
+      setTransferring(false)
+    }
     removeFirst()
-    openImport({ profileId, link })
+    openImport(profileId ? { profileId, link } : { link })
   }
 
   return (
     <>
-      <Dialog open={!choosing} onClose={decline}>
+      <Dialog open={!(choosing || transferring)} onClose={decline}>
         <DialogTitle>{t`${incoming.sender} sent you ${incoming.profileName} (${incoming.game})`}</DialogTitle>
-        <DialogContent />
+        <DialogContent>
+          <Typography color="text.secondary">
+            {incoming.sameAccount
+              ? t`The mod files can be copied directly from this Mortar.`
+              : t`The files will download from each mod's source.`}
+          </Typography>
+          {transferError ? <Typography color="error">{transferError}</Typography> : null}
+        </DialogContent>
         <DialogActions>
           <Button onClick={decline}>{t`Decline`}</Button>
           <Button onClick={() => setChoosing(true)} disabled={profiles.length === 0}>
             {t`Compare with a profile…`}
           </Button>
+          <Button variant="contained" onClick={() => accept()}>
+            {t`Import as new profile`}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={transferring}>
+        <DialogTitle>{t`Copying mod files`}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <CircularProgress size={24} />
+            <Typography>
+              {progress
+                ? t`${progress.current} of ${progress.total} mods · ${progress.bytes} bytes · ${progress.rate} bytes/s`
+                : t`Preparing transfer…`}
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions>
           <Button
-            variant="contained"
             onClick={() => {
-              removeFirst()
-              openImport({ link })
+              CancelTransfer(incoming.id).catch((error: unknown) => {
+                useToasts.getState().push({
+                  kind: 'error',
+                  title: t`Could not cancel transfer`,
+                  body: errorMessage(error),
+                })
+              })
             }}
           >
-            {t`Import as new profile`}
+            {t`Cancel`}
           </Button>
         </DialogActions>
       </Dialog>

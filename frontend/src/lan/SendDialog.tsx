@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import {
+  Box,
   Button,
   CircularProgress,
   Dialog,
@@ -11,12 +12,14 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  TextField,
   Typography,
 } from '@mui/material'
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import type { Peer } from '../../bindings/github.com/Rethunk-AI/mortar/internal/lan/models.ts'
 import { Peers, Send } from '../../bindings/github.com/Rethunk-AI/mortar/internal/lan/service.ts'
+import { useSettings } from '../settings/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
@@ -29,11 +32,19 @@ interface SendDialogProps {
   onClose: () => void
 }
 
+interface SendTarget {
+  id: string
+  name: string
+}
+
 export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) {
   const { t } = useLingui()
   const [peers, setPeers] = useState<Peer[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [sending, setSending] = useState<string | null>(null)
+  const [manual, setManual] = useState('')
+  const [addressPicker, setAddressPicker] = useState(false)
+  const addresses = useSettings((state) => state.lanAddresses ?? [])
 
   const refresh = useCallback(() => {
     setRefreshing(true)
@@ -52,6 +63,8 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
   useEffect(() => {
     if (!open) {
       setPeers([])
+      setManual('')
+      setAddressPicker(false)
       return
     }
     refresh()
@@ -59,17 +72,17 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
     return () => globalThis.clearInterval(timer)
   }, [open, refresh])
 
-  const send = (peer: Peer) => {
-    setSending(peer.id)
-    Send(peer.id, game, profileId)
+  const send = (target: SendTarget) => {
+    setSending(target.id)
+    Send(target.id, game, profileId)
       .then(() => {
-        useToasts.getState().push({ kind: 'success', title: t`Sent to ${peer.name}` })
+        useToasts.getState().push({ kind: 'success', title: t`Sent to ${target.name}` })
         onClose()
       })
       .catch((error: unknown) => {
         useToasts.getState().push({
           kind: 'error',
-          title: t`Could not send to ${peer.name}`,
+          title: t`Could not send to ${target.name}`,
           body: errorMessage(error),
         })
       })
@@ -97,8 +110,45 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
                 </ListItemButton>
               </ListItem>
             ))}
+            <ListItem disablePadding={true}>
+              <ListItemButton
+                disabled={sending !== null}
+                onClick={() => setAddressPicker((current) => !current)}
+              >
+                <ListItemText primary={t`Send to an address…`} />
+              </ListItemButton>
+            </ListItem>
+            {addresses.map((address) => (
+              <ListItem key={address} disablePadding={true}>
+                <ListItemButton
+                  disabled={sending !== null}
+                  onClick={() => send({ id: address, name: address })}
+                >
+                  <ListItemText primary={address} secondary={t`Recent address`} />
+                </ListItemButton>
+              </ListItem>
+            ))}
           </List>
         )}
+        {addressPicker ? (
+          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+            <TextField
+              autoFocus={true}
+              fullWidth={true}
+              size="small"
+              label={t`Host:port`}
+              value={manual}
+              onChange={(event) => setManual(event.target.value)}
+            />
+            <Button
+              variant="contained"
+              disabled={sending !== null || manual.trim() === ''}
+              onClick={() => send({ id: manual.trim(), name: manual.trim() })}
+            >
+              {t`Send`}
+            </Button>
+          </Box>
+        ) : null}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t`Cancel`}</Button>

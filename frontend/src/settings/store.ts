@@ -32,6 +32,8 @@ const defaults: Settings = {
   askEndorseMods: true,
   keepInTray: false,
   lanSharing: false,
+  lanPort: 47_630,
+  lanAddresses: [],
   includeBetaReleases: false,
   includePrereleaseModVersions: false,
   checkOnlyEnabledMods: false,
