@@ -175,10 +175,12 @@ function ProblemSection({
   title,
   rows,
   collapsible,
+  action,
 }: {
   title: string
   rows: (Row | DismissedRow)[]
   collapsible: boolean
+  action?: { label: string; onClick: () => void }
 }) {
   const { t } = useLingui()
   const [open, setOpen] = useState(!collapsible)
@@ -199,9 +201,21 @@ function ProblemSection({
         >
           {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
           {heading}
+          {action ? (
+            <Button size="small" onClick={action.onClick} sx={{ ml: 1, height: 26 }}>
+              {action.label}
+            </Button>
+          ) : null}
         </ButtonBase>
       ) : (
-        <Box sx={{ mb: 1 }}>{heading}</Box>
+        <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
+          {heading}
+          {action ? (
+            <Button size="small" onClick={action.onClick} sx={{ ml: 1, height: 26 }}>
+              {action.label}
+            </Button>
+          ) : null}
+        </Box>
       )}
       {open ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -283,6 +297,8 @@ export function ProblemsTab() {
 
   const sections = problemSections(result)
   const cleanup = result.cleanup ?? []
+  const removeMany = useMods((s) => s.removeMany)
+  const dismissAsset = useMods((s) => s.dismissAsset)
   const empty =
     sections.filter((section) => section.id !== 'dismissed').length === 0 &&
     cleanup.length === 0 &&
@@ -316,13 +332,43 @@ export function ProblemsTab() {
           title={sectionTitle(section.id)}
           rows={section.rows}
           collapsible={section.id === 'cosmetic' || section.id === 'dismissed'}
+          {...(section.id === 'cosmetic'
+            ? {
+                action: {
+                  label: t`Dismiss all`,
+                  onClick: () => {
+                    for (const row of section.rows) {
+                      if (!isDismissedRow(row) && row.kind === 'asset') {
+                        dismissAsset(row.asset).catch(reportUnexpected)
+                      }
+                    }
+                  },
+                },
+              }
+            : {})}
         />
       ))}
       {cleanup.length === 0 ? null : (
         <Box>
-          <Typography sx={{ mb: 1, fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
-            {t`Cleanup`}
-          </Typography>
+          <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
+            <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
+              {t`Cleanup`}
+            </Typography>
+            <Button
+              size="small"
+              sx={{ ml: 1, height: 26 }}
+              onClick={() => {
+                if (window.confirm(t`Remove all ${cleanup.length} mods from this profile?`)) {
+                  const mods = cleanup
+                    .map((item) => useMods.getState().mods.find((mod) => mod.key === item.key))
+                    .filter((mod): mod is NonNullable<typeof mod> => mod !== undefined)
+                  removeMany(mods).catch(reportUnexpected)
+                }
+              }}
+            >
+              {t`Remove all`}
+            </Button>
+          </Box>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {cleanup.map((item) => (
               <CleanupRow key={item.key} cleanup={item} />
