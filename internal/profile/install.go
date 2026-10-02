@@ -152,7 +152,8 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 	if err := s.unlocked(game, id); err != nil {
 		return Profile{}, false, false, err
 	}
-	if ask, need, err := s.fomodAsk(game, id, key, source, "", source.fomodMap()); err != nil {
+	source, ask, need, err := s.installAsk(game, id, key, source)
+	if err != nil {
 		return Profile{}, false, false, err
 	} else if need {
 		return Profile{}, false, false, &NeedChoicesError{Ask: ask}
