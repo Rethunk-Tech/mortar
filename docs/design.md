@@ -56,5 +56,7 @@ Not in the first release; re-weigh only when asked:
 - An asset conflict map: which mods edit which game assets (Content Patcher targets, replaced files) with load order and priority, built on the Content Patcher parser.
 - Game Select profile cards: each game row lists its profiles with problem and update counts, last played and a Play button.
 - Needs Nexus's approval through app registration first (below), since both start downloads outside Nexus's own Mod Manager Download button: an "Add to Mortar" button on Nexus listing tiles, and importing a Nexus collection as a profile.
+- "What changed since the last run": before Play and on the profile page, the mod changes since the profile's last run from the history log, each linked to its history entry.
+- Profile templates: a new profile started from a bundle plus game settings and launch options.
 - Per-profile save isolation.
 - Registering Mortar with Nexus (SSO slug; ask then about OAuth, which Vortex uses via `nxm://oauth/callback`, and Collections), and a mode for users without an API key: an `nxm://` link cannot become a download without API authentication (HTTP 401 without a key, measured), so that mode would pick up manual downloads from the Downloads folder by their manifests, with confirmation.
