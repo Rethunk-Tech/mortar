@@ -424,6 +424,10 @@ export function ModSidebar({ profile }: { profile: Profile }) {
       </Drawer>
     )
   }
+  // The details column only takes room while a mod is selected; the list gets the full width otherwise.
+  if (!selected) {
+    return null
+  }
   return (
     <Box
       aria-label={t`Selected mod`}
@@ -435,13 +439,7 @@ export function ModSidebar({ profile }: { profile: Profile }) {
         borderLeft: '1px solid rgba(255,255,255,0.1)',
       }}
     >
-      {selected ? (
-        <Inspector mod={selected} profile={profile} />
-      ) : (
-        <Typography sx={{ p: 1.75, fontSize: 13, color: 'text.secondary' }}>
-          {t`Select a mod to see its details.`}
-        </Typography>
-      )}
+      <Inspector mod={selected} profile={profile} />
     </Box>
   )
 }
