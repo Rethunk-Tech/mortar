@@ -205,7 +205,8 @@ func TestDecodeMapCacheUsesFileStamp(t *testing.T) {
 	entries := 0
 	prefix := path + "\x00"
 	mapCache.Range(func(key, _ any) bool {
-		if strings.HasPrefix(key.(string), prefix) {
+		keyString, ok := key.(string)
+		if ok && strings.HasPrefix(keyString, prefix) {
 			entries++
 		}
 		return true

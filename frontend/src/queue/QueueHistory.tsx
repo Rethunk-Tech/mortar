@@ -1,7 +1,32 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, FormControl, IconButton, MenuItem, Select, Tooltip, Typography } from '@mui/material'
-import { ArrowUpRight, CircleCheck, CircleX, Download, Filter, Trash2, User } from 'lucide-react'
-import { ClearHistory } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  FormControl,
+  IconButton,
+  MenuItem,
+  Select,
+  Tooltip,
+  Typography,
+} from '@mui/material'
+import {
+  ArrowUpRight,
+  CircleCheck,
+  CircleX,
+  Download,
+  Filter,
+  RotateCcw,
+  Trash2,
+  User,
+} from 'lucide-react'
+import { useState } from 'react'
+import {
+  ClearHistory,
+  RetryHistory,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { When } from '../i18n/When.tsx'
 import { showInProfile } from '../mods/revealMod.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -26,6 +51,24 @@ const menu = {
   transitionDuration: 0,
   PaperProps: { sx: { bgcolor: 'rgb(34,34,42)' } },
 } as const
+
+function RetryHistoryButton({ entry }: { entry: HistoryEntry }) {
+  const { t } = useLingui()
+  if (entry.outcome !== 'failed' && entry.outcome !== 'skipped') {
+    return null
+  }
+  return (
+    <Tooltip title={t`Download again`}>
+      <IconButton
+        size="small"
+        aria-label={t`Download again`}
+        onClick={() => RetryHistory(entry).catch(reportUnexpected)}
+      >
+        <RotateCcw size={16} />
+      </IconButton>
+    </Tooltip>
+  )
+}
 
 function OutcomeText({ outcome }: { outcome: string }) {
   const { t } = useLingui()
@@ -55,6 +98,7 @@ export function HistoryList({
   onCleared: () => void
 }) {
   const { t } = useLingui()
+  const [confirmClear, setConfirmClear] = useState(false)
   const profiles = useProfiles((s) => s.profiles)
   const nameOf = (id: string) => profiles.find((p) => p.id === id)?.name || id
   const rows = filterHistory(entries, filters)
@@ -106,13 +150,32 @@ export function HistoryList({
           <Tooltip title={t`Clear history`}>
             <IconButton
               aria-label={t`Clear history`}
-              onClick={() => ClearHistory().then(onCleared).catch(reportUnexpected)}
+              onClick={() => setConfirmClear(true)}
               sx={{ ml: 'auto' }}
             >
               <Trash2 size={16} />
             </IconButton>
           </Tooltip>
         ) : null}
+        <Dialog open={confirmClear} onClose={() => setConfirmClear(false)}>
+          <DialogTitle>{t`Clear download history?`}</DialogTitle>
+          <DialogActions>
+            <Button onClick={() => setConfirmClear(false)}>{t`Cancel`}</Button>
+            <Button
+              color="error"
+              onClick={() =>
+                ClearHistory()
+                  .then(() => {
+                    setConfirmClear(false)
+                    onCleared()
+                  })
+                  .catch(reportUnexpected)
+              }
+            >
+              {t`Clear history`}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
       {rows.length === 0 ? (
         <EmptyState compact={true} icon={<Download />} title={t`No downloads in history.`}>
@@ -150,6 +213,11 @@ export function HistoryList({
                     </>
                   ) : null}
                 </Typography>
+                {e.outcome === 'failed' && e.error ? (
+                  <Typography noWrap={true} title={e.error} sx={{ fontSize: 12, color: '#ffc4be' }}>
+                    {e.error}
+                  </Typography>
+                ) : null}
               </Box>
               {e.game && profiles.some((p) => p.id === e.profileId) ? (
                 <Tooltip title={t`Show in profile`}>
@@ -162,6 +230,7 @@ export function HistoryList({
                   </IconButton>
                 </Tooltip>
               ) : null}
+              <RetryHistoryButton entry={e} />
             </Box>
           ))
       )}

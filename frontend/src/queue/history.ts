@@ -7,10 +7,17 @@ export interface HistoryEntry {
   profileId: string
   game: string
   modId: number
+  fileId: number
+  kind: string
+  repo?: string
+  tag?: string
+  asset?: string
+  latest?: boolean
   size: number
   started: number
   finished: number
   outcome: string
+  error?: string
 }
 
 export interface HistoryFilters {
@@ -59,6 +66,12 @@ export function loadHistory(): Promise<HistoryEntry[]> {
       profileId: e.profileId ?? '',
       game: e.game ?? '',
       modId: e.modId ?? 0,
+      fileId: e.fileId ?? 0,
+      kind: e.kind ?? 'install',
+      repo: e.repo ?? '',
+      tag: e.tag ?? '',
+      asset: e.asset ?? '',
+      latest: e.latest ?? false,
       size: e.size ?? 0,
       started: e.started ?? 0,
       finished: e.finished ?? 0,

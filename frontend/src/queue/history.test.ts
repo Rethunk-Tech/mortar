@@ -14,6 +14,8 @@ const row = (over: Partial<HistoryEntry>): HistoryEntry => ({
   profileId: 'p1',
   game: 'stardew',
   modId: 0,
+  fileId: 0,
+  kind: 'install',
   size: 100,
   started: 1,
   finished: 2,

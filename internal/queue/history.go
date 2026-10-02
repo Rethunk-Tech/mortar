@@ -22,10 +22,17 @@ type HistoryEntry struct {
 	Profile  string `json:"profileId"`
 	Game     string `json:"game"`
 	ModID    int    `json:"modId"`
+	FileID   int    `json:"fileId"`
+	Kind     string `json:"kind"`
+	Repo     string `json:"repo,omitempty"`
+	Tag      string `json:"tag,omitempty"`
+	Asset    string `json:"asset,omitempty"`
+	Latest   bool   `json:"latest,omitempty"`
 	Size     int64  `json:"size"`
 	Started  int64  `json:"started"`
 	Finished int64  `json:"finished"`
 	Outcome  string `json:"outcome"`
+	Error    string `json:"error,omitempty"`
 }
 
 func (s *Service) historyPath() string {
@@ -71,7 +78,8 @@ func (s *Service) recordHistory(it *Item, outcome string) {
 	size := it.SizeKB << 10
 	entry := HistoryEntry{
 		Name: name, Version: it.Version, Source: src, Profile: it.Profile,
-		Game: it.Game, ModID: it.ModID, Size: size, Started: started, Finished: now, Outcome: outcome,
+		Game: it.Game, ModID: it.ModID, FileID: it.FileID, Kind: it.Kind, Repo: it.Repo, Tag: it.Tag, Asset: it.Asset,
+		Latest: it.Latest, Size: size, Started: started, Finished: now, Outcome: outcome, Error: it.Error,
 	}
 	s.pub.Lock()
 	defer s.pub.Unlock()
@@ -98,4 +106,12 @@ func (s *Service) ClearHistory() {
 	s.pub.Lock()
 	defer s.pub.Unlock()
 	s.writeHistory(nil)
+}
+
+// RetryHistory re-enqueues the request represented by a failed or skipped history entry.
+func (s *Service) RetryHistory(entry HistoryEntry) ([]Item, error) {
+	return s.Add([]Request{{
+		Kind: entry.Kind, Game: entry.Game, Profile: entry.Profile, ModID: entry.ModID, FileID: entry.FileID,
+		Name: entry.Name, Version: entry.Version, Repo: entry.Repo, Tag: entry.Tag, Asset: entry.Asset, Latest: entry.Latest,
+	}})
 }
