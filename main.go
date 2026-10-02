@@ -23,6 +23,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/github"
+	"github.com/Rethunk-AI/mortar/internal/lan"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/loadersvc"
 	"github.com/Rethunk-AI/mortar/internal/meta"
@@ -81,6 +82,7 @@ func registerEvents() {
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
 	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
 	application.RegisterEvent[sharesvc.Arrival](sharesvc.ArrivedEvent)
+	application.RegisterEvent[lan.Arrival](lan.ArrivedEvent)
 	application.RegisterEvent[launchsvc.NoticeClick](launchsvc.NoticeClickEvent)
 	application.RegisterEvent[updatesvc.Release](updatesvc.StagedEvent)
 }
@@ -113,6 +115,7 @@ func run() error {
 		store    *settings.Store
 		nxmSvc   *nxmsvc.Service
 		shareSvc *sharesvc.Service
+		lanSvc   *lan.Service
 		window   *application.WebviewWindow
 		// showWindow brings Mortar's window up, building a new one when closing to the tray removed it.
 		showWindow func()
@@ -175,6 +178,9 @@ func run() error {
 			),
 		},
 		OnShutdown: func() {
+			if lanSvc != nil {
+				lanSvc.Shutdown()
+			}
 			_ = updates.ApplyOnQuit(context.Background())
 		},
 		SingleInstance: &application.SingleInstanceOptions{
@@ -414,6 +420,10 @@ func run() error {
 		Dir:      dataDir,
 		Emit:     emit,
 	})
+	lanSvc = lan.NewService(lan.Deps{Shares: shareSvc, Version: version, Emit: emit})
+	if err := lanSvc.SetEnabled(store.Get().LanSharing); err != nil {
+		log.Printf("LAN sharing: %v", err)
+	}
 	// Queue changes reach shareSvc, so links are routed only once both exist.
 	nxmSvc.Receive(os.Args[1:])
 	plays.Receive(os.Args[1:])
@@ -437,7 +447,7 @@ func run() error {
 		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
 		application.NewService(bundlesSvc),
 		application.NewService(savesSvc), application.NewService(plays), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
-		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc),
+		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc), application.NewService(lanSvc),
 		application.NewService(supportSvc), application.NewService(updates), application.NewService(bisectSvc),
 		application.NewService(dataSvc), application.NewService(toolsSvc),
 	} {
@@ -656,6 +666,9 @@ func run() error {
 	syncTray()
 	app.Event.On(settings.ChangedEvent, func(*application.CustomEvent) {
 		syncTray()
+		if err := lanSvc.SetEnabled(store.Get().LanSharing); err != nil {
+			log.Printf("LAN sharing: %v", err)
+		}
 	})
 
 	closeReady()

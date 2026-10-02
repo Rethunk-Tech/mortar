@@ -96,6 +96,8 @@ type Settings struct {
 	TellWhenSmapiOut *bool `json:"tellWhenSmapiOut"`
 	// KeepInTray keeps Mortar in the system tray when the window is closed.
 	KeepInTray bool `json:"keepInTray"`
+	// LanSharing allows Mortar to discover nearby Mortar users and send or receive profile links.
+	LanSharing bool `json:"lanSharing"`
 	// IncludeBetaReleases offers Mortar prereleases from GitHub when checking for updates.
 	IncludeBetaReleases bool `json:"includeBetaReleases"`
 	// IncludePrereleaseModVersions offers mod updates whose version has a semver prerelease tag. Default off.
@@ -130,6 +132,7 @@ func Defaults() Settings {
 		Loaders: map[string]string{}, Dismissed: map[string][]string{}, NexusSeenDownloadServers: []string{}, BackupsKept: backup.DefaultKeep,
 		ListColumns: slices.Clone(defaultListColumns), ListSortColumn: defaultListSortColumn, ListSortDir: defaultListSortDir, ListGroupBy: defaultListGroupBy,
 		CheckModUpdatesOnStart: on(), TellWhenSmapiOut: on(), EnableModsWhenInstalled: on(), AskEndorseMods: on(),
+		LanSharing:  false,
 		OverlayPort: DefaultOverlayPort,
 	}
 }

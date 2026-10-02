@@ -16,6 +16,9 @@ func TestToggleDefaultsOn(t *testing.T) {
 	if d.EnableModsWhenInstalled == nil || !*d.EnableModsWhenInstalled {
 		t.Fatal("enableModsWhenInstalled default is on")
 	}
+	if d.LanSharing {
+		t.Fatal("lanSharing default is off")
+	}
 }
 
 func TestOmittedTogglesNormalizeOn(t *testing.T) {

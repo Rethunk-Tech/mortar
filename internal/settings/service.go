@@ -59,6 +59,11 @@ func (s *Service) SetKeepInTray(on bool) error {
 	return s.set(func(v *Settings) { v.KeepInTray = on })
 }
 
+// SetLanSharing sets whether nearby Mortar users may discover this installation and exchange profile links.
+func (s *Service) SetLanSharing(on bool) error {
+	return s.set(func(v *Settings) { v.LanSharing = on })
+}
+
 // SetIncludeBetaReleases sets whether Mortar update checks include GitHub prereleases.
 func (s *Service) SetIncludeBetaReleases(on bool) error {
 	return s.set(func(v *Settings) { v.IncludeBetaReleases = on })
