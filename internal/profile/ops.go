@@ -101,6 +101,9 @@ func isDisabled(e Entry, m EntryMod) bool { return hasID(e.Disabled, m.UniqueID)
 // materialize prepares a fresh copy of an entry in tmp: disabled nested mods get their dot names.
 // It returns the folder name the entry belongs under in mods/.
 func materialize(tmp string, e Entry) (string, error) {
+	if err := os.Remove(filepath.Join(tmp, ".complete")); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return "", err
+	}
 	final := e.Key
 	for _, m := range e.Mods {
 		if !isDisabled(e, m) {

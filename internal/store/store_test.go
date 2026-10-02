@@ -149,6 +149,61 @@ func TestAddDir(t *testing.T) {
 	}
 }
 
+func TestIncompleteItemIsReinstalled(t *testing.T) {
+	s := newStore(t)
+	first := t.TempDir()
+	if err := fsx.WriteFile(filepath.Join(first, "mod.dll"), []byte("old"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.AddDir("stardew", "local-item", first); err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(s.root, "stardew", "local-item")
+	if err := os.Remove(filepath.Join(dir, completeMarker)); err != nil {
+		t.Fatal(err)
+	}
+	second := t.TempDir()
+	if err := fsx.WriteFile(filepath.Join(second, "mod.dll"), []byte("new"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := s.AddDir("stardew", "local-item", second); err != nil {
+		t.Fatal(err)
+	}
+	got, err := fsx.ReadFile(filepath.Join(dir, "mod.dll"))
+	if err != nil || string(got) != "new" {
+		t.Fatalf("reinstalled item = %q, %v", got, err)
+	}
+	if !completeItem(dir) {
+		t.Fatal("reinstalled item has no completion marker")
+	}
+}
+
+func TestLegacyItemsAreMarkedCompleteOnce(t *testing.T) {
+	s := newStore(t)
+	dir := filepath.Join(s.root, "stardew", "legacy")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(filepath.Join(dir, "mod.dll"), []byte("old"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := s.Path("stardew", "legacy"); err != nil {
+		t.Fatal(err)
+	}
+	if !completeItem(dir) {
+		t.Fatal("legacy item was not marked complete")
+	}
+	idx, err := s.loadIndex()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if idx[indexMetadata][completeMarkerVersion].IsZero() {
+		t.Fatalf("migration flag missing: %v", idx)
+	}
+}
+
 func TestAddDirVerifiedChecksLocalKey(t *testing.T) {
 	s := newStore(t)
 	src := t.TempDir()

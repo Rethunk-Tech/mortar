@@ -30,6 +30,12 @@ import (
 // Unused items are deleted this long after their last use.
 const retention = 30 * 24 * time.Hour
 
+const (
+	completeMarker        = ".complete"
+	indexMetadata         = "__mortar"
+	completeMarkerVersion = "complete-marker-v1"
+)
+
 const tempPrefix = ".tmp-"
 
 var keyPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9.-]*$`)
@@ -120,6 +126,11 @@ func (s *Store) itemDir(id, key string) (string, error) {
 // Path returns the folder to copy into a profile: the item, or the stored content
 // root when that relative path still exists inside the item.
 func (s *Store) Path(game, key string) (string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err := s.migrateCompleteMarkers(); err != nil {
+		return "", err
+	}
 	dir, err := s.folder(game, key)
 	if err != nil {
 		return "", err
@@ -143,7 +154,24 @@ func (s *Store) folder(game, key string) (string, error) {
 		}
 		return "", err
 	}
+	if !completeItem(dir) {
+		return "", &Error{Game: game, Key: key, Err: ErrNotFound}
+	}
 	return dir, nil
+}
+
+func (s *Store) prepareItem(game, key string) (bool, error) {
+	dir, _ := s.itemDir(game, key)
+	if completeItem(dir) {
+		return true, nil
+	}
+	if !exists(dir) {
+		return false, nil
+	}
+	if err := os.RemoveAll(dir); err != nil {
+		return false, &Error{Game: game, Key: key, Err: err}
+	}
+	return false, nil
 }
 
 // AddArchive extracts the archive into the store under its local key, or
@@ -167,7 +195,12 @@ func (s *Store) AddArchiveKey(game, key, archivePath string) error {
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if dir, _ := s.itemDir(game, key); exists(dir) {
+	if err := s.migrateCompleteMarkers(); err != nil {
+		return err
+	}
+	if ready, err := s.prepareItem(game, key); err != nil {
+		return err
+	} else if ready {
 		return s.touch(game, key)
 	}
 	return s.install(game, key, func(tmp string) error {
@@ -199,7 +232,12 @@ func (s *Store) AddDir(game, key, srcDir string) error {
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if dir, _ := s.itemDir(game, key); exists(dir) {
+	if err := s.migrateCompleteMarkers(); err != nil {
+		return err
+	}
+	if ready, err := s.prepareItem(game, key); err != nil {
+		return err
+	} else if ready {
 		return s.touch(game, key)
 	}
 	return s.install(game, key, func(tmp string) error { return datadir.CopyTree(srcDir, tmp) }, func() int64 { return dirSize(srcDir) })
@@ -238,7 +276,22 @@ func (s *Store) install(game, key string, fill func(tmp string) error, need func
 	}()
 	if err = fill(tmp); err == nil {
 		stripJunk(tmp)
+		marker := filepath.Join(tmp, completeMarker)
+		if removeErr := os.Remove(marker); removeErr != nil && !errors.Is(removeErr, fs.ErrNotExist) {
+			err = removeErr
+		}
+	}
+	if err == nil {
+		err = syncTree(tmp)
+	}
+	if err == nil {
+		err = writeCompleteMarker(tmp)
+	}
+	if err == nil {
 		err = os.Rename(tmp, final)
+	}
+	if err == nil {
+		err = syncPath(gdir)
 	}
 	if err != nil {
 		if diskFull(err) {
@@ -249,13 +302,72 @@ func (s *Store) install(game, key string, fill func(tmp string) error, need func
 	return s.touch(game, key)
 }
 
+func completeItem(dir string) bool {
+	info, err := os.Lstat(dir)
+	if err != nil || !info.IsDir() {
+		return false
+	}
+	marker, err := os.Lstat(filepath.Join(dir, completeMarker))
+	return err == nil && marker.Mode().IsRegular()
+}
+
+func writeCompleteMarker(dir string) error {
+	marker := filepath.Join(dir, completeMarker)
+	if err := fsx.WriteFile(marker, nil, 0o600); err != nil {
+		return err
+	}
+	if err := syncPath(marker); err != nil {
+		return err
+	}
+	return syncPath(dir)
+}
+
+func syncTree(root string) error {
+	var dirs []string
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			dirs = append(dirs, path)
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		if info.Mode().IsRegular() {
+			return syncPath(path)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	slices.SortFunc(dirs, func(a, b string) int { return len(b) - len(a) })
+	for _, dir := range dirs {
+		if err := syncPath(dir); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func syncPath(path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	return errors.Join(f.Sync(), f.Close())
+}
+
 // IsDiskFull reports whether err is a write that ran out of space.
 func IsDiskFull(err error) bool { return diskFull(err) }
 
 func diskFull(err error) bool { return errors.Is(err, syscall.ENOSPC) || platformDiskFull(err) }
 
 func exists(p string) bool {
-	_, err := os.Stat(p)
+	_, err := os.Lstat(p)
 	return err == nil
 }
 
@@ -421,6 +533,47 @@ func (s *Store) saveIndex(idx index) error {
 	return datadir.WriteJSON(s.indexPath(), idx)
 }
 
+func (s *Store) migrateCompleteMarkers() error {
+	idx, err := s.loadIndex()
+	if err != nil {
+		return err
+	}
+	if !idx[indexMetadata][completeMarkerVersion].IsZero() {
+		return nil
+	}
+	games, err := os.ReadDir(s.root)
+	if errors.Is(err, fs.ErrNotExist) {
+		games = nil
+	} else if err != nil {
+		return err
+	}
+	for _, g := range games {
+		if !g.IsDir() || !game.Valid(g.Name()) {
+			continue
+		}
+		items, err := os.ReadDir(filepath.Join(s.root, g.Name()))
+		if err != nil {
+			return err
+		}
+		for _, item := range items {
+			if !item.IsDir() || strings.HasPrefix(item.Name(), tempPrefix) || !keyPattern.MatchString(item.Name()) {
+				continue
+			}
+			if completeItem(filepath.Join(s.root, g.Name(), item.Name())) {
+				continue
+			}
+			if err := writeCompleteMarker(filepath.Join(s.root, g.Name(), item.Name())); err != nil {
+				return err
+			}
+		}
+	}
+	if idx[indexMetadata] == nil {
+		idx[indexMetadata] = map[string]time.Time{}
+	}
+	idx[indexMetadata][completeMarkerVersion] = time.Now().UTC()
+	return s.saveIndex(idx)
+}
+
 func (s *Store) touch(game string, keys ...string) error {
 	idx, err := s.loadIndex()
 	if err != nil {
@@ -448,6 +601,9 @@ func (s *Store) Touch(game string, keys ...string) error {
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if err := s.migrateCompleteMarkers(); err != nil {
+		return err
+	}
 	return s.touch(game, keys...)
 }
 
@@ -457,6 +613,9 @@ func (s *Store) Touch(game string, keys ...string) error {
 func (s *Store) Collect(referenced map[string][]string, now time.Time) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if err := s.migrateCompleteMarkers(); err != nil {
+		return err
+	}
 	idx, err := s.loadIndex()
 	if err != nil {
 		return err
@@ -466,6 +625,9 @@ func (s *Store) Collect(referenced map[string][]string, now time.Time) error {
 		return err
 	}
 	next := index{}
+	if meta := idx[indexMetadata]; meta != nil {
+		next[indexMetadata] = meta
+	}
 	var errs []error
 	for _, g := range games {
 		if !g.IsDir() || !game.Valid(g.Name()) {
@@ -519,6 +681,9 @@ type Ref struct {
 func (s *Store) Unreferenced(referenced map[string][]string) ([]Ref, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if err := s.migrateCompleteMarkers(); err != nil {
+		return nil, err
+	}
 	games, err := os.ReadDir(s.root)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return nil, err
@@ -550,6 +715,9 @@ func (s *Store) Unreferenced(referenced map[string][]string) ([]Ref, error) {
 func (s *Store) Remove(refs []Ref) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if err := s.migrateCompleteMarkers(); err != nil {
+		return err
+	}
 	idx, err := s.loadIndex()
 	if err != nil {
 		return err

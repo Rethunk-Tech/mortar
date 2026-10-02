@@ -51,6 +51,9 @@ func resolveRoot(dir, rel string) (string, bool) {
 func (s *Store) SetRoot(game, key, rel string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if err := s.migrateCompleteMarkers(); err != nil {
+		return err
+	}
 	dir, err := s.folder(game, key)
 	if err != nil {
 		return err
@@ -75,6 +78,11 @@ func (s *Store) SetRoot(game, key, rel string) error {
 
 // Root is the stored relative content folder, or empty when none is set or it no longer exists.
 func (s *Store) Root(game, key string) (string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err := s.migrateCompleteMarkers(); err != nil {
+		return "", err
+	}
 	dir, err := s.folder(game, key)
 	if err != nil {
 		return "", err
