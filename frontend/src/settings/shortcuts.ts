@@ -1,3 +1,5 @@
+const tabNumberKey = /^[1-6]$/
+
 export type ShortcutId =
   | 'command-palette'
   | 'filter-mods'
@@ -11,17 +13,40 @@ export type ShortcutId =
   | 'mod-toggle'
   | 'mod-details'
   | 'mod-remove'
+  | 'tab-mods'
+  | 'tab-problems'
+  | 'tab-saves'
+  | 'tab-notes'
+  | 'tab-console'
+  | 'tab-performance'
+  | 'new-profile'
+  | 'duplicate-profile'
+  | 'rename-profile'
+  | 'find-all-mods'
+  | 'import'
+  | 'export-profile'
+  | 'downloads'
+  | 'notifications'
+  | 'previous-profile'
+  | 'next-profile'
+  | 'collapse-sidebar'
+  | 'back'
+  | 'help'
+  | 'vanilla-play'
 
 export interface Shortcut {
   id: ShortcutId
   keys: string
   always: boolean
+  group: 'General' | 'Navigation' | 'Profiles' | 'Mods list' | 'Console'
 }
 
 export interface Chord {
   key: string
   ctrlKey?: boolean
   metaKey?: boolean
+  shiftKey?: boolean
+  altKey?: boolean
 }
 
 export interface TypingTarget {
@@ -31,18 +56,42 @@ export interface TypingTarget {
 
 /** Single table for key handling and Settings › Shortcuts. */
 export const SHORTCUTS: readonly Shortcut[] = [
-  { id: 'command-palette', keys: 'Ctrl+K', always: false },
-  { id: 'filter-mods', keys: 'Ctrl+F', always: false },
-  { id: 'play', keys: 'Ctrl+P', always: false },
-  { id: 'check-updates', keys: 'F5', always: false },
-  { id: 'open-settings', keys: 'Ctrl+,', always: false },
-  { id: 'dismiss', keys: 'Esc', always: true },
-  { id: 'select-all-mods', keys: 'Ctrl+A', always: false },
-  { id: 'mod-up', keys: '↑', always: false },
-  { id: 'mod-down', keys: '↓', always: false },
-  { id: 'mod-toggle', keys: 'Space', always: false },
-  { id: 'mod-details', keys: 'Enter', always: false },
-  { id: 'mod-remove', keys: 'Delete', always: false },
+  { id: 'command-palette', keys: 'Ctrl+K', always: false, group: 'General' },
+  { id: 'filter-mods', keys: 'Ctrl+F', always: false, group: 'Mods list' },
+  { id: 'play', keys: 'Ctrl+P', always: false, group: 'General' },
+  { id: 'check-updates', keys: 'F5', always: false, group: 'General' },
+  { id: 'open-settings', keys: 'Ctrl+,', always: false, group: 'General' },
+  { id: 'dismiss', keys: 'Esc', always: true, group: 'General' },
+  { id: 'select-all-mods', keys: 'Ctrl+A', always: false, group: 'Mods list' },
+  { id: 'mod-up', keys: '↑', always: false, group: 'Mods list' },
+  { id: 'mod-down', keys: '↓', always: false, group: 'Mods list' },
+  { id: 'mod-toggle', keys: 'Space', always: false, group: 'Mods list' },
+  { id: 'mod-details', keys: 'Enter', always: false, group: 'Mods list' },
+  { id: 'mod-remove', keys: 'Delete', always: false, group: 'Mods list' },
+  ...(
+    [
+      ['tab-mods', 'Ctrl+1'],
+      ['tab-problems', 'Ctrl+2'],
+      ['tab-saves', 'Ctrl+3'],
+      ['tab-notes', 'Ctrl+4'],
+      ['tab-console', 'Ctrl+5'],
+      ['tab-performance', 'Ctrl+6'],
+    ] as const
+  ).map(([id, keys]) => ({ id, keys, always: false, group: 'Console' as const })),
+  { id: 'new-profile', keys: 'Ctrl+N', always: false, group: 'Profiles' },
+  { id: 'duplicate-profile', keys: 'Ctrl+D', always: false, group: 'Profiles' },
+  { id: 'rename-profile', keys: 'F2', always: false, group: 'Profiles' },
+  { id: 'find-all-mods', keys: 'Ctrl+Shift+F', always: false, group: 'Mods list' },
+  { id: 'import', keys: 'Ctrl+I', always: false, group: 'General' },
+  { id: 'export-profile', keys: 'Ctrl+E', always: false, group: 'Profiles' },
+  { id: 'downloads', keys: 'Ctrl+J', always: false, group: 'General' },
+  { id: 'notifications', keys: 'Ctrl+Shift+N', always: false, group: 'General' },
+  { id: 'previous-profile', keys: 'Ctrl+PageUp', always: false, group: 'Navigation' },
+  { id: 'next-profile', keys: 'Ctrl+PageDown', always: false, group: 'Navigation' },
+  { id: 'collapse-sidebar', keys: 'Ctrl+B', always: false, group: 'Navigation' },
+  { id: 'back', keys: 'Alt+Left', always: false, group: 'Navigation' },
+  { id: 'help', keys: 'F1', always: false, group: 'General' },
+  { id: 'vanilla-play', keys: 'Ctrl+Shift+P', always: false, group: 'General' },
 ]
 
 export function isTypingTarget(el: TypingTarget | null): boolean {
@@ -80,43 +129,54 @@ export function shortcutAllowed(
 }
 
 export function matchShortcut(e: Chord): ShortcutId | null {
-  const { key, ctrlKey, metaKey } = e
+  const { key, ctrlKey, metaKey, shiftKey, altKey } = e
   const ctrl = Boolean(ctrlKey || metaKey)
   if (key === 'Escape') {
     return 'dismiss'
   }
-  if (ctrl && (key === 'k' || key === 'K')) {
-    return 'command-palette'
+  if (altKey && key === 'ArrowLeft') {
+    return 'back'
   }
-  if (ctrl && (key === 'f' || key === 'F')) {
-    return 'filter-mods'
+  const fixed: Record<string, ShortcutId> = {
+    F1: 'help',
+    F2: 'rename-profile',
+    F5: 'check-updates',
+    ArrowUp: 'mod-up',
+    ArrowDown: 'mod-down',
+    ' ': 'mod-toggle',
+    Enter: 'mod-details',
+    Delete: 'mod-remove',
   }
-  if (ctrl && (key === 'p' || key === 'P')) {
-    return 'play'
+  if (!ctrl) {
+    return fixed[key] ?? null
   }
-  if (key === 'F5') {
-    return 'check-updates'
+  if (shiftKey) {
+    return (
+      ({ f: 'find-all-mods', n: 'notifications', p: 'vanilla-play' } as const)[
+        key.toLowerCase() as 'f' | 'n' | 'p'
+      ] ?? null
+    )
   }
-  if (ctrl && key === ',') {
-    return 'open-settings'
+  if (tabNumberKey.test(key)) {
+    return `tab-${['mods', 'problems', 'saves', 'notes', 'console', 'performance'][Number(key) - 1]}` as ShortcutId
   }
-  if (ctrl && (key === 'a' || key === 'A')) {
-    return 'select-all-mods'
-  }
-  if (key === 'ArrowUp') {
-    return 'mod-up'
-  }
-  if (key === 'ArrowDown') {
-    return 'mod-down'
-  }
-  if (key === ' ') {
-    return 'mod-toggle'
-  }
-  if (key === 'Enter') {
-    return 'mod-details'
-  }
-  if (key === 'Delete') {
-    return 'mod-remove'
-  }
-  return null
+  return (
+    (
+      {
+        k: 'command-palette',
+        f: 'filter-mods',
+        p: 'play',
+        n: 'new-profile',
+        d: 'duplicate-profile',
+        i: 'import',
+        e: 'export-profile',
+        j: 'downloads',
+        b: 'collapse-sidebar',
+        a: 'select-all-mods',
+        ',': 'open-settings',
+        PageUp: 'previous-profile',
+        PageDown: 'next-profile',
+      } as Record<string, ShortcutId>
+    )[key.length === 1 ? key.toLowerCase() : key] ?? null
+  )
 }

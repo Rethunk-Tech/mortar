@@ -22,7 +22,7 @@ export function buildPaletteItems(input: {
   mods: { key: string; uniqueId: string; name: string }[]
   sections: { id: SettingsSection; label: string }[]
   shortcuts: readonly Shortcut[]
-  shortcutLabels: Record<ShortcutId, string>
+  shortcutLabels: Partial<Record<ShortcutId, string>>
   labels: PaletteLabels
 }): PaletteItem[] {
   const { profiles, mods, sections, shortcuts, shortcutLabels, labels } = input
@@ -75,7 +75,7 @@ export function buildPaletteItems(input: {
     items.push({
       id: `shortcut:${row.id}`,
       kind: 'shortcut',
-      label: shortcutLabels[row.id],
+      label: shortcutLabels[row.id] ?? row.keys,
       shortcut: row.keys,
     })
   }

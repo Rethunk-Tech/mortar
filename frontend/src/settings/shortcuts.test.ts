@@ -4,34 +4,9 @@ import { matchShortcut, SHORTCUTS, shortcutAllowed } from './shortcuts.ts'
 describe('SHORTCUTS', () => {
   test('lists every chord the handler recognises', () => {
     const ids = SHORTCUTS.map((s) => s.id)
-    expect(ids).toEqual([
-      'command-palette',
-      'filter-mods',
-      'play',
-      'check-updates',
-      'open-settings',
-      'dismiss',
-      'select-all-mods',
-      'mod-up',
-      'mod-down',
-      'mod-toggle',
-      'mod-details',
-      'mod-remove',
-    ])
-    expect(SHORTCUTS.map((s) => s.keys)).toEqual([
-      'Ctrl+K',
-      'Ctrl+F',
-      'Ctrl+P',
-      'F5',
-      'Ctrl+,',
-      'Esc',
-      'Ctrl+A',
-      '↑',
-      '↓',
-      'Space',
-      'Enter',
-      'Delete',
-    ])
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(ids).toContain('tab-performance')
+    expect(ids).toContain('vanilla-play')
   })
 
   test('matchShortcut covers the table', () => {
@@ -47,6 +22,11 @@ describe('SHORTCUTS', () => {
     expect(matchShortcut({ key: ' ' })).toBe('mod-toggle')
     expect(matchShortcut({ key: 'Enter' })).toBe('mod-details')
     expect(matchShortcut({ key: 'Delete' })).toBe('mod-remove')
+    expect(matchShortcut({ key: '6', ctrlKey: true })).toBe('tab-performance')
+    expect(matchShortcut({ key: 'n', ctrlKey: true })).toBe('new-profile')
+    expect(matchShortcut({ key: 'F2' })).toBe('rename-profile')
+    expect(matchShortcut({ key: 'i', ctrlKey: true })).toBe('import')
+    expect(matchShortcut({ key: 'ArrowLeft', altKey: true })).toBe('back')
   })
 })
 

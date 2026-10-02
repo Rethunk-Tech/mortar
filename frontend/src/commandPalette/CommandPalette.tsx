@@ -130,7 +130,7 @@ function paletteSections(i18n: I18n) {
   ]
 }
 
-function shortcutLabels(i18n: I18n): Record<ShortcutId, string> {
+function shortcutLabels(i18n: I18n): Partial<Record<ShortcutId, string>> {
   return {
     'command-palette': i18n._(msg`Open the command palette`),
     'filter-mods': i18n._(msg`Focus the search`),
