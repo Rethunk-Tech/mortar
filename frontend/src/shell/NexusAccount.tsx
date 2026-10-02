@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Chip } from '@mui/material'
+import { Box, Button, Chip, IconButton, Tooltip } from '@mui/material'
 import { LogIn, LogOut } from 'lucide-react'
 import { SignOut } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
 import { openSettings } from '../nav/store.ts'
@@ -20,8 +20,10 @@ export function NexusAccount({ onNavigate }: { onNavigate: () => void }) {
         borderTop: '1px solid rgba(255,255,255,0.12)',
       }}
     >
-      <Box sx={{ minWidth: 0, flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <Box sx={{ fontSize: 12, color: 'rgba(225,225,230,0.95)' }}>{t`Nexus Mods`}</Box>
+      <Box sx={{ minWidth: 0, flexGrow: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box
+          sx={{ flexShrink: 0, fontSize: 12, color: 'rgba(225,225,230,0.95)' }}
+        >{t`Nexus Mods`}</Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
           <Box sx={{ fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {signedIn ? name : t`Not signed in`}
@@ -36,16 +38,17 @@ export function NexusAccount({ onNavigate }: { onNavigate: () => void }) {
         </Box>
       </Box>
       {signedIn ? (
-        <Button
-          size="small"
-          startIcon={<LogOut size={16} />}
-          onClick={() => {
-            SignOut().catch(reportUnexpected)
-          }}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
-          {t`Sign out`}
-        </Button>
+        <Tooltip title={t`Sign out`}>
+          <IconButton
+            aria-label={t`Sign out`}
+            size="small"
+            onClick={() => {
+              SignOut().catch(reportUnexpected)
+            }}
+          >
+            <LogOut size={16} />
+          </IconButton>
+        </Tooltip>
       ) : (
         <Button
           size="small"

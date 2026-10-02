@@ -24,6 +24,17 @@ import { initTrayNoticeClick } from './tray/noticeClick.ts'
 import { initMortarUpdateBackground } from './updates/background.ts'
 import './theme/fonts.ts'
 
+document.addEventListener('contextmenu', (event) => {
+  const { target } = event
+  const editable =
+    target instanceof Element &&
+    target.closest('input, textarea, [contenteditable="true"]') !== null
+  const selection = globalThis.getSelection()?.toString()
+  if (!(editable || selection)) {
+    event.preventDefault()
+  }
+})
+
 await activateLanguage((await Get()).language)
 initSettings().catch(reportUnexpected)
 initMortarUpdateBackground()

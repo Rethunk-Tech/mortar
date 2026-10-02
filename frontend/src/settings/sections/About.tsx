@@ -55,16 +55,26 @@ export function About() {
         {credits.map((entry) => (
           <Box
             key={entry.name}
-            sx={{ display: 'flex', flexWrap: 'wrap', gap: '6px', mb: '6px', breakInside: 'avoid' }}
+            sx={{ display: 'flex', gap: '6px', mb: '6px', breakInside: 'avoid', minWidth: 0 }}
           >
             <Link
               component="button"
               onClick={() => Browser.OpenURL(entry.url).catch(reportUnexpected)}
-              sx={{ fontSize: 'inherit', verticalAlign: 'baseline' }}
+              title={entry.name}
+              sx={{
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                fontSize: 'inherit',
+                verticalAlign: 'baseline',
+              }}
             >
               {entry.name}
             </Link>
-            <Box component="span">{`· ${entry.licence}`}</Box>
+            <Box component="span" sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
+              {`· ${entry.licence}`}
+            </Box>
           </Box>
         ))}
       </Box>
