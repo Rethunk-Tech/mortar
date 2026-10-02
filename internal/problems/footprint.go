@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"image"
-	"image/color"
 	"image/png"
 	"io"
 	"maps"
@@ -329,11 +328,11 @@ func imageAlpha(img image.Image, x, y int) uint8 {
 	case *image.RGBA:
 		return img.Pix[img.PixOffset(x, y)+3]
 	default:
-		rgba, ok := color.NRGBAModel.Convert(img.At(x, y)).(color.NRGBA)
-		if !ok {
-			return 0
+		_, _, _, alpha := img.At(x, y).RGBA()
+		if alpha > 0 {
+			return 1
 		}
-		return rgba.A
+		return 0
 	}
 }
 

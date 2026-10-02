@@ -147,6 +147,19 @@ func TestOpaqueImageShapeMatchesBruteForceCells(t *testing.T) {
 	}
 }
 
+func TestImageAlphaFallbackKeepsLowOpacity(t *testing.T) {
+	img := lowOpacityImage{}
+	if imageAlpha(img, 0, 0) == 0 {
+		t.Fatal("low nonzero alpha was treated as transparent")
+	}
+}
+
+type lowOpacityImage struct{}
+
+func (lowOpacityImage) ColorModel() color.Model { return color.RGBA64Model }
+func (lowOpacityImage) Bounds() image.Rectangle { return image.Rect(0, 0, 1, 1) }
+func (lowOpacityImage) At(int, int) color.Color { return color.RGBA64{A: 1} }
+
 func TestPlacesMakeEditsExclusive(t *testing.T) {
 	a := edit(t, `{"ToArea":{"X":0,"Y":0,"Width":16,"Height":16},"When":{"LocationName":"EastScarp_Village"}}`, true)
 	b := edit(t, `{"ToArea":{"X":0,"Y":0,"Width":16,"Height":16},"When":{"LocationName |contains=Custom_Umuwi":true}}`, true)
