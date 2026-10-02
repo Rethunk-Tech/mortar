@@ -106,6 +106,7 @@ type Shortcut struct {
 	Exe           string
 	StartDir      string
 	LaunchOptions string
+	Cover         string
 }
 
 // shortcutAppID is the id Steam derives for a non-Steam shortcut, from its quoted exe and name.
@@ -194,5 +195,11 @@ func (s Steam) AddShortcut(sc Shortcut) (bool, error) {
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return false, err
 	}
-	return true, fsx.WriteFile(path, next, 0o600)
+	if err := fsx.WriteFile(path, next, 0o600); err != nil {
+		return false, err
+	}
+	if err := writeGrid(dir, shortcutAppID(quoted(sc.Exe), sc.Name), sc.Cover); err != nil {
+		return true, err
+	}
+	return true, nil
 }

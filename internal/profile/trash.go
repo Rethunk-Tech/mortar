@@ -56,7 +56,15 @@ func (s *Store) Delete(gameID, id string) error {
 		return err
 	}
 	now := time.Now()
-	return os.Chtimes(dst, now, now)
+	if err := os.Chtimes(dst, now, now); err != nil {
+		return err
+	}
+	if s.ShortcutRemoved != nil {
+		if err := s.ShortcutRemoved(gameID, id); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *Store) trashed(gameID string) ([]TrashItem, error) {

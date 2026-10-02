@@ -158,6 +158,10 @@ type Store struct {
 	Bundled func(game string) []Bundle
 	// Created is called after Create has added a profile; nil means nothing.
 	Created func(game string)
+	// ShortcutRenamed updates an existing launcher after a profile is renamed; nil means nothing.
+	ShortcutRenamed func(game, id, profileName, gameName string) error
+	// ShortcutRemoved removes launchers after a profile is deleted; nil means nothing.
+	ShortcutRemoved func(game, id string) error
 	// Running reports whether the game is running this profile; nil means never.
 	Running func(game, id string) bool
 	// BackupsKept returns how many save backups to retain; nil means backup.DefaultKeep.
@@ -410,15 +414,26 @@ func (s *Store) create(game, name string) (Profile, error) {
 }
 
 // Rename changes a profile's name and touches its updated time.
-func (s *Store) Rename(game, id, name string) (Profile, error) {
+func (s *Store) Rename(gameID, id, name string) (Profile, error) {
 	name, err := cleanName(name)
 	if err != nil {
 		return Profile{}, err
 	}
-	return s.update(game, id, func(p *Profile, _ string) error {
+	p, err := s.update(gameID, id, func(p *Profile, _ string) error {
 		p.Name = name
 		return nil
 	})
+	if err != nil || s.ShortcutRenamed == nil {
+		return p, err
+	}
+	gameName := gameID
+	if g := game.Find(gameID); g != nil {
+		gameName = g.Name()
+	}
+	if err := s.ShortcutRenamed(gameID, id, p.Name, gameName); err != nil {
+		return p, err
+	}
+	return p, nil
 }
 
 // MaxNotes caps a profile's notes, in characters.

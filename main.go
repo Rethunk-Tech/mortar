@@ -208,6 +208,27 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	profiles.ShortcutRenamed = shortcut.Renamed
+	profiles.ShortcutRemoved = shortcut.Removed
+	plays.Covers = func(gameID, profileID string) ([]string, error) {
+		covers, err := profiles.Covers(gameID, profileID)
+		if err != nil {
+			return nil, err
+		}
+		if all, err := profiles.List(gameID); err == nil {
+			for _, p := range all {
+				if p.ID != profileID {
+					continue
+				}
+				switch p.Cover {
+				case "cover.png", "cover.jpg", "cover.webp":
+					covers = append([]string{filepath.Join(dataDir, "profiles", gameID, profileID, p.Cover)}, covers...)
+				}
+				break
+			}
+		}
+		return covers, nil
+	}
 	launches := launchsvc.NewService(home, store, profiles)
 	gamesSvc.Running = func(id string) bool {
 		st, err := launches.Status(id)

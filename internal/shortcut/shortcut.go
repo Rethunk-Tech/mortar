@@ -52,6 +52,7 @@ func validID(s string) bool {
 type Service struct {
 	// Emit is nil in tests that do not watch events.
 	Emit    func(name string, data any)
+	Covers  func(game, profile string) ([]string, error)
 	mu      sync.Mutex
 	pending *Request
 }
@@ -95,6 +96,19 @@ func (s *Service) Create(game, gameName, profile, profileName string) (string, e
 // ErrSteamRunning means Steam is open; it rewrites its shortcut list when it exits, which would drop the new entry.
 var ErrSteamRunning = errors.New("close Steam first: it rewrites its game list when it exits")
 
+func firstLocalFile(paths []string) string {
+	for _, path := range paths {
+		if path == "" || strings.Contains(path, "://") {
+			continue
+		}
+		info, err := os.Stat(path)
+		if err == nil && info.Mode().IsRegular() {
+			return path
+		}
+	}
+	return ""
+}
+
 // AddToSteam adds a non-Steam game that plays the profile to the native Steam library, for Big Picture and the
 // Steam Deck's Game Mode. It reports false when the same shortcut is already there.
 func (s *Service) AddToSteam(game, gameName, profile, profileName string) (bool, error) {
@@ -117,10 +131,17 @@ func (s *Service) AddToSteam(game, gameName, profile, profileName string) (bool,
 		return false, err
 	}
 	exe = nxm.Launchable(exe)
+	cover := ""
+	if s.Covers != nil {
+		if paths, err := s.Covers(game, profile); err == nil {
+			cover = firstLocalFile(paths)
+		}
+	}
 	return st.AddShortcut(steam.Shortcut{
 		Name:          profileName + " (" + gameName + ")",
 		Exe:           exe,
 		StartDir:      filepath.Dir(exe),
 		LaunchOptions: Arg(game, profile),
+		Cover:         cover,
 	})
 }

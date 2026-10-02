@@ -60,3 +60,44 @@ func TestCreateWritesADesktopEntryThatPlaysTheProfile(t *testing.T) {
 		}
 	}
 }
+
+func TestRenamedAndRemovedDesktopEntry(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the Windows shortcut goes through the shell")
+	}
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	path, err := create("/opt/Mortar/mortar", Arg("stardew", "p1"), "Main (Stardew Valley)")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := Renamed("stardew", "p1", "Renamed", "Stardew Valley"); err != nil {
+		t.Fatal(err)
+	}
+	root, err := os.OpenRoot(filepath.Dir(path))
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := root.ReadFile(filepath.Base(path))
+	_ = root.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(b), "Name=Renamed (Stardew Valley)\n") {
+		t.Fatalf("renamed entry:\n%s", b)
+	}
+	if err := Removed("stardew", "p1"); err != nil {
+		t.Fatal(err)
+	}
+	root, err = os.OpenRoot(filepath.Dir(path))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = root.ReadFile(filepath.Base(path))
+	_ = root.Close()
+	if !os.IsNotExist(err) {
+		t.Fatalf("removed entry error = %v", err)
+	}
+	if err := Removed("stardew", "p1"); err != nil {
+		t.Fatal(err)
+	}
+}
