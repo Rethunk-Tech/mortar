@@ -8,6 +8,7 @@ import { App } from './App.tsx'
 import { activateLanguage, i18n } from './i18n/index.ts'
 import { IncomingPrompt } from './lan/IncomingPrompt.tsx'
 import { initIncoming } from './lan/incoming.ts'
+import { initQuit } from './quit.ts'
 import { initPlayRequests } from './launch/playRequests.ts'
 import { initLaunch } from './launch/store.ts'
 import { initLoader } from './loader/store.ts'
@@ -49,6 +50,7 @@ initProfilesChanged()
 initPlayRequests()
 initShare().catch(reportUnexpected)
 initIncoming().catch(reportUnexpected)
+initQuit()
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

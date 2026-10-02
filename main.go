@@ -88,6 +88,8 @@ func registerEvents() {
 	application.RegisterEvent[lan.Arrival](lan.ArrivedEvent)
 	application.RegisterEvent[lan.TransferProgress](lan.TransferProgressEvent)
 	application.RegisterEvent[launchsvc.NoticeClick](launchsvc.NoticeClickEvent)
+	application.RegisterEvent[launchsvc.BackupWarning](launchsvc.BackupWarningEvent)
+	application.RegisterEvent[launchsvc.SettingsRestoreWarning](launchsvc.SettingsRestoreWarningEvent)
 	application.RegisterEvent[updatesvc.Release](updatesvc.StagedEvent)
 	application.RegisterEvent[string](quitRequestedEvent)
 }
@@ -491,6 +493,10 @@ func run() error {
 	loaders.App = app
 	profileSvc.App = app
 	launches.App = app
+	if err := launches.RecoverGameSettings(); err != nil {
+		log.Printf("game settings restore: %v", err)
+		app.Event.Emit(launchsvc.SettingsRestoreWarningEvent, launchsvc.SettingsRestoreWarning{Game: "stardew", Error: err.Error()})
+	}
 	loadersvc.EnsureExisting(loaders, "stardew")
 	pick.App = app
 	nexusSvc.App = app
