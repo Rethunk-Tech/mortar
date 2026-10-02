@@ -460,10 +460,11 @@ func (s *Store) recordSnapshot(game, id, kind, label string, count int) error {
 }
 
 func readHistory(dir string) (historyFileData, error) {
-	b, err := fsx.ReadFile(filepath.Join(dir, historyFile))
+	path := filepath.Join(dir, historyFile)
+	b, err := fsx.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return historyFileData{Events: []HistoryEvent{}, Snapshots: map[string][]Entry{}}, nil
+			return emptyHistory(), nil
 		}
 		return historyFileData{}, err
 	}
@@ -471,12 +472,12 @@ func readHistory(dir string) (historyFileData, error) {
 		Snapshots map[string][]Entry `json:"snapshots"`
 	}
 	if err := json.Unmarshal(b, &envelope); err != nil {
-		return historyFileData{}, fmt.Errorf("read history: %w", err)
+		return quarantineHistory(path, err)
 	}
 	if envelope.Snapshots != nil {
 		var data historyFileData
 		if err := json.Unmarshal(b, &data); err != nil {
-			return historyFileData{}, fmt.Errorf("read history: %w", err)
+			return quarantineHistory(path, err)
 		}
 		if data.Events == nil {
 			data.Events = []HistoryEvent{}
@@ -488,9 +489,9 @@ func readHistory(dir string) (historyFileData, error) {
 	}
 	var legacy legacyHistoryFileData
 	if err := json.Unmarshal(b, &legacy); err != nil {
-		return historyFileData{}, fmt.Errorf("read history: %w", err)
+		return quarantineHistory(path, err)
 	}
-	data := historyFileData{Events: []HistoryEvent{}, Snapshots: map[string][]Entry{}}
+	data := emptyHistory()
 	for _, old := range legacy.Events {
 		entries := cloneEntries(old.Entries)
 		id, err := entriesSnapshotID(entries)
@@ -509,6 +510,18 @@ func readHistory(dir string) (historyFileData, error) {
 		return historyFileData{}, err
 	}
 	return data, nil
+}
+
+func emptyHistory() historyFileData {
+	return historyFileData{Events: []HistoryEvent{}, Snapshots: map[string][]Entry{}}
+}
+
+func quarantineHistory(path string, cause error) (historyFileData, error) {
+	corrupt := fmt.Sprintf("%s.corrupt-%d", path, time.Now().UnixNano())
+	if err := os.Rename(path, corrupt); err != nil {
+		return historyFileData{}, errors.Join(fmt.Errorf("read history: %w", cause), fmt.Errorf("quarantine history: %w", err))
+	}
+	return emptyHistory(), nil
 }
 
 func writeHistory(dir string, data historyFileData) error {

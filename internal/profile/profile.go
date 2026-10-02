@@ -503,11 +503,11 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 		key := historyBatchKey(game, id)
 		if batch, ok := s.historyBatches[key]; ok {
 			if err := s.recordHistoryBatch(dir, &batch, p.Entries); err != nil {
-				return Profile{}, err
+				log.Printf("profile %s/%s: record history: %v", game, id, err)
 			}
 			s.historyBatches[key] = batch
 		} else if err := recordHistory(dir, before, p.Entries, kind, label); err != nil {
-			return Profile{}, err
+			log.Printf("profile %s/%s: record history: %v", game, id, err)
 		}
 	}
 	return p, nil

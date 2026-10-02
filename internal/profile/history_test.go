@@ -278,6 +278,64 @@ func TestHistoryMigratesLegacyEntriesInPlace(t *testing.T) {
 	}
 }
 
+func TestCorruptHistoryIsQuarantined(t *testing.T) {
+	s := newStore(t)
+	p, err := s.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, err := s.profileDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(dir, historyFile)
+	if err := fsx.WriteFile(path, []byte("{"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	data, err := readHistory(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data.Events) != 0 || len(data.Snapshots) != 0 {
+		t.Fatalf("empty history = %+v", data)
+	}
+	if _, err := os.Stat(path); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("corrupt history still exists: %v", err)
+	}
+	matches, err := filepath.Glob(path + ".corrupt-*")
+	if err != nil || len(matches) != 1 {
+		t.Fatalf("quarantined history = %v, %v", matches, err)
+	}
+}
+
+func TestProfileUpdateKeepsFilesWhenHistoryFails(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	p, err := e.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, err := e.profileDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(filepath.Join(dir, historyFile), 0o700); err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Entries) != 1 || got.Entries[0].Key != "local-a" {
+		t.Fatalf("profile after history failure = %+v", got)
+	}
+	if _, err := os.Stat(filepath.Join(e.mods(p.ID), "local-a")); err != nil {
+		t.Fatalf("installed entry was rolled back: %v", err)
+	}
+}
+
 func TestHistoryBatchRecordsOneUpdatedSnapshot(t *testing.T) {
 	e := newEnv(t)
 	for _, key := range []string{"a", "b", "c"} {
