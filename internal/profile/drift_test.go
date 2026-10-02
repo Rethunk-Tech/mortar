@@ -219,3 +219,33 @@ func TestSwitchingAModOffIsNotDrift(t *testing.T) {
 		t.Fatalf("after switching a mod off: %#v", got)
 	}
 }
+
+func TestRefreshDependenciesReadsOptionalFromStoreManifest(t *testing.T) {
+	e := newEnv(t)
+	p, err := e.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	zip := buildZip(t, "pack.zip", map[string]string{
+		"A/manifest.json": `{"UniqueID":"X.A","Name":"A","Version":"1.0","Dependencies":[{"UniqueID":"X.Opt","IsRequired":"false"}]}`,
+	})
+	if _, err := e.InstallArchive("stardew", p.ID, zip); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.update("stardew", p.ID, func(p *Profile, _ string) error {
+		p.Entries[0].Mods[0].Optional = nil
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.RefreshDependencies("stardew"); err != nil {
+		t.Fatal(err)
+	}
+	got, err := e.read("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if opt := got.Entries[0].Mods[0].Optional; len(opt) != 1 || opt[0] != "X.Opt" {
+		t.Fatalf("Optional = %v, want [X.Opt]", opt)
+	}
+}

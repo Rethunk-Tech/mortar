@@ -573,6 +573,11 @@ func run() error {
 			if err := items.Collect(keys, now); err != nil {
 				log.Printf("store collect: %v", err)
 			}
+			for g := range keys {
+				if err := profiles.RefreshDependencies(g); err != nil {
+					log.Printf("refresh dependencies: %s: %v", g, err)
+				}
+			}
 		}
 	}()
 	go func() {
