@@ -96,6 +96,25 @@ type Parser struct {
 	hidden bool
 }
 
+func smapiModsLoaded(e Entry) bool {
+	message := strings.ToLower(e.Message)
+	return e.Mod == "SMAPI" && strings.Contains(message, "loaded") && strings.Contains(message, "mod")
+}
+
+func smapiModsLoadedEnd(log string) int {
+	var p Parser
+	offset := 0
+	for line := range strings.Lines(log) {
+		end := offset + len(line)
+		trimmed := strings.TrimRight(line, "\r\n")
+		if e, shown := p.Parse(trimmed); shown && smapiModsLoaded(e) {
+			return end
+		}
+		offset = end
+	}
+	return 0
+}
+
 // Parse returns the entry for one line, and false when the line belongs to a suppressed message. A line that is not
 // a header continues the previous entry; with none yet it stands alone as an INFO line.
 func (p *Parser) Parse(line string) (Entry, bool) {
@@ -115,8 +134,11 @@ func (p *Parser) Parse(line string) (Entry, bool) {
 
 // Buffer keeps the newest MaxLines entries.
 type Buffer struct {
-	mu    sync.Mutex
-	lines []Entry
+	mu         sync.Mutex
+	lines      []Entry
+	head       []Entry
+	tail       []Entry
+	summarized bool
 }
 
 // Add appends e, discarding the oldest entries beyond MaxLines. It compacts only once a quarter over the bound so
@@ -124,7 +146,19 @@ type Buffer struct {
 func (b *Buffer) Add(e Entry) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	if b.summarized {
+		b.tail = append(b.tail, e)
+		b.trimTail()
+		return
+	}
 	b.lines = append(b.lines, e)
+	if smapiModsLoaded(e) {
+		b.head = slices.Clone(b.lines)
+		b.lines = nil
+		b.summarized = true
+		b.trimHead()
+		return
+	}
 	if len(b.lines) > MaxLines+MaxLines/4 {
 		b.lines = slices.Clone(b.lines[len(b.lines)-MaxLines:])
 	}
@@ -134,5 +168,28 @@ func (b *Buffer) Add(e Entry) {
 func (b *Buffer) Lines() []Entry {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	if b.summarized {
+		out := make([]Entry, 0, len(b.head)+len(b.tail)+1)
+		out = append(out, b.head...)
+		if len(b.tail) > 0 {
+			out = append(out, Entry{Level: Info, Mod: "Mortar", Message: omittedStartupLog})
+			out = append(out, b.tail...)
+		}
+		return out
+	}
 	return slices.Clone(b.lines[max(0, len(b.lines)-MaxLines):])
+}
+
+func (b *Buffer) trimHead() {
+	if len(b.head) >= MaxLines {
+		b.head = slices.Clone(b.head[len(b.head)-MaxLines+1:])
+	}
+	b.trimTail()
+}
+
+func (b *Buffer) trimTail() {
+	limit := max(0, MaxLines-len(b.head)-1)
+	if len(b.tail) > limit {
+		b.tail = slices.Clone(b.tail[len(b.tail)-limit:])
+	}
 }

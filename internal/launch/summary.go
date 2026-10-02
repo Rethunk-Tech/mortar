@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+const omittedStartupLog = "[Mortar] Earlier startup log omitted."
+
 // Outcome is how a recorded launch ended.
 type Outcome string
 
@@ -102,6 +104,26 @@ func Summarize(log string) Summary {
 func CapLog(log string, limit int) string {
 	if limit <= 0 || len(log) <= limit {
 		return log
+	}
+	if end := smapiModsLoadedEnd(log); end > 0 && end < len(log) {
+		marker := omittedStartupLog + "\n"
+		if !strings.HasSuffix(log[:end], "\n") {
+			marker = "\n" + marker
+		}
+		if len(log[:end])+len(marker) < limit {
+			tail := tailAtBoundary(log[end:], limit-len(log[:end])-len(marker))
+			out := log[:end] + marker + tail
+			if len(out) <= limit {
+				return out
+			}
+		}
+	}
+	return tailAtBoundary(log, limit)
+}
+
+func tailAtBoundary(log string, limit int) string {
+	if limit <= 0 {
+		return ""
 	}
 	cut := log[len(log)-limit:]
 	if i := strings.IndexByte(cut, '\n'); i >= 0 && i+1 < len(cut) {

@@ -3,6 +3,7 @@ package launch
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -54,5 +55,17 @@ func TestCapLogKeepsTheTailOnALineBoundary(t *testing.T) {
 	}
 	if CapLog("short", 100) != "short" {
 		t.Fatal("short logs are unchanged")
+	}
+}
+
+func TestCapLogKeepsSMAPIStartupAndTail(t *testing.T) {
+	log := "[12:00:00 INFO  SMAPI] SMAPI 4.5.2 with Stardew Valley 1.6.15\n" +
+		"[12:00:01 INFO  SMAPI] Loaded 2 mods\n" +
+		strings.Repeat("old tail line\n", 30) +
+		"newest tail line\n"
+	got := CapLog(log, 240)
+	if !strings.Contains(got, "Loaded 2 mods") || !strings.Contains(got, "newest tail line") ||
+		!strings.Contains(got, omittedStartupLog) {
+		t.Fatalf("startup or tail was lost: %q", got)
 	}
 }

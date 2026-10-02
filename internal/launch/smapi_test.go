@@ -54,6 +54,20 @@ func TestBufferKeepsNewestMaxLines(t *testing.T) {
 	}
 }
 
+func TestBufferKeepsSMAPIStartupAndTail(t *testing.T) {
+	var b Buffer
+	b.Add(Entry{Seq: 1, Mod: "SMAPI", Message: "SMAPI startup"})
+	b.Add(Entry{Seq: 2, Mod: "SMAPI", Message: "Loaded 2 mods"})
+	for i := 3; i <= MaxLines+10; i++ {
+		b.Add(Entry{Seq: int64(i), Mod: "game", Message: "tail"})
+	}
+	lines := b.Lines()
+	if len(lines) != MaxLines || lines[0].Seq != 1 || lines[1].Message != "Loaded 2 mods" ||
+		lines[2].Message != omittedStartupLog || lines[len(lines)-1].Seq != MaxLines+10 {
+		t.Fatalf("startup and tail were not retained: len=%d first=%+v last=%+v", len(lines), lines[:min(3, len(lines))], lines[len(lines)-1])
+	}
+}
+
 func TestParserHidesSuppressedMessageAndItsContinuations(t *testing.T) {
 	var p Parser
 	lines := []struct {
