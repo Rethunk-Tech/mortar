@@ -49,7 +49,7 @@ func newLinux(t *testing.T, current string) (*System, *recorder) {
 	t.Helper()
 	dir := t.TempDir()
 	r := &recorder{current: current, byMime: map[string]string{nxmMime: current}}
-	return &System{exe: "/opt/mortar/mortar", dataHome: filepath.Join(dir, "data"), configHome: filepath.Join(dir, "config"), run: r.run}, r
+	return &System{exe: "/opt/mortar/mortar", home: filepath.Join(dir, "home"), dataHome: filepath.Join(dir, "data"), configHome: filepath.Join(dir, "config"), run: r.run}, r
 }
 
 func TestRegisterThenRestorePreviousHandler(t *testing.T) {

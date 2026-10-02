@@ -215,3 +215,19 @@ func TestAFullQueueKeepsTheArrival(t *testing.T) {
 		t.Error("retried arrival not handed over")
 	}
 }
+
+func TestReceiveTakesALinkOnceWithinTheWindow(t *testing.T) {
+	s := newService(t, &fakeHandler{})
+	start := s.now()
+	link := "nxm://stardewvalley/mods/5/files/9?key=k&expires=99999999999&user_id=42"
+	s.Receive([]string{link})
+	s.Receive([]string{link})
+	if n := len(s.Inbox().Arrivals); n != 1 {
+		t.Fatalf("%d arrivals from one link sent twice", n)
+	}
+	s.now = func() time.Time { return start.Add(duplicateWindow + time.Second) }
+	s.Receive([]string{link})
+	if n := len(s.Inbox().Arrivals); n != 2 {
+		t.Fatalf("link sent again after the window: %d arrivals", n)
+	}
+}

@@ -23,6 +23,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/loadersvc"
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/modpic"
+	"github.com/Rethunk-AI/mortar/internal/nativehost"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/nexussvc"
 	"github.com/Rethunk-AI/mortar/internal/nxm"
@@ -86,6 +87,9 @@ func main() {
 func run() error {
 	if len(os.Args) > 1 && os.Args[1] == "--release-links" {
 		return releaseLinks()
+	}
+	if nativehost.Invoked(os.Args[1:]) {
+		return serveNativeHost()
 	}
 	registerEvents()
 	home, err := os.UserHomeDir()
@@ -229,6 +233,11 @@ func run() error {
 	}
 	if err := nxmHandler.Refresh(); err != nil {
 		log.Printf("desktop entry: %v", err)
+	}
+	if h, ok := any(nxmHandler).(interface{ WriteNativeHosts() error }); ok && store.Get().NxmHandled {
+		if err := h.WriteNativeHosts(); err != nil {
+			log.Printf("browser extension host: %v", err)
+		}
 	}
 	nxmSvc = nxmsvc.NewService(store, nxmHandler)
 
@@ -546,4 +555,23 @@ func releaseLinks() error {
 		return err
 	}
 	return nxmsvc.ReleaseLinks(store, h)
+}
+
+// serveNativeHost runs Mortar as the browser extension's native messaging host: each link is handed to a new Mortar
+// process, which forwards it to the running one like any nxm launch, or starts Mortar when none runs. The browser
+// waits for the reply, so the child is not waited for.
+func serveNativeHost() error {
+	exe, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	if img := os.Getenv("APPIMAGE"); img != "" {
+		exe = img
+	}
+	return nativehost.Serve(os.Stdin, os.Stdout, func(link string) error {
+		if !nxm.IsLink(link) {
+			return fmt.Errorf("not an nxm link: %q", link)
+		}
+		return nativehost.Start(exe, link)
+	})
 }

@@ -56,7 +56,8 @@ func (l *System) setDefault(mime string) error {
 
 // System is the system's registration of the nxm scheme.
 type System struct {
-	exe string
+	exe  string
+	home string
 	// dataHome and configHome are the XDG base directories; dataDirs are the system ones, for reading names.
 	dataHome, configHome string
 	dataDirs             []string
@@ -70,7 +71,7 @@ func New(exe string) (*System, error) {
 		return nil, err
 	}
 	l := &System{
-		exe: appImageOr(exe), dataHome: baseDir("XDG_DATA_HOME", filepath.Join(home, ".local", "share")),
+		exe: appImageOr(exe), home: home, dataHome: baseDir("XDG_DATA_HOME", filepath.Join(home, ".local", "share")),
 		configHome: baseDir("XDG_CONFIG_HOME", filepath.Join(home, ".config")), run: execRun,
 	}
 	for d := range strings.SplitSeq(baseDir("XDG_DATA_DIRS", "/usr/local/share:/usr/share"), ":") {
@@ -253,6 +254,9 @@ func (l *System) writeDesktop(withNxm bool) error {
 }
 
 func (l *System) Register() error {
+	if err := l.WriteNativeHosts(); err != nil {
+		return err
+	}
 	if skipUserDesktop() {
 		return l.setDefault(nxmMime)
 	}
@@ -266,6 +270,9 @@ func (l *System) Register() error {
 }
 
 func (l *System) Restore(previous string) error {
+	if err := l.removeNativeHosts(); err != nil {
+		return err
+	}
 	if !skipUserDesktop() {
 		if err := l.writeDesktop(false); err != nil {
 			return err

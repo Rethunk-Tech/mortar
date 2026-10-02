@@ -48,6 +48,10 @@ type Assignment struct {
 
 const assignedBuffer = 64
 
+// duplicateWindow is how long the same link is taken only once: with the browser extension installed, a link can
+// arrive twice, from the page's own launch and from the extension.
+const duplicateWindow = 10 * time.Minute
+
 // Service receives links and switches the system handler.
 type Service struct {
 	store   *settings.Store
@@ -62,6 +66,7 @@ type Service struct {
 	Route func(nxm.Link) bool
 
 	mu         sync.Mutex
+	recent     map[string]time.Time
 	nextID     int
 	arrivals   []Arrival
 	rejections []Rejection
@@ -86,6 +91,10 @@ func (s *Service) Receive(args []string) bool {
 			continue
 		}
 		found = true
+		if s.duplicate(arg) {
+			log.Printf("nxm: duplicate link ignored")
+			continue
+		}
 		if game, gerr := nxm.LinkGame(arg); gerr == nil && game != nexus.Game {
 			cur := s.store.Get()
 			if cur.NxmPrevious != "" && cur.RedirectOtherGames() {
@@ -120,6 +129,26 @@ func (s *Service) Receive(args []string) bool {
 		s.emit(ArrivedEvent, a)
 	}
 	return found
+}
+
+// duplicate records link and reports whether it already arrived within duplicateWindow.
+func (s *Service) duplicate(link string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	now := s.now()
+	for l, at := range s.recent {
+		if now.Sub(at) > duplicateWindow {
+			delete(s.recent, l)
+		}
+	}
+	if _, ok := s.recent[link]; ok {
+		return true
+	}
+	if s.recent == nil {
+		s.recent = map[string]time.Time{}
+	}
+	s.recent[link] = now
+	return false
 }
 
 // Inbox returns the waiting arrivals and the refusals not yet shown; refusals are handed over once.
