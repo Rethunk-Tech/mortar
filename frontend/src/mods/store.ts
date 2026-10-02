@@ -376,6 +376,86 @@ async function setEntryNoteTags(mod: Mod, note: string, tags: string[]) {
   }
 }
 
+function problemActions(
+  set: (p: { resolving?: Duplicate | null }) => void,
+  get: () => { load: () => Promise<void>; loadProblems: () => Promise<void> },
+) {
+  return {
+    resolve: (resolving: Duplicate | null) => set({ resolving }),
+    keepCopy: async (dup: Duplicate, keepKey: string) => {
+      const target = open()
+      if (!target) {
+        return
+      }
+      try {
+        for (const c of (dup.copies ?? []).filter((x) => x.key !== keepKey)) {
+          useProfiles
+            .getState()
+            .replace(
+              (await SetModEnabled(target.game, target.id, c.key, dup.uniqueId, false)).profile,
+            )
+        }
+      } catch (e) {
+        fail(i18n._(msg`Could not switch off the other copy of ${dup.name}`))(e)
+      }
+      set({ resolving: null })
+      await get().load()
+    },
+    dismissAsset: (conflict: AssetConflict) => dismissAssetConflict(get, conflict),
+    restoreDismissed: (token: string) => restoreDismissed(get, token),
+    dismissAbandoned: (uniqueId: string) => dismissAbandonedMod(get, uniqueId),
+    dismissListed: (uniqueId: string) => dismissListedRequirement(get, uniqueId),
+    dismissSetting: (setting: SettingHint) => dismissSettingHint(get, setting),
+    setConfigValue: (
+      setting: Pick<SettingHint, 'key' | 'uniqueId' | 'field' | 'name'>,
+      value: string,
+    ) => setConfigSetting(get, setting, value),
+  }
+}
+
+function setStoredView(set: (p: { view: View }) => void, view: View) {
+  set({ view })
+  try {
+    localStorage.setItem(VIEW_KEY, view)
+  } catch {
+    // Storage can be blocked; the view then lasts for this session only.
+  }
+}
+
+function viewActions(set: (p: { view: View }) => void) {
+  return {
+    setView: (view: View) => setStoredView(set, view),
+  }
+}
+
+function setEnabledAction(
+  set: (fn: (s: { mods: Mod[] }) => { mods: Mod[] }) => void,
+  get: () => { loadProblems: () => Promise<void> },
+  mod: Mod,
+  enabled: boolean,
+) {
+  const target = open()
+  if (!target) {
+    return Promise.resolve()
+  }
+  const flip = (on: boolean) =>
+    set((s) => ({
+      mods: s.mods.map((m) => (modId(m) === modId(mod) ? { ...m, enabled: on } : m)),
+    }))
+  flip(enabled)
+  return SetModEnabled(target.game, target.id, mod.key, mod.uniqueId, enabled).then(
+    (got) => {
+      useProfiles.getState().replace(got.profile)
+      announceAlso(got.alsoEnabled)
+      return get().loadProblems()
+    },
+    (e) => {
+      flip(!enabled)
+      fail(i18n._(msg`Could not switch ${mod.name}`))(e)
+    },
+  )
+}
+
 export const useMods = create<{
   mods: Mod[]
   loaded: boolean
@@ -432,38 +512,11 @@ export const useMods = create<{
   problems: null,
   problemsFor: '',
   resolving: null,
-  setView: (view) => {
-    set({ view })
-    try {
-      localStorage.setItem(VIEW_KEY, view)
-    } catch {
-      // Storage can be blocked; the view then lasts for this session only.
-    }
-  },
+  ...viewActions(set),
   load: () => loadMods(set, get),
   setQuery: (profileId, query) => set((s) => ({ queries: { ...s.queries, [profileId]: query } })),
   loadProblems: () => loadModProblems(set, get),
-  setEnabled: async (mod, enabled) => {
-    const target = open()
-    if (!target) {
-      return
-    }
-    const flip = (on: boolean) =>
-      set((s) => ({
-        mods: s.mods.map((m) => (modId(m) === modId(mod) ? { ...m, enabled: on } : m)),
-      }))
-    flip(enabled)
-    try {
-      const got = await SetModEnabled(target.game, target.id, mod.key, mod.uniqueId, enabled)
-      useProfiles.getState().replace(got.profile)
-      announceAlso(got.alsoEnabled)
-    } catch (e) {
-      flip(!enabled)
-      fail(i18n._(msg`Could not switch ${mod.name}`))(e)
-      return
-    }
-    await get().loadProblems()
-  },
+  setEnabled: (mod, enabled) => setEnabledAction(set, get, mod, enabled),
   setEnabledMany: (mods, enabled) => enableMany(set, get, mods, enabled),
   setPinned: async (mod, pinned) => {
     const target = open()
@@ -554,32 +607,7 @@ export const useMods = create<{
       fail(i18n._(msg`Could not open config.json of ${mod.name}`))(e)
     }
   },
-  resolve: (resolving) => set({ resolving }),
-  keepCopy: async (dup, keepKey) => {
-    const target = open()
-    if (!target) {
-      return
-    }
-    try {
-      for (const c of (dup.copies ?? []).filter((x) => x.key !== keepKey)) {
-        useProfiles
-          .getState()
-          .replace(
-            (await SetModEnabled(target.game, target.id, c.key, dup.uniqueId, false)).profile,
-          )
-      }
-    } catch (e) {
-      fail(i18n._(msg`Could not switch off the other copy of ${dup.name}`))(e)
-    }
-    set({ resolving: null })
-    await get().load()
-  },
-  dismissAsset: (conflict) => dismissAssetConflict(get, conflict),
-  restoreDismissed: (token) => restoreDismissed(get, token),
-  dismissAbandoned: (uniqueId) => dismissAbandonedMod(get, uniqueId),
-  dismissListed: (uniqueId) => dismissListedRequirement(get, uniqueId),
-  dismissSetting: (setting) => dismissSettingHint(get, setting),
-  setConfigValue: (setting, value) => setConfigSetting(get, setting, value),
+  ...problemActions(set, get),
   showUpdates: () => showUpdatesView(),
 }))
 
