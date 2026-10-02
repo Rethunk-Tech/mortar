@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, FormControlLabel, Switch } from '@mui/material'
 import {
+  SetEnableModsWhenInstalled,
   SetKeepInTray,
   SetTipsSeen,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
@@ -46,6 +47,7 @@ function KeepInTraySwitch() {
 
 export function General() {
   const { t } = useLingui()
+  const enableModsWhenInstalled = useSettings((s) => s.enableModsWhenInstalled)
   const push = useToasts((s) => s.push)
   const reportFailure = (err: unknown) => {
     const body = errorText(err)
@@ -60,9 +62,23 @@ export function General() {
         onClick={() => {
           SetTipsSeen([]).catch(reportFailure)
         }}
+        sx={{ alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
       >
         {t`Show tips again`}
       </Button>
+      <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Mods`}</Box>
+      <FormControlLabel
+        sx={{ m: 0, alignItems: 'center' }}
+        control={
+          <Switch
+            checked={enableModsWhenInstalled !== false}
+            onChange={(_, on) => {
+              SetEnableModsWhenInstalled(on).catch(reportFailure)
+            }}
+          />
+        }
+        label={t`Enable mods when installed`}
+      />
     </Box>
   )
 }

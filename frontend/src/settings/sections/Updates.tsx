@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   SetCheckModUpdatesOnStart,
   SetCheckOnlyEnabledMods,
-  SetEnableModsWhenInstalled,
   SetIncludeBetaReleases,
   SetIncludePrereleaseModVersions,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
@@ -159,7 +158,6 @@ export function Updates() {
   const includeBetaReleases = useSettings((s) => s.includeBetaReleases)
   const includePrereleaseModVersions = useSettings((s) => s.includePrereleaseModVersions)
   const checkOnlyEnabledMods = useSettings((s) => s.checkOnlyEnabledMods)
-  const enableModsWhenInstalled = useSettings((s) => s.enableModsWhenInstalled)
   const push = useToasts((s) => s.push)
   const fail = t`Couldn't save that setting`
   return (
@@ -208,16 +206,6 @@ export function Updates() {
           />
         }
         label={t`Check only enabled mods`}
-      />
-      <FormControlLabel
-        sx={{ m: 0, alignItems: 'center' }}
-        control={
-          <Switch
-            checked={enableModsWhenInstalled !== false}
-            onChange={(_, on) => persistToggle(() => SetEnableModsWhenInstalled(on), push, fail)}
-          />
-        }
-        label={t`Enable mods when installed`}
       />
       <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
         {t`Mod updates show on each profile's mod list. SMAPI's version and its update notice are in the game's settings.`}
