@@ -66,8 +66,8 @@ export function Row({
       sx={{
         display: 'grid',
         gridTemplateColumns: caution
-          ? `${ROW_TILE}px minmax(200px, 1fr) auto auto auto auto`
-          : `${ROW_TILE}px minmax(200px, 1fr) auto auto auto`,
+          ? `${ROW_TILE}px minmax(0, 1fr) auto auto auto`
+          : `${ROW_TILE}px minmax(0, 1fr) auto auto`,
         gap: '14px',
         alignItems: 'center',
         px: 3,
@@ -79,17 +79,19 @@ export function Row({
         mod={{ uniqueId: update.uniqueId, name: update.name, ...(picture ? { picture } : {}) }}
         size={ROW_TILE}
       />
-      <RowCopy
-        update={update}
-        caution={caution}
-        notes={notes}
-        reportedElsewhere={reportedElsewhere}
-        riskyChangelog={riskyChangelog}
-      />
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, whiteSpace: 'nowrap' }}>
-        <Version>{update.installed}</Version>
-        <ArrowRight size={14} aria-hidden={true} />
-        <Version isNew={true}>{update.version}</Version>
+      <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+        <RowCopy
+          update={update}
+          caution={caution}
+          notes={notes}
+          reportedElsewhere={reportedElsewhere}
+          riskyChangelog={riskyChangelog}
+        />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+          <Version>{update.installed}</Version>
+          <ArrowRight size={14} aria-hidden={true} />
+          <Version isNew={true}>{update.version}</Version>
+        </Box>
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         {update.url ? (

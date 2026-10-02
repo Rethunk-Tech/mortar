@@ -12,7 +12,7 @@ export function Version({ children, isNew }: { children: string; isNew?: boolean
         py: '3px',
         borderRadius: '4px',
         display: 'inline-block',
-        maxWidth: 150,
+        maxWidth: 260,
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
