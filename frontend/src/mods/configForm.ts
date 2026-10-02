@@ -93,6 +93,8 @@ class Parser {
       } else if (this.text[this.at] === '"') {
         this.at += 1
         return JSON.parse(this.text.slice(start, this.at)) as string
+      } else {
+        this.at += 1
       }
     }
     throw new Error('Unterminated config string')
