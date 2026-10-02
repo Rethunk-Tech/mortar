@@ -55,15 +55,26 @@ type Source struct {
 	Tag              string `json:"tag,omitempty"`
 	Asset            string `json:"asset,omitempty"`
 	fomod            *fomodChoices
+	disabled         *disabledMods
 }
 
 type fomodChoices struct {
 	m map[string]map[string][]string
 }
 
+type disabledMods struct {
+	ids []string
+}
+
 // WithFomod returns a copy that carries FOMOD plugin choices into InstallStaged.
 func (s Source) WithFomod(choices map[string]map[string][]string) Source {
 	s.fomod = &fomodChoices{m: choices}
+	return s
+}
+
+// WithDisabled returns a copy that switches the named mods off when installed.
+func (s Source) WithDisabled(uniqueIDs []string) Source {
+	s.disabled = &disabledMods{ids: slices.Clone(uniqueIDs)}
 	return s
 }
 

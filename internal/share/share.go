@@ -22,7 +22,7 @@ import (
 
 const (
 	// FormatVersion is the payload's leading number.
-	FormatVersion = 1
+	FormatVersion = 2
 
 	MaxEncoded    = 8 << 10
 	MaxDecoded    = 64 << 10
@@ -47,9 +47,11 @@ var (
 
 // Ref names one file to install: a Nexus mod file, or a GitHub release asset as "<owner>/<repo>@<tag>/<asset>".
 type Ref struct {
-	ModID  int
-	FileID int
-	GitHub string
+	ModID    int
+	FileID   int
+	GitHub   string
+	Disabled []string
+	Fomod    map[string]map[string][]string
 }
 
 // Shared is what a link carries.
@@ -103,10 +105,21 @@ func (r Ref) valid() bool {
 
 // MarshalJSON writes a GitHub ref as its string and a Nexus ref as [mod id, file id].
 func (r Ref) MarshalJSON() ([]byte, error) {
-	if r.GitHub != "" {
+	if !r.hasDetails() && r.GitHub != "" {
 		return json.Marshal(r.GitHub)
 	}
-	return json.Marshal([2]int{r.ModID, r.FileID})
+	if !r.hasDetails() {
+		return json.Marshal([2]int{r.ModID, r.FileID})
+	}
+	return json.Marshal(refDocument(r))
+}
+
+type refDocument struct {
+	ModID    int                            `json:"modId,omitempty"`
+	FileID   int                            `json:"fileId,omitempty"`
+	GitHub   string                         `json:"github,omitempty"`
+	Disabled []string                       `json:"disabled,omitempty"`
+	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
 }
 
 func parseRef(raw json.RawMessage) (Ref, error) {
@@ -116,7 +129,11 @@ func parseRef(raw json.RawMessage) (Ref, error) {
 	}
 	var ids []int
 	if err := json.Unmarshal(raw, &ids); err != nil || len(ids) != 2 {
-		return Ref{}, fmt.Errorf("%w: bad entry", ErrMalformed)
+		var doc refDocument
+		if err := json.Unmarshal(raw, &doc); err != nil {
+			return Ref{}, fmt.Errorf("%w: bad entry", ErrMalformed)
+		}
+		return Ref(doc), nil
 	}
 	return Ref{ModID: ids[0], FileID: ids[1]}, nil
 }
@@ -129,11 +146,56 @@ func checkShared(s Shared) error {
 		return fmt.Errorf("%w: more than %d entries", ErrMalformed, MaxEntries)
 	}
 	for _, r := range s.Entries {
-		if !r.valid() {
+		if !r.valid() || !validDetails(r) {
 			return fmt.Errorf("%w: bad entry", ErrMalformed)
 		}
 	}
 	return nil
+}
+
+func (r Ref) hasDetails() bool {
+	return len(r.Disabled) > 0 || len(r.Fomod) > 0
+}
+
+func validDetails(r Ref) bool {
+	if len(r.Disabled) > MaxEntries || len(r.Fomod) > MaxEntries {
+		return false
+	}
+	for _, id := range r.Disabled {
+		if id == "" || len(id) > 100 || strings.TrimSpace(id) != id || strings.ContainsFunc(id, unicode.IsControl) {
+			return false
+		}
+	}
+	for step, groups := range r.Fomod {
+		if step == "" || len(step) > 100 || strings.ContainsFunc(step, unicode.IsControl) || len(groups) > MaxEntries {
+			return false
+		}
+		for group, choices := range groups {
+			if group == "" || len(group) > 100 || strings.ContainsFunc(group, unicode.IsControl) || len(choices) > MaxEntries {
+				return false
+			}
+			for _, choice := range choices {
+				if len(choice) > 200 || strings.ContainsFunc(choice, unicode.IsControl) {
+					return false
+				}
+			}
+		}
+	}
+	return true
+}
+
+func cloneFomod(in map[string]map[string][]string) map[string]map[string][]string {
+	if len(in) == 0 {
+		return nil
+	}
+	out := make(map[string]map[string][]string, len(in))
+	for step, groups := range in {
+		out[step] = make(map[string][]string, len(groups))
+		for group, choices := range groups {
+			out[step][group] = slices.Clone(choices)
+		}
+	}
+	return out
 }
 
 // versioned splits a payload document into its version and the rest, refusing a newer version before the rest
@@ -203,17 +265,25 @@ func (s Shared) payload() (string, error) {
 	return out, nil
 }
 
+func withoutDetails(s Shared) Shared {
+	out := Shared{Name: s.Name, Entries: make([]Ref, len(s.Entries))}
+	for i, r := range s.Entries {
+		out.Entries[i] = Ref{ModID: r.ModID, FileID: r.FileID, GitHub: r.GitHub}
+	}
+	return out
+}
+
 // refOf maps an enabled, non-bundled entry to its Ref, or says why it cannot be shared.
 func refOf(e profile.Entry) (Ref, string) {
 	switch e.Source.Kind {
 	case profile.KindNexus:
-		r := Ref{ModID: e.Source.ModID, FileID: e.Source.FileID}
+		r := Ref{ModID: e.Source.ModID, FileID: e.Source.FileID, Disabled: slices.Clone(e.Disabled), Fomod: cloneFomod(e.Fomod)}
 		if !r.valid() {
 			return Ref{}, "no Nexus file recorded"
 		}
 		return r, ""
 	case profile.KindGitHub:
-		r := Ref{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset}
+		r := Ref{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset, Disabled: slices.Clone(e.Disabled), Fomod: cloneFomod(e.Fomod)}
 		if !r.valid() {
 			return Ref{}, "no GitHub release asset recorded"
 		}
@@ -277,6 +347,13 @@ func Collect(p profile.Profile) (s Shared, left []LeftOut, off []string) {
 func Encode(p profile.Profile) (Result, error) {
 	s, left, _ := Collect(p)
 	payload, err := s.payload()
+	if errors.Is(err, ErrTooLarge) {
+		fallback := withoutDetails(s)
+		payload, err = fallback.payload()
+		if err == nil {
+			s = fallback
+		}
+	}
 	if err != nil {
 		return Result{}, err
 	}

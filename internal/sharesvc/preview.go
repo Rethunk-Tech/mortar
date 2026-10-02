@@ -48,24 +48,26 @@ const (
 // Mod is one file the import would bring. Key names it for Import's exclusions. A GitHub mod is Unverified: its
 // trust check can only run after the download. Different marks a Nexus file replaced by another one of the mod.
 type Mod struct {
-	Key        string   `json:"key"`
-	Site       string   `json:"site"`
-	Name       string   `json:"name"`
-	Author     string   `json:"author"`
-	Version    string   `json:"version"`
-	State      string   `json:"state"`
-	Enabled    bool     `json:"enabled"`
-	Reason     string   `json:"reason"`
-	ModID      int      `json:"modId"`
-	FileID     int      `json:"fileId"`
-	Repo       string   `json:"repo"`
-	Tag        string   `json:"tag"`
-	Asset      string   `json:"asset"`
-	PageURL    string   `json:"pageUrl"`
-	SizeKB     int64    `json:"sizeKb"`
-	Different  bool     `json:"different"`
-	Unverified bool     `json:"unverified"`
-	UniqueIDs  []string `json:"uniqueIds"`
+	Key        string                         `json:"key"`
+	Site       string                         `json:"site"`
+	Name       string                         `json:"name"`
+	Author     string                         `json:"author"`
+	Version    string                         `json:"version"`
+	State      string                         `json:"state"`
+	Enabled    bool                           `json:"enabled"`
+	Reason     string                         `json:"reason"`
+	ModID      int                            `json:"modId"`
+	FileID     int                            `json:"fileId"`
+	Repo       string                         `json:"repo"`
+	Tag        string                         `json:"tag"`
+	Asset      string                         `json:"asset"`
+	PageURL    string                         `json:"pageUrl"`
+	SizeKB     int64                          `json:"sizeKb"`
+	Different  bool                           `json:"different"`
+	Unverified bool                           `json:"unverified"`
+	UniqueIDs  []string                       `json:"uniqueIds"`
+	Disabled   []string                       `json:"disabled,omitempty"`
+	Fomod      map[string]map[string][]string `json:"fomod,omitempty"`
 }
 
 // Problem is something found before any download. Key is the mod it is about, when one is; Detail is a version
@@ -310,6 +312,7 @@ func (r *resolver) github(ref share.Ref) Mod {
 	m := Mod{
 		Key: "github:" + ref.GitHub, Site: SiteGitHub, Name: name, Author: owner, Version: tag, Repo: repo, Tag: tag, Asset: asset,
 		PageURL: githubBase + repo, State: StateDownload, Unverified: true, UniqueIDs: []string{},
+		Disabled: append([]string{}, ref.Disabled...), Fomod: ref.Fomod,
 	}
 	if r.hasGitHub(repo, tag, asset) {
 		m.State = StateInstalled
@@ -346,7 +349,9 @@ func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Prob
 			mods = append(mods, r.github(ref))
 			continue
 		}
-		mods = append(mods, r.nexus(ref.ModID, ref.FileID, StateDownload))
+		m := r.nexus(ref.ModID, ref.FileID, StateDownload)
+		m.Disabled, m.Fomod = append([]string{}, ref.Disabled...), ref.Fomod
+		mods = append(mods, m)
 	}
 	deps, probs := r.dependencies(ctx, mods)
 	mods = append(mods, deps...)

@@ -226,6 +226,9 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 		return "", &NoModError{Key: key}
 	}
 	e := Entry{Key: key, Source: source, Mods: entryMods(found), Disabled: []string{}, Added: time.Now().UTC(), Fomod: cloneFomod(source.fomodMap())}
+	if source.disabled != nil {
+		disabled = append(disabled, source.disabled.ids...)
+	}
 	startEnabled := true
 	if s.NewModsEnabled != nil {
 		startEnabled = s.NewModsEnabled()

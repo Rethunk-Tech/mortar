@@ -36,7 +36,7 @@ func TestInstallArchiveAsksForFomodThenInstallsChoices(t *testing.T) {
 	if len(res.Profile.Entries) != 0 {
 		t.Fatalf("asked but already installed: %+v", res.Profile.Entries)
 	}
-	res, err = e.InstallFomod("stardew", p.ID, res.Fomod.Key, res.Fomod.Source, map[string]map[string][]string{
+	res, err = e.InstallFomod("stardew", p.ID, res.Fomod.Key, res.Fomod.Source.WithDisabled([]string{"A.Alpha"}), map[string]map[string][]string{
 		"Options": {"Pack": {"Alpha"}},
 	})
 	if err != nil {
@@ -45,12 +45,15 @@ func TestInstallArchiveAsksForFomodThenInstallsChoices(t *testing.T) {
 	if res.Fomod != nil || len(res.Added) != 1 || res.Added[0] != "A.Alpha" {
 		t.Fatalf("install: %+v", res)
 	}
-	got, err := os.ReadFile(filepath.Join(e.mods(p.ID), res.Profile.Entries[0].Key, "manifest.json"))
+	got, err := os.ReadFile(filepath.Join(e.mods(p.ID), "."+res.Profile.Entries[0].Key, "manifest.json"))
 	if err != nil || string(got) != manifestJSON("A.Alpha") {
 		t.Fatalf("layout %q %v", got, err)
 	}
 	if res.Profile.Entries[0].Fomod["Options"]["Pack"][0] != "Alpha" {
 		t.Fatalf("stored choices: %+v", res.Profile.Entries[0].Fomod)
+	}
+	if len(res.Profile.Entries[0].Disabled) != 1 || res.Profile.Entries[0].Disabled[0] != "A.Alpha" {
+		t.Fatalf("disabled mods: %+v", res.Profile.Entries[0].Disabled)
 	}
 }
 

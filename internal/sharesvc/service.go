@@ -570,6 +570,7 @@ func requestFor(game, profileID string, m Mod) queue.Request {
 		kind = queue.KindDependency
 	}
 	r := queue.Request{Kind: kind, Game: game, Profile: profileID, Name: m.Name, Version: m.Version}
+	r.Disabled, r.Fomod = m.Disabled, m.Fomod
 	if m.Site == SiteGitHub {
 		r.Repo, r.Tag, r.Asset = m.Repo, m.Tag, m.Asset
 		return r

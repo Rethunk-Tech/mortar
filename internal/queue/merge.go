@@ -32,10 +32,24 @@ func nexusSource(it Item, mod nexus.Mod) profile.Source {
 	if end == 0 {
 		end = it.endorsed
 	}
-	return profile.Source{
+	return sourceWithOptions(it, profile.Source{
 		Kind: profile.KindNexus, Name: it.FileName, ModID: it.ModID, FileID: it.FileID, Version: it.Version,
 		Picture: pic, EndorsementCount: end,
+	})
+}
+
+func sourceWithOptions(it Item, source profile.Source) profile.Source {
+	choices := it.fomod
+	if choices == nil {
+		choices = it.Fomod
 	}
+	if len(choices) > 0 {
+		source = source.WithFomod(choices)
+	}
+	if len(it.Disabled) > 0 {
+		source = source.WithDisabled(it.Disabled)
+	}
+	return source
 }
 
 func (s *Service) installNexusPath(it Item, path string, mod nexus.Mod) error {

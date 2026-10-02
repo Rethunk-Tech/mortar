@@ -61,9 +61,9 @@ func (s *Service) resolveGitHub(ctx context.Context, it Item) error {
 }
 
 func sourceOf(it Item) profile.Source {
-	return profile.Source{
+	return sourceWithOptions(it, profile.Source{
 		Kind: profile.KindGitHub, Name: it.Asset, Version: it.Version, Repo: it.Repo, Tag: it.Tag, Asset: it.Asset,
-	}
+	})
 }
 
 // downloadGitHub fetches the item's asset, stages it, and installs it when SMAPI's API ties its mods to the repo.
@@ -133,9 +133,6 @@ func (s *Service) installStaged(it Item) error {
 		return err
 	}
 	src := sourceOf(it)
-	if it.fomod != nil {
-		src = src.WithFomod(it.fomod)
-	}
 	if it.chosenRoot != "" {
 		if it.Remap != nil {
 			src = it.Remap.Source

@@ -103,9 +103,11 @@ type Item struct {
 	State    string  `json:"state"`
 	Progress float64 `json:"progress"`
 	// Latest carries Request.Latest so a restart still resolves to the newest file.
-	Latest bool   `json:"latest,omitempty"`
-	Speed  int64  `json:"speed"`
-	Error  string `json:"error"`
+	Latest   bool                           `json:"latest,omitempty"`
+	Disabled []string                       `json:"disabled,omitempty"`
+	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
+	Speed    int64                          `json:"speed"`
+	Error    string                         `json:"error"`
 
 	Repo       string            `json:"repo"`
 	Tag        string            `json:"tag"`
@@ -170,7 +172,9 @@ type Request struct {
 	Asset      string `json:"asset"`
 	// Latest asks for the newest file that updates FileID: a file found in the mod dataset, or that a save
 	// recorded, may have been superseded since. Share imports leave it off to reproduce the shared files.
-	Latest bool `json:"latest"`
+	Latest   bool                           `json:"latest"`
+	Disabled []string                       `json:"disabled,omitempty"`
+	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
 
 	key     string
 	expires int64
@@ -515,6 +519,12 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 			if r.key != "" {
 				it.key, it.expires = r.key, r.expires
 			}
+			if len(r.Disabled) > 0 {
+				it.Disabled = slices.Clone(r.Disabled)
+			}
+			if len(r.Fomod) > 0 {
+				it.Fomod, it.fomod = r.Fomod, r.Fomod
+			}
 			log.Printf("queue: mod %d file %d %s joined existing item %s (%s)", r.ModID, r.FileID, r.Repo, it.ID, it.State)
 			out = append(out, *it)
 			continue
@@ -522,7 +532,7 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 		it := &Item{
 			ID: newID(), Kind: r.Kind, BatchID: r.BatchID, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
 			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
-			Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, Latest: r.Latest,
+			Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, Latest: r.Latest, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod,
 		}
 		if it.Repo != "" {
 			it.Name = cmp.Or(it.Name, it.Repo)
@@ -687,7 +697,7 @@ func (s *Service) Confirm(id string) {
 func (s *Service) AnswerFomod(id string, choices map[string]map[string][]string) {
 	s.mu.Lock()
 	if it := s.find(id); it != nil && it.State == StateNeedsFomod && it.staged != "" {
-		it.State, it.fomod, it.FomodKey = StateQueued, choices, it.staged
+		it.State, it.fomod, it.Fomod, it.FomodKey = StateQueued, choices, choices, it.staged
 	}
 	s.mu.Unlock()
 	s.publish(true)

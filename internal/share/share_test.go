@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -57,6 +58,79 @@ func TestRoundTripAndLinks(t *testing.T) {
 	}
 }
 
+func TestDetailsRoundTrip(t *testing.T) {
+	choices := map[string]map[string][]string{"Options": {"Pack": {"Optional"}}}
+	p := profile.Profile{Name: "Choices", Entries: []profile.Entry{{
+		Key: "n", Source: profile.Source{Kind: profile.KindNexus, ModID: 4, FileID: 5},
+		Mods: []profile.EntryMod{{UniqueID: "A.On", Folder: "."}, {UniqueID: "A.Off", Folder: "."}}, Disabled: []string{"A.Off"}, Fomod: choices,
+	}}}
+	res, err := Encode(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := Parse(res.Payload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Entries) != 1 || !slices.Equal(got.Entries[0].Disabled, []string{"A.Off"}) ||
+		fmt.Sprint(got.Entries[0].Fomod) != fmt.Sprint(choices) {
+		t.Fatalf("link details = %+v", got.Entries)
+	}
+
+	dir := modsDirWith(t, map[string]string{"n/config.json": "{}"})
+	var buf bytes.Buffer
+	if _, err := Write(&buf, p, dir); err != nil {
+		t.Fatal(err)
+	}
+	file := filepath.Join(t.TempDir(), "details.mortar")
+	if err := os.WriteFile(file, buf.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	pv, err := Read(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(pv.Entries) != 1 || !slices.Equal(pv.Entries[0].Disabled, []string{"A.Off"}) ||
+		fmt.Sprint(pv.Entries[0].Fomod) != fmt.Sprint(choices) {
+		t.Fatalf("file details = %+v", pv.Entries)
+	}
+}
+
+func TestOldLinksRemainWithoutDetails(t *testing.T) {
+	got, err := Parse(pack(t, `[1,"old",[[4,5],"owner/repo@v1/a.zip"]]`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Name != "old" || len(got.Entries) != 2 || got.Entries[0].Disabled != nil || got.Entries[0].Fomod != nil ||
+		got.Entries[1].Disabled != nil || got.Entries[1].Fomod != nil {
+		t.Fatalf("old link = %+v", got)
+	}
+}
+
+func TestLinkDropsDetailsBeforeRefs(t *testing.T) {
+	p := profile.Profile{Name: "large"}
+	for i := range 250 {
+		sum := sha256.Sum256(fmt.Appendf(nil, "choice-%d", i))
+		p.Entries = append(p.Entries, profile.Entry{
+			Key: fmt.Sprint(i), Source: profile.Source{Kind: profile.KindNexus, ModID: i + 1, FileID: i + 2},
+			Mods:  []profile.EntryMod{{UniqueID: fmt.Sprintf("A.%d", i)}},
+			Fomod: map[string]map[string][]string{"Step": {fmt.Sprintf("Group-%d", i): {fmt.Sprintf("%x", sum)}}},
+		})
+	}
+	res, err := Encode(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Payload) >= MaxEncoded {
+		t.Fatalf("fallback payload is %d characters", len(res.Payload))
+	}
+	for _, ref := range res.Shared.Entries {
+		if len(ref.Disabled) != 0 || len(ref.Fomod) != 0 {
+			t.Fatalf("details survived fallback: %+v", ref)
+		}
+	}
+}
+
 func TestWrongForms(t *testing.T) {
 	p, err := Encode(sample())
 	if err != nil {
@@ -88,7 +162,7 @@ func pack(t *testing.T, doc string) string {
 }
 
 func TestNewerVersionRefused(t *testing.T) {
-	for _, doc := range []string{`[2,"x",[[1,2]]]`, `[9,{"weird":true}]`} {
+	for _, doc := range []string{`[3,"x",[[1,2]]]`, `[9,{"weird":true}]`} {
 		if _, err := Parse(pack(t, doc)); !errors.Is(err, ErrNewerVersion) {
 			t.Errorf("%s: err = %v", doc, err)
 		}
@@ -326,7 +400,7 @@ func TestReadRejects(t *testing.T) {
 		"duplicate":          {head, {"configs/A.one/c.json", "{}"}, {"configs/a.ONE/C.json", "{}"}},
 		"no uniqueid folder": {head, {"configs/c.json", "{}"}},
 		"bad id in list":     {{"profile.json", `{"version":1,"name":"x","entries":[],"uniqueIds":["../x"]}`}},
-		"newer version":      {{"profile.json", `{"version":2,"name":"x","entries":[]}`}},
+		"newer version":      {{"profile.json", `{"version":3,"name":"x","entries":[]}`}},
 		"bad entry":          {{"profile.json", `{"version":1,"name":"x","entries":[[0,1]]}`}},
 		"bad name":           {{"profile.json", `{"version":1,"name":"","entries":[]}`}},
 		"not json":           {{"profile.json", `nope`}},
