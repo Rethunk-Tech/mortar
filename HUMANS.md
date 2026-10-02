@@ -50,7 +50,12 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `tools <game>`, `tools run <game> <profile> <tool>` | configured external tools; start one |
 | `bundles <game>`, `bundles apply <game> <bundle> <profile>` | list saved bundles; copy one into a profile |
 | `nexus untrack <game> --all\|--unused` | untrack that game's Nexus mods (`--yes` skips the prompt) |
+| `update game profile UniqueID...\|--all` | queue selected or all available mod updates |
+| `queue retry\|skip [id]`, `queue pause\|resume\|clear` | control queued downloads |
+| `backups list`, `backups restore <name> [save...]` | list or restore save backups |
 | `queue`, `doctor`, `version`, `completion bash\|zsh\|fish` | the download queue, the environment, shell completion |
+
+`--json` writes failures to stderr as `{"error":"...","code":...}`. Exit code 2 means usage or confirmation was required, 3 means Mortar was not running, and 1 means another failure. `mortar doctor` falls back to read-only offline checks when Mortar is not running: it exits 0 when those checks find nothing, 1 when they find problems, and 3 when the offline check is healthy.
 
 ```sh
 mortar conflicts stardew "Profile 2"
