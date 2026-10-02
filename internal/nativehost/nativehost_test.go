@@ -2,10 +2,17 @@ package nativehost
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+	"net"
+	"os"
+	"path/filepath"
+	"strconv"
 	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
 
 func frame(t *testing.T, v any) []byte {
@@ -113,7 +120,7 @@ func TestServeAnswersModProfiles(t *testing.T) {
 			t.Fatalf("mod request = %q/%d", game, modID)
 		}
 		version := "1.2.3"
-		return modInProfile{Profile: "Default", Version: &version, FileID: 456}, []modInProfile{{Profile: "Co-op", Version: nil}}
+		return modInProfile{Profile: "Default", Version: &version, FileID: 456}, []modInProfile{{Profile: "Co-op", Version: nil, FileID: 789}}
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -128,7 +135,7 @@ func TestServeAnswersModProfiles(t *testing.T) {
 	}
 	if got.Open == nil || got.Open.Profile != "Default" || got.Open.Version == nil || *got.Open.Version != "1.2.3" ||
 		got.Open.FileID != 456 ||
-		len(got.Others) != 1 || got.Others[0].Profile != "Co-op" || got.Others[0].Version != nil {
+		len(got.Others) != 1 || got.Others[0].Profile != "Co-op" || got.Others[0].Version != nil || got.Others[0].FileID != 789 {
 		t.Fatalf("mod reply = %+v", got)
 	}
 }
@@ -146,5 +153,86 @@ func TestInvoked(t *testing.T) {
 		if got := Invoked(c.args); got != c.want {
 			t.Errorf("Invoked(%q) = %v", c.args, got)
 		}
+	}
+}
+
+func TestNexusModProfilesReturnsPerProfileFileIDs(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	dir, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = ln.Close() })
+	go func() {
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			_ = c.Close()
+		}
+	}()
+	addr, ok := ln.Addr().(*net.TCPAddr)
+	if !ok {
+		t.Fatalf("listen addr = %T", ln.Addr())
+	}
+	port := addr.Port
+	if err := os.WriteFile(filepath.Join(dir, "control.json"), []byte(`{"port":`+strconv.Itoa(port)+`}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	openID := "aaaaaaaaaaaaaaaa"
+	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"lastProfile":{"stardew":"`+openID+`"}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	writeProfile := func(id, name string, hidden bool, fileID int, body []byte) {
+		t.Helper()
+		pdir := filepath.Join(dir, "profiles", "stardew", id)
+		if err := os.MkdirAll(pdir, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if body == nil {
+			var err error
+			body, err = json.Marshal(map[string]any{
+				"name":   name,
+				"hidden": hidden,
+				"entries": []map[string]any{{
+					"source": map[string]any{"kind": "nexus", "modId": 1915, "fileId": fileID},
+					"mods":   []map[string]any{{"version": "2.0.0"}},
+				}},
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		if err := os.WriteFile(filepath.Join(pdir, "profile.json"), body, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	writeProfile(openID, "Default", false, 111, nil)
+	writeProfile("bbbbbbbbbbbbbbbb", "Co-op", false, 222, nil)
+	writeProfile("cccccccccccccccc", "Shared", false, 111, nil)
+	writeProfile("dddddddddddddddd", "Hidden", true, 333, nil)
+	writeProfile("eeeeeeeeeeeeeeee", "Broken", false, 444, []byte("{"))
+	openProfile, others := nexusModProfiles("stardewvalley", 1915)
+	if openProfile.Profile != "Default" || openProfile.FileID != 111 {
+		t.Fatalf("open = %+v", openProfile)
+	}
+	byName := map[string]int{}
+	for _, p := range others {
+		byName[p.Profile] = p.FileID
+	}
+	if byName["Co-op"] != 222 || byName["Shared"] != 111 {
+		t.Fatalf("others = %+v", others)
+	}
+	if _, ok := byName["Hidden"]; ok {
+		t.Fatalf("hidden profile listed: %+v", others)
+	}
+	if _, ok := byName["Broken"]; ok {
+		t.Fatalf("damaged profile listed: %+v", others)
 	}
 }

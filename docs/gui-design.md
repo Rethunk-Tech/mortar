@@ -291,4 +291,4 @@ The unpacked MV3 extension (`browser-extension/`) on `www.nexusmods.com`. Native
 - **Popup:** label **Installed mods**, a select **Off** / **Highlight** (default) / **Hide**, stored in `chrome.storage.local` as `mode`. Status under it: **Mortar's browser helper is not installed**, **Mortar is not running or no profile is open**, or **Connected to Mortar · N mods in the open profile**.
 - **Listings and search:** in Highlight, tiles whose Nexus id is in the open profile get a gold outline and an **In profile** badge; Hide removes those tiles; Off draws none.
 - **Mod page:** a panel under the title: **In \<profile\>: v\<version\>** or **Not in \<profile\>**, **Also in:** other profile names, **Nexus has a newer version** when the page version is newer, and **Open in Mortar** (`mortar://<game>/mod/<id>`). Off removes the panel.
-- **Files tab:** a badge **In \<profile\>** on the row of the file id that profile has installed.
+- **Files tab:** one badge per file that any of your (non-hidden) profiles has installed, listing those profile names (open profile first, highlighted).
