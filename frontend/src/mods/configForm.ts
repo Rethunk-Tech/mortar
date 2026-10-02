@@ -7,110 +7,101 @@ type ConfigNode =
   | { kind: 'object'; entries: { key: string; node: ConfigNode }[] }
   | { kind: 'readonly'; json: string }
 
+const numberPattern = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/
+const floatPattern = /[.eE]/
+const whitespacePattern = /\s/
+
 class Parser {
   private at = 0
-  constructor(private readonly text: string) {}
+  private readonly text: string
+  constructor(text: string) {
+    this.text = text
+  }
   value(): ConfigNode {
     this.space()
     const c = this.text[this.at]
-    if (c === '{') return this.object()
-    if (c === '[') return this.array()
-    if (c === '"') return { kind: 'string', value: this.string() }
+    if (c === '{') {
+      return this.object()
+    }
+    if (c === '[') {
+      return this.array()
+    }
+    if (c === '"') {
+      return { kind: 'string', value: this.string() }
+    }
     if (this.text.startsWith('true', this.at)) {
-      this.at += 4
+      this.at += 'true'.length
       return { kind: 'bool', value: true }
     }
     if (this.text.startsWith('false', this.at)) {
-      this.at += 5
+      this.at += 'false'.length
       return { kind: 'bool', value: false }
     }
     if (this.text.startsWith('null', this.at)) {
-      this.at += 4
+      this.at += 'null'.length
       return { kind: 'readonly', json: 'null' }
     }
-    const match = this.text.slice(this.at).match(/^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/)
-    if (!match) throw new Error(`Invalid config near ${this.at}`)
+    const match = this.text.slice(this.at).match(numberPattern)
+    if (!match) {
+      throw new Error(`Invalid config near ${this.at}`)
+    }
     this.at += match[0].length
-    return { kind: /[.eE]/.test(match[0]) ? 'float' : 'int', value: match[0] }
+    return { kind: floatPattern.test(match[0]) ? 'float' : 'int', value: match[0] }
   }
   private object(): ConfigNode {
-    this.at++
+    this.at += 1
     const entries: { key: string; node: ConfigNode }[] = []
     this.space()
     while (this.text[this.at] !== '}') {
       const key = this.string()
       this.space()
-      this.at++
+      this.at += 1
       entries.push({ key, node: this.value() })
       this.space()
       if (this.text[this.at] === ',') {
-        this.at++
+        this.at += 1
         this.space()
       }
     }
-    this.at++
+    this.at += 1
     return { kind: 'object', entries }
   }
   private array(): ConfigNode {
-    this.at++
+    this.at += 1
     const values: ConfigNode[] = []
     this.space()
     while (this.text[this.at] !== ']') {
       values.push(this.value())
       this.space()
       if (this.text[this.at] === ',') {
-        this.at++
+        this.at += 1
         this.space()
       }
     }
-    this.at++
+    this.at += 1
+    if (values.every((v): v is Extract<ConfigNode, { kind: 'string' }> => v.kind === 'string')) {
+      return { kind: 'strings', value: values.map((v) => v.value) }
+    }
     return { kind: 'readonly', json: `[${values.map((v) => serialize(v)).join(',')}]` }
   }
   private string(): string {
-    const start = this.at++
+    const start = this.at
+    this.at += 1
     while (this.at < this.text.length) {
-      if (this.text[this.at] === '\\') this.at += 2
-      else if (this.text[this.at++] === '"')
+      if (this.text[this.at] === '\\') {
+        this.at += 2
+      } else if (this.text[this.at] === '"') {
+        this.at += 1
         return JSON.parse(this.text.slice(start, this.at)) as string
+      }
     }
     throw new Error('Unterminated config string')
   }
   private space() {
-    while (/\s/.test(this.text[this.at] ?? '')) this.at++
-  }
-}
-
-function fromValue(value: unknown): ConfigNode {
-  if (value === null || typeof value === 'undefined') {
-    return { kind: 'readonly', json: 'null' }
-  }
-  if (typeof value === 'boolean') {
-    return { kind: 'bool', value }
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return Number.isInteger(value)
-      ? { kind: 'int', value: String(value) }
-      : { kind: 'float', value: String(value) }
-  }
-  if (typeof value === 'string') {
-    return { kind: 'string', value }
-  }
-  if (Array.isArray(value)) {
-    if (value.every((item) => typeof item === 'string')) {
-      return { kind: 'strings', value: value as string[] }
-    }
-    return { kind: 'readonly', json: JSON.stringify(value) }
-  }
-  if (typeof value === 'object') {
-    return {
-      kind: 'object',
-      entries: Object.entries(value as Record<string, unknown>).map(([key, child]) => ({
-        key,
-        node: fromValue(child),
-      })),
+    while (whitespacePattern.test(this.text[this.at] ?? '')) {
+      this.at += 1
     }
   }
-  return { kind: 'readonly', json: JSON.stringify(value) }
 }
 
 function serialize(node: ConfigNode): string {
