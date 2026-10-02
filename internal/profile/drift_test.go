@@ -166,3 +166,27 @@ func TestInstallThenScanReportsNoDrift(t *testing.T) {
 		t.Fatalf("after Mortar install: %#v", got)
 	}
 }
+
+func TestParkUnknownFoldersKeepsEarlierCopy(t *testing.T) {
+	s := newEnv(t)
+	p, err := s.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, s.mods(p.ID), "dropped/first.txt", "first")
+	if _, err := s.Mods("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, s.mods(p.ID), "dropped/second.txt", "second")
+	if _, err := s.UserMods("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+
+	hold := filepath.Join(s.root, "stardew", p.ID, modsHoldDir)
+	if got := read(t, filepath.Join(hold, "dropped", "first.txt")); got != "first" {
+		t.Fatalf("first parked folder = %q", got)
+	}
+	if got := read(t, filepath.Join(hold, "dropped-2", "second.txt")); got != "second" {
+		t.Fatalf("second parked folder = %q", got)
+	}
+}

@@ -288,17 +288,25 @@ func (s *Store) parkUnknownModsLocked(game, dir string, p Profile) error {
 		if err := os.MkdirAll(hold, 0o700); err != nil {
 			return err
 		}
-		dst := filepath.Join(hold, e.Name())
-		if exists(dst) {
-			if err := os.RemoveAll(dst); err != nil {
-				return err
-			}
-		}
+		dst := uniqueHoldPath(hold, e.Name())
 		if err := os.Rename(filepath.Join(modsDir, e.Name()), dst); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func uniqueHoldPath(dir, name string) string {
+	dst := filepath.Join(dir, name)
+	if !exists(dst) {
+		return dst
+	}
+	for n := 2; ; n++ {
+		dst = filepath.Join(dir, fmt.Sprintf("%s-%d", name, n))
+		if !exists(dst) {
+			return dst
+		}
+	}
 }
 
 func (s *Store) unplaceKeys(game, id string, keys []string) error {
