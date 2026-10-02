@@ -106,13 +106,23 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
           minWidth: 0,
           overflow: 'auto',
           px: 3.5,
-          py: 3,
+          py: 2,
           display: 'flex',
           flexDirection: 'column',
           gap: 2,
         }}
       >
-        <Typography component="h2" sx={{ fontSize: 22, fontWeight: 700 }}>
+        {/* Same 36px row and size as the Settings heading beside it, so the two titles line up. */}
+        <Typography
+          component="h2"
+          sx={{
+            fontSize: 20,
+            fontWeight: 700,
+            minHeight: 36,
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
           {current?.label}
         </Typography>
         {body[section]}
