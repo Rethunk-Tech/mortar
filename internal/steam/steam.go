@@ -234,8 +234,8 @@ func isDir(p string) bool {
 // steamID64Base is the offset between a SteamID64 and the account number naming its userdata folder.
 const steamID64Base = 76561197960265728
 
-// LaunchOptions returns appID's launch options from the MostRecent account's localconfig.vdf, or "" when none are set.
-func (s Steam) LaunchOptions(appID string) (string, error) {
+// userConfigDir is the MostRecent account's userdata config folder, where localconfig.vdf and shortcuts.vdf live.
+func (s Steam) userConfigDir() (string, error) {
 	acct, err := s.CurrentAccount()
 	if err != nil {
 		return "", err
@@ -244,8 +244,16 @@ func (s Steam) LaunchOptions(appID string) (string, error) {
 	if err != nil || id64 < steamID64Base {
 		return "", fmt.Errorf("invalid Steam account id %q", acct.ID)
 	}
-	path := filepath.Join(s.Root, "userdata", strconv.FormatUint(id64-steamID64Base, 10), "config", "localconfig.vdf")
-	m, err := parseVDF(path)
+	return filepath.Join(s.Root, "userdata", strconv.FormatUint(id64-steamID64Base, 10), "config"), nil
+}
+
+// LaunchOptions returns appID's launch options from the MostRecent account's localconfig.vdf, or "" when none are set.
+func (s Steam) LaunchOptions(appID string) (string, error) {
+	dir, err := s.userConfigDir()
+	if err != nil {
+		return "", err
+	}
+	m, err := parseVDF(filepath.Join(dir, "localconfig.vdf"))
 	if err != nil {
 		return "", err
 	}

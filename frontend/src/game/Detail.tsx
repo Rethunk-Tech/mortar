@@ -17,6 +17,7 @@ import {
 } from '@mui/material'
 import {
   FileDown,
+  Gamepad2,
   History,
   MoreHorizontal,
   Palette,
@@ -29,7 +30,10 @@ import {
 } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { Create as CreateShortcut } from '../../bindings/github.com/Rethunk-AI/mortar/internal/shortcut/service.ts'
+import {
+  AddToSteam,
+  Create as CreateShortcut,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/shortcut/service.ts'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { LogActions } from '../console/LogActions.tsx'
 import { useBadges } from '../mods/badges.ts'
@@ -127,6 +131,37 @@ function HeroMenu({ profile }: { profile: Profile }) {
             <SquareArrowOutUpRight size={16} />
           </ListItemIcon>
           <ListItemText>{t`Add a shortcut that plays this profile`}</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            close()
+            const { game } = useProfiles.getState()
+            if (!game) {
+              return
+            }
+            AddToSteam(game.id, game.name, profile.id, profile.name)
+              .then((added) =>
+                useToasts.getState().push({
+                  kind: 'success',
+                  title: added ? t`Added to Steam` : t`Already in Steam`,
+                  body: t`It shows in your Steam library the next time Steam starts.`,
+                }),
+              )
+              .catch((e: unknown) =>
+                useToasts
+                  .getState()
+                  .push({
+                    kind: 'error',
+                    title: t`Could not add it to Steam`,
+                    body: errorMessage(e),
+                  }),
+              )
+          }}
+        >
+          <ListItemIcon sx={{ color: 'inherit' }}>
+            <Gamepad2 size={16} />
+          </ListItemIcon>
+          <ListItemText>{t`Add this profile to Steam`}</ListItemText>
         </MenuItem>
       </Menu>
       <HistoryDialog

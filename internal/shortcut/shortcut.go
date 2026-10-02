@@ -6,10 +6,13 @@ package shortcut
 import (
 	"errors"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/nxm"
+	"github.com/Rethunk-AI/mortar/internal/steam"
 )
 
 const playFlag = "--play="
@@ -87,4 +90,37 @@ func (s *Service) Create(game, gameName, profile, profileName string) (string, e
 		return "", err
 	}
 	return create(nxm.Launchable(exe), Arg(game, profile), profileName+" ("+gameName+")")
+}
+
+// ErrSteamRunning means Steam is open; it rewrites its shortcut list when it exits, which would drop the new entry.
+var ErrSteamRunning = errors.New("close Steam first: it rewrites its game list when it exits")
+
+// AddToSteam adds a non-Steam game that plays the profile to the native Steam library, for Big Picture and the
+// Steam Deck's Game Mode. It reports false when the same shortcut is already there.
+func (s *Service) AddToSteam(game, gameName, profile, profileName string) (bool, error) {
+	if !validID(game) || !validID(profile) {
+		return false, errors.New("a shortcut needs a game and a profile")
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return false, err
+	}
+	st, status := steam.Locate(home)
+	if status != steam.Found || st.Kind != steam.KindNative {
+		return false, errors.New("no Steam was found that can start Mortar: Steam (Flatpak) cannot run programs outside its sandbox")
+	}
+	if running, err := launch.Processes("/proc", "steam"); err == nil && len(running) > 0 {
+		return false, ErrSteamRunning
+	}
+	exe, err := os.Executable()
+	if err != nil {
+		return false, err
+	}
+	exe = nxm.Launchable(exe)
+	return st.AddShortcut(steam.Shortcut{
+		Name:          profileName + " (" + gameName + ")",
+		Exe:           exe,
+		StartDir:      filepath.Dir(exe),
+		LaunchOptions: Arg(game, profile),
+	})
 }
