@@ -67,6 +67,7 @@ func ConfigDirs(home string, extra ...string) []string {
 	return append(slices.Clone(extra),
 		filepath.Join(home, ".local", "share", "lutris", "games"),
 		filepath.Join(home, ".var", "app", "net.lutris.Lutris", "data", "lutris", "games"),
+		filepath.Join(home, ".config", "lutris", "games"),
 	)
 }
 

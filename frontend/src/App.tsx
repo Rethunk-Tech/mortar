@@ -3,14 +3,15 @@ import { useEffect, useState } from 'react'
 import { Get } from '../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { CommandPalette } from './commandPalette/CommandPalette.tsx'
 import { FirstRun } from './firstrun/FirstRun.tsx'
-import { firstRunNeeded } from './firstrun/needed.ts'
+import { GameSetup } from './firstrun/GameSetup.tsx'
+import { gameSetupNeeded } from './firstrun/needed.ts'
 import { FomodDialog } from './fomod/Dialog.tsx'
 import { MainScreen } from './game/MainScreen.tsx'
 import { GameSelect } from './games/GameSelect.tsx'
 import { loadGameStatus } from './games/status.ts'
 import { LaunchLayer } from './launch/LaunchLayer.tsx'
 import { overlayGame, useLaunch } from './launch/store.ts'
-import { useNav } from './nav/store.ts'
+import { isGameId, useNav } from './nav/store.ts'
 import { ArrivalDialog } from './nxm/ArrivalDialog.tsx'
 import { ProfilesPage } from './profiles/ProfilesPage.tsx'
 import { GameSettingsPage } from './settings/GameSettingsPage.tsx'
@@ -40,12 +41,12 @@ export function App() {
   useEffect(() => {
     Promise.all([Get(), loadGameStatus()])
       .then(async ([settings, { games }]) => {
-        if (await firstRunNeeded(games)) {
+        if (!settings.launchersConfirmed) {
           useNav.getState().openSetup()
           return
         }
         const last = games.find((g) => g.id === settings.lastGame)
-        if (last?.id === 'stardew' && last.available && last.installed) {
+        if (last && isGameId(last.id) && last.available && !(await gameSetupNeeded(last))) {
           useNav.getState().openGame(last.id)
         }
       })
@@ -65,6 +66,7 @@ export function App() {
         {route.name === 'profiles' ? <ProfilesPage /> : null}
         {route.name === 'game' ? <MainScreen game={route.game} /> : null}
         {route.name === 'setup' ? <FirstRun /> : null}
+        {route.name === 'game-setup' ? <GameSetup game={route.game} /> : null}
         {ready && route.name === 'game-select' ? <GameSelect /> : null}
       </AppFrame>
       <LaunchLayer game={game} />

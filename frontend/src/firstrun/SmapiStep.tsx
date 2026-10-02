@@ -5,10 +5,10 @@ import { Check, Clock, Copy, Ellipsis, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { LaunchOptions } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { useLoader } from '../loader/store.ts'
+import type { GameId } from '../nav/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { launchLine, launchOptionsSet } from './logic.ts'
-import { STARDEW } from './needed.ts'
 import { Panel } from './Panel.tsx'
 
 const MONO = '"IBM Plex Mono", monospace'
@@ -154,7 +154,15 @@ function LaunchLine({
   )
 }
 
-export function SmapiStep({ gameDir, onDone }: { gameDir: string; onDone: () => void }) {
+export function SmapiStep({
+  game,
+  gameDir,
+  onDone,
+}: {
+  game: GameId
+  gameDir: string
+  onDone: () => void
+}) {
   const { t } = useLingui()
   const windows = System.IsWindows()
   const status = useLoader((s) => s.status)
@@ -172,14 +180,14 @@ export function SmapiStep({ gameDir, onDone }: { gameDir: string; onDone: () => 
   const readOptions = useCallback(
     // Steam's config is unreadable until the user has run Steam once, which reads as "not set yet".
     () =>
-      windows ? LaunchOptions(STARDEW).then(setOptions, () => setOptions('')) : Promise.resolve(),
-    [windows],
+      windows ? LaunchOptions(game).then(setOptions, () => setOptions('')) : Promise.resolve(),
+    [windows, game],
   )
   useEffect(() => {
-    Promise.all([check(STARDEW), readOptions()])
+    Promise.all([check(game), readOptions()])
       .then(() => setChecked(true))
       .catch(reportUnexpected)
-  }, [check, readOptions])
+  }, [check, readOptions, game])
 
   const smapiReady = status?.installed === true && !status.broken
   const launchReady = !windows || launchOptionsSet(options)
@@ -196,9 +204,9 @@ export function SmapiStep({ gameDir, onDone }: { gameDir: string; onDone: () => 
   useEffect(() => {
     if (checked && !smapiReady && !installing && !started.current) {
       started.current = true
-      install(STARDEW)
+      install(game)
     }
-  }, [checked, smapiReady, installing, install])
+  }, [checked, smapiReady, installing, install, game])
 
   if (!checked) {
     return null
@@ -259,7 +267,7 @@ export function SmapiStep({ gameDir, onDone }: { gameDir: string; onDone: () => 
             variant="contained"
             startIcon={<RefreshCw size={16} />}
             disabled={pending}
-            onClick={() => install(STARDEW)}
+            onClick={() => install(game)}
             sx={{ height: 46, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
           >
             {t`Retry`}

@@ -12,11 +12,13 @@ import {
   SetLastProfile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
+import { gameSetupNeeded } from '../firstrun/needed.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
-import { useNav } from '../nav/store.ts'
+import { isGameId, useNav } from '../nav/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { gameArt } from './art.ts'
 import { relativePlay } from './lastPlayed.ts'
 import { type GameStatus, loaderCaption, loadGameStatus } from './status.ts'
 
@@ -129,11 +131,16 @@ function Row({
     lastLine = t`last played ${lastPlayedName}`
   }
   const open = () => {
-    if (game.id !== 'stardew') {
+    if (!isGameId(game.id)) {
       return
     }
-    SetLastGame(game.id).catch((err: unknown) => fail(t`Could not save the last game`, err))
-    useNav.getState().openGame(game.id)
+    const { id } = game
+    SetLastGame(id).catch((err: unknown) => fail(t`Could not save the last game`, err))
+    gameSetupNeeded(game)
+      .then((needed) =>
+        needed ? useNav.getState().openGameSetup(id) : useNav.getState().openGame(id),
+      )
+      .catch((err: unknown) => fail(t`Could not read your games`, err))
   }
   const playLast = (ev: MouseEvent) => {
     ev.stopPropagation()
@@ -173,7 +180,7 @@ function Row({
   }
   const content = (
     <>
-      {game.artUrl ? <Art src={game.artUrl} openable={openable} /> : null}
+      {gameArt(game) ? <Art src={gameArt(game)} openable={openable} /> : null}
       <Box sx={{ position: 'relative', textShadow: shadow, textAlign: 'left', color: '#fff' }}>
         <Typography sx={{ fontSize: 34, fontWeight: 600, lineHeight: 1.2 }}>{game.name}</Typography>
         <Typography sx={{ fontSize: 17 }}>{loaderLine}</Typography>
@@ -217,7 +224,7 @@ function Row({
     justifyContent: 'space-between',
     px: '96px',
     overflow: 'hidden',
-    bgcolor: game.artUrl ? 'transparent' : 'background.paper',
+    bgcolor: gameArt(game) ? 'transparent' : 'background.paper',
     borderLeft: '4px solid',
     borderColor: openable ? 'primary.main' : 'transparent',
     borderTop: '1px solid rgba(0,0,0,0.8)',

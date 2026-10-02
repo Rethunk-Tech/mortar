@@ -34,15 +34,8 @@ const (
 	LauncherGOG          = "gog"
 )
 
-// root is the folder the user chose for a launcher, or "".
-func root(s settings.Settings, launcher string) string { return s.LauncherRoots[launcher] }
-
-func rootList(s settings.Settings, launcher string) []string {
-	if r := root(s, launcher); r != "" {
-		return []string{r}
-	}
-	return nil
-}
+// roots are the folders the user added for a launcher.
+func roots(s settings.Settings, launcher string) []string { return s.LauncherRoots[launcher] }
 
 func collect(g Game, home string, s settings.Settings) []FoundInstall {
 	var all []FoundInstall
@@ -57,7 +50,7 @@ func collect(g Game, home string, s settings.Settings) []FoundInstall {
 		seen[dir] = struct{}{}
 		all = append(all, FoundInstall{Store: store, Dir: dir})
 	}
-	for _, st := range steam.LocateAll(home, rootList(s, LauncherSteam)...) {
+	for _, st := range steam.LocateAll(home, roots(s, LauncherSteam)...) {
 		dir, err := st.InstallDir(g.SteamAppID())
 		if err != nil || dir == "" {
 			continue
@@ -68,10 +61,10 @@ func collect(g Game, home string, s settings.Settings) []FoundInstall {
 		}
 		add(store, dir)
 	}
-	for _, in := range gog.Locate(home, gog.Roots{Heroic: root(s, LauncherHeroic), Games: root(s, LauncherGOG)}) {
+	for _, in := range gog.Locate(home, gog.Roots{Heroic: roots(s, LauncherHeroic), Games: roots(s, LauncherGOG)}) {
 		add(in.Store, in.Dir)
 	}
-	for _, in := range lutris.Locate(home, rootList(s, LauncherLutris)...) {
+	for _, in := range lutris.Locate(home, roots(s, LauncherLutris)...) {
 		add(StoreLutris, in.Dir)
 	}
 	return all

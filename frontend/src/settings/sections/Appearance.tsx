@@ -25,7 +25,7 @@ export function Appearance() {
   }
   const cards: { name: AccentName; label: string; note: string }[] = [
     { name: 'sand', label: t`Sand`, note: t`Default` },
-    { name: 'moss', label: t`Moss`, note: t`Stardew green` },
+    { name: 'moss', label: t`Moss`, note: t`Earthy green` },
     { name: 'copper', label: t`Copper`, note: t`Warm and bold` },
     { name: 'sky', label: t`Sky`, note: t`Cool and calm` },
   ]

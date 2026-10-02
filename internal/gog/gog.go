@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
@@ -26,10 +27,10 @@ type Install struct {
 	Store string
 }
 
-// Roots are folders the user chose: Heroic's config folder and a folder of GOG games.
+// Roots are folders the user added: Heroic config folders and folders of GOG games.
 type Roots struct {
-	Heroic string
-	Games  string
+	Heroic []string
+	Games  []string
 }
 
 // Locate finds GOG Stardew folders under home (and Windows Galaxy / default paths), the user's own folders first.
@@ -48,10 +49,10 @@ func Locate(home string, r Roots) []Install {
 		out = append(out, Install{Dir: dir, Store: store})
 	}
 	add(galaxyPath(), StoreGOG)
-	for _, dir := range GamesDirs(home, r.Games) {
+	for _, dir := range GamesDirs(home, r.Games...) {
 		add(filepath.Join(dir, "Stardew Valley"), StoreGOG)
 	}
-	for _, cfg := range HeroicDirs(home, r.Heroic) {
+	for _, cfg := range HeroicDirs(home, r.Heroic...) {
 		for _, dir := range heroicInstalls(cfg) {
 			add(dir, StoreHeroic)
 		}
@@ -60,11 +61,8 @@ func Locate(home string, r Roots) []Install {
 }
 
 // GamesDirs are the folders GOG installers put games in, the user's own first.
-func GamesDirs(home, custom string) []string {
-	var out []string
-	if custom != "" {
-		out = append(out, custom)
-	}
+func GamesDirs(home string, custom ...string) []string {
+	out := slices.Clone(custom)
 	if runtime.GOOS == "windows" {
 		return append(out, windowsGamesDirs()...)
 	}
@@ -72,14 +70,18 @@ func GamesDirs(home, custom string) []string {
 }
 
 // HeroicDirs are Heroic's config folders (native, then Flatpak), the user's own first.
-func HeroicDirs(home, custom string) []string {
-	var out []string
-	if custom != "" {
-		out = append(out, custom)
+func HeroicDirs(home string, custom ...string) []string {
+	out := slices.Clone(custom)
+	if runtime.GOOS == "windows" {
+		if appData := os.Getenv("APPDATA"); appData != "" {
+			out = append(out, filepath.Join(appData, "heroic"))
+		}
+		return out
 	}
 	return append(out,
 		filepath.Join(home, ".config", "heroic"),
 		filepath.Join(home, ".var", "app", "com.heroicgameslauncher.hgl", "config", "heroic"),
+		filepath.Join(home, "snap", "heroic", "current", ".config", "heroic"),
 	)
 }
 

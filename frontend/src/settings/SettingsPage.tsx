@@ -7,6 +7,7 @@ import { About } from './sections/About.tsx'
 import { Appearance } from './sections/Appearance.tsx'
 import { Data } from './sections/Data.tsx'
 import { General } from './sections/General.tsx'
+import { Launchers } from './sections/Launchers.tsx'
 import { NexusMods } from './sections/NexusMods.tsx'
 import { Shortcuts } from './sections/Shortcuts.tsx'
 import { Updates } from './sections/Updates.tsx'
@@ -30,6 +31,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
   const sections: { id: SettingsSection; label: string }[] = [
     { id: 'general', label: t`General` },
     { id: 'appearance', label: t`Appearance` },
+    { id: 'launchers', label: t`Launchers` },
     { id: 'data', label: t`Data` },
     { id: 'nexus', label: t`Nexus Mods` },
     { id: 'updates', label: t`Updates` },
@@ -39,6 +41,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
   const body: Record<SettingsSection, ReactNode> = {
     general: <General />,
     appearance: <Appearance />,
+    launchers: <Launchers />,
     data: <Data />,
     nexus: <NexusMods />,
     updates: <Updates />,

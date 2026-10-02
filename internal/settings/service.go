@@ -3,6 +3,7 @@ package settings
 import (
 	"fmt"
 	"maps"
+	"slices"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
@@ -162,9 +163,9 @@ func (s *Service) SetGameFolder(game, dir string) error {
 	})
 }
 
-// SetLauncherRoot stores the folder the user chose for a launcher, or clears it when dir is empty.
-func (s *Service) SetLauncherRoot(launcher, dir string) error {
-	if dir != "" && s.ValidateLauncherRoot != nil {
+// AddLauncherRoot adds a folder of a launcher for Mortar to search, after checking it is that launcher's.
+func (s *Service) AddLauncherRoot(launcher, dir string) error {
+	if s.ValidateLauncherRoot != nil {
 		if err := s.ValidateLauncherRoot(launcher, dir); err != nil {
 			return err
 		}
@@ -172,12 +173,23 @@ func (s *Service) SetLauncherRoot(launcher, dir string) error {
 	return s.set(func(v *Settings) {
 		v.LauncherRoots = maps.Clone(v.LauncherRoots)
 		if v.LauncherRoots == nil {
-			v.LauncherRoots = map[string]string{}
+			v.LauncherRoots = map[string][]string{}
 		}
-		if dir == "" {
+		if !slices.Contains(v.LauncherRoots[launcher], dir) {
+			v.LauncherRoots[launcher] = append(slices.Clone(v.LauncherRoots[launcher]), dir)
+		}
+	})
+}
+
+// RemoveLauncherRoot stops searching a folder the user added for a launcher.
+func (s *Service) RemoveLauncherRoot(launcher, dir string) error {
+	return s.set(func(v *Settings) {
+		v.LauncherRoots = maps.Clone(v.LauncherRoots)
+		rest := slices.DeleteFunc(slices.Clone(v.LauncherRoots[launcher]), func(d string) bool { return d == dir })
+		if len(rest) == 0 {
 			delete(v.LauncherRoots, launcher)
 		} else {
-			v.LauncherRoots[launcher] = dir
+			v.LauncherRoots[launcher] = rest
 		}
 	})
 }

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 
 	"github.com/Rethunk-AI/mortar/internal/gog"
 	"github.com/Rethunk-AI/mortar/internal/lutris"
@@ -18,10 +19,10 @@ type StoreApp struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Found bool   `json:"found"`
-	// Root is the folder it was found in, or the user's chosen folder when that one is not usable.
-	Root string `json:"root"`
-	// Custom is whether the user chose Root.
-	Custom bool `json:"custom"`
+	// Roots are every searched folder that is this launcher's, in search order.
+	Roots []string `json:"roots"`
+	// Custom are the folders the user added, usable or not.
+	Custom []string `json:"custom"`
 	// Looked lists every folder searched, in order.
 	Looked []string       `json:"looked"`
 	Games  []StoreAppGame `json:"games"`
@@ -42,8 +43,8 @@ var storeLauncher = map[string]string{
 
 type launcherSpec struct {
 	id, name string
-	// looked lists the folders searched for this launcher, custom folder first.
-	looked func(home, custom string) []string
+	// looked lists the folders searched for this launcher, the user's own first.
+	looked func(home string, custom []string) []string
 	// usable reports whether a folder is this launcher's.
 	usable func(dir string) bool
 }
@@ -53,40 +54,40 @@ func isDir(p string) bool {
 	return err == nil && st.IsDir()
 }
 
-func withCustom(custom string, rest ...string) []string {
-	if custom == "" {
-		return rest
-	}
-	return append([]string{custom}, rest...)
+func withCustom(custom []string, rest ...string) []string {
+	return append(slices.Clone(custom), rest...)
 }
 
 func launcherSpecs() []launcherSpec {
 	steamDir := func(dir string) bool { return isDir(filepath.Join(dir, "steamapps")) }
 	specs := []launcherSpec{{
 		id: LauncherSteam, name: "Steam", usable: steamDir,
-		looked: func(home, custom string) []string { return steam.Roots(home, withCustom(custom)...) },
+		looked: func(home string, custom []string) []string { return steam.Roots(home, custom...) },
 	}}
 	if runtime.GOOS == "linux" {
-		specs = append(specs,
-			launcherSpec{
-				id: LauncherFlatpakSteam, name: "Steam (Flatpak)", usable: steamDir,
-				looked: func(home, _ string) []string { return []string{steam.FlatpakRoot(home)} },
-			},
-			launcherSpec{
-				id: LauncherHeroic, name: "Heroic", usable: func(dir string) bool { return isDir(filepath.Join(dir, "gog_store")) },
-				looked: gog.HeroicDirs,
-			},
-			launcherSpec{
-				id: LauncherLutris, name: "Lutris", usable: isDir,
-				looked: func(home, custom string) []string { return lutris.ConfigDirs(home, withCustom(custom)...) },
-			},
-		)
+		specs = append(specs, launcherSpec{
+			id: LauncherFlatpakSteam, name: "Steam (Flatpak)", usable: steamDir,
+			looked: func(home string, _ []string) []string { return []string{steam.FlatpakRoot(home)} },
+		})
 	}
-	gogSpec := launcherSpec{id: LauncherGOG, name: "GOG", usable: isDir, looked: gog.GamesDirs}
+	specs = append(specs, launcherSpec{
+		id: LauncherHeroic, name: "Heroic", usable: func(dir string) bool { return isDir(filepath.Join(dir, "gog_store")) },
+		looked: func(home string, custom []string) []string { return gog.HeroicDirs(home, custom...) },
+	})
+	if runtime.GOOS == "linux" {
+		specs = append(specs, launcherSpec{
+			id: LauncherLutris, name: "Lutris", usable: isDir,
+			looked: func(home string, custom []string) []string { return lutris.ConfigDirs(home, custom...) },
+		})
+	}
+	gogSpec := launcherSpec{
+		id: LauncherGOG, name: "GOG", usable: isDir,
+		looked: func(home string, custom []string) []string { return gog.GamesDirs(home, custom...) },
+	}
 	if runtime.GOOS == "windows" {
 		gogSpec.name = "GOG Galaxy"
-		gogSpec.looked = func(home, custom string) []string {
-			return append(withCustom(custom, gog.GalaxyDir()), gog.GamesDirs(home, "")...)
+		gogSpec.looked = func(home string, custom []string) []string {
+			return append(withCustom(custom, gog.GalaxyDir()), gog.GamesDirs(home)...)
 		}
 	}
 	return append(specs, gogSpec)
@@ -104,19 +105,26 @@ func Launchers(home string, s settings.Settings) ([]StoreApp, error) {
 	var out []StoreApp
 	for _, spec := range launcherSpecs() {
 		custom := s.LauncherRoots[spec.id]
-		l := StoreApp{ID: spec.id, Name: spec.name, Looked: spec.looked(home, custom), Games: byLauncher[spec.id], Custom: custom != ""}
+		l := StoreApp{
+			ID: spec.id, Name: spec.name, Looked: spec.looked(home, custom), Games: byLauncher[spec.id],
+			Roots: []string{}, Custom: slices.Clone(custom),
+		}
 		if l.Games == nil {
 			l.Games = []StoreAppGame{}
 		}
+		if l.Custom == nil {
+			l.Custom = []string{}
+		}
+		seen := map[string]bool{}
 		for _, dir := range l.Looked {
-			if dir != "" && spec.usable(dir) {
-				l.Found, l.Root = true, dir
-				break
+			real, err := filepath.EvalSymlinks(dir)
+			if err != nil || dir == "" || seen[real] || !spec.usable(dir) {
+				continue
 			}
+			seen[real] = true
+			l.Roots = append(l.Roots, dir)
 		}
-		if !l.Found && custom != "" {
-			l.Root = custom
-		}
+		l.Found = len(l.Roots) > 0
 		out = append(out, l)
 	}
 	return out, nil

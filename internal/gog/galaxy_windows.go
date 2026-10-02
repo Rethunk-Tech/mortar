@@ -17,8 +17,15 @@ func windowsGamesDirs() []string {
 	return dirs
 }
 
-// GalaxyDir is GOG Galaxy's install folder, whether or not it exists.
+// GalaxyDir is GOG Galaxy's install folder from its registry entry, else its default folder, whether or not it exists.
 func GalaxyDir() string {
+	if k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\WOW6432Node\GOG.com\GalaxyClient\paths`, registry.QUERY_VALUE); err == nil {
+		p, _, err := k.GetStringValue("client")
+		_ = k.Close()
+		if err == nil && p != "" {
+			return filepath.Clean(p)
+		}
+	}
 	if pf := os.Getenv("ProgramFiles(x86)"); pf != "" {
 		return filepath.Join(pf, "GOG Galaxy")
 	}

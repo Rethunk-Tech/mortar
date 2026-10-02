@@ -11,11 +11,10 @@ import {
   SetLastGame,
   SetLastProfile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
-import { useNav } from '../nav/store.ts'
+import { type GameId, useNav } from '../nav/store.ts'
 import { GameModsDialog } from '../profiles/GameModsDialog.tsx'
 import { openImport } from '../share/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
-import { STARDEW } from './needed.ts'
 
 const cardSx = (borderColor: string) => ({
   display: 'flex',
@@ -28,7 +27,7 @@ const cardSx = (borderColor: string) => ({
   borderRadius: '8px',
 })
 
-export function ProfileStep() {
+export function ProfileStep({ game }: { game: GameId }) {
   const { t } = useLingui()
   const [name, setName] = useState(t`Main`)
   const [error, setError] = useState('')
@@ -37,10 +36,10 @@ export function ProfileStep() {
   const [gameMods, setGameMods] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   useEffect(() => {
-    PreviewGameMods(STARDEW)
+    PreviewGameMods(game)
       .then((p) => setGameMods((p.mods ?? []).length > 0))
       .catch(() => setGameMods(false))
-  }, [])
+  }, [game])
   const submit = async () => {
     const trimmed = name.trim()
     if (!trimmed) {
@@ -49,10 +48,10 @@ export function ProfileStep() {
     }
     setBusy(true)
     try {
-      const profile = await Create(STARDEW, trimmed)
-      await Promise.all([SetLastGame(STARDEW), SetLastProfile(STARDEW, profile.id)])
+      const profile = await Create(game, trimmed)
+      await Promise.all([SetLastGame(game), SetLastProfile(game, profile.id)])
       RegisterLinks().catch(reportUnexpected)
-      useNav.getState().openGame(STARDEW)
+      useNav.getState().openGame(game)
     } catch (e) {
       setError(errorMessage(e))
       setBusy(false)
@@ -171,11 +170,11 @@ export function ProfileStep() {
       </Box>
       <GameModsDialog
         open={importOpen}
-        game={STARDEW}
+        game={game}
         onClose={() => setImportOpen(false)}
         onImported={(id) => {
-          Promise.all([SetLastGame(STARDEW), SetLastProfile(STARDEW, id)])
-            .then(() => useNav.getState().openGame(STARDEW))
+          Promise.all([SetLastGame(game), SetLastProfile(game, id)])
+            .then(() => useNav.getState().openGame(game))
             .catch(reportUnexpected)
           RegisterLinks().catch(reportUnexpected)
         }}

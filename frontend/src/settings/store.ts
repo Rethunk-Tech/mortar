@@ -12,6 +12,8 @@ const defaults: Settings = {
   lastPlayed: {},
   gameFolders: {},
   gameStores: {},
+  launcherRoots: {},
+  launchersConfirmed: false,
   loaders: {},
   dismissed: {},
   nexusUserId: 0,

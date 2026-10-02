@@ -33,25 +33,25 @@ func TestLaunchersReportFoundFoldersGamesAndWhereTheyLooked(t *testing.T) {
 		t.Fatal(err)
 	}
 	st := find(t, list, LauncherSteam)
-	if !st.Found || st.Root != filepath.Join(h, ".local", "share", "Steam") || len(st.Games) != 1 || st.Games[0].ID != "stardew" {
+	if !st.Found || st.Roots[0] != filepath.Join(h, ".local", "share", "Steam") || len(st.Games) != 1 || st.Games[0].ID != "stardew" {
 		t.Fatalf("steam = %+v", st)
 	}
-	if hr := find(t, list, LauncherHeroic); !hr.Found || len(hr.Looked) != 2 {
+	if hr := find(t, list, LauncherHeroic); !hr.Found || len(hr.Looked) != 3 {
 		t.Fatalf("Flatpak Heroic's config folder must count: %+v", hr)
 	}
 	lu := find(t, list, LauncherLutris)
-	if lu.Found || len(lu.Looked) != 2 || len(lu.Games) != 0 {
+	if lu.Found || len(lu.Looked) != 3 || len(lu.Games) != 0 {
 		t.Fatalf("lutris = %+v", lu)
 	}
 
 	custom := t.TempDir()
 	s := settings.Defaults()
-	s.LauncherRoots[LauncherLutris] = custom
+	s.LauncherRoots[LauncherLutris] = []string{custom}
 	list, err = Launchers(h, s)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if lu := find(t, list, LauncherLutris); !lu.Found || !lu.Custom || lu.Root != custom || lu.Looked[0] != custom {
+	if lu := find(t, list, LauncherLutris); !lu.Found || len(lu.Custom) != 1 || lu.Roots[0] != custom || lu.Looked[0] != custom {
 		t.Fatalf("a chosen folder is searched first: %+v", lu)
 	}
 }

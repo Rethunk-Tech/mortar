@@ -1,69 +1,39 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
-import { type GameStatus, loadGameStatus } from '../games/status.ts'
+import type { StoreApp } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
+import { Launchers } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
+import { ConfirmLaunchers } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { LauncherList } from '../launchers/LauncherList.tsx'
+import { useNav } from '../nav/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { FindStep } from './FindStep.tsx'
-import { STARDEW } from './needed.ts'
-import { ProfileStep } from './ProfileStep.tsx'
-import { SmapiStep } from './SmapiStep.tsx'
+import { useRefreshOnFocus } from './useRefreshOnFocus.ts'
 
-const FIND = 1
-const SMAPI = 2
-const PROFILE = 3
-type Step = typeof FIND | typeof SMAPI | typeof PROFILE
-
-function Chip({ n, label, state }: { n: Step; label: string; state: 'done' | 'current' | 'todo' }) {
-  return (
-    <Box
-      component="li"
-      aria-current={state === 'current' ? 'step' : undefined}
-      sx={{
-        px: '14px',
-        py: '6px',
-        borderRadius: '16px',
-        fontSize: 14,
-        fontWeight: state === 'todo' ? 'normal' : 'bold',
-        whiteSpace: 'nowrap',
-        bgcolor: (theme) =>
-          ({
-            done: 'rgba(12,223,100,0.18)',
-            current: theme.palette.primary.main,
-            todo: 'rgba(255,255,255,0.1)',
-          })[state],
-        color: (theme) =>
-          ({
-            done: theme.palette.success.light,
-            current: theme.palette.primary.contrastText,
-            todo: theme.palette.text.secondary,
-          })[state],
-      }}
-    >
-      {n} {label}
-    </Box>
-  )
-}
-
+// First run: the launchers that tell Mortar which games are installed. Each game is set up when first opened.
 export function FirstRun() {
   const { t } = useLingui()
-  const [step, setStep] = useState<Step>(FIND)
-  const [status, setStatus] = useState<GameStatus | null>(null)
+  const [launchers, setLaunchers] = useState<StoreApp[] | null>(null)
+  const [busy, setBusy] = useState(false)
   const refresh = useCallback(() => {
-    loadGameStatus().then(setStatus).catch(reportUnexpected)
+    Launchers()
+      .then((ls) => setLaunchers(ls ?? []))
+      .catch(reportUnexpected)
   }, [])
   useEffect(refresh, [refresh])
-  const goToProfile = useCallback(() => setStep(PROFILE), [])
-
-  if (!status) {
+  useRefreshOnFocus(refresh)
+  if (!launchers) {
     return null
   }
-  const stateOf = (n: Step) => {
-    if (n < step) {
-      return 'done'
-    }
-    return n === step ? 'current' : 'todo'
+  const found = launchers.filter((l) => l.found).length
+  const finish = () => {
+    setBusy(true)
+    ConfirmLaunchers()
+      .then(() => useNav.getState().openGameSelect())
+      .catch((e: unknown) => {
+        setBusy(false)
+        reportUnexpected(e)
+      })
   }
-  const gameDir = status.games.find((g) => g.id === STARDEW)?.installDir ?? ''
   return (
     <Box
       sx={{
@@ -75,34 +45,43 @@ export function FirstRun() {
         gap: '20px',
         pt: '34px',
         pb: 3,
+        px: 2,
       }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
         <Typography component="h1" sx={{ fontSize: 40, fontWeight: 700 }}>
           {t`Welcome to Mortar`}
         </Typography>
-        <Typography
-          sx={{ fontSize: 17 }}
-        >{t`Three steps and you are playing with mods.`}</Typography>
+        <Typography sx={{ fontSize: 17, textAlign: 'center' }}>
+          {t`Mortar finds your games through the launchers that installed them. You set up each game when you first open it.`}
+        </Typography>
       </Box>
-      <Box component="ol" sx={{ display: 'flex', gap: '10px', m: 0, p: 0, listStyle: 'none' }}>
-        <Chip
-          n={FIND}
-          label={step > FIND ? t`Game found` : t`Find the game`}
-          state={stateOf(FIND)}
-        />
-        <Chip
-          n={SMAPI}
-          label={step > SMAPI ? t`SMAPI installed` : t`Install SMAPI`}
-          state={stateOf(SMAPI)}
-        />
-        <Chip n={PROFILE} label={t`First profile`} state={stateOf(PROFILE)} />
+      <Box sx={{ width: 'min(1200px, 100%)' }}>
+        <LauncherList launchers={launchers} refresh={refresh} />
       </Box>
-      {step === FIND ? (
-        <FindStep status={status} refresh={refresh} onContinue={() => setStep(SMAPI)} />
-      ) : null}
-      {step === SMAPI ? <SmapiStep gameDir={gameDir} onDone={goToProfile} /> : null}
-      {step === PROFILE ? <ProfileStep /> : null}
+      <Box
+        sx={{
+          width: 'min(1200px, 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          justifyContent: 'flex-end',
+        }}
+      >
+        <Typography sx={{ fontSize: 14, color: 'text.secondary', flex: 1 }}>
+          {found > 0
+            ? t`${found} of ${launchers.length} launchers found.`
+            : t`No launchers found. You can still continue and choose each game's folder when you open it.`}
+        </Typography>
+        <Button
+          variant="contained"
+          disabled={busy}
+          onClick={finish}
+          sx={{ height: 46, px: 4, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
+        >
+          {t`Continue`}
+        </Button>
+      </Box>
     </Box>
   )
 }

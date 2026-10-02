@@ -7,6 +7,7 @@ export const isGameId = (game: string): game is GameId => game === 'stardew'
 export type SettingsSection =
   | 'general'
   | 'appearance'
+  | 'launchers'
   | 'data'
   | 'nexus'
   | 'updates'
@@ -16,6 +17,7 @@ export type SettingsSection =
 export type Route =
   | { name: 'game-select' }
   | { name: 'setup' }
+  | { name: 'game-setup'; game: GameId }
   | { name: 'game'; game: GameId }
   | { name: 'profiles'; game: GameId }
   | { name: 'game-settings'; game: GameId }
@@ -36,6 +38,7 @@ export const useNav = create<{
   openGame: (game: GameId) => void
   openGameSelect: () => void
   openSetup: () => void
+  openGameSetup: (game: GameId) => void
   openProfiles: () => void
   closeProfiles: () => void
   openGameSettings: () => void
@@ -47,6 +50,7 @@ export const useNav = create<{
   openGame: (game) => set({ route: { name: 'game', game } }),
   openGameSelect: () => set({ route: { name: 'game-select' } }),
   openSetup: () => set({ route: { name: 'setup' } }),
+  openGameSetup: (game) => set({ route: { name: 'game-setup', game } }),
   openProfiles: () =>
     set(({ route }) =>
       route.name === 'game' ? { route: { name: 'profiles', game: route.game } } : {},

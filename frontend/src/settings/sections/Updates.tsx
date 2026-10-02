@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, CircularProgress, FormControlLabel, Link, Switch } from '@mui/material'
 import { Download, RefreshCw, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { List as ListGames } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import {
   SetCheckModUpdatesOnStart,
   SetCheckOnlyEnabledMods,
@@ -154,6 +155,15 @@ function persistToggle(
 export function Updates() {
   const { t } = useLingui()
   const game = lastOpenedGame(useSettings((s) => s.lastGame))
+  const [gameName, setGameName] = useState('')
+  useEffect(() => {
+    if (!game) {
+      return
+    }
+    ListGames()
+      .then((gs) => setGameName((gs ?? []).find((g) => g.id === game)?.name ?? ''))
+      .catch(() => setGameName(''))
+  }, [game])
   const checkModUpdatesOnStart = useSettings((s) => s.checkModUpdatesOnStart)
   const includeBetaReleases = useSettings((s) => s.includeBetaReleases)
   const includePrereleaseModVersions = useSettings((s) => s.includePrereleaseModVersions)
@@ -208,7 +218,7 @@ export function Updates() {
         label={t`Check only enabled mods`}
       />
       <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
-        {t`Mod updates show on each profile's mod list. SMAPI's version and its update notice are in the game's settings.`}
+        {t`Mod updates show on each profile's mod list. A game's mod loader version and its update notice are in that game's settings.`}
       </Box>
       {game ? (
         <>
@@ -224,7 +234,7 @@ export function Updates() {
             onClick={() => useNav.setState({ route: { name: 'game-settings', game } })}
             sx={{ alignSelf: 'flex-start', fontSize: 13, whiteSpace: 'nowrap' }}
           >
-            {t`Open Stardew Valley settings`}
+            {gameName ? t`Open ${gameName} settings` : t`Open the game's settings`}
           </Link>
         </>
       ) : null}
