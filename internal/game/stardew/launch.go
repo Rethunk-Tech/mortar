@@ -156,6 +156,18 @@ func (Game) SteamLaunchForcesLoader(options string) bool {
 	return hasSMAPILine(options)
 }
 
+// SteamLaunchWithLoader puts SMAPI before Steam's %command%, or adds the SMAPI line ahead of options without one.
+func (Game) SteamLaunchWithLoader(dir, current string) string {
+	if hasSMAPILine(current) {
+		return current
+	}
+	exe := `"` + filepath.Join(dir, smapiMarker+".exe") + `"`
+	if strings.Contains(current, "%command%") {
+		return strings.Replace(current, "%command%", exe+" %command%", 1)
+	}
+	return strings.TrimSpace(exe + " %command% " + current)
+}
+
 // hasSMAPILine reports whether Steam launch options run SMAPI in place of the game: `"<game>\StardewModdingAPI.exe" %command%`.
 func hasSMAPILine(options string) bool {
 	return strings.Contains(strings.ToLower(options), strings.ToLower(smapiMarker)) && strings.Contains(options, "%command%")

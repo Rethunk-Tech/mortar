@@ -81,6 +81,9 @@ type Launcher interface {
 	LogFile() (string, error)
 	// SteamLaunchForcesLoader reports whether Steam's launch options start the loader instead of the game.
 	SteamLaunchForcesLoader(options string) bool
+	// SteamLaunchWithLoader returns current launch options changed so Steam starts the loader in dir, keeping the
+	// user's own options.
+	SteamLaunchWithLoader(dir, current string) string
 }
 
 var games = []Game{&stardew.Game{}}

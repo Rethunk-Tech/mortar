@@ -3,10 +3,13 @@ import { Box, Button, LinearProgress, Typography } from '@mui/material'
 import { System } from '@wailsio/runtime'
 import { Check, Clock, Copy, Ellipsis, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { LaunchOptions } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
+import {
+  LaunchOptions,
+  SetLaunchOption,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { useLoader } from '../loader/store.ts'
 import type { GameId } from '../nav/store.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { launchLine, launchOptionsSet } from './logic.ts'
 import { Panel } from './Panel.tsx'
@@ -61,11 +64,13 @@ function InstallLog({ steps, installing }: { steps: string[]; installing: boolea
 }
 
 function LaunchLine({
+  game,
   gameDir,
   options,
   recheck,
   onContinue,
 }: {
+  game: GameId
   gameDir: string
   options: string
   recheck: () => void
@@ -80,11 +85,26 @@ function LaunchLine({
       .then(() => useToasts.getState().push({ kind: 'success', title: t`Launch options copied` }))
       .catch(reportUnexpected)
   }
+  const [writing, setWriting] = useState(false)
+  const write = () => {
+    setWriting(true)
+    SetLaunchOption(game)
+      .then(() => {
+        useToasts.getState().push({ kind: 'success', title: t`Launch options set in Steam` })
+        recheck()
+      })
+      .catch((e: unknown) =>
+        useToasts
+          .getState()
+          .push({ kind: 'error', title: t`Could not set it in Steam`, body: errorMessage(e) }),
+      )
+      .finally(() => setWriting(false))
+  }
   return (
     <>
       <Typography sx={{ fontSize: 22, fontWeight: 700 }}>{t`One step in Steam`}</Typography>
       <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>
-        {t`On Windows, Steam starts the game without SMAPI unless you tell it otherwise. In Steam, right-click Stardew Valley, choose Properties, and paste this line into Launch Options:`}
+        {t`On Windows, Steam starts the game without SMAPI unless you tell it otherwise. With Steam closed, Mortar can set it for you; or in Steam, right-click Stardew Valley, choose Properties, and paste this line into Launch Options:`}
       </Typography>
       <Box sx={{ display: 'flex', gap: 1 }}>
         <Box
@@ -108,12 +128,23 @@ function LaunchLine({
           {line}
         </Box>
         <Button
-          variant="contained"
+          variant="outlined"
+          color="inherit"
           startIcon={<Copy size={16} />}
           onClick={copy}
           sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
         >
           {t`Copy`}
+        </Button>
+      </Box>
+      <Box>
+        <Button
+          variant="contained"
+          disabled={set || writing}
+          onClick={write}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          {t`Set it in Steam for me`}
         </Button>
       </Box>
       <Box
@@ -221,6 +252,7 @@ export function SmapiStep({
         </Box>
         {showLaunch ? (
           <LaunchLine
+            game={game}
             gameDir={gameDir}
             options={options}
             recheck={() => readOptions().catch(reportUnexpected)}
