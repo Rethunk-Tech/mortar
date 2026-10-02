@@ -2,6 +2,8 @@ package problems
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -17,7 +19,7 @@ func change(t *testing.T, raw string) cpChange {
 func edit(t *testing.T, raw string, image bool) cpPatch {
 	t.Helper()
 	ch := change(t, raw)
-	return cpPatch{kind: "edit", shapes: editShapes(t.TempDir(), ch, image), spouse: spouseOf(ch.When)}
+	return cpPatch{kind: "edit", shapes: editShapes(t.TempDir(), ch, image), spouse: spouseOf(ch.When), places: placesOf(ch.When)}
 }
 
 func TestEditsClash(t *testing.T) {
@@ -53,5 +55,39 @@ func TestEditsClash(t *testing.T) {
 func TestAdditiveEditHasNoShape(t *testing.T) {
 	if s := editShapes(t.TempDir(), change(t, `{"AddWarps":["1 2 Town 3 4"],"TextOperations":[{"Operation":"Append"}]}`), false); len(s) != 0 {
 		t.Fatalf("shapes %v", s)
+	}
+}
+
+func TestPlacesMakeEditsExclusive(t *testing.T) {
+	a := edit(t, `{"ToArea":{"X":0,"Y":0,"Width":16,"Height":16},"When":{"LocationName":"EastScarp_Village"}}`, true)
+	b := edit(t, `{"ToArea":{"X":0,"Y":0,"Width":16,"Height":16},"When":{"LocationName |contains=Custom_Umuwi":true}}`, true)
+	c := edit(t, `{"ToArea":{"X":0,"Y":0,"Width":16,"Height":16},"When":{"LocationName":"Custom_Umuwi, EastScarp_Village"}}`, true)
+	if editsClash([]cpPatch{a}, []cpPatch{b}) {
+		t.Fatal("different locations clashed")
+	}
+	if !editsClash([]cpPatch{a}, []cpPatch{c}) {
+		t.Fatal("shared location did not clash")
+	}
+}
+
+func TestMapPatchWithoutToAreaUsesTheSourceMapSize(t *testing.T) {
+	dir := t.TempDir()
+	tmx := `<?xml version="1.0"?><map version="1.0" orientation="orthogonal" width="10" height="8" tilewidth="16"></map>`
+	if err := os.WriteFile(filepath.Join(dir, "p.tmx"), []byte(tmx), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s := editShapes(dir, change(t, `{"FromFile":"p.tmx"}`), false)
+	if len(s) != 1 || s[0].kind != 'r' || s[0].w != 10 || s[0].h != 8 {
+		t.Fatalf("shapes %v", s)
+	}
+	if s := editShapes(dir, change(t, `{"FromFile":"p.tbin"}`), false); len(s) != 1 || s[0].kind != 'w' {
+		t.Fatalf("tbin should be whole: %v", s)
+	}
+}
+
+func TestHasModWithEmptyInput(t *testing.T) {
+	w := parseWhen(map[string]json.RawMessage{"HasMod: |contains=Other.Mod": json.RawMessage(`false`)}, map[string]bool{}, nil)
+	if len(w.noneOf) != 1 || w.noneOf[0] != "other.mod" {
+		t.Fatalf("when %+v", w)
 	}
 }

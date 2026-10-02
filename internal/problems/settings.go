@@ -354,3 +354,22 @@ func allowedValue(schema cpSchema, value string) (string, bool) {
 	}
 	return schema.allowValues[i], true
 }
+
+// configHolds reports whether the pack's current settings (config.json, else the schema Default) meet every
+// config condition, so a patch the player switched off is not counted as a conflict.
+func configHolds(conditions []cpConfig, schema map[string]cpSchema, config map[string]string) bool {
+	for _, c := range conditions {
+		field, ok := schema[strings.ToLower(c.field)]
+		if !ok {
+			continue
+		}
+		current, set := config[strings.ToLower(field.key)]
+		if !set {
+			current = field.defaultValue
+		}
+		if !settingValueMatches(current, c) {
+			return false
+		}
+	}
+	return true
+}

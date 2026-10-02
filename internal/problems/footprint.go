@@ -10,6 +10,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 // cpShape is part of a target one edit writes: an area (image pixels, or map tiles on every layer), one map
@@ -78,10 +80,21 @@ func editShapes(root string, ch cpChange, image bool) []cpShape {
 	}
 	var out []cpShape
 	if strings.TrimSpace(ch.FromFile) != "" {
-		if to, ok := areaOf(ch.ToArea); ok {
+		to, ok := areaOf(ch.ToArea)
+		switch {
+		case ok:
 			out = append(out, to)
-		} else {
+		case len(ch.ToArea) > 0:
 			return whole
+		default:
+			// Without ToArea the source map lands at the top-left at its own size (or FromArea's).
+			if from, ok := areaOf(ch.FromArea); ok {
+				out = append(out, cpShape{kind: 'r', w: from.w, h: from.h})
+			} else if w, h, ok := mapSize(root, ch.FromFile); ok {
+				out = append(out, cpShape{kind: 'r', w: w, h: h})
+			} else {
+				return whole
+			}
 		}
 	}
 	for _, raw := range ch.MapTiles {
@@ -170,6 +183,93 @@ func pngSize(root, rel string) (w, h int, ok bool) {
 	return cfg.Width, cfg.Height, true
 }
 
+var tmxSize = regexp.MustCompile(`<map\b[^>]*?\bwidth="(\d+)"[^>]*?\bheight="(\d+)"`)
+
+// mapSize reads a .tmx or .tmj map's size in tiles; .tbin and tokenized paths are unknown.
+func mapSize(root, rel string) (w, h int, ok bool) {
+	rel = strings.TrimSpace(rel)
+	ext := strings.ToLower(filepath.Ext(rel))
+	if rel == "" || hasToken(rel) || (ext != ".tmx" && ext != ".tmj") {
+		return 0, 0, false
+	}
+	abs, inRoot := inside(root, rel)
+	if !inRoot {
+		return 0, 0, false
+	}
+	raw, err := fsx.ReadFile(abs)
+	if err != nil {
+		return 0, 0, false
+	}
+	if ext == ".tmj" {
+		var m struct {
+			Width  int `json:"width"`
+			Height int `json:"height"`
+		}
+		if json.Unmarshal(raw, &m) != nil || m.Width <= 0 || m.Height <= 0 {
+			return 0, 0, false
+		}
+		return m.Width, m.Height, true
+	}
+	head := raw[:min(len(raw), 4096)]
+	m := tmxSize.FindSubmatch(head)
+	if m == nil {
+		return 0, 0, false
+	}
+	w, _ = strconv.Atoi(string(m[1]))
+	h, _ = strconv.Atoi(string(m[2]))
+	return w, h, w > 0 && h > 0
+}
+
+// placeTokens are conditions that hold one value at a time for the player: two edits that need disjoint
+// values of the same one never apply together (an edit for the East Scarp village and one for another map).
+var placeTokens = map[string]bool{"locationname": true, "locationcontext": true, "season": true, "weather": true, "dayofweek": true}
+
+// placesOf reads the literal values a When block requires of placeTokens ("LocationName": "A, B" or
+// "Season |contains=Spring": true).
+func placesOf(raw map[string]json.RawMessage) map[string][]string {
+	var out map[string][]string
+	for k, v := range raw {
+		if hasToken(k) {
+			continue
+		}
+		name, arg, _ := strings.Cut(k, "|")
+		name = tokenName(name)
+		if !placeTokens[name] {
+			continue
+		}
+		var values []string
+		if arg = strings.TrimSpace(arg); arg == "" {
+			if !condValues(v, &values) {
+				continue
+			}
+		} else {
+			param, list, ok := strings.Cut(arg, "=")
+			var flags []string
+			if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) || !condValues(v, &flags) || len(flags) != 1 || !strings.EqualFold(flags[0], "true") {
+				continue
+			}
+			values = splitTargets(list)
+		}
+		if out == nil {
+			out = map[string][]string{}
+		}
+		for _, value := range values {
+			out[name] = append(out[name], strings.ToLower(value))
+		}
+	}
+	return out
+}
+
+// tokenName is a condition key's token, lower-cased, with an empty input ("HasMod:") dropped as Content
+// Patcher does; a key with a real input ("Weather: Island") keeps it so it is not mistaken for the bare token.
+func tokenName(name string) string {
+	name = strings.TrimSpace(name)
+	if base, input, ok := strings.Cut(name, ":"); ok && strings.TrimSpace(input) == "" {
+		name = base
+	}
+	return strings.ToLower(strings.TrimSpace(name))
+}
+
 var spouseQuery = regexp.MustCompile(`(?i)^query:\s*'\{\{\s*spouse\s*\}\}'\s*=\s*'([^']+)'$`)
 
 // spouseOf is the NPC a When block requires the player to be married to ("Relationship:Abigail": "Married" or
@@ -199,7 +299,16 @@ func spouseOf(raw map[string]json.RawMessage) string {
 
 // exclusive reports whether two edits can never be active together.
 func exclusive(a, b cpPatch) bool {
-	return a.spouse != "" && b.spouse != "" && a.spouse != b.spouse
+	if a.spouse != "" && b.spouse != "" && a.spouse != b.spouse {
+		return true
+	}
+	for token, values := range a.places {
+		other, ok := b.places[token]
+		if ok && !slices.ContainsFunc(values, func(v string) bool { return slices.Contains(other, v) }) {
+			return true
+		}
+	}
+	return false
 }
 
 // editsClash reports whether any active edit of one pack can overwrite one of the other's.

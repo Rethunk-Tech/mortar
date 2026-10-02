@@ -51,8 +51,9 @@ type cpPatch struct {
 	target   string
 	priority string
 	when     cpWhen
-	shapes   []cpShape // what an edit writes; see editShapes
-	spouse   string    // the spouse the change requires, or ""
+	shapes   []cpShape           // what an edit writes; see editShapes
+	spouse   string              // the spouse the change requires, or ""
+	places   map[string][]string // literal values the change requires of placeTokens
 	// tokenValue is a dynamic token's value; a token that yields a picker value only when a mod is
 	// installed is how a pack says which mod that value is for.
 	tokenName  string
@@ -288,7 +289,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			}
 			pack.patches = append(pack.patches, cpPatch{
 				kind: kind, target: normalizeTarget(t), priority: strings.TrimSpace(ch.Priority), when: when,
-				shapes: shapes, spouse: spouseOf(ch.When),
+				shapes: shapes, spouse: spouseOf(ch.When), places: placesOf(ch.When),
 			})
 		}
 	}
@@ -300,7 +301,7 @@ func parseWhen(raw map[string]json.RawMessage, mentions map[string]bool, schema 
 	var w cpWhen
 	for k, v := range raw {
 		name, arg, _ := strings.Cut(k, "|")
-		name = strings.TrimSpace(name)
+		name = tokenName(name)
 		if hasToken(k) {
 			continue
 		}
@@ -564,8 +565,12 @@ func assetConflicts(mods []Installed) []AssetConflict {
 			}
 			knows[strings.ToLower(d.UniqueID)] = true
 		}
+		config := map[string]string{}
+		if len(pack.schema) > 0 {
+			config = readPackConfig(mod.Folder)
+		}
 		for _, p := range pack.patches {
-			if p.kind == "other" || !p.when.holds(present) {
+			if p.kind == "other" || !p.when.holds(present) || !configHolds(p.when.config, pack.schema, config) {
 				continue
 			}
 			hits := at[p.kind][p.target]

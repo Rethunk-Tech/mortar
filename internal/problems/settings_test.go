@@ -114,3 +114,17 @@ func TestCompatibilitySettingFieldActiveForAnyModIsNotSuggested(t *testing.T) {
 		t.Fatalf("hints = %#v", got)
 	}
 }
+
+func TestConfigOffPatchDoesNotConflict(t *testing.T) {
+	changes := `[{"Action":"EditImage","Target":"Maps/X","ToArea":{"X":0,"Y":0,"Width":8,"Height":8},"When":{"Recolor":true}}]`
+	off := settingPack(t, `{"Recolor":{"Default":true}}`, changes, `{"Recolor":false}`)
+	other := settingPack(t, `{"Recolor":{"Default":true}}`, changes, `{"Recolor":true}`)
+	other.Key, other.UniqueID, other.Name = "other", "Other.Pack", "Other Pack"
+	if got := assetConflicts([]Installed{off, other}); len(got) != 0 {
+		t.Fatalf("switched-off patch conflicted: %+v", got)
+	}
+	off2 := settingPack(t, `{"Recolor":{"Default":true}}`, changes, `{"Recolor":true}`)
+	if got := assetConflicts([]Installed{off2, other}); len(got) != 1 {
+		t.Fatalf("both on should conflict: %+v", got)
+	}
+}
