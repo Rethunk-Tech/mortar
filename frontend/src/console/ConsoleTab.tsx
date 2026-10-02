@@ -14,6 +14,7 @@ import { countByLevel, incompatibleSMAPI, isFiltered, LEVELS, modsOf } from './f
 import { stepHistory } from './history.ts'
 import { LinkedLog } from './LinkedLog.tsx'
 import { useShownEntries, useVisible } from './logHooks.ts'
+import { PerformancePanel } from './PerformancePanel.tsx'
 import { RunsPicker } from './RunsPicker.tsx'
 import { canSendTo, useConsole } from './store.ts'
 
@@ -438,6 +439,7 @@ export function ConsoleTab({ game }: { game: string }) {
           </Button>
         </Box>
       ) : null}
+      <PerformancePanel game={game} />
       {offerReinstall ? <ReinstallLoader game={game} /> : null}
       <LinkedLog
         game={game}
