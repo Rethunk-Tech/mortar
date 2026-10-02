@@ -24,6 +24,9 @@ Remaining ([architecture.md](architecture.md#release)):
 - **Library:** an extra folder to scan for mods; a toggle to show dot-hidden mods; asking before deleting old files on update; new folders in the game's own `Mods` folder offered for moving into a profile.
 - **Packages:** an aarch64 Flatpak bundle is blocked without qemu binfmt (or an aarch64 host): `flatpak-builder --arch=aarch64` still runs `build-commands` via the aarch64 SDK's `/bin/sh` (`bwrap: execvp /bin/sh: Exec format error`), even with only `install` of a prebuilt binary.
 - **Self-test:** update a mod in place with an older GitHub release in a copied game folder, checking carry-over, `.mortar-old`, the save backup and Roll back.
+- **Launching:** on Windows, write the SMAPI launch option (`"<game>\StardewModdingAPI.exe" %command%`) into Steam's `localconfig.vdf` for the user, only while Steam is closed since Steam rewrites the file on exit (today `internal/steam` reads it and the app shows a hint); a per-profile shortcut that plays that profile (a desktop entry, or a non-Steam Steam shortcut for Steam Deck Game Mode), built on `mortar launch`; a per-profile launch prefix and `VAR=value` environment (gamemoderun, mangohud) beside the existing extra SMAPI arguments; Reset game install, which deletes the game folder and asks the store to verify it.
+- **Library:** skip Nexus files flagged quarantined or as a virus on download and update (first confirm the API exposes the flag); a background check of every profile's mods for updates with a desktop and tray notification, like the self-update check; a Problems cleanup hint offering to remove frameworks that no remaining enabled mod needs.
+- **Play guard:** before a launch, when the save to be loaded uses mods the profile lacks, warn and offer to install them, from the saves scan.
 - **CurseForge** as a third source, after the repository is public: apply for a 3rd-party API key, then build it without caching API data, with a User-Agent on every request, and honouring each author's distribution setting.
 
 ## Later
@@ -42,5 +45,8 @@ Not in the first release; re-weigh only when asked:
 - macOS, as Stardrop ships for x64 and arm64: needs an Apple developer account for signing and notarization, Mac Steam paths and nxm registration, and a Mac to test on.
 - More interface languages than English, as Stardrop (17+), MO2 and r2modman ship; every string already goes through Lingui (English only for v1).
 - A light theme, as in Stardrop and Vortex, built once the design system is revisited (MUI stays; Tailwind and shadcn were raised).
+- Portable mode: the data folder beside the executable, switched by a marker file (Move data folder exists).
+- Previewing an archive's file tree before installing it (the folder picker shows it only when no manifest is found).
+- Comparing a profile against a friend's share link or `.mortar` file for multiplayer, then installing what is missing.
 - Per-profile save isolation.
 - Registering Mortar with Nexus (SSO slug; ask then about OAuth, which Vortex uses via `nxm://oauth/callback`, and Collections), and a mode for users without an API key: an `nxm://` link cannot become a download without API authentication (HTTP 401 without a key, measured), so that mode would pick up manual downloads from the Downloads folder by their manifests, with confirmation.
