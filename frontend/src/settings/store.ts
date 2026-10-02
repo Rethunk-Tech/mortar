@@ -1,7 +1,11 @@
 import { create } from 'zustand'
 import type { Settings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
-import { Get } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import {
+  CorruptSettingsPath,
+  Get,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { follow } from '../shell/follow.ts'
+import { useToasts } from '../toasts/store.ts'
 
 const defaults: Settings = {
   language: '',
@@ -52,5 +56,14 @@ const defaults: Settings = {
 
 export const useSettings = create<Settings>(() => defaults)
 
-export const initSettings = () =>
-  follow('settings:changed', Get, (next) => useSettings.setState(next))
+export const initSettings = async () => {
+  await follow('settings:changed', Get, (next) => useSettings.setState(next))
+  const path = await CorruptSettingsPath()
+  if (path) {
+    useToasts.getState().push({
+      kind: 'warning',
+      title: 'Settings could not be read',
+      body: `A copy was kept at ${path}`,
+    })
+  }
+}
