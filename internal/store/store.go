@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -370,7 +371,45 @@ func (s *Store) loadIndex() (index, error) {
 		return nil, err
 	}
 	if err := json.Unmarshal(b, &idx); err != nil {
-		return nil, fmt.Errorf("read store index: %w", err)
+		log.Printf("store index is corrupt, rebuilding: %v", err)
+		return s.rebuildIndex()
+	}
+	if idx == nil {
+		idx = index{}
+	}
+	return idx, nil
+}
+
+func (s *Store) rebuildIndex() (index, error) {
+	now := time.Now().UTC()
+	idx := index{}
+	games, err := os.ReadDir(s.root)
+	if errors.Is(err, fs.ErrNotExist) {
+		return idx, s.saveIndex(idx)
+	}
+	if err != nil {
+		return nil, err
+	}
+	for _, g := range games {
+		if !g.IsDir() || !game.Valid(g.Name()) {
+			continue
+		}
+		items, err := os.ReadDir(filepath.Join(s.root, g.Name()))
+		if err != nil {
+			return nil, err
+		}
+		for _, item := range items {
+			if !item.IsDir() || strings.HasPrefix(item.Name(), tempPrefix) || !keyPattern.MatchString(item.Name()) {
+				continue
+			}
+			if idx[g.Name()] == nil {
+				idx[g.Name()] = map[string]time.Time{}
+			}
+			idx[g.Name()][item.Name()] = now
+		}
+	}
+	if err := s.saveIndex(idx); err != nil {
+		return nil, err
 	}
 	return idx, nil
 }

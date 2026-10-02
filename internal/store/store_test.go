@@ -167,6 +167,32 @@ func TestAddDirVerifiedChecksLocalKey(t *testing.T) {
 	}
 }
 
+func TestCorruptIndexIsRebuiltForInstall(t *testing.T) {
+	s := newStore(t)
+	if err := os.MkdirAll(s.root, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(s.indexPath(), []byte("{"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	src := t.TempDir()
+	if err := fsx.WriteFile(filepath.Join(src, "mod.dll"), []byte("mod"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := s.AddDir("stardew", "local-corrupt-index", src); err != nil {
+		t.Fatal(err)
+	}
+	idx, err := s.loadIndex()
+	if err != nil {
+		t.Fatal(err)
+	}
+	last, ok := idx["stardew"]["local-corrupt-index"]
+	if !ok || time.Since(last) > time.Minute {
+		t.Fatalf("rebuilt index = %v", idx)
+	}
+}
+
 func TestCollect(t *testing.T) {
 	s := newStore(t)
 	for _, k := range []string{"smapi-1", "smapi-2", "smapi-3", "smapi-4"} {
