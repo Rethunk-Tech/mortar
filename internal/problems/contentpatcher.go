@@ -3,6 +3,7 @@ package problems
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"log"
 	"maps"
 	"os"
@@ -811,7 +812,7 @@ func clashing(hits []packHit) (out []packHit, cosmetic bool) {
 }
 
 func aware(a, b packHit) bool {
-	return a.key == b.key || a.mentions[strings.ToLower(b.id)] || b.mentions[strings.ToLower(a.id)]
+	return (a.key != "" && a.key == b.key) || a.mentions[strings.ToLower(b.id)] || b.mentions[strings.ToLower(a.id)]
 }
 
 func conflictOf(kind, target string, hits []packHit) AssetConflict {
@@ -1066,7 +1067,16 @@ func readPackPath(root, rel string) ([]byte, bool) {
 	if !ok {
 		return nil, false
 	}
-	raw, err := os.ReadFile(path)
+	relative, err := filepath.Rel(root, path)
+	if err != nil || !filepath.IsLocal(relative) {
+		return nil, false
+	}
+	file, err := os.OpenInRoot(root, relative)
+	if err != nil {
+		return nil, false
+	}
+	defer func() { _ = file.Close() }()
+	raw, err := io.ReadAll(file)
 	return raw, err == nil
 }
 
@@ -1075,7 +1085,7 @@ func caseInsensitivePath(root, rel string) (string, bool) {
 		return "", false
 	}
 	current := filepath.Clean(root)
-	for _, part := range strings.Split(filepath.ToSlash(rel), "/") {
+	for part := range strings.SplitSeq(filepath.ToSlash(rel), "/") {
 		if part == "" || part == "." || part == ".." {
 			if part == ".." {
 				return "", false

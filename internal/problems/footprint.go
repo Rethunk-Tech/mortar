@@ -10,6 +10,7 @@ import (
 	"image"
 	_ "image/png" // DecodeConfig reads a FromFile's size from its PNG header.
 	"io"
+	"maps"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -396,7 +397,7 @@ func decodeTMXValues(text, encoding, compression string) ([]int, bool) {
 			return nil, true
 		}
 		var out []int
-		for _, value := range strings.Split(text, ",") {
+		for value := range strings.SplitSeq(text, ",") {
 			value = strings.TrimSpace(value)
 			if value == "" {
 				continue
@@ -511,6 +512,10 @@ func mapFileShapes(m decodedMap, ch cpChange) []cpShape {
 	to, ok := mapArea(ch.ToArea, toFallback)
 	if !ok {
 		return unplaced(ch.ToArea)
+	}
+	if len(m.layers) == 0 {
+		to.layer = ""
+		return []cpShape{to}
 	}
 	mode := strings.ToLower(strings.TrimSpace(ch.PatchMode))
 	if mode == "" {
@@ -819,10 +824,19 @@ func switchOff(h packHit, peerSets ...[]packHit) (ConflictFix, bool) {
 				off = append(off, strings.TrimSpace(v))
 			}
 		}
-		if len(off) != 1 {
+		if len(off) == 0 {
 			continue
 		}
-		if len(peerSets) > 0 && settingStillClashes(h, peerSets[0], field, off[0]) {
+		if len(peerSets) > 0 {
+			safe := off[:0]
+			for _, value := range off {
+				if !settingStillClashes(h, peerSets[0], field, value) {
+					safe = append(safe, value)
+				}
+			}
+			off = safe
+		}
+		if len(off) != 1 {
 			continue
 		}
 		current, set := h.config[strings.ToLower(field.key)]
@@ -835,10 +849,8 @@ func switchOff(h packHit, peerSets ...[]packHit) (ConflictFix, bool) {
 }
 
 func settingStillClashes(h packHit, peers []packHit, field cpSchema, value string) bool {
-	config := map[string]string{}
-	for key, current := range h.config {
-		config[key] = current
-	}
+	config := make(map[string]string, len(h.config))
+	maps.Copy(config, h.config)
 	config[strings.ToLower(field.key)] = value
 	var active []cpPatch
 	for _, edit := range h.eligible {

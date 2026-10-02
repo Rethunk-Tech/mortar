@@ -196,10 +196,10 @@ func TestConflictWinnerUsesClashingPatchPriority(t *testing.T) {
 	first := syntheticEditPack(t, `{"Changes":[
 		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"Priority":"High"},
 		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":1,"Y":1,"Width":1,"Height":1},"Priority":"Low"}
-	}`)
+	]}`)
 	second := syntheticEditPack(t, `{"Changes":[
 		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":1,"Y":1,"Width":1,"Height":1},"Priority":"Medium"}
-	}`)
+	]}`)
 	conflicts := assetConflicts([]Installed{first, second})
 	if len(conflicts) != 1 || conflicts[0].WinnerID != second.UniqueID {
 		t.Fatalf("winner must be selected from clashing patches: %#v", conflicts)
@@ -217,7 +217,7 @@ func TestConflictWinnerUsesClashingPatchPriority(t *testing.T) {
 	if loadOrder.WinnerID != "addon" || loadOrder.WinnerName != "by load order" {
 		t.Fatalf("dependency order should decide equal-priority loads: %#v", loadOrder)
 	}
-	unclear := conflictOf("load", "Maps/Test", []packHit{base, packHit{
+	unclear := conflictOf("load", "Maps/Test", []packHit{base, {
 		id: "other", name: "Other", loads: []cpPatch{{priority: "Medium"}},
 		loadClashes: map[int]bool{0: true}, dependencies: map[string]bool{},
 	}})

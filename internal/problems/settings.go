@@ -62,7 +62,7 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 			}
 			for _, condition := range patch.when.config {
 				schema, ok := pack.schema[strings.ToLower(condition.field)]
-				if !ok || len(condition.values) == 0 || !schema.toggle() {
+				if !ok || len(condition.values) == 0 || !schema.booleanToggle() {
 					continue
 				}
 				current, present := config[strings.ToLower(schema.key)]
@@ -224,6 +224,24 @@ func (s cpSchema) toggle() bool {
 	}
 	if len(s.allowValues) > 0 {
 		return true
+	}
+	for _, v := range values {
+		switch strings.ToLower(strings.TrimSpace(v)) {
+		case "true", "false", "on", "off", "enabled", "disabled", "yes", "no":
+		default:
+			return false
+		}
+	}
+	return true
+}
+
+func (s cpSchema) booleanToggle() bool {
+	values := s.allowValues
+	if len(values) == 0 {
+		values = []string{s.defaultValue}
+	}
+	if s.allowMultiple || len(values) > 2 {
+		return false
 	}
 	for _, v := range values {
 		switch strings.ToLower(strings.TrimSpace(v)) {
