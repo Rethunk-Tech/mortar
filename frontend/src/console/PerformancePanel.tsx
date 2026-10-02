@@ -15,18 +15,27 @@ import {
 import { Clipboard } from '@wailsio/runtime'
 import { Copy, Gauge, Play, RefreshCw } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import type { PerformanceRow } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
-import { PerformanceReport } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import type {
+  PerformanceRow,
+  SavedReport,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import {
+  PerformanceReport,
+  PerformanceReports,
+  SavePerformanceReport,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { CompareTable, ReportSelect } from './PerformanceComparison.tsx'
 import { canSendTo, useConsole } from './store.ts'
 
 const ENABLE_COMMAND = 'performance enable'
 const SUMMARY_COMMAND = 'performance summary'
 const REPORT_TITLE = /summary|performance counter/i
+const MAX_SAVED_REPORTS = 20
 
 type SortColumn = 'name' | 'averageMs' | 'peakMs' | 'calls'
 type SortDirection = 'asc' | 'desc'
@@ -128,6 +137,15 @@ function PanelHeader({
   onStart,
   onReport,
   onCopy,
+  reports,
+  compareId,
+  onCompare,
+  onClearCompare,
+  compareSides,
+  beforeId,
+  afterId,
+  onBefore,
+  onAfter,
 }: {
   running: boolean
   busy: 'start' | 'report' | ''
@@ -136,6 +154,15 @@ function PanelHeader({
   onStart: () => void
   onReport: () => void
   onCopy: () => void
+  reports: SavedReport[]
+  compareId: string
+  onCompare: (id: string) => void
+  onClearCompare: () => void
+  compareSides: boolean
+  beforeId: string
+  afterId: string
+  onBefore: (id: string) => void
+  onAfter: (id: string) => void
 }) {
   const { t } = useLingui()
   return (
@@ -183,6 +210,24 @@ function PanelHeader({
       >
         {t`Copy report`}
       </Button>
+      {compareSides ? (
+        <>
+          <ReportSelect label={t`Before`} value={beforeId} reports={reports} onChange={onBefore} />
+          <ReportSelect label={t`After`} value={afterId} reports={reports} onChange={onAfter} />
+        </>
+      ) : (
+        <ReportSelect
+          label={t`Compare with…`}
+          value={compareId}
+          reports={reports}
+          onChange={onCompare}
+        />
+      )}
+      {(compareId !== '' || (beforeId !== '' && afterId !== '')) && (
+        <Button size="small" color="inherit" onClick={onClearCompare}>
+          {t`Clear comparison`}
+        </Button>
+      )}
     </Box>
   )
 }
@@ -214,10 +259,14 @@ function PerformanceEmpty({
   running,
   busy,
   onStart,
+  reports,
+  onCompare,
 }: {
   running: boolean
   busy: boolean
   onStart: () => void
+  reports: SavedReport[]
+  onCompare: () => void
 }) {
   const { t } = useLingui()
   return (
@@ -225,14 +274,21 @@ function PerformanceEmpty({
       icon={<Gauge size={40} aria-hidden={true} />}
       title={t`See which mods slow the game`}
       action={
-        <Button
-          variant="contained"
-          startIcon={<Play size={16} />}
-          disabled={!running || busy}
-          onClick={onStart}
-        >
-          {t`Start measuring`}
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="contained"
+            startIcon={<Play size={16} />}
+            disabled={!running || busy}
+            onClick={onStart}
+          >
+            {t`Start measuring`}
+          </Button>
+          {reports.length >= 2 && (
+            <Button variant="outlined" onClick={onCompare}>
+              {t`Compare saved reports`}
+            </Button>
+          )}
+        </Box>
       }
     >
       {running
@@ -242,6 +298,7 @@ function PerformanceEmpty({
   )
 }
 
+// biome-ignore lint/complexity/noExcessiveLinesPerFunction: panel state and rendering are one cohesive workflow
 export function PerformancePanel({ game }: { game: string }) {
   const { t } = useLingui()
   const entries = useConsole((s) => s.entries)
@@ -254,6 +311,10 @@ export function PerformancePanel({ game }: { game: string }) {
   const [busy, setBusy] = useState<'start' | 'report' | ''>('')
   const [reportAfter, setReportAfter] = useState<number | null>(null)
   const [rows, setRows] = useState<PerformanceRow[]>([])
+  const [savedReports, setSavedReports] = useState<SavedReport[]>([])
+  const [compareId, setCompareId] = useState('')
+  const [beforeId, setBeforeId] = useState('')
+  const [afterId, setAfterId] = useState('')
   const [sort, setSort] = useState<{ column: SortColumn; direction: SortDirection }>({
     column: 'peakMs',
     direction: 'desc',
@@ -266,6 +327,16 @@ export function PerformancePanel({ game }: { game: string }) {
       setReportAfter(null)
     }
   }, [running])
+
+  useEffect(() => {
+    if (openId === '') {
+      return
+    }
+    PerformanceReports(game, openId).then(
+      (reports) => setSavedReports(reports ?? []),
+      reportUnexpected,
+    )
+  }, [game, openId])
 
   const reportLines = useMemo(() => {
     if (reportAfter === null) {
@@ -296,6 +367,19 @@ export function PerformancePanel({ game }: { game: string }) {
       (next) => {
         if (active) {
           setRows(next ?? [])
+          if ((next ?? []).length > 0) {
+            // biome-ignore lint/suspicious/noNestedPromises: save only after the parsed report is available
+            SavePerformanceReport(game, openId, next ?? []).then(
+              (saved) =>
+                setSavedReports((current) =>
+                  [saved, ...current.filter((item) => item.id !== saved.id)].slice(
+                    0,
+                    MAX_SAVED_REPORTS,
+                  ),
+                ),
+              reportUnexpected,
+            )
+          }
         }
       },
       (error: unknown) => {
@@ -308,7 +392,7 @@ export function PerformancePanel({ game }: { game: string }) {
     return () => {
       active = false
     }
-  }, [reportLines])
+  }, [reportLines, game, openId])
 
   const sortBy = (column: SortColumn) => {
     setSort((current) => ({
@@ -352,8 +436,27 @@ export function PerformancePanel({ game }: { game: string }) {
     )
   }
 
-  if (reportLines.length === 0 && !measuring) {
-    return <PerformanceEmpty running={running} busy={busy !== ''} onStart={startMeasuring} />
+  const comparisonBefore = compareId
+    ? (savedReports.find((report) => report.id === compareId)?.rows ?? [])
+    : (savedReports.find((report) => report.id === beforeId)?.rows ?? [])
+  const comparisonNow = compareId
+    ? rows
+    : (savedReports.find((report) => report.id === afterId)?.rows ?? [])
+  const comparing = (compareId !== '' && rows.length > 0) || (beforeId !== '' && afterId !== '')
+
+  if (reportLines.length === 0 && !measuring && !comparing) {
+    return (
+      <PerformanceEmpty
+        running={running}
+        busy={busy !== ''}
+        onStart={startMeasuring}
+        reports={savedReports}
+        onCompare={() => {
+          setBeforeId(savedReports[1]?.id ?? '')
+          setAfterId(savedReports[0]?.id ?? '')
+        }}
+      />
+    )
   }
   return (
     <Paper
@@ -375,8 +478,25 @@ export function PerformancePanel({ game }: { game: string }) {
         onStart={startMeasuring}
         onReport={showReport}
         onCopy={copyReport}
+        reports={savedReports}
+        compareId={compareId}
+        onCompare={setCompareId}
+        onClearCompare={() => {
+          setCompareId('')
+          setBeforeId('')
+          setAfterId('')
+        }}
+        compareSides={rows.length === 0}
+        beforeId={beforeId}
+        afterId={afterId}
+        onBefore={setBeforeId}
+        onAfter={setAfterId}
       />
-      <ReportBody rows={rows} reportLines={reportLines} sort={sort} onSort={sortBy} />
+      {comparing ? (
+        <CompareTable before={comparisonBefore} now={comparisonNow} />
+      ) : (
+        <ReportBody rows={rows} reportLines={reportLines} sort={sort} onSort={sortBy} />
+      )}
     </Paper>
   )
 }

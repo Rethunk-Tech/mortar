@@ -43,7 +43,7 @@ func TestParsePerformanceReportSummary(t *testing.T) {
 func TestPerformanceReportsPersistAndPrune(t *testing.T) {
 	svc, profile, _, _ := runEnv(t)
 	rows := []PerformanceRow{{Name: "A", AverageMs: 1.25, PeakMs: 2, Calls: 3}}
-	for i := 0; i < 21; i++ {
+	for range 21 {
 		saved, err := svc.SavePerformanceReport("stardew", profile.ID, rows)
 		if err != nil {
 			t.Fatal(err)

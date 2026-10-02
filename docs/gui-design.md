@@ -184,6 +184,8 @@ A full-height text field fills the tab. Its placeholder explains that notes trav
 
 ## Performance tab
 
+Performance reports are saved per profile and can be compared from the tab. The comparison shows before/now average milliseconds, signed change and percentage, with new and gone mods called out.
+
 A tab of its own. Empty, before measuring: a gauge icon, **See which mods slow the game**, and copy that says to start the game with this profile then measure while playing, with **Start measuring** (off until this profile is running and This session is shown). After measuring starts: **Start measuring** / **Measuring**, **Show report** and **Copy report**. Start measuring sends SMAPI's `performance enable` through the bridge; Show report sends `performance summary` and fills a sortable table (Mod or event, Average ms, Peak ms, Calls). Off while the game is not running this profile or a past run is shown. After Show report with no table rows: **No performance data was returned.** or **Start measuring to view a report.** when the log held no summary.
 
 ## Profile management
