@@ -31,12 +31,14 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { UpdateEntry } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import {
   changelogNoteIsRisky,
   changelogsBetween,
@@ -53,6 +55,7 @@ import {
   visibleUpdates,
 } from './lookup.ts'
 import { useNexusDetails } from './nexusDetails.ts'
+import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { accent, paper } from './paper.ts'
 import { LetterTile } from './parts.tsx'
 import { useMods } from './store.ts'
@@ -198,12 +201,14 @@ function Row({
   caution,
   acked,
   onAck,
+  onUpdateAll,
 }: {
   update: Update
   profileId: string
   caution: string
   acked: boolean
   onAck: (on: boolean) => void
+  onUpdateAll: () => void
 }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
@@ -290,14 +295,24 @@ function Row({
           </Button>
         ) : null}
         {downloadable(update) ? (
-          <Button
-            variant="contained"
-            disabled={queued || (caution !== '' && !acked)}
-            onClick={() => download([updateWant(update)]).catch(reportUnexpected)}
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            {queued ? t`Queued` : t`Update`}
-          </Button>
+          <>
+            <Button
+              variant="contained"
+              disabled={queued || (caution !== '' && !acked)}
+              onClick={() => download([updateWant(update)]).catch(reportUnexpected)}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              {queued ? t`Queued` : t`Update`}
+            </Button>
+            <Button
+              variant="outlined"
+              disabled={queued || (caution !== '' && !acked)}
+              onClick={onUpdateAll}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              {t`Update in all profiles that have it`}
+            </Button>
+          </>
         ) : null}
       </Box>
       {caution ? (
@@ -377,6 +392,8 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   const mods = useMods((s) => s.mods)
   const [acked, setAcked] = useState<Record<string, boolean>>({})
   const [now, setNow] = useState(() => Date.now())
+  const [propagating, setPropagating] = useState<Update | null>(null)
+  const [propagationNewKey, setPropagationNewKey] = useState('')
   useEffect(() => {
     const id = globalThis.setInterval(() => setNow(Date.now()), TICK_MS)
     return () => globalThis.clearInterval(id)
@@ -389,6 +406,31 @@ export function UpdateReview({ profile }: { profile: Profile }) {
       (updates?.updates ?? []).filter((u) => u.nexusId > 0).map((u) => u.nexusId),
     ).catch(reportUnexpected)
   }, [open, updates])
+  useEffect(() => {
+    if (!propagating) {
+      return
+    }
+    const done = items.find(
+      (item) =>
+        item.state === 'done' &&
+        item.kind === 'update' &&
+        item.profileId === profile.id &&
+        item.name === propagating.name &&
+        item.version === propagating.version,
+    )
+    if (!done) {
+      return
+    }
+    const next = useProfiles
+      .getState()
+      .profiles.find((candidate) => candidate.id === profile.id)
+      ?.entries?.find((entry) =>
+        entry.mods?.some((mod) => sameId(mod.uniqueId, propagating.uniqueId)),
+      )?.key
+    if (next) {
+      setPropagationNewKey(next)
+    }
+  }, [items, profile.id, propagating])
   const cautionOk = (u: Update) => {
     const caution = installedCaution(mods, u)
     return caution === '' || acked[modId(u)] === true
@@ -445,6 +487,15 @@ export function UpdateReview({ profile }: { profile: Profile }) {
                 caution={caution}
                 acked={acked[id] === true}
                 onAck={(on) => setAcked((prev) => ({ ...prev, [id]: on }))}
+                onUpdateAll={() => {
+                  download([updateWant(u)])
+                    .then((added) => {
+                      if (added) {
+                        setPropagating(u)
+                      }
+                    })
+                    .catch(reportUnexpected)
+                }}
               />
             )
           })}
@@ -475,6 +526,34 @@ export function UpdateReview({ profile }: { profile: Profile }) {
           </Button>
         ) : null}
       </DialogActions>
+      <OtherProfilesDialog
+        open={propagating !== null && propagationNewKey !== ''}
+        onClose={() => {
+          setPropagating(null)
+          setPropagationNewKey('')
+        }}
+        game={useProfiles.getState().game?.id ?? ''}
+        currentProfileId={profile.id}
+        uniqueId={propagating?.uniqueId ?? ''}
+        title={t`Update ${propagating?.name ?? ''} in other profiles`}
+        confirmLabel={t`Update profiles`}
+        update={propagating ? { oldKey: propagating.key } : undefined}
+        onConfirm={async (profiles, pinned) => {
+          const game = useProfiles.getState().game?.id ?? ''
+          await Promise.all(
+            profiles.map((other) =>
+              UpdateEntry(game, other.id, propagating?.key ?? '', propagationNewKey),
+            ),
+          )
+          useToasts.getState().push({
+            kind: 'success',
+            title: t`Updated in ${profiles.length} profiles`,
+            ...(pinned.length > 0
+              ? { body: pinned.map((other) => t`pinned in ${other.name}`).join(', ') }
+              : {}),
+          })
+        }}
+      />
     </Dialog>
   )
 }

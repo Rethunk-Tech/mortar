@@ -30,6 +30,7 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
+  CopyMods,
   FomodPreview,
   ModsDir,
   OpenConsolePath,
@@ -43,6 +44,7 @@ import { entryOf, modId, nexusIdOf, updateFor } from './lookup.ts'
 import { type MenuAnchor, openPage, useContextMenu, useMenuState } from './menu.ts'
 import { type ModAction, modActions } from './modActions.ts'
 import { useNexusDetails } from './nexusDetails.ts'
+import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
 import { useLocked } from './useLocked.ts'
@@ -89,10 +91,12 @@ function ModMenuItems({
   mod,
   close,
   onSetCategory,
+  onAlsoAdd,
 }: {
   mod: Mod
   close: () => void
   onSetCategory: () => void
+  onAlsoAdd: () => void
 }) {
   const { t } = useLingui()
   const showFiles = useMods((s) => s.showFiles)
@@ -222,6 +226,18 @@ function ModMenuItems({
         <ListItemText>{t`Set category…`}</ListItemText>
       </MenuItem>
     ) : null,
+    a === 'files' ? (
+      <MenuItem
+        key="also-add"
+        disabled={locked}
+        onClick={() => {
+          close()
+          onAlsoAdd()
+        }}
+      >
+        <ListItemText>{t`Also add to…`}</ListItemText>
+      </MenuItem>
+    ) : null,
   ])
 }
 
@@ -234,12 +250,16 @@ function ModActionMenu({
   anchor: MenuAnchor
   onClose: () => void
 }) {
+  const { t } = useLingui()
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
   const byId = useNexusDetails((s) => s.byId)
   const entry = (profile?.entries ?? []).find((e) => e.key === mod.key)
   const nexusCategory =
     profile === undefined ? '' : (byId[nexusIdOf(profile, mod)]?.details?.category ?? '')
   const [categoryOpen, setCategoryOpen] = useState(false)
+  const [alsoOpen, setAlsoOpen] = useState(false)
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const currentProfileId = useProfiles((s) => s.openId)
   const position =
     'el' in anchor ? {} : { anchorReference: 'anchorPosition' as const, anchorPosition: anchor }
   return (
@@ -250,7 +270,12 @@ function ModActionMenu({
         anchorEl={'el' in anchor ? anchor.el : undefined}
         {...position}
       >
-        <ModMenuItems mod={mod} close={onClose} onSetCategory={() => setCategoryOpen(true)} />
+        <ModMenuItems
+          mod={mod}
+          close={onClose}
+          onSetCategory={() => setCategoryOpen(true)}
+          onAlsoAdd={() => setAlsoOpen(true)}
+        />
       </Menu>
       <SetCategoryDialog
         open={categoryOpen}
@@ -261,6 +286,20 @@ function ModActionMenu({
         modKey={mod.key}
         nexusCategory={nexusCategory}
         currentOverride={entry?.categoryOverride ?? ''}
+      />
+      <OtherProfilesDialog
+        open={alsoOpen}
+        onClose={() => setAlsoOpen(false)}
+        game={game}
+        currentProfileId={currentProfileId}
+        uniqueId={mod.uniqueId}
+        title={t`Also add ${mod.name} to…`}
+        confirmLabel={t`Add`}
+        onConfirm={async (profiles) => {
+          await Promise.all(
+            profiles.map((other) => CopyMods(game, currentProfileId, other.id, [mod.uniqueId])),
+          )
+        }}
       />
     </>
   )

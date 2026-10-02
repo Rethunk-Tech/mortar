@@ -9,7 +9,10 @@ import type {
   ModInProfile,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { ProfilesWithMod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import {
+  CopyMods,
+  ProfilesWithMod,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { compactQuery } from '../game/compact.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -37,6 +40,7 @@ import { ModNoteTags } from './ModNoteTags.tsx'
 import { useLookedSnapshot, useNexusEntry, useNexusFresh } from './nexusDetails.ts'
 import { formatCount, formatDate, isNewer } from './nexusFormat.ts'
 import { goneCaption, nexusPageMark, offersNexusDownload } from './nexusMark.ts'
+import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { accent, heading } from './paper.ts'
 import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
 import { useMods } from './store.ts'
@@ -204,6 +208,9 @@ function UpdateBanner({ mod }: { mod: Mod }) {
       <Button size="small" variant="contained" onClick={() => setReviewing(true)} sx={noWrap}>
         {t`Update`}
       </Button>
+      <Button size="small" variant="outlined" onClick={() => setReviewing(true)} sx={noWrap}>
+        {t`Update in all profiles that have it`}
+      </Button>
     </Box>
   )
 }
@@ -307,6 +314,8 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const others = siblingsOf(all, mod)
   const setOpen = useDetail((s) => s.setOpen)
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const [alsoOpen, setAlsoOpen] = useState(false)
   const kind = sourceKind(profile, mod)
   const nexusId = nexusIdOf(profile, mod)
   const fresh = useNexusFresh(nexusId)
@@ -361,6 +370,23 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
         />
       ) : null}
       <UpdateBanner mod={mod} />
+      <Button variant="outlined" onClick={() => setAlsoOpen(true)} sx={noWrap}>
+        {t`Also add to…`}
+      </Button>
+      <OtherProfilesDialog
+        open={alsoOpen}
+        onClose={() => setAlsoOpen(false)}
+        game={game}
+        currentProfileId={profile.id}
+        uniqueId={mod.uniqueId}
+        title={t`Also add ${mod.name} to…`}
+        confirmLabel={t`Add`}
+        onConfirm={async (profiles) => {
+          await Promise.all(
+            profiles.map((other) => CopyMods(game, profile.id, other.id, [mod.uniqueId])),
+          )
+        }}
+      />
       <ProblemLine mod={mod} />
       <LastRunLine mod={mod} profile={profile} />
       <ModDependencyTree mod={mod} />
