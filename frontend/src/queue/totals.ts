@@ -1,3 +1,4 @@
+import { i18n } from '@lingui/core'
 import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
 
 const PERCENT = 100
@@ -61,7 +62,10 @@ export const downloadedKb = (i: Item) => (i.sizeKb * i.progress) / PERCENT
 
 // The wall-clock time of a Unix timestamp, as "14:05".
 export const clockTime = (unix: number) =>
-  new Date(unix * MS_PER_SECOND).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  new Date(unix * MS_PER_SECOND).toLocaleTimeString(i18n.locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 
 // The name of the profile an item installs into: '' when the open game's list no longer has it, null when the
 // list loaded is another game's and cannot tell.

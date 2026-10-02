@@ -1,5 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, Dialog, DialogContent, DialogTitle, Menu, MenuItem } from '@mui/material'
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+} from '@mui/material'
 import { Download } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { SourceInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/migrate/models.ts'
@@ -59,6 +67,9 @@ export function ExternalImportMenu({ game }: { game: string }) {
               setSource(item)
             }}
           >
+            <ListItemIcon sx={{ color: 'inherit' }}>
+              <Download size={16} />
+            </ListItemIcon>
             {t`Import from ${item.name}…`}
           </MenuItem>
         ))}

@@ -309,7 +309,7 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
 }
 
 function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const all = useMods((s) => s.mods)
   const setPinned = useMods((s) => s.setPinned)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
@@ -360,7 +360,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       ) : null}
       <Field label={t`UniqueID`} value={mod.uniqueId} />
       {mod.endorsements > 0 ? (
-        <Field label={t`Endorsements`} value={mod.endorsements.toLocaleString()} />
+        <Field label={t`Endorsements`} value={mod.endorsements.toLocaleString(i18n.locale)} />
       ) : null}
       {nexusId ? (
         <NexusFields

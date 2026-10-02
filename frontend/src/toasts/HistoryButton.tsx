@@ -107,6 +107,7 @@ export function HistoryButton() {
             role: 'dialog',
             sx: {
               width: 360,
+              maxWidth: 'calc(100vw - 32px)',
               maxHeight: 440,
               bgcolor: 'rgb(40,40,48)',
               backgroundImage: 'none',

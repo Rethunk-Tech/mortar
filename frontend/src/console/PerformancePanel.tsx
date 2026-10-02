@@ -1,3 +1,4 @@
+import { i18n } from '@lingui/core'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -38,7 +39,7 @@ function callsLabel(value: number) {
   if (value === 0) {
     return '—'
   }
-  return Number.isInteger(value) ? value.toLocaleString() : value.toFixed(2)
+  return Number.isInteger(value) ? value.toLocaleString(i18n.locale) : value.toFixed(2)
 }
 
 function ReportTable({

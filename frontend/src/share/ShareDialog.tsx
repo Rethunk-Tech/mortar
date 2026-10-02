@@ -51,10 +51,10 @@ const LEVEL_COLOUR: Record<MeterLevel, string> = {
 }
 
 function Meter({ info }: { info: ShownInfo }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const { ratio, level } = meter(info.length, info.limit)
-  const length = info.length.toLocaleString()
-  const limit = info.limit.toLocaleString()
+  const length = info.length.toLocaleString(i18n.locale)
+  const limit = info.limit.toLocaleString(i18n.locale)
   const verdict = {
     ok: t`${length} of ${limit} characters · fits one Discord message`,
     warn: t`${length} of ${limit} characters · close to the Discord message limit`,

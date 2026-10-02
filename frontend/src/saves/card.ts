@@ -1,3 +1,5 @@
+import { i18n } from '@lingui/core'
+
 const minute = 60_000
 const hour = 60 * minute
 
@@ -17,4 +19,4 @@ export const farmTypeName = (whichFarm: number) => farmTypes[whichFarm] ?? ''
 
 export const hoursPlayed = (ms: number) => Math.floor(ms / hour)
 
-export const goldText = (money: number) => `${money.toLocaleString('en-US')}g`
+export const goldText = (money: number) => `${money.toLocaleString(i18n.locale)}g`
