@@ -475,6 +475,23 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return out, nil
 	case "problems":
 		return s.Problems.Problems(ctx, p.Game, id)
+	case "problems.dismissed":
+		res, err := s.Problems.Problems(ctx, p.Game, id)
+		if err != nil {
+			return nil, err
+		}
+		return res.Dismissed, nil
+	case "problems.dismiss":
+		if p.ModID < 1 {
+			return nil, fmt.Errorf("missing problem index")
+		}
+		return s.changed(p.Game, func() (any, error) {
+			return nil, s.dismissProblem(ctx, p.Game, id, p.ModID)
+		})
+	case "problems.restore":
+		return s.changed(p.Game, func() (any, error) {
+			return nil, s.restoreDismissedProblem(ctx, p.Game, id, p.Name, p.ModID)
+		})
 	case "modProblems":
 		if p.ModID < 1 {
 			return []ModProblem{}, nil

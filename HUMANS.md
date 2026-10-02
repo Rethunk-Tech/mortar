@@ -43,6 +43,7 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `mods <game> <profile>`, `mods enable\|disable\|pin\|unpin\|remove ... <UniqueID>...`, `mod ... <UniqueID>` | list, change and inspect mods |
 | `install <game> <profile> <archive>` | install a local archive |
 | `conflicts`, `problems`, `updates`, `saves <game> <profile>` | what the Problems, Mods and Saves tabs show |
+| `problems dismissed`, `problems dismiss <index>`, `problems restore <token\|index>` (`--profile`, `--game stardew`) | dismiss and restore Problems-tab warnings like the GUI |
 | `share`, `export <game> <profile> [file]`, `open <link\|file>` | share links and `.mortar` files |
 | `launch <game> <profile> [--wait]`, `status`, `stop <game>`, `runs`, `logs`, `logs search <query> [--profile <name>]` | play and read past runs |
 | `launchers`, `launchers add\|remove <id> <folder>` | what Settings › Launchers shows and changes |

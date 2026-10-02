@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/control"
+	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
@@ -203,6 +204,52 @@ func TestTrashListRestoreAndYes(t *testing.T) {
 	r = invoke(t, map[string]any{"trash.empty": nil}, "trash", "empty", "--yes")
 	if r.code != 0 || r.calls[0].method != "trash.empty" || !strings.Contains(r.out, "emptied") {
 		t.Fatalf("empty: %+v", r)
+	}
+}
+
+func TestProblemsDismissRestoreAndDismissed(t *testing.T) {
+	problemsResult := problems.Result{
+		Missing: []problems.Missing{
+			{DependentName: "Pack", UniqueID: "Need.Mod", Listed: true},
+			{DependentName: "Other", UniqueID: "Core", Reason: "absent"},
+		},
+		Settings: []problems.SettingHint{{UniqueID: "A.Mod", Name: "Alpha", Field: "Enabled", Current: "false", ForNames: []string{"Beta"}}},
+		Dismissed: []problems.DismissedProblem{
+			{Token: "listed\tneed.mod", Missing: &problems.Missing{DependentName: "Pack", UniqueID: "Need.Mod", Listed: true}},
+		},
+	}
+	results := map[string]any{
+		"problems":           problemsResult,
+		"problems.dismissed": problemsResult.Dismissed,
+		"problems.dismiss":   nil,
+		"problems.restore":   nil,
+	}
+	r := invoke(t, results, "problems", "stardew", "Farm")
+	if r.code != 0 || !strings.Contains(r.out, " 1  missing    Pack") || strings.Contains(r.out, " 1  missing    Other") {
+		t.Fatalf("numbered listed missing only: %q", r.out)
+	}
+	if !strings.Contains(r.out, "missing    Other") {
+		t.Fatalf("non-listed missing line: %q", r.out)
+	}
+	r = invoke(t, results, "problems", "dismissed", "--profile", "Farm")
+	if r.code != 0 || !strings.Contains(r.out, "listed\tneed.mod") || r.calls[0].method != "problems.dismissed" {
+		t.Fatalf("dismissed: %+v", r)
+	}
+	r = invoke(t, results, "problems", "dismiss", "1", "--profile", "Farm")
+	if r.code != 0 || r.calls[len(r.calls)-1].method != "problems.dismiss" || r.calls[len(r.calls)-1].params.ModID != 1 {
+		t.Fatalf("dismiss: %+v", r)
+	}
+	r = invoke(t, results, "problems", "dismiss", "9", "--profile", "Farm")
+	if r.code != 2 || !strings.Contains(r.errOut, "not dismissable") {
+		t.Fatalf("dismiss out of range: %+v", r)
+	}
+	r = invoke(t, results, "problems", "restore", "1", "--profile", "Farm")
+	if r.code != 0 || r.calls[len(r.calls)-1].method != "problems.restore" || r.calls[len(r.calls)-1].params.ModID != 1 {
+		t.Fatalf("restore index: %+v", r)
+	}
+	r = invoke(t, results, "problems", "restore", "listed\tneed.mod", "--profile", "Farm")
+	if got := r.calls[len(r.calls)-1]; got.method != "problems.restore" || got.params.Name != "listed\tneed.mod" {
+		t.Fatalf("restore token: %+v", got)
 	}
 }
 

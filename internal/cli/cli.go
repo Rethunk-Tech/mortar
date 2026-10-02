@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -254,6 +255,16 @@ func (c *cmd) dispatch() error {
 	}
 	if verb == "logs" && len(c.args) >= 3 && c.args[1] == "search" {
 		return c.searchLogs(c.args[2])
+	}
+	if verb == "problems" && len(c.args) > 1 {
+		switch c.args[1] {
+		case "dismissed":
+			return c.problemsDismissed()
+		case "dismiss":
+			return c.problemsDismiss()
+		case "restore":
+			return c.problemsRestore()
+		}
 	}
 	a, err := c.need(1, "a game", "a profile")
 	if err != nil {
@@ -848,40 +859,130 @@ func (c *cmd) problems(p control.Params) error {
 	if err := c.ask("problems", p, &r, readTimeout); err != nil {
 		return err
 	}
-	return c.emit(r, func() {
-		conflicts := 0
-		for _, x := range r.AssetConflicts {
-			if !x.Cosmetic {
-				conflicts++
-			}
+	return c.emit(r, func() { c.printProblems(r) })
+}
+
+func (c *cmd) printProblems(r problems.Result) {
+	conflicts := 0
+	for _, x := range r.AssetConflicts {
+		if !x.Cosmetic {
+			conflicts++
 		}
-		fmt.Fprintf(c.out, "%d problems: %d missing, %d duplicates, %d broken, %d conflicts, %d settings, %d last-run errors, %d outside edits\n",
-			r.Count(), len(r.Missing), len(r.Duplicates), len(r.Broken), conflicts, len(r.Settings), len(r.RunErrors), len(r.Drift))
-		fmt.Fprintf(c.out, "Dismissed (%d)\n", len(r.Dismissed))
-		for _, x := range r.Missing {
+	}
+	fmt.Fprintf(c.out, "%d problems: %d missing, %d duplicates, %d broken, %d conflicts, %d settings, %d last-run errors, %d outside edits\n",
+		r.Count(), len(r.Missing), len(r.Duplicates), len(r.Broken), conflicts, len(r.Settings), len(r.RunErrors), len(r.Drift))
+	fmt.Fprintf(c.out, "Dismissed (%d)\n", len(r.Dismissed))
+	n := 0
+	next := func() string {
+		n++
+		return fmt.Sprintf("%2d", n)
+	}
+	for _, x := range r.Missing {
+		if x.Listed {
+			fmt.Fprintf(c.out, "%s  missing    %s needs %s\n", next(), x.DependentName, missingName(x))
+		} else {
 			fmt.Fprintf(c.out, "missing    %s needs %s\n", x.DependentName, missingName(x))
 		}
-		for _, x := range r.Duplicates {
-			fmt.Fprintf(c.out, "duplicate  %s (%s)\n", x.Name, x.UniqueID)
-		}
-		for _, x := range r.Broken {
+	}
+	for _, x := range r.Duplicates {
+		fmt.Fprintf(c.out, "duplicate  %s (%s)\n", x.Name, x.UniqueID)
+	}
+	for _, x := range r.Broken {
+		if x.Status == "abandoned" {
+			fmt.Fprintf(c.out, "%s  broken     %s: %s %s\n", next(), x.Name, x.Status, x.Summary)
+		} else {
 			fmt.Fprintf(c.out, "broken     %s: %s %s\n", x.Name, x.Status, x.Summary)
 		}
-		for _, x := range r.AssetConflicts {
-			if !x.Cosmetic {
+	}
+	for _, x := range r.AssetConflicts {
+		if !x.Cosmetic {
+			if x.Kind != "" {
+				fmt.Fprintf(c.out, "%s  conflict   %s %s: %s\n", next(), x.Kind, x.Target, strings.Join(x.Names, ", "))
+			} else {
 				fmt.Fprintf(c.out, "conflict   %s %s: %s\n", x.Kind, x.Target, strings.Join(x.Names, ", "))
 			}
 		}
-		for _, x := range r.Settings {
-			fmt.Fprintf(c.out, "setting    %s %s=%s for %s\n", x.Name, x.Field, x.Current, strings.Join(x.ForNames, ", "))
-		}
-		for _, x := range r.RunErrors {
-			fmt.Fprintf(c.out, "run error  %s (%s)\n", x.Name, x.UniqueID)
-		}
-		for _, x := range r.Drift {
-			fmt.Fprintf(c.out, "edited     %s %s\n", x.Kind, x.Folder)
+	}
+	for _, x := range r.Settings {
+		fmt.Fprintf(c.out, "%s  setting    %s %s=%s for %s\n", next(), x.Name, x.Field, x.Current, strings.Join(x.ForNames, ", "))
+	}
+	for _, x := range r.RunErrors {
+		fmt.Fprintf(c.out, "run error  %s (%s)\n", x.Name, x.UniqueID)
+	}
+	for _, x := range r.Drift {
+		fmt.Fprintf(c.out, "edited     %s %s\n", x.Kind, x.Folder)
+	}
+}
+
+func (c *cmd) problemsDismissed() error {
+	profile, err := c.problemsProfile()
+	if err != nil {
+		return err
+	}
+	game := c.problemsGame()
+	var list []problems.DismissedProblem
+	if err := c.ask("problems.dismissed", control.Params{Game: game, Profile: profile}, &list, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(list, func() {
+		for i, d := range list {
+			kind, text := dismissedKindText(d)
+			fmt.Fprintf(c.out, "%d\t%s\t%s\t%s\n", i+1, kind, text, d.Token)
 		}
 	})
+}
+
+func (c *cmd) problemsDismiss() error {
+	a, err := c.need(2, "a problem index")
+	if err != nil {
+		return err
+	}
+	index, err := parseProblemIndex(a[0])
+	if err != nil {
+		return err
+	}
+	profile, err := c.problemsProfile()
+	if err != nil {
+		return err
+	}
+	game := c.problemsGame()
+	var r problems.Result
+	if err := c.ask("problems", control.Params{Game: game, Profile: profile}, &r, readTimeout); err != nil {
+		return err
+	}
+	rows := dismissableRows(r)
+	if index > len(rows) {
+		return refusedError{fmt.Sprintf("problem index %d is not dismissable (%d dismissable rows; run mortar problems %s %s)", index, len(rows), game, profile)}
+	}
+	if err := c.ask("problems.dismiss", control.Params{Game: game, Profile: profile, ModID: index}, nil, readTimeout); err != nil {
+		return err
+	}
+	fmt.Fprintln(c.out, "Dismissed.")
+	return nil
+}
+
+func (c *cmd) problemsRestore() error {
+	a, err := c.need(2, "a dismissal token or index")
+	if err != nil {
+		return err
+	}
+	profile, err := c.problemsProfile()
+	if err != nil {
+		return err
+	}
+	game := c.problemsGame()
+	arg := a[0]
+	p := control.Params{Game: game, Profile: profile}
+	if idx, err := strconv.Atoi(strings.TrimSpace(arg)); err == nil && idx > 0 {
+		p.ModID = idx
+	} else {
+		p.Name = arg
+	}
+	if err := c.ask("problems.restore", p, nil, readTimeout); err != nil {
+		return err
+	}
+	fmt.Fprintln(c.out, "Restored.")
+	return nil
 }
 
 func (c *cmd) updates(p control.Params) error {
@@ -945,6 +1046,11 @@ func (c *cmd) runs(p control.Params) error {
 			})
 		}
 		c.table("ID\tSTARTED\tDURATION\tOUTCOME\tERRORS\tWARNINGS\tSMAPI\tGAME", t)
+		for _, r := range list {
+			if r.Cause != nil && r.Cause.ModName != "" {
+				fmt.Fprintf(c.out, "%s: Caused by %s — %s\n", r.ID, r.Cause.ModName, r.Cause.Detail)
+			}
+		}
 	})
 }
 
@@ -1140,6 +1246,9 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   install <game> <profile> <archive>      install a local archive
   conflicts <game> <profile> [--all]      asset conflicts (--all includes cosmetic ones)
   problems <game> <profile>               everything the Problems tab lists
+  problems dismissed [--profile <name>]   dismissed problems (index, kind, text, token)
+  problems dismiss <index> [--profile <name>]
+  problems restore <token|index> [--profile <name>]
   updates <game> <profile>                mods with a newer version
   saves <game> <profile>                  saves and the mods each one lacks
   share <game> <profile>                  share link

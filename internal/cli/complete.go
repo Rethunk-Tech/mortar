@@ -52,6 +52,7 @@ var subverbs = map[string][]string{
 	"completion": {"bash", "zsh", "fish"},
 	"launchers":  {"add", "remove"},
 	"tools":      {"run"},
+	"problems":   {"dismissed", "dismiss", "restore"},
 }
 
 // gameAt and profileAt give the positions (1-based after the verb) where a verb takes a game and a profile.
@@ -84,6 +85,11 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 		return 1, 2, 0
 	case "mod":
 		return 1, 2, 3
+	case "problems":
+		if len(words) > 1 && slices.Contains(subverbs["problems"], words[1]) {
+			return 0, 0, 0
+		}
+		return 1, 2, 0
 	}
 	return 1, 2, 0
 }
@@ -102,8 +108,10 @@ func (c *cmd) complete(words []string) error {
 				cands = append(cands, v)
 			}
 		}
-	} else if subs, ok := subverbs[words[0]]; ok && pos == 1 && words[0] != "mods" {
+	} else if subs, ok := subverbs[words[0]]; ok && pos == 1 && words[0] != "mods" && words[0] != "problems" {
 		cands = subs
+	} else if words[0] == "problems" && pos == 1 {
+		cands = append(cands, subverbs["problems"]...)
 	} else if words[0] == "trash" && pos == 2 && len(words) > 1 && (words[1] == "restore" || words[1] == "delete") {
 		game := "stardew"
 		for i := 0; i+1 < len(words); i++ {
