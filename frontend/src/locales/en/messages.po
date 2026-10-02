@@ -736,7 +736,7 @@ msgstr "Follow new lines"
 msgid "{name} was removed from Nexus"
 msgstr "{name} was removed from Nexus"
 
-#: src/nxm/store.ts:51
+#: src/nxm/store.ts:53
 #: src/queue/actions.ts:80
 #: src/queue/store.ts:175
 #: src/queue/store.ts:263
@@ -867,7 +867,7 @@ msgstr "Check only enabled mods: {from} → {to}"
 msgid "Rename profile"
 msgstr "Rename profile"
 
-#: src/nxm/store.ts:63
+#: src/nxm/store.ts:65
 msgid "Could not start the Nexus download"
 msgstr "Could not start the Nexus download"
 
@@ -1279,7 +1279,7 @@ msgstr "Created"
 msgid "Hidden"
 msgstr "Hidden"
 
-#: src/nxm/store.ts:138
+#: src/nxm/store.ts:140
 msgid "Mortar · Install {name}?"
 msgstr "Mortar · Install {name}?"
 
@@ -1820,7 +1820,7 @@ msgstr "About Mortar"
 msgid "No saves were found"
 msgstr "No saves were found"
 
-#: src/nxm/store.ts:140
+#: src/nxm/store.ts:142
 msgid "You started this download on Nexus. Show Mortar to choose the profile it goes into."
 msgstr "You started this download on Nexus. Show Mortar to choose the profile it goes into."
 
@@ -2794,7 +2794,7 @@ msgstr "Could not untrack"
 msgid "Mods from the same download are removed together: {0}."
 msgstr "Mods from the same download are removed together: {0}."
 
-#: src/nxm/store.ts:71
+#: src/nxm/store.ts:73
 msgid "Downloading {name} into {profileName}"
 msgstr "Downloading {name} into {profileName}"
 
@@ -2935,11 +2935,11 @@ msgstr "Open {name} on Nexus"
 msgid "Untagged"
 msgstr "Untagged"
 
-#: src/nxm/store.ts:121
+#: src/nxm/store.ts:123
 msgid "Nexus link not used"
 msgstr "Nexus link not used"
 
-#: src/nxm/store.ts:76
+#: src/nxm/store.ts:78
 msgid "Nexus mod {modId}"
 msgstr "Nexus mod {modId}"
 
