@@ -115,6 +115,11 @@
     "url": "https://github.com/bodgit/sevenzip"
   },
   {
+    "name": "github.com/go-ole/go-ole",
+    "licence": "MIT",
+    "url": "https://github.com/go-ole/go-ole"
+  },
+  {
     "name": "github.com/nwaples/rardecode/v2",
     "licence": "BSD-2-Clause",
     "url": "https://github.com/nwaples/rardecode"
