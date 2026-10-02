@@ -97,6 +97,17 @@ func (s *Service) Receive(args []string) bool {
 		found = true
 		if s.duplicate(arg) {
 			log.Printf("nxm: duplicate link ignored")
+			if link, err := nxm.Parse(arg, s.store.Get().NexusUserID, s.now()); err == nil {
+				s.mu.Lock()
+				for _, arrival := range s.arrivals {
+					if arrival.Link == link {
+						s.mu.Unlock()
+						s.emit(ArrivedEvent, arrival)
+						break
+					}
+				}
+				s.mu.Unlock()
+			}
 			continue
 		}
 		if game, gerr := nxm.LinkGame(arg); gerr == nil && game != nexus.Game {
@@ -119,6 +130,7 @@ func (s *Service) Receive(args []string) bool {
 		s.nextID++
 		id := s.nextID
 		if re, ok := errors.AsType[*nxm.RejectError](err); ok {
+			s.forget(arg)
 			r := Rejection{ID: id, Reason: re.Reason}
 			log.Printf("nxm: link %d rejected: %s", id, re.Reason)
 			s.rejections = append(s.rejections, r)
@@ -133,6 +145,22 @@ func (s *Service) Receive(args []string) bool {
 		s.emit(ArrivedEvent, a)
 	}
 	return found
+}
+
+func (s *Service) forget(link string) {
+	s.mu.Lock()
+	delete(s.recent, link)
+	s.mu.Unlock()
+}
+
+func (s *Service) forgetArrival(link nxm.Link) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for raw := range s.recent {
+		if parsed, err := nxm.Parse(raw, s.store.Get().NexusUserID, s.now()); err == nil && parsed == link {
+			delete(s.recent, raw)
+		}
+	}
 }
 
 // duplicate records link and reports whether it already arrived and has not expired since.
@@ -196,8 +224,18 @@ func (s *Service) Assign(id int, game, profile string) error {
 // Ignore drops the arrival.
 func (s *Service) Ignore(id int) {
 	s.mu.Lock()
-	s.arrivals = slices.DeleteFunc(s.arrivals, func(a Arrival) bool { return a.ID == id })
+	var link nxm.Link
+	s.arrivals = slices.DeleteFunc(s.arrivals, func(a Arrival) bool {
+		if a.ID == id {
+			link = a.Link
+			return true
+		}
+		return false
+	})
 	s.mu.Unlock()
+	if link.ModID != 0 {
+		s.forgetArrival(link)
+	}
 	log.Printf("nxm: link %d ignored", id)
 }
 

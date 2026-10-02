@@ -6,9 +6,11 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  FormControlLabel,
   ListItemIcon,
   Menu,
   MenuItem,
+  Checkbox,
 } from '@mui/material'
 import { UserRound } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
@@ -42,6 +44,7 @@ function useModName(modId: number): string {
 function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const { t } = useLingui()
   const choose = useNxm((s) => s.choose)
+  const arrivals = useNxm((s) => s.arrivals)
   const dismiss = useNxm((s) => s.dismiss)
   const lastId = useSettings((s) => s.lastProfile?.[NXM_GAME])
   const name = useModName(arrival.link.modId)
@@ -53,6 +56,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const [creating, setCreating] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [applyAll, setApplyAll] = useState(false)
   const load = useCallback(() => {
     List(NXM_GAME)
       .then((list) => setProfiles((list ?? []).filter((p) => !p.hidden)))
@@ -70,7 +74,8 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
     }
     setBusy(true)
     setError('')
-    choose(arrival.id, profile)
+    const ids = applyAll ? arrivals.map((a) => a.id) : [arrival.id]
+    Promise.all(ids.map((id) => choose(id, profile)))
       .catch((e: unknown) => setError(errorMessage(e)))
       .finally(() => setBusy(false))
   }
@@ -94,6 +99,14 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
     >
       <DialogTitle>{t`Install ${name}?`}</DialogTitle>
       <DialogContent>
+        <DialogContentText sx={{ mb: 1 }}>
+          {t`File ${arrival.link.fileId} · version ${arrival.link.key}`}
+        </DialogContentText>
+        {arrivals.length > 1 ? (
+          <DialogContentText sx={{ mb: 1 }}>
+            {t`${arrivals.length - 1} more waiting`}
+          </DialogContentText>
+        ) : null}
         {profiles === null ? (
           <LoadingRow>{text}</LoadingRow>
         ) : (
@@ -103,6 +116,14 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
           <DialogContentText color="error" sx={{ mt: 1 }}>
             {error}
           </DialogContentText>
+        ) : null}
+        {arrivals.length > 1 ? (
+          <FormControlLabel
+            control={
+              <Checkbox checked={applyAll} onChange={(_, checked) => setApplyAll(checked)} />
+            }
+            label={t`Apply this profile to all waiting`}
+          />
         ) : null}
       </DialogContent>
       <DialogActions>
