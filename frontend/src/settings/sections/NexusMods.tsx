@@ -96,11 +96,17 @@ export function NexusMods() {
         <NexusMeter />
         {seenServers && seenServers.length > 0 ? (
           <FormControl size="small" fullWidth={true}>
-            <InputLabel id={serverId}>{t`Preferred download server`}</InputLabel>
+            {/* Automatic is the empty value, so the label must stay raised and the field must show it. */}
+            <InputLabel id={serverId} shrink={true}>
+              {t`Preferred download server`}
+            </InputLabel>
             <Select
               labelId={serverId}
               label={t`Preferred download server`}
               value={preferredServer}
+              displayEmpty={true}
+              notched={true}
+              renderValue={(v) => (v === '' ? t`Automatic` : String(v))}
               onChange={(e) => {
                 SetNexusPreferredDownloadServer(String(e.target.value)).catch(reportUnexpected)
               }}

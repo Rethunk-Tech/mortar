@@ -25,7 +25,7 @@ msgstr "Mod: {mod}"
 msgid "Browse…"
 msgstr "Browse…"
 
-#: src/settings/sections/Data.tsx:74
+#: src/settings/sections/Data.tsx:73
 msgid "List grouping: {from} → {to}"
 msgstr "List grouping: {from} → {to}"
 
@@ -119,7 +119,6 @@ msgid "Preview import"
 msgstr "Preview import"
 
 #: src/settings/sections/Data.tsx:150
-#: src/settings/sections/Data.tsx:163
 msgid "Move data folder…"
 msgstr "Move data folder…"
 
@@ -162,7 +161,7 @@ msgstr "History"
 msgid "Remove {0} mods from this profile?"
 msgstr "Remove {0} mods from this profile?"
 
-#: src/settings/sections/NexusMods.tsx:138
+#: src/settings/sections/NexusMods.tsx:144
 msgid "Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them."
 msgstr "Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them."
 
@@ -522,7 +521,7 @@ msgstr "Grid view"
 msgid "Review"
 msgstr "Review"
 
-#: src/settings/sections/NexusMods.tsx:170
+#: src/settings/sections/NexusMods.tsx:176
 #: src/shell/NexusAccount.tsx:59
 msgid "Sign in"
 msgstr "Sign in"
@@ -576,7 +575,7 @@ msgstr "Retry"
 msgid "Copper"
 msgstr "Copper"
 
-#: src/settings/sections/Data.tsx:211
+#: src/settings/sections/Data.tsx:216
 msgid "Mortar's data"
 msgstr "Mortar's data"
 
@@ -626,8 +625,8 @@ msgstr "Name"
 msgid "SMAPI is the loader every Stardew mod needs. It goes into the game folder."
 msgstr "SMAPI is the loader every Stardew mod needs. It goes into the game folder."
 
-#: src/settings/sections/Data.tsx:263
-#: src/settings/sections/Data.tsx:292
+#: src/settings/sections/Data.tsx:262
+#: src/settings/sections/Data.tsx:291
 msgid "Total"
 msgstr "Total"
 
@@ -657,7 +656,7 @@ msgstr "{name} is marked broken for this game version."
 msgid "{pickedName} is used after Save."
 msgstr "{pickedName} is used after Save."
 
-#: src/settings/sections/Data.tsx:82
+#: src/settings/sections/Data.tsx:81
 msgid "Enable mods when installed: {from} → {to}"
 msgstr "Enable mods when installed: {from} → {to}"
 
@@ -847,7 +846,7 @@ msgstr "Undo"
 msgid "Stardew Valley is now {0}. This profile last launched on {1}."
 msgstr "Stardew Valley is now {0}. This profile last launched on {1}."
 
-#: src/settings/sections/NexusMods.tsx:119
+#: src/settings/sections/NexusMods.tsx:125
 msgid "Handle Nexus \"Mod Manager Download\" links"
 msgstr "Handle Nexus \"Mod Manager Download\" links"
 
@@ -859,7 +858,7 @@ msgstr "{first} installed"
 msgid "Notes travel in a shared .mortar file, not in a share link."
 msgstr "Notes travel in a shared .mortar file, not in a share link."
 
-#: src/settings/sections/Data.tsx:80
+#: src/settings/sections/Data.tsx:79
 msgid "Check only enabled mods: {from} → {to}"
 msgstr "Check only enabled mods: {from} → {to}"
 
@@ -1008,7 +1007,7 @@ msgstr "No recorded runs yet"
 msgid "Archive"
 msgstr "Archive"
 
-#: src/settings/sections/Data.tsx:72
+#: src/settings/sections/Data.tsx:71
 msgid "List sort direction: {from} → {to}"
 msgstr "List sort direction: {from} → {to}"
 
@@ -1020,7 +1019,7 @@ msgstr "Restore {when}"
 msgid "Desktop"
 msgstr "Desktop"
 
-#: src/settings/sections/Data.tsx:287
+#: src/settings/sections/Data.tsx:286
 msgid "Nothing to remove."
 msgstr "Nothing to remove."
 
@@ -1337,8 +1336,8 @@ msgstr "Cover image"
 #: src/profiles/GameModsDialog.tsx:149
 #: src/profiles/ProfilesPage.tsx:149
 #: src/saves/BackupsDialog.tsx:248
-#: src/settings/sections/Data.tsx:117
-#: src/settings/sections/Data.tsx:297
+#: src/settings/sections/Data.tsx:116
+#: src/settings/sections/Data.tsx:296
 #: src/settings/sections/GameSettings.tsx:252
 #: src/settings/sections/nxmHandler.tsx:101
 #: src/settings/sections/StreamOverlay.tsx:271
@@ -1356,7 +1355,7 @@ msgstr "Nothing to download"
 msgid "Standard farm"
 msgstr "Standard farm"
 
-#: src/settings/sections/Data.tsx:88
+#: src/settings/sections/Data.tsx:87
 msgid "{field}: {from} → {to}"
 msgstr "{field}: {from} → {to}"
 
@@ -1374,7 +1373,8 @@ msgstr "Choose image…"
 msgid "Stopping…"
 msgstr "Stopping…"
 
-#: src/settings/sections/NexusMods.tsx:108
+#: src/settings/sections/NexusMods.tsx:109
+#: src/settings/sections/NexusMods.tsx:114
 msgid "Automatic"
 msgstr "Automatic"
 
@@ -1387,7 +1387,7 @@ msgstr "Compare {0} with…"
 msgid "Done"
 msgstr "Done"
 
-#: src/settings/sections/Data.tsx:60
+#: src/settings/sections/Data.tsx:59
 msgid "Accent: {from} → {to}"
 msgstr "Accent: {from} → {to}"
 
@@ -1765,7 +1765,7 @@ msgstr "Enable {0}"
 msgid "Stop the game before moving the data folder."
 msgstr "Stop the game before moving the data folder."
 
-#: src/settings/sections/Data.tsx:260
+#: src/settings/sections/Data.tsx:259
 msgid "Cache"
 msgstr "Cache"
 
@@ -1881,7 +1881,7 @@ msgstr "Remove filter {mod}"
 msgid "After the first release"
 msgstr "After the first release"
 
-#: src/settings/sections/Data.tsx:262
+#: src/settings/sections/Data.tsx:261
 msgid "Trash"
 msgstr "Trash"
 
@@ -1894,7 +1894,7 @@ msgstr "The automatic cover is used after Save."
 msgid "Copied part {0}"
 msgstr "Copied part {0}"
 
-#: src/settings/sections/NexusMods.tsx:174
+#: src/settings/sections/NexusMods.tsx:180
 msgid "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 msgstr "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 
@@ -2170,7 +2170,7 @@ msgstr "Back"
 msgid "Selected mod"
 msgstr "Selected mod"
 
-#: src/settings/sections/Data.tsx:106
+#: src/settings/sections/Data.tsx:105
 msgid "Nothing would change."
 msgstr "Nothing would change."
 
@@ -2179,7 +2179,7 @@ msgid "config.json"
 msgstr "config.json"
 
 #. placeholder {0}: p.name
-#: src/settings/sections/Data.tsx:257
+#: src/settings/sections/Data.tsx:256
 msgid "{0} (profile)"
 msgstr "{0} (profile)"
 
@@ -2199,6 +2199,10 @@ msgstr "Could not switch off the other copy of {0}"
 #: src/saves/SavesTab.tsx:294
 msgid "Mortar reads each save for the mods it has used. You pick the save in the game; this is how well each one fits {name}."
 msgstr "Mortar reads each save for the mods it has used. You pick the save in the game; this is how well each one fits {name}."
+
+#: src/settings/sections/Data.tsx:156
+msgid "Move…"
+msgstr "Move…"
 
 #: src/mods/ModList.tsx:460
 #: src/mods/ModsTab.tsx:223
@@ -2268,7 +2272,7 @@ msgstr "Track"
 msgid "Levels"
 msgstr "Levels"
 
-#: src/settings/sections/Data.tsx:62
+#: src/settings/sections/Data.tsx:61
 msgid "Background: {from} → {to}"
 msgstr "Background: {from} → {to}"
 
@@ -2294,7 +2298,7 @@ msgstr "Could not check the mods for problems"
 msgid "Search the log"
 msgstr "Search the log"
 
-#: src/settings/sections/NexusMods.tsx:123
+#: src/settings/sections/NexusMods.tsx:129
 msgid "{owner} opens these links now."
 msgstr "{owner} opens these links now."
 
@@ -2450,7 +2454,7 @@ msgstr "Stardew Valley was not found"
 msgid "Could not list backups: {error}"
 msgstr "Could not list backups: {error}"
 
-#: src/settings/sections/Data.tsx:76
+#: src/settings/sections/Data.tsx:75
 msgid "Check mod updates on start: {from} → {to}"
 msgstr "Check mod updates on start: {from} → {to}"
 
@@ -2569,7 +2573,7 @@ msgstr "Four Corners farm"
 #: src/commandPalette/CommandPalette.tsx:163
 #: src/profiles/GameModsDialog.tsx:157
 #: src/profiles/ProfilesPage.tsx:271
-#: src/settings/sections/Data.tsx:129
+#: src/settings/sections/Data.tsx:128
 msgid "Import"
 msgstr "Import"
 
@@ -2705,7 +2709,7 @@ msgstr "Could not upload the log"
 msgid "Updated {mods} in {profileName}"
 msgstr "Updated {mods} in {profileName}"
 
-#: src/settings/sections/Data.tsx:251
+#: src/settings/sections/Data.tsx:250
 msgid "Import settings…"
 msgstr "Import settings…"
 
@@ -2773,7 +2777,7 @@ msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {
 msgid "New since you last looked"
 msgstr "New since you last looked"
 
-#: src/settings/sections/Data.tsx:84
+#: src/settings/sections/Data.tsx:83
 msgid "Tell when SMAPI is out: {from} → {to}"
 msgstr "Tell when SMAPI is out: {from} → {to}"
 
@@ -2798,7 +2802,7 @@ msgstr "Mods from the same download are removed together: {0}."
 msgid "Downloading {name} into {profileName}"
 msgstr "Downloading {name} into {profileName}"
 
-#: src/settings/sections/Data.tsx:304
+#: src/settings/sections/Data.tsx:303
 msgid "Clean up"
 msgstr "Clean up"
 
@@ -2844,7 +2848,7 @@ msgstr "Windowed"
 msgid "Date"
 msgstr "Date"
 
-#: src/settings/sections/Data.tsx:259
+#: src/settings/sections/Data.tsx:258
 msgid "Store"
 msgstr "Store"
 
@@ -3045,7 +3049,7 @@ msgstr "Downloads come from Nexus with your account, so Mortar needs your API ke
 msgid "Discord"
 msgstr "Discord"
 
-#: src/settings/sections/Data.tsx:236
+#: src/settings/sections/Data.tsx:235
 msgid "Export settings…"
 msgstr "Export settings…"
 
@@ -3243,7 +3247,7 @@ msgstr "{total, plural, one {# mod} other {# mods}}"
 msgid "From an archive"
 msgstr "From an archive"
 
-#: src/settings/sections/Data.tsx:226
+#: src/settings/sections/Data.tsx:225
 msgid "Open folder"
 msgstr "Open folder"
 
@@ -3628,7 +3632,7 @@ msgstr "Filter {total, plural, one {# mod} other {# mods}}"
 
 #: src/saves/BackupsDialog.tsx:147
 #: src/saves/SavesTab.tsx:302
-#: src/settings/sections/Data.tsx:261
+#: src/settings/sections/Data.tsx:260
 #: src/settings/sections/Updates.tsx:295
 msgid "Save backups"
 msgstr "Save backups"
@@ -3897,12 +3901,12 @@ msgstr "Found in GOG"
 msgid "SMAPI mods"
 msgstr "SMAPI mods"
 
-#: src/settings/sections/Data.tsx:276
-#: src/settings/sections/Data.tsx:284
+#: src/settings/sections/Data.tsx:275
+#: src/settings/sections/Data.tsx:283
 msgid "Clean up unused"
 msgstr "Clean up unused"
 
-#: src/settings/sections/NexusMods.tsx:134
+#: src/settings/sections/NexusMods.tsx:140
 msgid "Send other games' links to {redirectName}"
 msgstr "Send other games' links to {redirectName}"
 
@@ -4068,7 +4072,7 @@ msgstr "{name} is obsolete: {summary}"
 msgid "Author"
 msgstr "Author"
 
-#: src/settings/sections/Data.tsx:103
+#: src/settings/sections/Data.tsx:102
 msgid "Import settings"
 msgstr "Import settings"
 
@@ -4221,7 +4225,7 @@ msgstr "Added {mods} to {profileName}"
 msgid "Remove {0}"
 msgstr "Remove {0}"
 
-#: src/settings/sections/Data.tsx:86
+#: src/settings/sections/Data.tsx:85
 msgid "Seen tips: {from} → {to}"
 msgstr "Seen tips: {from} → {to}"
 
@@ -4309,7 +4313,7 @@ msgstr "{0, plural, one {# mod} other {# mods}}"
 msgid "Launcher replaced"
 msgstr "Launcher replaced"
 
-#: src/settings/sections/Data.tsx:68
+#: src/settings/sections/Data.tsx:67
 msgid "List columns: {from} → {to}"
 msgstr "List columns: {from} → {to}"
 
@@ -4373,7 +4377,7 @@ msgstr "{0, plural, one {# hour ago} other {# hours ago}}"
 msgid "No changelog entries between these versions."
 msgstr "No changelog entries between these versions."
 
-#: src/settings/sections/Data.tsx:78
+#: src/settings/sections/Data.tsx:77
 msgid "Include pre-release mod versions: {from} → {to}"
 msgstr "Include pre-release mod versions: {from} → {to}"
 
@@ -4455,7 +4459,7 @@ msgstr "Tools"
 msgid "Nexus page"
 msgstr "Nexus page"
 
-#: src/settings/sections/Data.tsx:64
+#: src/settings/sections/Data.tsx:63
 msgid "Last game: {from} → {to}"
 msgstr "Last game: {from} → {to}"
 
@@ -4515,7 +4519,7 @@ msgstr "Profile exported"
 msgid "Loading profiles…"
 msgstr "Loading profiles…"
 
-#: src/settings/sections/Data.tsx:212
+#: src/settings/sections/Data.tsx:217
 msgid "Measuring…"
 msgstr "Measuring…"
 
@@ -4628,7 +4632,7 @@ msgstr "Support"
 msgid "No mods yet"
 msgstr "No mods yet"
 
-#: src/settings/sections/Data.tsx:70
+#: src/settings/sections/Data.tsx:69
 msgid "List sort: {from} → {to}"
 msgstr "List sort: {from} → {to}"
 
@@ -4652,7 +4656,7 @@ msgstr "Mortar downloads and installs a mod when you click Mod Manager Download 
 msgid "Settings sections"
 msgstr "Settings sections"
 
-#: src/settings/sections/Data.tsx:66
+#: src/settings/sections/Data.tsx:65
 msgid "Backups kept: {from} → {to}"
 msgstr "Backups kept: {from} → {to}"
 
@@ -4931,12 +4935,12 @@ msgstr "Sound volume ({value}%)"
 msgid "Adopt"
 msgstr "Adopt"
 
-#: src/settings/sections/NexusMods.tsx:151
+#: src/settings/sections/NexusMods.tsx:157
 msgid "Personal API key"
 msgstr "Personal API key"
 
-#: src/settings/sections/NexusMods.tsx:99
-#: src/settings/sections/NexusMods.tsx:102
+#: src/settings/sections/NexusMods.tsx:101
+#: src/settings/sections/NexusMods.tsx:105
 msgid "Preferred download server"
 msgstr "Preferred download server"
 

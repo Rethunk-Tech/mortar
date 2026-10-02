@@ -9,9 +9,8 @@ import {
   DialogContent,
   DialogTitle,
   LinearProgress,
-  Link,
 } from '@mui/material'
-import { Download, FolderOpen, Trash2, Upload } from 'lucide-react'
+import { Download, FolderInput, FolderOpen, Trash2, Upload } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   Usage as DiskUse,
@@ -133,11 +132,12 @@ function ImportSettingsDialog({
   )
 }
 
-function MoveDataLink() {
+function MoveDataButton() {
   const { t } = useLingui()
   return (
-    <Link
-      component="button"
+    <Button
+      variant="outlined"
+      startIcon={<FolderInput size={16} />}
       onClick={() => {
         const st = useLaunch.getState().status
         if (st?.state === State.Launching || st?.state === State.Running) {
@@ -151,17 +151,10 @@ function MoveDataLink() {
           .then((dest) => (dest ? MoveDataFolder(dest) : Promise.resolve()))
           .catch(reportUnexpected)
       }}
-      sx={{
-        alignSelf: 'flex-start',
-        fontSize: 13,
-        ...nowrap,
-        display: 'inline-flex',
-        gap: 0.75,
-        alignItems: 'center',
-      }}
+      sx={{ ...nowrap, flexShrink: 0 }}
     >
-      {t`Move data folder…`}
-    </Link>
+      {t`Move…`}
+    </Button>
   )
 }
 
@@ -207,25 +200,31 @@ export function Data() {
   }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Mortar's data`}</Box>
-        <Box sx={{ ...mono, wordBreak: 'break-all' }}>{usage ? usage.path : t`Measuring…`}</Box>
-        <Link
-          component="button"
-          onClick={() => OpenDataFolder().catch(reportUnexpected)}
-          sx={{
-            alignSelf: 'flex-start',
-            fontSize: 13,
-            ...nowrap,
-            display: 'inline-flex',
-            gap: 0.75,
-            alignItems: 'center',
-          }}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          p: '14px',
+          bgcolor: 'rgba(55,55,65,0.9)',
+          borderRadius: '6px',
+        }}
+      >
+        <Box
+          sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}
         >
-          <FolderOpen size={14} />
+          <Box sx={{ fontSize: 15, fontWeight: 600 }}>{t`Mortar's data`}</Box>
+          <Box sx={{ ...mono, wordBreak: 'break-all' }}>{usage ? usage.path : t`Measuring…`}</Box>
+        </Box>
+        <Button
+          variant="outlined"
+          startIcon={<FolderOpen size={16} />}
+          onClick={() => OpenDataFolder().catch(reportUnexpected)}
+          sx={{ ...nowrap, flexShrink: 0 }}
+        >
           {t`Open folder`}
-        </Link>
-        <MoveDataLink />
+        </Button>
+        <MoveDataButton />
       </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
         <Button
