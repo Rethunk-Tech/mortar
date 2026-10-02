@@ -1,6 +1,10 @@
 package problems
 
 import (
+	"bytes"
+	"image"
+	"image/color"
+	"image/png"
 	"os"
 	"path/filepath"
 	"slices"
@@ -361,6 +365,60 @@ func TestOverlayMapWithUnknownLayerDoesNotClash(t *testing.T) {
 	}
 }
 
+func TestOverlayImageUsesOpaqueCells(t *testing.T) {
+	opaque := image.NewNRGBA(image.Rect(0, 0, 32, 16))
+	opaque.SetNRGBA(0, 0, color.NRGBA{A: 255})
+	root := t.TempDir()
+	writeRegressionFile(t, root, "manifest.json", `{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"patch.png","ToArea":{"X":0,"Y":0,"Width":32,"Height":16},"PatchMode":"Overlay"}]}`)
+	writePNG(t, filepath.Join(root, "patch.png"), opaque)
+	pack := readContentPack(Installed{Enabled: true, Folder: root})
+	other := cpPatch{image: true, shapes: []cpShape{{kind: 'r', x: 16, y: 0, w: 16, h: 16}}}
+	if clash, _ := editsClash(pack.patches, []cpPatch{other}); clash {
+		t.Fatal("transparent overlay cells must not clash")
+	}
+	opaque.SetNRGBA(16, 0, color.NRGBA{A: 255})
+	writePNG(t, filepath.Join(root, "patch.png"), opaque)
+	packCache.Delete(filepath.Clean(root))
+	pack = readContentPack(Installed{Enabled: true, Folder: root})
+	if clash, _ := editsClash(pack.patches, []cpPatch{other}); !clash {
+		t.Fatal("opaque overlay cell must clash")
+	}
+}
+
+func TestTokenizedImageFromFileExpandsCaseInsensitive(t *testing.T) {
+	root := t.TempDir()
+	writeRegressionFile(t, root, "manifest.json", `{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"sprites/{{season}}.png","ToArea":{"X":32,"Y":0,"Width":16,"Height":16},"PatchMode":"Overlay"}]}`)
+	for _, season := range []string{"Spring", "Summer", "Fall", "Winter"} {
+		img := image.NewNRGBA(image.Rect(0, 0, 16, 16))
+		if season == "Fall" {
+			img.SetNRGBA(0, 0, color.NRGBA{A: 255})
+		}
+		writePNG(t, filepath.Join(root, "sprites", season+".png"), img)
+	}
+	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
+	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
+	if len(sourceFiles(root, "sprites/{{season}}.png")) != 4 {
+		t.Fatal("season token did not expand to all case-insensitive matches")
+	}
+	other := cpPatch{image: true, shapes: []cpShape{{kind: 'r', x: 32, y: 0, w: 16, h: 16}}}
+	if clash, _ := editsClash(pack.patches, []cpPatch{other}); !clash {
+		t.Fatal("opaque seasonal file must clash")
+	}
+}
+
+func TestUnresolvableTokenizedImageFallsBackToWholeSheet(t *testing.T) {
+	root := t.TempDir()
+	writeRegressionFile(t, root, "manifest.json", `{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"sprites/{{missing}}.png","PatchMode":"Overlay"}]}`)
+	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
+	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
+	if len(pack.patches) != 1 || len(pack.patches[0].shapes) != 1 || pack.patches[0].shapes[0].kind != 'w' {
+		t.Fatalf("unresolvable token should use whole-sheet fallback: %#v", pack.patches)
+	}
+}
+
 func TestDifferentSpouseConditionsExcludeEdits(t *testing.T) {
 	root := t.TempDir()
 	writeRegressionFile(t, root, "content.json", `{"Changes":[
@@ -381,6 +439,20 @@ func writeRegressionFile(t *testing.T, root, rel, body string) {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func writePNG(t *testing.T, path string, image image.Image) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	var data bytes.Buffer
+	if err := png.Encode(&data, image); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, data.Bytes(), 0o600); err != nil {
 		t.Fatal(err)
 	}
 }

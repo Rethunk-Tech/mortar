@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"image"
-	_ "image/png" // DecodeConfig reads a FromFile's size from its PNG header.
+	"image/png"
 	"io"
 	"maps"
 	"os"
@@ -18,6 +18,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
@@ -28,6 +29,7 @@ import (
 type cpShape struct {
 	kind       byte // 'r' area, 't' tile, 'p' property, 'w' whole
 	x, y, w, h int
+	cells      string
 	layer, key string
 	// value is a property's literal value, "" when tokenized; tiny marks a whole-asset shape that is really one
 	// or two tiles at a position only Content Patcher can work out.
@@ -56,6 +58,40 @@ func (s cpShape) overlaps(o cpShape) bool {
 	if s.layer != "" && o.layer != "" && s.layer != o.layer {
 		return false
 	}
+	if s.cells != "" || o.cells != "" {
+		if s.cells != "" && o.cells != "" {
+			for cell := range strings.SplitSeq(s.cells, ";") {
+				if cell != "" && strings.Contains(o.cells, ";"+cell+";") {
+					return true
+				}
+			}
+			return false
+		}
+		cells, area := s.cells, o
+		if cells == "" {
+			cells, area = o.cells, s
+		}
+		ax, ay, aw, ah := area.area()
+		for encoded := range strings.SplitSeq(cells, ";") {
+			if encoded == "" {
+				continue
+			}
+			parts := strings.SplitN(encoded, ",", 2)
+			if len(parts) != 2 {
+				continue
+			}
+			cxCell, errX := strconv.Atoi(parts[0])
+			cyCell, errY := strconv.Atoi(parts[1])
+			if errX != nil || errY != nil {
+				continue
+			}
+			cx, cy := cxCell*16, cyCell*16
+			if cx < ax+aw && ax < cx+16 && cy < ay+ah && ay < cy+16 {
+				return true
+			}
+		}
+		return false
+	}
 	ax, ay, aw, ah := s.area()
 	bx, by, bw, bh := o.area()
 	return ax < bx+bw && bx < ax+aw && ay < by+bh && by < ay+ah
@@ -78,13 +114,25 @@ var whole = []cpShape{{kind: 'w'}}
 func editShapes(root string, ch cpChange, image bool) []cpShape {
 	if image {
 		if to, ok := areaOf(ch.ToArea); ok {
+			if strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
+				return imagePatchShapes(root, ch, to.x, to.y)
+			}
 			return []cpShape{to}
 		} else if len(ch.ToArea) > 0 {
 			return unplaced(ch.ToArea)
 		}
 		// Without ToArea the source lands at the top-left, sized like FromArea or the whole file.
 		if from, ok := areaOf(ch.FromArea); ok {
+			if strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
+				return imagePatchShapes(root, ch, 0, 0)
+			}
 			return []cpShape{{kind: 'r', w: from.w, h: from.h}}
+		}
+		if strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
+			return imagePatchShapes(root, ch, 0, 0)
+		}
+		if hasToken(ch.FromFile) {
+			return imagePatchShapes(root, ch, 0, 0)
 		}
 		if w, h, ok := pngSize(root, ch.FromFile); ok {
 			return []cpShape{{kind: 'r', w: w, h: h}}
@@ -148,6 +196,157 @@ func editShapes(root string, ch cpChange, image bool) []cpShape {
 		out = append(out, cpShape{kind: 'p', key: strings.ToLower(key), value: value})
 	}
 	return out
+}
+
+var pngShapeCache sync.Map
+
+func imagePatchShapes(root string, ch cpChange, x, y int) []cpShape {
+	files := sourceFiles(root, ch.FromFile)
+	if len(files) == 0 {
+		return whole
+	}
+	if !strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
+		var out []cpShape
+		for _, file := range files {
+			if from, ok := areaOf(ch.FromArea); ok {
+				out = append(out, cpShape{kind: 'r', x: x, y: y, w: from.w, h: from.h})
+				continue
+			}
+			if w, h, ok := pngSize(root, file); ok {
+				out = append(out, cpShape{kind: 'r', x: x, y: y, w: w, h: h})
+			}
+		}
+		if len(out) > 0 {
+			return out
+		}
+		return whole
+	}
+	var out []cpShape
+	for _, file := range files {
+		if shape, ok := opaqueImageShape(root, file, ch.FromArea, x, y); ok && len(shape.cells) > 0 {
+			out = append(out, shape)
+		}
+	}
+	if len(out) > 0 {
+		return out
+	}
+	return whole
+}
+
+func opaqueImageShape(root, rel string, fromRaw json.RawMessage, x, y int) (cpShape, bool) {
+	abs, ok := inside(root, rel)
+	if !ok {
+		return cpShape{}, false
+	}
+	info, err := os.Stat(abs)
+	if err != nil {
+		return cpShape{}, false
+	}
+	key := abs + "\x00" + strconv.FormatInt(info.ModTime().UnixNano(), 10)
+	var decoded image.Image
+	if cached, ok := pngShapeCache.Load(key); ok {
+		decoded, _ = cached.(image.Image)
+	} else {
+		file, err := os.OpenInRoot(root, filepath.FromSlash(rel))
+		if err != nil {
+			return cpShape{}, false
+		}
+		decoded, err = png.Decode(file)
+		_ = file.Close()
+		if err != nil {
+			return cpShape{}, false
+		}
+		pngShapeCache.Store(key, decoded)
+	}
+	bounds := decoded.Bounds()
+	from := cpShape{w: bounds.Dx(), h: bounds.Dy()}
+	if len(fromRaw) > 0 {
+		var parsed bool
+		from, parsed = areaOf(fromRaw)
+		if !parsed {
+			return cpShape{}, false
+		}
+	}
+	cells := ""
+	for py := max(from.y, bounds.Min.Y); py < min(from.y+from.h, bounds.Max.Y); py++ {
+		for px := max(from.x, bounds.Min.X); px < min(from.x+from.w, bounds.Max.X); px++ {
+			_, _, _, alpha := decoded.At(px, py).RGBA()
+			if alpha > 0 {
+				cell := strconv.Itoa((x+px-from.x)/16) + "," + strconv.Itoa((y+py-from.y)/16)
+				if !strings.Contains(cells, ";"+cell+";") {
+					cells += ";" + cell
+				}
+			}
+		}
+	}
+	return cpShape{kind: 'r', cells: cells}, true
+}
+
+func sourceFiles(root, rel string) []string {
+	rel = strings.TrimSpace(rel)
+	if rel == "" {
+		return nil
+	}
+	if !hasToken(rel) {
+		if path, ok := caseInsensitivePath(root, rel); ok {
+			relative, err := filepath.Rel(root, path)
+			if err == nil {
+				return []string{filepath.ToSlash(relative)}
+			}
+		}
+		return nil
+	}
+	parts := strings.Split(filepath.ToSlash(rel), "/")
+	var out []string
+	var walk func(string, int, string)
+	walk = func(dir string, index int, prefix string) {
+		if index == len(parts) {
+			out = append(out, strings.TrimPrefix(filepath.ToSlash(prefix), "./"))
+			return
+		}
+		part := parts[index]
+		if hasToken(part) {
+			for {
+				start := strings.Index(part, "{{")
+				if start < 0 {
+					break
+				}
+				end := strings.Index(part[start+2:], "}}")
+				if end < 0 {
+					break
+				}
+				end += start + 2
+				part = part[:start] + "*" + part[end+2:]
+			}
+		}
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			return
+		}
+		for _, entry := range entries {
+			if !matchFold(part, entry.Name()) {
+				continue
+			}
+			next := filepath.Join(dir, entry.Name())
+			if index == len(parts)-1 {
+				if !entry.IsDir() {
+					walk(next, index+1, filepath.Join(prefix, entry.Name()))
+				}
+				continue
+			}
+			if entry.IsDir() {
+				walk(next, index+1, filepath.Join(prefix, entry.Name()))
+			}
+		}
+	}
+	walk(root, 0, "")
+	return out
+}
+
+func matchFold(pattern, value string) bool {
+	pattern, value = strings.ToLower(pattern), strings.ToLower(value)
+	matched, err := filepath.Match(pattern, value)
+	return err == nil && matched
 }
 
 // unplaced is the shape of an area whose position is tokenized: the whole asset, marked tiny when its literal

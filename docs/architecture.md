@@ -355,6 +355,7 @@ Saves live in one folder, `%APPDATA%\StardewValley\Saves` or `~/.config/StardewV
   - enabled mods that logged errors in this profile's newest stored run (warning when that run crashed or hit a fatal error, info otherwise; **Switch off** and **Get help** on the stored run's log; cleared by a later clean run, switching the mod off, or updating it)
   - Abandoned mods are info-level and dismissible per profile like Content Patcher conflicts
 - **What counts as a Content Patcher conflict:** two or more enabled packs (`ContentPackFor.UniqueID` `Pathoschild.ContentPatcher`) that `Load` the same target (warning: only one wins) or that `EditImage`/`EditMap` the same target (info, dismissible per profile via `settings.json` `dismissed`). Both kinds can be restored from Problems. `EditData` on the same target is not reported.
+- Overlay image edits conflict only where an opaque 16×16 source cell lands; tokenised `FromFile` paths use every matching file, or fall back to the whole sheet when none match.
 - Loads whose files are all blank or JSON/image-identical are ignored; JSON equality is by parsed value, so formatting does not create a conflict.
 - `FromFile` and recursive `Include` paths are relative to the content pack root.
 - **When a change counts:**
