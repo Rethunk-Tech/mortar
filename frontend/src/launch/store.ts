@@ -35,7 +35,6 @@ import {
 
 const RUN_POLL_ATTEMPTS = 20
 const RUN_POLL_MS = 250
-
 function resetConsole(status: Status, prev: Status | null) {
   const same =
     prev?.state === State.Launching && prev.game === status.game && prev.profile === status.profile
@@ -49,11 +48,9 @@ function resetConsole(status: Status, prev: Status | null) {
   useConsole.getState().reset(status.game, keep || status.profile)
   return true
 }
-
 const reportError = (title: string) => (e: unknown) => {
   useToasts.getState().push({ kind: 'error', title, body: errorMessage(e) })
 }
-
 function failureBody(status: Status): string {
   if (status.hint === Hint.HintSteam) {
     return i18n._(msg`Steam may not be running or signed in. Start Steam, sign in and try again.`)
@@ -70,13 +67,12 @@ function failureBody(status: Status): string {
   }
   return status.error
 }
-
 interface Failure {
   profile: string
   body: string
   hint: Hint
+  cause: Status['cause']
 }
-
 interface UpdateWarn {
   game: string
   profile: string
@@ -86,8 +82,6 @@ interface UpdateWarn {
   broken: Broken[]
   update?: UpdateContext
 }
-
-// SaveWarn is the newest save when it uses mods the profile lacks or has switched off.
 interface SaveWarn {
   game: string
   profile: string
@@ -224,7 +218,7 @@ async function startWithWarning(opts: {
       return
     }
   } catch {
-    // An unreadable save never blocks Play; the Saves tab shows the same check.
+    // Save check unavailable; continue launching.
   }
   await startProfile({
     set: opts.set,
@@ -326,7 +320,14 @@ function applyStatus(
     return
   }
   if (status.state === State.Failed) {
-    set({ failure: { profile: status.profile, body: failureBody(status), hint: status.hint } })
+    set({
+      failure: {
+        profile: status.profile,
+        body: failureBody(status),
+        hint: status.hint,
+        cause: status.cause,
+      },
+    })
     set({ updateRollback: null })
   }
   if (status.state === State.NoSteam) {
@@ -368,11 +369,9 @@ export const useLaunch = create<{
   saveWarn: SaveWarn | null
   updateRollback: UpdateRollback | null
   stopping: boolean
-  // Play was pressed and no launch:state has answered yet, which is when SMAPI installs first.
   starting: boolean
   startingProfile: string
   crash: Crash | null
-  // polled marks a status read by refresh() rather than announced by a launch:state event.
   apply: (status: Status, polled?: boolean) => void
   refresh: (game: string) => Promise<void>
   start: (game: string, profile: string, direct: boolean) => Promise<void>

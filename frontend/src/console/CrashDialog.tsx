@@ -8,12 +8,15 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
+import { Browser } from '@wailsio/runtime'
 import { LifeBuoy, Terminal } from 'lucide-react'
 import { useState } from 'react'
 import { Start as StartBisect } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bisect/service.ts'
 import { useTab } from '../game/tab.ts'
 import { useLaunch } from '../launch/store.ts'
+import { nexusIdOf } from '../mods/lookup.ts'
 import { paper } from '../mods/paper.ts'
+import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { BisectDialog } from './BisectDialog.tsx'
 import { useConsole } from './store.ts'
@@ -26,6 +29,8 @@ export function CrashDialog() {
     null,
   )
   const [bisectError, setBisectError] = useState<string | null>(null)
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === crash?.profile))
+  const mod = useMods((s) => s.mods.find((m) => m.key === crash?.cause?.modKey))
   if (!crash) {
     return bisectJob ? (
       <BisectDialog
@@ -37,6 +42,7 @@ export function CrashDialog() {
     ) : null
   }
   const canBisect = crash.mods === null || crash.mods.length === 0
+  const nexusID = profile && mod ? nexusIdOf(profile, mod) : 0
   const startBisect = async () => {
     try {
       const id = await StartBisect(crash.game, crash.profile)
@@ -59,6 +65,12 @@ export function CrashDialog() {
           sx={{ fontSize: 22, fontWeight: 700 }}
         >{t`Stardew Valley closed with errors`}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          {crash.cause ? (
+            <Box sx={{ fontSize: 14 }}>
+              <Box sx={{ fontWeight: 700 }}>{t`Caused by ${crash.cause.modName}`}</Box>
+              <Box sx={{ color: 'text.secondary', mt: 0.25 }}>{crash.cause.detail}</Box>
+            </Box>
+          ) : null}
           {crash.mods === null || crash.mods.length === 0 ? (
             <Typography sx={{ fontSize: 14 }}>{t`The SMAPI log has errors.`}</Typography>
           ) : (
@@ -75,6 +87,27 @@ export function CrashDialog() {
           <Button onClick={dismiss} sx={{ whiteSpace: 'nowrap' }}>
             {t`Dismiss`}
           </Button>
+          {mod ? (
+            <Button
+              onClick={() =>
+                useMods
+                  .getState()
+                  .setEnabled(mod, false)
+                  .catch(() => undefined)
+              }
+            >
+              {t`Switch off`}
+            </Button>
+          ) : null}
+          {nexusID > 0 ? (
+            <Button
+              onClick={() =>
+                Browser.OpenURL(`https://www.nexusmods.com/stardewvalley/mods/${nexusID}`)
+              }
+            >
+              {t`Open page`}
+            </Button>
+          ) : null}
           {canBisect ? (
             <Button onClick={startBisect} sx={{ whiteSpace: 'nowrap' }}>
               {t`Find the mod causing this`}

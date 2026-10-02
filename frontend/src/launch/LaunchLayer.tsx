@@ -11,7 +11,7 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
-import { Clipboard } from '@wailsio/runtime'
+import { Browser, Clipboard } from '@wailsio/runtime'
 import { CircleAlert, Copy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
@@ -25,6 +25,8 @@ import { format } from '../console/filter.ts'
 import { useConsole } from '../console/store.ts'
 import { launchLine } from '../firstrun/logic.ts'
 import { useTab } from '../game/tab.ts'
+import { nexusIdOf } from '../mods/lookup.ts'
+import { useMods } from '../mods/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -262,11 +264,14 @@ function Failure({ game }: { game: string }) {
   const failure = useLaunch((s) => s.failure)
   const dismiss = useLaunch((s) => s.dismissFailure)
   const start = useLaunch((s) => s.start)
+  const cause = failure?.cause
+  const mod = useMods((s) => s.mods.find((m) => m.key === cause?.modKey))
   // The dialog unmounts with `failure`, so nothing fades out with stale text.
   if (!failure) {
     return null
   }
   const name = info?.name ?? ''
+  const nexusID = info && mod ? nexusIdOf(info, mod) : 0
   const showLine = failure.hint === Hint.HintLaunchOptions && info?.installDir
   const showFlatpak = failure.hint === Hint.HintFlatpakFS
   return (
@@ -283,11 +288,32 @@ function Failure({ game }: { game: string }) {
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
         <DialogContentText>{failure.body}</DialogContentText>
+        {cause ? (
+          <DialogContentText>
+            <strong>{t`Caused by ${cause.modName}`}</strong>
+            <br />
+            {cause.detail}
+          </DialogContentText>
+        ) : null}
         {showLine ? <LaunchLine line={launchLine(info.installDir)} /> : null}
         {showFlatpak ? <FlatpakGrant /> : null}
       </DialogContent>
       <DialogActions>
         <Button onClick={dismiss}>{t`Close`}</Button>
+        {mod ? (
+          <Button onClick={() => useMods.getState().setEnabled(mod, false).catch(reportUnexpected)}>
+            {t`Switch off`}
+          </Button>
+        ) : null}
+        {nexusID > 0 ? (
+          <Button
+            onClick={() =>
+              Browser.OpenURL(`https://www.nexusmods.com/stardewvalley/mods/${nexusID}`)
+            }
+          >
+            {t`Open page`}
+          </Button>
+        ) : null}
         <Button
           variant="contained"
           onClick={() => {

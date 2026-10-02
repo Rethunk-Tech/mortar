@@ -12,7 +12,10 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
-import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import {
+  RunCause,
+  Runs,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { onFilterFocus } from '../mods/filterFocus.ts'
@@ -190,6 +193,25 @@ function SearchBox() {
 
 const NO_HISTORY: string[] = []
 const MONO = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace'
+
+function CauseBanner({ game, profile, run }: { game: string; profile: string; run: string }) {
+  const { t } = useLingui()
+  const [cause, setCause] = useState<Awaited<ReturnType<typeof RunCause>> | null>(null)
+  useEffect(() => {
+    if (!run) {
+      setCause(null)
+      return
+    }
+    RunCause(game, profile, run).then(setCause, () => setCause(null))
+  }, [game, profile, run])
+  return cause?.modName ? (
+    <Box
+      sx={{ mx: 2, mb: 1, px: 1.5, py: 1, bgcolor: 'rgba(180,80,70,0.25)', borderRadius: '6px' }}
+    >
+      <strong>{t`Caused by ${cause.modName}`}</strong> {t`·`} {cause.detail}
+    </Box>
+  ) : null
+}
 
 function CommandLine({ game }: { game: string }) {
   const { t } = useLingui()
@@ -496,6 +518,7 @@ export function ConsoleTab({ game }: { game: string }) {
           </Button>
         </Box>
       ) : null}
+      <CauseBanner game={target.game} profile={target.profile} run={viewingRun} />
       {offerReinstall ? <ReinstallLoader game={game} /> : null}
       <LinkedLog
         game={game}
