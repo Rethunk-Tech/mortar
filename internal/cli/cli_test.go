@@ -24,6 +24,9 @@ func fake(results map[string]any, calls *[]call) caller {
 		if err != nil {
 			return err
 		}
+		if out == nil {
+			return nil
+		}
 		return json.Unmarshal(b, out)
 	}
 }
@@ -83,6 +86,45 @@ func TestCommandsSendTheirArguments(t *testing.T) {
 	r = invoke(t, map[string]any{"conflicts": []any{}}, "conflicts", "stardew", "abc", "--all")
 	if !r.calls[0].params.All {
 		t.Error("--all not sent")
+	}
+}
+
+func TestProfileCompareHistoryAndRevert(t *testing.T) {
+	results := map[string]any{
+		"profile.compare": profile.CLICompare{
+			OnlyA: []profile.DiffSide{{UniqueID: "A.Mod", Name: "Alpha", Version: "1", Enabled: true}},
+		},
+		"profile.history": []control.HistoryRow{{ID: "event-1", Kind: "added", Summary: "Added Alpha"}},
+		"profile.revert":  profile.Profile{ID: "profile-1", Name: "Farm"},
+	}
+	r := invoke(t, results, "profile", "compare", "stardew", "A", "B")
+	if r.code != 0 || !strings.Contains(r.out, "only-in-A") {
+		t.Fatalf("compare: %+v", r)
+	}
+	if got := r.calls[0]; got.method != "profile.compare" || got.params.Profile != "A" || got.params.Name != "B" {
+		t.Fatalf("compare params: %+v", got)
+	}
+	r = invoke(t, results, "profile", "history", "stardew", "Farm")
+	if r.code != 0 || !strings.Contains(r.out, "event-1") {
+		t.Fatalf("history: %+v", r)
+	}
+	r = invoke(t, results, "profile", "revert", "stardew", "Farm", "event-1")
+	if r.code != 0 || r.calls[0].method != "profile.revert" || r.calls[0].params.Name != "event-1" {
+		t.Fatalf("revert: %+v", r)
+	}
+}
+
+func TestToolsCommands(t *testing.T) {
+	results := map[string]any{
+		"tools": []map[string]string{{"id": "smapi", "name": "SMAPI", "executable": "/bin/smapi"}},
+	}
+	r := invoke(t, results, "tools", "stardew")
+	if r.code != 0 || !strings.Contains(r.out, "smapi") {
+		t.Fatalf("tools: %+v", r)
+	}
+	r = invoke(t, results, "tools", "run", "stardew", "Farm", "smapi")
+	if r.code != 0 || r.calls[0].method != "tools.run" || r.calls[0].params.Name != "smapi" {
+		t.Fatalf("tools run: %+v", r)
 	}
 }
 

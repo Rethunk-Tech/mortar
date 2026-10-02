@@ -44,10 +44,11 @@ func completion(w io.Writer, shell string) error {
 
 // subverbs are the second words of the verbs that take one.
 var subverbs = map[string][]string{
-	"profile":    {"create", "rename", "copy", "delete"},
+	"profile":    {"create", "rename", "copy", "delete", "compare", "history", "revert"},
 	"mods":       {"enable", "disable", "pin", "unpin", "remove"},
 	"completion": {"bash", "zsh", "fish"},
 	"launchers":  {"add", "remove"},
+	"tools":      {"run"},
 }
 
 // gameAt and profileAt give the positions (1-based after the verb) where a verb takes a game and a profile.
@@ -55,6 +56,11 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 	switch words[0] {
 	case "games", "doctor", "queue", "version", "help", "open", "completion", "launchers":
 		return 0, 0, 0
+	case "tools":
+		if len(words) > 1 && words[1] == "run" {
+			return 2, 3, 4
+		}
+		return 1, 0, 0
 	case "profiles", "status", "stop":
 		return 1, 0, 0
 	case "profile":
@@ -114,6 +120,15 @@ func (c *cmd) complete(words []string) error {
 			if c.ask("mods", control.Params{Game: words[gameAt], Profile: words[profileAt]}, &rows, readTimeout) == nil {
 				for _, m := range rows {
 					cands = append(cands, m.UniqueID)
+				}
+			}
+		case 4:
+			var rows []struct {
+				ID string `json:"id"`
+			}
+			if c.ask("tools", control.Params{Game: words[gameAt]}, &rows, readTimeout) == nil {
+				for _, tool := range rows {
+					cands = append(cands, tool.ID)
 				}
 			}
 		}

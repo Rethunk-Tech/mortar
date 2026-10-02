@@ -174,3 +174,30 @@ func TestHandleProfilesByNameAndID(t *testing.T) {
 		t.Error("an unknown method must be an error")
 	}
 }
+
+func TestHandleProfileCompareAndHistory(t *testing.T) {
+	s := services(t)
+	ctx := context.Background()
+	a, err := s.Profiles.Create("stardew", "A")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Profiles.Create("stardew", "B"); err != nil {
+		t.Fatal(err)
+	}
+	res, err := s.Handle(ctx, "profile.compare", Params{Game: "stardew", Profile: a.ID, Name: "B"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	diff, ok := res.(profile.CLICompare)
+	if !ok || len(diff.OnlyA) != 0 || len(diff.OnlyB) != 0 || len(diff.Identical) != 0 {
+		t.Fatalf("empty comparison: %#v", res)
+	}
+	res, err = s.Handle(ctx, "profile.history", Params{Game: "stardew", Profile: a.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rows, ok := res.([]HistoryRow); !ok || len(rows) != 0 {
+		t.Fatalf("empty history: %#v", res)
+	}
+}

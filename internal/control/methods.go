@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/savessvc"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/share"
+	"github.com/Rethunk-AI/mortar/internal/tools"
 )
 
 // ChangedEvent tells the window a profile changed outside it, so it reloads that game's profiles.
@@ -37,6 +38,7 @@ type Services struct {
 	Launches    *launchsvc.Service
 	Saves       *savessvc.Service
 	Queue       *queue.Service
+	Tools       *tools.Service
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 }
@@ -121,6 +123,20 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.games()
 	case "profiles":
 		return s.Profiles.List(p.Game)
+	case "tools":
+		if s.Tools == nil {
+			return nil, errors.New("tools are unavailable")
+		}
+		return s.Tools.List(p.Game)
+	case "tools.run":
+		if s.Tools == nil {
+			return nil, errors.New("tools are unavailable")
+		}
+		prof, err := s.resolve(p.Game, p.Profile)
+		if err != nil {
+			return nil, err
+		}
+		return nil, s.Tools.Launch(p.Game, prof.ID, p.Name)
 	case "profile.create":
 		if strings.TrimSpace(p.Name) == "" {
 			return nil, errors.New("a profile needs a name")
@@ -163,6 +179,24 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.Rename(p.Game, id, p.Name) })
 	case "profile.copy":
 		return s.changed(p.Game, func() (any, error) { return s.copyProfile(p.Game, id, p.Name) })
+	case "profile.compare":
+		other, err := s.resolve(p.Game, p.Name)
+		if err != nil {
+			return nil, err
+		}
+		return profile.CompareProfilesCLI(prof, other), nil
+	case "profile.history":
+		events, err := s.Profiles.History(p.Game, id)
+		if err != nil {
+			return nil, err
+		}
+		out := make([]HistoryRow, 0, len(events))
+		for _, event := range events {
+			out = append(out, HistoryRow{ID: event.ID, At: event.At, Kind: event.Kind, Summary: event.Label})
+		}
+		return out, nil
+	case "profile.revert":
+		return s.changed(p.Game, func() (any, error) { return s.Profiles.Revert(p.Game, id, p.Name) })
 	case "profile.delete":
 		return s.changed(p.Game, func() (any, error) { return Removed{Mods: []string{prof.Name}}, s.Profiles.Delete(p.Game, id) })
 	case "mods":
@@ -235,6 +269,14 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.launch(ctx, p.Game, id)
 	}
 	return nil, fmt.Errorf("unknown method %q", method)
+}
+
+// HistoryRow is the compact history item shown by the CLI.
+type HistoryRow struct {
+	ID      string    `json:"id"`
+	At      time.Time `json:"at"`
+	Kind    string    `json:"kind"`
+	Summary string    `json:"summary"`
 }
 
 // changed runs a mutating call and tells the window to reload the game's profiles.

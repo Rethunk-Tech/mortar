@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/queue"
 	"github.com/Rethunk-AI/mortar/internal/savessvc"
+	"github.com/Rethunk-AI/mortar/internal/tools"
 )
 
 const (
@@ -32,7 +33,7 @@ var verbs = map[string]bool{
 	"games": true, "profiles": true, "profile": true, "mods": true, "mod": true, "install": true,
 	"conflicts": true, "problems": true, "updates": true, "share": true, "export": true, "open": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
-	"doctor": true, "launchers": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
+	"doctor": true, "launchers": true, "tools": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
 // Is reports whether args (without the program name) are a command-line call: a known verb, or a bare word that
@@ -193,6 +194,8 @@ func (c *cmd) dispatch() error {
 			return err
 		}
 		return c.profiles(a[0])
+	case "tools":
+		return c.tools()
 	case "profile":
 		return c.profile()
 	case "status", "stop":
@@ -341,6 +344,40 @@ func (c *cmd) profile() error {
 	sub := c.args[1]
 	var p profile.Profile
 	switch sub {
+	case "compare":
+		a, err := c.need(2, "a game", "a profile", "a second profile")
+		if err != nil {
+			return err
+		}
+		var diff profile.CLICompare
+		if err := c.ask("profile.compare", control.Params{Game: a[0], Profile: a[1], Name: a[2]}, &diff, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(diff, func() { c.compareTable(diff) })
+	case "history":
+		a, err := c.need(2, "a game", "a profile")
+		if err != nil {
+			return err
+		}
+		var rows []control.HistoryRow
+		if err := c.ask("profile.history", control.Params{Game: a[0], Profile: a[1]}, &rows, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(rows, func() {
+			t := [][]string{}
+			for _, row := range rows {
+				t = append(t, []string{row.ID, row.At.Local().Format("2006-01-02 15:04"), row.Kind, row.Summary})
+			}
+			c.table("ID\tTIME\tKIND\tSUMMARY", t)
+		})
+	case "revert":
+		a, err := c.need(2, "a game", "a profile", "an event id")
+		if err != nil {
+			return err
+		}
+		if err := c.ask("profile.revert", control.Params{Game: a[0], Profile: a[1], Name: a[2]}, &p, readTimeout); err != nil {
+			return err
+		}
 	case "create":
 		a, err := c.need(2, "a game", "a name")
 		if err != nil {
@@ -379,6 +416,57 @@ func (c *cmd) profile() error {
 		return usageError{"unknown profile command " + sub}
 	}
 	return c.emit(p, func() { fmt.Fprintf(c.out, "%s\t%s\n", p.ID, p.Name) })
+}
+
+func (c *cmd) compareTable(diff profile.CLICompare) {
+	rows := [][]string{}
+	for _, side := range diff.OnlyA {
+		rows = append(rows, []string{"only-in-A", side.Name, side.UniqueID, side.Version, yes(side.Enabled)})
+	}
+	for _, side := range diff.OnlyB {
+		rows = append(rows, []string{"only-in-B", side.Name, side.UniqueID, side.Version, yes(side.Enabled)})
+	}
+	for _, pair := range diff.DifferentVersion {
+		rows = append(rows, []string{"different-version", pair.Name, pair.UniqueID, pair.A.Version + " -> " + pair.B.Version, ""})
+	}
+	for _, pair := range diff.DifferentEnabled {
+		rows = append(rows, []string{"different-enabled", pair.Name, pair.UniqueID, "", yes(pair.A.Enabled) + " -> " + yes(pair.B.Enabled)})
+	}
+	for _, pair := range diff.Identical {
+		rows = append(rows, []string{"identical", pair.Name, pair.UniqueID, pair.A.Version, yes(pair.A.Enabled)})
+	}
+	c.table("SECTION\tNAME\tUNIQUEID\tVERSION\tENABLED", rows)
+}
+
+func (c *cmd) tools() error {
+	if len(c.args) > 1 && c.args[1] == "run" {
+		a, err := c.need(2, "a game", "a profile", "a tool")
+		if err != nil {
+			return err
+		}
+		if err := c.ask("tools.run", control.Params{Game: a[0], Profile: a[1], Name: a[2]}, nil, launchTimeout); err != nil {
+			return err
+		}
+		if !c.json {
+			fmt.Fprintf(c.out, "Started %s.\n", a[2])
+		}
+		return nil
+	}
+	a, err := c.need(1, "a game")
+	if err != nil {
+		return err
+	}
+	var list []tools.Tool
+	if err := c.ask("tools", control.Params{Game: a[0]}, &list, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(list, func() {
+		rows := [][]string{}
+		for _, tool := range list {
+			rows = append(rows, []string{tool.ID, tool.Name, tool.Executable, tool.WorkingDir})
+		}
+		c.table("ID\tNAME\tEXECUTABLE\tWORKING DIR", rows)
+	})
 }
 
 func (c *cmd) mods(p control.Params) error {
@@ -779,6 +867,9 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   profile rename <game> <profile> <name>
   profile copy <game> <profile> [name]
   profile delete <game> <profile>         moves it to Mortar's trash
+  profile compare <game> <profileA> <profileB>
+  profile history <game> <profile>       restore points
+  profile revert <game> <profile> <eventId>
   mods <game> <profile>                   mods with version, state and source
   mods enable|disable <game> <profile> <UniqueID>...
   mods pin|unpin <game> <profile> <UniqueID>...
@@ -797,6 +888,8 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   runs <game> <profile>                   recent launches
   logs <game> <profile> [--run <id>]      a stored SMAPI log (latest by default)
   queue                                   the download queue
+  tools <game>                            configured external tools
+  tools run <game> <profile> <tool>       start an external tool
   launchers [add|remove <id> <folder>]   launchers, the games in each, and your added folders
   doctor                                  versions, folders and link handling
   completion bash|zsh|fish                shell completion script
