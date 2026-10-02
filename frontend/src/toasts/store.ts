@@ -24,6 +24,7 @@ export interface ToastInput {
   body?: string
   detail?: string
   picture?: string
+  count?: number
   action?: ToastAction
 }
 
@@ -37,6 +38,9 @@ export interface ToastHistoryItem {
   kind: ToastKind
   title: string
   body?: string
+  detail?: string
+  picture?: string
+  count?: number
   action?: ToastAction
 }
 
@@ -68,6 +72,19 @@ export const useToasts = create<{
     history: [],
     unread: 0,
     push: (input) => {
+      const now = Date.now()
+      const previous = get().history[0]
+      if (previous && previous.title === input.title && now - previous.at < QUICK_MS) {
+        const count = (previous.count ?? 1) + 1
+        const merged = { ...previous, at: now, count }
+        set((s) => ({
+          history: [merged, ...s.history.slice(1)],
+          toasts: s.toasts.map((toast) =>
+            toast.title === input.title ? { ...toast, count } : toast,
+          ),
+        }))
+        return previous.id
+      }
       const id = nextId
       nextId += 1
       const kept = [...get().toasts, { ...input, id }]
@@ -77,10 +94,12 @@ export const useToasts = create<{
       }
       const item: ToastHistoryItem = {
         id,
-        at: Date.now(),
+        at: now,
         kind: input.kind,
         title: input.title,
         ...(input.body === undefined ? {} : { body: input.body }),
+        ...(input.detail === undefined ? {} : { detail: input.detail }),
+        ...(input.picture === undefined ? {} : { picture: input.picture }),
         ...(input.action === undefined ? {} : { action: input.action }),
       }
       set({

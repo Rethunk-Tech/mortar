@@ -113,3 +113,15 @@ test('history keeps actions and Clear drops the list', () => {
   expect(useToasts.getState().history).toEqual([])
   expect(useToasts.getState().unread).toBe(0)
 })
+
+test('merges repeated titles and keeps detail and picture in history', () => {
+  const { push } = useToasts.getState()
+  push({ kind: 'success', title: 'Imported Farm', detail: 'details', picture: 'farm.png' })
+  jest.advanceTimersByTime(1000)
+  push({ kind: 'success', title: 'Imported Farm', detail: 'new details', picture: 'new.png' })
+  const { history } = useToasts.getState()
+  expect(history).toHaveLength(1)
+  expect(history[0]?.count).toBe(2)
+  expect(history[0]?.detail).toBe('details')
+  expect(history[0]?.picture).toBe('farm.png')
+})

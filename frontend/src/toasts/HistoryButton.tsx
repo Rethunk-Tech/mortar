@@ -45,7 +45,10 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
       }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{item.title}</Typography>
+        <Typography sx={{ fontSize: 13, fontWeight: 600 }}>
+          {item.title}
+          {item.count && item.count > 1 ? ` (×${item.count})` : ''}
+        </Typography>
         {item.body ? (
           <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{item.body}</Typography>
         ) : null}
