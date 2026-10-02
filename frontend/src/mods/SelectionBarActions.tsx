@@ -24,7 +24,7 @@ export function SelectionBarActions({
   clear,
 }: {
   selected: Mod[]
-  profile: { entries?: { key: string; pinned?: boolean }[] } | undefined
+  profile: { entries?: { key: string; pinned?: boolean }[] | null } | undefined
   latest: ReadonlyMap<string, string>
   locked: boolean
   count: string
