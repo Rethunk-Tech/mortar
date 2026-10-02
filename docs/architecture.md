@@ -224,7 +224,7 @@ Steam app `413150`, through `libraryfolders.vdf`. A machine can hold several Ste
 | Heroic (Linux) | `~/.config/heroic/gog_store/installed.json`, `appName` `1453375253` |
 | Lutris (Linux) | `~/.local/share/lutris/games/*.yml` and Flatpak `~/.var/app/net.lutris.Lutris/data/lutris/games/*.yml`. A Stardew entry is `game_slug` `stardew-valley`, a matching `slug`, or an `exe` / `working_dir` that points at an install with `Stardew Valley.dll`. Steam-runner entries are ignored |
 
-Lutris and GOG launches start SMAPI directly with `--mods-path`. When several installs are found, Stardew settings lists each with its store (Steam, Flatpak Steam, GOG, GOG via Heroic, Lutris) and the choice is `gameStores` in `settings.json`; Game Select and first run name the store in use. A user-chosen folder in `gameFolders` still wins. When nothing is found, first run says so and offers Browse and a retry.
+Lutris, GOG, Heroic and Minigalaxy launches start SMAPI directly with `--mods-path`. When several installs are found, Stardew settings lists each with its store (Steam, Flatpak Steam, GOG, GOG via Heroic, GOG via Minigalaxy, Lutris) and the choice is `gameStores` in `settings.json`; Game Select and first run name the store in use. A user-chosen folder in `gameFolders` still wins. When nothing is found, first run says so and offers Browse and a retry.
 
 **Steam Deck:** install Mortar in Desktop Mode from Discover (Flatpak `tech.rethunk.Mortar`) or with the published AppImage; SteamOS also ships native Steam at the paths above without Flatpak. In Game Mode, add Mortar as a non-Steam game pointing at the Flatpak or AppImage, or launch Stardew through Steam with the launch-options line Mortar shows for Windows Steam (on Deck, Linux `steam -applaunch` with `--mods-path` applies when Stardew is started from Steam with Mortar's profile). Profiles and mods live in Mortar's data folder under Desktop Mode; grant Flatpak Steam read access to that folder when mods are launched through Flatpak Steam.
 
@@ -250,7 +250,7 @@ Lutris and GOG launches start SMAPI directly with `--mods-path`. When several in
 | Copy | How Mortar starts it |
 | --- | --- |
 | Steam | `steam -applaunch <appid> <args>` — Steam passes the arguments after the app ID to the game, which keeps the overlay, achievements and playtime tracking |
-| GOG or Heroic | SMAPI directly (the Direct path) |
+| GOG, Heroic or Minigalaxy | SMAPI directly (the Direct path) |
 | Flatpak Steam | `flatpak run com.valvesoftware.Steam -applaunch 413150 --skip-terminal -- --mods-path <dir>` |
 
 A launch through Flatpak Steam that times out while the override is missing uses the filesystem-access hint.
