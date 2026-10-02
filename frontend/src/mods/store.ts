@@ -28,11 +28,14 @@ import {
   SetSkipVersion,
   ShowFiles,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { SetListGroupBy } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorMessage } from '../toasts/report.ts'
+import { useSettings } from '../settings/store.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useBadges } from './badges.ts'
+import { loadCollapsed, persistCollapsed } from './group.ts'
 import { modId, problemCount } from './lookup.ts'
 import { useSelection } from './selection.ts'
 import { useUpdates } from './updates.ts'
@@ -75,6 +78,25 @@ function removingOf(mod: Mod | readonly Mod[] | null): Mod[] {
   }
   const list: readonly Mod[] = Array.isArray(mod) ? mod : [mod]
   return [...list]
+}
+
+function showUpdatesView() {
+  useSettings.setState({ listGroupBy: 'status' })
+  SetListGroupBy('status').catch(reportUnexpected)
+  const gameId = useProfiles.getState().game?.id ?? ''
+  if (gameId !== '') {
+    const collapsed = loadCollapsed(gameId)
+    if (collapsed.update) {
+      const next: Record<string, boolean> = {}
+      for (const [key, value] of Object.entries(collapsed)) {
+        if (key !== 'update' && value) {
+          next[key] = true
+        }
+      }
+      persistCollapsed(gameId, next)
+    }
+  }
+  useUpdates.getState().load().catch(reportUnexpected)
 }
 
 async function loadMods(
@@ -343,6 +365,7 @@ export const useMods = create<{
     setting: Pick<SettingHint, 'key' | 'uniqueId' | 'field' | 'name'>,
     value: string,
   ) => Promise<void>
+  showUpdates: () => void
 }>((set, get) => ({
   mods: [],
   loaded: false,
@@ -469,6 +492,7 @@ export const useMods = create<{
   dismissListed: (uniqueId) => dismissListedRequirement(get, uniqueId),
   dismissSetting: (setting) => dismissSettingHint(get, setting),
   setConfigValue: (setting, value) => setConfigSetting(get, setting, value),
+  showUpdates: () => showUpdatesView(),
 }))
 
 export type { View }

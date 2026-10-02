@@ -15,13 +15,14 @@ type RunEndNotice struct {
 	Body    string `json:"body"`
 }
 
-// NoticeClickEvent is emitted when the user activates a run-end desktop notification.
+// NoticeClickEvent is emitted when the user activates a Mortar desktop notification.
 const NoticeClickEvent = "tray:notice"
 
-// NoticeClick opens the ended run's profile console in the UI.
+// NoticeClick opens the notification's profile in the UI (console or mods updates).
 type NoticeClick struct {
 	Game    string `json:"game"`
 	Profile string `json:"profile"`
+	Tab     string `json:"tab"`
 }
 
 // RunEndNotificationText chooses the desktop notification title and body from the run log summary.
@@ -40,15 +41,20 @@ func RunEndNotificationText(gameName string, stats launch.Summary) (title, body 
 	return title, body
 }
 
-// NoticeProfileFromResponse reads the profile id from a run-end notification activation.
-func NoticeProfileFromResponse(id string, data map[string]any) (gameID, profileID string) {
-	if !strings.HasPrefix(id, "run-end-") {
-		return "", ""
+// NoticeProfileFromResponse reads game, profile, and target tab from a notification activation.
+func NoticeProfileFromResponse(id string, data map[string]any) (gameID, profileID, tab string) {
+	switch {
+	case strings.HasPrefix(id, "run-end-"):
+		tab = "console"
+	case strings.HasPrefix(id, "mod-updates-"):
+		tab = "updates"
+	default:
+		return "", "", ""
 	}
 	if data == nil {
-		return "", ""
+		return "", "", ""
 	}
 	gameID, _ = data["game"].(string)
 	profileID, _ = data["profile"].(string)
-	return gameID, profileID
+	return gameID, profileID, tab
 }

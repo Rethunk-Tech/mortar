@@ -28,11 +28,15 @@ func TestRunEndNotificationTextCrash(t *testing.T) {
 }
 
 func TestNoticeProfileFromResponse(t *testing.T) {
-	g, p := NoticeProfileFromResponse("run-end-abc", map[string]any{"game": "stardew", "profile": "prof"})
-	if g != "stardew" || p != "prof" {
-		t.Fatalf("got %q %q", g, p)
+	g, p, tab := NoticeProfileFromResponse("run-end-abc", map[string]any{"game": "stardew", "profile": "prof"})
+	if g != "stardew" || p != "prof" || tab != "console" {
+		t.Fatalf("run-end: got %q %q tab %q", g, p, tab)
 	}
-	if g, p := NoticeProfileFromResponse("nxm-1", map[string]any{"profile": "prof"}); g != "" || p != "" {
-		t.Fatalf("wrong id: got %q %q", g, p)
+	g, p, tab = NoticeProfileFromResponse("mod-updates-prof-123", map[string]any{"game": "stardew", "profile": "prof"})
+	if g != "stardew" || p != "prof" || tab != "updates" {
+		t.Fatalf("mod-updates: got %q %q tab %q", g, p, tab)
+	}
+	if g, p, tab := NoticeProfileFromResponse("nxm-1", map[string]any{"profile": "prof"}); g != "" || p != "" || tab != "" {
+		t.Fatalf("wrong id: got %q %q tab %q", g, p, tab)
 	}
 }

@@ -476,9 +476,9 @@ func run() error {
 	supportSvc.App = app
 	notifier.OnNotificationResponse(func(result notifications.NotificationResult) {
 		showWindow()
-		gameID, profileID := launchsvc.NoticeProfileFromResponse(result.Response.ID, result.Response.UserInfo)
+		gameID, profileID, tab := launchsvc.NoticeProfileFromResponse(result.Response.ID, result.Response.UserInfo)
 		if profileID != "" && gameID != "" {
-			app.Event.Emit(launchsvc.NoticeClickEvent, launchsvc.NoticeClick{Game: gameID, Profile: profileID})
+			app.Event.Emit(launchsvc.NoticeClickEvent, launchsvc.NoticeClick{Game: gameID, Profile: profileID, Tab: tab})
 		}
 	})
 
