@@ -305,6 +305,7 @@ export function FixButton({
   const mods = useMods((s) => s.mods)
   const setEnabled = useMods((s) => s.setEnabled)
   const resolve = useMods((s) => s.resolve)
+  const remove = useMods((s) => s.remove)
   const dismissAsset = useMods((s) => s.dismissAsset)
   const restoreDismissed = useMods((s) => s.restoreDismissed)
   const setConfigValue = useMods((s) => s.setConfigValue)
@@ -326,6 +327,29 @@ export function FixButton({
     return <RunErrorButtons runError={problem.runError} button={button} />
   }
   if (problem.kind === 'duplicate') {
+    const nexusFiles = (problem.duplicate.nexusFiles ?? []).filter((file) => file.remove)
+    if (nexusFiles.length > 0) {
+      return (
+        <>
+          {nexusFiles.map((file) => {
+            const mod = mods.find((candidate) => candidate.key === file.key)
+            return mod ? (
+              <Button
+                key={file.key}
+                size="small"
+                variant="outlined"
+                color="warning"
+                disabled={locked}
+                onClick={() => remove(mod).catch(reportUnexpected)}
+                sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+              >
+                {t`Remove ${file.fileName || file.key}`}
+              </Button>
+            ) : null
+          })}
+        </>
+      )
+    }
     return button(t`Resolve`, () => resolve(problem.duplicate))
   }
   if (problem.kind === 'broken') {

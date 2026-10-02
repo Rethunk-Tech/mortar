@@ -89,6 +89,14 @@ export function useDescribe(): Describe {
   return (p: Problem): string => {
     switch (p.kind) {
       case 'duplicate':
+        if ((p.duplicate.nexusFiles ?? []).length > 1) {
+          const files = (p.duplicate.nexusFiles ?? [])
+            .map((file) => `${file.fileName} (${file.version})`)
+            .join(', ')
+          return p.duplicate.nexusOptional
+            ? t`${p.duplicate.name} has multiple Nexus files installed: ${files}. One may be an add-on.`
+            : t`${p.duplicate.name} has multiple Nexus files installed: ${files}.`
+        }
         return t`${p.duplicate.name} is installed twice, and SMAPI loads only one.`
       case 'broken':
         return describeBroken(p)

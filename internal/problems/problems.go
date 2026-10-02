@@ -91,9 +91,18 @@ type Copy struct {
 
 // Duplicate is a UniqueID with several enabled copies.
 type Duplicate struct {
-	UniqueID string `json:"uniqueId"`
-	Name     string `json:"name"`
-	Copies   []Copy `json:"copies"`
+	UniqueID      string      `json:"uniqueId"`
+	Name          string      `json:"name"`
+	Copies        []Copy      `json:"copies"`
+	NexusFiles    []NexusFile `json:"nexusFiles,omitempty"`
+	NexusOptional bool        `json:"nexusOptional,omitempty"`
+}
+
+type NexusFile struct {
+	Key      string `json:"key"`
+	FileName string `json:"fileName"`
+	Version  string `json:"version"`
+	Remove   bool   `json:"remove"`
 }
 
 // Broken is an enabled mod SMAPI's API marks broken, obsolete or abandoned for the game version.
@@ -162,7 +171,13 @@ func (r Result) Count() int {
 			conflicts++
 		}
 	}
-	return len(r.Missing) + len(r.Duplicates) + len(r.Broken) + conflicts + len(r.Settings) + len(r.RunErrors) + len(r.Drift)
+	duplicates := 0
+	for _, duplicate := range r.Duplicates {
+		if !duplicate.NexusOptional {
+			duplicates++
+		}
+	}
+	return len(r.Missing) + duplicates + len(r.Broken) + conflicts + len(r.Settings) + len(r.RunErrors) + len(r.Drift)
 }
 
 func sameID(a, b string) bool { return strings.EqualFold(a, b) }
@@ -183,7 +198,7 @@ func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Resul
 	conflicts, conflictSettings := assetConflictResults(enabled)
 	r := Result{
 		Missing:        []Missing{},
-		Duplicates:     duplicates(enabled),
+		Duplicates:     duplicatesWithNexus(ctx, m, enabled),
 		Broken:         []Broken{},
 		AssetConflicts: conflicts,
 		Settings:       append(compatibilitySettings(enabled), conflictSettings...),
@@ -200,6 +215,73 @@ func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Resul
 	r.Broken = broken
 	r.Unknown = r.Unknown || unknown
 	return r
+}
+
+func duplicatesWithNexus(ctx context.Context, m Meta, enabled []Installed) []Duplicate {
+	out := duplicates(enabled)
+	for i := range out {
+		var pageID int
+		var files []NexusFile
+		optional := false
+		for _, copy := range out[i].Copies {
+			page, _, ok := nexusEntryFile(copy.Key)
+			if !ok {
+				continue
+			}
+			if pageID == 0 {
+				pageID = page
+			}
+			if page != pageID {
+				continue
+			}
+			if !slices.ContainsFunc(files, func(file NexusFile) bool { return file.Key == copy.Key }) {
+				files = append(files, NexusFile{Key: copy.Key})
+			}
+		}
+		if len(files) < 2 || pageID == 0 {
+			continue
+		}
+		page, err := m.Page(ctx, pageID)
+		if err != nil {
+			continue
+		}
+		for j := range files {
+			_, fileID, _ := nexusEntryFile(files[j].Key)
+			for _, file := range page.Downloads {
+				if file.ID != fileID {
+					continue
+				}
+				files[j].FileName, files[j].Version = file.FileName, file.Version
+				kind := strings.ToLower(file.Type)
+				optional = optional || kind == "optional" || kind == "miscellaneous"
+				break
+			}
+		}
+		files = slices.DeleteFunc(files, func(file NexusFile) bool { return file.FileName == "" })
+		if len(files) < 2 {
+			continue
+		}
+		keep := 0
+		for j := range files {
+			if newerNexusFile(files[j], files[keep]) {
+				keep = j
+			}
+		}
+		for j := range files {
+			files[j].Remove = j != keep
+		}
+		out[i].NexusFiles, out[i].NexusOptional = files, optional
+	}
+	return out
+}
+
+func newerNexusFile(a, b NexusFile) bool {
+	if c, ok := meta.CompareVersions(a.Version, b.Version); ok && c != 0 {
+		return c > 0
+	}
+	_, aID, _ := nexusEntryFile(a.Key)
+	_, bID, _ := nexusEntryFile(b.Key)
+	return aID > bID
 }
 
 func missingDeps(enabled, all []Installed) []Missing {
@@ -347,6 +429,20 @@ func nexusEntryPage(key string) (int, bool) {
 	}
 	n, err := strconv.Atoi(page)
 	return n, err == nil
+}
+
+func nexusEntryFile(key string) (int, int64, bool) {
+	if !strings.HasPrefix(strings.ToLower(key), "nexus-") {
+		return 0, 0, false
+	}
+	rest := key[len("nexus-"):]
+	pageText, fileText, ok := strings.Cut(rest, "-")
+	if !ok {
+		return 0, 0, false
+	}
+	page, pageErr := strconv.Atoi(pageText)
+	file, fileErr := strconv.ParseInt(fileText, 10, 64)
+	return page, file, pageErr == nil && fileErr == nil
 }
 
 func listedDepState(all []Installed, pageID int, page meta.Page, pageKnown bool) (string, bool) {

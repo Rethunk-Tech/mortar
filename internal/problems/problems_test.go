@@ -187,6 +187,41 @@ func TestDuplicates(t *testing.T) {
 	}
 }
 
+func TestNexusFilesInDuplicate(t *testing.T) {
+	a := mod("nexus-21788-116403", "SVE.WorldMap", "1.0", true)
+	a.SourceKind = "nexus"
+	b := mod("nexus-21788-175477", "SVE.WorldMap", "1.0", true)
+	b.SourceKind = "nexus"
+	got := Check(context.Background(), fakeMeta{pages: map[int]meta.Page{21788: {
+		Downloads: []meta.File{
+			{ID: 116403, Type: "MAIN", FileName: "WorldMap-1.0.zip", Version: "1.0"},
+			{ID: 175477, Type: "MAIN", FileName: "WorldMap-2.0.zip", Version: "2.0"},
+		},
+	}}}, Environment{}, []Installed{a, b})
+	if len(got.Duplicates) != 1 || len(got.Duplicates[0].NexusFiles) != 2 {
+		t.Fatalf("nexus files = %+v", got.Duplicates)
+	}
+	if !got.Duplicates[0].NexusFiles[0].Remove || got.Duplicates[0].NexusFiles[1].Remove {
+		t.Fatalf("remove flags = %+v", got.Duplicates[0].NexusFiles)
+	}
+}
+
+func TestOptionalNexusFileDuplicateIsInformational(t *testing.T) {
+	a := mod("nexus-21788-116403", "SVE.WorldMap", "1.0", true)
+	a.SourceKind = "nexus"
+	b := mod("nexus-21788-175477", "SVE.WorldMap", "1.0", true)
+	b.SourceKind = "nexus"
+	got := Check(context.Background(), fakeMeta{pages: map[int]meta.Page{21788: {
+		Downloads: []meta.File{
+			{ID: 116403, Type: "MAIN", FileName: "WorldMap-1.0.zip", Version: "1.0"},
+			{ID: 175477, Type: "MISCELLANEOUS", FileName: "WorldMap-addon.zip", Version: "1.0"},
+		},
+	}}}, Environment{}, []Installed{a, b})
+	if len(got.Duplicates) != 1 || !got.Duplicates[0].NexusOptional || got.Count() != 0 {
+		t.Fatalf("optional duplicate = %+v, count = %d", got.Duplicates, got.Count())
+	}
+}
+
 func TestBroken(t *testing.T) {
 	m := fakeMeta{compat: map[string]meta.UpdateResult{
 		"A": {Compatibility: "Broken", BrokeIn: "Stardew Valley 1.6"},
