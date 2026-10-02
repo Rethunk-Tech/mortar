@@ -1,3 +1,4 @@
+// biome-ignore lint/style/noExcessiveLinesPerFile: The update review keeps the complete review flow together.
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
@@ -37,6 +38,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
+import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
@@ -46,15 +48,15 @@ import {
   mergeCachedDetails,
 } from './changelogRange.ts'
 import {
+  entryOf,
   installableUpdate,
-  listedAgainstNexus,
   modId,
   sameId,
   siblingsOf,
   updateCount,
-  visibleUpdates,
+  updatesForReview,
 } from './lookup.ts'
-import { useNexusDetails } from './nexusDetails.ts'
+import { loadDetails, useNexusDetails } from './nexusDetails.ts'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { accent, paper } from './paper.ts'
 import { LetterTile } from './parts.tsx'
@@ -142,6 +144,7 @@ function Fold({ title, children }: { title: string; children: ReactNode }) {
 function Changes({ update }: { update: Update }) {
   const { t } = useLingui()
   const details = useNexusDetails((s) => s.byId[update.nexusId]?.details)
+  const signedIn = useNexus((s) => s.signedIn)
   if (!update.nexusId) {
     return null
   }
@@ -149,6 +152,15 @@ function Changes({ update }: { update: Update }) {
     return (
       <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
         {t`Changelog is not cached yet.`}
+        {signedIn ? (
+          <Button
+            size="small"
+            onClick={() => loadDetails(update.nexusId).catch(reportUnexpected)}
+            sx={{ ml: 0.75, minWidth: 0, p: 0, fontSize: 12, textTransform: 'none' }}
+          >
+            {t`Load changes`}
+          </Button>
+        ) : null}
       </Typography>
     )
   }
@@ -195,24 +207,36 @@ function Changes({ update }: { update: Update }) {
   )
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: The row owns all update-choice interactions.
 function Row({
   update,
   profileId,
   caution,
   acked,
+  included,
   onAck,
+  onInclude,
   onUpdateAll,
+  picture,
 }: {
   update: Update
   profileId: string
   caution: string
   acked: boolean
+  included: boolean
   onAck: (on: boolean) => void
+  onInclude: (on: boolean) => void
   onUpdateAll: () => void
+  picture?: string
 }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const mod = mods.find((m) => m.key === update.key && sameId(m.uniqueId, update.uniqueId))
+  const setPinned = useMods((s) => s.setPinned)
+  const setSkipVersion = useMods((s) => s.setSkipVersion)
+  const entry = useProfiles((s) =>
+    s.profiles.find((p) => p.id === profileId)?.entries?.find((e) => e.key === update.key),
+  )
   const details = useNexusDetails((s) => s.byId[update.nexusId]?.details)
   const riskyChangelog =
     update.nexusId > 0 && details
@@ -232,8 +256,8 @@ function Row({
       sx={{
         display: 'grid',
         gridTemplateColumns: caution
-          ? `${ROW_TILE}px minmax(0, 1fr) auto auto auto`
-          : `${ROW_TILE}px minmax(0, 1fr) auto auto`,
+          ? `${ROW_TILE}px minmax(0, 1fr) auto auto auto auto`
+          : `${ROW_TILE}px minmax(0, 1fr) auto auto auto`,
         gap: '14px',
         alignItems: 'center',
         px: 3,
@@ -241,7 +265,10 @@ function Row({
         borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}
     >
-      <LetterTile mod={{ uniqueId: update.uniqueId, name: update.name }} size={ROW_TILE} />
+      <LetterTile
+        mod={{ uniqueId: update.uniqueId, name: update.name, ...(picture ? { picture } : {}) }}
+        size={ROW_TILE}
+      />
       <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '3px' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
           <Typography sx={{ fontSize: 16, fontWeight: 600, overflowWrap: 'anywhere', minWidth: 0 }}>
@@ -297,6 +324,21 @@ function Row({
         {downloadable(update) ? (
           <>
             <Button
+              size="small"
+              disabled={!mod}
+              onClick={() => mod && setSkipVersion(mod, update.version).catch(reportUnexpected)}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              {t`Skip this version`}
+            </Button>
+            <Button
+              size="small"
+              onClick={() => mod && setPinned(mod, !entry?.pinned).catch(reportUnexpected)}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              {entry?.pinned ? t`Unpin` : t`Pin`}
+            </Button>
+            <Button
               variant="contained"
               disabled={queued || (caution !== '' && !acked)}
               onClick={() => download([updateWant(update)]).catch(reportUnexpected)}
@@ -315,13 +357,24 @@ function Row({
           </>
         ) : null}
       </Box>
+      <Checkbox
+        checked={included && (!caution || acked)}
+        disabled={caution !== '' && !acked}
+        onChange={(_, on) => onInclude(on)}
+        slotProps={{ input: { 'aria-label': t`Include ${update.name}` } }}
+        sx={{ justifySelf: 'center' }}
+      />
       {caution ? (
-        <Checkbox
-          checked={acked}
-          onChange={(_, on) => onAck(on)}
-          slotProps={{ input: { 'aria-label': t`Confirm update for ${update.name}` } }}
-          sx={{ justifySelf: 'center' }}
-        />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Checkbox
+            checked={acked}
+            onChange={(_, on) => onAck(on)}
+            slotProps={{ input: { 'aria-label': t`Confirm update for ${update.name}` } }}
+          />
+          <Typography
+            sx={{ fontSize: 11, color: 'warning.main' }}
+          >{t`Acknowledge caution to include`}</Typography>
+        </Box>
       ) : null}
     </Box>
   )
@@ -393,7 +446,7 @@ export function UpdateBar() {
   const updates = useUpdates((s) => s.updates)
   const setReviewing = useUpdates((s) => s.setReviewing)
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
-  const count = updateCount(updates, profile)
+  const count = updateCount(updates, profile, useNexusDetails.getState().byId)
   if (count === 0) {
     return updates?.unknown ? (
       <Typography sx={{ mx: 2, mt: 1, fontSize: 12, color: 'text.secondary' }}>
@@ -438,22 +491,26 @@ export function UpdateBar() {
   )
 }
 
+// biome-ignore lint/complexity/noExcessiveLinesPerFunction: The review dialog is one cohesive interaction.
 export function UpdateReview({ profile }: { profile: Profile }) {
   const { t } = useLingui()
+  const signedIn = useNexus((s) => s.signedIn)
   const open = useUpdates((s) => s.reviewing)
   const updates = useUpdates((s) => s.updates)
   const checkedAt = useUpdates((s) => s.checkedAt)
   const setReviewing = useUpdates((s) => s.setReviewing)
   const close = () => setReviewing(false)
   const byId = useNexusDetails((s) => s.byId)
-  const list = visibleUpdates(updates, profile).filter((u) =>
-    listedAgainstNexus(u, byId[u.nexusId]?.details?.page),
-  )
+  const list = updatesForReview(updates, profile, byId)
   const items = useQueue((s) => s.state.items)
   const mods = useMods((s) => s.mods)
   const [acked, setAcked] = useState<Record<string, boolean>>({})
   const [now, setNow] = useState(() => Date.now())
-  const [propagating, setPropagating] = useState<Update | null>(null)
+  const [propagating, setPropagating] = useState<Update[]>([])
+  const [firstPropagating] = propagating
+  const [include, setInclude] = useState<Record<string, boolean>>({})
+  const [propagateAll, setPropagateAll] = useState(false)
+  const [loadingAll, setLoadingAll] = useState(false)
   useEffect(() => {
     const id = globalThis.setInterval(() => setNow(Date.now()), TICK_MS)
     return () => globalThis.clearInterval(id)
@@ -471,8 +528,19 @@ export function UpdateReview({ profile }: { profile: Profile }) {
     return caution === '' || acked[modId(u)] === true
   }
   const wanted = list
-    .filter((u) => downloadable(u) && !pendingUpdate(items, profile.id, u) && cautionOk(u))
+    .filter(
+      (u) =>
+        include[modId(u)] !== false &&
+        downloadable(u) &&
+        !pendingUpdate(items, profile.id, u) &&
+        cautionOk(u),
+    )
     .map(updateWant)
+  const uncachedIds = [
+    ...new Set(
+      list.filter((u) => u.nexusId > 0 && !byId[u.nexusId]?.details).map((u) => u.nexusId),
+    ),
+  ]
   return (
     <Dialog
       open={open && list.length > 0}
@@ -514,6 +582,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
           {list.map((u) => {
             const caution = installedCaution(mods, u)
             const id = modId(u)
+            const picture = entryOf(profile, u.key)?.source.picture
             return (
               <Row
                 key={id}
@@ -521,12 +590,15 @@ export function UpdateReview({ profile }: { profile: Profile }) {
                 profileId={profile.id}
                 caution={caution}
                 acked={acked[id] === true}
+                included={include[id] !== false}
                 onAck={(on) => setAcked((prev) => ({ ...prev, [id]: on }))}
+                onInclude={(on) => setInclude((prev) => ({ ...prev, [id]: on }))}
+                {...(picture === undefined ? {} : { picture })}
                 onUpdateAll={() => {
                   download([updateWant(u)])
                     .then((added) => {
                       if (added) {
-                        setPropagating(u)
+                        setPropagating([u])
                       }
                     })
                     .catch(reportUnexpected)
@@ -548,24 +620,65 @@ export function UpdateReview({ profile }: { profile: Profile }) {
         <Button variant="outlined" onClick={close} sx={{ whiteSpace: 'nowrap' }}>
           {t`Close`}
         </Button>
+        {signedIn && uncachedIds.length > 0 ? (
+          <Button
+            variant="text"
+            disabled={loadingAll}
+            onClick={async () => {
+              setLoadingAll(true)
+              try {
+                for (const id of uncachedIds) {
+                  await loadDetails(id)
+                }
+              } catch (e) {
+                reportUnexpected(e)
+              } finally {
+                setLoadingAll(false)
+              }
+            }}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            {loadingAll ? t`Loading changes…` : t`Load all changes`}
+          </Button>
+        ) : null}
+        {wanted.length > 0 ? (
+          <Checkbox
+            checked={propagateAll}
+            onChange={(_, on) => setPropagateAll(on)}
+            slotProps={{
+              input: { 'aria-label': t`Also update other profiles that hold the same files` },
+            }}
+          />
+        ) : null}
+        {wanted.length > 0 ? (
+          <Typography sx={{ fontSize: 12, maxWidth: 180 }}>
+            {t`Also update other profiles that hold the same files`}
+          </Typography>
+        ) : null}
         {wanted.length > 0 ? (
           <Button
             variant="contained"
             onClick={() => {
               close()
-              download(wanted, true).catch(reportUnexpected)
+              download(wanted, true)
+                .then((added) => {
+                  if (added && propagateAll) {
+                    setPropagating(list.filter((u) => wanted.some((w) => w.currentKey === u.key)))
+                  }
+                })
+                .catch(reportUnexpected)
             }}
             sx={{ whiteSpace: 'nowrap' }}
           >
-            {t`Update all`}
+            {t`Update ${wanted.length}`}
           </Button>
         ) : null}
       </DialogActions>
-      {propagating ? (
+      {firstPropagating ? (
         <PropagateUpdate
           profile={profile}
-          update={propagating}
-          onDone={() => setPropagating(null)}
+          update={firstPropagating}
+          onDone={() => setPropagating((pending) => pending.slice(1))}
         />
       ) : null}
     </Dialog>
