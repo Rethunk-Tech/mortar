@@ -7,14 +7,22 @@ type Describe = (p: Problem) => string
 
 export function useDescribeDrift(): (d: Drift) => string {
   const { t } = useLingui()
+  const mods = useMods((s) => s.mods)
+  // A drift names an archive entry; the user knows it by the mods it installed.
+  const entryName = (key: string) =>
+    mods
+      .filter((m) => m.key === key)
+      .map((m) => m.name)
+      .join(', ') || key
   return (d) => {
     if (d.kind === 'unknown') {
       return t`${d.folder} is in this profile's mods folder and is not an installed entry.`
     }
+    const name = entryName(d.key)
     if (d.kind === 'deleted') {
-      return t`${d.key} was removed from this profile's mods folder.`
+      return t`${name} was removed from this profile's mods folder.`
     }
-    return t`${d.key} was changed outside Mortar.`
+    return t`${name} was changed outside Mortar.`
   }
 }
 

@@ -104,7 +104,7 @@ msgstr "Stop the game to change mods."
 msgid "Mortar takes Stardew Valley links only."
 msgstr "Mortar takes Stardew Valley links only."
 
-#: src/mods/describe.ts:40
+#: src/mods/describe.ts:48
 msgid "{name} broke in {brokeIn}."
 msgstr "{name} broke in {brokeIn}."
 
@@ -422,7 +422,7 @@ msgstr "Already in Steam"
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.currentFor
-#: src/mods/describe.ts:108
+#: src/mods/describe.ts:116
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 
@@ -485,7 +485,7 @@ msgstr "Show files"
 msgid "More play options"
 msgstr "More play options"
 
-#: src/mods/describe.ts:37
+#: src/mods/describe.ts:45
 msgid "{name} is marked obsolete and may not work with this game version."
 msgstr "{name} is marked obsolete and may not work with this game version."
 
@@ -690,7 +690,7 @@ msgstr "Got it"
 msgid "Failed"
 msgstr "Failed"
 
-#: src/mods/describe.ts:41
+#: src/mods/describe.ts:49
 msgid "{name} is marked broken for this game version."
 msgstr "{name} is marked broken for this game version."
 
@@ -1147,7 +1147,7 @@ msgstr "It shows in your Steam library the next time Steam starts."
 msgid "Game settings"
 msgstr "Game settings"
 
-#: src/mods/describe.ts:32
+#: src/mods/describe.ts:40
 msgid "{name} is marked abandoned and may no longer be maintained."
 msgstr "{name} is marked abandoned and may no longer be maintained."
 
@@ -1257,7 +1257,7 @@ msgstr "GitHub page"
 msgid "Replace with {replaceName}"
 msgstr "Replace with {replaceName}"
 
-#: src/mods/describe.ts:70
+#: src/mods/describe.ts:78
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 
@@ -1433,7 +1433,7 @@ msgstr "Standard farm"
 msgid "{field}: {from} → {to}"
 msgstr "{field}: {from} → {to}"
 
-#: src/mods/describe.ts:31
+#: src/mods/describe.ts:39
 msgid "{name} is abandoned: {summary}"
 msgstr "{name} is abandoned: {summary}"
 
@@ -1580,6 +1580,10 @@ msgstr "The original profile was not changed."
 msgid "These will be removed: {0}"
 msgstr "These will be removed: {0}"
 
+#: src/mods/describe.ts:25
+msgid "{name} was changed outside Mortar."
+msgstr "{name} was changed outside Mortar."
+
 #: src/queue/QueueBody.tsx:183
 msgid "Needs your click"
 msgstr "Needs your click"
@@ -1703,7 +1707,7 @@ msgstr "Added to Steam"
 msgid "Duplicate"
 msgstr "Duplicate"
 
-#: src/mods/describe.ts:76
+#: src/mods/describe.ts:84
 msgid "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 
@@ -1824,7 +1828,7 @@ msgstr "Could not read this Mortar build's version: {failed}"
 msgid "SMAPI is not installed"
 msgstr "SMAPI is not installed"
 
-#: src/mods/describe.ts:78
+#: src/mods/describe.ts:86
 msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
 
@@ -1982,7 +1986,7 @@ msgid "Mods in this category will move to Uncategorized."
 msgstr "Mods in this category will move to Uncategorized."
 
 #. placeholder {0}: p.duplicate.name
-#: src/mods/describe.ts:84
+#: src/mods/describe.ts:92
 msgid "{0} is installed twice, and SMAPI loads only one."
 msgstr "{0} is installed twice, and SMAPI loads only one."
 
@@ -2068,7 +2072,7 @@ msgstr "Zoom ({value}%)"
 msgid "Updates are unknown: SMAPI's update service could not be reached."
 msgstr "Updates are unknown: SMAPI's update service could not be reached."
 
-#: src/mods/describe.ts:96
+#: src/mods/describe.ts:104
 msgid "{name} logged {count} errors in the last run."
 msgstr "{name} logged {count} errors in the last run."
 
@@ -2187,11 +2191,6 @@ msgstr "No profiles yet"
 #: src/profiles/store.ts:185
 msgid "Could not save the open profile"
 msgstr "Could not save the open profile"
-
-#. placeholder {0}: d.key
-#: src/mods/describe.ts:15
-msgid "{0} was removed from this profile's mods folder."
-msgstr "{0} was removed from this profile's mods folder."
 
 #: src/fomod/Dialog.tsx:229
 msgid "Next"
@@ -2424,7 +2423,7 @@ msgstr "Background: {from} → {to}"
 msgid "Deleted profiles stay here for 30 days, mods and settings included."
 msgstr "Deleted profiles stay here for 30 days, mods and settings included."
 
-#: src/mods/describe.ts:56
+#: src/mods/describe.ts:64
 msgid "{who} all load {target}.{winner}"
 msgstr "{who} all load {target}.{winner}"
 
@@ -2526,7 +2525,7 @@ msgstr "Saving…"
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
-#: src/mods/describe.ts:58
+#: src/mods/describe.ts:66
 msgid "{who} all edit {target}.{winner}"
 msgstr "{who} all edit {target}.{winner}"
 
@@ -2606,7 +2605,7 @@ msgstr "Conflicts"
 msgid "Copy the mods already in Stardew Valley's Mods folder into a new profile. Nothing in the game folder is moved or changed."
 msgstr "Copy the mods already in Stardew Valley's Mods folder into a new profile. Nothing in the game folder is moved or changed."
 
-#: src/mods/describe.ts:49
+#: src/mods/describe.ts:57
 msgid " The winner is unclear."
 msgstr " The winner is unclear."
 
@@ -2911,7 +2910,7 @@ msgstr "{length} of {limit} characters · close to the Discord message limit"
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.currentFor
-#: src/mods/describe.ts:105
+#: src/mods/describe.ts:113
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
 
@@ -3040,7 +3039,7 @@ msgstr "Hide token"
 msgid "Has used:"
 msgstr "Has used:"
 
-#: src/mods/describe.ts:53
+#: src/mods/describe.ts:61
 msgid " {winnerName} wins; {losers} overridden."
 msgstr " {winnerName} wins; {losers} overridden."
 
@@ -3099,7 +3098,7 @@ msgid "Checked with SMAPI's update service · just now"
 msgstr "Checked with SMAPI's update service · just now"
 
 #. placeholder {0}: d.folder
-#: src/mods/describe.ts:12
+#: src/mods/describe.ts:19
 msgid "{0} is in this profile's mods folder and is not an installed entry."
 msgstr "{0} is in this profile's mods folder and is not an installed entry."
 
@@ -3176,7 +3175,7 @@ msgstr "Winter"
 msgid "Manage tools"
 msgstr "Manage tools"
 
-#: src/mods/describe.ts:94
+#: src/mods/describe.ts:102
 msgid "{name} logged an error in the last run: {first}"
 msgstr "{name} logged an error in the last run: {first}"
 
@@ -3576,7 +3575,7 @@ msgstr "Borderless"
 #. placeholder {0}: s.name
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
-#: src/mods/describe.ts:102
+#: src/mods/describe.ts:110
 msgid "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 msgstr "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 
@@ -3861,7 +3860,7 @@ msgstr "Luck skill"
 msgid "Import from…"
 msgstr "Import from…"
 
-#: src/mods/describe.ts:73
+#: src/mods/describe.ts:81
 msgid "{dependentName} needs {dep}, which is switched off."
 msgstr "{dependentName} needs {dep}, which is switched off."
 
@@ -3927,7 +3926,7 @@ msgstr "{0, plural, one {# problem} other {# problems}}"
 msgid "Could not verify its source"
 msgstr "Could not verify its source"
 
-#: src/mods/describe.ts:69
+#: src/mods/describe.ts:77
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement."
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
@@ -4233,7 +4232,7 @@ msgstr "{counts} · {0} MB"
 msgid "Its source is not known."
 msgstr "Its source is not known."
 
-#: src/mods/describe.ts:36
+#: src/mods/describe.ts:44
 msgid "{name} is obsolete: {summary}"
 msgstr "{name} is obsolete: {summary}"
 
@@ -4254,7 +4253,7 @@ msgstr "Could not use that image"
 #. placeholder {0}: s.name
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
-#: src/mods/describe.ts:110
+#: src/mods/describe.ts:118
 msgid "{0}'s {1} is {2}; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}; it can match {installed} instead."
 
@@ -4290,6 +4289,10 @@ msgstr "Could not abstain"
 msgid "Include {0}"
 msgstr "Include {0}"
 
+#: src/mods/describe.ts:23
+msgid "{name} was removed from this profile's mods folder."
+msgstr "{name} was removed from this profile's mods folder."
+
 #. placeholder {0}: (preview.replace?.keepLocal ?? []).join(', ')
 #: src/share/ImportFooter.tsx:147
 msgid "Local-only mods kept: {0}"
@@ -4321,7 +4324,7 @@ msgstr "{found} of {0} launchers found."
 msgid "Accent colour"
 msgstr "Accent colour"
 
-#: src/mods/describe.ts:53
+#: src/mods/describe.ts:61
 msgid " {winnerName} wins."
 msgstr " {winnerName} wins."
 
@@ -4967,11 +4970,6 @@ msgstr "Update all"
 #: src/queue/store.ts:261
 msgid "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 msgstr "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
-
-#. placeholder {0}: d.key
-#: src/mods/describe.ts:17
-msgid "{0} was changed outside Mortar."
-msgstr "{0} was changed outside Mortar."
 
 #: src/mods/ProblemsTab.tsx:26
 msgid "Errors in the last run"
