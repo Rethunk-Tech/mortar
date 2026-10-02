@@ -227,3 +227,44 @@ func Resolve(cfg Config, choices Choices, ctx EvalContext) []Op {
 	slices.SortStableFunc(ops, func(a, b Op) int { return a.Priority - b.Priority })
 	return ops
 }
+
+// Unanswered reports whether cfg shows a group the user picks from that neither old nor choices knew, so replaying
+// choices made against old would decide it without asking.
+func Unanswered(old, cfg Config, choices Choices, ctx EvalContext) bool {
+	seen := map[[2]string]bool{}
+	for _, s := range old.Steps {
+		for _, g := range s.Groups {
+			seen[[2]string{s.Name, g.Name}] = true
+		}
+	}
+	for _, s := range VisibleSteps(cfg, FlagsFrom(cfg, choices, ctx), ctx) {
+		for _, g := range s.Groups {
+			if strings.EqualFold(g.Type, SelectAll) || seen[[2]string{s.Name, g.Name}] {
+				continue
+			}
+			if _, ok := choices[s.Name][g.Name]; !ok {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// Keep returns the choices that still name a plugin of cfg.
+func Keep(cfg Config, choices Choices) Choices {
+	out := Choices{}
+	for _, s := range cfg.Steps {
+		for _, g := range s.Groups {
+			for _, name := range choices[s.Name][g.Name] {
+				if _, ok := plugin(g, name); !ok {
+					continue
+				}
+				if out[s.Name] == nil {
+					out[s.Name] = map[string][]string{}
+				}
+				out[s.Name][g.Name] = append(out[s.Name][g.Name], name)
+			}
+		}
+	}
+	return out
+}

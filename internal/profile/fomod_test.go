@@ -1,8 +1,12 @@
 package profile
 
 import (
+	"errors"
 	"os"
+
 	"path/filepath"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
@@ -74,5 +78,64 @@ func TestFomodReplayMismatchAsksAgain(t *testing.T) {
 	}
 	if res.Fomod == nil {
 		t.Fatal("vanished choice should ask again")
+	}
+}
+
+func TestFomodUpdateReplaysOnlyUnchangedOptions(t *testing.T) {
+	raw, err := fsx.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	base := string(raw)
+	extra := `<group name="Extras" type="SelectAny"><plugins><plugin name="Gamma"><description/><files/>` +
+		`<typeDescriptor><type name="Optional"/></typeDescriptor></plugin></plugins></group></optionalFileGroups>`
+	alpha := map[string]map[string][]string{"Options": {"Pack": {"Alpha"}}}
+	for _, tc := range []struct {
+		name, xml string
+		want      map[string]map[string][]string
+	}{
+		{"unchanged", base, nil},
+		{"new group", strings.Replace(base, "</optionalFileGroups>", extra, 1), alpha},
+		{"plugin gone", strings.Replace(base, `name="Alpha"`, `name="Alpha2"`, 1), map[string]map[string][]string{}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			e := newEnv(t)
+			p, err := e.Create("stardew", "A")
+			if err != nil {
+				t.Fatal(err)
+			}
+			files := func(xml string) map[string]string {
+				return map[string]string{
+					"fomod/ModuleConfig.xml": xml,
+					"alpha/manifest.json":    manifestJSON("A.Alpha"),
+					"beta/manifest.json":     manifestJSON("A.Beta"),
+				}
+			}
+			e.item(t, "v1", files(base))
+			e.item(t, "v2", files(tc.xml))
+			if _, err := e.InstallFomod("stardew", p.ID, "v1", Source{Kind: KindLocal, Name: "x"}, alpha); err != nil {
+				t.Fatal(err)
+			}
+			src, ask, need, err := e.installAsk("stardew", p.ID, "v2", Source{Kind: KindLocal, Name: "x"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if tc.want == nil {
+				if need || !reflect.DeepEqual(src.fomodMap(), alpha) {
+					t.Fatalf("install should replay silently: need=%v choices=%v", need, src.fomodMap())
+				}
+			} else if !need || !ask.Changed || ask.OldKey != "v1" || !reflect.DeepEqual(ask.Choices, tc.want) {
+				t.Fatalf("install should re-offer: need=%v ask=%+v", need, ask)
+			}
+			_, err = e.UpdateEntry("stardew", p.ID, "v1", "v2")
+			need2, asked := errors.AsType[*NeedChoicesError](err)
+			if tc.want == nil {
+				if err != nil {
+					t.Fatalf("update should replay silently: %v", err)
+				}
+			} else if !asked || !need2.Ask.Changed || !reflect.DeepEqual(need2.Ask.Choices, tc.want) {
+				t.Fatalf("update should re-offer: %v", err)
+			}
+		})
 	}
 }

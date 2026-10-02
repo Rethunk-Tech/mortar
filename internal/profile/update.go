@@ -104,11 +104,11 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 // over the old one. It returns the entry as it stands afterwards, and the swap for the caller to commit once
 // profile.json records it or undo if that fails.
 func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *Source) (Entry, swapped, error) {
-	choices := e.Fomod
+	choices, asker := e.Fomod, s.replayAsk
 	if source != nil && source.fomod != nil {
-		choices = source.fomodMap()
+		choices, asker = source.fomodMap(), s.fomodAsk
 	}
-	if ask, need, err := s.fomodAsk(game, id, newKey, e.Source, e.Key, choices); err != nil {
+	if ask, need, err := asker(game, id, newKey, e.Source, e.Key, choices); err != nil {
 		return Entry{}, swapped{}, err
 	} else if need {
 		if source != nil {

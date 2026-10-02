@@ -24,6 +24,8 @@ type FomodAsk struct {
 	ModuleName string                         `json:"moduleName"`
 	Steps      []FomodStep                    `json:"steps"`
 	Choices    map[string]map[string][]string `json:"choices,omitempty"`
+	// Changed means a new version's install options no longer fit the entry's saved choices.
+	Changed bool `json:"changed,omitempty"`
 }
 
 type FomodStep struct {
@@ -162,6 +164,83 @@ func (s *Store) fomodAsk(game, id, key string, source Source, oldKey string, cho
 	return askFrom(cfg, key, source, oldKey, choices, eval), true, nil
 }
 
+// replayAsk is fomodAsk for choices saved against oldKey's config. It also asks when key shows a group to pick from
+// that oldKey did not have, and then prefills the wizard with the saved choices that still exist.
+func (s *Store) replayAsk(game, id, key string, source Source, oldKey string, choices map[string]map[string][]string) (FomodAsk, bool, error) {
+	cfg, ok, err := s.fomodOf(game, key)
+	if err != nil || !ok {
+		return FomodAsk{}, false, err
+	}
+	old, _, err := s.fomodOf(game, oldKey)
+	if err != nil {
+		old = cfg
+	}
+	modsDir, err := s.ModsDir(game, id)
+	if err != nil {
+		return FomodAsk{}, false, err
+	}
+	eval := s.fomodEval(game, s.fileIndex(modsDir))
+	if fomod.Match(cfg, choices, eval) && !fomod.Unanswered(old, cfg, choices, eval) {
+		return FomodAsk{}, false, nil
+	}
+	ask := askFrom(cfg, key, source, oldKey, fomod.Keep(cfg, choices), eval)
+	ask.Changed = true
+	return ask, true, nil
+}
+
+// installAsk is the wizard installing key needs. When key replaces one entry of the profile and the user gave no
+// choices, that entry's saved choices replay: the returned source carries them.
+func (s *Store) installAsk(game, id, key string, source Source) (Source, FomodAsk, bool, error) {
+	if source.fomod != nil {
+		ask, need, err := s.fomodAsk(game, id, key, source, "", source.fomodMap())
+		return source, ask, need, err
+	}
+	if _, ok, err := s.fomodOf(game, key); err != nil || !ok {
+		return source, FomodAsk{}, false, err
+	}
+	prev, ok, err := s.replacing(game, id, key)
+	if err != nil {
+		return source, FomodAsk{}, false, err
+	}
+	if !ok {
+		ask, need, err := s.fomodAsk(game, id, key, source, "", nil)
+		return source, ask, need, err
+	}
+	ask, need, err := s.replayAsk(game, id, key, source, prev.Key, prev.Fomod)
+	if err != nil || need {
+		return source, ask, need, err
+	}
+	return source.WithFomod(cloneFomod(prev.Fomod)), FomodAsk{}, false, nil
+}
+
+// replacing is the one entry holding a mod anywhere in the store item key, under any choice of its options.
+func (s *Store) replacing(game, id, key string) (Entry, bool, error) {
+	root, err := s.items.Path(game, key)
+	if err != nil {
+		return Entry{}, false, err
+	}
+	found, err := manifest.Scan(root)
+	if err != nil {
+		return Entry{}, false, err
+	}
+	p, err := s.read(game, id)
+	if err != nil {
+		return Entry{}, false, err
+	}
+	var held []Entry
+	for _, e := range p.Entries {
+		if slices.ContainsFunc(e.Mods, func(m EntryMod) bool {
+			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return sameID(f.UniqueID, m.UniqueID) })
+		}) {
+			held = append(held, e)
+		}
+	}
+	if len(held) != 1 {
+		return Entry{}, false, nil
+	}
+	return held[0], true, nil
+}
+
 func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][]string) (src, tmp string, err error) {
 	root, err := s.items.Path(game, key)
 	if err != nil {
@@ -212,13 +291,19 @@ func (s *Store) FomodPreview(game, id, key string, choices map[string]map[string
 		return FomodAsk{}, err
 	}
 	var src Source
+	held := false
 	for _, e := range p.Entries {
 		if e.Key == key {
-			src = e.Source
+			src, held = e.Source, true
 			if choices == nil {
 				choices = e.Fomod
 			}
 			break
+		}
+	}
+	if !held && len(choices) == 0 {
+		if _, ask, need, err := s.installAsk(game, id, key, src); err != nil || need {
+			return ask, err
 		}
 	}
 	ask, _, err := s.fomodAsk(game, id, key, src, "", choices)
