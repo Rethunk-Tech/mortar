@@ -16,6 +16,7 @@ import {
   Select,
   Switch,
   TextField,
+  Tooltip,
 } from '@mui/material'
 import { Check, LogIn, LogOut } from 'lucide-react'
 import { type SubmitEvent, useEffect, useId, useState } from 'react'
@@ -36,6 +37,7 @@ import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { NexusMeter } from '../NexusMeter.tsx'
 import { useNexus } from '../nexus.ts'
+import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useNxmHandler } from './nxmHandler.tsx'
 import { nxmOwnerName } from './nxmOwnerName.ts'
@@ -134,44 +136,52 @@ function NexusModsSignedIn({
           />
         </Box>
       </Alert>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <Box sx={{ fontSize: 14, fontWeight: 600 }}>
+      <SettingsSection title={t`Tracking`}>
+        <Box sx={{ px: 2, pt: 1, fontSize: 13, color: 'text.secondary' }}>
           {trackedCount === null
-            ? t`Tracked mods`
-            : t`Tracked mods (${trackedCount} for ${game?.name ?? ''})`}
+            ? t`Tracked for Stardew Valley`
+            : t`${trackedCount} tracked for Stardew Valley`}
         </Box>
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-          <Button
-            variant="outlined"
-            disabled={busy || trackedCount === null || trackedCount === 0}
-            onClick={() => setConfirming(false)}
-          >
-            {t`Untrack every ${game?.name ?? ''} mod…`}
-          </Button>
-          <Button
-            variant="outlined"
-            disabled={busy || trackedCount === null || trackedCount === 0}
-            onClick={() => setConfirming(true)}
-          >
-            {t`Untrack mods not in any profile…`}
-          </Button>
-        </Box>
-      </Box>
+        <SettingRow
+          label={t`Untrack all…`}
+          description={t`Untrack every Stardew Valley mod on Nexus`}
+        >
+          <Tooltip title={t`Untrack every Stardew Valley mod on Nexus`}>
+            <span>
+              <Button
+                variant="outlined"
+                disabled={busy || trackedCount === null || trackedCount === 0}
+                onClick={() => setConfirming(false)}
+              >{t`Untrack all…`}</Button>
+            </span>
+          </Tooltip>
+        </SettingRow>
+        <SettingRow
+          label={t`Untrack unused…`}
+          description={t`Untrack mods not used by any profile`}
+        >
+          <Tooltip title={t`Untrack mods not used by any profile`}>
+            <span>
+              <Button
+                variant="outlined"
+                disabled={busy || trackedCount === null || trackedCount === 0}
+                onClick={() => setConfirming(true)}
+              >{t`Untrack unused…`}</Button>
+            </span>
+          </Tooltip>
+        </SettingRow>
+      </SettingsSection>
       {premium ? null : (
-        <Box sx={{ fontSize: 14, lineHeight: 1.5 }}>
+        <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
           {t`Free accounts need one click on Nexus for every download. Mortar opens each file's page in turn and takes the download from your click.`}
         </Box>
       )}
       <NexusMeter />
-      <FormControlLabel
-        sx={{ m: 0, alignItems: 'flex-start' }}
-        control={<Switch checked={askEndorse} onChange={(_, on) => onAskEndorse(on)} />}
-        label={
-          <Box component="span" sx={{ display: 'block', fontSize: 14 }}>
-            {t`Ask me to endorse mods I keep using`}
-          </Box>
-        }
-      />
+      <SettingsSection title={t`Endorsements`}>
+        <SettingRow label={t`Ask me to endorse mods I keep using`}>
+          <Switch checked={askEndorse} onChange={(_, on) => onAskEndorse(on)} />
+        </SettingRow>
+      </SettingsSection>
       {seenServers && seenServers.length > 0 ? (
         <FormControl size="small" sx={{ maxWidth: 360 }}>
           <InputLabel id={serverId} shrink={true}>
@@ -197,25 +207,18 @@ function NexusModsSignedIn({
           </Select>
         </FormControl>
       ) : null}
-      <FormControlLabel
-        sx={{ m: 0, alignItems: 'flex-start' }}
-        control={<Switch checked={nxm.handled} onChange={(_, on) => nxm.toggle(on)} />}
-        label={
-          <Box>
-            <Box component="span" sx={{ display: 'block', fontSize: 14 }}>
-              {t`Handle Nexus "Mod Manager Download" links`}
-            </Box>
-            <Box
-              component="span"
-              sx={{ display: 'block', fontSize: 13, color: 'rgba(225,225,230,0.95)' }}
-            >
-              {owner
-                ? t`${owner} opens these links now. Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them.`
-                : t`Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them.`}
-            </Box>
-          </Box>
-        }
-      />
+      <SettingsSection title={t`Downloads`}>
+        <SettingRow
+          label={t`Handle "Mod Manager Download" links`}
+          description={t`Clicking these links on Nexus starts the download in Mortar.`}
+        >
+          <Tooltip
+            title={owner ? t`${owner} opens these links now.` : t`Mortar handles these links now.`}
+          >
+            <Switch checked={nxm.handled} onChange={(_, on) => nxm.toggle(on)} />
+          </Tooltip>
+        </SettingRow>
+      </SettingsSection>
       {nxm.handled && nxmPrevious ? (
         <FormControlLabel
           control={
