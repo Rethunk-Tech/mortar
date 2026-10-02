@@ -218,13 +218,13 @@ func TestStartInstallsAMissingLoaderBeforeLaunching(t *testing.T) {
 		<-release
 		return errors.New("boom")
 	}
-	if err := svc.Start("stardew", p.ID, false); err != nil {
+	if err := svc.Start(context.Background(), "stardew", p.ID, false); err != nil {
 		t.Fatal(err)
 	}
 	if id := <-asked; id != "stardew" {
 		t.Fatalf("ensured %q", id)
 	}
-	if err := svc.Start("stardew", p.ID, false); err == nil {
+	if err := svc.Start(context.Background(), "stardew", p.ID, false); err == nil {
 		t.Fatal("a second Start while the loader installs must be refused")
 	}
 	close(release)
@@ -337,7 +337,7 @@ func TestConcurrentStartsLaunchOnce(t *testing.T) {
 	for range 2 {
 		wg.Go(func() {
 			<-gate
-			if svc.Start("stardew", p.ID, false) != nil {
+			if svc.Start(context.Background(), "stardew", p.ID, false) != nil {
 				refused.Add(1)
 			}
 		})
@@ -365,7 +365,7 @@ func TestStartWithAnInstalledLoaderWaitsForEnsureLoader(t *testing.T) {
 		<-release
 		return errors.New("update failed")
 	}
-	if err := svc.Start("stardew", p.ID, false); err != nil {
+	if err := svc.Start(context.Background(), "stardew", p.ID, false); err != nil {
 		t.Fatal(err)
 	}
 	<-asked
@@ -434,7 +434,7 @@ func TestStartLoaderUsesAppLifetime(t *testing.T) {
 		saw <- ctx
 		return ctx.Err()
 	}
-	if err := svc.Start("stardew", p.ID, true); err != nil {
+	if err := svc.Start(context.Background(), "stardew", p.ID, true); err != nil {
 		t.Fatal(err)
 	}
 	select {

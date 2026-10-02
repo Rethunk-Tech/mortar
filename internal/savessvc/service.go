@@ -83,11 +83,10 @@ func NewService(profiles *profile.Store, store *settings.Store, client *meta.Cli
 
 // Saves scans the game's saves and compares each with the profile. Wails runs it off the UI thread; a first scan
 // of large saves takes well under a second, and later calls read the cache.
-func (s *Service) Saves(game, profileID string) ([]Fit, error) {
+func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, error) {
 	if game != "stardew" {
 		return []Fit{}, nil
 	}
-	ctx := context.Background()
 	index, err := s.meta.Index(ctx)
 	if err != nil {
 		return nil, err

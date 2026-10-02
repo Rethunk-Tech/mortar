@@ -340,8 +340,9 @@ func (s *Service) Status(gameID string) (Status, error) {
 
 // Start launches the profile. Its outcome arrives as StateEvents: Launching, then Running or Failed, or NoSteam
 // when the user must first agree to launch without Steam (direct). A missing or broken loader is installed first.
-func (s *Service) Start(gameID, profileID string, direct bool) error {
-	return s.start(context.Background(), gameID, profileID, direct)
+func (s *Service) Start(ctx context.Context, gameID, profileID string, direct bool) error {
+	// The game outlives the call that started it, so the caller's cancellation does not reach the launch.
+	return s.start(context.WithoutCancel(ctx), gameID, profileID, direct)
 }
 
 func (s *Service) start(parent context.Context, gameID, profileID string, direct bool) error {
