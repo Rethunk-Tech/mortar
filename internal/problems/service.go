@@ -107,7 +107,7 @@ func (s *Service) installed(gameID, id string) ([]Installed, error) {
 	mods := make([]Installed, len(installed))
 	for i, m := range installed {
 		mods[i] = Installed{
-			Key: m.Key, SourceKind: m.Source.Kind, Enabled: m.Enabled,
+			Key: m.Key, SourceKind: m.Source.Kind, SourceVersion: m.Source.Version, Enabled: m.Enabled,
 			Pinned: m.Pinned, SkipVersion: m.SkipVersion, IgnoreUpdates: m.IgnoreUpdates, Manifest: m.Manifest,
 		}
 		if m.Enabled {

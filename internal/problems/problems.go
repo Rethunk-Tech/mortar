@@ -28,7 +28,10 @@ type Meta interface {
 type Installed struct {
 	Key string
 	// SourceKind is the entry's source: "local" for an archive, "smapi" for the loader's own mods, "mortar" for the console bridge, "nexus" for a download.
-	SourceKind    string
+	SourceKind string
+	// SourceVersion is the version of the download the entry came from (a Nexus file's version). Authors
+	// often leave some manifests of a multi-part download unbumped, so it can be newer than Version.
+	SourceVersion string
 	Enabled       bool
 	Pinned        bool
 	SkipVersion   string

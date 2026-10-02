@@ -1,6 +1,11 @@
 package problems
 
-import "testing"
+import (
+	"context"
+	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/meta"
+)
 
 func TestNexusUpdateFollowsSuggestedSite(t *testing.T) {
 	keys := []string{"Nexus:12345", "CurseForge:67890"}
@@ -21,5 +26,20 @@ func TestStableSuffixIsNotPrerelease(t *testing.T) {
 	held := HideHeld(UpdatesResult{Updates: []Update{{Key: "k", Installed: "1.4.10-stable", Version: "1.5.3-beta"}}}, nil, false)
 	if len(held.Updates) != 0 {
 		t.Fatalf("beta offered with prereleases off: %+v", held.Updates)
+	}
+}
+
+func TestUnbumpedManifestInsideNewerDownloadIsNotAnUpdate(t *testing.T) {
+	part := mod("k1", "Haru.DesertExpansion", "2.0.8", true)
+	part.SourceVersion = "2.0.9"
+	older := mod("k2", "Other.Mod", "1.0.0", true)
+	older.SourceVersion = "1.0.0"
+	rm := fakeMeta{compat: map[string]meta.UpdateResult{
+		"Haru.DesertExpansion": {Known: true, Suggested: &meta.Update{Version: "2.0.9", URL: "https://www.nexusmods.com/stardewvalley/mods/31595"}},
+		"Other.Mod":            {Known: true, Suggested: &meta.Update{Version: "1.1.0", URL: "https://www.nexusmods.com/stardewvalley/mods/9"}},
+	}}
+	got := CheckUpdates(context.Background(), rm, Environment{}, []Installed{part, older}, false).Updates
+	if len(got) != 1 || got[0].UniqueID != "Other.Mod" {
+		t.Fatalf("got %+v", got)
 	}
 }

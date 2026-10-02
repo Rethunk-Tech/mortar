@@ -76,6 +76,12 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 		return r
 	}
 	for i, res := range m.CheckUpdates(ctx, req) {
+		if res.Suggested != nil && downloaded(asked[i], res.Suggested.Version) {
+			res.Suggested = nil
+		}
+		if res.Unofficial != nil && downloaded(asked[i], res.Unofficial.Version) {
+			res.Unofficial = nil
+		}
 		switch {
 		case !res.Known:
 			r.Unknown = true
@@ -252,4 +258,14 @@ func githubUpdate(keys []string, url string) string {
 		}
 	}
 	return ""
+}
+
+// downloaded reports whether the entry's download is already at version or newer, so the update is installed
+// even though this manifest was left at an older version inside it.
+func downloaded(x Installed, version string) bool {
+	if x.SourceVersion == "" {
+		return false
+	}
+	c, ok := meta.CompareVersions(x.SourceVersion, version)
+	return ok && c >= 0
 }
