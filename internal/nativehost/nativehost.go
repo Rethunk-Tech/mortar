@@ -43,23 +43,31 @@ func Invoked(args []string) bool {
 }
 
 type request struct {
-	Type string `json:"type"`
-	Link string `json:"link"`
-	Game string `json:"game"`
+	Type  string `json:"type"`
+	Link  string `json:"link"`
+	Game  string `json:"game"`
+	ModID int    `json:"modId"`
 }
 
 type reply struct {
-	OK     bool   `json:"ok,omitempty"`
-	Error  string `json:"error,omitempty"`
-	ModIDs *[]int `json:"modIds,omitempty"`
+	OK     bool           `json:"ok,omitempty"`
+	Error  string         `json:"error,omitempty"`
+	ModIDs *[]int         `json:"modIds,omitempty"`
+	Open   *modInProfile  `json:"open,omitempty"`
+	Others []modInProfile `json:"others,omitempty"`
+}
+
+type modInProfile struct {
+	Profile string  `json:"profile"`
+	Version *string `json:"version"`
 }
 
 // Serve answers messages from r until it closes, handing each message's link to open.
 func Serve(r io.Reader, w io.Writer, open func(link string) error) error {
-	return serve(r, w, open, activeNexusModIDs)
+	return serve(r, w, open, activeNexusModIDs, nexusModProfiles)
 }
 
-func serve(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int) error {
+func serve(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, mod func(game string, modID int) (modInProfile, []modInProfile)) error {
 	for {
 		var n uint32
 		if err := binary.Read(r, binary.NativeEndian, &n); err != nil {
@@ -85,6 +93,9 @@ func serve(r io.Reader, w io.Writer, open func(link string) error, installed fun
 				}
 			}
 			rep = reply{ModIDs: &ids}
+		case "mod":
+			openProfile, others := mod(req.Game, req.ModID)
+			rep = reply{Open: &openProfile, Others: others}
 		case "":
 			if err := open(req.Link); err != nil {
 				rep = reply{Error: err.Error()}
@@ -158,6 +169,81 @@ func activeNexusModIDs(domain string) []int {
 		}
 	}
 	return ids
+}
+
+func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
+	var openProfile modInProfile
+	var others []modInProfile
+	if modID < 1 {
+		return openProfile, nil
+	}
+	info, ok := components.BundledGameByNexusDomain(domain)
+	if !ok {
+		return openProfile, nil
+	}
+	dataDir, err := datadir.Dir()
+	if err != nil || !mortarRunning(dataDir) {
+		return openProfile, nil
+	}
+	store, err := settings.Open()
+	if err != nil {
+		return openProfile, nil
+	}
+	openID := store.Get().LastProfile[info.ID]
+	root, err := os.OpenRoot(dataDir)
+	if err != nil {
+		return openProfile, nil
+	}
+	defer func() { _ = root.Close() }()
+	profiles, err := root.Open(filepath.Join("profiles", info.ID))
+	if err != nil {
+		return openProfile, nil
+	}
+	entries, err := profiles.ReadDir(-1)
+	_ = profiles.Close()
+	if err != nil {
+		return openProfile, nil
+	}
+	for _, dir := range entries {
+		if !dir.IsDir() || strings.HasPrefix(dir.Name(), ".") {
+			continue
+		}
+		var profile struct {
+			Name    string `json:"name"`
+			Hidden  bool   `json:"hidden"`
+			Entries []struct {
+				Source struct {
+					Kind  string `json:"kind"`
+					ModID int    `json:"modId"`
+				} `json:"source"`
+				Mods []struct {
+					Version string `json:"version"`
+				} `json:"mods"`
+			} `json:"entries"`
+		}
+		data, err := root.ReadFile(filepath.Join("profiles", info.ID, dir.Name(), "profile.json"))
+		if err != nil || json.Unmarshal(data, &profile) != nil || profile.Hidden {
+			continue
+		}
+		var version *string
+		for _, entry := range profile.Entries {
+			if entry.Source.Kind != "nexus" || entry.Source.ModID != modID {
+				continue
+			}
+			if len(entry.Mods) > 0 && entry.Mods[0].Version != "" {
+				v := entry.Mods[0].Version
+				version = &v
+			}
+			break
+		}
+		found := modInProfile{Profile: profile.Name, Version: version}
+		if dir.Name() == openID {
+			openProfile = found
+		} else {
+			others = append(others, found)
+		}
+	}
+	return openProfile, others
 }
 
 func mortarRunning(dataDir string) bool {

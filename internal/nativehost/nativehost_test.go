@@ -64,7 +64,7 @@ func TestServeAnswersInstalledMods(t *testing.T) {
 			t.Fatalf("installed game = %q", game)
 		}
 		return []int{123, 456}
-	})
+	}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,6 +78,36 @@ func TestServeAnswersInstalledMods(t *testing.T) {
 	}
 	if got.ModIDs == nil || len(*got.ModIDs) != 2 || (*got.ModIDs)[0] != 123 || (*got.ModIDs)[1] != 456 {
 		t.Fatalf("installed reply = %+v", got.ModIDs)
+	}
+}
+
+func TestServeAnswersModProfiles(t *testing.T) {
+	in := frame(t, request{Type: "mod", Game: "stardewvalley", ModID: 123})
+	var out bytes.Buffer
+	err := serve(bytes.NewReader(in), &out, func(string) error {
+		t.Fatal("mod request opened a link")
+		return nil
+	}, nil, func(game string, modID int) (modInProfile, []modInProfile) {
+		if game != "stardewvalley" || modID != 123 {
+			t.Fatalf("mod request = %q/%d", game, modID)
+		}
+		version := "1.2.3"
+		return modInProfile{Profile: "Default", Version: &version}, []modInProfile{{Profile: "Co-op", Version: nil}}
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var n uint32
+	if err := binary.Read(&out, binary.NativeEndian, &n); err != nil {
+		t.Fatal(err)
+	}
+	var got reply
+	if err := json.Unmarshal(out.Next(int(n)), &got); err != nil {
+		t.Fatal(err)
+	}
+	if got.Open == nil || got.Open.Profile != "Default" || got.Open.Version == nil || *got.Open.Version != "1.2.3" ||
+		len(got.Others) != 1 || got.Others[0].Profile != "Co-op" || got.Others[0].Version != nil {
+		t.Fatalf("mod reply = %+v", got)
 	}
 }
 
