@@ -2,12 +2,12 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Menu, MenuItem } from '@mui/material'
 import { ChevronDown, History } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Outcome } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import type { Run } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useOutcomeLabel } from './outcome.ts'
 import { useConsole } from './store.ts'
 
 export function RunsPicker({ game }: { game: string }) {
@@ -41,15 +41,7 @@ export function RunsPicker({ game }: { game: string }) {
       live = false
     }
   }, [game, profile, crashId])
-  const outcome = (o: string) => {
-    if (o === Outcome.OutcomeCrashed) {
-      return t`Crashed`
-    }
-    if (o === Outcome.OutcomeFailed) {
-      return t`Failed`
-    }
-    return t`Ran`
-  }
+  const outcome = useOutcomeLabel()
   const label = (r: Run) => {
     const when = r.started ? formatWhen(r.started, { withTime: true }) : r.id
     return `${when} · ${outcome(r.outcome)}`

@@ -327,7 +327,7 @@ function ModsBody({
     return (
       <EmptyState
         icon={<SearchX />}
-        title={t`No mods match your search.`}
+        title={t`No mods match your search`}
         action={<Button onClick={onClear}>{t`Clear search`}</Button>}
       >
         {t`Try a different search.`}

@@ -10,6 +10,7 @@ import { SearchRuns } from '../../bindings/github.com/Rethunk-AI/mortar/internal
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { useOutcomeLabel } from './outcome.ts'
 import { useConsole } from './store.ts'
 
 const SEARCH_DEBOUNCE_MS = 250
@@ -40,6 +41,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
 
 export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLingui()
+  const outcome = useOutcomeLabel()
   const shown = useConsole((s) => s.shown)
   const viewRun = useConsole((s) => s.viewRun)
   const jumpTo = useConsole((s) => s.jumpTo)
@@ -97,7 +99,11 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
         />
         {loading ? <Typography color="text.secondary">{t`Searching…`}</Typography> : null}
         {!loading && groups.size === 0 ? (
-          <EmptyState icon={<FileSearch />} title={t`No matches`} compact={true}>
+          <EmptyState
+            icon={<FileSearch />}
+            title={query.trim() ? t`No matches` : t`Search every run`}
+            compact={true}
+          >
             {query.trim()
               ? t`No stored run contains that text.`
               : t`Enter text to search stored runs.`}
@@ -110,7 +116,9 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
                 <Typography
                   sx={{ fontSize: 13, fontWeight: 700, color: 'text.secondary', mb: 0.5 }}
                 >
-                  {t`${formatWhen(hits[0].started, { withTime: true })} · ${hits[0].outcome}`}
+                  {hits[0]
+                    ? t`${formatWhen(hits[0].started, { withTime: true })} · ${outcome(hits[0].outcome)}`
+                    : null}
                 </Typography>
                 {hits.map((hit) => (
                   <Box
