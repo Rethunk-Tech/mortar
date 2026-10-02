@@ -15,9 +15,11 @@ import { useShownEntries, useVisible } from './logHooks.ts'
 import { SearchRunsDialog } from './SearchRunsDialog.tsx'
 import { logFileName, saveLogText } from './save.ts'
 import { useConsole } from './store.ts'
+import { useConsoleEmpty } from './useConsoleEmpty.ts'
 
-export function LogActions() {
+export function LogActions({ game }: { game: string }) {
   const { t } = useLingui()
+  const empty = useConsoleEmpty(game)
   const rows = useVisible()
   const entries = useShownEntries()
   const shown = useConsole((s) => s.shown)
@@ -30,6 +32,9 @@ export function LogActions() {
   const [searching, setSearching] = useState(false)
   const firstErr = firstError(rows)
   const canSave = entries.length > 0 || cleared > 0
+  if (empty) {
+    return null
+  }
   return (
     <Box sx={{ display: 'flex', gap: 0.75 }}>
       <IconAction

@@ -6,6 +6,7 @@ import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { EmptyState } from './EmptyState.tsx'
+import { reportBug } from './reportBug.ts'
 
 function Fallback({ error, stack, onRetry }: { error: Error; stack: string; onRetry: () => void }) {
   const { t } = useLingui()
@@ -25,6 +26,9 @@ function Fallback({ error, stack, onRetry }: { error: Error; stack: string; onRe
           </Button>
           <Button startIcon={<Copy size={16} />} onClick={copy}>
             {t`Copy details`}
+          </Button>
+          <Button variant="text" onClick={() => reportBug('')}>
+            {t`Report a bug`}
           </Button>
         </Box>
       }
