@@ -53,6 +53,7 @@ import {
   RemoveDialog,
   UpdateBadge,
 } from './parts.tsx'
+import { addedWithin, WEEK_MS } from './recent.ts'
 import { SelectionBar } from './SelectionBar.tsx'
 import { ModSidebar } from './Sidebar.tsx'
 import { useSelection } from './selection.ts'
@@ -444,7 +445,8 @@ export function ModsTab({ profile }: { profile: Profile }) {
       (filter === 'update' && Boolean(updateFor(updates, m, profile))) ||
       (filter === 'problem' && modStatusProblem(problems, m)) ||
       (filter === 'pinned' && Boolean(entry?.pinned)) ||
-      (filter === 'local' && entry?.source.kind === 'local')
+      (filter === 'local' && entry?.source.kind === 'local') ||
+      (filter === 'recent' && addedWithin(entry?.added, WEEK_MS, Date.now()))
     )
   })
   return (

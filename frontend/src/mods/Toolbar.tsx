@@ -60,6 +60,7 @@ const FILTERS: readonly {
   { id: 'problem', label: (i18n) => i18n._(msg`Has problems`) },
   { id: 'pinned', label: (i18n) => i18n._(msg`Pinned`) },
   { id: 'local', label: (i18n) => i18n._(msg`Local`) },
+  { id: 'recent', label: (i18n) => i18n._(msg`Added this week`) },
 ]
 
 // At the minimum size the toolbar buttons fold into icon buttons.
@@ -417,4 +418,4 @@ export function EmptyMods({ profileId }: { profileId: string }) {
   )
 }
 
-export type ModFilter = 'all' | 'disabled' | 'update' | 'problem' | 'pinned' | 'local'
+export type ModFilter = 'all' | 'disabled' | 'update' | 'problem' | 'pinned' | 'local' | 'recent'
