@@ -1,0 +1,765 @@
+// Package cli is Mortar's command line: `mortar <verb> ...` asks the running app over internal/control and prints
+// the answer as a table, or as JSON with --json. It never opens a window or touches the data folder itself.
+package cli
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"strings"
+	"text/tabwriter"
+	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/control"
+	"github.com/Rethunk-AI/mortar/internal/launchsvc"
+	"github.com/Rethunk-AI/mortar/internal/problems"
+	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-AI/mortar/internal/queue"
+	"github.com/Rethunk-AI/mortar/internal/savessvc"
+)
+
+const (
+	readTimeout    = 2 * time.Minute
+	installTimeout = 10 * time.Minute
+	launchTimeout  = 4 * time.Minute
+)
+
+// verbs are the first words that make an invocation a command-line call rather than a window launch.
+var verbs = map[string]bool{
+	"games": true, "profiles": true, "profile": true, "mods": true, "mod": true, "install": true,
+	"conflicts": true, "problems": true, "updates": true, "share": true, "export": true, "open": true,
+	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
+	"doctor": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
+}
+
+// Is reports whether args (without the program name) are a command-line call: a known verb, or a bare word that
+// cannot be the link or file path a window launch takes, which then fails as an unknown command.
+func Is(args []string) bool {
+	if len(args) == 0 {
+		return false
+	}
+	a := args[0]
+	return verbs[a] || (a != "" && !strings.HasPrefix(a, "-") && !strings.ContainsAny(a, `/\:.`))
+}
+
+// caller sends one request to the running app; tests replace it.
+type caller func(method string, p control.Params, out any, timeout time.Duration) error
+
+type cmd struct {
+	version string
+	call    caller
+	out     io.Writer
+	errOut  io.Writer
+	json    bool
+	all     bool
+	wait    bool
+	run     string
+	args    []string
+}
+
+// usageError is a malformed command line: exit 2 with the usage text.
+type usageError struct{ msg string }
+
+func (e usageError) Error() string { return e.msg }
+
+// Run executes one command and returns the process exit code.
+func Run(version string, args []string, stdout, stderr io.Writer) int {
+	attachConsole()
+	return run(version, control.Call, args, stdout, stderr)
+}
+
+func run(version string, call caller, args []string, stdout, stderr io.Writer) int {
+	c := &cmd{version: version, call: call, out: stdout, errOut: stderr}
+	if err := c.parse(args); err != nil {
+		return c.fail(err)
+	}
+	if err := c.dispatch(); err != nil {
+		return c.fail(err)
+	}
+	return 0
+}
+
+func (c *cmd) fail(err error) int {
+	if u, ok := errors.AsType[usageError](err); ok {
+		fmt.Fprintln(c.errOut, "mortar:", u.msg)
+		fmt.Fprint(c.errOut, usage)
+		return 2
+	}
+	fmt.Fprintln(c.errOut, "mortar:", err)
+	return 1
+}
+
+func (c *cmd) parse(args []string) error {
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		switch {
+		case a == "--json":
+			c.json = true
+		case a == "--all":
+			c.all = true
+		case a == "--wait":
+			c.wait = true
+		case a == "--run":
+			if i+1 >= len(args) {
+				return usageError{"--run needs a run id"}
+			}
+			i++
+			c.run = args[i]
+		case strings.HasPrefix(a, "--run="):
+			c.run = strings.TrimPrefix(a, "--run=")
+		case a == "--help" || a == "-h":
+			c.args = append(c.args, "help")
+		case strings.HasPrefix(a, "--"):
+			return usageError{"unknown flag " + a}
+		default:
+			c.args = append(c.args, a)
+		}
+	}
+	return nil
+}
+
+// need returns the n positional arguments after the verb words, naming them in the error.
+func (c *cmd) need(skip int, names ...string) ([]string, error) {
+	got := c.args[skip:]
+	if len(got) < len(names) {
+		return nil, usageError{fmt.Sprintf("%s needs %s", strings.Join(c.args[:skip], " "), strings.Join(names[len(got):], ", "))}
+	}
+	return got, nil
+}
+
+func (c *cmd) ask(method string, p control.Params, out any, timeout time.Duration) error {
+	return c.call(method, p, out, timeout)
+}
+
+// emit prints v as JSON with --json, otherwise calls human.
+func (c *cmd) emit(v any, human func()) error {
+	if c.json {
+		enc := json.NewEncoder(c.out)
+		enc.SetIndent("", "  ")
+		return enc.Encode(v)
+	}
+	human()
+	return nil
+}
+
+func (c *cmd) table(header string, rows [][]string) {
+	tw := tabwriter.NewWriter(c.out, 0, 0, 2, ' ', 0)
+	fmt.Fprintln(tw, header)
+	for _, r := range rows {
+		fmt.Fprintln(tw, strings.Join(r, "\t"))
+	}
+	_ = tw.Flush()
+}
+
+func (c *cmd) dispatch() error {
+	verb := c.args[0]
+	if !verbs[verb] {
+		return usageError{"unknown command " + verb}
+	}
+	switch verb {
+	case "help", "--help", "-h":
+		fmt.Fprint(c.out, usage)
+		return nil
+	case "version":
+		return c.emit(map[string]string{"version": c.version}, func() { fmt.Fprintln(c.out, "mortar", c.version) })
+	case "completion":
+		a, err := c.need(1, "a shell (bash, zsh or fish)")
+		if err != nil {
+			return err
+		}
+		return completion(c.out, a[0])
+	case "__complete":
+		return c.complete(c.args[1:])
+	case "open":
+		a, err := c.need(1, "a share link or .mortar file")
+		if err != nil {
+			return err
+		}
+		return open(a[0])
+	case "games":
+		return c.games()
+	case "doctor":
+		return c.doctor()
+	case "queue":
+		return c.queue()
+	case "profiles":
+		a, err := c.need(1, "a game")
+		if err != nil {
+			return err
+		}
+		return c.profiles(a[0])
+	case "profile":
+		return c.profile()
+	case "status", "stop":
+		a, err := c.need(1, "a game")
+		if err != nil {
+			return err
+		}
+		return c.status(verb, a[0])
+	case "mods":
+		if len(c.args) > 1 {
+			switch c.args[1] {
+			case "enable", "disable", "remove", "pin", "unpin":
+				return c.modsChange(c.args[1])
+			}
+		}
+	}
+	a, err := c.need(1, "a game", "a profile")
+	if err != nil {
+		return err
+	}
+	p := control.Params{Game: a[0], Profile: a[1], All: c.all, Run: c.run}
+	switch verb {
+	case "mods":
+		return c.mods(p)
+	case "mod":
+		if len(a) < 3 {
+			return usageError{"mod needs a UniqueID"}
+		}
+		p.UniqueIDs = a[2:3]
+		return c.mod(p)
+	case "install":
+		if len(a) < 3 {
+			return usageError{"install needs an archive path"}
+		}
+		p.Path = absPath(a[2])
+		return c.install(p)
+	case "export":
+		if len(a) < 3 {
+			return usageError{"export needs the .mortar file to write"}
+		}
+		p.Path = absPath(a[2])
+		return c.export(p)
+	case "conflicts":
+		return c.conflicts(p)
+	case "problems":
+		return c.problems(p)
+	case "updates":
+		return c.updates(p)
+	case "share":
+		return c.share(p)
+	case "runs":
+		return c.runs(p)
+	case "logs":
+		return c.logs(p)
+	case "saves":
+		return c.saves(p)
+	case "launch":
+		return c.launch(p)
+	}
+	return usageError{"unknown command " + verb}
+}
+
+func absPath(p string) string {
+	if a, err := absolute(p); err == nil {
+		return a
+	}
+	return p
+}
+
+// open hands a share link or .mortar file to the app the way a browser or file manager would: a second instance
+// forwards it to the running window, or starts Mortar when none runs.
+func open(target string) error {
+	exe, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	if !strings.Contains(target, "://") {
+		target = absPath(target)
+	}
+	proc, err := os.StartProcess(exe, []string{exe, target}, &os.ProcAttr{Files: []*os.File{nil, nil, nil}})
+	if err != nil {
+		return err
+	}
+	return proc.Release()
+}
+
+// missingName names a missing requirement by its page when known, with the minimum version it needs.
+func missingName(m problems.Missing) string {
+	name := m.UniqueID
+	if m.Where != nil && m.Where.PageName != "" {
+		name = m.Where.PageName + " (" + m.UniqueID + ")"
+	}
+	if m.MinimumVersion != "" {
+		name += " " + m.MinimumVersion + "+"
+	}
+	if m.Optional {
+		name += ", optional"
+	}
+	return name
+}
+
+func yes(b bool) string {
+	if b {
+		return "yes"
+	}
+	return "no"
+}
+
+func (c *cmd) games() error {
+	var rows []control.GameRow
+	if err := c.ask("games", control.Params{}, &rows, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(rows, func() {
+		t := [][]string{}
+		for _, g := range rows {
+			t = append(t, []string{g.ID, g.Name, yes(g.Available), yes(g.Configured), fmt.Sprint(g.Profiles), g.Store, g.InstallDir})
+		}
+		c.table("ID\tNAME\tSUPPORTED\tCONFIGURED\tPROFILES\tSTORE\tFOLDER", t)
+	})
+}
+
+func (c *cmd) profiles(gameID string) error {
+	var list []profile.Profile
+	if err := c.ask("profiles", control.Params{Game: gameID}, &list, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(list, func() {
+		t := [][]string{}
+		for _, p := range list {
+			on, total := 0, 0
+			for _, e := range p.Entries {
+				total += len(e.Mods)
+				on += len(e.Mods) - len(e.Disabled)
+			}
+			t = append(t, []string{p.ID, p.Name, fmt.Sprintf("%d/%d", on, total), p.Updated.Local().Format("2006-01-02 15:04")})
+		}
+		c.table("ID\tNAME\tMODS ON\tUPDATED", t)
+	})
+}
+
+func (c *cmd) profile() error {
+	if len(c.args) < 2 {
+		return usageError{"profile needs create, rename, copy or delete"}
+	}
+	sub := c.args[1]
+	var p profile.Profile
+	switch sub {
+	case "create":
+		a, err := c.need(2, "a game", "a name")
+		if err != nil {
+			return err
+		}
+		if err := c.ask("profile.create", control.Params{Game: a[0], Name: strings.Join(a[1:], " ")}, &p, readTimeout); err != nil {
+			return err
+		}
+	case "rename":
+		a, err := c.need(2, "a game", "a profile", "a new name")
+		if err != nil {
+			return err
+		}
+		if err := c.ask("profile.rename", control.Params{Game: a[0], Profile: a[1], Name: strings.Join(a[2:], " ")}, &p, readTimeout); err != nil {
+			return err
+		}
+	case "copy":
+		a, err := c.need(2, "a game", "a profile")
+		if err != nil {
+			return err
+		}
+		if err := c.ask("profile.copy", control.Params{Game: a[0], Profile: a[1], Name: strings.Join(a[2:], " ")}, &p, readTimeout); err != nil {
+			return err
+		}
+	case "delete":
+		a, err := c.need(2, "a game", "a profile")
+		if err != nil {
+			return err
+		}
+		var r control.Removed
+		if err := c.ask("profile.delete", control.Params{Game: a[0], Profile: a[1]}, &r, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(r, func() { fmt.Fprintf(c.out, "Moved %s to Mortar's trash.\n", strings.Join(r.Mods, ", ")) })
+	default:
+		return usageError{"unknown profile command " + sub}
+	}
+	return c.emit(p, func() { fmt.Fprintf(c.out, "%s\t%s\n", p.ID, p.Name) })
+}
+
+func (c *cmd) mods(p control.Params) error {
+	var rows []control.ModRow
+	if err := c.ask("mods", p, &rows, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(rows, func() { c.modTable(rows) })
+}
+
+func (c *cmd) modTable(rows []control.ModRow) {
+	t := [][]string{}
+	for _, m := range rows {
+		state := "on"
+		if !m.Enabled {
+			state = "off"
+		}
+		if m.Pinned {
+			state += ", pinned"
+		}
+		t = append(t, []string{m.UniqueID, m.Name, m.Version, state, m.Source})
+	}
+	c.table("UNIQUEID\tNAME\tVERSION\tSTATE\tSOURCE", t)
+}
+
+func (c *cmd) modsChange(sub string) error {
+	a, err := c.need(2, "a game", "a profile", "one or more UniqueIDs")
+	if err != nil {
+		return err
+	}
+	p := control.Params{Game: a[0], Profile: a[1], UniqueIDs: a[2:]}
+	switch sub {
+	case "enable", "disable":
+		var res profile.EnableResult
+		if err := c.ask("mods."+sub, p, &res, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(res, func() {
+			fmt.Fprintf(c.out, "%sd %s.\n", strings.ToUpper(sub[:1])+sub[1:], strings.Join(p.UniqueIDs, ", "))
+			if len(res.AlsoEnabled) > 0 {
+				fmt.Fprintf(c.out, "Also enabled, as required: %s.\n", strings.Join(res.AlsoEnabled, ", "))
+			}
+		})
+	case "remove":
+		var r control.Removed
+		if err := c.ask("mods.remove", p, &r, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(r, func() { fmt.Fprintf(c.out, "Removed %s.\n", strings.Join(r.Mods, ", ")) })
+	}
+	var rows []control.ModRow
+	if err := c.ask("mods."+sub, p, &rows, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(rows, func() { c.modTable(rows) })
+}
+
+func (c *cmd) mod(p control.Params) error {
+	var m control.ModInfo
+	if err := c.ask("mod", p, &m, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(m, func() {
+		state := "on"
+		if !m.Enabled {
+			state = "off"
+		}
+		fmt.Fprintf(c.out, "%s (%s) %s by %s, %s, from %s\n", m.Name, m.UniqueID, m.Version, m.Author, state, m.Source)
+		list := func(label string, xs []string) {
+			if len(xs) > 0 {
+				fmt.Fprintf(c.out, "%s: %s\n", label, strings.Join(xs, ", "))
+			}
+		}
+		list("Needs", m.Needs)
+		list("Optional", m.Optional)
+		list("Needed by", m.Dependents)
+		for _, x := range m.Missing {
+			fmt.Fprintf(c.out, "Missing: %s\n", missingName(x))
+		}
+		for _, x := range m.Conflicts {
+			fmt.Fprintf(c.out, "Conflict: %s %s with %s\n", x.Kind, x.Target, strings.Join(x.Names, ", "))
+		}
+		for _, x := range m.Settings {
+			fmt.Fprintf(c.out, "Setting: %s is %s, suggested %s\n", x.Field, x.Current, strings.Join(x.Suggested, " or "))
+		}
+	})
+}
+
+func (c *cmd) install(p control.Params) error {
+	var res control.InstallOutcome
+	if err := c.ask("install", p, &res, installTimeout); err != nil {
+		return err
+	}
+	if res.Needs != "" {
+		if c.json {
+			_ = c.emit(res, func() {})
+		}
+		what := "its installer options"
+		if res.Needs == "folder" {
+			what = "which folder is the mod"
+		}
+		return fmt.Errorf("this archive needs you to choose %s: install it from Mortar's window", what)
+	}
+	return c.emit(res, func() {
+		verb := "Installed"
+		if res.Updated {
+			verb = "Updated"
+		}
+		fmt.Fprintf(c.out, "%s %s.\n", verb, strings.Join(res.Added, ", "))
+	})
+}
+
+func (c *cmd) conflicts(p control.Params) error {
+	var list []problems.AssetConflict
+	if err := c.ask("conflicts", p, &list, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(list, func() {
+		if len(list) == 0 {
+			fmt.Fprintln(c.out, "No conflicts.")
+			return
+		}
+		t := [][]string{}
+		for _, x := range list {
+			kind := x.Kind
+			if x.Cosmetic {
+				kind += " (cosmetic)"
+			}
+			winner := x.WinnerName
+			if winner == "" {
+				winner = "unclear"
+			}
+			fixes := []string{}
+			for _, f := range x.Fixes {
+				fixes = append(fixes, fmt.Sprintf("%s %s=%s", f.Name, f.Field, f.Value))
+			}
+			t = append(t, []string{kind, x.Target, strings.Join(x.Names, ", "), winner, strings.Join(fixes, "; ")})
+		}
+		c.table("KIND\tTARGET\tMODS\tWINNER\tFIXES", t)
+	})
+}
+
+func (c *cmd) problems(p control.Params) error {
+	var r problems.Result
+	if err := c.ask("problems", p, &r, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(r, func() {
+		conflicts := 0
+		for _, x := range r.AssetConflicts {
+			if !x.Cosmetic {
+				conflicts++
+			}
+		}
+		fmt.Fprintf(c.out, "%d problems: %d missing, %d duplicates, %d broken, %d conflicts, %d settings, %d last-run errors, %d outside edits\n",
+			r.Count(), len(r.Missing), len(r.Duplicates), len(r.Broken), conflicts, len(r.Settings), len(r.RunErrors), len(r.Drift))
+		for _, x := range r.Missing {
+			fmt.Fprintf(c.out, "missing    %s needs %s\n", x.DependentName, missingName(x))
+		}
+		for _, x := range r.Duplicates {
+			fmt.Fprintf(c.out, "duplicate  %s (%s)\n", x.Name, x.UniqueID)
+		}
+		for _, x := range r.Broken {
+			fmt.Fprintf(c.out, "broken     %s: %s %s\n", x.Name, x.Status, x.Summary)
+		}
+		for _, x := range r.AssetConflicts {
+			if !x.Cosmetic {
+				fmt.Fprintf(c.out, "conflict   %s %s: %s\n", x.Kind, x.Target, strings.Join(x.Names, ", "))
+			}
+		}
+		for _, x := range r.Settings {
+			fmt.Fprintf(c.out, "setting    %s %s=%s for %s\n", x.Name, x.Field, x.Current, strings.Join(x.ForNames, ", "))
+		}
+		for _, x := range r.RunErrors {
+			fmt.Fprintf(c.out, "run error  %s (%s)\n", x.Name, x.UniqueID)
+		}
+		for _, x := range r.Drift {
+			fmt.Fprintf(c.out, "edited     %s %s\n", x.Kind, x.Folder)
+		}
+	})
+}
+
+func (c *cmd) updates(p control.Params) error {
+	var r problems.UpdatesResult
+	if err := c.ask("updates", p, &r, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(r, func() {
+		if len(r.Updates) == 0 {
+			fmt.Fprintln(c.out, "Everything is up to date.")
+			return
+		}
+		t := [][]string{}
+		for _, u := range r.Updates {
+			t = append(t, []string{u.UniqueID, u.Name, u.Installed, u.Version, u.URL})
+		}
+		c.table("UNIQUEID\tNAME\tINSTALLED\tNEWEST\tPAGE", t)
+	})
+}
+
+func (c *cmd) share(p control.Params) error {
+	var l control.ShareLink
+	if err := c.ask("share", p, &l, readTimeout); err != nil {
+		return err
+	}
+	if l.TooLarge && !c.json {
+		return errors.New("this profile is too large for a link; use mortar export to write a .mortar file")
+	}
+	return c.emit(l, func() { fmt.Fprintln(c.out, l.Web) })
+}
+
+func (c *cmd) export(p control.Params) error {
+	var e control.Exported
+	if err := c.ask("export", p, &e, installTimeout); err != nil {
+		return err
+	}
+	return c.emit(e, func() {
+		fmt.Fprintf(c.out, "Wrote %s.\n", e.Path)
+		if n := len(e.Skipped); n > 0 {
+			shown := e.Skipped[:min(n, 5)]
+			more := ""
+			if n > len(shown) {
+				more = fmt.Sprintf(" and %d more (--json lists all)", n-len(shown))
+			}
+			fmt.Fprintf(c.out, "Left out %d settings files: %s%s\n", n, strings.Join(shown, ", "), more)
+		}
+	})
+}
+
+func (c *cmd) runs(p control.Params) error {
+	var list []launchsvc.Run
+	if err := c.ask("runs", p, &list, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(list, func() {
+		t := [][]string{}
+		for _, r := range list {
+			t = append(t, []string{
+				r.ID, r.Started, (time.Duration(r.DurationMs) * time.Millisecond).Round(time.Second).String(),
+				string(r.Outcome), fmt.Sprint(r.Errors), fmt.Sprint(r.Warnings), r.SMAPIVersion, r.GameVersion,
+			})
+		}
+		c.table("ID\tSTARTED\tDURATION\tOUTCOME\tERRORS\tWARNINGS\tSMAPI\tGAME", t)
+	})
+}
+
+func (c *cmd) logs(p control.Params) error {
+	var l control.RunLog
+	if err := c.ask("logs", p, &l, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(l, func() { fmt.Fprint(c.out, l.Text) })
+}
+
+func (c *cmd) saves(p control.Params) error {
+	var list []savessvc.Fit
+	if err := c.ask("saves", p, &list, readTimeout); err != nil {
+		return err
+	}
+	seasons := []string{"Spring", "Summer", "Fall", "Winter"}
+	return c.emit(list, func() {
+		t := [][]string{}
+		for _, s := range list {
+			season := fmt.Sprint(s.Season)
+			if s.Season >= 0 && s.Season < len(seasons) {
+				season = seasons[s.Season]
+			}
+			missing := []string{}
+			for _, m := range s.Missing {
+				missing = append(missing, m.Name)
+			}
+			t = append(t, []string{s.Folder, s.Farmer, s.Farm, fmt.Sprintf("%s %d, Year %d", season, s.Day, s.Year), strings.Join(missing, ", ")})
+		}
+		c.table("FOLDER\tFARMER\tFARM\tDATE\tMISSING MODS", t)
+	})
+}
+
+func (c *cmd) launch(p control.Params) error {
+	var st launchsvc.Status
+	if err := c.ask("launch", p, &st, launchTimeout); err != nil {
+		return err
+	}
+	if !c.wait {
+		return c.emit(st, func() { fmt.Fprintf(c.out, "%s is %s.\n", p.Game, st.State) })
+	}
+	if !c.json {
+		fmt.Fprintf(c.out, "%s is %s; waiting for it to close.\n", p.Game, st.State)
+	}
+	for st.State == launchsvc.Running || st.State == launchsvc.Launching {
+		time.Sleep(2 * time.Second)
+		if err := c.ask("status", control.Params{Game: p.Game}, &st, readTimeout); err != nil {
+			return err
+		}
+	}
+	return c.runs(control.Params{Game: p.Game, Profile: p.Profile})
+}
+
+func (c *cmd) status(verb, gameID string) error {
+	var st launchsvc.Status
+	if err := c.ask(verb, control.Params{Game: gameID}, &st, launchTimeout); err != nil {
+		return err
+	}
+	return c.emit(st, func() {
+		line := fmt.Sprintf("%s is %s", gameID, st.State)
+		if st.Profile != "" {
+			line += " (profile " + st.Profile + ")"
+		}
+		fmt.Fprintln(c.out, line+".")
+	})
+}
+
+func (c *cmd) queue() error {
+	var st queue.State
+	if err := c.ask("queue", control.Params{}, &st, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(st, func() {
+		if len(st.Items) == 0 {
+			fmt.Fprintln(c.out, "The download queue is empty.")
+			return
+		}
+		t := [][]string{}
+		for _, it := range st.Items {
+			t = append(t, []string{it.ID, it.Name, it.Version, it.State, it.Profile, it.Error})
+		}
+		c.table("ID\tNAME\tVERSION\tSTATE\tPROFILE\tERROR", t)
+		if st.Paused {
+			fmt.Fprintln(c.out, "Paused.")
+		}
+	})
+}
+
+func (c *cmd) doctor() error {
+	var d control.Doctor
+	if err := c.ask("doctor", control.Params{}, &d, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(d, func() {
+		fmt.Fprintf(c.out, "Mortar %s (this command %s)\nData folder: %s\n", d.Version, c.version, d.DataDir)
+		for _, g := range d.Games {
+			env := d.Environment[g.ID]
+			fmt.Fprintf(c.out, "%s: installed %s, folder %q, store %s, game %s, SMAPI %s, %s\n",
+				g.Name, yes(g.Installed), g.InstallDir, g.Store, env.GameVersion, env.APIVersion, env.Platform)
+		}
+		handler := "off"
+		if d.NxmHandled {
+			handler = "Mortar"
+			if d.NxmPrevious != "" {
+				handler += " (other games go to " + d.NxmPrevious + ")"
+			}
+		}
+		fmt.Fprintf(c.out, "nxm:// links: %s\n", handler)
+	})
+}
+
+const usage = `Usage: mortar <command> [arguments] [--json]
+
+Mortar must be running; these commands ask the open app. <profile> is an id or a name.
+
+  games                                   supported games, whether each is configured
+  profiles <game>                         profiles of a game
+  profile create <game> <name>            new empty profile
+  profile rename <game> <profile> <name>
+  profile copy <game> <profile> [name]
+  profile delete <game> <profile>         moves it to Mortar's trash
+  mods <game> <profile>                   mods with version, state and source
+  mods enable|disable <game> <profile> <UniqueID>...
+  mods pin|unpin <game> <profile> <UniqueID>...
+  mods remove <game> <profile> <UniqueID>...   removes each mod's whole download
+  mod <game> <profile> <UniqueID>         one mod: dependencies, dependents, conflicts, settings
+  install <game> <profile> <archive>      install a local archive
+  conflicts <game> <profile> [--all]      asset conflicts (--all includes cosmetic ones)
+  problems <game> <profile>               everything the Problems tab lists
+  updates <game> <profile>                mods with a newer version
+  saves <game> <profile>                  saves and the mods each one lacks
+  share <game> <profile>                  share link
+  export <game> <profile> <file.mortar>   write a .mortar file
+  open <link|file>                        hand a share link or .mortar file to Mortar
+  launch <game> <profile> [--wait]        play; --wait waits for the game to close
+  status <game> | stop <game>
+  runs <game> <profile>                   recent launches
+  logs <game> <profile> [--run <id>]      a stored SMAPI log (latest by default)
+  queue                                   the download queue
+  doctor                                  versions, folders and link handling
+  completion bash|zsh|fish                shell completion script
+  version | help
+`

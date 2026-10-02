@@ -1,0 +1,117 @@
+package cli
+
+import (
+	"bytes"
+	"encoding/json"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/control"
+	"github.com/Rethunk-AI/mortar/internal/profile"
+)
+
+type call struct {
+	method string
+	params control.Params
+}
+
+// fake answers each method with a canned JSON result and records what was asked.
+func fake(results map[string]any, calls *[]call) caller {
+	return func(method string, p control.Params, out any, _ time.Duration) error {
+		*calls = append(*calls, call{method, p})
+		b, err := json.Marshal(results[method])
+		if err != nil {
+			return err
+		}
+		return json.Unmarshal(b, out)
+	}
+}
+
+type outcome struct {
+	code        int
+	out, errOut string
+	calls       []call
+}
+
+func invoke(t *testing.T, results map[string]any, args ...string) outcome {
+	t.Helper()
+	var o, e bytes.Buffer
+	var calls []call
+	code := run("9.9.9", fake(results, &calls), args, &o, &e)
+	return outcome{code, o.String(), e.String(), calls}
+}
+
+func TestUsageErrorsExitTwo(t *testing.T) {
+	for _, args := range [][]string{{"mods"}, {"profiles"}, {"games", "--bogus"}, {"profile", "rename", "stardew", "p"}, {"logs", "stardew", "p", "--run"}} {
+		r := invoke(t, nil, args...)
+		if r.code != 2 || !strings.Contains(r.errOut, "Usage:") || len(r.calls) != 0 {
+			t.Errorf("%v: code %d, calls %v, stderr %q", args, r.code, r.calls, r.errOut)
+		}
+	}
+	if r := invoke(t, nil, "help"); r.code != 0 || !strings.Contains(r.out, "Usage:") {
+		t.Errorf("help: %d %q", r.code, r.out)
+	}
+}
+
+func TestCommandsSendTheirArguments(t *testing.T) {
+	results := map[string]any{
+		"profile.create": profile.Profile{ID: "abc", Name: "My Farm"},
+		"mods.disable":   profile.EnableResult{},
+		"mods": []control.ModRow{
+			{UniqueID: "A.Mod", Name: "Alpha", Version: "1.0", Enabled: true, Source: "nexus:1/2"},
+			{UniqueID: "B.Mod", Name: "Beta", Version: "2.0", Pinned: true, Source: "local"},
+		},
+	}
+	r := invoke(t, results, "profile", "create", "stardew", "My", "Farm")
+	if r.code != 0 || r.calls[0].method != "profile.create" || r.calls[0].params.Name != "My Farm" || !strings.Contains(r.out, "abc") {
+		t.Fatalf("create: %+v", r)
+	}
+	r = invoke(t, results, "mods", "disable", "stardew", "My Farm", "A.Mod", "B.Mod")
+	if c := r.calls[0]; c.method != "mods.disable" || c.params.Profile != "My Farm" || len(c.params.UniqueIDs) != 2 || !strings.HasPrefix(r.out, "Disabled ") {
+		t.Fatalf("disable: %+v", r)
+	}
+	r = invoke(t, results, "mods", "stardew", "abc")
+	if r.code != 0 || !strings.Contains(r.out, "UNIQUEID") || !strings.Contains(r.out, "off, pinned") {
+		t.Fatalf("mods table: %q", r.out)
+	}
+	r = invoke(t, results, "mods", "stardew", "abc", "--json")
+	var rows []control.ModRow
+	if err := json.Unmarshal([]byte(r.out), &rows); err != nil || len(rows) != 2 {
+		t.Fatalf("--json: %v %q", err, r.out)
+	}
+	r = invoke(t, map[string]any{"conflicts": []any{}}, "conflicts", "stardew", "abc", "--all")
+	if !r.calls[0].params.All {
+		t.Error("--all not sent")
+	}
+}
+
+func TestCompleteOffersVerbsGamesAndProfiles(t *testing.T) {
+	results := map[string]any{
+		"games":    []control.GameRow{{ID: "stardew"}},
+		"profiles": []profile.Profile{{ID: "1", Name: "Spring"}, {ID: "2", Name: "Winter"}},
+	}
+	if r := invoke(t, results, "__complete", "con"); strings.TrimSpace(r.out) != "conflicts" {
+		t.Errorf("verb: %q", r.out)
+	}
+	if r := invoke(t, results, "__complete", "mods", ""); !strings.Contains(r.out, "disable") || !strings.Contains(r.out, "stardew") {
+		t.Errorf("mods position 1 should offer subverbs and games: %q", r.out)
+	}
+	if r := invoke(t, results, "__complete", "conflicts", "stardew", "w"); strings.TrimSpace(r.out) != "Winter" {
+		t.Errorf("profile: %q", r.out)
+	}
+}
+
+func TestIsTakesVerbsAndBareWordsButNotLinksOrFiles(t *testing.T) {
+	for arg, want := range map[string]bool{
+		"games": true, "nonsense": true, "nxm://stardewvalley/mods/1/files/2": false,
+		"/home/me/farm.mortar": false, "farm.mortar": false, `C:\farm.mortar`: false, "--release-links": false,
+	} {
+		if got := Is([]string{arg}); got != want {
+			t.Errorf("Is(%q) = %v, want %v", arg, got, want)
+		}
+	}
+	if r := invoke(t, nil, "nonsense"); r.code != 2 || !strings.Contains(r.errOut, "unknown command") {
+		t.Errorf("unknown verb: %d %q", r.code, r.errOut)
+	}
+}

@@ -9,6 +9,7 @@ import { initLaunch } from './launch/store.ts'
 import { initLoader } from './loader/store.ts'
 import { initNexusSeen } from './mods/nexusDetails.ts'
 import { initNxm } from './nxm/store.ts'
+import { initProfilesChanged } from './profiles/store.ts'
 import { initQueue } from './queue/store.ts'
 import { initNexus } from './settings/nexus.ts'
 import { initSettings } from './settings/store.ts'
@@ -28,6 +29,7 @@ initTrayNoticeClick()
 initLoader()
 initNxm().catch(reportUnexpected)
 initQueue().catch(reportUnexpected)
+initProfilesChanged()
 initShare().catch(reportUnexpected)
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(

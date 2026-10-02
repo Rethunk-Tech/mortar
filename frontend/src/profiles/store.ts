@@ -1,4 +1,5 @@
 import { msg } from '@lingui/core/macro'
+import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
 import type {
@@ -279,3 +280,16 @@ export const useProfiles = create<{
   },
   ensureOpen: () => ensureVisible(get),
 }))
+
+// The command line changes profiles through the running app, which then names the game; reload it when it is open.
+export function initProfilesChanged() {
+  if (typeof Events.On !== 'function') {
+    return
+  }
+  Events.On('profiles:changed', (event) => {
+    const s = useProfiles.getState()
+    if (s.game?.id === event.data) {
+      s.refresh().catch(() => undefined)
+    }
+  })
+}

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"embed"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,7 +15,9 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/backdrop"
 	"github.com/Rethunk-AI/mortar/internal/bisect"
+	"github.com/Rethunk-AI/mortar/internal/cli"
 	"github.com/Rethunk-AI/mortar/internal/components"
+	"github.com/Rethunk-AI/mortar/internal/control"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
 	"github.com/Rethunk-AI/mortar/internal/game"
@@ -69,6 +72,7 @@ func registerEvents() {
 	application.RegisterEvent[loadersvc.Progress](loadersvc.ProgressEvent)
 	application.RegisterEvent[[]string](picker.DroppedEvent)
 	application.RegisterEvent[settings.Settings](settings.ChangedEvent)
+	application.RegisterEvent[string](control.ChangedEvent)
 	application.RegisterEvent[nexussvc.Account](nexussvc.ChangedEvent)
 	application.RegisterEvent[queue.State](queue.ChangedEvent)
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
@@ -87,6 +91,9 @@ func main() {
 func run() error {
 	if len(os.Args) > 1 && os.Args[1] == "--release-links" {
 		return releaseLinks()
+	}
+	if cli.Is(os.Args[1:]) {
+		os.Exit(cli.Run(version, os.Args[1:], os.Stdout, os.Stderr))
 	}
 	if nativehost.Invoked(os.Args[1:]) {
 		return serveNativeHost()
@@ -414,6 +421,15 @@ func run() error {
 		stopQueue()
 		waitQueue()
 	}()
+	ctl := &control.Services{
+		Version: version, Settings: store, Games: gamesSvc, Store: profiles, Profiles: profileSvc,
+		Problems: problemsSvc, Launches: launches, Saves: savesSvc, Queue: queueSvc, Emit: emit,
+	}
+	go func() {
+		if err := control.Serve(queueCtx, dataDir, version, ctl.Handle); err != nil && !errors.Is(err, context.Canceled) {
+			log.Printf("control: %v", err)
+		}
+	}()
 	svc.App = app
 	loaders.App = app
 	profileSvc.App = app
@@ -508,7 +524,7 @@ func run() error {
 			} else {
 				profileID := row.ProfileID
 				item.OnClick(func(*application.Context) {
-					_ = launches.Start("stardew", profileID, false)
+					_ = launches.Start(context.Background(), "stardew", profileID, false)
 				})
 			}
 		}
