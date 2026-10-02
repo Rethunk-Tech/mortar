@@ -49,7 +49,7 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 		out = append(out, variantSettings(packMod, pack, config, present, byID)...)
 		groups := map[string]*settingGroup{}
 		for _, patch := range pack.patches {
-			if !patch.when.holds(present) {
+			if !patch.when.holds(present) || !dynamicWhenHolds(patch.when, pack.tokens, present, pack.schema, config) {
 				continue
 			}
 			ids := enabledRequirements(patch.when, present, packMod.UniqueID)

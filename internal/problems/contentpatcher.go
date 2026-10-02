@@ -101,13 +101,28 @@ type cpConfig struct {
 }
 
 // cpWhen holds a change's HasMod conditions: each anyOf group needs one of its mods
-// present, and no noneOf mod may be present. Other conditions are treated as met.
+// present, and no noneOf mod may be present. Dynamic token conditions are checked
+// with the pack and profile context; other conditions are treated as met.
 type cpWhen struct {
-	anyOf  [][]string
-	noneOf []string
-	config []cpConfig
-	spouse string
-	places map[string][]string
+	anyOf   [][]string
+	noneOf  []string
+	config  []cpConfig
+	dynamic []cpDynamicCondition
+	flags   []cpFlagCondition
+	spouse  string
+	places  map[string][]string
+}
+
+type cpDynamicCondition struct {
+	name     string
+	values   []string
+	contains string
+	expected bool
+}
+
+type cpFlagCondition struct {
+	name    string
+	present bool
 }
 
 func (w cpWhen) with(o cpWhen) cpWhen {
@@ -125,12 +140,21 @@ func (w cpWhen) with(o cpWhen) cpWhen {
 		spouse = "\x00"
 	}
 	return cpWhen{
-		anyOf:  append(slices.Clone(w.anyOf), o.anyOf...),
-		noneOf: append(slices.Clone(w.noneOf), o.noneOf...),
-		config: append(slices.Clone(w.config), o.config...),
-		spouse: spouse,
-		places: places,
+		anyOf:   append(slices.Clone(w.anyOf), o.anyOf...),
+		noneOf:  append(slices.Clone(w.noneOf), o.noneOf...),
+		config:  append(slices.Clone(w.config), o.config...),
+		dynamic: append(slices.Clone(w.dynamic), o.dynamic...),
+		flags:   append(slices.Clone(w.flags), o.flags...),
+		spouse:  spouse,
+		places:  places,
 	}
+}
+
+func (w cpWhen) withDefinition(o cpWhen) cpWhen {
+	merged := w.with(o)
+	// A definition's flags constrain its reachability, not the patch that selects it.
+	merged.flags = slices.Clone(w.flags)
+	return merged
 }
 
 func (w cpWhen) holds(present map[string]bool) bool {
@@ -387,43 +411,17 @@ func parseWhenWithTokens(raw map[string]json.RawMessage, mentions map[string]boo
 func parseWhenDepth(raw map[string]json.RawMessage, mentions map[string]bool, schema map[string]cpSchema, tokens []cpTokenDefinition, depth int) cpWhen {
 	var w cpWhen
 	for k, v := range raw {
-		name, arg, _ := strings.Cut(k, "|")
-		name = tokenName(name)
 		if hasToken(k) {
-			if depth < 8 {
-				if token, ok := dynamicTokenConditionName(k); ok {
-					values := []string{}
-					if condValues(v, &values) {
-						match := -1
-						for i, definition := range tokens {
-							if definition.name != token || !slices.ContainsFunc(values, func(value string) bool {
-								return strings.EqualFold(strings.TrimSpace(value), strings.TrimSpace(definition.value))
-							}) {
-								continue
-							}
-							if match >= 0 {
-								match = -2
-								break
-							}
-							match = i
-						}
-						if match >= 0 {
-							w = w.with(parseWhenDepth(tokens[match].when, mentions, schema, tokens, depth+1))
-						}
-					}
-				}
+			if merged, ok := dynamicTokenWhen(k, v, tokens, mentions, schema, depth); ok {
+				w = w.withDefinition(merged)
 			}
 			continue
 		}
-		if depth < 8 {
-			if token, ok := dynamicTokenConditionName(k); ok && slices.ContainsFunc(tokens, func(definition cpTokenDefinition) bool {
-				return definition.name == token
-			}) {
-				if merged, ok := dynamicTokenWhen(token, v, tokens, mentions, schema, depth); ok {
-					w = w.with(merged)
-				}
-				continue
-			}
+		name, arg, _ := strings.Cut(k, "|")
+		name = tokenName(name)
+		if merged, ok := dynamicTokenWhen(k, v, tokens, mentions, schema, depth); ok {
+			w = w.withDefinition(merged)
+			continue
 		}
 		if strings.EqualFold(name, "hasmod") {
 			arg = strings.TrimSpace(arg)
@@ -454,6 +452,10 @@ func parseWhenDepth(raw map[string]json.RawMessage, mentions map[string]bool, sc
 			case "false":
 				w.noneOf = append(w.noneOf, ids...)
 			}
+			continue
+		}
+		if flags, ok := flagConditions(k, v); ok {
+			w.flags = append(w.flags, flags...)
 			continue
 		}
 		if field, ok := schema[strings.ToLower(name)]; ok {
@@ -489,39 +491,393 @@ func parseWhenDepth(raw map[string]json.RawMessage, mentions map[string]bool, sc
 }
 
 func dynamicTokenConditionName(key string) (string, bool) {
+	name, _, ok := dynamicTokenConditionParts(key)
+	return name, ok
+}
+
+func dynamicTokenConditionParts(key string) (string, string, bool) {
 	key = strings.TrimSpace(key)
 	if strings.HasPrefix(key, "{{") {
 		if !strings.HasSuffix(key, "}}") {
-			return "", false
+			return "", "", false
 		}
 		key = strings.TrimSpace(key[2 : len(key)-2])
 	}
-	name, _, _ := strings.Cut(key, "|")
+	name, arg, _ := strings.Cut(key, "|")
 	name = tokenName(name)
-	return name, name != ""
+	return name, strings.TrimSpace(arg), name != ""
 }
 
-func dynamicTokenWhen(name string, raw json.RawMessage, tokens []cpTokenDefinition, mentions map[string]bool, schema map[string]cpSchema, depth int) (cpWhen, bool) {
-	values := []string{}
-	if !condValues(raw, &values) {
+func dynamicTokenWhen(key string, raw json.RawMessage, tokens []cpTokenDefinition, mentions map[string]bool, schema map[string]cpSchema, depth int) (cpWhen, bool) {
+	condition, ok := dynamicTokenCondition(key, raw)
+	if !ok || !slices.ContainsFunc(tokens, func(definition cpTokenDefinition) bool {
+		return definition.name == condition.name
+	}) {
 		return cpWhen{}, false
+	}
+	out := cpWhen{dynamic: []cpDynamicCondition{condition}}
+	if condition.contains != "" && !condition.expected {
+		return out, true
 	}
 	match := -1
 	for i, definition := range tokens {
-		if definition.name != name || !slices.ContainsFunc(values, func(value string) bool {
-			return strings.EqualFold(strings.TrimSpace(value), strings.TrimSpace(definition.value))
-		}) {
+		if definition.name != condition.name || !dynamicConditionMatchesValue(condition, definition.value) {
 			continue
 		}
 		if match >= 0 {
-			return cpWhen{}, true
+			match = -1
+			break
 		}
 		match = i
 	}
-	if match < 0 {
-		return cpWhen{}, true
+	if match >= 0 && depth < 8 {
+		out = out.withDefinition(parseWhenDepth(tokens[match].when, mentions, schema, tokens, depth+1))
 	}
-	return parseWhenDepth(tokens[match].when, mentions, schema, tokens, depth+1), true
+	return out, true
+}
+
+func dynamicTokenCondition(key string, raw json.RawMessage) (cpDynamicCondition, bool) {
+	name, arg, ok := dynamicTokenConditionParts(key)
+	if !ok {
+		return cpDynamicCondition{}, false
+	}
+	if arg == "" {
+		var values []string
+		if !condValues(raw, &values) {
+			return cpDynamicCondition{}, false
+		}
+		return cpDynamicCondition{name: name, values: values}, true
+	}
+	param, list, ok := strings.Cut(arg, "=")
+	if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) {
+		return cpDynamicCondition{}, false
+	}
+	var flags []string
+	if !condValues(raw, &flags) || len(flags) != 1 {
+		return cpDynamicCondition{}, false
+	}
+	expected, err := strconv.ParseBool(strings.TrimSpace(flags[0]))
+	if err != nil {
+		return cpDynamicCondition{}, false
+	}
+	return cpDynamicCondition{name: name, contains: strings.TrimSpace(list), expected: expected}, true
+}
+
+func dynamicConditionMatchesValue(condition cpDynamicCondition, value string) bool {
+	if condition.contains != "" {
+		return condition.expected && strings.EqualFold(strings.TrimSpace(condition.contains), strings.TrimSpace(value))
+	}
+	return slices.ContainsFunc(condition.values, func(want string) bool {
+		return strings.EqualFold(strings.TrimSpace(want), strings.TrimSpace(value))
+	})
+}
+
+type cpConditionState uint8
+
+const (
+	cpConditionUnknown cpConditionState = iota
+	cpConditionFalse
+	cpConditionTrue
+)
+
+type cpTokenReachability struct {
+	values map[string]bool
+	known  bool
+}
+
+func reachableDynamicTokens(tokens []cpTokenDefinition, present map[string]bool, schema map[string]cpSchema, config map[string]string, flags []cpFlagCondition) map[string]cpTokenReachability {
+	reachable := map[string]cpTokenReachability{}
+	for _, definition := range tokens {
+		if definition.name == "" {
+			continue
+		}
+		state := dynamicWhenState(definition.when, tokens, reachable, present, schema, config, flags)
+		current, exists := reachable[definition.name]
+		if !exists {
+			current.known = true
+			current.values = map[string]bool{}
+		}
+		switch state {
+		case cpConditionTrue:
+			current.values = map[string]bool{}
+			current.known = true
+		case cpConditionUnknown:
+		case cpConditionFalse:
+			reachable[definition.name] = current
+			continue
+		}
+		if hasToken(definition.value) {
+			current.known = false
+			reachable[definition.name] = current
+			continue
+		}
+		current.values[strings.ToLower(strings.TrimSpace(definition.value))] = true
+		reachable[definition.name] = current
+	}
+	return reachable
+}
+
+func dynamicWhenState(raw map[string]json.RawMessage, tokens []cpTokenDefinition, reachable map[string]cpTokenReachability, present map[string]bool, schema map[string]cpSchema, config map[string]string, flags []cpFlagCondition) cpConditionState {
+	state := cpConditionTrue
+	for key, value := range raw {
+		current := dynamicConditionState(key, value, tokens, reachable, present, schema, config, flags)
+		if current == cpConditionFalse {
+			return cpConditionFalse
+		}
+		if current == cpConditionUnknown {
+			state = cpConditionUnknown
+		}
+	}
+	return state
+}
+
+func dynamicConditionState(key string, raw json.RawMessage, tokens []cpTokenDefinition, reachable map[string]cpTokenReachability, present map[string]bool, schema map[string]cpSchema, config map[string]string, flags []cpFlagCondition) cpConditionState {
+	name, arg, ok := dynamicTokenConditionParts(key)
+	if !ok {
+		return cpConditionUnknown
+	}
+	if strings.EqualFold(name, "hasmod") {
+		return hasModConditionState(arg, raw, present)
+	}
+	if flagValues, recognized := flagConditions(key, raw); recognized {
+		if len(flagValues) == 0 {
+			return cpConditionUnknown
+		}
+		state := cpConditionTrue
+		for _, flag := range flagValues {
+			current := cpConditionUnknown
+			for _, assumption := range flags {
+				if assumption.name != flag.name {
+					continue
+				}
+				if assumption.present != flag.present {
+					return cpConditionFalse
+				}
+				current = cpConditionTrue
+			}
+			if current == cpConditionUnknown {
+				state = cpConditionUnknown
+			}
+		}
+		return state
+	}
+	if tokenDefinitionExists(tokens, name) {
+		reachableToken, computed := reachable[name]
+		if !computed || !reachableToken.known {
+			return cpConditionUnknown
+		}
+		condition, valid := dynamicTokenCondition(key, raw)
+		if !valid {
+			return cpConditionUnknown
+		}
+		return dynamicConditionStateForReachable(condition, reachableToken)
+	}
+	if field, known := schema[strings.ToLower(name)]; known {
+		condition, valid := configCondition(field, arg, raw)
+		if !valid {
+			return cpConditionUnknown
+		}
+		if configHolds([]cpConfig{condition}, schema, config) {
+			return cpConditionTrue
+		}
+		return cpConditionFalse
+	}
+	return cpConditionUnknown
+}
+
+func dynamicConditionStateForReachable(condition cpDynamicCondition, reachable cpTokenReachability) cpConditionState {
+	if !reachable.known {
+		return cpConditionUnknown
+	}
+	if len(reachable.values) == 0 {
+		return cpConditionFalse
+	}
+	matched := 0
+	if condition.contains != "" {
+		has := reachable.values[strings.ToLower(strings.TrimSpace(condition.contains))]
+		if condition.expected {
+			if !has {
+				return cpConditionFalse
+			}
+			for value := range reachable.values {
+				if value != strings.ToLower(strings.TrimSpace(condition.contains)) {
+					return cpConditionUnknown
+				}
+			}
+			return cpConditionTrue
+		}
+		if has {
+			matched = len(reachable.values) - 1
+		} else {
+			matched = len(reachable.values)
+		}
+		if matched == 0 {
+			return cpConditionFalse
+		}
+		if matched == len(reachable.values) {
+			return cpConditionTrue
+		}
+		return cpConditionUnknown
+	}
+	for value := range reachable.values {
+		if slices.ContainsFunc(condition.values, func(want string) bool {
+			return strings.EqualFold(strings.TrimSpace(want), value)
+		}) {
+			matched++
+		}
+	}
+	if matched == 0 {
+		return cpConditionFalse
+	}
+	if matched == len(reachable.values) {
+		return cpConditionTrue
+	}
+	return cpConditionUnknown
+}
+
+func dynamicWhenHolds(when cpWhen, tokens []cpTokenDefinition, present map[string]bool, schema map[string]cpSchema, config map[string]string) bool {
+	if len(when.dynamic) == 0 {
+		return true
+	}
+	reachable := reachableDynamicTokens(tokens, present, schema, config, when.flags)
+	for _, condition := range when.dynamic {
+		state, ok := reachable[condition.name]
+		if !ok || !state.known {
+			continue
+		}
+		if len(state.values) == 0 {
+			return false
+		}
+		if condition.contains != "" {
+			has := state.values[strings.ToLower(strings.TrimSpace(condition.contains))]
+			if condition.expected && !has {
+				return false
+			}
+			if !condition.expected && has && len(state.values) == 1 {
+				return false
+			}
+			continue
+		}
+		if !slices.ContainsFunc(condition.values, func(value string) bool {
+			return state.values[strings.ToLower(strings.TrimSpace(value))]
+		}) {
+			return false
+		}
+	}
+	return true
+}
+
+func tokenDefinitionExists(tokens []cpTokenDefinition, name string) bool {
+	return slices.ContainsFunc(tokens, func(definition cpTokenDefinition) bool {
+		return definition.name == name
+	})
+}
+
+func hasModConditionState(arg string, raw json.RawMessage, present map[string]bool) cpConditionState {
+	if strings.TrimSpace(arg) == "" {
+		var list string
+		if json.Unmarshal(raw, &list) != nil || hasToken(list) {
+			return cpConditionUnknown
+		}
+		ids := splitTargets(list)
+		if len(ids) == 0 {
+			return cpConditionUnknown
+		}
+		for _, id := range ids {
+			if present[strings.ToLower(id)] {
+				return cpConditionTrue
+			}
+		}
+		return cpConditionFalse
+	}
+	param, list, ok := strings.Cut(arg, "=")
+	if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) {
+		return cpConditionUnknown
+	}
+	ids := splitTargets(list)
+	var values []string
+	if len(ids) == 0 || !condValues(raw, &values) || len(values) != 1 {
+		return cpConditionUnknown
+	}
+	found := slices.ContainsFunc(ids, func(id string) bool { return present[strings.ToLower(id)] })
+	switch strings.ToLower(values[0]) {
+	case "true":
+		if found {
+			return cpConditionTrue
+		}
+		return cpConditionFalse
+	case "false":
+		if found {
+			return cpConditionFalse
+		}
+		return cpConditionTrue
+	default:
+		return cpConditionUnknown
+	}
+}
+
+func configCondition(field cpSchema, arg string, raw json.RawMessage) (cpConfig, bool) {
+	var values []string
+	if !condValues(raw, &values) {
+		return cpConfig{}, false
+	}
+	if strings.TrimSpace(arg) == "" {
+		return cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple}, true
+	}
+	param, list, ok := strings.Cut(arg, "=")
+	if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) || len(values) != 1 {
+		return cpConfig{}, false
+	}
+	named := splitTargets(list)
+	switch strings.ToLower(values[0]) {
+	case "true":
+		values = named
+	case "false":
+		values = slices.DeleteFunc(slices.Clone(field.allowValues), func(a string) bool {
+			return slices.ContainsFunc(named, func(n string) bool { return strings.EqualFold(n, a) })
+		})
+	default:
+		return cpConfig{}, false
+	}
+	if len(values) == 0 {
+		return cpConfig{}, false
+	}
+	return cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple}, true
+}
+
+func flagConditions(key string, raw json.RawMessage) ([]cpFlagCondition, bool) {
+	name, arg, _ := strings.Cut(key, "|")
+	if !strings.EqualFold(tokenName(name), "hasflag") {
+		return nil, false
+	}
+	if strings.TrimSpace(arg) == "" {
+		var values []string
+		if !condValues(raw, &values) {
+			return nil, true
+		}
+		out := make([]cpFlagCondition, 0, len(values))
+		for _, value := range values {
+			value = strings.TrimSpace(value)
+			if value == "" || hasToken(value) {
+				return nil, true
+			}
+			out = append(out, cpFlagCondition{name: strings.ToLower(value), present: true})
+		}
+		return out, true
+	}
+	param, list, ok := strings.Cut(arg, "=")
+	if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) {
+		return nil, true
+	}
+	var values []string
+	if !condValues(raw, &values) || len(values) != 1 {
+		return nil, true
+	}
+	present, err := strconv.ParseBool(strings.TrimSpace(values[0]))
+	if err != nil || strings.TrimSpace(list) == "" {
+		return nil, true
+	}
+	return []cpFlagCondition{{name: strings.ToLower(strings.TrimSpace(list)), present: present}}, true
 }
 
 // condValues reads a condition value given as a string, comma list, bool or array; false when it holds a token.
@@ -747,7 +1103,7 @@ func assetConflictResults(mods []Installed) ([]AssetConflict, []SettingHint) {
 			config = readPackConfig(mod.Folder)
 		}
 		for _, p := range pack.patches {
-			if p.kind == "other" || !p.when.holds(present) {
+			if p.kind == "other" || !p.when.holds(present) || !dynamicWhenHolds(p.when, pack.tokens, present, pack.schema, config) {
 				continue
 			}
 			hits := at[p.kind][p.target]

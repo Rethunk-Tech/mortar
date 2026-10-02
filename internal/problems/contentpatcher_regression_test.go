@@ -432,6 +432,48 @@ func TestDifferentSpouseConditionsExcludeEdits(t *testing.T) {
 	}
 }
 
+func TestDynamicTokenReachabilityGatesConflicts(t *testing.T) {
+	t.Run("last installed-mod definition masks earlier values", func(t *testing.T) {
+		pack := syntheticEditPack(t, `{"DynamicTokens":[
+			{"Name":"Concession","Value":"Default"},
+			{"Name":"Concession","Value":"CC","When":{"HasMod |contains=FlashShifter.StardewValleyExpandedCP":false}},
+			{"Name":"Concession","Value":"Default","When":{"HasMod |contains=FlashShifter.StardewValleyExpandedCP":true}}
+		],"Changes":[
+			{"Action":"EditImage","Target":"maps/movietheater_tilesheet","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"Concession |contains=Default":false}}
+		]}`)
+		peer := syntheticEditPack(t, `{"Changes":[{"Action":"EditImage","Target":"maps/movietheater_tilesheet","ToArea":{"X":0,"Y":0,"Width":1,"Height":1}}]}`)
+		sve := Installed{Enabled: true, UniqueID: "FlashShifter.StardewValleyExpandedCP", Name: "SVE", Key: "sve"}
+		if conflicts := assetConflicts([]Installed{pack, peer, sve}); len(conflicts) != 0 {
+			t.Fatalf("masked dynamic token condition should remove the edit: %#v", conflicts)
+		}
+	})
+
+	t.Run("unknown game state remains possible", func(t *testing.T) {
+		pack := syntheticEditPack(t, `{"DynamicTokens":[
+			{"Name":"SeasonalChoice","Value":"Spring","When":{"Season":"Spring"}}
+		],"Changes":[
+			{"Action":"EditImage","Target":"maps/movietheater_tilesheet","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"SeasonalChoice":"Spring"}}
+		]}`)
+		peer := syntheticEditPack(t, `{"Changes":[{"Action":"EditImage","Target":"maps/movietheater_tilesheet","ToArea":{"X":0,"Y":0,"Width":1,"Height":1}}]}`)
+		if conflicts := assetConflicts([]Installed{pack, peer}); len(conflicts) != 1 {
+			t.Fatalf("unknown game-state definition should remain possible: %#v", conflicts)
+		}
+	})
+
+	t.Run("opposite HasFlag assumptions are unreachable", func(t *testing.T) {
+		pack := syntheticEditPack(t, `{"DynamicTokens":[
+			{"Name":"FlagChoice","Value":"Default"},
+			{"Name":"FlagChoice","Value":"Flagged","When":{"HasFlag":"festival"}}
+		],"Changes":[
+			{"Action":"EditImage","Target":"maps/movietheater_tilesheet","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"FlagChoice":"Flagged","HasFlag |contains=festival":false}}
+		]}`)
+		peer := syntheticEditPack(t, `{"Changes":[{"Action":"EditImage","Target":"maps/movietheater_tilesheet","ToArea":{"X":0,"Y":0,"Width":1,"Height":1}}]}`)
+		if conflicts := assetConflicts([]Installed{pack, peer}); len(conflicts) != 0 {
+			t.Fatalf("opposite HasFlag definition should not apply: %#v", conflicts)
+		}
+	})
+}
+
 func writeRegressionFile(t *testing.T, root, rel, body string) {
 	t.Helper()
 	path := filepath.Join(root, filepath.FromSlash(rel))

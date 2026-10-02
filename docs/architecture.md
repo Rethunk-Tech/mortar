@@ -361,6 +361,7 @@ Saves live in one folder, `%APPDATA%\StardewValley\Saves` or `~/.config/StardewV
 - **When a change counts:**
   - A `When` `HasMod` condition (`"HasMod": "A, B"` or `"HasMod |contains=A": true/false`) counts only when that condition holds for the profile's enabled mods; other conditions are treated as met.
   - A change whose config conditions do not match the pack's current settings (`config.json`, else the schema `Default`) is not counted.
+  - DynamicToken conditions use every statically reachable value; unknown game-state conditions stay possible, except an opposite literal `HasFlag` assumption in the same `When`.
   - Condition keys with an empty input (`"HasMod: |contains=…"`) read as the bare token, as Content Patcher reads them.
 - **When two edits write the same place:**
   - Image edits compare their `ToArea` (or, without one, `FromArea`'s size or the source PNG's size at the top-left).
