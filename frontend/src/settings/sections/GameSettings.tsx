@@ -12,12 +12,14 @@ import {
   RadioGroup,
   Switch,
 } from '@mui/material'
-import { Browser, Clipboard } from '@wailsio/runtime'
+import { Browser, Clipboard, System } from '@wailsio/runtime'
 import { Copy, Download, FolderOpen, Undo2 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import type { FoundInstall } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
 import {
+  ClearLaunchOption,
   GrantSteamAccess,
+  LaunchOptions,
   ResetInstall,
   SteamAccess,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
@@ -28,6 +30,7 @@ import {
   SetGameStore,
   SetTellWhenSmapiOut,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { launchOptionsSet } from '../../firstrun/logic.ts'
 import { loadGameStatus } from '../../games/status.ts'
 import { storeName } from '../../games/storeName.ts'
 import { useLaunch } from '../../launch/store.ts'
@@ -46,6 +49,63 @@ function StoreLabel({ store }: { store: string }) {
   const { t } = useLingui()
   const named = storeName(store)
   return named ? t(named) : t`Steam`
+}
+
+function ResetInstallDialog({
+  open,
+  folder,
+  onClose,
+  onConfirm,
+}: {
+  open: boolean
+  folder: string
+  onClose: () => void
+  onConfirm: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <Dialog open={open} onClose={onClose} transitionDuration={0}>
+      <DialogTitle>{t`Reset game install?`}</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          {t`This deletes the game folder at ${folder}, including every file in it, SMAPI, and any mods placed there. Saves are not in this folder and will be kept. Profiles' mods are stored separately by Mortar and will be kept.`}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>{t`Cancel`}</Button>
+        <Button color="error" variant="contained" onClick={onConfirm}>
+          {t`Delete and restore`}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
+async function offerLaunchOptionRemoval(
+  push: ReturnType<typeof useToasts.getState>['push'],
+  title: string,
+  label: string,
+  errorTitle: string,
+) {
+  try {
+    const options = await LaunchOptions(GAME)
+    if (launchOptionsSet(options)) {
+      push({
+        kind: 'success',
+        title,
+        action: {
+          label,
+          run: () =>
+            ClearLaunchOption(GAME).then(undefined, (err: unknown) => {
+              const body = errorText(err)
+              push({ kind: 'error', title: errorTitle, ...(body ? { body } : {}) })
+            }),
+        },
+      })
+    }
+  } catch {
+    // Steam may not be installed; reset still succeeded.
+  }
 }
 
 function GameFolder({
@@ -155,39 +215,38 @@ function GameFolder({
       >
         {t`Reset game install`}
       </Button>
-      <Dialog open={resetting} onClose={() => setResetting(false)} transitionDuration={0}>
-        <DialogTitle>{t`Reset game install?`}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t`This deletes the game folder at ${folder}, including every file in it, SMAPI, and any mods placed there. Saves are not in this folder and will be kept. Profiles' mods are stored separately by Mortar and will be kept.`}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setResetting(false)}>{t`Cancel`}</Button>
-          <Button
-            color="error"
-            variant="contained"
-            onClick={() => {
-              setResetting(false)
-              change(
-                ResetInstall(GAME).then(() => {
-                  if (store === 'steam' || store === 'flatpak-steam') {
-                    return Browser.OpenURL('steam://validate/413150')
-                  }
-                  useToasts.getState().push({
-                    kind: 'info',
-                    title: t`Game install deleted`,
-                    body: t`Reinstall Stardew Valley from your game launcher.`,
-                  })
-                  return Promise.resolve()
-                }),
+      <ResetInstallDialog
+        open={resetting}
+        folder={folder}
+        onClose={() => setResetting(false)}
+        onConfirm={async () => {
+          setResetting(false)
+          setError('')
+          try {
+            await ResetInstall(GAME)
+            if (System.IsWindows()) {
+              await offerLaunchOptionRemoval(
+                useToasts.getState().push,
+                t`Game install deleted`,
+                t`Remove SMAPI from Steam's launch options`,
+                t`Couldn't update Steam's launch options`,
               )
-            }}
-          >
-            {t`Delete and restore`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+            }
+            if (store === 'steam' || store === 'flatpak-steam') {
+              await Browser.OpenURL('steam://validate/413150')
+            } else {
+              useToasts.getState().push({
+                kind: 'info',
+                title: t`Game install deleted`,
+                body: t`Reinstall Stardew Valley from your game launcher.`,
+              })
+            }
+            onRefresh()
+          } catch (e: unknown) {
+            setError(errorText(e) ?? t`That folder cannot be used`)
+          }
+        }}
+      />
       {error ? (
         <Box role="alert" sx={{ fontSize: 13, color: 'error.light' }}>
           {error}

@@ -45,3 +45,19 @@ func (s *Service) SetLaunchOption(id string) (string, error) {
 	}
 	return st.SetLaunchOptions(g.SteamAppID(), func(current string) string { return g.SteamLaunchWithLoader(dir, current) })
 }
+
+// ClearLaunchOption removes the game's loader command from Steam's launch options.
+func (s *Service) ClearLaunchOption(id string) (string, error) {
+	g := Find(id)
+	if g == nil {
+		return "", fmt.Errorf("unknown game %q", id)
+	}
+	st, status := steam.Locate(s.home, roots(s.store.Get(), LauncherSteam)...)
+	if status != steam.Found {
+		return "", errors.New("steam was not found")
+	}
+	if running, err := launch.Processes("/proc", "steam"); err == nil && len(running) > 0 {
+		return "", errors.New("close Steam first: it rewrites its settings when it exits")
+	}
+	return st.SetLaunchOptions(g.SteamAppID(), g.SteamLaunchWithoutLoader)
+}

@@ -84,6 +84,8 @@ type Launcher interface {
 	// SteamLaunchWithLoader returns current launch options changed so Steam starts the loader in dir, keeping the
 	// user's own options.
 	SteamLaunchWithLoader(dir, current string) string
+	// SteamLaunchWithoutLoader returns current launch options with the loader command removed.
+	SteamLaunchWithoutLoader(current string) string
 }
 
 var games = []Game{&stardew.Game{}}
