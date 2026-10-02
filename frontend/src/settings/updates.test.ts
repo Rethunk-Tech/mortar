@@ -12,6 +12,7 @@ mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/updatesvc/serv
   },
   Restart: async () => undefined,
 }))
+mock.module('../quit.ts', () => ({ askQuit: async () => true }))
 
 const { getInitialState, useMortarUpdate } = await import('./updates.ts')
 
