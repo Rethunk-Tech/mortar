@@ -1,9 +1,18 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Checkbox, Chip, Menu, MenuItem } from '@mui/material'
-import { ArrowDownToLine, ChevronDown, Clock, Download, Search, X } from 'lucide-react'
+import { Box, Button, ButtonBase, Checkbox, Chip, Menu, MenuItem, Typography } from '@mui/material'
+import {
+  ArrowDownToLine,
+  ChevronDown,
+  Clock,
+  Download,
+  Search,
+  SquareTerminal,
+  X,
+} from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { onFilterFocus } from '../mods/filterFocus.ts'
@@ -324,6 +333,59 @@ function ReinstallLoader({ game }: { game: string }) {
   )
 }
 
+// useHasRuns reports whether the profile has any recorded run, re-reading once the game stops so a run that just
+// ended counts. Until it knows, it assumes runs exist so the log never flashes the empty state.
+function useHasRuns(game: string, profile: string, running: boolean): boolean {
+  const [hasRuns, setHasRuns] = useState(true)
+  useEffect(() => {
+    if (running) {
+      return
+    }
+    let live = true
+    Runs(game, profile).then(
+      (list) => {
+        if (live) {
+          setHasRuns((list ?? []).length > 0)
+        }
+      },
+      () => {
+        if (live) {
+          setHasRuns(true)
+        }
+      },
+    )
+    return () => {
+      live = false
+    }
+  }, [game, profile, running])
+  return hasRuns
+}
+
+// ConsoleEmpty stands in for the log until the profile has ever run, so a first visit is not an empty black box.
+function ConsoleEmpty() {
+  const { t } = useLingui()
+  return (
+    <Box
+      sx={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 2,
+        px: 3,
+        textAlign: 'center',
+      }}
+    >
+      <SquareTerminal size={40} color="rgba(255,255,255,0.6)" aria-hidden={true} />
+      <Typography sx={{ fontSize: 22, fontWeight: 700 }}>{t`No game output yet`}</Typography>
+      <Typography sx={{ maxWidth: 480, fontSize: 15, lineHeight: 1.5, color: 'text.secondary' }}>
+        {t`Play this profile and SMAPI's log shows here as it runs. Every run is kept, so you can look back at it later.`}
+      </Typography>
+    </Box>
+  )
+}
+
 export function ConsoleTab({ game }: { game: string }) {
   const { t } = useLingui()
   const entries = useShownEntries()
@@ -365,6 +427,11 @@ export function ConsoleTab({ game }: { game: string }) {
     }
   }, [target.game, target.profile, launchingOther, load])
   const total = entries.length
+  const running = useLaunch((s) => canSendTo(s.status, game, openId))
+  const hasRuns = useHasRuns(game, openId, running)
+  if (loaded && total === 0 && viewingRun === '' && !running && !hasRuns) {
+    return <ConsoleEmpty />
+  }
   let empty: string | null = null
   if (loaded && total === 0) {
     empty = t`The console fills when the game runs.`
