@@ -23,6 +23,26 @@ function checkedWithSmapi(at: number | null, now: number, unknown: boolean): str
 
 const MS_PER_HOUR = 3_600_000
 let hourlyTimer: ReturnType<typeof setInterval> | undefined
+const inFlight = new Map<string, Promise<UpdatesResult>>()
+
+function loadUpdates(game: string, profile: string): Promise<UpdatesResult> {
+  const key = `${game}/${profile}`
+  const existing = inFlight.get(key)
+  if (existing) {
+    return existing
+  }
+  const promise = Updates(game, profile)
+  inFlight.set(key, promise)
+  void promise.then(
+    () => {
+      if (inFlight.get(key) === promise) inFlight.delete(key)
+    },
+    () => {
+      if (inFlight.get(key) === promise) inFlight.delete(key)
+    },
+  )
+  return promise
+}
 
 function ignoreRecheckError() {
   return
@@ -44,7 +64,7 @@ const useUpdates = create<{
       return
     }
     try {
-      const updates = await Updates(game.id, openId)
+      const updates = await loadUpdates(game.id, openId)
       if (useProfiles.getState().openId === openId) {
         set({ updates, checkedAt: Date.now() })
       }
@@ -82,4 +102,4 @@ function syncHourlyRecheck() {
 useProfiles.subscribe(syncHourlyRecheck)
 syncHourlyRecheck()
 
-export { checkedWithSmapi, useUpdates }
+export { checkedWithSmapi, loadUpdates, useUpdates }

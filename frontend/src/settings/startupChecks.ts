@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
-import { Updates } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import { Get } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useLoader } from '../loader/store.ts'
+import { loadUpdates } from '../mods/updates.ts'
 import { maybeToastSmapi } from './smapiToast.ts'
 
 function ignore() {
@@ -21,7 +21,7 @@ export function useStartupChecks() {
         await Promise.all(
           Object.entries(last)
             .filter(([game, profile]) => game && profile)
-            .map(([game, profile]) => Updates(game, profile ?? '').catch(ignore)),
+            .map(([game, profile]) => loadUpdates(game, profile ?? '').catch(ignore)),
         )
       }
       if (shouldRunStartupCheck(s.tellWhenSmapiOut)) {
