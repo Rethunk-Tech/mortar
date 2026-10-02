@@ -3,13 +3,22 @@
 package nativehost
 
 import (
+	"context"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"math"
+	"net"
+	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
 const (
@@ -33,16 +42,23 @@ func Invoked(args []string) bool {
 }
 
 type request struct {
+	Type string `json:"type"`
 	Link string `json:"link"`
+	Game string `json:"game"`
 }
 
 type reply struct {
-	OK    bool   `json:"ok"`
-	Error string `json:"error,omitempty"`
+	OK     bool   `json:"ok,omitempty"`
+	Error  string `json:"error,omitempty"`
+	ModIDs *[]int `json:"modIds,omitempty"`
 }
 
 // Serve answers messages from r until it closes, handing each message's link to open.
 func Serve(r io.Reader, w io.Writer, open func(link string) error) error {
+	return serve(r, w, open, activeNexusModIDs)
+}
+
+func serve(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int) error {
 	for {
 		var n uint32
 		if err := binary.Read(r, binary.NativeEndian, &n); err != nil {
@@ -59,8 +75,21 @@ func Serve(r io.Reader, w io.Writer, open func(link string) error) error {
 			return err
 		}
 		rep := reply{OK: true}
-		if err := open(req.Link); err != nil {
-			rep = reply{Error: err.Error()}
+		switch req.Type {
+		case "installed":
+			ids := []int{}
+			if installed != nil {
+				if found := installed(req.Game); found != nil {
+					ids = found
+				}
+			}
+			rep = reply{ModIDs: &ids}
+		case "":
+			if err := open(req.Link); err != nil {
+				rep = reply{Error: err.Error()}
+			}
+		default:
+			rep = reply{Error: fmt.Sprintf("unknown request type %q", req.Type)}
 		}
 		out, err := json.Marshal(rep)
 		if err != nil {
@@ -77,6 +106,87 @@ func Serve(r io.Reader, w io.Writer, open func(link string) error) error {
 			return err
 		}
 	}
+}
+
+func activeNexusModIDs(domain string) []int {
+	ids := []int{}
+	if !strings.EqualFold(domain, "stardewvalley") {
+		return ids
+	}
+	dataDir, err := datadir.Dir()
+	if err != nil || !mortarRunning(dataDir) {
+		return ids
+	}
+	store, err := settings.Open()
+	if err != nil {
+		return ids
+	}
+	current := store.Get()
+	if current.LastGame != "stardew" {
+		return ids
+	}
+	profileID := current.LastProfile["stardew"]
+	if profileID == "" || filepath.Base(profileID) != profileID {
+		return ids
+	}
+	root, err := os.OpenRoot(dataDir)
+	if err != nil {
+		return ids
+	}
+	data, err := root.ReadFile(filepath.Join("profiles", "stardew", profileID, "profile.json"))
+	_ = root.Close()
+	if err != nil {
+		return ids
+	}
+	var profile struct {
+		Entries []struct {
+			Source struct {
+				Kind  string `json:"kind"`
+				ModID int    `json:"modId"`
+			} `json:"source"`
+		} `json:"entries"`
+	}
+	if err := json.Unmarshal(data, &profile); err != nil {
+		return ids
+	}
+	seen := make(map[int]struct{}, len(profile.Entries))
+	for _, entry := range profile.Entries {
+		if entry.Source.Kind == "nexus" && entry.Source.ModID > 0 {
+			if _, exists := seen[entry.Source.ModID]; !exists {
+				seen[entry.Source.ModID] = struct{}{}
+				ids = append(ids, entry.Source.ModID)
+			}
+		}
+	}
+	return ids
+}
+
+func mortarRunning(dataDir string) bool {
+	root, err := os.OpenRoot(dataDir)
+	if err != nil {
+		return false
+	}
+	data, err := root.ReadFile("control.json")
+	_ = root.Close()
+	if err != nil {
+		return false
+	}
+	var discovery struct {
+		Port int `json:"port"`
+	}
+	if json.Unmarshal(data, &discovery) != nil || discovery.Port < 1 || discovery.Port > 65535 {
+		return false
+	}
+	conn, err := (&net.Dialer{Timeout: time.Second}).DialContext(
+		context.Background(),
+		"tcp",
+		net.JoinHostPort("127.0.0.1", strconv.Itoa(discovery.Port)),
+	)
+	if err != nil {
+		return false
+	}
+	_ = conn.Close()
+	return true
 }
 
 // frameLen is a message's length as the uint32 prefix native messaging uses.
