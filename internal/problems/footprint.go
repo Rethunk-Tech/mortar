@@ -491,6 +491,13 @@ type decodedMap struct {
 	layers        []decodedMapLayer
 }
 
+type decodedMapResult struct {
+	value decodedMap
+	ok    bool
+}
+
+var mapCache sync.Map
+
 type decodedMapLayer struct {
 	name  string
 	tiles []mapTile
@@ -562,6 +569,18 @@ func decodeMap(root, rel string) (decodedMap, bool) {
 	if !ok {
 		return decodedMap{}, false
 	}
+	info, err := os.Stat(abs)
+	if err != nil {
+		return decodedMap{}, false
+	}
+	key := abs + "\x00" + strconv.FormatInt(info.Size(), 10) + "\x00" +
+		strconv.FormatInt(info.ModTime().UnixNano(), 10)
+	if cached, ok := mapCache.Load(key); ok {
+		result, ok := cached.(decodedMapResult)
+		if ok {
+			return result.value, result.ok
+		}
+	}
 	raw, err := fsx.ReadFile(abs)
 	if err != nil {
 		return decodedMap{}, false
@@ -569,6 +588,7 @@ func decodeMap(root, rel string) (decodedMap, bool) {
 	if strings.EqualFold(filepath.Ext(rel), ".tmj") {
 		var doc tmjMapDocument
 		if json.Unmarshal(raw, &doc) != nil {
+			mapCache.Store(key, decodedMapResult{ok: false})
 			return decodedMap{}, false
 		}
 		out := decodedMap{width: doc.Width, height: doc.Height}
@@ -591,23 +611,27 @@ func decodeMap(root, rel string) (decodedMap, bool) {
 			out.layers = append(out.layers, decoded)
 		}
 		mapBounds(&out)
+		mapCache.Store(key, decodedMapResult{value: out, ok: true})
 		return out, true
 	}
 
 	var doc tmxMapDocument
 	if xml.Unmarshal(raw, &doc) != nil {
+		mapCache.Store(key, decodedMapResult{ok: false})
 		return decodedMap{}, false
 	}
 	out := decodedMap{width: doc.Width, height: doc.Height}
 	for _, layer := range doc.Layers {
 		decoded, ok := decodeTMXLayer(layer)
 		if !ok {
+			mapCache.Store(key, decodedMapResult{ok: false})
 			return decodedMap{}, false
 		}
 		decoded.name = strings.ToLower(strings.TrimSpace(layer.Name))
 		out.layers = append(out.layers, decoded)
 	}
 	mapBounds(&out)
+	mapCache.Store(key, decodedMapResult{value: out, ok: true})
 	return out, true
 }
 

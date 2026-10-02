@@ -9,7 +9,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 )
 
 func change(t *testing.T, raw string) cpChange {
@@ -169,6 +171,47 @@ func TestMapPatchWithoutToAreaUsesTheSourceMapSize(t *testing.T) {
 	}
 	if s := editShapes(dir, change(t, `{"FromFile":"p.tbin"}`), false); len(s) != 1 || s[0].kind != 'w' {
 		t.Fatalf("tbin should be whole: %v", s)
+	}
+}
+
+func TestDecodeMapCacheUsesFileStamp(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "map.tmj")
+	write := func(width int) {
+		t.Helper()
+		raw := `{"width":` + strconv.Itoa(width) + `,"height":1,"layers":[]}`
+		if err := os.WriteFile(path, []byte(raw), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write(1)
+	mapCache = sync.Map{}
+	first, ok := decodeMap(dir, "map.tmj")
+	if !ok || first.width != 1 {
+		t.Fatalf("first decode = %#v, %v", first, ok)
+	}
+	if _, ok := decodeMap(dir, "map.tmj"); !ok {
+		t.Fatal("second decode failed")
+	}
+	changed := time.Now().Add(time.Second)
+	write(2)
+	if err := os.Chtimes(path, changed, changed); err != nil {
+		t.Fatal(err)
+	}
+	second, ok := decodeMap(dir, "map.tmj")
+	if !ok || second.width != 2 {
+		t.Fatalf("changed decode = %#v, %v", second, ok)
+	}
+	entries := 0
+	prefix := path + "\x00"
+	mapCache.Range(func(key, _ any) bool {
+		if strings.HasPrefix(key.(string), prefix) {
+			entries++
+		}
+		return true
+	})
+	if entries != 2 {
+		t.Fatalf("map cache entries = %d, want 2", entries)
 	}
 }
 
