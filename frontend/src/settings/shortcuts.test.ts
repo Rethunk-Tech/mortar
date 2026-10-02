@@ -11,6 +11,12 @@ describe('SHORTCUTS', () => {
       'check-updates',
       'open-settings',
       'dismiss',
+      'select-all-mods',
+      'mod-up',
+      'mod-down',
+      'mod-toggle',
+      'mod-details',
+      'mod-remove',
     ])
     expect(SHORTCUTS.map((s) => s.keys)).toEqual([
       'Ctrl+K',
@@ -19,6 +25,12 @@ describe('SHORTCUTS', () => {
       'F5',
       'Ctrl+,',
       'Esc',
+      'Ctrl+A',
+      '↑',
+      '↓',
+      'Space',
+      'Enter',
+      'Delete',
     ])
   })
 
@@ -29,7 +41,12 @@ describe('SHORTCUTS', () => {
     expect(matchShortcut({ key: 'F5' })).toBe('check-updates')
     expect(matchShortcut({ key: ',', ctrlKey: true })).toBe('open-settings')
     expect(matchShortcut({ key: 'Escape' })).toBe('dismiss')
-    expect(matchShortcut({ key: 'a' })).toBeNull()
+    expect(matchShortcut({ key: 'a', ctrlKey: true })).toBe('select-all-mods')
+    expect(matchShortcut({ key: 'ArrowUp' })).toBe('mod-up')
+    expect(matchShortcut({ key: 'ArrowDown' })).toBe('mod-down')
+    expect(matchShortcut({ key: ' ' })).toBe('mod-toggle')
+    expect(matchShortcut({ key: 'Enter' })).toBe('mod-details')
+    expect(matchShortcut({ key: 'Delete' })).toBe('mod-remove')
   })
 })
 

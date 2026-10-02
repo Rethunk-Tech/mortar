@@ -2,7 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, CircularProgress, Divider, Tab, Tabs, Typography } from '@mui/material'
 import { Plus, RotateCcw, Settings2, Share2 } from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { LogActions } from '../console/LogActions.tsx'
@@ -242,8 +242,10 @@ export function Detail() {
   const openGameSettings = useNav((s) => s.openGameSettings)
   const profile = profiles.find((p) => p.id === openId)
   const loadSaves = useSaves((s) => s.load)
-  const modState = useMods((s) =>
-    s.mods.map((mod) => `${mod.key}:${mod.uniqueId}:${mod.enabled}`).join('|'),
+  const mods = useMods((s) => s.mods)
+  const modState = useMemo(
+    () => mods.map((mod) => `${mod.key}:${mod.uniqueId}:${mod.enabled}`).join('|'),
+    [mods],
   )
   const profileId = profile?.id
   const saveEntries = (profile?.entries ?? [])

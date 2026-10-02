@@ -100,5 +100,23 @@ export function matchShortcut(e: Chord): ShortcutId | null {
   if (ctrl && key === ',') {
     return 'open-settings'
   }
+  if (ctrl && (key === 'a' || key === 'A')) {
+    return 'select-all-mods'
+  }
+  if (key === 'ArrowUp') {
+    return 'mod-up'
+  }
+  if (key === 'ArrowDown') {
+    return 'mod-down'
+  }
+  if (key === ' ') {
+    return 'mod-toggle'
+  }
+  if (key === 'Enter') {
+    return 'mod-details'
+  }
+  if (key === 'Delete') {
+    return 'mod-remove'
+  }
   return null
 }
