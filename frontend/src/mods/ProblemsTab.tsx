@@ -29,6 +29,8 @@ function useSectionTitle() {
         return t`Duplicates`
       case 'settings':
         return t`Settings`
+      case 'cosmetic':
+        return t`Cosmetic or harmless`
       default:
         return ''
     }

@@ -205,6 +205,10 @@ msgstr "No lines match the filters."
 msgid "Notes"
 msgstr "Notes"
 
+#: src/mods/ProblemsTab.tsx:33
+msgid "Cosmetic or harmless"
+msgstr "Cosmetic or harmless"
+
 #. placeholder {0}: official.installed
 #. placeholder {0}: update.installed
 #. placeholder {1}: official.version
@@ -2032,7 +2036,7 @@ msgstr "You started this download on Nexus. There is no profile to put it in yet
 msgid "{name} settings"
 msgstr "{name} settings"
 
-#: src/mods/ProblemsTab.tsx:114
+#: src/mods/ProblemsTab.tsx:116
 msgid "Copy all problems"
 msgstr "Copy all problems"
 
@@ -2965,7 +2969,7 @@ msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the nex
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
 #: src/mods/ProblemBar.tsx:36
-#: src/mods/ProblemsTab.tsx:188
+#: src/mods/ProblemsTab.tsx:190
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
@@ -3426,7 +3430,7 @@ msgstr "Copy from profile…"
 msgid "Removed from Nexus · {0}"
 msgstr "Removed from Nexus · {0}"
 
-#: src/mods/ProblemsTab.tsx:130
+#: src/mods/ProblemsTab.tsx:132
 msgid "Problems copied"
 msgstr "Problems copied"
 
@@ -3774,7 +3778,7 @@ msgid "Token"
 msgstr "Token"
 
 #: src/mods/ProblemBar.tsx:25
-#: src/mods/ProblemsTab.tsx:147
+#: src/mods/ProblemsTab.tsx:149
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -4860,7 +4864,7 @@ msgstr "A game update replaced SMAPI's launcher"
 msgid "Retry now"
 msgstr "Retry now"
 
-#: src/mods/ProblemsTab.tsx:171
+#: src/mods/ProblemsTab.tsx:173
 msgid "No problems found."
 msgstr "No problems found."
 

@@ -138,7 +138,13 @@ type Result struct {
 
 // Count is the number of problems, one per missing dependency, duplicate, broken mod, asset conflict, setting and last-run error.
 func (r Result) Count() int {
-	return len(r.Missing) + len(r.Duplicates) + len(r.Broken) + len(r.AssetConflicts) + len(r.Settings) + len(r.RunErrors) + len(r.Drift)
+	conflicts := 0
+	for _, c := range r.AssetConflicts {
+		if !c.Cosmetic {
+			conflicts++
+		}
+	}
+	return len(r.Missing) + len(r.Duplicates) + len(r.Broken) + conflicts + len(r.Settings) + len(r.RunErrors) + len(r.Drift)
 }
 
 func sameID(a, b string) bool { return strings.EqualFold(a, b) }

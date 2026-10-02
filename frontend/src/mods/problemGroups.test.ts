@@ -69,3 +69,27 @@ test('settings are an info-level group and count as problems', () => {
   expect(problemSections(result).map((s) => s.id)).toEqual(['settings'])
   expect(problemCount(result)).toBe(1)
 })
+
+test('cosmetic conflicts get their own section and are not counted', () => {
+  const conflict = (target: string, cosmetic: boolean) => ({
+    kind: 'edit',
+    target,
+    packIds: ['A', 'B'],
+    names: ['A', 'B'],
+    keys: ['a', 'b'],
+    winnerId: '',
+    winnerName: 'unclear',
+    overridden: null,
+    cosmetic,
+  })
+  const result: Result = {
+    ...emptyResult(),
+    assetConflicts: [conflict('maps/forest', false), conflict('loosesprites/cursors', true)],
+  }
+  const sections = problemSections(result)
+  expect(sections.map((s) => [s.id, s.rows.length])).toEqual([
+    ['conflicts', 1],
+    ['cosmetic', 1],
+  ])
+  expect(problemCount(result)).toBe(1)
+})

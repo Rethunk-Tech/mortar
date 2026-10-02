@@ -22,6 +22,7 @@ export type ProblemSectionId =
   | 'drift'
   | 'duplicates'
   | 'settings'
+  | 'cosmetic'
 
 export interface ProblemSection {
   id: ProblemSectionId
@@ -36,7 +37,9 @@ export function problemSections(result: Result): ProblemSection[] {
     },
     {
       id: 'conflicts',
-      rows: (result.assetConflicts ?? []).map((asset): Row => ({ kind: 'asset', asset })),
+      rows: (result.assetConflicts ?? [])
+        .filter((asset) => !asset.cosmetic)
+        .map((asset): Row => ({ kind: 'asset', asset })),
     },
     {
       id: 'broken',
@@ -58,6 +61,12 @@ export function problemSections(result: Result): ProblemSection[] {
       id: 'settings',
       rows: (result.settings ?? []).map((setting): Row => ({ kind: 'setting', setting })),
     },
+    {
+      id: 'cosmetic',
+      rows: (result.assetConflicts ?? [])
+        .filter((asset) => asset.cosmetic)
+        .map((asset): Row => ({ kind: 'asset', asset })),
+    },
   ]
   return sections.filter((s) => s.rows.length > 0)
 }
@@ -66,5 +75,7 @@ export function problemCount(result: Result | null): number {
   if (!result) {
     return 0
   }
-  return problemSections(result).reduce((n, s) => n + s.rows.length, 0)
+  return problemSections(result)
+    .filter((s) => s.id !== 'cosmetic')
+    .reduce((n, s) => n + s.rows.length, 0)
 }

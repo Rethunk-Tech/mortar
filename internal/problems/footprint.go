@@ -21,6 +21,10 @@ type cpShape struct {
 	kind       byte // 'r' area, 't' tile, 'p' property, 'w' whole
 	x, y, w, h int
 	layer, key string
+	// value is a property's literal value, "" when tokenized; tiny marks a whole-asset shape that is really one
+	// or two tiles at a position only Content Patcher can work out.
+	value string
+	tiny  bool
 }
 
 func (s cpShape) area() (x, y, w, h int) {
@@ -35,7 +39,8 @@ func (s cpShape) area() (x, y, w, h int) {
 // it does not name.
 func (s cpShape) overlaps(o cpShape) bool {
 	if s.kind == 'p' || o.kind == 'p' {
-		return s.kind == o.kind && s.key == o.key
+		// Two packs setting a property to the same value agree; only different (or unknown) values clash.
+		return s.kind == o.kind && s.key == o.key && (s.value == "" || o.value == "" || !strings.EqualFold(s.value, o.value))
 	}
 	if s.kind == 'w' || o.kind == 'w' {
 		return true
@@ -67,7 +72,7 @@ func editShapes(root string, ch cpChange, image bool) []cpShape {
 		if to, ok := areaOf(ch.ToArea); ok {
 			return []cpShape{to}
 		} else if len(ch.ToArea) > 0 {
-			return whole
+			return unplaced(ch.ToArea)
 		}
 		// Without ToArea the source lands at the top-left, sized like FromArea or the whole file.
 		if from, ok := areaOf(ch.FromArea); ok {
@@ -85,7 +90,7 @@ func editShapes(root string, ch cpChange, image bool) []cpShape {
 		case ok:
 			out = append(out, to)
 		case len(ch.ToArea) > 0:
-			return whole
+			return unplaced(ch.ToArea)
 		default:
 			// Without ToArea the source map lands at the top-left at its own size (or FromArea's).
 			if from, ok := areaOf(ch.FromArea); ok {
@@ -118,13 +123,43 @@ func editShapes(root string, ch cpChange, image bool) []cpShape {
 		}
 		out = append(out, cpShape{kind: 't', x: pos.x, y: pos.y, layer: strings.ToLower(strings.TrimSpace(tile.Layer))})
 	}
-	for key := range ch.MapProperties {
+	for key, raw := range ch.MapProperties {
 		if hasToken(key) {
 			return whole
 		}
-		out = append(out, cpShape{kind: 'p', key: strings.ToLower(key)})
+		value, _ := scalarValue(raw)
+		if hasToken(value) {
+			value = ""
+		}
+		out = append(out, cpShape{kind: 'p', key: strings.ToLower(key), value: value})
 	}
 	return out
+}
+
+// unplaced is the shape of an area whose position is tokenized: the whole asset, marked tiny when its literal
+// size is at most two tiles (a trapdoor or a sign placed by a computed position).
+func unplaced(raw json.RawMessage) []cpShape {
+	var fields map[string]json.RawMessage
+	if json.Unmarshal(raw, &fields) != nil {
+		return whole
+	}
+	w, h := 0, 0
+	for k, v := range fields {
+		var n int
+		if json.Unmarshal(v, &n) != nil {
+			continue
+		}
+		switch strings.ToLower(k) {
+		case "width":
+			w = n
+		case "height":
+			h = n
+		}
+	}
+	if w > 0 && h > 0 && w <= 2 && h <= 2 {
+		return []cpShape{{kind: 'w', tiny: true}}
+	}
+	return whole
 }
 
 // areaOf reads {X, Y, Width, Height} (or a Position's {X, Y}) given as numbers or numeric strings; false when
@@ -311,14 +346,35 @@ func exclusive(a, b cpPatch) bool {
 	return false
 }
 
-// editsClash reports whether any active edit of one pack can overwrite one of the other's.
-func editsClash(a, b []cpPatch) bool {
+// editsClash reports whether any active edit of one pack can overwrite one of the other's, and whether every
+// such overlap is harmless (see harmless).
+func editsClash(a, b []cpPatch) (clash, minor bool) {
+	minor = true
 	for _, x := range a {
 		for _, y := range b {
 			if !exclusive(x, y) && shapesOverlap(x.shapes, y.shapes) {
-				return true
+				clash = true
+				minor = minor && harmless(x, y)
 			}
 		}
 	}
-	return false
+	return clash, clash && minor
+}
+
+// harmless reports an overlap that cannot hurt play: two image edits only change how something looks; an edit
+// that applies in one location or weather only matters there; and a one-tile edit at a computed spot is too
+// small to place, so it is shown without counting as a problem.
+func harmless(x, y cpPatch) bool {
+	return (x.image && y.image) || situational(x) || situational(y) || tinyOnly(x) || tinyOnly(y)
+}
+
+func situational(p cpPatch) bool {
+	_, location := p.places["locationname"]
+	_, context := p.places["locationcontext"]
+	_, weather := p.places["weather"]
+	return location || context || weather
+}
+
+func tinyOnly(p cpPatch) bool {
+	return len(p.shapes) > 0 && !slices.ContainsFunc(p.shapes, func(s cpShape) bool { return !s.tiny })
 }

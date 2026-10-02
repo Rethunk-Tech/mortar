@@ -75,7 +75,10 @@ export const problemsOf = (result: Result | null): Problem[] =>
         ),
         ...(result.broken ?? []).map((broken): Problem => ({ kind: 'broken', broken })),
         ...(result.missing ?? []).map((missing): Problem => ({ kind: 'missing', missing })),
-        ...(result.assetConflicts ?? []).map((asset): Problem => ({ kind: 'asset', asset })),
+        // Cosmetic conflicts are listed on the Problems tab only; they are never a problem to count or fix.
+        ...(result.assetConflicts ?? [])
+          .filter((asset) => !asset.cosmetic)
+          .map((asset): Problem => ({ kind: 'asset', asset })),
         ...(result.runErrors ?? []).map((runError): Problem => ({ kind: 'runError', runError })),
         ...(result.settings ?? []).map((setting): Problem => ({ kind: 'setting', setting })),
       ]

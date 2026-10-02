@@ -38,14 +38,15 @@ func TestEditsClash(t *testing.T) {
 		{"tile inside a map patch area", `{"FromFile":"p.tmx","ToArea":{"X":0,"Y":0,"Width":10,"Height":10}}`, `{"MapTiles":[{"Position":{"X":3,"Y":3},"Layer":"Buildings","SetIndex":1}]}`, false, true},
 		{"property-only tile edits merge", `{"MapTiles":[{"Position":{"X":"{{Random: 1, 2}}","Y":1},"Layer":"Back","SetProperties":{"Light":"1"}}]}`, `{"FromFile":"p.tmx"}`, false, false},
 		{"different map properties", `{"MapProperties":{"Music":"x"}}`, `{"MapProperties":{"Light":"y"}}`, false, false},
-		{"same map property", `{"MapProperties":{"Music":"x"}}`, `{"MapProperties":{"music":"y"}}`, false, true},
+		{"same map property, different values", `{"MapProperties":{"Music":"x"}}`, `{"MapProperties":{"music":"y"}}`, false, true},
+		{"same map property, same value", `{"MapProperties":{"AllowGiantCrops":"T"}}`, `{"MapProperties":{"allowgiantcrops":"t"}}`, false, false},
 		{"different spouses never apply together", `{"When":{"Query: '{{Spouse}}' = 'Sterling'":true}}`, `{"When":{"Relationship:Jasper":"Married"}}`, true, false},
 		{"same spouse still clashes", `{"When":{"Relationship:Jasper":"Married"}}`, `{"When":{"Query: '{{Spouse}}' = 'Jasper'":true}}`, true, true},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			a, b := edit(t, c.a, c.image), edit(t, c.b, c.image)
-			if got := editsClash([]cpPatch{a}, []cpPatch{b}); got != c.want {
+			if got, _ := editsClash([]cpPatch{a}, []cpPatch{b}); got != c.want {
 				t.Fatalf("clash = %v, shapes %v / %v", got, a.shapes, b.shapes)
 			}
 		})
@@ -62,10 +63,10 @@ func TestPlacesMakeEditsExclusive(t *testing.T) {
 	a := edit(t, `{"ToArea":{"X":0,"Y":0,"Width":16,"Height":16},"When":{"LocationName":"EastScarp_Village"}}`, true)
 	b := edit(t, `{"ToArea":{"X":0,"Y":0,"Width":16,"Height":16},"When":{"LocationName |contains=Custom_Umuwi":true}}`, true)
 	c := edit(t, `{"ToArea":{"X":0,"Y":0,"Width":16,"Height":16},"When":{"LocationName":"Custom_Umuwi, EastScarp_Village"}}`, true)
-	if editsClash([]cpPatch{a}, []cpPatch{b}) {
+	if clash, _ := editsClash([]cpPatch{a}, []cpPatch{b}); clash {
 		t.Fatal("different locations clashed")
 	}
-	if !editsClash([]cpPatch{a}, []cpPatch{c}) {
+	if clash, _ := editsClash([]cpPatch{a}, []cpPatch{c}); !clash {
 		t.Fatal("shared location did not clash")
 	}
 }
@@ -89,5 +90,37 @@ func TestHasModWithEmptyInput(t *testing.T) {
 	w := parseWhen(map[string]json.RawMessage{"HasMod: |contains=Other.Mod": json.RawMessage(`false`)}, map[string]bool{}, nil)
 	if len(w.noneOf) != 1 || w.noneOf[0] != "other.mod" {
 		t.Fatalf("when %+v", w)
+	}
+}
+
+func TestHarmlessOverlaps(t *testing.T) {
+	area := `"ToArea":{"X":0,"Y":0,"Width":16,"Height":16}`
+	mapEdit := func(when string) cpPatch {
+		return edit(t, `{"FromFile":"p.tmx",`+area+when+`}`, false)
+	}
+	img := func(when string) cpPatch {
+		p := edit(t, `{`+area+when+`}`, true)
+		p.image = true
+		return p
+	}
+	tiny := edit(t, `{"FromFile":"p.tmx","ToArea":{"X":"{{x}}","Y":"{{y}}","Width":1,"Height":1}}`, false)
+	cases := []struct {
+		name  string
+		a, b  cpPatch
+		minor bool
+	}{
+		{"two image edits are cosmetic", img(""), img(""), true},
+		{"two map edits matter", mapEdit(""), mapEdit(""), false},
+		{"a map edit in one location only", mapEdit(`,"When":{"LocationName":"Cave"}`), mapEdit(""), true},
+		{"an image edit in one weather only", img(`,"When":{"Weather":"Storm"}`), mapEdit(""), true},
+		{"one tile at a computed spot", tiny, mapEdit(""), true},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			clash, minor := editsClash([]cpPatch{c.a}, []cpPatch{c.b})
+			if !clash || minor != c.minor {
+				t.Fatalf("clash=%v minor=%v", clash, minor)
+			}
+		})
 	}
 }

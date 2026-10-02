@@ -34,6 +34,8 @@ type AssetConflict struct {
 	WinnerID   string   `json:"winnerId"`
 	WinnerName string   `json:"winnerName"`
 	Overridden []string `json:"overridden"`
+	// Cosmetic marks an edit conflict whose every overlap is harmless (see harmless): shown, never counted.
+	Cosmetic bool `json:"cosmetic"`
 }
 
 type packHit struct {
@@ -54,6 +56,7 @@ type cpPatch struct {
 	shapes   []cpShape           // what an edit writes; see editShapes
 	spouse   string              // the spouse the change requires, or ""
 	places   map[string][]string // literal values the change requires of placeTokens
+	image    bool                // an EditImage change, which only changes how something looks
 	// tokenValue is a dynamic token's value; a token that yields a picker value only when a mod is
 	// installed is how a pack says which mod that value is for.
 	tokenName  string
@@ -289,7 +292,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			}
 			pack.patches = append(pack.patches, cpPatch{
 				kind: kind, target: normalizeTarget(t), priority: strings.TrimSpace(ch.Priority), when: when,
-				shapes: shapes, spouse: spouseOf(ch.When), places: placesOf(ch.When),
+				shapes: shapes, spouse: spouseOf(ch.When), places: placesOf(ch.When), image: strings.EqualFold(action, kindEditImage),
 			})
 		}
 	}
@@ -590,11 +593,14 @@ func assetConflicts(mods []Installed) []AssetConflict {
 	out := []AssetConflict{}
 	for kind, targets := range at {
 		for t, hits := range targets {
+			cosmetic := false
 			if kind == "edit" {
-				hits = clashing(hits)
+				hits, cosmetic = clashing(hits)
 			}
 			if len(hits) >= 2 {
-				out = append(out, conflictOf(kind, t, hits))
+				c := conflictOf(kind, t, hits)
+				c.Cosmetic = cosmetic
+				out = append(out, c)
 			}
 		}
 	}
@@ -613,23 +619,28 @@ func assetConflicts(mods []Installed) []AssetConflict {
 // clashing keeps the packs that share an overlapping edit of one target with a pack they were not built
 // alongside. Packs in one entry, or where one names the other as a dependency or in a HasMod condition,
 // were patched to work together, so their overlaps are intended.
-func clashing(hits []packHit) []packHit {
+func clashing(hits []packHit) (out []packHit, cosmetic bool) {
 	in := make([]bool, len(hits))
+	cosmetic = true
 	for i := range hits {
 		for j := i + 1; j < len(hits); j++ {
-			if aware(hits[i], hits[j]) || !editsClash(hits[i].edits, hits[j].edits) {
+			if aware(hits[i], hits[j]) {
+				continue
+			}
+			clash, minor := editsClash(hits[i].edits, hits[j].edits)
+			if !clash {
 				continue
 			}
 			in[i], in[j] = true, true
+			cosmetic = cosmetic && minor
 		}
 	}
-	var out []packHit
 	for i, h := range hits {
 		if in[i] {
 			out = append(out, h)
 		}
 	}
-	return out
+	return out, cosmetic
 }
 
 func aware(a, b packHit) bool {
