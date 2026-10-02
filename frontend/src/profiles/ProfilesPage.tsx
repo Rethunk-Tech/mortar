@@ -24,8 +24,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  IconButton,
   InputAdornment,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import {
@@ -69,8 +71,10 @@ function TrashRow({ item }: { item: TrashItem }) {
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1.25,
-        p: 1.5,
+        gap: 0.5,
+        py: 1,
+        pl: 1.5,
+        pr: 0.5,
         bgcolor: 'rgba(55,55,65,0.9)',
         borderRadius: '6px',
       }}
@@ -81,25 +85,29 @@ function TrashRow({ item }: { item: TrashItem }) {
         </Typography>
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{days}</Typography>
       </Box>
-      <Button
-        variant="outlined"
-        startIcon={<RotateCcw size={14} />}
-        disabled={pending}
-        onClick={() => run(() => restore(item.id))}
-        sx={{ whiteSpace: 'nowrap' }}
-      >
-        {t`Restore`}
-      </Button>
-      <Button
-        variant="outlined"
-        color="error"
-        startIcon={<Trash2 size={14} />}
-        disabled={pending}
-        onClick={() => setConfirming(true)}
-        sx={{ whiteSpace: 'nowrap' }}
-      >
-        {t`Delete permanently`}
-      </Button>
+      <Tooltip title={t`Restore`}>
+        <span>
+          <IconButton
+            aria-label={t`Restore ${item.name}`}
+            disabled={pending}
+            onClick={() => run(() => restore(item.id))}
+          >
+            <RotateCcw size={16} />
+          </IconButton>
+        </span>
+      </Tooltip>
+      <Tooltip title={t`Delete permanently`}>
+        <span>
+          <IconButton
+            aria-label={t`Delete ${item.name} permanently`}
+            color="error"
+            disabled={pending}
+            onClick={() => setConfirming(true)}
+          >
+            <Trash2 size={16} />
+          </IconButton>
+        </span>
+      </Tooltip>
       <Dialog open={confirming} onClose={() => setConfirming(false)}>
         <DialogTitle>{t`Delete ${item.name} permanently?`}</DialogTitle>
         <DialogContent>
@@ -138,7 +146,6 @@ function Trash() {
         flexDirection: 'column',
         gap: 1.25,
         p: 2,
-        alignSelf: 'start',
         bgcolor: 'rgba(40,40,48,0.78)',
         borderRadius: '8px',
       }}
@@ -451,7 +458,7 @@ export function ProfilesPage() {
             </DndContext>
           )}
         </Box>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: 320, flexShrink: 0 }}>
           <BundlesSection game={game} profiles={profiles} />
           <Trash />
         </Box>

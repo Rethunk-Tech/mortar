@@ -87,7 +87,6 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
           flexDirection: 'column',
           gap: 1.25,
           p: 2,
-          alignSelf: 'start',
           bgcolor: 'rgba(40,40,48,0.78)',
           borderRadius: '8px',
         }}
