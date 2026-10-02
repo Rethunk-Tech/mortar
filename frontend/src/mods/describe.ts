@@ -95,8 +95,20 @@ export function useDescribe(): Describe {
         }
         return t`${name} logged ${count} errors in the last run.`
       }
-      case 'setting':
-        return t`${p.setting.name} has a ${p.setting.field} setting for ${(p.setting.forNames ?? []).join(', ')}; it is ${p.setting.current}, so those patches are off.`
+      case 'setting': {
+        const s = p.setting
+        const installed = (s.forNames ?? []).join(', ')
+        if (!s.variant) {
+          return t`${s.name} has a ${s.field} setting for ${installed}; it is ${s.current}, so those patches are off.`
+        }
+        if (s.currentFor !== '' && installed !== '') {
+          return t`${s.name}'s ${s.field} is ${s.current}, made for ${s.currentFor}, which this profile lacks; it can match ${installed} instead.`
+        }
+        if (s.currentFor !== '') {
+          return t`${s.name}'s ${s.field} is ${s.current}, made for ${s.currentFor}, which this profile lacks.`
+        }
+        return t`${s.name}'s ${s.field} is ${s.current}; it can match ${installed} instead.`
+      }
       default:
         return ''
     }

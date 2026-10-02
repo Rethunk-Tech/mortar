@@ -53,6 +53,10 @@ type cpPatch struct {
 	when     cpWhen
 	shapes   []cpShape // what an edit writes; see editShapes
 	spouse   string    // the spouse the change requires, or ""
+	// tokenValue is a dynamic token's value; a token that yields a picker value only when a mod is
+	// installed is how a pack says which mod that value is for.
+	tokenName  string
+	tokenValue string
 }
 
 type cpConfig struct {
@@ -137,6 +141,7 @@ type cpSchema struct {
 	defaultValue  string
 	allowMultiple bool
 	allowValues   []string
+	allowBlank    bool
 	description   string
 }
 
@@ -157,6 +162,7 @@ func readConfigSchema(root string) map[string]cpSchema {
 			Default       json.RawMessage `json:"Default"`
 			AllowMultiple bool            `json:"AllowMultiple"`
 			AllowValues   string          `json:"AllowValues"`
+			AllowBlank    bool            `json:"AllowBlank"`
 			Description   string          `json:"Description"`
 		}
 		if json.Unmarshal(raw, &entry) != nil {
@@ -172,6 +178,7 @@ func readConfigSchema(root string) map[string]cpSchema {
 			defaultValue:  defaultValue,
 			allowMultiple: entry.AllowMultiple,
 			allowValues:   splitTargets(entry.AllowValues),
+			allowBlank:    entry.AllowBlank,
 			description:   entry.Description,
 		}
 	}
@@ -227,7 +234,9 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 	var doc struct {
 		Changes       []cpChange `json:"Changes"`
 		DynamicTokens []struct {
-			When map[string]json.RawMessage `json:"When"`
+			Name  string                     `json:"Name"`
+			Value json.RawMessage            `json:"Value"`
+			When  map[string]json.RawMessage `json:"When"`
 		} `json:"DynamicTokens"`
 	}
 	if err := json.Unmarshal(stripJSONNoise(raw), &doc); err != nil {
@@ -237,7 +246,8 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 	// settings too. Content Patcher reads DynamicTokens only from content.json.
 	if key == "content.json" {
 		for _, tok := range doc.DynamicTokens {
-			pack.patches = append(pack.patches, cpPatch{kind: "other", when: outer.with(parseWhen(tok.When, pack.mentions, pack.schema))})
+			value, _ := scalarValue(tok.Value)
+			pack.patches = append(pack.patches, cpPatch{kind: "other", when: outer.with(parseWhen(tok.When, pack.mentions, pack.schema)), tokenName: strings.ToLower(strings.TrimSpace(tok.Name)), tokenValue: value})
 		}
 	}
 	for _, ch := range doc.Changes {

@@ -1,6 +1,7 @@
 package problems
 
 import (
+	"cmp"
 	"encoding/json"
 	"path/filepath"
 	"slices"
@@ -45,6 +46,7 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 			continue
 		}
 		config := readPackConfig(packMod.Folder)
+		out = append(out, variantSettings(packMod, pack, config, present, byID)...)
 		groups := map[string]*settingGroup{}
 		for _, patch := range pack.patches {
 			if !patch.when.holds(present) {
@@ -230,4 +232,125 @@ func (s cpSchema) toggle() bool {
 		}
 	}
 	return true
+}
+
+// variantSettings suggests a picker value from the pack's own mapping of values to mods: a dynamic token that
+// yields one of the field's allowed values only when a mod is installed (Value "Earthy" When HasMod
+// DaisyNiko.EarthyRecolour). A field with two or more such values is a picker. Its automatic choice is a
+// blank value when allowed, or the value the mapping tokens themselves require of the field ("Off"), since
+// with it the pack detects the installed mod on its own.
+func variantSettings(packMod Installed, pack cachedPack, config map[string]string, present map[string]bool, byID map[string]Installed) []SettingHint {
+	var out []SettingHint
+	for _, schema := range pack.schema {
+		if schema.allowMultiple || len(schema.allowValues) < 2 {
+			continue
+		}
+		// Only the field's own tokens count: those that read it ({{Field}}) or test it. Other tokens can yield
+		// the same words ("Default") for unrelated choices.
+		own := map[string]bool{}
+		for _, p := range pack.patches {
+			if p.tokenName == "" {
+				continue
+			}
+			reads := strings.Contains(strings.ToLower(p.tokenValue), "{{"+strings.ToLower(schema.key)+"}}")
+			if reads || slices.ContainsFunc(p.when.config, func(c cpConfig) bool { return strings.EqualFold(c.field, schema.key) }) {
+				own[p.tokenName] = true
+			}
+		}
+		forValue := map[string][]string{} // lower-cased allowed value -> mod ids that select it
+		var auto []string
+		for _, p := range pack.patches {
+			if p.tokenValue == "" || !own[p.tokenName] {
+				continue
+			}
+			value, ok := allowedValue(schema, p.tokenValue)
+			if !ok {
+				continue
+			}
+			var ids []string
+			for _, group := range p.when.anyOf {
+				for _, id := range group {
+					if !sameID(id, packMod.UniqueID) {
+						ids = append(ids, strings.ToLower(id))
+					}
+				}
+			}
+			if len(ids) == 0 {
+				continue
+			}
+			forValue[strings.ToLower(value)] = append(forValue[strings.ToLower(value)], ids...)
+			for _, c := range p.when.config {
+				if strings.EqualFold(c.field, schema.key) {
+					for _, v := range c.values {
+						addSettingValue(&auto, v)
+					}
+				}
+			}
+		}
+		if len(forValue) < 2 {
+			continue
+		}
+		current, set := config[strings.ToLower(schema.key)]
+		if !set {
+			current = schema.defaultValue
+		}
+		current = strings.TrimSpace(current)
+		if (current == "" && schema.allowBlank) || slices.ContainsFunc(auto, func(a string) bool { return strings.EqualFold(a, current) }) {
+			continue
+		}
+		var enabledFor []Installed
+		var enabledValues []string
+		for _, value := range schema.allowValues {
+			for _, id := range forValue[strings.ToLower(value)] {
+				if present[id] {
+					enabledFor = append(enabledFor, byID[id])
+					addSettingValue(&enabledValues, value)
+				}
+			}
+		}
+		currentFor := ""
+		for _, id := range forValue[strings.ToLower(current)] {
+			if present[id] {
+				currentFor = ""
+				break
+			}
+			currentFor = id
+		}
+		if forValue[strings.ToLower(current)] != nil && currentFor == "" {
+			continue // the current value is for a mod the profile has
+		}
+		if currentFor == "" && len(enabledFor) == 0 {
+			continue // a generic choice and none of the mapped mods: nothing to match
+		}
+		var suggested []string
+		switch {
+		case schema.allowBlank:
+			suggested = []string{""}
+		case len(auto) > 0:
+			suggested = auto
+		default:
+			suggested = enabledValues
+		}
+		if len(suggested) == 0 {
+			continue
+		}
+		hint := SettingHint{
+			Key: packMod.Key, UniqueID: packMod.UniqueID, Name: packMod.Name, Field: schema.key, Current: current,
+			Suggested: suggested, Description: schema.description, Variant: true, CurrentFor: currentFor,
+		}
+		for _, mod := range enabledFor {
+			hint.For = append(hint.For, mod.UniqueID)
+			hint.ForNames = append(hint.ForNames, cmp.Or(mod.Name, mod.UniqueID))
+		}
+		out = append(out, hint)
+	}
+	return out
+}
+
+func allowedValue(schema cpSchema, value string) (string, bool) {
+	i := slices.IndexFunc(schema.allowValues, func(v string) bool { return strings.EqualFold(strings.TrimSpace(v), strings.TrimSpace(value)) })
+	if i < 0 {
+		return "", false
+	}
+	return schema.allowValues[i], true
 }

@@ -208,6 +208,8 @@ function SettingButtons({ setting }: { setting: SettingHint }) {
     return null
   }
   const first = values[0] ?? ''
+  // A blank picker value means "detect it for me", which reads better than an empty name.
+  const label = (value: string) => (value === '' ? t`Set to automatic` : t`Set to ${value}`)
   return (
     <>
       <Button
@@ -218,7 +220,7 @@ function SettingButtons({ setting }: { setting: SettingHint }) {
         onClick={() => apply(first)}
         sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
       >
-        {t`Set to ${first}`}
+        {label(first)}
       </Button>
       {values.length > 1 ? (
         <>
@@ -236,7 +238,7 @@ function SettingButtons({ setting }: { setting: SettingHint }) {
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
             {values.map((value) => (
               <MenuItem key={value} onClick={() => apply(value)}>
-                {t`Set to ${value}`}
+                {label(value)}
               </MenuItem>
             ))}
           </Menu>

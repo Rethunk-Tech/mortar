@@ -115,6 +115,10 @@ type SettingHint struct {
 	For         []string `json:"for"`
 	ForNames    []string `json:"forNames"`
 	Description string   `json:"description"`
+	// Variant marks a picker (a palette, recolour or similar choice) whose values the pack maps to mods.
+	// CurrentFor names the mod the current value is for when that mod is not enabled.
+	Variant    bool   `json:"variant"`
+	CurrentFor string `json:"currentFor"`
 }
 
 // Result is everything found for one profile. Unknown is set when a lookup failed, so the lists may be short.

@@ -61,6 +61,8 @@ test('settings are an info-level group and count as problems', () => {
         for: ['Other.Mod'],
         forNames: ['Other'],
         description: '',
+        variant: false,
+        currentFor: '',
       },
     ],
   }
