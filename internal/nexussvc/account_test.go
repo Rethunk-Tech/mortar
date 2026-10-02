@@ -67,6 +67,13 @@ func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
 	if err := s.Track(ctx, 541); err != nil {
 		t.Fatal(err)
 	}
+	if count, err := s.TrackedCount(ctx, "stardewvalley"); err != nil || count != 1 {
+		t.Fatalf("tracked count = %d, %v", count, err)
+	}
+	result, err := s.UntrackAll(ctx, "stardewvalley", false)
+	if err != nil || result.Untracked != 1 || result.Remaining != 0 || result.StoppedForLimit {
+		t.Fatalf("untrack all = %+v, %v", result, err)
+	}
 }
 
 func TestEndorseWithoutDownloadSurfacesNexusMessage(t *testing.T) {

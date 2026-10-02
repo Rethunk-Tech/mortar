@@ -4,6 +4,11 @@ import {
   Box,
   Button,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -17,6 +22,8 @@ import { type SubmitEvent, useEffect, useId, useState } from 'react'
 import {
   SignIn,
   SignOut,
+  TrackedCount,
+  UntrackAll,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
 import {
   Get as GetSettings,
@@ -25,6 +32,7 @@ import {
   SetNxmRedirectOtherGames,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
+import { useToasts } from '../../toasts/store.ts'
 import { NexusMeter } from '../NexusMeter.tsx'
 import { useNexus } from '../nexus.ts'
 import { useSettings } from '../store.ts'
@@ -59,6 +67,39 @@ function NexusModsSignedIn({
   onAskEndorse: (on: boolean) => void
 }) {
   const { t } = useLingui()
+  const pushToast = useToasts((s) => s.push)
+  const [trackedCount, setTrackedCount] = useState<number | null>(null)
+  const [confirming, setConfirming] = useState<boolean | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    TrackedCount('stardewvalley').then(setTrackedCount).catch(reportUnexpected)
+  }, [])
+
+  const untrack = () => {
+    if (confirming === null) {
+      return
+    }
+    setBusy(true)
+    UntrackAll('stardewvalley', confirming)
+      .then((result) => {
+        const toast = {
+          kind: result.stoppedForLimit ? 'warning' : 'success',
+          title: t`Untracked ${result.untracked} mods`,
+          ...(result.stoppedForLimit
+            ? { body: t`Stopped at the API limit; ${result.remaining} left` }
+            : {}),
+        } as const
+        pushToast(toast)
+        setTrackedCount(result.remaining)
+        setConfirming(null)
+      })
+      .catch((err: unknown) =>
+        pushToast({ kind: 'error', title: errorText(err) ?? t`Could not untrack mods` }),
+      )
+      .finally(() => setBusy(false))
+  }
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Alert
@@ -88,6 +129,25 @@ function NexusModsSignedIn({
           />
         </Box>
       </Alert>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Tracked mods`}</Box>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Button
+            variant="outlined"
+            disabled={busy || trackedCount === null || trackedCount === 0}
+            onClick={() => setConfirming(false)}
+          >
+            {t`Untrack every Stardew Valley mod…`}
+          </Button>
+          <Button
+            variant="outlined"
+            disabled={busy || trackedCount === null || trackedCount === 0}
+            onClick={() => setConfirming(true)}
+          >
+            {t`Untrack mods not in any profile…`}
+          </Button>
+        </Box>
+      </Box>
       {premium ? null : (
         <Box sx={{ fontSize: 14, lineHeight: 1.5 }}>
           {t`Free accounts need one click on Nexus for every download. Mortar opens each file's page in turn and takes the download from your click.`}
@@ -159,6 +219,22 @@ function NexusModsSignedIn({
         />
       ) : null}
       {nxm.dialog}
+      <Dialog open={confirming !== null} onClose={() => (busy ? undefined : setConfirming(null))}>
+        <DialogTitle>{t`Untrack mods?`}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t`Untrack ${trackedCount ?? 0} mods on Nexus? Nexus has no undo for this.`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button disabled={busy} onClick={() => setConfirming(null)}>
+            {t`Cancel`}
+          </Button>
+          <Button disabled={busy} color="error" variant="contained" onClick={untrack}>
+            {t`Untrack mods`}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

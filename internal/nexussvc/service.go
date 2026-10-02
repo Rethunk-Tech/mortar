@@ -9,6 +9,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/secret"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -25,6 +26,13 @@ type Account struct {
 	Name     string       `json:"name"`
 	Premium  bool         `json:"premium"`
 	Limits   nexus.Limits `json:"limits"`
+}
+
+// UntrackAllResult reports the progress of a bulk untrack operation.
+type UntrackAllResult struct {
+	Untracked       int  `json:"untracked"`
+	Remaining       int  `json:"remaining"`
+	StoppedForLimit bool `json:"stoppedForLimit"`
 }
 
 // Service signs in and out of Nexus Mods.
@@ -140,6 +148,86 @@ func (s *Service) TrackedMods(ctx context.Context) ([]nexus.TrackedMod, error) {
 		return nil, err
 	}
 	return c.TrackedMods(ctx)
+}
+
+// TrackedCount returns the number of tracked mods for a game's Nexus domain.
+func (s *Service) TrackedCount(ctx context.Context, game string) (int, error) {
+	mods, err := s.TrackedMods(ctx)
+	if err != nil {
+		return 0, err
+	}
+	count := 0
+	for _, mod := range mods {
+		if mod.DomainName == game {
+			count++
+		}
+	}
+	return count, nil
+}
+
+// UntrackAll removes a game's tracked mods, optionally retaining mods used by any profile.
+func (s *Service) UntrackAll(ctx context.Context, game string, onlyNotInProfiles bool) (UntrackAllResult, error) {
+	mods, err := s.TrackedMods(ctx)
+	if err != nil {
+		return UntrackAllResult{}, err
+	}
+	targets := make([]int, 0, len(mods))
+	for _, mod := range mods {
+		if mod.DomainName == game {
+			targets = append(targets, mod.ModID)
+		}
+	}
+	if onlyNotInProfiles {
+		used, err := profileModIDs(game)
+		if err != nil {
+			return UntrackAllResult{}, err
+		}
+		filtered := targets[:0]
+		for _, modID := range targets {
+			if !used[modID] {
+				filtered = append(filtered, modID)
+			}
+		}
+		targets = filtered
+	}
+	result := UntrackAllResult{Remaining: len(targets)}
+	for i, modID := range targets {
+		limits := s.client.Limits()
+		if limits.Known && (limits.Daily.Remaining <= nexus.LimitFloor || limits.Hourly.Remaining <= nexus.LimitFloor) {
+			result.StoppedForLimit = true
+			break
+		}
+		if err := s.Untrack(ctx, modID); err != nil {
+			if _, ok := errors.AsType[*nexus.RateLimitError](err); ok {
+				result.StoppedForLimit = true
+				break
+			}
+			return result, err
+		}
+		result.Untracked++
+		result.Remaining = len(targets) - i - 1
+	}
+	return result, nil
+}
+
+func profileModIDs(game string) (map[int]bool, error) {
+	store, err := profile.Open(nil)
+	if err != nil {
+		return nil, err
+	}
+	profiles, err := store.List(game)
+	if err != nil {
+		return nil, err
+	}
+	used := map[int]bool{}
+	for _, p := range profiles {
+		for _, entry := range p.Entries {
+			if entry.Source.ModID > 0 {
+				used[entry.Source.ModID] = true
+			}
+		}
+	}
+	return used, nil
 }
 
 // Track starts tracking modID for the signed-in user.
