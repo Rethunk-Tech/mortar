@@ -60,6 +60,7 @@ export function General() {
   const enableModsWhenInstalled = useSettings((s) => s.enableModsWhenInstalled)
   const lanSharing = useSettings((s) => s.lanSharing)
   const lanPort = useSettings((s) => s.lanPort)
+  const [portText, setPortText] = useState(String(lanPort))
   const push = useToasts((s) => s.push)
   const reportFailure = useCallback(
     (err: unknown) => {
@@ -71,6 +72,21 @@ export function General() {
   useEffect(() => {
     FirewallBlocked().then(setFirewallBlocked).catch(reportFailure)
   }, [reportFailure])
+  useEffect(() => {
+    setPortText(String(lanPort))
+  }, [lanPort])
+  const savePort = () => {
+    if (portText.trim() === '') {
+      setPortText(String(lanPort))
+      return
+    }
+    const port = Number(portText)
+    if (Number.isInteger(port) && port >= 0 && port <= maxLanPort) {
+      SetLanPort(port).catch(reportFailure)
+    } else {
+      setPortText(String(lanPort))
+    }
+  }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Window`}</Box>
@@ -113,13 +129,14 @@ export function General() {
         label={t`LAN port`}
         type="number"
         size="small"
-        value={lanPort}
+        value={portText}
         slotProps={{ htmlInput: { min: 0, max: maxLanPort, step: 1 } }}
         helperText={t`Use 0 to let the operating system choose a port.`}
-        onChange={(event) => {
-          const port = Number(event.target.value)
-          if (Number.isInteger(port) && port >= 0 && port <= maxLanPort) {
-            SetLanPort(port).catch(reportFailure)
+        onChange={(event) => setPortText(event.target.value)}
+        onBlur={savePort}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            savePort()
           }
         }}
         sx={{ maxWidth: 240 }}
