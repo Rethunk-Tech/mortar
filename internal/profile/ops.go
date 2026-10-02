@@ -680,7 +680,7 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 	if err := os.MkdirAll(modsDir, 0o700); err != nil {
 		return err
 	}
-	if err := s.parkUnknownModsLocked(game, dir, p); err != nil {
+	if err := s.parkUnknownModsLocked(dir, p); err != nil {
 		return err
 	}
 	known := map[string]bool{}

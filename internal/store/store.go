@@ -354,7 +354,7 @@ func syncTree(root string) error {
 }
 
 func syncPath(path string) error {
-	f, err := os.Open(path)
+	f, err := fsx.Open(path)
 	if err != nil {
 		return err
 	}
