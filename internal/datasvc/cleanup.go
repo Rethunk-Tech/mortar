@@ -19,7 +19,6 @@ const (
 	datasetTTL    = 30 * 24 * time.Hour
 	releasesTTL   = time.Hour
 	updatesTTL    = time.Hour
-	tmpPrefix     = ".tmp-"
 )
 
 // Item is one path Clean up would remove.
@@ -41,7 +40,7 @@ type fetchedFile struct {
 }
 
 // Select lists store items no referenced key names, cache files past their expiry, and leftover temp folders.
-func Select(root string, items *store.Store, referenced map[string][]string, now time.Time) (Preview, error) {
+func Select(root string, items *store.Store, referenced map[string][]string, now time.Time, labels ...func(string, string) string) (Preview, error) {
 	out := Preview{Items: []Item{}}
 	refs, err := items.Unreferenced(referenced)
 	if err != nil {
@@ -50,7 +49,13 @@ func Select(root string, items *store.Store, referenced map[string][]string, now
 	for _, r := range refs {
 		rel := filepath.ToSlash(filepath.Join("store", r.Game, r.Key))
 		n := dirSize(filepath.Join(root, filepath.FromSlash(rel)))
-		out.Items = append(out.Items, Item{Kind: "store", Label: r.Game + "/" + r.Key, Rel: rel, Size: n})
+		label := r.Game + "/" + r.Key
+		if len(labels) > 0 && labels[0] != nil {
+			if named := labels[0](r.Game, r.Key); named != "" {
+				label = named
+			}
+		}
+		out.Items = append(out.Items, Item{Kind: "store", Label: label, Rel: rel, Size: n})
 		out.Total += n
 	}
 	cacheRoot := filepath.Join(root, "cache")
@@ -107,7 +112,7 @@ func Select(root string, items *store.Store, referenced map[string][]string, now
 		}
 		slash := filepath.ToSlash(rel)
 		name := d.Name()
-		if d.Type().IsRegular() && strings.HasPrefix(name, "backup-") && strings.HasSuffix(name, ".tmp") {
+		if d.Type().IsRegular() && tempName(name) {
 			if info, infoErr := d.Info(); infoErr == nil {
 				out.Items = append(out.Items, Item{Kind: "temp", Label: slash, Rel: slash, Size: info.Size()})
 				out.Total += info.Size()
@@ -117,14 +122,14 @@ func Select(root string, items *store.Store, referenced map[string][]string, now
 		if !d.IsDir() {
 			return nil
 		}
-		if !strings.HasPrefix(name, tmpPrefix) && !strings.HasSuffix(name, ".tmp") {
+		if !tempName(name) {
 			return nil
 		}
 		empty, emptyErr := dirEmpty(path)
 		if emptyErr != nil {
 			return emptyErr
 		}
-		if !empty && !strings.HasPrefix(name, tmpPrefix) {
+		if !empty && !strings.HasPrefix(name, ".tmp-") && !strings.HasPrefix(name, ".tmp_") {
 			return nil
 		}
 		n := dirSize(path)
@@ -136,6 +141,10 @@ func Select(root string, items *store.Store, referenced map[string][]string, now
 		return Preview{}, err
 	}
 	return out, nil
+}
+
+func tempName(name string) bool {
+	return strings.HasPrefix(name, ".tmp-") || strings.HasPrefix(name, ".tmp_") || strings.HasSuffix(name, ".tmp")
 }
 
 // Apply deletes the listed relative paths except store keys still in keep, and drops matching index entries.

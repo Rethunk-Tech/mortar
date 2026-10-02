@@ -52,6 +52,15 @@ func TestSelectKeepsReferencedAndApplyRemovesTheRest(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(root, "cache", ".tmp-empty"), 0o700); err != nil {
 		t.Fatal(err)
 	}
+	if err := os.MkdirAll(filepath.Join(root, "cache", ".tmp_legacy"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "cache", ".tmp_legacy", "partial"), []byte("partial"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "cache", "write.tmp"), []byte("partial"), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	preview, err := Select(root, items, map[string][]string{"stardew": {"keep"}}, now)
 	if err != nil {
 		t.Fatal(err)
@@ -63,7 +72,7 @@ func TestSelectKeepsReferencedAndApplyRemovesTheRest(t *testing.T) {
 			t.Fatalf("referenced store item listed: %+v", preview.Items)
 		}
 	}
-	if kinds["store"] != 1 || kinds["cache"] != 1 || kinds["temp"] != 1 {
+	if kinds["store"] != 1 || kinds["cache"] != 1 || kinds["temp"] != 3 {
 		t.Fatalf("kinds = %v items = %+v", kinds, preview.Items)
 	}
 	if err := Apply(root, items, preview, map[string][]string{"stardew": {"keep"}}); err != nil {
@@ -83,6 +92,12 @@ func TestSelectKeepsReferencedAndApplyRemovesTheRest(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(root, "cache", ".tmp-empty")); !os.IsNotExist(err) {
 		t.Fatal("empty temp remains")
+	}
+	if _, err := os.Stat(filepath.Join(root, "cache", ".tmp_legacy")); !os.IsNotExist(err) {
+		t.Fatal("underscore temp remains")
+	}
+	if _, err := os.Stat(filepath.Join(root, "cache", "write.tmp")); !os.IsNotExist(err) {
+		t.Fatal("tmp file remains")
 	}
 }
 
