@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
@@ -10,7 +11,6 @@ import {
   ListItemIcon,
   Menu,
   MenuItem,
-  Checkbox,
 } from '@mui/material'
 import { UserRound } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
