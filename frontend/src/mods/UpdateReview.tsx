@@ -327,6 +327,67 @@ function Row({
   )
 }
 
+// PropagateUpdate offers the update just applied to this profile to the game's other profiles that hold the old
+// file, once the queue has installed it here and the new entry key is known.
+function PropagateUpdate({
+  profile,
+  update,
+  onDone,
+}: {
+  profile: Profile
+  update: Update
+  onDone: () => void
+}) {
+  const { t } = useLingui()
+  const items = useQueue((s) => s.state.items)
+  const [newKey, setNewKey] = useState('')
+  useEffect(() => {
+    const done = items.find(
+      (item) =>
+        item.state === 'done' &&
+        item.kind === 'update' &&
+        item.profileId === profile.id &&
+        item.name === update.name &&
+        item.version === update.version,
+    )
+    if (!done) {
+      return
+    }
+    const next = useProfiles
+      .getState()
+      .profiles.find((candidate) => candidate.id === profile.id)
+      ?.entries?.find((entry) =>
+        entry.mods?.some((mod) => sameId(mod.uniqueId, update.uniqueId)),
+      )?.key
+    if (next) {
+      setNewKey(next)
+    }
+  }, [items, profile.id, update])
+  return (
+    <OtherProfilesDialog
+      open={newKey !== ''}
+      onClose={onDone}
+      game={useProfiles.getState().game?.id ?? ''}
+      currentProfileId={profile.id}
+      uniqueId={update.uniqueId}
+      title={t`Update ${update.name} in other profiles`}
+      confirmLabel={t`Update profiles`}
+      update={{ oldKey: update.key }}
+      onConfirm={async (profiles, pinned) => {
+        const game = useProfiles.getState().game?.id ?? ''
+        await Promise.all(profiles.map((other) => UpdateEntry(game, other.id, update.key, newKey)))
+        useToasts.getState().push({
+          kind: 'success',
+          title: t`Updated in ${profiles.length} profiles`,
+          ...(pinned.length > 0
+            ? { body: pinned.map((other) => t`pinned in ${other.name}`).join(', ') }
+            : {}),
+        })
+      }}
+    />
+  )
+}
+
 export function UpdateBar() {
   const { t } = useLingui()
   const updates = useUpdates((s) => s.updates)
@@ -393,7 +454,6 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   const [acked, setAcked] = useState<Record<string, boolean>>({})
   const [now, setNow] = useState(() => Date.now())
   const [propagating, setPropagating] = useState<Update | null>(null)
-  const [propagationNewKey, setPropagationNewKey] = useState('')
   useEffect(() => {
     const id = globalThis.setInterval(() => setNow(Date.now()), TICK_MS)
     return () => globalThis.clearInterval(id)
@@ -406,31 +466,6 @@ export function UpdateReview({ profile }: { profile: Profile }) {
       (updates?.updates ?? []).filter((u) => u.nexusId > 0).map((u) => u.nexusId),
     ).catch(reportUnexpected)
   }, [open, updates])
-  useEffect(() => {
-    if (!propagating) {
-      return
-    }
-    const done = items.find(
-      (item) =>
-        item.state === 'done' &&
-        item.kind === 'update' &&
-        item.profileId === profile.id &&
-        item.name === propagating.name &&
-        item.version === propagating.version,
-    )
-    if (!done) {
-      return
-    }
-    const next = useProfiles
-      .getState()
-      .profiles.find((candidate) => candidate.id === profile.id)
-      ?.entries?.find((entry) =>
-        entry.mods?.some((mod) => sameId(mod.uniqueId, propagating.uniqueId)),
-      )?.key
-    if (next) {
-      setPropagationNewKey(next)
-    }
-  }, [items, profile.id, propagating])
   const cautionOk = (u: Update) => {
     const caution = installedCaution(mods, u)
     return caution === '' || acked[modId(u)] === true
@@ -526,34 +561,13 @@ export function UpdateReview({ profile }: { profile: Profile }) {
           </Button>
         ) : null}
       </DialogActions>
-      <OtherProfilesDialog
-        open={propagating !== null && propagationNewKey !== ''}
-        onClose={() => {
-          setPropagating(null)
-          setPropagationNewKey('')
-        }}
-        game={useProfiles.getState().game?.id ?? ''}
-        currentProfileId={profile.id}
-        uniqueId={propagating?.uniqueId ?? ''}
-        title={t`Update ${propagating?.name ?? ''} in other profiles`}
-        confirmLabel={t`Update profiles`}
-        update={propagating ? { oldKey: propagating.key } : undefined}
-        onConfirm={async (profiles, pinned) => {
-          const game = useProfiles.getState().game?.id ?? ''
-          await Promise.all(
-            profiles.map((other) =>
-              UpdateEntry(game, other.id, propagating?.key ?? '', propagationNewKey),
-            ),
-          )
-          useToasts.getState().push({
-            kind: 'success',
-            title: t`Updated in ${profiles.length} profiles`,
-            ...(pinned.length > 0
-              ? { body: pinned.map((other) => t`pinned in ${other.name}`).join(', ') }
-              : {}),
-          })
-        }}
-      />
+      {propagating ? (
+        <PropagateUpdate
+          profile={profile}
+          update={propagating}
+          onDone={() => setPropagating(null)}
+        />
+      ) : null}
     </Dialog>
   )
 }

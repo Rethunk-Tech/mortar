@@ -29,6 +29,7 @@ const defaults: Settings = {
   nexusSeenDownloadServers: [],
   checkModUpdatesOnStart: true,
   tellWhenSmapiOut: true,
+  askEndorseMods: true,
   keepInTray: false,
   includeBetaReleases: false,
   includePrereleaseModVersions: false,
