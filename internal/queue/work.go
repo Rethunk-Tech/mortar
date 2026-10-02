@@ -298,7 +298,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 			if cur.Name == "" {
 				cur.Name = m.Name
 			}
-			cur.picture, cur.endorsed = m.PictureURL, m.EndorsementCount
+			cur.Picture, cur.endorsed = m.PictureURL, m.EndorsementCount
 		}
 		s.mu.Unlock()
 	}
@@ -450,6 +450,8 @@ func (p *progress) set(n int64) {
 		it.Speed = speed
 		if p.total > 0 {
 			it.Progress = float64(p.n) * 100 / float64(p.total)
+			// The file list can omit a size; the transfer's own length is the real one.
+			it.SizeKB = p.total >> 10
 		}
 	}
 	p.s.mu.Unlock()

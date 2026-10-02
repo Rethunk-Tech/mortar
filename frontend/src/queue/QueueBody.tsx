@@ -44,7 +44,7 @@ const names = (items: Item[]) =>
 const tile = (i: Item) => ({
   uniqueId: i.repo || String(i.modId),
   name: i.name || i.repo || String(i.modId),
-  picture: '',
+  picture: i.picture ?? '',
 })
 
 // The item's name with the profile it installs into under it; the sheet is too narrow to fit both on one line.

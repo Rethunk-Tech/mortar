@@ -85,17 +85,19 @@ const (
 // waits in StateNeedsChoice. Unverified marks an installed asset whose source SMAPI's API could not check.
 // Progress is a percentage and Speed bytes per second.
 type Item struct {
-	ID       string  `json:"id"`
-	Kind     string  `json:"kind"`
-	Game     string  `json:"game"`
-	Profile  string  `json:"profileId"`
-	ModID    int     `json:"modId"`
-	FileID   int     `json:"fileId"`
-	Current  int     `json:"currentFileId"`
-	Name     string  `json:"name"`
-	FileName string  `json:"fileName"`
-	Version  string  `json:"version"`
-	SizeKB   int64   `json:"sizeKb"`
+	ID       string `json:"id"`
+	Kind     string `json:"kind"`
+	Game     string `json:"game"`
+	Profile  string `json:"profileId"`
+	ModID    int    `json:"modId"`
+	FileID   int    `json:"fileId"`
+	Current  int    `json:"currentFileId"`
+	Name     string `json:"name"`
+	FileName string `json:"fileName"`
+	Version  string `json:"version"`
+	SizeKB   int64  `json:"sizeKb"`
+	// Picture is the mod page's picture URL, known once the download starts; empty for GitHub items.
+	Picture  string  `json:"picture,omitempty"`
 	State    string  `json:"state"`
 	Progress float64 `json:"progress"`
 	Speed    int64   `json:"speed"`
@@ -120,7 +122,6 @@ type Item struct {
 	staged string
 	// readyZip means the Nexus archive is already on disk and the next step is install (or the merge choice).
 	readyZip bool
-	picture  string
 	endorsed int
 	fomod    map[string]map[string][]string
 	// chosenRoot is the folder AnswerRoot picked for a staged item; it is not persisted.

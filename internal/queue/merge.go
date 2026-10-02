@@ -27,7 +27,7 @@ func fileCategory(ctx context.Context, c *nexus.Client, it Item) string {
 func nexusSource(it Item, mod nexus.Mod) profile.Source {
 	pic, end := mod.PictureURL, mod.EndorsementCount
 	if pic == "" {
-		pic = it.picture
+		pic = it.Picture
 	}
 	if end == 0 {
 		end = it.endorsed
