@@ -2,7 +2,22 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
-import { ExternalLink, History, Plus, Power, X } from 'lucide-react'
+import {
+  CalendarDays,
+  CircleCheck,
+  Clock,
+  Coins,
+  ExternalLink,
+  Flower2,
+  History,
+  Leaf,
+  Plus,
+  Power,
+  Snowflake,
+  Sun,
+  TriangleAlert,
+  X,
+} from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import type {
@@ -174,15 +189,36 @@ function AddAll({ missing, profile }: { missing: Lack[]; profile: Profile }) {
   )
 }
 
-function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: string }) {
+// Each season's tile colour and icon, solid so the card reads at a glance.
+const SEASON_STYLE = [
+  { color: '#4f9e52', Icon: Flower2 },
+  { color: '#d29a22', Icon: Sun },
+  { color: '#c0612b', Icon: Leaf },
+  { color: '#5e8fb8', Icon: Snowflake },
+] as const
+
+function Stat({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 0.75,
+        fontSize: 13,
+        color: 'rgba(255,255,255,0.85)',
+        ...nowrap,
+      }}
+    >
+      <Box component="span" sx={{ display: 'flex', color: 'text.secondary' }}>
+        {icon}
+      </Box>
+      {children}
+    </Box>
+  )
+}
+
+function useFarmKind(which: number): string {
   const { t } = useLingui()
-  const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
-  const missing = fit.missing ?? []
-  const ok = missing.length === 0
-  const played = new Date(fit.played).toLocaleDateString()
-  const season = seasons[fit.season] ?? ''
-  const { day, year } = fit
-  const date = day > 0 ? t`${season} ${day}, year ${year}` : ''
   const kinds = [
     t`Standard farm`,
     t`Riverland farm`,
@@ -193,58 +229,111 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
     t`Beach farm`,
     t`Meadowlands farm`,
   ]
-  const kind = kinds[fit.whichFarm] ?? ''
+  return kinds[which] ?? ''
+}
+
+function FitStatus({ missing }: { missing: number }) {
+  const { t } = useLingui()
+  const ok = missing === 0
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 0.5,
+        px: 1.25,
+        py: '3px',
+        borderRadius: '12px',
+        fontSize: 12,
+        fontWeight: 700,
+        bgcolor: ok ? 'rgba(12,223,100,0.16)' : 'rgba(243,180,22,0.18)',
+        color: ok ? 'success.main' : 'warning.main',
+        ...nowrap,
+      }}
+    >
+      {ok ? <CircleCheck size={13} /> : <TriangleAlert size={13} />}
+      {ok
+        ? t`All mods present`
+        : t`Has used ${plural(missing, { one: '# mod it lacks', other: '# mods it lacks' })}`}
+    </Box>
+  )
+}
+
+function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: string }) {
+  const { t } = useLingui()
+  const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
+  const missing = fit.missing ?? []
+  const style = SEASON_STYLE[fit.season] ?? SEASON_STYLE[0]
+  const kind = useFarmKind(fit.whichFarm)
   const hours = hoursPlayed(fit.millisecondsPlayed)
-  const play = hours > 0 ? t`${hours}h played` : ''
-  const gold = fit.money ? goldText(fit.money) : ''
-  const meta = [fit.farmer, kind, date, play, gold, t`last played ${played}`]
-    .filter(Boolean)
-    .join(' · ')
-  const color = ok ? 'success.main' : 'warning.main'
+  const subtitle = [fit.farmer, kind].filter(Boolean).join(' · ')
   return (
     <Box
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 1,
-        px: 1.75,
-        py: 1.5,
+        gap: 1.25,
+        p: 1.75,
         bgcolor: 'rgba(50,50,60,0.78)',
-        borderLeft: '4px solid',
-        borderLeftColor: color,
-        borderRadius: '6px',
+        border: '1px solid rgba(255,255,255,0.06)',
+        borderRadius: '8px',
+        '&:hover': { borderColor: 'rgba(255,255,255,0.16)' },
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-          <Typography noWrap={true} sx={{ fontSize: 16, fontWeight: 600 }}>
+        <Box
+          aria-hidden={true}
+          sx={{
+            width: 52,
+            height: 52,
+            flexShrink: 0,
+            display: 'grid',
+            placeItems: 'center',
+            borderRadius: '10px',
+            bgcolor: style.color,
+            color: '#ffffff',
+          }}
+        >
+          <style.Icon size={26} />
+        </Box>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography noWrap={true} sx={{ fontSize: 17, fontWeight: 700 }}>
             {fit.farm || fit.folder}
           </Typography>
           <Typography noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
-            {meta}
+            {subtitle}
           </Typography>
         </Box>
-        <Box
-          sx={{
-            px: 1.25,
-            py: '3px',
-            borderRadius: '12px',
-            fontSize: 12,
-            fontWeight: 700,
-            bgcolor: ok ? 'rgba(12,223,100,0.16)' : 'rgba(243,180,22,0.18)',
-            color,
-            ...nowrap,
-          }}
-        >
-          {ok
-            ? t`All mods present`
-            : t`Has used ${plural(missing.length, { one: '# mod it lacks', other: '# mods it lacks' })}`}
-        </Box>
-        {ok ? null : <AddAll missing={missing} profile={profile} />}
       </Box>
-      {ok ? null : (
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2, rowGap: 0.75 }}>
+        {fit.day > 0 ? (
+          <Stat icon={<CalendarDays size={14} />}>
+            {t`${seasons[fit.season] ?? ''} ${fit.day}, year ${fit.year}`}
+          </Stat>
+        ) : null}
+        {hours > 0 ? <Stat icon={<Clock size={14} />}>{t`${hours}h played`}</Stat> : null}
+        {fit.money ? <Stat icon={<Coins size={14} />}>{goldText(fit.money)}</Stat> : null}
+      </Box>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          pt: 1,
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+        }}
+      >
+        <Typography
+          sx={{ flex: 1, minWidth: 0, fontSize: 12, color: 'text.secondary' }}
+          noWrap={true}
+        >
+          {t`Last played ${new Date(fit.played).toLocaleDateString()}`}
+        </Typography>
+        <FitStatus missing={missing.length} />
+        {missing.length === 0 ? null : <AddAll missing={missing} profile={profile} />}
+      </Box>
+      {missing.length === 0 ? null : (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{t`Has used:`}</Typography>
           {missing.map((lack) => (
             <LackChip key={lack.uniqueId} fit={fit} lack={lack} profile={profile} game={game} />
           ))}
@@ -302,7 +391,17 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
           {t`Save backups`}
         </Button>
       </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, px: 2, pt: 0.75, pb: 2 }}>
+      <Box
+        sx={{
+          display: fits.length > 0 ? 'grid' : 'flex',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+          flexDirection: 'column',
+          gap: 1.25,
+          px: 2,
+          pt: 0.75,
+          pb: 1.5,
+        }}
+      >
         {body}
       </Box>
       <BackupsDialog open={backupsOpen} onClose={() => setBackupsOpen(false)} />
