@@ -1,6 +1,7 @@
 package problems
 
 import (
+	"bytes"
 	"encoding/json"
 	"maps"
 	"os"
@@ -57,6 +58,10 @@ type packHit struct {
 	key      string
 	priority string
 	mentions map[string]bool
+	root     string
+	tokens   []cpPatch
+	present  map[string]bool
+	loads    []cpPatch
 	edits    []cpPatch // the pack's active edits of this target
 	schema   map[string]cpSchema
 	config   map[string]string
@@ -67,6 +72,7 @@ type packHit struct {
 type cpPatch struct {
 	kind     string // "load" or "edit"
 	target   string
+	fromFile string
 	priority string
 	when     cpWhen
 	shapes   []cpShape           // what an edit writes; see editShapes
@@ -307,7 +313,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 				continue
 			}
 			pack.patches = append(pack.patches, cpPatch{
-				kind: kind, target: normalizeTarget(t), priority: strings.TrimSpace(ch.Priority), when: when,
+				kind: kind, target: normalizeTarget(t), fromFile: ch.FromFile, priority: strings.TrimSpace(ch.Priority), when: when,
 				shapes: shapes, spouse: spouseOf(ch.When), places: placesOf(ch.When), image: strings.EqualFold(action, kindEditImage),
 			})
 		}
@@ -595,13 +601,18 @@ func assetConflicts(mods []Installed) []AssetConflict {
 			hits := at[p.kind][p.target]
 			i := slices.IndexFunc(hits, func(h packHit) bool { return sameID(h.id, mod.UniqueID) })
 			if i < 0 {
-				hits = append(hits, packHit{id: mod.UniqueID, name: mod.Name, key: mod.Key, priority: p.priority, mentions: knows, schema: pack.schema, config: config})
+				hits = append(hits, packHit{
+					id: mod.UniqueID, name: mod.Name, key: mod.Key, priority: p.priority, mentions: knows,
+					root: mod.Folder, tokens: slices.Clone(pack.patches), present: present, schema: pack.schema, config: config,
+				})
 				i = len(hits) - 1
 				at[p.kind][p.target] = hits
 			} else {
 				hits[i].priority = strongerContentPatcherPriority(hits[i].priority, p.priority, p.kind)
 			}
-			if p.kind == "edit" {
+			if p.kind == "load" {
+				hits[i].loads = append(hits[i].loads, p)
+			} else {
 				hits[i].edits = append(hits[i].edits, p)
 			}
 		}
@@ -615,7 +626,12 @@ func assetConflicts(mods []Installed) []AssetConflict {
 			}
 			if len(hits) >= 2 {
 				c := conflictOf(kind, t, hits)
-				c.Cosmetic = cosmetic
+				if kind == "load" {
+					c.Cosmetic = harmlessLoads(hits, c)
+				}
+				if kind == "edit" {
+					c.Cosmetic = cosmetic
+				}
 				c.Fixes = []ConflictFix{}
 				for _, h := range hits {
 					if fix, ok := switchOff(h); ok {
@@ -702,6 +718,181 @@ func conflictOf(kind, target string, hits []packHit) AssetConflict {
 		c.WinnerName = "unclear"
 	}
 	return c
+}
+
+func harmlessLoads(hits []packHit, conflict AssetConflict) bool {
+	if len(hits) < 2 {
+		return false
+	}
+	winner := slices.IndexFunc(hits, func(h packHit) bool { return sameID(h.id, conflict.WinnerID) })
+	if winner < 0 {
+		for _, hit := range hits {
+			for _, load := range hit.loads {
+				if !loadFileBlank(hit, load, conflict.Target) {
+					return false
+				}
+			}
+		}
+		return true
+	}
+
+	winnerBlank := true
+	for _, load := range hits[winner].loads {
+		winnerBlank = winnerBlank && loadFileBlank(hits[winner], load, conflict.Target)
+	}
+	for i, hit := range hits {
+		if i == winner {
+			continue
+		}
+		for _, load := range hit.loads {
+			blank := loadFileBlank(hit, load, conflict.Target)
+			identical := false
+			for _, winningLoad := range hits[winner].loads {
+				if loadFilesEqual(hit, load, hits[winner], winningLoad, conflict.Target) {
+					identical = true
+					break
+				}
+			}
+			if blank || identical {
+				continue
+			}
+			if winnerBlank {
+				return false
+			}
+			if !loadPriorityDecided(hits, conflict) {
+				return false
+			}
+			if contentPatcherPriority("load", hit.priority) > -1000 && !hit.mentions[strings.ToLower(hits[winner].id)] {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func loadPriorityDecided(hits []packHit, conflict AssetConflict) bool {
+	if conflict.WinnerID == "" {
+		return false
+	}
+	winner := slices.IndexFunc(hits, func(h packHit) bool { return sameID(h.id, conflict.WinnerID) })
+	if winner < 0 {
+		return false
+	}
+	best := contentPatcherPriority("load", hits[winner].priority)
+	for i, hit := range hits {
+		if i != winner && contentPatcherPriority("load", hit.priority) >= best {
+			return false
+		}
+	}
+	return true
+}
+
+func loadFileBlank(hit packHit, load cpPatch, target string) bool {
+	raw, ok := loadFileBytes(hit, load, target)
+	if !ok {
+		return false
+	}
+	raw = bytes.TrimSpace(stripJSONNoise(raw))
+	return bytes.Equal(raw, []byte("{}")) || bytes.Equal(raw, []byte("[]"))
+}
+
+func loadFilesEqual(a packHit, ap cpPatch, b packHit, bp cpPatch, target string) bool {
+	left, ok := loadFileBytes(a, ap, target)
+	if !ok {
+		return false
+	}
+	right, ok := loadFileBytes(b, bp, target)
+	return ok && bytes.Equal(stripJSONNoise(left), stripJSONNoise(right))
+}
+
+func loadFileBytes(hit packHit, load cpPatch, target string) ([]byte, bool) {
+	path, ok := resolveLoadFile(load.fromFile, target, hit.tokens, hit.present, hit.schema, hit.config)
+	if !ok {
+		return nil, false
+	}
+	return readPackPath(hit.root, path)
+}
+
+func resolveLoadFile(file, target string, tokens []cpPatch, present map[string]bool, schema map[string]cpSchema, config map[string]string) (string, bool) {
+	file = strings.TrimSpace(file)
+	for range 16 {
+		start := strings.Index(file, "{{")
+		if start < 0 {
+			return file, true
+		}
+		end := strings.Index(file[start+2:], "}}")
+		if end < 0 {
+			return "", false
+		}
+		end += start + 2
+		name := tokenName(file[start+2 : end])
+		var value string
+		switch name {
+		case "target":
+			value = target
+		case "targetwithoutpath":
+			value = target
+			if slash := strings.LastIndexAny(value, "/\\"); slash >= 0 {
+				value = value[slash+1:]
+			}
+		default:
+			found := false
+			for _, token := range tokens {
+				if token.tokenName != name || !token.when.holds(present) || !configHolds(token.when.config, schema, config) {
+					continue
+				}
+				value, found = token.tokenValue, true
+			}
+			if !found {
+				return "", false
+			}
+		}
+		file = file[:start] + value + file[end+2:]
+	}
+	return "", false
+}
+
+func readPackPath(root, rel string) ([]byte, bool) {
+	if root == "" {
+		return nil, false
+	}
+	path, ok := caseInsensitivePath(root, rel)
+	if !ok {
+		return nil, false
+	}
+	raw, err := os.ReadFile(path)
+	return raw, err == nil
+}
+
+func caseInsensitivePath(root, rel string) (string, bool) {
+	if filepath.IsAbs(rel) || strings.TrimSpace(rel) == "" {
+		return "", false
+	}
+	current := filepath.Clean(root)
+	for _, part := range strings.Split(filepath.ToSlash(rel), "/") {
+		if part == "" || part == "." || part == ".." {
+			if part == ".." {
+				return "", false
+			}
+			continue
+		}
+		entries, err := os.ReadDir(current)
+		if err != nil {
+			return "", false
+		}
+		next := ""
+		for _, entry := range entries {
+			if strings.EqualFold(entry.Name(), part) {
+				next = entry.Name()
+				break
+			}
+		}
+		if next == "" {
+			return "", false
+		}
+		current = filepath.Join(current, next)
+	}
+	return current, true
 }
 
 func contentPatcherPriority(kind, priority string) int {
