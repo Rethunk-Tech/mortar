@@ -88,6 +88,9 @@ Section
     SetOutPath $INSTDIR
     
     !insertmacro wails.files
+!if "${WAILS_INSTALL_SCOPE}" != "user"
+    ExecWait '"$SYSDIR\netsh.exe" advfirewall firewall add rule name="Mortar" dir=in action=allow program="$INSTDIR\${PRODUCT_EXECUTABLE}" enable=yes profile=private,domain'
+!endif
 
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
     CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
@@ -102,6 +105,9 @@ Section "uninstall"
     !insertmacro wails.setShellContext
 
     ExecWait '"$INSTDIR\${PRODUCT_EXECUTABLE}" --release-links'
+!if "${WAILS_INSTALL_SCOPE}" != "user"
+    ExecWait '"$SYSDIR\netsh.exe" advfirewall firewall delete rule name="Mortar"'
+!endif
 
     RMDir /r "$AppData\${PRODUCT_EXECUTABLE}" # Remove the WebView2 DataPath
 

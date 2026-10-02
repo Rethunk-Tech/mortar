@@ -1,5 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, FormControlLabel, Switch, TextField } from '@mui/material'
+import { useCallback, useEffect, useState } from 'react'
+import {
+  FirewallBlocked,
+  FixFirewall,
+} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/lan/service.ts'
 import {
   SetEnableModsWhenInstalled,
   SetKeepInTray,
@@ -51,14 +56,21 @@ function KeepInTraySwitch() {
 
 export function General() {
   const { t } = useLingui()
+  const [firewallBlocked, setFirewallBlocked] = useState(false)
   const enableModsWhenInstalled = useSettings((s) => s.enableModsWhenInstalled)
   const lanSharing = useSettings((s) => s.lanSharing)
   const lanPort = useSettings((s) => s.lanPort)
   const push = useToasts((s) => s.push)
-  const reportFailure = (err: unknown) => {
-    const body = errorText(err)
-    push({ kind: 'error', title: t`Couldn't save that setting`, ...(body ? { body } : {}) })
-  }
+  const reportFailure = useCallback(
+    (err: unknown) => {
+      const body = errorText(err)
+      push({ kind: 'error', title: t`Couldn't save that setting`, ...(body ? { body } : {}) })
+    },
+    [push, t],
+  )
+  useEffect(() => {
+    FirewallBlocked().then(setFirewallBlocked).catch(reportFailure)
+  }, [reportFailure])
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Window`}</Box>
@@ -112,6 +124,31 @@ export function General() {
         }}
         sx={{ maxWidth: 240 }}
       />
+      {firewallBlocked === true && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            color: 'rgba(255,220,170,0.95)',
+            fontSize: 13,
+          }}
+        >
+          <Box sx={{ flex: 1 }}>{t`Windows Firewall blocks incoming sends to Mortar`}</Box>
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => {
+              FixFirewall()
+                .then(() => FirewallBlocked())
+                .then(setFirewallBlocked)
+                .catch(reportFailure)
+            }}
+          >
+            {t`Fix`}
+          </Button>
+        </Box>
+      )}
       <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Mods`}</Box>
       <FormControlLabel
         sx={{ m: 0, alignItems: 'center' }}
