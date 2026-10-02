@@ -13,13 +13,13 @@ import {
   ListItemButton,
   ListItemText,
   TextField,
-  Typography,
 } from '@mui/material'
-import { RefreshCw } from 'lucide-react'
+import { Inbox, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import type { Peer } from '../../bindings/github.com/Rethunk-AI/mortar/internal/lan/models.ts'
 import { Peers, Send } from '../../bindings/github.com/Rethunk-AI/mortar/internal/lan/service.ts'
 import { useSettings } from '../settings/store.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
@@ -99,7 +99,11 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
       </DialogTitle>
       <DialogContent dividers={true}>
         {peers.length === 0 && !refreshing ? (
-          <Typography color="text.secondary">{t`No Mortar users found nearby.`}</Typography>
+          <EmptyState
+            compact={true}
+            icon={<Inbox size={28} />}
+            title={t`No Mortar users found nearby.`}
+          >{t`Ask another Mortar user to open sharing nearby.`}</EmptyState>
         ) : (
           <List disablePadding={true}>
             {peers.map((peer) => (

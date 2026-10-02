@@ -80,7 +80,7 @@ function TrashRow({ item }: { item: TrashItem }) {
       }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography noWrap={true} sx={{ fontSize: 15, fontWeight: 600 }}>
+        <Typography noWrap={true} title={item.name} sx={{ fontSize: 15, fontWeight: 600 }}>
           {item.name}
         </Typography>
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{days}</Typography>

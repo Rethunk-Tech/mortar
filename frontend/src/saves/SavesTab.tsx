@@ -301,7 +301,11 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
           <style.Icon size={26} />
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography noWrap={true} sx={{ fontSize: 17, fontWeight: 700 }}>
+          <Typography
+            noWrap={true}
+            title={fit.farm || fit.folder}
+            sx={{ fontSize: 17, fontWeight: 700 }}
+          >
             {fit.farm || fit.folder}
           </Typography>
           <Typography noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>

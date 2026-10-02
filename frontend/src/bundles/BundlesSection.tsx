@@ -12,7 +12,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { Pencil, Trash2 } from 'lucide-react'
+import { PackagePlus, Pencil, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Bundle } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/models.ts'
 import {
@@ -21,6 +21,7 @@ import {
   Rename,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BundleNameDialog } from './dialogs.tsx'
@@ -32,6 +33,15 @@ function hasBundle(profile: Profile, bundle: Bundle) {
     ),
   )
   return (bundle.mods ?? []).every((mod) => installed.has(mod.uniqueId.toLowerCase()))
+}
+
+function NoBundles() {
+  const { t } = useLingui()
+  return (
+    <EmptyState compact={true} icon={<PackagePlus size={28} />} title={t`No bundles yet.`}>
+      {t`Create a bundle to reuse a set of mods.`}
+    </EmptyState>
+  )
 }
 
 export function BundlesSection({ game, profiles }: { game: string; profiles: Profile[] }) {
@@ -95,9 +105,7 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
           {t`Bundles`}
         </Typography>
         {bundles.length === 0 ? (
-          <Typography
-            sx={{ color: 'text.secondary', fontSize: 13 }}
-          >{t`No bundles yet.`}</Typography>
+          <NoBundles />
         ) : (
           bundles.map((bundle) => {
             const holders = profiles.filter((profile) => hasBundle(profile, bundle))
@@ -110,7 +118,11 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
                 sx={{ p: 1.25, bgcolor: 'rgba(55,55,65,0.9)', borderRadius: '6px' }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Typography noWrap={true} sx={{ flex: 1, minWidth: 0, fontWeight: 600 }}>
+                  <Typography
+                    noWrap={true}
+                    title={bundle.name}
+                    sx={{ flex: 1, minWidth: 0, fontWeight: 600 }}
+                  >
                     {bundle.name}
                   </Typography>
                   <Tooltip title={t`Rename`}>

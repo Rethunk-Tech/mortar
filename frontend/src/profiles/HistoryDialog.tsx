@@ -11,6 +11,7 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material'
+import { History as HistoryIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { HistoryEvent } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
@@ -18,6 +19,7 @@ import {
   Revert,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useProfiles } from './store.ts'
 
@@ -73,14 +75,14 @@ export function HistoryDialog({
       open={open}
       onClose={onClose}
       transitionDuration={0}
-      slotProps={{ paper: { sx: { minWidth: 440 } } }}
+      slotProps={{ paper: { sx: { minWidth: 440, maxWidth: 'calc(100vw - 64px)' } } }}
     >
       <DialogTitle>{t`History`}</DialogTitle>
       <DialogContent>
         {events.length === 0 ? (
-          <Typography
-            sx={{ fontSize: 14, color: 'text.secondary' }}
-          >{t`No changes yet`}</Typography>
+          <EmptyState compact={true} icon={<HistoryIcon size={28} />} title={t`No changes yet`}>
+            {t`Profile changes will appear here.`}
+          </EmptyState>
         ) : (
           <List disablePadding={true}>
             {events.map((ev) => (

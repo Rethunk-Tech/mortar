@@ -253,7 +253,7 @@ export function UpdateBadge({ mod }: { mod: Mod }) {
             setSkipVersion(mod, update.version).catch(reportUnexpected)
           }}
         >
-          <ListItemIcon>
+          <ListItemIcon sx={{ color: 'inherit' }}>
             <Ban size={16} />
           </ListItemIcon>
           <ListItemText>{t`Skip this update`}</ListItemText>

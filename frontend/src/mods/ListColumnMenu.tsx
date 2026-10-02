@@ -282,7 +282,9 @@ function ListColumnMenu({
               onToggle(id)
             }}
           >
-            <ListItemIcon>{shown ? <Check size={16} aria-hidden={true} /> : null}</ListItemIcon>
+            <ListItemIcon sx={{ color: 'inherit' }}>
+              {shown ? <Check size={16} aria-hidden={true} /> : null}
+            </ListItemIcon>
             <ListItemText>{columnLabel(id)}</ListItemText>
           </MenuItem>
         )
@@ -294,7 +296,7 @@ function ListColumnMenu({
           onClose()
         }}
       >
-        <ListItemIcon>
+        <ListItemIcon sx={{ color: 'inherit' }}>
           <RotateCcw size={16} aria-hidden={true} />
         </ListItemIcon>
         <ListItemText>{t`Reset to default columns`}</ListItemText>

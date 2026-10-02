@@ -27,6 +27,8 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLaunch } from '../launch/store.ts'
 import { paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { formatBytes } from './backupFormat.ts'
@@ -93,7 +95,11 @@ function BackupRow({
         <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 600 }}>
           {when}
         </Typography>
-        <Typography noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Typography
+          noWrap={true}
+          title={backup.name}
+          sx={{ fontSize: 13, color: 'text.secondary' }}
+        >
           {meta}
         </Typography>
       </Box>
@@ -153,10 +159,14 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
             </Typography>
           ) : null}
           {status === 'loading' && items.length === 0 ? (
-            <Typography sx={{ color: 'text.secondary' }}>{t`Reading backups…`}</Typography>
+            <LoadingRow>{t`Reading backups…`}</LoadingRow>
           ) : null}
           {status === 'ready' && items.length === 0 ? (
-            <Typography sx={{ color: 'text.secondary' }}>{t`No save backups yet.`}</Typography>
+            <EmptyState
+              compact={true}
+              icon={<FolderOpen size={28} />}
+              title={t`No save backups yet.`}
+            >{t`Backups appear when Mortar creates a save backup.`}</EmptyState>
           ) : null}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {items.map((b) => (
@@ -203,7 +213,7 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
             setMenu(null)
           }}
         >
-          <ListItemIcon>
+          <ListItemIcon sx={{ color: 'inherit' }}>
             <RotateCcw size={16} />
           </ListItemIcon>
           <ListItemText>{t`Restore all`}</ListItemText>
@@ -218,7 +228,7 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
               setMenu(null)
             }}
           >
-            <ListItemIcon>
+            <ListItemIcon sx={{ color: 'inherit' }}>
               <RotateCcw size={16} />
             </ListItemIcon>
             <ListItemText>{t`Restore ${snap.farm || snap.folder}`}</ListItemText>

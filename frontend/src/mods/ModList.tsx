@@ -319,7 +319,7 @@ function ModListTable({
 }) {
   const { t } = useLingui()
   return (
-    <Box sx={{ minWidth: 0, minHeight: 0, overflowY: 'auto' }}>
+    <Box sx={{ minWidth: 0, minHeight: 0, overflowY: 'auto', pb: 1.5 }}>
       <Table
         aria-label={t`Mods`}
         stickyHeader={true}

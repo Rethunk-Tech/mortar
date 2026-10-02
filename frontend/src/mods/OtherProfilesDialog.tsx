@@ -7,8 +7,8 @@ import {
   DialogContent,
   DialogTitle,
   FormControlLabel,
-  Typography,
 } from '@mui/material'
+import { Inbox } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
   ModInProfile,
@@ -17,10 +17,20 @@ import type {
 import { ProfilesWithMod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { isLocked } from './locked.ts'
 import { selectableProfileIds } from './otherProfiles.ts'
+
+function NoOtherProfiles() {
+  const { t } = useLingui()
+  return (
+    <EmptyState compact={true} icon={<Inbox size={28} />} title={t`No other profile of this game.`}>
+      {t`Create another profile to use this mod there.`}
+    </EmptyState>
+  )
+}
 
 function DialogFooter({
   pending,
@@ -213,10 +223,8 @@ export function OtherProfilesDialog({
   return (
     <Dialog open={open} onClose={pending ? undefined : onClose} transitionDuration={0}>
       <DialogTitle>{title}</DialogTitle>
-      <DialogContent sx={{ minWidth: 420 }}>
-        {profiles.length === 0 ? (
-          <Typography>{t`No other profile of this game.`}</Typography>
-        ) : null}
+      <DialogContent sx={{ minWidth: 420, maxWidth: 'calc(100vw - 64px)' }}>
+        {profiles.length === 0 ? <NoOtherProfiles /> : null}
         {profiles.map((profile) => {
           const row = rows.find((candidate) => candidate.profileId === profile.id)
           const isPinned = row !== undefined && pinned(profile, row)
@@ -237,7 +245,7 @@ export function OtherProfilesDialog({
       </DialogContent>
       <DialogFooter
         pending={pending}
-        selected={selected.length}
+        selected={profiles.length === 0 ? 0 : selected.length}
         confirmText={confirmText}
         onClose={onClose}
         onConfirm={() => confirm().catch(() => undefined)}

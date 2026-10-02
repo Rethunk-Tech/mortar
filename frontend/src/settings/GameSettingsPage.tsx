@@ -21,7 +21,7 @@ export function GameSettingsPage() {
     return () => globalThis.removeEventListener('keydown', onKey)
   }, [close])
   return (
-    <Box sx={{ height: '100%', overflow: 'auto', px: 3.5, py: 3 }}>
+    <Box sx={{ height: '100%', overflow: 'auto', px: 3.5, pt: 3, pb: 1.5 }}>
       <Box sx={{ maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <ButtonBase

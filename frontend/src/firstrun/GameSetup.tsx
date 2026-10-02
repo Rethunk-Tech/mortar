@@ -27,7 +27,7 @@ const loaderSteps: Record<GameId, LoaderStep | null> = {
   stardew: SmapiStep,
 }
 
-export function StepChip({
+function StepChip({
   n,
   label,
   state,

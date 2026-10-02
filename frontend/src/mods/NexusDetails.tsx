@@ -7,6 +7,7 @@ import type { Details } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNexus } from '../settings/nexus.ts'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { type Block, parseBBCode, safeUrl } from './bbcode.ts'
 import { NewSinceLooked } from './NewSince.tsx'
@@ -286,7 +287,7 @@ export function NexusDetails({ mod, modId, fileId }: { mod: Mod; modId: number; 
     return <Loaded key={modId} details={entry.details} mod={mod} fileId={fileId} modId={modId} />
   }
   if (!entry) {
-    return <Typography sx={muted}>{t`Reading the Nexus page…`}</Typography>
+    return <LoadingRow>{t`Reading the Nexus page…`}</LoadingRow>
   }
   return (
     <Typography sx={muted}>

@@ -189,7 +189,7 @@ export function ProfileRow({ profile }: { profile: Profile }) {
         ) : (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <ProfileMark profile={profile} />
-            <Typography noWrap={true} sx={{ fontSize: 17, fontWeight: 600 }}>
+            <Typography noWrap={true} title={profile.name} sx={{ fontSize: 17, fontWeight: 600 }}>
               {profile.name}
             </Typography>
             {profile.hidden ? (

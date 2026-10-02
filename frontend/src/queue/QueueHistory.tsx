@@ -126,7 +126,11 @@ export function HistoryList({
               key={`${e.started}-${e.finished}-${e.name}-${e.profileId}-${e.outcome}`}
               sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, py: 0.75 }}
             >
-              <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 600 }}>
+              <Typography
+                noWrap={true}
+                title={`${e.name}${e.version ? ` ${e.version}` : ''}`}
+                sx={{ fontSize: 14, fontWeight: 600 }}
+              >
                 {e.name}
                 {e.version ? ` ${e.version}` : ''}
               </Typography>

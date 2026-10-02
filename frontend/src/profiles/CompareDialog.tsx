@@ -1,15 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import { Inbox } from 'lucide-react'
 import { useMemo } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { CopyMods } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -17,7 +12,7 @@ import { CompareBulkBody } from './CompareBulkBody.tsx'
 import { compareProfiles } from './compare.ts'
 import { useProfiles } from './store.ts'
 
-const paper = { paper: { sx: { minWidth: 520, maxWidth: 720 } } }
+const paper = { paper: { sx: { minWidth: 520, maxWidth: 'calc(100vw - 64px)' } } }
 
 export function PickCompareDialog({
   from,
@@ -36,9 +31,13 @@ export function PickCompareDialog({
       <DialogTitle>{t`Compare ${from?.name ?? ''} with…`}</DialogTitle>
       <DialogContent>
         {profiles.length === 0 ? (
-          <Typography
-            sx={{ color: 'text.secondary' }}
-          >{t`No other profile of this game.`}</Typography>
+          <EmptyState
+            compact={true}
+            icon={<Inbox size={28} />}
+            title={t`No other profile of this game.`}
+          >
+            {t`Create another profile to compare it with this one.`}
+          </EmptyState>
         ) : (
           profiles.map((p) => (
             <Button

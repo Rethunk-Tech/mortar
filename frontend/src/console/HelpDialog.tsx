@@ -18,6 +18,7 @@ import {
   Upload,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
 import { paper } from '../mods/paper.ts'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useConsole } from './store.ts'
@@ -169,7 +170,10 @@ export function HelpDialog({ game }: { game: string }) {
       <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Get help`}</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {body ? (
-          <Typography sx={{ fontSize: 14 }}>{body}</Typography>
+          <>
+            {log === null ? <LoadingRow>{body}</LoadingRow> : null}
+            {log === null ? null : <Typography sx={{ fontSize: 14 }}>{body}</Typography>}
+          </>
         ) : (
           <>
             <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>

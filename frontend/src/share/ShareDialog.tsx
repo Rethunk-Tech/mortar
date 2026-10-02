@@ -134,7 +134,11 @@ function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }
             sx={{ width: '100%', height: 96, objectFit: 'cover', borderRadius: '6px' }}
           />
         ) : null}
-        <Typography noWrap={true} sx={{ fontSize: 20, fontWeight: 700, color: 'inherit' }}>
+        <Typography
+          noWrap={true}
+          title={info.name}
+          sx={{ fontSize: 20, fontWeight: 700, color: 'inherit' }}
+        >
           {info.name}
         </Typography>
         <Typography sx={{ fontSize: 13, color: 'inherit' }}>{t`${gameName} · ${mods}`}</Typography>
@@ -342,7 +346,7 @@ function CopyModList() {
                 setAnchor(null)
               }}
             >
-              <ListItemIcon>
+              <ListItemIcon sx={{ color: 'inherit' }}>
                 {o.id === format ? <Check size={16} /> : <Icon size={16} />}
               </ListItemIcon>
               <ListItemText>{o.label}</ListItemText>
@@ -516,7 +520,7 @@ export function ShareDialog() {
                 <Typography
                   sx={{ fontSize: 13, color: 'text.secondary' }}
                 >{t`Share profile`}</Typography>
-                <Typography noWrap={true} sx={{ fontSize: 24, fontWeight: 700 }}>
+                <Typography noWrap={true} title={info.name} sx={{ fontSize: 24, fontWeight: 700 }}>
                   {info.name}
                 </Typography>
               </Box>

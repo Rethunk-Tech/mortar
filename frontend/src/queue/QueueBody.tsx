@@ -54,7 +54,11 @@ function Title({ item, size }: { item: Item; size: number }) {
   const profile = useProfiles((s) => profileOf(item, s.game?.id, s.profiles))
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-      <Typography noWrap={true} sx={{ fontSize: size, fontWeight: 600 }}>
+      <Typography
+        noWrap={true}
+        title={item.name || item.fileName}
+        sx={{ fontSize: size, fontWeight: 600 }}
+      >
         {item.name || item.fileName}
       </Typography>
       {profile === null ? null : (

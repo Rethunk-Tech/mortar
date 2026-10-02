@@ -163,7 +163,7 @@ function ModCard({
             opacity: m.enabled ? 1 : OFF_OPACITY,
           }}
         >
-          <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 600 }}>
+          <Typography noWrap={true} title={m.name} sx={{ fontSize: 14, fontWeight: 600 }}>
             {m.name}
           </Typography>
           <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>

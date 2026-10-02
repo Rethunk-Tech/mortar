@@ -6,9 +6,11 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  ListItemIcon,
   Menu,
   MenuItem,
 } from '@mui/material'
+import { UserRound } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import type { Arrival } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
@@ -44,6 +46,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const name = useModName(arrival.link.modId)
   // New profile creates in the game the profiles store has open, so it is offered only when that is this game.
   const canCreate = useProfiles((s) => s.game?.id === NXM_GAME)
+  const gameName = useProfiles((s) => s.game?.name ?? '')
   const [profiles, setProfiles] = useState<Profile[] | null>(null)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [creating, setCreating] = useState(false)
@@ -76,7 +79,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   } else if (profiles.length === 0) {
     text = canCreate
       ? t`You started this download on Nexus. There is no profile to put it in yet; create one first.`
-      : t`You started this download on Nexus, but there is no Stardew Valley profile to put it in yet.`
+      : t`You started this download on Nexus, but there is no ${gameName} profile to put it in yet.`
   }
   return (
     <Dialog
@@ -126,6 +129,9 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
               pick(p.id)
             }}
           >
+            <ListItemIcon sx={{ color: 'inherit' }}>
+              <UserRound size={16} aria-hidden={true} />
+            </ListItemIcon>
             {p.name}
           </MenuItem>
         ))}

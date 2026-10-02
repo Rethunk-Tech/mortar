@@ -10,11 +10,11 @@ import {
   ListItem,
   ListItemText,
   Tooltip,
-  Typography,
 } from '@mui/material'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Inbox, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { Tool } from '../../bindings/github.com/Rethunk-AI/mortar/internal/tools/models.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useTools } from './store.ts'
 import { ToolEditorDialog } from './ToolEditorDialog.tsx'
@@ -42,9 +42,9 @@ export function ToolsManageDialog({
         <DialogTitle>{t`Manage tools`}</DialogTitle>
         <DialogContent>
           {tools.length === 0 ? (
-            <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-              {t`No tools yet. Add a program you run alongside the game, such as a save editor or a map viewer, and it launches from the Tools menu in one click.`}
-            </Typography>
+            <EmptyState compact={true} icon={<Inbox size={28} />} title={t`No tools yet`}>
+              {t`Add a program you run alongside the game, such as a save editor or a map viewer.`}
+            </EmptyState>
           ) : null}
           <List dense={true}>
             {tools.map((tool) => (

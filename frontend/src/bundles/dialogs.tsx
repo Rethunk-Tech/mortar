@@ -22,6 +22,8 @@ import {
   Create,
   List as ListBundles,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/service.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
@@ -184,10 +186,16 @@ function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToB
   }
   const bundleContent = (() => {
     if (loading) {
-      return <Typography sx={{ color: 'text.secondary' }}>{t`Loading bundles…`}</Typography>
+      return <LoadingRow>{t`Loading bundles…`}</LoadingRow>
     }
     if (bundles.length === 0) {
-      return <Typography sx={{ color: 'text.secondary' }}>{t`No bundles yet.`}</Typography>
+      return (
+        <EmptyState
+          compact={true}
+          icon={<PackagePlus size={28} />}
+          title={t`No bundles yet.`}
+        >{t`Create a bundle to reuse a set of mods.`}</EmptyState>
+      )
     }
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
@@ -211,7 +219,7 @@ function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToB
   return (
     <Dialog open={open} onClose={busy ? undefined : onClose} transitionDuration={0}>
       <DialogTitle>{t`Add to bundle`}</DialogTitle>
-      <DialogContent sx={{ minWidth: 420 }}>
+      <DialogContent sx={{ minWidth: 420, maxWidth: 'calc(100vw - 64px)' }}>
         <Typography sx={{ mb: 1.25, color: 'text.secondary', fontSize: 13 }}>
           {t`Choose an existing bundle or create one.`}
         </Typography>
@@ -309,7 +317,7 @@ function ApplyBundleDialog({
   }
   const bundleContent = (() => {
     if (loading) {
-      return <Typography sx={{ color: 'text.secondary' }}>{t`Loading bundles…`}</Typography>
+      return <LoadingRow>{t`Loading bundles…`}</LoadingRow>
     }
     if (bundles.length === 0) {
       return <Typography sx={{ color: 'text.secondary' }}>{t`No bundles yet.`}</Typography>
@@ -336,7 +344,9 @@ function ApplyBundleDialog({
   return (
     <Dialog open={open} onClose={busy ? undefined : onClose} transitionDuration={0}>
       <DialogTitle>{t`Add a bundle to ${profileName}`}</DialogTitle>
-      <DialogContent sx={{ minWidth: 420 }}>{bundleContent}</DialogContent>
+      <DialogContent sx={{ minWidth: 420, maxWidth: 'calc(100vw - 64px)' }}>
+        {bundleContent}
+      </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={busy}>
           {t`Cancel`}

@@ -1,9 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Collapse, IconButton, TextField, Typography } from '@mui/material'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronRight, Inbox } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { CompareDiffRow, CompareSection } from './CompareRows.tsx'
 import type { ComparePair, CompareSide, ProfileCompare } from './compare.ts'
 import { sideLabel } from './compare.ts'
@@ -320,9 +321,13 @@ export function CompareBulkBody({
       ) : null}
       <IdenticalList rows={identical} />
       {!hasDiff && identical.length === 0 && !needle ? (
-        <Typography
-          sx={{ color: 'text.secondary' }}
-        >{t`No user mods in either profile.`}</Typography>
+        <EmptyState
+          compact={true}
+          icon={<Inbox size={28} />}
+          title={t`No user mods in either profile.`}
+        >
+          {t`These profiles have no user mods to compare.`}
+        </EmptyState>
       ) : null}
     </>
   )

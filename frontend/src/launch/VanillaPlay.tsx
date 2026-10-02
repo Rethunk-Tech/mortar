@@ -156,7 +156,7 @@ export function VanillaPlay({
       </Tooltip>
       <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
         <MenuItem disabled={vanillaDisabled} onClick={playVanilla}>
-          <ListItemIcon>
+          <ListItemIcon sx={{ color: 'inherit' }}>
             <Gamepad2 size={16} />
           </ListItemIcon>
           <ListItemText>{t`Play without mods`}</ListItemText>

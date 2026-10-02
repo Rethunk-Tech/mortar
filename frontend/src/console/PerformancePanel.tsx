@@ -360,7 +360,7 @@ export function PerformancePanel({ game }: { game: string }) {
       variant="outlined"
       sx={{
         mx: 2,
-        mb: 1,
+        mb: 1.5,
         flexShrink: 0,
         overflow: 'hidden',
         bgcolor: 'rgba(0,0,0,0.24)',
