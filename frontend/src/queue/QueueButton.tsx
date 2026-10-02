@@ -11,13 +11,20 @@ export function QueueButton() {
   const left = useQueue((s) => totals(s.state.items).left)
   const setOpen = useQueue((s) => s.setOpen)
   return (
-    <Box sx={{ display: 'flex', p: '6px', [compact]: { p: 0, justifyContent: 'center' } }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flex: 1,
+        pl: '6px',
+        [compact]: { flex: 'none', pl: 0, justifyContent: 'center' },
+      }}
+    >
       <ButtonBase
         onClick={() => setOpen(true)}
         aria-label={t`Downloads`}
         sx={{
           flex: 1,
-          height: 36,
+          height: 40,
           justifyContent: 'flex-start',
           gap: 1.25,
           px: '10px',

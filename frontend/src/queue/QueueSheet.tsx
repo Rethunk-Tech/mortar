@@ -1,6 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Drawer, IconButton, Tooltip, Typography } from '@mui/material'
-import { History as HistoryIcon, List, X } from 'lucide-react'
+import { Box, Drawer, IconButton, Tooltip, Typography } from '@mui/material'
+import {
+  History as HistoryIcon,
+  List,
+  ListX,
+  Pause as PauseIcon,
+  Play as PlayIcon,
+  X,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import {
   ClearFinished,
@@ -52,34 +59,33 @@ function Header({
             {line}
           </Typography>
         </Box>
-        <Button
-          variant="outlined"
-          color="inherit"
-          startIcon={view === 'history' ? <List size={14} /> : <HistoryIcon size={14} />}
-          onClick={() => onView(view === 'history' ? 'queue' : 'history')}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
-          {view === 'history' ? t`Queue` : t`History`}
-        </Button>
-        {finished.length > 0 && view === 'queue' ? (
-          <Button
-            variant="outlined"
-            color="inherit"
-            onClick={() => ClearFinished().catch(reportUnexpected)}
-            sx={{ whiteSpace: 'nowrap' }}
+        <Tooltip title={view === 'history' ? t`Queue` : t`History`}>
+          <IconButton
+            aria-label={view === 'history' ? t`Queue` : t`History`}
+            onClick={() => onView(view === 'history' ? 'queue' : 'history')}
           >
-            {t`Clear finished`}
-          </Button>
+            {view === 'history' ? <List size={16} /> : <HistoryIcon size={16} />}
+          </IconButton>
+        </Tooltip>
+        {finished.length > 0 && view === 'queue' ? (
+          <Tooltip title={t`Clear finished`}>
+            <IconButton
+              aria-label={t`Clear finished`}
+              onClick={() => ClearFinished().catch(reportUnexpected)}
+            >
+              <ListX size={16} />
+            </IconButton>
+          </Tooltip>
         ) : null}
         {idle ? null : (
-          <Button
-            variant="outlined"
-            color="inherit"
-            onClick={() => (paused ? Resume() : Pause()).catch(reportUnexpected)}
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            {paused ? t`Resume` : t`Pause all`}
-          </Button>
+          <Tooltip title={paused ? t`Resume` : t`Pause all`}>
+            <IconButton
+              aria-label={paused ? t`Resume` : t`Pause all`}
+              onClick={() => (paused ? Resume() : Pause()).catch(reportUnexpected)}
+            >
+              {paused ? <PlayIcon size={16} /> : <PauseIcon size={16} />}
+            </IconButton>
+          </Tooltip>
         )}
         <Tooltip title={t`Close downloads`}>
           <IconButton aria-label={t`Close downloads`} onClick={onClose}>
