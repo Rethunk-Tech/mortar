@@ -4,6 +4,7 @@ package nxmsvc
 import (
 	"errors"
 	"fmt"
+	"log"
 	"slices"
 	"sync"
 	"time"
@@ -88,13 +89,17 @@ func (s *Service) Receive(args []string) bool {
 		if game, gerr := nxm.LinkGame(arg); gerr == nil && game != nexus.Game {
 			cur := s.store.Get()
 			if cur.NxmPrevious != "" && cur.RedirectOtherGames() {
-				if err := s.handler.ForwardOther(arg, cur.NxmPrevious); err == nil {
+				err := s.handler.ForwardOther(arg, cur.NxmPrevious)
+				if err == nil {
+					log.Printf("nxm: %s link forwarded to the previous handler", game)
 					continue
 				}
+				log.Printf("nxm: forward %s link: %v", game, err)
 			}
 		}
 		link, err := nxm.Parse(arg, s.store.Get().NexusUserID, s.now())
 		if err == nil && s.Route != nil && s.Route(link) {
+			log.Printf("nxm: mod %d file %d resumed a waiting download", link.ModID, link.FileID)
 			continue
 		}
 		s.mu.Lock()
@@ -102,12 +107,14 @@ func (s *Service) Receive(args []string) bool {
 		id := s.nextID
 		if re, ok := errors.AsType[*nxm.RejectError](err); ok {
 			r := Rejection{ID: id, Reason: re.Reason}
+			log.Printf("nxm: link %d rejected: %s", id, re.Reason)
 			s.rejections = append(s.rejections, r)
 			s.mu.Unlock()
 			s.emit(RejectedEvent, r)
 			continue
 		}
 		a := Arrival{ID: id, Link: link}
+		log.Printf("nxm: link %d arrived: mod %d file %d", id, link.ModID, link.FileID)
 		s.arrivals = append(s.arrivals, a)
 		s.mu.Unlock()
 		s.emit(ArrivedEvent, a)
@@ -138,9 +145,11 @@ func (s *Service) Assign(id int, game, profile string) error {
 	}
 	select {
 	case s.Assigned <- Assignment{Link: s.arrivals[i].Link, Game: game, Profile: profile}:
+		log.Printf("nxm: link %d assigned to profile %s", id, profile)
 		s.arrivals = slices.Delete(s.arrivals, i, i+1)
 		return nil
 	default:
+		log.Printf("nxm: link %d not assigned: download queue full", id)
 		return errors.New("too many downloads are waiting")
 	}
 }
@@ -150,6 +159,7 @@ func (s *Service) Ignore(id int) {
 	s.mu.Lock()
 	s.arrivals = slices.DeleteFunc(s.arrivals, func(a Arrival) bool { return a.ID == id })
 	s.mu.Unlock()
+	log.Printf("nxm: link %d ignored", id)
 }
 
 // Owner names the app that handles nxm links now, or is empty when none does or Mortar already does.

@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -294,6 +295,7 @@ func Run(ctx context.Context, s *Service, assigned <-chan nxmsvc.Assignment) (wa
 // reject shows a link that could not be queued as a failed entry, since there is no item to blame. It keeps the
 // request so that Retry can download it once the cause is fixed.
 func (s *Service) reject(r Request, err error) {
+	log.Printf("queue: mod %d file %d could not be queued: %v", r.ModID, r.FileID, err)
 	s.mu.Lock()
 	s.items = append(s.items, &Item{
 		ID: newID(), Kind: r.Kind, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
@@ -440,6 +442,7 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 			if r.key != "" {
 				it.key, it.expires = r.key, r.expires
 			}
+			log.Printf("queue: mod %d file %d %s joined existing item %s (%s)", r.ModID, r.FileID, r.Repo, it.ID, it.State)
 			out = append(out, *it)
 			continue
 		}
@@ -455,6 +458,7 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 			it.Current = file
 		}
 		s.items = append(s.items, it)
+		log.Printf("queue: mod %d file %d %s queued as %s for profile %s", r.ModID, r.FileID, r.Repo, it.ID, r.Profile)
 		out = append(out, *it)
 	}
 	s.mu.Unlock()

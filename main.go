@@ -108,6 +108,23 @@ func run() error {
 	ready := make(chan struct{})
 	closeReady := sync.OnceFunc(func() { close(ready) })
 	defer closeReady()
+	// A burst of nxm clicks starts one second instance per link; each launch is queued at once and handled here in
+	// order, so a slow handoff (waiting for startup, asking the window whether it is minimised) never holds up the next.
+	handoffs := make(chan application.SecondInstanceData, 256)
+	go func() {
+		<-ready
+		for d := range handoffs {
+			if window == nil || nxmSvc == nil || shareSvc == nil {
+				log.Printf("second instance: dropped, Mortar did not finish starting")
+				continue
+			}
+			// A minimised window stays down: the window sends a desktop notification whose click brings it up.
+			nxmLink := nxmSvc.Receive(d.Args)
+			if shareSvc.Receive(sharesvc.InDir(d.Args, d.WorkingDir)) || !nxmLink || !window.IsMinimised() {
+				showWindow()
+			}
+		}
+	}()
 	dataDir, err := datadir.Dir()
 	if err != nil {
 		return err
@@ -144,15 +161,8 @@ func run() error {
 		SingleInstance: &application.SingleInstanceOptions{
 			UniqueID: "tech.rethunk.mortar",
 			OnSecondInstanceLaunch: func(d application.SecondInstanceData) {
-				<-ready
-				if window == nil || nxmSvc == nil || shareSvc == nil {
-					return
-				}
-				// A minimised window stays down: the window sends a desktop notification whose click brings it up.
-				nxmLink := nxmSvc.Receive(d.Args)
-				if shareSvc.Receive(sharesvc.InDir(d.Args, d.WorkingDir)) || !nxmLink || !window.IsMinimised() {
-					showWindow()
-				}
+				log.Printf("second instance: %d args queued", len(d.Args)-1)
+				handoffs <- d
 			},
 		},
 	})
