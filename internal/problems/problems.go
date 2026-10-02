@@ -124,6 +124,13 @@ type SettingHint struct {
 	CurrentFor string `json:"currentFor"`
 }
 
+// Cleanup is a framework mod that no enabled mod currently needs.
+type Cleanup struct {
+	Key      string `json:"key"`
+	UniqueID string `json:"uniqueId"`
+	Name     string `json:"name"`
+}
+
 // Result is everything found for one profile. Unknown is set when a lookup failed, so the lists may be short.
 type Result struct {
 	Missing        []Missing       `json:"missing"`
@@ -131,6 +138,7 @@ type Result struct {
 	Broken         []Broken        `json:"broken"`
 	AssetConflicts []AssetConflict `json:"assetConflicts"`
 	Settings       []SettingHint   `json:"settings"`
+	Cleanup        []Cleanup       `json:"cleanup,omitempty"`
 	RunErrors      []RunError      `json:"runErrors"`
 	Drift          []profile.Drift `json:"drift,omitempty"`
 	Unknown        bool            `json:"unknown"`
@@ -168,6 +176,7 @@ func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Resul
 		Broken:         []Broken{},
 		AssetConflicts: assetConflicts(enabled),
 		Settings:       compatibilitySettings(enabled),
+		Cleanup:        cleanupHints(mods),
 		Drift:          []profile.Drift{},
 	}
 	missing := missingDeps(enabled, mods)

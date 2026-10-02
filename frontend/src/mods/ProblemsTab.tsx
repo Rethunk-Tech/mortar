@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { Copy, TriangleAlert } from 'lucide-react'
 import { IconAction } from '../shell/IconAction.tsx'
@@ -104,6 +104,47 @@ function ProblemRow({ row }: { row: Row }) {
   )
 }
 
+function CleanupRow({ cleanup }: { cleanup: { key: string; uniqueId: string; name: string } }) {
+  const { t } = useLingui()
+  const remove = useMods((s) => s.remove)
+  const mod = useMods((s) => s.mods.find((candidate) => candidate.key === cleanup.key))
+  return (
+    <Box
+      role="alert"
+      sx={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 1.25,
+        flexShrink: 0,
+        pl: 1.5,
+        pr: 0.75,
+        py: 1,
+        fontSize: 14,
+        bgcolor: 'rgba(56,189,248,0.12)',
+        border: '1px solid rgba(56,189,248,0.45)',
+        borderRadius: '6px',
+      }}
+    >
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}>
+          {t`${cleanup.name || cleanup.uniqueId}: Not needed by any enabled mod`}
+        </Typography>
+      </Box>
+      <Button
+        size="small"
+        disabled={mod === undefined}
+        onClick={() => {
+          if (mod !== undefined) {
+            remove(mod).catch(reportUnexpected)
+          }
+        }}
+      >
+        {t`Remove`}
+      </Button>
+    </Box>
+  )
+}
+
 // ProblemActions sits in the profile's tab row while the Problems tab is open, like the Console's log actions.
 export function ProblemActions() {
   const { t } = useLingui()
@@ -111,14 +152,15 @@ export function ProblemActions() {
   const sectionTitle = useSectionTitle()
   const rowText = useRowText()
   const sections = result === null ? [] : problemSections(result)
+  const cleanup = result?.cleanup ?? []
   return (
     <IconAction
       label={t`Copy all problems`}
       icon={<Copy size={16} />}
-      disabled={sections.length === 0}
+      disabled={sections.length === 0 && cleanup.length === 0}
       onClick={() => {
-        const text = sections
-          .map((section) =>
+        const text = [
+          ...sections.map((section) =>
             [
               sectionTitle(section.id),
               ...section.rows.map((row) => {
@@ -126,7 +168,24 @@ export function ProblemActions() {
                 return note === '' ? `- ${line}` : `- ${line}\n  ${note}`
               }),
             ].join('\n'),
-          )
+          ),
+          ...(cleanup.length === 0
+            ? []
+            : [
+                [
+                  t`Cleanup`,
+                  ...cleanup.map(
+                    (item) =>
+                      `- ${t`${item.name || item.uniqueId}: Not needed by any enabled mod`}`,
+                  ),
+                  ...cleanup.map(
+                    (item) =>
+                      `- ${item.name || item.uniqueId}: ${t`Not needed by any enabled mod`}`,
+                  ),
+                ].join('\n'),
+              ]),
+        ]
+          .filter((value, index, values) => values.indexOf(value) === index)
           .join('\n\n')
         Clipboard.SetText(text).then(
           () => useToasts.getState().push({ kind: 'success', title: t`Problems copied` }),
@@ -152,7 +211,8 @@ export function ProblemsTab() {
   }
 
   const sections = problemSections(result)
-  const empty = sections.length === 0 && !result.unknown
+  const cleanup = result.cleanup ?? []
+  const empty = sections.length === 0 && cleanup.length === 0 && !result.unknown
 
   return (
     <Box
@@ -184,6 +244,18 @@ export function ProblemsTab() {
             </Box>
           </Box>
         ))
+      )}
+      {cleanup.length === 0 ? null : (
+        <Box>
+          <Typography sx={{ mb: 1, fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
+            {t`Cleanup`}
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {cleanup.map((item) => (
+              <CleanupRow key={item.key} cleanup={item} />
+            ))}
+          </Box>
+        </Box>
       )}
       {result.unknown ? (
         <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
