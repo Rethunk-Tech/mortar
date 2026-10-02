@@ -95,6 +95,18 @@ func Removed(game, profile string) error {
 	return err
 }
 
+func exists(game, profile string) (bool, error) {
+	path, err := desktopPath(game, profile)
+	if err != nil {
+		return false, err
+	}
+	info, err := os.Stat(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	return err == nil && info.Mode().IsRegular(), err
+}
+
 // desktopValue keeps a name on one line, as the desktop entry format requires.
 func desktopValue(s string) string {
 	return strings.NewReplacer("\n", " ", "\r", " ").Replace(s)

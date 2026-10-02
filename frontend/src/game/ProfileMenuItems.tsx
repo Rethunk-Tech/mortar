@@ -25,12 +25,14 @@ import {
   Trash2,
   Users,
 } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import { PickImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   AddToSteam,
   Create as CreateShortcut,
+  Remove as RemoveShortcut,
+  Exists as ShortcutExists,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/shortcut/service.ts'
 import { CompareDialog, PickCompareDialog } from '../profiles/CompareDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
@@ -104,7 +106,18 @@ function DeleteProfileDialog({
 // ShortcutMenuItems are the ways to start a profile from outside Mortar: a desktop or Start menu shortcut, and Steam.
 function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => void }) {
   const { t } = useLingui()
-  const game = () => useProfiles.getState().game
+  const currentGame = useProfiles((s) => s.game)
+  const [hasShortcut, setHasShortcut] = useState(false)
+  useEffect(() => {
+    const g = currentGame
+    if (!g) {
+      setHasShortcut(false)
+      return
+    }
+    ShortcutExists(g.id, profile.id)
+      .then(setHasShortcut)
+      .catch(() => setHasShortcut(false))
+  }, [currentGame, profile.id])
   return (
     <>
       <ProfileMenuItem
@@ -112,7 +125,7 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
         label={t`Add a shortcut that plays this profile`}
         onClick={() => {
           close()
-          const g = game()
+          const g = currentGame
           if (g) {
             CreateShortcut(g.id, g.name, profile.id, profile.name)
               .then((path) =>
@@ -124,12 +137,30 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
           }
         }}
       />
+      {hasShortcut ? (
+        <ProfileMenuItem
+          icon={<Trash2 size={16} />}
+          label={t`Remove the shortcut`}
+          onClick={() => {
+            close()
+            const g = currentGame
+            if (g) {
+              RemoveShortcut(g.id, profile.id)
+                .then(() => {
+                  useToasts.getState().push({ kind: 'success', title: t`Shortcut removed` })
+                  setHasShortcut(false)
+                })
+                .catch(toastError(t`Could not remove the shortcut`))
+            }
+          }}
+        />
+      ) : null}
       <ProfileMenuItem
         icon={<Gamepad2 size={16} />}
         label={t`Add this profile to Steam`}
         onClick={() => {
           close()
-          const g = game()
+          const g = currentGame
           if (g) {
             AddToSteam(g.id, g.name, profile.id, profile.name)
               .then((added) =>

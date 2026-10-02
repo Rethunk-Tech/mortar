@@ -93,6 +93,16 @@ func (s *Service) Create(game, gameName, profile, profileName string) (string, e
 	return create(nxm.Launchable(exe), Arg(game, profile), profileName+" ("+gameName+")")
 }
 
+// Exists reports whether a desktop or Start-menu shortcut plays the profile.
+func (s *Service) Exists(game, profile string) (bool, error) {
+	return exists(game, profile)
+}
+
+// Remove removes the desktop or Start-menu shortcut for the profile.
+func (s *Service) Remove(game, profile string) error {
+	return Removed(game, profile)
+}
+
 // ErrSteamRunning means Steam is open; it rewrites its shortcut list when it exits, which would drop the new entry.
 var ErrSteamRunning = errors.New("close Steam first: it rewrites its game list when it exits")
 

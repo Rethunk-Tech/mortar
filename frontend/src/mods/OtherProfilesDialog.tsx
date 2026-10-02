@@ -22,11 +22,92 @@ import { useToasts } from '../toasts/store.ts'
 import { isLocked } from './locked.ts'
 import { selectableProfileIds } from './otherProfiles.ts'
 
+function DialogFooter({
+  pending,
+  selected,
+  confirmText,
+  onClose,
+  onConfirm,
+}: {
+  pending: boolean
+  selected: number
+  confirmText: string
+  onClose: () => void
+  onConfirm: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <DialogActions>
+      <Button onClick={onClose} disabled={pending}>
+        {t`Cancel`}
+      </Button>
+      <Button onClick={onConfirm} disabled={pending || selected === 0} variant="contained">
+        {confirmText}
+      </Button>
+    </DialogActions>
+  )
+}
+
+function ProfileChoice({
+  profile,
+  row,
+  mode,
+  isPinned,
+  isLockedProfile,
+  selected,
+  choose,
+}: {
+  profile: Profile
+  row: ModInProfile | undefined
+  mode: 'add' | 'remove'
+  isPinned: boolean
+  isLockedProfile: boolean
+  selected: boolean
+  choose: (id: string) => void
+}) {
+  const { t } = useLingui()
+  const has = row !== undefined
+  const disabled =
+    mode === 'remove' ? !has || isPinned || isLockedProfile : has || isPinned || isLockedProfile
+  return (
+    <FormControlLabel
+      control={
+        <Checkbox
+          checked={mode === 'remove' ? selected : has || selected}
+          disabled={disabled}
+          onChange={() => choose(profile.id)}
+        />
+      }
+      label={
+        <span>
+          {profile.name}
+          {has && mode !== 'remove' && !isPinned ? ` — ${t`Already has it`}` : ''}
+          {isPinned ? ` — ${t`pinned in ${profile.name}`}` : ''}
+          {isLockedProfile ? ` — ${t`Stop the game to change mods.`}` : ''}
+        </span>
+      }
+    />
+  )
+}
+
+const toggleSelected = (current: string[], id: string) =>
+  current.includes(id) ? current.filter((value) => value !== id) : [...current, id]
+const profileIsLocked = (
+  status: Parameters<typeof isLocked>[0],
+  starting: boolean,
+  startingProfile: string,
+  profile: Profile,
+) => isLocked(status, profile.id, starting ? startingProfile : '')
+const profileHasPinned = (profile: Profile, row: ModInProfile, update?: { oldKey: string }) =>
+  Boolean(update && profile.entries?.some((entry) => entry.key === row.key && entry.pinned))
+
 export function OtherProfilesDialog({
   open,
   game,
   currentProfileId,
   uniqueId,
+  uniqueIds,
+  mode = 'add',
   title,
   confirmLabel,
   update,
@@ -37,6 +118,8 @@ export function OtherProfilesDialog({
   game: string
   currentProfileId: string
   uniqueId: string
+  uniqueIds?: string[]
+  mode?: 'add' | 'remove'
   title: string
   confirmLabel: string
   update?: { oldKey: string } | undefined
@@ -48,25 +131,33 @@ export function OtherProfilesDialog({
   const [rows, setRows] = useState<ModInProfile[]>([])
   const [selected, setSelected] = useState<string[]>([])
   const [pending, setPending] = useState(false)
-  const launch = useLaunch((s) => ({
-    status: s.status,
-    starting: s.starting,
-    startingProfile: s.startingProfile,
-  }))
-
+  const launchStatus = useLaunch((s) => s.status)
+  const launchStarting = useLaunch((s) => s.starting)
+  const launchStartingProfile = useLaunch((s) => s.startingProfile)
   useEffect(() => {
     if (!open) {
       return
     }
-    ProfilesWithMod(game, uniqueId)
-      .then((next) => setRows((next ?? []).filter((row) => row.profileId !== currentProfileId)))
+    Promise.all((uniqueIds ?? [uniqueId]).map((id) => ProfilesWithMod(game, id)))
+      .then((lists) =>
+        setRows(
+          lists
+            .flatMap((next) => next ?? [])
+            .filter(
+              (row, index, all) =>
+                row.profileId !== currentProfileId &&
+                all.findIndex(
+                  (other) => other.profileId === row.profileId && other.key === row.key,
+                ) === index,
+            ),
+        ),
+      )
       .catch((e) =>
         useToasts
           .getState()
           .push({ kind: 'error', title: t`Could not read other profiles`, body: errorMessage(e) }),
       )
-  }, [currentProfileId, game, open, t, uniqueId])
-
+  }, [currentProfileId, game, open, t, uniqueId, uniqueIds])
   useEffect(() => {
     if (!open) {
       return
@@ -80,27 +171,24 @@ export function OtherProfilesDialog({
           return (
             pinned ||
             (profile &&
-              isLocked(launch.status, profile.id, launch.starting ? launch.startingProfile : ''))
+              isLocked(launchStatus, profile.id, launchStarting ? launchStartingProfile : ''))
           )
         })
         .map((row) => row.profileId),
     )
     setSelected(
-      selectableProfileIds(
-        rows.map((row) => row.profileId),
-        unavailable,
-      ),
+      mode === 'remove'
+        ? []
+        : selectableProfileIds(
+            profiles.map((profile) => profile.id),
+            unavailable,
+          ),
     )
-  }, [launch.starting, launch.startingProfile, launch.status, open, profiles, rows, update])
-
-  const choose = (id: string) =>
-    setSelected((current) =>
-      current.includes(id) ? current.filter((value) => value !== id) : [...current, id],
-    )
+  }, [launchStarting, launchStartingProfile, launchStatus, mode, open, profiles, rows, update])
+  const choose = (id: string) => setSelected((current) => toggleSelected(current, id))
   const locked = (profile: Profile) =>
-    isLocked(launch.status, profile.id, launch.starting ? launch.startingProfile : '')
-  const pinned = (profile: Profile, row: ModInProfile) =>
-    Boolean(update && profile.entries?.some((entry) => entry.key === row.key && entry.pinned))
+    profileIsLocked(launchStatus, launchStarting, launchStartingProfile, profile)
+  const pinned = (profile: Profile, row: ModInProfile) => profileHasPinned(profile, row, update)
   const confirm = async () => {
     setPending(true)
     try {
@@ -121,7 +209,7 @@ export function OtherProfilesDialog({
       setPending(false)
     }
   }
-
+  const confirmText = mode === 'remove' ? t`Remove from ${selected.length} profiles` : confirmLabel
   return (
     <Dialog open={open} onClose={pending ? undefined : onClose} transitionDuration={0}>
       <DialogTitle>{title}</DialogTitle>
@@ -131,42 +219,29 @@ export function OtherProfilesDialog({
         ) : null}
         {profiles.map((profile) => {
           const row = rows.find((candidate) => candidate.profileId === profile.id)
-          const has = row !== undefined
           const isPinned = row !== undefined && pinned(profile, row)
           const isLockedProfile = locked(profile)
-          const disabled = has || isPinned || isLockedProfile
           return (
-            <FormControlLabel
+            <ProfileChoice
               key={profile.id}
-              control={
-                <Checkbox
-                  checked={has || selected.includes(profile.id)}
-                  disabled={disabled}
-                  onChange={() => choose(profile.id)}
-                />
-              }
-              label={
-                <span>
-                  {profile.name}
-                  {has && !isPinned ? ` — ${t`Already has it`}` : ''}
-                  {isPinned ? ` — ${t`pinned in ${profile.name}`}` : ''}
-                  {isLockedProfile ? ` — ${t`Stop the game to change mods.`}` : ''}
-                </span>
-              }
+              profile={profile}
+              row={row}
+              mode={mode}
+              isPinned={isPinned}
+              isLockedProfile={isLockedProfile}
+              selected={selected.includes(profile.id)}
+              choose={choose}
             />
           )
         })}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={pending}>{t`Cancel`}</Button>
-        <Button
-          onClick={() => confirm().catch(() => undefined)}
-          disabled={pending || selected.length === 0}
-          variant="contained"
-        >
-          {confirmLabel}
-        </Button>
-      </DialogActions>
+      <DialogFooter
+        pending={pending}
+        selected={selected.length}
+        confirmText={confirmText}
+        onClose={onClose}
+        onConfirm={() => confirm().catch(() => undefined)}
+      />
     </Dialog>
   )
 }

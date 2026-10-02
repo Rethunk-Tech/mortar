@@ -34,10 +34,12 @@ import {
   FomodPreview,
   ModsDir,
   OpenConsolePath,
+  RemoveEntry,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useFomod } from '../fomod/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { SetCategoryDialog } from './CategoryEditor.tsx'
 import { useDetail } from './detail.ts'
 import { entryOf, modId, nexusIdOf, updateFor } from './lookup.ts'
@@ -87,16 +89,137 @@ function openManifestOf(mod: Mod, profile: Profile | undefined) {
     .catch(reportUnexpected)
 }
 
+function RemoveOtherMenuItem({
+  locked,
+  close,
+  onClick,
+}: {
+  locked: boolean
+  close: () => void
+  onClick: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <MenuItem
+      disabled={locked}
+      onClick={() => {
+        close()
+        onClick()
+      }}
+    >
+      <ListItemIcon sx={{ color: 'inherit' }}>
+        <Trash2 size={ICON_SIZE} />
+      </ListItemIcon>
+      <ListItemText>{t`Remove from other profiles…`}</ListItemText>
+    </MenuItem>
+  )
+}
+
+function ModActionItems({
+  actions,
+  items,
+  close,
+  locked,
+  hasFomod,
+  mod,
+  profile,
+  onSetCategory,
+  onAlsoAdd,
+  labels,
+}: {
+  actions: ModAction[]
+  items: Record<ModAction | 'reinstall', { label: string; icon: ReactNode; run: () => void }>
+  close: () => void
+  locked: boolean
+  hasFomod: boolean
+  mod: Mod
+  profile: Profile | undefined
+  onSetCategory: () => void
+  onAlsoAdd: () => void
+  labels: { manifest: string; category: string; alsoAdd: string }
+}) {
+  return actions.flatMap((a) => [
+    a === 'remove' ? <Divider key="divider" /> : null,
+    <MenuItem
+      key={a}
+      disabled={locked && (a === 'toggle' || a === 'remove')}
+      sx={a === 'remove' ? { color: 'error.main' } : undefined}
+      onClick={() => {
+        close()
+        items[a].run()
+      }}
+    >
+      <ListItemIcon sx={{ color: 'inherit' }}>{items[a].icon}</ListItemIcon>
+      <ListItemText>{items[a].label}</ListItemText>
+    </MenuItem>,
+    a === 'files' && hasFomod ? (
+      <MenuItem
+        key="reinstall"
+        disabled={locked}
+        onClick={() => {
+          close()
+          items.reinstall.run()
+        }}
+      >
+        <ListItemIcon sx={{ color: 'inherit' }}>{items.reinstall.icon}</ListItemIcon>
+        <ListItemText>{items.reinstall.label}</ListItemText>
+      </MenuItem>
+    ) : null,
+    a === 'files' ? (
+      <MenuItem
+        key="manifest"
+        onClick={() => {
+          close()
+          openManifestOf(mod, profile)
+        }}
+      >
+        <ListItemIcon sx={{ color: 'inherit' }}>
+          <FileJson size={ICON_SIZE} />
+        </ListItemIcon>
+        <ListItemText>{labels.manifest}</ListItemText>
+      </MenuItem>
+    ) : null,
+    a === 'files' ? (
+      <MenuItem
+        key="category"
+        onClick={() => {
+          close()
+          onSetCategory()
+        }}
+      >
+        <ListItemIcon sx={{ color: 'inherit' }}>
+          <FolderTree size={ICON_SIZE} />
+        </ListItemIcon>
+        <ListItemText>{labels.category}</ListItemText>
+      </MenuItem>
+    ) : null,
+    a === 'files' ? (
+      <MenuItem
+        key="also-add"
+        disabled={locked}
+        onClick={() => {
+          close()
+          onAlsoAdd()
+        }}
+      >
+        <ListItemText>{labels.alsoAdd}</ListItemText>
+      </MenuItem>
+    ) : null,
+  ])
+}
+
 function ModMenuItems({
   mod,
   close,
   onSetCategory,
   onAlsoAdd,
+  onRemoveOther,
 }: {
   mod: Mod
   close: () => void
   onSetCategory: () => void
   onAlsoAdd: () => void
+  onRemoveOther: () => void
 }) {
   const { t } = useLingui()
   const showFiles = useMods((s) => s.showFiles)
@@ -171,74 +294,30 @@ function ModMenuItems({
       run: () => askRemove(mod),
     },
   }
-  return modActions(state).flatMap((a) => [
-    a === 'remove' ? <Divider key="divider" /> : null,
-    <MenuItem
-      key={a}
-      disabled={locked && (a === 'toggle' || a === 'remove')}
-      sx={a === 'remove' ? { color: 'error.main' } : undefined}
-      onClick={() => {
-        close()
-        items[a].run()
-      }}
-    >
-      <ListItemIcon sx={{ color: 'inherit' }}>{items[a].icon}</ListItemIcon>
-      <ListItemText>{items[a].label}</ListItemText>
-    </MenuItem>,
-    a === 'files' && hasFomod ? (
-      <MenuItem
-        key="reinstall"
-        disabled={locked}
-        onClick={() => {
-          close()
-          items.reinstall.run()
-        }}
-      >
-        <ListItemIcon sx={{ color: 'inherit' }}>{items.reinstall.icon}</ListItemIcon>
-        <ListItemText>{items.reinstall.label}</ListItemText>
-      </MenuItem>
-    ) : null,
-    a === 'files' ? (
-      <MenuItem
-        key="manifest"
-        onClick={() => {
-          close()
-          openManifestOf(mod, profile)
-        }}
-      >
-        <ListItemIcon sx={{ color: 'inherit' }}>
-          <FileJson size={ICON_SIZE} />
-        </ListItemIcon>
-        <ListItemText>{t`Open manifest.json`}</ListItemText>
-      </MenuItem>
-    ) : null,
-    a === 'files' ? (
-      <MenuItem
-        key="category"
-        onClick={() => {
-          close()
-          onSetCategory()
-        }}
-      >
-        <ListItemIcon sx={{ color: 'inherit' }}>
-          <FolderTree size={ICON_SIZE} />
-        </ListItemIcon>
-        <ListItemText>{t`Set category…`}</ListItemText>
-      </MenuItem>
-    ) : null,
-    a === 'files' ? (
-      <MenuItem
-        key="also-add"
-        disabled={locked}
-        onClick={() => {
-          close()
-          onAlsoAdd()
-        }}
-      >
-        <ListItemText>{t`Also add to…`}</ListItemText>
-      </MenuItem>
-    ) : null,
-  ])
+  return [
+    ...ModActionItems({
+      actions: modActions(state),
+      items,
+      close,
+      locked,
+      hasFomod,
+      mod,
+      profile,
+      onSetCategory,
+      onAlsoAdd,
+      labels: {
+        manifest: t`Open manifest.json`,
+        category: t`Set category…`,
+        alsoAdd: t`Also add to…`,
+      },
+    }),
+    <RemoveOtherMenuItem
+      key="remove-other"
+      locked={locked}
+      close={close}
+      onClick={onRemoveOther}
+    />,
+  ]
 }
 
 function ModActionMenu({
@@ -258,6 +337,7 @@ function ModActionMenu({
     profile === undefined ? '' : (byId[nexusIdOf(profile, mod)]?.details?.category ?? '')
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [alsoOpen, setAlsoOpen] = useState(false)
+  const [removeOtherOpen, setRemoveOtherOpen] = useState(false)
   const game = useProfiles((s) => s.game?.id ?? '')
   const currentProfileId = useProfiles((s) => s.openId)
   const position =
@@ -275,6 +355,7 @@ function ModActionMenu({
           close={onClose}
           onSetCategory={() => setCategoryOpen(true)}
           onAlsoAdd={() => setAlsoOpen(true)}
+          onRemoveOther={() => setRemoveOtherOpen(true)}
         />
       </Menu>
       <SetCategoryDialog
@@ -299,6 +380,20 @@ function ModActionMenu({
           await Promise.all(
             profiles.map((other) => CopyMods(game, currentProfileId, other.id, [mod.uniqueId])),
           )
+        }}
+      />
+      <OtherProfilesDialog
+        open={removeOtherOpen}
+        onClose={() => setRemoveOtherOpen(false)}
+        game={game}
+        currentProfileId={currentProfileId}
+        uniqueId={mod.uniqueId}
+        mode="remove"
+        title={t`Remove ${mod.name} from other profiles`}
+        confirmLabel={t`Remove`}
+        onConfirm={async (profiles) => {
+          await Promise.all(profiles.map((other) => RemoveEntry(game, other.id, mod.key)))
+          useToasts.getState().push({ kind: 'success', title: t`Mods removed from other profiles` })
         }}
       />
     </>

@@ -101,3 +101,26 @@ func TestRenamedAndRemovedDesktopEntry(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestExistsAndRemoveDesktopEntry(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the Windows shortcut goes through the shell")
+	}
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	s := &Service{}
+	if exists, err := s.Exists("stardew", "p1"); err != nil || exists {
+		t.Fatalf("before create: exists=%v err=%v", exists, err)
+	}
+	if _, err := create("/opt/Mortar/mortar", Arg("stardew", "p1"), "Main"); err != nil {
+		t.Fatal(err)
+	}
+	if exists, err := s.Exists("stardew", "p1"); err != nil || !exists {
+		t.Fatalf("after create: exists=%v err=%v", exists, err)
+	}
+	if err := s.Remove("stardew", "p1"); err != nil {
+		t.Fatal(err)
+	}
+	if exists, err := s.Exists("stardew", "p1"); err != nil || exists {
+		t.Fatalf("after remove: exists=%v err=%v", exists, err)
+	}
+}

@@ -163,6 +163,18 @@ func Removed(game, profile string) error {
 	return nil
 }
 
+func exists(game, profile string) (bool, error) {
+	if !validID(game) || !validID(profile) {
+		return false, errors.New("a shortcut needs a game and a profile")
+	}
+	dir, err := startMenuDir()
+	if err != nil {
+		return false, err
+	}
+	matches, err := matchingLinks(dir, Arg(game, profile))
+	return len(matches) > 0, err
+}
+
 // fileName keeps a shortcut's name to characters every file system accepts.
 func fileName(name string) string {
 	clean := strings.Map(func(r rune) rune {
