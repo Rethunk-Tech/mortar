@@ -312,6 +312,16 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, errors.New("backups are unavailable")
 		}
 		return nil, s.Saves.RestoreBackup(p.Name, p.UniqueIDs)
+	case "backups.keep":
+		if s.Saves == nil {
+			return nil, errors.New("backups are unavailable")
+		}
+		return nil, s.Saves.SetBackupPinned(p.Name, true)
+	case "backups.unkeep":
+		if s.Saves == nil {
+			return nil, errors.New("backups are unavailable")
+		}
+		return nil, s.Saves.SetBackupPinned(p.Name, false)
 	case "bundles":
 		if s.Bundles == nil {
 			return nil, errors.New("bundles are unavailable")

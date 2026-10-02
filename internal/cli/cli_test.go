@@ -119,6 +119,28 @@ func TestProfileCompareHistoryAndRevert(t *testing.T) {
 	}
 }
 
+func TestBackupsKeepAndUnkeep(t *testing.T) {
+	results := map[string]any{
+		"backups.keep":   nil,
+		"backups.unkeep": nil,
+	}
+	r := invoke(t, results, "backups", "keep", "2026-01-01.zip")
+	if r.code != 0 || r.calls[0].method != "backups.keep" || r.calls[0].params.Name != "2026-01-01.zip" {
+		t.Fatalf("keep: %+v", r)
+	}
+	if !strings.Contains(r.out, "Kept") {
+		t.Fatalf("keep out: %q", r.out)
+	}
+	r = invoke(t, results, "backups", "unkeep", "2026-01-01.zip", "--json")
+	if r.code != 0 || r.calls[0].method != "backups.unkeep" {
+		t.Fatalf("unkeep: %+v", r)
+	}
+	var body map[string]any
+	if err := json.Unmarshal([]byte(r.out), &body); err != nil || body["pinned"] != false {
+		t.Fatalf("unkeep json: %v %q", err, r.out)
+	}
+}
+
 func TestProfileMatchSendsPreviewRequest(t *testing.T) {
 	r := invoke(t, map[string]any{"profile.match": control.ProfileMatch{Already: 2, Missing: []string{"Missing"}}},
 		"profile", "match", "stardew", "Farm", "mortar://example")

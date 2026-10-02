@@ -54,7 +54,7 @@ var subverbs = map[string][]string{
 	"tools":      {"run"},
 	"problems":   {"dismissed", "dismiss", "restore"},
 	"queue":      {"retry", "skip", "pause", "resume", "clear"},
-	"backups":    {"list", "restore"},
+	"backups":    {"list", "keep", "unkeep", "restore"},
 }
 
 // gameAt and profileAt give the positions (1-based after the verb) where a verb takes a game and a profile.

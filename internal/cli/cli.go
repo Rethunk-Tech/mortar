@@ -1239,20 +1239,41 @@ func (c *cmd) update() error {
 }
 
 func (c *cmd) backups() error {
-	if len(c.args) > 1 && c.args[1] == "restore" {
-		a, err := c.need(2, "a backup name")
-		if err != nil {
-			return err
+	if len(c.args) > 1 {
+		switch c.args[1] {
+		case "restore":
+			a, err := c.need(2, "a backup name")
+			if err != nil {
+				return err
+			}
+			if err := c.ask("backups.restore", control.Params{Name: a[0], UniqueIDs: a[1:]}, nil, installTimeout); err != nil {
+				return err
+			}
+			return c.emit(map[string]any{"restored": a[0], "saves": a[1:]}, func() {
+				fmt.Fprintf(c.out, "Restored %s.\n", a[0])
+			})
+		case "keep", "unkeep":
+			a, err := c.need(2, "a backup name")
+			if err != nil {
+				return err
+			}
+			method := "backups." + c.args[1]
+			if err := c.ask(method, control.Params{Name: a[0]}, nil, readTimeout); err != nil {
+				return err
+			}
+			pinned := c.args[1] == "keep"
+			return c.emit(map[string]any{"name": a[0], "pinned": pinned}, func() {
+				if pinned {
+					fmt.Fprintf(c.out, "Kept %s.\n", a[0])
+				} else {
+					fmt.Fprintf(c.out, "Unkept %s.\n", a[0])
+				}
+			})
+		case "list":
+			break
+		default:
+			return usageError{"unknown backups command " + c.args[1]}
 		}
-		if err := c.ask("backups.restore", control.Params{Name: a[0], UniqueIDs: a[1:]}, nil, installTimeout); err != nil {
-			return err
-		}
-		return c.emit(map[string]any{"restored": a[0], "saves": a[1:]}, func() {
-			fmt.Fprintf(c.out, "Restored %s.\n", a[0])
-		})
-	}
-	if len(c.args) > 1 && c.args[1] != "list" {
-		return usageError{"unknown backups command " + c.args[1]}
 	}
 	var list any
 	if err := c.ask("backups", control.Params{}, &list, readTimeout); err != nil {
@@ -1438,6 +1459,8 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   update <game> <profile> <UniqueID>...|--all
                                           queue available mod updates
   backups list                            list save backups
+  backups keep <name>                     keep a save backup during rotation
+  backups unkeep <name>                   stop keeping a save backup
   backups restore <name> [save...]        restore a save backup
   tools <game>                            configured external tools
   tools run <game> <profile> <tool>       start an external tool
