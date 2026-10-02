@@ -31,6 +31,9 @@ func TestDetectsStardropProfileAndReadsGameMods(t *testing.T) {
 	if mod.SourcePath == "" {
 		t.Fatal("Stardrop mod has no source path")
 	}
+	if len(preview.Missing) != 1 || preview.Missing[0] != "Missing.Mod" {
+		t.Fatalf("missing = %#v", preview.Missing)
+	}
 }
 
 func TestDetectsVortexProfileAndReadsStagingMods(t *testing.T) {

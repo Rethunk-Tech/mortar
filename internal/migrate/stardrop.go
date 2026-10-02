@@ -96,10 +96,13 @@ func stardropPreviewFile(path, id, modsPath string) (ProfilePreview, error) {
 		name = id
 	}
 	enabled := make(map[string]bool, len(source.EnabledModIDs))
+	enabledIDs := make([]string, 0, len(source.EnabledModIDs))
 	for _, uniqueID := range source.EnabledModIDs {
-		enabled[strings.ToLower(strings.TrimSpace(string(uniqueID)))] = true
+		id := strings.TrimSpace(string(uniqueID))
+		enabled[strings.ToLower(id)] = true
+		enabledIDs = append(enabledIDs, id)
 	}
-	mods, err := stardropMods(modsPath, enabled, source.ModData)
+	mods, missing, err := stardropMods(modsPath, enabled, enabledIDs, source.ModData)
 	if err != nil {
 		return ProfilePreview{}, err
 	}
@@ -113,7 +116,7 @@ func stardropPreviewFile(path, id, modsPath string) (ProfilePreview, error) {
 		}
 	}
 	return ProfilePreview{
-		ID: id, Name: name, Source: KindStardrop, ModsPath: modsPath, Mods: mods,
+		ID: id, Name: name, Source: KindStardrop, ModsPath: modsPath, Mods: mods, Missing: missing,
 	}, nil
 }
 
@@ -136,10 +139,15 @@ func stardropModsPath(dataDir, fallback string) string {
 	return filepath.Clean(path)
 }
 
-func stardropMods(modsPath string, enabled map[string]bool, portable []stardropModData) ([]ModPreview, error) {
+func stardropMods(
+	modsPath string,
+	enabled map[string]bool,
+	enabledIDs []string,
+	portable []stardropModData,
+) ([]ModPreview, []string, error) {
 	found, err := folderMods(modsPath)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	seen := make(map[string]bool, len(found))
 	out := make([]ModPreview, 0, len(found)+len(portable))
@@ -157,6 +165,9 @@ func stardropMods(modsPath string, enabled map[string]bool, portable []stardropM
 			continue
 		}
 		isEnabled := enabled[key]
+		if isEnabled {
+			continue
+		}
 		if len(enabled) == 0 {
 			isEnabled = true
 		}
@@ -165,7 +176,25 @@ func stardropMods(modsPath string, enabled map[string]bool, portable []stardropM
 			Enabled: isEnabled, NexusModID: nexusIDFromURL(item.ModPageURI),
 		})
 	}
-	return out, nil
+	return out, missingEnabledIDs(enabledIDs, found), nil
+}
+
+func missingEnabledIDs(enabledIDs []string, found []folderMod) []string {
+	foundIDs := make(map[string]bool, len(found))
+	for _, item := range found {
+		foundIDs[strings.ToLower(strings.TrimSpace(item.UniqueID))] = true
+	}
+	seen := make(map[string]bool, len(enabledIDs))
+	var missing []string
+	for _, id := range enabledIDs {
+		key := strings.ToLower(strings.TrimSpace(id))
+		if key == "" || seen[key] || foundIDs[key] || manifest.LoaderManaged(id) {
+			continue
+		}
+		seen[key] = true
+		missing = append(missing, strings.TrimSpace(id))
+	}
+	return missing
 }
 
 type folderMod struct {

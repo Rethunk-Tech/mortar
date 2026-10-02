@@ -23,6 +23,31 @@ const dialogSx = {
   borderRadius: '6px',
 }
 
+function MissingMods({ ids }: { ids: string[] }) {
+  const { t } = useLingui()
+  return (
+    <Box
+      sx={{
+        mb: 1,
+        px: 1.5,
+        py: 1,
+        bgcolor: 'rgba(243,180,22,0.12)',
+        border: '1px solid rgba(243,180,22,0.35)',
+        borderRadius: '4px',
+      }}
+    >
+      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+        {t`Not found in the Mods folder`}
+      </Typography>
+      <Box component="ul" sx={{ m: 0, pl: 2.5, fontSize: 13, color: 'text.secondary' }}>
+        {ids.map((id) => (
+          <li key={id}>{id}</li>
+        ))}
+      </Box>
+    </Box>
+  )
+}
+
 function Body({ request }: { request: ImportRequest }) {
   const { t } = useLingui()
   const close = useImportDialog((s) => s.close)
@@ -135,6 +160,9 @@ function Body({ request }: { request: ImportRequest }) {
               bgcolor: 'rgba(0,0,0,0.2)',
             }}
           >
+            {flow.external?.missing && flow.external.missing.length > 0 ? (
+              <MissingMods ids={flow.external.missing} />
+            ) : null}
             {hasMods ? (
               <Tiles mods={preview.mods} excluded={flow.excluded} onToggle={flow.toggle} />
             ) : (

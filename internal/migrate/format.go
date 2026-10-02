@@ -21,4 +21,5 @@ type ProfilePreview struct {
 	Source   string       `json:"source"`
 	ModsPath string       `json:"modsPath"`
 	Mods     []ModPreview `json:"mods"`
+	Missing  []string     `json:"missing"`
 }

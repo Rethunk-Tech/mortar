@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
 const vortexGame = "stardewvalley"
@@ -93,17 +94,24 @@ func vortexPreviewState(modsPath string, state map[string]json.RawMessage, id st
 		modIDs[id] = true
 	}
 	var out []ModPreview
+	var missing []string
 	for modID := range modIDs {
 		mod := byID[modID]
 		enabled := selected.ModState[modID].Enabled
 		path := vortexModPath(modsPath, mod)
-		for _, item := range byPath[filepath.Clean(path)] {
+		items := byPath[filepath.Clean(path)]
+		if enabled && len(items) == 0 && !manifest.LoaderManaged(modID) &&
+			!manifest.LoaderManaged(rawString(mod.Attributes, "uniqueId", "uniqueID")) {
+			missing = append(missing, modID)
+			continue
+		}
+		for _, item := range items {
 			out = append(out, ModPreview{
 				UniqueID: item.UniqueID, Name: item.Name, Version: item.Version,
 				Enabled: enabled, NexusModID: nexusID(item.UpdateKeys), SourcePath: item.Path,
 			})
 		}
-		if len(byPath[filepath.Clean(path)]) > 0 {
+		if len(items) > 0 {
 			continue
 		}
 		name := rawString(mod.Attributes, "name", "modName")
@@ -120,7 +128,7 @@ func vortexPreviewState(modsPath string, state map[string]json.RawMessage, id st
 		out = []ModPreview{}
 	}
 	return ProfilePreview{
-		ID: selected.ID, Name: selected.Name, Source: KindVortex, ModsPath: modsPath, Mods: out,
+		ID: selected.ID, Name: selected.Name, Source: KindVortex, ModsPath: modsPath, Mods: out, Missing: missing,
 	}, nil
 }
 
