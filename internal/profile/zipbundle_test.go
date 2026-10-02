@@ -84,7 +84,7 @@ func TestExportRestoreRoundTrip(t *testing.T) {
 		}
 	}
 	cfgText, err := e.ReadConfig("stardew", got.ID, key, "X.A")
-	if err != nil || cfgText != `{"ok":true}` {
+	if err != nil || cfgText != "{\n  \"ok\": true\n}\n" {
 		t.Fatalf("config = %q %v", cfgText, err)
 	}
 	cover, err := os.ReadFile(filepath.Join(e.root, "stardew", got.ID, got.Cover))

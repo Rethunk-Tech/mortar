@@ -75,12 +75,11 @@ function Field({
           value={String(node.value)}
           onChange={(e) => {
             const raw = e.target.value
-            const n = Number(raw)
-            if (!Number.isFinite(n)) {
+            if (!/^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(raw)) {
               return
             }
             const float = node.kind === 'float' || raw.includes('.')
-            onChange(path, float ? { kind: 'float', value: n } : { kind: 'int', value: n })
+            onChange(path, float ? { kind: 'float', value: raw } : { kind: 'int', value: raw })
           }}
         />
       )
@@ -217,6 +216,7 @@ export function ConfigEditor({
   const [tree, setTree] = useState<ConfigNode | null>(null)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
+  const [dirty, setDirty] = useState(false)
   const readGen = useRef(0)
   useEffect(() => {
     if (!open) {
@@ -224,6 +224,7 @@ export function ConfigEditor({
       setTree(null)
       setError('')
       setSaved(false)
+      setDirty(false)
       return
     }
     const target = openTarget()
@@ -233,6 +234,7 @@ export function ConfigEditor({
     readGen.current += 1
     const seq = readGen.current
     setSaved(false)
+    setDirty(false)
     ReadConfig(target.game, target.id, mod.key, mod.uniqueId)
       .then((raw) => {
         if (seq !== readGen.current) {
@@ -259,14 +261,21 @@ export function ConfigEditor({
       .then(() => {
         if (seq === readGen.current) {
           setSaved(true)
+          setDirty(false)
         }
       })
       .catch(reportUnexpected)
   }
+  const close = () => {
+    if (dirty && !window.confirm(t`Discard changes?`)) {
+      return
+    }
+    onClose()
+  }
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={close}
       fullWidth={true}
       maxWidth="sm"
       transitionDuration={0}
@@ -279,6 +288,7 @@ export function ConfigEditor({
           tree={tree}
           onChange={(path, next) => {
             setSaved(false)
+            setDirty(true)
             setTree((cur) => (cur ? setAt(cur, path, next) : cur))
           }}
           onOpen={() => openConfig(mod).catch(reportUnexpected)}
@@ -286,7 +296,7 @@ export function ConfigEditor({
       </DialogContent>
       <DialogActions>
         {saved ? <Typography sx={{ mr: 'auto', ...text }}>{t`Saved`}</Typography> : null}
-        <Button onClick={onClose} sx={noWrap}>{t`Close`}</Button>
+        <Button onClick={close} sx={noWrap}>{t`Close`}</Button>
         <Button onClick={save} disabled={locked || !tree} sx={noWrap}>
           {t`Save`}
         </Button>

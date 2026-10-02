@@ -32,7 +32,7 @@ const (
 )
 
 func rewriteConfigJSON(data []byte) ([]byte, error) {
-	dec := json.NewDecoder(bytes.NewReader(data))
+	dec := json.NewDecoder(bytes.NewReader(stripConfigJSONNoise(data)))
 	dec.UseNumber()
 	node, err := decodeJSON(dec)
 	if err != nil {

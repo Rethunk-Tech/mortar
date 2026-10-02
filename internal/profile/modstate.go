@@ -173,7 +173,11 @@ func (s *Store) ReadConfig(game, id, key, uniqueID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(b), nil
+	normalized, err := rewriteConfigJSON(b)
+	if err != nil {
+		return "", err
+	}
+	return string(normalized), nil
 }
 
 // WriteConfig replaces the mod's config.json atomically after checking JSON and the path.

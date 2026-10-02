@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"bytes"
 	"errors"
 	"os"
 	"path/filepath"
@@ -117,7 +118,7 @@ func TestReadWriteConfigRoundTripAndLock(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got != `{"z":1,"n":1.5}` {
+	if got != "{\n  \"z\": 1,\n  \"n\": 1.5\n}\n" {
 		t.Fatalf("read = %s", got)
 	}
 	if err := svc.WriteConfig("stardew", p.ID, "a-1", "me.a", `{"z":1,"n":1.5,"s":"ok"}`); err != nil {
@@ -147,6 +148,22 @@ func TestReadWriteConfigRoundTripAndLock(t *testing.T) {
 	}
 	if err := svc.WriteConfig("stardew", p.ID, "a-1", "nope.Mod", `{}`); err == nil {
 		t.Fatal("unknown mod write")
+	}
+}
+
+func TestReadConfigKeepsLargeNumbersAndComments(t *testing.T) {
+	m := manifestJSON("me.a")
+	e, p := updEnv(t, map[string]string{"A/manifest.json": m, "A/config.json": "{\n// accepted\n\"large\": 9007199254740993,\n\"tail\": [1,],\n}"}, nil)
+	svc := NewService(e.Store, t.TempDir(), nil)
+	got, err := svc.ReadConfig("stardew", p.ID, "a-1", "me.a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Contains([]byte(got), []byte("9007199254740993")) {
+		t.Fatalf("large number changed: %s", got)
+	}
+	if bytes.Contains([]byte(got), []byte("//")) || bytes.Contains([]byte(got), []byte(",]")) {
+		t.Fatalf("JSON noise remained: %s", got)
 	}
 }
 
