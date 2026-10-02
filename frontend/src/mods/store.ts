@@ -16,18 +16,25 @@ import {
   Problems,
   RestoreDismissed,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
-import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type {
+  Mod,
+  Profile,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   Mods,
   OpenConfig,
   RemoveEntries,
   RemoveEntry,
   SetConfigValue,
+  SetEntryCategoryMany,
   SetEntryNoteTags,
+  SetEntryTagsMany,
   SetModEnabled,
   SetModsEnabled,
   SetPinned,
+  SetPinnedMany,
   SetSkipVersion,
+  SetSkipVersionMany,
   ShowFiles,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { SetListGroupBy } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
@@ -193,6 +200,30 @@ async function enableMany(
     return
   }
   await get().loadProblems()
+}
+
+async function batchProfile(
+  mods: Mod[],
+  call: (game: string, id: string, keys: string[]) => Promise<Profile>,
+  title: string,
+) {
+  const target = open()
+  if (!target) {
+    return
+  }
+  try {
+    useProfiles.getState().replace(
+      await call(
+        target.game,
+        target.id,
+        mods.map((mod) => mod.key),
+      ),
+    )
+  } catch (e) {
+    fail(title)(e)
+    return
+  }
+  await useUpdates.getState().load()
 }
 
 async function dropMods(get: () => { load: () => Promise<void> }, mods: Mod[]) {
@@ -365,7 +396,11 @@ export const useMods = create<{
   setEnabled: (mod: Mod, enabled: boolean) => Promise<void>
   setEnabledMany: (mods: Mod[], enabled: boolean) => Promise<void>
   setPinned: (mod: Mod, pinned: boolean) => Promise<void>
+  setPinnedMany: (mods: Mod[], pinned: boolean) => Promise<void>
   setSkipVersion: (mod: Mod, version: string) => Promise<void>
+  setSkipVersionMany: (mods: Mod[]) => Promise<void>
+  setCategoryMany: (mods: Mod[], category: string) => Promise<void>
+  setTagMany: (mods: Mod[], tag: string, add: boolean) => Promise<void>
   setNoteTags: (mod: Mod, note: string, tags: string[]) => Promise<void>
   askRemove: (mod: Mod | readonly Mod[] | null) => void
   remove: (mod: Mod) => Promise<void>
@@ -443,6 +478,14 @@ export const useMods = create<{
     }
     await useUpdates.getState().load()
   },
+  setPinnedMany: (mods, pinned) =>
+    batchProfile(
+      mods,
+      (game, id, keys) => SetPinnedMany(game, id, keys, pinned),
+      i18n._(
+        pinned ? msg`Could not pin the selected mods` : msg`Could not unpin the selected mods`,
+      ),
+    ),
   setSkipVersion: async (mod, version) => {
     const target = open()
     if (!target) {
@@ -462,6 +505,29 @@ export const useMods = create<{
     }
     await useUpdates.getState().load()
   },
+  setSkipVersionMany: (mods) =>
+    batchProfile(
+      mods,
+      (game, id, keys) =>
+        SetSkipVersionMany(
+          game,
+          id,
+          mods.map((mod, index) => ({ key: keys[index] ?? mod.key, version: mod.version })),
+        ),
+      i18n._(msg`Could not skip updates for the selected mods`),
+    ),
+  setCategoryMany: (mods, category) =>
+    batchProfile(
+      mods,
+      (game, id, keys) => SetEntryCategoryMany(game, id, keys, category),
+      i18n._(msg`Could not set the category for the selected mods`),
+    ),
+  setTagMany: (mods, tag, add) =>
+    batchProfile(
+      mods,
+      (game, id, keys) => SetEntryTagsMany(game, id, keys, tag, add),
+      i18n._(msg`Could not update tags for the selected mods`),
+    ),
   setNoteTags: (mod, note, tags) => setEntryNoteTags(mod, note, tags),
   askRemove: (mod) => set({ removing: removingOf(mod) }),
   remove: (mod) => dropMod(get, mod),
