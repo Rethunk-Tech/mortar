@@ -18,7 +18,7 @@ func TestShareCheckRunsOnce(t *testing.T) {
 		mu.Unlock()
 		close(start)
 		<-release
-		return Result{}
+		return Result{Unknown: true}
 	}
 
 	var wg sync.WaitGroup
@@ -26,8 +26,12 @@ func TestShareCheckRunsOnce(t *testing.T) {
 	for range 2 {
 		go func() {
 			defer wg.Done()
-			if _, err := s.shareCheck(context.Background(), "stardew/profile", check); err != nil {
+			result, err := s.shareCheck(context.Background(), "stardew/profile", check)
+			if err != nil {
 				t.Errorf("shareCheck: %v", err)
+			}
+			if !result.Unknown {
+				t.Error("shareCheck returned the wrong result")
 			}
 		}()
 	}

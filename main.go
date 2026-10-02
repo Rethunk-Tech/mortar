@@ -22,6 +22,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/control"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/lan"
@@ -549,7 +550,7 @@ func run() error {
 	}()
 	go func() {
 		failurePath := filepath.Join(dataDir, "cache", "components-failure")
-		if b, err := os.ReadFile(failurePath); err == nil {
+		if b, err := fsx.ReadFile(failurePath); err == nil {
 			if at, err := time.Parse(time.RFC3339Nano, strings.TrimSpace(string(b))); err == nil && time.Since(at) < time.Hour {
 				return
 			}
@@ -557,7 +558,7 @@ func run() error {
 		if _, err := componentClient.Load(context.Background(), modMeta, updateKey); err != nil {
 			log.Printf("components manifest unavailable; using bundled copy: %v", err)
 			_ = os.MkdirAll(filepath.Dir(failurePath), 0o700)
-			_ = os.WriteFile(failurePath, []byte(time.Now().Format(time.RFC3339Nano)), 0o600)
+			_ = fsx.WriteFile(failurePath, []byte(time.Now().Format(time.RFC3339Nano)), 0o600)
 			return
 		}
 		_ = os.Remove(failurePath)
