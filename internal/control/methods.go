@@ -28,13 +28,15 @@ const ChangedEvent = "profiles:changed"
 type Services struct {
 	Version  string
 	Settings *settings.Store
-	Games    *game.Service
-	Store    *profile.Store
-	Profiles *profile.Service
-	Problems *problems.Service
-	Launches *launchsvc.Service
-	Saves    *savessvc.Service
-	Queue    *queue.Service
+	// SettingsSvc validates and saves settings changes, as the window's Settings does.
+	SettingsSvc *settings.Service
+	Games       *game.Service
+	Store       *profile.Store
+	Profiles    *profile.Service
+	Problems    *problems.Service
+	Launches    *launchsvc.Service
+	Saves       *savessvc.Service
+	Queue       *queue.Service
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 }
@@ -126,6 +128,18 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.Create(p.Game, p.Name) })
 	case "doctor":
 		return s.doctor()
+	case "launchers":
+		return s.Games.Launchers()
+	case "launchers.add":
+		if err := s.SettingsSvc.AddLauncherRoot(p.Name, p.Path); err != nil {
+			return nil, err
+		}
+		return s.Games.Launchers()
+	case "launchers.remove":
+		if err := s.SettingsSvc.RemoveLauncherRoot(p.Name, p.Path); err != nil {
+			return nil, err
+		}
+		return s.Games.Launchers()
 	case "queue":
 		return s.Queue.State(), nil
 	case "status":

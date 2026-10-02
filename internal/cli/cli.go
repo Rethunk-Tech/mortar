@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/control"
+	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -31,7 +32,7 @@ var verbs = map[string]bool{
 	"games": true, "profiles": true, "profile": true, "mods": true, "mod": true, "install": true,
 	"conflicts": true, "problems": true, "updates": true, "share": true, "export": true, "open": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
-	"doctor": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
+	"doctor": true, "launchers": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
 // Is reports whether args (without the program name) are a command-line call: a known verb, or a bare word that
@@ -182,6 +183,8 @@ func (c *cmd) dispatch() error {
 		return c.games()
 	case "doctor":
 		return c.doctor()
+	case "launchers":
+		return c.launchers()
 	case "queue":
 		return c.queue()
 	case "profiles":
@@ -708,6 +711,41 @@ func (c *cmd) queue() error {
 	})
 }
 
+func (c *cmd) launchers() error {
+	method, p := "launchers", control.Params{}
+	if len(c.args) > 1 {
+		switch sub := c.args[1]; sub {
+		case "add", "remove":
+			a, err := c.need(2, "a launcher id", "a folder")
+			if err != nil {
+				return err
+			}
+			method, p = "launchers."+sub, control.Params{Name: a[0], Path: absPath(a[1])}
+		default:
+			return usageError{"unknown launchers command " + sub}
+		}
+	}
+	var list []game.StoreApp
+	if err := c.ask(method, p, &list, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(list, func() {
+		t := [][]string{}
+		for _, l := range list {
+			games := []string{}
+			for _, g := range l.Games {
+				games = append(games, g.Name)
+			}
+			where := strings.Join(l.Roots, ", ")
+			if !l.Found {
+				where = "not found"
+			}
+			t = append(t, []string{l.ID, l.Name, yes(l.Found), strings.Join(games, ", "), where})
+		}
+		c.table("ID\tNAME\tFOUND\tGAMES\tFOLDERS", t)
+	})
+}
+
 func (c *cmd) doctor() error {
 	var d control.Doctor
 	if err := c.ask("doctor", control.Params{}, &d, readTimeout); err != nil {
@@ -759,6 +797,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   runs <game> <profile>                   recent launches
   logs <game> <profile> [--run <id>]      a stored SMAPI log (latest by default)
   queue                                   the download queue
+  launchers [add|remove <id> <folder>]   launchers, the games in each, and your added folders
   doctor                                  versions, folders and link handling
   completion bash|zsh|fish                shell completion script
   version | help

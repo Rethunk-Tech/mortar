@@ -36,6 +36,7 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `conflicts`, `problems`, `updates`, `saves <game> <profile>` | what the Problems, Mods and Saves tabs show |
 | `share`, `export <game> <profile> [file]`, `open <link\|file>` | share links and `.mortar` files |
 | `launch <game> <profile> [--wait]`, `status`, `stop <game>`, `runs`, `logs` | play and read past runs |
+| `launchers`, `launchers add\|remove <id> <folder>` | what Settings › Launchers shows and changes |
 | `queue`, `doctor`, `version`, `completion bash\|zsh\|fish` | the download queue, the environment, shell completion |
 
 ```sh

@@ -427,7 +427,7 @@ func run() error {
 		waitQueue()
 	}()
 	ctl := &control.Services{
-		Version: version, Settings: store, Games: gamesSvc, Store: profiles, Profiles: profileSvc,
+		Version: version, Settings: store, SettingsSvc: svc, Games: gamesSvc, Store: profiles, Profiles: profileSvc,
 		Problems: problemsSvc, Launches: launches, Saves: savesSvc, Queue: queueSvc, Emit: emit,
 	}
 	go func() {

@@ -47,12 +47,13 @@ var subverbs = map[string][]string{
 	"profile":    {"create", "rename", "copy", "delete"},
 	"mods":       {"enable", "disable", "pin", "unpin", "remove"},
 	"completion": {"bash", "zsh", "fish"},
+	"launchers":  {"add", "remove"},
 }
 
 // gameAt and profileAt give the positions (1-based after the verb) where a verb takes a game and a profile.
 func positions(words []string) (gameAt, profileAt, modAt int) {
 	switch words[0] {
-	case "games", "doctor", "queue", "version", "help", "open", "completion":
+	case "games", "doctor", "queue", "version", "help", "open", "completion", "launchers":
 		return 0, 0, 0
 	case "profiles", "status", "stop":
 		return 1, 0, 0
