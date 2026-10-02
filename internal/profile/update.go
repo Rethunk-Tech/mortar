@@ -14,6 +14,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/backup"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	gamepkg "github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
@@ -358,7 +359,15 @@ func (s *Store) saveBackup(game, profileID string) error {
 	if game != "stardew" {
 		return nil
 	}
-	cfg, err := os.UserConfigDir()
+	selected := ""
+	var err error
+	if s.settings != nil {
+		_, selected, _, err = gamepkg.Resolve(s.home, s.settings.Get(), game)
+		if err != nil {
+			return err
+		}
+	}
+	savesDir, err := gamepkg.SavesDir(selected, s.home)
 	if err != nil {
 		return err
 	}
@@ -366,6 +375,6 @@ func (s *Store) saveBackup(game, profileID string) error {
 	if s.BackupsKept != nil {
 		keep = s.BackupsKept()
 	}
-	_, err = backup.Saves(filepath.Join(cfg, "StardewValley", "Saves"), filepath.Join(filepath.Dir(s.root), "backups"), keep, time.Now(), backup.Cause{Profile: profileID, Kind: backup.KindUpdate})
+	_, err = backup.Saves(savesDir, filepath.Join(filepath.Dir(s.root), "backups"), keep, time.Now(), backup.Cause{Profile: profileID, Kind: backup.KindUpdate})
 	return err
 }

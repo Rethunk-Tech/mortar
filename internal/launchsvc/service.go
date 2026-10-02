@@ -653,7 +653,11 @@ func (s *Service) backupChangedSaves(gameID, profileID string) error {
 	if !changedSinceLastRun(events, lastRun) {
 		return nil
 	}
-	cfg, err := os.UserConfigDir()
+	_, selected, _, err := game.Resolve(s.home, s.settings.Get(), gameID)
+	if err != nil {
+		return err
+	}
+	savesDir, err := game.SavesDir(selected, s.home)
 	if err != nil {
 		return err
 	}
@@ -662,7 +666,7 @@ func (s *Service) backupChangedSaves(gameID, profileID string) error {
 		return err
 	}
 	_, err = backup.Saves(
-		filepath.Join(cfg, "StardewValley", "Saves"),
+		savesDir,
 		filepath.Join(base, "backups"),
 		s.settings.Get().BackupsKept,
 		time.Now(),

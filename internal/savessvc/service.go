@@ -7,7 +7,6 @@ import (
 	"errors"
 	"log"
 	"maps"
-	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -15,6 +14,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/problems"
@@ -58,6 +58,7 @@ type Fit struct {
 
 // Service exposes the save scan to the frontend.
 type Service struct {
+	home     string
 	profiles *profile.Store
 	settings *settings.Store
 	meta     *meta.Client
@@ -68,8 +69,12 @@ type Service struct {
 }
 
 // NewService reads saves from the Stardew Valley Saves folder and caches scans in <datadir>/cache.
-func NewService(profiles *profile.Store, store *settings.Store, client *meta.Client) (*Service, error) {
-	cfg, err := os.UserConfigDir()
+func NewService(home string, profiles *profile.Store, store *settings.Store, client *meta.Client) (*Service, error) {
+	_, selected, _, err := game.Resolve(home, store.Get(), "stardew")
+	if err != nil {
+		return nil, err
+	}
+	savesDir, err := game.SavesDir(selected, home)
 	if err != nil {
 		return nil, err
 	}
@@ -77,8 +82,8 @@ func NewService(profiles *profile.Store, store *settings.Store, client *meta.Cli
 	if err != nil {
 		return nil, err
 	}
-	scanner := &saves.Scanner{Dir: filepath.Join(cfg, "StardewValley", "Saves"), CacheDir: filepath.Join(base, "cache")}
-	return &Service{profiles: profiles, settings: store, meta: client, scanner: scanner}, nil
+	scanner := &saves.Scanner{Dir: savesDir, CacheDir: filepath.Join(base, "cache")}
+	return &Service{home: home, profiles: profiles, settings: store, meta: client, scanner: scanner}, nil
 }
 
 // Saves scans the game's saves and compares each with the profile. Wails runs it off the UI thread; a first scan

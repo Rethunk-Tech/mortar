@@ -265,7 +265,7 @@ func run() error {
 		log.Printf("purge trash: %v", err)
 	}
 
-	savesSvc, err := savessvc.NewService(profiles, store, modMeta)
+	savesSvc, err := savessvc.NewService(home, profiles, store, modMeta)
 	if err != nil {
 		return err
 	}

@@ -2,7 +2,6 @@ package tools
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/Rethunk-AI/mortar/internal/game"
@@ -81,7 +80,7 @@ func (s *Service) context(gameID, profileID string) (Context, error) {
 	}
 	mods = absDir(mods)
 	profileDir := absDir(filepath.Dir(mods))
-	saves, err := savesDir(gameID)
+	saves, err := s.savesDir(gameID)
 	if err != nil {
 		return Context{}, err
 	}
@@ -93,13 +92,17 @@ func (s *Service) context(gameID, profileID string) (Context, error) {
 	}, nil
 }
 
-func savesDir(gameID string) (string, error) {
+func (s *Service) savesDir(gameID string) (string, error) {
 	if gameID != "stardew" {
 		return "", nil
 	}
-	cfg, err := os.UserConfigDir()
+	_, selected, _, err := game.Resolve(s.home, s.settings.Get(), gameID)
 	if err != nil {
 		return "", err
 	}
-	return absDir(filepath.Join(cfg, "StardewValley", "Saves")), nil
+	dir, err := game.SavesDir(selected, s.home)
+	if err != nil {
+		return "", err
+	}
+	return absDir(dir), nil
 }

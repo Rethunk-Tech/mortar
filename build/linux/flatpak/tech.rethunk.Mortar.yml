@@ -8,8 +8,10 @@ finish-args:
   - --socket=wayland
   - --socket=fallback-x11
   - --device=dri
+  - --filesystem=xdg-config/StardewValley
   - --filesystem=xdg-data/Steam
   - --filesystem=~/.var/app/com.valvesoftware.Steam
+  - --filesystem=~/.var/app/com.valvesoftware.Steam/.config/StardewValley
   - --filesystem=xdg-config/heroic:ro
   - --filesystem=xdg-data/lutris:ro
   - --filesystem=~/.var/app/net.lutris.Lutris

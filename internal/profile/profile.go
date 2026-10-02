@@ -21,6 +21,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
@@ -152,10 +153,12 @@ type Profile struct {
 
 // Store reads and writes profiles under one root folder.
 type Store struct {
-	root  string
-	trash string
-	items *store.Store
-	mu    sync.Mutex
+	root     string
+	trash    string
+	items    *store.Store
+	home     string
+	settings *settings.Store
+	mu       sync.Mutex
 	// Bundled returns the store items every profile of a game holds: the loader's own mods and the console
 	// bridge, whichever are installed.
 	Bundled func(game string) []Bundle
