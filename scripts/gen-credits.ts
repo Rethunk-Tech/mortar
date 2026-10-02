@@ -3,7 +3,6 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const LICENCE_HEAD_CHARS = 5000
 const LICENCE_ERROR_CHARS = 280
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -138,59 +137,59 @@ function readLicenceFile(dir: string): string {
 }
 
 function classifyLicenceText(text: string): string {
-  const head = text.slice(0, LICENCE_HEAD_CHARS)
-  if (/GNU AFFERO GENERAL PUBLIC LICENSE/i.test(head) && /Version 3/i.test(head)) {
+  const body = text
+  if (/GNU AFFERO GENERAL PUBLIC LICENSE/i.test(body) && /Version 3/i.test(body)) {
     return 'AGPL-3.0'
   }
-  if (/GNU LESSER GENERAL PUBLIC LICENSE/i.test(head) && /Version 3/i.test(head)) {
+  if (/GNU LESSER GENERAL PUBLIC LICENSE/i.test(body) && /Version 3/i.test(body)) {
     return 'LGPL-3.0'
   }
-  if (/GNU LESSER GENERAL PUBLIC LICENSE/i.test(head) && /Version 2\.1/i.test(head)) {
+  if (/GNU LESSER GENERAL PUBLIC LICENSE/i.test(body) && /Version 2\.1/i.test(body)) {
     return 'LGPL-2.1'
   }
-  if (/GNU GENERAL PUBLIC LICENSE/i.test(head) && /Version 3/i.test(head)) {
+  if (/GNU GENERAL PUBLIC LICENSE/i.test(body) && /Version 3/i.test(body)) {
     return 'GPL-3.0'
   }
-  if (/mozilla public license/i.test(head) && /2\.0/i.test(head)) {
+  if (/mozilla public license/i.test(body) && /2\.0/i.test(body)) {
     return 'MPL-2.0'
   }
-  if (/apache license/i.test(head) && /version 2\.0/i.test(head)) {
+  if (/apache license/i.test(body) && /version 2\.0/i.test(body)) {
     return 'Apache-2.0'
   }
-  if (/sil open font license/i.test(head)) {
+  if (/sil open font license/i.test(body)) {
     return 'OFL-1.1'
   }
-  if (/creative commons/i.test(head) && /attribution-sharealike 4\.0/i.test(head)) {
+  if (/creative commons/i.test(body) && /attribution-sharealike 4\.0/i.test(body)) {
     return 'CC-BY-SA-4.0'
   }
   if (
-    /the mit license/i.test(head) ||
-    (/permission is hereby granted, free of charge/i.test(head) && /\bMIT\b/.test(head))
+    /the mit license/i.test(body) ||
+    (/permission is hereby granted, free of charge/i.test(body) && /\bMIT\b/.test(body))
   ) {
     return 'MIT'
   }
-  if (/permission is hereby granted, free of charge/i.test(head)) {
+  if (/permission is hereby granted, free of charge/i.test(body)) {
     return 'MIT'
   }
-  if (/permission to use, copy, modify, and\/or distribute this software/i.test(head)) {
+  if (/permission to use, copy, modify, and\/or distribute this software/i.test(body)) {
     return 'ISC'
   }
   if (
-    /redistribution and use in source and binary forms/i.test(head) &&
-    /neither the name/i.test(head)
+    /redistribution and use in source and binary forms/i.test(body) &&
+    /neither the name/i.test(body)
   ) {
     return 'BSD-3-Clause'
   }
-  if (/bsd 3-clause/i.test(head)) {
+  if (/bsd 3-clause/i.test(body)) {
     return 'BSD-3-Clause'
   }
-  if (/redistribution and use in source and binary forms/i.test(head)) {
+  if (/redistribution and use in source and binary forms/i.test(body)) {
     return 'BSD-2-Clause'
   }
-  if (/unlicense/i.test(head)) {
+  if (/unlicense/i.test(body)) {
     return 'Unlicense'
   }
-  throw new Error(`unrecognised licence text:\n${head.slice(0, LICENCE_ERROR_CHARS)}`)
+  throw new Error(`unrecognised licence text:\n${body.slice(0, LICENCE_ERROR_CHARS)}`)
 }
 
 interface CreditEntry {
@@ -277,3 +276,5 @@ function main(): void {
 if (import.meta.main) {
   main()
 }
+
+export { classifyLicenceText }
