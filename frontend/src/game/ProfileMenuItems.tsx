@@ -23,6 +23,7 @@ import {
   ImagePlus,
   SquareArrowOutUpRight,
   Trash2,
+  Users,
 } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { PickImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
@@ -33,6 +34,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/shortcut/service.ts'
 import { CompareDialog, PickCompareDialog } from '../profiles/CompareDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
+import { openImport } from '../share/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { applyStagedCover, hasPickedCover } from './cover.ts'
@@ -99,6 +101,58 @@ function DeleteProfileDialog({
   )
 }
 
+// ShortcutMenuItems are the ways to start a profile from outside Mortar: a desktop or Start menu shortcut, and Steam.
+function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => void }) {
+  const { t } = useLingui()
+  const game = () => useProfiles.getState().game
+  return (
+    <>
+      <ProfileMenuItem
+        icon={<SquareArrowOutUpRight size={16} />}
+        label={t`Add a shortcut that plays this profile`}
+        onClick={() => {
+          close()
+          const g = game()
+          if (g) {
+            CreateShortcut(g.id, g.name, profile.id, profile.name)
+              .then((path) =>
+                useToasts
+                  .getState()
+                  .push({ kind: 'success', title: t`Shortcut added`, body: path }),
+              )
+              .catch(toastError(t`Could not add the shortcut`))
+          }
+        }}
+      />
+      <ProfileMenuItem
+        icon={<Gamepad2 size={16} />}
+        label={t`Add this profile to Steam`}
+        onClick={() => {
+          close()
+          const g = game()
+          if (g) {
+            AddToSteam(g.id, g.name, profile.id, profile.name)
+              .then((added) =>
+                useToasts.getState().push({
+                  kind: 'success',
+                  title: added ? t`Added to Steam` : t`Already in Steam`,
+                  body: t`It shows in your Steam library the next time Steam starts.`,
+                }),
+              )
+              .catch((e) =>
+                useToasts.getState().push({
+                  kind: 'error',
+                  title: t`Could not add it to Steam`,
+                  body: sentenceCase(errorMessage(e)),
+                }),
+              )
+          }
+        }}
+      />
+    </>
+  )
+}
+
 export function CoverMenuItems({
   game,
   profile,
@@ -152,7 +206,6 @@ export function MoreMenuItems({
   onHistory: () => void
 }) {
   const { t } = useLingui()
-  const game = () => useProfiles.getState().game
   const profiles = useProfiles((s) => s.profiles)
   const duplicate = useProfiles((s) => s.duplicate)
   const setHidden = useProfiles((s) => s.setHidden)
@@ -178,47 +231,14 @@ export function MoreMenuItems({
         }}
       />
       <ProfileMenuItem
-        icon={<SquareArrowOutUpRight size={16} />}
-        label={t`Add a shortcut that plays this profile`}
+        icon={<Users size={16} />}
+        label={t`Match a friend's profile…`}
         onClick={() => {
           close()
-          const g = game()
-          if (g) {
-            CreateShortcut(g.id, g.name, profile.id, profile.name)
-              .then((path) =>
-                useToasts
-                  .getState()
-                  .push({ kind: 'success', title: t`Shortcut added`, body: path }),
-              )
-              .catch(toastError(t`Could not add the shortcut`))
-          }
+          openImport({ profileId: profile.id })
         }}
       />
-      <ProfileMenuItem
-        icon={<Gamepad2 size={16} />}
-        label={t`Add this profile to Steam`}
-        onClick={() => {
-          close()
-          const g = game()
-          if (g) {
-            AddToSteam(g.id, g.name, profile.id, profile.name)
-              .then((added) =>
-                useToasts.getState().push({
-                  kind: 'success',
-                  title: added ? t`Added to Steam` : t`Already in Steam`,
-                  body: t`It shows in your Steam library the next time Steam starts.`,
-                }),
-              )
-              .catch((e) =>
-                useToasts.getState().push({
-                  kind: 'error',
-                  title: t`Could not add it to Steam`,
-                  body: sentenceCase(errorMessage(e)),
-                }),
-              )
-          }
-        }}
-      />
+      <ShortcutMenuItems profile={profile} close={close} />
       <ProfileMenuItem
         icon={<Copy size={16} />}
         label={t`Duplicate`}

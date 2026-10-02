@@ -6,6 +6,7 @@ import { paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { CompareSummary } from './CompareSummary.tsx'
 import { ImportFooter } from './ImportFooter.tsx'
 import { ImportInput } from './ImportInput.tsx'
 import { Tiles } from './ImportPreview.tsx'
@@ -162,6 +163,9 @@ function Body({ request }: { request: ImportRequest }) {
           >
             {flow.external?.missing && flow.external.missing.length > 0 ? (
               <MissingMods ids={flow.external.missing} />
+            ) : null}
+            {targetName && !flow.external ? (
+              <CompareSummary preview={preview} targetName={targetName} />
             ) : null}
             {hasMods ? (
               <Tiles mods={preview.mods} excluded={flow.excluded} onToggle={flow.toggle} />
