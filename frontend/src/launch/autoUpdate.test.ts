@@ -1,6 +1,12 @@
 import { expect, test } from 'bun:test'
 import type { Update } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import { planAutoUpdates } from './autoUpdate.ts'
+import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
+import {
+  acknowledgeUpdateCaution,
+  cautionAcknowledged,
+  planAutoUpdates,
+  queueItemSucceeded,
+} from './autoUpdate.ts'
 
 const update = (overrides: Partial<Update>): Update => ({
   key: 'old',
@@ -43,4 +49,19 @@ test('plans installable updates except pinned entries', () => {
       currentKey: 'github',
     },
   ])
+})
+
+test('treats queue items that disappeared as done and free waiting clicks as successful', () => {
+  expect(queueItemSucceeded(undefined, true)).toBe(true)
+  expect(queueItemSucceeded({ state: 'waiting-click' } as Item, false)).toBe(true)
+  expect(queueItemSucceeded({ state: 'waiting-click' } as Item, true)).toBe(false)
+})
+
+test('keeps caution acknowledgements for auto-update', () => {
+  const candidate = update({ key: 'cautious' })
+  acknowledgeUpdateCaution('profile', candidate, false)
+  expect(cautionAcknowledged('profile', candidate)).toBe(false)
+  acknowledgeUpdateCaution('profile', candidate, true)
+  expect(cautionAcknowledged('profile', candidate)).toBe(true)
+  acknowledgeUpdateCaution('profile', candidate, false)
 })

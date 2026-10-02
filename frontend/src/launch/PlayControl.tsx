@@ -56,6 +56,7 @@ export function PlayControl({ game }: { game: string }) {
   const { t } = useLingui()
   const status = useLaunch((s) => s.status)
   const stopping = useLaunch((s) => s.stopping)
+  const updating = useLaunch((s) => s.updating)
   const starting = useLaunch((s) => s.starting)
   const installingLoader = useLoader((s) => s.installing)
   const start = useLaunch((s) => s.start)
@@ -144,12 +145,19 @@ export function PlayControl({ game }: { game: string }) {
 
   const busy = starting || installingLoader
   const launching = state === State.Launching
+  let label = t`Play`
+  if (installingLoader) {
+    label = t`Installing SMAPI…`
+  }
+  if (updating > 0) {
+    label = t`Updating ${updating} mods…`
+  }
   return (
     <VanillaPlay
       game={game}
       playDisabled={openId === '' || launching || busy}
       vanillaDisabled={launching || busy}
-      label={installingLoader ? t`Installing SMAPI…` : t`Play`}
+      label={label}
       play={() => start(game, openId, false)}
     />
   )

@@ -83,6 +83,10 @@ msgstr "Could not switch the selected mods"
 msgid "Open profile"
 msgstr "Open profile"
 
+#: src/profiles/EditProfileDialog.tsx:244
+msgid "Free Nexus accounts must click each download on Nexus; those updates will not block Play."
+msgstr "Free Nexus accounts must click each download on Nexus; those updates will not block Play."
+
 #: src/firstrun/SmapiStep.tsx:280
 msgid "Installing SMAPI {latest}"
 msgstr "Installing SMAPI {latest}"
@@ -464,7 +468,7 @@ msgstr "Add to {targetName}"
 msgid "A .mortar file holds the same mods as the link, plus the settings files (.json) each mod has written. Send it to someone, and they open it from Mortar's Import."
 msgstr "A .mortar file holds the same mods as the link, plus the settings files (.json) each mod has written. Send it to someone, and they open it from Mortar's Import."
 
-#: src/mods/UpdateReview.tsx:618
+#: src/mods/UpdateReview.tsx:622
 msgid "Mortar checks for updates at startup, when you press F5, and at most once an hour while it is running."
 msgstr "Mortar checks for updates at startup, when you press F5, and at most once an hour while it is running."
 
@@ -477,7 +481,7 @@ msgstr "Broken"
 msgid "Bundled mods added"
 msgstr "Bundled mods added"
 
-#: src/launch/store.ts:65
+#: src/launch/store.ts:64
 msgid "Steam's launch options for Stardew Valley lack the SMAPI line. In Steam, right-click the game, choose Properties, and paste this line into Launch Options."
 msgstr "Steam's launch options for Stardew Valley lack the SMAPI line. In Steam, right-click the game, choose Properties, and paste this line into Launch Options."
 
@@ -540,7 +544,7 @@ msgid "Flatpak Steam"
 msgstr "Flatpak Steam"
 
 #. placeholder {0}: update.name
-#: src/mods/UpdateReview.tsx:426
+#: src/mods/UpdateReview.tsx:427
 msgid "Update {0} in other profiles"
 msgstr "Update {0} in other profiles"
 
@@ -579,7 +583,7 @@ msgstr "Select all mods"
 msgid "Use this folder"
 msgstr "Use this folder"
 
-#: src/launch/autoUpdate.ts:171
+#: src/launch/autoUpdate.ts:224
 msgid "Could not add the update downloads"
 msgstr "Could not add the update downloads"
 
@@ -635,7 +639,7 @@ msgid "Add a bundle to {profileName}"
 msgstr "Add a bundle to {profileName}"
 
 #: src/game/ProfileMenuItems.tsx:252
-#: src/profiles/EditProfileDialog.tsx:157
+#: src/profiles/EditProfileDialog.tsx:158
 msgid "Use the automatic cover"
 msgstr "Use the automatic cover"
 
@@ -657,7 +661,7 @@ msgstr "Caused by {0}"
 msgid "Before updating {0}"
 msgstr "Before updating {0}"
 
-#: src/mods/UpdateReview.tsx:332
+#: src/mods/UpdateReview.tsx:333
 msgid "Skip this version"
 msgstr "Skip this version"
 
@@ -681,7 +685,7 @@ msgstr "{count} unavailable"
 msgid "Grid view"
 msgstr "Grid view"
 
-#: src/mods/UpdateReview.tsx:488
+#: src/mods/UpdateReview.tsx:489
 msgid "Review"
 msgstr "Review"
 
@@ -716,7 +720,7 @@ msgid "Import from {0}"
 msgstr "Import from {0}"
 
 #: src/launch/SaveWarnDialog.tsx:40
-#: src/mods/UpdateReview.tsx:250
+#: src/mods/UpdateReview.tsx:251
 msgid "Switched off in this profile"
 msgstr "Switched off in this profile"
 
@@ -724,8 +728,7 @@ msgstr "Switched off in this profile"
 msgid "Missing requirements"
 msgstr "Missing requirements"
 
-#: src/launch/store.ts:127
-#: src/launch/store.ts:269
+#: src/launch/store.ts:265
 #: src/mods/ModDetail.tsx:105
 #: src/mods/ModDetail.tsx:199
 msgid "Roll back"
@@ -776,7 +779,7 @@ msgstr "found, without {0}"
 msgid "Mortar's data"
 msgstr "Mortar's data"
 
-#: src/launch/store.ts:124
+#: src/launch/store.ts:123
 msgid "Could not update mods before Play"
 msgstr "Could not update mods before Play"
 
@@ -866,7 +869,7 @@ msgstr "{0} of {1} mods · {2} · {3}/s"
 msgid "{name} is marked broken for this game version."
 msgstr "{name} is marked broken for this game version."
 
-#: src/profiles/EditProfileDialog.tsx:137
+#: src/profiles/EditProfileDialog.tsx:138
 msgid "{pickedName} is used after Save."
 msgstr "{pickedName} is used after Save."
 
@@ -912,11 +915,11 @@ msgstr "Tell me when a new SMAPI is out"
 msgid "More actions for {0}"
 msgstr "More actions for {0}"
 
-#: src/mods/UpdateReview.tsx:172
+#: src/mods/UpdateReview.tsx:173
 msgid "This mod has no changelog."
 msgstr "This mod has no changelog."
 
-#: src/profiles/EditProfileDialog.tsx:237
+#: src/profiles/EditProfileDialog.tsx:239
 msgid "Update mods before Play"
 msgstr "Update mods before Play"
 
@@ -957,7 +960,7 @@ msgid "has {0}"
 msgstr "has {0}"
 
 #. placeholder {0}: profiles.length
-#: src/mods/UpdateReview.tsx:434
+#: src/mods/UpdateReview.tsx:435
 msgid "Updated in {0} profiles"
 msgstr "Updated in {0} profiles"
 
@@ -1013,7 +1016,7 @@ msgstr "Show"
 
 #: src/mods/ModDependencyTree.tsx:86
 #: src/mods/problemFixButtons.tsx:80
-#: src/mods/UpdateReview.tsx:347
+#: src/mods/UpdateReview.tsx:348
 #: src/saves/SavesTab.tsx:105
 msgid "Queued"
 msgstr "Queued"
@@ -1072,7 +1075,7 @@ msgstr "Remove from other profiles…"
 msgid "Hill-top farm"
 msgstr "Hill-top farm"
 
-#: src/launch/PlayControl.tsx:152
+#: src/launch/PlayControl.tsx:150
 msgid "Installing SMAPI…"
 msgstr "Installing SMAPI…"
 
@@ -1111,7 +1114,7 @@ msgid "Skipped"
 msgstr "Skipped"
 
 #: src/game/ProfileContextMenu.tsx:48
-#: src/profiles/EditProfileDialog.tsx:466
+#: src/profiles/EditProfileDialog.tsx:471
 #: src/profiles/ProfileRow.tsx:78
 msgid "Edit profile"
 msgstr "Edit profile"
@@ -1149,7 +1152,7 @@ msgstr "Handle Nexus \"Mod Manager Download\" links"
 msgid "Check only enabled mods: {from} → {to}"
 msgstr "Check only enabled mods: {from} → {to}"
 
-#: src/launch/store.ts:508
+#: src/launch/events.ts:23
 msgid "Could not restore profile game settings"
 msgstr "Could not restore profile game settings"
 
@@ -1211,8 +1214,8 @@ msgstr "Dismiss for this save"
 msgid "Create another profile to compare it with this one."
 msgstr "Create another profile to compare it with this one."
 
-#: src/mods/ProblemsTab.tsx:266
-#: src/mods/ProblemsTab.tsx:392
+#: src/mods/ProblemsTab.tsx:270
+#: src/mods/ProblemsTab.tsx:396
 msgid "Cleanup"
 msgstr "Cleanup"
 
@@ -1321,7 +1324,7 @@ msgstr "No recorded runs yet"
 msgid "Archive"
 msgstr "Archive"
 
-#: src/profiles/EditProfileDialog.tsx:340
+#: src/profiles/EditProfileDialog.tsx:345
 msgid "Launch prefix"
 msgstr "Launch prefix"
 
@@ -1400,7 +1403,7 @@ msgstr "Fullscreen resolution height"
 msgid "Reading the log…"
 msgstr "Reading the log…"
 
-#: src/mods/UpdateReview.tsx:161
+#: src/mods/UpdateReview.tsx:162
 msgid "Load changes"
 msgstr "Load changes"
 
@@ -1591,7 +1594,7 @@ msgstr "Open Downloads"
 msgid "Quit Mortar?"
 msgstr "Quit Mortar?"
 
-#: src/launch/store.ts:500
+#: src/launch/events.ts:15
 msgid "Could not back up saves before Play"
 msgstr "Could not back up saves before Play"
 
@@ -1615,6 +1618,10 @@ msgstr "Not checked yet."
 #: src/mods/SelectionBar.tsx:70
 msgid "Disable"
 msgstr "Disable"
+
+#: src/launch/autoUpdate.ts:143
+msgid "Timed out waiting for mod updates"
+msgstr "Timed out waiting for mod updates"
 
 #: src/settings/sections/StreamOverlay.tsx:294
 #: src/settings/sections/StreamOverlay.tsx:445
@@ -1672,7 +1679,7 @@ msgstr "Could not duplicate the profile"
 msgid "Copy CSS"
 msgstr "Copy CSS"
 
-#: src/profiles/EditProfileDialog.tsx:347
+#: src/profiles/EditProfileDialog.tsx:352
 msgid "Prefix for direct launches only (for example, gamemoderun mangohud). On Windows, prefixes are unavailable."
 msgstr "Prefix for direct launches only (for example, gamemoderun mangohud). On Windows, prefixes are unavailable."
 
@@ -1709,8 +1716,8 @@ msgstr "Replace {targetName}"
 msgid "Main"
 msgstr "Main"
 
-#: src/launch/store.ts:152
-#: src/launch/store.ts:246
+#: src/launch/store.ts:153
+#: src/launch/vanillaStart.ts:10
 msgid "Could not launch the game"
 msgstr "Could not launch the game"
 
@@ -1744,7 +1751,7 @@ msgstr "config.json, as the mod ships it"
 msgid "Performance report"
 msgstr "Performance report"
 
-#: src/profiles/EditProfileDialog.tsx:129
+#: src/profiles/EditProfileDialog.tsx:130
 msgid "Cover image"
 msgstr "Cover image"
 
@@ -1774,7 +1781,7 @@ msgstr "Cover image"
 #: src/mods/OtherProfilesDialog.tsx:52
 #: src/mods/parts.tsx:352
 #: src/profiles/CompareDialog.tsx:60
-#: src/profiles/EditProfileDialog.tsx:492
+#: src/profiles/EditProfileDialog.tsx:497
 #: src/profiles/GameModsDialog.tsx:149
 #: src/profiles/ProfilesPage.tsx:117
 #: src/profiles/ProfilesPage.tsx:183
@@ -1811,8 +1818,8 @@ msgstr "{field}: {from} → {to}"
 msgid "{name} is abandoned: {summary}"
 msgstr "{name} is abandoned: {summary}"
 
-#: src/profiles/EditProfileDialog.tsx:143
-#: src/profiles/EditProfileDialog.tsx:152
+#: src/profiles/EditProfileDialog.tsx:144
+#: src/profiles/EditProfileDialog.tsx:153
 #: src/settings/sections/Appearance.tsx:179
 msgid "Choose image…"
 msgstr "Choose image…"
@@ -1888,7 +1895,7 @@ msgstr "Could not undo the install"
 msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
-#: src/mods/ProblemsTab.tsx:273
+#: src/mods/ProblemsTab.tsx:277
 msgid "Not needed by any enabled mod"
 msgstr "Not needed by any enabled mod"
 
@@ -2035,7 +2042,7 @@ msgstr "Could not read recently deleted profiles"
 
 #: src/loader/Banner.tsx:38
 #: src/mods/Sidebar.tsx:210
-#: src/mods/UpdateReview.tsx:347
+#: src/mods/UpdateReview.tsx:348
 #: src/settings/sections/GameSettings.tsx:386
 #: src/settings/smapiToast.ts:35
 msgid "Update"
@@ -2135,11 +2142,11 @@ msgstr "Changed outside Mortar"
 msgid "Connection"
 msgstr "Connection"
 
-#: src/mods/UpdateReview.tsx:641
+#: src/mods/UpdateReview.tsx:645
 msgid "Loading changes…"
 msgstr "Loading changes…"
 
-#: src/profiles/EditProfileDialog.tsx:355
+#: src/profiles/EditProfileDialog.tsx:360
 msgid "Launch environment"
 msgstr "Launch environment"
 
@@ -2178,7 +2185,7 @@ msgid "{mods, plural, one {# mod} other {# mods}}"
 msgstr "{mods, plural, one {# mod} other {# mods}}"
 
 #. placeholder {0}: o.name
-#: src/mods/UpdateReview.tsx:249
+#: src/mods/UpdateReview.tsx:250
 msgid "Also updates {0} (same download)"
 msgstr "Also updates {0} (same download)"
 
@@ -2453,10 +2460,8 @@ msgstr "Add a value"
 msgid "Start measuring to view a report."
 msgstr "Start measuring to view a report."
 
-#. placeholder {0}: cleanup.name || cleanup.uniqueId
 #. placeholder {0}: item.name || item.uniqueId
-#: src/mods/ProblemsTab.tsx:150
-#: src/mods/ProblemsTab.tsx:269
+#: src/mods/ProblemsTab.tsx:273
 msgid "{0}: Not needed by any enabled mod"
 msgstr "{0}: Not needed by any enabled mod"
 
@@ -2487,7 +2492,7 @@ msgstr "{0} is installed twice, and SMAPI loads only one."
 msgid "Choose the game folder…"
 msgstr "Choose the game folder…"
 
-#: src/profiles/EditProfileDialog.tsx:324
+#: src/profiles/EditProfileDialog.tsx:329
 msgid "Launch options"
 msgstr "Launch options"
 
@@ -2508,7 +2513,7 @@ msgstr "After the first release"
 msgid "Trash"
 msgstr "Trash"
 
-#: src/profiles/EditProfileDialog.tsx:136
+#: src/profiles/EditProfileDialog.tsx:137
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
@@ -2567,7 +2572,7 @@ msgstr "Retry failed"
 msgid "Zoom ({value}%)"
 msgstr "Zoom ({value}%)"
 
-#: src/mods/UpdateReview.tsx:453
+#: src/mods/UpdateReview.tsx:454
 msgid "Updates are unknown: SMAPI's update service could not be reached."
 msgstr "Updates are unknown: SMAPI's update service could not be reached."
 
@@ -2667,7 +2672,7 @@ msgstr "{daily} requests left today · {hourly} this hour"
 msgid "Their folders in this profile are deleted."
 msgstr "Their folders in this profile are deleted."
 
-#: src/mods/ProblemsTab.tsx:375
+#: src/mods/ProblemsTab.tsx:379
 msgid "Dismiss all"
 msgstr "Dismiss all"
 
@@ -2691,7 +2696,7 @@ msgstr "Could not delete the bundle"
 msgid "{name} settings"
 msgstr "{name} settings"
 
-#: src/mods/ProblemsTab.tsx:247
+#: src/mods/ProblemsTab.tsx:251
 msgid "Copy all problems"
 msgstr "Copy all problems"
 
@@ -2768,7 +2773,7 @@ msgstr "That folder cannot be used"
 #: src/mods/problemFixButtons.tsx:48
 #: src/mods/problemFixButtons.tsx:175
 #: src/mods/Sidebar.tsx:192
-#: src/mods/UpdateReview.tsx:321
+#: src/mods/UpdateReview.tsx:322
 #: src/saves/SavesTab.tsx:171
 msgid "Open page"
 msgstr "Open page"
@@ -2888,7 +2893,7 @@ msgstr "{length} of {limit} characters · too long for one Discord message"
 msgid "New"
 msgstr "New"
 
-#: src/mods/UpdateReview.tsx:641
+#: src/mods/UpdateReview.tsx:645
 msgid "Load all changes"
 msgstr "Load all changes"
 
@@ -2940,7 +2945,7 @@ msgstr "Show {0} in its profile"
 msgid "Mod list format"
 msgstr "Mod list format"
 
-#: src/launch/store.ts:407
+#: src/launch/store.ts:405
 msgid "Could not check whether the game is running"
 msgstr "Could not check whether the game is running"
 
@@ -2949,7 +2954,7 @@ msgid "Track"
 msgstr "Track"
 
 #. placeholder {0}: item.name || i18n._(msg`the mod`)
-#: src/launch/autoUpdate.ts:90
+#: src/launch/autoUpdate.ts:115
 msgid "The update for {0} did not finish"
 msgstr "The update for {0} did not finish"
 
@@ -3098,7 +3103,7 @@ msgid "Clear download history?"
 msgstr "Clear download history?"
 
 #: src/mods/Sidebar.tsx:213
-#: src/mods/UpdateReview.tsx:355
+#: src/mods/UpdateReview.tsx:356
 msgid "Update in all profiles that have it"
 msgstr "Update in all profiles that have it"
 
@@ -3106,9 +3111,9 @@ msgstr "Update in all profiles that have it"
 msgid "Save as bundle…"
 msgstr "Save as bundle…"
 
-#: src/launch/PlayControl.tsx:123
-#: src/launch/PlayControl.tsx:125
-#: src/launch/PlayControl.tsx:128
+#: src/launch/PlayControl.tsx:124
+#: src/launch/PlayControl.tsx:126
+#: src/launch/PlayControl.tsx:129
 #: src/launch/StopDialog.tsx:42
 msgid "Stop game"
 msgstr "Stop game"
@@ -3145,7 +3150,7 @@ msgstr "Current files on Nexus ({0})"
 msgid "{0} · {1} errors"
 msgstr "{0} · {1} errors"
 
-#: src/mods/UpdateReview.tsx:278
+#: src/mods/UpdateReview.tsx:279
 msgid "This update's notes mention breaking changes or new requirements"
 msgstr "This update's notes mention breaking changes or new requirements"
 
@@ -3186,7 +3191,7 @@ msgid "Warm and bold"
 msgstr "Warm and bold"
 
 #. placeholder {0}: logs.length
-#: src/mods/UpdateReview.tsx:185
+#: src/mods/UpdateReview.tsx:186
 msgid "{0, plural, one {# version of changes} other {# versions of changes}}"
 msgstr "{0, plural, one {# version of changes} other {# versions of changes}}"
 
@@ -3252,11 +3257,11 @@ msgstr "Add a tag"
 msgid "Nexus rejected your API key"
 msgstr "Nexus rejected your API key"
 
-#: src/launch/store.ts:114
+#: src/launch/store.ts:113
 msgid "Could not roll back updates"
 msgstr "Could not roll back updates"
 
-#: src/profiles/EditProfileDialog.tsx:179
+#: src/profiles/EditProfileDialog.tsx:180
 msgid "Colour"
 msgstr "Colour"
 
@@ -3267,6 +3272,12 @@ msgstr "Pinned"
 #: src/mods/store.ts:300
 msgid "Could not dismiss the overlap"
 msgstr "Could not dismiss the overlap"
+
+#. placeholder {0}: cleanup.name || cleanup.uniqueId
+#. placeholder {1}: cleanup.reason || 'Not needed by any enabled mod'
+#: src/mods/ProblemsTab.tsx:154
+msgid "{0}: {1}"
+msgstr "{0}: {1}"
 
 #. placeholder {0}: formatCount(page.downloads, i18n.locale)
 #. placeholder {1}: formatCount(page.uniqueDownloads, i18n.locale)
@@ -3318,12 +3329,12 @@ msgstr "Open backups folder"
 msgid "Preparing transfer…"
 msgstr "Preparing transfer…"
 
-#: src/mods/UpdateReview.tsx:616
+#: src/mods/UpdateReview.tsx:620
 msgid "Update downloads a mod's new file from Nexus or GitHub. For other pages, download the archive and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details."
 msgstr "Update downloads a mod's new file from Nexus or GitHub. For other pages, download the archive and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details."
 
 #. placeholder {0}: wanted.length
-#: src/mods/UpdateReview.tsx:673
+#: src/mods/UpdateReview.tsx:677
 msgid "Update {0}"
 msgstr "Update {0}"
 
@@ -3331,7 +3342,7 @@ msgstr "Update {0}"
 msgid "Reset to default"
 msgstr "Reset to default"
 
-#: src/launch/store.ts:486
+#: src/launch/store.ts:484
 msgid "Could not stop the game"
 msgstr "Could not stop the game"
 
@@ -3339,7 +3350,7 @@ msgstr "Could not stop the game"
 msgid "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 
-#: src/mods/UpdateReview.tsx:251
+#: src/mods/UpdateReview.tsx:252
 msgid "Unofficial"
 msgstr "Unofficial"
 
@@ -3362,7 +3373,7 @@ msgstr "Completed downloads will appear here."
 msgid "Create another profile to use this mod there."
 msgstr "Create another profile to use this mod there."
 
-#: src/mods/ListColumnMenu.tsx:302
+#: src/mods/ListColumnMenu.tsx:305
 msgid "Reset to default columns"
 msgstr "Reset to default columns"
 
@@ -3425,7 +3436,7 @@ msgstr "Restore this backup?"
 msgid "Time"
 msgstr "Time"
 
-#: src/launch/store.ts:201
+#: src/launch/store.ts:215
 msgid "Could not check the game version"
 msgstr "Could not check the game version"
 
@@ -3568,6 +3579,10 @@ msgstr "·"
 msgid "Add"
 msgstr "Add"
 
+#: src/launch/PlayControl.tsx:153
+msgid "Updating {updating} mods…"
+msgstr "Updating {updating} mods…"
+
 #: src/mods/DuplicateDialog.tsx:117
 msgid "Keep this one"
 msgstr "Keep this one"
@@ -3663,7 +3678,7 @@ msgstr "Copy OBS URL"
 msgid "Command copied"
 msgstr "Command copied"
 
-#: src/profiles/EditProfileDialog.tsx:333
+#: src/profiles/EditProfileDialog.tsx:338
 msgid "Extra SMAPI arguments for this profile. Mortar sets --mods-path itself."
 msgstr "Extra SMAPI arguments for this profile. Mortar sets --mods-path itself."
 
@@ -3744,7 +3759,7 @@ msgstr "Could not show the skipped update for {0}"
 msgid "After"
 msgstr "After"
 
-#: src/profiles/EditProfileDialog.tsx:364
+#: src/profiles/EditProfileDialog.tsx:369
 msgid "One VAR=value per line; applies to direct launches only. Steam launches do not receive these settings."
 msgstr "One VAR=value per line; applies to direct launches only. Steam launches do not receive these settings."
 
@@ -3791,6 +3806,7 @@ msgid "Executable"
 msgstr "Executable"
 
 #: src/launch/SaveWarnDialog.tsx:54
+#: src/launch/store.ts:128
 #: src/launch/UpdateWarnDialog.tsx:58
 msgid "Play anyway"
 msgstr "Play anyway"
@@ -3839,7 +3855,7 @@ msgid "Could not pin {0}"
 msgstr "Could not pin {0}"
 
 #: src/mods/NexusDetails.tsx:273
-#: src/profiles/EditProfileDialog.tsx:312
+#: src/profiles/EditProfileDialog.tsx:317
 msgid "Description"
 msgstr "Description"
 
@@ -3852,7 +3868,7 @@ msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the nex
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
 #: src/mods/ProblemBar.tsx:53
-#: src/mods/ProblemsTab.tsx:418
+#: src/mods/ProblemsTab.tsx:422
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
@@ -3866,7 +3882,7 @@ msgstr "Regenerate token?"
 
 #: src/mods/ModMenu.tsx:347
 #: src/mods/Sidebar.tsx:350
-#: src/mods/UpdateReview.tsx:339
+#: src/mods/UpdateReview.tsx:340
 msgid "Unpin"
 msgstr "Unpin"
 
@@ -3902,7 +3918,7 @@ msgstr "Only in {aName}"
 #. placeholder {0}: update.version
 #: src/mods/parts.tsx:220
 #: src/mods/Sidebar.tsx:183
-#: src/mods/UpdateReview.tsx:275
+#: src/mods/UpdateReview.tsx:276
 msgid "Unofficial update available: {0}"
 msgstr "Unofficial update available: {0}"
 
@@ -4024,7 +4040,7 @@ msgstr "Nexus is throttling requests until the window resets."
 msgid "Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 msgstr "Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 
-#: src/profiles/EditProfileDialog.tsx:239
+#: src/profiles/EditProfileDialog.tsx:241
 msgid "Applies available updates (not pinned mods) and keeps a restore point you can roll back to."
 msgstr "Applies available updates (not pinned mods) and keeps a restore point you can roll back to."
 
@@ -4116,7 +4132,7 @@ msgstr "Combat skill"
 #. placeholder {0}: other.name
 #. placeholder {0}: profile.name
 #: src/mods/OtherProfilesDialog.tsx:95
-#: src/mods/UpdateReview.tsx:436
+#: src/mods/UpdateReview.tsx:437
 msgid "pinned in {0}"
 msgstr "pinned in {0}"
 
@@ -4220,7 +4236,7 @@ msgstr "{total, plural, one {# mod} other {# mods}}"
 msgid "From an archive"
 msgstr "From an archive"
 
-#: src/launch/store.ts:267
+#: src/launch/store.ts:263
 msgid "Errors appeared after updating"
 msgstr "Errors appeared after updating"
 
@@ -4348,7 +4364,7 @@ msgstr "Focus the search"
 msgid "These profiles have the same mods."
 msgstr "These profiles have the same mods."
 
-#: src/mods/UpdateReview.tsx:339
+#: src/mods/UpdateReview.tsx:340
 msgid "Pin"
 msgstr "Pin"
 
@@ -4448,7 +4464,7 @@ msgid "Updates, missing dependencies and links from Nexus land here."
 msgstr "Updates, missing dependencies and links from Nexus land here."
 
 #. placeholder {0}: cleanup.length
-#: src/mods/ProblemsTab.tsx:398
+#: src/mods/ProblemsTab.tsx:402
 msgid "Remove all {0} mods from this profile?"
 msgstr "Remove all {0} mods from this profile?"
 
@@ -4459,7 +4475,7 @@ msgstr "Remove all {0} mods from this profile?"
 msgid "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 msgstr "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 
-#: src/launch/PlayControl.tsx:95
+#: src/launch/PlayControl.tsx:96
 msgid "Running"
 msgstr "Running"
 
@@ -4491,7 +4507,7 @@ msgstr "Copy from profile…"
 msgid "Removed from Nexus · {0}"
 msgstr "Removed from Nexus · {0}"
 
-#: src/mods/ProblemsTab.tsx:281
+#: src/mods/ProblemsTab.tsx:285
 msgid "Problems copied"
 msgstr "Problems copied"
 
@@ -4520,7 +4536,7 @@ msgstr "Recent changes"
 msgid "Close downloads"
 msgstr "Close downloads"
 
-#: src/mods/ProblemsTab.tsx:189
+#: src/mods/ProblemsTab.tsx:193
 msgid "{title} · {count}"
 msgstr "{title} · {count}"
 
@@ -4607,7 +4623,7 @@ msgstr "copy of {name}"
 msgid "GOG via Heroic"
 msgstr "GOG via Heroic"
 
-#: src/launch/autoUpdate.ts:90
+#: src/launch/autoUpdate.ts:115
 msgid "the mod"
 msgstr "the mod"
 
@@ -4760,7 +4776,7 @@ msgstr "Mortar menu"
 msgid "Manage profiles"
 msgstr "Manage profiles"
 
-#: src/launch/PlayControl.tsx:129
+#: src/launch/PlayControl.tsx:130
 msgid "Running {time}"
 msgstr "Running {time}"
 
@@ -4773,7 +4789,7 @@ msgstr "Built on"
 #: src/mods/parts.tsx:312
 #: src/mods/parts.tsx:363
 #: src/mods/problemFixButtons.tsx:508
-#: src/mods/ProblemsTab.tsx:162
+#: src/mods/ProblemsTab.tsx:166
 #: src/mods/SelectionBar.tsx:100
 msgid "Remove"
 msgstr "Remove"
@@ -4788,7 +4804,7 @@ msgstr "Compare {aName} and {bName}"
 
 #: src/commandPalette/CommandPalette.tsx:177
 #: src/games/GameSelect.tsx:201
-#: src/launch/PlayControl.tsx:152
+#: src/launch/PlayControl.tsx:148
 #: src/settings/sections/Appearance.tsx:131
 msgid "Play"
 msgstr "Play"
@@ -4845,7 +4861,7 @@ msgstr "Beach farm"
 #: src/mods/CategoryEditor.tsx:149
 #: src/mods/ConfigEditor.tsx:305
 #: src/mods/SelectionBar.tsx:118
-#: src/profiles/EditProfileDialog.tsx:499
+#: src/profiles/EditProfileDialog.tsx:504
 #: src/tools/ToolEditorDialog.tsx:119
 msgid "Save"
 msgstr "Save"
@@ -4933,7 +4949,7 @@ msgid "Token"
 msgstr "Token"
 
 #: src/mods/ProblemBar.tsx:42
-#: src/mods/ProblemsTab.tsx:296
+#: src/mods/ProblemsTab.tsx:300
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -5074,7 +5090,7 @@ msgid "Send other games' links to {redirectName}"
 msgstr "Send other games' links to {redirectName}"
 
 #. placeholder {0}: runningProfile.name
-#: src/launch/PlayControl.tsx:111
+#: src/launch/PlayControl.tsx:112
 msgid "Playing {0}"
 msgstr "Playing {0}"
 
@@ -5138,7 +5154,7 @@ msgstr "Could not rename the bundle"
 msgid "Details"
 msgstr "Details"
 
-#: src/mods/UpdateReview.tsx:480
+#: src/mods/UpdateReview.tsx:481
 msgid "{count, plural, one {# update is available} other {# updates are available}}"
 msgstr "{count, plural, one {# update is available} other {# updates are available}}"
 
@@ -5183,7 +5199,7 @@ msgstr "Game install deleted"
 msgid "Cool and calm"
 msgstr "Cool and calm"
 
-#: src/launch/store.ts:60
+#: src/launch/store.ts:59
 msgid "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › Stardew Valley) or SMAPI will not see this profile."
 msgstr "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › Stardew Valley) or SMAPI will not see this profile."
 
@@ -5213,7 +5229,7 @@ msgstr "Saves"
 msgid "World"
 msgstr "World"
 
-#: src/mods/UpdateReview.tsx:376
+#: src/mods/UpdateReview.tsx:377
 msgid "Acknowledge caution to include"
 msgstr "Acknowledge caution to include"
 
@@ -5227,7 +5243,7 @@ msgstr "Resume"
 msgid "Copy part {0}"
 msgstr "Copy part {0}"
 
-#: src/launch/store.ts:56
+#: src/launch/store.ts:55
 msgid "Steam may not be running or signed in. Start Steam, sign in and try again."
 msgstr "Steam may not be running or signed in. Start Steam, sign in and try again."
 
@@ -5240,6 +5256,10 @@ msgstr "This is a development build of Mortar {0}, so it does not check for upda
 #: src/queue/QueueSheet.tsx:48
 msgid "{counts} · {0} MB"
 msgstr "{counts} · {0} MB"
+
+#: src/launch/store.ts:126
+msgid "You can roll back the completed updates from the profile history."
+msgstr "You can roll back the completed updates from the profile history."
 
 #: src/share/SharedMods.tsx:28
 msgid "Its source is not known."
@@ -5271,7 +5291,7 @@ msgid "Move data folder"
 msgstr "Move data folder"
 
 #: src/game/ProfileMenuItems.tsx:239
-#: src/profiles/EditProfileDialog.tsx:451
+#: src/profiles/EditProfileDialog.tsx:456
 msgid "Could not use that image"
 msgstr "Could not use that image"
 
@@ -5297,17 +5317,17 @@ msgstr "last played {lastPlayedName} · {ago}"
 
 #. placeholder {0}: installable.length
 #. placeholder {0}: wants.length
-#: src/mods/ProblemsTab.tsx:349
+#: src/mods/ProblemsTab.tsx:353
 #: src/saves/SavesTab.tsx:221
 msgid "Add all {0}"
 msgstr "Add all {0}"
 
 #. placeholder {0}: update.name
-#: src/mods/UpdateReview.tsx:372
+#: src/mods/UpdateReview.tsx:373
 msgid "Confirm update for {0}"
 msgstr "Confirm update for {0}"
 
-#: src/mods/ProblemsTab.tsx:335
+#: src/mods/ProblemsTab.tsx:339
 msgid "No problems found"
 msgstr "No problems found"
 
@@ -5317,7 +5337,7 @@ msgstr "Could not abstain"
 
 #. placeholder {0}: mod.name
 #. placeholder {0}: update.name
-#: src/mods/UpdateReview.tsx:364
+#: src/mods/UpdateReview.tsx:365
 #: src/share/ImportPreview.tsx:85
 msgid "Include {0}"
 msgstr "Include {0}"
@@ -5330,7 +5350,7 @@ msgstr "Use 0 to let the operating system choose a port."
 msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
 
-#: src/mods/ProblemsTab.tsx:406
+#: src/mods/ProblemsTab.tsx:410
 msgid "Remove all"
 msgstr "Remove all"
 
@@ -5627,7 +5647,7 @@ msgstr "Switched off"
 msgid "Could not save the note and tags for {0}"
 msgstr "Could not save the note and tags for {0}"
 
-#: src/mods/UpdateReview.tsx:179
+#: src/mods/UpdateReview.tsx:180
 msgid "No changelog entries between these versions."
 msgstr "No changelog entries between these versions."
 
@@ -5639,7 +5659,7 @@ msgstr "Include pre-release mod versions: {from} → {to}"
 msgid "Also in these profiles"
 msgstr "Also in these profiles"
 
-#: src/profiles/EditProfileDialog.tsx:199
+#: src/profiles/EditProfileDialog.tsx:200
 msgid "Icon"
 msgstr "Icon"
 
@@ -5677,8 +5697,8 @@ msgstr "Backups appear when Mortar creates a save backup."
 msgid "Downloading and verifying Mortar {0}…"
 msgstr "Downloading and verifying Mortar {0}…"
 
-#: src/mods/UpdateReview.tsx:649
-#: src/mods/UpdateReview.tsx:655
+#: src/mods/UpdateReview.tsx:653
+#: src/mods/UpdateReview.tsx:659
 msgid "Also update other profiles that hold the same files"
 msgstr "Also update other profiles that hold the same files"
 
@@ -5818,7 +5838,7 @@ msgstr "Downloads paused. Retrying in {n} s."
 msgid "Import from the game's Mods folder"
 msgstr "Import from the game's Mods folder"
 
-#: src/mods/UpdateReview.tsx:154
+#: src/mods/UpdateReview.tsx:155
 msgid "Changelog is not cached yet."
 msgstr "Changelog is not cached yet."
 
@@ -5877,7 +5897,7 @@ msgstr "Show times"
 
 #. placeholder {0}: list.length
 #. placeholder {1}: profile.name
-#: src/mods/UpdateReview.tsx:570
+#: src/mods/UpdateReview.tsx:571
 msgid "{0, plural, one {# update} other {# updates}} for {1}"
 msgstr "{0, plural, one {# update} other {# updates}} for {1}"
 
@@ -6080,8 +6100,8 @@ msgstr "Version {0}"
 #: src/mods/CategoryEditor.tsx:143
 #: src/mods/ConfigEditor.tsx:303
 #: src/mods/ModDetail.tsx:298
-#: src/mods/UpdateReview.tsx:576
-#: src/mods/UpdateReview.tsx:621
+#: src/mods/UpdateReview.tsx:577
+#: src/mods/UpdateReview.tsx:625
 #: src/profiles/CompareDialog.tsx:131
 #: src/profiles/HistoryDialog.tsx:119
 #: src/saves/BackupsDialog.tsx:200
@@ -6181,7 +6201,7 @@ msgstr "Before ms"
 msgid "Alert"
 msgstr "Alert"
 
-#: src/mods/ProblemsTab.tsx:337
+#: src/mods/ProblemsTab.tsx:341
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 
@@ -6290,7 +6310,7 @@ msgstr "Untrack mods?"
 msgid "Preferred download server"
 msgstr "Preferred download server"
 
-#: src/mods/UpdateReview.tsx:427
+#: src/mods/UpdateReview.tsx:428
 msgid "Update profiles"
 msgstr "Update profiles"
 

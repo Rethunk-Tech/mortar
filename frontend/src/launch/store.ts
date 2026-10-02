@@ -1,5 +1,4 @@
 import { msg } from '@lingui/core/macro'
-import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import { Hint } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import {
@@ -11,7 +10,6 @@ import {
   Status as LaunchStatus,
   Runs,
   Start,
-  StartVanilla,
   Stop,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import type { Broken } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
@@ -32,6 +30,7 @@ import {
   rollbackAutoUpdate,
   updateBeforePlay,
 } from './autoUpdate.ts'
+import { startVanillaGame } from './vanillaStart.ts'
 
 const RUN_POLL_ATTEMPTS = 20
 const RUN_POLL_MS = 250
@@ -117,15 +116,16 @@ function rollbackAction(point: AutoUpdateRestorePoint) {
     })
 }
 
-function updateFailure(error: unknown) {
+function updateFailure(error: unknown, playAnyway: () => Promise<void>) {
   const point = isAutoUpdateError(error) ? error.restorePoint : undefined
   useToasts.getState().push({
     kind: 'error',
     title: i18n._(msg`Could not update mods before Play`),
     body: errorMessage(error),
     ...(point && point.updates.length > 0
-      ? { action: { label: i18n._(msg`Roll back`), run: rollbackAction(point) } }
+      ? { detail: i18n._(msg`You can roll back the completed updates from the profile history.`) }
       : {}),
+    action: { label: i18n._(msg`Play anyway`), run: playAnyway },
   })
 }
 
@@ -133,6 +133,7 @@ async function startProfile(opts: {
   set: (p: {
     starting?: boolean
     startingProfile?: string
+    updating?: number
     updateRollback?: UpdateRollback | null
   }) => void
   game: string
@@ -158,6 +159,7 @@ async function startWithWarning(opts: {
   set: (p: {
     starting?: boolean
     startingProfile?: string
+    updating?: number
     updateWarn?: UpdateWarn | null
     saveWarn?: SaveWarn | null
     updateRollback?: UpdateRollback | null
@@ -172,12 +174,24 @@ async function startWithWarning(opts: {
   opts.set({ starting: true, startingProfile: opts.profile })
   let update: UpdateContext | undefined
   try {
-    update = updateContext(await updateBeforePlay(opts.game, opts.profile))
+    update = updateContext(
+      await updateBeforePlay(opts.game, opts.profile, (count) => opts.set({ updating: count })),
+    )
   } catch (error) {
-    opts.set({ starting: false, startingProfile: '' })
-    updateFailure(error)
+    opts.set({ starting: false, startingProfile: '', updating: 0 })
+    updateFailure(error, async () => {
+      opts.set({ starting: true, startingProfile: opts.profile })
+      await startProfile({
+        set: opts.set,
+        game: opts.game,
+        profile: opts.profile,
+        direct: opts.direct,
+        update: undefined,
+      })
+    })
     return
   }
+  opts.set({ updating: 0 })
   try {
     const warning = await UpdateWarning(opts.game, opts.profile)
     if (warning.changed) {
@@ -227,24 +241,6 @@ async function startWithWarning(opts: {
     direct: opts.direct,
     update,
   })
-}
-
-async function startVanillaGame(opts: {
-  get: () => { starting: boolean }
-  set: (p: { starting: boolean; startingProfile?: string }) => void
-  game: string
-  direct: boolean
-}) {
-  if (opts.get().starting) {
-    return
-  }
-  opts.set({ starting: true, startingProfile: '' })
-  try {
-    await StartVanilla(opts.game, opts.direct)
-  } catch (e) {
-    opts.set({ starting: false, startingProfile: '' })
-    reportError(i18n._(msg`Could not launch the game`))(e)
-  }
 }
 
 async function checkUpdatedRun(
@@ -368,6 +364,7 @@ export const useLaunch = create<{
   updateWarn: UpdateWarn | null
   saveWarn: SaveWarn | null
   updateRollback: UpdateRollback | null
+  updating: number
   stopping: boolean
   starting: boolean
   startingProfile: string
@@ -395,6 +392,7 @@ export const useLaunch = create<{
   updateWarn: null,
   saveWarn: null,
   updateRollback: null,
+  updating: 0,
   stopping: false,
   starting: false,
   startingProfile: '',
@@ -490,10 +488,5 @@ export const useLaunch = create<{
   },
 }))
 
-export function initLaunch() {
-  Events.On('launch:state', (event) => useLaunch.getState().apply(event.data))
-  Events.On('launch:line', (event) => useConsole.getState().add(event.data))
-  Events.On('launch:crash', (event) => useLaunch.getState().setCrash(event.data))
-}
 export const overlayGame = (routeName: string, routeGame: string, statusGame: string) =>
   routeName === 'game' ? routeGame : statusGame

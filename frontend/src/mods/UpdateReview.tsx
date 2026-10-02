@@ -34,6 +34,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { UpdateEntry } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
+import { acknowledgeUpdateCaution } from '../launch/autoUpdate.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
@@ -591,7 +592,10 @@ export function UpdateReview({ profile }: { profile: Profile }) {
                 caution={caution}
                 acked={acked[id] === true}
                 included={include[id] !== false}
-                onAck={(on) => setAcked((prev) => ({ ...prev, [id]: on }))}
+                onAck={(on) => {
+                  setAcked((prev) => ({ ...prev, [id]: on }))
+                  acknowledgeUpdateCaution(profile.id, u, on)
+                }}
                 onInclude={(on) => setInclude((prev) => ({ ...prev, [id]: on }))}
                 {...(picture === undefined ? {} : { picture })}
                 onUpdateAll={() => {

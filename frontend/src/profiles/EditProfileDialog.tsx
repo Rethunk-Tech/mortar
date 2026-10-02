@@ -20,6 +20,7 @@ import { PickImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { hasPickedCover, type StagedCover } from '../game/cover.ts'
 import { HeroCover } from '../game/HeroCover.tsx'
+import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { colorHex, MAX_DESCRIPTION, PROFILE_COLORS, PROFILE_ICONS } from './appearance.ts'
 import { GameSettings, type GameSettingsValues } from './GameSettings.tsx'
@@ -228,6 +229,7 @@ function UpdateBeforePlayField({
   onChange: (checked: boolean) => void
 }) {
   const { t } = useLingui()
+  const premium = useNexus((s) => s.premium)
   return (
     <FormControlLabel
       sx={{ alignItems: 'flex-start', m: 0, mb: 2 }}
@@ -237,6 +239,9 @@ function UpdateBeforePlayField({
           <Typography>{t`Update mods before Play`}</Typography>
           <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
             {t`Applies available updates (not pinned mods) and keeps a restore point you can roll back to.`}
+            {premium
+              ? ''
+              : ` ${t`Free Nexus accounts must click each download on Nexus; those updates will not block Play.`}`}
           </Typography>
         </Box>
       }

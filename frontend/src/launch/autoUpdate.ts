@@ -6,6 +6,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import {
   History,
   List,
+  Mods,
   Revert,
   RollBack,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
@@ -18,9 +19,10 @@ import {
   State as QueueState,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
-import { installableUpdate, visibleUpdates } from '../mods/lookup.ts'
+import { installableUpdate, sameId, visibleUpdates } from '../mods/lookup.ts'
 import { useProfiles } from '../profiles/store.ts'
 import type { Want } from '../queue/actions.ts'
+import { useNexus } from '../settings/nexus.ts'
 
 interface AutoUpdatePlan {
   updates: Update[]
@@ -82,8 +84,31 @@ const FINISHED = new Set([
 ])
 
 const QUEUE_POLL_MS = 250
+const QUEUE_TIMEOUT_MS = 300_000
 
 const textOf = (error: unknown) => (error instanceof Error ? error.message : String(error))
+
+const acknowledgedCautions = new Set<string>()
+
+const cautionKey = (profileId: string, update: Pick<Update, 'key' | 'version'>) =>
+  `${profileId}/${update.key}/${update.version}`
+
+function acknowledgeUpdateCaution(
+  profileId: string,
+  update: Pick<Update, 'key' | 'version'>,
+  acknowledged: boolean,
+) {
+  const key = cautionKey(profileId, update)
+  if (acknowledged) {
+    acknowledgedCautions.add(key)
+  } else {
+    acknowledgedCautions.delete(key)
+  }
+}
+
+function cautionAcknowledged(profileId: string, update: Pick<Update, 'key' | 'version'>) {
+  return acknowledgedCautions.has(cautionKey(profileId, update))
+}
 
 function itemFailure(item: Item): Error {
   return new Error(
@@ -93,22 +118,31 @@ function itemFailure(item: Item): Error {
 
 const delay = (ms: number) => new Promise<void>((resolve) => globalThis.setTimeout(resolve, ms))
 
-async function waitForUpdates(ids: string[]): Promise<void> {
+function queueItemSucceeded(item: Item | undefined, premium: boolean): boolean {
+  return item === undefined || item.state === 'done' || (!premium && item.state === 'waiting-click')
+}
+
+async function waitForUpdates(ids: string[], premium: boolean): Promise<void> {
+  const deadline = Date.now() + QUEUE_TIMEOUT_MS
   for (;;) {
     const state = await QueueState()
     const items = state.items ?? []
     const found = ids.map((id) => items.find((item) => item.id === id))
-    if (found.every((item) => item !== undefined)) {
-      const unfinished = found.find((item) => item !== undefined && !FINISHED.has(item.state))
-      if (!unfinished) {
-        const failed = found.find((item) => item !== undefined && item.state !== 'done')
-        if (failed) {
-          throw itemFailure(failed)
-        }
-        return
+    const unfinished = found.find(
+      (item) =>
+        item !== undefined && !FINISHED.has(item.state) && !queueItemSucceeded(item, premium),
+    )
+    if (!unfinished) {
+      const failed = found.find((item) => item !== undefined && !queueItemSucceeded(item, premium))
+      if (failed) {
+        throw itemFailure(failed)
       }
+      return
     }
-    await delay(QUEUE_POLL_MS)
+    if (Date.now() >= deadline) {
+      throw new Error(i18n._(msg`Timed out waiting for mod updates`))
+    }
+    await delay(Math.min(QUEUE_POLL_MS, Math.max(0, deadline - Date.now())))
   }
 }
 
@@ -145,7 +179,11 @@ function pinnedKeys(profile: Profile): Set<string> {
   return new Set((profile.entries ?? []).filter((entry) => entry.pinned).map((entry) => entry.key))
 }
 
-async function updateBeforePlay(game: string, profileId: string): Promise<AutoUpdateResult> {
+async function updateBeforePlay(
+  game: string,
+  profileId: string,
+  onProgress?: (count: number) => void,
+): Promise<AutoUpdateResult> {
   const profile = useProfiles.getState().profiles.find((candidate) => candidate.id === profileId)
   if (!profile?.updateBeforePlay) {
     return { restorePoint: null, previousRunId: '', previousErrors: null }
@@ -157,20 +195,39 @@ async function updateBeforePlay(game: string, profileId: string): Promise<AutoUp
     const history = await History(game, profileId)
     point.historyId = history?.[0]?.id ?? ''
     const result = await Updates(game, profileId)
+    const mods = (await Mods(game, profileId)) ?? []
     const plan = planAutoUpdates(visibleUpdates(result, profile), pinnedKeys(profile))
-    if (plan.updates.length === 0) {
+    const updates = plan.updates.filter((update) => {
+      const mod = mods.find(
+        (candidate) => candidate.key === update.key && sameId(candidate.uniqueId, update.uniqueId),
+      )
+      return !mod?.updateCautionMessage?.trim() || cautionAcknowledged(profileId, update)
+    })
+    if (updates.length === 0) {
       return { restorePoint: null, previousRunId: before.id, previousErrors: before.errors }
     }
-    point.updates = plan.updates
-    const batchId = plan.wants.length > 1 ? crypto.randomUUID() : ''
+    const wants = updates.map((update) => ({
+      kind: 'update' as const,
+      ...(update.githubRepo ? { repo: update.githubRepo } : { modId: update.nexusId }),
+      name: update.name,
+      version: update.version,
+      currentKey: update.key,
+    }))
+    point.updates = updates
+    const batchId = wants.length > 1 ? crypto.randomUUID() : ''
     if (useProfiles.getState().openId !== profileId) {
       useProfiles.getState().open(profileId)
     }
-    const added = await Add(requests(game, profileId, plan.wants, batchId))
-    if (!added || added.length !== plan.wants.length) {
+    onProgress?.(updates.length)
+    const added = await Add(requests(game, profileId, wants, batchId))
+    if (!added || added.length !== wants.length) {
       throw new Error(i18n._(msg`Could not add the update downloads`))
     }
-    await waitForUpdates(added.map((item) => item.id))
+    // Waiting-click is a successful handoff for free Nexus accounts; the user must finish that click on Nexus.
+    await waitForUpdates(
+      added.map((item) => item.id),
+      useNexus.getState().premium,
+    )
     return { restorePoint: point, previousRunId: before.id, previousErrors: before.errors }
   } catch (error) {
     if (isAutoUpdateError(error)) {
@@ -210,4 +267,12 @@ async function rollbackAutoUpdate(point: AutoUpdateRestorePoint): Promise<void> 
 }
 
 export type { AutoUpdatePlan, AutoUpdateRestorePoint, AutoUpdateResult }
-export { isAutoUpdateError, planAutoUpdates, rollbackAutoUpdate, updateBeforePlay }
+export {
+  acknowledgeUpdateCaution,
+  cautionAcknowledged,
+  isAutoUpdateError,
+  planAutoUpdates,
+  queueItemSucceeded,
+  rollbackAutoUpdate,
+  updateBeforePlay,
+}
