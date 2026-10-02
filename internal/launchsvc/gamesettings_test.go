@@ -80,7 +80,9 @@ func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {
 	if err := os.WriteFile(startup, gameChanged, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	svc.restoreGameSettings(restore)
+	if err := svc.restoreGameSettings(restore); err != nil {
+		t.Fatal(err)
+	}
 	got, err := fsx.ReadFile(startup)
 	if err != nil {
 		t.Fatal(err)

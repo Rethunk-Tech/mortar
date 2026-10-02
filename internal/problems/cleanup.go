@@ -3,6 +3,7 @@ package problems
 import (
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -12,6 +13,13 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
+
+// markUnreadable records that a map could not be read, so the tilesheets it might use count as possibly used, and
+// lets the walk go on to the other files.
+func markUnreadable(flag *bool) error {
+	*flag = true
+	return nil
+}
 
 func cleanupHints(mods []Installed) []Cleanup {
 	enabledNeeds := map[string]bool{}
@@ -134,8 +142,7 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 		}
 		if err := filepath.WalkDir(mod.Folder, func(path string, entry os.DirEntry, err error) error {
 			if err != nil {
-				mapsUnreadable = true
-				return nil
+				return markUnreadable(&mapsUnreadable)
 			}
 			if entry.IsDir() {
 				return nil
@@ -146,8 +153,7 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 			}
 			raw, readErr := fsx.ReadFile(path)
 			if readErr != nil {
-				mapsUnreadable = true
-				return nil
+				return markUnreadable(&mapsUnreadable)
 			}
 			for _, candidate := range candidates {
 				id := strings.ToLower(candidate.UniqueID)
@@ -265,7 +271,7 @@ func tmxImageSources(raw []byte) ([]string, bool) {
 	for {
 		token, err := decoder.Token()
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				return sources, true
 			}
 			return nil, false

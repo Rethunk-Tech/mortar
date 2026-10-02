@@ -1,6 +1,7 @@
 package problems
 
 import (
+	"bytes"
 	"encoding/json"
 	"image"
 	"image/color"
@@ -12,6 +13,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 func change(t *testing.T, raw string) cpChange {
@@ -76,16 +79,11 @@ func TestOpaqueImageShapeMatchesBruteForceCells(t *testing.T) {
 			}
 		}
 	}
-	// The test controls dir with t.TempDir, so this path cannot escape the sandbox.
-	file, err := os.Create(filepath.Join(dir, "patch.png")) //nolint:gosec // dir is t.TempDir
-	if err != nil {
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, img); err != nil {
 		t.Fatal(err)
 	}
-	if err := png.Encode(file, img); err != nil {
-		_ = file.Close()
-		t.Fatal(err)
-	}
-	if err := file.Close(); err != nil {
+	if err := fsx.WriteFile(filepath.Join(dir, "patch.png"), buf.Bytes(), 0o600); err != nil {
 		t.Fatal(err)
 	}
 

@@ -74,9 +74,11 @@ func TestCleanupHintsTilesheets(t *testing.T) {
 	})
 	t.Run("optional dependency", func(t *testing.T) {
 		pack := tilesheetPack(t, "Tiles.Optional", `{"Changes":[{"Action":"Load","Target":"Maps/OptionalTiles"}]}`)
-		other := Installed{Key: "optional-user", Enabled: true, Manifest: manifest.Manifest{
-			Name: "Optional User", UniqueID: "Other.Optional", Dependencies: []manifest.Dependency{{UniqueID: "Tiles.Optional", Required: false}},
-		}}
+		other := Installed{
+			Key: "optional-user", Enabled: true,
+			Name: "Optional User", UniqueID: "Other.Optional",
+			Dependencies: []manifest.Dependency{{UniqueID: "Tiles.Optional", Required: false}},
+		}
 		if got := cleanupHints([]Installed{pack, other}); len(got) != 0 {
 			t.Fatalf("optional dependency was flagged: %#v", got)
 		}
@@ -90,9 +92,11 @@ func TestCleanupHintsTilesheets(t *testing.T) {
 	})
 	t.Run("disabled use", func(t *testing.T) {
 		pack := tilesheetPack(t, "Tiles.Disabled", `{"Changes":[{"Action":"Load","Target":"Maps/DisabledTiles"}]}`)
-		other := Installed{Key: "disabled-user", Enabled: false, Manifest: manifest.Manifest{
-			Name: "Disabled User", UniqueID: "Other.Disabled", Dependencies: []manifest.Dependency{{UniqueID: "Tiles.Disabled", Required: false}},
-		}}
+		other := Installed{
+			Key: "disabled-user", Enabled: false,
+			Name: "Disabled User", UniqueID: "Other.Disabled",
+			Dependencies: []manifest.Dependency{{UniqueID: "Tiles.Disabled", Required: false}},
+		}
 		got := cleanupHints([]Installed{pack, other})
 		if len(got) != 1 || got[0].Reason != "Used only by switched-off mods: Disabled User" {
 			t.Fatalf("disabled tilesheet = %#v", got)
@@ -111,14 +115,14 @@ func tilesheetPack(t *testing.T, id, content string) Installed {
 	root := t.TempDir()
 	writeProblemFile(t, root, "manifest.json", `{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
 	writeProblemFile(t, root, "content.json", content)
-	return Installed{Key: id, Enabled: true, Folder: root, Manifest: manifest.Manifest{Name: id, UniqueID: id}}
+	return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
 }
 
 func modFolder(t *testing.T, name, file, content string) Installed {
 	t.Helper()
 	root := t.TempDir()
 	writeProblemFile(t, root, file, content)
-	return Installed{Key: name, Enabled: true, Folder: root, Manifest: manifest.Manifest{Name: name, UniqueID: name}}
+	return Installed{Key: name, Enabled: true, Folder: root, Name: name, UniqueID: name}
 }
 
 func writeProblemFile(t *testing.T, root, name, content string) {

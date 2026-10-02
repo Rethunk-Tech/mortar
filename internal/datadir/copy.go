@@ -12,9 +12,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
-// CopyTree copies the regular files and folders under src into dst (which may exist), file by file with io.Copy, which
-// the OS clones where the filesystem can. Directory junctions and symlink directories are not followed. Symlink files
-// are copied by content when they still resolve under src, and are an error when they escape.
+// CopyProgress counts files and bytes while CopyTree runs.
 type CopyProgress struct {
 	Files      int
 	TotalFiles int
@@ -22,6 +20,9 @@ type CopyProgress struct {
 	TotalBytes int64
 }
 
+// CopyTree copies the regular files and folders under src into dst (which may exist), file by file with io.Copy, which
+// the OS clones where the filesystem can. Directory junctions and symlink directories are not followed. Symlink files
+// are copied by content when they still resolve under src, and are an error when they escape.
 func CopyTree(src, dst string) error {
 	return copyTree(src, dst, nil)
 }

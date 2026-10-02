@@ -278,11 +278,11 @@ func TestFetchSlotsCapPremiumAndFreeSources(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			f.premium.Store(tc.premium)
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			defer cancel()
 			var active, maxActive atomic.Int32
 			var wg sync.WaitGroup
-			for i := 0; i < 6; i++ {
+			for range 6 {
 				wg.Go(func() {
 					release, err := f.s.fetchSlot(ctx, Item{})
 					if err != nil {
@@ -327,7 +327,7 @@ func TestInstallsAreSerialized(t *testing.T) {
 		return profile.InstallResult{}, nil
 	}
 	var wg sync.WaitGroup
-	for i := 0; i < 2; i++ {
+	for range 2 {
 		wg.Go(func() {
 			_ = f.s.installNexusPath(Item{ID: newID(), Game: "stardew", Profile: "p1"}, "", nexus.Mod{})
 		})

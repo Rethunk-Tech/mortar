@@ -73,7 +73,7 @@ export const useToasts = create<{
     unread: 0,
     push: (input) => {
       const now = Date.now()
-      const previous = get().history[0]
+      const [previous] = get().history
       if (previous && previous.title === input.title && now - previous.at < QUICK_MS) {
         const count = (previous.count ?? 1) + 1
         const merged = { ...previous, at: now, count }
