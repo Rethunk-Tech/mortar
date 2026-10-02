@@ -44,8 +44,10 @@ func completion(w io.Writer, shell string) error {
 
 // subverbs are the second words of the verbs that take one.
 var subverbs = map[string][]string{
-	"profile":    {"create", "rename", "copy", "delete", "compare", "history", "revert"},
+	"profile":    {"create", "rename", "copy", "delete", "compare", "match", "history", "revert"},
 	"mods":       {"enable", "disable", "pin", "unpin", "remove"},
+	"bundles":    {"apply"},
+	"nexus":      {"untrack"},
 	"completion": {"bash", "zsh", "fish"},
 	"launchers":  {"add", "remove"},
 	"tools":      {"run"},
@@ -56,6 +58,10 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 	switch words[0] {
 	case "games", "doctor", "queue", "version", "help", "open", "completion", "launchers":
 		return 0, 0, 0
+	case "bundles":
+		return 1, 0, 0
+	case "nexus":
+		return 2, 0, 0
 	case "tools":
 		if len(words) > 1 && words[1] == "run" {
 			return 2, 3, 4

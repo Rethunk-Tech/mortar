@@ -10,15 +10,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/bundles"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
+	"github.com/Rethunk-AI/mortar/internal/nexussvc"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/queue"
 	"github.com/Rethunk-AI/mortar/internal/savessvc"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/share"
+	"github.com/Rethunk-AI/mortar/internal/sharesvc"
 	"github.com/Rethunk-AI/mortar/internal/tools"
 )
 
@@ -39,6 +42,9 @@ type Services struct {
 	Saves       *savessvc.Service
 	Queue       *queue.Service
 	Tools       *tools.Service
+	Bundles     *bundles.Service
+	Nexus       *nexussvc.Service
+	Shares      *sharesvc.Service
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 }
@@ -116,6 +122,37 @@ type Doctor struct {
 	NxmPrevious string                          `json:"nxmPrevious"`
 }
 
+type BundleRow struct {
+	bundles.Bundle
+	Profiles []string `json:"profiles"`
+}
+
+type BundleApply struct {
+	Added   int      `json:"added"`
+	Missing []string `json:"missing"`
+}
+
+type NexusUntrack struct {
+	nexussvc.UntrackAllResult
+	Count int `json:"count"`
+}
+
+type ProfileMatch struct {
+	Already   int      `json:"already"`
+	Missing   []string `json:"missing"`
+	Different []string `json:"different"`
+	OnlyYours []string `json:"onlyYours"`
+}
+
+func resolveBundle(list []bundles.Bundle, name string) (bundles.Bundle, error) {
+	for _, bundle := range list {
+		if bundle.ID == name || bundle.Name == name {
+			return bundle, nil
+		}
+	}
+	return bundles.Bundle{}, fmt.Errorf("bundle %q not found", name)
+}
+
 // Handle runs one method against the live services.
 func (s *Services) Handle(ctx context.Context, method string, p Params) (any, error) {
 	switch method {
@@ -158,6 +195,81 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.Games.Launchers()
 	case "queue":
 		return s.Queue.State(), nil
+	case "bundles":
+		if s.Bundles == nil {
+			return nil, errors.New("bundles are unavailable")
+		}
+		list, err := s.Bundles.List(p.Game)
+		if err != nil {
+			return nil, err
+		}
+		profiles, err := s.Profiles.List(p.Game)
+		if err != nil {
+			return nil, err
+		}
+		out := make([]BundleRow, 0, len(list))
+		for _, b := range list {
+			ids := make(map[string]bool)
+			for _, m := range b.Mods {
+				ids[m.UniqueID] = true
+			}
+			var names []string
+			for _, prof := range profiles {
+				have := make(map[string]bool)
+				for _, entry := range prof.Entries {
+					for _, mod := range entry.Mods {
+						have[mod.UniqueID] = true
+					}
+				}
+				ok := true
+				for id := range ids {
+					if !have[id] {
+						ok = false
+						break
+					}
+				}
+				if ok {
+					names = append(names, prof.Name)
+				}
+			}
+			out = append(out, BundleRow{Bundle: b, Profiles: names})
+		}
+		return out, nil
+	case "bundles.apply":
+		if s.Bundles == nil {
+			return nil, errors.New("bundles are unavailable")
+		}
+		prof, err := s.resolve(p.Game, p.Profile)
+		if err != nil {
+			return nil, err
+		}
+		list, err := s.Bundles.List(p.Game)
+		if err != nil {
+			return nil, err
+		}
+		bundle, err := resolveBundle(list, p.Name)
+		if err != nil {
+			return nil, err
+		}
+		result, err := s.Bundles.Apply(p.Game, bundle.ID, prof.ID)
+		if err != nil {
+			return nil, err
+		}
+		return BundleApply{Added: result.Added, Missing: result.Missing}, nil
+	case "nexus.untrack":
+		if s.Nexus == nil {
+			return nil, errors.New("nexus is unavailable")
+		}
+		result, err := s.Nexus.UntrackAll(ctx, p.Game, p.Unused)
+		if err != nil {
+			return nil, err
+		}
+		return NexusUntrack{UntrackAllResult: result, Count: result.Untracked + result.Remaining}, nil
+	case "nexus.tracked":
+		if s.Nexus == nil {
+			return nil, errors.New("nexus is unavailable")
+		}
+		return s.Nexus.TrackedCount(ctx, p.Game)
 	case "status":
 		return s.Launches.Status(p.Game)
 	case "stop":
@@ -185,6 +297,32 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, err
 		}
 		return profile.CompareProfilesCLI(prof, other), nil
+	case "profile.match":
+		if s.Shares == nil {
+			return nil, errors.New("sharing is unavailable")
+		}
+		var preview sharesvc.Preview
+		var err error
+		if strings.HasSuffix(strings.ToLower(p.Path), ".mortar") {
+			preview, err = s.Shares.PreviewFile(ctx, p.Game, p.Path, prof.ID)
+		} else {
+			preview, err = s.Shares.PreviewLink(ctx, p.Game, p.Path, prof.ID)
+		}
+		if err != nil {
+			return nil, err
+		}
+		out := ProfileMatch{OnlyYours: preview.Replace.Remove}
+		for _, mod := range preview.Mods {
+			switch {
+			case mod.Different:
+				out.Different = append(out.Different, mod.Name)
+			case mod.State == sharesvc.StateDownload || mod.State == sharesvc.StateDependency:
+				out.Missing = append(out.Missing, mod.Name)
+			case mod.State == sharesvc.StateInstalled:
+				out.Already++
+			}
+		}
+		return out, nil
 	case "profile.history":
 		events, err := s.Profiles.History(p.Game, id)
 		if err != nil {

@@ -37,6 +37,8 @@ type Params struct {
 	Path      string   `json:"path,omitempty"`
 	Run       string   `json:"run,omitempty"`
 	All       bool     `json:"all,omitempty"`
+	Unused    bool     `json:"unused,omitempty"`
+	Yes       bool     `json:"yes,omitempty"`
 }
 
 type request struct {

@@ -114,6 +114,24 @@ func TestProfileCompareHistoryAndRevert(t *testing.T) {
 	}
 }
 
+func TestProfileMatchSendsPreviewRequest(t *testing.T) {
+	r := invoke(t, map[string]any{"profile.match": control.ProfileMatch{Already: 2, Missing: []string{"Missing"}}},
+		"profile", "match", "stardew", "Farm", "mortar://example")
+	if r.code != 0 || !strings.Contains(r.out, "2 mods already match") {
+		t.Fatalf("match: %+v", r)
+	}
+	if got := r.calls[0]; got.method != "profile.match" || got.params.Path != "mortar://example" {
+		t.Fatalf("match params: %+v", got)
+	}
+}
+
+func TestNexusUntrackRequiresScope(t *testing.T) {
+	r := invoke(t, nil, "nexus", "untrack", "stardew", "--yes")
+	if r.code != 2 || len(r.calls) != 0 {
+		t.Fatalf("untrack scope: %+v", r)
+	}
+}
+
 func TestToolsCommands(t *testing.T) {
 	results := map[string]any{
 		"tools": []map[string]string{{"id": "smapi", "name": "SMAPI", "executable": "/bin/smapi"}},

@@ -33,6 +33,7 @@ var verbs = map[string]bool{
 	"games": true, "profiles": true, "profile": true, "mods": true, "mod": true, "install": true,
 	"conflicts": true, "problems": true, "updates": true, "share": true, "export": true, "open": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
+	"bundles": true, "nexus": true,
 	"doctor": true, "launchers": true, "tools": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
@@ -56,6 +57,8 @@ type cmd struct {
 	errOut  io.Writer
 	json    bool
 	all     bool
+	unused  bool
+	yesFlag bool
 	wait    bool
 	run     string
 	args    []string
@@ -101,6 +104,10 @@ func (c *cmd) parse(args []string) error {
 			c.json = true
 		case a == "--all":
 			c.all = true
+		case a == "--unused":
+			c.unused = true
+		case a == "--yes":
+			c.yesFlag = true
 		case a == "--wait":
 			c.wait = true
 		case a == "--run":
@@ -188,6 +195,10 @@ func (c *cmd) dispatch() error {
 		return c.launchers()
 	case "queue":
 		return c.queue()
+	case "bundles":
+		return c.bundles()
+	case "nexus":
+		return c.nexus()
 	case "profiles":
 		a, err := c.need(1, "a game")
 		if err != nil {
@@ -337,6 +348,77 @@ func (c *cmd) profiles(gameID string) error {
 	})
 }
 
+func (c *cmd) bundles() error {
+	if len(c.args) > 1 && c.args[1] == "apply" {
+		a, err := c.need(2, "a game", "a bundle", "a profile")
+		if err != nil {
+			return err
+		}
+		var result control.BundleApply
+		if err := c.ask("bundles.apply", control.Params{Game: a[0], Name: a[1], Profile: a[2]}, &result, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(result, func() {
+			fmt.Fprintf(c.out, "Added %d mods.\n", result.Added)
+			if len(result.Missing) > 0 {
+				fmt.Fprintf(c.out, "Not in Mortar's store: %s\n", strings.Join(result.Missing, ", "))
+			}
+		})
+	}
+	a, err := c.need(1, "a game")
+	if err != nil {
+		return err
+	}
+	var list []control.BundleRow
+	if err := c.ask("bundles", control.Params{Game: a[0]}, &list, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(list, func() {
+		rows := make([][]string, 0, len(list))
+		for _, b := range list {
+			rows = append(rows, []string{b.ID, b.Name, fmt.Sprint(len(b.Mods)), strings.Join(b.Profiles, ", ")})
+		}
+		c.table("ID\tNAME\tMODS\tPROFILES WITH ALL", rows)
+	})
+}
+
+func (c *cmd) nexus() error {
+	if len(c.args) < 2 || c.args[1] != "untrack" {
+		return usageError{"unknown nexus command"}
+	}
+	a, err := c.need(2, "a game")
+	if err != nil {
+		return err
+	}
+	if c.all == c.unused {
+		return usageError{"nexus untrack needs exactly one of --all or --unused"}
+	}
+	var count int
+	if err := c.ask("nexus.tracked", control.Params{Game: a[0]}, &count, readTimeout); err != nil {
+		return err
+	}
+	if !c.yesFlag {
+		fmt.Fprintf(c.errOut, "Untrack %d mods? [y/N] ", count)
+		var answer string
+		if _, err := fmt.Fscan(os.Stdin, &answer); err != nil {
+			return err
+		}
+		if strings.ToLower(answer) != "y" && strings.ToLower(answer) != "yes" {
+			return errors.New("cancelled")
+		}
+	}
+	var result control.NexusUntrack
+	if err := c.ask("nexus.untrack", control.Params{Game: a[0], Unused: c.unused}, &result, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(result, func() {
+		fmt.Fprintf(c.out, "Untracked %d mods; %d remaining.\n", result.Untracked, result.Remaining)
+		if result.StoppedForLimit {
+			fmt.Fprintln(c.out, "Stopped at the Nexus API limit.")
+		}
+	})
+}
+
 func (c *cmd) profile() error {
 	if len(c.args) < 2 {
 		return usageError{"profile needs create, rename, copy or delete"}
@@ -354,6 +436,27 @@ func (c *cmd) profile() error {
 			return err
 		}
 		return c.emit(diff, func() { c.compareTable(diff) })
+	case "match":
+		a, err := c.need(2, "a game", "a profile", "a link or .mortar file")
+		if err != nil {
+			return err
+		}
+		var match control.ProfileMatch
+		if err := c.ask("profile.match", control.Params{Game: a[0], Profile: a[1], Path: a[2]}, &match, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(match, func() {
+			fmt.Fprintf(c.out, "%d mods already match %s.\n", match.Already, a[1])
+			if len(match.Missing) > 0 {
+				fmt.Fprintf(c.out, "Missing in %s: %s\n", a[1], strings.Join(match.Missing, ", "))
+			}
+			if len(match.Different) > 0 {
+				fmt.Fprintf(c.out, "Different version: %s\n", strings.Join(match.Different, ", "))
+			}
+			if len(match.OnlyYours) > 0 {
+				fmt.Fprintf(c.out, "Only in yours: %s\n", strings.Join(match.OnlyYours, ", "))
+			}
+		})
 	case "history":
 		a, err := c.need(2, "a game", "a profile")
 		if err != nil {
@@ -866,6 +969,10 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   profile create <game> <name>            new empty profile
   profile rename <game> <profile> <name>
   profile copy <game> <profile> [name]
+  profile match <game> <profile> <link-or-file> preview a friend's profile
+  bundles <game>                         list saved bundles
+  bundles apply <game> <bundle> <profile> apply a bundle
+  nexus untrack <game> --all|--unused    bulk untrack Nexus mods
   profile delete <game> <profile>         moves it to Mortar's trash
   profile compare <game> <profileA> <profileB>
   profile history <game> <profile>       restore points
