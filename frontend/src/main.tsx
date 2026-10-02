@@ -5,6 +5,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { App } from './App.tsx'
 import { i18n } from './i18n/index.ts'
+import { initPlayRequests } from './launch/playRequests.ts'
 import { initLaunch } from './launch/store.ts'
 import { initLoader } from './loader/store.ts'
 import { initNexusSeen } from './mods/nexusDetails.ts'
@@ -30,6 +31,7 @@ initLoader()
 initNxm().catch(reportUnexpected)
 initQueue().catch(reportUnexpected)
 initProfilesChanged()
+initPlayRequests()
 initShare().catch(reportUnexpected)
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(

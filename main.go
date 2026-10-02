@@ -38,6 +38,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/savessvc"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/sharesvc"
+	"github.com/Rethunk-AI/mortar/internal/shortcut"
 	modstore "github.com/Rethunk-AI/mortar/internal/store"
 	"github.com/Rethunk-AI/mortar/internal/support"
 	"github.com/Rethunk-AI/mortar/internal/tools"
@@ -73,6 +74,7 @@ func registerEvents() {
 	application.RegisterEvent[[]string](picker.DroppedEvent)
 	application.RegisterEvent[settings.Settings](settings.ChangedEvent)
 	application.RegisterEvent[string](control.ChangedEvent)
+	application.RegisterEvent[shortcut.Request](shortcut.RequestedEvent)
 	application.RegisterEvent[nexussvc.Account](nexussvc.ChangedEvent)
 	application.RegisterEvent[queue.State](queue.ChangedEvent)
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
@@ -119,6 +121,7 @@ func run() error {
 		pictures     *modpic.Cache
 	)
 	ready := make(chan struct{})
+	plays := &shortcut.Service{}
 	closeReady := sync.OnceFunc(func() { close(ready) })
 	defer closeReady()
 	// A burst of nxm clicks starts one second instance per link; each launch is queued at once and handled here in
@@ -135,7 +138,7 @@ func run() error {
 			// keeps the browser in front; the window sends a desktop notification when a link needs a profile chosen.
 			// Only a window closed to the tray is brought back, since nothing else could show the link.
 			nxmLink := nxmSvc.Receive(d.Args)
-			if shareSvc.Receive(sharesvc.InDir(d.Args, d.WorkingDir)) || !nxmLink || windowClosed() {
+			if shareSvc.Receive(sharesvc.InDir(d.Args, d.WorkingDir)) || plays.Receive(d.Args) || !nxmLink || windowClosed() {
 				showWindow()
 			}
 		}
@@ -265,6 +268,7 @@ func run() error {
 		return err
 	}
 	emit := func(name string, data any) { app.Event.Emit(name, data) }
+	plays.Emit = emit
 	queueSvc, err := queue.New(queue.Deps{
 		Client:  func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },
 		Premium: func() bool { return store.Get().NexusPremium },
@@ -388,6 +392,7 @@ func run() error {
 	})
 	// Queue changes reach shareSvc, so links are routed only once both exist.
 	nxmSvc.Receive(os.Args[1:])
+	plays.Receive(os.Args[1:])
 	shareSvc.Receive(sharesvc.InDir(os.Args[1:], sharesvc.LaunchDir()))
 	shareSvc.QueueChanged(queueSvc.State())
 
@@ -406,7 +411,7 @@ func run() error {
 	for _, s := range []application.Service{
 		application.NewService(svc), application.NewService(gamesSvc),
 		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
-		application.NewService(savesSvc), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
+		application.NewService(savesSvc), application.NewService(plays), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
 		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc),
 		application.NewService(supportSvc), application.NewService(updates), application.NewService(bisectSvc),
 		application.NewService(dataSvc), application.NewService(toolsSvc),

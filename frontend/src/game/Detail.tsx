@@ -25,9 +25,11 @@ import {
   RotateCcw,
   Settings2,
   Share2,
+  SquareArrowOutUpRight,
 } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { Create as CreateShortcut } from '../../bindings/github.com/Rethunk-AI/mortar/internal/shortcut/service.ts'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { LogActions } from '../console/LogActions.tsx'
 import { useBadges } from '../mods/badges.ts'
@@ -46,7 +48,8 @@ import { SavesTab } from '../saves/SavesTab.tsx'
 import { useSaves } from '../saves/store.ts'
 import { openShare } from '../share/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { ToolsMenu } from '../tools/ToolsMenu.tsx'
 import { compact, compactMeta, saveFits } from './compact.ts'
 import { CoverButton, HeroCover } from './HeroCover.tsx'
@@ -97,6 +100,33 @@ function HeroMenu({ profile }: { profile: Profile }) {
             <FileDown size={16} />
           </ListItemIcon>
           <ListItemText>{t`Export profile…`}</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            close()
+            const { game } = useProfiles.getState()
+            if (!game) {
+              return
+            }
+            CreateShortcut(game.id, game.name, profile.id, profile.name)
+              .then((path) =>
+                useToasts
+                  .getState()
+                  .push({ kind: 'success', title: t`Shortcut added`, body: path }),
+              )
+              .catch((e: unknown) =>
+                useToasts.getState().push({
+                  kind: 'error',
+                  title: t`Could not add the shortcut`,
+                  body: errorMessage(e),
+                }),
+              )
+          }}
+        >
+          <ListItemIcon sx={{ color: 'inherit' }}>
+            <SquareArrowOutUpRight size={16} />
+          </ListItemIcon>
+          <ListItemText>{t`Add a shortcut that plays this profile`}</ListItemText>
         </MenuItem>
       </Menu>
       <HistoryDialog
