@@ -1,9 +1,15 @@
 package problems
 
 import (
+	"compress/gzip"
+	"compress/zlib"
+	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
+	"encoding/xml"
 	"image"
 	_ "image/png" // DecodeConfig reads a FromFile's size from its PNG header.
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -45,7 +51,7 @@ func (s cpShape) overlaps(o cpShape) bool {
 	if s.kind == 'w' || o.kind == 'w' {
 		return true
 	}
-	if s.kind == 't' && o.kind == 't' && s.layer != o.layer {
+	if s.layer != "" && o.layer != "" && s.layer != o.layer {
 		return false
 	}
 	ax, ay, aw, ah := s.area()
@@ -85,6 +91,12 @@ func editShapes(root string, ch cpChange, image bool) []cpShape {
 	}
 	var out []cpShape
 	if strings.TrimSpace(ch.FromFile) != "" {
+		ext := strings.ToLower(filepath.Ext(strings.TrimSpace(ch.FromFile)))
+		if ext == ".tmx" || ext == ".tmj" {
+			if decoded, ok := decodeMap(root, ch.FromFile); ok {
+				return mapFileShapes(decoded, ch)
+			}
+		}
 		to, ok := areaOf(ch.ToArea)
 		switch {
 		case ok:
@@ -216,6 +228,365 @@ func pngSize(root, rel string) (w, h int, ok bool) {
 		return 0, 0, false
 	}
 	return cfg.Width, cfg.Height, true
+}
+
+type decodedMap struct {
+	width, height int
+	layers        []decodedMapLayer
+}
+
+type decodedMapLayer struct {
+	name  string
+	tiles []mapTile
+}
+
+type mapTile struct {
+	x, y int
+}
+
+type tmxMapDocument struct {
+	Width  int        `xml:"width,attr"`
+	Height int        `xml:"height,attr"`
+	Layers []tmxLayer `xml:"layer"`
+}
+
+type tmxLayer struct {
+	Name   string  `xml:"name,attr"`
+	Width  int     `xml:"width,attr"`
+	Height int     `xml:"height,attr"`
+	Data   tmxData `xml:"data"`
+}
+
+type tmxData struct {
+	Encoding    string     `xml:"encoding,attr"`
+	Compression string     `xml:"compression,attr"`
+	Text        string     `xml:",chardata"`
+	Tiles       []tmxTile  `xml:"tile"`
+	Chunks      []tmxChunk `xml:"chunk"`
+}
+
+type tmxTile struct {
+	GID uint32 `xml:"gid,attr"`
+}
+
+type tmxChunk struct {
+	X      int       `xml:"x,attr"`
+	Y      int       `xml:"y,attr"`
+	Width  int       `xml:"width,attr"`
+	Height int       `xml:"height,attr"`
+	Text   string    `xml:",chardata"`
+	Tiles  []tmxTile `xml:"tile"`
+}
+
+type tmjMapDocument struct {
+	Width  int        `json:"width"`
+	Height int        `json:"height"`
+	Layers []tmjLayer `json:"layers"`
+}
+
+type tmjLayer struct {
+	Type   string     `json:"type"`
+	Name   string     `json:"name"`
+	Width  int        `json:"width"`
+	Height int        `json:"height"`
+	Data   []int      `json:"data"`
+	Chunks []tmjChunk `json:"chunks"`
+}
+
+type tmjChunk struct {
+	X      int   `json:"x"`
+	Y      int   `json:"y"`
+	Width  int   `json:"width"`
+	Height int   `json:"height"`
+	Data   []int `json:"data"`
+}
+
+func decodeMap(root, rel string) (decodedMap, bool) {
+	abs, ok := inside(root, rel)
+	if !ok {
+		return decodedMap{}, false
+	}
+	raw, err := fsx.ReadFile(abs)
+	if err != nil {
+		return decodedMap{}, false
+	}
+	if strings.EqualFold(filepath.Ext(rel), ".tmj") {
+		var doc tmjMapDocument
+		if json.Unmarshal(raw, &doc) != nil {
+			return decodedMap{}, false
+		}
+		out := decodedMap{width: doc.Width, height: doc.Height}
+		for _, layer := range doc.Layers {
+			if layer.Type != "" && !strings.EqualFold(layer.Type, "tilelayer") {
+				continue
+			}
+			decoded := decodedMapLayer{name: strings.ToLower(strings.TrimSpace(layer.Name))}
+			if len(layer.Chunks) > 0 {
+				for _, chunk := range layer.Chunks {
+					appendMapTiles(&decoded.tiles, chunk.X, chunk.Y, chunk.Width, chunk.Height, chunk.Data)
+				}
+			} else {
+				width := layer.Width
+				if width <= 0 {
+					width = doc.Width
+				}
+				appendMapTiles(&decoded.tiles, 0, 0, width, layer.Height, layer.Data)
+			}
+			out.layers = append(out.layers, decoded)
+		}
+		mapBounds(&out)
+		return out, true
+	}
+
+	var doc tmxMapDocument
+	if xml.Unmarshal(raw, &doc) != nil {
+		return decodedMap{}, false
+	}
+	out := decodedMap{width: doc.Width, height: doc.Height}
+	for _, layer := range doc.Layers {
+		decoded, ok := decodeTMXLayer(layer)
+		if !ok {
+			return decodedMap{}, false
+		}
+		decoded.name = strings.ToLower(strings.TrimSpace(layer.Name))
+		out.layers = append(out.layers, decoded)
+	}
+	mapBounds(&out)
+	return out, true
+}
+
+func decodeTMXLayer(layer tmxLayer) (decodedMapLayer, bool) {
+	out := decodedMapLayer{}
+	if len(layer.Data.Chunks) > 0 {
+		for _, chunk := range layer.Data.Chunks {
+			values, ok := decodeTMXValues(chunk.Text, layer.Data.Encoding, layer.Data.Compression)
+			if len(chunk.Tiles) > 0 {
+				values = make([]int, len(chunk.Tiles))
+				for i, tile := range chunk.Tiles {
+					values[i] = int(tile.GID)
+				}
+				ok = true
+			}
+			if !ok {
+				return decodedMapLayer{}, false
+			}
+			appendMapTiles(&out.tiles, chunk.X, chunk.Y, chunk.Width, chunk.Height, values)
+		}
+		return out, true
+	}
+	values, ok := decodeTMXValues(layer.Data.Text, layer.Data.Encoding, layer.Data.Compression)
+	if len(layer.Data.Tiles) > 0 {
+		values = make([]int, len(layer.Data.Tiles))
+		for i, tile := range layer.Data.Tiles {
+			values[i] = int(tile.GID)
+		}
+		ok = true
+	}
+	if !ok {
+		return decodedMapLayer{}, false
+	}
+	appendMapTiles(&out.tiles, 0, 0, layer.Width, layer.Height, values)
+	return out, true
+}
+
+func decodeTMXValues(text, encoding, compression string) ([]int, bool) {
+	text = strings.TrimSpace(text)
+	if strings.EqualFold(encoding, "csv") {
+		if text == "" {
+			return nil, true
+		}
+		var out []int
+		for _, value := range strings.Split(text, ",") {
+			value = strings.TrimSpace(value)
+			if value == "" {
+				continue
+			}
+			n, err := strconv.Atoi(value)
+			if err != nil {
+				return nil, false
+			}
+			out = append(out, n)
+		}
+		return out, true
+	}
+	if !strings.EqualFold(encoding, "base64") {
+		return nil, text == ""
+	}
+	encoded, err := base64.StdEncoding.DecodeString(strings.Join(strings.Fields(text), ""))
+	if err != nil {
+		return nil, false
+	}
+	var data []byte
+	switch strings.ToLower(strings.TrimSpace(compression)) {
+	case "":
+		data = encoded
+	case "zlib":
+		reader, err := zlib.NewReader(bytesReader(encoded))
+		if err != nil {
+			return nil, false
+		}
+		data, err = io.ReadAll(reader)
+		_ = reader.Close()
+		if err != nil {
+			return nil, false
+		}
+	case "gzip":
+		reader, err := gzip.NewReader(bytesReader(encoded))
+		if err != nil {
+			return nil, false
+		}
+		data, err = io.ReadAll(reader)
+		_ = reader.Close()
+		if err != nil {
+			return nil, false
+		}
+	default:
+		return nil, false
+	}
+	if len(data)%4 != 0 {
+		return nil, false
+	}
+	out := make([]int, len(data)/4)
+	for i := range out {
+		out[i] = int(binary.LittleEndian.Uint32(data[i*4:]))
+	}
+	return out, true
+}
+
+func bytesReader(data []byte) io.Reader {
+	return &sliceReader{data: data}
+}
+
+type sliceReader struct {
+	data []byte
+	pos  int
+}
+
+func (r *sliceReader) Read(p []byte) (int, error) {
+	if r.pos >= len(r.data) {
+		return 0, io.EOF
+	}
+	n := copy(p, r.data[r.pos:])
+	r.pos += n
+	return n, nil
+}
+
+func appendMapTiles(out *[]mapTile, x, y, width, height int, values []int) {
+	if width <= 0 {
+		return
+	}
+	for i, value := range values {
+		if value == 0 {
+			continue
+		}
+		tx := x + i%width
+		ty := y + i/width
+		if height > 0 && i/width >= height {
+			break
+		}
+		*out = append(*out, mapTile{x: tx, y: ty})
+	}
+}
+
+func mapBounds(m *decodedMap) {
+	for _, layer := range m.layers {
+		for _, tile := range layer.tiles {
+			m.width = max(m.width, tile.x+1)
+			m.height = max(m.height, tile.y+1)
+		}
+	}
+}
+
+func mapFileShapes(m decodedMap, ch cpChange) []cpShape {
+	fallback := cpShape{kind: 'r', w: m.width, h: m.height}
+	if fallback.w <= 0 || fallback.h <= 0 {
+		return nil
+	}
+	from, ok := mapArea(ch.FromArea, fallback)
+	if !ok {
+		return whole
+	}
+	toFallback := fallback
+	toFallback.x, toFallback.y = 0, 0
+	to, ok := mapArea(ch.ToArea, toFallback)
+	if !ok {
+		return unplaced(ch.ToArea)
+	}
+	mode := strings.ToLower(strings.TrimSpace(ch.PatchMode))
+	if mode == "" {
+		mode = "replacebylayer"
+	}
+	switch mode {
+	case "overlay":
+		var out []cpShape
+		for _, layer := range m.layers {
+			for _, tile := range layer.tiles {
+				if tile.x < from.x || tile.x >= from.x+from.w || tile.y < from.y || tile.y >= from.y+from.h {
+					continue
+				}
+				out = append(out, cpShape{
+					kind: 't', x: to.x + tile.x - from.x, y: to.y + tile.y - from.y,
+					layer: layer.name,
+				})
+			}
+		}
+		return out
+	case "replace":
+		to.layer = ""
+		return []cpShape{to}
+	case "replacebylayer":
+		var out []cpShape
+		for _, layer := range m.layers {
+			area := to
+			area.layer = layer.name
+			out = append(out, area)
+		}
+		return out
+	default:
+		var out []cpShape
+		for _, layer := range m.layers {
+			area := to
+			area.layer = layer.name
+			out = append(out, area)
+		}
+		return out
+	}
+}
+
+func mapArea(raw json.RawMessage, fallback cpShape) (cpShape, bool) {
+	if len(raw) == 0 {
+		return fallback, true
+	}
+	area, ok := areaOf(raw)
+	if !ok {
+		return cpShape{}, false
+	}
+	var fields map[string]json.RawMessage
+	if json.Unmarshal(raw, &fields) != nil {
+		return cpShape{}, false
+	}
+	if !hasAreaField(fields, "x") {
+		area.x = fallback.x
+	}
+	if !hasAreaField(fields, "y") {
+		area.y = fallback.y
+	}
+	if !hasAreaField(fields, "width") {
+		area.w = fallback.w
+	}
+	if !hasAreaField(fields, "height") {
+		area.h = fallback.h
+	}
+	return area, area.w > 0 && area.h > 0
+}
+
+func hasAreaField(fields map[string]json.RawMessage, want string) bool {
+	for key := range fields {
+		if strings.EqualFold(strings.TrimSpace(key), want) {
+			return true
+		}
+	}
+	return false
 }
 
 var tmxSize = regexp.MustCompile(`<map\b[^>]*?\bwidth="(\d+)"[^>]*?\bheight="(\d+)"`)
@@ -352,6 +723,9 @@ func editsClash(a, b []cpPatch) (clash, minor bool) {
 	minor = true
 	for _, x := range a {
 		for _, y := range b {
+			if x.image && y.image && strings.EqualFold(strings.TrimSpace(x.patchMode), "overlay") && strings.EqualFold(strings.TrimSpace(y.patchMode), "overlay") {
+				continue
+			}
 			if !exclusive(x, y) && shapesOverlap(x.shapes, y.shapes) {
 				clash = true
 				minor = minor && harmless(x, y)

@@ -70,15 +70,16 @@ type packHit struct {
 
 // cpPatch is one Load or EditImage/EditMap change with the HasMod conditions that gate it.
 type cpPatch struct {
-	kind     string // "load" or "edit"
-	target   string
-	fromFile string
-	priority string
-	when     cpWhen
-	shapes   []cpShape           // what an edit writes; see editShapes
-	spouse   string              // the spouse the change requires, or ""
-	places   map[string][]string // literal values the change requires of placeTokens
-	image    bool                // an EditImage change, which only changes how something looks
+	kind      string // "load" or "edit"
+	target    string
+	fromFile  string
+	priority  string
+	patchMode string
+	when      cpWhen
+	shapes    []cpShape           // what an edit writes; see editShapes
+	spouse    string              // the spouse the change requires, or ""
+	places    map[string][]string // literal values the change requires of placeTokens
+	image     bool                // an EditImage change, which only changes how something looks
 	// tokenValue is a dynamic token's value; a token that yields a picker value only when a mod is
 	// installed is how a pack says which mod that value is for.
 	tokenName  string
@@ -313,7 +314,8 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 				continue
 			}
 			pack.patches = append(pack.patches, cpPatch{
-				kind: kind, target: normalizeTarget(t), fromFile: ch.FromFile, priority: strings.TrimSpace(ch.Priority), when: when,
+				kind: kind, target: normalizeTarget(t), fromFile: ch.FromFile, priority: strings.TrimSpace(ch.Priority),
+				patchMode: strings.TrimSpace(ch.PatchMode), when: when,
 				shapes: shapes, spouse: spouseOf(ch.When), places: placesOf(ch.When), image: strings.EqualFold(action, kindEditImage),
 			})
 		}
@@ -450,6 +452,7 @@ type cpChange struct {
 	Target        string                     `json:"Target"`
 	FromFile      string                     `json:"FromFile"`
 	Priority      string                     `json:"Priority"`
+	PatchMode     string                     `json:"PatchMode"`
 	When          map[string]json.RawMessage `json:"When"`
 	FromArea      json.RawMessage            `json:"FromArea"`
 	ToArea        json.RawMessage            `json:"ToArea"`
