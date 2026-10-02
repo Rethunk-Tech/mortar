@@ -265,7 +265,7 @@ func (s *Service) PreviewImportSettings() (ImportPreview, error) {
 	return ImportPreview{Raw: string(b), Changes: previewChanges(s.store.Get(), p, present)}, nil
 }
 
-// ApplyImportedSettings applies a previously previewed export. Unknown fields stay ignored.
+// ApplyImportedSettings applies a previewed export. Unknown fields stay ignored.
 func (s *Service) ApplyImportedSettings(raw string) error {
 	p, present, err := ParseExport([]byte(raw))
 	if err != nil {
