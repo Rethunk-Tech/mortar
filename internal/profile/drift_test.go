@@ -190,3 +190,32 @@ func TestParkUnknownFoldersKeepsEarlierCopy(t *testing.T) {
 		t.Fatalf("second parked folder = %q", got)
 	}
 }
+
+func TestSwitchingAModOffIsNotDrift(t *testing.T) {
+	e := newEnv(t)
+	p, err := e.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	zip := buildZip(t, "pack.zip", map[string]string{
+		"A/manifest.json": manifestJSON("X.A"),
+		"A/assets/a.png":  "a",
+		"B/manifest.json": manifestJSON("X.B"),
+	})
+	if _, err := e.InstallArchive("stardew", p.ID, zip); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.ScanModsDrift("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "X.A", false); err != nil {
+		t.Fatal(err)
+	}
+	got, err := e.ScanModsDrift("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 0 {
+		t.Fatalf("after switching a mod off: %#v", got)
+	}
+}

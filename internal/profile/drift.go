@@ -91,6 +91,16 @@ func isUserWritten(rel string) bool {
 	return strings.HasSuffix(strings.ToLower(base), ".mortar-old")
 }
 
+// undotDirs drops the leading dot Mortar adds to a switched-off mod's folder, so its files still match the
+// store copy, which keeps the plain name.
+func undotDirs(rel string) string {
+	parts := strings.Split(filepath.ToSlash(rel), "/")
+	for i := range len(parts) - 1 {
+		parts[i] = strings.TrimPrefix(parts[i], ".")
+	}
+	return filepath.FromSlash(strings.Join(parts, "/"))
+}
+
 func walkFolderStat(root, peer string) (FolderStat, error) {
 	var st FolderStat
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
@@ -107,7 +117,7 @@ func walkFolderStat(root, peer string) (FolderStat, error) {
 		if isUserWritten(rel) {
 			return nil
 		}
-		if peer != "" && !exists(filepath.Join(peer, rel)) {
+		if peer != "" && !exists(filepath.Join(peer, rel)) && !exists(filepath.Join(peer, undotDirs(rel))) {
 			return nil
 		}
 		info, err := d.Info()
