@@ -111,6 +111,45 @@ const profileIsLocked = (
 const profileHasPinned = (profile: Profile, row: ModInProfile, update?: { oldKey: string }) =>
   Boolean(update && profile.entries?.some((entry) => entry.key === row.key && entry.pinned))
 
+function ProfileChoices({
+  profiles,
+  rows,
+  mode,
+  selected,
+  choose,
+  pinned,
+  locked,
+}: {
+  profiles: Profile[]
+  rows: ModInProfile[]
+  mode: 'add' | 'remove'
+  selected: string[]
+  choose: (id: string) => void
+  pinned: (profile: Profile, row: ModInProfile) => boolean
+  locked: (profile: Profile) => boolean
+}) {
+  return (
+    <>
+      {profiles.map((profile) => {
+        const row = rows.find((candidate) => candidate.profileId === profile.id)
+        const isPinned = row !== undefined && pinned(profile, row)
+        return (
+          <ProfileChoice
+            key={profile.id}
+            profile={profile}
+            row={row}
+            mode={mode}
+            isPinned={isPinned}
+            isLockedProfile={locked(profile)}
+            selected={selected.includes(profile.id)}
+            choose={choose}
+          />
+        )
+      })}
+    </>
+  )
+}
+
 export function OtherProfilesDialog({
   open,
   game,
@@ -229,23 +268,15 @@ export function OtherProfilesDialog({
       <DialogTitle>{title}</DialogTitle>
       <DialogContent sx={{ minWidth: 420, maxWidth: 'calc(100vw - 64px)' }}>
         {profiles.length === 0 ? <NoOtherProfiles /> : null}
-        {profiles.map((profile) => {
-          const row = rows.find((candidate) => candidate.profileId === profile.id)
-          const isPinned = row !== undefined && pinned(profile, row)
-          const isLockedProfile = locked(profile)
-          return (
-            <ProfileChoice
-              key={profile.id}
-              profile={profile}
-              row={row}
-              mode={mode}
-              isPinned={isPinned}
-              isLockedProfile={isLockedProfile}
-              selected={selected.includes(profile.id)}
-              choose={choose}
-            />
-          )
-        })}
+        <ProfileChoices
+          profiles={profiles}
+          rows={rows}
+          mode={mode}
+          selected={selected}
+          choose={choose}
+          pinned={pinned}
+          locked={locked}
+        />
       </DialogContent>
       <DialogFooter
         pending={pending}

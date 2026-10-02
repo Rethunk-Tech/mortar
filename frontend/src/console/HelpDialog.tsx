@@ -93,6 +93,54 @@ function HideUserName({
   )
 }
 
+function HelpLog({
+  log,
+  link,
+  hideUserName,
+  setHideUserName,
+  copy,
+}: {
+  log: string
+  link: string
+  hideUserName: boolean
+  setHideUserName: (value: boolean) => void
+  copy: (text: string) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <>
+      <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
+        {t`Upload your SMAPI log to smapi.io, the Stardew modding community's log viewer, and share the link where you ask for help.`}
+      </Typography>
+      <Alert severity="warning" icon={<TriangleAlert size={16} aria-hidden={true} />}>
+        {t`The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it.`}
+      </Alert>
+      <Box
+        component="textarea"
+        readOnly={true}
+        aria-label={t`SMAPI log`}
+        value={log}
+        spellCheck={false}
+        sx={{
+          height: 320,
+          resize: 'none',
+          p: 1.5,
+          bgcolor: 'rgba(0,0,0,0.5)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          borderRadius: '6px',
+          color: '#ffffff',
+          fontFamily: MONO,
+          fontSize: 12,
+          whiteSpace: 'pre',
+          outline: 'none',
+        }}
+      />
+      <HideUserName checked={hideUserName} onChange={setHideUserName} />
+      {link ? <LinkRow link={link} onCopy={() => copy(link)} /> : null}
+    </>
+  )
+}
+
 // Shows the SMAPI log as it is on disk and uploads it to smapi.io only once the user confirms.
 export function HelpDialog({ game }: { game: string }) {
   const { t } = useLingui()
@@ -203,36 +251,13 @@ export function HelpDialog({ game }: { game: string }) {
             {log === null ? null : <Typography sx={{ fontSize: 14 }}>{body}</Typography>}
           </>
         ) : (
-          <>
-            <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
-              {t`Upload your SMAPI log to smapi.io, the Stardew modding community's log viewer, and share the link where you ask for help.`}
-            </Typography>
-            <Alert severity="warning" icon={<TriangleAlert size={16} aria-hidden={true} />}>
-              {t`The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it.`}
-            </Alert>
-            <Box
-              component="textarea"
-              readOnly={true}
-              aria-label={t`SMAPI log`}
-              value={log ?? ''}
-              spellCheck={false}
-              sx={{
-                height: 320,
-                resize: 'none',
-                p: 1.5,
-                bgcolor: 'rgba(0,0,0,0.5)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                borderRadius: '6px',
-                color: '#ffffff',
-                fontFamily: MONO,
-                fontSize: 12,
-                whiteSpace: 'pre',
-                outline: 'none',
-              }}
-            />
-            <HideUserName checked={hideUserName} onChange={setHideUserName} />
-            {link ? <LinkRow link={link} onCopy={() => copy(link)} /> : null}
-          </>
+          <HelpLog
+            log={log ?? ''}
+            link={link}
+            hideUserName={hideUserName}
+            setHideUserName={setHideUserName}
+            copy={copy}
+          />
         )}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>

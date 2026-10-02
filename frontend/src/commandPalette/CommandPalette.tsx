@@ -1,3 +1,5 @@
+import type { I18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Dialog, List, ListItemButton, ListItemIcon, ListItemText, TextField } from '@mui/material'
 import {
@@ -116,8 +118,37 @@ function usePaletteWindow(open: boolean) {
   return searchRef
 }
 
+function paletteSections(i18n: I18n) {
+  return [
+    { id: 'general' as const, label: i18n._(msg`General`) },
+    { id: 'appearance' as const, label: i18n._(msg`Appearance`) },
+    { id: 'data' as const, label: i18n._(msg`Data`) },
+    { id: 'nexus' as const, label: i18n._(msg`Nexus Mods`) },
+    { id: 'updates' as const, label: i18n._(msg`Updates`) },
+    { id: 'shortcuts' as const, label: i18n._(msg`Shortcuts`) },
+    { id: 'about' as const, label: i18n._(msg`About`) },
+  ]
+}
+
+function shortcutLabels(i18n: I18n): Record<ShortcutId, string> {
+  return {
+    'command-palette': i18n._(msg`Open the command palette`),
+    'filter-mods': i18n._(msg`Focus the search`),
+    play: i18n._(msg`Play the open profile`),
+    'check-updates': i18n._(msg`Check for mod updates`),
+    'open-settings': i18n._(msg`Open Settings`),
+    dismiss: i18n._(msg`Close dialog or clear selection`),
+    'select-all-mods': i18n._(msg`Select all mods`),
+    'mod-up': i18n._(msg`Focus the previous mod`),
+    'mod-down': i18n._(msg`Focus the next mod`),
+    'mod-toggle': i18n._(msg`Toggle the focused mod`),
+    'mod-details': i18n._(msg`Open focused mod details`),
+    'mod-remove': i18n._(msg`Remove the focused mod`),
+  }
+}
+
 export function CommandPalette() {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const open = useCommandPalette((s) => s.open)
   const creating = useCommandPalette((s) => s.creating)
   const profiles = useProfiles((s) => s.profiles)
@@ -125,29 +156,8 @@ export function CommandPalette() {
   const [query, setQuery] = useState('')
   const [index, setIndex] = useState(0)
   const searchRef = usePaletteWindow(open)
-  const sections: { id: SettingsSection; label: string }[] = [
-    { id: 'general', label: t`General` },
-    { id: 'appearance', label: t`Appearance` },
-    { id: 'data', label: t`Data` },
-    { id: 'nexus', label: t`Nexus Mods` },
-    { id: 'updates', label: t`Updates` },
-    { id: 'shortcuts', label: t`Shortcuts` },
-    { id: 'about', label: t`About` },
-  ]
-  const shortcutLabels: Record<ShortcutId, string> = {
-    'command-palette': t`Open the command palette`,
-    'filter-mods': t`Focus the search`,
-    play: t`Play the open profile`,
-    'check-updates': t`Check for mod updates`,
-    'open-settings': t`Open Settings`,
-    dismiss: t`Close dialog or clear selection`,
-    'select-all-mods': t`Select all mods`,
-    'mod-up': t`Focus the previous mod`,
-    'mod-down': t`Focus the next mod`,
-    'mod-toggle': t`Toggle the focused mod`,
-    'mod-details': t`Open focused mod details`,
-    'mod-remove': t`Remove the focused mod`,
-  }
+  const sections: { id: SettingsSection; label: string }[] = paletteSections(i18n)
+  const shortcutLabelMap = shortcutLabels(i18n)
   const profile = profiles.find((p) => p.id === openId)
   const mods = userModEntries(profile?.entries).flatMap((entry) =>
     (entry.mods ?? []).map((mod) => ({
@@ -162,7 +172,7 @@ export function CommandPalette() {
       mods,
       sections,
       shortcuts: SHORTCUTS,
-      shortcutLabels,
+      shortcutLabels: shortcutLabelMap,
       labels: {
         play: t`Play`,
         updates: t`Check for mod updates`,
