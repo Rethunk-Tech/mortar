@@ -17,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
@@ -110,7 +111,8 @@ func serve(r io.Reader, w io.Writer, open func(link string) error, installed fun
 
 func activeNexusModIDs(domain string) []int {
 	ids := []int{}
-	if !strings.EqualFold(domain, "stardewvalley") {
+	info, ok := components.BundledGameByNexusDomain(domain)
+	if !ok {
 		return ids
 	}
 	dataDir, err := datadir.Dir()
@@ -121,11 +123,8 @@ func activeNexusModIDs(domain string) []int {
 	if err != nil {
 		return ids
 	}
-	current := store.Get()
-	if current.LastGame != "stardew" {
-		return ids
-	}
-	profileID := current.LastProfile["stardew"]
+	// The profile last open for the page's game, even while Mortar shows another game.
+	profileID := store.Get().LastProfile[info.ID]
 	if profileID == "" || filepath.Base(profileID) != profileID {
 		return ids
 	}
@@ -133,7 +132,7 @@ func activeNexusModIDs(domain string) []int {
 	if err != nil {
 		return ids
 	}
-	data, err := root.ReadFile(filepath.Join("profiles", "stardew", profileID, "profile.json"))
+	data, err := root.ReadFile(filepath.Join("profiles", info.ID, profileID, "profile.json"))
 	_ = root.Close()
 	if err != nil {
 		return ids

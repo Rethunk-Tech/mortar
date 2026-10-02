@@ -341,6 +341,21 @@ func BundledGame(id string) (GameInfo, bool) {
 	return findGame(m.Games, id)
 }
 
+// BundledGameByNexusDomain returns the game whose Nexus domain (the v1 URL segment) is domain, from the manifest
+// compiled into Mortar; the browser extension names games by that domain.
+func BundledGameByNexusDomain(domain string) (GameInfo, bool) {
+	m, err := BundledManifest()
+	if err != nil {
+		return GameInfo{}, false
+	}
+	for _, g := range m.Games {
+		if g.Nexus.Domain != "" && strings.EqualFold(g.Nexus.Domain, domain) {
+			return g, true
+		}
+	}
+	return GameInfo{}, false
+}
+
 func findGame(games []GameInfo, id string) (GameInfo, bool) {
 	for _, g := range games {
 		if g.ID == id {
