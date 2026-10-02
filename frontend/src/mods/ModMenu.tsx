@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 import {
   Ban,
+  CopyPlus,
   Ellipsis,
   ExternalLink,
   Eye,
@@ -128,6 +129,7 @@ function ModActionItems({
   onSetCategory,
   onAlsoAdd,
   onAddBundle,
+  onRemoveOther,
   labels,
 }: {
   actions: ModAction[]
@@ -140,36 +142,40 @@ function ModActionItems({
   onSetCategory: () => void
   onAlsoAdd: () => void
   onAddBundle: () => void
+  onRemoveOther: () => void
   labels: { manifest: string; category: string; alsoAdd: string; addBundle: string }
 }) {
-  return actions.flatMap((a) => [
-    a === 'remove' ? <Divider key="divider" /> : null,
+  const renderAction = (action: ModAction | 'reinstall', disabled = false) => (
     <MenuItem
-      key={a}
-      disabled={locked && (a === 'toggle' || a === 'remove')}
-      sx={a === 'remove' ? { color: 'error.main' } : undefined}
+      key={action}
+      disabled={disabled}
       onClick={() => {
         close()
-        items[a].run()
+        items[action].run()
       }}
     >
-      <ListItemIcon sx={{ color: 'inherit' }}>{items[a].icon}</ListItemIcon>
-      <ListItemText>{items[a].label}</ListItemText>
-    </MenuItem>,
-    a === 'files' && hasFomod ? (
-      <MenuItem
-        key="reinstall"
-        disabled={locked}
-        onClick={() => {
-          close()
-          items.reinstall.run()
-        }}
-      >
-        <ListItemIcon sx={{ color: 'inherit' }}>{items.reinstall.icon}</ListItemIcon>
-        <ListItemText>{items.reinstall.label}</ListItemText>
-      </MenuItem>
-    ) : null,
-    a === 'files' ? (
+      <ListItemIcon sx={{ color: 'inherit' }}>{items[action].icon}</ListItemIcon>
+      <ListItemText>{items[action].label}</ListItemText>
+    </MenuItem>
+  )
+  const has = (action: ModAction) => actions.includes(action)
+  const result: ReactNode[] = []
+  if (has('toggle')) {
+    result.push(renderAction('toggle', locked))
+  }
+  if (has('details')) {
+    result.push(renderAction('details'))
+  }
+  result.push(<Divider key="source-divider" />)
+  if (has('page')) {
+    result.push(renderAction('page'))
+  }
+  if (has('files')) {
+    result.push(renderAction('files'))
+    if (hasFomod) {
+      result.push(renderAction('reinstall', locked))
+    }
+    result.push(
       <MenuItem
         key="manifest"
         onClick={() => {
@@ -181,9 +187,10 @@ function ModActionItems({
           <FileJson size={ICON_SIZE} />
         </ListItemIcon>
         <ListItemText>{labels.manifest}</ListItemText>
-      </MenuItem>
-    ) : null,
-    a === 'files' ? (
+      </MenuItem>,
+    )
+    result.push(<Divider key="organisation-divider" />)
+    result.push(
       <MenuItem
         key="category"
         onClick={() => {
@@ -195,21 +202,9 @@ function ModActionItems({
           <FolderTree size={ICON_SIZE} />
         </ListItemIcon>
         <ListItemText>{labels.category}</ListItemText>
-      </MenuItem>
-    ) : null,
-    a === 'files' ? (
-      <MenuItem
-        key="also-add"
-        disabled={locked}
-        onClick={() => {
-          close()
-          onAlsoAdd()
-        }}
-      >
-        <ListItemText>{labels.alsoAdd}</ListItemText>
-      </MenuItem>
-    ) : null,
-    a === 'files' ? (
+      </MenuItem>,
+    )
+    result.push(
       <MenuItem
         key="add-bundle"
         disabled={locked}
@@ -222,9 +217,57 @@ function ModActionItems({
           <PackagePlus size={ICON_SIZE} />
         </ListItemIcon>
         <ListItemText>{labels.addBundle}</ListItemText>
-      </MenuItem>
-    ) : null,
-  ])
+      </MenuItem>,
+    )
+    if (has('pin')) {
+      result.push(renderAction('pin'))
+    }
+    if (has('skip')) {
+      result.push(renderAction('skip'))
+    }
+    result.push(<Divider key="other-profiles-divider" />)
+    result.push(
+      <MenuItem
+        key="also-add"
+        disabled={locked}
+        onClick={() => {
+          close()
+          onAlsoAdd()
+        }}
+      >
+        <ListItemIcon sx={{ color: 'inherit' }}>
+          <CopyPlus size={ICON_SIZE} />
+        </ListItemIcon>
+        <ListItemText>{labels.alsoAdd}</ListItemText>
+      </MenuItem>,
+    )
+  }
+  result.push(
+    <RemoveOtherMenuItem
+      key="remove-other"
+      locked={locked}
+      close={close}
+      onClick={onRemoveOther}
+    />,
+  )
+  if (has('remove')) {
+    result.push(<Divider key="remove-divider" />)
+    result.push(
+      <MenuItem
+        key="remove"
+        disabled={locked}
+        sx={{ color: 'error.main' }}
+        onClick={() => {
+          close()
+          items.remove.run()
+        }}
+      >
+        <ListItemIcon sx={{ color: 'inherit' }}>{items.remove.icon}</ListItemIcon>
+        <ListItemText>{items.remove.label}</ListItemText>
+      </MenuItem>,
+    )
+  }
+  return result
 }
 
 function ModMenuItems({
@@ -327,6 +370,7 @@ function ModMenuItems({
       onSetCategory,
       onAlsoAdd,
       onAddBundle,
+      onRemoveOther,
       labels: {
         manifest: t`Open manifest.json`,
         category: t`Set category…`,

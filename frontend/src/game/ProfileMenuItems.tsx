@@ -216,7 +216,7 @@ function SendProfileMenuItem({ profile, close }: { profile: Profile; close: () =
   )
 }
 
-export function CoverMenuItems({
+function CoverMenuItems({
   game,
   profile,
   close,
@@ -239,122 +239,57 @@ export function CoverMenuItems({
       await apply(path).catch(toastError(t`Could not use that image`))
     }
   }
-  return (
-    <>
-      <ProfileMenuItem
-        icon={<ImagePlus size={16} />}
-        label={t`Choose cover image…`}
-        onClick={() => choose().catch(reportUnexpected)}
-      />
-      <ProfileMenuItem
-        icon={<ImageOff size={16} />}
-        label={t`Use the automatic cover`}
-        disabled={!hasPickedCover(profile.cover, undefined)}
-        onClick={() => {
-          close()
-          apply(null).catch(reportUnexpected)
-        }}
-      />
-    </>
-  )
+  return [
+    <ProfileMenuItem
+      key="choose-cover"
+      icon={<ImagePlus size={16} />}
+      label={t`Choose cover image…`}
+      onClick={() => choose().catch(reportUnexpected)}
+    />,
+    <ProfileMenuItem
+      key="automatic-cover"
+      icon={<ImageOff size={16} />}
+      label={t`Use the automatic cover`}
+      disabled={!hasPickedCover(profile.cover, undefined)}
+      onClick={() => {
+        close()
+        apply(null).catch(reportUnexpected)
+      }}
+    />,
+  ]
 }
 
-export function MoreMenuItems({
+function ProfileDialogs({
   profile,
-  close,
-  onHistory,
+  currentGame,
+  compareFrom,
+  setCompareFrom,
+  compare,
+  setCompare,
+  deleting,
+  setDeleting,
+  bundleOpen,
+  setBundleOpen,
 }: {
   profile: Profile
-  close: () => void
-  onHistory: () => void
+  currentGame: { id: string } | null
+  compareFrom: Profile | null
+  setCompareFrom: (profile: Profile | null) => void
+  compare: { a: Profile; b: Profile } | null
+  setCompare: (value: { a: Profile; b: Profile } | null) => void
+  deleting: boolean
+  setDeleting: (value: boolean) => void
+  bundleOpen: boolean
+  setBundleOpen: (value: boolean) => void
 }) {
   const { t } = useLingui()
-  const profiles = useProfiles((s) => s.profiles)
-  const currentGame = useProfiles((s) => s.game)
-  const duplicate = useProfiles((s) => s.duplicate)
-  const setHidden = useProfiles((s) => s.setHidden)
-  const [compareFrom, setCompareFrom] = useState<Profile | null>(null)
-  const [compare, setCompare] = useState<{ a: Profile; b: Profile } | null>(null)
-  const [deleting, setDeleting] = useState(false)
-  const [bundleOpen, setBundleOpen] = useState(false)
   return (
     <>
-      <ProfileMenuItem
-        icon={<History size={16} />}
-        label={t`History`}
-        onClick={() => {
-          close()
-          onHistory()
-        }}
-      />
-      <ProfileMenuItem
-        icon={<FileDown size={16} />}
-        label={t`Export profile…`}
-        onClick={() => {
-          close()
-          useProfiles.getState().exportProfile(profile.id).catch(reportUnexpected)
-        }}
-      />
-      <ProfileMenuItem
-        icon={<PackagePlus size={16} />}
-        label={t`Add a bundle…`}
-        disabled={!currentGame}
-        onClick={() => {
-          close()
-          setBundleOpen(true)
-        }}
-      />
-      <ProfileMenuItem
-        icon={<Users size={16} />}
-        label={t`Match a friend's profile…`}
-        onClick={() => {
-          close()
-          openImport({ profileId: profile.id })
-        }}
-      />
-      <SendProfileMenuItem profile={profile} close={close} />
-      <ShortcutMenuItems profile={profile} close={close} />
-      <ProfileMenuItem
-        icon={<Copy size={16} />}
-        label={t`Duplicate`}
-        onClick={() => {
-          close()
-          duplicate(profile.id).catch(reportUnexpected)
-        }}
-      />
-      <ProfileMenuItem
-        icon={<GitCompare size={16} />}
-        label={t`Compare with…`}
-        disabled={profiles.length < 2}
-        onClick={() => {
-          close()
-          setCompareFrom(profile)
-        }}
-      />
-      <ProfileMenuItem
-        icon={profile.hidden ? <Eye size={16} /> : <EyeOff size={16} />}
-        label={profile.hidden ? t`Show in sidebar` : t`Hide from sidebar`}
-        onClick={() => {
-          close()
-          setHidden(profile.id, !profile.hidden).catch(reportUnexpected)
-        }}
-      />
-      <Divider />
-      <ProfileMenuItem
-        icon={<Trash2 size={16} />}
-        label={t`Delete`}
-        onClick={() => {
-          close()
-          setDeleting(true)
-        }}
-      />
       {compareFrom === null ? null : (
         <PickCompareDialog
           from={compareFrom}
           onPicked={(other) => {
-            if (compareFrom) {
-              setCompare({ a: compareFrom, b: other })
-            }
+            setCompare({ a: compareFrom, b: other })
             setCompareFrom(null)
           }}
           onClose={() => setCompareFrom(null)}
@@ -393,4 +328,119 @@ export function MoreMenuItems({
   )
 }
 
-export { ProfileMenuItem }
+function MoreMenuItems({
+  profile,
+  close,
+  onHistory,
+}: {
+  profile: Profile
+  close: () => void
+  onHistory: () => void
+}) {
+  const { t } = useLingui()
+  const profiles = useProfiles((s) => s.profiles)
+  const currentGame = useProfiles((s) => s.game)
+  const duplicate = useProfiles((s) => s.duplicate)
+  const setHidden = useProfiles((s) => s.setHidden)
+  const [compareFrom, setCompareFrom] = useState<Profile | null>(null)
+  const [compare, setCompare] = useState<{ a: Profile; b: Profile } | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [bundleOpen, setBundleOpen] = useState(false)
+  return [
+    <ProfileMenuItem
+      key="history"
+      icon={<History size={16} />}
+      label={t`History`}
+      onClick={() => {
+        close()
+        onHistory()
+      }}
+    />,
+    <ProfileMenuItem
+      key="duplicate"
+      icon={<Copy size={16} />}
+      label={t`Duplicate`}
+      onClick={() => {
+        close()
+        duplicate(profile.id).catch(reportUnexpected)
+      }}
+    />,
+    <ProfileMenuItem
+      key="export"
+      icon={<FileDown size={16} />}
+      label={t`Export profile…`}
+      onClick={() => {
+        close()
+        useProfiles.getState().exportProfile(profile.id).catch(reportUnexpected)
+      }}
+    />,
+    <ProfileMenuItem
+      key="hide"
+      icon={profile.hidden ? <Eye size={16} /> : <EyeOff size={16} />}
+      label={profile.hidden ? t`Show in sidebar` : t`Hide from sidebar`}
+      onClick={() => {
+        close()
+        setHidden(profile.id, !profile.hidden).catch(reportUnexpected)
+      }}
+    />,
+    <Divider key="sharing-divider" />,
+    <ProfileMenuItem
+      key="match"
+      icon={<Users size={16} />}
+      label={t`Match a friend's profile…`}
+      onClick={() => {
+        close()
+        openImport({ profileId: profile.id })
+      }}
+    />,
+    <ProfileMenuItem
+      key="compare"
+      icon={<GitCompare size={16} />}
+      label={t`Compare with…`}
+      disabled={profiles.length < 2}
+      onClick={() => {
+        close()
+        setCompareFrom(profile)
+      }}
+    />,
+    <SendProfileMenuItem key="send" profile={profile} close={close} />,
+    <Divider key="bundle-divider" />,
+    <ProfileMenuItem
+      key="bundle"
+      icon={<PackagePlus size={16} />}
+      label={t`Add a bundle…`}
+      disabled={!currentGame}
+      onClick={() => {
+        close()
+        setBundleOpen(true)
+      }}
+    />,
+    <Divider key="shortcut-divider" />,
+    <ShortcutMenuItems key="shortcuts" profile={profile} close={close} />,
+    <Divider key="delete-divider" />,
+    <ProfileMenuItem
+      key="delete"
+      icon={<Trash2 size={16} />}
+      label={t`Delete`}
+      onClick={() => {
+        close()
+        setDeleting(true)
+      }}
+    />,
+    <ProfileDialogs
+      key="dialogs"
+      profile={profile}
+      currentGame={currentGame}
+      compareFrom={compareFrom}
+      setCompareFrom={setCompareFrom}
+      compare={compare}
+      setCompare={setCompare}
+      deleting={deleting}
+      setDeleting={setDeleting}
+      bundleOpen={bundleOpen}
+      setBundleOpen={setBundleOpen}
+    />,
+  ]
+}
+
+export { CoverMenuItems, MoreMenuItems, ProfileMenuItem }
