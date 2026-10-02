@@ -226,6 +226,10 @@ function CommandLine({ game }: { game: string }) {
         sending.current = false
       })
   }
+  // With no game to send to, the input only takes room from the log.
+  if (!running) {
+    return null
+  }
   return (
     <Box
       component="label"
@@ -235,7 +239,8 @@ function CommandLine({ game }: { game: string }) {
         gap: 1,
         height: 38,
         mx: 2,
-        mb: 2,
+        mt: -0.5,
+        mb: 1.5,
         px: 1.5,
         flexShrink: 0,
         bgcolor: 'rgba(0,0,0,0.5)',
@@ -250,10 +255,7 @@ function CommandLine({ game }: { game: string }) {
       <Box
         component="input"
         aria-label={t`Console command`}
-        placeholder={
-          running ? t`Type a command, for example help` : t`Start the game to run commands`
-        }
-        disabled={!running}
+        placeholder={t`Type a command, for example help`}
         value={text}
         spellCheck={false}
         autoComplete="off"

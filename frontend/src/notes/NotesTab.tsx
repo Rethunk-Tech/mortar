@@ -115,7 +115,17 @@ export function NotesTab({ profile }: { profile: Profile }) {
 
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ flex: 1, minHeight: 0, display: 'flex', px: 2, pt: 1.5 }}>
+      <Box
+        sx={{
+          position: 'relative',
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          px: 2,
+          pt: 1.5,
+          pb: 1.5,
+        }}
+      >
         <TextField
           multiline={true}
           fullWidth={true}
@@ -140,17 +150,10 @@ export function NotesTab({ profile }: { profile: Profile }) {
             },
           }}
         />
-      </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          alignItems: 'center',
-          minHeight: 32,
-          px: 2,
-        }}
-      >
-        <StatusLine status={status} now={now} onRetry={() => save()} />
+        {/* Floats in the field's corner so the save status takes no room from the notes. */}
+        <Box sx={{ position: 'absolute', right: 32, bottom: 20 }}>
+          <StatusLine status={status} now={now} onRetry={() => save()} />
+        </Box>
       </Box>
     </Box>
   )
