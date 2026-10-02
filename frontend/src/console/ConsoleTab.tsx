@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Checkbox, Chip, Menu, MenuItem, Typography } from '@mui/material'
+import { Box, Button, ButtonBase, Checkbox, Chip, Menu, MenuItem } from '@mui/material'
 import {
   ArrowDownToLine,
   ChevronDown,
@@ -17,6 +17,7 @@ import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { onFilterFocus } from '../mods/filterFocus.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { countByLevel, incompatibleSMAPI, isFiltered, LEVELS, modsOf } from './filter.ts'
@@ -365,24 +366,12 @@ function useHasRuns(game: string, profile: string, running: boolean): boolean {
 function ConsoleEmpty() {
   const { t } = useLingui()
   return (
-    <Box
-      sx={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 2,
-        px: 3,
-        textAlign: 'center',
-      }}
+    <EmptyState
+      icon={<SquareTerminal size={40} aria-hidden={true} />}
+      title={t`No game output yet`}
     >
-      <SquareTerminal size={40} color="rgba(255,255,255,0.6)" aria-hidden={true} />
-      <Typography sx={{ fontSize: 22, fontWeight: 700 }}>{t`No game output yet`}</Typography>
-      <Typography sx={{ maxWidth: 480, fontSize: 15, lineHeight: 1.5, color: 'text.secondary' }}>
-        {t`Play this profile and SMAPI's log shows here as it runs. Every run is kept, so you can look back at it later.`}
-      </Typography>
-    </Box>
+      {t`Play this profile and SMAPI's log shows here as it runs. Every run is kept, so you can look back at it later.`}
+    </EmptyState>
   )
 }
 

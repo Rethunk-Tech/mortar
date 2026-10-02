@@ -18,6 +18,7 @@ import type { PerformanceRow } from '../../bindings/github.com/Rethunk-AI/mortar
 import { PerformanceReport } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { canSendTo, useConsole } from './store.ts'
@@ -219,36 +220,24 @@ function PerformanceEmpty({
 }) {
   const { t } = useLingui()
   return (
-    <Box
-      sx={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 2,
-        px: 3,
-        textAlign: 'center',
-      }}
+    <EmptyState
+      icon={<Gauge size={40} aria-hidden={true} />}
+      title={t`See which mods slow the game`}
+      action={
+        <Button
+          variant="contained"
+          startIcon={<Play size={16} />}
+          disabled={!running || busy}
+          onClick={onStart}
+        >
+          {t`Start measuring`}
+        </Button>
+      }
     >
-      <Gauge size={40} color="rgba(255,255,255,0.6)" aria-hidden={true} />
-      <Typography
-        sx={{ fontSize: 22, fontWeight: 700 }}
-      >{t`See which mods slow the game`}</Typography>
-      <Typography sx={{ maxWidth: 480, fontSize: 15, lineHeight: 1.5, color: 'text.secondary' }}>
-        {running
-          ? t`Measure while you play, then show a report of the mods that take the most time each frame.`
-          : t`Start the game with this profile, then measure here while you play.`}
-      </Typography>
-      <Button
-        variant="contained"
-        startIcon={<Play size={16} />}
-        disabled={!running || busy}
-        onClick={onStart}
-      >
-        {t`Start measuring`}
-      </Button>
-    </Box>
+      {running
+        ? t`Measure while you play, then show a report of the mods that take the most time each frame.`
+        : t`Start the game with this profile, then measure here while you play.`}
+    </EmptyState>
   )
 }
 

@@ -1,8 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
-import { Copy, TriangleAlert } from 'lucide-react'
+import { Copy, ShieldCheck, TriangleAlert } from 'lucide-react'
 import { useProfiles } from '../profiles/store.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -235,9 +236,12 @@ export function ProblemsTab() {
       }}
     >
       {empty ? (
-        <Typography
-          sx={{ fontSize: 14, color: 'text.secondary' }}
-        >{t`No problems found.`}</Typography>
+        <EmptyState
+          icon={<ShieldCheck size={40} aria-hidden={true} />}
+          title={t`No problems found`}
+        >
+          {t`Every mod has what it needs and nothing clashes.`}
+        </EmptyState>
       ) : (
         sections.map((section) => (
           <Box key={section.id}>
