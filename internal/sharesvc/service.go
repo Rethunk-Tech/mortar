@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"maps"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -78,6 +79,8 @@ type Deps struct {
 	Premium  func() bool
 	Env      func(game string) problems.Environment
 	Queue    Queue
+	// Stored reports whether a source key is already available in Mortar's store.
+	Stored func(game, key string) bool
 	// Dir is the data folder holding pending-configs.json; empty keeps pending imports in memory only.
 	Dir string
 	// Emit is nil in tests that do not watch events.
@@ -127,6 +130,7 @@ type session struct {
 	// target is the profile the preview was resolved against; refs are what it resolved.
 	target   string
 	refs     []share.Ref
+	stored   map[string]bool
 	external []migrate.ModPreview
 }
 
@@ -463,6 +467,7 @@ func (s *Service) preview(ctx context.Context, game string, shared share.Shared,
 	if s.gen == gen {
 		s.current = &session{
 			id: pv.Session, game: game, preview: pv, notes: notes, configs: configs, origin: origin, target: profileID, refs: shared.Entries,
+			stored: maps.Clone(r.storedKeys),
 		}
 	}
 	s.mu.Unlock()
@@ -473,6 +478,7 @@ func (s *Service) preview(ctx context.Context, game string, shared share.Shared,
 func (s *Service) resolverFor(game, profileID string) (*resolver, error) {
 	r := &resolver{
 		meta: s.d.Meta, files: s.d.Files, signedIn: s.d.SignedIn(), premium: s.d.Premium(), env: s.d.Env(game),
+		game: game, stored: s.d.Stored, storedKeys: map[string]bool{},
 	}
 	if profileID == "" {
 		return r, nil
@@ -571,6 +577,7 @@ func (s *Service) Import(ctx context.Context, game, session, profileID string, e
 		}
 	}()
 	mods := cur.preview.Mods
+	stored := cur.stored
 	if profileID != cur.target {
 		r, err := s.resolverFor(game, profileID)
 		if err != nil {
@@ -578,6 +585,7 @@ func (s *Service) Import(ctx context.Context, game, session, profileID string, e
 		}
 		mods, _ = r.resolve(ctx, cur.refs)
 		mods = append(externalLocalMods(cur.external), mods...)
+		stored = r.storedKeys
 	}
 	var reqs []queue.Request
 	var wanted []wantedFile
@@ -587,7 +595,8 @@ func (s *Service) Import(ctx context.Context, game, session, profileID string, e
 		external[externalKey(i)] = mod
 	}
 	for _, m := range mods {
-		if slices.Contains(exclude, m.Key) || m.State == StateInstalled || m.State == StateUnavailable {
+		if slices.Contains(exclude, m.Key) || m.State == StateUnavailable ||
+			(m.State == StateInstalled && !stored[m.Key]) {
 			continue
 		}
 		if m.Site == SiteLocal {

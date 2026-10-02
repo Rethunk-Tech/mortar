@@ -64,6 +64,11 @@ func (s *Service) SetLanSharing(on bool) error {
 	return s.set(func(v *Settings) { v.LanSharing = on })
 }
 
+// SetLanPort stores the fixed LAN sharing port, or zero to let the OS choose one.
+func (s *Service) SetLanPort(port int) error {
+	return s.set(func(v *Settings) { v.LanPort = port })
+}
+
 // SetIncludeBetaReleases sets whether Mortar update checks include GitHub prereleases.
 func (s *Service) SetIncludeBetaReleases(on bool) error {
 	return s.set(func(v *Settings) { v.IncludeBetaReleases = on })

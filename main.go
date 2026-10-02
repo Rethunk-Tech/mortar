@@ -38,6 +38,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/queue"
 	"github.com/Rethunk-AI/mortar/internal/savessvc"
+	"github.com/Rethunk-AI/mortar/internal/secret"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/sharesvc"
 	"github.com/Rethunk-AI/mortar/internal/shortcut"
@@ -83,6 +84,7 @@ func registerEvents() {
 	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
 	application.RegisterEvent[sharesvc.Arrival](sharesvc.ArrivedEvent)
 	application.RegisterEvent[lan.Arrival](lan.ArrivedEvent)
+	application.RegisterEvent[lan.TransferProgress](lan.TransferProgressEvent)
 	application.RegisterEvent[launchsvc.NoticeClick](launchsvc.NoticeClickEvent)
 	application.RegisterEvent[updatesvc.Release](updatesvc.StagedEvent)
 }
@@ -417,10 +419,18 @@ func run() error {
 		Premium:  func() bool { return store.Get().NexusPremium },
 		Env:      problemsSvc.Environment,
 		Queue:    queueSvc,
-		Dir:      dataDir,
+		Stored: func(gameID, key string) bool {
+			_, err := items.Path(gameID, key)
+			return err == nil
+		},
+		Dir:  dataDir,
+		Emit: emit,
+	})
+	lanSvc = lan.NewService(lan.Deps{
+		Shares: shareSvc, Settings: store, Store: items, Version: version,
+		NexusKey: func() (string, error) { return secret.Get("nexus") },
 		Emit:     emit,
 	})
-	lanSvc = lan.NewService(lan.Deps{Shares: shareSvc, Version: version, Emit: emit})
 	if err := lanSvc.SetEnabled(store.Get().LanSharing); err != nil {
 		log.Printf("LAN sharing: %v", err)
 	}

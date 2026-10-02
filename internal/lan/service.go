@@ -20,8 +20,10 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/share"
 	"github.com/Rethunk-AI/mortar/internal/sharesvc"
+	"github.com/Rethunk-AI/mortar/internal/store"
 	"github.com/hashicorp/mdns"
 )
 
@@ -34,14 +36,18 @@ const (
 	rateLimit       = 10 * time.Second
 	peerTTL         = 6 * time.Second
 	httpTimeout     = 5 * time.Second
+	nonceTTL        = time.Minute
+	transferTTL     = 5 * time.Minute
 )
 
 // Arrival is a profile share received from another Mortar installation.
 type Arrival struct {
+	ID          int    `json:"id"`
 	Sender      string `json:"sender"`
 	Game        string `json:"game"`
 	Payload     string `json:"payload"`
 	ProfileName string `json:"profileName"`
+	SameAccount bool   `json:"sameAccount"`
 }
 
 // Peer is a nearby Mortar installation that can receive a profile share.
@@ -52,9 +58,12 @@ type Peer struct {
 
 // Deps connects LAN sharing to the rest of Mortar.
 type Deps struct {
-	Shares  *sharesvc.Service
-	Version string
-	Emit    func(name string, data any)
+	Shares   *sharesvc.Service
+	Settings *settings.Store
+	Store    *store.Store
+	Version  string
+	NexusKey func() (string, error)
+	Emit     func(name string, data any)
 }
 
 // Service advertises this Mortar installation, discovers peers, and exchanges profile links.
@@ -68,6 +77,14 @@ type Service struct {
 	enabled bool
 	peers   map[string]peerRecord
 	inbox   []Arrival
+	nextID  int
+
+	nonces   map[string]nonceRecord
+	grants   map[string]transferGrant
+	incoming map[int]incomingTransfer
+	active   map[int]context.CancelFunc
+
+	configuredPort int
 
 	server   *http.Server
 	listener net.Listener
@@ -85,9 +102,12 @@ type peerRecord struct {
 }
 
 type shareRequest struct {
-	Sender  string `json:"sender"`
-	Game    string `json:"game"`
-	Payload string `json:"payload"`
+	Sender     string `json:"sender"`
+	Game       string `json:"game"`
+	Payload    string `json:"payload"`
+	Nonce      string `json:"nonce,omitempty"`
+	Proof      string `json:"proof,omitempty"`
+	SenderPort int    `json:"senderPort"`
 }
 
 // NewService returns a LAN sharing service that is disabled until SetEnabled is called.
@@ -97,15 +117,28 @@ func NewService(deps Deps) *Service {
 		name:        localName(),
 		peers:       map[string]peerRecord{},
 		lastReceive: map[string]time.Time{},
+		nonces:      map[string]nonceRecord{},
+		grants:      map[string]transferGrant{},
+		incoming:    map[int]incomingTransfer{},
+		active:      map[int]context.CancelFunc{},
 	}
 }
 
 // SetEnabled starts or stops the LAN listener and mDNS discovery.
 func (s *Service) SetEnabled(enabled bool) error {
-	if enabled {
-		return s.start()
+	if !enabled {
+		return s.stop()
 	}
-	return s.stop()
+	desired := s.lanPort()
+	s.mu.RLock()
+	restart := s.enabled && s.configuredPort != desired
+	s.mu.RUnlock()
+	if restart {
+		if err := s.stop(); err != nil {
+			return err
+		}
+	}
+	return s.start()
 }
 
 // Shutdown stops LAN sharing permanently as Mortar exits.
@@ -123,6 +156,7 @@ func (s *Service) Shutdown() {
 	server, listener, advertiser, cancel := s.resourcesLocked()
 	s.clearResourcesLocked()
 	s.peers = map[string]peerRecord{}
+	s.configuredPort = 0
 	s.mu.Unlock()
 	stopResources(server, listener, advertiser, cancel)
 	s.wg.Wait()
@@ -144,7 +178,11 @@ func (s *Service) start() error {
 	s.mu.RUnlock()
 
 	config := net.ListenConfig{}
-	listener, err := config.Listen(context.Background(), "tcp", ":0")
+	address := ":0"
+	if configuredPort := s.lanPort(); configuredPort > 0 {
+		address = net.JoinHostPort("", strconv.Itoa(configuredPort))
+	}
+	listener, err := config.Listen(context.Background(), "tcp", address)
 	if err != nil {
 		return fmt.Errorf("listen for LAN sharing: %w", err)
 	}
@@ -188,6 +226,7 @@ func (s *Service) start() error {
 		return errors.New("LAN sharing service is shut down")
 	}
 	s.enabled = true
+	s.configuredPort = s.lanPort()
 	s.server = server
 	s.listener = listener
 	s.mdns = advertiser
@@ -225,6 +264,7 @@ func (s *Service) stop() error {
 	server, listener, advertiser, cancel := s.resourcesLocked()
 	s.clearResourcesLocked()
 	s.peers = map[string]peerRecord{}
+	s.configuredPort = 0
 	s.mu.Unlock()
 	stopResources(server, listener, advertiser, cancel)
 	s.wg.Wait()
@@ -306,11 +346,25 @@ func (s *Service) sendPayload(peerID, game, payload string) error {
 	if _, err := validateRequest(shareRequest{Sender: s.name, Game: game, Payload: payload}); err != nil {
 		return err
 	}
-	body, err := json.Marshal(shareRequest{Sender: s.name, Game: game, Payload: payload})
+	hello, err := s.hello(peerID)
+	if err != nil {
+		return err
+	}
+	request := shareRequest{
+		Sender:     s.name,
+		Game:       game,
+		Payload:    payload,
+		Nonce:      hello.Nonce,
+		SenderPort: s.port(),
+	}
+	if key := s.nexusKey(); key != "" {
+		request.Proof = hmacProof(key, hello.Nonce, payload)
+	}
+	body, err := json.Marshal(request)
 	if err != nil {
 		return fmt.Errorf("encode profile share: %w", err)
 	}
-	endpoint, err := shareEndpoint(peerID)
+	endpoint, err := shareEndpoint(peerID, "/share")
 	if err != nil {
 		return err
 	}
@@ -333,28 +387,130 @@ func (s *Service) sendPayload(peerID, game, payload string) error {
 		}
 		return fmt.Errorf("peer rejected profile share: HTTP %d", resp.StatusCode)
 	}
+	var result shareResponse
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 64<<10)).Decode(&result); err != nil && !errors.Is(err, io.EOF) {
+		return fmt.Errorf("read profile share response: %w", err)
+	}
+	if result.SameAccount && result.TransferToken != "" {
+		s.rememberGrant(result.TransferToken, game, result.EntryKeys)
+	}
+	s.rememberAddress(peerID)
 	return nil
 }
 
-func shareEndpoint(peerID string) (string, error) {
-	if !strings.Contains(peerID, "://") {
-		peerID = "http://" + peerID
+func (s *Service) hello(peerID string) (helloResponse, error) {
+	endpoint, err := shareEndpoint(peerID, "/hello")
+	if err != nil {
+		return helloResponse{}, err
 	}
-	parsed, err := url.Parse(peerID)
-	if err != nil || parsed.Scheme != "http" || parsed.Host == "" || parsed.User != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), httpTimeout)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return helloResponse{}, fmt.Errorf("prepare LAN handshake: %w", err)
+	}
+	resp, err := (&http.Client{}).Do(req)
+	if err != nil {
+		return helloResponse{}, fmt.Errorf("contact LAN peer: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return helloResponse{}, fmt.Errorf("LAN peer handshake failed: HTTP %d", resp.StatusCode)
+	}
+	var hello helloResponse
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 16<<10)).Decode(&hello); err != nil {
+		return helloResponse{}, fmt.Errorf("read LAN peer handshake: %w", err)
+	}
+	if hello.Nonce == "" {
+		return helloResponse{}, errors.New("LAN peer returned no handshake nonce")
+	}
+	return hello, nil
+}
+
+func shareEndpoint(peerID, endpointPath string) (string, error) {
+	address, err := peerAddress(peerID)
+	if err != nil {
+		return "", err
+	}
+	return (&url.URL{Scheme: "http", Host: address, Path: endpointPath}).String(), nil
+}
+
+func peerAddress(raw string) (string, error) {
+	raw = strings.TrimSpace(raw)
+	if strings.Contains(raw, "://") {
+		parsed, err := url.Parse(raw)
+		if err != nil || parsed.Scheme != "http" || parsed.Host == "" || parsed.User != nil {
+			return "", errors.New("invalid LAN peer address")
+		}
+		raw = parsed.Host
+	}
+	if strings.ContainsAny(raw, "/?#") {
 		return "", errors.New("invalid LAN peer address")
 	}
-	parsed.Path = "/share"
-	parsed.RawPath = ""
-	parsed.RawQuery = ""
-	parsed.Fragment = ""
-	return parsed.String(), nil
+	host, portText, err := net.SplitHostPort(raw)
+	if err != nil || host == "" {
+		return "", errors.New("LAN peer address must be host:port")
+	}
+	port, err := strconv.Atoi(portText)
+	if err != nil || port < 1 || port > 65535 {
+		return "", errors.New("LAN peer port must be between 1 and 65535")
+	}
+	return net.JoinHostPort(host, strconv.Itoa(port)), nil
+}
+
+func (s *Service) rememberAddress(raw string) {
+	if s.deps.Settings == nil {
+		return
+	}
+	address, err := peerAddress(raw)
+	if err != nil {
+		return
+	}
+	next, err := s.deps.Settings.Update(func(next *settings.Settings) {
+		addresses := make([]string, 0, settings.MaxLanAddresses)
+		addresses = append(addresses, address)
+		for _, current := range next.LanAddresses {
+			if current != address && len(addresses) < settings.MaxLanAddresses {
+				addresses = append(addresses, current)
+			}
+		}
+		next.LanAddresses = addresses
+	})
+	if err == nil && s.deps.Emit != nil {
+		s.deps.Emit(settings.ChangedEvent, next)
+	}
 }
 
 func (s *Service) handler() http.Handler {
 	mux := http.NewServeMux()
+	mux.HandleFunc("/hello", s.handleHello)
 	mux.HandleFunc("/share", s.handleShare)
+	mux.HandleFunc("/store/", s.handleStore)
 	return mux
+}
+
+func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	nonce, err := randomToken()
+	if err != nil {
+		http.Error(w, "could not create handshake", http.StatusInternalServerError)
+		return
+	}
+	now := time.Now()
+	peer := remotePeer(r)
+	s.mu.Lock()
+	for value, record := range s.nonces {
+		if now.After(record.expires) {
+			delete(s.nonces, value)
+		}
+	}
+	s.nonces[nonce] = nonceRecord{peer: peer, expires: now.Add(nonceTTL)}
+	s.mu.Unlock()
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(helloResponse{Name: s.name, Version: s.deps.Version, Nonce: nonce})
 }
 
 func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
@@ -390,19 +546,61 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "profile shares from this peer are temporarily rate limited", http.StatusTooManyRequests)
 		return
 	}
+	peer := remotePeer(r)
+	sameAccount := request.SenderPort > 0 &&
+		s.consumeProof(peer, request) &&
+		accountMatches(s.nexusKey(), request.Nonce, request.Payload, request.Proof)
+	keys := entryKeys(request.Game, shared)
+	response := shareResponse{SameAccount: sameAccount}
+	var arrivalTransfer incomingTransfer
+	if sameAccount && request.SenderPort > 0 {
+		token, tokenErr := randomToken()
+		if tokenErr != nil {
+			http.Error(w, "could not create transfer token", http.StatusInternalServerError)
+			return
+		}
+		response.TransferToken = token
+		response.EntryKeys = keys
+		arrivalTransfer = incomingTransfer{
+			Peer:    net.JoinHostPort(peer, strconv.Itoa(request.SenderPort)),
+			Game:    request.Game,
+			Token:   token,
+			Keys:    keys,
+			Expires: time.Now().Add(transferTTL),
+		}
+	}
 	arrival := Arrival{
 		Sender:      request.Sender,
 		Game:        request.Game,
 		Payload:     request.Payload,
 		ProfileName: shared.Name,
+		SameAccount: sameAccount && arrivalTransfer.Token != "",
 	}
 	s.mu.Lock()
+	s.nextID++
+	arrival.ID = s.nextID
 	s.inbox = append(s.inbox, arrival)
+	if arrivalTransfer.Token != "" {
+		s.incoming[arrival.ID] = arrivalTransfer
+	}
 	s.mu.Unlock()
 	if s.deps.Emit != nil {
 		s.deps.Emit(ArrivedEvent, arrival)
 	}
-	w.WriteHeader(http.StatusNoContent)
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(response)
+}
+
+func (s *Service) consumeProof(peer string, request shareRequest) bool {
+	if request.Nonce == "" {
+		return false
+	}
+	now := time.Now()
+	s.mu.Lock()
+	record, ok := s.nonces[request.Nonce]
+	delete(s.nonces, request.Nonce)
+	s.mu.Unlock()
+	return ok && record.peer == peer && now.Before(record.expires)
 }
 
 // Inbox returns profile shares received before the window started listening.
@@ -547,6 +745,17 @@ func (s *Service) port() int {
 		return 0
 	}
 	return address.Port
+}
+
+func (s *Service) lanPort() int {
+	if s.deps.Settings == nil {
+		return 0
+	}
+	port := s.deps.Settings.Get().LanPort
+	if port < 0 || port > 65535 {
+		return 0
+	}
+	return port
 }
 
 func entryAddress(entry *mdns.ServiceEntry) string {

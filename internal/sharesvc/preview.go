@@ -116,11 +116,14 @@ func nexusPage(modID int) string {
 // resolver looks one import up. Its answers come from the mod dataset and, when signed in, Nexus's file lists;
 // a lookup that fails leaves the mod as the link named it rather than failing the preview.
 type resolver struct {
-	meta     problems.Meta
-	files    func(ctx context.Context, modID int) ([]nexus.File, error)
-	signedIn bool
-	premium  bool
-	env      problems.Environment
+	meta       problems.Meta
+	files      func(ctx context.Context, modID int) ([]nexus.File, error)
+	signedIn   bool
+	premium    bool
+	env        problems.Environment
+	game       string
+	stored     func(game, key string) bool
+	storedKeys map[string]bool
 	// target is the profile the mods would join: what it has installed, and its entries by source.
 	target    []profile.Entry
 	installed []profile.Installed
@@ -242,6 +245,11 @@ func (r *resolver) nexus(modID, fileID int, state string) Mod {
 		fallbackName("")
 		return m
 	}
+	if r.storedKey(m.Key) {
+		m.State = StateInstalled
+		fallbackName("")
+		return m
+	}
 	if info.gone {
 		m.State, m.Reason = StateUnavailable, ReasonRemoved
 		fallbackName("")
@@ -305,8 +313,18 @@ func (r *resolver) github(ref share.Ref) Mod {
 	}
 	if r.hasGitHub(repo, tag, asset) {
 		m.State = StateInstalled
+	} else if r.storedKey(m.Key) {
+		m.State = StateInstalled
 	}
 	return m
+}
+
+func (r *resolver) storedKey(key string) bool {
+	if r.stored == nil || !r.stored(r.game, key) {
+		return false
+	}
+	r.storedKeys[key] = true
+	return true
 }
 
 func nexusIDs(refs []share.Ref) []int {

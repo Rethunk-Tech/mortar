@@ -204,6 +204,20 @@ func (s *Store) AddDir(game, key, srcDir string) error {
 	return s.install(game, key, func(tmp string) error { return datadir.CopyTree(srcDir, tmp) }, func() int64 { return dirSize(srcDir) })
 }
 
+// AddDirVerified copies srcDir under key and checks local content keys before installing them.
+func (s *Store) AddDirVerified(game, key, srcDir string) error {
+	if strings.HasPrefix(key, "local-") {
+		got, err := hashDir(srcDir)
+		if err != nil {
+			return err
+		}
+		if got != key {
+			return fmt.Errorf("store key hash mismatch: got %q, want %q", got, key)
+		}
+	}
+	return s.AddDir(game, key, srcDir)
+}
+
 // install fills a temp folder beside the final one and renames it into place,
 // removing the temp folder on any failure.
 func (s *Store) install(game, key string, fill func(tmp string) error, need func() int64) (err error) {

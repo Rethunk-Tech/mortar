@@ -149,6 +149,24 @@ func TestAddDir(t *testing.T) {
 	}
 }
 
+func TestAddDirVerifiedChecksLocalKey(t *testing.T) {
+	s := newStore(t)
+	src := t.TempDir()
+	if err := os.WriteFile(filepath.Join(src, "mod.dll"), []byte("mod"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	key, err := hashDir(src)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.AddDirVerified("stardew", key, src); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.AddDirVerified("stardew", LocalKey("wrong"), src); err == nil {
+		t.Fatal("mismatched local key was accepted")
+	}
+}
+
 func TestCollect(t *testing.T) {
 	s := newStore(t)
 	for _, k := range []string{"smapi-1", "smapi-2", "smapi-3", "smapi-4"} {

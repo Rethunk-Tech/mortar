@@ -98,6 +98,10 @@ type Settings struct {
 	KeepInTray bool `json:"keepInTray"`
 	// LanSharing allows Mortar to discover nearby Mortar users and send or receive profile links.
 	LanSharing bool `json:"lanSharing"`
+	// LanPort is the LAN sharing HTTP port; zero lets the OS choose one.
+	LanPort int `json:"lanPort"`
+	// LanAddresses stores the most recently used manual LAN peer addresses.
+	LanAddresses []string `json:"lanAddresses"`
 	// IncludeBetaReleases offers Mortar prereleases from GitHub when checking for updates.
 	IncludeBetaReleases bool `json:"includeBetaReleases"`
 	// IncludePrereleaseModVersions offers mod updates whose version has a semver prerelease tag. Default off.
@@ -118,8 +122,10 @@ type Settings struct {
 }
 
 const (
-	MinBackupsKept = 1
-	MaxBackupsKept = 50
+	MinBackupsKept  = 1
+	MaxBackupsKept  = 50
+	DefaultLanPort  = 47630
+	MaxLanAddresses = 5
 )
 
 // Defaults returns the settings used when no valid file exists.
@@ -129,7 +135,7 @@ func Defaults() Settings {
 	return Settings{
 		Language: "", Accent: "sand", Background: BackgroundImage, LastProfile: map[string]string{}, LastPlayed: map[string]Played{}, GameFolders: map[string]string{},
 		GameStores: map[string]string{}, LauncherRoots: map[string][]string{},
-		Loaders: map[string]string{}, Dismissed: map[string][]string{}, NexusSeenDownloadServers: []string{}, BackupsKept: backup.DefaultKeep,
+		Loaders: map[string]string{}, Dismissed: map[string][]string{}, NexusSeenDownloadServers: []string{}, LanPort: DefaultLanPort, LanAddresses: []string{}, BackupsKept: backup.DefaultKeep,
 		ListColumns: slices.Clone(defaultListColumns), ListSortColumn: defaultListSortColumn, ListSortDir: defaultListSortDir, ListGroupBy: defaultListGroupBy,
 		CheckModUpdatesOnStart: on(), TellWhenSmapiOut: on(), EnableModsWhenInstalled: on(), AskEndorseMods: on(),
 		LanSharing:  false,
@@ -191,6 +197,7 @@ func Open() (*Store, error) {
 	normalizeTips(&s.cur)
 	normalizeOverlay(&s.cur)
 	normalizeNexus(&s.cur)
+	normalizeLAN(&s.cur)
 	return s, nil
 }
 
@@ -219,6 +226,9 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	if next.BackupsKept < MinBackupsKept || next.BackupsKept > MaxBackupsKept {
 		return s.cur, fmt.Errorf("backups kept must be %d to %d, got %d", MinBackupsKept, MaxBackupsKept, next.BackupsKept)
 	}
+	if next.LanPort < 0 || next.LanPort > 65535 {
+		return s.cur, fmt.Errorf("LAN port must be between 0 and 65535, got %d", next.LanPort)
+	}
 	next.LastPlayed = validLastPlayed(next.LastPlayed)
 	normalizeStores(&next)
 	normalizeToggles(&next)
@@ -237,6 +247,7 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	normalizeList(&next)
 	normalizeTips(&next)
 	normalizeNexus(&next)
+	normalizeLAN(&next)
 	if err := datadir.WriteJSON(s.path, next); err != nil {
 		return s.cur, err
 	}
@@ -273,6 +284,18 @@ func normalizeToggles(s *Settings) {
 	}
 	if s.AskEndorseMods == nil {
 		s.AskEndorseMods = on()
+	}
+}
+
+func normalizeLAN(s *Settings) {
+	if s.LanPort < 0 || s.LanPort > 65535 {
+		s.LanPort = DefaultLanPort
+	}
+	if s.LanAddresses == nil {
+		s.LanAddresses = []string{}
+	}
+	if len(s.LanAddresses) > MaxLanAddresses {
+		s.LanAddresses = s.LanAddresses[:MaxLanAddresses]
 	}
 }
 

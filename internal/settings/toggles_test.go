@@ -19,6 +19,9 @@ func TestToggleDefaultsOn(t *testing.T) {
 	if d.LanSharing {
 		t.Fatal("lanSharing default is off")
 	}
+	if d.LanPort != DefaultLanPort || len(d.LanAddresses) != 0 {
+		t.Fatalf("LAN defaults = port %d, addresses %v", d.LanPort, d.LanAddresses)
+	}
 }
 
 func TestOmittedTogglesNormalizeOn(t *testing.T) {
