@@ -23,6 +23,18 @@ function runShortcut(id: NonNullable<ReturnType<typeof matchShortcut>>) {
       return useUpdates.getState().load()
     case 'open-settings':
       return openSettings()
+    case 'tab-mods':
+      return useTab.getState().setTab('mods')
+    case 'tab-problems':
+      return useTab.getState().setTab('problems')
+    case 'tab-saves':
+      return useTab.getState().setTab('saves')
+    case 'tab-notes':
+      return useTab.getState().setTab('notes')
+    case 'tab-console':
+      return useTab.getState().setTab('console')
+    case 'tab-performance':
+      return useTab.getState().setTab('performance')
     case 'new-profile':
       return profiles.create('New profile').catch(() => undefined)
     case 'duplicate-profile':
