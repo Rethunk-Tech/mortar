@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { Copy, TriangleAlert } from 'lucide-react'
+import { useProfiles } from '../profiles/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -145,10 +146,16 @@ function CleanupRow({ cleanup }: { cleanup: { key: string; uniqueId: string; nam
   )
 }
 
+// useOpenProblems is the open profile's problems, or null while they load, never the profile shown before.
+function useOpenProblems() {
+  const openId = useProfiles((s) => s.openId)
+  return useMods((s) => (s.problemsFor === openId ? s.problems : null))
+}
+
 // ProblemActions sits in the profile's tab row while the Problems tab is open, like the Console's log actions.
 export function ProblemActions() {
   const { t } = useLingui()
-  const result = useMods((s) => s.problems)
+  const result = useOpenProblems()
   const sectionTitle = useSectionTitle()
   const rowText = useRowText()
   const sections = result === null ? [] : problemSections(result)
@@ -198,7 +205,7 @@ export function ProblemActions() {
 
 export function ProblemsTab() {
   const { t } = useLingui()
-  const result = useMods((s) => s.problems)
+  const result = useOpenProblems()
   const sectionTitle = useSectionTitle()
   useLoadProblemsOnFocus()
 
