@@ -92,7 +92,7 @@ func TestServeAnswersModProfiles(t *testing.T) {
 			t.Fatalf("mod request = %q/%d", game, modID)
 		}
 		version := "1.2.3"
-		return modInProfile{Profile: "Default", Version: &version}, []modInProfile{{Profile: "Co-op", Version: nil}}
+		return modInProfile{Profile: "Default", Version: &version, FileID: 456}, []modInProfile{{Profile: "Co-op", Version: nil}}
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -106,6 +106,7 @@ func TestServeAnswersModProfiles(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got.Open == nil || got.Open.Profile != "Default" || got.Open.Version == nil || *got.Open.Version != "1.2.3" ||
+		got.Open.FileID != 456 ||
 		len(got.Others) != 1 || got.Others[0].Profile != "Co-op" || got.Others[0].Version != nil {
 		t.Fatalf("mod reply = %+v", got)
 	}

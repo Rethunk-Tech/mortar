@@ -60,6 +60,7 @@ type reply struct {
 type modInProfile struct {
 	Profile string  `json:"profile"`
 	Version *string `json:"version"`
+	FileID  int     `json:"fileId,omitempty"`
 }
 
 // Serve answers messages from r until it closes, handing each message's link to open.
@@ -213,8 +214,9 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 			Hidden  bool   `json:"hidden"`
 			Entries []struct {
 				Source struct {
-					Kind  string `json:"kind"`
-					ModID int    `json:"modId"`
+					Kind   string `json:"kind"`
+					ModID  int    `json:"modId"`
+					FileID int    `json:"fileId"`
 				} `json:"source"`
 				Mods []struct {
 					Version string `json:"version"`
@@ -226,6 +228,7 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 			continue
 		}
 		var version *string
+		var fileID int
 		for _, entry := range profile.Entries {
 			if entry.Source.Kind != "nexus" || entry.Source.ModID != modID {
 				continue
@@ -234,9 +237,10 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 				v := entry.Mods[0].Version
 				version = &v
 			}
+			fileID = entry.Source.FileID
 			break
 		}
-		found := modInProfile{Profile: profile.Name, Version: version}
+		found := modInProfile{Profile: profile.Name, Version: version, FileID: fileID}
 		if dir.Name() == openID {
 			openProfile = found
 		} else {
