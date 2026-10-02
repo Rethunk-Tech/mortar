@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Collapse, IconButton, Typography } from '@mui/material'
+import { Box, Button, Collapse, IconButton, TextField, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
@@ -61,6 +61,112 @@ function IdenticalList({ rows }: { rows: ComparePair[] }) {
         </Box>
       </Collapse>
     </Box>
+  )
+}
+
+function CompareModFilter({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (value: string) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <TextField
+      size="small"
+      fullWidth={true}
+      placeholder={t`Filter mods`}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      sx={{ mb: 2 }}
+    />
+  )
+}
+
+function filteredCompare(diff: ProfileCompare, needle: string) {
+  const matchesSide = (side: CompareSide) =>
+    !needle ||
+    side.name.toLowerCase().includes(needle) ||
+    side.uniqueId.toLowerCase().includes(needle)
+  const matchesPair = (row: ComparePair) =>
+    !needle ||
+    row.name.toLowerCase().includes(needle) ||
+    row.uniqueId.toLowerCase().includes(needle)
+  const onlyA = diff.onlyA.filter(matchesSide)
+  const onlyB = diff.onlyB.filter(matchesSide)
+  const differentVersion = diff.differentVersion.filter(matchesPair)
+  const differentEnabled = diff.differentEnabled.filter(matchesPair)
+  const identical = diff.identical.filter(matchesPair)
+  const hasDiff =
+    onlyA.length > 0 ||
+    onlyB.length > 0 ||
+    differentVersion.length > 0 ||
+    differentEnabled.length > 0
+  return { onlyA, onlyB, differentVersion, differentEnabled, identical, hasDiff }
+}
+
+function OnlyInSection({
+  title,
+  rows,
+  from,
+  to,
+  direction,
+  aName,
+  bName,
+  enabled,
+  disabled,
+  pending,
+  onCopy,
+  onCopyAll,
+}: {
+  title: string
+  rows: CompareSide[]
+  from: Profile
+  to: Profile
+  direction: 'toB' | 'toA'
+  aName: string
+  bName: string
+  enabled: string
+  disabled: string
+  pending: boolean
+  onCopy: (from: Profile, to: Profile, uniqueId: string) => void
+  onCopyAll: (from: Profile, to: Profile, uniqueIds: string[]) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <BulkSection
+      title={title}
+      action={
+        <Button
+          size="small"
+          variant="outlined"
+          disabled={pending}
+          onClick={() =>
+            onCopyAll(
+              from,
+              to,
+              rows.map((row) => row.uniqueId),
+            )
+          }
+        >
+          {t`Copy all to ${to.name}`}
+        </Button>
+      }
+    >
+      {rows.map((side) => (
+        <CompareDiffRow
+          key={side.uniqueId}
+          label={sideLabel(side, enabled, disabled)}
+          aName={aName}
+          bName={bName}
+          pending={pending}
+          {...(direction === 'toB'
+            ? { copyToB: () => onCopy(from, to, side.uniqueId) }
+            : { copyToA: () => onCopy(from, to, side.uniqueId) })}
+        />
+      ))}
+    </BulkSection>
   )
 }
 
@@ -129,92 +235,61 @@ export function CompareBulkBody({
   onCopyAll: (from: Profile, to: Profile, uniqueIds: string[]) => void
 }) {
   const { t } = useLingui()
+  const [filter, setFilter] = useState('')
+  const needle = filter.trim().toLowerCase()
+  const { onlyA, onlyB, differentVersion, differentEnabled, identical, hasDiff } = filteredCompare(
+    diff,
+    needle,
+  )
   const enabled = t`Enabled`
   const disabled = t`Switched off`
-  const hasDiff =
-    diff.onlyA.length > 0 ||
-    diff.onlyB.length > 0 ||
-    diff.differentVersion.length > 0 ||
-    diff.differentEnabled.length > 0
+  const sectionProps = {
+    aName,
+    bName,
+    enabled,
+    disabled,
+    pending,
+    onCopy,
+    onCopyAll,
+  }
 
-  const onlySection = ({
-    title,
-    rows,
-    from,
-    to,
-    direction,
-  }: {
-    title: string
-    rows: CompareSide[]
-    from: Profile
-    to: Profile
-    direction: 'toB' | 'toA'
-  }) => (
-    <BulkSection
-      title={title}
-      action={
-        <Button
-          size="small"
-          variant="outlined"
-          disabled={pending}
-          onClick={() =>
-            onCopyAll(
-              from,
-              to,
-              rows.map((row) => row.uniqueId),
-            )
-          }
-        >
-          {t`Copy all to ${to.name}`}
-        </Button>
-      }
-    >
-      {rows.map((side) => (
-        <CompareDiffRow
-          key={side.uniqueId}
-          label={sideLabel(side, enabled, disabled)}
-          aName={aName}
-          bName={bName}
-          pending={pending}
-          {...(direction === 'toB'
-            ? { copyToB: () => onCopy(from, to, side.uniqueId) }
-            : { copyToA: () => onCopy(from, to, side.uniqueId) })}
-        />
-      ))}
-    </BulkSection>
-  )
-
-  if (!hasDiff && diff.identical.length > 0) {
+  if (!(needle || hasDiff) && identical.length > 0) {
     return (
-      <Typography
-        sx={{ color: 'text.secondary' }}
-      >{t`These profiles have the same mods.`}</Typography>
+      <>
+        <CompareModFilter value={filter} onChange={setFilter} />
+        <Typography
+          sx={{ color: 'text.secondary' }}
+        >{t`These profiles have the same mods.`}</Typography>
+      </>
     )
   }
 
   return (
     <>
-      {diff.onlyA.length > 0
-        ? onlySection({
-            title: t`Only in ${aName}`,
-            rows: diff.onlyA,
-            from: profileA,
-            to: profileB,
-            direction: 'toB',
-          })
-        : null}
-      {diff.onlyB.length > 0
-        ? onlySection({
-            title: t`Only in ${bName}`,
-            rows: diff.onlyB,
-            from: profileB,
-            to: profileA,
-            direction: 'toA',
-          })
-        : null}
-      {diff.differentVersion.length > 0 ? (
+      <CompareModFilter value={filter} onChange={setFilter} />
+      {onlyA.length > 0 ? (
+        <OnlyInSection
+          title={t`Only in ${aName}`}
+          rows={onlyA}
+          from={profileA}
+          to={profileB}
+          direction="toB"
+          {...sectionProps}
+        />
+      ) : null}
+      {onlyB.length > 0 ? (
+        <OnlyInSection
+          title={t`Only in ${bName}`}
+          rows={onlyB}
+          from={profileB}
+          to={profileA}
+          direction="toA"
+          {...sectionProps}
+        />
+      ) : null}
+      {differentVersion.length > 0 ? (
         <CompareSection title={t`Different version`}>
-          {diff.differentVersion.map((row) => (
+          {differentVersion.map((row) => (
             <VersionRow
               key={row.uniqueId}
               row={row}
@@ -228,9 +303,9 @@ export function CompareBulkBody({
           ))}
         </CompareSection>
       ) : null}
-      {diff.differentEnabled.length > 0 ? (
+      {differentEnabled.length > 0 ? (
         <CompareSection title={t`Different enabled state`}>
-          {diff.differentEnabled.map((row) => (
+          {differentEnabled.map((row) => (
             <CompareDiffRow
               key={row.uniqueId}
               label={t`${row.name}: ${sideLabel(row.a, enabled, disabled)} → ${sideLabel(row.b, enabled, disabled)}`}
@@ -243,8 +318,8 @@ export function CompareBulkBody({
           ))}
         </CompareSection>
       ) : null}
-      <IdenticalList rows={diff.identical} />
-      {!hasDiff && diff.identical.length === 0 ? (
+      <IdenticalList rows={identical} />
+      {!hasDiff && identical.length === 0 && !needle ? (
         <Typography
           sx={{ color: 'text.secondary' }}
         >{t`No user mods in either profile.`}</Typography>
