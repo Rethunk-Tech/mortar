@@ -1,12 +1,22 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
-import { CircleAlert, Copy, Download, Eraser, FileSearch, LifeBuoy } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronUp,
+  CircleAlert,
+  Copy,
+  Download,
+  Eraser,
+  FileSearch,
+  LifeBuoy,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
   RunLog,
   Runs,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { SaveFile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import { Log } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -47,6 +57,15 @@ export function LogActions({ game }: { game: string }) {
       .catch(() => setViewedStart(null))
   }, [shown.game, shown.profile, viewingRun])
   const firstErr = firstError(rows)
+  const errorRows = rows.flatMap((row, index) =>
+    row.level === Level.Error && !row.cont ? [index] : [],
+  )
+  const firstErrorPosition = errorRows.indexOf(firstErr)
+  const previousErr = firstErrorPosition > 0 ? (errorRows[firstErrorPosition - 1] ?? -1) : -1
+  const nextErr =
+    firstErrorPosition >= 0 && firstErrorPosition < errorRows.length - 1
+      ? (errorRows[firstErrorPosition + 1] ?? -1)
+      : -1
   const canSave = entries.length > 0 || cleared > 0
   if (empty) {
     return null
@@ -58,6 +77,18 @@ export function LogActions({ game }: { game: string }) {
         icon={<CircleAlert size={16} />}
         disabled={firstErr < 0}
         onClick={() => jumpTo(firstErr)}
+      />
+      <IconAction
+        label={t`Jump to previous error`}
+        icon={<ChevronUp size={16} />}
+        disabled={previousErr < 0}
+        onClick={() => jumpTo(previousErr)}
+      />
+      <IconAction
+        label={t`Jump to next error`}
+        icon={<ChevronDown size={16} />}
+        disabled={nextErr < 0}
+        onClick={() => jumpTo(nextErr)}
       />
       <IconAction
         label={t`Clear`}

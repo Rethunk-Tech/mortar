@@ -57,7 +57,7 @@ import { SelectionBar } from './SelectionBar.tsx'
 import { ModSidebar } from './Sidebar.tsx'
 import { useSelection } from './selection.ts'
 import { useMods, type View } from './store.ts'
-import { EmptyMods, Toolbar } from './Toolbar.tsx'
+import { EmptyMods, type ModFilter, Toolbar } from './Toolbar.tsx'
 import { UpdateBar, UpdateReview } from './UpdateReview.tsx'
 import { useUpdates } from './updates.ts'
 
@@ -358,6 +358,9 @@ export function ModsTab({ profile }: { profile: Profile }) {
   const load = useMods((s) => s.load)
   const query = useMods((s) => s.queries[profile.id] ?? '')
   const setQuery = useMods((s) => s.setQuery)
+  const problems = useMods((s) => s.problems)
+  const updates = useUpdates((s) => s.updates)
+  const [filter, setFilter] = useState<ModFilter>('all')
   const loadKey = `${profile.id}:${profile.updated}`
   const gameId = useProfiles((s) => s.game?.id)
   const launchState = useLaunch((s) => s.status?.state)
@@ -414,7 +417,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
       .finally(() => {
         loading.current = false
       })
-  }, [load, loadKey])
+  }, [load, loadKey, profile.id])
 
   if (userModCount(profile) === 0) {
     return <EmptyMods profileId={profile.id} />
@@ -435,7 +438,14 @@ export function ModsTab({ profile }: { profile: Profile }) {
     if (q && !searchable.some((value) => value.toLowerCase().includes(q))) {
       return false
     }
-    return true
+    return (
+      filter === 'all' ||
+      (filter === 'disabled' && !m.enabled) ||
+      (filter === 'update' && Boolean(updateFor(updates, m, profile))) ||
+      (filter === 'problem' && modStatusProblem(problems, m)) ||
+      (filter === 'pinned' && Boolean(entry?.pinned)) ||
+      (filter === 'local' && entry?.source.kind === 'local')
+    )
   })
   return (
     <Box
@@ -446,7 +456,13 @@ export function ModsTab({ profile }: { profile: Profile }) {
       </TipBanner>
       <ProblemBar />
       <UpdateBar />
-      <Toolbar query={query} onQuery={(value) => setQuery(profile.id, value)} total={mods.length} />
+      <Toolbar
+        query={query}
+        onQuery={(value) => setQuery(profile.id, value)}
+        total={mods.length}
+        filter={filter}
+        onFilter={setFilter}
+      />
       <LockedNote />
       <SelectionKeys shown={shown} />
       <SelectionBar profileId={profile.id} mods={shown} />

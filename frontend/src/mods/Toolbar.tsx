@@ -1,9 +1,12 @@
+import type { I18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
   ButtonBase,
+  Chip,
   CircularProgress,
   Divider,
   InputAdornment,
@@ -49,6 +52,16 @@ import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
 const NEXUS = 'https://www.nexusmods.com/stardewvalley/mods'
+const FILTERS: readonly {
+  id: Exclude<ModFilter, 'all'>
+  label: (i18n: I18n) => string
+}[] = [
+  { id: 'disabled', label: (i18n) => i18n._(msg`Disabled`) },
+  { id: 'update', label: (i18n) => i18n._(msg`Update available`) },
+  { id: 'problem', label: (i18n) => i18n._(msg`Has problems`) },
+  { id: 'pinned', label: (i18n) => i18n._(msg`Pinned`) },
+  { id: 'local', label: (i18n) => i18n._(msg`Local`) },
+]
 
 // At the minimum size the toolbar buttons fold into icon buttons.
 const iconWhenCompact = {
@@ -200,12 +213,16 @@ export function Toolbar({
   query,
   onQuery,
   total,
+  filter,
+  onFilter,
 }: {
   query: string
   onQuery: (q: string) => void
   total: number
+  filter: ModFilter
+  onFilter: (filter: ModFilter) => void
 }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const view = useMods((s) => s.view)
   const setView = useMods((s) => s.setView)
   const narrow = useMediaQuery(compactQuery)
@@ -293,6 +310,18 @@ export function Toolbar({
       ) : (
         <Box sx={{ flex: 1, minWidth: 0 }} />
       )}
+      <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+        {FILTERS.map((item) => (
+          <Chip
+            key={item.id}
+            label={item.label(i18n)}
+            size="small"
+            variant={filter === item.id ? 'filled' : 'outlined'}
+            color={filter === item.id ? 'primary' : 'default'}
+            onClick={() => onFilter(filter === item.id ? 'all' : item.id)}
+          />
+        ))}
+      </Box>
       {narrow ? (
         <Button
           variant="outlined"
@@ -351,3 +380,5 @@ export function EmptyMods({ profileId }: { profileId: string }) {
     </EmptyState>
   )
 }
+
+export type ModFilter = 'all' | 'disabled' | 'update' | 'problem' | 'pinned' | 'local'
