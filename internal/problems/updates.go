@@ -23,7 +23,8 @@ func hasPrerelease(version string) bool {
 }
 
 // Update is a newer version SMAPI's API suggests for an installed mod. URL is the page to get it from, and
-// NexusID that page's Nexus mod ID, 0 when the mod is not on Nexus. GitHubRepo is "owner/repo" when the mod's
+// NexusID that page's Nexus mod ID, 0 when the suggested version is not on Nexus (a CurseForge beta of a mod
+// that is also on Nexus must not be fetched from Nexus). GitHubRepo is "owner/repo" when the mod's
 // update key and the suggested update both name a GitHub repository, so the release can be installed directly.
 type Update struct {
 	Key        string `json:"key"`
@@ -72,13 +73,13 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 			r.Updates = append(r.Updates, Update{
 				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
 				Installed: x.Version, Version: res.Suggested.Version, URL: res.Suggested.URL,
-				NexusID: nexusID(x.UpdateKeys), GitHubRepo: githubUpdate(x.UpdateKeys, res.Suggested.URL),
+				NexusID: nexusUpdate(x.UpdateKeys, res.Suggested.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Suggested.URL),
 			})
 			if res.Unofficial != nil {
 				r.Updates = append(r.Updates, Update{
 					Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
 					Installed: x.Version, Version: res.Unofficial.Version, URL: res.Unofficial.URL,
-					NexusID: nexusID(x.UpdateKeys), GitHubRepo: githubUpdate(x.UpdateKeys, res.Unofficial.URL),
+					NexusID: nexusUpdate(x.UpdateKeys, res.Unofficial.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Unofficial.URL),
 					Unofficial: true,
 				})
 			}
@@ -87,7 +88,7 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 			r.Updates = append(r.Updates, Update{
 				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
 				Installed: x.Version, Version: res.Unofficial.Version, URL: res.Unofficial.URL,
-				NexusID: nexusID(x.UpdateKeys), GitHubRepo: githubUpdate(x.UpdateKeys, res.Unofficial.URL),
+				NexusID: nexusUpdate(x.UpdateKeys, res.Unofficial.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Unofficial.URL),
 				Unofficial: true,
 			})
 		}
@@ -222,6 +223,14 @@ func githubKey(key string) (string, bool) {
 }
 
 // githubUpdate is the repository of the first GitHub update key, provided the suggested update lives on GitHub too.
+func nexusUpdate(keys []string, url string) int {
+	u := strings.ToLower(url)
+	if u != "" && !strings.Contains(u, "nexusmods.com/") && !strings.HasPrefix(u, "https://github.com/") {
+		return 0
+	}
+	return nexusID(keys)
+}
+
 func githubUpdate(keys []string, url string) string {
 	if !strings.HasPrefix(strings.ToLower(url), "https://github.com/") {
 		return ""
