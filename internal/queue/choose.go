@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/meta"
@@ -11,6 +12,41 @@ const (
 	categoryMain     = "MAIN"
 	categoryOptional = "OPTIONAL"
 )
+
+var fileVersionSuffix = regexp.MustCompile(`(?i)(?:[\s._-]+v?\d+(?:[._-]\d+)+|[\s._-]+v?\d+)$`)
+
+func fileStem(name string) string {
+	name = strings.TrimSpace(name)
+	lower := strings.ToLower(name)
+	for _, ext := range []string{".zip", ".rar", ".7z"} {
+		if strings.HasSuffix(lower, ext) {
+			name = strings.TrimSpace(name[:len(name)-len(ext)])
+			break
+		}
+	}
+	for {
+		stem := strings.TrimSpace(fileVersionSuffix.ReplaceAllString(name, ""))
+		if stem == name {
+			break
+		}
+		name = stem
+	}
+	return strings.ToLower(strings.Join(strings.Fields(name), " "))
+}
+
+func sameFileGroup(a, b nexus.File) bool {
+	aStem, bStem := fileStem(a.FileName), fileStem(b.FileName)
+	return aStem == "" || bStem == "" || aStem == bStem
+}
+
+func betterFile(candidate, current nexus.File) bool {
+	candidateOld := strings.EqualFold(candidate.Category, "OLD_VERSION")
+	currentOld := strings.EqualFold(current.Category, "OLD_VERSION")
+	if candidateOld != currentOld {
+		return currentOld
+	}
+	return candidate.FileID > current.FileID
+}
 
 func sameVersion(f nexus.File, want string) bool {
 	for _, v := range []string{f.Version, f.ModVersion} {
@@ -29,6 +65,7 @@ func sameVersion(f nexus.File, want string) bool {
 // version comes first. version may be empty, which leaves only the primary file.
 func ChooseFile(files []nexus.File, version string, current int) (nexus.File, bool) {
 	categories := []string{categoryMain}
+	currentFile := fileByID(files, current)
 	for _, f := range files {
 		if f.FileID == current && strings.EqualFold(f.Category, categoryOptional) {
 			categories = []string{categoryOptional, categoryMain}
@@ -38,7 +75,8 @@ func ChooseFile(files []nexus.File, version string, current int) (nexus.File, bo
 		for _, category := range categories {
 			var best nexus.File
 			for _, f := range files {
-				if strings.EqualFold(f.Category, category) && sameVersion(f, version) && f.FileID > best.FileID {
+				if strings.EqualFold(f.Category, category) && sameVersion(f, version) &&
+					(currentFile.FileID == 0 || sameFileGroup(f, currentFile)) && f.FileID > best.FileID {
 					best = f
 				}
 			}
@@ -48,7 +86,8 @@ func ChooseFile(files []nexus.File, version string, current int) (nexus.File, bo
 		}
 	}
 	for _, f := range files {
-		if f.IsPrimary && (!strings.EqualFold(f.Category, categoryOptional) || categories[0] == categoryOptional) {
+		if f.IsPrimary && (!strings.EqualFold(f.Category, categoryOptional) || categories[0] == categoryOptional) &&
+			(currentFile.FileID == 0 || sameFileGroup(f, currentFile)) {
 			return f, true
 		}
 	}
@@ -73,7 +112,17 @@ func newestUpdate(files []nexus.File, file nexus.File) nexus.File {
 		if next.FileID == 0 {
 			break
 		}
+		if !sameFileGroup(file, next) {
+			break
+		}
 		file = next
+	}
+	if fileStem(file.FileName) != "" {
+		for _, candidate := range files {
+			if sameFileGroup(candidate, file) && betterFile(candidate, file) {
+				file = candidate
+			}
+		}
 	}
 	return file
 }

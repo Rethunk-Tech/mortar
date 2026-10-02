@@ -76,10 +76,12 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 		return r
 	}
 	for i, res := range m.CheckUpdates(ctx, req) {
-		if res.Suggested != nil && downloaded(asked[i], res.Suggested.Version) {
+		if res.Suggested != nil && (downloaded(asked[i], res.Suggested.Version) ||
+			nexusFileIsCurrent(ctx, m, asked[i], res.Suggested.URL)) {
 			res.Suggested = nil
 		}
-		if res.Unofficial != nil && downloaded(asked[i], res.Unofficial.Version) {
+		if res.Unofficial != nil && (downloaded(asked[i], res.Unofficial.Version) ||
+			nexusFileIsCurrent(ctx, m, asked[i], res.Unofficial.URL)) {
 			res.Unofficial = nil
 		}
 		switch {
@@ -268,4 +270,80 @@ func downloaded(x Installed, version string) bool {
 	}
 	c, ok := meta.CompareVersions(x.SourceVersion, version)
 	return ok && c >= 0
+}
+
+var nexusFileVersionSuffix = regexp.MustCompile(`(?i)(?:[\s._-]+v?\d+(?:[._-]\d+)+|[\s._-]+v?\d+)$`)
+
+func nexusFileStem(name string) string {
+	name = strings.TrimSpace(name)
+	lower := strings.ToLower(name)
+	for _, ext := range []string{".zip", ".rar", ".7z"} {
+		if strings.HasSuffix(lower, ext) {
+			name = strings.TrimSpace(name[:len(name)-len(ext)])
+			break
+		}
+	}
+	for {
+		stem := strings.TrimSpace(nexusFileVersionSuffix.ReplaceAllString(name, ""))
+		if stem == name {
+			break
+		}
+		name = stem
+	}
+	return strings.ToLower(strings.Join(strings.Fields(name), " "))
+}
+
+func sameNexusFileGroup(a, b meta.File) bool {
+	aStem, bStem := nexusFileStem(a.FileName), nexusFileStem(b.FileName)
+	return aStem == "" || bStem == "" || aStem == bStem
+}
+
+func newerPreviewFile(candidate, current meta.File) bool {
+	candidateOld := strings.EqualFold(candidate.Type, "OLD_VERSION")
+	currentOld := strings.EqualFold(current.Type, "OLD_VERSION")
+	if candidateOld != currentOld {
+		return currentOld
+	}
+	return candidate.ID > current.ID
+}
+
+func containsPreviewMod(file meta.File, uniqueID string) bool {
+	return slices.ContainsFunc(file.Mods, func(m meta.Mod) bool { return sameID(m.UniqueID, uniqueID) })
+}
+
+// nexusFileIsCurrent uses the cached SMAPI file preview to keep a stale manifest from making a file update itself.
+// The preview also prevents a raw game-content file from becoming an update target for a SMAPI mod.
+func nexusFileIsCurrent(ctx context.Context, m Meta, x Installed, url string) bool {
+	modID := nexusUpdate(x.UpdateKeys, url)
+	if modID == 0 {
+		return false
+	}
+	keyModID, fileID, ok := nexusEntryFile(x.Key)
+	if !ok || keyModID != modID {
+		return false
+	}
+	page, err := m.Page(ctx, modID)
+	if err != nil {
+		return false
+	}
+	var installed meta.File
+	for _, file := range page.Downloads {
+		if file.ID == fileID {
+			installed = file
+			break
+		}
+	}
+	if installed.ID == 0 {
+		return false
+	}
+	latest := installed
+	for _, file := range page.Downloads {
+		if sameNexusFileGroup(file, installed) && newerPreviewFile(file, latest) {
+			latest = file
+		}
+	}
+	if latest.ID == installed.ID {
+		return !strings.EqualFold(installed.Type, "OLD_VERSION")
+	}
+	return !containsPreviewMod(latest, x.UniqueID)
 }
