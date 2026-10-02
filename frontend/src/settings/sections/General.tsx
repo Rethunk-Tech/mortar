@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, FormControlLabel, Switch, TextField } from '@mui/material'
+import { Box, Button, Switch, TextField } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import {
   FirewallBlocked,
@@ -14,45 +14,11 @@ import {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { errorText } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 
 const maxLanPort = 65_535
-
-function KeepInTraySwitch() {
-  const { t } = useLingui()
-  const keepInTray = useSettings((s) => s.keepInTray)
-  const push = useToasts((s) => s.push)
-  const reportFailure = (err: unknown) => {
-    const body = errorText(err)
-    push({ kind: 'error', title: t`Couldn't save that setting`, ...(body ? { body } : {}) })
-  }
-  return (
-    <FormControlLabel
-      sx={{ m: 0, alignItems: 'flex-start' }}
-      control={
-        <Switch
-          checked={keepInTray}
-          onChange={(_, on) => {
-            SetKeepInTray(on).catch(reportFailure)
-          }}
-        />
-      }
-      label={
-        <Box>
-          <Box component="span" sx={{ display: 'block', fontSize: 14 }}>
-            {t`Keep Mortar in the tray`}
-          </Box>
-          <Box
-            component="span"
-            sx={{ display: 'block', fontSize: 13, color: 'rgba(225,225,230,0.95)' }}
-          >
-            {t`Closing the window hides Mortar instead of quitting. On GNOME you may need the AppIndicator extension to see the tray icon.`}
-          </Box>
-        </Box>
-      }
-    />
-  )
-}
+const defaultLanPort = 8080
 
 export function General() {
   const { t } = useLingui()
@@ -89,96 +55,101 @@ export function General() {
   }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Window`}</Box>
-      <KeepInTraySwitch />
-      <Button
-        variant="outlined"
-        onClick={() => {
-          SetTipsSeen([]).catch(reportFailure)
-        }}
-        sx={{ alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
-      >
-        {t`Show tips again`}
-      </Button>
-      <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Sharing`}</Box>
-      <FormControlLabel
-        sx={{ m: 0, alignItems: 'flex-start' }}
-        control={
+      <SettingsSection title={t`Window`}>
+        <SettingRow
+          label={t`Keep Mortar in the tray`}
+          description={t`Closing the window hides Mortar instead of quitting.`}
+        >
+          <Switch
+            checked={useSettings((s) => s.keepInTray)}
+            onChange={(_, on) => SetKeepInTray(on).catch(reportFailure)}
+          />
+        </SettingRow>
+        <SettingRow label={t`Tips`} description={t`Show the first-run tips again`}>
+          <Button
+            variant="outlined"
+            onClick={() => SetTipsSeen([]).catch(reportFailure)}
+          >{t`Show again`}</Button>
+        </SettingRow>
+      </SettingsSection>
+      <SettingsSection title={t`Sharing`}>
+        <SettingRow
+          label={t`Share profiles on the local network`}
+          description={t`Lets nearby Mortar users find this installation and exchange profile links.`}
+        >
           <Switch
             checked={lanSharing}
-            onChange={(_, on) => {
-              SetLanSharing(on).catch(reportFailure)
-            }}
+            onChange={(_, on) => SetLanSharing(on).catch(reportFailure)}
           />
-        }
-        label={
-          <Box>
-            <Box component="span" sx={{ display: 'block', fontSize: 14 }}>
-              {t`Share profiles on the local network`}
-            </Box>
-            <Box
-              component="span"
-              sx={{ display: 'block', fontSize: 13, color: 'rgba(225,225,230,0.95)' }}
+        </SettingRow>
+        {lanSharing ? (
+          <>
+            <SettingRow
+              label={t`Automatic port`}
+              description={t`Let the operating system choose a free port`}
             >
-              {t`Lets nearby Mortar users find this installation and exchange profile links.`}
-            </Box>
-          </Box>
-        }
-      />
-      <TextField
-        label={t`LAN port`}
-        type="number"
-        size="small"
-        value={portText}
-        slotProps={{ htmlInput: { min: 0, max: maxLanPort, step: 1 } }}
-        helperText={t`Use 0 to let the operating system choose a port.`}
-        onChange={(event) => setPortText(event.target.value)}
-        onBlur={savePort}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') {
-            savePort()
-          }
-        }}
-        sx={{ maxWidth: 240 }}
-      />
-      {firewallBlocked === true && (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            color: 'rgba(255,220,170,0.95)',
-            fontSize: 13,
-          }}
-        >
-          <Box sx={{ flex: 1 }}>{t`Windows Firewall blocks incoming sends to Mortar`}</Box>
-          <Button
-            size="small"
-            variant="outlined"
-            onClick={() => {
-              FixFirewall()
-                .then(() => FirewallBlocked())
-                .then(setFirewallBlocked)
-                .catch(reportFailure)
+              <Switch
+                checked={lanPort === 0}
+                onChange={(_, on) => SetLanPort(on ? 0 : defaultLanPort).catch(reportFailure)}
+              />
+            </SettingRow>
+            {lanPort === 0 ? null : (
+              <SettingRow
+                label={t`LAN port`}
+                description={t`The port Mortar uses for local sharing`}
+              >
+                <TextField
+                  type="number"
+                  size="small"
+                  value={portText}
+                  slotProps={{ htmlInput: { min: 1, max: maxLanPort, step: 1 } }}
+                  onChange={(event) => setPortText(event.target.value)}
+                  onBlur={savePort}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      savePort()
+                    }
+                  }}
+                  sx={{ width: 140 }}
+                />
+              </SettingRow>
+            )}
+          </>
+        ) : null}
+        {firewallBlocked === true && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              color: 'rgba(255,220,170,0.95)',
+              fontSize: 13,
             }}
           >
-            {t`Fix`}
-          </Button>
-        </Box>
-      )}
-      <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Mods`}</Box>
-      <FormControlLabel
-        sx={{ m: 0, alignItems: 'center' }}
-        control={
+            <Box sx={{ flex: 1 }}>{t`Windows Firewall blocks incoming sends to Mortar`}</Box>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => {
+                FixFirewall()
+                  .then(() => FirewallBlocked())
+                  .then(setFirewallBlocked)
+                  .catch(reportFailure)
+              }}
+            >
+              {t`Fix`}
+            </Button>
+          </Box>
+        )}
+      </SettingsSection>
+      <SettingsSection title={t`Mods`}>
+        <SettingRow label={t`Enable mods when installed`}>
           <Switch
             checked={enableModsWhenInstalled !== false}
-            onChange={(_, on) => {
-              SetEnableModsWhenInstalled(on).catch(reportFailure)
-            }}
+            onChange={(_, on) => SetEnableModsWhenInstalled(on).catch(reportFailure)}
           />
-        }
-        label={t`Enable mods when installed`}
-      />
+        </SettingRow>
+      </SettingsSection>
     </Box>
   )
 }
