@@ -57,6 +57,22 @@ func (s *Service) OpenBackupsFolder() error {
 	return datadir.Open(dir)
 }
 
+// OpenSaveFolder shows one save's folder (a direct child of the Saves folder) in the system file manager.
+func (s *Service) OpenSaveFolder(folder string) error {
+	if folder == "" || folder != filepath.Base(folder) || folder == "." || folder == ".." {
+		return fmt.Errorf("not a save folder: %q", folder)
+	}
+	savesDir, _, err := s.backupDirs()
+	if err != nil {
+		return err
+	}
+	dir := filepath.Join(savesDir, folder)
+	if info, err := os.Stat(dir); err != nil || !info.IsDir() {
+		return fmt.Errorf("save %q not found", folder)
+	}
+	return datadir.Open(dir)
+}
+
 func (s *Service) backupDirs() (savesDir, backupsDir string, err error) {
 	savesDir = s.scanner.Dir
 	base, err := datadir.Dir()

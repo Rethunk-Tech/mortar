@@ -9,6 +9,7 @@ import {
   Coins,
   ExternalLink,
   Flower2,
+  FolderOpen,
   History,
   Leaf,
   Plus,
@@ -25,6 +26,7 @@ import type {
   Fit,
   Lack,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
+import { OpenSaveFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLocked } from '../mods/useLocked.ts'
 import { download, type Want } from '../queue/actions.ts'
@@ -312,6 +314,17 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
             {subtitle}
           </Typography>
         </Box>
+        <Tooltip title={t`Open save folder`}>
+          <IconButton
+            size="small"
+            aria-label={t`Open the folder of ${fit.farm || fit.folder}`}
+            onClick={() => {
+              OpenSaveFolder(fit.folder).catch(reportUnexpected)
+            }}
+          >
+            <FolderOpen size={16} />
+          </IconButton>
+        </Tooltip>
       </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2, rowGap: 0.75 }}>
         {fit.day > 0 ? (

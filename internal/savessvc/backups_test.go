@@ -79,3 +79,12 @@ func writeFarm(t *testing.T, saves, folder, farm, body string) {
 		t.Fatal(err)
 	}
 }
+
+func TestOpenSaveFolderRefusesPathsOutsideSaves(t *testing.T) {
+	s := &Service{scanner: &saves.Scanner{Dir: t.TempDir()}}
+	for _, folder := range []string{"", ".", "..", "../etc", "a/b", "Missing_123"} {
+		if err := s.OpenSaveFolder(folder); err == nil {
+			t.Errorf("OpenSaveFolder(%q) = nil, want an error", folder)
+		}
+	}
+}
