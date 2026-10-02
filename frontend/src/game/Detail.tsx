@@ -1,19 +1,8 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Chip,
-  Divider,
-  IconButton,
-  Menu,
-  Tab,
-  Tabs,
-  Tooltip,
-  Typography,
-} from '@mui/material'
-import { MoreHorizontal, Palette, Pencil, Plus, RotateCcw, Settings2, Share2 } from 'lucide-react'
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { Box, Button, Chip, Divider, Tab, Tabs, Tooltip, Typography } from '@mui/material'
+import { Plus, RotateCcw, Settings2, Share2 } from 'lucide-react'
+import { type ReactNode, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { LogActions } from '../console/LogActions.tsx'
@@ -27,8 +16,6 @@ import { useMods } from '../mods/store.ts'
 import { useNav } from '../nav/store.ts'
 import { NotesTab } from '../notes/NotesTab.tsx'
 import { userModCount } from '../profiles/count.ts'
-import { EditProfileDialog } from '../profiles/EditProfileDialog.tsx'
-import { HistoryDialog } from '../profiles/HistoryDialog.tsx'
 import { ProfileMark } from '../profiles/ProfileMark.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { SavesTab } from '../saves/SavesTab.tsx'
@@ -38,51 +25,13 @@ import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { ToolsMenu } from '../tools/ToolsMenu.tsx'
 import { compact, compactMeta, saveFits } from './compact.ts'
-import { CoverButton, HeroCover } from './HeroCover.tsx'
+import { HeroCover } from './HeroCover.tsx'
 import { NameField } from './NameField.tsx'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
-import { MoreMenuItems } from './ProfileMenuItems.tsx'
 import { useRenameRequest } from './renameRequest.ts'
 import { type TabId, useTab } from './tab.ts'
-import { useRestoreFocus } from './useRestoreFocus.ts'
 
 const fmt = (iso: unknown) => formatWhen(String(iso))
-
-function HeroMenu({ profile }: { profile: Profile }) {
-  const { t } = useLingui()
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
-  const [historyOpen, setHistoryOpen] = useState(false)
-  const close = () => setAnchor(null)
-  return (
-    <>
-      <Tooltip title={t`Profile menu`}>
-        <IconButton
-          aria-label={t`Profile menu`}
-          aria-haspopup="menu"
-          onClick={(e) => setAnchor(e.currentTarget)}
-          size="small"
-        >
-          <MoreHorizontal size={16} />
-        </IconButton>
-      </Tooltip>
-      {/* Kept mounted: the items own dialogs (Send, Compare, Delete) that must outlive the closed menu. */}
-      <Menu
-        open={anchor !== null}
-        anchorEl={anchor}
-        onClose={close}
-        transitionDuration={0}
-        keepMounted={true}
-      >
-        <MoreMenuItems profile={profile} close={close} onHistory={() => setHistoryOpen(true)} />
-      </Menu>
-      <HistoryDialog
-        profileId={profile.id}
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-      />
-    </>
-  )
-}
 
 function Card({ label, value, onClick }: { label: string; value: string; onClick?: () => void }) {
   return (
@@ -114,11 +63,10 @@ function Card({ label, value, onClick }: { label: string; value: string; onClick
   )
 }
 
-function HeroName({ profile, game, meta }: { profile: Profile; game: string; meta: string[] }) {
+function HeroName({ profile, meta }: { profile: Profile; meta: string[] }) {
   const { t } = useLingui()
   const rename = useProfiles((s) => s.rename)
   const [editing, setEditing] = useState(false)
-  const [editingProfile, setEditingProfile] = useState(false)
   const renameId = useRenameRequest((s) => s.id)
   useEffect(() => {
     if (renameId === profile.id) {
@@ -126,8 +74,6 @@ function HeroName({ profile, game, meta }: { profile: Profile; game: string; met
       setEditing(true)
     }
   }, [renameId, profile.id])
-  const pencil = useRef<HTMLButtonElement>(null)
-  useRestoreFocus(editing, pencil)
   return (
     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -165,27 +111,6 @@ function HeroName({ profile, game, meta }: { profile: Profile; game: string; met
             >
               {profile.name}
             </Typography>
-            <Tooltip title={t`Rename profile`}>
-              <IconButton
-                ref={pencil}
-                aria-label={t`Rename profile`}
-                onClick={() => setEditing(true)}
-                size="small"
-              >
-                <Pencil size={16} />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title={t`Edit profile`}>
-              <IconButton
-                aria-label={t`Edit profile`}
-                onClick={() => setEditingProfile(true)}
-                size="small"
-              >
-                <Palette size={16} />
-              </IconButton>
-            </Tooltip>
-            <CoverButton game={game} profile={profile} />
-            <HeroMenu profile={profile} />
           </>
         )}
       </Box>
@@ -210,11 +135,6 @@ function HeroName({ profile, game, meta }: { profile: Profile; game: string; met
       >
         {meta.join(' · ')}
       </Typography>
-      <EditProfileDialog
-        profile={profile}
-        open={editingProfile}
-        onClose={() => setEditingProfile(false)}
-      />
     </Box>
   )
 }
@@ -276,7 +196,7 @@ function Hero({ profile, game }: { profile: Profile; game: string }) {
           [compact]: { top: 0, bottom: 0, left: 12, right: 12, alignItems: 'center' },
         }}
       >
-        <HeroName profile={profile} game={game} meta={meta} />
+        <HeroName profile={profile} meta={meta} />
         <Box sx={{ display: 'flex', gap: 1, [compact]: { display: 'none' } }}>
           <Card label={t`Mods`} value={String(mods)} />
           {total === 0 ? (
