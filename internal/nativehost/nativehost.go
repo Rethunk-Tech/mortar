@@ -50,12 +50,13 @@ type request struct {
 }
 
 type reply struct {
-	OK       bool           `json:"ok,omitempty"`
-	Error    string         `json:"error,omitempty"`
-	ModIDs   *[]int         `json:"modIds,omitempty"`
-	Open     *modInProfile  `json:"open,omitempty"`
-	Others   []modInProfile `json:"others,omitempty"`
-	Problems []modProblem   `json:"problems,omitempty"`
+	OK        bool           `json:"ok,omitempty"`
+	Error     string         `json:"error,omitempty"`
+	Connected bool           `json:"connected"`
+	ModIDs    *[]int         `json:"modIds,omitempty"`
+	Open      *modInProfile  `json:"open,omitempty"`
+	Others    []modInProfile `json:"others,omitempty"`
+	Problems  []modProblem   `json:"problems,omitempty"`
 }
 
 type modProblem struct {
@@ -71,10 +72,14 @@ type modInProfile struct {
 
 // Serve answers messages from r until it closes, handing each message's link to open.
 func Serve(r io.Reader, w io.Writer, open func(link string) error) error {
-	return serve(r, w, open, activeNexusModIDs, nexusModProfiles, nexusModProblems)
+	return serveWithConnection(r, w, open, activeNexusModIDs, nexusModProfiles, activeNexusConnected, nexusModProblems)
 }
 
 func serve(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, mod func(game string, modID int) (modInProfile, []modInProfile), problem ...func(game string, modID int) []modProblem) error {
+	return serveWithConnection(r, w, open, installed, mod, nil, problem...)
+}
+
+func serveWithConnection(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, mod func(game string, modID int) (modInProfile, []modInProfile), connected func(string) bool, problem ...func(game string, modID int) []modProblem) error {
 	for {
 		var n uint32
 		if err := binary.Read(r, binary.NativeEndian, &n); err != nil {
@@ -99,7 +104,11 @@ func serve(r io.Reader, w io.Writer, open func(link string) error, installed fun
 					ids = found
 				}
 			}
-			rep = reply{ModIDs: &ids}
+			isConnected := installed != nil
+			if connected != nil {
+				isConnected = connected(req.Game)
+			}
+			rep = reply{Connected: isConnected, ModIDs: &ids}
 		case "mod":
 			openProfile, others := mod(req.Game, req.ModID)
 			rep = reply{Open: &openProfile, Others: others}
@@ -261,6 +270,23 @@ func activeNexusModIDs(domain string) []int {
 		}
 	}
 	return ids
+}
+
+func activeNexusConnected(domain string) bool {
+	info, ok := components.BundledGameByNexusDomain(domain)
+	if !ok {
+		return false
+	}
+	dataDir, err := datadir.Dir()
+	if err != nil || !mortarRunning(dataDir) {
+		return false
+	}
+	store, err := settings.Open()
+	if err != nil {
+		return false
+	}
+	profileID := store.Get().LastProfile[info.ID]
+	return profileID != "" && filepath.Base(profileID) == profileID
 }
 
 func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {

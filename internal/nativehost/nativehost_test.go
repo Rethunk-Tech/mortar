@@ -81,6 +81,27 @@ func TestServeAnswersInstalledMods(t *testing.T) {
 	}
 }
 
+func TestServeReportsConnectedWhenProfileHasNoMods(t *testing.T) {
+	in := frame(t, request{Type: "installed", Game: "stardewvalley"})
+	var out bytes.Buffer
+	err := serveWithConnection(bytes.NewReader(in), &out, func(string) error { return nil },
+		func(string) []int { return []int{} }, nil, func(string) bool { return true })
+	if err != nil {
+		t.Fatal(err)
+	}
+	var n uint32
+	if err := binary.Read(&out, binary.NativeEndian, &n); err != nil {
+		t.Fatal(err)
+	}
+	var got reply
+	if err := json.Unmarshal(out.Next(int(n)), &got); err != nil {
+		t.Fatal(err)
+	}
+	if !got.Connected || got.ModIDs == nil || len(*got.ModIDs) != 0 {
+		t.Fatalf("installed reply = %+v", got)
+	}
+}
+
 func TestServeAnswersModProfiles(t *testing.T) {
 	in := frame(t, request{Type: "mod", Game: "stardewvalley", ModID: 123})
 	var out bytes.Buffer
