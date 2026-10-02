@@ -18,7 +18,6 @@ import {
   SetEnableModsWhenInstalled,
   SetIncludeBetaReleases,
   SetIncludePrereleaseModVersions,
-  SetTellWhenSmapiOut,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useNav } from '../../nav/store.ts'
 import { errorMessage, errorText, reportUnexpected } from '../../toasts/report.ts'
@@ -209,7 +208,6 @@ export function Updates() {
   const { t } = useLingui()
   const game = lastOpenedGame(useSettings((s) => s.lastGame))
   const checkModUpdatesOnStart = useSettings((s) => s.checkModUpdatesOnStart)
-  const tellWhenSmapiOut = useSettings((s) => s.tellWhenSmapiOut)
   const includeBetaReleases = useSettings((s) => s.includeBetaReleases)
   const includePrereleaseModVersions = useSettings((s) => s.includePrereleaseModVersions)
   const checkOnlyEnabledMods = useSettings((s) => s.checkOnlyEnabledMods)
@@ -230,7 +228,7 @@ export function Updates() {
         }
         label={t`Include beta releases`}
       />
-      <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Mods and SMAPI`}</Box>
+      <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Mods`}</Box>
       <FormControlLabel
         sx={{ m: 0, alignItems: 'center' }}
         control={
@@ -267,16 +265,6 @@ export function Updates() {
         sx={{ m: 0, alignItems: 'center' }}
         control={
           <Switch
-            checked={tellWhenSmapiOut !== false}
-            onChange={(_, on) => persistToggle(() => SetTellWhenSmapiOut(on), push, fail)}
-          />
-        }
-        label={t`Tell me when a new SMAPI is out`}
-      />
-      <FormControlLabel
-        sx={{ m: 0, alignItems: 'center' }}
-        control={
-          <Switch
             checked={enableModsWhenInstalled !== false}
             onChange={(_, on) => persistToggle(() => SetEnableModsWhenInstalled(on), push, fail)}
           />
@@ -284,7 +272,7 @@ export function Updates() {
         label={t`Enable mods when installed`}
       />
       <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
-        {t`Mod updates show on each profile's mod list, and SMAPI's in the game's settings.`}
+        {t`Mod updates show on each profile's mod list. SMAPI's version and its update notice are in the game's settings.`}
       </Box>
       {game ? (
         <>

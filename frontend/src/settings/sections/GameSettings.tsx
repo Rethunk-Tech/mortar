@@ -10,6 +10,7 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
+  Switch,
 } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { Copy, Download, FolderOpen, Undo2 } from 'lucide-react'
@@ -24,6 +25,7 @@ import {
   ChooseGameFolder,
   SetGameFolder,
   SetGameStore,
+  SetTellWhenSmapiOut,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { loadGameStatus } from '../../games/status.ts'
 import { useLaunch } from '../../launch/store.ts'
@@ -341,6 +343,34 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
   )
 }
 
+// SMAPI is Stardew's loader, so whether Mortar announces a new SMAPI belongs with the game, not the global Updates.
+function SmapiNotice() {
+  const { t } = useLingui()
+  const on = useSettings((s) => s.tellWhenSmapiOut) !== false
+  const push = useToasts((s) => s.push)
+  return (
+    <FormControlLabel
+      sx={{ m: 0, alignItems: 'center' }}
+      control={
+        <Switch
+          checked={on}
+          onChange={(_, value) =>
+            SetTellWhenSmapiOut(value).catch((err: unknown) => {
+              const body = errorText(err)
+              push({
+                kind: 'error',
+                title: t`Couldn't save that setting`,
+                ...(body ? { body } : {}),
+              })
+            })
+          }
+        />
+      }
+      label={t`Tell me when a new SMAPI is out`}
+    />
+  )
+}
+
 function GameBody() {
   const { t } = useLingui()
   const [folder, setFolder] = useState('')
@@ -369,6 +399,7 @@ function GameBody() {
       />
       <FlatpakAccess />
       <Smapi key={folder} onVersion={setVersion} />
+      <SmapiNotice />
       <StreamOverlay />
     </Box>
   )
