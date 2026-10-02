@@ -258,6 +258,10 @@ func run() error {
 			}
 			return res, err
 		},
+		Stored: func(game, key string) bool {
+			_, err := items.Path(game, key)
+			return err == nil
+		},
 		Stage:         profiles.StageGitHub,
 		InstallStaged: profiles.InstallStaged,
 		InstallRemap:  profiles.InstallRemap,

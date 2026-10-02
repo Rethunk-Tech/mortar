@@ -38,6 +38,8 @@ type fixture struct {
 	keys         []string
 	samePage     func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool)
 	installExtra func(game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error)
+	stored       map[string]bool
+	fromStore    []string
 	// published is the last state publish finished writing; waiting on it rather than State keeps a test from
 	// ending while queue.json is still being written.
 	published atomic.Pointer[State]
@@ -122,6 +124,18 @@ func newFixture(t *testing.T) *fixture {
 			}
 			return f.installExtra(game, profileID, entryKey, path, src)
 		},
+		Stored: func(_, key string) bool {
+			f.mu.Lock()
+			defer f.mu.Unlock()
+			return f.stored[key]
+		},
+		InstallStaged: func(_, _, key string, src profile.Source) (profile.InstallResult, error) {
+			f.mu.Lock()
+			f.fromStore = append(f.fromStore, key)
+			f.installs = append(f.installs, src)
+			f.mu.Unlock()
+			return profile.InstallResult{}, nil
+		},
 		OpenURL: func(u string) error {
 			f.mu.Lock()
 			f.opened = append(f.opened, u)
@@ -200,6 +214,41 @@ func TestPremiumDownloadsAndInstallsWithoutClicks(t *testing.T) {
 		t.Errorf("a premium download opened pages: %v", f.opened)
 	}
 	f.leftovers()
+}
+
+func TestAStoredFileInstallsFromTheStoreWithoutAClick(t *testing.T) {
+	f := newFixture(t)
+	f.premium.Store(false)
+	f.stored = map[string]bool{"nexus-1-10": true}
+	f.start()
+	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	st := f.wait("done", f.item(StateDone))
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if len(f.opened) != 0 || len(f.keys) != 0 || len(f.fromStore) != 1 || f.fromStore[0] != "nexus-1-10" {
+		t.Fatalf("opened %v, keys %v, from store %v", f.opened, f.keys, f.fromStore)
+	}
+	if src := f.installs[0]; src.Kind != "nexus" || src.ModID != 1 || src.FileID != 10 || st.Items[0].Name != "Alpha" {
+		t.Errorf("source %+v, item %+v", src, st.Items[0])
+	}
+}
+
+func TestAQueuedItemIsNamedBeforeItsTurn(t *testing.T) {
+	f := newFixture(t)
+	f.s.Pause()
+	assigned := make(chan nxmsvc.Assignment, 1)
+	ctx, cancel := context.WithCancel(context.Background())
+	wait := Run(ctx, f.s, assigned)
+	t.Cleanup(func() {
+		cancel()
+		wait()
+	})
+	assigned <- nxmsvc.Assignment{Link: nxm.Link{ModID: 1, FileID: 10, Key: "k", Expires: f.now().Unix() + 600}, Game: "stardew", Profile: "p1"}
+	f.wait("the name", func(st State) bool {
+		return len(st.Items) == 1 && st.Items[0].State == StateQueued && st.Items[0].Name == "Alpha" && st.Items[0].Picture == "https://img/a.png"
+	})
 }
 
 func TestFreeAccountWaitsForTheClickThenTakesTheLink(t *testing.T) {
@@ -349,9 +398,13 @@ func TestQueueSurvivesARestart(t *testing.T) {
 	if _, err := f.s.Add([]Request{req(10), req(11)}); err != nil {
 		t.Fatal(err)
 	}
+	f.s.mu.Lock()
 	f.s.items[0].State = StateDownloading
+	f.s.mu.Unlock()
 	f.s.publish(true)
+	f.s.mu.Lock()
 	f.s.items[0].key = "never-saved"
+	f.s.mu.Unlock()
 	again, err := New(f.s.d)
 	if err != nil {
 		t.Fatal(err)

@@ -125,8 +125,11 @@ type Item struct {
 	staged string
 	// readyZip means the Nexus archive is already on disk and the next step is install (or the merge choice).
 	readyZip bool
-	endorsed int
-	fomod    map[string]map[string][]string
+	// fromStoreRefused means the stored copy cannot be used, because the profile asks to merge with an entry from
+	// the same mod page, so a free account's item waits for its click; it is not persisted.
+	fromStoreRefused bool
+	endorsed         int
+	fomod            map[string]map[string][]string
 	// chosenRoot is the folder AnswerRoot picked for a staged item; it is not persisted.
 	chosenRoot string
 	// started is when this attempt left the queue for a fetch; it is not persisted.
@@ -177,6 +180,9 @@ type Deps struct {
 	Client  func() (*nexus.Client, error)
 	Premium func() bool
 	Install func(game, profileID, path string, source profile.Source) (profile.InstallResult, error)
+	// Stored reports whether the game's store already holds key, as a Nexus file installed into another profile
+	// does; such a file installs from the store without downloading or a click.
+	Stored func(game, key string) bool
 	// Stage unpacks a downloaded GitHub asset into the store and returns the UniqueIDs of its mods; InstallStaged
 	// then adds it to the profile. Between the two, Verify checks the source.
 	Stage         func(game string, source profile.Source, path string) (key string, uniqueIDs []string, err error)
@@ -283,8 +289,14 @@ func Run(ctx context.Context, s *Service, assigned <-chan nxmsvc.Assignment) (wa
 					Kind: KindInstall, Game: a.Game, Profile: a.Profile, ModID: a.Link.ModID, FileID: a.Link.FileID,
 					key: a.Link.Key, expires: a.Link.Expires,
 				}
-				if _, err := s.add([]Request{r}); err != nil {
+				items, err := s.add([]Request{r})
+				if err != nil {
 					s.reject(r, err)
+				}
+				for _, it := range items {
+					if it.Name == "" {
+						go s.describe(ctx, it.ID, it.ModID)
+					}
 				}
 			}
 		}
@@ -303,6 +315,35 @@ func (s *Service) reject(r Request, err error) {
 	})
 	s.mu.Unlock()
 	s.publish(true)
+}
+
+// describe fills a queued Nexus item's name and picture from its mod page, so it shows them while it waits.
+func (s *Service) describe(ctx context.Context, id string, modID int) {
+	c, err := s.d.Client()
+	if err != nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	m, err := c.Mod(ctx, modID)
+	if err != nil {
+		return
+	}
+	s.mu.Lock()
+	cur := s.find(id)
+	if cur != nil {
+		cur.Name = cmp.Or(cur.Name, m.Name)
+		cur.Picture, cur.endorsed = m.PictureURL, m.EndorsementCount
+	}
+	s.mu.Unlock()
+	if cur != nil {
+		s.publish(true)
+	}
+}
+
+// stored reports whether the item's Nexus file is already in the store.
+func (s *Service) stored(it *Item) bool {
+	return it.Repo == "" && it.FileID != 0 && !it.fromStoreRefused && s.d.Stored != nil && s.d.Stored(it.Game, store.NexusKey(it.ModID, it.FileID))
 }
 
 func newID() string {

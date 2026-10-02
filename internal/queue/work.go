@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -48,7 +49,7 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 			held = true
 		case it.Repo != "":
 			return it, s.forAsset(it), held
-		case premium || s.usable(it):
+		case premium || s.usable(it) || s.stored(it):
 			return it, s.forFile(it, fetch), held
 		case head == nil:
 			head = it
@@ -292,8 +293,11 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		return err
 	}
 	var mod nexus.Mod
-	// The picture and name are nice to have: a page that cannot be fetched only leaves the letter tile.
-	if m, merr := c.Mod(ctx, it.ModID); merr == nil {
+	// The picture and name are nice to have: a page that cannot be fetched only leaves the letter tile. describe
+	// usually fetched them while the item waited.
+	if it.Picture != "" {
+		mod = nexus.Mod{Name: it.Name, PictureURL: it.Picture, EndorsementCount: it.endorsed}
+	} else if m, merr := c.Mod(ctx, it.ModID); merr == nil {
 		mod = m
 		s.mu.Lock()
 		if cur := s.find(it.ID); cur != nil {
@@ -303,6 +307,11 @@ func (s *Service) download(ctx context.Context, it Item) error {
 			cur.Picture, cur.endorsed = m.PictureURL, m.EndorsementCount
 		}
 		s.mu.Unlock()
+	}
+	if s.stored(&it) {
+		if done, err := s.installStored(it, mod); done {
+			return err
+		}
 	}
 	s.mu.Lock()
 	key, expires := "", int64(0)
@@ -458,4 +467,32 @@ func (p *progress) set(n int64) {
 	}
 	p.s.mu.Unlock()
 	p.s.publish(false)
+}
+
+// installStored adds a Nexus file the store already holds to the item's profile. It reports false, so the file is
+// downloaded as usual, when the profile has an entry from the same mod page: that choice installs from the archive.
+func (s *Service) installStored(it Item, mod nexus.Mod) (bool, error) {
+	if it.Kind != KindUpdate && s.d.SamePage != nil {
+		if _, ok := s.d.SamePage(it.Game, it.Profile, it.ModID, it.FileID, it.Category); ok {
+			s.mu.Lock()
+			defer s.mu.Unlock()
+			cur := s.find(it.ID)
+			if cur == nil || s.d.Premium() || s.usable(cur) {
+				return false, nil
+			}
+			// A free account needs the file's link to download it, so the item waits for its click.
+			cur.fromStoreRefused, cur.State = true, StateQueued
+			return true, nil
+		}
+	}
+	s.mu.Lock()
+	if cur := s.find(it.ID); cur != nil {
+		cur.State, cur.Progress, cur.Speed = StateInstalling, 100, 0
+	}
+	s.mu.Unlock()
+	s.publish(true)
+	key := store.NexusKey(it.ModID, it.FileID)
+	log.Printf("queue: mod %d file %d installs from the store (%s)", it.ModID, it.FileID, key)
+	res, err := s.d.InstallStaged(it.Game, it.Profile, key, nexusSource(it, mod))
+	return true, s.afterInstall(it.ID, res, err, false)
 }

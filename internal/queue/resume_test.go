@@ -188,8 +188,10 @@ func TestTruncatedPartialResumesAfterRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	saveResume(path, resumeMeta{ExpectedSize: int64(len(body)), URL: "stale"})
+	f.s.mu.Lock()
 	f.s.items[0].State = StateDownloading
 	f.s.items[0].FileName = "a-1.0.zip"
+	f.s.mu.Unlock()
 	f.s.publish(true)
 	again, err := New(f.s.d)
 	if err != nil {
