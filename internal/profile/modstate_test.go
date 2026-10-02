@@ -27,6 +27,28 @@ func TestModFolderByKeyPicksTheCopy(t *testing.T) {
 	}
 }
 
+func TestInstalledReturnsModFolders(t *testing.T) {
+	m := manifestJSON("me.a")
+	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m + " "})
+
+	installed, err := e.Installed("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(installed) != 1 {
+		t.Fatalf("Installed returned %d mods, want 1", len(installed))
+	}
+	for _, mod := range installed {
+		want, err := e.ModFolder("stardew", p.ID, mod.Key, mod.UniqueID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if mod.Folder != want {
+			t.Errorf("Installed(%s).Folder = %s, want %s", mod.Key, mod.Folder, want)
+		}
+	}
+}
+
 func TestModStateAndResetConfig(t *testing.T) {
 	m := manifestJSON("me.a")
 	e, p := updEnv(t,

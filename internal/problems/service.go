@@ -31,6 +31,36 @@ type Service struct {
 	mu      sync.Mutex
 	cache   map[string]cached
 	updates map[string]cachedUpdates
+	checks  map[string]*problemCall
+}
+
+type problemCall struct {
+	done   chan struct{}
+	result Result
+}
+
+func (s *Service) shareCheck(ctx context.Context, key string, check func() Result) (Result, error) {
+	s.mu.Lock()
+	if call, ok := s.checks[key]; ok {
+		s.mu.Unlock()
+		select {
+		case <-call.done:
+			return call.result, nil
+		case <-ctx.Done():
+			return Result{}, ctx.Err()
+		}
+	}
+	call := &problemCall{done: make(chan struct{})}
+	s.checks[key] = call
+	s.mu.Unlock()
+
+	r := check()
+	s.mu.Lock()
+	call.result = r
+	delete(s.checks, key)
+	close(call.done)
+	s.mu.Unlock()
+	return r, nil
 }
 
 type cachedUpdates struct {
@@ -46,7 +76,7 @@ type cached struct {
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store, m *meta.Client) *Service {
-	return &Service{home: home, settings: s, profiles: profiles, meta: m, cache: map[string]cached{}, updates: map[string]cachedUpdates{}}
+	return &Service{home: home, settings: s, profiles: profiles, meta: m, cache: map[string]cached{}, updates: map[string]cachedUpdates{}, checks: map[string]*problemCall{}}
 }
 
 func platform() string {
@@ -107,13 +137,8 @@ func (s *Service) installed(gameID, id string) ([]Installed, error) {
 	mods := make([]Installed, len(installed))
 	for i, m := range installed {
 		mods[i] = Installed{
-			Key: m.Key, SourceKind: m.Source.Kind, SourceVersion: m.Source.Version, Enabled: m.Enabled,
+			Key: m.Key, SourceKind: m.Source.Kind, SourceVersion: m.Source.Version, Enabled: m.Enabled, Folder: m.Folder,
 			Pinned: m.Pinned, SkipVersion: m.SkipVersion, IgnoreUpdates: m.IgnoreUpdates, Manifest: m.Manifest,
-		}
-		if m.Enabled {
-			if folder, err := s.profiles.ModFolder(gameID, id, m.Key, m.UniqueID); err == nil {
-				mods[i].Folder = folder
-			}
 		}
 	}
 	return mods, nil
@@ -142,20 +167,35 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	if ok && c.fingerprint == fp {
 		return s.withDrift(gameID, id, s.withDismissed(gameID, id, c.result))
 	}
-	r := Check(ctx, s.meta, env, mods)
-	if s.Runs != nil && runID != "" {
-		_, summary, err := s.Runs.LastRunSummary(gameID, id)
-		if err == nil {
-			r.RunErrors = RunErrorsFromSummary(runID, summary, mods)
-		}
-	} else if r.RunErrors == nil {
-		r.RunErrors = []RunError{}
-	}
-	if !r.Unknown {
-		s.mu.Lock()
-		s.cache[key] = cached{fp, r}
+
+	checkKey := key + "\x00" + fp
+	s.mu.Lock()
+	if c, ok := s.cache[key]; ok && c.fingerprint == fp {
 		s.mu.Unlock()
+		return s.withDrift(gameID, id, s.withDismissed(gameID, id, c.result))
 	}
+	s.mu.Unlock()
+
+	r, err := s.shareCheck(ctx, checkKey, func() Result {
+		r := Check(ctx, s.meta, env, mods)
+		if s.Runs != nil && runID != "" {
+			_, summary, err := s.Runs.LastRunSummary(gameID, id)
+			if err == nil {
+				r.RunErrors = RunErrorsFromSummary(runID, summary, mods)
+			}
+		} else if r.RunErrors == nil {
+			r.RunErrors = []RunError{}
+		}
+		return r
+	})
+	if err != nil {
+		return Result{}, err
+	}
+	s.mu.Lock()
+	if !r.Unknown {
+		s.cache[key] = cached{fp, r}
+	}
+	s.mu.Unlock()
 	return s.withDrift(gameID, id, s.withDismissed(gameID, id, r))
 }
 
