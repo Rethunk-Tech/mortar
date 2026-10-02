@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/url"
 	"slices"
+	"strconv"
 	"sync"
 	"time"
 
@@ -48,8 +50,9 @@ type Assignment struct {
 
 const assignedBuffer = 64
 
-// duplicateWindow is how long the same link is taken only once: with the browser extension installed, a link can
-// arrive twice, from the page's own launch and from the extension.
+// duplicateWindow is how long a link without a readable expiry is taken only once. With the browser extension a
+// link can arrive more than once: from the page's own launch, from the extension, and again from every tab still
+// open when the extension is reinstalled. A link with an expiry is taken once until it expires.
 const duplicateWindow = 10 * time.Minute
 
 // Service receives links and switches the system handler.
@@ -65,7 +68,8 @@ type Service struct {
 	// means never. A routed link never becomes an arrival.
 	Route func(nxm.Link) bool
 
-	mu         sync.Mutex
+	mu sync.Mutex
+	// recent maps each link taken to when it may be taken again.
 	recent     map[string]time.Time
 	nextID     int
 	arrivals   []Arrival
@@ -131,13 +135,13 @@ func (s *Service) Receive(args []string) bool {
 	return found
 }
 
-// duplicate records link and reports whether it already arrived within duplicateWindow.
+// duplicate records link and reports whether it already arrived and has not expired since.
 func (s *Service) duplicate(link string) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	now := s.now()
-	for l, at := range s.recent {
-		if now.Sub(at) > duplicateWindow {
+	for l, until := range s.recent {
+		if now.After(until) {
 			delete(s.recent, l)
 		}
 	}
@@ -147,7 +151,13 @@ func (s *Service) duplicate(link string) bool {
 	if s.recent == nil {
 		s.recent = map[string]time.Time{}
 	}
-	s.recent[link] = now
+	until := now.Add(duplicateWindow)
+	if u, err := url.Parse(link); err == nil {
+		if exp, err := strconv.ParseInt(u.Query().Get("expires"), 10, 64); err == nil && time.Unix(exp, 0).After(until) {
+			until = time.Unix(exp, 0)
+		}
+	}
+	s.recent[link] = until
 	return false
 }
 

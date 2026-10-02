@@ -216,7 +216,7 @@ func TestAFullQueueKeepsTheArrival(t *testing.T) {
 	}
 }
 
-func TestReceiveTakesALinkOnceWithinTheWindow(t *testing.T) {
+func TestReceiveTakesALinkOnceUntilItExpires(t *testing.T) {
 	s := newService(t, &fakeHandler{})
 	start := s.now()
 	link := "nxm://stardewvalley/mods/5/files/9?key=k&expires=99999999999&user_id=42"
@@ -227,7 +227,12 @@ func TestReceiveTakesALinkOnceWithinTheWindow(t *testing.T) {
 	}
 	s.now = func() time.Time { return start.Add(duplicateWindow + time.Second) }
 	s.Receive([]string{link})
-	if n := len(s.Inbox().Arrivals); n != 2 {
-		t.Fatalf("link sent again after the window: %d arrivals", n)
+	if n := len(s.Inbox().Arrivals); n != 1 {
+		t.Fatalf("an unexpired link was taken again: %d arrivals", n)
+	}
+	s.now = func() time.Time { return time.Unix(99999999999, 0).Add(time.Second) }
+	s.Receive([]string{link})
+	if in := s.Inbox(); len(in.Rejections) != 1 || in.Rejections[0].Reason != nxm.ReasonExpired {
+		t.Fatalf("an expired link sent again was not refused as expired: %+v", in)
 	}
 }
