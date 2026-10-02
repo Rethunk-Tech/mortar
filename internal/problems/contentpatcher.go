@@ -42,6 +42,7 @@ type packHit struct {
 	key      string
 	priority string
 	mentions map[string]bool
+	edits    []cpPatch // the pack's active edits of this target
 }
 
 // cpPatch is one Load or EditImage/EditMap change with the HasMod conditions that gate it.
@@ -50,6 +51,8 @@ type cpPatch struct {
 	target   string
 	priority string
 	when     cpWhen
+	shapes   []cpShape // what an edit writes; see editShapes
+	spouse   string    // the spouse the change requires, or ""
 }
 
 // cpWhen holds a change's HasMod conditions: each anyOf group needs one of its mods
@@ -170,6 +173,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 		action := strings.TrimSpace(ch.Action)
 		when := outer.with(parseWhen(ch.When, pack.mentions))
 		var kind string
+		var shapes []cpShape
 		switch {
 		case strings.EqualFold(action, "Include"):
 			for _, from := range splitTargets(ch.FromFile) {
@@ -184,6 +188,10 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			kind = "load"
 		case strings.EqualFold(action, kindEditImage), strings.EqualFold(action, kindEditMap):
 			kind = "edit"
+			shapes = editShapes(root, ch, strings.EqualFold(action, kindEditImage))
+			if len(shapes) == 0 {
+				continue
+			}
 		default:
 			continue
 		}
@@ -192,7 +200,10 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 				pack.skips++
 				continue
 			}
-			pack.patches = append(pack.patches, cpPatch{kind: kind, target: normalizeTarget(t), priority: strings.TrimSpace(ch.Priority), when: when})
+			pack.patches = append(pack.patches, cpPatch{
+				kind: kind, target: normalizeTarget(t), priority: strings.TrimSpace(ch.Priority), when: when,
+				shapes: shapes, spouse: spouseOf(ch.When),
+			})
 		}
 	}
 }
@@ -265,11 +276,15 @@ func note(ids []string, mentions map[string]bool) []string {
 }
 
 type cpChange struct {
-	Action   string                     `json:"Action"`
-	Target   string                     `json:"Target"`
-	FromFile string                     `json:"FromFile"`
-	Priority string                     `json:"Priority"`
-	When     map[string]json.RawMessage `json:"When"`
+	Action        string                     `json:"Action"`
+	Target        string                     `json:"Target"`
+	FromFile      string                     `json:"FromFile"`
+	Priority      string                     `json:"Priority"`
+	When          map[string]json.RawMessage `json:"When"`
+	FromArea      json.RawMessage            `json:"FromArea"`
+	ToArea        json.RawMessage            `json:"ToArea"`
+	MapTiles      []json.RawMessage          `json:"MapTiles"`
+	MapProperties map[string]json.RawMessage `json:"MapProperties"`
 }
 
 func splitTargets(s string) []string {
@@ -412,16 +427,24 @@ func assetConflicts(mods []Installed) []AssetConflict {
 			hits := at[p.kind][p.target]
 			i := slices.IndexFunc(hits, func(h packHit) bool { return sameID(h.id, mod.UniqueID) })
 			if i < 0 {
-				at[p.kind][p.target] = append(hits, packHit{id: mod.UniqueID, name: mod.Name, key: mod.Key, priority: p.priority, mentions: knows})
-				continue
+				hits = append(hits, packHit{id: mod.UniqueID, name: mod.Name, key: mod.Key, priority: p.priority, mentions: knows})
+				i = len(hits) - 1
+				at[p.kind][p.target] = hits
+			} else {
+				hits[i].priority = strongerContentPatcherPriority(hits[i].priority, p.priority, p.kind)
 			}
-			hits[i].priority = strongerContentPatcherPriority(hits[i].priority, p.priority, p.kind)
+			if p.kind == "edit" {
+				hits[i].edits = append(hits[i].edits, p)
+			}
 		}
 	}
 	out := []AssetConflict{}
 	for kind, targets := range at {
 		for t, hits := range targets {
-			if len(hits) >= 2 && (kind == "load" || !allAware(hits)) {
+			if kind == "edit" {
+				hits = clashing(hits)
+			}
+			if len(hits) >= 2 {
 				out = append(out, conflictOf(kind, t, hits))
 			}
 		}
@@ -438,17 +461,30 @@ func assetConflicts(mods []Installed) []AssetConflict {
 	return out
 }
 
-// allAware reports whether every pair of packs editing one target was built to work together:
-// they ship in one entry, or one names the other as a dependency or in a HasMod condition.
-func allAware(hits []packHit) bool {
+// clashing keeps the packs that share an overlapping edit of one target with a pack they were not built
+// alongside. Packs in one entry, or where one names the other as a dependency or in a HasMod condition,
+// were patched to work together, so their overlaps are intended.
+func clashing(hits []packHit) []packHit {
+	in := make([]bool, len(hits))
 	for i := range hits {
 		for j := i + 1; j < len(hits); j++ {
-			if hits[i].key != hits[j].key && !hits[i].mentions[strings.ToLower(hits[j].id)] && !hits[j].mentions[strings.ToLower(hits[i].id)] {
-				return false
+			if aware(hits[i], hits[j]) || !editsClash(hits[i].edits, hits[j].edits) {
+				continue
 			}
+			in[i], in[j] = true, true
 		}
 	}
-	return true
+	var out []packHit
+	for i, h := range hits {
+		if in[i] {
+			out = append(out, h)
+		}
+	}
+	return out
+}
+
+func aware(a, b packHit) bool {
+	return a.key == b.key || a.mentions[strings.ToLower(b.id)] || b.mentions[strings.ToLower(a.id)]
 }
 
 func conflictOf(kind, target string, hits []packHit) AssetConflict {
