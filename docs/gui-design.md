@@ -119,13 +119,12 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 
 ## Saves tab
 
-Every save in the Saves folder with its fit for this profile:
+Every save in the Saves folder with its fit for this profile, as cards in a grid (340px minimum column), above a line explaining that the save is picked inside the game. Each card has:
 
-- a coloured edge and a chip ("All mods present", "Has used N mods it lacks")
+- a solid tile coloured and iconed by the save's season, the farm name, and `farmer · type farm` under it
+- icon stats for the in-game date, hours played and gold, leaving out any the save does not give
+- a footer with the last played date, the fit chip ("All mods present", "Has used N mods it lacks") and Add all for mods Mortar can install
 - the mods it has used as removable chips (dismissing one for that save)
-- Add to this profile for mods Mortar can install
-- a line explaining that the save is picked inside the game
-- a card's second line reads `farmer · type farm · season day, year N · Nh played · goldg · last played date`, leaving out a part the save does not give
 
 **Save backups** above the cards opens a dialog listing the backup zips newest first, each with its time, cause ("Before updating" the named profile, "Before a restore" or "Unknown"), size and the farms inside, with **Restore** (a dark menu: Restore all, or each save of that zip alone), **Open backups folder** and **Close**. Restore asks first, names the saves it will overwrite and says the current Saves folder is backed up first (solid paper, no transition), and reads "Stop the game to restore saves." while the game runs.
 
@@ -248,6 +247,8 @@ Each game has its own setup, run when it is first opened from Game Select and th
 ## Confirmations
 
 Short toasts, bottom right, stacked (at most three; the oldest goes first), each with a coloured edge by kind and a dismiss button, dismissing themselves after 5 s (10 s for errors and warnings), with hover pausing the countdown, and an action where one exists: "Link copied", "SpaceCore installed" and "Added X to Y" (Undo), "… rolled back" (Redo update), "Couldn't reach Nexus" (Retry now), "N downloads need your decision" (Show). A toast about a mod shows its picture, from the same cache as the cards. Toasts stay in the session's notification history (the sidebar bell, [Main screen](#main-screen); [architecture.md](architecture.md#stack)).
+
+**Empty states:** a tab with nothing to show centres an icon, a title, a line on how to fill it and, where one helps, a button: Saves with no saves, Problems with none found, Console for a profile that has never run (an empty log with past runs shows the log), and Performance before a report.
 
 **First-open tips:** the Mods tab, the Saves tab, the Console and the Share dialog each show a short dismissible banner the first time they open; Settings › General has **Show tips again**.
 
