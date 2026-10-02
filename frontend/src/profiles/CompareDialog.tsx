@@ -10,8 +10,10 @@ import {
 import { useMemo } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { CopyMods } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { errorMessage } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
-import { CompareBody } from './CompareBody.tsx'
+import { CompareBulkBody } from './CompareBulkBody.tsx'
 import { compareProfiles } from './compare.ts'
 import { useProfiles } from './store.ts'
 
@@ -88,10 +90,16 @@ export function CompareDialog({
   }, [profileA, profileB])
   const [pending, run] = usePending()
 
-  const copyOne = (from: Profile, to: Profile, uniqueId: string) => {
+  const copy = (from: Profile, to: Profile, uniqueIds: string[]) => {
     run(async () => {
-      await CopyMods(game, from.id, to.id, [uniqueId])
-      await refresh()
+      try {
+        await CopyMods(game, from.id, to.id, uniqueIds)
+        await refresh()
+      } catch (error) {
+        useToasts
+          .getState()
+          .push({ kind: 'error', title: t`Could not copy mods`, body: errorMessage(error) })
+      }
     })
   }
 
@@ -108,14 +116,15 @@ export function CompareDialog({
       <DialogTitle>{t`Compare ${aName} and ${bName}`}</DialogTitle>
       <DialogContent>
         {diff && profileA && profileB ? (
-          <CompareBody
+          <CompareBulkBody
             diff={diff}
             profileA={profileA}
             profileB={profileB}
             aName={aName}
             bName={bName}
             pending={pending}
-            onCopy={copyOne}
+            onCopy={(from, to, uniqueId) => copy(from, to, [uniqueId])}
+            onCopyAll={copy}
           />
         ) : null}
       </DialogContent>
