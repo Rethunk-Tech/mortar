@@ -12,7 +12,7 @@ msgid "Mortar's licence"
 msgstr "Mortar's licence"
 
 #: src/console/PerformancePanel.tsx:180
-#: src/game/Detail.tsx:363
+#: src/game/Detail.tsx:364
 msgid "Performance"
 msgstr "Performance"
 
@@ -92,15 +92,15 @@ msgstr "Installing SMAPI {latest}"
 msgid "SMAPI {0}"
 msgstr "SMAPI {0}"
 
-#: src/game/Detail.tsx:213
+#: src/game/Detail.tsx:214
 #: src/mods/Sidebar.tsx:134
 msgid "Updated"
 msgstr "Updated"
 
 #: src/mods/LockedNote.tsx:9
 #: src/mods/OtherProfilesDialog.tsx:96
-#: src/saves/SavesTab.tsx:89
-#: src/saves/SavesTab.tsx:109
+#: src/saves/SavesTab.tsx:91
+#: src/saves/SavesTab.tsx:111
 #: src/toasts/HistoryButton.tsx:27
 #: src/toasts/ToastHost.tsx:29
 msgid "Stop the game to change mods."
@@ -255,7 +255,7 @@ msgstr "No lines match the filters."
 msgid "Never for this mod"
 msgstr "Never for this mod"
 
-#: src/game/Detail.tsx:361
+#: src/game/Detail.tsx:362
 msgid "Notes"
 msgstr "Notes"
 
@@ -285,7 +285,7 @@ msgstr "{0} sent you {1} ({gameName})"
 #. placeholder {0}: badge?.updates ?? 0
 #. placeholder {0}: counts.updates
 #. placeholder {0}: part.n
-#: src/game/Detail.tsx:163
+#: src/game/Detail.tsx:164
 #: src/game/Sidebar.tsx:82
 #: src/profiles/ProfileRow.tsx:103
 msgid "{0, plural, one {# update} other {# updates}}"
@@ -311,7 +311,7 @@ msgstr "Updated on Nexus"
 msgid "Dismiss"
 msgstr "Dismiss"
 
-#: src/queue/QueueHistory.tsx:94
+#: src/queue/QueueHistory.tsx:95
 msgid "All profiles"
 msgstr "All profiles"
 
@@ -575,7 +575,7 @@ msgstr "More play options"
 msgid "{name} is marked obsolete and may not work with this game version."
 msgstr "{name} is marked obsolete and may not work with this game version."
 
-#: src/queue/QueueHistory.tsx:74
+#: src/queue/QueueHistory.tsx:75
 msgid "All outcomes"
 msgstr "All outcomes"
 
@@ -707,11 +707,11 @@ msgid "Some mods could not be checked, so more updates may show up later."
 msgstr "Some mods could not be checked, so more updates may show up later."
 
 #: src/firstrun/SmapiStep.tsx:305
-#: src/game/Detail.tsx:265
+#: src/game/Detail.tsx:266
 #: src/mods/ModsTab.tsx:306
 #: src/notes/NotesTab.tsx:38
 #: src/queue/QueueBody.tsx:312
-#: src/saves/SavesTab.tsx:381
+#: src/saves/SavesTab.tsx:394
 #: src/settings/sections/Updates.tsx:36
 msgid "Retry"
 msgstr "Retry"
@@ -799,7 +799,7 @@ msgid "Got it"
 msgstr "Got it"
 
 #: src/console/outcome.ts:12
-#: src/queue/QueueHistory.tsx:35
+#: src/queue/QueueHistory.tsx:36
 msgid "Failed"
 msgstr "Failed"
 
@@ -927,6 +927,10 @@ msgstr "No tools yet"
 msgid "Filter mods"
 msgstr "Filter mods"
 
+#: src/queue/QueueHistory.tsx:155
+msgid "Show in profile"
+msgstr "Show in profile"
+
 #: src/console/ConsoleTab.tsx:458
 msgid "Follow new lines"
 msgstr "Follow new lines"
@@ -955,7 +959,7 @@ msgstr "Show"
 #: src/mods/ModDependencyTree.tsx:86
 #: src/mods/problemFixButtons.tsx:80
 #: src/mods/UpdateReview.tsx:305
-#: src/saves/SavesTab.tsx:86
+#: src/saves/SavesTab.tsx:88
 msgid "Queued"
 msgstr "Queued"
 
@@ -974,7 +978,7 @@ msgstr "Latest on Nexus"
 #. placeholder {0}: seasons[fit.season] ?? ''
 #. placeholder {1}: fit.day
 #. placeholder {2}: fit.year
-#: src/saves/SavesTab.tsx:319
+#: src/saves/SavesTab.tsx:332
 msgid "{0} {1}, year {2}"
 msgstr "{0} {1}, year {2}"
 
@@ -1009,7 +1013,7 @@ msgstr "Game folder"
 msgid "Remove from other profiles…"
 msgstr "Remove from other profiles…"
 
-#: src/saves/SavesTab.tsx:230
+#: src/saves/SavesTab.tsx:232
 msgid "Hill-top farm"
 msgstr "Hill-top farm"
 
@@ -1038,7 +1042,7 @@ msgstr "Tracked mods ({trackedCount} for {0})"
 msgid "Choose executable"
 msgstr "Choose executable"
 
-#: src/saves/SavesTab.tsx:399
+#: src/saves/SavesTab.tsx:412
 msgid "Saves stay in one folder for every profile. This tab shows how well each save fits this one."
 msgstr "Saves stay in one folder for every profile. This tab shows how well each save fits this one."
 
@@ -1047,7 +1051,7 @@ msgid "One step in Steam"
 msgstr "One step in Steam"
 
 #: src/queue/QueueBody.tsx:480
-#: src/queue/QueueHistory.tsx:37
+#: src/queue/QueueHistory.tsx:38
 msgid "Skipped"
 msgstr "Skipped"
 
@@ -1114,6 +1118,10 @@ msgstr "Appearance"
 msgid "Ran"
 msgstr "Ran"
 
+#: src/saves/SavesTab.tsx:317
+msgid "Open save folder"
+msgstr "Open save folder"
+
 #: src/games/storeName.ts:10
 msgid "Lutris"
 msgstr "Lutris"
@@ -1131,7 +1139,7 @@ msgstr "Add mods from an archive you downloaded, or find them on Nexus."
 msgid "Delete permanently"
 msgstr "Delete permanently"
 
-#: src/saves/SavesTab.tsx:153
+#: src/saves/SavesTab.tsx:155
 msgid "Dismiss for this save"
 msgstr "Dismiss for this save"
 
@@ -1188,7 +1196,7 @@ msgstr "The console fills when the game runs."
 msgid "Reading the Nexus page…"
 msgstr "Reading the Nexus page…"
 
-#: src/saves/SavesTab.tsx:260
+#: src/saves/SavesTab.tsx:262
 msgid "All mods present"
 msgstr "All mods present"
 
@@ -1262,7 +1270,7 @@ msgstr "Nothing to remove."
 msgid "Show report"
 msgstr "Show report"
 
-#: src/game/Detail.tsx:307
+#: src/game/Detail.tsx:308
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
 
@@ -1366,7 +1374,7 @@ msgstr "{gameName} · {mods}"
 msgid "Fix"
 msgstr "Fix"
 
-#: src/saves/SavesTab.tsx:106
+#: src/saves/SavesTab.tsx:108
 msgid "{name} (switched off)"
 msgstr "{name} (switched off)"
 
@@ -1400,7 +1408,7 @@ msgstr "{0}'s farm ({1}) was last played with mods this profile does not have on
 msgid "config.json, changed from the mod's own"
 msgstr "config.json, changed from the mod's own"
 
-#: src/game/Detail.tsx:256
+#: src/game/Detail.tsx:257
 #: src/profiles/store.ts:223
 msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
@@ -1426,7 +1434,7 @@ msgstr "Info"
 msgid "3 updates"
 msgstr "3 updates"
 
-#: src/saves/SavesTab.tsx:130
+#: src/saves/SavesTab.tsx:132
 msgid "Add {name} to this profile"
 msgstr "Add {name} to this profile"
 
@@ -1439,7 +1447,7 @@ msgstr "Past run"
 msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
-#: src/game/Detail.tsx:362
+#: src/game/Detail.tsx:363
 msgid "Console"
 msgstr "Console"
 
@@ -1571,7 +1579,7 @@ msgstr "The SMAPI log has errors."
 msgid "Resize sidebar"
 msgstr "Resize sidebar"
 
-#: src/game/Detail.tsx:214
+#: src/game/Detail.tsx:215
 msgid "Created"
 msgstr "Created"
 
@@ -1674,7 +1682,7 @@ msgstr "Cancel"
 msgid "Nothing to download"
 msgstr "Nothing to download"
 
-#: src/saves/SavesTab.tsx:227
+#: src/saves/SavesTab.tsx:229
 msgid "Standard farm"
 msgstr "Standard farm"
 
@@ -1697,7 +1705,7 @@ msgstr "Choose image…"
 msgid "Choose a {0} folder"
 msgstr "Choose a {0} folder"
 
-#: src/saves/SavesTab.tsx:390
+#: src/saves/SavesTab.tsx:403
 msgid "Play this profile and start a farm. Each save shows here with how well it fits {name}, so you know which mods it needs."
 msgstr "Play this profile and start a farm. Each save shows here with how well it fits {name}, so you know which mods it needs."
 
@@ -1719,7 +1727,7 @@ msgstr "Automatic"
 msgid "Compare {0} with…"
 msgstr "Compare {0} with…"
 
-#: src/queue/QueueHistory.tsx:33
+#: src/queue/QueueHistory.tsx:34
 msgid "Done"
 msgstr "Done"
 
@@ -1852,7 +1860,7 @@ msgstr "{name} was changed outside Mortar."
 msgid "Needs your click"
 msgstr "Needs your click"
 
-#: src/game/Detail.tsx:210
+#: src/game/Detail.tsx:211
 #: src/mods/ModDependencyTree.tsx:178
 #: src/mods/Toolbar.tsx:101
 msgid "None"
@@ -1984,7 +1992,7 @@ msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile 
 msgid "Include beta releases"
 msgstr "Include beta releases"
 
-#: src/saves/SavesTab.tsx:234
+#: src/saves/SavesTab.tsx:236
 msgid "Meadowlands farm"
 msgstr "Meadowlands farm"
 
@@ -2165,7 +2173,7 @@ msgstr "Values"
 msgid "Changes apply right away"
 msgstr "Changes apply right away"
 
-#: src/queue/QueueHistory.tsx:117
+#: src/queue/QueueHistory.tsx:118
 msgid "No downloads in history."
 msgstr "No downloads in history."
 
@@ -2247,7 +2255,7 @@ msgstr "About Mortar"
 msgid "The files will download from each mod's source."
 msgstr "The files will download from each mod's source."
 
-#: src/saves/SavesTab.tsx:261
+#: src/saves/SavesTab.tsx:263
 msgid "Has used {missing, plural, one {# mod it lacks} other {# mods it lacks}}"
 msgstr "Has used {missing, plural, one {# mod it lacks} other {# mods it lacks}}"
 
@@ -2381,7 +2389,7 @@ msgid "Found"
 msgstr "Found"
 
 #. placeholder {0}: formatWhen(fit.played)
-#: src/saves/SavesTab.tsx:346
+#: src/saves/SavesTab.tsx:359
 msgid "Last played {0}"
 msgstr "Last played {0}"
 
@@ -2390,7 +2398,7 @@ msgstr "Last played {0}"
 msgid "Stream overlay"
 msgstr "Stream overlay"
 
-#: src/saves/SavesTab.tsx:84
+#: src/saves/SavesTab.tsx:86
 msgid "Add to this profile"
 msgstr "Add to this profile"
 
@@ -2517,7 +2525,7 @@ msgstr "{name} settings"
 msgid "Copy all problems"
 msgstr "Copy all problems"
 
-#: src/game/Detail.tsx:296
+#: src/game/Detail.tsx:297
 msgid "No profiles yet"
 msgstr "No profiles yet"
 
@@ -2541,6 +2549,11 @@ msgstr "All values"
 #: src/settings/sections/StreamOverlay.tsx:325
 msgid "Port"
 msgstr "Port"
+
+#. placeholder {0}: fit.farm || fit.folder
+#: src/saves/SavesTab.tsx:320
+msgid "Open the folder of {0}"
+msgstr "Open the folder of {0}"
 
 #: src/bundles/dialogs.tsx:246
 msgid "Create and add"
@@ -2584,7 +2597,7 @@ msgstr "That folder cannot be used"
 #: src/mods/problemFixButtons.tsx:175
 #: src/mods/Sidebar.tsx:192
 #: src/mods/UpdateReview.tsx:294
-#: src/saves/SavesTab.tsx:141
+#: src/saves/SavesTab.tsx:143
 msgid "Open page"
 msgstr "Open page"
 
@@ -2677,7 +2690,7 @@ msgstr "Could not switch off the other copy of {0}"
 msgid "Mods removed from other profiles"
 msgstr "Mods removed from other profiles"
 
-#: src/saves/SavesTab.tsx:403
+#: src/saves/SavesTab.tsx:416
 msgid "Mortar reads each save for the mods it has used. You pick the save in the game; this is how well each one fits {name}."
 msgstr "Mortar reads each save for the mods it has used. You pick the save in the game; this is how well each one fits {name}."
 
@@ -2741,6 +2754,11 @@ msgstr "Versions"
 #: src/mods/ModDetail.tsx:180
 msgid "Roll back {0}?"
 msgstr "Roll back {0}?"
+
+#. placeholder {0}: e.name
+#: src/queue/QueueHistory.tsx:158
+msgid "Show {0} in its profile"
+msgstr "Show {0} in its profile"
 
 #: src/share/ShareDialog.tsx:325
 msgid "Mod list format"
@@ -2833,8 +2851,8 @@ msgid "Send"
 msgstr "Send"
 
 #: src/console/ConsoleTab.tsx:116
-#: src/game/Detail.tsx:207
-#: src/game/Detail.tsx:341
+#: src/game/Detail.tsx:208
+#: src/game/Detail.tsx:342
 #: src/mods/ModList.tsx:328
 #: src/settings/sections/General.tsx:152
 #: src/settings/sections/Updates.tsx:187
@@ -3120,7 +3138,7 @@ msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was add
 msgid "Unofficial"
 msgstr "Unofficial"
 
-#: src/saves/SavesTab.tsx:232
+#: src/saves/SavesTab.tsx:234
 msgid "Four Corners farm"
 msgstr "Four Corners farm"
 
@@ -3131,7 +3149,7 @@ msgstr "Four Corners farm"
 msgid "Import"
 msgstr "Import"
 
-#: src/queue/QueueHistory.tsx:118
+#: src/queue/QueueHistory.tsx:119
 msgid "Completed downloads will appear here."
 msgstr "Completed downloads will appear here."
 
@@ -3185,7 +3203,7 @@ msgstr "More details"
 msgid "The link has expired. Click Mod Manager Download on Nexus again."
 msgstr "The link has expired. Click Mod Manager Download on Nexus again."
 
-#: src/saves/SavesTab.tsx:268
+#: src/saves/SavesTab.tsx:270
 msgid "Summer"
 msgstr "Summer"
 
@@ -3314,7 +3332,7 @@ msgstr "Add a shortcut that plays this profile"
 msgid "Crashed"
 msgstr "Crashed"
 
-#: src/saves/SavesTab.tsx:231
+#: src/saves/SavesTab.tsx:233
 msgid "Wilderness farm"
 msgstr "Wilderness farm"
 
@@ -3566,7 +3584,7 @@ msgstr "Couldn't resize the window"
 msgid "Couldn't read the window state"
 msgstr "Couldn't read the window state"
 
-#: src/saves/SavesTab.tsx:144
+#: src/saves/SavesTab.tsx:146
 msgid "Open {name} on Nexus"
 msgstr "Open {name} on Nexus"
 
@@ -3656,7 +3674,7 @@ msgstr "Only in {aName}"
 msgid "Unofficial update available: {0}"
 msgstr "Unofficial update available: {0}"
 
-#: src/saves/SavesTab.tsx:268
+#: src/saves/SavesTab.tsx:270
 msgid "Winter"
 msgstr "Winter"
 
@@ -3724,7 +3742,7 @@ msgstr "Export settings…"
 msgid "Reset"
 msgstr "Reset"
 
-#: src/saves/SavesTab.tsx:268
+#: src/saves/SavesTab.tsx:270
 msgid "Spring"
 msgstr "Spring"
 
@@ -3799,8 +3817,8 @@ msgstr "Checked with SMAPI's update service"
 msgid "A profile with that name already exists, so this one is \"{name}\""
 msgstr "A profile with that name already exists, so this one is \"{name}\""
 
-#: src/queue/QueueHistory.tsx:105
-#: src/queue/QueueHistory.tsx:107
+#: src/queue/QueueHistory.tsx:106
+#: src/queue/QueueHistory.tsx:108
 msgid "Clear history"
 msgstr "Clear history"
 
@@ -3831,13 +3849,13 @@ msgstr "{profileName} · {mods, plural, one {# mod} other {# mods}}"
 msgid "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 msgstr "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 
-#: src/game/Detail.tsx:349
+#: src/game/Detail.tsx:350
 #: src/mods/ModList.tsx:470
 #: src/mods/ModsTab.tsx:230
 msgid "Problems"
 msgstr "Problems"
 
-#: src/game/Detail.tsx:303
+#: src/game/Detail.tsx:304
 msgid "Create your first profile"
 msgstr "Create your first profile"
 
@@ -3865,7 +3883,7 @@ msgstr "Combat skill"
 msgid "pinned in {0}"
 msgstr "pinned in {0}"
 
-#: src/saves/SavesTab.tsx:144
+#: src/saves/SavesTab.tsx:146
 msgid "Open the page of {name}"
 msgstr "Open the page of {name}"
 
@@ -4000,7 +4018,7 @@ msgid "{0} will be overwritten. A backup of the current Saves folder is made fir
 msgstr "{0} will be overwritten. A backup of the current Saves folder is made first."
 
 #: src/mods/ModMenu.tsx:322
-#: src/saves/SavesTab.tsx:141
+#: src/saves/SavesTab.tsx:143
 msgid "Open on Nexus"
 msgstr "Open on Nexus"
 
@@ -4119,7 +4137,7 @@ msgstr "Could not create the bundle"
 msgid "This update changed its install options. Your earlier picks are kept where they still exist."
 msgstr "This update changed its install options. Your earlier picks are kept where they still exist."
 
-#: src/saves/SavesTab.tsx:114
+#: src/saves/SavesTab.tsx:116
 msgid "Switch on {name} in this profile"
 msgstr "Switch on {name} in this profile"
 
@@ -4292,7 +4310,7 @@ msgstr "Could not unpin {0}"
 msgid "In the same download"
 msgstr "In the same download"
 
-#: src/game/Detail.tsx:269
+#: src/game/Detail.tsx:270
 msgid "Mortar could not load the profiles for this game."
 msgstr "Mortar could not load the profiles for this game."
 
@@ -4456,7 +4474,7 @@ msgid "Lets nearby Mortar users find this installation and exchange profile link
 msgstr "Lets nearby Mortar users find this installation and exchange profile links."
 
 #: src/saves/BackupsDialog.tsx:154
-#: src/saves/SavesTab.tsx:411
+#: src/saves/SavesTab.tsx:424
 #: src/settings/sections/Data.tsx:307
 #: src/settings/sections/Data.tsx:331
 msgid "Save backups"
@@ -4467,7 +4485,7 @@ msgstr "Save backups"
 msgid "Mortar menu"
 msgstr "Mortar menu"
 
-#: src/game/Detail.tsx:284
+#: src/game/Detail.tsx:285
 #: src/game/Sidebar.tsx:424
 #: src/game/Sidebar.tsx:425
 msgid "Manage profiles"
@@ -4550,7 +4568,7 @@ msgstr "Done ({0}): {1}"
 msgid "Delete {0}?"
 msgstr "Delete {0}?"
 
-#: src/saves/SavesTab.tsx:233
+#: src/saves/SavesTab.tsx:235
 msgid "Beach farm"
 msgstr "Beach farm"
 
@@ -4594,7 +4612,7 @@ msgstr "Keep Mortar in the tray"
 #. placeholder {0}: badge?.problems ?? 0
 #. placeholder {0}: counts.problems
 #. placeholder {0}: part.n
-#: src/game/Detail.tsx:165
+#: src/game/Detail.tsx:166
 #: src/game/Sidebar.tsx:92
 #: src/mods/ProblemBar.tsx:54
 #: src/profiles/ProfileRow.tsx:104
@@ -4650,7 +4668,7 @@ msgstr "Token"
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
-#: src/saves/SavesTab.tsx:156
+#: src/saves/SavesTab.tsx:158
 msgid "Dismiss {name} for this save"
 msgstr "Dismiss {name} for this save"
 
@@ -4658,7 +4676,7 @@ msgstr "Dismiss {name} for this save"
 msgid "Found in {foundIn}"
 msgstr "Found in {foundIn}"
 
-#: src/saves/SavesTab.tsx:228
+#: src/saves/SavesTab.tsx:230
 msgid "Riverland farm"
 msgstr "Riverland farm"
 
@@ -4683,7 +4701,7 @@ msgstr "Mining skill"
 msgid "Dependency"
 msgstr "Dependency"
 
-#: src/game/Detail.tsx:281
+#: src/game/Detail.tsx:282
 msgid "All profiles are hidden"
 msgstr "All profiles are hidden"
 
@@ -4726,7 +4744,7 @@ msgstr "Markdown"
 msgid "Could not cancel transfer"
 msgstr "Could not cancel transfer"
 
-#: src/game/Detail.tsx:210
+#: src/game/Detail.tsx:211
 msgid "{fitting} of {total}"
 msgstr "{fitting} of {total}"
 
@@ -4738,7 +4756,7 @@ msgstr "Could not dismiss the setting warning"
 msgid "Clear filters"
 msgstr "Clear filters"
 
-#: src/saves/SavesTab.tsx:372
+#: src/saves/SavesTab.tsx:385
 msgid "Could not read your saves: {detail}"
 msgstr "Could not read your saves: {detail}"
 
@@ -4903,8 +4921,8 @@ msgstr "About"
 msgid "Could not roll back {0}"
 msgstr "Could not roll back {0}"
 
-#: src/game/Detail.tsx:209
-#: src/game/Detail.tsx:360
+#: src/game/Detail.tsx:210
+#: src/game/Detail.tsx:361
 msgid "Saves"
 msgstr "Saves"
 
@@ -4987,7 +5005,7 @@ msgid "last played {lastPlayedName} · {ago}"
 msgstr "last played {lastPlayedName} · {ago}"
 
 #. placeholder {0}: wants.length
-#: src/saves/SavesTab.tsx:191
+#: src/saves/SavesTab.tsx:193
 msgid "Add all {0}"
 msgstr "Add all {0}"
 
@@ -5022,7 +5040,7 @@ msgstr "{name} was removed from this profile's mods folder."
 msgid "Local-only mods kept: {0}"
 msgstr "Local-only mods kept: {0}"
 
-#: src/game/Detail.tsx:288
+#: src/game/Detail.tsx:289
 msgid "Show one in the sidebar from Manage profiles."
 msgstr "Show one in the sidebar from Manage profiles."
 
@@ -5091,7 +5109,7 @@ msgid "Downloaded"
 msgstr "Downloaded"
 
 #: src/queue/QueueBody.tsx:480
-#: src/queue/QueueHistory.tsx:39
+#: src/queue/QueueHistory.tsx:40
 msgid "Cancelled"
 msgstr "Cancelled"
 
@@ -5113,7 +5131,7 @@ msgstr "{0} left out"
 msgid "Choose a profile to import"
 msgstr "Choose a profile to import"
 
-#: src/saves/SavesTab.tsx:109
+#: src/saves/SavesTab.tsx:111
 msgid "Switch on in this profile"
 msgstr "Switch on in this profile"
 
@@ -5228,7 +5246,7 @@ msgstr "Manage deleted profiles"
 #. placeholder {0}: info.count
 #. placeholder {0}: part.n
 #: src/bundles/BundlesSection.tsx:112
-#: src/game/Detail.tsx:160
+#: src/game/Detail.tsx:161
 #: src/share/ShareDialog.tsx:92
 #: src/share/ShareDialog.tsx:190
 msgid "{0, plural, one {# mod} other {# mods}}"
@@ -5374,7 +5392,7 @@ msgstr "Reinstall Stardew Valley from your game launcher."
 msgid "A share link names this profile and the Nexus or GitHub files in it, not the archives."
 msgstr "A share link names this profile and the Nexus or GitHub files in it, not the archives."
 
-#: src/saves/SavesTab.tsx:322
+#: src/saves/SavesTab.tsx:335
 msgid "{hours}h played"
 msgstr "{hours}h played"
 
@@ -5508,7 +5526,7 @@ msgstr "Check this download"
 msgid "Save…"
 msgstr "Save…"
 
-#: src/saves/SavesTab.tsx:268
+#: src/saves/SavesTab.tsx:270
 msgid "Fall"
 msgstr "Fall"
 
@@ -5592,7 +5610,7 @@ msgstr "No stored run contains that text."
 msgid "List sort: {from} → {to}"
 msgstr "List sort: {from} → {to}"
 
-#: src/saves/SavesTab.tsx:386
+#: src/saves/SavesTab.tsx:399
 msgid "Reading your saves…"
 msgstr "Reading your saves…"
 
@@ -5812,7 +5830,7 @@ msgid "On"
 msgstr "On"
 
 #: src/commandPalette/CommandPalette.tsx:165
-#: src/game/Detail.tsx:381
+#: src/game/Detail.tsx:382
 #: src/profiles/ProfileRow.tsx:224
 msgid "Share"
 msgstr "Share"
@@ -5826,7 +5844,7 @@ msgstr "Added mods to {0}"
 msgid "Leave out"
 msgstr "Leave out"
 
-#: src/saves/SavesTab.tsx:389
+#: src/saves/SavesTab.tsx:402
 msgid "No saves yet"
 msgstr "No saves yet"
 
@@ -5886,7 +5904,7 @@ msgstr "No config.json yet"
 msgid "Add them"
 msgstr "Add them"
 
-#: src/saves/SavesTab.tsx:229
+#: src/saves/SavesTab.tsx:231
 msgid "Forest farm"
 msgstr "Forest farm"
 
@@ -5895,7 +5913,7 @@ msgstr "Forest farm"
 msgid "Import from {0}…"
 msgstr "Import from {0}…"
 
-#: src/game/Detail.tsx:386
+#: src/game/Detail.tsx:387
 msgid "{gameName} settings"
 msgstr "{gameName} settings"
 
@@ -5933,7 +5951,7 @@ msgstr "Adopt"
 msgid "Not in this profile"
 msgstr "Not in this profile"
 
-#: src/queue/QueueHistory.tsx:144
+#: src/queue/QueueHistory.tsx:148
 msgid " · "
 msgstr " · "
 

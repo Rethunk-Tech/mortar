@@ -108,6 +108,7 @@ function HeroName({ profile, meta }: { profile: Profile; meta: string[] }) {
             ) : null}
             <Typography
               noWrap={true}
+              title={profile.name}
               sx={{
                 fontSize: 44,
                 fontWeight: 700,
