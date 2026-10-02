@@ -143,8 +143,8 @@ function FomodWizard({ session }: { session: FomodSession }) {
       ),
     [session, choices],
   )
-  const invalidGroup = step?.groups.find(
-    (g) => !groupOK(g.type, choices[step.name]?.[g.name] ?? []),
+  const invalidGroup = (step?.groups ?? []).find(
+    (g) => !groupOK(g.type, choices[step?.name ?? '']?.[g.name] ?? []),
   )?.name
 
   const pick = (groupType: string, groupName: string, plugin: string, on: boolean) => {
