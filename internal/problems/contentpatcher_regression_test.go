@@ -50,7 +50,7 @@ func syntheticLoadPack(t *testing.T, content string, files map[string]string) In
 			t.Fatal(err)
 		}
 	}
-	return Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root)}
+	return Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)}
 }
 
 func TestEditMapPatchModesUseSourceLayers(t *testing.T) {
@@ -242,7 +242,7 @@ func syntheticEditPack(t *testing.T, content string) Installed {
 	if err := os.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	return Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root)}
+	return Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)}
 }
 
 func TestSwitchOffOnlySuggestsNonClashingAllowedValue(t *testing.T) {
