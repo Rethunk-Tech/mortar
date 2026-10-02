@@ -19,7 +19,12 @@ lefthook install
 ```sh
 wails3 dev      # app with the Vite dev server
 wails3 build    # production binary in bin/mortar
+wails3 task selftest -- start [--copy-data]   # sandboxed server-mode Mortar at http://127.0.0.1:9455
+wails3 task selftest -- restart               # rebuild and restart after changes
+wails3 task selftest -- stop
 ```
+
+`selftest` runs `scripts/selftest.sh`: a `server`-tagged binary, its own HOME, a copied (never linked) Stardew folder and a minimal Steam library, so the real data, game and Steam config are never touched. Optional `--copy-data` copies live Mortar profiles and settings into that sandbox once. The sandbox lives under `/var/tmp/mortar-selftest` unless `MORTAR_SELFTEST_DIR` is set; the script does not delete it.
 
 The frontend build first runs `scripts/gen-credits.ts`, which rewrites `frontend/src/settings/generated/credits.json` (the licence list on Settings › About) from `frontend/package.json` and `go.mod`, then extracts and compiles the Lingui catalogs in `frontend/src/locales/`, so a build never shows a message id in place of its text; commit those files when they change.
 
@@ -31,12 +36,18 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | --- | --- |
 | `games` | supported games and whether each is configured |
 | `profiles <game>`, `profile create\|rename\|copy\|delete ...` | list and manage profiles |
+| `profile compare <game> <A> <B>` | mods only in A, only in B, version or enabled differences |
+| `profile match <game> <profile> <link-or-file>` | preview a friend's share against a profile |
+| `profile history <game> <profile>`, `profile revert <game> <profile> <eventId>` | restore points; revert to one |
 | `mods <game> <profile>`, `mods enable\|disable\|pin\|unpin\|remove ... <UniqueID>...`, `mod ... <UniqueID>` | list, change and inspect mods |
 | `install <game> <profile> <archive>` | install a local archive |
 | `conflicts`, `problems`, `updates`, `saves <game> <profile>` | what the Problems, Mods and Saves tabs show |
 | `share`, `export <game> <profile> [file]`, `open <link\|file>` | share links and `.mortar` files |
 | `launch <game> <profile> [--wait]`, `status`, `stop <game>`, `runs`, `logs` | play and read past runs |
 | `launchers`, `launchers add\|remove <id> <folder>` | what Settings › Launchers shows and changes |
+| `tools <game>`, `tools run <game> <profile> <tool>` | configured external tools; start one |
+| `bundles <game>`, `bundles apply <game> <bundle> <profile>` | list saved bundles; copy one into a profile |
+| `nexus untrack <game> --all\|--unused` | untrack that game's Nexus mods (`--yes` skips the prompt) |
 | `queue`, `doctor`, `version`, `completion bash\|zsh\|fish` | the download queue, the environment, shell completion |
 
 ```sh
