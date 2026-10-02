@@ -39,6 +39,7 @@ type fixture struct {
 	samePage     func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool)
 	installExtra func(game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error)
 	stored       map[string]profile.Source
+	newest       atomic.Int32
 	// calls counts Nexus API requests.
 	calls     atomic.Int32
 	fromStore []string
@@ -119,6 +120,7 @@ func newFixture(t *testing.T) *fixture {
 			f.mu.Unlock()
 			return profile.InstallResult{}, nil
 		},
+		Newest: func(_, _ string, _ int) int { return int(f.newest.Load()) },
 		SamePage: func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool) {
 			if f.samePage == nil {
 				return profile.MergeAsk{}, false
@@ -289,6 +291,23 @@ func TestFreeAccountWaitsForTheClickThenTakesTheLink(t *testing.T) {
 	if len(f.keys) != 1 || f.keys[0] != "k" {
 		t.Errorf("download link was asked with keys %v", f.keys)
 	}
+}
+
+func TestWaitingLatestItemIsSkippedOnceTheProfileHasANewerFile(t *testing.T) {
+	f := newFixture(t)
+	f.premium.Store(false)
+	f.start()
+	exact, latest := req(10), req(10)
+	exact.Profile, latest.Latest = "p2", true
+	if _, err := f.s.Add([]Request{latest, exact}); err != nil {
+		t.Fatal(err)
+	}
+	f.wait("the click", f.item(StateWaitingClick))
+	f.newest.Store(11)
+	f.s.poke()
+	f.wait("the skip", func(st State) bool {
+		return len(st.Items) == 2 && st.Items[0].State == StateSkipped && st.Items[1].State == StateWaitingClick
+	})
 }
 
 func TestExpiredKeyReopensThePage(t *testing.T) {

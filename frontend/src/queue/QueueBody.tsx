@@ -183,14 +183,17 @@ function Click({ item }: { item: Item }) {
       label={t`Needs your click`}
       text={t`Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page.`}
       actions={
-        <Button
-          variant="contained"
-          disabled={pending}
-          onClick={() => run(() => OpenPage(item.id))}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
-          {t`Open download page`}
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <SkipButton item={item} />
+          <Button
+            variant="contained"
+            disabled={pending}
+            onClick={() => run(() => OpenPage(item.id))}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            {t`Open download page`}
+          </Button>
+        </Box>
       }
     />
   )

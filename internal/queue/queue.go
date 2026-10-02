@@ -189,6 +189,8 @@ type Deps struct {
 	Stage         func(game string, source profile.Source, path string) (key string, uniqueIDs []string, err error)
 	InstallStaged func(game, profileID, key string, source profile.Source) (profile.InstallResult, error)
 	InstallRemap  func(game, profileID, key, root string, source profile.Source) (profile.InstallResult, error)
+	// Newest is the highest Nexus file id the profile holds from modID's page, 0 when none; nil means never.
+	Newest func(game, profileID string, modID int) int
 	// SamePage reports an existing profile entry from this Nexus mod page when the incoming file is another file on it.
 	SamePage func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool)
 	// InstallExtra adds a downloaded Nexus file to an existing same-page entry.

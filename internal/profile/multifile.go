@@ -48,6 +48,17 @@ func SamePageAsk(p Profile, modID, fileID int, category string) (MergeAsk, bool)
 	return MergeAsk{}, false
 }
 
+// NewestFromPage is the highest Nexus file id the profile holds from modID's page, 0 when it holds none.
+func NewestFromPage(p Profile, modID int) int {
+	newest := 0
+	for _, e := range p.Entries {
+		if e.Source.Kind == KindNexus && e.Source.ModID == modID {
+			newest = max(newest, e.Source.FileID)
+		}
+	}
+	return newest
+}
+
 // AddExtra copies extraKey into mods/<entryKey>/<extraKey>/ and records it on the entry.
 func (s *Store) AddExtra(game, id, entryKey, extraKey string, source Source) (Profile, error) {
 	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {

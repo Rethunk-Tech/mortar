@@ -136,7 +136,37 @@ func (s *Service) run(ctx context.Context) {
 	}
 }
 
+// obsolete lists queued Nexus items the profile already holds at that file or newer, read under the lock. Only an
+// update or a Latest request counts: a plain request asks for that exact file, as a share import does.
+func (s *Service) obsolete() []Item {
+	var out []Item
+	for _, it := range s.items {
+		if (it.State == StateQueued || it.State == StateWaitingClick) && it.Repo == "" && it.FileID > 0 &&
+			it.staged == "" && !it.readyZip && (it.Latest || it.Kind == KindUpdate) {
+			out = append(out, *it)
+		}
+	}
+	return out
+}
+
+// skipHeld skips the items obsolete found once the profile is checked outside the lock.
+func (s *Service) skipHeld() {
+	if s.d.Newest == nil {
+		return
+	}
+	s.mu.Lock()
+	cands := s.obsolete()
+	s.mu.Unlock()
+	for _, it := range cands {
+		if have := s.d.Newest(it.Game, it.Profile, it.ModID); have >= it.FileID {
+			log.Printf("queue: mod %d file %d skipped as %s, profile %s already has file %d", it.ModID, it.FileID, it.ID, it.Profile, have)
+			s.end(it.ID, StateSkipped, StateQueued, StateWaitingClick)
+		}
+	}
+}
+
 func (s *Service) step(ctx context.Context) bool {
+	s.skipHeld()
 	s.mu.Lock()
 	var queued []*Item
 	for _, it := range s.items {

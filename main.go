@@ -271,6 +271,18 @@ func run() error {
 		Stage:         profiles.StageGitHub,
 		InstallStaged: profiles.InstallStaged,
 		InstallRemap:  profiles.InstallRemap,
+		Newest: func(game, profileID string, modID int) int {
+			all, err := profiles.List(game)
+			if err != nil {
+				return 0
+			}
+			for _, p := range all {
+				if p.ID == profileID {
+					return profile.NewestFromPage(p, modID)
+				}
+			}
+			return 0
+		},
 		SamePage: func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool) {
 			all, err := profiles.List(game)
 			if err != nil {
