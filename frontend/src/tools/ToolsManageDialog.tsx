@@ -10,6 +10,7 @@ import {
   ListItem,
   ListItemText,
   Tooltip,
+  Typography,
 } from '@mui/material'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
@@ -31,13 +32,20 @@ export function ToolsManageDialog({
   const tools = useTools((s) => s.tools)
   const remove = useTools((s) => s.remove)
   const update = useTools((s) => s.update)
+  const add = useTools((s) => s.add)
   const [editing, setEditing] = useState<Tool | null>(null)
+  const [adding, setAdding] = useState(false)
 
   return (
     <>
       <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth={true} transitionDuration={0}>
         <DialogTitle>{t`Manage tools`}</DialogTitle>
         <DialogContent>
+          {tools.length === 0 ? (
+            <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+              {t`No tools yet. Add a program you run alongside the game, such as a save editor or a map viewer, and it launches from the Tools menu in one click.`}
+            </Typography>
+          ) : null}
           <List dense={true}>
             {tools.map((tool) => (
               <ListItem
@@ -71,9 +79,18 @@ export function ToolsManageDialog({
           </List>
         </DialogContent>
         <DialogActions>
+          <Button onClick={() => setAdding(true)}>{t`Add tool…`}</Button>
           <Button onClick={onClose}>{t`Close`}</Button>
         </DialogActions>
       </Dialog>
+      <ToolEditorDialog
+        open={adding}
+        initial={null}
+        onClose={() => setAdding(false)}
+        onSave={async (tool) => {
+          await add(game, tool)
+        }}
+      />
       <ToolEditorDialog
         open={editing !== null}
         initial={editing}
