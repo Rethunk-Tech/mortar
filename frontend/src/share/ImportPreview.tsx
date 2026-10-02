@@ -314,6 +314,7 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
     one: 'with # settings file, written once its mod is installed',
     other: 'with # settings files, written once their mods are installed',
   })
+  const skippedSettings = preview.skippedSettings ?? []
   const counts = MOD_STATES.filter((s) => summary.counts[s] > 0)
   const detail = [
     ready ? t`${mods} · about ${size} to download` : mods,
@@ -356,6 +357,21 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
         <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }} title={detail}>
           {detail}
         </Typography>
+        {skippedSettings.length > 0 ? (
+          <Box>
+            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+              {plural(skippedSettings.length, {
+                one: '# settings file was left out (too large):',
+                other: '# settings files were left out (too large):',
+              })}
+            </Typography>
+            <Box component="ul" sx={{ m: 0, pl: 2.5, fontSize: 13, color: 'text.secondary' }}>
+              {skippedSettings.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
+            </Box>
+          </Box>
+        ) : null}
       </Box>
       <Box sx={{ flex: 1 }} />
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
