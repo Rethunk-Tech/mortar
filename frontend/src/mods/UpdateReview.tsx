@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
@@ -21,6 +22,7 @@ import {
   ChevronRight,
   ExternalLink,
   ShieldCheck,
+  TriangleAlert,
   X,
 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
@@ -35,7 +37,12 @@ import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { changelogsBetween, mergeCachedDetails } from './changelogRange.ts'
+import {
+  changelogNoteIsRisky,
+  changelogsBetween,
+  changelogsHaveRiskyNotes,
+  mergeCachedDetails,
+} from './changelogRange.ts'
 import {
   installableUpdate,
   listedAgainstNexus,
@@ -165,11 +172,20 @@ function Changes({ update }: { update: Update }) {
       {logs.map((c) => (
         <Box key={c.version}>
           <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{c.version}</Typography>
-          <Typography
-            sx={{ fontSize: 13, pl: 2, whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}
-          >
-            {(c.notes ?? []).map((n) => `• ${n}`).join('\n')}
-          </Typography>
+          {(c.notes ?? []).map((n) => (
+            <Typography
+              key={n}
+              sx={{
+                fontSize: 13,
+                pl: 2,
+                whiteSpace: 'pre-line',
+                overflowWrap: 'anywhere',
+                color: changelogNoteIsRisky(n) ? 'warning.main' : undefined,
+              }}
+            >
+              {`• ${n}`}
+            </Typography>
+          ))}
         </Box>
       ))}
     </Fold>
@@ -192,6 +208,13 @@ function Row({
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const mod = mods.find((m) => m.key === update.key && sameId(m.uniqueId, update.uniqueId))
+  const details = useNexusDetails((s) => s.byId[update.nexusId]?.details)
+  const riskyChangelog =
+    update.nexusId > 0 && details
+      ? changelogsHaveRiskyNotes(
+          changelogsBetween(details.changelogs ?? [], update.installed, update.version),
+        )
+      : false
   const queued = useQueue((s) => pendingUpdate(s.state.items, profileId, update))
   const notes = [
     ...(mod ? siblingsOf(mods, mod).map((o) => t`Also updates ${o.name} (same download)`) : []),
@@ -215,9 +238,21 @@ function Row({
     >
       <LetterTile mod={{ uniqueId: update.uniqueId, name: update.name }} size={ROW_TILE} />
       <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '3px' }}>
-        <Typography sx={{ fontSize: 16, fontWeight: 600, overflowWrap: 'anywhere' }}>
-          {update.unofficial ? t`Unofficial update available: ${update.version}` : update.name}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
+          <Typography sx={{ fontSize: 16, fontWeight: 600, overflowWrap: 'anywhere', minWidth: 0 }}>
+            {update.unofficial ? t`Unofficial update available: ${update.version}` : update.name}
+          </Typography>
+          {riskyChangelog ? (
+            <Tooltip title={t`This update's notes mention breaking changes or new requirements`}>
+              <Box
+                component="span"
+                sx={{ display: 'inline-flex', flexShrink: 0, color: 'warning.main' }}
+              >
+                <TriangleAlert size={16} aria-hidden={true} />
+              </Box>
+            </Tooltip>
+          ) : null}
+        </Box>
         {notes.length > 0 ? (
           <Typography
             sx={{
