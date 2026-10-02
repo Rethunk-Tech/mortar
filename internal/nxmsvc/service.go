@@ -99,14 +99,18 @@ func (s *Service) Receive(args []string) bool {
 			log.Printf("nxm: duplicate link ignored")
 			if link, err := nxm.Parse(arg, s.store.Get().NexusUserID, s.now()); err == nil {
 				s.mu.Lock()
+				var waiting *Arrival
 				for _, arrival := range s.arrivals {
 					if arrival.Link == link {
-						s.mu.Unlock()
-						s.emit(ArrivedEvent, arrival)
+						copy := arrival
+						waiting = &copy
 						break
 					}
 				}
 				s.mu.Unlock()
+				if waiting != nil {
+					s.emit(ArrivedEvent, *waiting)
+				}
 			}
 			continue
 		}
@@ -130,7 +134,7 @@ func (s *Service) Receive(args []string) bool {
 		s.nextID++
 		id := s.nextID
 		if re, ok := errors.AsType[*nxm.RejectError](err); ok {
-			s.forget(arg)
+			delete(s.recent, arg)
 			r := Rejection{ID: id, Reason: re.Reason}
 			log.Printf("nxm: link %d rejected: %s", id, re.Reason)
 			s.rejections = append(s.rejections, r)
