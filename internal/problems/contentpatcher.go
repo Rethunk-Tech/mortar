@@ -44,6 +44,7 @@ type AssetConflict struct {
 	Cosmetic bool `json:"cosmetic"`
 	// Fixes are settings that switch off every clashing edit of one pack.
 	Fixes []ConflictFix `json:"fixes"`
+	Info  string        `json:"info,omitempty"`
 }
 
 // ConflictFix sets one on/off field of a pack (Key, UniqueID) to Value, which turns off all of that pack's edits
@@ -1786,6 +1787,9 @@ func conflictOf(kind, target string, hits []packHit) AssetConflict {
 	for i, h := range hits {
 		c.PackIDs[i], c.Names[i], c.Keys[i] = h.id, h.name, h.key
 	}
+	if kind == "edit" && len(hits) >= 3 && strings.Contains(strings.ToLower(target), "objects") {
+		c.Info = itemConflictInfo(hits)
+	}
 	best := -1
 	bestRank := -1 << 31
 	var tied []int
@@ -1829,6 +1833,70 @@ func conflictOf(kind, target string, hits []packHit) AssetConflict {
 	}
 	c.WinnerName = "unclear"
 	return c
+}
+
+func itemConflictInfo(hits []packHit) string {
+	common := map[string]bool{}
+	for _, patch := range hits[0].edits {
+		for _, shape := range patch.shapes {
+			for cell := range shapeCells(shape) {
+				common[cell] = true
+			}
+		}
+	}
+	for _, hit := range hits[1:] {
+		cells := map[string]bool{}
+		for _, patch := range hit.edits {
+			for _, shape := range patch.shapes {
+				for cell := range shapeCells(shape) {
+					cells[cell] = true
+				}
+			}
+		}
+		for cell := range common {
+			if !cells[cell] {
+				delete(common, cell)
+			}
+		}
+	}
+	if len(common) == 0 {
+		return ""
+	}
+	cells := slices.Sorted(maps.Keys(common))
+	if len(cells) == 0 {
+		return ""
+	}
+	parts := strings.Split(cells[0], ",")
+	if len(parts) == 2 {
+		x, xErr := strconv.Atoi(parts[0])
+		y, yErr := strconv.Atoi(parts[1])
+		if xErr == nil && yErr == nil {
+			return "cell (" + strconv.Itoa(x*16) + ", " + strconv.Itoa(y*16) + ")"
+		}
+	}
+	return "cell (" + strings.ReplaceAll(cells[0], ",", ", ") + ")"
+}
+
+func shapeCells(shape cpShape) map[string]bool {
+	out := map[string]bool{}
+	if shape.cells != "" {
+		for cell := range strings.SplitSeq(shape.cells, ";") {
+			if cell != "" {
+				out[cell] = true
+			}
+		}
+		return out
+	}
+	x, y, w, h := shape.area()
+	if w <= 0 || h <= 0 || x%16 != 0 || y%16 != 0 || w%16 != 0 || h%16 != 0 {
+		return out
+	}
+	for cy := y / 16; cy < (y+h)/16; cy++ {
+		for cx := x / 16; cx < (x+w)/16; cx++ {
+			out[strconv.Itoa(cx)+","+strconv.Itoa(cy)] = true
+		}
+	}
+	return out
 }
 
 func hitPriority(kind string, hit packHit) int {

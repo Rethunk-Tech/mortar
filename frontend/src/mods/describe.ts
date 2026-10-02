@@ -60,10 +60,13 @@ export function useDescribe(): Describe {
       winner =
         losers === '' ? t` ${winnerName} wins.` : t` ${winnerName} wins; ${losers} overridden.`
     }
-    if (kind === 'load') {
-      return t`${who} all load ${target}.${winner}`
-    }
-    return t`${who} all edit ${target}.${winner}`
+    const sentence =
+      kind === 'load'
+        ? t`${who} all load ${target}.${winner}`
+        : t`${who} all edit ${target}.${winner}`
+    return p.asset.info
+      ? `${sentence} ${t`These mods may add the same item: ${p.asset.info}.`}`
+      : sentence
   }
 
   const describeMissing = (p: Extract<Problem, { kind: 'missing' }>): string => {

@@ -116,6 +116,18 @@ func TestAssetConflicts(t *testing.T) {
 	})
 }
 
+func TestItemConflictInfo(t *testing.T) {
+	hits := []packHit{
+		{id: "A", edits: []cpPatch{{shapes: []cpShape{{kind: 'r', x: 208, y: 192, w: 16, h: 16}}}}},
+		{id: "B", edits: []cpPatch{{shapes: []cpShape{{kind: 'r', x: 208, y: 192, w: 16, h: 16}}}}},
+		{id: "C", edits: []cpPatch{{shapes: []cpShape{{kind: 'r', x: 208, y: 192, w: 16, h: 16}}}}},
+	}
+	got := conflictOf("edit", "Maps/springobjects", hits)
+	if got.Info != "cell (208, 192)" {
+		t.Fatalf("item info = %q", got.Info)
+	}
+}
+
 func TestContentPatcherJSONNoise(t *testing.T) {
 	dir := t.TempDir()
 	folder := filepath.Join(dir, "Pack.Noise")
