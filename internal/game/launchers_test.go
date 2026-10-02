@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/settings"
@@ -66,5 +67,21 @@ func TestValidateLauncherRoot(t *testing.T) {
 	}
 	if err := ValidateLauncherRoot("nope", t.TempDir()); err == nil {
 		t.Error("an unknown launcher must be refused")
+	}
+}
+
+func TestLauncherSetPerOS(t *testing.T) {
+	ids := func(goos string) []string {
+		var out []string
+		for _, s := range launcherSpecs(goos) {
+			out = append(out, s.id)
+		}
+		return out
+	}
+	if got := ids("windows"); slices.Contains(got, LauncherFlatpakSteam) || slices.Contains(got, LauncherLutris) {
+		t.Errorf("Windows lists Linux-only launchers: %v", got)
+	}
+	if got := ids("linux"); !slices.Contains(got, LauncherFlatpakSteam) || !slices.Contains(got, LauncherLutris) {
+		t.Errorf("Linux misses launchers: %v", got)
 	}
 }

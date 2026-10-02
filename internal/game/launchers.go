@@ -58,13 +58,14 @@ func withCustom(custom []string, rest ...string) []string {
 	return append(slices.Clone(custom), rest...)
 }
 
-func launcherSpecs() []launcherSpec {
+// launcherSpecs are the launchers Mortar reads on goos.
+func launcherSpecs(goos string) []launcherSpec {
 	steamDir := func(dir string) bool { return isDir(filepath.Join(dir, "steamapps")) }
 	specs := []launcherSpec{{
 		id: LauncherSteam, name: "Steam", usable: steamDir,
 		looked: func(home string, custom []string) []string { return steam.Roots(home, custom...) },
 	}}
-	if runtime.GOOS == "linux" {
+	if goos == "linux" {
 		specs = append(specs, launcherSpec{
 			id: LauncherFlatpakSteam, name: "Steam (Flatpak)", usable: steamDir,
 			looked: func(home string, _ []string) []string { return []string{steam.FlatpakRoot(home)} },
@@ -74,7 +75,7 @@ func launcherSpecs() []launcherSpec {
 		id: LauncherHeroic, name: "Heroic", usable: func(dir string) bool { return isDir(filepath.Join(dir, "gog_store")) },
 		looked: func(home string, custom []string) []string { return gog.HeroicDirs(home, custom...) },
 	})
-	if runtime.GOOS == "linux" {
+	if goos == "linux" {
 		specs = append(specs, launcherSpec{
 			id: LauncherLutris, name: "Lutris", usable: isDir,
 			looked: func(home string, custom []string) []string { return lutris.ConfigDirs(home, custom...) },
@@ -84,7 +85,7 @@ func launcherSpecs() []launcherSpec {
 		id: LauncherGOG, name: "GOG", usable: isDir,
 		looked: func(home string, custom []string) []string { return gog.GamesDirs(home, custom...) },
 	}
-	if runtime.GOOS == "windows" {
+	if goos == "windows" {
 		gogSpec.name = "GOG Galaxy"
 		gogSpec.looked = func(home string, custom []string) []string {
 			return append(withCustom(custom, gog.GalaxyDir()), gog.GamesDirs(home)...)
@@ -103,7 +104,7 @@ func Launchers(home string, s settings.Settings) ([]StoreApp, error) {
 		}
 	}
 	var out []StoreApp
-	for _, spec := range launcherSpecs() {
+	for _, spec := range launcherSpecs(runtime.GOOS) {
 		custom := s.LauncherRoots[spec.id]
 		l := StoreApp{
 			ID: spec.id, Name: spec.name, Looked: spec.looked(home, custom), Games: byLauncher[spec.id],
@@ -117,11 +118,11 @@ func Launchers(home string, s settings.Settings) ([]StoreApp, error) {
 		}
 		seen := map[string]bool{}
 		for _, dir := range l.Looked {
-			real, err := filepath.EvalSymlinks(dir)
-			if err != nil || dir == "" || seen[real] || !spec.usable(dir) {
+			resolved, err := filepath.EvalSymlinks(dir)
+			if err != nil || dir == "" || seen[resolved] || !spec.usable(dir) {
 				continue
 			}
-			seen[real] = true
+			seen[resolved] = true
 			l.Roots = append(l.Roots, dir)
 		}
 		l.Found = len(l.Roots) > 0
@@ -132,7 +133,7 @@ func Launchers(home string, s settings.Settings) ([]StoreApp, error) {
 
 // ValidateLauncherRoot checks that dir is a folder of the named launcher before it is saved.
 func ValidateLauncherRoot(launcher, dir string) error {
-	for _, spec := range launcherSpecs() {
+	for _, spec := range launcherSpecs(runtime.GOOS) {
 		if spec.id != launcher {
 			continue
 		}
