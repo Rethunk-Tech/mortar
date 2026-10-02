@@ -104,6 +104,25 @@ func TestScanReadsSaveAndCachesByMtime(t *testing.T) {
 	}
 }
 
+func TestNewestReadsOnlyTheNewestSave(t *testing.T) {
+	dir := t.TempDir()
+	old := filepath.Join(dir, "Old_1")
+	write(t, filepath.Join(old, "Old_1"), "not a save")
+	newest := filepath.Join(dir, "New_1")
+	write(t, filepath.Join(newest, "New_1"), "<SaveGame><modData>"+item("Author.Mod/x")+"</modData></SaveGame>")
+	now := time.Now()
+	if err := os.Chtimes(filepath.Join(old, "Old_1"), now.Add(-time.Hour), now.Add(-time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(filepath.Join(newest, "New_1"), now, now); err != nil {
+		t.Fatal(err)
+	}
+	got, err := (&Scanner{Dir: dir}).Newest(index)
+	if err != nil || got.Folder != "New_1" || !reflect.DeepEqual(got.Used, []string{"author.mod"}) {
+		t.Fatalf("newest = %+v, %v", got, err)
+	}
+}
+
 func TestKeysSpanChunks(t *testing.T) {
 	pad := make([]byte, 1<<20-5)
 	for i := range pad {

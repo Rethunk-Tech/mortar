@@ -135,6 +135,19 @@ func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, err
 	return fits, nil
 }
 
+func fitFor(in saves.Info, have map[string]bool, dismissed []string) (Fit, bool) {
+	lacks := saves.Lacking(in.Used, have, dismissed)
+	fit := Fit{
+		Folder: in.Folder, Farm: in.Farm, Farmer: in.Farmer, Season: in.Season, Day: in.Day, Year: in.Year,
+		Played: in.Played, WhichFarm: in.WhichFarm, MillisecondsPlayed: in.MillisecondsPlayed, Money: in.Money,
+		Missing: make([]Lack, len(lacks)),
+	}
+	for i, l := range lacks {
+		fit.Missing[i] = Lack{UniqueID: l.UniqueID, Name: l.UniqueID, Disabled: l.Disabled}
+	}
+	return fit, len(lacks) > 0
+}
+
 type described struct {
 	name  string
 	where *problems.Ref
@@ -179,11 +192,30 @@ func (s *Service) describe(ctx context.Context, ids map[string]bool) map[string]
 // LastSaveGap is the most recently written save when it uses mods the profile lacks or has switched off, the save
 // the game most likely loads next; ok is false when that save has everything or there are no saves.
 func (s *Service) LastSaveGap(ctx context.Context, game, profileID string) (fit Fit, ok bool, err error) {
-	fits, err := s.Saves(ctx, game, profileID)
+	if game != "stardew" {
+		return Fit{}, false, nil
+	}
+	index, err := s.meta.Index(ctx)
 	if err != nil {
 		return Fit{}, false, err
 	}
-	fit, ok = lastGap(fits)
+	mods, err := s.profiles.Mods(game, profileID)
+	if err != nil {
+		return Fit{}, false, err
+	}
+	have := map[string]bool{}
+	for _, mod := range mods {
+		id := strings.ToLower(mod.UniqueID)
+		have[id] = have[id] || mod.Enabled
+	}
+	info, err := s.scanner.Newest(index)
+	if err != nil {
+		return Fit{}, false, err
+	}
+	if info.Folder == "" {
+		return Fit{}, false, nil
+	}
+	fit, ok = fitFor(info, have, s.settings.Get().Dismissed[info.Folder])
 	return fit, ok, nil
 }
 

@@ -143,6 +143,45 @@ func (s *Scanner) Scan(index map[string][]meta.Ref) ([]Info, error) {
 	return out, errors.Join(errs...)
 }
 
+// Newest reads only the save folder most recently written. It is used by the launch warning, where the other saves
+// and their mod names are not needed until the user opens the Saves tab.
+func (s *Scanner) Newest(index map[string][]meta.Ref) (Info, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	entries, err := os.ReadDir(s.Dir)
+	if errors.Is(err, fs.ErrNotExist) {
+		return Info{}, nil
+	}
+	if err != nil {
+		return Info{}, err
+	}
+	var newest string
+	var played int64
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		st, ok, err := s.stampOf(entry.Name(), len(index))
+		if err != nil {
+			return Info{}, err
+		}
+		if !ok {
+			continue
+		}
+		at := st.Info
+		if at == 0 {
+			at = st.Main
+		}
+		if newest == "" || at > played || (at == played && entry.Name() > newest) {
+			newest, played = entry.Name(), at
+		}
+	}
+	if newest == "" {
+		return Info{}, nil
+	}
+	return s.read(newest, index)
+}
+
 // stampOf reports ok=false for a folder that is not a save: Stardew's main file is named like its folder.
 func (s *Scanner) stampOf(folder string, index int) (st stamp, ok bool, err error) {
 	main, err := os.Stat(filepath.Join(s.Dir, folder, folder))
