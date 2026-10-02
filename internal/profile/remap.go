@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
@@ -18,6 +19,15 @@ type RemapAsk struct {
 	Key    string      `json:"key"`
 	Source Source      `json:"source"`
 	Tree   []RemapNode `json:"tree"`
+	// Variants is set when the archive holds several copies of the same mod; the user picks one folder of them.
+	Variants []RemapVariant `json:"variants,omitempty"`
+}
+
+// RemapVariant is one folder of an archive that ships the same mod in several variants.
+type RemapVariant struct {
+	Path        string `json:"path"`
+	Version     string `json:"version"`
+	Description string `json:"description"`
 }
 
 // RemapNode is one file or folder in the extracted archive.
@@ -29,14 +39,15 @@ type RemapNode struct {
 	Children []RemapNode `json:"children,omitempty"`
 }
 
-// NeedRootError means the store item has no SMAPI-reachable manifest and the user has not chosen a folder.
+// NeedRootError means the store item has no SMAPI-reachable manifest, or several variants of one mod, and the user has
+// not chosen a folder.
 type NeedRootError struct {
 	Ask RemapAsk
 }
 
 func (e *NeedRootError) Error() string { return "this archive needs a mod folder chosen" }
 
-func (s *Store) remapAsk(game, key string) (RemapAsk, bool, error) {
+func (s *Store) remapAsk(game, id, key string) (RemapAsk, bool, error) {
 	dir, err := s.items.Path(game, key)
 	if err != nil {
 		return RemapAsk{}, false, err
@@ -59,14 +70,81 @@ func (s *Store) remapAsk(game, key string) (RemapAsk, bool, error) {
 	if err != nil {
 		return RemapAsk{}, false, err
 	}
-	if len(found) > 0 {
+	vars := variants(found)
+	if len(found) > 0 && len(vars) == 0 {
 		return RemapAsk{}, false, nil
+	}
+	if len(vars) > 0 {
+		if rel := s.priorVariant(game, id, found, vars); rel != "" {
+			return RemapAsk{}, false, s.items.SetRoot(game, key, rel)
+		}
 	}
 	tree, err := remapTree(dir)
 	if err != nil {
 		return RemapAsk{}, false, err
 	}
-	return RemapAsk{Key: key, Tree: tree}, true, nil
+	return RemapAsk{Key: key, Tree: tree, Variants: vars}, true, nil
+}
+
+// variants returns one folder per copy of each mod the archive holds more than once, since SMAPI refuses to load a
+// UniqueID twice. Each folder is widened to its highest ancestor that still holds a single copy, so a variant that
+// bundles several mods ("Option A/[CP] Mod", "Option A/[JA] Mod") is picked whole.
+func variants(found []manifest.Mod) []RemapVariant {
+	byID := map[string][]manifest.Mod{}
+	for _, m := range found {
+		id := strings.ToLower(m.UniqueID)
+		byID[id] = append(byID[id], m)
+	}
+	under := func(dir, folder string) bool { return folder == dir || strings.HasPrefix(folder, dir+"/") }
+	single := func(dir string) bool {
+		for _, ms := range byID {
+			n := 0
+			for _, m := range ms {
+				if under(dir, m.Folder) {
+					n++
+				}
+			}
+			if n > 1 {
+				return false
+			}
+		}
+		return true
+	}
+	var out []RemapVariant
+	for _, m := range found {
+		if len(byID[strings.ToLower(m.UniqueID)]) < 2 {
+			continue
+		}
+		dir := m.Folder
+		for p := path.Dir(dir); p != "." && single(p); p = path.Dir(p) {
+			dir = p
+		}
+		if !slices.ContainsFunc(out, func(v RemapVariant) bool { return v.Path == dir }) {
+			out = append(out, RemapVariant{Path: dir, Version: m.Version, Description: m.Description})
+		}
+	}
+	return out
+}
+
+// priorVariant is the variant folder the profile's current entry for these mods was installed from, when this
+// archive has a folder of the same name, so an update keeps the variant the user chose.
+func (s *Store) priorVariant(game, id string, found []manifest.Mod, vars []RemapVariant) string {
+	p, err := s.read(game, id)
+	if err != nil {
+		return ""
+	}
+	for _, e := range p.Entries {
+		if !slices.ContainsFunc(e.Mods, func(m EntryMod) bool {
+			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return sameID(f.UniqueID, m.UniqueID) })
+		}) {
+			continue
+		}
+		rel, err := s.items.Root(game, e.Key)
+		if err == nil && rel != "" && slices.ContainsFunc(vars, func(v RemapVariant) bool { return v.Path == rel }) {
+			return rel
+		}
+	}
+	return ""
 }
 
 func contentRootFile(dir string) string {
@@ -150,6 +228,9 @@ func (s *Store) InstallRemap(game, id, key, root string, source Source) (Install
 	}
 	if len(found) == 0 {
 		return InstallResult{}, &InstallError{Msg: "Choose a folder that holds a SMAPI manifest", Err: &NoModError{Key: key}}
+	}
+	if len(variants(found)) > 0 {
+		return InstallResult{}, &InstallError{Msg: "Choose a folder that holds only one variant of the mod", Err: fmt.Errorf("root %q holds variants", root)}
 	}
 	if err := s.items.SetRoot(game, key, rel); err != nil {
 		return InstallResult{}, installError(err)

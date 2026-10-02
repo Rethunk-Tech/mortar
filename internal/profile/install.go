@@ -24,7 +24,8 @@ type InstallResult struct {
 	VersionChanged bool `json:"versionChanged"`
 	// Fomod is set when the store item has install options and they have not been chosen yet.
 	Fomod *FomodAsk `json:"fomod,omitempty"`
-	// Remap is set when the archive has no SMAPI-reachable manifest and the user must pick a folder.
+	// Remap is set when the archive has no SMAPI-reachable manifest, or several variants of one mod, and the user must
+	// pick a folder.
 	Remap *RemapAsk `json:"remap,omitempty"`
 }
 
@@ -159,7 +160,7 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 	if _, hasFomod, err := s.fomodOf(game, key); err != nil {
 		return Profile{}, false, false, err
 	} else if !hasFomod {
-		if ask, need, err := s.remapAsk(game, key); err != nil {
+		if ask, need, err := s.remapAsk(game, id, key); err != nil {
 			return Profile{}, false, false, err
 		} else if need {
 			return Profile{}, false, false, &NeedRootError{Ask: ask}

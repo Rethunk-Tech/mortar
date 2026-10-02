@@ -41,6 +41,7 @@ export function NeedsRootCallout({ item }: { item: Item }) {
     return null
   }
   const profileName = profile?.name ?? ''
+  const variants = (ask.variants ?? []).length > 0
   return (
     <Box
       sx={{
@@ -66,7 +67,7 @@ export function NeedsRootCallout({ item }: { item: Item }) {
               color: 'primary.main',
             }}
           >
-            {t`Choose a folder`}
+            {variants ? t`Choose a variant` : t`Choose a folder`}
           </Typography>
           <Title item={item} size={16} />
         </Box>
@@ -82,7 +83,9 @@ export function NeedsRootCallout({ item }: { item: Item }) {
         </Box>
       </Box>
       <Typography sx={{ fontSize: 13, lineHeight: 1.45 }}>
-        {t`This archive has no SMAPI mod where Mortar expects one. Pick the folder that holds manifest.json.`}
+        {variants
+          ? t`This archive holds several variants of the same mod. Pick the one to install; updates keep it.`
+          : t`This archive has no SMAPI mod where Mortar expects one. Pick the folder that holds manifest.json.`}
       </Typography>
       <Button
         variant="contained"
@@ -99,7 +102,7 @@ export function NeedsRootCallout({ item }: { item: Item }) {
         }
         sx={{ alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
       >
-        {t`Choose folder…`}
+        {variants ? t`Choose variant…` : t`Choose folder…`}
       </Button>
     </Box>
   )

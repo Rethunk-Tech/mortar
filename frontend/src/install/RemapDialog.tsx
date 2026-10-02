@@ -14,7 +14,10 @@ import {
 } from '@mui/material'
 import { ChevronDown, ChevronRight, File, Folder } from 'lucide-react'
 import { useState } from 'react'
-import type { RemapNode } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type {
+  RemapNode,
+  RemapVariant,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { paper } from '../mods/paper.ts'
 import { useInstall } from './store.ts'
 
@@ -91,6 +94,39 @@ function NodeRow({
   )
 }
 
+function VariantRows({
+  variants,
+  selected,
+  onSelect,
+}: {
+  variants: RemapVariant[]
+  selected: string
+  onSelect: (path: string) => void
+}) {
+  const differ = (pick: (v: RemapVariant) => string) => new Set(variants.map(pick)).size > 1
+  const showVersion = differ((v) => v.version)
+  const showDescription = differ((v) => v.description)
+  return (
+    <>
+      {variants.map((v) => (
+        <ListItemButton
+          key={v.path}
+          selected={selected === v.path}
+          onClick={() => onSelect(v.path)}
+          sx={{ py: 0.25 }}
+        >
+          <Box component={Folder} size={14} strokeWidth={1.75} sx={{ mr: 1, flexShrink: 0 }} />
+          <ListItemText
+            primary={showVersion ? `${v.path} · ${v.version}` : v.path}
+            secondary={showDescription ? v.description : undefined}
+            slotProps={{ primary: { noWrap: true } }}
+          />
+        </ListItemButton>
+      ))}
+    </>
+  )
+}
+
 function RemapBody() {
   const { t } = useLingui()
   const session = useInstall((s) => s.remap)
@@ -101,6 +137,7 @@ function RemapBody() {
   if (!session) {
     return null
   }
+  const variants = session.ask.variants ?? []
   return (
     <Dialog
       open={true}
@@ -109,23 +146,38 @@ function RemapBody() {
       transitionDuration={0}
       sx={{ '& .MuiDialog-paper': { minWidth: 420, maxHeight: '80vh' } }}
     >
-      <DialogTitle>{t`Choose the mod folder`}</DialogTitle>
+      <DialogTitle>
+        {variants.length > 0 ? t`Choose a variant` : t`Choose the mod folder`}
+      </DialogTitle>
       <DialogContent>
         <Typography variant="body2" sx={{ mb: 1 }}>
-          {t`This archive has no SMAPI mod where Mortar expects one. Pick the folder that holds manifest.json.`}
+          {variants.length > 0
+            ? t`This archive holds several variants of the same mod. Pick the one to install; updates keep it.`
+            : t`This archive has no SMAPI mod where Mortar expects one. Pick the folder that holds manifest.json.`}
         </Typography>
         <List dense={true} disablePadding={true}>
-          {(session.ask.tree ?? []).map((n) => (
-            <NodeRow
-              key={n.path}
-              node={n}
+          {variants.length > 0 ? (
+            <VariantRows
+              variants={variants}
               selected={selected}
-              onSelect={(path, isDir) => {
+              onSelect={(path) => {
                 setSelected(path)
-                setDir(isDir)
+                setDir(true)
               }}
             />
-          ))}
+          ) : (
+            (session.ask.tree ?? []).map((n) => (
+              <NodeRow
+                key={n.path}
+                node={n}
+                selected={selected}
+                onSelect={(path, isDir) => {
+                  setSelected(path)
+                  setDir(isDir)
+                }}
+              />
+            ))
+          )}
         </List>
       </DialogContent>
       <DialogActions>
