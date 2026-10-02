@@ -211,7 +211,7 @@ touch "$4/StardewModdingAPI.dll"
 func vanillaInstall(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
-	write(t, filepath.Join(dir, marker), "")
+	write(t, filepath.Join(dir, identity().Marker), "")
 	write(t, filepath.Join(dir, linuxLauncher), "native stub")
 	return dir
 }

@@ -19,12 +19,23 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
 
+// Game is the domain name of the only game Mortar takes from Nexus so far, and GameID its numeric id in the v2 API.
+// Configure sets both from the verified component manifest at startup; these are the bundled values.
+var (
+	Game   = "stardewvalley"
+	GameID = 1303
+)
+
+// Configure sets the Nexus game from the component manifest; an empty domain keeps the current one.
+func Configure(domain string, id int) {
+	if domain != "" && id > 0 {
+		Game, GameID = domain, id
+	}
+}
+
 const (
 	// BaseURL is the public API.
 	BaseURL = "https://api.nexusmods.com"
-	// Game is the domain name of the only game Mortar supports so far, and GameID its numeric id in the v2 API.
-	Game   = "stardewvalley"
-	GameID = 1303
 	// LimitFloor is the remaining-call count at or under which requests are refused until the window resets.
 	LimitFloor = 5
 

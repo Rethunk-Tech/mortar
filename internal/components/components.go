@@ -61,6 +61,52 @@ type SourceComponent struct {
 // SourceFile is the committed input read by cmd/components.
 type SourceFile struct {
 	Components []SourceComponent `json:"components"`
+	Games      []GameInfo        `json:"games"`
+}
+
+// GameInfo is one game's identity: the names and ids the stores and mod sites know it by. How a game is launched or
+// modded stays in its Go implementation; this is only what can change without a Mortar release.
+type GameInfo struct {
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	SteamAppID string `json:"steamAppId"`
+	// Marker is a file every install of the game holds, at its root or one "game" folder down.
+	Marker string     `json:"marker"`
+	Loader string     `json:"loader"`
+	GOG    GOGInfo    `json:"gog"`
+	Lutris LutrisInfo `json:"lutris"`
+	Nexus  NexusInfo  `json:"nexus"`
+}
+
+// GOGInfo names a game to GOG: its product id and the folder GOG installers give it.
+type GOGInfo struct {
+	ProductID string `json:"productId"`
+	Folder    string `json:"folder"`
+}
+
+// LutrisInfo names a game to Lutris: its slug and a word its executable paths contain.
+type LutrisInfo struct {
+	Slug    string `json:"slug"`
+	Keyword string `json:"keyword"`
+}
+
+// NexusInfo names a game to Nexus Mods: its domain in v1 URLs and its numeric id in the v2 API.
+type NexusInfo struct {
+	Domain string `json:"domain"`
+	ID     int    `json:"id"`
+}
+
+// Validate checks that a game names itself and that no file or folder name could leave its folder.
+func (g GameInfo) Validate() error {
+	if g.ID == "" || g.Name == "" || g.Marker == "" {
+		return errors.New("a game needs an id, a name and a marker file")
+	}
+	for _, name := range []string{g.Marker, g.GOG.Folder} {
+		if strings.ContainsAny(name, "/\\") || name == "." || name == ".." {
+			return fmt.Errorf("game %q has an unsafe file or folder name %q", g.ID, name)
+		}
+	}
+	return nil
 }
 
 // Component is one resolved, hashed asset in a manifest.
@@ -80,6 +126,7 @@ type Component struct {
 type Manifest struct {
 	Serial     uint64      `json:"serial"`
 	Components []Component `json:"components"`
+	Games      []GameInfo  `json:"games"`
 }
 
 // Validate checks the source host, component identity and asset digest.
@@ -141,6 +188,16 @@ func (m Manifest) Validate() error {
 			return fmt.Errorf("component %q is listed more than once for %s", c.Name, c.Game)
 		}
 		seen[key] = struct{}{}
+	}
+	games := make(map[string]struct{}, len(m.Games))
+	for _, g := range m.Games {
+		if err := g.Validate(); err != nil {
+			return err
+		}
+		if _, ok := games[g.ID]; ok {
+			return fmt.Errorf("game %q is listed more than once", g.ID)
+		}
+		games[g.ID] = struct{}{}
 	}
 	return nil
 }
@@ -264,6 +321,33 @@ func (c *Client) Component(game, name string) (Component, bool) {
 		}
 	}
 	return Component{}, false
+}
+
+// Game returns a game's identity from the selected manifest, else from the bundled one, so a manifest that lacks a
+// game never leaves Mortar without it.
+func (c *Client) Game(id string) (GameInfo, bool) {
+	if g, ok := findGame(c.manifest.Games, id); ok {
+		return g, true
+	}
+	return BundledGame(id)
+}
+
+// BundledGame returns a game's identity from the manifest compiled into Mortar.
+func BundledGame(id string) (GameInfo, bool) {
+	m, err := BundledManifest()
+	if err != nil {
+		return GameInfo{}, false
+	}
+	return findGame(m.Games, id)
+}
+
+func findGame(games []GameInfo, id string) (GameInfo, bool) {
+	for _, g := range games {
+		if g.ID == id {
+			return g, true
+		}
+	}
+	return GameInfo{}, false
 }
 
 // Load fetches the signed manifest at startup, using the existing meta cache for a daily TTL. A failed

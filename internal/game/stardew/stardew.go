@@ -15,8 +15,17 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/steam"
 )
 
-// marker ships in every install on every platform; the launcher name differs per OS.
-const marker = "Stardew Valley.dll"
+// identity is Stardew Valley's names and store ids from the verified component manifest, which always carries them
+// because the bundled manifest does.
+func identity() components.GameInfo {
+	if configuredComponents != nil {
+		if g, ok := configuredComponents.Game("stardew"); ok {
+			return g
+		}
+	}
+	g, _ := components.BundledGame("stardew")
+	return g
+}
 
 // Game is Stardew Valley. The configured component client supplies loader releases; the other fields exist so
 // tests can point network and filesystem operations elsewhere.
@@ -46,23 +55,26 @@ var configuredComponents *components.Client
 func ConfigureComponents(client *components.Client) { configuredComponents = client }
 
 func (Game) ID() string         { return "stardew" }
-func (Game) Name() string       { return "Stardew Valley" }
-func (Game) SteamAppID() string { return "413150" }
+func (Game) Name() string       { return identity().Name }
+func (Game) SteamAppID() string { return identity().SteamAppID }
 
-// GOG names Stardew Valley to the GOG locators: its GOG product id and the folder GOG installers use.
+// GOG names Stardew Valley to the GOG locators.
 func (Game) GOG() gog.Game {
-	return gog.Game{ProductID: "1453375253", Folder: "Stardew Valley", Marker: marker}
+	g := identity()
+	return gog.Game{ProductID: g.GOG.ProductID, Folder: g.GOG.Folder, Marker: g.Marker}
 }
 
 // Lutris names Stardew Valley to the Lutris locator.
 func (Game) Lutris() lutris.Game {
-	return lutris.Game{Slug: "stardew-valley", Keyword: "stardew", Marker: marker}
+	g := identity()
+	return lutris.Game{Slug: g.Lutris.Slug, Keyword: g.Lutris.Keyword, Marker: g.Marker}
 }
-func (Game) LoaderName() string   { return "SMAPI" }
+func (Game) LoaderName() string   { return identity().Loader }
 func (Game) ModSources() []string { return []string{"nexus", "github"} }
 
 // ValidInstall reports why dir is not a Stardew Valley install folder.
 func (Game) ValidInstall(dir string) error {
+	marker := identity().Marker
 	st, err := os.Stat(filepath.Join(dir, marker))
 	if err != nil || !st.Mode().IsRegular() {
 		return fmt.Errorf("%q is not a Stardew Valley folder: it has no %s", dir, marker)

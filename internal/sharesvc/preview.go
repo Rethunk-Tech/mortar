@@ -102,12 +102,16 @@ const (
 )
 
 const (
-	nexusPageBase = "https://www.nexusmods.com/" + nexus.Game + "/mods/"
 	githubBase    = "https://github.com/"
 	fetchParallel = 6
 	categoryMain  = "MAIN"
 	categoryOld   = "ARCHIVED"
 )
+
+// nexusPage is a Nexus mod's page for the configured game.
+func nexusPage(modID int) string {
+	return "https://www.nexusmods.com/" + nexus.Game + "/mods/" + fmt.Sprint(modID)
+}
 
 // resolver looks one import up. Its answers come from the mod dataset and, when signed in, Nexus's file lists;
 // a lookup that fails leaves the mod as the link named it rather than failing the preview.
@@ -215,7 +219,7 @@ func substitute(files []nexus.File, version string) *nexus.File {
 }
 
 func nexusMod(modID, fileID int, state string) Mod {
-	return Mod{Key: store.NexusKey(modID, fileID), Site: SiteNexus, ModID: modID, FileID: fileID, PageURL: nexusPageBase + fmt.Sprint(modID), State: state, UniqueIDs: []string{}}
+	return Mod{Key: store.NexusKey(modID, fileID), Site: SiteNexus, ModID: modID, FileID: fileID, PageURL: nexusPage(modID), State: state, UniqueIDs: []string{}}
 }
 
 // nexus resolves one Nexus file.

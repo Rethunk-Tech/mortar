@@ -25,5 +25,26 @@
       "asset": "MortarSmapiBridge-{version}.zip",
       "version": "latest"
     }
+  ],
+  "games": [
+    {
+      "id": "stardew",
+      "name": "Stardew Valley",
+      "steamAppId": "413150",
+      "marker": "Stardew Valley.dll",
+      "loader": "SMAPI",
+      "gog": {
+        "productId": "1453375253",
+        "folder": "Stardew Valley"
+      },
+      "lutris": {
+        "slug": "stardew-valley",
+        "keyword": "stardew"
+      },
+      "nexus": {
+        "domain": "stardewvalley",
+        "id": 1303
+      }
+    }
   ]
 }

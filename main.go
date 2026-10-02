@@ -219,6 +219,9 @@ func run() error {
 		log.Printf("components manifest unavailable; using bundled copy: %v", err)
 	}
 	game.ConfigureComponents(componentClient)
+	if g, ok := componentClient.Game("stardew"); ok {
+		nexus.Configure(g.Nexus.Domain, g.Nexus.ID)
+	}
 	loaders := loadersvc.NewService(home, store, items, profiles, componentClient)
 	loadersvc.Attach(loaders, "stardew")
 	launches.EnsureLoader = func(ctx context.Context, id string, fromStart bool) error {

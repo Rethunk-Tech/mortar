@@ -206,3 +206,20 @@ func TestLoadRefusesManifestOlderThanBundled(t *testing.T) {
 		t.Fatalf("older signed manifest = serial %d, %v; want the bundled serial %d and an error", manifest.Serial, err, base)
 	}
 }
+
+func TestGameFallsBackToBundledAndRejectsUnsafeNames(t *testing.T) {
+	c := NewClient(nil)
+	c.SetManifest(Manifest{Serial: 1})
+	g, ok := c.Game("stardew")
+	if !ok || g.Name != "Stardew Valley" || g.Marker == "" || g.GOG.ProductID == "" {
+		t.Fatalf("a manifest without games must fall back to the bundled identity: %+v %v", g, ok)
+	}
+	bad := Manifest{Serial: 1, Games: []GameInfo{{ID: "x", Name: "X", Marker: "../escape.dll"}}}
+	if err := bad.Validate(); err == nil {
+		t.Fatal("a marker that leaves the game folder must be refused")
+	}
+	dup := Manifest{Serial: 1, Games: []GameInfo{{ID: "x", Name: "X", Marker: "m"}, {ID: "x", Name: "X", Marker: "m"}}}
+	if err := dup.Validate(); err == nil {
+		t.Fatal("a game listed twice must be refused")
+	}
+}
