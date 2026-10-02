@@ -14,7 +14,15 @@ export type Want = Pick<Request, 'kind'> &
   Partial<
     Pick<
       Request,
-      'modId' | 'fileId' | 'name' | 'fileName' | 'version' | 'currentKey' | 'repo' | 'latest'
+      | 'modId'
+      | 'fileId'
+      | 'name'
+      | 'fileName'
+      | 'version'
+      | 'currentKey'
+      | 'repo'
+      | 'latest'
+      | 'batchId'
     >
   >
 
@@ -43,6 +51,7 @@ export async function download(reqs: Want[], showQueue = false): Promise<boolean
   if (!at) {
     return false
   }
+  const batchId = reqs.length > 1 ? crypto.randomUUID() : ''
   try {
     await Add(
       reqs.map((r) => ({
@@ -55,6 +64,7 @@ export async function download(reqs: Want[], showQueue = false): Promise<boolean
         fileName: '',
         version: '',
         currentKey: '',
+        batchId,
         latest: false,
         ...r,
         ...at,

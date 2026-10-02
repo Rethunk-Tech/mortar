@@ -361,6 +361,9 @@ func run() error {
 		Emit:    emit,
 		Dir:     dataDir,
 		Changed: func(st queue.State) { shareSvc.QueueChanged(st) },
+		HistoryBatch: func(game, profileID, batchID string) error {
+			return profiles.RecordHistoryBatch(game, profileID, batchID)
+		},
 	})
 	if err != nil {
 		return err

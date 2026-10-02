@@ -611,9 +611,9 @@ func (c *cmd) profile() error {
 		return c.emit(rows, func() {
 			t := [][]string{}
 			for _, row := range rows {
-				t = append(t, []string{row.ID, row.At.Local().Format("2006-01-02 15:04"), row.Kind, row.Summary})
+				t = append(t, []string{row.ID, row.At.Local().Format("2006-01-02 15:04"), row.Kind, fmt.Sprint(row.Count), row.Summary})
 			}
-			c.table("ID\tTIME\tKIND\tSUMMARY", t)
+			c.table("ID\tTIME\tKIND\tCOUNT\tSUMMARY", t)
 		})
 	case "revert":
 		a, err := c.need(2, "a game", "a profile", "an event id")

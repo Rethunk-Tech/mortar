@@ -278,12 +278,16 @@ func (s *Store) StoreKeys() (map[string][]string, error) {
 			if _, err := os.Stat(filepath.Join(dir, fileName)); err != nil {
 				dir = filepath.Join(s.trash, g, p.ID)
 			}
-			events, err := readHistory(dir)
+			data, err := readHistory(dir)
 			if err != nil {
 				return nil, err
 			}
-			for _, ev := range events {
-				for _, e := range ev.Entries {
+			for _, ev := range data.Events {
+				entries, ok := snapshotEntries(data, ev.SnapshotID)
+				if !ok {
+					return nil, fmt.Errorf("history snapshot %s not found", ev.SnapshotID)
+				}
+				for _, e := range entries {
 					out[g] = append(out[g], e.Key)
 					if e.PreviousKey != "" {
 						out[g] = append(out[g], e.PreviousKey)

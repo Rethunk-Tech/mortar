@@ -472,8 +472,32 @@ func (s *Service) finish(id string, err error, unverified bool) error {
 	s.publish(true)
 	if rec != nil {
 		s.recordHistory(rec, StateDone)
+		if s.d.HistoryBatch != nil {
+			if batchErr := s.d.HistoryBatch(rec.Game, rec.Profile, rec.BatchID); batchErr != nil {
+				log.Printf("queue: record profile history batch %s: %v", rec.BatchID, batchErr)
+			}
+			if rec.BatchID != "" && s.batchFinished(rec) {
+				if batchErr := s.d.HistoryBatch(rec.Game, rec.Profile, ""); batchErr != nil {
+					log.Printf("queue: close profile history batch %s: %v", rec.BatchID, batchErr)
+				}
+			}
+		}
 	}
 	return nil
+}
+
+func (s *Service) batchFinished(rec *Item) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, it := range s.items {
+		if it == nil || it.ID == rec.ID || it.Game != rec.Game || it.Profile != rec.Profile || it.BatchID != rec.BatchID {
+			continue
+		}
+		if !dismissable(it.State) {
+			return false
+		}
+	}
+	return true
 }
 
 func (s *Service) diskError(err error, total int64) error {

@@ -88,6 +88,7 @@ const (
 type Item struct {
 	ID       string `json:"id"`
 	Kind     string `json:"kind"`
+	BatchID  string `json:"batchId,omitempty"`
 	Game     string `json:"game"`
 	Profile  string `json:"profileId"`
 	ModID    int    `json:"modId"`
@@ -155,6 +156,7 @@ type State struct {
 // (the newest stable one when both are empty); Asset may be empty when the release has just one archive.
 type Request struct {
 	Kind       string `json:"kind"`
+	BatchID    string `json:"batchId,omitempty"`
 	Game       string `json:"game"`
 	Profile    string `json:"profileId"`
 	ModID      int    `json:"modId"`
@@ -204,7 +206,9 @@ type Deps struct {
 	Emit func(name string, data any)
 	// Changed is called with the state after every change, from the goroutine that made it; nil means nothing.
 	Changed func(State)
-	HTTP    *http.Client
+	// HistoryBatch records a completed install in the profile's bulk history event; an empty batch closes it.
+	HistoryBatch func(game, profileID, batchID string) error
+	HTTP         *http.Client
 	// Dir is the data folder holding queue.json and the downloads folder; it must be on the store's volume.
 	Dir string
 	Now func() time.Time
@@ -509,7 +513,7 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 			continue
 		}
 		it := &Item{
-			ID: newID(), Kind: r.Kind, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
+			ID: newID(), Kind: r.Kind, BatchID: r.BatchID, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
 			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
 			Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, Latest: r.Latest,
 		}

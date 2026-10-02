@@ -112,9 +112,10 @@ async function waitForUpdates(ids: string[]): Promise<void> {
   }
 }
 
-function requests(game: string, profileId: string, wants: Want[]): Request[] {
+function requests(game: string, profileId: string, wants: Want[], batchId: string): Request[] {
   return wants.map((want) => ({
     kind: want.kind,
+    batchId,
     game,
     profileId,
     modId: want.modId ?? 0,
@@ -161,10 +162,11 @@ async function updateBeforePlay(game: string, profileId: string): Promise<AutoUp
       return { restorePoint: null, previousRunId: before.id, previousErrors: before.errors }
     }
     point.updates = plan.updates
+    const batchId = plan.wants.length > 1 ? crypto.randomUUID() : ''
     if (useProfiles.getState().openId !== profileId) {
       useProfiles.getState().open(profileId)
     }
-    const added = await Add(requests(game, profileId, plan.wants))
+    const added = await Add(requests(game, profileId, plan.wants, batchId))
     if (!added || added.length !== plan.wants.length) {
       throw new Error(i18n._(msg`Could not add the update downloads`))
     }

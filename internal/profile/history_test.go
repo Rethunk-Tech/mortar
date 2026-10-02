@@ -6,8 +6,11 @@ import (
 	"path/filepath"
 	"reflect"
 	"slices"
+	"strings"
 	"testing"
+	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
@@ -98,7 +101,10 @@ func TestHistoryRevertRestoresEntries(t *testing.T) {
 	if err != nil || len(afterAdd) == 0 {
 		t.Fatalf("history after add: %v %v", afterAdd, err)
 	}
-	snap := cloneEntries(afterAdd[0].Entries)
+	snap, err := e.Snapshot("stardew", p.ID, afterAdd[0].SnapshotID)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
 		t.Fatal(err)
 	}
@@ -193,6 +199,114 @@ func TestHistoryBounded(t *testing.T) {
 	}
 	if len(events) != maxHistory {
 		t.Fatalf("len = %d, want %d", len(events), maxHistory)
+	}
+}
+
+func TestHistoryDeduplicatesSnapshots(t *testing.T) {
+	s := newStore(t)
+	p, err := s.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	entries := []Entry{{Key: "k", Mods: []EntryMod{{UniqueID: "x", Name: "X", Version: "1", Folder: "."}}}}
+	for _, version := range []string{"1", "2", "1"} {
+		next := cloneEntries(entries)
+		next[0].Mods[0].Version = version
+		if _, err := s.update("stardew", p.ID, func(p *Profile, _ string) error {
+			p.Entries = next
+			return nil
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	dir, err := s.profileDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := readHistory(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data.Events) != 3 || len(data.Snapshots) != 2 {
+		t.Fatalf("history events=%d snapshots=%d, want 3 and 2", len(data.Events), len(data.Snapshots))
+	}
+}
+
+func TestHistoryMigratesLegacyEntriesInPlace(t *testing.T) {
+	s := newStore(t)
+	p, err := s.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, err := s.profileDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	entries := []Entry{{Key: "legacy", Mods: []EntryMod{{UniqueID: "legacy.mod", Folder: "."}}}}
+	old := legacyHistoryFileData{Events: []legacyHistoryEvent{{
+		ID: "legacy-event", At: time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC),
+		Kind: historyAdded, Label: "Added legacy", Count: 1, Entries: entries,
+	}}}
+	if err := datadir.WriteJSON(filepath.Join(dir, historyFile), old); err != nil {
+		t.Fatal(err)
+	}
+	events, err := s.History("stardew", p.ID)
+	if err != nil || len(events) != 1 {
+		t.Fatalf("migrated history = %+v, %v", events, err)
+	}
+	if events[0].SnapshotID == "" {
+		t.Fatal("legacy event has no snapshot ID")
+	}
+	snapshot, err := s.Snapshot("stardew", p.ID, events[0].ID)
+	if err != nil || !reflect.DeepEqual(snapshot, entries) {
+		t.Fatalf("migrated snapshot = %+v, %v", snapshot, err)
+	}
+	data, err := readHistory(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data.Snapshots) != 1 || len(data.Events) != 1 {
+		t.Fatalf("migrated data = %+v", data)
+	}
+	raw, err := os.ReadFile(filepath.Join(dir, historyFile))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(raw), `"entries"`) {
+		t.Fatalf("legacy entries remain in migrated history: %s", raw)
+	}
+}
+
+func TestHistoryBatchRecordsOneUpdatedSnapshot(t *testing.T) {
+	e := newEnv(t)
+	for _, key := range []string{"a", "b", "c"} {
+		e.item(t, key, map[string]string{"manifest.json": manifestJSON(key)})
+	}
+	p, err := e.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := e.OpenHistoryBatch("stardew", p.ID, "batch-1"); err != nil {
+		t.Fatal(err)
+	}
+	for _, key := range []string{"a", "b", "c"} {
+		if _, err := e.AddEntry("stardew", p.ID, key, Source{}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := e.CloseHistoryBatch("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	events, err := e.History("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(events) != 1 || events[0].Kind != historyBulk || events[0].Count != 3 {
+		t.Fatalf("batch history = %+v", events)
+	}
+	snapshot, err := e.Snapshot("stardew", p.ID, events[0].SnapshotID)
+	if err != nil || len(snapshot) != 3 {
+		t.Fatalf("batch snapshot = %+v, %v", snapshot, err)
 	}
 }
 

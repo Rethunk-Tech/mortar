@@ -151,6 +151,14 @@ func newID(bundles []Bundle) (string, error) {
 	}
 }
 
+func historyBatchID(bundleID string) string {
+	var raw [8]byte
+	if _, err := rand.Read(raw[:]); err != nil {
+		return bundleID + "-apply"
+	}
+	return bundleID + "-" + hex.EncodeToString(raw[:])
+}
+
 func profileFor(profiles []profile.Profile, id string) (profile.Profile, error) {
 	for _, p := range profiles {
 		if p.ID == id {
@@ -422,6 +430,11 @@ func (s *Service) Apply(gameID, bundleID, profileID string) (ApplyResult, error)
 	if s.profiles.Running != nil && s.profiles.Running(gameID, profileID) {
 		return ApplyResult{}, &profile.RunningError{Game: gameID}
 	}
+	batchID := historyBatchID(bundleID)
+	if err := s.profiles.OpenHistoryBatch(gameID, profileID, batchID); err != nil {
+		return ApplyResult{}, err
+	}
+	defer func() { _ = s.profiles.CloseHistoryBatch(gameID, profileID) }()
 	groups := make([]entryMods, 0, len(bundles[i].Mods))
 	groupAt := map[string]int{}
 	for _, mod := range bundles[i].Mods {

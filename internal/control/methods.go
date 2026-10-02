@@ -421,7 +421,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		out := make([]HistoryRow, 0, len(events))
 		for _, event := range events {
-			out = append(out, HistoryRow{ID: event.ID, At: event.At, Kind: event.Kind, Summary: event.Label})
+			out = append(out, HistoryRow{ID: event.ID, At: event.At, Kind: event.Kind, Summary: event.Label, Count: event.Count})
 		}
 		return out, nil
 	case "profile.revert":
@@ -533,6 +533,7 @@ type HistoryRow struct {
 	ID      string    `json:"id"`
 	At      time.Time `json:"at"`
 	Kind    string    `json:"kind"`
+	Count   int       `json:"count"`
 	Summary string    `json:"summary"`
 }
 

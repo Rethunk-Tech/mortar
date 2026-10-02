@@ -72,6 +72,11 @@ func (s *Service) History(game, id string) ([]HistoryEvent, error) {
 	return s.store.History(game, id)
 }
 
+// Snapshot returns the entries for a history snapshot or event.
+func (s *Service) Snapshot(game, id, snapshotID string) ([]Entry, error) {
+	return s.store.Snapshot(game, id, snapshotID)
+}
+
 // Revert restores the profile's entries to the snapshot stored with eventID.
 func (s *Service) Revert(game, id, eventID string) (Profile, error) {
 	return s.store.Revert(game, id, eventID)

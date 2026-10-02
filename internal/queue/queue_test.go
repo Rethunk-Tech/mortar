@@ -549,6 +549,18 @@ func TestAddValidatesTheWholeBatch(t *testing.T) {
 	}
 }
 
+func TestAddCarriesHistoryBatchID(t *testing.T) {
+	f := newFixture(t)
+	request := req(10)
+	request.BatchID = "batch-1"
+	items, err := f.s.Add([]Request{request})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(items) != 1 || items[0].BatchID != request.BatchID {
+		t.Fatalf("queued item = %+v", items)
+	}
+}
 func TestDismissAndClearFinishedLeaveActiveItems(t *testing.T) {
 	f := newFixture(t)
 	f.s.mu.Lock()

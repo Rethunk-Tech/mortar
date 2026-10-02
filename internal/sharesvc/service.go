@@ -45,6 +45,14 @@ const (
 
 const filePerm = 0o644
 
+func historyBatchID() string {
+	var raw [8]byte
+	if _, err := rand.Read(raw[:]); err != nil {
+		return fmt.Sprintf("share-%d", time.Now().UnixNano())
+	}
+	return "share-" + hex.EncodeToString(raw[:])
+}
+
 var (
 	// ErrNoPreview means Import was asked for without a preview to act on.
 	ErrNoPreview = errors.New("there is nothing to import: open a link or file first")
@@ -553,7 +561,11 @@ func joinNotes(parts ...string) string {
 // are written once their mods are installed, except for mods the profile already had, whose config is the user's.
 // A preview resolved against another profile than profileID is resolved again, so a new profile made from a preview
 // of the open one still gets the mods the open one has.
-func (s *Service) Import(ctx context.Context, game, session, profileID string, exclude []string) (res Result, err error) {
+func (s *Service) Import(ctx context.Context, game, session, profileID string, exclude []string) (Result, error) {
+	return s.importWithBatch(ctx, game, session, profileID, exclude, "")
+}
+
+func (s *Service) importWithBatch(ctx context.Context, game, session, profileID string, exclude []string, batchID string) (res Result, err error) {
 	s.mu.Lock()
 	cur := s.current
 	switch {
@@ -661,6 +673,17 @@ func (s *Service) Import(ctx context.Context, game, session, profileID string, e
 		res.Profile = p
 		configs = slices.DeleteFunc(slices.Clone(configs), func(c share.Config) bool { return holds(p, c.UniqueID) })
 	}
+	if len(local) > 0 || len(reqs) > 0 {
+		if batchID == "" {
+			batchID = historyBatchID()
+		}
+		if err := s.d.Profiles.OpenHistoryBatch(game, profileID, batchID); err != nil {
+			if created {
+				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
+			}
+			return Result{}, err
+		}
+	}
 	if len(local) > 0 {
 		if err := s.d.Profiles.ImportExternalMods(game, profileID, local); err != nil {
 			if created {
@@ -691,15 +714,18 @@ func (s *Service) Import(ctx context.Context, game, session, profileID string, e
 		}
 	}
 	for i := range reqs {
-		reqs[i].Profile = profileID
+		reqs[i].Profile, reqs[i].BatchID = profileID, batchID
 	}
 	if len(reqs) > 0 {
 		if _, err := s.d.Queue.Add(reqs); err != nil {
+			_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
 			if created {
 				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
 			}
 			return Result{}, err
 		}
+	} else if batchID != "" {
+		_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
 	}
 	res.Queued = len(reqs)
 	if len(configs) > 0 && len(reqs) > 0 {
@@ -735,12 +761,17 @@ func (s *Service) Replace(ctx context.Context, game, session, profileID string, 
 		return Result{}, err
 	}
 	plan := PlanReplace(p, mods)
+	batchID := historyBatchID()
+	if err := s.d.Profiles.OpenHistoryBatch(game, profileID, batchID); err != nil {
+		return Result{}, err
+	}
 	if len(plan.RemoveKeys) > 0 {
 		if _, err := s.d.Profiles.RemoveEntries(game, profileID, plan.RemoveKeys); err != nil {
+			_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
 			return Result{}, err
 		}
 	}
-	return s.Import(ctx, game, session, profileID, exclude)
+	return s.importWithBatch(ctx, game, session, profileID, exclude, batchID)
 }
 
 func holds(p profile.Profile, uniqueID string) bool {

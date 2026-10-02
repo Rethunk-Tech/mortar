@@ -177,6 +177,7 @@ type Store struct {
 	historyKind     string
 	historyLabel    string
 	historyQuietIDs map[string]int
+	historyBatches  map[string]historyBatch
 }
 
 // RunningError is returned by operations that would change the mods/ folder of a profile its game is running.
@@ -238,7 +239,10 @@ func Open(items *store.Store) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Store{root: filepath.Join(dir, "profiles"), trash: filepath.Join(dir, "trash"), items: items, historyQuietIDs: map[string]int{}}, nil
+	return &Store{
+		root: filepath.Join(dir, "profiles"), trash: filepath.Join(dir, "trash"), items: items,
+		historyQuietIDs: map[string]int{}, historyBatches: map[string]historyBatch{},
+	}, nil
 }
 
 func cleanName(name string) (string, error) {
@@ -496,7 +500,13 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 	kind, label := s.historyKind, s.historyLabel
 	s.historyKind, s.historyLabel = "", ""
 	if s.historyQuietIDs[id] == 0 {
-		if err := recordHistory(dir, before, p.Entries, kind, label); err != nil {
+		key := historyBatchKey(game, id)
+		if batch, ok := s.historyBatches[key]; ok {
+			if err := s.recordHistoryBatch(dir, &batch, p.Entries); err != nil {
+				return Profile{}, err
+			}
+			s.historyBatches[key] = batch
+		} else if err := recordHistory(dir, before, p.Entries, kind, label); err != nil {
 			return Profile{}, err
 		}
 	}

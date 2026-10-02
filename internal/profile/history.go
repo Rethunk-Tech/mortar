@@ -2,6 +2,7 @@ package profile
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -32,8 +33,24 @@ const (
 	historyBulk     = "bulk"
 )
 
-// HistoryEvent is one change to a profile's mod set, with the entry list after that change.
+// HistoryEvent is metadata for one change to a profile's mod set.
 type HistoryEvent struct {
+	ID         string    `json:"id"`
+	At         time.Time `json:"at"`
+	Kind       string    `json:"kind"`
+	Label      string    `json:"label"`
+	Count      int       `json:"count,omitempty"`
+	From       string    `json:"from,omitempty"`
+	To         string    `json:"to,omitempty"`
+	SnapshotID string    `json:"snapshotId"`
+}
+
+type historyFileData struct {
+	Events    []HistoryEvent     `json:"events"`
+	Snapshots map[string][]Entry `json:"snapshots"`
+}
+
+type legacyHistoryEvent struct {
 	ID      string    `json:"id"`
 	At      time.Time `json:"at"`
 	Kind    string    `json:"kind"`
@@ -44,8 +61,8 @@ type HistoryEvent struct {
 	Entries []Entry   `json:"entries"`
 }
 
-type historyFileData struct {
-	Events []HistoryEvent `json:"events"`
+type legacyHistoryFileData struct {
+	Events []legacyHistoryEvent `json:"events"`
 }
 
 // History returns this profile's change events, newest first.
@@ -59,15 +76,37 @@ func (s *Store) History(game, id string) ([]HistoryEvent, error) {
 	if err != nil {
 		return nil, err
 	}
-	events, err := readHistory(dir)
+	data, err := readHistory(dir)
 	if err != nil {
 		return nil, err
 	}
-	out := make([]HistoryEvent, len(events))
-	for i, e := range events {
-		out[len(events)-1-i] = e
+	out := make([]HistoryEvent, len(data.Events))
+	for i, e := range data.Events {
+		out[len(data.Events)-1-i] = e
 	}
 	return out, nil
+}
+
+// Snapshot returns the entries held by a snapshot hash or history event ID.
+func (s *Store) Snapshot(game, id, snapshotID string) ([]Entry, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if _, err := s.read(game, id); err != nil {
+		return nil, err
+	}
+	dir, err := s.profileDir(game, id)
+	if err != nil {
+		return nil, err
+	}
+	data, err := readHistory(dir)
+	if err != nil {
+		return nil, err
+	}
+	entries, ok := snapshotEntries(data, snapshotID)
+	if !ok {
+		return nil, fmt.Errorf("history snapshot %s not found", snapshotID)
+	}
+	return cloneEntries(entries), nil
 }
 
 // MissingKeys are store keys a revert needs that are not in the store.
@@ -90,21 +129,25 @@ func (s *Store) Revert(game, id, eventID string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	events, err := readHistory(dir)
+	data, err := readHistory(dir)
 	if err != nil {
 		return Profile{}, err
 	}
 	var target *HistoryEvent
-	for i := range events {
-		if events[i].ID == eventID {
-			target = &events[i]
+	for i := range data.Events {
+		if data.Events[i].ID == eventID {
+			target = &data.Events[i]
 			break
 		}
 	}
 	if target == nil {
 		return Profile{}, fmt.Errorf("history event %s not found", eventID)
 	}
-	missing, err := s.missingStoreKeys(game, target.Entries)
+	snap, ok := snapshotEntries(data, target.SnapshotID)
+	if !ok {
+		return Profile{}, fmt.Errorf("history snapshot %s not found", target.SnapshotID)
+	}
+	missing, err := s.missingStoreKeys(game, snap)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -112,7 +155,7 @@ func (s *Store) Revert(game, id, eventID string) (Profile, error) {
 		return Profile{}, &MissingKeys{Keys: missing}
 	}
 	label := "Reverted to " + target.At.UTC().Format(time.RFC3339)
-	snap := cloneEntries(target.Entries)
+	snap = cloneEntries(snap)
 	return s.updateLockedAs(game, id, historyReverted, label, func(p *Profile, profDir string) error {
 		return s.applyEntrySnapshot(game, p, profDir, snap)
 	})
@@ -257,6 +300,149 @@ func (s *Store) setHistoryQuiet(id string, on bool) {
 	}
 }
 
+type historyBatch struct {
+	ID      string
+	EventID string
+	Before  []Entry
+}
+
+func historyBatchKey(game, id string) string {
+	return game + "\x00" + id
+}
+
+// OpenHistoryBatch makes subsequent changes to this profile part of one history event.
+func (s *Store) OpenHistoryBatch(game, id, batchID string) error {
+	if batchID == "" {
+		return errors.New("history batch id is empty")
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	p, err := s.read(game, id)
+	if err != nil {
+		return err
+	}
+	key := historyBatchKey(game, id)
+	if batch, ok := s.historyBatches[key]; ok && batch.ID == batchID {
+		return nil
+	}
+	if s.historyBatches == nil {
+		s.historyBatches = map[string]historyBatch{}
+	}
+	s.historyBatches[key] = historyBatch{ID: batchID, Before: cloneEntries(p.Entries)}
+	return nil
+}
+
+// RecordHistoryBatch associates a completed queued install with its bulk event.
+func (s *Store) RecordHistoryBatch(game, id, batchID string) error {
+	if batchID == "" {
+		return s.CloseHistoryBatch(game, id)
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	p, err := s.read(game, id)
+	if err != nil {
+		return err
+	}
+	dir, err := s.profileDir(game, id)
+	if err != nil {
+		return err
+	}
+	data, err := readHistory(dir)
+	if err != nil {
+		return err
+	}
+	key := historyBatchKey(game, id)
+	batch, ok := s.historyBatches[key]
+	if !ok || batch.ID != batchID {
+		batch = historyBatch{ID: batchID, Before: cloneEntries(p.Entries)}
+	}
+	if batch.EventID == "" && len(data.Events) > 0 {
+		last := data.Events[len(data.Events)-1]
+		if entries, exists := snapshotEntries(data, last.SnapshotID); exists && entriesEqual(entries, p.Entries) {
+			batch.EventID = last.ID
+			if len(data.Events) > 1 {
+				if previous, exists := snapshotEntries(data, data.Events[len(data.Events)-2].SnapshotID); exists {
+					batch.Before = cloneEntries(previous)
+				}
+			} else {
+				batch.Before = []Entry{}
+			}
+		}
+	}
+	if err := s.recordHistoryBatchData(dir, &data, &batch, p.Entries); err != nil {
+		return err
+	}
+	if s.historyBatches == nil {
+		s.historyBatches = map[string]historyBatch{}
+	}
+	s.historyBatches[key] = batch
+	return nil
+}
+
+// CloseHistoryBatch ends the current bulk event for a profile.
+func (s *Store) CloseHistoryBatch(game, id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.historyBatches != nil {
+		delete(s.historyBatches, historyBatchKey(game, id))
+	}
+	return nil
+}
+
+func (s *Store) recordHistoryBatch(dir string, batch *historyBatch, after []Entry) error {
+	data, err := readHistory(dir)
+	if err != nil {
+		return err
+	}
+	return s.recordHistoryBatchData(dir, &data, batch, after)
+}
+
+func (s *Store) recordHistoryBatchData(dir string, data *historyFileData, batch *historyBatch, after []Entry) error {
+	if entriesEqual(batch.Before, after) {
+		return nil
+	}
+	ev := classifyHistory(batch.Before, after)
+	ev.Kind = historyBulk
+	if ev.Count < 1 {
+		ev.Count = 1
+	}
+	ev.Label = fmt.Sprintf("Changed %d mods", ev.Count)
+	if batch.EventID == "" {
+		created, err := appendHistory(dir, ev, after)
+		if err != nil {
+			return err
+		}
+		batch.EventID = created.ID
+		return nil
+	}
+	index := -1
+	for i := range data.Events {
+		if data.Events[i].ID == batch.EventID {
+			index = i
+			ev.ID, ev.At = data.Events[i].ID, data.Events[i].At
+			break
+		}
+	}
+	if index < 0 {
+		created, err := appendHistory(dir, ev, after)
+		if err != nil {
+			return err
+		}
+		batch.EventID = created.ID
+		return nil
+	}
+	snapshot, err := entriesSnapshotID(after)
+	if err != nil {
+		return err
+	}
+	if _, exists := data.Snapshots[snapshot]; !exists {
+		data.Snapshots[snapshot] = cloneEntries(after)
+	}
+	ev.SnapshotID = snapshot
+	data.Events[index] = ev
+	return writeHistory(dir, *data)
+}
+
 func (s *Store) recordSnapshot(game, id, kind, label string, count int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -269,32 +455,101 @@ func (s *Store) recordSnapshot(game, id, kind, label string, count int) error {
 		return err
 	}
 	ev := HistoryEvent{Kind: kind, Label: label, Count: count}
-	return appendHistory(dir, ev, p.Entries)
+	_, err = appendHistory(dir, ev, p.Entries)
+	return err
 }
 
-func readHistory(dir string) ([]HistoryEvent, error) {
+func readHistory(dir string) (historyFileData, error) {
 	b, err := fsx.ReadFile(filepath.Join(dir, historyFile))
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return []HistoryEvent{}, nil
+			return historyFileData{Events: []HistoryEvent{}, Snapshots: map[string][]Entry{}}, nil
 		}
-		return nil, err
+		return historyFileData{}, err
 	}
-	var data historyFileData
-	if err := json.Unmarshal(b, &data); err != nil {
-		return nil, fmt.Errorf("read history: %w", err)
+	var envelope struct {
+		Snapshots map[string][]Entry `json:"snapshots"`
 	}
-	if data.Events == nil {
-		return []HistoryEvent{}, nil
+	if err := json.Unmarshal(b, &envelope); err != nil {
+		return historyFileData{}, fmt.Errorf("read history: %w", err)
 	}
-	return data.Events, nil
+	if envelope.Snapshots != nil {
+		var data historyFileData
+		if err := json.Unmarshal(b, &data); err != nil {
+			return historyFileData{}, fmt.Errorf("read history: %w", err)
+		}
+		if data.Events == nil {
+			data.Events = []HistoryEvent{}
+		}
+		if data.Snapshots == nil {
+			data.Snapshots = map[string][]Entry{}
+		}
+		return data, nil
+	}
+	var legacy legacyHistoryFileData
+	if err := json.Unmarshal(b, &legacy); err != nil {
+		return historyFileData{}, fmt.Errorf("read history: %w", err)
+	}
+	data := historyFileData{Events: []HistoryEvent{}, Snapshots: map[string][]Entry{}}
+	for _, old := range legacy.Events {
+		entries := cloneEntries(old.Entries)
+		id, err := entriesSnapshotID(entries)
+		if err != nil {
+			return historyFileData{}, err
+		}
+		if _, exists := data.Snapshots[id]; !exists {
+			data.Snapshots[id] = entries
+		}
+		data.Events = append(data.Events, HistoryEvent{
+			ID: old.ID, At: old.At, Kind: old.Kind, Label: old.Label, Count: old.Count,
+			From: old.From, To: old.To, SnapshotID: id,
+		})
+	}
+	if err := writeHistory(dir, data); err != nil {
+		return historyFileData{}, err
+	}
+	return data, nil
 }
 
-func writeHistory(dir string, events []HistoryEvent) error {
-	if len(events) > maxHistory {
-		events = events[len(events)-maxHistory:]
+func writeHistory(dir string, data historyFileData) error {
+	if len(data.Events) > maxHistory {
+		data.Events = data.Events[len(data.Events)-maxHistory:]
 	}
-	return datadir.WriteJSON(filepath.Join(dir, historyFile), historyFileData{Events: events})
+	if data.Snapshots == nil {
+		data.Snapshots = map[string][]Entry{}
+	}
+	referenced := make(map[string]struct{}, len(data.Events))
+	for _, event := range data.Events {
+		referenced[event.SnapshotID] = struct{}{}
+	}
+	for id := range data.Snapshots {
+		if _, ok := referenced[id]; !ok {
+			delete(data.Snapshots, id)
+		}
+	}
+	return datadir.WriteJSON(filepath.Join(dir, historyFile), data)
+}
+
+func snapshotEntries(data historyFileData, id string) ([]Entry, bool) {
+	if entries, ok := data.Snapshots[id]; ok {
+		return entries, true
+	}
+	for _, event := range data.Events {
+		if event.ID == id {
+			entries, ok := data.Snapshots[event.SnapshotID]
+			return entries, ok
+		}
+	}
+	return nil, false
+}
+
+func entriesSnapshotID(entries []Entry) (string, error) {
+	raw, err := json.Marshal(entries)
+	if err != nil {
+		return "", err
+	}
+	sum := sha256.Sum256(raw)
+	return hex.EncodeToString(sum[:]), nil
 }
 
 func cloneEntries(in []Entry) []Entry {
@@ -326,22 +581,35 @@ func recordHistory(dir string, before, after []Entry, kind, label string) error 
 	if label != "" {
 		ev.Label = label
 	}
-	return appendHistory(dir, ev, after)
+	_, err := appendHistory(dir, ev, after)
+	return err
 }
 
-func appendHistory(dir string, ev HistoryEvent, after []Entry) error {
+func appendHistory(dir string, ev HistoryEvent, after []Entry) (HistoryEvent, error) {
 	ev.At = time.Now().UTC().Truncate(time.Second)
 	var raw [8]byte
 	if _, err := rand.Read(raw[:]); err != nil {
-		return err
+		return HistoryEvent{}, err
 	}
 	ev.ID = hex.EncodeToString(raw[:])
-	ev.Entries = cloneEntries(after)
-	events, err := readHistory(dir)
+	entries := cloneEntries(after)
+	snapshotID, err := entriesSnapshotID(entries)
 	if err != nil {
-		return err
+		return HistoryEvent{}, err
 	}
-	return writeHistory(dir, append(events, ev))
+	ev.SnapshotID = snapshotID
+	data, err := readHistory(dir)
+	if err != nil {
+		return HistoryEvent{}, err
+	}
+	if _, exists := data.Snapshots[snapshotID]; !exists {
+		data.Snapshots[snapshotID] = entries
+	}
+	data.Events = append(data.Events, ev)
+	if err := writeHistory(dir, data); err != nil {
+		return HistoryEvent{}, err
+	}
+	return ev, nil
 }
 
 func classifyHistory(before, after []Entry) HistoryEvent {
