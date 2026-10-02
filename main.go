@@ -106,8 +106,10 @@ func run() error {
 		window   *application.WebviewWindow
 		// showWindow brings Mortar's window up, building a new one when closing to the tray removed it.
 		showWindow func()
-		profiles   *profile.Store
-		pictures   *modpic.Cache
+		// windowClosed reports whether closing to the tray removed the window.
+		windowClosed func() bool
+		profiles     *profile.Store
+		pictures     *modpic.Cache
 	)
 	ready := make(chan struct{})
 	closeReady := sync.OnceFunc(func() { close(ready) })
@@ -122,9 +124,11 @@ func run() error {
 				log.Printf("second instance: dropped, Mortar did not finish starting")
 				continue
 			}
-			// A minimised window stays down: the window sends a desktop notification whose click brings it up.
+			// An nxm link leaves an open window where it is, minimised or behind the browser, so a burst of clicks
+			// keeps the browser in front; the window sends a desktop notification when a link needs a profile chosen.
+			// Only a window closed to the tray is brought back, since nothing else could show the link.
 			nxmLink := nxmSvc.Receive(d.Args)
-			if shareSvc.Receive(sharesvc.InDir(d.Args, d.WorkingDir)) || !nxmLink || !window.IsMinimised() {
+			if shareSvc.Receive(sharesvc.InDir(d.Args, d.WorkingDir)) || !nxmLink || windowClosed() {
 				showWindow()
 			}
 		}
@@ -448,6 +452,11 @@ func run() error {
 		return w
 	}
 	window = newWindow()
+	windowClosed = func() bool {
+		windowMu.Lock()
+		defer windowMu.Unlock()
+		return windowGone
+	}
 	showWindow = func() {
 		windowMu.Lock()
 		defer windowMu.Unlock()

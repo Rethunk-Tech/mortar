@@ -40,12 +40,14 @@ const rejectionText = (reason: string): string => {
   }
 }
 
-// A desktop notification stands in for the on-screen prompt while the window is minimised; clicking it or Show
+// A desktop notification stands in for the on-screen prompt while the window is minimised, or, for a link that
+// waits for a profile, while it is behind another window: an nxm link never raises Mortar. Clicking it or Show
 // raises the window (main.go OnNotificationResponse).
 const names = new Map<number, Promise<string>>()
 
-async function notify(arrival: Arrival, title: string, body: string) {
-  if (!(await Window.IsMinimised())) {
+async function notify(arrival: Arrival, title: string, body: string, evenUnfocused = false) {
+  const unseen = (await Window.IsMinimised()) || (evenUnfocused && !(await Window.IsFocused()))
+  if (!unseen) {
     return
   }
   await RegisterNotificationCategory(nxmShowCategory(i18n._(msg`Show`)))
@@ -139,6 +141,7 @@ export async function initNxm(): Promise<void> {
           i18n._(
             msg`You started this download on Nexus. Show Mortar to choose the profile it goes into.`,
           ),
+          true,
         ),
       )
       .catch(reportUnexpected)
