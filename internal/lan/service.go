@@ -68,8 +68,9 @@ type Deps struct {
 
 // Service advertises this Mortar installation, discovers peers, and exchanges profile links.
 type Service struct {
-	deps Deps
-	name string
+	deps       Deps
+	name       string
+	instanceID string
 
 	lifeMu  sync.Mutex
 	mu      sync.RWMutex
@@ -112,9 +113,14 @@ type shareRequest struct {
 
 // NewService returns a LAN sharing service that is disabled until SetEnabled is called.
 func NewService(deps Deps) *Service {
+	instanceID, err := randomToken()
+	if err != nil {
+		instanceID = fmt.Sprintf("%d", time.Now().UnixNano())
+	}
 	return &Service{
 		deps:        deps,
 		name:        localName(),
+		instanceID:  instanceID,
 		peers:       map[string]peerRecord{},
 		lastReceive: map[string]time.Time{},
 		nonces:      map[string]nonceRecord{},
@@ -199,7 +205,10 @@ func (s *Service) start() error {
 		"",
 		port,
 		nil,
-		[]string{fmt.Sprintf("version=%s", s.deps.Version)},
+		[]string{
+			fmt.Sprintf("version=%s", s.deps.Version),
+			"instance=" + s.instanceID,
+		},
 	)
 	if err != nil {
 		_ = listener.Close()
@@ -718,7 +727,7 @@ func (s *Service) browse(ctx context.Context) {
 
 func (s *Service) addPeer(entry *mdns.ServiceEntry) {
 	name := peerName(entry.Name)
-	if name == "" || (name == s.name && entry.Port == s.port()) {
+	if name == "" || entryInstanceID(entry) == s.instanceID {
 		return
 	}
 	address := entryAddress(entry)
@@ -773,8 +782,41 @@ func entryAddress(entry *mdns.ServiceEntry) string {
 
 func peerName(name string) string {
 	suffix := "." + serviceType + ".local."
+	if !strings.HasSuffix(name, suffix) {
+		return ""
+	}
 	name = strings.TrimSuffix(name, suffix)
-	return strings.TrimSuffix(name, ".")
+	return unescapeDNSName(strings.TrimSuffix(name, "."))
+}
+
+func entryInstanceID(entry *mdns.ServiceEntry) string {
+	for _, field := range entry.InfoFields {
+		if instanceID, ok := strings.CutPrefix(field, "instance="); ok {
+			return instanceID
+		}
+	}
+	return ""
+}
+
+func unescapeDNSName(name string) string {
+	var out strings.Builder
+	for i := 0; i < len(name); i++ {
+		if name[i] != '\\' || i+1 >= len(name) {
+			out.WriteByte(name[i])
+			continue
+		}
+		i++
+		if i+2 < len(name) && name[i] >= '0' && name[i] <= '9' &&
+			name[i+1] >= '0' && name[i+1] <= '9' &&
+			name[i+2] >= '0' && name[i+2] <= '9' {
+			value := int(name[i]-'0')*100 + int(name[i+1]-'0')*10 + int(name[i+2]-'0')
+			out.WriteByte(byte(value))
+			i += 2
+			continue
+		}
+		out.WriteByte(name[i])
+	}
+	return out.String()
 }
 
 func localName() string {

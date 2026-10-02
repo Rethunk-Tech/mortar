@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
@@ -16,6 +17,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/share"
 	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/hashicorp/mdns"
 )
 
 func testPayload(t *testing.T) string {
@@ -228,5 +230,31 @@ func TestLoopbackSendReceive(t *testing.T) {
 		}
 	case <-time.After(2 * time.Second):
 		t.Fatal("timed out waiting for arrival")
+	}
+}
+
+func TestPeerNameUnescapesDNSInstanceName(t *testing.T) {
+	if got := peerName(`Damon\ Blais._mortar._tcp.local.`); got != "Damon Blais" {
+		t.Fatalf("peerName() = %q, want %q", got, "Damon Blais")
+	}
+}
+
+func TestPeerNameRejectsOtherServiceTypes(t *testing.T) {
+	if got := peerName("OpenThread._meshcop._udp.local."); got != "" {
+		t.Fatalf("peerName() = %q, want empty", got)
+	}
+}
+
+func TestAddPeerDropsOurInstance(t *testing.T) {
+	service := NewService(Deps{})
+	service.enabled = true
+	service.addPeer(&mdns.ServiceEntry{
+		Name:       `Damon\ Blais._mortar._tcp.local.`,
+		Port:       1234,
+		AddrV4:     net.ParseIP("192.0.2.1"),
+		InfoFields: []string{"instance=" + service.instanceID},
+	})
+	if peers := service.Peers(); len(peers) != 0 {
+		t.Fatalf("Peers() = %#v, want no peers", peers)
 	}
 }

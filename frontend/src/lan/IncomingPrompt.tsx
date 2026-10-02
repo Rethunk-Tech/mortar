@@ -19,6 +19,7 @@ import {
   Transfer,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/lan/service.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { formatBytes } from '../saves/backupFormat.ts'
 import { openImport } from '../share/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -29,6 +30,10 @@ export function IncomingPrompt() {
   const incoming = useIncomingShares((state) => state.items[0])
   const removeFirst = useIncomingShares((state) => state.removeFirst)
   const profiles = useProfiles((state) => state.profiles)
+  const incomingGame = incoming?.game ?? ''
+  const gameName = useProfiles((state) =>
+    state.game?.id === incomingGame ? (state.game.name ?? incomingGame) : incomingGame,
+  )
   const progress = useIncomingShares((state) =>
     incoming ? state.progress[incoming.id] : undefined,
   )
@@ -62,14 +67,16 @@ export function IncomingPrompt() {
       }
       setTransferring(false)
     }
-    removeFirst()
     openImport(profileId ? { profileId, link } : { link })
+    removeFirst()
   }
 
   return (
     <>
       <Dialog open={!(choosing || transferring)} onClose={decline}>
-        <DialogTitle>{t`${incoming.sender} sent you ${incoming.profileName} (${incoming.game})`}</DialogTitle>
+        <DialogTitle>
+          {t`${incoming.sender} sent you ${incoming.profileName} (${gameName})`}
+        </DialogTitle>
         <DialogContent>
           <Typography color="text.secondary">
             {incoming.sameAccount
@@ -95,7 +102,7 @@ export function IncomingPrompt() {
             <CircularProgress size={24} />
             <Typography>
               {progress
-                ? t`${progress.current} of ${progress.total} mods · ${progress.bytes} bytes · ${progress.rate} bytes/s`
+                ? t`${progress.current} of ${progress.total} mods · ${formatBytes(progress.bytes)} · ${formatBytes(progress.rate)}/s`
                 : t`Preparing transfer…`}
             </Typography>
           </Box>
