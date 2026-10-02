@@ -124,7 +124,11 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
   )
 }
 
-function CleanupRow({ cleanup }: { cleanup: { key: string; uniqueId: string; name: string } }) {
+function CleanupRow({
+  cleanup,
+}: {
+  cleanup: { key: string; uniqueId: string; name: string; reason?: string }
+}) {
   const { t } = useLingui()
   const remove = useMods((s) => s.remove)
   const mod = useMods((s) => s.mods.find((candidate) => candidate.key === cleanup.key))
@@ -147,7 +151,7 @@ function CleanupRow({ cleanup }: { cleanup: { key: string; uniqueId: string; nam
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}>
-          {t`${cleanup.name || cleanup.uniqueId}: Not needed by any enabled mod`}
+          {t`${cleanup.name || cleanup.uniqueId}: ${cleanup.reason || 'Not needed by any enabled mod'}`}
         </Typography>
       </Box>
       <Button

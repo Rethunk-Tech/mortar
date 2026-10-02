@@ -517,7 +517,15 @@ func contentPackTargets(mod Installed) (load, edit []string, skips int) {
 }
 
 func readContentPack(mod Installed) cachedPack {
-	if !mod.Enabled || mod.Folder == "" || !isContentPatcherPack(mod.Folder) {
+	return readContentPackWithEnabled(mod, true)
+}
+
+func readContentPackForCleanup(mod Installed) cachedPack {
+	return readContentPackWithEnabled(mod, false)
+}
+
+func readContentPackWithEnabled(mod Installed, requireEnabled bool) cachedPack {
+	if (requireEnabled && !mod.Enabled) || mod.Folder == "" || !isContentPatcherPack(mod.Folder) {
 		return cachedPack{}
 	}
 	root := filepath.Clean(mod.Folder)

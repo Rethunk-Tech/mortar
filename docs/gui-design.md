@@ -141,11 +141,11 @@ A full-height scrollable list of every problem for this profile, grouped under h
 - Settings (Content Patcher compatibility setting suggestions)
 - Cosmetic or harmless (never counts toward the tab's chip, the profile badge or the Mods-tab row)
 - Dismissed (collapsed by default; dismissed rows are muted and can be restored)
-- Cleanup (unused frameworks; never counted)
+- Cleanup (unused frameworks and conservatively detected unused tilesheet packs; never counted)
 
 While the tab is open, a **Copy all problems** icon button in the tab row (where the Console keeps its log actions) copies every group as plain text: the heading, then one "- " line per problem with its author note indented under it, including Cleanup.
 
-Each row shows the full wrapped text, severity icon, the Nexus author note when a listed requirement has one, and its fix actions. Every conflict has **Dismiss**; cosmetic or harmless rows use small outlined inherit fix buttons, and real conflicts keep the contained warning style. Dismissed rows retain their normal actions, replace **Dismiss** with **Restore**, and are muted. Cleanup rows read "<name>: Not needed by any enabled mod" with **Remove**. Applying a Content Patcher **Set to** suggestion remembers that field value so the reverse hint stays hidden until the setting changes ([architecture.md](architecture.md#saves)).
+Each row shows the full wrapped text, severity icon, the Nexus author note when a listed requirement has one, and its fix actions. Every conflict has **Dismiss**; cosmetic or harmless rows use small outlined inherit fix buttons, and real conflicts keep the contained warning style. Dismissed rows retain their normal actions, replace **Dismiss** with **Restore**, and are muted. Cleanup rows read "<name>: Not needed by any enabled mod" or their specific reason, with **Remove**. Applying a Content Patcher **Set to** suggestion remembers that field value so the reverse hint stays hidden until the setting changes ([architecture.md](architecture.md#saves)).
 
 - Loading: the same "Checking the mods for problems…" line as the summary
 - None: "No problems found."

@@ -129,6 +129,7 @@ type Cleanup struct {
 	Key      string `json:"key"`
 	UniqueID string `json:"uniqueId"`
 	Name     string `json:"name"`
+	Reason   string `json:"reason,omitempty"`
 }
 
 type DismissedProblem struct {
