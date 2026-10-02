@@ -43,5 +43,12 @@
       "content_preview_link": ""
     }
   ],
-  "file_updates": []
+  "file_updates": [
+    {
+      "old_file_id": 2000,
+      "new_file_id": 3001,
+      "old_file_name": "old.zip",
+      "new_file_name": "new.zip"
+    }
+  ]
 }

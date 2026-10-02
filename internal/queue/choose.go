@@ -54,3 +54,26 @@ func ChooseFile(files []nexus.File, version string, current int) (nexus.File, bo
 	}
 	return nexus.File{}, false
 }
+
+func fileByID(files []nexus.File, id int) nexus.File {
+	for _, f := range files {
+		if f.FileID == id {
+			return f
+		}
+	}
+	return nexus.File{}
+}
+
+// newestUpdate follows the author's file_updates chain from file to the newest file still listed.
+func newestUpdate(files []nexus.File, file nexus.File) nexus.File {
+	seen := map[int]bool{}
+	for file.ReplacedBy != 0 && !seen[file.FileID] {
+		seen[file.FileID] = true
+		next := fileByID(files, file.ReplacedBy)
+		if next.FileID == 0 {
+			break
+		}
+		file = next
+	}
+	return file
+}

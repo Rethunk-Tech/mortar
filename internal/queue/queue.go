@@ -100,8 +100,10 @@ type Item struct {
 	Picture  string  `json:"picture,omitempty"`
 	State    string  `json:"state"`
 	Progress float64 `json:"progress"`
-	Speed    int64   `json:"speed"`
-	Error    string  `json:"error"`
+	// Latest carries Request.Latest so a restart still resolves to the newest file.
+	Latest bool   `json:"latest,omitempty"`
+	Speed  int64  `json:"speed"`
+	Error  string `json:"error"`
 
 	Repo       string            `json:"repo"`
 	Tag        string            `json:"tag"`
@@ -160,6 +162,9 @@ type Request struct {
 	Repo       string `json:"repo"`
 	Tag        string `json:"tag"`
 	Asset      string `json:"asset"`
+	// Latest asks for the newest file that updates FileID: a file found in the mod dataset, or that a save
+	// recorded, may have been superseded since. Share imports leave it off to reproduce the shared files.
+	Latest bool `json:"latest"`
 
 	key     string
 	expires int64
@@ -441,7 +446,7 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 		it := &Item{
 			ID: newID(), Kind: r.Kind, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
 			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
-			Repo: r.Repo, Tag: r.Tag, Asset: r.Asset,
+			Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, Latest: r.Latest,
 		}
 		if it.Repo != "" {
 			it.Name = cmp.Or(it.Name, it.Repo)

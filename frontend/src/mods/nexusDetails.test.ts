@@ -96,6 +96,7 @@ const file = (category: string, uploaded: string): File => ({
   category,
   sizeKb: 1,
   isPrimary: false,
+  replacedBy: 0,
   uploaded,
 })
 

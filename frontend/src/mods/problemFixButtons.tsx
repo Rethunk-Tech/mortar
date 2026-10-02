@@ -57,6 +57,7 @@ function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string }) {
     : {
         kind: 'dependency',
         modId: where.pageId,
+        latest: true,
         fileId: where.fileId,
         name: where.pageName,
         fileName: where.fileName,

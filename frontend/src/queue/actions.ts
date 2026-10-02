@@ -12,7 +12,10 @@ import { useQueue } from './store.ts'
 // What a caller says about a file; the rest is filled in.
 export type Want = Pick<Request, 'kind'> &
   Partial<
-    Pick<Request, 'modId' | 'fileId' | 'name' | 'fileName' | 'version' | 'currentKey' | 'repo'>
+    Pick<
+      Request,
+      'modId' | 'fileId' | 'name' | 'fileName' | 'version' | 'currentKey' | 'repo' | 'latest'
+    >
   >
 
 // The game and profile open now, or null when none is.
@@ -52,6 +55,7 @@ export async function download(reqs: Want[], showQueue = false): Promise<boolean
         fileName: '',
         version: '',
         currentKey: '',
+        latest: false,
         ...r,
         ...at,
       })),

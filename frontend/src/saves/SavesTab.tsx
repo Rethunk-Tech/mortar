@@ -32,6 +32,7 @@ function wantFor(lack: Lack): Want | null {
     return {
       kind: 'install',
       modId: where.pageId,
+      latest: true,
       fileId: where.fileId,
       name: lack.name,
       fileName: where.fileName,

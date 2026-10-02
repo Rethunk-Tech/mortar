@@ -66,6 +66,7 @@ function MissingAdd({ uniqueID }: { uniqueID: string }) {
     : {
         kind: 'dependency',
         modId: where.pageId,
+        latest: true,
         fileId: where.fileId,
         name: where.pageName,
         fileName: where.fileName,

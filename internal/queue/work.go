@@ -260,10 +260,9 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 	}
 	var file nexus.File
 	if it.FileID != 0 {
-		for _, f := range files {
-			if f.FileID == it.FileID {
-				file = f
-			}
+		file = fileByID(files, it.FileID)
+		if it.Latest {
+			file = newestUpdate(files, file)
 		}
 	} else {
 		file, _ = ChooseFile(files, it.Version, it.Current)
@@ -276,6 +275,9 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 	if cur := s.find(it.ID); cur != nil {
 		cur.FileID, cur.FileName, cur.SizeKB = file.FileID, cmp.Or(file.FileName, fmt.Sprintf("file-%d", file.FileID)), file.SizeKB
 		cur.Version = cmp.Or(cur.Version, file.Version)
+		if it.Latest {
+			cur.Version = cmp.Or(file.Version, cur.Version)
+		}
 		cur.Category = cmp.Or(cur.Category, file.Category)
 	}
 	return nil

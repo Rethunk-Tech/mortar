@@ -138,6 +138,7 @@ test('Add them queues through the same Want the Problems bar uses', () => {
     {
       kind: 'dependency',
       modId: 541,
+      latest: true,
       fileId: 1,
       name: 'Content Patcher',
       fileName: 'CP.zip',

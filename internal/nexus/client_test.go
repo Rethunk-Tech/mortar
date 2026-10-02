@@ -82,7 +82,7 @@ func TestReplays(t *testing.T) {
 	}
 
 	files, err := c.Files(ctx, 541)
-	if err != nil || len(files) != 2 || files[0] != (File{FileID: 3001, FileName: "Content Patcher-541-2-0-0.zip", Name: "Content Patcher", Version: "2.0.0", ModVersion: "2.0.0", Category: "MAIN", SizeKB: 2048, IsPrimary: true, Uploaded: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)}) || files[1].Category != "" {
+	if err != nil || len(files) != 2 || files[0] != (File{FileID: 3001, FileName: "Content Patcher-541-2-0-0.zip", Name: "Content Patcher", Version: "2.0.0", ModVersion: "2.0.0", Category: "MAIN", SizeKB: 2048, IsPrimary: true, Uploaded: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)}) || files[1].Category != "" || files[1].ReplacedBy != 3001 {
 		t.Fatalf("files = %+v, %v", files, err)
 	}
 

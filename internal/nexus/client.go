@@ -260,6 +260,8 @@ type File struct {
 	SizeKB      int64     `json:"sizeKb"`
 	IsPrimary   bool      `json:"isPrimary"`
 	Uploaded    time.Time `json:"uploaded"`
+	// ReplacedBy is the file the author uploaded as this one's update (Nexus file_updates), or 0.
+	ReplacedBy int `json:"replacedBy"`
 }
 
 // Files lists every file of a mod.
@@ -277,6 +279,10 @@ func (c *Client) Files(ctx context.Context, modID int) ([]File, error) {
 			IsPrimary   bool      `json:"is_primary"`
 			Uploaded    time.Time `json:"uploaded_time"`
 		} `json:"files"`
+		Updates []struct {
+			Old int `json:"old_file_id"`
+			New int `json:"new_file_id"`
+		} `json:"file_updates"`
 	}
 	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s/mods/%d/files.json", Game, modID), false, &raw); err != nil {
 		return nil, err
@@ -291,6 +297,13 @@ func (c *Client) Files(ctx context.Context, modID int) ([]File, error) {
 			file.Category = *f.Category
 		}
 		files = append(files, file)
+	}
+	for _, u := range raw.Updates {
+		for i := range files {
+			if files[i].FileID == u.Old && u.New > files[i].ReplacedBy {
+				files[i].ReplacedBy = u.New
+			}
+		}
 	}
 	return files, nil
 }
