@@ -88,6 +88,9 @@ func fingerprint(env Environment, mods []Installed, runID string) string {
 			if info, err := os.Stat(filepath.Join(m.Folder, "content.json")); err == nil {
 				b.WriteString("|" + strconv.FormatInt(info.ModTime().UnixNano(), 10))
 			}
+			if info, err := os.Stat(filepath.Join(m.Folder, "config.json")); err == nil {
+				b.WriteString("|config:" + strconv.FormatInt(info.ModTime().UnixNano(), 10))
+			}
 		}
 		for _, d := range m.Dependencies {
 			b.WriteString("|" + d.UniqueID + ">=" + d.MinimumVersion)
@@ -173,6 +176,7 @@ func (s *Service) withDismissed(gameID, id string, r Result) Result {
 	r.AssetConflicts = hideDismissed(r.AssetConflicts, tokens)
 	r.Broken = hideDismissedBroken(r.Broken, tokens)
 	r.Missing = hideDismissedListed(r.Missing, tokens)
+	r.Settings = hideDismissedSettings(r.Settings, tokens)
 	return r
 }
 
@@ -202,6 +206,25 @@ func (s *Service) DismissListedRequirement(_ context.Context, gameID, id, unique
 		return errors.New("missing requirement id")
 	}
 	token := dismissToken("listed", strings.ToLower(uniqueID))
+	bucket := dismissBucket(gameID, id)
+	_, err := s.settings.Update(func(v *settings.Settings) {
+		if slices.Contains(v.Dismissed[bucket], token) {
+			return
+		}
+		next := maps.Clone(v.Dismissed)
+		next[bucket] = append(slices.Clone(v.Dismissed[bucket]), token)
+		v.Dismissed = next
+	})
+	return err
+}
+
+// DismissSetting hides one compatibility setting for this profile until its patch group is gone.
+func (s *Service) DismissSetting(_ context.Context, gameID, id, uniqueID, field string) error {
+	uniqueID, field = strings.TrimSpace(uniqueID), strings.TrimSpace(field)
+	if uniqueID == "" || field == "" {
+		return errors.New("missing setting")
+	}
+	token := dismissToken("setting", strings.ToLower(uniqueID)+"\t"+strings.ToLower(field))
 	bucket := dismissBucket(gameID, id)
 	_, err := s.settings.Update(func(v *settings.Settings) {
 		if slices.Contains(v.Dismissed[bucket], token) {

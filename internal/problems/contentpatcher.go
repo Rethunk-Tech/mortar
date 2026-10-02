@@ -55,15 +55,26 @@ type cpPatch struct {
 	spouse   string    // the spouse the change requires, or ""
 }
 
+type cpConfig struct {
+	field         string
+	values        []string
+	allowMultiple bool
+}
+
 // cpWhen holds a change's HasMod conditions: each anyOf group needs one of its mods
 // present, and no noneOf mod may be present. Other conditions are treated as met.
 type cpWhen struct {
 	anyOf  [][]string
 	noneOf []string
+	config []cpConfig
 }
 
 func (w cpWhen) with(o cpWhen) cpWhen {
-	return cpWhen{anyOf: append(slices.Clone(w.anyOf), o.anyOf...), noneOf: append(slices.Clone(w.noneOf), o.noneOf...)}
+	return cpWhen{
+		anyOf:  append(slices.Clone(w.anyOf), o.anyOf...),
+		noneOf: append(slices.Clone(w.noneOf), o.noneOf...),
+		config: append(slices.Clone(w.config), o.config...),
+	}
 }
 
 func (w cpWhen) holds(present map[string]bool) bool {
@@ -79,6 +90,7 @@ type cachedPack struct {
 	mtime    time.Time
 	patches  []cpPatch
 	mentions map[string]bool
+	schema   map[string]cpSchema
 	skips    int
 }
 
@@ -111,10 +123,53 @@ func readContentPack(mod Installed) cachedPack {
 			return got
 		}
 	}
-	pack := cachedPack{mtime: info.ModTime(), mentions: map[string]bool{}}
+	pack := cachedPack{mtime: info.ModTime(), mentions: map[string]bool{}, schema: readConfigSchema(root)}
 	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
 	packCache.Store(root, pack)
 	return pack
+}
+
+type cpSchema struct {
+	key           string
+	defaultValue  string
+	allowMultiple bool
+	description   string
+}
+
+func readConfigSchema(root string) map[string]cpSchema {
+	raw, err := fsx.ReadFile(filepath.Join(root, "content.json"))
+	if err != nil {
+		return nil
+	}
+	var doc struct {
+		ConfigSchema map[string]json.RawMessage `json:"ConfigSchema"`
+	}
+	if json.Unmarshal(stripJSONNoise(raw), &doc) != nil {
+		return nil
+	}
+	out := make(map[string]cpSchema, len(doc.ConfigSchema))
+	for key, raw := range doc.ConfigSchema {
+		var entry struct {
+			Default       json.RawMessage `json:"Default"`
+			AllowMultiple bool            `json:"AllowMultiple"`
+			Description   string          `json:"Description"`
+		}
+		if json.Unmarshal(raw, &entry) != nil {
+			continue
+		}
+		defaultValue, _ := scalarValue(entry.Default)
+		key = strings.TrimSpace(key)
+		if key == "" || hasToken(key) {
+			continue
+		}
+		out[strings.ToLower(key)] = cpSchema{
+			key:           key,
+			defaultValue:  defaultValue,
+			allowMultiple: entry.AllowMultiple,
+			description:   entry.Description,
+		}
+	}
+	return out
 }
 
 func isContentPatcherPack(folder string) bool {
@@ -171,7 +226,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 	}
 	for _, ch := range doc.Changes {
 		action := strings.TrimSpace(ch.Action)
-		when := outer.with(parseWhen(ch.When, pack.mentions))
+		when := outer.with(parseWhen(ch.When, pack.mentions, pack.schema))
 		var kind string
 		var shapes []cpShape
 		switch {
@@ -208,38 +263,53 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 	}
 }
 
-// parseWhen reads the HasMod conditions of a When block and records every mod they name.
+// parseWhen reads the HasMod and schema-backed config conditions of a When block.
 // It understands "HasMod": "A, B" and "HasMod |contains=A, B": true/false.
-func parseWhen(raw map[string]json.RawMessage, mentions map[string]bool) cpWhen {
+func parseWhen(raw map[string]json.RawMessage, mentions map[string]bool, schema map[string]cpSchema) cpWhen {
 	var w cpWhen
 	for k, v := range raw {
 		name, arg, _ := strings.Cut(k, "|")
-		if !strings.EqualFold(strings.TrimSpace(name), "hasmod") {
+		name = strings.TrimSpace(name)
+		if hasToken(k) {
 			continue
 		}
-		arg = strings.TrimSpace(arg)
-		if arg == "" {
-			var ids []string
-			if !condValues(v, &ids) {
+		if strings.EqualFold(name, "hasmod") {
+			arg = strings.TrimSpace(arg)
+			if arg == "" {
+				var list string
+				if json.Unmarshal(v, &list) != nil || hasToken(list) {
+					continue
+				}
+				ids := splitTargets(list)
+				if len(ids) == 0 {
+					continue
+				}
+				w.anyOf = append(w.anyOf, note(ids, mentions))
 				continue
 			}
-			w.anyOf = append(w.anyOf, note(ids, mentions))
+			param, list, ok := strings.Cut(arg, "=")
+			if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) {
+				continue
+			}
+			ids := note(splitTargets(list), mentions)
+			var flags []string
+			if !condValues(v, &flags) || len(flags) != 1 {
+				continue
+			}
+			switch strings.ToLower(flags[0]) {
+			case "true":
+				w.anyOf = append(w.anyOf, ids)
+			case "false":
+				w.noneOf = append(w.noneOf, ids...)
+			}
 			continue
 		}
-		param, list, ok := strings.Cut(arg, "=")
-		if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) {
-			continue
-		}
-		ids := note(splitTargets(list), mentions)
-		var flags []string
-		if !condValues(v, &flags) || len(flags) != 1 {
-			continue
-		}
-		switch strings.ToLower(flags[0]) {
-		case "true":
-			w.anyOf = append(w.anyOf, ids)
-		case "false":
-			w.noneOf = append(w.noneOf, ids...)
+		if field, ok := schema[strings.ToLower(name)]; ok {
+			var values []string
+			if !condValues(v, &values) {
+				continue
+			}
+			w.config = append(w.config, cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple})
 		}
 	}
 	return w
@@ -249,13 +319,19 @@ func parseWhen(raw map[string]json.RawMessage, mentions map[string]bool) cpWhen 
 func condValues(v json.RawMessage, out *[]string) bool {
 	var str string
 	var b bool
-	var arr []string
+	var arr []json.RawMessage
 	switch {
 	case json.Unmarshal(v, &str) == nil:
 	case json.Unmarshal(v, &b) == nil:
 		str = strconv.FormatBool(b)
 	case json.Unmarshal(v, &arr) == nil:
-		str = strings.Join(arr, ",")
+		for _, item := range arr {
+			value, ok := scalarValue(item)
+			if !ok || hasToken(value) {
+				return false
+			}
+			str += "," + value
+		}
 	default:
 		return false
 	}
@@ -264,6 +340,22 @@ func condValues(v json.RawMessage, out *[]string) bool {
 	}
 	*out = splitTargets(str)
 	return len(*out) > 0
+}
+
+func scalarValue(v json.RawMessage) (string, bool) {
+	var str string
+	if json.Unmarshal(v, &str) == nil {
+		return str, true
+	}
+	var b bool
+	if json.Unmarshal(v, &b) == nil {
+		return strconv.FormatBool(b), true
+	}
+	var n json.Number
+	if json.Unmarshal(v, &n) == nil {
+		return string(n), true
+	}
+	return "", false
 }
 
 func note(ids []string, mentions map[string]bool) []string {
@@ -600,6 +692,25 @@ func hideDismissedListed(missing []Missing, tokens []string) []Missing {
 			continue
 		}
 		out = append(out, m)
+	}
+	return out
+}
+
+func hideDismissedSettings(settings []SettingHint, tokens []string) []SettingHint {
+	if len(tokens) == 0 {
+		return settings
+	}
+	skip := map[string]bool{}
+	for _, t := range tokens {
+		skip[t] = true
+	}
+	out := []SettingHint{}
+	for _, setting := range settings {
+		target := strings.ToLower(setting.UniqueID) + "\t" + strings.ToLower(setting.Field)
+		if skip[dismissToken("setting", target)] {
+			continue
+		}
+		out = append(out, setting)
 	}
 	return out
 }

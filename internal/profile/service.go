@@ -1,11 +1,17 @@
 package profile
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -228,6 +234,211 @@ func (s *Service) ReadConfig(game, id, key, uniqueID string) (string, error) {
 // WriteConfig replaces the mod's config.json atomically.
 func (s *Service) WriteConfig(game, id, key, uniqueID, contents string) error {
 	return s.store.WriteConfig(game, id, key, uniqueID, contents)
+}
+
+// SetConfigValue changes one setting while retaining the config's other raw JSON values.
+func (s *Service) SetConfigValue(game, id, key, uniqueID, field, value string) error {
+	field = strings.TrimSpace(field)
+	if field == "" {
+		return errors.New("missing config field")
+	}
+	folder, err := s.store.ModFolder(game, id, key, uniqueID)
+	if err != nil {
+		return err
+	}
+	path := filepath.Join(folder, configFile)
+	raw, err := fsx.ReadFile(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		raw = []byte("{}")
+	} else if err != nil {
+		return err
+	}
+	var values map[string]json.RawMessage
+	if err := json.Unmarshal(stripConfigJSONNoise(raw), &values); err != nil {
+		return fmt.Errorf("config.json is not valid JSON: %w", err)
+	}
+	if values == nil {
+		values = map[string]json.RawMessage{}
+	}
+	schemaField, boolValue := configSchemaField(folder, field)
+	actual := schemaField
+	for key := range values {
+		if strings.EqualFold(key, field) {
+			actual = key
+			break
+		}
+	}
+	if actual == "" {
+		actual = field
+	}
+	var encoded []byte
+	if boolValue {
+		parsed, err := strconv.ParseBool(strings.TrimSpace(value))
+		if err != nil {
+			return fmt.Errorf("config field %s expects a boolean", field)
+		}
+		encoded, err = json.Marshal(parsed)
+		if err != nil {
+			return err
+		}
+	} else {
+		encoded, err = json.Marshal(value)
+		if err != nil {
+			return err
+		}
+	}
+	values[actual] = encoded
+	contents, err := json.MarshalIndent(values, "", "  ")
+	if err != nil {
+		return err
+	}
+	contents = append(contents, '\n')
+	return s.store.WriteConfig(game, id, key, uniqueID, string(contents))
+}
+
+func configSchemaField(folder, field string) (string, bool) {
+	raw, err := fsx.ReadFile(filepath.Join(folder, "content.json"))
+	if err != nil {
+		return "", false
+	}
+	var doc struct {
+		ConfigSchema map[string]json.RawMessage `json:"ConfigSchema"`
+	}
+	if json.Unmarshal(stripConfigJSONNoise(raw), &doc) != nil {
+		return "", false
+	}
+	for key, raw := range doc.ConfigSchema {
+		if !strings.EqualFold(strings.TrimSpace(key), field) {
+			continue
+		}
+		var entry struct {
+			Default     json.RawMessage `json:"Default"`
+			AllowValues json.RawMessage `json:"AllowValues"`
+		}
+		if json.Unmarshal(raw, &entry) != nil {
+			return key, false
+		}
+		return key, schemaAllowsBoolean(entry.Default, entry.AllowValues)
+	}
+	return "", false
+}
+
+func schemaAllowsBoolean(defaultValue, allowValues json.RawMessage) bool {
+	var b bool
+	if json.Unmarshal(defaultValue, &b) == nil {
+		return true
+	}
+	var values []json.RawMessage
+	if json.Unmarshal(allowValues, &values) == nil {
+		if len(values) == 0 {
+			return false
+		}
+		for _, value := range values {
+			if json.Unmarshal(value, &b) == nil {
+				continue
+			}
+			var text string
+			if json.Unmarshal(value, &text) != nil || !isBooleanText(text) {
+				return false
+			}
+		}
+		return true
+	}
+	var text string
+	if json.Unmarshal(allowValues, &text) == nil {
+		parts := strings.Split(text, ",")
+		if len(parts) == 0 {
+			return false
+		}
+		for _, part := range parts {
+			if !isBooleanText(part) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
+func isBooleanText(value string) bool {
+	value = strings.ToLower(strings.TrimSpace(value))
+	return value == "true" || value == "false"
+}
+
+// Content Patcher accepts comments and trailing commas in the files it owns.
+func stripConfigJSONNoise(b []byte) []byte {
+	out := make([]byte, 0, len(b))
+	inStr := false
+	esc := false
+	for i := 0; i < len(b); {
+		c := b[i]
+		if inStr {
+			out = append(out, c)
+			if esc {
+				esc = false
+			} else if c == '\\' {
+				esc = true
+			} else if c == '"' {
+				inStr = false
+			}
+			i++
+			continue
+		}
+		if c == '"' {
+			inStr = true
+			out = append(out, c)
+			i++
+			continue
+		}
+		if c == '/' && i+1 < len(b) && b[i+1] == '/' {
+			i += 2
+			for i < len(b) && b[i] != '\n' {
+				i++
+			}
+			continue
+		}
+		if c == '/' && i+1 < len(b) && b[i+1] == '*' {
+			i += 2
+			for i+1 < len(b) && (b[i] != '*' || b[i+1] != '/') {
+				i++
+			}
+			if i+1 < len(b) {
+				i += 2
+			}
+			continue
+		}
+		if c == ',' {
+			j := i + 1
+			for j < len(b) && unicode.IsSpace(rune(b[j])) {
+				j++
+			}
+			for j < len(b) && b[j] == '/' && j+1 < len(b) && (b[j+1] == '/' || b[j+1] == '*') {
+				if b[j+1] == '/' {
+					for j < len(b) && b[j] != '\n' {
+						j++
+					}
+				} else {
+					j += 2
+					for j+1 < len(b) && (b[j] != '*' || b[j+1] != '/') {
+						j++
+					}
+					if j+1 < len(b) {
+						j += 2
+					}
+				}
+				for j < len(b) && unicode.IsSpace(rune(b[j])) {
+					j++
+				}
+			}
+			if j < len(b) && (b[j] == '}' || b[j] == ']') {
+				i++
+				continue
+			}
+		}
+		out = append(out, c)
+		i++
+	}
+	return out
 }
 
 // SetPinned records whether the entry stays on its current version.

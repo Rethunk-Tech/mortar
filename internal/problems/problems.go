@@ -104,20 +104,34 @@ type Broken struct {
 	Replacement *Ref   `json:"replacement,omitempty"`
 }
 
+// SettingHint is a Content Patcher compatibility setting that is not enabled for the profile.
+type SettingHint struct {
+	Key         string   `json:"key"`
+	UniqueID    string   `json:"uniqueId"`
+	Name        string   `json:"name"`
+	Field       string   `json:"field"`
+	Current     string   `json:"current"`
+	Suggested   []string `json:"suggested"`
+	For         []string `json:"for"`
+	ForNames    []string `json:"forNames"`
+	Description string   `json:"description"`
+}
+
 // Result is everything found for one profile. Unknown is set when a lookup failed, so the lists may be short.
 type Result struct {
 	Missing        []Missing       `json:"missing"`
 	Duplicates     []Duplicate     `json:"duplicates"`
 	Broken         []Broken        `json:"broken"`
 	AssetConflicts []AssetConflict `json:"assetConflicts"`
+	Settings       []SettingHint   `json:"settings"`
 	RunErrors      []RunError      `json:"runErrors"`
 	Drift          []profile.Drift `json:"drift,omitempty"`
 	Unknown        bool            `json:"unknown"`
 }
 
-// Count is the number of problems, one per missing dependency, duplicate, broken mod, asset conflict and last-run error.
+// Count is the number of problems, one per missing dependency, duplicate, broken mod, asset conflict, setting and last-run error.
 func (r Result) Count() int {
-	return len(r.Missing) + len(r.Duplicates) + len(r.Broken) + len(r.AssetConflicts) + len(r.RunErrors) + len(r.Drift)
+	return len(r.Missing) + len(r.Duplicates) + len(r.Broken) + len(r.AssetConflicts) + len(r.Settings) + len(r.RunErrors) + len(r.Drift)
 }
 
 func sameID(a, b string) bool { return strings.EqualFold(a, b) }
@@ -140,6 +154,7 @@ func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Resul
 		Duplicates:     duplicates(enabled),
 		Broken:         []Broken{},
 		AssetConflicts: assetConflicts(enabled),
+		Settings:       compatibilitySettings(enabled),
 		Drift:          []profile.Drift{},
 	}
 	missing := missingDeps(enabled, mods)
