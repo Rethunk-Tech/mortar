@@ -35,23 +35,25 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
     <Box
       sx={{
         display: 'flex',
-        flexDirection: 'column',
-        gap: 0.5,
+        alignItems: 'flex-start',
+        gap: 1,
         px: 1.5,
         py: 1,
         borderLeft: '3px solid',
         borderLeftColor: edge[item.kind],
       }}
     >
-      <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{item.title}</Typography>
-      {item.body ? (
-        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{item.body}</Typography>
-      ) : null}
-      <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
-        {new Intl.DateTimeFormat(i18n.locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
-          new Date(item.at),
-        )}
-      </Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flex: 1, minWidth: 0 }}>
+        <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{item.title}</Typography>
+        {item.body ? (
+          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{item.body}</Typography>
+        ) : null}
+        <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
+          {new Intl.DateTimeFormat(i18n.locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
+            new Date(item.at),
+          )}
+        </Typography>
+      </Box>
       {action ? (
         <Tooltip title={state.disabled ? (state.reason ?? '') : ''}>
           <span>
@@ -59,7 +61,7 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
               size="small"
               disabled={state.disabled}
               onClick={run}
-              sx={{ whiteSpace: 'nowrap' }}
+              sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
             >
               {action.label}
             </Button>
