@@ -21,6 +21,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { SavesTab } from '../saves/SavesTab.tsx'
 import { useSaves } from '../saves/store.ts'
 import { openShare } from '../share/store.ts'
+import { ErrorBoundary } from '../shell/ErrorBoundary.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { ToolsMenu } from '../tools/ToolsMenu.tsx'
@@ -389,12 +390,14 @@ export function Detail() {
           />
         </Box>
       </Box>
-      {tab === 'console' ? <ConsoleTab game={game} /> : null}
-      {tab === 'performance' ? <PerformancePanel game={game} /> : null}
-      {tab === 'notes' ? <NotesTab key={`notes-${profile.id}`} profile={profile} /> : null}
-      {tab === 'saves' ? <SavesTab profile={profile} game={game} /> : null}
-      {tab === 'mods' ? <ModsTab key={`mods-${profile.id}`} profile={profile} /> : null}
-      {tab === 'problems' ? <ProblemsTab key={`problems-${profile.id}`} /> : null}
+      <ErrorBoundary resetKey={`${tab}-${profile.id}`}>
+        {tab === 'console' ? <ConsoleTab game={game} /> : null}
+        {tab === 'performance' ? <PerformancePanel game={game} /> : null}
+        {tab === 'notes' ? <NotesTab key={`notes-${profile.id}`} profile={profile} /> : null}
+        {tab === 'saves' ? <SavesTab profile={profile} game={game} /> : null}
+        {tab === 'mods' ? <ModsTab key={`mods-${profile.id}`} profile={profile} /> : null}
+        {tab === 'problems' ? <ProblemsTab key={`problems-${profile.id}`} /> : null}
+      </ErrorBoundary>
     </Box>
   )
 }

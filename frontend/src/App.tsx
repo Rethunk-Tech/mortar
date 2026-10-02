@@ -21,6 +21,7 @@ import { useAppShortcuts } from './settings/useShortcuts.ts'
 import { ImportDialog } from './share/ImportDialog.tsx'
 import { ShareDialog } from './share/ShareDialog.tsx'
 import { AppFrame } from './shell/AppFrame.tsx'
+import { ErrorBoundary } from './shell/ErrorBoundary.tsx'
 import { errorMessage } from './toasts/report.ts'
 import { useToasts } from './toasts/store.ts'
 import { ToastHost } from './toasts/ToastHost.tsx'
@@ -61,13 +62,15 @@ export function App() {
     <>
       <AppFrame>
         <UpdateReadyBanner />
-        {route.name === 'settings' ? <SettingsPage section={route.section} /> : null}
-        {route.name === 'game-settings' ? <GameSettingsPage /> : null}
-        {route.name === 'profiles' ? <ProfilesPage /> : null}
-        {route.name === 'game' ? <MainScreen game={route.game} /> : null}
-        {route.name === 'setup' ? <FirstRun /> : null}
-        {route.name === 'game-setup' ? <GameSetup game={route.game} /> : null}
-        {ready && route.name === 'game-select' ? <GameSelect /> : null}
+        <ErrorBoundary resetKey={route.name}>
+          {route.name === 'settings' ? <SettingsPage section={route.section} /> : null}
+          {route.name === 'game-settings' ? <GameSettingsPage /> : null}
+          {route.name === 'profiles' ? <ProfilesPage /> : null}
+          {route.name === 'game' ? <MainScreen game={route.game} /> : null}
+          {route.name === 'setup' ? <FirstRun /> : null}
+          {route.name === 'game-setup' ? <GameSetup game={route.game} /> : null}
+          {ready && route.name === 'game-select' ? <GameSelect /> : null}
+        </ErrorBoundary>
       </AppFrame>
       <LaunchLayer game={game} />
       <ArrivalDialog />
