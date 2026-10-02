@@ -46,6 +46,9 @@ export function FirstRun() {
         pt: '34px',
         pb: 3,
         px: 2,
+        // Centred when it fits, scrolling from the top when it does not.
+        '& > :first-of-type': { mt: 'auto' },
+        '& > :last-child': { mb: 'auto' },
       }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>

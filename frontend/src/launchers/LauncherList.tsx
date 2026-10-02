@@ -17,6 +17,7 @@ import {
   AddLauncherRoot,
   RemoveLauncherRoot,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { LauncherLogo } from '../brand/launchers/LauncherLogo.tsx'
 import { errorMessage } from '../toasts/report.ts'
 
 const STATUS_ICON = 30
@@ -67,6 +68,9 @@ function LauncherRow({ launcher, refresh }: { launcher: StoreApp; refresh: () =>
         expandIcon={<ChevronDown size={18} />}
         sx={{ '& .MuiAccordionSummary-content': { alignItems: 'center', gap: 2, my: 1.25 } }}
       >
+        <Box sx={{ display: 'flex', flexShrink: 0 }}>
+          <LauncherLogo id={launcher.id} size={STATUS_ICON} />
+        </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography sx={{ fontSize: 17, fontWeight: 700 }}>{launcher.name}</Typography>
           <Typography sx={{ fontSize: 13, color: 'text.secondary' }} noWrap={true}>
