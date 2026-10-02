@@ -468,3 +468,23 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 	}
 	return p, nil
 }
+
+// SourceOf is the source a profile of game recorded for store key, current or rolled-back, or zero when no profile
+// holds key.
+func (s *Store) SourceOf(game, key string) Source {
+	all, err := s.List(game)
+	if err != nil {
+		return Source{}
+	}
+	for _, p := range all {
+		for _, e := range p.Entries {
+			if e.Key == key {
+				return e.Source
+			}
+			if e.PreviousKey == key && e.PreviousSource != nil {
+				return *e.PreviousSource
+			}
+		}
+	}
+	return Source{}
+}

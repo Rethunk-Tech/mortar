@@ -38,8 +38,10 @@ type fixture struct {
 	keys         []string
 	samePage     func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool)
 	installExtra func(game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error)
-	stored       map[string]bool
-	fromStore    []string
+	stored       map[string]profile.Source
+	// calls counts Nexus API requests.
+	calls     atomic.Int32
+	fromStore []string
 	// published is the last state publish finished writing; waiting on it rather than State keeps a test from
 	// ending while queue.json is still being written.
 	published atomic.Pointer[State]
@@ -93,7 +95,12 @@ func newFixture(t *testing.T) *fixture {
 		}
 		fmt.Fprint(w, payload)
 	})
-	srv = httptest.NewServer(mux)
+	srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/v1/") {
+			f.calls.Add(1)
+		}
+		mux.ServeHTTP(w, r)
+	}))
 	t.Cleanup(srv.Close)
 
 	c := nexus.New("test")
@@ -124,10 +131,11 @@ func newFixture(t *testing.T) *fixture {
 			}
 			return f.installExtra(game, profileID, entryKey, path, src)
 		},
-		Stored: func(_, key string) bool {
+		Stored: func(_, key string) (profile.Source, bool) {
 			f.mu.Lock()
 			defer f.mu.Unlock()
-			return f.stored[key]
+			src, ok := f.stored[key]
+			return src, ok
 		},
 		InstallStaged: func(_, _, key string, src profile.Source) (profile.InstallResult, error) {
 			f.mu.Lock()
@@ -219,7 +227,7 @@ func TestPremiumDownloadsAndInstallsWithoutClicks(t *testing.T) {
 func TestAStoredFileInstallsFromTheStoreWithoutAClick(t *testing.T) {
 	f := newFixture(t)
 	f.premium.Store(false)
-	f.stored = map[string]bool{"nexus-1-10": true}
+	f.stored = map[string]profile.Source{"nexus-1-10": {Kind: "nexus", Name: "a-1.0.zip", ModID: 1, FileID: 10, Version: "1.0", Picture: "https://img/a.png", EndorsementCount: 7}}
 	f.start()
 	if _, err := f.s.Add([]Request{req(10)}); err != nil {
 		t.Fatal(err)
@@ -227,10 +235,10 @@ func TestAStoredFileInstallsFromTheStoreWithoutAClick(t *testing.T) {
 	st := f.wait("done", f.item(StateDone))
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	if len(f.opened) != 0 || len(f.keys) != 0 || len(f.fromStore) != 1 || f.fromStore[0] != "nexus-1-10" {
+	if len(f.opened) != 0 || len(f.keys) != 0 || f.calls.Load() != 0 || len(f.fromStore) != 1 || f.fromStore[0] != "nexus-1-10" {
 		t.Fatalf("opened %v, keys %v, from store %v", f.opened, f.keys, f.fromStore)
 	}
-	if src := f.installs[0]; src.Kind != "nexus" || src.ModID != 1 || src.FileID != 10 || st.Items[0].Name != "Alpha" {
+	if src := f.installs[0]; src.Kind != "nexus" || src.ModID != 1 || src.FileID != 10 || src.Version != "1.0" || src.Picture != "https://img/a.png" || st.Items[0].FileName != "a-1.0.zip" {
 		t.Errorf("source %+v, item %+v", src, st.Items[0])
 	}
 }

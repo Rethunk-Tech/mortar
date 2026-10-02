@@ -258,9 +258,11 @@ func run() error {
 			}
 			return res, err
 		},
-		Stored: func(game, key string) bool {
-			_, err := items.Path(game, key)
-			return err == nil
+		Stored: func(game, key string) (profile.Source, bool) {
+			if _, err := items.Path(game, key); err != nil {
+				return profile.Source{}, false
+			}
+			return profiles.SourceOf(game, key), true
 		},
 		Stage:         profiles.StageGitHub,
 		InstallStaged: profiles.InstallStaged,
