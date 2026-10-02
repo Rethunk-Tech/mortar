@@ -45,6 +45,40 @@ func TestCreateListRename(t *testing.T) {
 	}
 }
 
+func TestListReturnsDamagedProfiles(t *testing.T) {
+	s := newStore(t)
+	good, err := s.Create("stardew", "Good")
+	if err != nil {
+		t.Fatal(err)
+	}
+	badID := "0123456789abcdef"
+	badDir := filepath.Join(s.root, "stardew", badID)
+	if err := os.MkdirAll(filepath.Join(badDir, "mods"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(badDir, fileName), []byte("{"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := s.List("stardew")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var damaged Profile
+	foundGood := false
+	for _, p := range got {
+		if p.ID == good.ID {
+			foundGood = true
+		}
+		if p.ID == badID {
+			damaged = p
+		}
+	}
+	if !foundGood || damaged.ID != badID || damaged.Error == "" {
+		t.Fatalf("profiles = %+v", got)
+	}
+}
+
 func TestRejects(t *testing.T) {
 	s := newStore(t)
 	p, err := s.Create("stardew", "ok")

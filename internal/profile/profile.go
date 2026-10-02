@@ -149,6 +149,8 @@ type Profile struct {
 	LaunchEnv string `json:"launchEnv,omitempty"`
 	// UpdateBeforePlay applies available mod updates before launching this profile; false is the default.
 	UpdateBeforePlay bool `json:"updateBeforePlay,omitempty"`
+	// Error is set on a list item whose profile.json could not be read.
+	Error string `json:"error,omitempty"`
 }
 
 // Store reads and writes profiles under one root folder.
@@ -314,7 +316,8 @@ func (s *Store) List(game string) ([]Profile, error) {
 		}
 		p, err := s.read(game, d.Name())
 		if err != nil {
-			return nil, err
+			out = append(out, Profile{ID: d.Name(), Error: err.Error()})
+			continue
 		}
 		out = append(out, p)
 	}
