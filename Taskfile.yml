@@ -35,6 +35,11 @@ tasks:
     cmds:
       - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
 
+  selftest:
+    summary: Runs Mortar in server mode against a sandboxed home with a copied game, for browser self-tests (scripts/selftest.sh)
+    cmds:
+      - scripts/selftest.sh {{.CLI_ARGS | default "start"}}
+
   components:refresh:
     summary: Resolves, hashes and refreshes the bundled component manifest
     cmds:
