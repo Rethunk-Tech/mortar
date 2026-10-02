@@ -1,0 +1,5 @@
+{
+  "Name": "Kept",
+  "EnabledModIds": [{ "UniqueId": "Example.Mod", "SourceId": "collection-1" }],
+  "PreservedModConfigs": { "example.mod": { "Volume": 3 } }
+}

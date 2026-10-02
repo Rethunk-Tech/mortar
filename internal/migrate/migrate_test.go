@@ -58,3 +58,16 @@ func TestDetectsVortexProfileAndReadsStagingMods(t *testing.T) {
 		t.Fatal("Vortex mod has no source path")
 	}
 }
+
+func TestStardropProfileCarriesItsOwnConfigCopy(t *testing.T) {
+	home := filepath.Join("testdata", "stardrop", "home")
+	mods := filepath.Join("testdata", "stardrop", "game", "Mods")
+
+	preview, err := Preview(home, mods, KindStardrop, "Kept")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(preview.Mods) != 1 || !preview.Mods[0].Enabled || string(preview.Mods[0].Config) != `{ "Volume": 3 }` {
+		t.Fatalf("mods = %#v", preview.Mods)
+	}
+}

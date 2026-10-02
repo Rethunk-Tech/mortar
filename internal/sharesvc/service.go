@@ -367,19 +367,40 @@ func (s *Service) PreviewExternal(ctx context.Context, game string, external mig
 			refs = append(refs, share.Ref{ModID: mod.NexusModID})
 		}
 	}
-	out, err := s.preview(ctx, game, share.Shared{Name: external.Name, Entries: refs}, "", nil, profileID, "")
+	configs, skipped := externalConfigs(external.Mods)
+	out, err := s.preview(ctx, game, share.Shared{Name: external.Name, Entries: refs}, "", configs, profileID, "")
 	if err != nil {
 		return Preview{}, err
 	}
 	local := externalLocalMods(external.Mods)
 	out.Mods = append(local, out.Mods...)
+	out.SkippedSettings = skipped
 	s.mu.Lock()
 	if s.current != nil && s.current.id == out.Session {
 		s.current.preview.Mods = append(local, s.current.preview.Mods...)
+		s.current.preview.SkippedSettings = skipped
 		s.current.external = slices.Clone(external.Mods)
 	}
 	s.mu.Unlock()
 	return out, nil
+}
+
+// externalConfigs keeps each external mod's own config.json under the caps a .mortar file's configs have, and
+// lists the ones left out.
+func externalConfigs(mods []migrate.ModPreview) (configs []share.Config, skipped []string) {
+	var total int64
+	for _, mod := range mods {
+		if len(mod.Config) == 0 || mod.UniqueID == "" {
+			continue
+		}
+		total += int64(len(mod.Config))
+		if len(mod.Config) > share.MaxConfigBytes || total > share.MaxConfigTotal || len(configs) >= share.MaxConfigFiles {
+			skipped = append(skipped, mod.UniqueID+"/config.json")
+			continue
+		}
+		configs = append(configs, share.Config{UniqueID: mod.UniqueID, Path: "config.json", Data: mod.Config})
+	}
+	return configs, skipped
 }
 
 func externalLocalMods(mods []migrate.ModPreview) []Mod {
@@ -637,6 +658,24 @@ func (s *Service) Import(ctx context.Context, game, session, profileID string, e
 		}
 		if p, err := s.find(game, profileID); err == nil {
 			res.Profile = p
+		}
+		// Copied folders are on the profile now, so their configs land at once; the rest wait for their downloads.
+		if len(configs) > 0 {
+			var written []string
+			err := s.d.Profiles.InMods(game, profileID, func(prof profile.Profile, modsDir string) error {
+				var err error
+				written, err = share.Apply(modsDir, prof.Entries, configs)
+				return err
+			})
+			if err != nil {
+				if created {
+					err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
+				}
+				return Result{}, err
+			}
+			configs = slices.DeleteFunc(slices.Clone(configs), func(c share.Config) bool {
+				return slices.ContainsFunc(written, func(id string) bool { return strings.EqualFold(id, c.UniqueID) })
+			})
 		}
 	}
 	for i := range reqs {

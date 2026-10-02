@@ -9,6 +9,9 @@ type ModPreview struct {
 	Enabled    bool   `json:"enabled"`
 	NexusModID int    `json:"nexusModID,omitempty"`
 	SourcePath string `json:"sourcePath,omitempty"`
+	// Config is the profile's own copy of the mod's config.json, when the manager keeps one apart from the mod
+	// folder. A folder copy carries its config.json with it.
+	Config []byte `json:"config,omitempty"`
 }
 
 // ProfilePreview is one external profile and the mods it would import.

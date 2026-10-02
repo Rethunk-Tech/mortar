@@ -78,18 +78,20 @@ type Problem struct {
 	URL    string `json:"url"`
 }
 
-// Preview is what an import would do. Settings counts the config files a .mortar file carries.
+// Preview is what an import would do. Settings counts the config files a .mortar file or an external profile carries.
 type Preview struct {
 	// Session names this preview; Import takes it back so it acts on exactly what the dialog shows.
-	Session  string      `json:"session"`
-	Name     string      `json:"name"`
-	Notes    string      `json:"notes"`
-	Settings int         `json:"settings"`
-	Mods     []Mod       `json:"mods"`
-	Problems []Problem   `json:"problems"`
-	SignedIn bool        `json:"signedIn"`
-	Premium  bool        `json:"premium"`
-	Replace  ReplacePlan `json:"replace"`
+	Session  string `json:"session"`
+	Name     string `json:"name"`
+	Notes    string `json:"notes"`
+	Settings int    `json:"settings"`
+	// SkippedSettings lists the external import's config files left out as too large, as UniqueID/path.
+	SkippedSettings []string    `json:"skippedSettings,omitempty"`
+	Mods            []Mod       `json:"mods"`
+	Problems        []Problem   `json:"problems"`
+	SignedIn        bool        `json:"signedIn"`
+	Premium         bool        `json:"premium"`
+	Replace         ReplacePlan `json:"replace"`
 }
 
 // Site names of a Mod.

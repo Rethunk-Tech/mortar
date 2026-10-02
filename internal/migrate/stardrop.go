@@ -16,8 +16,31 @@ import (
 
 type stardropProfile struct {
 	Name          string            `json:"Name"`
-	EnabledModIDs []string          `json:"EnabledModIds"`
+	EnabledModIDs []stardropModRef  `json:"EnabledModIds"`
 	ModData       []stardropModData `json:"ModData"`
+	// PreservedModConfigs holds each mod's config.json for this profile, keyed by lower-case UniqueID, when
+	// Stardrop keeps configs per profile. The copy in the mod folder is whichever profile ran last.
+	PreservedModConfigs map[string]json.RawMessage `json:"PreservedModConfigs"`
+}
+
+// stardropModRef is an EnabledModIds item: a bare UniqueID, or an object that also names the collection that
+// installed the mod.
+type stardropModRef string
+
+func (r *stardropModRef) UnmarshalJSON(b []byte) error {
+	var id string
+	if json.Unmarshal(b, &id) == nil {
+		*r = stardropModRef(id)
+		return nil
+	}
+	var ref struct {
+		UniqueID string `json:"UniqueId"`
+	}
+	if err := json.Unmarshal(b, &ref); err != nil {
+		return err
+	}
+	*r = stardropModRef(ref.UniqueID)
+	return nil
 }
 
 type stardropModData struct {
@@ -74,11 +97,20 @@ func stardropPreviewFile(path, id, modsPath string) (ProfilePreview, error) {
 	}
 	enabled := make(map[string]bool, len(source.EnabledModIDs))
 	for _, uniqueID := range source.EnabledModIDs {
-		enabled[strings.ToLower(strings.TrimSpace(uniqueID))] = true
+		enabled[strings.ToLower(strings.TrimSpace(string(uniqueID)))] = true
 	}
 	mods, err := stardropMods(modsPath, enabled, source.ModData)
 	if err != nil {
 		return ProfilePreview{}, err
+	}
+	configs := make(map[string]json.RawMessage, len(source.PreservedModConfigs))
+	for uniqueID, config := range source.PreservedModConfigs {
+		configs[strings.ToLower(uniqueID)] = config
+	}
+	for i := range mods {
+		if config := configs[strings.ToLower(mods[i].UniqueID)]; len(config) > 0 && string(config) != "null" {
+			mods[i].Config = config
+		}
 	}
 	return ProfilePreview{
 		ID: id, Name: name, Source: KindStardrop, ModsPath: modsPath, Mods: mods,
