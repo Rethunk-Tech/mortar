@@ -6,26 +6,17 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { lastRunOf } from './lastRun.ts'
 import { isNewer } from './nexusFormat.ts'
 
-const LIST_COLUMN_IDS = [
-  'on',
-  'name',
-  'version',
-  'latest',
-  'uniqueId',
-  'author',
-  'source',
-  'category',
-  'endorsements',
-  'downloads',
-  'updated',
-  'installed',
-  'needs',
-  'status',
-  'notes',
-  'lastRun',
+// Columns in menu and table order, grouped: the mod itself, its versions and state, dates, then Nexus figures.
+const LIST_COLUMN_GROUPS = [
+  ['on', 'name', 'author', 'category', 'notes', 'uniqueId'],
+  ['version', 'latest', 'status', 'needs'],
+  ['installed', 'updated', 'lastRun'],
+  ['source', 'endorsements', 'downloads'],
 ] as const
 
-type ListColumnId = (typeof LIST_COLUMN_IDS)[number]
+const LIST_COLUMN_IDS = LIST_COLUMN_GROUPS.flat()
+
+type ListColumnId = (typeof LIST_COLUMN_GROUPS)[number][number]
 
 const LOCKED_LIST_COLUMNS: readonly ListColumnId[] = ['on', 'name']
 
@@ -394,6 +385,7 @@ export {
   compareListRows,
   DEFAULT_LIST_COLUMN_SORT,
   DEFAULT_VISIBLE_LIST_COLUMNS,
+  LIST_COLUMN_GROUPS,
   LIST_COLUMN_IDS,
   LIST_COLUMN_WIDTH,
   LOCKED_LIST_COLUMNS,

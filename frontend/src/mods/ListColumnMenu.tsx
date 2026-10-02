@@ -35,7 +35,7 @@ import { SetListSort } from '../../bindings/github.com/Rethunk-AI/mortar/interna
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import {
-  LIST_COLUMN_IDS,
+  LIST_COLUMN_GROUPS,
   type ListColumnId,
   LOCKED_LIST_COLUMNS,
   moveListColumn,
@@ -271,24 +271,27 @@ function ListColumnMenu({
       anchorReference="anchorPosition"
       anchorPosition={anchor ?? undefined}
     >
-      {LIST_COLUMN_IDS.map((id) => {
-        const locked = LOCKED_LIST_COLUMNS.includes(id)
-        const shown = visible.includes(id)
-        return (
-          <MenuItem
-            key={id}
-            disabled={locked}
-            onClick={() => {
-              onToggle(id)
-            }}
-          >
-            <ListItemIcon sx={{ color: 'inherit' }}>
-              {shown ? <Check size={16} aria-hidden={true} /> : null}
-            </ListItemIcon>
-            <ListItemText>{columnLabel(id)}</ListItemText>
-          </MenuItem>
-        )
-      })}
+      {LIST_COLUMN_GROUPS.flatMap((group, index) => [
+        index > 0 ? <Divider key={`divider-${group[0]}`} /> : null,
+        ...group.map((id) => {
+          const locked = LOCKED_LIST_COLUMNS.includes(id)
+          const shown = visible.includes(id)
+          return (
+            <MenuItem
+              key={id}
+              disabled={locked}
+              onClick={() => {
+                onToggle(id)
+              }}
+            >
+              <ListItemIcon sx={{ color: 'inherit' }}>
+                {shown ? <Check size={16} aria-hidden={true} /> : null}
+              </ListItemIcon>
+              <ListItemText>{columnLabel(id)}</ListItemText>
+            </MenuItem>
+          )
+        }),
+      ])}
       <Divider />
       <MenuItem
         onClick={() => {
