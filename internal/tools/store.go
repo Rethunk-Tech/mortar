@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"sync"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/game"
@@ -17,6 +18,7 @@ import (
 
 type Store struct {
 	root string
+	mu   sync.Mutex
 }
 
 func Open() (*Store, error) {
@@ -81,9 +83,8 @@ func (s *Store) List(game string) ([]Tool, error) {
 }
 
 func (s *Store) Add(game string, t Tool) (Tool, error) {
-	if err := validateTool(t); err != nil {
-		return Tool{}, err
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	t.Arguments = slices.Clone(t.Arguments)
 	id, err := newID()
 	if err != nil {
@@ -102,11 +103,10 @@ func (s *Store) Add(game string, t Tool) (Tool, error) {
 }
 
 func (s *Store) Update(game string, t Tool) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if t.ID == "" {
 		return fmt.Errorf("id is required")
-	}
-	if err := validateTool(t); err != nil {
-		return err
 	}
 	t.Arguments = slices.Clone(t.Arguments)
 	tools, err := s.load(game)
@@ -122,6 +122,8 @@ func (s *Store) Update(game string, t Tool) error {
 }
 
 func (s *Store) Remove(game, id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	tools, err := s.load(game)
 	if err != nil {
 		return err

@@ -31,12 +31,34 @@ func (s *Service) List(game string) ([]Tool, error) {
 
 func (s *Service) Add(game string, t Tool) (Tool, error) {
 	t.Arguments = NormalizeArguments(t.Arguments)
+	ctx, err := s.validationContext(game)
+	if err != nil {
+		return Tool{}, err
+	}
+	if err := validateTool(t, ctx); err != nil {
+		return Tool{}, err
+	}
 	return s.store.Add(game, t)
 }
 
 func (s *Service) Update(game string, t Tool) error {
 	t.Arguments = NormalizeArguments(t.Arguments)
+	ctx, err := s.validationContext(game)
+	if err != nil {
+		return err
+	}
+	if err := validateTool(t, ctx); err != nil {
+		return err
+	}
 	return s.store.Update(game, t)
+}
+
+func (s *Service) validationContext(gameID string) (Context, error) {
+	install, err := game.InstallDir(s.home, s.settings.Get(), gameID)
+	if err != nil {
+		return Context{}, err
+	}
+	return Context{Game: absDir(install)}, nil
 }
 
 func (s *Service) Remove(game, id string) error {
