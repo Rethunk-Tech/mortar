@@ -464,3 +464,14 @@ func buildRar(t *testing.T, files ...rarFile) string {
 	out = append(out, rarBlock(append(vint(5), vint(0)...), 0x80, 0)...) // end of archive
 	return writeTemp(t, "a.rar", out)
 }
+
+func TestZipNamesInALegacyEncodingBecomeUTF8(t *testing.T) {
+	// GBK bytes for a left curly quote, as a Chinese-locale zip tool writes them without the UTF-8 flag.
+	dest, err := extract(t, buildZip(t, zentry{name: "[FS]Kyuya\xa1\xaes hats Pack/manifest.json", body: "{}"}), Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := readFile(t, filepath.Join(dest, "[FS]Kyuya‘s hats Pack", "manifest.json")); got != "{}" {
+		t.Fatalf("manifest = %q", got)
+	}
+}

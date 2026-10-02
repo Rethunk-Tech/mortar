@@ -13,8 +13,10 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"golang.org/x/text/encoding/simplifiedchinese"
 
 	"github.com/bodgit/sevenzip"
 	"github.com/nwaples/rardecode/v2"
@@ -148,6 +150,7 @@ func (x *extractor) zip(r io.ReaderAt, size int64) error {
 		return &Error{Reason: ErrTooManyEntries}
 	}
 	for _, f := range zr.File {
+		f.Name = zipName(f)
 		mode := f.Mode()
 		if f.Flags&1 != 0 {
 			return &Error{Entry: f.Name, Reason: ErrEncrypted}
@@ -160,6 +163,20 @@ func (x *extractor) zip(r io.ReaderAt, size int64) error {
 		}
 	}
 	return nil
+}
+
+// zipName is an entry's name as UTF-8. Zips written without the UTF-8 flag carry names in the writer's locale;
+// for Stardew mods that is most often GBK from Chinese-locale tools, and GB18030 decodes it. A name left as raw
+// bytes extracts to a folder the game's .NET runtime cannot open.
+func zipName(f *zip.File) string {
+	if utf8.ValidString(f.Name) {
+		return f.Name
+	}
+	decoded, err := simplifiedchinese.GB18030.NewDecoder().String(f.Name)
+	if err != nil || !utf8.ValidString(decoded) {
+		return strings.ToValidUTF8(f.Name, "_")
+	}
+	return decoded
 }
 
 func (x *extractor) sevenZip(r io.ReaderAt, size int64) error {
