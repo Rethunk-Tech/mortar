@@ -52,6 +52,15 @@ test('mod filter keeps only the picked mods', () => {
   expect(modsOf(log)).toEqual(['Cooking', 'Love of Cooking', 'SMAPI'])
 })
 
+test('filters complete stack-trace entries and can exclude a mod', () => {
+  const rows = visible(log, { ...DEFAULT_FILTERS, excludeMods: ['Love of Cooking'] })
+  expect(rows.map((r) => r.message)).toEqual(['Loaded 42 mods', 'obsolete API', 'hello'])
+  expect(visible(log, { ...DEFAULT_FILTERS, search: 'spacecore' }).map((r) => r.message)).toEqual([
+    'Failed to load:',
+    '  needs SpaceCore',
+  ])
+})
+
 test('isFiltered is false only for the defaults', () => {
   expect(isFiltered(DEFAULT_FILTERS)).toBe(false)
   expect(isFiltered({ ...DEFAULT_FILTERS, levels: [...DEFAULT_FILTERS.levels, Level.Trace] })).toBe(

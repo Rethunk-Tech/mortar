@@ -2,46 +2,53 @@ function needle(s: string): string {
   return s.trim().toLowerCase()
 }
 
-function fuzzyHit(query: string, text: string): boolean {
+const WORDS = /\s+/
+const RANK_FUZZY = 1
+const RANK_WORD = 2
+const RANK_CONTIGUOUS = 3
+const RANK_EXACT = 4
+const MAX_RESULTS = 50
+
+function fuzzyRank(query: string, text: string): number {
   const q = needle(query)
   const t = needle(text)
   if (q.length === 0) {
-    return true
+    return RANK_FUZZY
   }
   if (t.includes(q)) {
-    return true
+    return RANK_CONTIGUOUS
+  }
+  const words = t.split(WORDS)
+  if (words.some((word) => word.startsWith(q))) {
+    return RANK_WORD
   }
   let qi = 0
   for (const ch of t) {
     if (ch === q[qi]) {
       qi += 1
       if (qi === q.length) {
-        return true
+        return RANK_FUZZY
       }
     }
   }
-  return false
+  return 0
 }
-
-const rankExact = 3
-const rankPrefix = 2
-const rankFuzzy = 1
 
 function rank(query: string, item: PaletteItem): number {
   const q = needle(query)
   if (q.length === 0) {
-    return rankFuzzy
+    return RANK_FUZZY
   }
-  const fields = [item.label, item.hint ?? '', item.id]
+  const fields = [item.label, item.hint ?? '']
   let best = 0
   for (const field of fields) {
     const t = needle(field)
     if (t === q) {
-      best = Math.max(best, rankExact)
+      best = Math.max(best, RANK_EXACT)
     } else if (t.startsWith(q)) {
-      best = Math.max(best, rankPrefix)
-    } else if (fuzzyHit(query, field)) {
-      best = Math.max(best, rankFuzzy)
+      best = Math.max(best, RANK_CONTIGUOUS)
+    } else {
+      best = Math.max(best, fuzzyRank(query, field))
     }
   }
   return best
@@ -67,5 +74,5 @@ export function matchPaletteItems(items: readonly PaletteItem[], query: string):
     }
     return a.item.label.localeCompare(b.item.label)
   })
-  return scored.map((row) => row.item)
+  return scored.slice(0, MAX_RESULTS).map((row) => row.item)
 }

@@ -141,6 +141,12 @@ export function CommandPalette() {
     'check-updates': t`Check for mod updates`,
     'open-settings': t`Open Settings`,
     dismiss: t`Close dialog or clear selection`,
+    'select-all-mods': t`Select all mods`,
+    'mod-up': t`Focus the previous mod`,
+    'mod-down': t`Focus the next mod`,
+    'mod-toggle': t`Toggle the focused mod`,
+    'mod-details': t`Open focused mod details`,
+    'mod-remove': t`Remove the focused mod`,
   }
   const profile = profiles.find((p) => p.id === openId)
   const mods = userModEntries(profile?.entries).flatMap((entry) =>
@@ -168,6 +174,15 @@ export function CommandPalette() {
         profileHint: t`Open profile`,
         modHint: t`Open mod`,
         settingsHint: t`Settings`,
+        tabs: {
+          mods: t`Go to Mods`,
+          problems: t`Go to Problems`,
+          saves: t`Go to Saves`,
+          notes: t`Go to Notes`,
+          console: t`Go to Console`,
+          performance: t`Go to Performance`,
+        },
+        toggle: (name) => t`Toggle ${name}`,
       },
     }),
     query,

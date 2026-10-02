@@ -32,3 +32,24 @@ test('ranks an exact label above a fuzzy hit', () => {
   )
   expect(ranked[0]?.id).toBe('action:play')
 })
+
+test('ranks contiguous and word-start matches above scattered matches', () => {
+  const ranked = matchPaletteItems(
+    [
+      { id: 'scattered', kind: 'action', label: 'C o n' },
+      { id: 'word', kind: 'action', label: 'Console settings' },
+      { id: 'contiguous', kind: 'action', label: 'Console' },
+    ],
+    'con',
+  )
+  expect(ranked.map((item) => item.id)).toEqual(['contiguous', 'word', 'scattered'])
+})
+
+test('caps results at fifty', () => {
+  const many = Array.from({ length: 51 }, (_, i) => ({
+    id: `action:${i}`,
+    kind: 'action' as const,
+    label: `Action ${i}`,
+  }))
+  expect(matchPaletteItems(many, '').length).toBe(50)
+})

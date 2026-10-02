@@ -12,12 +12,14 @@ export interface Filters {
   search: string
   levels: Level[]
   mods: string[]
+  excludeMods: string[]
 }
 
 export const DEFAULT_FILTERS: Filters = {
   search: '',
   levels: [Level.Info, Level.Warn, Level.Error, Level.Alert],
   mods: [],
+  excludeMods: [],
 }
 
 export function shownLog(entries: Entry[], mine: boolean): Entry[] {
@@ -42,6 +44,7 @@ export function isFiltered(f: Filters): boolean {
   return (
     f.search.trim() !== '' ||
     f.mods.length > 0 ||
+    f.excludeMods.length > 0 ||
     f.levels.length !== DEFAULT_FILTERS.levels.length ||
     DEFAULT_FILTERS.levels.some((l) => !f.levels.includes(l))
   )
@@ -49,14 +52,28 @@ export function isFiltered(f: Filters): boolean {
 
 export function visible(entries: Entry[], f: Filters): Entry[] {
   const needle = f.search.trim().toLowerCase()
-  return entries.filter(
-    (e) =>
-      f.levels.includes(e.level) &&
-      (f.mods.length === 0 || f.mods.includes(e.mod)) &&
+  const groups: Entry[][] = []
+  for (const entry of entries) {
+    if (!entry.cont || groups.length === 0) {
+      groups.push([])
+    }
+    groups.at(-1)?.push(entry)
+  }
+  return groups.flatMap((group) => {
+    const [header] = group
+    if (!header) {
+      return []
+    }
+    const matches =
+      group.every((e) => f.levels.includes(e.level)) &&
+      (f.mods.length === 0 || f.mods.includes(header.mod)) &&
+      !f.excludeMods.includes(header.mod) &&
       (needle === '' ||
-        e.message.toLowerCase().includes(needle) ||
-        e.mod.toLowerCase().includes(needle)),
-  )
+        group.some(
+          (e) => e.message.toLowerCase().includes(needle) || e.mod.toLowerCase().includes(needle),
+        ))
+    return matches ? group : []
+  })
 }
 
 export function firstError(rows: Entry[]): number {

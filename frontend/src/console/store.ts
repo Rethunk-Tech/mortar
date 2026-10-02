@@ -53,6 +53,7 @@ export const useConsole = create<{
   setSearch: (search: string) => void
   toggleLevel: (level: Level) => void
   setMods: (mods: string[]) => void
+  setExcludeMods: (mods: string[]) => void
   clearFilters: () => void
   setTimestamps: (on: boolean) => void
   setFollow: (on: boolean) => void
@@ -169,6 +170,7 @@ export const useConsole = create<{
       },
     })),
   setMods: (mods) => set((s) => ({ filters: { ...s.filters, mods } })),
+  setExcludeMods: (excludeMods) => set((s) => ({ filters: { ...s.filters, excludeMods } })),
   clearFilters: () => set({ filters: DEFAULT_FILTERS }),
   setTimestamps: (timestamps) => set({ timestamps }),
   setFollow: (follow) => set({ follow }),

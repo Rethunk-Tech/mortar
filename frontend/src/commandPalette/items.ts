@@ -13,6 +13,8 @@ export interface PaletteLabels {
   profileHint: string
   modHint: string
   settingsHint: string
+  tabs: Record<string, string>
+  toggle: (name: string) => string
 }
 
 export function buildPaletteItems(input: {
@@ -40,6 +42,12 @@ export function buildPaletteItems(input: {
       label: mod.name,
       hint: `${labels.modHint} · ${mod.uniqueId}`,
     })
+    items.push({
+      id: `toggle-mod:${mod.key}/${mod.uniqueId}`,
+      kind: 'action',
+      label: labels.toggle(mod.name),
+      hint: labels.modHint,
+    })
   }
   for (const section of sections) {
     items.push({
@@ -57,6 +65,11 @@ export function buildPaletteItems(input: {
     { id: 'action:share', kind: 'action', label: labels.share },
     { id: 'action:new-profile', kind: 'action', label: labels.newProfile },
     { id: 'action:stream-overlay', kind: 'action', label: labels.streamOverlay },
+    ...Object.entries(labels.tabs).map(([id, label]) => ({
+      id: `tab:${id}`,
+      kind: 'action' as const,
+      label,
+    })),
   )
   for (const row of shortcuts) {
     items.push({

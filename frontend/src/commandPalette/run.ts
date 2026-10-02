@@ -1,5 +1,7 @@
+import { useTab } from '../game/tab.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
 import { requestFilterFocus } from '../mods/filterFocus.ts'
+import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { type GameId, type SettingsSection, useNav } from '../nav/store.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
@@ -19,6 +21,7 @@ const sections = new Set<SettingsSection>([
   'shortcuts',
   'about',
 ])
+const TAB_PREFIX_LENGTH = 4
 
 function leaveShellPages(): void {
   const nav = useNav.getState()
@@ -62,6 +65,34 @@ function runShortcut(id: ShortcutId): void {
 }
 
 function runAction(id: string): void {
+  if (id.startsWith('tab:')) {
+    useTab
+      .getState()
+      .setTab(
+        id.slice(TAB_PREFIX_LENGTH) as
+          | 'mods'
+          | 'problems'
+          | 'saves'
+          | 'notes'
+          | 'console'
+          | 'performance',
+      )
+    return
+  }
+  if (id.startsWith('toggle-mod:')) {
+    const rest = id.slice('toggle-mod:'.length)
+    const cut = rest.indexOf('/')
+    const mod = useMods
+      .getState()
+      .mods.find(
+        (candidate) =>
+          candidate.key === rest.slice(0, cut) && candidate.uniqueId === rest.slice(cut + 1),
+      )
+    if (mod) {
+      useMods.getState().setEnabled(mod, !mod.enabled).catch(reportUnexpected)
+    }
+    return
+  }
   if (id === 'action:play') {
     playOpenProfile()
     return
