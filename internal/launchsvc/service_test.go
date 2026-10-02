@@ -13,7 +13,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"runtime"
 	"testing"
 	"time"
 
@@ -465,16 +464,28 @@ func TestStartLoaderUsesAppLifetime(t *testing.T) {
 	}
 }
 
-func TestStartedGameIsNotCancelledWhenStartReturns(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("uses a shell script as the game")
+const fakeGameEnv = "MORTAR_TEST_FAKE_GAME"
+
+func TestMain(m *testing.M) {
+	if os.Getenv(fakeGameEnv) != "" {
+		time.Sleep(3 * time.Second)
+		os.Exit(0)
 	}
+	os.Exit(m.Run())
+}
+
+func TestStartedGameIsNotCancelledWhenStartReturns(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	svc, p := startEnv(t)
 	folder := svc.settings.Get().GameFolders["stardew"]
-	script := []byte("#!/bin/sh\nexec sleep 3\n")
+	self, err := os.Executable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The test binary stands in for the game: with fakeGameEnv set it sleeps, then exits cleanly.
+	t.Setenv(fakeGameEnv, "1")
 	for _, name := range []string{"StardewValley", "StardewValley-original", "StardewModdingAPI"} {
-		if err := os.WriteFile(filepath.Join(folder, name), script, 0o700); err != nil {
+		if err := os.Symlink(self, filepath.Join(folder, name)); err != nil {
 			t.Fatal(err)
 		}
 	}
