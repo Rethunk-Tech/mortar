@@ -72,7 +72,7 @@ function BundleNameDialog({
   return (
     <Dialog open={open} onClose={busy ? undefined : onClose} transitionDuration={0}>
       <DialogTitle>{title}</DialogTitle>
-      <DialogContent sx={{ minWidth: 360 }}>
+      <DialogContent sx={{ minWidth: 360, maxWidth: 'calc(100vw - 64px)' }}>
         <TextField
           autoFocus={true}
           fullWidth={true}

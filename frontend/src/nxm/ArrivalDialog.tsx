@@ -19,6 +19,7 @@ import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { NXM_GAME } from './route.ts'
 import { fallbackName, modName, useNxm } from './store.ts'
@@ -93,7 +94,11 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
     >
       <DialogTitle>{t`Install ${name}?`}</DialogTitle>
       <DialogContent>
-        <DialogContentText>{text}</DialogContentText>
+        {profiles === null ? (
+          <LoadingRow>{text}</LoadingRow>
+        ) : (
+          <DialogContentText>{text}</DialogContentText>
+        )}
         {error ? (
           <DialogContentText color="error" sx={{ mt: 1 }}>
             {error}
