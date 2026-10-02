@@ -57,4 +57,5 @@ Not in the first release; re-weigh only when asked:
 - "What changed since the last run": before Play and on the profile page, the mod changes since the profile's last run from the history log, each linked to its history entry.
 - Profile templates: a new profile started from a bundle plus game settings and launch options.
 - Per-profile save isolation.
+- Settings considered and not taken (2026-10-02): new profiles starting as a copy of the open profile or from a bundle; scheduled save backups on a timer while the game runs; an offline mode that never contacts the network.
 - Registering Mortar with Nexus (SSO slug; ask then about OAuth, which Vortex uses via `nxm://oauth/callback`, and Collections), and a mode for users without an API key: an `nxm://` link cannot become a download without API authentication (HTTP 401 without a key, measured), so that mode would pick up manual downloads from the Downloads folder by their manifests, with confirmation.
