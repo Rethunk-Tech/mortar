@@ -1,3 +1,4 @@
+// biome-ignore lint/style/noExcessiveLinesPerFile: problem actions share the mod store lifecycle
 import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
 import type {
@@ -13,6 +14,7 @@ import {
   DismissSetting,
   Pages,
   Problems,
+  RestoreDismissed,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
@@ -301,6 +303,20 @@ async function dismissAssetConflict(
   await get().loadProblems()
 }
 
+async function restoreDismissed(get: () => { loadProblems: () => Promise<void> }, token: string) {
+  const target = open()
+  if (!target) {
+    return
+  }
+  try {
+    await RestoreDismissed(target.game, target.id, token)
+  } catch (e) {
+    fail(i18n._(msg`Could not restore the warning`))(e)
+    return
+  }
+  await get().loadProblems()
+}
+
 async function dropMod(get: () => { load: () => Promise<void> }, mod: Mod) {
   const target = open()
   if (!target) {
@@ -358,6 +374,7 @@ export const useMods = create<{
   resolve: (dup: Duplicate | null) => void
   keepCopy: (dup: Duplicate, keepKey: string) => Promise<void>
   dismissAsset: (conflict: AssetConflict) => Promise<void>
+  restoreDismissed: (token: string) => Promise<void>
   dismissAbandoned: (uniqueId: string) => Promise<void>
   dismissListed: (uniqueId: string) => Promise<void>
   dismissSetting: (setting: SettingHint) => Promise<void>
@@ -488,6 +505,7 @@ export const useMods = create<{
     await get().load()
   },
   dismissAsset: (conflict) => dismissAssetConflict(get, conflict),
+  restoreDismissed: (token) => restoreDismissed(get, token),
   dismissAbandoned: (uniqueId) => dismissAbandonedMod(get, uniqueId),
   dismissListed: (uniqueId) => dismissListedRequirement(get, uniqueId),
   dismissSetting: (setting) => dismissSettingHint(get, setting),

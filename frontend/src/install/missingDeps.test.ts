@@ -50,6 +50,7 @@ const result = (missing: Missing[]): Result => ({
   assetConflicts: null,
   settings: null,
   runErrors: null,
+  dismissed: [],
   unknown: false,
 })
 

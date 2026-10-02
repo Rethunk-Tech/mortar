@@ -3,6 +3,10 @@ import type { Drift } from '../../bindings/github.com/Rethunk-AI/mortar/internal
 import type { Problem } from './lookup.ts'
 
 export type Row = Problem | { kind: 'drift'; drift: Drift }
+export interface DismissedRow {
+  row: Problem
+  token: string
+}
 
 export const driftRows = (result: Result | null): Row[] =>
   (result?.drift ?? []).map((drift) => ({ kind: 'drift' as const, drift }))
@@ -23,10 +27,11 @@ export type ProblemSectionId =
   | 'duplicates'
   | 'settings'
   | 'cosmetic'
+  | 'dismissed'
 
 export interface ProblemSection {
   id: ProblemSectionId
-  rows: Row[]
+  rows: (Row | DismissedRow)[]
 }
 
 export function problemSections(result: Result): ProblemSection[] {
@@ -66,6 +71,24 @@ export function problemSections(result: Result): ProblemSection[] {
       rows: (result.assetConflicts ?? [])
         .filter((asset) => asset.cosmetic)
         .map((asset): Row => ({ kind: 'asset', asset })),
+    },
+    {
+      id: 'dismissed',
+      rows: (result.dismissed ?? []).flatMap((item): DismissedRow[] => {
+        if (item.assetConflict) {
+          return [{ token: item.token, row: { kind: 'asset', asset: item.assetConflict } }]
+        }
+        if (item.broken) {
+          return [{ token: item.token, row: { kind: 'broken', broken: item.broken } }]
+        }
+        if (item.missing) {
+          return [{ token: item.token, row: { kind: 'missing', missing: item.missing } }]
+        }
+        if (item.setting) {
+          return [{ token: item.token, row: { kind: 'setting', setting: item.setting } }]
+        }
+        return []
+      }),
     },
   ]
   return sections.filter((s) => s.rows.length > 0)

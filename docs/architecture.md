@@ -120,7 +120,7 @@ The frontend moves on when one fails to load and shows a solid tone after the la
 - `gameFolders` (`{}`): game id to an install folder the user chose, which wins over store discovery; checked as a game install when set, and emptied to go back to discovery.
 - `gameStores` (`{}`): game id to the store to use when several installs are found (`steam`, `flatpak-steam`, `gog`, `gog-heroic`, `lutris`); an unknown value is dropped on load.
 - `loaders` (`{}`): game id to the loader version Mortar installed.
-- `dismissed` (`{}`): save folder name to the `UniqueID`s whose missing-mod warning was dismissed for it.
+- `dismissed` (`{}`): profile dismissal bucket to tokens for hidden warnings. Problems keeps dismissed conflicts, abandoned mods, listed requirements and settings available in its Dismissed section; restoring removes the token.
 - `nexusUserId` (0), `nexusName` (empty), `nexusPremium` (false): the signed-in account, for display; a zero id means signed out.
 - `nxmHandled` (false), `nxmPrevious` (empty), `nxmAsked` (false): whether Mortar handles `nxm://` links, the handler it replaced, and whether the user was asked.
 - `nxmPreviousName` (empty): display name of that previous handler.
@@ -353,8 +353,8 @@ Saves live in one folder, `%APPDATA%\StardewValley\Saves` or `~/.config/StardewV
   - mods SMAPI's API marks broken, obsolete or abandoned for the game version, with `compatibilitySummary` when SMAPI supplies it, including a one-click replacement when the summary names a Nexus or GitHub target Mortar can install, or a `UniqueID` the mod dataset resolves
   - Content Patcher asset conflicts, each with a one-click fix
   - enabled mods that logged errors in this profile's newest stored run (warning when that run crashed or hit a fatal error, info otherwise; **Switch off** and **Get help** on the stored run's log; cleared by a later clean run, switching the mod off, or updating it)
-  - Abandoned mods are info-level and dismissible per profile like overlapping map or image edits
-- **What counts as a Content Patcher conflict:** two or more enabled packs (`ContentPackFor.UniqueID` `Pathoschild.ContentPatcher`) that `Load` the same target (warning: only one wins) or that `EditImage`/`EditMap` the same target (info, dismissible per profile via `settings.json` `dismissed`, same map as missing-save-mod warnings). `EditData` on the same target is not reported.
+  - Abandoned mods are info-level and dismissible per profile like Content Patcher conflicts
+- **What counts as a Content Patcher conflict:** two or more enabled packs (`ContentPackFor.UniqueID` `Pathoschild.ContentPatcher`) that `Load` the same target (warning: only one wins) or that `EditImage`/`EditMap` the same target (info, dismissible per profile via `settings.json` `dismissed`). Both kinds can be restored from Problems. `EditData` on the same target is not reported.
 - **When a change counts:**
   - A `When` `HasMod` condition (`"HasMod": "A, B"` or `"HasMod |contains=A": true/false`) counts only when that condition holds for the profile's enabled mods; other conditions are treated as met.
   - A change whose config conditions do not match the pack's current settings (`config.json`, else the schema `Default`) is not counted.

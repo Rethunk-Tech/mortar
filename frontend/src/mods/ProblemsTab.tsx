@@ -11,9 +11,17 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useDescribe, useDescribeDrift } from './describe.ts'
 import { DriftButtons, FixButton } from './problemFixButtons.tsx'
-import { isInfoRow, type ProblemSectionId, problemSections, type Row } from './problemGroups.ts'
+import {
+  type DismissedRow,
+  isInfoRow,
+  type ProblemSectionId,
+  problemSections,
+  type Row,
+} from './problemGroups.ts'
 import { useMods } from './store.ts'
 import { useLoadProblemsOnFocus } from './useLoadProblemsOnFocus.ts'
+
+const isDismissedRow = (row: Row | DismissedRow): row is DismissedRow => 'row' in row
 
 function useSectionTitle() {
   const { t } = useLingui()
@@ -35,6 +43,8 @@ function useSectionTitle() {
         return t`Settings`
       case 'cosmetic':
         return t`Cosmetic or harmless`
+      case 'dismissed':
+        return t`Dismissed`
       default:
         return ''
     }
@@ -60,7 +70,7 @@ function useRowText() {
   }
 }
 
-function ProblemRow({ row }: { row: Row }) {
+function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) {
   const info = isInfoRow(row)
   const { text, note: authorNote } = useRowText()(row)
   return (
@@ -78,6 +88,7 @@ function ProblemRow({ row }: { row: Row }) {
         bgcolor: info ? 'rgba(56,189,248,0.12)' : 'rgba(243,180,22,0.14)',
         border: info ? '1px solid rgba(56,189,248,0.45)' : '1px solid rgba(243,180,22,0.5)',
         borderRadius: '6px',
+        ...(dismissed ? { opacity: 0.75 } : {}),
       }}
     >
       <Box
@@ -102,7 +113,11 @@ function ProblemRow({ row }: { row: Row }) {
         )}
       </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, justifyContent: 'flex-end' }}>
-        {row.kind === 'drift' ? <DriftButtons drift={row.drift} /> : <FixButton problem={row} />}
+        {row.kind === 'drift' ? (
+          <DriftButtons drift={row.drift} />
+        ) : (
+          <FixButton problem={row} dismissedToken={dismissed?.token} />
+        )}
       </Box>
     </Box>
   )
@@ -162,7 +177,7 @@ function ProblemSection({
   collapsible,
 }: {
   title: string
-  rows: Row[]
+  rows: (Row | DismissedRow)[]
   collapsible: boolean
 }) {
   const { t } = useLingui()
@@ -190,9 +205,13 @@ function ProblemSection({
       )}
       {open ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {rows.map((row) => (
-            <ProblemRow key={JSON.stringify(row)} row={row} />
-          ))}
+          {rows.map((row) =>
+            isDismissedRow(row) ? (
+              <ProblemRow key={row.token} row={row.row} dismissed={row} />
+            ) : (
+              <ProblemRow key={JSON.stringify(row)} row={row} />
+            ),
+          )}
         </Box>
       ) : null}
     </Box>
@@ -205,7 +224,8 @@ export function ProblemActions() {
   const result = useOpenProblems()
   const sectionTitle = useSectionTitle()
   const rowText = useRowText()
-  const sections = result === null ? [] : problemSections(result)
+  const sections =
+    result === null ? [] : problemSections(result).filter((section) => section.id !== 'dismissed')
   const cleanup = result?.cleanup ?? []
   return (
     <IconAction
@@ -217,7 +237,8 @@ export function ProblemActions() {
           ...sections.map((section) =>
             [
               sectionTitle(section.id),
-              ...section.rows.map((row) => {
+              ...section.rows.map((entry) => {
+                const row = isDismissedRow(entry) ? entry.row : entry
                 const { text: line, note } = rowText(row)
                 return note === '' ? `- ${line}` : `- ${line}\n  ${note}`
               }),
@@ -262,7 +283,10 @@ export function ProblemsTab() {
 
   const sections = problemSections(result)
   const cleanup = result.cleanup ?? []
-  const empty = sections.length === 0 && cleanup.length === 0 && !result.unknown
+  const empty =
+    sections.filter((section) => section.id !== 'dismissed').length === 0 &&
+    cleanup.length === 0 &&
+    !result.unknown
 
   return (
     <Box
@@ -285,16 +309,15 @@ export function ProblemsTab() {
         >
           {t`Every mod has what it needs and nothing clashes.`}
         </EmptyState>
-      ) : (
-        sections.map((section) => (
-          <ProblemSection
-            key={section.id}
-            title={sectionTitle(section.id)}
-            rows={section.rows}
-            collapsible={section.id === 'cosmetic'}
-          />
-        ))
-      )}
+      ) : null}
+      {sections.map((section) => (
+        <ProblemSection
+          key={section.id}
+          title={sectionTitle(section.id)}
+          rows={section.rows}
+          collapsible={section.id === 'cosmetic' || section.id === 'dismissed'}
+        />
+      ))}
       {cleanup.length === 0 ? null : (
         <Box>
           <Typography sx={{ mb: 1, fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>

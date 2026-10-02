@@ -63,6 +63,7 @@ test("drift on an entry flags that entry's mods for status grouping", () => {
     settings: [],
     runErrors: [],
     drift: [drift],
+    dismissed: [],
     unknown: false,
   }
   expect(
@@ -101,6 +102,7 @@ test('problems and updates are counted per finding', () => {
         },
       ],
       drift: [{ kind: DriftKind.DriftChanged, folder: 'k', key: 'k' }],
+      dismissed: [],
       unknown: false,
     }),
   ).toBe(4)

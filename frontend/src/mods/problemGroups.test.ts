@@ -10,6 +10,7 @@ const emptyResult = (): Result => ({
   settings: [],
   runErrors: [],
   drift: [],
+  dismissed: [],
   unknown: false,
 })
 

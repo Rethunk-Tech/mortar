@@ -102,6 +102,7 @@ test('status grouping puts drift-affected entries in Problems', () => {
     settings: [],
     runErrors: [],
     drift: [{ kind: DriftKind.DriftChanged, folder: 'k', key: 'k' }],
+    dismissed: [],
     unknown: false,
   }
   const fullMod = mod as Mod

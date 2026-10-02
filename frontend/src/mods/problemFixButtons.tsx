@@ -197,7 +197,13 @@ function BrokenFixButtons({
   )
 }
 
-function SettingButtons({ setting }: { setting: SettingHint }) {
+function SettingButtons({
+  setting,
+  dismissedToken,
+}: {
+  setting: SettingHint
+  dismissedToken?: string | undefined
+}) {
   const { t } = useLingui()
   const loadProblems = useMods((s) => s.loadProblems)
   const dismissSetting = useMods((s) => s.dismissSetting)
@@ -226,16 +232,30 @@ function SettingButtons({ setting }: { setting: SettingHint }) {
   const label = (value: string) => (value === '' ? t`Set to automatic` : t`Set to ${value}`)
   return (
     <>
-      <Button
-        size="small"
-        variant="contained"
-        color="warning"
-        disabled={locked}
-        onClick={() => apply(first)}
-        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
-      >
-        {label(first)}
-      </Button>
+      {dismissedToken === undefined ? (
+        <Button
+          size="small"
+          variant="contained"
+          color="warning"
+          disabled={locked}
+          onClick={() => apply(first)}
+          sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        >
+          {label(first)}
+        </Button>
+      ) : (
+        <Button
+          size="small"
+          color="info"
+          variant="outlined"
+          onClick={() =>
+            useMods.getState().restoreDismissed(dismissedToken).catch(reportUnexpected)
+          }
+          sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        >
+          {t`Restore`}
+        </Button>
+      )}
       {values.length > 1 ? (
         <>
           <Button
@@ -271,12 +291,22 @@ function SettingButtons({ setting }: { setting: SettingHint }) {
   )
 }
 
-export function FixButton({ problem }: { problem: Problem }) {
+// The row action matrix is intentionally kept in one place so dismissed rows retain their normal fixes.
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: action combinations are part of the problem model
+// biome-ignore lint/complexity/noExcessiveLinesPerFunction: action combinations are part of the problem model
+export function FixButton({
+  problem,
+  dismissedToken,
+}: {
+  problem: Problem
+  dismissedToken?: string | undefined
+}) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const setEnabled = useMods((s) => s.setEnabled)
   const resolve = useMods((s) => s.resolve)
   const dismissAsset = useMods((s) => s.dismissAsset)
+  const restoreDismissed = useMods((s) => s.restoreDismissed)
   const setConfigValue = useMods((s) => s.setConfigValue)
   const dismissListed = useMods((s) => s.dismissListed)
   const locked = useLocked()
@@ -299,10 +329,32 @@ export function FixButton({ problem }: { problem: Problem }) {
     return button(t`Resolve`, () => resolve(problem.duplicate))
   }
   if (problem.kind === 'broken') {
+    if (dismissedToken !== undefined) {
+      const mod = mods.find(
+        (m) => m.key === problem.broken.key && sameId(m.uniqueId, problem.broken.uniqueId),
+      )
+      return (
+        <>
+          {mod ? button(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected)) : null}
+          {problem.broken.replacement ? (
+            <WhereButtons where={problem.broken.replacement} addLabel={t`Replace`} />
+          ) : null}
+          <Button
+            size="small"
+            color="info"
+            variant="outlined"
+            onClick={() => restoreDismissed(dismissedToken).catch(reportUnexpected)}
+            sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
+            {t`Restore`}
+          </Button>
+        </>
+      )
+    }
     return <BrokenFixButtons broken={problem.broken} button={button} />
   }
   if (problem.kind === 'setting') {
-    return <SettingButtons setting={problem.setting} />
+    return <SettingButtons setting={problem.setting} dismissedToken={dismissedToken} />
   }
   if (problem.kind === 'asset') {
     const key = problem.asset.keys?.[0]
@@ -322,6 +374,36 @@ export function FixButton({ problem }: { problem: Problem }) {
         {label}
       </Button>
     )
+    if (dismissedToken !== undefined) {
+      return (
+        <>
+          {(problem.asset.fixes ?? []).map((fix) => (
+            <Tooltip
+              key={`${fix.uniqueId}/${fix.field}`}
+              title={t`In ${fix.name}; turns off its edits here`}
+            >
+              <span>
+                {assetButton(t`Set ${fix.field} to ${fix.value}`, () =>
+                  setConfigValue(fix, fix.value).catch(reportUnexpected),
+                )}
+              </span>
+            </Tooltip>
+          ))}
+          {mod
+            ? assetButton(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected))
+            : null}
+          <Button
+            size="small"
+            color="info"
+            variant="outlined"
+            onClick={() => restoreDismissed(dismissedToken).catch(reportUnexpected)}
+            sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
+            {t`Restore`}
+          </Button>
+        </>
+      )
+    }
     return (
       <>
         {(problem.asset.fixes ?? []).map((fix) => (
@@ -339,7 +421,7 @@ export function FixButton({ problem }: { problem: Problem }) {
         {mod
           ? assetButton(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected))
           : null}
-        {problem.asset.kind === 'edit' ? (
+        {problem.asset.kind === '' ? null : (
           <Button
             size="small"
             color="info"
@@ -349,11 +431,27 @@ export function FixButton({ problem }: { problem: Problem }) {
           >
             {t`Dismiss`}
           </Button>
-        ) : null}
+        )}
       </>
     )
   }
   const { missing } = problem
+  if (dismissedToken !== undefined) {
+    return (
+      <>
+        {missing.where ? <WhereButtons where={missing.where} addLabel={t`Add`} /> : null}
+        <Button
+          size="small"
+          color="info"
+          variant="outlined"
+          onClick={() => restoreDismissed(dismissedToken).catch(reportUnexpected)}
+          sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        >
+          {t`Restore`}
+        </Button>
+      </>
+    )
+  }
   if (missing.listed) {
     return <ListedButtons missing={missing} dismiss={dismissListed} />
   }
