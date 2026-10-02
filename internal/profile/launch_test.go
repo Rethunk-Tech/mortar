@@ -16,14 +16,16 @@ func TestLaunchSettingsParsing(t *testing.T) {
 	if _, err := LaunchPrefixArgs(`unterminated"`); err == nil {
 		t.Fatal("unterminated quote accepted")
 	}
-	if _, err := LaunchEnvironment("GOOD=value\n_BAD=value"); err == nil {
-		t.Fatal("invalid environment accepted")
+	for _, bad := range []string{"GOOD=value\n1BAD=value", "NO_EQUALS", "SP ACE=x"} {
+		if _, err := LaunchEnvironment(bad); err == nil {
+			t.Fatalf("invalid environment %q accepted", bad)
+		}
 	}
-	env, err := LaunchEnvironment("GOOD=value\nALSO=two=parts")
+	env, err := LaunchEnvironment("GOOD=value\n_ALSO=two=parts")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := []string{"GOOD=value", "ALSO=two=parts"}; !reflect.DeepEqual(env, want) {
+	if want := []string{"GOOD=value", "_ALSO=two=parts"}; !reflect.DeepEqual(env, want) {
 		t.Fatalf("env = %#v, want %#v", env, want)
 	}
 }
