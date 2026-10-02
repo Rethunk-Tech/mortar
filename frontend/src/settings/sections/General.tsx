@@ -3,6 +3,7 @@ import { Box, Button, FormControlLabel, Switch } from '@mui/material'
 import {
   SetEnableModsWhenInstalled,
   SetKeepInTray,
+  SetLanSharing,
   SetTipsSeen,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { errorText } from '../../toasts/report.ts'
@@ -48,6 +49,7 @@ function KeepInTraySwitch() {
 export function General() {
   const { t } = useLingui()
   const enableModsWhenInstalled = useSettings((s) => s.enableModsWhenInstalled)
+  const lanSharing = useSettings((s) => s.lanSharing)
   const push = useToasts((s) => s.push)
   const reportFailure = (err: unknown) => {
     const body = errorText(err)
@@ -66,6 +68,31 @@ export function General() {
       >
         {t`Show tips again`}
       </Button>
+      <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Sharing`}</Box>
+      <FormControlLabel
+        sx={{ m: 0, alignItems: 'flex-start' }}
+        control={
+          <Switch
+            checked={lanSharing}
+            onChange={(_, on) => {
+              SetLanSharing(on).catch(reportFailure)
+            }}
+          />
+        }
+        label={
+          <Box>
+            <Box component="span" sx={{ display: 'block', fontSize: 14 }}>
+              {t`Share profiles on the local network`}
+            </Box>
+            <Box
+              component="span"
+              sx={{ display: 'block', fontSize: 13, color: 'rgba(225,225,230,0.95)' }}
+            >
+              {t`Lets nearby Mortar users find this installation and exchange profile links.`}
+            </Box>
+          </Box>
+        }
+      />
       <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Mods`}</Box>
       <FormControlLabel
         sx={{ m: 0, alignItems: 'center' }}

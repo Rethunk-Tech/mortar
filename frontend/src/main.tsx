@@ -6,6 +6,8 @@ import ReactDOM from 'react-dom/client'
 import { Get } from '../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { App } from './App.tsx'
 import { activateLanguage, i18n } from './i18n/index.ts'
+import { IncomingPrompt } from './lan/IncomingPrompt.tsx'
+import { initIncoming } from './lan/incoming.ts'
 import { initPlayRequests } from './launch/playRequests.ts'
 import { initLaunch } from './launch/store.ts'
 import { initLoader } from './loader/store.ts'
@@ -35,6 +37,7 @@ initQueue().catch(reportUnexpected)
 initProfilesChanged()
 initPlayRequests()
 initShare().catch(reportUnexpected)
+initIncoming().catch(reportUnexpected)
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
@@ -42,6 +45,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       <Themed>
         <CssBaseline />
         <App />
+        <IncomingPrompt />
       </Themed>
     </I18nProvider>
   </React.StrictMode>,

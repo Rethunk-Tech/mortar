@@ -31,6 +31,7 @@ const defaults: Settings = {
   tellWhenSmapiOut: true,
   askEndorseMods: true,
   keepInTray: false,
+  lanSharing: false,
   includeBetaReleases: false,
   includePrereleaseModVersions: false,
   checkOnlyEnabledMods: false,

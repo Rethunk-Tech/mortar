@@ -22,6 +22,7 @@ import {
   ImageOff,
   ImagePlus,
   PackagePlus,
+  Send as SendIcon,
   SquareArrowOutUpRight,
   Trash2,
   Users,
@@ -36,9 +37,11 @@ import {
   Exists as ShortcutExists,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/shortcut/service.ts'
 import { ApplyBundleDialog } from '../bundles/dialogs.tsx'
+import { SendDialog } from '../lan/SendDialog.tsx'
 import { useMods } from '../mods/store.ts'
 import { CompareDialog, PickCompareDialog } from '../profiles/CompareDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
+import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -187,6 +190,32 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
   )
 }
 
+function SendProfileMenuItem({ profile, close }: { profile: Profile; close: () => void }) {
+  const { t } = useLingui()
+  const currentGame = useProfiles((s) => s.game)
+  const lanSharing = useSettings((s) => s.lanSharing)
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <ProfileMenuItem
+        icon={<SendIcon size={16} />}
+        label={t`Send to…`}
+        disabled={!(lanSharing && currentGame)}
+        onClick={() => {
+          close()
+          setOpen(true)
+        }}
+      />
+      <SendDialog
+        open={open}
+        game={currentGame?.id ?? ''}
+        profileId={profile.id}
+        onClose={() => setOpen(false)}
+      />
+    </>
+  )
+}
+
 export function CoverMenuItems({
   game,
   profile,
@@ -283,6 +312,7 @@ export function MoreMenuItems({
           openImport({ profileId: profile.id })
         }}
       />
+      <SendProfileMenuItem profile={profile} close={close} />
       <ShortcutMenuItems profile={profile} close={close} />
       <ProfileMenuItem
         icon={<Copy size={16} />}

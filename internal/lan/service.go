@@ -67,6 +67,7 @@ type Service struct {
 	closed  bool
 	enabled bool
 	peers   map[string]peerRecord
+	inbox   []Arrival
 
 	server   *http.Server
 	listener net.Listener
@@ -383,15 +384,28 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "profile shares from this peer are temporarily rate limited", http.StatusTooManyRequests)
 		return
 	}
+	arrival := Arrival{
+		Sender:      request.Sender,
+		Game:        request.Game,
+		Payload:     request.Payload,
+		ProfileName: shared.Name,
+	}
+	s.mu.Lock()
+	s.inbox = append(s.inbox, arrival)
+	s.mu.Unlock()
 	if s.deps.Emit != nil {
-		s.deps.Emit(ArrivedEvent, Arrival{
-			Sender:      request.Sender,
-			Game:        request.Game,
-			Payload:     request.Payload,
-			ProfileName: shared.Name,
-		})
+		s.deps.Emit(ArrivedEvent, arrival)
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// Inbox returns profile shares received before the window started listening.
+func (s *Service) Inbox() []Arrival {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := append([]Arrival(nil), s.inbox...)
+	s.inbox = nil
+	return out
 }
 
 func decodeRequest(body []byte) (shareRequest, error) {
