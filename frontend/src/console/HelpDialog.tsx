@@ -7,6 +7,8 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
+  Switch,
   Typography,
 } from '@mui/material'
 import { Browser, Clipboard } from '@wailsio/runtime'
@@ -78,6 +80,7 @@ export function HelpDialog({ game }: { game: string }) {
   const [log, setLog] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [link, setLink] = useState('')
+  const [hideUserName, setHideUserName] = useState(true)
   const close = () => setHelping(false)
 
   useEffect(() => {
@@ -128,7 +131,14 @@ export function HelpDialog({ game }: { game: string }) {
       return
     }
     setUploading(true)
-    Upload(log)
+    const home = log.match(/\/home\/([^/\\\s]+)/)?.[1]
+    const uploaded =
+      hideUserName && home
+        ? log
+            .replaceAll(new RegExp(`/home/${home}`, 'g'), '~')
+            .replaceAll(new RegExp(`\\b${home}\\b`, 'g'), '<user>')
+        : log
+    Upload(uploaded)
       .then((url) => {
         if (uploadGen.current !== token) {
           return
@@ -201,6 +211,15 @@ export function HelpDialog({ game }: { game: string }) {
                 whiteSpace: 'pre',
                 outline: 'none',
               }}
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={hideUserName}
+                  onChange={(_, checked) => setHideUserName(checked)}
+                />
+              }
+              label={t`Hide my user name`}
             />
             {link ? <LinkRow link={link} onCopy={() => copy(link)} /> : null}
           </>

@@ -2,7 +2,8 @@ import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { CircleAlert, Copy, Download, Eraser, FileSearch, LifeBuoy } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { RunLog } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { SaveFile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import { Log } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
@@ -30,6 +31,19 @@ export function LogActions({ game }: { game: string }) {
   )
   const { clear, jumpTo, setHelping } = useConsole.getState()
   const [searching, setSearching] = useState(false)
+  const [viewedStart, setViewedStart] = useState<Date | null>(null)
+  useEffect(() => {
+    if (!viewingRun) {
+      setViewedStart(null)
+      return
+    }
+    Runs(shown.game, shown.profile)
+      .then((runs) => {
+        const run = (runs ?? []).find((item) => item.id === viewingRun)
+        setViewedStart(run?.started ? new Date(run.started) : null)
+      })
+      .catch(() => setViewedStart(null))
+  }, [shown.game, shown.profile, viewingRun])
   const firstErr = firstError(rows)
   const canSave = entries.length > 0 || cleared > 0
   if (empty) {
@@ -74,7 +88,11 @@ export function LogActions({ game }: { game: string }) {
               if (text === '') {
                 return
               }
-              return SaveFile(t`Save log`, logFileName(profileName, new Date()), text)
+              return SaveFile(
+                t`Save log`,
+                logFileName(profileName, viewedStart ?? new Date()),
+                text,
+              )
             })
             .catch(reportUnexpected)
         }}
