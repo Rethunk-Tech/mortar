@@ -143,5 +143,10 @@
     "name": "golang.org/x/sys",
     "licence": "BSD-3-Clause",
     "url": "https://pkg.go.dev/golang.org/x/sys"
+  },
+  {
+    "name": "golang.org/x/text",
+    "licence": "BSD-3-Clause",
+    "url": "https://pkg.go.dev/golang.org/x/text"
   }
 ]
