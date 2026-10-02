@@ -80,7 +80,8 @@ listener() {
 stop() {
   local pid
   pid=$(listener || true)
-  if [ -n "$pid" ] && [ "$(readlink "/proc/$pid/exe")" = "$ROOT/mortar-server" ]; then
+  # A rebuild replaces the binary first, so the running server's exe then reads "<path> (deleted)".
+  if [ -n "$pid" ] && [ "$(readlink "/proc/$pid/exe" | sed 's/ (deleted)$//')" = "$ROOT/mortar-server" ]; then
     kill "$pid"
     echo "stopped $pid"
   elif [ -n "$pid" ]; then
