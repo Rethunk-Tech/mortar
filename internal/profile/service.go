@@ -492,6 +492,15 @@ func (s *Service) SetSkipVersionMany(game, id string, refs []SkipVersionRef) (Pr
 	return s.store.SetSkipVersionMany(game, id, refs)
 }
 
+// SetSkipSource records whether updates from source are hidden for the entry.
+func (s *Service) SetSkipSource(game, id, key, source string, skip bool) (Profile, error) {
+	return s.store.SetSkipSource(game, id, key, source, skip)
+}
+
+func (s *Service) SetSkipSourceMany(game, id string, keys []string, source string, skip bool) (Profile, error) {
+	return s.store.SetSkipSourceMany(game, id, keys, source, skip)
+}
+
 // ExportProfile asks where to save a zip of the whole profile and writes it. It returns "" when the dialog is cancelled.
 func (s *Service) ExportProfile(game, id string) (string, error) {
 	p, err := s.store.read(game, id)

@@ -116,6 +116,8 @@ type Entry struct {
 	Pinned bool `json:"pinned,omitempty"`
 	// SkipVersion is one newer version to hide; a later version is offered again.
 	SkipVersion string `json:"skipVersion,omitempty"`
+	// SkipSources hides updates reported by these sources.
+	SkipSources []string `json:"skipSources,omitempty"`
 	// Note is a per-entry remark in this profile, at most MaxEntryNote characters.
 	Note string `json:"note,omitempty"`
 	// Tags are per-entry labels in this profile, at most MaxEntryTags of MaxEntryTag characters each.

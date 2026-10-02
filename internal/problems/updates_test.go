@@ -32,8 +32,8 @@ func TestCheckUpdates(t *testing.T) {
 	env := Environment{GameVersion: "1.6.15", APIVersion: "4.3.2", Platform: "Linux"}
 	got := CheckUpdates(context.Background(), rm, env, []Installed{bundled, mod("k1", "me.a", "1.0.0", true), mod("k3", "me.b", "1.0.0", true), off}, false)
 	want := []Update{
-		{Key: "k1", UniqueID: "me.a", Name: "me.a", Installed: "1.0.0", Version: "2.0.0", URL: "https://example.test/a"},
-		{Key: "k2", UniqueID: "me.off", Name: "me.off", Installed: "1.0.0", Version: "1.1.0", URL: "https://example.test/off"},
+		{Key: "k1", UniqueID: "me.a", Name: "me.a", Installed: "1.0.0", Version: "2.0.0", URL: "https://example.test/a", Source: "example.test"},
+		{Key: "k2", UniqueID: "me.off", Name: "me.off", Installed: "1.0.0", Version: "1.1.0", URL: "https://example.test/off", Source: "example.test"},
 	}
 	if !reflect.DeepEqual(got.Updates, want) || got.Unknown {
 		t.Fatalf("got %+v", got)
@@ -86,6 +86,39 @@ func TestHideHeldDropsPinnedAndSkipped(t *testing.T) {
 	}, true)
 	if len(got.Updates) != 2 || got.Updates[0].Key != "later" || got.Updates[1].Key != "open" {
 		t.Fatalf("got %+v", got.Updates)
+	}
+}
+
+func TestHideHeldDropsSkippedSources(t *testing.T) {
+	r := UpdatesResult{Updates: []Update{
+		{Key: "nexus", Version: "2.0.0", Source: "Nexus"},
+		{Key: "github", Version: "2.0.0", Source: "GitHub"},
+	}}
+	got := HideHeld(r, []Installed{
+		{Key: "nexus", SkipSources: []string{"Nexus"}},
+		{Key: "github"},
+	}, true)
+	if len(got.Updates) != 1 || got.Updates[0].Key != "github" {
+		t.Fatalf("got %+v", got.Updates)
+	}
+}
+
+func TestUpdateSource(t *testing.T) {
+	tests := []struct {
+		update meta.Update
+		nexus  int
+		github string
+		want   string
+	}{
+		{meta.Update{Source: "CurseForge:123"}, 0, "", "CurseForge"},
+		{meta.Update{}, 0, "owner/repo", "GitHub"},
+		{meta.Update{}, 42, "", "Nexus"},
+		{meta.Update{URL: "https://www.moddrop.com/stardew/a"}, 0, "", "ModDrop"},
+	}
+	for _, test := range tests {
+		if got := updateSource(test.update, test.nexus, test.github); got != test.want {
+			t.Errorf("updateSource(%+v) = %q, want %q", test.update, got, test.want)
+		}
 	}
 }
 

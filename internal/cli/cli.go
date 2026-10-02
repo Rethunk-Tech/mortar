@@ -16,6 +16,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/control"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/problems"
@@ -105,13 +106,13 @@ func run(version string, call caller, args []string, stdout, stderr io.Writer) i
 }
 
 func (c *cmd) fail(err error) int {
-	var offline offlineDoctorError
-	if errors.As(err, &offline) {
+	if offline, ok := errors.AsType[offlineDoctorError](err); ok {
 		if c.json {
 			_ = json.NewEncoder(c.out).Encode(offline.result)
 		} else {
 			fmt.Fprintln(c.out, offline.result["summary"])
-			for _, f := range offline.result["findings"].([]string) {
+			findings, _ := offline.result["findings"].([]string)
+			for _, f := range findings {
 				fmt.Fprintln(c.out, "Finding:", f)
 			}
 		}
@@ -1036,9 +1037,9 @@ func (c *cmd) updates(p control.Params) error {
 		}
 		t := [][]string{}
 		for _, u := range r.Updates {
-			t = append(t, []string{u.UniqueID, u.Name, u.Installed, u.Version, u.URL})
+			t = append(t, []string{u.UniqueID, u.Name, u.Installed, u.Version, u.Source, u.URL})
 		}
-		c.table("UNIQUEID\tNAME\tINSTALLED\tNEWEST\tPAGE", t)
+		c.table("UNIQUEID\tNAME\tINSTALLED\tNEWEST\tSOURCE\tPAGE", t)
 	})
 }
 
@@ -1329,7 +1330,7 @@ func offlineDoctor() error {
 	findings := []string{}
 	fixes := []string{}
 	settingsPath := filepath.Join(dir, "settings.json")
-	if b, err := os.ReadFile(settingsPath); err != nil {
+	if b, err := fsx.ReadFile(settingsPath); err != nil {
 		findings = append(findings, "settings.json is unreadable or missing")
 		fixes = append(fixes, "restore settings.json from a known-good copy")
 	} else if !json.Valid(b) {
@@ -1342,7 +1343,7 @@ func offlineDoctor() error {
 	}
 	_ = filepath.WalkDir(filepath.Join(dir, "profiles"), func(path string, entry os.DirEntry, walkErr error) error {
 		if walkErr == nil && !entry.IsDir() && entry.Name() == "profile.json" {
-			if b, readErr := os.ReadFile(path); readErr != nil || !json.Valid(b) {
+			if b, readErr := fsx.ReadFile(path); readErr != nil || !json.Valid(b) {
 				findings = append(findings, "damaged profile.json: "+path)
 				fixes = append(fixes, "restore or remove the damaged profile")
 			}
@@ -1360,7 +1361,7 @@ func offlineDoctor() error {
 			fixes = append(fixes, "free disk space before starting Mortar")
 		}
 	}
-	if b, err := os.ReadFile(filepath.Join(dir, "store", "index.json")); err != nil || !json.Valid(b) {
+	if b, err := fsx.ReadFile(filepath.Join(dir, "store", "index.json")); err != nil || !json.Valid(b) {
 		findings = append(findings, "store index.json is unreadable or corrupt")
 		fixes = append(fixes, "restore the store index or let Mortar rebuild it")
 	}

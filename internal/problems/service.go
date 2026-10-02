@@ -145,7 +145,7 @@ func (s *Service) installed(gameID, id string) ([]Installed, error) {
 	for i, m := range installed {
 		mods[i] = Installed{
 			Key: m.Key, SourceKind: m.Source.Kind, SourceVersion: m.Source.Version, Enabled: m.Enabled, Folder: m.Folder,
-			Pinned: m.Pinned, SkipVersion: m.SkipVersion, IgnoreUpdates: m.IgnoreUpdates, Manifest: m.Manifest,
+			Pinned: m.Pinned, SkipVersion: m.SkipVersion, SkipSources: m.SkipSources, IgnoreUpdates: m.IgnoreUpdates, Manifest: m.Manifest,
 		}
 	}
 	return mods, nil

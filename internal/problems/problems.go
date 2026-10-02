@@ -35,6 +35,7 @@ type Installed struct {
 	Enabled       bool
 	Pinned        bool
 	SkipVersion   string
+	SkipSources   []string
 	IgnoreUpdates bool
 	// Folder is the mod's directory in the profile, used to read Content Patcher content.json.
 	Folder string

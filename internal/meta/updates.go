@@ -41,6 +41,7 @@ type InstalledMod struct {
 type Update struct {
 	Version string `json:"version"`
 	URL     string `json:"url"`
+	Source  string `json:"source,omitempty"`
 }
 
 // UpdateResult is the answer for one mod. Known is false when SMAPI's API could not be reached and no cached
@@ -67,6 +68,7 @@ type apiRequest struct {
 type apiUpdate struct {
 	Version            string     `json:"version"`
 	URL                string     `json:"url"`
+	UpdateKey          string     `json:"updateKey"`
 	Unofficial         *apiUpdate `json:"unofficial"`
 	UnofficialForSmapi *apiUpdate `json:"unofficialForSmapi"`
 }
@@ -75,7 +77,7 @@ func (u *apiUpdate) asUpdate() *Update {
 	if u == nil || strings.TrimSpace(u.Version) == "" {
 		return nil
 	}
-	return &Update{Version: u.Version, URL: u.URL}
+	return &Update{Version: u.Version, URL: u.URL, Source: u.UpdateKey}
 }
 
 func firstUnofficial(parts ...*apiUpdate) *Update {

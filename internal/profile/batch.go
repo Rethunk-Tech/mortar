@@ -128,3 +128,20 @@ func (s *Store) SetSkipVersionMany(game, id string, refs []SkipVersionRef) (Prof
 		return nil
 	})
 }
+
+// SetSkipSourceMany records whether updates from source are hidden for each entry.
+func (s *Store) SetSkipSourceMany(game, id string, keys []string, source string, skip bool) (Profile, error) {
+	return s.updateEntries(game, id, keys, func(e *Entry, _ string) error {
+		if skip {
+			if !slices.Contains(e.SkipSources, source) {
+				e.SkipSources = append(e.SkipSources, source)
+			}
+			return nil
+		}
+		e.SkipSources = slices.DeleteFunc(e.SkipSources, func(existing string) bool { return existing == source })
+		if len(e.SkipSources) == 0 {
+			e.SkipSources = nil
+		}
+		return nil
+	})
+}

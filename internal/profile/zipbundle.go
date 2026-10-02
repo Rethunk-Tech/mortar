@@ -330,6 +330,12 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 				return Profile{}, err
 			}
 		}
+		for _, source := range e.SkipSources {
+			out, err = s.SetSkipSource(game, created.ID, key, source, true)
+			if err != nil {
+				return Profile{}, err
+			}
+		}
 		if e.Note != "" || len(e.Tags) > 0 {
 			out, err = s.SetEntryNoteTags(game, created.ID, key, e.Note, e.Tags)
 			if err != nil {

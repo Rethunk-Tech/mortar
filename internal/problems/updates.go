@@ -2,6 +2,7 @@ package problems
 
 import (
 	"context"
+	"net/url"
 	"regexp"
 	"slices"
 	"strings"
@@ -47,6 +48,7 @@ type Update struct {
 	NexusID    int    `json:"nexusId"`
 	GitHubRepo string `json:"githubRepo"`
 	Unofficial bool   `json:"unofficial"`
+	Source     string `json:"source"`
 }
 
 // UpdatesResult lists a profile's updates. Unknown is set when SMAPI's API could not be reached for some mod,
@@ -93,12 +95,14 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
 				Installed: x.Version, Version: res.Suggested.Version, URL: res.Suggested.URL,
 				NexusID: nexusUpdate(x.UpdateKeys, res.Suggested.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Suggested.URL),
+				Source: updateSource(*res.Suggested, nexusUpdate(x.UpdateKeys, res.Suggested.URL), githubUpdate(x.UpdateKeys, res.Suggested.URL)),
 			})
 			if res.Unofficial != nil {
 				r.Updates = append(r.Updates, Update{
 					Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
 					Installed: x.Version, Version: res.Unofficial.Version, URL: res.Unofficial.URL,
 					NexusID: nexusUpdate(x.UpdateKeys, res.Unofficial.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Unofficial.URL),
+					Source:     updateSource(*res.Unofficial, nexusUpdate(x.UpdateKeys, res.Unofficial.URL), githubUpdate(x.UpdateKeys, res.Unofficial.URL)),
 					Unofficial: true,
 				})
 			}
@@ -108,6 +112,7 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
 				Installed: x.Version, Version: res.Unofficial.Version, URL: res.Unofficial.URL,
 				NexusID: nexusUpdate(x.UpdateKeys, res.Unofficial.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Unofficial.URL),
+				Source:     updateSource(*res.Unofficial, nexusUpdate(x.UpdateKeys, res.Unofficial.URL), githubUpdate(x.UpdateKeys, res.Unofficial.URL)),
 				Unofficial: true,
 			})
 		}
@@ -133,6 +138,9 @@ func HideHeld(r UpdatesResult, mods []Installed, includePrerelease bool) Updates
 			continue
 		}
 		hold := profile.Entry{Pinned: m.Pinned, SkipVersion: m.SkipVersion, IgnoreUpdates: m.IgnoreUpdates}
+		if slices.Contains(m.SkipSources, u.Source) {
+			continue
+		}
 		if !hold.OffersUpdate(u.Version) {
 			continue
 		}
@@ -143,6 +151,39 @@ func HideHeld(r UpdatesResult, mods []Installed, includePrerelease bool) Updates
 	}
 	r.Updates = kept
 	return r
+}
+
+func updateSource(u meta.Update, nexusID int, githubRepo string) string {
+	if site, _, ok := strings.Cut(u.Source, ":"); ok && strings.TrimSpace(site) != "" {
+		return strings.TrimSpace(site)
+	}
+	if githubRepo != "" {
+		return "GitHub"
+	}
+	if nexusID > 0 {
+		return "Nexus"
+	}
+	if strings.HasPrefix(strings.ToLower(u.URL), "https://github.com/") {
+		return "GitHub"
+	}
+	if strings.Contains(strings.ToLower(u.URL), "nexusmods.com/") {
+		return "Nexus"
+	}
+	if parsed, err := url.Parse(u.URL); err == nil {
+		host := strings.TrimPrefix(strings.ToLower(parsed.Hostname()), "www.")
+		switch host {
+		case "curseforge.com", "minecraft.curseforge.com":
+			return "CurseForge"
+		case "moddrop.com":
+			return "ModDrop"
+		case "chucklefish.com":
+			return "Chucklefish"
+		}
+		if host != "" {
+			return host
+		}
+	}
+	return ""
 }
 
 // Need is one dependency of a mod and whether the profile meets it. State is "ok", "absent", "disabled" or

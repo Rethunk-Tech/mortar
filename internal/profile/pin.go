@@ -13,6 +13,10 @@ func (e Entry) OffersUpdate(newer string) bool {
 	return e.SkipVersion == "" || e.SkipVersion != newer
 }
 
+func (e Entry) SkipsSource(source string) bool {
+	return slices.Contains(e.SkipSources, source)
+}
+
 func (s *Store) patchEntry(game, id, key string, fn func(*Entry) error) (Profile, error) {
 	return s.update(game, id, func(p *Profile, _ string) error {
 		i := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == key })
@@ -38,6 +42,23 @@ func (s *Store) SetPinned(game, id, key string, pinned bool) (Profile, error) {
 func (s *Store) SetSkipVersion(game, id, key, version string) (Profile, error) {
 	return s.patchEntry(game, id, key, func(e *Entry) error {
 		e.SkipVersion = version
+		return nil
+	})
+}
+
+// SetSkipSource records whether updates from source are hidden for the entry.
+func (s *Store) SetSkipSource(game, id, key, source string, skip bool) (Profile, error) {
+	return s.patchEntry(game, id, key, func(e *Entry) error {
+		if skip {
+			if !slices.Contains(e.SkipSources, source) {
+				e.SkipSources = append(e.SkipSources, source)
+			}
+			return nil
+		}
+		e.SkipSources = slices.DeleteFunc(e.SkipSources, func(existing string) bool { return existing == source })
+		if len(e.SkipSources) == 0 {
+			e.SkipSources = nil
+		}
 		return nil
 	})
 }
