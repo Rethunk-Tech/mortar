@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
@@ -268,7 +269,7 @@ func TestHistoryMigratesLegacyEntriesInPlace(t *testing.T) {
 	if len(data.Snapshots) != 1 || len(data.Events) != 1 {
 		t.Fatalf("migrated data = %+v", data)
 	}
-	raw, err := os.ReadFile(filepath.Join(dir, historyFile))
+	raw, err := fsx.ReadFile(filepath.Join(dir, historyFile))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -9,6 +9,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 func TestContentPackDiskCache(t *testing.T) {
@@ -71,6 +73,7 @@ func TestContentPackDiskCache(t *testing.T) {
 	cache = readDiskPackCache(t, cachePath)
 	entry = cache.Packs[filepath.Clean(mod.Folder)]
 	entry.Pack = diskCachedPack{}
+	cache.Packs[filepath.Clean(mod.Folder)] = entry
 	cache.Version = contentPackParserVersion - 1
 	raw, err := json.Marshal(cache)
 	if err != nil {
@@ -116,7 +119,7 @@ func diskCachePack(t *testing.T) (Installed, string, string) {
 
 func readDiskPackCache(t *testing.T, path string) diskPackCache {
 	t.Helper()
-	raw, err := os.ReadFile(path)
+	raw, err := fsx.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}

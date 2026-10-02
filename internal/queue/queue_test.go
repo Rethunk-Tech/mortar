@@ -561,6 +561,7 @@ func TestAddCarriesHistoryBatchID(t *testing.T) {
 		t.Fatalf("queued item = %+v", items)
 	}
 }
+
 func TestDismissAndClearFinishedLeaveActiveItems(t *testing.T) {
 	f := newFixture(t)
 	f.s.mu.Lock()

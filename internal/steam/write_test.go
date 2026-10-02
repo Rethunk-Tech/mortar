@@ -41,7 +41,7 @@ func TestAtomicWriteFileLeavesOldFileOnWriteFailure(t *testing.T) {
 	if err := fsx.AtomicWriteFile(filepath.Join(dir, "missing", "steam.vdf"), []byte("new"), 0o600); err == nil {
 		t.Fatal("expected write failure")
 	}
-	body, err := os.ReadFile(path)
+	body, err := fsx.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
