@@ -35,8 +35,10 @@ export function ProblemBar() {
     problems.length === 0
       ? t`Some checks could not run without a connection, so more problems may show up later.`
       : plural(problems.length, { one: '# problem', other: '# problems' })
-  const detail =
-    first === undefined ? '' : first.kind === 'drift' ? describeDrift(first.drift) : describe(first)
+  let detail = ''
+  if (first !== undefined) {
+    detail = first.kind === 'drift' ? describeDrift(first.drift) : describe(first)
+  }
   return (
     <ButtonBase
       onClick={() => setTab('problems')}

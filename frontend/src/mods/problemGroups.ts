@@ -71,6 +71,19 @@ export function problemSections(result: Result): ProblemSection[] {
   return sections.filter((s) => s.rows.length > 0)
 }
 
+export function assetFixUsesQuietButtons(cosmetic: boolean): boolean {
+  return cosmetic
+}
+
+export function assetFixButtonStyle(cosmetic: boolean): {
+  variant: 'contained' | 'outlined'
+  color: 'warning' | 'inherit'
+} {
+  return assetFixUsesQuietButtons(cosmetic)
+    ? { variant: 'outlined', color: 'inherit' }
+    : { variant: 'contained', color: 'warning' }
+}
+
 export function problemCount(result: Result | null): number {
   if (!result) {
     return 0

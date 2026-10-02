@@ -184,16 +184,21 @@ function Row({
           <Button
             component="span"
             variant="contained"
-            startIcon={<Play size={18} fill="currentColor" />}
+            size="large"
+            startIcon={<Play size={22} fill="currentColor" />}
             onClick={playLast}
             sx={{
               flexShrink: 0,
+              height: 96,
+              minWidth: 120,
+              px: 3,
               borderRadius: 0,
+              fontSize: 17,
               fontWeight: 700,
               textTransform: 'none',
               boxShadow: 'none',
               whiteSpace: 'nowrap',
-              '& .MuiButton-startIcon': { mr: '8px' },
+              '& .MuiButton-startIcon': { mr: '10px' },
             }}
           >
             {t`Play`}

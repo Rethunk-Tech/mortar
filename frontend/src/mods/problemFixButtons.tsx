@@ -23,6 +23,7 @@ import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { type Problem, sameId } from './lookup.ts'
+import { assetFixButtonStyle } from './problemGroups.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -296,6 +297,19 @@ export function FixButton({ problem }: { problem: Problem }) {
     const id = problem.asset.packIds?.[0]
     const mod = mods.find((m) => m.key === key && (id === undefined || sameId(m.uniqueId, id)))
     const dismiss = dismissAsset
+    const { variant, color } = assetFixButtonStyle(problem.asset.cosmetic)
+    const assetButton = (label: string, onClick: () => void) => (
+      <Button
+        size="small"
+        variant={variant}
+        color={color}
+        disabled={locked}
+        onClick={onClick}
+        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+      >
+        {label}
+      </Button>
+    )
     return (
       <>
         {(problem.asset.fixes ?? []).map((fix) => (
@@ -304,13 +318,15 @@ export function FixButton({ problem }: { problem: Problem }) {
             title={t`In ${fix.name}; turns off its edits here`}
           >
             <span>
-              {button(t`Set ${fix.field} to ${fix.value}`, () =>
+              {assetButton(t`Set ${fix.field} to ${fix.value}`, () =>
                 setConfigValue(fix, fix.value).catch(reportUnexpected),
               )}
             </span>
           </Tooltip>
         ))}
-        {mod ? button(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected)) : null}
+        {mod
+          ? assetButton(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected))
+          : null}
         {problem.asset.kind === 'edit' ? (
           <Button
             size="small"
