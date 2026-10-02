@@ -102,8 +102,8 @@ func (s *Service) Receive(args []string) bool {
 				var waiting *Arrival
 				for _, arrival := range s.arrivals {
 					if arrival.Link == link {
-						copy := arrival
-						waiting = &copy
+						duplicate := arrival
+						waiting = &duplicate
 						break
 					}
 				}
@@ -134,7 +134,9 @@ func (s *Service) Receive(args []string) bool {
 		s.nextID++
 		id := s.nextID
 		if re, ok := errors.AsType[*nxm.RejectError](err); ok {
-			delete(s.recent, arg)
+			s.mu.Unlock()
+			s.forget(arg)
+			s.mu.Lock()
 			r := Rejection{ID: id, Reason: re.Reason}
 			log.Printf("nxm: link %d rejected: %s", id, re.Reason)
 			s.rejections = append(s.rejections, r)
