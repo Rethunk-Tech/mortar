@@ -136,16 +136,26 @@ export function ImportFooter({
         <DialogTitle>{t`Replace ${targetName}?`}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 360 }}>
           {(preview.replace?.remove ?? []).length > 0 ? (
-            <Typography sx={{ fontSize: 13 }}>
-              {t`These will be removed: ${(preview.replace?.remove ?? []).join(', ')}`}
-            </Typography>
+            <Box component="details">
+              <Typography component="summary" sx={{ fontSize: 13, cursor: 'pointer' }}>
+                {t`These will be removed (${(preview.replace?.remove ?? []).length})`}
+              </Typography>
+              <Typography sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}>
+                {(preview.replace?.remove ?? []).join(', ')}
+              </Typography>
+            </Box>
           ) : (
             <Typography sx={{ fontSize: 13 }}>{t`Nothing will be removed.`}</Typography>
           )}
           {(preview.replace?.keepLocal ?? []).length > 0 ? (
-            <Typography sx={{ fontSize: 13 }}>
-              {t`Local-only mods kept: ${(preview.replace?.keepLocal ?? []).join(', ')}`}
-            </Typography>
+            <Box component="details">
+              <Typography component="summary" sx={{ fontSize: 13, cursor: 'pointer' }}>
+                {t`Local-only mods kept (${(preview.replace?.keepLocal ?? []).length})`}
+              </Typography>
+              <Typography sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}>
+                {(preview.replace?.keepLocal ?? []).join(', ')}
+              </Typography>
+            </Box>
           ) : null}
         </DialogContent>
         <DialogActions>

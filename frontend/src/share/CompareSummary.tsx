@@ -29,12 +29,16 @@ export function CompareSummary({ preview, targetName }: { preview: Preview; targ
       {rows
         .filter((r) => r.items.length > 0)
         .map((r) => (
-          <Typography key={r.label} sx={{ fontSize: 13 }}>
-            <Box component="span" sx={{ color: r.tone, fontWeight: 600 }}>
-              {`${r.label} (${r.items.length}): `}
-            </Box>
-            {r.items.join(', ')}
-          </Typography>
+          <Box component="details" key={r.label}>
+            <Typography component="summary" sx={{ fontSize: 13, cursor: 'pointer' }}>
+              <Box component="span" sx={{ color: r.tone, fontWeight: 600 }}>
+                {`${r.label} (${r.items.length})`}
+              </Box>
+            </Typography>
+            <Typography sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}>
+              {r.items.join(', ')}
+            </Typography>
+          </Box>
         ))}
     </Box>
   )
