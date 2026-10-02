@@ -22,8 +22,9 @@ import (
 const (
 	// BaseURL is the public API.
 	BaseURL = "https://api.nexusmods.com"
-	// Game is the domain name of the only game Mortar supports so far.
-	Game = "stardewvalley"
+	// Game is the domain name of the only game Mortar supports so far, and GameID its numeric id in the v2 API.
+	Game   = "stardewvalley"
+	GameID = 1303
 	// LimitFloor is the remaining-call count at or under which requests are refused until the window resets.
 	LimitFloor = 5
 
@@ -269,8 +270,6 @@ type File struct {
 	ReplacedBy int `json:"replacedBy"`
 }
 
-const stardewValleyGameID = 1303
-
 // ScanStatuses returns Nexus's v2 virus-scan status for each file. Results are cached for this client.
 func (c *Client) ScanStatuses(ctx context.Context, modID int) (map[int]string, error) {
 	c.scanMu.Lock()
@@ -281,7 +280,7 @@ func (c *Client) ScanStatuses(ctx context.Context, modID int) (map[int]string, e
 	c.scanMu.Unlock()
 
 	body, err := json.Marshal(map[string]string{
-		"query": fmt.Sprintf("{ modFiles(modId: %d, gameId: %d) { fileId scannedV2 } }", modID, stardewValleyGameID),
+		"query": fmt.Sprintf("{ modFiles(modId: %d, gameId: %d) { fileId scannedV2 } }", modID, GameID),
 	})
 	if err != nil {
 		return nil, err
