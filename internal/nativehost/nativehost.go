@@ -50,11 +50,17 @@ type request struct {
 }
 
 type reply struct {
-	OK     bool           `json:"ok,omitempty"`
-	Error  string         `json:"error,omitempty"`
-	ModIDs *[]int         `json:"modIds,omitempty"`
-	Open   *modInProfile  `json:"open,omitempty"`
-	Others []modInProfile `json:"others,omitempty"`
+	OK       bool           `json:"ok,omitempty"`
+	Error    string         `json:"error,omitempty"`
+	ModIDs   *[]int         `json:"modIds,omitempty"`
+	Open     *modInProfile  `json:"open,omitempty"`
+	Others   []modInProfile `json:"others,omitempty"`
+	Problems []modProblem   `json:"problems,omitempty"`
+}
+
+type modProblem struct {
+	Kind string `json:"kind"`
+	Text string `json:"text"`
 }
 
 type modInProfile struct {
@@ -65,10 +71,10 @@ type modInProfile struct {
 
 // Serve answers messages from r until it closes, handing each message's link to open.
 func Serve(r io.Reader, w io.Writer, open func(link string) error) error {
-	return serve(r, w, open, activeNexusModIDs, nexusModProfiles)
+	return serve(r, w, open, activeNexusModIDs, nexusModProfiles, nexusModProblems)
 }
 
-func serve(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, mod func(game string, modID int) (modInProfile, []modInProfile)) error {
+func serve(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, mod func(game string, modID int) (modInProfile, []modInProfile), problem ...func(game string, modID int) []modProblem) error {
 	for {
 		var n uint32
 		if err := binary.Read(r, binary.NativeEndian, &n); err != nil {
@@ -97,6 +103,12 @@ func serve(r io.Reader, w io.Writer, open func(link string) error, installed fun
 		case "mod":
 			openProfile, others := mod(req.Game, req.ModID)
 			rep = reply{Open: &openProfile, Others: others}
+		case "modProblems":
+			var rows []modProblem
+			if len(problem) > 0 && problem[0] != nil {
+				rows = problem[0](req.Game, req.ModID)
+			}
+			rep = reply{Problems: rows}
 		case "":
 			if err := open(req.Link); err != nil {
 				rep = reply{Error: err.Error()}
@@ -119,6 +131,85 @@ func serve(r io.Reader, w io.Writer, open func(link string) error, installed fun
 			return err
 		}
 	}
+}
+
+func nexusModProblems(domain string, modID int) []modProblem {
+	if modID < 1 {
+		return []modProblem{}
+	}
+	info, ok := components.BundledGameByNexusDomain(domain)
+	if !ok {
+		return []modProblem{}
+	}
+	dataDir, err := datadir.Dir()
+	if err != nil || !mortarRunning(dataDir) {
+		return []modProblem{}
+	}
+	store, err := settings.Open()
+	if err != nil {
+		return []modProblem{}
+	}
+	profileID := store.Get().LastProfile[info.ID]
+	if profileID == "" || filepath.Base(profileID) != profileID {
+		return []modProblem{}
+	}
+	var rows []modProblem
+	if err := runningControlCall(dataDir, "modProblems", map[string]any{
+		"game": info.ID, "profile": profileID, "modId": modID,
+	}, &rows, time.Second); err != nil {
+		return []modProblem{}
+	}
+	return rows
+}
+
+func runningControlCall(dir, method string, params map[string]any, out any, timeout time.Duration) error {
+	root, err := os.OpenRoot(dir)
+	if err != nil {
+		return err
+	}
+	b, err := root.ReadFile("control.json")
+	_ = root.Close()
+	if err != nil {
+		return err
+	}
+	var discovery struct {
+		Port  int    `json:"port"`
+		Token string `json:"token"`
+	}
+	if err := json.Unmarshal(b, &discovery); err != nil {
+		return err
+	}
+	conn, err := (&net.Dialer{Timeout: 2 * time.Second}).DialContext(
+		context.Background(),
+		"tcp",
+		net.JoinHostPort("127.0.0.1", strconv.Itoa(discovery.Port)),
+	)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = conn.Close() }()
+	_ = conn.SetDeadline(time.Now().Add(timeout))
+	req, err := json.Marshal(map[string]any{"token": discovery.Token, "method": method, "params": params})
+	if err != nil {
+		return err
+	}
+	if _, err := conn.Write(append(req, '\n')); err != nil {
+		return err
+	}
+	var rep struct {
+		Result json.RawMessage `json:"result"`
+		Error  string          `json:"error"`
+	}
+	if err := json.NewDecoder(io.LimitReader(conn, 16<<20)).Decode(&rep); err != nil {
+		return err
+	}
+	if rep.Error != "" {
+		return errors.New(rep.Error)
+	}
+	if out == nil || len(rep.Result) == 0 {
+		return nil
+	}
+	return json.Unmarshal(rep.Result, out)
 }
 
 func activeNexusModIDs(domain string) []int {

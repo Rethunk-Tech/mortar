@@ -31,6 +31,28 @@ func waitFile(t *testing.T, path string, present bool) {
 	t.Fatalf("%s present=%v never happened", path, !present)
 }
 
+func TestModProblemsFiltersByNexusModAndOmitsCosmeticConflicts(t *testing.T) {
+	p := profile.Profile{Entries: []profile.Entry{
+		{Source: profile.Source{Kind: profile.KindNexus, ModID: 42}, Mods: []profile.EntryMod{{UniqueID: "Pack.Target", Name: "Target"}}},
+		{Source: profile.Source{Kind: profile.KindNexus, ModID: 99}, Mods: []profile.EntryMod{{UniqueID: "Pack.Other", Name: "Other"}}},
+	}}
+	result := problems.Result{
+		Missing: []problems.Missing{{DependentID: "pack.target", DependentName: "Target", UniqueID: "Core.Required", Reason: "absent"}},
+		Broken:  []problems.Broken{{UniqueID: "Pack.Target", Name: "Target"}},
+		AssetConflicts: []problems.AssetConflict{
+			{PackIDs: []string{"Pack.Target", "Pack.Other"}, Names: []string{"Target", "Other"}},
+			{PackIDs: []string{"Pack.Target", "Pack.Other"}, Names: []string{"Target", "Other"}, Cosmetic: true},
+		},
+	}
+	got := modProblems(p, result, 42)
+	if len(got) != 3 || got[0].Kind != "missing" || got[1].Kind != "broken" || got[2].Kind != "conflict" {
+		t.Fatalf("modProblems = %+v", got)
+	}
+	if got[2].Text != "conflicts with Other" {
+		t.Fatalf("conflict text = %q", got[2].Text)
+	}
+}
+
 func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
 	dir := t.TempDir()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -172,6 +194,74 @@ func TestHandleProfilesByNameAndID(t *testing.T) {
 	}
 	if _, err := s.Handle(ctx, "nope", Params{Game: "stardew", Profile: p.ID}); err == nil {
 		t.Error("an unknown method must be an error")
+	}
+}
+
+func TestHandleTrash(t *testing.T) {
+	s := services(t)
+	var events []string
+	s.Emit = func(name string, data any) { events = append(events, fmt.Sprintf("%s:%v", name, data)) }
+	ctx := context.Background()
+
+	p, err := s.Profiles.Create("stardew", "Gone")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Profiles.Delete("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	events = nil
+
+	res, err := s.Handle(ctx, "trash.list", Params{Game: "stardew"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	items, ok := res.([]profile.TrashItem)
+	if !ok || len(items) != 1 || items[0].ID != p.ID {
+		t.Fatalf("trash.list: %#v", res)
+	}
+
+	restored, err := s.Handle(ctx, "trash.restore", Params{Game: "stardew", Profile: p.Name})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if prof, ok := restored.(profile.Profile); !ok || prof.ID != p.ID {
+		t.Fatalf("restore: %#v", restored)
+	}
+	if len(events) != 1 || events[0] != ChangedEvent+":stardew" {
+		t.Fatalf("restore must notify the window, got %v", events)
+	}
+
+	if err := s.Profiles.Delete("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	events = nil
+	if _, err := s.Handle(ctx, "trash.delete", Params{Game: "stardew", Profile: p.ID}); err != nil {
+		t.Fatal(err)
+	}
+	if len(events) != 1 {
+		t.Fatalf("delete must notify the window, got %v", events)
+	}
+	if res, err := s.Handle(ctx, "trash.list", Params{Game: "stardew"}); err != nil {
+		t.Fatal(err)
+	} else if items, ok := res.([]profile.TrashItem); !ok || len(items) != 0 {
+		t.Fatalf("after purge: %#v", res)
+	}
+
+	p2, err := s.Profiles.Create("stardew", "Also Gone")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Profiles.Delete("stardew", p2.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Handle(ctx, "trash.empty", Params{Game: "stardew"}); err != nil {
+		t.Fatal(err)
+	}
+	if res, err := s.Handle(ctx, "trash.list", Params{Game: "stardew"}); err != nil {
+		t.Fatal(err)
+	} else if items, ok := res.([]profile.TrashItem); !ok || len(items) != 0 {
+		t.Fatalf("after empty: %#v", res)
 	}
 }
 
