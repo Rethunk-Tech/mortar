@@ -112,3 +112,20 @@ func TestScanSkipsASymlinkDirectory(t *testing.T) {
 		t.Fatalf("scan = %+v, %v", got, err)
 	}
 }
+
+func TestParseReadsStringIsRequired(t *testing.T) {
+	m, err := Parse([]byte(`{"UniqueID": "A", "Dependencies": [
+		{"UniqueID": "Opt", "IsRequired": "false"},
+		{"UniqueID": "Req", "IsRequired": "True"},
+		{"UniqueID": "Plain"}
+	]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]bool{"Opt": false, "Req": true, "Plain": true}
+	for _, d := range m.Dependencies {
+		if w, ok := want[d.UniqueID]; ok && d.Required != w {
+			t.Errorf("%s Required = %v, want %v", d.UniqueID, d.Required, w)
+		}
+	}
+}

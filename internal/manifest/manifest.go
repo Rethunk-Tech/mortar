@@ -94,8 +94,7 @@ func dependency(v json.RawMessage) (Dependency, bool) {
 	}
 	d := Dependency{UniqueID: text(obj, "uniqueid"), MinimumVersion: text(obj, "minimumversion"), Required: true}
 	if b := field(obj, "isrequired"); b != nil {
-		var required bool
-		if json.Unmarshal(b, &required) == nil {
+		if required, ok := flexBool(b); ok {
 			d.Required = required
 		}
 	}
@@ -138,9 +137,26 @@ func text(raw map[string]json.RawMessage, name string) string {
 }
 
 func boolean(v json.RawMessage) bool {
-	var b bool
-	_ = json.Unmarshal(v, &b)
+	b, _ := flexBool(v)
 	return b
+}
+
+// flexBool reads a JSON boolean or the strings "true"/"false" in any case, as SMAPI's Json.NET reader does.
+func flexBool(v json.RawMessage) (value, ok bool) {
+	if json.Unmarshal(v, &value) == nil {
+		return value, true
+	}
+	var s string
+	if json.Unmarshal(v, &s) != nil {
+		return false, false
+	}
+	switch strings.ToLower(strings.TrimSpace(s)) {
+	case "true":
+		return true, true
+	case "false":
+		return false, true
+	}
+	return false, false
 }
 
 // version accepts a string or SMAPI's legacy {MajorVersion, MinorVersion, PatchVersion, Build} object.

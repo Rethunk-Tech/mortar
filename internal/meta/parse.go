@@ -33,10 +33,26 @@ func (l *list) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// flexBool accepts a JSON boolean or the strings "true"/"false", as SMAPI's Json.NET reader does; anything
+// else reads as true, the default for IsRequired.
+type flexBool bool
+
+func (b *flexBool) UnmarshalJSON(data []byte) error {
+	var v bool
+	if json.Unmarshal(data, &v) == nil {
+		*b = flexBool(v)
+		return nil
+	}
+	var s string
+	_ = json.Unmarshal(data, &s)
+	*b = flexBool(!strings.EqualFold(strings.TrimSpace(s), "false"))
+	return nil
+}
+
 type rawDependency struct {
-	UniqueID       text  `json:"UniqueID"`
-	MinimumVersion text  `json:"MinimumVersion"`
-	IsRequired     *bool `json:"IsRequired"`
+	UniqueID       text      `json:"UniqueID"`
+	MinimumVersion text      `json:"MinimumVersion"`
+	IsRequired     *flexBool `json:"IsRequired"`
 }
 
 type rawManifest struct {
@@ -96,7 +112,7 @@ func (m *rawManifest) mod() Mod {
 	}
 	for _, d := range m.Dependencies {
 		if d.UniqueID != "" {
-			out.Dependencies = append(out.Dependencies, Dependency{string(d.UniqueID), string(d.MinimumVersion), d.IsRequired == nil || *d.IsRequired})
+			out.Dependencies = append(out.Dependencies, Dependency{string(d.UniqueID), string(d.MinimumVersion), d.IsRequired == nil || bool(*d.IsRequired)})
 		}
 	}
 	if cp := m.ContentPackFor; cp != nil && cp.UniqueID != "" {
