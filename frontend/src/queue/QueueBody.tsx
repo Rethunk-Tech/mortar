@@ -13,6 +13,7 @@ import {
   RetryFailed,
   Skip,
   SkipAll,
+  SkipProfile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { QueueNeedsMerge } from '../install/QueueNeedsMerge.tsx'
 import { QueueNeedsRoot } from '../install/QueueNeedsRoot.tsx'
@@ -360,6 +361,28 @@ function Active({ item }: { item: Item }) {
   )
 }
 
+function NextActions({ item }: { item: Item }) {
+  const { t } = useLingui()
+  return (
+    <Box sx={{ display: 'flex', gap: 1 }}>
+      <Button
+        size="small"
+        onClick={() => SkipAll().catch(reportUnexpected)}
+        sx={{ whiteSpace: 'nowrap' }}
+      >
+        {t`Skip all`}
+      </Button>
+      <Button
+        size="small"
+        onClick={() => SkipProfile(item.game, item.profileId).catch(reportUnexpected)}
+        sx={{ whiteSpace: 'nowrap' }}
+      >
+        {t`Skip this profile`}
+      </Button>
+    </Box>
+  )
+}
+
 export function Body({ items }: { items: Item[] }) {
   const { t } = useLingui()
   const click = items.filter((i) => i.state === 'waiting-click')
@@ -392,6 +415,7 @@ export function Body({ items }: { items: Item[] }) {
     )
   }
   const more = next.length - NAME_MAX
+  const [firstProfile] = next
   return (
     <>
       {click.map((i) => (
@@ -414,15 +438,7 @@ export function Body({ items }: { items: Item[] }) {
         <Fold
           bg="rgba(55,55,65,0.6)"
           line={more > 0 ? t`Up next: ${names(next)} and ${more} more` : t`Up next: ${names(next)}`}
-          action={
-            <Button
-              size="small"
-              onClick={() => SkipAll().catch(reportUnexpected)}
-              sx={{ whiteSpace: 'nowrap' }}
-            >
-              {t`Skip all`}
-            </Button>
-          }
+          action={firstProfile ? <NextActions item={firstProfile} /> : null}
         >
           {next.map((i) => (
             <Row
