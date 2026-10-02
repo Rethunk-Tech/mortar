@@ -9,6 +9,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import {
   Status as LaunchStatus,
+  Runs,
   Start,
   StartVanilla,
   Stop,
@@ -24,6 +25,16 @@ import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import {
+  type AutoUpdateRestorePoint,
+  type AutoUpdateResult,
+  isAutoUpdateError,
+  rollbackAutoUpdate,
+  updateBeforePlay,
+} from './autoUpdate.ts'
+
+const RUN_POLL_ATTEMPTS = 20
+const RUN_POLL_MS = 250
 
 function resetConsole(status: Status, prev: Status | null) {
   const same =
@@ -73,6 +84,7 @@ interface UpdateWarn {
   recorded: string
   installed: string
   broken: Broken[]
+  update?: UpdateContext
 }
 
 // SaveWarn is the newest save when it uses mods the profile lacks or has switched off.
@@ -81,6 +93,70 @@ interface SaveWarn {
   profile: string
   direct: boolean
   save: Fit
+  update?: UpdateContext
+}
+
+interface UpdateContext {
+  restorePoint: AutoUpdateRestorePoint
+  previousRunId: string
+  previousErrors: number | null
+}
+
+interface UpdateRollback {
+  context: UpdateContext
+  game: string
+  profile: string
+}
+
+function updateContext(result: AutoUpdateResult): UpdateContext | undefined {
+  return result.restorePoint ? { ...result, restorePoint: result.restorePoint } : undefined
+}
+
+function rollbackAction(point: AutoUpdateRestorePoint) {
+  return () =>
+    rollbackAutoUpdate(point).catch((error) => {
+      useToasts.getState().push({
+        kind: 'error',
+        title: i18n._(msg`Could not roll back updates`),
+        body: errorMessage(error),
+      })
+    })
+}
+
+function updateFailure(error: unknown) {
+  const point = isAutoUpdateError(error) ? error.restorePoint : undefined
+  useToasts.getState().push({
+    kind: 'error',
+    title: i18n._(msg`Could not update mods before Play`),
+    body: errorMessage(error),
+    ...(point && point.updates.length > 0
+      ? { action: { label: i18n._(msg`Roll back`), run: rollbackAction(point) } }
+      : {}),
+  })
+}
+
+async function startProfile(opts: {
+  set: (p: {
+    starting?: boolean
+    startingProfile?: string
+    updateRollback?: UpdateRollback | null
+  }) => void
+  game: string
+  profile: string
+  direct: boolean
+  update: UpdateContext | undefined
+}) {
+  if (opts.update) {
+    opts.set({
+      updateRollback: { context: opts.update, game: opts.game, profile: opts.profile },
+    })
+  }
+  try {
+    await Start(opts.game, opts.profile, opts.direct)
+  } catch (error) {
+    opts.set({ starting: false, startingProfile: '', updateRollback: null })
+    reportError(i18n._(msg`Could not launch the game`))(error)
+  }
 }
 
 async function startWithWarning(opts: {
@@ -90,6 +166,7 @@ async function startWithWarning(opts: {
     startingProfile?: string
     updateWarn?: UpdateWarn | null
     saveWarn?: SaveWarn | null
+    updateRollback?: UpdateRollback | null
   }) => void
   game: string
   profile: string
@@ -99,6 +176,14 @@ async function startWithWarning(opts: {
     return
   }
   opts.set({ starting: true, startingProfile: opts.profile })
+  let update: UpdateContext | undefined
+  try {
+    update = updateContext(await updateBeforePlay(opts.game, opts.profile))
+  } catch (error) {
+    opts.set({ starting: false, startingProfile: '' })
+    updateFailure(error)
+    return
+  }
   try {
     const warning = await UpdateWarning(opts.game, opts.profile)
     if (warning.changed) {
@@ -112,6 +197,7 @@ async function startWithWarning(opts: {
           recorded: warning.recorded,
           installed: warning.installed,
           broken: warning.broken ?? [],
+          ...(update ? { update } : {}),
         },
       })
       return
@@ -127,19 +213,26 @@ async function startWithWarning(opts: {
       opts.set({
         starting: false,
         startingProfile: '',
-        saveWarn: { game: opts.game, profile: opts.profile, direct: opts.direct, save },
+        saveWarn: {
+          game: opts.game,
+          profile: opts.profile,
+          direct: opts.direct,
+          save,
+          ...(update ? { update } : {}),
+        },
       })
       return
     }
   } catch {
     // An unreadable save never blocks Play; the Saves tab shows the same check.
   }
-  try {
-    await Start(opts.game, opts.profile, opts.direct)
-  } catch (e) {
-    opts.set({ starting: false, startingProfile: '' })
-    reportError(i18n._(msg`Could not launch the game`))(e)
-  }
+  await startProfile({
+    set: opts.set,
+    game: opts.game,
+    profile: opts.profile,
+    direct: opts.direct,
+    update,
+  })
 }
 
 async function startVanillaGame(opts: {
@@ -160,13 +253,119 @@ async function startVanillaGame(opts: {
   }
 }
 
+async function checkUpdatedRun(
+  rollback: UpdateRollback,
+  get: () => { updateRollback: UpdateRollback | null },
+  set: (p: { updateRollback: UpdateRollback | null }) => void,
+) {
+  const { previousRunId, previousErrors } = rollback.context
+  if (previousErrors === null) {
+    set({ updateRollback: null })
+    return
+  }
+  for (let attempt = 0; attempt < RUN_POLL_ATTEMPTS; attempt += 1) {
+    try {
+      const latest = (await Runs(rollback.game, rollback.profile))?.[0]
+      if (latest && latest.id !== previousRunId) {
+        if (latest.errors > previousErrors) {
+          useToasts.getState().push({
+            kind: 'warning',
+            title: i18n._(msg`Errors appeared after updating`),
+            action: {
+              label: i18n._(msg`Roll back`),
+              run: rollbackAction(rollback.context.restorePoint),
+            },
+          })
+          return
+        }
+        if (get().updateRollback === rollback) {
+          set({ updateRollback: null })
+        }
+        return
+      }
+    } catch {
+      return
+    }
+    await new Promise<void>((resolve) => globalThis.setTimeout(resolve, RUN_POLL_MS))
+  }
+}
+
+interface DirectAsk {
+  game: string
+  profile: string
+  update?: UpdateContext
+}
+
+function applyStatus(
+  status: Status,
+  polled: boolean,
+  get: () => {
+    status: Status | null
+    hidden: boolean
+    updateRollback: UpdateRollback | null
+  },
+  set: (p: {
+    starting?: boolean
+    startingProfile?: string
+    hidden?: boolean
+    failure?: Failure | null
+    askDirect?: DirectAsk | null
+    status?: Status
+    updateRollback?: UpdateRollback | null
+  }) => void,
+) {
+  const previous = get().status
+  if (!polled || status.state !== State.Idle) {
+    set({ starting: false, startingProfile: '' })
+  }
+  if (status.state === State.Launching) {
+    if (resetConsole(status, previous)) {
+      set({ hidden: false, failure: null })
+    }
+    set({ status })
+    return
+  }
+  if (status.state === State.Failed) {
+    set({ failure: { profile: status.profile, body: failureBody(status), hint: status.hint } })
+  }
+  if (status.state === State.NoSteam) {
+    const rollback = get().updateRollback
+    set({
+      askDirect: {
+        game: status.game,
+        profile: status.profile,
+        ...(rollback ? { update: rollback.context } : {}),
+      },
+    })
+  }
+  if (status.state === State.Running || status.state === State.Idle) {
+    if (status.state === State.Running && previous?.state === State.Launching && !get().hidden) {
+      useTab.getState().setTab('console')
+    }
+    set({ status })
+    const rollback = get().updateRollback
+    if (
+      status.state === State.Idle &&
+      previous?.state === State.Running &&
+      rollback &&
+      previous.game === rollback.game &&
+      previous.profile === rollback.profile
+    ) {
+      checkUpdatedRun(rollback, get, set).catch(() => undefined)
+    }
+  } else {
+    set({ status: { ...status, state: State.Idle } })
+  }
+}
+
 export const useLaunch = create<{
   status: Status | null
   hidden: boolean
   failure: Failure | null
-  askDirect: { game: string; profile: string } | null
+  askDirect: DirectAsk | null
   updateWarn: UpdateWarn | null
   saveWarn: SaveWarn | null
+  updateRollback: UpdateRollback | null
   stopping: boolean
   // Play was pressed and no launch:state has answered yet, which is when SMAPI installs first.
   starting: boolean
@@ -195,42 +394,12 @@ export const useLaunch = create<{
   askDirect: null,
   updateWarn: null,
   saveWarn: null,
+  updateRollback: null,
   stopping: false,
   starting: false,
   startingProfile: '',
   crash: null,
-  apply: (status, polled = false) => {
-    // A poll that lands before the first launch:state still reports Idle; only an event ends preparation.
-    if (!polled || status.state !== State.Idle) {
-      set({ starting: false, startingProfile: '' })
-    }
-    if (status.state === State.Launching) {
-      if (resetConsole(status, get().status)) {
-        set({ hidden: false, failure: null })
-      }
-      set({ status })
-      return
-    }
-    if (status.state === State.Failed) {
-      set({ failure: { profile: status.profile, body: failureBody(status), hint: status.hint } })
-    }
-    if (status.state === State.NoSteam) {
-      set({ askDirect: { game: status.game, profile: status.profile } })
-    }
-    // Failed and NoSteam are one-off announcements; the game itself is idle.
-    if (status.state === State.Running || status.state === State.Idle) {
-      if (
-        status.state === State.Running &&
-        get().status?.state === State.Launching &&
-        !get().hidden
-      ) {
-        useTab.getState().setTab('console')
-      }
-      set({ status })
-    } else {
-      set({ status: { ...status, state: State.Idle } })
-    }
-  },
+  apply: (status, polled = false) => applyStatus(status, polled, get, set),
   refresh: async (game) => {
     try {
       get().apply(await LaunchStatus(game), true)
@@ -265,12 +434,13 @@ export const useLaunch = create<{
       return
     }
     set({ starting: true, startingProfile: warn.profile })
-    try {
-      await Start(warn.game, warn.profile, warn.direct)
-    } catch (e) {
-      set({ starting: false, startingProfile: '' })
-      reportError(i18n._(msg`Could not launch the game`))(e)
-    }
+    await startProfile({
+      set,
+      game: warn.game,
+      profile: warn.profile,
+      direct: warn.direct,
+      update: warn.update,
+    })
   },
   openProblems: () => {
     const warn = get().updateWarn
@@ -290,6 +460,15 @@ export const useLaunch = create<{
     if (agreed && askDirect) {
       if (askDirect.profile === '') {
         await get().startVanilla(askDirect.game, true)
+      } else if (askDirect.update) {
+        set({ starting: true, startingProfile: askDirect.profile })
+        await startProfile({
+          set,
+          game: askDirect.game,
+          profile: askDirect.profile,
+          direct: true,
+          update: askDirect.update,
+        })
       } else {
         await get().start(askDirect.game, askDirect.profile, true)
       }

@@ -91,6 +91,11 @@ func (s *Service) SetNotes(game, id, notes string) (Profile, error) {
 	return s.store.SetNotes(game, id, notes)
 }
 
+// SetUpdateBeforePlay records whether available mod updates run before Play.
+func (s *Service) SetUpdateBeforePlay(game, id string, on bool) (Profile, error) {
+	return s.store.SetUpdateBeforePlay(game, id, on)
+}
+
 // SetAppearance replaces a profile's colour, icon and short description.
 func (s *Service) SetAppearance(game, id, color, icon, description string) (Profile, error) {
 	return s.store.SetAppearance(game, id, color, icon, description)

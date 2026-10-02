@@ -146,6 +146,8 @@ type Profile struct {
 	LaunchPrefix string `json:"launchPrefix,omitempty"`
 	// LaunchEnv contains one NAME=value environment variable per line for direct launches.
 	LaunchEnv string `json:"launchEnv,omitempty"`
+	// UpdateBeforePlay applies available mod updates before launching this profile; false is the default.
+	UpdateBeforePlay bool `json:"updateBeforePlay,omitempty"`
 }
 
 // Store reads and writes profiles under one root folder.
@@ -448,6 +450,14 @@ func (s *Store) SetNotes(game, id, notes string) (Profile, error) {
 	}
 	return s.update(game, id, func(p *Profile, _ string) error {
 		p.Notes = notes
+		return nil
+	})
+}
+
+// SetUpdateBeforePlay records whether available mod updates run before Play.
+func (s *Store) SetUpdateBeforePlay(game, id string, on bool) (Profile, error) {
+	return s.update(game, id, func(p *Profile, _ string) error {
+		p.UpdateBeforePlay = on
 		return nil
 	})
 }

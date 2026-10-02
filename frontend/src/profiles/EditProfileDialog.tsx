@@ -6,33 +6,26 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   IconButton,
+  Switch,
   TextField,
   Tooltip,
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import type { Settings as BackendGameSettings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/gamesettings/models.ts'
-import {
-  GameSettings as GetGameSettings,
-  SetGameSettings,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { GameSettings as GetGameSettings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { PickImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { applyStagedCover, hasPickedCover, type StagedCover } from '../game/cover.ts'
+import { hasPickedCover, type StagedCover } from '../game/cover.ts'
 import { HeroCover } from '../game/HeroCover.tsx'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
-import {
-  clipDescription,
-  colorHex,
-  MAX_DESCRIPTION,
-  PROFILE_COLORS,
-  PROFILE_ICONS,
-} from './appearance.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import { colorHex, MAX_DESCRIPTION, PROFILE_COLORS, PROFILE_ICONS } from './appearance.ts'
 import { GameSettings, type GameSettingsValues } from './GameSettings.tsx'
 import { LaunchPreview } from './LaunchPreview.tsx'
 import { ProfileMark } from './ProfileMark.tsx'
+import { saveProfile } from './saveProfile.ts'
 import { useProfiles } from './store.ts'
 
 const PATH_SEPARATORS = /[\\/]/
@@ -227,6 +220,30 @@ function AppearancePickers({
   )
 }
 
+function UpdateBeforePlayField({
+  checked,
+  onChange,
+}: {
+  checked: boolean
+  onChange: (checked: boolean) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <FormControlLabel
+      sx={{ alignItems: 'flex-start', m: 0, mb: 2 }}
+      control={<Switch checked={checked} onChange={(_, value) => onChange(value)} />}
+      label={
+        <Box>
+          <Typography>{t`Update mods before Play`}</Typography>
+          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+            {t`Applies available updates (not pinned mods) and keeps a restore point you can roll back to.`}
+          </Typography>
+        </Box>
+      }
+    />
+  )
+}
+
 interface ProfileFieldsProps {
   profile: Profile
   gameId: string
@@ -248,6 +265,8 @@ interface ProfileFieldsProps {
   onLaunchError: (value: LaunchError) => void
   gameSettings: GameSettingsValues | null
   onGameSettings: (value: GameSettingsValues | null) => void
+  updateBeforePlay: boolean
+  onUpdateBeforePlay: (value: boolean) => void
 }
 
 function ProfileFields({
@@ -271,6 +290,8 @@ function ProfileFields({
   onLaunchError,
   gameSettings,
   onGameSettings,
+  updateBeforePlay,
+  onUpdateBeforePlay,
 }: ProfileFieldsProps) {
   const { t } = useLingui()
   return (
@@ -351,28 +372,10 @@ function ProfileFields({
         prefix={launchPrefix}
         env={launchEnv}
       />
+      <UpdateBeforePlayField checked={updateBeforePlay} onChange={onUpdateBeforePlay} />
       <GameSettings profileId={profile.id} value={gameSettings} onChange={onGameSettings} />
     </DialogContent>
   )
-}
-
-// coverSaved applies a staged cover image, telling the user when the image cannot be used.
-async function coverSaved(
-  gameId: string,
-  profile: Profile,
-  staged: StagedCover,
-  failure: string,
-): Promise<boolean> {
-  try {
-    const next = await applyStagedCover(gameId, profile.id, staged)
-    if (next) {
-      useProfiles.getState().replace(next)
-    }
-    return true
-  } catch (e) {
-    useToasts.getState().push({ kind: 'error', title: failure, body: errorMessage(e) })
-    return false
-  }
 }
 
 export function EditProfileDialog({
@@ -395,6 +398,7 @@ export function EditProfileDialog({
   const [launchOptions, setLaunchOptionsField] = useState(profile.launchOptions ?? '')
   const [launchPrefix, setLaunchPrefix] = useState(profile.launchPrefix ?? '')
   const [launchEnv, setLaunchEnv] = useState(profile.launchEnv ?? '')
+  const [updateBeforePlay, setUpdateBeforePlayField] = useState(profile.updateBeforePlay ?? false)
   const [stagedCover, setStagedCover] = useState<StagedCover>(undefined)
   const [gameSettings, setGameSettings, gameSettingsLoaded] = useProfileGameSettings(
     gameId,
@@ -411,6 +415,7 @@ export function EditProfileDialog({
       setLaunchOptionsField(profile.launchOptions ?? '')
       setLaunchPrefix(profile.launchPrefix ?? '')
       setLaunchEnv(profile.launchEnv ?? '')
+      setUpdateBeforePlayField(profile.updateBeforePlay ?? false)
       setStagedCover(undefined)
       setLaunchError(null)
     }
@@ -422,39 +427,29 @@ export function EditProfileDialog({
     profile.launchOptions,
     profile.launchPrefix,
     profile.launchEnv,
+    profile.updateBeforePlay,
   ])
-  const save = async () => {
-    setBusy(true)
-    setLaunchError(null)
-    try {
-      try {
-        await setLaunchOptions(profile.id, launchOptions)
-      } catch (e) {
-        setLaunchError({ field: 'options', message: errorMessage(e) })
-        return
-      }
-      try {
-        await setLaunchSettings(profile.id, launchPrefix, launchEnv)
-      } catch (e) {
-        setLaunchError({ field: 'settings', message: errorMessage(e) })
-        return
-      }
-      try {
-        await setAppearance(profile.id, color, icon, clipDescription(description))
-        if (gameId) {
-          await SetGameSettings(gameId, profile.id, gameSettings ?? {})
-        }
-      } catch (e) {
-        reportUnexpected(e)
-        return
-      }
-      if (await coverSaved(gameId, profile, stagedCover, t`Could not use that image`)) {
-        onClose()
-      }
-    } finally {
-      setBusy(false)
-    }
-  }
+  const save = () =>
+    saveProfile({
+      profile,
+      gameId,
+      launchOptions,
+      launchPrefix,
+      launchEnv,
+      updateBeforePlay,
+      stagedCover,
+      gameSettings,
+      setLaunchOptions,
+      setLaunchSettings,
+      setAppearance,
+      color,
+      icon,
+      description,
+      setLaunchError,
+      setBusy,
+      onClose,
+      coverFailure: t`Could not use that image`,
+    })
   return (
     <Dialog
       open={open}
@@ -490,6 +485,8 @@ export function EditProfileDialog({
           onLaunchError={setLaunchError}
           gameSettings={gameSettings}
           onGameSettings={setGameSettings}
+          updateBeforePlay={updateBeforePlay}
+          onUpdateBeforePlay={setUpdateBeforePlayField}
         />
         <DialogActions>
           <Button onClick={onClose} sx={{ whiteSpace: 'nowrap' }}>{t`Cancel`}</Button>
