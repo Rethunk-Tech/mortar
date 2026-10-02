@@ -279,14 +279,13 @@ func variantSettings(packMod Installed, pack cachedPack, config map[string]strin
 		forValue := map[string][]string{} // lower-cased allowed value -> mod ids that select it
 		var auto []string
 		for _, p := range pack.patches {
-			if p.tokenValue == "" || !own[p.tokenName] {
+			usesField := slices.ContainsFunc(p.when.config, func(c cpConfig) bool {
+				return strings.EqualFold(c.field, schema.key)
+			})
+			if !own[p.tokenName] && !usesField {
 				continue
 			}
-			value, ok := allowedValue(schema, p.tokenValue)
-			if !ok {
-				continue
-			}
-			var ids []string
+			ids := make([]string, 0)
 			for _, group := range p.when.anyOf {
 				for _, id := range group {
 					if !sameID(id, packMod.UniqueID) {
@@ -297,9 +296,19 @@ func variantSettings(packMod Installed, pack cachedPack, config map[string]strin
 			if len(ids) == 0 {
 				continue
 			}
-			forValue[strings.ToLower(value)] = append(forValue[strings.ToLower(value)], ids...)
+			if own[p.tokenName] {
+				if value, ok := allowedValue(schema, p.tokenValue); ok {
+					forValue[strings.ToLower(value)] = append(forValue[strings.ToLower(value)], ids...)
+				}
+			}
 			for _, c := range p.when.config {
-				if strings.EqualFold(c.field, schema.key) {
+				if !strings.EqualFold(c.field, schema.key) {
+					continue
+				}
+				for _, conditionValue := range c.values {
+					if value, ok := allowedValue(schema, conditionValue); ok {
+						forValue[strings.ToLower(value)] = append(forValue[strings.ToLower(value)], ids...)
+					}
 					for _, v := range c.values {
 						addSettingValue(&auto, v)
 					}
