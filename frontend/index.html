@@ -7,6 +7,43 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      'use strict'
+      // Errors before React mounts (a module that fails to load or link) leave a blank window
+      // that no error boundary can see; show them instead.
+      ;(() => {
+        const show = (detail) => {
+          const root = document.getElementById('root')
+          if (!root || root.childElementCount > 0) {
+            return
+          }
+          let box = document.getElementById('boot-error')
+          if (!box) {
+            box = document.createElement('pre')
+            box.id = 'boot-error'
+            box.style.cssText =
+              'margin:0;padding:32px;height:100vh;box-sizing:border-box;overflow:auto;background:#1c1b20;color:#e8e6e3;font:13px/1.5 ui-monospace,monospace;white-space:pre-wrap'
+            box.textContent = 'Mortar could not start.\n\n'
+            document.body.appendChild(box)
+          }
+          box.textContent += `${detail}\n`
+        }
+        globalThis.addEventListener(
+          'error',
+          (e) => {
+            const src = e.target && e.target !== globalThis ? e.target.src || e.target.href : ''
+            show(src ? `Could not load ${src}` : `${e.message}${e.filename ? `\n  at ${e.filename}:${e.lineno}` : ''}`)
+          },
+          true,
+        )
+        globalThis.addEventListener('unhandledrejection', (e) => show(String(e.reason?.stack ?? e.reason)))
+        new MutationObserver(() => {
+          if (document.getElementById('root')?.childElementCount) {
+            document.getElementById('boot-error')?.remove()
+          }
+        }).observe(document.getElementById('root'), { childList: true })
+      })()
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
