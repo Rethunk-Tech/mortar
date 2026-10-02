@@ -226,6 +226,125 @@ func TestPremiumDownloadsAndInstallsWithoutClicks(t *testing.T) {
 	f.leftovers()
 }
 
+func TestSkipProfileHoldsDownloadsUntilRestore(t *testing.T) {
+	f := newFixture(t)
+	f.s.Pause()
+	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	f.s.SkipProfile("stardew", "p1")
+	st := f.s.State()
+	if len(st.Items) != 1 || st.Items[0].State != StateSkipped || st.Items[0].Error != "profile deleted" {
+		t.Fatalf("deleted profile queue state = %+v", st.Items)
+	}
+	f.s.RestoreProfile("stardew", "p1")
+	st = f.s.State()
+	if st.Items[0].State != StateQueued || st.Items[0].Error != "" {
+		t.Fatalf("restored profile queue state = %+v", st.Items)
+	}
+}
+
+func TestSkipCancelsAFetch(t *testing.T) {
+	f := newFixture(t)
+	entered := make(chan struct{})
+	release := make(chan struct{})
+	f.cdn = func(w http.ResponseWriter, _ *http.Request) {
+		close(entered)
+		<-release
+		fmt.Fprint(w, payload)
+	}
+	f.start()
+	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	<-entered
+	f.s.Skip(f.s.State().Items[0].ID)
+	close(release)
+	st := f.wait("skipped fetch", f.item(StateSkipped))
+	if st.Items[0].Error != "" {
+		t.Errorf("skip error = %q", st.Items[0].Error)
+	}
+}
+
+func TestFetchSlotsCapPremiumAndFreeSources(t *testing.T) {
+	f := newFixture(t)
+	for _, tc := range []struct {
+		name    string
+		premium bool
+		want    int
+	}{
+		{name: "premium", premium: true, want: 3},
+		{name: "free", premium: false, want: 1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			f.premium.Store(tc.premium)
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			var active, maxActive atomic.Int32
+			var wg sync.WaitGroup
+			for i := 0; i < 6; i++ {
+				wg.Go(func() {
+					release, err := f.s.fetchSlot(ctx, Item{})
+					if err != nil {
+						return
+					}
+					n := active.Add(1)
+					for {
+						old := maxActive.Load()
+						if n <= old || maxActive.CompareAndSwap(old, n) {
+							break
+						}
+					}
+					time.Sleep(10 * time.Millisecond)
+					active.Add(-1)
+					release()
+				})
+			}
+			wg.Wait()
+			if got := int(maxActive.Load()); got > tc.want {
+				t.Fatalf("max concurrent fetches = %d, want at most %d", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestInstallsAreSerialized(t *testing.T) {
+	f := newFixture(t)
+	entered := make(chan struct{}, 2)
+	release := make(chan struct{})
+	var active, maxActive atomic.Int32
+	f.s.d.Install = func(string, string, string, profile.Source) (profile.InstallResult, error) {
+		n := active.Add(1)
+		for {
+			old := maxActive.Load()
+			if n <= old || maxActive.CompareAndSwap(old, n) {
+				break
+			}
+		}
+		entered <- struct{}{}
+		<-release
+		active.Add(-1)
+		return profile.InstallResult{}, nil
+	}
+	var wg sync.WaitGroup
+	for i := 0; i < 2; i++ {
+		wg.Go(func() {
+			_ = f.s.installNexusPath(Item{ID: newID(), Game: "stardew", Profile: "p1"}, "", nexus.Mod{})
+		})
+	}
+	<-entered
+	select {
+	case <-entered:
+		t.Fatal("second install started before the first finished")
+	case <-time.After(20 * time.Millisecond):
+	}
+	close(release)
+	wg.Wait()
+	if maxActive.Load() != 1 {
+		t.Fatalf("max concurrent installs = %d, want 1", maxActive.Load())
+	}
+}
+
 func TestAStoredFileInstallsFromTheStoreWithoutAClick(t *testing.T) {
 	f := newFixture(t)
 	f.premium.Store(false)

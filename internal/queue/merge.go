@@ -42,6 +42,8 @@ func (s *Service) installNexusPath(it Item, path string, mod nexus.Mod) error {
 	src := nexusSource(it, mod)
 	var res profile.InstallResult
 	var err error
+	s.installMu.Lock()
+	defer s.installMu.Unlock()
 	if it.MergeAdd && it.Merge != nil && s.d.InstallExtra != nil {
 		res, err = s.d.InstallExtra(it.Game, it.Profile, it.Merge.EntryKey, path, src)
 	} else {

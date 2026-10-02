@@ -567,6 +567,8 @@ func (s *Service) installStored(it Item, mod nexus.Mod) (bool, error) {
 	s.publish(true)
 	key := store.NexusKey(it.ModID, it.FileID)
 	log.Printf("queue: mod %d file %d installs from the store (%s)", it.ModID, it.FileID, key)
+	s.installMu.Lock()
 	res, err := s.d.InstallStaged(it.Game, it.Profile, key, nexusSource(it, mod))
+	s.installMu.Unlock()
 	return true, s.afterInstall(it.ID, res, err, false)
 }
