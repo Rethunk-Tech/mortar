@@ -154,14 +154,6 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	// Mods extracted before zip names were decoded may sit in folders the game cannot open.
-	for _, root := range []string{filepath.Join(dataDir, "store"), filepath.Join(dataDir, "profiles")} {
-		if n, err := archive.RepairNames(root); err != nil {
-			log.Printf("repair names under %s: %v", root, err)
-		} else if n > 0 {
-			log.Printf("repaired %d file names under %s", n, root)
-		}
-	}
 	updates := &updatesvc.Service{}
 	app := application.New(application.Options{
 		Name: "Mortar",
@@ -257,9 +249,6 @@ func run() error {
 	profiles.BackupsKept = func() int { return store.Get().BackupsKept }
 	modMeta := &meta.Client{CacheDir: filepath.Join(dataDir, "cache")}
 	componentClient := components.NewClient(&http.Client{Timeout: 30 * time.Second})
-	if _, err := componentClient.Load(context.Background(), modMeta, updateKey); err != nil {
-		log.Printf("components manifest unavailable; using bundled copy: %v", err)
-	}
 	game.ConfigureComponents(componentClient)
 	if g, ok := componentClient.Game("stardew"); ok {
 		nexus.Configure(g.Nexus.Domain, g.Nexus.ID)
@@ -377,17 +366,6 @@ func run() error {
 	}
 	launches.Unlocked = func() { queue.NotifyUnlocked(queueSvc) }
 	nxmSvc.Route = queueSvc.Route
-	// An unreadable profile.json stops collection: its keys are unknown, and their items must not be deleted.
-	if keys, err := profiles.StoreKeys(); err != nil {
-		log.Printf("store collect skipped: %v", err)
-	} else {
-		for g, staged := range queueSvc.StagedKeys() {
-			keys[g] = append(keys[g], staged...)
-		}
-		if err := items.Collect(keys, now); err != nil {
-			log.Printf("store collect: %v", err)
-		}
-	}
 	notifier := notifications.New()
 
 	pick := &picker.Service{}
@@ -548,6 +526,45 @@ func run() error {
 		return w
 	}
 	window = newWindow()
+	go func() {
+		// Mods extracted before zip names were decoded may sit in folders the game cannot open.
+		for _, root := range []string{filepath.Join(dataDir, "store"), filepath.Join(dataDir, "profiles")} {
+			if n, err := archive.RepairNames(root); err != nil {
+				log.Printf("repair names under %s: %v", root, err)
+			} else if n > 0 {
+				log.Printf("repaired %d file names under %s", n, root)
+			}
+		}
+		// An unreadable profile.json stops collection: its keys are unknown, and their items must not be deleted.
+		if keys, err := profiles.StoreKeys(); err != nil {
+			log.Printf("store collect skipped: %v", err)
+		} else {
+			for g, staged := range queueSvc.StagedKeys() {
+				keys[g] = append(keys[g], staged...)
+			}
+			if err := items.Collect(keys, now); err != nil {
+				log.Printf("store collect: %v", err)
+			}
+		}
+	}()
+	go func() {
+		failurePath := filepath.Join(dataDir, "cache", "components-failure")
+		if b, err := os.ReadFile(failurePath); err == nil {
+			if at, err := time.Parse(time.RFC3339Nano, strings.TrimSpace(string(b))); err == nil && time.Since(at) < time.Hour {
+				return
+			}
+		}
+		if _, err := componentClient.Load(context.Background(), modMeta, updateKey); err != nil {
+			log.Printf("components manifest unavailable; using bundled copy: %v", err)
+			_ = os.MkdirAll(filepath.Dir(failurePath), 0o700)
+			_ = os.WriteFile(failurePath, []byte(time.Now().Format(time.RFC3339Nano)), 0o600)
+			return
+		}
+		_ = os.Remove(failurePath)
+		if g, ok := componentClient.Game("stardew"); ok {
+			nexus.Configure(g.Nexus.Domain, g.Nexus.ID)
+		}
+	}()
 	windowClosed = func() bool {
 		windowMu.Lock()
 		defer windowMu.Unlock()
