@@ -2,6 +2,8 @@ package problems
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"io"
 	"log"
@@ -13,9 +15,9 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 	"unicode"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
@@ -167,18 +169,334 @@ func (w cpWhen) holds(present map[string]bool) bool {
 }
 
 type cachedPack struct {
-	mtime    time.Time
-	patches  []cpPatch
-	tokens   []cpTokenDefinition
-	mentions map[string]bool
-	schema   map[string]cpSchema
-	skips    int
+	fingerprint string
+	files       []packFileStamp
+	patches     []cpPatch
+	tokens      []cpTokenDefinition
+	mentions    map[string]bool
+	schema      map[string]cpSchema
+	skips       int
+}
+
+const contentPackParserVersion = 2
+
+type packFileStamp struct {
+	Path    string `json:"path"`
+	Size    int64  `json:"size"`
+	ModTime int64  `json:"mtime"`
+}
+
+type diskPackCache struct {
+	Version int                      `json:"version"`
+	Packs   map[string]diskPackEntry `json:"packs"`
+}
+
+type diskPackEntry struct {
+	Fingerprint string          `json:"fingerprint"`
+	Files       []packFileStamp `json:"files"`
+	Pack        diskCachedPack  `json:"pack"`
+}
+
+type diskCachedPack struct {
+	Patches  []diskPatch           `json:"patches"`
+	Tokens   []diskTokenDefinition `json:"tokens"`
+	Mentions map[string]bool       `json:"mentions"`
+	Schema   map[string]diskSchema `json:"schema"`
+	Skips    int                   `json:"skips"`
+}
+
+type diskPatch struct {
+	Kind          string              `json:"kind"`
+	Target        string              `json:"target"`
+	FromFile      string              `json:"fromFile"`
+	Priority      string              `json:"priority"`
+	PatchMode     string              `json:"patchMode"`
+	When          diskWhen            `json:"when"`
+	Shapes        []diskShape         `json:"shapes"`
+	Spouse        string              `json:"spouse"`
+	Places        map[string][]string `json:"places"`
+	Image         bool                `json:"image"`
+	ImageSource   []byte              `json:"imageSource"`
+	ImageFromArea string              `json:"imageFromArea"`
+	TokenName     string              `json:"tokenName"`
+	TokenValue    string              `json:"tokenValue"`
+}
+
+type diskShape struct {
+	Kind  byte   `json:"kind"`
+	X     int    `json:"x"`
+	Y     int    `json:"y"`
+	W     int    `json:"w"`
+	H     int    `json:"h"`
+	Cells string `json:"cells"`
+	Layer string `json:"layer"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
+	Tiny  bool   `json:"tiny"`
+}
+
+type diskWhen struct {
+	AnyOf   [][]string             `json:"anyOf"`
+	NoneOf  []string               `json:"noneOf"`
+	Config  []diskConfig           `json:"config"`
+	Dynamic []diskDynamicCondition `json:"dynamic"`
+	Flags   []diskFlagCondition    `json:"flags"`
+	Spouse  string                 `json:"spouse"`
+	Places  map[string][]string    `json:"places"`
+}
+
+type diskConfig struct {
+	Field         string   `json:"field"`
+	Values        []string `json:"values"`
+	AllowMultiple bool     `json:"allowMultiple"`
+}
+
+type diskDynamicCondition struct {
+	Name     string   `json:"name"`
+	Values   []string `json:"values"`
+	Contains string   `json:"contains"`
+	Expected bool     `json:"expected"`
+}
+
+type diskFlagCondition struct {
+	Name    string `json:"name"`
+	Present bool   `json:"present"`
+}
+
+type diskTokenDefinition struct {
+	Name  string                     `json:"name"`
+	Value string                     `json:"value"`
+	When  map[string]json.RawMessage `json:"when"`
+}
+
+type diskSchema struct {
+	Key           string   `json:"key"`
+	DefaultValue  string   `json:"defaultValue"`
+	AllowMultiple bool     `json:"allowMultiple"`
+	AllowValues   []string `json:"allowValues"`
+	AllowBlank    bool     `json:"allowBlank"`
+	Description   string   `json:"description"`
+}
+
+var packDiskState struct {
+	sync.Mutex
+	loaded  bool
+	path    string
+	entries map[string]diskPackEntry
+	dirty   bool
 }
 
 type cpTokenDefinition struct {
 	name  string
 	value string
 	when  map[string]json.RawMessage
+}
+
+func diskPackOf(pack cachedPack) diskCachedPack {
+	out := diskCachedPack{
+		Mentions: pack.mentions,
+		Skips:    pack.skips,
+	}
+	if pack.patches != nil {
+		out.Patches = make([]diskPatch, len(pack.patches))
+		for i, patch := range pack.patches {
+			out.Patches[i] = diskPatchOf(patch)
+		}
+	}
+	if pack.tokens != nil {
+		out.Tokens = make([]diskTokenDefinition, len(pack.tokens))
+		for i, token := range pack.tokens {
+			out.Tokens[i] = diskTokenDefinition{Name: token.name, Value: token.value, When: token.when}
+		}
+	}
+	if pack.schema != nil {
+		out.Schema = make(map[string]diskSchema, len(pack.schema))
+		for key, schema := range pack.schema {
+			out.Schema[key] = diskSchema{
+				Key:           schema.key,
+				DefaultValue:  schema.defaultValue,
+				AllowMultiple: schema.allowMultiple,
+				AllowValues:   schema.allowValues,
+				AllowBlank:    schema.allowBlank,
+				Description:   schema.description,
+			}
+		}
+	}
+	return out
+}
+
+func cachedPackOfDisk(disk diskCachedPack, entry diskPackEntry) cachedPack {
+	out := cachedPack{
+		fingerprint: entry.Fingerprint,
+		files:       entry.Files,
+		mentions:    disk.Mentions,
+		schema:      make(map[string]cpSchema, len(disk.Schema)),
+		skips:       disk.Skips,
+	}
+	if disk.Patches != nil {
+		out.patches = make([]cpPatch, len(disk.Patches))
+		for i, patch := range disk.Patches {
+			out.patches[i] = cpPatchOfDisk(patch)
+		}
+	}
+	if disk.Tokens != nil {
+		out.tokens = make([]cpTokenDefinition, len(disk.Tokens))
+		for i, token := range disk.Tokens {
+			out.tokens[i] = cpTokenDefinition{name: token.Name, value: token.Value, when: token.When}
+		}
+	}
+	for key, schema := range disk.Schema {
+		out.schema[key] = cpSchema{
+			key:           schema.Key,
+			defaultValue:  schema.DefaultValue,
+			allowMultiple: schema.AllowMultiple,
+			allowValues:   schema.AllowValues,
+			allowBlank:    schema.AllowBlank,
+			description:   schema.Description,
+		}
+	}
+	if disk.Schema == nil {
+		out.schema = nil
+	}
+	return out
+}
+
+func diskPatchOf(patch cpPatch) diskPatch {
+	out := diskPatch{
+		Kind:          patch.kind,
+		Target:        patch.target,
+		FromFile:      patch.fromFile,
+		Priority:      patch.priority,
+		PatchMode:     patch.patchMode,
+		When:          diskWhenOf(patch.when),
+		Spouse:        patch.spouse,
+		Places:        patch.places,
+		Image:         patch.image,
+		ImageSource:   patch.imageSource,
+		ImageFromArea: patch.imageFromArea,
+		TokenName:     patch.tokenName,
+		TokenValue:    patch.tokenValue,
+	}
+	if patch.shapes != nil {
+		out.Shapes = make([]diskShape, len(patch.shapes))
+		for i, shape := range patch.shapes {
+			out.Shapes[i] = diskShape{
+				Kind:  shape.kind,
+				X:     shape.x,
+				Y:     shape.y,
+				W:     shape.w,
+				H:     shape.h,
+				Cells: shape.cells,
+				Layer: shape.layer,
+				Key:   shape.key,
+				Value: shape.value,
+				Tiny:  shape.tiny,
+			}
+		}
+	}
+	return out
+}
+
+func cpPatchOfDisk(patch diskPatch) cpPatch {
+	out := cpPatch{
+		kind:          patch.Kind,
+		target:        patch.Target,
+		fromFile:      patch.FromFile,
+		priority:      patch.Priority,
+		patchMode:     patch.PatchMode,
+		when:          cpWhenOfDisk(patch.When),
+		spouse:        patch.Spouse,
+		places:        patch.Places,
+		image:         patch.Image,
+		imageSource:   patch.ImageSource,
+		imageFromArea: patch.ImageFromArea,
+		tokenName:     patch.TokenName,
+		tokenValue:    patch.TokenValue,
+	}
+	if patch.Shapes != nil {
+		out.shapes = make([]cpShape, len(patch.Shapes))
+		for i, shape := range patch.Shapes {
+			out.shapes[i] = cpShape{
+				kind:  shape.Kind,
+				x:     shape.X,
+				y:     shape.Y,
+				w:     shape.W,
+				h:     shape.H,
+				cells: shape.Cells,
+				layer: shape.Layer,
+				key:   shape.Key,
+				value: shape.Value,
+				tiny:  shape.Tiny,
+			}
+		}
+	}
+	return out
+}
+
+func diskWhenOf(when cpWhen) diskWhen {
+	out := diskWhen{
+		AnyOf:  when.anyOf,
+		NoneOf: when.noneOf,
+		Spouse: when.spouse,
+		Places: when.places,
+	}
+	if when.config != nil {
+		out.Config = make([]diskConfig, len(when.config))
+		for i, config := range when.config {
+			out.Config[i] = diskConfig{Field: config.field, Values: config.values, AllowMultiple: config.allowMultiple}
+		}
+	}
+	if when.dynamic != nil {
+		out.Dynamic = make([]diskDynamicCondition, len(when.dynamic))
+		for i, condition := range when.dynamic {
+			out.Dynamic[i] = diskDynamicCondition{
+				Name:     condition.name,
+				Values:   condition.values,
+				Contains: condition.contains,
+				Expected: condition.expected,
+			}
+		}
+	}
+	if when.flags != nil {
+		out.Flags = make([]diskFlagCondition, len(when.flags))
+		for i, flag := range when.flags {
+			out.Flags[i] = diskFlagCondition{Name: flag.name, Present: flag.present}
+		}
+	}
+	return out
+}
+
+func cpWhenOfDisk(when diskWhen) cpWhen {
+	out := cpWhen{
+		anyOf:  when.AnyOf,
+		noneOf: when.NoneOf,
+		spouse: when.Spouse,
+		places: when.Places,
+	}
+	if when.Config != nil {
+		out.config = make([]cpConfig, len(when.Config))
+		for i, config := range when.Config {
+			out.config[i] = cpConfig{field: config.Field, values: config.Values, allowMultiple: config.AllowMultiple}
+		}
+	}
+	if when.Dynamic != nil {
+		out.dynamic = make([]cpDynamicCondition, len(when.Dynamic))
+		for i, condition := range when.Dynamic {
+			out.dynamic[i] = cpDynamicCondition{
+				name:     condition.Name,
+				values:   condition.Values,
+				contains: condition.Contains,
+				expected: condition.Expected,
+			}
+		}
+	}
+	if when.Flags != nil {
+		out.flags = make([]cpFlagCondition, len(when.Flags))
+		for i, flag := range when.Flags {
+			out.flags[i] = cpFlagCondition{name: flag.Name, present: flag.Present}
+		}
+	}
+	return out
 }
 
 var packCache sync.Map // folder path -> cachedPack
@@ -203,20 +521,212 @@ func readContentPack(mod Installed) cachedPack {
 		return cachedPack{}
 	}
 	root := filepath.Clean(mod.Folder)
-	info, err := os.Stat(filepath.Join(root, "content.json"))
-	if err != nil {
+	if _, err := os.Stat(filepath.Join(root, "content.json")); err != nil {
 		return cachedPack{}
 	}
 	if c, ok := packCache.Load(root); ok {
 		got, ok := c.(cachedPack)
-		if ok && got.mtime.Equal(info.ModTime()) {
+		if ok && packFingerprintValid(root, got.files, got.fingerprint) {
 			return got
 		}
 	}
-	pack := cachedPack{mtime: info.ModTime(), mentions: map[string]bool{}, schema: readConfigSchema(root)}
+	cachePath := loadPackDiskCache()
+	if cachePath != "" {
+		if entry, ok := diskPackEntryFor(root); ok && packFingerprintValid(root, entry.Files, entry.Fingerprint) {
+			pack := cachedPackOfDisk(entry.Pack, entry)
+			packCache.Store(root, pack)
+			clearDiskPackPayload(root)
+			return pack
+		}
+	}
+	pack := cachedPack{mentions: map[string]bool{}, schema: readConfigSchema(root)}
+	pack.recordPackFile(root, filepath.Join(root, "content.json"))
 	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
+	slices.SortFunc(pack.files, func(a, b packFileStamp) int {
+		return strings.Compare(a.Path, b.Path)
+	})
+	pack.fingerprint = packFilesFingerprint(pack.files)
 	packCache.Store(root, pack)
+	if cachePath != "" {
+		storeDiskPackEntry(root, diskPackEntry{
+			Fingerprint: pack.fingerprint,
+			Files:       slices.Clone(pack.files),
+			Pack:        diskPackOf(pack),
+		})
+	}
 	return pack
+}
+
+func (p *cachedPack) recordPackFile(root, abs string) {
+	info, err := os.Stat(abs)
+	if err != nil {
+		return
+	}
+	relative, err := filepath.Rel(root, abs)
+	if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(os.PathSeparator)) {
+		return
+	}
+	stamp := packFileStamp{
+		Path:    filepath.ToSlash(relative),
+		Size:    info.Size(),
+		ModTime: info.ModTime().UnixNano(),
+	}
+	for i, existing := range p.files {
+		if existing.Path == stamp.Path {
+			p.files[i] = stamp
+			return
+		}
+	}
+	p.files = append(p.files, stamp)
+}
+
+func packFilesFingerprint(files []packFileStamp) string {
+	raw, _ := json.Marshal(files)
+	sum := sha256.Sum256(raw)
+	return hex.EncodeToString(sum[:])
+}
+
+func packFingerprintValid(root string, files []packFileStamp, fingerprint string) bool {
+	if len(files) == 0 || fingerprint == "" {
+		return false
+	}
+	current := make([]packFileStamp, len(files))
+	for i, expected := range files {
+		abs, ok := inside(root, expected.Path)
+		if !ok {
+			return false
+		}
+		info, err := os.Stat(abs)
+		if err != nil || info.Size() != expected.Size || info.ModTime().UnixNano() != expected.ModTime {
+			return false
+		}
+		current[i] = expected
+	}
+	return packFilesFingerprint(current) == fingerprint
+}
+
+func contentPackCachePath() (string, error) {
+	base, err := datadir.Dir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(base, "cache", "problems-content-packs.json"), nil
+}
+
+func loadPackDiskCache() string {
+	path, err := contentPackCachePath()
+	if err != nil {
+		return ""
+	}
+	packDiskState.Lock()
+	defer packDiskState.Unlock()
+	if packDiskState.loaded && packDiskState.path == path {
+		return path
+	}
+	packDiskState.loaded = true
+	packDiskState.path = path
+	packDiskState.entries = map[string]diskPackEntry{}
+	packDiskState.dirty = false
+	raw, err := fsx.ReadFile(path)
+	if err != nil {
+		return path
+	}
+	var cache diskPackCache
+	if json.Unmarshal(raw, &cache) == nil && cache.Version == contentPackParserVersion && cache.Packs != nil {
+		packDiskState.entries = cache.Packs
+	}
+	return path
+}
+
+func diskPackEntryFor(root string) (diskPackEntry, bool) {
+	packDiskState.Lock()
+	defer packDiskState.Unlock()
+	entry, ok := packDiskState.entries[root]
+	return entry, ok
+}
+
+func storeDiskPackEntry(root string, entry diskPackEntry) {
+	packDiskState.Lock()
+	defer packDiskState.Unlock()
+	if packDiskState.entries == nil {
+		packDiskState.entries = map[string]diskPackEntry{}
+	}
+	entry.Pack = diskCachedPack{}
+	packDiskState.entries[root] = entry
+	packDiskState.dirty = true
+}
+
+func clearDiskPackPayload(root string) {
+	packDiskState.Lock()
+	defer packDiskState.Unlock()
+	entry, ok := packDiskState.entries[root]
+	if ok {
+		entry.Pack = diskCachedPack{}
+		packDiskState.entries[root] = entry
+	}
+}
+
+func flushPackDiskCache(mods []Installed) {
+	path := loadPackDiskCache()
+	if path == "" {
+		return
+	}
+	present := map[string]bool{}
+	for _, mod := range mods {
+		if mod.Folder != "" {
+			present[filepath.Clean(mod.Folder)] = true
+		}
+	}
+	packDiskState.Lock()
+	for root := range packDiskState.entries {
+		if !present[root] {
+			delete(packDiskState.entries, root)
+			packDiskState.dirty = true
+		}
+	}
+	if !packDiskState.dirty {
+		packDiskState.Unlock()
+		return
+	}
+	entries := make(map[string]diskPackEntry, len(packDiskState.entries))
+	for root, entry := range packDiskState.entries {
+		if cached, ok := packCache.Load(root); ok {
+			if pack, ok := cached.(cachedPack); ok {
+				entry.Pack = diskPackOf(pack)
+			}
+		}
+		entries[root] = entry
+	}
+	raw, err := json.Marshal(diskPackCache{
+		Version: contentPackParserVersion,
+		Packs:   entries,
+	})
+	if err != nil {
+		packDiskState.Unlock()
+		return
+	}
+	packDiskState.dirty = false
+	packDiskState.Unlock()
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		packDiskState.Lock()
+		packDiskState.dirty = true
+		packDiskState.Unlock()
+		return
+	}
+	if err := os.WriteFile(path, raw, 0o600); err != nil {
+		packDiskState.Lock()
+		packDiskState.dirty = true
+		packDiskState.Unlock()
+		return
+	}
+	packDiskState.Lock()
+	for root, entry := range packDiskState.entries {
+		if _, ok := packCache.Load(root); ok {
+			entry.Pack = diskCachedPack{}
+			packDiskState.entries[root] = entry
+		}
+	}
+	packDiskState.Unlock()
 }
 
 type cpSchema struct {
@@ -314,6 +824,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 	if err != nil {
 		return
 	}
+	pack.recordPackFile(root, abs)
 	var doc struct {
 		Changes       []json.RawMessage `json:"Changes"`
 		DynamicTokens []struct {
@@ -369,6 +880,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 		case strings.EqualFold(action, kindEditImage), strings.EqualFold(action, kindEditMap):
 			kind = "edit"
 			ch.FromFile = contentSourceReference(root, rel, ch.FromFile)
+			recordReferencedPackFiles(root, ch.FromFile, strings.EqualFold(action, kindEditImage), pack)
 			shapes = editShapes(root, ch, strings.EqualFold(action, kindEditImage))
 			if len(shapes) == 0 {
 				kind = "other"
@@ -395,6 +907,28 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 				imageFromArea: string(stripJSONNoise(ch.FromArea)),
 			})
 		}
+	}
+}
+
+func recordReferencedPackFiles(root, rel string, image bool, pack *cachedPack) {
+	rel = strings.TrimSpace(rel)
+	if rel == "" {
+		return
+	}
+	if image {
+		for _, file := range sourceFiles(root, rel) {
+			if abs, ok := inside(root, file); ok {
+				pack.recordPackFile(root, abs)
+			}
+		}
+		return
+	}
+	ext := strings.ToLower(filepath.Ext(rel))
+	if ext != ".tmx" && ext != ".tmj" {
+		return
+	}
+	if abs, ok := inside(root, rel); ok {
+		pack.recordPackFile(root, abs)
 	}
 }
 
@@ -1074,6 +1608,7 @@ func assetConflicts(mods []Installed) []AssetConflict {
 }
 
 func assetConflictResults(mods []Installed) ([]AssetConflict, []SettingHint) {
+	defer flushPackDiskCache(mods)
 	present := map[string]bool{}
 	for _, mod := range mods {
 		if mod.Enabled {

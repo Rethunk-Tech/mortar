@@ -48,7 +48,7 @@ Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_
   - a run is stored when the game goes idle or the launch fails; a launch without mods stores none
 - `trash/`: deleted profiles, kept 30 days; **Delete permanently** and **Empty trash** remove them at once ([Profile operations](#profile-operations)).
 - `backups/`: zips of the Saves folder taken before updates, as many kept as Settings › Updates says (`backupsKept` in `settings.json`, 1 to 50, default 5); one under ten minutes old stands in for a new one when the Saves folder has not changed since. A new zip may have a sibling `<stamp>.json` recording why it was made, `{profile, kind}` with kind `update` (before a mod update, naming the profile) or `restore` (before a restore); older zips have none and show as unknown.
-- `cache/`: API responses, mod pictures and the dataset index.
+- `cache/`: API responses, mod pictures, the dataset index, and Content Patcher scan results.
 - `queue.json`: the download queue's state, without `nxm://` keys.
 - `downloads/<item id>.<ext>`: a download in progress, with `<name>.resume.json` beside it (expected size, `ETag`, source URL and the checksum when the server sent one). A failed or interrupted fetch keeps both; Cancel and Skip delete them.
 - `download-history.json`: every finished queue item, the last 1,000, newest last, written temp then rename.
