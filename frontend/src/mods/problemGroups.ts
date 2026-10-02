@@ -106,12 +106,3 @@ export function assetFixButtonStyle(cosmetic: boolean): {
     ? { variant: 'outlined', color: 'inherit' }
     : { variant: 'contained', color: 'warning' }
 }
-
-export function problemCount(result: Result | null): number {
-  if (!result) {
-    return 0
-  }
-  return problemSections(result)
-    .filter((s) => s.id !== 'cosmetic')
-    .reduce((n, s) => n + s.rows.length, 0)
-}

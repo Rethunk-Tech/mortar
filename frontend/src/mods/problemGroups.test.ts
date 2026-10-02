@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test'
 import type { Result } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import { problemCount, problemSections } from './problemGroups.ts'
+import { problemCount } from './lookup.ts'
+import { problemSections } from './problemGroups.ts'
 
 const emptyResult = (): Result => ({
   duplicates: [],
@@ -94,4 +95,29 @@ test('cosmetic conflicts get their own section and are not counted', () => {
     ['cosmetic', 1],
   ])
   expect(problemCount(result)).toBe(1)
+})
+
+test('dismissed problems are listed but not counted', () => {
+  const result: Result = {
+    ...emptyResult(),
+    dismissed: [
+      {
+        token: 'load\tmaps/greenhouse',
+        assetConflict: {
+          kind: 'load',
+          target: 'maps/greenhouse',
+          packIds: [],
+          names: [],
+          keys: [],
+          winnerId: '',
+          winnerName: '',
+          overridden: [],
+          cosmetic: false,
+          fixes: [],
+        },
+      },
+    ],
+  }
+  expect(problemSections(result).map((s) => s.id)).toEqual(['dismissed'])
+  expect(problemCount(result)).toBe(0)
 })
