@@ -1,8 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Typography } from '@mui/material'
+import { Box, IconButton, Typography } from '@mui/material'
+import { Clipboard } from '@wailsio/runtime'
+import { Copy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { CommandPreview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { PreviewCommand } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 
 const PREVIEW_DEBOUNCE_MS = 300
 
@@ -12,6 +16,10 @@ function shellQuote(value: string): string {
 
 function formatPreview(preview: CommandPreview): string {
   return [...(preview.env ?? []), (preview.argv ?? []).map(shellQuote).join(' ')].join('\n')
+}
+
+function formatShellLine(preview: CommandPreview): string {
+  return [...(preview.env ?? []), (preview.argv ?? []).map(shellQuote).join(' ')].join(' ')
 }
 
 export function LaunchPreview({
@@ -47,11 +55,30 @@ export function LaunchPreview({
       clearTimeout(timer)
     }
   }, [env, gameId, options, prefix, profileId])
+  const copyCommand = () => {
+    Clipboard.SetText(formatShellLine(preview)).then(
+      () => useToasts.getState().push({ kind: 'success', title: t`Command copied` }),
+      reportUnexpected,
+    )
+  }
+
   return (
     <Box sx={{ mt: 1, mb: 1 }}>
-      <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
-        {t`Direct launch preview`}
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+        <Typography sx={{ fontSize: 12, color: 'text.secondary', flex: 1 }}>
+          {t`Direct launch preview`}
+        </Typography>
+        {preview.error ? null : (
+          <IconButton
+            size="small"
+            aria-label={t`Copy the command`}
+            onClick={copyCommand}
+            sx={{ color: 'text.secondary' }}
+          >
+            <Copy size={14} />
+          </IconButton>
+        )}
+      </Box>
       {preview.error ? (
         <Typography color="error" sx={{ fontSize: 12 }}>
           {preview.error}
