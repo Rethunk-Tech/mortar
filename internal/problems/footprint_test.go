@@ -2,8 +2,13 @@ package problems
 
 import (
 	"encoding/json"
+	"image"
+	"image/color"
+	"image/png"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -56,6 +61,67 @@ func TestEditsClash(t *testing.T) {
 func TestAdditiveEditHasNoShape(t *testing.T) {
 	if s := editShapes(t.TempDir(), change(t, `{"AddWarps":["1 2 Town 3 4"],"TextOperations":[{"Operation":"Append"}]}`), false); len(s) != 0 {
 		t.Fatalf("shapes %v", s)
+	}
+}
+
+func TestOpaqueImageShapeMatchesBruteForceCells(t *testing.T) {
+	dir := t.TempDir()
+	img := image.NewNRGBA(image.Rect(0, 0, 48, 40))
+	for y := 0; y < img.Bounds().Dy(); y++ {
+		for x := 0; x < img.Bounds().Dx(); x++ {
+			if (x*7+y*11)%13 < 5 {
+				img.SetNRGBA(x, y, color.NRGBA{R: 255, A: uint8((x+y)%255 + 1)})
+			}
+		}
+	}
+	file, err := os.Create(filepath.Join(dir, "patch.png"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := png.Encode(file, img); err != nil {
+		_ = file.Close()
+		t.Fatal(err)
+	}
+	if err := file.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	from := change(t, `{"FromArea":{"X":3,"Y":5,"Width":37,"Height":29}}`).FromArea
+	got, ok := opaqueImageShape(dir, "patch.png", from, 7, 9)
+	if !ok {
+		t.Fatal("opaque image shape failed")
+	}
+	wantSet := map[string]bool{}
+	for py := 5; py < 34; py++ {
+		for px := 3; px < 40; px++ {
+			_, _, _, alpha := img.At(px, py).RGBA()
+			if alpha > 0 {
+				wantSet[strconv.Itoa((7+px-3)/16)+","+strconv.Itoa((9+py-5)/16)] = true
+			}
+		}
+	}
+	want := make([]string, 0, len(wantSet))
+	for y := 0; y < 4; y++ {
+		for x := 0; x < 3; x++ {
+			cell := strconv.Itoa(x) + "," + strconv.Itoa(y)
+			if wantSet[cell] {
+				want = append(want, cell)
+			}
+		}
+	}
+	wantCells := ";" + strings.Join(want, ";")
+	if got.cells != wantCells {
+		t.Fatalf("cells = %v, want %v", got.cells, wantCells)
+	}
+	seen := map[string]bool{}
+	for cell := range strings.SplitSeq(got.cells, ";") {
+		if cell == "" {
+			continue
+		}
+		if seen[cell] {
+			t.Fatalf("duplicate cell %q in %v", cell, got.cells)
+		}
+		seen[cell] = true
 	}
 }
 

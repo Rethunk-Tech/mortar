@@ -60,12 +60,7 @@ func (s cpShape) overlaps(o cpShape) bool {
 	}
 	if s.cells != "" || o.cells != "" {
 		if s.cells != "" && o.cells != "" {
-			for cell := range strings.SplitSeq(s.cells, ";") {
-				if cell != "" && strings.Contains(o.cells, ";"+cell+";") {
-					return true
-				}
-			}
-			return false
+			return cellSetsOverlap(s.cells, o.cells)
 		}
 		cells, area := s.cells, o
 		if cells == "" {
@@ -95,6 +90,21 @@ func (s cpShape) overlaps(o cpShape) bool {
 	ax, ay, aw, ah := s.area()
 	bx, by, bw, bh := o.area()
 	return ax < bx+bw && bx < ax+aw && ay < by+bh && by < ay+ah
+}
+
+func cellSetsOverlap(a, b string) bool {
+	other := map[string]bool{}
+	for cell := range strings.SplitSeq(b, ";") {
+		if cell != "" {
+			other[cell] = true
+		}
+	}
+	for cell := range strings.SplitSeq(a, ";") {
+		if cell != "" && other[cell] {
+			return true
+		}
+	}
+	return false
 }
 
 func shapesOverlap(a, b []cpShape) bool {
@@ -267,19 +277,51 @@ func opaqueImageShape(root, rel string, fromRaw json.RawMessage, x, y int) (cpSh
 			return cpShape{}, false
 		}
 	}
-	cells := ""
-	for py := max(from.y, bounds.Min.Y); py < min(from.y+from.h, bounds.Max.Y); py++ {
-		for px := max(from.x, bounds.Min.X); px < min(from.x+from.w, bounds.Max.X); px++ {
-			_, _, _, alpha := decoded.At(px, py).RGBA()
-			if alpha > 0 {
-				cell := strconv.Itoa((x+px-from.x)/16) + "," + strconv.Itoa((y+py-from.y)/16)
-				if !strings.Contains(cells, ";"+cell+";") {
-					cells += ";" + cell
-				}
+	minX, maxX := max(from.x, bounds.Min.X), min(from.x+from.w, bounds.Max.X)
+	minY, maxY := max(from.y, bounds.Min.Y), min(from.y+from.h, bounds.Max.Y)
+	if minX >= maxX || minY >= maxY {
+		return cpShape{kind: 'r'}, true
+	}
+	firstCellX := (x + minX - from.x) / 16
+	lastCellX := (x + maxX - 1 - from.x) / 16
+	firstCellY := (y + minY - from.y) / 16
+	lastCellY := (y + maxY - 1 - from.y) / 16
+	width := lastCellX - firstCellX + 1
+	bitmap := make([]bool, width*(lastCellY-firstCellY+1))
+	for py := minY; py < maxY; py++ {
+		for px := minX; px < maxX; px++ {
+			if imageAlpha(decoded, px, py) == 0 {
+				continue
+			}
+			cellX := (x + px - from.x) / 16
+			cellY := (y + py - from.y) / 16
+			bitmap[(cellY-firstCellY)*width+cellX-firstCellX] = true
+		}
+	}
+	var cells strings.Builder
+	for cellY := firstCellY; cellY <= lastCellY; cellY++ {
+		for cellX := firstCellX; cellX <= lastCellX; cellX++ {
+			if bitmap[(cellY-firstCellY)*width+cellX-firstCellX] {
+				cells.WriteByte(';')
+				cells.WriteString(strconv.Itoa(cellX))
+				cells.WriteByte(',')
+				cells.WriteString(strconv.Itoa(cellY))
 			}
 		}
 	}
-	return cpShape{kind: 'r', cells: cells}, true
+	return cpShape{kind: 'r', cells: cells.String()}, true
+}
+
+func imageAlpha(img image.Image, x, y int) uint8 {
+	switch img := img.(type) {
+	case *image.NRGBA:
+		return img.Pix[img.PixOffset(x, y)+3]
+	case *image.RGBA:
+		return img.Pix[img.PixOffset(x, y)+3]
+	default:
+		_, _, _, alpha := img.At(x, y).RGBA()
+		return uint8(alpha >> 8)
+	}
 }
 
 func sourceFiles(root, rel string) []string {
