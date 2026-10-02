@@ -13,6 +13,9 @@ const LICENCE = 'https://github.com/Rethunk-AI/mortar/blob/main/LICENSE'
 
 const body = { color: 'rgba(235,235,240,0.95)' }
 
+// Credits flow into as many columns of at least this width as the pane holds.
+const CREDIT_COLUMN = '260px'
+
 export function About() {
   const { t } = useLingui()
   const game = useNav((s) => routeGame(s.route) ?? '')
@@ -48,9 +51,12 @@ export function About() {
         {t`Fedora 44 default wallpaper (f44-01-night) by the Fedora Design Team, CC-BY-SA-4.0.`}
       </Box>
       <Box sx={{ fontWeight: 600 }}>{t`Credits`}</Box>
-      <Box sx={{ ...body, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <Box sx={{ ...body, columnWidth: CREDIT_COLUMN, columnGap: 4 }}>
         {credits.map((entry) => (
-          <Box key={entry.name} sx={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+          <Box
+            key={entry.name}
+            sx={{ display: 'flex', flexWrap: 'wrap', gap: '6px', mb: '6px', breakInside: 'avoid' }}
+          >
             <Link
               component="button"
               onClick={() => Browser.OpenURL(entry.url).catch(reportUnexpected)}
@@ -64,7 +70,7 @@ export function About() {
       </Box>
       <Box sx={{ fontWeight: 600 }}>{t`Not affiliated`}</Box>
       <Box sx={body}>
-        {t`Stardew Valley is ConcernedApe's. Game art shown in Mortar is read from your own Steam install. Nexus Mods and GitHub content belongs to its authors.`}
+        {t`Stardew Valley is ConcernedApe's. Game art shown in Mortar is read from your own Steam install, or else from Steam's public store images. Nexus Mods and GitHub content belongs to its authors.`}
       </Box>
       <Button
         variant="outlined"
