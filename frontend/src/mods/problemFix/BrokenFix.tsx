@@ -1,0 +1,80 @@
+import { useLingui } from '@lingui/react/macro'
+import { Button } from '@mui/material'
+import { Browser } from '@wailsio/runtime'
+import type { ReactNode } from 'react'
+import { reportUnexpected } from '../../toasts/report.ts'
+import { type Problem, sameId } from '../lookup.ts'
+import { useMods } from '../store.ts'
+import { WhereButtons } from './WhereButtons.tsx'
+import type { WarningButton } from './warningButton.tsx'
+
+export function BrokenFix({
+  problem,
+  button,
+}: {
+  problem: Extract<Problem, { kind: 'broken' }>
+  button: WarningButton
+}) {
+  const { t } = useLingui()
+  const mods = useMods((s) => s.mods)
+  const setEnabled = useMods((s) => s.setEnabled)
+  const dismissAbandoned = useMods((s) => s.dismissAbandoned)
+  const { broken } = problem
+  const mod = mods.find((m) => m.key === broken.key && sameId(m.uniqueId, broken.uniqueId))
+  const where = broken.replacement
+  const replaceName =
+    where?.pageName?.trim() ||
+    where?.github?.trim() ||
+    where?.fileName?.trim() ||
+    (where && where.pageId > 0 ? String(where.pageId) : '')
+  let replace: ReactNode = null
+  if (where && replaceName !== '') {
+    replace =
+      (broken.status === 'obsolete' || broken.status === 'deprecated') && where.url ? (
+        <Button
+          size="small"
+          color="warning"
+          variant="outlined"
+          onClick={() => Browser.OpenURL(where.url).catch(reportUnexpected)}
+          sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        >
+          {t`Open replacement`}
+        </Button>
+      ) : (
+        <WhereButtons where={where} addLabel={t`Replace with ${replaceName}`} />
+      )
+  } else if (where?.url) {
+    replace = (
+      <Button
+        size="small"
+        color="warning"
+        variant="outlined"
+        onClick={() => Browser.OpenURL(where.url).catch(reportUnexpected)}
+        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+      >
+        {t`Open page`}
+      </Button>
+    )
+  }
+  const dismiss =
+    broken.status === 'abandoned' ||
+    broken.status === 'obsolete' ||
+    broken.status === 'deprecated' ? (
+      <Button
+        size="small"
+        color="info"
+        variant="outlined"
+        onClick={() => dismissAbandoned(broken.uniqueId).catch(reportUnexpected)}
+        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+      >
+        {t`Dismiss`}
+      </Button>
+    ) : null
+  return (
+    <>
+      {mod ? button(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected)) : null}
+      {replace}
+      {dismiss}
+    </>
+  )
+}
