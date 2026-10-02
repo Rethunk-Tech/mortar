@@ -31,6 +31,7 @@ import {
   SetNexusPreferredDownloadServer,
   SetNxmRedirectOtherGames,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { useProfiles } from '../../profiles/store.ts'
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { NexusMeter } from '../NexusMeter.tsx'
@@ -71,17 +72,21 @@ function NexusModsSignedIn({
   const [trackedCount, setTrackedCount] = useState<number | null>(null)
   const [confirming, setConfirming] = useState<boolean | null>(null)
   const [busy, setBusy] = useState(false)
+  // The game last opened; untracking is per game, and Settings has no game of its own.
+  const game = useProfiles((s) => s.game)
 
   useEffect(() => {
-    TrackedCount('stardewvalley').then(setTrackedCount).catch(reportUnexpected)
-  }, [])
+    if (game) {
+      TrackedCount(game.id).then(setTrackedCount).catch(reportUnexpected)
+    }
+  }, [game])
 
   const untrack = () => {
-    if (confirming === null) {
+    if (confirming === null || !game) {
       return
     }
     setBusy(true)
-    UntrackAll('stardewvalley', confirming)
+    UntrackAll(game.id, confirming)
       .then((result) => {
         const toast = {
           kind: result.stoppedForLimit ? 'warning' : 'success',
@@ -137,7 +142,7 @@ function NexusModsSignedIn({
             disabled={busy || trackedCount === null || trackedCount === 0}
             onClick={() => setConfirming(false)}
           >
-            {t`Untrack every Stardew Valley mod…`}
+            {t`Untrack every ${game?.name ?? ''} mod…`}
           </Button>
           <Button
             variant="outlined"
@@ -223,7 +228,9 @@ function NexusModsSignedIn({
         <DialogTitle>{t`Untrack mods?`}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {t`Untrack ${trackedCount ?? 0} mods on Nexus? Nexus has no undo for this.`}
+            {confirming
+              ? t`Untrack the ${game?.name ?? ''} mods none of your profiles use, out of ${trackedCount ?? 0} tracked? Nexus has no undo for this.`
+              : t`Untrack all ${trackedCount ?? 0} tracked ${game?.name ?? ''} mods on Nexus? Nexus has no undo for this.`}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

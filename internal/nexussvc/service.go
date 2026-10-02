@@ -5,7 +5,10 @@ package nexussvc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/components"
 
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
@@ -44,6 +47,8 @@ type Service struct {
 	prompts *promptStore
 	// App is set after application.New so sign-in and sign-out can emit events.
 	App *application.App
+	// Profiles is the app's profile store, read when untracking only the mods no profile uses.
+	Profiles *profile.Store
 }
 
 // NewService keeps mod page details in m's cache.
@@ -150,35 +155,39 @@ func (s *Service) TrackedMods(ctx context.Context) ([]nexus.TrackedMod, error) {
 	return c.TrackedMods(ctx)
 }
 
-// TrackedCount returns the number of tracked mods for a game's Nexus domain.
-func (s *Service) TrackedCount(ctx context.Context, game string) (int, error) {
+// trackedFor returns the signed-in user's tracked Nexus mod ids for a Mortar game.
+func (s *Service) trackedFor(ctx context.Context, gameID string) ([]int, error) {
+	info, ok := components.BundledGame(gameID)
+	if !ok || info.Nexus.Domain == "" {
+		return nil, fmt.Errorf("game %q has no Nexus domain", gameID)
+	}
 	mods, err := s.TrackedMods(ctx)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	count := 0
+	var ids []int
 	for _, mod := range mods {
-		if mod.DomainName == game {
-			count++
+		if strings.EqualFold(mod.DomainName, info.Nexus.Domain) {
+			ids = append(ids, mod.ModID)
 		}
 	}
-	return count, nil
+	return ids, nil
+}
+
+// TrackedCount returns how many of a Mortar game's mods the user tracks on Nexus.
+func (s *Service) TrackedCount(ctx context.Context, gameID string) (int, error) {
+	ids, err := s.trackedFor(ctx, gameID)
+	return len(ids), err
 }
 
 // UntrackAll removes a game's tracked mods, optionally retaining mods used by any profile.
-func (s *Service) UntrackAll(ctx context.Context, game string, onlyNotInProfiles bool) (UntrackAllResult, error) {
-	mods, err := s.TrackedMods(ctx)
+func (s *Service) UntrackAll(ctx context.Context, gameID string, onlyNotInProfiles bool) (UntrackAllResult, error) {
+	targets, err := s.trackedFor(ctx, gameID)
 	if err != nil {
 		return UntrackAllResult{}, err
 	}
-	targets := make([]int, 0, len(mods))
-	for _, mod := range mods {
-		if mod.DomainName == game {
-			targets = append(targets, mod.ModID)
-		}
-	}
 	if onlyNotInProfiles {
-		used, err := profileModIDs(game)
+		used, err := s.profileModIDs(gameID)
 		if err != nil {
 			return UntrackAllResult{}, err
 		}
@@ -210,12 +219,12 @@ func (s *Service) UntrackAll(ctx context.Context, game string, onlyNotInProfiles
 	return result, nil
 }
 
-func profileModIDs(game string) (map[int]bool, error) {
-	store, err := profile.Open(nil)
-	if err != nil {
-		return nil, err
+func (s *Service) profileModIDs(gameID string) (map[int]bool, error) {
+	// Without the store every tracked mod would look unused; refuse rather than untrack mods profiles hold.
+	if s.Profiles == nil {
+		return nil, errors.New("profiles are unavailable")
 	}
-	profiles, err := store.List(game)
+	profiles, err := s.Profiles.List(gameID)
 	if err != nil {
 		return nil, err
 	}

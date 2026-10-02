@@ -67,12 +67,15 @@ func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
 	if err := s.Track(ctx, 541); err != nil {
 		t.Fatal(err)
 	}
-	if count, err := s.TrackedCount(ctx, "stardewvalley"); err != nil || count != 1 {
+	if count, err := s.TrackedCount(ctx, "stardew"); err != nil || count != 1 {
 		t.Fatalf("tracked count = %d, %v", count, err)
 	}
-	result, err := s.UntrackAll(ctx, "stardewvalley", false)
+	result, err := s.UntrackAll(ctx, "stardew", false)
 	if err != nil || result.Untracked != 1 || result.Remaining != 0 || result.StoppedForLimit {
 		t.Fatalf("untrack all = %+v, %v", result, err)
+	}
+	if _, err := s.UntrackAll(ctx, "stardew", true); err == nil {
+		t.Fatal("untracking only unused mods without the profile store must refuse, not untrack everything")
 	}
 }
 
