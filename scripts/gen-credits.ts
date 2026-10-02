@@ -260,7 +260,8 @@ function buildCredits(): CreditEntry[] {
     },
   ]
 
-  return [...extra, ...npm, ...go]
+  const excluded = new Set(['Mortar', 'Mortar SMAPI Bridge', 'SMAPI', 'BepInEx'])
+  return [...extra, ...npm, ...go].filter((entry) => !excluded.has(entry.name))
 }
 
 function main(): void {

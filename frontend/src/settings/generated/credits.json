@@ -1,20 +1,5 @@
 [
   {
-    "name": "Mortar",
-    "licence": "AGPL-3.0",
-    "url": "https://github.com/Rethunk-AI/mortar"
-  },
-  {
-    "name": "Mortar SMAPI Bridge",
-    "licence": "AGPL-3.0",
-    "url": "https://github.com/Rethunk-AI/mortar-smapi-bridge"
-  },
-  {
-    "name": "SMAPI",
-    "licence": "LGPL-3.0",
-    "url": "https://smapi.io/"
-  },
-  {
     "name": "Minigalaxy icon",
     "licence": "GPL-3.0",
     "url": "https://github.com/sharkwouter/minigalaxy"

@@ -78,10 +78,6 @@ export function About() {
           </Box>
         ))}
       </Box>
-      <Box sx={{ fontWeight: 600 }}>{t`Not affiliated`}</Box>
-      <Box sx={body}>
-        {t`Stardew Valley is ConcernedApe's. Game art shown in Mortar is read from your own Steam install, or else from Steam's public store images. Nexus Mods and GitHub content belongs to its authors.`}
-      </Box>
       <Button
         variant="outlined"
         color="inherit"

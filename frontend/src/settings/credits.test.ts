@@ -25,9 +25,6 @@ test('credits list has name, licence, and project url on every entry', () => {
   expect(isCreditList(credits)).toBe(true)
   const names = new Set(credits.map((e) => e.name))
   for (const n of [
-    'Mortar',
-    'Mortar SMAPI Bridge',
-    'SMAPI',
     'Fedora 44 default wallpaper (f44-01-night)',
     '@fontsource/open-sans',
     'lucide-react',
@@ -40,8 +37,6 @@ test('credits list has name, licence, and project url on every entry', () => {
   ]) {
     expect(names.has(n)).toBe(true)
   }
-  expect(credits.find((e) => e.name === 'Mortar')?.licence).toBe('AGPL-3.0')
-  expect(credits.find((e) => e.name === 'SMAPI')?.licence).toBe('LGPL-3.0')
   expect(credits.find((e) => e.name === '@fontsource/open-sans')?.licence).toBe('OFL-1.1')
   expect(credits.find((e) => e.name === 'lucide-react')?.licence).toBe('ISC')
 })
