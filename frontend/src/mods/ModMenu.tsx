@@ -17,6 +17,7 @@ import {
   FolderOpen,
   FolderTree,
   Info,
+  PackagePlus,
   Pin,
   PinOff,
   Power,
@@ -36,6 +37,7 @@ import {
   OpenConsolePath,
   RemoveEntry,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { AddToBundleDialog } from '../bundles/dialogs.tsx'
 import { useFomod } from '../fomod/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -125,6 +127,7 @@ function ModActionItems({
   profile,
   onSetCategory,
   onAlsoAdd,
+  onAddBundle,
   labels,
 }: {
   actions: ModAction[]
@@ -136,7 +139,8 @@ function ModActionItems({
   profile: Profile | undefined
   onSetCategory: () => void
   onAlsoAdd: () => void
-  labels: { manifest: string; category: string; alsoAdd: string }
+  onAddBundle: () => void
+  labels: { manifest: string; category: string; alsoAdd: string; addBundle: string }
 }) {
   return actions.flatMap((a) => [
     a === 'remove' ? <Divider key="divider" /> : null,
@@ -205,6 +209,21 @@ function ModActionItems({
         <ListItemText>{labels.alsoAdd}</ListItemText>
       </MenuItem>
     ) : null,
+    a === 'files' ? (
+      <MenuItem
+        key="add-bundle"
+        disabled={locked}
+        onClick={() => {
+          close()
+          onAddBundle()
+        }}
+      >
+        <ListItemIcon sx={{ color: 'inherit' }}>
+          <PackagePlus size={ICON_SIZE} />
+        </ListItemIcon>
+        <ListItemText>{labels.addBundle}</ListItemText>
+      </MenuItem>
+    ) : null,
   ])
 }
 
@@ -213,12 +232,14 @@ function ModMenuItems({
   close,
   onSetCategory,
   onAlsoAdd,
+  onAddBundle,
   onRemoveOther,
 }: {
   mod: Mod
   close: () => void
   onSetCategory: () => void
   onAlsoAdd: () => void
+  onAddBundle: () => void
   onRemoveOther: () => void
 }) {
   const { t } = useLingui()
@@ -305,10 +326,12 @@ function ModMenuItems({
       profile,
       onSetCategory,
       onAlsoAdd,
+      onAddBundle,
       labels: {
         manifest: t`Open manifest.json`,
         category: t`Set category…`,
         alsoAdd: t`Also add to…`,
+        addBundle: t`Add to bundle…`,
       },
     }),
     <RemoveOtherMenuItem
@@ -337,6 +360,7 @@ function ModActionMenu({
     profile === undefined ? '' : (byId[nexusIdOf(profile, mod)]?.details?.category ?? '')
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [alsoOpen, setAlsoOpen] = useState(false)
+  const [bundleOpen, setBundleOpen] = useState(false)
   const [removeOtherOpen, setRemoveOtherOpen] = useState(false)
   const game = useProfiles((s) => s.game?.id ?? '')
   const currentProfileId = useProfiles((s) => s.openId)
@@ -355,6 +379,7 @@ function ModActionMenu({
           close={onClose}
           onSetCategory={() => setCategoryOpen(true)}
           onAlsoAdd={() => setAlsoOpen(true)}
+          onAddBundle={() => setBundleOpen(true)}
           onRemoveOther={() => setRemoveOtherOpen(true)}
         />
       </Menu>
@@ -395,6 +420,13 @@ function ModActionMenu({
           await Promise.all(profiles.map((other) => RemoveEntry(game, other.id, mod.key)))
           useToasts.getState().push({ kind: 'success', title: t`Mods removed from other profiles` })
         }}
+      />
+      <AddToBundleDialog
+        open={bundleOpen}
+        onClose={() => setBundleOpen(false)}
+        game={game}
+        profileId={currentProfileId}
+        uniqueIds={[mod.uniqueId]}
       />
     </>
   )

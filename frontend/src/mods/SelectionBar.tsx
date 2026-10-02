@@ -1,13 +1,16 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { Power, PowerOff, Share2, Trash2, X } from 'lucide-react'
+import { PackagePlus, Power, PowerOff, Share2, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
+import { Create } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { CopyMods } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { BundleNameDialog } from '../bundles/dialogs.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { openShare } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { modId } from './lookup.ts'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { useSelection } from './selection.ts'
@@ -24,6 +27,7 @@ export function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod
   const askRemove = useMods((s) => s.askRemove)
   const locked = useLocked()
   const [alsoOpen, setAlsoOpen] = useState(false)
+  const [saveOpen, setSaveOpen] = useState(false)
   if (ids.length < 2) {
     return null
   }
@@ -77,6 +81,16 @@ export function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod
         <Button
           size="small"
           variant="outlined"
+          disabled={locked}
+          startIcon={<PackagePlus size={15} />}
+          onClick={() => setSaveOpen(true)}
+          sx={noWrap}
+        >
+          {t`Save as bundle…`}
+        </Button>
+        <Button
+          size="small"
+          variant="outlined"
           color="error"
           disabled={locked}
           startIcon={<Trash2 size={15} />}
@@ -98,6 +112,20 @@ export function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod
           {t`Clear`}
         </Button>
       </Box>
+      <BundleNameDialog
+        open={saveOpen}
+        title={t`Save selection as bundle`}
+        submitLabel={t`Save`}
+        errorTitle={t`Could not create the bundle`}
+        onClose={() => setSaveOpen(false)}
+        onSubmit={async (name) => {
+          const game = useProfiles.getState().game?.id ?? ''
+          const created = await Create(game, name, profileId, [
+            ...new Set(selected.map((mod) => mod.uniqueId)),
+          ])
+          useToasts.getState().push({ kind: 'success', title: t`Created ${created.name}` })
+        }}
+      />
       <OtherProfilesDialog
         open={alsoOpen}
         onClose={() => setAlsoOpen(false)}

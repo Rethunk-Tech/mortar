@@ -21,6 +21,7 @@ import {
   History,
   ImageOff,
   ImagePlus,
+  PackagePlus,
   SquareArrowOutUpRight,
   Trash2,
   Users,
@@ -34,6 +35,8 @@ import {
   Remove as RemoveShortcut,
   Exists as ShortcutExists,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/shortcut/service.ts'
+import { ApplyBundleDialog } from '../bundles/dialogs.tsx'
+import { useMods } from '../mods/store.ts'
 import { CompareDialog, PickCompareDialog } from '../profiles/CompareDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { openImport } from '../share/store.ts'
@@ -238,11 +241,13 @@ export function MoreMenuItems({
 }) {
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
+  const currentGame = useProfiles((s) => s.game)
   const duplicate = useProfiles((s) => s.duplicate)
   const setHidden = useProfiles((s) => s.setHidden)
   const [compareFrom, setCompareFrom] = useState<Profile | null>(null)
   const [compare, setCompare] = useState<{ a: Profile; b: Profile } | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [bundleOpen, setBundleOpen] = useState(false)
   return (
     <>
       <ProfileMenuItem
@@ -259,6 +264,15 @@ export function MoreMenuItems({
         onClick={() => {
           close()
           useProfiles.getState().exportProfile(profile.id).catch(reportUnexpected)
+        }}
+      />
+      <ProfileMenuItem
+        icon={<PackagePlus size={16} />}
+        label={t`Add a bundle…`}
+        disabled={!currentGame}
+        onClick={() => {
+          close()
+          setBundleOpen(true)
         }}
       />
       <ProfileMenuItem
@@ -322,6 +336,29 @@ export function MoreMenuItems({
         onClose={() => setCompare(null)}
       />
       <DeleteProfileDialog profile={profile} open={deleting} onClose={() => setDeleting(false)} />
+      <ApplyBundleDialog
+        open={bundleOpen}
+        game={currentGame?.id ?? ''}
+        profileName={profile.name}
+        profileId={profile.id}
+        onClose={() => setBundleOpen(false)}
+        onApplied={(result) => {
+          useProfiles.getState().replace(result.profile)
+          if (useProfiles.getState().openId === profile.id) {
+            useMods.getState().load().catch(reportUnexpected)
+          }
+          const missing = result.missing ?? []
+          const added = t`${result.added} mods added`
+          useToasts.getState().push({
+            kind: 'success',
+            title: t`Bundle added`,
+            body:
+              missing.length > 0
+                ? `${added}\n${t`Not in Mortar's store: ${missing.join(', ')}`}`
+                : added,
+          })
+        }}
+      />
     </>
   )
 }

@@ -34,6 +34,7 @@ import type {
   Profile,
   TrashItem,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { BundlesSection } from '../bundles/BundlesSection.tsx'
 import { compact } from '../game/compact.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { useNav } from '../nav/store.ts'
@@ -378,7 +379,10 @@ export function ProfilesPage() {
             </DndContext>
           )}
         </Box>
-        <Trash />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <BundlesSection game={game} profiles={profiles} />
+          <Trash />
+        </Box>
       </Box>
       <NewProfileDialog open={creating} onClose={() => setCreating(false)} />
       <GameModsDialog

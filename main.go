@@ -15,6 +15,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/backdrop"
 	"github.com/Rethunk-AI/mortar/internal/bisect"
+	"github.com/Rethunk-AI/mortar/internal/bundles"
 	"github.com/Rethunk-AI/mortar/internal/cli"
 	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/control"
@@ -265,6 +266,7 @@ func run() error {
 
 	nexusClient := nexus.New(version)
 	nexusSvc := nexussvc.NewService(store, nexusClient, modMeta)
+	nexusSvc.Profiles = profiles
 
 	exe, err := os.Executable()
 	if err != nil {
@@ -374,6 +376,7 @@ func run() error {
 	pick := &picker.Service{}
 	profileSvc := profile.NewService(profiles, home, store)
 	profileSvc.Version = version
+	bundlesSvc := bundles.NewService(profiles, dataDir)
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
 	problemsSvc.Runs = launches
 	supportSvc := support.NewService(version, problemsSvc.Environment, home, profiles.ModsDir)
@@ -432,6 +435,7 @@ func run() error {
 	for _, s := range []application.Service{
 		application.NewService(svc), application.NewService(gamesSvc),
 		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
+		application.NewService(bundlesSvc),
 		application.NewService(savesSvc), application.NewService(plays), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
 		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc),
 		application.NewService(supportSvc), application.NewService(updates), application.NewService(bisectSvc),
