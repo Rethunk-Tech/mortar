@@ -24,8 +24,12 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   IconButton,
   InputAdornment,
+  ListItemIcon,
+  Menu,
+  MenuItem,
   TextField,
   Tooltip,
   Typography,
@@ -40,7 +44,8 @@ import {
   Search,
   Trash2,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
+import type { SourceInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/migrate/models.ts'
 import type {
   Profile,
   TrashItem,
@@ -53,9 +58,11 @@ import { openImport } from '../share/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
-import { ExternalImportMenu } from './ExternalImportMenu.tsx'
+import { ExternalImportMenuItems, ExternalImportProfileDialog } from './ExternalImportMenu.tsx'
+import { useExternalImportSources } from './externalImportSources.ts'
 import { findModInProfiles, openModInProfile } from './findMod.ts'
 import { GameModsDialog } from './GameModsDialog.tsx'
+import { shouldShowExternalImportDivider } from './importMenu.ts'
 import { ProfileRow } from './ProfileRow.tsx'
 import { useProfiles } from './store.ts'
 
@@ -257,6 +264,11 @@ function ProfilesHeader({
   onCreate: () => void
 }) {
   const { t } = useLingui()
+  const importMenuId = useId()
+  const externalSources = useExternalImportSources(game)
+  const [importAnchor, setImportAnchor] = useState<HTMLElement | null>(null)
+  const [externalSource, setExternalSource] = useState<SourceInfo | null>(null)
+  const closeImportMenu = () => setImportAnchor(null)
   return (
     <Box
       sx={{
@@ -287,31 +299,68 @@ function ProfilesHeader({
       <Button
         variant="outlined"
         color="inherit"
-        startIcon={<FolderInput size={16} />}
-        onClick={onImportGame}
-        sx={{ height: 40, px: 2, fontSize: 14, whiteSpace: 'nowrap' }}
-      >
-        {t`Import from the game's Mods folder`}
-      </Button>
-      <Button
-        variant="outlined"
-        color="inherit"
         startIcon={<Download size={16} />}
-        onClick={onImport}
+        aria-haspopup="menu"
+        aria-expanded={importAnchor !== null}
+        aria-controls={importMenuId}
+        onClick={(event) => setImportAnchor(event.currentTarget)}
         sx={{ height: 40, px: 2, fontSize: 14, whiteSpace: 'nowrap' }}
       >
         {t`Import`}
       </Button>
-      <ExternalImportMenu game={game} />
-      <Button
-        variant="outlined"
-        color="inherit"
-        startIcon={<FileUp size={16} />}
-        onClick={onRestoreZip}
-        sx={{ height: 40, px: 2, fontSize: 14, whiteSpace: 'nowrap' }}
+      <Menu
+        id={importMenuId}
+        anchorEl={importAnchor}
+        open={importAnchor !== null}
+        onClose={closeImportMenu}
       >
-        {t`Restore from zip…`}
-      </Button>
+        <MenuItem
+          onClick={() => {
+            closeImportMenu()
+            onImportGame()
+          }}
+        >
+          <ListItemIcon sx={{ color: 'inherit' }}>
+            <FolderInput size={16} aria-hidden={true} />
+          </ListItemIcon>
+          {t`From the Mods folder`}
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            closeImportMenu()
+            onImport()
+          }}
+        >
+          <ListItemIcon sx={{ color: 'inherit' }}>
+            <Download size={16} aria-hidden={true} />
+          </ListItemIcon>
+          {t`From a link or file…`}
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            closeImportMenu()
+            onRestoreZip()
+          }}
+        >
+          <ListItemIcon sx={{ color: 'inherit' }}>
+            <FileUp size={16} aria-hidden={true} />
+          </ListItemIcon>
+          {t`From a backup…`}
+        </MenuItem>
+        {shouldShowExternalImportDivider(externalSources.length) ? <Divider /> : null}
+        <ExternalImportMenuItems
+          sources={externalSources}
+          onPick={(source) => {
+            closeImportMenu()
+            setExternalSource(source)
+          }}
+        />
+      </Menu>
+      <ExternalImportProfileDialog
+        game={game}
+        source={externalSource}
+        onClose={() => setExternalSource(null)}
+      />
       <Button
         variant="contained"
         startIcon={<Plus size={16} />}
