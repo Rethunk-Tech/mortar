@@ -81,7 +81,9 @@ function Body({ request }: { request: ImportRequest }) {
             whiteSpace: 'nowrap',
           }}
         >
-          {t`Import profile from…`}
+          {flow.external
+            ? t`Import from ${SOURCE_NAMES[flow.external.source] ?? flow.external.source}`
+            : t`Import profile from…`}
         </Typography>
         <Tabs
           value={flow.tab}
@@ -93,6 +95,8 @@ function Body({ request }: { request: ImportRequest }) {
           sx={{
             flexGrow: 1,
             minHeight: 46,
+            // Another mod manager's profile has no link or file to switch to.
+            visibility: flow.external ? 'hidden' : 'visible',
             '& .MuiTab-root': {
               flex: 1,
               maxWidth: 'none',
@@ -153,6 +157,9 @@ function Body({ request }: { request: ImportRequest }) {
     </Box>
   )
 }
+
+// SOURCE_NAMES are the product names of the mod managers Mortar imports profiles from, keyed by migrate's source kind.
+const SOURCE_NAMES: Record<string, string> = { stardrop: 'Stardrop', vortex: 'Vortex' }
 
 export function ImportDialog() {
   const request = useImportDialog((s) => s.request)

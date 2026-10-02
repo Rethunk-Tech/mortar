@@ -192,6 +192,9 @@ func folderMods(modsPath string) ([]folderMod, error) {
 			return nil, err
 		}
 		for _, item := range mods {
+			if manifest.LoaderManaged(item.UniqueID) {
+				continue
+			}
 			out = append(out, folderMod{Mod: item, Path: path})
 		}
 	}

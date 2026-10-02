@@ -219,6 +219,7 @@ export function useImportFlow(
   }
 
   return {
+    external,
     tab,
     setTab,
     text,

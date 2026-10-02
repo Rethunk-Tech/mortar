@@ -92,14 +92,6 @@ func bundledFolder(name string) string {
 	return ""
 }
 
-func bundledUniqueID(id string) bool {
-	switch strings.ToLower(id) {
-	case "smapi.consolecommands", "smapi.savebackup", "rethunk.mortarsmapibridge":
-		return true
-	}
-	return false
-}
-
 func nexusUpdateKey(key string) (int, bool) {
 	site, rest, ok := strings.Cut(key, ":")
 	if !ok || !strings.EqualFold(strings.TrimSpace(site), "nexus") {
@@ -189,7 +181,7 @@ func classifyFolder(dir, name string) (gameModSlot, bool) {
 	}
 	allBundled := true
 	for _, mod := range mods {
-		if !bundledUniqueID(mod.UniqueID) {
+		if !manifest.LoaderManaged(mod.UniqueID) {
 			allBundled = false
 			break
 		}

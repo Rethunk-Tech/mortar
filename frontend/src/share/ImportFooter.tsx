@@ -36,6 +36,10 @@ export function ImportFooter({
   const { t } = useLingui()
   const needsSignIn = summary.fromNexus > 0 && !signedIn
   const canRun = !(flow.busy || needsSignIn)
+  let runLabel = flow.tab === 'file' ? t`New profile from file` : t`New profile from link`
+  if (flow.external) {
+    runLabel = t`New profile`
+  }
   const [askReplace, setAskReplace] = useState(false)
   const targetId = useImportDialog((s) => s.request?.profileId ?? '')
   const targetLocked = isLocked(
@@ -120,7 +124,7 @@ export function ImportFooter({
           }}
           sx={{ height: 40 }}
         >
-          {flow.tab === 'file' ? t`New profile from file` : t`New profile from link`}
+          {runLabel}
         </Button>
       </Box>
       <Dialog

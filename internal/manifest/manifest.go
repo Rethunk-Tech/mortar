@@ -284,3 +284,13 @@ func Scan(root string) ([]Mod, error) {
 	}
 	return mods, walk(root, ".")
 }
+
+// LoaderManaged reports whether a mod is installed and kept current by SMAPI or Mortar itself, so a profile never
+// lists, imports or downloads it as one of its own mods.
+func LoaderManaged(uniqueID string) bool {
+	switch strings.ToLower(uniqueID) {
+	case "smapi.consolecommands", "smapi.savebackup", "rethunk.mortarsmapibridge":
+		return true
+	}
+	return false
+}

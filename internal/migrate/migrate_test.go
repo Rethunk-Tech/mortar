@@ -1,6 +1,7 @@
 package migrate
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -69,5 +70,25 @@ func TestStardropProfileCarriesItsOwnConfigCopy(t *testing.T) {
 	}
 	if len(preview.Mods) != 1 || !preview.Mods[0].Enabled || string(preview.Mods[0].Config) != `{ "Volume": 3 }` {
 		t.Fatalf("mods = %#v", preview.Mods)
+	}
+}
+
+func TestFolderModsSkipsModsSMAPIInstallsItself(t *testing.T) {
+	dir := t.TempDir()
+	for name, id := range map[string]string{"ConsoleCommands": "SMAPI.ConsoleCommands", "Real": "Someone.Real"} {
+		if err := os.MkdirAll(filepath.Join(dir, name), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		body := `{"Name":"` + name + `","UniqueID":"` + id + `","Version":"1.0.0"}`
+		if err := os.WriteFile(filepath.Join(dir, name, "manifest.json"), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	mods, err := folderMods(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(mods) != 1 || mods[0].UniqueID != "Someone.Real" {
+		t.Fatalf("mods = %+v, want only Someone.Real", mods)
 	}
 }
