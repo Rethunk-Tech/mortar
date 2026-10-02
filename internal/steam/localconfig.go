@@ -168,5 +168,8 @@ func (s Steam) SetLaunchOptions(appID string, merge func(current string) string)
 	if err != nil {
 		return "", err
 	}
-	return value, fsx.WriteFile(path, next, info.Mode().Perm())
+	if err := backupBeforeEdit(path, next, info.Mode().Perm()); err != nil {
+		return "", err
+	}
+	return value, fsx.AtomicWriteFile(path, next, info.Mode().Perm())
 }

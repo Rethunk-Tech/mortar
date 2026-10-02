@@ -195,7 +195,10 @@ func (s Steam) AddShortcut(sc Shortcut) (bool, error) {
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return false, err
 	}
-	if err := fsx.WriteFile(path, next, 0o600); err != nil {
+	if err := backupBeforeEdit(path, next, 0o600); err != nil {
+		return false, err
+	}
+	if err := fsx.AtomicWriteFile(path, next, 0o600); err != nil {
 		return false, err
 	}
 	if err := writeGrid(dir, shortcutAppID(quoted(sc.Exe), sc.Name), sc.Cover); err != nil {
