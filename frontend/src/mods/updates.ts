@@ -28,17 +28,21 @@ const inFlight = new Map<string, Promise<UpdatesResult>>()
 function loadUpdates(game: string, profile: string): Promise<UpdatesResult> {
   const key = `${game}/${profile}`
   const existing = inFlight.get(key)
-  if (existing) {
+  if (existing !== undefined) {
     return existing
   }
   const promise = Updates(game, profile)
   inFlight.set(key, promise)
-  void promise.then(
+  promise.then(
     () => {
-      if (inFlight.get(key) === promise) inFlight.delete(key)
+      if (inFlight.get(key) === promise) {
+        inFlight.delete(key)
+      }
     },
     () => {
-      if (inFlight.get(key) === promise) inFlight.delete(key)
+      if (inFlight.get(key) === promise) {
+        inFlight.delete(key)
+      }
     },
   )
   return promise
