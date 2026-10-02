@@ -74,7 +74,8 @@ func TestOpaqueImageShapeMatchesBruteForceCells(t *testing.T) {
 			}
 		}
 	}
-	file, err := os.Create(filepath.Join(dir, "patch.png"))
+	// The test controls dir with t.TempDir, so this path cannot escape the sandbox.
+	file, err := os.Create(filepath.Join(dir, "patch.png")) //nolint:gosec // dir is t.TempDir
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,8 +102,8 @@ func TestOpaqueImageShapeMatchesBruteForceCells(t *testing.T) {
 		}
 	}
 	want := make([]string, 0, len(wantSet))
-	for y := 0; y < 4; y++ {
-		for x := 0; x < 3; x++ {
+	for y := range 4 {
+		for x := range 3 {
 			cell := strconv.Itoa(x) + "," + strconv.Itoa(y)
 			if wantSet[cell] {
 				want = append(want, cell)
@@ -122,6 +123,25 @@ func TestOpaqueImageShapeMatchesBruteForceCells(t *testing.T) {
 			t.Fatalf("duplicate cell %q in %v", cell, got.cells)
 		}
 		seen[cell] = true
+	}
+	full, ok := opaqueImageShape(dir, "patch.png", nil, 7, 9)
+	if !ok || full.cells == got.cells {
+		t.Fatalf("full-area cache key did not preserve the requested area: %q / %q", full.cells, got.cells)
+	}
+	cacheEntries := 0
+	cacheValuesAreCells := true
+	prefix := filepath.Join(dir, "patch.png") + "\x00"
+	pngShapeCache.Range(func(key, value any) bool {
+		keyString, ok := key.(string)
+		if ok && strings.HasPrefix(keyString, prefix) {
+			cacheEntries++
+			_, valueIsCells := value.(string)
+			cacheValuesAreCells = cacheValuesAreCells && valueIsCells
+		}
+		return true
+	})
+	if cacheEntries != 2 || !cacheValuesAreCells {
+		t.Fatalf("PNG cache entries = %d, cells-only values = %v", cacheEntries, cacheValuesAreCells)
 	}
 }
 

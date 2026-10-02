@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"image"
+	"image/color"
 	"image/png"
 	"io"
 	"maps"
@@ -252,30 +253,38 @@ func opaqueImageShape(root, rel string, fromRaw json.RawMessage, x, y int) (cpSh
 	if err != nil {
 		return cpShape{}, false
 	}
-	key := abs + "\x00" + strconv.FormatInt(info.ModTime().UnixNano(), 10)
-	var decoded image.Image
-	if cached, ok := pngShapeCache.Load(key); ok {
-		decoded, _ = cached.(image.Image)
-	} else {
-		file, err := os.OpenInRoot(root, filepath.FromSlash(rel))
-		if err != nil {
-			return cpShape{}, false
-		}
-		decoded, err = png.Decode(file)
-		_ = file.Close()
-		if err != nil {
-			return cpShape{}, false
-		}
-		pngShapeCache.Store(key, decoded)
-	}
-	bounds := decoded.Bounds()
-	from := cpShape{w: bounds.Dx(), h: bounds.Dy()}
+	fromKey := "full"
+	var from cpShape
 	if len(fromRaw) > 0 {
 		var parsed bool
 		from, parsed = areaOf(fromRaw)
 		if !parsed {
 			return cpShape{}, false
 		}
+		fromKey = strconv.Itoa(from.x) + "," + strconv.Itoa(from.y) + "," +
+			strconv.Itoa(from.w) + "," + strconv.Itoa(from.h)
+	}
+	key := abs + "\x00" + strconv.FormatInt(info.Size(), 10) + "\x00" +
+		strconv.FormatInt(info.ModTime().UnixNano(), 10) + "\x00" + fromKey + "\x00" +
+		strconv.Itoa(x) + "," + strconv.Itoa(y)
+	if cached, ok := pngShapeCache.Load(key); ok {
+		if cells, ok := cached.(string); ok {
+			return cpShape{kind: 'r', cells: cells}, true
+		}
+	}
+	var decoded image.Image
+	file, err := os.OpenInRoot(root, filepath.FromSlash(rel))
+	if err != nil {
+		return cpShape{}, false
+	}
+	decoded, err = png.Decode(file)
+	_ = file.Close()
+	if err != nil {
+		return cpShape{}, false
+	}
+	bounds := decoded.Bounds()
+	if fromKey == "full" {
+		from = cpShape{w: bounds.Dx(), h: bounds.Dy()}
 	}
 	minX, maxX := max(from.x, bounds.Min.X), min(from.x+from.w, bounds.Max.X)
 	minY, maxY := max(from.y, bounds.Min.Y), min(from.y+from.h, bounds.Max.Y)
@@ -309,6 +318,7 @@ func opaqueImageShape(root, rel string, fromRaw json.RawMessage, x, y int) (cpSh
 			}
 		}
 	}
+	pngShapeCache.Store(key, cells.String())
 	return cpShape{kind: 'r', cells: cells.String()}, true
 }
 
@@ -319,8 +329,11 @@ func imageAlpha(img image.Image, x, y int) uint8 {
 	case *image.RGBA:
 		return img.Pix[img.PixOffset(x, y)+3]
 	default:
-		_, _, _, alpha := img.At(x, y).RGBA()
-		return uint8(alpha >> 8)
+		rgba, ok := color.NRGBAModel.Convert(img.At(x, y)).(color.NRGBA)
+		if !ok {
+			return 0
+		}
+		return rgba.A
 	}
 }
 
