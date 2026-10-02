@@ -268,26 +268,148 @@ function MoveDialog({
   )
 }
 
-export function Data() {
+function DataDialogs({
+  preview,
+  busy,
+  onClosePreview,
+  onCleanup,
+  importPreview,
+  onCloseImport,
+  move,
+  moving,
+  moveProgress,
+  moveError,
+  onCloseMove,
+  onMove,
+}: {
+  preview: Preview | null
+  busy: boolean
+  onClosePreview: () => void
+  onCleanup: () => void
+  importPreview: ImportPreview | null
+  onCloseImport: () => void
+  move: MoveState | null
+  moving: boolean
+  moveProgress: { files: number; totalFiles: number; bytes: number; totalBytes: number }
+  moveError: string
+  onCloseMove: () => void
+  onMove: () => void
+}) {
   const { t } = useLingui()
-  const openProfiles = useNav((s) => s.openProfiles)
+  return (
+    <>
+      <Dialog
+        open={preview !== null}
+        onClose={onClosePreview}
+        transitionDuration={0}
+        slotProps={{ paper }}
+      >
+        <DialogTitle>{t`Clean up unused`}</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 360 }}>
+          {(preview?.items ?? []).length === 0 ? (
+            <Box sx={{ fontSize: 13 }}>{t`Nothing to remove.`}</Box>
+          ) : (
+            (preview?.items ?? []).map((it) => <Row key={it.rel} label={it.label} size={it.size} />)
+          )}
+          {(preview?.items ?? []).length > 0 ? (
+            <Row label={t`Total`} size={preview?.total ?? 0} />
+          ) : null}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClosePreview} sx={nowrap}>
+            {t`Cancel`}
+          </Button>
+          <Button
+            onClick={onCleanup}
+            disabled={busy || (preview?.items ?? []).length === 0}
+            sx={nowrap}
+          >
+            {t`Clean up`}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <ImportSettingsDialog preview={importPreview} onClose={onCloseImport} />
+      <MoveDialog
+        move={move}
+        moving={moving}
+        progress={moveProgress}
+        error={moveError}
+        onClose={onCloseMove}
+        onMove={onMove}
+      />
+    </>
+  )
+}
+
+function moveDataFolder(options: {
+  move: MoveState
+  setMove: (value: MoveState | null) => void
+  setMoveError: (value: string) => void
+  setMoving: (value: boolean) => void
+  setMoveProgress: (value: {
+    files: number
+    totalFiles: number
+    bytes: number
+    totalBytes: number
+  }) => void
+  moveErrorText: string
+}) {
+  const { move, setMove, setMoveError, setMoving, setMoveProgress, moveErrorText } = options
+  setMoving(true)
+  setMoveError('')
+  const poll = globalThis.setInterval(() => {
+    UsageProgress().then(
+      (progress) => setMoveProgress(progress),
+      () => undefined,
+    )
+  }, MOVE_PROGRESS_INTERVAL)
+  MoveDataFolder(move.dest)
+    .then(() => setMove(null))
+    .catch((err: unknown) => setMoveError(errorText(err) || moveErrorText))
+    .finally(() => {
+      globalThis.clearInterval(poll)
+      setMoving(false)
+    })
+}
+
+function UsageSummary({
+  usage,
+  bytes,
+  openProfiles,
+}: {
+  usage: DiskUse | null
+  bytes: number
+  openProfiles: () => void
+}) {
+  const { t } = useLingui()
+  return usage ? (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: 480 }}>
+      {(usage.profiles ?? []).map((p) => (
+        <Row key={`${p.game}/${p.id}`} label={t`${p.name} (profile)`} size={p.size} />
+      ))}
+      <Row label={t`Store`} size={usage.store} />
+      <Row label={t`Cache`} size={usage.cache} />
+      <Row label={t`Save backups`} size={usage.backups} />
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+        <Row label={t`Trash`} size={usage.trash} />
+        <Button size="small" onClick={openProfiles} sx={{ ...nowrap, flexShrink: 0 }}>
+          {t`Manage deleted profiles`}
+        </Button>
+      </Box>
+      <Row label={t`Total`} size={usage.total} />
+    </Box>
+  ) : (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <LinearProgress />
+      <Box sx={{ ...mono, color: 'text.secondary' }}>{formatBytes(bytes)}</Box>
+    </Box>
+  )
+}
+
+function useDataUsage() {
   const [usage, setUsage] = useState<DiskUse | null>(null)
   const [bytes, setBytes] = useState(0)
-  const [preview, setPreview] = useState<Preview | null>(null)
-  const [importPreview, setImportPreview] = useState<ImportPreview | null>(null)
-  const [busy, setBusy] = useState(false)
-  const [move, setMove] = useState<MoveState | null>(null)
-  const [moveError, setMoveError] = useState('')
-  const [moving, setMoving] = useState(false)
-  const [moveProgress, setMoveProgress] = useState({
-    files: 0,
-    totalFiles: 0,
-    bytes: 0,
-    totalBytes: 0,
-  })
-  const stopRef = useRef<() => void>(() => {
-    return
-  })
+  const stopRef = useRef<() => void>(() => undefined)
   const restart = useCallback(() => {
     stopRef.current()
     setUsage(null)
@@ -301,10 +423,27 @@ export function Data() {
   }, [])
   useEffect(() => {
     restart()
-    return () => {
-      stopRef.current()
-    }
+    return () => stopRef.current()
   }, [restart])
+  return { usage, bytes, restart }
+}
+
+export function Data() {
+  const { t } = useLingui()
+  const openProfiles = useNav((s) => s.openProfiles)
+  const { usage, bytes, restart } = useDataUsage()
+  const [preview, setPreview] = useState<Preview | null>(null)
+  const [importPreview, setImportPreview] = useState<ImportPreview | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [move, setMove] = useState<MoveState | null>(null)
+  const [moveError, setMoveError] = useState('')
+  const [moving, setMoving] = useState(false)
+  const [moveProgress, setMoveProgress] = useState({
+    files: 0,
+    totalFiles: 0,
+    bytes: 0,
+    totalBytes: 0,
+  })
   const openPreview = () => {
     CleanupPreview().then(setPreview).catch(reportUnexpected)
   }
@@ -340,27 +479,14 @@ export function Data() {
     if (!move) {
       return
     }
-    setMoving(true)
-    setMoveError('')
-    const poll = globalThis.setInterval(() => {
-      UsageProgress().then(
-        (progress) =>
-          setMoveProgress({
-            files: progress.files,
-            totalFiles: progress.totalFiles,
-            bytes: progress.bytes,
-            totalBytes: progress.totalBytes,
-          }),
-        () => undefined,
-      )
-    }, MOVE_PROGRESS_INTERVAL)
-    MoveDataFolder(move.dest)
-      .then(() => setMove(null))
-      .catch((err: unknown) => setMoveError(errorText(err) || t`Could not move the data folder.`))
-      .finally(() => {
-        globalThis.clearInterval(poll)
-        setMoving(false)
-      })
+    moveDataFolder({
+      move,
+      setMove,
+      setMoveError,
+      setMoving,
+      setMoveProgress,
+      moveErrorText: t`Could not move the data folder.`,
+    })
   }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -414,30 +540,7 @@ export function Data() {
           {t`Import settings…`}
         </Button>
       </Box>
-      {usage ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: 480 }}>
-          {(usage.profiles ?? []).map((p) => (
-            <Row key={`${p.game}/${p.id}`} label={t`${p.name} (profile)`} size={p.size} />
-          ))}
-          <Row label={t`Store`} size={usage.store} />
-          <Row label={t`Cache`} size={usage.cache} />
-          <Row label={t`Save backups`} size={usage.backups} />
-          <Box
-            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}
-          >
-            <Row label={t`Trash`} size={usage.trash} />
-            <Button size="small" onClick={openProfiles} sx={{ ...nowrap, flexShrink: 0 }}>
-              {t`Manage deleted profiles`}
-            </Button>
-          </Box>
-          <Row label={t`Total`} size={usage.total} />
-        </Box>
-      ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <LinearProgress />
-          <Box sx={{ ...mono, color: 'text.secondary' }}>{formatBytes(bytes)}</Box>
-        </Box>
-      )}
+      <UsageSummary usage={usage} bytes={bytes} openProfiles={openProfiles} />
       <Button
         onClick={openPreview}
         startIcon={<Trash2 size={16} />}
@@ -447,43 +550,18 @@ export function Data() {
       </Button>
       <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Save backups`}</Box>
       <BackupsKept />
-      <Dialog
-        open={preview !== null}
-        onClose={() => setPreview(null)}
-        transitionDuration={0}
-        slotProps={{ paper }}
-      >
-        <DialogTitle>{t`Clean up unused`}</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 360 }}>
-          {(preview?.items ?? []).length === 0 ? (
-            <Box sx={{ fontSize: 13 }}>{t`Nothing to remove.`}</Box>
-          ) : (
-            (preview?.items ?? []).map((it) => <Row key={it.rel} label={it.label} size={it.size} />)
-          )}
-          {(preview?.items ?? []).length > 0 ? (
-            <Row label={t`Total`} size={preview?.total ?? 0} />
-          ) : null}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setPreview(null)} sx={nowrap}>
-            {t`Cancel`}
-          </Button>
-          <Button
-            onClick={runCleanup}
-            disabled={busy || (preview?.items ?? []).length === 0}
-            sx={nowrap}
-          >
-            {t`Clean up`}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <ImportSettingsDialog preview={importPreview} onClose={() => setImportPreview(null)} />
-      <MoveDialog
+      <DataDialogs
+        preview={preview}
+        busy={busy}
+        onClosePreview={() => setPreview(null)}
+        onCleanup={runCleanup}
+        importPreview={importPreview}
+        onCloseImport={() => setImportPreview(null)}
         move={move}
         moving={moving}
-        progress={moveProgress}
-        error={moveError}
-        onClose={() => setMove(null)}
+        moveProgress={moveProgress}
+        moveError={moveError}
+        onCloseMove={() => setMove(null)}
         onMove={runMove}
       />
     </Box>
