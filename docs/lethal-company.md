@@ -1,9 +1,9 @@
 # Lethal Company: research for the second game
 
-Not in the first release (NOMAD, 2026-09-29); this is the research for the second implementation, kept so it is not redone. Sources: Gale (`Kesomannen/gale`), r2modmanPlus (`ebkr/r2modmanPlus`), the Thunderstore server source (`thunderstore-io/Thunderstore`), and BepInEx 5.4.23.5's release zip.
+Research for the second `Game` implementation. Sources: Gale (`Kesomannen/gale`), r2modmanPlus (`ebkr/r2modmanPlus`), the Thunderstore server source (`thunderstore-io/Thunderstore`), and BepInEx 5.4.23.5's release zip.
 
 - **Discovery:** Steam app `1966720`. On Linux it runs through Proton.
-- **Mod index:** the chunked listing index at `https://thunderstore.io/c/lethal-company/api/v1/package-listing-index/` (25 gzipped chunks, 50,978 packages, 34.6 MB gzipped, measured 2026-09-29), fetched in parallel and cached. Never the full v1 package list, which is about 332 MB uncompressed.
+- **Mod index:** the chunked listing index at `https://thunderstore.io/c/lethal-company/api/v1/package-listing-index/`, fetched in parallel and cached. Never the full v1 package list.
 - **Downloads:** `https://thunderstore.io/package/download/{namespace}/{name}/{version}/`, no auth. Dependencies are `Namespace-Name-Version` strings.
 - **Loader:** the `BepInEx-BepInExPack` package. Doorstop's `winhttp.dll` and `doorstop_config.ini` must sit next to the game executable, so, as Gale does (`Kesomannen/gale` `src-tauri/src/profile/launch/mod.rs`, `copy_required_files`), launch copies the profile's top-level loader files and `doorstop_libs` into the game folder. The rest of the profile stays in Mortar's data directory.
 - **Launch arguments** depend on the Doorstop version, read from the profile's `.doorstop_version` (default 3): `--doorstop-enable true --doorstop-target <preloader>` for 3.x, `--doorstop-enabled true --doorstop-target-assembly <preloader>` for 4.x.

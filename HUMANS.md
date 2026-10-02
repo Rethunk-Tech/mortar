@@ -61,7 +61,7 @@ Per release:
 1. Set `const version` in `main.go` to the new version, gate, commit and push `main`.
 2. `git tag v1.2.3 && git push origin v1.2.3`. The tag must equal `main.go`'s version with a leading `v`, or the manifest step fails and nothing is published.
 
-### Flathub (NOMAD)
+### Flathub
 
 CI only attaches a single-file `.flatpak` for people who sideload. Listing on Flathub is a separate submission using `build/linux/flatpak/tech.rethunk.Mortar.yml`:
 
@@ -70,7 +70,7 @@ CI only attaches a single-file `.flatpak` for people who sideload. Listing on Fl
 3. Build from source inside the GNOME SDK (or keep the file-source binary and accept Flathub review of that choice). The GitHub bundle is not what Flathub builds.
 4. finish-args grant network, Wayland/X11, DRI, native and Flatpak Steam libraries, read-only Heroic (`xdg-config/heroic`) and Lutris game configs (`xdg-data/lutris`), read-write Flatpak Lutris and Heroic app data, default `~/GOG Games` and `~/Games/Heroic` install trees, `xdg-data/mortar`, and the single-instance bus name.
 
-### AUR mortar-bin (NOMAD)
+### AUR mortar-bin
 
 `build/linux/aur/PKGBUILD` and `.SRCINFO` install `mortar-linux-amd64` or `mortar-linux-arm64` from the GitHub release, plus the tagged desktop entry and icon. Publishing:
 
