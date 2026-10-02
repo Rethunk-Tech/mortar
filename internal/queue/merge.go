@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -68,6 +69,38 @@ func (s *Service) installNexusPath(it Item, path string, mod nexus.Mod) error {
 		dropDownload(path)
 	}
 	return s.afterInstall(it.ID, res, err, false)
+}
+
+const rawXNBMessage = "This file replaces game files directly (raw .xnb). Mortar installs SMAPI mods; use the mod's Content Patcher version."
+
+func (s *Service) contentPatcherHint(ctx context.Context, it Item, err error) error {
+	var installErr *profile.InstallError
+	if !errors.As(err, &installErr) || !strings.HasPrefix(installErr.Msg, rawXNBMessage) {
+		return err
+	}
+	c, clientErr := s.d.Client()
+	if clientErr != nil {
+		return err
+	}
+	files, filesErr := c.Files(ctx, it.ModID)
+	if filesErr != nil {
+		return err
+	}
+	var name string
+	bestID := 0
+	for _, file := range files {
+		if file.FileID == it.FileID || file.FileID <= bestID {
+			continue
+		}
+		if !strings.Contains(strings.ToLower(file.Name+" "+file.FileName), "content patcher") {
+			continue
+		}
+		name, bestID = file.FileName, file.FileID
+	}
+	if name == "" {
+		return err
+	}
+	return &profile.InstallError{Msg: installErr.Msg + " Content Patcher file: " + name, Err: err}
 }
 
 func (s *Service) installReadyZip(it Item) (bool, error) {

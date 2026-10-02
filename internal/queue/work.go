@@ -206,7 +206,7 @@ func (s *Service) step(ctx context.Context) bool {
 	case fetch:
 		s.settle(snap.ID, s.download(itemCtx, snap))
 	case install:
-		s.settle(snap.ID, s.installStaged(snap))
+		s.settle(snap.ID, s.installStaged(itemCtx, snap))
 	}
 	return true
 }
@@ -419,7 +419,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	}
 	s.mu.Unlock()
 	s.publish(true)
-	return s.installNexusPath(it, path, mod)
+	return s.contentPatcherHint(ctx, it, s.installNexusPath(it, path, mod))
 }
 
 func (s *Service) pauseFomod(id, key string) {

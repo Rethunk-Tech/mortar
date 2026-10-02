@@ -188,6 +188,11 @@ func (e *NoModError) Error() string {
 	return fmt.Sprintf("%q holds no mod: no readable %s", e.Key, manifest.FileName)
 }
 
+// rawXNBError reports an archive that replaces game content rather than carrying a SMAPI mod.
+type rawXNBError struct{ Key string }
+
+func (e *rawXNBError) Error() string { return fmt.Sprintf("%q holds raw .xnb files", e.Key) }
+
 // SourceSMAPI marks the entry holding the loader's own mods, and SourceMortar the one holding Mortar's console
 // bridge. Both are in every profile and hidden from users.
 const (

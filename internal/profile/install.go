@@ -269,6 +269,8 @@ func installError(err error) error {
 		msg = fmt.Sprintf("%s is already in this profile", dup.Label)
 	case errors.As(err, &span):
 		msg = fmt.Sprintf("This archive's mods are in several entries of this profile (%s): remove all but one, then install again", strings.Join(span.Labels, "; "))
+	case errors.As(err, new(*rawXNBError)):
+		msg = "This file replaces game files directly (raw .xnb). Mortar installs SMAPI mods; use the mod's Content Patcher version."
 	case errors.As(err, new(*NoModError)):
 		msg = "No SMAPI mod was found in this archive"
 	default:

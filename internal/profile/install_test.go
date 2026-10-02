@@ -77,6 +77,18 @@ func TestInstallArchive(t *testing.T) {
 	}
 }
 
+func TestInstallArchiveRawXNBExplainsContentPatcherAlternative(t *testing.T) {
+	e := newEnv(t)
+	p, _ := e.Create("stardew", "P")
+	raw := buildZip(t, "raw-woods.zip", map[string]string{"Woods.xnb": "raw"})
+
+	_, err := e.InstallArchive("stardew", p.ID, raw)
+	var ie *InstallError
+	if !errors.As(err, &ie) || ie.Msg != "This file replaces game files directly (raw .xnb). Mortar installs SMAPI mods; use the mod's Content Patcher version." {
+		t.Fatalf("raw xnb err = %v", err)
+	}
+}
+
 func TestInstallArchiveSameModVersionIsAReplace(t *testing.T) {
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
