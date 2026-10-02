@@ -1,5 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button } from '@mui/material'
+import { Button, IconButton, Menu, MenuItem } from '@mui/material'
+import { MoreHorizontal } from 'lucide-react'
+import { useState } from 'react'
 import type { Update } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import type {
   Mod,
@@ -31,53 +33,61 @@ export function UpdateActions({
   const setPinned = useMods((s) => s.setPinned)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const setSkipSource = useMods((s) => s.setSkipSource)
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const blocked = queued || (caution !== '' && !acked)
+  const act = (fn: () => Promise<unknown>) => () => {
+    setAnchor(null)
+    fn().catch(reportUnexpected)
+  }
   return (
     <>
-      <Button
-        size="small"
-        disabled={!mod}
-        onClick={() => mod && setSkipVersion(mod, update.version).catch(reportUnexpected)}
-        sx={{ whiteSpace: 'nowrap' }}
-      >
-        {t`Skip this version`}
-      </Button>
-      <Button
-        size="small"
-        onClick={() => mod && setPinned(mod, !entry?.pinned).catch(reportUnexpected)}
-        sx={{ whiteSpace: 'nowrap' }}
-      >
-        {entry?.pinned ? t`Unpin` : t`Pin`}
-      </Button>
-      {update.source && !entry?.skipSources?.includes(update.source) ? (
+      {downloadable(update) ? (
         <Button
-          size="small"
-          disabled={!mod}
-          onClick={() => mod && setSkipSource(mod, update.source, true).catch(reportUnexpected)}
+          variant="contained"
+          disabled={blocked}
+          onClick={() => download([updateWant(update)]).catch(reportUnexpected)}
           sx={{ whiteSpace: 'nowrap' }}
         >
-          {t`Ignore updates from ${update.source}`}
+          {queued ? t`Queued` : t`Update`}
         </Button>
       ) : null}
-      {downloadable(update) ? (
-        <>
-          <Button
-            variant="contained"
-            disabled={queued || (caution !== '' && !acked)}
-            onClick={() => download([updateWant(update)]).catch(reportUnexpected)}
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            {queued ? t`Queued` : t`Update`}
-          </Button>
-          <Button
-            variant="outlined"
-            disabled={queued || (caution !== '' && !acked)}
-            onClick={onUpdateAll}
-            sx={{ whiteSpace: 'nowrap' }}
-          >
+      <IconButton
+        aria-label={t`More actions for ${update.name}`}
+        aria-haspopup="menu"
+        onClick={(e) => setAnchor(e.currentTarget)}
+        sx={{ borderRadius: '6px', bgcolor: anchor ? 'rgba(255,255,255,0.1)' : 'transparent' }}
+      >
+        <MoreHorizontal size={18} />
+      </IconButton>
+      <Menu
+        open={anchor !== null}
+        anchorEl={anchor}
+        onClose={() => setAnchor(null)}
+        transitionDuration={0}
+      >
+        {downloadable(update) ? (
+          <MenuItem disabled={blocked} onClick={act(async () => onUpdateAll())}>
             {t`Update in all profiles that have it`}
-          </Button>
-        </>
-      ) : null}
+          </MenuItem>
+        ) : null}
+        <MenuItem
+          disabled={!mod}
+          onClick={act(async () => mod && setSkipVersion(mod, update.version))}
+        >
+          {t`Skip this version`}
+        </MenuItem>
+        <MenuItem disabled={!mod} onClick={act(async () => mod && setPinned(mod, !entry?.pinned))}>
+          {entry?.pinned ? t`Unpin` : t`Pin`}
+        </MenuItem>
+        {update.source && !entry?.skipSources?.includes(update.source) ? (
+          <MenuItem
+            disabled={!mod}
+            onClick={act(async () => mod && setSkipSource(mod, update.source, true))}
+          >
+            {t`Ignore updates from ${update.source}`}
+          </MenuItem>
+        ) : null}
+      </Menu>
     </>
   )
 }

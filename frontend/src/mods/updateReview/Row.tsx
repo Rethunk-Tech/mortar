@@ -66,8 +66,8 @@ export function Row({
       sx={{
         display: 'grid',
         gridTemplateColumns: caution
-          ? `${ROW_TILE}px minmax(0, 1fr) auto auto auto auto`
-          : `${ROW_TILE}px minmax(0, 1fr) auto auto auto`,
+          ? `${ROW_TILE}px minmax(200px, 1fr) auto auto auto auto`
+          : `${ROW_TILE}px minmax(200px, 1fr) auto auto auto`,
         gap: '14px',
         alignItems: 'center',
         px: 3,
@@ -91,7 +91,7 @@ export function Row({
         <ArrowRight size={14} aria-hidden={true} />
         <Version isNew={true}>{update.version}</Version>
       </Box>
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         {update.url ? (
           <Button
             variant="outlined"
