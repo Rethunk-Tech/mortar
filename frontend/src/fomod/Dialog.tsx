@@ -68,8 +68,14 @@ function PluginImage({ game, itemKey, rel }: { game: string; itemKey: string; re
   )
 }
 
-function emptyChoices(): Record<string, Record<string, string[]>> {
-  return {}
+function savedChoices(ask: FomodSession['ask']): Record<string, Record<string, string[]>> {
+  const out: Record<string, Record<string, string[]>> = {}
+  for (const [step, groups] of Object.entries(ask.choices ?? {})) {
+    for (const [group, names] of Object.entries(groups ?? {})) {
+      out[step] = { ...out[step], [group]: names ?? [] }
+    }
+  }
+  return out
 }
 
 function setGroup(
@@ -108,9 +114,8 @@ function FomodWizard({ session }: { session: FomodSession }) {
   const install = useFomod((s) => s.install)
   const refresh = useFomod((s) => s.refresh)
   const [index, setIndex] = useState(0)
-  const [choices, setChoices] = useState<Record<string, Record<string, string[]>>>(() =>
-    emptyChoices(),
-  )
+  const [choices, setChoices] = useState(() => savedChoices(session.ask))
+  const [changed] = useState(Boolean(session.ask.changed))
   const steps = session.ask.steps ?? []
   const step = steps[index]
   const last = index >= steps.length - 1 || steps.length === 0
@@ -151,6 +156,11 @@ function FomodWizard({ session }: { session: FomodSession }) {
     >
       <DialogTitle>{session.ask.moduleName || t`Install options`}</DialogTitle>
       <DialogContent>
+        {changed ? (
+          <Typography variant="body2" color="warning.main" sx={{ mb: 2 }}>
+            {t`This update changed its install options. Your earlier picks are kept where they still exist.`}
+          </Typography>
+        ) : null}
         {step ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography variant="subtitle2">{step.name}</Typography>
