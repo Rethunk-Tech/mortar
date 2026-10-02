@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
-import { Copy, Play, RefreshCw } from 'lucide-react'
+import { Copy, Gauge, Play, RefreshCw } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { PerformanceRow } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { PerformanceReport } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
@@ -208,6 +208,50 @@ function ReportBody({
   )
 }
 
+function PerformanceEmpty({
+  running,
+  busy,
+  onStart,
+}: {
+  running: boolean
+  busy: boolean
+  onStart: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <Box
+      sx={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 2,
+        px: 3,
+        textAlign: 'center',
+      }}
+    >
+      <Gauge size={40} color="rgba(255,255,255,0.6)" aria-hidden={true} />
+      <Typography
+        sx={{ fontSize: 22, fontWeight: 700 }}
+      >{t`See which mods slow the game`}</Typography>
+      <Typography sx={{ maxWidth: 480, fontSize: 15, lineHeight: 1.5, color: 'text.secondary' }}>
+        {running
+          ? t`Measure while you play, then show a report of the mods that take the most time each frame.`
+          : t`Start the game with this profile, then measure here while you play.`}
+      </Typography>
+      <Button
+        variant="contained"
+        startIcon={<Play size={16} />}
+        disabled={!running || busy}
+        onClick={onStart}
+      >
+        {t`Start measuring`}
+      </Button>
+    </Box>
+  )
+}
+
 export function PerformancePanel({ game }: { game: string }) {
   const { t } = useLingui()
   const entries = useConsole((s) => s.entries)
@@ -318,6 +362,9 @@ export function PerformancePanel({ game }: { game: string }) {
     )
   }
 
+  if (reportLines.length === 0 && !measuring) {
+    return <PerformanceEmpty running={running} busy={busy !== ''} onStart={startMeasuring} />
+  }
   return (
     <Paper
       variant="outlined"

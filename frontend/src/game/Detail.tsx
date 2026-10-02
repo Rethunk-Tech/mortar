@@ -244,8 +244,6 @@ function Hero({ profile, game }: { profile: Profile; game: string }) {
         height: 190,
         flexShrink: 0,
         overflow: 'hidden',
-        borderBottom: 1,
-        borderColor: 'divider',
         [compact]: {
           height: 52,
           bgcolor: 'rgba(15,15,18,0.5)',
@@ -257,6 +255,8 @@ function Hero({ profile, game }: { profile: Profile; game: string }) {
         sx={{
           position: 'absolute',
           inset: 0,
+          maskImage: HERO_FADE,
+          WebkitMaskImage: HERO_FADE,
           [compact]: { display: 'none' },
         }}
       >
@@ -319,6 +319,9 @@ function Centered({ children }: { children: ReactNode }) {
     </Box>
   )
 }
+
+// The cover stays opaque until its bottom fifth, then fades to transparent into the backdrop above the tab row.
+const HERO_FADE = 'linear-gradient(to bottom, #000 80%, transparent 100%)'
 
 export function Detail() {
   const { t } = useLingui()

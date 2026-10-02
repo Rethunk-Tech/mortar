@@ -256,7 +256,7 @@ function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
                   gap: '6px',
                   px: 2,
                   pt: '4px',
-                  pb: 1,
+                  pb: '4px',
                   alignContent: 'start',
                 }}
               >
