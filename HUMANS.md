@@ -23,6 +23,27 @@ wails3 build    # production binary in bin/mortar
 
 The frontend build first runs `scripts/gen-credits.ts`, which rewrites `frontend/src/settings/generated/credits.json` (the licence list on Settings › About) from `frontend/package.json` and `go.mod`, then extracts and compiles the Lingui catalogs in `frontend/src/locales/`, so a build never shows a message id in place of its text; commit those files when they change.
 
+## Command line
+
+With Mortar running, `mortar <command>` asks the open app and prints a table, or JSON with `--json`; `mortar help` lists every command. `<profile>` is a profile id or name.
+
+| Command | Does |
+| --- | --- |
+| `games` | supported games and whether each is configured |
+| `profiles <game>`, `profile create\|rename\|copy\|delete ...` | list and manage profiles |
+| `mods <game> <profile>`, `mods enable\|disable\|pin\|unpin\|remove ... <UniqueID>...`, `mod ... <UniqueID>` | list, change and inspect mods |
+| `install <game> <profile> <archive>` | install a local archive |
+| `conflicts`, `problems`, `updates`, `saves <game> <profile>` | what the Problems, Mods and Saves tabs show |
+| `share`, `export <game> <profile> [file]`, `open <link\|file>` | share links and `.mortar` files |
+| `launch <game> <profile> [--wait]`, `status`, `stop <game>`, `runs`, `logs` | play and read past runs |
+| `queue`, `doctor`, `version`, `completion bash\|zsh\|fish` | the download queue, the environment, shell completion |
+
+```sh
+mortar conflicts stardew "Profile 2"
+mortar mods stardew bf8012eb5944d3ad --json | jq -r '.[] | select(.enabled | not) | .uniqueId'
+source <(mortar completion bash)
+```
+
 ## Gate
 
 ```sh

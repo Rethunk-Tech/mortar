@@ -158,6 +158,10 @@ The frontend moves on when one fails to load and shows a solid tone after the la
   - Keep the leading dot on disabled folders; then swap `key` and `previousKey` and remove the old folder.
   - Before updating a profile, zip the Saves folder into `backups/`.
 
+## Command line
+
+`mortar <verb>` (`internal/cli`) is decided in `main` before `application.New`, so it never takes the single-instance lock or opens a window; any other first argument, a link or a file path, is a window launch. The CLI is a client of the running app: at startup the app (`internal/control`) listens on `127.0.0.1` with an OS-chosen port and writes `control.json` (`port`, a random 32-byte `token`, `pid`, `version`; mode 0600) in the data folder, removed on exit. Each connection carries one JSON request line (`token`, `method`, `params`) and gets one reply line (`result` or `error`); the token is compared in constant time. Methods run on the app's own services, so the window and the CLI never write the data folder at once, and a change emits `profiles:changed` with the game id, which reloads that game's profiles in the window. `launch` detaches the game from the request (`context.WithoutCancel`). `open` runs the binary again with the link, which a running window takes over the usual second-instance path. On Windows the GUI-subsystem exe attaches to its parent console (`AttachConsole`) unless its output is redirected.
+
 ## Trust boundaries
 
 Everything from outside is untrusted: links, `.mortar` files, archives, API responses. Share links and `.mortar` files have their own caps and rules in [Sharing](#sharing).

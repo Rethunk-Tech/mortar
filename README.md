@@ -25,6 +25,7 @@ Prerequisites, build and gate: [HUMANS.md](HUMANS.md).
 - Discovers Stardew Valley on Steam (including Flatpak Steam), GOG, Heroic and Lutris, and installs SMAPI.
 - Keeps each set of mods in its own profile, with install, update, rollback and share as a link or `.mortar` file.
 - Downloads from Nexus Mods and GitHub; never re-hosts mod files.
+- A command line for the running app: `mortar games`, `mortar mods stardew "My Farm"`, `mortar conflicts ...`, with `--json` for scripts.
 
 ## Documentation
 
