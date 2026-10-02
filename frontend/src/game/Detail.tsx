@@ -6,34 +6,15 @@ import {
   Chip,
   Divider,
   IconButton,
-  ListItemIcon,
-  ListItemText,
   Menu,
-  MenuItem,
   Tab,
   Tabs,
   Tooltip,
   Typography,
 } from '@mui/material'
-import {
-  FileDown,
-  Gamepad2,
-  History,
-  MoreHorizontal,
-  Palette,
-  Pencil,
-  Plus,
-  RotateCcw,
-  Settings2,
-  Share2,
-  SquareArrowOutUpRight,
-} from 'lucide-react'
+import { MoreHorizontal, Palette, Pencil, Plus, RotateCcw, Settings2, Share2 } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import {
-  AddToSteam,
-  Create as CreateShortcut,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/shortcut/service.ts'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { LogActions } from '../console/LogActions.tsx'
 import { useBadges } from '../mods/badges.ts'
@@ -52,13 +33,14 @@ import { SavesTab } from '../saves/SavesTab.tsx'
 import { useSaves } from '../saves/store.ts'
 import { openShare } from '../share/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { ToolsMenu } from '../tools/ToolsMenu.tsx'
 import { compact, compactMeta, saveFits } from './compact.ts'
 import { CoverButton, HeroCover } from './HeroCover.tsx'
 import { NameField } from './NameField.tsx'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
+import { MoreMenuItems } from './ProfileMenuItems.tsx'
+import { useRenameRequest } from './renameRequest.ts'
 import { type TabId, useTab } from './tab.ts'
 import { useRestoreFocus } from './useRestoreFocus.ts'
 
@@ -68,7 +50,6 @@ function HeroMenu({ profile }: { profile: Profile }) {
   const { t } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [historyOpen, setHistoryOpen] = useState(false)
-  const exportProfile = useProfiles((s) => s.exportProfile)
   const close = () => setAnchor(null)
   return (
     <>
@@ -83,84 +64,7 @@ function HeroMenu({ profile }: { profile: Profile }) {
         </IconButton>
       </Tooltip>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={close} transitionDuration={0}>
-        <MenuItem
-          onClick={() => {
-            close()
-            setHistoryOpen(true)
-          }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <History size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`History`}</ListItemText>
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            close()
-            exportProfile(profile.id).catch(reportUnexpected)
-          }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <FileDown size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Export profile…`}</ListItemText>
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            close()
-            const { game } = useProfiles.getState()
-            if (!game) {
-              return
-            }
-            CreateShortcut(game.id, game.name, profile.id, profile.name)
-              .then((path) =>
-                useToasts
-                  .getState()
-                  .push({ kind: 'success', title: t`Shortcut added`, body: path }),
-              )
-              .catch((e: unknown) =>
-                useToasts.getState().push({
-                  kind: 'error',
-                  title: t`Could not add the shortcut`,
-                  body: errorMessage(e),
-                }),
-              )
-          }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <SquareArrowOutUpRight size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Add a shortcut that plays this profile`}</ListItemText>
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            close()
-            const { game } = useProfiles.getState()
-            if (!game) {
-              return
-            }
-            AddToSteam(game.id, game.name, profile.id, profile.name)
-              .then((added) =>
-                useToasts.getState().push({
-                  kind: 'success',
-                  title: added ? t`Added to Steam` : t`Already in Steam`,
-                  body: t`It shows in your Steam library the next time Steam starts.`,
-                }),
-              )
-              .catch((e: unknown) =>
-                useToasts.getState().push({
-                  kind: 'error',
-                  title: t`Could not add it to Steam`,
-                  body: errorMessage(e),
-                }),
-              )
-          }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <Gamepad2 size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Add this profile to Steam`}</ListItemText>
-        </MenuItem>
+        <MoreMenuItems profile={profile} close={close} onHistory={() => setHistoryOpen(true)} />
       </Menu>
       <HistoryDialog
         profileId={profile.id}
@@ -206,6 +110,13 @@ function HeroName({ profile, game, meta }: { profile: Profile; game: string; met
   const rename = useProfiles((s) => s.rename)
   const [editing, setEditing] = useState(false)
   const [editingProfile, setEditingProfile] = useState(false)
+  const renameId = useRenameRequest((s) => s.id)
+  useEffect(() => {
+    if (renameId === profile.id) {
+      useRenameRequest.getState().clear()
+      setEditing(true)
+    }
+  }, [renameId, profile.id])
   const pencil = useRef<HTMLButtonElement>(null)
   useRestoreFocus(editing, pencil)
   return (

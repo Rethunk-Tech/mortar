@@ -1,14 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip } from '@mui/material'
-import { ImageOff, ImagePlus } from 'lucide-react'
+import { Box, IconButton, Menu, Tooltip } from '@mui/material'
+import { ImagePlus } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { PickImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { Covers } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { useProfiles } from '../profiles/store.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
-import { applyStagedCover, firstCoverSrc, hasPickedCover } from './cover.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import { firstCoverSrc } from './cover.ts'
+import { CoverMenuItems } from './ProfileMenuItems.tsx'
 
 // The first of the profile's covers that loads (picked, Nexus, Steam), else a solid tone.
 export function HeroCover({ game, profile }: { game: string; profile: Profile }) {
@@ -55,32 +53,7 @@ export function HeroCover({ game, profile }: { game: string; profile: Profile })
 export function CoverButton({ game, profile }: { game: string; profile: Profile }) {
   const { t } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
-  const replace = useProfiles((s) => s.replace)
   const close = () => setAnchor(null)
-  const choose = async () => {
-    close()
-    const path = await PickImage(t`Choose cover image`)
-    if (!path) {
-      return
-    }
-    try {
-      const next = await applyStagedCover(game, profile.id, path)
-      if (next) {
-        replace(next)
-      }
-    } catch (e) {
-      useToasts
-        .getState()
-        .push({ kind: 'error', title: t`Could not use that image`, body: errorMessage(e) })
-    }
-  }
-  const automatic = async () => {
-    close()
-    const next = await applyStagedCover(game, profile.id, null)
-    if (next) {
-      replace(next)
-    }
-  }
   return (
     <>
       <Tooltip title={t`Cover image`}>
@@ -94,21 +67,7 @@ export function CoverButton({ game, profile }: { game: string; profile: Profile 
         </IconButton>
       </Tooltip>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={close}>
-        <MenuItem onClick={() => choose().catch(reportUnexpected)}>
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <ImagePlus size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Choose cover image…`}</ListItemText>
-        </MenuItem>
-        <MenuItem
-          disabled={!hasPickedCover(profile.cover, undefined)}
-          onClick={() => automatic().catch(reportUnexpected)}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <ImageOff size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Use the automatic cover`}</ListItemText>
-        </MenuItem>
+        <CoverMenuItems game={game} profile={profile} close={close} />
       </Menu>
     </>
   )

@@ -15,6 +15,7 @@ import { HistoryButton } from '../toasts/HistoryButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { compact } from './compact.ts'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
+import { ProfileContextMenu } from './ProfileContextMenu.tsx'
 import { SupportButton } from './SupportButton.tsx'
 
 const MIN = 150
@@ -106,14 +107,20 @@ function ProfileButton({
   profile,
   selected,
   onOpen,
+  onMenu,
 }: {
   profile: Profile
   selected: boolean
   onOpen: () => void
+  onMenu: (position: { top: number; left: number }) => void
 }) {
   return (
     <ButtonBase
       onClick={onOpen}
+      onContextMenu={(e) => {
+        e.preventDefault()
+        onMenu({ top: e.clientY, left: e.clientX })
+      }}
       aria-current={selected ? 'true' : undefined}
       aria-label={profile.name}
       title={profile.name}
@@ -266,13 +273,44 @@ function BottomBlock({ game }: { game: string }) {
   )
 }
 
+// ProfileList is the sidebar's profile buttons, each with the profile page's actions on right-click. The menu stays
+// mounted after it closes so the dialogs it opened stay open.
+function ProfileList({ game, profiles }: { game: string; profiles: Profile[] }) {
+  const openId = useProfiles((s) => s.openId)
+  const open = useProfiles((s) => s.open)
+  const [menu, setMenu] = useState<{
+    id: string
+    position: { top: number; left: number } | null
+  } | null>(null)
+  const menuProfile = menu ? profiles.find((p) => p.id === menu.id) : undefined
+  return (
+    <>
+      {profiles.map((p) => (
+        <ProfileButton
+          key={p.id}
+          profile={p}
+          selected={p.id === openId}
+          onOpen={() => open(p.id)}
+          onMenu={(position) => setMenu({ id: p.id, position })}
+        />
+      ))}
+      {menuProfile ? (
+        <ProfileContextMenu
+          game={game}
+          profile={menuProfile}
+          position={menu?.position ?? null}
+          onClose={() => setMenu((m) => (m ? { ...m, position: null } : m))}
+        />
+      ) : null}
+    </>
+  )
+}
+
 export function Sidebar({ game }: { game: string }) {
   const { t } = useLingui()
   const allProfiles = useProfiles((s) => s.profiles)
   const profiles = allProfiles.filter((p) => !p.hidden)
   const openProfiles = useNav((s) => s.openProfiles)
-  const openId = useProfiles((s) => s.openId)
-  const open = useProfiles((s) => s.open)
   const [width, setWidth] = useState(storedWidth)
   const [creating, setCreating] = useState(false)
   const loadBadges = useBadges((s) => s.loadAll)
@@ -339,14 +377,7 @@ export function Sidebar({ game }: { game: string }) {
           },
         }}
       >
-        {profiles.map((p) => (
-          <ProfileButton
-            key={p.id}
-            profile={p}
-            selected={p.id === openId}
-            onOpen={() => open(p.id)}
-          />
-        ))}
+        <ProfileList game={game} profiles={profiles} />
         <ButtonBase
           onClick={() => setCreating(true)}
           sx={{
