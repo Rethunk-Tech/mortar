@@ -1,8 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button } from '@mui/material'
+import { Button, Menu, MenuItem } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
-import type { ReactNode } from 'react'
-import type { Ref } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import { ChevronDown } from 'lucide-react'
+import { type ReactNode, useState } from 'react'
+import type {
+  Ref,
+  SettingHint,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import type { Drift } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   AdoptDriftFolder,
@@ -189,6 +193,68 @@ function BrokenFixButtons({
   )
 }
 
+function SettingButtons({ setting }: { setting: SettingHint }) {
+  const { t } = useLingui()
+  const setConfigValue = useMods((s) => s.setConfigValue)
+  const dismissSetting = useMods((s) => s.dismissSetting)
+  const locked = useLocked()
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+  const values = setting.suggested ?? []
+  const apply = (value: string) => {
+    setAnchorEl(null)
+    setConfigValue(setting, value).catch(reportUnexpected)
+  }
+  if (values.length === 0) {
+    return null
+  }
+  const first = values[0] ?? ''
+  return (
+    <>
+      <Button
+        size="small"
+        variant="contained"
+        color="warning"
+        disabled={locked}
+        onClick={() => apply(first)}
+        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+      >
+        {t`Set to ${first}`}
+      </Button>
+      {values.length > 1 ? (
+        <>
+          <Button
+            size="small"
+            variant="contained"
+            color="warning"
+            aria-label={t`More setting values`}
+            disabled={locked}
+            onClick={(event) => setAnchorEl(event.currentTarget)}
+            sx={{ minWidth: 28, width: 28, height: 28, px: 0, flexShrink: 0 }}
+          >
+            <ChevronDown size={15} aria-hidden={true} />
+          </Button>
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+            {values.map((value) => (
+              <MenuItem key={value} onClick={() => apply(value)}>
+                {t`Set to ${value}`}
+              </MenuItem>
+            ))}
+          </Menu>
+        </>
+      ) : null}
+      <Button
+        size="small"
+        color="info"
+        variant="outlined"
+        onClick={() => dismissSetting(setting).catch(reportUnexpected)}
+        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+      >
+        {t`Dismiss`}
+      </Button>
+    </>
+  )
+}
+
 export function FixButton({ problem }: { problem: Problem }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
@@ -217,6 +283,9 @@ export function FixButton({ problem }: { problem: Problem }) {
   }
   if (problem.kind === 'broken') {
     return <BrokenFixButtons broken={problem.broken} button={button} />
+  }
+  if (problem.kind === 'setting') {
+    return <SettingButtons setting={problem.setting} />
   }
   if (problem.kind === 'asset') {
     const key = problem.asset.keys?.[0]

@@ -7,6 +7,7 @@ const emptyResult = (): Result => ({
   broken: [],
   missing: [],
   assetConflicts: [],
+  settings: [],
   runErrors: [],
   drift: [],
   unknown: false,
@@ -44,4 +45,25 @@ test('problemSections omits empty groups and keeps order', () => {
 
 test('problemCount is zero while result is null', () => {
   expect(problemCount(null)).toBe(0)
+})
+
+test('settings are an info-level group and count as problems', () => {
+  const result: Result = {
+    ...emptyResult(),
+    settings: [
+      {
+        key: 'pack',
+        uniqueId: 'Pack.Compat',
+        name: 'Pack',
+        field: 'Enabled',
+        current: 'false',
+        suggested: ['true'],
+        for: ['Other.Mod'],
+        forNames: ['Other'],
+        description: '',
+      },
+    ],
+  }
+  expect(problemSections(result).map((s) => s.id)).toEqual(['settings'])
+  expect(problemCount(result)).toBe(1)
 })

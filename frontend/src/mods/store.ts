@@ -4,11 +4,13 @@ import type {
   AssetConflict,
   Duplicate,
   Result,
+  SettingHint,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import {
   DismissAbandonedMod,
   DismissAssetConflict,
   DismissListedRequirement,
+  DismissSetting,
   Pages,
   Problems,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
@@ -18,6 +20,7 @@ import {
   OpenConfig,
   RemoveEntries,
   RemoveEntry,
+  SetConfigValue,
   SetEntryNoteTags,
   SetModEnabled,
   SetModsEnabled,
@@ -216,6 +219,48 @@ async function dismissListedRequirement(
   await get().loadProblems()
 }
 
+async function dismissSettingHint(
+  get: () => { loadProblems: () => Promise<void> },
+  setting: SettingHint,
+) {
+  const target = open()
+  if (!target) {
+    return
+  }
+  try {
+    await DismissSetting(target.game, target.id, setting.uniqueId, setting.field)
+  } catch (e) {
+    fail(i18n._(msg`Could not dismiss the setting warning`))(e)
+    return
+  }
+  await get().loadProblems()
+}
+
+async function setConfigSetting(
+  get: () => { loadProblems: () => Promise<void> },
+  setting: SettingHint,
+  value: string,
+) {
+  const target = open()
+  if (!target) {
+    return
+  }
+  try {
+    await SetConfigValue(
+      target.game,
+      target.id,
+      setting.key,
+      setting.uniqueId,
+      setting.field,
+      value,
+    )
+  } catch (e) {
+    fail(i18n._(msg`Could not set ${setting.field} for ${setting.name}`))(e)
+    return
+  }
+  await get().loadProblems()
+}
+
 async function dismissAssetConflict(
   get: () => { loadProblems: () => Promise<void> },
   conflict: AssetConflict,
@@ -247,6 +292,20 @@ async function dropMod(get: () => { load: () => Promise<void> }, mod: Mod) {
   useSelection.getState().clear()
 }
 
+async function setEntryNoteTags(mod: Mod, note: string, tags: string[]) {
+  const target = open()
+  if (!target) {
+    return
+  }
+  try {
+    useProfiles
+      .getState()
+      .replace(await SetEntryNoteTags(target.game, target.id, mod.key, note, tags))
+  } catch (e) {
+    fail(i18n._(msg`Could not save the note and tags for ${mod.name}`))(e)
+  }
+}
+
 export const useMods = create<{
   mods: Mod[]
   loaded: boolean
@@ -276,6 +335,8 @@ export const useMods = create<{
   dismissAsset: (conflict: AssetConflict) => Promise<void>
   dismissAbandoned: (uniqueId: string) => Promise<void>
   dismissListed: (uniqueId: string) => Promise<void>
+  dismissSetting: (setting: SettingHint) => Promise<void>
+  setConfigValue: (setting: SettingHint, value: string) => Promise<void>
 }>((set, get) => ({
   mods: [],
   loaded: false,
@@ -350,19 +411,7 @@ export const useMods = create<{
     }
     await useUpdates.getState().load()
   },
-  setNoteTags: async (mod, note, tags) => {
-    const target = open()
-    if (!target) {
-      return
-    }
-    try {
-      useProfiles
-        .getState()
-        .replace(await SetEntryNoteTags(target.game, target.id, mod.key, note, tags))
-    } catch (e) {
-      fail(i18n._(msg`Could not save the note and tags for ${mod.name}`))(e)
-    }
-  },
+  setNoteTags: (mod, note, tags) => setEntryNoteTags(mod, note, tags),
   askRemove: (mod) => set({ removing: removingOf(mod) }),
   remove: (mod) => dropMod(get, mod),
   removeMany: (mods) => dropMods(get, mods),
@@ -411,6 +460,8 @@ export const useMods = create<{
   dismissAsset: (conflict) => dismissAssetConflict(get, conflict),
   dismissAbandoned: (uniqueId) => dismissAbandonedMod(get, uniqueId),
   dismissListed: (uniqueId) => dismissListedRequirement(get, uniqueId),
+  dismissSetting: (setting) => dismissSettingHint(get, setting),
+  setConfigValue: (setting, value) => setConfigSetting(get, setting, value),
 }))
 
 export type { View }

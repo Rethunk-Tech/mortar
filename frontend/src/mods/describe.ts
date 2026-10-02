@@ -95,6 +95,8 @@ export function useDescribe(): Describe {
         }
         return t`${name} logged ${count} errors in the last run.`
       }
+      case 'setting':
+        return t`${p.setting.name} has a ${p.setting.field} setting for ${(p.setting.forNames ?? []).join(', ')}; it is ${p.setting.current}, so those patches are off.`
       default:
         return ''
     }

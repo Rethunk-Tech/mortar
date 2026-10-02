@@ -99,6 +99,7 @@ test('status grouping puts drift-affected entries in Problems', () => {
     duplicates: [],
     broken: [],
     assetConflicts: [],
+    settings: [],
     runErrors: [],
     drift: [{ kind: DriftKind.DriftChanged, folder: 'k', key: 'k' }],
     unknown: false,

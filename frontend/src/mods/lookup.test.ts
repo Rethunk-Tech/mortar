@@ -60,6 +60,7 @@ test("drift on an entry flags that entry's mods for status grouping", () => {
     duplicates: [],
     broken: [],
     assetConflicts: [],
+    settings: [],
     runErrors: [],
     drift: [drift],
     unknown: false,
@@ -87,6 +88,7 @@ test('problems and updates are counted per finding', () => {
       duplicates: [{ uniqueId: 'me.a', name: 'A', copies: [] }],
       broken: [{ key: 'k', uniqueId: 'me.b', name: 'B', status: 'broken', brokeIn: '' }],
       assetConflicts: [],
+      settings: [],
       runErrors: [
         {
           key: 'k2',

@@ -27,6 +27,8 @@ function useSectionTitle() {
         return t`Changed outside Mortar`
       case 'duplicates':
         return t`Duplicates`
+      case 'settings':
+        return t`Settings`
       default:
         return ''
     }
@@ -38,7 +40,12 @@ function useRowText() {
   const describe = useDescribe()
   const describeDrift = useDescribeDrift()
   return (row: Row) => {
-    const note = row.kind === 'missing' && row.missing.listed ? row.missing.note.trim() : ''
+    let note = ''
+    if (row.kind === 'missing' && row.missing.listed) {
+      note = row.missing.note.trim()
+    } else if (row.kind === 'setting') {
+      note = row.setting.description.trim()
+    }
     let text = row.kind === 'drift' ? describeDrift(row.drift) : describe(row)
     if (note !== '' && text.endsWith(`: ${note}`)) {
       text = text.slice(0, -(note.length + 2))

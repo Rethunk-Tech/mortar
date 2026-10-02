@@ -11,6 +11,7 @@ export const isInfoRow = (p: Row): boolean =>
   (p.kind === 'asset' && p.asset.kind === 'edit') ||
   (p.kind === 'broken' && p.broken.status === 'abandoned') ||
   (p.kind === 'missing' && p.missing.listed) ||
+  p.kind === 'setting' ||
   (p.kind === 'runError' && !p.runError.severe)
 
 export type ProblemSectionId =
@@ -20,6 +21,7 @@ export type ProblemSectionId =
   | 'runErrors'
   | 'drift'
   | 'duplicates'
+  | 'settings'
 
 export interface ProblemSection {
   id: ProblemSectionId
@@ -51,6 +53,10 @@ export function problemSections(result: Result): ProblemSection[] {
     {
       id: 'duplicates',
       rows: (result.duplicates ?? []).map((duplicate): Row => ({ kind: 'duplicate', duplicate })),
+    },
+    {
+      id: 'settings',
+      rows: (result.settings ?? []).map((setting): Row => ({ kind: 'setting', setting })),
     },
   ]
   return sections.filter((s) => s.rows.length > 0)

@@ -48,6 +48,7 @@ const result = (missing: Missing[]): Result => ({
   duplicates: null,
   broken: null,
   assetConflicts: null,
+  settings: null,
   runErrors: null,
   unknown: false,
 })

@@ -6,6 +6,7 @@ import type {
   Missing,
   Result,
   RunError,
+  SettingHint,
   Update,
   UpdatesResult,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
@@ -64,6 +65,7 @@ export type Problem =
   | { kind: 'duplicate'; duplicate: Duplicate }
   | { kind: 'asset'; asset: AssetConflict }
   | { kind: 'runError'; runError: RunError }
+  | { kind: 'setting'; setting: SettingHint }
 
 export const problemsOf = (result: Result | null): Problem[] =>
   result
@@ -75,6 +77,7 @@ export const problemsOf = (result: Result | null): Problem[] =>
         ...(result.missing ?? []).map((missing): Problem => ({ kind: 'missing', missing })),
         ...(result.assetConflicts ?? []).map((asset): Problem => ({ kind: 'asset', asset })),
         ...(result.runErrors ?? []).map((runError): Problem => ({ kind: 'runError', runError })),
+        ...(result.settings ?? []).map((setting): Problem => ({ kind: 'setting', setting })),
       ]
     : []
 
@@ -102,6 +105,9 @@ export function concerns(p: Problem, mod: Mod): boolean {
   }
   if (p.kind === 'runError') {
     return p.runError.key === mod.key && sameId(p.runError.uniqueId, mod.uniqueId)
+  }
+  if (p.kind === 'setting') {
+    return p.setting.key === mod.key && sameId(p.setting.uniqueId, mod.uniqueId)
   }
   return sameId(p.missing.dependentId, mod.uniqueId)
 }
