@@ -48,6 +48,7 @@ var subverbs = map[string][]string{
 	"mods":       {"enable", "disable", "pin", "unpin", "remove"},
 	"bundles":    {"apply"},
 	"nexus":      {"untrack"},
+	"trash":      {"list", "restore", "delete", "empty"},
 	"completion": {"bash", "zsh", "fish"},
 	"launchers":  {"add", "remove"},
 	"tools":      {"run"},
@@ -62,6 +63,8 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 		return 1, 0, 0
 	case "nexus":
 		return 2, 0, 0
+	case "trash":
+		return 0, 0, 0
 	case "tools":
 		if len(words) > 1 && words[1] == "run" {
 			return 2, 3, 4
@@ -101,6 +104,19 @@ func (c *cmd) complete(words []string) error {
 		}
 	} else if subs, ok := subverbs[words[0]]; ok && pos == 1 && words[0] != "mods" {
 		cands = subs
+	} else if words[0] == "trash" && pos == 2 && len(words) > 1 && (words[1] == "restore" || words[1] == "delete") {
+		game := "stardew"
+		for i := 0; i+1 < len(words); i++ {
+			if words[i] == "--game" {
+				game = words[i+1]
+			}
+		}
+		var items []profile.TrashItem
+		if c.ask("trash.list", control.Params{Game: game}, &items, readTimeout) == nil {
+			for _, item := range items {
+				cands = append(cands, item.Name)
+			}
+		}
 	} else {
 		if words[0] == "mods" && pos == 1 {
 			cands = append(cands, subverbs["mods"]...)

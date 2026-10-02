@@ -162,6 +162,50 @@ func TestCompleteOffersVerbsGamesAndProfiles(t *testing.T) {
 	}
 }
 
+func TestTrashListRestoreAndYes(t *testing.T) {
+	deleted := time.Now().Add(-3 * 24 * time.Hour).UTC()
+	results := map[string]any{
+		"trash.list":    []profile.TrashItem{{ID: "id1", Name: "Old Farm", DeletedAt: deleted, DaysLeft: 27}},
+		"trash.restore": profile.Profile{ID: "id1", Name: "Old Farm"},
+		"trash.delete":  control.Removed{Mods: []string{"Old Farm"}},
+	}
+	r := invoke(t, results, "trash", "list")
+	if r.code != 0 || !strings.Contains(r.out, "Old Farm") || !strings.Contains(r.out, "days left") {
+		t.Fatalf("list: %+v", r)
+	}
+	if got := r.calls[0]; got.method != "trash.list" || got.params.Game != "stardew" {
+		t.Fatalf("list params: %+v", got)
+	}
+	r = invoke(t, results, "trash", "list", "--game", "stardew")
+	if r.calls[0].params.Game != "stardew" {
+		t.Fatalf("list --game: %+v", r.calls[0])
+	}
+	r = invoke(t, map[string]any{"trash.list": []profile.TrashItem{}}, "trash", "list")
+	if r.code != 0 || !strings.Contains(r.out, "Trash is empty.") {
+		t.Fatalf("empty list: %+v", r)
+	}
+	r = invoke(t, results, "trash", "restore", "Old Farm")
+	if r.code != 0 || !strings.Contains(r.out, "Restored") || r.calls[0].method != "trash.restore" || r.calls[0].params.Profile != "Old Farm" {
+		t.Fatalf("restore: %+v", r)
+	}
+	r = invoke(t, nil, "trash", "delete", "Old Farm")
+	if r.code != 2 || len(r.calls) != 0 || !strings.Contains(r.errOut, "--yes") {
+		t.Fatalf("delete without yes: %+v", r)
+	}
+	r = invoke(t, results, "trash", "delete", "Old Farm", "--yes")
+	if r.code != 0 || r.calls[0].method != "trash.delete" || !strings.Contains(r.out, "Permanently deleted") {
+		t.Fatalf("delete: %+v", r)
+	}
+	r = invoke(t, nil, "trash", "empty")
+	if r.code != 2 || !strings.Contains(r.errOut, "--yes") {
+		t.Fatalf("empty without yes: %+v", r)
+	}
+	r = invoke(t, map[string]any{"trash.empty": nil}, "trash", "empty", "--yes")
+	if r.code != 0 || r.calls[0].method != "trash.empty" || !strings.Contains(r.out, "emptied") {
+		t.Fatalf("empty: %+v", r)
+	}
+}
+
 func TestIsTakesVerbsAndBareWordsButNotLinksOrFiles(t *testing.T) {
 	for arg, want := range map[string]bool{
 		"games": true, "nonsense": true, "nxm://stardewvalley/mods/1/files/2": false,
