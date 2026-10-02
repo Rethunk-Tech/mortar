@@ -113,6 +113,78 @@ const pendingUpdate = (items: Item[], profileId: string, u: Update) =>
     ? pendingFor(items, profileId, 0, u.githubRepo)
     : pendingFor(items, profileId, u.nexusId)
 
+function UpdateActions({
+  update,
+  mod,
+  entry,
+  queued,
+  caution,
+  acked,
+  onUpdateAll,
+}: {
+  update: Update
+  mod?: Mod
+  entry?: NonNullable<Profile['entries']>[number]
+  queued: boolean
+  caution: string
+  acked: boolean
+  onUpdateAll: () => void
+}) {
+  const { t } = useLingui()
+  const setPinned = useMods((s) => s.setPinned)
+  const setSkipVersion = useMods((s) => s.setSkipVersion)
+  const setSkipSource = useMods((s) => s.setSkipSource)
+  return (
+    <>
+      <Button
+        size="small"
+        disabled={!mod}
+        onClick={() => mod && setSkipVersion(mod, update.version).catch(reportUnexpected)}
+        sx={{ whiteSpace: 'nowrap' }}
+      >
+        {t`Skip this version`}
+      </Button>
+      <Button
+        size="small"
+        onClick={() => mod && setPinned(mod, !entry?.pinned).catch(reportUnexpected)}
+        sx={{ whiteSpace: 'nowrap' }}
+      >
+        {entry?.pinned ? t`Unpin` : t`Pin`}
+      </Button>
+      {update.source && !entry?.skipSources?.includes(update.source) ? (
+        <Button
+          size="small"
+          disabled={!mod}
+          onClick={() => mod && setSkipSource(mod, update.source, true).catch(reportUnexpected)}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          {t`Ignore updates from ${update.source}`}
+        </Button>
+      ) : null}
+      {downloadable(update) ? (
+        <>
+          <Button
+            variant="contained"
+            disabled={queued || (caution !== '' && !acked)}
+            onClick={() => download([updateWant(update)]).catch(reportUnexpected)}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            {queued ? t`Queued` : t`Update`}
+          </Button>
+          <Button
+            variant="outlined"
+            disabled={queued || (caution !== '' && !acked)}
+            onClick={onUpdateAll}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            {t`Update in all profiles that have it`}
+          </Button>
+        </>
+      ) : null}
+    </>
+  )
+}
+
 function Fold({ title, children }: { title: string; children: ReactNode }) {
   const [shown, setShown] = useState(false)
   const Icon = shown ? ChevronDown : ChevronRight
@@ -208,7 +280,6 @@ function Changes({ update }: { update: Update }) {
   )
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: The row owns all update-choice interactions.
 function Row({
   update,
   profileId,
@@ -233,8 +304,6 @@ function Row({
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const mod = mods.find((m) => m.key === update.key && sameId(m.uniqueId, update.uniqueId))
-  const setPinned = useMods((s) => s.setPinned)
-  const setSkipVersion = useMods((s) => s.setSkipVersion)
   const entry = useProfiles((s) =>
     s.profiles.find((p) => p.id === profileId)?.entries?.find((e) => e.key === update.key),
   )
@@ -251,6 +320,8 @@ function Row({
     ...(mod && !mod.enabled ? [t`Switched off in this profile`] : []),
     ...(update.unofficial ? [t`Unofficial`] : []),
   ]
+  const reportedElsewhere =
+    entry?.source.kind === 'nexus' && update.source !== '' && update.source !== 'Nexus'
   return (
     <Box
       role="listitem"
@@ -304,6 +375,11 @@ function Row({
             {caution}
           </Typography>
         ) : null}
+        {reportedElsewhere ? (
+          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+            {t`Reported by ${update.source}`}
+          </Typography>
+        ) : null}
         <Changes update={update} />
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, whiteSpace: 'nowrap' }}>
@@ -322,41 +398,15 @@ function Row({
             {t`Open page`}
           </Button>
         ) : null}
-        {downloadable(update) ? (
-          <>
-            <Button
-              size="small"
-              disabled={!mod}
-              onClick={() => mod && setSkipVersion(mod, update.version).catch(reportUnexpected)}
-              sx={{ whiteSpace: 'nowrap' }}
-            >
-              {t`Skip this version`}
-            </Button>
-            <Button
-              size="small"
-              onClick={() => mod && setPinned(mod, !entry?.pinned).catch(reportUnexpected)}
-              sx={{ whiteSpace: 'nowrap' }}
-            >
-              {entry?.pinned ? t`Unpin` : t`Pin`}
-            </Button>
-            <Button
-              variant="contained"
-              disabled={queued || (caution !== '' && !acked)}
-              onClick={() => download([updateWant(update)]).catch(reportUnexpected)}
-              sx={{ whiteSpace: 'nowrap' }}
-            >
-              {queued ? t`Queued` : t`Update`}
-            </Button>
-            <Button
-              variant="outlined"
-              disabled={queued || (caution !== '' && !acked)}
-              onClick={onUpdateAll}
-              sx={{ whiteSpace: 'nowrap' }}
-            >
-              {t`Update in all profiles that have it`}
-            </Button>
-          </>
-        ) : null}
+        <UpdateActions
+          update={update}
+          {...(mod ? { mod } : {})}
+          {...(entry ? { entry } : {})}
+          queued={queued}
+          caution={caution}
+          acked={acked}
+          onUpdateAll={onUpdateAll}
+        />
       </Box>
       <Checkbox
         checked={included && (!caution || acked)}

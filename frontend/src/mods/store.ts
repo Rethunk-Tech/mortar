@@ -33,6 +33,7 @@ import {
   SetModsEnabled,
   SetPinned,
   SetPinnedMany,
+  SetSkipSource,
   SetSkipVersion,
   SetSkipVersionMany,
   ShowFiles,
@@ -479,6 +480,7 @@ export const useMods = create<{
   setPinnedMany: (mods: Mod[], pinned: boolean) => Promise<void>
   setSkipVersion: (mod: Mod, version: string) => Promise<void>
   setSkipVersionMany: (mods: Mod[]) => Promise<void>
+  setSkipSource: (mod: Mod, source: string, skip: boolean) => Promise<void>
   setCategoryMany: (mods: Mod[], category: string) => Promise<void>
   setTagMany: (mods: Mod[], tag: string, add: boolean) => Promise<void>
   setNoteTags: (mod: Mod, note: string, tags: string[]) => Promise<void>
@@ -569,6 +571,16 @@ export const useMods = create<{
         ),
       i18n._(msg`Could not skip updates for the selected mods`),
     ),
+  setSkipSource: async (mod, source, skip) => {
+    const target = open()
+    if (!target) {
+      return
+    }
+    useProfiles
+      .getState()
+      .replace(await SetSkipSource(target.game, target.id, mod.key, source, skip))
+    await useUpdates.getState().load()
+  },
   setCategoryMany: (mods, category) =>
     batchProfile(
       mods,

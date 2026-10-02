@@ -17,6 +17,7 @@ const update = (overrides: Partial<Update>): Update => ({
   url: '',
   nexusId: 42,
   githubRepo: '',
+  source: '',
   unofficial: false,
   ...overrides,
 })

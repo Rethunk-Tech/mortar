@@ -120,6 +120,7 @@ test('an update belongs to one copy of a mod', () => {
     url: '',
     nexusId: 0,
     githubRepo: '',
+    source: '',
     unofficial: false,
   }
   const result = { updates: [update], unknown: false }
@@ -133,6 +134,8 @@ test('a pin or skipped version hides that update', () => {
   expect(offersUpdate({ pinned: true }, '2.0.0')).toBe(false)
   expect(offersUpdate({ skipVersion: '2.0.0' }, '2.0.0')).toBe(false)
   expect(offersUpdate({ skipVersion: '2.0.0' }, '2.1.0')).toBe(true)
+  expect(offersUpdate({ skipSources: ['GitHub'] }, '2.0.0', 'GitHub')).toBe(false)
+  expect(offersUpdate({ skipSources: ['GitHub'] }, '2.0.0', 'Nexus')).toBe(true)
   const update = {
     key: 'a-1',
     uniqueId: 'me.a',
@@ -142,6 +145,7 @@ test('a pin or skipped version hides that update', () => {
     url: '',
     nexusId: 0,
     githubRepo: '',
+    source: '',
     unofficial: false,
   }
   const result = { updates: [update], unknown: false }
@@ -187,6 +191,7 @@ test('a removed Nexus page and unofficial versions are not installed by Update a
     url: '',
     nexusId: 1,
     githubRepo: '',
+    source: '',
     unofficial: false,
   }
   expect(listedAgainstNexus(row, { status: 'published', available: true })).toBe(true)
@@ -207,6 +212,7 @@ test('review updates use the same Nexus-filtered list as the count', () => {
         url: '',
         nexusId: 1,
         githubRepo: '',
+        source: '',
         unofficial: false,
       },
       {
@@ -218,6 +224,7 @@ test('review updates use the same Nexus-filtered list as the count', () => {
         url: '',
         nexusId: 2,
         githubRepo: '',
+        source: '',
         unofficial: false,
       },
     ],

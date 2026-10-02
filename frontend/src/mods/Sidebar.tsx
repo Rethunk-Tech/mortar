@@ -313,6 +313,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   const all = useMods((s) => s.mods)
   const setPinned = useMods((s) => s.setPinned)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
+  const setSkipSource = useMods((s) => s.setSkipSource)
   const others = siblingsOf(all, mod)
   const setOpen = useDetail((s) => s.setOpen)
   const game = useProfiles((s) => s.game?.id ?? '')
@@ -322,7 +323,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   const fresh = useNexusFresh(nexusId)
   const entry = entryOf(profile, mod.key)
   const offered = useUpdates((s) => updateFor(s.updates, mod, profile))
-  const source = kindLabel(kind, {
+  const sourceName = kindLabel(kind, {
     archive: t`Archive`,
     nexus: t`Nexus Mods`,
     github: t`GitHub`,
@@ -336,7 +337,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
             {mod.name}
           </Typography>
           <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-            {`${mod.author} · ${source}`}
+            {`${mod.author} · ${sourceName}`}
           </Typography>
         </Box>
         <ModSwitch mod={mod} />
@@ -358,6 +359,16 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
           {t`Show skipped update`}
         </Button>
       ) : null}
+      {(entry?.skipSources ?? []).map((ignoredSource) => (
+        <Button
+          key={ignoredSource}
+          variant="outlined"
+          onClick={() => setSkipSource(mod, ignoredSource, false).catch(reportUnexpected)}
+          sx={noWrap}
+        >
+          {t`Stop ignoring ${ignoredSource} updates`}
+        </Button>
+      ))}
       <Field label={t`UniqueID`} value={mod.uniqueId} />
       {mod.endorsements > 0 ? (
         <Field label={t`Endorsements`} value={mod.endorsements.toLocaleString(i18n.locale)} />

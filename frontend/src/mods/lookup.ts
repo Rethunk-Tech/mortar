@@ -131,10 +131,14 @@ export const problemCount = (result: Result | null): number =>
   problemsOf(result).length + (result?.drift?.length ?? 0)
 
 export const offersUpdate = (
-  entry: { pinned?: boolean; skipVersion?: string } | undefined,
+  entry: { pinned?: boolean; skipVersion?: string; skipSources?: string[] | null } | undefined,
   newer: string,
+  source = '',
 ): boolean => {
   if (!newer || entry?.pinned) {
+    return false
+  }
+  if (source !== '' && (entry?.skipSources ?? []).includes(source)) {
     return false
   }
   const skip = entry?.skipVersion ?? ''
@@ -142,7 +146,7 @@ export const offersUpdate = (
 }
 
 export const visibleUpdates = (result: UpdatesResult | null, profile?: Profile | null): Update[] =>
-  (result?.updates ?? []).filter((u) => offersUpdate(entryOf(profile, u.key), u.version))
+  (result?.updates ?? []).filter((u) => offersUpdate(entryOf(profile, u.key), u.version, u.source))
 
 export const listedAgainstNexus = (
   u: Update,
