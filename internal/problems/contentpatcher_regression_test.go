@@ -191,3 +191,56 @@ func TestPriorityParsingKeepsOddChangesIsolated(t *testing.T) {
 		t.Fatal("Content Patcher priority scale was not applied")
 	}
 }
+
+func TestConflictWinnerUsesClashingPatchPriority(t *testing.T) {
+	first := syntheticEditPack(t, `{"Changes":[
+		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"Priority":"High"},
+		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":1,"Y":1,"Width":1,"Height":1},"Priority":"Low"}
+	}`)
+	second := syntheticEditPack(t, `{"Changes":[
+		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":1,"Y":1,"Width":1,"Height":1},"Priority":"Medium"}
+	}`)
+	conflicts := assetConflicts([]Installed{first, second})
+	if len(conflicts) != 1 || conflicts[0].WinnerID != second.UniqueID {
+		t.Fatalf("winner must be selected from clashing patches: %#v", conflicts)
+	}
+
+	base := packHit{
+		id: "base", name: "Base", loads: []cpPatch{{priority: "Medium"}},
+		loadClashes: map[int]bool{0: true}, dependencies: map[string]bool{},
+	}
+	addon := packHit{
+		id: "addon", name: "Addon", loads: []cpPatch{{priority: "Medium"}},
+		loadClashes: map[int]bool{0: true}, dependencies: map[string]bool{"base": true},
+	}
+	loadOrder := conflictOf("load", "Maps/Test", []packHit{base, addon})
+	if loadOrder.WinnerID != "addon" || loadOrder.WinnerName != "by load order" {
+		t.Fatalf("dependency order should decide equal-priority loads: %#v", loadOrder)
+	}
+	unclear := conflictOf("load", "Maps/Test", []packHit{base, packHit{
+		id: "other", name: "Other", loads: []cpPatch{{priority: "Medium"}},
+		loadClashes: map[int]bool{0: true}, dependencies: map[string]bool{},
+	}})
+	if unclear.WinnerName != "unclear" {
+		t.Fatalf("unrelated equal-priority loads should be unclear: %#v", unclear)
+	}
+	exclusive := conflictOf("load", "Maps/Test", []packHit{
+		{id: "one", name: "One", loads: []cpPatch{{priority: "Exclusive"}}, loadClashes: map[int]bool{0: true}},
+		{id: "two", name: "Two", loads: []cpPatch{{priority: "Exclusive"}}, loadClashes: map[int]bool{0: true}},
+	})
+	if exclusive.WinnerName != "CP applies neither" {
+		t.Fatalf("exclusive loads should leave the asset unchanged: %#v", exclusive)
+	}
+}
+
+func syntheticEditPack(t *testing.T, content string) Installed {
+	t.Helper()
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "manifest.json"), []byte(`{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	return Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root)}
+}

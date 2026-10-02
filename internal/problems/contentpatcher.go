@@ -3,6 +3,7 @@ package problems
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"maps"
 	"os"
 	"path/filepath"
@@ -53,20 +54,21 @@ type ConflictFix struct {
 }
 
 type packHit struct {
-	id          string
-	name        string
-	key         string
-	priority    string
-	mentions    map[string]bool
-	root        string
-	tokens      []cpPatch
-	present     map[string]bool
-	loads       []cpPatch
-	edits       []cpPatch // the pack's active edits of this target
-	loadClashes map[int]bool
-	schema      map[string]cpSchema
-	config      map[string]string
-	clashes     map[int]bool // indices into edits that overlap an edit of a pack it was not built with
+	id           string
+	name         string
+	key          string
+	priority     string
+	mentions     map[string]bool
+	root         string
+	tokens       []cpPatch
+	present      map[string]bool
+	loads        []cpPatch
+	edits        []cpPatch // the pack's active edits of this target
+	loadClashes  map[int]bool
+	dependencies map[string]bool
+	schema       map[string]cpSchema
+	config       map[string]string
+	clashes      map[int]bool // indices into edits that overlap an edit of a pack it was not built with
 }
 
 // cpPatch is one Load or EditImage/EditMap change with the HasMod conditions that gate it.
@@ -667,11 +669,14 @@ func assetConflicts(mods []Installed) []AssetConflict {
 	for _, mod := range mods {
 		pack := readContentPack(mod)
 		knows := maps.Clone(pack.mentions)
+		dependencies := map[string]bool{}
 		for _, d := range mod.Dependencies {
 			if knows == nil {
 				knows = map[string]bool{}
 			}
-			knows[strings.ToLower(d.UniqueID)] = true
+			id := strings.ToLower(d.UniqueID)
+			knows[id] = true
+			dependencies[id] = true
 		}
 		config := map[string]string{}
 		if len(pack.schema) > 0 {
@@ -687,6 +692,7 @@ func assetConflicts(mods []Installed) []AssetConflict {
 				hits = append(hits, packHit{
 					id: mod.UniqueID, name: mod.Name, key: mod.Key, priority: p.priority, mentions: knows,
 					root: mod.Folder, tokens: slices.Clone(pack.patches), present: present, schema: pack.schema, config: config,
+					dependencies: dependencies,
 				})
 				i = len(hits) - 1
 				at[p.kind][p.target] = hits
@@ -807,35 +813,113 @@ func conflictOf(kind, target string, hits []packHit) AssetConflict {
 		c.PackIDs[i], c.Names[i], c.Keys[i] = h.id, h.name, h.key
 	}
 	best := -1
-	bestRank := -1
-	tied := false
+	bestRank := -1 << 31
+	var tied []int
 	exclusive := 0
 	for i, hit := range hits {
-		rank := contentPatcherPriority(kind, hit.priority)
-		if kind == "load" && strings.EqualFold(strings.TrimSpace(hit.priority), "exclusive") {
+		rank := hitPriority(kind, hit)
+		if kind == "load" && hasExclusiveLoad(hit) {
 			exclusive++
 		}
 		if rank > bestRank {
-			best, bestRank, tied = i, rank, false
+			best, bestRank, tied = i, rank, []int{i}
 		} else if rank == bestRank {
-			tied = true
+			tied = append(tied, i)
 		}
 	}
-	if best >= 0 && !tied && exclusive < 2 {
+	if kind == "load" && exclusive >= 2 {
+		c.WinnerName = "CP applies neither"
+		log.Printf("Content Patcher error: exclusive loads for %s leave the asset unchanged", target)
+		return c
+	}
+	if best >= 0 && len(tied) == 1 {
 		c.WinnerID, c.WinnerName = hits[best].id, hits[best].name
 		for i, h := range hits {
 			if i != best {
 				c.Overridden = append(c.Overridden, h.name)
 			}
 		}
-	} else {
-		c.WinnerName = "unclear"
+		return c
 	}
+	if kind == "load" {
+		if winner, ok := dependencyLoadWinner(hits, tied); ok {
+			c.WinnerID = hits[winner].id
+			c.WinnerName = "by load order"
+			for i, h := range hits {
+				if i != winner {
+					c.Overridden = append(c.Overridden, h.name)
+				}
+			}
+			return c
+		}
+	}
+	c.WinnerName = "unclear"
 	return c
+}
+
+func hitPriority(kind string, hit packHit) int {
+	best := -1
+	found := false
+	if kind == "load" {
+		for i, patch := range hit.loads {
+			if hit.loadClashes != nil && !hit.loadClashes[i] {
+				continue
+			}
+			rank := contentPatcherPriority(kind, patch.priority)
+			if !found || rank > best {
+				best, found = rank, true
+			}
+		}
+	} else {
+		for i, patch := range hit.edits {
+			if hit.clashes != nil && !hit.clashes[i] {
+				continue
+			}
+			rank := contentPatcherPriority(kind, patch.priority)
+			if !found || rank > best {
+				best, found = rank, true
+			}
+		}
+	}
+	if found {
+		return best
+	}
+	return contentPatcherPriority(kind, hit.priority)
+}
+
+func hasExclusiveLoad(hit packHit) bool {
+	for i, patch := range hit.loads {
+		if hit.loadClashes != nil && !hit.loadClashes[i] {
+			continue
+		}
+		if strings.EqualFold(strings.TrimSpace(patch.priority), "exclusive") {
+			return true
+		}
+	}
+	return false
+}
+
+func dependencyLoadWinner(hits []packHit, tied []int) (int, bool) {
+	if len(tied) != 2 {
+		return -1, false
+	}
+	left, right := tied[0], tied[1]
+	leftDepends := hits[left].dependencies[strings.ToLower(hits[right].id)]
+	rightDepends := hits[right].dependencies[strings.ToLower(hits[left].id)]
+	if leftDepends == rightDepends {
+		return -1, false
+	}
+	if leftDepends {
+		return left, true
+	}
+	return right, true
 }
 
 func harmlessLoads(hits []packHit, conflict AssetConflict) bool {
 	if len(hits) < 2 {
+		return false
+	}
+	if conflict.WinnerName == "CP applies neither" {
 		return false
 	}
 	winner := slices.IndexFunc(hits, func(h packHit) bool { return sameID(h.id, conflict.WinnerID) })
@@ -876,7 +960,7 @@ func harmlessLoads(hits []packHit, conflict AssetConflict) bool {
 			if !loadPriorityDecided(hits, conflict) {
 				return false
 			}
-			if contentPatcherPriority("load", hit.priority) > -1000 && !hit.mentions[strings.ToLower(hits[winner].id)] {
+			if hitPriority("load", hit) > -1000 && !hit.mentions[strings.ToLower(hits[winner].id)] {
 				return false
 			}
 		}
@@ -892,9 +976,9 @@ func loadPriorityDecided(hits []packHit, conflict AssetConflict) bool {
 	if winner < 0 {
 		return false
 	}
-	best := contentPatcherPriority("load", hits[winner].priority)
+	best := hitPriority("load", hits[winner])
 	for i, hit := range hits {
-		if i != winner && contentPatcherPriority("load", hit.priority) >= best {
+		if i != winner && hitPriority("load", hit) >= best {
 			return false
 		}
 	}
