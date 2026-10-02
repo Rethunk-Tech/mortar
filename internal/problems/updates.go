@@ -18,8 +18,19 @@ const updatesTTL = time.Hour
 
 var semverPrerelease = regexp.MustCompile(`^[vV]?(\d+)\.(\d+)(?:\.(\d+))?(?:\.(\d+))?-([0-9A-Za-z].*)$`)
 
+// hasPrerelease reports a semver prerelease suffix. Authors also tag releases "-stable" or "-release", which
+// semver would read as a prerelease and so let betas through to someone who turned them off.
 func hasPrerelease(version string) bool {
-	return semverPrerelease.MatchString(strings.TrimSpace(version))
+	m := semverPrerelease.FindStringSubmatch(strings.TrimSpace(version))
+	if m == nil {
+		return false
+	}
+	tag, _, _ := strings.Cut(strings.ToLower(m[5]), ".")
+	switch tag {
+	case "stable", "release", "final", "ga", "rtm":
+		return false
+	}
+	return true
 }
 
 // Update is a newer version SMAPI's API suggests for an installed mod. URL is the page to get it from, and

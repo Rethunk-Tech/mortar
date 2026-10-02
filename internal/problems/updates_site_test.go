@@ -11,3 +11,15 @@ func TestNexusUpdateFollowsSuggestedSite(t *testing.T) {
 		t.Fatalf("curseforge url: %d", got)
 	}
 }
+
+func TestStableSuffixIsNotPrerelease(t *testing.T) {
+	for v, want := range map[string]bool{"1.4.10-stable": false, "1.5.3-beta": true, "2.0.0-Release": false, "1.0.0": false, "3.1.0-rc.1": true} {
+		if got := hasPrerelease(v); got != want {
+			t.Errorf("hasPrerelease(%q) = %v", v, got)
+		}
+	}
+	held := HideHeld(UpdatesResult{Updates: []Update{{Key: "k", Installed: "1.4.10-stable", Version: "1.5.3-beta"}}}, nil, false)
+	if len(held.Updates) != 0 {
+		t.Fatalf("beta offered with prereleases off: %+v", held.Updates)
+	}
+}
