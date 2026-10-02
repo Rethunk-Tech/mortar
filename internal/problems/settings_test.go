@@ -128,3 +128,17 @@ func TestConfigOffPatchDoesNotConflict(t *testing.T) {
 		t.Fatalf("both on should conflict: %+v", got)
 	}
 }
+
+func TestConflictOffersTheSettingThatRemovesOnePack(t *testing.T) {
+	changes := `[{"Action":"EditMap","Target":"Maps/Desert","FromFile":"cart.tmx","ToArea":{"X":2,"Y":38,"Width":2,"Height":2},"When":{"DesertMinecart":true}}]`
+	cart := settingPack(t, `{"DesertMinecart":{"Default":true,"AllowValues":"true, false"}}`, changes, "")
+	desert := settingPack(t, `{}`, `[{"Action":"EditMap","Target":"Maps/Desert","FromFile":"d.tmx","ToArea":{"X":0,"Y":0,"Width":60,"Height":156}}]`, "")
+	desert.Key, desert.UniqueID, desert.Name = "desert", "Desert.Expansion", "Desert Expansion"
+	got := assetConflicts([]Installed{cart, desert})
+	if len(got) != 1 || len(got[0].Fixes) != 1 {
+		t.Fatalf("conflicts %+v", got)
+	}
+	if f := got[0].Fixes[0]; f.UniqueID != "Pack.Compat" || f.Field != "DesertMinecart" || f.Value != "false" || f.Current != "true" {
+		t.Fatalf("fix %+v", f)
+	}
+}

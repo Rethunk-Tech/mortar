@@ -378,3 +378,74 @@ func situational(p cpPatch) bool {
 func tinyOnly(p cpPatch) bool {
 	return len(p.shapes) > 0 && !slices.ContainsFunc(p.shapes, func(s cpShape) bool { return !s.tiny })
 }
+
+// markClashes records which edits of a and b overlap each other.
+func markClashes(a, b *packHit) {
+	for i, x := range a.edits {
+		for j, y := range b.edits {
+			if exclusive(x, y) || !shapesOverlap(x.shapes, y.shapes) {
+				continue
+			}
+			if a.clashes == nil {
+				a.clashes = map[int]bool{}
+			}
+			if b.clashes == nil {
+				b.clashes = map[int]bool{}
+			}
+			a.clashes[i], b.clashes[j] = true, true
+		}
+	}
+}
+
+// switchOff finds an on/off field that every clashing edit of the pack needs; its other value removes the pack
+// from the conflict, such as Better Things' DesertMinecart for an expansion that redraws the desert.
+func switchOff(h packHit) (ConflictFix, bool) {
+	if len(h.clashes) == 0 {
+		return ConflictFix{}, false
+	}
+	var first cpPatch
+	for i := range h.clashes {
+		first = h.edits[i]
+		break
+	}
+	for _, c := range first.when.config {
+		field, ok := h.schema[strings.ToLower(c.field)]
+		if !ok || !field.toggle() {
+			continue
+		}
+		needed := map[string]bool{}
+		all := true
+		for i := range h.clashes {
+			j := slices.IndexFunc(h.edits[i].when.config, func(o cpConfig) bool { return strings.EqualFold(o.field, field.key) })
+			if j < 0 {
+				all = false
+				break
+			}
+			for _, v := range h.edits[i].when.config[j].values {
+				needed[strings.ToLower(v)] = true
+			}
+		}
+		if !all {
+			continue
+		}
+		values := field.allowValues
+		if len(values) == 0 {
+			values = []string{"true", "false"}
+		}
+		var off []string
+		for _, v := range values {
+			if !needed[strings.ToLower(strings.TrimSpace(v))] {
+				off = append(off, strings.TrimSpace(v))
+			}
+		}
+		if len(off) != 1 {
+			continue
+		}
+		current, set := h.config[strings.ToLower(field.key)]
+		if !set {
+			current = field.defaultValue
+		}
+		return ConflictFix{Key: h.key, UniqueID: h.id, Name: h.name, Field: field.key, Current: current, Value: off[0]}, true
+	}
+	return ConflictFix{}, false
+}

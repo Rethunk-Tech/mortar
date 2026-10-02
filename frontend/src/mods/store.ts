@@ -238,7 +238,7 @@ async function dismissSettingHint(
 
 async function setConfigSetting(
   get: () => { loadProblems: () => Promise<void> },
-  setting: SettingHint,
+  setting: Pick<SettingHint, 'key' | 'uniqueId' | 'field' | 'name'>,
   value: string,
 ) {
   const target = open()
@@ -336,7 +336,10 @@ export const useMods = create<{
   dismissAbandoned: (uniqueId: string) => Promise<void>
   dismissListed: (uniqueId: string) => Promise<void>
   dismissSetting: (setting: SettingHint) => Promise<void>
-  setConfigValue: (setting: SettingHint, value: string) => Promise<void>
+  setConfigValue: (
+    setting: Pick<SettingHint, 'key' | 'uniqueId' | 'field' | 'name'>,
+    value: string,
+  ) => Promise<void>
 }>((set, get) => ({
   mods: [],
   loaded: false,

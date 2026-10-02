@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, Menu, MenuItem } from '@mui/material'
+import { Button, Menu, MenuItem, Tooltip } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
 import { ChevronDown } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
@@ -264,6 +264,7 @@ export function FixButton({ problem }: { problem: Problem }) {
   const setEnabled = useMods((s) => s.setEnabled)
   const resolve = useMods((s) => s.resolve)
   const dismissAsset = useMods((s) => s.dismissAsset)
+  const setConfigValue = useMods((s) => s.setConfigValue)
   const dismissListed = useMods((s) => s.dismissListed)
   const locked = useLocked()
   const button = (label: string, onClick: () => void) => (
@@ -297,6 +298,18 @@ export function FixButton({ problem }: { problem: Problem }) {
     const dismiss = dismissAsset
     return (
       <>
+        {(problem.asset.fixes ?? []).map((fix) => (
+          <Tooltip
+            key={`${fix.uniqueId}/${fix.field}`}
+            title={t`In ${fix.name}; turns off its edits here`}
+          >
+            <span>
+              {button(t`Set ${fix.field} to ${fix.value}`, () =>
+                setConfigValue(fix, fix.value).catch(reportUnexpected),
+              )}
+            </span>
+          </Tooltip>
+        ))}
         {mod ? button(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected)) : null}
         {problem.asset.kind === 'edit' ? (
           <Button

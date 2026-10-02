@@ -36,6 +36,19 @@ type AssetConflict struct {
 	Overridden []string `json:"overridden"`
 	// Cosmetic marks an edit conflict whose every overlap is harmless (see harmless): shown, never counted.
 	Cosmetic bool `json:"cosmetic"`
+	// Fixes are settings that switch off every clashing edit of one pack.
+	Fixes []ConflictFix `json:"fixes"`
+}
+
+// ConflictFix sets one on/off field of a pack (Key, UniqueID) to Value, which turns off all of that pack's edits
+// in the conflict; Current is the field's value now.
+type ConflictFix struct {
+	Key      string `json:"key"`
+	UniqueID string `json:"uniqueId"`
+	Name     string `json:"name"`
+	Field    string `json:"field"`
+	Current  string `json:"current"`
+	Value    string `json:"value"`
 }
 
 type packHit struct {
@@ -45,6 +58,9 @@ type packHit struct {
 	priority string
 	mentions map[string]bool
 	edits    []cpPatch // the pack's active edits of this target
+	schema   map[string]cpSchema
+	config   map[string]string
+	clashes  map[int]bool // indices into edits that overlap an edit of a pack it was not built with
 }
 
 // cpPatch is one Load or EditImage/EditMap change with the HasMod conditions that gate it.
@@ -579,7 +595,7 @@ func assetConflicts(mods []Installed) []AssetConflict {
 			hits := at[p.kind][p.target]
 			i := slices.IndexFunc(hits, func(h packHit) bool { return sameID(h.id, mod.UniqueID) })
 			if i < 0 {
-				hits = append(hits, packHit{id: mod.UniqueID, name: mod.Name, key: mod.Key, priority: p.priority, mentions: knows})
+				hits = append(hits, packHit{id: mod.UniqueID, name: mod.Name, key: mod.Key, priority: p.priority, mentions: knows, schema: pack.schema, config: config})
 				i = len(hits) - 1
 				at[p.kind][p.target] = hits
 			} else {
@@ -600,6 +616,12 @@ func assetConflicts(mods []Installed) []AssetConflict {
 			if len(hits) >= 2 {
 				c := conflictOf(kind, t, hits)
 				c.Cosmetic = cosmetic
+				c.Fixes = []ConflictFix{}
+				for _, h := range hits {
+					if fix, ok := switchOff(h); ok {
+						c.Fixes = append(c.Fixes, fix)
+					}
+				}
 				out = append(out, c)
 			}
 		}
@@ -632,6 +654,7 @@ func clashing(hits []packHit) (out []packHit, cosmetic bool) {
 				continue
 			}
 			in[i], in[j] = true, true
+			markClashes(&hits[i], &hits[j])
 			cosmetic = cosmetic && minor
 		}
 	}

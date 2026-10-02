@@ -227,6 +227,7 @@ msgstr "Update available: {0} → {1}"
 msgid "{0, plural, one {# update} other {# updates}}"
 msgstr "{0, plural, one {# update} other {# updates}}"
 
+#: src/tools/ToolsManageDialog.tsx:82
 #: src/tools/ToolsMenu.tsx:62
 msgid "Add tool…"
 msgstr "Add tool…"
@@ -239,7 +240,7 @@ msgstr "Updated on Nexus"
 #: src/mods/problemFixButtons.tsx:136
 #: src/mods/problemFixButtons.tsx:185
 #: src/mods/problemFixButtons.tsx:255
-#: src/mods/problemFixButtons.tsx:309
+#: src/mods/problemFixButtons.tsx:322
 #: src/tips/TipBanner.tsx:36
 #: src/tips/TipBanner.tsx:39
 #: src/toasts/ToastHost.tsx:133
@@ -295,7 +296,7 @@ msgstr "Sign in to Nexus Mods in Settings to see more from this mod's page."
 msgid "Only in {bName}"
 msgstr "Only in {bName}"
 
-#: src/mods/problemFixButtons.tsx:285
+#: src/mods/problemFixButtons.tsx:286
 msgid "Resolve"
 msgstr "Resolve"
 
@@ -705,7 +706,7 @@ msgstr "Enter a name for the profile."
 msgid "Files added"
 msgstr "Files added"
 
-#: src/mods/problemFixButtons.tsx:393
+#: src/mods/problemFixButtons.tsx:406
 msgid "Forget"
 msgstr "Forget"
 
@@ -910,6 +911,10 @@ msgstr "Found in GOG via Heroic"
 msgid "Add mods from an archive you downloaded, or find them on Nexus."
 msgstr "Add mods from an archive you downloaded, or find them on Nexus."
 
+#: src/tools/ToolsManageDialog.tsx:46
+msgid "No tools yet. Add a program you run alongside the game, such as a save editor or a map viewer, and it launches from the Tools menu in one click."
+msgstr "No tools yet. Add a program you run alongside the game, such as a save editor or a map viewer, and it launches from the Tools menu in one click."
+
 #: src/saves/SavesTab.tsx:134
 msgid "Dismiss for this save"
 msgstr "Dismiss for this save"
@@ -1052,7 +1057,7 @@ msgstr "Different version"
 msgid "Sky"
 msgstr "Sky"
 
-#: src/mods/problemFixButtons.tsx:407
+#: src/mods/problemFixButtons.tsx:420
 msgid "Keep my changes"
 msgstr "Keep my changes"
 
@@ -2071,7 +2076,7 @@ msgid "Port"
 msgstr "Port"
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:437
+#: src/mods/store.ts:440
 msgid "Could not open config.json of {0}"
 msgstr "Could not open config.json of {0}"
 
@@ -2165,7 +2170,7 @@ msgstr "Request counts appear after Mortar talks to Nexus."
 msgid "Back"
 msgstr "Back"
 
-#: src/mods/Sidebar.tsx:429
+#: src/mods/Sidebar.tsx:433
 msgid "Selected mod"
 msgstr "Selected mod"
 
@@ -2191,7 +2196,7 @@ msgid "Open in editor"
 msgstr "Open in editor"
 
 #. placeholder {0}: dup.name
-#: src/mods/store.ts:455
+#: src/mods/store.ts:458
 msgid "Could not switch off the other copy of {0}"
 msgstr "Could not switch off the other copy of {0}"
 
@@ -2311,7 +2316,7 @@ msgstr "Restore {0}"
 msgid "One argument per line. Placeholders: {game}, {mods}, {saves}, {profile}."
 msgstr "One argument per line. Placeholders: {game}, {mods}, {saves}, {profile}."
 
-#: src/mods/problemFixButtons.tsx:416
+#: src/mods/problemFixButtons.tsx:429
 msgid "Revert"
 msgstr "Revert"
 
@@ -2328,7 +2333,7 @@ msgid "Mods"
 msgstr "Mods"
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:376
+#: src/mods/store.ts:379
 msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
@@ -2708,7 +2713,7 @@ msgid "Import settings…"
 msgstr "Import settings…"
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:407
+#: src/mods/store.ts:410
 msgid "Could not skip the update for {0}"
 msgstr "Could not skip the update for {0}"
 
@@ -2726,7 +2731,7 @@ msgstr "Game"
 
 #: src/mods/ModDependencyTree.tsx:86
 #: src/mods/problemFixButtons.tsx:128
-#: src/mods/problemFixButtons.tsx:327
+#: src/mods/problemFixButtons.tsx:340
 msgid "Add"
 msgstr "Add"
 
@@ -2851,18 +2856,18 @@ msgid "Download"
 msgstr "Download"
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:426
+#: src/mods/store.ts:429
 msgid "Could not open the folder of {0}"
 msgstr "Could not open the folder of {0}"
 
 #. placeholder {0}: tool.name
-#: src/tools/ToolsManageDialog.tsx:47
-#: src/tools/ToolsManageDialog.tsx:50
+#: src/tools/ToolsManageDialog.tsx:55
+#: src/tools/ToolsManageDialog.tsx:58
 msgid "Edit {0}"
 msgstr "Edit {0}"
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:406
+#: src/mods/store.ts:409
 msgid "Could not show the skipped update for {0}"
 msgstr "Could not show the skipped update for {0}"
 
@@ -2951,7 +2956,7 @@ msgid "{0} is in this profile's mods folder and is not an installed entry."
 msgstr "{0} is in this profile's mods folder and is not an installed entry."
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:390
+#: src/mods/store.ts:393
 msgid "Could not pin {0}"
 msgstr "Could not pin {0}"
 
@@ -3018,7 +3023,7 @@ msgstr "Unofficial update available: {0}"
 msgid "Winter"
 msgstr "Winter"
 
-#: src/tools/ToolsManageDialog.tsx:39
+#: src/tools/ToolsManageDialog.tsx:42
 #: src/tools/ToolsMenu.tsx:73
 msgid "Manage tools"
 msgstr "Manage tools"
@@ -3486,7 +3491,7 @@ msgid "{profileName} has {0} more than once. SMAPI loads only one, so pick which
 msgstr "{profileName} has {0} more than once. SMAPI loads only one, so pick which to keep. The others are switched off, not deleted."
 
 #. placeholder {0}: mod.name
-#: src/mods/store.ts:390
+#: src/mods/store.ts:393
 msgid "Could not unpin {0}"
 msgstr "Could not unpin {0}"
 
@@ -3545,6 +3550,11 @@ msgstr "Export profile…"
 msgid "Some files could not be checked against Nexus, so a few may differ from what was shared."
 msgstr "Some files could not be checked against Nexus, so a few may differ from what was shared."
 
+#. placeholder {0}: fix.name
+#: src/mods/problemFixButtons.tsx:304
+msgid "In {0}; turns off its edits here"
+msgstr "In {0}; turns off its edits here"
+
 #: src/launch/LaunchLayer.tsx:281
 msgid "{name} did not start"
 msgstr "{name} did not start"
@@ -3585,7 +3595,7 @@ msgstr "Install {name}?"
 #: src/console/BisectDialog.tsx:148
 #: src/mods/problemFixButtons.tsx:104
 #: src/mods/problemFixButtons.tsx:190
-#: src/mods/problemFixButtons.tsx:300
+#: src/mods/problemFixButtons.tsx:313
 msgid "Switch off"
 msgstr "Switch off"
 
@@ -3652,7 +3662,7 @@ msgstr "Built on"
 #: src/mods/ModMenu.tsx:165
 #: src/mods/parts.tsx:312
 #: src/mods/parts.tsx:363
-#: src/mods/problemFixButtons.tsx:369
+#: src/mods/problemFixButtons.tsx:382
 #: src/mods/SelectionBar.tsx:71
 msgid "Remove"
 msgstr "Remove"
@@ -3760,10 +3770,6 @@ msgstr "Install"
 #: src/settings/sections/GameSettings.tsx:243
 msgid "This runs the command below once for your user. Steam will then be able to read Mortar's data folder."
 msgstr "This runs the command below once for your user. Steam will then be able to read Mortar's data folder."
-
-#: src/mods/Sidebar.tsx:442
-msgid "Select a mod to see its details."
-msgstr "Select a mod to see its details."
 
 #: src/mods/ModDependencyTree.tsx:107
 msgid "Required"
@@ -4003,6 +4009,12 @@ msgstr "Cool and calm"
 msgid "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › Stardew Valley) or SMAPI will not see this profile."
 msgstr "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › Stardew Valley) or SMAPI will not see this profile."
 
+#. placeholder {0}: fix.field
+#. placeholder {1}: fix.value
+#: src/mods/problemFixButtons.tsx:307
+msgid "Set {0} to {1}"
+msgstr "Set {0} to {1}"
+
 #: src/commandPalette/CommandPalette.tsx:134
 #: src/settings/SettingsPage.tsx:35
 msgid "About"
@@ -4207,8 +4219,8 @@ msgid "Added {mods} to {profileName}"
 msgstr "Added {mods} to {profileName}"
 
 #. placeholder {0}: tool.name
-#: src/tools/ToolsManageDialog.tsx:56
-#: src/tools/ToolsManageDialog.tsx:59
+#: src/tools/ToolsManageDialog.tsx:64
+#: src/tools/ToolsManageDialog.tsx:67
 msgid "Remove {0}"
 msgstr "Remove {0}"
 
@@ -4544,7 +4556,7 @@ msgstr "Changelog is not cached yet."
 msgid "Could not endorse"
 msgstr "Could not endorse"
 
-#: src/mods/problemFixButtons.tsx:321
+#: src/mods/problemFixButtons.tsx:334
 msgid "Switch on"
 msgstr "Switch on"
 
@@ -4688,7 +4700,7 @@ msgstr "Checking for updates…"
 msgid "UI scale ({value}%)"
 msgstr "UI scale ({value}%)"
 
-#: src/mods/problemFixButtons.tsx:384
+#: src/mods/problemFixButtons.tsx:397
 #: src/profiles/ProfilesPage.tsx:79
 #: src/saves/BackupsDialog.tsx:99
 #: src/saves/BackupsDialog.tsx:268
@@ -4772,7 +4784,7 @@ msgstr "Version {0}"
 #: src/share/ShareDialog.tsx:525
 #: src/share/ShareDialog.tsx:527
 #: src/shell/TitleBar.tsx:123
-#: src/tools/ToolsManageDialog.tsx:74
+#: src/tools/ToolsManageDialog.tsx:83
 msgid "Close"
 msgstr "Close"
 
@@ -4917,7 +4929,7 @@ msgstr "Install anyway"
 msgid "Sound volume ({value}%)"
 msgstr "Sound volume ({value}%)"
 
-#: src/mods/problemFixButtons.tsx:360
+#: src/mods/problemFixButtons.tsx:373
 msgid "Adopt"
 msgstr "Adopt"
 

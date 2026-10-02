@@ -81,6 +81,7 @@ test('cosmetic conflicts get their own section and are not counted', () => {
     winnerName: 'unclear',
     overridden: null,
     cosmetic,
+    fixes: [],
   })
   const result: Result = {
     ...emptyResult(),
