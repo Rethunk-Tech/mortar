@@ -490,11 +490,6 @@ func parseWhenDepth(raw map[string]json.RawMessage, mentions map[string]bool, sc
 	return w.with(cpWhen{spouse: spouseOf(raw), places: placesOf(raw)})
 }
 
-func dynamicTokenConditionName(key string) (string, bool) {
-	name, _, ok := dynamicTokenConditionParts(key)
-	return name, ok
-}
-
 func dynamicTokenConditionParts(key string) (string, string, bool) {
 	key = strings.TrimSpace(key)
 	if strings.HasPrefix(key, "{{") {

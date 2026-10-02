@@ -266,12 +266,13 @@ function Failure({ game }: { game: string }) {
   const start = useLaunch((s) => s.start)
   const cause = failure?.cause
   const mod = useMods((s) => s.mods.find((m) => m.key === cause?.modKey))
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
   // The dialog unmounts with `failure`, so nothing fades out with stale text.
   if (!failure) {
     return null
   }
   const name = info?.name ?? ''
-  const nexusID = info && mod ? nexusIdOf(info, mod) : 0
+  const nexusID = profile && mod ? nexusIdOf(profile, mod) : 0
   const showLine = failure.hint === Hint.HintLaunchOptions && info?.installDir
   const showFlatpak = failure.hint === Hint.HintFlatpakFS
   return (

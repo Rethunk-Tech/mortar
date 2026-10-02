@@ -215,7 +215,7 @@ func TestProblemsDismissRestoreAndDismissed(t *testing.T) {
 		},
 		Settings: []problems.SettingHint{{UniqueID: "A.Mod", Name: "Alpha", Field: "Enabled", Current: "false", ForNames: []string{"Beta"}}},
 		Dismissed: []problems.DismissedProblem{
-			{Token: "listed\tneed.mod", Missing: &problems.Missing{DependentName: "Pack", UniqueID: "Need.Mod", Listed: true}},
+			{Token: strings.Join([]string{"listed", "need.mod"}, "\t"), Missing: &problems.Missing{DependentName: "Pack", UniqueID: "Need.Mod", Listed: true}},
 		},
 	}
 	results := map[string]any{

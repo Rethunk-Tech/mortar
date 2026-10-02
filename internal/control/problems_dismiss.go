@@ -65,7 +65,7 @@ func (s *Services) dismissProblem(ctx context.Context, gameID, profileID string,
 	}
 }
 
-func (s *Services) restoreDismissedProblem(ctx context.Context, gameID, profileID string, token string, index int) error {
+func (s *Services) restoreDismissedProblem(ctx context.Context, gameID, profileID, token string, index int) error {
 	if token == "" {
 		if index < 1 {
 			return fmt.Errorf("missing dismissal token or index")
