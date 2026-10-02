@@ -1,5 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  ButtonBase,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
+} from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { ChevronDown, ChevronRight, Copy, ShieldCheck, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
@@ -295,6 +304,9 @@ export function ProblemsTab() {
   const result = useOpenProblems()
   const sectionTitle = useSectionTitle()
   useLoadProblemsOnFocus()
+  const removeMany = useMods((s) => s.removeMany)
+  const dismissAsset = useMods((s) => s.dismissAsset)
+  const [confirmCleanup, setConfirmCleanup] = useState(false)
 
   if (result === null) {
     return <LoadingRow>{t`Checking the mods for problems…`}</LoadingRow>
@@ -302,8 +314,6 @@ export function ProblemsTab() {
 
   const sections = problemSections(result)
   const cleanup = result.cleanup ?? []
-  const removeMany = useMods((s) => s.removeMany)
-  const dismissAsset = useMods((s) => s.dismissAsset)
   const installable =
     sections
       .find((section) => section.id === 'missing')
@@ -318,6 +328,53 @@ export function ProblemsTab() {
     sections.filter((section) => section.id !== 'dismissed').length === 0 &&
     cleanup.length === 0 &&
     !result.unknown
+
+  const sectionExtras = (section: (typeof sections)[number]) => {
+    if (section.id === 'missing' && installable.length > 0) {
+      return {
+        action: {
+          label: t`Add all ${installable.length}`,
+          onClick: () => {
+            const wants: Want[] = installable.flatMap(({ missing }): Want[] => {
+              const { where } = missing
+              if (!where) {
+                return []
+              }
+              return where.site === 'GitHub'
+                ? [{ kind: 'dependency', repo: where.github, name: where.github }]
+                : [
+                    {
+                      kind: 'dependency',
+                      modId: where.pageId,
+                      fileId: where.fileId,
+                      latest: true,
+                      name: where.pageName,
+                      fileName: where.fileName,
+                      version: where.version,
+                    },
+                  ]
+            })
+            download(wants).catch(reportUnexpected)
+          },
+        },
+      }
+    }
+    if (section.id === 'cosmetic') {
+      return {
+        action: {
+          label: t`Dismiss all`,
+          onClick: () => {
+            for (const row of section.rows) {
+              if (!isDismissedRow(row) && row.kind === 'asset') {
+                dismissAsset(row.asset).catch(reportUnexpected)
+              }
+            }
+          },
+        },
+      }
+    }
+    return {}
+  }
 
   return (
     <Box
@@ -347,46 +404,7 @@ export function ProblemsTab() {
           title={sectionTitle(section.id)}
           rows={section.rows}
           collapsible={section.id === 'cosmetic' || section.id === 'dismissed'}
-          {...(section.id === 'missing' && installable.length > 0
-            ? {
-                action: {
-                  label: t`Add all ${installable.length}`,
-                  onClick: () => {
-                    const wants: Want[] = installable.flatMap(({ missing }): Want[] => {
-                      const where = missing.where
-                      if (!where) return []
-                      return where.site === 'GitHub'
-                        ? [{ kind: 'dependency', repo: where.github, name: where.github }]
-                        : [
-                            {
-                              kind: 'dependency',
-                              modId: where.pageId,
-                              fileId: where.fileId,
-                              latest: true,
-                              name: where.pageName,
-                              fileName: where.fileName,
-                              version: where.version,
-                            },
-                          ]
-                    })
-                    download(wants).catch(reportUnexpected)
-                  },
-                },
-              }
-            : section.id === 'cosmetic'
-              ? {
-                  action: {
-                    label: t`Dismiss all`,
-                    onClick: () => {
-                      for (const row of section.rows) {
-                        if (!isDismissedRow(row) && row.kind === 'asset') {
-                          dismissAsset(row.asset).catch(reportUnexpected)
-                        }
-                      }
-                    },
-                  },
-                }
-              : {})}
+          {...sectionExtras(section)}
         />
       ))}
       {cleanup.length === 0 ? null : (
@@ -395,18 +413,7 @@ export function ProblemsTab() {
             <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
               {t`Cleanup`}
             </Typography>
-            <Button
-              size="small"
-              sx={{ ml: 1, height: 26 }}
-              onClick={() => {
-                if (window.confirm(t`Remove all ${cleanup.length} mods from this profile?`)) {
-                  const mods = cleanup
-                    .map((item) => useMods.getState().mods.find((mod) => mod.key === item.key))
-                    .filter((mod): mod is NonNullable<typeof mod> => mod !== undefined)
-                  removeMany(mods).catch(reportUnexpected)
-                }
-              }}
-            >
+            <Button size="small" sx={{ ml: 1, height: 26 }} onClick={() => setConfirmCleanup(true)}>
               {t`Remove all`}
             </Button>
           </Box>
@@ -417,6 +424,26 @@ export function ProblemsTab() {
           </Box>
         </Box>
       )}
+      <Dialog open={confirmCleanup} onClose={() => setConfirmCleanup(false)}>
+        <DialogTitle>{t`Remove all ${cleanup.length} mods from this profile?`}</DialogTitle>
+        <DialogContent>{t`This cannot be undone.`}</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmCleanup(false)}>{t`Cancel`}</Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => {
+              setConfirmCleanup(false)
+              const mods = cleanup
+                .map((item) => useMods.getState().mods.find((mod) => mod.key === item.key))
+                .filter((mod): mod is NonNullable<typeof mod> => mod !== undefined)
+              removeMany(mods).catch(reportUnexpected)
+            }}
+          >
+            {t`Remove all`}
+          </Button>
+        </DialogActions>
+      </Dialog>
       {result.unknown ? (
         <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
           {t`Some checks could not run without a connection, so more problems may show up later.`}
