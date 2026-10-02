@@ -497,6 +497,39 @@ func run() error {
 		window.Restore()
 		window.Show().Focus()
 	}
+	updatesvc.StartModBackground(updateCtx, modUpdateSettingFunc(func() bool {
+		check := store.Get().CheckModUpdatesOnStart
+		return check != nil && *check
+	}), modUpdateSourceFunc(func(ctx context.Context) ([]updatesvc.ModUpdate, error) {
+		if _, err := game.InstallDir(home, store.Get(), "stardew"); err != nil {
+			return nil, nil
+		}
+		all, err := profiles.List("stardew")
+		if err != nil {
+			return nil, err
+		}
+		out := make([]updatesvc.ModUpdate, 0, len(all))
+		for _, p := range all {
+			result, err := problemsSvc.Updates(ctx, "stardew", p.ID)
+			if err != nil {
+				return nil, err
+			}
+			out = append(out, updatesvc.ModUpdate{
+				Game: "stardew", ProfileID: p.ID, ProfileName: p.Name, Count: len(result.Updates),
+			})
+		}
+		return out, nil
+	}), modUpdateNotifierFunc(func(update updatesvc.ModUpdate) {
+		title, body := updatesvc.ModUpdateNotification(update)
+		if err := notifier.SendNotification(notifications.NotificationOptions{
+			ID:    fmt.Sprintf("mod-updates-%s-%d", update.ProfileID, time.Now().UnixNano()),
+			Title: title,
+			Body:  body,
+			Data:  map[string]any{"game": update.Game, "profile": update.ProfileID},
+		}); err != nil {
+			log.Printf("mod update notification: %v", err)
+		}
+	}))
 
 	var tray *application.SystemTray
 	var trayMenu *application.Menu
@@ -583,6 +616,24 @@ func run() error {
 	err = app.Run()
 	stopQueue()
 	return err
+}
+
+type modUpdateSourceFunc func(context.Context) ([]updatesvc.ModUpdate, error)
+
+type modUpdateSettingFunc func() bool
+
+func (f modUpdateSettingFunc) ModUpdatesEnabled() bool {
+	return f()
+}
+
+func (f modUpdateSourceFunc) ModUpdates(ctx context.Context) ([]updatesvc.ModUpdate, error) {
+	return f(ctx)
+}
+
+type modUpdateNotifierFunc func(updatesvc.ModUpdate)
+
+func (f modUpdateNotifierFunc) Notify(update updatesvc.ModUpdate) {
+	f(update)
 }
 
 func releaseLinks() error {
