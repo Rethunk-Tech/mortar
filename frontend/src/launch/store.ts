@@ -327,6 +327,7 @@ function applyStatus(
   }
   if (status.state === State.Failed) {
     set({ failure: { profile: status.profile, body: failureBody(status), hint: status.hint } })
+    set({ updateRollback: null })
   }
   if (status.state === State.NoSteam) {
     const rollback = get().updateRollback
@@ -457,7 +458,11 @@ export const useLaunch = create<{
   answerDirect: async (agreed) => {
     const { askDirect } = get()
     set({ askDirect: null })
-    if (agreed && askDirect) {
+    if (!agreed) {
+      set({ updateRollback: null })
+      return
+    }
+    if (askDirect) {
       if (askDirect.profile === '') {
         await get().startVanilla(askDirect.game, true)
       } else if (askDirect.update) {
@@ -491,6 +496,5 @@ export function initLaunch() {
   Events.On('launch:line', (event) => useConsole.getState().add(event.data))
   Events.On('launch:crash', (event) => useLaunch.getState().setCrash(event.data))
 }
-
 export const overlayGame = (routeName: string, routeGame: string, statusGame: string) =>
   routeName === 'game' ? routeGame : statusGame

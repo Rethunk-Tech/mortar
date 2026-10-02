@@ -1,3 +1,4 @@
+import { msg } from '@lingui/core/macro'
 import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import type { Update } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { Updates } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
@@ -16,6 +17,7 @@ import {
   Add,
   State as QueueState,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+import { i18n } from '../i18n/index.ts'
 import { installableUpdate, visibleUpdates } from '../mods/lookup.ts'
 import { useProfiles } from '../profiles/store.ts'
 import type { Want } from '../queue/actions.ts'
@@ -84,7 +86,9 @@ const QUEUE_POLL_MS = 250
 const textOf = (error: unknown) => (error instanceof Error ? error.message : String(error))
 
 function itemFailure(item: Item): Error {
-  return new Error(item.error || `${item.name || 'A mod'} update did not finish`)
+  return new Error(
+    item.error || i18n._(msg`The update for ${item.name || i18n._(msg`the mod`)} did not finish`),
+  )
 }
 
 const delay = (ms: number) => new Promise<void>((resolve) => globalThis.setTimeout(resolve, ms))
@@ -162,7 +166,7 @@ async function updateBeforePlay(game: string, profileId: string): Promise<AutoUp
     }
     const added = await Add(requests(game, profileId, plan.wants))
     if (!added || added.length !== plan.wants.length) {
-      throw new Error('the update downloads could not be added')
+      throw new Error(i18n._(msg`Could not add the update downloads`))
     }
     await waitForUpdates(added.map((item) => item.id))
     return { restorePoint: point, previousRunId: before.id, previousErrors: before.errors }
@@ -180,12 +184,12 @@ async function currentUpdateKeys(point: AutoUpdateRestorePoint): Promise<string[
   if (!profile) {
     return []
   }
-  return point.updates.flatMap((update) => {
-    return (profile.entries ?? [])
+  return point.updates.flatMap((update) =>
+    (profile.entries ?? [])
       .filter((candidate) => candidate.previousKey === update.key)
       .map((entry) => entry.key)
-      .filter((key) => key !== '')
-  })
+      .filter((key) => key !== ''),
+  )
 }
 
 async function rollbackAutoUpdate(point: AutoUpdateRestorePoint): Promise<void> {
