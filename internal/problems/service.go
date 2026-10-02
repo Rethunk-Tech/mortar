@@ -35,13 +35,17 @@ type Service struct {
 }
 
 type problemCall struct {
-	done   chan struct{}
-	result Result
+	done     chan struct{}
+	result   Result
+	once     sync.Once
+	joined   chan struct{}
+	joinOnce sync.Once
 }
 
 func (s *Service) shareCheck(ctx context.Context, key string, check func() Result) (Result, error) {
 	s.mu.Lock()
 	if call, ok := s.checks[key]; ok {
+		call.joinOnce.Do(func() { close(call.joined) })
 		s.mu.Unlock()
 		select {
 		case <-call.done:
@@ -50,15 +54,17 @@ func (s *Service) shareCheck(ctx context.Context, key string, check func() Resul
 			return Result{}, ctx.Err()
 		}
 	}
-	call := &problemCall{done: make(chan struct{})}
+	call := &problemCall{done: make(chan struct{}), joined: make(chan struct{})}
 	s.checks[key] = call
 	s.mu.Unlock()
 
 	r := check()
 	s.mu.Lock()
-	call.result = r
-	delete(s.checks, key)
-	close(call.done)
+	call.once.Do(func() {
+		call.result = r
+		delete(s.checks, key)
+		close(call.done)
+	})
 	s.mu.Unlock()
 	return r, nil
 }

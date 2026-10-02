@@ -23,19 +23,31 @@ func TestShareCheckRunsOnce(t *testing.T) {
 
 	var wg sync.WaitGroup
 	wg.Add(2)
-	for range 2 {
-		go func() {
-			defer wg.Done()
-			result, err := s.shareCheck(context.Background(), "stardew/profile", check)
-			if err != nil {
-				t.Errorf("shareCheck: %v", err)
-			}
-			if !result.Unknown {
-				t.Error("shareCheck returned the wrong result")
-			}
-		}()
-	}
+	go func() {
+		defer wg.Done()
+		result, err := s.shareCheck(context.Background(), "stardew/profile", check)
+		if err != nil {
+			t.Errorf("shareCheck: %v", err)
+		}
+		if !result.Unknown {
+			t.Error("shareCheck returned the wrong result")
+		}
+	}()
 	<-start
+	go func() {
+		defer wg.Done()
+		result, err := s.shareCheck(context.Background(), "stardew/profile", check)
+		if err != nil {
+			t.Errorf("shareCheck: %v", err)
+		}
+		if !result.Unknown {
+			t.Error("shareCheck returned the wrong result")
+		}
+	}()
+	s.mu.Lock()
+	call := s.checks["stardew/profile"]
+	s.mu.Unlock()
+	<-call.joined
 	close(release)
 	wg.Wait()
 	if calls != 1 {
