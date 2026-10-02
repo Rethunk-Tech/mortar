@@ -2,23 +2,12 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  alpha,
-  Box,
-  Button,
-  Divider,
-  IconButton,
-  Menu,
-  MenuItem,
-  type MenuItemProps,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { alpha, Box, Button, Divider, IconButton, Menu, Tooltip, Typography } from '@mui/material'
 import { GripVertical, MoreHorizontal, Palette, Pencil, Share2 } from 'lucide-react'
-import { type ReactNode, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { NameField } from '../game/NameField.tsx'
-import { CoverMenuItems, MoreMenuItems } from '../game/ProfileMenuItems.tsx'
+import { CoverMenuItems, MoreMenuItems, ProfileMenuItem } from '../game/ProfileMenuItems.tsx'
 import { useRestoreFocus } from '../game/useRestoreFocus.ts'
 import { useBadges } from '../mods/badges.ts'
 import { openShare } from '../share/store.ts'
@@ -31,25 +20,6 @@ import { joinSummary, knownCount, originLine } from './summary.ts'
 
 const DRAG_TINT_ALPHA = 0.24
 const panelSx = { bgcolor: 'rgba(50,50,60,0.78)', borderRadius: '6px' }
-const menuPaper = {
-  paper: {
-    sx: { width: 220, p: 0.75 },
-  },
-  list: { sx: { p: 0 } },
-}
-
-function Item({ icon, sx, children, ...props }: MenuItemProps & { icon: ReactNode }) {
-  return (
-    <MenuItem
-      {...props}
-      sx={{ height: 38, gap: '10px', px: '10px', borderRadius: '5px', fontSize: 14, ...sx }}
-    >
-      {icon}
-      {children}
-    </MenuItem>
-  )
-}
-
 function RowMenu({
   profile,
   anchor,
@@ -89,7 +59,6 @@ function RowMenu({
         disableRestoreFocus={true}
         keepMounted={true}
         slotProps={{
-          ...menuPaper,
           transition: {
             onExited: () => {
               if (refocus.current) {
@@ -99,12 +68,16 @@ function RowMenu({
           },
         }}
       >
-        <Item icon={<Pencil size={15} />} onClick={choose(onRename, false)}>
-          {t`Rename`}
-        </Item>
-        <Item icon={<Palette size={15} />} onClick={choose(onEdit, false)}>
-          {t`Edit profile`}
-        </Item>
+        <ProfileMenuItem
+          icon={<Pencil size={16} />}
+          label={t`Rename`}
+          onClick={choose(onRename, false)}
+        />
+        <ProfileMenuItem
+          icon={<Palette size={16} />}
+          label={t`Edit profile`}
+          onClick={choose(onEdit, false)}
+        />
         <CoverMenuItems game={game} profile={profile} close={choose(() => undefined)} />
         <Divider sx={{ my: 0.5 }} />
         <MoreMenuItems
