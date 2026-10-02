@@ -67,9 +67,18 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
     - **Cover:** the profile's cover image at full opacity under a light solid dim layer (`rgba(20,20,24,0.18)`), its alpha fading to transparent over the bottom 20% by an alpha mask, so the art reaches the top of the tab row so the backdrop shows through into the tab row (the hero has no background of its own).
     - **Cover source, in order:** an image the user picked, else the Nexus picture of the profile's most-endorsed mod (`endorsement_count` from the mod endpoint), else Steam's own hero art for the game, else a solid tone; never a random image. Steam's art is read at runtime from `<Steam>/appcache/librarycache/413150/library_hero.jpg` (Steam also keeps a `library_hero_blur.jpg`) and never bundled with Mortar.
     - **Text:** the profile name large and bold with a soft white glow, and always the same cards (Mods, Updated, Created) so the name sits at the same place for every profile. Beside the name sit Rename, **Edit profile** (Palette icon), the cover image menu and a ⋯ **Profile menu** holding **Export profile…** (native save dialog). Under the name, the profile's description shows as one truncated line with the whole text in a tooltip, when it has one (hidden in the compact layout).
-  - A **Saves** card in the hero with how many saves fit this profile ("2 of 4", "0 of 0" when there are none), opening the **Saves** tab: each save in the Saves folder with its fit, "all mods present" or "has used N mods this profile lacks" with their names, from the save scan ([architecture.md](architecture.md#saves)); a mod can be dismissed for a save. Players pick their save inside the game, so this is where the check shows, before Play.
+  - A **Saves** card in the hero with how many saves fit this profile ("2 of 4", "0 of 0" when there are none), opening the **Saves** tab:
+    - each save in the Saves folder with its fit: "all mods present" or "has used N mods this profile lacks" with their names, from the save scan ([architecture.md](architecture.md#saves))
+    - a mod can be dismissed for a save
+    - Players pick their save inside the game, so this is where the check shows, before Play.
   - Tabs: **Mods** (default), **Problems** (a count chip when the open profile has any problems), **Saves**, **Notes**, **Console**, then 32px bordered icon buttons with tooltips at the right of the row: a **Tools** menu (Wrench; lists configured tools for one-click launch, **Add tool…** and **Manage tools** for edit and remove, with **Add tool…** and a line saying what tools are for when none exist; the editor uses the native executable picker and documents placeholders), **Share**, and the game settings icon at the end of the tab row.
-- **Launching** covers the whole window with the launch overlay, the title bar inert except its window controls: a spinner, "Launching Stardew Valley", and SMAPI's first log lines as they arrive (started, mods loading, mods it will skip), with Open console and Hide, until the game is up or the launch fails (a launch where SMAPI exits without writing a log fails with its exit code). While the game runs, the Play button becomes a Running status with the elapsed time and a **Stop game** button, and the open profile's mod controls are locked ("Stop the game to change mods."): switching, removing, installing and dropping archives. While Mortar installs SMAPI by itself, Play reads "Installing SMAPI…". When the installed Stardew version differs from the one the last launch recorded, a dialog, "The game was updated", says which version the profile last launched on and which is installed, lists the profile's mods SMAPI's API marks broken for the new one (or that none are), and offers **Cancel**, **Open problems** (the Mods tab) and **Play anyway**; a first launch does not ask. When a launch Mortar started ends with errors or a SMAPI crash, a dialog, "Stardew Valley closed with errors", lists the mods that logged errors ("<mod> · N errors", each with its first message) with **Open Console**, **Get help** and **Dismiss**. When that list is empty, **Find the mod causing this** starts a crash bisect ([architecture.md](architecture.md#launch)).
+- **Launching** covers the whole window with the launch overlay, the title bar inert except its window controls:
+  - a spinner, "Launching Stardew Valley", and SMAPI's first log lines as they arrive (started, mods loading, mods it will skip), with Open console and Hide, until the game is up or the launch fails
+  - a launch where SMAPI exits without writing a log fails with its exit code
+  - While the game runs, the Play button becomes a Running status with the elapsed time and a **Stop game** button, and the open profile's mod controls are locked ("Stop the game to change mods."): switching, removing, installing and dropping archives
+  - While Mortar installs SMAPI by itself, Play reads "Installing SMAPI…"
+  - When the installed Stardew version differs from the one the last launch recorded, a dialog, "The game was updated", says which version the profile last launched on and which is installed, lists the profile's mods SMAPI's API marks broken for the new one (or that none are), and offers **Cancel**, **Open problems** (the Mods tab) and **Play anyway**; a first launch does not ask
+  - When a launch Mortar started ends with errors or a SMAPI crash, a dialog, "Stardew Valley closed with errors", lists the mods that logged errors ("mod · N errors", each with its first message) with **Open Console**, **Get help** and **Dismiss**. When that list is empty, **Find the mod causing this** starts a crash bisect ([architecture.md](architecture.md#launch)).
 - **Compact layout** (below 960px wide; the minimum window is 768×432): the sidebar collapses to a rail of profile initials with Play at its foot, the hero gives way to a one-line header (the name and "N mods · N updates · N problems", a part that is zero left out), the mods search folds into a filter icon that expands into the field, other actions fold into icon buttons, and the mod grid drops to two columns.
 
 ## Mods tab
@@ -105,11 +114,38 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 
 ## Saves tab
 
-Every save in the Saves folder with its fit for this profile: a coloured edge and a chip ("All mods present", "Has used N mods it lacks"), the mods it has used as removable chips (dismissing one for that save), and Add to this profile for mods Mortar can install. A line explains that the save is picked inside the game. A card's second line reads "<farmer> · <type> farm · <season day, year N> · <n>h played · <gold>g · last played <date>", leaving out a part the save does not give. **Save backups** above the cards opens a dialog listing the backup zips newest first, each with its time, cause ("Before updating <profile>", "Before a restore" or "Unknown"), size and the farms inside, with **Restore** (a dark menu: Restore all, or each save of that zip alone), **Open backups folder** and **Close**. Restore asks first, names the saves it will overwrite and says the current Saves folder is backed up first (solid paper, no transition), and reads "Stop the game to restore saves." while the game runs.
+Every save in the Saves folder with its fit for this profile:
+
+- a coloured edge and a chip ("All mods present", "Has used N mods it lacks")
+- the mods it has used as removable chips (dismissing one for that save)
+- Add to this profile for mods Mortar can install
+- a line explaining that the save is picked inside the game
+- a card's second line reads `farmer · type farm · season day, year N · Nh played · goldg · last played date`, leaving out a part the save does not give
+
+**Save backups** above the cards opens a dialog listing the backup zips newest first, each with its time, cause ("Before updating" the named profile, "Before a restore" or "Unknown"), size and the farms inside, with **Restore** (a dark menu: Restore all, or each save of that zip alone), **Open backups folder** and **Close**. Restore asks first, names the saves it will overwrite and says the current Saves folder is backed up first (solid paper, no transition), and reads "Stop the game to restore saves." while the game runs.
 
 ## Problems tab
 
-A full-height scrollable list of every problem for this profile, grouped under headings (Missing requirements, Conflicts, Broken or outdated mods, Errors in the last run, Changed outside Mortar, Duplicates, Settings, Cosmetic or harmless) with only non-empty groups shown; the Cosmetic or harmless group never counts toward the tab's chip, the profile badge or the Mods-tab row. While the tab is open, a **Copy all problems** icon button in the tab row (where the Console keeps its log actions) copies every group as plain text: the heading, then one "- " line per problem with its author note indented under it. Each row shows the full wrapped text, severity icon, the Nexus author note when a listed requirement has one, and its fix actions. Cosmetic or harmless rows use small outlined inherit fix buttons; real conflicts keep the contained warning style. The Settings group contains Content Patcher compatibility setting suggestions. While checks are loading it shows the same "Checking the mods for problems…" line as the summary; when there are none it shows "No problems found."; when some checks could not run offline it shows the connection warning from the summary. On the Mods tab, problems take one clickable row (warning colour when any problem is a warning): the count, the first warning's text truncated, and **Open Problems**; clicking anywhere on it opens this tab.
+A full-height scrollable list of every problem for this profile, grouped under headings (only non-empty groups shown):
+
+- Missing requirements
+- Conflicts
+- Broken or outdated mods
+- Errors in the last run
+- Changed outside Mortar
+- Duplicates
+- Settings (Content Patcher compatibility setting suggestions)
+- Cosmetic or harmless (never counts toward the tab's chip, the profile badge or the Mods-tab row)
+
+While the tab is open, a **Copy all problems** icon button in the tab row (where the Console keeps its log actions) copies every group as plain text: the heading, then one "- " line per problem with its author note indented under it.
+
+Each row shows the full wrapped text, severity icon, the Nexus author note when a listed requirement has one, and its fix actions. Cosmetic or harmless rows use small outlined inherit fix buttons; real conflicts keep the contained warning style.
+
+- Loading: the same "Checking the mods for problems…" line as the summary
+- None: "No problems found."
+- Some checks could not run offline: the connection warning from the summary
+
+On the Mods tab, problems take one clickable row (warning colour when any problem is a warning): the count, the first warning's text truncated, and **Open Problems**; clicking anywhere on it opens this tab.
 
 ## Notes tab
 
@@ -125,12 +161,24 @@ A header row like the Saves tab's explains that notes travel in a shared `.morta
 
 - SMAPI's log as it is written, monospace, in columns: a level bar, time, level, mod and message; warnings and errors get a tinted row.
 - Filters: a search box that grows to fill the row, toggles for SMAPI's six levels (Trace, Debug, Info, Warn, Error, Alert) each with its line count (Trace and Debug off by default), a mod picker whose choices show as removable chips, and Clear filters; icon toggles (tooltip and aria-label, aria-pressed for state) for timestamps (Clock) and following new lines (ArrowDownToLine, on by default) at the right of the filter row.
-- Log actions are icon buttons beside the tabs, each with a tooltip and aria-label, so the tab row does not wrap: Jump to first error (CircleAlert), Clear (Eraser), **Copy** (Copy), **Save log…** (Download) (a native save dialog, default name `SMAPI-<profile>-<date>.txt`; the raw SMAPI log file when this profile owns it, otherwise the Console's lines; off when there is nothing to save), and **Get help** (LifeBuoy): shows the log with its local paths and asks before uploading it to smapi.io/log, then copies the link and offers Open.
-- **Runs** picker, on the filter row after the mod picker (its button reads This session or the run shown): This session, or one of the profile's last 20 recorded launches (outcome Ran, Crashed or Failed, with its time); a past run loads its stored log read-only, and Save log and Get help use it. "No recorded runs yet" before the first.
+- Log actions are icon buttons beside the tabs, each with a tooltip and aria-label, so the tab row does not wrap:
+  - Jump to first error (CircleAlert)
+  - Clear (Eraser)
+  - **Copy** (Copy)
+  - **Save log…** (Download): a native save dialog, default name `SMAPI-<profile>-<date>.txt`; the raw SMAPI log file when this profile owns it, otherwise the Console's lines; off when there is nothing to save
+  - **Get help** (LifeBuoy): shows the log with its local paths and asks before uploading it to smapi.io/log, then copies the link and offers Open
+- **Runs** picker, on the filter row after the mod picker (its button reads This session or the run shown):
+  - This session, or one of the profile's last 20 recorded launches (outcome Ran, Crashed or Failed, with its time)
+  - a past run loads its stored log read-only, and Save log and Get help use it
+  - "No recorded runs yet" before the first
 - **Links:** in visible rows only, an exact installed mod name or `UniqueID` is an underlined link, in the row's own colour, that selects the mod, and a path under the profile's `mods/` folder or the game folder opens its folder.
 - Before the first launch: a line saying the console fills when the game runs.
 - **Reinstall:** when SMAPI's own log says it is incompatible with the game's version, an offer to reinstall SMAPI appears in the console.
-- **Input line** at the bottom (monospace, prompt `>`): Enter sends the command to the running game through the Mortar SMAPI Bridge and echoes `> <command>` into the log as a Mortar line; the output arrives with SMAPI's own lines, and Follow is switched back on so it scrolls into view. Up and Down browse the last 100 commands of that game (in memory only). Disabled with the hint "Start the game to run commands" while the game is not running; a failed send shows a toast.
+- **Input line** at the bottom (monospace, prompt `>`):
+  - Enter sends the command to the running game through the Mortar SMAPI Bridge and echoes it into the log as a Mortar line prefixed with `>`
+  - the output arrives with SMAPI's own lines, and Follow is switched back on so it scrolls into view
+  - Up and Down browse the last 100 commands of that game (in memory only)
+  - Disabled with the hint "Start the game to run commands" while the game is not running; a failed send shows a toast
 
 ## Profile management
 
