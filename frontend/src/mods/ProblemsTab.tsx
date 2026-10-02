@@ -4,6 +4,7 @@ import { Clipboard } from '@wailsio/runtime'
 import { ChevronDown, ChevronRight, Copy, ShieldCheck, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { useProfiles } from '../profiles/store.ts'
+import { download, type Want } from '../queue/actions.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
@@ -299,6 +300,16 @@ export function ProblemsTab() {
   const cleanup = result.cleanup ?? []
   const removeMany = useMods((s) => s.removeMany)
   const dismissAsset = useMods((s) => s.dismissAsset)
+  const installable =
+    sections
+      .find((section) => section.id === 'missing')
+      ?.rows.filter(
+        (row): row is Extract<Row, { kind: 'missing' }> =>
+          !isDismissedRow(row) &&
+          row.kind === 'missing' &&
+          row.missing.listed &&
+          row.missing.where !== null,
+      ) ?? []
   const empty =
     sections.filter((section) => section.id !== 'dismissed').length === 0 &&
     cleanup.length === 0 &&
@@ -332,20 +343,46 @@ export function ProblemsTab() {
           title={sectionTitle(section.id)}
           rows={section.rows}
           collapsible={section.id === 'cosmetic' || section.id === 'dismissed'}
-          {...(section.id === 'cosmetic'
+          {...(section.id === 'missing' && installable.length > 0
             ? {
                 action: {
-                  label: t`Dismiss all`,
+                  label: t`Add all ${installable.length}`,
                   onClick: () => {
-                    for (const row of section.rows) {
-                      if (!isDismissedRow(row) && row.kind === 'asset') {
-                        dismissAsset(row.asset).catch(reportUnexpected)
-                      }
-                    }
+                    const wants: Want[] = installable.flatMap(({ missing }): Want[] => {
+                      const where = missing.where
+                      if (!where) return []
+                      return where.site === 'GitHub'
+                        ? [{ kind: 'dependency', repo: where.github, name: where.github }]
+                        : [
+                            {
+                              kind: 'dependency',
+                              modId: where.pageId,
+                              fileId: where.fileId,
+                              latest: true,
+                              name: where.pageName,
+                              fileName: where.fileName,
+                              version: where.version,
+                            },
+                          ]
+                    })
+                    download(wants).catch(reportUnexpected)
                   },
                 },
               }
-            : {})}
+            : section.id === 'cosmetic'
+              ? {
+                  action: {
+                    label: t`Dismiss all`,
+                    onClick: () => {
+                      for (const row of section.rows) {
+                        if (!isDismissedRow(row) && row.kind === 'asset') {
+                          dismissAsset(row.asset).catch(reportUnexpected)
+                        }
+                      }
+                    },
+                  },
+                }
+              : {})}
         />
       ))}
       {cleanup.length === 0 ? null : (
