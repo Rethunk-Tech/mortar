@@ -9,6 +9,7 @@ import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useBadges } from './badges.ts'
 import { updateCount } from './lookup.ts'
+import { useNexusDetails } from './nexusDetails.ts'
 
 function checkedWithSmapi(at: number | null, now: number, unknown: boolean): string {
   if (unknown) {
@@ -24,6 +25,18 @@ function checkedWithSmapi(at: number | null, now: number, unknown: boolean): str
 const MS_PER_HOUR = 3_600_000
 let hourlyTimer: ReturnType<typeof setInterval> | undefined
 const inFlight = new Map<string, Promise<UpdatesResult>>()
+
+function syncBadge() {
+  const { openId, profiles } = useProfiles.getState()
+  const { updates } = useUpdates.getState()
+  if (!(openId && updates)) {
+    return
+  }
+  const profile = profiles.find((p) => p.id === openId)
+  useBadges
+    .getState()
+    .patch(openId, { updates: updateCount(updates, profile, useNexusDetails.getState().byId) })
+}
 
 function loadUpdates(game: string, profile: string): Promise<UpdatesResult> {
   const key = `${game}/${profile}`
@@ -72,12 +85,11 @@ const useUpdates = create<{
       if (useProfiles.getState().openId === openId) {
         set({ updates, checkedAt: Date.now() })
       }
-      const profile = useProfiles.getState().profiles.find((p) => p.id === openId)
-      useBadges.getState().patch(openId, { updates: updateCount(updates, profile) })
+      syncBadge()
     } catch (e) {
       useToasts.getState().push({
         kind: 'error',
-        title: i18n._(msg`Couldn't reach Nexus`),
+        title: i18n._(msg`SMAPI update check failed`),
         body: errorMessage(e),
         action: {
           label: i18n._(msg`Retry now`),
@@ -104,6 +116,7 @@ function syncHourlyRecheck() {
 }
 
 useProfiles.subscribe(syncHourlyRecheck)
+useNexusDetails.subscribe(syncBadge)
 syncHourlyRecheck()
 
 export { checkedWithSmapi, loadUpdates, useUpdates }

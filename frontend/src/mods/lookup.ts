@@ -154,11 +154,29 @@ export const listedAgainstNexus = (
   return true
 }
 
+export const updatesForReview = (
+  result: UpdatesResult | null,
+  profile?: Profile | null,
+  details: Record<
+    number,
+    { details?: { page?: { status?: string; available?: boolean } } } | undefined
+  > = {},
+): Update[] =>
+  visibleUpdates(result, profile).filter((u) =>
+    listedAgainstNexus(u, details[u.nexusId]?.details?.page),
+  )
+
 export const installableUpdate = (u: Update): boolean =>
   !u.unofficial && (u.githubRepo !== '' || u.nexusId > 0)
 
-export const updateCount = (result: UpdatesResult | null, profile?: Profile | null): number =>
-  visibleUpdates(result, profile).length
+export const updateCount = (
+  result: UpdatesResult | null,
+  profile?: Profile | null,
+  details?: Record<
+    number,
+    { details?: { page?: { status?: string; available?: boolean } } } | undefined
+  >,
+): number => updatesForReview(result, profile, details).length
 
 // The update SMAPI's API suggests for this very copy of a mod, if any.
 export const updateFor = (

@@ -16,6 +16,7 @@ import {
   reshow,
   updateCount,
   updateFor,
+  updatesForReview,
 } from './lookup.ts'
 
 const copy = (key: string, newest: boolean, nexus = false): Copy => ({
@@ -192,4 +193,40 @@ test('a removed Nexus page and unofficial versions are not installed by Update a
   expect(listedAgainstNexus(row, { status: 'deleted', available: true })).toBe(false)
   expect(installableUpdate({ ...row, unofficial: true, githubRepo: 'a/b', nexusId: 0 })).toBe(false)
   expect(installableUpdate({ ...row, unofficial: false, githubRepo: 'a/b', nexusId: 0 })).toBe(true)
+})
+
+test('review updates use the same Nexus-filtered list as the count', () => {
+  const result = {
+    updates: [
+      {
+        key: 'a',
+        uniqueId: 'a',
+        name: 'A',
+        installed: '1',
+        version: '2',
+        url: '',
+        nexusId: 1,
+        githubRepo: '',
+        unofficial: false,
+      },
+      {
+        key: 'b',
+        uniqueId: 'b',
+        name: 'B',
+        installed: '1',
+        version: '2',
+        url: '',
+        nexusId: 2,
+        githubRepo: '',
+        unofficial: false,
+      },
+    ],
+    unknown: false,
+  }
+  const details = {
+    1: { details: { page: { status: 'published', available: true } } },
+    2: { details: { page: { status: 'deleted', available: true } } },
+  }
+  expect(updatesForReview(result, undefined, details).map((u) => u.key)).toEqual(['a'])
+  expect(updateCount(result, undefined, details)).toBe(1)
 })
