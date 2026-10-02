@@ -68,7 +68,7 @@ func (s *Store) SetEntryCategoryMany(game, id string, keys []string, override st
 			if !found {
 				return Profile{}, fmt.Errorf("unknown custom category %q", override)
 			}
-		} else if _, err := cleanCategoryName(override); err != nil {
+		} else if err := cleanCategoryName(override); err != nil {
 			return Profile{}, err
 		}
 	}

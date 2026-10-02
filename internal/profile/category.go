@@ -99,15 +99,15 @@ func sanitizeCategory(c CustomCategory) (CustomCategory, bool) {
 	return c, true
 }
 
-func cleanCategoryName(name string) (string, error) {
+func cleanCategoryName(name string) error {
 	name = strings.TrimSpace(name)
 	if name == "" {
-		return "", errors.New("category name is empty")
+		return errors.New("category name is empty")
 	}
 	if n := utf8.RuneCountInString(name); n > maxCategoryName {
-		return "", fmt.Errorf("category name is longer than %d characters", maxCategoryName)
+		return fmt.Errorf("category name is longer than %d characters", maxCategoryName)
 	}
-	return name, nil
+	return nil
 }
 
 func newCategoryID() (string, error) {
@@ -257,7 +257,7 @@ func (s *Store) SetEntryCategory(game, id, key, override string) (Profile, error
 			if !slices.ContainsFunc(cats, func(c CustomCategory) bool { return c.ID == override }) {
 				return Profile{}, fmt.Errorf("unknown custom category %q", override)
 			}
-		} else if _, err := cleanCategoryName(override); err != nil {
+		} else if err := cleanCategoryName(override); err != nil {
 			return Profile{}, err
 		}
 	}
