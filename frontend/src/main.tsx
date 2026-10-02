@@ -3,8 +3,9 @@ import { I18nProvider } from '@lingui/react'
 import { CssBaseline } from '@mui/material'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { Get } from '../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { App } from './App.tsx'
-import { i18n } from './i18n/index.ts'
+import { activateLanguage, i18n } from './i18n/index.ts'
 import { initPlayRequests } from './launch/playRequests.ts'
 import { initLaunch } from './launch/store.ts'
 import { initLoader } from './loader/store.ts'
@@ -21,6 +22,7 @@ import { initTrayNoticeClick } from './tray/noticeClick.ts'
 import { initMortarUpdateBackground } from './updates/background.ts'
 import './theme/fonts.ts'
 
+await activateLanguage((await Get()).language)
 initSettings().catch(reportUnexpected)
 initMortarUpdateBackground()
 initNexus().catch(reportUnexpected)

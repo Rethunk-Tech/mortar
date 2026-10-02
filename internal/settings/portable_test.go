@@ -8,6 +8,7 @@ import (
 
 func TestExportOmitsSecretsAndMachineFields(t *testing.T) {
 	s := Defaults()
+	s.Language = "en"
 	s.Accent = "moss"
 	s.NexusName = "NOMAD"
 	s.NexusUserID = 99
@@ -35,6 +36,9 @@ func TestExportOmitsSecretsAndMachineFields(t *testing.T) {
 	if m["accent"] != "moss" {
 		t.Fatalf("accent = %v", m["accent"])
 	}
+	if m["language"] != "en" {
+		t.Fatalf("language = %v", m["language"])
+	}
 	for _, k := range []string{
 		"nexusName", "nexusUserId", "nexusPremium", "gameFolders", "gameStores", "loaders",
 		"lastProfile", "lastPlayed", "backgroundImage", "dismissed",
@@ -50,6 +54,18 @@ func TestExportOmitsSecretsAndMachineFields(t *testing.T) {
 		if strings.Contains(raw, secret) {
 			t.Fatalf("export still holds %q: %s", secret, raw)
 		}
+	}
+}
+
+func TestLanguagePortableRoundTrip(t *testing.T) {
+	p, present, err := ParseExport([]byte(`{"version":1,"language":"en"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	cur := Defaults()
+	ApplyExport(&cur, p, present)
+	if cur.Language != "en" {
+		t.Fatalf("language = %q", cur.Language)
 	}
 }
 

@@ -38,7 +38,8 @@ const (
 
 // Settings is the on-disk shape of settings.json.
 type Settings struct {
-	Accent string `json:"accent"`
+	Language string `json:"language"`
+	Accent   string `json:"accent"`
 	// Background is one of the Background* constants.
 	Background string `json:"background"`
 	// BackgroundImage is the absolute path of the user's wallpaper; empty means the default one.
@@ -122,7 +123,7 @@ func on() *bool { v := true; return &v }
 
 func Defaults() Settings {
 	return Settings{
-		Accent: "sand", Background: BackgroundImage, LastProfile: map[string]string{}, LastPlayed: map[string]Played{}, GameFolders: map[string]string{},
+		Language: "", Accent: "sand", Background: BackgroundImage, LastProfile: map[string]string{}, LastPlayed: map[string]Played{}, GameFolders: map[string]string{},
 		GameStores: map[string]string{}, LauncherRoots: map[string][]string{},
 		Loaders: map[string]string{}, Dismissed: map[string][]string{}, NexusSeenDownloadServers: []string{}, BackupsKept: backup.DefaultKeep,
 		ListColumns: slices.Clone(defaultListColumns), ListSortColumn: defaultListSortColumn, ListSortDir: defaultListSortDir, ListGroupBy: defaultListGroupBy,
@@ -171,6 +172,9 @@ func Open() (*Store, error) {
 	if !slices.Contains(accents, s.cur.Accent) {
 		s.cur.Accent = Defaults().Accent
 	}
+	if s.cur.Language != "" && s.cur.Language != "en" {
+		s.cur.Language = Defaults().Language
+	}
 	if !slices.Contains(backgrounds, s.cur.Background) {
 		s.cur.Background = Defaults().Background
 	}
@@ -200,6 +204,9 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	fn(&next)
 	if !slices.Contains(accents, next.Accent) {
 		return s.cur, fmt.Errorf("unknown accent %q", next.Accent)
+	}
+	if next.Language != "" && next.Language != "en" {
+		return s.cur, fmt.Errorf("unknown language %q", next.Language)
 	}
 	if !slices.Contains(backgrounds, next.Background) {
 		return s.cur, fmt.Errorf("unknown background %q", next.Background)

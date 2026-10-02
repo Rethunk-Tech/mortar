@@ -13,6 +13,7 @@ const exportVersion = 1
 // Portable is settings.json minus secrets and machine-specific or personal fields.
 type Portable struct {
 	Version                      int      `json:"version"`
+	Language                     string   `json:"language"`
 	Accent                       string   `json:"accent"`
 	Background                   string   `json:"background"`
 	LastGame                     string   `json:"lastGame"`
@@ -47,7 +48,7 @@ type ImportPreview struct {
 }
 
 var portableFields = []string{
-	"accent", "background", "lastGame", "backupsKept",
+	"language", "accent", "background", "lastGame", "backupsKept",
 	"listColumns", "listSortColumn", "listSortDir", "listGroupBy",
 	"checkModUpdatesOnStart", "tellWhenSmapiOut", "keepInTray", "includeBetaReleases",
 	"includePrereleaseModVersions", "checkOnlyEnabledMods", "enableModsWhenInstalled", "tipsSeen",
@@ -58,6 +59,7 @@ var portableFields = []string{
 func MarshalExport(s Settings) ([]byte, error) {
 	p := Portable{
 		Version:                      exportVersion,
+		Language:                     s.Language,
 		Accent:                       s.Accent,
 		Background:                   s.Background,
 		LastGame:                     s.LastGame,
@@ -103,6 +105,9 @@ func ParseExport(b []byte) (Portable, map[string]struct{}, error) {
 	overlay := Defaults()
 	if _, ok := present["accent"]; ok {
 		overlay.Accent = p.Accent
+	}
+	if _, ok := present["language"]; ok {
+		overlay.Language = p.Language
 	}
 	if _, ok := present["background"]; ok {
 		overlay.Background = p.Background
@@ -158,6 +163,9 @@ func ParseExport(b []byte) (Portable, map[string]struct{}, error) {
 	overlay = sanitizePortable(overlay)
 	if _, ok := present["accent"]; ok {
 		p.Accent = overlay.Accent
+	}
+	if _, ok := present["language"]; ok {
+		p.Language = overlay.Language
 	}
 	if _, ok := present["background"]; ok {
 		p.Background = overlay.Background
@@ -217,6 +225,9 @@ func ParseExport(b []byte) (Portable, map[string]struct{}, error) {
 func ApplyExport(cur *Settings, p Portable, present map[string]struct{}) {
 	if _, ok := present["accent"]; ok {
 		cur.Accent = p.Accent
+	}
+	if _, ok := present["language"]; ok {
+		cur.Language = p.Language
 	}
 	if _, ok := present["background"]; ok {
 		cur.Background = p.Background
@@ -310,6 +321,8 @@ func previewChanges(cur Settings, p Portable, present map[string]struct{}) []Cha
 
 func fieldText(s Settings, field string) string {
 	switch field {
+	case "language":
+		return s.Language
 	case "accent":
 		return s.Accent
 	case "background":

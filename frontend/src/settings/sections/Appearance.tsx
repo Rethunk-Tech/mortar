@@ -1,12 +1,27 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Chip, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import {
+  Box,
+  Button,
+  ButtonBase,
+  Chip,
+  FormControl,
+  FormHelperText,
+  InputLabel,
+  MenuItem,
+  Select,
+  ToggleButton,
+  ToggleButtonGroup,
+} from '@mui/material'
 import { ImagePlus, RotateCcw } from 'lucide-react'
+import { useId } from 'react'
 import {
   ChooseBackgroundImage,
   SetAccent,
   SetBackground,
   SetBackgroundImage,
+  SetLanguage,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { availableLocales } from '../../i18n/locales.ts'
 import { type AccentName, accents } from '../../theme/accents.ts'
 import { errorText } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
@@ -15,9 +30,11 @@ import { isAccent } from '../theme.ts'
 
 export function Appearance() {
   const { t } = useLingui()
+  const languageLabelId = useId()
   const accent = useSettings((s) => s.accent)
   const background = useSettings((s) => s.background)
   const backgroundImage = useSettings((s) => s.backgroundImage)
+  const language = useSettings((s) => s.language)
   const push = useToasts((s) => s.push)
   const reportFailure = (err: unknown) => {
     const body = errorText(err)
@@ -31,6 +48,27 @@ export function Appearance() {
   ]
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <FormControl size="small" disabled={availableLocales.length === 1}>
+        <InputLabel id={languageLabelId}>{t`Language`}</InputLabel>
+        <Select
+          labelId={languageLabelId}
+          value={language}
+          label={t`Language`}
+          onChange={(event) => {
+            SetLanguage(event.target.value).catch(reportFailure)
+          }}
+        >
+          <MenuItem value="">{t`System default`}</MenuItem>
+          {availableLocales.map((locale) => (
+            <MenuItem key={locale} value={locale}>
+              {new Intl.DisplayNames([locale], { type: 'language' }).of(locale) ?? locale}
+            </MenuItem>
+          ))}
+        </Select>
+        {availableLocales.length === 1 ? (
+          <FormHelperText>{t`More languages are coming.`}</FormHelperText>
+        ) : null}
+      </FormControl>
       <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Accent colour`}</Box>
       <Box
         role="radiogroup"

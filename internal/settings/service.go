@@ -30,6 +30,11 @@ func NewService(store *Store) *Service { return &Service{store: store} }
 
 func (s *Service) Get() Settings { return s.store.Get() }
 
+// SetLanguage stores the preferred interface language, or the empty string for the system language.
+func (s *Service) SetLanguage(language string) error {
+	return s.set(func(v *Settings) { v.Language = language })
+}
+
 func (s *Service) SetAccent(accent string) error {
 	return s.set(func(v *Settings) { v.Accent = accent })
 }

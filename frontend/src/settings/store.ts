@@ -4,6 +4,7 @@ import { Get } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settin
 import { follow } from '../shell/follow.ts'
 
 const defaults: Settings = {
+  language: '',
   accent: 'sand',
   background: 'image',
   backgroundImage: '',
