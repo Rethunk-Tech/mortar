@@ -13,6 +13,7 @@ Agents self-test everything they can: in the Wails dev server's browser view, an
 - One Go `Game` interface holds everything that differs per game: install discovery, loader install, mod source, manifest identity, and profile launch. Everything else is shared. Stardew Valley is the only implementation in v1; Lethal Company is deferred ([docs/design.md](docs/design.md#later)).
 - Share links name their game. Form: [docs/architecture.md](docs/architecture.md#sharing).
 - Mortar never re-hosts mod files; downloads come from each mod's own source.
+- Nexus downloads start only from Nexus's own Mod Manager Download button (or a Premium API download the user asked for in Mortar); the browser extension reads and marks Nexus pages and relays those clicks, never starts downloads or opens Nexus pages itself.
 
 ## Verify
 
