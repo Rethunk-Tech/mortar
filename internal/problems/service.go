@@ -117,6 +117,7 @@ func fingerprint(env Environment, mods []Installed, runID string) string {
 	b.WriteString(env.GameVersion + "|" + env.APIVersion + "|run:" + runID)
 	for _, m := range mods {
 		b.WriteString("\n" + m.Key + "|" + m.UniqueID + "|" + m.Version + "|" + m.Name)
+		b.WriteString("|desc:" + m.Description)
 		if m.Enabled {
 			b.WriteString("|on")
 		}
@@ -184,6 +185,9 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 
 	r, err := s.shareCheck(ctx, checkKey, func() Result {
 		r := Check(ctx, s.meta, env, mods)
+		r.Broken = append(r.Broken, authorMarkedMods(s.home, slices.DeleteFunc(slices.Clone(mods), func(x Installed) bool {
+			return !x.Enabled
+		}))...)
 		if s.Runs != nil && runID != "" {
 			_, summary, err := s.Runs.LastRunSummary(gameID, id)
 			if err == nil {
@@ -231,13 +235,13 @@ func (s *Service) withDismissed(gameID, id string, r Result) Result {
 	return r
 }
 
-// DismissAbandonedMod hides an abandoned-mod info row for this profile until the mod is gone.
+// DismissAbandonedMod hides an author-marked broken row for this profile until the mod is gone.
 func (s *Service) DismissAbandonedMod(_ context.Context, gameID, id, uniqueID string) error {
 	uniqueID = strings.TrimSpace(uniqueID)
 	if uniqueID == "" {
 		return errors.New("missing mod id")
 	}
-	token := dismissToken("abandoned", strings.ToLower(uniqueID))
+	token := dismissToken("broken", strings.ToLower(uniqueID))
 	bucket := dismissBucket(gameID, id)
 	_, err := s.settings.Update(func(v *settings.Settings) {
 		if slices.Contains(v.Dismissed[bucket], token) {

@@ -2320,8 +2320,12 @@ func hideDismissedBroken(broken []Broken, tokens []string) ([]Broken, []Dismisse
 	out := []Broken{}
 	dismissed := []DismissedProblem{}
 	for _, b := range broken {
-		token := dismissToken("abandoned", strings.ToLower(b.UniqueID))
-		if b.Status == "abandoned" && skip[token] {
+		token := dismissToken("broken", strings.ToLower(b.UniqueID))
+		legacy := dismissToken("abandoned", strings.ToLower(b.UniqueID))
+		if (b.Status == "abandoned" || b.Status == "obsolete" || b.Status == "deprecated") && (skip[token] || skip[legacy]) {
+			if skip[legacy] {
+				token = legacy
+			}
 			dismissed = append(dismissed, DismissedProblem{Token: token, Broken: &b})
 			continue
 		}

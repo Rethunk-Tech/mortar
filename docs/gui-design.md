@@ -135,6 +135,7 @@ A full-height scrollable list of every problem for this profile, grouped under h
 - Missing requirements
 - Conflicts
 - Broken or outdated mods
+  - Author-marked obsolete or deprecated mods include the source and a short quoted reason; a Nexus replacement offers **Open replacement** without downloading.
 - Errors in the last run
 - Changed outside Mortar
 - Duplicates
