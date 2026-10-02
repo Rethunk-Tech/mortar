@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
 const (
@@ -36,6 +37,16 @@ type Run struct {
 	Outcome      launch.Outcome `json:"outcome"`
 	Errors       int            `json:"errors"`
 	Warnings     int            `json:"warnings"`
+	Cause        *Cause         `json:"cause,omitempty"`
+}
+
+type Cause struct {
+	ModKey   string `json:"modKey"`
+	ModName  string `json:"modName"`
+	UniqueID string `json:"uniqueId"`
+	Reason   string `json:"reason"`
+	Detail   string `json:"detail"`
+	Path     string `json:"path"`
 }
 
 type RunHit struct {
@@ -57,6 +68,7 @@ type Crash struct {
 	Profile string            `json:"profile"`
 	RunID   string            `json:"runId"`
 	Mods    []launch.ModError `json:"mods"`
+	Cause   *Cause            `json:"cause,omitempty"`
 }
 
 type runIndex struct {
@@ -101,6 +113,14 @@ func (s *Service) RunLog(gameID, profileID, runID string) (string, error) {
 		return "", err
 	}
 	return strings.ToValidUTF8(string(data), ""), nil
+}
+
+func (s *Service) RunCause(gameID, profileID, runID string) (Cause, error) {
+	text, err := s.RunLog(gameID, profileID, runID)
+	if err != nil {
+		return Cause{}, err
+	}
+	return s.cause(gameID, profileID, text), nil
 }
 
 func (s *Service) SearchRuns(gameID, profileID, query string) (RunSearch, error) {
@@ -270,10 +290,14 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	if err != nil {
 		idx = runIndex{}
 	}
+	cause := s.cause(g.ID(), profileID, text)
 	run := Run{
 		ID: id, Started: started.UTC().Format(time.RFC3339Nano), Ended: ended.UTC().Format(time.RFC3339Nano),
 		DurationMs: ended.Sub(started).Milliseconds(), SMAPIVersion: stats.SMAPI, GameVersion: stats.Game,
 		Outcome: outcome, Errors: stats.Errors, Warnings: stats.Warnings,
+	}
+	if cause.ModName != "" {
+		run.Cause = &cause
 	}
 	idx.Runs = append([]Run{run}, idx.Runs...)
 	var drop []Run
@@ -288,8 +312,126 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		_ = os.Remove(runLogPath(dir, old.ID))
 	}
 	if !failed && (stats.Errors > 0 || stats.Crashed) {
-		s.emit(CrashEvent, Crash{Game: g.ID(), Profile: profileID, RunID: id, Mods: stats.Mods})
+		var crashCause *Cause
+		if run.Cause != nil {
+			crashCause = run.Cause
+		}
+		s.emit(CrashEvent, Crash{Game: g.ID(), Profile: profileID, RunID: id, Mods: stats.Mods, Cause: crashCause})
 	}
+}
+
+func (s *Service) cause(gameID, profileID, text string) Cause {
+	mods, err := s.profiles.UserMods(gameID, profileID)
+	if err != nil {
+		return Cause{}
+	}
+	modsDir, err := s.profiles.ModsDir(gameID, profileID)
+	if err != nil {
+		return Cause{}
+	}
+	lines := strings.Split(text, "\n")
+	if cause, ok := missingFileCause(mods, modsDir, lines); ok {
+		return cause
+	}
+	for _, line := range lines {
+		if !strings.Contains(line, "DirectoryNotFoundException") &&
+			!strings.Contains(line, "FileNotFoundException") &&
+			!strings.Contains(line, "Could not find a part of the path") {
+			continue
+		}
+		path := extractQuotedPath(line)
+		if path == "" || !pathWithin(path, modsDir) {
+			continue
+		}
+		rel, _ := filepath.Rel(modsDir, path)
+		key, _, _ := strings.Cut(rel, string(filepath.Separator))
+		for _, mod := range mods {
+			if mod.Key == key {
+				return Cause{
+					ModKey: mod.Key, ModName: mod.Name, UniqueID: mod.UniqueID, Reason: "missing-file",
+					Detail: fmt.Sprintf("%s: a file it needs could not be opened. Reinstall it.", mod.Name), Path: path,
+				}
+			}
+		}
+	}
+	asset := ""
+	for _, line := range lines {
+		if rest, _, ok := strings.Cut(line, "Failed loading asset '"); ok {
+			asset = strings.TrimSuffix(rest, "'")
+			break
+		}
+	}
+	if asset != "" {
+		for _, line := range lines {
+			for _, mod := range mods {
+				if strings.Contains(line, "["+mod.Name+"]") && strings.Contains(line, asset) {
+					return Cause{
+						ModKey: mod.Key, ModName: mod.Name, UniqueID: mod.UniqueID, Reason: "asset-load",
+						Detail: fmt.Sprintf("%s: it could not load an asset. Reinstall it.", mod.Name),
+					}
+				}
+			}
+		}
+	}
+	for _, line := range lines {
+		for _, mod := range mods {
+			if strings.Contains(line, "["+mod.Name+"]") && (strings.Contains(strings.ToLower(line), "exception") ||
+				strings.Contains(strings.ToLower(line), " failed ")) {
+				return Cause{
+					ModKey: mod.Key, ModName: mod.Name, UniqueID: mod.UniqueID, Reason: "mod-exception",
+					Detail: fmt.Sprintf("%s: it encountered an error. Reinstall it.", mod.Name),
+				}
+			}
+		}
+	}
+	return Cause{}
+}
+
+func missingFileCause(mods []profile.Mod, modsDir string, lines []string) (Cause, bool) {
+	for _, line := range lines {
+		if !strings.Contains(line, "DirectoryNotFoundException") &&
+			!strings.Contains(line, "FileNotFoundException") &&
+			!strings.Contains(line, "Could not find a part of the path") {
+			continue
+		}
+		path := extractQuotedPath(line)
+		if path == "" || !pathWithin(path, modsDir) {
+			continue
+		}
+		rel, _ := filepath.Rel(modsDir, path)
+		key, _, _ := strings.Cut(rel, string(filepath.Separator))
+		for _, mod := range mods {
+			if mod.Key == key {
+				return Cause{
+					ModKey: mod.Key, ModName: mod.Name, UniqueID: mod.UniqueID, Reason: "missing-file",
+					Detail: fmt.Sprintf("%s: a file it needs could not be opened. Reinstall it.", mod.Name), Path: path,
+				}, true
+			}
+		}
+	}
+	return Cause{}, false
+}
+
+func extractQuotedPath(line string) string {
+	start := strings.IndexAny(line, "\"'")
+	if start < 0 {
+		return ""
+	}
+	end := strings.LastIndexAny(line, "\"'")
+	if end <= start {
+		return ""
+	}
+	return strings.TrimSpace(line[start+1 : end])
+}
+
+func pathWithin(path, dir string) bool {
+	absPath, err1 := filepath.Abs(path)
+	absDir, err2 := filepath.Abs(dir)
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	rel, err := filepath.Rel(absDir, absPath)
+	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
 }
 
 func (s *Service) runText(g game.Game, profileID, modsDir string) string {

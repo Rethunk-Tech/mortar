@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -60,6 +61,7 @@ type Status struct {
 	Since   int64       `json:"since"`
 	Hint    launch.Hint `json:"hint"`
 	Error   string      `json:"error"`
+	Cause   *Cause      `json:"cause,omitempty"`
 }
 
 // Lines is a batch of new log entries of the profile's session, oldest first.
@@ -466,7 +468,7 @@ func (s *Service) StartVanilla(gameID string, direct bool) error {
 	go func() {
 		defer s.donePreparing(gameID)
 		if err := s.begin(context.Background(), g, "", dir, "", direct, true); err != nil {
-			s.set(Status{Game: gameID, State: Failed, Error: err.Error()})
+			s.set(Status{Game: gameID, State: Failed, Error: plainLaunchError(err, dir)})
 		}
 	}()
 	return nil
@@ -782,14 +784,32 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, req la
 			s.say(g.ID(), profileID, fmt.Sprintf("%s exited with code %d.", g.LoaderName(), exited.Code))
 		}
 		s.finishFailed(g, profileID, buf)
-		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Error: err.Error()})
+		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Error: plainLaunchError(err, req.InstallDir), Cause: causeFromBuffer(s, g.ID(), profileID, buf)})
 	case errors.As(err, &f):
 		s.finishFailed(g, profileID, buf)
-		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Hint: f.Hint, Error: f.Error()})
+		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Hint: f.Hint, Error: f.Error(), Cause: causeFromBuffer(s, g.ID(), profileID, buf)})
 	default:
 		s.finishFailed(g, profileID, buf)
-		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Error: err.Error()})
+		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Error: plainLaunchError(err, req.InstallDir), Cause: causeFromBuffer(s, g.ID(), profileID, buf)})
 	}
+}
+
+func causeFromBuffer(s *Service, gameID, profileID string, buf *launch.Buffer) *Cause {
+	cause := s.cause(gameID, profileID, launch.FormatLog(buf.Lines()))
+	if cause.ModName == "" {
+		return nil
+	}
+	return &cause
+}
+
+func plainLaunchError(err error, dir string) string {
+	if errors.Is(err, context.Canceled) {
+		return "The launch was interrupted. Try again."
+	}
+	if errors.Is(err, exec.ErrNotFound) || errors.Is(err, os.ErrPermission) {
+		return fmt.Sprintf("Mortar could not start the game files at %s.", dir)
+	}
+	return err.Error()
 }
 
 // Stop terminates the loader process of the profile the game is running.

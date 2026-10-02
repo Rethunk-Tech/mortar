@@ -2,6 +2,7 @@ package launchsvc
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,6 +34,20 @@ func runEnv(t *testing.T) (*Service, profile.Profile, string, string) {
 		t.Fatal(err)
 	}
 	return NewService(home, nil, profiles), p, cfg, home
+}
+
+func TestMissingFileCauseNamesKyuyaPack(t *testing.T) {
+	modsDir := filepath.Join(t.TempDir(), "mods")
+	path := filepath.Join(modsDir, "nexus-11780-74182", "[FS]Kyuya??s hats Pack", "assets", "hat.png")
+	got, ok := missingFileCause([]profile.Mod{{Key: "nexus-11780-74182", Name: "[FS]Kyuya's hats Pack", UniqueID: "Kyuya.Hats"}}, modsDir,
+		[]string{fmt.Sprintf("ContentLoadException: Could not find a part of the path '%s'", path)})
+	if !ok {
+		t.Fatal("missing-file cause was not classified")
+	}
+	if got.ModName != "[FS]Kyuya's hats Pack" || got.Reason != "missing-file" ||
+		got.Detail != "[FS]Kyuya's hats Pack: a file it needs could not be opened. Reinstall it." {
+		t.Fatalf("cause = %#v", got)
+	}
 }
 
 func writeOwnedLog(t *testing.T, cfg, home, modsDir, extra string) {
