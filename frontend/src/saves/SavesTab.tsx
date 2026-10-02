@@ -20,8 +20,12 @@ import {
   TriangleAlert,
   X,
 } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import {
+  CopyMods,
+  ProfilesWithMod,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import type {
   Fit,
   Lack,
@@ -29,6 +33,7 @@ import type {
 import { OpenSaveFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLocked } from '../mods/useLocked.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
@@ -79,6 +84,18 @@ function LackChip({
   const dismiss = useSaves((s) => s.dismiss)
   const enable = useSaves((s) => s.enable)
   const locked = useLocked()
+  const [source, setSource] = useState<{ id: string; name: string } | null>(null)
+  useEffect(() => {
+    ProfilesWithMod(game, lack.uniqueId)
+      .then((rows) => {
+        const row = (rows ?? []).find((candidate) => candidate.profileId !== profile.id)
+        const sourceName = useProfiles
+          .getState()
+          .profiles.find((candidate) => candidate.id === row?.profileId)?.name
+        setSource(row && sourceName ? { id: row.profileId, name: sourceName } : null)
+      })
+      .catch(reportUnexpected)
+  }, [game, lack.uniqueId, profile.id])
   const want = lack.disabled ? null : wantFor(lack)
   const queued = useQueue((s) =>
     want ? pendingFor(s.state.items, profile.id, want.modId ?? 0, want.repo ?? '') : false,
@@ -138,6 +155,17 @@ function LackChip({
             </IconButton>
           </span>
         </Tooltip>
+      ) : null}
+      {source ? (
+        <Button
+          size="small"
+          onClick={() =>
+            CopyMods(game, source.id, profile.id, [lack.uniqueId]).catch(reportUnexpected)
+          }
+          sx={{ minWidth: 0, px: 0.5, ...nowrap }}
+        >
+          {t`Copy from ${source.name}`}
+        </Button>
       ) : null}
       {!(lack.disabled || want) && url ? (
         <Tooltip title={nexusPage ? t`Open on Nexus` : t`Open page`}>

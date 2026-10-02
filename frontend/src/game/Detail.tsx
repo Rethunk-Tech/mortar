@@ -242,14 +242,19 @@ export function Detail() {
   const openGameSettings = useNav((s) => s.openGameSettings)
   const profile = profiles.find((p) => p.id === openId)
   const loadSaves = useSaves((s) => s.load)
+  const modState = useMods((s) =>
+    s.mods.map((mod) => `${mod.key}:${mod.uniqueId}:${mod.enabled}`).join('|'),
+  )
   const profileId = profile?.id
-  const updated = String(profile?.updated)
-  // The profile's mods change with `updated`, and the save comparison follows them.
+  const saveEntries = (profile?.entries ?? [])
+    .map((entry) => `${entry.key}:${(entry.mods ?? []).map((mod) => mod.uniqueId).join(',')}`)
+    .join('|')
+  const saveKey = `${saveEntries}|${modState}`
   useEffect(() => {
     if (game && profileId) {
-      loadSaves(game, profileId, updated).catch(reportUnexpected)
+      loadSaves(game, profileId, saveKey).catch(reportUnexpected)
     }
-  }, [game, profileId, updated, loadSaves])
+  }, [game, profileId, saveKey, loadSaves])
   if (!loaded) {
     return failed ? (
       <EmptyState

@@ -8,12 +8,15 @@ import { useProfiles } from '../profiles/store.ts'
 
 const DEBOUNCE_MS = 800
 const TICK_MS = 60_000
+// Keep this in sync with profile.MaxNotes.
+const MAX_NOTES = 20_000
+const COUNTER_THRESHOLD = 500
 
 type Status =
   | { kind: 'idle' }
   | { kind: 'saving' }
   | { kind: 'saved'; at: number }
-  | { kind: 'error' }
+  | { kind: 'error'; message: string }
 
 function StatusLine({
   status,
@@ -33,7 +36,7 @@ function StatusLine({
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Typography
           sx={{ fontSize: 13, color: 'error.main' }}
-        >{t`Could not save notes`}</Typography>
+        >{t`Could not save notes: ${status.message}`}</Typography>
         <Button size="small" onClick={onRetry} sx={{ whiteSpace: 'nowrap' }}>
           {t`Retry`}
         </Button>
@@ -75,9 +78,12 @@ export function NotesTab({ profile }: { profile: Profile }) {
         setStatus({ kind: 'saved', at: Date.now() })
         save()
       },
-      () => {
+      (error) => {
         inflight.current = false
-        setStatus({ kind: 'error' })
+        setStatus({
+          kind: 'error',
+          message: error instanceof Error ? error.message : String(error),
+        })
       },
     )
   }, [game, profile.id, replace])
@@ -123,7 +129,7 @@ export function NotesTab({ profile }: { profile: Profile }) {
           onChange={(e) => onChange(e.target.value)}
           placeholder={t`Your notes for this profile, for example: Friday co-op profile. Keep everyone on the same version of the big mods before playing together. Notes travel in a shared .mortar file, not in a share link.`}
           slotProps={{
-            htmlInput: { 'aria-label': t`Notes for ${profile.name}` },
+            htmlInput: { 'aria-label': t`Notes for ${profile.name}`, maxLength: MAX_NOTES },
           }}
           sx={{
             flex: 1,
@@ -140,6 +146,13 @@ export function NotesTab({ profile }: { profile: Profile }) {
             },
           }}
         />
+        {text.length >= MAX_NOTES - COUNTER_THRESHOLD ? (
+          <Typography
+            sx={{ position: 'absolute', right: 32, top: 8, fontSize: 12, color: 'text.secondary' }}
+          >
+            {`${text.length}/${MAX_NOTES}`}
+          </Typography>
+        ) : null}
         {/* Floats in the field's corner so the save status takes no room from the notes. */}
         <Box sx={{ position: 'absolute', right: 32, bottom: 20 }}>
           <StatusLine status={status} now={now} onRetry={() => save()} />
