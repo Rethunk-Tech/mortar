@@ -223,7 +223,7 @@ A wide "Import profile from…" dialog over the dimmed game screen, with tabs **
 
 ## Download queue
 
-A side sheet. The header gives totals (done, in progress, failed, left, size) over a progress bar split by state, with icon buttons for History (or back to Queue), **Clear finished** when any done, failed, cancelled or skipped rows remain (those rows also have a dismiss icon; queued and in-progress items stay), **Pause all** / Resume (stops new starts; the in-flight download finishes; hidden while the queue is idle) and Close. Rows are 54px tall; Skip, Cancel and dismiss on a row are icon buttons (Retry on a failed row stays a labelled button).
+A side sheet. The header gives parallel download counts (downloading and waiting, pluralised) plus totals (done, in progress, failed, left, size) over a progress bar split by state, with icon buttons for History (or back to Queue), **Clear finished** when any done, failed, cancelled or skipped rows remain (those rows also have a dismiss icon; queued and in-progress items stay), **Pause all** / Resume (stops new starts; the in-flight download finishes; hidden while the queue is idle) and Close. Rows are 54px tall; Skip, Cancel and dismiss on a row are icon buttons (Retry on a failed row stays a labelled button).
 
 Sections, top down:
 

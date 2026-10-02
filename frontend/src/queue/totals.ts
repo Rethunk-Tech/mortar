@@ -19,6 +19,18 @@ interface Totals {
 
 export const isActive = (i: Item) => i.state === 'downloading' || i.state === 'installing'
 
+export const isDownloading = (i: Item) => i.state === 'downloading'
+
+export const isWaiting = (i: Item) => i.state === 'queued'
+
+export function parallelDownloads(items: Item[]) {
+  const counted = items.filter((i) => i.state !== 'skipped' && i.state !== 'cancelled')
+  return {
+    downloading: counted.filter(isDownloading).length,
+    waiting: counted.filter(isWaiting).length,
+  }
+}
+
 // What the user still waits for: everything that neither finished nor was dropped, failures included.
 export const isLeft = (i: Item) => !['done', 'skipped', 'cancelled'].includes(i.state)
 

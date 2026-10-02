@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
-import { megabytes, pendingFor, profileOf, totals } from './totals.ts'
+import { megabytes, parallelDownloads, pendingFor, profileOf, totals } from './totals.ts'
 
 const item = (state: string, sizeKb = 0, modId = 1): Item => ({
   id: state + modId,
@@ -43,6 +43,17 @@ test('totals count each state and split the bar over what was asked for', () => 
 
 test('an empty queue has an empty bar', () => {
   expect(totals([]).doneShare).toBe(0)
+})
+
+test('parallelDownloads counts active fetches and queued rows', () => {
+  expect(parallelDownloads([item('downloading'), item('downloading'), item('queued')])).toEqual({
+    downloading: 2,
+    waiting: 1,
+  })
+  expect(parallelDownloads([item('installing'), item('skipped')])).toEqual({
+    downloading: 0,
+    waiting: 0,
+  })
 })
 
 test('a failed download can be queued again but a waiting one cannot', () => {

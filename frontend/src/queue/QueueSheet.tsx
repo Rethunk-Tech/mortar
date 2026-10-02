@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Drawer, IconButton, Tooltip, Typography } from '@mui/material'
 import {
@@ -25,7 +26,7 @@ import {
 import { Body } from './QueueBody.tsx'
 import { HistoryList } from './QueueHistory.tsx'
 import { useQueue } from './store.ts'
-import { clockTime, megabytes, totals } from './totals.ts'
+import { clockTime, megabytes, parallelDownloads, totals } from './totals.ts'
 
 const WIDTH = 500
 const GREEN = '#0cdf64'
@@ -44,8 +45,14 @@ function Header({
   const { t } = useLingui()
   const { items, paused, limitedUntil } = useQueue((s) => s.state)
   const sum = totals(items)
+  const { downloading, waiting } = parallelDownloads(items)
   const counts = t`${sum.done} done · ${sum.active} in progress · ${sum.failed} failed · ${sum.left} left`
-  const line = sum.sizeKb > 0 ? t`${counts} · ${megabytes(sum.sizeKb)} MB` : counts
+  const parallel =
+    downloading > 0 || waiting > 0
+      ? t`${plural(downloading, { one: '# downloading', other: '# downloading' })} · ${plural(waiting, { one: '# waiting', other: '# waiting' })}`
+      : null
+  const summary = parallel ? t`${parallel} · ${counts}` : counts
+  const line = sum.sizeKb > 0 ? t`${summary} · ${megabytes(sum.sizeKb)} MB` : summary
   const idle = !paused && sum.active === 0 && sum.left === 0
   const finished = items.filter((i) => ['done', 'failed', 'skipped', 'cancelled'].includes(i.state))
   return (
