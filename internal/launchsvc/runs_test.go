@@ -1,6 +1,7 @@
 package launchsvc
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -154,4 +155,50 @@ func TestClosedRunWithCrashMarksCrashed(t *testing.T) {
 	if err != nil || len(runs) != 1 || runs[0].Outcome != launch.OutcomeCrashed {
 		t.Fatalf("crashed = %#v, %v", runs, err)
 	}
+}
+
+func TestSearchRuns(t *testing.T) {
+	svc, p, _, _ := runEnv(t)
+	mods, err := svc.profiles.ModsDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := runsDir(mods)
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	index := runIndex{Runs: []Run{
+		{ID: "new", Started: "2026-10-02T12:00:00Z", Outcome: launch.OutcomeFailed},
+		{ID: "old", Started: "2026-10-01T12:00:00Z", Outcome: launch.OutcomeRan},
+	}}
+	if err := os.WriteFile(filepath.Join(dir, "index.json"), mustJSON(t, index), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "new.txt"), []byte("nothing\nTarget NEW\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "old.txt"), []byte("target old\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got, err := svc.SearchRuns("stardew", p.ID, "TARGET")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Truncated || len(got.Hits) != 2 || got.Hits[0].RunID != "new" || got.Hits[0].LineNumber != 2 ||
+		got.Hits[0].Line != "Target NEW" || got.Hits[1].RunID != "old" {
+		t.Fatalf("search = %#v", got)
+	}
+	empty, err := svc.SearchRuns("stardew", p.ID, "  ")
+	if err != nil || len(empty.Hits) != 0 {
+		t.Fatalf("empty search = %#v, %v", empty, err)
+	}
+}
+
+func mustJSON(t *testing.T, value any) []byte {
+	t.Helper()
+	data, err := json.Marshal(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return data
 }

@@ -79,6 +79,12 @@ type ModInfo struct {
 	Settings   []problems.SettingHint   `json:"settings"`
 }
 
+// ModProblem is a short, read-only problem shown beside a Nexus mod page.
+type ModProblem struct {
+	Kind string `json:"kind"`
+	Text string `json:"text"`
+}
+
 // InstallOutcome is install's result without the whole profile.
 type InstallOutcome struct {
 	Added          []string `json:"added"`
@@ -144,6 +150,66 @@ type ProfileMatch struct {
 	OnlyYours []string `json:"onlyYours"`
 }
 
+func modProblems(p profile.Profile, result problems.Result, nexusID int) []ModProblem {
+	var ids []string
+	for _, entry := range p.Entries {
+		if entry.Source.Kind == profile.KindNexus && entry.Source.ModID == nexusID {
+			for _, mod := range entry.Mods {
+				ids = append(ids, mod.UniqueID)
+			}
+		}
+	}
+	involves := func(id string) bool {
+		return slices.ContainsFunc(ids, func(want string) bool { return strings.EqualFold(want, id) })
+	}
+	out := []ModProblem{}
+	for _, missing := range result.Missing {
+		if !involves(missing.DependentID) {
+			continue
+		}
+		need := missing.UniqueID
+		if missing.Where != nil && missing.Where.PageName != "" {
+			need = missing.Where.PageName
+		}
+		kind, verb := "missing", "is missing"
+		if missing.Reason == "outdated" {
+			kind, verb = "outdated", "needs a newer"
+		}
+		out = append(out, ModProblem{Kind: kind, Text: fmt.Sprintf("%s %s %s", missing.DependentName, verb, need)})
+	}
+	for _, duplicate := range result.Duplicates {
+		if involves(duplicate.UniqueID) {
+			out = append(out, ModProblem{Kind: "duplicate", Text: fmt.Sprintf("%s has duplicate copies", duplicate.Name)})
+		}
+	}
+	for _, broken := range result.Broken {
+		if involves(broken.UniqueID) {
+			out = append(out, ModProblem{Kind: "broken", Text: fmt.Sprintf("%s is broken for this game version", broken.Name)})
+		}
+	}
+	for _, conflict := range result.AssetConflicts {
+		if conflict.Cosmetic || !slices.ContainsFunc(conflict.PackIDs, involves) {
+			continue
+		}
+		var names []string
+		for i, id := range conflict.PackIDs {
+			if !involves(id) && i < len(conflict.Names) {
+				names = append(names, conflict.Names[i])
+			}
+		}
+		if len(names) == 0 {
+			names = []string{"another mod"}
+		}
+		out = append(out, ModProblem{Kind: "conflict", Text: fmt.Sprintf("conflicts with %s", strings.Join(names, ", "))})
+	}
+	for _, run := range result.RunErrors {
+		if involves(run.UniqueID) {
+			out = append(out, ModProblem{Kind: "error", Text: fmt.Sprintf("%s reported errors in the last run", run.Name)})
+		}
+	}
+	return out
+}
+
 func resolveBundle(list []bundles.Bundle, name string) (bundles.Bundle, error) {
 	for _, bundle := range list {
 		if bundle.ID == name || bundle.Name == name {
@@ -160,6 +226,24 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.games()
 	case "profiles":
 		return s.Profiles.List(p.Game)
+	case "trash.list":
+		return s.Profiles.ListTrash(p.Game)
+	case "trash.restore":
+		item, err := s.resolveTrash(p.Game, p.Profile)
+		if err != nil {
+			return nil, err
+		}
+		return s.changed(p.Game, func() (any, error) { return s.Profiles.Restore(p.Game, item.ID) })
+	case "trash.delete":
+		item, err := s.resolveTrash(p.Game, p.Profile)
+		if err != nil {
+			return nil, err
+		}
+		return s.changed(p.Game, func() (any, error) {
+			return Removed{Mods: []string{item.Name}}, s.Profiles.Purge(p.Game, item.ID)
+		})
+	case "trash.empty":
+		return s.changed(p.Game, func() (any, error) { return nil, s.Profiles.PurgeTrash(p.Game) })
 	case "tools":
 		if s.Tools == nil {
 			return nil, errors.New("tools are unavailable")
@@ -281,6 +365,13 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		return s.Launches.Status(p.Game)
 	}
+	if method == "logs.search" {
+		prof, err := s.resolve(p.Game, p.Profile)
+		if err != nil {
+			return nil, err
+		}
+		return s.Launches.SearchRuns(p.Game, prof.ID, p.Query)
+	}
 	prof, err := s.resolve(p.Game, p.Profile)
 	if err != nil {
 		return nil, err
@@ -384,6 +475,15 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return out, nil
 	case "problems":
 		return s.Problems.Problems(ctx, p.Game, id)
+	case "modProblems":
+		if p.ModID < 1 {
+			return []ModProblem{}, nil
+		}
+		result, err := s.Problems.Problems(ctx, p.Game, id)
+		if err != nil {
+			return nil, err
+		}
+		return modProblems(prof, result, p.ModID), nil
 	case "updates":
 		return s.Problems.Updates(ctx, p.Game, id)
 	case "share":
@@ -401,6 +501,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.Launches.Runs(p.Game, id)
 	case "logs":
 		return s.runLog(p.Game, id, p.Run)
+	case "logs.search":
+		return s.Launches.SearchRuns(p.Game, id, p.Query)
 	case "saves":
 		return s.Saves.Saves(ctx, p.Game, id)
 	case "launch":
@@ -470,6 +572,39 @@ func (s *Services) resolve(gameID, sel string) (profile.Profile, error) {
 		ids[i] = p.ID
 	}
 	return profile.Profile{}, fmt.Errorf("%d profiles are named %q; use an id: %s", len(hits), sel, strings.Join(ids, ", "))
+}
+
+// resolveTrash finds a trashed profile by id, or by name ignoring case; an ambiguous name lists the matching ids.
+func (s *Services) resolveTrash(gameID, sel string) (profile.TrashItem, error) {
+	if sel == "" {
+		return profile.TrashItem{}, errors.New("name a deleted profile")
+	}
+	all, err := s.Profiles.ListTrash(gameID)
+	if err != nil {
+		return profile.TrashItem{}, err
+	}
+	for _, item := range all {
+		if item.ID == sel {
+			return item, nil
+		}
+	}
+	var hits []profile.TrashItem
+	for _, item := range all {
+		if strings.EqualFold(item.Name, sel) {
+			hits = append(hits, item)
+		}
+	}
+	switch len(hits) {
+	case 1:
+		return hits[0], nil
+	case 0:
+		return profile.TrashItem{}, fmt.Errorf("no deleted %s profile is named or has the id %q", gameID, sel)
+	}
+	ids := make([]string, len(hits))
+	for i, item := range hits {
+		ids[i] = item.ID
+	}
+	return profile.TrashItem{}, fmt.Errorf("%d deleted profiles are named %q; use an id: %s", len(hits), sel, strings.Join(ids, ", "))
 }
 
 func (s *Services) reload(gameID, id string, fallback profile.Profile) profile.Profile {

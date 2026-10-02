@@ -38,6 +38,19 @@ type Run struct {
 	Warnings     int            `json:"warnings"`
 }
 
+type RunHit struct {
+	RunID      string         `json:"runId"`
+	Started    string         `json:"started"`
+	Outcome    launch.Outcome `json:"outcome"`
+	LineNumber int            `json:"lineNumber"`
+	Line       string         `json:"line"`
+}
+
+type RunSearch struct {
+	Hits      []RunHit `json:"hits"`
+	Truncated bool     `json:"truncated"`
+}
+
 // Crash names the mods that logged errors in a run that just ended.
 type Crash struct {
 	Game    string            `json:"game"`
@@ -88,6 +101,47 @@ func (s *Service) RunLog(gameID, profileID, runID string) (string, error) {
 		return "", err
 	}
 	return strings.ToValidUTF8(string(data), ""), nil
+}
+
+func (s *Service) SearchRuns(gameID, profileID, query string) (RunSearch, error) {
+	if strings.TrimSpace(query) == "" {
+		return RunSearch{Hits: []RunHit{}}, nil
+	}
+	runs, err := s.Runs(gameID, profileID)
+	if err != nil {
+		return RunSearch{}, err
+	}
+	needle := strings.ToLower(query)
+	result := RunSearch{Hits: []RunHit{}}
+	for _, run := range runs {
+		text, err := s.RunLog(gameID, profileID, run.ID)
+		if err != nil {
+			return RunSearch{}, err
+		}
+		for number, line := range strings.Split(text, "\n") {
+			if !strings.Contains(strings.ToLower(line), needle) {
+				continue
+			}
+			if len(result.Hits) == 500 {
+				result.Truncated = true
+				return result, nil
+			}
+			result.Hits = append(result.Hits, RunHit{
+				RunID: run.ID, Started: run.Started, Outcome: run.Outcome,
+				LineNumber: number + 1, Line: trimRunSearchLine(line),
+			})
+		}
+	}
+	return result, nil
+}
+
+func trimRunSearchLine(line string) string {
+	line = strings.TrimSpace(line)
+	runes := []rune(line)
+	if len(runes) > 300 {
+		return string(runes[:300])
+	}
+	return line
 }
 
 // RunLines returns the stored run's log as console entries.

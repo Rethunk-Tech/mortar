@@ -33,7 +33,7 @@ var verbs = map[string]bool{
 	"games": true, "profiles": true, "profile": true, "mods": true, "mod": true, "install": true,
 	"conflicts": true, "problems": true, "updates": true, "share": true, "export": true, "open": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
-	"bundles": true, "nexus": true,
+	"bundles": true, "nexus": true, "trash": true,
 	"doctor": true, "launchers": true, "tools": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
@@ -61,8 +61,15 @@ type cmd struct {
 	yesFlag bool
 	wait    bool
 	run     string
+	game    string
+	profile string
 	args    []string
 }
+
+// refusedError is a destructive action blocked until the user passes --yes: exit 2 with the message only.
+type refusedError struct{ msg string }
+
+func (e refusedError) Error() string { return e.msg }
 
 // usageError is a malformed command line: exit 2 with the usage text.
 type usageError struct{ msg string }
@@ -92,6 +99,10 @@ func (c *cmd) fail(err error) int {
 		fmt.Fprint(c.errOut, usage)
 		return 2
 	}
+	if _, ok := errors.AsType[refusedError](err); ok {
+		fmt.Fprintln(c.errOut, "mortar:", err)
+		return 2
+	}
 	fmt.Fprintln(c.errOut, "mortar:", err)
 	return 1
 }
@@ -118,6 +129,22 @@ func (c *cmd) parse(args []string) error {
 			c.run = args[i]
 		case strings.HasPrefix(a, "--run="):
 			c.run = strings.TrimPrefix(a, "--run=")
+		case a == "--profile":
+			if i+1 >= len(args) {
+				return usageError{"--profile needs a profile name"}
+			}
+			i++
+			c.profile = args[i]
+		case strings.HasPrefix(a, "--profile="):
+			c.profile = strings.TrimPrefix(a, "--profile=")
+		case a == "--game":
+			if i+1 >= len(args) {
+				return usageError{"--game needs a game id"}
+			}
+			i++
+			c.game = args[i]
+		case strings.HasPrefix(a, "--game="):
+			c.game = strings.TrimPrefix(a, "--game=")
 		case a == "--help" || a == "-h":
 			c.args = append(c.args, "help")
 		case strings.HasPrefix(a, "--"):
@@ -199,6 +226,8 @@ func (c *cmd) dispatch() error {
 		return c.bundles()
 	case "nexus":
 		return c.nexus()
+	case "trash":
+		return c.trash()
 	case "profiles":
 		a, err := c.need(1, "a game")
 		if err != nil {
@@ -222,6 +251,9 @@ func (c *cmd) dispatch() error {
 				return c.modsChange(c.args[1])
 			}
 		}
+	}
+	if verb == "logs" && len(c.args) >= 3 && c.args[1] == "search" {
+		return c.searchLogs(c.args[2])
 	}
 	a, err := c.need(1, "a game", "a profile")
 	if err != nil {
@@ -380,6 +412,105 @@ func (c *cmd) bundles() error {
 		}
 		c.table("ID\tNAME\tMODS\tPROFILES WITH ALL", rows)
 	})
+}
+
+func (c *cmd) trashGame() string {
+	if c.game != "" {
+		return c.game
+	}
+	return "stardew"
+}
+
+func relativeDeleted(when time.Time) string {
+	s := time.Since(when)
+	switch {
+	case s < time.Minute:
+		return "just now"
+	case s < time.Hour:
+		n := s / time.Minute
+		if n == 1 {
+			return "1 minute ago"
+		}
+		return fmt.Sprintf("%d minutes ago", n)
+	case s < 24*time.Hour:
+		n := s / time.Hour
+		if n == 1 {
+			return "1 hour ago"
+		}
+		return fmt.Sprintf("%d hours ago", n)
+	default:
+		n := s / (24 * time.Hour)
+		if n == 1 {
+			return "1 day ago"
+		}
+		return fmt.Sprintf("%d days ago", n)
+	}
+}
+
+func (c *cmd) trash() error {
+	if len(c.args) < 2 {
+		return usageError{"trash needs list, restore, delete or empty"}
+	}
+	game := c.trashGame()
+	sub := c.args[1]
+	switch sub {
+	case "list":
+		var items []profile.TrashItem
+		if err := c.ask("trash.list", control.Params{Game: game}, &items, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(items, func() {
+			if len(items) == 0 {
+				fmt.Fprintln(c.out, "Trash is empty.")
+				return
+			}
+			rows := [][]string{}
+			for _, item := range items {
+				left := fmt.Sprintf("%d days left", item.DaysLeft)
+				if item.DaysLeft == 1 {
+					left = "1 day left"
+				}
+				rows = append(rows, []string{item.Name, relativeDeleted(item.DeletedAt), left})
+			}
+			c.table("NAME\tDELETED\tDAYS LEFT", rows)
+		})
+	case "restore":
+		a, err := c.need(2, "a deleted profile name or id")
+		if err != nil {
+			return err
+		}
+		var p profile.Profile
+		if err := c.ask("trash.restore", control.Params{Game: game, Profile: a[0]}, &p, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(p, func() { fmt.Fprintf(c.out, "Restored %s (%s).\n", p.Name, p.ID) })
+	case "delete":
+		a, err := c.need(2, "a deleted profile name or id")
+		if err != nil {
+			return err
+		}
+		if !c.yesFlag {
+			return refusedError{"permanently deleting a profile needs --yes"}
+		}
+		var r control.Removed
+		if err := c.ask("trash.delete", control.Params{Game: game, Profile: a[0]}, &r, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(r, func() {
+			fmt.Fprintf(c.out, "Permanently deleted %s.\n", strings.Join(r.Mods, ", "))
+		})
+	case "empty":
+		if !c.yesFlag {
+			return refusedError{"emptying trash needs --yes"}
+		}
+		if err := c.ask("trash.empty", control.Params{Game: game}, nil, readTimeout); err != nil {
+			return err
+		}
+		fmt.Fprintln(c.out, "Trash emptied.")
+		return nil
+	default:
+		return usageError{"unknown trash command " + sub}
+	}
 }
 
 func (c *cmd) nexus() error {
@@ -824,6 +955,25 @@ func (c *cmd) logs(p control.Params) error {
 	return c.emit(l, func() { fmt.Fprint(c.out, l.Text) })
 }
 
+func (c *cmd) searchLogs(query string) error {
+	var result launchsvc.RunSearch
+	if err := c.call("logs.search", control.Params{Game: "stardew", Profile: c.profile, Query: query}, &result, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(result, func() {
+		if len(result.Hits) == 0 {
+			fmt.Fprintln(c.out, "No matches.")
+			return
+		}
+		for _, hit := range result.Hits {
+			fmt.Fprintf(c.out, "%s  %s  L%d: %s\n", hit.Started, hit.Outcome, hit.LineNumber, hit.Line)
+		}
+		if result.Truncated {
+			fmt.Fprintln(c.out, "Showing the first 500 matches.")
+		}
+	})
+}
+
 func (c *cmd) saves(p control.Params) error {
 	var list []savessvc.Fit
 	if err := c.ask("saves", p, &list, readTimeout); err != nil {
@@ -974,6 +1124,10 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   bundles apply <game> <bundle> <profile> apply a bundle
   nexus untrack <game> --all|--unused    bulk untrack Nexus mods
   profile delete <game> <profile>         moves it to Mortar's trash
+  trash list [--game stardew]             recently deleted profiles
+  trash restore <name|id> [--game stardew]
+  trash delete <name|id> --yes            permanently delete one
+  trash empty --yes [--game stardew]      purge all deleted profiles
   profile compare <game> <profileA> <profileB>
   profile history <game> <profile>       restore points
   profile revert <game> <profile> <eventId>
@@ -994,6 +1148,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   status <game> | stop <game>
   runs <game> <profile>                   recent launches
   logs <game> <profile> [--run <id>]      a stored SMAPI log (latest by default)
+  logs search <query> [--profile <name>]  search all stored run logs
   queue                                   the download queue
   tools <game>                            configured external tools
   tools run <game> <profile> <tool>       start an external tool

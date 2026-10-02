@@ -32,10 +32,12 @@ const maxLine = 16 << 20
 type Params struct {
 	Game      string   `json:"game,omitempty"`
 	Profile   string   `json:"profile,omitempty"`
+	ModID     int      `json:"modId,omitempty"`
 	Name      string   `json:"name,omitempty"`
 	UniqueIDs []string `json:"uniqueIds,omitempty"`
 	Path      string   `json:"path,omitempty"`
 	Run       string   `json:"run,omitempty"`
+	Query     string   `json:"query,omitempty"`
 	All       bool     `json:"all,omitempty"`
 	Unused    bool     `json:"unused,omitempty"`
 	Yes       bool     `json:"yes,omitempty"`
