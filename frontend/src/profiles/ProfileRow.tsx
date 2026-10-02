@@ -14,27 +14,14 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import {
-  Copy,
-  Eye,
-  EyeOff,
-  FileDown,
-  GitCompare,
-  GripVertical,
-  History,
-  MoreHorizontal,
-  Palette,
-  Pencil,
-  Share2,
-  Trash2,
-} from 'lucide-react'
+import { GripVertical, MoreHorizontal, Palette, Pencil, Share2 } from 'lucide-react'
 import { type ReactNode, useRef, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { NameField } from '../game/NameField.tsx'
+import { CoverMenuItems, MoreMenuItems } from '../game/ProfileMenuItems.tsx'
 import { useRestoreFocus } from '../game/useRestoreFocus.ts'
 import { useBadges } from '../mods/badges.ts'
 import { openShare } from '../share/store.ts'
-import { reportUnexpected } from '../toasts/report.ts'
 import { userModCount } from './count.ts'
 import { EditProfileDialog } from './EditProfileDialog.tsx'
 import { HistoryDialog } from './HistoryDialog.tsx'
@@ -69,9 +56,6 @@ function RowMenu({
   onClose,
   onRename,
   onEdit,
-  onDelete,
-  onCompare,
-  canCompare,
   returnFocus,
 }: {
   profile: Profile
@@ -79,15 +63,10 @@ function RowMenu({
   onClose: () => void
   onRename: () => void
   onEdit: () => void
-  onDelete: (p: Profile) => void
-  onCompare: () => void
-  canCompare: boolean
   returnFocus: () => void
 }) {
   const { t } = useLingui()
-  const duplicate = useProfiles((s) => s.duplicate)
-  const exportProfile = useProfiles((s) => s.exportProfile)
-  const setHidden = useProfiles((s) => s.setHidden)
+  const game = useProfiles((s) => s.game?.id ?? '')
   const [historyOpen, setHistoryOpen] = useState(false)
   // An action that moves focus itself (rename, delete) turns the return to the ⋯ button off.
   const refocus = useRef(true)
@@ -108,6 +87,7 @@ function RowMenu({
           onClose()
         }}
         disableRestoreFocus={true}
+        keepMounted={true}
         slotProps={{
           ...menuPaper,
           transition: {
@@ -125,44 +105,13 @@ function RowMenu({
         <Item icon={<Palette size={15} />} onClick={choose(onEdit, false)}>
           {t`Edit profile`}
         </Item>
-        <Item icon={<History size={15} />} onClick={choose(() => setHistoryOpen(true))}>
-          {t`History`}
-        </Item>
-        <Item
-          icon={<Copy size={15} />}
-          onClick={choose(() => {
-            duplicate(profile.id).catch(reportUnexpected)
-          })}
-        >
-          {t`Duplicate`}
-        </Item>
-        <Item
-          icon={<FileDown size={15} />}
-          onClick={choose(() => {
-            exportProfile(profile.id).catch(reportUnexpected)
-          })}
-        >
-          {t`Export profile…`}
-        </Item>
-        <Item icon={<GitCompare size={15} />} disabled={!canCompare} onClick={choose(onCompare)}>
-          {t`Compare with…`}
-        </Item>
-        <Item
-          icon={profile.hidden ? <Eye size={15} /> : <EyeOff size={15} />}
-          onClick={choose(() => {
-            setHidden(profile.id, !profile.hidden).catch(reportUnexpected)
-          })}
-        >
-          {profile.hidden ? t`Show in sidebar` : t`Hide from sidebar`}
-        </Item>
+        <CoverMenuItems game={game} profile={profile} close={choose(() => undefined)} />
         <Divider sx={{ my: 0.5 }} />
-        <Item
-          icon={<Trash2 size={15} />}
-          onClick={choose(() => onDelete(profile), false)}
-          sx={{ color: '#ff9a90' }}
-        >
-          {t`Delete`}
-        </Item>
+        <MoreMenuItems
+          profile={profile}
+          close={choose(() => undefined)}
+          onHistory={() => setHistoryOpen(true)}
+        />
       </Menu>
       <HistoryDialog
         profileId={profile.id}
@@ -193,17 +142,7 @@ function useRowSummary(profile: Profile): string {
   ])
 }
 
-export function ProfileRow({
-  profile,
-  onDelete,
-  onCompare,
-  canCompare,
-}: {
-  profile: Profile
-  onDelete: (p: Profile) => void
-  onCompare: (p: Profile) => void
-  canCompare: boolean
-}) {
+export function ProfileRow({ profile }: { profile: Profile }) {
   const { t } = useLingui()
   const rename = useProfiles((s) => s.rename)
   const [renaming, setRenaming] = useState(false)
@@ -334,9 +273,6 @@ export function ProfileRow({
         onClose={() => setAnchor(null)}
         onRename={() => setRenaming(true)}
         onEdit={() => setEditing(true)}
-        onDelete={onDelete}
-        onCompare={() => onCompare(profile)}
-        canCompare={canCompare}
         returnFocus={() => more.current?.focus()}
       />
       <EditProfileDialog profile={profile} open={editing} onClose={() => setEditing(false)} />

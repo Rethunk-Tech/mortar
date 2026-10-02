@@ -40,7 +40,7 @@ import {
   Search,
   Trash2,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type {
   Profile,
   TrashItem,
@@ -52,7 +52,6 @@ import { useNav } from '../nav/store.ts'
 import { openImport } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
-import { CompareDialog, PickCompareDialog } from './CompareDialog.tsx'
 import { ExternalImportMenu } from './ExternalImportMenu.tsx'
 import { findModInProfiles, openModInProfile } from './findMod.ts'
 import { GameModsDialog } from './GameModsDialog.tsx'
@@ -189,59 +188,6 @@ function Trash() {
         </DialogActions>
       </Dialog>
     </Box>
-  )
-}
-
-function DeleteDialog({ deleting, onDone }: { deleting: Profile | null; onDone: () => void }) {
-  const { t } = useLingui()
-  const profiles = useProfiles((s) => s.profiles)
-  const remove = useProfiles((s) => s.remove)
-  // The row whose ⋯ button takes focus once the dialog has closed: this one, or a neighbour when it is deleted.
-  const focusAfter = useRef('')
-  const close = (focusId: string) => {
-    focusAfter.current = focusId
-    onDone()
-  }
-  const cancel = () => close(deleting?.id ?? '')
-  return (
-    <Dialog
-      open={deleting !== null}
-      onClose={cancel}
-      slotProps={{
-        transition: {
-          onExited: () => {
-            document
-              .querySelector<HTMLElement>(
-                `[data-actions="${globalThis.CSS.escape(focusAfter.current)}"]`,
-              )
-              ?.focus()
-          },
-        },
-      }}
-    >
-      <DialogTitle>{t`Delete ${deleting?.name ?? ''}?`}</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          {t`The profile stays restorable for 30 days from Recently deleted.`}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={cancel}>{t`Cancel`}</Button>
-        <Button
-          variant="contained"
-          color="error"
-          onClick={() => {
-            if (deleting) {
-              const at = profiles.findIndex((p) => p.id === deleting.id)
-              close((profiles[at + 1] ?? profiles[at - 1])?.id ?? '')
-              remove(deleting.id).catch(reportUnexpected)
-            }
-          }}
-        >
-          {t`Delete`}
-        </Button>
-      </DialogActions>
-    </Dialog>
   )
 }
 
@@ -383,9 +329,6 @@ export function ProfilesPage() {
   const [creating, setCreating] = useState(false)
   const [importingGameMods, setImportingGameMods] = useState(false)
   const openProfile = useProfiles((s) => s.open)
-  const [deleting, setDeleting] = useState<Profile | null>(null)
-  const [pickFor, setPickFor] = useState<Profile | null>(null)
-  const [compare, setCompare] = useState<{ a: Profile; b: Profile } | null>(null)
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -446,13 +389,7 @@ export function ProfilesPage() {
                 strategy={verticalListSortingStrategy}
               >
                 {profiles.map((p) => (
-                  <ProfileRow
-                    key={p.id}
-                    profile={p}
-                    onDelete={setDeleting}
-                    onCompare={setPickFor}
-                    canCompare={profiles.length > 1}
-                  />
+                  <ProfileRow key={p.id} profile={p} />
                 ))}
               </SortableContext>
             </DndContext>
@@ -472,22 +409,6 @@ export function ProfilesPage() {
           openProfile(id)
           closeProfiles()
         }}
-      />
-      <DeleteDialog deleting={deleting} onDone={() => setDeleting(null)} />
-      <PickCompareDialog
-        from={pickFor}
-        onPicked={(other) => {
-          if (pickFor) {
-            setCompare({ a: pickFor, b: other })
-          }
-          setPickFor(null)
-        }}
-        onClose={() => setPickFor(null)}
-      />
-      <CompareDialog
-        a={compare?.a ?? null}
-        b={compare?.b ?? null}
-        onClose={() => setCompare(null)}
       />
     </Box>
   )
