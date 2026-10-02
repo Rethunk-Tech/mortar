@@ -806,13 +806,13 @@ func unescapeDNSName(name string) string {
 			continue
 		}
 		i++
-		if i+2 < len(name) && name[i] >= '0' && name[i] <= '9' &&
-			name[i+1] >= '0' && name[i+1] <= '9' &&
-			name[i+2] >= '0' && name[i+2] <= '9' {
-			value := int(name[i]-'0')*100 + int(name[i+1]-'0')*10 + int(name[i+2]-'0')
-			out.WriteByte(byte(value))
-			i += 2
-			continue
+		// \DDD is a decimal byte; anything past 255 is not one, so it stays literal.
+		if i+2 < len(name) {
+			if value, err := strconv.ParseUint(name[i:i+3], 10, 8); err == nil {
+				out.WriteByte(byte(value))
+				i += 2
+				continue
+			}
 		}
 		out.WriteByte(name[i])
 	}
