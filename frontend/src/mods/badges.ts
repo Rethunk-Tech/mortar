@@ -16,7 +16,8 @@ interface Counts {
 export const useBadges = create<{
   byProfile: Record<string, Counts>
   patch: (profileId: string, counts: Partial<Counts>) => void
-  loadAll: (game: string, profiles: Profile[]) => Promise<void>
+  // loadAll fills the badges of every visible profile but skip, whose own Mods tab loads keep its badges current.
+  loadAll: (game: string, profiles: Profile[], skip: string) => Promise<void>
 }>((set) => ({
   byProfile: {},
   patch: (profileId, counts) =>
@@ -26,26 +27,21 @@ export const useBadges = create<{
         [profileId]: { updates: 0, problems: 0, ...s.byProfile[profileId], ...counts },
       },
     })),
-  loadAll: async (game, profiles) => {
-    await Promise.all(
-      profiles
-        .filter((p) => !p.hidden)
-        .map(async (p) => {
-          try {
-            const [problems, updates] = await Promise.all([
-              Problems(game, p.id),
-              Updates(game, p.id),
-            ])
-            set((s) => ({
-              byProfile: {
-                ...s.byProfile,
-                [p.id]: { problems: problemCount(problems), updates: updateCount(updates, p) },
-              },
-            }))
-          } catch {
-            // No badge without an answer; opening the profile reports the failure.
-          }
-        }),
-    )
+  loadAll: async (game, profiles, skip) => {
+    // One profile at a time: a cold problem check of a large profile is seconds of CPU, and the open profile's
+    // own check should not have to share it.
+    for (const p of profiles.filter((q) => !q.hidden && q.id !== skip)) {
+      try {
+        const [problems, updates] = await Promise.all([Problems(game, p.id), Updates(game, p.id)])
+        set((s) => ({
+          byProfile: {
+            ...s.byProfile,
+            [p.id]: { problems: problemCount(problems), updates: updateCount(updates, p) },
+          },
+        }))
+      } catch {
+        // No badge without an answer; opening the profile reports the failure.
+      }
+    }
   },
 }))

@@ -7,6 +7,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import { HelpDialog } from '../console/HelpDialog.tsx'
 import { PlayControl } from '../launch/PlayControl.tsx'
 import { useBadges } from '../mods/badges.ts'
+import { useMods } from '../mods/store.ts'
 import { useNav } from '../nav/store.ts'
 import { ProfileMark } from '../profiles/ProfileMark.tsx'
 import { useProfiles } from '../profiles/store.ts'
@@ -325,11 +326,14 @@ export function Sidebar({ game }: { game: string }) {
   const loadBadges = useBadges((s) => s.loadAll)
   // A profile's badges follow its mods, which change with `updated`.
   const stamp = profiles.map((p) => `${p.id}:${String(p.updated)}`).join(',')
+  const openId = useProfiles((s) => s.openId)
+  // The other profiles' checks wait until the open profile's mods are on screen.
+  const modsShown = useMods((s) => s.loaded && s.modsFor === openId)
   useEffect(() => {
-    if (stamp) {
-      loadBadges(game, allProfiles).catch(reportUnexpected)
+    if (stamp && modsShown) {
+      loadBadges(game, allProfiles, openId).catch(reportUnexpected)
     }
-  }, [game, stamp, allProfiles, loadBadges])
+  }, [game, stamp, allProfiles, loadBadges, modsShown, openId])
 
   return (
     <Box
