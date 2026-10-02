@@ -150,8 +150,8 @@ func TestHideDismissedSoftOnly(t *testing.T) {
 		{Kind: "load", Target: "a"},
 		{Kind: "edit", Target: "b"},
 	}
-	got := hideDismissed(in, []string{dismissToken("edit", "b"), dismissToken("load", "a")})
-	if len(got) != 1 || got[0].Kind != "load" {
-		t.Fatalf("got %+v", got)
+	got, dismissed := hideDismissed(in, []string{dismissToken("edit", "b"), dismissToken("load", "a")})
+	if len(got) != 0 || len(dismissed) != 2 {
+		t.Fatalf("got %+v dismissed %+v", got, dismissed)
 	}
 }

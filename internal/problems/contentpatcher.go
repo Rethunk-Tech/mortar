@@ -1267,76 +1267,92 @@ func settingChoiceToken(uniqueID, field, value string) string {
 	return dismissToken("setting-choice", target)
 }
 
-func hideDismissedBroken(broken []Broken, tokens []string) []Broken {
+func hideDismissedBroken(broken []Broken, tokens []string) ([]Broken, []DismissedProblem) {
 	if len(tokens) == 0 {
-		return broken
+		return broken, nil
 	}
 	skip := map[string]bool{}
 	for _, t := range tokens {
 		skip[t] = true
 	}
 	out := []Broken{}
+	dismissed := []DismissedProblem{}
 	for _, b := range broken {
-		if b.Status == "abandoned" && skip[dismissToken("abandoned", strings.ToLower(b.UniqueID))] {
+		token := dismissToken("abandoned", strings.ToLower(b.UniqueID))
+		if b.Status == "abandoned" && skip[token] {
+			dismissed = append(dismissed, DismissedProblem{Token: token, Broken: &b})
 			continue
 		}
 		out = append(out, b)
 	}
-	return out
+	return out, dismissed
 }
 
-func hideDismissedListed(missing []Missing, tokens []string) []Missing {
+func hideDismissedListed(missing []Missing, tokens []string) ([]Missing, []DismissedProblem) {
 	if len(tokens) == 0 {
-		return missing
+		return missing, nil
 	}
 	skip := map[string]bool{}
 	for _, t := range tokens {
 		skip[t] = true
 	}
 	out := []Missing{}
+	dismissed := []DismissedProblem{}
 	for _, m := range missing {
-		if m.Listed && skip[dismissToken("listed", strings.ToLower(m.UniqueID))] {
+		token := dismissToken("listed", strings.ToLower(m.UniqueID))
+		if m.Listed && skip[token] {
+			dismissed = append(dismissed, DismissedProblem{Token: token, Missing: &m})
 			continue
 		}
 		out = append(out, m)
 	}
-	return out
+	return out, dismissed
 }
 
-func hideDismissedSettings(settings []SettingHint, tokens []string) []SettingHint {
+func hideDismissedSettings(settings []SettingHint, tokens []string) ([]SettingHint, []DismissedProblem) {
 	if len(tokens) == 0 {
-		return settings
+		return settings, nil
 	}
 	skip := map[string]bool{}
 	for _, t := range tokens {
 		skip[t] = true
 	}
 	out := []SettingHint{}
+	dismissed := []DismissedProblem{}
 	for _, setting := range settings {
 		target := strings.ToLower(setting.UniqueID) + "\t" + strings.ToLower(setting.Field)
-		if skip[dismissToken("setting", target)] ||
-			skip[settingChoiceToken(setting.UniqueID, setting.Field, setting.Current)] {
+		token := dismissToken("setting", target)
+		if skip[token] {
+			dismissed = append(dismissed, DismissedProblem{Token: token, Setting: &setting})
+			continue
+		}
+		token = settingChoiceToken(setting.UniqueID, setting.Field, setting.Current)
+		if skip[token] {
+			dismissed = append(dismissed, DismissedProblem{Token: token, Setting: &setting})
 			continue
 		}
 		out = append(out, setting)
 	}
-	return out
+	return out, dismissed
 }
 
-func hideDismissed(conflicts []AssetConflict, tokens []string) []AssetConflict {
+func hideDismissed(conflicts []AssetConflict, tokens []string) ([]AssetConflict, []DismissedProblem) {
 	if len(tokens) == 0 {
-		return conflicts
+		return conflicts, nil
 	}
 	skip := map[string]bool{}
 	for _, t := range tokens {
 		skip[t] = true
 	}
 	out := []AssetConflict{}
+	dismissed := []DismissedProblem{}
 	for _, c := range conflicts {
-		if c.Kind == "edit" && skip[dismissToken(c.Kind, c.Target)] {
+		token := dismissToken(c.Kind, c.Target)
+		if skip[token] {
+			dismissed = append(dismissed, DismissedProblem{Token: token, AssetConflict: &c})
 			continue
 		}
 		out = append(out, c)
 	}
-	return out
+	return out, dismissed
 }

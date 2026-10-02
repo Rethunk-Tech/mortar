@@ -13,12 +13,12 @@ func TestRememberedSettingChoiceHidesHintUntilValueChanges(t *testing.T) {
 		"cornucopia.morecrops\tenable extended trees pack\tfalse",
 	)}
 
-	if got := hideDismissedSettings([]SettingHint{setting}, tokens); len(got) != 0 {
+	if got, dismissed := hideDismissedSettings([]SettingHint{setting}, tokens); len(got) != 0 || len(dismissed) != 1 {
 		t.Fatalf("remembered setting choice left reverse hint: %+v", got)
 	}
 
 	setting.Current = "true"
-	got := hideDismissedSettings([]SettingHint{setting}, tokens)
+	got, _ := hideDismissedSettings([]SettingHint{setting}, tokens)
 	if len(got) != 1 {
 		t.Fatalf("changed setting value hid hint: %+v", got)
 	}

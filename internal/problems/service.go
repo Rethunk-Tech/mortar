@@ -173,10 +173,15 @@ func (s *Service) withDrift(gameID, id string, r Result) (Result, error) {
 
 func (s *Service) withDismissed(gameID, id string, r Result) Result {
 	tokens := s.settings.Get().Dismissed[dismissBucket(gameID, id)]
-	r.AssetConflicts = hideDismissed(r.AssetConflicts, tokens)
-	r.Broken = hideDismissedBroken(r.Broken, tokens)
-	r.Missing = hideDismissedListed(r.Missing, tokens)
-	r.Settings = hideDismissedSettings(r.Settings, tokens)
+	var dismissed []DismissedProblem
+	r.AssetConflicts, dismissed = hideDismissed(r.AssetConflicts, tokens)
+	r.Dismissed = append(r.Dismissed, dismissed...)
+	r.Broken, dismissed = hideDismissedBroken(r.Broken, tokens)
+	r.Dismissed = append(r.Dismissed, dismissed...)
+	r.Missing, dismissed = hideDismissedListed(r.Missing, tokens)
+	r.Dismissed = append(r.Dismissed, dismissed...)
+	r.Settings, dismissed = hideDismissedSettings(r.Settings, tokens)
+	r.Dismissed = append(r.Dismissed, dismissed...)
 	return r
 }
 
@@ -256,10 +261,11 @@ func (s *Service) RememberSettingChoice(_ context.Context, gameID, id, uniqueID,
 	return err
 }
 
-// DismissAssetConflict hides a soft (edit) Content Patcher overlap for this profile until it is gone.
+// DismissAssetConflict hides a Content Patcher overlap for this profile until it is gone.
 func (s *Service) DismissAssetConflict(_ context.Context, gameID, id, kind, target string) error {
-	if kind != "edit" || target == "" {
-		return errors.New("only overlapping image or map edits can be dismissed")
+	kind, target = strings.TrimSpace(kind), strings.TrimSpace(target)
+	if kind == "" || target == "" {
+		return errors.New("missing conflict kind or target")
 	}
 	token := dismissToken(kind, target)
 	bucket := dismissBucket(gameID, id)
@@ -269,6 +275,24 @@ func (s *Service) DismissAssetConflict(_ context.Context, gameID, id, kind, targ
 		}
 		next := maps.Clone(v.Dismissed)
 		next[bucket] = append(slices.Clone(v.Dismissed[bucket]), token)
+		v.Dismissed = next
+	})
+	return err
+}
+
+func (s *Service) RestoreDismissed(_ context.Context, gameID, id, token string) error {
+	token = strings.TrimSpace(token)
+	if token == "" {
+		return errors.New("missing dismissal token")
+	}
+	bucket := dismissBucket(gameID, id)
+	_, err := s.settings.Update(func(v *settings.Settings) {
+		current := v.Dismissed[bucket]
+		if !slices.Contains(current, token) {
+			return
+		}
+		next := maps.Clone(v.Dismissed)
+		next[bucket] = slices.Delete(slices.Clone(current), slices.Index(current, token), slices.Index(current, token)+1)
 		v.Dismissed = next
 	})
 	return err

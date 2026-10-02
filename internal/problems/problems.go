@@ -131,17 +131,26 @@ type Cleanup struct {
 	Name     string `json:"name"`
 }
 
+type DismissedProblem struct {
+	Token         string         `json:"token"`
+	AssetConflict *AssetConflict `json:"assetConflict,omitempty"`
+	Broken        *Broken        `json:"broken,omitempty"`
+	Missing       *Missing       `json:"missing,omitempty"`
+	Setting       *SettingHint   `json:"setting,omitempty"`
+}
+
 // Result is everything found for one profile. Unknown is set when a lookup failed, so the lists may be short.
 type Result struct {
-	Missing        []Missing       `json:"missing"`
-	Duplicates     []Duplicate     `json:"duplicates"`
-	Broken         []Broken        `json:"broken"`
-	AssetConflicts []AssetConflict `json:"assetConflicts"`
-	Settings       []SettingHint   `json:"settings"`
-	Cleanup        []Cleanup       `json:"cleanup,omitempty"`
-	RunErrors      []RunError      `json:"runErrors"`
-	Drift          []profile.Drift `json:"drift,omitempty"`
-	Unknown        bool            `json:"unknown"`
+	Missing        []Missing          `json:"missing"`
+	Duplicates     []Duplicate        `json:"duplicates"`
+	Broken         []Broken           `json:"broken"`
+	AssetConflicts []AssetConflict    `json:"assetConflicts"`
+	Settings       []SettingHint      `json:"settings"`
+	Cleanup        []Cleanup          `json:"cleanup,omitempty"`
+	RunErrors      []RunError         `json:"runErrors"`
+	Drift          []profile.Drift    `json:"drift,omitempty"`
+	Dismissed      []DismissedProblem `json:"dismissed"`
+	Unknown        bool               `json:"unknown"`
 }
 
 // Count is the number of problems, one per missing dependency, duplicate, broken mod, asset conflict, setting and last-run error.

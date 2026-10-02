@@ -857,6 +857,7 @@ func (c *cmd) problems(p control.Params) error {
 		}
 		fmt.Fprintf(c.out, "%d problems: %d missing, %d duplicates, %d broken, %d conflicts, %d settings, %d last-run errors, %d outside edits\n",
 			r.Count(), len(r.Missing), len(r.Duplicates), len(r.Broken), conflicts, len(r.Settings), len(r.RunErrors), len(r.Drift))
+		fmt.Fprintf(c.out, "Dismissed (%d)\n", len(r.Dismissed))
 		for _, x := range r.Missing {
 			fmt.Fprintf(c.out, "missing    %s needs %s\n", x.DependentName, missingName(x))
 		}
