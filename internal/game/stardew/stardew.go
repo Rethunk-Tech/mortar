@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 
 	"github.com/Rethunk-AI/mortar/internal/gog"
 	"github.com/Rethunk-AI/mortar/internal/lutris"
@@ -18,8 +19,8 @@ import (
 // identity is Stardew Valley's names and store ids from the verified component manifest, which always carries them
 // because the bundled manifest does.
 func identity() components.GameInfo {
-	if configuredComponents != nil {
-		if g, ok := configuredComponents.Game("stardew"); ok {
+	if c := configuredComponents.Load(); c != nil {
+		if g, ok := c.Game("stardew"); ok {
 			return g
 		}
 	}
@@ -49,10 +50,11 @@ type Game struct {
 	FlatpakShow func() (string, error)
 }
 
-var configuredComponents *components.Client
+// configuredComponents is set by every service that builds a component client, possibly at the same time.
+var configuredComponents atomic.Pointer[components.Client]
 
 // ConfigureComponents selects the verified component manifest used by this game.
-func ConfigureComponents(client *components.Client) { configuredComponents = client }
+func ConfigureComponents(client *components.Client) { configuredComponents.Store(client) }
 
 func (Game) ID() string         { return "stardew" }
 func (Game) Name() string       { return identity().Name }
