@@ -83,6 +83,7 @@ async function loadMods(
     mods?: Mod[]
     pages?: Record<string, string | undefined>
     loaded?: boolean
+    modsFor?: string
   }) => void,
   get: () => { loadProblems: () => Promise<void> },
 ) {
@@ -97,7 +98,7 @@ async function loadMods(
       Pages(target.game, target.id),
     ])
     if (open()?.id === target.id) {
-      set({ mods: mods ?? [], pages: pages ?? {}, loaded: true })
+      set({ mods: mods ?? [], pages: pages ?? {}, loaded: true, modsFor: target.id })
     }
   } catch (e) {
     if (open()?.id === target.id) {
@@ -309,6 +310,8 @@ async function setEntryNoteTags(mod: Mod, note: string, tags: string[]) {
 export const useMods = create<{
   mods: Mod[]
   loaded: boolean
+  // modsFor is the profile mods belongs to, so returning to that profile's tab shows them while they refresh.
+  modsFor: string
   loadError: string
   pages: Record<string, string | undefined>
   view: View
@@ -343,6 +346,7 @@ export const useMods = create<{
 }>((set, get) => ({
   mods: [],
   loaded: false,
+  modsFor: '',
   loadError: '',
   pages: {},
   view: storedView(),

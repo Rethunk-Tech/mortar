@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Card, Chip, CircularProgress, Typography } from '@mui/material'
+import { Box, Button, ButtonBase, Card, Chip, Skeleton, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import type {
@@ -303,8 +303,19 @@ function ModsBody({
         </Button>
       </Box>
     ) : (
-      <Box sx={{ px: 2 }}>
-        <CircularProgress size={20} aria-label={t`Loading mods`} />
+      <Box
+        role="status"
+        aria-label={t`Loading mods`}
+        sx={{ px: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
+      >
+        {LOADING_ROWS.map((n) => (
+          <Skeleton
+            key={n}
+            variant="rounded"
+            height={ROW_HEIGHT}
+            sx={{ bgcolor: 'rgba(255,255,255,0.06)' }}
+          />
+        ))}
       </Box>
     )
   }
@@ -326,6 +337,11 @@ function ModsBody({
     </Box>
   )
 }
+
+// Placeholder rows while a profile's mods load for the first time.
+const LOADING_ROW_COUNT = 8
+const LOADING_ROWS = Array.from({ length: LOADING_ROW_COUNT }, (_, i) => i)
+const ROW_HEIGHT = 44
 
 export function ModsTab({ profile }: { profile: Profile }) {
   const { t } = useLingui()
@@ -356,15 +372,17 @@ export function ModsTab({ profile }: { profile: Profile }) {
   }, [gameId, profile.id, launchState])
   useEffect(() => {
     const pending = useDetail.getState().pendingId
-    useMods.setState({
-      mods: [],
-      loaded: false,
-      loadError: '',
-      problems: null,
-      resolving: null,
-      removing: [],
-    })
-    useUpdates.setState({ updates: null, reviewing: false })
+    if (useMods.getState().modsFor !== profile.id) {
+      useMods.setState({
+        mods: [],
+        loaded: false,
+        loadError: '',
+        problems: null,
+        resolving: null,
+        removing: [],
+      })
+      useUpdates.setState({ updates: null, reviewing: false })
+    }
     if (!pending) {
       useDetail.getState().show(null)
     }
@@ -380,7 +398,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
         useDetail.getState().show(mod ?? null)
       })
       .catch(reportUnexpected)
-  }, [load])
+  }, [load, profile.id])
 
   useEffect(() => {
     if (!(configurableOnly && gameId)) {

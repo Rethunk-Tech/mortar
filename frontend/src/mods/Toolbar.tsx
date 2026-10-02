@@ -214,7 +214,10 @@ export function Toolbar({
   const [expanded, setExpanded] = useState(false)
   const fieldOpen = searchFieldOpen(narrow, expanded, query)
   const inputRef = useRef<HTMLInputElement>(null)
-  const placeholder = t`Filter ${plural(total, { one: '# mod', other: '# mods' })}`
+  const loaded = useMods((s) => s.loaded)
+  const placeholder = loaded
+    ? t`Filter ${plural(total, { one: '# mod', other: '# mods' })}`
+    : t`Filter mods`
   const collapseIfEmpty = () => {
     if (query === '') {
       setExpanded(false)
