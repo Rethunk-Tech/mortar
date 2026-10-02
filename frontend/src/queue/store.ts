@@ -21,6 +21,7 @@ import { considerMissing } from '../install/store.ts'
 import { useLaunch } from '../launch/store.ts'
 import { isLocked } from '../mods/locked.ts'
 import { useMods } from '../mods/store.ts'
+import { openSettings } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { follow } from '../shell/follow.ts'
 import { changeStillLatest, type HistoryActionState } from '../toasts/history.ts'
@@ -79,6 +80,9 @@ function unblockedDependent(
 }
 
 const MS_PER_SEC = 1000
+const REFRESH_DEBOUNCE_MS = 1000
+let refreshTimer: ReturnType<typeof setTimeout> | undefined
+let installToast: number | undefined
 
 function retryWaitSeconds(until: number, now = Date.now()): number {
   return Math.max(1, until - Math.floor(now / MS_PER_SEC))
@@ -93,6 +97,33 @@ function downloadFailCopy(error: string): { body: string; detail?: string } {
   return {
     body: i18n._(msg`The download could not finish. Retry or skip it from the queue.`),
     ...(detail === undefined ? {} : { detail }),
+  }
+}
+
+function failureToast(item: Item) {
+  const error = item.error ?? ''
+  if (error.includes('API key')) {
+    return {
+      title: i18n._(msg`Nexus rejected your API key`),
+      action: { label: i18n._(msg`Open Nexus settings`), run: () => openSettings('nexus') },
+    }
+  }
+  if (error.includes('Not enough disk space')) {
+    return {
+      title: i18n._(msg`Not enough disk space`),
+      action: { label: i18n._(msg`Open data folder settings`), run: () => openSettings('data') },
+    }
+  }
+  if (error.includes('quarantined')) {
+    return { title: i18n._(msg`File quarantined`) }
+  }
+  return {
+    title: i18n._(msg`Couldn't reach Nexus`),
+    action: {
+      label: i18n._(msg`Retry now`),
+      run: () => Retry(item.id),
+      live: () => retryLive(item.id),
+    },
   }
 }
 
@@ -150,15 +181,12 @@ function installUndo(item: Item, entry: Entry | undefined) {
 function pushDownloadFailures(failed: Item[]) {
   const nexusFail = singleNexusFailure(failed)
   if (nexusFail) {
+    const cause = failureToast(nexusFail)
     useToasts.getState().push({
       kind: 'error',
-      title: i18n._(msg`Couldn't reach Nexus`),
+      title: cause.title,
       ...downloadFailCopy(nexusFail.error ?? ''),
-      action: {
-        label: i18n._(msg`Retry now`),
-        run: () => Retry(nexusFail.id),
-        live: () => retryLive(nexusFail.id),
-      },
+      ...(cause.action === undefined ? {} : { action: cause.action }),
     })
     return
   }
@@ -187,7 +215,20 @@ function pushRateLimitPause(prev: Snapshot, next: Snapshot) {
   }
 }
 
-async function announce(prev: Snapshot, next: Snapshot) {
+function debounceProfileRefresh(games: string[]) {
+  clearTimeout(refreshTimer)
+  refreshTimer = setTimeout(async () => {
+    refreshTimer = undefined
+    const { game, refresh, load } = useProfiles.getState()
+    for (const id of games) {
+      await (id === game?.id ? refresh() : load(id))
+        .then(() => useMods.getState().load())
+        .catch(() => undefined)
+    }
+  }, REFRESH_DEBOUNCE_MS)
+}
+
+function announce(prev: Snapshot, next: Snapshot) {
   const before = new Map(prev.items.map((i) => [i.id, i.state]))
   const changed = (state: string) =>
     next.items.filter((i) => i.state === state && before.get(i.id) !== state)
@@ -199,12 +240,9 @@ async function announce(prev: Snapshot, next: Snapshot) {
     ...changed('needs-merge'),
   ]
   const blocked = useMods.getState().problems?.missing
-  const { game, refresh, load } = useProfiles.getState()
   const games = [...new Set(done.map((i) => i.game))]
-  for (const id of games) {
-    await (id === game?.id ? refresh() : load(id))
-      .then(() => useMods.getState().load())
-      .catch(() => undefined)
+  if (games.length > 0) {
+    debounceProfileRefresh(games)
   }
   const dependentIds: string[] = []
   for (const item of done) {
@@ -224,9 +262,9 @@ async function announce(prev: Snapshot, next: Snapshot) {
       const entry = entryForItem(profile, item)
       const extra = installUndo(item, entry)
       const first = item.name
-      useToasts.getState().push({
+      installToast = useToasts.getState().push({
         kind: 'success',
-        title: i18n._(msg`${first} installed`),
+        title: i18n._(msg`${first} installed into ${profile?.name ?? 'profile'}`),
         ...(unblocked ? { body: i18n._(msg`${unblocked} can load now.`) } : {}),
         ...(extra
           ? {
@@ -247,12 +285,14 @@ async function announce(prev: Snapshot, next: Snapshot) {
       })
     }
   } else if (done.length > 1) {
-    useToasts.getState().push({
-      kind: 'success',
-      title: i18n._(
-        msg`${plural(done.length, { one: '# mod installed', other: '# mods installed' })}`,
-      ),
-    })
+    const title = i18n._(
+      msg`${plural(done.length, { one: '# mod installed', other: '# mods installed' })}`,
+    )
+    if (installToast === undefined) {
+      installToast = useToasts.getState().push({ kind: 'success', title })
+    } else {
+      useToasts.getState().update(installToast, { title })
+    }
   }
   if (waiting.length > 0) {
     useToasts.getState().push({
@@ -284,7 +324,7 @@ export const initQueue = () =>
     const next = snapshot(state)
     useQueue.setState({ state: next })
     if (!first) {
-      announce(prev, next).catch(() => undefined)
+      announce(prev, next)
     }
   })
 

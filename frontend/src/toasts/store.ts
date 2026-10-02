@@ -49,6 +49,7 @@ export const useToasts = create<{
   history: ToastHistoryItem[]
   unread: number
   push: (toast: ToastInput) => number
+  update: (id: number, toast: Partial<ToastInput>) => void
   dismiss: (id: number) => void
   hold: (id: number) => void
   release: (id: number) => void
@@ -89,6 +90,12 @@ export const useToasts = create<{
       })
       arm(id, input.kind)
       return id
+    },
+    update: (id, input) => {
+      set((s) => ({
+        toasts: s.toasts.map((toast) => (toast.id === id ? { ...toast, ...input } : toast)),
+        history: s.history.map((toast) => (toast.id === id ? { ...toast, ...input } : toast)),
+      }))
     },
     dismiss: (id) => {
       clearTimeout(timers.get(id))
