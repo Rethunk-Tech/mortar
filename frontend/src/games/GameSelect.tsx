@@ -1,8 +1,8 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Typography } from '@mui/material'
+import { Box, Button, ButtonBase, Link, Typography } from '@mui/material'
 import { Play } from 'lucide-react'
-import { type MouseEvent, useEffect, useState } from 'react'
+import { type MouseEvent, useCallback, useEffect, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { List } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
@@ -13,9 +13,10 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { gameSetupNeeded } from '../firstrun/needed.ts'
+import { useRefreshOnFocus } from '../firstrun/useRefreshOnFocus.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
-import { isGameId, useNav } from '../nav/store.ts'
+import { isGameId, openSettings, useNav } from '../nav/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { gameArt } from './art.ts'
@@ -226,45 +227,65 @@ function Row({
   )
 }
 
+interface GameState {
+  profiles: Profile[]
+  lastPlayedId: string
+  lastPlayedAt: string
+  setupNeeded: boolean
+}
+
 export function GameSelect() {
   const { t } = useLingui()
   const [status, setStatus] = useState<GameStatus | null>(null)
-  const [profiles, setProfiles] = useState<Profile[]>([])
-  const [lastPlayedId, setLastPlayedId] = useState('')
-  const [lastPlayedAt, setLastPlayedAt] = useState('')
+  const [states, setStates] = useState<Record<string, GameState>>({})
   const loaderStatus = useLoader((s) => s.status)
   const checkLoader = useLoader((s) => s.check)
   useEffect(() => {
     checkLoader('stardew')
   }, [checkLoader])
-  useEffect(() => {
-    Promise.all([loadGameStatus(), List('stardew'), Get()])
-      .then(([s, listed, settings]) => {
+  const refresh = useCallback(() => {
+    Promise.all([loadGameStatus(), Get()])
+      .then(async ([s, settings]) => {
+        const entries = await Promise.all(
+          s.games
+            .filter((g) => g.available)
+            .map(async (g): Promise<[string, GameState]> => {
+              const [listed, setupNeeded] = await Promise.all([List(g.id), gameSetupNeeded(g)])
+              const profiles = listed ?? []
+              const played = settings.lastPlayed?.[g.id]
+              const still = Boolean(
+                played?.profile && profiles.some((p) => p.id === played.profile),
+              )
+              return [
+                g.id,
+                {
+                  profiles,
+                  setupNeeded,
+                  lastPlayedId: still && played ? played.profile : '',
+                  lastPlayedAt: still && played ? played.at : '',
+                },
+              ]
+            }),
+        )
         setStatus(s)
-        const next = listed ?? []
-        setProfiles(next)
-        const played = settings.lastPlayed?.stardew
-        const still = Boolean(played?.profile && next.some((p) => p.id === played.profile))
-        setLastPlayedId(still && played ? played.profile : '')
-        setLastPlayedAt(still && played ? played.at : '')
+        setStates(Object.fromEntries(entries))
       })
       .catch((err: unknown) => fail(t`Could not read your games`, err))
   }, [t])
+  useEffect(refresh, [refresh])
+  useRefreshOnFocus(refresh)
   if (!status) {
     return null
   }
-  const lastName = profiles.find((p) => p.id === lastPlayedId)?.name ?? ''
   const noteFor = (g: Game) => {
+    const st = states[g.id]
     if (!g.available) {
       return t`After the first release`
     }
-    if (!g.installed) {
-      return t`Not found`
+    if (!st || st.setupNeeded) {
+      return t`Not set up · Open it to set it up`
     }
-    if (g.id !== 'stardew') {
-      return t`Installed`
-    }
-    return plural(profiles.length, {
+    return plural(st.profiles.length, {
       one: 'Installed · # profile',
       other: 'Installed · # profiles',
     })
@@ -272,26 +293,32 @@ export function GameSelect() {
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-        {status.games.map((g) => (
-          <Row
-            key={g.id}
-            game={g}
-            openable={g.available && g.installed}
-            note={noteFor(g)}
-            loader={loaderCaption(g.loader, g.id === 'stardew' ? loaderStatus : null)}
-            lastPlayedName={g.id === 'stardew' ? lastName : ''}
-            lastPlayedAt={g.id === 'stardew' ? lastPlayedAt : ''}
-            lastPlayedId={g.id === 'stardew' ? lastPlayedId : ''}
-          />
-        ))}
+        {status.games.map((g) => {
+          const st = states[g.id]
+          const lastId = st?.lastPlayedId ?? ''
+          return (
+            <Row
+              key={g.id}
+              game={g}
+              openable={g.available}
+              note={noteFor(g)}
+              loader={loaderCaption(g.loader, g.id === 'stardew' ? loaderStatus : null)}
+              lastPlayedName={st?.profiles.find((p) => p.id === lastId)?.name ?? ''}
+              lastPlayedAt={st?.lastPlayedAt ?? ''}
+              lastPlayedId={st?.setupNeeded ? '' : lastId}
+            />
+          )
+        })}
       </Box>
-      {status.steam !== 'found' && !status.games.some((g) => g.available && g.installed) && (
-        <Typography noWrap={true} sx={{ px: 2, py: 0.75, fontSize: 14, color: 'text.secondary' }}>
-          {t`Mortar looks for Stardew Valley in Steam, Flatpak Steam, GOG, Heroic and Lutris.`}{' '}
-          {status.steam === 'flatpak-only'
-            ? t`Only a Flatpak Steam was found, with no game in its library.`
-            : t`Steam was not found.`}
-        </Typography>
+      {!status.games.some((g) => g.available && g.installed) && (
+        <Box sx={{ px: 2, py: 0.75, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography noWrap={true} sx={{ fontSize: 14, color: 'text.secondary' }}>
+            {t`No supported game was found in your launchers.`}
+          </Typography>
+          <Link component="button" onClick={() => openSettings('launchers')} sx={{ fontSize: 14 }}>
+            {t`Launchers…`}
+          </Link>
+        </Box>
       )}
     </Box>
   )
