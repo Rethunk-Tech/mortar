@@ -14,6 +14,7 @@ import { overlayGame, useLaunch } from './launch/store.ts'
 import { isGameId, useNav } from './nav/store.ts'
 import { ArrivalDialog } from './nxm/ArrivalDialog.tsx'
 import { ProfilesPage } from './profiles/ProfilesPage.tsx'
+import { QuitPrompt } from './QuitPrompt.tsx'
 import { GameSettingsPage } from './settings/GameSettingsPage.tsx'
 import { SettingsPage } from './settings/SettingsPage.tsx'
 import { useStartupChecks } from './settings/startupChecks.ts'
@@ -79,6 +80,7 @@ export function App() {
       <ShareDialog />
       <ImportDialog />
       <WhatsNewDialog />
+      <QuitPrompt />
       <ToastHost />
     </>
   )

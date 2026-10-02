@@ -31,6 +31,7 @@ import { useLocked } from './useLocked.ts'
 const text = { fontSize: 13 } as const
 const noWrap = { whiteSpace: 'nowrap' } as const
 const row = { display: 'flex', alignItems: 'center', gap: 1, minHeight: 36, ...text } as const
+const numberPattern = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/
 
 function openTarget() {
   const { game, openId } = useProfiles.getState()
@@ -75,7 +76,7 @@ function Field({
           value={String(node.value)}
           onChange={(e) => {
             const raw = e.target.value
-            if (!/^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(raw)) {
+            if (!numberPattern.test(raw)) {
               return
             }
             const float = node.kind === 'float' || raw.includes('.')
@@ -217,6 +218,7 @@ export function ConfigEditor({
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
   const [dirty, setDirty] = useState(false)
+  const [discardOpen, setDiscardOpen] = useState(false)
   const readGen = useRef(0)
   useEffect(() => {
     if (!open) {
@@ -267,41 +269,51 @@ export function ConfigEditor({
       .catch(reportUnexpected)
   }
   const close = () => {
-    if (dirty && !window.confirm(t`Discard changes?`)) {
+    if (dirty) {
+      setDiscardOpen(true)
       return
     }
     onClose()
   }
   return (
-    <Dialog
-      open={open}
-      onClose={close}
-      fullWidth={true}
-      maxWidth="sm"
-      transitionDuration={0}
-      slotProps={{ paper }}
-    >
-      <DialogTitle>{t`Edit config.json`}</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        {error ? <Typography sx={text}>{error}</Typography> : null}
-        <Fields
-          tree={tree}
-          onChange={(path, next) => {
-            setSaved(false)
-            setDirty(true)
-            setTree((cur) => (cur ? setAt(cur, path, next) : cur))
-          }}
-          onOpen={() => openConfig(mod).catch(reportUnexpected)}
-        />
-      </DialogContent>
-      <DialogActions>
-        {saved ? <Typography sx={{ mr: 'auto', ...text }}>{t`Saved`}</Typography> : null}
-        <Button onClick={close} sx={noWrap}>{t`Close`}</Button>
-        <Button onClick={save} disabled={locked || !tree} sx={noWrap}>
-          {t`Save`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <>
+      <Dialog
+        open={open}
+        onClose={close}
+        fullWidth={true}
+        maxWidth="sm"
+        transitionDuration={0}
+        slotProps={{ paper }}
+      >
+        <DialogTitle>{t`Edit config.json`}</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {error ? <Typography sx={text}>{error}</Typography> : null}
+          <Fields
+            tree={tree}
+            onChange={(path, next) => {
+              setSaved(false)
+              setDirty(true)
+              setTree((cur) => (cur ? setAt(cur, path, next) : cur))
+            }}
+            onOpen={() => openConfig(mod).catch(reportUnexpected)}
+          />
+        </DialogContent>
+        <DialogActions>
+          {saved ? <Typography sx={{ mr: 'auto', ...text }}>{t`Saved`}</Typography> : null}
+          <Button onClick={close} sx={noWrap}>{t`Close`}</Button>
+          <Button onClick={save} disabled={locked || !tree} sx={noWrap}>
+            {t`Save`}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={discardOpen} onClose={() => setDiscardOpen(false)}>
+        <DialogTitle>{t`Discard changes?`}</DialogTitle>
+        <DialogActions>
+          <Button onClick={() => setDiscardOpen(false)}>{t`Cancel`}</Button>
+          <Button onClick={onClose} autoFocus={true}>{t`Discard`}</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   )
 }
 

@@ -10,9 +10,10 @@ import {
   Install,
   Restart,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/updatesvc/service.ts'
-import { i18n } from '../i18n/index.ts'
-import { errorMessage } from '../toasts/report.ts'
 import { BusySummary } from '../../bindings/github.com/Rethunk-AI/mortar/quitservice.ts'
+import { i18n } from '../i18n/index.ts'
+import { askQuit } from '../quit.ts'
+import { errorMessage } from '../toasts/report.ts'
 
 type Phase =
   | 'idle'
@@ -111,7 +112,7 @@ export const useMortarUpdate = create<{
     restart: () =>
       run('restarting', async () => {
         const summary = await BusySummary()
-        if (summary && !window.confirm(summary)) {
+        if (summary && !(await askQuit(summary))) {
           return { phase: 'ready' }
         }
         await Restart()
