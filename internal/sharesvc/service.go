@@ -514,6 +514,7 @@ func (s *Service) Discard() {
 type Result struct {
 	Profile profile.Profile `json:"profile"`
 	Queued  int             `json:"queued"`
+	BatchID string          `json:"batchId,omitempty"`
 }
 
 func requestFor(game, profileID string, m Mod) queue.Request {
@@ -728,11 +729,12 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
 	}
 	res.Queued = len(reqs)
+	res.BatchID = batchID
 	if len(configs) > 0 && len(reqs) > 0 {
 		// savePending marshals every pending import, which queueChanged edits under applyMu.
 		s.applyMu.Lock()
 		s.mu.Lock()
-		s.pending = append(s.pending, &pending{Game: game, Profile: profileID, Wanted: wanted, Configs: configs})
+		s.pending = append(s.pending, &pending{Game: game, Profile: profileID, BatchID: batchID, Wanted: wanted, Configs: configs})
 		s.mu.Unlock()
 		s.savePending()
 		s.applyMu.Unlock()
@@ -815,6 +817,7 @@ func (w wantedFile) item(it queue.Item) bool {
 type pending struct {
 	Game    string         `json:"game"`
 	Profile string         `json:"profile"`
+	BatchID string         `json:"batchId"`
 	Wanted  []wantedFile   `json:"wanted"`
 	Configs []share.Config `json:"configs"`
 	// seen is the set of finished downloads the configs were last applied for; it starts over with the process.
@@ -858,9 +861,17 @@ func (s *Service) queueChanged(st queue.State) {
 	changed := false
 	for _, p := range todo {
 		var done []string
+		settled := 0
 		for _, it := range st.Items {
 			if it.Game != p.Game || it.Profile != p.Profile {
 				continue
+			}
+			if p.BatchID != "" && it.BatchID != p.BatchID {
+				continue
+			}
+			if slices.ContainsFunc(p.Wanted, func(w wantedFile) bool { return w.item(it) }) &&
+				(it.State == queue.StateDone || it.State == queue.StateFailed || it.State == queue.StateSkipped || it.State == queue.StateCancelled) {
+				settled++
 			}
 			if it.State == queue.StateDone && slices.ContainsFunc(p.Wanted, func(w wantedFile) bool { return w.item(it) }) {
 				done = append(done, it.ID)
@@ -872,7 +883,7 @@ func (s *Service) queueChanged(st queue.State) {
 		if s.wantedInstalled(p) {
 			seen = "on-profile"
 		}
-		if len(p.Configs) > 0 && seen != p.seen && (len(done) > 0 || seen == "on-profile") {
+		if len(p.Configs) > 0 && seen != p.seen && (len(done) > 0 || settled >= len(p.Wanted) || seen == "on-profile") {
 			p.seen = seen
 			before := len(p.Configs)
 			s.apply(p)
