@@ -12,12 +12,13 @@ import {
   RadioGroup,
   Switch,
 } from '@mui/material'
-import { Clipboard } from '@wailsio/runtime'
+import { Browser, Clipboard } from '@wailsio/runtime'
 import { Copy, Download, FolderOpen, Undo2 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import type { FoundInstall } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
 import {
   GrantSteamAccess,
+  ResetInstall,
   SteamAccess,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { State } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
@@ -63,6 +64,7 @@ function GameFolder({
   const { t } = useLingui()
   const override = useSettings((s) => s.gameFolders?.[GAME] ?? '')
   const [error, setError] = useState('')
+  const [resetting, setResetting] = useState(false)
   const change = (run: Promise<void>) => {
     setError('')
     run
@@ -144,6 +146,48 @@ function GameFolder({
           </Button>
         ) : null}
       </Box>
+      <Button
+        variant="text"
+        color="error"
+        disabled={resetting || !folder}
+        onClick={() => setResetting(true)}
+        sx={{ alignSelf: 'flex-start', minHeight: 36 }}
+      >
+        {t`Reset game install`}
+      </Button>
+      <Dialog open={resetting} onClose={() => setResetting(false)} transitionDuration={0}>
+        <DialogTitle>{t`Reset game install?`}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t`This deletes the game folder at ${folder}, including every file in it, SMAPI, and any mods placed there. Saves are not in this folder and will be kept. Profiles' mods are stored separately by Mortar and will be kept.`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setResetting(false)}>{t`Cancel`}</Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => {
+              setResetting(false)
+              change(
+                ResetInstall(GAME).then(() => {
+                  if (store === 'steam' || store === 'flatpak-steam') {
+                    return Browser.OpenURL('steam://validate/413150')
+                  }
+                  useToasts.getState().push({
+                    kind: 'info',
+                    title: t`Game install deleted`,
+                    body: t`Reinstall Stardew Valley from your game launcher.`,
+                  })
+                  return Promise.resolve()
+                }),
+              )
+            }}
+          >
+            {t`Delete and restore`}
+          </Button>
+        </DialogActions>
+      </Dialog>
       {error ? (
         <Box role="alert" sx={{ fontSize: 13, color: 'error.light' }}>
           {error}

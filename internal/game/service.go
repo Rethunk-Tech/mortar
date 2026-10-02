@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
@@ -32,12 +33,40 @@ type SteamAccess struct {
 
 // Service exposes the games to the frontend.
 type Service struct {
-	home  string
-	store *settings.Store
+	home    string
+	store   *settings.Store
+	running func(string) bool
 }
 
 func NewService(home string, store *settings.Store) *Service {
 	return &Service{home: home, store: store}
+}
+
+// ResetInstall removes only a validated game install, after refusing active games
+// and paths that could erase the user's home or filesystem.
+func (s *Service) ResetInstall(id string) error {
+	if s.running != nil && s.running(id) {
+		return fmt.Errorf("cannot reset %s while it is running", id)
+	}
+	dir, err := InstallDir(s.home, s.store.Get(), id)
+	if err != nil {
+		return err
+	}
+	if dir == "" {
+		return fmt.Errorf("game %q is not installed", id)
+	}
+	if err := ValidateFolder(id, dir); err != nil {
+		return err
+	}
+	clean := filepath.Clean(dir)
+	home, err := filepath.Abs(s.home)
+	if err != nil {
+		return err
+	}
+	if clean == string(filepath.Separator) || clean == home {
+		return fmt.Errorf("refusing to remove protected path %q", clean)
+	}
+	return os.RemoveAll(clean)
 }
 
 // SteamStatus reports whether a usable Steam was found.
