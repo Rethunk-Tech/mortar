@@ -112,7 +112,7 @@ function RunErrorButtons({
         onClick={openHelp}
         sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
       >
-        {t`Get help`}
+        {t`Show in log`}
       </Button>
     </>
   )
