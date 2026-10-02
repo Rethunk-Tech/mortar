@@ -36,6 +36,9 @@ import { useProfiles } from './store.ts'
 
 const PATH_SEPARATORS = /[\\/]/
 
+// LaunchError is a rejected launch field: the extra SMAPI arguments, or the prefix and environment saved together.
+type LaunchError = { field: 'options' | 'settings'; message: string } | null
+
 function toGameSettings(value: BackendGameSettings): GameSettingsValues | null {
   const next: GameSettingsValues = {}
   if (
@@ -240,8 +243,8 @@ interface ProfileFieldsProps {
   onLaunchPrefix: (value: string) => void
   launchEnv: string
   onLaunchEnv: (value: string) => void
-  optionsError: string
-  onOptionsError: (value: string) => void
+  launchError: LaunchError
+  onLaunchError: (value: LaunchError) => void
   gameSettings: GameSettingsValues | null
   onGameSettings: (value: GameSettingsValues | null) => void
 }
@@ -263,8 +266,8 @@ function ProfileFields({
   onLaunchPrefix,
   launchEnv,
   onLaunchEnv,
-  optionsError,
-  onOptionsError,
+  launchError,
+  onLaunchError,
   gameSettings,
   onGameSettings,
 }: ProfileFieldsProps) {
@@ -300,11 +303,12 @@ function ProfileFields({
         value={launchOptions}
         onChange={(event) => {
           onLaunchOptions(event.target.value)
-          onOptionsError('')
+          onLaunchError(null)
         }}
-        error={optionsError !== ''}
+        error={launchError?.field === 'options'}
         helperText={
-          optionsError || t`Extra SMAPI arguments for this profile. Mortar sets --mods-path itself.`
+          (launchError?.field === 'options' && launchError.message) ||
+          t`Extra SMAPI arguments for this profile. Mortar sets --mods-path itself.`
         }
         slotProps={{ root: { sx: { userSelect: 'text' } } }}
       />
@@ -313,7 +317,11 @@ function ProfileFields({
         margin="dense"
         label={t`Launch prefix`}
         value={launchPrefix}
-        onChange={(event) => onLaunchPrefix(event.target.value)}
+        onChange={(event) => {
+          onLaunchPrefix(event.target.value)
+          onLaunchError(null)
+        }}
+        error={launchError?.field === 'settings'}
         helperText={t`Prefix for direct launches only (for example, gamemoderun mangohud). On Windows, prefixes are unavailable.`}
         slotProps={{ root: { sx: { userSelect: 'text' } } }}
       />
@@ -324,8 +332,15 @@ function ProfileFields({
         minRows={2}
         label={t`Launch environment`}
         value={launchEnv}
-        onChange={(event) => onLaunchEnv(event.target.value)}
-        helperText={t`One VAR=value per line; applies to direct launches only. Steam launches do not receive these settings.`}
+        onChange={(event) => {
+          onLaunchEnv(event.target.value)
+          onLaunchError(null)
+        }}
+        error={launchError?.field === 'settings'}
+        helperText={
+          (launchError?.field === 'settings' && launchError.message) ||
+          t`One VAR=value per line; applies to direct launches only. Steam launches do not receive these settings.`
+        }
         slotProps={{ root: { sx: { userSelect: 'text' } } }}
       />
       <GameSettings profileId={profile.id} value={gameSettings} onChange={onGameSettings} />
@@ -378,7 +393,7 @@ export function EditProfileDialog({
     profile.id,
     open,
   )
-  const [optionsError, setOptionsError] = useState('')
+  const [launchError, setLaunchError] = useState<LaunchError>(null)
   const [busy, setBusy] = useState(false)
   useEffect(() => {
     if (open) {
@@ -389,7 +404,7 @@ export function EditProfileDialog({
       setLaunchPrefix(profile.launchPrefix ?? '')
       setLaunchEnv(profile.launchEnv ?? '')
       setStagedCover(undefined)
-      setOptionsError('')
+      setLaunchError(null)
     }
   }, [
     open,
@@ -402,13 +417,18 @@ export function EditProfileDialog({
   ])
   const save = async () => {
     setBusy(true)
-    setOptionsError('')
+    setLaunchError(null)
     try {
       try {
         await setLaunchOptions(profile.id, launchOptions)
+      } catch (e) {
+        setLaunchError({ field: 'options', message: errorMessage(e) })
+        return
+      }
+      try {
         await setLaunchSettings(profile.id, launchPrefix, launchEnv)
       } catch (e) {
-        setOptionsError(e instanceof Error ? e.message : String(e))
+        setLaunchError({ field: 'settings', message: errorMessage(e) })
         return
       }
       try {
@@ -458,8 +478,8 @@ export function EditProfileDialog({
           onLaunchPrefix={setLaunchPrefix}
           launchEnv={launchEnv}
           onLaunchEnv={setLaunchEnv}
-          optionsError={optionsError}
-          onOptionsError={setOptionsError}
+          launchError={launchError}
+          onLaunchError={setLaunchError}
           gameSettings={gameSettings}
           onGameSettings={setGameSettings}
         />
