@@ -12,11 +12,11 @@ import {
   LifeBuoy,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import {
   RunLog,
   Runs,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
-import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { SaveFile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import { Log } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
 import { useProfiles } from '../profiles/store.ts'

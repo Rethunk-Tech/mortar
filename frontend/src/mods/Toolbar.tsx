@@ -1,6 +1,5 @@
 import type { I18n } from '@lingui/core'
-import { msg } from '@lingui/core/macro'
-import { plural } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
