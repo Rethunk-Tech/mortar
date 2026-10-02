@@ -2,6 +2,7 @@ package launchsvc
 
 import (
 	"bytes"
+	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -18,14 +19,22 @@ import (
 
 const (
 	gameSettingsFile       = "game-settings.json"
+	settingsRestoreFile    = "game-settings.restore.json"
 	startupPreferencesFile = "startup_preferences"
 )
 
 type settingsRestore struct {
-	path     string
-	original gamesettings.Settings
-	written  gamesettings.Settings
-	once     sync.Once
+	path       string
+	recordPath string
+	original   gamesettings.Settings
+	written    gamesettings.Settings
+	once       sync.Once
+}
+
+type settingsRestoreRecord struct {
+	Path     string                `json:"path"`
+	Original gamesettings.Settings `json:"original"`
+	Written  gamesettings.Settings `json:"written"`
 }
 
 func (s *Service) GameSettings(game, id string) (gamesettings.Settings, error) {
@@ -98,38 +107,123 @@ func (s *Service) prepareGameSettings(game, id string) (*settingsRestore, bool, 
 	if bytes.Equal(data, patched) {
 		return nil, false, nil
 	}
-	if err := fsx.WriteFile(path, patched, 0o600); err != nil {
+	settingsPath, err := s.profileSettingsPath(game, id)
+	if err != nil {
 		return nil, false, err
 	}
-	return &settingsRestore{path: path, original: original, written: written}, false, nil
+	recordPath := filepath.Join(filepath.Dir(settingsPath), settingsRestoreFile)
+	restore := &settingsRestore{
+		path: path, recordPath: recordPath, original: original, written: written,
+	}
+	if err := writeSettingsRestore(recordPath, restore); err != nil {
+		return nil, false, err
+	}
+	if err := fsx.AtomicWriteFile(path, patched, 0o600); err != nil {
+		return nil, false, errors.Join(err, os.Remove(recordPath))
+	}
+	return restore, false, nil
 }
 
-func (s *Service) restoreGameSettings(restore *settingsRestore) {
-	if restore == nil {
-		return
+func writeSettingsRestore(path string, restore *settingsRestore) error {
+	body, err := json.Marshal(settingsRestoreRecord{Path: restore.path, Original: restore.original, Written: restore.written})
+	if err != nil {
+		return err
 	}
+	body = append(body, '\n')
+	return fsx.AtomicWriteFile(path, body, 0o600)
+}
+
+func readSettingsRestore(path string) (*settingsRestore, error) {
+	body, err := fsx.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var record settingsRestoreRecord
+	if err := json.Unmarshal(body, &record); err != nil {
+		return nil, err
+	}
+	return &settingsRestore{
+		path: record.Path, recordPath: path, original: record.Original, written: record.Written,
+	}, nil
+}
+
+func removeSettingsRestore(path string) error {
+	if err := os.Remove(path); !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	return nil
+}
+
+func (s *Service) restoreGameSettings(restore *settingsRestore) error {
+	if restore == nil {
+		return nil
+	}
+	var restoreErr error
 	restore.once.Do(func() {
 		data, err := fsx.ReadFile(restore.path)
 		if errors.Is(err, os.ErrNotExist) {
+			restoreErr = err
 			return
 		}
 		if err != nil {
+			restoreErr = err
 			return
 		}
 		current, err := readStartupSettings(data, restore.written)
 		if err != nil {
+			restoreErr = err
 			return
 		}
 		original := settingsUnchanged(current, restore.written, restore.original)
 		if emptySettings(original) {
+			restoreErr = removeSettingsRestore(restore.recordPath)
 			return
 		}
 		patched, err := gamesettings.Patch(data, original)
-		if err != nil || bytes.Equal(data, patched) {
+		if err != nil {
+			restoreErr = err
 			return
 		}
-		_ = fsx.WriteFile(restore.path, patched, 0o600)
+		if bytes.Equal(data, patched) {
+			restoreErr = removeSettingsRestore(restore.recordPath)
+			return
+		}
+		if err := fsx.AtomicWriteFile(restore.path, patched, 0o600); err != nil {
+			restoreErr = err
+			return
+		}
+		restoreErr = removeSettingsRestore(restore.recordPath)
 	})
+	return restoreErr
+}
+
+// RecoverGameSettings applies records left by a launch that ended before its in-memory restore ran.
+func (s *Service) RecoverGameSettings() error {
+	profiles, err := s.profiles.List("stardew")
+	if err != nil {
+		return err
+	}
+	var errs []error
+	for _, p := range profiles {
+		settingsPath, err := s.profileSettingsPath("stardew", p.ID)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", p.Name, err))
+			continue
+		}
+		recordPath := filepath.Join(filepath.Dir(settingsPath), settingsRestoreFile)
+		restore, err := readSettingsRestore(recordPath)
+		if errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", p.Name, err))
+			continue
+		}
+		if err := s.restoreGameSettings(restore); err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", p.Name, err))
+		}
+	}
+	return errors.Join(errs...)
 }
 
 func readStartupSettings(data []byte, wanted gamesettings.Settings) (gamesettings.Settings, error) {

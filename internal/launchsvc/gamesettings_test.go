@@ -64,6 +64,9 @@ func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {
 	if missing || restore == nil {
 		t.Fatalf("prepare returned restore %v, missing %v", restore, missing)
 	}
+	if _, err := os.Stat(restore.recordPath); err != nil {
+		t.Fatalf("restore record was not persisted: %v", err)
+	}
 	patched, err := fsx.ReadFile(startup)
 	if err != nil {
 		t.Fatal(err)
@@ -90,6 +93,49 @@ func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {
 	}
 	if !bytes.Contains(got, []byte("<soundVolumeLevel>80</soundVolumeLevel>")) {
 		t.Fatalf("untouched setting changed: %s", got)
+	}
+	if _, err := os.Stat(restore.recordPath); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("restore record survived: %v", err)
+	}
+}
+
+func TestGameSettingsLeftoverRestoreRunsAtStartup(t *testing.T) {
+	svc, p, config := newGameSettingsService(t)
+	startup := filepath.Join(config, "StardewValley", startupPreferencesFile)
+	if err := os.MkdirAll(filepath.Dir(startup), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(startup, []byte(`<startup_preferences><windowMode>fullscreen</windowMode></startup_preferences>`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	mode := "windowed"
+	if err := svc.SetGameSettings("stardew", p.ID, gamesettings.Settings{WindowMode: &mode}); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := svc.prepareGameSettings("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	svc2 := NewService("", nil, svc.profiles)
+	if err := svc2.RecoverGameSettings(); err != nil {
+		t.Fatal(err)
+	}
+	got, err := fsx.ReadFile(startup)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Contains(got, []byte("<windowMode>fullscreen</windowMode>")) {
+		t.Fatalf("leftover settings were not restored: %s", got)
+	}
+}
+
+func TestGameSettingsRestoreReportsReadError(t *testing.T) {
+	svc, _, _ := newGameSettingsService(t)
+	err := svc.restoreGameSettings(&settingsRestore{
+		path:       filepath.Join(t.TempDir(), "missing"),
+		recordPath: filepath.Join(t.TempDir(), "record"),
+	})
+	if !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("restore error = %v, want missing startup preferences", err)
 	}
 }
 
