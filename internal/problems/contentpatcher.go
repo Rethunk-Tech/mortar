@@ -99,6 +99,9 @@ var packCache sync.Map // folder path -> cachedPack
 func contentPackTargets(mod Installed) (load, edit []string, skips int) {
 	pack := readContentPack(mod)
 	for _, p := range pack.patches {
+		if p.kind == "other" {
+			continue
+		}
 		if p.kind == "load" {
 			load = append(load, p.target)
 		} else {
@@ -133,6 +136,7 @@ type cpSchema struct {
 	key           string
 	defaultValue  string
 	allowMultiple bool
+	allowValues   []string
 	description   string
 }
 
@@ -152,6 +156,7 @@ func readConfigSchema(root string) map[string]cpSchema {
 		var entry struct {
 			Default       json.RawMessage `json:"Default"`
 			AllowMultiple bool            `json:"AllowMultiple"`
+			AllowValues   string          `json:"AllowValues"`
 			Description   string          `json:"Description"`
 		}
 		if json.Unmarshal(raw, &entry) != nil {
@@ -166,6 +171,7 @@ func readConfigSchema(root string) map[string]cpSchema {
 			key:           key,
 			defaultValue:  defaultValue,
 			allowMultiple: entry.AllowMultiple,
+			allowValues:   splitTargets(entry.AllowValues),
 			description:   entry.Description,
 		}
 	}
@@ -219,10 +225,20 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 		return
 	}
 	var doc struct {
-		Changes []cpChange `json:"Changes"`
+		Changes       []cpChange `json:"Changes"`
+		DynamicTokens []struct {
+			When map[string]json.RawMessage `json:"When"`
+		} `json:"DynamicTokens"`
 	}
 	if err := json.Unmarshal(stripJSONNoise(raw), &doc); err != nil {
 		return
+	}
+	// A dynamic token's value gates content like a change does, so its conditions count for compatibility
+	// settings too. Content Patcher reads DynamicTokens only from content.json.
+	if key == "content.json" {
+		for _, tok := range doc.DynamicTokens {
+			pack.patches = append(pack.patches, cpPatch{kind: "other", when: outer.with(parseWhen(tok.When, pack.mentions, pack.schema))})
+		}
 	}
 	for _, ch := range doc.Changes {
 		action := strings.TrimSpace(ch.Action)
@@ -245,9 +261,14 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			kind = "edit"
 			shapes = editShapes(root, ch, strings.EqualFold(action, kindEditImage))
 			if len(shapes) == 0 {
-				continue
+				kind = "other"
 			}
 		default:
+			kind = "other"
+		}
+		// Changes that cannot conflict still count for compatibility settings, whatever their target.
+		if kind == "other" {
+			pack.patches = append(pack.patches, cpPatch{kind: kind, when: when})
 			continue
 		}
 		for _, t := range splitTargets(ch.Target) {
@@ -308,6 +329,27 @@ func parseWhen(raw map[string]json.RawMessage, mentions map[string]bool, schema 
 			var values []string
 			if !condValues(v, &values) {
 				continue
+			}
+			if arg = strings.TrimSpace(arg); arg != "" {
+				// "Field |contains=A, B": true accepts A or B; false accepts every other allowed value.
+				param, list, ok := strings.Cut(arg, "=")
+				if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) || len(values) != 1 {
+					continue
+				}
+				named := splitTargets(list)
+				switch strings.ToLower(values[0]) {
+				case "true":
+					values = named
+				case "false":
+					values = slices.DeleteFunc(slices.Clone(field.allowValues), func(a string) bool {
+						return slices.ContainsFunc(named, func(n string) bool { return strings.EqualFold(n, a) })
+					})
+				default:
+					continue
+				}
+				if len(values) == 0 {
+					continue
+				}
 			}
 			w.config = append(w.config, cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple})
 		}
@@ -513,7 +555,7 @@ func assetConflicts(mods []Installed) []AssetConflict {
 			knows[strings.ToLower(d.UniqueID)] = true
 		}
 		for _, p := range pack.patches {
-			if !p.when.holds(present) {
+			if p.kind == "other" || !p.when.holds(present) {
 				continue
 			}
 			hits := at[p.kind][p.target]

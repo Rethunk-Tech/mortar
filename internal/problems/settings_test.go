@@ -72,3 +72,45 @@ func settingPack(t *testing.T, schema, changes, config string) Installed {
 	}
 	return Installed{Key: "pack", Enabled: true, Folder: dir, UniqueID: "Pack.Compat", Name: "Compatibility Pack"}
 }
+
+func TestCompatibilitySettingContainsForm(t *testing.T) {
+	schema := `{"Patch":{"Default":"on","AllowValues":"on, off"}}`
+	active := settingPack(t, schema, `[{"Action":"Load","Target":"a","When":{"Patch|contains=on":true,"HasMod":"Other.Mod"}}]`, `{"Patch":"on"}`)
+	if got := compatibilitySettings([]Installed{active, settingMod()}); len(got) != 0 {
+		t.Fatalf("contains=true already met: %#v", got)
+	}
+	off := settingPack(t, schema, `[{"Action":"Load","Target":"a","When":{"Patch |contains=off":false,"HasMod":"Other.Mod"}}]`, `{"Patch":"off"}`)
+	hints := compatibilitySettings([]Installed{off, settingMod()})
+	if len(hints) != 1 || len(hints[0].Suggested) != 1 || hints[0].Suggested[0] != "on" {
+		t.Fatalf("contains=false should suggest the other value: %#v", hints)
+	}
+}
+
+func TestCompatibilitySettingVariantFieldIsNotSuggested(t *testing.T) {
+	pack := settingPack(t, `{"Room":{"Default":"None","AllowValues":"Plain, Glass, None"}}`, `[{"Action":"Load","Target":"a","When":{"Room":"Plain","HasMod":"Other.Mod"}}]`, `{"Room":"None"}`)
+	if got := compatibilitySettings([]Installed{pack, settingMod()}); len(got) != 0 {
+		t.Fatalf("variant field suggested: %#v", got)
+	}
+}
+
+func TestCompatibilitySettingOnIncludedPropertyOnlyPatch(t *testing.T) {
+	pack := settingPack(t, `{"Animals":{"Default":"off","AllowValues":"on, off"}}`, `[{"Action":"Include","FromFile":"cc.json","When":{"HasMod":"Other.Mod"}}]`, "")
+	cc := `{"Changes":[{"Action":"EditMap","Target":"Maps/X","MapTiles":[{"Position":{"X":1,"Y":1},"Layer":"Back","SetProperties":{"A":"b"}}],"When":{"Animals":"on"}}]}`
+	if err := os.WriteFile(filepath.Join(pack.Folder, "cc.json"), []byte(cc), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	hints := compatibilitySettings([]Installed{pack, settingMod()})
+	if len(hints) != 1 || hints[0].Field != "Animals" || hints[0].Suggested[0] != "on" {
+		t.Fatalf("hints = %#v", hints)
+	}
+}
+
+func TestCompatibilitySettingFieldActiveForAnyModIsNotSuggested(t *testing.T) {
+	changes := `[{"Action":"Load","Target":"a","When":{"Shift":true,"HasMod":"Other.Mod"}},{"Action":"Load","Target":"b","When":{"Shift":false,"HasMod":"Other.Mod","HasMod |contains=Third.Mod":true}}]`
+	third := settingMod()
+	third.UniqueID, third.Key = "Third.Mod", "third"
+	pack := settingPack(t, `{"Shift":{"Default":true}}`, changes, `{"Shift":true}`)
+	if got := compatibilitySettings([]Installed{pack, settingMod(), third}); len(got) != 0 {
+		t.Fatalf("hints = %#v", got)
+	}
+}

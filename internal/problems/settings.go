@@ -60,14 +60,16 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 			}
 			for _, condition := range patch.when.config {
 				schema, ok := pack.schema[strings.ToLower(condition.field)]
-				if !ok || len(condition.values) == 0 {
+				if !ok || len(condition.values) == 0 || !schema.toggle() {
 					continue
 				}
 				current, present := config[strings.ToLower(schema.key)]
 				if !present {
 					current = schema.defaultValue
 				}
-				groupKey := strings.ToLower(schema.key) + "\x00" + strings.Join(ids, "\x00")
+				// One group per field: a value that already runs a patch for any installed mod is the player's
+				// choice, even when other patches for other mod combinations need a different value.
+				groupKey := strings.ToLower(schema.key)
 				group := groups[groupKey]
 				if group == nil {
 					group = &settingGroup{
@@ -77,6 +79,12 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 						required: required,
 					}
 					groups[groupKey] = group
+				} else {
+					for _, mod := range required {
+						if !slices.ContainsFunc(group.required, func(m Installed) bool { return sameID(m.UniqueID, mod.UniqueID) }) {
+							group.required = append(group.required, mod)
+						}
+					}
 				}
 				for _, value := range condition.values {
 					addSettingValue(&group.suggested, value)
@@ -201,4 +209,25 @@ func addSettingValue(values *[]string, value string) {
 		return
 	}
 	*values = append(*values, value)
+}
+
+// toggle reports an on/off field. Only toggles are suggested: a field that picks among several variants or
+// lists NPCs also gates patches for other mods, but switching it changes what the player chose, not
+// whether a compatibility patch runs.
+func (s cpSchema) toggle() bool {
+	values := s.allowValues
+	if len(values) == 0 {
+		values = []string{s.defaultValue}
+	}
+	if s.allowMultiple || len(values) > 2 {
+		return false
+	}
+	for _, v := range values {
+		switch strings.ToLower(strings.TrimSpace(v)) {
+		case "true", "false", "on", "off", "enabled", "disabled", "yes", "no":
+		default:
+			return false
+		}
+	}
+	return true
 }
