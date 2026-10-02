@@ -15,12 +15,14 @@ import { Download, FolderInput, FolderOpen, Trash2, Upload } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   Usage as DiskUse,
+  MoveEstimate,
   Preview,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
 import {
   Cleanup,
   CleanupPreview,
   MoveDataFolder,
+  MoveDataFolderPreview,
   Usage,
   UsageProgress,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
@@ -45,6 +47,7 @@ import { beginUsageLoad } from '../usageLoad.ts'
 
 const MIN_KEPT = 1
 const MAX_KEPT = 50
+const MOVE_PROGRESS_INTERVAL = 200
 const nowrap = { whiteSpace: 'nowrap' } as const
 const mono = { fontFamily: '"IBM Plex Mono", monospace', fontSize: 13 } as const
 
@@ -178,7 +181,7 @@ function ImportSettingsDialog({
   )
 }
 
-function MoveDataButton() {
+function MoveDataButton({ onPicked }: { onPicked: (dest: string) => void }) {
   const { t } = useLingui()
   return (
     <Button
@@ -194,13 +197,71 @@ function MoveDataButton() {
           return
         }
         PickFolder(t`Move data folder…`)
-          .then((dest) => (dest ? MoveDataFolder(dest) : Promise.resolve()))
-          .catch(reportUnexpected)
+          .then((dest) => (dest ? onPicked(dest) : undefined))
+          .catch((err: unknown) => {
+            const body = errorText(err)
+            useToasts.getState().push({
+              kind: 'error',
+              title: t`Couldn't prepare the data folder move`,
+              ...(body ? { body } : {}),
+            })
+          })
       }}
       sx={{ ...nowrap, flexShrink: 0 }}
     >
       {t`Move…`}
     </Button>
+  )
+}
+
+type MoveState = { dest: string; estimate: MoveEstimate }
+
+function MoveDialog({
+  move,
+  moving,
+  progress,
+  error,
+  onClose,
+  onMove,
+}: {
+  move: MoveState | null
+  moving: boolean
+  progress: { files: number; totalFiles: number; bytes: number; totalBytes: number }
+  error: string
+  onClose: () => void
+  onMove: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <Dialog
+      open={move !== null}
+      onClose={() => !moving && onClose()}
+      transitionDuration={0}
+      slotProps={{ paper }}
+    >
+      <DialogTitle>{t`Move data folder`}</DialogTitle>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 360 }}>
+        {move ? (
+          <>
+            <Box>{t`Data to copy: ${formatBytes(move.estimate.bytes)}`}</Box>
+            <Box>{t`Free space at destination: ${formatBytes(move.estimate.freeBytes)}`}</Box>
+            {moving ? (
+              <>
+                <LinearProgress />
+                <Box sx={{ ...mono }}>
+                  {t`${progress.files}/${progress.totalFiles} files · ${formatBytes(progress.bytes)} / ${formatBytes(progress.totalBytes)}`}
+                </Box>
+              </>
+            ) : null}
+            {error ? <Box sx={{ color: 'error.main' }}>{error}</Box> : null}
+          </>
+        ) : null}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} disabled={moving} sx={nowrap}>{t`Cancel`}</Button>
+        <Button onClick={onMove} disabled={moving || move === null} sx={nowrap}>{t`Move`}</Button>
+      </DialogActions>
+    </Dialog>
   )
 }
 
@@ -212,6 +273,15 @@ export function Data() {
   const [preview, setPreview] = useState<Preview | null>(null)
   const [importPreview, setImportPreview] = useState<ImportPreview | null>(null)
   const [busy, setBusy] = useState(false)
+  const [move, setMove] = useState<MoveState | null>(null)
+  const [moveError, setMoveError] = useState('')
+  const [moving, setMoving] = useState(false)
+  const [moveProgress, setMoveProgress] = useState({
+    files: 0,
+    totalFiles: 0,
+    bytes: 0,
+    totalBytes: 0,
+  })
   const stopRef = useRef<() => void>(() => {
     return
   })
@@ -237,13 +307,54 @@ export function Data() {
   }
   const runCleanup = () => {
     setBusy(true)
-    Cleanup()
+    if (!preview) {
+      return
+    }
+    Cleanup(preview)
       .then(() => {
         setPreview(null)
         restart()
       })
       .catch(reportUnexpected)
       .finally(() => setBusy(false))
+  }
+  const prepareMove = (dest: string) => {
+    MoveDataFolderPreview(dest)
+      .then((estimate) => {
+        setMoveError('')
+        setMove({ dest, estimate })
+      })
+      .catch((err: unknown) => {
+        const body = errorText(err)
+        useToasts.getState().push({
+          kind: 'error',
+          title: t`Couldn't inspect the destination folder`,
+          ...(body ? { body } : {}),
+        })
+      })
+  }
+  const runMove = () => {
+    if (!move) {
+      return
+    }
+    setMoving(true)
+    setMoveError('')
+    const poll = globalThis.setInterval(() => {
+      const progress = UsageProgress()
+      setMoveProgress({
+        files: progress.files,
+        totalFiles: progress.totalFiles,
+        bytes: progress.bytes,
+        totalBytes: progress.totalBytes,
+      })
+    }, MOVE_PROGRESS_INTERVAL)
+    MoveDataFolder(move.dest)
+      .then(() => setMove(null))
+      .catch((err: unknown) => setMoveError(errorText(err) || t`Could not move the data folder.`))
+      .finally(() => {
+        globalThis.clearInterval(poll)
+        setMoving(false)
+      })
   }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -271,7 +382,7 @@ export function Data() {
         >
           {t`Open folder`}
         </Button>
-        <MoveDataButton />
+        <MoveDataButton onPicked={prepareMove} />
       </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
         <Button
@@ -361,6 +472,14 @@ export function Data() {
         </DialogActions>
       </Dialog>
       <ImportSettingsDialog preview={importPreview} onClose={() => setImportPreview(null)} />
+      <MoveDialog
+        move={move}
+        moving={moving}
+        progress={moveProgress}
+        error={moveError}
+        onClose={() => setMove(null)}
+        onMove={runMove}
+      />
     </Box>
   )
 }
