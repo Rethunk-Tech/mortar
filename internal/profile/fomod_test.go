@@ -3,7 +3,6 @@ package profile
 import (
 	"errors"
 	"os"
-
 	"path/filepath"
 	"reflect"
 	"strings"

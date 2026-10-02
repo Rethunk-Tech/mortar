@@ -154,7 +154,7 @@ func TestRemapVariantsAskThenUpdateReuses(t *testing.T) {
 
 func TestRemapVariantsWidenToBundle(t *testing.T) {
 	m := func(id, folder string) manifest.Mod {
-		return manifest.Mod{Manifest: manifest.Manifest{UniqueID: id}, Folder: folder}
+		return manifest.Mod{UniqueID: id, Folder: folder}
 	}
 	got := variants([]manifest.Mod{
 		m("Mod.CP", "Options/Option A/[CP] Mod"), m("Mod.JA", "Options/Option A/[JA] Mod"),
