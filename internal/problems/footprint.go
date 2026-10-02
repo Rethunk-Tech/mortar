@@ -628,7 +628,7 @@ func mapSize(root, rel string) (w, h int, ok bool) {
 
 // placeTokens are conditions that hold one value at a time for the player: two edits that need disjoint
 // values of the same one never apply together (an edit for the East Scarp village and one for another map).
-var placeTokens = map[string]bool{"locationname": true, "locationcontext": true, "season": true, "weather": true, "dayofweek": true}
+var placeTokens = map[string]bool{"locationname": true, "locationcontext": true, "season": true, "weather": true, "dayofweek": true, "farmtype": true}
 
 // placesOf reads the literal values a When block requires of placeTokens ("LocationName": "A, B" or
 // "Season |contains=Spring": true).

@@ -122,3 +122,15 @@ func syntheticMapShapes(t *testing.T, mapJSON, patchMode string) []cpShape {
 	}
 	return pack.patches[0].shapes
 }
+
+func TestFarmTypeMakesLoadConditionsExclusive(t *testing.T) {
+	first := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Test","FromFile":"first.json","When":{"FarmType":"A_TK.FarmProjectForaging"}}]}`, map[string]string{
+		"first.json": `{"Tile": 1}`,
+	})
+	second := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Test","FromFile":"second.json","When":{"FarmType":"WaFF"}}]}`, map[string]string{
+		"second.json": `{"Tile": 2}`,
+	})
+	if conflicts := assetConflicts([]Installed{first, second}); len(conflicts) != 0 {
+		t.Fatalf("different farm types should not conflict: %#v", conflicts)
+	}
+}

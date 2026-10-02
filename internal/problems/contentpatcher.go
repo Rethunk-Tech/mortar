@@ -53,19 +53,20 @@ type ConflictFix struct {
 }
 
 type packHit struct {
-	id       string
-	name     string
-	key      string
-	priority string
-	mentions map[string]bool
-	root     string
-	tokens   []cpPatch
-	present  map[string]bool
-	loads    []cpPatch
-	edits    []cpPatch // the pack's active edits of this target
-	schema   map[string]cpSchema
-	config   map[string]string
-	clashes  map[int]bool // indices into edits that overlap an edit of a pack it was not built with
+	id          string
+	name        string
+	key         string
+	priority    string
+	mentions    map[string]bool
+	root        string
+	tokens      []cpPatch
+	present     map[string]bool
+	loads       []cpPatch
+	edits       []cpPatch // the pack's active edits of this target
+	loadClashes map[int]bool
+	schema      map[string]cpSchema
+	config      map[string]string
+	clashes     map[int]bool // indices into edits that overlap an edit of a pack it was not built with
 }
 
 // cpPatch is one Load or EditImage/EditMap change with the HasMod conditions that gate it.
@@ -626,6 +627,8 @@ func assetConflicts(mods []Installed) []AssetConflict {
 			cosmetic := false
 			if kind == "edit" {
 				hits, cosmetic = clashing(hits)
+			} else {
+				hits = clashingLoads(hits)
 			}
 			if len(hits) >= 2 {
 				c := conflictOf(kind, t, hits)
@@ -654,6 +657,35 @@ func assetConflicts(mods []Installed) []AssetConflict {
 		}
 		return strings.Compare(a.Target, b.Target)
 	})
+	return out
+}
+
+func clashingLoads(hits []packHit) (out []packHit) {
+	in := make([]bool, len(hits))
+	for i := range hits {
+		for j := i + 1; j < len(hits); j++ {
+			for ai, a := range hits[i].loads {
+				for bj, b := range hits[j].loads {
+					if exclusive(a, b) {
+						continue
+					}
+					in[i], in[j] = true, true
+					if hits[i].loadClashes == nil {
+						hits[i].loadClashes = map[int]bool{}
+					}
+					if hits[j].loadClashes == nil {
+						hits[j].loadClashes = map[int]bool{}
+					}
+					hits[i].loadClashes[ai], hits[j].loadClashes[bj] = true, true
+				}
+			}
+		}
+	}
+	for i, hit := range hits {
+		if in[i] {
+			out = append(out, hit)
+		}
+	}
 	return out
 }
 
