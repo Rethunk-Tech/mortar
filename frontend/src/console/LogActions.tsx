@@ -1,7 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
-import { CircleAlert, Copy, Download, Eraser, LifeBuoy } from 'lucide-react'
+import { CircleAlert, Copy, Download, Eraser, FileSearch, LifeBuoy } from 'lucide-react'
+import { useState } from 'react'
 import { RunLog } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { SaveFile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import { Log } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
@@ -11,6 +12,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { firstError, formatAll } from './filter.ts'
 import { useShownEntries, useVisible } from './logHooks.ts'
+import { SearchRunsDialog } from './SearchRunsDialog.tsx'
 import { logFileName, saveLogText } from './save.ts'
 import { useConsole } from './store.ts'
 
@@ -25,6 +27,7 @@ export function LogActions() {
     (s) => s.profiles.find((p) => p.id === shown.profile)?.name ?? shown.profile,
   )
   const { clear, jumpTo, setHelping } = useConsole.getState()
+  const [searching, setSearching] = useState(false)
   const firstErr = firstError(rows)
   const canSave = entries.length > 0 || cleared > 0
   return (
@@ -72,10 +75,16 @@ export function LogActions() {
         }}
       />
       <IconAction
+        label={t`Search all runs`}
+        icon={<FileSearch size={16} />}
+        onClick={() => setSearching(true)}
+      />
+      <IconAction
         label={t`Get help`}
         icon={<LifeBuoy size={16} />}
         onClick={() => setHelping(true)}
       />
+      <SearchRunsDialog open={searching} onClose={() => setSearching(false)} />
     </Box>
   )
 }

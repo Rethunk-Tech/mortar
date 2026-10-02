@@ -36,6 +36,7 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | --- | --- |
 | `games` | supported games and whether each is configured |
 | `profiles <game>`, `profile create\|rename\|copy\|delete ...` | list and manage profiles |
+| `trash list [--game stardew]`, `trash restore\|delete\|empty ...` | recently deleted profiles (`delete` and `empty` need `--yes`) |
 | `profile compare <game> <A> <B>` | mods only in A, only in B, version or enabled differences |
 | `profile match <game> <profile> <link-or-file>` | preview a friend's share against a profile |
 | `profile history <game> <profile>`, `profile revert <game> <profile> <eventId>` | restore points; revert to one |
@@ -43,7 +44,7 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `install <game> <profile> <archive>` | install a local archive |
 | `conflicts`, `problems`, `updates`, `saves <game> <profile>` | what the Problems, Mods and Saves tabs show |
 | `share`, `export <game> <profile> [file]`, `open <link\|file>` | share links and `.mortar` files |
-| `launch <game> <profile> [--wait]`, `status`, `stop <game>`, `runs`, `logs` | play and read past runs |
+| `launch <game> <profile> [--wait]`, `status`, `stop <game>`, `runs`, `logs`, `logs search <query> [--profile <name>]` | play and read past runs |
 | `launchers`, `launchers add\|remove <id> <folder>` | what Settings › Launchers shows and changes |
 | `tools <game>`, `tools run <game> <profile> <tool>` | configured external tools; start one |
 | `bundles <game>`, `bundles apply <game> <bundle> <profile>` | list saved bundles; copy one into a profile |

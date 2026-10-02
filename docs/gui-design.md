@@ -171,6 +171,7 @@ A full-height text field fills the tab. Its placeholder explains that notes trav
   - Clear (Eraser)
   - **Copy** (Copy)
   - **Save log…** (Download): a native save dialog, default name `SMAPI-<profile>-<date>.txt`; the raw SMAPI log file when this profile owns it, otherwise the Console's lines; off when there is nothing to save
+  - **Search all runs** (FileSearch): searches every stored run and opens a matching run at its line
   - **Get help** (LifeBuoy): shows the log with its local paths and asks before uploading it to smapi.io/log, then copies the link and offers Open
 - **Runs** picker, on the filter row after the mod picker (its button reads This session or the run shown):
   - This session, or one of the profile's last 20 recorded launches (outcome Ran, Crashed or Failed, with its time)
