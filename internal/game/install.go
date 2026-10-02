@@ -25,7 +25,26 @@ type FoundInstall struct {
 
 var storeOrder = []string{StoreSteam, StoreFlatpakSteam, StoreGOG, StoreGOGHeroic, StoreLutris}
 
-func collect(g Game, home string) []FoundInstall {
+// Launcher ids, each the source of one or more stores' installs.
+const (
+	LauncherSteam        = "steam"
+	LauncherFlatpakSteam = "flatpak-steam"
+	LauncherHeroic       = "heroic"
+	LauncherLutris       = "lutris"
+	LauncherGOG          = "gog"
+)
+
+// root is the folder the user chose for a launcher, or "".
+func root(s settings.Settings, launcher string) string { return s.LauncherRoots[launcher] }
+
+func rootList(s settings.Settings, launcher string) []string {
+	if r := root(s, launcher); r != "" {
+		return []string{r}
+	}
+	return nil
+}
+
+func collect(g Game, home string, s settings.Settings) []FoundInstall {
 	var all []FoundInstall
 	seen := map[string]struct{}{}
 	add := func(store, dir string) {
@@ -38,7 +57,7 @@ func collect(g Game, home string) []FoundInstall {
 		seen[dir] = struct{}{}
 		all = append(all, FoundInstall{Store: store, Dir: dir})
 	}
-	for _, st := range steam.LocateAll(home) {
+	for _, st := range steam.LocateAll(home, rootList(s, LauncherSteam)...) {
 		dir, err := st.InstallDir(g.SteamAppID())
 		if err != nil || dir == "" {
 			continue
@@ -49,10 +68,10 @@ func collect(g Game, home string) []FoundInstall {
 		}
 		add(store, dir)
 	}
-	for _, in := range gog.Locate(home) {
+	for _, in := range gog.Locate(home, gog.Roots{Heroic: root(s, LauncherHeroic), Games: root(s, LauncherGOG)}) {
 		add(in.Store, in.Dir)
 	}
-	for _, in := range lutris.Locate(home) {
+	for _, in := range lutris.Locate(home, rootList(s, LauncherLutris)...) {
 		add(StoreLutris, in.Dir)
 	}
 	return all
@@ -96,7 +115,7 @@ func Resolve(home string, s settings.Settings, id string) (dir, store string, al
 	if g == nil {
 		return "", "", nil, fmt.Errorf("unknown game %q", id)
 	}
-	all = collect(g, home)
+	all = collect(g, home, s)
 	dir, store = pick(all, s.GameFolders[id], s.GameStores[id], g)
 	return dir, store, all, nil
 }

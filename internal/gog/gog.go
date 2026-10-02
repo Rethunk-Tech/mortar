@@ -26,8 +26,14 @@ type Install struct {
 	Store string
 }
 
-// Locate finds GOG Stardew folders under home (and Windows Galaxy / default paths).
-func Locate(home string) []Install {
+// Roots are folders the user chose: Heroic's config folder and a folder of GOG games.
+type Roots struct {
+	Heroic string
+	Games  string
+}
+
+// Locate finds GOG Stardew folders under home (and Windows Galaxy / default paths), the user's own folders first.
+func Locate(home string, r Roots) []Install {
 	var out []Install
 	seen := map[string]struct{}{}
 	add := func(dir, store string) {
@@ -42,13 +48,39 @@ func Locate(home string) []Install {
 		out = append(out, Install{Dir: dir, Store: store})
 	}
 	add(galaxyPath(), StoreGOG)
-	for _, dir := range offlineDirs(home) {
-		add(dir, StoreGOG)
+	for _, dir := range GamesDirs(home, r.Games) {
+		add(filepath.Join(dir, "Stardew Valley"), StoreGOG)
 	}
-	for _, dir := range heroicDirs(home) {
-		add(dir, StoreHeroic)
+	for _, cfg := range HeroicDirs(home, r.Heroic) {
+		for _, dir := range heroicInstalls(cfg) {
+			add(dir, StoreHeroic)
+		}
 	}
 	return out
+}
+
+// GamesDirs are the folders GOG installers put games in, the user's own first.
+func GamesDirs(home, custom string) []string {
+	var out []string
+	if custom != "" {
+		out = append(out, custom)
+	}
+	if runtime.GOOS == "windows" {
+		return append(out, windowsGamesDirs()...)
+	}
+	return append(out, filepath.Join(home, "GOG Games"))
+}
+
+// HeroicDirs are Heroic's config folders (native, then Flatpak), the user's own first.
+func HeroicDirs(home, custom string) []string {
+	var out []string
+	if custom != "" {
+		out = append(out, custom)
+	}
+	return append(out,
+		filepath.Join(home, ".config", "heroic"),
+		filepath.Join(home, ".var", "app", "com.heroicgameslauncher.hgl", "config", "heroic"),
+	)
 }
 
 func gameDir(dir string) string {
@@ -67,20 +99,13 @@ func hasMarker(dir string) bool {
 	return err == nil && st.Mode().IsRegular()
 }
 
-func offlineDirs(home string) []string {
-	if runtime.GOOS == "windows" {
-		return windowsOffline()
-	}
-	return []string{filepath.Join(home, "GOG Games", "Stardew Valley", "game")}
-}
-
 type heroicGame struct {
 	AppName     string `json:"appName"`
 	InstallPath string `json:"install_path"`
 }
 
-func heroicDirs(home string) []string {
-	path := filepath.Join(home, ".config", "heroic", "gog_store", "installed.json")
+func heroicInstalls(cfg string) []string {
+	path := filepath.Join(cfg, "gog_store", "installed.json")
 	b, err := fsx.ReadFile(path)
 	if err != nil {
 		return nil

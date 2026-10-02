@@ -52,6 +52,10 @@ type Settings struct {
 	GameFolders map[string]string `json:"gameFolders"`
 	// GameStores maps a game id to the chosen store when several installs were found.
 	GameStores map[string]string `json:"gameStores"`
+	// LauncherRoots maps a launcher id to a folder the user chose for it, searched before the usual places.
+	LauncherRoots map[string]string `json:"launcherRoots"`
+	// LaunchersConfirmed is whether first run's launcher screen was finished; until then the app opens on it.
+	LaunchersConfirmed bool `json:"launchersConfirmed"`
 	// Loaders maps a game id to the loader version Mortar installed.
 	Loaders map[string]string `json:"loaders"`
 	// Dismissed maps a save folder name to the UniqueIDs whose missing-mod warning the user dismissed for it.
@@ -119,8 +123,8 @@ func on() *bool { v := true; return &v }
 func Defaults() Settings {
 	return Settings{
 		Accent: "sand", Background: BackgroundImage, LastProfile: map[string]string{}, LastPlayed: map[string]Played{}, GameFolders: map[string]string{},
-		GameStores: map[string]string{},
-		Loaders:    map[string]string{}, Dismissed: map[string][]string{}, NexusSeenDownloadServers: []string{}, BackupsKept: backup.DefaultKeep,
+		GameStores: map[string]string{}, LauncherRoots: map[string]string{},
+		Loaders: map[string]string{}, Dismissed: map[string][]string{}, NexusSeenDownloadServers: []string{}, BackupsKept: backup.DefaultKeep,
 		ListColumns: slices.Clone(defaultListColumns), ListSortColumn: defaultListSortColumn, ListSortDir: defaultListSortDir, ListGroupBy: defaultListGroupBy,
 		CheckModUpdatesOnStart: on(), TellWhenSmapiOut: on(), EnableModsWhenInstalled: on(),
 		OverlayPort: DefaultOverlayPort,
@@ -229,6 +233,9 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 }
 
 func normalizeStores(s *Settings) {
+	if s.LauncherRoots == nil {
+		s.LauncherRoots = map[string]string{}
+	}
 	if s.GameStores == nil {
 		s.GameStores = map[string]string{}
 		return

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
@@ -31,14 +32,14 @@ type Install struct {
 	Dir string
 }
 
-// Locate finds Stardew folders from Lutris YAML configs under home.
-func Locate(home string) []Install {
+// Locate finds Stardew folders from Lutris YAML configs under home and in the user's own config folders.
+func Locate(home string, extra ...string) []Install {
 	if runtime.GOOS != "linux" {
 		return nil
 	}
 	var out []Install
 	seen := map[string]struct{}{}
-	for _, dir := range gameConfigDirs(home) {
+	for _, dir := range ConfigDirs(home, extra...) {
 		entries, err := os.ReadDir(dir)
 		if err != nil {
 			continue
@@ -61,11 +62,12 @@ func Locate(home string) []Install {
 	return out
 }
 
-func gameConfigDirs(home string) []string {
-	return []string{
+// ConfigDirs are the Lutris game-config folders searched, the user's own first.
+func ConfigDirs(home string, extra ...string) []string {
+	return append(slices.Clone(extra),
 		filepath.Join(home, ".local", "share", "lutris", "games"),
 		filepath.Join(home, ".var", "app", "net.lutris.Lutris", "data", "lutris", "games"),
-	}
+	)
 }
 
 func installFromConfig(gamesDir, name string) (string, error) {

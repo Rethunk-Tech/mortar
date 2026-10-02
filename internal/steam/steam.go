@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -53,10 +54,15 @@ func FlatpakRoot(home string) string {
 	return filepath.Join(home, ".var", "app", FlatpakID, ".local", "share", "Steam")
 }
 
-// LocateAll returns every usable Steam, native first, then Flatpak.
-func LocateAll(home string) []Steam {
+// Roots are the native Steam folders searched, the user's own folders first.
+func Roots(home string, extra ...string) []string {
+	return append(slices.Clone(extra), candidates(home)...)
+}
+
+// LocateAll returns every usable Steam, native first (the user's own folders before the usual ones), then Flatpak.
+func LocateAll(home string, extra ...string) []Steam {
 	var out []Steam
-	for _, root := range candidates(home) {
+	for _, root := range Roots(home, extra...) {
 		if isDir(filepath.Join(root, "steamapps")) {
 			out = append(out, Steam{Root: root, Kind: KindNative})
 		}
@@ -68,8 +74,8 @@ func LocateAll(home string) []Steam {
 }
 
 // Locate finds Steam for the given home directory. Native Steam wins when both exist.
-func Locate(home string) (Steam, Status) {
-	if all := LocateAll(home); len(all) > 0 {
+func Locate(home string, extra ...string) (Steam, Status) {
+	if all := LocateAll(home, extra...); len(all) > 0 {
 		return all[0], Found
 	}
 	if isDir(FlatpakRoot(home)) {

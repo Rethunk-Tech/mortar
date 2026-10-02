@@ -9,12 +9,20 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
-func windowsOffline() []string {
-	dirs := []string{filepath.Join(`C:\GOG Games`, "Stardew Valley")}
+func windowsGamesDirs() []string {
+	dirs := []string{`C:\GOG Games`}
 	if pf := os.Getenv("ProgramFiles(x86)"); pf != "" {
-		dirs = append(dirs, filepath.Join(pf, "GOG Galaxy", "Games", "Stardew Valley"))
+		dirs = append(dirs, filepath.Join(pf, "GOG Galaxy", "Games"))
 	}
 	return dirs
+}
+
+// GalaxyDir is GOG Galaxy's install folder, whether or not it exists.
+func GalaxyDir() string {
+	if pf := os.Getenv("ProgramFiles(x86)"); pf != "" {
+		return filepath.Join(pf, "GOG Galaxy")
+	}
+	return ""
 }
 
 // lookupGalaxy is the Galaxy registry read; tests replace it so they never touch the real registry.

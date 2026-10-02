@@ -2,4 +2,4 @@
 
 package gog
 
-func windowsOffline() []string { return nil }
+func windowsGamesDirs() []string { return nil }

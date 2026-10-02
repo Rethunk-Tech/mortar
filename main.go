@@ -188,6 +188,7 @@ func run() error {
 	}
 	svc := settings.NewService(store)
 	svc.ValidateGameFolder = game.ValidateFolder
+	svc.ValidateLauncherRoot = game.ValidateLauncherRoot
 	svc.ValidateImage = backdrop.Check
 
 	gamesSvc := game.NewService(home, store)

@@ -31,7 +31,7 @@ func TestLocateLinuxOfflineAndHeroic(t *testing.T) {
 	if err := os.WriteFile(cfg, []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	got := Locate(home)
+	got := Locate(home, Roots{})
 	var offlineHit, heroicHit bool
 	for _, in := range got {
 		if in.Dir == offline && in.Store == StoreGOG {
@@ -61,7 +61,7 @@ func TestHeroicKeyedJSONAndNestedGame(t *testing.T) {
 	if err := os.WriteFile(cfg, []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	got := Locate(home)
+	got := Locate(home, Roots{})
 	var found Install
 	for _, in := range got {
 		if in.Store == StoreHeroic {
@@ -75,7 +75,7 @@ func TestHeroicKeyedJSONAndNestedGame(t *testing.T) {
 }
 
 func TestLocateIgnoresMissing(t *testing.T) {
-	if got := Locate(t.TempDir()); len(got) != 0 {
+	if got := Locate(t.TempDir(), Roots{}); len(got) != 0 {
 		t.Fatalf("got %#v", got)
 	}
 }

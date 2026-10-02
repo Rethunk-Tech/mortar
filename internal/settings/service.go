@@ -19,6 +19,8 @@ type Service struct {
 	App *application.App
 	// ValidateGameFolder vets a folder before it is stored; set before the app runs.
 	ValidateGameFolder func(game, dir string) error
+	// ValidateLauncherRoot vets a launcher folder before it is stored; set before the app runs.
+	ValidateLauncherRoot func(launcher, dir string) error
 	// ValidateImage vets a wallpaper path before it is stored; set before the app runs.
 	ValidateImage func(path string) error
 }
@@ -158,6 +160,31 @@ func (s *Service) SetGameFolder(game, dir string) error {
 			v.GameFolders[game] = dir
 		}
 	})
+}
+
+// SetLauncherRoot stores the folder the user chose for a launcher, or clears it when dir is empty.
+func (s *Service) SetLauncherRoot(launcher, dir string) error {
+	if dir != "" && s.ValidateLauncherRoot != nil {
+		if err := s.ValidateLauncherRoot(launcher, dir); err != nil {
+			return err
+		}
+	}
+	return s.set(func(v *Settings) {
+		v.LauncherRoots = maps.Clone(v.LauncherRoots)
+		if v.LauncherRoots == nil {
+			v.LauncherRoots = map[string]string{}
+		}
+		if dir == "" {
+			delete(v.LauncherRoots, launcher)
+		} else {
+			v.LauncherRoots[launcher] = dir
+		}
+	})
+}
+
+// ConfirmLaunchers records that first run's launcher screen is done.
+func (s *Service) ConfirmLaunchers() error {
+	return s.set(func(v *Settings) { v.LaunchersConfirmed = true })
 }
 
 // SetGameStore stores the chosen store for game, or clears it when store is empty.
