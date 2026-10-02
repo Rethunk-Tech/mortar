@@ -333,6 +333,25 @@ function ProfileFields({
   )
 }
 
+// coverSaved applies a staged cover image, telling the user when the image cannot be used.
+async function coverSaved(
+  gameId: string,
+  profile: Profile,
+  staged: StagedCover,
+  failure: string,
+): Promise<boolean> {
+  try {
+    const next = await applyStagedCover(gameId, profile.id, staged)
+    if (next) {
+      useProfiles.getState().replace(next)
+    }
+    return true
+  } catch (e) {
+    useToasts.getState().push({ kind: 'error', title: failure, body: errorMessage(e) })
+    return false
+  }
+}
+
 export function EditProfileDialog({
   profile,
   open,
@@ -346,14 +365,13 @@ export function EditProfileDialog({
   const setAppearance = useProfiles((s) => s.setAppearance)
   const setLaunchOptions = useProfiles((s) => s.setLaunchOptions)
   const setLaunchSettings = useProfiles((s) => s.setLaunchSettings)
-  const replace = useProfiles((s) => s.replace)
   const gameId = useProfiles((s) => s.game?.id ?? '')
   const [color, setColor] = useState(profile.color ?? '')
   const [icon, setIcon] = useState(profile.icon ?? '')
   const [description, setDescription] = useState(profile.description ?? '')
   const [launchOptions, setLaunchOptionsField] = useState(profile.launchOptions ?? '')
-  const [launchPrefix, setLaunchPrefix] = useState(profile.launchPrefix ?? ''),
-    [launchEnv, setLaunchEnv] = useState(profile.launchEnv ?? '')
+  const [launchPrefix, setLaunchPrefix] = useState(profile.launchPrefix ?? '')
+  const [launchEnv, setLaunchEnv] = useState(profile.launchEnv ?? '')
   const [stagedCover, setStagedCover] = useState<StagedCover>(undefined)
   const [gameSettings, setGameSettings, gameSettingsLoaded] = useProfileGameSettings(
     gameId,
@@ -383,50 +401,28 @@ export function EditProfileDialog({
     profile.launchEnv,
   ])
   const save = async () => {
-    if (busy) {
-      return
-    }
     setBusy(true)
     setOptionsError('')
     try {
       try {
-        await setAppearance(profile.id, color, icon, clipDescription(description))
-      } catch (e) {
-        reportUnexpected(e)
-        return
-      }
-      try {
         await setLaunchOptions(profile.id, launchOptions)
-      } catch (e) {
-        setOptionsError(e instanceof Error ? e.message : String(e))
-        return
-      }
-      try {
         await setLaunchSettings(profile.id, launchPrefix, launchEnv)
       } catch (e) {
         setOptionsError(e instanceof Error ? e.message : String(e))
         return
       }
-      if (gameId) {
-        try {
-          await SetGameSettings(gameId, profile.id, gameSettings ?? {})
-        } catch (e) {
-          reportUnexpected(e)
-          return
-        }
-      }
       try {
-        const next = await applyStagedCover(gameId, profile.id, stagedCover)
-        if (next) {
-          replace(next)
+        await setAppearance(profile.id, color, icon, clipDescription(description))
+        if (gameId) {
+          await SetGameSettings(gameId, profile.id, gameSettings ?? {})
         }
       } catch (e) {
-        useToasts
-          .getState()
-          .push({ kind: 'error', title: t`Could not use that image`, body: errorMessage(e) })
+        reportUnexpected(e)
         return
       }
-      onClose()
+      if (await coverSaved(gameId, profile, stagedCover, t`Could not use that image`)) {
+        onClose()
+      }
     } finally {
       setBusy(false)
     }

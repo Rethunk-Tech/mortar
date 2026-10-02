@@ -148,13 +148,11 @@ function HeroMenu({ profile }: { profile: Profile }) {
                 }),
               )
               .catch((e: unknown) =>
-                useToasts
-                  .getState()
-                  .push({
-                    kind: 'error',
-                    title: t`Could not add it to Steam`,
-                    body: errorMessage(e),
-                  }),
+                useToasts.getState().push({
+                  kind: 'error',
+                  title: t`Could not add it to Steam`,
+                  body: errorMessage(e),
+                }),
               )
           }}
         >
