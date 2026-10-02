@@ -1,10 +1,10 @@
 package profile
 
 import (
-	"bytes"
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -159,10 +159,10 @@ func TestReadConfigKeepsLargeNumbersAndComments(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Contains([]byte(got), []byte("9007199254740993")) {
+	if !strings.Contains(got, "9007199254740993") {
 		t.Fatalf("large number changed: %s", got)
 	}
-	if bytes.Contains([]byte(got), []byte("//")) || bytes.Contains([]byte(got), []byte(",]")) {
+	if strings.Contains(got, "//") || strings.Contains(got, ",]") {
 		t.Fatalf("JSON noise remained: %s", got)
 	}
 }
