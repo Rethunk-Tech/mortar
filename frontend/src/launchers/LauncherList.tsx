@@ -176,7 +176,10 @@ export function LauncherList({
   launchers: StoreApp[]
   refresh: () => void
 }) {
-  const columns = [launchers.filter((_, i) => i % 2 === 0), launchers.filter((_, i) => i % 2 === 1)]
+  const columns = [
+    { side: 'left', rows: launchers.filter((_, i) => i % 2 === 0) },
+    { side: 'right', rows: launchers.filter((_, i) => i % 2 === 1) },
+  ]
   // With nothing found at all, the first row starts open so a new user lands on Add folder.
   const first = launchers.every((l) => !l.found) ? launchers[0]?.id : undefined
   const stack = { display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 } as const
@@ -191,9 +194,9 @@ export function LauncherList({
           [`@container (min-width: ${2 * COLUMN_MIN}px)`]: { display: 'grid' },
         }}
       >
-        {columns.map((col) => (
-          <Box key={col.map((l) => l.id).join()} sx={stack}>
-            {col.map((l) => (
+        {columns.map(({ side, rows }) => (
+          <Box key={side} sx={stack}>
+            {rows.map((l) => (
               <LauncherRow key={l.id} launcher={l} refresh={refresh} open={l.id === first} />
             ))}
           </Box>
