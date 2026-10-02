@@ -505,22 +505,30 @@ func run() error {
 		check := store.Get().CheckModUpdatesOnStart
 		return check != nil && *check
 	}), modUpdateSourceFunc(func(ctx context.Context) ([]updatesvc.ModUpdate, error) {
-		if _, err := game.InstallDir(home, store.Get(), "stardew"); err != nil {
-			return nil, nil
-		}
-		all, err := profiles.List("stardew")
+		games, err := gamesSvc.List()
 		if err != nil {
 			return nil, err
 		}
-		out := make([]updatesvc.ModUpdate, 0, len(all))
-		for _, p := range all {
-			result, err := problemsSvc.Updates(ctx, "stardew", p.ID)
-			if err != nil {
-				return nil, err
+		var out []updatesvc.ModUpdate
+		for _, g := range games {
+			if !g.Available || !g.Installed {
+				continue
 			}
-			out = append(out, updatesvc.ModUpdate{
-				Game: "stardew", ProfileID: p.ID, ProfileName: p.Name, Count: len(result.Updates),
-			})
+			all, err := profiles.List(g.ID)
+			if err != nil {
+				log.Printf("mod updates: %s profiles: %v", g.ID, err)
+				continue
+			}
+			for _, p := range all {
+				result, err := problemsSvc.Updates(ctx, g.ID, p.ID)
+				if err != nil {
+					log.Printf("mod updates: %s/%s: %v", g.ID, p.ID, err)
+					continue
+				}
+				out = append(out, updatesvc.ModUpdate{
+					Game: g.ID, ProfileID: p.ID, ProfileName: p.Name, Count: len(result.Updates),
+				})
+			}
 		}
 		return out, nil
 	}), modUpdateNotifierFunc(func(update updatesvc.ModUpdate) {
