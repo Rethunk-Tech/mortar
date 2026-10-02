@@ -1,0 +1,23 @@
+import { Box } from '@mui/material'
+import { accent } from '../paper.ts'
+import { MEDIUM, MONO } from './constants.ts'
+
+export function Version({ children, isNew }: { children: string; isNew?: boolean }) {
+  return (
+    <Box
+      component="span"
+      sx={{
+        px: 1,
+        py: '3px',
+        borderRadius: '4px',
+        fontFamily: MONO,
+        fontSize: 13,
+        fontWeight: isNew ? MEDIUM : 'normal',
+        color: isNew ? 'primary.main' : 'text.primary',
+        bgcolor: isNew ? accent.chip : 'rgba(255,255,255,0.08)',
+      }}
+    >
+      {children}
+    </Box>
+  )
+}

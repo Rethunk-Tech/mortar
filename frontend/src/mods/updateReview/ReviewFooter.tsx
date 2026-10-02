@@ -1,0 +1,71 @@
+import { useLingui } from '@lingui/react/macro'
+import { Box, Button, Checkbox, DialogActions, Typography } from '@mui/material'
+import { ShieldCheck } from 'lucide-react'
+
+export function ReviewFooter({
+  wantedCount,
+  signedIn,
+  uncachedIds,
+  loadingAll,
+  propagateAll,
+  onClose,
+  onLoadAll,
+  onPropagate,
+  onUpdate,
+}: {
+  wantedCount: number
+  signedIn: boolean
+  uncachedIds: number[]
+  loadingAll: boolean
+  propagateAll: boolean
+  onClose: () => void
+  onLoadAll: () => void
+  onPropagate: (on: boolean) => void
+  onUpdate: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <DialogActions sx={{ px: 3, py: 2, gap: 1.5, bgcolor: 'rgba(0,0,0,0.2)' }}>
+      <Box sx={{ color: '#a3d3f7', display: 'flex' }}>
+        <ShieldCheck size={18} aria-hidden={true} />
+      </Box>
+      <Typography sx={{ flex: 1, fontSize: 13, lineHeight: 1.45 }}>
+        {t`Update downloads a mod's new file from Nexus or GitHub. For other pages, download the archive and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details.`}
+        <br />
+        {t`Mortar checks for updates at startup, when you press F5, and at most once an hour while it is running.`}
+      </Typography>
+      <Button variant="outlined" onClick={onClose} sx={{ whiteSpace: 'nowrap' }}>
+        {t`Close`}
+      </Button>
+      {signedIn && uncachedIds.length > 0 ? (
+        <Button
+          variant="text"
+          disabled={loadingAll}
+          onClick={onLoadAll}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          {loadingAll ? t`Loading changes…` : t`Load all changes`}
+        </Button>
+      ) : null}
+      {wantedCount > 0 ? (
+        <Checkbox
+          checked={propagateAll}
+          onChange={(_, on) => onPropagate(on)}
+          slotProps={{
+            input: { 'aria-label': t`Also update other profiles that hold the same files` },
+          }}
+        />
+      ) : null}
+      {wantedCount > 0 ? (
+        <Typography sx={{ fontSize: 12, maxWidth: 180 }}>
+          {t`Also update other profiles that hold the same files`}
+        </Typography>
+      ) : null}
+      {wantedCount > 0 ? (
+        <Button variant="contained" onClick={onUpdate} sx={{ whiteSpace: 'nowrap' }}>
+          {t`Update ${wantedCount}`}
+        </Button>
+      ) : null}
+    </DialogActions>
+  )
+}
