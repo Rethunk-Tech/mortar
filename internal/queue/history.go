@@ -20,6 +20,7 @@ type HistoryEntry struct {
 	Version  string `json:"version"`
 	Source   string `json:"source"`
 	Profile  string `json:"profileId"`
+	BatchID  string `json:"batchId,omitempty"`
 	Game     string `json:"game"`
 	ModID    int    `json:"modId"`
 	FileID   int    `json:"fileId"`
@@ -77,7 +78,7 @@ func (s *Service) recordHistory(it *Item, outcome string) {
 	}
 	size := it.SizeKB << 10
 	entry := HistoryEntry{
-		Name: name, Version: it.Version, Source: src, Profile: it.Profile,
+		Name: name, Version: it.Version, Source: src, Profile: it.Profile, BatchID: it.BatchID,
 		Game: it.Game, ModID: it.ModID, FileID: it.FileID, Kind: it.Kind, Repo: it.Repo, Tag: it.Tag, Asset: it.Asset,
 		Latest: it.Latest, Size: size, Started: started, Finished: now, Outcome: outcome, Error: it.Error,
 	}

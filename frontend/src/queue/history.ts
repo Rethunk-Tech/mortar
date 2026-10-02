@@ -5,6 +5,7 @@ export interface HistoryEntry {
   version: string
   source: string
   profileId: string
+  batchId: string
   game: string
   modId: number
   fileId: number
@@ -23,9 +24,10 @@ export interface HistoryEntry {
 export interface HistoryFilters {
   outcome: string
   profileId: string
+  batchId: string
 }
 
-export const emptyFilters = (): HistoryFilters => ({ outcome: '', profileId: '' })
+export const emptyFilters = (): HistoryFilters => ({ outcome: '', profileId: '', batchId: '' })
 
 export function filterHistory(entries: HistoryEntry[], filters: HistoryFilters): HistoryEntry[] {
   return entries.filter((e) => {
@@ -33,6 +35,9 @@ export function filterHistory(entries: HistoryEntry[], filters: HistoryFilters):
       return false
     }
     if (filters.profileId && e.profileId !== filters.profileId) {
+      return false
+    }
+    if (filters.batchId && e.batchId !== filters.batchId) {
       return false
     }
     return true
@@ -64,6 +69,7 @@ export function loadHistory(): Promise<HistoryEntry[]> {
       version: e.version ?? '',
       source: e.source ?? '',
       profileId: e.profileId ?? '',
+      batchId: e.batchId ?? '',
       game: e.game ?? '',
       modId: e.modId ?? 0,
       fileId: e.fileId ?? 0,

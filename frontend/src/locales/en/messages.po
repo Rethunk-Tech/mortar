@@ -80,6 +80,10 @@ msgstr "Could not switch the selected mods"
 msgid "Open profile"
 msgstr "Open profile"
 
+#: src/share/importCompletion.ts:83
+msgid "Show failed"
+msgstr "Show failed"
+
 #: src/profiles/EditProfileDialog.tsx:244
 msgid "Free Nexus accounts must click each download on Nexus; those updates will not block Play."
 msgstr "Free Nexus accounts must click each download on Nexus; those updates will not block Play."
@@ -115,7 +119,7 @@ msgstr "Stop the game to change mods."
 msgid "Mortar takes Stardew Valley links only."
 msgstr "Mortar takes Stardew Valley links only."
 
-#: src/mods/describe.ts:48
+#: src/mods/describe.ts:61
 msgid "{name} broke in {brokeIn}."
 msgstr "{name} broke in {brokeIn}."
 
@@ -149,7 +153,7 @@ msgid "Sand"
 msgstr "Sand"
 
 #. placeholder {0}: failed.length
-#: src/queue/store.ts:200
+#: src/queue/store.ts:201
 msgid "{0, plural, one {# download failed} other {# downloads failed}}"
 msgstr "{0, plural, one {# download failed} other {# downloads failed}}"
 
@@ -166,7 +170,7 @@ msgstr "{0} opens these links now. Mortar takes them over and gives them back wh
 msgid "Duplicate the open profile"
 msgstr "Duplicate the open profile"
 
-#: src/queue/store.ts:98
+#: src/queue/store.ts:99
 msgid "The download could not finish. Retry or skip it from the queue."
 msgstr "The download could not finish. Retry or skip it from the queue."
 
@@ -314,10 +318,10 @@ msgid "Updated on Nexus"
 msgstr "Updated on Nexus"
 
 #: src/console/CrashDialog.tsx:88
-#: src/mods/problemFixButtons.tsx:139
-#: src/mods/problemFixButtons.tsx:188
-#: src/mods/problemFixButtons.tsx:288
-#: src/mods/problemFixButtons.tsx:456
+#: src/mods/problemFixButtons.tsx:103
+#: src/mods/problemFixButtons.tsx:151
+#: src/mods/problemFixButtons.tsx:250
+#: src/mods/problemFixButtons.tsx:417
 #: src/tips/TipBanner.tsx:36
 #: src/tips/TipBanner.tsx:39
 #: src/toasts/ToastHost.tsx:133
@@ -393,7 +397,7 @@ msgstr "Sign in to Nexus Mods in Settings to see more from this mod's page."
 msgid "Only in {bName}"
 msgstr "Only in {bName}"
 
-#: src/mods/problemFixButtons.tsx:353
+#: src/mods/problemFixButtons.tsx:314
 msgid "Resolve"
 msgstr "Resolve"
 
@@ -520,7 +524,7 @@ msgstr "Already in Steam"
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.currentFor
-#: src/mods/describe.ts:127
+#: src/mods/describe.ts:136
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 
@@ -615,7 +619,7 @@ msgstr "Show files"
 msgid "More play options"
 msgstr "More play options"
 
-#: src/mods/describe.ts:45
+#: src/mods/describe.ts:58
 msgid "{name} is marked obsolete and may not work with this game version."
 msgstr "{name} is marked obsolete and may not work with this game version."
 
@@ -626,6 +630,11 @@ msgstr "All outcomes"
 #: src/settings/sections/StreamOverlay.tsx:111
 msgid "Fishing skill"
 msgstr "Fishing skill"
+
+#. placeholder {0}: batch.pendingSettings
+#: src/share/importCompletion.ts:73
+msgid "{0, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
+msgstr "{0, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
 
 #: src/share/ImportDialog.tsx:85
 msgid "Import profile"
@@ -811,7 +820,7 @@ msgstr "Needed by"
 msgid "Skip"
 msgstr "Skip"
 
-#: src/queue/store.ts:54
+#: src/queue/store.ts:55
 msgid "Nothing in the queue needs a decision."
 msgstr "Nothing in the queue needs a decision."
 
@@ -824,7 +833,7 @@ msgstr "Copy mod list"
 msgid "Copied"
 msgstr "Copied"
 
-#: src/mods/problemFixButtons.tsx:115
+#: src/mods/runErrorFixButtons.tsx:62
 msgid "Show in log"
 msgstr "Show in log"
 
@@ -849,7 +858,7 @@ msgstr "SMAPI is the loader every Stardew mod needs. It goes into the game folde
 msgid "Total"
 msgstr "Total"
 
-#: src/mods/problemFixButtons.tsx:232
+#: src/mods/problemFixButtons.tsx:194
 msgid "Set to automatic"
 msgstr "Set to automatic"
 
@@ -875,7 +884,7 @@ msgstr "Failed"
 msgid "{0} of {1} mods · {2} · {3}/s"
 msgstr "{0} of {1} mods · {2} · {3}/s"
 
-#: src/mods/describe.ts:49
+#: src/mods/describe.ts:62
 msgid "{name} is marked broken for this game version."
 msgstr "{name} is marked broken for this game version."
 
@@ -952,7 +961,7 @@ msgstr "Files added"
 msgid "Loading bundles…"
 msgstr "Loading bundles…"
 
-#: src/mods/problemFixButtons.tsx:556
+#: src/mods/problemFixButtons.tsx:516
 msgid "Forget"
 msgstr "Forget"
 
@@ -1027,8 +1036,8 @@ msgstr "Show the first-run tips again"
 
 #: src/nxm/store.ts:53
 #: src/queue/actions.ts:90
-#: src/queue/store.ts:203
-#: src/queue/store.ts:303
+#: src/queue/store.ts:204
+#: src/queue/store.ts:308
 msgid "Show"
 msgstr "Show"
 
@@ -1143,7 +1152,7 @@ msgstr "Calls"
 
 #: src/install/store.ts:147
 #: src/install/store.ts:208
-#: src/queue/store.ts:273
+#: src/queue/store.ts:278
 msgid "Undo"
 msgstr "Undo"
 
@@ -1211,7 +1220,7 @@ msgstr "Open save folder"
 msgid "Lutris"
 msgstr "Lutris"
 
-#: src/share/useImportFlow.ts:86
+#: src/share/useImportFlow.ts:98
 msgid "Imported {name}"
 msgstr "Imported {name}"
 
@@ -1416,7 +1425,7 @@ msgid "Clear comparison"
 msgstr "Clear comparison"
 
 #. placeholder {0}: p.duplicate.name
-#: src/mods/describe.ts:101
+#: src/mods/describe.ts:114
 msgid "{0} has multiple Nexus files installed: {files}."
 msgstr "{0} has multiple Nexus files installed: {files}."
 
@@ -1424,7 +1433,7 @@ msgstr "{0} has multiple Nexus files installed: {files}."
 msgid "Sky"
 msgstr "Sky"
 
-#: src/mods/problemFixButtons.tsx:570
+#: src/mods/problemFixButtons.tsx:530
 msgid "Keep my changes"
 msgstr "Keep my changes"
 
@@ -1478,7 +1487,7 @@ msgstr "Local-only mods kept ({0})"
 msgid "Game settings"
 msgstr "Game settings"
 
-#: src/mods/describe.ts:40
+#: src/mods/describe.ts:53
 msgid "{name} is marked abandoned and may no longer be maintained."
 msgstr "{name} is marked abandoned and may no longer be maintained."
 
@@ -1607,11 +1616,11 @@ msgstr "Update available"
 msgid "GitHub page"
 msgstr "GitHub page"
 
-#: src/mods/problemFixButtons.tsx:165
+#: src/mods/problemFixButtons.tsx:128
 msgid "Replace with {replaceName}"
 msgstr "Replace with {replaceName}"
 
-#: src/mods/describe.ts:81
+#: src/mods/describe.ts:94
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 
@@ -1855,7 +1864,7 @@ msgid "Could not unpin the selected mods"
 msgstr "Could not unpin the selected mods"
 
 #: src/share/ImportPreview.tsx:350
-#: src/share/useImportFlow.ts:79
+#: src/share/useImportFlow.ts:91
 msgid "Nothing to download"
 msgstr "Nothing to download"
 
@@ -1867,7 +1876,7 @@ msgstr "Standard farm"
 msgid "{field}: {from} → {to}"
 msgstr "{field}: {from} → {to}"
 
-#: src/mods/describe.ts:39
+#: src/mods/describe.ts:52
 msgid "{name} is abandoned: {summary}"
 msgstr "{name} is abandoned: {summary}"
 
@@ -1921,7 +1930,7 @@ msgstr "Done"
 msgid "Accent: {from} → {to}"
 msgstr "Accent: {from} → {to}"
 
-#: src/queue/store.ts:212
+#: src/queue/store.ts:213
 msgid "Downloads paused"
 msgstr "Downloads paused"
 
@@ -1944,7 +1953,7 @@ msgstr "Send to…"
 msgid "Could not undo the install"
 msgstr "Could not undo the install"
 
-#: src/share/useImportFlow.ts:86
+#: src/share/useImportFlow.ts:98
 msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
@@ -2099,6 +2108,7 @@ msgid "Could not read recently deleted profiles"
 msgstr "Could not read recently deleted profiles"
 
 #: src/loader/Banner.tsx:38
+#: src/mods/runErrorFixButtons.tsx:54
 #: src/mods/Sidebar.tsx:210
 #: src/mods/UpdateReview.tsx:348
 #: src/settings/sections/GameSettings.tsx:386
@@ -2182,7 +2192,7 @@ msgstr "Enter text to search stored runs."
 msgid "Duplicate"
 msgstr "Duplicate"
 
-#: src/mods/describe.ts:87
+#: src/mods/describe.ts:100
 msgid "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 
@@ -2340,7 +2350,7 @@ msgstr "SMAPI is not installed"
 msgid "Couldn't prepare the data folder move"
 msgstr "Couldn't prepare the data folder move"
 
-#: src/mods/describe.ts:89
+#: src/mods/describe.ts:102
 msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
 
@@ -2352,7 +2362,7 @@ msgstr "Choose a file…"
 msgid "Reinstall with options…"
 msgstr "Reinstall with options…"
 
-#: src/mods/problemFixButtons.tsx:364
+#: src/mods/problemFixButtons.tsx:325
 msgid "Replace"
 msgstr "Replace"
 
@@ -2405,6 +2415,10 @@ msgstr "Has problems"
 #: src/settings/sections/General.tsx:98
 msgid "LAN port"
 msgstr "LAN port"
+
+#: src/mods/describe.ts:40
+msgid "{name} was updated since this run and logged {count} errors."
+msgstr "{name} was updated since this run and logged {count} errors."
 
 #: src/queue/QueueSheet.tsx:71
 #: src/queue/QueueSheet.tsx:73
@@ -2488,7 +2502,7 @@ msgstr "Has used {missing, plural, one {# mod it lacks} other {# mods it lacks}}
 msgid "Profiles: {holderNames}"
 msgstr "Profiles: {holderNames}"
 
-#: src/queue/store.ts:118
+#: src/queue/store.ts:119
 msgid "File quarantined"
 msgstr "File quarantined"
 
@@ -2550,7 +2564,7 @@ msgid "Mods in this category will move to Uncategorized."
 msgstr "Mods in this category will move to Uncategorized."
 
 #. placeholder {0}: p.duplicate.name
-#: src/mods/describe.ts:103
+#: src/mods/describe.ts:116
 msgid "{0} is installed twice, and SMAPI loads only one."
 msgstr "{0} is installed twice, and SMAPI loads only one."
 
@@ -2651,12 +2665,12 @@ msgstr "Updates are unknown: SMAPI's update service could not be reached."
 msgid "Remove the focused mod"
 msgstr "Remove the focused mod"
 
-#: src/mods/describe.ts:115
+#: src/mods/describe.ts:44
 msgid "{name} logged {count} errors in the last run."
 msgstr "{name} logged {count} errors in the last run."
 
 #. placeholder {0}: profile?.name ?? 'profile'
-#: src/queue/store.ts:267
+#: src/queue/store.ts:272
 msgid "{first} installed into {0}"
 msgstr "{first} installed into {0}"
 
@@ -2823,8 +2837,8 @@ msgstr "Could not open config.json of {0}"
 msgid "Mortar {0} is available."
 msgstr "Mortar {0} is available."
 
-#. placeholder {0}: done.length
-#: src/queue/store.ts:289
+#. placeholder {0}: shownDone.length
+#: src/queue/store.ts:294
 msgid "{0, plural, one {# mod installed} other {# mods installed}}"
 msgstr "{0, plural, one {# mod installed} other {# mods installed}}"
 
@@ -2850,7 +2864,7 @@ msgstr "That folder cannot be used"
 #: src/launch/LaunchLayer.tsx:315
 #: src/mods/ModDependencyTree.tsx:55
 #: src/mods/problemFixButtons.tsx:48
-#: src/mods/problemFixButtons.tsx:175
+#: src/mods/problemFixButtons.tsx:138
 #: src/mods/Sidebar.tsx:192
 #: src/mods/UpdateReview.tsx:322
 #: src/saves/SavesTab.tsx:171
@@ -2929,7 +2943,7 @@ msgstr "config.json"
 msgid "{0} (profile)"
 msgstr "{0} (profile)"
 
-#: src/queue/store.ts:60
+#: src/queue/store.ts:61
 msgid "That download is no longer waiting to retry."
 msgstr "That download is no longer waiting to retry."
 
@@ -3060,7 +3074,7 @@ msgstr "Decline"
 msgid "Deleted profiles stay here for 30 days, mods and settings included."
 msgstr "Deleted profiles stay here for 30 days, mods and settings included."
 
-#: src/mods/describe.ts:65
+#: src/mods/describe.ts:78
 msgid "{who} all load {target}.{winner}"
 msgstr "{who} all load {target}.{winner}"
 
@@ -3098,7 +3112,7 @@ msgstr "{0, plural, one {# mod selected} other {# mods selected}}"
 msgid "Restore {0}"
 msgstr "Restore {0}"
 
-#: src/mods/problemFixButtons.tsx:579
+#: src/mods/problemFixButtons.tsx:539
 msgid "Revert"
 msgstr "Revert"
 
@@ -3208,7 +3222,7 @@ msgstr "Saving…"
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
-#: src/mods/describe.ts:66
+#: src/mods/describe.ts:79
 msgid "{who} all edit {target}.{winner}"
 msgstr "{who} all edit {target}.{winner}"
 
@@ -3267,6 +3281,14 @@ msgstr "Nothing in this profile"
 msgid "Warm and bold"
 msgstr "Warm and bold"
 
+#. placeholder {0}: batch.name
+#. placeholder {1}: counts.installed
+#. placeholder {2}: counts.failed
+#. placeholder {3}: counts.skipped
+#: src/share/importCompletion.ts:68
+msgid "Imported {0}: {1} installed, {2} failed, {3} skipped"
+msgstr "Imported {0}: {1} installed, {2} failed, {3} skipped"
+
 #. placeholder {0}: logs.length
 #: src/mods/UpdateReview.tsx:186
 msgid "{0, plural, one {# version of changes} other {# versions of changes}}"
@@ -3309,7 +3331,7 @@ msgstr "Export or share the open profile"
 msgid "Copy the mods already in Stardew Valley's Mods folder into a new profile. Nothing in the game folder is moved or changed."
 msgstr "Copy the mods already in Stardew Valley's Mods folder into a new profile. Nothing in the game folder is moved or changed."
 
-#: src/mods/describe.ts:57
+#: src/mods/describe.ts:70
 msgid " The winner is unclear."
 msgstr " The winner is unclear."
 
@@ -3334,7 +3356,7 @@ msgstr "Note"
 msgid "Add a tag"
 msgstr "Add a tag"
 
-#: src/queue/store.ts:107
+#: src/queue/store.ts:108
 msgid "Nexus rejected your API key"
 msgstr "Nexus rejected your API key"
 
@@ -3381,7 +3403,7 @@ msgstr "GOG"
 msgid "Could not read the Nexus page: {0}"
 msgstr "Could not read the Nexus page: {0}"
 
-#: src/share/useImportFlow.ts:106
+#: src/share/useImportFlow.ts:118
 msgid "Imported, but could not show the profile"
 msgstr "Imported, but could not show the profile"
 
@@ -3393,7 +3415,7 @@ msgstr "Open problems"
 msgid "Check for mod updates when Mortar starts"
 msgstr "Check for mod updates when Mortar starts"
 
-#: src/share/useImportFlow.ts:78
+#: src/share/useImportFlow.ts:90
 msgid "{queued, plural, one {# download queued} other {# downloads queued}}"
 msgstr "{queued, plural, one {# download queued} other {# downloads queued}}"
 
@@ -3652,9 +3674,9 @@ msgstr "·"
 
 #: src/mods/ModDependencyTree.tsx:86
 #: src/mods/ModMenu.tsx:442
-#: src/mods/problemFixButtons.tsx:131
-#: src/mods/problemFixButtons.tsx:466
-#: src/mods/problemFixButtons.tsx:490
+#: src/mods/problemFixButtons.tsx:95
+#: src/mods/problemFixButtons.tsx:427
+#: src/mods/problemFixButtons.tsx:451
 #: src/mods/SelectionBar.tsx:234
 #: src/mods/Sidebar.tsx:384
 msgid "Add"
@@ -3708,7 +3730,7 @@ msgstr "No bundles yet."
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.currentFor
-#: src/mods/describe.ts:124
+#: src/mods/describe.ts:133
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
 
@@ -3732,7 +3754,7 @@ msgstr "Tell when SMAPI is out: {from} → {to}"
 msgid "Weather"
 msgstr "Weather"
 
-#: src/mods/problemFixButtons.tsx:232
+#: src/mods/problemFixButtons.tsx:194
 msgid "Set to {value}"
 msgstr "Set to {value}"
 
@@ -3789,6 +3811,10 @@ msgstr "Restart now"
 #: src/console/HelpDialog.tsx:234
 msgid "There is no SMAPI log for this profile yet. Play this profile once, then try again."
 msgstr "There is no SMAPI log for this profile yet. Play this profile once, then try again."
+
+#: src/mods/describe.ts:41
+msgid "{name} was updated since this run and logged an error: {first}"
+msgstr "{name} was updated since this run and logged an error: {first}"
 
 #: src/console/PerformanceComparison.tsx:54
 msgid "Performance comparison"
@@ -3874,7 +3900,7 @@ msgstr "Windowed resolution width"
 msgid "Hide token"
 msgstr "Hide token"
 
-#: src/mods/describe.ts:61
+#: src/mods/describe.ts:74
 msgid " {winnerName} wins; {losers} overridden."
 msgstr " {winnerName} wins; {losers} overridden."
 
@@ -3916,7 +3942,7 @@ msgstr "Couldn't resize the window"
 msgid "Couldn't read the window state"
 msgstr "Couldn't read the window state"
 
-#: src/queue/store.ts:114
+#: src/queue/store.ts:115
 msgid "Open data folder settings"
 msgstr "Open data folder settings"
 
@@ -4040,7 +4066,7 @@ msgstr "Manage tools"
 msgid "Change"
 msgstr "Change"
 
-#: src/mods/describe.ts:113
+#: src/mods/describe.ts:45
 msgid "{name} logged an error in the last run: {first}"
 msgstr "{name} logged an error in the last run: {first}"
 
@@ -4134,7 +4160,7 @@ msgid "{label}: {0}"
 msgstr "{label}: {0}"
 
 #. placeholder {0}: p.asset.info
-#: src/mods/describe.ts:68
+#: src/mods/describe.ts:81
 msgid "These mods may add the same item: {0}."
 msgstr "These mods may add the same item: {0}."
 
@@ -4175,7 +4201,7 @@ msgstr "last played {lastPlayedName}"
 msgid "Checked with SMAPI's update service"
 msgstr "Checked with SMAPI's update service"
 
-#: src/share/useImportFlow.ts:80
+#: src/share/useImportFlow.ts:92
 msgid "A profile with that name already exists, so this one is \"{name}\""
 msgstr "A profile with that name already exists, so this one is \"{name}\""
 
@@ -4595,7 +4621,7 @@ msgstr "Remove all {0} mods from this profile?"
 #. placeholder {0}: s.name
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
-#: src/mods/describe.ts:121
+#: src/mods/describe.ts:130
 msgid "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 msgstr "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 
@@ -4779,8 +4805,8 @@ msgid "Some files could not be checked against Nexus, so a few may differ from w
 msgstr "Some files could not be checked against Nexus, so a few may differ from what was shared."
 
 #. placeholder {0}: fix.name
-#: src/mods/problemFixButtons.tsx:407
-#: src/mods/problemFixButtons.tsx:436
+#: src/mods/problemFixButtons.tsx:368
+#: src/mods/problemFixButtons.tsx:397
 msgid "In {0}; turns off its edits here"
 msgstr "In {0}; turns off its edits here"
 
@@ -4824,11 +4850,11 @@ msgstr "Install {name}?"
 #: src/console/BisectDialog.tsx:148
 #: src/console/CrashDialog.tsx:99
 #: src/launch/LaunchLayer.tsx:306
-#: src/mods/problemFixButtons.tsx:107
-#: src/mods/problemFixButtons.tsx:193
-#: src/mods/problemFixButtons.tsx:362
-#: src/mods/problemFixButtons.tsx:417
-#: src/mods/problemFixButtons.tsx:446
+#: src/mods/problemFixButtons.tsx:156
+#: src/mods/problemFixButtons.tsx:323
+#: src/mods/problemFixButtons.tsx:378
+#: src/mods/problemFixButtons.tsx:407
+#: src/mods/runErrorFixButtons.tsx:52
 msgid "Switch off"
 msgstr "Switch off"
 
@@ -4923,7 +4949,7 @@ msgstr "Switch to Saves"
 #: src/mods/ModMenu.tsx:457
 #: src/mods/parts.tsx:312
 #: src/mods/parts.tsx:363
-#: src/mods/problemFixButtons.tsx:532
+#: src/mods/problemFixButtons.tsx:492
 #: src/mods/ProblemsTab.tsx:166
 #: src/mods/SelectionBar.tsx:177
 #: src/mods/SelectionBarActions.tsx:133
@@ -4962,7 +4988,7 @@ msgstr "Change…"
 msgid "Luck skill"
 msgstr "Luck skill"
 
-#: src/mods/describe.ts:84
+#: src/mods/describe.ts:97
 msgid "{dependentName} needs {dep}, which is switched off."
 msgstr "{dependentName} needs {dep}, which is switched off."
 
@@ -5044,7 +5070,7 @@ msgstr "Could not copy mods"
 msgid "Could not verify its source"
 msgstr "Could not verify its source"
 
-#: src/mods/describe.ts:80
+#: src/mods/describe.ts:93
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement."
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
@@ -5278,7 +5304,7 @@ msgstr "No launchers found. You can still continue and choose each game's folder
 msgid "Tag"
 msgstr "Tag"
 
-#: src/queue/store.ts:121
+#: src/queue/store.ts:122
 msgid "Couldn't reach Nexus"
 msgstr "Couldn't reach Nexus"
 
@@ -5358,8 +5384,8 @@ msgstr "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access
 
 #. placeholder {0}: fix.field
 #. placeholder {1}: fix.value
-#: src/mods/problemFixButtons.tsx:410
-#: src/mods/problemFixButtons.tsx:439
+#: src/mods/problemFixButtons.tsx:371
+#: src/mods/problemFixButtons.tsx:400
 msgid "Set {0} to {1}"
 msgstr "Set {0} to {1}"
 
@@ -5426,7 +5452,7 @@ msgstr "Its source is not known."
 msgid "Clear search"
 msgstr "Clear search"
 
-#: src/mods/describe.ts:44
+#: src/mods/describe.ts:57
 msgid "{name} is obsolete: {summary}"
 msgstr "{name} is obsolete: {summary}"
 
@@ -5455,7 +5481,7 @@ msgstr "Could not use that image"
 #. placeholder {0}: s.name
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
-#: src/mods/describe.ts:129
+#: src/mods/describe.ts:138
 msgid "{0}'s {1} is {2}; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}; it can match {installed} instead."
 
@@ -5504,7 +5530,7 @@ msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
 
 #. placeholder {0}: p.duplicate.name
-#: src/mods/describe.ts:100
+#: src/mods/describe.ts:113
 msgid "{0} has multiple Nexus files installed: {files}. One may be an add-on."
 msgstr "{0} has multiple Nexus files installed: {files}. One may be an add-on."
 
@@ -5516,7 +5542,7 @@ msgstr "Remove all"
 msgid "Show one in the sidebar from Manage profiles."
 msgstr "Show one in the sidebar from Manage profiles."
 
-#: src/queue/store.ts:113
+#: src/queue/store.ts:114
 msgid "Not enough disk space"
 msgstr "Not enough disk space"
 
@@ -5542,7 +5568,7 @@ msgstr "{found} of {0} launchers found."
 msgid "Accent colour"
 msgstr "Accent colour"
 
-#: src/mods/describe.ts:61
+#: src/mods/describe.ts:74
 msgid " {winnerName} wins."
 msgstr " {winnerName} wins."
 
@@ -5643,7 +5669,7 @@ msgstr "Measure while you play, then show a report of the mods that take the mos
 
 #. placeholder {0}: file.fileName || file.key
 #. placeholder {0}: tool.name
-#: src/mods/problemFixButtons.tsx:346
+#: src/mods/problemFixButtons.tsx:307
 #: src/tools/ToolsManageDialog.tsx:64
 #: src/tools/ToolsManageDialog.tsx:67
 msgid "Remove {0}"
@@ -5797,7 +5823,7 @@ msgstr "Could not redo the update"
 msgid "Last run"
 msgstr "Last run"
 
-#: src/mods/problemFixButtons.tsx:265
+#: src/mods/problemFixButtons.tsx:227
 msgid "More setting values"
 msgstr "More setting values"
 
@@ -5994,7 +6020,7 @@ msgstr "Display"
 msgid "Welcome to Mortar"
 msgstr "Welcome to Mortar"
 
-#: src/queue/store.ts:268
+#: src/queue/store.ts:273
 msgid "{unblocked} can load now."
 msgstr "{unblocked} can load now."
 
@@ -6022,7 +6048,7 @@ msgstr "Import profile from…"
 msgid "{n} GitHub"
 msgstr "{n} GitHub"
 
-#: src/queue/store.ts:213
+#: src/queue/store.ts:214
 msgid "Downloads paused. Retrying in {n} s."
 msgstr "Downloads paused. Retrying in {n} s."
 
@@ -6039,7 +6065,7 @@ msgstr "Changelog is not cached yet."
 msgid "Could not endorse"
 msgstr "Could not endorse"
 
-#: src/mods/problemFixButtons.tsx:484
+#: src/mods/problemFixButtons.tsx:445
 msgid "Switch on"
 msgstr "Switch on"
 
@@ -6191,7 +6217,7 @@ msgstr "Your notes for this profile, for example: Friday co-op profile. Keep eve
 msgid "imported from a .mortar file"
 msgstr "imported from a .mortar file"
 
-#: src/queue/store.ts:108
+#: src/queue/store.ts:109
 #: src/share/ImportFooter.tsx:68
 msgid "Open Nexus settings"
 msgstr "Open Nexus settings"
@@ -6215,11 +6241,11 @@ msgstr "Checking for updates…"
 msgid "UI scale ({value}%)"
 msgstr "UI scale ({value}%)"
 
-#: src/mods/problemFixButtons.tsx:256
-#: src/mods/problemFixButtons.tsx:373
-#: src/mods/problemFixButtons.tsx:426
-#: src/mods/problemFixButtons.tsx:474
-#: src/mods/problemFixButtons.tsx:547
+#: src/mods/problemFixButtons.tsx:218
+#: src/mods/problemFixButtons.tsx:334
+#: src/mods/problemFixButtons.tsx:387
+#: src/mods/problemFixButtons.tsx:435
+#: src/mods/problemFixButtons.tsx:507
 #: src/profiles/ProfilesPage.tsx:95
 #: src/saves/BackupsDialog.tsx:109
 #: src/saves/BackupsDialog.tsx:296
@@ -6266,8 +6292,8 @@ msgstr "{0, plural, one {# day left} other {# days left}}"
 msgid "Could not add the shortcut"
 msgstr "Could not add the shortcut"
 
-#. placeholder {0}: waiting.length
-#: src/queue/store.ts:301
+#. placeholder {0}: shownWaiting.length
+#: src/queue/store.ts:306
 msgid "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 msgstr "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 
@@ -6416,7 +6442,7 @@ msgid "A game update replaced SMAPI's launcher"
 msgstr "A game update replaced SMAPI's launcher"
 
 #: src/mods/updates.ts:95
-#: src/queue/store.ts:123
+#: src/queue/store.ts:124
 msgid "Retry now"
 msgstr "Retry now"
 
@@ -6472,7 +6498,7 @@ msgstr "Install anyway"
 msgid "Sound volume ({value}%)"
 msgstr "Sound volume ({value}%)"
 
-#: src/mods/problemFixButtons.tsx:523
+#: src/mods/problemFixButtons.tsx:483
 msgid "Adopt"
 msgstr "Adopt"
 

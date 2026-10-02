@@ -12,6 +12,7 @@ const row = (over: Partial<HistoryEntry>): HistoryEntry => ({
   version: '1.0',
   source: 'nexus',
   profileId: 'p1',
+  batchId: '',
   game: 'stardew',
   modId: 0,
   fileId: 0,
@@ -34,16 +35,23 @@ test('filterHistory matches outcome and profile', () => {
     row({ name: 'bad', outcome: 'failed' }),
     row({ name: 'other', profileId: 'p2' }),
   ]
-  expect(filterHistory(rows, { outcome: 'failed', profileId: '' }).map((e) => e.name)).toEqual([
-    'bad',
-  ])
-  expect(filterHistory(rows, { outcome: '', profileId: 'p2' }).map((e) => e.name)).toEqual([
-    'other',
-  ])
-  expect(filterHistory(rows, { outcome: 'done', profileId: 'p2' }).map((e) => e.name)).toEqual([
-    'other',
-  ])
-  expect(filterHistory(rows, { outcome: 'failed', profileId: 'p2' })).toEqual([])
+  expect(
+    filterHistory(rows, { outcome: 'failed', profileId: '', batchId: '' }).map((e) => e.name),
+  ).toEqual(['bad'])
+  expect(
+    filterHistory(rows, { outcome: '', profileId: 'p2', batchId: '' }).map((e) => e.name),
+  ).toEqual(['other'])
+  expect(
+    filterHistory(rows, { outcome: 'done', profileId: 'p2', batchId: '' }).map((e) => e.name),
+  ).toEqual(['other'])
+  expect(filterHistory(rows, { outcome: 'failed', profileId: 'p2', batchId: '' })).toEqual([])
+})
+
+test('filterHistory matches an import batch', () => {
+  const rows = [row({ batchId: 'batch-1' }), row({ batchId: 'batch-2' })]
+  expect(
+    filterHistory(rows, { outcome: '', profileId: '', batchId: 'batch-2' }).map((e) => e.batchId),
+  ).toEqual(['batch-2'])
 })
 
 test('historyProfiles lists unique profile ids', () => {

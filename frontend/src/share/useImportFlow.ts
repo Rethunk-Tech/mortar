@@ -24,6 +24,7 @@ import { useQueue } from '../queue/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { beginWork } from '../toasts/usePending.ts'
+import { trackImport } from './importCompletion.ts'
 import { type ShownPreview, shownPreview } from './logic.ts'
 import { type ImportOptions, importAfterSignIn, useImportDialog } from './store.ts'
 
@@ -53,6 +54,38 @@ function toggleExcluded(previous: ReadonlySet<string>, key: string): ReadonlySet
   return next
 }
 
+interface PreviewState {
+  latest: { current: number }
+  setPreviewBusy: (busy: boolean) => void
+  setError: (error: string) => void
+  setPreview: (preview: ShownPreview | null) => void
+  setExcluded: (excluded: ReadonlySet<string>) => void
+}
+
+async function showPreview(pending: Promise<Preview>, state: PreviewState) {
+  const { latest, setPreviewBusy, setError, setPreview, setExcluded } = state
+  const n = latest.current + 1
+  latest.current = n
+  setPreviewBusy(true)
+  setError('')
+  try {
+    const shown = shownPreview(await pending)
+    if (n === latest.current) {
+      setPreview(shown)
+      setExcluded(new Set())
+    }
+  } catch (e) {
+    if (n === latest.current) {
+      setPreview(null)
+      setError(errorMessage(e))
+    }
+  } finally {
+    if (n === latest.current) {
+      setPreviewBusy(false)
+    }
+  }
+}
+
 // Shows what an import filled: the open profile refreshed, or the new one opened on its game's page.
 // A new profile registers mortar:// and .mortar (idempotent): an import can arrive before first run finished,
 // including via the Nexus sign-in detour, which leaves the setup route behind.
@@ -69,9 +102,20 @@ async function showImported(game: string, intoOpen: boolean, id: string) {
 }
 
 // Tells what an import did: the downloads it queued, and the name a new profile took when the shared one was taken.
-function announce(result: Result, intoOpen: boolean, sharedName: string | undefined) {
+function announce(
+  result: Result,
+  intoOpen: boolean,
+  sharedName: string | undefined,
+  pendingSettings: number,
+) {
   const { name } = result.profile
   const { queued } = result
+  trackImport(
+    result,
+    (batchId) => useQueue.getState().openHistory(batchId),
+    pendingSettings,
+    useQueue.getState().state.items,
+  )
   const renamed = !intoOpen && sharedName !== undefined && name !== sharedName
   const body = [
     queued > 0
@@ -95,11 +139,11 @@ async function afterImport(
   game: string,
   intoOpen: boolean,
   result: Result,
-  previewName: string | undefined,
+  notice: { name: string | undefined; settings: number },
 ) {
   try {
     await showImported(game, intoOpen, result.profile.id)
-    announce(result, intoOpen, previewName)
+    announce(result, intoOpen, notice.name, notice.settings)
   } catch (e) {
     useToasts.getState().push({
       kind: 'error',
@@ -128,29 +172,11 @@ export function useImportFlow(
   const [importBusy, setImportBusy] = useState(false)
   const latest = useRef(0)
   const importing = useRef(false)
-  const show = useCallback(async (pending: Promise<Preview>) => {
-    const n = latest.current + 1
-    latest.current = n
-    setPreviewBusy(true)
-    setError('')
-    try {
-      const shown = shownPreview(await pending)
-      if (n === latest.current) {
-        setPreview(shown)
-        setExcluded(new Set())
-      }
-    } catch (e) {
-      if (n === latest.current) {
-        setPreview(null)
-        setError(errorMessage(e))
-      }
-    } finally {
-      if (n === latest.current) {
-        setPreviewBusy(false)
-      }
-    }
-  }, [])
-
+  const show = useCallback(
+    (pending: Promise<Preview>) =>
+      showPreview(pending, { latest, setPreviewBusy, setError, setPreview, setExcluded }),
+    [],
+  )
   const previewLink = useCallback(
     (value: string) => show(PreviewLink(game, value, profileId)),
     [game, profileId, show],
@@ -166,7 +192,6 @@ export function useImportFlow(
     (value: ProfilePreview) => show(PreviewExternal(game, value, profileId)),
     [game, profileId, show],
   )
-
   const paste = async () => {
     const clip = await ReadClipboard()
     setText(clip)
@@ -189,7 +214,6 @@ export function useImportFlow(
     setPath('')
   }
   const toggle = (key: string) => setExcluded((prev) => toggleExcluded(prev, key))
-
   const run = async (intoOpen: boolean, replace = false) => {
     if (!beginWork(importing)) {
       return
@@ -202,7 +226,10 @@ export function useImportFlow(
       const result = replace
         ? await Replace(game, session, profileId, skip)
         : await Import(game, session, intoOpen ? profileId : '', skip)
-      await afterImport(game, replace || intoOpen, result, preview?.name)
+      await afterImport(game, replace || intoOpen, result, {
+        name: preview?.name,
+        settings: preview?.settings ?? 0,
+      })
       if (useImportDialog.getState().request?.run === opened) {
         close()
       }

@@ -23,6 +23,7 @@ import { isLocked } from '../mods/locked.ts'
 import { useMods } from '../mods/store.ts'
 import { openSettings } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { isTrackedImportBatch, observeImportState } from '../share/importCompletion.ts'
 import { follow } from '../shell/follow.ts'
 import { changeStillLatest, type HistoryActionState } from '../toasts/history.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -241,6 +242,10 @@ function announce(prev: Snapshot, next: Snapshot) {
   ]
   const blocked = useMods.getState().problems?.missing
   const games = [...new Set(done.map((i) => i.game))]
+  const shown = (items: Item[]) => items.filter((item) => !isTrackedImportBatch(item.batchId ?? ''))
+  const shownDone = shown(done)
+  const shownFailed = shown(failed)
+  const shownWaiting = shown(waiting)
   if (games.length > 0) {
     debounceProfileRefresh(games)
   }
@@ -255,8 +260,8 @@ function announce(prev: Snapshot, next: Snapshot) {
   }
   considerMissing(dependentIds)
   const unblocked = unblockedDependent(blocked, dependentIds)
-  if (done.length === 1) {
-    const [item] = done
+  if (shownDone.length === 1) {
+    const [item] = shownDone
     if (item) {
       const profile = useProfiles.getState().profiles.find((p) => p.id === item.profileId)
       const entry = entryForItem(profile, item)
@@ -284,9 +289,9 @@ function announce(prev: Snapshot, next: Snapshot) {
           : {}),
       })
     }
-  } else if (done.length > 1) {
+  } else if (shownDone.length > 1) {
     const title = i18n._(
-      msg`${plural(done.length, { one: '# mod installed', other: '# mods installed' })}`,
+      msg`${plural(shownDone.length, { one: '# mod installed', other: '# mods installed' })}`,
     )
     if (installToast === undefined) {
       installToast = useToasts.getState().push({ kind: 'success', title })
@@ -294,27 +299,33 @@ function announce(prev: Snapshot, next: Snapshot) {
       useToasts.getState().update(installToast, { title })
     }
   }
-  if (waiting.length > 0) {
+  if (shownWaiting.length > 0) {
     useToasts.getState().push({
       kind: 'info',
       title: i18n._(
-        msg`${plural(waiting.length, { one: '# download needs your decision', other: '# downloads need your decision' })}`,
+        msg`${plural(shownWaiting.length, { one: '# download needs your decision', other: '# downloads need your decision' })}`,
       ),
       action: { label: i18n._(msg`Show`), run: show, live: showLive },
     })
   }
-  pushDownloadFailures(failed)
+  pushDownloadFailures(shownFailed)
   pushRateLimitPause(prev, next)
 }
 
 export const useQueue = create<{
   state: Snapshot
   open: boolean
+  historyBatchId: string
   setOpen: (open: boolean) => void
+  openHistory: (batchId: string) => void
+  consumeHistoryBatch: () => void
 }>((set) => ({
   state: empty,
   open: false,
-  setOpen: (open) => set({ open }),
+  historyBatchId: '',
+  setOpen: (open) => set({ open, ...(open ? {} : { historyBatchId: '' }) }),
+  openHistory: (batchId) => set({ open: true, historyBatchId: batchId }),
+  consumeHistoryBatch: () => set({ historyBatchId: '' }),
 }))
 
 // The first state seen, fetched or evented, is the silent baseline: items finished before startup are not news.
@@ -323,6 +334,7 @@ export const initQueue = () =>
     const prev = useQueue.getState().state
     const next = snapshot(state)
     useQueue.setState({ state: next })
+    observeImportState(next.items)
     if (!first) {
       announce(prev, next)
     }

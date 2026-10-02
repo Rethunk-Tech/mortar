@@ -10,7 +10,9 @@ import (
 func TestHistoryRecordsAFinishedDownload(t *testing.T) {
 	f := newFixture(t)
 	f.start()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	r := req(10)
+	r.BatchID = "batch-1"
+	if _, err := f.s.Add([]Request{r}); err != nil {
 		t.Fatal(err)
 	}
 	f.wait("done", f.item(StateDone))
@@ -19,7 +21,7 @@ func TestHistoryRecordsAFinishedDownload(t *testing.T) {
 		t.Fatalf("history %+v", got)
 	}
 	e := got[0]
-	if e.Name != "Alpha" || e.Version != "1.0" || e.Source != "nexus" || e.Profile != "p1" || e.Outcome != StateDone {
+	if e.Name != "Alpha" || e.Version != "1.0" || e.Source != "nexus" || e.Profile != "p1" || e.BatchID != "batch-1" || e.Outcome != StateDone {
 		t.Fatalf("entry %+v", e)
 	}
 	if e.Started == 0 || e.Finished == 0 {

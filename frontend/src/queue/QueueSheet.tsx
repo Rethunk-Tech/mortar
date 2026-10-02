@@ -124,6 +124,7 @@ function Header({
 export function QueueSheet() {
   const open = useQueue((s) => s.open)
   const setOpen = useQueue((s) => s.setOpen)
+  const historyBatchId = useQueue((s) => s.historyBatchId)
   const items = useQueue((s) => s.state.items)
   const [view, setView] = useState<'queue' | 'history'>('queue')
   const [history, setHistory] = useState<HistoryEntry[]>([])
@@ -133,6 +134,13 @@ export function QueueSheet() {
     setView('queue')
     setOpen(false)
   }
+  useEffect(() => {
+    if (open && historyBatchId) {
+      setView('history')
+      setFilters({ outcome: 'failed', profileId: '', batchId: historyBatchId })
+      useQueue.getState().consumeHistoryBatch()
+    }
+  }, [open, historyBatchId])
   useEffect(() => {
     if (!open || view !== 'history') {
       return
