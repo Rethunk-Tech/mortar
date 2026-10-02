@@ -201,8 +201,8 @@ func missingDeps(enabled, all []Installed) []Missing {
 	return out
 }
 
-// fetchAll calls fetch for every id, a few at a time: a cold profile needs one Nexus round trip per page, and
-// doing them one by one kept the first check after a start busy for many seconds. failed reports any error.
+// fetchAll calls fetch for every id, a few at a time, because a cold profile needs one Nexus round trip per page.
+// failed reports any error.
 func fetchAll[T any](ctx context.Context, ids []int, fetch func(context.Context, int) (T, error)) (got map[int]T, failed bool) {
 	got = make(map[int]T, len(ids))
 	var mu sync.Mutex
