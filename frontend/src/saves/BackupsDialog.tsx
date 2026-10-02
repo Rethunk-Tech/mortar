@@ -16,7 +16,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { FolderOpen, RotateCcw } from 'lucide-react'
+import { FolderOpen, Pin, PinOff, RotateCcw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
   Backup,
@@ -56,6 +56,9 @@ function causeLabel(b: Backup, profileName: (id: string) => string): string {
   }
   if (b.kind === 'restore') {
     return i18n._(msg`Before a restore`)
+  }
+  if (b.kind === 'launch') {
+    return i18n._(msg`Before playing`)
   }
   return i18n._(msg`Unknown`)
 }
@@ -123,7 +126,7 @@ function BackupRow({
 
 export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLingui()
-  const { items, status, error, load, restore, openFolder } = useSaveBackups()
+  const { items, status, error, load, restore, setPinned, openFolder } = useSaveBackups()
   const profiles = useProfiles((s) => s.profiles)
   const fits = useSaves((s) => s.fits)
   const busyGame = useLaunch(
@@ -205,6 +208,20 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
           setMenu(null)
         }}
       >
+        <MenuItem
+          onClick={() => {
+            if (menu) {
+              const { backup } = menu
+              setPinned(backup.name, !backup.pinned).catch(reportUnexpected)
+            }
+            setMenu(null)
+          }}
+        >
+          <ListItemIcon sx={{ color: 'inherit' }}>
+            {menu?.backup.pinned ? <PinOff size={16} /> : <Pin size={16} />}
+          </ListItemIcon>
+          <ListItemText>{menu?.backup.pinned ? t`Unkeep` : t`Keep`}</ListItemText>
+        </MenuItem>
         <MenuItem
           onClick={() => {
             if (menu) {

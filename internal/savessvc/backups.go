@@ -25,6 +25,15 @@ func (s *Service) ListBackups() ([]backup.Backup, error) {
 	return backup.List(dir)
 }
 
+// SetBackupPinned keeps or unkeeps a backup during rotation.
+func (s *Service) SetBackupPinned(name string, pinned bool) error {
+	_, dir, err := s.backupDirs()
+	if err != nil {
+		return err
+	}
+	return backup.SetPinned(dir, name, pinned)
+}
+
 // RestoreBackup copies folders from the named zip into the Saves folder after zipping the current saves.
 // An empty folders list restores every save in the zip.
 func (s *Service) RestoreBackup(name string, folders []string) error {

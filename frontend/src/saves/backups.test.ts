@@ -7,6 +7,7 @@ const firstBackup = {
   size: 2048,
   profile: 'p1',
   kind: 'update',
+  pinned: false,
   saves: [{ folder: 'Farm_1', farm: 'Sunny' }],
 }
 const listed = [firstBackup]
@@ -17,6 +18,7 @@ mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/servi
   RestoreBackup: async (name: string, folders: string[] | null) => {
     restored = { name, folders }
   },
+  SetBackupPinned: async () => undefined,
   OpenBackupsFolder: async () => undefined,
 }))
 

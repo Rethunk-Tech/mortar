@@ -27,6 +27,7 @@ type Backup struct {
 	Size    int64  `json:"size"`
 	Profile string `json:"profile"`
 	Kind    string `json:"kind"`
+	Pinned  bool   `json:"pinned"`
 	Saves   []Snap `json:"saves"`
 }
 
@@ -51,7 +52,7 @@ func List(backupsDir string) ([]Backup, error) {
 			b.At = t.UnixMilli()
 		}
 		c := readCause(p)
-		b.Profile, b.Kind = c.Profile, c.Kind
+		b.Profile, b.Kind, b.Pinned = c.Profile, c.Kind, c.Pinned
 		b.Saves, _ = snapsIn(p)
 		out = append(out, b)
 	}

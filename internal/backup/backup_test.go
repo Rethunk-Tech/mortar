@@ -44,6 +44,40 @@ func TestSavesZipsAndKeepsTheChosenCount(t *testing.T) {
 	}
 }
 
+func TestPinnedBackupSurvivesRotation(t *testing.T) {
+	saves := filepath.Join(t.TempDir(), "Saves")
+	if err := os.MkdirAll(filepath.Join(saves, "Farm_1"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(filepath.Join(saves, "Farm_1", "Farm_1"), []byte("save"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	out := t.TempDir()
+	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	first, err := Saves(saves, out, 2, start, Cause{Kind: KindLaunch})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := SetPinned(out, filepath.Base(first), true); err != nil {
+		t.Fatal(err)
+	}
+	for i := 1; i < 5; i++ {
+		if _, err := Saves(saves, out, 2, start.Add(time.Duration(i)*MinGap), Cause{Kind: KindLaunch}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	items, err := List(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(items) != 3 {
+		t.Fatalf("%d backups, want pinned plus two unpinned", len(items))
+	}
+	if !items[len(items)-1].Pinned {
+		t.Fatalf("pinned backup missing: %+v", items)
+	}
+}
+
 func TestSavesSkipsMissingFolder(t *testing.T) {
 	out := filepath.Join(t.TempDir(), "backups")
 	got, err := Saves(filepath.Join(t.TempDir(), "none"), out, DefaultKeep, time.Now(), Cause{})

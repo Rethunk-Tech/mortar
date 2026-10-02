@@ -4,6 +4,7 @@ import {
   ListBackups,
   OpenBackupsFolder,
   RestoreBackup,
+  SetBackupPinned,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 
@@ -15,6 +16,7 @@ export const useSaveBackups = create<{
   error: string
   load: () => Promise<void>
   restore: (name: string, folders: string[] | null) => Promise<void>
+  setPinned: (name: string, pinned: boolean) => Promise<void>
   openFolder: () => Promise<void>
 }>((set, get) => {
   let latest = 0
@@ -39,6 +41,10 @@ export const useSaveBackups = create<{
     },
     restore: async (name, folders) => {
       await RestoreBackup(name, folders)
+      await get().load()
+    },
+    setPinned: async (name, pinned) => {
+      await SetBackupPinned(name, pinned)
       await get().load()
     },
     openFolder: async () => {

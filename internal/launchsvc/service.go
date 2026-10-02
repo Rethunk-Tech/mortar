@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -35,6 +34,10 @@ const (
 	// LineEvent is emitted with a Lines for each batch of log lines the game writes, from the moment the launch
 	// counts as started until the game exits.
 	LineEvent = "launch:line"
+	// BackupWarningEvent is emitted when a launch could not make its pre-play save backup.
+	BackupWarningEvent = "launch:backup-warning"
+	// SettingsRestoreWarningEvent is emitted when profile game settings could not be restored.
+	SettingsRestoreWarningEvent = "launch:settings-restore-warning"
 
 	pollEvery  = 2 * time.Second
 	stopGrace  = 10 * time.Second
@@ -69,6 +72,20 @@ type Lines struct {
 	Game    string         `json:"game"`
 	Profile string         `json:"profile"`
 	Entries []launch.Entry `json:"entries"`
+}
+
+// BackupWarning describes a non-fatal save backup failure before Play.
+type BackupWarning struct {
+	Game    string `json:"game"`
+	Profile string `json:"profile"`
+	Error   string `json:"error"`
+}
+
+// SettingsRestoreWarning describes a profile game settings restore failure.
+type SettingsRestoreWarning struct {
+	Game    string `json:"game"`
+	Profile string `json:"profile"`
+	Error   string `json:"error"`
 }
 
 // CommandPreview is the direct launch command assembled from unsaved profile fields.
@@ -603,14 +620,13 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 	}
 	var restore *settingsRestore
 	var settingsMissing bool
+	var backupErr error
 	if !vanilla && profileID != "" {
 		restore, settingsMissing, err = s.prepareGameSettings(g.ID(), profileID)
 		if err != nil {
 			return err
 		}
-		if err := s.backupChangedSaves(g.ID(), profileID); err != nil {
-			log.Printf("save backup before launch: %v", err)
-		}
+		backupErr = s.backupChangedSaves(g.ID(), profileID, g, dir)
 	}
 	runCtx, cancel := context.WithCancel(ctx)
 	buf := &launch.Buffer{}
@@ -629,12 +645,17 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 	if settingsMissing {
 		s.say(gameID, profileID, "startup_preferences is missing; skipped profile game settings.")
 	}
+	if backupErr != nil {
+		msg := fmt.Sprintf("Could not back up saves before playing: %v.", backupErr)
+		s.say(gameID, profileID, msg)
+		s.emit(BackupWarningEvent, BackupWarning{Game: gameID, Profile: profileID, Error: backupErr.Error()})
+	}
 	s.watch(g)
 	go s.run(runCtx, g, profileID, req, buf)
 	return nil
 }
 
-func (s *Service) backupChangedSaves(gameID, profileID string) error {
+func (s *Service) backupChangedSaves(gameID, profileID string, g game.Game, installDir string) error {
 	events, err := s.profiles.History(gameID, profileID)
 	if err != nil {
 		return err
@@ -650,10 +671,13 @@ func (s *Service) backupChangedSaves(gameID, profileID string) error {
 			return err
 		}
 	}
-	if !changedSinceLastRun(events, lastRun) {
+	set := s.settings.Get()
+	recorded := set.LastPlayed[gameID].GameVersion
+	installed := g.LoaderStatus(installDir, set.Loaders[gameID]).GameVersion
+	if !backupNeeded(events, lastRun, recorded, installed) {
 		return nil
 	}
-	_, selected, _, err := game.Resolve(s.home, s.settings.Get(), gameID)
+	_, selected, _, err := game.Resolve(s.home, set, gameID)
 	if err != nil {
 		return err
 	}
@@ -668,11 +692,15 @@ func (s *Service) backupChangedSaves(gameID, profileID string) error {
 	_, err = backup.Saves(
 		savesDir,
 		filepath.Join(base, "backups"),
-		s.settings.Get().BackupsKept,
+		set.BackupsKept,
 		time.Now(),
-		backup.Cause{Profile: profileID, Kind: backup.KindUpdate},
+		backup.Cause{Profile: profileID, Kind: backup.KindLaunch},
 	)
 	return err
+}
+
+func backupNeeded(events []profile.HistoryEvent, lastRun time.Time, recorded, installed string) bool {
+	return changedSinceLastRun(events, lastRun) || stardew.GameVersionChanged(recorded, installed)
 }
 
 func changedSinceLastRun(events []profile.HistoryEvent, lastRun time.Time) bool {
@@ -770,7 +798,9 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, req la
 		sess := s.logs[g.ID()]
 		s.mu.Unlock()
 		if sess.buf == buf && sess.profile == profileID {
-			s.restoreGameSettings(sess.restore)
+			if restoreErr := s.restoreGameSettings(sess.restore); restoreErr != nil {
+				s.reportSettingsRestore(g.ID(), profileID, restoreErr)
+			}
 		}
 	}
 	var f *launch.Failure
@@ -870,7 +900,9 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 	sess, ok := s.logs[g.ID()]
 	s.mu.Unlock()
 	if ok && !sess.vanilla && cur.Profile != "" {
-		s.restoreGameSettings(sess.restore)
+		if restoreErr := s.restoreGameSettings(sess.restore); restoreErr != nil {
+			s.reportSettingsRestore(g.ID(), cur.Profile, restoreErr)
+		}
 		started := sess.started
 		if cur.Since > 0 {
 			started = time.UnixMilli(cur.Since)
@@ -908,6 +940,12 @@ func (s *Service) say(gameID, profileID, msg string) {
 		sess.buf.Add(e)
 	}
 	s.emit(LineEvent, Lines{Game: gameID, Profile: profileID, Entries: []launch.Entry{e}})
+}
+
+func (s *Service) reportSettingsRestore(gameID, profileID string, err error) {
+	msg := fmt.Sprintf("Could not restore profile game settings: %v.", err)
+	s.say(gameID, profileID, msg)
+	s.emit(SettingsRestoreWarningEvent, SettingsRestoreWarning{Game: gameID, Profile: profileID, Error: err.Error()})
 }
 
 // Send runs a console command in the running game through the bridge mod in the running profile. The command

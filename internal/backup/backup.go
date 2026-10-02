@@ -16,8 +16,9 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
-// KindUpdate and KindRestore are Cause.Kind values written beside a zip.
+// KindLaunch, KindUpdate, and KindRestore are Cause.Kind values written beside a zip.
 const (
+	KindLaunch  = "launch"
 	KindUpdate  = "update"
 	KindRestore = "restore"
 )
@@ -26,6 +27,7 @@ const (
 type Cause struct {
 	Profile string `json:"profile,omitempty"`
 	Kind    string `json:"kind,omitempty"`
+	Pinned  bool   `json:"pinned,omitempty"`
 }
 
 // DefaultKeep is how many backups are retained unless the user chose otherwise.
@@ -190,20 +192,53 @@ func list(dir string) ([]string, error) {
 	return zips, nil
 }
 
-// prune removes the oldest backups beyond keep, and temp files older than MinGap: a backup still being written
-// is younger.
+// SetPinned marks a backup so rotation will retain it.
+func SetPinned(backupsDir, name string, pinned bool) error {
+	if name == "" || filepath.Base(name) != name || filepath.Ext(name) != ".zip" || strings.Contains(name, "..") {
+		return errors.New("invalid backup name")
+	}
+	path := filepath.Join(backupsDir, name)
+	if _, err := os.Stat(path); err != nil {
+		return err
+	}
+	cause := readCause(path)
+	cause.Pinned = pinned
+	if cause.Profile == "" && cause.Kind == "" && !cause.Pinned {
+		if err := os.Remove(causePath(path)); !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+		return nil
+	}
+	return writeCause(path, cause)
+}
+
+// prune removes the oldest unpinned backups beyond keep, and temp files older than MinGap: a backup still being
+// written is younger.
 func prune(dir string, keep int, now time.Time) error {
 	zips, err := list(dir)
 	if err != nil {
 		return err
 	}
+	unpinned := 0
+	for _, n := range zips {
+		if !readCause(filepath.Join(dir, n)).Pinned {
+			unpinned++
+		}
+	}
 	var errs []error
-	for _, n := range zips[:max(0, len(zips)-keep)] {
+	for _, n := range zips {
+		if unpinned <= keep {
+			break
+		}
+		if readCause(filepath.Join(dir, n)).Pinned {
+			continue
+		}
 		p := filepath.Join(dir, n)
 		errs = append(errs, os.Remove(p))
 		if err := os.Remove(causePath(p)); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			errs = append(errs, err)
 		}
+		unpinned--
 	}
 	tmps, err := filepath.Glob(filepath.Join(dir, "backup-*.tmp"))
 	if err != nil {
