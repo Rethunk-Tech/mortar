@@ -328,6 +328,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 		switch {
 		case strings.EqualFold(action, "Include"):
 			for _, from := range splitTargets(ch.FromFile) {
+				from = contentSourceReference(root, rel, from)
 				if hasToken(from) {
 					pack.skips++
 					continue
@@ -337,8 +338,10 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			continue
 		case strings.EqualFold(action, kindLoad):
 			kind = "load"
+			ch.FromFile = contentSourceReference(root, rel, ch.FromFile)
 		case strings.EqualFold(action, kindEditImage), strings.EqualFold(action, kindEditMap):
 			kind = "edit"
+			ch.FromFile = contentSourceReference(root, rel, ch.FromFile)
 			shapes = editShapes(root, ch, strings.EqualFold(action, kindEditImage))
 			if len(shapes) == 0 {
 				kind = "other"
@@ -407,6 +410,16 @@ func parseWhenDepth(raw map[string]json.RawMessage, mentions map[string]bool, sc
 			}
 			continue
 		}
+		if depth < 8 {
+			if token, ok := dynamicTokenConditionName(k); ok && slices.ContainsFunc(tokens, func(definition cpTokenDefinition) bool {
+				return definition.name == token
+			}) {
+				if merged, ok := dynamicTokenWhen(token, v, tokens, mentions, schema, depth); ok {
+					w = w.with(merged)
+				}
+				continue
+			}
+		}
 		if strings.EqualFold(name, "hasmod") {
 			arg = strings.TrimSpace(arg)
 			if arg == "" {
@@ -472,11 +485,38 @@ func parseWhenDepth(raw map[string]json.RawMessage, mentions map[string]bool, sc
 
 func dynamicTokenConditionName(key string) (string, bool) {
 	key = strings.TrimSpace(key)
-	if !strings.HasPrefix(key, "{{") || !strings.HasSuffix(key, "}}") {
-		return "", false
+	if strings.HasPrefix(key, "{{") {
+		if !strings.HasSuffix(key, "}}") {
+			return "", false
+		}
+		key = strings.TrimSpace(key[2 : len(key)-2])
 	}
-	name := tokenName(strings.TrimSpace(key[2 : len(key)-2]))
+	name, _, _ := strings.Cut(key, "|")
+	name = tokenName(name)
 	return name, name != ""
+}
+
+func dynamicTokenWhen(name string, raw json.RawMessage, tokens []cpTokenDefinition, mentions map[string]bool, schema map[string]cpSchema, depth int) (cpWhen, bool) {
+	values := []string{}
+	if !condValues(raw, &values) {
+		return cpWhen{}, false
+	}
+	match := -1
+	for i, definition := range tokens {
+		if definition.name != name || !slices.ContainsFunc(values, func(value string) bool {
+			return strings.EqualFold(strings.TrimSpace(value), strings.TrimSpace(definition.value))
+		}) {
+			continue
+		}
+		if match >= 0 {
+			return cpWhen{}, true
+		}
+		match = i
+	}
+	if match < 0 {
+		return cpWhen{}, true
+	}
+	return parseWhenDepth(tokens[match].when, mentions, schema, tokens, depth+1), true
 }
 
 // condValues reads a condition value given as a string, comma list, bool or array; false when it holds a token.
@@ -553,6 +593,29 @@ func splitTargets(s string) []string {
 		}
 	}
 	return out
+}
+
+func contentReference(base, rel string) string {
+	rel = strings.ReplaceAll(strings.TrimSpace(rel), "\\", "/")
+	if rel == "" {
+		return ""
+	}
+	return filepath.ToSlash(filepath.Clean(filepath.Join(filepath.Dir(filepath.FromSlash(base)), filepath.FromSlash(rel))))
+}
+
+func contentSourceReference(root, base, rel string) string {
+	reference := contentReference(base, rel)
+	if hasToken(rel) {
+		return reference
+	}
+	if _, ok := caseInsensitivePath(root, reference); ok {
+		return reference
+	}
+	rootReference := contentReference("content.json", rel)
+	if _, ok := caseInsensitivePath(root, rootReference); ok {
+		return rootReference
+	}
+	return reference
 }
 
 func hasToken(s string) bool {
@@ -931,6 +994,9 @@ func harmlessLoads(hits []packHit, conflict AssetConflict) bool {
 	if conflict.WinnerName == "CP applies neither" {
 		return false
 	}
+	if allLoadFilesIdentical(hits, conflict.Target) {
+		return true
+	}
 	winner := slices.IndexFunc(hits, func(h packHit) bool { return sameID(h.id, conflict.WinnerID) })
 	if winner < 0 {
 		for _, hit := range hits {
@@ -977,6 +1043,28 @@ func harmlessLoads(hits []packHit, conflict AssetConflict) bool {
 	return true
 }
 
+func allLoadFilesIdentical(hits []packHit, target string) bool {
+	var reference []byte
+	found := false
+	for _, hit := range hits {
+		for _, load := range hit.loads {
+			raw, ok := loadFileBytes(hit, load, target)
+			if !ok {
+				return false
+			}
+			raw = stripJSONNoise(raw)
+			if !found {
+				reference, found = raw, true
+				continue
+			}
+			if !bytes.Equal(reference, raw) {
+				return false
+			}
+		}
+	}
+	return found
+}
+
 func loadPriorityDecided(hits []packHit, conflict AssetConflict) bool {
 	if conflict.WinnerID == "" {
 		return false
@@ -1000,7 +1088,12 @@ func loadFileBlank(hit packHit, load cpPatch, target string) bool {
 		return false
 	}
 	raw = bytes.TrimSpace(stripJSONNoise(raw))
-	return bytes.Equal(raw, []byte("{}")) || bytes.Equal(raw, []byte("[]"))
+	var object map[string]json.RawMessage
+	if json.Unmarshal(raw, &object) == nil && object != nil && len(object) == 0 {
+		return true
+	}
+	var array []json.RawMessage
+	return json.Unmarshal(raw, &array) == nil && array != nil && len(array) == 0
 }
 
 func loadFilesEqual(a packHit, ap cpPatch, b packHit, bp cpPatch, target string) bool {

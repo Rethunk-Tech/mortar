@@ -267,3 +267,73 @@ func TestSwitchOffOnlySuggestsNonClashingAllowedValue(t *testing.T) {
 	}
 	t.Fatalf("expected a safe setting fix for %s: %#v", first.UniqueID, conflicts[0].Fixes)
 }
+
+func TestIncludedBlankLoadsUseTheIncludingFilePath(t *testing.T) {
+	root := t.TempDir()
+	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"Include","FromFile":"nested/content.json"}]}`)
+	writeRegressionFile(t, root, "nested/content.json", `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"blank.json","Priority":"low"}]}`)
+	writeRegressionFile(t, root, "nested/blank.json", "{\r\n// empty\r\n}")
+	writeRegressionFile(t, root, "manifest.json", `{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	mod := Installed{Key: "included", Enabled: true, Folder: root, UniqueID: "Included.Blank", Name: "Included Blank"}
+
+	conflicts := assetConflicts([]Installed{mod, syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"other.json"}]}`, map[string]string{
+		"other.json": `{"value":1}`,
+	})})
+	if len(conflicts) != 1 || !conflicts[0].Cosmetic {
+		t.Fatalf("included blank load should be cosmetic: %#v", conflicts)
+	}
+}
+
+func TestBareDynamicTokenWhenMergesSpouseCondition(t *testing.T) {
+	root := t.TempDir()
+	writeRegressionFile(t, root, "content.json", `{"DynamicTokens":[
+		{"Name":"ShadowKidsActive","Value":false},
+		{"Name":"ShadowKidsActive","Value":true,"When":{"Spouse":"SenS"}}
+	],"Changes":[{"Action":"EditImage","Target":"characters/toddler","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"ShadowKidsActive":true}}]}`)
+	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
+	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
+	if len(pack.patches) != 3 || pack.patches[2].spouse != "sens" {
+		t.Fatalf("bare DynamicToken spouse condition was not merged: %#v", pack.patches)
+	}
+}
+
+func TestOverlayMapWithUnknownLayerDoesNotClash(t *testing.T) {
+	root := t.TempDir()
+	writeRegressionFile(t, root, "content.json", `{"Changes":[
+		{"Action":"EditMap","Target":"Maps/Test","FromFile":"fog.tmx","PatchMode":"Overlay"},
+		{"Action":"EditMap","Target":"Maps/Test","ToArea":{"X":0,"Y":0,"Width":2,"Height":2}}
+	]}`)
+	writeRegressionFile(t, root, "fog.tmx", `<?xml version="1.0"?><map width="2" height="2"><layer name="AlwaysFront4" width="2" height="2"><data encoding="csv">1,0,0,0</data></layer></map>`)
+	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
+	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
+	if len(pack.patches) != 2 {
+		t.Fatalf("expected two map patches: %#v", pack.patches)
+	}
+	if clash, _ := editsClash([]cpPatch{pack.patches[0]}, []cpPatch{pack.patches[1]}); clash {
+		t.Fatal("overlay layer should not clash with an unknown-layer patch")
+	}
+}
+
+func TestDifferentSpouseConditionsExcludeEdits(t *testing.T) {
+	root := t.TempDir()
+	writeRegressionFile(t, root, "content.json", `{"Changes":[
+		{"Action":"EditImage","Target":"characters/toddler","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"Relationship:Sigurd":"Married"}},
+		{"Action":"EditImage","Target":"characters/toddler","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"Spouse":"SenS"}}
+	]}`)
+	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
+	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
+	if len(pack.patches) != 2 || !exclusive(pack.patches[0], pack.patches[1]) {
+		t.Fatalf("different spouse conditions should be exclusive: %#v", pack.patches)
+	}
+}
+
+func writeRegressionFile(t *testing.T, root, rel, body string) {
+	t.Helper()
+	path := filepath.Join(root, filepath.FromSlash(rel))
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+}

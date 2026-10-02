@@ -735,6 +735,9 @@ func editsClash(a, b []cpPatch) (clash, minor bool) {
 	minor = true
 	for _, x := range a {
 		for _, y := range b {
+			if mapOverlayHasUnknownLayer(x, y) {
+				continue
+			}
 			if x.image && y.image && strings.EqualFold(strings.TrimSpace(x.patchMode), "overlay") && strings.EqualFold(strings.TrimSpace(y.patchMode), "overlay") {
 				continue
 			}
@@ -747,11 +750,38 @@ func editsClash(a, b []cpPatch) (clash, minor bool) {
 	return clash, clash && minor
 }
 
+func mapOverlayHasUnknownLayer(a, b cpPatch) bool {
+	if a.image || b.image {
+		return false
+	}
+	aOverlay := strings.EqualFold(strings.TrimSpace(a.patchMode), "overlay")
+	bOverlay := strings.EqualFold(strings.TrimSpace(b.patchMode), "overlay")
+	return (aOverlay && hasUnknownMapLayer(b)) || (bOverlay && hasUnknownMapLayer(a))
+}
+
+func hasUnknownMapLayer(p cpPatch) bool {
+	return slices.ContainsFunc(p.shapes, func(shape cpShape) bool {
+		return shape.kind != 'p' && shape.layer == ""
+	})
+}
+
 // harmless reports an overlap that cannot hurt play: two image edits only change how something looks; an edit
 // that applies in one location or weather only matters there; and a one-tile edit at a computed spot is too
 // small to place, so it is shown without counting as a problem.
 func harmless(x, y cpPatch) bool {
-	return (x.image && y.image) || situational(x) || situational(y) || tinyOnly(x) || tinyOnly(y)
+	return (x.image && y.image) || overlayPriorityHarmless(x, y) || situational(x) || situational(y) || tinyOnly(x) || tinyOnly(y)
+}
+
+func overlayPriorityHarmless(x, y cpPatch) bool {
+	xOverlay := strings.EqualFold(strings.TrimSpace(x.patchMode), "overlay")
+	yOverlay := strings.EqualFold(strings.TrimSpace(y.patchMode), "overlay")
+	if xOverlay == yOverlay {
+		return false
+	}
+	if xOverlay {
+		return contentPatcherPriority("edit", x.priority) > contentPatcherPriority("edit", y.priority)
+	}
+	return contentPatcherPriority("edit", y.priority) > contentPatcherPriority("edit", x.priority)
 }
 
 func situational(p cpPatch) bool {
