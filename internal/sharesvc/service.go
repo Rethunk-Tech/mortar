@@ -39,6 +39,7 @@ const DiscordLimit = 2000
 const (
 	ArrivalLink = "link"
 	ArrivalFile = "file"
+	ArrivalMod  = "mod"
 )
 
 const filePerm = 0o644
@@ -52,12 +53,14 @@ var (
 	ErrSignedOut = errors.New("sign in to Nexus Mods before importing mods from Nexus")
 )
 
-// Arrival is a link or a .mortar file that reached the app from outside. It is only ever shown in the import
-// dialog; nothing is imported by arriving.
+// Arrival is a link, a .mortar file, or a mod route that reached the app from outside. It is only ever shown in the
+// import dialog or used to select a mod; nothing is imported by arriving.
 type Arrival struct {
 	ID    int    `json:"id"`
 	Kind  string `json:"kind"`
 	Value string `json:"value"`
+	Game  string `json:"game,omitempty"`
+	ModID int    `json:"modId,omitempty"`
 }
 
 // Queue is the download queue's part in an import.
@@ -935,9 +938,12 @@ func fileURLPath(arg string) string {
 	return filepath.FromSlash(path)
 }
 
-// classify says whether a launch argument is a share link or a .mortar file. It looks no further than the form:
-// the import dialog parses and previews it, and refuses what is not a share.
+// classify says whether a launch argument is a mod route, share link, or .mortar file. It looks no further than the
+// form: the import dialog parses and previews links, and refuses what is not a share.
 func classify(arg string) (Arrival, bool) {
+	if route, ok := parseModRoute(arg); ok {
+		return Arrival{Kind: ArrivalMod, Value: arg, Game: route.game, ModID: route.modID}, true
+	}
 	if strings.HasPrefix(arg, appLinkPrefix) || strings.HasPrefix(arg, webLinkPrefix) {
 		return Arrival{Kind: ArrivalLink, Value: arg}, true
 	}
