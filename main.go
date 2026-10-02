@@ -667,15 +667,17 @@ func run() error {
 					log.Printf("run-end notification: %v", err)
 				}
 			}
+			// Menus are GTK objects: rebuilding one off the main thread, or twice at once from a burst of
+			// events, leaves items without their native handle and panics.
 			app.Event.On(launchsvc.StateEvent, func(*application.CustomEvent) {
-				refreshTrayMenu()
+				application.InvokeSync(refreshTrayMenu)
 			})
 		}
 		refreshTrayMenu()
 	}
 	syncTray()
 	app.Event.On(settings.ChangedEvent, func(*application.CustomEvent) {
-		syncTray()
+		application.InvokeSync(syncTray)
 		if err := lanSvc.SetEnabled(store.Get().LanSharing); err != nil {
 			log.Printf("LAN sharing: %v", err)
 		}
