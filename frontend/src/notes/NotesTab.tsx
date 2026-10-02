@@ -114,35 +114,49 @@ export function NotesTab({ profile }: { profile: Profile }) {
   }
 
   return (
-    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 1, p: 2 }}>
-      <Typography component="aside" sx={{ fontSize: 13, color: 'text.secondary' }}>
-        {t`Notes travel in a shared .mortar file, not in a share link.`}
-      </Typography>
-      <TextField
-        multiline={true}
-        fullWidth={true}
-        value={text}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={t`Your notes for this profile, for example: Friday co-op profile. Keep everyone on the same version of the big mods before playing together.`}
-        slotProps={{
-          htmlInput: { 'aria-label': t`Notes for ${profile.name}` },
-        }}
+    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <Box
         sx={{
-          flex: 1,
-          minHeight: 0,
-          '& .MuiInputBase-root': {
-            flex: 1,
-            alignItems: 'flex-start',
-            overflow: 'auto',
-            p: 2,
-            fontSize: 15,
-            lineHeight: 1.6,
-            bgcolor: 'rgba(0,0,0,0.35)',
-            borderRadius: '8px',
-          },
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          minHeight: 30,
+          px: 2,
+          pt: 1.5,
+          pb: 0.75,
         }}
-      />
-      <StatusLine status={status} now={now} onRetry={() => save()} />
+      >
+        <Typography sx={{ flex: 1, minWidth: 0, fontSize: 13, lineHeight: 1.5 }}>
+          {t`Notes travel in a shared .mortar file, not in a share link.`}
+        </Typography>
+        <StatusLine status={status} now={now} onRetry={() => save()} />
+      </Box>
+      <Box sx={{ flex: 1, minHeight: 0, display: 'flex', px: 2, pt: 0.75, pb: 2 }}>
+        <TextField
+          multiline={true}
+          fullWidth={true}
+          value={text}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={t`Your notes for this profile, for example: Friday co-op profile. Keep everyone on the same version of the big mods before playing together.`}
+          slotProps={{
+            htmlInput: { 'aria-label': t`Notes for ${profile.name}` },
+          }}
+          sx={{
+            flex: 1,
+            minHeight: 0,
+            '& .MuiInputBase-root': {
+              flex: 1,
+              alignItems: 'flex-start',
+              overflow: 'auto',
+              p: 2,
+              fontSize: 15,
+              lineHeight: 1.6,
+              bgcolor: 'rgba(0,0,0,0.35)',
+              borderRadius: '8px',
+            },
+          }}
+        />
+      </Box>
     </Box>
   )
 }

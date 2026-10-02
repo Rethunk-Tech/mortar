@@ -99,7 +99,7 @@ A full-height scrollable list of every problem for this profile, grouped under h
 
 ## Notes tab
 
-One line of secondary text explains that notes travel in a shared `.mortar` file, not in a share link; below it, a plain text area for the profile's notes, saved automatically ("Saved · 2 min ago"). What a share carries is in [architecture.md](architecture.md#sharing).
+A header row like the Saves tab's explains that notes travel in a shared `.mortar` file, not in a share link, with the save state at its right ("Saved · 2 min ago", or **Retry** after a failed save); below it, a plain text area for the profile's notes, saved automatically. What a share carries is in [architecture.md](architecture.md#sharing).
 
 ## In-between moments
 
