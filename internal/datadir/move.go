@@ -23,6 +23,26 @@ type SpaceError struct {
 	Need int64
 }
 
+type RelocateEstimate struct {
+	Bytes     int64 `json:"bytes"`
+	FreeBytes int64 `json:"freeBytes"`
+}
+
+func EstimateRelocate(src, dest string) (RelocateEstimate, error) {
+	need, err := Size(src)
+	if err != nil {
+		return RelocateEstimate{}, err
+	}
+	free, err := freeBytes(dest)
+	if err != nil {
+		free, err = freeBytes(filepath.Dir(dest))
+		if err != nil {
+			return RelocateEstimate{}, err
+		}
+	}
+	return RelocateEstimate{Bytes: need, FreeBytes: free}, nil
+}
+
 func (e *SpaceError) Error() string {
 	return fmt.Sprintf("not enough free space: this move needs about %d MB free", (e.Need+1024*1024-1)/(1024*1024))
 }
@@ -109,29 +129,27 @@ func removeOld(src, def string) error {
 }
 
 // Relocate copies src into dest (which must be empty), verifies the copy, writes the pointer at def, then removes src.
-func Relocate(src, dest, def string) error {
+func Relocate(src, dest, def string, reports ...func(CopyProgress)) error {
 	src, dest, def = filepath.Clean(src), filepath.Clean(dest), filepath.Clean(def)
+	var report func(CopyProgress)
+	if len(reports) > 0 {
+		report = reports[0]
+	}
 	if UnderRoot(src, dest) {
 		return ErrInside
 	}
 	if err := emptyDir(dest); err != nil {
 		return err
 	}
-	need, err := Size(src)
+	estimate, err := EstimateRelocate(src, dest)
 	if err != nil {
 		return err
 	}
-	free, err := freeBytes(dest)
-	if err != nil {
-		free, err = freeBytes(filepath.Dir(dest))
-		if err != nil {
-			return err
-		}
+	if estimate.FreeBytes < estimate.Bytes {
+		return &SpaceError{Need: estimate.Bytes}
 	}
-	if free < need {
-		return &SpaceError{Need: need}
-	}
-	if err := CopyTree(src, dest); err != nil {
+	if err := copyTree(src, dest, report); err != nil {
+		_ = os.RemoveAll(dest)
 		return err
 	}
 	if err := verifyCopy(src, dest); err != nil {

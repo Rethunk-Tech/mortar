@@ -3,9 +3,6 @@ package datasvc
 
 import (
 	"errors"
-	"os"
-	"slices"
-	"strings"
 	"sync"
 	"time"
 
@@ -21,15 +18,29 @@ type Service struct {
 	staged   func() map[string][]string
 	mu       sync.Mutex
 	progress Progress
+	busy     []BusySource
 	// Busy is true while the game is launching or running; nil means never busy.
 	Busy func() bool
 	// Restart starts Mortar again after a successful move; nil skips that in tests.
 	Restart func() error
 }
 
+type BusySource interface {
+	Busy() bool
+}
+
+type BusyFunc func() bool
+
+func (f BusyFunc) Busy() bool { return f() }
+
+type MoveEstimate struct {
+	Bytes     int64 `json:"bytes"`
+	FreeBytes int64 `json:"freeBytes"`
+}
+
 // NewService measures and cleans the data folder using the store's Collect keep set.
-func NewService(items *store.Store, profiles *profile.Store, staged func() map[string][]string) *Service {
-	return &Service{items: items, profiles: profiles, staged: staged}
+func NewService(items *store.Store, profiles *profile.Store, staged func() map[string][]string, busy ...BusySource) *Service {
+	return &Service{items: items, profiles: profiles, staged: staged, busy: busy}
 }
 
 // UsageProgress is the in-flight size walk, or Measuring false when idle.
@@ -60,20 +71,21 @@ func (s *Service) CleanupPreview() (Preview, error) {
 	if err != nil {
 		return Preview{}, err
 	}
-	return Select(dir, s.items, keys, time.Now())
+	return Select(dir, s.items, keys, time.Now(), func(game, key string) string {
+		source := s.profiles.SourceOf(game, key)
+		if source.Name == "" {
+			return ""
+		}
+		if source.Version == "" {
+			return source.Name
+		}
+		return source.Name + " " + source.Version
+	})
 }
 
 // Cleanup removes exactly the unused set CleanupPreview listed.
-func (s *Service) Cleanup() error {
+func (s *Service) Cleanup(preview Preview) error {
 	dir, err := datadir.Dir()
-	if err != nil {
-		return err
-	}
-	keys, err := s.referenced()
-	if err != nil {
-		return err
-	}
-	preview, err := Select(dir, s.items, keys, time.Now())
 	if err != nil {
 		return err
 	}
@@ -81,35 +93,11 @@ func (s *Service) Cleanup() error {
 }
 
 func (s *Service) applyPreview(root string, preview Preview) error {
-	var refs []store.Ref
-	for _, it := range preview.Items {
-		if it.Kind == "store" {
-			game, key, ok := strings.Cut(strings.TrimPrefix(it.Rel, "store/"), "/")
-			if !ok {
-				continue
-			}
-			keep, err := s.referenced()
-			if err != nil {
-				return err
-			}
-			if slices.Contains(keep[game], key) {
-				continue
-			}
-			abs, confErr := confined(root, it.Rel)
-			if confErr != nil {
-				continue
-			}
-			_ = os.RemoveAll(abs)
-			refs = append(refs, store.Ref{Game: game, Key: key})
-			continue
-		}
-		abs, confErr := confined(root, it.Rel)
-		if confErr != nil {
-			continue
-		}
-		_ = os.RemoveAll(abs)
+	keys, err := s.referenced()
+	if err != nil {
+		return err
 	}
-	return s.items.Remove(refs)
+	return Apply(root, s.items, preview, keys)
 }
 
 func (s *Service) referenced() (map[string][]string, error) {
@@ -131,6 +119,18 @@ func (s *Service) setProgress(p Progress) {
 	s.mu.Unlock()
 }
 
+func (s *Service) MoveDataFolderPreview(dest string) (MoveEstimate, error) {
+	src, err := datadir.Dir()
+	if err != nil {
+		return MoveEstimate{}, err
+	}
+	estimate, err := datadir.EstimateRelocate(src, dest)
+	if err != nil {
+		return MoveEstimate{}, err
+	}
+	return MoveEstimate{Bytes: estimate.Bytes, FreeBytes: estimate.FreeBytes}, nil
+}
+
 var errGameRunning = errors.New("stop the game before moving the data folder")
 
 // MoveDataFolder copies the data folder to dest, verifies it, points the default location at dest, removes the old copy, and restarts.
@@ -141,6 +141,11 @@ func (s *Service) MoveDataFolder(dest string) error {
 	if s.Busy != nil && s.Busy() {
 		return errGameRunning
 	}
+	for _, busy := range s.busy {
+		if busy != nil && busy.Busy() {
+			return errGameRunning
+		}
+	}
 	src, err := datadir.Dir()
 	if err != nil {
 		return err
@@ -149,9 +154,15 @@ func (s *Service) MoveDataFolder(dest string) error {
 	if err != nil {
 		return err
 	}
-	if err := datadir.Relocate(src, dest, def); err != nil {
+	if err := datadir.Relocate(src, dest, def, func(p datadir.CopyProgress) {
+		s.setProgress(Progress{
+			Copying: true, Files: p.Files, TotalFiles: p.TotalFiles, Bytes: p.Bytes, TotalBytes: p.TotalBytes,
+		})
+	}); err != nil {
+		s.setProgress(Progress{})
 		return err
 	}
+	s.setProgress(Progress{})
 	if s.Restart != nil {
 		return s.Restart()
 	}

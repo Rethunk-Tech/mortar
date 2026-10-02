@@ -49,6 +49,24 @@ func TestRelocateRefusesATargetInsideTheSourceOrANonEmptyFolder(t *testing.T) {
 	}
 }
 
+func TestRelocateRemovesPartialDestinationWhenCopyFails(t *testing.T) {
+	src := t.TempDir()
+	if err := fsx.WriteFile(filepath.Join(src, "a"), []byte("copied"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(t.TempDir(), "outside"), filepath.Join(src, "z")); err != nil {
+		t.Fatal(err)
+	}
+	dest := filepath.Join(t.TempDir(), "new")
+	err := Relocate(src, dest, t.TempDir())
+	if err == nil {
+		t.Fatal("copy unexpectedly succeeded")
+	}
+	if _, statErr := os.Stat(dest); !os.IsNotExist(statErr) {
+		t.Fatalf("partial destination remains: %v", statErr)
+	}
+}
+
 func TestResolveFollowsThePointerFile(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", home)

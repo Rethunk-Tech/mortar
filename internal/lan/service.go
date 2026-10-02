@@ -130,6 +130,13 @@ func NewService(deps Deps) *Service {
 	}
 }
 
+// Busy reports whether an incoming LAN transfer is active.
+func (s *Service) Busy() bool {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return len(s.active) > 0
+}
+
 // SetEnabled starts or stops the LAN listener and mDNS discovery.
 func (s *Service) SetEnabled(enabled bool) error {
 	if !enabled {

@@ -20,6 +20,13 @@ func TestMoveDataFolderRefusesWhileTheGameRuns(t *testing.T) {
 	}
 }
 
+func TestMoveDataFolderRefusesWhileAnotherServiceIsBusy(t *testing.T) {
+	s := NewService(nil, nil, nil, BusyFunc(func() bool { return true }))
+	if err := s.MoveDataFolder(t.TempDir()); !errors.Is(err, errGameRunning) {
+		t.Fatalf("busy = %v", err)
+	}
+}
+
 func TestMoveDataFolderRelocatesWhenIdle(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", home)

@@ -89,6 +89,7 @@ func registerEvents() {
 	application.RegisterEvent[lan.TransferProgress](lan.TransferProgressEvent)
 	application.RegisterEvent[launchsvc.NoticeClick](launchsvc.NoticeClickEvent)
 	application.RegisterEvent[updatesvc.Release](updatesvc.StagedEvent)
+	application.RegisterEvent[string](quitRequestedEvent)
 }
 
 func main() {
@@ -374,6 +375,8 @@ func run() error {
 
 	pick := &picker.Service{}
 	profileSvc := profile.NewService(profiles, home, store)
+	profileSvc.QueueProfileDeleted = queueSvc.SkipProfile
+	profileSvc.QueueProfileRestored = queueSvc.RestoreProfile
 	profileSvc.Version = version
 	bundlesSvc := bundles.NewService(profiles, dataDir)
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
@@ -436,12 +439,15 @@ func run() error {
 		return err
 	}
 
-	dataSvc := datasvc.NewService(items, profiles, queueSvc.StagedKeys)
-	dataSvc.Busy = func() bool {
-		st, err := launches.Status("stardew")
-		return err == nil && (st.State == launchsvc.Launching || st.State == launchsvc.Running)
-	}
+	dataSvc := datasvc.NewService(items, profiles, queueSvc.StagedKeys,
+		queueSvc, lanSvc,
+		datasvc.BusyFunc(func() bool {
+			st, err := launches.Status("stardew")
+			return err == nil && (st.State == launchsvc.Launching || st.State == launchsvc.Running)
+		}),
+	)
 	dataSvc.Restart = datasvc.RestartSelf
+	quitSvc := &QuitService{app: app, queue: queueSvc, lan: lanSvc, launch: launches}
 
 	for _, s := range []application.Service{
 		application.NewService(svc), application.NewService(gamesSvc),
@@ -451,6 +457,7 @@ func run() error {
 		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc), application.NewService(lanSvc),
 		application.NewService(supportSvc), application.NewService(updates), application.NewService(bisectSvc),
 		application.NewService(dataSvc), application.NewService(toolsSvc),
+		application.NewService(quitSvc),
 	} {
 		app.RegisterService(s)
 	}
@@ -520,7 +527,10 @@ func run() error {
 		// destroys the window and showing builds a fresh one that the compositor places as new.
 		w.RegisterHook(events.Common.WindowClosing, func(*application.WindowEvent) {
 			if !store.Get().KeepInTray {
-				app.Quit()
+				if quitSvc.AllowWindowClose() {
+					return
+				}
+				quitSvc.RequestQuit()
 				return
 			}
 			windowMu.Lock()
@@ -655,7 +665,21 @@ func run() error {
 			gameName = g.Name()
 		}
 		if running {
-			trayMenu.Add(gameName + " is running").SetEnabled(false)
+			trayMenu.Add("Stop " + gameName).OnClick(func(*application.Context) {
+				_ = launches.Stop("stardew")
+			})
+		}
+		left := 0
+		for _, item := range queueSvc.State().Items {
+			if item.State != queue.StateDone && item.State != queue.StateSkipped && item.State != queue.StateCancelled {
+				left++
+			}
+		}
+		if left > 0 {
+			trayMenu.Add(fmt.Sprintf("%d downloads…", left)).OnClick(func(*application.Context) {
+				showWindow()
+				app.Event.Emit("queue:open", nil)
+			})
 		}
 		recent, _ := launches.RecentLaunches("stardew", 3)
 		for _, row := range recent {
@@ -665,13 +689,13 @@ func run() error {
 			} else {
 				profileID := row.ProfileID
 				item.OnClick(func(*application.Context) {
-					_ = launches.Start(context.Background(), "stardew", profileID, false)
+					app.Event.Emit(shortcut.RequestedEvent, shortcut.Request{Game: "stardew", Profile: profileID})
 				})
 			}
 		}
 		trayMenu.AddSeparator()
 		trayMenu.Add("Quit").OnClick(func(*application.Context) {
-			app.Quit()
+			quitSvc.RequestQuit()
 		})
 		trayMenu.Update()
 	}

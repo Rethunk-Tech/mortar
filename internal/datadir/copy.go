@@ -15,10 +15,40 @@ import (
 // CopyTree copies the regular files and folders under src into dst (which may exist), file by file with io.Copy, which
 // the OS clones where the filesystem can. Directory junctions and symlink directories are not followed. Symlink files
 // are copied by content when they still resolve under src, and are an error when they escape.
+type CopyProgress struct {
+	Files      int
+	TotalFiles int
+	Bytes      int64
+	TotalBytes int64
+}
+
 func CopyTree(src, dst string) error {
+	return copyTree(src, dst, nil)
+}
+
+func copyTree(src, dst string, report func(CopyProgress)) error {
 	root, err := filepath.EvalSymlinks(src)
 	if err != nil {
 		return err
+	}
+	var progress CopyProgress
+	if report != nil {
+		progress.TotalBytes, err = Size(src)
+		if err != nil {
+			return err
+		}
+		err = filepath.WalkDir(src, func(p string, d fs.DirEntry, walkErr error) error {
+			if walkErr != nil {
+				return walkErr
+			}
+			if d.Type().IsRegular() {
+				progress.TotalFiles++
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
 	}
 	return filepath.WalkDir(src, func(p string, _ fs.DirEntry, err error) error {
 		if err != nil {
@@ -58,7 +88,19 @@ func CopyTree(src, dst string) error {
 			if !UnderRoot(root, resolved) {
 				return fmt.Errorf("%s escapes %s", p, src)
 			}
-			return CopyFile(resolved, target)
+			if err := CopyFile(resolved, target); err != nil {
+				return err
+			}
+			if report != nil {
+				progress.Files++
+				info, err := os.Stat(resolved)
+				if err != nil {
+					return err
+				}
+				progress.Bytes += info.Size()
+				report(progress)
+			}
+			return nil
 		}
 		if !info.Mode().IsRegular() {
 			return fmt.Errorf("%s is not a regular file", p)
@@ -66,7 +108,15 @@ func CopyTree(src, dst string) error {
 		if !UnderRoot(root, resolved) {
 			return fmt.Errorf("%s escapes %s", p, src)
 		}
-		return CopyFile(p, target)
+		if err := CopyFile(p, target); err != nil {
+			return err
+		}
+		if report != nil {
+			progress.Files++
+			progress.Bytes += info.Size()
+			report(progress)
+		}
+		return nil
 	})
 }
 

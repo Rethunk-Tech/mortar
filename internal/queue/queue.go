@@ -392,6 +392,13 @@ func (s *Service) State() State {
 	return s.snapshot()
 }
 
+// Busy reports whether the queue still has work or an open user decision.
+func (s *Service) Busy() bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return slices.ContainsFunc(s.items, func(it *Item) bool { return !finished(it.State) })
+}
+
 func finished(state string) bool {
 	return state == StateDone || state == StateSkipped || state == StateCancelled
 }
@@ -610,7 +617,7 @@ func (s *Service) drop(match func(*Item) bool) {
 
 // Skip drops an item that has not started, that failed, or that waits for the user.
 func (s *Service) Skip(id string) {
-	s.end(id, StateSkipped, StateFailed, StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge)
+	s.end(id, StateSkipped, StateFailed, StateQueued, StateWaitingClick, StateDownloading, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge)
 }
 
 // SkipAll skips every item that has not started.
@@ -631,17 +638,27 @@ func (s *Service) SkipAll() {
 // SkipProfile skips every not-yet-started item for a profile.
 func (s *Service) SkipProfile(game, profileID string) {
 	s.mu.Lock()
-	var ids []string
 	for _, it := range s.items {
 		if it.Game == game && it.Profile == profileID &&
 			slices.Contains([]string{StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge}, it.State) {
-			ids = append(ids, it.ID)
+			it.State, it.Progress, it.Speed, it.key, it.staged, it.Error = StateSkipped, 0, 0, "", "", "profile deleted"
 		}
 	}
 	s.mu.Unlock()
-	for _, id := range ids {
-		s.Skip(id)
+	s.publish(true)
+}
+
+// RestoreProfile requeues items held because their profile was deleted.
+func (s *Service) RestoreProfile(game, profileID string) {
+	s.mu.Lock()
+	for _, it := range s.items {
+		if it.Game == game && it.Profile == profileID && it.State == StateSkipped && it.Error == "profile deleted" {
+			it.State, it.Error = StateQueued, ""
+		}
 	}
+	s.mu.Unlock()
+	s.publish(true)
+	s.poke()
 }
 
 // Choose picks the asset of an item waiting in StateNeedsChoice.

@@ -13,9 +13,13 @@ import (
 
 // Progress is a size walk in progress.
 type Progress struct {
-	Measuring bool   `json:"measuring"`
-	Bytes     int64  `json:"bytes"`
-	Path      string `json:"path"`
+	Measuring  bool   `json:"measuring"`
+	Copying    bool   `json:"copying"`
+	Bytes      int64  `json:"bytes"`
+	TotalBytes int64  `json:"totalBytes"`
+	Files      int    `json:"files"`
+	TotalFiles int    `json:"totalFiles"`
+	Path       string `json:"path"`
 }
 
 // ProfileSize is one profile's mods folder, not the shared store.
