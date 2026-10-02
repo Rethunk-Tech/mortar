@@ -14,13 +14,13 @@ import {
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { gameSetupNeeded } from '../firstrun/needed.ts'
 import { useRefreshOnFocus } from '../firstrun/useRefreshOnFocus.ts'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { isGameId, openSettings, useNav } from '../nav/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { gameArt } from './art.ts'
-import { relativePlay } from './lastPlayed.ts'
 import { type GameStatus, loaderCaption, loadGameStatus } from './status.ts'
 import { storeName } from './storeName.ts'
 
@@ -115,17 +115,7 @@ function Row({
 }) {
   const { t } = useLingui()
   const start = useLaunch((s) => s.start)
-  const rel = relativePlay(lastPlayedAt, Date.now())
-  let ago = ''
-  if (rel?.kind === 'now') {
-    ago = t`just now`
-  } else if (rel?.unit === 'minute') {
-    ago = plural(rel.n, { one: '# minute ago', other: '# minutes ago' })
-  } else if (rel?.unit === 'hour') {
-    ago = plural(rel.n, { one: '# hour ago', other: '# hours ago' })
-  } else if (rel?.unit === 'day') {
-    ago = plural(rel.n, { one: '# day ago', other: '# days ago' })
-  }
+  const ago = formatWhen(lastPlayedAt)
   let lastLine = ''
   if (lastPlayedName && ago) {
     lastLine = t`last played ${lastPlayedName} · ${ago}`

@@ -643,7 +643,7 @@ msgstr "List view"
 msgid "Link length"
 msgstr "Link length"
 
-#: src/games/GameSelect.tsx:316
+#: src/games/GameSelect.tsx:306
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
@@ -1423,11 +1423,6 @@ msgstr "{0} · {1} · {farms}"
 #: src/mods/ProblemsTab.tsx:31
 msgid "Duplicates"
 msgstr "Duplicates"
-
-#. placeholder {0}: rel.n
-#: src/games/GameSelect.tsx:123
-msgid "{0, plural, one {# minute ago} other {# minutes ago}}"
-msgstr "{0, plural, one {# minute ago} other {# minutes ago}}"
 
 #: src/mods/ModList.tsx:467
 #: src/mods/ModsTab.tsx:229
@@ -2305,7 +2300,7 @@ msgstr "Up next: {0}"
 msgid "Remove filter {mod}"
 msgstr "Remove filter {mod}"
 
-#: src/games/GameSelect.tsx:283
+#: src/games/GameSelect.tsx:273
 msgid "After the first release"
 msgstr "After the first release"
 
@@ -2439,7 +2434,7 @@ msgstr "Problem: {text}"
 msgid "Trace"
 msgstr "Trace"
 
-#: src/games/GameSelect.tsx:286
+#: src/games/GameSelect.tsx:276
 msgid "Not set up · Open it to set it up"
 msgstr "Not set up · Open it to set it up"
 
@@ -2494,7 +2489,7 @@ msgstr "Copy all problems"
 msgid "No profiles yet"
 msgstr "No profiles yet"
 
-#: src/games/GameSelect.tsx:154
+#: src/games/GameSelect.tsx:144
 #: src/profiles/store.ts:230
 msgid "Could not save the open profile"
 msgstr "Could not save the open profile"
@@ -3719,7 +3714,7 @@ msgstr "Remove SMAPI from Steam's launch options"
 msgid "Check later"
 msgstr "Check later"
 
-#: src/games/GameSelect.tsx:133
+#: src/games/GameSelect.tsx:123
 msgid "last played {lastPlayedName}"
 msgstr "last played {lastPlayedName}"
 
@@ -3842,15 +3837,10 @@ msgid "Could not reset the settings of {0}"
 msgstr "Could not reset the settings of {0}"
 
 #: src/App.tsx:56
-#: src/games/GameSelect.tsx:145
-#: src/games/GameSelect.tsx:273
+#: src/games/GameSelect.tsx:135
+#: src/games/GameSelect.tsx:263
 msgid "Could not read your games"
 msgstr "Could not read your games"
-
-#. placeholder {0}: rel.n
-#: src/games/GameSelect.tsx:127
-msgid "{0, plural, one {# day ago} other {# days ago}}"
-msgstr "{0, plural, one {# day ago} other {# days ago}}"
 
 #: src/mods/ModDetail.tsx:218
 msgid "Nothing"
@@ -4283,7 +4273,7 @@ msgstr "Upload your SMAPI log to smapi.io, the Stardew modding community's log v
 msgid "Reset the settings of {0}?"
 msgstr "Reset the settings of {0}?"
 
-#: src/games/GameSelect.tsx:165
+#: src/games/GameSelect.tsx:155
 msgid "{loader} | {store}"
 msgstr "{loader} | {store}"
 
@@ -4329,7 +4319,7 @@ msgstr "Add to bundle"
 msgid "Quit"
 msgstr "Quit"
 
-#: src/games/GameSelect.tsx:167
+#: src/games/GameSelect.tsx:157
 msgid "{loader} · {lastLine}"
 msgstr "{loader} · {lastLine}"
 
@@ -4391,13 +4381,13 @@ msgid "Compare {aName} and {bName}"
 msgstr "Compare {aName} and {bName}"
 
 #: src/commandPalette/CommandPalette.tsx:161
-#: src/games/GameSelect.tsx:199
+#: src/games/GameSelect.tsx:189
 #: src/launch/PlayControl.tsx:152
 #: src/settings/sections/Appearance.tsx:131
 msgid "Play"
 msgstr "Play"
 
-#: src/games/GameSelect.tsx:319
+#: src/games/GameSelect.tsx:309
 msgid "Launchers…"
 msgstr "Launchers…"
 
@@ -4681,7 +4671,7 @@ msgid "Could not add the bundle"
 msgstr "Could not add the bundle"
 
 #. placeholder {0}: st.profiles.length
-#: src/games/GameSelect.tsx:288
+#: src/games/GameSelect.tsx:278
 msgid "{0, plural, one {Installed · # profile} other {Installed · # profiles}}"
 msgstr "{0, plural, one {Installed · # profile} other {Installed · # profiles}}"
 
@@ -4863,7 +4853,7 @@ msgstr "Loading mods"
 msgid "{0} (optional)"
 msgstr "{0} (optional)"
 
-#: src/games/GameSelect.tsx:131
+#: src/games/GameSelect.tsx:121
 msgid "last played {lastPlayedName} · {ago}"
 msgstr "last played {lastPlayedName} · {ago}"
 
@@ -5145,7 +5135,7 @@ msgstr "Broke in {0}"
 msgid "Open Problems"
 msgstr "Open Problems"
 
-#: src/games/GameSelect.tsx:163
+#: src/games/GameSelect.tsx:153
 msgid "{loader} | {store} · {lastLine}"
 msgstr "{loader} | {store} · {lastLine}"
 
@@ -5186,11 +5176,6 @@ msgstr "Switched off"
 #: src/mods/store.ts:328
 msgid "Could not save the note and tags for {0}"
 msgstr "Could not save the note and tags for {0}"
-
-#. placeholder {0}: rel.n
-#: src/games/GameSelect.tsx:125
-msgid "{0, plural, one {# hour ago} other {# hours ago}}"
-msgstr "{0, plural, one {# hour ago} other {# hours ago}}"
 
 #: src/mods/UpdateReview.tsx:167
 msgid "No changelog entries between these versions."
@@ -5308,8 +5293,8 @@ msgstr "This archive has no SMAPI mod where Mortar expects one. Pick the folder 
 msgid "Skip this update"
 msgstr "Skip this update"
 
-#: src/games/GameSelect.tsx:140
-#: src/games/GameSelect.tsx:152
+#: src/games/GameSelect.tsx:130
+#: src/games/GameSelect.tsx:142
 msgid "Could not save the last game"
 msgstr "Could not save the last game"
 
@@ -5350,10 +5335,6 @@ msgstr "Windowed resolution height"
 #: src/share/ImportDialog.tsx:112
 msgid "Import profile from…"
 msgstr "Import profile from…"
-
-#: src/games/GameSelect.tsx:121
-msgid "just now"
-msgstr "just now"
 
 #: src/share/SharedMods.tsx:20
 msgid "{n} GitHub"

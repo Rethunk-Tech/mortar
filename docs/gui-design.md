@@ -248,6 +248,8 @@ Each game has its own setup, run when it is first opened from Game Select and th
 
 Short toasts, bottom right, stacked (at most three; the oldest goes first), each with a coloured edge by kind and a dismiss button, dismissing themselves after 5 s (10 s for errors and warnings), with hover pausing the countdown, and an action where one exists: "Link copied", "SpaceCore installed" and "Added X to Y" (Undo), "… rolled back" (Redo update), "Couldn't reach Nexus" (Retry now), "N downloads need your decision" (Show). A toast about a mod shows its picture, from the same cache as the cards. Toasts stay in the session's notification history (the sidebar bell, [Main screen](#main-screen); [architecture.md](architecture.md#stack)).
 
+**Times:** a moment within the last week reads relative ("a few seconds ago", "3 minutes ago", "yesterday", "3 days ago"); older ones show the date, with the time where the list is a timeline (runs, backups, profile history, notifications). This covers the mod list's Updated and Installed columns, the hero's Updated and Created, save cards, Game Select's last played, and the Notes and update-check status lines.
+
 **Empty states:** a tab with nothing to show centres an icon, a title, a line on how to fill it and, where one helps, a button: Saves with no saves, Problems with none found, Console for a profile that has never run (an empty log with past runs shows the log), and Performance before a report.
 
 **First-open tips:** the Mods tab, the Saves tab, the Console and the Share dialog each show a short dismissible banner the first time they open; Settings › General has **Show tips again**.
