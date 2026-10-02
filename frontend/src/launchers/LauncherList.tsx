@@ -158,7 +158,8 @@ function LauncherRow({ launcher, refresh }: { launcher: StoreApp; refresh: () =>
   )
 }
 
-// The launchers Mortar reads, one row each: found or not, the games in it, and every folder it uses.
+// The launchers Mortar reads, one row each, in two independent columns on a wide window so opening a row only
+// pushes down the rows below it in its own column; a narrow window wraps the columns into one.
 export function LauncherList({
   launchers,
   refresh,
@@ -166,17 +167,24 @@ export function LauncherList({
   launchers: StoreApp[]
   refresh: () => void
 }) {
+  const columns = [launchers.filter((_, i) => i % 2 === 0), launchers.filter((_, i) => i % 2 === 1)]
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(auto-fit, minmax(min(${COLUMN_MIN}px, 100%), 1fr))`,
-        alignItems: 'start',
-        gap: 1,
-      }}
-    >
-      {launchers.map((l) => (
-        <LauncherRow key={l.id} launcher={l} refresh={refresh} />
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 1 }}>
+      {columns.map((col) => (
+        <Box
+          key={col.map((l) => l.id).join()}
+          sx={{
+            flex: `1 1 ${COLUMN_MIN}px`,
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+          }}
+        >
+          {col.map((l) => (
+            <LauncherRow key={l.id} launcher={l} refresh={refresh} />
+          ))}
+        </Box>
       ))}
     </Box>
   )
