@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   ButtonBase,
-  Chip,
   CircularProgress,
   Divider,
   InputAdornment,
@@ -20,6 +19,7 @@ import {
 import { Browser } from '@wailsio/runtime'
 import {
   Ban,
+  Check,
   Download,
   ExternalLink,
   Filter,
@@ -84,6 +84,54 @@ const viewButton = (active: boolean) => ({
 function persistGroupBy(by: GroupBy) {
   useSettings.setState({ listGroupBy: by })
   SetListGroupBy(by).catch(reportUnexpected)
+}
+
+function ShowFilterControl({
+  filter,
+  onFilter,
+}: {
+  filter: ModFilter
+  onFilter: (filter: ModFilter) => void
+}) {
+  const { t, i18n } = useLingui()
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const active = FILTERS.find((item) => item.id === filter)
+  const choose = (next: ModFilter) => {
+    onFilter(next)
+    setAnchor(null)
+  }
+  return (
+    <>
+      <Button
+        variant="outlined"
+        color={active ? 'primary' : 'inherit'}
+        aria-label={t`Show`}
+        startIcon={<Filter size={14} />}
+        onClick={(e) => setAnchor(e.currentTarget)}
+        sx={iconWhenCompact}
+      >
+        <span className="label">{active ? active.label(i18n) : t`Show`}</span>
+      </Button>
+      <Menu
+        open={anchor !== null}
+        anchorEl={anchor}
+        onClose={() => setAnchor(null)}
+        transitionDuration={0}
+      >
+        {[
+          { id: 'all' as const, label: t`All mods` },
+          ...FILTERS.map((item) => ({ id: item.id, label: item.label(i18n) })),
+        ].map((item) => (
+          <MenuItem key={item.id} selected={filter === item.id} onClick={() => choose(item.id)}>
+            <ListItemIcon sx={{ color: 'inherit' }}>
+              {filter === item.id ? <Check size={16} aria-hidden={true} /> : null}
+            </ListItemIcon>
+            <ListItemText>{item.label}</ListItemText>
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  )
 }
 
 function GroupByControl() {
@@ -221,7 +269,7 @@ export function Toolbar({
   filter: ModFilter
   onFilter: (filter: ModFilter) => void
 }) {
-  const { t, i18n } = useLingui()
+  const { t } = useLingui()
   const view = useMods((s) => s.view)
   const setView = useMods((s) => s.setView)
   const narrow = useMediaQuery(compactQuery)
@@ -309,18 +357,7 @@ export function Toolbar({
       ) : (
         <Box sx={{ flex: 1, minWidth: 0 }} />
       )}
-      <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
-        {FILTERS.map((item) => (
-          <Chip
-            key={item.id}
-            label={item.label(i18n)}
-            size="small"
-            variant={filter === item.id ? 'filled' : 'outlined'}
-            color={filter === item.id ? 'primary' : 'default'}
-            onClick={() => onFilter(filter === item.id ? 'all' : item.id)}
-          />
-        ))}
-      </Box>
+      <ShowFilterControl filter={filter} onFilter={onFilter} />
       {narrow ? (
         <Button
           variant="outlined"
