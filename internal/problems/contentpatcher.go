@@ -284,7 +284,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 		return
 	}
 	var doc struct {
-		Changes       []cpChange `json:"Changes"`
+		Changes       []json.RawMessage `json:"Changes"`
 		DynamicTokens []struct {
 			Name  string                     `json:"Name"`
 			Value json.RawMessage            `json:"Value"`
@@ -312,7 +312,11 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			pack.patches = append(pack.patches, cpPatch{kind: "other", when: outer.with(parseWhen(tok.When, pack.mentions, pack.schema)), tokenName: strings.ToLower(strings.TrimSpace(tok.Name)), tokenValue: value})
 		}
 	}
-	for _, ch := range doc.Changes {
+	for _, rawChange := range doc.Changes {
+		var ch cpChange
+		if json.Unmarshal(rawChange, &ch) != nil {
+			continue
+		}
 		action := strings.TrimSpace(ch.Action)
 		when := outer.with(parseWhenWithTokens(ch.When, pack.mentions, pack.schema, pack.tokens))
 		var kind string
@@ -348,8 +352,9 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 				pack.skips++
 				continue
 			}
+			priority, _ := scalarValue(ch.Priority)
 			pack.patches = append(pack.patches, cpPatch{
-				kind: kind, target: normalizeTarget(t), fromFile: ch.FromFile, priority: strings.TrimSpace(ch.Priority),
+				kind: kind, target: normalizeTarget(t), fromFile: ch.FromFile, priority: strings.TrimSpace(priority),
 				patchMode: strings.TrimSpace(ch.PatchMode), when: when,
 				shapes: shapes, spouse: when.spouse, places: when.places, image: strings.EqualFold(action, kindEditImage),
 			})
@@ -526,7 +531,7 @@ type cpChange struct {
 	Action        string                     `json:"Action"`
 	Target        string                     `json:"Target"`
 	FromFile      string                     `json:"FromFile"`
-	Priority      string                     `json:"Priority"`
+	Priority      json.RawMessage            `json:"Priority"`
 	PatchMode     string                     `json:"PatchMode"`
 	When          map[string]json.RawMessage `json:"When"`
 	FromArea      json.RawMessage            `json:"FromArea"`
@@ -1005,35 +1010,44 @@ func caseInsensitivePath(root, rel string) (string, bool) {
 }
 
 func contentPatcherPriority(kind, priority string) int {
-	priority = strings.ToLower(strings.TrimSpace(priority))
-	if kind == "load" {
-		if priority == "" {
-			priority = "exclusive"
-		}
-		switch priority {
-		case "low":
-			return 0
-		case "medium":
-			return 1000
-		case "high":
-			return 2000
-		case "exclusive":
+	priority = strings.TrimSpace(priority)
+	if priority == "" {
+		if kind == "load" {
 			return 3000
 		}
-		return 1000
-	}
-	if priority == "" {
-		priority = "default"
-	}
-	switch priority {
-	case "early":
 		return 0
-	case "default":
-		return 1000
-	case "late":
-		return 2000
 	}
-	return 1000
+	if numeric, err := strconv.Atoi(priority); err == nil {
+		return numeric
+	}
+	base := priority
+	offset := 0
+	for i := 1; i < len(priority); i++ {
+		if priority[i] != '+' && priority[i] != '-' {
+			continue
+		}
+		value, err := strconv.Atoi(strings.TrimSpace(priority[i+1:]))
+		if err != nil {
+			return 0
+		}
+		if priority[i] == '-' {
+			value = -value
+		}
+		base, offset = priority[:i], value
+		break
+	}
+	switch strings.ToLower(strings.TrimSpace(base)) {
+	case "low", "early":
+		return -1000 + offset
+	case "medium", "default":
+		return offset
+	case "high", "late":
+		return 1000 + offset
+	case "exclusive":
+		return 3000 + offset
+	default:
+		return 0
+	}
 }
 
 func strongerContentPatcherPriority(current, candidate, kind string) string {

@@ -165,3 +165,29 @@ func TestDynamicTokenWhenMergesDefinitionConditions(t *testing.T) {
 		t.Fatal("different dynamic FarmType values should be exclusive")
 	}
 }
+
+func TestPriorityParsingKeepsOddChangesIsolated(t *testing.T) {
+	root := t.TempDir()
+	content := `{"Changes":[
+		{"Action":"Load","Target":"Maps/Load","FromFile":"load.json","Priority":42},
+		{"Action":"EditImage","Target":"Maps/Image","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"Priority":"Late - 10"},
+		{"Action":"Load","Target":"Maps/Odd","FromFile":"odd.json","Priority":{"unexpected":true}}
+	]}`
+	if err := os.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
+	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
+	if len(pack.patches) != 3 {
+		t.Fatalf("one malformed priority must not discard the other changes: %#v", pack.patches)
+	}
+	if pack.patches[0].priority != "42" || pack.patches[1].priority != "Late - 10" || pack.patches[2].priority != "" {
+		t.Fatalf("unexpected parsed priorities: %#v", pack.patches)
+	}
+	if contentPatcherPriority("load", "Low") != -1000 ||
+		contentPatcherPriority("edit", "Default") != 0 ||
+		contentPatcherPriority("load", "High + 25") != 1025 ||
+		contentPatcherPriority("edit", "Early - 5") != -1005 {
+		t.Fatal("Content Patcher priority scale was not applied")
+	}
+}
