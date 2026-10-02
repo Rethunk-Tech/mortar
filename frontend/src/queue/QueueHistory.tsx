@@ -1,8 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, FormControl, MenuItem, Select, Typography } from '@mui/material'
-import { CircleCheck, CircleX, Filter, Trash2, User } from 'lucide-react'
+import { Box, FormControl, IconButton, MenuItem, Select, Tooltip, Typography } from '@mui/material'
+import { CircleCheck, CircleX, Download, Filter, Trash2, User } from 'lucide-react'
 import { ClearHistory } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import {
   filterHistory,
@@ -10,9 +12,10 @@ import {
   type HistoryFilters,
   historyProfiles,
 } from './history.ts'
-import { clockTime, megabytes } from './totals.ts'
+import { megabytes } from './totals.ts'
 
 const bytesInKb = 1024
+const millisecondsPerSecond = 1000
 
 function sizeKb(bytes: number) {
   return Math.floor(bytes / bytesInKb)
@@ -99,21 +102,21 @@ export function HistoryList({
           </Select>
         </FormControl>
         {entries.length > 0 ? (
-          <Button
-            variant="outlined"
-            color="inherit"
-            startIcon={<Trash2 size={14} />}
-            onClick={() => ClearHistory().then(onCleared).catch(reportUnexpected)}
-            sx={{ whiteSpace: 'nowrap', ml: 'auto' }}
-          >
-            {t`Clear history`}
-          </Button>
+          <Tooltip title={t`Clear history`}>
+            <IconButton
+              aria-label={t`Clear history`}
+              onClick={() => ClearHistory().then(onCleared).catch(reportUnexpected)}
+              sx={{ ml: 'auto' }}
+            >
+              <Trash2 size={16} />
+            </IconButton>
+          </Tooltip>
         ) : null}
       </Box>
       {rows.length === 0 ? (
-        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-          {t`No downloads in history.`}
-        </Typography>
+        <EmptyState compact={true} icon={<Download />} title={t`No downloads in history.`}>
+          {t`Completed downloads will appear here.`}
+        </EmptyState>
       ) : (
         rows
           .slice()
@@ -132,7 +135,9 @@ export function HistoryList({
                 {` · ${e.source}`}
                 {e.profileId ? ` · ${nameOf(e.profileId)}` : ''}
                 {e.size > 0 ? ` · ${megabytes(sizeKb(e.size))} MB` : ''}
-                {e.finished ? ` · ${clockTime(e.finished)}` : ''}
+                {e.finished
+                  ? ` · ${formatWhen(e.finished * millisecondsPerSecond, { withTime: true })}`
+                  : ''}
               </Typography>
             </Box>
           ))

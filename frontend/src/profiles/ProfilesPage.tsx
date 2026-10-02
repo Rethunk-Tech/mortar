@@ -50,6 +50,7 @@ import { compact } from '../game/compact.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { useNav } from '../nav/store.ts'
 import { openImport } from '../share/store.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { ExternalImportMenu } from './ExternalImportMenu.tsx'
@@ -149,27 +150,30 @@ function Trash() {
         borderRadius: '8px',
       }}
     >
-      <Typography component="h2" sx={{ fontSize: 16, fontWeight: 700 }}>
-        {t`Recently deleted`}
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography
+          component="h2"
+          sx={{ fontSize: 16, fontWeight: 700 }}
+        >{t`Recently deleted`}</Typography>
+        {trash.length === 0 ? null : (
+          <Tooltip title={t`Empty trash`}>
+            <IconButton
+              aria-label={t`Empty trash`}
+              color="error"
+              disabled={pending}
+              onClick={() => setConfirming(true)}
+            >
+              <Trash2 size={16} />
+            </IconButton>
+          </Tooltip>
+        )}
+      </Box>
       <Typography sx={{ fontSize: 13, lineHeight: 1.45 }}>
         {t`Deleted profiles stay here for 30 days, mods and settings included.`}
       </Typography>
       {trash.map((item) => (
         <TrashRow key={item.id} item={item} />
       ))}
-      {trash.length === 0 ? null : (
-        <Button
-          variant="outlined"
-          color="error"
-          startIcon={<Trash2 size={14} />}
-          disabled={pending}
-          onClick={() => setConfirming(true)}
-          sx={{ alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
-        >
-          {t`Empty trash`}
-        </Button>
-      )}
       <Dialog open={confirming} onClose={() => setConfirming(false)}>
         <DialogTitle>{t`Empty trash?`}</DialogTitle>
         <DialogContent>
@@ -377,13 +381,27 @@ export function ProfilesPage() {
           alignContent: 'start',
           gap: 2,
           px: 2.5,
-          py: 2,
+          pt: 2,
+          pb: 1.5,
           [compact]: { gridTemplateColumns: 'minmax(0, 1fr)' },
         }}
       >
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {profiles.length === 0 ? (
-            <Typography sx={{ color: 'text.secondary' }}>{t`No profiles yet.`}</Typography>
+            <EmptyState
+              compact={true}
+              icon={<Plus />}
+              title={t`No profiles yet.`}
+              action={
+                <Button
+                  variant="contained"
+                  startIcon={<Plus size={16} />}
+                  onClick={() => setCreating(true)}
+                >{t`New profile`}</Button>
+              }
+            >
+              {t`Create a profile to manage a set of mods.`}
+            </EmptyState>
           ) : (
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
               <SortableContext

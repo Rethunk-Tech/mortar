@@ -31,6 +31,7 @@ import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -370,7 +371,7 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
       </Box>
     )
   } else if (status === 'loading' && fits.length === 0) {
-    body = <Typography sx={{ color: 'text.secondary' }}>{t`Reading your saves…`}</Typography>
+    body = <LoadingRow>{t`Reading your saves…`}</LoadingRow>
   } else if (fits.length === 0) {
     body = (
       <EmptyState icon={<Sprout size={40} aria-hidden={true} />} title={t`No saves yet`}>

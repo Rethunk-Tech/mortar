@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Card, Chip, Skeleton, Typography } from '@mui/material'
+import { SearchX } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import type {
@@ -12,6 +13,7 @@ import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { dialogOpen } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useCustomCategories } from './customCategories.ts'
@@ -282,11 +284,13 @@ function ModsBody({
   shown,
   view,
   query,
+  onClear,
 }: {
   profile: Profile
   shown: Mod[]
   view: View
   query: string
+  onClear: () => void
 }) {
   const { t } = useLingui()
   const loaded = useMods((s) => s.loaded)
@@ -321,9 +325,13 @@ function ModsBody({
   }
   if (shown.length === 0 && query) {
     return (
-      <Typography
-        sx={{ px: 2, color: 'text.secondary' }}
-      >{t`No mods match your search.`}</Typography>
+      <EmptyState
+        icon={<SearchX />}
+        title={t`No mods match your search.`}
+        action={<Button onClick={onClear}>{t`Clear search`}</Button>}
+      >
+        {t`Try a different search.`}
+      </EmptyState>
     )
   }
   return (
@@ -421,7 +429,13 @@ export function ModsTab({ profile }: { profile: Profile }) {
       <LockedNote />
       <SelectionKeys shown={shown} />
       <SelectionBar profileId={profile.id} mods={shown} />
-      <ModsBody profile={profile} shown={shown} view={view} query={q} />
+      <ModsBody
+        profile={profile}
+        shown={shown}
+        view={view}
+        query={q}
+        onClear={() => setQuery('')}
+      />
       <ModDetail profile={profile} />
       <UpdateReview profile={profile} />
       <ModContextMenu />

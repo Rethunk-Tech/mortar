@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useDescribe, useDescribeDrift } from './describe.ts'
@@ -256,11 +257,7 @@ export function ProblemsTab() {
   useLoadProblemsOnFocus()
 
   if (result === null) {
-    return (
-      <Typography sx={{ px: 2, py: 2, fontSize: 14, color: 'text.secondary' }}>
-        {t`Checking the mods for problems…`}
-      </Typography>
-    )
+    return <LoadingRow>{t`Checking the mods for problems…`}</LoadingRow>
   }
 
   const sections = problemSections(result)
@@ -274,7 +271,8 @@ export function ProblemsTab() {
         minHeight: 0,
         overflowY: 'auto',
         px: 2,
-        py: 2,
+        pt: 2,
+        pb: 1.5,
         display: 'flex',
         flexDirection: 'column',
         gap: 2,

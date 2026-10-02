@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material'
-import { RotateCcw, X } from 'lucide-react'
+import { Download, RotateCcw, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
 import {
@@ -18,6 +18,7 @@ import { QueueNeedsRoot } from '../install/QueueNeedsRoot.tsx'
 import { accent } from '../mods/paper.ts'
 import { LetterTile } from '../mods/parts.tsx'
 import { useProfiles } from '../profiles/store.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { Fold } from './QueueFold.tsx'
@@ -273,15 +274,15 @@ function Failed({ items }: { items: Item[] }) {
       <SectionTitle
         color="#ffb3ab"
         action={
-          <Button
-            size="small"
-            color="error"
-            variant="outlined"
-            onClick={() => RetryFailed().catch(reportUnexpected)}
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            {t`Retry failed`}
-          </Button>
+          <Tooltip title={t`Retry failed`}>
+            <IconButton
+              aria-label={t`Retry failed`}
+              color="error"
+              onClick={() => RetryFailed().catch(reportUnexpected)}
+            >
+              <RotateCcw size={16} />
+            </IconButton>
+          </Tooltip>
         }
       >
         {t`Failed (${items.length})`}
@@ -380,9 +381,9 @@ export function Body({ items }: { items: Item[] }) {
     0
   ) {
     return (
-      <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-        {t`Nothing is downloading. Updates, missing dependencies and links from Nexus land here.`}
-      </Typography>
+      <EmptyState icon={<Download />} title={t`Nothing downloading`}>
+        {t`Updates, missing dependencies and links from Nexus land here.`}
+      </EmptyState>
     )
   }
   const more = next.length - NAME_MAX

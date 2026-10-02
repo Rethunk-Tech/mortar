@@ -1,8 +1,8 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Chip, Divider, Tab, Tabs, Typography } from '@mui/material'
+import { Box, Button, Chip, CircularProgress, Divider, Tab, Tabs, Typography } from '@mui/material'
 import { Plus, RotateCcw, Settings2, Share2 } from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { LogActions } from '../console/LogActions.tsx'
@@ -21,6 +21,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { SavesTab } from '../saves/SavesTab.tsx'
 import { useSaves } from '../saves/store.ts'
 import { openShare } from '../share/store.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { ErrorBoundary } from '../shell/ErrorBoundary.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -213,28 +214,11 @@ function Hero({ profile, game }: { profile: Profile; game: string }) {
   )
 }
 
-function Centered({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      sx={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 1.5,
-        textAlign: 'center',
-        px: 3,
-      }}
-    >
-      {children}
-    </Box>
-  )
-}
-
 // The cover stays opaque until its bottom fifth, then fades to transparent into the backdrop above the tab row.
 const HERO_FADE = 'linear-gradient(to bottom, #000 80%, transparent 100%)'
 
+// Keep the profile-loading and profile-empty states adjacent to the profile view.
+// biome-ignore lint/complexity/noExcessiveLinesPerFunction: the state branches are the view's complete fallback UI
 export function Detail() {
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
@@ -263,51 +247,62 @@ export function Detail() {
   }, [game, profileId, updated, loadSaves])
   if (!loaded) {
     return failed ? (
-      <Centered>
-        <Typography
-          sx={{ fontSize: 24, fontWeight: 600 }}
-        >{t`Could not read your profiles`}</Typography>
-        <Button
-          variant="contained"
-          startIcon={<RotateCcw size={16} />}
-          onClick={() => {
-            load(failed).catch(reportUnexpected)
-          }}
-        >
-          {t`Retry`}
-        </Button>
-      </Centered>
-    ) : null
+      <EmptyState
+        icon={<RotateCcw />}
+        title={t`Could not read your profiles`}
+        action={
+          <Button
+            variant="contained"
+            startIcon={<RotateCcw size={16} />}
+            onClick={() => {
+              load(failed).catch(reportUnexpected)
+            }}
+          >
+            {t`Retry`}
+          </Button>
+        }
+      >
+        {t`Mortar could not load the profiles for this game.`}
+      </EmptyState>
+    ) : (
+      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    )
   }
   if (!profile && profiles.length > 0) {
     return (
-      <Centered>
-        <Typography sx={{ fontSize: 24, fontWeight: 600 }}>{t`All profiles are hidden`}</Typography>
-        <Typography sx={{ color: 'text.secondary' }}>
-          {t`Show one in the sidebar from Manage profiles.`}
-        </Typography>
-        <Button variant="contained" startIcon={<Settings2 size={16} />} onClick={openProfiles}>
-          {t`Manage profiles`}
-        </Button>
-      </Centered>
+      <EmptyState
+        icon={<Settings2 />}
+        title={t`All profiles are hidden`}
+        action={
+          <Button variant="contained" startIcon={<Settings2 size={16} />} onClick={openProfiles}>
+            {t`Manage profiles`}
+          </Button>
+        }
+      >
+        {t`Show one in the sidebar from Manage profiles.`}
+      </EmptyState>
     )
   }
   if (!profile) {
     return (
-      <Centered>
-        <Typography sx={{ fontSize: 24, fontWeight: 600 }}>{t`No profiles yet`}</Typography>
-        <Typography sx={{ color: 'text.secondary' }}>
-          {t`A profile holds one set of mods for this game.`}
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<Plus size={16} />}
-          onClick={() => setCreating(true)}
-        >
-          {t`Create your first profile`}
-        </Button>
+      <EmptyState
+        icon={<Plus />}
+        title={t`No profiles yet`}
+        action={
+          <Button
+            variant="contained"
+            startIcon={<Plus size={16} />}
+            onClick={() => setCreating(true)}
+          >
+            {t`Create your first profile`}
+          </Button>
+        }
+      >
+        {t`A profile holds one set of mods for this game.`}
         <NewProfileDialog open={creating} onClose={() => setCreating(false)} />
-      </Centered>
+      </EmptyState>
     )
   }
   return (
