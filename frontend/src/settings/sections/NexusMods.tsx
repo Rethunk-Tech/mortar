@@ -13,12 +13,14 @@ import {
   TextField,
 } from '@mui/material'
 import { Check, LogIn, LogOut } from 'lucide-react'
-import { type SubmitEvent, useId, useState } from 'react'
+import { type SubmitEvent, useEffect, useId, useState } from 'react'
 import {
   SignIn,
   SignOut,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
 import {
+  Get as GetSettings,
+  SetAskEndorseMods,
   SetNexusPreferredDownloadServer,
   SetNxmRedirectOtherGames,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
@@ -40,6 +42,8 @@ function NexusModsSignedIn({
   nxmPrevious,
   redirectOther,
   redirectName,
+  askEndorse,
+  onAskEndorse,
 }: {
   serverId: string
   name: string
@@ -51,6 +55,8 @@ function NexusModsSignedIn({
   nxmPrevious: string
   redirectOther: boolean
   redirectName: string
+  askEndorse: boolean
+  onAskEndorse: (on: boolean) => void
 }) {
   const { t } = useLingui()
   return (
@@ -88,6 +94,15 @@ function NexusModsSignedIn({
         </Box>
       )}
       <NexusMeter />
+      <FormControlLabel
+        sx={{ m: 0, alignItems: 'flex-start' }}
+        control={<Switch checked={askEndorse} onChange={(_, on) => onAskEndorse(on)} />}
+        label={
+          <Box component="span" sx={{ display: 'block', fontSize: 14 }}>
+            {t`Ask me to endorse mods I keep using`}
+          </Box>
+        }
+      />
       {seenServers && seenServers.length > 0 ? (
         <FormControl size="small" sx={{ maxWidth: 360 }}>
           <InputLabel id={serverId} shrink={true}>
@@ -165,6 +180,19 @@ export function NexusMods() {
   const [key, setKey] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [askEndorse, setAskEndorse] = useState(true)
+  useEffect(() => {
+    GetSettings()
+      .then((settings) => setAskEndorse(settings.askEndorseMods ?? true))
+      .catch(reportUnexpected)
+  }, [])
+  const onAskEndorse = (on: boolean) => {
+    setAskEndorse(on)
+    SetAskEndorseMods(on).catch((err: unknown) => {
+      setAskEndorse(!on)
+      reportUnexpected(err)
+    })
+  }
   const submit = (e: SubmitEvent) => {
     e.preventDefault()
     setBusy(true)
@@ -190,6 +218,8 @@ export function NexusMods() {
         nxmPrevious={nxmPrevious}
         redirectOther={redirectOther}
         redirectName={redirectName}
+        askEndorse={askEndorse}
+        onAskEndorse={onAskEndorse}
       />
     )
   }

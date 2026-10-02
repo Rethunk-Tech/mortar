@@ -324,6 +324,11 @@ func (s *Service) SetNexusPreferredDownloadServer(shortName string) error {
 	return s.set(func(v *Settings) { v.NexusPreferredDownloadServer = shortName })
 }
 
+// SetAskEndorseMods sets whether Mortar suggests endorsing mods after clean runs.
+func (s *Service) SetAskEndorseMods(on bool) error {
+	return s.set(func(v *Settings) { v.AskEndorseMods = &on })
+}
+
 // SetNxmRedirectOtherGames sets whether non-Stardew nxm links go to the previous handler.
 func (s *Service) SetNxmRedirectOtherGames(on bool) error {
 	return s.set(func(v *Settings) { v.NxmRedirectOtherGames = &on })

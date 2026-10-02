@@ -78,6 +78,8 @@ type Settings struct {
 	NexusPreferredDownloadServer string `json:"nexusPreferredDownloadServer"`
 	// NexusSeenDownloadServers lists short_name values Mortar has seen from Nexus.
 	NexusSeenDownloadServers []string `json:"nexusSeenDownloadServers"`
+	// AskEndorseMods is whether Mortar may suggest endorsing mods after clean runs. Nil or omitted means on.
+	AskEndorseMods *bool `json:"askEndorseMods"`
 	// BackupsKept is how many save backups to retain, from MinBackupsKept to MaxBackupsKept.
 	BackupsKept int `json:"backupsKept"`
 	// ListColumns is the Mods list-view columns that are shown. Unknown ids are dropped; an empty list is the default.
@@ -127,7 +129,7 @@ func Defaults() Settings {
 		GameStores: map[string]string{}, LauncherRoots: map[string][]string{},
 		Loaders: map[string]string{}, Dismissed: map[string][]string{}, NexusSeenDownloadServers: []string{}, BackupsKept: backup.DefaultKeep,
 		ListColumns: slices.Clone(defaultListColumns), ListSortColumn: defaultListSortColumn, ListSortDir: defaultListSortDir, ListGroupBy: defaultListGroupBy,
-		CheckModUpdatesOnStart: on(), TellWhenSmapiOut: on(), EnableModsWhenInstalled: on(),
+		CheckModUpdatesOnStart: on(), TellWhenSmapiOut: on(), EnableModsWhenInstalled: on(), AskEndorseMods: on(),
 		OverlayPort: DefaultOverlayPort,
 	}
 }
@@ -265,6 +267,9 @@ func normalizeToggles(s *Settings) {
 	}
 	if s.EnableModsWhenInstalled == nil {
 		s.EnableModsWhenInstalled = on()
+	}
+	if s.AskEndorseMods == nil {
+		s.AskEndorseMods = on()
 	}
 }
 

@@ -29,10 +29,11 @@ type Account struct {
 
 // Service signs in and out of Nexus Mods.
 type Service struct {
-	store  *settings.Store
-	client *nexus.Client
-	meta   *meta.Client
-	seen   *nexus.SeenStore
+	store   *settings.Store
+	client  *nexus.Client
+	meta    *meta.Client
+	seen    *nexus.SeenStore
+	prompts *promptStore
 	// App is set after application.New so sign-in and sign-out can emit events.
 	App *application.App
 }

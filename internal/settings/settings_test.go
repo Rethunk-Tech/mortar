@@ -38,7 +38,7 @@ func TestDefaultsAndRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := Settings{"", "moss", BackgroundSolid, "/pics/a.png", "lethal", map[string]string{}, map[string]Played{}, map[string]string{}, map[string]string{}, map[string][]string{}, false, map[string]string{}, map[string][]string{}, 0, "", false, true, "vortex.desktop", false, "", nil, "", []string{}, backup.DefaultKeep, slices.Clone(defaultListColumns), defaultListSortColumn, defaultListSortDir, defaultListGroupBy, on(), on(), false, false, false, false, on(), nil, "", false, DefaultOverlayPort, ""}
+	want := Settings{"", "moss", BackgroundSolid, "/pics/a.png", "lethal", map[string]string{}, map[string]Played{}, map[string]string{}, map[string]string{}, map[string][]string{}, false, map[string]string{}, map[string][]string{}, 0, "", false, true, "vortex.desktop", false, "", nil, "", []string{}, on(), backup.DefaultKeep, slices.Clone(defaultListColumns), defaultListSortColumn, defaultListSortDir, defaultListGroupBy, on(), on(), false, false, false, false, on(), nil, "", false, DefaultOverlayPort, ""}
 	if got := s2.Get(); !reflect.DeepEqual(got, want) {
 		t.Fatalf("round trip = %+v", got)
 	}

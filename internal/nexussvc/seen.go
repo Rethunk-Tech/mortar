@@ -13,7 +13,12 @@ func (s *Service) UseDataDir(dir string) error {
 	if err != nil {
 		return err
 	}
+	prompts, err := openPromptStore(dir)
+	if err != nil {
+		return err
+	}
 	s.seen = st
+	s.prompts = prompts
 	return nil
 }
 

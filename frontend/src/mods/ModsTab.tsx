@@ -18,6 +18,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { useCustomCategories } from './customCategories.ts'
 import { DuplicateDialog } from './DuplicateDialog.tsx'
 import { useDetail } from './detail.ts'
+import { EndorsePrompt } from './EndorsePrompt.tsx'
 import {
   customCategoryById,
   emptyGroupLabel,
@@ -476,6 +477,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
       <ModContextMenu />
       <RemoveDialog />
       <DuplicateDialog profileName={profile.name} />
+      <EndorsePrompt profile={profile} />
     </Box>
   )
 }
