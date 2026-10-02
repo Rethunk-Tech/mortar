@@ -44,3 +44,14 @@ func TestDecideModUpdateNotification(t *testing.T) {
 		t.Fatal("unchanged or reduced counts should not notify")
 	}
 }
+
+func TestModUpdateNotificationPluralizes(t *testing.T) {
+	_, one := ModUpdateNotification(ModUpdate{Count: 1, ProfileName: "Farm"})
+	if one != "1 mod update available for Farm" {
+		t.Fatalf("one update = %q", one)
+	}
+	_, many := ModUpdateNotification(ModUpdate{Count: 2, ProfileName: "Farm"})
+	if many != "2 mod updates available for Farm" {
+		t.Fatalf("many updates = %q", many)
+	}
+}

@@ -92,5 +92,9 @@ func StartModBackground(ctx context.Context, enabled ModUpdateSetting, source Mo
 }
 
 func ModUpdateNotification(update ModUpdate) (title, body string) {
-	return "Mod updates available", fmt.Sprintf("%d mod updates available for %s", update.Count, update.ProfileName)
+	label := "mod updates"
+	if update.Count == 1 {
+		label = "mod update"
+	}
+	return "Mod updates available", fmt.Sprintf("%d %s available for %s", update.Count, label, update.ProfileName)
 }
