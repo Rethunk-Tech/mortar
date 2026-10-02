@@ -479,9 +479,17 @@ func (s *Service) SetPinned(game, id, key string, pinned bool) (Profile, error) 
 	return s.store.SetPinned(game, id, key, pinned)
 }
 
+func (s *Service) SetPinnedMany(game, id string, keys []string, pinned bool) (Profile, error) {
+	return s.store.SetPinnedMany(game, id, keys, pinned)
+}
+
 // SetSkipVersion hides that exact newer version, or clears the skip when version is empty.
 func (s *Service) SetSkipVersion(game, id, key, version string) (Profile, error) {
 	return s.store.SetSkipVersion(game, id, key, version)
+}
+
+func (s *Service) SetSkipVersionMany(game, id string, refs []SkipVersionRef) (Profile, error) {
+	return s.store.SetSkipVersionMany(game, id, refs)
 }
 
 // ExportProfile asks where to save a zip of the whole profile and writes it. It returns "" when the dialog is cancelled.
@@ -545,4 +553,12 @@ func (s *Service) SaveCustomCategories(game string, categories []CustomCategory)
 // SetEntryCategory sets or clears an entry's primary category override.
 func (s *Service) SetEntryCategory(game, id, key, override string) (Profile, error) {
 	return s.store.SetEntryCategory(game, id, key, override)
+}
+
+func (s *Service) SetEntryCategoryMany(game, id string, keys []string, override string) (Profile, error) {
+	return s.store.SetEntryCategoryMany(game, id, keys, override)
+}
+
+func (s *Service) SetEntryTagsMany(game, id string, keys []string, tag string, add bool) (Profile, error) {
+	return s.store.SetEntryTagsMany(game, id, keys, tag, add)
 }
