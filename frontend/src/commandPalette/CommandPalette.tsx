@@ -126,6 +126,7 @@ export function CommandPalette() {
   const [index, setIndex] = useState(0)
   const searchRef = usePaletteWindow(open)
   const sections: { id: SettingsSection; label: string }[] = [
+    { id: 'general', label: t`General` },
     { id: 'appearance', label: t`Appearance` },
     { id: 'data', label: t`Data` },
     { id: 'nexus', label: t`Nexus Mods` },

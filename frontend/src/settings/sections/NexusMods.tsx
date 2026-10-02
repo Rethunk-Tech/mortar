@@ -29,6 +29,125 @@ import { useSettings } from '../store.ts'
 import { useNxmHandler } from './nxmHandler.tsx'
 import { nxmOwnerName } from './nxmOwnerName.ts'
 
+function NexusModsSignedIn({
+  serverId,
+  name,
+  premium,
+  preferredServer,
+  seenServers,
+  nxm,
+  owner,
+  nxmPrevious,
+  redirectOther,
+  redirectName,
+}: {
+  serverId: string
+  name: string
+  premium: boolean
+  preferredServer: string
+  seenServers: string[] | null
+  nxm: ReturnType<typeof useNxmHandler>
+  owner: string
+  nxmPrevious: string
+  redirectOther: boolean
+  redirectName: string
+}) {
+  const { t } = useLingui()
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Alert
+        severity="success"
+        icon={<Check size={16} aria-hidden={true} />}
+        action={
+          <Button
+            color="inherit"
+            size="small"
+            startIcon={<LogOut size={16} />}
+            onClick={() => {
+              SignOut().catch(reportUnexpected)
+            }}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            {t`Sign out`}
+          </Button>
+        }
+        sx={{ alignItems: 'center', fontSize: 14 }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span>{t`Signed in as ${name}`}</span>
+          <Chip
+            size="small"
+            color={premium ? 'primary' : 'default'}
+            label={premium ? t`Premium` : t`Free`}
+          />
+        </Box>
+      </Alert>
+      {premium ? null : (
+        <Box sx={{ fontSize: 14, lineHeight: 1.5 }}>
+          {t`Free accounts need one click on Nexus for every download. Mortar opens each file's page in turn and takes the download from your click.`}
+        </Box>
+      )}
+      <NexusMeter />
+      {seenServers && seenServers.length > 0 ? (
+        <FormControl size="small" sx={{ maxWidth: 360 }}>
+          <InputLabel id={serverId} shrink={true}>
+            {t`Preferred download server`}
+          </InputLabel>
+          <Select
+            labelId={serverId}
+            label={t`Preferred download server`}
+            value={preferredServer}
+            displayEmpty={true}
+            notched={true}
+            renderValue={(v) => (v === '' ? t`Automatic` : String(v))}
+            onChange={(e) => {
+              SetNexusPreferredDownloadServer(String(e.target.value)).catch(reportUnexpected)
+            }}
+          >
+            <MenuItem value="">{t`Automatic`}</MenuItem>
+            {seenServers?.map((server) => (
+              <MenuItem key={server} value={server}>
+                {server}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      ) : null}
+      <FormControlLabel
+        sx={{ m: 0, alignItems: 'flex-start' }}
+        control={<Switch checked={nxm.handled} onChange={(_, on) => nxm.toggle(on)} />}
+        label={
+          <Box>
+            <Box component="span" sx={{ display: 'block', fontSize: 14 }}>
+              {t`Handle Nexus "Mod Manager Download" links`}
+            </Box>
+            <Box
+              component="span"
+              sx={{ display: 'block', fontSize: 13, color: 'rgba(225,225,230,0.95)' }}
+            >
+              {owner
+                ? t`${owner} opens these links now. Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them.`
+                : t`Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them.`}
+            </Box>
+          </Box>
+        }
+      />
+      {nxm.handled && nxmPrevious ? (
+        <FormControlLabel
+          control={
+            <Switch
+              checked={redirectOther}
+              onChange={(_, on) => SetNxmRedirectOtherGames(on).catch(reportUnexpected)}
+            />
+          }
+          label={t`Send other games' links to ${redirectName}`}
+        />
+      ) : null}
+      {nxm.dialog}
+    </Box>
+  )
+}
+
 export function NexusMods() {
   const { t } = useLingui()
 
@@ -60,91 +179,18 @@ export function NexusMods() {
   }
   if (signedIn) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Alert
-          severity="success"
-          icon={<Check size={16} aria-hidden={true} />}
-          action={
-            <Button
-              color="inherit"
-              size="small"
-              startIcon={<LogOut size={16} />}
-              onClick={() => {
-                SignOut().catch(reportUnexpected)
-              }}
-              sx={{ whiteSpace: 'nowrap' }}
-            >
-              {t`Sign out`}
-            </Button>
-          }
-          sx={{ alignItems: 'center', fontSize: 14 }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span>{t`Signed in as ${name}`}</span>
-            <Chip
-              size="small"
-              color={premium ? 'primary' : 'default'}
-              label={premium ? t`Premium` : t`Free`}
-            />
-          </Box>
-        </Alert>
-        {premium ? null : (
-          <Box sx={{ fontSize: 14, lineHeight: 1.5 }}>
-            {t`Free accounts need one click on Nexus for every download. Mortar opens each file's page in turn and takes the download from your click.`}
-          </Box>
-        )}
-        <NexusMeter />
-        {seenServers && seenServers.length > 0 ? (
-          <FormControl size="small" fullWidth={true}>
-            {/* Automatic is the empty value, so the label must stay raised and the field must show it. */}
-            <InputLabel id={serverId} shrink={true}>
-              {t`Preferred download server`}
-            </InputLabel>
-            <Select
-              labelId={serverId}
-              label={t`Preferred download server`}
-              value={preferredServer}
-              displayEmpty={true}
-              notched={true}
-              renderValue={(v) => (v === '' ? t`Automatic` : String(v))}
-              onChange={(e) => {
-                SetNexusPreferredDownloadServer(String(e.target.value)).catch(reportUnexpected)
-              }}
-            >
-              <MenuItem value="">{t`Automatic`}</MenuItem>
-              {seenServers?.map((server) => (
-                <MenuItem key={server} value={server}>
-                  {server}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        ) : null}
-        <FormControlLabel
-          control={<Switch checked={nxm.handled} onChange={(_, on) => nxm.toggle(on)} />}
-          label={t`Handle Nexus "Mod Manager Download" links`}
-        />
-        {owner ? (
-          <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
-            {t`${owner} opens these links now.`}
-          </Box>
-        ) : null}
-        {nxm.handled && nxmPrevious ? (
-          <FormControlLabel
-            control={
-              <Switch
-                checked={redirectOther}
-                onChange={(_, on) => SetNxmRedirectOtherGames(on).catch(reportUnexpected)}
-              />
-            }
-            label={t`Send other games' links to ${redirectName}`}
-          />
-        ) : null}
-        <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
-          {t`Clicking Mod Manager Download on Nexus then starts the download in Mortar. Turning this off gives the links back to the app that had them.`}
-        </Box>
-        {nxm.dialog}
-      </Box>
+      <NexusModsSignedIn
+        serverId={serverId}
+        name={name}
+        premium={premium}
+        preferredServer={preferredServer}
+        seenServers={seenServers}
+        nxm={nxm}
+        owner={owner}
+        nxmPrevious={nxmPrevious}
+        redirectOther={redirectOther}
+        redirectName={redirectName}
+      />
     )
   }
   return (

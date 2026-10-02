@@ -11,6 +11,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { useCommandPalette } from './store.ts'
 
 const sections = new Set<SettingsSection>([
+  'general',
   'appearance',
   'data',
   'nexus',

@@ -9,7 +9,7 @@ export function NexusMeter() {
   const limits = useNexus((s) => s.limits)
   if (!limits.known) {
     return (
-      <Box sx={{ fontSize: 14, color: 'rgba(225,225,230,0.95)' }}>
+      <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
         {t`Request counts appear after Mortar talks to Nexus.`}
       </Box>
     )

@@ -4,7 +4,14 @@ export type GameId = 'stardew'
 
 export const isGameId = (game: string): game is GameId => game === 'stardew'
 
-export type SettingsSection = 'appearance' | 'data' | 'nexus' | 'updates' | 'shortcuts' | 'about'
+export type SettingsSection =
+  | 'general'
+  | 'appearance'
+  | 'data'
+  | 'nexus'
+  | 'updates'
+  | 'shortcuts'
+  | 'about'
 
 export type Route =
   | { name: 'game-select' }
@@ -61,7 +68,7 @@ export const useNav = create<{
       route:
         route.name === 'settings'
           ? { ...route, section: section ?? route.section }
-          : { name: 'settings', section: section ?? 'appearance', back: route },
+          : { name: 'settings', section: section ?? 'general', back: route },
     })),
   closeSettings: () => set(({ route }) => (route.name === 'settings' ? { route: route.back } : {})),
 }))

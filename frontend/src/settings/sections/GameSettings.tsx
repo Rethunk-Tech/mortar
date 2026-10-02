@@ -280,6 +280,8 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
       (s.status?.game === GAME &&
         (s.status.state === State.Launching || s.status.state === State.Running)),
   )
+  const tellWhenSmapiOut = useSettings((s) => s.tellWhenSmapiOut) !== false
+  const push = useToasts((s) => s.push)
   useEffect(() => {
     check(GAME)
     refreshLaunch(GAME)
@@ -321,53 +323,51 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
     <Box
       sx={{
         display: 'flex',
-        alignItems: 'center',
+        flexDirection: 'column',
         gap: 1.5,
         p: '14px',
         bgcolor: 'rgba(55,55,65,0.9)',
         borderRadius: '6px',
       }}
     >
-      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
-        <Box sx={{ fontSize: 15, fontWeight: 600 }}>{title}</Box>
-        {detail ? (
-          <Box
-            sx={{ fontSize: 13, color: status?.updateAvailable ? 'warning.main' : 'success.main' }}
-          >
-            {detail}
-          </Box>
-        ) : null}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box
+          sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}
+        >
+          <Box sx={{ fontSize: 15, fontWeight: 600 }}>{title}</Box>
+          {detail ? (
+            <Box
+              sx={{
+                fontSize: 13,
+                color: status?.updateAvailable ? 'warning.main' : 'success.main',
+              }}
+            >
+              {detail}
+            </Box>
+          ) : null}
+        </Box>
+        {control}
       </Box>
-      {control}
-    </Box>
-  )
-}
-
-// SMAPI is Stardew's loader, so whether Mortar announces a new SMAPI belongs with the game, not the global Updates.
-function SmapiNotice() {
-  const { t } = useLingui()
-  const on = useSettings((s) => s.tellWhenSmapiOut) !== false
-  const push = useToasts((s) => s.push)
-  return (
-    <FormControlLabel
-      sx={{ m: 0, alignItems: 'center' }}
-      control={
-        <Switch
-          checked={on}
-          onChange={(_, value) =>
-            SetTellWhenSmapiOut(value).catch((err: unknown) => {
-              const body = errorText(err)
-              push({
-                kind: 'error',
-                title: t`Couldn't save that setting`,
-                ...(body ? { body } : {}),
+      <FormControlLabel
+        sx={{ m: 0, alignItems: 'center' }}
+        control={
+          <Switch
+            checked={tellWhenSmapiOut}
+            onChange={(_, value) =>
+              SetTellWhenSmapiOut(value).catch((err: unknown) => {
+                const body = errorText(err)
+                push({
+                  kind: 'error',
+                  title: t`Couldn't save that setting`,
+                  ...(body ? { body } : {}),
+                })
               })
-            })
-          }
-        />
-      }
-      label={t`Tell me when a new SMAPI is out`}
-    />
+            }
+          />
+        }
+        label={t`Tell me when a new SMAPI is out`}
+      />
+    </Box>
   )
 }
 
@@ -399,7 +399,6 @@ function GameBody() {
       />
       <FlatpakAccess />
       <Smapi key={folder} onVersion={setVersion} />
-      <SmapiNotice />
       <StreamOverlay />
     </Box>
   )

@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogTitle,
   LinearProgress,
+  TextField,
 } from '@mui/material'
 import { Download, FolderInput, FolderOpen, Trash2, Upload } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -31,16 +32,60 @@ import {
   ExportSettings,
   OpenDataFolder,
   PreviewImportSettings,
+  SetBackupsKept,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useLaunch } from '../../launch/store.ts'
 import { paper } from '../../mods/paper.ts'
 import { formatBytes } from '../../saves/backupFormat.ts'
-import { reportUnexpected } from '../../toasts/report.ts'
+import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { useSettings } from '../store.ts'
 import { beginUsageLoad } from '../usageLoad.ts'
 
+const MIN_KEPT = 1
+const MAX_KEPT = 50
 const nowrap = { whiteSpace: 'nowrap' } as const
 const mono = { fontFamily: '"IBM Plex Mono", monospace', fontSize: 13 } as const
+
+function BackupsKept() {
+  const { t } = useLingui()
+  const kept = useSettings((s) => s.backupsKept)
+  const push = useToasts((s) => s.push)
+  const [draft, setDraft] = useState(String(kept))
+  useEffect(() => setDraft(String(kept)), [kept])
+  const commit = () => {
+    const n = Number(draft)
+    if (!Number.isInteger(n) || n < MIN_KEPT || n > MAX_KEPT) {
+      setDraft(String(kept))
+      return
+    }
+    if (n !== kept) {
+      SetBackupsKept(n).catch((err: unknown) => {
+        const body = errorText(err)
+        push({ kind: 'error', title: t`Couldn't save that setting`, ...(body ? { body } : {}) })
+        setDraft(String(kept))
+      })
+    }
+  }
+  return (
+    <TextField
+      type="number"
+      size="small"
+      label={t`Backups kept`}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+          e.target.blur()
+        }
+      }}
+      helperText={t`Saves are zipped before mods update; older backups beyond this many are deleted. ${MIN_KEPT} to ${MAX_KEPT}.`}
+      slotProps={{ htmlInput: { min: MIN_KEPT, max: MAX_KEPT, step: 1 } }}
+      sx={{ alignSelf: 'flex-start', width: 320 }}
+    />
+  )
+}
 
 function Row({ label, size }: { label: string; size: number }) {
   return (
@@ -267,6 +312,8 @@ export function Data() {
           <Box sx={{ ...mono, color: 'text.secondary' }}>{formatBytes(bytes)}</Box>
         </Box>
       )}
+      <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Save backups`}</Box>
+      <BackupsKept />
       <Button
         onClick={openPreview}
         startIcon={<Trash2 size={16} />}

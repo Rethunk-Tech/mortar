@@ -6,6 +6,7 @@ import { type SettingsSection, useNav } from '../nav/store.ts'
 import { About } from './sections/About.tsx'
 import { Appearance } from './sections/Appearance.tsx'
 import { Data } from './sections/Data.tsx'
+import { General } from './sections/General.tsx'
 import { NexusMods } from './sections/NexusMods.tsx'
 import { Shortcuts } from './sections/Shortcuts.tsx'
 import { Updates } from './sections/Updates.tsx'
@@ -27,6 +28,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
     return () => globalThis.removeEventListener('keydown', onKey)
   }, [closeSettings])
   const sections: { id: SettingsSection; label: string }[] = [
+    { id: 'general', label: t`General` },
     { id: 'appearance', label: t`Appearance` },
     { id: 'data', label: t`Data` },
     { id: 'nexus', label: t`Nexus Mods` },
@@ -35,6 +37,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
     { id: 'about', label: t`About` },
   ]
   const body: Record<SettingsSection, ReactNode> = {
+    general: <General />,
     appearance: <Appearance />,
     data: <Data />,
     nexus: <NexusMods />,

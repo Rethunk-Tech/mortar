@@ -1,18 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Alert,
-  Box,
-  Button,
-  CircularProgress,
-  FormControlLabel,
-  Link,
-  Switch,
-  TextField,
-} from '@mui/material'
+import { Alert, Box, Button, CircularProgress, FormControlLabel, Link, Switch } from '@mui/material'
 import { Download, RefreshCw, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import {
-  SetBackupsKept,
   SetCheckModUpdatesOnStart,
   SetCheckOnlyEnabledMods,
   SetEnableModsWhenInstalled,
@@ -26,8 +16,6 @@ import { useSettings } from '../store.ts'
 import { useMortarUpdate } from '../updates.ts'
 import { lastOpenedGame } from './lastOpenedGame.ts'
 
-const MIN_KEPT = 1
-const MAX_KEPT = 50
 const button = { whiteSpace: 'nowrap', alignSelf: 'flex-start' }
 
 function MortarUpdate() {
@@ -153,46 +141,6 @@ function MortarUpdate() {
   )
 }
 
-function BackupsKept() {
-  const { t } = useLingui()
-  const kept = useSettings((s) => s.backupsKept)
-  const push = useToasts((s) => s.push)
-  const [draft, setDraft] = useState(String(kept))
-  useEffect(() => setDraft(String(kept)), [kept])
-  const commit = () => {
-    const n = Number(draft)
-    if (!Number.isInteger(n) || n < MIN_KEPT || n > MAX_KEPT) {
-      setDraft(String(kept))
-      return
-    }
-    if (n !== kept) {
-      SetBackupsKept(n).catch((err: unknown) => {
-        const body = errorText(err)
-        push({ kind: 'error', title: t`Couldn't save that setting`, ...(body ? { body } : {}) })
-        setDraft(String(kept))
-      })
-    }
-  }
-  return (
-    <TextField
-      type="number"
-      size="small"
-      label={t`Backups kept`}
-      value={draft}
-      onChange={(e) => setDraft(e.target.value)}
-      onBlur={commit}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
-          e.target.blur()
-        }
-      }}
-      helperText={t`Saves are zipped before mods update; older backups beyond this many are deleted. ${MIN_KEPT} to ${MAX_KEPT}.`}
-      slotProps={{ htmlInput: { min: MIN_KEPT, max: MAX_KEPT, step: 1 } }}
-      sx={{ alignSelf: 'flex-start', width: 320, mt: 1 }}
-    />
-  )
-}
-
 function persistToggle(
   run: () => Promise<void>,
   push: ReturnType<typeof useToasts.getState>['push'],
@@ -292,8 +240,6 @@ export function Updates() {
           </Link>
         </>
       ) : null}
-      <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Save backups`}</Box>
-      <BackupsKept />
     </Box>
   )
 }
