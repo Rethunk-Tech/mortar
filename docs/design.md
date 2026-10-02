@@ -48,5 +48,6 @@ Not in the first release; re-weigh only when asked:
 - Portable mode: the data folder beside the executable, switched by a marker file (Move data folder exists).
 - Previewing an archive's file tree before installing it (the folder picker shows it only when no manifest is found).
 - Comparing a profile against a friend's share link or `.mortar` file for multiplayer, then installing what is missing.
+- Bottles as a launcher (Linux): games there are Windows builds in a Wine prefix, so it needs SMAPI's Windows installer run inside the bottle (`bottles-cli run -b <bottle> -e <installer>`) and launches through `bottles-cli run` with `--mods-path`; the Linux SMAPI install would break such a copy. Detection is simple: bottles under `~/.local/share/bottles/bottles` and `~/.var/app/com.usebottles.bottles/data/bottles/bottles`, each searched for `drive_c/Program Files (x86)/Steam` and GOG folders.
 - Per-profile save isolation.
 - Registering Mortar with Nexus (SSO slug; ask then about OAuth, which Vortex uses via `nxm://oauth/callback`, and Collections), and a mode for users without an API key: an `nxm://` link cannot become a download without API authentication (HTTP 401 without a key, measured), so that mode would pick up manual downloads from the Downloads folder by their manifests, with confirmation.
