@@ -28,16 +28,17 @@ var runIDPattern = regexp.MustCompile(`^[0-9A-Za-z.-]+$`)
 
 // Run is one recorded launch of a profile, without the log body.
 type Run struct {
-	ID           string         `json:"id"`
-	Started      string         `json:"started"`
-	Ended        string         `json:"ended"`
-	DurationMs   int64          `json:"durationMs"`
-	SMAPIVersion string         `json:"smapiVersion"`
-	GameVersion  string         `json:"gameVersion"`
-	Outcome      launch.Outcome `json:"outcome"`
-	Errors       int            `json:"errors"`
-	Warnings     int            `json:"warnings"`
-	Cause        *Cause         `json:"cause,omitempty"`
+	ID           string          `json:"id"`
+	Started      string          `json:"started"`
+	Ended        string          `json:"ended"`
+	DurationMs   int64           `json:"durationMs"`
+	SMAPIVersion string          `json:"smapiVersion"`
+	GameVersion  string          `json:"gameVersion"`
+	Outcome      launch.Outcome  `json:"outcome"`
+	Errors       int             `json:"errors"`
+	Warnings     int             `json:"warnings"`
+	Mods         []launch.ModRef `json:"mods,omitempty"`
+	Cause        *Cause          `json:"cause,omitempty"`
 }
 
 type Cause struct {
@@ -197,7 +198,9 @@ func (s *Service) LastRunSummary(gameID, profileID string) (string, launch.Summa
 	if err != nil {
 		return "", launch.Summary{}, err
 	}
-	return run.ID, launch.Summarize(text), nil
+	summary := launch.Summarize(text)
+	summary.ModRefs = append([]launch.ModRef{}, run.Mods...)
+	return run.ID, summary, nil
 }
 
 // LastRunIssues attributes the newest completed run's SMAPI log to user mods.
@@ -257,7 +260,27 @@ func readIndex(dir string) (runIndex, error) {
 	return idx, nil
 }
 
-func (s *Service) record(g game.Game, profileID string, started time.Time, failed bool) {
+func (s *Service) profileModRefs(gameID, profileID string) []launch.ModRef {
+	if profileID == "" {
+		return nil
+	}
+	installed, err := s.profiles.Installed(gameID, profileID)
+	if err != nil {
+		return nil
+	}
+	refs := make([]launch.ModRef, 0, len(installed))
+	for _, mod := range installed {
+		if !mod.Enabled {
+			continue
+		}
+		refs = append(refs, launch.ModRef{
+			Name: mod.Name, UniqueID: mod.UniqueID, Key: mod.Key, Version: mod.Version, SourceVersion: mod.Source.Version,
+		})
+	}
+	return refs
+}
+
+func (s *Service) record(g game.Game, profileID string, started time.Time, failed bool, refs ...[]launch.ModRef) {
 	if s.profiles == nil || profileID == "" {
 		return
 	}
@@ -295,6 +318,9 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		ID: id, Started: started.UTC().Format(time.RFC3339Nano), Ended: ended.UTC().Format(time.RFC3339Nano),
 		DurationMs: ended.Sub(started).Milliseconds(), SMAPIVersion: stats.SMAPI, GameVersion: stats.Game,
 		Outcome: outcome, Errors: stats.Errors, Warnings: stats.Warnings,
+	}
+	if len(refs) > 0 {
+		run.Mods = append([]launch.ModRef{}, refs[0]...)
 	}
 	if cause.ModName != "" {
 		run.Cause = &cause

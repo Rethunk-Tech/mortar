@@ -31,6 +31,19 @@ export function useDescribe(): Describe {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const nameOf = (id: string) => mods.find((m) => sameId(m.uniqueId, id))?.name ?? id
+  const describeRunError = (
+    runError: Extract<Problem, { kind: 'runError' }>['runError'],
+  ): string => {
+    const { name, first, count, updated } = runError
+    if (updated) {
+      return first === ''
+        ? t`${name} was updated since this run and logged ${count} errors.`
+        : t`${name} was updated since this run and logged an error: ${first}`
+    }
+    return first === ''
+      ? t`${name} logged ${count} errors in the last run.`
+      : t`${name} logged an error in the last run: ${first}`
+  }
 
   const describeBroken = (p: Extract<Problem, { kind: 'broken' }>): string => {
     const { name, brokeIn, status, summary } = p.broken
@@ -108,11 +121,7 @@ export function useDescribe(): Describe {
       case 'missing':
         return describeMissing(p)
       case 'runError': {
-        const { name, first, count } = p.runError
-        if (first !== '') {
-          return t`${name} logged an error in the last run: ${first}`
-        }
-        return t`${name} logged ${count} errors in the last run.`
+        return describeRunError(p.runError)
       }
       case 'setting': {
         const s = p.setting

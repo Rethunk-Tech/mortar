@@ -7,8 +7,11 @@ import (
 
 // ModRef is an installed mod the SMAPI log column can name.
 type ModRef struct {
-	Name     string
-	UniqueID string
+	Name          string `json:"name"`
+	UniqueID      string `json:"uniqueId"`
+	Key           string `json:"key"`
+	Version       string `json:"version"`
+	SourceVersion string `json:"sourceVersion"`
 }
 
 // ModRunIssues is ERROR/ALERT and WARN counts for one installed mod

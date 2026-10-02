@@ -133,6 +133,22 @@ func TestRecordStoresOwnedLogAndBoundsHistory(t *testing.T) {
 	}
 }
 
+func TestLastRunSummaryIncludesModSnapshot(t *testing.T) {
+	svc, p, cfg, home := runEnv(t)
+	mods, err := svc.profiles.ModsDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeOwnedLog(t, cfg, home, mods, "[19:43:50 ERROR Alpha] old error\n")
+	g := game.Find("stardew")
+	ref := launch.ModRef{Name: "Alpha", UniqueID: "me.mod", Key: "old-key", Version: "1.0", SourceVersion: "1.0"}
+	svc.record(g, p.ID, time.Now(), false, []launch.ModRef{ref})
+	_, summary, err := svc.LastRunSummary("stardew", p.ID)
+	if err != nil || len(summary.ModRefs) != 1 || summary.ModRefs[0] != ref {
+		t.Fatalf("summary refs = %#v, %v", summary.ModRefs, err)
+	}
+}
+
 func TestRecordFailedLaunchAndUnownedLogUsesSession(t *testing.T) {
 	svc, p, cfg, _ := runEnv(t)
 	g := game.Find("stardew")

@@ -15,6 +15,7 @@ type RunError struct {
 	First    string `json:"first"`
 	Severe   bool   `json:"severe"`
 	RunID    string `json:"runId"`
+	Updated  bool   `json:"updated,omitempty"`
 }
 
 // RunReader loads the newest recorded run's SMAPI log summary for a profile.
@@ -35,11 +36,25 @@ func installedByRef(mods []Installed, ref launch.ModRef) (Installed, bool) {
 		if !m.Enabled {
 			continue
 		}
-		if m.Name == ref.Name && strings.EqualFold(m.UniqueID, ref.UniqueID) {
+		if ref.Key != "" && m.Key == ref.Key && (ref.UniqueID == "" || strings.EqualFold(m.UniqueID, ref.UniqueID)) &&
+			(ref.Name == "" || m.Name == ref.Name) {
+			return m, true
+		}
+		if (ref.UniqueID != "" && strings.EqualFold(m.UniqueID, ref.UniqueID)) ||
+			(ref.UniqueID == "" && ref.Name != "" && m.Name == ref.Name) {
 			return m, true
 		}
 	}
 	return Installed{}, false
+}
+
+func changedSinceRun(now Installed, then launch.ModRef) bool {
+	if then.Key == "" {
+		return false
+	}
+	return now.Key != then.Key ||
+		then.Version != "" && now.Version != then.Version ||
+		then.SourceVersion != "" && now.SourceVersion != then.SourceVersion
 }
 
 // RunErrorsFromSummary maps a run summary to profile mods that logged errors and are still enabled.
@@ -47,7 +62,11 @@ func RunErrorsFromSummary(runID string, summary launch.Summary, mods []Installed
 	if runID == "" || len(summary.Mods) == 0 {
 		return []RunError{}
 	}
-	refs := modRefs(mods)
+	refs := summary.ModRefs
+	snapshot := len(refs) > 0
+	if !snapshot {
+		refs = modRefs(mods)
+	}
 	severe := summary.Crashed
 	out := []RunError{}
 	for _, me := range summary.Mods {
@@ -62,6 +81,7 @@ func RunErrorsFromSummary(runID string, summary launch.Summary, mods []Installed
 		out = append(out, RunError{
 			Key: inst.Key, UniqueID: inst.UniqueID, Name: inst.Name,
 			Count: me.Count, First: me.First, Severe: severe, RunID: runID,
+			Updated: snapshot && changedSinceRun(inst, ref),
 		})
 	}
 	return out

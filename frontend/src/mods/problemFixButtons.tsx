@@ -18,7 +18,6 @@ import {
   RevertDriftEntry,
   SetConfigValue,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { useConsole } from '../console/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
@@ -26,6 +25,7 @@ import { pendingFor } from '../queue/totals.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { type Problem, sameId } from './lookup.ts'
 import { assetFixButtonStyle } from './problemGroups.ts'
+import { RunErrorButtons } from './runErrorFixButtons.tsx'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -82,42 +82,6 @@ function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string }) {
     </>
   )
 }
-
-function RunErrorButtons({
-  runError,
-  button,
-}: {
-  runError: Extract<Problem, { kind: 'runError' }>['runError']
-  button: (label: string, onClick: () => void) => ReactNode
-}) {
-  const { t } = useLingui()
-  const mods = useMods((s) => s.mods)
-  const setEnabled = useMods((s) => s.setEnabled)
-  const mod = mods.find((m) => m.key === runError.key && sameId(m.uniqueId, runError.uniqueId))
-  const openHelp = () => {
-    const { game, openId } = useProfiles.getState()
-    if (!(game && openId) || runError.runId === '') {
-      return
-    }
-    useConsole.getState().viewRun(game.id, openId, runError.runId)
-    useConsole.getState().setHelping(true)
-  }
-  return (
-    <>
-      {mod ? button(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected)) : null}
-      <Button
-        size="small"
-        color="warning"
-        variant="outlined"
-        onClick={openHelp}
-        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
-      >
-        {t`Show in log`}
-      </Button>
-    </>
-  )
-}
-
 function ListedButtons({
   missing,
   dismiss,
@@ -141,7 +105,6 @@ function ListedButtons({
     </>
   )
 }
-
 function BrokenFixButtons({
   broken,
   button,
@@ -196,7 +159,6 @@ function BrokenFixButtons({
     </>
   )
 }
-
 function SettingButtons({
   setting,
   dismissedToken,
@@ -290,7 +252,6 @@ function SettingButtons({
     </>
   )
 }
-
 // The row action matrix is intentionally kept in one place so dismissed rows retain their normal fixes.
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: action combinations are part of the problem model
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: action combinations are part of the problem model
@@ -489,7 +450,6 @@ export function FixButton({
   }
   return <WhereButtons where={where} addLabel={t`Add`} />
 }
-
 export function DriftButtons({ drift }: { drift: Drift }) {
   const { t } = useLingui()
   const load = useMods((s) => s.load)

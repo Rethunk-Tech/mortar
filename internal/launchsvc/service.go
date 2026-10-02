@@ -101,6 +101,7 @@ type session struct {
 	profile         string
 	vanilla         bool
 	started         time.Time
+	mods            []launch.ModRef
 	restore         *settingsRestore
 	settingsMissing bool
 }
@@ -631,12 +632,14 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 	runCtx, cancel := context.WithCancel(ctx)
 	buf := &launch.Buffer{}
 	started := time.Now()
+	mods := s.profileModRefs(gameID, profileID)
 	s.mu.Lock()
 	s.logs[gameID], s.stop[gameID] = session{
 		buf:             buf,
 		profile:         profileID,
 		vanilla:         vanilla,
 		started:         started,
+		mods:            mods,
 		restore:         restore,
 		settingsMissing: settingsMissing,
 	}, cancel
@@ -915,7 +918,7 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 				s.NotifyRunEnd(RunEndNotice{Game: g.ID(), Profile: cur.Profile, Title: title, Body: body})
 			}
 		}
-		s.record(g, cur.Profile, started, false)
+		s.record(g, cur.Profile, started, false, sess.mods)
 	}
 	s.set(Status{Game: g.ID(), State: Idle})
 }
@@ -927,7 +930,7 @@ func (s *Service) finishFailed(g game.Game, profileID string, buf *launch.Buffer
 	if !ok || sess.vanilla || sess.buf != buf || profileID == "" {
 		return
 	}
-	s.record(g, profileID, sess.started, true)
+	s.record(g, profileID, sess.started, true, sess.mods)
 }
 
 // say adds a console line of Mortar's own to the session of the profile the game runs.

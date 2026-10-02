@@ -67,3 +67,18 @@ func TestRunErrorsFromSummary_matchByUniqueID(t *testing.T) {
 		t.Fatalf("match by id: %#v", got)
 	}
 }
+
+func TestRunErrorsFromSummaryMarksModsUpdatedSinceRun(t *testing.T) {
+	mod := installedMod("new-key", "Alpha", "me.mod", true)
+	mod.Version, mod.SourceVersion = "2.0", "2.0"
+	summary := launch.Summary{
+		ModRefs: []launch.ModRef{{
+			Key: "old-key", Name: "Alpha", UniqueID: "me.mod", Version: "1.0", SourceVersion: "1.0",
+		}},
+		Mods: []launch.ModError{{Mod: "Alpha", Count: 1, First: "old error"}},
+	}
+	got := RunErrorsFromSummary("run", summary, []Installed{mod})
+	if len(got) != 1 || got[0].Key != "new-key" || !got[0].Updated {
+		t.Fatalf("updated row = %#v", got)
+	}
+}
