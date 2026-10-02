@@ -12,6 +12,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 	"unicode/utf8"
 
@@ -168,15 +169,51 @@ func (x *extractor) zip(r io.ReaderAt, size int64) error {
 // zipName is an entry's name as UTF-8. Zips written without the UTF-8 flag carry names in the writer's locale;
 // for Stardew mods that is most often GBK from Chinese-locale tools, and GB18030 decodes it. A name left as raw
 // bytes extracts to a folder the game's .NET runtime cannot open.
-func zipName(f *zip.File) string {
-	if utf8.ValidString(f.Name) {
-		return f.Name
+func zipName(f *zip.File) string { return utf8Name(f.Name) }
+
+func utf8Name(name string) string {
+	if utf8.ValidString(name) {
+		return name
 	}
-	decoded, err := simplifiedchinese.GB18030.NewDecoder().String(f.Name)
+	decoded, err := simplifiedchinese.GB18030.NewDecoder().String(name)
 	if err != nil || !utf8.ValidString(decoded) {
-		return strings.ToValidUTF8(f.Name, "_")
+		return strings.ToValidUTF8(name, "_")
 	}
 	return decoded
+}
+
+// RepairNames renames every file and folder under root whose name is not UTF-8, as zipName would have named it,
+// deepest first so a folder's own path stays valid while its children move. A name whose repaired form already
+// exists is left alone. It returns how many entries it renamed.
+func RepairNames(root string) (int, error) {
+	var bad []string
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				return nil
+			}
+			return err
+		}
+		if path != root && !utf8.ValidString(d.Name()) {
+			bad = append(bad, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return 0, err
+	}
+	renamed := 0
+	for _, from := range slices.Backward(bad) {
+		to := filepath.Join(filepath.Dir(from), utf8Name(filepath.Base(from)))
+		if _, err := os.Lstat(to); err == nil {
+			continue
+		}
+		if err := os.Rename(from, to); err != nil {
+			return renamed, err
+		}
+		renamed++
+	}
+	return renamed, nil
 }
 
 func (x *extractor) sevenZip(r io.ReaderAt, size int64) error {

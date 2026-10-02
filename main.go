@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/archive"
 	"github.com/Rethunk-AI/mortar/internal/backdrop"
 	"github.com/Rethunk-AI/mortar/internal/bisect"
 	"github.com/Rethunk-AI/mortar/internal/bundles"
@@ -152,6 +153,14 @@ func run() error {
 	dataDir, err := datadir.Dir()
 	if err != nil {
 		return err
+	}
+	// Mods extracted before zip names were decoded may sit in folders the game cannot open.
+	for _, root := range []string{filepath.Join(dataDir, "store"), filepath.Join(dataDir, "profiles")} {
+		if n, err := archive.RepairNames(root); err != nil {
+			log.Printf("repair names under %s: %v", root, err)
+		} else if n > 0 {
+			log.Printf("repaired %d file names under %s", n, root)
+		}
 	}
 	updates := &updatesvc.Service{}
 	app := application.New(application.Options{
