@@ -378,12 +378,6 @@ function ModMenuItems({
         addBundle: t`Add to bundle…`,
       },
     }),
-    <RemoveOtherMenuItem
-      key="remove-other"
-      locked={locked}
-      close={close}
-      onClick={onRemoveOther}
-    />,
   ]
 }
 
