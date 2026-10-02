@@ -59,9 +59,10 @@ func (s *Store) Delete(gameID, id string) error {
 	if err := os.Chtimes(dst, now, now); err != nil {
 		return err
 	}
+	// The profile is already in the trash; a shortcut left behind is logged, not a failed delete.
 	if s.ShortcutRemoved != nil {
 		if err := s.ShortcutRemoved(gameID, id); err != nil {
-			return err
+			log.Printf("profile %s/%s: remove its shortcuts: %v", gameID, id, err)
 		}
 	}
 	return nil

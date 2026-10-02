@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -430,8 +431,9 @@ func (s *Store) Rename(gameID, id, name string) (Profile, error) {
 	if g := game.Find(gameID); g != nil {
 		gameName = g.Name()
 	}
+	// The rename has happened; a shortcut keeping the old name is logged, not a failed rename.
 	if err := s.ShortcutRenamed(gameID, id, p.Name, gameName); err != nil {
-		return p, err
+		log.Printf("profile %s/%s: rename its shortcuts: %v", gameID, id, err)
 	}
 	return p, nil
 }
