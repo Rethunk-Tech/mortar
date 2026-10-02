@@ -17,6 +17,7 @@ import { type ReactNode, useEffect, useRef, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { LogActions } from '../console/LogActions.tsx'
+import { PerformancePanel } from '../console/PerformancePanel.tsx'
 import { useBadges } from '../mods/badges.ts'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { ProblemActions, ProblemsTab } from '../mods/ProblemsTab.tsx'
@@ -445,6 +446,7 @@ export function Detail() {
           <Tab value="saves" label={t`Saves`} />
           <Tab value="notes" label={t`Notes`} />
           <Tab value="console" label={t`Console`} />
+          <Tab value="performance" label={t`Performance`} />
         </Tabs>
         <Box sx={{ flexGrow: 1 }} />
         <Box sx={{ display: 'flex', gap: 0.75 }}>
@@ -474,6 +476,7 @@ export function Detail() {
         </Box>
       </Box>
       {tab === 'console' ? <ConsoleTab game={game} /> : null}
+      {tab === 'performance' ? <PerformancePanel game={game} /> : null}
       {tab === 'notes' ? <NotesTab key={`notes-${profile.id}`} profile={profile} /> : null}
       {tab === 'saves' ? <SavesTab profile={profile} game={game} /> : null}
       {tab === 'mods' ? <ModsTab key={`mods-${profile.id}`} profile={profile} /> : null}
