@@ -279,6 +279,12 @@ func (s *Service) Peers() []Peer {
 
 // Send sends a profile's share link to a discovered peer.
 func (s *Service) Send(peerID, game, profileID string) error {
+	s.mu.RLock()
+	enabled := s.enabled
+	s.mu.RUnlock()
+	if !enabled {
+		return errors.New("LAN sharing is disabled")
+	}
 	if s.deps.Shares == nil {
 		return errors.New("LAN sharing is unavailable")
 	}
