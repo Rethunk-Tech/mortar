@@ -403,7 +403,9 @@ func (s *Service) start(parent context.Context, gameID, profileID string, direct
 			// Reading the profile takes its lock, so a change to its mods already under way finishes first; any
 			// later one sees the profile as running.
 			if _, err = s.profiles.Mods(gameID, profileID); err == nil {
-				err = s.begin(ctx, g, profileID, dir, modsDir, direct, false)
+				// The run gets parent, not ctx: ctx is cancelled as soon as this goroutine returns, which would
+				// end the game Mortar just started.
+				err = s.begin(parent, g, profileID, dir, modsDir, direct, false)
 			}
 		}
 		if err != nil {

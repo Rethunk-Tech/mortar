@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"runtime"
 	"testing"
 	"time"
 
@@ -462,4 +463,39 @@ func TestStartLoaderUsesAppLifetime(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("EnsureLoader was not called")
 	}
+}
+
+func TestStartedGameIsNotCancelledWhenStartReturns(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("uses a shell script as the game")
+	}
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	svc, p := startEnv(t)
+	folder := svc.settings.Get().GameFolders["stardew"]
+	script := []byte("#!/bin/sh\nexec sleep 3\n")
+	for _, name := range []string{"StardewValley", "StardewValley-original", "StardewModdingAPI"} {
+		if err := os.WriteFile(filepath.Join(folder, name), script, 0o700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	svc.EnsureLoader = func(context.Context, string, bool) error { return nil }
+	if err := svc.Start(context.Background(), "stardew", p.ID, true); err != nil {
+		t.Fatal(err)
+	}
+	deadline := time.Now().Add(10 * time.Second)
+	for time.Now().Before(deadline) {
+		runs, err := svc.Runs("stardew", p.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(runs) > 0 {
+			if runs[0].DurationMs < 2000 {
+				text, _ := svc.RunLog("stardew", p.ID, runs[0].ID)
+				t.Fatalf("the game was stopped after %d ms: %q", runs[0].DurationMs, text)
+			}
+			return
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+	t.Fatal("the run was never recorded")
 }
