@@ -1955,7 +1955,7 @@ msgstr "Farming skill"
 msgid "Profile menu"
 msgstr "Profile menu"
 
-#: src/toasts/HistoryButton.tsx:142
+#: src/toasts/HistoryButton.tsx:144
 msgid "No notifications yet"
 msgstr "No notifications yet"
 
@@ -2137,8 +2137,8 @@ msgstr "Could not remove the selected mods"
 msgid "Saved"
 msgstr "Saved"
 
-#: src/toasts/HistoryButton.tsx:87
-#: src/toasts/HistoryButton.tsx:129
+#: src/toasts/HistoryButton.tsx:89
+#: src/toasts/HistoryButton.tsx:131
 #: src/toasts/ToastHost.tsx:149
 msgid "Notifications"
 msgstr "Notifications"
@@ -4432,7 +4432,7 @@ msgstr "{hours}h played"
 
 #: src/console/LogActions.tsx:39
 #: src/mods/SelectionBar.tsx:83
-#: src/toasts/HistoryButton.tsx:136
+#: src/toasts/HistoryButton.tsx:138
 msgid "Clear"
 msgstr "Clear"
 
