@@ -244,3 +244,26 @@ func syntheticEditPack(t *testing.T, content string) Installed {
 	}
 	return Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root)}
 }
+
+func TestSwitchOffOnlySuggestsNonClashingAllowedValue(t *testing.T) {
+	first := syntheticEditPack(t, `{"ConfigSchema":{"Variant":{"Default":"Red","AllowValues":"Red, Blue, Green"}},"Changes":[
+		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"Variant":"Red"}},
+		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"Variant":"Blue"}}
+	]}`)
+	second := syntheticEditPack(t, `{"Changes":[
+		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":0,"Y":0,"Width":1,"Height":1}}
+	]}`)
+	conflicts := assetConflicts([]Installed{first, second})
+	if len(conflicts) != 1 {
+		t.Fatalf("expected one conflict, got %#v", conflicts)
+	}
+	for _, fix := range conflicts[0].Fixes {
+		if sameID(fix.UniqueID, first.UniqueID) {
+			if fix.Field != "Variant" || fix.Value != "Green" {
+				t.Fatalf("expected the only safe allowed value, got %#v", fix)
+			}
+			return
+		}
+	}
+	t.Fatalf("expected a safe setting fix for %s: %#v", first.UniqueID, conflicts[0].Fixes)
+}

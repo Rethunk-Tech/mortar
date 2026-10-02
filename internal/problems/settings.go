@@ -213,16 +213,17 @@ func addSettingValue(values *[]string, value string) {
 	*values = append(*values, value)
 }
 
-// toggle reports an on/off field. Only toggles are suggested: a field that picks among several variants or
-// lists NPCs also gates patches for other mods, but switching it changes what the player chose, not
-// whether a compatibility patch runs.
+// toggle reports a single-choice field whose values can select which compatibility patch runs.
 func (s cpSchema) toggle() bool {
 	values := s.allowValues
 	if len(values) == 0 {
 		values = []string{s.defaultValue}
 	}
-	if s.allowMultiple || len(values) > 2 {
+	if s.allowMultiple || len(values) == 0 {
 		return false
+	}
+	if len(s.allowValues) > 0 {
+		return true
 	}
 	for _, v := range values {
 		switch strings.ToLower(strings.TrimSpace(v)) {

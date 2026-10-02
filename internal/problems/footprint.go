@@ -780,7 +780,7 @@ func markClashes(a, b *packHit) {
 
 // switchOff finds an on/off field that every clashing edit of the pack needs; its other value removes the pack
 // from the conflict, such as Better Things' DesertMinecart for an expansion that redraws the desert.
-func switchOff(h packHit) (ConflictFix, bool) {
+func switchOff(h packHit, peerSets ...[]packHit) (ConflictFix, bool) {
 	if len(h.clashes) == 0 {
 		return ConflictFix{}, false
 	}
@@ -822,6 +822,9 @@ func switchOff(h packHit) (ConflictFix, bool) {
 		if len(off) != 1 {
 			continue
 		}
+		if len(peerSets) > 0 && settingStillClashes(h, peerSets[0], field, off[0]) {
+			continue
+		}
 		current, set := h.config[strings.ToLower(field.key)]
 		if !set {
 			current = field.defaultValue
@@ -829,4 +832,30 @@ func switchOff(h packHit) (ConflictFix, bool) {
 		return ConflictFix{Key: h.key, UniqueID: h.id, Name: h.name, Field: field.key, Current: current, Value: off[0]}, true
 	}
 	return ConflictFix{}, false
+}
+
+func settingStillClashes(h packHit, peers []packHit, field cpSchema, value string) bool {
+	config := map[string]string{}
+	for key, current := range h.config {
+		config[key] = current
+	}
+	config[strings.ToLower(field.key)] = value
+	var active []cpPatch
+	for _, edit := range h.eligible {
+		if configHolds(edit.when.config, h.schema, config) {
+			active = append(active, edit)
+		}
+	}
+	if len(h.eligible) == 0 {
+		active = h.edits
+	}
+	for _, peer := range peers {
+		if sameID(peer.id, h.id) {
+			continue
+		}
+		if clash, _ := editsClash(active, peer.edits); clash {
+			return true
+		}
+	}
+	return false
 }

@@ -64,6 +64,7 @@ type packHit struct {
 	present      map[string]bool
 	loads        []cpPatch
 	edits        []cpPatch // the pack's active edits of this target
+	eligible     []cpPatch // edits whose HasMod conditions hold, including config-off variants
 	loadClashes  map[int]bool
 	dependencies map[string]bool
 	schema       map[string]cpSchema
@@ -683,7 +684,7 @@ func assetConflicts(mods []Installed) []AssetConflict {
 			config = readPackConfig(mod.Folder)
 		}
 		for _, p := range pack.patches {
-			if p.kind == "other" || !p.when.holds(present) || !configHolds(p.when.config, pack.schema, config) {
+			if p.kind == "other" || !p.when.holds(present) {
 				continue
 			}
 			hits := at[p.kind][p.target]
@@ -699,10 +700,17 @@ func assetConflicts(mods []Installed) []AssetConflict {
 			} else {
 				hits[i].priority = strongerContentPatcherPriority(hits[i].priority, p.priority, p.kind)
 			}
-			if p.kind == "load" {
-				hits[i].loads = append(hits[i].loads, p)
-			} else {
+			if p.kind == "edit" {
+				hits[i].eligible = append(hits[i].eligible, p)
+				if !configHolds(p.when.config, pack.schema, config) {
+					continue
+				}
 				hits[i].edits = append(hits[i].edits, p)
+			} else {
+				if !configHolds(p.when.config, pack.schema, config) {
+					continue
+				}
+				hits[i].loads = append(hits[i].loads, p)
 			}
 		}
 	}
@@ -725,7 +733,7 @@ func assetConflicts(mods []Installed) []AssetConflict {
 				}
 				c.Fixes = []ConflictFix{}
 				for _, h := range hits {
-					if fix, ok := switchOff(h); ok {
+					if fix, ok := switchOff(h, hits); ok {
 						c.Fixes = append(c.Fixes, fix)
 					}
 				}
