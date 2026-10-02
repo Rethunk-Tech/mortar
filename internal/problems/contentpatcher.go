@@ -1260,6 +1260,13 @@ func dismissToken(kind, target string) string {
 	return kind + "\t" + target
 }
 
+func settingChoiceToken(uniqueID, field, value string) string {
+	target := strings.ToLower(strings.TrimSpace(uniqueID)) + "\t" +
+		strings.ToLower(strings.TrimSpace(field)) + "\t" +
+		strings.ToLower(strings.TrimSpace(value))
+	return dismissToken("setting-choice", target)
+}
+
 func hideDismissedBroken(broken []Broken, tokens []string) []Broken {
 	if len(tokens) == 0 {
 		return broken
@@ -1307,7 +1314,8 @@ func hideDismissedSettings(settings []SettingHint, tokens []string) []SettingHin
 	out := []SettingHint{}
 	for _, setting := range settings {
 		target := strings.ToLower(setting.UniqueID) + "\t" + strings.ToLower(setting.Field)
-		if skip[dismissToken("setting", target)] {
+		if skip[dismissToken("setting", target)] ||
+			skip[settingChoiceToken(setting.UniqueID, setting.Field, setting.Current)] {
 			continue
 		}
 		out = append(out, setting)

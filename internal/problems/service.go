@@ -237,6 +237,25 @@ func (s *Service) DismissSetting(_ context.Context, gameID, id, uniqueID, field 
 	return err
 }
 
+// RememberSettingChoice keeps a setting hint hidden while its chosen value remains current.
+func (s *Service) RememberSettingChoice(_ context.Context, gameID, id, uniqueID, field, value string) error {
+	uniqueID, field = strings.TrimSpace(uniqueID), strings.TrimSpace(field)
+	if uniqueID == "" || field == "" {
+		return errors.New("missing setting")
+	}
+	token := settingChoiceToken(uniqueID, field, value)
+	bucket := dismissBucket(gameID, id)
+	_, err := s.settings.Update(func(v *settings.Settings) {
+		if slices.Contains(v.Dismissed[bucket], token) {
+			return
+		}
+		next := maps.Clone(v.Dismissed)
+		next[bucket] = append(slices.Clone(v.Dismissed[bucket]), token)
+		v.Dismissed = next
+	})
+	return err
+}
+
 // DismissAssetConflict hides a soft (edit) Content Patcher overlap for this profile until it is gone.
 func (s *Service) DismissAssetConflict(_ context.Context, gameID, id, kind, target string) error {
 	if kind != "edit" || target == "" {

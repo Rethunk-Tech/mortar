@@ -7,6 +7,7 @@ import type {
   Ref,
   SettingHint,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import { RememberSettingChoice } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import type { Drift } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   AdoptDriftFolder,
@@ -15,6 +16,7 @@ import {
   RemoveDriftFolder,
   RestoreDriftEntry,
   RevertDriftEntry,
+  SetConfigValue,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useConsole } from '../console/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -197,14 +199,24 @@ function BrokenFixButtons({
 
 function SettingButtons({ setting }: { setting: SettingHint }) {
   const { t } = useLingui()
-  const setConfigValue = useMods((s) => s.setConfigValue)
+  const loadProblems = useMods((s) => s.loadProblems)
   const dismissSetting = useMods((s) => s.dismissSetting)
   const locked = useLocked()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const values = setting.suggested ?? []
-  const apply = (value: string) => {
+  const apply = async (value: string) => {
     setAnchorEl(null)
-    setConfigValue(setting, value).catch(reportUnexpected)
+    const { game, openId } = useProfiles.getState()
+    if (!(game && openId)) {
+      return
+    }
+    try {
+      await SetConfigValue(game.id, openId, setting.key, setting.uniqueId, setting.field, value)
+      await RememberSettingChoice(game.id, openId, setting.uniqueId, setting.field, value)
+      await loadProblems()
+    } catch (error) {
+      reportUnexpected(error)
+    }
   }
   if (values.length === 0) {
     return null
