@@ -3,7 +3,7 @@ import { Badge, Box, Button, IconButton, Popover, Tooltip, Typography } from '@m
 import { Bell } from 'lucide-react'
 import { useState } from 'react'
 import { compact } from '../game/compact.ts'
-import { formatWhen } from '../i18n/formatWhen.ts'
+import { When } from '../i18n/When.tsx'
 import { useLaunch } from '../launch/store.ts'
 import { isLocked } from '../mods/locked.ts'
 import { historyActionState } from './history.ts'
@@ -50,7 +50,7 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
           <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{item.body}</Typography>
         ) : null}
         <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
-          {formatWhen(item.at, { withTime: true })}
+          <When value={item.at} withTime={true} />
         </Typography>
       </Box>
       {action ? (

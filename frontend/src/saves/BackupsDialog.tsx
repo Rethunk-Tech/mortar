@@ -23,7 +23,7 @@ import type {
   Snap,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/backup/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
-import { formatWhen } from '../i18n/formatWhen.ts'
+import { When } from '../i18n/When.tsx'
 import { useLaunch } from '../launch/store.ts'
 import { paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -74,7 +74,7 @@ function BackupRow({
   onRestore: (el: HTMLElement) => void
 }) {
   const { t } = useLingui()
-  const when = backup.at > 0 ? formatWhen(backup.at, { withTime: true }) : backup.name
+  const when = backup.at > 0 ? <When value={backup.at} withTime={true} /> : backup.name
   const farms = (backup.saves ?? []).map((s) => s.farm || s.folder).join(', ')
   const meta = farms
     ? t`${causeLabel(backup, profileName)} · ${formatBytes(backup.size)} · ${farms}`

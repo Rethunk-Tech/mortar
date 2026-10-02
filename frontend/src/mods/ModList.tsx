@@ -11,13 +11,13 @@ import {
   useMediaQuery,
 } from '@mui/material'
 import { Pin } from 'lucide-react'
-import { type MouseEvent, useEffect, useState } from 'react'
+import { type MouseEvent, type ReactNode, useEffect, useState } from 'react'
 import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compactQuery } from '../game/compact.ts'
-import { formatWhen } from '../i18n/formatWhen.ts'
+import { When } from '../i18n/When.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -81,10 +81,10 @@ function dash(value: string) {
   return value || '—'
 }
 
-function ValueCell({ text, accent }: { text: string; accent?: boolean }) {
+function ValueCell({ text, title, accent }: { text: ReactNode; title?: string; accent?: boolean }) {
   return (
     <Cell
-      title={text}
+      title={title ?? (typeof text === 'string' ? text : undefined)}
       sx={{
         ...ellipsis,
         color: accent ? 'primary.main' : 'text.secondary',
@@ -141,13 +141,17 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string) {
     case 'installed':
     case 'notes': {
       const notes = [row.note, row.tags.join(', ')].filter((part) => part !== '').join(' · ')
+      if (id === 'updated') {
+        return <ValueCell key={id} text={<When value={page?.updated ?? ''} />} />
+      }
+      if (id === 'installed') {
+        return <ValueCell key={id} text={<When value={row.added} />} />
+      }
       const text = {
         uniqueId: dash(m.uniqueId),
         author: dash(m.author),
         source: dash(row.source),
         category: dash(row.categoryLabel),
-        updated: dash(formatWhen(page?.updated ?? '')),
-        installed: dash(formatWhen(row.added)),
         notes: dash(notes),
       }[id]
       return <ValueCell key={id} text={text} />

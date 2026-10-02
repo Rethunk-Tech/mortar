@@ -113,7 +113,7 @@ function Row({
   lastPlayedAt: string
   lastPlayedId: string
 }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const start = useLaunch((s) => s.start)
   const ago = formatWhen(lastPlayedAt)
   let lastLine = ''
@@ -161,7 +161,19 @@ function Row({
       {gameArt(game) ? <Art src={gameArt(game)} openable={openable} /> : null}
       <Box sx={{ position: 'relative', textShadow: shadow, textAlign: 'left', color: '#fff' }}>
         <Typography sx={{ fontSize: 34, fontWeight: 600, lineHeight: 1.2 }}>{game.name}</Typography>
-        <Typography sx={{ fontSize: 17 }}>{loaderLine}</Typography>
+        <Typography
+          title={
+            lastPlayedAt
+              ? new Intl.DateTimeFormat(i18n.locale, {
+                  dateStyle: 'medium',
+                  timeStyle: 'short',
+                }).format(new Date(lastPlayedAt))
+              : undefined
+          }
+          sx={{ fontSize: 17 }}
+        >
+          {loaderLine}
+        </Typography>
         <Typography sx={{ mt: '6px', fontSize: 16, fontWeight: 600 }}>{note}</Typography>
       </Box>
       <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '14px' }}>

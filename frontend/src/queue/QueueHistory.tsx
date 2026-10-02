@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, FormControl, IconButton, MenuItem, Select, Tooltip, Typography } from '@mui/material'
 import { CircleCheck, CircleX, Download, Filter, Trash2, User } from 'lucide-react'
 import { ClearHistory } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
-import { formatWhen } from '../i18n/formatWhen.ts'
+import { When } from '../i18n/When.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -139,9 +139,12 @@ export function HistoryList({
                 {` · ${e.source}`}
                 {e.profileId ? ` · ${nameOf(e.profileId)}` : ''}
                 {e.size > 0 ? ` · ${megabytes(sizeKb(e.size))} MB` : ''}
-                {e.finished
-                  ? ` · ${formatWhen(e.finished * millisecondsPerSecond, { withTime: true })}`
-                  : ''}
+                {e.finished ? (
+                  <>
+                    {t` · `}
+                    <When value={e.finished * millisecondsPerSecond} withTime={true} />
+                  </>
+                ) : null}
               </Typography>
             </Box>
           ))

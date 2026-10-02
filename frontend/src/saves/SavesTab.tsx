@@ -264,7 +264,7 @@ function FitStatus({ missing }: { missing: number }) {
 }
 
 function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: string }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
   const missing = fit.missing ?? []
   const style = SEASON_STYLE[fit.season] ?? SEASON_STYLE[0]
@@ -334,6 +334,14 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
         <Typography
           sx={{ flex: 1, minWidth: 0, fontSize: 12, color: 'text.secondary' }}
           noWrap={true}
+          title={
+            fit.played
+              ? new Intl.DateTimeFormat(i18n.locale, {
+                  dateStyle: 'medium',
+                  timeStyle: 'short',
+                }).format(new Date(fit.played))
+              : undefined
+          }
         >
           {t`Last played ${formatWhen(fit.played)}`}
         </Typography>

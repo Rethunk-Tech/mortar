@@ -18,7 +18,7 @@ import {
   History,
   Revert,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { formatWhen } from '../i18n/formatWhen.ts'
+import { When } from '../i18n/When.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useProfiles } from './store.ts'
@@ -102,7 +102,7 @@ export function HistoryDialog({
               >
                 <ListItemText
                   primary={ev.label}
-                  secondary={formatWhen(String(ev.at), { withTime: true })}
+                  secondary={<When value={String(ev.at)} withTime={true} />}
                 />
               </ListItem>
             ))}

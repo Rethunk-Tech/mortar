@@ -2,12 +2,12 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, CircularProgress, Divider, Tab, Tabs, Typography } from '@mui/material'
 import { Plus, RotateCcw, Settings2, Share2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { LogActions } from '../console/LogActions.tsx'
 import { PerformancePanel } from '../console/PerformancePanel.tsx'
-import { formatWhen } from '../i18n/formatWhen.ts'
+import { When } from '../i18n/When.tsx'
 import { useBadges } from '../mods/badges.ts'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { ProblemActions, ProblemsTab } from '../mods/ProblemsTab.tsx'
@@ -33,9 +33,15 @@ import { NewProfileDialog } from './NewProfileDialog.tsx'
 import { useRenameRequest } from './renameRequest.ts'
 import { type TabId, useTab } from './tab.ts'
 
-const fmt = (iso: unknown) => formatWhen(String(iso))
-
-function Card({ label, value, onClick }: { label: string; value: string; onClick?: () => void }) {
+function Card({
+  label,
+  value,
+  onClick,
+}: {
+  label: string
+  value: ReactNode
+  onClick?: () => void
+}) {
   return (
     <Box
       component={onClick ? 'button' : 'div'}
@@ -147,8 +153,6 @@ function Hero({ profile, game }: { profile: Profile; game: string }) {
   const setTab = useTab((s) => s.setTab)
   const fits = useSaves((s) => s.fits)
   const { fitting, total } = saveFits(fits)
-  const created = fmt(profile.created)
-  const updated = fmt(profile.updated)
   const updates = useBadges((s) => s.byProfile[profile.id]?.updates ?? 0)
   const problems = useBadges((s) => s.byProfile[profile.id]?.problems ?? 0)
   const meta = compactMeta(mods, updates, problems).map((part) => {
@@ -206,8 +210,8 @@ function Hero({ profile, game }: { profile: Profile; game: string }) {
             value={total === 0 ? t`None` : t`${fitting} of ${total}`}
             onClick={() => setTab('saves')}
           />
-          <Card label={t`Updated`} value={updated} />
-          <Card label={t`Created`} value={created} />
+          <Card label={t`Updated`} value={<When value={profile.updated} />} />
+          <Card label={t`Created`} value={<When value={profile.created} />} />
         </Box>
       </Box>
     </Box>
@@ -368,7 +372,7 @@ export function Detail() {
           ) : null}
           {tab === 'console' ? (
             <>
-              <LogActions />
+              <LogActions game={game} />
               <Divider orientation="vertical" flexItem={true} sx={{ mx: 0.5 }} />
             </>
           ) : null}
