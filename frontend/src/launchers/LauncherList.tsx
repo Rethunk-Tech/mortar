@@ -26,7 +26,15 @@ const COLUMN_MIN = 460
 
 const pathSx = { fontSize: 13, userSelect: 'text', overflowWrap: 'anywhere' } as const
 
-function LauncherRow({ launcher, refresh }: { launcher: StoreApp; refresh: () => void }) {
+function LauncherRow({
+  launcher,
+  refresh,
+  open,
+}: {
+  launcher: StoreApp
+  refresh: () => void
+  open?: boolean
+}) {
   const { t } = useLingui()
   const [error, setError] = useState('')
   const games = (launcher.games ?? []).map((g) => g.name)
@@ -57,6 +65,7 @@ function LauncherRow({ launcher, refresh }: { launcher: StoreApp; refresh: () =>
   }
   return (
     <Accordion
+      defaultExpanded={open}
       disableGutters={true}
       sx={{
         bgcolor: 'rgba(50,50,60,0.78)',
@@ -168,6 +177,8 @@ export function LauncherList({
   refresh: () => void
 }) {
   const columns = [launchers.filter((_, i) => i % 2 === 0), launchers.filter((_, i) => i % 2 === 1)]
+  // With nothing found at all, the first row starts open so a new user lands on Add folder.
+  const first = launchers.every((l) => !l.found) ? launchers[0]?.id : undefined
   const stack = { display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 } as const
   return (
     <Box sx={{ containerType: 'inline-size' }}>
@@ -183,14 +194,14 @@ export function LauncherList({
         {columns.map((col) => (
           <Box key={col.map((l) => l.id).join()} sx={stack}>
             {col.map((l) => (
-              <LauncherRow key={l.id} launcher={l} refresh={refresh} />
+              <LauncherRow key={l.id} launcher={l} refresh={refresh} open={l.id === first} />
             ))}
           </Box>
         ))}
       </Box>
       <Box sx={{ ...stack, [`@container (min-width: ${2 * COLUMN_MIN}px)`]: { display: 'none' } }}>
         {launchers.map((l) => (
-          <LauncherRow key={l.id} launcher={l} refresh={refresh} />
+          <LauncherRow key={l.id} launcher={l} refresh={refresh} open={l.id === first} />
         ))}
       </Box>
     </Box>
