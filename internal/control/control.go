@@ -41,6 +41,8 @@ type Params struct {
 	All       bool     `json:"all,omitempty"`
 	Unused    bool     `json:"unused,omitempty"`
 	Yes       bool     `json:"yes,omitempty"`
+	Sub       string   `json:"sub,omitempty"`
+	Force     bool     `json:"force,omitempty"`
 }
 
 type request struct {

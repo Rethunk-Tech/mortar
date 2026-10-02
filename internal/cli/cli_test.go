@@ -88,6 +88,10 @@ func TestCommandsSendTheirArguments(t *testing.T) {
 	if !r.calls[0].params.All {
 		t.Error("--all not sent")
 	}
+	r = invoke(t, map[string]any{"launch": nil}, "launch", "stardew", "abc", "--force")
+	if r.code != 0 || len(r.calls) != 1 || r.calls[0].method != "launch" || !r.calls[0].params.Force {
+		t.Fatalf("--force: %+v", r)
+	}
 }
 
 func TestProfileCompareHistoryAndRevert(t *testing.T) {
@@ -264,5 +268,26 @@ func TestIsTakesVerbsAndBareWordsButNotLinksOrFiles(t *testing.T) {
 	}
 	if r := invoke(t, nil, "nonsense"); r.code != 2 || !strings.Contains(r.errOut, "unknown command") {
 		t.Errorf("unknown verb: %d %q", r.code, r.errOut)
+	}
+}
+
+func TestJSONErrorsUseStructuredExitCodes(t *testing.T) {
+	var out, errOut bytes.Buffer
+	if code := run("9.9.9", func(string, control.Params, any, time.Duration) error {
+		return control.ErrNotRunning
+	}, []string{"games", "--json"}, &out, &errOut); code != 3 {
+		t.Fatalf("not running code = %d", code)
+	}
+	var failure map[string]any
+	if err := json.Unmarshal(errOut.Bytes(), &failure); err != nil || failure["code"] != float64(3) {
+		t.Fatalf("not running JSON = %q", errOut.String())
+	}
+	out.Reset()
+	errOut.Reset()
+	if code := run("9.9.9", fake(nil, new([]call)), []string{"profile", "--json"}, &out, &errOut); code != 2 {
+		t.Fatalf("usage code = %d", code)
+	}
+	if err := json.Unmarshal(errOut.Bytes(), &failure); err != nil || failure["code"] != float64(2) {
+		t.Fatalf("usage JSON = %q", errOut.String())
 	}
 }

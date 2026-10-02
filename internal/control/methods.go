@@ -279,6 +279,39 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.Games.Launchers()
 	case "queue":
 		return s.Queue.State(), nil
+	case "queue.retry":
+		if p.Name == "" {
+			s.Queue.RetryFailed()
+		} else {
+			s.Queue.Retry(p.Name)
+		}
+		return s.Queue.State(), nil
+	case "queue.skip":
+		if p.Name == "" {
+			s.Queue.SkipAll()
+		} else {
+			s.Queue.Skip(p.Name)
+		}
+		return s.Queue.State(), nil
+	case "queue.pause":
+		s.Queue.Pause()
+		return s.Queue.State(), nil
+	case "queue.resume":
+		s.Queue.Resume()
+		return s.Queue.State(), nil
+	case "queue.clear":
+		s.Queue.ClearFinished()
+		return s.Queue.State(), nil
+	case "backups":
+		if s.Saves == nil {
+			return nil, errors.New("backups are unavailable")
+		}
+		return s.Saves.ListBackups()
+	case "backups.restore":
+		if s.Saves == nil {
+			return nil, errors.New("backups are unavailable")
+		}
+		return nil, s.Saves.RestoreBackup(p.Name, p.UniqueIDs)
 	case "bundles":
 		if s.Bundles == nil {
 			return nil, errors.New("bundles are unavailable")
@@ -427,7 +460,9 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "profile.revert":
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.Revert(p.Game, id, p.Name) })
 	case "profile.delete":
-		return s.changed(p.Game, func() (any, error) { return Removed{Mods: []string{prof.Name}}, s.Profiles.Delete(p.Game, id) })
+		return s.changed(p.Game, func() (any, error) {
+			return Removed{Mods: []string{prof.Name}}, s.Profiles.Delete(p.Game, id)
+		})
 	case "mods":
 		return modRows(prof), nil
 	case "mod":
@@ -503,6 +538,27 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return modProblems(prof, result, p.ModID), nil
 	case "updates":
 		return s.Problems.Updates(ctx, p.Game, id)
+	case "updates.queue":
+		r, err := s.Problems.Updates(ctx, p.Game, id)
+		if err != nil {
+			return nil, err
+		}
+		var reqs []queue.Request
+		for _, u := range r.Updates {
+			if u.Unofficial || (!p.All && len(p.UniqueIDs) > 0 && !slices.ContainsFunc(p.UniqueIDs, func(want string) bool {
+				return strings.EqualFold(want, u.UniqueID)
+			})) {
+				continue
+			}
+			reqs = append(reqs, queue.Request{
+				Kind: queue.KindUpdate, Game: p.Game, Profile: id, Name: u.Name, Version: u.Version,
+				CurrentKey: u.Key, ModID: u.NexusID, Repo: u.GitHubRepo, Latest: true,
+			})
+		}
+		if _, err := s.Queue.Add(reqs); err != nil {
+			return nil, err
+		}
+		return s.Queue.State(), nil
 	case "share":
 		res, err := share.Encode(prof)
 		if errors.Is(err, share.ErrTooLarge) {
@@ -523,7 +579,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "saves":
 		return s.Saves.Saves(ctx, p.Game, id)
 	case "launch":
-		return s.launch(ctx, p.Game, id)
+		return s.launch(ctx, p.Game, id, p.Force)
 	}
 	return nil, fmt.Errorf("unknown method %q", method)
 }
@@ -861,7 +917,53 @@ func (s *Services) runLog(gameID, id, run string) (RunLog, error) {
 // launchWait bounds how long launch waits for the game to leave Launching.
 const launchWait = 3 * time.Minute
 
-func (s *Services) launch(ctx context.Context, gameID, id string) (launchsvc.Status, error) {
+type launchWarningError struct {
+	update problems.UpdateWarning
+	save   savessvc.Fit
+	gap    bool
+}
+
+func (e launchWarningError) Error() string {
+	var warnings []string
+	if e.update.Changed {
+		warning := fmt.Sprintf(
+			"The game was updated: Stardew Valley is now %s; this profile last launched on %s.",
+			e.update.Installed,
+			e.update.Recorded,
+		)
+		if len(e.update.Broken) == 0 {
+			warning += " None of this profile's mods are marked broken for the new version."
+		} else {
+			names := make([]string, 0, len(e.update.Broken))
+			for _, mod := range e.update.Broken {
+				names = append(names, mod.Name)
+			}
+			warning += " Mods marked broken: " + strings.Join(names, ", ") + "."
+		}
+		warnings = append(warnings, warning)
+	}
+	if e.gap {
+		warnings = append(warnings, fmt.Sprintf(
+			"Your last save needs other mods: %s's farm (%s) was last played with mods this profile does not have on.",
+			e.save.Farmer,
+			e.save.Folder,
+		))
+	}
+	return strings.Join(append(warnings, "Play anyway with --force."), "\n")
+}
+
+func (s *Services) launch(ctx context.Context, gameID, id string, force bool) (launchsvc.Status, error) {
+	update, err := s.Problems.UpdateWarning(ctx, gameID, id)
+	if err != nil {
+		return launchsvc.Status{}, err
+	}
+	save, gap, err := s.Saves.LastSaveGap(ctx, gameID, id)
+	if err != nil {
+		return launchsvc.Status{}, err
+	}
+	if !force && (update.Changed || gap) {
+		return launchsvc.Status{}, launchWarningError{update: update, save: save, gap: gap}
+	}
 	if err := s.Launches.Start(ctx, gameID, id, false); err != nil {
 		return launchsvc.Status{}, err
 	}

@@ -8,12 +8,15 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 	"text/tabwriter"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/control"
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/problems"
@@ -35,7 +38,7 @@ var verbs = map[string]bool{
 	"conflicts": true, "problems": true, "updates": true, "share": true, "export": true, "open": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
 	"bundles": true, "nexus": true, "trash": true,
-	"doctor": true, "launchers": true, "tools": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
+	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
 // Is reports whether args (without the program name) are a command-line call: a known verb, or a bare word that
@@ -60,6 +63,7 @@ type cmd struct {
 	all         bool
 	unused      bool
 	yesFlag     bool
+	force       bool
 	wait        bool
 	run         string
 	game        string
@@ -76,6 +80,13 @@ func (e refusedError) Error() string { return e.msg }
 type usageError struct{ msg string }
 
 func (e usageError) Error() string { return e.msg }
+
+type offlineDoctorError struct {
+	result map[string]any
+	code   int
+}
+
+func (e offlineDoctorError) Error() string { return "doctor ran offline" }
 
 // Run executes one command and returns the process exit code.
 func Run(version string, args []string, stdout, stderr io.Writer) int {
@@ -95,17 +106,41 @@ func run(version string, call caller, args []string, stdout, stderr io.Writer) i
 }
 
 func (c *cmd) fail(err error) int {
-	if u, ok := errors.AsType[usageError](err); ok {
-		fmt.Fprintln(c.errOut, "mortar:", u.msg)
-		fmt.Fprint(c.errOut, usage)
-		return 2
+	var offline offlineDoctorError
+	if errors.As(err, &offline) {
+		if c.json {
+			_ = json.NewEncoder(c.out).Encode(offline.result)
+		} else {
+			fmt.Fprintln(c.out, offline.result["summary"])
+			for _, f := range offline.result["findings"].([]string) {
+				fmt.Fprintln(c.out, "Finding:", f)
+			}
+		}
+		return offline.code
+	}
+	code := 1
+	if _, ok := errors.AsType[usageError](err); ok {
+		code = 2
 	}
 	if _, ok := errors.AsType[refusedError](err); ok {
+		code = 2
+	}
+	if errors.Is(err, control.ErrNotRunning) {
+		code = 3
+	}
+	if c.json {
+		_ = json.NewEncoder(c.errOut).Encode(map[string]any{"error": err.Error(), "code": code})
+		return code
+	}
+	if code == 2 {
 		fmt.Fprintln(c.errOut, "mortar:", err)
-		return 2
+		if _, ok := errors.AsType[usageError](err); ok {
+			fmt.Fprint(c.errOut, usage)
+		}
+		return code
 	}
 	fmt.Fprintln(c.errOut, "mortar:", err)
-	return 1
+	return code
 }
 
 func (c *cmd) parse(args []string) error {
@@ -120,6 +155,8 @@ func (c *cmd) parse(args []string) error {
 			c.unused = true
 		case a == "--yes":
 			c.yesFlag = true
+		case a == "--force":
+			c.force = true
 		case a == "--wait":
 			c.wait = true
 		case a == "--run":
@@ -223,6 +260,10 @@ func (c *cmd) dispatch() error {
 		return c.launchers()
 	case "queue":
 		return c.queue()
+	case "update":
+		return c.update()
+	case "backups":
+		return c.backups()
 	case "bundles":
 		return c.bundles()
 	case "nexus":
@@ -270,7 +311,7 @@ func (c *cmd) dispatch() error {
 	if err != nil {
 		return err
 	}
-	p := control.Params{Game: a[0], Profile: a[1], All: c.all, Run: c.run}
+	p := control.Params{Game: a[0], Profile: a[1], All: c.all, Run: c.run, Force: c.force}
 	switch verb {
 	case "mods":
 		return c.mods(p)
@@ -517,8 +558,7 @@ func (c *cmd) trash() error {
 		if err := c.ask("trash.empty", control.Params{Game: game}, nil, readTimeout); err != nil {
 			return err
 		}
-		fmt.Fprintln(c.out, "Trash emptied.")
-		return nil
+		return c.emit(map[string]bool{"emptied": true}, func() { fmt.Fprintln(c.out, "Trash emptied.") })
 	default:
 		return usageError{"unknown trash command " + sub}
 	}
@@ -540,6 +580,9 @@ func (c *cmd) nexus() error {
 		return err
 	}
 	if !c.yesFlag {
+		if info, err := os.Stdin.Stat(); err != nil || info.Mode()&os.ModeCharDevice == 0 {
+			return refusedError{"nexus untrack needs --yes when stdin is not a terminal"}
+		}
 		fmt.Fprintf(c.errOut, "Untrack %d mods? [y/N] ", count)
 		var answer string
 		if _, err := fmt.Fscan(os.Stdin, &answer); err != nil {
@@ -563,7 +606,7 @@ func (c *cmd) nexus() error {
 
 func (c *cmd) profile() error {
 	if len(c.args) < 2 {
-		return usageError{"profile needs create, rename, copy or delete"}
+		return usageError{"profile needs create, rename, copy, compare, match, history, revert or delete"}
 	}
 	sub := c.args[1]
 	var p profile.Profile
@@ -692,10 +735,9 @@ func (c *cmd) tools() error {
 		if err := c.ask("tools.run", control.Params{Game: a[0], Profile: a[1], Name: a[2]}, nil, launchTimeout); err != nil {
 			return err
 		}
-		if !c.json {
+		return c.emit(map[string]any{"started": true, "tool": a[2]}, func() {
 			fmt.Fprintf(c.out, "Started %s.\n", a[2])
-		}
-		return nil
+		})
 	}
 	a, err := c.need(1, "a game")
 	if err != nil {
@@ -957,8 +999,7 @@ func (c *cmd) problemsDismiss() error {
 	if err := c.ask("problems.dismiss", control.Params{Game: game, Profile: profile, ModID: index}, nil, readTimeout); err != nil {
 		return err
 	}
-	fmt.Fprintln(c.out, "Dismissed.")
-	return nil
+	return c.emit(map[string]bool{"dismissed": true}, func() { fmt.Fprintln(c.out, "Dismissed.") })
 }
 
 func (c *cmd) problemsRestore() error {
@@ -981,8 +1022,7 @@ func (c *cmd) problemsRestore() error {
 	if err := c.ask("problems.restore", p, nil, readTimeout); err != nil {
 		return err
 	}
-	fmt.Fprintln(c.out, "Restored.")
-	return nil
+	return c.emit(map[string]bool{"restored": true}, func() { fmt.Fprintln(c.out, "Restored.") })
 }
 
 func (c *cmd) updates(p control.Params) error {
@@ -1139,6 +1179,30 @@ func (c *cmd) status(verb, gameID string) error {
 }
 
 func (c *cmd) queue() error {
+	if len(c.args) > 1 {
+		sub := c.args[1]
+		method := "queue." + sub
+		switch sub {
+		case "retry", "skip":
+			var id string
+			if len(c.args) > 2 {
+				id = c.args[2]
+			}
+			var st queue.State
+			if err := c.ask(method, control.Params{Name: id}, &st, readTimeout); err != nil {
+				return err
+			}
+			return c.emit(st, func() { fmt.Fprintf(c.out, "Queue %s.\n", sub) })
+		case "pause", "resume", "clear":
+			var st queue.State
+			if err := c.ask(method, control.Params{}, &st, readTimeout); err != nil {
+				return err
+			}
+			return c.emit(st, func() { fmt.Fprintf(c.out, "Queue %s.\n", sub) })
+		default:
+			return usageError{"unknown queue command " + sub}
+		}
+	}
 	var st queue.State
 	if err := c.ask("queue", control.Params{}, &st, readTimeout); err != nil {
 		return err
@@ -1157,6 +1221,44 @@ func (c *cmd) queue() error {
 			fmt.Fprintln(c.out, "Paused.")
 		}
 	})
+}
+
+func (c *cmd) update() error {
+	a, err := c.need(1, "a game", "a profile")
+	if err != nil {
+		return err
+	}
+	if len(a) == 2 && !c.all {
+		return usageError{"update needs one or more UniqueIDs, or --all"}
+	}
+	var st queue.State
+	if err := c.ask("updates.queue", control.Params{Game: a[0], Profile: a[1], UniqueIDs: a[2:], All: c.all}, &st, installTimeout); err != nil {
+		return err
+	}
+	return c.emit(st, func() { fmt.Fprintf(c.out, "Queued updates.\n") })
+}
+
+func (c *cmd) backups() error {
+	if len(c.args) > 1 && c.args[1] == "restore" {
+		a, err := c.need(2, "a backup name")
+		if err != nil {
+			return err
+		}
+		if err := c.ask("backups.restore", control.Params{Name: a[0], UniqueIDs: a[1:]}, nil, installTimeout); err != nil {
+			return err
+		}
+		return c.emit(map[string]any{"restored": a[0], "saves": a[1:]}, func() {
+			fmt.Fprintf(c.out, "Restored %s.\n", a[0])
+		})
+	}
+	if len(c.args) > 1 && c.args[1] != "list" {
+		return usageError{"unknown backups command " + c.args[1]}
+	}
+	var list any
+	if err := c.ask("backups", control.Params{}, &list, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(list, func() { fmt.Fprintln(c.out, list) })
 }
 
 func (c *cmd) launchers() error {
@@ -1197,6 +1299,9 @@ func (c *cmd) launchers() error {
 func (c *cmd) doctor() error {
 	var d control.Doctor
 	if err := c.ask("doctor", control.Params{}, &d, readTimeout); err != nil {
+		if errors.Is(err, control.ErrNotRunning) {
+			return offlineDoctor()
+		}
 		return err
 	}
 	return c.emit(d, func() {
@@ -1215,6 +1320,76 @@ func (c *cmd) doctor() error {
 		}
 		fmt.Fprintf(c.out, "nxm:// links: %s\n", handler)
 	})
+}
+
+func offlineDoctor() error {
+	dir, err := datadir.Dir()
+	if err != nil {
+		return err
+	}
+	findings := []string{}
+	fixes := []string{}
+	settingsPath := filepath.Join(dir, "settings.json")
+	if b, err := os.ReadFile(settingsPath); err != nil {
+		findings = append(findings, "settings.json is unreadable or missing")
+		fixes = append(fixes, "restore settings.json from a known-good copy")
+	} else if !json.Valid(b) {
+		findings = append(findings, "settings.json is corrupt")
+		fixes = append(fixes, "restore settings.json from a known-good copy")
+	}
+	if copies, _ := filepath.Glob(settingsPath + ".*"); len(copies) > 0 {
+		findings = append(findings, fmt.Sprintf("%d settings temporary/copy files are present", len(copies)))
+		fixes = append(fixes, "keep the newest valid settings.json and remove abandoned copies")
+	}
+	_ = filepath.WalkDir(filepath.Join(dir, "profiles"), func(path string, entry os.DirEntry, walkErr error) error {
+		if walkErr == nil && !entry.IsDir() && entry.Name() == "profile.json" {
+			if b, readErr := os.ReadFile(path); readErr != nil || !json.Valid(b) {
+				findings = append(findings, "damaged profile.json: "+path)
+				fixes = append(fixes, "restore or remove the damaged profile")
+			}
+		}
+		return nil
+	})
+	if info, statErr := os.Stat(filepath.Join(dir, control.FileName)); statErr == nil && time.Since(info.ModTime()) > 24*time.Hour {
+		findings = append(findings, "control.json is stale")
+		fixes = append(fixes, "start Mortar once to refresh control.json")
+	}
+	var free uint64
+	var stat syscall.Statfs_t
+	if err := syscall.Statfs(dir, &stat); err == nil {
+		free = uint64(stat.Bavail) * uint64(stat.Bsize)
+		if free == 0 {
+			findings = append(findings, "data folder has no free space")
+			fixes = append(fixes, "free disk space before starting Mortar")
+		}
+	}
+	if b, err := os.ReadFile(filepath.Join(dir, "store", "index.json")); err != nil || !json.Valid(b) {
+		findings = append(findings, "store index.json is unreadable or corrupt")
+		fixes = append(fixes, "restore the store index or let Mortar rebuild it")
+	}
+	var cacheBytes int64
+	_ = filepath.WalkDir(filepath.Join(dir, "cache"), func(path string, entry os.DirEntry, walkErr error) error {
+		if walkErr == nil && !entry.IsDir() {
+			if info, statErr := entry.Info(); statErr == nil {
+				cacheBytes += info.Size()
+			}
+		}
+		return nil
+	})
+	result := map[string]any{
+		"offline": true, "dataDir": dir, "freeBytes": free, "cacheBytes": cacheBytes,
+		"findings": findings, "fixes": fixes, "summary": fmt.Sprintf("Offline doctor: %d findings.", len(findings)),
+	}
+	if len(findings) > 0 {
+		if len(fixes) > 0 {
+			result["summary"] = fmt.Sprintf("Offline doctor: %d findings; see fixes.", len(findings))
+		}
+	}
+	code := 3
+	if len(findings) > 0 {
+		code = 1
+	}
+	return offlineDoctorError{result: result, code: code}
 }
 
 const usage = `Usage: mortar <command> [arguments] [--json]
@@ -1254,12 +1429,18 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   share <game> <profile>                  share link
   export <game> <profile> <file.mortar>   write a .mortar file
   open <link|file>                        hand a share link or .mortar file to Mortar
-  launch <game> <profile> [--wait]        play; --wait waits for the game to close
+  launch <game> <profile> [--wait] [--force] play; --force skips Play warnings
   status <game> | stop <game>
   runs <game> <profile>                   recent launches
   logs <game> <profile> [--run <id>]      a stored SMAPI log (latest by default)
   logs search <query> [--profile <name>]  search all stored run logs
   queue                                   the download queue
+  queue retry|skip [<id>]                 retry or skip queued downloads
+  queue pause|resume|clear                control the download queue
+  update <game> <profile> <UniqueID>...|--all
+                                          queue available mod updates
+  backups list                            list save backups
+  backups restore <name> [save...]        restore a save backup
   tools <game>                            configured external tools
   tools run <game> <profile> <tool>       start an external tool
   launchers [add|remove <id> <folder>]   launchers, the games in each, and your added folders
