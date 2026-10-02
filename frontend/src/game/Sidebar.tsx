@@ -121,6 +121,13 @@ function ProfileButton({
         e.preventDefault()
         onMenu({ top: e.clientY, left: e.clientX })
       }}
+      onKeyDown={(e) => {
+        if (e.key === 'ContextMenu' || (e.key === 'F10' && e.shiftKey)) {
+          e.preventDefault()
+          const rect = e.currentTarget.getBoundingClientRect()
+          onMenu({ top: rect.bottom, left: rect.left })
+        }
+      }}
       aria-current={selected ? 'true' : undefined}
       aria-label={profile.name}
       title={profile.name}

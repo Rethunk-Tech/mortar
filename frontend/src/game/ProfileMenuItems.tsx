@@ -1,20 +1,37 @@
 import { useLingui } from '@lingui/react/macro'
-import { ListItemIcon, ListItemText, MenuItem } from '@mui/material'
 import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
+  ListItemIcon,
+  ListItemText,
+  MenuItem,
+} from '@mui/material'
+import {
+  Copy,
+  Eye,
+  EyeOff,
   FileDown,
   Gamepad2,
+  GitCompare,
   History,
   ImageOff,
   ImagePlus,
   SquareArrowOutUpRight,
+  Trash2,
 } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { type ReactNode, useState } from 'react'
 import { PickImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   AddToSteam,
   Create as CreateShortcut,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/shortcut/service.ts'
+import { CompareDialog, PickCompareDialog } from '../profiles/CompareDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -25,7 +42,9 @@ import { applyStagedCover, hasPickedCover } from './cover.ts'
 const toastError = (title: string) => (e: unknown) =>
   useToasts.getState().push({ kind: 'error', title, body: errorMessage(e) })
 
-export function ProfileMenuItem({
+const sentenceCase = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
+
+function ProfileMenuItem({
   icon,
   label,
   disabled,
@@ -41,6 +60,42 @@ export function ProfileMenuItem({
       <ListItemIcon sx={{ color: 'inherit' }}>{icon}</ListItemIcon>
       <ListItemText>{label}</ListItemText>
     </MenuItem>
+  )
+}
+
+function DeleteProfileDialog({
+  profile,
+  open,
+  onClose,
+}: {
+  profile: Profile
+  open: boolean
+  onClose: () => void
+}) {
+  const { t } = useLingui()
+  const remove = useProfiles((s) => s.remove)
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>{t`Delete ${profile.name}?`}</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          {t`The profile stays restorable for 30 days from Recently deleted.`}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>{t`Cancel`}</Button>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={() => {
+            onClose()
+            remove(profile.id).catch(reportUnexpected)
+          }}
+        >
+          {t`Delete`}
+        </Button>
+      </DialogActions>
+    </Dialog>
   )
 }
 
@@ -98,6 +153,12 @@ export function MoreMenuItems({
 }) {
   const { t } = useLingui()
   const game = () => useProfiles.getState().game
+  const profiles = useProfiles((s) => s.profiles)
+  const duplicate = useProfiles((s) => s.duplicate)
+  const setHidden = useProfiles((s) => s.setHidden)
+  const [compareFrom, setCompareFrom] = useState<Profile | null>(null)
+  const [compare, setCompare] = useState<{ a: Profile; b: Profile } | null>(null)
+  const [deleting, setDeleting] = useState(false)
   return (
     <>
       <ProfileMenuItem
@@ -148,10 +209,70 @@ export function MoreMenuItems({
                   body: t`It shows in your Steam library the next time Steam starts.`,
                 }),
               )
-              .catch(toastError(t`Could not add it to Steam`))
+              .catch((e) =>
+                useToasts.getState().push({
+                  kind: 'error',
+                  title: t`Could not add it to Steam`,
+                  body: sentenceCase(errorMessage(e)),
+                }),
+              )
           }
         }}
       />
+      <ProfileMenuItem
+        icon={<Copy size={16} />}
+        label={t`Duplicate`}
+        onClick={() => {
+          close()
+          duplicate(profile.id).catch(reportUnexpected)
+        }}
+      />
+      <ProfileMenuItem
+        icon={<GitCompare size={16} />}
+        label={t`Compare with…`}
+        disabled={profiles.length < 2}
+        onClick={() => {
+          close()
+          setCompareFrom(profile)
+        }}
+      />
+      <ProfileMenuItem
+        icon={profile.hidden ? <Eye size={16} /> : <EyeOff size={16} />}
+        label={profile.hidden ? t`Show in sidebar` : t`Hide from sidebar`}
+        onClick={() => {
+          close()
+          setHidden(profile.id, !profile.hidden).catch(reportUnexpected)
+        }}
+      />
+      <Divider />
+      <ProfileMenuItem
+        icon={<Trash2 size={16} />}
+        label={t`Delete`}
+        onClick={() => {
+          close()
+          setDeleting(true)
+        }}
+      />
+      {compareFrom === null ? null : (
+        <PickCompareDialog
+          from={compareFrom}
+          onPicked={(other) => {
+            if (compareFrom) {
+              setCompare({ a: compareFrom, b: other })
+            }
+            setCompareFrom(null)
+          }}
+          onClose={() => setCompareFrom(null)}
+        />
+      )}
+      <CompareDialog
+        a={compare?.a ?? null}
+        b={compare?.b ?? null}
+        onClose={() => setCompare(null)}
+      />
+      <DeleteProfileDialog profile={profile} open={deleting} onClose={() => setDeleting(false)} />
     </>
   )
 }
+
+export { ProfileMenuItem }

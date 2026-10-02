@@ -3,7 +3,8 @@ import { Divider, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/materi
 import { Play, Plus, Settings2, Wrench } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { IconAction } from '../shell/IconAction.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { useTools } from './store.ts'
 import { ToolEditorDialog } from './ToolEditorDialog.tsx'
 import { ToolsManageDialog } from './ToolsManageDialog.tsx'
@@ -17,6 +18,7 @@ export function ToolsMenu({ game, profileID }: { game: string; profileID: string
   const load = useTools((s) => s.load)
   const add = useTools((s) => s.add)
   const launch = useTools((s) => s.launch)
+  const push = useToasts((s) => s.push)
 
   useEffect(() => {
     if (game) {
@@ -40,7 +42,15 @@ export function ToolsMenu({ game, profileID }: { game: string; profileID: string
             key={tool.id}
             onClick={() => {
               close()
-              launch(game, profileID, tool.id).catch(reportUnexpected)
+              launch(game, profileID, tool.id)
+                .then(() => push({ kind: 'success', title: t`Started ${tool.name}` }))
+                .catch((e: unknown) =>
+                  push({
+                    kind: 'error',
+                    title: t`Could not start ${tool.name}`,
+                    body: errorMessage(e),
+                  }),
+                )
             }}
           >
             <ListItemIcon sx={{ color: 'inherit' }}>
