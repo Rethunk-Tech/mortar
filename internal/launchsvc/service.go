@@ -507,6 +507,18 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 			return err
 		}
 		req.ExtraArgs = extra
+		prefix, env, err := s.profiles.LaunchSettings(g.ID(), profileID)
+		if err != nil {
+			return err
+		}
+		req.Prefix, err = profile.LaunchPrefixArgs(prefix)
+		if err != nil {
+			return err
+		}
+		req.Env, err = profile.LaunchEnvironment(env)
+		if err != nil {
+			return err
+		}
 	}
 	cur := s.settings.Get()
 	_, store, _, err := game.Resolve(s.home, cur, g.ID())

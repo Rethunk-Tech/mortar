@@ -236,6 +236,10 @@ interface ProfileFieldsProps {
   onDescription: (value: string) => void
   launchOptions: string
   onLaunchOptions: (value: string) => void
+  launchPrefix: string
+  onLaunchPrefix: (value: string) => void
+  launchEnv: string
+  onLaunchEnv: (value: string) => void
   optionsError: string
   onOptionsError: (value: string) => void
   gameSettings: GameSettingsValues | null
@@ -255,6 +259,10 @@ function ProfileFields({
   onDescription,
   launchOptions,
   onLaunchOptions,
+  launchPrefix,
+  onLaunchPrefix,
+  launchEnv,
+  onLaunchEnv,
   optionsError,
   onOptionsError,
   gameSettings,
@@ -300,6 +308,26 @@ function ProfileFields({
         }
         slotProps={{ root: { sx: { userSelect: 'text' } } }}
       />
+      <TextField
+        fullWidth={true}
+        margin="dense"
+        label={t`Launch prefix`}
+        value={launchPrefix}
+        onChange={(event) => onLaunchPrefix(event.target.value)}
+        helperText={t`Prefix for direct launches only (for example, gamemoderun mangohud). On Windows, prefixes are unavailable.`}
+        slotProps={{ root: { sx: { userSelect: 'text' } } }}
+      />
+      <TextField
+        fullWidth={true}
+        margin="dense"
+        multiline={true}
+        minRows={2}
+        label={t`Launch environment`}
+        value={launchEnv}
+        onChange={(event) => onLaunchEnv(event.target.value)}
+        helperText={t`One VAR=value per line; applies to direct launches only. Steam launches do not receive these settings.`}
+        slotProps={{ root: { sx: { userSelect: 'text' } } }}
+      />
       <GameSettings profileId={profile.id} value={gameSettings} onChange={onGameSettings} />
     </DialogContent>
   )
@@ -317,12 +345,15 @@ export function EditProfileDialog({
   const { t } = useLingui()
   const setAppearance = useProfiles((s) => s.setAppearance)
   const setLaunchOptions = useProfiles((s) => s.setLaunchOptions)
+  const setLaunchSettings = useProfiles((s) => s.setLaunchSettings)
   const replace = useProfiles((s) => s.replace)
   const gameId = useProfiles((s) => s.game?.id ?? '')
   const [color, setColor] = useState(profile.color ?? '')
   const [icon, setIcon] = useState(profile.icon ?? '')
   const [description, setDescription] = useState(profile.description ?? '')
   const [launchOptions, setLaunchOptionsField] = useState(profile.launchOptions ?? '')
+  const [launchPrefix, setLaunchPrefix] = useState(profile.launchPrefix ?? ''),
+    [launchEnv, setLaunchEnv] = useState(profile.launchEnv ?? '')
   const [stagedCover, setStagedCover] = useState<StagedCover>(undefined)
   const [gameSettings, setGameSettings, gameSettingsLoaded] = useProfileGameSettings(
     gameId,
@@ -337,10 +368,20 @@ export function EditProfileDialog({
       setIcon(profile.icon ?? '')
       setDescription(profile.description ?? '')
       setLaunchOptionsField(profile.launchOptions ?? '')
+      setLaunchPrefix(profile.launchPrefix ?? '')
+      setLaunchEnv(profile.launchEnv ?? '')
       setStagedCover(undefined)
       setOptionsError('')
     }
-  }, [open, profile.color, profile.description, profile.icon, profile.launchOptions])
+  }, [
+    open,
+    profile.color,
+    profile.description,
+    profile.icon,
+    profile.launchOptions,
+    profile.launchPrefix,
+    profile.launchEnv,
+  ])
   const save = async () => {
     if (busy) {
       return
@@ -356,6 +397,12 @@ export function EditProfileDialog({
       }
       try {
         await setLaunchOptions(profile.id, launchOptions)
+      } catch (e) {
+        setOptionsError(e instanceof Error ? e.message : String(e))
+        return
+      }
+      try {
+        await setLaunchSettings(profile.id, launchPrefix, launchEnv)
       } catch (e) {
         setOptionsError(e instanceof Error ? e.message : String(e))
         return
@@ -411,6 +458,10 @@ export function EditProfileDialog({
           onDescription={setDescription}
           launchOptions={launchOptions}
           onLaunchOptions={setLaunchOptionsField}
+          launchPrefix={launchPrefix}
+          onLaunchPrefix={setLaunchPrefix}
+          launchEnv={launchEnv}
+          onLaunchEnv={setLaunchEnv}
           optionsError={optionsError}
           onOptionsError={setOptionsError}
           gameSettings={gameSettings}

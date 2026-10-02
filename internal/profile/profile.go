@@ -141,6 +141,10 @@ type Profile struct {
 	Description string `json:"description,omitempty"`
 	// LaunchOptions is extra SMAPI arguments for this profile, as the user typed them.
 	LaunchOptions string `json:"launchOptions,omitempty"`
+	// LaunchPrefix is a shell-style command prefix for direct launches.
+	LaunchPrefix string `json:"launchPrefix,omitempty"`
+	// LaunchEnv contains one NAME=value environment variable per line for direct launches.
+	LaunchEnv string `json:"launchEnv,omitempty"`
 }
 
 // Store reads and writes profiles under one root folder.

@@ -56,6 +56,9 @@ type Request struct {
 	ModsDir string
 	// ExtraArgs are extra SMAPI arguments from the profile's launch options.
 	ExtraArgs []string
+	// Prefix and Env apply only to direct launches.
+	Prefix []string
+	Env    []string
 	// Steam is nil when no Steam was found.
 	Steam *steam.Steam
 	// Direct launches the loader without Steam, after the user agreed to lose the overlay and playtime.
@@ -72,8 +75,16 @@ type Runner func(dir, name string, args ...string) (exited <-chan error, err err
 
 // Start is the Runner that runs the real command, reaping it in the background.
 func Start(dir, name string, args ...string) (<-chan error, error) {
+	return StartWithEnv(nil, dir, name, args...)
+}
+
+// StartWithEnv starts a process with additional environment variables.
+func StartWithEnv(env []string, dir, name string, args ...string) (<-chan error, error) {
 	cmd := exec.CommandContext(context.Background(), name, args...)
 	cmd.Dir = dir
+	if len(env) > 0 {
+		cmd.Env = append(os.Environ(), env...)
+	}
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
@@ -87,6 +98,7 @@ type Command struct {
 	Dir  string
 	Name string
 	Args []string
+	Env  []string
 	// LogFile is the file the game rewrites when it starts.
 	LogFile string
 	// Failure names the hint to give when the log never appears.

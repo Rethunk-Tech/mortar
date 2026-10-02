@@ -20,6 +20,7 @@ import {
   SetAppearance,
   SetHidden,
   SetLaunchOptions,
+  SetLaunchSettings,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { SetLastProfile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { loadGameStatus } from '../games/status.ts'
@@ -108,6 +109,18 @@ async function applyLaunchOptions(
   }
 }
 
+async function applyLaunchSettings(
+  get: () => { game: GameInfo | null; replace: (p: Profile) => void },
+  id: string,
+  prefix: string,
+  env: string,
+) {
+  const { game } = get()
+  if (game) {
+    get().replace(await SetLaunchSettings(game.id, id, prefix, env))
+  }
+}
+
 async function read(gameId: string, current: string) {
   const [{ games }, list] = await Promise.all([loadGameStatus(), List(gameId)])
   const profiles = list ?? []
@@ -131,6 +144,7 @@ export const useProfiles = create<{
   rename: (id: string, name: string) => Promise<boolean>
   setAppearance: (id: string, color: string, icon: string, description: string) => Promise<void>
   setLaunchOptions: (id: string, options: string) => Promise<void>
+  setLaunchSettings: (id: string, prefix: string, env: string) => Promise<void>
   replace: (profile: Profile) => void
   refresh: () => Promise<void>
   loadTrash: () => Promise<void>
@@ -196,6 +210,7 @@ export const useProfiles = create<{
     }
   },
   setLaunchOptions: (id, options) => applyLaunchOptions(get, id, options),
+  setLaunchSettings: (id, prefix, env) => applyLaunchSettings(get, id, prefix, env),
   replace: (p) => set((s) => ({ profiles: s.profiles.map((x) => (x.id === p.id ? p : x)) })),
   refresh: () => refreshList(get, set),
   loadTrash: async () => {

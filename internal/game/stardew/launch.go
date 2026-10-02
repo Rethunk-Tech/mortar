@@ -55,7 +55,9 @@ func (g Game) Launch(ctx context.Context, req launch.Request, onLines func([]str
 	}
 	run := g.Runner
 	if run == nil {
-		run = launch.Start
+		run = func(dir, name string, args ...string) (<-chan error, error) {
+			return launch.StartWithEnv(cmd.Env, dir, name, args...)
+		}
 	}
 	return launch.Run(ctx, run, cmd, g.LaunchTiming, onLines)
 }
@@ -72,11 +74,15 @@ func (g Game) command(goos string, req launch.Request, steamPath, flatpakPath st
 	smapiArgs := appendLaunchArgs(goos, modsArgs, req.ExtraArgs)
 	windows := goos == "windows"
 	if req.Direct {
+		directArgs := smapiArgs
+		if !windows {
+			directArgs = append(append([]string{}, req.Prefix...), smapiArgs...)
+		}
 		if windows {
-			return launch.Command{Dir: req.InstallDir, Name: filepath.Join(req.InstallDir, smapiMarker+".exe"), Args: smapiArgs}, nil
+			return launch.Command{Dir: req.InstallDir, Name: filepath.Join(req.InstallDir, smapiMarker+".exe"), Args: directArgs, Env: req.Env}, nil
 		}
 		// The launcher reads its own flags before `--` and forwards only what follows it.
-		return launch.Command{Dir: req.InstallDir, Name: filepath.Join(req.InstallDir, linuxLauncher), Args: smapiArgs}, nil
+		return launch.Command{Dir: req.InstallDir, Name: filepath.Join(req.InstallDir, linuxLauncher), Args: directArgs, Env: req.Env}, nil
 	}
 	appID := []string{"-applaunch", g.SteamAppID()}
 	switch {
