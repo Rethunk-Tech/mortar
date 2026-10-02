@@ -202,7 +202,7 @@ export function NexusMods() {
       <Box component="label" htmlFor={keyId} sx={{ fontSize: 14, fontWeight: 600 }}>
         {t`Personal API key`}
       </Box>
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
         <TextField
           id={keyId}
           type="password"
@@ -210,20 +210,18 @@ export function NexusMods() {
           autoComplete="off"
           value={key}
           onChange={(e) => setKey(e.target.value)}
-          sx={{ flexGrow: 1 }}
+          helperText={t`Kept in your system keyring. Find it on Nexus under Settings, API Keys.`}
+          sx={{ width: 420, maxWidth: '100%' }}
         />
         <Button
           type="submit"
           variant="contained"
           startIcon={<LogIn size={16} />}
           disabled={busy || key.trim() === ''}
-          sx={{ whiteSpace: 'nowrap' }}
+          sx={{ whiteSpace: 'nowrap', flexShrink: 0, height: 40 }}
         >
           {t`Sign in`}
         </Button>
-      </Box>
-      <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
-        {t`Kept in your system keyring. Find it on Nexus under Settings, API Keys.`}
       </Box>
       {error ? <Alert severity="error">{error}</Alert> : null}
     </Box>
