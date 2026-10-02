@@ -1,41 +1,55 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
-import { TriangleAlert } from 'lucide-react'
+import { Clipboard } from '@wailsio/runtime'
+import { Copy, TriangleAlert } from 'lucide-react'
+import { IconAction } from '../shell/IconAction.tsx'
+import { reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { useDescribe, useDescribeDrift } from './describe.ts'
 import { DriftButtons, FixButton } from './problemFixButtons.tsx'
 import { isInfoRow, type ProblemSectionId, problemSections, type Row } from './problemGroups.ts'
 import { useMods } from './store.ts'
 import { useLoadProblemsOnFocus } from './useLoadProblemsOnFocus.ts'
 
-function SectionHeading({ id }: { id: ProblemSectionId }) {
+function useSectionTitle() {
   const { t } = useLingui()
-  switch (id) {
-    case 'missing':
-      return t`Missing requirements`
-    case 'conflicts':
-      return t`Conflicts`
-    case 'broken':
-      return t`Broken or outdated mods`
-    case 'runErrors':
-      return t`Errors in the last run`
-    case 'drift':
-      return t`Changed outside Mortar`
-    case 'duplicates':
-      return t`Duplicates`
-    default:
-      return ''
+  return (id: ProblemSectionId) => {
+    switch (id) {
+      case 'missing':
+        return t`Missing requirements`
+      case 'conflicts':
+        return t`Conflicts`
+      case 'broken':
+        return t`Broken or outdated mods`
+      case 'runErrors':
+        return t`Errors in the last run`
+      case 'drift':
+        return t`Changed outside Mortar`
+      case 'duplicates':
+        return t`Duplicates`
+      default:
+        return ''
+    }
+  }
+}
+
+// useRowText is a row's sentence and the author's note shown under it, shared by the list and Copy all.
+function useRowText() {
+  const describe = useDescribe()
+  const describeDrift = useDescribeDrift()
+  return (row: Row) => {
+    const note = row.kind === 'missing' && row.missing.listed ? row.missing.note.trim() : ''
+    let text = row.kind === 'drift' ? describeDrift(row.drift) : describe(row)
+    if (note !== '' && text.endsWith(`: ${note}`)) {
+      text = text.slice(0, -(note.length + 2))
+    }
+    return { text, note }
   }
 }
 
 function ProblemRow({ row }: { row: Row }) {
-  const describe = useDescribe()
-  const describeDrift = useDescribeDrift()
   const info = isInfoRow(row)
-  const authorNote = row.kind === 'missing' && row.missing.listed ? row.missing.note.trim() : ''
-  let text = row.kind === 'drift' ? describeDrift(row.drift) : describe(row)
-  if (authorNote !== '' && text.endsWith(`: ${authorNote}`)) {
-    text = text.slice(0, -(authorNote.length + 2))
-  }
+  const { text, note: authorNote } = useRowText()(row)
   return (
     <Box
       role="alert"
@@ -84,6 +98,8 @@ function ProblemRow({ row }: { row: Row }) {
 export function ProblemsTab() {
   const { t } = useLingui()
   const result = useMods((s) => s.problems)
+  const sectionTitle = useSectionTitle()
+  const rowText = useRowText()
   useLoadProblemsOnFocus()
 
   if (result === null) {
@@ -110,6 +126,31 @@ export function ProblemsTab() {
         gap: 2,
       }}
     >
+      {sections.length > 0 ? (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: -1 }}>
+          <IconAction
+            label={t`Copy all problems`}
+            icon={<Copy size={16} />}
+            onClick={() => {
+              const text = sections
+                .map((section) =>
+                  [
+                    sectionTitle(section.id),
+                    ...section.rows.map((row) => {
+                      const { text: line, note } = rowText(row)
+                      return note === '' ? `- ${line}` : `- ${line}\n  ${note}`
+                    }),
+                  ].join('\n'),
+                )
+                .join('\n\n')
+              Clipboard.SetText(text).then(
+                () => useToasts.getState().push({ kind: 'success', title: t`Problems copied` }),
+                reportUnexpected,
+              )
+            }}
+          />
+        </Box>
+      ) : null}
       {empty ? (
         <Typography
           sx={{ fontSize: 14, color: 'text.secondary' }}
@@ -118,7 +159,7 @@ export function ProblemsTab() {
         sections.map((section) => (
           <Box key={section.id}>
             <Typography sx={{ mb: 1, fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
-              <SectionHeading id={section.id} />
+              {sectionTitle(section.id)}
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               {section.rows.map((row) => (

@@ -525,7 +525,7 @@ msgstr "Link length"
 msgid "Switched off in this profile"
 msgstr "Switched off in this profile"
 
-#: src/mods/ProblemsTab.tsx:14
+#: src/mods/ProblemsTab.tsx:19
 msgid "Missing requirements"
 msgstr "Missing requirements"
 
@@ -1148,7 +1148,7 @@ msgstr "Console"
 msgid "{0} · {1} · {farms}"
 msgstr "{0} · {1} · {farms}"
 
-#: src/mods/ProblemsTab.tsx:24
+#: src/mods/ProblemsTab.tsx:29
 msgid "Duplicates"
 msgstr "Duplicates"
 
@@ -1582,7 +1582,7 @@ msgstr "Include beta releases"
 msgid "Meadowlands farm"
 msgstr "Meadowlands farm"
 
-#: src/mods/ProblemsTab.tsx:22
+#: src/mods/ProblemsTab.tsx:27
 msgid "Changed outside Mortar"
 msgstr "Changed outside Mortar"
 
@@ -2017,6 +2017,10 @@ msgstr "You started this download on Nexus. There is no profile to put it in yet
 msgid "{name} settings"
 msgstr "{name} settings"
 
+#: src/mods/ProblemsTab.tsx:132
+msgid "Copy all problems"
+msgstr "Copy all problems"
+
 #: src/game/Detail.tsx:404
 msgid "No profiles yet"
 msgstr "No profiles yet"
@@ -2429,7 +2433,7 @@ msgstr "Could not list backups: {error}"
 msgid "Check mod updates on start: {from} → {to}"
 msgstr "Check mod updates on start: {from} → {to}"
 
-#: src/mods/ProblemsTab.tsx:16
+#: src/mods/ProblemsTab.tsx:21
 msgid "Conflicts"
 msgstr "Conflicts"
 
@@ -2934,7 +2938,7 @@ msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the nex
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
 #: src/mods/ProblemBar.tsx:81
-#: src/mods/ProblemsTab.tsx:133
+#: src/mods/ProblemsTab.tsx:174
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
@@ -3388,6 +3392,10 @@ msgstr "Copy from profile…"
 msgid "Removed from Nexus · {0}"
 msgstr "Removed from Nexus · {0}"
 
+#: src/mods/ProblemsTab.tsx:147
+msgid "Problems copied"
+msgstr "Problems copied"
+
 #: src/mods/NexusAccountActions.tsx:117
 msgid "Abstain"
 msgstr "Abstain"
@@ -3731,7 +3739,7 @@ msgid "Token"
 msgstr "Token"
 
 #: src/mods/ProblemBar.tsx:27
-#: src/mods/ProblemsTab.tsx:92
+#: src/mods/ProblemsTab.tsx:108
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -4519,7 +4527,7 @@ msgstr "Checked with SMAPI's update service · {n, plural, one {# minute ago} ot
 msgid "{0, plural, one {# update} other {# updates}} for {1}"
 msgstr "{0, plural, one {# update} other {# updates}} for {1}"
 
-#: src/mods/ProblemsTab.tsx:18
+#: src/mods/ProblemsTab.tsx:23
 msgid "Broken or outdated mods"
 msgstr "Broken or outdated mods"
 
@@ -4677,7 +4685,7 @@ msgstr "{0, plural, one {# download needs your decision} other {# downloads need
 msgid "{0} was changed outside Mortar."
 msgstr "{0} was changed outside Mortar."
 
-#: src/mods/ProblemsTab.tsx:20
+#: src/mods/ProblemsTab.tsx:25
 msgid "Errors in the last run"
 msgstr "Errors in the last run"
 
@@ -4797,7 +4805,7 @@ msgstr "A game update replaced SMAPI's launcher"
 msgid "Retry now"
 msgstr "Retry now"
 
-#: src/mods/ProblemsTab.tsx:116
+#: src/mods/ProblemsTab.tsx:157
 msgid "No problems found."
 msgstr "No problems found."
 
