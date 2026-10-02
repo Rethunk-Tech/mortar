@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"syscall"
 	"text/tabwriter"
 	"time"
 
@@ -1354,10 +1353,8 @@ func offlineDoctor() error {
 		findings = append(findings, "control.json is stale")
 		fixes = append(fixes, "start Mortar once to refresh control.json")
 	}
-	var free uint64
-	var stat syscall.Statfs_t
-	if err := syscall.Statfs(dir, &stat); err == nil {
-		free = uint64(stat.Bavail) * uint64(stat.Bsize)
+	free, freeErr := freeSpace(dir)
+	if freeErr == nil {
 		if free == 0 {
 			findings = append(findings, "data folder has no free space")
 			fixes = append(fixes, "free disk space before starting Mortar")
