@@ -71,26 +71,13 @@ func New(exe string) (*System, error) {
 		return nil, err
 	}
 	l := &System{
-		exe: appImageOr(exe), home: home, dataHome: baseDir("XDG_DATA_HOME", filepath.Join(home, ".local", "share")),
+		exe: Launchable(exe), home: home, dataHome: baseDir("XDG_DATA_HOME", filepath.Join(home, ".local", "share")),
 		configHome: baseDir("XDG_CONFIG_HOME", filepath.Join(home, ".config")), run: execRun,
 	}
 	for d := range strings.SplitSeq(baseDir("XDG_DATA_DIRS", "/usr/local/share:/usr/share"), ":") {
 		l.dataDirs = append(l.dataDirs, filepath.Join(d, "applications"))
 	}
 	return l, nil
-}
-
-// appImageOr returns $APPIMAGE when exe runs from that AppImage's mount, which vanishes on exit. A child started from
-// an AppImage inherits APPIMAGE, hence the check that exe lives under $APPDIR.
-func appImageOr(exe string) string {
-	img, mount := os.Getenv("APPIMAGE"), os.Getenv("APPDIR")
-	if img == "" || mount == "" || !strings.HasPrefix(exe, filepath.Clean(mount)+string(filepath.Separator)) {
-		return exe
-	}
-	if info, err := fsx.Stat(img); err != nil || !info.Mode().IsRegular() {
-		return exe
-	}
-	return img
 }
 
 func baseDir(env, fallback string) string {
