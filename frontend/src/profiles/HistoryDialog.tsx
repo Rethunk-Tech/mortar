@@ -21,6 +21,7 @@ import {
 import { When } from '../i18n/When.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { historyChangeSummary } from './historyCounts.ts'
 import { useProfiles } from './store.ts'
 
 export function HistoryDialog({
@@ -85,27 +86,35 @@ export function HistoryDialog({
           </EmptyState>
         ) : (
           <List disablePadding={true}>
-            {events.map((ev) => (
-              <ListItem
-                key={ev.id}
-                disableGutters={true}
-                secondaryAction={
-                  <Button
-                    size="small"
-                    sx={{ whiteSpace: 'nowrap' }}
-                    disabled={busy !== ''}
-                    onClick={() => revertTo(ev.id).catch(reportUnexpected)}
-                  >
-                    {t`Revert to here`}
-                  </Button>
-                }
-              >
-                <ListItemText
-                  primary={ev.label}
-                  secondary={<When value={String(ev.at)} withTime={true} />}
-                />
-              </ListItem>
-            ))}
+            {events.map((ev) => {
+              const changes = historyChangeSummary(ev)
+              return (
+                <ListItem
+                  key={ev.id}
+                  disableGutters={true}
+                  secondaryAction={
+                    <Button
+                      size="small"
+                      sx={{ whiteSpace: 'nowrap' }}
+                      disabled={busy !== ''}
+                      onClick={() => revertTo(ev.id).catch(reportUnexpected)}
+                    >
+                      {t`Revert to here`}
+                    </Button>
+                  }
+                >
+                  <ListItemText
+                    primary={ev.label}
+                    secondary={
+                      <>
+                        {changes === '' ? null : `${changes} · `}
+                        <When value={String(ev.at)} withTime={true} />
+                      </>
+                    }
+                  />
+                </ListItem>
+              )
+            })}
           </List>
         )}
         {error !== '' && (

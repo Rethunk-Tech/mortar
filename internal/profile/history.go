@@ -40,6 +40,9 @@ type HistoryEvent struct {
 	Kind       string    `json:"kind"`
 	Label      string    `json:"label"`
 	Count      int       `json:"count,omitempty"`
+	Added      int       `json:"added,omitempty"`
+	Removed    int       `json:"removed,omitempty"`
+	Updated    int       `json:"updated,omitempty"`
 	From       string    `json:"from,omitempty"`
 	To         string    `json:"to,omitempty"`
 	SnapshotID string    `json:"snapshotId"`
@@ -82,7 +85,15 @@ func (s *Store) History(game, id string) ([]HistoryEvent, error) {
 	}
 	out := make([]HistoryEvent, len(data.Events))
 	for i, e := range data.Events {
-		out[len(data.Events)-1-i] = e
+		ev := e
+		var before []Entry
+		if i > 0 {
+			before, _ = snapshotEntries(data, data.Events[i-1].SnapshotID)
+		}
+		if after, ok := snapshotEntries(data, e.SnapshotID); ok {
+			ev.Added, ev.Removed, ev.Updated = ModDiffCounts(before, after)
+		}
+		out[len(data.Events)-1-i] = ev
 	}
 	return out, nil
 }
@@ -623,6 +634,33 @@ func appendHistory(dir string, ev HistoryEvent, after []Entry) (HistoryEvent, er
 		return HistoryEvent{}, err
 	}
 	return ev, nil
+}
+
+// ModDiffCounts reports how many mods were added, removed, or updated between two snapshots.
+func ModDiffCounts(before, after []Entry) (added, removed, updated int) {
+	bMap := indexEntries(before)
+	aMap := indexEntries(after)
+	seen := map[string]struct{}{}
+	for id, ae := range aMap {
+		seen[id] = struct{}{}
+		be, ok := bMap[id]
+		if !ok {
+			added++
+			continue
+		}
+		if be.Key != ae.Key || entryVersion(be) != entryVersion(ae) {
+			updated++
+		}
+	}
+	for id := range bMap {
+		if _, ok := seen[id]; ok {
+			continue
+		}
+		if _, ok := aMap[id]; !ok {
+			removed++
+		}
+	}
+	return added, removed, updated
 }
 
 func classifyHistory(before, after []Entry) HistoryEvent {

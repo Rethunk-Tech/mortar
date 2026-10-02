@@ -390,6 +390,46 @@ func TestHistoryRevertRefusedWhileRunning(t *testing.T) {
 	}
 }
 
+func TestModDiffCounts(t *testing.T) {
+	a1 := Entry{Key: "a", Mods: []EntryMod{{UniqueID: "A.Mod", Name: "Alpha", Version: "1.0"}}}
+	a2 := Entry{Key: "a2", Mods: []EntryMod{{UniqueID: "A.Mod", Name: "Alpha", Version: "2.0"}}}
+	b := Entry{Key: "b", Mods: []EntryMod{{UniqueID: "B.Mod", Name: "Beta", Version: "1.0"}}}
+	c := Entry{Key: "c", Mods: []EntryMod{{UniqueID: "C.Mod", Name: "Gamma", Version: "1.0"}}}
+	before := []Entry{a1, b}
+	after := []Entry{a2, c}
+	added, removed, updated := ModDiffCounts(before, after)
+	if added != 1 || removed != 1 || updated != 1 {
+		t.Fatalf("got +%d −%d ~%d, want +1 −1 ~1", added, removed, updated)
+	}
+}
+
+func TestHistoryIncludesModDiffCounts(t *testing.T) {
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
+	p, err := e.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	events, err := e.History("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(events) < 2 {
+		t.Fatalf("events: %+v", events)
+	}
+	// Newest first: second add should show +1 with no removes or updates.
+	if events[0].Added != 1 || events[0].Removed != 0 || events[0].Updated != 0 {
+		t.Fatalf("latest event counts = +%d −%d ~%d, want +1 −0 ~0", events[0].Added, events[0].Removed, events[0].Updated)
+	}
+}
+
 func TestClassifyHistoryNamesTheEntryThatChanged(t *testing.T) {
 	a := Entry{Key: "gmcm", Mods: []EntryMod{{UniqueID: "spacechase0.GenericModConfigMenu", Name: "Generic Mod Config Menu"}}}
 	b := Entry{Key: "npc", Mods: []EntryMod{{UniqueID: "Bouhm.NPCMapLocations", Name: "NPC Map Locations"}}}
