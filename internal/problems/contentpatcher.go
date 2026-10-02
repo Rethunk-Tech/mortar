@@ -1106,7 +1106,7 @@ func assetConflictResults(mods []Installed) ([]AssetConflict, []SettingHint) {
 			if i < 0 {
 				hits = append(hits, packHit{
 					id: mod.UniqueID, name: mod.Name, key: mod.Key, priority: p.priority, mentions: knows,
-					root: mod.Folder, tokens: slices.Clone(pack.patches), present: present, schema: pack.schema, config: config,
+					root: mod.Folder, tokens: pack.patches, present: present, schema: pack.schema, config: config,
 					dependencies: dependencies,
 				})
 				i = len(hits) - 1
