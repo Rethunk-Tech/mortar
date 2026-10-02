@@ -251,6 +251,8 @@ func (s *Store) missingEntryFolders(game, id string) ([]string, error) {
 }
 
 func (s *Store) parkUnknownMods(game, id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	p, err := s.read(game, id)
 	if err != nil {
 		return err
@@ -259,6 +261,10 @@ func (s *Store) parkUnknownMods(game, id string) error {
 	if err != nil {
 		return err
 	}
+	return s.parkUnknownModsLocked(game, dir, p)
+}
+
+func (s *Store) parkUnknownModsLocked(game, dir string, p Profile) error {
 	known := map[string]struct{}{}
 	for _, key := range entryKeys(p) {
 		known[key] = struct{}{}

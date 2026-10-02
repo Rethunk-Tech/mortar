@@ -404,6 +404,29 @@ func TestRebuildAfterModsDeleted(t *testing.T) {
 	}
 }
 
+func TestModsParkUnknownFoldersBeforeRebuild(t *testing.T) {
+	e := newEnv(t)
+	p, err := e.Create("stardew", "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, e.mods(p.ID), "dropped/keep.txt", "keep")
+
+	if _, err := e.Mods("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.UserMods("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	held := filepath.Join(e.root, "stardew", p.ID, modsHoldDir, "dropped", "keep.txt")
+	if b, err := os.ReadFile(held); err != nil || string(b) != "keep" {
+		t.Fatalf("parked folder = %q, %v", b, err)
+	}
+	if exists(filepath.Join(e.mods(p.ID), "dropped")) {
+		t.Fatal("unknown folder remained in mods")
+	}
+}
+
 func TestHiddenReorderAndStoreKeys(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("X.A")})

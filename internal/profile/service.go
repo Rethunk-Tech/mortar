@@ -27,7 +27,9 @@ type Service struct {
 	// App is set after application.New so export and restore can use native file dialogs.
 	App *application.App
 	// Version is Mortar's version written into exported zips.
-	Version string
+	Version              string
+	QueueProfileDeleted  func(game, id string)
+	QueueProfileRestored func(game, id string)
 }
 
 func NewService(store *Store, home string, settings *settings.Store) *Service {
@@ -183,11 +185,25 @@ func (s *Service) CopyMods(game, fromID, toID string, uniqueIDs []string) (Profi
 }
 
 // Delete moves the profile to the trash, where it stays restorable for 30 days.
-func (s *Service) Delete(game, id string) error { return s.store.Delete(game, id) }
+func (s *Service) Delete(game, id string) error {
+	if err := s.store.Delete(game, id); err != nil {
+		return err
+	}
+	if s.QueueProfileDeleted != nil {
+		s.QueueProfileDeleted(game, id)
+	}
+	return nil
+}
 
 func (s *Service) ListTrash(game string) ([]TrashItem, error) { return s.store.ListTrash(game) }
 
-func (s *Service) Restore(game, id string) (Profile, error) { return s.store.Restore(game, id) }
+func (s *Service) Restore(game, id string) (Profile, error) {
+	p, err := s.store.Restore(game, id)
+	if err == nil && s.QueueProfileRestored != nil {
+		s.QueueProfileRestored(game, id)
+	}
+	return p, err
+}
 
 func (s *Service) Purge(game, id string) error { return s.store.Purge(game, id) }
 
@@ -199,13 +215,10 @@ func (s *Service) SetHidden(game, id string, hidden bool) (Profile, error) {
 
 func (s *Service) Reorder(game string, ids []string) error { return s.store.Reorder(game, ids) }
 
-// Mods lists the profile's mods. Unknown folders are parked so rebuild does not delete them; missing entry folders stay missing so drift can offer Restore.
+// Mods lists the profile's mods. Missing entry folders stay missing so drift can offer Restore.
 func (s *Service) Mods(game, id string) ([]Mod, error) {
 	missing, err := s.store.missingEntryFolders(game, id)
 	if err != nil {
-		return nil, err
-	}
-	if err := s.store.parkUnknownMods(game, id); err != nil {
 		return nil, err
 	}
 	mods, err := s.store.UserMods(game, id)
