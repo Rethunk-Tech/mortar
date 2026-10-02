@@ -214,7 +214,10 @@ function MoveDataButton({ onPicked }: { onPicked: (dest: string) => void }) {
   )
 }
 
-type MoveState = { dest: string; estimate: MoveEstimate }
+interface MoveState {
+  dest: string
+  estimate: MoveEstimate
+}
 
 function MoveDialog({
   move,
@@ -340,13 +343,16 @@ export function Data() {
     setMoving(true)
     setMoveError('')
     const poll = globalThis.setInterval(() => {
-      const progress = UsageProgress()
-      setMoveProgress({
-        files: progress.files,
-        totalFiles: progress.totalFiles,
-        bytes: progress.bytes,
-        totalBytes: progress.totalBytes,
-      })
+      UsageProgress().then(
+        (progress) =>
+          setMoveProgress({
+            files: progress.files,
+            totalFiles: progress.totalFiles,
+            bytes: progress.bytes,
+            totalBytes: progress.totalBytes,
+          }),
+        () => undefined,
+      )
     }, MOVE_PROGRESS_INTERVAL)
     MoveDataFolder(move.dest)
       .then(() => setMove(null))
