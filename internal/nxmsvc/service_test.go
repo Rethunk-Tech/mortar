@@ -179,10 +179,15 @@ func TestReceiveQueuesAcceptedAndReportsRefused(t *testing.T) {
 
 func TestIgnoreDropsTheArrival(t *testing.T) {
 	s := newService(t, &fakeHandler{})
-	s.Receive([]string{"nxm://stardewvalley/mods/5/files/9?key=k&expires=1000600&user_id=42"})
+	link := "nxm://stardewvalley/mods/5/files/9?key=k&expires=1000600&user_id=42"
+	s.Receive([]string{link})
 	s.Ignore(s.Inbox().Arrivals[0].ID)
 	if len(s.Inbox().Arrivals) != 0 || len(s.Assigned) != 0 {
 		t.Error("ignored link survived")
+	}
+	s.Receive([]string{link})
+	if len(s.Inbox().Arrivals) != 1 {
+		t.Error("ignored link was not accepted when it arrived again")
 	}
 }
 
