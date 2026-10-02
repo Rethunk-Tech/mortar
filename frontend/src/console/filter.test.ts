@@ -42,7 +42,7 @@ test('Trace and Debug are hidden by default and counts cover every line', () => 
 })
 
 test('search matches message or mod, ignoring case', () => {
-  expect(visible(log, { ...DEFAULT_FILTERS, search: ' spacecore ' })).toHaveLength(1)
+  expect(visible(log, { ...DEFAULT_FILTERS, search: ' spacecore ' })).toHaveLength(2)
   expect(visible(log, { ...DEFAULT_FILTERS, search: 'COOKING' })).toHaveLength(3)
 })
 
