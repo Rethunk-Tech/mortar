@@ -62,6 +62,12 @@ func (g Game) Launch(ctx context.Context, req launch.Request, onLines func([]str
 	return launch.Run(ctx, run, cmd, g.LaunchTiming, onLines)
 }
 
+// DirectCommand builds the command used for a direct profile launch without starting it.
+func (g Game) DirectCommand(goos string, req launch.Request) (launch.Command, error) {
+	req.Direct = true
+	return g.command(goos, req, "", "")
+}
+
 // command builds the process to start. steamPath and flatpakPath are LookPath results, "" when missing.
 func (g Game) command(goos string, req launch.Request, steamPath, flatpakPath string) (launch.Command, error) {
 	if req.Vanilla {
@@ -166,6 +172,34 @@ func (Game) SteamLaunchWithLoader(dir, current string) string {
 		return strings.Replace(current, "%command%", exe+" %command%", 1)
 	}
 	return strings.TrimSpace(exe + " %command% " + current)
+}
+
+// SteamLaunchWithoutLoader removes SMAPI before Steam's %command%, keeping the user's other options.
+func (Game) SteamLaunchWithoutLoader(current string) string {
+	if !hasSMAPILine(current) {
+		if strings.TrimSpace(current) == "%command%" {
+			return ""
+		}
+		return current
+	}
+	prefix, suffix, ok := strings.Cut(current, "%command%")
+	if !ok {
+		return current
+	}
+	closeQuote := strings.LastIndex(prefix, `"`)
+	if closeQuote < 0 {
+		return current
+	}
+	openQuote := strings.LastIndex(prefix[:closeQuote], `"`)
+	if openQuote < 0 || !strings.Contains(strings.ToLower(prefix[openQuote:closeQuote+1]), strings.ToLower(smapiMarker)) {
+		return current
+	}
+	result := prefix[:openQuote] + "%command%" + suffix
+	result = strings.TrimSpace(result)
+	if result == "%command%" {
+		return ""
+	}
+	return result
 }
 
 // hasSMAPILine reports whether Steam launch options run SMAPI in place of the game: `"<game>\StardewModdingAPI.exe" %command%`.

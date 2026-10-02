@@ -66,6 +66,13 @@ type Lines struct {
 	Entries []launch.Entry `json:"entries"`
 }
 
+// CommandPreview is the direct launch command assembled from unsaved profile fields.
+type CommandPreview struct {
+	Env   []string `json:"env"`
+	Argv  []string `json:"argv"`
+	Error string   `json:"error"`
+}
+
 // session is the log of a launch Mortar made, and the profile it launched.
 type session struct {
 	buf             *launch.Buffer
@@ -474,6 +481,54 @@ func (s *Service) target(g game.Game, profileID string) (dir, modsDir string, er
 	}
 	modsDir, err = s.profiles.ModsDir(g.ID(), profileID)
 	return dir, modsDir, err
+}
+
+// PreviewCommand builds the direct launch command without starting it.
+func (s *Service) PreviewCommand(gameID, profileID, options, prefix, env string) CommandPreview {
+	preview := CommandPreview{}
+	fail := func(err error) CommandPreview {
+		preview.Error = err.Error()
+		return preview
+	}
+	g := game.Find(gameID)
+	if g == nil {
+		return fail(fmt.Errorf("unknown game %q", gameID))
+	}
+	dir, modsDir, err := s.target(g, profileID)
+	if err != nil {
+		return fail(err)
+	}
+	extra, err := stardew.ParseLaunchOptions(options)
+	if err != nil {
+		return fail(err)
+	}
+	prefixArgs, err := profile.LaunchPrefixArgs(prefix)
+	if err != nil {
+		return fail(err)
+	}
+	envArgs, err := profile.LaunchEnvironment(env)
+	if err != nil {
+		return fail(err)
+	}
+	builder, ok := g.(interface {
+		DirectCommand(string, launch.Request) (launch.Command, error)
+	})
+	if !ok {
+		return fail(fmt.Errorf("%s does not support command previews", g.Name()))
+	}
+	cmd, err := builder.DirectCommand(runtime.GOOS, launch.Request{
+		InstallDir: dir,
+		ModsDir:    modsDir,
+		ExtraArgs:  extra,
+		Prefix:     prefixArgs,
+		Env:        envArgs,
+	})
+	if err != nil {
+		return fail(err)
+	}
+	preview.Env = cmd.Env
+	preview.Argv = append([]string{cmd.Name}, cmd.Args...)
+	return preview
 }
 
 func (s *Service) donePreparing(gameID string) {

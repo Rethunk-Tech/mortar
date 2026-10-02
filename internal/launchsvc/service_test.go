@@ -210,6 +210,23 @@ func startEnv(t *testing.T) (*Service, profile.Profile) {
 	return NewService(t.TempDir(), set, profiles), p
 }
 
+func TestPreviewCommandUsesUnsavedLaunchFields(t *testing.T) {
+	svc, p := startEnv(t)
+	preview := svc.PreviewCommand("stardew", p.ID, `--foo "two words"`, `gamemoderun "mango hud"`, "ONE=value\nTWO=two")
+	if preview.Error != "" {
+		t.Fatal(preview.Error)
+	}
+	if len(preview.Env) != 2 || preview.Env[0] != "ONE=value" || preview.Env[1] != "TWO=two" {
+		t.Fatalf("env = %#v", preview.Env)
+	}
+	if len(preview.Argv) < 7 || preview.Argv[1] != "gamemoderun" || preview.Argv[2] != "mango hud" {
+		t.Fatalf("argv = %#v", preview.Argv)
+	}
+	if preview.Argv[len(preview.Argv)-2] != "--foo" || preview.Argv[len(preview.Argv)-1] != "two words" {
+		t.Fatalf("argv = %#v", preview.Argv)
+	}
+}
+
 func TestStartInstallsAMissingLoaderBeforeLaunching(t *testing.T) {
 	svc, p := startEnv(t)
 	asked, release := make(chan string), make(chan struct{})

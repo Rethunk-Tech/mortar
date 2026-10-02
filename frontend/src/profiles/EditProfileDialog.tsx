@@ -31,6 +31,7 @@ import {
   PROFILE_ICONS,
 } from './appearance.ts'
 import { GameSettings, type GameSettingsValues } from './GameSettings.tsx'
+import { LaunchPreview } from './LaunchPreview.tsx'
 import { ProfileMark } from './ProfileMark.tsx'
 import { useProfiles } from './store.ts'
 
@@ -342,6 +343,13 @@ function ProfileFields({
           t`One VAR=value per line; applies to direct launches only. Steam launches do not receive these settings.`
         }
         slotProps={{ root: { sx: { userSelect: 'text' } } }}
+      />
+      <LaunchPreview
+        gameId={gameId}
+        profileId={profile.id}
+        options={launchOptions}
+        prefix={launchPrefix}
+        env={launchEnv}
       />
       <GameSettings profileId={profile.id} value={gameSettings} onChange={onGameSettings} />
     </DialogContent>
