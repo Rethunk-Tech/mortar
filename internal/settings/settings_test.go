@@ -81,6 +81,11 @@ func TestCorruptFile(t *testing.T) {
 	if !reflect.DeepEqual(s2.Get(), Defaults()) {
 		t.Fatalf("corrupt = %+v", s2.Get())
 	}
+	if got := s2.CorruptPath(); got == "" {
+		t.Fatal("corrupt settings path was not reported")
+	} else if _, err := os.Stat(got); err != nil {
+		t.Fatalf("corrupt copy missing: %v", err)
+	}
 	_ = s
 }
 

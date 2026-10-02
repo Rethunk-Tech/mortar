@@ -145,12 +145,13 @@ func Defaults() Settings {
 
 // Store reads and writes settings.json under the user data folder.
 type Store struct {
-	mu   sync.Mutex
-	path string
-	cur  Settings
+	mu          sync.Mutex
+	path        string
+	cur         Settings
+	corruptPath string
 }
 
-// Open loads settings from the data folder; a missing or corrupt file yields defaults.
+// Open loads settings from the data folder; a corrupt file is preserved beside it and yields defaults.
 func Open() (*Store, error) {
 	dir, err := datadir.Dir()
 	if err != nil {
@@ -159,7 +160,13 @@ func Open() (*Store, error) {
 	s := &Store{path: filepath.Join(dir, fileName), cur: Defaults()}
 	if b, err := os.ReadFile(s.path); err == nil {
 		var loaded Settings
-		if json.Unmarshal(b, &loaded) == nil {
+		if err := json.Unmarshal(b, &loaded); err != nil {
+			corrupt := fmt.Sprintf("%s.corrupt-%d", s.path, time.Now().UnixNano())
+			if renameErr := os.Rename(s.path, corrupt); renameErr != nil {
+				return nil, fmt.Errorf("preserve corrupt settings: %w", renameErr)
+			}
+			s.corruptPath = corrupt
+		} else {
 			s.cur = loaded
 		}
 	}
@@ -199,6 +206,13 @@ func Open() (*Store, error) {
 	normalizeNexus(&s.cur)
 	normalizeLAN(&s.cur)
 	return s, nil
+}
+
+// CorruptPath returns the one-time path of settings preserved during Open, if any.
+func (s *Store) CorruptPath() string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.corruptPath
 }
 
 // Get returns the current settings.
