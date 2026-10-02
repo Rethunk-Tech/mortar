@@ -75,6 +75,26 @@ func TestRequiredFiles(t *testing.T) {
 	}
 }
 
+func TestRequiredPluginIsResolvedWithoutChoice(t *testing.T) {
+	cfg, err := Parse([]byte(`<config><installSteps><installStep name="S"><optionalFileGroups>
+		<group name="G" type="SelectExactlyOne"><plugins>
+			<plugin name="Required"><files><file source="required.txt" destination="required.txt"/></files>
+				<typeDescriptor><type name="Required"/></typeDescriptor></plugin>
+			<plugin name="Other"><files><file source="other.txt" destination="other.txt"/></files>
+				<typeDescriptor><type name="Optional"/></typeDescriptor></plugin>
+		</plugins></group></optionalFileGroups></installStep></installSteps></config>`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ops := Resolve(cfg, nil, EvalContext{})
+	if len(ops) != 1 || ops[0].Source != "required.txt" {
+		t.Fatalf("required plugin = %+v", ops)
+	}
+	if !Match(cfg, nil, EvalContext{}) {
+		t.Fatal("required-only group should match")
+	}
+}
+
 func TestFolderApply(t *testing.T) {
 	cfg := loadFixture(t, "folder.xml")
 	src := t.TempDir()

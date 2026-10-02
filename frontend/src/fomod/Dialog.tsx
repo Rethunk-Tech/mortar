@@ -75,6 +75,20 @@ function savedChoices(ask: FomodSession['ask']): Record<string, Record<string, s
       out[step] = { ...out[step], [group]: names ?? [] }
     }
   }
+  for (const step of ask.steps ?? []) {
+    for (const group of step.groups ?? []) {
+      const current = out[step.name]?.[group.name] ?? []
+      const required = (group.plugins ?? []).filter((p) => p.type === 'Required').map((p) => p.name)
+      const recommended =
+        current.length === 0
+          ? (group.plugins ?? []).filter((p) => p.type === 'Recommended').map((p) => p.name)
+          : []
+      const seeded = [...new Set([...current, ...required, ...recommended])]
+      if (seeded.length > 0) {
+        out[step.name] = { ...out[step.name], [group.name]: seeded }
+      }
+    }
+  }
   return out
 }
 
@@ -117,6 +131,9 @@ function FomodWizard({ session }: { session: FomodSession }) {
   const [choices, setChoices] = useState(() => savedChoices(session.ask))
   const [changed] = useState(Boolean(session.ask.changed))
   const steps = session.ask.steps ?? []
+  useEffect(() => {
+    setIndex((current) => Math.min(current, Math.max(0, steps.length - 1)))
+  }, [steps.length])
   const step = steps[index]
   const last = index >= steps.length - 1 || steps.length === 0
   const valid = useMemo(
@@ -126,6 +143,9 @@ function FomodWizard({ session }: { session: FomodSession }) {
       ),
     [session, choices],
   )
+  const invalidGroup = step?.groups.find(
+    (g) => !groupOK(g.type, choices[step.name]?.[g.name] ?? []),
+  )?.name
 
   const pick = (groupType: string, groupName: string, plugin: string, on: boolean) => {
     if (!step) {
@@ -148,7 +168,11 @@ function FomodWizard({ session }: { session: FomodSession }) {
   return (
     <Dialog
       open={true}
-      onClose={close}
+      onClose={(_, reason) => {
+        if (reason !== 'backdropClick') {
+          close()
+        }
+      }}
       slotProps={{ paper }}
       transitionDuration={0}
       maxWidth="sm"
@@ -163,7 +187,9 @@ function FomodWizard({ session }: { session: FomodSession }) {
         ) : null}
         {step ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Typography variant="subtitle2">{step.name}</Typography>
+            <Typography variant="subtitle2">
+              {t`Step ${index + 1} of ${steps.length}: ${step.name}`}
+            </Typography>
             {(step.groups ?? []).map((g) => {
               const selected = choices[step.name]?.[g.name] ?? []
               const exclusive = g.type === 'SelectExactlyOne' || g.type === 'SelectAtMostOne'
@@ -210,6 +236,11 @@ function FomodWizard({ session }: { session: FomodSession }) {
         ) : (
           <Typography>{t`This pack has files that always install.`}</Typography>
         )}
+        {invalidGroup ? (
+          <Typography color="error" variant="body2" sx={{ mt: 2 }}>
+            {t`Choose an option in ${invalidGroup}.`}
+          </Typography>
+        ) : null}
       </DialogContent>
       <DialogActions>
         <Button onClick={close}>{t`Cancel`}</Button>
@@ -225,7 +256,11 @@ function FomodWizard({ session }: { session: FomodSession }) {
             {t`Install`}
           </Button>
         ) : (
-          <Button variant="contained" onClick={() => setIndex((i) => i + 1)}>
+          <Button
+            variant="contained"
+            disabled={!step || Boolean(invalidGroup)}
+            onClick={() => setIndex((i) => i + 1)}
+          >
             {t`Next`}
           </Button>
         )}

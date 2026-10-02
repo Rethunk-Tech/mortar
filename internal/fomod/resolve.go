@@ -143,10 +143,13 @@ func selected(choices Choices, step, group string, g Group) []string {
 		}
 		return names
 	}
-	if choices == nil {
-		return nil
+	names := slices.Clone(choices[step][group])
+	for _, p := range g.Plugins {
+		if PluginType(p, nil, EvalContext{}) == TypeRequired && !slices.Contains(names, p.Name) {
+			names = append(names, p.Name)
+		}
 	}
-	return slices.Clone(choices[step][group])
+	return names
 }
 
 // Match reports whether choices still name plugins that exist and satisfy each visible group's type.
