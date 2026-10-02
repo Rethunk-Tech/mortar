@@ -312,8 +312,6 @@ export function Data() {
           <Box sx={{ ...mono, color: 'text.secondary' }}>{formatBytes(bytes)}</Box>
         </Box>
       )}
-      <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Save backups`}</Box>
-      <BackupsKept />
       <Button
         onClick={openPreview}
         startIcon={<Trash2 size={16} />}
@@ -321,6 +319,8 @@ export function Data() {
       >
         {t`Clean up unused`}
       </Button>
+      <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Save backups`}</Box>
+      <BackupsKept />
       <Dialog
         open={preview !== null}
         onClose={() => setPreview(null)}
