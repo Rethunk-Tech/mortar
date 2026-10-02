@@ -51,5 +51,8 @@ Not in the first release; re-weigh only when asked:
 - Steam Deck Game Mode play: a `--play` launch from a Steam shortcut starts Mortar minimised or headless, shows only a small controller-friendly prompt when Play is blocked, and exits when the game closes so Steam tracks playtime.
 - A "Tracked, not installed" list for a profile, from the Nexus tracked list Mortar already reads (`nexussvc.TrackedMods`; the mod sidebar already tracks and untracks).
 - A profile sync folder (Syncthing, Dropbox, a NAS) holding each profile's `.mortar` state, so another machine is offered the changes, with conflict detection when both sides edited; mod files still come from their sources.
+- History that shows what each change did (mods added, removed, updated old to new, switched on or off, settings files changed) and reverts a single item instead of everything after a point.
+- A new profile made from a save: exactly the mods the Saves tab knows that save used, missing ones downloaded through the queue, named after the farm.
+- An asset conflict map: which mods edit which game assets (Content Patcher targets, replaced files) with load order and priority, built on the Content Patcher parser.
 - Per-profile save isolation.
 - Registering Mortar with Nexus (SSO slug; ask then about OAuth, which Vortex uses via `nxm://oauth/callback`, and Collections), and a mode for users without an API key: an `nxm://` link cannot become a download without API authentication (HTTP 401 without a key, measured), so that mode would pick up manual downloads from the Downloads folder by their manifests, with confirmation.
