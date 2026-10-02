@@ -37,6 +37,7 @@ import {
   ModsDir,
   OpenConsolePath,
   RemoveEntry,
+  SetModEnabled,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { AddToBundleDialog } from '../bundles/dialogs.tsx'
 import { useFomod } from '../fomod/store.ts'
@@ -299,8 +300,8 @@ function ModMenuItems({
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
   const game = useProfiles((s) => s.game)
   const update = useUpdates((s) => updateFor(s.updates, mod, profile))
-  const entry = (profile?.entries ?? []).find((e) => e.key === mod.key)
-  const hasFomod = Boolean(entry?.fomod && Object.keys(entry.fomod).length > 0)
+  const currentEntry = (profile?.entries ?? []).find((e) => e.key === mod.key)
+  const hasFomod = Boolean(currentEntry?.fomod && Object.keys(currentEntry.fomod).length > 0)
   const items: Record<
     ModAction | 'reinstall',
     { label: string; icon: ReactNode; run: () => void }
@@ -336,10 +337,10 @@ function ModMenuItems({
       label: t`Reinstall with options…`,
       icon: <Settings2 size={ICON_SIZE} />,
       run: () => {
-        if (!(game && profile && entry)) {
+        if (!(game && profile && currentEntry)) {
           return
         }
-        openFomodReinstall(game.id, profile, entry.key)
+        openFomodReinstall(game.id, profile, currentEntry.key)
       },
     },
     pin: {
@@ -452,10 +453,24 @@ function ModActionMenu({
         currentProfileId={currentProfileId}
         uniqueId={mod.uniqueId}
         mode="remove"
-        title={t`Remove ${mod.name} from other profiles`}
+        title={t`Remove ${mod.name} from other profiles (switches it off when it shares an entry)`}
         confirmLabel={t`Remove`}
-        onConfirm={async (profiles) => {
-          await Promise.all(profiles.map((other) => RemoveEntry(game, other.id, mod.key)))
+        onConfirm={async (profiles, _pinned, rows) => {
+          await Promise.all(
+            profiles.map((other) => {
+              const row = rows.find((candidate) => candidate.profileId === other.id)
+              const entryMods =
+                useProfiles
+                  .getState()
+                  .profiles.find((candidate) => candidate.id === other.id)
+                  ?.entries?.find((profileEntry) => profileEntry.key === row?.key)?.mods ?? []
+              return entryMods.length > 1
+                ? SetModEnabled(game, other.id, row?.key ?? '', mod.uniqueId, false).then(
+                    (result) => useProfiles.getState().replace(result.profile),
+                  )
+                : RemoveEntry(game, other.id, row?.key ?? '')
+            }),
+          )
           useToasts.getState().push({ kind: 'success', title: t`Mods removed from other profiles` })
         }}
       />

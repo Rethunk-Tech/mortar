@@ -5,6 +5,12 @@ export type ShortcutId =
   | 'check-updates'
   | 'open-settings'
   | 'dismiss'
+  | 'select-all-mods'
+  | 'mod-up'
+  | 'mod-down'
+  | 'mod-toggle'
+  | 'mod-details'
+  | 'mod-remove'
 
 export interface Shortcut {
   id: ShortcutId
@@ -31,6 +37,12 @@ export const SHORTCUTS: readonly Shortcut[] = [
   { id: 'check-updates', keys: 'F5', always: false },
   { id: 'open-settings', keys: 'Ctrl+,', always: false },
   { id: 'dismiss', keys: 'Esc', always: true },
+  { id: 'select-all-mods', keys: 'Ctrl+A', always: false },
+  { id: 'mod-up', keys: '↑', always: false },
+  { id: 'mod-down', keys: '↓', always: false },
+  { id: 'mod-toggle', keys: 'Space', always: false },
+  { id: 'mod-details', keys: 'Enter', always: false },
+  { id: 'mod-remove', keys: 'Delete', always: false },
 ]
 
 export function isTypingTarget(el: TypingTarget | null): boolean {

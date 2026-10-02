@@ -134,7 +134,7 @@ export function OtherProfilesDialog({
   confirmLabel: string
   update?: { oldKey: string } | undefined
   onClose: () => void
-  onConfirm: (profiles: Profile[], pinned: Profile[]) => Promise<void>
+  onConfirm: (profiles: Profile[], pinned: Profile[], rows: ModInProfile[]) => Promise<void>
 }) {
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles).filter((p) => p.id !== currentProfileId)
@@ -209,7 +209,11 @@ export function OtherProfilesDialog({
           return profile !== undefined && pinned(profile, row)
         })
         .flatMap((row) => profiles.filter((profile) => profile.id === row.profileId))
-      await onConfirm(chosen, skipped)
+      await onConfirm(
+        chosen,
+        skipped,
+        rows.filter((row) => selected.includes(row.profileId)),
+      )
       onClose()
     } catch (e) {
       useToasts

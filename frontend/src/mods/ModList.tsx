@@ -226,6 +226,8 @@ function ModRow({
   const detailId = useDetail((s) => s.detailId)
   const selectedIds = useSelection((s) => s.ids)
   const show = useDetail((s) => s.show)
+  const setEnabled = useMods((s) => s.setEnabled)
+  const askRemove = useMods((s) => s.askRemove)
   const m = row.mod
   const rowId = modId(m)
   const marked = selectedIds.includes(rowId) || (selectedIds.length === 0 && rowId === detailId)
@@ -244,9 +246,33 @@ function ModRow({
         useSelection.getState().click(orderedIds, rowId, e)
         show(m)
       }}
-      tabIndex={0}
+      data-mod-row="true"
+      tabIndex={orderedIds[0] === rowId ? 0 : -1}
       {...menu}
-      onKeyDown={menu.onKeyDown}
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault()
+          const rows = [
+            ...(e.currentTarget.parentElement?.querySelectorAll<HTMLElement>(
+              '[data-mod-row="true"]',
+            ) ?? []),
+          ]
+          const index = rows.indexOf(e.currentTarget)
+          rows[(index + (e.key === 'ArrowDown' ? 1 : -1) + rows.length) % rows.length]?.focus()
+          return
+        }
+        if (e.key === ' ') {
+          e.preventDefault()
+          setEnabled(m, !m.enabled).catch(reportUnexpected)
+          return
+        }
+        if (e.key === 'Delete') {
+          e.preventDefault()
+          askRemove(m)
+          return
+        }
+        menu.onKeyDown(e)
+      }}
       sx={{
         display: 'grid',
         gridTemplateColumns: listGridColumns(cols),

@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Card, Chip, Skeleton, Typography } from '@mui/material'
 import { SearchX } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import type {
   Mod,
@@ -356,9 +356,12 @@ export function ModsTab({ profile }: { profile: Profile }) {
   const mods = useMods((s) => s.mods)
   const view = useMods((s) => s.view)
   const load = useMods((s) => s.load)
+  const query = useMods((s) => s.queries[profile.id] ?? '')
+  const setQuery = useMods((s) => s.setQuery)
+  const loadKey = `${profile.id}:${profile.updated}`
   const gameId = useProfiles((s) => s.game?.id)
   const launchState = useLaunch((s) => s.status?.state)
-  const [query, setQuery] = useState('')
+  const loading = useRef(false)
   useEffect(() => {
     if (!gameId) {
       return
@@ -376,6 +379,9 @@ export function ModsTab({ profile }: { profile: Profile }) {
       .then(() => undefined)
   }, [gameId, profile.id, launchState])
   useEffect(() => {
+    if (loadKey === '') {
+      return
+    }
     const pending = useDetail.getState().pendingId
     if (useMods.getState().modsFor !== profile.id) {
       useMods.setState({
@@ -393,17 +399,22 @@ export function ModsTab({ profile }: { profile: Profile }) {
     }
     useContextMenu.getState().close()
     useSelection.getState().clear()
+    if (loading.current) {
+      return
+    }
+    loading.current = true
     load()
       .then(() => {
         const id = useDetail.getState().takePending()
-        if (!id) {
-          return
+        if (id) {
+          useDetail.getState().show(useMods.getState().mods.find((m) => modId(m) === id) ?? null)
         }
-        const mod = useMods.getState().mods.find((m) => modId(m) === id)
-        useDetail.getState().show(mod ?? null)
       })
       .catch(reportUnexpected)
-  }, [load, profile.id])
+      .finally(() => {
+        loading.current = false
+      })
+  }, [load, loadKey])
 
   if (userModCount(profile) === 0) {
     return <EmptyMods profileId={profile.id} />
@@ -411,7 +422,17 @@ export function ModsTab({ profile }: { profile: Profile }) {
 
   const q = query.trim().toLowerCase()
   const shown = mods.filter((m) => {
-    if (q && !m.name.toLowerCase().includes(q) && !m.author.toLowerCase().includes(q)) {
+    const entry = entryOf(profile, m.key)
+    const searchable = [
+      m.name,
+      m.author,
+      m.uniqueId,
+      ...(entry?.tags ?? []),
+      entry?.note ?? '',
+      entry?.categoryOverride ?? '',
+      JSON.stringify(entry?.source ?? ''),
+    ]
+    if (q && !searchable.some((value) => value.toLowerCase().includes(q))) {
       return false
     }
     return true
@@ -425,7 +446,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
       </TipBanner>
       <ProblemBar />
       <UpdateBar />
-      <Toolbar query={query} onQuery={setQuery} total={mods.length} />
+      <Toolbar query={query} onQuery={(value) => setQuery(profile.id, value)} total={mods.length} />
       <LockedNote />
       <SelectionKeys shown={shown} />
       <SelectionBar profileId={profile.id} mods={shown} />
@@ -434,7 +455,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
         shown={shown}
         view={view}
         query={q}
-        onClear={() => setQuery('')}
+        onClear={() => setQuery(profile.id, '')}
       />
       <ModDetail profile={profile} />
       <UpdateReview profile={profile} />

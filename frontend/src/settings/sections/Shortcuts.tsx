@@ -11,6 +11,12 @@ export function Shortcuts() {
     'check-updates': t`Check for mod updates`,
     'open-settings': t`Open Settings`,
     dismiss: t`Close dialog or clear selection`,
+    'select-all-mods': t`Select all mods`,
+    'mod-up': t`Focus the previous mod`,
+    'mod-down': t`Focus the next mod`,
+    'mod-toggle': t`Toggle the focused mod`,
+    'mod-details': t`Open focused mod details`,
+    'mod-remove': t`Remove the focused mod`,
   }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: 14 }}>

@@ -350,6 +350,7 @@ export const useMods = create<{
   loaded: boolean
   // modsFor is the profile mods belongs to, so returning to that profile's tab shows them while they refresh.
   modsFor: string
+  queries: Record<string, string>
   loadError: string
   pages: Record<string, string | undefined>
   view: View
@@ -383,10 +384,12 @@ export const useMods = create<{
     value: string,
   ) => Promise<void>
   showUpdates: () => void
+  setQuery: (profileId: string, query: string) => void
 }>((set, get) => ({
   mods: [],
   loaded: false,
   modsFor: '',
+  queries: {},
   loadError: '',
   pages: {},
   view: storedView(),
@@ -403,6 +406,7 @@ export const useMods = create<{
     }
   },
   load: () => loadMods(set, get),
+  setQuery: (profileId, query) => set((s) => ({ queries: { ...s.queries, [profileId]: query } })),
   loadProblems: () => loadModProblems(set, get),
   setEnabled: async (mod, enabled) => {
     const target = open()

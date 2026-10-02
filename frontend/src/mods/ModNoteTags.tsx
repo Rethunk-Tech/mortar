@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Autocomplete, Box, TextField, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   Mod,
   Profile,
@@ -11,6 +11,8 @@ import { entryOf } from './lookup.ts'
 import { heading } from './paper.ts'
 import { useMods } from './store.ts'
 
+const DEBOUNCE_MS = 400
+
 export function ModNoteTags({ profile, mod }: { profile: Profile; mod: Mod }) {
   const { t } = useLingui()
   const setNoteTags = useMods((s) => s.setNoteTags)
@@ -19,15 +21,37 @@ export function ModNoteTags({ profile, mod }: { profile: Profile; mod: Mod }) {
   const savedTags = entry?.tags ?? []
   const [note, setNote] = useState(savedNote)
   const [tags, setTags] = useState<string[]>(savedTags)
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const latest = useRef({ note: savedNote, tags: savedTags })
   const savedTagsKey = savedTags.join('\0')
   useEffect(() => {
+    globalThis.clearTimeout(timer.current)
     setNote(savedNote)
     setTags(savedTagsKey === '' ? [] : savedTagsKey.split('\0'))
-  }, [savedNote, savedTagsKey])
+    latest.current = { note: savedNote, tags: savedTags }
+  }, [savedNote, savedTags, savedTagsKey])
   const suggestions = profileTags(profile.entries)
-  const save = (nextNote: string, nextTags: string[]) => {
-    setNoteTags(mod, nextNote, nextTags).catch(reportUnexpected)
+  const save = useCallback(
+    (nextNote: string, nextTags: string[]) => {
+      globalThis.clearTimeout(timer.current)
+      setNoteTags(mod, nextNote, nextTags).catch(reportUnexpected)
+    },
+    [mod, setNoteTags],
+  )
+  const schedule = (nextNote: string, nextTags: string[]) => {
+    latest.current = { note: nextNote, tags: nextTags }
+    globalThis.clearTimeout(timer.current)
+    timer.current = globalThis.setTimeout(() => save(nextNote, nextTags), DEBOUNCE_MS)
   }
+  useEffect(
+    () => () => {
+      globalThis.clearTimeout(timer.current)
+      if (latest.current.note !== savedNote || latest.current.tags.join('\0') !== savedTagsKey) {
+        save(latest.current.note, latest.current.tags)
+      }
+    },
+    [savedNote, savedTagsKey, save],
+  )
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
       <Box>
@@ -40,7 +64,7 @@ export function ModNoteTags({ profile, mod }: { profile: Profile; mod: Mod }) {
           onChange={(e) => setNote(e.target.value)}
           onBlur={() => {
             if (note !== savedNote) {
-              save(note, tags)
+              schedule(note, tags)
             }
           }}
           slotProps={{ htmlInput: { maxLength: MAX_ENTRY_NOTE, 'aria-label': t`Note` } }}
@@ -57,7 +81,7 @@ export function ModNoteTags({ profile, mod }: { profile: Profile; mod: Mod }) {
           onChange={(_, next) => {
             const cleaned = takeTags(next)
             setTags(cleaned)
-            save(note, cleaned)
+            schedule(note, cleaned)
           }}
           slotProps={{ chip: { size: 'small' } }}
           renderInput={(params) => (
