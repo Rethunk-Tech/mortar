@@ -12,6 +12,7 @@ import {
   Retry,
   RetryFailed,
   Skip,
+  SkipAll,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { QueueNeedsMerge } from '../install/QueueNeedsMerge.tsx'
 import { QueueNeedsRoot } from '../install/QueueNeedsRoot.tsx'
@@ -413,6 +414,15 @@ export function Body({ items }: { items: Item[] }) {
         <Fold
           bg="rgba(55,55,65,0.6)"
           line={more > 0 ? t`Up next: ${names(next)} and ${more} more` : t`Up next: ${names(next)}`}
+          action={
+            <Button
+              size="small"
+              onClick={() => SkipAll().catch(reportUnexpected)}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              {t`Skip all`}
+            </Button>
+          }
         >
           {next.map((i) => (
             <Row

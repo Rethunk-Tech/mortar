@@ -6,11 +6,13 @@ export function Fold({
   line,
   color,
   bg,
+  action,
   children,
 }: {
   line: string
   color?: string
   bg: string
+  action?: ReactNode
   children: ReactNode
 }) {
   const [open, setOpen] = useState(false)
@@ -43,6 +45,7 @@ export function Fold({
         >
           {line}
         </Box>
+        {action ? <Box onClick={(e) => e.stopPropagation()}>{action}</Box> : null}
         {open ? (
           <ChevronUp size={14} aria-hidden={true} />
         ) : (
