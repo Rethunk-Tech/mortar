@@ -125,7 +125,20 @@ function BrokenFixButtons({
     (where && where.pageId > 0 ? String(where.pageId) : '')
   let replace: ReactNode = null
   if (where && replaceName !== '') {
-    replace = <WhereButtons where={where} addLabel={t`Replace with ${replaceName}`} />
+    replace =
+      (broken.status === 'obsolete' || broken.status === 'deprecated') && where.url ? (
+        <Button
+          size="small"
+          color="warning"
+          variant="outlined"
+          onClick={() => Browser.OpenURL(where.url).catch(reportUnexpected)}
+          sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        >
+          {t`Open replacement`}
+        </Button>
+      ) : (
+        <WhereButtons where={where} addLabel={t`Replace with ${replaceName}`} />
+      )
   } else if (where?.url) {
     replace = (
       <Button
@@ -140,7 +153,9 @@ function BrokenFixButtons({
     )
   }
   const dismiss =
-    broken.status === 'abandoned' ? (
+    broken.status === 'abandoned' ||
+    broken.status === 'obsolete' ||
+    broken.status === 'deprecated' ? (
       <Button
         size="small"
         color="info"
@@ -318,12 +333,31 @@ export function FixButton({
       const mod = mods.find(
         (m) => m.key === problem.broken.key && sameId(m.uniqueId, problem.broken.uniqueId),
       )
+      const { replacement } = problem.broken
+      let replacementAction: ReactNode = null
+      if (
+        replacement &&
+        problem.broken.status !== 'obsolete' &&
+        problem.broken.status !== 'deprecated'
+      ) {
+        replacementAction = <WhereButtons where={replacement} addLabel={t`Replace`} />
+      } else if (replacement?.url) {
+        replacementAction = (
+          <Button
+            size="small"
+            color="warning"
+            variant="outlined"
+            onClick={() => Browser.OpenURL(replacement.url ?? '').catch(reportUnexpected)}
+            sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
+            {t`Open replacement`}
+          </Button>
+        )
+      }
       return (
         <>
           {mod ? button(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected)) : null}
-          {problem.broken.replacement ? (
-            <WhereButtons where={problem.broken.replacement} addLabel={t`Replace`} />
-          ) : null}
+          {replacementAction}
           <Button
             size="small"
             color="info"
