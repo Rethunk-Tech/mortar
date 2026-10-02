@@ -231,7 +231,7 @@ func (s *Store) PurgeTrash(target any) error {
 	return errors.Join(errs...)
 }
 
-// StoreKeys lists, per game, every store key that a profile or trashed profile names as key or previousKey.
+// StoreKeys lists, per game, every store key that a profile or trashed profile names.
 func (s *Store) StoreKeys() (map[string][]string, error) {
 	out := map[string][]string{}
 	games := map[string]bool{}
@@ -271,6 +271,8 @@ func (s *Store) StoreKeys() (map[string][]string, error) {
 				if e.PreviousKey != "" {
 					out[g] = append(out[g], e.PreviousKey)
 				}
+				out[g] = append(out[g], e.ExtraStoreKeys...)
+				out[g] = append(out[g], e.PreviousExtraStoreKeys...)
 			}
 			dir := filepath.Join(s.root, g, p.ID)
 			if _, err := os.Stat(filepath.Join(dir, fileName)); err != nil {
@@ -286,6 +288,8 @@ func (s *Store) StoreKeys() (map[string][]string, error) {
 					if e.PreviousKey != "" {
 						out[g] = append(out[g], e.PreviousKey)
 					}
+					out[g] = append(out[g], e.ExtraStoreKeys...)
+					out[g] = append(out[g], e.PreviousExtraStoreKeys...)
 				}
 			}
 		}

@@ -220,6 +220,53 @@ func (s *Service) List(gameID string) ([]Bundle, error) {
 	return s.readLocked(gameID)
 }
 
+// ReferencedStoreKeys lists the store items still needed by saved bundles.
+func (s *Service) ReferencedStoreKeys() (map[string][]string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := map[string][]string{}
+	files, err := os.ReadDir(s.root)
+	if errors.Is(err, os.ErrNotExist) {
+		return out, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	for _, file := range files {
+		if file.IsDir() || filepath.Ext(file.Name()) != ".json" {
+			continue
+		}
+		gameID := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name()))
+		if !gamepkg.Valid(gameID) {
+			continue
+		}
+		list, err := s.readLocked(gameID)
+		if err != nil {
+			return nil, err
+		}
+		for _, bundle := range list {
+			for _, mod := range bundle.Mods {
+				if mod.EntryKey != "" {
+					out[gameID] = append(out[gameID], mod.EntryKey)
+				}
+			}
+		}
+	}
+	for gameID, keys := range out {
+		seen := map[string]struct{}{}
+		unique := make([]string, 0, len(keys))
+		for _, key := range keys {
+			if _, ok := seen[key]; ok {
+				continue
+			}
+			seen[key] = struct{}{}
+			unique = append(unique, key)
+		}
+		out[gameID] = unique
+	}
+	return out, nil
+}
+
 // Create makes a bundle by snapshotting selected mods from a profile.
 func (s *Service) Create(gameID, name, profileID string, uniqueIDs []string) (Bundle, error) {
 	name, err := bundleName(name)

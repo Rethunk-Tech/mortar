@@ -540,6 +540,14 @@ func run() error {
 		if keys, err := profiles.StoreKeys(); err != nil {
 			log.Printf("store collect skipped: %v", err)
 		} else {
+			bundleKeys, err := bundlesSvc.ReferencedStoreKeys()
+			if err != nil {
+				log.Printf("store collect skipped: %v", err)
+				return
+			}
+			for g, bundle := range bundleKeys {
+				keys[g] = append(keys[g], bundle...)
+			}
 			for g, staged := range queueSvc.StagedKeys() {
 				keys[g] = append(keys[g], staged...)
 			}
@@ -601,13 +609,16 @@ func run() error {
 				continue
 			}
 			for _, p := range all {
+				if p.Hidden {
+					continue
+				}
 				result, err := problemsSvc.Updates(ctx, g.ID, p.ID)
 				if err != nil {
 					log.Printf("mod updates: %s/%s: %v", g.ID, p.ID, err)
 					continue
 				}
 				out = append(out, updatesvc.ModUpdate{
-					Game: g.ID, ProfileID: p.ID, ProfileName: p.Name, Count: len(result.Updates),
+					Game: g.ID, ProfileID: p.ID, ProfileName: p.Name, Count: officialUpdateCount(result.Updates),
 				})
 			}
 		}
@@ -767,4 +778,15 @@ func serveNativeHost() error {
 		}
 		return nativehost.Start(exe, link)
 	})
+}
+
+func officialUpdateCount(updates []problems.Update) int {
+	seen := make(map[string]struct{}, len(updates))
+	for _, update := range updates {
+		if update.Unofficial {
+			continue
+		}
+		seen[update.Key+"\x00"+update.UniqueID] = struct{}{}
+	}
+	return len(seen)
 }

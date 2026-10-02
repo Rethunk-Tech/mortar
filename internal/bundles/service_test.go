@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -106,6 +107,65 @@ func TestBundleStoreSnapshotsAndPersistsMods(t *testing.T) {
 	}
 	if len(list) != 0 {
 		t.Fatalf("bundles after delete = %+v", list)
+	}
+}
+
+func TestReferencedKeysKeepProfileExtrasAndBundlesDuringCollect(t *testing.T) {
+	svc, profiles, items := testService(t)
+	addItem(t, items, "profile-main", "Profile.Main", "Profile Main")
+	addItem(t, items, "profile-extra", "Profile.Extra", "Profile Extra")
+	addItem(t, items, "bundle-only", "Bundle.Only", "Bundle Only")
+	addItem(t, items, "unused", "Unused.Mod", "Unused")
+
+	profileSource, err := profiles.Create("stardew", "Profile")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := profiles.AddEntry("stardew", profileSource.ID, "profile-main", profile.Source{}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := profiles.AddExtra("stardew", profileSource.ID, "profile-main", "profile-extra", profile.Source{}); err != nil {
+		t.Fatal(err)
+	}
+
+	bundleSource, err := profiles.Create("stardew", "Bundle source")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := profiles.AddEntry("stardew", bundleSource.ID, "bundle-only", profile.Source{}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.Create("stardew", "Saved bundle", bundleSource.ID, []string{"Bundle.Only"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := profiles.Delete("stardew", bundleSource.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := profiles.Purge("stardew", bundleSource.ID); err != nil {
+		t.Fatal(err)
+	}
+
+	keys, err := profiles.StoreKeys()
+	if err != nil {
+		t.Fatal(err)
+	}
+	bundleKeys, err := svc.ReferencedStoreKeys()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for game, referenced := range bundleKeys {
+		keys[game] = append(keys[game], referenced...)
+	}
+	if err := items.Collect(keys, time.Now().Add(31*24*time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	for _, key := range []string{"profile-main", "profile-extra", "bundle-only"} {
+		if _, err := items.Path("stardew", key); err != nil {
+			t.Fatalf("referenced item %q was collected: %v", key, err)
+		}
+	}
+	if _, err := items.Path("stardew", "unused"); !errors.Is(err, modstore.ErrNotFound) {
+		t.Fatalf("unreferenced item remains: %v", err)
 	}
 }
 
