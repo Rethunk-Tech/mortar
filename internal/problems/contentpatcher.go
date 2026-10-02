@@ -99,13 +99,30 @@ type cpWhen struct {
 	anyOf  [][]string
 	noneOf []string
 	config []cpConfig
+	spouse string
+	places map[string][]string
 }
 
 func (w cpWhen) with(o cpWhen) cpWhen {
+	places := map[string][]string{}
+	for key, values := range w.places {
+		places[key] = slices.Clone(values)
+	}
+	for key, values := range o.places {
+		places[key] = append(places[key], values...)
+	}
+	spouse := w.spouse
+	if spouse == "" {
+		spouse = o.spouse
+	} else if o.spouse != "" && !strings.EqualFold(spouse, o.spouse) {
+		spouse = "\x00"
+	}
 	return cpWhen{
 		anyOf:  append(slices.Clone(w.anyOf), o.anyOf...),
 		noneOf: append(slices.Clone(w.noneOf), o.noneOf...),
 		config: append(slices.Clone(w.config), o.config...),
+		spouse: spouse,
+		places: places,
 	}
 }
 
@@ -121,9 +138,16 @@ func (w cpWhen) holds(present map[string]bool) bool {
 type cachedPack struct {
 	mtime    time.Time
 	patches  []cpPatch
+	tokens   []cpTokenDefinition
 	mentions map[string]bool
 	schema   map[string]cpSchema
 	skips    int
+}
+
+type cpTokenDefinition struct {
+	name  string
+	value string
+	when  map[string]json.RawMessage
 }
 
 var packCache sync.Map // folder path -> cachedPack
@@ -274,13 +298,23 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 	// settings too. Content Patcher reads DynamicTokens only from content.json.
 	if key == "content.json" {
 		for _, tok := range doc.DynamicTokens {
-			value, _ := scalarValue(tok.Value)
+			value, ok := scalarValue(tok.Value)
+			if !ok {
+				continue
+			}
+			pack.tokens = append(pack.tokens, cpTokenDefinition{name: tokenName(tok.Name), value: value, when: tok.When})
+		}
+		for _, tok := range doc.DynamicTokens {
+			value, ok := scalarValue(tok.Value)
+			if !ok {
+				continue
+			}
 			pack.patches = append(pack.patches, cpPatch{kind: "other", when: outer.with(parseWhen(tok.When, pack.mentions, pack.schema)), tokenName: strings.ToLower(strings.TrimSpace(tok.Name)), tokenValue: value})
 		}
 	}
 	for _, ch := range doc.Changes {
 		action := strings.TrimSpace(ch.Action)
-		when := outer.with(parseWhen(ch.When, pack.mentions, pack.schema))
+		when := outer.with(parseWhenWithTokens(ch.When, pack.mentions, pack.schema, pack.tokens))
 		var kind string
 		var shapes []cpShape
 		switch {
@@ -317,7 +351,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			pack.patches = append(pack.patches, cpPatch{
 				kind: kind, target: normalizeTarget(t), fromFile: ch.FromFile, priority: strings.TrimSpace(ch.Priority),
 				patchMode: strings.TrimSpace(ch.PatchMode), when: when,
-				shapes: shapes, spouse: spouseOf(ch.When), places: placesOf(ch.When), image: strings.EqualFold(action, kindEditImage),
+				shapes: shapes, spouse: when.spouse, places: when.places, image: strings.EqualFold(action, kindEditImage),
 			})
 		}
 	}
@@ -326,11 +360,42 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 // parseWhen reads the HasMod and schema-backed config conditions of a When block.
 // It understands "HasMod": "A, B" and "HasMod |contains=A, B": true/false.
 func parseWhen(raw map[string]json.RawMessage, mentions map[string]bool, schema map[string]cpSchema) cpWhen {
+	return parseWhenWithTokens(raw, mentions, schema, nil)
+}
+
+func parseWhenWithTokens(raw map[string]json.RawMessage, mentions map[string]bool, schema map[string]cpSchema, tokens []cpTokenDefinition) cpWhen {
+	return parseWhenDepth(raw, mentions, schema, tokens, 0)
+}
+
+func parseWhenDepth(raw map[string]json.RawMessage, mentions map[string]bool, schema map[string]cpSchema, tokens []cpTokenDefinition, depth int) cpWhen {
 	var w cpWhen
 	for k, v := range raw {
 		name, arg, _ := strings.Cut(k, "|")
 		name = tokenName(name)
 		if hasToken(k) {
+			if depth < 8 {
+				if token, ok := dynamicTokenConditionName(k); ok {
+					values := []string{}
+					if condValues(v, &values) {
+						match := -1
+						for i, definition := range tokens {
+							if definition.name != token || !slices.ContainsFunc(values, func(value string) bool {
+								return strings.EqualFold(strings.TrimSpace(value), strings.TrimSpace(definition.value))
+							}) {
+								continue
+							}
+							if match >= 0 {
+								match = -2
+								break
+							}
+							match = i
+						}
+						if match >= 0 {
+							w = w.with(parseWhenDepth(tokens[match].when, mentions, schema, tokens, depth+1))
+						}
+					}
+				}
+			}
 			continue
 		}
 		if strings.EqualFold(name, "hasmod") {
@@ -393,7 +458,16 @@ func parseWhen(raw map[string]json.RawMessage, mentions map[string]bool, schema 
 			w.config = append(w.config, cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple})
 		}
 	}
-	return w
+	return w.with(cpWhen{spouse: spouseOf(raw), places: placesOf(raw)})
+}
+
+func dynamicTokenConditionName(key string) (string, bool) {
+	key = strings.TrimSpace(key)
+	if !strings.HasPrefix(key, "{{") || !strings.HasSuffix(key, "}}") {
+		return "", false
+	}
+	name := tokenName(strings.TrimSpace(key[2 : len(key)-2]))
+	return name, name != ""
 }
 
 // condValues reads a condition value given as a string, comma list, bool or array; false when it holds a token.

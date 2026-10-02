@@ -134,3 +134,34 @@ func TestFarmTypeMakesLoadConditionsExclusive(t *testing.T) {
 		t.Fatalf("different farm types should not conflict: %#v", conflicts)
 	}
 }
+
+func TestDynamicTokenWhenMergesDefinitionConditions(t *testing.T) {
+	root := t.TempDir()
+	content := `{"DynamicTokens":[
+		{"Name":"FarmChoice","Value":"A_TK.FarmProjectForaging","When":{"HasMod":"Author.Required","Spouse":"Abigail","FarmType":"A_TK.FarmProjectForaging"}},
+		{"Name":"FarmChoice","Value":"WaFF","When":{"HasMod":"Other.Mod"}}
+	],"Changes":[
+		{"Action":"Load","Target":"Maps/Test","FromFile":"map.json","When":{"{{FarmChoice}}":"A_TK.FarmProjectForaging"}}
+	]}`
+	if err := os.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
+	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
+	var load cpPatch
+	for _, patch := range pack.patches {
+		if patch.kind == "load" {
+			load = patch
+			break
+		}
+	}
+	if load.when.spouse != "abigail" || !slices.Contains(load.when.places["farmtype"], "a_tk.farmprojectforaging") {
+		t.Fatalf("dynamic token conditions were not merged: %#v", load)
+	}
+	if !slices.Contains(load.when.anyOf[0], "author.required") {
+		t.Fatalf("dynamic token HasMod condition was not merged: %#v", load.when)
+	}
+	if !exclusive(load, cpPatch{places: map[string][]string{"farmtype": {"waff"}}}) {
+		t.Fatal("different dynamic FarmType values should be exclusive")
+	}
+}

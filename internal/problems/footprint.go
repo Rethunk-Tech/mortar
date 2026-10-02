@@ -684,6 +684,13 @@ var spouseQuery = regexp.MustCompile(`(?i)^query:\s*'\{\{\s*spouse\s*\}\}'\s*=\s
 func spouseOf(raw map[string]json.RawMessage) string {
 	for k, v := range raw {
 		key := strings.TrimSpace(k)
+		if strings.EqualFold(key, "spouse") {
+			var npc string
+			if json.Unmarshal(v, &npc) == nil && !hasToken(npc) && strings.TrimSpace(npc) != "" {
+				return strings.ToLower(strings.TrimSpace(npc))
+			}
+			continue
+		}
 		if m := spouseQuery.FindStringSubmatch(key); m != nil {
 			var on bool
 			if json.Unmarshal(v, &on) == nil && on {
