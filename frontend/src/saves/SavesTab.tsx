@@ -25,6 +25,7 @@ import type {
   Fit,
   Lack,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLocked } from '../mods/useLocked.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
@@ -329,7 +330,7 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
           sx={{ flex: 1, minWidth: 0, fontSize: 12, color: 'text.secondary' }}
           noWrap={true}
         >
-          {t`Last played ${new Date(fit.played).toLocaleDateString()}`}
+          {t`Last played ${formatWhen(fit.played)}`}
         </Typography>
         <FitStatus missing={missing.length} />
         {missing.length === 0 ? null : <AddAll missing={missing} profile={profile} />}

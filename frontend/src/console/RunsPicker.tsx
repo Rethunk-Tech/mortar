@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { Outcome } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import type { Run } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useConsole } from './store.ts'
@@ -50,7 +51,7 @@ export function RunsPicker({ game }: { game: string }) {
     return t`Ran`
   }
   const label = (r: Run) => {
-    const when = r.started ? new Date(r.started).toLocaleString() : r.id
+    const when = r.started ? formatWhen(r.started, { withTime: true }) : r.id
     return `${when} · ${outcome(r.outcome)}`
   }
   const selected = runs.find((r) => r.id === viewingRun)

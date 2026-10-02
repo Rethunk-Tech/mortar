@@ -14,6 +14,7 @@ import {
   ProfilesWithMod,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { compactQuery } from '../game/compact.ts'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -38,7 +39,7 @@ import {
 import { ModDependencyTree } from './ModDependencyTree.tsx'
 import { ModNoteTags } from './ModNoteTags.tsx'
 import { useLookedSnapshot, useNexusEntry, useNexusFresh } from './nexusDetails.ts'
-import { formatCount, formatDate, isNewer } from './nexusFormat.ts'
+import { formatCount, isNewer } from './nexusFormat.ts'
 import { goneCaption, nexusPageMark, offersNexusDownload } from './nexusMark.ts'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { accent, heading } from './paper.ts'
@@ -130,7 +131,7 @@ function NexusFields({
           value={resolvedCategoryLabel(categoryOverride, category, customById) || '—'}
         />
         <Clipped label={t`Downloads`} value={formatCount(page.downloads, i18n.locale)} />
-        <Clipped label={t`Updated`} value={formatDate(page.updated, i18n.locale) || '—'} />
+        <Clipped label={t`Updated`} value={formatWhen(page.updated) || '—'} />
       </Box>
     </>
   )

@@ -18,6 +18,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { LogActions } from '../console/LogActions.tsx'
 import { PerformancePanel } from '../console/PerformancePanel.tsx'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { useBadges } from '../mods/badges.ts'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { ProblemActions, ProblemsTab } from '../mods/ProblemsTab.tsx'
@@ -45,7 +46,7 @@ import { useRenameRequest } from './renameRequest.ts'
 import { type TabId, useTab } from './tab.ts'
 import { useRestoreFocus } from './useRestoreFocus.ts'
 
-const fmt = (iso: unknown) => new Date(String(iso)).toLocaleDateString()
+const fmt = (iso: unknown) => formatWhen(String(iso))
 
 function HeroMenu({ profile }: { profile: Profile }) {
   const { t } = useLingui()

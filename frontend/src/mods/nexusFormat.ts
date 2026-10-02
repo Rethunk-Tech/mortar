@@ -2,7 +2,6 @@ import type { File } from '../../bindings/github.com/Rethunk-AI/mortar/internal/
 
 const KB_PER_MB = 1024
 // Go's zero time, sent for a date Nexus left out.
-const FIRST_YEAR = 1970
 // Nexus leaves the category out on many old files, so only these count as current.
 const current = new Set(['MAIN', 'UPDATE', 'OPTIONAL', 'MISCELLANEOUS'])
 
@@ -105,13 +104,6 @@ export const formatSize = (kb: number, locale: string) =>
 
 export const formatCount = (n: number, locale: string) =>
   new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(n)
-
-export const formatDate = (iso: string, locale: string) => {
-  const d = new Date(iso)
-  return Number.isNaN(d.getTime()) || d.getUTCFullYear() < FIRST_YEAR
-    ? ''
-    : new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(d)
-}
 
 // The installed file first, then the page's current files, newest first; old and archived files are left out.
 export const currentFiles = (files: File[], installedId: number) => {

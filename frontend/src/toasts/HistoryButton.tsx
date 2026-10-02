@@ -3,6 +3,7 @@ import { Badge, Box, Button, IconButton, Popover, Tooltip, Typography } from '@m
 import { Bell } from 'lucide-react'
 import { useState } from 'react'
 import { compact } from '../game/compact.ts'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLaunch } from '../launch/store.ts'
 import { isLocked } from '../mods/locked.ts'
 import { historyActionState } from './history.ts'
@@ -17,7 +18,7 @@ const edge: Record<ToastHistoryItem['kind'], string> = {
 }
 
 function HistoryRow({ item }: { item: ToastHistoryItem }) {
-  const { t, i18n } = useLingui()
+  const { t } = useLingui()
   const status = useLaunch((s) => s.status)
   const startingProfile = useLaunch((s) => (s.starting ? s.startingProfile : ''))
   const { action } = item
@@ -49,9 +50,7 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
           <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{item.body}</Typography>
         ) : null}
         <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
-          {new Intl.DateTimeFormat(i18n.locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
-            new Date(item.at),
-          )}
+          {formatWhen(item.at, { withTime: true })}
         </Typography>
       </Box>
       {action ? (

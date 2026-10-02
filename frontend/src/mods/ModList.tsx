@@ -17,6 +17,7 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compactQuery } from '../game/compact.ts'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -52,7 +53,7 @@ import { modId, modStatusProblem, nexusIdOf, updateFor } from './lookup.ts'
 import { ModsGroupHeader } from './ModsGroupHeader.tsx'
 import { contextMenuProps } from './menu.ts'
 import { primeDetails, useNexusDetails, useNexusFresh } from './nexusDetails.ts'
-import { formatCount, formatDate, isNewer } from './nexusFormat.ts'
+import { formatCount, isNewer } from './nexusFormat.ts'
 import { heading } from './paper.ts'
 import {
   LastRunBadge,
@@ -145,8 +146,8 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string) {
         author: dash(m.author),
         source: dash(row.source),
         category: dash(row.categoryLabel),
-        updated: dash(formatDate(page?.updated ?? '', locale)),
-        installed: dash(formatDate(row.added, locale)),
+        updated: dash(formatWhen(page?.updated ?? '')),
+        installed: dash(formatWhen(row.added)),
         notes: dash(notes),
       }[id]
       return <ValueCell key={id} text={text} />

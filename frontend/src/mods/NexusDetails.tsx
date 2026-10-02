@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, TriangleAlert } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type { Details } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { type Block, parseBBCode, safeUrl } from './bbcode.ts'
@@ -16,14 +17,7 @@ import {
   useLookedSnapshot,
   useNexusEntry,
 } from './nexusDetails.ts'
-import {
-  currentFiles,
-  formatCount,
-  formatDate,
-  formatSize,
-  isNewer,
-  recentChangelogs,
-} from './nexusFormat.ts'
+import { currentFiles, formatCount, formatSize, isNewer, recentChangelogs } from './nexusFormat.ts'
 import { goneCaption, nexusPageMark } from './nexusMark.ts'
 import { heading } from './paper.ts'
 
@@ -142,7 +136,7 @@ function Facts({ details, mod }: { details: Details; mod: Mod }) {
         {t`${formatCount(page.downloads, i18n.locale)} · ${formatCount(page.uniqueDownloads, i18n.locale)} unique`}
       </Fact>
       <Fact label={t`Created · updated`}>
-        {`${formatDate(page.created, i18n.locale) || '—'} · ${formatDate(page.updated, i18n.locale) || '—'}`}
+        {`${formatWhen(page.created) || '—'} · ${formatWhen(page.updated) || '—'}`}
       </Fact>
     </Box>
   )
@@ -162,7 +156,7 @@ function Files({
   const installed = files[0]?.fileId === fileId ? files[0] : undefined
   const others = installed ? files.slice(1) : files
   const line = (f: (typeof files)[number]) =>
-    [f.version, formatSize(f.sizeKb, i18n.locale), formatDate(f.uploaded, i18n.locale)]
+    [f.version, formatSize(f.sizeKb, i18n.locale), formatWhen(f.uploaded)]
       .filter(Boolean)
       .join(' · ')
   return (

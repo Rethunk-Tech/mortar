@@ -1,21 +1,14 @@
-import { msg, plural } from '@lingui/core/macro'
+import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
 import type { UpdatesResult } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { Updates } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { i18n } from '../i18n/index.ts'
-import { ago } from '../notes/ago.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useBadges } from './badges.ts'
 import { updateCount } from './lookup.ts'
-
-function checkedWhen(at: number | null, now: number) {
-  if (at === null) {
-    return null
-  }
-  return ago(now - at)
-}
 
 function checkedWithSmapi(at: number | null, now: number, unknown: boolean): string {
   if (unknown) {
@@ -24,23 +17,8 @@ function checkedWithSmapi(at: number | null, now: number, unknown: boolean): str
   if (at === null) {
     return i18n._(msg`Checked with SMAPI's update service`)
   }
-  const { unit, n } = ago(now - at)
-  if (unit === 'now') {
-    return i18n._(msg`Checked with SMAPI's update service · just now`)
-  }
-  if (unit === 'minute') {
-    return i18n._(
-      msg`Checked with SMAPI's update service · ${plural(n, { one: '# minute ago', other: '# minutes ago' })}`,
-    )
-  }
-  if (unit === 'hour') {
-    return i18n._(
-      msg`Checked with SMAPI's update service · ${plural(n, { one: '# hour ago', other: '# hours ago' })}`,
-    )
-  }
-  return i18n._(
-    msg`Checked with SMAPI's update service · ${plural(n, { one: '# day ago', other: '# days ago' })}`,
-  )
+  const when = formatWhen(at, { now })
+  return i18n._(msg`Checked with SMAPI's update service · ${when}`)
 }
 
 const MS_PER_HOUR = 3_600_000
@@ -104,4 +82,4 @@ function syncHourlyRecheck() {
 useProfiles.subscribe(syncHourlyRecheck)
 syncHourlyRecheck()
 
-export { checkedWhen, checkedWithSmapi, useUpdates }
+export { checkedWithSmapi, useUpdates }

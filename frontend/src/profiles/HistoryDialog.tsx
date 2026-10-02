@@ -17,6 +17,7 @@ import {
   History,
   Revert,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useProfiles } from './store.ts'
 
@@ -99,7 +100,7 @@ export function HistoryDialog({
               >
                 <ListItemText
                   primary={ev.label}
-                  secondary={new Date(String(ev.at)).toLocaleString()}
+                  secondary={formatWhen(String(ev.at), { withTime: true })}
                 />
               </ListItem>
             ))}

@@ -1,11 +1,10 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { SetNotes } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { ago } from './ago.ts'
 
 const DEBOUNCE_MS = 800
 const TICK_MS = 60_000
@@ -43,16 +42,7 @@ function StatusLine({
   }
   let label = t`Saving…`
   if (status.kind === 'saved') {
-    const { unit, n } = ago(now - status.at)
-    if (unit === 'now') {
-      label = t`Saved · just now`
-    } else if (unit === 'minute') {
-      label = t`Saved · ${plural(n, { one: '# min ago', other: '# min ago' })}`
-    } else if (unit === 'hour') {
-      label = t`Saved · ${plural(n, { one: '# hour ago', other: '# hours ago' })}`
-    } else {
-      label = t`Saved · ${plural(n, { one: '# day ago', other: '# days ago' })}`
-    }
+    label = t`Saved · ${formatWhen(status.at, { now })}`
   }
   return <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{label}</Typography>
 }
