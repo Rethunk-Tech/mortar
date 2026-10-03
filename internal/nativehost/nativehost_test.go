@@ -310,3 +310,115 @@ func TestNexusModProfilesReportsRequiredByPinAndSkip(t *testing.T) {
 		t.Fatalf("requiredBy = %v", openProfile.RequiredBy)
 	}
 }
+
+func TestServeAnswersModUpdateAvailable(t *testing.T) {
+	in := frame(t, request{Type: "mod", Game: "stardewvalley", ModID: 1915})
+	var out bytes.Buffer
+	err := serve(bytes.NewReader(in), &out, func(string) error {
+		t.Fatal("mod request opened a link")
+		return nil
+	}, nil, func(string, int) (modInProfile, []modInProfile) {
+		v := "1.0.0"
+		fresh := "2.0.0"
+		return modInProfile{Profile: "Default", Version: &v, UpdateAvailable: true},
+			[]modInProfile{{Profile: "Co-op", Version: &fresh}}
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var n uint32
+	if err := binary.Read(&out, binary.NativeEndian, &n); err != nil {
+		t.Fatal(err)
+	}
+	var got reply
+	if err := json.Unmarshal(out.Next(int(n)), &got); err != nil {
+		t.Fatal(err)
+	}
+	if got.Open == nil || !got.Open.UpdateAvailable || len(got.Others) != 1 || got.Others[0].UpdateAvailable {
+		t.Fatalf("mod reply = %+v", got)
+	}
+}
+
+func TestNexusModProfilesUpdateAvailableFromCache(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	dir, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = ln.Close() })
+	go func() {
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			_ = c.Close()
+		}
+	}()
+	addr, ok := ln.Addr().(*net.TCPAddr)
+	if !ok {
+		t.Fatalf("listen addr = %T", ln.Addr())
+	}
+	if err := os.WriteFile(filepath.Join(dir, "control.json"), []byte(`{"port":`+strconv.Itoa(addr.Port)+`}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	openID := "aaaaaaaaaaaaaaaa"
+	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"lastProfile":{"stardew":"`+openID+`"}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	write := func(id, name, version string, fileID int) {
+		t.Helper()
+		pdir := filepath.Join(dir, "profiles", "stardew", id)
+		if err := os.MkdirAll(pdir, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		body, err := json.Marshal(map[string]any{
+			"name": name,
+			"entries": []map[string]any{{
+				"source": map[string]any{"kind": "nexus", "modId": 1915, "fileId": fileID},
+				"mods":   []map[string]any{{"version": version}},
+			}},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(pdir, "profile.json"), body, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write(openID, "Default", "1.0.0", 10)
+	write("bbbbbbbbbbbbbbbb", "Co-op", "3.0.0", 30)
+	cacheDir := filepath.Join(dir, "cache", "nexus")
+	if err := os.MkdirAll(cacheDir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	cache, err := json.Marshal(map[string]any{
+		"fetched": "2026-01-01T00:00:00Z",
+		"value": map[string]any{
+			"page": map[string]any{"version": "2.0.0"},
+			"files": []map[string]any{
+				{"fileId": 10, "version": "1.0.0", "replacedBy": 20},
+				{"fileId": 20, "version": "2.0.0"},
+				{"fileId": 30, "version": "3.0.0"},
+			},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(cacheDir, "details-v3-stardewvalley-1915.json"), cache, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	openProfile, others := nexusModProfiles("stardewvalley", 1915)
+	if !openProfile.UpdateAvailable {
+		t.Fatalf("open update = %+v", openProfile)
+	}
+	if len(others) != 1 || others[0].Profile != "Co-op" || others[0].UpdateAvailable {
+		t.Fatalf("others = %+v", others)
+	}
+}

@@ -66,13 +66,14 @@ type modProblem struct {
 }
 
 type modInProfile struct {
-	Profile     string   `json:"profile"`
-	Version     *string  `json:"version"`
-	FileID      int      `json:"fileId,omitempty"`
-	RequiredBy  []string `json:"requiredBy,omitempty"`
-	Pinned      bool     `json:"pinned,omitempty"`
-	SkipVersion string   `json:"skipVersion,omitempty"`
-	SkipSources []string `json:"skipSources,omitempty"`
+	Profile         string   `json:"profile"`
+	Version         *string  `json:"version"`
+	FileID          int      `json:"fileId,omitempty"`
+	UpdateAvailable bool     `json:"updateAvailable,omitempty"`
+	RequiredBy      []string `json:"requiredBy,omitempty"`
+	Pinned          bool     `json:"pinned,omitempty"`
+	SkipVersion     string   `json:"skipVersion,omitempty"`
+	SkipSources     []string `json:"skipSources,omitempty"`
 }
 
 type diskMod struct {
@@ -395,6 +396,7 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 		return openProfile, nil
 	}
 	defer func() { _ = root.Close() }()
+	pageVer, files := cachedNexusDetails(root, domain, modID)
 	profiles, err := root.Open(filepath.Join("profiles", info.ID))
 	if err != nil {
 		return openProfile, nil
@@ -443,6 +445,9 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 			break
 		}
 		found := modInProfile{Profile: profile.Name, Version: version, FileID: fileID}
+		if version != nil || fileID > 0 {
+			found.UpdateAvailable = nexusUpdateAvailable(version, fileID, pageVer, files)
+		}
 		if dir.Name() == openID {
 			found.Pinned = pinned
 			found.SkipVersion = skipVersion
@@ -454,6 +459,100 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 		}
 	}
 	return openProfile, others
+}
+
+type cachedNexusFile struct {
+	FileID     int    `json:"fileId"`
+	Version    string `json:"version"`
+	ReplacedBy int    `json:"replacedBy"`
+}
+
+func cachedNexusDetails(root *os.Root, domain string, modID int) (string, []cachedNexusFile) {
+	data, err := root.ReadFile(filepath.Join("cache", "nexus", fmt.Sprintf("details-v3-%s-%d.json", domain, modID)))
+	if err != nil {
+		return "", nil
+	}
+	var wrap struct {
+		Value struct {
+			Page struct {
+				Version string `json:"version"`
+			} `json:"page"`
+			Files []cachedNexusFile `json:"files"`
+		} `json:"value"`
+	}
+	if json.Unmarshal(data, &wrap) == nil && (wrap.Value.Page.Version != "" || len(wrap.Value.Files) > 0) {
+		return wrap.Value.Page.Version, wrap.Value.Files
+	}
+	var flat struct {
+		Page struct {
+			Version string `json:"version"`
+		} `json:"page"`
+		Files []cachedNexusFile `json:"files"`
+	}
+	if json.Unmarshal(data, &flat) != nil {
+		return "", nil
+	}
+	return flat.Page.Version, flat.Files
+}
+
+func nexusUpdateAvailable(version *string, fileID int, pageVer string, files []cachedNexusFile) bool {
+	if version != nil && newerVersion(pageVer, *version) {
+		return true
+	}
+	if fileID < 1 {
+		return false
+	}
+	byID := make(map[int]cachedNexusFile, len(files))
+	for _, f := range files {
+		byID[f.FileID] = f
+	}
+	cur := fileID
+	seen := map[int]bool{}
+	for {
+		f, ok := byID[cur]
+		if !ok || f.ReplacedBy < 1 || seen[cur] {
+			return cur != fileID
+		}
+		seen[cur] = true
+		cur = f.ReplacedBy
+	}
+}
+
+func newerVersion(page, installed string) bool {
+	a, b := versionParts(page), versionParts(installed)
+	if len(a) == 0 || len(b) == 0 {
+		return false
+	}
+	n := max(len(a), len(b))
+	for i := range n {
+		av, bv := 0, 0
+		if i < len(a) {
+			av = a[i]
+		}
+		if i < len(b) {
+			bv = b[i]
+		}
+		if av != bv {
+			return av > bv
+		}
+	}
+	return false
+}
+
+func versionParts(value string) []int {
+	fields := strings.FieldsFunc(value, func(r rune) bool { return r < '0' || r > '9' })
+	if len(fields) == 0 {
+		return nil
+	}
+	out := make([]int, 0, len(fields))
+	for _, f := range fields {
+		n, err := strconv.Atoi(f)
+		if err != nil {
+			return nil
+		}
+		out = append(out, n)
+	}
+	return out
 }
 
 func mortarRunning(dataDir string) bool {
