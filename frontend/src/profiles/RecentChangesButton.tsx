@@ -1,5 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, IconButton, Popover, Tooltip, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  IconButton,
+  MenuItem,
+  Popover,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import { History as HistoryIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { RecentEvent } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
@@ -13,6 +22,7 @@ import { download } from '../queue/actions.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { historyChangeSummary } from './historyCounts.ts'
 import { revertHistoryEvent } from './historyRevert.ts'
+import { useRecentChanges } from './recentChanges.ts'
 
 function RecentRow({
   ev,
@@ -80,6 +90,9 @@ function RecentPanel({
   onDownload: () => void
 }) {
   const { t } = useLingui()
+  const [profile, setProfile] = useState('')
+  const names = [...new Map(events.map((ev) => [ev.profileId, ev.profileName])).entries()]
+  const shown = profile === '' ? events : events.filter((ev) => ev.profileId === profile)
   return (
     <Popover
       open={open}
@@ -113,14 +126,32 @@ function RecentPanel({
         }}
       >
         <Typography sx={{ flex: 1, fontSize: 13, fontWeight: 700 }}>{t`Recent changes`}</Typography>
+        {names.length > 1 ? (
+          <TextField
+            select={true}
+            size="small"
+            variant="standard"
+            value={profile}
+            onChange={(e) => setProfile(e.target.value)}
+            slotProps={{ htmlInput: { 'aria-label': t`Show changes from` } }}
+            sx={{ minWidth: 140, '& .MuiInputBase-root': { fontSize: 13 } }}
+          >
+            <MenuItem value="">{t`All profiles`}</MenuItem>
+            {names.map(([id, name]) => (
+              <MenuItem key={id} value={id}>
+                {name}
+              </MenuItem>
+            ))}
+          </TextField>
+        ) : null}
       </Box>
       <Box sx={{ overflowY: 'auto', maxHeight: 380, [compact]: { maxHeight: 280 } }}>
-        {events.length === 0 ? (
+        {shown.length === 0 ? (
           <Typography sx={{ p: 1.75, fontSize: 13, color: 'text.secondary' }}>
             {t`No changes yet`}
           </Typography>
         ) : (
-          events.map((ev) => (
+          shown.map((ev) => (
             <RecentRow
               key={`${ev.profileId}:${ev.id}`}
               ev={ev}
@@ -151,7 +182,8 @@ function RecentPanel({
 
 export function RecentChangesButton({ game }: { game: string }) {
   const { t } = useLingui()
-  const [open, setOpen] = useState(false)
+  const open = useRecentChanges((s) => s.open)
+  const setOpen = useRecentChanges((s) => s.setOpen)
   const [events, setEvents] = useState<RecentEvent[]>([])
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')

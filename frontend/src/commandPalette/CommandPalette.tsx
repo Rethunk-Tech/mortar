@@ -183,6 +183,8 @@ export function CommandPalette() {
         share: t`Share`,
         newProfile: t`New profile`,
         streamOverlay: t`Stream overlay`,
+        recentChanges: t`Recent changes`,
+        diagnostics: t`Diagnostics`,
         profileHint: t`Open profile`,
         modHint: t`Open mod`,
         settingsHint: t`Settings`,

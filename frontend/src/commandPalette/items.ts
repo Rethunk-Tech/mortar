@@ -10,6 +10,8 @@ export interface PaletteLabels {
   share: string
   newProfile: string
   streamOverlay: string
+  recentChanges: string
+  diagnostics: string
   profileHint: string
   modHint: string
   settingsHint: string
@@ -65,6 +67,8 @@ export function buildPaletteItems(input: {
     { id: 'action:share', kind: 'action', label: labels.share },
     { id: 'action:new-profile', kind: 'action', label: labels.newProfile },
     { id: 'action:stream-overlay', kind: 'action', label: labels.streamOverlay },
+    { id: 'action:recent-changes', kind: 'action', label: labels.recentChanges },
+    { id: 'settings:about', kind: 'settings', label: labels.diagnostics },
     ...Object.entries(labels.tabs).map(([id, label]) => ({
       id: `tab:${id}`,
       kind: 'action' as const,

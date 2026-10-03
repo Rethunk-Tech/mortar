@@ -4,6 +4,7 @@ import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { type GameId, type SettingsSection, useNav } from '../nav/store.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
+import { useRecentChanges } from '../profiles/recentChanges.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { SHORTCUTS, type ShortcutId } from '../settings/shortcuts.ts'
@@ -69,6 +70,10 @@ function runAction(id: string): void {
   }
   if (id === 'action:updates') {
     useUpdates.getState().load().catch(reportUnexpected)
+    return
+  }
+  if (id === 'action:recent-changes') {
+    useRecentChanges.getState().setOpen(true)
     return
   }
   if (id === 'action:downloads') {
