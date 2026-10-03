@@ -86,6 +86,11 @@ func zipModName(rel string, skip map[string]bool) (string, bool) {
 	return zipModsPrefix + key + "/" + more, true
 }
 
+func omitFromProfileZip(rel string) bool {
+	return rel == historyFile || rel == "runs" || rel == historyFilesDir ||
+		strings.HasPrefix(rel, "runs/") || strings.HasPrefix(rel, historyFilesDir+"/")
+}
+
 func snapshotProfileExport(src, dst string, p Profile) error {
 	skip := map[string]bool{}
 	for _, e := range p.Entries {
@@ -105,7 +110,7 @@ func snapshotProfileExport(src, dst string, p Profile) error {
 		if rel == "." {
 			return nil
 		}
-		if rel == historyFile || rel == "runs" || strings.HasPrefix(rel, "runs/") {
+		if omitFromProfileZip(rel) {
 			if d.IsDir() {
 				return fs.SkipDir
 			}
@@ -169,18 +174,18 @@ func writeProfileZip(w io.Writer, mortarVersion, profileDir string, p Profile) e
 		if walkErr != nil {
 			return walkErr
 		}
-		if d.IsDir() {
-			return nil
-		}
 		rel, err := filepath.Rel(profileDir, fp)
 		if err != nil {
 			return err
 		}
 		rel = filepath.ToSlash(rel)
-		if rel == historyFile || rel == "runs" || strings.HasPrefix(rel, "runs/") {
+		if omitFromProfileZip(rel) {
 			if d.IsDir() {
 				return fs.SkipDir
 			}
+			return nil
+		}
+		if d.IsDir() {
 			return nil
 		}
 		if rel == zipManifestName {
