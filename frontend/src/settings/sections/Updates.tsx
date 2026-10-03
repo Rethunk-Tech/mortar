@@ -1,23 +1,23 @@
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, CircularProgress, FormControlLabel, Link, Switch } from '@mui/material'
+import { Alert, Box, Button, CircularProgress, Switch } from '@mui/material'
 import { Download, RefreshCw, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
-import { List as ListGames } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import {
   SetCheckOnlyEnabledMods,
   SetIncludeBetaReleases,
   SetIncludePrereleaseModVersions,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useNav } from '../../nav/store.ts'
-import { errorMessage, errorText, reportUnexpected } from '../../toasts/report.ts'
+import { errorMessage, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
-import { SettingsSection } from '../SettingsSection.tsx'
+import { persist } from '../persist.ts'
+import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useMortarUpdate } from '../updates.ts'
 import { lastOpenedGame } from './lastOpenedGame.ts'
 
-const button = { whiteSpace: 'nowrap', alignSelf: 'flex-start' }
+const button = { whiteSpace: 'nowrap', flexShrink: 0 }
 
 function MortarUpdate() {
   const { t } = useLingui()
@@ -106,22 +106,26 @@ function MortarUpdate() {
   }
   return (
     <>
-      <Box
-        sx={{ fontSize: 14, color: 'var(--mortar-ink-sec)' }}
-      >{t`Installed: Mortar ${info.version}`}</Box>
-      <Box
-        role="status"
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          fontSize: 14,
-          color: phase === 'error' ? 'error.main' : 'inherit',
-        }}
+      <SettingRow
+        label={t`Installed: Mortar ${info.version}`}
+        description={
+          <Box
+            component="span"
+            role="status"
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 1,
+              color: phase === 'error' ? 'error.main' : 'inherit',
+            }}
+          >
+            {busy ? <CircularProgress size={12} /> : null}
+            {states[phase]}
+          </Box>
+        }
       >
-        {busy ? <CircularProgress size={14} /> : null}
-        {states[phase]}
-      </Box>
+        {action}
+      </SettingRow>
       {phase === 'available' && release?.notes ? (
         <Box
           sx={{
@@ -129,122 +133,76 @@ function MortarUpdate() {
             whiteSpace: 'pre-wrap',
             maxHeight: 200,
             overflow: 'auto',
-            p: 1.5,
-            bgcolor: 'var(--mortar-overlay-30)',
-            borderRadius: '6px',
+            px: 2,
+            py: 1.5,
           }}
         >
           {release.notes}
         </Box>
       ) : null}
-      {action}
     </>
   )
-}
-
-function persistToggle(
-  run: () => Promise<void>,
-  push: ReturnType<typeof useToasts.getState>['push'],
-  title: string,
-) {
-  run().catch((err: unknown) => {
-    const body = errorText(err)
-    push({ kind: 'error', title, ...(body ? { body } : {}) })
-  })
 }
 
 export function Updates() {
   const { t } = useLingui()
   const game = lastOpenedGame(useSettings((s) => s.lastGame))
-  const [gameName, setGameName] = useState('')
-  useEffect(() => {
-    if (!game) {
-      return
-    }
-    ListGames()
-      .then((gs) => setGameName((gs ?? []).find((g) => g.id === game)?.name ?? ''))
-      .catch(() => setGameName(''))
-  }, [game])
   const includeBetaReleases = useSettings((s) => s.includeBetaReleases)
   const includePrereleaseModVersions = useSettings((s) => s.includePrereleaseModVersions)
   const checkOnlyEnabledMods = useSettings((s) => s.checkOnlyEnabledMods)
   const push = useToasts((s) => s.push)
   const fail = t`Couldn't save that setting`
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Mortar`}</Box>
-      <MortarUpdate />
-      <FormControlLabel
-        sx={{ m: 0, alignItems: 'center' }}
-        control={
+    <>
+      <SettingsSection title={t`Mortar`}>
+        <MortarUpdate />
+        <SettingRow label={t`Include beta releases`}>
           <Switch
             checked={includeBetaReleases}
-            onChange={(_, on) => persistToggle(() => SetIncludeBetaReleases(on), push, fail)}
+            onChange={(_, on) => persist(() => SetIncludeBetaReleases(on), push, fail)}
           />
-        }
-        label={t`Include beta releases`}
-      />
-      <SettingsSection>
+        </SettingRow>
         <PrefByKey prefKey="autoInstallMortarUpdates" />
       </SettingsSection>
-      <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Mods`}</Box>
-      <SettingsSection>
-        <PrefKeys
-          keys={[
-            'updateCheckIntervalMinutes',
-            'notifyModUpdates',
-            'updateDigest',
-            'updateModsBeforePlayDefault',
-            'checkModUpdatesOnStart',
-          ]}
-        />
-      </SettingsSection>
-      <FormControlLabel
-        sx={{ m: 0, alignItems: 'center' }}
-        control={
-          <Switch
-            checked={includePrereleaseModVersions}
-            onChange={(_, on) =>
-              persistToggle(() => SetIncludePrereleaseModVersions(on), push, fail)
-            }
-          />
-        }
-        label={t`Include pre-release mod versions`}
-      />
-      <SettingsSection>
-        <PrefByKey prefKey="smapiBuilds" />
-      </SettingsSection>
-      <FormControlLabel
-        sx={{ m: 0, alignItems: 'center' }}
-        control={
+      <SettingsSection title={t`Mods`}>
+        <PrefKeys keys={['checkModUpdatesOnStart', 'updateCheckIntervalMinutes']} />
+        <SettingRow label={t`Check only enabled mods`}>
           <Switch
             checked={checkOnlyEnabledMods}
-            onChange={(_, on) => persistToggle(() => SetCheckOnlyEnabledMods(on), push, fail)}
+            onChange={(_, on) => persist(() => SetCheckOnlyEnabledMods(on), push, fail)}
           />
-        }
-        label={t`Check only enabled mods`}
-      />
-      <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
-        {t`Mod updates show on each profile's mod list. A game's mod loader version and its update notice are in that game's settings.`}
-      </Box>
-      {game ? (
-        <>
-          <Link
-            component="button"
-            onClick={() => useNav.getState().openGame(game)}
-            sx={{ alignSelf: 'flex-start', fontSize: 13, whiteSpace: 'nowrap' }}
+        </SettingRow>
+        <SettingRow label={t`Include pre-release mod versions`}>
+          <Switch
+            checked={includePrereleaseModVersions}
+            onChange={(_, on) => persist(() => SetIncludePrereleaseModVersions(on), push, fail)}
+          />
+        </SettingRow>
+        {game ? (
+          <SettingRow
+            label={t`Review mod updates`}
+            description={t`Mod updates show on each profile's mod list.`}
           >
-            {t`Review mod updates`}
-          </Link>
-          <Link
-            component="button"
-            onClick={() => useNav.setState({ route: { name: 'game-settings', game } })}
-            sx={{ alignSelf: 'flex-start', fontSize: 13, whiteSpace: 'nowrap' }}
+            <Button variant="outlined" onClick={() => useNav.getState().openGame(game)} sx={button}>
+              {t`Review`}
+            </Button>
+          </SettingRow>
+        ) : null}
+        {game ? (
+          <SettingRow
+            label={t`Mod loader updates`}
+            description={t`A game's mod loader version and its update notice are in that game's settings.`}
           >
-            {gameName ? t`Open ${gameName} settings` : t`Open the game's settings`}
-          </Link>
-        </>
-      ) : null}
-    </Box>
+            <Button
+              variant="outlined"
+              onClick={() => useNav.setState({ route: { name: 'game-settings', game } })}
+              sx={button}
+            >
+              {t`Open game settings`}
+            </Button>
+          </SettingRow>
+        ) : null}
+      </SettingsSection>
+    </>
   )
 }
