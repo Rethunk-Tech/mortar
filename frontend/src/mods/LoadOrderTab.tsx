@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, InputAdornment, TextField, Tooltip, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
@@ -14,13 +15,50 @@ import { useToasts } from '../toasts/store.ts'
 import { formatLoadOrderCopy, loadOrderEmptyKind } from './loadOrderText.ts'
 import { useMods } from './store.ts'
 
-function chipSx(missing: boolean) {
-  return {
-    height: 22,
-    fontSize: 12,
-    maxWidth: 220,
-    ...(missing ? { color: 'error.main', borderColor: 'error.main' } : {}),
-  }
+const INLINE_REQUIRED = 4
+const INLINE_USERS = 2
+
+// Thousands of these render at once, so they are plain buttons rather than MUI Chips with tooltips.
+function DepChip({
+  label,
+  title,
+  missing = false,
+  onClick,
+}: {
+  label: string
+  title?: string
+  missing?: boolean
+  onClick?: () => void
+}) {
+  return (
+    <Box
+      component={onClick ? 'button' : 'span'}
+      type={onClick ? 'button' : undefined}
+      title={title}
+      onClick={onClick}
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        height: 22,
+        maxWidth: 240,
+        px: 1,
+        border: '1px solid',
+        borderColor: missing ? 'error.main' : 'var(--mortar-hairline-22)',
+        borderRadius: '11px',
+        bgcolor: 'transparent',
+        color: missing ? 'error.main' : 'text.primary',
+        font: 'inherit',
+        fontSize: 12,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        cursor: onClick ? 'pointer' : 'default',
+        '&:hover': onClick ? { bgcolor: 'action.hover' } : {},
+      }}
+    >
+      {label}
+    </Box>
+  )
 }
 
 function DepChips({
@@ -33,63 +71,53 @@ function DepChips({
   onScroll: (id: string) => void
 }) {
   const { t } = useLingui()
-  const unknown = t`Unknown mod`
-  const chip = (id: string) => {
+  const [open, setOpen] = useState(false)
+  const chip = (prefix: 'req' | 'opt' | 'dep', id: string, missing = false) => {
     const name = (names.get(id.toLowerCase()) ?? '').trim()
     const known = name !== ''
-    return {
-      known,
-      label: known ? name : unknown,
-      title: known ? undefined : id,
-    }
+    const label = known ? name : t`Unknown mod`
+    const text = {
+      req: t`Required: ${label}`,
+      opt: t`Optional: ${label}`,
+      dep: t`Used by: ${label}`,
+    }[prefix]
+    return (
+      <DepChip
+        key={`${prefix}-${id}`}
+        label={text}
+        missing={missing}
+        {...(known ? {} : { title: id })}
+        {...(known && !missing ? { onClick: () => onScroll(id) } : {})}
+      />
+    )
+  }
+  const missingIds = new Set((row.missingRequired ?? []).map((m) => m.toLowerCase()))
+  const required = row.required ?? []
+  const optional = row.optional ?? []
+  const users = row.dependents ?? []
+  const long = required.length > INLINE_REQUIRED || users.length > INLINE_USERS
+  const shownRequired = open ? required : required.slice(0, INLINE_REQUIRED)
+  if (required.length + optional.length + users.length === 0) {
+    return null
   }
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 0.75 }}>
-      {(row.required ?? []).map((id) => {
-        const { known, label, title } = chip(id)
-        const missing = (row.missingRequired ?? []).some(
-          (m) => m.toLowerCase() === id.toLowerCase(),
-        )
-        return (
-          <Tooltip key={`req-${id}`} title={title ?? ''}>
-            <Chip
-              size="small"
-              variant="outlined"
-              label={t`Required: ${label}`}
-              onClick={known && !missing ? () => onScroll(id) : undefined}
-              sx={chipSx(missing)}
-            />
-          </Tooltip>
-        )
-      })}
-      {(row.optional ?? []).map((id) => {
-        const { known, label, title } = chip(id)
-        return (
-          <Tooltip key={`opt-${id}`} title={title ?? ''}>
-            <Chip
-              size="small"
-              variant="outlined"
-              label={t`Optional: ${label}`}
-              onClick={known ? () => onScroll(id) : undefined}
-              sx={chipSx(false)}
-            />
-          </Tooltip>
-        )
-      })}
-      {(row.dependents ?? []).map((id) => {
-        const { known, label, title } = chip(id)
-        return (
-          <Tooltip key={`dep-${id}`} title={title ?? ''}>
-            <Chip
-              size="small"
-              variant="outlined"
-              label={t`Used by: ${label}`}
-              onClick={known ? () => onScroll(id) : undefined}
-              sx={chipSx(false)}
-            />
-          </Tooltip>
-        )
-      })}
+      {shownRequired.map((id) => chip('req', id, missingIds.has(id.toLowerCase())))}
+      {optional.map((id) => chip('opt', id))}
+      {open || users.length <= INLINE_USERS ? users.map((id) => chip('dep', id)) : null}
+      {long ? (
+        <DepChip
+          label={
+            open
+              ? t`Show less`
+              : plural(users.length, { one: 'Used by # mod', other: 'Used by # mods' }) +
+                (required.length > INLINE_REQUIRED
+                  ? t` · ${required.length - INLINE_REQUIRED} more required`
+                  : '')
+          }
+          onClick={() => setOpen((v) => !v)}
+        />
+      ) : null}
     </Box>
   )
 }

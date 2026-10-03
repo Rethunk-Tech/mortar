@@ -334,7 +334,7 @@ msgstr "No user mods in either profile."
 msgid "Untrack mods"
 msgstr "Untrack mods"
 
-#: src/mods/LoadOrderTab.tsx:58
+#: src/mods/LoadOrderTab.tsx:80
 msgid "Required: {label}"
 msgstr "Required: {label}"
 
@@ -1133,7 +1133,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 
 #: src/firstrun/SmapiStep.tsx:334
 #: src/game/detailStates.tsx:27
-#: src/mods/LoadOrderTab.tsx:288
+#: src/mods/LoadOrderTab.tsx:316
 #: src/mods/ModsTab.tsx:97
 #: src/notes/NotesTab.tsx:42
 #: src/queue/QueueBody.tsx:240
@@ -1154,6 +1154,10 @@ msgstr "found, without {0}"
 #: src/settings/sections/DataUsage.tsx:245
 msgid "Mortar's data"
 msgstr "Mortar's data"
+
+#: src/mods/LoadOrderTab.tsx:112
+msgid "Show less"
+msgstr "Show less"
 
 #: src/settings/sections/DataUsage.tsx:215
 msgid "Deleted profiles…"
@@ -1373,7 +1377,7 @@ msgstr "Loading bundles…"
 msgid "Forget"
 msgstr "Forget"
 
-#: src/mods/LoadOrderTab.tsx:154
+#: src/mods/LoadOrderTab.tsx:182
 msgid "The game loader chooses this order. Mortar does not change it."
 msgstr "The game loader chooses this order. Mortar does not change it."
 
@@ -1516,7 +1520,7 @@ msgstr "Run checks"
 msgid "{0} {1}, year {2}"
 msgstr "{0} {1}, year {2}"
 
-#: src/mods/LoadOrderTab.tsx:200
+#: src/mods/LoadOrderTab.tsx:228
 msgid "Dependency cycle"
 msgstr "Dependency cycle"
 
@@ -1532,7 +1536,7 @@ msgstr "Dependency cycle"
 msgid "New profile"
 msgstr "New profile"
 
-#: src/mods/LoadOrderTab.tsx:149
+#: src/mods/LoadOrderTab.tsx:177
 msgid "Copy load order"
 msgstr "Copy load order"
 
@@ -1782,7 +1786,7 @@ msgstr "Mods no profile uses"
 msgid "Ignore updates from {0}"
 msgstr "Ignore updates from {0}"
 
-#: src/mods/LoadOrderTab.tsx:295
+#: src/mods/LoadOrderTab.tsx:323
 msgid "No enabled mods"
 msgstr "No enabled mods"
 
@@ -2036,6 +2040,11 @@ msgstr "Sky"
 #: src/mods/ConflictWhy.tsx:98
 msgid "Both set: {0}"
 msgstr "Both set: {0}"
+
+#. placeholder {0}: required.length - INLINE_REQUIRED
+#: src/mods/LoadOrderTab.tsx:115
+msgid " · {0} more required"
+msgstr " · {0} more required"
 
 #: src/mods/problemFixButtons.tsx:169
 msgid "Keep my changes"
@@ -3822,7 +3831,7 @@ msgstr "Copy"
 msgid "Open the command palette"
 msgstr "Open the command palette"
 
-#: src/mods/LoadOrderTab.tsx:286
+#: src/mods/LoadOrderTab.tsx:314
 msgid "Could not read load order"
 msgstr "Could not read load order"
 
@@ -4149,7 +4158,7 @@ msgstr "Selected mod"
 msgid "Nothing would change."
 msgstr "Nothing would change."
 
-#: src/mods/LoadOrderTab.tsx:143
+#: src/mods/LoadOrderTab.tsx:171
 msgid "Load order copied"
 msgstr "Load order copied"
 
@@ -5476,7 +5485,7 @@ msgstr "Couldn't read the window state"
 msgid "Open {name} on Nexus"
 msgstr "Open {name} on Nexus"
 
-#: src/mods/LoadOrderTab.tsx:197
+#: src/mods/LoadOrderTab.tsx:225
 msgid "These mods require each other."
 msgstr "These mods require each other."
 
@@ -6274,8 +6283,8 @@ msgstr "These profiles have the same mods."
 msgid "Review collection update"
 msgstr "Review collection update"
 
-#: src/mods/LoadOrderTab.tsx:125
-#: src/mods/LoadOrderTab.tsx:127
+#: src/mods/LoadOrderTab.tsx:153
+#: src/mods/LoadOrderTab.tsx:155
 msgid "Filter load order"
 msgstr "Filter load order"
 
@@ -6483,7 +6492,7 @@ msgstr "Skip pre-Play check"
 msgid "Copy from profile…"
 msgstr "Copy from profile…"
 
-#: src/mods/LoadOrderTab.tsx:72
+#: src/mods/LoadOrderTab.tsx:81
 msgid "Optional: {label}"
 msgstr "Optional: {label}"
 
@@ -6676,6 +6685,11 @@ msgstr "Step {0} of ~{1}, {2} mods left"
 #: src/launch/PrePlayDialog.tsx:118
 msgid "This profile has problems that can affect a launch."
 msgstr "This profile has problems that can affect a launch."
+
+#. placeholder {0}: users.length
+#: src/mods/LoadOrderTab.tsx:113
+msgid "{0, plural, one {Used by # mod} other {Used by # mods}}"
+msgstr "{0, plural, one {Used by # mod} other {Used by # mods}}"
 
 #: src/mods/SplitCombineItems.tsx:81
 msgid "Combined"
@@ -7146,7 +7160,7 @@ msgstr "All profiles are hidden"
 msgid "Steam"
 msgstr "Steam"
 
-#: src/mods/LoadOrderTab.tsx:281
+#: src/mods/LoadOrderTab.tsx:309
 msgid "Reading load order…"
 msgstr "Reading load order…"
 
@@ -7536,8 +7550,8 @@ msgstr "Import settings"
 #: src/launch/SaveWarnDialog.tsx:59
 #: src/mods/EnableRequirementsDialog.tsx:26
 #: src/mods/EnableRequirementsDialog.tsx:65
-#: src/mods/LoadOrderTab.tsx:36
-#: src/mods/LoadOrderTab.tsx:194
+#: src/mods/LoadOrderTab.tsx:78
+#: src/mods/LoadOrderTab.tsx:222
 #: src/mods/ProblemsTab.tsx:180
 #: src/mods/ProblemsTab.tsx:442
 msgid "Unknown mod"
@@ -7881,7 +7895,7 @@ msgstr "Location"
 msgid "Stardew Valley's Steam launch options run SMAPI in place of the game. Steam will still start SMAPI unless that launch option is removed. Mortar will not change it."
 msgstr "Stardew Valley's Steam launch options run SMAPI in place of the game. Steam will still start SMAPI unless that launch option is removed. Mortar will not change it."
 
-#: src/mods/LoadOrderTab.tsx:86
+#: src/mods/LoadOrderTab.tsx:82
 msgid "Used by: {label}"
 msgstr "Used by: {label}"
 
@@ -8766,7 +8780,7 @@ msgstr "Copy as a message"
 msgid "Before a restore"
 msgstr "Before a restore"
 
-#: src/mods/LoadOrderTab.tsx:296
+#: src/mods/LoadOrderTab.tsx:324
 msgid "Switch mods on in the Mods tab to see the order SMAPI loads them."
 msgstr "Switch mods on in the Mods tab to see the order SMAPI loads them."
 
