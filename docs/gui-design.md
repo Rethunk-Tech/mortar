@@ -133,6 +133,10 @@ Every save in the Saves folder with its fit for this profile, as cards in a grid
 
 **Save backups** above the cards opens a dialog listing the backup zips newest first, each with its time, cause ("Before updating" the named profile, "Before a restore", "Before playing", "Manual" or "Unknown"), size and the farms inside, with **Restore** (a dark menu: Restore all, or each save of that zip alone), **Open backups folder** and **Close**. Restore asks first, names the saves it will overwrite and says the current Saves folder is backed up first (solid paper, no transition), and reads "Stop the game to restore saves." while the game runs. A successful or failed Back up now toasts.
 
+## Browse tab
+
+Finds mods to add to the open profile. The toolbar matches the Mods tab: a **Nexus Mods** / **GitHub** source switch and one search field (debounced). Before a search, an empty state says what each source does (Premium downloads here; free accounts download from the mod page with Mod Manager Download; GitHub adds the latest release). Results are cards in the Mods grid's spacing: picture, name, author and stats (endorsements and downloads, or stars), a two-line summary, an open-page icon, and **Download** (Nexus Premium), **Add** (GitHub) or **In this profile**. Loading shows placeholder cards; no results and a failed search each have their own empty state, the latter with **Try again**. More than 20 results page at the foot.
+
 ## Problems tab
 
 A full-height scrollable list of every problem for this profile, grouped under headings (only non-empty groups shown):

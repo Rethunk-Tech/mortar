@@ -1,46 +1,54 @@
-import { msg } from '@lingui/core/macro'
-import { useLingui } from '@lingui/react'
+import { plural } from '@lingui/core/macro'
+import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
   Card,
-  CardContent,
-  CardMedia,
   Chip,
+  InputAdornment,
   Pagination,
-  Stack,
-  Tab,
-  Tabs,
+  Skeleton,
   TextField,
   Typography,
 } from '@mui/material'
+import { CloudOff, Download, ExternalLink, Plus, Search, SearchX } from 'lucide-react'
 import { useEffect, useState } from 'react'
-
+import { PrefSegmented } from '../settings/PrefControls.tsx'
+import { EmptyState } from '../shell/EmptyState.tsx'
+import { IconAction } from '../shell/IconAction.tsx'
 import { clampPage, DEBOUNCE_MS, PAGE_SIZE } from './browseState.ts'
 import type { BrowseItem, BrowsePageProps } from './browseTypes.ts'
 
 const NEXUS = 'nexus'
 const GITHUB = 'github'
 const FIRST_PAGE = 1
-const CARD_IMAGE_HEIGHT = 140
+const PICTURE_PX = 72
+const CARD_MIN_PX = 340
+const SKELETON_KEYS = ['a', 'b', 'c', 'd', 'e', 'f']
+const ICON_SIZE = 40
+const STALE_OPACITY = 0.6
 
-function BrowsePage({
+const grid = {
+  display: 'grid',
+  gridTemplateColumns: `repeat(auto-fill, minmax(${CARD_MIN_PX}px, 1fr))`,
+  gap: '6px',
+} as const
+
+type Status = 'idle' | 'loading' | 'done' | 'error'
+
+function useBrowseQuery({
   game,
   profileID,
-  premium,
-  hasCurseForgeKey,
   search,
-  openUrl,
-  downloadNexus,
-  addGitHub,
-}: BrowsePageProps) {
-  const { i18n } = useLingui()
+}: Pick<BrowsePageProps, 'game' | 'profileID' | 'search'>) {
   const [source, setSource] = useState(NEXUS)
   const [draft, setDraft] = useState('')
   const [text, setText] = useState('')
   const [page, setPage] = useState(FIRST_PAGE)
+  const [retry, setRetry] = useState(0)
   const [result, setResult] = useState({ total: 0, items: [] as BrowseItem[] })
-  const [busy, setBusy] = useState('')
+  const [status, setStatus] = useState<Status>('idle')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -53,80 +61,202 @@ function BrowsePage({
   }, [draft])
 
   useEffect(() => {
-    if (text.trim() === '') {
+    if (text.trim() === '' || retry < 0) {
       setResult({ total: 0, items: [] })
-      setBusy('')
+      setStatus('idle')
       return
     }
     let cancelled = false
+    setStatus('loading')
     search({ game, source, text, page, profileID })
       .then((next) => {
         if (!cancelled) {
           setResult(next)
-          setBusy('')
+          setStatus('done')
           setPage((current) => clampPage({ page: current, total: next.total }))
         }
       })
       .catch((err: { message?: string }) => {
         if (!cancelled) {
-          const { message } = err
-          setBusy(message ?? i18n._(msg`GitHub is busy, try again in a minute`))
+          setError(err.message ?? '')
+          setStatus('error')
         }
       })
     return () => {
       cancelled = true
     }
-  }, [game, source, text, page, profileID, search, i18n])
+  }, [game, source, text, page, profileID, search, retry])
 
+  return {
+    source,
+    setSource,
+    draft,
+    setDraft,
+    text,
+    page,
+    setPage,
+    setRetry,
+    result,
+    status,
+    error,
+  }
+}
+
+function BrowsePage({
+  game,
+  profileID,
+  premium,
+  hasCurseForgeKey,
+  search,
+  openUrl,
+  downloadNexus,
+  addGitHub,
+}: BrowsePageProps) {
+  const { t } = useLingui()
+  const {
+    source,
+    setSource,
+    draft,
+    setDraft,
+    text,
+    page,
+    setPage,
+    setRetry,
+    result,
+    status,
+    error,
+  } = useBrowseQuery({ game, profileID, search })
   const pageCount = Math.max(FIRST_PAGE, Math.ceil(result.total / PAGE_SIZE) || FIRST_PAGE)
+  const sources = [
+    { value: NEXUS, label: t`Nexus Mods` },
+    { value: GITHUB, label: t`GitHub` },
+    ...(hasCurseForgeKey ? [{ value: 'curseforge', label: t`CurseForge` }] : []),
+  ]
+  const placeholder = source === GITHUB ? t`Search GitHub releases` : t`Search Nexus Mods`
+
+  let hint = t`Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download.`
+  if (source === GITHUB) {
+    hint = t`Search GitHub for mods published as releases. Add puts the latest release in this profile.`
+  } else if (premium) {
+    hint = t`Search Nexus Mods. Download installs the mod into this profile.`
+  }
+  let body: React.ReactNode
+  if (status === 'idle') {
+    body = (
+      <EmptyState icon={<Search size={ICON_SIZE} />} title={t`Find mods to add`}>
+        {hint}
+      </EmptyState>
+    )
+  } else if (status === 'error') {
+    body = (
+      <EmptyState
+        icon={<CloudOff size={ICON_SIZE} />}
+        title={t`Search did not work`}
+        action={
+          <Button variant="outlined" onClick={() => setRetry((n) => n + 1)}>
+            {t`Try again`}
+          </Button>
+        }
+      >
+        {error || t`The service may be busy. Try again in a minute.`}
+      </EmptyState>
+    )
+  } else if (status === 'loading' && result.items.length === 0) {
+    body = (
+      <Box sx={grid}>
+        {SKELETON_KEYS.map((key) => (
+          <Skeleton key={key} variant="rounded" height={PICTURE_PX + 24} />
+        ))}
+      </Box>
+    )
+  } else if (result.items.length === 0) {
+    body = (
+      <EmptyState icon={<SearchX size={ICON_SIZE} />} title={t`No mods match "${text}"`}>
+        {t`Try fewer words, or the mod's exact name.`}
+      </EmptyState>
+    )
+  } else {
+    body = (
+      <>
+        <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>
+          {plural(result.total, { one: '# result', other: '# results' })}
+        </Typography>
+        <Box sx={{ ...grid, opacity: status === 'loading' ? STALE_OPACITY : 1 }}>
+          {result.items.map((item) => (
+            <ResultCard
+              key={`${item.source}:${item.id}`}
+              item={item}
+              premium={premium}
+              openUrl={openUrl}
+              downloadNexus={downloadNexus}
+              addGitHub={addGitHub}
+            />
+          ))}
+        </Box>
+        {result.total > PAGE_SIZE ? (
+          <Pagination
+            count={pageCount}
+            page={page}
+            onChange={(_event, next) => setPage(next)}
+            sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}
+          />
+        ) : null}
+      </>
+    )
+  }
 
   return (
-    <Stack spacing={2} sx={{ p: 2, overflow: 'auto' }}>
-      <Typography variant="h5">{i18n._(msg`Browse`)}</Typography>
-      <TextField
-        autoFocus={true}
-        fullWidth={true}
-        label={i18n._(msg`Search mods`)}
-        value={draft}
-        onChange={(event) => {
-          const { value } = event.target
-          setDraft(value)
-        }}
-      />
-      <Tabs
-        value={source}
-        onChange={(_event, next: string) => {
-          setSource(next)
-          setPage(FIRST_PAGE)
-        }}
-      >
-        <Tab value={NEXUS} label={i18n._(msg`Nexus`)} />
-        <Tab value={GITHUB} label={i18n._(msg`GitHub`)} />
-        {hasCurseForgeKey ? <Tab value="curseforge" label={i18n._(msg`CurseForge`)} /> : null}
-      </Tabs>
-      {busy === '' ? null : <Typography color="text.secondary">{busy}</Typography>}
-      <Stack spacing={2}>
-        {result.items.map((item) => (
-          <ResultCard
-            key={`${item.source}:${item.id}`}
-            item={item}
-            premium={premium}
-            openUrl={openUrl}
-            downloadNexus={downloadNexus}
-            addGitHub={addGitHub}
-          />
-        ))}
-      </Stack>
-      {result.total > PAGE_SIZE ? (
-        <Pagination
-          count={pageCount}
-          page={page}
-          onChange={(_event, next) => {
-            setPage(next)
+    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.25, pb: 0.75 }}>
+        <PrefSegmented
+          value={source}
+          label={t`Source`}
+          options={sources}
+          onChange={(next) => {
+            setSource(next)
+            setPage(FIRST_PAGE)
           }}
         />
-      ) : null}
-    </Stack>
+        <TextField
+          size="small"
+          autoFocus={true}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder={placeholder}
+          slotProps={{
+            htmlInput: { 'aria-label': placeholder },
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search size={14} />
+                </InputAdornment>
+              ),
+              sx: {
+                height: 36,
+                fontSize: 13,
+                borderRadius: '6px',
+                bgcolor: 'var(--mortar-overlay-30)',
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--mortar-hairline-15)' },
+              },
+            },
+          }}
+          sx={{ flex: 1, minWidth: 0 }}
+        />
+      </Box>
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          px: 2,
+          py: 1,
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {body}
+      </Box>
+    </Box>
   )
 }
 
@@ -143,7 +273,7 @@ function ResultCard({
   downloadNexus: (modID: string) => void
   addGitHub: (repo: string) => void
 }) {
-  const { i18n } = useLingui()
+  const { t } = useLingui()
   const {
     source,
     id,
@@ -157,53 +287,100 @@ function ResultCard({
     url,
     installed,
   } = item
+  const stats =
+    source === NEXUS
+      ? t`${endorsements} endorsements · ${downloads} downloads`
+      : plural(stars, { one: '# star', other: '# stars' })
+  let action: React.ReactNode = null
+  if (installed) {
+    action = <Chip size="small" label={t`In this profile`} />
+  } else if (source === GITHUB) {
+    action = (
+      <Button
+        size="small"
+        variant="contained"
+        startIcon={<Plus size={14} />}
+        onClick={() => addGitHub(id)}
+      >
+        {t`Add`}
+      </Button>
+    )
+  } else if (premium) {
+    action = (
+      <Button
+        size="small"
+        variant="contained"
+        startIcon={<Download size={14} />}
+        onClick={() => downloadNexus(id)}
+      >
+        {t`Download`}
+      </Button>
+    )
+  }
   return (
-    <Card>
-      <Stack direction="row">
-        {picture === '' ? (
-          <Box sx={{ width: CARD_IMAGE_HEIGHT, height: CARD_IMAGE_HEIGHT }} />
-        ) : (
-          <CardMedia
-            component="img"
-            image={picture}
-            alt=""
-            sx={{ width: CARD_IMAGE_HEIGHT, height: CARD_IMAGE_HEIGHT }}
-          />
-        )}
-        <CardContent sx={{ flex: 1 }}>
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Typography variant="h6">{name}</Typography>
-            {installed ? <Chip size="small" label={i18n._(msg`In this profile`)} /> : null}
-          </Stack>
-          <Typography variant="body2" color="text.secondary">
-            {author}
-          </Typography>
-          <Typography variant="body2">{summary}</Typography>
-          <Typography variant="caption">
-            {source === NEXUS
-              ? i18n._(msg`${endorsements} endorsements · ${downloads} downloads`)
-              : i18n._(msg`${stars} stars`)}
-          </Typography>
-          <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-            {source === NEXUS ? (
-              <>
-                <Button size="small" onClick={() => openUrl(url)}>
-                  {i18n._(msg`Open on Nexus`)}
-                </Button>
-                {premium ? (
-                  <Button size="small" onClick={() => downloadNexus(id)}>
-                    {i18n._(msg`Download`)}
-                  </Button>
-                ) : null}
-              </>
-            ) : (
-              <Button size="small" onClick={() => addGitHub(id)}>
-                {i18n._(msg`Add`)}
-              </Button>
-            )}
-          </Stack>
-        </CardContent>
-      </Stack>
+    <Card sx={{ display: 'flex', gap: 1.25, p: 1, borderRadius: '6px', minWidth: 0 }}>
+      {picture === '' ? (
+        <Box
+          sx={{
+            width: PICTURE_PX,
+            height: PICTURE_PX,
+            flexShrink: 0,
+            borderRadius: '4px',
+            bgcolor: 'var(--mortar-raised)',
+          }}
+        />
+      ) : (
+        <Box
+          component="img"
+          src={picture}
+          alt=""
+          loading="lazy"
+          sx={{
+            width: PICTURE_PX,
+            height: PICTURE_PX,
+            flexShrink: 0,
+            objectFit: 'cover',
+            borderRadius: '4px',
+          }}
+        />
+      )}
+      <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+        <Typography noWrap={true} title={name} sx={{ fontSize: 15, fontWeight: 600 }}>
+          {name}
+        </Typography>
+        <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
+          {author === '' ? stats : `${author} · ${stats}`}
+        </Typography>
+        <Typography
+          title={summary}
+          sx={{
+            fontSize: 13,
+            color: 'var(--mortar-ink-soft)',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
+          {summary}
+        </Typography>
+      </Box>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          gap: 0.5,
+        }}
+      >
+        <IconAction
+          label={source === GITHUB ? t`Open on GitHub` : t`Open on Nexus`}
+          icon={<ExternalLink size={15} />}
+          onClick={() => openUrl(url)}
+        />
+        {action}
+      </Box>
     </Card>
   )
 }
