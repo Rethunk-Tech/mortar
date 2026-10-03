@@ -271,14 +271,16 @@ export function PerformanceEmpty({
       title={t`See which mods slow the game`}
       action={
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            variant="contained"
-            startIcon={<Play size={16} />}
-            disabled={!running || busy}
-            onClick={onStart}
-          >
-            {t`Start measuring`}
-          </Button>
+          <DisabledReason title={t`Play this profile to measure.`} disabled={!running}>
+            <Button
+              variant="contained"
+              startIcon={<Play size={16} />}
+              disabled={!running || busy}
+              onClick={onStart}
+            >
+              {t`Start measuring`}
+            </Button>
+          </DisabledReason>
           {reports.length >= 2 && (
             <Button variant="outlined" onClick={onCompare}>
               {t`Compare saved reports`}
