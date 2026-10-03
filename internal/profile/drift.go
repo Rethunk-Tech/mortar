@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
@@ -102,7 +103,7 @@ func walkFolderStat(root, peer string) (FolderStat, error) {
 	var inPeer map[string]struct{}
 	if peer != "" && peer != root {
 		var err error
-		if inPeer, err = relFiles(peer); err != nil {
+		if inPeer, err = storeFiles(peer); err != nil {
 			return FolderStat{}, err
 		}
 	}
@@ -136,6 +137,54 @@ func walkFolderStat(root, peer string) (FolderStat, error) {
 		return nil
 	})
 	return st, err
+}
+
+// storeListing is a store item's file list and stats. Store items do not change once installed, so
+// they are listed once per process (again only if the item's folder is replaced) instead of every scan.
+type storeListing struct {
+	modTime int64
+	files   map[string]struct{}
+	stat    FolderStat
+}
+
+var storeListings = struct {
+	sync.Mutex
+	byPath map[string]storeListing
+}{byPath: map[string]storeListing{}}
+
+func storeListingFor(peer string) (storeListing, error) {
+	info, err := os.Stat(peer)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return storeListing{files: map[string]struct{}{}}, nil
+		}
+		return storeListing{}, err
+	}
+	stamp := info.ModTime().UnixNano()
+	storeListings.Lock()
+	cached, ok := storeListings.byPath[peer]
+	storeListings.Unlock()
+	if ok && cached.modTime == stamp {
+		return cached, nil
+	}
+	files, err := relFiles(peer)
+	if err != nil {
+		return storeListing{}, err
+	}
+	st, err := walkFolderStat(peer, peer)
+	if err != nil {
+		return storeListing{}, err
+	}
+	listing := storeListing{modTime: stamp, files: files, stat: st}
+	storeListings.Lock()
+	storeListings.byPath[peer] = listing
+	storeListings.Unlock()
+	return listing, nil
+}
+
+func storeFiles(peer string) (map[string]struct{}, error) {
+	listing, err := storeListingFor(peer)
+	return listing.files, err
 }
 
 // relFiles lists the files under root by path relative to it, from directory entries alone.
@@ -430,11 +479,11 @@ func (s *Store) ScanModsDrift(game, id string) ([]Drift, error) {
 	storeStats := map[string]FolderStat{}
 	for _, key := range keys {
 		if peer := storePeer(s, game, key); peer != "" {
-			st, err := walkFolderStat(peer, peer)
+			listing, err := storeListingFor(peer)
 			if err != nil {
 				return nil, err
 			}
-			storeStats[key] = st
+			storeStats[key] = listing.stat
 		}
 	}
 	before := maps.Clone(snap.Folders)
