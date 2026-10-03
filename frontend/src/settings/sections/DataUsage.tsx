@@ -18,8 +18,6 @@ import { type SegmentId, storageSegments } from './storageSegments.ts'
 
 const MIN_KEPT = 1
 const MAX_KEPT = 50
-// Every usage row reserves the same action slot, so sizes line up whether or not a row has a button.
-const ACTION_WIDTH = 168
 
 // Categorical slots validated for both themes (CVD and contrast); "other" stays neutral so it reads as remainder.
 const SEGMENT_COLORS: Record<'light' | 'dark', Record<SegmentId, string>> = {
@@ -47,86 +45,127 @@ const END_RADIUS = 4
 const MIN_SEGMENT = 4
 const PERCENT = 100
 const SKELETON_WIDTH = 64
+const SEGMENT_ORDER: SegmentId[] = ['profiles', 'store', 'cache', 'backups', 'trash', 'other']
+const filled = { ...nowrap, bgcolor: 'var(--mortar-raised)', boxShadow: 'none' } as const
 
 function useSegmentColors() {
   return SEGMENT_COLORS[useTheme().palette.mode]
 }
 
-function SizeRow({
-  label,
-  size,
-  action,
-  color,
-}: {
-  label: string
-  size: number | null
-  action?: ReactNode
-  color?: string
-}) {
+function SizeRow({ label, size }: { label: string; size: number | null }) {
   return (
     <SettingRow label={label}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        {color ? (
-          <Box
-            aria-hidden={true}
-            sx={{ width: DOT, height: DOT, borderRadius: '50%', bgcolor: color, flexShrink: 0 }}
-          />
-        ) : null}
-        <Box sx={{ fontSize: 14, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>
-          {size === null ? <Skeleton width={SKELETON_WIDTH} /> : formatBytes(size)}
-        </Box>
-        <Box sx={{ width: ACTION_WIDTH, display: 'flex', justifyContent: 'flex-end' }}>
-          {action}
-        </Box>
+      <Box sx={{ fontSize: 15, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+        {size === null ? <Skeleton width={SKELETON_WIDTH} /> : formatBytes(size)}
       </Box>
     </SettingRow>
+  )
+}
+
+function Legend({
+  sizes,
+  labels,
+}: {
+  sizes: Record<SegmentId, number> | null
+  labels: Record<SegmentId, string>
+}) {
+  const colors = useSegmentColors()
+  return (
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2.5, rowGap: 0.75, pt: 1.5 }}>
+      {SEGMENT_ORDER.map((id) => (
+        <Box key={id} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: 13 }}>
+          <Box
+            aria-hidden={true}
+            sx={{
+              width: DOT,
+              height: DOT,
+              borderRadius: '50%',
+              bgcolor: colors[id],
+              flexShrink: 0,
+            }}
+          />
+          <Box
+            component="span"
+            sx={{ fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}
+          >
+            {labels[id]}
+          </Box>
+          <Box
+            component="span"
+            sx={{ color: 'text.secondary', fontVariantNumeric: 'tabular-nums' }}
+          >
+            {sizes ? formatBytes(sizes[id]) : <Skeleton width={SKELETON_WIDTH} />}
+          </Box>
+        </Box>
+      ))}
+    </Box>
   )
 }
 
 function StorageBar({
   usage,
   labels,
+  bytes,
+  actions,
 }: {
   usage: DiskUse | null
   labels: Record<SegmentId, string>
+  bytes: number
+  actions: ReactNode
 }) {
+  const { t } = useLingui()
   const colors = useSegmentColors()
-  if (!usage) {
-    return (
-      <Box sx={{ px: 2, py: 2 }}>
-        <LinearProgress sx={{ height: BAR_HEIGHT, borderRadius: `${END_RADIUS}px` }} />
-      </Box>
-    )
-  }
-  const segs = storageSegments(usage).filter((s) => s.size > 0)
-  const total = Math.max(1, usage.total)
+  const segs = usage ? storageSegments(usage).filter((s) => s.size > 0) : []
+  const sizes = usage
+    ? (Object.fromEntries(storageSegments(usage).map((s) => [s.id, s.size])) as Record<
+        SegmentId,
+        number
+      >)
+    : null
+  const total = Math.max(1, usage?.total ?? 1)
   return (
-    <Box sx={{ px: 2, py: 2 }}>
-      <Box
-        role="img"
-        aria-label={segs.map((s) => `${labels[s.id]} ${formatBytes(s.size)}`).join(', ')}
-        sx={{ display: 'flex', gap: `${BAR_GAP}px`, height: BAR_HEIGHT }}
-      >
-        {segs.map((s, i) => (
-          <Tooltip
-            key={s.id}
-            title={`${labels[s.id]} · ${formatBytes(s.size)} · ${Math.round((s.size / total) * PERCENT)}%`}
-          >
-            <Box
-              sx={{
-                flexGrow: s.size,
-                flexBasis: 0,
-                minWidth: MIN_SEGMENT,
-                bgcolor: colors[s.id],
-                borderTopLeftRadius: i === 0 ? END_RADIUS : 0,
-                borderBottomLeftRadius: i === 0 ? END_RADIUS : 0,
-                borderTopRightRadius: i === segs.length - 1 ? END_RADIUS : 0,
-                borderBottomRightRadius: i === segs.length - 1 ? END_RADIUS : 0,
-              }}
-            />
-          </Tooltip>
-        ))}
+    <Box sx={{ px: 2.5, py: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 2, pb: 1.5 }}>
+        <Box sx={{ flex: 1, fontSize: 16 }}>
+          {usage ? t`${formatBytes(usage.total)} used` : t`Measuring… ${formatBytes(bytes)}`}
+        </Box>
+        {usage?.sharedSavedKnown && usage.sharedSaved > 0 ? (
+          <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
+            {t`${formatBytes(usage.sharedSaved)} saved by sharing files`}
+          </Box>
+        ) : null}
       </Box>
+      {usage ? (
+        <Box
+          role="img"
+          aria-label={segs.map((s) => `${labels[s.id]} ${formatBytes(s.size)}`).join(', ')}
+          sx={{ display: 'flex', gap: `${BAR_GAP}px`, height: BAR_HEIGHT }}
+        >
+          {segs.map((s, i) => (
+            <Tooltip
+              key={s.id}
+              title={`${labels[s.id]} · ${formatBytes(s.size)} · ${Math.round((s.size / total) * PERCENT)}%`}
+            >
+              <Box
+                sx={{
+                  flexGrow: s.size,
+                  flexBasis: 0,
+                  minWidth: MIN_SEGMENT,
+                  bgcolor: colors[s.id],
+                  borderTopLeftRadius: i === 0 ? END_RADIUS : 0,
+                  borderBottomLeftRadius: i === 0 ? END_RADIUS : 0,
+                  borderTopRightRadius: i === segs.length - 1 ? END_RADIUS : 0,
+                  borderBottomRightRadius: i === segs.length - 1 ? END_RADIUS : 0,
+                }}
+              />
+            </Tooltip>
+          ))}
+        </Box>
+      ) : (
+        <LinearProgress sx={{ height: BAR_HEIGHT, borderRadius: `${END_RADIUS}px` }} />
+      )}
+      <Legend sizes={sizes} labels={labels} />
+      <Box sx={{ display: 'flex', gap: 1, pt: 2, flexWrap: 'wrap' }}>{actions}</Box>
     </Box>
   )
 }
@@ -147,26 +186,18 @@ export function BackupsKept() {
 export function UsageRows({
   usage,
   bytes,
-  onCleanUp,
   onClearCache,
   onDeletedProfiles,
 }: {
   usage: DiskUse | null
   bytes: number
-  onCleanUp: () => void
   onClearCache: () => void
   onDeletedProfiles: () => void
 }) {
   const { t } = useLingui()
-  const colors = useSegmentColors()
   const games = usage
     ? [...(usage.games ?? [])].sort((a, b) => b.size - a.size || a.name.localeCompare(b.name))
     : null
-  const button = (label: string, onClick: () => void) => (
-    <Button variant="outlined" onClick={onClick} sx={nowrap}>
-      {label}
-    </Button>
-  )
   const labels: Record<SegmentId, string> = {
     profiles: t`Profiles`,
     store: t`Store`,
@@ -175,40 +206,20 @@ export function UsageRows({
     trash: t`Trash`,
     other: t`Other`,
   }
-  const sizes = usage
-    ? (Object.fromEntries(storageSegments(usage).map((s) => [s.id, s.size])) as Record<
-        SegmentId,
-        number
-      >)
-    : null
-  const actions: Partial<Record<SegmentId, ReactNode>> = {
-    store: button(t`Clean up…`, onCleanUp),
-    cache: button(t`Clear…`, onClearCache),
-    trash: button(t`Deleted profiles…`, onDeletedProfiles),
-  }
-  const order: SegmentId[] = ['profiles', 'store', 'cache', 'backups', 'trash', 'other']
-  let sharedSaved: number | null = null
-  if (usage) {
-    sharedSaved = usage.sharedSavedKnown ? usage.sharedSaved : 0
-  }
+  const actions = (
+    <>
+      <Button variant="contained" color="inherit" onClick={onClearCache} sx={filled}>
+        {t`Clear cache…`}
+      </Button>
+      <Button variant="contained" color="inherit" onClick={onDeletedProfiles} sx={filled}>
+        {t`Deleted profiles…`}
+      </Button>
+    </>
+  )
   return (
     <>
       <SettingsSection title={t`Usage`}>
-        <StorageBar usage={usage} labels={labels} />
-        {order.map((id) => (
-          <SizeRow
-            key={id}
-            label={labels[id]}
-            size={sizes ? sizes[id] : null}
-            color={colors[id]}
-            action={actions[id]}
-          />
-        ))}
-        <SizeRow label={t`Space saved by sharing files`} size={sharedSaved} />
-        <SizeRow
-          label={usage ? t`Total` : t`Measuring… ${formatBytes(bytes)}`}
-          size={usage ? usage.total : null}
-        />
+        <StorageBar usage={usage} labels={labels} bytes={bytes} actions={actions} />
       </SettingsSection>
       <SettingsSection title={t`By game`}>
         {games === null ? (

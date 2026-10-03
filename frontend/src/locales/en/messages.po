@@ -59,7 +59,7 @@ msgstr "Start muted"
 msgid "Interface tour"
 msgstr "Interface tour"
 
-#: src/settings/sections/DataUsage.tsx:176
+#: src/settings/sections/DataUsage.tsx:207
 msgid "Other"
 msgstr "Other"
 
@@ -314,10 +314,6 @@ msgstr "Always"
 msgid "Use a file"
 msgstr "Use a file"
 
-#: src/settings/sections/DataUsage.tsx:185
-msgid "Clean up…"
-msgstr "Clean up…"
-
 #: src/settings/sections/Shortcuts.tsx:42
 msgid "Switch to Console"
 msgstr "Switch to Console"
@@ -370,7 +366,7 @@ msgstr "{0} mods added"
 msgid "{0} {1} installed"
 msgstr "{0} {1} installed"
 
-#: src/settings/sections/DataStoreReport.tsx:259
+#: src/settings/sections/DataStoreReport.tsx:273
 msgid "Older copies of the same mod"
 msgstr "Older copies of the same mod"
 
@@ -739,6 +735,10 @@ msgstr "Steam's launch options for Stardew Valley lack the SMAPI line. In Steam,
 msgid "Nexus Mod Manager links"
 msgstr "Nexus Mod Manager links"
 
+#: src/settings/sections/DataUsage.tsx:212
+msgid "Clear cache…"
+msgstr "Clear cache…"
+
 #: src/mods/updateReview/Changes.tsx:58
 msgid "What's new"
 msgstr "What's new"
@@ -894,10 +894,6 @@ msgstr "{name} is marked obsolete and may not work with this game version."
 #: src/browse/BrowsePage.tsx:184
 msgid "{endorsements} endorsements · {downloads} downloads"
 msgstr "{endorsements} endorsements · {downloads} downloads"
-
-#: src/settings/sections/DataUsage.tsx:186
-msgid "Clear…"
-msgstr "Clear…"
 
 #: src/queue/QueueHistory.tsx:119
 msgid "All outcomes"
@@ -1155,11 +1151,11 @@ msgstr "Copper"
 msgid "found, without {0}"
 msgstr "found, without {0}"
 
-#: src/settings/sections/DataUsage.tsx:234
+#: src/settings/sections/DataUsage.tsx:245
 msgid "Mortar's data"
 msgstr "Mortar's data"
 
-#: src/settings/sections/DataUsage.tsx:187
+#: src/settings/sections/DataUsage.tsx:215
 msgid "Deleted profiles…"
 msgstr "Deleted profiles…"
 
@@ -1236,10 +1232,6 @@ msgstr "SMAPI is the loader every Stardew mod needs. It goes into the game folde
 msgid "No changelog on Nexus"
 msgstr "No changelog on Nexus"
 
-#: src/settings/sections/DataUsage.tsx:209
-msgid "Total"
-msgstr "Total"
-
 #: src/mods/problemFix/SettingFix.tsx:45
 msgid "Set to automatic"
 msgstr "Set to automatic"
@@ -1278,7 +1270,7 @@ msgstr "{name} is marked broken for this game version."
 msgid "SMAPI unofficial builds"
 msgstr "SMAPI unofficial builds"
 
-#: src/settings/sections/DataUsage.tsx:196
+#: src/settings/sections/DataUsage.tsx:221
 msgid "Usage"
 msgstr "Usage"
 
@@ -1781,7 +1773,7 @@ msgstr "Create another profile to compare it with this one."
 msgid "Start Mortar when you sign in to this computer"
 msgstr "Start Mortar when you sign in to this computer"
 
-#: src/settings/sections/DataStoreReport.tsx:252
+#: src/settings/sections/DataStoreReport.tsx:266
 msgid "Mods no profile uses"
 msgstr "Mods no profile uses"
 
@@ -2067,7 +2059,7 @@ msgid "Show the tour again"
 msgstr "Show the tour again"
 
 #. placeholder {0}: formatBytes(bytes)
-#: src/settings/sections/DataUsage.tsx:209
+#: src/settings/sections/DataUsage.tsx:130
 msgid "Measuring… {0}"
 msgstr "Measuring… {0}"
 
@@ -2144,7 +2136,7 @@ msgstr "Updated tags"
 msgid "Update mods before Play on new profiles"
 msgstr "Update mods before Play on new profiles"
 
-#: src/settings/sections/DataStoreReport.tsx:260
+#: src/settings/sections/DataStoreReport.tsx:274
 msgid "a newer copy is kept"
 msgstr "a newer copy is kept"
 
@@ -2375,7 +2367,7 @@ msgstr "Stop the game?"
 msgid "Go back"
 msgstr "Go back"
 
-#: src/settings/sections/DataStoreReport.tsx:109
+#: src/settings/sections/DataStoreReport.tsx:100
 msgid "Unfinished downloads and temporary files"
 msgstr "Unfinished downloads and temporary files"
 
@@ -2668,7 +2660,7 @@ msgstr "{name} is abandoned: {summary}"
 msgid "Choose image…"
 msgstr "Choose image…"
 
-#: src/settings/sections/DataUsage.tsx:213
+#: src/settings/sections/DataUsage.tsx:224
 msgid "By game"
 msgstr "By game"
 
@@ -3003,6 +2995,12 @@ msgstr "Edit"
 msgid "Removed"
 msgstr "Removed"
 
+#. placeholder {0}: picked.size
+#. placeholder {1}: formatBytes(bytes)
+#: src/settings/sections/DataStoreReport.tsx:369
+msgid "{0} selected · {1}"
+msgstr "{0} selected · {1}"
+
 #: src/tools/ToolEditorDialog.tsx:105
 msgid "Working directory"
 msgstr "Working directory"
@@ -3014,7 +3012,7 @@ msgid "Installed"
 msgstr "Installed"
 
 #. placeholder {0}: formatBytes(bytes)
-#: src/settings/sections/DataStoreReport.tsx:330
+#: src/settings/sections/DataStoreReport.tsx:336
 msgid "Freed {0}"
 msgstr "Freed {0}"
 
@@ -3152,7 +3150,7 @@ msgstr "Choose a file"
 msgid "Mortar starts the unmodded game directly so SMAPI's Linux launcher is not used. The Steam overlay and Steam's playtime tracking will not work. Steam still supplies the API if it is running."
 msgstr "Mortar starts the unmodded game directly so SMAPI's Linux launcher is not used. The Steam overlay and Steam's playtime tracking will not work. Steam still supplies the API if it is running."
 
-#: src/settings/sections/DataStoreReport.tsx:107
+#: src/settings/sections/DataStoreReport.tsx:98
 msgid "Cached GitHub release lists"
 msgstr "Cached GitHub release lists"
 
@@ -3191,6 +3189,10 @@ msgstr "{0, plural, one {# settings file was left out (too large or an unusual n
 #: src/settings/prefCopy.ts:192
 msgid "The banner at the top of a profile"
 msgstr "The banner at the top of a profile"
+
+#: src/settings/sections/DataStoreReport.tsx:372
+msgid "Clear selection"
+msgstr "Clear selection"
 
 #. placeholder {0}: tool.name
 #: src/tools/ToolsMenu.tsx:57
@@ -3362,11 +3364,6 @@ msgstr "Restarting…"
 msgid "Warn"
 msgstr "Warn"
 
-#. placeholder {0}: formatBytes(bytes)
-#: src/settings/sections/DataStoreReport.tsx:366
-msgid "Remove selected ({0})"
-msgstr "Remove selected ({0})"
-
 #: src/mods/columnLabel.ts:18
 #: src/mods/ModDependencyTree.tsx:203
 #: src/mods/ModDetail.tsx:210
@@ -3442,7 +3439,7 @@ msgstr "No Mortar users found nearby."
 msgid "Full"
 msgstr "Full"
 
-#: src/settings/sections/DataUsage.tsx:173
+#: src/settings/sections/DataUsage.tsx:204
 msgid "Cache"
 msgstr "Cache"
 
@@ -3642,7 +3639,7 @@ msgstr "Return to last known good"
 msgid "After the first release"
 msgstr "After the first release"
 
-#: src/settings/sections/DataUsage.tsx:175
+#: src/settings/sections/DataUsage.tsx:206
 msgid "Trash"
 msgstr "Trash"
 
@@ -3685,6 +3682,11 @@ msgstr "Download folder"
 #: src/settings/startupChecks.ts:29
 msgid "Mortar closed unexpectedly last time"
 msgstr "Mortar closed unexpectedly last time"
+
+#. placeholder {0}: formatBytes(usage.sharedSaved)
+#: src/settings/sections/DataUsage.tsx:134
+msgid "{0} saved by sharing files"
+msgstr "{0} saved by sharing files"
 
 #. placeholder {0}: need.minimumVersion
 #. placeholder {1}: need.installedVersion
@@ -4060,7 +4062,7 @@ msgstr "Open page"
 msgid "{count} to download"
 msgstr "{count} to download"
 
-#: src/settings/sections/DataUsage.tsx:140
+#: src/settings/sections/DataUsage.tsx:179
 msgid "Saves are zipped before mods update; older backups beyond this many are deleted. {MIN_KEPT} to {MAX_KEPT}."
 msgstr "Saves are zipped before mods update; older backups beyond this many are deleted. {MIN_KEPT} to {MAX_KEPT}."
 
@@ -4410,7 +4412,7 @@ msgid "Mods"
 msgstr "Mods"
 
 #. placeholder {0}: g.items.length
-#: src/settings/sections/DataStoreReport.tsx:271
+#: src/settings/sections/DataStoreReport.tsx:285
 msgid "{0, plural, one {# file} other {# files}}"
 msgstr "{0, plural, one {# file} other {# files}}"
 
@@ -4497,7 +4499,7 @@ msgstr "Pick up where you left off."
 msgid "Clear download history?"
 msgstr "Clear download history?"
 
-#: src/settings/sections/DataStoreReport.tsx:111
+#: src/settings/sections/DataStoreReport.tsx:102
 msgid "Other cached data"
 msgstr "Other cached data"
 
@@ -5065,7 +5067,7 @@ msgstr "Update {wantedCount}"
 msgid "Could not skip the update for {0}"
 msgstr "Could not skip the update for {0}"
 
-#: src/settings/sections/DataStoreReport.tsx:120
+#: src/settings/sections/DataStoreReport.tsx:111
 msgid "Nexus mod {id}"
 msgstr "Nexus mod {id}"
 
@@ -5212,6 +5214,10 @@ msgstr "Mods from the same download are removed together: {0}."
 msgid "Downloading {name} into {profileName}"
 msgstr "Downloading {name} into {profileName}"
 
+#: src/settings/sections/DataStoreReport.tsx:342
+msgid "Clean up"
+msgstr "Clean up"
+
 #: src/settings/sections/StreamOverlay.tsx:186
 #: src/settings/sections/StreamOverlay.tsx:189
 msgid "Copy OBS URL"
@@ -5297,7 +5303,7 @@ msgstr "Date"
 msgid "Problems and updates"
 msgstr "Problems and updates"
 
-#: src/settings/sections/DataUsage.tsx:172
+#: src/settings/sections/DataUsage.tsx:203
 msgid "Store"
 msgstr "Store"
 
@@ -5319,7 +5325,7 @@ msgstr "Could not open the folder of {0}"
 msgid "Create a new profile"
 msgstr "Create a new profile"
 
-#: src/settings/sections/DataStoreReport.tsx:240
+#: src/settings/sections/DataStoreReport.tsx:254
 msgid "Nothing to clean up."
 msgstr "Nothing to clean up."
 
@@ -5364,7 +5370,7 @@ msgstr "After"
 msgid "One VAR=value per line; applies to direct launches only. Steam launches do not receive these settings."
 msgstr "One VAR=value per line; applies to direct launches only. Steam launches do not receive these settings."
 
-#: src/settings/sections/Storage.tsx:84
+#: src/settings/sections/Storage.tsx:83
 msgid "Retention"
 msgstr "Retention"
 
@@ -5389,7 +5395,7 @@ msgstr "A file it needs could not be opened."
 msgid "Windowed resolution width"
 msgstr "Windowed resolution width"
 
-#: src/settings/sections/DataStoreReport.tsx:105
+#: src/settings/sections/DataStoreReport.tsx:96
 msgid "Cached Nexus mod details"
 msgstr "Cached Nexus mod details"
 
@@ -6066,7 +6072,7 @@ msgstr "Dark"
 
 #: src/profiles/ProfilesPage.tsx:175
 #: src/profiles/ProfilesPage.tsx:178
-#: src/settings/sections/DataUsage.tsx:242
+#: src/settings/sections/DataUsage.tsx:253
 msgid "Open folder"
 msgstr "Open folder"
 
@@ -6346,6 +6352,11 @@ msgstr "Download failed"
 msgid "Paste it on the mod's bug tracker."
 msgstr "Paste it on the mod's bug tracker."
 
+#. placeholder {0}: formatBytes(usage.total)
+#: src/settings/sections/DataUsage.tsx:130
+msgid "{0} used"
+msgstr "{0} used"
+
 #: src/firstrun/SmapiStep.tsx:289
 msgid "SMAPI is the loader every Stardew mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 msgstr "SMAPI is the loader every Stardew mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
@@ -6402,7 +6413,7 @@ msgstr "Updates, missing dependencies and links from Nexus land here."
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
-#: src/settings/sections/DataUsage.tsx:139
+#: src/settings/sections/DataUsage.tsx:178
 msgid "Save backups kept"
 msgstr "Save backups kept"
 
@@ -6827,7 +6838,7 @@ msgstr "Lets nearby Mortar users find this installation and exchange profile lin
 
 #: src/saves/BackupsDialog.tsx:161
 #: src/saves/SavesTab.tsx:86
-#: src/settings/sections/DataUsage.tsx:174
+#: src/settings/sections/DataUsage.tsx:205
 msgid "Save backups"
 msgstr "Save backups"
 
@@ -6861,7 +6872,8 @@ msgstr "Switch to Saves"
 #: src/mods/problemFixButtons.tsx:131
 #: src/mods/ProblemsTab.tsx:217
 #: src/mods/SelectionBarActions.tsx:138
-#: src/settings/sections/DataStoreReport.tsx:373
+#: src/settings/sections/DataStoreReport.tsx:375
+#: src/settings/sections/DataStoreReport.tsx:383
 msgid "Remove"
 msgstr "Remove"
 
@@ -7051,11 +7063,7 @@ msgstr "FromArea {0}"
 msgid "Required"
 msgstr "Required"
 
-#: src/settings/sections/DataUsage.tsx:207
-msgid "Space saved by sharing files"
-msgstr "Space saved by sharing files"
-
-#: src/settings/sections/DataStoreReport.tsx:371
+#: src/settings/sections/DataStoreReport.tsx:381
 msgid "Remove the selected items?"
 msgstr "Remove the selected items?"
 
@@ -7201,7 +7209,7 @@ msgid "{fitting} of {total}"
 msgstr "{fitting} of {total}"
 
 #. placeholder {0}: formatBytes(bytes)
-#: src/settings/sections/DataStoreReport.tsx:372
+#: src/settings/sections/DataStoreReport.tsx:382
 msgid "This frees {0}. Removed mods download again if a profile needs them later."
 msgstr "This frees {0}. Removed mods download again if a profile needs them later."
 
@@ -7609,10 +7617,6 @@ msgstr "Show one in the sidebar from Manage profiles."
 msgid "Not enough disk space"
 msgstr "Not enough disk space"
 
-#: src/settings/sections/DataStoreReport.tsx:345
-msgid "Clean up storage"
-msgstr "Clean up storage"
-
 #: src/settings/sections/Appearance.tsx:210
 msgid "Mods view"
 msgstr "Mods view"
@@ -7674,7 +7678,7 @@ msgstr "Player"
 #: src/game/Sidebar.tsx:336
 #: src/profiles/ProfilesPage.tsx:371
 #: src/settings/sections/AboutDiagnostics.tsx:59
-#: src/settings/sections/DataUsage.tsx:171
+#: src/settings/sections/DataUsage.tsx:202
 #: src/settings/sections/Shortcuts.tsx:180
 msgid "Profiles"
 msgstr "Profiles"
@@ -7837,7 +7841,7 @@ msgstr "Teal"
 msgid "Could not read this profile"
 msgstr "Could not read this profile"
 
-#: src/settings/sections/DataStoreReport.tsx:247
+#: src/settings/sections/DataStoreReport.tsx:261
 msgid "Select all"
 msgstr "Select all"
 
@@ -7861,7 +7865,7 @@ msgstr "Closing the window hides Mortar instead of quitting."
 msgid "This is not a Mod Manager Download link from Nexus."
 msgstr "This is not a Mod Manager Download link from Nexus."
 
-#: src/settings/sections/DataUsage.tsx:233
+#: src/settings/sections/DataUsage.tsx:244
 #: src/settings/sections/StreamOverlay.tsx:84
 msgid "Location"
 msgstr "Location"
@@ -8218,8 +8222,8 @@ msgstr "Loading profiles…"
 msgid "Missing requirements on install"
 msgstr "Missing requirements on install"
 
-#: src/settings/sections/DataUsage.tsx:215
-#: src/settings/sections/DataUsage.tsx:234
+#: src/settings/sections/DataUsage.tsx:226
+#: src/settings/sections/DataUsage.tsx:245
 msgid "Measuring…"
 msgstr "Measuring…"
 
@@ -8463,7 +8467,7 @@ msgstr "Reinstall"
 msgid "Checking for updates…"
 msgstr "Checking for updates…"
 
-#: src/settings/sections/DataStoreReport.tsx:264
+#: src/settings/sections/DataStoreReport.tsx:278
 msgid "Leftover files"
 msgstr "Leftover files"
 
@@ -8649,7 +8653,6 @@ msgstr "Restore second"
 #: src/profiles/CompareDialog.tsx:134
 #: src/profiles/HistoryPanel.tsx:117
 #: src/saves/BackupsDialog.tsx:204
-#: src/settings/sections/DataStoreReport.tsx:357
 #: src/share/ImportDialog.tsx:211
 #: src/share/ImportDialog.tsx:214
 #: src/share/ShareDialog.tsx:105

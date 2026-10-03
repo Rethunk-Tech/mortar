@@ -1,16 +1,7 @@
 import type { I18n } from '@lingui/core'
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Checkbox,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from '@mui/material'
+import { Box, Button, Checkbox, Skeleton } from '@mui/material'
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import type {
   Item as LeftoverItem,
@@ -28,10 +19,10 @@ import type {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/store/models.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { When } from '../../i18n/When.tsx'
-import { paper } from '../../mods/paper.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { SettingsSection } from '../SettingsSection.tsx'
 import { nowrap } from './dataStyles.ts'
 
 const SELECT_SEP = '\u0000'
@@ -136,17 +127,38 @@ function Row({
   return (
     <Box
       component="label"
-      sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: 36, cursor: 'pointer' }}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        minHeight: 44,
+        px: 1.5,
+        borderRadius: '6px',
+        cursor: 'pointer',
+        '&:hover': { bgcolor: 'action.hover' },
+      }}
     >
       <Checkbox size="small" checked={checked} onChange={(ev) => onToggle(ev.target.checked)} />
-      <Box sx={{ flex: 1, minWidth: 0, fontSize: 14, ...nowrap, overflow: 'hidden' }}>{title}</Box>
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          fontSize: 15,
+          ...nowrap,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        {title}
+      </Box>
       <Box sx={{ flexShrink: 0, fontSize: 13, color: 'text.secondary', ...nowrap }}>{detail}</Box>
       <Box
         sx={{
           flexShrink: 0,
-          width: 80,
+          width: 96,
           textAlign: 'right',
-          fontSize: 13,
+          fontSize: 15,
+          fontWeight: 600,
           fontVariantNumeric: 'tabular-nums',
         }}
       >
@@ -171,9 +183,13 @@ function Section({
         sx={{
           display: 'flex',
           justifyContent: 'space-between',
-          fontSize: 13,
+          fontSize: 12,
           fontWeight: 700,
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
           color: 'text.secondary',
+          px: 1.5,
+          pt: 1.5,
           pb: 0.5,
         }}
       >
@@ -187,7 +203,7 @@ function Section({
   )
 }
 
-function useCleanupData(open: boolean) {
+function useCleanupData() {
   const [store, setStore] = useState<{ unused: Sel[]; older: Sel[] } | null>(null)
   const [preview, setPreview] = useState<Preview | null>(null)
   const load = useCallback(() => {
@@ -197,10 +213,8 @@ function useCleanupData(open: boolean) {
     CleanupPreview().then(setPreview).catch(reportUnexpected)
   }, [])
   useEffect(() => {
-    if (open) {
-      load()
-    }
-  }, [open, load])
+    load()
+  }, [load])
   return { store, preview, load }
 }
 
@@ -219,7 +233,7 @@ function CleanupBody({
 }) {
   const { t, i18n } = useLingui()
   if (store === null) {
-    return <CircularProgress size={20} />
+    return <Skeleton height={44} />
   }
   const items = [...store.unused, ...store.older]
   const allIds = [...items.map((s) => s.id), ...leftovers.map((g) => g.kind)]
@@ -237,7 +251,7 @@ function CleanupBody({
   )
   const sum = (rows: Sel[]) => rows.reduce((n, s) => n + s.item.size, 0)
   if (allIds.length === 0) {
-    return <Box sx={{ fontSize: 14 }}>{t`Nothing to clean up.`}</Box>
+    return <Box sx={{ fontSize: 15, px: 1.5, py: 1.5 }}>{t`Nothing to clean up.`}</Box>
   }
   return (
     <>
@@ -278,17 +292,9 @@ function CleanupBody({
   )
 }
 
-function CleanupDialog({
-  open,
-  onClose,
-  onChanged,
-}: {
-  open: boolean
-  onClose: () => void
-  onChanged: () => void
-}) {
+function StoreCleanup({ onChanged }: { onChanged: () => void }) {
   const { t } = useLingui()
-  const { store, preview } = useCleanupData(open)
+  const { store, preview, load } = useCleanupData()
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const [confirm, setConfirm] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -325,7 +331,7 @@ function CleanupDialog({
       .then(() => {
         setConfirm(false)
         setPicked(new Set())
-        onClose()
+        load()
         onChanged()
         useToasts.getState().push({ kind: 'success', title: t`Freed ${formatBytes(bytes)}` })
       })
@@ -333,17 +339,8 @@ function CleanupDialog({
       .finally(() => setBusy(false))
   }
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth={true}
-      scroll="paper"
-      transitionDuration={0}
-      slotProps={{ paper }}
-    >
-      <DialogTitle>{t`Clean up storage`}</DialogTitle>
-      <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <SettingsSection title={t`Clean up`}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', py: 0.5 }}>
         <CleanupBody
           store={store}
           leftovers={leftovers}
@@ -351,21 +348,34 @@ function CleanupDialog({
           setPicked={setPicked}
           toggle={toggle}
         />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} sx={nowrap}>
-          {t`Close`}
-        </Button>
-        <Button
-          variant="contained"
-          color="error"
-          disabled={bytes === 0 && picked.size === 0}
-          onClick={() => setConfirm(true)}
-          sx={nowrap}
+      </Box>
+      {picked.size > 0 ? (
+        // Pinned to the bottom of the page while anything is selected, like a list's action bar.
+        <Box
+          sx={{
+            position: 'sticky',
+            bottom: 0,
+            zIndex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            px: 2,
+            py: 1.25,
+            bgcolor: 'var(--mortar-panel-92) !important',
+            boxShadow: '0 -4px 12px rgba(0,0,0,0.3)',
+          }}
         >
-          {t`Remove selected (${formatBytes(bytes)})`}
-        </Button>
-      </DialogActions>
+          <Box sx={{ flex: 1, fontSize: 15 }}>
+            {t`${picked.size} selected · ${formatBytes(bytes)}`}
+          </Box>
+          <Button onClick={() => setPicked(new Set())} sx={nowrap}>
+            {t`Clear selection`}
+          </Button>
+          <Button variant="contained" color="error" onClick={() => setConfirm(true)} sx={nowrap}>
+            {t`Remove`}
+          </Button>
+        </Box>
+      ) : null}
       <ConfirmDialog
         open={confirm}
         title={t`Remove the selected items?`}
@@ -376,8 +386,8 @@ function CleanupDialog({
         onCancel={() => setConfirm(false)}
         onConfirm={run}
       />
-    </Dialog>
+    </SettingsSection>
   )
 }
 
-export { CleanupDialog }
+export { StoreCleanup }
