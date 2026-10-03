@@ -176,6 +176,11 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 		}
 	}
 	fp := fingerprint(env, mods, runID)
+	depth := settings.ConflictScanFull
+	if s.settings != nil {
+		depth = settings.Resolve(s.settings.Get(), "conflictScanDepth", gameID, nil)
+	}
+	fp += "|scan:" + depth
 	key := gameID + "/" + id
 	s.mu.Lock()
 	c, ok := s.cache[key]
@@ -193,6 +198,8 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	s.mu.Unlock()
 
 	r, err := s.shareCheck(ctx, checkKey, func() Result {
+		skipImageOverlap = depth == settings.ConflictScanSkipImages
+		defer func() { skipImageOverlap = false }()
 		r := Check(ctx, s.meta, env, mods)
 		r.Broken = append(r.Broken, authorMarkedMods(s.home, slices.DeleteFunc(slices.Clone(mods), func(x Installed) bool {
 			return !x.Enabled
