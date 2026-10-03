@@ -76,10 +76,10 @@ function ProfileCards({
         flexDirection: 'row',
         flexWrap: 'nowrap',
         alignItems: 'center',
-        gap: '10px',
-        mt: '6px',
+        gap: 1,
+        mt: 1,
         minHeight: 0,
-        maxHeight: 28,
+        maxHeight: 32,
         overflow: 'hidden',
       }}
     >
@@ -128,20 +128,26 @@ function ProfileCard({
   const counts = useBadges((s) => s.byProfile[profile.id])
   return (
     <ButtonBase
+      component="div"
       onClick={onOpen}
       sx={{
         display: 'flex',
         flexDirection: 'row',
         flexWrap: 'nowrap',
         alignItems: 'center',
-        gap: 0.75,
+        gap: 1,
         flexShrink: 0,
-        maxHeight: 28,
+        height: 32,
+        px: 1.25,
         minWidth: 0,
         overflow: 'hidden',
-        color: 'inherit',
+        color: 'text.primary',
+        textShadow: 'none',
+        bgcolor: 'var(--mortar-raised)',
+        borderRadius: '6px',
         fontFamily: 'inherit',
         textAlign: 'left',
+        '&:hover': { bgcolor: 'var(--mortar-hairline-16)' },
       }}
     >
       <Typography
@@ -151,7 +157,6 @@ function ProfileCard({
       >
         {profile.name}
       </Typography>
-      <ProfileHealth counts={counts} game={gameId} profileId={profile.id} />
       {lastPlayedAt ? (
         <Box
           sx={{
@@ -159,12 +164,13 @@ function ProfileCard({
             lineHeight: 1.2,
             overflow: 'hidden',
             whiteSpace: 'nowrap',
-            opacity: 0.9,
+            color: 'text.secondary',
           }}
         >
           <When value={lastPlayedAt} />
         </Box>
       ) : null}
+      <ProfileHealth counts={counts} game={gameId} profileId={profile.id} />
     </ButtonBase>
   )
 }
