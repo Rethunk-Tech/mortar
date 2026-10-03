@@ -55,21 +55,6 @@ type historyFileData struct {
 	Snapshots map[string][]Entry `json:"snapshots"`
 }
 
-type legacyHistoryEvent struct {
-	ID      string    `json:"id"`
-	At      time.Time `json:"at"`
-	Kind    string    `json:"kind"`
-	Label   string    `json:"label"`
-	Count   int       `json:"count,omitempty"`
-	From    string    `json:"from,omitempty"`
-	To      string    `json:"to,omitempty"`
-	Entries []Entry   `json:"entries"`
-}
-
-type legacyHistoryFileData struct {
-	Events []legacyHistoryEvent `json:"events"`
-}
-
 // History returns this profile's change events, newest first.
 func (s *Store) History(game, id string) ([]HistoryEvent, error) {
 	s.mu.Lock()
@@ -588,6 +573,8 @@ func (s *Store) recordSnapshot(game, id, kind, label string, count int) error {
 	return err
 }
 
+var onHistoryDecode func()
+
 func peekHistory(dir string) (historyFileData, error) {
 	b, err := fsx.ReadFile(filepath.Join(dir, historyFile))
 	if err != nil {
@@ -596,8 +583,7 @@ func peekHistory(dir string) (historyFileData, error) {
 		}
 		return historyFileData{}, err
 	}
-	data, _, err := historyFromBytes(b)
-	return data, err
+	return historyFromBytes(b)
 }
 
 func latestSnapshotAt(dir string) ([]Entry, bool) {
@@ -605,12 +591,7 @@ func latestSnapshotAt(dir string) ([]Entry, bool) {
 	if err != nil {
 		return nil, false
 	}
-	for _, ev := range slices.Backward(data.Events) {
-		if entries, ok := snapshotEntries(data, ev.SnapshotID); ok {
-			return cloneEntries(entries), true
-		}
-	}
-	return nil, false
+	return latestSnapshotOf(data)
 }
 
 func readHistory(dir string) (historyFileData, error) {
@@ -622,58 +603,28 @@ func readHistory(dir string) (historyFileData, error) {
 		}
 		return historyFileData{}, err
 	}
-	data, legacy, err := historyFromBytes(b)
+	data, err := historyFromBytes(b)
 	if err != nil {
 		return quarantineHistory(path, err)
-	}
-	if legacy {
-		if err := writeHistory(dir, data, 0); err != nil {
-			return historyFileData{}, err
-		}
 	}
 	return data, nil
 }
 
-func historyFromBytes(b []byte) (historyFileData, bool, error) {
-	var envelope struct {
-		Snapshots map[string][]Entry `json:"snapshots"`
+func historyFromBytes(b []byte) (historyFileData, error) {
+	if onHistoryDecode != nil {
+		onHistoryDecode()
 	}
-	if err := json.Unmarshal(b, &envelope); err != nil {
-		return historyFileData{}, false, err
+	var data historyFileData
+	if err := json.Unmarshal(b, &data); err != nil {
+		return historyFileData{}, err
 	}
-	if envelope.Snapshots != nil {
-		var data historyFileData
-		if err := json.Unmarshal(b, &data); err != nil {
-			return historyFileData{}, false, err
-		}
-		if data.Events == nil {
-			data.Events = []HistoryEvent{}
-		}
-		if data.Snapshots == nil {
-			data.Snapshots = map[string][]Entry{}
-		}
-		return data, false, nil
+	if data.Events == nil {
+		data.Events = []HistoryEvent{}
 	}
-	var legacy legacyHistoryFileData
-	if err := json.Unmarshal(b, &legacy); err != nil {
-		return historyFileData{}, false, err
+	if data.Snapshots == nil {
+		data.Snapshots = map[string][]Entry{}
 	}
-	data := emptyHistory()
-	for _, old := range legacy.Events {
-		entries := cloneEntries(old.Entries)
-		id, err := entriesSnapshotID(entries)
-		if err != nil {
-			return historyFileData{}, true, err
-		}
-		if _, exists := data.Snapshots[id]; !exists {
-			data.Snapshots[id] = entries
-		}
-		data.Events = append(data.Events, HistoryEvent{
-			ID: old.ID, At: old.At, Kind: old.Kind, Label: old.Label, Count: old.Count,
-			From: old.From, To: old.To, SnapshotID: id,
-		})
-	}
-	return data, true, nil
+	return data, nil
 }
 
 func emptyHistory() historyFileData {
@@ -707,7 +658,11 @@ func writeHistory(dir string, data historyFileData, keep int) error {
 			delete(data.Snapshots, id)
 		}
 	}
-	return datadir.WriteJSON(filepath.Join(dir, historyFile), data)
+	if err := datadir.WriteJSON(filepath.Join(dir, historyFile), data); err != nil {
+		return err
+	}
+	pruneHistoryFiles(dir, referenced)
+	return nil
 }
 
 func snapshotEntries(data historyFileData, id string) ([]Entry, bool) {
@@ -791,10 +746,10 @@ func appendHistory(dir string, ev HistoryEvent, after []Entry, keep int) (Histor
 		data.Snapshots[snapshotID] = entries
 	}
 	data.Events = append(data.Events, ev)
+	captureHistoryConfigs(dir, snapshotID, after)
 	if err := writeHistory(dir, data, keep); err != nil {
 		return HistoryEvent{}, err
 	}
-	captureHistoryConfigs(dir, snapshotID, after)
 	return ev, nil
 }
 

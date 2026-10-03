@@ -1,7 +1,11 @@
 package profile
 
 import (
-	"io/fs"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,29 +14,49 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
-const historyFilesDir = "history-files"
+const (
+	historyFilesDir      = "history-files"
+	historyBlobsDir      = "blobs"
+	historySnapshotIndex = "index.json"
+)
 
 func captureHistoryConfigs(dir, snapshotID string, entries []Entry) {
 	if snapshotID == "" {
 		return
 	}
-	root := filepath.Join(dir, historyFilesDir, snapshotID)
-	_ = os.RemoveAll(root)
+	idx := map[string]map[string]string{}
 	mods := filepath.Join(dir, "mods")
 	for _, e := range entries {
 		files := configFilesIn(liveEntryDir(mods, e.Key))
 		if len(files) == 0 {
 			continue
 		}
+		paths := make(map[string]string, len(files))
 		for rel, body := range files {
-			path := filepath.Join(root, e.Key, filepath.FromSlash(rel))
-			if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+			sum := sha256.Sum256(body)
+			hash := hex.EncodeToString(sum[:])
+			blob := filepath.Join(dir, historyFilesDir, historyBlobsDir, hash)
+			if _, err := os.Stat(blob); errors.Is(err, os.ErrNotExist) {
+				if err := os.MkdirAll(filepath.Dir(blob), 0o700); err != nil {
+					return
+				}
+				if err := datadir.WriteFile(blob, body, 0o600); err != nil {
+					return
+				}
+			} else if err != nil {
 				return
 			}
-			if err := datadir.WriteFile(path, body, 0o600); err != nil {
-				return
-			}
+			paths[rel] = hash
 		}
+		idx[e.Key] = paths
+	}
+	snapDir := filepath.Join(dir, historyFilesDir, snapshotID)
+	_ = os.RemoveAll(snapDir)
+	if err := os.MkdirAll(snapDir, 0o700); err != nil {
+		return
+	}
+	if err := datadir.WriteJSON(filepath.Join(snapDir, historySnapshotIndex), idx); err != nil {
+		return
 	}
 }
 
@@ -41,12 +65,25 @@ func loadHistoryConfigs(dir, snapshotID string, entries []Entry) map[string]map[
 	if snapshotID == "" {
 		return out
 	}
-	root := filepath.Join(dir, historyFilesDir, snapshotID)
+	idx, err := readSnapshotIndex(dir, snapshotID)
+	if err != nil {
+		return out
+	}
 	for _, e := range entries {
-		id := entryIdentity(e)
-		files := configFilesIn(filepath.Join(root, e.Key))
-		if len(files) > 0 {
-			out[id] = files
+		files := idx[e.Key]
+		if len(files) == 0 {
+			continue
+		}
+		loaded := make(map[string][]byte, len(files))
+		for rel, hash := range files {
+			body, err := fsx.ReadFile(filepath.Join(dir, historyFilesDir, historyBlobsDir, hash))
+			if err != nil {
+				continue
+			}
+			loaded[rel] = body
+		}
+		if len(loaded) > 0 {
+			out[entryIdentity(e)] = loaded
 		}
 	}
 	return out
@@ -65,12 +102,7 @@ func readLiveConfigs(mods string, entries []Entry) map[string]map[string][]byte 
 
 func configFilesIn(root string) map[string][]byte {
 	files := map[string][]byte{}
-	_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-		if err == nil && !d.IsDir() {
-			addConfigFile(files, root, path)
-		}
-		return nil
-	})
+	addConfigFile(files, root, filepath.Join(root, "config.json"))
 	return files
 }
 
@@ -89,8 +121,15 @@ func addConfigFile(files map[string][]byte, root, path string) {
 }
 
 func restoreHistoryConfig(dir, snapshotID, key, file string) error {
-	src := filepath.Join(dir, historyFilesDir, snapshotID, key, filepath.FromSlash(file))
-	body, err := fsx.ReadFile(src)
+	idx, err := readSnapshotIndex(dir, snapshotID)
+	if err != nil {
+		return err
+	}
+	hash, ok := idx[key][file]
+	if !ok || hash == "" {
+		return fmt.Errorf("history config %s/%s not found", key, file)
+	}
+	body, err := fsx.ReadFile(filepath.Join(dir, historyFilesDir, historyBlobsDir, hash))
 	if err != nil {
 		return err
 	}
@@ -99,6 +138,63 @@ func restoreHistoryConfig(dir, snapshotID, key, file string) error {
 		return err
 	}
 	return datadir.WriteFile(dst, body, 0o600)
+}
+
+func readSnapshotIndex(dir, snapshotID string) (map[string]map[string]string, error) {
+	raw, err := fsx.ReadFile(filepath.Join(dir, historyFilesDir, snapshotID, historySnapshotIndex))
+	if err != nil {
+		return nil, err
+	}
+	var idx map[string]map[string]string
+	if err := json.Unmarshal(raw, &idx); err != nil {
+		return nil, err
+	}
+	if idx == nil {
+		idx = map[string]map[string]string{}
+	}
+	return idx, nil
+}
+
+func pruneHistoryFiles(dir string, referenced map[string]struct{}) {
+	root := filepath.Join(dir, historyFilesDir)
+	ents, err := os.ReadDir(root)
+	if err != nil {
+		return
+	}
+	keepBlobs := map[string]struct{}{}
+	for _, ent := range ents {
+		name := ent.Name()
+		if name == historyBlobsDir {
+			continue
+		}
+		path := filepath.Join(root, name)
+		if _, ok := referenced[name]; !ok {
+			_ = os.RemoveAll(path)
+			continue
+		}
+		idx, err := readSnapshotIndex(dir, name)
+		if err != nil {
+			_ = os.RemoveAll(path)
+			continue
+		}
+		for _, files := range idx {
+			for _, hash := range files {
+				if hash != "" {
+					keepBlobs[hash] = struct{}{}
+				}
+			}
+		}
+	}
+	blobs, err := os.ReadDir(filepath.Join(root, historyBlobsDir))
+	if err != nil {
+		return
+	}
+	for _, ent := range blobs {
+		if _, ok := keepBlobs[ent.Name()]; ok {
+			continue
+		}
+		_ = os.RemoveAll(filepath.Join(root, historyBlobsDir, ent.Name()))
+	}
 }
 
 func predecessorOf(data historyFileData, eventID string) (before []Entry, beforeID string, event HistoryEvent, ok bool) {
