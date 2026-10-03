@@ -185,6 +185,17 @@ func (r Result) Count() int {
 	return len(r.Missing) + duplicates + len(r.Broken) + conflicts + len(r.Settings) + len(r.RunErrors) + len(r.Drift)
 }
 
+// WarningCount is cosmetic asset conflicts plus compat and cleanup hints.
+func (r Result) WarningCount() int {
+	n := len(r.Compat) + len(r.Cleanup)
+	for _, c := range r.AssetConflicts {
+		if c.Cosmetic {
+			n++
+		}
+	}
+	return n
+}
+
 func sameID(a, b string) bool { return strings.EqualFold(a, b) }
 
 // meets reports whether version satisfies minimum. What cannot be compared is taken as satisfied: SMAPI itself

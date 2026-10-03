@@ -216,6 +216,7 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 		} else if r.RunErrors == nil {
 			r.RunErrors = []RunError{}
 		}
+		s.recordHealth(gameID, id, env, mods, r)
 		return r
 	})
 	if err != nil {
@@ -437,6 +438,39 @@ func (s *Service) Updates(ctx context.Context, gameID, id string) (UpdatesResult
 
 func hideUpdates(r UpdatesResult, mods []Installed, set settings.Settings) UpdatesResult {
 	return HideHeld(r, mods, set.IncludePrereleaseModVersions, set.GamePrefs(settings.GameStardew).SmapiBuilds)
+}
+
+func (s *Service) recordHealth(gameID, id string, env Environment, mods []Installed, r Result) {
+	if s.profiles == nil {
+		return
+	}
+	dir, err := s.profiles.ProfileDir(gameID, id)
+	if err != nil {
+		return
+	}
+	r = s.withDismissed(gameID, id, r)
+	point := profile.HealthPoint{
+		At:       time.Now().UTC(),
+		Problems: r.Count(),
+		Warnings: r.WarningCount(),
+		Updates:  s.visibleUpdateCount(gameID, id, env, mods),
+	}
+	_ = profile.AppendHealth(dir, point)
+}
+
+func (s *Service) visibleUpdateCount(gameID, id string, env Environment, mods []Installed) int {
+	if s.settings == nil {
+		return 0
+	}
+	fp := fingerprint(env, mods, "")
+	key := gameID + "/" + id
+	s.mu.Lock()
+	c, ok := s.updates[key]
+	s.mu.Unlock()
+	if !ok || c.fingerprint != fp {
+		return 0
+	}
+	return len(hideUpdates(c.result, mods, s.settings.Get()).Updates)
 }
 
 // UpdateWarning is the Play dialog after a game update: the last launched Stardew version versus the installed one.
