@@ -236,3 +236,77 @@ func TestNexusModProfilesReturnsPerProfileFileIDs(t *testing.T) {
 		t.Fatalf("damaged profile listed: %+v", others)
 	}
 }
+
+func TestNexusModProfilesReportsRequiredByPinAndSkip(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	dir, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = ln.Close() })
+	go func() {
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			_ = c.Close()
+		}
+	}()
+	addr, ok := ln.Addr().(*net.TCPAddr)
+	if !ok {
+		t.Fatalf("listen addr = %T", ln.Addr())
+	}
+	if err := os.WriteFile(filepath.Join(dir, "control.json"), []byte(`{"port":`+strconv.Itoa(addr.Port)+`}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	openID := "aaaaaaaaaaaaaaaa"
+	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"lastProfile":{"stardew":"`+openID+`"}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	pdir := filepath.Join(dir, "profiles", "stardew", openID)
+	if err := os.MkdirAll(pdir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	body, err := json.Marshal(map[string]any{
+		"name": "Default",
+		"entries": []map[string]any{
+			{
+				"pinned":      true,
+				"skipVersion": "3.0.0",
+				"skipSources": []string{"github"},
+				"source":      map[string]any{"kind": "nexus", "modId": 1915, "fileId": 111},
+				"mods":        []map[string]any{{"uniqueId": "Core.Lib", "name": "Core", "version": "2.0.0"}},
+			},
+			{
+				"source": map[string]any{"kind": "nexus", "modId": 99, "fileId": 2},
+				"mods": []map[string]any{{
+					"uniqueId": "Farm.Pack", "name": "Farm pack", "needs": []string{"Core.Lib"},
+				}},
+			},
+			{
+				"disabled": []string{"Off.Pack"},
+				"source":   map[string]any{"kind": "local"},
+				"mods":     []map[string]any{{"uniqueId": "Off.Pack", "name": "Off", "needs": []string{"Core.Lib"}}},
+			},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(pdir, "profile.json"), body, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	openProfile, _ := nexusModProfiles("stardewvalley", 1915)
+	if !openProfile.Pinned || openProfile.SkipVersion != "3.0.0" || len(openProfile.SkipSources) != 1 || openProfile.SkipSources[0] != "github" {
+		t.Fatalf("pin/skip = %+v", openProfile)
+	}
+	if len(openProfile.RequiredBy) != 1 || openProfile.RequiredBy[0] != "Farm pack" {
+		t.Fatalf("requiredBy = %v", openProfile.RequiredBy)
+	}
+}

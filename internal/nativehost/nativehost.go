@@ -13,6 +13,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -65,9 +66,90 @@ type modProblem struct {
 }
 
 type modInProfile struct {
-	Profile string  `json:"profile"`
-	Version *string `json:"version"`
-	FileID  int     `json:"fileId,omitempty"`
+	Profile     string   `json:"profile"`
+	Version     *string  `json:"version"`
+	FileID      int      `json:"fileId,omitempty"`
+	RequiredBy  []string `json:"requiredBy,omitempty"`
+	Pinned      bool     `json:"pinned,omitempty"`
+	SkipVersion string   `json:"skipVersion,omitempty"`
+	SkipSources []string `json:"skipSources,omitempty"`
+}
+
+type diskMod struct {
+	Name           string   `json:"name"`
+	UniqueID       string   `json:"uniqueId"`
+	Version        string   `json:"version"`
+	Needs          []string `json:"needs"`
+	Optional       []string `json:"optional"`
+	ContentPackFor string   `json:"contentPackFor"`
+}
+
+type diskEntry struct {
+	Pinned      bool     `json:"pinned"`
+	SkipVersion string   `json:"skipVersion"`
+	SkipSources []string `json:"skipSources"`
+	Disabled    []string `json:"disabled"`
+	Source      struct {
+		Kind   string `json:"kind"`
+		ModID  int    `json:"modId"`
+		FileID int    `json:"fileId"`
+	} `json:"source"`
+	Mods []diskMod `json:"mods"`
+}
+
+func foldID(id string) string { return strings.ToLower(strings.TrimSpace(id)) }
+
+func requiresID(m diskMod, target string) bool {
+	if strings.EqualFold(strings.TrimSpace(m.ContentPackFor), target) {
+		return true
+	}
+	opt := map[string]bool{}
+	for _, id := range m.Optional {
+		opt[foldID(id)] = true
+	}
+	for _, id := range m.Needs {
+		if strings.EqualFold(id, target) && !opt[foldID(id)] {
+			return true
+		}
+	}
+	return false
+}
+
+func requiredByNames(entries []diskEntry, targets []string) []string {
+	var names []string
+	seen := map[string]bool{}
+	offOf := func(ids []string) map[string]bool {
+		m := map[string]bool{}
+		for _, id := range ids {
+			m[foldID(id)] = true
+		}
+		return m
+	}
+	for _, e := range entries {
+		off := offOf(e.Disabled)
+		for _, m := range e.Mods {
+			id := foldID(m.UniqueID)
+			if id == "" || off[id] || seen[id] {
+				continue
+			}
+			if slices.ContainsFunc(targets, func(t string) bool { return strings.EqualFold(t, m.UniqueID) }) {
+				continue
+			}
+			for _, t := range targets {
+				if requiresID(m, t) {
+					seen[id] = true
+					name := m.Name
+					if name == "" {
+						name = m.UniqueID
+					}
+					names = append(names, name)
+					break
+				}
+			}
+		}
+	}
+	slices.Sort(names)
+	return names
 }
 
 // Serve answers messages from r until it closes, handing each message's link to open.
@@ -327,18 +409,9 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 			continue
 		}
 		var profile struct {
-			Name    string `json:"name"`
-			Hidden  bool   `json:"hidden"`
-			Entries []struct {
-				Source struct {
-					Kind   string `json:"kind"`
-					ModID  int    `json:"modId"`
-					FileID int    `json:"fileId"`
-				} `json:"source"`
-				Mods []struct {
-					Version string `json:"version"`
-				} `json:"mods"`
-			} `json:"entries"`
+			Name    string      `json:"name"`
+			Hidden  bool        `json:"hidden"`
+			Entries []diskEntry `json:"entries"`
 		}
 		data, err := root.ReadFile(filepath.Join("profiles", info.ID, dir.Name(), "profile.json"))
 		if err != nil || json.Unmarshal(data, &profile) != nil || profile.Hidden {
@@ -346,6 +419,10 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 		}
 		var version *string
 		var fileID int
+		var targets []string
+		var pinned bool
+		var skipVersion string
+		var skipSources []string
 		for _, entry := range profile.Entries {
 			if entry.Source.Kind != "nexus" || entry.Source.ModID != modID {
 				continue
@@ -355,10 +432,22 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 				version = &v
 			}
 			fileID = entry.Source.FileID
+			pinned = entry.Pinned
+			skipVersion = entry.SkipVersion
+			skipSources = append([]string{}, entry.SkipSources...)
+			for _, m := range entry.Mods {
+				if m.UniqueID != "" {
+					targets = append(targets, m.UniqueID)
+				}
+			}
 			break
 		}
 		found := modInProfile{Profile: profile.Name, Version: version, FileID: fileID}
 		if dir.Name() == openID {
+			found.Pinned = pinned
+			found.SkipVersion = skipVersion
+			found.SkipSources = skipSources
+			found.RequiredBy = requiredByNames(profile.Entries, targets)
 			openProfile = found
 		} else {
 			others = append(others, found)
