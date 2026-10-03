@@ -47,13 +47,13 @@ var (
 
 // Ref names one file to install: a Nexus mod file, or a GitHub release asset as "<owner>/<repo>@<tag>/<asset>".
 type Ref struct {
-	ModID    int
-	FileID   int
-	GitHub   string
-	Disabled []string
-	Fomod    map[string]map[string][]string
-	Note     string
-	Tags     []string
+	ModID    int                            `json:"modId,omitempty"`
+	FileID   int                            `json:"fileId,omitempty"`
+	GitHub   string                         `json:"github,omitempty"`
+	Disabled []string                       `json:"disabled,omitempty"`
+	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
+	Note     string                         `json:"note,omitempty"`
+	Tags     []string                       `json:"tags,omitempty"`
 }
 
 // Shared is what a link carries.
