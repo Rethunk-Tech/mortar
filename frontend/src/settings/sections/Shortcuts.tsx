@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { SetShortcuts } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
-import { Searchable, SettingsSection } from '../SettingsSection.tsx'
+import { SettingsSection } from '../SettingsSection.tsx'
 import {
   conflictFor,
   defaultBindings,
@@ -134,12 +134,35 @@ function ShortcutRow({
   )
 }
 
+export function ResetAllShortcuts() {
+  const { t } = useLingui()
+  const [confirmReset, setConfirmReset] = useState(false)
+  return (
+    <>
+      <Button variant="outlined" onClick={() => setConfirmReset(true)}>
+        {t`Reset all`}
+      </Button>
+      <ConfirmDialog
+        open={confirmReset}
+        title={t`Reset every shortcut?`}
+        body={t`Every key returns to its default.`}
+        confirmLabel={t`Reset all`}
+        color="warning"
+        onCancel={() => setConfirmReset(false)}
+        onConfirm={() => {
+          setConfirmReset(false)
+          SetShortcuts(defaultBindings()).catch(reportUnexpected)
+        }}
+      />
+    </>
+  )
+}
+
 export function Shortcuts() {
   const { t } = useLingui()
   const query = useSettingsSearch()
   const [recording, setRecording] = useState<ShortcutId | null>(null)
   const [conflict, setConflict] = useState<{ id: ShortcutId; other: ShortcutId } | null>(null)
-  const [confirmReset, setConfirmReset] = useState(false)
   const stored = useSettings((s) => s.shortcuts)
   const bindings = useMemo(() => mergeBindings(stored), [stored])
   const labels = useShortcutLabels()
@@ -213,28 +236,6 @@ export function Shortcuts() {
           </SettingsSection>
         ) : null
       })}
-      <Searchable terms={t`Reset all shortcuts`} loose={true}>
-        <Button
-          variant="text"
-          onClick={() => setConfirmReset(true)}
-          sx={{ alignSelf: 'flex-start' }}
-        >
-          {t`Reset all`}
-        </Button>
-      </Searchable>
-      <ConfirmDialog
-        open={confirmReset}
-        title={t`Reset every shortcut?`}
-        body={t`Every key returns to its default.`}
-        confirmLabel={t`Reset all`}
-        color="warning"
-        onCancel={() => setConfirmReset(false)}
-        onConfirm={() => {
-          setConfirmReset(false)
-          setConflict(null)
-          SetShortcuts(defaultBindings()).catch(reportUnexpected)
-        }}
-      />
     </Box>
   )
 }

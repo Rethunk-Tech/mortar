@@ -30,6 +30,7 @@ export function SettingsShell<Id extends string>({
   current,
   onPage,
   render,
+  actions = {},
 }: {
   title: string
   backLabel: string
@@ -38,6 +39,8 @@ export function SettingsShell<Id extends string>({
   current: Id
   onPage: (id: Id) => void
   render: (id: Id) => ReactNode
+  // Page-wide actions sit at the right of the page title.
+  actions?: Partial<Record<Id, ReactNode>>
 }) {
   const { t } = useLingui()
   const [query, setQuery] = useState('')
@@ -99,18 +102,30 @@ export function SettingsShell<Id extends string>({
             gap: 2,
           }}
         >
-          <Typography
-            component="h2"
+          <Box
             sx={{
-              fontSize: 20,
-              fontWeight: 700,
-              minHeight: 36,
+              width: '100%',
+              maxWidth: CONTENT_MAX,
               display: 'flex',
               alignItems: 'center',
+              gap: 2,
             }}
           >
-            {query ? t`Search results` : pages.find((p) => p.id === current)?.label}
-          </Typography>
+            <Typography
+              component="h2"
+              sx={{
+                flex: 1,
+                fontSize: 20,
+                fontWeight: 700,
+                minHeight: 36,
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              {query ? t`Search results` : pages.find((p) => p.id === current)?.label}
+            </Typography>
+            {query ? null : actions[current]}
+          </Box>
           <Box
             sx={{
               width: '100%',

@@ -8,8 +8,9 @@ const THUMB_HOVER_ALPHA = 0.7
 const TRACK_ALPHA_DARK = 0.08
 const TRACK_ALPHA_LIGHT = 0.16
 const FONT = '"Open Sans", sans-serif'
+// MUI converts px to rem against this root size, so a larger value renders smaller text: compact shrinks type.
 const HTML_FONT_SIZE = 18
-const HTML_FONT_SIZE_COMPACT = 16
+const HTML_FONT_SIZE_COMPACT = 20
 const TITLE_BAR_PX = 36
 const TITLE_BAR_COMPACT_PX = 32
 const WINDOW_BUTTON_PX = 46

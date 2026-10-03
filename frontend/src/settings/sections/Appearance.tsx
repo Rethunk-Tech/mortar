@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Chip } from '@mui/material'
+import { Box, Button, ButtonBase } from '@mui/material'
 import { ImagePlus, RotateCcw } from 'lucide-react'
 import {
   ChooseBackgroundImage,
@@ -123,47 +123,6 @@ export function Appearance() {
                   </ButtonBase>
                 )
               })}
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                p: '14px',
-                bgcolor: 'var(--mortar-overlay-25)',
-                borderRadius: '8px',
-              }}
-            >
-              <Button
-                variant="contained"
-                tabIndex={-1}
-                sx={{ width: 140, height: 44, fontSize: 17, fontWeight: 700 }}
-              >
-                {t`Play`}
-              </Button>
-              <Chip label={t`3 updates`} color="primary" size="small" sx={{ fontWeight: 700 }} />
-              <Box
-                component="span"
-                sx={{
-                  py: '6px',
-                  borderBottom: '2px solid',
-                  borderColor: 'primary.main',
-                  fontSize: 14,
-                }}
-              >
-                {t`Stardew Valley`}
-              </Box>
-              <Box
-                component="span"
-                sx={{
-                  flexGrow: 1,
-                  textAlign: 'right',
-                  fontSize: 13,
-                  color: 'var(--mortar-ink-sec)',
-                }}
-              >
-                {t`Changes apply right away`}
-              </Box>
             </Box>
           </Box>
         </Searchable>

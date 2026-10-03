@@ -23,7 +23,7 @@ import { Launchers } from './sections/Launchers.tsx'
 import { ModsProfiles } from './sections/ModsProfiles.tsx'
 import { NexusMods } from './sections/NexusMods.tsx'
 import { Notifications } from './sections/Notifications.tsx'
-import { Shortcuts } from './sections/Shortcuts.tsx'
+import { ResetAllShortcuts, Shortcuts } from './sections/Shortcuts.tsx'
 import { Storage } from './sections/Storage.tsx'
 import { Updates } from './sections/Updates.tsx'
 
@@ -65,6 +65,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
       current={section}
       onPage={(id) => useNav.getState().openSettings(id)}
       render={(id) => body[id]}
+      actions={{ shortcuts: <ResetAllShortcuts /> }}
     />
   )
 }

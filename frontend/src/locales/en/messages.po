@@ -713,7 +713,7 @@ msgstr "Mortar checks for updates at startup, when you press F5, and at most onc
 msgid "Repaired “{0}”"
 msgstr "Repaired “{0}”"
 
-#: src/settings/sections/Shortcuts.tsx:184
+#: src/settings/sections/Shortcuts.tsx:207
 msgid "Tabs"
 msgstr "Tabs"
 
@@ -1002,7 +1002,7 @@ msgstr "Skip this version"
 msgid "Mortar can start Stardew Valley directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 msgstr "Mortar can start Stardew Valley directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 
-#: src/settings/sections/Appearance.tsx:182
+#: src/settings/sections/Appearance.tsx:141
 msgid "Solid"
 msgstr "Solid"
 
@@ -1020,8 +1020,8 @@ msgstr "The mod files can be copied directly from this Mortar."
 msgid "Newest lines kept in the Console"
 msgstr "Newest lines kept in the Console"
 
-#: src/settings/sections/Shortcuts.tsx:222
-#: src/settings/sections/Shortcuts.tsx:229
+#: src/settings/sections/Shortcuts.tsx:143
+#: src/settings/sections/Shortcuts.tsx:149
 msgid "Reset all"
 msgstr "Reset all"
 
@@ -1082,7 +1082,7 @@ msgstr "No supported game was found in your launchers."
 msgid "GitHub is busy, try again in a minute"
 msgstr "GitHub is busy, try again in a minute"
 
-#: src/settings/SettingsShell.tsx:112
+#: src/settings/SettingsShell.tsx:125
 msgid "Search results"
 msgstr "Search results"
 
@@ -1776,15 +1776,11 @@ msgstr "Imported {name}"
 msgid "{count} mods"
 msgstr "{count} mods"
 
-#: src/settings/sections/Shortcuts.tsx:216
-msgid "Reset all shortcuts"
-msgstr "Reset all shortcuts"
-
 #: src/settings/prefCopy.ts:312
 msgid "Empty follows the latest release"
 msgstr "Empty follows the latest release"
 
-#: src/settings/sections/Shortcuts.tsx:228
+#: src/settings/sections/Shortcuts.tsx:148
 msgid "Every key returns to its default."
 msgstr "Every key returns to its default."
 
@@ -1999,7 +1995,7 @@ msgstr "Restore {when}"
 msgid "Open the next profile"
 msgstr "Open the next profile"
 
-#: src/settings/sections/Appearance.tsx:181
+#: src/settings/sections/Appearance.tsx:140
 #: src/settings/sections/Notifications.tsx:58
 msgid "Desktop"
 msgstr "Desktop"
@@ -2325,10 +2321,6 @@ msgstr "Include FOMOD choices"
 #: src/settings/prefCopy.ts:243
 msgid "Info"
 msgstr "Info"
-
-#: src/settings/sections/Appearance.tsx:144
-msgid "3 updates"
-msgstr "3 updates"
 
 #: src/saves/lackChipActions.tsx:63
 msgid "Add {name} to this profile"
@@ -2715,7 +2707,7 @@ msgstr "{name} is abandoned: {summary}"
 
 #: src/profiles/EditProfileDialog.tsx:101
 #: src/profiles/EditProfileDialog.tsx:110
-#: src/settings/sections/Appearance.tsx:202
+#: src/settings/sections/Appearance.tsx:161
 msgid "Choose image…"
 msgstr "Choose image…"
 
@@ -3412,7 +3404,7 @@ msgstr "Auto-accept from this Nexus account"
 msgid "Copy the command"
 msgstr "Copy the command"
 
-#: src/settings/sections/Appearance.tsx:191
+#: src/settings/sections/Appearance.tsx:150
 msgid "Background preview"
 msgstr "Background preview"
 
@@ -3451,10 +3443,6 @@ msgstr "The game log has errors."
 #: src/profiles/EditProfileDialog.tsx:142
 msgid "Gold"
 msgstr "Gold"
-
-#: src/settings/sections/Appearance.tsx:165
-msgid "Changes apply right away"
-msgstr "Changes apply right away"
 
 #: src/settings/prefCopy.ts:57
 msgid "Direct"
@@ -3730,9 +3718,9 @@ msgstr "Enable, disable, and update mods for the open profile."
 msgid "Create profile"
 msgstr "Create profile"
 
-#: src/settings/sections/Appearance.tsx:171
-#: src/settings/sections/Appearance.tsx:172
-#: src/settings/sections/Appearance.tsx:175
+#: src/settings/sections/Appearance.tsx:130
+#: src/settings/sections/Appearance.tsx:131
+#: src/settings/sections/Appearance.tsx:134
 msgid "Background"
 msgstr "Background"
 
@@ -3892,8 +3880,8 @@ msgstr "Open the command palette"
 msgid "Could not read load order"
 msgstr "Could not read load order"
 
-#: src/settings/sections/Appearance.tsx:180
-#: src/settings/sections/Appearance.tsx:187
+#: src/settings/sections/Appearance.tsx:139
+#: src/settings/sections/Appearance.tsx:146
 msgid "Image"
 msgstr "Image"
 
@@ -4898,7 +4886,7 @@ msgstr "Update downloads a mod's new file from Nexus or GitHub. For other pages,
 msgid "Copied the report"
 msgstr "Copied the report"
 
-#: src/settings/sections/Appearance.tsx:212
+#: src/settings/sections/Appearance.tsx:171
 msgid "Reset to default"
 msgstr "Reset to default"
 
@@ -4958,10 +4946,6 @@ msgstr "Share profile"
 #: src/lan/SendDialog.tsx:117
 msgid "Refresh"
 msgstr "Refresh"
-
-#: src/settings/sections/Appearance.tsx:154
-msgid "Stardew Valley"
-msgstr "Stardew Valley"
 
 #: src/game/ProfileMenuItems.tsx:231
 msgid "Choose cover image"
@@ -5323,7 +5307,7 @@ msgstr "Copy OBS URL"
 msgid "Command copied"
 msgstr "Command copied"
 
-#: src/settings/sections/Shortcuts.tsx:183
+#: src/settings/sections/Shortcuts.tsx:206
 msgid "Mods list"
 msgstr "Mods list"
 
@@ -6187,7 +6171,7 @@ msgstr "Open folder"
 msgid "Default background"
 msgstr "Default background"
 
-#: src/settings/sections/Shortcuts.tsx:227
+#: src/settings/sections/Shortcuts.tsx:147
 msgid "Reset every shortcut?"
 msgstr "Reset every shortcut?"
 
@@ -7015,7 +6999,6 @@ msgstr "Find the crash cause"
 #: src/launch/PlayControl.tsx:149
 #: src/settings/GameSettingsPage.tsx:55
 #: src/settings/GameSettingsPage.tsx:77
-#: src/settings/sections/Appearance.tsx:142
 msgid "Play"
 msgstr "Play"
 
@@ -7542,7 +7525,7 @@ msgstr "Downloads resume {0}."
 msgid "Game install deleted"
 msgstr "Game install deleted"
 
-#: src/settings/sections/Appearance.tsx:225
+#: src/settings/sections/Appearance.tsx:184
 msgid "Sidebar"
 msgstr "Sidebar"
 
@@ -7554,7 +7537,7 @@ msgstr "Cool and calm"
 msgid "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › Stardew Valley) or SMAPI will not see this profile."
 msgstr "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › Stardew Valley) or SMAPI will not see this profile."
 
-#: src/settings/sections/Shortcuts.tsx:181
+#: src/settings/sections/Shortcuts.tsx:204
 msgid "Navigation"
 msgstr "Navigation"
 
@@ -7739,7 +7722,7 @@ msgstr "Show one in the sidebar from Manage profiles."
 msgid "Not enough disk space"
 msgstr "Not enough disk space"
 
-#: src/settings/sections/Appearance.tsx:221
+#: src/settings/sections/Appearance.tsx:180
 msgid "Mods view"
 msgstr "Mods view"
 
@@ -7802,7 +7785,7 @@ msgstr "Player"
 #: src/profiles/ProfilesPage.tsx:371
 #: src/settings/sections/AboutDiagnostics.tsx:59
 #: src/settings/sections/DataUsage.tsx:202
-#: src/settings/sections/Shortcuts.tsx:182
+#: src/settings/sections/Shortcuts.tsx:205
 msgid "Profiles"
 msgstr "Profiles"
 
@@ -7950,7 +7933,7 @@ msgid "Source"
 msgstr "Source"
 
 #: src/commandPalette/CommandPalette.tsx:124
-#: src/settings/sections/Shortcuts.tsx:180
+#: src/settings/sections/Shortcuts.tsx:203
 #: src/settings/SettingsPage.tsx:34
 msgid "General"
 msgstr "General"
@@ -8321,7 +8304,7 @@ msgid "SMAPI {0} is available"
 msgstr "SMAPI {0} is available"
 
 #: src/profiles/GameSettings.tsx:270
-#: src/settings/sections/Appearance.tsx:218
+#: src/settings/sections/Appearance.tsx:177
 msgid "Display"
 msgstr "Display"
 
