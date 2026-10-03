@@ -273,6 +273,8 @@ func installError(err error) error {
 		msg = "This file replaces game files directly (raw .xnb). Mortar installs SMAPI mods; use the mod's Content Patcher version."
 	case errors.As(err, new(*NoModError)):
 		msg = "No SMAPI mod was found in this archive"
+	case errors.Is(err, store.ErrIncomplete):
+		msg = "This mod is only partly in Mortar's store; add the archive again"
 	default:
 		return err
 	}

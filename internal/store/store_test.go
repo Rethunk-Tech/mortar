@@ -179,7 +179,7 @@ func TestIncompleteItemIsReinstalled(t *testing.T) {
 	}
 }
 
-func TestLegacyItemsAreMarkedCompleteOnce(t *testing.T) {
+func TestLegacyItemsWithoutArchiveAreIncomplete(t *testing.T) {
 	s := newStore(t)
 	dir := filepath.Join(s.root, "stardew", "legacy")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
@@ -189,19 +189,51 @@ func TestLegacyItemsAreMarkedCompleteOnce(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, err := s.Path("stardew", "legacy"); err != nil {
-		t.Fatal(err)
+	_, err := s.Path("stardew", "legacy")
+	if !errors.Is(err, ErrIncomplete) {
+		t.Fatalf("Path = %v", err)
 	}
-	if !completeItem(dir) {
-		t.Fatal("legacy item was not marked complete")
+	if completeItem(dir) {
+		t.Fatal("incomplete item was marked complete")
 	}
-	idx, err := s.loadIndex()
+}
+
+func TestIncompleteItemIsReextractedFromSourceArchive(t *testing.T) {
+	s := newStore(t)
+	zipPath := buildZip(t, map[string]string{"Mod/manifest.json": "{}"})
+	key, err := s.AddArchive("stardew", zipPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if idx[indexMetadata][completeMarkerVersion].IsZero() {
-		t.Fatalf("migration flag missing: %v", idx)
+	dir := filepath.Join(s.root, "stardew", key)
+	if err := os.Remove(filepath.Join(dir, completeMarker)); err != nil {
+		t.Fatal(err)
 	}
+	if err := os.RemoveAll(filepath.Join(dir, "Mod")); err != nil {
+		t.Fatal(err)
+	}
+	src := filepath.Join(s.root, "stardew", key+".zip")
+	if err := datadirCopy(t, zipPath, src); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.RepairIncomplete(); err != nil {
+		t.Fatal(err)
+	}
+	if !completeItem(dir) {
+		t.Fatal("item was not re-extracted")
+	}
+	if b, err := fsx.ReadFile(filepath.Join(dir, "Mod", "manifest.json")); err != nil || string(b) != "{}" {
+		t.Fatalf("re-extracted = %q, %v", b, err)
+	}
+}
+
+func datadirCopy(t *testing.T, src, dst string) error {
+	t.Helper()
+	b, err := fsx.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	return fsx.WriteFile(dst, b, 0o600)
 }
 
 func TestAddDirVerifiedChecksLocalKey(t *testing.T) {
