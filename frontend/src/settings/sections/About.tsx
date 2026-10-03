@@ -1,8 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Link } from '@mui/material'
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
 import { FileArchive } from 'lucide-react'
+import { useState } from 'react'
 import { Logo } from '../../brand/Logo.tsx'
+import { paper } from '../../mods/paper.ts'
 import { routeGame, useNav } from '../../nav/store.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { saveDiagnostics } from '../../shell/saveDiagnostics.ts'
@@ -18,10 +20,51 @@ const body = { color: 'var(--mortar-ink-soft)' }
 // Credits flow into as many columns of at least this width as the pane holds.
 const CREDIT_COLUMN = '260px'
 
+function CreditList() {
+  return (
+    <Box
+      sx={{
+        ...body,
+        display: 'grid',
+        gridTemplateColumns: `repeat(auto-fill, minmax(${CREDIT_COLUMN}, 1fr))`,
+        columnGap: 4,
+        rowGap: '6px',
+        fontSize: 14,
+      }}
+    >
+      {credits.map((entry) => (
+        <Box
+          key={entry.name}
+          sx={{ display: 'flex', alignItems: 'baseline', gap: '6px', minWidth: 0 }}
+        >
+          <Link
+            component="button"
+            onClick={() => Browser.OpenURL(entry.url).catch(reportUnexpected)}
+            title={entry.name}
+            sx={{
+              minWidth: 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              fontSize: 'inherit',
+            }}
+          >
+            {entry.name}
+          </Link>
+          <Box component="span" sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
+            {`· ${entry.licence}`}
+          </Box>
+        </Box>
+      ))}
+    </Box>
+  )
+}
+
 export function About() {
   const { t } = useLingui()
   const game = useNav((s) => routeGame(s.route) ?? '')
   const profile = useProfiles((s) => s.openId)
+  const [creditsOpen, setCreditsOpen] = useState(false)
   return (
     <Searchable
       terms={`${t`About`} Mortar ${t`version`} ${t`licence`} ${t`Credits`} ${t`Diagnostics`} SMAPI`}
@@ -62,34 +105,28 @@ export function About() {
         <Box sx={body}>
           {t`Fedora 44 default wallpaper (f44-01-night) by the Fedora Design Team, CC-BY-SA 4.0.`}
         </Box>
-        <Box sx={{ fontWeight: 600 }}>{t`Credits`}</Box>
-        <Box sx={{ ...body, columnWidth: CREDIT_COLUMN, columnGap: 4 }}>
-          {credits.map((entry) => (
-            <Box
-              key={entry.name}
-              sx={{ display: 'flex', gap: '6px', mb: '6px', breakInside: 'avoid', minWidth: 0 }}
-            >
-              <Link
-                component="button"
-                onClick={() => Browser.OpenURL(entry.url).catch(reportUnexpected)}
-                title={entry.name}
-                sx={{
-                  minWidth: 0,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  fontSize: 'inherit',
-                  verticalAlign: 'baseline',
-                }}
-              >
-                {entry.name}
-              </Link>
-              <Box component="span" sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
-                {`· ${entry.licence}`}
-              </Box>
-            </Box>
-          ))}
+        <Box>
+          <Button variant="outlined" color="inherit" onClick={() => setCreditsOpen(true)}>
+            {t`Open-source licences (${credits.length})`}
+          </Button>
         </Box>
+        <Dialog
+          open={creditsOpen}
+          onClose={() => setCreditsOpen(false)}
+          maxWidth="md"
+          fullWidth={true}
+          scroll="paper"
+          transitionDuration={0}
+          slotProps={{ paper }}
+        >
+          <DialogTitle>{t`Open-source licences`}</DialogTitle>
+          <DialogContent dividers={true}>
+            <CreditList />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setCreditsOpen(false)}>{t`Close`}</Button>
+          </DialogActions>
+        </Dialog>
         <Diagnostics />
         <Box sx={{ fontSize: 13, color: 'text.secondary', lineHeight: 1.5 }}>
           {t`Save diagnostics… writes a redacted zip for a bug report. Run checks for a live summary.`}

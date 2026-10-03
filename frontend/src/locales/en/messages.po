@@ -7,7 +7,7 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#: src/settings/sections/About.tsx:58
+#: src/settings/sections/About.tsx:101
 msgid "Mortar's licence"
 msgstr "Mortar's licence"
 
@@ -334,7 +334,7 @@ msgstr "No user mods in either profile."
 msgid "Untrack mods"
 msgstr "Untrack mods"
 
-#: src/mods/LoadOrderTab.tsx:80
+#: src/mods/LoadOrderTab.tsx:82
 msgid "Required: {label}"
 msgstr "Required: {label}"
 
@@ -926,7 +926,7 @@ msgstr "{0, plural, one {# setting is still waiting for its mod to install.} oth
 msgid "Import profile"
 msgstr "Import profile"
 
-#: src/settings/sections/About.tsx:104
+#: src/settings/sections/About.tsx:141
 #: src/shell/AppMenu.tsx:141
 msgid "Save diagnostics…"
 msgstr "Save diagnostics…"
@@ -973,7 +973,7 @@ msgstr "{0, plural, one {# failed} other {# failed}}"
 #. placeholder {0}: crash.cause.modName
 #: src/console/ConsoleTab.tsx:218
 #: src/console/CrashDialog.tsx:156
-#: src/launch/LaunchLayer.tsx:302
+#: src/launch/LaunchLayer.tsx:299
 msgid "Caused by {0}"
 msgstr "Caused by {0}"
 
@@ -986,7 +986,7 @@ msgstr "Before updating {0}"
 msgid "Skip this version"
 msgstr "Skip this version"
 
-#: src/launch/LaunchLayer.tsx:355
+#: src/launch/LaunchLayer.tsx:352
 msgid "Mortar can start Stardew Valley directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 msgstr "Mortar can start Stardew Valley directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 
@@ -1058,7 +1058,7 @@ msgstr "Sprout"
 msgid "Link length"
 msgstr "Link length"
 
-#: src/firstrunTour/TourPopover.tsx:66
+#: src/firstrunTour/TourPopover.tsx:67
 msgid "See load errors, missing dependencies, and other issues before you play."
 msgstr "See load errors, missing dependencies, and other issues before you play."
 
@@ -1117,7 +1117,7 @@ msgstr "Not in the file"
 msgid "Could not dismiss the warning"
 msgstr "Could not dismiss the warning"
 
-#: src/settings/sections/About.tsx:27
+#: src/settings/sections/About.tsx:70
 msgid "licence"
 msgstr "licence"
 
@@ -1140,7 +1140,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 
 #: src/firstrun/SmapiStep.tsx:334
 #: src/game/detailStates.tsx:27
-#: src/mods/LoadOrderTab.tsx:316
+#: src/mods/LoadOrderTab.tsx:337
 #: src/mods/ModsTab.tsx:97
 #: src/notes/NotesTab.tsx:42
 #: src/queue/QueueBody.tsx:240
@@ -1162,7 +1162,7 @@ msgstr "found, without {0}"
 msgid "Mortar's data"
 msgstr "Mortar's data"
 
-#: src/mods/LoadOrderTab.tsx:112
+#: src/mods/LoadOrderTab.tsx:114
 msgid "Show less"
 msgstr "Show less"
 
@@ -1248,7 +1248,7 @@ msgstr "No changelog on Nexus"
 msgid "Set to automatic"
 msgstr "Set to automatic"
 
-#: src/launch/LaunchLayer.tsx:244
+#: src/launch/LaunchLayer.tsx:241
 #: src/settings/sections/GameSettings.tsx:375
 msgid "Grant Flatpak Steam access?"
 msgstr "Grant Flatpak Steam access?"
@@ -1388,7 +1388,7 @@ msgstr "Loading bundles…"
 msgid "Forget"
 msgstr "Forget"
 
-#: src/mods/LoadOrderTab.tsx:182
+#: src/mods/LoadOrderTab.tsx:199
 msgid "The game loader chooses this order. Mortar does not change it."
 msgstr "The game loader chooses this order. Mortar does not change it."
 
@@ -1469,7 +1469,7 @@ msgstr "Go to Console"
 msgid "Installed in your profiles"
 msgstr "Installed in your profiles"
 
-#: src/firstrunTour/TourPopover.tsx:130
+#: src/firstrunTour/TourPopover.tsx:139
 msgid "Skip tour"
 msgstr "Skip tour"
 
@@ -1535,7 +1535,7 @@ msgstr "Run checks"
 msgid "{0} {1}, year {2}"
 msgstr "{0} {1}, year {2}"
 
-#: src/mods/LoadOrderTab.tsx:228
+#: src/mods/LoadOrderTab.tsx:248
 msgid "Dependency cycle"
 msgstr "Dependency cycle"
 
@@ -1551,7 +1551,7 @@ msgstr "Dependency cycle"
 msgid "New profile"
 msgstr "New profile"
 
-#: src/mods/LoadOrderTab.tsx:177
+#: src/mods/LoadOrderTab.tsx:194
 msgid "Copy load order"
 msgstr "Copy load order"
 
@@ -1594,7 +1594,7 @@ msgstr "Upload log"
 msgid "Or import a shared profile"
 msgstr "Or import a shared profile"
 
-#: src/launch/LaunchLayer.tsx:364
+#: src/launch/LaunchLayer.tsx:361
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
 
@@ -1683,6 +1683,10 @@ msgstr "Stardew Valley is now {0}. This profile last launched on {1}."
 #: src/share/CompareSummary.tsx:22
 msgid "Only in {targetName}"
 msgstr "Only in {targetName}"
+
+#: src/settings/sections/About.tsx:122
+msgid "Open-source licences"
+msgstr "Open-source licences"
 
 #: src/mods/CompatChip.tsx:52
 #: src/mods/CompatSection.tsx:19
@@ -1806,7 +1810,7 @@ msgstr "Mods no profile uses"
 msgid "Ignore updates from {0}"
 msgstr "Ignore updates from {0}"
 
-#: src/mods/LoadOrderTab.tsx:323
+#: src/mods/LoadOrderTab.tsx:344
 msgid "No enabled mods"
 msgstr "No enabled mods"
 
@@ -1876,7 +1880,7 @@ msgstr "{count} checked later"
 msgid "Created “{0}”"
 msgstr "Created “{0}”"
 
-#: src/settings/sections/About.tsx:52
+#: src/settings/sections/About.tsx:95
 msgid "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · and open-source libraries under their own licences."
 msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · and open-source libraries under their own licences."
 
@@ -2062,7 +2066,7 @@ msgid "Both set: {0}"
 msgstr "Both set: {0}"
 
 #. placeholder {0}: required.length - INLINE_REQUIRED
-#: src/mods/LoadOrderTab.tsx:115
+#: src/mods/LoadOrderTab.tsx:117
 msgid " · {0} more required"
 msgstr " · {0} more required"
 
@@ -2248,7 +2252,7 @@ msgid "{0, plural, one {# download added} other {# downloads added}}"
 msgstr "{0, plural, one {# download added} other {# downloads added}}"
 
 #: src/firstrun/SmapiStep.tsx:85
-#: src/launch/LaunchLayer.tsx:213
+#: src/launch/LaunchLayer.tsx:210
 msgid "Launch options copied"
 msgstr "Launch options copied"
 
@@ -2569,6 +2573,11 @@ msgstr "Part of the OBS address; regenerate it if it leaks"
 msgid "{0, plural, one {Since last run: # change} other {Since last run: # changes}}"
 msgstr "{0, plural, one {Since last run: # change} other {Since last run: # changes}}"
 
+#. placeholder {0}: credits.length
+#: src/settings/sections/About.tsx:110
+msgid "Open-source licences ({0})"
+msgstr "Open-source licences ({0})"
+
 #: src/launch/playStart.ts:117
 #: src/launch/vanillaStart.ts:10
 msgid "Could not launch the game"
@@ -2631,8 +2640,8 @@ msgstr "Cover image"
 #: src/lan/IncomingPrompt.tsx:167
 #: src/lan/IncomingPrompt.tsx:185
 #: src/lan/SendDialog.tsx:184
-#: src/launch/LaunchLayer.tsx:251
-#: src/launch/LaunchLayer.tsx:361
+#: src/launch/LaunchLayer.tsx:248
+#: src/launch/LaunchLayer.tsx:358
 #: src/launch/PrePlayDialog.tsx:141
 #: src/launch/SaveWarnDialog.tsx:70
 #: src/launch/UpdateWarnDialog.tsx:51
@@ -2743,7 +2752,7 @@ msgstr "Automatic"
 msgid "Compare {0} with…"
 msgstr "Compare {0} with…"
 
-#: src/firstrunTour/TourPopover.tsx:151
+#: src/firstrunTour/TourPopover.tsx:160
 #: src/queue/QueueHistory.tsx:77
 msgid "Done"
 msgstr "Done"
@@ -2851,7 +2860,7 @@ msgstr "Include disabled mods"
 msgid "Show live game info in OBS. Changes apply the next time you press Play."
 msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 
-#: src/settings/sections/About.tsx:43
+#: src/settings/sections/About.tsx:86
 #: src/settings/sections/AboutDiagnostics.tsx:43
 #: src/settings/sections/Updates.tsx:157
 #: src/shell/AppMenu.tsx:77
@@ -2883,7 +2892,7 @@ msgstr "Last run: {summary}"
 msgid "Could not install SMAPI"
 msgstr "Could not install SMAPI"
 
-#: src/settings/sections/About.tsx:63
+#: src/settings/sections/About.tsx:106
 msgid "Fedora 44 default wallpaper (f44-01-night) by the Fedora Design Team, CC-BY-SA 4.0."
 msgstr "Fedora 44 default wallpaper (f44-01-night) by the Fedora Design Team, CC-BY-SA 4.0."
 
@@ -3570,7 +3579,7 @@ msgid "Pinned at this version"
 msgstr "Pinned at this version"
 
 #: src/console/CrashDialog.tsx:95
-#: src/launch/LaunchLayer.tsx:175
+#: src/launch/LaunchLayer.tsx:172
 msgid "Open console"
 msgstr "Open console"
 
@@ -3692,7 +3701,7 @@ msgstr "Copied part {0}"
 msgid "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 msgstr "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 
-#: src/firstrunTour/TourPopover.tsx:63
+#: src/firstrunTour/TourPopover.tsx:64
 msgid "Enable, disable, and update mods for the open profile."
 msgstr "Enable, disable, and update mods for the open profile."
 
@@ -3847,7 +3856,7 @@ msgstr "Different enabled state"
 #: src/console/HelpDialog.tsx:67
 #: src/console/LogActions.tsx:100
 #: src/firstrun/SmapiStep.tsx:140
-#: src/launch/LaunchLayer.tsx:219
+#: src/launch/LaunchLayer.tsx:216
 #: src/saves/lackChipActions.tsx:83
 #: src/settings/sections/GameSettings.tsx:367
 msgid "Copy"
@@ -3858,7 +3867,7 @@ msgstr "Copy"
 msgid "Open the command palette"
 msgstr "Open the command palette"
 
-#: src/mods/LoadOrderTab.tsx:314
+#: src/mods/LoadOrderTab.tsx:335
 msgid "Could not read load order"
 msgstr "Could not read load order"
 
@@ -4004,7 +4013,7 @@ msgstr "Could not save the open profile"
 msgid "When you press Play"
 msgstr "When you press Play"
 
-#: src/firstrunTour/TourPopover.tsx:151
+#: src/firstrunTour/TourPopover.tsx:160
 #: src/fomod/Dialog.tsx:269
 msgid "Next"
 msgstr "Next"
@@ -4088,7 +4097,7 @@ msgstr "Premium downloads come from this Nexus server when it offers the file."
 
 #: src/console/BisectDialog.tsx:147
 #: src/console/CrashDialog.tsx:202
-#: src/launch/LaunchLayer.tsx:323
+#: src/launch/LaunchLayer.tsx:320
 #: src/mods/ModDependencyTree.tsx:55
 #: src/mods/problemFix/BrokenFix.tsx:55
 #: src/mods/problemFix/WhereButtons.tsx:27
@@ -4166,7 +4175,7 @@ msgstr "Request counts appear after Mortar talks to Nexus."
 msgid "Rescan"
 msgstr "Rescan"
 
-#: src/firstrunTour/TourPopover.tsx:138
+#: src/firstrunTour/TourPopover.tsx:147
 #: src/fomod/Dialog.tsx:253
 #: src/profiles/ProfilesPage.tsx:359
 #: src/settings/SettingsNav.tsx:76
@@ -4185,7 +4194,7 @@ msgstr "Selected mod"
 msgid "Nothing would change."
 msgstr "Nothing would change."
 
-#: src/mods/LoadOrderTab.tsx:171
+#: src/mods/LoadOrderTab.tsx:188
 msgid "Load order copied"
 msgstr "Load order copied"
 
@@ -4450,7 +4459,7 @@ msgid "Send"
 msgstr "Send"
 
 #: src/console/ConsoleTab.tsx:126
-#: src/firstrunTour/TourPopover.tsx:62
+#: src/firstrunTour/TourPopover.tsx:63
 #: src/game/Hero.tsx:295
 #: src/game/ProfileWorkspace.tsx:48
 #: src/mods/ModListVirtual.tsx:283
@@ -4684,7 +4693,7 @@ msgstr "Reverted the profile"
 msgid "New bundle name"
 msgstr "New bundle name"
 
-#: src/launch/LaunchLayer.tsx:333
+#: src/launch/LaunchLayer.tsx:330
 #: src/shell/ErrorBoundary.tsx:25
 msgid "Try again"
 msgstr "Try again"
@@ -4939,8 +4948,7 @@ msgstr "Choose cover image"
 msgid "Install separately"
 msgstr "Install separately"
 
-#: src/settings/sections/About.tsx:27
-#: src/settings/sections/About.tsx:65
+#: src/settings/sections/About.tsx:70
 msgid "Credits"
 msgstr "Credits"
 
@@ -5137,7 +5145,7 @@ msgid "Wilderness farm"
 msgstr "Wilderness farm"
 
 #: src/settings/sections/AboutDiagnostics.tsx:47
-#: src/shell/TitleBar.tsx:107
+#: src/shell/TitleBar.tsx:106
 msgid "Game"
 msgstr "Game"
 
@@ -5208,7 +5216,7 @@ msgstr "Spacing of buttons and lists"
 msgid "Patch-day review"
 msgstr "Patch-day review"
 
-#: src/firstrunTour/TourPopover.tsx:57
+#: src/firstrunTour/TourPopover.tsx:58
 msgid "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
 msgstr "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
 
@@ -5523,7 +5531,7 @@ msgstr "Couldn't read the window state"
 msgid "Open {name} on Nexus"
 msgstr "Open {name} on Nexus"
 
-#: src/mods/LoadOrderTab.tsx:225
+#: src/mods/LoadOrderTab.tsx:245
 msgid "These mods require each other."
 msgstr "These mods require each other."
 
@@ -5561,7 +5569,7 @@ msgstr "{0} is in this profile's mods folder and is not an installed entry."
 msgid "This change can be undone from History."
 msgstr "This change can be undone from History."
 
-#: src/firstrunTour/TourPopover.tsx:69
+#: src/firstrunTour/TourPopover.tsx:70
 msgid "Press {paletteKeys} to jump anywhere — profiles, settings, downloads, and more."
 msgstr "Press {paletteKeys} to jump anywhere — profiles, settings, downloads, and more."
 
@@ -5800,7 +5808,7 @@ msgstr "Default profile for Nexus links"
 msgid "Uncategorised"
 msgstr "Uncategorised"
 
-#: src/launch/LaunchLayer.tsx:351
+#: src/launch/LaunchLayer.tsx:348
 msgid "Steam was not found"
 msgstr "Steam was not found"
 
@@ -5822,7 +5830,7 @@ msgstr "{0} missing dependencies"
 msgid "Nexus is throttling requests until the window resets."
 msgstr "Nexus is throttling requests until the window resets."
 
-#: src/launch/LaunchLayer.tsx:356
+#: src/launch/LaunchLayer.tsx:353
 msgid "Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 msgstr "Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 
@@ -5889,7 +5897,7 @@ msgstr "Default"
 msgid "UniqueID"
 msgstr "UniqueID"
 
-#: src/launch/LaunchLayer.tsx:133
+#: src/launch/LaunchLayer.tsx:130
 msgid "{profileName} · {mods, plural, one {# mod} other {# mods}}"
 msgstr "{profileName} · {mods, plural, one {# mod} other {# mods}}"
 
@@ -5898,7 +5906,7 @@ msgstr "{profileName} · {mods, plural, one {# mod} other {# mods}}"
 msgid "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 msgstr "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 
-#: src/firstrunTour/TourPopover.tsx:65
+#: src/firstrunTour/TourPopover.tsx:66
 #: src/game/ProfileWorkspace.tsx:54
 #: src/mods/ModCards.tsx:439
 #: src/mods/ModList.tsx:390
@@ -5941,8 +5949,8 @@ msgstr "pinned in {0}"
 msgid "Open the page of {name}"
 msgstr "Open the page of {name}"
 
-#: src/launch/LaunchLayer.tsx:241
-#: src/launch/LaunchLayer.tsx:259
+#: src/launch/LaunchLayer.tsx:238
+#: src/launch/LaunchLayer.tsx:256
 #: src/settings/sections/GameSettings.tsx:370
 #: src/settings/sections/GameSettings.tsx:393
 msgid "Grant access"
@@ -5997,7 +6005,7 @@ msgstr "Skills"
 msgid "Enable mods when installed"
 msgstr "Enable mods when installed"
 
-#: src/settings/sections/About.tsx:95
+#: src/settings/sections/About.tsx:132
 msgid "Save diagnostics… writes a redacted zip for a bug report. Run checks for a live summary."
 msgstr "Save diagnostics… writes a redacted zip for a bug report. Run checks for a live summary."
 
@@ -6014,7 +6022,7 @@ msgstr "Could not reset the settings of {0}"
 msgid "Where nxm downloads go. Empty follows the last opened profile."
 msgstr "Where nxm downloads go. Empty follows the last opened profile."
 
-#: src/firstrunTour/TourPopover.tsx:60
+#: src/firstrunTour/TourPopover.tsx:61
 msgid "Launch the game with this profile's mods. Mortar applies your list before SMAPI starts."
 msgstr "Launch the game with this profile's mods. Mortar applies your list before SMAPI starts."
 
@@ -6131,7 +6139,7 @@ msgstr "Dark"
 msgid "Open folder"
 msgstr "Open folder"
 
-#: src/settings/sections/About.tsx:61
+#: src/settings/sections/About.tsx:104
 msgid "Default background"
 msgstr "Default background"
 
@@ -6215,7 +6223,7 @@ msgstr "Search mods"
 msgid "Music volume ({value}%)"
 msgstr "Music volume ({value}%)"
 
-#: src/settings/sections/About.tsx:46
+#: src/settings/sections/About.tsx:89
 msgid "AGPL-3.0 · Rethunk-AI/mortar"
 msgstr "AGPL-3.0 · Rethunk-AI/mortar"
 
@@ -6321,8 +6329,8 @@ msgstr "These profiles have the same mods."
 msgid "Review collection update"
 msgstr "Review collection update"
 
-#: src/mods/LoadOrderTab.tsx:153
-#: src/mods/LoadOrderTab.tsx:155
+#: src/mods/LoadOrderTab.tsx:170
+#: src/mods/LoadOrderTab.tsx:172
 msgid "Filter load order"
 msgstr "Filter load order"
 
@@ -6429,7 +6437,7 @@ msgstr "Update ready — applies when you close Mortar."
 msgid "A .mortar file suits a profile this size better, and carries your mod settings too."
 msgstr "A .mortar file suits a profile this size better, and carries your mod settings too."
 
-#: src/shell/TitleBar.tsx:98
+#: src/shell/TitleBar.tsx:97
 msgid "Setup"
 msgstr "Setup"
 
@@ -6530,7 +6538,7 @@ msgstr "Skip pre-Play check"
 msgid "Copy from profile…"
 msgstr "Copy from profile…"
 
-#: src/mods/LoadOrderTab.tsx:81
+#: src/mods/LoadOrderTab.tsx:83
 msgid "Optional: {label}"
 msgstr "Optional: {label}"
 
@@ -6672,7 +6680,7 @@ msgstr "winner"
 msgid "Use game setting ({gameLabel})"
 msgstr "Use game setting ({gameLabel})"
 
-#: src/shell/TitleBar.tsx:120
+#: src/shell/TitleBar.tsx:119
 msgid "Maximise"
 msgstr "Maximise"
 
@@ -6685,7 +6693,7 @@ msgid "Loading game settings…"
 msgstr "Loading game settings…"
 
 #: src/settings/prefCopy.ts:45
-#: src/shell/TitleBar.tsx:102
+#: src/shell/TitleBar.tsx:101
 msgid "Game Select"
 msgstr "Game Select"
 
@@ -6725,7 +6733,7 @@ msgid "This profile has problems that can affect a launch."
 msgstr "This profile has problems that can affect a launch."
 
 #. placeholder {0}: users.length
-#: src/mods/LoadOrderTab.tsx:113
+#: src/mods/LoadOrderTab.tsx:115
 msgid "{0, plural, one {Used by # mod} other {Used by # mods}}"
 msgstr "{0, plural, one {Used by # mod} other {Used by # mods}}"
 
@@ -6750,7 +6758,7 @@ msgstr "In {0}; turns off its edits here"
 msgid "Files"
 msgstr "Files"
 
-#: src/launch/LaunchLayer.tsx:294
+#: src/launch/LaunchLayer.tsx:291
 msgid "{name} did not start"
 msgstr "{name} did not start"
 
@@ -6803,7 +6811,7 @@ msgstr "Install {name}?"
 #: src/console/BisectDialog.tsx:148
 #: src/console/CrashDialog.tsx:60
 #: src/console/RunProblems.tsx:114
-#: src/launch/LaunchLayer.tsx:314
+#: src/launch/LaunchLayer.tsx:311
 #: src/mods/problemFix/AssetFix.tsx:52
 #: src/mods/problemFix/BrokenFix.tsx:75
 #: src/mods/problemFix/DismissedBrokenFix.tsx:50
@@ -6917,7 +6925,7 @@ msgstr "Manage profiles"
 msgid "Running {time}"
 msgstr "Running {time}"
 
-#: src/settings/sections/About.tsx:50
+#: src/settings/sections/About.tsx:93
 msgid "Built on"
 msgstr "Built on"
 
@@ -6954,7 +6962,7 @@ msgid "Find the crash cause"
 msgstr "Find the crash cause"
 
 #: src/commandPalette/paletteLabels.ts:7
-#: src/firstrunTour/TourPopover.tsx:59
+#: src/firstrunTour/TourPopover.tsx:60
 #: src/games/GameSelect.tsx:225
 #: src/launch/PlayControl.tsx:149
 #: src/settings/sections/Appearance.tsx:142
@@ -7099,7 +7107,7 @@ msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 msgid "Install"
 msgstr "Install"
 
-#: src/launch/LaunchLayer.tsx:247
+#: src/launch/LaunchLayer.tsx:244
 #: src/settings/sections/GameSettings.tsx:378
 msgid "This runs the command below once for your user. Steam will then be able to read Mortar's data folder."
 msgstr "This runs the command below once for your user. Steam will then be able to read Mortar's data folder."
@@ -7198,7 +7206,7 @@ msgstr "All profiles are hidden"
 msgid "Steam"
 msgstr "Steam"
 
-#: src/mods/LoadOrderTab.tsx:309
+#: src/mods/LoadOrderTab.tsx:330
 msgid "Reading load order…"
 msgstr "Reading load order…"
 
@@ -7216,7 +7224,7 @@ msgstr "colour"
 #: src/settings/sections/AboutDiagnostics.tsx:53
 #: src/settings/SettingsNav.tsx:89
 #: src/shell/AppMenu.tsx:106
-#: src/shell/TitleBar.tsx:112
+#: src/shell/TitleBar.tsx:111
 msgid "Settings"
 msgstr "Settings"
 
@@ -7229,8 +7237,8 @@ msgstr "Could not read the details of {0}"
 msgid "Install SMAPI {selected}."
 msgstr "Install SMAPI {selected}."
 
-#: src/launch/LaunchLayer.tsx:116
-#: src/launch/LaunchLayer.tsx:131
+#: src/launch/LaunchLayer.tsx:113
+#: src/launch/LaunchLayer.tsx:128
 msgid "Launching {name}"
 msgstr "Launching {name}"
 
@@ -7404,7 +7412,7 @@ msgid "Couldn't reach Nexus"
 msgstr "Couldn't reach Nexus"
 
 #: src/commandPalette/paletteLabels.ts:19
-#: src/settings/sections/About.tsx:27
+#: src/settings/sections/About.tsx:70
 #: src/settings/sections/AboutDiagnostics.tsx:101
 msgid "Diagnostics"
 msgstr "Diagnostics"
@@ -7443,7 +7451,7 @@ msgid "{summary} · {0} MB"
 msgstr "{summary} · {0} MB"
 
 #: src/settings/prefCopy.ts:24
-#: src/shell/TitleBar.tsx:117
+#: src/shell/TitleBar.tsx:116
 msgid "Minimise"
 msgstr "Minimise"
 
@@ -7511,7 +7519,7 @@ msgid "Play the open profile without SMAPI"
 msgstr "Play the open profile without SMAPI"
 
 #: src/commandPalette/CommandPalette.tsx:134
-#: src/settings/sections/About.tsx:27
+#: src/settings/sections/About.tsx:70
 #: src/settings/SettingsPage.tsx:55
 msgid "About"
 msgstr "About"
@@ -7594,8 +7602,8 @@ msgstr "Import settings"
 #: src/launch/SaveWarnDialog.tsx:59
 #: src/mods/EnableRequirementsDialog.tsx:26
 #: src/mods/EnableRequirementsDialog.tsx:65
-#: src/mods/LoadOrderTab.tsx:78
-#: src/mods/LoadOrderTab.tsx:222
+#: src/mods/LoadOrderTab.tsx:80
+#: src/mods/LoadOrderTab.tsx:242
 #: src/mods/ProblemsTab.tsx:180
 #: src/mods/ProblemsTab.tsx:442
 msgid "Unknown mod"
@@ -7686,7 +7694,7 @@ msgstr "Not enough disk space"
 msgid "Mods view"
 msgstr "Mods view"
 
-#: src/launch/LaunchLayer.tsx:178
+#: src/launch/LaunchLayer.tsx:175
 msgid "Hide"
 msgstr "Hide"
 
@@ -7740,7 +7748,7 @@ msgstr "Update in all profiles ({n})"
 msgid "Player"
 msgstr "Player"
 
-#: src/firstrunTour/TourPopover.tsx:56
+#: src/firstrunTour/TourPopover.tsx:57
 #: src/game/Sidebar.tsx:336
 #: src/profiles/ProfilesPage.tsx:371
 #: src/settings/sections/AboutDiagnostics.tsx:59
@@ -7940,7 +7948,7 @@ msgstr "Location"
 msgid "Stardew Valley's Steam launch options run SMAPI in place of the game. Steam will still start SMAPI unless that launch option is removed. Mortar will not change it."
 msgstr "Stardew Valley's Steam launch options run SMAPI in place of the game. Steam will still start SMAPI unless that launch option is removed. Mortar will not change it."
 
-#: src/mods/LoadOrderTab.tsx:82
+#: src/mods/LoadOrderTab.tsx:84
 msgid "Used by: {label}"
 msgstr "Used by: {label}"
 
@@ -8354,7 +8362,7 @@ msgstr "Check this download"
 msgid "Save…"
 msgstr "Save…"
 
-#: src/settings/sections/About.tsx:27
+#: src/settings/sections/About.tsx:70
 msgid "version"
 msgstr "version"
 
@@ -8566,7 +8574,7 @@ msgstr "rate limit"
 #: src/profiles/ProfilesPage.tsx:94
 #: src/saves/BackupsDialog.tsx:113
 #: src/saves/BackupsDialog.tsx:262
-#: src/shell/TitleBar.tsx:120
+#: src/shell/TitleBar.tsx:119
 msgid "Restore"
 msgstr "Restore"
 
@@ -8645,7 +8653,7 @@ msgid "Save current as…"
 msgstr "Save current as…"
 
 #. placeholder {0}: step + 1
-#: src/firstrunTour/TourPopover.tsx:72
+#: src/firstrunTour/TourPopover.tsx:73
 msgid "Step {0} of {TOUR_STEP_COUNT}"
 msgstr "Step {0} of {TOUR_STEP_COUNT}"
 
@@ -8717,7 +8725,7 @@ msgstr "Restore second"
 #: src/console/BisectDialog.tsx:141
 #: src/console/BisectDialog.tsx:152
 #: src/console/HelpDialog.tsx:268
-#: src/launch/LaunchLayer.tsx:311
+#: src/launch/LaunchLayer.tsx:308
 #: src/launch/SweepDialog.tsx:101
 #: src/mods/AuthorDialog.tsx:173
 #: src/mods/CategoryEditor.tsx:143
@@ -8728,13 +8736,14 @@ msgstr "Restore second"
 #: src/profiles/CompareDialog.tsx:134
 #: src/profiles/HistoryPanel.tsx:117
 #: src/saves/BackupsDialog.tsx:204
+#: src/settings/sections/About.tsx:127
 #: src/share/ImportDialog.tsx:211
 #: src/share/ImportDialog.tsx:214
 #: src/share/ShareDialog.tsx:105
 #: src/share/ShareDialog.tsx:106
 #: src/share/ShareShell.tsx:89
 #: src/share/ShareShell.tsx:91
-#: src/shell/TitleBar.tsx:123
+#: src/shell/TitleBar.tsx:122
 #: src/tools/ToolsManageDialog.tsx:83
 msgid "Close"
 msgstr "Close"
@@ -8839,7 +8848,7 @@ msgstr "Copy as a message"
 msgid "Before a restore"
 msgstr "Before a restore"
 
-#: src/mods/LoadOrderTab.tsx:324
+#: src/mods/LoadOrderTab.tsx:345
 msgid "Switch mods on in the Mods tab to see the order SMAPI loads them."
 msgstr "Switch mods on in the Mods tab to see the order SMAPI loads them."
 
@@ -8898,7 +8907,7 @@ msgstr "{0} · kept for rollback"
 msgid "Decide later"
 msgstr "Decide later"
 
-#: src/firstrunTour/TourPopover.tsx:68
+#: src/firstrunTour/TourPopover.tsx:69
 msgid "Command palette"
 msgstr "Command palette"
 
