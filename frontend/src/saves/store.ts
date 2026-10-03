@@ -1,13 +1,17 @@
+import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { SetModEnabled } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import type { Fit } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
 import {
   Dismiss,
+  RestoreDismissed,
   Saves,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
+import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { dropMissing } from './dropMissing.ts'
 
 interface State {
@@ -42,9 +46,21 @@ export const useSaves = create<State>((set, get) => ({
     }
   },
   dismiss: async (folder, uniqueId) => {
+    const previous = get().fits
     try {
       await Dismiss(folder, uniqueId)
       set({ fits: dropMissing(get().fits, uniqueId, folder) })
+      useToasts.getState().push({
+        kind: 'success',
+        title: i18n._(msg`Dismissed for this save`),
+        action: {
+          label: i18n._(msg`Undo`),
+          run: async () => {
+            await RestoreDismissed(folder, uniqueId)
+            set({ fits: previous })
+          },
+        },
+      })
     } catch (e) {
       reportUnexpected(e)
     }

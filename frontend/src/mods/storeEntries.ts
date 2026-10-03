@@ -7,6 +7,8 @@ import {
   OpenConfig,
   RemoveEntries,
   RemoveEntry,
+  RestoreEntries,
+  RestoreEntryFields,
   SetEntryCategoryMany,
   SetEntryNoteTags,
   SetEntryTagsMany,
@@ -21,6 +23,14 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { changeStillLatest } from '../toasts/history.ts'
+import { useToasts } from '../toasts/store.ts'
+import {
+  entriesForKeys,
+  entryFieldsOf,
+  fieldsStillUndoable,
+  type UndoEntry,
+} from '../toasts/undo.ts'
 import { modId } from './lookup.ts'
 import { useSelection } from './selection.ts'
 import { announceAlso, fail, open } from './storeView.ts'
@@ -66,26 +76,97 @@ export async function enableMany(
   await get().loadProblems()
 }
 
+function pushFieldsUndo(
+  profileId: string,
+  fields: ReturnType<typeof entryFieldsOf>,
+  title: string,
+) {
+  useToasts.getState().push({
+    kind: 'success',
+    title,
+    action: {
+      label: i18n._(msg`Undo`),
+      profileId,
+      run: async () => {
+        const target = open()
+        if (!target) {
+          return
+        }
+        useProfiles.getState().replace(await RestoreEntryFields(target.game, target.id, fields))
+        await useUpdates.getState().load()
+      },
+      live: () => {
+        const profile = useProfiles.getState().profiles.find((p) => p.id === profileId)
+        if (!profile) {
+          return { disabled: true, reason: i18n._(msg`That profile is gone.`) }
+        }
+        return fieldsStillUndoable((profile.entries ?? []) as UndoEntry[], fields)
+          ? { disabled: false }
+          : { disabled: true, reason: i18n._(msg`This is no longer the latest change.`) }
+      },
+    },
+  })
+}
+
+function pushRemovedUndo(
+  profileId: string,
+  entries: NonNullable<Profile['entries']>,
+  load: () => Promise<void>,
+) {
+  const uniqueIds = entries.flatMap((entry) => (entry.mods ?? []).map((mod) => mod.uniqueId))
+  const [first] = entries
+  useToasts.getState().push({
+    kind: 'success',
+    title:
+      entries.length === 1
+        ? i18n._(msg`Removed ${first?.mods?.[0]?.name ?? 'mod'}`)
+        : i18n._(msg`Removed ${entries.length} mods`),
+    action: {
+      label: i18n._(msg`Undo`),
+      profileId,
+      run: async () => {
+        const target = open()
+        if (!target) {
+          return
+        }
+        useProfiles.getState().replace(await RestoreEntries(target.game, target.id, entries))
+        await load()
+      },
+      live: () => {
+        const profile = useProfiles.getState().profiles.find((p) => p.id === profileId)
+        if (!(profile && first)) {
+          return { disabled: true, reason: i18n._(msg`That profile is gone.`) }
+        }
+        const state = changeStillLatest(profile, first.key, uniqueIds)
+        return state.disabled
+          ? { disabled: false }
+          : { disabled: true, reason: i18n._(msg`This is no longer the latest change.`) }
+      },
+    },
+  })
+}
+
 export async function batchProfile(
   mods: Mod[],
   call: (game: string, id: string, keys: string[]) => Promise<Profile>,
   title: string,
+  done?: string,
 ) {
   const target = open()
   if (!target) {
     return
   }
+  const keys = mods.map((mod) => mod.key)
+  const profile = useProfiles.getState().profiles.find((p) => p.id === target.id)
+  const fields = entryFieldsOf((profile?.entries ?? []) as UndoEntry[], keys)
   try {
-    useProfiles.getState().replace(
-      await call(
-        target.game,
-        target.id,
-        mods.map((mod) => mod.key),
-      ),
-    )
+    useProfiles.getState().replace(await call(target.game, target.id, keys))
   } catch (e) {
     fail(title)(e)
     return
+  }
+  if (done !== undefined) {
+    pushFieldsUndo(target.id, fields, done)
   }
   await useUpdates.getState().load()
 }
@@ -96,8 +177,11 @@ export async function dropMods(get: () => { load: () => Promise<void> }, mods: M
     return
   }
   const keys = [...new Set(mods.map((m) => m.key))]
+  const profile = useProfiles.getState().profiles.find((p) => p.id === target.id)
+  const removed = entriesForKeys(profile?.entries ?? [], keys)
   try {
     useProfiles.getState().replace(await RemoveEntries(target.game, target.id, keys))
+    pushRemovedUndo(target.id, removed, get().load)
   } catch (e) {
     fail(i18n._(msg`Could not remove the selected mods`))(e)
   }
@@ -110,8 +194,11 @@ export async function dropMod(get: () => { load: () => Promise<void> }, mod: Mod
   if (!target) {
     return
   }
+  const profile = useProfiles.getState().profiles.find((p) => p.id === target.id)
+  const removed = entriesForKeys(profile?.entries ?? [], [mod.key])
   try {
     useProfiles.getState().replace(await RemoveEntry(target.game, target.id, mod.key))
+    pushRemovedUndo(target.id, removed, get().load)
   } catch (e) {
     fail(i18n._(msg`Could not remove ${mod.name}`))(e)
   }
@@ -180,6 +267,7 @@ export function pinMany(mods: Mod[], pinned: boolean) {
     mods,
     (game, id, keys) => SetPinnedMany(game, id, keys, pinned),
     i18n._(pinned ? msg`Could not pin the selected mods` : msg`Could not unpin the selected mods`),
+    i18n._(pinned ? msg`Pinned selected mods` : msg`Unpinned selected mods`),
   )
 }
 
@@ -213,6 +301,7 @@ export function skipVersionMany(mods: Mod[]) {
         mods.map((mod, index) => ({ key: keys[index] ?? mod.key, version: mod.version })),
       ),
     i18n._(msg`Could not skip updates for the selected mods`),
+    i18n._(msg`Skipped updates for selected mods`),
   )
 }
 
@@ -230,6 +319,7 @@ export function setCategoryMany(mods: Mod[], category: string) {
     mods,
     (game, id, keys) => SetEntryCategoryMany(game, id, keys, category),
     i18n._(msg`Could not set the category for the selected mods`),
+    i18n._(msg`Updated categories`),
   )
 }
 
@@ -238,6 +328,7 @@ export function setTagMany(mods: Mod[], tag: string, add: boolean) {
     mods,
     (game, id, keys) => SetEntryTagsMany(game, id, keys, tag, add),
     i18n._(msg`Could not update tags for the selected mods`),
+    i18n._(msg`Updated tags`),
   )
 }
 

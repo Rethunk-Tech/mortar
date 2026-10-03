@@ -14,14 +14,13 @@ import {
 import { History as HistoryIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { HistoryEvent } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import {
-  History,
-  Revert,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { History } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { When } from '../i18n/When.tsx'
+import { download } from '../queue/actions.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { historyChangeSummary } from './historyCounts.ts'
+import { revertHistoryEvent } from './historyRevert.ts'
 import { useProfiles } from './store.ts'
 
 export function HistoryDialog({
@@ -35,16 +34,23 @@ export function HistoryDialog({
 }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game)
-  const replace = useProfiles((s) => s.replace)
   const [events, setEvents] = useState<HistoryEvent[]>([])
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
+  const [missingEvent, setMissingEvent] = useState('')
+  const [missingNames, setMissingNames] = useState<string[]>([])
+  const [missingWants, setMissingWants] = useState<
+    Awaited<ReturnType<typeof revertHistoryEvent>>['missingWants']
+  >([])
   useEffect(() => {
     if (!(open && game)) {
       return
     }
     let live = true
     setError('')
+    setMissingEvent('')
+    setMissingNames([])
+    setMissingWants([])
     History(game.id, profileId)
       .then((list) => {
         if (live) {
@@ -61,16 +67,16 @@ export function HistoryDialog({
       return
     }
     setBusy(id)
-    setError('')
-    try {
-      replace(await Revert(game.id, profileId, id))
-      setEvents((await History(game.id, profileId)) ?? [])
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
-    } finally {
-      setBusy('')
-    }
+    const result = await revertHistoryEvent(game.id, profileId, id, events)
+    setEvents(result.events)
+    setError(result.error)
+    setMissingEvent(result.missingEvent)
+    setMissingNames(result.missingNames)
+    setMissingWants(result.missingWants)
+    setBusy('')
   }
+  const errorText =
+    missingNames.length > 0 ? t`Could not restore ${missingNames.join(', ')}` : error
   return (
     <Dialog
       open={open}
@@ -108,7 +114,7 @@ export function HistoryDialog({
                     secondary={
                       <>
                         {changes === '' ? null : `${changes} · `}
-                        <When value={String(ev.at)} withTime={true} />
+                        <When value={ev.at} withTime={true} />
                       </>
                     }
                   />
@@ -119,7 +125,17 @@ export function HistoryDialog({
         )}
         {error !== '' && (
           <Box sx={{ mt: 1 }}>
-            <Typography sx={{ fontSize: 13, color: 'error.main' }}>{error}</Typography>
+            <Typography sx={{ fontSize: 13, color: 'error.main' }}>{errorText}</Typography>
+            {missingEvent !== '' && missingWants.length > 0 && (
+              <Button
+                size="small"
+                sx={{ mt: 1, whiteSpace: 'nowrap' }}
+                disabled={busy !== ''}
+                onClick={() => download(missingWants).catch(reportUnexpected)}
+              >
+                {t`Download missing mods`}
+              </Button>
+            )}
           </Box>
         )}
       </DialogContent>
