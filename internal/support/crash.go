@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync/atomic"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
@@ -19,7 +20,7 @@ const (
 
 // lastRunCrashed is set by DetectLastRunCrashed at process start so LastRunCrashed
 // stays true for this run without re-reading files the frontend might call twice.
-var lastRunCrashed bool
+var lastRunCrashed atomic.Bool
 
 // DetectLastRunCrashed reports whether the previous process ended unexpectedly:
 // crash.log larger than the byte count in crash.seen, or mortar.prev.log whose
@@ -29,8 +30,9 @@ func DetectLastRunCrashed(dataDir string) bool {
 	crashPath := filepath.Join(dataDir, crashLogName)
 	grew := crashLogGrew(crashPath, filepath.Join(dataDir, crashSeenName))
 	writeCrashSeen(filepath.Join(dataDir, crashSeenName), crashPath)
-	lastRunCrashed = grew || prevLogUnclean(filepath.Join(dataDir, prevLogName))
-	return lastRunCrashed
+	crashed := grew || prevLogUnclean(filepath.Join(dataDir, prevLogName))
+	lastRunCrashed.Store(crashed)
+	return crashed
 }
 
 func crashLogGrew(crashPath, seenPath string) bool {
@@ -86,9 +88,10 @@ func prevLogUnclean(prevPath string) bool {
 	return !strings.Contains(last, "msg=shutdown") || !strings.Contains(last, "clean=true")
 }
 
-// LastRunCrashed reports whether the previous Mortar process ended unexpectedly.
+// LastRunCrashed reports whether the previous Mortar process ended unexpectedly, once per run: a reloaded or
+// rebuilt window must not show the notice again.
 func (s *Service) LastRunCrashed() bool {
-	return lastRunCrashed
+	return lastRunCrashed.Swap(false)
 }
 
 func logTailSections(dataDir, home string, budget int) string {

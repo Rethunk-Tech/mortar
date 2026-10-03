@@ -130,3 +130,11 @@ func TestDiagnosticsSectionLogTails(t *testing.T) {
 		t.Fatalf("over budget: %d bytes", len(got))
 	}
 }
+
+func TestLastRunCrashedReportsOncePerRun(t *testing.T) {
+	lastRunCrashed.Store(true)
+	s := &Service{}
+	if !s.LastRunCrashed() || s.LastRunCrashed() {
+		t.Fatal("want true once, then false")
+	}
+}
