@@ -9,6 +9,7 @@ import type {
 import { SearchRuns } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useOutcomeLabel } from './outcome.ts'
 import { useConsole } from './store.ts'
@@ -97,7 +98,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
           size="small"
           sx={{ mb: 1.5 }}
         />
-        {loading ? <Typography color="text.secondary">{t`Searching…`}</Typography> : null}
+        {loading ? <LoadingRow>{t`Searching…`}</LoadingRow> : null}
         {!loading && groups.size === 0 ? (
           <EmptyState
             icon={<FileSearch />}

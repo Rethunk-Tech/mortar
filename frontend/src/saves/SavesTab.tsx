@@ -44,7 +44,7 @@ import { pendingFor } from '../queue/totals.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { BackupsDialog } from './BackupsDialog.tsx'
@@ -90,6 +90,7 @@ function LackChip({
   const dismiss = useSaves((s) => s.dismiss)
   const enable = useSaves((s) => s.enable)
   const locked = useLocked()
+  const [copying, runCopy] = usePending()
   const [source, setSource] = useState<{ id: string; name: string } | null>(null)
   useEffect(() => {
     ProfilesWithMod(game, lack.uniqueId)
@@ -165,12 +166,12 @@ function LackChip({
       {source ? (
         <Button
           size="small"
-          onClick={() =>
-            CopyMods(game, source.id, profile.id, [lack.uniqueId]).catch(reportUnexpected)
-          }
+          disabled={copying || locked}
+          title={source.name}
+          onClick={() => runCopy(() => CopyMods(game, source.id, profile.id, [lack.uniqueId]))}
           sx={{ minWidth: 0, px: 0.5, ...nowrap }}
         >
-          {t`Copy from ${source.name}`}
+          {t`Copy`}
         </Button>
       ) : null}
       {!(lack.disabled || want) && url ? (
@@ -443,8 +444,8 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   if (status === 'error') {
     body = (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography sx={{ fontSize: 13, color: 'error.main' }}>
-          {t`Could not read your saves: ${detail}`}
+        <Typography sx={{ fontSize: 13, color: 'error.main' }} title={errorDetails(detail)}>
+          {errorMessage(detail)}
         </Typography>
         <Button
           size="small"

@@ -58,7 +58,7 @@ import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { useNav } from '../nav/store.ts'
 import { openImport } from '../share/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { ExternalImportMenuItems, ExternalImportProfileDialog } from './ExternalImportMenu.tsx'
 import { useExternalImportSources } from './externalImportSources.ts'
@@ -314,14 +314,18 @@ function FindModSearch({ profiles }: { profiles: Profile[] }) {
             <Button
               key={`${h.profileId}/${h.key}/${h.uniqueId}`}
               onClick={() => openModInProfile(h)}
+              title={`${h.name} · ${h.uniqueId} · ${h.profileName} · ${h.version} · ${h.enabled ? t`Enabled` : t`Switched off`}`}
               sx={{
                 whiteSpace: 'nowrap',
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
                 justifyContent: 'flex-start',
                 textTransform: 'none',
                 fontSize: 13,
               }}
             >
-              {`${h.name} · ${h.uniqueId} · ${h.profileName} · ${h.version} · ${h.enabled ? t`Enabled` : t`Switched off`}`}
+              {`${h.name} · ${h.profileName} · ${h.version} · ${h.enabled ? t`Enabled` : t`Switched off`}`}
             </Button>
           ))}
         </Box>

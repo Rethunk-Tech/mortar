@@ -96,6 +96,8 @@ function ModCard({
   const fresh = useNexusFresh(nexusIdOf(profile, m))
   const tag = firstTag(entryOf(profile, m.key)?.tags)
   const cardSize = useSettings((s) => s.gridCardSize) || 'medium'
+  const meta =
+    useSettings((s) => s.showAuthorOnCards) === false ? m.version : `${m.author} · ${m.version}`
   return (
     <Card
       {...contextMenuProps(m)}
@@ -163,10 +165,12 @@ function ModCard({
           >
             {m.name}
           </Typography>
-          <Typography noWrap={true} sx={{ fontSize: META_FONT_PX, color: 'text.secondary' }}>
-            {useSettings((s) => s.showAuthorOnCards) === false
-              ? m.version
-              : `${m.author} · ${m.version}`}
+          <Typography
+            noWrap={true}
+            title={meta}
+            sx={{ fontSize: META_FONT_PX, color: 'text.secondary' }}
+          >
+            {meta}
           </Typography>
         </Box>
       </ButtonBase>
@@ -175,7 +179,7 @@ function ModCard({
       <NexusGoneBadge mod={m} />
       <ProblemBadge mod={m} />
       <LastRunBadge mod={m} />
-      {tag ? <Chip size="small" label={tag} sx={{ maxWidth: TAG_MAX_PX }} /> : null}
+      {tag ? <Chip size="small" label={tag} title={tag} sx={{ maxWidth: TAG_MAX_PX }} /> : null}
       <ModMenu mod={m} />
     </Card>
   )

@@ -290,6 +290,7 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
           onClick={() =>
             openModInProfile({ profileId: r.profileId, key: r.key, uniqueId: r.uniqueId })
           }
+          title={`${r.profileName} · ${r.version} · ${r.enabled ? t`Enabled` : t`Switched off`}`}
           sx={{
             ...noWrap,
             display: 'block',
@@ -299,6 +300,8 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
             textTransform: 'none',
             fontSize: 13,
             px: 0.5,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
         >
           {`${r.profileName} · ${r.version} · ${r.enabled ? t`Enabled` : t`Switched off`}`}

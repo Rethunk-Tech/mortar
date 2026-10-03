@@ -21,7 +21,7 @@ import { accent } from '../mods/paper.ts'
 import { LetterTile } from '../mods/parts.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { Fold } from './QueueFold.tsx'
 import { downloadedKb, isActive, megabytes, megabytesPerSecond, profileOf } from './totals.ts'
@@ -64,7 +64,7 @@ function Title({ item, size }: { item: Item; size: number }) {
         {item.name || item.fileName}
       </Typography>
       {profile === null ? null : (
-        <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
+        <Typography noWrap={true} title={profile} sx={{ fontSize: 12, color: 'text.secondary' }}>
           {profile ? t`into ${profile}` : t`into a deleted profile`}
         </Typography>
       )}
@@ -272,6 +272,7 @@ function Confirmation({ item }: { item: Item }) {
 
 function Failed({ items }: { items: Item[] }) {
   const { t } = useLingui()
+  const [pending, run] = usePending()
   if (items.length === 0) {
     return null
   }
@@ -281,13 +282,16 @@ function Failed({ items }: { items: Item[] }) {
         color="#ffb3ab"
         action={
           <Tooltip title={t`Retry failed`}>
-            <IconButton
-              aria-label={t`Retry failed`}
-              color="error"
-              onClick={() => RetryFailed().catch(reportUnexpected)}
-            >
-              <RotateCcw size={16} />
-            </IconButton>
+            <span>
+              <IconButton
+                aria-label={t`Retry failed`}
+                color="error"
+                disabled={pending}
+                onClick={() => run(() => RetryFailed())}
+              >
+                <RotateCcw size={16} />
+              </IconButton>
+            </span>
           </Tooltip>
         }
       >
@@ -299,8 +303,8 @@ function Failed({ items }: { items: Item[] }) {
           item={i}
           sx={{ bgcolor: 'rgba(255,107,95,0.1)', border: '1px solid rgba(255,107,95,0.35)' }}
           sub={
-            <Typography title={i.error} sx={{ ...detail, color: '#ffc4be' }}>
-              {i.error}
+            <Typography title={errorDetails(i.error)} sx={{ ...detail, color: '#ffc4be' }}>
+              {errorMessage(i.error)}
             </Typography>
           }
           actions={

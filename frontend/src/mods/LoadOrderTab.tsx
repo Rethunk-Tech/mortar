@@ -129,8 +129,10 @@ function OrderList({
             {row.position}
           </Typography>
           <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-              <Typography sx={{ fontWeight: 600 }}>{row.name}</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+              <Typography noWrap={true} title={row.name} sx={{ fontWeight: 600, minWidth: 0 }}>
+                {row.name}
+              </Typography>
               {row.cycle ? (
                 <Tooltip title={t`These mods require each other.`}>
                   <Chip
