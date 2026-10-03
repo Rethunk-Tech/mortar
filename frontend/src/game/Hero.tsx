@@ -3,11 +3,10 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link, Typography } from '@mui/material'
 import { type ReactNode, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import type { CollectionStatus } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
-import { CollectionStatus as loadCollectionStatus } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
 import { When } from '../i18n/When.tsx'
 import { useBadges } from '../mods/badges.ts'
 import { openPage } from '../mods/menu.ts'
+import { unlinkCollection } from '../profiles/collectionUnlink.ts'
 import { userModCount } from '../profiles/count.ts'
 import { ProfileMark } from '../profiles/ProfileMark.tsx'
 import { useProfiles } from '../profiles/store.ts'
@@ -21,6 +20,7 @@ import { HeroCover } from './HeroCover.tsx'
 import { NameField } from './NameField.tsx'
 import { useRenameRequest } from './renameRequest.ts'
 import { useTab } from './tab.ts'
+import { useCollectionStatus } from './useCollectionStatus.ts'
 
 const CARD_HOVER = 'var(--mortar-card-hover)'
 const CARD_BG = 'var(--mortar-panel-85)'
@@ -99,44 +99,7 @@ function Card({
 
 function CollectionLine({ profile, game }: { profile: Profile; game: string }) {
   const { t } = useLingui()
-  const [status, setStatus] = useState<CollectionStatus | null>(null)
-  useEffect(() => {
-    if (!profile.collection) {
-      setStatus(null)
-      return
-    }
-    let cancelled = false
-    loadCollectionStatus(game, profile.id)
-      .then((next) => {
-        if (!cancelled) {
-          setStatus(next)
-        }
-      })
-      .catch(() => {
-        if (!cancelled && profile.collection) {
-          setStatus({
-            linked: true,
-            name: profile.collection.name,
-            revision: profile.collection.revision,
-            latest: 0,
-            url: `https://www.nexusmods.com/games/${profile.collection.domain}/collections/${profile.collection.slug}`,
-          })
-        }
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [game, profile.id, profile.collection])
-  const pending =
-    profile.collection && !status
-      ? {
-          linked: true,
-          name: profile.collection.name,
-          revision: profile.collection.revision,
-          latest: 0,
-          url: `https://www.nexusmods.com/games/${profile.collection.domain}/collections/${profile.collection.slug}`,
-        }
-      : status
+  const pending = useCollectionStatus(game, profile)
   const { line, review } = collectionHeader(pending)
   if (!line) {
     return null
@@ -166,6 +129,9 @@ function CollectionLine({ profile, game }: { profile: Profile; game: string }) {
           {t`Revision ${review} is out — Review`}
         </Button>
       )}
+      <Button size="small" onClick={() => unlinkCollection(game, profile)}>
+        {t`Unlink`}
+      </Button>
     </Typography>
   )
 }
