@@ -50,8 +50,8 @@ func TestContentPackDiskCache(t *testing.T) {
 	if len(hit.patches) != len(first.patches) || hit.patches[1].shapes[0].cells != first.patches[1].shapes[0].cells {
 		t.Fatalf("disk cache hit = %#v, want %#v", hit.patches, first.patches)
 	}
-	if !bytes.Equal(hit.patches[1].imageSource, first.patches[1].imageSource) || len(hit.patches[1].imageSource) == 0 {
-		t.Fatalf("image bytes were not restored from the pack file")
+	if hit.patches[1].imageDigest == "" || hit.patches[1].imageDigest != first.patches[1].imageDigest {
+		t.Fatalf("image digest was not restored from the disk cache")
 	}
 
 	if err := os.WriteFile(extra, []byte(`{"Changes":[]}`), 0o600); err != nil {
@@ -121,6 +121,34 @@ func diskCachePack(t *testing.T) (Installed, string, string) {
 	pngPath := filepath.Join(root, "patch.png")
 	writePNG(t, pngPath, img)
 	return Installed{Enabled: true, Folder: root, UniqueID: "Disk.Cache", Name: "Disk Cache", Key: "Disk.Cache"}, extra, pngPath
+}
+
+func TestReadContentPackConcurrent(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+	mods := make([]Installed, 8)
+	for i := range mods {
+		mod, _, _ := diskCachePack(t)
+		mod.UniqueID = "Disk.Cache." + strconv.Itoa(i)
+		mod.Key = mod.UniqueID
+		mods[i] = mod
+	}
+	preloadContentPacks(mods)
+	var wg sync.WaitGroup
+	got := make([]cachedPack, len(mods))
+	for i, mod := range mods {
+		wg.Go(func() {
+			got[i] = readContentPack(mod)
+		})
+	}
+	wg.Wait()
+	for i, pack := range got {
+		if len(pack.patches) != 2 || pack.patches[1].imageDigest == "" || pack.patches[1].shapes[0].cells == "" {
+			t.Fatalf("pack %d = %#v", i, pack.patches)
+		}
+	}
 }
 
 func readDiskPackCache(t *testing.T, path string) diskPackCache {
@@ -208,6 +236,8 @@ func BenchmarkPackDiskCacheLoad(b *testing.B) {
 func resetContentPackCaches() {
 	packCache = sync.Map{}
 	pngShapeCache = sync.Map{}
+	pngAlphaCache = sync.Map{}
+	cellSetCache = sync.Map{}
 	mapCache = sync.Map{}
 	packDiskState.Lock()
 	packDiskState.loaded = false

@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -114,7 +115,7 @@ type cpPatch struct {
 	spouse        string              // the spouse the change requires, or ""
 	places        map[string][]string // literal values the change requires of placeTokens
 	image         bool                // an EditImage change, which only changes how something looks
-	imageSource   []byte
+	imageDigest   string
 	imageFromArea string
 	source        string
 	index         int
@@ -211,7 +212,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 7
+const contentPackParserVersion = 8
 
 type packFileStamp struct {
 	Path    string `json:"path"`
@@ -247,6 +248,7 @@ type diskPatch struct {
 	When          diskWhen    `json:"when,omitzero"`
 	Shapes        []diskShape `json:"shapes,omitempty"`
 	Image         bool        `json:"image,omitempty"`
+	ImageDigest   string      `json:"imageDigest,omitempty"`
 	ImageFromArea string      `json:"imageFromArea,omitempty"`
 	Source        string      `json:"source,omitempty"`
 	Index         int         `json:"index,omitempty"`
@@ -404,6 +406,7 @@ func diskPatchOf(patch cpPatch) diskPatch {
 		PatchMode:     patch.patchMode,
 		When:          diskWhenOf(patch.when),
 		Image:         patch.image,
+		ImageDigest:   patch.imageDigest,
 		ImageFromArea: patch.imageFromArea,
 		Source:        patch.source,
 		Index:         patch.index,
@@ -432,7 +435,7 @@ func diskPatchOf(patch cpPatch) diskPatch {
 	return out
 }
 
-func cpPatchOfDisk(root string, patch diskPatch) cpPatch {
+func cpPatchOfDisk(_ string, patch diskPatch) cpPatch {
 	when := cpWhenOfDisk(patch.When)
 	out := cpPatch{
 		kind:          patch.Kind,
@@ -444,6 +447,7 @@ func cpPatchOfDisk(root string, patch diskPatch) cpPatch {
 		spouse:        when.spouse,
 		places:        when.places,
 		image:         patch.Image,
+		imageDigest:   patch.ImageDigest,
 		imageFromArea: patch.ImageFromArea,
 		source:        patch.Source,
 		index:         patch.Index,
@@ -451,9 +455,6 @@ func cpPatchOfDisk(root string, patch diskPatch) cpPatch {
 		toArea:        patch.ToArea,
 		tokenName:     patch.TokenName,
 		tokenValue:    patch.TokenValue,
-	}
-	if patch.Image {
-		out.imageSource = imageSource(root, patch.FromFile, true)
 	}
 	if patch.Shapes != nil {
 		out.shapes = make([]cpShape, len(patch.Shapes))
@@ -1160,7 +1161,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 				kind: kind, target: normalizeTarget(t), fromFile: ch.FromFile, priority: strings.TrimSpace(priority),
 				patchMode: strings.TrimSpace(ch.PatchMode), when: when,
 				shapes: shapes, spouse: when.spouse, places: when.places, image: action == kindEditImage,
-				imageSource:   imageSource(root, ch.FromFile, action == kindEditImage),
+				imageDigest:   imageFileDigest(root, ch.FromFile, action == kindEditImage),
 				imageFromArea: fromArea,
 				source:        rel, index: i, action: action, toArea: toArea,
 			})
@@ -1868,8 +1869,50 @@ func assetConflicts(mods []Installed) []AssetConflict {
 	return conflicts
 }
 
+func preloadContentPacks(mods []Installed) {
+	workers := max(1, runtime.GOMAXPROCS(0))
+	sem := make(chan struct{}, workers)
+	var wg sync.WaitGroup
+	for _, mod := range mods {
+		wg.Go(func() {
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			_ = readContentPack(mod)
+		})
+	}
+	wg.Wait()
+}
+
+func dropPNGAlphaMemo() {
+	pngAlphaCache.Range(func(k, v any) bool {
+		if pix, ok := v.(pngAlpha); ok {
+			releaseAlpha(pix.a)
+		}
+		pngAlphaCache.Delete(k)
+		return true
+	})
+}
+
+func dropCheckScratch() {
+	dropPNGAlphaMemo()
+	pngShapeCache.Range(func(k, _ any) bool {
+		pngShapeCache.Delete(k)
+		return true
+	})
+	cellSetCache.Range(func(k, _ any) bool {
+		cellSetCache.Delete(k)
+		return true
+	})
+	mapCache.Range(func(k, _ any) bool {
+		mapCache.Delete(k)
+		return true
+	})
+}
+
 func assetConflictResults(mods []Installed) ([]AssetConflict, []SettingHint) {
 	defer flushPackDiskCache(mods)
+	defer dropCheckScratch()
+	preloadContentPacks(mods)
 	present := map[string]bool{}
 	for _, mod := range mods {
 		if mod.Enabled {
@@ -2457,15 +2500,16 @@ func readPackPath(root, rel string) ([]byte, bool) {
 	return raw, err == nil
 }
 
-func imageSource(root, rel string, image bool) []byte {
+func imageFileDigest(root, rel string, image bool) string {
 	if !image {
-		return nil
+		return ""
 	}
 	raw, ok := readPackPath(root, rel)
 	if !ok {
-		return nil
+		return ""
 	}
-	return raw
+	sum := sha256.Sum256(raw)
+	return hex.EncodeToString(sum[:])
 }
 
 func caseInsensitivePath(root, rel string) (string, bool) {
