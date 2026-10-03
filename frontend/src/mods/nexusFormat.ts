@@ -1,6 +1,8 @@
 import type { File } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
+import { formatBytes } from '../i18n/bytes.ts'
 
-const KB_PER_MB = 1024
+const KIB = 1024
+
 // Go's zero time, sent for a date Nexus left out.
 // Nexus leaves the category out on many old files, so only these count as current.
 const current = new Set(['MAIN', 'UPDATE', 'OPTIONAL', 'MISCELLANEOUS'])
@@ -93,14 +95,7 @@ const compareVersions = (a: string, b: string) => {
   return sign(x.pre.length - y.pre.length)
 }
 
-export const formatSize = (kb: number, locale: string) =>
-  kb < KB_PER_MB
-    ? new Intl.NumberFormat(locale, { style: 'unit', unit: 'kilobyte' }).format(kb)
-    : new Intl.NumberFormat(locale, {
-        style: 'unit',
-        unit: 'megabyte',
-        maximumFractionDigits: 1,
-      }).format(kb / KB_PER_MB)
+export const formatSize = (kb: number) => formatBytes(kb * KIB)
 
 export const formatCount = (n: number, locale: string) =>
   new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(n)

@@ -1,5 +1,5 @@
 import { Box } from '@mui/material'
-import { formatBytes } from '../../saves/backupFormat.ts'
+import { formatBytes } from '../../i18n/bytes.ts'
 import { mono } from './dataStyles.ts'
 
 export function Row({ label, size }: { label: string; size: number }) {

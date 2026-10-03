@@ -30,9 +30,9 @@ import {
   ExportSettings,
   PreviewImportSettings,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { formatBytes } from '../../i18n/bytes.ts'
 import { When } from '../../i18n/When.tsx'
 import { paper } from '../../mods/paper.ts'
-import { formatBytes } from '../../saves/backupFormat.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 
 const nowrap = { whiteSpace: 'nowrap' } as const

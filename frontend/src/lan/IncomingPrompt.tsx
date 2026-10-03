@@ -18,8 +18,8 @@ import {
   CancelTransfer,
   Transfer,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/lan/service.ts'
+import { formatBytes } from '../i18n/bytes.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { formatBytes } from '../saves/backupFormat.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'

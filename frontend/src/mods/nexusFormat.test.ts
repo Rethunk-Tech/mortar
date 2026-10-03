@@ -1,10 +1,11 @@
 import { expect, test } from 'bun:test'
 import type { File } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
+import { formatBytes } from '../i18n/bytes.ts'
 import { currentFiles, formatCount, formatSize, isNewer, recentChangelogs } from './nexusFormat.ts'
 
 test('formats sizes and counts', () => {
-  expect(formatSize(617, 'en')).toBe('617 kB')
-  expect(formatSize(2048, 'en')).toBe('2 MB')
+  expect(formatSize(617)).toBe(formatBytes(617 * 1024))
+  expect(formatSize(2048)).toBe(formatBytes(2048 * 1024))
   expect(formatCount(9_915_155, 'en')).toBe('9.9M')
 })
 

@@ -68,8 +68,8 @@ test('summary counts each state, sums only what downloads and skips unticked mod
 })
 
 test('sizes read as approximate KB, MB and GB', () => {
-  expect(formatSize(0)).toBe('0 KB')
-  expect(formatSize(900)).toBe('900 KB')
+  expect(formatSize(0)).toBe('0 byte')
+  expect(formatSize(900)).toBe('900 kB')
   expect(formatSize(1536)).toBe('1.5 MB')
   expect(formatSize(20 * 1024)).toBe('20 MB')
   expect(formatSize(1.5 * 1024 * 1024)).toBe('1.5 GB')

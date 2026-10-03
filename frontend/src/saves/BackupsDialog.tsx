@@ -23,6 +23,7 @@ import type {
   Snap,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/backup/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
 import { useLaunch } from '../launch/store.ts'
 import { paper } from '../mods/paper.ts'
@@ -31,7 +32,6 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
-import { formatBytes } from './backupFormat.ts'
 import { useSaveBackups } from './backups.ts'
 import { useSaves } from './store.ts'
 

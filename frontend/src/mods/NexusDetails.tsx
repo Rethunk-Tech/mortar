@@ -152,14 +152,12 @@ function Files({
   fileId: number
   looked: { newestFileUnix: number; newestChange: string } | undefined
 }) {
-  const { t, i18n } = useLingui()
+  const { t } = useLingui()
   const files = currentFiles(details.files ?? [], fileId)
   const installed = files[0]?.fileId === fileId ? files[0] : undefined
   const others = installed ? files.slice(1) : files
   const line = (f: (typeof files)[number]) =>
-    [f.version, formatSize(f.sizeKb, i18n.locale), formatWhen(f.uploaded)]
-      .filter(Boolean)
-      .join(' · ')
+    [f.version, formatSize(f.sizeKb), formatWhen(f.uploaded)].filter(Boolean).join(' · ')
   return (
     <>
       {installed ? (

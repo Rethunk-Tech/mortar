@@ -7,7 +7,7 @@ import {
   OpenDataFolder,
   SetBackupsKept,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
-import { formatBytes } from '../../saves/backupFormat.ts'
+import { formatBytes } from '../../i18n/bytes.ts'
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { useSettings } from '../store.ts'

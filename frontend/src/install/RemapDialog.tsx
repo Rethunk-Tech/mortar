@@ -18,20 +18,9 @@ import type {
   RemapNode,
   RemapVariant,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { formatBytes } from '../i18n/bytes.ts'
 import { paper } from '../mods/paper.ts'
 import { useInstall } from './store.ts'
-
-const bytesInKb = 1024
-
-function formatSize(n: number): string {
-  if (n < bytesInKb) {
-    return `${n} B`
-  }
-  if (n < bytesInKb * bytesInKb) {
-    return `${(n / bytesInKb).toFixed(1)} KB`
-  }
-  return `${(n / (bytesInKb * bytesInKb)).toFixed(1)} MB`
-}
 
 function NodeRow({
   node,
@@ -49,7 +38,7 @@ function NodeRow({
         <Box component={File} size={14} strokeWidth={1.75} sx={{ mr: 1, flexShrink: 0 }} />
         <ListItemText
           primary={node.name}
-          secondary={formatSize(node.size)}
+          secondary={formatBytes(node.size)}
           slotProps={{ primary: { noWrap: true }, secondary: { noWrap: true } }}
         />
       </ListItemButton>
@@ -79,7 +68,7 @@ function NodeRow({
         <Box component={Folder} size={14} strokeWidth={1.75} sx={{ mr: 1, flexShrink: 0 }} />
         <ListItemText
           primary={node.name}
-          secondary={formatSize(node.size)}
+          secondary={formatBytes(node.size)}
           slotProps={{ primary: { noWrap: true }, secondary: { noWrap: true } }}
         />
       </ListItemButton>

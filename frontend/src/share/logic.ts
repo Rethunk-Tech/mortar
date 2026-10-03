@@ -5,10 +5,11 @@ import type {
   Preview,
   Problem,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
+import { formatBytes } from '../i18n/bytes.ts'
 
 const WARN_AT = 0.8
 const SOURCE_SITE_NEXUS = 'nexus'
-const KB = 1024
+const KIB = 1024
 
 const downloads = (state: ModState) =>
   state === 'download' || state === 'dependency' || state === 'later'
@@ -95,14 +96,6 @@ export function summarize(mods: readonly Mod[], excluded: ReadonlySet<string>): 
   return s
 }
 
-// "12 MB" or "1.4 GB": the size is approximate, so one decimal only where it matters.
 export function formatSize(kb: number): string {
-  if (kb < KB) {
-    return `${Math.max(0, Math.round(kb))} KB`
-  }
-  const mb = kb / KB
-  if (mb < KB) {
-    return `${mb < 10 ? mb.toFixed(1) : Math.round(mb)} MB`
-  }
-  return `${(mb / KB).toFixed(1)} GB`
+  return formatBytes(kb * KIB)
 }

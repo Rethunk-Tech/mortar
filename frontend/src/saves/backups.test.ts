@@ -23,7 +23,7 @@ mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/servi
 }))
 
 const { getInitialState, useSaveBackups } = await import('./backups.ts')
-const { formatBytes } = await import('./backupFormat.ts')
+const { formatBytes } = await import('../i18n/bytes.ts')
 
 test('load fills backups newest as returned', async () => {
   listImpl = async () => listed
@@ -66,6 +66,6 @@ test('a slower first list does not overwrite a later load', async () => {
 })
 
 test('formatBytes uses KB past a kibibyte', () => {
-  expect(formatBytes(500)).toBe('500 B')
-  expect(formatBytes(2048)).toBe('2.0 KB')
+  expect(formatBytes(500)).toBe('500 byte')
+  expect(formatBytes(2048)).toBe('2 kB')
 })

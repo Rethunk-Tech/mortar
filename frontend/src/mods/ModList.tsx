@@ -7,9 +7,9 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compactQuery } from '../game/compact.ts'
+import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
 import { useProfiles } from '../profiles/store.ts'
-import { formatBytes } from '../saves/backupFormat.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useCustomCategories } from './customCategories.ts'
