@@ -414,6 +414,16 @@ func (s *Service) RestoreDismissed(_ context.Context, gameID, id, token string) 
 // or until the mods or versions change, unless SMAPI's API could not be reached, in which case the next call
 // tries again.
 func (s *Service) Updates(ctx context.Context, gameID, id string) (UpdatesResult, error) {
+	return s.updatesFor(ctx, gameID, id, false)
+}
+
+// CheckUpdatesNow asks SMAPI's API again for every mod in the profile, ignoring cached answers: the explicit
+// "Check for updates" (F5).
+func (s *Service) CheckUpdatesNow(ctx context.Context, gameID, id string) (UpdatesResult, error) {
+	return s.updatesFor(ctx, gameID, id, true)
+}
+
+func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool) (UpdatesResult, error) {
 	mods, err := s.installed(gameID, id)
 	if err != nil {
 		return UpdatesResult{}, err
@@ -424,11 +434,11 @@ func (s *Service) Updates(ctx context.Context, gameID, id string) (UpdatesResult
 	s.mu.Lock()
 	c, ok := s.updates[key]
 	s.mu.Unlock()
-	if ok && c.fingerprint == fp && time.Since(c.at) < updatesTTL {
+	if ok && !fresh && c.fingerprint == fp && time.Since(c.at) < updatesTTL {
 		return hideUpdates(c.result, mods, s.settings.Get()), nil
 	}
 	set := s.settings.Get()
-	r := CheckUpdates(ctx, s.meta, env, mods, set.CheckOnlyEnabledMods)
+	r := checkUpdates(ctx, s.meta, env, mods, set.CheckOnlyEnabledMods, fresh)
 	if !r.Unknown {
 		s.mu.Lock()
 		s.updates[key] = cachedUpdates{fp, time.Now(), r}

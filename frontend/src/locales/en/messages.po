@@ -263,7 +263,7 @@ msgstr "Premium and GitHub downloads at once"
 msgid "{0, plural, one {# download failed} other {# downloads failed}}"
 msgstr "{0, plural, one {# download failed} other {# downloads failed}}"
 
-#: src/mods/updates.ts:97
+#: src/mods/updates.ts:101
 msgid "{count} updates available"
 msgstr "{count} updates available"
 
@@ -300,6 +300,10 @@ msgstr "Remove {0} mods from this profile?"
 #: src/mods/ConfigEditor.tsx:259
 msgid "Discard changes?"
 msgstr "Discard changes?"
+
+#: src/shell/checkForUpdates.ts:38
+msgid "a new Mortar is ready"
+msgstr "a new Mortar is ready"
 
 #: src/settings/prefCopy.ts:30
 msgid "Mortar leaves the taskbar and waits in the tray until the game exits."
@@ -950,7 +954,7 @@ msgid "Import profile"
 msgstr "Import profile"
 
 #: src/settings/sections/AboutDiagnostics.tsx:218
-#: src/shell/AppMenu.tsx:141
+#: src/shell/AppMenu.tsx:140
 msgid "Save diagnostics…"
 msgstr "Save diagnostics…"
 
@@ -1012,6 +1016,10 @@ msgstr "Skip this version"
 #: src/launch/LaunchLayer.tsx:360
 msgid "Mortar can start Stardew Valley directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 msgstr "Mortar can start Stardew Valley directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
+
+#: src/shell/checkForUpdates.ts:21
+msgid "Mod update check failed"
+msgstr "Mod update check failed"
 
 #: src/settings/sections/Appearance.tsx:141
 msgid "Solid"
@@ -1149,7 +1157,7 @@ msgstr "It could not load an asset."
 msgid "Download again"
 msgstr "Download again"
 
-#: src/mods/updates.ts:17
+#: src/mods/updates.ts:20
 msgid "Some mods could not be checked, so more updates may show up later."
 msgstr "Some mods could not be checked, so more updates may show up later."
 
@@ -1448,6 +1456,10 @@ msgstr "Could not set {0} for {1}"
 #: src/tools/ToolsManageDialog.tsx:45
 msgid "No tools yet"
 msgstr "No tools yet"
+
+#: src/shell/checkForUpdates.ts:38
+msgid "Mortar is up to date"
+msgstr "Mortar is up to date"
 
 #: src/mods/Toolbar.tsx:294
 #: src/mods/Toolbar.tsx:351
@@ -2314,7 +2326,7 @@ msgid "Could not sign in"
 msgstr "Could not sign in"
 
 #: src/settings/startupChecks.ts:31
-#: src/shell/AppMenu.tsx:152
+#: src/shell/AppMenu.tsx:151
 #: src/shell/ErrorBoundary.tsx:31
 msgid "Report a bug"
 msgstr "Report a bug"
@@ -2554,7 +2566,7 @@ msgstr "Copy CSS"
 msgid "Prefix for direct launches only (for example, gamemoderun mangohud). On Windows, prefixes are unavailable."
 msgstr "Prefix for direct launches only (for example, gamemoderun mangohud). On Windows, prefixes are unavailable."
 
-#: src/mods/updates.ts:103
+#: src/mods/updates.ts:107
 msgid "SMAPI update check failed"
 msgstr "SMAPI update check failed"
 
@@ -2594,7 +2606,7 @@ msgid "Part of the OBS address; regenerate it if it leaks"
 msgstr "Part of the OBS address; regenerate it if it leaks"
 
 #. placeholder {0}: lines.length
-#: src/profiles/SinceLastRun.tsx:62
+#: src/profiles/SinceLastRun.tsx:73
 msgid "{0, plural, one {Since last run: # change} other {Since last run: # changes}}"
 msgstr "{0, plural, one {Since last run: # change} other {Since last run: # changes}}"
 
@@ -3561,11 +3573,11 @@ msgstr "Ignore"
 msgid "Another file from a mod you have"
 msgstr "Another file from a mod you have"
 
-#: src/console/store.ts:171
+#: src/console/store.ts:172
 msgid "Could not run the command"
 msgstr "Could not run the command"
 
-#: src/shell/AppMenu.tsx:164
+#: src/shell/AppMenu.tsx:163
 msgid "About Mortar"
 msgstr "About Mortar"
 
@@ -4019,6 +4031,10 @@ msgstr "In Mortar"
 msgid "{name} settings"
 msgstr "{name} settings"
 
+#: src/shell/checkForUpdates.ts:33
+msgid "{found, plural, one {# mod update} other {# mod updates}}"
+msgstr "{found, plural, one {# mod update} other {# mod updates}}"
+
 #. placeholder {0}: game.name
 #: src/games/GameSelect.tsx:248
 msgid "Open {0}"
@@ -4311,7 +4327,7 @@ msgstr "Copy to {aName}"
 msgid "Create a profile first."
 msgstr "Create a profile first."
 
-#: src/shell/AppMenu.tsx:130
+#: src/shell/AppMenu.tsx:129
 msgid "Open data folder"
 msgstr "Open data folder"
 
@@ -4521,7 +4537,7 @@ msgstr "Could not change how Nexus links open"
 msgid "When you switch a mod on, also enable its required mods already in the profile"
 msgstr "When you switch a mod on, also enable its required mods already in the profile"
 
-#: src/shell/AppMenu.tsx:175
+#: src/shell/AppMenu.tsx:174
 msgid "Source code"
 msgstr "Source code"
 
@@ -4534,6 +4550,7 @@ msgid "imported from the game's Mods folder"
 msgstr "imported from the game's Mods folder"
 
 #: src/mods/Toolbar.tsx:310
+#: src/shell/checkForUpdates.ts:49
 msgid "View"
 msgstr "View"
 
@@ -5121,7 +5138,7 @@ msgid "Check interval"
 msgstr "Check interval"
 
 #: src/console/HelpDialog.tsx:185
-#: src/console/store.ts:145
+#: src/console/store.ts:146
 #: src/mods/ReportToAuthorButton.tsx:139
 msgid "Could not read the SMAPI log"
 msgstr "Could not read the SMAPI log"
@@ -5910,7 +5927,7 @@ msgstr "Check later"
 msgid "last played {lastPlayedName}"
 msgstr "last played {lastPlayedName}"
 
-#: src/mods/updates.ts:20
+#: src/mods/updates.ts:23
 msgid "Checked with SMAPI's update service"
 msgstr "Checked with SMAPI's update service"
 
@@ -6633,7 +6650,7 @@ msgstr "Abstain"
 msgid "Move to trash"
 msgstr "Move to trash"
 
-#: src/mods/updates.ts:23
+#: src/mods/updates.ts:26
 msgid "Checked with SMAPI's update service · {when}"
 msgstr "Checked with SMAPI's update service · {when}"
 
@@ -6941,7 +6958,7 @@ msgid "Sparkles"
 msgstr "Sparkles"
 
 #: src/QuitPrompt.tsx:20
-#: src/shell/AppMenu.tsx:182
+#: src/shell/AppMenu.tsx:181
 msgid "Quit"
 msgstr "Quit"
 
@@ -7197,6 +7214,10 @@ msgstr "Required"
 #: src/settings/sections/DataStoreReport.tsx:400
 msgid "Remove the selected items?"
 msgstr "Remove the selected items?"
+
+#: src/shell/checkForUpdates.ts:34
+msgid "Mods are up to date"
+msgstr "Mods are up to date"
 
 #: src/mods/detail.ts:128
 msgid "Redo update"
@@ -8048,7 +8069,9 @@ msgstr "Browse Nexus"
 msgid "Signed in as {name}"
 msgstr "Signed in as {name}"
 
-#: src/shell/AppMenu.tsx:118
+#: src/commandPalette/CommandPalette.tsx:143
+#: src/settings/sections/Shortcuts.tsx:30
+#: src/shell/AppMenu.tsx:117
 msgid "Check for updates"
 msgstr "Check for updates"
 
@@ -8639,6 +8662,7 @@ msgid "Reinstall"
 msgstr "Reinstall"
 
 #: src/settings/sections/Updates.tsx:63
+#: src/shell/checkForUpdates.ts:13
 msgid "Checking for updates…"
 msgstr "Checking for updates…"
 
@@ -8674,7 +8698,7 @@ msgstr "rate limit"
 msgid "Restore"
 msgstr "Restore"
 
-#: src/profiles/SinceLastRun.tsx:88
+#: src/profiles/SinceLastRun.tsx:99
 msgid "Changes since last run"
 msgstr "Changes since last run"
 
@@ -8851,9 +8875,7 @@ msgstr "Restore second"
 msgid "Close"
 msgstr "Close"
 
-#: src/commandPalette/CommandPalette.tsx:143
 #: src/commandPalette/paletteLabels.ts:8
-#: src/settings/sections/Shortcuts.tsx:30
 msgid "Check for mod updates"
 msgstr "Check for mod updates"
 
@@ -8992,7 +9014,7 @@ msgstr "Reading backups…"
 msgid "A game update replaced SMAPI's launcher"
 msgstr "A game update replaced SMAPI's launcher"
 
-#: src/mods/updates.ts:107
+#: src/mods/updates.ts:111
 #: src/queue/store.ts:125
 msgid "Retry now"
 msgstr "Retry now"

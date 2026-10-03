@@ -61,8 +61,12 @@ type UpdatesResult struct {
 // CheckUpdates asks SMAPI's API about every user mod (the bundled ones update with SMAPI). It never returns
 // an error: a failed lookup leaves Unknown set.
 func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed, enabledOnly bool) UpdatesResult {
+	return checkUpdates(ctx, m, env, mods, enabledOnly, false)
+}
+
+func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed, enabledOnly, fresh bool) UpdatesResult {
 	r := UpdatesResult{Updates: []Update{}}
-	req := meta.UpdateRequest{APIVersion: env.APIVersion, GameVersion: env.GameVersion, Platform: env.Platform}
+	req := meta.UpdateRequest{APIVersion: env.APIVersion, GameVersion: env.GameVersion, Platform: env.Platform, Fresh: fresh}
 	var asked []Installed
 	for _, x := range mods {
 		if x.SourceKind == profile.SourceSMAPI || x.SourceKind == profile.SourceMortar {

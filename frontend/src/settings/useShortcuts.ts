@@ -5,12 +5,12 @@ import { useSidebarCollapsed } from '../game/sidebarCollapsed.ts'
 import { useTab } from '../game/tab.ts'
 import { playOpenProfile, playVanillaOpen } from '../launch/playOpen.ts'
 import { requestFilterFocus } from '../mods/filterFocus.ts'
-import { useUpdates } from '../mods/updates.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { requestFindAllFocus } from '../profiles/findMod.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { openImport, openShare } from '../share/store.ts'
+import { checkForUpdates } from '../shell/checkForUpdates.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
   dialogOpen,
@@ -46,7 +46,7 @@ export function runShortcut(id: ShortcutId) {
     case 'play':
       return playOpenProfile()
     case 'check-updates':
-      return useUpdates.getState().load()
+      return checkForUpdates()
     case 'open-settings':
       return useNav.getState().openSettings()
     case 'tab-mods':

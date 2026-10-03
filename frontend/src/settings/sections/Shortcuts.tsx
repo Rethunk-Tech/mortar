@@ -27,7 +27,7 @@ function useShortcutLabels(): Labels {
       'command-palette': t`Open the command palette`,
       'filter-mods': t`Focus the search`,
       play: t`Play the open profile`,
-      'check-updates': t`Check for mod updates`,
+      'check-updates': t`Check for updates`,
       'open-settings': t`Open Settings`,
       dismiss: t`Close dialog or clear selection`,
       'select-all-mods': t`Select all mods`,

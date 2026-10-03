@@ -28,6 +28,8 @@ type UpdateRequest struct {
 	GameVersion string
 	Platform    string // Android, Linux, Mac or Windows
 	Mods        []InstalledMod
+	// Fresh asks the API even for answers still young enough to come from cache, for an explicit check.
+	Fresh bool
 }
 
 // InstalledMod is one mod to check.
@@ -126,7 +128,7 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 	out := make([]UpdateResult, len(req.Mods))
 	var stale []int
 	for i, m := range req.Mods {
-		if e, ok := store[req.key(m)]; ok && now.Sub(e.Fetched) < updatesTTL {
+		if e, ok := store[req.key(m)]; ok && !req.Fresh && now.Sub(e.Fetched) < updatesTTL {
 			out[i] = e.Value
 		} else {
 			stale = append(stale, i)

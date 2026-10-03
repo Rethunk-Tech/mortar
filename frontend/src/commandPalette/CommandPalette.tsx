@@ -140,7 +140,7 @@ function shortcutLabels(i18n: I18n): Partial<Record<ShortcutId, string>> {
     'command-palette': i18n._(msg`Open the command palette`),
     'filter-mods': i18n._(msg`Focus the search`),
     play: i18n._(msg`Play the open profile`),
-    'check-updates': i18n._(msg`Check for mod updates`),
+    'check-updates': i18n._(msg`Check for updates`),
     'open-settings': i18n._(msg`Open Settings`),
     dismiss: i18n._(msg`Close dialog or clear selection`),
     'select-all-mods': i18n._(msg`Select all mods`),

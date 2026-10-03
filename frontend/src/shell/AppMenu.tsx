@@ -25,9 +25,9 @@ import { Logo } from '../brand/Logo.tsx'
 import { compact } from '../game/compact.ts'
 import { openSettings, routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { useMortarUpdate } from '../settings/updates.ts'
 import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { checkForUpdates } from './checkForUpdates.ts'
 import { NexusAccount } from './NexusAccount.tsx'
 import { reportBug } from './reportBug.ts'
 import { saveDiagnostics } from './saveDiagnostics.ts'
@@ -108,8 +108,7 @@ export function AppMenu() {
           <ListItemButton
             onClick={() => {
               close()
-              openSettings('updates')
-              useMortarUpdate.getState().check().catch(reportUnexpected)
+              checkForUpdates().catch(reportUnexpected)
             }}
           >
             <ListItemIcon>

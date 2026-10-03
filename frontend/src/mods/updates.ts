@@ -1,7 +1,10 @@
 import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
 import type { UpdatesResult } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import { Updates } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
+import {
+  CheckUpdatesNow,
+  Updates,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -71,6 +74,7 @@ const useUpdates = create<{
   checkedAt: number | null
   reviewing: boolean
   load: () => Promise<void>
+  checkNow: () => Promise<number | null>
   setReviewing: (reviewing: boolean) => void
 }>((set) => ({
   updates: null,
@@ -109,6 +113,22 @@ const useUpdates = create<{
         },
       })
     }
+  },
+  // An explicit check: asks SMAPI's API again, ignoring cached answers, and returns how many updates it found.
+  checkNow: async () => {
+    const { game, openId } = useProfiles.getState()
+    if (!(game && openId)) {
+      return null
+    }
+    const updates = await CheckUpdatesNow(game.id, openId)
+    if (useProfiles.getState().openId === openId) {
+      set({ updates, checkedAt: Date.now() })
+    }
+    syncBadge()
+    return updateCount(
+      updates,
+      useProfiles.getState().profiles.find((p) => p.id === openId),
+    )
   },
   setReviewing: (reviewing) => set({ reviewing }),
 }))
