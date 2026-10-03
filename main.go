@@ -284,6 +284,7 @@ func run() error {
 		_, err := loaders.Ensure(ctx, id, fromStart)
 		return err
 	}
+	loaders.OnReady = func(id string) { launches.MaybeSweep(context.Background(), id) }
 	now := time.Now()
 	if err := profiles.PurgeTrash(now); err != nil {
 		log.Printf("purge trash: %v", err)
@@ -573,7 +574,7 @@ func run() error {
 	ctl := &control.Services{
 		Version: version, Settings: store, SettingsSvc: svc, Games: gamesSvc, Store: profiles, Profiles: profileSvc,
 		Problems: problemsSvc, Launches: launches, Saves: savesSvc, Queue: queueSvc, Tools: toolsSvc, Bundles: bundlesSvc,
-		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Downloads: dlWatch, Plays: plays, Emit: emit,
+		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Downloads: dlWatch, Plays: plays, Loaders: loaders, Emit: emit,
 	}
 	go func() {
 		if err := control.Serve(queueCtx, dataDir, version, ctl.Handle); err != nil && !errors.Is(err, context.Canceled) {
@@ -589,6 +590,7 @@ func run() error {
 		app.Event.Emit(launchsvc.SettingsRestoreWarningEvent, launchsvc.SettingsRestoreWarning{Game: "stardew", Error: err.Error()})
 	}
 	loadersvc.EnsureExisting(loaders, "stardew")
+	launchsvc.SweepOnStart(launches, "stardew")
 	pick.App = app
 	nexusSvc.App = app
 	nxmSvc.App = app

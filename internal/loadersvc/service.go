@@ -55,8 +55,13 @@ type Service struct {
 	run func(ctx context.Context, id string, fromStart bool) (loader.Status, error)
 	// App is set after application.New so events can be emitted.
 	App *application.App
+	// OnReady runs after a successful loader install (SMAPI version may have changed).
+	OnReady func(id string)
 	// procDir is where running processes are listed on Linux; tests point it at a fake.
 	procDir string
+	// listVersions and fetchInstall let tests supply a release list and skip the installer.
+	listVersions func(context.Context, string) ([]string, error)
+	fetchInstall func(context.Context, string, string) error
 }
 
 func NewService(home string, s *settings.Store, items *store.Store, profiles *profile.Store, clients ...*components.Client) *Service {
@@ -239,6 +244,9 @@ func (s *Service) Status(ctx context.Context, id string) (loader.Status, error) 
 	if err != nil {
 		return loader.Status{}, err
 	}
+	if pin := s.settings.Get().GamePrefs(id).SmapiPin; pin != "" {
+		return st, nil
+	}
 	if latest, err := g.LatestLoader(ctx); err == nil {
 		st.Latest = latest
 		st.UpdateAvailable = st.Installed && st.Version != "" && loader.Newer(latest, st.Version)
@@ -265,7 +273,8 @@ func (s *Service) Ensure(ctx context.Context, id string, fromStart bool) (loader
 	if err != nil {
 		return loader.Status{}, err
 	}
-	if st.Installed && !st.Broken {
+	pin := s.settings.Get().GamePrefs(id).SmapiPin
+	if st.Installed && !st.Broken && (pin == "" || st.Version == pin) {
 		return st, nil
 	}
 	return s.run(ctx, id, fromStart)
@@ -284,40 +293,7 @@ func (s *Service) install(ctx context.Context, id string, fromStart bool) (st lo
 	if running || (!fromStart && s.profiles.AnyRunning(id)) {
 		return loader.Status{}, fmt.Errorf("%s is running: close it before installing %s", g.Name(), g.LoaderName())
 	}
-	s.emit(StateEvent, State{Game: id, Installing: true})
-	defer func() {
-		state := State{Game: id}
-		if err != nil {
-			state.Error = err.Error()
-		}
-		s.emit(StateEvent, state)
-	}()
-	bundled := func(version, modsDir string) error {
-		key := store.SMAPIKey(version)
-		if err := s.items.AddDir(id, key, modsDir); err != nil {
-			return err
-		}
-		apply := s.profiles.ApplyBundled
-		if fromStart {
-			apply = s.profiles.ApplyBundledForStart
-		}
-		return apply(id, profile.Bundle{Key: key, Source: profile.Source{Kind: profile.SourceSMAPI, Name: "SMAPI"}})
-	}
-	version, err := g.InstallLoader(ctx, dir, bundled, func(step loader.Step) {
-		s.emit(ProgressEvent, Progress{Game: id, Step: step})
-	})
-	if err != nil {
-		return loader.Status{}, err
-	}
-	next, err := s.settings.Update(func(v *settings.Settings) {
-		v.Loaders = maps.Clone(v.Loaders)
-		v.Loaders[id] = version
-	})
-	if err != nil {
-		return loader.Status{}, err
-	}
-	s.emit(settings.ChangedEvent, next)
-	return s.Status(ctx, id)
+	return s.installVersion(ctx, g, dir, id, s.settings.Get().GamePrefs(id).SmapiPin, fromStart)
 }
 
 // gameRunning reports whether any process of the game runs, with or without its loader and however it was started.

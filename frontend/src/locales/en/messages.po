@@ -624,6 +624,10 @@ msgstr "Add to {targetName}"
 msgid "A .mortar file holds the same mods as the link, plus the settings files (.json) each mod has written. Send it to someone, and they open it from Mortar's Import."
 msgstr "A .mortar file holds the same mods as the link, plus the settings files (.json) each mod has written. Send it to someone, and they open it from Mortar's Import."
 
+#: src/launch/SweepDialog.tsx:29
+msgid "Turn off"
+msgstr "Turn off"
+
 #: src/mods/SelectionBarDialogs.tsx:87
 msgid "Set category for selected mods"
 msgstr "Set category for selected mods"
@@ -876,6 +880,10 @@ msgstr "Notify when updates are found"
 msgid "Section reset to defaults"
 msgstr "Section reset to defaults"
 
+#: src/settings/sections/DataStoreReport.tsx:231
+msgid "Remove selected"
+msgstr "Remove selected"
+
 #. placeholder {0}: res.failed
 #: src/profiles/GameModsDialog.tsx:101
 msgid "{0, plural, one {# failed} other {# failed}}"
@@ -931,6 +939,7 @@ msgstr "{count} unavailable"
 msgid "Grid view"
 msgstr "Grid view"
 
+#: src/launch/events.ts:45
 #: src/mods/updateReview/UpdateBar.tsx:55
 msgid "Review"
 msgstr "Review"
@@ -1558,7 +1567,7 @@ msgstr "Check only enabled mods: {from} → {to}"
 msgid "No problems to copy."
 msgstr "No problems to copy."
 
-#: src/launch/events.ts:24
+#: src/launch/events.ts:66
 msgid "Could not restore profile game settings"
 msgstr "Could not restore profile game settings"
 
@@ -1606,6 +1615,10 @@ msgstr "Lutris"
 #: src/share/useImportFlow.ts:131
 msgid "Imported {name}"
 msgstr "Imported {name}"
+
+#: src/settings/sections/DataStoreReport.tsx:35
+msgid "Remove {count} selected items? This frees {size}."
+msgstr "Remove {count} selected items? This frees {size}."
 
 #: src/mods/AssetMapPanel.tsx:69
 msgid "{count} mods"
@@ -1669,6 +1682,10 @@ msgstr "Keep the Nexus copy"
 #: src/settings/prefCopy.ts:206
 msgid "Live log starts at this level and above"
 msgstr "Live log starts at this level and above"
+
+#: src/launch/SweepDialog.tsx:31
+msgid "No fix yet"
+msgstr "No fix yet"
 
 #: src/settings/sections/StreamOverlay.tsx:442
 msgid "Load a save to see values"
@@ -2197,7 +2214,7 @@ msgstr "Open Downloads"
 msgid "Quit Mortar?"
 msgstr "Quit Mortar?"
 
-#: src/launch/events.ts:16
+#: src/launch/events.ts:58
 msgid "Could not back up saves before Play"
 msgstr "Could not back up saves before Play"
 
@@ -2753,6 +2770,7 @@ msgid "Could not read recently deleted profiles"
 msgstr "Could not read recently deleted profiles"
 
 #: src/console/RunProblems.tsx:111
+#: src/launch/SweepDialog.tsx:26
 #: src/loader/Banner.tsx:38
 #: src/mods/runErrorFixButtons.tsx:55
 #: src/mods/Sidebar.tsx:217
@@ -2766,6 +2784,10 @@ msgstr "Update"
 #: src/tools/ToolsMenu.tsx:43
 msgid "Launch other apps with this profile."
 msgstr "Launch other apps with this profile."
+
+#: src/settings/sections/DataStoreReport.tsx:114
+msgid "Same mod stored twice"
+msgstr "Same mod stored twice"
 
 #: src/console/LogActions.tsx:82
 msgid "Jump to previous error"
@@ -4215,6 +4237,10 @@ msgstr "Delete {0} permanently"
 msgid "Could not remove the shortcut"
 msgstr "Could not remove the shortcut"
 
+#: src/launch/events.ts:42
+msgid "{name} updated to {version} — {n, plural, one {# profile needs attention} other {# profiles need attention}}"
+msgstr "{name} updated to {version} — {n, plural, one {# profile needs attention} other {# profiles need attention}}"
+
 #: src/queue/QueueHistory.tsx:161
 msgid "Clear download history?"
 msgstr "Clear download history?"
@@ -4428,8 +4454,11 @@ msgstr "Pinned"
 msgid "Could not dismiss the overlap"
 msgstr "Could not dismiss the overlap"
 
+#. placeholder {0}: mod.name
 #. placeholder {0}: row.name
+#. placeholder {1}: fixLabel(i18n, mod.fix)
 #. placeholder {1}: reasonText(row.reason)
+#: src/launch/SweepDialog.tsx:54
 #: src/mods/updateReview/EverywhereDialog.tsx:58
 msgid "{0}: {1}"
 msgstr "{0}: {1}"
@@ -4610,6 +4639,10 @@ msgstr "Run logs kept"
 #: src/settings/sections/DataMove.tsx:83
 msgid "Free space at destination: {0}"
 msgstr "Free space at destination: {0}"
+
+#: src/launch/SweepDialog.tsx:104
+msgid "Update all fixable"
+msgstr "Update all fixable"
 
 #: src/nxm/store.ts:33
 msgid "The link has expired. Click Mod Manager Download on Nexus again."
@@ -4833,6 +4866,10 @@ msgstr "{length} of {limit} characters · close to the Discord message limit"
 msgid "Spacing of buttons and lists"
 msgstr "Spacing of buttons and lists"
 
+#: src/launch/SweepDialog.tsx:97
+msgid "Patch-day review"
+msgstr "Patch-day review"
+
 #: src/settings/sections/AboutDiagnostics.tsx:78
 msgid "Could not copy the report"
 msgstr "Could not copy the report"
@@ -4902,6 +4939,12 @@ msgstr "Copy OBS URL"
 #: src/settings/sections/GameSettings.tsx:355
 msgid "Command copied"
 msgstr "Command copied"
+
+#. placeholder {0}: keep.name
+#. placeholder {1}: keep.version
+#: src/settings/sections/DataStoreReport.tsx:120
+msgid "Keep the newest copy ({0} {1})"
+msgstr "Keep the newest copy ({0} {1})"
 
 #: src/mods/NexusAccountActions.tsx:135
 msgid "Could not track"
@@ -5379,6 +5422,11 @@ msgstr "These mods may add the same item: {0}."
 msgid "Sign in to Nexus Mods in Settings before downloading from a link."
 msgstr "Sign in to Nexus Mods in Settings before downloading from a link."
 
+#. placeholder {0}: row.missingDeps
+#: src/launch/SweepDialog.tsx:59
+msgid "{0} missing dependencies"
+msgstr "{0} missing dependencies"
+
 #: src/settings/NexusMeter.tsx:26
 msgid "Nexus is throttling requests until the window resets."
 msgstr "Nexus is throttling requests until the window resets."
@@ -5780,6 +5828,10 @@ msgstr "Updates"
 msgid "Nothing downloading"
 msgstr "Nothing downloading"
 
+#: src/settings/sections/DataStoreReport.tsx:235
+msgid "Remove selected store items?"
+msgstr "Remove selected store items?"
+
 #: src/settings/prefCopy.ts:317
 msgid "What the sidebar shows on profile badges"
 msgstr "What the sidebar shows on profile badges"
@@ -6064,6 +6116,10 @@ msgstr "No mods match your search"
 msgid "Abstain"
 msgstr "Abstain"
 
+#: src/settings/sections/DataStoreReport.tsx:83
+msgid "Not used by any profile"
+msgstr "Not used by any profile"
+
 #: src/profiles/ProfilesPage.tsx:200
 #: src/profiles/ProfilesPage.tsx:203
 msgid "Move to trash"
@@ -6346,7 +6402,7 @@ msgstr "Switched off {0}"
 msgid "3 times"
 msgstr "3 times"
 
-#: src/settings/sections/Data.tsx:88
+#: src/settings/sections/Data.tsx:89
 msgid "Could not move the data folder."
 msgstr "Could not move the data folder."
 
@@ -6398,7 +6454,7 @@ msgstr "Lets nearby Mortar users find this installation and exchange profile lin
 
 #: src/saves/BackupsDialog.tsx:161
 #: src/saves/SavesTab.tsx:87
-#: src/settings/sections/Data.tsx:141
+#: src/settings/sections/Data.tsx:143
 #: src/settings/sections/DataUsage.tsx:85
 msgid "Save backups"
 msgstr "Save backups"
@@ -6435,6 +6491,7 @@ msgstr "Switch to Saves"
 #: src/mods/SelectionBarActions.tsx:138
 #: src/settings/sections/DataMods.tsx:138
 #: src/settings/sections/DataMods.tsx:153
+#: src/settings/sections/DataStoreReport.tsx:237
 msgid "Remove"
 msgstr "Remove"
 
@@ -6788,7 +6845,7 @@ msgstr "Status"
 msgid "Pending"
 msgstr "Pending"
 
-#: src/settings/sections/Data.tsx:75
+#: src/settings/sections/Data.tsx:76
 msgid "Couldn't inspect the destination folder"
 msgstr "Couldn't inspect the destination folder"
 
@@ -6809,7 +6866,7 @@ msgstr "Dates"
 msgid "Folders you added:"
 msgstr "Folders you added:"
 
-#: src/settings/sections/Data.tsx:139
+#: src/settings/sections/Data.tsx:141
 #: src/settings/sections/DataDialogs.tsx:88
 msgid "Clean up unused"
 msgstr "Clean up unused"
@@ -6987,6 +7044,10 @@ msgstr "Play the open profile without SMAPI"
 msgid "About"
 msgstr "About"
 
+#: src/launch/SweepDialog.tsx:82
+msgid "Updated fixable mods"
+msgstr "Updated fixable mods"
+
 #. placeholder {0}: mod.name
 #: src/mods/detail.ts:116
 msgid "Could not roll back {0}"
@@ -7031,6 +7092,10 @@ msgstr "You can roll back the completed updates from the profile history."
 #: src/share/SharedMods.tsx:28
 msgid "Its source is not known."
 msgstr "Its source is not known."
+
+#: src/settings/sections/DataStoreReport.tsx:222
+msgid "No unused or duplicate store items."
+msgstr "No unused or duplicate store items."
 
 #: src/mods/ModsTab.tsx:123
 msgid "Clear search"
@@ -7511,6 +7576,10 @@ msgstr "Run crashed"
 #: src/mods/storeEntries.ts:239
 msgid "Could not save the note and tags for {0}"
 msgstr "Could not save the note and tags for {0}"
+
+#: src/settings/sections/DataStoreReport.tsx:220
+msgid "Store cleanup"
+msgstr "Store cleanup"
 
 #: src/settings/sections/DataImport.tsx:32
 msgid "Include pre-release mod versions: {from} → {to}"
@@ -8090,6 +8159,7 @@ msgstr "Restore second"
 #: src/console/BisectDialog.tsx:152
 #: src/console/HelpDialog.tsx:268
 #: src/launch/LaunchLayer.tsx:311
+#: src/launch/SweepDialog.tsx:101
 #: src/mods/CategoryEditor.tsx:143
 #: src/mods/ConfigEditor.tsx:249
 #: src/mods/ModDetail.tsx:302

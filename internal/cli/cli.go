@@ -43,8 +43,8 @@ var verbs = map[string]bool{
 	"conflicts": true, "problems": true, "who": true, "updates": true, "share": true, "export": true, "open": true, "play": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
 	"downloads": true,
-	"bundles":   true, "nexus": true, "trash": true, "cache": true, "data": true,
-	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
+	"bundles":   true, "nexus": true, "trash": true, "cache": true, "data": true, "store": true,
+	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "smapi": true, "sweep": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
 // Is reports whether args (without the program name) are a command-line call: a known verb, or a bare word that
@@ -353,6 +353,8 @@ func (c *cmd) dispatch() error {
 		return c.gameCmd()
 	case "doctor":
 		return c.doctor()
+	case "sweep":
+		return c.sweep()
 	case "launchers":
 		return c.launchers()
 	case "queue":
@@ -363,6 +365,8 @@ func (c *cmd) dispatch() error {
 		return c.update()
 	case "backups":
 		return c.backups()
+	case "smapi":
+		return c.smapi()
 	case "settings":
 		return c.settings()
 	case "bundles":
@@ -373,6 +377,8 @@ func (c *cmd) dispatch() error {
 		return c.trash()
 	case "cache":
 		return c.cacheCmd()
+	case "store":
+		return c.storeCmd()
 	case "data":
 		return c.dataCmd()
 	case "profiles":
@@ -2103,6 +2109,9 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   settings export <file>                  write portable settings JSON
   settings import <file>                  apply a portable settings JSON
   settings reset [key] [--game id]        restore defaults
+  smapi versions <game>                   SMAPI versions in the store and on GitHub
+  smapi install <game> <version>          install that SMAPI version
+  smapi pin <game> <version|latest>       pin SMAPI, or follow latest
   games                                   supported games, whether each is configured
   profiles <game>                         profiles of a game
   profile list <game> <profile> --format md|text  enabled mods (name, version, Nexus link)
@@ -2141,6 +2150,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   mods files <game> <profile> <mod>       linked extra files (keys for mods split)
   mods config <game> <profile> <mod> [<field> <value>]  print or set one config field
   mods menu <game> <profile> <mod> [--set <page>/<index>=<value>]  captured GMCM menu
+  sweep <game> [--json]                   patch-day check after a game or SMAPI change
   mods compat <game> <profile>            non-ok SMAPI compatibility-list rows
   mod <game> <profile> <mod id>           one mod: dependencies, dependents, conflicts, settings
                                           (mod id is the SMAPI UniqueID)
@@ -2180,6 +2190,8 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   cache size                              analysis cache size
   cache clear                             delete the analysis cache
   data usage --by-mod                     store items with size on disk
+  store report [--game G]                 unused and duplicate store items
+  store remove <game> <key>...            delete store items no profile uses
   backups keep <name>                     keep a save backup during rotation
   backups unkeep <name>                   stop keeping a save backup
   backups restore <name> [save...]        restore a save backup

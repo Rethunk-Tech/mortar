@@ -16,6 +16,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/dlwatch"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
+	"github.com/Rethunk-AI/mortar/internal/loadersvc"
 	"github.com/Rethunk-AI/mortar/internal/logshare"
 	"github.com/Rethunk-AI/mortar/internal/nexussvc"
 	"github.com/Rethunk-AI/mortar/internal/problems"
@@ -64,6 +65,7 @@ type Services struct {
 	Data        *datasvc.Service
 	Downloads   *dlwatch.Service
 	Plays       *shortcut.Service
+	Loaders     *loadersvc.Service
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 }
@@ -242,6 +244,12 @@ func resolveBundle(list []bundles.Bundle, name string) (bundles.Bundle, error) {
 // Handle runs one method against the live services.
 func (s *Services) Handle(ctx context.Context, method string, p Params) (any, error) {
 	switch method {
+	case "smapi.versions":
+		return s.smapiVersions(ctx, p.Game)
+	case "smapi.install":
+		return s.smapiInstall(ctx, p.Game, p.Name)
+	case "smapi.pin":
+		return nil, s.smapiPin(p.Game, p.Value)
 	case "games":
 		return s.games()
 	case "game.steamLaunchOption":
@@ -495,10 +503,16 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, errors.New("data is unavailable")
 		}
 		return s.Data.ModUsage()
+	case "store.report":
+		return s.storeReport(p)
+	case "store.remove":
+		return s.storeRemove(p)
 	case "history.all":
 		return s.Profiles.RecentHistory(p.Game)
 	case "status":
 		return s.Launches.Status(p.Game)
+	case "sweep":
+		return s.Launches.Sweep(ctx, p.Game)
 	case "stop":
 		if _, err := s.Launches.Status(p.Game); err != nil {
 			return nil, err

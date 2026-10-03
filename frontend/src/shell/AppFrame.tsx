@@ -3,6 +3,7 @@ import { Events } from '@wailsio/runtime'
 import { type ReactNode, useEffect, useState } from 'react'
 import { DropOverlay } from '../install/DropOverlay.tsx'
 import { dropTargetProps } from '../install/dropTarget.ts'
+import { SweepDialog } from '../launch/SweepDialog.tsx'
 import { useSettings } from '../settings/store.ts'
 import { TitleBar } from './TitleBar.tsx'
 import { win } from './win.ts'
@@ -69,6 +70,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
         {children}
       </Box>
       <DropOverlay target={frame} />
+      <SweepDialog />
     </Box>
   )
 }

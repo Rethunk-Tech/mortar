@@ -33,6 +33,7 @@ type GameSettings struct {
 	EnableRequirements          string `json:"enableRequirements"`
 	MissingRequirements         string `json:"missingRequirements"`
 	SmapiBuilds                 string `json:"smapiBuilds"`
+	SmapiPin                    string `json:"smapiPin"`
 	DefaultLaunchMethod         string `json:"defaultLaunchMethod"`
 	ShowSmapiConsole            *bool  `json:"showSmapiConsole"`
 	SkipPlayCheck               bool   `json:"skipPlayCheck"`
@@ -42,6 +43,8 @@ type GameSettings struct {
 	BackupLocation              string `json:"backupLocation"`
 	ConflictScanDepth           string `json:"conflictScanDepth"`
 	WatchDownloads              *bool  `json:"watchDownloads"`
+	LastSweepGameVersion        string `json:"lastSweepGameVersion,omitempty"`
+	LastSweepSMAPIVersion       string `json:"lastSweepSMAPIVersion,omitempty"`
 }
 
 // PrefSpec is one registry row, served to the CLI and frontend.
@@ -128,6 +131,7 @@ var registry = []pref{
 	enumPref("enableRequirements", ScopeGame, EnableReqAlways, enableReqValues, func(s Settings, g string) string { return s.GamePrefs(g).EnableRequirements }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.EnableRequirements = v; putGame(s, g, gp) }),
 	enumPref("missingRequirements", ScopeGame, MissingReqAsk, missingReqValues, func(s Settings, g string) string { return s.GamePrefs(g).MissingRequirements }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.MissingRequirements = v; putGame(s, g, gp) }),
 	enumPref("smapiBuilds", ScopeGame, SmapiBuildsShow, smapiBuildsValues, func(s Settings, g string) string { return s.GamePrefs(g).SmapiBuilds }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SmapiBuilds = v; putGame(s, g, gp) }),
+	strPref("smapiPin", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).SmapiPin }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SmapiPin = v; putGame(s, g, gp) }),
 	overridable(enumPref("defaultLaunchMethod", ScopeGame, LaunchSteam, launchMethodValues, func(s Settings, g string) string { return s.GamePrefs(g).DefaultLaunchMethod }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.DefaultLaunchMethod = v; putGame(s, g, gp) })),
 	overridable(ptrPref("showSmapiConsole", ScopeGame, true, func(s Settings, g string) *bool { return s.GamePrefs(g).ShowSmapiConsole }, func(s *Settings, g string, on bool) {
 		gp := s.GamePrefs(g)
@@ -244,6 +248,7 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.SmapiBuilds != "" {
 		dst.SmapiBuilds = src.SmapiBuilds
 	}
+	dst.SmapiPin = src.SmapiPin
 	if src.DefaultLaunchMethod != "" {
 		dst.DefaultLaunchMethod = src.DefaultLaunchMethod
 	}
@@ -265,6 +270,12 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	}
 	if src.WatchDownloads != nil {
 		dst.WatchDownloads = src.WatchDownloads
+	}
+	if src.LastSweepGameVersion != "" {
+		dst.LastSweepGameVersion = src.LastSweepGameVersion
+	}
+	if src.LastSweepSMAPIVersion != "" {
+		dst.LastSweepSMAPIVersion = src.LastSweepSMAPIVersion
 	}
 }
 
