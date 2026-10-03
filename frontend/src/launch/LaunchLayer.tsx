@@ -32,6 +32,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { holdFocus, launchEscHides } from './holdFocus.ts'
+import { PrePlayDialog } from './PrePlayDialog.tsx'
 import { SaveWarnDialog } from './SaveWarnDialog.tsx'
 import { useLaunch } from './store.ts'
 import { UpdateWarnDialog } from './UpdateWarnDialog.tsx'
@@ -376,6 +377,7 @@ export function LaunchLayer({ game }: { game: string }) {
       <CrashDialog />
       <UpdateWarnDialog />
       <SaveWarnDialog />
+      <PrePlayDialog />
       <VanillaPlayDialogs />
     </>
   )

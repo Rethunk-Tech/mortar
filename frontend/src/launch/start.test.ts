@@ -6,6 +6,17 @@ let warnWait: Promise<void> = Promise.resolve()
 let finishWarn: (() => void) | undefined
 
 mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts', () => ({
+  Problems: async () => ({
+    missing: null,
+    duplicates: null,
+    broken: null,
+    assetConflicts: null,
+    settings: null,
+    runErrors: null,
+    dismissed: [],
+    unknown: false,
+  }),
+  Updates: async () => ({ updates: null, unknown: false }),
   UpdateWarning: () => {
     warnCalls += 1
     return warnWait.then(() => ({

@@ -183,9 +183,13 @@ async function updateBeforePlay(
   game: string,
   profileId: string,
   onProgress?: (count: number) => void,
+  force = false,
 ): Promise<AutoUpdateResult> {
   const profile = useProfiles.getState().profiles.find((candidate) => candidate.id === profileId)
-  if (!profile?.updateBeforePlay) {
+  if (!(force || profile?.updateBeforePlay)) {
+    return { restorePoint: null, previousRunId: '', previousErrors: null }
+  }
+  if (!profile) {
     return { restorePoint: null, previousRunId: '', previousErrors: null }
   }
 

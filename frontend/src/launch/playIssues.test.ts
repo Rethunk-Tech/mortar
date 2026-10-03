@@ -1,0 +1,108 @@
+import { expect, test } from 'bun:test'
+import type {
+  AssetConflict,
+  Broken,
+  Missing,
+  Update,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import { playIssueSummary } from './playIssues.ts'
+
+const missing = (over: Partial<Missing> = {}): Missing => ({
+  dependentId: 'A.Mod',
+  dependentName: 'A',
+  uniqueId: 'Need.This',
+  minimumVersion: '',
+  reason: 'absent',
+  installedVersion: '',
+  listed: false,
+  note: '',
+  optional: false,
+  where: null,
+  ...over,
+})
+
+const conflict = (over: Partial<AssetConflict> = {}): AssetConflict => ({
+  kind: 'load',
+  target: 'maps/town',
+  packIds: [],
+  names: ['One', 'Two'],
+  keys: [],
+  winnerId: '',
+  winnerName: '',
+  overridden: [],
+  cosmetic: false,
+  fixes: [],
+  info: '',
+  evidence: [],
+  ...over,
+})
+
+const broken = (over: Partial<Broken> = {}): Broken => ({
+  key: 'k',
+  uniqueId: 'B.Mod',
+  name: 'Broke',
+  status: 'broken',
+  brokeIn: '',
+  summary: '',
+  ...over,
+})
+
+const update = (over: Partial<Update> = {}): Update => ({
+  key: 'u',
+  uniqueId: '',
+  name: 'Newer',
+  installed: '',
+  version: '2.0.0',
+  url: '',
+  nexusId: 0,
+  githubRepo: '',
+  unofficial: false,
+  source: '',
+  ...over,
+})
+
+test('playIssueSummary is empty when nothing is wrong', () => {
+  expect(playIssueSummary({})).toEqual([])
+  expect(
+    playIssueSummary({
+      missing: [missing({ optional: true })],
+      assetConflicts: [conflict({ cosmetic: true })],
+      broken: [broken({ status: 'abandoned' })],
+      updates: [],
+    }),
+  ).toEqual([])
+})
+
+test('playIssueSummary groups required missing, non-cosmetic conflicts, updates, and broken or obsolete', () => {
+  const names = ['A', 'B', 'C', 'D', 'E', 'F']
+  expect(
+    playIssueSummary({
+      missing: [
+        missing({
+          uniqueId: 'SpaceCore',
+          where: {
+            site: 'Nexus',
+            github: '',
+            pageId: 1,
+            pageName: 'SpaceCore',
+            url: '',
+            fileId: 0,
+            fileName: '',
+            version: '',
+          },
+        }),
+      ],
+      assetConflicts: [conflict({ names: ['SVE', 'Other'] })],
+      broken: [
+        broken({ name: 'Old', status: 'obsolete' }),
+        broken({ name: 'Dead', status: 'abandoned' }),
+      ],
+      updates: names.map((name, i) => update({ name, key: String(i) })),
+    }),
+  ).toEqual([
+    { kind: 'missing', count: 1, names: ['SpaceCore'] },
+    { kind: 'conflicts', count: 1, names: ['SVE, Other'] },
+    { kind: 'updates', count: 6, names: ['A', 'B', 'C', 'D', 'E'] },
+    { kind: 'broken', count: 1, names: ['Old'] },
+  ])
+})

@@ -9,13 +9,8 @@ import {
 import {
   Status as LaunchStatus,
   Runs,
-  Start,
   Stop,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
-import type { Broken } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import { UpdateWarning } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
-import type { Fit } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
-import { LastSaveGap } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { useConsole } from '../console/store.ts'
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
@@ -23,14 +18,20 @@ import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import {
-  type AutoUpdateRestorePoint,
-  type AutoUpdateResult,
-  isAutoUpdateError,
-  rollbackAutoUpdate,
-  updateBeforePlay,
-} from './autoUpdate.ts'
+import { type AutoUpdateRestorePoint, rollbackAutoUpdate } from './autoUpdate.ts'
 import { applyOnPlayWindow } from './onPlay.ts'
+import {
+  openProblems,
+  type PlayCheck,
+  playAnyway,
+  type SaveWarn,
+  startProfile,
+  startWithWarning,
+  type UpdateContext,
+  type UpdateRollback,
+  type UpdateWarn,
+  updateAndPlay,
+} from './playStart.ts'
 import { startVanillaGame } from './vanillaStart.ts'
 
 const RUN_POLL_ATTEMPTS = 20
@@ -73,38 +74,6 @@ interface Failure {
   hint: Hint
   cause: Status['cause']
 }
-interface UpdateWarn {
-  game: string
-  profile: string
-  direct: boolean
-  recorded: string
-  installed: string
-  broken: Broken[]
-  update?: UpdateContext
-}
-interface SaveWarn {
-  game: string
-  profile: string
-  direct: boolean
-  save: Fit
-  update?: UpdateContext
-}
-
-interface UpdateContext {
-  restorePoint: AutoUpdateRestorePoint
-  previousRunId: string
-  previousErrors: number | null
-}
-
-interface UpdateRollback {
-  context: UpdateContext
-  game: string
-  profile: string
-}
-
-function updateContext(result: AutoUpdateResult): UpdateContext | undefined {
-  return result.restorePoint ? { ...result, restorePoint: result.restorePoint } : undefined
-}
 
 function rollbackAction(point: AutoUpdateRestorePoint) {
   return () =>
@@ -115,133 +84,6 @@ function rollbackAction(point: AutoUpdateRestorePoint) {
         body: errorMessage(error),
       })
     })
-}
-
-function updateFailure(error: unknown, playAnyway: () => Promise<void>) {
-  const point = isAutoUpdateError(error) ? error.restorePoint : undefined
-  useToasts.getState().push({
-    kind: 'error',
-    title: i18n._(msg`Could not update mods before Play`),
-    body: errorMessage(error),
-    ...(point && point.updates.length > 0
-      ? { detail: i18n._(msg`You can roll back the completed updates from the profile history.`) }
-      : {}),
-    action: { label: i18n._(msg`Play anyway`), run: playAnyway },
-  })
-}
-
-async function startProfile(opts: {
-  set: (p: {
-    starting?: boolean
-    startingProfile?: string
-    updating?: number
-    updateRollback?: UpdateRollback | null
-  }) => void
-  game: string
-  profile: string
-  direct: boolean
-  update: UpdateContext | undefined
-}) {
-  if (opts.update) {
-    opts.set({
-      updateRollback: { context: opts.update, game: opts.game, profile: opts.profile },
-    })
-  }
-  try {
-    await Start(opts.game, opts.profile, opts.direct)
-  } catch (error) {
-    opts.set({ starting: false, startingProfile: '', updateRollback: null })
-    reportError(i18n._(msg`Could not launch the game`))(error)
-  }
-}
-
-async function startWithWarning(opts: {
-  get: () => { starting: boolean }
-  set: (p: {
-    starting?: boolean
-    startingProfile?: string
-    updating?: number
-    updateWarn?: UpdateWarn | null
-    saveWarn?: SaveWarn | null
-    updateRollback?: UpdateRollback | null
-  }) => void
-  game: string
-  profile: string
-  direct: boolean
-}) {
-  if (opts.get().starting) {
-    return
-  }
-  opts.set({ starting: true, startingProfile: opts.profile })
-  let update: UpdateContext | undefined
-  try {
-    update = updateContext(
-      await updateBeforePlay(opts.game, opts.profile, (count) => opts.set({ updating: count })),
-    )
-  } catch (error) {
-    opts.set({ starting: false, startingProfile: '', updating: 0 })
-    updateFailure(error, async () => {
-      opts.set({ starting: true, startingProfile: opts.profile })
-      await startProfile({
-        set: opts.set,
-        game: opts.game,
-        profile: opts.profile,
-        direct: opts.direct,
-        update: undefined,
-      })
-    })
-    return
-  }
-  opts.set({ updating: 0 })
-  try {
-    const warning = await UpdateWarning(opts.game, opts.profile)
-    if (warning.changed) {
-      opts.set({
-        starting: false,
-        startingProfile: '',
-        updateWarn: {
-          game: opts.game,
-          profile: opts.profile,
-          direct: opts.direct,
-          recorded: warning.recorded,
-          installed: warning.installed,
-          broken: warning.broken ?? [],
-          ...(update ? { update } : {}),
-        },
-      })
-      return
-    }
-  } catch (e) {
-    opts.set({ starting: false, startingProfile: '' })
-    reportError(i18n._(msg`Could not check the game version`))(e)
-    return
-  }
-  try {
-    const [save, gap] = await LastSaveGap(opts.game, opts.profile)
-    if (gap) {
-      opts.set({
-        starting: false,
-        startingProfile: '',
-        saveWarn: {
-          game: opts.game,
-          profile: opts.profile,
-          direct: opts.direct,
-          save,
-          ...(update ? { update } : {}),
-        },
-      })
-      return
-    }
-  } catch {
-    // Save check unavailable; continue launching.
-  }
-  await startProfile({
-    set: opts.set,
-    game: opts.game,
-    profile: opts.profile,
-    direct: opts.direct,
-    update,
-  })
 }
 
 async function checkUpdatedRun(
@@ -365,6 +207,7 @@ export const useLaunch = create<{
   askDirect: DirectAsk | null
   updateWarn: UpdateWarn | null
   saveWarn: SaveWarn | null
+  playCheck: PlayCheck | null
   updateRollback: UpdateRollback | null
   updating: number
   stopping: boolean
@@ -381,9 +224,11 @@ export const useLaunch = create<{
   setCrash: (crash: Crash) => void
   dismissUpdateWarn: () => void
   dismissSaveWarn: () => void
+  dismissPlayCheck: () => void
   openSaves: () => void
   answerDirect: (agreed: boolean) => Promise<void>
   playAnyway: () => Promise<void>
+  updateAndPlay: () => Promise<void>
   openProblems: () => void
   stop: (game: string) => Promise<void>
 }>((set, get) => ({
@@ -393,6 +238,7 @@ export const useLaunch = create<{
   askDirect: null,
   updateWarn: null,
   saveWarn: null,
+  playCheck: null,
   updateRollback: null,
   updating: 0,
   stopping: false,
@@ -415,6 +261,7 @@ export const useLaunch = create<{
   setCrash: (crash) => set({ crash }),
   dismissUpdateWarn: () => set({ updateWarn: null }),
   dismissSaveWarn: () => set({ saveWarn: null }),
+  dismissPlayCheck: () => set({ playCheck: null }),
   openSaves: () => {
     const warn = get().saveWarn
     set({ saveWarn: null })
@@ -427,33 +274,9 @@ export const useLaunch = create<{
     useProfiles.getState().open(warn.profile)
     useTab.getState().setTab('saves')
   },
-  playAnyway: async () => {
-    const warn = get().updateWarn ?? get().saveWarn
-    set({ updateWarn: null, saveWarn: null })
-    if (!warn) {
-      return
-    }
-    set({ starting: true, startingProfile: warn.profile })
-    await startProfile({
-      set,
-      game: warn.game,
-      profile: warn.profile,
-      direct: warn.direct,
-      update: warn.update,
-    })
-  },
-  openProblems: () => {
-    const warn = get().updateWarn
-    set({ updateWarn: null })
-    if (!warn) {
-      return
-    }
-    if (warn.game === 'stardew') {
-      useNav.getState().openGame('stardew')
-    }
-    useProfiles.getState().open(warn.profile)
-    useTab.getState().setTab('mods')
-  },
+  playAnyway: () => playAnyway(get, set),
+  updateAndPlay: () => updateAndPlay(get, set),
+  openProblems: () => openProblems(get, set),
   answerDirect: async (agreed) => {
     const { askDirect } = get()
     set({ askDirect: null })
