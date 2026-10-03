@@ -34,7 +34,7 @@ function addHit(
 
 function collectFromProfile(byId: Map<string, AuthorModRow>, profile: Profile, author: string) {
   for (const entry of profile.entries ?? []) {
-    for (const mod of entry.mods) {
+    for (const mod of entry.mods ?? []) {
       if (authorFieldIncludes(mod.author, author)) {
         const enabled = !(entry.disabled ?? []).some((id) => sameId(id, mod.uniqueId))
         addHit(

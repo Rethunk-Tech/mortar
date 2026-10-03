@@ -1409,7 +1409,7 @@ msgstr "Go to Console"
 msgid "Installed in your profiles"
 msgstr "Installed in your profiles"
 
-#: src/firstrunTour/TourPopover.tsx:114
+#: src/firstrunTour/TourPopover.tsx:113
 msgid "Skip tour"
 msgstr "Skip tour"
 
@@ -2633,7 +2633,7 @@ msgstr "Automatic"
 msgid "Compare {0} with…"
 msgstr "Compare {0} with…"
 
-#: src/firstrunTour/TourPopover.tsx:135
+#: src/firstrunTour/TourPopover.tsx:134
 #: src/queue/QueueHistory.tsx:77
 msgid "Done"
 msgstr "Done"
@@ -3885,7 +3885,7 @@ msgstr "Could not save the open profile"
 msgid "When you press Play"
 msgstr "When you press Play"
 
-#: src/firstrunTour/TourPopover.tsx:135
+#: src/firstrunTour/TourPopover.tsx:134
 #: src/fomod/Dialog.tsx:269
 msgid "Next"
 msgstr "Next"
@@ -4037,7 +4037,7 @@ msgstr "Request counts appear after Mortar talks to Nexus."
 msgid "Rescan"
 msgstr "Rescan"
 
-#: src/firstrunTour/TourPopover.tsx:122
+#: src/firstrunTour/TourPopover.tsx:121
 #: src/fomod/Dialog.tsx:253
 #: src/profiles/ProfilesPage.tsx:362
 #: src/settings/SettingsNav.tsx:36

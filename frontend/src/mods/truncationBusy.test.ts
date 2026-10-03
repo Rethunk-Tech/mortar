@@ -6,7 +6,7 @@ const src = (...parts: string[]) => readFileSync(join(import.meta.dir, ...parts)
 
 test('mod cards expose a tooltip for clipped author/version and first tag', () => {
   const cards = src('ModCards.tsx')
-  expect(cards).toContain('title={meta}')
+  expect(/title=\{showAuthor \? .*m\.author.*: m\.version\}/.test(cards)).toBe(true)
   expect(cards).toContain('title={tag}')
 })
 

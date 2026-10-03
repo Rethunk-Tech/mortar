@@ -112,7 +112,7 @@ function AuthorDialogBody({
 
   if (rows.length === 0) {
     return (
-      <EmptyState compact={true} title={t`No installed mods for this author.`}>
+      <EmptyState compact={true} icon={null} title={t`No installed mods for this author.`}>
         {t`Try another spelling, or install a mod by ${author} in any profile.`}
       </EmptyState>
     )

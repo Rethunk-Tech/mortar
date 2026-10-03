@@ -107,8 +107,7 @@ function TourPopover({
                   <Stack
                     direction="row"
                     spacing={1}
-                    justifyContent="space-between"
-                    alignItems="center"
+                    sx={{ justifyContent: 'space-between', alignItems: 'center' }}
                   >
                     <Button size="small" color="inherit" onClick={finish}>
                       {t`Skip tour`}
