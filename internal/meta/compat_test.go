@@ -1,0 +1,112 @@
+package meta
+
+import (
+	"strings"
+	"testing"
+)
+
+// Canned sample of SmapiCompatibilityList data/mods.jsonc (and the wiki dump SMAPI.Web also served).
+const compatSample = `[
+  {
+    "name": "Content Patcher",
+    "id": "Pathoschild.ContentPatcher",
+    "nexus": 1915,
+    "compatibility": { "status": "ok" }
+  },
+  {
+    "name": "Broken Example",
+    "id": ["Author.Broken", "Author.Broken.Old"],
+    "nexusID": 99,
+    "compatibility": {
+      "status": "Broken",
+      "summary": "Crashes on load.",
+      "brokeIn": "Stardew Valley 1.6"
+    }
+  },
+  {
+    "name": "Unofficial Example",
+    "id": "Author.Unofficial",
+    "nexus": 42,
+    "compatibility": {
+      "status": "unofficial",
+      "summary": "Use the unofficial update.",
+      "unofficialUrl": "https://example.com/unofficial"
+    }
+  },
+  {
+    "name": "Workaround Example",
+    "id": "Author.Workaround",
+    "compatibility": { "status": "workaround", "summary": "Load after X." }
+  },
+  {
+    "name": "Obsolete Example",
+    "id": "Author.Obsolete",
+    "nexus": 7,
+    "compatibility": { "status": "obsolete", "summary": "Use New Mod." },
+    "successor": "Author.New"
+  }
+]
+`
+
+func TestParseCompatJSONMapsIDAndNexus(t *testing.T) {
+	idx, err := parseCompatJSON([]byte(compatSample))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ok, found := idx.Lookup("pathoschild.contentpatcher", 0)
+	if !found || ok.Status != StatusOK {
+		t.Fatalf("unique id: %+v found=%v", ok, found)
+	}
+	byNexus, found := idx.Lookup("", 1915)
+	if !found || byNexus.Status != StatusOK {
+		t.Fatalf("nexus: %+v found=%v", byNexus, found)
+	}
+	broken, found := idx.Lookup("Author.Broken.Old", 0)
+	if !found || broken.Status != StatusBroken || broken.BrokeIn != "Stardew Valley 1.6" || broken.Summary != "Crashes on load." {
+		t.Fatalf("alias id: %+v found=%v", broken, found)
+	}
+	if e, ok := idx.Lookup("", 99); !ok || e.Status != StatusBroken {
+		t.Fatalf("broken nexus: %+v ok=%v", e, ok)
+	}
+	unoff, found := idx.Lookup("Author.Unofficial", 0)
+	if !found || unoff.Status != StatusUnofficial || unoff.UnofficialURL != "https://example.com/unofficial" {
+		t.Fatalf("unofficial: %+v found=%v", unoff, found)
+	}
+	opt, found := idx.Lookup("Author.Workaround", 0)
+	if !found || opt.Status != StatusOptional {
+		t.Fatalf("workaround→optional: %+v found=%v", opt, found)
+	}
+	obs, found := idx.Lookup("Author.Obsolete", 7)
+	if !found || obs.Status != StatusObsolete || obs.Replacement != "Author.New" {
+		t.Fatalf("obsolete: %+v found=%v", obs, found)
+	}
+}
+
+func TestParseCompatJSONWikiObjectAndComments(t *testing.T) {
+	body := `
+// wiki-shaped dump
+{
+  "mods": [
+    {
+      "ID": ["Wiki.Mod"],
+      "nexusID": 3,
+      "compatibility": { "status": "Abandoned", "summary": "Gone." }
+    },
+  ]
+}
+`
+	idx, err := parseCompatJSON([]byte(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	e, found := idx.Lookup("Wiki.Mod", 3)
+	if !found || e.Status != StatusAbandoned || e.Summary != "Gone." {
+		t.Fatalf("%+v found=%v err=%v", e, found, err)
+	}
+	if _, err := parseCompatJSON([]byte("not json")); err == nil {
+		t.Fatal("want decode error")
+	}
+	if !strings.Contains(defaultCompatURL, "SmapiCompatibilityList") {
+		t.Fatal(defaultCompatURL)
+	}
+}

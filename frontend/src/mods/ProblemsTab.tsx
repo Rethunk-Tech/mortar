@@ -435,10 +435,9 @@ export function ProblemsTab() {
   if (result === null) {
     return <LoadingRow>{t`Checking the mods for problems…`}</LoadingRow>
   }
-
   const sections = problemSections(result)
-  const cleanup = result.cleanup ?? [],
-    compat = result.compat ?? []
+  const cleanup = result.cleanup ?? []
+  const compat = result.compat ?? []
   const installable =
     sections
       .find((section) => section.id === 'missing')

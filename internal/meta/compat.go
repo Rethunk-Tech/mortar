@@ -1,0 +1,379 @@
+package meta
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+	"unicode"
+)
+
+// Wiki-backed compatibility list behind https://smapi.io/mods. SMAPI.Web (Pathoschild/SMAPI
+// src/SMAPI.Web) loads Pathoschild/SmapiCompatibilityList rather than scraping the HTML table.
+const defaultCompatURL = "https://raw.githubusercontent.com/Pathoschild/SmapiCompatibilityList/main/data/mods.jsonc"
+
+const (
+	compatTTL  = 24 * time.Hour
+	compatFile = "smapi-compat.json"
+	maxCompat  = 16 << 20
+)
+
+// CompatEntry is one SMAPI compatibility-list row, keyed later by UniqueID and Nexus id.
+type CompatEntry struct {
+	Status        string `json:"status"`
+	Summary       string `json:"summary"`
+	BrokeIn       string `json:"brokeIn"`
+	UnofficialURL string `json:"unofficialUrl"`
+	Replacement   string `json:"replacement"`
+}
+
+// CompatIndex maps UniqueID (lowercased) and Nexus page id onto the same entry.
+type CompatIndex struct {
+	ByID    map[string]CompatEntry
+	ByNexus map[int]CompatEntry
+}
+
+func (idx CompatIndex) Lookup(uniqueID string, nexusID int) (CompatEntry, bool) {
+	if uniqueID != "" {
+		if e, ok := idx.ByID[strings.ToLower(uniqueID)]; ok {
+			return e, true
+		}
+	}
+	if nexusID > 0 {
+		if e, ok := idx.ByNexus[nexusID]; ok {
+			return e, true
+		}
+	}
+	return CompatEntry{}, false
+}
+
+// CompatList fetches the SMAPI compatibility JSON (cached a day).
+func (c *Client) CompatList(ctx context.Context) (CompatIndex, error) {
+	return Cached(c, compatFile, compatTTL, func() (CompatIndex, error) {
+		return c.fetchCompat(ctx)
+	})
+}
+
+func (c *Client) fetchCompat(ctx context.Context) (CompatIndex, error) {
+	u := c.CompatURL
+	if u == "" {
+		u = defaultCompatURL
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	if err != nil {
+		return CompatIndex{}, err
+	}
+	b, err := c.do(req, maxCompat)
+	if err != nil {
+		return CompatIndex{}, err
+	}
+	return parseCompatJSON(b)
+}
+
+type rawCompatMod struct {
+	ID               json.RawMessage `json:"id"`
+	IDs              json.RawMessage `json:"ids"`
+	Nexus            flexInt         `json:"nexus"`
+	NexusID          flexInt         `json:"nexusID"`
+	Compatibility    json.RawMessage `json:"compatibility"`
+	UnofficialUpdate json.RawMessage `json:"unofficialUpdate"`
+	Status           string          `json:"status"`
+	Summary          string          `json:"summary"`
+	BrokeIn          string          `json:"brokeIn"`
+	UnofficialURL    string          `json:"unofficialUrl"`
+	Replacement      json.RawMessage `json:"replacement"`
+	Successor        json.RawMessage `json:"successor"`
+}
+
+type rawCompatBody struct {
+	Status        string          `json:"status"`
+	Summary       string          `json:"summary"`
+	BrokeIn       string          `json:"brokeIn"`
+	UnofficialURL string          `json:"unofficialUrl"`
+	Replacement   json.RawMessage `json:"replacement"`
+}
+
+type flexInt int
+
+func (n *flexInt) UnmarshalJSON(b []byte) error {
+	var i int
+	if json.Unmarshal(b, &i) == nil {
+		*n = flexInt(i)
+		return nil
+	}
+	var s string
+	if json.Unmarshal(b, &s) == nil {
+		i, err := strconv.Atoi(strings.TrimSpace(s))
+		if err == nil {
+			*n = flexInt(i)
+		}
+	}
+	return nil
+}
+
+func parseCompatJSON(b []byte) (CompatIndex, error) {
+	b = stripJSONC(b)
+	mods, err := decodeCompatMods(b)
+	if err != nil {
+		return CompatIndex{}, err
+	}
+	idx := CompatIndex{
+		ByID:    make(map[string]CompatEntry, len(mods)),
+		ByNexus: make(map[int]CompatEntry, len(mods)),
+	}
+	for _, raw := range mods {
+		e := entryFromRaw(raw)
+		if e.Status == "" {
+			continue
+		}
+		for _, id := range uniqueIDsOf(raw) {
+			idx.ByID[strings.ToLower(id)] = e
+		}
+		nexus := int(raw.NexusID)
+		if nexus == 0 {
+			nexus = int(raw.Nexus)
+		}
+		if nexus > 0 {
+			idx.ByNexus[nexus] = e
+		}
+	}
+	return idx, nil
+}
+
+func decodeCompatMods(b []byte) ([]rawCompatMod, error) {
+	var mods []rawCompatMod
+	if json.Unmarshal(b, &mods) == nil && (len(mods) > 0 || bytes.Equal(bytes.TrimSpace(b), []byte("[]"))) {
+		return mods, nil
+	}
+	var wrap struct {
+		Mods []rawCompatMod `json:"mods"`
+		Data []rawCompatMod `json:"data"`
+	}
+	if err := json.Unmarshal(b, &wrap); err != nil {
+		return nil, err
+	}
+	if len(wrap.Mods) > 0 {
+		return wrap.Mods, nil
+	}
+	return wrap.Data, nil
+}
+
+func entryFromRaw(raw rawCompatMod) CompatEntry {
+	e := CompatEntry{
+		Status:        normalizeCompatStatus(raw.Status),
+		Summary:       strings.TrimSpace(raw.Summary),
+		BrokeIn:       strings.TrimSpace(raw.BrokeIn),
+		UnofficialURL: strings.TrimSpace(raw.UnofficialURL),
+		Replacement:   replacementOf(raw.Replacement),
+	}
+	if len(raw.Compatibility) > 0 {
+		var nested rawCompatBody
+		if json.Unmarshal(raw.Compatibility, &nested) == nil && (nested.Status != "" || nested.Summary != "") {
+			if s := normalizeCompatStatus(nested.Status); s != "" {
+				e.Status = s
+			}
+			if nested.Summary != "" {
+				e.Summary = strings.TrimSpace(nested.Summary)
+			}
+			if nested.BrokeIn != "" {
+				e.BrokeIn = strings.TrimSpace(nested.BrokeIn)
+			}
+			if nested.UnofficialURL != "" {
+				e.UnofficialURL = strings.TrimSpace(nested.UnofficialURL)
+			}
+			if r := replacementOf(nested.Replacement); r != "" {
+				e.Replacement = r
+			}
+		} else {
+			var status string
+			if json.Unmarshal(raw.Compatibility, &status) == nil {
+				if s := normalizeCompatStatus(status); s != "" {
+					e.Status = s
+				}
+			}
+		}
+	}
+	if e.UnofficialURL == "" && len(raw.UnofficialUpdate) > 0 {
+		var u struct {
+			URL string `json:"url"`
+		}
+		if json.Unmarshal(raw.UnofficialUpdate, &u) == nil {
+			e.UnofficialURL = strings.TrimSpace(u.URL)
+		}
+	}
+	if e.Replacement == "" {
+		e.Replacement = replacementOf(raw.Successor)
+	}
+	if e.Status == "" {
+		e.Status = StatusOK
+	}
+	return e
+}
+
+const (
+	StatusOK         = "ok"
+	StatusOptional   = "optional"
+	StatusUnofficial = "unofficial"
+	StatusBroken     = "broken"
+	StatusObsolete   = "obsolete"
+	StatusAbandoned  = "abandoned"
+)
+
+func normalizeCompatStatus(s string) string {
+	switch strings.ToLower(strings.TrimSpace(s)) {
+	case "ok", "compatible":
+		return StatusOK
+	case "optional", "workaround":
+		return StatusOptional
+	case "unofficial":
+		return StatusUnofficial
+	case "broken":
+		return StatusBroken
+	case "obsolete":
+		return StatusObsolete
+	case "abandoned":
+		return StatusAbandoned
+	default:
+		return ""
+	}
+}
+
+func uniqueIDsOf(raw rawCompatMod) []string {
+	ids := append(stringIDs(raw.ID), stringIDs(raw.IDs)...)
+	out := ids[:0]
+	seen := map[string]bool{}
+	for _, id := range ids {
+		id = strings.TrimSpace(id)
+		if id == "" || seen[strings.ToLower(id)] {
+			continue
+		}
+		seen[strings.ToLower(id)] = true
+		out = append(out, id)
+	}
+	return out
+}
+
+func stringIDs(raw json.RawMessage) []string {
+	if len(raw) == 0 {
+		return nil
+	}
+	var one string
+	if json.Unmarshal(raw, &one) == nil {
+		return []string{one}
+	}
+	var many []string
+	if json.Unmarshal(raw, &many) == nil {
+		return many
+	}
+	return nil
+}
+
+func replacementOf(raw json.RawMessage) string {
+	if len(raw) == 0 {
+		return ""
+	}
+	var s string
+	if json.Unmarshal(raw, &s) == nil {
+		return strings.TrimSpace(s)
+	}
+	var obj struct {
+		Name string `json:"name"`
+		ID   string `json:"id"`
+		URL  string `json:"url"`
+	}
+	if json.Unmarshal(raw, &obj) == nil {
+		for _, v := range []string{obj.Name, obj.ID, obj.URL} {
+			if strings.TrimSpace(v) != "" {
+				return strings.TrimSpace(v)
+			}
+		}
+	}
+	var many []string
+	if json.Unmarshal(raw, &many) == nil && len(many) > 0 {
+		return strings.TrimSpace(many[0])
+	}
+	return ""
+}
+
+func stripJSONC(b []byte) []byte {
+	var out bytes.Buffer
+	out.Grow(len(b))
+	inStr, esc, slash, block := false, false, false, false
+	for i := 0; i < len(b); i++ {
+		c := b[i]
+		if block {
+			if c == '*' && i+1 < len(b) && b[i+1] == '/' {
+				block = false
+				i++
+			}
+			continue
+		}
+		if slash {
+			slash = false
+			if !inStr && c == '/' {
+				for i < len(b) && b[i] != '\n' {
+					i++
+				}
+				if i < len(b) {
+					out.WriteByte('\n')
+				}
+				continue
+			}
+			if !inStr && c == '*' {
+				block = true
+				continue
+			}
+			out.WriteByte('/')
+		}
+		if !inStr && c == '/' {
+			slash = true
+			continue
+		}
+		if inStr {
+			out.WriteByte(c)
+			if esc {
+				esc = false
+				continue
+			}
+			if c == '\\' {
+				esc = true
+				continue
+			}
+			if c == '"' {
+				inStr = false
+			}
+			continue
+		}
+		if c == '"' {
+			inStr = true
+			out.WriteByte(c)
+			continue
+		}
+		out.WriteByte(c)
+	}
+	s := out.Bytes()
+	return stripTrailingCommas(s)
+}
+
+func stripTrailingCommas(b []byte) []byte {
+	var out []byte
+	i := 0
+	for i < len(b) {
+		if b[i] == ',' {
+			j := i + 1
+			for j < len(b) && unicode.IsSpace(rune(b[j])) {
+				j++
+			}
+			if j < len(b) && (b[j] == '}' || b[j] == ']') {
+				i = j
+				continue
+			}
+		}
+		out = append(out, b[i])
+		i++
+	}
+	return out
+}

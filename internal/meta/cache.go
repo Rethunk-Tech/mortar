@@ -28,6 +28,7 @@ type Client struct {
 	IndexURL   string
 	PageBase   string
 	UpdatesURL string
+	CompatURL  string
 	Now        func() time.Time
 	index      indexMemo
 	// updatesMu serializes update checks so concurrent profiles share one fetch and one cache write.

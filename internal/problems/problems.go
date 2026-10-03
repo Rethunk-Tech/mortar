@@ -159,6 +159,7 @@ type Result struct {
 	AssetConflicts []AssetConflict    `json:"assetConflicts"`
 	Settings       []SettingHint      `json:"settings"`
 	Cleanup        []Cleanup          `json:"cleanup,omitempty"`
+	Compat         []Compat           `json:"compat,omitempty"`
 	RunErrors      []RunError         `json:"runErrors"`
 	Drift          []profile.Drift    `json:"drift,omitempty"`
 	Dismissed      []DismissedProblem `json:"dismissed"`

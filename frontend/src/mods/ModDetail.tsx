@@ -22,6 +22,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { CompatDetail } from './CompatChip.tsx'
 import { EditConfigButton } from './ConfigEditor.tsx'
 import { useDetail } from './detail.ts'
 import { modId, siblingsOf } from './lookup.ts'
@@ -219,6 +220,7 @@ function Body({ mod, relations, state, ask }: BodyProps) {
       ) : null}
       <Versions mod={mod} state={state} ask={() => ask('rollback')} />
       <Settings mod={mod} state={state} ask={() => ask('reset')} />
+      <CompatDetail mod={mod} />
       <Section title={t`Needed by`}>
         <Names
           names={(relations?.neededBy ?? []).map((d) => d.name)}
