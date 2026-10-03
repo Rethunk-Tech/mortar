@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/jsonc"
 	"github.com/Rethunk-AI/mortar/internal/modconfig"
 )
 
@@ -157,7 +158,7 @@ func schemaFromDir(folder string) modconfig.Schema {
 	if err != nil {
 		return modconfig.Schema{}
 	}
-	schema, err := modconfig.Parse(stripConfigJSONNoise(raw))
+	schema, err := modconfig.Parse(jsonc.Clean(raw))
 	if err != nil {
 		return modconfig.Schema{}
 	}

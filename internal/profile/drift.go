@@ -1,7 +1,6 @@
 package profile
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -57,16 +56,13 @@ func holdDir(profileDir string) string {
 }
 
 func loadSnapshot(profileDir string) (ModsSnapshot, error) {
-	data, err := os.ReadFile(snapshotPath(profileDir))
+	var snap ModsSnapshot
+	found, err := datadir.ReadJSON(snapshotPath(profileDir), &snap)
 	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return ModsSnapshot{Folders: map[string]FolderStat{}}, nil
-		}
 		return ModsSnapshot{}, err
 	}
-	var snap ModsSnapshot
-	if err := json.Unmarshal(data, &snap); err != nil {
-		return ModsSnapshot{}, err
+	if !found {
+		return ModsSnapshot{Folders: map[string]FolderStat{}}, nil
 	}
 	if snap.Folders == nil {
 		snap.Folders = map[string]FolderStat{}

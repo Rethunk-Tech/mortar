@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -33,7 +34,7 @@ func windowGeomPath(dataDir string) string {
 }
 
 func loadWindowGeom(dataDir string, screens []screenRect) (windowGeom, bool) {
-	b, err := os.ReadFile(windowGeomPath(dataDir))
+	b, err := fsx.ReadFile(windowGeomPath(dataDir))
 	if err != nil {
 		return windowGeom{}, false
 	}

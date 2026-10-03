@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/jsonc"
 )
 
 type jsonPair struct {
@@ -32,7 +34,7 @@ const (
 )
 
 func rewriteConfigJSON(data []byte) ([]byte, error) {
-	dec := json.NewDecoder(bytes.NewReader(stripConfigJSONNoise(data)))
+	dec := json.NewDecoder(bytes.NewReader(jsonc.Clean(data)))
 	dec.UseNumber()
 	node, err := decodeJSON(dec)
 	if err != nil {

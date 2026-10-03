@@ -266,7 +266,10 @@ func (s *Store) AddDir(game, key, srcDir string) error {
 	} else if ready {
 		return s.touch(game, key)
 	}
-	return s.install(game, key, func(tmp string) error { return datadir.CopyTree(srcDir, tmp) }, func() int64 { return dirSize(srcDir) })
+	return s.install(game, key, func(tmp string) error { return datadir.CopyTree(srcDir, tmp) }, func() int64 {
+		n, _ := datadir.Size(srcDir)
+		return n
+	})
 }
 
 // AddDirVerified copies srcDir under key and checks local content keys before installing them.
@@ -474,18 +477,6 @@ func hashKey(path string) (string, error) {
 	return LocalKey(hex.EncodeToString(h.Sum(nil))), nil
 }
 
-func dirSize(dir string) (n int64) {
-	_ = filepath.WalkDir(dir, func(_ string, d fs.DirEntry, err error) error {
-		if err == nil && d.Type().IsRegular() {
-			if info, ierr := d.Info(); ierr == nil {
-				n += info.Size()
-			}
-		}
-		return nil
-	})
-	return n
-}
-
 // index maps game -> key -> last use.
 type index map[string]map[string]time.Time
 
@@ -493,7 +484,7 @@ func (s *Store) indexPath() string { return filepath.Join(s.root, "index.json") 
 
 func (s *Store) loadIndex() (index, error) {
 	idx := index{}
-	b, err := os.ReadFile(s.indexPath())
+	b, err := fsx.ReadFile(s.indexPath())
 	if errors.Is(err, fs.ErrNotExist) {
 		return idx, nil
 	}

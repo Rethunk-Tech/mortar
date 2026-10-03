@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/jsonc"
 )
 
 type settingGroup struct {
@@ -156,7 +157,7 @@ func readPackConfig(folder string) map[string]string {
 		return map[string]string{}
 	}
 	var values map[string]json.RawMessage
-	if json.Unmarshal(stripJSONNoise(raw), &values) != nil {
+	if json.Unmarshal(jsonc.Clean(raw), &values) != nil {
 		return map[string]string{}
 	}
 	out := make(map[string]string, len(values))

@@ -1,14 +1,13 @@
 package profile
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"strings"
-	"unicode"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/jsonc"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
@@ -153,96 +152,8 @@ func idSet(ids []string) map[string]bool {
 
 func lenientObject(raw []byte) (map[string]json.RawMessage, error) {
 	var doc map[string]json.RawMessage
-	cleaned := dropTrailing(dropCommentsJSON(bytes.TrimPrefix(raw, []byte("\xef\xbb\xbf"))))
-	if err := json.Unmarshal(cleaned, &doc); err != nil {
+	if err := json.Unmarshal(jsonc.Clean(raw), &doc); err != nil {
 		return nil, err
 	}
 	return doc, nil
-}
-
-func dropCommentsJSON(b []byte) []byte {
-	out := make([]byte, 0, len(b))
-	inStr, esc := false, false
-	i := 0
-	for i < len(b) {
-		c := b[i]
-		if inStr {
-			out = append(out, c)
-			if esc {
-				esc = false
-			} else if c == '\\' {
-				esc = true
-			} else if c == '"' {
-				inStr = false
-			}
-			i++
-			continue
-		}
-		if c == '"' {
-			inStr, out = true, append(out, c)
-			i++
-			continue
-		}
-		if c == '/' && i+1 < len(b) && b[i+1] == '/' {
-			for i < len(b) && b[i] != '\n' {
-				i++
-			}
-			if i < len(b) {
-				out = append(out, '\n')
-				i++
-			}
-			continue
-		}
-		if c == '/' && i+1 < len(b) && b[i+1] == '*' {
-			end := bytes.Index(b[i+2:], []byte("*/"))
-			if end < 0 {
-				return out
-			}
-			i += end + 4
-			out = append(out, ' ')
-			continue
-		}
-		out = append(out, c)
-		i++
-	}
-	return out
-}
-
-func dropTrailing(b []byte) []byte {
-	out := make([]byte, 0, len(b))
-	inStr, esc := false, false
-	i := 0
-	for i < len(b) {
-		c := b[i]
-		if inStr {
-			out = append(out, c)
-			if esc {
-				esc = false
-			} else if c == '\\' {
-				esc = true
-			} else if c == '"' {
-				inStr = false
-			}
-			i++
-			continue
-		}
-		if c == '"' {
-			inStr, out = true, append(out, c)
-			i++
-			continue
-		}
-		if c == ',' {
-			j := i + 1
-			for j < len(b) && unicode.IsSpace(rune(b[j])) {
-				j++
-			}
-			if j < len(b) && (b[j] == '}' || b[j] == ']') {
-				i++
-				continue
-			}
-		}
-		out = append(out, c)
-		i++
-	}
-	return out
 }

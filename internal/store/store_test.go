@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 
 	"github.com/Rethunk-AI/mortar/internal/archive"
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
 
 func newStore(t *testing.T) *Store {
@@ -82,6 +83,23 @@ func TestAddArchiveIsIdempotent(t *testing.T) {
 	}
 }
 
+func TestLoadIndexRejectsSymlink(t *testing.T) {
+	s := newStore(t)
+	if err := os.MkdirAll(s.root, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	outside := filepath.Join(t.TempDir(), "index.json")
+	if err := os.WriteFile(outside, []byte(`{"stardew":{}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(outside, s.indexPath()); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.loadIndex(); err == nil {
+		t.Fatal("symlink index was read")
+	}
+}
+
 func TestKeysDoesNotStampCompleteMarkerVersion(t *testing.T) {
 	s := newStore(t)
 	p := buildZip(t, map[string]string{"Mod/manifest.json": "{}"})
@@ -119,7 +137,8 @@ func TestDiskFullMessage(t *testing.T) {
 	if err := fsx.WriteFile(filepath.Join(src, "a"), make([]byte, 3<<20), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	err := s.install("stardew", "smapi-1", func(string) error { return syscall.ENOSPC }, func() int64 { return dirSize(src) })
+	n, _ := datadir.Size(src)
+	err := s.install("stardew", "smapi-1", func(string) error { return syscall.ENOSPC }, func() int64 { return n })
 	if !errors.Is(err, syscall.ENOSPC) || !strings.Contains(err.Error(), "needs about 4 MB") {
 		t.Fatalf("err = %v", err)
 	}

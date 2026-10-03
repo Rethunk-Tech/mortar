@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/jsonc"
 )
 
 // cpShape is part of a target one edit writes: an area (image pixels, or map tiles on every layer), one map
@@ -209,7 +210,7 @@ func dataLiteral(raw json.RawMessage, values map[string]string) string {
 		}
 		return ""
 	}
-	return string(stripJSONNoise(raw))
+	return string(jsonc.Clean(raw))
 }
 
 // editShapes is what one EditImage or EditMap change writes. An edit that only adds warps, rewrites text

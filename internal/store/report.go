@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
@@ -79,8 +80,9 @@ func (s *Store) gameReport(gameID string, idx index, keep map[string]bool) (Game
 		}
 		dir := filepath.Join(s.root, gameID, key)
 		name, uniqueID, version := readManifest(dir)
+		size, _ := datadir.Size(dir)
 		entry := Item{
-			Key: key, Name: name, Version: version, LastUsed: idx[gameID][key], Size: dirSize(dir),
+			Key: key, Name: name, Version: version, LastUsed: idx[gameID][key], Size: size,
 		}
 		if !keep[key] {
 			unused = append(unused, entry)

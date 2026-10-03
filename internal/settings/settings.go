@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/backup"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 const fileName = "settings.json"
@@ -243,7 +244,7 @@ func Open() (*Store, error) {
 		return nil, err
 	}
 	s := &Store{path: filepath.Join(dir, fileName), cur: Defaults()}
-	if b, err := os.ReadFile(s.path); err == nil {
+	if b, err := fsx.ReadFile(s.path); err == nil {
 		var loaded Settings
 		if err := json.Unmarshal(b, &loaded); err != nil {
 			corrupt := fmt.Sprintf("%s.corrupt-%d", s.path, time.Now().UnixNano())

@@ -120,3 +120,12 @@ func assertOptionalDep(t *testing.T, raw, uniqueID string, want bool) {
 		t.Fatalf("optional %s = %v, want %v; body %s", uniqueID, got, want, strings.TrimSpace(raw))
 	}
 }
+
+func TestRewriteManifestDepsJSONC(t *testing.T) {
+	raw := []byte("\xef\xbb\xbf{\n  // comment\n  \"Name\": \"Win\",\n  \"UniqueID\": \"Me.Win\",\n}\n")
+	out, err := rewriteManifestDeps(raw, []string{"Me.Lose"}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertOptionalDep(t, string(out), "Me.Lose", true)
+}
