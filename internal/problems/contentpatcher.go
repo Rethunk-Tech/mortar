@@ -2,7 +2,9 @@ package problems
 
 import (
 	"bytes"
+	"compress/gzip"
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"io"
@@ -209,7 +211,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 6
+const contentPackParserVersion = 7
 
 type packFileStamp struct {
 	Path    string `json:"path"`
@@ -229,88 +231,85 @@ type diskPackEntry struct {
 }
 
 type diskCachedPack struct {
-	Patches  []diskPatch           `json:"patches"`
-	Tokens   []diskTokenDefinition `json:"tokens"`
-	Mentions map[string]bool       `json:"mentions"`
-	Schema   map[string]diskSchema `json:"schema"`
-	Skips    int                   `json:"skips"`
+	Patches  []diskPatch           `json:"patches,omitempty"`
+	Tokens   []diskTokenDefinition `json:"tokens,omitempty"`
+	Mentions map[string]bool       `json:"mentions,omitempty"`
+	Schema   map[string]diskSchema `json:"schema,omitempty"`
+	Skips    int                   `json:"skips,omitempty"`
 }
 
 type diskPatch struct {
-	Kind          string              `json:"kind"`
-	Target        string              `json:"target"`
-	FromFile      string              `json:"fromFile"`
-	Priority      string              `json:"priority"`
-	PatchMode     string              `json:"patchMode"`
-	When          diskWhen            `json:"when"`
-	Shapes        []diskShape         `json:"shapes"`
-	Spouse        string              `json:"spouse"`
-	Places        map[string][]string `json:"places"`
-	Image         bool                `json:"image"`
-	ImageSource   []byte              `json:"imageSource"`
-	ImageFromArea string              `json:"imageFromArea"`
-	Source        string              `json:"source"`
-	Index         int                 `json:"index"`
-	Action        string              `json:"action"`
-	ToArea        string              `json:"toArea"`
-	TokenName     string              `json:"tokenName"`
-	TokenValue    string              `json:"tokenValue"`
+	Kind          string      `json:"kind,omitempty"`
+	Target        string      `json:"target,omitempty"`
+	FromFile      string      `json:"fromFile,omitempty"`
+	Priority      string      `json:"priority,omitempty"`
+	PatchMode     string      `json:"patchMode,omitempty"`
+	When          diskWhen    `json:"when,omitzero"`
+	Shapes        []diskShape `json:"shapes,omitempty"`
+	Image         bool        `json:"image,omitempty"`
+	ImageFromArea string      `json:"imageFromArea,omitempty"`
+	Source        string      `json:"source,omitempty"`
+	Index         int         `json:"index,omitempty"`
+	Action        string      `json:"action,omitempty"`
+	ToArea        string      `json:"toArea,omitempty"`
+	TokenName     string      `json:"tokenName,omitempty"`
+	TokenValue    string      `json:"tokenValue,omitempty"`
 }
 
 type diskShape struct {
-	Kind  byte   `json:"kind"`
-	X     int    `json:"x"`
-	Y     int    `json:"y"`
-	W     int    `json:"w"`
-	H     int    `json:"h"`
-	Cells string `json:"cells"`
-	Layer string `json:"layer"`
-	Key   string `json:"key"`
-	Value string `json:"value"`
-	Tiny  bool   `json:"tiny"`
+	Kind  byte   `json:"kind,omitempty"`
+	X     int    `json:"x,omitempty"`
+	Y     int    `json:"y,omitempty"`
+	W     int    `json:"w,omitempty"`
+	H     int    `json:"h,omitempty"`
+	Cells []byte `json:"cells,omitempty"`
+	Layer string `json:"layer,omitempty"`
+	Key   string `json:"key,omitempty"`
+	Value string `json:"value,omitempty"`
+	Tiny  bool   `json:"tiny,omitempty"`
 }
 
 type diskWhen struct {
-	AnyOf   [][]string             `json:"anyOf"`
-	NoneOf  []string               `json:"noneOf"`
-	Config  []diskConfig           `json:"config"`
-	Dynamic []diskDynamicCondition `json:"dynamic"`
-	Flags   []diskFlagCondition    `json:"flags"`
-	Spouse  string                 `json:"spouse"`
-	Places  map[string][]string    `json:"places"`
+	AnyOf   [][]string             `json:"anyOf,omitempty"`
+	NoneOf  []string               `json:"noneOf,omitempty"`
+	Config  []diskConfig           `json:"config,omitempty"`
+	Dynamic []diskDynamicCondition `json:"dynamic,omitempty"`
+	Flags   []diskFlagCondition    `json:"flags,omitempty"`
+	Spouse  string                 `json:"spouse,omitempty"`
+	Places  map[string][]string    `json:"places,omitempty"`
 }
 
 type diskConfig struct {
-	Field         string   `json:"field"`
-	Values        []string `json:"values"`
-	AllowMultiple bool     `json:"allowMultiple"`
+	Field         string   `json:"field,omitempty"`
+	Values        []string `json:"values,omitempty"`
+	AllowMultiple bool     `json:"allowMultiple,omitempty"`
 }
 
 type diskDynamicCondition struct {
-	Name     string   `json:"name"`
-	Values   []string `json:"values"`
-	Contains string   `json:"contains"`
-	Expected bool     `json:"expected"`
+	Name     string   `json:"name,omitempty"`
+	Values   []string `json:"values,omitempty"`
+	Contains string   `json:"contains,omitempty"`
+	Expected bool     `json:"expected,omitempty"`
 }
 
 type diskFlagCondition struct {
-	Name    string `json:"name"`
-	Present bool   `json:"present"`
+	Name    string `json:"name,omitempty"`
+	Present bool   `json:"present,omitempty"`
 }
 
 type diskTokenDefinition struct {
-	Name  string                     `json:"name"`
-	Value string                     `json:"value"`
-	When  map[string]json.RawMessage `json:"when"`
+	Name  string                     `json:"name,omitempty"`
+	Value string                     `json:"value,omitempty"`
+	When  map[string]json.RawMessage `json:"when,omitempty"`
 }
 
 type diskSchema struct {
-	Key           string   `json:"key"`
-	DefaultValue  string   `json:"defaultValue"`
-	AllowMultiple bool     `json:"allowMultiple"`
-	AllowValues   []string `json:"allowValues"`
-	AllowBlank    bool     `json:"allowBlank"`
-	Description   string   `json:"description"`
+	Key           string   `json:"key,omitempty"`
+	DefaultValue  string   `json:"defaultValue,omitempty"`
+	AllowMultiple bool     `json:"allowMultiple,omitempty"`
+	AllowValues   []string `json:"allowValues,omitempty"`
+	AllowBlank    bool     `json:"allowBlank,omitempty"`
+	Description   string   `json:"description,omitempty"`
 }
 
 var packDiskState struct {
@@ -360,7 +359,7 @@ func diskPackOf(pack cachedPack) diskCachedPack {
 	return out
 }
 
-func cachedPackOfDisk(disk diskCachedPack, entry diskPackEntry) cachedPack {
+func cachedPackOfDisk(root string, disk diskCachedPack, entry diskPackEntry) cachedPack {
 	out := cachedPack{
 		fingerprint: entry.Fingerprint,
 		files:       entry.Files,
@@ -371,7 +370,7 @@ func cachedPackOfDisk(disk diskCachedPack, entry diskPackEntry) cachedPack {
 	if disk.Patches != nil {
 		out.patches = make([]cpPatch, len(disk.Patches))
 		for i, patch := range disk.Patches {
-			out.patches[i] = cpPatchOfDisk(patch)
+			out.patches[i] = cpPatchOfDisk(root, patch)
 		}
 	}
 	if disk.Tokens != nil {
@@ -404,10 +403,7 @@ func diskPatchOf(patch cpPatch) diskPatch {
 		Priority:      patch.priority,
 		PatchMode:     patch.patchMode,
 		When:          diskWhenOf(patch.when),
-		Spouse:        patch.spouse,
-		Places:        patch.places,
 		Image:         patch.image,
-		ImageSource:   patch.imageSource,
 		ImageFromArea: patch.imageFromArea,
 		Source:        patch.source,
 		Index:         patch.index,
@@ -425,7 +421,7 @@ func diskPatchOf(patch cpPatch) diskPatch {
 				Y:     shape.y,
 				W:     shape.w,
 				H:     shape.h,
-				Cells: shape.cells,
+				Cells: encodeCellSet(shape.cells),
 				Layer: shape.layer,
 				Key:   shape.key,
 				Value: shape.value,
@@ -436,18 +432,18 @@ func diskPatchOf(patch cpPatch) diskPatch {
 	return out
 }
 
-func cpPatchOfDisk(patch diskPatch) cpPatch {
+func cpPatchOfDisk(root string, patch diskPatch) cpPatch {
+	when := cpWhenOfDisk(patch.When)
 	out := cpPatch{
 		kind:          patch.Kind,
 		target:        patch.Target,
 		fromFile:      patch.FromFile,
 		priority:      patch.Priority,
 		patchMode:     patch.PatchMode,
-		when:          cpWhenOfDisk(patch.When),
-		spouse:        patch.Spouse,
-		places:        patch.Places,
+		when:          when,
+		spouse:        when.spouse,
+		places:        when.places,
 		image:         patch.Image,
-		imageSource:   patch.ImageSource,
 		imageFromArea: patch.ImageFromArea,
 		source:        patch.Source,
 		index:         patch.Index,
@@ -455,6 +451,9 @@ func cpPatchOfDisk(patch diskPatch) cpPatch {
 		toArea:        patch.ToArea,
 		tokenName:     patch.TokenName,
 		tokenValue:    patch.TokenValue,
+	}
+	if patch.Image {
+		out.imageSource = imageSource(root, patch.FromFile, true)
 	}
 	if patch.Shapes != nil {
 		out.shapes = make([]cpShape, len(patch.Shapes))
@@ -465,7 +464,7 @@ func cpPatchOfDisk(patch diskPatch) cpPatch {
 				y:     shape.Y,
 				w:     shape.W,
 				h:     shape.H,
-				cells: shape.Cells,
+				cells: decodeCellSet(shape.Cells),
 				layer: shape.Layer,
 				key:   shape.Key,
 				value: shape.Value,
@@ -474,6 +473,162 @@ func cpPatchOfDisk(patch diskPatch) cpPatch {
 		}
 	}
 	return out
+}
+
+// encodeCellSet packs "x,y;..." into a bounding-box bitmap, or ordered int16/int32 pairs when sparse.
+func encodeCellSet(s string) []byte {
+	if s == "" {
+		return nil
+	}
+	var xs, ys []int
+	minX, minY := 1<<30, 1<<30
+	maxX, maxY := -1<<30, -1<<30
+	for cell := range strings.SplitSeq(s, ";") {
+		if cell == "" {
+			continue
+		}
+		parts := strings.SplitN(cell, ",", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		x, errX := strconv.Atoi(parts[0])
+		y, errY := strconv.Atoi(parts[1])
+		if errX != nil || errY != nil {
+			continue
+		}
+		xs = append(xs, x)
+		ys = append(ys, y)
+		minX, minY = min(minX, x), min(minY, y)
+		maxX, maxY = max(maxX, x), max(maxY, y)
+	}
+	n := len(xs)
+	if n == 0 {
+		return nil
+	}
+	width := maxX - minX + 1
+	height := maxY - minY + 1
+	bitBytes := (width*height + 7) / 8
+	pairBytes := 1 + 4*n
+	if width > 0 && height > 0 && width <= 65535 && height <= 65535 && bitBytes+10 < pairBytes && bitBytes <= 1<<20 &&
+		minX >= -32768 && maxX <= 32767 && minY >= -32768 && maxY <= 32767 {
+		out := make([]byte, 9+bitBytes)
+		out[0] = 0
+		putInt16(out[1:], minX)
+		putInt16(out[3:], minY)
+		putUint16(out[5:], width)
+		putUint16(out[7:], height)
+		for i := range n {
+			bit := (ys[i]-minY)*width + (xs[i] - minX)
+			out[9+bit/8] |= 1 << (bit % 8)
+		}
+		return out
+	}
+	fit16 := minX >= -32768 && maxX <= 32767 && minY >= -32768 && maxY <= 32767
+	if fit16 {
+		out := make([]byte, 1+4*n)
+		out[0] = 1
+		for i := range n {
+			putInt16(out[1+4*i:], xs[i])
+			putInt16(out[3+4*i:], ys[i])
+		}
+		return out
+	}
+	out := make([]byte, 1+8*n)
+	out[0] = 2
+	for i := range n {
+		putInt32(out[1+8*i:], xs[i])
+		putInt32(out[5+8*i:], ys[i])
+	}
+	return out
+}
+
+func putInt16(b []byte, v int) {
+	binary.LittleEndian.PutUint16(b, uint16(uint(v)&0xffff))
+}
+
+func putInt32(b []byte, v int) {
+	binary.LittleEndian.PutUint32(b, uint32(uint(v)&0xffffffff))
+}
+
+func putUint16(b []byte, v int) {
+	binary.LittleEndian.PutUint16(b, uint16(uint(v)&0xffff))
+}
+
+func getUint16(b []byte) int {
+	return int(b[0]) | int(b[1])<<8
+}
+
+func getInt16(b []byte) int {
+	v := int(b[0]) | int(b[1])<<8
+	if v >= 0x8000 {
+		return v - 0x10000
+	}
+	return v
+}
+
+func getInt32(b []byte) int {
+	v := int(b[0]) | int(b[1])<<8 | int(b[2])<<16 | int(b[3])<<24
+	if v >= 0x80000000 {
+		return v - 0x100000000
+	}
+	return v
+}
+
+func decodeCellSet(raw []byte) string {
+	if len(raw) == 0 {
+		return ""
+	}
+	var b strings.Builder
+	write := func(x, y int) {
+		b.WriteByte(';')
+		b.WriteString(strconv.Itoa(x))
+		b.WriteByte(',')
+		b.WriteString(strconv.Itoa(y))
+	}
+	switch raw[0] {
+	case 0:
+		if len(raw) < 9 {
+			return ""
+		}
+		minX := getInt16(raw[1:])
+		minY := getInt16(raw[3:])
+		width := getUint16(raw[5:])
+		height := getUint16(raw[7:])
+		bits := raw[9:]
+		if width <= 0 || height <= 0 {
+			return ""
+		}
+		for y := range height {
+			for x := range width {
+				bit := y*width + x
+				if bit/8 >= len(bits) {
+					return b.String()
+				}
+				if bits[bit/8]&(1<<(bit%8)) != 0 {
+					write(minX+x, minY+y)
+				}
+			}
+		}
+	case 1:
+		rest := raw[1:]
+		if len(rest)%4 != 0 {
+			return ""
+		}
+		for i := 0; i < len(rest); i += 4 {
+			write(getInt16(rest[i:]), getInt16(rest[i+2:]))
+		}
+	case 2:
+		rest := raw[1:]
+		if len(rest)%8 != 0 {
+			return ""
+		}
+		for i := 0; i < len(rest); i += 8 {
+			write(getInt32(rest[i:]), getInt32(rest[i+4:]))
+		}
+	default:
+		return ""
+	}
+	return b.String()
 }
 
 func diskWhenOf(when cpWhen) diskWhen {
@@ -584,7 +739,7 @@ func readContentPackWithEnabled(mod Installed, requireEnabled bool) cachedPack {
 	cachePath := loadPackDiskCache()
 	if cachePath != "" {
 		if entry, ok := diskPackEntryFor(root); ok && packFingerprintValid(root, entry.Files, entry.Fingerprint) {
-			pack := cachedPackOfDisk(entry.Pack, entry)
+			pack := cachedPackOfDisk(root, entry.Pack, entry)
 			packCache.Store(root, pack)
 			clearDiskPackPayload(root)
 			return pack
@@ -666,6 +821,31 @@ func contentPackCachePath() (string, error) {
 	return filepath.Join(base, "cache", "problems-content-packs.json"), nil
 }
 
+func zipPackCache(raw []byte) ([]byte, error) {
+	var buf bytes.Buffer
+	writer := gzip.NewWriter(&buf)
+	if _, err := writer.Write(raw); err != nil {
+		return nil, err
+	}
+	if err := writer.Close(); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func unzipPackCache(raw []byte) ([]byte, bool) {
+	if len(raw) >= 2 && raw[0] == 0x1f && raw[1] == 0x8b {
+		reader, err := gzip.NewReader(bytes.NewReader(raw))
+		if err != nil {
+			return nil, false
+		}
+		payload, err := io.ReadAll(reader)
+		_ = reader.Close()
+		return payload, err == nil
+	}
+	return raw, true
+}
+
 func loadPackDiskCache() string {
 	path, err := contentPackCachePath()
 	if err != nil {
@@ -684,8 +864,12 @@ func loadPackDiskCache() string {
 	if err != nil {
 		return path
 	}
+	payload, ok := unzipPackCache(raw)
+	if !ok {
+		return path
+	}
 	var cache diskPackCache
-	if json.Unmarshal(raw, &cache) == nil && cache.Version == contentPackParserVersion && cache.Packs != nil {
+	if json.Unmarshal(payload, &cache) == nil && cache.Version == contentPackParserVersion && cache.Packs != nil {
 		packDiskState.entries = cache.Packs
 	}
 	return path
@@ -758,6 +942,11 @@ func flushPackDiskCache(mods []Installed) {
 		packDiskState.Unlock()
 		return
 	}
+	packed, err := zipPackCache(raw)
+	if err != nil {
+		packDiskState.Unlock()
+		return
+	}
 	packDiskState.dirty = false
 	packDiskState.Unlock()
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
@@ -766,7 +955,7 @@ func flushPackDiskCache(mods []Installed) {
 		packDiskState.Unlock()
 		return
 	}
-	if err := os.WriteFile(path, raw, 0o600); err != nil {
+	if err := os.WriteFile(path, packed, 0o600); err != nil {
 		packDiskState.Lock()
 		packDiskState.dirty = true
 		packDiskState.Unlock()
