@@ -238,7 +238,7 @@ msgstr "Preview import"
 msgid "Move data folder…"
 msgstr "Move data folder…"
 
-#: src/launchers/LauncherList.tsx:64
+#: src/launchers/LauncherList.tsx:106
 msgid "Found, with no supported games yet"
 msgstr "Found, with no supported games yet"
 
@@ -2722,7 +2722,7 @@ msgid "By game"
 msgstr "By game"
 
 #. placeholder {0}: launcher.name
-#: src/launchers/LauncherList.tsx:54
+#: src/launchers/LauncherList.tsx:96
 msgid "Choose a {0} folder"
 msgstr "Choose a {0} folder"
 
@@ -2735,9 +2735,13 @@ msgstr "Toggle the focused mod"
 msgid "Play this profile and start a farm. Each save shows here with how well it fits {name}, so you know which mods it needs."
 msgstr "Play this profile and start a farm. Each save shows here with how well it fits {name}, so you know which mods it needs."
 
-#: src/launchers/LauncherList.tsx:127
+#: src/launchers/LauncherList.tsx:61
 msgid "Stop searching this folder"
 msgstr "Stop searching this folder"
+
+#: src/launchers/LauncherList.tsx:162
+msgid "Added by you"
+msgstr "Added by you"
 
 #: src/console/BisectDialog.tsx:156
 msgid "Stopping…"
@@ -3752,7 +3756,8 @@ msgstr "{0} saved by sharing files"
 msgid "Needs {0} or newer, has {1}"
 msgstr "Needs {0} or newer, has {1}"
 
-#: src/launchers/LauncherList.tsx:91
+#: src/launchers/LauncherList.tsx:133
+#: src/launchers/LauncherList.tsx:151
 msgid "Found"
 msgstr "Found"
 
@@ -4184,7 +4189,7 @@ msgid "Request counts appear after Mortar talks to Nexus."
 msgstr "Request counts appear after Mortar talks to Nexus."
 
 #: src/firstrun/FindStep.tsx:206
-#: src/launchers/LauncherList.tsx:157
+#: src/launchers/LauncherList.tsx:176
 msgid "Rescan"
 msgstr "Rescan"
 
@@ -4815,8 +4820,9 @@ msgstr "{0}: {1}"
 msgid "{0} · {1} unique"
 msgstr "{0} · {1} unique"
 
-#: src/launchers/LauncherList.tsx:62
-#: src/launchers/LauncherList.tsx:93
+#: src/launchers/LauncherList.tsx:104
+#: src/launchers/LauncherList.tsx:135
+#: src/launchers/LauncherList.tsx:155
 #: src/settings/sections/GameSettings.tsx:201
 msgid "Not found"
 msgstr "Not found"
@@ -5073,7 +5079,7 @@ msgstr "Removed from Nexus"
 msgid "A download fails"
 msgstr "A download fails"
 
-#: src/launchers/LauncherList.tsx:148
+#: src/launchers/LauncherList.tsx:185
 msgid "Add folder…"
 msgstr "Add folder…"
 
@@ -6094,7 +6100,7 @@ msgstr "Switch to Performance"
 msgid "Include config files"
 msgstr "Include config files"
 
-#: src/launchers/LauncherList.tsx:130
+#: src/launchers/LauncherList.tsx:62
 msgid "Remove {dir}"
 msgstr "Remove {dir}"
 
@@ -7371,10 +7377,6 @@ msgstr "SMAPI mods"
 msgid "Dates"
 msgstr "Dates"
 
-#: src/launchers/LauncherList.tsx:123
-msgid "Folders you added:"
-msgstr "Folders you added:"
-
 #: src/settings/sections/Downloads.tsx:80
 msgid "Send other games' links to {redirectName}"
 msgstr "Send other games' links to {redirectName}"
@@ -7990,10 +7992,6 @@ msgstr "Stardew Valley's Steam launch options run SMAPI in place of the game. St
 #: src/mods/LoadOrderTab.tsx:84
 msgid "Used by: {label}"
 msgstr "Used by: {label}"
-
-#: src/launchers/LauncherList.tsx:100
-msgid "Found in:"
-msgstr "Found in:"
 
 #. placeholder {0}: status.latest
 #: src/settings/smapiToast.ts:33
@@ -9029,10 +9027,6 @@ msgstr "Switch profile"
 #: src/queue/QueueHistory.tsx:211
 msgid " · "
 msgstr " · "
-
-#: src/launchers/LauncherList.tsx:111
-msgid "Mortar looked in:"
-msgstr "Mortar looked in:"
 
 #: src/settings/sections/NexusMods.tsx:259
 msgid "Personal API key"

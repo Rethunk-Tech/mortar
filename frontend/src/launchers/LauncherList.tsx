@@ -9,7 +9,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { ChevronDown, CircleCheck, CircleX, FolderPlus, RefreshCw, X } from 'lucide-react'
+import { ChevronDown, CircleCheck, CircleX, Folder, FolderPlus, RefreshCw, X } from 'lucide-react'
 import { useState } from 'react'
 import type { StoreApp } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
 import { PickFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
@@ -25,6 +25,48 @@ const STATUS_ICON = 30
 const COLUMN_MIN = 460
 
 const pathSx = { fontSize: 13, userSelect: 'text', overflowWrap: 'anywhere' } as const
+
+const MISSING_OPACITY = 0.5
+
+function FolderRow({
+  dir,
+  note,
+  found,
+  onRemove,
+}: {
+  dir: string
+  note: string
+  found: boolean
+  onRemove?: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minHeight: 44, px: 1.5 }}>
+      <Folder
+        size={16}
+        aria-hidden={true}
+        style={{ flexShrink: 0, opacity: found ? 1 : MISSING_OPACITY }}
+      />
+      <Typography
+        title={dir}
+        sx={{ ...pathSx, flex: 1, minWidth: 0, color: found ? 'text.primary' : 'text.secondary' }}
+        noWrap={true}
+      >
+        {dir}
+      </Typography>
+      <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'nowrap' }}>
+        {note}
+      </Typography>
+      {onRemove ? (
+        <Tooltip title={t`Stop searching this folder`}>
+          <IconButton size="small" aria-label={t`Remove ${dir}`} onClick={onRemove}>
+            <X size={14} />
+          </IconButton>
+        </Tooltip>
+      ) : null}
+    </Box>
+  )
+}
 
 function LauncherRow({
   launcher,
@@ -95,58 +137,35 @@ function LauncherRow({
         </Box>
       </AccordionSummary>
       <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, pt: 0 }}>
-        {roots.length > 0 ? (
-          <Box>
-            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{t`Found in:`}</Typography>
-            {roots.map((dir) => (
-              <Typography key={dir} sx={pathSx}>
-                {dir}
-              </Typography>
-            ))}
-          </Box>
-        ) : (
-          <Box>
-            <Typography
-              sx={{ fontSize: 13, color: 'text.secondary' }}
-            >{t`Mortar looked in:`}</Typography>
-            <Box component="ul" sx={{ m: 0, pl: 2.5, color: 'text.secondary', ...pathSx }}>
-              {looked.map((dir) => (
-                <li key={dir}>{dir}</li>
-              ))}
-            </Box>
-          </Box>
-        )}
-        {custom.length > 0 ? (
-          <Box>
-            <Typography
-              sx={{ fontSize: 13, color: 'text.secondary' }}
-            >{t`Folders you added:`}</Typography>
-            {custom.map((dir) => (
-              <Box key={dir} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Typography sx={{ ...pathSx, flex: 1 }}>{dir}</Typography>
-                <Tooltip title={t`Stop searching this folder`}>
-                  <IconButton
-                    size="small"
-                    aria-label={t`Remove ${dir}`}
-                    onClick={() => run(RemoveLauncherRoot(launcher.id, dir))}
-                  >
-                    <X size={14} />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            ))}
-          </Box>
-        ) : null}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Button
-            variant={launcher.found ? 'outlined' : 'contained'}
-            color={launcher.found ? 'inherit' : 'primary'}
-            size="small"
-            startIcon={<FolderPlus size={15} />}
-            onClick={add}
-          >
-            {t`Add folder…`}
-          </Button>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            bgcolor: 'var(--mortar-raised)',
+            borderRadius: '6px',
+            overflow: 'hidden',
+            '& > * + *': { borderTop: '1px solid var(--mortar-hairline)' },
+          }}
+        >
+          {roots.map((dir) => (
+            <FolderRow key={dir} dir={dir} note={t`Found`} found={true} />
+          ))}
+          {roots.length === 0
+            ? looked.map((dir) => (
+                <FolderRow key={dir} dir={dir} note={t`Not found`} found={false} />
+              ))
+            : null}
+          {custom.map((dir) => (
+            <FolderRow
+              key={dir}
+              dir={dir}
+              note={t`Added by you`}
+              found={roots.includes(dir)}
+              onRemove={() => run(RemoveLauncherRoot(launcher.id, dir))}
+            />
+          ))}
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
           <Button
             variant="text"
             color="inherit"
@@ -155,6 +174,15 @@ function LauncherRow({
             onClick={refresh}
           >
             {t`Rescan`}
+          </Button>
+          <Button
+            variant={launcher.found ? 'outlined' : 'contained'}
+            color={launcher.found ? 'inherit' : 'primary'}
+            size="small"
+            startIcon={<FolderPlus size={15} />}
+            onClick={add}
+          >
+            {t`Add folder…`}
           </Button>
         </Box>
         {error ? (
