@@ -40,9 +40,6 @@ type tagged struct {
 func (s *Store) Report(referenced map[string][]string) (Report, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if err := s.migrateCompleteMarkers(); err != nil {
-		return nil, err
-	}
 	idx, err := s.loadIndex()
 	if err != nil {
 		return nil, err

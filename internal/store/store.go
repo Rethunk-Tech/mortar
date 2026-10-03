@@ -32,9 +32,8 @@ import (
 const retention = 30 * 24 * time.Hour
 
 const (
-	completeMarker        = ".complete"
-	indexMetadata         = "__mortar"
-	completeMarkerVersion = "complete-marker-v1"
+	completeMarker = ".complete"
+	indexMetadata  = "__mortar"
 )
 
 const tempPrefix = ".tmp-"
@@ -74,9 +73,6 @@ var ErrIncomplete = errors.New("store item is incomplete")
 type Store struct {
 	root string
 	mu   sync.Mutex
-	// migrated is set once this process has repaired incomplete items and recorded the marker
-	// version; item lookups then skip the whole-store pass. Guarded by mu.
-	migrated bool
 	// UnusedFor is unused-item lifetime; 0 uses the built-in 30 days, negative means keep forever.
 	UnusedFor time.Duration
 }
@@ -104,9 +100,6 @@ func SMAPIKey(version string) string { return "smapi-" + version }
 func (s *Store) Keys(game string) ([]string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if err := s.migrateCompleteMarkers(); err != nil {
-		return nil, err
-	}
 	idx, err := s.loadIndex()
 	if err != nil {
 		return nil, err
@@ -160,9 +153,6 @@ func (s *Store) itemDir(id, key string) (string, error) {
 func (s *Store) Path(game, key string) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if err := s.migrateCompleteMarkers(); err != nil {
-		return "", err
-	}
 	dir, err := s.folder(game, key)
 	if err != nil {
 		return "", err
@@ -237,9 +227,6 @@ func (s *Store) AddArchiveKey(game, key, archivePath string) error {
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if err := s.migrateCompleteMarkers(); err != nil {
-		return err
-	}
 	if ready, err := s.prepareItem(game, key); err != nil {
 		return err
 	} else if ready {
@@ -274,9 +261,6 @@ func (s *Store) AddDir(game, key, srcDir string) error {
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if err := s.migrateCompleteMarkers(); err != nil {
-		return err
-	}
 	if ready, err := s.prepareItem(game, key); err != nil {
 		return err
 	} else if ready {
@@ -567,32 +551,6 @@ func (s *Store) saveIndex(idx index) error {
 	return datadir.WriteJSON(s.indexPath(), idx)
 }
 
-func (s *Store) migrateCompleteMarkers() error {
-	if s.migrated {
-		return nil
-	}
-	if err := s.repairIncompleteLocked(); err != nil {
-		return err
-	}
-	idx, err := s.loadIndex()
-	if err != nil {
-		return err
-	}
-	if !idx[indexMetadata][completeMarkerVersion].IsZero() {
-		s.migrated = true
-		return nil
-	}
-	if idx[indexMetadata] == nil {
-		idx[indexMetadata] = map[string]time.Time{}
-	}
-	idx[indexMetadata][completeMarkerVersion] = time.Now().UTC()
-	if err := s.saveIndex(idx); err != nil {
-		return err
-	}
-	s.migrated = true
-	return nil
-}
-
 // RepairIncomplete re-extracts store items missing .complete when a source archive is still beside them.
 func (s *Store) RepairIncomplete() error {
 	s.mu.Lock()
@@ -697,9 +655,6 @@ func (s *Store) Touch(game string, keys ...string) error {
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if err := s.migrateCompleteMarkers(); err != nil {
-		return err
-	}
 	return s.touch(game, keys...)
 }
 
@@ -709,9 +664,6 @@ func (s *Store) Touch(game string, keys ...string) error {
 func (s *Store) Collect(referenced map[string][]string, now time.Time) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if err := s.migrateCompleteMarkers(); err != nil {
-		return err
-	}
 	idx, err := s.loadIndex()
 	if err != nil {
 		return err
@@ -794,9 +746,6 @@ type Ref struct {
 func (s *Store) Unreferenced(referenced map[string][]string) ([]Ref, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if err := s.migrateCompleteMarkers(); err != nil {
-		return nil, err
-	}
 	games, err := os.ReadDir(s.root)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return nil, err
@@ -828,9 +777,6 @@ func (s *Store) Unreferenced(referenced map[string][]string) ([]Ref, error) {
 func (s *Store) Remove(refs []Ref) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if err := s.migrateCompleteMarkers(); err != nil {
-		return err
-	}
 	idx, err := s.loadIndex()
 	if err != nil {
 		return err

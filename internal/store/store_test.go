@@ -82,6 +82,24 @@ func TestAddArchiveIsIdempotent(t *testing.T) {
 	}
 }
 
+func TestKeysDoesNotStampCompleteMarkerVersion(t *testing.T) {
+	s := newStore(t)
+	p := buildZip(t, map[string]string{"Mod/manifest.json": "{}"})
+	if _, err := s.AddArchive("stardew", p); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Keys("stardew"); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile(s.indexPath())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(raw), "complete-marker-v1") {
+		t.Fatal("index still stamps complete-marker-v1")
+	}
+}
+
 func TestAddArchiveFailureLeavesNothing(t *testing.T) {
 	s := newStore(t)
 	p := buildZip(t, map[string]string{"ok.txt": "x", "../evil.txt": "y"})
