@@ -33,6 +33,8 @@ Remaining ([architecture.md](architecture.md#release)):
 - **Steam Deck / gamepad mode** (larger targets, gamepad focus navigation, Game Mode): parked 2026-10-02 (not v1).
 - **macOS build**: Stardew runs on macOS, but Mortar has no macOS CI or test machine. Parked 2026-10-02 (not v1).
 - **Scheduled save backups** (daily or every N hours while Mortar runs, keep the last N per save, never while the game writes), beside today's before-Play backups: parked 2026-10-03.
+- **Accessibility pass** (keyboard-only navigation of every screen, focus order, screen-reader labels on icon buttons, reduced motion everywhere): parked 2026-10-03.
+- **Offline mode banner** (clear banner when Nexus/GitHub are unreachable, cached data with "as of" times, network actions disabled with a reason): parked 2026-10-03.
 
 Not in the first release; re-weigh only when asked:
 
