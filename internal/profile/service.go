@@ -86,6 +86,11 @@ func (s *Service) History(game, id string) ([]HistoryEvent, error) {
 	return s.store.History(game, id)
 }
 
+// HealthHistory lists problem-check snapshots for this profile, oldest first.
+func (s *Service) HealthHistory(game, id string) ([]HealthPoint, error) {
+	return s.store.HealthHistory(game, id)
+}
+
 // RecentHistory lists the newest change events across this game's usable, non-hidden profiles.
 func (s *Service) RecentHistory(game string) ([]RecentEvent, error) {
 	return s.store.RecentHistory(game)
