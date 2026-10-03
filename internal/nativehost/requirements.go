@@ -2,7 +2,6 @@ package nativehost
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
@@ -37,11 +37,11 @@ func nexusPageRequirements(domain string, modID int) []requirementItem {
 		return nil
 	}
 	defer func() { _ = root.Close() }()
-	raw, err := root.ReadFile(filepath.Join("cache", fmt.Sprintf("nexus-requirements-%d.json", modID)))
-	if err != nil {
+	reqs, ok := meta.Peek[[]meta.Requirement](&meta.Client{}, meta.RequirementsCacheFile(modID))
+	if !ok {
 		return nil
 	}
-	items := parsePageRequirements(raw)
+	items := requirementItems(reqs)
 	if len(items) == 0 {
 		return nil
 	}
@@ -50,17 +50,17 @@ func nexusPageRequirements(domain string, modID int) []requirementItem {
 
 func parsePageRequirements(raw []byte) []requirementItem {
 	var wrap struct {
-		Value []struct {
-			ModID int    `json:"ModID"`
-			Name  string `json:"Name"`
-			Notes string `json:"Notes"`
-		} `json:"value"`
+		Value []meta.Requirement `json:"value"`
 	}
 	if json.Unmarshal(raw, &wrap) != nil {
 		return nil
 	}
-	items := make([]requirementItem, 0, len(wrap.Value))
-	for _, req := range wrap.Value {
+	return requirementItems(wrap.Value)
+}
+
+func requirementItems(reqs []meta.Requirement) []requirementItem {
+	items := make([]requirementItem, 0, len(reqs))
+	for _, req := range reqs {
 		name := strings.TrimSpace(req.Name)
 		if req.ModID < 1 {
 			if name == "" {

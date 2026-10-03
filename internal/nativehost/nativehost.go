@@ -21,6 +21,8 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-AI/mortar/internal/nexussvc"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
@@ -455,7 +457,7 @@ func activeNexusUpdates(domain string) (string, []modUpdate) {
 				installed = v
 			}
 		}
-		pageVer, files := cachedNexusDetails(root, domain, entry.Source.ModID)
+		pageVer, files := cachedNexusDetails(root, entry.Source.ModID)
 		if !nexusUpdateAvailable(version, entry.Source.FileID, pageVer, files) {
 			continue
 		}
@@ -518,7 +520,7 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 		return openProfile, nil
 	}
 	defer func() { _ = root.Close() }()
-	pageVer, files := cachedNexusDetails(root, domain, modID)
+	pageVer, files := cachedNexusDetails(root, modID)
 	profiles, err := root.Open(filepath.Join("profiles", info.ID))
 	if err != nil {
 		return openProfile, nil
@@ -592,32 +594,17 @@ type cachedNexusFile struct {
 	ReplacedBy int    `json:"replacedBy"`
 }
 
-func cachedNexusDetails(root *os.Root, domain string, modID int) (string, []cachedNexusFile) {
-	data, err := root.ReadFile(filepath.Join("cache", "nexus", fmt.Sprintf("details-v3-%s-%d.json", domain, modID)))
-	if err != nil {
+func cachedNexusDetails(root *os.Root, modID int) (string, []cachedNexusFile) {
+	c := &meta.Client{CacheDir: filepath.Join(root.Name(), "cache")}
+	d, ok := meta.Peek[nexussvc.Details](c, nexussvc.DetailsName(modID))
+	if !ok {
 		return "", nil
 	}
-	var wrap struct {
-		Value struct {
-			Page struct {
-				Version string `json:"version"`
-			} `json:"page"`
-			Files []cachedNexusFile `json:"files"`
-		} `json:"value"`
+	files := make([]cachedNexusFile, 0, len(d.Files))
+	for _, f := range d.Files {
+		files = append(files, cachedNexusFile{FileID: f.FileID, Version: f.Version, ReplacedBy: f.ReplacedBy})
 	}
-	if json.Unmarshal(data, &wrap) == nil && (wrap.Value.Page.Version != "" || len(wrap.Value.Files) > 0) {
-		return wrap.Value.Page.Version, wrap.Value.Files
-	}
-	var flat struct {
-		Page struct {
-			Version string `json:"version"`
-		} `json:"page"`
-		Files []cachedNexusFile `json:"files"`
-	}
-	if json.Unmarshal(data, &flat) != nil {
-		return "", nil
-	}
-	return flat.Page.Version, flat.Files
+	return d.Page.Version, files
 }
 
 func nexusUpdateAvailable(version *string, fileID int, pageVer string, files []cachedNexusFile) bool {

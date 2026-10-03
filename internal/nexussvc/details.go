@@ -28,7 +28,7 @@ type Details struct {
 // (details-v3-… so copies from before endorsement status are not reused), refetching once they are a day
 // old. Signed out, rate-limited or offline, it serves what is cached however old, and errors only with nothing.
 func (s *Service) Details(ctx context.Context, modID int) (Details, error) {
-	return meta.Cached(s.meta, detailsName(modID), detailsTTL, func() (Details, error) {
+	return meta.Cached(s.meta, DetailsName(modID), detailsTTL, func() (Details, error) {
 		c, err := Authed(s.store, s.client)
 		if err != nil {
 			return Details{}, err
@@ -53,7 +53,8 @@ func (s *Service) Details(ctx context.Context, modID int) (Details, error) {
 	})
 }
 
-func detailsName(modID int) string {
+// DetailsName is the cache file under cache/ for a Nexus mod's details.
+func DetailsName(modID int) string {
 	return fmt.Sprintf("nexus/details-v3-%s-%d.json", nexus.Game, modID)
 }
 
@@ -62,7 +63,7 @@ func detailsName(modID int) string {
 func (s *Service) CachedDetails(modIDs []int) map[int]Details {
 	out := make(map[int]Details, len(modIDs))
 	for _, id := range modIDs {
-		if d, ok := meta.Peek[Details](s.meta, detailsName(id)); ok {
+		if d, ok := meta.Peek[Details](s.meta, DetailsName(id)); ok {
 			out[id] = d
 		}
 	}
