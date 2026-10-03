@@ -138,6 +138,28 @@ func TestProfileCompareHistoryAndRevert(t *testing.T) {
 	}
 }
 
+func TestHistoryAll(t *testing.T) {
+	results := map[string]any{
+		"history.all": []profile.RecentEvent{
+			{ProfileID: "p1", ProfileName: "Farm", HistoryEvent: profile.HistoryEvent{ID: "event-2", Kind: "added", Label: "Added Beta"}},
+		},
+	}
+	r := invoke(t, results, "history", "stardew", "--all")
+	if r.code != 0 || !strings.Contains(r.out, "event-2") || !strings.Contains(r.out, "Farm") {
+		t.Fatalf("history --all: %+v", r)
+	}
+	if got := r.calls[0]; got.method != "history.all" || got.params.Game != "stardew" {
+		t.Fatalf("history --all params: %+v", got)
+	}
+	r = invoke(t, results, "history", "--all", "--json", "stardew")
+	if r.code != 0 || !strings.Contains(r.out, `"profileName": "Farm"`) {
+		t.Fatalf("history --all --json: %+v", r)
+	}
+	if r := invoke(t, results, "history", "stardew"); r.code != 2 {
+		t.Fatalf("history without --all: %+v", r)
+	}
+}
+
 func TestBackupsKeepAndUnkeep(t *testing.T) {
 	results := map[string]any{
 		"backups.keep":   nil,

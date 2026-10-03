@@ -415,6 +415,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, errors.New("nexus is unavailable")
 		}
 		return s.Nexus.TrackedCount(ctx, p.Game)
+	case "history.all":
+		return s.Profiles.RecentHistory(p.Game)
 	case "status":
 		return s.Launches.Status(p.Game)
 	case "stop":

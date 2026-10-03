@@ -35,7 +35,7 @@ const (
 
 // verbs are the first words that make an invocation a command-line call rather than a window launch.
 var verbs = map[string]bool{
-	"games": true, "profiles": true, "profile": true, "mods": true, "mod": true, "install": true,
+	"games": true, "profiles": true, "profile": true, "history": true, "mods": true, "mod": true, "install": true,
 	"conflicts": true, "problems": true, "updates": true, "share": true, "export": true, "open": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
 	"bundles": true, "nexus": true, "trash": true,
@@ -279,6 +279,8 @@ func (c *cmd) dispatch() error {
 			return err
 		}
 		return c.profiles(a[0])
+	case "history":
+		return c.historyAll()
 	case "tools":
 		return c.tools()
 	case "profile":
@@ -436,6 +438,30 @@ func (c *cmd) profiles(gameID string) error {
 			t = append(t, []string{p.ID, p.Name, fmt.Sprintf("%d/%d", on, total), p.Updated.Local().Format("2006-01-02 15:04")})
 		}
 		c.table("ID\tNAME\tMODS ON\tUPDATED", t)
+	})
+}
+
+func (c *cmd) historyAll() error {
+	if !c.all {
+		return usageError{"history needs --all"}
+	}
+	a, err := c.need(1, "a game")
+	if err != nil {
+		return err
+	}
+	var rows []profile.RecentEvent
+	if err := c.ask("history.all", control.Params{Game: a[0]}, &rows, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(rows, func() {
+		t := [][]string{}
+		for _, row := range rows {
+			t = append(t, []string{
+				row.ProfileName, row.ID, row.At.Local().Format("2006-01-02 15:04"),
+				row.Kind, fmt.Sprint(row.Count), row.Label,
+			})
+		}
+		c.table("PROFILE\tID\tTIME\tKIND\tCOUNT\tSUMMARY", t)
 	})
 }
 
@@ -1437,6 +1463,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   trash empty --yes [--game stardew]      purge all deleted profiles
   profile compare <game> <profileA> <profileB>
   profile history <game> <profile>       restore points
+  history <game> --all                   recent changes across profiles
   profile revert <game> <profile> <eventId>
   profile load-order <game> <profile>    enabled mods in SMAPI load order
   mods <game> <profile>                   mods with version, state and source

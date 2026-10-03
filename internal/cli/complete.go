@@ -74,7 +74,7 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 			return 2, 3, 4
 		}
 		return 1, 0, 0
-	case "profiles", "status", "stop":
+	case "profiles", "status", "stop", "history":
 		return 1, 0, 0
 	case "profile":
 		if len(words) > 1 && words[1] == "create" {

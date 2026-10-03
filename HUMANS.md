@@ -40,6 +40,7 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `profile compare <game> <A> <B>` | mods only in A, only in B, version or enabled differences |
 | `profile match <game> <profile> <link-or-file>` | preview a friend's share against a profile |
 | `profile history <game> <profile>`, `profile revert <game> <profile> <eventId>` | restore points; revert to one |
+| `history <game> --all` | recent changes across that game's profiles |
 | `profile load-order <game> <profile>` | enabled mods in SMAPI load order |
 | `mods <game> <profile>`, `mods enable\|disable\|pin\|unpin\|remove ... <UniqueID>...`, `mod ... <UniqueID>` | list, change and inspect mods |
 | `install <game> <profile> <archive>` | install a local archive |
