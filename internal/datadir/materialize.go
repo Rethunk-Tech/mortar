@@ -79,7 +79,20 @@ func MaterializeTreeOps(src, dst string, ops Ops) error {
 	return copyTree(src, dst, nil, ops.put)
 }
 
-// WritableRel reports a path a mod may rewrite in place (never hardlink or symlink).
+// textExts are files mods and players edit in place; a hardlinked or symlinked copy would carry that edit into the
+// store and every other profile, so they are cloned or copied. Binaries (dll, png, xnb, audio) stay shareable.
+var textExts = map[string]bool{
+	".json": true, ".txt": true, ".ini": true, ".cfg": true, ".xml": true, ".yaml": true, ".yml": true,
+	".toml": true, ".csv": true, ".tmx": true, ".md": true,
+}
+
+// EditableText reports a text file a player may edit in place, so it never shares an inode with the store.
+func EditableText(rel string) bool {
+	return textExts[strings.ToLower(filepath.Ext(rel))]
+}
+
+// WritableRel reports state a mod writes itself (config, data and save folders): never hardlinked or symlinked, and
+// owned by the profile rather than compared with the store copy.
 func WritableRel(rel string) bool {
 	rel = filepath.ToSlash(rel)
 	base := filepath.Base(rel)
@@ -97,7 +110,7 @@ func WritableRel(rel string) bool {
 }
 
 func (ops Ops) put(src, dst, rel string) error {
-	writable := WritableRel(rel)
+	writable := WritableRel(rel) || EditableText(rel)
 	srcDev, srcErr := fileDevice(src)
 	dstDev, dstErr := fileDevice(filepath.Dir(dst))
 	sameDev := srcErr == nil && dstErr == nil && srcDev == dstDev

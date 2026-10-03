@@ -145,17 +145,15 @@ func TestConfigJSONNeverHardlinkedOrSymlinked(t *testing.T) {
 		if err := MaterializeTreeOps(src, dst, opsFor(t, tier)); err != nil {
 			t.Fatal(err)
 		}
-		for _, rel := range []string{"A/config.json", "A/nested/config.json", "A/data/save.json", "A/saves/slot.dat"} {
+		for _, rel := range []string{"A/config.json", "A/nested/config.json", "A/data/save.json", "A/saves/slot.dat", "A/readme.txt"} {
 			from := filepath.Join(src, filepath.FromSlash(rel))
 			to := filepath.Join(dst, filepath.FromSlash(rel))
 			if linked(t, from, to) {
 				t.Fatalf("tier %d linked writable %s", tier, rel)
 			}
 		}
-		readmeFrom := filepath.Join(src, "A", "readme.txt")
-		readmeTo := filepath.Join(dst, "A", "readme.txt")
-		if !linked(t, readmeFrom, readmeTo) {
-			t.Fatalf("tier %d did not link readme", tier)
+		if !linked(t, filepath.Join(src, "dll", "mod.dll"), filepath.Join(dst, "dll", "mod.dll")) {
+			t.Fatalf("tier %d did not link the dll", tier)
 		}
 	}
 }
@@ -273,6 +271,19 @@ func TestWritableRel(t *testing.T) {
 	}
 	if WritableRel("manifest.json") || WritableRel("assets/foo.png") {
 		t.Fatal("expected shipped")
+	}
+}
+
+func TestEditableTextNeverSharesAnInode(t *testing.T) {
+	for _, rel := range []string{"manifest.json", "Mod/content.json", "Mod/i18n/de.json", "Mod/notes.TXT", "Mod/maps/Farm.tmx"} {
+		if !EditableText(rel) {
+			t.Fatalf("%s: text files must never share an inode with the store", rel)
+		}
+	}
+	for _, rel := range []string{"assets/foo.png", "Mod/Mod.dll", "Mod/assets/Music.ogg", "Mod/x.xnb"} {
+		if EditableText(rel) {
+			t.Fatalf("%s: binaries stay shareable", rel)
+		}
 	}
 }
 
