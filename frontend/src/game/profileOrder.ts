@@ -1,0 +1,26 @@
+export interface OrderableProfile {
+  id: string
+  name: string
+}
+
+export function orderProfiles<T extends OrderableProfile>(
+  profiles: T[],
+  order: string,
+  lastPlayedProfile = '',
+): T[] {
+  if (order === 'name') {
+    return [...profiles].sort((a, b) => a.name.localeCompare(b.name))
+  }
+  if (order === 'lastPlayed') {
+    return [...profiles].sort((a, b) => {
+      if (a.id === lastPlayedProfile && b.id !== lastPlayedProfile) {
+        return -1
+      }
+      if (b.id === lastPlayedProfile && a.id !== lastPlayedProfile) {
+        return 1
+      }
+      return 0
+    })
+  }
+  return profiles
+}

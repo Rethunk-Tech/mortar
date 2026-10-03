@@ -2,24 +2,25 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, IconButton, Tooltip } from '@mui/material'
 import { ChevronRight, ListOrdered, Plus } from 'lucide-react'
-import { type PointerEvent, useEffect, useState } from 'react'
+import { type PointerEvent, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { HelpDialog } from '../console/HelpDialog.tsx'
 import { PlayControl } from '../launch/PlayControl.tsx'
+import { showProblemBadge, showUpdateBadge } from '../mods/badgeDisplay.ts'
 import { useBadges } from '../mods/badges.ts'
-import { useMods } from '../mods/store.ts'
 import { useNav } from '../nav/store.ts'
 import { ProfileMark } from '../profiles/ProfileMark.tsx'
 import { RecentChangesButton } from '../profiles/RecentChangesButton.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { QueueButton } from '../queue/QueueButton.tsx'
+import { useSettings } from '../settings/store.ts'
 import { HistoryButton } from '../toasts/HistoryButton.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
 import { compact } from './compact.ts'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
 import { ProfileContextMenu } from './ProfileContextMenu.tsx'
 import { SupportButton } from './SupportButton.tsx'
 import { useSidebarCollapsed } from './sidebarCollapsed.ts'
+import { useOrderedProfiles, useSidebarBadges } from './useSidebarProfiles.ts'
 
 const MIN = 150
 const MAX = 300
@@ -86,10 +87,11 @@ const pill = {
 
 function Badges({ profile }: { profile: Profile }) {
   const { t } = useLingui()
+  const mode = useSettings((s) => s.sidebarBadges)
   const counts = useBadges((s) => s.byProfile[profile.id])
   return (
     <>
-      {counts && counts.updates > 0 ? (
+      {showUpdateBadge(mode) && counts && counts.updates > 0 ? (
         <Box
           component="span"
           role="img"
@@ -99,7 +101,7 @@ function Badges({ profile }: { profile: Profile }) {
           {counts.updates}
         </Box>
       ) : null}
-      {counts && counts.problems > 0 ? (
+      {showProblemBadge(mode) && counts && counts.problems > 0 ? (
         <Box
           component="span"
           role="img"
@@ -332,23 +334,12 @@ function ProfileList({ game, profiles }: { game: string; profiles: Profile[] }) 
 
 export function Sidebar({ game }: { game: string }) {
   const { t } = useLingui()
-  const allProfiles = useProfiles((s) => s.profiles)
-  const profiles = allProfiles.filter((p) => !p.hidden)
+  const { profiles } = useOrderedProfiles(game)
+  useSidebarBadges(game)
   const openProfiles = useNav((s) => s.openProfiles)
   const [width, setWidth] = useState(storedWidth)
   const [creating, setCreating] = useState(false)
   const collapsed = useSidebarCollapsed((s) => s.collapsed)
-  const loadBadges = useBadges((s) => s.loadAll)
-  // A profile's badges follow its mods, which change with `updated`.
-  const stamp = profiles.map((p) => `${p.id}:${String(p.updated)}`).join(',')
-  const openId = useProfiles((s) => s.openId)
-  // The other profiles' checks wait until the open profile's mods are on screen.
-  const modsShown = useMods((s) => s.loaded && s.modsFor === openId)
-  useEffect(() => {
-    if (stamp && modsShown) {
-      loadBadges(game, allProfiles, openId).catch(reportUnexpected)
-    }
-  }, [game, stamp, allProfiles, loadBadges, modsShown, openId])
 
   return (
     <Box
