@@ -135,3 +135,16 @@ func writeProblemFile(t *testing.T, root, name, content string) {
 		t.Fatal(err)
 	}
 }
+
+func TestMapScanners(t *testing.T) {
+	tmx := []byte(`<map><tileset name="a"><image source="../Maps/spring_town.png" width="1"/></tileset>` +
+		`<tileset><image width="2" source='Tiles\Extra.png'/></tileset><imagelayer><image/></imagelayer></map>`)
+	got := tmxImageSources(tmx)
+	if len(got) != 2 || got[0] != "../Maps/spring_town.png" || got[1] != `Tiles\Extra.png` {
+		t.Fatalf("tmx sources = %q", got)
+	}
+	runs := printableRuns([]byte("\x00\x01SharedTiles\x00ab\x00Maps/Town\x00SharedTiles"))
+	if len(runs) != 2 || runs[0] != "sharedtiles" || runs[1] != "maps/town" {
+		t.Fatalf("tbin runs = %q", runs)
+	}
+}

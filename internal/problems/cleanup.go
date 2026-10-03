@@ -2,9 +2,6 @@ package problems
 
 import (
 	"bytes"
-	"encoding/xml"
-	"errors"
-	"io"
 	"os"
 	"path/filepath"
 	"slices"
@@ -125,6 +122,10 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 		}
 		assetsByID[id] = assets
 	}
+	basenamesByID := map[string][]string{}
+	for id, assets := range assetsByID {
+		basenamesByID[id] = assetBasenames(assets)
+	}
 	for _, mod := range mods {
 		if containsMod(candidates, mod) {
 			continue
@@ -156,22 +157,20 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 			if readErr != nil {
 				return markUnreadable(&mapsUnreadable)
 			}
-			if !scan.ok {
-				mapsUnreadable = true
-				return nil
-			}
 			for _, candidate := range candidates {
 				id := strings.ToLower(candidate.UniqueID)
 				if ext == ".tbin" {
-					if slices.ContainsFunc(assetBasenames(assetsByID[id]), func(name string) bool {
-						return bytes.Contains(scan.lower, []byte(name))
+					if slices.ContainsFunc(basenamesByID[id], func(name string) bool {
+						return slices.ContainsFunc(scan.runs, func(run string) bool {
+							return strings.Contains(run, name)
+						})
 					}) {
 						recordTilesheetUse(uses[id], mod)
 					}
 					continue
 				}
-				if slices.ContainsFunc(scan.sources, func(source string) bool {
-					return assetMatches(assetsByID[id], source)
+				if slices.ContainsFunc(scan.keys, func(key string) bool {
+					return assetsByID[id][key]
 				}) {
 					recordTilesheetUse(uses[id], mod)
 				}
@@ -235,11 +234,6 @@ func assetBasenames(assets map[string]bool) []string {
 	return out
 }
 
-func assetMatches(assets map[string]bool, source string) bool {
-	normalized := normalizeAsset(source)
-	return assets[normalized] || assets[filepath.Base(normalized)]
-}
-
 func manifestUses(mod Installed, uniqueID string) bool {
 	return slices.ContainsFunc(mod.Dependencies, func(dep manifest.Dependency) bool {
 		return sameID(dep.UniqueID, uniqueID)
@@ -269,9 +263,8 @@ func containsMod(mods []Installed, want Installed) bool {
 type mapScan struct {
 	size    int64
 	modTime int64
-	sources []string
-	lower   []byte
-	ok      bool
+	keys    []string
+	runs    []string
 }
 
 var mapScans = struct {
@@ -294,11 +287,14 @@ func mapScanFor(path string, entry os.DirEntry, ext string) (mapScan, error) {
 	if err != nil {
 		return mapScan{}, err
 	}
-	scan := mapScan{size: info.Size(), modTime: info.ModTime().UnixNano(), ok: true}
+	scan := mapScan{size: info.Size(), modTime: info.ModTime().UnixNano()}
 	if ext == ".tbin" {
-		scan.lower = bytes.ToLower(raw)
+		scan.runs = printableRuns(raw)
 	} else {
-		scan.sources, scan.ok = tmxImageSources(raw)
+		for _, source := range tmxImageSources(raw) {
+			normalized := normalizeAsset(source)
+			scan.keys = append(scan.keys, normalized, filepath.Base(normalized))
+		}
 	}
 	mapScans.Lock()
 	mapScans.byPath[path] = scan
@@ -306,25 +302,63 @@ func mapScanFor(path string, entry os.DirEntry, ext string) (mapScan, error) {
 	return scan, nil
 }
 
-func tmxImageSources(raw []byte) ([]string, bool) {
-	decoder := xml.NewDecoder(bytes.NewReader(raw))
+// tmxImageSources returns the source attribute of every <image> tag. A byte scan instead of
+// encoding/xml: thousands of maps are read per check and only this one attribute matters.
+func tmxImageSources(raw []byte) []string {
 	var sources []string
-	for {
-		token, err := decoder.Token()
-		if err != nil {
-			if errors.Is(err, io.EOF) {
-				return sources, true
-			}
-			return nil, false
+	for rest := raw; ; {
+		i := bytes.Index(rest, []byte("<image"))
+		if i < 0 {
+			return sources
 		}
-		start, ok := token.(xml.StartElement)
-		if !ok || !strings.EqualFold(start.Name.Local, "image") {
+		rest = rest[i+len("<image"):]
+		end := bytes.IndexByte(rest, '>')
+		if end < 0 {
+			return sources
+		}
+		tag := rest[:end]
+		rest = rest[end:]
+		j := bytes.Index(tag, []byte("source="))
+		if j < 0 || j+len("source=") >= len(tag) {
 			continue
 		}
-		for _, attr := range start.Attr {
-			if strings.EqualFold(attr.Name.Local, "source") {
-				sources = append(sources, attr.Value)
-			}
+		value := tag[j+len("source="):]
+		quote := value[0]
+		if quote != '"' && quote != '\'' {
+			continue
+		}
+		if k := bytes.IndexByte(value[1:], quote); k >= 0 {
+			sources = append(sources, string(value[1:1+k]))
 		}
 	}
+}
+
+// printableRuns returns the distinct lower-cased runs of printable ASCII in a binary map,
+// which is where a .tbin names its tilesheets; the tile data between them is dropped.
+func printableRuns(raw []byte) []string {
+	const minRun = 3
+	seen := map[string]bool{}
+	var runs []string
+	start := -1
+	flush := func(end int) {
+		if start >= 0 && end-start >= minRun {
+			run := strings.ToLower(string(raw[start:end]))
+			if !seen[run] {
+				seen[run] = true
+				runs = append(runs, run)
+			}
+		}
+		start = -1
+	}
+	for i, c := range raw {
+		if c >= ' ' && c <= '~' {
+			if start < 0 {
+				start = i
+			}
+			continue
+		}
+		flush(i)
+	}
+	flush(len(raw))
+	return runs
 }
