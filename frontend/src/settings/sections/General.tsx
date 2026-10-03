@@ -13,6 +13,7 @@ import {
   SetListSort,
   SetTipsSeen,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { TourAgainButton } from '../../firstrunTour/TourAgainButton.tsx'
 import { errorText } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSelect } from '../PrefControls.tsx'
@@ -196,6 +197,12 @@ export function General() {
             variant="outlined"
             onClick={() => SetTipsSeen([]).catch(reportFailure)}
           >{t`Show again`}</Button>
+        </SettingRow>
+        <SettingRow
+          label={t`Interface tour`}
+          description={t`Walk through profiles, Play, mods, and the command palette`}
+        >
+          <TourAgainButton />
         </SettingRow>
       </SettingsSection>
       <SettingsSection title={t`Sharing`} prefKeys={['lanName', 'lanAutoAcceptSameAccount']}>

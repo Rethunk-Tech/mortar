@@ -5,6 +5,7 @@ import { CommandPalette } from './commandPalette/CommandPalette.tsx'
 import { FirstRun } from './firstrun/FirstRun.tsx'
 import { GameSetup } from './firstrun/GameSetup.tsx'
 import { gameSetupNeeded } from './firstrun/needed.ts'
+import { FirstRunTour } from './firstrunTour/FirstRunTour.tsx'
 import { FomodDialog } from './fomod/Dialog.tsx'
 import { MainScreen } from './game/MainScreen.tsx'
 import { GameSelect } from './games/GameSelect.tsx'
@@ -84,6 +85,7 @@ export function App() {
       <ArrivalDialog />
       <FomodDialog />
       <CommandPalette />
+      <FirstRunTour />
       <PinReasonDialog />
       <ShareDialog />
       <ImportDialog />

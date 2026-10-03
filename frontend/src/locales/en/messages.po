@@ -55,6 +55,10 @@ msgstr "{0, plural, one {# mod included} other {# mods included}}"
 msgid "Start muted"
 msgstr "Start muted"
 
+#: src/settings/sections/General.tsx:203
+msgid "Interface tour"
+msgstr "Interface tour"
+
 #: src/settings/updates.ts:37
 msgid "Could not reach GitHub. Check your connection and try again."
 msgstr "Could not reach GitHub. Check your connection and try again."
@@ -294,7 +298,7 @@ msgstr "Switch to Console"
 msgid "You started this download on Nexus, but there is no {gameName} profile to put it in yet."
 msgstr "You started this download on Nexus, but there is no {gameName} profile to put it in yet."
 
-#: src/settings/sections/General.tsx:270
+#: src/settings/sections/General.tsx:285
 msgid "Fixing…"
 msgstr "Fixing…"
 
@@ -997,6 +1001,10 @@ msgstr "Sprout"
 msgid "Link length"
 msgstr "Link length"
 
+#: src/firstrunTour/FirstRunTour.tsx:118
+msgid "See load errors, missing dependencies, and other issues before you play."
+msgstr "See load errors, missing dependencies, and other issues before you play."
+
 #: src/games/GameSelect.tsx:339
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
@@ -1025,7 +1033,7 @@ msgstr "Missing requirements"
 
 #: src/settings/prefCopy.ts:115
 #: src/settings/prefCopy.ts:116
-#: src/settings/sections/General.tsx:95
+#: src/settings/sections/General.tsx:97
 msgid "Default sort"
 msgstr "Default sort"
 
@@ -1035,7 +1043,7 @@ msgstr "Default sort"
 msgid "Roll back"
 msgstr "Roll back"
 
-#: src/settings/sections/General.tsx:256
+#: src/settings/sections/General.tsx:271
 msgid "Windows Firewall blocks incoming sends to Mortar"
 msgstr "Windows Firewall blocks incoming sends to Mortar"
 
@@ -1373,6 +1381,10 @@ msgstr "Will update"
 msgid "Go to Console"
 msgstr "Go to Console"
 
+#: src/firstrunTour/FirstRunTour.tsx:175
+msgid "Skip tour"
+msgstr "Skip tour"
+
 #: src/console/ConsoleTab.tsx:486
 msgid "Follow new lines"
 msgstr "Follow new lines"
@@ -1391,7 +1403,7 @@ msgstr "Enjoying {0}? Endorse it on Nexus"
 msgid "Sent to {0}"
 msgstr "Sent to {0}"
 
-#: src/settings/sections/General.tsx:194
+#: src/settings/sections/General.tsx:196
 msgid "Show the first-run tips again"
 msgstr "Show the first-run tips again"
 
@@ -1971,6 +1983,10 @@ msgstr "Fullscreen resolution height"
 msgid "Reading the log…"
 msgstr "Reading the log…"
 
+#: src/settings/sections/General.tsx:213
+msgid "Show the tour again"
+msgstr "Show the tour again"
+
 #: src/firstrun/SmapiStep.tsx:181
 msgid "Check again"
 msgstr "Check again"
@@ -2080,7 +2096,7 @@ msgstr "Discard"
 msgid "{gameName} · {mods}"
 msgstr "{gameName} · {mods}"
 
-#: src/settings/sections/General.tsx:270
+#: src/settings/sections/General.tsx:285
 msgid "Fix"
 msgstr "Fix"
 
@@ -2585,6 +2601,7 @@ msgstr "Automatic"
 msgid "Compare {0} with…"
 msgstr "Compare {0} with…"
 
+#: src/firstrunTour/FirstRunTour.tsx:196
 #: src/queue/QueueHistory.tsx:77
 msgid "Done"
 msgstr "Done"
@@ -2772,7 +2789,7 @@ msgstr "Link copied"
 
 #: src/mods/ListColumnMenu.tsx:49
 #: src/mods/Sidebar.tsx:355
-#: src/settings/sections/General.tsx:105
+#: src/settings/sections/General.tsx:107
 msgid "Version"
 msgstr "Version"
 
@@ -3261,7 +3278,7 @@ msgstr "No downloads in history."
 msgid "Has problems"
 msgstr "Has problems"
 
-#: src/settings/sections/General.tsx:225
+#: src/settings/sections/General.tsx:240
 msgid "LAN port"
 msgstr "LAN port"
 
@@ -3516,6 +3533,10 @@ msgstr "Restore every setting in this group to its default. You can undo from th
 msgid "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 msgstr "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 
+#: src/firstrunTour/FirstRunTour.tsx:115
+msgid "Enable, disable, and update mods for the open profile."
+msgstr "Enable, disable, and update mods for the open profile."
+
 #: src/firstrun/ProfileStep.tsx:135
 msgid "Create profile"
 msgstr "Create profile"
@@ -3610,7 +3631,7 @@ msgstr "Allow"
 msgid "Could not unlink the collection"
 msgstr "Could not unlink the collection"
 
-#: src/settings/sections/General.tsx:198
+#: src/settings/sections/General.tsx:200
 msgid "Show again"
 msgstr "Show again"
 
@@ -3824,6 +3845,7 @@ msgstr "Could not save the open profile"
 msgid "When you press Play"
 msgstr "When you press Play"
 
+#: src/firstrunTour/FirstRunTour.tsx:196
 #: src/fomod/Dialog.tsx:269
 msgid "Next"
 msgstr "Next"
@@ -3933,7 +3955,7 @@ msgstr "Could not remove the selected mods"
 msgid "Saved"
 msgstr "Saved"
 
-#: src/settings/sections/General.tsx:135
+#: src/settings/sections/General.tsx:137
 #: src/toasts/HistoryButton.tsx:127
 #: src/toasts/HistoryButton.tsx:177
 #: src/toasts/ToastHost.tsx:178
@@ -3975,6 +3997,7 @@ msgstr "Request counts appear after Mortar talks to Nexus."
 msgid "Rescan"
 msgstr "Rescan"
 
+#: src/firstrunTour/FirstRunTour.tsx:183
 #: src/fomod/Dialog.tsx:253
 #: src/profiles/ProfilesPage.tsx:362
 #: src/settings/SettingsNav.tsx:36
@@ -4255,11 +4278,12 @@ msgid "Send"
 msgstr "Send"
 
 #: src/console/ConsoleTab.tsx:125
+#: src/firstrunTour/FirstRunTour.tsx:114
 #: src/game/Hero.tsx:295
 #: src/game/ProfileWorkspace.tsx:46
 #: src/mods/ModListVirtual.tsx:283
-#: src/settings/sections/General.tsx:65
-#: src/settings/sections/General.tsx:275
+#: src/settings/sections/General.tsx:67
+#: src/settings/sections/General.tsx:290
 #: src/settings/sections/Updates.tsx:190
 msgid "Mods"
 msgstr "Mods"
@@ -4618,7 +4642,7 @@ msgstr "Allow the native host to talk to the browser extension"
 msgid "{queued, plural, one {# download queued} other {# downloads queued}}"
 msgstr "{queued, plural, one {# download queued} other {# downloads queued}}"
 
-#: src/settings/sections/General.tsx:104
+#: src/settings/sections/General.tsx:106
 msgid "Name Z–A"
 msgstr "Name Z–A"
 
@@ -4712,7 +4736,7 @@ msgstr "Refresh"
 
 #: src/settings/sections/Appearance.tsx:143
 #: src/settings/sections/DataPrefs.tsx:20
-#: src/settings/sections/General.tsx:283
+#: src/settings/sections/General.tsx:298
 msgid "Stardew Valley"
 msgstr "Stardew Valley"
 
@@ -4992,6 +5016,10 @@ msgstr "Spacing of buttons and lists"
 msgid "Patch-day review"
 msgstr "Patch-day review"
 
+#: src/firstrunTour/FirstRunTour.tsx:109
+msgid "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
+msgstr "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
+
 #: src/settings/sections/AboutDiagnostics.tsx:95
 msgid "Could not copy the report"
 msgstr "Could not copy the report"
@@ -5251,7 +5279,7 @@ msgstr "Executable"
 msgid "Play anyway"
 msgstr "Play anyway"
 
-#: src/settings/sections/General.tsx:216
+#: src/settings/sections/General.tsx:231
 msgid "Let the operating system choose a free port"
 msgstr "Let the operating system choose a free port"
 
@@ -5316,6 +5344,10 @@ msgstr "{0} is in this profile's mods folder and is not an installed entry."
 #: src/mods/ProblemsTab.tsx:386
 msgid "This change can be undone from History."
 msgstr "This change can be undone from History."
+
+#: src/firstrunTour/FirstRunTour.tsx:121
+msgid "Press {paletteKeys} to jump anywhere — profiles, settings, downloads, and more."
+msgstr "Press {paletteKeys} to jump anywhere — profiles, settings, downloads, and more."
 
 #. placeholder {0}: mod.name
 #: src/mods/storeEntries.ts:296
@@ -5639,6 +5671,7 @@ msgstr "{profileName} · {mods, plural, one {# mod} other {# mods}}"
 msgid "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 msgstr "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 
+#: src/firstrunTour/FirstRunTour.tsx:117
 #: src/game/ProfileWorkspace.tsx:51
 #: src/mods/ModCards.tsx:431
 #: src/mods/ModList.tsx:390
@@ -5734,7 +5767,7 @@ msgstr "Also add selected mods to…"
 msgid "Skills"
 msgstr "Skills"
 
-#: src/settings/sections/General.tsx:276
+#: src/settings/sections/General.tsx:291
 msgid "Enable mods when installed"
 msgstr "Enable mods when installed"
 
@@ -5751,7 +5784,11 @@ msgstr "Could not reset the settings of {0}"
 msgid "Where nxm downloads go. Empty follows the last opened profile."
 msgstr "Where nxm downloads go. Empty follows the last opened profile."
 
-#: src/settings/sections/General.tsx:226
+#: src/firstrunTour/FirstRunTour.tsx:112
+msgid "Launch the game with this profile's mods. Mortar applies your list before SMAPI starts."
+msgstr "Launch the game with this profile's mods. Mortar applies your list before SMAPI starts."
+
+#: src/settings/sections/General.tsx:241
 msgid "The port Mortar uses for local sharing"
 msgstr "The port Mortar uses for local sharing"
 
@@ -5762,7 +5799,7 @@ msgstr "The port Mortar uses for local sharing"
 msgid "Default for Share and Export. You can change it per share."
 msgstr "Default for Share and Export. You can change it per share."
 
-#: src/App.tsx:62
+#: src/App.tsx:63
 #: src/games/GameSelect.tsx:140
 #: src/games/GameSelect.tsx:283
 msgid "Could not read your games"
@@ -5978,7 +6015,7 @@ msgstr "Remove selected store items?"
 msgid "What the sidebar shows on profile badges"
 msgstr "What the sidebar shows on profile badges"
 
-#: src/settings/sections/General.tsx:201
+#: src/settings/sections/General.tsx:216
 msgid "Sharing"
 msgstr "Sharing"
 
@@ -6364,7 +6401,7 @@ msgstr "Could not unpin {0}"
 msgid "In the same download"
 msgstr "In the same download"
 
-#: src/settings/sections/General.tsx:103
+#: src/settings/sections/General.tsx:105
 msgid "Name A–Z"
 msgstr "Name A–Z"
 
@@ -6603,7 +6640,7 @@ msgstr "Ask before removing mods from a profile"
 msgid "Filter {total, plural, one {# mod} other {# mods}}"
 msgstr "Filter {total, plural, one {# mod} other {# mods}}"
 
-#: src/settings/sections/General.tsx:204
+#: src/settings/sections/General.tsx:219
 msgid "Lets nearby Mortar users find this installation and exchange profile links."
 msgstr "Lets nearby Mortar users find this installation and exchange profile links."
 
@@ -6658,7 +6695,7 @@ msgstr "Change shortcut"
 msgid "It encountered an error."
 msgstr "It encountered an error."
 
-#: src/settings/sections/General.tsx:181
+#: src/settings/sections/General.tsx:183
 msgid "Window"
 msgstr "Window"
 
@@ -6671,6 +6708,7 @@ msgid "Find the crash cause"
 msgstr "Find the crash cause"
 
 #: src/commandPalette/paletteLabels.ts:7
+#: src/firstrunTour/FirstRunTour.tsx:111
 #: src/games/GameSelect.tsx:207
 #: src/games/ProfileCards.tsx:235
 #: src/launch/PlayControl.tsx:149
@@ -6773,7 +6811,7 @@ msgstr "{importable, plural, one {# mod will be copied into a new profile. The g
 msgid "Don't check before Play"
 msgstr "Don't check before Play"
 
-#: src/settings/sections/General.tsx:186
+#: src/settings/sections/General.tsx:188
 msgid "Keep Mortar in the tray"
 msgstr "Keep Mortar in the tray"
 
@@ -7121,7 +7159,7 @@ msgstr "Diagnostics"
 msgid "Add category"
 msgstr "Add category"
 
-#: src/settings/sections/General.tsx:215
+#: src/settings/sections/General.tsx:230
 msgid "Automatic port"
 msgstr "Automatic port"
 
@@ -7288,7 +7326,7 @@ msgstr "Enjoying these mods? Endorse them on Nexus"
 #: src/mods/ListColumnMenu.tsx:52
 #: src/mods/Toolbar.tsx:179
 #: src/settings/prefCopy.ts:106
-#: src/settings/sections/General.tsx:106
+#: src/settings/sections/General.tsx:108
 msgid "Author"
 msgstr "Author"
 
@@ -7439,6 +7477,7 @@ msgstr "Update in all profiles ({n})"
 msgid "Player"
 msgstr "Player"
 
+#: src/firstrunTour/FirstRunTour.tsx:108
 #: src/game/Sidebar.tsx:336
 #: src/profiles/ProfilesPage.tsx:374
 #: src/settings/sections/AboutDiagnostics.tsx:59
@@ -7618,7 +7657,7 @@ msgstr "Share selection"
 msgid "Download progress"
 msgstr "Download progress"
 
-#: src/settings/sections/General.tsx:187
+#: src/settings/sections/General.tsx:189
 msgid "Closing the window hides Mortar instead of quitting."
 msgstr "Closing the window hides Mortar instead of quitting."
 
@@ -7821,7 +7860,7 @@ msgstr "Backups appear when Mortar creates a save backup."
 msgid "Downloading and verifying Mortar {0}…"
 msgstr "Downloading and verifying Mortar {0}…"
 
-#: src/settings/sections/General.tsx:194
+#: src/settings/sections/General.tsx:196
 msgid "Tips"
 msgstr "Tips"
 
@@ -7964,7 +8003,7 @@ msgid "SMAPI {0} is available"
 msgstr "SMAPI {0} is available"
 
 #: src/profiles/GameSettings.tsx:270
-#: src/settings/sections/General.tsx:129
+#: src/settings/sections/General.tsx:131
 msgid "Display"
 msgstr "Display"
 
@@ -8056,6 +8095,10 @@ msgstr "Check this download"
 #: src/share/ShareDialog.tsx:423
 msgid "Save…"
 msgstr "Save…"
+
+#: src/settings/sections/General.tsx:204
+msgid "Walk through profiles, Play, mods, and the command palette"
+msgstr "Walk through profiles, Play, mods, and the command palette"
 
 #: src/saves/SaveDetails.tsx:50
 msgid "Fall"
@@ -8277,6 +8320,7 @@ msgstr "Open settings"
 msgid "Crashed: {0}"
 msgstr "Crashed: {0}"
 
+#: src/firstrunTour/FirstRunTour.tsx:56
 #: src/settings/PrefControls.tsx:61
 #: src/settings/PrefControls.tsx:106
 #: src/settings/PrefRow.tsx:26
@@ -8284,8 +8328,8 @@ msgstr "Crashed: {0}"
 #: src/settings/sections/DataPrefs.tsx:17
 #: src/settings/sections/DataUsage.tsx:36
 #: src/settings/sections/GameSettings.tsx:489
-#: src/settings/sections/General.tsx:61
-#: src/settings/sections/General.tsx:156
+#: src/settings/sections/General.tsx:63
+#: src/settings/sections/General.tsx:158
 #: src/settings/sections/NexusDownloadPrefs.tsx:17
 #: src/settings/sections/SmapiVersionRow.tsx:49
 #: src/settings/sections/StreamOverlay.tsx:441
@@ -8316,6 +8360,11 @@ msgstr "{0, plural, one {# download needs your decision} other {# downloads need
 #: src/mods/ConfigPresets.tsx:157
 msgid "Save current as…"
 msgstr "Save current as…"
+
+#. placeholder {0}: step + 1
+#: src/firstrunTour/FirstRunTour.tsx:124
+msgid "Step {0} of {TOUR_STEP_COUNT}"
+msgstr "Step {0} of {TOUR_STEP_COUNT}"
 
 #: src/profiles/ProfilesPage.tsx:414
 msgid "From a link or file…"
@@ -8561,6 +8610,10 @@ msgstr "{0} · kept for rollback"
 msgid "Decide later"
 msgstr "Decide later"
 
+#: src/firstrunTour/FirstRunTour.tsx:120
+msgid "Command palette"
+msgstr "Command palette"
+
 #: src/mods/ModDetail.tsx:139
 #: src/mods/ModDetail.tsx:140
 msgid "No config.json yet"
@@ -8588,7 +8641,7 @@ msgstr "{gameName} settings"
 msgid "Set category…"
 msgstr "Set category…"
 
-#: src/settings/sections/General.tsx:203
+#: src/settings/sections/General.tsx:218
 msgid "Share profiles on the local network"
 msgstr "Share profiles on the local network"
 
