@@ -31,6 +31,8 @@ modules:
       - install -Dm644 tech.rethunk.Mortar-512.png /app/share/icons/hicolor/512x512/apps/tech.rethunk.Mortar.png
       - install -Dm644 tech.rethunk.Mortar-256.png /app/share/icons/hicolor/256x256/apps/tech.rethunk.Mortar.png
       - install -Dm644 appicon.svg /app/share/icons/hicolor/scalable/apps/tech.rethunk.Mortar.svg
+      - install -Dm644 LICENSE /app/share/doc/mortar/LICENSE
+      - install -Dm644 THIRD_PARTY_NOTICES /app/share/doc/mortar/THIRD_PARTY_NOTICES
     sources:
       - type: file
         path: ../../../bin/mortar-packaged
@@ -46,3 +48,7 @@ modules:
         path: ../icons/tech.rethunk.Mortar-256.png
       - type: file
         path: ../../appicon.svg
+      - type: file
+        path: ../../../LICENSE
+      - type: file
+        path: ../../../THIRD_PARTY_NOTICES

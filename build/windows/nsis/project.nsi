@@ -88,6 +88,8 @@ Section
     SetOutPath $INSTDIR
     
     !insertmacro wails.files
+    File "/oname=LICENSE" "..\..\..\LICENSE"
+    File "/oname=THIRD_PARTY_NOTICES" "..\..\..\THIRD_PARTY_NOTICES"
 !if "${WAILS_INSTALL_SCOPE}" != "user"
     ExecWait '"$SYSDIR\netsh.exe" advfirewall firewall add rule name="Mortar" dir=in action=allow program="$INSTDIR\${PRODUCT_EXECUTABLE}" enable=yes profile=private,domain'
 !endif

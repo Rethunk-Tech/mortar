@@ -46,6 +46,16 @@ contents:
     file_info:
       owner: root
       group: root
+  - src: LICENSE
+    dst: /usr/share/doc/mortar/LICENSE
+    file_info:
+      owner: root
+      group: root
+  - src: THIRD_PARTY_NOTICES
+    dst: /usr/share/doc/mortar/THIRD_PARTY_NOTICES
+    file_info:
+      owner: root
+      group: root
 overrides:
   deb:
     depends:

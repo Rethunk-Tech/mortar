@@ -38,4 +38,8 @@ package() {
     "${pkgdir}/usr/share/icons/hicolor/256x256/apps/tech.rethunk.Mortar.png"
   install -Dm644 "mortar-${pkgver}/build/appicon.svg" \
     "${pkgdir}/usr/share/icons/hicolor/scalable/apps/tech.rethunk.Mortar.svg"
+  install -Dm644 "mortar-${pkgver}/LICENSE" \
+    "${pkgdir}/usr/share/doc/mortar/LICENSE"
+  install -Dm644 "mortar-${pkgver}/THIRD_PARTY_NOTICES" \
+    "${pkgdir}/usr/share/doc/mortar/THIRD_PARTY_NOTICES"
 }
