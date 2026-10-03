@@ -4,7 +4,6 @@ import { Settings2, Share2 } from 'lucide-react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { BrowseHost } from '../browse/BrowseHost.tsx'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
-import { LogActions } from '../console/LogActions.tsx'
 import { PerformancePanel } from '../console/PerformancePanel.tsx'
 import { AssetMapPanel } from '../mods/AssetMapPanel.tsx'
 import { LoadOrderTab } from '../mods/LoadOrderTab.tsx'
@@ -88,12 +87,6 @@ function WorkspaceActions({
       {tab === 'problems' ? (
         <>
           <ProblemActions />
-          <Divider orientation="vertical" flexItem={true} sx={{ mx: 0.5 }} />
-        </>
-      ) : null}
-      {tab === 'console' ? (
-        <>
-          <LogActions game={game} />
           <Divider orientation="vertical" flexItem={true} sx={{ mx: 0.5 }} />
         </>
       ) : null}

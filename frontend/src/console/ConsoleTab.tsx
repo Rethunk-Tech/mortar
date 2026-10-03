@@ -27,6 +27,7 @@ import { TipBanner } from '../tips/TipBanner.tsx'
 import { countByLevel, incompatibleSMAPI, isFiltered, LEVELS, modsOf } from './filter.ts'
 import { stepHistory } from './history.ts'
 import { LinkedLog } from './LinkedLog.tsx'
+import { LogActions } from './LogActions.tsx'
 import { useShownEntries, useVisible } from './logHooks.ts'
 import { RunProblemsStrip } from './RunProblems.tsx'
 import { RunsPicker } from './RunsPicker.tsx'
@@ -464,7 +465,7 @@ export function ConsoleTab({ game }: { game: string }) {
       <Box
         sx={{
           display: 'flex',
-          flexWrap: 'wrap',
+          flexWrap: 'nowrap',
           alignItems: 'center',
           gap: 1,
           px: 2,
@@ -496,6 +497,9 @@ export function ConsoleTab({ game }: { game: string }) {
             onClick={clearFilters}
           />
         ) : null}
+        <Box sx={{ ml: 'auto', display: 'flex', gap: 0.75 }}>
+          <LogActions game={game} />
+        </Box>
       </Box>
       {filters.mods.length > 0 ? (
         <Box
