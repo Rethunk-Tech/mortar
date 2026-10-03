@@ -81,8 +81,13 @@ func Attach(s *Service, id string) {
 // EnsureExisting installs the game's loader in the background when profiles exist and it is missing or broken.
 // Call it once s.App is set, so the install's progress reaches the window.
 func EnsureExisting(s *Service, id string) {
-	if all, err := s.profiles.List(id); err == nil && len(all) > 0 {
-		s.ensureInBackground(id)
+	if all, err := s.profiles.List(id); err == nil {
+		for _, p := range all {
+			if p.Error == "" {
+				s.ensureInBackground(id)
+				break
+			}
+		}
 	}
 }
 

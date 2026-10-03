@@ -421,6 +421,10 @@ func (c *cmd) profiles(gameID string) error {
 	return c.emit(list, func() {
 		t := [][]string{}
 		for _, p := range list {
+			if p.Error != "" {
+				t = append(t, []string{p.ID, "damaged", p.Error, ""})
+				continue
+			}
 			on, total := 0, 0
 			for _, e := range p.Entries {
 				total += len(e.Mods)

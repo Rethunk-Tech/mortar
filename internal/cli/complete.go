@@ -144,7 +144,9 @@ func (c *cmd) complete(words []string) error {
 			var list []profile.Profile
 			if c.ask("profiles", control.Params{Game: words[gameAt]}, &list, readTimeout) == nil {
 				for _, p := range list {
-					cands = append(cands, p.Name)
+					if p.Error == "" && p.Name != "" {
+						cands = append(cands, p.Name)
+					}
 				}
 			}
 		case modAt:

@@ -138,6 +138,71 @@ function TrashRow({ item }: { item: TrashItem }) {
   )
 }
 
+function Damaged() {
+  const { t } = useLingui()
+  const damaged = useProfiles((s) => s.damaged)
+  const openFolder = useProfiles((s) => s.openFolder)
+  const remove = useProfiles((s) => s.remove)
+  const [pending, run] = usePending()
+  if (damaged.length === 0) {
+    return null
+  }
+  return (
+    <Box
+      component="section"
+      aria-label={t`Damaged`}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, mb: 2 }}
+    >
+      <Typography component="h2" sx={{ fontSize: 16, fontWeight: 700 }}>{t`Damaged`}</Typography>
+      {damaged.map((item) => (
+        <Box
+          key={item.id}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+            py: 1,
+            pl: 1.5,
+            pr: 0.5,
+            bgcolor: 'rgba(55,55,65,0.9)',
+            borderRadius: '6px',
+          }}
+        >
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography noWrap={true} title={item.id} sx={{ fontSize: 15, fontWeight: 600 }}>
+              {item.id}
+            </Typography>
+            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{item.error}</Typography>
+          </Box>
+          <Tooltip title={t`Open folder`}>
+            <span>
+              <IconButton
+                aria-label={t`Open folder`}
+                disabled={pending}
+                onClick={() => run(() => openFolder(item.id))}
+              >
+                <FolderOpen size={16} />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title={t`Move to trash`}>
+            <span>
+              <IconButton
+                aria-label={t`Move to trash`}
+                color="error"
+                disabled={pending}
+                onClick={() => run(() => remove(item.id))}
+              >
+                <Trash2 size={16} />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Box>
+      ))}
+    </Box>
+  )
+}
+
 function Trash() {
   const { t } = useLingui()
   const trash = useProfiles((s) => s.trash)
@@ -378,6 +443,7 @@ export function ProfilesPage() {
   const closeProfiles = useNav((s) => s.closeProfiles)
   const game = useNav((s) => (s.route.name === 'profiles' ? s.route.game : 'stardew'))
   const profiles = useProfiles((s) => s.profiles)
+  const damaged = useProfiles((s) => s.damaged)
   const reorder = useProfiles((s) => s.reorder)
   const restoreZip = useProfiles((s) => s.restoreZip)
   const loadTrash = useProfiles((s) => s.loadTrash)
@@ -436,7 +502,8 @@ export function ProfilesPage() {
         }}
       >
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          {profiles.length === 0 ? (
+          <Damaged />
+          {profiles.length === 0 && damaged.length === 0 ? (
             <EmptyState
               compact={true}
               icon={<Plus />}

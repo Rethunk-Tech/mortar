@@ -181,7 +181,7 @@ func (s *Service) find(game, id string) (profile.Profile, error) {
 	if err != nil {
 		return profile.Profile{}, err
 	}
-	i := slices.IndexFunc(all, func(p profile.Profile) bool { return p.ID == id })
+	i := slices.IndexFunc(all, func(p profile.Profile) bool { return p.Error == "" && p.ID == id })
 	if i < 0 {
 		return profile.Profile{}, fmt.Errorf("profile %s not found", id)
 	}
@@ -679,9 +679,11 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		if err != nil {
 			return Result{}, err
 		}
-		names := make([]string, len(existing))
-		for i, e := range existing {
-			names[i] = e.Name
+		names := make([]string, 0, len(existing))
+		for _, e := range existing {
+			if e.Error == "" {
+				names = append(names, e.Name)
+			}
 		}
 		p, err := s.d.Profiles.Create(game, profile.UniqueName(names, cur.preview.Name))
 		if err != nil {
@@ -886,7 +888,7 @@ func (s *Service) wantedInstalled(p *pending) bool {
 	}
 	var entries []profile.Entry
 	for _, pr := range all {
-		if pr.ID == p.Profile {
+		if pr.Error == "" && pr.ID == p.Profile {
 			entries = pr.Entries
 			break
 		}

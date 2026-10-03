@@ -247,7 +247,7 @@ func (s *Store) StoreKeys() (map[string][]string, error) {
 		}
 	}
 	for g := range games {
-		profiles, err := s.List(g)
+		profiles, err := s.listOK(g)
 		if err != nil {
 			return nil, err
 		}

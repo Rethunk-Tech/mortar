@@ -161,7 +161,7 @@ func historyBatchID(bundleID string) string {
 
 func profileFor(profiles []profile.Profile, id string) (profile.Profile, error) {
 	for _, p := range profiles {
-		if p.ID == id {
+		if p.Error == "" && p.ID == id {
 			return p, nil
 		}
 	}

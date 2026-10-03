@@ -79,6 +79,42 @@ func TestListReturnsDamagedProfiles(t *testing.T) {
 	}
 }
 
+func TestStoreKeysSkipsDamagedAndListDamaged(t *testing.T) {
+	s := newStore(t)
+	s.trash = filepath.Join(t.TempDir(), "trash")
+	good, err := s.Create("stardew", "Good")
+	if err != nil {
+		t.Fatal(err)
+	}
+	badID := "0123456789abcdef"
+	badDir := filepath.Join(s.root, "stardew", badID)
+	if err := os.MkdirAll(filepath.Join(badDir, "mods"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(badDir, fileName), []byte("{"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	keys, err := s.StoreKeys()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(keys["stardew"]) != 0 {
+		t.Fatalf("StoreKeys used a damaged profile: %v", keys)
+	}
+	damaged, err := s.ListDamaged("stardew")
+	if err != nil || len(damaged) != 1 || damaged[0].ID != badID || damaged[0].Error == "" {
+		t.Fatalf("ListDamaged = %+v, %v", damaged, err)
+	}
+	all, err := s.List("stardew")
+	if err != nil || len(all) != 2 {
+		t.Fatalf("List = %+v, %v", all, err)
+	}
+	if good.ID == "" {
+		t.Fatal("good profile missing")
+	}
+}
+
 func TestRejects(t *testing.T) {
 	s := newStore(t)
 	p, err := s.Create("stardew", "ok")

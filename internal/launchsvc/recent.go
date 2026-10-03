@@ -36,6 +36,9 @@ func (s *Service) RecentLaunches(gameID string, limit int) ([]RecentLaunch, erro
 		return nil, err
 	}
 	for _, p := range all {
+		if p.Error != "" {
+			continue
+		}
 		names[p.ID] = p.Name
 	}
 	var candidates []recentCandidate
@@ -47,6 +50,9 @@ func (s *Service) RecentLaunches(gameID string, limit int) ([]RecentLaunch, erro
 		}
 	}
 	for _, p := range all {
+		if p.Error != "" {
+			continue
+		}
 		modsDir, err := s.profiles.ModsDir(gameID, p.ID)
 		if err != nil {
 			continue

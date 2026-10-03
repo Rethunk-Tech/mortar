@@ -230,6 +230,9 @@ func (s *Service) profileModIDs(gameID string) (map[int]bool, error) {
 	}
 	used := map[int]bool{}
 	for _, p := range profiles {
+		if p.Error != "" {
+			continue
+		}
 		for _, entry := range p.Entries {
 			if entry.Source.ModID > 0 {
 				used[entry.Source.ModID] = true

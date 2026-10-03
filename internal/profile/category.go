@@ -196,7 +196,7 @@ func (s *Store) clearCategoryOverridesLocked(game string, customIDs []string) er
 	for _, id := range customIDs {
 		drop[id] = true
 	}
-	all, err := s.List(game)
+	all, err := s.listOK(game)
 	if err != nil {
 		return err
 	}

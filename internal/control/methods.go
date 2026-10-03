@@ -620,7 +620,13 @@ func (s *Services) games() ([]GameRow, error) {
 	out := make([]GameRow, 0, len(list))
 	for _, g := range list {
 		ps, _ := s.Profiles.List(g.ID)
-		out = append(out, GameRow{GameInfo: g, Configured: g.Installed && g.InstallDir != "", Profiles: len(ps)})
+		n := 0
+		for _, p := range ps {
+			if p.Error == "" {
+				n++
+			}
+		}
+		out = append(out, GameRow{GameInfo: g, Configured: g.Installed && g.InstallDir != "", Profiles: n})
 	}
 	return out, nil
 }
@@ -641,7 +647,7 @@ func (s *Services) resolve(gameID, sel string) (profile.Profile, error) {
 	}
 	var hits []profile.Profile
 	for _, p := range all {
-		if strings.EqualFold(p.Name, sel) {
+		if p.Error == "" && strings.EqualFold(p.Name, sel) {
 			hits = append(hits, p)
 		}
 	}

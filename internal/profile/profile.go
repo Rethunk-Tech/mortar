@@ -195,6 +195,15 @@ type Store struct {
 	historyBatches  map[string]historyBatch
 }
 
+func (s *Store) historyKeep() int {
+	if s.settings != nil {
+		if n := s.settings.Get().HistoryEventsKept; n > 0 {
+			return n
+		}
+	}
+	return maxHistory
+}
+
 // RunningError is returned by operations that would change the mods/ folder of a profile its game is running.
 type RunningError struct{ Game string }
 
@@ -216,7 +225,7 @@ func (s *Store) unlocked(game, id string) error {
 
 // AnyRunning reports whether the game is running any of its profiles.
 func (s *Store) AnyRunning(game string) bool {
-	all, err := s.List(game)
+	all, err := s.listOK(game)
 	if err != nil {
 		return false
 	}
@@ -343,6 +352,41 @@ func (s *Store) List(game string) ([]Profile, error) {
 	return out, nil
 }
 
+func usable(p Profile) bool { return p.Error == "" }
+
+func skipDamaged(all []Profile) []Profile {
+	out := make([]Profile, 0, len(all))
+	for _, p := range all {
+		if usable(p) {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+func (s *Store) listOK(game string) ([]Profile, error) {
+	all, err := s.List(game)
+	if err != nil {
+		return nil, err
+	}
+	return skipDamaged(all), nil
+}
+
+// ListDamaged returns profiles whose profile.json could not be read.
+func (s *Store) ListDamaged(game string) ([]Profile, error) {
+	all, err := s.List(game)
+	if err != nil {
+		return nil, err
+	}
+	out := []Profile{}
+	for _, p := range all {
+		if !usable(p) {
+			out = append(out, p)
+		}
+	}
+	return out, nil
+}
+
 func (s *Store) read(game, id string) (Profile, error) {
 	dir, err := s.profileDir(game, id)
 	if err != nil {
@@ -412,7 +456,7 @@ func (s *Store) create(game, name string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	existing, err := s.List(game)
+	existing, err := s.listOK(game)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -430,6 +474,9 @@ func (s *Store) create(game, name string) (Profile, error) {
 	}
 	now := time.Now().UTC().Truncate(time.Second)
 	p := Profile{ID: id, Name: name, Order: len(existing), Created: now, Updated: now, Entries: []Entry{}}
+	if s.settings != nil {
+		p.UpdateBeforePlay = s.settings.Get().UpdateModsBeforePlayDefault
+	}
 	if len(existing) > 0 {
 		p.Order = existing[len(existing)-1].Order + 1
 	}
@@ -522,7 +569,7 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 				log.Printf("profile %s/%s: record history: %v", game, id, err)
 			}
 			s.historyBatches[key] = batch
-		} else if err := recordHistory(dir, before, p.Entries, kind, label); err != nil {
+		} else if err := recordHistory(dir, before, p.Entries, kind, label, s.historyKeep()); err != nil {
 			log.Printf("profile %s/%s: record history: %v", game, id, err)
 		}
 	}
@@ -532,7 +579,7 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 // SourceOf is the source a profile of game recorded for store key, current or rolled-back, or zero when no profile
 // holds key.
 func (s *Store) SourceOf(game, key string) Source {
-	all, err := s.List(game)
+	all, err := s.listOK(game)
 	if err != nil {
 		return Source{}
 	}

@@ -389,7 +389,7 @@ func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
 	if err != nil {
 		return GameModsResult{}, err
 	}
-	existing, err := s.List(game)
+	existing, err := s.listOK(game)
 	if err != nil {
 		return GameModsResult{}, err
 	}

@@ -152,6 +152,19 @@ func TestProfileMatchSendsPreviewRequest(t *testing.T) {
 	}
 }
 
+func TestProfilesMarksDamaged(t *testing.T) {
+	results := map[string]any{
+		"profiles": []profile.Profile{
+			{ID: "1", Name: "Spring"},
+			{ID: "0123456789abcdef", Error: "read profile: unexpected EOF"},
+		},
+	}
+	r := invoke(t, results, "profiles", "stardew")
+	if r.code != 0 || !strings.Contains(r.out, "damaged") || !strings.Contains(r.out, "0123456789abcdef") {
+		t.Fatalf("profiles: %q", r.out)
+	}
+}
+
 func TestNexusUntrackRequiresScope(t *testing.T) {
 	r := invoke(t, nil, "nexus", "untrack", "stardew", "--yes")
 	if r.code != 2 || len(r.calls) != 0 {

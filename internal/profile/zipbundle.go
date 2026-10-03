@@ -238,7 +238,7 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 	if err := json.Unmarshal(raw, &src); err != nil {
 		return Profile{}, fmt.Errorf("profile.json: %w", err)
 	}
-	all, err := s.List(game)
+	all, err := s.listOK(game)
 	if err != nil {
 		return Profile{}, err
 	}

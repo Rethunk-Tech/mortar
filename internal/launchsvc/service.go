@@ -269,6 +269,9 @@ func (s *Service) find(g game.Game) (string, time.Time) {
 		return "", time.Time{}
 	}
 	for _, p := range all {
+		if p.Error != "" {
+			continue
+		}
 		dir, err := s.profiles.ModsDir(g.ID(), p.ID)
 		if err != nil {
 			continue
@@ -985,7 +988,7 @@ func (s *Service) bridgeFolder(g game.Game, profileID string) (string, error) {
 		return "", err
 	}
 	for _, p := range all {
-		if p.ID != profileID {
+		if p.Error != "" || p.ID != profileID {
 			continue
 		}
 		for _, e := range p.Entries {

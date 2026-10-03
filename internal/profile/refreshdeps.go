@@ -13,14 +13,11 @@ import (
 // RefreshDependencies re-reads every entry's manifests from the store so the stored needs and optional lists
 // follow the current manifest parser. It writes a profile only when something changed, and records no history.
 func (s *Store) RefreshDependencies(game string) error {
-	profiles, err := s.List(game)
+	profiles, err := s.listOK(game)
 	if err != nil {
 		return err
 	}
 	for _, p := range profiles {
-		if p.Error != "" {
-			continue
-		}
 		if err := s.refreshDependencies(game, p.ID); err != nil {
 			log.Printf("profile %s/%s: refresh dependencies: %v", game, p.ID, err)
 		}

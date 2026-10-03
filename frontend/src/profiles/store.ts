@@ -59,6 +59,14 @@ async function restoreProfileZip(gameId: string, apply: (p: Profile) => Promise<
   }
 }
 
+function splitListed(list: Profile[] | null | undefined) {
+  const all = list ?? []
+  return {
+    profiles: all.filter((p) => !p.error),
+    damaged: all.filter((p) => Boolean(p.error)),
+  }
+}
+
 const visibleId = (profiles: Profile[], id: string | undefined) =>
   profiles.find((p) => p.id === id && !p.hidden)?.id ?? ''
 
@@ -74,7 +82,7 @@ function ensureVisible(
 }
 
 async function duplicateProfile(
-  get: () => { game: GameInfo | null },
+  get: () => { game: GameInfo | null; open: (id: string) => void },
   set: (p: { profiles: Profile[] }) => void,
   id: string,
 ) {
@@ -84,7 +92,9 @@ async function duplicateProfile(
   }
   try {
     const p = await Duplicate(game.id, id)
-    set({ profiles: (await List(game.id)) ?? [p] })
+    const listed = splitListed((await List(game.id)) ?? [p])
+    set({ ...listed })
+    get().open(p.id)
   } catch (e) {
     fail(i18n._(msg`Could not duplicate the profile`))(e)
   }
@@ -92,11 +102,11 @@ async function duplicateProfile(
 
 async function refreshList(
   get: () => { game: GameInfo | null },
-  set: (p: { profiles: Profile[] }) => void,
+  set: (p: { profiles: Profile[]; damaged: Profile[] }) => void,
 ) {
   const { game } = get()
   if (game) {
-    set({ profiles: (await List(game.id)) ?? [] })
+    set(splitListed((await List(game.id)) ?? []))
   }
 }
 
@@ -144,6 +154,63 @@ async function purgeAllTrash(get: () => { game: GameInfo | null; loadTrash: () =
   await get().loadTrash()
 }
 
+async function deleteProfile(
+  get: () => {
+    game: GameInfo | null
+    profiles: Profile[]
+    ensureOpen: () => void
+    loadTrash: () => Promise<void>
+    restore: (id: string) => Promise<void>
+  },
+  set: (
+    fn: (s: { profiles: Profile[]; damaged: Profile[] }) => {
+      profiles: Profile[]
+      damaged: Profile[]
+    },
+  ) => void,
+  id: string,
+) {
+  const { game } = get()
+  if (!game) {
+    return
+  }
+  const gone = get().profiles.find((p) => p.id === id)
+  await Delete(game.id, id)
+  set((s) => ({
+    profiles: s.profiles.filter((x) => x.id !== id),
+    damaged: s.damaged.filter((x) => x.id !== id),
+  }))
+  get().ensureOpen()
+  useToasts.getState().push({
+    kind: 'success',
+    title: i18n._(msg`Deleted “${gone?.name ?? 'profile'}”`),
+    action: {
+      label: i18n._(msg`Undo`),
+      profileId: id,
+      run: () => get().restore(id),
+    },
+  })
+}
+
+async function reorderProfiles(
+  get: () => { game: GameInfo | null; profiles: Profile[] },
+  set: (p: { profiles: Profile[] }) => void,
+  ids: string[],
+) {
+  const { game, profiles } = get()
+  if (!game) {
+    return
+  }
+  const byId = new Map(profiles.map((p) => [p.id, p]))
+  set({ profiles: ids.flatMap((id) => byId.get(id) ?? []) })
+  try {
+    await Reorder(game.id, ids)
+  } catch (e) {
+    fail(i18n._(msg`Could not save the profile order`))(e)
+    set({ profiles })
+  }
+}
+
 async function restoreProfile(
   get: () => {
     game: GameInfo | null
@@ -151,7 +218,7 @@ async function restoreProfile(
     ensureOpen: () => void
     loadTrash: () => Promise<void>
   },
-  set: (patch: { profiles: Profile[] }) => void,
+  set: (patch: { profiles: Profile[]; damaged?: Profile[] }) => void,
   id: string,
 ) {
   const { game } = get()
@@ -159,22 +226,28 @@ async function restoreProfile(
     return
   }
   await Restore(game.id, id)
-  set({ profiles: (await List(game.id)) ?? [] })
+  set(splitListed((await List(game.id)) ?? []))
   get().ensureOpen()
   await get().loadTrash()
 }
 
 async function read(gameId: string, current: string) {
-  const [{ games }, list] = await Promise.all([loadGameStatus(), List(gameId)])
-  const profiles = list ?? []
+  const [{ games }, list, damagedList] = await Promise.all([
+    loadGameStatus(),
+    List(gameId),
+    ListDamaged(gameId),
+  ])
+  const { profiles } = splitListed(list)
+  const damaged = damagedList ?? splitListed(list).damaged
   const last = useSettings.getState().lastProfile?.[gameId]
   const openId = visibleId(profiles, current) || visibleId(profiles, last) || firstVisible(profiles)
-  return { game: games.find((g) => g.id === gameId) ?? null, profiles, openId }
+  return { game: games.find((g) => g.id === gameId) ?? null, profiles, damaged, openId }
 }
 
 export const useProfiles = create<{
   game: GameInfo | null
   profiles: Profile[]
+  damaged: Profile[]
   trash: TrashItem[]
   openId: string
   loaded: boolean
@@ -194,6 +267,7 @@ export const useProfiles = create<{
   duplicate: (id: string) => Promise<void>
   exportProfile: (id: string) => Promise<void>
   restoreZip: () => Promise<void>
+  openFolder: (id: string) => Promise<void>
   setHidden: (id: string, hidden: boolean) => Promise<void>
   remove: (id: string) => Promise<void>
   restore: (id: string) => Promise<void>
@@ -204,6 +278,7 @@ export const useProfiles = create<{
 }>((set, get) => ({
   game: null,
   profiles: [],
+  damaged: [],
   trash: [],
   openId: '',
   loaded: false,
@@ -275,11 +350,22 @@ export const useProfiles = create<{
       await exportProfileZip(game.id, id)
     }
   },
+  openFolder: async (id) => {
+    const { game } = get()
+    if (!game) {
+      return
+    }
+    try {
+      await OpenFolder(game.id, id)
+    } catch (e) {
+      fail(i18n._(msg`Could not open the profile folder`))(e)
+    }
+  },
   restoreZip: async () => {
     const { game } = get()
     if (game) {
       await restoreProfileZip(game.id, async (p) => {
-        set({ profiles: (await List(game.id)) ?? [p] })
+        set(splitListed((await List(game.id)) ?? [p]))
         get().open(p.id)
       })
     }
@@ -297,14 +383,8 @@ export const useProfiles = create<{
     }
   },
   remove: async (id) => {
-    const { game } = get()
-    if (!game) {
-      return
-    }
     try {
-      await Delete(game.id, id)
-      set((s) => ({ profiles: s.profiles.filter((x) => x.id !== id) }))
-      get().ensureOpen()
+      await deleteProfile(get, set, id)
     } catch (e) {
       fail(i18n._(msg`Could not delete the profile`))(e)
     }
@@ -331,20 +411,7 @@ export const useProfiles = create<{
       fail(i18n._(msg`Could not empty the trash`))(e)
     }
   },
-  reorder: async (ids) => {
-    const { game, profiles } = get()
-    if (!game) {
-      return
-    }
-    const byId = new Map(profiles.map((p) => [p.id, p]))
-    set({ profiles: ids.flatMap((id) => byId.get(id) ?? []) })
-    try {
-      await Reorder(game.id, ids)
-    } catch (e) {
-      fail(i18n._(msg`Could not save the profile order`))(e)
-      set({ profiles })
-    }
-  },
+  reorder: (ids) => reorderProfiles(get, set, ids),
   ensureOpen: () => ensureVisible(get),
 }))
 

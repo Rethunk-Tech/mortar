@@ -205,6 +205,9 @@ func (s *Service) RecoverGameSettings() error {
 	}
 	var errs []error
 	for _, p := range profiles {
+		if p.Error != "" {
+			continue
+		}
 		settingsPath, err := s.profileSettingsPath("stardew", p.ID)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("%s: %w", p.Name, err))

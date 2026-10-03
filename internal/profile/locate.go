@@ -16,7 +16,7 @@ func (s *Store) ProfilesWithMod(game, uniqueID string) ([]ModInProfile, error) {
 	if uniqueID == "" {
 		return []ModInProfile{}, nil
 	}
-	all, err := s.List(game)
+	all, err := s.listOK(game)
 	if err != nil {
 		return nil, err
 	}
