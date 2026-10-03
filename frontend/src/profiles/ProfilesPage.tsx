@@ -50,6 +50,7 @@ import type {
 import { BundlesSection } from '../bundles/BundlesSection.tsx'
 import { compact } from '../game/compact.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
+import { useTab } from '../game/tab.ts'
 import { useProfilePageBadges } from '../game/useSidebarProfiles.ts'
 import { useBadges } from '../mods/badges.ts'
 import { ProfileHealth } from '../mods/ProfileHealth.tsx'
@@ -542,7 +543,14 @@ export function ProfilesPage() {
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <ProfileRow profile={p} />
                     </Box>
-                    <ProfileHealth counts={byProfile[p.id]} />
+                    <ProfileHealth
+                      counts={byProfile[p.id]}
+                      onClick={() => {
+                        openProfile(p.id)
+                        closeProfiles()
+                        useTab.getState().setTab('problems')
+                      }}
+                    />
                   </Box>
                 ))}
               </SortableContext>

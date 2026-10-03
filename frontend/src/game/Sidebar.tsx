@@ -18,6 +18,7 @@ import { NewProfileDialog } from './NewProfileDialog.tsx'
 import { ProfileContextMenu } from './ProfileContextMenu.tsx'
 import { SupportButton } from './SupportButton.tsx'
 import { useSidebarCollapsed } from './sidebarCollapsed.ts'
+import { useTab } from './tab.ts'
 import { useOrderedProfiles, useSidebarBadges } from './useSidebarProfiles.ts'
 
 const MIN = 150
@@ -62,7 +63,13 @@ function initials(name: string): string {
 
 function Badges({ profile }: { profile: Profile }) {
   const counts = useBadges((s) => s.byProfile[profile.id])
-  return <ProfileHealth counts={counts} sidebar={true} />
+  return (
+    <ProfileHealth
+      counts={counts}
+      sidebar={true}
+      onClick={() => useTab.getState().setTab('problems')}
+    />
+  )
 }
 
 function ProfileButton({

@@ -1,6 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Tooltip } from '@mui/material'
+import type { KeyboardEvent } from 'react'
 import { compact } from '../game/compact.ts'
 import { useSettings } from '../settings/store.ts'
 import { healthView } from './badgeDisplay.ts'
@@ -40,9 +41,12 @@ const sidebarPill = {
 export function ProfileHealth({
   counts,
   sidebar = false,
+  onClick,
 }: {
   counts?: Counts | undefined
   sidebar?: boolean
+  // Opens the profile's Problems tab; the badge is a button only when it is set.
+  onClick?: () => void
 }) {
   const { t } = useLingui()
   const mode = useSettings((s) => s.sidebarBadges)
@@ -59,10 +63,23 @@ export function ProfileHealth({
     <Tooltip title={view.tooltip} disableInteractive={true}>
       <Box
         component="span"
-        role="img"
+        role={onClick ? 'button' : 'img'}
         aria-label={view.tooltip}
+        tabIndex={onClick ? 0 : undefined}
+        onClick={onClick}
+        onKeyDown={
+          onClick
+            ? (e: KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onClick()
+                }
+              }
+            : undefined
+        }
         sx={{
           ...(sidebar ? sidebarPill : pill),
+          cursor: onClick ? 'pointer' : 'default',
           bgcolor: view.tone === 'red' ? 'error.main' : 'warning.main',
         }}
       >
