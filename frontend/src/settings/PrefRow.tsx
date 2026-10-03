@@ -4,9 +4,16 @@ import type { ReactNode } from 'react'
 import type { PrefSpec } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
 import { SetByKey } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useToasts } from '../toasts/store.ts'
-import { PrefNumber, PrefSelect, PrefSwitch, PrefText } from './PrefControls.tsx'
+import {
+  PrefCards,
+  PrefNumber,
+  PrefSegmented,
+  PrefSelect,
+  PrefSwitch,
+  PrefText,
+} from './PrefControls.tsx'
 import { persist } from './persist.ts'
-import { prefControl } from './prefControl.ts'
+import { choiceStyle, prefControl } from './prefControl.ts'
 import { prefCopy } from './prefCopy.ts'
 import { specByKey, usePrefSpecs } from './prefSpecs.ts'
 import { prefAsBool, prefAsNumber, prefAsString, prefRaw, specGameArg } from './prefValue.ts'
@@ -40,9 +47,16 @@ export function PrefRow({
   if (options.length > 0 && !options.some((o) => o.value === selectValue)) {
     selectValue = options[0]?.value ?? selectValue
   }
+  const style = options.length > 0 ? choiceStyle(options) : 'select'
   let control: ReactNode
   if (kind === 'switch') {
     control = <PrefSwitch checked={prefAsBool(raw, spec)} onChange={(on) => save(String(on))} />
+  } else if (style === 'cards') {
+    control = <PrefCards value={selectValue} onChange={save} options={options} label={copy.label} />
+  } else if (style === 'segmented' && options.length > 0) {
+    control = (
+      <PrefSegmented value={selectValue} onChange={save} options={options} label={copy.label} />
+    )
   } else if (kind === 'select' || options.length > 0) {
     control = <PrefSelect value={selectValue} onChange={save} options={options} />
   } else if (kind === 'number') {
@@ -64,7 +78,7 @@ export function PrefRow({
     )
   }
   return (
-    <SettingRow label={copy.label} description={copy.description}>
+    <SettingRow label={copy.label} description={copy.description} block={style === 'cards'}>
       {extra ? (
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           {control}

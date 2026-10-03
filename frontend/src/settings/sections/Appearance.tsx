@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Chip, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Box, Button, ButtonBase, Chip } from '@mui/material'
 import { ImagePlus, RotateCcw } from 'lucide-react'
 import {
   ChooseBackgroundImage,
@@ -13,7 +13,7 @@ import { LIST_COLUMN_IDS, sanitizeListSort } from '../../mods/listColumns.ts'
 import { type AccentName, accents } from '../../theme/accents.ts'
 import { errorText } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
-import { PrefSelect } from '../PrefControls.tsx'
+import { PrefSegmented, PrefSelect } from '../PrefControls.tsx'
 import { PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
@@ -159,22 +159,18 @@ export function Appearance() {
       </SettingsSection>
       <SettingsSection title={t`Background`}>
         <SettingRow label={t`Background`}>
-          <ToggleButtonGroup
-            exclusive={true}
-            size="small"
+          <PrefSegmented
             value={background}
-            aria-label={t`Background`}
-            onChange={(_, next: string | null) => {
-              if (next) {
-                SetBackground(next).catch(reportFailure)
-              }
+            label={t`Background`}
+            onChange={(next) => {
+              SetBackground(next).catch(reportFailure)
             }}
-            sx={{ '& .MuiToggleButton-root': { whiteSpace: 'nowrap' } }}
-          >
-            <ToggleButton value="image">{t`Image`}</ToggleButton>
-            <ToggleButton value="desktop">{t`Desktop`}</ToggleButton>
-            <ToggleButton value="solid">{t`Solid`}</ToggleButton>
-          </ToggleButtonGroup>
+            options={[
+              { value: 'image', label: t`Image` },
+              { value: 'desktop', label: t`Desktop` },
+              { value: 'solid', label: t`Solid` },
+            ]}
+          />
         </SettingRow>
         {background === 'image' ? (
           <SettingRow label={t`Image`}>

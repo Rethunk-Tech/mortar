@@ -5,7 +5,7 @@ interface PrefCopy {
   label: string
   description?: string
   placeholder?: string
-  options?: { value: string; label: string }[]
+  options?: { value: string; label: string; hint?: string }[]
 }
 
 function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
@@ -14,17 +14,37 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
       label: i18n._(msg`When you press Play`),
       description: i18n._(msg`What Mortar does when the game starts, then restore when it exits.`),
       options: [
-        { value: 'stay', label: i18n._(msg`Stay open`) },
-        { value: 'minimise', label: i18n._(msg`Minimise`) },
-        { value: 'hide', label: i18n._(msg`Hide to tray`) },
+        {
+          value: 'stay',
+          label: i18n._(msg`Stay open`),
+          hint: i18n._(msg`Mortar stays on screen beside the game.`),
+        },
+        {
+          value: 'minimise',
+          label: i18n._(msg`Minimise`),
+          hint: i18n._(msg`Mortar minimises while you play and comes back when the game exits.`),
+        },
+        {
+          value: 'hide',
+          label: i18n._(msg`Hide to tray`),
+          hint: i18n._(msg`Mortar leaves the taskbar and waits in the tray until the game exits.`),
+        },
       ],
     },
     startScreen: {
       label: i18n._(msg`Start screen`),
       description: i18n._(msg`Where Mortar opens after the launcher check.`),
       options: [
-        { value: 'last', label: i18n._(msg`Last opened profile`) },
-        { value: 'gameselect', label: i18n._(msg`Game Select`) },
+        {
+          value: 'last',
+          label: i18n._(msg`Last opened profile`),
+          hint: i18n._(msg`Pick up where you left off.`),
+        },
+        {
+          value: 'gameselect',
+          label: i18n._(msg`Game Select`),
+          hint: i18n._(msg`Choose a game and profile each time.`),
+        },
       ],
     },
     defaultLaunchMethod: {
@@ -183,9 +203,21 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
       label: i18n._(msg`Backup before Play`),
       description: i18n._(msg`When Mortar zips Saves before launching`),
       options: [
-        { value: 'changed', label: i18n._(msg`When mods changed`) },
-        { value: 'always', label: i18n._(msg`Every Play`) },
-        { value: 'never', label: i18n._(msg`Never`) },
+        {
+          value: 'changed',
+          label: i18n._(msg`When mods changed`),
+          hint: i18n._(msg`Back up saves only if the profile's mods changed since the last run.`),
+        },
+        {
+          value: 'always',
+          label: i18n._(msg`Every Play`),
+          hint: i18n._(msg`Back up saves every time the game starts.`),
+        },
+        {
+          value: 'never',
+          label: i18n._(msg`Never`),
+          hint: i18n._(msg`Start the game without a backup.`),
+        },
       ],
     },
     launchBackupsKept: { label: i18n._(msg`Launch backups kept`) },

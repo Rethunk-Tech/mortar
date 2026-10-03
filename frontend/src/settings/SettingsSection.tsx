@@ -11,6 +11,8 @@ function nodeText(node: ReactNode): string {
 }
 
 const STACK_BELOW = 560
+const ROW_GAP = 3
+const BLOCK_GAP = 1.5
 
 export function SettingsSection({
   title,
@@ -65,10 +67,12 @@ export function SettingRow({
   label,
   description,
   children,
+  block = false,
 }: {
   label: ReactNode
   description?: ReactNode
   children: ReactNode
+  block?: boolean
 }) {
   const query = useSettingsSearch()
   if (!prefMatches(query, nodeText(label), nodeText(description))) {
@@ -78,8 +82,9 @@ export function SettingRow({
     <Box
       sx={{
         display: 'flex',
-        alignItems: 'center',
-        gap: 3,
+        alignItems: block ? 'stretch' : 'center',
+        flexDirection: block ? 'column' : 'row',
+        gap: block ? BLOCK_GAP : ROW_GAP,
         minHeight: 64,
         px: 2.5,
         py: 1.5,
@@ -106,7 +111,11 @@ export function SettingRow({
           <Box sx={{ fontSize: 14, color: 'text.secondary', mt: 0.25 }}>{description}</Box>
         ) : null}
       </Box>
-      <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>{children}</Box>
+      {block ? (
+        children
+      ) : (
+        <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>{children}</Box>
+      )}
     </Box>
   )
 }

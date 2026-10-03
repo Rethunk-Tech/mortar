@@ -1,5 +1,15 @@
 import { useLingui } from '@lingui/react/macro'
-import { MenuItem, Select, Switch, TextField } from '@mui/material'
+import {
+  Box,
+  ButtonBase,
+  MenuItem,
+  Radio,
+  Select,
+  Switch,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+} from '@mui/material'
 import { useEffect, useState } from 'react'
 import { errorText } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -26,6 +36,106 @@ export function PrefSelect({
         </MenuItem>
       ))}
     </Select>
+  )
+}
+
+export function PrefSegmented({
+  value,
+  onChange,
+  options,
+  label,
+}: {
+  value: string
+  onChange: (v: string) => void
+  options: { value: string; label: string }[]
+  label: string
+}) {
+  return (
+    <ToggleButtonGroup
+      exclusive={true}
+      size="small"
+      value={value}
+      aria-label={label}
+      onChange={(_, next: string | null) => {
+        if (next !== null) {
+          onChange(next)
+        }
+      }}
+      sx={{
+        bgcolor: 'var(--mortar-raised)',
+        borderRadius: '6px',
+        p: '3px',
+        gap: '3px',
+        '& .MuiToggleButton-root': {
+          border: 0,
+          borderRadius: '4px !important',
+          px: 1.75,
+          color: 'text.secondary',
+        },
+        '& .MuiToggleButton-root.Mui-selected, & .MuiToggleButton-root.Mui-selected:hover': {
+          bgcolor: 'primary.main',
+          color: 'primary.contrastText',
+        },
+      }}
+    >
+      {options.map((o) => (
+        <ToggleButton key={o.value} value={o.value}>
+          {o.label}
+        </ToggleButton>
+      ))}
+    </ToggleButtonGroup>
+  )
+}
+
+export function PrefCards({
+  value,
+  onChange,
+  options,
+  label,
+}: {
+  value: string
+  onChange: (v: string) => void
+  options: { value: string; label: string; hint?: string }[]
+  label: string
+}) {
+  return (
+    <Box
+      role="radiogroup"
+      aria-label={label}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+    >
+      {options.map((o) => {
+        const on = o.value === value
+        return (
+          <ButtonBase
+            key={o.value}
+            role="radio"
+            aria-checked={on}
+            onClick={() => onChange(o.value)}
+            sx={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'flex-start',
+              textAlign: 'left',
+              gap: 1.5,
+              px: 1.5,
+              py: 1.25,
+              borderRadius: '6px',
+              bgcolor: on ? 'var(--mortar-hairline-12)' : 'var(--mortar-raised)',
+              outline: on ? '1px solid' : 'none',
+              outlineColor: 'primary.main',
+              '&:hover': { bgcolor: 'var(--mortar-hairline-12)' },
+            }}
+          >
+            <Radio checked={on} size="small" tabIndex={-1} sx={{ p: 0, mt: '2px' }} />
+            <Box sx={{ minWidth: 0 }}>
+              <Box sx={{ fontSize: 15, fontWeight: 600 }}>{o.label}</Box>
+              {o.hint ? <Box sx={{ fontSize: 14, color: 'text.secondary' }}>{o.hint}</Box> : null}
+            </Box>
+          </ButtonBase>
+        )
+      })}
+    </Box>
   )
 }
 

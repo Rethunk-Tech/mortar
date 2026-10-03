@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { prefControl } from './prefControl.ts'
+import { choiceStyle, prefControl } from './prefControl.ts'
 import { prefMatches, sectionVisible } from './prefFilter.ts'
 
 test('prefControl maps registry types to fields', () => {
@@ -23,4 +23,14 @@ test('sectionVisible hides a section with no matching rows', () => {
   ]
   expect(sectionVisible('timestamp', rows)).toBe(true)
   expect(sectionVisible('nxm', rows)).toBe(false)
+})
+
+test('choiceStyle picks cards, a button strip or a list', () => {
+  const o = (label: string, hint?: string) => (hint ? { label, hint } : { label })
+  expect(choiceStyle([o('Dark'), o('Light'), o('System')])).toBe('segmented')
+  expect(choiceStyle([o('Stay open', 'a'), o('Minimise', 'b')])).toBe('cards')
+  expect(choiceStyle([o('a'), o('b'), o('c'), o('d'), o('e')])).toBe('select')
+  expect(
+    choiceStyle([o('A very long option label here'), o('Another very long option label')]),
+  ).toBe('select')
 })
