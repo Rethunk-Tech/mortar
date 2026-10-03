@@ -5,6 +5,7 @@ import {
   ChevronDown,
   Clock,
   Download,
+  FilterX,
   Search,
   SquareTerminal,
   X,
@@ -488,8 +489,15 @@ export function ConsoleTab({ game }: { game: string }) {
           pressed={follow}
           onClick={() => setFollow(!follow)}
         />
+        {isFiltered(filters) ? (
+          <IconAction
+            label={t`Clear filters`}
+            icon={<FilterX size={16} />}
+            onClick={clearFilters}
+          />
+        ) : null}
       </Box>
-      {isFiltered(filters) ? (
+      {filters.mods.length > 0 ? (
         <Box
           sx={{
             display: 'flex',
@@ -513,15 +521,6 @@ export function ConsoleTab({ game }: { game: string }) {
               sx={{ bgcolor: 'var(--mortar-hairline)', fontSize: 13 }}
             />
           ))}
-          <Button
-            size="small"
-            variant="text"
-            color="inherit"
-            onClick={clearFilters}
-            sx={{ minWidth: 0, textDecoration: 'underline' }}
-          >
-            {t`Clear filters`}
-          </Button>
         </Box>
       ) : null}
       <CauseBanner game={target.game} profile={target.profile} run={viewingRun} />
