@@ -76,7 +76,7 @@ func Scan(dir string) Report {
 	} else {
 		checks = append(checks, Check{ID: "control", Status: Pass, Detail: "control.json is absent"})
 	}
-	free, freeErr := freeSpace(dir)
+	free, freeErr := datadir.FreeBytes(dir)
 	if freeErr == nil {
 		if free == 0 {
 			checks = append(checks, Check{

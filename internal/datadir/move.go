@@ -33,9 +33,9 @@ func EstimateRelocate(src, dest string) (RelocateEstimate, error) {
 	if err != nil {
 		return RelocateEstimate{}, err
 	}
-	free, err := freeBytes(dest)
+	free, err := FreeBytes(dest)
 	if err != nil {
-		free, err = freeBytes(filepath.Dir(dest))
+		free, err = FreeBytes(filepath.Dir(dest))
 		if err != nil {
 			return RelocateEstimate{}, err
 		}

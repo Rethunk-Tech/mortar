@@ -6,7 +6,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-func freeBytes(path string) (int64, error) {
+func FreeBytes(path string) (int64, error) {
 	var free, total, totalFree uint64
 	p, err := windows.UTF16PtrFromString(path)
 	if err != nil {

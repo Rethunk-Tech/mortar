@@ -2097,16 +2097,8 @@ func offlineDoctor() error {
 	}
 	rep := doctor.Scan(dir)
 	findings, fixes := doctor.Findings(rep)
-	free, _ := freeSpace(dir)
-	var cacheBytes int64
-	_ = filepath.WalkDir(filepath.Join(dir, "cache"), func(_ string, entry os.DirEntry, walkErr error) error {
-		if walkErr == nil && !entry.IsDir() {
-			if info, statErr := entry.Info(); statErr == nil {
-				cacheBytes += info.Size()
-			}
-		}
-		return nil
-	})
+	free, _ := datadir.FreeBytes(dir)
+	cacheBytes, _ := datadir.Size(filepath.Join(dir, "cache"))
 	result := map[string]any{
 		"offline": true, "dataDir": dir, "freeBytes": free, "cacheBytes": cacheBytes,
 		"findings": findings, "fixes": fixes, "summary": fmt.Sprintf("Offline doctor: %d findings.", len(findings)),
