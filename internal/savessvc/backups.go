@@ -66,6 +66,23 @@ func (s *Service) OpenBackupsFolder() error {
 	return datadir.Open(dir)
 }
 
+// CreateBackup zips one save and marks the zip kept, with cause kind manual.
+func (s *Service) CreateBackup(folder string) error {
+	if folder == "" || folder != filepath.Base(folder) || folder == "." || folder == ".." {
+		return fmt.Errorf("not a save folder: %q", folder)
+	}
+	savesDir, backupsDir, err := s.backupDirs()
+	if err != nil {
+		return err
+	}
+	keep := backup.DefaultKeep
+	if s.settings != nil {
+		keep = s.settings.Get().BackupsKept
+	}
+	_, err = backup.Folder(savesDir, backupsDir, folder, keep, time.Now(), backup.Cause{Kind: backup.KindManual, Pinned: true})
+	return err
+}
+
 // OpenSaveFolder shows one save's folder (a direct child of the Saves folder) in the system file manager.
 func (s *Service) OpenSaveFolder(folder string) error {
 	if folder == "" || folder != filepath.Base(folder) || folder == "." || folder == ".." {

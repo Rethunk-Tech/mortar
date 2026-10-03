@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
 import {
+  Archive,
   CalendarDays,
   CircleCheck,
   Clock,
@@ -30,7 +31,10 @@ import type {
   Fit,
   Lack,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
-import { OpenSaveFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
+import {
+  CreateBackup,
+  OpenSaveFolder,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLocked } from '../mods/useLocked.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -40,9 +44,11 @@ import { pendingFor } from '../queue/totals.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { BackupsDialog } from './BackupsDialog.tsx'
+import { useSaveBackups } from './backups.ts'
 import { goldText, hoursPlayed } from './card.ts'
 import { useSaves } from './store.ts'
 
@@ -295,12 +301,14 @@ function FitStatus({ missing }: { missing: number }) {
 
 function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: string }) {
   const { t, i18n } = useLingui()
+  const [backingUp, runBackup] = usePending()
   const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
   const missing = fit.missing ?? []
   const style = SEASON_STYLE[fit.season] ?? SEASON_STYLE[0]
   const kind = useFarmKind(fit.whichFarm)
   const hours = hoursPlayed(fit.millisecondsPlayed)
   const subtitle = [fit.farmer, kind].filter(Boolean).join(' · ')
+  const label = fit.farm || fit.folder
   return (
     <Box
       sx={{
@@ -342,10 +350,36 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
             {subtitle}
           </Typography>
         </Box>
+        <Tooltip title={t`Back up now`}>
+          <span>
+            <IconButton
+              size="small"
+              disabled={backingUp}
+              aria-label={t`Back up ${label} now`}
+              onClick={() => {
+                runBackup(async () => {
+                  try {
+                    await CreateBackup(fit.folder)
+                    await useSaveBackups.getState().load()
+                    useToasts.getState().push({ kind: 'success', title: t`Backed up ${label}` })
+                  } catch (e) {
+                    useToasts.getState().push({
+                      kind: 'error',
+                      title: t`Could not back up ${label}`,
+                      body: errorMessage(e),
+                    })
+                  }
+                })
+              }}
+            >
+              <Archive size={16} />
+            </IconButton>
+          </span>
+        </Tooltip>
         <Tooltip title={t`Open save folder`}>
           <IconButton
             size="small"
-            aria-label={t`Open the folder of ${fit.farm || fit.folder}`}
+            aria-label={t`Open the folder of ${label}`}
             onClick={() => {
               OpenSaveFolder(fit.folder).catch(reportUnexpected)
             }}

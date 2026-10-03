@@ -122,11 +122,12 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
 Every save in the Saves folder with its fit for this profile, as cards in a grid (340px minimum column), above a line explaining that the save is picked inside the game. Each card has:
 
 - a solid tile coloured and iconed by the save's season, the farm name, and `farmer · type farm` under it
+- **Back up now** and **Open save folder** on the card; Back up now zips that save only, labelled Manual and kept until deleted
 - icon stats for the in-game date, hours played and gold, leaving out any the save does not give
 - a footer with the last played date, the fit chip ("All mods present", "Has used N mods it lacks") and Add all for mods Mortar can install
 - the mods it has used as removable chips (dismissing one for that save toasts Undo)
 
-**Save backups** above the cards opens a dialog listing the backup zips newest first, each with its time, cause ("Before updating" the named profile, "Before a restore" or "Unknown"), size and the farms inside, with **Restore** (a dark menu: Restore all, or each save of that zip alone), **Open backups folder** and **Close**. Restore asks first, names the saves it will overwrite and says the current Saves folder is backed up first (solid paper, no transition), and reads "Stop the game to restore saves." while the game runs.
+**Save backups** above the cards opens a dialog listing the backup zips newest first, each with its time, cause ("Before updating" the named profile, "Before a restore", "Before playing", "Manual" or "Unknown"), size and the farms inside, with **Restore** (a dark menu: Restore all, or each save of that zip alone), **Open backups folder** and **Close**. Restore asks first, names the saves it will overwrite and says the current Saves folder is backed up first (solid paper, no transition), and reads "Stop the game to restore saves." while the game runs. A successful or failed Back up now toasts.
 
 ## Problems tab
 

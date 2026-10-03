@@ -5,6 +5,7 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -16,11 +17,12 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
-// KindLaunch, KindUpdate, and KindRestore are Cause.Kind values written beside a zip.
+// KindLaunch, KindUpdate, KindRestore, and KindManual are Cause.Kind values written beside a zip.
 const (
 	KindLaunch  = "launch"
 	KindUpdate  = "update"
 	KindRestore = "restore"
+	KindManual  = "manual"
 )
 
 // Cause is why a backup was made, stored as a sidecar next to the zip so older timestamp-only names still parse.
@@ -78,7 +80,43 @@ func Saves(savesDir, backupsDir string, keep int, now time.Time, cause Cause) (s
 	if err != nil {
 		return "", err
 	}
-	err = writeZip(tmp, savesDir)
+	return finishZip(tmp, backupsDir, savesDir, "", keep, now, name, cause)
+}
+
+// Folder zips one save folder into backupsDir the same way Saves does, without the recent-backup stand-in so a
+// requested backup is always a new zip.
+func Folder(savesDir, backupsDir, folder string, keep int, now time.Time, cause Cause) (string, error) {
+	if folder == "" || folder != filepath.Base(folder) || folder == "." || folder == ".." {
+		return "", fmt.Errorf("not a save folder: %q", folder)
+	}
+	dir := filepath.Join(savesDir, folder)
+	info, err := os.Stat(dir)
+	if err != nil || !info.IsDir() {
+		return "", fmt.Errorf("save %q not found", folder)
+	}
+	zips, err := list(backupsDir)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return "", err
+	}
+	name := now.UTC().Truncate(time.Millisecond)
+	if len(zips) > 0 {
+		newest := zips[len(zips)-1]
+		if t, err := time.Parse(stamp, strings.TrimSuffix(newest, ".zip")); err == nil && !name.After(t) {
+			name = t.Add(time.Millisecond)
+		}
+	}
+	if err := os.MkdirAll(backupsDir, 0o700); err != nil {
+		return "", err
+	}
+	tmp, err := os.CreateTemp(backupsDir, "backup-*.tmp")
+	if err != nil {
+		return "", err
+	}
+	return finishZip(tmp, backupsDir, savesDir, folder, keep, now, name, cause)
+}
+
+func finishZip(tmp *os.File, backupsDir, savesDir, only string, keep int, now, name time.Time, cause Cause) (string, error) {
+	err := writeZip(tmp, savesDir, only)
 	if err == nil {
 		err = tmp.Sync()
 	}
@@ -141,10 +179,14 @@ func lastChange(root string) (time.Time, error) {
 	return last, err
 }
 
-func writeZip(w io.Writer, root string) error {
+func writeZip(w io.Writer, root, only string) error {
 	zw := zip.NewWriter(w)
 	base := filepath.Base(root)
-	err := filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
+	walk := root
+	if only != "" {
+		walk = filepath.Join(root, only)
+	}
+	err := filepath.WalkDir(walk, func(p string, d fs.DirEntry, err error) error {
 		if err != nil || !d.Type().IsRegular() {
 			return err
 		}

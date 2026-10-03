@@ -154,6 +154,64 @@ func TestSavesBacksUpAgainWhenASaveChangedAndSweepsCrashedTemps(t *testing.T) {
 	}
 }
 
+func TestFolderZipsOnlyThatSaveAndStaysPinned(t *testing.T) {
+	saves := filepath.Join(t.TempDir(), "Saves")
+	for _, folder := range []string{"Farm_1", "Farm_2"} {
+		if err := os.MkdirAll(filepath.Join(saves, folder), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := fsx.WriteFile(filepath.Join(saves, folder, folder), []byte(folder), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	out := t.TempDir()
+	start := time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC)
+	if _, err := Saves(saves, out, 1, start, Cause{Kind: KindLaunch}); err != nil {
+		t.Fatal(err)
+	}
+	got, err := Folder(saves, out, "Farm_1", 1, start.Add(MinGap), Cause{Kind: KindManual, Pinned: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	items, err := List(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var manual Backup
+	for _, b := range items {
+		if b.Name == filepath.Base(got) {
+			manual = b
+		}
+	}
+	if manual.Kind != KindManual || !manual.Pinned || len(manual.Saves) != 1 || manual.Saves[0].Folder != "Farm_1" {
+		t.Fatalf("manual backup = %+v", manual)
+	}
+	zr, err := zip.OpenReader(got)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = zr.Close() }()
+	if len(zr.File) != 1 || zr.File[0].Name != "Saves/Farm_1/Farm_1" {
+		t.Fatalf("zip holds %v", zr.File)
+	}
+	if _, err := Saves(saves, out, 1, start.Add(2*MinGap), Cause{Kind: KindLaunch}); err != nil {
+		t.Fatal(err)
+	}
+	after, err := List(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	kept := false
+	for _, b := range after {
+		if b.Name == filepath.Base(got) && b.Pinned {
+			kept = true
+		}
+	}
+	if !kept {
+		t.Fatalf("manual backup pruned: %+v", after)
+	}
+}
+
 func TestABackwardsClockKeepsTheNewZip(t *testing.T) {
 	saves := filepath.Join(t.TempDir(), "Saves")
 	if err := os.MkdirAll(saves, 0o750); err != nil {

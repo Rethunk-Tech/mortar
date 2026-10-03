@@ -80,6 +80,40 @@ func writeFarm(t *testing.T, saves, folder, farm, body string) {
 	}
 }
 
+func TestCreateBackupIsManualPinnedAndOnlyThatSave(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	cfg, err := os.UserConfigDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	savesDir := filepath.Join(cfg, "StardewValley", "Saves")
+	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
+	writeFarm(t, savesDir, "Farm_2", "Rainy", "v2")
+	store, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := &Service{settings: store, scanner: &saves.Scanner{Dir: savesDir}}
+	if err := s.CreateBackup("Farm_1"); err != nil {
+		t.Fatal(err)
+	}
+	listed, err := s.ListBackups()
+	if err != nil || len(listed) != 1 {
+		t.Fatalf("list = %+v, %v", listed, err)
+	}
+	b := listed[0]
+	if b.Kind != backup.KindManual || !b.Pinned || len(b.Saves) != 1 || b.Saves[0].Folder != "Farm_1" {
+		t.Fatalf("backup = %+v", b)
+	}
+	for _, folder := range []string{"", ".", "..", "../etc", "a/b", "Missing_123"} {
+		if err := s.CreateBackup(folder); err == nil {
+			t.Errorf("CreateBackup(%q) = nil, want an error", folder)
+		}
+	}
+}
+
 func TestOpenSaveFolderRefusesPathsOutsideSaves(t *testing.T) {
 	s := &Service{scanner: &saves.Scanner{Dir: t.TempDir()}}
 	for _, folder := range []string{"", ".", "..", "../etc", "a/b", "Missing_123"} {
