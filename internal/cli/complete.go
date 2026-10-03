@@ -45,7 +45,7 @@ func completion(w io.Writer, shell string) error {
 // subverbs are the second words of the verbs that take one.
 var subverbs = map[string][]string{
 	"profile":    {"create", "rename", "copy", "delete", "compare", "match", "collection", "history", "revert", "load-order", "repair", "list"},
-	"mods":       {"enable", "disable", "pin", "unpin", "remove", "tag", "untag", "category", "note", "skip-version", "split", "combine", "config"},
+	"mods":       {"enable", "disable", "pin", "unpin", "remove", "tag", "untag", "category", "note", "skip-version", "split", "combine", "config", "compat"},
 	"bundles":    {"apply"},
 	"nexus":      {"untrack"},
 	"trash":      {"list", "restore", "delete", "empty"},
@@ -60,6 +60,7 @@ var subverbs = map[string][]string{
 	"data":       {"usage"},
 	"settings":   {"get", "set", "export", "import", "reset"},
 	"logs":       {"search", "share", "fixes"},
+	"updates":    {"apply"},
 }
 
 // gameAt and profileAt give the positions (1-based after the verb) where a verb takes a game and a profile.
@@ -96,6 +97,18 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 		if len(words) > 1 && slices.Contains(subverbs["problems"], words[1]) {
 			return 0, 0, 0
 		}
+		return 1, 2, 0
+	case "updates":
+		if len(words) > 1 && words[1] == "apply" {
+			return 2, 0, 3
+		}
+		return 1, 2, 0
+	case "conflicts":
+		if len(words) > 1 && words[1] == "map" {
+			return 2, 3, 0
+		}
+		return 1, 2, 0
+	case "who":
 		return 1, 2, 0
 	case "logs":
 		if len(words) > 1 && words[1] == "search" {
@@ -149,6 +162,9 @@ func (c *cmd) complete(words []string) error {
 		}
 		if words[0] == "logs" && pos == 1 {
 			cands = append(cands, subverbs["logs"]...)
+		}
+		if words[0] == "conflicts" && pos == 1 {
+			cands = append(cands, "map")
 		}
 		gameAt, profileAt, modAt := positions(words)
 		switch pos {

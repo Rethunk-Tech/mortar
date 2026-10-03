@@ -5,6 +5,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { LogActions } from '../console/LogActions.tsx'
 import { PerformancePanel } from '../console/PerformancePanel.tsx'
+import { AssetMapPanel } from '../mods/AssetMapPanel.tsx'
 import { LoadOrderTab } from '../mods/LoadOrderTab.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { ProblemActions, ProblemsTab } from '../mods/ProblemsTab.tsx'
@@ -37,7 +38,7 @@ function WorkspaceTabs({ problemsTabCount }: { problemsTabCount: number | null }
           fontSize: 14,
           fontWeight: 400,
           color: 'text.secondary',
-          '&.Mui-selected': { color: '#ffffff', fontWeight: 600 },
+          '&.Mui-selected': { color: 'var(--mortar-ink)', fontWeight: 600 },
         },
       }}
     >
@@ -128,7 +129,7 @@ export function ProfileWorkspace({
           display: 'flex',
           alignItems: 'center',
           px: 2,
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          borderBottom: '1px solid var(--mortar-hairline)',
           flexShrink: 0,
         }}
       >
@@ -142,7 +143,17 @@ export function ProfileWorkspace({
         {tab === 'notes' ? <NotesTab key={`notes-${profile.id}`} profile={profile} /> : null}
         {tab === 'saves' ? <SavesTab profile={profile} game={game} /> : null}
         {tab === 'mods' ? <ModsTab key={`mods-${profile.id}`} profile={profile} /> : null}
-        {tab === 'problems' ? <ProblemsTab key={`problems-${profile.id}`} /> : null}
+        {tab === 'problems' ? (
+          <Box
+            key={`problems-${profile.id}`}
+            sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
+          >
+            <Box sx={{ px: 2, pt: 2, flexShrink: 0 }}>
+              <AssetMapPanel />
+            </Box>
+            <ProblemsTab />
+          </Box>
+        ) : null}
         {tab === 'load-order' ? (
           <LoadOrderTab key={`load-order-${profile.id}`} profile={profile} game={game} />
         ) : null}

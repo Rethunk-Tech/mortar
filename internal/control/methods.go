@@ -496,6 +496,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.downloads()
 	case "downloads.install":
 		return s.downloadsInstall(p)
+	case "updates.apply":
+		return s.changed(p.Game, func() (any, error) { return s.applyEverywhere(ctx, p) })
 	}
 	if method == "logs.search" {
 		prof, err := s.resolve(p.Game, p.Profile)
@@ -737,8 +739,14 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			}
 		}
 		return out, nil
+	case "who":
+		return s.Problems.WhoChanges(ctx, p.Game, id, p.Query)
+	case "conflicts.map":
+		return s.Problems.AssetMap(ctx, p.Game, id, p.Query, 0)
 	case "problems":
 		return s.Problems.Problems(ctx, p.Game, id)
+	case "compatibility":
+		return s.Problems.CompatibilityFor(ctx, p.Game, id)
 	case "problems.dismissed":
 		res, err := s.Problems.Problems(ctx, p.Game, id)
 		if err != nil {
