@@ -5,6 +5,7 @@ import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import type { Row } from '../../bindings/github.com/Rethunk-AI/mortar/internal/loadorder/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { LoadOrder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { useTab } from '../game/tab.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -29,51 +30,61 @@ function DepChips({
   onScroll: (id: string) => void
 }) {
   const { t } = useLingui()
-  const labelFor = (uniqueId: string) => names.get(uniqueId.toLowerCase()) ?? uniqueId
+  const unknown = t`Unknown mod`
+  const chip = (id: string) => {
+    const name = (names.get(id.toLowerCase()) ?? '').trim()
+    const known = name !== ''
+    return {
+      known,
+      label: known ? name : unknown,
+      title: known ? undefined : id,
+    }
+  }
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 0.75 }}>
       {(row.required ?? []).map((id) => {
-        const name = labelFor(id)
+        const { known, label, title } = chip(id)
         const missing = (row.missingRequired ?? []).some(
           (m) => m.toLowerCase() === id.toLowerCase(),
         )
-        const known = names.has(id.toLowerCase())
         return (
-          <Chip
-            key={`req-${id}`}
-            size="small"
-            variant="outlined"
-            label={t`Required: ${name}`}
-            onClick={known && !missing ? () => onScroll(id) : undefined}
-            sx={chipSx(missing)}
-          />
+          <Tooltip key={`req-${id}`} title={title ?? ''}>
+            <Chip
+              size="small"
+              variant="outlined"
+              label={t`Required: ${label}`}
+              onClick={known && !missing ? () => onScroll(id) : undefined}
+              sx={chipSx(missing)}
+            />
+          </Tooltip>
         )
       })}
       {(row.optional ?? []).map((id) => {
-        const name = labelFor(id)
-        const known = names.has(id.toLowerCase())
+        const { known, label, title } = chip(id)
         return (
-          <Chip
-            key={`opt-${id}`}
-            size="small"
-            variant="outlined"
-            label={t`Optional: ${name}`}
-            onClick={known ? () => onScroll(id) : undefined}
-            sx={chipSx(false)}
-          />
+          <Tooltip key={`opt-${id}`} title={title ?? ''}>
+            <Chip
+              size="small"
+              variant="outlined"
+              label={t`Optional: ${label}`}
+              onClick={known ? () => onScroll(id) : undefined}
+              sx={chipSx(false)}
+            />
+          </Tooltip>
         )
       })}
       {(row.dependents ?? []).map((id) => {
-        const name = labelFor(id)
+        const { known, label, title } = chip(id)
         return (
-          <Chip
-            key={`dep-${id}`}
-            size="small"
-            variant="outlined"
-            label={t`Used by: ${name}`}
-            onClick={() => onScroll(id)}
-            sx={chipSx(false)}
-          />
+          <Tooltip key={`dep-${id}`} title={title ?? ''}>
+            <Chip
+              size="small"
+              variant="outlined"
+              label={t`Used by: ${label}`}
+              onClick={known ? () => onScroll(id) : undefined}
+              sx={chipSx(false)}
+            />
+          </Tooltip>
         )
       })}
     </Box>
@@ -130,8 +141,12 @@ function OrderList({
           </Typography>
           <Box sx={{ minWidth: 0, flex: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-              <Typography noWrap={true} title={row.name} sx={{ fontWeight: 600, minWidth: 0 }}>
-                {row.name}
+              <Typography
+                noWrap={true}
+                title={row.name.trim() === '' ? row.uniqueId : row.name}
+                sx={{ fontWeight: 600, minWidth: 0 }}
+              >
+                {row.name.trim() === '' ? t`Unknown mod` : row.name}
               </Typography>
               {row.cycle ? (
                 <Tooltip title={t`These mods require each other.`}>
@@ -188,6 +203,20 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
       cancelled = true
     }
   }, [request])
+
+  useEffect(() => {
+    if (rows === null) {
+      return
+    }
+    const pending = useTab.getState().takePendingLoadOrder()
+    if (!pending) {
+      return
+    }
+    const el =
+      anchors.current.get(pending.id.toLowerCase()) ??
+      (pending.fallback === '' ? undefined : anchors.current.get(pending.fallback.toLowerCase()))
+    el?.scrollIntoView({ block: 'center' })
+  }, [rows])
 
   const names = useMemo(() => {
     const map = new Map<string, string>()

@@ -12,6 +12,7 @@ import {
 import { Clipboard } from '@wailsio/runtime'
 import { ChevronDown, ChevronRight, Copy, ShieldCheck, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
+import { useTab } from '../game/tab.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
@@ -32,6 +33,7 @@ import {
   problemSections,
   type Row,
 } from './problemGroups.ts'
+import { formatProblemReport, whyKeysOf } from './problemReport.ts'
 import { useMods } from './store.ts'
 import { useLoadProblemsOnFocus } from './useLoadProblemsOnFocus.ts'
 
@@ -119,7 +121,25 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
         <TriangleAlert size={16} aria-hidden={true} />
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}>
+        <Typography
+          sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}
+          {...(row.kind === 'missing'
+            ? {
+                component: ButtonBase,
+                onClick: () =>
+                  useTab.getState().revealLoadOrder(row.missing.uniqueId, row.missing.dependentId),
+                sx: {
+                  fontSize: 14,
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word',
+                  textAlign: 'left',
+                  borderRadius: '4px',
+                  textDecoration: 'underline',
+                  textDecorationColor: 'rgba(255,255,255,0.35)',
+                },
+              }
+            : {})}
+        >
           {text}
         </Typography>
         {authorNote === '' ? null : (
@@ -162,6 +182,8 @@ function CleanupRow({
   const { t } = useLingui()
   const remove = useMods((s) => s.remove)
   const mod = useMods((s) => s.mods.find((candidate) => candidate.key === cleanup.key))
+  const who = cleanup.name.trim() === '' ? t`Unknown mod` : cleanup.name
+  const reason = cleanup.reason || 'Not needed by any enabled mod'
   return (
     <Box
       role="alert"
@@ -180,8 +202,11 @@ function CleanupRow({
       }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}>
-          {t`${cleanup.name || cleanup.uniqueId}: ${cleanup.reason || 'Not needed by any enabled mod'}`}
+        <Typography
+          title={cleanup.name.trim() === '' ? cleanup.uniqueId : undefined}
+          sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}
+        >
+          {t`${who}: ${reason}`}
         </Typography>
       </Box>
       <DisabledReason title={t`This mod is no longer in the profile.`} disabled={mod === undefined}>
@@ -306,47 +331,33 @@ export function ProblemActions() {
   const { t } = useLingui()
   const result = useOpenProblems()
   const sectionTitle = useSectionTitle()
-  const rowText = useRowText()
   const sections =
-    result === null ? [] : problemSections(result).filter((section) => section.id !== 'dismissed')
-  const cleanup = result?.cleanup ?? []
+    result === null
+      ? []
+      : problemSections(result).filter(
+          (section) => section.id !== 'dismissed' && section.id !== 'cosmetic',
+        )
+  const harmlessCount = (result?.assetConflicts ?? []).filter((asset) => asset.cosmetic).length
   return (
     <IconAction
-      label={t`Copy all problems`}
+      label={t`Copy report`}
       icon={<Copy size={16} />}
-      disabled={sections.length === 0 && cleanup.length === 0}
+      disabled={result === null || (sections.length === 0 && harmlessCount === 0)}
       onClick={() => {
-        const text = [
-          ...sections.map((section) =>
-            [
-              sectionTitle(section.id),
-              ...section.rows.map((entry) => {
-                const row = isDismissedRow(entry) ? entry.row : entry
-                const { text: line, note } = rowText(row)
-                return note === '' ? `- ${line}` : `- ${line}\n  ${note}`
-              }),
-            ].join('\n'),
-          ),
-          ...(cleanup.length === 0
-            ? []
-            : [
-                [
-                  t`Cleanup`,
-                  ...cleanup.map(
-                    (item) =>
-                      `- ${t`${item.name || item.uniqueId}: Not needed by any enabled mod`}`,
-                  ),
-                  ...cleanup.map(
-                    (item) =>
-                      `- ${item.name || item.uniqueId}: ${t`Not needed by any enabled mod`}`,
-                  ),
-                ].join('\n'),
-              ]),
-        ]
-          .filter((value, index, values) => values.indexOf(value) === index)
-          .join('\n\n')
+        const text = formatProblemReport(
+          sections.map((section) => ({
+            title: sectionTitle(section.id),
+            count: section.rows.length,
+            whyKeys: section.rows.flatMap((entry) => {
+              const row = isDismissedRow(entry) ? entry.row : entry
+              return row.kind === 'asset' ? whyKeysOf(row.asset.evidence) : []
+            }),
+          })),
+          t`Harmless`,
+          harmlessCount,
+        )
         Clipboard.SetText(text).then(
-          () => useToasts.getState().push({ kind: 'success', title: t`Problems copied` }),
+          () => useToasts.getState().push({ kind: 'success', title: t`Report copied` }),
           reportUnexpected,
         )
       }}
