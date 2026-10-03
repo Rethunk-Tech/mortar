@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/doctor"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
+	"github.com/Rethunk-AI/mortar/internal/loadorder"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/queue"
@@ -38,7 +39,7 @@ var verbs = map[string]bool{
 	"conflicts": true, "problems": true, "updates": true, "share": true, "export": true, "open": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
 	"bundles": true, "nexus": true, "trash": true,
-	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
+	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
 // Is reports whether args (without the program name) are a command-line call: a known verb, or a bare word that
@@ -264,6 +265,8 @@ func (c *cmd) dispatch() error {
 		return c.update()
 	case "backups":
 		return c.backups()
+	case "settings":
+		return c.settings()
 	case "bundles":
 		return c.bundles()
 	case "nexus":
@@ -503,6 +506,37 @@ func relativeDeleted(when time.Time) string {
 	}
 }
 
+func (c *cmd) settings() error {
+	if len(c.args) < 2 {
+		return usageError{"settings needs get or set"}
+	}
+	switch c.args[1] {
+	case "get":
+		key := ""
+		if len(c.args) > 2 {
+			key = c.args[2]
+		}
+		var rows [][2]string
+		if err := c.ask("settings.get", control.Params{Key: key}, &rows, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(rows, func() {
+			out := make([][]string, 0, len(rows))
+			for _, r := range rows {
+				out = append(out, []string{r[0], r[1]})
+			}
+			c.table("KEY\tVALUE", out)
+		})
+	case "set":
+		if len(c.args) < 4 {
+			return usageError{"settings set needs a key and a value"}
+		}
+		return c.ask("settings.set", control.Params{Key: c.args[2], Value: strings.Join(c.args[3:], " ")}, nil, readTimeout)
+	default:
+		return usageError{"unknown settings command " + c.args[1]}
+	}
+}
+
 func (c *cmd) trash() error {
 	if len(c.args) < 2 {
 		return usageError{"trash needs list, restore, delete or empty"}
@@ -610,7 +644,7 @@ func (c *cmd) nexus() error {
 
 func (c *cmd) profile() error {
 	if len(c.args) < 2 {
-		return usageError{"profile needs create, rename, copy, compare, match, history, revert or delete"}
+		return usageError{"profile needs create, rename, copy, compare, match, history, revert, load-order or delete"}
 	}
 	sub := c.args[1]
 	var p profile.Profile
@@ -646,6 +680,16 @@ func (c *cmd) profile() error {
 				fmt.Fprintf(c.out, "Only in yours: %s\n", strings.Join(match.OnlyYours, ", "))
 			}
 		})
+	case "load-order":
+		a, err := c.need(2, "a game", "a profile")
+		if err != nil {
+			return err
+		}
+		var order []loadorder.Row
+		if err := c.ask("profile.loadOrder", control.Params{Game: a[0], Profile: a[1]}, &order, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(order, func() { c.printLoadOrder(order) })
 	case "history":
 		a, err := c.need(2, "a game", "a profile")
 		if err != nil {
@@ -1375,6 +1419,8 @@ const usage = `Usage: mortar <command> [arguments] [--json]
 
 Mortar must be running; these commands ask the open app. <profile> is an id or a name.
 
+  settings get [key]                      list settings, or one key
+  settings set <key> <value>              change a setting
   games                                   supported games, whether each is configured
   profiles <game>                         profiles of a game
   profile create <game> <name>            new empty profile
@@ -1392,6 +1438,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   profile compare <game> <profileA> <profileB>
   profile history <game> <profile>       restore points
   profile revert <game> <profile> <eventId>
+  profile load-order <game> <profile>    enabled mods in SMAPI load order
   mods <game> <profile>                   mods with version, state and source
   mods enable|disable <game> <profile> <UniqueID>...
   mods pin|unpin <game> <profile> <UniqueID>...
