@@ -41,6 +41,9 @@ const MinGap = 10 * time.Minute
 
 const stamp = "2006-01-02T15-04-05.000"
 
+// FileName is the backup file name for a backup taken at t.
+func FileName(t time.Time) string { return t.Format(stamp) + ".zip" }
+
 // Saves zips savesDir into backupsDir/<timestamp>.zip through a temp file and rename, then deletes all but the
 // newest keep backups and temp files a crash left. It returns the zip's path (the newest existing one when that is
 // under MinGap old and nothing in savesDir changed since), or "" when savesDir does not exist.
@@ -123,7 +126,7 @@ func finishZip(tmp *os.File, backupsDir, savesDir, only string, keep int, now, n
 	if err = errors.Join(err, tmp.Close()); err != nil {
 		return "", errors.Join(err, os.Remove(tmp.Name()))
 	}
-	dst := filepath.Join(backupsDir, name.Format(stamp)+".zip")
+	dst := filepath.Join(backupsDir, FileName(name))
 	if err := os.Rename(tmp.Name(), dst); err != nil {
 		return "", errors.Join(err, os.Remove(tmp.Name()))
 	}

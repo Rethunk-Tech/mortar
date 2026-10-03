@@ -101,8 +101,28 @@ func (s *Service) CreateBackup(folder string) error {
 	if s.settings != nil {
 		keep = s.settings.Get().BackupsKept
 	}
-	_, err = backup.Folder(savesDir, backupsDir, folder, keep, time.Now(), backup.Cause{Kind: backup.KindManual, Pinned: true})
+	_, reads, err := s.backupReads()
+	if err != nil {
+		return err
+	}
+	now := uniqueBackupTime(reads, time.Now())
+	_, err = backup.Folder(savesDir, backupsDir, folder, keep, now, backup.Cause{Kind: backup.KindManual, Pinned: true})
 	return err
+}
+
+// uniqueBackupTime moves now forward a millisecond at a time until no backup folder already holds a backup of that
+// name: backups are named by their millisecond, and a second one in the same millisecond would replace the first.
+func uniqueBackupTime(dirs []string, now time.Time) time.Time {
+	for {
+		taken := slices.ContainsFunc(dirs, func(dir string) bool {
+			_, err := os.Stat(filepath.Join(dir, backup.FileName(now)))
+			return err == nil
+		})
+		if !taken {
+			return now
+		}
+		now = now.Add(time.Millisecond)
+	}
 }
 
 // OpenSaveFolder shows one save's folder (a direct child of the Saves folder) in the system file manager.
