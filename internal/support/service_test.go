@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/doctor"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 )
 
@@ -87,5 +88,20 @@ func TestLogIsOnlyItsProfiles(t *testing.T) {
 	}
 	if got, err := s.Log("stardew", "b"); err != nil || got != "" {
 		t.Fatalf("profile b: %q, %v", got, err)
+	}
+}
+
+func TestDiagnosticsSectionHidesHomeAndStaysShort(t *testing.T) {
+	report := doctor.Report{Checks: []doctor.Check{{Status: "ok", Detail: "/home/me/.local/share/mortar exists"}}}
+	got := diagnosticsSection(report, "/home/me")
+	if !strings.Contains(got, "ok: ~/.local/share/mortar exists") || strings.Contains(got, "/home/me") {
+		t.Fatalf("section %q", got)
+	}
+	long := doctor.Report{}
+	for range 500 {
+		long.Checks = append(long.Checks, doctor.Check{Status: "warn", Detail: strings.Repeat("x", 40)})
+	}
+	if got := diagnosticsSection(long, ""); len(got) > maxDiagnostics+64 || !strings.Contains(got, "…") {
+		t.Fatalf("long section %d bytes", len(got))
 	}
 }

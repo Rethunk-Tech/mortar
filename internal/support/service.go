@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/doctor"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
@@ -122,5 +123,28 @@ func (s *Service) BugURL(gameID string) string {
 		}
 	}
 	body := "**What happened**\n\n\n**What you expected**\n\n\n**Steps to reproduce**\n\n\n---\n" + about + "\n"
+	if report, err := s.Doctor(); err == nil {
+		body += diagnosticsSection(report, s.home)
+	}
 	return issuesURL + "?" + url.Values{"title": {"Bug: "}, "body": {body}}.Encode()
+}
+
+// maxDiagnostics keeps the prefilled issue URL well under the length GitHub and browsers accept.
+const maxDiagnostics = 3000
+
+// diagnosticsSection lists each diagnostics check as "status: detail" with the home folder shown as ~,
+// cut short once it would make the issue link too long.
+func diagnosticsSection(report doctor.Report, home string) string {
+	var b strings.Builder
+	b.WriteString("\n**Diagnostics**\n```\n")
+	for _, c := range report.Checks {
+		line := c.Status + ": " + hideHome(c.Detail, home) + "\n"
+		if b.Len()+len(line) > maxDiagnostics {
+			b.WriteString("…\n")
+			break
+		}
+		b.WriteString(line)
+	}
+	b.WriteString("```\n")
+	return b.String()
 }
