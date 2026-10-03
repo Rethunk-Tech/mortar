@@ -1,12 +1,4 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from '@mui/material'
 import { type ReactNode, useEffect, useState } from 'react'
 import {
   DeclineOffer,
@@ -14,7 +6,7 @@ import {
   Enable,
   Owner,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/service.ts'
-import { paper } from '../../mods/paper.ts'
+import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { errorDetails, errorMessage } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { useSettings } from '../store.ts'
@@ -81,37 +73,27 @@ export function useNxmHandler(): {
     ? t`${prompt.owner} opens these links now. Mortar takes them over and gives them back when you turn this off in Settings.`
     : ''
   const dialog = (
-    <Dialog open={prompt !== null} onClose={close} transitionDuration={0} slotProps={{ paper }}>
-      <DialogTitle>
-        {prompt?.mode === 'offer' || !prompt?.owner
+    <ConfirmDialog
+      open={prompt !== null}
+      title={
+        prompt?.mode === 'offer' || !prompt?.owner
           ? t`Handle Nexus download links?`
-          : t`Take Nexus links from ${prompt.owner}?`}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText>{[intro, ownerNote].filter(Boolean).join(' ')}</DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            close()
-            if (prompt?.mode === 'offer') {
-              DeclineOffer().catch(fail)
-            }
-          }}
-        >
-          {prompt?.mode === 'offer' ? t`Not now` : t`Cancel`}
-        </Button>
-        <Button
-          variant="contained"
-          onClick={() => {
-            close()
-            change(true)
-          }}
-        >
-          {prompt?.mode === 'offer' ? t`Handle links` : t`Take over`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+          : t`Take Nexus links from ${prompt.owner}?`
+      }
+      body={[intro, ownerNote].filter(Boolean).join(' ')}
+      cancelLabel={prompt?.mode === 'offer' ? t`Not now` : t`Cancel`}
+      confirmLabel={prompt?.mode === 'offer' ? t`Handle links` : t`Take over`}
+      onCancel={() => {
+        close()
+        if (prompt?.mode === 'offer') {
+          DeclineOffer().catch(fail)
+        }
+      }}
+      onConfirm={() => {
+        close()
+        change(true)
+      }}
+    />
   )
   return {
     handled,

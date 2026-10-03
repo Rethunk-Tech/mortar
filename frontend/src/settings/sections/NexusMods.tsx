@@ -4,11 +4,6 @@ import {
   Box,
   Button,
   Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -33,6 +28,7 @@ import {
   SetNxmRedirectOtherGames,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useProfiles } from '../../profiles/store.ts'
+import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { NexusMeter } from '../NexusMeter.tsx'
@@ -42,6 +38,68 @@ import { useSettings } from '../store.ts'
 import { NexusDownloadPrefs } from './NexusDownloadPrefs.tsx'
 import { useNxmHandler } from './nxmHandler.tsx'
 import { nxmOwnerName } from './nxmOwnerName.ts'
+
+function UntrackConfirmDialog({
+  unused,
+  busy,
+  setBusy,
+  gameId,
+  gameName,
+  trackedCount,
+  setTrackedCount,
+  onCancel,
+}: {
+  unused: boolean | null
+  busy: boolean
+  setBusy: (v: boolean) => void
+  gameId: string | undefined
+  gameName: string
+  trackedCount: number
+  setTrackedCount: (n: number) => void
+  onCancel: () => void
+}) {
+  const { t } = useLingui()
+  const pushToast = useToasts((s) => s.push)
+  const untrack = () => {
+    if (unused === null || !gameId) {
+      return
+    }
+    setBusy(true)
+    UntrackAll(gameId, unused)
+      .then((result) => {
+        const toast = {
+          kind: result.stoppedForLimit ? 'warning' : 'success',
+          title: t`Untracked ${result.untracked} mods`,
+          ...(result.stoppedForLimit
+            ? { body: t`Stopped at the API limit; ${result.remaining} left` }
+            : {}),
+        } as const
+        pushToast(toast)
+        setTrackedCount(result.remaining)
+        onCancel()
+      })
+      .catch((err: unknown) =>
+        pushToast({ kind: 'error', title: errorText(err) ?? t`Could not untrack mods` }),
+      )
+      .finally(() => setBusy(false))
+  }
+  return (
+    <ConfirmDialog
+      open={unused !== null}
+      danger={true}
+      busy={busy}
+      title={t`Untrack mods?`}
+      body={
+        unused
+          ? t`Untrack the ${gameName} mods none of your profiles use, out of ${trackedCount} tracked? Nexus has no undo for this.`
+          : t`Untrack all ${trackedCount} tracked ${gameName} mods on Nexus? Nexus has no undo for this.`
+      }
+      confirmLabel={t`Untrack mods`}
+      onCancel={onCancel}
+      onConfirm={untrack}
+    />
+  )
+}
 
 function NexusModsSignedIn({
   serverId,
@@ -71,7 +129,6 @@ function NexusModsSignedIn({
   onAskEndorse: (on: boolean) => void
 }) {
   const { t } = useLingui()
-  const pushToast = useToasts((s) => s.push)
   const [trackedCount, setTrackedCount] = useState<number | null>(null)
   const [confirming, setConfirming] = useState<boolean | null>(null)
   const [busy, setBusy] = useState(false)
@@ -83,30 +140,6 @@ function NexusModsSignedIn({
       TrackedCount(game.id).then(setTrackedCount).catch(reportUnexpected)
     }
   }, [game])
-
-  const untrack = () => {
-    if (confirming === null || !game) {
-      return
-    }
-    setBusy(true)
-    UntrackAll(game.id, confirming)
-      .then((result) => {
-        const toast = {
-          kind: result.stoppedForLimit ? 'warning' : 'success',
-          title: t`Untracked ${result.untracked} mods`,
-          ...(result.stoppedForLimit
-            ? { body: t`Stopped at the API limit; ${result.remaining} left` }
-            : {}),
-        } as const
-        pushToast(toast)
-        setTrackedCount(result.remaining)
-        setConfirming(null)
-      })
-      .catch((err: unknown) =>
-        pushToast({ kind: 'error', title: errorText(err) ?? t`Could not untrack mods` }),
-      )
-      .finally(() => setBusy(false))
-  }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -236,24 +269,16 @@ function NexusModsSignedIn({
         />
       ) : null}
       {nxm.dialog}
-      <Dialog open={confirming !== null} onClose={() => (busy ? undefined : setConfirming(null))}>
-        <DialogTitle>{t`Untrack mods?`}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {confirming
-              ? t`Untrack the ${game?.name ?? ''} mods none of your profiles use, out of ${trackedCount ?? 0} tracked? Nexus has no undo for this.`
-              : t`Untrack all ${trackedCount ?? 0} tracked ${game?.name ?? ''} mods on Nexus? Nexus has no undo for this.`}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button disabled={busy} onClick={() => setConfirming(null)}>
-            {t`Cancel`}
-          </Button>
-          <Button disabled={busy} color="error" variant="contained" onClick={untrack}>
-            {t`Untrack mods`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <UntrackConfirmDialog
+        unused={confirming}
+        busy={busy}
+        setBusy={setBusy}
+        gameId={game?.id}
+        gameName={game?.name ?? ''}
+        trackedCount={trackedCount ?? 0}
+        setTrackedCount={setTrackedCount}
+        onCancel={() => setConfirming(null)}
+      />
     </Box>
   )
 }

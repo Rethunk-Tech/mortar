@@ -2,11 +2,6 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Button,
   ButtonGroup,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   IconButton,
   ListItemIcon,
   ListItemText,
@@ -18,6 +13,7 @@ import { ChevronDown, Gamepad2, Play } from 'lucide-react'
 import { type MouseEvent, useState } from 'react'
 import { compact } from '../game/compact.ts'
 import { routeGame, useNav } from '../nav/store.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { playVanillaOpen, rememberLinuxVanillaDirect, useVanillaPrompt } from './playOpen.ts'
 import { SmapiWarnDialog } from './SmapiWarnDialog.tsx'
 import { useLaunch } from './store.ts'
@@ -43,35 +39,19 @@ export function VanillaPlayDialogs() {
           startVanilla(game, false).then(() => undefined)
         }}
       />
-      <Dialog
+      <ConfirmDialog
         open={linuxDirect}
-        onClose={() => setLinuxDirect(false)}
-        transitionDuration={0}
-        slotProps={{ paper: { sx: { maxWidth: 440 } } }}
-      >
-        <DialogTitle>{t`Play without Steam overlay`}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t`Mortar starts the unmodded game directly so SMAPI's Linux launcher is not used. The Steam overlay and Steam's playtime tracking will not work. Steam still supplies the API if it is running.`}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setLinuxDirect(false)} sx={{ whiteSpace: 'nowrap' }}>
-            {t`Cancel`}
-          </Button>
-          <Button
-            variant="contained"
-            sx={{ whiteSpace: 'nowrap' }}
-            onClick={() => {
-              rememberLinuxVanillaDirect()
-              setLinuxDirect(false)
-              startVanilla(game, true).then(() => undefined)
-            }}
-          >
-            {t`Play without mods`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        maxWidth={440}
+        title={t`Play without Steam overlay`}
+        body={t`Mortar starts the unmodded game directly so SMAPI's Linux launcher is not used. The Steam overlay and Steam's playtime tracking will not work. Steam still supplies the API if it is running.`}
+        confirmLabel={t`Play without mods`}
+        onCancel={() => setLinuxDirect(false)}
+        onConfirm={() => {
+          rememberLinuxVanillaDirect()
+          setLinuxDirect(false)
+          startVanilla(game, true).then(() => undefined)
+        }}
+      />
     </>
   )
 }

@@ -1,14 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from '@mui/material'
+import { Button } from '@mui/material'
 import { useState } from 'react'
 import { SetByKey } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { pushUndoToast } from '../toasts/undo.ts'
@@ -62,20 +56,14 @@ export function ResetSectionButton({ keys }: { keys: string[] }) {
       <Button variant="text" onClick={() => setOpen(true)} sx={{ alignSelf: 'flex-start' }}>
         {t`Reset section to defaults`}
       </Button>
-      <Dialog open={open} onClose={() => setOpen(false)} transitionDuration={0}>
-        <DialogTitle>{t`Reset this section?`}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t`Restore every setting in this group to its default. You can undo from the toast.`}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>{t`Cancel`}</Button>
-          <Button color="warning" variant="contained" onClick={run}>
-            {t`Reset`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDialog
+        open={open}
+        title={t`Reset this section?`}
+        body={t`Restore every setting in this group to its default. You can undo from the toast.`}
+        confirmLabel={t`Reset`}
+        onCancel={() => setOpen(false)}
+        onConfirm={run}
+      />
     </>
   )
 }

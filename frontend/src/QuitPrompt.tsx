@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import { useQuitPrompt } from './quit.ts'
+import { ConfirmDialog } from './shell/ConfirmDialog.tsx'
 
 export function QuitPrompt() {
   const { message, resolve } = useQuitPrompt()
@@ -13,15 +13,13 @@ export function QuitPrompt() {
     resolve(confirmed)
   }
   return (
-    <Dialog open={true} onClose={() => answer(false)}>
-      <DialogTitle>{t`Quit Mortar?`}</DialogTitle>
-      <DialogContent>{message}</DialogContent>
-      <DialogActions>
-        <Button onClick={() => answer(false)}>{t`Cancel`}</Button>
-        <Button onClick={() => answer(true)} autoFocus={true}>
-          {t`Quit`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <ConfirmDialog
+      open={true}
+      title={t`Quit Mortar?`}
+      body={message}
+      confirmLabel={t`Quit`}
+      onCancel={() => answer(false)}
+      onConfirm={() => answer(true)}
+    />
   )
 }

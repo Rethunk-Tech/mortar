@@ -2,10 +2,6 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   LinearProgress,
   Table,
   TableBody,
@@ -32,7 +28,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { When } from '../../i18n/When.tsx'
-import { paper } from '../../mods/paper.ts'
+import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 
 const nowrap = { whiteSpace: 'nowrap' } as const
@@ -150,36 +146,24 @@ function DataByMod({ onCleanup, onChanged }: { onCleanup: () => void; onChanged:
           ))}
         </TableBody>
       </Table>
-      <Dialog
+      <ConfirmDialog
         open={removeItem !== null}
-        onClose={() => setRemoveItem(null)}
-        transitionDuration={0}
-        slotProps={{ paper }}
-      >
-        <DialogTitle>{t`Remove from the store`}</DialogTitle>
-        <DialogContent>
-          {removeItem ? t`Remove ${removeItem.name} from the store?` : null}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setRemoveItem(null)} sx={nowrap}>{t`Cancel`}</Button>
-          <Button
-            onClick={() => {
-              if (!removeItem) {
-                return
-              }
-              RemoveStoreItem(removeItem.game, removeItem.key)
-                .then(() => {
-                  setRemoveItem(null)
-                  onChanged()
-                })
-                .catch(reportUnexpected)
-            }}
-            sx={nowrap}
-          >
-            {t`Remove`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        title={t`Remove from the store`}
+        body={removeItem ? t`Remove ${removeItem.name} from the store?` : null}
+        confirmLabel={t`Remove`}
+        onCancel={() => setRemoveItem(null)}
+        onConfirm={() => {
+          if (!removeItem) {
+            return
+          }
+          RemoveStoreItem(removeItem.game, removeItem.key)
+            .then(() => {
+              setRemoveItem(null)
+              onChanged()
+            })
+            .catch(reportUnexpected)
+        }}
+      />
     </Box>
   )
 }
@@ -195,26 +179,21 @@ function CacheClearDialog({
 }) {
   const { t } = useLingui()
   return (
-    <Dialog open={open} onClose={onClose} transitionDuration={0} slotProps={{ paper }}>
-      <DialogTitle>{t`Clear cache`}</DialogTitle>
-      <DialogContent>{t`Removes cached Nexus and SMAPI details and problem scans. Use it if an API key was revoked or the details look wrong. Mortar fetches them again as needed, so the next problem check takes longer.`}</DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} sx={nowrap}>{t`Cancel`}</Button>
-        <Button
-          onClick={() => {
-            ClearCache()
-              .then(() => {
-                onClose()
-                onCleared()
-              })
-              .catch(reportUnexpected)
-          }}
-          sx={nowrap}
-        >
-          {t`Clear`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <ConfirmDialog
+      open={open}
+      title={t`Clear cache`}
+      body={t`Removes cached Nexus and SMAPI details and problem scans. Use it if an API key was revoked or the details look wrong. Mortar fetches them again as needed, so the next problem check takes longer.`}
+      confirmLabel={t`Clear`}
+      onCancel={onClose}
+      onConfirm={() => {
+        ClearCache()
+          .then(() => {
+            onClose()
+            onCleared()
+          })
+          .catch(reportUnexpected)
+      }}
+    />
   )
 }
 
