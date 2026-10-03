@@ -60,9 +60,9 @@ func newFixture(t *testing.T) *fixture {
 	mux.HandleFunc("/v1/games/stardewvalley/mods/1/files.json", func(w http.ResponseWriter, _ *http.Request) {
 		f.headers(w)
 		fmt.Fprint(w, `{"files":[
-			{"file_id":10,"file_name":"a-1.0.zip","version":"1.0","category_name":"MAIN","size_kb":3,"is_primary":true},
-			{"file_id":11,"file_name":"a-2.0.zip","version":"2.0","category_name":"MAIN","size_kb":4},
-			{"file_id":12,"file_name":"a-2.0-alt.zip","version":"2.0","category_name":"OPTIONAL","size_kb":4}]}`)
+			{"file_id":10,"file_name":"a-1.0.zip","version":"1.0","category_name":"MAIN","size_kb":3,"is_primary":true,"md5_hash":"785d887b432c6e90f8ac1ac31ba3d845"},
+			{"file_id":11,"file_name":"a-2.0.zip","version":"2.0","category_name":"MAIN","size_kb":4,"md5_hash":"785d887b432c6e90f8ac1ac31ba3d845"},
+			{"file_id":12,"file_name":"a-2.0-alt.zip","version":"2.0","category_name":"OPTIONAL","size_kb":4,"md5_hash":"785d887b432c6e90f8ac1ac31ba3d845"}]}`)
 	})
 	mux.HandleFunc("/v1/games/stardewvalley/mods/1.json", func(w http.ResponseWriter, _ *http.Request) {
 		f.headers(w)
@@ -749,4 +749,70 @@ func itemIDs(st State) []string {
 		ids[i] = it.ID
 	}
 	return ids
+}
+
+func TestAutoRetryFetchesBeforeFailing(t *testing.T) {
+	f := newFixture(t)
+	var hits atomic.Int32
+	f.cdn = func(w http.ResponseWriter, _ *http.Request) {
+		if hits.Add(1) < 3 {
+			http.Error(w, "no", http.StatusInternalServerError)
+			return
+		}
+		fmt.Fprint(w, payload)
+	}
+	f.s.d.RetryFetches = func() int { return 2 }
+	f.start()
+	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	f.wait("done after retries", f.item(StateDone))
+	if hits.Load() != 3 {
+		t.Fatalf("fetches = %d", hits.Load())
+	}
+}
+
+func TestPauseDownloadsWhileGameRuns(t *testing.T) {
+	f := newFixture(t)
+	var busy atomic.Bool
+	busy.Store(true)
+	f.s.d.PauseWhilePlaying = func() bool { return true }
+	f.s.d.GameBusy = busy.Load
+	f.start()
+	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(80 * time.Millisecond)
+	if st := f.s.State(); len(st.Items) != 1 || st.Items[0].State != StateQueued {
+		t.Fatalf("while busy %+v", f.s.State())
+	}
+	busy.Store(false)
+	NotifyUnlocked(f.s)
+	f.wait("resumed", f.item(StateDone))
+}
+
+func TestNexusMD5MismatchFailsDownload(t *testing.T) {
+	f := newFixture(t)
+	f.s.d.VerifyNexusMD5 = func() bool { return true }
+	f.cdn = func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, "not the archive")
+	}
+	f.start()
+	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	st := f.wait("md5 failed", f.item(StateFailed))
+	if !strings.Contains(st.Items[0].Error, "MD5") {
+		t.Fatalf("error %q", st.Items[0].Error)
+	}
+}
+
+func TestNexusMD5MatchAllowsInstall(t *testing.T) {
+	f := newFixture(t)
+	f.s.d.VerifyNexusMD5 = func() bool { return true }
+	f.start()
+	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	f.wait("md5 ok", f.item(StateDone))
 }

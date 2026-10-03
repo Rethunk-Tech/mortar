@@ -4,6 +4,7 @@ package nexus
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -13,6 +14,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -277,6 +279,7 @@ type File struct {
 	SizeKB      int64     `json:"sizeKb"`
 	IsPrimary   bool      `json:"isPrimary"`
 	Uploaded    time.Time `json:"uploaded"`
+	MD5         string    `json:"md5,omitempty"`
 	// ReplacedBy is the file the author uploaded as this one's update (Nexus file_updates), or 0.
 	ReplacedBy int `json:"replacedBy"`
 }
@@ -357,6 +360,8 @@ func (c *Client) Files(ctx context.Context, modID int) ([]File, error) {
 			SizeKB      int64     `json:"size_kb"`
 			IsPrimary   bool      `json:"is_primary"`
 			Uploaded    time.Time `json:"uploaded_time"`
+			MD5         string    `json:"md5"`
+			MD5Hash     string    `json:"md5_hash"`
 		} `json:"files"`
 		Updates []struct {
 			Old int `json:"old_file_id"`
@@ -371,6 +376,7 @@ func (c *Client) Files(ctx context.Context, modID int) ([]File, error) {
 		file := File{
 			FileID: f.FileID, FileName: f.FileName, Name: f.Name, Description: f.Description, Version: f.Version,
 			ModVersion: f.ModVersion, SizeKB: f.SizeKB, IsPrimary: f.IsPrimary, Uploaded: f.Uploaded.UTC(),
+			MD5: cmp.Or(strings.TrimSpace(f.MD5), strings.TrimSpace(f.MD5Hash)),
 		}
 		if f.Category != nil {
 			file.Category = *f.Category

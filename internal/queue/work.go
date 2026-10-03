@@ -3,12 +3,17 @@ package queue
 import (
 	"cmp"
 	"context"
+	"crypto/md5" // #nosec G501 -- Nexus file hashes are MD5
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 
 	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
@@ -38,6 +43,7 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 	if s.paused || s.until.After(s.d.Now()) {
 		return nil, resolve, false
 	}
+	pauseFetch := s.pauseFetch()
 	premium := s.d.Premium()
 	var head *Item
 	waiting := false
@@ -49,9 +55,19 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 		case running[it.Game+"\n"+it.Profile]:
 			held = true
 		case it.Repo != "":
-			return it, s.forAsset(it), held
+			act := s.forAsset(it)
+			if act == fetch && pauseFetch {
+				held = true
+				continue
+			}
+			return it, act, held
 		case premium || s.usable(it) || s.stored(it):
-			return it, s.forFile(it, fetch), held
+			act := s.forFile(it, fetch)
+			if act == fetch && pauseFetch {
+				held = true
+				continue
+			}
+			return it, act, held
 		case head == nil:
 			head = it
 		}
@@ -60,6 +76,41 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 		return nil, resolve, held
 	}
 	return head, s.forFile(head, click), held
+}
+
+func retryBackoff(n int) time.Duration {
+	d := 200 * time.Millisecond
+	for range n {
+		d *= 2
+	}
+	return d
+}
+
+func (s *Service) checkNexusMD5(path, want string) error {
+	if s.d.VerifyNexusMD5 == nil || !s.d.VerifyNexusMD5() {
+		return nil
+	}
+	want = strings.ToLower(strings.TrimSpace(want))
+	if want == "" {
+		return nil
+	}
+	b, err := fsx.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	sum := md5.Sum(b) // #nosec G401 -- Nexus file hashes are MD5
+	got := hex.EncodeToString(sum[:])
+	if got != want {
+		return usererr.New(usererr.Damaged, fmt.Sprintf("Nexus MD5 mismatch: got %s, wanted %s", got, want))
+	}
+	return nil
+}
+
+func (s *Service) pauseFetch() bool {
+	if s.d.PauseWhilePlaying == nil || !s.d.PauseWhilePlaying() {
+		return false
+	}
+	return s.d.GameBusy != nil && s.d.GameBusy()
 }
 
 func (s *Service) runningOf(items []*Item) map[string]bool {
@@ -307,6 +358,7 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 	defer s.mu.Unlock()
 	if cur := s.find(it.ID); cur != nil {
 		cur.FileID, cur.FileName, cur.SizeKB = file.FileID, cmp.Or(file.FileName, fmt.Sprintf("file-%d", file.FileID)), file.SizeKB
+		cur.fileMD5 = file.MD5
 		cur.Version = cmp.Or(cur.Version, file.Version)
 		if it.Latest {
 			cur.Version = cmp.Or(file.Version, cur.Version)
@@ -402,24 +454,56 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		return err
 	}
 	path := s.dest(it.ID, it.FileName)
-	uri := links[0].URI
+	fetchOnce := func() error {
+		uri := links[0].URI
+		var ferr error
+		for attempt := range 2 {
+			ferr = s.fetch(ctx, it, uri, path)
+			if ferr == nil || !errors.Is(ferr, errLinkExpired) || attempt == 1 {
+				break
+			}
+			next, lerr := c.DownloadLinks(ctx, it.ModID, it.FileID, key, expires)
+			if lerr != nil {
+				return usererr.Wrap(usererr.Network, lerr)
+			}
+			if len(next) == 0 {
+				return usererr.New(usererr.Network, "the download has no link")
+			}
+			links = next
+			uri = links[0].URI
+		}
+		return ferr
+	}
+	retries := 0
+	if s.d.RetryFetches != nil {
+		retries = s.d.RetryFetches()
+	}
 	var fetchErr error
-	for attempt := range 2 {
-		fetchErr = s.fetch(ctx, it, uri, path)
-		if fetchErr == nil || !errors.Is(fetchErr, errLinkExpired) || attempt == 1 {
+	for n := 0; n <= retries; n++ {
+		fetchErr = fetchOnce()
+		if fetchErr == nil || errors.Is(fetchErr, context.Canceled) {
 			break
 		}
-		links, err = c.DownloadLinks(ctx, it.ModID, it.FileID, key, expires)
-		if err != nil {
-			return usererr.Wrap(usererr.Network, err)
+		if n == retries {
+			break
 		}
-		if len(links) == 0 {
-			return usererr.New(usererr.Network, "the download has no link")
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(retryBackoff(n)):
 		}
-		uri = links[0].URI
 	}
 	if fetchErr != nil {
 		return fetchErr
+	}
+	wantMD5 := ""
+	s.mu.Lock()
+	if cur := s.find(it.ID); cur != nil {
+		wantMD5 = cur.fileMD5
+	}
+	s.mu.Unlock()
+	if err := s.checkNexusMD5(path, wantMD5); err != nil {
+		return err
 	}
 	s.mu.Lock()
 	cur := s.find(it.ID)

@@ -137,6 +137,7 @@ type Item struct {
 	chosenRoot string
 	// started is when this attempt left the queue for a fetch; it is not persisted.
 	started time.Time
+	fileMD5 string
 }
 
 // saved is queue.json: the state, and the staged key of each item that has one, so a restart still asks for
@@ -224,6 +225,14 @@ type Deps struct {
 	DownloadDir func() string
 	// Track records a Nexus mod as tracked after a successful install; nil means never.
 	Track func(ctx context.Context, modID int)
+	// RetryFetches is extra fetch attempts after a failed download; nil or 0 is off.
+	RetryFetches func() int
+	// PauseWhilePlaying pauses new fetches while GameBusy; installs still wait per profile.
+	PauseWhilePlaying func() bool
+	// GameBusy reports whether any game is launching or running; nil means never.
+	GameBusy func() bool
+	// VerifyNexusMD5 compares a finished Nexus download with the file's API md5 when set.
+	VerifyNexusMD5 func() bool
 }
 
 // Service is the download queue.
