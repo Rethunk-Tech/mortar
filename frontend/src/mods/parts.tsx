@@ -20,6 +20,7 @@ import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { dependentsOf } from './dependents.ts'
 import { useDescribe } from './describe.ts'
 import { useLastRun } from './lastRun.ts'
 import { concerns, entryOf, modId, nexusIdOf, problemsOf, siblingsOf, updateFor } from './lookup.ts'
@@ -331,6 +332,7 @@ export function RemoveDialog() {
       ),
     ),
   ]
+  const dependents = dependentsOf(mods, removing)
   const close = () => askRemove(null)
   let body = t`Their folders in this profile are deleted.`
   if (extra.length > 0) {
@@ -338,6 +340,17 @@ export function RemoveDialog() {
   } else if (one) {
     body = t`Its folder in this profile is deleted.`
   }
+  const drop = (list: typeof removing) => {
+    close()
+    if (list.length > 0) {
+      removeMany(list).catch(reportUnexpected)
+    }
+  }
+  const needLine =
+    dependents.length > 0
+      ? t`${dependents.length} mods need this: ${dependents.map((m) => m.name).join(', ')}`
+      : ''
+  const allCount = removing.length + dependents.length
   return (
     <Dialog open={removing.length > 0} onClose={close} slotProps={{ paper }}>
       <DialogTitle>
@@ -347,21 +360,28 @@ export function RemoveDialog() {
       </DialogTitle>
       <DialogContent>
         <DialogContentText>{body}</DialogContentText>
+        {needLine ? <DialogContentText sx={{ mt: 1 }}>{needLine}</DialogContentText> : null}
       </DialogContent>
       <DialogActions>
         <Button onClick={close}>{t`Cancel`}</Button>
-        <Button
-          color="error"
-          disabled={locked}
-          onClick={() => {
-            close()
-            if (removing.length > 0) {
-              removeMany(removing).catch(reportUnexpected)
-            }
-          }}
-        >
-          {t`Remove`}
-        </Button>
+        {dependents.length > 0 ? (
+          <>
+            <Button color="error" disabled={locked} onClick={() => drop(removing)}>
+              {t`Remove anyway`}
+            </Button>
+            <Button
+              color="error"
+              disabled={locked}
+              onClick={() => drop([...removing, ...dependents])}
+            >
+              {t`Remove all ${allCount}`}
+            </Button>
+          </>
+        ) : (
+          <Button color="error" disabled={locked} onClick={() => drop(removing)}>
+            {t`Remove`}
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   )

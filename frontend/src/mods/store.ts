@@ -7,6 +7,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { useSettings } from '../settings/store.ts'
+import { dependentsOf } from './dependents.ts'
 import {
   dropMod,
   dropMods,
@@ -104,7 +105,10 @@ export const useMods = create<{
       set({ removing: [] })
       return
     }
-    if (useSettings.getState().confirmRemovals === false) {
+    if (
+      useSettings.getState().confirmRemovals === false &&
+      dependentsOf(get().mods, list).length === 0
+    ) {
       dropMods(get, list).catch(() => undefined)
       return
     }
