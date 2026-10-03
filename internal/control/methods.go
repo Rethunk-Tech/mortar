@@ -224,6 +224,21 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	switch method {
 	case "games":
 		return s.games()
+	case "settings.get":
+		cur := s.Settings.Get()
+		if p.Key == "" {
+			return cur.AllPrefs(), nil
+		}
+		v, err := cur.Lookup(p.Key)
+		if err != nil {
+			return nil, err
+		}
+		return [][2]string{{p.Key, v}}, nil
+	case "settings.set":
+		if p.Key == "" {
+			return nil, fmt.Errorf("settings set needs a key")
+		}
+		return nil, s.SettingsSvc.SetByKey(p.Key, p.Value)
 	case "profiles":
 		return s.Profiles.List(p.Game)
 	case "trash.list":
@@ -342,6 +357,9 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			}
 			var names []string
 			for _, prof := range profiles {
+				if prof.Error != "" {
+					continue
+				}
 				have := make(map[string]bool)
 				for _, entry := range prof.Entries {
 					for _, mod := range entry.Mods {
@@ -457,6 +475,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			}
 		}
 		return out, nil
+	case "profile.loadOrder":
+		return s.Profiles.LoadOrder(p.Game, id)
 	case "profile.history":
 		events, err := s.Profiles.History(p.Game, id)
 		if err != nil {

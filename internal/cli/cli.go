@@ -16,7 +16,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/control"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/doctor"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/problems"
@@ -1329,21 +1329,12 @@ func (c *cmd) doctor() error {
 		}
 		return err
 	}
-	return c.emit(d, func() {
-		fmt.Fprintf(c.out, "Mortar %s (this command %s)\nData folder: %s\n", d.Version, c.version, d.DataDir)
-		for _, g := range d.Games {
-			env := d.Environment[g.ID]
-			fmt.Fprintf(c.out, "%s: installed %s, folder %q, store %s, game %s, SMAPI %s, %s\n",
-				g.Name, yes(g.Installed), g.InstallDir, g.Store, env.GameVersion, env.APIVersion, env.Platform)
-		}
-		handler := "off"
-		if d.NxmHandled {
-			handler = "Mortar"
-			if d.NxmPrevious != "" {
-				handler += " (other games go to " + d.NxmPrevious + ")"
-			}
-		}
-		fmt.Fprintf(c.out, "nxm:// links: %s\n", handler)
+	rep := doctor.FromLive(doctor.Live{
+		Version: d.Version, CommandVersion: c.version, DataDir: d.DataDir,
+		Games: d.Games, Environment: d.Environment, NxmHandled: d.NxmHandled, NxmPrevious: d.NxmPrevious,
+	})
+	return c.emit(rep, func() {
+		fmt.Fprint(c.out, doctor.PlainText(rep))
 	})
 }
 
@@ -1352,46 +1343,11 @@ func offlineDoctor() error {
 	if err != nil {
 		return err
 	}
-	findings := []string{}
-	fixes := []string{}
-	settingsPath := filepath.Join(dir, "settings.json")
-	if b, err := fsx.ReadFile(settingsPath); err != nil {
-		findings = append(findings, "settings.json is unreadable or missing")
-		fixes = append(fixes, "restore settings.json from a known-good copy")
-	} else if !json.Valid(b) {
-		findings = append(findings, "settings.json is corrupt")
-		fixes = append(fixes, "restore settings.json from a known-good copy")
-	}
-	if copies, _ := filepath.Glob(settingsPath + ".*"); len(copies) > 0 {
-		findings = append(findings, fmt.Sprintf("%d settings temporary/copy files are present", len(copies)))
-		fixes = append(fixes, "keep the newest valid settings.json and remove abandoned copies")
-	}
-	_ = filepath.WalkDir(filepath.Join(dir, "profiles"), func(path string, entry os.DirEntry, walkErr error) error {
-		if walkErr == nil && !entry.IsDir() && entry.Name() == "profile.json" {
-			if b, readErr := fsx.ReadFile(path); readErr != nil || !json.Valid(b) {
-				findings = append(findings, "damaged profile.json: "+path)
-				fixes = append(fixes, "restore or remove the damaged profile")
-			}
-		}
-		return nil
-	})
-	if info, statErr := os.Stat(filepath.Join(dir, control.FileName)); statErr == nil && time.Since(info.ModTime()) > 24*time.Hour {
-		findings = append(findings, "control.json is stale")
-		fixes = append(fixes, "start Mortar once to refresh control.json")
-	}
-	free, freeErr := freeSpace(dir)
-	if freeErr == nil {
-		if free == 0 {
-			findings = append(findings, "data folder has no free space")
-			fixes = append(fixes, "free disk space before starting Mortar")
-		}
-	}
-	if b, err := fsx.ReadFile(filepath.Join(dir, "store", "index.json")); err != nil || !json.Valid(b) {
-		findings = append(findings, "store index.json is unreadable or corrupt")
-		fixes = append(fixes, "restore the store index or let Mortar rebuild it")
-	}
+	rep := doctor.Scan(dir)
+	findings, fixes := doctor.Findings(rep)
+	free, _ := freeSpace(dir)
 	var cacheBytes int64
-	_ = filepath.WalkDir(filepath.Join(dir, "cache"), func(path string, entry os.DirEntry, walkErr error) error {
+	_ = filepath.WalkDir(filepath.Join(dir, "cache"), func(_ string, entry os.DirEntry, walkErr error) error {
 		if walkErr == nil && !entry.IsDir() {
 			if info, statErr := entry.Info(); statErr == nil {
 				cacheBytes += info.Size()

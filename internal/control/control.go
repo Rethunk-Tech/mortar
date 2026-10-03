@@ -43,6 +43,8 @@ type Params struct {
 	Yes       bool     `json:"yes,omitempty"`
 	Sub       string   `json:"sub,omitempty"`
 	Force     bool     `json:"force,omitempty"`
+	Key       string   `json:"key,omitempty"`
+	Value     string   `json:"value,omitempty"`
 }
 
 type request struct {

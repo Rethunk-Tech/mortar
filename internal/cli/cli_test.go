@@ -94,6 +94,25 @@ func TestCommandsSendTheirArguments(t *testing.T) {
 	}
 }
 
+func TestSettingsGetSet(t *testing.T) {
+	results := map[string]any{
+		"settings.get": [][2]string{{"onPlay", "stay"}, {"runsKept", "20"}},
+		"settings.set": nil,
+	}
+	r := invoke(t, results, "settings", "get")
+	if r.code != 0 || r.calls[0].method != "settings.get" || !strings.Contains(r.out, "onPlay") {
+		t.Fatalf("get: %+v", r)
+	}
+	r = invoke(t, results, "settings", "get", "onPlay")
+	if r.calls[0].params.Key != "onPlay" {
+		t.Fatalf("get key: %+v", r.calls[0])
+	}
+	r = invoke(t, results, "settings", "set", "onPlay", "hide")
+	if r.code != 0 || r.calls[0].method != "settings.set" || r.calls[0].params.Key != "onPlay" || r.calls[0].params.Value != "hide" {
+		t.Fatalf("set: %+v", r)
+	}
+}
+
 func TestProfileCompareHistoryAndRevert(t *testing.T) {
 	results := map[string]any{
 		"profile.compare": profile.CLICompare{
