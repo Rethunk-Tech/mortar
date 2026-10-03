@@ -65,8 +65,8 @@ export function ProfileHealth({
     updates: (n) => t`${plural(n, { one: '# update', other: '# updates' })}`,
   })
   const [detail, setDetail] = useState<{
-    history: Awaited<ReturnType<typeof HealthHistory>>
-    runs: Awaited<ReturnType<typeof Runs>>
+    history: NonNullable<Awaited<ReturnType<typeof HealthHistory>>>
+    runs: NonNullable<Awaited<ReturnType<typeof Runs>>>
   } | null>(null)
 
   const loadDetail = () => {

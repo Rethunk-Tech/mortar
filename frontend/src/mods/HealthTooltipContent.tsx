@@ -2,7 +2,7 @@ import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Stack, Typography } from '@mui/material'
-import type { Run } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import type { Run } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import type { HealthPoint } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   buildHealthSparklinePath,
@@ -81,7 +81,7 @@ export function HealthTooltipContent({
         </Box>
       )}
       {recentRuns.length > 0 ? (
-        <Stack direction="row" spacing={RUN_DOT_GAP} alignItems="center">
+        <Stack direction="row" spacing={RUN_DOT_GAP} sx={{ alignItems: 'center' }}>
           {recentRuns.map((run) => {
             const kind = runKind(run)
             return (
