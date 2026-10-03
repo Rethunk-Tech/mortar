@@ -15,6 +15,7 @@ import {
   SkipAll,
   SkipProfile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+import { formatBytes } from '../i18n/bytes.ts'
 import { QueueNeedsMerge } from '../install/QueueNeedsMerge.tsx'
 import { QueueNeedsRoot } from '../install/QueueNeedsRoot.tsx'
 import { LetterTile } from '../mods/parts.tsx'
@@ -23,7 +24,7 @@ import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.t
 import { usePending } from '../toasts/usePending.ts'
 import { Callout, Title } from './Callout.tsx'
 import { Fold } from './QueueFold.tsx'
-import { downloadedKb, isActive, megabytes, megabytesPerSecond, tile } from './totals.ts'
+import { downloadedKb, isActive, tile } from './totals.ts'
 
 const BLUE = '#2b8bda'
 const ROW = {
@@ -36,6 +37,7 @@ const ROW = {
   borderRadius: '6px',
 } as const
 const NAME_MAX = 3
+const KIB = 1024
 
 const names = (items: Item[]) =>
   items
@@ -257,7 +259,7 @@ function Active({ item }: { item: Item }) {
   const { t } = useLingui()
   const downloading = item.state === 'downloading'
   const text = downloading
-    ? t`${megabytes(downloadedKb(item))} of ${megabytes(item.sizeKb)} MB · ${megabytesPerSecond(item.speed)} MB/s`
+    ? t`${formatBytes(downloadedKb(item) * KIB)} of ${formatBytes(item.sizeKb * KIB)} · ${formatBytes(item.speed)}/s`
     : t`Installing`
   return (
     <Box sx={{ ...ROW, bgcolor: 'rgba(55,55,65,0.9)' }}>
