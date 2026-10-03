@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, IconButton, Tooltip } from '@mui/material'
-import { ChevronDown, ChevronUp, X } from 'lucide-react'
+import { Check, ChevronDown, ChevronUp, Copy, X } from 'lucide-react'
 import { useState } from 'react'
 import { useLaunch } from '../launch/store.ts'
 import { isLocked } from '../mods/locked.ts'
@@ -14,6 +14,33 @@ const edge: Record<ToastKind, string> = {
   success: 'success.main',
   warning: 'warning.main',
   error: 'error.main',
+}
+
+function CopyDetail({ text }: { text: string }) {
+  const { t } = useLingui()
+  const [copied, setCopied] = useState(false)
+  return (
+    <ButtonBase
+      onClick={() =>
+        navigator.clipboard
+          .writeText(text)
+          .then(() => setCopied(true))
+          .catch(reportUnexpected)
+      }
+      sx={{
+        alignSelf: 'flex-start',
+        mt: '4px',
+        gap: '4px',
+        fontSize: 12,
+        fontFamily: 'inherit',
+        color: 'rgba(235,235,240,0.95)',
+        textDecoration: 'underline',
+      }}
+    >
+      {copied ? <Check size={12} /> : <Copy size={12} />}
+      {copied ? t`Copied` : t`Copy details`}
+    </ButtonBase>
+  )
 }
 
 function ToastCard({ toast }: { toast: Toast }) {
@@ -83,6 +110,7 @@ function ToastCard({ toast }: { toast: Toast }) {
             {toast.detail}
           </Box>
         ) : null}
+        {open && toast.detail ? <CopyDetail text={toast.detail} /> : null}
       </Box>
       {toast.detail ? (
         <ButtonBase
