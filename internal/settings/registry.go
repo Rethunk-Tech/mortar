@@ -35,6 +35,7 @@ type GameSettings struct {
 	SmapiBuilds                 string `json:"smapiBuilds"`
 	DefaultLaunchMethod         string `json:"defaultLaunchMethod"`
 	ShowSmapiConsole            *bool  `json:"showSmapiConsole"`
+	SkipPlayCheck               bool   `json:"skipPlayCheck"`
 	ConsoleLevel                string `json:"consoleLevel"`
 	ConsoleTimestamps           *bool  `json:"consoleTimestamps"`
 	ConsoleFollow               *bool  `json:"consoleFollow"`
@@ -42,14 +43,15 @@ type GameSettings struct {
 
 // PrefSpec is one registry row, served to the CLI and frontend.
 type PrefSpec struct {
-	Key      string   `json:"key"`
-	Scope    string   `json:"scope"`
-	Type     string   `json:"type"`
-	Default  string   `json:"default"`
-	Min      int      `json:"min,omitempty"`
-	Max      int      `json:"max,omitempty"`
-	Values   []string `json:"values,omitempty"`
-	LabelKey string   `json:"labelKey"`
+	Key                string   `json:"key"`
+	Scope              string   `json:"scope"`
+	Type               string   `json:"type"`
+	Default            string   `json:"default"`
+	Min                int      `json:"min,omitempty"`
+	Max                int      `json:"max,omitempty"`
+	Values             []string `json:"values,omitempty"`
+	LabelKey           string   `json:"labelKey"`
+	ProfileOverridable bool     `json:"profileOverridable,omitempty"`
 }
 
 type pref struct {
@@ -92,13 +94,13 @@ var registry = []pref{
 	boolPref("lanAutoAcceptSameAccount", ScopeApp, func(s Settings, _ string) bool { return s.LanAutoAcceptSameAccount }, func(s *Settings, _ string, on bool) { s.LanAutoAcceptSameAccount = on }),
 	strPref("downloadFolder", ScopeApp, func(s Settings, _ string) string { return s.DownloadFolder }, func(s *Settings, _, v string) { s.DownloadFolder = v }),
 
-	enumPref("backupBeforePlay", ScopeGame, BackupBeforePlayChanged, backupBeforePlayValues, func(s Settings, g string) string { return s.GamePrefs(g).BackupBeforePlay }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BackupBeforePlay = v; putGame(s, g, gp) }),
-	intPref("launchBackupsKept", ScopeGame, DefaultLaunchBackupsKept, MinLaunchBackupsKept, MaxLaunchBackupsKept, func(s Settings, g string) int { return s.GamePrefs(g).LaunchBackupsKept }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.LaunchBackupsKept = n; putGame(s, g, gp) }),
-	boolPref("updateModsBeforePlayDefault", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).UpdateModsBeforePlayDefault }, func(s *Settings, g string, on bool) {
+	overridable(enumPref("backupBeforePlay", ScopeGame, BackupBeforePlayChanged, backupBeforePlayValues, func(s Settings, g string) string { return s.GamePrefs(g).BackupBeforePlay }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BackupBeforePlay = v; putGame(s, g, gp) })),
+	overridable(intPref("launchBackupsKept", ScopeGame, DefaultLaunchBackupsKept, MinLaunchBackupsKept, MaxLaunchBackupsKept, func(s Settings, g string) int { return s.GamePrefs(g).LaunchBackupsKept }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.LaunchBackupsKept = n; putGame(s, g, gp) })),
+	overridable(boolPref("updateModsBeforePlayDefault", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).UpdateModsBeforePlayDefault }, func(s *Settings, g string, on bool) {
 		gp := s.GamePrefs(g)
 		gp.UpdateModsBeforePlayDefault = on
 		putGame(s, g, gp)
-	}),
+	})),
 	intPref("runsKept", ScopeGame, DefaultRunsKept, MinRunsKept, MaxRunsKept, func(s Settings, g string) int { return s.GamePrefs(g).RunsKept }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.RunsKept = n; putGame(s, g, gp) }),
 	intPref("consoleLogCap", ScopeGame, DefaultConsoleLogCap, MinConsoleLogCap, MaxConsoleLogCap, func(s Settings, g string) int { return s.GamePrefs(g).ConsoleLogCap }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.ConsoleLogCap = n; putGame(s, g, gp) }),
 	strPref("nxmDefaultProfile", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).NxmDefaultProfile }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.NxmDefaultProfile = v; putGame(s, g, gp) }),
@@ -106,12 +108,17 @@ var registry = []pref{
 	enumPref("enableRequirements", ScopeGame, EnableReqAlways, enableReqValues, func(s Settings, g string) string { return s.GamePrefs(g).EnableRequirements }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.EnableRequirements = v; putGame(s, g, gp) }),
 	enumPref("missingRequirements", ScopeGame, MissingReqAsk, missingReqValues, func(s Settings, g string) string { return s.GamePrefs(g).MissingRequirements }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.MissingRequirements = v; putGame(s, g, gp) }),
 	enumPref("smapiBuilds", ScopeGame, SmapiBuildsShow, smapiBuildsValues, func(s Settings, g string) string { return s.GamePrefs(g).SmapiBuilds }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SmapiBuilds = v; putGame(s, g, gp) }),
-	enumPref("defaultLaunchMethod", ScopeGame, LaunchSteam, launchMethodValues, func(s Settings, g string) string { return s.GamePrefs(g).DefaultLaunchMethod }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.DefaultLaunchMethod = v; putGame(s, g, gp) }),
-	ptrPref("showSmapiConsole", ScopeGame, true, func(s Settings, g string) *bool { return s.GamePrefs(g).ShowSmapiConsole }, func(s *Settings, g string, on bool) {
+	overridable(enumPref("defaultLaunchMethod", ScopeGame, LaunchSteam, launchMethodValues, func(s Settings, g string) string { return s.GamePrefs(g).DefaultLaunchMethod }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.DefaultLaunchMethod = v; putGame(s, g, gp) })),
+	overridable(ptrPref("showSmapiConsole", ScopeGame, true, func(s Settings, g string) *bool { return s.GamePrefs(g).ShowSmapiConsole }, func(s *Settings, g string, on bool) {
 		gp := s.GamePrefs(g)
 		gp.ShowSmapiConsole = &on
 		putGame(s, g, gp)
-	}),
+	})),
+	overridable(boolPref("skipPlayCheck", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).SkipPlayCheck }, func(s *Settings, g string, on bool) {
+		gp := s.GamePrefs(g)
+		gp.SkipPlayCheck = on
+		putGame(s, g, gp)
+	})),
 	enumPref("consoleLevel", ScopeGame, ConsoleLevelInfo, consoleLevelValues, func(s Settings, g string) string { return s.GamePrefs(g).ConsoleLevel }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.ConsoleLevel = v; putGame(s, g, gp) }),
 	ptrPref("consoleTimestamps", ScopeGame, true, func(s Settings, g string) *bool { return s.GamePrefs(g).ConsoleTimestamps }, func(s *Settings, g string, on bool) {
 		gp := s.GamePrefs(g)
@@ -187,6 +194,7 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 		dst.LaunchBackupsKept = src.LaunchBackupsKept
 	}
 	dst.UpdateModsBeforePlayDefault = src.UpdateModsBeforePlayDefault
+	dst.SkipPlayCheck = src.SkipPlayCheck
 	if src.RunsKept != 0 {
 		dst.RunsKept = src.RunsKept
 	}
