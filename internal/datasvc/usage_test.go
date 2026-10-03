@@ -45,6 +45,61 @@ func TestMeasureSizesSkipSymlinks(t *testing.T) {
 	}
 }
 
+func TestMeasureGameTotals(t *testing.T) {
+	root := t.TempDir()
+	write := func(rel string, n int) {
+		t.Helper()
+		p := filepath.Join(root, filepath.FromSlash(rel))
+		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, make([]byte, n), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("profiles/alpha/p1/profile.json", 4)
+	write("profiles/alpha/p1/mods/a.bin", 100)
+	write("store/alpha/k/m.bin", 20)
+	write("backups/alpha/s.zip", 8)
+	write("cache/alpha/c.bin", 5)
+	write("cache/nexus/alpha/n.json", 3)
+	write("profiles/beta/p1/profile.json", 2)
+	write("profiles/beta/p1/mods/b.bin", 50)
+	write("store/beta/k/m.bin", 10)
+	write("backups/beta/s.zip", 7)
+	write("cache/beta/c.bin", 6)
+	write("cache/nexus/beta/n.json", 1)
+	write("cache/nexus/x.json", 9)
+	write("backups/one.zip", 11)
+	write("trash/alpha/dead.bin", 40)
+	got, err := Measure(root, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	byGame := map[string]int64{}
+	for _, g := range got.Games {
+		byGame[g.Game] = g.Size
+		if g.Name != g.Game {
+			t.Fatalf("name = %q game = %q", g.Name, g.Game)
+		}
+	}
+	if byGame["alpha"] != 4+100+20+8+5+3 {
+		t.Fatalf("alpha = %d games=%+v", byGame["alpha"], got.Games)
+	}
+	if byGame["beta"] != 2+50+10+7+6+1 {
+		t.Fatalf("beta = %d games=%+v", byGame["beta"], got.Games)
+	}
+	if _, ok := byGame["nexus"]; ok {
+		t.Fatalf("cache kind counted as a game: %+v", got.Games)
+	}
+	if _, ok := byGame["one.zip"]; ok {
+		t.Fatalf("loose backup counted as a game: %+v", got.Games)
+	}
+	if len(byGame) != 2 {
+		t.Fatalf("games = %+v", got.Games)
+	}
+}
+
 func TestMeasureSharedSavedHardlink(t *testing.T) {
 	root := t.TempDir()
 	store := filepath.Join(root, "store", "g", "k", "m.bin")

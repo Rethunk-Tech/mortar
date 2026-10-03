@@ -32,10 +32,18 @@ type ProfileSize struct {
 	Size int64  `json:"size"`
 }
 
+// GameUsage is one game's profiles, store items, save backups, and cache entries.
+type GameUsage struct {
+	Game string `json:"game"`
+	Name string `json:"name"`
+	Size int64  `json:"size"`
+}
+
 // Usage is disk use of Mortar's data folder.
 type Usage struct {
 	Path             string        `json:"path"`
 	Profiles         []ProfileSize `json:"profiles"`
+	Games            []GameUsage   `json:"games"`
 	Store            int64         `json:"store"`
 	Cache            int64         `json:"cache"`
 	Backups          int64         `json:"backups"`
@@ -65,8 +73,11 @@ type profileMeta struct {
 
 // Measure walks root without following symlinks and reports each bucket's size.
 func Measure(root string, report func(Progress)) (Usage, error) {
-	u := Usage{Path: root, Profiles: []ProfileSize{}}
+	u := Usage{Path: root, Profiles: []ProfileSize{}, Games: []GameUsage{}}
 	mods := map[string]int64{}
+	direct := map[string]int64{}
+	backupGame := map[string]int64{}
+	cacheSeg := map[[2]string]int64{}
 	share := newShareAcc()
 	err := filepath.WalkDir(filepath.Clean(root), func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -101,13 +112,23 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 			switch {
 			case hasPrefix(slash, "store/"):
 				u.Store += n
+				if game := nestedGame(slash, "store/"); game != "" {
+					direct[game] += n
+				}
 			case hasPrefix(slash, "cache/"):
 				u.Cache += n
+				cacheSeg[cacheSegs(slash)] += n
 			case hasPrefix(slash, "backups/"):
 				u.Backups += n
+				if game := nestedGame(slash, "backups/"); game != "" {
+					backupGame[game] += n
+				}
 			case hasPrefix(slash, "trash/"):
 				u.Trash += n
 			default:
+				if game := nestedGame(slash, "profiles/"); game != "" {
+					direct[game] += n
+				}
 				if game, id, ok := profileMods(slash); ok {
 					mods[game+"/"+id] += n
 				}
@@ -153,7 +174,59 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 			})
 		}
 	}
+	known := map[string]struct{}{}
+	sizes := map[string]int64{}
+	for id, n := range direct {
+		known[id] = struct{}{}
+		sizes[id] = n
+	}
+	for id, n := range backupGame {
+		known[id] = struct{}{}
+		sizes[id] += n
+	}
+	for segs, n := range cacheSeg {
+		switch {
+		case segs[0] != "":
+			if _, ok := known[segs[0]]; ok {
+				sizes[segs[0]] += n
+				continue
+			}
+			fallthrough
+		default:
+			if _, ok := known[segs[1]]; ok {
+				sizes[segs[1]] += n
+			}
+		}
+	}
+	for id, n := range sizes {
+		u.Games = append(u.Games, GameUsage{Game: id, Name: id, Size: n})
+	}
 	return u, nil
+}
+
+func nestedGame(slash, prefix string) string {
+	rest, ok := strings.CutPrefix(slash, prefix)
+	if !ok {
+		return ""
+	}
+	game, more, found := strings.Cut(rest, "/")
+	if !found || game == "" || more == "" {
+		return ""
+	}
+	return game
+}
+
+func cacheSegs(slash string) [2]string {
+	rest, ok := strings.CutPrefix(slash, "cache/")
+	if !ok {
+		return [2]string{}
+	}
+	first, rest, found := strings.Cut(rest, "/")
+	if !found {
+		return [2]string{first, ""}
+	}
+	second, _, _ := strings.Cut(rest, "/")
+	return [2]string{first, second}
 }
 
 func hasPrefix(slash, prefix string) bool {
