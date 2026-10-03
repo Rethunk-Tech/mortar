@@ -1,15 +1,25 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Chip, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  LinearProgress,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { useEffect, useState } from 'react'
 import type { AssetTarget } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import {
-  AssetMap,
-  WhoChanges,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
+import { AssetMap } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { paper } from './paper.ts'
 
-const whoQueryDelayMs = 200
+const filterDelayMs = 200
 
 function TargetList({
   targets,
@@ -37,8 +47,6 @@ function TargetList({
               borderRadius: 1,
               px: 1.25,
               py: 1,
-              outline: many ? '1px solid' : 'none',
-              outlineColor: 'warning.main',
             }}
           >
             <Box
@@ -65,8 +73,19 @@ function TargetList({
               }}
             >
               <Typography sx={{ fontSize: 14, fontWeight: 600, flex: 1 }}>{label}</Typography>
-              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-                {t`${count} mods`}
+              <Typography
+                title={
+                  many
+                    ? t`More than one mod changes this; the winner's version is used.`
+                    : undefined
+                }
+                sx={{
+                  fontSize: 13,
+                  color: many ? 'warning.main' : 'text.secondary',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {plural(count, { one: 'Changed by # mod', other: 'Changed by # mods' })}
               </Typography>
             </Box>
             {expanded ? <ModTouches target={target} /> : null}
@@ -106,76 +125,69 @@ function ModTouches({ target }: { target: AssetTarget }) {
   )
 }
 
-export function AssetMapPanel() {
+export function AssetMapDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game)
   const openId = useProfiles((s) => s.openId)
-  const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('')
-  const [who, setWho] = useState<AssetTarget[]>([])
-  const [mapTargets, setMapTargets] = useState<AssetTarget[]>([])
-  const [open, setOpen] = useState<string | null>(null)
+  const [mapTargets, setMapTargets] = useState<AssetTarget[] | null>(null)
+  const [expanded, setExpanded] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!(game && openId)) {
-      return
-    }
-    const q = query.trim()
-    if (q === '') {
-      setWho([])
+    if (!(open && game && openId)) {
       return
     }
     const handle = globalThis.setTimeout(() => {
-      WhoChanges(game.id, openId, q)
+      AssetMap(game.id, openId, filter.trim(), 0)
         .then((page) => {
-          setWho(page.targets ?? [])
+          setMapTargets(page.targets ?? [])
         })
         .catch(reportUnexpected)
-    }, whoQueryDelayMs)
+    }, filterDelayMs)
     return () => {
       globalThis.clearTimeout(handle)
     }
-  }, [game, openId, query])
-
-  useEffect(() => {
-    if (!(game && openId)) {
-      return
-    }
-    AssetMap(game.id, openId, filter.trim(), 0)
-      .then((page) => {
-        setMapTargets(page.targets ?? [])
-      })
-      .catch(reportUnexpected)
-  }, [game, openId, filter])
+  }, [open, game, openId, filter])
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
-      <TextField
-        size="small"
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value)
-        }}
-        placeholder={t`Who changes this?`}
-        slotProps={{ htmlInput: { 'aria-label': t`Who changes this?` } }}
-      />
-      {who.length > 0 ? <TargetList targets={who} /> : null}
-      <TextField
-        size="small"
-        value={filter}
-        onChange={(e) => {
-          setFilter(e.target.value)
-        }}
-        placeholder={t`Filter assets`}
-        slotProps={{ htmlInput: { 'aria-label': t`Filter assets` } }}
-      />
-      <TargetList
-        targets={mapTargets}
-        open={open}
-        onToggle={(id) => {
-          setOpen((cur) => (cur === id ? null : id))
-        }}
-      />
-    </Box>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth={true}
+      scroll="paper"
+      transitionDuration={0}
+      slotProps={{ paper }}
+    >
+      <DialogTitle>{t`Asset map`}</DialogTitle>
+      <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+          {t`Every game asset the profile's content packs change, and which mods change it. Open one to see each mod's edit.`}
+        </Typography>
+        <TextField
+          size="small"
+          value={filter}
+          onChange={(e) => {
+            setFilter(e.target.value)
+          }}
+          placeholder={t`Find an asset, for example Maps/Town`}
+          slotProps={{ htmlInput: { 'aria-label': t`Find an asset` } }}
+        />
+        {mapTargets === null ? (
+          <LinearProgress />
+        ) : (
+          <TargetList
+            targets={mapTargets}
+            open={expanded}
+            onToggle={(id) => {
+              setExpanded((cur) => (cur === id ? null : id))
+            }}
+          />
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>{t`Close`}</Button>
+      </DialogActions>
+    </Dialog>
   )
 }

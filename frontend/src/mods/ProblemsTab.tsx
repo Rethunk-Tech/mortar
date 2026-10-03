@@ -1,21 +1,30 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
-import { ChevronDown, ChevronRight, Copy, ShieldCheck, TriangleAlert } from 'lucide-react'
-import { type ComponentProps, useState } from 'react'
+import {
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  Info,
+  Map as MapIcon,
+  ShieldCheck,
+  TriangleAlert,
+} from 'lucide-react'
+import { useState } from 'react'
 import { useTab } from '../game/tab.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { AssetMapDialog } from './AssetMapDialog.tsx'
+import { CleanupSection } from './CleanupSection.tsx'
 import { CompatSection } from './CompatSection.tsx'
 import { ConflictWhy } from './ConflictWhy.tsx'
 import { compatReportChunks } from './compatChip.ts'
@@ -88,7 +97,6 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
   const [why, setWhy] = useState(false)
   return (
     <Box
-      role="alert"
       sx={{
         display: 'flex',
         alignItems: 'flex-start',
@@ -98,8 +106,8 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
         pr: 0.75,
         py: 1,
         fontSize: 14,
-        bgcolor: info ? 'rgba(56,189,248,0.12)' : 'rgba(243,180,22,0.14)',
-        border: info ? '1px solid rgba(56,189,248,0.45)' : '1px solid rgba(243,180,22,0.5)',
+        bgcolor: info ? 'var(--mortar-overlay-45)' : 'rgba(243,180,22,0.14)',
+        border: info ? '1px solid transparent' : '1px solid rgba(243,180,22,0.5)',
         borderRadius: '6px',
         ...(dismissed ? { opacity: 0.75 } : {}),
       }}
@@ -110,10 +118,14 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
           display: 'flex',
           flexShrink: 0,
           mt: 0.25,
-          color: info ? 'info.main' : 'warning.main',
+          color: info ? 'text.secondary' : 'warning.main',
         }}
       >
-        <TriangleAlert size={16} aria-hidden={true} />
+        {info ? (
+          <Info size={16} aria-hidden={true} />
+        ) : (
+          <TriangleAlert size={16} aria-hidden={true} />
+        )}
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography
@@ -165,58 +177,6 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
           <FixButton problem={row} dismissedToken={dismissed?.token} />
         )}
       </Box>
-    </Box>
-  )
-}
-
-function CleanupRow({
-  cleanup,
-}: {
-  cleanup: { key: string; uniqueId: string; name: string; reason?: string }
-}) {
-  const { t } = useLingui()
-  const remove = useMods((s) => s.remove)
-  const mod = useMods((s) => s.mods.find((candidate) => candidate.key === cleanup.key))
-  const who = cleanup.name.trim() === '' ? t`Unknown mod` : cleanup.name
-  const reason = cleanup.reason || 'Not needed by any enabled mod'
-  return (
-    <Box
-      role="alert"
-      sx={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 1.25,
-        flexShrink: 0,
-        pl: 1.5,
-        pr: 0.75,
-        py: 1,
-        fontSize: 14,
-        bgcolor: 'rgba(56,189,248,0.12)',
-        border: '1px solid rgba(56,189,248,0.45)',
-        borderRadius: '6px',
-      }}
-    >
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography
-          title={cleanup.name.trim() === '' ? cleanup.uniqueId : undefined}
-          sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}
-        >
-          {t`${who}: ${reason}`}
-        </Typography>
-      </Box>
-      <DisabledReason title={t`This mod is no longer in the profile.`} disabled={mod === undefined}>
-        <Button
-          size="small"
-          disabled={mod === undefined}
-          onClick={() => {
-            if (mod !== undefined) {
-              remove(mod).catch(reportUnexpected)
-            }
-          }}
-        >
-          {t`Remove`}
-        </Button>
-      </DisabledReason>
     </Box>
   )
 }
@@ -328,16 +288,6 @@ function renderProblemSections(
   })
 }
 
-function removeCleanup(
-  cleanup: { key: string }[],
-  removeMany: ReturnType<typeof useMods.getState>['removeMany'],
-) {
-  const mods = cleanup
-    .map((item) => useMods.getState().mods.find((mod) => mod.key === item.key))
-    .filter((mod): mod is NonNullable<typeof mod> => mod !== undefined)
-  removeMany(mods).catch(reportUnexpected)
-}
-
 function dismissCosmetic(
   sections: ReturnType<typeof problemSections>,
   dismissAsset: ReturnType<typeof useMods.getState>['dismissAsset'],
@@ -359,48 +309,11 @@ function OfflineChecksNote() {
   )
 }
 
-function CleanupSection({ cleanup }: { cleanup: ComponentProps<typeof CleanupRow>['cleanup'][] }) {
-  const { t } = useLingui()
-  const removeMany = useMods((s) => s.removeMany)
-  const [confirmCleanup, setConfirmCleanup] = useState(false)
-  if (cleanup.length === 0) {
-    return null
-  }
-  return (
-    <Box>
-      <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
-        <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
-          {t`Cleanup`}
-        </Typography>
-        <Button size="small" sx={{ ml: 1, height: 26 }} onClick={() => setConfirmCleanup(true)}>
-          {t`Remove all`}
-        </Button>
-      </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        {cleanup.map((item) => (
-          <CleanupRow key={item.key} cleanup={item} />
-        ))}
-      </Box>
-      <ConfirmDialog
-        open={confirmCleanup}
-        title={t`Remove all ${cleanup.length} mods from this profile?`}
-        body={t`This change can be undone from History.`}
-        confirmLabel={t`Remove all`}
-        color="error"
-        onCancel={() => setConfirmCleanup(false)}
-        onConfirm={() => {
-          setConfirmCleanup(false)
-          removeCleanup(cleanup, removeMany)
-        }}
-      />
-    </Box>
-  )
-}
-
 // ProblemActions sits in the profile's tab row while the Problems tab is open, like the Console's log actions.
 export function ProblemActions() {
   const { t } = useLingui()
   const result = useOpenProblems()
+  const [mapOpen, setMapOpen] = useState(false)
   const sectionTitle = useSectionTitle()
   const rowText = useRowText()
   const sections = result === null ? [] : problemSections(result)
@@ -411,51 +324,59 @@ export function ProblemActions() {
     result === null ||
     (sections.length === 0 && cleanup.length === 0 && compat.length === 0 && harmlessCount === 0)
   return (
-    <IconAction
-      label={t`Copy report`}
-      icon={<Copy size={16} />}
-      disabled={nothing}
-      disabledTitle={t`No problems to copy.`}
-      onClick={() => {
-        const text = formatProblemReport(
-          [
-            ...sections.map((section) => ({
-              title: sectionTitle(section.id),
-              count: section.rows.length,
-              whyKeys: section.rows.flatMap((entry) => {
-                const row = isDismissedRow(entry) ? entry.row : entry
-                return row.kind === 'asset' ? whyKeysOf(row.asset.evidence) : []
-              }),
-              lines: section.rows.map((entry) => {
-                const row = isDismissedRow(entry) ? entry.row : entry
-                const { text: sentence, note } = rowText(row)
-                return note === '' ? sentence : `${sentence} ${note}`
-              }),
-            })),
-            ...(cleanup.length === 0
-              ? []
-              : [
-                  {
-                    title: t`Cleanup`,
-                    count: cleanup.length,
-                    lines: cleanup.map((item) => {
-                      const who = item.name.trim() === '' ? t`Unknown mod` : item.name
-                      const reason = item.reason || 'Not needed by any enabled mod'
-                      return `${who}: ${reason}`
-                    }),
-                  },
-                ]),
-            ...compatReportChunks(compat, t`Compatibility`),
-          ],
-          t`Harmless`,
-          harmlessCount,
-        )
-        Clipboard.SetText(text).then(
-          () => useToasts.getState().push({ kind: 'success', title: t`Report copied` }),
-          reportUnexpected,
-        )
-      }}
-    />
+    <>
+      <IconAction
+        label={t`Asset map`}
+        icon={<MapIcon size={16} />}
+        onClick={() => setMapOpen(true)}
+      />
+      <AssetMapDialog open={mapOpen} onClose={() => setMapOpen(false)} />
+      <IconAction
+        label={t`Copy report`}
+        icon={<Copy size={16} />}
+        disabled={nothing}
+        disabledTitle={t`No problems to copy.`}
+        onClick={() => {
+          const text = formatProblemReport(
+            [
+              ...sections.map((section) => ({
+                title: sectionTitle(section.id),
+                count: section.rows.length,
+                whyKeys: section.rows.flatMap((entry) => {
+                  const row = isDismissedRow(entry) ? entry.row : entry
+                  return row.kind === 'asset' ? whyKeysOf(row.asset.evidence) : []
+                }),
+                lines: section.rows.map((entry) => {
+                  const row = isDismissedRow(entry) ? entry.row : entry
+                  const { text: sentence, note } = rowText(row)
+                  return note === '' ? sentence : `${sentence} ${note}`
+                }),
+              })),
+              ...(cleanup.length === 0
+                ? []
+                : [
+                    {
+                      title: t`Cleanup`,
+                      count: cleanup.length,
+                      lines: cleanup.map((item) => {
+                        const who = item.name.trim() === '' ? t`Unknown mod` : item.name
+                        const reason = item.reason || 'Not needed by any enabled mod'
+                        return `${who}: ${reason}`
+                      }),
+                    },
+                  ]),
+              ...compatReportChunks(compat, t`Compatibility`),
+            ],
+            t`Harmless`,
+            harmlessCount,
+          )
+          Clipboard.SetText(text).then(
+            () => useToasts.getState().push({ kind: 'success', title: t`Report copied` }),
+            reportUnexpected,
+          )
+        }}
+      />
+    </>
   )
 }
 

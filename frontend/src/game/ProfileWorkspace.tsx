@@ -5,7 +5,6 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import { BrowseHost } from '../browse/BrowseHost.tsx'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { PerformancePanel } from '../console/PerformancePanel.tsx'
-import { AssetMapPanel } from '../mods/AssetMapPanel.tsx'
 import { LoadOrderTab } from '../mods/LoadOrderTab.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { ProblemActions, ProblemsTab } from '../mods/ProblemsTab.tsx'
@@ -155,12 +154,7 @@ export function ProfileWorkspace({
               flexDirection: 'column',
             }}
           >
-            {/* One scroll area: the problems come first, the asset map after them, so a large map never
-                pushes the problems out of reach. */}
             <ProblemsTab />
-            <Box sx={{ px: 2, pb: 2, flexShrink: 0 }}>
-              <AssetMapPanel />
-            </Box>
           </Box>
         ) : null}
         {tab === 'load-order' ? (
