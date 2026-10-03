@@ -300,3 +300,21 @@ func TestCheckUpdatesUnlistedModIsKnownAndCached(t *testing.T) {
 		t.Fatalf("unlisted mod asked again: %d -> %d requests", asked, hits.Load())
 	}
 }
+
+func TestPageMissingFromDatasetIsCached(t *testing.T) {
+	var hits atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		hits.Add(1)
+		http.NotFound(w, nil)
+	}))
+	t.Cleanup(srv.Close)
+	c := &Client{HTTP: srv.Client(), CacheDir: t.TempDir(), PageBase: srv.URL}
+	for range 2 {
+		if _, err := c.Page(context.Background(), 4216); err != nil {
+			t.Fatalf("a page the dataset lacks is an answer, not an error: %v", err)
+		}
+	}
+	if hits.Load() != 1 {
+		t.Fatalf("missing page fetched %d times, want once", hits.Load())
+	}
+}

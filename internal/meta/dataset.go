@@ -166,6 +166,10 @@ func (c *Client) Page(ctx context.Context, id int) (Page, error) {
 			return Page{}, err
 		}
 		b, err := c.do(req, maxPage)
+		if statusErr, ok := errors.AsType[*StatusError](err); ok && statusErr.Code == http.StatusNotFound {
+			// The dataset has no file for this page: an answer, so it is cached like one.
+			return Page{}, nil
+		}
 		if err != nil {
 			return Page{}, err
 		}
@@ -218,7 +222,8 @@ func (c *Client) PageRequirements(ctx context.Context, pageID int) ([]Requiremen
 			return nil, err
 		}
 		if len(response.Errors) > 0 {
-			return nil, errors.New(response.Errors[0].Message)
+			// Nexus answered (a hidden or removed page): no listed requirements, cached like any answer.
+			return []Requirement{}, nil
 		}
 		if len(response.Data.LegacyModsByDomain.Nodes) == 0 {
 			return []Requirement{}, nil
