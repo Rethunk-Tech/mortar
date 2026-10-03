@@ -45,6 +45,31 @@ func TestMeasureSizesSkipSymlinks(t *testing.T) {
 	}
 }
 
+func TestMeasureSharedSavedHardlink(t *testing.T) {
+	root := t.TempDir()
+	store := filepath.Join(root, "store", "g", "k", "m.bin")
+	if err := os.MkdirAll(filepath.Dir(store), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(store, make([]byte, 8192), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	prof := filepath.Join(root, "profiles", "g", "0123456789abcdef", "mods", "k", "m.bin")
+	if err := os.MkdirAll(filepath.Dir(prof), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Link(store, prof); err != nil {
+		t.Fatal(err)
+	}
+	got, err := Measure(root, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.SharedSavedKnown || got.SharedSaved < 4000 {
+		t.Fatalf("sharedSaved known=%v n=%d", got.SharedSavedKnown, got.SharedSaved)
+	}
+}
+
 func TestMeasureModUsageAggregatesStoreAndProfileCopies(t *testing.T) {
 	root := t.TempDir()
 	write := func(rel string, n int) {

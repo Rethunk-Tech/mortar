@@ -176,7 +176,7 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 }
 
 func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry, ne *Entry, newManifests []manifest.Mod) (swapped, error) {
-	if err := datadir.CopyTree(newSrc, tmp); err != nil {
+	if err := datadir.MaterializeTree(newSrc, tmp); err != nil {
 		return swapped{}, err
 	}
 	for _, nm := range ne.Mods {
@@ -340,6 +340,9 @@ func copyOver(src, dst string) error {
 		return err
 	}
 	if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
+		return err
+	}
+	if err := os.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
 	return fsx.WriteFile(dst, b, 0o600)

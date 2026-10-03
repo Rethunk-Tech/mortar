@@ -20,14 +20,17 @@ type CopyProgress struct {
 	TotalBytes int64
 }
 
-// CopyTree copies the regular files and folders under src into dst (which may exist), file by file with io.Copy, which
-// the OS clones where the filesystem can. Directory junctions and symlink directories are not followed. Symlink files
-// are copied by content when they still resolve under src, and are an error when they escape.
+// CopyTree copies the regular files and folders under src into dst (which may exist), file by file with io.Copy.
+// Directory junctions and symlink directories are not followed. Symlink files are copied by content when they still
+// resolve under src, and are an error when they escape.
 func CopyTree(src, dst string) error {
-	return copyTree(src, dst, nil)
+	return copyTree(src, dst, nil, nil)
 }
 
-func copyTree(src, dst string, report func(CopyProgress)) error {
+func copyTree(src, dst string, report func(CopyProgress), put func(from, to, rel string) error) error {
+	if put == nil {
+		put = func(from, to, _ string) error { return CopyFile(from, to) }
+	}
 	root, err := filepath.EvalSymlinks(src)
 	if err != nil {
 		return err
@@ -89,7 +92,7 @@ func copyTree(src, dst string, report func(CopyProgress)) error {
 			if !UnderRoot(root, resolved) {
 				return fmt.Errorf("%s escapes %s", p, src)
 			}
-			if err := CopyFile(resolved, target); err != nil {
+			if err := put(resolved, target, rel); err != nil {
 				return err
 			}
 			if report != nil {
@@ -109,7 +112,7 @@ func copyTree(src, dst string, report func(CopyProgress)) error {
 		if !UnderRoot(root, resolved) {
 			return fmt.Errorf("%s escapes %s", p, src)
 		}
-		if err := CopyFile(p, target); err != nil {
+		if err := put(p, target, rel); err != nil {
 			return err
 		}
 		if report != nil {

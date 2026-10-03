@@ -176,7 +176,7 @@ func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey str
 		return err
 	}
 	defer func() { _ = os.RemoveAll(scratch) }()
-	if err := datadir.CopyTree(extraSrc, scratch); err != nil {
+	if err := datadir.MaterializeTree(extraSrc, scratch); err != nil {
 		return err
 	}
 	profRoot := filepath.Join(oldDir, oldProfKey)
@@ -281,7 +281,7 @@ func (s *Store) copyExtraInto(game, id, entryDir, extraKey string, choices map[s
 	if err != nil {
 		return err
 	}
-	if err := datadir.CopyTree(src, scratch); err != nil {
+	if err := datadir.MaterializeTree(src, scratch); err != nil {
 		return errors.Join(err, os.RemoveAll(scratch))
 	}
 	if err := os.Rename(scratch, dest); err != nil {

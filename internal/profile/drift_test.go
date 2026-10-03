@@ -100,6 +100,56 @@ func TestScanDriftIgnoresConfigJSON(t *testing.T) {
 	}
 }
 
+func TestScanDriftIgnoresModDataWrites(t *testing.T) {
+	mods := t.TempDir()
+	when := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
+	writeTimed(t, filepath.Join(mods, "mod", "manifest.json"), "a", when)
+	st, err := walkFolderStat(filepath.Join(mods, "mod"), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeTimed(t, filepath.Join(mods, "mod", "data", "x.json"), `{"x":1}`, when.Add(time.Hour))
+	after, err := walkFolderStat(filepath.Join(mods, "mod"), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if after != st {
+		t.Fatalf("data/ counted as an outside edit: %+v vs %+v", st, after)
+	}
+}
+
+func TestScanDriftLinkedShippedFileUnchanged(t *testing.T) {
+	mods := t.TempDir()
+	store := t.TempDir()
+	when := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
+	writeTimed(t, filepath.Join(store, "manifest.json"), "a", when)
+	if err := os.MkdirAll(filepath.Join(mods, "mod"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Link(filepath.Join(store, "manifest.json"), filepath.Join(mods, "mod", "manifest.json")); err != nil {
+		t.Fatal(err)
+	}
+	st, err := walkFolderStat(filepath.Join(mods, "mod"), store)
+	if err != nil {
+		t.Fatal(err)
+	}
+	after, err := walkFolderStat(filepath.Join(mods, "mod"), store)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if after != st {
+		t.Fatalf("hardlink counted as modified: %+v vs %+v", st, after)
+	}
+	names, err := liveFolders(mods, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := scanDrift(names, map[string]FolderStat{"mod": after}, []string{"mod"}, ModsSnapshot{Folders: map[string]FolderStat{"mod": st}})
+	if len(got) != 0 {
+		t.Fatalf("linked shipped file: %#v", got)
+	}
+}
+
 func TestScanModsDriftOnProfile(t *testing.T) {
 	s := newStore(t)
 	p, err := s.Create("stardew", "Farm")

@@ -139,7 +139,7 @@ func (s *Store) place(game, modsDir string, e Entry) error {
 		return err
 	}
 	final, err := func() (string, error) {
-		if err := datadir.CopyTree(src, scratch); err != nil {
+		if err := datadir.MaterializeTree(src, scratch); err != nil {
 			return "", err
 		}
 		return materialize(scratch, e)
@@ -653,7 +653,7 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 	}
 	err = os.MkdirAll(filepath.Join(tmp, "mods"), 0o700)
 	if err == nil {
-		err = datadir.CopyTree(filepath.Join(srcDir, "mods"), filepath.Join(tmp, "mods"))
+		err = datadir.MaterializeTreeExclusive(filepath.Join(srcDir, "mods"), filepath.Join(tmp, "mods"))
 	}
 	if err == nil && coverType(src.Cover) != "" {
 		err = datadir.CopyFile(filepath.Join(srcDir, src.Cover), filepath.Join(tmp, src.Cover))

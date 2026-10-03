@@ -148,7 +148,7 @@ func Relocate(src, dest, def string, reports ...func(CopyProgress)) error {
 	if estimate.FreeBytes < estimate.Bytes {
 		return &SpaceError{Need: estimate.Bytes}
 	}
-	if err := copyTree(src, dest, report); err != nil {
+	if err := copyTree(src, dest, report, nil); err != nil {
 		_ = os.RemoveAll(dest)
 		return err
 	}

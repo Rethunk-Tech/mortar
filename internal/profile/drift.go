@@ -84,11 +84,7 @@ func entryFolderName(name string) string {
 }
 
 func isUserWritten(rel string) bool {
-	base := filepath.Base(rel)
-	if strings.EqualFold(base, "config.json") {
-		return true
-	}
-	return strings.HasSuffix(strings.ToLower(base), ".mortar-old")
+	return datadir.WritableRel(rel)
 }
 
 // undotDirs drops the leading dot Mortar adds to a switched-off mod's folder, so its files still match the
@@ -477,7 +473,7 @@ func (s *Store) revertDriftEntry(game, id, key string) (Profile, error) {
 		if err != nil {
 			return err
 		}
-		if err := datadir.CopyTree(src, scratch); err != nil {
+		if err := datadir.MaterializeTree(src, scratch); err != nil {
 			return errors.Join(err, os.RemoveAll(scratch))
 		}
 		none := filepath.Join(scratch, ".no-old")
