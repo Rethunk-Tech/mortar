@@ -8,6 +8,7 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useOutcomeLabel } from './outcome.ts'
+import { runExitText } from './runExit.ts'
 import { useConsole } from './store.ts'
 
 export function RunsPicker({ game }: { game: string }) {
@@ -60,7 +61,7 @@ export function RunsPicker({ game }: { game: string }) {
         endIcon={<ChevronDown size={12} />}
         aria-label={t`Runs: ${button}`}
         onClick={(e) => setAnchor(e.currentTarget)}
-        sx={{ height: 34, borderColor: 'rgba(255,255,255,0.2)', color: '#ffffff' }}
+        sx={{ height: 34, borderColor: 'var(--mortar-hairline-20)', color: 'var(--mortar-ink)' }}
       >
         {button}
       </Button>
@@ -86,6 +87,7 @@ export function RunsPicker({ game }: { game: string }) {
             key={r.id}
             dense={true}
             selected={viewingRun === r.id}
+            title={runExitText(r.exit)}
             onClick={() => {
               viewRun(game, profile, r.id)
               setAnchor(null)

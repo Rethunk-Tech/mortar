@@ -105,6 +105,8 @@ type session struct {
 	mods            []launch.ModRef
 	restore         *settingsRestore
 	settingsMissing bool
+	exit            launch.Exit
+	haveExit        bool
 }
 
 // Service exposes launch, status and stop to the frontend.
@@ -136,6 +138,10 @@ type Service struct {
 	// OnSavePlayed is called with the save folder SMAPI loaded when a run is recorded.
 	OnSavePlayed func(gameID, profileID, saveFolder string)
 	quit         <-chan struct{}
+	// WaitPID waits for a game process Mortar did not start (Steam relay). Tests replace it.
+	WaitPID  func(pid int) (launch.Exit, error)
+	stopping map[string]bool
+	reaping  map[string]bool
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store) *Service {
@@ -143,6 +149,7 @@ func NewService(home string, s *settings.Store, profiles *profile.Store) *Servic
 		home: home, settings: s, profiles: profiles, procDir: procDirRun,
 		status: map[string]Status{}, watching: map[string]bool{},
 		logs: map[string]session{}, stop: map[string]context.CancelFunc{}, preparing: map[string]string{},
+		stopping: map[string]bool{}, reaping: map[string]bool{},
 		EnsureLoader: func(context.Context, string, bool) error { return errors.New("the loader cannot be installed here") },
 	}
 }
@@ -332,8 +339,14 @@ func (s *Service) poll(g game.Game) bool {
 		s.mu.Unlock()
 		s.set(Status{Game: g.ID(), State: Running, Since: sinceOr(procs[0].Start)})
 	case cur.State == Running && cur.Profile != "" && profileID == "":
+		if s.reapArmed(g.ID()) {
+			break
+		}
 		s.closed(g, cur, false)
 	case cur.State == Running && cur.Profile == "" && !alive:
+		if s.reapArmed(g.ID()) {
+			break
+		}
 		s.closed(g, cur, false)
 	}
 	return s.current(g.ID()).State != Idle
@@ -581,6 +594,10 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 	ov := launchOverrides(s.profiles, g.ID(), profileID)
 	showConsole := settings.Resolve(s.settings.Get(), "showSmapiConsole", g.ID(), ov) == "true"
 	req := launch.Request{InstallDir: dir, ModsDir: modsDir, Direct: direct, Vanilla: vanilla, Seen: s.seen(g), HideWindow: !showConsole}
+	if waitOnChild(req) {
+		req.OnExit = func(x launch.Exit) { s.finishWait(g, x) }
+		s.armReap(g.ID())
+	}
 	if !vanilla && profileID != "" {
 		st := s.settings.Get()
 		if err := overlay.ApplyToMods(modsDir, st.OverlayEnabled, st.OverlayPort, st.OverlayToken); err != nil {
@@ -848,18 +865,26 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, req la
 		if req.Vanilla {
 			s.say(g.ID(), profileID, "Started without mods")
 		}
+		if !waitOnChild(req) {
+			s.armReap(g.ID())
+			go s.awaitPID(g, profileID)
+		}
 	case errors.Is(err, launch.ErrNoSteam):
+		s.clearReap(g.ID())
 		s.set(Status{Game: g.ID(), State: NoSteam, Profile: profileID})
 	case errors.As(err, &exited):
+		s.clearReap(g.ID())
 		if len(buf.Lines()) == 0 {
 			s.say(g.ID(), profileID, fmt.Sprintf("%s exited with code %d.", g.LoaderName(), exited.Code))
 		}
 		s.finishFailed(g, profileID, buf)
 		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Error: plainLaunchError(err, req.InstallDir), Cause: causeFromBuffer(s, g.ID(), profileID, buf)})
 	case errors.As(err, &f):
+		s.clearReap(g.ID())
 		s.finishFailed(g, profileID, buf)
 		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Hint: f.Hint, Error: f.Error(), Cause: causeFromBuffer(s, g.ID(), profileID, buf)})
 	default:
+		s.clearReap(g.ID())
 		s.finishFailed(g, profileID, buf)
 		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Error: plainLaunchError(err, req.InstallDir), Cause: causeFromBuffer(s, g.ID(), profileID, buf)})
 	}
@@ -908,6 +933,9 @@ func (s *Service) Stop(gameID string) error {
 	if err != nil {
 		return err
 	}
+	s.mu.Lock()
+	s.stopping[gameID] = true
+	s.mu.Unlock()
 	var errs []error
 	for _, p := range procs {
 		errs = append(errs, launch.Terminate(p.PID, stopGrace))
@@ -925,9 +953,25 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 	if s.current(g.ID()).State != Running {
 		return
 	}
+	if stopped {
+		s.mu.Lock()
+		if sess, ok := s.logs[g.ID()]; ok && !sess.haveExit {
+			sess.exit = launch.Exit{Stopped: true}
+			sess.haveExit = true
+			s.logs[g.ID()] = sess
+		}
+		s.mu.Unlock()
+	}
 	msg := g.Name() + " closed"
 	if stopped {
 		msg = g.Name() + " was stopped from Mortar"
+	} else {
+		s.mu.Lock()
+		sessExit := s.logs[g.ID()]
+		s.mu.Unlock()
+		if sessExit.haveExit && launch.ExitCrashed(sessExit.exit) {
+			msg = g.Name() + " crashed; " + launch.DescribeExit(sessExit.exit)
+		}
 	}
 	if cur.Since > 0 {
 		msg += " after " + time.Since(time.UnixMilli(cur.Since)).Round(time.Second).String()
@@ -955,6 +999,7 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 		s.record(g, cur.Profile, started, false, sess.mods)
 	}
 	s.set(Status{Game: g.ID(), State: Idle})
+	s.clearReap(g.ID())
 }
 
 func (s *Service) finishFailed(g game.Game, profileID string, buf *launch.Buffer) {

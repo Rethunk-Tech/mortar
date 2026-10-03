@@ -44,6 +44,7 @@ func (g Game) Launch(ctx context.Context, req launch.Request, onLines func([]str
 	if err != nil {
 		return err
 	}
+	cmd.OnExit = req.OnExit
 	if req.Vanilla {
 		cmd.Ready = req.Seen
 	} else {

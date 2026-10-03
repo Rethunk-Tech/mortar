@@ -40,7 +40,7 @@ const (
 // verbs are the first words that make an invocation a command-line call rather than a window launch.
 var verbs = map[string]bool{
 	"games": true, "profiles": true, "profile": true, "history": true, "mods": true, "mod": true, "install": true,
-	"conflicts": true, "problems": true, "updates": true, "share": true, "export": true, "open": true, "play": true,
+	"conflicts": true, "problems": true, "who": true, "updates": true, "share": true, "export": true, "open": true, "play": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
 	"downloads": true,
 	"bundles":   true, "nexus": true, "trash": true, "cache": true, "data": true,
@@ -80,6 +80,8 @@ type cmd struct {
 	profileFlag   string
 	updateFlag    bool
 	changelogFlag bool
+	everywhere    bool
+	filter        string
 	args          []string
 }
 
@@ -182,6 +184,14 @@ func (c *cmd) parse(args []string) error {
 			c.verbose = true
 		case a == "--all":
 			c.all = true
+		case a == "--filter":
+			if i+1 >= len(args) {
+				return usageError{"--filter needs a value"}
+			}
+			i++
+			c.filter = args[i]
+		case strings.HasPrefix(a, "--filter="):
+			c.filter = strings.TrimPrefix(a, "--filter=")
 		case a == "--unused":
 			c.unused = true
 		case a == "--by-mod":
@@ -198,6 +208,8 @@ func (c *cmd) parse(args []string) error {
 			c.updateFlag = true
 		case a == "--changelog":
 			c.changelogFlag = true
+		case a == "--everywhere":
+			c.everywhere = true
 		case a == "--format":
 			if i+1 >= len(args) {
 				return usageError{"--format needs md or text"}
@@ -355,6 +367,8 @@ func (c *cmd) dispatch() error {
 				return c.modsChange(c.args[1])
 			case "config":
 				return c.modsConfig()
+			case "compat":
+				return c.modsCompat()
 			}
 		}
 	}
@@ -376,6 +390,15 @@ func (c *cmd) dispatch() error {
 		case "restore":
 			return c.problemsRestore()
 		}
+	}
+	if verb == "who" {
+		return c.who()
+	}
+	if verb == "conflicts" && len(c.args) > 1 && c.args[1] == "map" {
+		return c.conflictsMap()
+	}
+	if verb == "updates" && len(c.args) > 1 && c.args[1] == "apply" {
+		return c.updatesApply()
 	}
 	a, err := c.need(1, "a game", "a profile")
 	if err != nil {
@@ -1602,10 +1625,10 @@ func (c *cmd) runs(p control.Params) error {
 		for _, r := range list {
 			t = append(t, []string{
 				runStartedLabel(r.Started), (time.Duration(r.DurationMs) * time.Millisecond).Round(time.Second).String(),
-				runOutcomeLabel(string(r.Outcome)), fmt.Sprint(r.Errors), fmt.Sprint(r.Warnings), r.SMAPIVersion, r.GameVersion,
+				runOutcomeLabel(string(r.Outcome)), runEndedLabel(r.Exit), fmt.Sprint(r.Errors), fmt.Sprint(r.Warnings), r.SMAPIVersion, r.GameVersion,
 			})
 		}
-		c.table("STARTED\tDURATION\tOUTCOME\tERRORS\tWARNINGS\tSMAPI\tGAME", t)
+		c.table("STARTED\tDURATION\tOUTCOME\tENDED\tERRORS\tWARNINGS\tSMAPI\tGAME", t)
 		for _, r := range list {
 			if r.Cause != nil {
 				fmt.Fprintf(c.out, "%s\n", runCauseLine(r))
@@ -2036,15 +2059,20 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   mods split <game> <profile> <mod> <file>
   mods combine <game> <profile> <mod> <into-mod>
   mods config <game> <profile> <mod> [<field> <value>]  print or set one config field
+  mods compat <game> <profile>            non-ok SMAPI compatibility-list rows
   mod <game> <profile> <mod id>           one mod: dependencies, dependents, conflicts, settings
                                           (mod id is the SMAPI UniqueID)
   install <game> <profile> <archive>      install a local archive
   conflicts <game> <profile> [--all]      asset conflicts (--all includes cosmetic ones)
+  conflicts map <game> <profile> [--filter x]
+                                          every touched asset, with who writes it
+  who <game> <profile> <query>            which mods change an asset
   problems <game> <profile> [--format text]  everything the Problems tab lists
   problems dismissed [--profile <name>]   dismissed problems (index, kind, text, token)
   problems dismiss <index> [--profile <name>]
   problems restore <token|index> [--profile <name>]
   updates <game> <profile> [--changelog]  mods with a newer version
+  updates apply --everywhere <game> [mod]  same update in every eligible profile
   saves <game> <profile>                  saves and the mods each one lacks
   share <game> <profile>                  share link
   export <game> <profile> <file.mortar>   write a .mortar file

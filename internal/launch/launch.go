@@ -69,6 +69,8 @@ type Request struct {
 	Vanilla bool
 	// Seen reports that a vanilla launch succeeded, when the game process is running. Ignored otherwise.
 	Seen func() bool
+	// OnExit reports how the loader process ended after the game has started. Not used for Steam relays.
+	OnExit func(Exit)
 }
 
 // Runner starts a command and returns without waiting for it to finish. exited receives the Wait
@@ -120,6 +122,8 @@ type Command struct {
 	Relay bool
 	// Ready, when set, is the success rule instead of a rewritten log: a vanilla launch waits for the game process.
 	Ready func() bool
+	// OnExit reports how the started process ended after the game has started. Ignored for Relay commands.
+	OnExit func(Exit)
 }
 
 const clockSlack = 50 * time.Millisecond
@@ -166,6 +170,10 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 	started := func() error {
 		if c.LogFile != "" {
 			go follow(ctx, &tail, tm.Poll)
+		}
+		if c.OnExit != nil && exited != nil && !c.Relay {
+			ch := exited
+			go func() { c.OnExit(WaitError(<-ch)) }()
 		}
 		return nil
 	}

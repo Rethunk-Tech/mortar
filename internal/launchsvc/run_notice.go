@@ -35,6 +35,14 @@ func RunEndNotificationText(gameName string, stats launch.Summary) (title, body 
 		} else {
 			body = fmt.Sprintf("%d mods logged errors", n)
 		}
+		if launch.ExitCrashed(stats.Exit) {
+			desc := launch.DescribeExit(stats.Exit)
+			if n == 0 {
+				body = desc
+			} else {
+				body += "; " + desc
+			}
+		}
 		return title, body
 	}
 	title = "Game closed"

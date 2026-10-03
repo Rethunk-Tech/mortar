@@ -25,6 +25,7 @@ import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BisectDialog } from './BisectDialog.tsx'
 import { crashCauseDetailLine, crashCauseKind } from './crashCause.ts'
+import { canBisectCrash } from './canBisect.ts'
 import { useConsole } from './store.ts'
 
 type Crash = NonNullable<ReturnType<typeof useLaunch.getState>['crash']>
@@ -116,7 +117,7 @@ export function CrashDialog() {
       />
     ) : null
   }
-  const canBisect = crash.mods === null || crash.mods.length === 0
+  const canBisect = canBisectCrash(crash)
   const nexusID = profile && mod ? nexusIdOf(profile, mod) : 0
   const startBisect = async () => {
     try {

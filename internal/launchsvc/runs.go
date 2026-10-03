@@ -39,6 +39,7 @@ type Run struct {
 	Warnings     int             `json:"warnings"`
 	Mods         []launch.ModRef `json:"mods,omitempty"`
 	Cause        *Cause          `json:"cause,omitempty"`
+	Exit         *launch.Exit    `json:"exit,omitempty"`
 }
 
 type Cause struct {
@@ -200,6 +201,9 @@ func (s *Service) LastRunSummary(gameID, profileID string) (string, launch.Summa
 	}
 	summary := launch.Summarize(text)
 	summary.ModRefs = append([]launch.ModRef{}, run.Mods...)
+	if run.Exit != nil {
+		launch.ApplyExit(&summary, *run.Exit)
+	}
 	return run.ID, summary, nil
 }
 
@@ -293,17 +297,18 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		s.OnSavePlayed(g.ID(), profileID, folder)
 	}
 	stats := launch.Summarize(text)
+	s.mu.Lock()
+	sess := s.logs[g.ID()]
+	s.mu.Unlock()
+	if sess.haveExit {
+		launch.ApplyExit(&stats, sess.exit)
+	}
 	text = launch.CapLog(text, launch.MaxLogBytes)
 	ended := time.Now()
 	if started.IsZero() {
 		started = ended
 	}
-	outcome := launch.OutcomeRan
-	if failed {
-		outcome = launch.OutcomeFailed
-	} else if stats.Crashed {
-		outcome = launch.OutcomeCrashed
-	}
+	outcome := launch.OutcomeOf(failed, stats.Crashed)
 	id := fmt.Sprintf("%s-%d", started.UTC().Format("20060102T150405"), started.UnixNano())
 	dir := runsDir(modsDir)
 	if err := os.MkdirAll(dir, 0o700); err != nil {
@@ -324,6 +329,10 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	}
 	if len(refs) > 0 {
 		run.Mods = append([]launch.ModRef{}, refs[0]...)
+	}
+	if sess.haveExit {
+		ex := stats.Exit
+		run.Exit = &ex
 	}
 	if cause.ModName != "" {
 		run.Cause = &cause

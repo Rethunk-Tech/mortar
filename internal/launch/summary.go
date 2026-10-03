@@ -41,6 +41,7 @@ type Summary struct {
 	Warnings int
 	Mods     []ModError
 	ModRefs  []ModRef
+	Exit     Exit
 }
 
 // ParseLog turns a SMAPI log into entries, hiding the same suppressed messages as the console.
