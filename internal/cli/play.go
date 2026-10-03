@@ -26,7 +26,7 @@ func (c *cmd) play() error {
 	if err := c.emit(groups, func() { printPlayIssues(c, groups) }); err != nil {
 		return err
 	}
-	if len(groups) > 0 {
+	if playGroupsBlocking(groups) > 0 {
 		return playCheckError{code: 3}
 	}
 	return nil
