@@ -1,6 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, InputAdornment, TextField, Tooltip, Typography } from '@mui/material'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { Clipboard } from '@wailsio/runtime'
 import { Copy, ListOrdered, Search } from 'lucide-react'
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
@@ -16,6 +17,7 @@ import { formatLoadOrderCopy, loadOrderEmptyKind } from './loadOrderText.ts'
 import { useMods } from './store.ts'
 
 const INLINE_REQUIRED = 4
+const ROW_ESTIMATE_PX = 72
 const INLINE_USERS = 2
 
 // Thousands of these render at once, so they are plain buttons rather than MUI Chips with tooltips.
@@ -125,13 +127,11 @@ function DepChips({
 function OrderList({
   rows,
   names,
-  anchors,
-  onScroll,
+  scrollRef,
 }: {
   rows: Row[]
   names: Map<string, string>
-  anchors: RefObject<Map<string, HTMLElement>>
-  onScroll: (id: string) => void
+  scrollRef: RefObject<(id: string) => boolean>
 }) {
   const { t } = useLingui()
   const [query, setQuery] = useState('')
@@ -143,6 +143,23 @@ function OrderList({
           (row) =>
             row.name.toLowerCase().includes(needle) || row.uniqueId.toLowerCase().includes(needle),
         )
+  const parentRef = useRef<HTMLDivElement>(null)
+  const virtualizer = useVirtualizer({
+    count: shown.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => ROW_ESTIMATE_PX,
+    overscan: 8,
+    getItemKey: (index) => shown[index]?.uniqueId ?? index,
+  })
+  const onScroll = (id: string): boolean => {
+    const index = shown.findIndex((row) => row.uniqueId.toLowerCase() === id.toLowerCase())
+    if (index < 0) {
+      return false
+    }
+    virtualizer.scrollToIndex(index, { align: 'center' })
+    return true
+  }
+  scrollRef.current = onScroll
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 0.5 }}>
@@ -177,66 +194,71 @@ function OrderList({
           {t`Copy load order`}
         </Button>
       </Box>
-      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', px: 2, py: 1.5 }}>
+      <Box ref={parentRef} sx={{ flex: 1, minHeight: 0, overflow: 'auto', px: 2, py: 1.5 }}>
         <Typography title="SMAPI" sx={{ fontSize: 13, color: 'text.secondary', mb: 1.5 }}>
           {t`The game loader chooses this order. Mortar does not change it.`}
         </Typography>
-        {shown.map((row) => (
-          <Box
-            key={row.uniqueId}
-            ref={(el: HTMLDivElement | null) => {
-              if (el) {
-                anchors.current.set(row.uniqueId.toLowerCase(), el)
-              } else {
-                anchors.current.delete(row.uniqueId.toLowerCase())
-              }
-            }}
-            sx={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 1.5,
-              py: 1,
-              borderBottom: '1px solid var(--mortar-hairline-faint)',
-              ...(row.cycle
-                ? { outline: '1px solid', outlineColor: 'error.main', outlineOffset: -1 }
-                : {}),
-            }}
-          >
-            <Typography
-              sx={{
-                width: 36,
-                flexShrink: 0,
-                color: 'text.secondary',
-                fontVariantNumeric: 'tabular-nums',
-              }}
-            >
-              {row.position}
-            </Typography>
-            <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+        <Box sx={{ position: 'relative', height: virtualizer.getTotalSize() }}>
+          {virtualizer.getVirtualItems().map((item) => {
+            const row = shown[item.index]
+            return row ? (
+              <Box
+                key={item.key}
+                data-index={item.index}
+                ref={virtualizer.measureElement}
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  transform: `translateY(${item.start}px)`,
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 1.5,
+                  py: 1,
+                  borderBottom: '1px solid var(--mortar-hairline-faint)',
+                  ...(row.cycle
+                    ? { outline: '1px solid', outlineColor: 'error.main', outlineOffset: -1 }
+                    : {}),
+                }}
+              >
                 <Typography
-                  noWrap={true}
-                  title={row.name.trim() === '' ? row.uniqueId : row.name}
-                  sx={{ fontWeight: 600, minWidth: 0 }}
+                  sx={{
+                    width: 36,
+                    flexShrink: 0,
+                    color: 'text.secondary',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
                 >
-                  {row.name.trim() === '' ? t`Unknown mod` : row.name}
+                  {row.position}
                 </Typography>
-                {row.cycle ? (
-                  <Tooltip title={t`These mods require each other.`}>
-                    <Chip
-                      size="small"
-                      label={t`Dependency cycle`}
-                      color="error"
-                      variant="outlined"
-                      sx={{ height: 22 }}
-                    />
-                  </Tooltip>
-                ) : null}
+                <Box sx={{ minWidth: 0, flex: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                    <Typography
+                      noWrap={true}
+                      title={row.name.trim() === '' ? row.uniqueId : row.name}
+                      sx={{ fontWeight: 600, minWidth: 0 }}
+                    >
+                      {row.name.trim() === '' ? t`Unknown mod` : row.name}
+                    </Typography>
+                    {row.cycle ? (
+                      <Tooltip title={t`These mods require each other.`}>
+                        <Chip
+                          size="small"
+                          label={t`Dependency cycle`}
+                          color="error"
+                          variant="outlined"
+                          sx={{ height: 22 }}
+                        />
+                      </Tooltip>
+                    ) : null}
+                  </Box>
+                  <DepChips row={row} names={names} onScroll={onScroll} />
+                </Box>
               </Box>
-              <DepChips row={row} names={names} onScroll={onScroll} />
-            </Box>
-          </Box>
-        ))}
+            ) : null
+          })}
+        </Box>
       </Box>
     </Box>
   )
@@ -253,7 +275,7 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
   const request = `${game}\0${profile.id}\0${enabledKey}\0${retry}`
   const [rows, setRows] = useState<Row[] | null>(null)
   const [failed, setFailed] = useState(false)
-  const anchors = useRef(new Map<string, HTMLElement>())
+  const scrollRef = useRef<(id: string) => boolean>(() => false)
 
   useEffect(() => {
     let cancelled = false
@@ -291,10 +313,9 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
     if (!pending) {
       return
     }
-    const el =
-      anchors.current.get(pending.id.toLowerCase()) ??
-      (pending.fallback === '' ? undefined : anchors.current.get(pending.fallback.toLowerCase()))
-    el?.scrollIntoView({ block: 'center' })
+    if (!scrollRef.current(pending.id) && pending.fallback !== '') {
+      scrollRef.current(pending.fallback)
+    }
   }, [rows])
 
   const names = useMemo(() => {
@@ -325,12 +346,5 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
       </EmptyState>
     )
   }
-  return (
-    <OrderList
-      rows={rows}
-      names={names}
-      anchors={anchors}
-      onScroll={(id) => anchors.current.get(id.toLowerCase())?.scrollIntoView({ block: 'center' })}
-    />
-  )
+  return <OrderList rows={rows} names={names} scrollRef={scrollRef} />
 }
