@@ -19,8 +19,14 @@ func TestProfileLoadOrder(t *testing.T) {
 	if r.code != 0 || r.calls[0].method != "profile.loadOrder" || r.calls[0].params.Profile != "Farm" {
 		t.Fatalf("call: %+v", r)
 	}
-	if !strings.Contains(r.out, "Z.Lib") || !strings.Contains(r.out, "cycle") || !strings.Contains(r.out, "missing Missing.Mod") {
+	if !strings.Contains(r.out, "MOD ID") || !strings.Contains(r.out, "dependency cycle") || !strings.Contains(r.out, "missing Missing.Mod") {
 		t.Fatalf("table: %q", r.out)
+	}
+	if !strings.Contains(r.out, "Addon") || !strings.Contains(r.out, "Lib") {
+		t.Fatalf("names: %q", r.out)
+	}
+	if strings.Contains(r.out, "UNIQUEID") || strings.Contains(r.out, "\tcycle") {
+		t.Fatalf("internal labels: %q", r.out)
 	}
 	r = invoke(t, results, "profile", "load-order", "stardew", "Farm", "--json")
 	var rows []loadorder.Row

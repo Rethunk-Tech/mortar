@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/control"
+	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-AI/mortar/internal/savessvc"
 )
 
 type call struct {
@@ -141,8 +143,12 @@ func TestProfileCompareHistoryAndRevert(t *testing.T) {
 		t.Fatalf("compare params: %+v", got)
 	}
 	r = invoke(t, results, "profile", "history", "stardew", "Farm")
-	if r.code != 0 || !strings.Contains(r.out, "event-1") {
+	if r.code != 0 || !strings.Contains(r.out, "Added Alpha") || strings.Contains(r.out, "event-1") || strings.Contains(r.out, "KIND") {
 		t.Fatalf("history: %+v", r)
+	}
+	r = invoke(t, results, "profile", "history", "stardew", "Farm", "--json")
+	if r.code != 0 || !strings.Contains(r.out, `"id": "event-1"`) {
+		t.Fatalf("history json: %q", r.out)
 	}
 	r = invoke(t, results, "profile", "revert", "stardew", "Farm", "event-1")
 	if r.code != 0 || r.calls[0].method != "profile.revert" || r.calls[0].params.Name != "event-1" {
@@ -170,7 +176,7 @@ func TestHistoryAll(t *testing.T) {
 		},
 	}
 	r := invoke(t, results, "history", "stardew", "--all")
-	if r.code != 0 || !strings.Contains(r.out, "event-2") || !strings.Contains(r.out, "Farm") {
+	if r.code != 0 || !strings.Contains(r.out, "Added Beta") || !strings.Contains(r.out, "Farm") || strings.Contains(r.out, "event-2") || strings.Contains(r.out, "KIND") {
 		t.Fatalf("history --all: %+v", r)
 	}
 	if got := r.calls[0]; got.method != "history.all" || got.params.Game != "stardew" {
@@ -245,8 +251,12 @@ func TestProfilesMarksDamaged(t *testing.T) {
 		},
 	}
 	r := invoke(t, results, "profiles", "stardew")
-	if r.code != 0 || !strings.Contains(r.out, "damaged") || !strings.Contains(r.out, "0123456789abcdef") {
+	if r.code != 0 || !strings.Contains(r.out, "Could not read this profile") || strings.Contains(r.out, "unexpected EOF") {
 		t.Fatalf("profiles: %q", r.out)
+	}
+	r = invoke(t, results, "profiles", "stardew", "--json")
+	if r.code != 0 || !strings.Contains(r.out, "0123456789abcdef") || !strings.Contains(r.out, "unexpected EOF") {
+		t.Fatalf("profiles json: %q", r.out)
 	}
 }
 
@@ -355,9 +365,16 @@ func TestProblemsDismissRestoreAndDismissed(t *testing.T) {
 	if !strings.Contains(r.out, "missing    Other") {
 		t.Fatalf("non-listed missing line: %q", r.out)
 	}
+	if !strings.Contains(r.out, "2 problems: 1 missing") {
+		t.Fatalf("counted summary: %q", r.out)
+	}
 	r = invoke(t, results, "problems", "dismissed", "--profile", "Farm")
-	if r.code != 0 || !strings.Contains(r.out, "listed\tneed.mod") || r.calls[0].method != "problems.dismissed" {
+	if r.code != 0 || !strings.Contains(r.out, "Pack needs Need.Mod") || strings.Contains(r.out, "listed\tneed.mod") || r.calls[0].method != "problems.dismissed" {
 		t.Fatalf("dismissed: %+v", r)
+	}
+	r = invoke(t, results, "problems", "dismissed", "--profile", "Farm", "--json")
+	if r.code != 0 || !strings.Contains(r.out, `"token"`) || !strings.Contains(r.out, "need.mod") {
+		t.Fatalf("dismissed json: %q", r.out)
 	}
 	r = invoke(t, results, "problems", "dismiss", "1", "--profile", "Farm")
 	if r.code != 0 || r.calls[len(r.calls)-1].method != "problems.dismiss" || r.calls[len(r.calls)-1].params.ModID != 1 {
@@ -583,5 +600,77 @@ func TestQueueRetrySkipAndHumanStates(t *testing.T) {
 	r = invoke(t, results, "queue", "skip")
 	if r.code != 0 || !strings.Contains(r.out, "Skipped 2 downloads.") {
 		t.Fatalf("skip: %q", r.out)
+	}
+}
+
+func TestGamesProfilesRunsSavesAndEnableHuman(t *testing.T) {
+	started := time.Now().Add(-2 * time.Minute).UTC().Format(time.RFC3339)
+	played := time.Now().Add(-3 * time.Hour).UnixMilli()
+	results := map[string]any{
+		"games": []control.GameRow{{
+			ID: "stardew", Name: "Stardew Valley", Available: true, Configured: false, Profiles: 1, Store: "steam", InstallDir: "/games/Stardew Valley",
+		}},
+		"profiles": []profile.Profile{
+			{ID: "deadbeef", Name: "Broken", Error: "open profile.json: unexpected EOF"},
+			{ID: "abc", Name: "Farm"},
+		},
+		"mods.enable": profile.EnableResult{AlsoEnabled: []string{"Pathoschild.ContentPatcher"}},
+		"mods": []control.ModRow{
+			{UniqueID: "Pathoschild.ContentPatcher", Name: "Content Patcher", Enabled: true},
+			{UniqueID: "A.Mod", Name: "Alpha", Enabled: true},
+		},
+		"runs": []launchsvc.Run{{
+			ID: "run-9", Started: started, DurationMs: 1000, Outcome: "crashed", Errors: 1,
+			Cause: &launchsvc.Cause{ModName: "Alpha", Detail: "[damaged] log truncated"},
+		}},
+		"saves": []savessvc.Fit{{
+			Folder: "Farm_1", Farm: "Green Acres", Farmer: "Sam", Season: 0, Day: 1, Year: 2,
+			LastProfileID: "abc", LastProfileAt: played,
+		}},
+	}
+	r := invoke(t, results, "games")
+	if r.code != 0 || !strings.Contains(r.out, "GAME") || !strings.Contains(r.out, "stardew") || !strings.Contains(r.out, "Supported") || !strings.Contains(r.out, "Not set up") {
+		t.Fatalf("games: %q", r.out)
+	}
+	if strings.Contains(r.out, "ID\t") || strings.Contains(r.out, "\tyes") || strings.Contains(r.out, "\tno") {
+		t.Fatalf("games internals: %q", r.out)
+	}
+	r = invoke(t, results, "games", "--json")
+	if r.code != 0 || !strings.Contains(r.out, `"id": "stardew"`) {
+		t.Fatalf("games json: %q", r.out)
+	}
+	r = invoke(t, results, "profiles", "stardew")
+	if r.code != 0 || !strings.Contains(r.out, "Could not read this profile") || strings.Contains(r.out, "unexpected EOF") {
+		t.Fatalf("profiles: %q", r.out)
+	}
+	r = invoke(t, results, "profiles", "stardew", "--json")
+	if r.code != 0 || !strings.Contains(r.out, "unexpected EOF") {
+		t.Fatalf("profiles json: %q", r.out)
+	}
+	r = invoke(t, results, "mods", "enable", "stardew", "Farm", "A.Mod")
+	if r.code != 0 || !strings.Contains(r.out, "Also enabled, as required: Content Patcher.") || strings.Contains(r.out, "Pathoschild.ContentPatcher") {
+		t.Fatalf("enable: %q", r.out)
+	}
+	r = invoke(t, results, "mods", "enable", "stardew", "Farm", "A.Mod", "--json")
+	if r.code != 0 || !strings.Contains(r.out, "Pathoschild.ContentPatcher") {
+		t.Fatalf("enable json: %q", r.out)
+	}
+	r = invoke(t, results, "runs", "stardew", "Farm")
+	if r.code != 0 || !strings.Contains(r.out, "Crashed") || !strings.Contains(r.out, "minutes ago") || !strings.Contains(r.out, "Alpha: That data could not be read.") {
+		t.Fatalf("runs: %q", r.out)
+	}
+	if strings.Contains(r.out, "run-9") || strings.Contains(r.out, "crashed") || strings.Contains(r.out, "log truncated") {
+		t.Fatalf("runs internals: %q", r.out)
+	}
+	r = invoke(t, results, "runs", "stardew", "Farm", "--json")
+	if r.code != 0 || !strings.Contains(r.out, `"id": "run-9"`) || !strings.Contains(r.out, "log truncated") {
+		t.Fatalf("runs json: %q", r.out)
+	}
+	r = invoke(t, results, "saves", "stardew", "Farm")
+	if r.code != 0 || !strings.HasPrefix(strings.TrimSpace(r.out), "FARM") || !strings.Contains(r.out, "Green Acres") || !strings.Contains(r.out, "Farm ·") || !strings.Contains(r.out, "hours ago") {
+		t.Fatalf("saves: %q", r.out)
+	}
+	if strings.HasPrefix(strings.TrimSpace(r.out), "FOLDER") {
+		t.Fatalf("saves folder-first: %q", r.out)
 	}
 }

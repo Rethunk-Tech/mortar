@@ -453,6 +453,147 @@ func yes(b bool) string {
 	return "no"
 }
 
+func gameSupportedLabel(ok bool) string {
+	if ok {
+		return "Supported"
+	}
+	return "Not supported"
+}
+
+func gameConfiguredLabel(ok bool) string {
+	if ok {
+		return "Installed"
+	}
+	return "Not set up"
+}
+
+func historySummary(kind string, count int, label string) string {
+	if strings.TrimSpace(label) != "" {
+		return label
+	}
+	if count <= 0 {
+		return kind
+	}
+	noun := "change"
+	if count != 1 {
+		noun = "changes"
+	}
+	if kind != "" {
+		return fmt.Sprintf("%s · %d %s", kind, count, noun)
+	}
+	return fmt.Sprintf("%d %s", count, noun)
+}
+
+func modNamesForIDs(ids []string, mods []control.ModRow) []string {
+	names := make(map[string]string, len(mods))
+	for _, m := range mods {
+		if m.UniqueID != "" && m.Name != "" {
+			names[m.UniqueID] = m.Name
+		}
+	}
+	out := make([]string, 0, len(ids))
+	for _, id := range ids {
+		if n := names[id]; n != "" {
+			out = append(out, n)
+			continue
+		}
+		out = append(out, id)
+	}
+	return out
+}
+
+func countedMissing(r problems.Result) int {
+	n := 0
+	for _, x := range r.Missing {
+		if x.Optional || x.Listed {
+			continue
+		}
+		n++
+	}
+	return n
+}
+
+func harmlessMissing(r problems.Result) int {
+	n := 0
+	for _, x := range r.Missing {
+		if x.Optional || x.Listed {
+			n++
+		}
+	}
+	return n
+}
+
+func problemsHumanCount(r problems.Result) int {
+	return r.Count() - harmlessMissing(r)
+}
+
+func runStartedLabel(started string) string {
+	if started == "" {
+		return ""
+	}
+	for _, layout := range []string{time.RFC3339Nano, time.RFC3339, "2006-01-02 15:04:05", "2006-01-02 15:04"} {
+		if t, err := time.Parse(layout, started); err == nil {
+			return relativeDeleted(t)
+		}
+		if t, err := time.ParseInLocation(layout, started, time.Local); err == nil {
+			return relativeDeleted(t)
+		}
+	}
+	return started
+}
+
+func runOutcomeLabel(outcome string) string {
+	switch strings.ToLower(outcome) {
+	case "ran", "ok", "success", "succeeded", "exited":
+		return "Ran"
+	case "crashed", "crash":
+		return "Crashed"
+	case "failed", "fail", "error":
+		return "Failed"
+	default:
+		if outcome == "" {
+			return "Ran"
+		}
+		return outcome
+	}
+}
+
+func runCauseLine(r launchsvc.Run) string {
+	if r.Cause == nil {
+		return ""
+	}
+	kind := usererr.Unknown
+	if r.Cause.Reason != "" {
+		kind, _ = usererr.Parse(r.Cause.Reason)
+	}
+	if kind == usererr.Unknown && r.Cause.Detail != "" {
+		kind, _ = usererr.Parse(r.Cause.Detail)
+	}
+	line := Sentence(kind)
+	if r.Cause.ModName != "" {
+		return r.Cause.ModName + ": " + line
+	}
+	return line
+}
+
+func saveLastPlayed(s savessvc.Fit, profileNames map[string]string) string {
+	name := profileNames[s.LastProfileID]
+	var when time.Time
+	if s.LastProfileAt > 0 {
+		when = time.UnixMilli(s.LastProfileAt)
+	}
+	if name == "" && when.IsZero() {
+		return ""
+	}
+	if name == "" {
+		return relativeDeleted(when)
+	}
+	if when.IsZero() {
+		return name
+	}
+	return name + " · " + relativeDeleted(when)
+}
+
 func (c *cmd) games() error {
 	var rows []control.GameRow
 	if err := c.ask("games", control.Params{}, &rows, readTimeout); err != nil {
@@ -461,9 +602,9 @@ func (c *cmd) games() error {
 	return c.emit(rows, func() {
 		t := [][]string{}
 		for _, g := range rows {
-			t = append(t, []string{g.ID, g.Name, yes(g.Available), yes(g.Configured), fmt.Sprint(g.Profiles), g.Store, g.InstallDir})
+			t = append(t, []string{g.ID, gameSupportedLabel(g.Available), gameConfiguredLabel(g.Configured), fmt.Sprint(g.Profiles), g.Store, g.InstallDir})
 		}
-		c.table("ID\tNAME\tSUPPORTED\tCONFIGURED\tPROFILES\tSTORE\tFOLDER", t)
+		c.table("GAME\tSUPPORTED\tCONFIGURED\tPROFILES\tSTORE\tFOLDER", t)
 	})
 }
 
@@ -476,7 +617,7 @@ func (c *cmd) profiles(gameID string) error {
 		t := [][]string{}
 		for _, p := range list {
 			if p.Error != "" {
-				t = append(t, []string{p.ID, "damaged", p.Error, ""})
+				t = append(t, []string{p.Name, "Could not read this profile", "", ""})
 				continue
 			}
 			on, total := 0, 0
@@ -506,11 +647,10 @@ func (c *cmd) historyAll() error {
 		t := [][]string{}
 		for _, row := range rows {
 			t = append(t, []string{
-				row.ProfileName, row.ID, row.At.Local().Format("2006-01-02 15:04"),
-				row.Kind, fmt.Sprint(row.Count), row.Label,
+				row.ProfileName, row.At.Local().Format("2006-01-02 15:04"), historySummary(row.Kind, row.Count, row.Label),
 			})
 		}
-		c.table("PROFILE\tID\tTIME\tKIND\tCOUNT\tSUMMARY", t)
+		c.table("PROFILE\tTIME\tSUMMARY", t)
 	})
 }
 
@@ -826,9 +966,9 @@ func (c *cmd) profile() error {
 		return c.emit(rows, func() {
 			t := [][]string{}
 			for _, row := range rows {
-				t = append(t, []string{row.ID, row.At.Local().Format("2006-01-02 15:04"), row.Kind, fmt.Sprint(row.Count), row.Summary})
+				t = append(t, []string{row.At.Local().Format("2006-01-02 15:04"), historySummary(row.Kind, row.Count, row.Summary)})
 			}
-			c.table("ID\tTIME\tKIND\tCOUNT\tSUMMARY", t)
+			c.table("TIME\tSUMMARY", t)
 		})
 	case "revert":
 		a, err := c.need(2, "a game", "a profile", "an event id")
@@ -1053,7 +1193,9 @@ func (c *cmd) modsChange(sub string) error {
 		return c.emit(res, func() {
 			fmt.Fprintf(c.out, "%sd %s.\n", strings.ToUpper(sub[:1])+sub[1:], strings.Join(p.UniqueIDs, ", "))
 			if len(res.AlsoEnabled) > 0 {
-				fmt.Fprintf(c.out, "Also enabled, as required: %s.\n", strings.Join(res.AlsoEnabled, ", "))
+				var mods []control.ModRow
+				_ = c.ask("mods", control.Params{Game: p.Game, Profile: p.Profile}, &mods, readTimeout)
+				fmt.Fprintf(c.out, "Also enabled, as required: %s.\n", strings.Join(modNamesForIDs(res.AlsoEnabled, mods), ", "))
 			}
 		})
 	case "remove":
@@ -1181,21 +1323,15 @@ func (c *cmd) printProblemsText(r problems.Result) {
 			conflicts++
 		}
 	}
-	optional := 0
-	for _, x := range r.Missing {
-		if x.Optional {
-			optional++
-		}
-	}
-	harmless += optional
-	fmt.Fprintf(c.out, "missing: %d\n", len(r.Missing)-optional)
+	harmless += harmlessMissing(r)
+	fmt.Fprintf(c.out, "missing: %d\n", countedMissing(r))
 	fmt.Fprintf(c.out, "duplicates: %d\n", len(r.Duplicates))
 	fmt.Fprintf(c.out, "broken: %d\n", len(r.Broken))
 	fmt.Fprintf(c.out, "conflicts: %d\n", conflicts)
 	fmt.Fprintf(c.out, "settings: %d\n", len(r.Settings))
 	fmt.Fprintf(c.out, "last-run errors: %d\n", len(r.RunErrors))
 	fmt.Fprintf(c.out, "outside edits: %d\n", len(r.Drift))
-	fmt.Fprintf(c.out, "counted: %d\n", r.Count())
+	fmt.Fprintf(c.out, "counted: %d\n", problemsHumanCount(r))
 	fmt.Fprintf(c.out, "harmless: %d\n", harmless)
 }
 
@@ -1207,7 +1343,7 @@ func (c *cmd) printProblems(r problems.Result) {
 		}
 	}
 	fmt.Fprintf(c.out, "%d problems: %d missing, %d duplicates, %d broken, %d conflicts, %d settings, %d last-run errors, %d outside edits\n",
-		r.Count(), len(r.Missing), len(r.Duplicates), len(r.Broken), conflicts, len(r.Settings), len(r.RunErrors), len(r.Drift))
+		problemsHumanCount(r), countedMissing(r), len(r.Duplicates), len(r.Broken), conflicts, len(r.Settings), len(r.RunErrors), len(r.Drift))
 	fmt.Fprintf(c.out, "Dismissed (%d)\n", len(r.Dismissed))
 	n := 0
 	next := func() string {
@@ -1264,7 +1400,7 @@ func (c *cmd) problemsDismissed() error {
 	return c.emit(list, func() {
 		for i, d := range list {
 			kind, text := dismissedKindText(d)
-			fmt.Fprintf(c.out, "%d\t%s\t%s\t%s\n", i+1, kind, text, d.Token)
+			fmt.Fprintf(c.out, "%d\t%s\t%s\n", i+1, kind, text)
 		}
 	})
 }
@@ -1376,14 +1512,14 @@ func (c *cmd) runs(p control.Params) error {
 		t := [][]string{}
 		for _, r := range list {
 			t = append(t, []string{
-				r.ID, r.Started, (time.Duration(r.DurationMs) * time.Millisecond).Round(time.Second).String(),
-				string(r.Outcome), fmt.Sprint(r.Errors), fmt.Sprint(r.Warnings), r.SMAPIVersion, r.GameVersion,
+				runStartedLabel(r.Started), (time.Duration(r.DurationMs) * time.Millisecond).Round(time.Second).String(),
+				runOutcomeLabel(string(r.Outcome)), fmt.Sprint(r.Errors), fmt.Sprint(r.Warnings), r.SMAPIVersion, r.GameVersion,
 			})
 		}
-		c.table("ID\tSTARTED\tDURATION\tOUTCOME\tERRORS\tWARNINGS\tSMAPI\tGAME", t)
+		c.table("STARTED\tDURATION\tOUTCOME\tERRORS\tWARNINGS\tSMAPI\tGAME", t)
 		for _, r := range list {
-			if r.Cause != nil && r.Cause.ModName != "" {
-				fmt.Fprintf(c.out, "%s: Caused by %s — %s\n", r.ID, r.Cause.ModName, r.Cause.Detail)
+			if r.Cause != nil {
+				fmt.Fprintf(c.out, "%s\n", runCauseLine(r))
 			}
 		}
 	})
@@ -1456,6 +1592,15 @@ func (c *cmd) saves(p control.Params) error {
 		return err
 	}
 	seasons := []string{"Spring", "Summer", "Fall", "Winter"}
+	profileNames := map[string]string{}
+	var profiles []profile.Profile
+	if err := c.ask("profiles", control.Params{Game: p.Game}, &profiles, readTimeout); err == nil {
+		for _, pr := range profiles {
+			if pr.ID != "" && pr.Name != "" {
+				profileNames[pr.ID] = pr.Name
+			}
+		}
+	}
 	return c.emit(list, func() {
 		t := [][]string{}
 		for _, s := range list {
@@ -1467,9 +1612,9 @@ func (c *cmd) saves(p control.Params) error {
 			for _, m := range s.Missing {
 				missing = append(missing, m.Name)
 			}
-			t = append(t, []string{s.Folder, s.Farmer, s.Farm, fmt.Sprintf("%s %d, Year %d", season, s.Day, s.Year), strings.Join(missing, ", ")})
+			t = append(t, []string{s.Farm, s.Farmer, s.Folder, fmt.Sprintf("%s %d, Year %d", season, s.Day, s.Year), saveLastPlayed(s, profileNames), strings.Join(missing, ", ")})
 		}
-		c.table("FOLDER\tFARMER\tFARM\tDATE\tMISSING MODS", t)
+		c.table("FARM\tFARMER\tFOLDER\tDATE\tLAST PLAYED WITH\tMISSING MODS", t)
 	})
 }
 
