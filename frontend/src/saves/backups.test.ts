@@ -66,6 +66,6 @@ test('a slower first list does not overwrite a later load', async () => {
 })
 
 test('formatBytes uses KB past a kibibyte', () => {
-  expect(formatBytes(500)).toBe('500 byte')
+  expect(formatBytes(500)).toBe('500 bytes')
   expect(formatBytes(2048)).toBe('2 kB')
 })
