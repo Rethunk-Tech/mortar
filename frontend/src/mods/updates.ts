@@ -5,6 +5,7 @@ import { Updates } from '../../bindings/github.com/Rethunk-AI/mortar/internal/pr
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useSettings } from '../settings/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useBadges } from './badges.ts'
@@ -86,6 +87,16 @@ const useUpdates = create<{
         set({ updates, checkedAt: Date.now() })
       }
       syncBadge()
+      const count = updateCount(
+        updates,
+        useProfiles.getState().profiles.find((p) => p.id === openId),
+      )
+      if (count > 0 && useSettings.getState().notifyModUpdates) {
+        useToasts.getState().push({
+          kind: 'info',
+          title: i18n._(msg`${count} updates available`),
+        })
+      }
     } catch (e) {
       useToasts.getState().push({
         kind: 'error',
@@ -110,12 +121,17 @@ function syncHourlyRecheck() {
   if (!(game && openId)) {
     return
   }
-  hourlyTimer = setInterval(() => {
-    useUpdates.getState().load().catch(ignoreRecheckError)
-  }, MS_PER_HOUR)
+  const minutes = useSettings.getState().updateCheckIntervalMinutes || 60
+  hourlyTimer = setInterval(
+    () => {
+      useUpdates.getState().load().catch(ignoreRecheckError)
+    },
+    minutes * (MS_PER_HOUR / 60),
+  )
 }
 
 useProfiles.subscribe(syncHourlyRecheck)
+useSettings.subscribe(syncHourlyRecheck)
 useNexusDetails.subscribe(syncBadge)
 syncHourlyRecheck()
 

@@ -2,6 +2,7 @@ import { msg } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
 import { useConsole } from '../console/store.ts'
 import { i18n } from '../i18n/index.ts'
+import { useSettings } from '../settings/store.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useLaunch } from './store.ts'
 
@@ -24,5 +25,10 @@ export function initLaunch() {
       body: data.error ?? '',
     })
   })
-  Events.On('launch:crash', (event) => useLaunch.getState().setCrash(event.data))
+  Events.On('launch:crash', (event) => {
+    if (useSettings.getState().notifyRunCrashed === false) {
+      return
+    }
+    useLaunch.getState().setCrash(event.data)
+  })
 }

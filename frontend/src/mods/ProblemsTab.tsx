@@ -14,6 +14,7 @@ import { ChevronDown, ChevronRight, Copy, ShieldCheck, TriangleAlert } from 'luc
 import { useState } from 'react'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
+import { useSettings } from '../settings/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
@@ -246,6 +247,31 @@ function ProblemSection({
   )
 }
 
+function renderProblemSections(
+  sections: ReturnType<typeof problemSections>,
+  cosmeticConflicts: string,
+  sectionTitle: (id: ProblemSectionId) => string,
+  extras: (section: ReturnType<typeof problemSections>[number]) => {
+    action?: { label: string; onClick: () => void }
+  },
+) {
+  return sections.map((section) => {
+    if (section.id === 'cosmetic' && cosmeticConflicts === 'hidden') {
+      return null
+    }
+    const cosmeticOpen = cosmeticConflicts === 'expanded'
+    return (
+      <ProblemSection
+        key={section.id}
+        title={sectionTitle(section.id)}
+        rows={section.rows}
+        collapsible={(section.id === 'cosmetic' && !cosmeticOpen) || section.id === 'dismissed'}
+        {...extras(section)}
+      />
+    )
+  })
+}
+
 // ProblemActions sits in the profile's tab row while the Problems tab is open, like the Console's log actions.
 export function ProblemActions() {
   const { t } = useLingui()
@@ -307,6 +333,7 @@ export function ProblemsTab() {
   const removeMany = useMods((s) => s.removeMany)
   const dismissAsset = useMods((s) => s.dismissAsset)
   const [confirmCleanup, setConfirmCleanup] = useState(false)
+  const cosmeticConflicts = useSettings((s) => s.cosmeticConflicts)
 
   if (result === null) {
     return <LoadingRow>{t`Checking the mods for problems…`}</LoadingRow>
@@ -398,15 +425,7 @@ export function ProblemsTab() {
           {t`Every mod has what it needs and nothing clashes.`}
         </EmptyState>
       ) : null}
-      {sections.map((section) => (
-        <ProblemSection
-          key={section.id}
-          title={sectionTitle(section.id)}
-          rows={section.rows}
-          collapsible={section.id === 'cosmetic' || section.id === 'dismissed'}
-          {...sectionExtras(section)}
-        />
-      ))}
+      {renderProblemSections(sections, cosmeticConflicts, sectionTitle, sectionExtras)}
       {cleanup.length === 0 ? null : (
         <Box>
           <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>

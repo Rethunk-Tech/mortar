@@ -6,6 +6,7 @@ import type {
   SettingHint,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { useSettings } from '../settings/store.ts'
 import {
   dropMod,
   dropMods,
@@ -97,7 +98,18 @@ export const useMods = create<{
   setCategoryMany: (mods, category) => setCategoryMany(mods, category),
   setTagMany: (mods, tag, add) => setTagMany(mods, tag, add),
   setNoteTags: (mod, note, tags) => setEntryNoteTags(mod, note, tags),
-  askRemove: (mod) => set({ removing: removingOf(mod) }),
+  askRemove: (mod) => {
+    const list = removingOf(mod)
+    if (list.length === 0) {
+      set({ removing: [] })
+      return
+    }
+    if (useSettings.getState().confirmRemovals === false) {
+      dropMods(get, list).catch(() => undefined)
+      return
+    }
+    set({ removing: list })
+  },
   remove: (mod) => dropMod(get, mod),
   removeMany: (mods) => dropMods(get, mods),
   showFiles: (mod) => showModFiles(mod),

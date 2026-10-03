@@ -2,6 +2,7 @@ import { msg } from '@lingui/core/macro'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useSettings } from '../settings/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
@@ -11,10 +12,14 @@ const VIEW_KEY = 'mortar.modsView'
 
 export function storedView(): View {
   try {
-    return localStorage.getItem(VIEW_KEY) === 'list' ? 'list' : 'grid'
+    const stored = localStorage.getItem(VIEW_KEY)
+    if (stored === 'list' || stored === 'grid') {
+      return stored
+    }
   } catch {
-    return 'grid'
+    // Storage can be blocked.
   }
+  return useSettings.getState().defaultModsView === 'list' ? 'list' : 'grid'
 }
 
 export function setStoredView(set: (p: { view: View }) => void, view: View) {

@@ -47,6 +47,9 @@ export function App() {
           useNav.getState().openSetup()
           return
         }
+        if (settings.startScreen === 'gameselect') {
+          return
+        }
         const last = games.find((g) => g.id === settings.lastGame)
         if (last && isGameId(last.id) && last.available && !(await gameSetupNeeded(last))) {
           useNav.getState().openGame(last.id)

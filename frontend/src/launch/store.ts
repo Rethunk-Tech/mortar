@@ -30,6 +30,7 @@ import {
   rollbackAutoUpdate,
   updateBeforePlay,
 } from './autoUpdate.ts'
+import { applyOnPlayWindow } from './onPlay.ts'
 import { startVanillaGame } from './vanillaStart.ts'
 
 const RUN_POLL_ATTEMPTS = 20
@@ -305,6 +306,7 @@ function applyStatus(
   }) => void,
 ) {
   const previous = get().status
+  applyOnPlayWindow(status, previous)
   if (!polled || status.state !== State.Idle) {
     set({ starting: false, startingProfile: '' })
   }

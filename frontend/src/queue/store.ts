@@ -23,6 +23,7 @@ import { isLocked } from '../mods/locked.ts'
 import { useMods } from '../mods/store.ts'
 import { openSettings } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useSettings } from '../settings/store.ts'
 import { isTrackedImportBatch, observeImportState } from '../share/importCompletion.ts'
 import { follow } from '../shell/follow.ts'
 import { changeStillLatest, type HistoryActionState } from '../toasts/history.ts'
@@ -180,6 +181,9 @@ function installUndo(item: Item, entry: Entry | undefined) {
 }
 
 function pushDownloadFailures(failed: Item[]) {
+  if (useSettings.getState().notifyDownloadFailed === false) {
+    return
+  }
   const nexusFail = singleNexusFailure(failed)
   if (nexusFail) {
     const cause = failureToast(nexusFail)
@@ -229,6 +233,54 @@ function debounceProfileRefresh(games: string[]) {
   }, REFRESH_DEBOUNCE_MS)
 }
 
+function toastInstalls(shownDone: Item[], unblocked: string | undefined) {
+  if (useSettings.getState().notifyDownloadFinished === false) {
+    return
+  }
+  if (shownDone.length === 1) {
+    const [item] = shownDone
+    if (!item) {
+      return
+    }
+    const profile = useProfiles.getState().profiles.find((p) => p.id === item.profileId)
+    const entry = entryForItem(profile, item)
+    const extra = installUndo(item, entry)
+    const first = item.name
+    installToast = useToasts.getState().push({
+      kind: 'success',
+      title: i18n._(msg`${first} installed into ${profile?.name ?? 'profile'}`),
+      ...(unblocked ? { body: i18n._(msg`${unblocked} can load now.`) } : {}),
+      ...(extra
+        ? {
+            picture: extra.picture,
+            action: {
+              label: i18n._(msg`Undo`),
+              run: () => undoInstall(item, extra.entry),
+              profileId: extra.profileId,
+              live: () =>
+                changeStillLatest(
+                  useProfiles.getState().profiles.find((p) => p.id === extra.profileId),
+                  extra.entry.key,
+                  (extra.entry.mods ?? []).map((m) => m.uniqueId),
+                ),
+            },
+          }
+        : {}),
+    })
+    return
+  }
+  if (shownDone.length > 1) {
+    const title = i18n._(
+      msg`${plural(shownDone.length, { one: '# mod installed', other: '# mods installed' })}`,
+    )
+    if (installToast === undefined) {
+      installToast = useToasts.getState().push({ kind: 'success', title })
+    } else {
+      useToasts.getState().update(installToast, { title })
+    }
+  }
+}
+
 function announce(prev: Snapshot, next: Snapshot) {
   const before = new Map(prev.items.map((i) => [i.id, i.state]))
   const changed = (state: string) =>
@@ -260,45 +312,7 @@ function announce(prev: Snapshot, next: Snapshot) {
   }
   considerMissing(dependentIds)
   const unblocked = unblockedDependent(blocked, dependentIds)
-  if (shownDone.length === 1) {
-    const [item] = shownDone
-    if (item) {
-      const profile = useProfiles.getState().profiles.find((p) => p.id === item.profileId)
-      const entry = entryForItem(profile, item)
-      const extra = installUndo(item, entry)
-      const first = item.name
-      installToast = useToasts.getState().push({
-        kind: 'success',
-        title: i18n._(msg`${first} installed into ${profile?.name ?? 'profile'}`),
-        ...(unblocked ? { body: i18n._(msg`${unblocked} can load now.`) } : {}),
-        ...(extra
-          ? {
-              picture: extra.picture,
-              action: {
-                label: i18n._(msg`Undo`),
-                run: () => undoInstall(item, extra.entry),
-                profileId: extra.profileId,
-                live: () =>
-                  changeStillLatest(
-                    useProfiles.getState().profiles.find((p) => p.id === extra.profileId),
-                    extra.entry.key,
-                    (extra.entry.mods ?? []).map((m) => m.uniqueId),
-                  ),
-              },
-            }
-          : {}),
-      })
-    }
-  } else if (shownDone.length > 1) {
-    const title = i18n._(
-      msg`${plural(shownDone.length, { one: '# mod installed', other: '# mods installed' })}`,
-    )
-    if (installToast === undefined) {
-      installToast = useToasts.getState().push({ kind: 'success', title })
-    } else {
-      useToasts.getState().update(installToast, { title })
-    }
-  }
+  toastInstalls(shownDone, unblocked)
   if (shownWaiting.length > 0) {
     useToasts.getState().push({
       kind: 'info',

@@ -44,6 +44,7 @@ import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { useSettings } from '../store.ts'
 import { beginUsageLoad } from '../usageLoad.ts'
+import { DataPrefs } from './DataPrefs.tsx'
 
 const MIN_KEPT = 1
 const MAX_KEPT = 50
@@ -550,6 +551,7 @@ export function Data() {
       </Button>
       <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Save backups`}</Box>
       <BackupsKept />
+      <DataPrefs />
       <DataDialogs
         preview={preview}
         busy={busy}

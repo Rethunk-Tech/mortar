@@ -4,6 +4,7 @@ import {
   Updates,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { useSettings } from '../settings/store.ts'
 import { problemCount, updateCount } from './lookup.ts'
 
 interface Counts {
@@ -28,6 +29,9 @@ export const useBadges = create<{
       },
     })),
   loadAll: async (game, profiles, skip) => {
+    if (useSettings.getState().backgroundBadgeChecks === false) {
+      return
+    }
     // One profile at a time: a cold problem check of a large profile is seconds of CPU, and the open profile's
     // own check should not have to share it.
     for (const p of profiles.filter((q) => !q.hidden && q.id !== skip)) {

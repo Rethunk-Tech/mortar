@@ -145,6 +145,22 @@ The frontend moves on when one fails to load and shows a solid tone after the la
 - `smapiToastAt` (empty): RFC3339 time of the last SMAPI-update toast; a later toast is suppressed for 24 hours after it. Written only when the toast shows.
 - `tipsSeen` (empty): the empty-state tips dismissed, from `mods`, `saves`, `console` and `share`; an unknown id is refused on write and dropped on load, as are duplicates.
 - `overlayEnabled` (false), `overlayPort` (8123), `overlayToken` (empty): the Mortar SMAPI Bridge stream overlay. Port is 1024–65535; an out-of-range value is refused on write and becomes 8123 on load. The token is 32 random bytes as hex, created on first enable and on Regenerate. It is a secret: it is never logged, never exported, and stripped from diagnostics.
+- `onPlay` (`stay`): `stay`, `minimise`, or `hide` when a game launches; the window is restored when the game exits.
+- `backupBeforePlay` (`changed`): `changed` (mods or game version since last run), `always`, or `never`. `launchBackupsKept` (5) is how many launch save zips to keep (1–50).
+- `updateModsBeforePlayDefault` (false): `UpdateBeforePlay` on a newly created profile.
+- `runsKept` (20): stored SMAPI run logs per profile (1–100). `consoleLogCap` (20000): newest console lines in memory (1000–100000).
+- `parallelDownloads` (3): Premium/GitHub fetch pool (1–8). Free Nexus stays one at a time.
+- `updateCheckIntervalMinutes` (60): background mod-update interval (15–1440). `checkModUpdatesOnStart` still gates the startup check. `notifyModUpdates` (false): toast when a check finds updates.
+- `keepDownloadArchives` (false): keep the zip after install. `storeRetentionDays` (30): unused store items; 0 keeps them forever.
+- `nxmDefaultProfile` (empty): profile id for `nxm://` links; empty uses the last-opened profile.
+- `defaultModsView` (`grid`): `grid` or `list`.
+- `confirmRemovals` (true): ask before removing mods.
+- `cosmeticConflicts` (`collapsed`): `collapsed`, `expanded`, or `hidden` on Problems.
+- `backgroundBadgeChecks` (true): fill sidebar badges for other profiles.
+- `startScreen` (`last`): `last` opens the last profile; `gameselect` opens Game Select.
+- `dates` (`relative`): `relative` or `absolute`.
+- `trashRetentionDays` (30): days a deleted profile stays restorable (1–365). `historyEventsKept` (200): history events per profile (20–2000).
+- `notifyDownloadFinished` (true), `notifyDownloadFailed` (true), `notifyRunCrashed` (true): per-kind notices.
 - `shortcuts` (the Settings › Shortcuts table): action id to a chord (`Ctrl+K`, `Ctrl+Shift+F`, …). Missing ids take the defaults; an unknown id is refused on write and dropped on load; a chord used by two actions is refused on write.
 
 **Export and import:** Settings › Data writes `language`, `accent`, `background`, `lastGame`, `backupsKept`, the four `list*` fields, the mod-update toggles (`checkModUpdatesOnStart`, `tellWhenSmapiOut`, `includePrereleaseModVersions`, `checkOnlyEnabledMods`, `enableModsWhenInstalled`), `keepInTray`, `includeBetaReleases`, `tipsSeen`, `nexusPreferredDownloadServer` and `nxmRedirectOtherGames` as `{"version": 1, ...}` through the native save dialog. Import reads such a file, refuses any other version, ignores unknown fields, sanitises each present value as a load does, and applies it only after a preview of what would change. Account and machine fields (`nexusUserId`, `nexusName`, `nexusPremium`, `nexusSeenDownloadServers`, `gameFolders`, `gameStores`, `loaders`, `lastProfile`, `lastPlayed`, `backgroundImage`, `dismissed`, `nxmHandled`, `nxmPrevious`, `nxmPreviousName`, `nxmAsked`, `lanSharing`, `lanPort`, `lanAddresses`) and `overlayToken` (with overlay enabled/port) are never exported, and the keyring is never read.
@@ -166,7 +182,7 @@ The frontend moves on when one fails to load and shows a solid tone after the la
   - When the manifest sits at the archive's root, that folder is the entry's own `mods/<store key>/`, so the entry is found by its key with or without the dot. Programs can create leading-dot names on NTFS.
 - **Enable, disable and remove several at once:** one write to `profile.json` per action, under the same running-game lock.
 - **Duplicate:** copy the profile's `mods/` folder as it is, mod-written data included, under a new id, and record origin `copy` with `copyOf` the source profile's name.
-- **Delete:** move the profile folder to `trash/`, restorable for 30 days. **Delete permanently** (`Purge`) removes one trashed profile; **Empty trash** (`PurgeTrash` with the game id) removes every trashed profile for that game. Both refuse a symlink. Startup still deletes trash older than 30 days.
+- **Delete:** move the profile folder to `trash/`, restorable for `trashRetentionDays` (default 30). **Delete permanently** (`Purge`) removes one trashed profile; **Empty trash** (`PurgeTrash` with the game id) removes every trashed profile for that game. Both refuse a symlink. Startup still deletes trash older than that retention.
 - **Damaged:** `List` still returns a row `{id, error}` when `profile.json` cannot be read. Callers skip those rows; `ListDamaged` is what the Profiles page and `mortar profiles` use to show them. `StoreKeys` skips a damaged live profile so one corrupt file does not stop collection.
 - **Import from the game's Mods folder:** scan one level of `<game>/Mods` the way SMAPI and archive install do (a folder with `manifest.json`, or a folder of those folders).
   - SMAPI's bundled Console Commands and Save Backup and Mortar's bridge are left out of the preview and are not counted as skipped.

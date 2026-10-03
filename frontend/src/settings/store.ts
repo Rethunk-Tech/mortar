@@ -58,7 +58,7 @@ const defaults: Settings = {
   launchBackupsKept: 5,
   updateModsBeforePlayDefault: false,
   runsKept: 20,
-  consoleLogCap: 20000,
+  consoleLogCap: 20_000,
   parallelDownloads: 3,
   updateCheckIntervalMinutes: 60,
   notifyModUpdates: false,

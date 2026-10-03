@@ -11,6 +11,7 @@ export interface WhenOptions {
   locale?: string
   // The translated text for under a minute ago, which Intl words as "now".
   fewSeconds?: string
+  absolute?: boolean
 }
 
 // relativeWhen reads a moment as "3 minutes ago" or "yesterday" within the last week and as a date before that,
@@ -22,11 +23,18 @@ export function relativeWhen(
     now = Date.now(),
     locale = 'en',
     fewSeconds = 'a few seconds ago',
+    absolute = false,
   }: WhenOptions = {},
 ): string {
   const d = new Date(value)
   if (Number.isNaN(d.getTime()) || d.getUTCFullYear() < FIRST_YEAR) {
     return ''
+  }
+  if (absolute) {
+    return new Intl.DateTimeFormat(locale, {
+      dateStyle: 'medium',
+      ...(withTime ? { timeStyle: 'short' as const } : {}),
+    }).format(d)
   }
   const elapsed = now - d.getTime()
   if (elapsed < MINUTE) {

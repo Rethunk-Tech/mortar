@@ -39,6 +39,7 @@ import { NexusMeter } from '../NexusMeter.tsx'
 import { useNexus } from '../nexus.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
+import { NexusDownloadPrefs } from './NexusDownloadPrefs.tsx'
 import { useNxmHandler } from './nxmHandler.tsx'
 import { nxmOwnerName } from './nxmOwnerName.ts'
 
@@ -218,6 +219,7 @@ function NexusModsSignedIn({
             <Switch checked={nxm.handled} onChange={(_, on) => nxm.toggle(on)} />
           </Tooltip>
         </SettingRow>
+        <NexusDownloadPrefs />
       </SettingsSection>
       {nxm.handled && nxmPrevious ? (
         <FormControlLabel

@@ -16,6 +16,7 @@ import { errorText } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
+import { DisplayAndNotices, ModsPrefs, WindowLaunch } from './GeneralMore.tsx'
 
 const maxLanPort = 65_535
 const defaultLanPort = 8080
@@ -56,6 +57,7 @@ export function General() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <SettingsSection title={t`Window`}>
+        <WindowLaunch />
         <SettingRow
           label={t`Keep Mortar in the tray`}
           description={t`Closing the window hides Mortar instead of quitting.`}
@@ -150,6 +152,8 @@ export function General() {
           />
         </SettingRow>
       </SettingsSection>
+      <ModsPrefs />
+      <DisplayAndNotices />
     </Box>
   )
 }

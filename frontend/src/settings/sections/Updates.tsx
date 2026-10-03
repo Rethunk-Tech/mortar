@@ -8,10 +8,16 @@ import {
   SetCheckOnlyEnabledMods,
   SetIncludeBetaReleases,
   SetIncludePrereleaseModVersions,
+  SetNotifyModUpdates,
+  SetUpdateCheckIntervalMinutes,
+  SetUpdateModsBeforePlayDefault,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useNav } from '../../nav/store.ts'
 import { errorMessage, errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { PrefNumber, PrefSwitch } from '../PrefControls.tsx'
+import { persist } from '../persist.ts'
+import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useMortarUpdate } from '../updates.ts'
 import { lastOpenedGame } from './lastOpenedGame.ts'
@@ -185,6 +191,34 @@ export function Updates() {
         label={t`Include beta releases`}
       />
       <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Mods`}</Box>
+      <SettingsSection>
+        <SettingRow
+          label={t`Check interval`}
+          description={t`Minutes between background update checks`}
+        >
+          <PrefNumber
+            value={useSettings((s) => s.updateCheckIntervalMinutes) || 60}
+            min={15}
+            max={1440}
+            onCommit={(n) => SetUpdateCheckIntervalMinutes(n)}
+          />
+        </SettingRow>
+        <SettingRow label={t`Notify when updates are found`}>
+          <PrefSwitch
+            checked={Boolean(useSettings((s) => s.notifyModUpdates))}
+            onChange={(on) => persist(() => SetNotifyModUpdates(on), push, fail)}
+          />
+        </SettingRow>
+        <SettingRow
+          label={t`Update mods before Play on new profiles`}
+          description={t`Default for a profile you just created`}
+        >
+          <PrefSwitch
+            checked={useSettings((s) => s.updateModsBeforePlayDefault)}
+            onChange={(on) => persist(() => SetUpdateModsBeforePlayDefault(on), push, fail)}
+          />
+        </SettingRow>
+      </SettingsSection>
       <FormControlLabel
         sx={{ m: 0, alignItems: 'center' }}
         control={
