@@ -57,12 +57,22 @@ export function ShareShell({
           role="dialog"
           aria-label={t`Share ${info.name}`}
           sx={{
+            position: 'relative',
             display: 'grid',
             gridTemplateColumns: tab === 'link' ? 'minmax(0, 1fr) 340px' : 'minmax(0, 1fr)',
             height: '100%',
             minHeight: 0,
           }}
         >
+          <Tooltip title={t`Close`}>
+            <IconButton
+              aria-label={t`Close`}
+              onClick={close}
+              sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
+            >
+              <X size={18} />
+            </IconButton>
+          </Tooltip>
           <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
             <TipBanner tip="share">
               {t`A share link names this profile and the Nexus or GitHub files in it, not the archives.`}
@@ -85,17 +95,6 @@ export function ShareShell({
                 </Typography>
               </Box>
               {headerExtra}
-              {tab === 'file' ? (
-                <Tooltip title={t`Close`}>
-                  <IconButton
-                    aria-label={t`Close`}
-                    onClick={close}
-                    sx={{ alignSelf: 'flex-start' }}
-                  >
-                    <X size={18} />
-                  </IconButton>
-                </Tooltip>
-              ) : null}
             </Box>
             <Box sx={{ m: '18px 24px 0', display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <TabPills

@@ -3,17 +3,16 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
+  ButtonGroup,
   Divider,
-  IconButton,
   ListItemIcon,
   ListItemText,
   Menu,
   MenuItem,
-  Tooltip,
   Typography,
 } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
-import { Check, Copy, FileText, List, MessageSquare, Save, Type, X } from 'lucide-react'
+import { Check, ChevronDown, Copy, FileText, List, MessageSquare, Save, Type } from 'lucide-react'
 import { useState } from 'react'
 import type { Saved } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
 import { SaveFile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
@@ -82,7 +81,7 @@ function Meter({ info }: { info: ShownInfo }) {
   )
 }
 
-function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }) {
+function PagePreview({ info }: { info: ShownInfo }) {
   const { t } = useLingui()
   const art = useProfiles((s) => s.game?.artUrl)
   const gameName = useProfiles((s) => s.game?.name ?? '')
@@ -100,14 +99,9 @@ function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }
         borderLeft: '1px solid var(--mortar-hairline-muted)',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <Typography sx={{ ...heading, flex: 1 }}>{t`What they see`}</Typography>
-        <Tooltip title={t`Close`}>
-          <IconButton aria-label={t`Close`} onClick={onClose} sx={{ width: 40, height: 40 }}>
-            <X size={16} />
-          </IconButton>
-        </Tooltip>
-      </Box>
+      <Typography sx={{ ...heading, minHeight: 40, display: 'flex', alignItems: 'center' }}>
+        {t`What they see`}
+      </Typography>
       <Box
         sx={{
           display: 'flex',
@@ -302,40 +296,37 @@ function CopyModList() {
     { id: 'discord', label: t`Discord`, icon: MessageSquare },
   ]
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
-      {format === 'discord' && parts.length > 1 ? (
-        parts.map((part) => (
+    <>
+      <ButtonGroup variant="outlined" color="inherit" sx={{ mr: 5 }}>
+        {format === 'discord' && parts.length > 1 ? (
+          parts.map((part) => (
+            <Button
+              key={part.id}
+              startIcon={<Copy size={16} />}
+              onClick={() => copyText(part.text, t`Copied part ${part.n}`)}
+              sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
+            >
+              {t`Copy part ${part.n}`}
+            </Button>
+          ))
+        ) : (
           <Button
-            key={part.id}
-            variant="outlined"
-            color="inherit"
-            startIcon={<Copy size={16} />}
-            onClick={() => copyText(part.text, t`Copied part ${part.n}`)}
+            startIcon={<List size={16} />}
+            onClick={() => copyText(parts[0]?.text ?? '', t`Mod list copied`)}
             sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
           >
-            {t`Copy part ${part.n}`}
+            {t`Copy mod list`}
           </Button>
-        ))
-      ) : (
+        )}
         <Button
-          variant="outlined"
-          color="inherit"
-          startIcon={<List size={16} />}
-          onClick={() => copyText(parts[0]?.text ?? '', t`Mod list copied`)}
+          aria-label={t`Mod list format`}
+          endIcon={<ChevronDown size={14} />}
+          onClick={(e) => setAnchor(e.currentTarget)}
           sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
         >
-          {t`Copy mod list`}
+          {options.find((o) => o.id === format)?.label}
         </Button>
-      )}
-      <Button
-        variant="outlined"
-        color="inherit"
-        aria-label={t`Mod list format`}
-        onClick={(e) => setAnchor(e.currentTarget)}
-        sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
-      >
-        {options.find((o) => o.id === format)?.label}
-      </Button>
+      </ButtonGroup>
       <Menu
         open={Boolean(anchor)}
         anchorEl={anchor}
@@ -362,7 +353,7 @@ function CopyModList() {
           )
         })}
       </Menu>
-    </Box>
+    </>
   )
 }
 
@@ -466,7 +457,7 @@ export function ShareDialog() {
         setTab={setTab}
         info={info}
         headerExtra={<CopyModList />}
-        preview={tab === 'link' && info ? <PagePreview info={info} onClose={close} /> : null}
+        preview={tab === 'link' && info ? <PagePreview info={info} /> : null}
       >
         {tab === 'link' && info ? (
           <LinkTab

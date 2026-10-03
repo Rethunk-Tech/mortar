@@ -193,7 +193,7 @@ func (s *Service) find(game, id string) (profile.Profile, error) {
 func entryNames(e profile.Entry, withDisabled bool) []string {
 	var names []string
 	for _, m := range e.Mods {
-		if (withDisabled || !slices.Contains(e.Disabled, m.UniqueID)) && m.Name != "" {
+		if (withDisabled || !slices.Contains(e.Disabled, m.UniqueID)) && m.Name != "" && !slices.Contains(names, m.Name) {
 			names = append(names, m.Name)
 		}
 	}
@@ -285,7 +285,11 @@ func describe(p profile.Profile, include ...share.Include) (Info, error) {
 			g = &info.Groups[len(info.Groups)-1]
 			groups[e.Source.Kind] = g
 		}
-		g.Mods = append(g.Mods, entryNames(e, false)...)
+		for _, name := range entryNames(e, false) {
+			if !slices.Contains(g.Mods, name) {
+				g.Mods = append(g.Mods, name)
+			}
+		}
 	}
 	return info, nil
 }
