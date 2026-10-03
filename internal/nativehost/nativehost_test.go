@@ -88,6 +88,42 @@ func TestServeAnswersInstalledMods(t *testing.T) {
 	}
 }
 
+func TestActiveNexusConnectedOffWhenExtensionOff(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	dir, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = ln.Close() })
+	go func() {
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			_ = c.Close()
+		}
+	}()
+	addr, ok := ln.Addr().(*net.TCPAddr)
+	if !ok {
+		t.Fatalf("listen addr = %T", ln.Addr())
+	}
+	if err := os.WriteFile(filepath.Join(dir, "control.json"), []byte(`{"port":`+strconv.Itoa(addr.Port)+`}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"extensionConnection":"off","lastProfile":{"stardew":"aaaaaaaaaaaaaaaa"}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if activeNexusConnected("stardewvalley") {
+		t.Fatal("extension off should reply not-connected")
+	}
+}
+
 func TestServeReportsConnectedWhenProfileHasNoMods(t *testing.T) {
 	in := frame(t, request{Type: "installed", Game: "stardewvalley"})
 	var out bytes.Buffer
@@ -306,8 +342,11 @@ func TestNexusModProfilesReportsRequiredByPinAndSkip(t *testing.T) {
 	if !openProfile.Pinned || openProfile.SkipVersion != "3.0.0" || len(openProfile.SkipSources) != 1 || openProfile.SkipSources[0] != "github" {
 		t.Fatalf("pin/skip = %+v", openProfile)
 	}
-	if len(openProfile.RequiredBy) != 1 || openProfile.RequiredBy[0] != "Farm pack" {
+	if len(openProfile.RequiredBy) != 1 || openProfile.RequiredBy[0] != "Farm.Pack" {
 		t.Fatalf("requiredBy = %v", openProfile.RequiredBy)
+	}
+	if len(openProfile.RequiredByNames) != 1 || openProfile.RequiredByNames[0] != "Farm pack" {
+		t.Fatalf("requiredByNames = %v", openProfile.RequiredByNames)
 	}
 }
 

@@ -71,6 +71,7 @@ type modInProfile struct {
 	FileID          int      `json:"fileId,omitempty"`
 	UpdateAvailable bool     `json:"updateAvailable,omitempty"`
 	RequiredBy      []string `json:"requiredBy,omitempty"`
+	RequiredByNames []string `json:"requiredByNames,omitempty"`
 	Pinned          bool     `json:"pinned,omitempty"`
 	SkipVersion     string   `json:"skipVersion,omitempty"`
 	SkipSources     []string `json:"skipSources,omitempty"`
@@ -116,16 +117,21 @@ func requiresID(m diskMod, target string) bool {
 	return false
 }
 
-func requiredByNames(entries []diskEntry, targets []string) []string {
-	var names []string
+type requiredByRef struct {
+	id   string
+	name string
+}
+
+func requiredByMods(entries []diskEntry, targets []string) ([]string, []string) {
 	seen := map[string]bool{}
-	offOf := func(ids []string) map[string]bool {
+	offOf := func(disabled []string) map[string]bool {
 		m := map[string]bool{}
-		for _, id := range ids {
+		for _, id := range disabled {
 			m[foldID(id)] = true
 		}
 		return m
 	}
+	var refs []requiredByRef
 	for _, e := range entries {
 		off := offOf(e.Disabled)
 		for _, m := range e.Mods {
@@ -143,14 +149,22 @@ func requiredByNames(entries []diskEntry, targets []string) []string {
 					if name == "" {
 						name = m.UniqueID
 					}
-					names = append(names, name)
+					refs = append(refs, requiredByRef{id: m.UniqueID, name: name})
 					break
 				}
 			}
 		}
 	}
-	slices.Sort(names)
-	return names
+	slices.SortFunc(refs, func(a, b requiredByRef) int {
+		return strings.Compare(strings.ToLower(a.name), strings.ToLower(b.name))
+	})
+	ids := make([]string, len(refs))
+	names := make([]string, len(refs))
+	for i, ref := range refs {
+		ids[i] = ref.id
+		names[i] = ref.name
+	}
+	return ids, names
 }
 
 // Serve answers messages from r until it closes, handing each message's link to open.
@@ -368,7 +382,11 @@ func activeNexusConnected(domain string) bool {
 	if err != nil {
 		return false
 	}
-	profileID := store.Get().LastProfile[info.ID]
+	cur := store.Get()
+	if conn, err := cur.Lookup("extensionConnection"); err == nil && conn == settings.ExtensionOff {
+		return false
+	}
+	profileID := cur.LastProfile[info.ID]
 	return profileID != "" && filepath.Base(profileID) == profileID
 }
 
@@ -452,7 +470,7 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 			found.Pinned = pinned
 			found.SkipVersion = skipVersion
 			found.SkipSources = skipSources
-			found.RequiredBy = requiredByNames(profile.Entries, targets)
+			found.RequiredBy, found.RequiredByNames = requiredByMods(profile.Entries, targets)
 			openProfile = found
 		} else {
 			others = append(others, found)
