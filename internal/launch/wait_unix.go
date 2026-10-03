@@ -16,8 +16,7 @@ func WaitError(err error) Exit {
 	if err == nil {
 		return Exit{Code: 0}
 	}
-	var ee *exec.ExitError
-	if errors.As(err, &ee) {
+	if ee, ok := errors.AsType[*exec.ExitError](err); ok {
 		x := Exit{Code: ee.ExitCode()}
 		if ws, ok := ee.Sys().(syscall.WaitStatus); ok && ws.Signaled() {
 			x.Signal = unixSignalName(ws.Signal())

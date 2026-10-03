@@ -14,8 +14,7 @@ func WaitError(err error) Exit {
 	if err == nil {
 		return Exit{Code: 0}
 	}
-	var ee *exec.ExitError
-	if errors.As(err, &ee) {
+	if ee, ok := errors.AsType[*exec.ExitError](err); ok {
 		return Exit{Code: ee.ExitCode()}
 	}
 	return Exit{Code: 1}
