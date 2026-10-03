@@ -1,4 +1,3 @@
-import { i18n } from '@lingui/core'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -23,15 +22,15 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { CompareTable, ReportSelect } from './PerformanceComparison.tsx'
 import type { PanelBusy, SortColumn, SortDirection } from './usePerformancePanel.ts'
 
-function numberLabel(value: number) {
-  return value.toFixed(2)
+function formatTiming(value: number, locale: string) {
+  return value.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-function callsLabel(value: number) {
+function callsLabel(value: number, locale: string) {
   if (value === 0) {
     return '—'
   }
-  return Number.isInteger(value) ? value.toLocaleString(i18n.locale) : value.toFixed(2)
+  return Number.isInteger(value) ? value.toLocaleString(locale) : formatTiming(value, locale)
 }
 
 interface HeaderProps {
@@ -81,7 +80,7 @@ export function ReportTable({
   sort: { column: SortColumn; direction: SortDirection }
   onSort: (column: SortColumn) => void
 }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const headers: { column: SortColumn; label: string }[] = [
     { column: 'name', label: t`Mod or event` },
     { column: 'averageMs', label: t`Average ms` },
@@ -139,9 +138,9 @@ export function ReportTable({
               <TableCell sx={{ maxWidth: 320, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {row.name}
               </TableCell>
-              <TableCell align="right">{numberLabel(row.averageMs)}</TableCell>
-              <TableCell align="right">{numberLabel(row.peakMs)}</TableCell>
-              <TableCell align="right">{callsLabel(row.calls)}</TableCell>
+              <TableCell align="right">{formatTiming(row.averageMs, i18n.locale)}</TableCell>
+              <TableCell align="right">{formatTiming(row.peakMs, i18n.locale)}</TableCell>
+              <TableCell align="right">{callsLabel(row.calls, i18n.locale)}</TableCell>
             </TableRow>
           ))}
         </TableBody>
