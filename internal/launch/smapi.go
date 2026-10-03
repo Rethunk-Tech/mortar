@@ -48,6 +48,22 @@ var suppressed = []string{
 	"Galaxy SignInSteam failed with an exception:",
 }
 
+var loadedSaveRe = regexp.MustCompile(`(?i)(?:Context:\s*)?loaded save '([^']+)'`)
+
+// LoadedSave returns the save folder SMAPI loaded, from the last matching SMAPI line in log.
+func LoadedSave(log string) (string, bool) {
+	folder := ""
+	for _, e := range ParseLog(log) {
+		if e.Mod != "SMAPI" {
+			continue
+		}
+		if m := loadedSaveRe.FindStringSubmatch(e.Message); m != nil {
+			folder = m[1]
+		}
+	}
+	return folder, folder != ""
+}
+
 // ModsPath returns the mods folder SMAPI's log says it loaded, as SMAPI wrote it, and false when the log does not
 // say. SMAPI writes the home folder as ~ (`PathUtilities.AnonymizePathForDisplay`).
 func ModsPath(log string) (string, bool) {

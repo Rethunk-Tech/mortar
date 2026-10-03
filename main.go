@@ -273,6 +273,7 @@ func run() error {
 		return err
 	}
 	savesSvc.Launches = launches
+	launches.OnSavePlayed = savesSvc.NotePlayed
 
 	nexusClient := nexus.New(version)
 	nexusSvc := nexussvc.NewService(store, nexusClient, modMeta)

@@ -289,6 +289,9 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		return
 	}
 	text := s.runText(g, profileID, modsDir)
+	if folder, ok := launch.LoadedSave(text); ok && s.OnSavePlayed != nil {
+		s.OnSavePlayed(g.ID(), profileID, folder)
+	}
 	stats := launch.Summarize(text)
 	text = launch.CapLog(text, launch.MaxLogBytes)
 	ended := time.Now()

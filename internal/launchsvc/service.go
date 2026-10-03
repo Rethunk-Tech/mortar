@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -133,6 +134,8 @@ type Service struct {
 	Unlocked func()
 	// NotifyRunEnd sends a desktop notification when a Mortar-started run ends; main sets this from the tray wiring.
 	NotifyRunEnd func(RunEndNotice)
+	// OnSavePlayed is called with the save folder SMAPI loaded when a run is recorded.
+	OnSavePlayed func(gameID, profileID, saveFolder string)
 	quit         <-chan struct{}
 }
 

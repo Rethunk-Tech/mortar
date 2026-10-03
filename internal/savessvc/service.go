@@ -54,6 +54,8 @@ type Fit struct {
 	MillisecondsPlayed int64  `json:"millisecondsPlayed"`
 	Money              int    `json:"money"`
 	Missing            []Lack `json:"missing"`
+	LastProfileID      string `json:"lastProfileId"`
+	LastProfileAt      int64  `json:"lastProfileAt"`
 }
 
 // Service exposes the save scan to the frontend.
@@ -65,6 +67,7 @@ type Service struct {
 	scanner  *saves.Scanner
 	// Launches, when set, refuses restore while the game is launching or running.
 	Launches *launchsvc.Service
+	last     *Store
 	busy     func() bool
 }
 
@@ -83,7 +86,7 @@ func NewService(home string, profiles *profile.Store, store *settings.Store, cli
 		return nil, err
 	}
 	scanner := &saves.Scanner{Dir: savesDir, CacheDir: filepath.Join(base, "cache")}
-	return &Service{home: home, profiles: profiles, settings: store, meta: client, scanner: scanner}, nil
+	return &Service{home: home, profiles: profiles, settings: store, meta: client, scanner: scanner, last: NewStore(base)}, nil
 }
 
 // Saves scans the game's saves and compares each with the profile. Wails runs it off the UI thread; a first scan
@@ -131,8 +134,29 @@ func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, err
 				fits[i].Missing[j].Name, fits[i].Missing[j].Where = d.name, d.where
 			}
 		}
+		s.attachLast(game, &fits[i])
 	}
 	return fits, nil
+}
+
+func (s *Service) attachLast(game string, fit *Fit) {
+	if s.last == nil || fit.Folder == "" {
+		return
+	}
+	rec, ok, err := s.last.Get(game, fit.Folder)
+	if err != nil || !ok {
+		return
+	}
+	fit.LastProfileID = rec.ProfileID
+	fit.LastProfileAt = rec.At.UnixMilli()
+}
+
+// NotePlayed records that profileID just ran saveFolder. launchsvc calls this when a run's log names the save.
+func (s *Service) NotePlayed(gameID, profileID, saveFolder string) {
+	if s.last == nil {
+		return
+	}
+	_ = s.last.Record(gameID, saveFolder, profileID, time.Now())
 }
 
 func fitFor(in saves.Info, have map[string]bool, dismissed []string) (Fit, bool) {
@@ -216,6 +240,7 @@ func (s *Service) LastSaveGap(ctx context.Context, game, profileID string) (fit 
 		return Fit{}, false, nil
 	}
 	fit, ok = fitFor(info, have, s.settings.Get().Dismissed[info.Folder])
+	s.attachLast(game, &fit)
 	return fit, ok, nil
 }
 

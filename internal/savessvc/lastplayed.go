@@ -1,0 +1,110 @@
+package savessvc
+
+import (
+	"encoding/json"
+	"errors"
+	"maps"
+	"os"
+	"path/filepath"
+	"sync"
+	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/datadir"
+)
+
+// LastPlayed maps a save folder name to the profile it was last launched with.
+type LastPlayed struct {
+	ProfileID string    `json:"profileId"`
+	At        time.Time `json:"at"`
+}
+
+type lastPlayedFile struct {
+	Saves map[string]LastPlayed `json:"saves"`
+}
+
+// Store holds per-game last-played associations.
+type Store struct {
+	mu   sync.Mutex
+	root string
+}
+
+// NewStore writes last-played records under root/<gameID>/last-played.json.
+func NewStore(root string) *Store {
+	return &Store{root: root}
+}
+
+func (s *Store) path(gameID string) string {
+	return filepath.Join(s.root, gameID, "last-played.json")
+}
+
+// Get returns the last-played record for a save, or ok=false if none.
+func (s *Store) Get(gameID, saveFolder string) (LastPlayed, bool, error) {
+	all, err := s.load(gameID)
+	if err != nil {
+		return LastPlayed{}, false, err
+	}
+	rec, ok := all.Saves[saveFolder]
+	return rec, ok, nil
+}
+
+// All returns every last-played record for a game.
+func (s *Store) All(gameID string) (map[string]LastPlayed, error) {
+	all, err := s.load(gameID)
+	if err != nil {
+		return nil, err
+	}
+	out := maps.Clone(all.Saves)
+	if out == nil {
+		out = map[string]LastPlayed{}
+	}
+	return out, nil
+}
+
+// Record stores that saveFolder was last played with profileID at at.
+func (s *Store) Record(gameID, saveFolder, profileID string, at time.Time) error {
+	if gameID == "" || saveFolder == "" || profileID == "" {
+		return errors.New("game, save, and profile are required")
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	all, err := s.loadUnlocked(gameID)
+	if err != nil {
+		return err
+	}
+	if all.Saves == nil {
+		all.Saves = map[string]LastPlayed{}
+	}
+	all.Saves[saveFolder] = LastPlayed{ProfileID: profileID, At: at.UTC()}
+	return s.writeUnlocked(gameID, all)
+}
+
+func (s *Store) load(gameID string) (lastPlayedFile, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.loadUnlocked(gameID)
+}
+
+func (s *Store) loadUnlocked(gameID string) (lastPlayedFile, error) {
+	data, err := os.ReadFile(s.path(gameID))
+	if errors.Is(err, os.ErrNotExist) {
+		return lastPlayedFile{Saves: map[string]LastPlayed{}}, nil
+	}
+	if err != nil {
+		return lastPlayedFile{}, err
+	}
+	var parsed lastPlayedFile
+	if err := json.Unmarshal(data, &parsed); err != nil {
+		return lastPlayedFile{}, err
+	}
+	if parsed.Saves == nil {
+		parsed.Saves = map[string]LastPlayed{}
+	}
+	return parsed, nil
+}
+
+func (s *Store) writeUnlocked(gameID string, all lastPlayedFile) error {
+	if err := os.MkdirAll(filepath.Dir(s.path(gameID)), 0o700); err != nil {
+		return err
+	}
+	return datadir.WriteJSON(s.path(gameID), all)
+}
