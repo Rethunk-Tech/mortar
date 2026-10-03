@@ -5,7 +5,13 @@ import { type ReactNode, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { When } from '../i18n/When.tsx'
 import { useBadges } from '../mods/badges.ts'
+import { problemsOf, updateCount } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
+import { useNexusDetails } from '../mods/nexusDetails.ts'
+import { driftRows, isInfoRow } from '../mods/problemGroups.ts'
+import { useMods } from '../mods/store.ts'
+import { useUpdates } from '../mods/updates.ts'
+import { useLoadProblemsOnFocus } from '../mods/useLoadProblemsOnFocus.ts'
 import { unlinkCollection } from '../profiles/collectionUnlink.ts'
 import { userModCount } from '../profiles/count.ts'
 import { ProfileMark } from '../profiles/ProfileMark.tsx'
@@ -54,11 +60,14 @@ function Card({
   value,
   onClick,
   ariaLabel,
+  tone,
 }: {
   label: string
   value: ReactNode
   onClick?: () => void
   ariaLabel?: string
+  // A coloured edge for a card that asks for attention.
+  tone?: 'warning' | 'primary' | undefined
 }) {
   return (
     <Box
@@ -78,6 +87,7 @@ function Card({
         py: 1,
         bgcolor: CARD_BG,
         borderRadius: CARD_RADIUS,
+        boxShadow: (theme) => (tone ? `inset 0 0 0 1px ${theme.palette[tone].main}` : 'none'),
       }}
     >
       <Typography sx={{ fontSize: LABEL_FONT_PX, color: 'text.secondary', whiteSpace: 'nowrap' }}>
@@ -214,6 +224,43 @@ function HeroName({ profile, meta, game }: { profile: Profile; meta: string[]; g
   )
 }
 
+// Problems and updates live in the header so the Mods tab keeps its rows for the list.
+function AttentionCards() {
+  const { t } = useLingui()
+  const setTab = useTab((s) => s.setTab)
+  const result = useMods((s) => s.problems)
+  const updates = useUpdates((s) => s.updates)
+  const setReviewing = useUpdates((s) => s.setReviewing)
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  useLoadProblemsOnFocus()
+  const problems = [...problemsOf(result), ...driftRows(result)]
+  const real = problems.some((p) => !isInfoRow(p))
+  const updateN = updateCount(updates, profile, useNexusDetails.getState().byId)
+  return (
+    <>
+      {result === null ? <Card label={t`Problems`} value={t`Checking…`} /> : null}
+      {result !== null && problems.length > 0 ? (
+        <Card
+          label={t`Problems`}
+          value={String(problems.length)}
+          tone={real ? 'warning' : undefined}
+          ariaLabel={t`Open problems (${problems.length})`}
+          onClick={() => setTab('problems')}
+        />
+      ) : null}
+      {updateN > 0 ? (
+        <Card
+          label={t`Updates`}
+          value={String(updateN)}
+          tone="primary"
+          ariaLabel={t`Review ${updateN} updates`}
+          onClick={() => setReviewing(true)}
+        />
+      ) : null}
+    </>
+  )
+}
+
 const HERO_FADE = 'linear-gradient(to bottom, #000 80%, transparent 100%)'
 
 export function Hero({ profile, game }: { profile: Profile; game: string }) {
@@ -292,6 +339,7 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
       >
         <HeroName profile={profile} meta={meta} game={game} />
         <Box sx={{ display: 'flex', gap: 1, [compact]: { display: 'none' } }}>
+          <AttentionCards />
           <Card label={t`Mods`} value={String(mods)} />
           <Card
             label={t`Saves`}

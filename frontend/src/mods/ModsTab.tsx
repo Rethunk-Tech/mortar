@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Skeleton, Typography } from '@mui/material'
+import { Box, Button, Skeleton, Typography, useMediaQuery } from '@mui/material'
 import { SearchX } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
@@ -7,10 +7,12 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { compactQuery } from '../game/compact.ts'
 import { useLaunch } from '../launch/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { dialogOpen } from '../settings/shortcuts.ts'
+import { useSettings } from '../settings/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -144,6 +146,21 @@ const LOADING_ROW_COUNT = 8
 const LOADING_ROWS = Array.from({ length: LOADING_ROW_COUNT }, (_, i) => i)
 const ROW_HEIGHT = 44
 
+// The header carries Problems and Updates; these bars stand in when the header is compact or hidden.
+function AttentionBars() {
+  const heroMode = useSettings((st) => st.profileHero) || 'full'
+  const narrow = useMediaQuery(compactQuery)
+  if (heroMode === 'full' && !narrow) {
+    return null
+  }
+  return (
+    <>
+      <ProblemBar />
+      <UpdateBar />
+    </>
+  )
+}
+
 export function ModsTab({ profile }: { profile: Profile }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
@@ -253,8 +270,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
       <TipBanner tip="mods">
         {t`Drop archives anywhere on the window, or Browse Nexus to find mods.`}
       </TipBanner>
-      <ProblemBar />
-      <UpdateBar />
+      <AttentionBars />
       <Toolbar
         query={query}
         onQuery={(value) => setQuery(profile.id, value)}
