@@ -127,6 +127,14 @@ func (s *Service) SetUpdateBeforePlay(game, id string, on bool) (Profile, error)
 }
 
 // SetSkipPlayCheck records whether the pre-Play problems dialog is skipped for this profile.
+func (s *Service) SetOverride(game, id, key, value string) (Profile, error) {
+	return s.store.SetOverride(game, id, key, value)
+}
+
+func (s *Service) SetOverrides(game, id string, overrides map[string]string) (Profile, error) {
+	return s.store.SetOverrides(game, id, overrides)
+}
+
 func (s *Service) SetSkipPlayCheck(game, id string, on bool) (Profile, error) {
 	return s.store.SetSkipPlayCheck(game, id, on)
 }

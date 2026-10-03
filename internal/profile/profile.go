@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -165,6 +166,8 @@ type Profile struct {
 	UpdateBeforePlay bool `json:"updateBeforePlay,omitempty"`
 	// SkipPlayCheck skips the pre-Play problems dialog for this profile.
 	SkipPlayCheck bool `json:"skipPlayCheck,omitempty"`
+	// Overrides are profile values for settings.ProfileOverridable keys.
+	Overrides map[string]string `json:"overrides,omitempty"`
 	// Error is set on a list item whose profile.json could not be read.
 	Error string `json:"error,omitempty"`
 	// RepairError is why Repair is unavailable on a damaged list item.
@@ -538,18 +541,12 @@ func (s *Store) SetNotes(game, id, notes string) (Profile, error) {
 
 // SetUpdateBeforePlay records whether available mod updates run before Play.
 func (s *Store) SetUpdateBeforePlay(game, id string, on bool) (Profile, error) {
-	return s.update(game, id, func(p *Profile, _ string) error {
-		p.UpdateBeforePlay = on
-		return nil
-	})
+	return s.SetOverride(game, id, "updateModsBeforePlayDefault", strconv.FormatBool(on))
 }
 
 // SetSkipPlayCheck records whether the pre-Play problems dialog is skipped for this profile.
 func (s *Store) SetSkipPlayCheck(game, id string, on bool) (Profile, error) {
-	return s.update(game, id, func(p *Profile, _ string) error {
-		p.SkipPlayCheck = on
-		return nil
-	})
+	return s.SetOverride(game, id, "skipPlayCheck", strconv.FormatBool(on))
 }
 
 // update reads the profile under the lock, applies fn (given the profile folder), then writes it with a new updated time.
