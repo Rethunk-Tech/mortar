@@ -1,5 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from '@mui/material'
 import type { Preview } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
 import type { ImportPreview } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
 import { paper } from '../../mods/paper.ts'
@@ -9,8 +17,38 @@ import type { MoveState } from './DataMoveRun.ts'
 import { Row } from './DataUi.tsx'
 import { nowrap } from './dataStyles.ts'
 
+function PreviewBody({
+  preview,
+  previewLoading,
+}: {
+  preview: Preview | null
+  previewLoading: boolean
+}) {
+  const { t } = useLingui()
+  if (previewLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+        <CircularProgress size={24} />
+      </Box>
+    )
+  }
+  if ((preview?.items ?? []).length === 0) {
+    return <Box sx={{ fontSize: 13 }}>{t`Nothing to remove.`}</Box>
+  }
+  return (
+    <>
+      {(preview?.items ?? []).map((it) => (
+        <Row key={it.rel} label={it.label} size={it.size} />
+      ))}
+      <Row label={t`Total`} size={preview?.total ?? 0} />
+    </>
+  )
+}
+
 export function DataDialogs({
   preview,
+  previewOpen,
+  previewLoading,
   busy,
   onClosePreview,
   onCleanup,
@@ -24,6 +62,8 @@ export function DataDialogs({
   onMove,
 }: {
   preview: Preview | null
+  previewOpen: boolean
+  previewLoading: boolean
   busy: boolean
   onClosePreview: () => void
   onCleanup: () => void
@@ -40,21 +80,14 @@ export function DataDialogs({
   return (
     <>
       <Dialog
-        open={preview !== null}
+        open={previewOpen}
         onClose={onClosePreview}
         transitionDuration={0}
         slotProps={{ paper }}
       >
         <DialogTitle>{t`Clean up unused`}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 360 }}>
-          {(preview?.items ?? []).length === 0 ? (
-            <Box sx={{ fontSize: 13 }}>{t`Nothing to remove.`}</Box>
-          ) : (
-            (preview?.items ?? []).map((it) => <Row key={it.rel} label={it.label} size={it.size} />)
-          )}
-          {(preview?.items ?? []).length > 0 ? (
-            <Row label={t`Total`} size={preview?.total ?? 0} />
-          ) : null}
+          <PreviewBody preview={preview} previewLoading={previewLoading} />
         </DialogContent>
         <DialogActions>
           <Button onClick={onClosePreview} sx={nowrap}>
@@ -62,7 +95,7 @@ export function DataDialogs({
           </Button>
           <Button
             onClick={onCleanup}
-            disabled={busy || (preview?.items ?? []).length === 0}
+            disabled={busy || previewLoading || (preview?.items ?? []).length === 0}
             sx={nowrap}
           >
             {t`Clean up`}

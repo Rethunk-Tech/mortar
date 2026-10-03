@@ -54,17 +54,19 @@ function StoreLabel({ store }: { store: string }) {
 function ResetInstallDialog({
   open,
   folder,
+  busy,
   onClose,
   onConfirm,
 }: {
   open: boolean
   folder: string
+  busy: boolean
   onClose: () => void
   onConfirm: () => void
 }) {
   const { t } = useLingui()
   return (
-    <Dialog open={open} onClose={onClose} transitionDuration={0}>
+    <Dialog open={open} onClose={busy ? undefined : onClose} transitionDuration={0}>
       <DialogTitle>{t`Reset game install?`}</DialogTitle>
       <DialogContent>
         <DialogContentText>
@@ -72,8 +74,10 @@ function ResetInstallDialog({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>{t`Cancel`}</Button>
-        <Button color="error" variant="contained" onClick={onConfirm}>
+        <Button onClick={onClose} disabled={busy}>
+          {t`Cancel`}
+        </Button>
+        <Button color="error" variant="contained" onClick={onConfirm} disabled={busy}>
           {t`Delete and restore`}
         </Button>
       </DialogActions>
@@ -108,6 +112,50 @@ async function offerLaunchOptionRemoval(
   }
 }
 
+function ExtraInstalls({
+  installs,
+  store,
+  override,
+  onPick,
+}: {
+  installs: FoundInstall[]
+  store: string
+  override: string
+  onPick: (store: string) => void
+}) {
+  if (installs.length <= 1) {
+    return null
+  }
+  return (
+    <RadioGroup value={override ? '' : store} onChange={(e) => onPick(e.target.value)}>
+      {installs.map((item) => (
+        <FormControlLabel
+          key={`${item.store}:${item.dir}`}
+          value={item.store}
+          control={<Radio size="small" />}
+          label={
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <StoreLabel store={item.store} />
+              <Box
+                sx={{
+                  fontSize: 12,
+                  color: 'rgba(225,225,230,0.95)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+                title={item.dir}
+              >
+                {item.dir}
+              </Box>
+            </Box>
+          }
+        />
+      ))}
+    </RadioGroup>
+  )
+}
+
 function GameFolder({
   folder,
   versionNote,
@@ -125,6 +173,7 @@ function GameFolder({
   const override = useSettings((s) => s.gameFolders?.[GAME] ?? '')
   const [error, setError] = useState('')
   const [resetting, setResetting] = useState(false)
+  const [restoreBusy, setRestoreBusy] = useState(false)
   const change = (run: Promise<void>) => {
     setError('')
     run
@@ -142,33 +191,18 @@ function GameFolder({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
       <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Game folder`}</Box>
-      {installs.length > 1 ? (
-        <RadioGroup
-          value={override ? '' : store}
-          onChange={(e) =>
-            change(SetGameFolder(GAME, '').then(() => SetGameStore(GAME, e.target.value)))
-          }
-        >
-          {installs.map((item) => (
-            <FormControlLabel
-              key={`${item.store}:${item.dir}`}
-              value={item.store}
-              control={<Radio size="small" />}
-              label={
-                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                  <StoreLabel store={item.store} />
-                  <Box sx={{ fontSize: 12, color: 'rgba(225,225,230,0.95)' }}>{item.dir}</Box>
-                </Box>
-              }
-            />
-          ))}
-        </RadioGroup>
-      ) : null}
+      <ExtraInstalls
+        installs={installs}
+        store={store}
+        override={override}
+        onPick={(next) => change(SetGameFolder(GAME, '').then(() => SetGameStore(GAME, next)))}
+      />
       <Box sx={{ display: 'flex', gap: 1 }}>
         <Box
           role="textbox"
           aria-readonly={true}
           aria-label={t`Game folder`}
+          title={folder || undefined}
           sx={{
             flexGrow: 1,
             minWidth: 0,
@@ -218,10 +252,15 @@ function GameFolder({
       <ResetInstallDialog
         open={resetting}
         folder={folder}
-        onClose={() => setResetting(false)}
+        busy={restoreBusy}
+        onClose={() => {
+          if (!restoreBusy) {
+            setResetting(false)
+          }
+        }}
         onConfirm={async () => {
-          setResetting(false)
           setError('')
+          setRestoreBusy(true)
           try {
             await ResetInstall(GAME)
             if (System.IsWindows()) {
@@ -242,8 +281,11 @@ function GameFolder({
               })
             }
             onRefresh()
+            setResetting(false)
           } catch (e: unknown) {
             setError(errorText(e) ?? t`That folder cannot be used`)
+          } finally {
+            setRestoreBusy(false)
           }
         }}
       />

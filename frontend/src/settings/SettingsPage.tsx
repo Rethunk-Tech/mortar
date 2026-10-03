@@ -1,8 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Typography } from '@mui/material'
-import { ArrowLeft } from 'lucide-react'
-import { type ReactNode, useEffect } from 'react'
+import { Box, TextField, Typography } from '@mui/material'
+import { type ReactNode, useEffect, useState } from 'react'
 import { type SettingsSection, useNav } from '../nav/store.ts'
+import { SettingsNav } from './SettingsNav.tsx'
+import { SettingsSearchProvider } from './SettingsSearch.tsx'
 import { About } from './sections/About.tsx'
 import { Appearance } from './sections/Appearance.tsx'
 import { Data } from './sections/Data.tsx'
@@ -13,21 +14,24 @@ import { Shortcuts } from './sections/Shortcuts.tsx'
 import { Updates } from './sections/Updates.tsx'
 import { shouldLeavePageOnEscape } from './shouldLeavePageOnEscape.ts'
 
-const ACTIVE_WEIGHT = 600
-
 export function SettingsPage({ section }: { section: SettingsSection }) {
   const { t } = useLingui()
   const closeSettings = useNav((s) => s.closeSettings)
-  const setSection = useNav((s) => s.openSettings)
+  const [query, setQuery] = useState('')
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && query) {
+        setQuery('')
+        e.preventDefault()
+        return
+      }
       if (shouldLeavePageOnEscape(e, document.querySelector('[role="dialog"]') !== null)) {
         closeSettings()
       }
     }
     globalThis.addEventListener('keydown', onKey)
     return () => globalThis.removeEventListener('keydown', onKey)
-  }, [closeSettings])
+  }, [closeSettings, query])
   const sections: { id: SettingsSection; label: string }[] = [
     { id: 'general', label: t`General` },
     { id: 'appearance', label: t`Appearance` },
@@ -50,94 +54,67 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
   }
   const current = sections.find((s) => s.id === section)
   return (
-    <Box sx={{ height: '100%', display: 'grid', gridTemplateColumns: '200px minmax(0, 1fr)' }}>
-      <Box
-        component="nav"
-        aria-label={t`Settings sections`}
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '2px',
-          px: 1,
-          py: 2,
-          bgcolor: 'rgba(30,30,36,0.8)',
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pb: 1.25 }}>
-          <ButtonBase
-            aria-label={t`Back`}
-            onClick={closeSettings}
-            sx={{
-              width: 36,
-              height: 36,
-              flexShrink: 0,
-              borderRadius: '6px',
-              '&:hover': { bgcolor: 'action.hover' },
-            }}
-          >
-            <ArrowLeft size={20} />
-          </ButtonBase>
-          <Typography component="h1" sx={{ fontSize: 20, fontWeight: 700 }}>
-            {t`Settings`}
-          </Typography>
-        </Box>
-        {sections.map((s) => {
-          const active = section === s.id
-          return (
-            <ButtonBase
-              key={s.id}
-              onClick={() => setSection(s.id)}
-              aria-current={active ? 'page' : undefined}
-              sx={{
-                justifyContent: 'flex-start',
-                height: 38,
-                px: '12px',
-                borderRadius: '6px',
-                fontSize: 14,
-                fontWeight: active ? ACTIVE_WEIGHT : 'normal',
-                fontFamily: 'inherit',
-                whiteSpace: 'nowrap',
-                bgcolor: active ? 'rgba(255,255,255,0.12)' : 'transparent',
-                color: active ? '#ffffff' : 'rgba(225,225,230,0.95)',
-                '&:hover': { bgcolor: active ? 'rgba(255,255,255,0.12)' : 'action.hover' },
-              }}
-            >
-              {s.label}
-            </ButtonBase>
-          )
-        })}
-      </Box>
-      <Box
-        sx={{
-          minWidth: 0,
-          overflow: 'auto',
-          px: 3.5,
-          pt: 2,
-          pb: 1.5,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-        }}
-      >
-        {/* Same 36px row and size as the Settings heading beside it, so the two titles line up. */}
-        <Typography
-          component="h2"
+    <SettingsSearchProvider query={query}>
+      <Box sx={{ height: '100%', display: 'grid', gridTemplateColumns: '200px minmax(0, 1fr)' }}>
+        <SettingsNav section={section} sections={sections} />
+        <Box
           sx={{
-            fontSize: 20,
-            fontWeight: 700,
-            minHeight: 36,
+            minWidth: 0,
+            overflow: 'auto',
+            px: 3.5,
+            pt: 2,
+            pb: 1.5,
             display: 'flex',
-            alignItems: 'center',
+            flexDirection: 'column',
+            gap: 2,
           }}
         >
-          {current?.label}
-        </Typography>
-        <Box
-          sx={{ width: '100%', maxWidth: 760, bgcolor: 'rgba(0,0,0,0.25)', borderRadius: 1, p: 2 }}
-        >
-          {body[section]}
+          <Typography
+            component="h2"
+            sx={{
+              fontSize: 20,
+              fontWeight: 700,
+              minHeight: 36,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            {current?.label}
+          </Typography>
+          <TextField
+            size="small"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t`Search settings`}
+            slotProps={{ htmlInput: { 'aria-label': t`Search settings` } }}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape' && query) {
+                e.preventDefault()
+                e.stopPropagation()
+                setQuery('')
+              }
+            }}
+            sx={{ width: '100%', maxWidth: 760 }}
+          />
+          <Box
+            sx={{
+              width: '100%',
+              maxWidth: 760,
+              bgcolor: 'rgba(0,0,0,0.25)',
+              borderRadius: 1,
+              p: 2,
+            }}
+          >
+            {query
+              ? sections.map((s) => (
+                  <Box key={s.id} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
+                    {body[s.id]}
+                  </Box>
+                ))
+              : body[section]}
+          </Box>
         </Box>
       </Box>
-    </Box>
+    </SettingsSearchProvider>
   )
 }

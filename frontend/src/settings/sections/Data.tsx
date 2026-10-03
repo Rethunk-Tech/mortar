@@ -25,6 +25,8 @@ function useDataSection() {
   const openProfiles = useNav((s) => s.openProfiles)
   const { usage, bytes, restart, rev } = useDataUsage()
   const [preview, setPreview] = useState<Preview | null>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewLoading, setPreviewLoading] = useState(false)
   const [importPreview, setImportPreview] = useState<ImportPreview | null>(null)
   const [busy, setBusy] = useState(false)
   const [move, setMove] = useState<MoveState | null>(null)
@@ -38,7 +40,13 @@ function useDataSection() {
   })
   const [confirmClear, setConfirmClear] = useState(false)
   const openPreview = () => {
-    CleanupPreview().then(setPreview).catch(reportUnexpected)
+    setPreviewOpen(true)
+    setPreview(null)
+    setPreviewLoading(true)
+    CleanupPreview()
+      .then(setPreview)
+      .catch(reportUnexpected)
+      .finally(() => setPreviewLoading(false))
   }
   const runCleanup = () => {
     if (!preview) {
@@ -48,6 +56,7 @@ function useDataSection() {
     Cleanup(preview)
       .then(() => {
         setPreview(null)
+        setPreviewOpen(false)
         restart()
       })
       .catch(reportUnexpected)
@@ -87,6 +96,8 @@ function useDataSection() {
     restart,
     rev,
     preview,
+    previewOpen,
+    previewLoading,
     importPreview,
     busy,
     move,
@@ -97,6 +108,7 @@ function useDataSection() {
     confirmClear,
     setConfirmClear,
     setPreview,
+    setPreviewOpen,
     setImportPreview,
     openPreview,
     runCleanup,
@@ -131,8 +143,13 @@ export function Data() {
       <DataPrefs />
       <DataDialogs
         preview={d.preview}
+        previewOpen={d.previewOpen}
+        previewLoading={d.previewLoading}
         busy={d.busy}
-        onClosePreview={() => d.setPreview(null)}
+        onClosePreview={() => {
+          d.setPreview(null)
+          d.setPreviewOpen(false)
+        }}
         onCleanup={d.runCleanup}
         importPreview={d.importPreview}
         onCloseImport={() => d.setImportPreview(null)}

@@ -1,17 +1,34 @@
 import { Box, type SxProps, type Theme } from '@mui/material'
-import type { ReactNode } from 'react'
+import { Children, type ReactNode } from 'react'
+import { prefMatches } from './prefFilter.ts'
+import { ResetSectionButton } from './ResetSection.tsx'
+import { useSettingsSearch } from './useSettingsSearch.ts'
+
+function nodeText(node: ReactNode): string {
+  if (typeof node === 'string' || typeof node === 'number') {
+    return String(node)
+  }
+  return ''
+}
 
 export function SettingsSection({
   title,
   description,
   children,
   sx,
+  prefKeys,
 }: {
   title?: ReactNode
   description?: ReactNode
   children: ReactNode
   sx?: SxProps<Theme>
+  prefKeys?: string[]
 }) {
+  const query = useSettingsSearch()
+  const shown = Children.toArray(children)
+  if (query && shown.length === 0) {
+    return null
+  }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, ...sx }}>
       {title ? (
@@ -28,6 +45,7 @@ export function SettingsSection({
       >
         {children}
       </Box>
+      {prefKeys && prefKeys.length > 0 ? <ResetSectionButton keys={prefKeys} /> : null}
     </Box>
   )
 }
@@ -41,6 +59,10 @@ export function SettingRow({
   description?: ReactNode
   children: ReactNode
 }) {
+  const query = useSettingsSearch()
+  if (!prefMatches(query, nodeText(label), nodeText(description))) {
+    return null
+  }
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minHeight: 58, px: 2, py: 1 }}>
       <Box sx={{ flex: 1, minWidth: 0 }}>

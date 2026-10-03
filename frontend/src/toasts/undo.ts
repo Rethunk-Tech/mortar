@@ -1,4 +1,16 @@
+import type { ToastAction, ToastInput } from './store.ts'
+
 export const MISSING_STORE_PREFIX = 'missing from the store: '
+
+export function pushUndoToast(
+  push: (toast: ToastInput) => number,
+  title: string,
+  undoLabel: string,
+  undo: () => unknown,
+): number {
+  const action: ToastAction = { label: undoLabel, run: undo }
+  return push({ kind: 'success', title, action })
+}
 
 export interface UndoEntry {
   key: string

@@ -4,23 +4,15 @@ import { Download, RefreshCw, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { List as ListGames } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import {
-  SetAutoInstallMortarUpdates,
-  SetCheckModUpdatesOnStart,
   SetCheckOnlyEnabledMods,
   SetIncludeBetaReleases,
   SetIncludePrereleaseModVersions,
-  SetNotifyModUpdates,
-  SetSmapiBuilds,
-  SetUpdateCheckIntervalMinutes,
-  SetUpdateModsBeforePlayDefault,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useNav } from '../../nav/store.ts'
 import { errorMessage, errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
-import { gamePrefs } from '../gamePrefs.ts'
-import { PrefNumber, PrefSelect, PrefSwitch } from '../PrefControls.tsx'
-import { persist } from '../persist.ts'
-import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
+import { SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useMortarUpdate } from '../updates.ts'
 import { lastOpenedGame } from './lastOpenedGame.ts'
@@ -173,7 +165,6 @@ export function Updates() {
       .then((gs) => setGameName((gs ?? []).find((g) => g.id === game)?.name ?? ''))
       .catch(() => setGameName(''))
   }, [game])
-  const checkModUpdatesOnStart = useSettings((s) => s.checkModUpdatesOnStart)
   const includeBetaReleases = useSettings((s) => s.includeBetaReleases)
   const includePrereleaseModVersions = useSettings((s) => s.includePrereleaseModVersions)
   const checkOnlyEnabledMods = useSettings((s) => s.checkOnlyEnabledMods)
@@ -193,54 +184,27 @@ export function Updates() {
         }
         label={t`Include beta releases`}
       />
-      <SettingRow
-        label={t`Install Mortar updates automatically`}
-        description={t`Download and stage a found update without asking`}
-      >
-        <PrefSwitch
-          checked={useSettings((s) => s.autoInstallMortarUpdates) !== false}
-          onChange={(on) => persist(() => SetAutoInstallMortarUpdates(on), push, fail)}
-        />
-      </SettingRow>
-      <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Mods`}</Box>
-      <SettingsSection>
-        <SettingRow
-          label={t`Check interval`}
-          description={t`Minutes between background update checks`}
-        >
-          <PrefNumber
-            value={useSettings((s) => s.updateCheckIntervalMinutes) || 60}
-            min={15}
-            max={1440}
-            onCommit={(n) => SetUpdateCheckIntervalMinutes(n)}
-          />
-        </SettingRow>
-        <SettingRow label={t`Notify when updates are found`}>
-          <PrefSwitch
-            checked={Boolean(useSettings((s) => s.notifyModUpdates))}
-            onChange={(on) => persist(() => SetNotifyModUpdates(on), push, fail)}
-          />
-        </SettingRow>
-        <SettingRow
-          label={t`Update mods before Play on new profiles`}
-          description={t`Default for a profile you just created`}
-        >
-          <PrefSwitch
-            checked={useSettings((s) => gamePrefs(s).updateModsBeforePlayDefault)}
-            onChange={(on) => persist(() => SetUpdateModsBeforePlayDefault(on), push, fail)}
-          />
-        </SettingRow>
+      <SettingsSection prefKeys={['autoInstallMortarUpdates']}>
+        <PrefByKey prefKey="autoInstallMortarUpdates" />
       </SettingsSection>
-      <FormControlLabel
-        sx={{ m: 0, alignItems: 'center' }}
-        control={
-          <Switch
-            checked={checkModUpdatesOnStart !== false}
-            onChange={(_, on) => persistToggle(() => SetCheckModUpdatesOnStart(on), push, fail)}
-          />
-        }
-        label={t`Check for mod updates when Mortar starts`}
-      />
+      <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Mods`}</Box>
+      <SettingsSection
+        prefKeys={[
+          'updateCheckIntervalMinutes',
+          'notifyModUpdates',
+          'updateModsBeforePlayDefault',
+          'checkModUpdatesOnStart',
+        ]}
+      >
+        <PrefKeys
+          keys={[
+            'updateCheckIntervalMinutes',
+            'notifyModUpdates',
+            'updateModsBeforePlayDefault',
+            'checkModUpdatesOnStart',
+          ]}
+        />
+      </SettingsSection>
       <FormControlLabel
         sx={{ m: 0, alignItems: 'center' }}
         control={
@@ -253,21 +217,8 @@ export function Updates() {
         }
         label={t`Include pre-release mod versions`}
       />
-      <SettingsSection>
-        <SettingRow
-          label={t`SMAPI unofficial builds`}
-          description={t`Pre-releases and unofficial SMAPI updates. Show lists them; Include lets Update all install them.`}
-        >
-          <PrefSelect
-            value={useSettings((s) => gamePrefs(s).smapiBuilds) || 'show'}
-            onChange={(v) => persist(() => SetSmapiBuilds(v), push, fail)}
-            options={[
-              { value: 'never', label: t`Never` },
-              { value: 'show', label: t`Show` },
-              { value: 'include', label: t`Include` },
-            ]}
-          />
-        </SettingRow>
+      <SettingsSection prefKeys={['smapiBuilds']}>
+        <PrefByKey prefKey="smapiBuilds" />
       </SettingsSection>
       <FormControlLabel
         sx={{ m: 0, alignItems: 'center' }}

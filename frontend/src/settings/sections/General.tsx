@@ -10,16 +10,101 @@ import {
   SetKeepInTray,
   SetLanPort,
   SetLanSharing,
+  SetListSort,
   SetTipsSeen,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { errorText } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { PrefSelect } from '../PrefControls.tsx'
+import { PrefKeys } from '../PrefRow.tsx'
+import { persist } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
-import { DisplayAndNotices, LanIdentity, ModsPrefs, WindowLaunch } from './GeneralMore.tsx'
 
 const maxLanPort = 65_535
 const defaultLanPort = 8080
+
+function WindowLaunch() {
+  return <PrefKeys keys={['onPlay', 'startScreen', 'defaultLaunchMethod', 'showSmapiConsole']} />
+}
+
+function LanIdentity() {
+  return <PrefKeys keys={['lanName', 'lanAutoAcceptSameAccount']} />
+}
+
+function ModsPrefs() {
+  const { t } = useLingui()
+  const push = useToasts((s) => s.push)
+  const fail = t`Couldn't save that setting`
+  const sort = `${useSettings((s) => s.listSortColumn) || 'name'}:${useSettings((s) => s.listSortDir) || 'asc'}`
+  return (
+    <SettingsSection
+      title={t`Mods`}
+      prefKeys={[
+        'defaultModsView',
+        'gridCardSize',
+        'showAuthorOnCards',
+        'enableRequirements',
+        'missingRequirements',
+        'reuseFomodChoices',
+        'listGroupBy',
+        'listSortColumn',
+        'listSortDir',
+        'confirmRemovals',
+        'cosmeticConflicts',
+        'backgroundBadgeChecks',
+      ]}
+    >
+      <PrefKeys
+        keys={[
+          'defaultModsView',
+          'gridCardSize',
+          'showAuthorOnCards',
+          'enableRequirements',
+          'missingRequirements',
+          'reuseFomodChoices',
+          'listGroupBy',
+        ]}
+      />
+      <SettingRow label={t`Default sort`}>
+        <PrefSelect
+          value={sort}
+          onChange={(v) => {
+            const [column, dir] = v.split(':')
+            persist(() => SetListSort(column ?? 'name', dir ?? 'asc'), push, fail)
+          }}
+          options={[
+            { value: 'name:asc', label: t`Name A–Z` },
+            { value: 'name:desc', label: t`Name Z–A` },
+            { value: 'version:asc', label: t`Version` },
+            { value: 'author:asc', label: t`Author` },
+          ]}
+        />
+      </SettingRow>
+      <PrefKeys keys={['confirmRemovals', 'cosmeticConflicts', 'backgroundBadgeChecks']} />
+    </SettingsSection>
+  )
+}
+
+function DisplayAndNotices() {
+  const { t } = useLingui()
+  return (
+    <>
+      <SettingsSection
+        title={t`Display`}
+        prefKeys={['dates', 'density', 'reduceMotion', 'profileHero']}
+      >
+        <PrefKeys keys={['dates', 'density', 'reduceMotion', 'profileHero']} />
+      </SettingsSection>
+      <SettingsSection
+        title={t`Notifications`}
+        prefKeys={['notifyDownloadFinished', 'notifyDownloadFailed', 'notifyRunCrashed']}
+      >
+        <PrefKeys keys={['notifyDownloadFinished', 'notifyDownloadFailed', 'notifyRunCrashed']} />
+      </SettingsSection>
+    </>
+  )
+}
 
 export function General() {
   const { t } = useLingui()
@@ -56,7 +141,10 @@ export function General() {
   }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <SettingsSection title={t`Window`}>
+      <SettingsSection
+        title={t`Window`}
+        prefKeys={['onPlay', 'startScreen', 'defaultLaunchMethod', 'showSmapiConsole']}
+      >
         <WindowLaunch />
         <SettingRow
           label={t`Keep Mortar in the tray`}
@@ -74,7 +162,7 @@ export function General() {
           >{t`Show again`}</Button>
         </SettingRow>
       </SettingsSection>
-      <SettingsSection title={t`Sharing`}>
+      <SettingsSection title={t`Sharing`} prefKeys={['lanName', 'lanAutoAcceptSameAccount']}>
         <SettingRow
           label={t`Share profiles on the local network`}
           description={t`Lets nearby Mortar users find this installation and exchange profile links.`}
