@@ -8,38 +8,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/problems"
 )
 
-// dismissRow is one problem row mortar problems may dismiss by index.
-type dismissRow struct {
-	kind         string
-	uniqueID     string
-	field        string
-	conflictKind string
-	target       string
-}
-
-func dismissableRows(r problems.Result) []dismissRow {
-	var out []dismissRow
-	for _, x := range r.Missing {
-		if x.Listed {
-			out = append(out, dismissRow{kind: "listed", uniqueID: x.UniqueID})
-		}
-	}
-	for _, x := range r.Broken {
-		if x.Status == "abandoned" {
-			out = append(out, dismissRow{kind: "abandoned", uniqueID: x.UniqueID})
-		}
-	}
-	for _, x := range r.AssetConflicts {
-		if !x.Cosmetic && x.Kind != "" {
-			out = append(out, dismissRow{kind: "conflict", conflictKind: x.Kind, target: x.Target})
-		}
-	}
-	for _, x := range r.Settings {
-		out = append(out, dismissRow{kind: "setting", uniqueID: x.UniqueID, field: x.Field})
-	}
-	return out
-}
-
+// problems.Dismissable is one problem row mortar problems may dismiss by index.
 func dismissedKindText(d problems.DismissedProblem) (kind, text string) {
 	if d.AssetConflict != nil {
 		c := d.AssetConflict
