@@ -27,6 +27,7 @@ Remaining ([architecture.md](architecture.md#release)):
 - **CurseForge** as a third source, after the repository is public: apply for a 3rd-party API key, then build it without caching API data, with a User-Agent on every request, and honouring each author's distribution setting.
 
 ## Later
+
 - **Browse Nexus inside Mortar** (search, sort, mod details, then open on Nexus to download): parked 2026-10-02; the browser extension marks and relays from Nexus pages, and free accounts must still click Nexus's own download button.
 - **UI translations** beyond English: the Lingui machinery and extracted catalogs exist; needs chosen languages and translators. Parked 2026-10-02 (not v1).
 - **Steam Deck / gamepad mode** (larger targets, gamepad focus navigation, Game Mode): parked 2026-10-02 (not v1).
@@ -57,7 +58,7 @@ Not in the first release; re-weigh only when asked:
 - A new profile made from a save: exactly the mods the Saves tab knows that save used, missing ones downloaded through the queue, named after the farm.
 - An asset conflict map: which mods edit which game assets (Content Patcher targets, replaced files) with load order and priority, built on the Content Patcher parser.
 - Game Select profile cards: each game row lists its profiles with problem and update counts, last played and a Play button.
-- Needs Nexus's approval through app registration first (below), since both start downloads outside Nexus's own Mod Manager Download button: an "Add to Mortar" button on Nexus listing tiles, and importing a Nexus collection as a profile.
+- Needs Nexus's approval through app registration first (below), since it starts downloads outside Nexus's own Mod Manager Download button: an "Add to Mortar" button on Nexus listing tiles.
 - "What changed since the last run": before Play and on the profile page, the mod changes since the profile's last run from the history log, each linked to its history entry.
 - Profile templates: a new profile started from a bundle plus game settings and launch options.
 - Per-profile save isolation.
