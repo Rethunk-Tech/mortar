@@ -43,6 +43,7 @@ import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
 import { useInstall } from '../install/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
+import { formatDiscord } from '../share/modList.ts'
 import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -279,41 +280,44 @@ function CopyModListControl() {
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const enabled = mods.some((mod) => mod.enabled)
-  const copy = (format: ModListFormat) => {
+  const copy = (format: ModListFormat | 'discord') => {
     setAnchor(null)
     if (!profile) {
       return
     }
-    const text = formatModList(
-      mods.map((mod) => {
-        const nexusId = nexusIdOf(profile, mod)
-        return {
-          enabled: mod.enabled,
-          name: mod.name,
-          version: mod.version,
-          ...(nexusId > 0
-            ? { nexusUrl: `https://www.nexusmods.com/stardewvalley/mods/${nexusId}` }
-            : {}),
-        }
-      }),
-      format,
-    )
+    const items = mods.map((mod) => {
+      const nexusId = nexusIdOf(profile, mod)
+      const url = nexusId > 0 ? `https://www.nexusmods.com/stardewvalley/mods/${nexusId}` : ''
+      return {
+        enabled: mod.enabled,
+        name: mod.name,
+        version: mod.version,
+        url,
+        ...(nexusId > 0 ? { nexusUrl: url } : {}),
+      }
+    })
+    const text =
+      format === 'discord' ? formatDiscord(items).join('\n\n') : formatModList(items, format)
     Clipboard.SetText(text).then(
       () => useToasts.getState().push({ kind: 'success', title: t`Mod list copied` }),
       reportUnexpected,
     )
   }
+  const enableFirst = t`Enable a mod first.`
   return (
     <>
-      <Button
-        variant="outlined"
-        aria-label={t`Copy mod list`}
-        startIcon={<Copy size={14} />}
-        onClick={(e) => setAnchor(e.currentTarget)}
-        sx={iconWhenCompact}
-      >
-        <span className="label">{t`Copy`}</span>
-      </Button>
+      <DisabledReason title={enableFirst} disabled={!enabled}>
+        <Button
+          variant="outlined"
+          aria-label={t`Copy mod list`}
+          disabled={!enabled}
+          startIcon={<Copy size={14} />}
+          onClick={(e) => setAnchor(e.currentTarget)}
+          sx={iconWhenCompact}
+        >
+          <span className="label">{t`Copy`}</span>
+        </Button>
+      </DisabledReason>
       <Menu
         open={anchor !== null}
         anchorEl={anchor}
@@ -328,6 +332,9 @@ function CopyModListControl() {
         </MenuItem>
         <MenuItem disabled={!enabled} onClick={() => copy('plain')}>
           <ListItemText>{t`Plain text`}</ListItemText>
+        </MenuItem>
+        <MenuItem disabled={!enabled} onClick={() => copy('discord')}>
+          <ListItemText>{t`Discord`}</ListItemText>
         </MenuItem>
       </Menu>
     </>
