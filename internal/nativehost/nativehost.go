@@ -20,6 +20,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
@@ -58,6 +59,8 @@ type reply struct {
 	Open      *modInProfile  `json:"open,omitempty"`
 	Others    []modInProfile `json:"others,omitempty"`
 	Problems  []modProblem   `json:"problems,omitempty"`
+	// Accent is Mortar's accent colour, read on every reply so the extension follows a change in the app.
+	Accent string `json:"accent,omitempty"`
 }
 
 type modProblem struct {
@@ -222,6 +225,7 @@ func serveWithConnection(r io.Reader, w io.Writer, open func(link string) error,
 		default:
 			rep = reply{Error: fmt.Sprintf("unknown request type %q", req.Type)}
 		}
+		rep.Accent = accentColor()
 		out, err := json.Marshal(rep)
 		if err != nil {
 			return err
@@ -623,4 +627,18 @@ func Manifest(exe string, firefox bool) ([]byte, error) {
 		m["allowed_origins"] = []string{ChromeOrigin}
 	}
 	return json.MarshalIndent(m, "", "  ")
+}
+
+// accentColor reads only the accent from Mortar's settings file; the native host never writes Mortar's data, so it
+// does not go through settings.Open, which moves a corrupt file aside.
+func accentColor() string {
+	var s struct {
+		Accent string `json:"accent"`
+	}
+	if dir, err := datadir.Dir(); err == nil {
+		if b, err := fsx.ReadFile(filepath.Join(dir, "settings.json")); err == nil {
+			_ = json.Unmarshal(b, &s)
+		}
+	}
+	return settings.AccentColor(s.Accent)
 }
