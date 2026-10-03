@@ -120,7 +120,7 @@ function playIssueSummary(input: {
       kind: 'saveMods',
       count: saveMods.length,
       names: slice.map((m) => m.name),
-      switchProfileId: input.switchProfileId,
+      ...(input.switchProfileId ? { switchProfileId: input.switchProfileId } : {}),
     })
   }
   return groups

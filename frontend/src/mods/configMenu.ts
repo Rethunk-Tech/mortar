@@ -1,9 +1,9 @@
-export interface GmcmChoice {
+interface GmcmChoice {
   value: string
   label: string
 }
 
-export interface GmcmOption {
+interface GmcmOption {
   index: number
   kind: string
   fieldId: string | null
@@ -19,22 +19,22 @@ export interface GmcmOption {
   titleScreenOnly: boolean
 }
 
-export interface GmcmPage {
+interface GmcmPage {
   id: string
   title: string
-  options: GmcmOption[]
+  options: GmcmOption[] | null
 }
 
-export interface GmcmCapture {
+interface GmcmCapture {
   schema: number
   mod: { id: string; name: string; version: string }
   gmcmVersion: string
   capturedAt: string
   titleScreenOnlyDefault: boolean
-  pages: GmcmPage[]
+  pages: GmcmPage[] | null
 }
 
-export interface GmcmEdit {
+interface GmcmEdit {
   page: string
   index: number
   kind: string
@@ -43,22 +43,22 @@ export interface GmcmEdit {
   value: unknown
 }
 
-export interface GmcmPending {
+interface GmcmPending {
   schema: number
-  edits: GmcmEdit[]
+  edits: GmcmEdit[] | null
 }
 
-export interface GmcmSkipped {
+interface GmcmSkipped {
   edit: GmcmEdit
   reason: string
 }
 
-export interface GmcmResult {
+interface GmcmResult {
   applied: number
-  skipped: GmcmSkipped[]
+  skipped: GmcmSkipped[] | null
 }
 
-export function optionKey(page: string, index: number): string {
+function optionKey(page: string, index: number): string {
   return `${page}/${index}`
 }
 
@@ -66,7 +66,7 @@ function isAbsent(v: unknown): boolean {
   return v === null || v === undefined
 }
 
-export function valuesEqual(a: unknown, b: unknown): boolean {
+function valuesEqual(a: unknown, b: unknown): boolean {
   if (a === b) {
     return true
   }
@@ -79,7 +79,7 @@ export function valuesEqual(a: unknown, b: unknown): boolean {
   return JSON.stringify(a) === JSON.stringify(b)
 }
 
-export function pendingEdits(capture: GmcmCapture, drafts: Record<string, unknown>): GmcmEdit[] {
+function pendingEdits(capture: GmcmCapture, drafts: Record<string, unknown>): GmcmEdit[] {
   const out: GmcmEdit[] = []
   for (const page of capture.pages ?? []) {
     for (const opt of page.options ?? []) {
@@ -99,7 +99,7 @@ export function pendingEdits(capture: GmcmCapture, drafts: Record<string, unknow
   return out
 }
 
-export function draftMap(pending: GmcmPending | null): Record<string, unknown> {
+function draftMap(pending: GmcmPending | null): Record<string, unknown> {
   const out: Record<string, unknown> = {}
   for (const edit of pending?.edits ?? []) {
     out[optionKey(edit.page, edit.index)] = edit.value
@@ -107,11 +107,19 @@ export function draftMap(pending: GmcmPending | null): Record<string, unknown> {
   return out
 }
 
-export function optionDraft(
-  page: string,
-  opt: GmcmOption,
-  drafts: Record<string, unknown>,
-): unknown {
+function optionDraft(page: string, opt: GmcmOption, drafts: Record<string, unknown>): unknown {
   const key = optionKey(page, opt.index)
   return key in drafts ? drafts[key] : opt.value
 }
+
+export type {
+  GmcmCapture,
+  GmcmChoice,
+  GmcmEdit,
+  GmcmOption,
+  GmcmPage,
+  GmcmPending,
+  GmcmResult,
+  GmcmSkipped,
+}
+export { draftMap, optionDraft, optionKey, pendingEdits, valuesEqual }

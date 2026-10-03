@@ -19,7 +19,7 @@ test('also-in-profiles rows and load-order names truncate with a title', () => {
 })
 
 test('saves copy-from uses a short label, tooltip, and usePending', () => {
-  const saves = src('..', 'saves', 'SavesTab.tsx')
+  const saves = src('..', 'saves', 'lackChipActions.tsx')
   expect(saves).toContain('const [copying, runCopy] = usePending()')
   expect(saves).toContain('title={source.name}')
   expect(saves).toContain('disabled={copying || locked}')

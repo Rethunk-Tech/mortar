@@ -17,10 +17,13 @@ function fallbackStatus(profile: Profile): CollectionLink | null {
   }
 }
 
-export function useCollectionStatus(game: string, profile: Profile): CollectionLink | null {
+export function useCollectionStatus(
+  game: string,
+  profile: Profile | undefined,
+): CollectionLink | null {
   const [status, setStatus] = useState<CollectionStatus | null>(null)
   useEffect(() => {
-    if (!profile.collection) {
+    if (!profile?.collection) {
       setStatus(null)
       return
     }
@@ -40,7 +43,7 @@ export function useCollectionStatus(game: string, profile: Profile): CollectionL
       cancelled = true
     }
   }, [game, profile])
-  if (!profile.collection) {
+  if (!profile?.collection) {
     return null
   }
   if (status) {

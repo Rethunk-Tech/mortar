@@ -1,37 +1,18 @@
-export interface HistoryDiffView {
-  a: string
-  b: string
-  added: { id: string; name: string; version: string; key: string }[]
-  removed: { id: string; name: string; version: string; key: string }[]
-  versions: { id: string; name: string; old: string; new: string; oldKey: string; newKey: string }[]
-  enabled: { id: string; name: string; key: string; old: boolean; new: boolean }[]
-  configs: { id: string; name: string; key: string; files: string[] }[]
-  items: {
-    kind: string
-    mod: string
-    name: string
-    key: string
-    oldKey?: string
-    newKey?: string
-    old?: string
-    new?: string
-    file?: string
-    detail: string
-  }[]
-}
+import type {
+  HistoryDiff,
+  HistoryItem,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 
-export function diffLines(diff: HistoryDiffView): string[] {
+export function diffLines(diff: HistoryDiff): string[] {
   return (diff.items ?? []).map((item) => item.detail).filter((line) => line !== '')
 }
 
 export function selectedPair(ids: string[]): [string, string] | null {
-  if (ids.length !== 2) {
-    return null
-  }
-  return [ids[0], ids[1]]
+  const [a, b] = ids
+  return ids.length === 2 && a !== undefined && b !== undefined ? [a, b] : null
 }
 
-export function itemModKey(item: HistoryDiffView['items'][number]): string {
+export function itemModKey(item: HistoryItem): string {
   if (item.kind === 'config' && item.file) {
     return `${item.mod}/${item.file}`
   }

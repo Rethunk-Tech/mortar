@@ -13,7 +13,7 @@ export function ExtraFilesChip({ mod, profile }: { mod: Mod; profile: Profile })
   const { i18n } = useLingui()
   const entry = entryOf(profile, mod.key)
   const extras = entry?.extraStoreKeys ?? []
-  const files = useNexusEntry(nexusIdOf(profile, mod))?.files
+  const files = useNexusEntry(nexusIdOf(profile, mod))?.details?.files
   const openMenu = useContextMenu((s) => s.open)
   if (extras.length === 0) {
     return null

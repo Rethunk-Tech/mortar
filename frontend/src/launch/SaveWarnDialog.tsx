@@ -79,7 +79,7 @@ export function SaveWarnDialog() {
             {t`Switch profile`}
           </Button>
         ) : null}
-        {recorded && warn ? (
+        {recorded && warn && save ? (
           <Button
             onClick={() => {
               addRecordedMods(warn.game, warn.profile, save).catch(reportUnexpected)

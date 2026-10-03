@@ -17,6 +17,9 @@ function saveFit(folder: string, uniqueId: string): Fit {
     missing: [{ uniqueId, name: uniqueId, disabled: true, where: null }],
     lastProfileId: '',
     lastProfileAt: 0,
+    lastProfileExists: false,
+    lastMods: null,
+    lastMissing: null,
   }
 }
 

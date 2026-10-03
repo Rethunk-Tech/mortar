@@ -163,7 +163,7 @@ export function CommandPalette() {
   const shortcutLabelMap = shortcutLabels(i18n)
   const bindings = mergeBindings(useSettings((s) => s.shortcuts))
   const shown = usePaletteShown({
-    t,
+    i18n,
     query,
     profiles,
     openId,

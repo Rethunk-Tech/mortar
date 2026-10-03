@@ -146,9 +146,9 @@ export function CrashDialog() {
         transitionDuration={0}
         slotProps={{ paper: { sx: { ...paper.sx, width: 520, maxWidth: 'calc(100% - 32px)' } } }}
       >
-        <DialogTitle
-          sx={{ fontSize: 22, fontWeight: 700 }}
-        >{crash.crashed ? t`Stardew Valley crashed` : t`Stardew Valley closed with errors`}</DialogTitle>
+        <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>
+          {crash.crashed ? t`Stardew Valley crashed` : t`Stardew Valley closed with errors`}
+        </DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {crash.cause ? (
             <Box sx={{ fontSize: 14 }}>

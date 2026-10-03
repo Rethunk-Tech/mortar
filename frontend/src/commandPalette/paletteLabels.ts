@@ -1,34 +1,34 @@
+import type { I18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import type { PaletteLabels } from './items.ts'
 
-export function paletteActionLabels(
-  t: (template: TemplateStringsArray, ...args: unknown[]) => string,
-): PaletteLabels {
+export function paletteActionLabels(i18n: I18n): PaletteLabels {
   return {
-    play: t`Play`,
-    updates: t`Check for mod updates`,
-    downloads: t`Open Downloads`,
-    import: t`Import`,
-    pasteLink: t`Paste a link…`,
-    collectionReview: t`Review collection update`,
-    findCrashCause: t`Find the crash cause`,
-    configureMod: (name) => t`Configure ${name}…`,
-    share: t`Share`,
-    newProfile: t`New profile`,
-    streamOverlay: t`Stream overlay`,
-    recentChanges: t`Recent changes`,
-    diagnostics: t`Diagnostics`,
-    profileHint: t`Open profile`,
-    modHint: t`Open mod`,
-    settingsHint: t`Settings`,
+    play: i18n._(msg`Play`),
+    updates: i18n._(msg`Check for mod updates`),
+    downloads: i18n._(msg`Open Downloads`),
+    import: i18n._(msg`Import`),
+    pasteLink: i18n._(msg`Paste a link…`),
+    collectionReview: i18n._(msg`Review collection update`),
+    findCrashCause: i18n._(msg`Find the crash cause`),
+    configureMod: (name) => i18n._(msg`Configure ${name}…`),
+    share: i18n._(msg`Share`),
+    newProfile: i18n._(msg`New profile`),
+    streamOverlay: i18n._(msg`Stream overlay`),
+    recentChanges: i18n._(msg`Recent changes`),
+    diagnostics: i18n._(msg`Diagnostics`),
+    profileHint: i18n._(msg`Open profile`),
+    modHint: i18n._(msg`Open mod`),
+    settingsHint: i18n._(msg`Settings`),
     tabs: {
-      mods: t`Go to Mods`,
-      problems: t`Go to Problems`,
-      'load-order': t`Go to Load order`,
-      saves: t`Go to Saves`,
-      notes: t`Go to Notes`,
-      console: t`Go to Console`,
-      performance: t`Go to Performance`,
+      mods: i18n._(msg`Go to Mods`),
+      problems: i18n._(msg`Go to Problems`),
+      'load-order': i18n._(msg`Go to Load order`),
+      saves: i18n._(msg`Go to Saves`),
+      notes: i18n._(msg`Go to Notes`),
+      console: i18n._(msg`Go to Console`),
+      performance: i18n._(msg`Go to Performance`),
     },
-    toggle: (name) => t`Toggle ${name}`,
+    toggle: (name) => i18n._(msg`Toggle ${name}`),
   }
 }

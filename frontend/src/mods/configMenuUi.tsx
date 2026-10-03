@@ -86,7 +86,8 @@ export function MenuPages({
   onDiscard: () => void
 }) {
   const { t } = useLingui()
-  const page = capture.pages.find((p) => p.id === pageId) ?? capture.pages[0]
+  const pages = capture.pages ?? []
+  const page = pages.find((p) => p.id === pageId) ?? pages[0]
   const skipped = result?.skipped ?? []
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>

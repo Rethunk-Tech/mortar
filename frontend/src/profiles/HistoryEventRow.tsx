@@ -1,9 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, ListItem, ListItemText } from '@mui/material'
-import type { HistoryEvent } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type {
+  HistoryEvent,
+  HistoryItem,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { When } from '../i18n/When.tsx'
 import { historyChangeSummary } from './historyCounts.ts'
-import type { HistoryDiffView } from './historyDiff.ts'
 import { itemModKey } from './historyDiff.ts'
 
 export function HistoryEventRow({
@@ -16,7 +18,7 @@ export function HistoryEventRow({
   busy,
 }: {
   ev: HistoryEvent
-  items: HistoryDiffView['items']
+  items: HistoryItem[]
   selected: boolean
   onToggle: () => void
   onUndo: () => void

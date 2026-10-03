@@ -18,8 +18,9 @@ export function PinReasonDialog() {
     }
     setBusy(true)
     try {
-      if (target.mods.length === 1) {
-        await pinMod(target.mods[0], true, reason)
+      const [only] = target.mods
+      if (target.mods.length === 1 && only) {
+        await pinMod(only, true, reason)
       } else {
         await pinMany(target.mods, true, reason)
       }

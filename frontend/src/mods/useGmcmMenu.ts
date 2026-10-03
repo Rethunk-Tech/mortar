@@ -52,7 +52,7 @@ export function useGmcmMenu(uniqueId: string, open: boolean) {
         setCapture(cap)
         setDrafts(draftMap(pending))
         setResult(last as Result)
-        setPageId(cap?.pages[0]?.id ?? '')
+        setPageId(cap?.pages?.[0]?.id ?? '')
       })
       .catch(() => undefined)
   }, [open, uniqueId])

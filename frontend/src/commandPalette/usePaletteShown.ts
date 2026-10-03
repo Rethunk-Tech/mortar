@@ -1,3 +1,4 @@
+import type { I18n } from '@lingui/core'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { collectionHeader } from '../game/collectionHeader.ts'
 import { useCollectionStatus } from '../game/useCollectionStatus.ts'
@@ -9,7 +10,7 @@ import { matchPaletteItems, type PaletteItem } from './match.ts'
 import { paletteActionLabels } from './paletteLabels.ts'
 
 export function usePaletteShown(input: {
-  t: (template: TemplateStringsArray, ...args: unknown[]) => string
+  i18n: I18n
   query: string
   profiles: Profile[]
   openId: string | undefined
@@ -18,9 +19,9 @@ export function usePaletteShown(input: {
   shortcutLabels: Partial<Record<ShortcutId, string>>
   bindings: Record<ShortcutId, string>
 }): PaletteItem[] {
-  const { t, query, profiles, openId, gameId, sections, shortcutLabels, bindings } = input
+  const { i18n, query, profiles, openId, gameId, sections, shortcutLabels, bindings } = input
   const profile = profiles.find((p) => p.id === openId)
-  const collectionStatus = useCollectionStatus(gameId, profile ?? { id: '' })
+  const collectionStatus = useCollectionStatus(gameId, profile)
   const collectionReview = Boolean(
     profile?.collection && collectionHeader(collectionStatus).review !== null,
   )
@@ -38,7 +39,7 @@ export function usePaletteShown(input: {
       sections,
       shortcuts: SHORTCUTS.map((row) => ({ ...row, keys: bindings[row.id] })),
       shortcutLabels,
-      labels: paletteActionLabels(t),
+      labels: paletteActionLabels(i18n),
       collectionReview,
     }),
     query,
