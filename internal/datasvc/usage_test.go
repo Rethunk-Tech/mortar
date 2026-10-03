@@ -72,6 +72,7 @@ func TestMeasureGameTotals(t *testing.T) {
 	write("cache/nexus/x.json", 9)
 	write("backups/one.zip", 11)
 	write("trash/alpha/dead.bin", 40)
+	write("profiles/stardew/p1/profile.json", 1)
 	got, err := Measure(root, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -79,8 +80,12 @@ func TestMeasureGameTotals(t *testing.T) {
 	byGame := map[string]int64{}
 	for _, g := range got.Games {
 		byGame[g.Game] = g.Size
-		if g.Name != g.Game {
-			t.Fatalf("name = %q game = %q", g.Name, g.Game)
+		want := g.Game
+		if g.Game == "stardew" {
+			want = "Stardew Valley"
+		}
+		if g.Name != want {
+			t.Fatalf("name = %q, want %q", g.Name, want)
 		}
 	}
 	if byGame["alpha"] != 4+100+20+8+5+3 {
@@ -95,7 +100,7 @@ func TestMeasureGameTotals(t *testing.T) {
 	if _, ok := byGame["one.zip"]; ok {
 		t.Fatalf("loose backup counted as a game: %+v", got.Games)
 	}
-	if len(byGame) != 2 {
+	if len(byGame) != 3 {
 		t.Fatalf("games = %+v", got.Games)
 	}
 }

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/game"
 )
 
 // Progress is a size walk in progress.
@@ -199,7 +200,11 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 		}
 	}
 	for id, n := range sizes {
-		u.Games = append(u.Games, GameUsage{Game: id, Name: id, Size: n})
+		name := id
+		if g := game.Find(id); g != nil {
+			name = g.Name()
+		}
+		u.Games = append(u.Games, GameUsage{Game: id, Name: name, Size: n})
 	}
 	return u, nil
 }
