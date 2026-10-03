@@ -1,12 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from '@mui/material'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { useLaunch } from './store.ts'
 
 export function StopDialog({
@@ -21,27 +14,18 @@ export function StopDialog({
   const { t } = useLingui()
   const stop = useLaunch((s) => s.stop)
   return (
-    <Dialog open={open} onClose={onClose} slotProps={{ paper: { sx: { maxWidth: 420 } } }}>
-      <DialogTitle>{t`Stop the game?`}</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          {t`Stardew Valley will close now, and any progress since your last save is lost.`}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} sx={{ whiteSpace: 'nowrap' }}>{t`Cancel`}</Button>
-        <Button
-          color="error"
-          variant="contained"
-          sx={{ whiteSpace: 'nowrap' }}
-          onClick={() => {
-            onClose()
-            stop(game)
-          }}
-        >
-          {t`Stop game`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <ConfirmDialog
+      open={open}
+      maxWidth={420}
+      danger={true}
+      title={t`Stop the game?`}
+      body={t`Stardew Valley will close now, and any progress since your last save is lost.`}
+      confirmLabel={t`Stop game`}
+      onCancel={onClose}
+      onConfirm={() => {
+        onClose()
+        stop(game)
+      }}
+    />
   )
 }
