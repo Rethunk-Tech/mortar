@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, InputAdornment, TextField, Typography } from '@mui/material'
 import { History, Search, Sprout } from 'lucide-react'
@@ -56,15 +57,12 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
         {t`Saves stay in one folder for every profile. This tab shows how well each one fits this one.`}
       </TipBanner>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 0.75 }}>
-        <Typography sx={{ flex: 1, minWidth: 0, fontSize: 13, lineHeight: 1.5 }}>
-          {t`Mortar reads each save for the mods it has used. You pick the save in the game; this is how well each one fits ${name}.`}
-        </Typography>
         {fits.length === 0 ? null : (
           <TextField
             size="small"
             value={query}
             onChange={(e) => setQuery(e.currentTarget.value)}
-            placeholder={t`Filter saves`}
+            placeholder={plural(fits.length, { one: 'Filter # save', other: 'Filter # saves' })}
             slotProps={{
               htmlInput: { 'aria-label': t`Filter saves` },
               input: {
@@ -75,9 +73,10 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
                 ),
               },
             }}
-            sx={{ width: 200, flexShrink: 0 }}
+            sx={{ width: 360, maxWidth: '50%' }}
           />
         )}
+        <Box sx={{ flex: 1 }} />
         <Button
           size="small"
           startIcon={<History size={14} />}
