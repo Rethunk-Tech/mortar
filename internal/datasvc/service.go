@@ -4,6 +4,7 @@ package datasvc
 import (
 	"errors"
 	"path/filepath"
+	"slices"
 	"sync"
 	"time"
 
@@ -89,10 +90,7 @@ func (s *Service) ModUsage() (ModUsage, error) {
 	if err != nil {
 		return ModUsage{}, err
 	}
-	fp, err := usageFingerprint(dir)
-	if err != nil {
-		return ModUsage{}, err
-	}
+	fp := usageFingerprint(dir)
 	s.mu.Lock()
 	if s.modFP == fp && s.modFP != "" {
 		u := s.modCache
@@ -136,10 +134,8 @@ func (s *Service) RemoveStoreItem(game, key string) error {
 	if err != nil {
 		return err
 	}
-	for _, k := range keys[game] {
-		if k == key {
-			return errInUse
-		}
+	if slices.Contains(keys[game], key) {
+		return errInUse
 	}
 	if err := s.items.Remove([]store.Ref{{Game: game, Key: key}}); err != nil {
 		return err

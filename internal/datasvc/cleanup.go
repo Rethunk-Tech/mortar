@@ -40,7 +40,7 @@ type fetchedFile struct {
 }
 
 // Select lists store items no referenced key names, cache files past their expiry, and leftover temp folders.
-func Select(root string, items *store.Store, referenced map[string][]string, now time.Time, labels ...func(string, string) string) (Preview, error) {
+func Select(root string, items *store.Store, referenced map[string][]string, now time.Time, nameOf func(string, string) string) (Preview, error) {
 	out := Preview{Items: []Item{}}
 	refs, err := items.Unreferenced(referenced)
 	if err != nil {
@@ -50,8 +50,8 @@ func Select(root string, items *store.Store, referenced map[string][]string, now
 		rel := filepath.ToSlash(filepath.Join("store", r.Game, r.Key))
 		n := dirSize(filepath.Join(root, filepath.FromSlash(rel)))
 		label := r.Game + "/" + r.Key
-		if len(labels) > 0 && labels[0] != nil {
-			if named := labels[0](r.Game, r.Key); named != "" {
+		if nameOf != nil {
+			if named := nameOf(r.Game, r.Key); named != "" {
 				label = named
 			}
 		}
@@ -59,7 +59,7 @@ func Select(root string, items *store.Store, referenced map[string][]string, now
 		out.Total += n
 	}
 	cacheRoot := filepath.Join(root, "cache")
-	err = filepath.WalkDir(cacheRoot, func(path string, d fs.DirEntry, err error) error {
+	err = filepath.WalkDir(filepath.Clean(cacheRoot), func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			if errors.Is(err, fs.ErrNotExist) {
 				return fs.SkipDir
@@ -93,7 +93,7 @@ func Select(root string, items *store.Store, referenced map[string][]string, now
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return Preview{}, err
 	}
-	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+	err = filepath.WalkDir(filepath.Clean(root), func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -171,7 +171,7 @@ func Apply(root string, items *store.Store, preview Preview, keep map[string][]s
 		if confErr != nil {
 			continue
 		}
-		_ = os.RemoveAll(abs)
+		_ = os.RemoveAll(filepath.Clean(abs))
 	}
 	return items.Remove(refs)
 }
@@ -200,7 +200,7 @@ func fileAge(path string, now time.Time) time.Duration {
 			return now.Sub(wrap.Fetched)
 		}
 	}
-	info, err := os.Stat(path)
+	info, err := os.Stat(filepath.Clean(path))
 	if err != nil {
 		return 0
 	}
@@ -208,7 +208,7 @@ func fileAge(path string, now time.Time) time.Duration {
 }
 
 func dirSize(dir string) (n int64) {
-	_ = filepath.WalkDir(dir, func(_ string, d fs.DirEntry, err error) error {
+	_ = filepath.WalkDir(filepath.Clean(dir), func(_ string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return fs.SkipDir
 		}
@@ -224,7 +224,7 @@ func dirSize(dir string) (n int64) {
 }
 
 func dirEmpty(dir string) (bool, error) {
-	ents, err := os.ReadDir(dir)
+	ents, err := os.ReadDir(filepath.Clean(dir))
 	if err != nil {
 		return false, err
 	}

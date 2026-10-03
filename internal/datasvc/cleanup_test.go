@@ -61,7 +61,7 @@ func TestSelectKeepsReferencedAndApplyRemovesTheRest(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "cache", "write.tmp"), []byte("partial"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	preview, err := Select(root, items, map[string][]string{"stardew": {"keep"}}, now)
+	preview, err := Select(root, items, map[string][]string{"stardew": {"keep"}}, now, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,7 +120,7 @@ func TestApplySkipsAStoreKeyThatBecameReferenced(t *testing.T) {
 		t.Fatal(err)
 	}
 	now := time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)
-	preview, err := Select(root, items, map[string][]string{}, now)
+	preview, err := Select(root, items, map[string][]string{}, now, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

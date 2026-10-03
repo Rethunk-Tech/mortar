@@ -34,13 +34,15 @@ type ProfileSize struct {
 
 // Usage is disk use of Mortar's data folder.
 type Usage struct {
-	Path     string        `json:"path"`
-	Profiles []ProfileSize `json:"profiles"`
-	Store    int64         `json:"store"`
-	Cache    int64         `json:"cache"`
-	Backups  int64         `json:"backups"`
-	Trash    int64         `json:"trash"`
-	Total    int64         `json:"total"`
+	Path             string        `json:"path"`
+	Profiles         []ProfileSize `json:"profiles"`
+	Store            int64         `json:"store"`
+	Cache            int64         `json:"cache"`
+	Backups          int64         `json:"backups"`
+	Trash            int64         `json:"trash"`
+	Total            int64         `json:"total"`
+	SharedSaved      int64         `json:"sharedSaved"`
+	SharedSavedKnown bool          `json:"sharedSavedKnown"`
 }
 
 // CacheInfo is Mortar's cache folder.
@@ -65,7 +67,8 @@ type profileMeta struct {
 func Measure(root string, report func(Progress)) (Usage, error) {
 	u := Usage{Path: root, Profiles: []ProfileSize{}}
 	mods := map[string]int64{}
-	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+	share := newShareAcc()
+	err := filepath.WalkDir(filepath.Clean(root), func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			if path == root {
 				return err
@@ -76,12 +79,18 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 			if d.IsDir() {
 				return fs.SkipDir
 			}
+			if info, infoErr := os.Stat(filepath.Clean(path)); infoErr == nil && info.Mode().IsRegular() {
+				if resolved, resErr := filepath.EvalSymlinks(path); resErr == nil && under(root, resolved) {
+					share.addFollowed(info)
+				}
+			}
 			return nil
 		}
 		if !d.Type().IsRegular() {
 			return nil
 		}
 		if info, infoErr := d.Info(); infoErr == nil {
+			share.add(info)
 			n := info.Size()
 			u.Total += n
 			rel := path
@@ -112,8 +121,9 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 	if err != nil {
 		return Usage{}, err
 	}
+	u.SharedSaved, u.SharedSavedKnown = share.saved()
 	profilesRoot := filepath.Join(root, "profiles")
-	games, err := os.ReadDir(profilesRoot)
+	games, err := os.ReadDir(filepath.Clean(profilesRoot))
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return Usage{}, err
 	}
@@ -121,7 +131,7 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 		if !g.IsDir() || g.Type()&fs.ModeSymlink != 0 {
 			continue
 		}
-		ids, err := os.ReadDir(filepath.Join(profilesRoot, g.Name()))
+		ids, err := os.ReadDir(filepath.Clean(filepath.Join(profilesRoot, g.Name())))
 		if err != nil {
 			continue
 		}
@@ -208,7 +218,7 @@ func MeasureMods(root string) (ModUsage, error) {
 	last := readStoreIndex(filepath.Join(root, "store", "index.json"))
 	names, uses, copies := profileUse(root)
 	storeRoot := filepath.Join(root, "store")
-	games, err := os.ReadDir(storeRoot)
+	games, err := os.ReadDir(filepath.Clean(storeRoot))
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return ModUsage{}, err
 	}
@@ -216,7 +226,7 @@ func MeasureMods(root string) (ModUsage, error) {
 		if !g.IsDir() || g.Type()&fs.ModeSymlink != 0 {
 			continue
 		}
-		items, err := os.ReadDir(filepath.Join(storeRoot, g.Name()))
+		items, err := os.ReadDir(filepath.Clean(filepath.Join(storeRoot, g.Name())))
 		if err != nil {
 			continue
 		}
@@ -262,7 +272,7 @@ func profileUse(root string) (names map[string]string, uses map[string]int, copi
 	uses = map[string]int{}
 	copies = map[string]int64{}
 	profilesRoot := filepath.Join(root, "profiles")
-	games, err := os.ReadDir(profilesRoot)
+	games, err := os.ReadDir(filepath.Clean(profilesRoot))
 	if err != nil {
 		return names, uses, copies
 	}
@@ -270,7 +280,7 @@ func profileUse(root string) (names map[string]string, uses map[string]int, copi
 		if !g.IsDir() || g.Type()&fs.ModeSymlink != 0 {
 			continue
 		}
-		ids, err := os.ReadDir(filepath.Join(profilesRoot, g.Name()))
+		ids, err := os.ReadDir(filepath.Clean(filepath.Join(profilesRoot, g.Name())))
 		if err != nil {
 			continue
 		}
@@ -322,28 +332,28 @@ func readProfileEntries(path string) profileEntries {
 }
 
 func clearCache(dir string) error {
-	ents, err := os.ReadDir(dir)
+	ents, err := os.ReadDir(filepath.Clean(dir))
 	if errors.Is(err, fs.ErrNotExist) {
-		return os.MkdirAll(dir, 0o700)
+		return os.MkdirAll(filepath.Clean(dir), 0o700)
 	}
 	if err != nil {
 		return err
 	}
 	var errs []error
 	for _, e := range ents {
-		errs = append(errs, os.RemoveAll(filepath.Join(dir, e.Name())))
+		errs = append(errs, os.RemoveAll(filepath.Clean(filepath.Join(dir, e.Name()))))
 	}
 	return errors.Join(errs...)
 }
 
-func usageFingerprint(root string) (string, error) {
+func usageFingerprint(root string) string {
 	var n int64
 	for _, rel := range []string{filepath.Join("store", "index.json"), "profiles", "store"} {
-		info, err := os.Stat(filepath.Join(root, rel))
+		info, err := os.Stat(filepath.Clean(filepath.Join(root, rel)))
 		if err != nil {
 			continue
 		}
 		n += info.ModTime().UnixNano()
 	}
-	return strconv.FormatInt(n, 10), nil
+	return strconv.FormatInt(n, 10)
 }

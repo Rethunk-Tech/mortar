@@ -58,7 +58,7 @@ func TestRemoveStoreItemRefusesWhenAProfileUsesIt(t *testing.T) {
 
 func setEntry(t *testing.T, path, key string) {
 	t.Helper()
-	b, err := os.ReadFile(path)
+	b, err := os.ReadFile(filepath.Clean(path))
 	if err != nil {
 		t.Fatal(err)
 	}
