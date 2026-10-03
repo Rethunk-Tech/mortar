@@ -79,11 +79,11 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 	}
 	for i, res := range m.CheckUpdates(ctx, req) {
 		if res.Suggested != nil && (downloaded(asked[i], res.Suggested.Version) ||
-			nexusFileIsCurrent(ctx, m, asked[i], res.Suggested.URL)) {
+			nexusFileIsCurrent(ctx, m, asked[i], res.Suggested.URL, res.Suggested.Version)) {
 			res.Suggested = nil
 		}
 		if res.Unofficial != nil && (downloaded(asked[i], res.Unofficial.Version) ||
-			nexusFileIsCurrent(ctx, m, asked[i], res.Unofficial.URL)) {
+			nexusFileIsCurrent(ctx, m, asked[i], res.Unofficial.URL, res.Unofficial.Version)) {
 			res.Unofficial = nil
 		}
 		switch {
@@ -358,7 +358,7 @@ func containsPreviewMod(file meta.File, uniqueID string) bool {
 
 // nexusFileIsCurrent uses the cached SMAPI file preview to keep a stale manifest from making a file update itself.
 // The preview also prevents a raw game-content file from becoming an update target for a SMAPI mod.
-func nexusFileIsCurrent(ctx context.Context, m Meta, x Installed, url string) bool {
+func nexusFileIsCurrent(ctx context.Context, m Meta, x Installed, url, suggested string) bool {
 	modID := nexusUpdate(x.UpdateKeys, url)
 	if modID == 0 {
 		return false
@@ -388,6 +388,11 @@ func nexusFileIsCurrent(ctx context.Context, m Meta, x Installed, url string) bo
 		}
 	}
 	if latest.ID == installed.ID {
+		// The dataset trails Nexus: when SMAPI already knows a newer version than the newest file the page lists,
+		// the page is stale and the update is real.
+		if c, ok := meta.CompareVersions(latest.Version, suggested); ok && c < 0 {
+			return false
+		}
 		return !strings.EqualFold(installed.Type, "OLD_VERSION")
 	}
 	return !containsPreviewMod(latest, x.UniqueID)

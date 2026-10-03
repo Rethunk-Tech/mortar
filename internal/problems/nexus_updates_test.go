@@ -79,3 +79,28 @@ func TestCheckUpdatesChoosesANewerFileFromTheSameStem(t *testing.T) {
 		t.Fatalf("updates = %+v, want one same-stem update", got.Updates)
 	}
 }
+
+func TestCheckUpdatesTrustsSMAPIOverAStaleDatasetPage(t *testing.T) {
+	const id = "Example.MachineControlPanel"
+	rm := fakeMeta{
+		compat: map[string]meta.UpdateResult{
+			id: {Known: true, Suggested: &meta.Update{Version: "2.5.0", URL: "https://www.nexusmods.com/stardewvalley/mods/28261"}},
+		},
+		pages: map[int]meta.Page{28261: {
+			Downloads: []meta.File{{
+				ID:       179112,
+				Type:     "MAIN",
+				Version:  "2.4.1",
+				FileName: "Machine Control Panel-28261-2-4-1.zip",
+				Mods:     []meta.Mod{{UniqueID: id, Version: "2.4.1"}},
+			}},
+		}},
+	}
+	installed := mod("nexus-28261-179112", id, "2.4.1", true)
+	installed.UpdateKeys = []string{"Nexus:28261"}
+
+	got := CheckUpdates(context.Background(), rm, Environment{}, []Installed{installed}, false)
+	if len(got.Updates) != 1 || got.Updates[0].Version != "2.5.0" {
+		t.Fatalf("updates = %+v, want 2.5.0", got.Updates)
+	}
+}
