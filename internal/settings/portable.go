@@ -48,6 +48,10 @@ type Portable struct {
 	NotifyDownloadFinished       *bool                    `json:"notifyDownloadFinished"`
 	NotifyDownloadFailed         *bool                    `json:"notifyDownloadFailed"`
 	NotifyRunCrashed             *bool                    `json:"notifyRunCrashed"`
+	DesktopDownloadFinished      *bool                    `json:"desktopDownloadFinished"`
+	DesktopDownloadFailed        *bool                    `json:"desktopDownloadFailed"`
+	DesktopRunCrashed            *bool                    `json:"desktopRunCrashed"`
+	DesktopModUpdates            *bool                    `json:"desktopModUpdates"`
 	Density                      string                   `json:"density"`
 	Theme                        string                   `json:"theme"`
 	GridCardSize                 string                   `json:"gridCardSize"`
@@ -119,6 +123,7 @@ var portableFields = []string{
 	"defaultModsView", "confirmRemovals", "backgroundBadgeChecks",
 	"startScreen", "dates", "trashRetentionDays", "historyEventsKept",
 	"notifyDownloadFinished", "notifyDownloadFailed", "notifyRunCrashed",
+	"desktopDownloadFinished", "desktopDownloadFailed", "desktopRunCrashed", "desktopModUpdates",
 	"density", "gridCardSize", "showAuthorOnCards", "reduceMotion", "profileHero",
 	"reuseFomodChoices", "driftChecks",
 	"autoInstallMortarUpdates", "autoTrackNexus",
@@ -333,6 +338,10 @@ func fillPortable(s Settings) Portable {
 		NotifyDownloadFinished:       s.NotifyDownloadFinished,
 		NotifyDownloadFailed:         s.NotifyDownloadFailed,
 		NotifyRunCrashed:             s.NotifyRunCrashed,
+		DesktopDownloadFinished:      s.DesktopDownloadFinished,
+		DesktopDownloadFailed:        s.DesktopDownloadFailed,
+		DesktopRunCrashed:            s.DesktopRunCrashed,
+		DesktopModUpdates:            s.DesktopModUpdates,
 		Density:                      s.Density,
 		Theme:                        s.Theme,
 		GridCardSize:                 s.GridCardSize,
@@ -469,6 +478,18 @@ func copyPortable(dst *Settings, p Portable, present map[string]struct{}) {
 	}
 	if has(present, "notifyRunCrashed") {
 		dst.NotifyRunCrashed = p.NotifyRunCrashed
+	}
+	if has(present, "desktopDownloadFinished") {
+		dst.DesktopDownloadFinished = p.DesktopDownloadFinished
+	}
+	if has(present, "desktopDownloadFailed") {
+		dst.DesktopDownloadFailed = p.DesktopDownloadFailed
+	}
+	if has(present, "desktopRunCrashed") {
+		dst.DesktopRunCrashed = p.DesktopRunCrashed
+	}
+	if has(present, "desktopModUpdates") {
+		dst.DesktopModUpdates = p.DesktopModUpdates
 	}
 	if has(present, "density") {
 		dst.Density = p.Density

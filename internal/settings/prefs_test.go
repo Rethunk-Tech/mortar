@@ -101,7 +101,9 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"cosmeticConflicts": "hidden", "backgroundBadgeChecks": "false", "startScreen": "gameselect",
 		"dates": "absolute", "trashRetentionDays": "10", "historyEventsKept": "50",
 		"notifyDownloadFinished": "false", "notifyDownloadFailed": "false", "notifyRunCrashed": "false",
-		"density": "compact", "theme": "light", "gridCardSize": "large", "showAuthorOnCards": "false",
+		"desktopDownloadFinished": "true", "desktopDownloadFailed": "false", "desktopRunCrashed": "false",
+		"desktopModUpdates": "true",
+		"density":           "compact", "theme": "light", "gridCardSize": "large", "showAuthorOnCards": "false",
 		"reduceMotion": "always", "profileHero": "hidden", "enableRequirements": "never",
 		"missingRequirements": "autodownload", "reuseFomodChoices": "false", "driftChecks": "false",
 		"smapiBuilds": "include", "smapiPin": "4.0.0", "autoInstallMortarUpdates": "false", "autoTrackNexus": "true",
@@ -206,6 +208,22 @@ func TestStoreUnusedForZeroIsForever(t *testing.T) {
 func TestTrashKeepForDefaultThirtyDays(t *testing.T) {
 	if Defaults().TrashKeepFor() != 30*24*time.Hour {
 		t.Fatalf("trash = %s", Defaults().TrashKeepFor())
+	}
+}
+
+func TestDesktopNotifyPrefKeys(t *testing.T) {
+	var s Settings
+	want := map[string]string{
+		"desktopDownloadFinished": "false",
+		"desktopDownloadFailed":   "true",
+		"desktopRunCrashed":       "true",
+		"desktopModUpdates":       "false",
+	}
+	for key, def := range want {
+		got, err := s.Lookup(key)
+		if err != nil || got != def {
+			t.Fatalf("%s = %q %v, want %s", key, got, err, def)
+		}
 	}
 }
 

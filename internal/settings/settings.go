@@ -142,13 +142,21 @@ type Settings struct {
 	// BackgroundBadgeChecks fills sidebar badges for other profiles. Nil means on.
 	BackgroundBadgeChecks *bool `json:"backgroundBadgeChecks"`
 	// StartScreen is last (last opened profile) or gameselect.
-	StartScreen                string `json:"startScreen"`
-	Dates                      string `json:"dates"`
-	TrashRetentionDays         int    `json:"trashRetentionDays"`
-	HistoryEventsKept          int    `json:"historyEventsKept"`
-	NotifyDownloadFinished     *bool  `json:"notifyDownloadFinished"`
-	NotifyDownloadFailed       *bool  `json:"notifyDownloadFailed"`
-	NotifyRunCrashed           *bool  `json:"notifyRunCrashed"`
+	StartScreen            string `json:"startScreen"`
+	Dates                  string `json:"dates"`
+	TrashRetentionDays     int    `json:"trashRetentionDays"`
+	HistoryEventsKept      int    `json:"historyEventsKept"`
+	NotifyDownloadFinished *bool  `json:"notifyDownloadFinished"`
+	NotifyDownloadFailed   *bool  `json:"notifyDownloadFailed"`
+	NotifyRunCrashed       *bool  `json:"notifyRunCrashed"`
+	// DesktopDownloadFinished sends a desktop notification when a download finishes. Nil means off.
+	DesktopDownloadFinished *bool `json:"desktopDownloadFinished"`
+	// DesktopDownloadFailed sends a desktop notification when a download fails. Nil means on.
+	DesktopDownloadFailed *bool `json:"desktopDownloadFailed"`
+	// DesktopRunCrashed sends a desktop notification when a Mortar-started run crashes. Nil means on.
+	DesktopRunCrashed *bool `json:"desktopRunCrashed"`
+	// DesktopModUpdates sends a desktop notification when a background check finds updates. Nil means off.
+	DesktopModUpdates          *bool  `json:"desktopModUpdates"`
 	Density                    string `json:"density"`
 	Theme                      string `json:"theme"`
 	GridCardSize               string `json:"gridCardSize"`
