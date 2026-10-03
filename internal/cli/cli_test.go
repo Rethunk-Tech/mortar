@@ -366,15 +366,18 @@ func TestProblemsDismissRestoreAndDismissed(t *testing.T) {
 }
 
 func TestCacheAndDataUsageByMod(t *testing.T) {
+	cacheSize := map[string]any{"path": "/data/cache", "size": 12}
+	modRow := map[string]any{
+		"game": "stardew", "key": "nexus-1-1", "name": "Alpha", "size": 100, "profiles": 1, "profileSize": 80, "lastUsed": "2026-01-02T03:04:05Z",
+	}
+	usageByMod := map[string]any{
+		"total": 100,
+		"items": []map[string]any{modRow},
+	}
 	results := map[string]any{
-		"cache.size":  map[string]any{"path": "/data/cache", "size": 12},
-		"cache.clear": nil,
-		"data.usageByMod": map[string]any{
-			"total": 100,
-			"items": []map[string]any{
-				{"game": "stardew", "key": "nexus-1-1", "name": "Alpha", "size": 100, "profiles": 1, "profileSize": 80, "lastUsed": "2026-01-02T03:04:05Z"},
-			},
-		},
+		"cache.size":      cacheSize,
+		"cache.clear":     nil,
+		"data.usageByMod": usageByMod,
 	}
 	r := invoke(t, results, "cache", "size")
 	if r.code != 0 || r.calls[0].method != "cache.size" || !strings.Contains(r.out, "/data/cache") {
