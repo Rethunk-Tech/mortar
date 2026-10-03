@@ -36,7 +36,11 @@ export function SaveWarnDialog() {
           {(save?.missing ?? []).map((m) => (
             <ListItem key={m.uniqueId} disableGutters={true}>
               <ListItemText
-                primary={m.name || m.uniqueId}
+                primary={
+                  <span title={(m.name ?? '').trim() === '' ? m.uniqueId : undefined}>
+                    {(m.name ?? '').trim() === '' ? t`Unknown mod` : m.name}
+                  </span>
+                }
                 secondary={m.disabled ? t`Switched off in this profile` : t`Not in this profile`}
               />
             </ListItem>

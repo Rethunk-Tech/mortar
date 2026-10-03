@@ -49,10 +49,17 @@ import { useUpdates } from './updates.ts'
 
 const noWrap = { whiteSpace: 'nowrap' } as const
 
-function Field({ label, value }: { label: string; value: string }) {
+function Field({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  const caption = (
+    <Typography component={hint ? 'span' : 'p'} sx={heading}>
+      {label}
+    </Typography>
+  )
   return (
     <Box>
-      <Typography sx={heading}>{label}</Typography>
+      <Tooltip title={hint ?? ''} disableHoverListener={!hint}>
+        {caption}
+      </Tooltip>
       <Typography sx={{ fontSize: 13, overflowWrap: 'anywhere' }}>{value}</Typography>
     </Box>
   )
@@ -372,7 +379,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
           {t`Stop ignoring ${ignoredSource} updates`}
         </Button>
       ))}
-      <Field label={t`UniqueID`} value={mod.uniqueId} />
+      <Field label={t`Mod id`} value={mod.uniqueId} hint={t`SMAPI UniqueID`} />
       {mod.endorsements > 0 ? (
         <Field label={t`Endorsements`} value={mod.endorsements.toLocaleString(i18n.locale)} />
       ) : null}

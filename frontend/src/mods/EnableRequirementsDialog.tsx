@@ -23,7 +23,7 @@ export function EnableRequirementsDialog() {
   if (!offer) {
     return null
   }
-  const names = offer.mods.map((m) => m.name || m.uniqueId)
+  const names = offer.mods.map((m) => ((m.name ?? '').trim() === '' ? t`Unknown mod` : m.name))
   const enableThem = () => {
     const target = open()
     dismiss()
@@ -58,7 +58,12 @@ export function EnableRequirementsDialog() {
       <DialogContent>
         <List dense={true}>
           {offer.mods.map((m) => (
-            <ListItem key={`${m.key}:${m.uniqueId}`}>{m.name || m.uniqueId}</ListItem>
+            <ListItem
+              key={`${m.key}:${m.uniqueId}`}
+              title={(m.name ?? '').trim() === '' ? m.uniqueId : undefined}
+            >
+              {(m.name ?? '').trim() === '' ? t`Unknown mod` : m.name}
+            </ListItem>
           ))}
         </List>
       </DialogContent>
