@@ -52,7 +52,7 @@ function StatusLine({
 }
 
 export function NotesTab({ profile }: { profile: Profile }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
   const replace = useProfiles((s) => s.replace)
   const [text, setText] = useState(profile.notes)
@@ -146,7 +146,7 @@ export function NotesTab({ profile }: { profile: Profile }) {
           <Typography
             sx={{ position: 'absolute', right: 32, top: 8, fontSize: 12, color: 'text.secondary' }}
           >
-            {`${text.length}/${MAX_NOTES}`}
+            {t`${text.length.toLocaleString(i18n.locale)} of ${MAX_NOTES.toLocaleString(i18n.locale)}`}
           </Typography>
         ) : null}
         {/* Floats in the field's corner so the save status takes no room from the notes. */}
