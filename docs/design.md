@@ -32,6 +32,7 @@ Remaining ([architecture.md](architecture.md#release)):
 - **UI translations** beyond English: the Lingui machinery and extracted catalogs exist; needs chosen languages and translators. Parked 2026-10-02 (not v1).
 - **Steam Deck / gamepad mode** (larger targets, gamepad focus navigation, Game Mode): parked 2026-10-02 (not v1).
 - **macOS build**: Stardew runs on macOS, but Mortar has no macOS CI or test machine. Parked 2026-10-02 (not v1).
+- **Scheduled save backups** (daily or every N hours while Mortar runs, keep the last N per save, never while the game writes), beside today's before-Play backups: parked 2026-10-03.
 
 Not in the first release; re-weigh only when asked:
 
