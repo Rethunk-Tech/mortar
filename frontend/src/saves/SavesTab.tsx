@@ -36,6 +36,7 @@ import {
   OpenSaveFolder,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { When } from '../i18n/When.tsx'
 import { useLocked } from '../mods/useLocked.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
@@ -310,6 +311,9 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
   const hours = hoursPlayed(fit.millisecondsPlayed)
   const subtitle = [fit.farmer, kind].filter(Boolean).join(' · ')
   const label = fit.farm || fit.folder
+  const lastName =
+    useProfiles.getState().profiles.find((p) => p.id === fit.lastProfileId)?.name ??
+    fit.lastProfileId
   return (
     <Box
       sx={{
@@ -421,6 +425,17 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
         >
           {t`Last played ${formatWhen(fit.played)}`}
         </Typography>
+        {fit.lastProfileId ? (
+          <Typography sx={{ fontSize: 12, color: 'text.secondary' }} noWrap={true}>
+            {t`Last played with ${lastName}`}
+            {fit.lastProfileAt ? (
+              <>
+                {' '}
+                <When value={fit.lastProfileAt} />
+              </>
+            ) : null}
+          </Typography>
+        ) : null}
         <FitStatus missing={missing.length} />
         {missing.length === 0 ? null : <AddAll missing={missing} profile={profile} />}
       </Box>

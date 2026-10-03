@@ -69,8 +69,28 @@ test('playIssueSummary is empty when nothing is wrong', () => {
       assetConflicts: [conflict({ cosmetic: true })],
       broken: [broken({ status: 'abandoned' })],
       updates: [],
+      currentProfileId: 'p1',
+      lastPlayed: { folder: 'Farm_1', farm: 'Sunny', profileId: 'p1', profileName: 'Main' },
     }),
   ).toEqual([])
+})
+
+test('playIssueSummary adds a last-profile group when the newest save used another profile', () => {
+  expect(
+    playIssueSummary({
+      currentProfileId: 'p1',
+      lastPlayed: { folder: 'Farm_1', farm: 'Sunny', profileId: 'p2', profileName: 'Co-op' },
+    }),
+  ).toEqual([
+    {
+      kind: 'lastProfile',
+      count: 1,
+      names: [],
+      save: 'Sunny',
+      profileName: 'Co-op',
+      switchProfileId: 'p2',
+    },
+  ])
 })
 
 test('playIssueSummary groups required missing, non-cosmetic conflicts, updates, and broken or obsolete', () => {

@@ -15,6 +15,8 @@ function saveFit(folder: string, uniqueId: string): Fit {
     millisecondsPlayed: 0,
     money: 0,
     missing: [{ uniqueId, name: uniqueId, disabled: true, where: null }],
+    lastProfileId: '',
+    lastProfileAt: 0,
   }
 }
 

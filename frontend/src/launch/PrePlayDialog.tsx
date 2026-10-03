@@ -33,6 +33,8 @@ function GroupHeading({ group }: { group: PlayIssueGroup }) {
       return t`Pending updates (${group.count})`
     case 'broken':
       return t`Broken or obsolete (${group.count})`
+    case 'lastProfile':
+      return t`${group.save} was last played with ${group.profileName}`
     default:
       return ''
   }
@@ -56,13 +58,15 @@ function Group({ group }: { group: PlayIssueGroup }) {
       <Typography sx={{ mt: 1.5, fontWeight: 600 }}>
         <GroupHeading group={group} />
       </Typography>
-      <List dense={true}>
-        {group.names.map((name) => (
-          <ListItem key={name} disableGutters={true}>
-            <ListItemText primary={name} />
-          </ListItem>
-        ))}
-      </List>
+      {group.names.length === 0 ? null : (
+        <List dense={true}>
+          {group.names.map((name) => (
+            <ListItem key={name} disableGutters={true}>
+              <ListItemText primary={name} />
+            </ListItem>
+          ))}
+        </List>
+      )}
     </>
   )
 }
@@ -76,6 +80,7 @@ export function PrePlayDialog() {
   const updateAndPlay = useLaunch((s) => s.updateAndPlay)
   const skip = check?.skipPlayCheck ?? false
   const hasUpdates = (check?.groups ?? []).some((g) => g.kind === 'updates')
+  const lastProfile = (check?.groups ?? []).find((g) => g.kind === 'lastProfile')
   return (
     <Dialog
       open={check !== null}
@@ -114,6 +119,17 @@ export function PrePlayDialog() {
             sx={{ whiteSpace: 'nowrap' }}
           >
             {t`Update and play`}
+          </Button>
+        ) : null}
+        {lastProfile?.switchProfileId ? (
+          <Button
+            onClick={() => {
+              useProfiles.getState().open(lastProfile.switchProfileId ?? '')
+              cancel()
+            }}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            {t`Switch profile`}
           </Button>
         ) : null}
         <Button
