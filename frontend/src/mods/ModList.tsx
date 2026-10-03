@@ -1,17 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  alpha,
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  type TableCellProps,
-  TableHead,
-  TableRow,
-  useMediaQuery,
-} from '@mui/material'
+import { alpha, Box, TableCell, type TableCellProps, TableRow, useMediaQuery } from '@mui/material'
 import { Pin } from 'lucide-react'
-import { type MouseEvent, type ReactNode, useEffect, useState } from 'react'
+import { type MouseEvent, type ReactNode, useEffect, useMemo, useState } from 'react'
 import type {
   Mod,
   Profile,
@@ -19,6 +9,7 @@ import type {
 import { compactQuery } from '../game/compact.ts'
 import { When } from '../i18n/When.tsx'
 import { useProfiles } from '../profiles/store.ts'
+import { formatBytes } from '../saves/backupFormat.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useCustomCategories } from './customCategories.ts'
@@ -32,29 +23,24 @@ import {
   loadCollapsed,
   rowGroupKey,
   sanitizeListGroupBy,
-  toggleCollapsed,
 } from './group.ts'
-import { HeaderCells, ListColumnMenu } from './ListColumnMenu.tsx'
 import {
   columnMenuFromEvent,
   compareListRows,
-  DEFAULT_VISIBLE_LIST_COLUMNS,
   type ListColumnId,
   type ListRow,
   listGridColumns,
   persistColumns,
   sanitizeListColumns,
   sanitizeListSort,
-  toggleListColumn,
   visibleListColumns,
 } from './listColumns.ts'
-import { toListRow } from './listRows.ts'
+import { toListRow, useEntrySizes } from './listRows.ts'
 import { modId, modStatusProblem, nexusIdOf, updateFor } from './lookup.ts'
-import { ModsGroupHeader } from './ModsGroupHeader.tsx'
+import { ModListTable } from './ModListVirtual.tsx'
 import { contextMenuProps } from './menu.ts'
 import { primeDetails, useNexusDetails, useNexusFresh } from './nexusDetails.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
-import { heading } from './paper.ts'
 import {
   LastRunBadge,
   LetterTile,
@@ -67,6 +53,7 @@ import {
 import { useSelection } from './selection.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
+import { flattenModGroups } from './virtualRows.ts'
 
 const SELECTED_ALPHA = 0.14
 const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const
@@ -203,6 +190,8 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string) {
           <LastRunBadge mod={m} />
         </Cell>
       )
+    case 'size':
+      return <ValueCell key="size" text={row.size === undefined ? '—' : formatBytes(row.size)} />
     default:
       return null
   }
@@ -215,6 +204,7 @@ function ModRow({
   locale,
   orderedIds,
   profile,
+  onArrow,
 }: {
   row: ListRow
   striped: boolean
@@ -222,6 +212,7 @@ function ModRow({
   locale: string
   orderedIds: readonly string[]
   profile: Profile
+  onArrow: (id: string, dir: -1 | 1) => void
 }) {
   const detailId = useDetail((s) => s.detailId)
   const selectedIds = useSelection((s) => s.ids)
@@ -247,18 +238,13 @@ function ModRow({
         show(m)
       }}
       data-mod-row="true"
+      data-mod-id={rowId}
       tabIndex={orderedIds[0] === rowId ? 0 : -1}
       {...menu}
       onKeyDown={(e) => {
         if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
           e.preventDefault()
-          const rows = [
-            ...(e.currentTarget.parentElement?.querySelectorAll<HTMLElement>(
-              '[data-mod-row="true"]',
-            ) ?? []),
-          ]
-          const index = rows.indexOf(e.currentTarget)
-          rows[(index + (e.key === 'ArrowDown' ? 1 : -1) + rows.length) % rows.length]?.focus()
+          onArrow(rowId, e.key === 'ArrowDown' ? 1 : -1)
           return
         }
         if (e.key === ' ') {
@@ -304,136 +290,6 @@ function ModRow({
   )
 }
 
-function ModListTable({
-  grid,
-  cols,
-  sort,
-  onMenu,
-  onPreview,
-  onCommit,
-  onCancel,
-  groups,
-  groupBy,
-  headingFor,
-  tagHint,
-  collapsed,
-  gameId,
-  setCollapsed,
-  locale,
-  orderedIds,
-  profile,
-  visible,
-  menu,
-  setMenu,
-}: {
-  grid: string
-  cols: readonly ListColumnId[]
-  sort: ReturnType<typeof sanitizeListSort>
-  onMenu: (e: MouseEvent) => void
-  onPreview: (order: ListColumnId[]) => void
-  onCommit: () => void
-  onCancel: () => void
-  groups: { key: string; items: ListRow[] }[]
-  groupBy: ReturnType<typeof sanitizeListGroupBy>
-  headingFor: (key: string) => string
-  tagHint: string
-  collapsed: Record<string, boolean>
-  gameId: string
-  setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
-  locale: string
-  orderedIds: readonly string[]
-  profile: Profile
-  visible: ListColumnId[]
-  menu: { top: number; left: number } | null
-  setMenu: (menu: { top: number; left: number } | null) => void
-}) {
-  const { t } = useLingui()
-  return (
-    <Box sx={{ minWidth: 0, minHeight: 0, overflowY: 'auto', pb: 1.5 }}>
-      <Table
-        aria-label={t`Mods`}
-        stickyHeader={true}
-        sx={{
-          display: 'block',
-          '& thead, & tbody': { display: 'block' },
-        }}
-      >
-        <TableHead>
-          <TableRow
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: grid,
-              gap: '10px',
-              alignItems: 'center',
-              px: 2,
-              height: 30,
-              position: 'sticky',
-              top: 0,
-              zIndex: 1,
-              bgcolor: 'rgba(25,25,30,0.9)',
-              ...heading,
-              borderBottom: '1px solid rgba(255,255,255,0.08)',
-            }}
-          >
-            <HeaderCells
-              cols={cols}
-              sort={sort}
-              onMenu={onMenu}
-              onPreview={onPreview}
-              onCommit={onCommit}
-              onCancel={onCancel}
-            />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {groups.map((group) => {
-            const open = collapsed[group.key] !== true
-            return (
-              <Box key={group.key || 'none'} component="div">
-                {groupBy === 'none' ? null : (
-                  <TableRow sx={{ display: 'block' }}>
-                    <TableCell sx={{ p: 0, border: 0, display: 'block' }}>
-                      <ModsGroupHeader
-                        label={headingFor(group.key)}
-                        count={group.items.length}
-                        open={open}
-                        onToggle={() =>
-                          setCollapsed((cur) => toggleCollapsed(gameId, cur, group.key, open))
-                        }
-                        {...(groupBy === 'tag' ? { hint: tagHint } : {})}
-                      />
-                    </TableCell>
-                  </TableRow>
-                )}
-                {open
-                  ? group.items.map((r, i) => (
-                      <ModRow
-                        key={modId(r.mod)}
-                        row={r}
-                        striped={i % 2 === 1}
-                        cols={cols}
-                        locale={locale}
-                        orderedIds={orderedIds}
-                        profile={profile}
-                      />
-                    ))
-                  : null}
-              </Box>
-            )
-          })}
-        </TableBody>
-      </Table>
-      <ListColumnMenu
-        anchor={menu}
-        visible={visible}
-        onToggle={(id) => persistColumns(toggleListColumn(visible, id))}
-        onReset={() => persistColumns([...DEFAULT_VISIBLE_LIST_COLUMNS])}
-        onClose={() => setMenu(null)}
-      />
-    </Box>
-  )
-}
-
 export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   const { t, i18n } = useLingui()
   const narrow = useMediaQuery(compactQuery)
@@ -453,6 +309,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   const byId = useNexusDetails((s) => s.byId)
   const customCategories = useCustomCategories((s) => s.categories)
   const customById = customCategoryById(customCategories)
+  useEntrySizes()
   const problems = useMods((s) => s.problems)
   const updates = useUpdates((s) => s.updates)
 
@@ -481,6 +338,15 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
       }),
     (a, b) => compareListRows(a, b, sort),
   )
+  const items = useMemo(
+    () =>
+      flattenModGroups(groups, {
+        grouped: groupBy !== 'none',
+        collapsed,
+        idOf: (row) => modId(row.mod),
+      }),
+    [collapsed, groupBy, groups],
+  )
   const orderedIds = groups.flatMap((g) => g.items.map((r) => modId(r.mod)))
   const onMenu = (e: MouseEvent) => setMenu(columnMenuFromEvent(e))
   const grid = listGridColumns(cols)
@@ -505,7 +371,6 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
     }
     setPreview(null)
   }
-  const onCancel = () => setPreview(null)
 
   return (
     <ModListTable
@@ -515,20 +380,29 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
       onMenu={onMenu}
       onPreview={setPreview}
       onCommit={onCommit}
-      onCancel={onCancel}
+      onCancel={() => setPreview(null)}
       groups={groups}
+      items={items}
       groupBy={groupBy}
       headingFor={headingFor}
       tagHint={tagHint}
       collapsed={collapsed}
       gameId={gameId}
       setCollapsed={setCollapsed}
-      locale={i18n.locale}
-      orderedIds={orderedIds}
-      profile={profile}
       visible={visible}
       menu={menu}
       setMenu={setMenu}
+      renderRow={(row, striped, onArrow) => (
+        <ModRow
+          row={row}
+          striped={striped}
+          cols={cols}
+          locale={i18n.locale}
+          orderedIds={orderedIds}
+          profile={profile}
+          onArrow={onArrow}
+        />
+      )}
     />
   )
 }

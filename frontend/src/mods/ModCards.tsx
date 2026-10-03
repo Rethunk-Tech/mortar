@@ -1,0 +1,371 @@
+import { useLingui } from '@lingui/react/macro'
+import { Box, ButtonBase, Card, Chip, Typography, useMediaQuery } from '@mui/material'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import type {
+  Mod,
+  Profile,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { compact, compactQuery } from '../game/compact.ts'
+import { useProfiles } from '../profiles/store.ts'
+import { useSettings } from '../settings/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import { useCustomCategories } from './customCategories.ts'
+import { useDetail } from './detail.ts'
+import {
+  customCategoryById,
+  emptyGroupLabel,
+  firstTag,
+  groupHeading,
+  groupSorted,
+  installedNames,
+  loadCollapsed,
+  rowGroupKey,
+  sanitizeListGroupBy,
+  toggleCollapsed,
+} from './group.ts'
+import { compareListRows, type ListRow, sanitizeListSort } from './listColumns.ts'
+import { toListRow } from './listRows.ts'
+import { entryOf, modId, modStatusProblem, nexusIdOf, updateFor } from './lookup.ts'
+import { ModMenu } from './ModMenu.tsx'
+import { ModsGroupHeader } from './ModsGroupHeader.tsx'
+import { contextMenuProps } from './menu.ts'
+import { primeDetails, useNexusDetails, useNexusFresh } from './nexusDetails.ts'
+import {
+  LastRunBadge,
+  LetterTile,
+  NexusGoneBadge,
+  PinBadge,
+  ProblemBadge,
+  UpdateBadge,
+} from './parts.tsx'
+import { useSelection } from './selection.ts'
+import { useMods } from './store.ts'
+import { useUpdates } from './updates.ts'
+import {
+  flattenModGroups,
+  gridColumnCount,
+  gridLanePx,
+  groupKeyHolding,
+  useModVirtual,
+  type VirtualRow,
+  virtualIndexOf,
+} from './virtualRows.ts'
+
+const OFF_OPACITY = 0.6
+
+function ModCard({
+  mod: m,
+  orderedIds,
+  profile,
+}: {
+  mod: Mod
+  orderedIds: readonly string[]
+  profile: Profile
+}) {
+  const { t } = useLingui()
+  const openDetail = useDetail((s) => s.show)
+  const selectedId = useDetail((s) => s.detailId)
+  const selectedIds = useSelection((s) => s.ids)
+  const id = modId(m)
+  const marked = selectedIds.includes(id) || (selectedIds.length === 0 && id === selectedId)
+  const fresh = useNexusFresh(nexusIdOf(profile, m))
+  const tag = firstTag(entryOf(profile, m.key)?.tags)
+  return (
+    <Card
+      {...contextMenuProps(m)}
+      sx={{
+        height: 64,
+        pl: 1,
+        pr: 0.75,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        minWidth: 0,
+        borderRadius: '6px',
+        outline: marked ? '1px solid' : 'none',
+        outlineColor: 'primary.main',
+        [compact]: { height: 50, '& .tile': { width: 38, height: 38, fontSize: 19 } },
+      }}
+    >
+      <ButtonBase
+        aria-label={t`Details of ${m.name}`}
+        onMouseDown={(e) => {
+          if (e.shiftKey) {
+            e.preventDefault()
+          }
+        }}
+        onClick={(e) => {
+          useSelection.getState().click(orderedIds, id, e)
+          openDetail(m)
+        }}
+        sx={{
+          '&.Mui-focusVisible': { outlineOffset: '-2px' },
+          flex: 1,
+          minWidth: 0,
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          justifyContent: 'flex-start',
+          textAlign: 'left',
+          fontFamily: 'inherit',
+          color: 'inherit',
+        }}
+      >
+        <LetterTile mod={m} fresh={fresh} />
+        <Box
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            pl: '10px',
+            borderLeft: '1px solid rgba(255,255,255,0.12)',
+            opacity: m.enabled ? 1 : OFF_OPACITY,
+          }}
+        >
+          <Typography noWrap={true} title={m.name} sx={{ fontSize: 14, fontWeight: 600 }}>
+            {m.name}
+          </Typography>
+          <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
+            {`${m.author} · ${m.version}`}
+          </Typography>
+        </Box>
+      </ButtonBase>
+      <PinBadge mod={m} />
+      <UpdateBadge mod={m} />
+      <NexusGoneBadge mod={m} />
+      <ProblemBadge mod={m} />
+      <LastRunBadge mod={m} />
+      {tag ? <Chip size="small" label={tag} sx={{ maxWidth: 96 }} /> : null}
+      <ModMenu mod={m} />
+    </Card>
+  )
+}
+
+function GridSlot({
+  item,
+  heading,
+  collapsed,
+  gameId,
+  setCollapsed,
+  groupBy,
+  tagHint,
+  columns,
+  orderedIds,
+  profile,
+}: {
+  item: VirtualRow<ListRow>
+  heading: (key: string) => string
+  collapsed: Record<string, boolean>
+  gameId: string
+  setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
+  groupBy: string
+  tagHint: string
+  columns: number
+  orderedIds: readonly string[]
+  profile: Profile
+}) {
+  if (item.kind === 'header') {
+    return (
+      <ModsGroupHeader
+        label={heading(item.groupKey)}
+        count={item.count}
+        open={collapsed[item.groupKey] !== true}
+        onToggle={() =>
+          setCollapsed((cur) =>
+            toggleCollapsed(gameId, cur, item.groupKey, collapsed[item.groupKey] !== true),
+          )
+        }
+        {...(groupBy === 'tag' ? { hint: tagHint } : {})}
+      />
+    )
+  }
+  if (item.kind !== 'lane') {
+    return null
+  }
+  return (
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+        gap: '6px',
+        px: 2,
+        alignContent: 'start',
+      }}
+    >
+      {item.items.map((r) => (
+        <ModCard key={modId(r.mod)} mod={r.mod} orderedIds={orderedIds} profile={profile} />
+      ))}
+    </Box>
+  )
+}
+
+function CardsPane({
+  groups,
+  groupBy,
+  collapsed,
+  setCollapsed,
+  gameId,
+  heading,
+  tagHint,
+  orderedIds,
+  profile,
+}: {
+  groups: { key: string; items: ListRow[] }[]
+  groupBy: string
+  collapsed: Record<string, boolean>
+  setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
+  gameId: string
+  heading: (key: string) => string
+  tagHint: string
+  orderedIds: readonly string[]
+  profile: Profile
+}) {
+  const compactCards = useMediaQuery(compactQuery)
+  const [width, setWidth] = useState(0)
+  const columns = gridColumnCount(width)
+  const items = useMemo(
+    () =>
+      flattenModGroups(groups, {
+        grouped: groupBy !== 'none',
+        collapsed,
+        idOf: (row) => modId(row.mod),
+        columns,
+      }),
+    [collapsed, columns, groupBy, groups],
+  )
+  const { parentRef, virtualizer } = useModVirtual(items, gridLanePx(compactCards))
+  const detailId = useDetail((s) => s.detailId)
+  const lastReveal = useRef('')
+  useEffect(() => {
+    const el = parentRef.current
+    if (!el) {
+      return
+    }
+    const sync = () => setWidth(el.clientWidth)
+    const ro = new ResizeObserver(sync)
+    ro.observe(el)
+    sync()
+    return () => ro.disconnect()
+  }, [parentRef])
+  useLayoutEffect(() => {
+    if (!detailId) {
+      return
+    }
+    const held = groupKeyHolding(groups, (row) => modId(row.mod) === detailId)
+    if (held !== undefined && collapsed[held] === true) {
+      setCollapsed((cur) => toggleCollapsed(gameId, cur, held, false))
+      return
+    }
+    const idx = virtualIndexOf(items, detailId, (row) => modId(row.mod))
+    const token = `${detailId}:${idx}`
+    if (lastReveal.current === token || idx < 0) {
+      return
+    }
+    lastReveal.current = token
+    virtualizer.scrollToIndex(idx, { align: 'auto' })
+  }, [collapsed, detailId, gameId, groups, items, setCollapsed, virtualizer])
+  return (
+    <Box ref={parentRef} sx={{ minHeight: 0, height: '100%', overflowY: 'auto' }}>
+      <Box sx={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+        {virtualizer.getVirtualItems().map((vi) => {
+          const item = items[vi.index]
+          if (!item) {
+            return null
+          }
+          return (
+            <Box
+              key={item.key}
+              data-index={vi.index}
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                transform: `translateY(${vi.start}px)`,
+              }}
+            >
+              <GridSlot
+                item={item}
+                heading={heading}
+                collapsed={collapsed}
+                gameId={gameId}
+                setCollapsed={setCollapsed}
+                groupBy={groupBy}
+                tagHint={tagHint}
+                columns={columns}
+                orderedIds={orderedIds}
+                profile={profile}
+              />
+            </Box>
+          )
+        })}
+      </Box>
+    </Box>
+  )
+}
+
+export function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
+  const { t } = useLingui()
+  const groupBy = sanitizeListGroupBy(useSettings((s) => s.listGroupBy))
+  const listSortColumn = useSettings((s) => s.listSortColumn)
+  const listSortDir = useSettings((s) => s.listSortDir)
+  const sort = sanitizeListSort(listSortColumn ?? '', listSortDir ?? '')
+  const byId = useNexusDetails((s) => s.byId)
+  const customCategories = useCustomCategories((s) => s.categories)
+  const customById = customCategoryById(customCategories)
+  const gameId = useProfiles((s) => s.game?.id) ?? ''
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => loadCollapsed(gameId))
+  const problems = useMods((s) => s.problems)
+  const updates = useUpdates((s) => s.updates)
+  const tagHint = t`A mod with several tags appears under its first tag.`
+  useEffect(() => {
+    setCollapsed(loadCollapsed(gameId))
+  }, [gameId])
+  useEffect(() => {
+    primeDetails(shown.map((m) => nexusIdOf(profile, m)).filter((id) => id > 0)).catch(
+      reportUnexpected,
+    )
+  }, [shown, profile])
+  const names = installedNames(shown)
+  const groups = groupSorted(
+    shown.map((m) => toListRow(m, profile, byId, customCategories)),
+    groupBy,
+    (row) =>
+      rowGroupKey(groupBy, row, {
+        hasProblem: modStatusProblem(problems, row.mod),
+        hasUpdate: Boolean(updateFor(updates, row.mod, profile)),
+        names,
+        customById,
+      }),
+    (a, b) => compareListRows(a, b, sort),
+  )
+  const orderedIds = groups.flatMap((g) => g.items.map((r) => modId(r.mod)))
+  const emptyLabel = emptyGroupLabel(groupBy, {
+    category: t`Uncategorised`,
+    source: t`Unknown source`,
+    tag: t`Untagged`,
+    author: t`Unknown author`,
+  })
+  const heading = (key: string) =>
+    groupHeading(groupBy, key, {
+      empty: emptyLabel,
+      problems: t`Problems`,
+      update: t`Update available`,
+      enabled: t`Enabled`,
+      disabled: t`Disabled`,
+      smapi: t`SMAPI mods`,
+    })
+  return (
+    <CardsPane
+      groups={groups}
+      groupBy={groupBy}
+      collapsed={collapsed}
+      setCollapsed={setCollapsed}
+      gameId={gameId}
+      heading={heading}
+      tagHint={tagHint}
+      orderedIds={orderedIds}
+      profile={profile}
+    />
+  )
+}

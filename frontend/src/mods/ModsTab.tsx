@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Card, Chip, Skeleton, Typography } from '@mui/material'
+import { Box, Button, Skeleton, Typography } from '@mui/material'
 import { SearchX } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
@@ -7,12 +7,10 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { compact } from '../game/compact.ts'
 import { useLaunch } from '../launch/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { dialogOpen } from '../settings/shortcuts.ts'
-import { useSettings } from '../settings/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -20,39 +18,16 @@ import { useCustomCategories } from './customCategories.ts'
 import { DuplicateDialog } from './DuplicateDialog.tsx'
 import { useDetail } from './detail.ts'
 import { EndorsePrompt } from './EndorsePrompt.tsx'
-import {
-  customCategoryById,
-  emptyGroupLabel,
-  firstTag,
-  groupHeading,
-  groupSorted,
-  installedNames,
-  loadCollapsed,
-  rowGroupKey,
-  sanitizeListGroupBy,
-  toggleCollapsed,
-} from './group.ts'
 import { LockedNote } from './LockedNote.tsx'
 import { useLastRun } from './lastRun.ts'
-import { compareListRows, sanitizeListSort } from './listColumns.ts'
-import { toListRow } from './listRows.ts'
-import { entryOf, modId, modStatusProblem, nexusIdOf, updateFor } from './lookup.ts'
+import { entryOf, modId, modStatusProblem, updateFor } from './lookup.ts'
+import { Cards } from './ModCards.tsx'
 import { ModDetail } from './ModDetail.tsx'
 import { ModList } from './ModList.tsx'
-import { ModContextMenu, ModMenu } from './ModMenu.tsx'
-import { ModsGroupHeader } from './ModsGroupHeader.tsx'
-import { contextMenuProps, useContextMenu } from './menu.ts'
-import { primeDetails, useNexusDetails, useNexusFresh } from './nexusDetails.ts'
+import { ModContextMenu } from './ModMenu.tsx'
+import { useContextMenu } from './menu.ts'
 import { ProblemBar } from './ProblemBar.tsx'
-import {
-  LastRunBadge,
-  LetterTile,
-  NexusGoneBadge,
-  PinBadge,
-  ProblemBadge,
-  RemoveDialog,
-  UpdateBadge,
-} from './parts.tsx'
+import { RemoveDialog } from './parts.tsx'
 import { addedWithin, WEEK_MS } from './recent.ts'
 import { SelectionBar } from './SelectionBar.tsx'
 import { ModSidebar } from './Sidebar.tsx'
@@ -61,8 +36,6 @@ import { useMods, type View } from './store.ts'
 import { EmptyMods, type ModFilter, Toolbar } from './Toolbar.tsx'
 import { UpdateBar, UpdateReview } from './UpdateReview.tsx'
 import { useUpdates } from './updates.ts'
-
-const OFF_OPACITY = 0.6
 
 function SelectionKeys({ shown }: { shown: Mod[] }) {
   useEffect(() => {
@@ -93,191 +66,6 @@ function SelectionKeys({ shown }: { shown: Mod[] }) {
     return () => globalThis.removeEventListener('keydown', onKey)
   }, [shown])
   return null
-}
-
-function ModCard({
-  mod: m,
-  orderedIds,
-  profile,
-}: {
-  mod: Mod
-  orderedIds: readonly string[]
-  profile: Profile
-}) {
-  const { t } = useLingui()
-  const openDetail = useDetail((s) => s.show)
-  const selectedId = useDetail((s) => s.detailId)
-  const selectedIds = useSelection((s) => s.ids)
-  const id = modId(m)
-  const marked = selectedIds.includes(id) || (selectedIds.length === 0 && id === selectedId)
-  const fresh = useNexusFresh(nexusIdOf(profile, m))
-  const tag = firstTag(entryOf(profile, m.key)?.tags)
-  return (
-    <Card
-      {...contextMenuProps(m)}
-      sx={{
-        height: 64,
-        pl: 1,
-        pr: 0.75,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        minWidth: 0,
-        borderRadius: '6px',
-        outline: marked ? '1px solid' : 'none',
-        outlineColor: 'primary.main',
-        [compact]: { height: 50, '& .tile': { width: 38, height: 38, fontSize: 19 } },
-      }}
-    >
-      <ButtonBase
-        aria-label={t`Details of ${m.name}`}
-        onMouseDown={(e) => {
-          if (e.shiftKey) {
-            e.preventDefault()
-          }
-        }}
-        onClick={(e) => {
-          useSelection.getState().click(orderedIds, id, e)
-          openDetail(m)
-        }}
-        sx={{
-          '&.Mui-focusVisible': { outlineOffset: '-2px' },
-          flex: 1,
-          minWidth: 0,
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          justifyContent: 'flex-start',
-          textAlign: 'left',
-          fontFamily: 'inherit',
-          color: 'inherit',
-        }}
-      >
-        <LetterTile mod={m} fresh={fresh} />
-        <Box
-          sx={{
-            flex: 1,
-            minWidth: 0,
-            pl: '10px',
-            borderLeft: '1px solid rgba(255,255,255,0.12)',
-            opacity: m.enabled ? 1 : OFF_OPACITY,
-          }}
-        >
-          <Typography noWrap={true} title={m.name} sx={{ fontSize: 14, fontWeight: 600 }}>
-            {m.name}
-          </Typography>
-          <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
-            {`${m.author} · ${m.version}`}
-          </Typography>
-        </Box>
-      </ButtonBase>
-      <PinBadge mod={m} />
-      <UpdateBadge mod={m} />
-      <NexusGoneBadge mod={m} />
-      <ProblemBadge mod={m} />
-      <LastRunBadge mod={m} />
-      {tag ? <Chip size="small" label={tag} sx={{ maxWidth: 96 }} /> : null}
-      <ModMenu mod={m} />
-    </Card>
-  )
-}
-
-function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
-  const { t } = useLingui()
-  const groupBy = sanitizeListGroupBy(useSettings((s) => s.listGroupBy))
-  const listSortColumn = useSettings((s) => s.listSortColumn)
-  const listSortDir = useSettings((s) => s.listSortDir)
-  const sort = sanitizeListSort(listSortColumn ?? '', listSortDir ?? '')
-  const byId = useNexusDetails((s) => s.byId)
-  const customCategories = useCustomCategories((s) => s.categories)
-  const customById = customCategoryById(customCategories)
-  const gameId = useProfiles((s) => s.game?.id) ?? ''
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => loadCollapsed(gameId))
-  const problems = useMods((s) => s.problems)
-  const updates = useUpdates((s) => s.updates)
-  const tagHint = t`A mod with several tags appears under its first tag.`
-  useEffect(() => {
-    setCollapsed(loadCollapsed(gameId))
-  }, [gameId])
-  useEffect(() => {
-    primeDetails(shown.map((m) => nexusIdOf(profile, m)).filter((id) => id > 0)).catch(
-      reportUnexpected,
-    )
-  }, [shown, profile])
-  const names = installedNames(shown)
-  const groups = groupSorted(
-    shown.map((m) => toListRow(m, profile, byId, customCategories)),
-    groupBy,
-    (row) =>
-      rowGroupKey(groupBy, row, {
-        hasProblem: modStatusProblem(problems, row.mod),
-        hasUpdate: Boolean(updateFor(updates, row.mod, profile)),
-        names,
-        customById,
-      }),
-    (a, b) => compareListRows(a, b, sort),
-  )
-  const orderedIds = groups.flatMap((g) => g.items.map((r) => modId(r.mod)))
-  const emptyLabel = emptyGroupLabel(groupBy, {
-    category: t`Uncategorised`,
-    source: t`Unknown source`,
-    tag: t`Untagged`,
-    author: t`Unknown author`,
-  })
-  const heading = (key: string) =>
-    groupHeading(groupBy, key, {
-      empty: emptyLabel,
-      problems: t`Problems`,
-      update: t`Update available`,
-      enabled: t`Enabled`,
-      disabled: t`Disabled`,
-      smapi: t`SMAPI mods`,
-    })
-  return (
-    <Box sx={{ minHeight: 0, overflowY: 'auto' }}>
-      {groups.map((group) => {
-        const open = collapsed[group.key] !== true
-        return (
-          <Box key={group.key || 'none'}>
-            {groupBy === 'none' ? null : (
-              <ModsGroupHeader
-                label={heading(group.key)}
-                count={group.items.length}
-                open={open}
-                onToggle={() =>
-                  setCollapsed((cur) => toggleCollapsed(gameId, cur, group.key, open))
-                }
-                {...(groupBy === 'tag' ? { hint: tagHint } : {})}
-              />
-            )}
-            {open ? (
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                  gap: '6px',
-                  px: 2,
-                  pt: '4px',
-                  pb: '4px',
-                  alignContent: 'start',
-                }}
-              >
-                {group.items.map((r) => (
-                  <ModCard
-                    key={modId(r.mod)}
-                    mod={r.mod}
-                    orderedIds={orderedIds}
-                    profile={profile}
-                  />
-                ))}
-              </Box>
-            ) : null}
-          </Box>
-        )
-      })}
-    </Box>
-  )
 }
 
 function ModsBody({

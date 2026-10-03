@@ -21,6 +21,7 @@
     "@lingui/core": "6.8.0",
     "@lingui/react": "6.8.0",
     "@mui/material": "9.4.0",
+    "@tanstack/react-virtual": "3.14.13",
     "@wailsio/runtime": "3.0.0-beta.26",
     "lucide-react": "1.49.0",
     "react": "19.3.0",
