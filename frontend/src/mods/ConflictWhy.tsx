@@ -17,6 +17,7 @@ function evidenceKey(e: ConflictEvidence) {
   return `${e.packId}:${e.source}:${e.index}:${e.action}:${e.target}`
 }
 
+const KEYS_SHOWN = 8
 export function ConflictWhy({ asset }: { asset: AssetConflict }) {
   const { t } = useLingui()
   const gameId = useProfiles((s) => s.game?.id) ?? ''
@@ -77,6 +78,21 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
           <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'normal' }}>
             {t`${e.action} ${e.target}`}
           </Typography>
+          {e.keys && e.keys.length > 0 ? (
+            <Typography
+              title={e.keys.join('\n')}
+              sx={{
+                fontSize: 12,
+                color: 'warning.main',
+                whiteSpace: 'normal',
+                overflowWrap: 'anywhere',
+              }}
+            >
+              {e.keys.length > KEYS_SHOWN
+                ? t`Both set: ${e.keys.slice(0, KEYS_SHOWN).join(', ')} +${e.keys.length - KEYS_SHOWN} more`
+                : t`Both set: ${e.keys.join(', ')}`}
+            </Typography>
+          ) : null}
           {e.toArea ? (
             <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'normal' }}>
               {t`ToArea ${e.toArea}`}

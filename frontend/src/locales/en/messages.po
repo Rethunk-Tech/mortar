@@ -92,7 +92,7 @@ msgstr "Could not switch the selected mods"
 msgid "Open profile"
 msgstr "Open profile"
 
-#: src/mods/ConflictWhy.tsx:96
+#: src/mods/ConflictWhy.tsx:112
 msgid "Priority Default"
 msgstr "Priority Default"
 
@@ -514,7 +514,7 @@ msgstr "gone"
 #. placeholder {1}: formatBytes(backup.size)
 #. placeholder {1}: outcome(hits[0].outcome)
 #: src/console/SearchRunsDialog.tsx:120
-#: src/mods/ConflictWhy.tsx:75
+#: src/mods/ConflictWhy.tsx:76
 #: src/profiles/CompareBulkBody.tsx:59
 #: src/saves/BackupsDialog.tsx:87
 msgid "{0} · {1}"
@@ -1656,6 +1656,11 @@ msgstr "{0} has multiple Nexus files installed: {files}."
 msgid "Sky"
 msgstr "Sky"
 
+#. placeholder {0}: e.keys.join(', ')
+#: src/mods/ConflictWhy.tsx:93
+msgid "Both set: {0}"
+msgstr "Both set: {0}"
+
 #: src/mods/problemFixButtons.tsx:163
 msgid "Keep my changes"
 msgstr "Keep my changes"
@@ -1698,7 +1703,7 @@ msgid "And {0} more on the Nexus page"
 msgstr "And {0} more on the Nexus page"
 
 #. placeholder {0}: e.priority
-#: src/mods/ConflictWhy.tsx:96
+#: src/mods/ConflictWhy.tsx:112
 msgid "Priority {0}"
 msgstr "Priority {0}"
 
@@ -1976,6 +1981,12 @@ msgstr "No performance data was returned."
 #: src/settings/sections/NexusMods.tsx:182
 msgid "Ask me to endorse mods I keep using"
 msgstr "Ask me to endorse mods I keep using"
+
+#. placeholder {0}: e.keys.slice(0, KEYS_SHOWN).join(', ')
+#. placeholder {1}: e.keys.length - KEYS_SHOWN
+#: src/mods/ConflictWhy.tsx:92
+msgid "Both set: {0} +{1} more"
+msgstr "Both set: {0} +{1} more"
 
 #: src/bundles/BundlesSection.tsx:94
 #: src/bundles/BundlesSection.tsx:105
@@ -5117,7 +5128,7 @@ msgid ".mortar file"
 msgstr ".mortar file"
 
 #. placeholder {0}: e.when
-#: src/mods/ConflictWhy.tsx:92
+#: src/mods/ConflictWhy.tsx:108
 msgid "When {0}"
 msgstr "When {0}"
 
@@ -5803,7 +5814,7 @@ msgid "Copy details"
 msgstr "Copy details"
 
 #. placeholder {0}: e.fromArea
-#: src/mods/ConflictWhy.tsx:87
+#: src/mods/ConflictWhy.tsx:103
 msgid "FromArea {0}"
 msgstr "FromArea {0}"
 
@@ -6944,7 +6955,7 @@ msgstr "Support"
 
 #. placeholder {0}: e.action
 #. placeholder {1}: e.target
-#: src/mods/ConflictWhy.tsx:78
+#: src/mods/ConflictWhy.tsx:79
 msgid "{0} {1}"
 msgstr "{0} {1}"
 
@@ -7190,7 +7201,7 @@ msgid "Stop ignoring {ignoredSource} updates"
 msgstr "Stop ignoring {ignoredSource} updates"
 
 #. placeholder {0}: e.toArea
-#: src/mods/ConflictWhy.tsx:82
+#: src/mods/ConflictWhy.tsx:98
 msgid "ToArea {0}"
 msgstr "ToArea {0}"
 

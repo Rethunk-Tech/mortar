@@ -9,6 +9,7 @@ import (
 	"image/draw"
 	"image/png"
 	"maps"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -38,6 +39,7 @@ func conflictEvidence(kind string, hits []packHit) []ConflictEvidence {
 				When:     whenSummary(patch.when),
 				Priority: patch.priority,
 				FromFile: patch.fromFile,
+				Keys:     clashingKeys(patch, hits, hit.id),
 			}
 			if patch.image {
 				if bounds == nil {
@@ -52,6 +54,39 @@ func conflictEvidence(kind string, hits []packHit) []ConflictEvidence {
 	}
 	return out
 }
+
+// clashingKeys lists the data entries and fields of patch that another pack's edit also writes, as
+// "Entry 301" or "Field 301.Price" with any TargetField path, without the pack scoping of token keys.
+func clashingKeys(patch cpPatch, hits []packHit, self string) []string {
+	keys := []string{}
+	for _, s := range patch.shapes {
+		if s.kind != 'p' {
+			continue
+		}
+		clash := slices.ContainsFunc(hits, func(h packHit) bool {
+			return !sameID(h.id, self) && slices.ContainsFunc(h.edits, func(o cpPatch) bool {
+				return slices.ContainsFunc(o.shapes, s.overlaps)
+			})
+		})
+		if clash {
+			keys = append(keys, keyLabel(s.key))
+		}
+	}
+	return keys
+}
+
+func keyLabel(key string) string {
+	label := "Entry "
+	if rest, ok := strings.CutPrefix(key, "field:"); ok {
+		label, key = "Field ", rest
+	} else {
+		key = strings.TrimPrefix(key, "entry:")
+	}
+	return label + packScope.ReplaceAllString(key, "")
+}
+
+// packScope matches the "@<pack folder>|" packScopedKey puts before a token key.
+var packScope = regexp.MustCompile(`@[^|]*\|`)
 
 func whenSummary(w cpWhen) string {
 	var parts []string

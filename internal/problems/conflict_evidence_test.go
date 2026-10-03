@@ -68,6 +68,9 @@ func TestConflictEvidenceEditData(t *testing.T) {
 		t.Fatalf("evidence = %+v", ev)
 	}
 	for _, e := range ev {
+		if len(e.Keys) != 1 || e.Keys[0] != "Entry 123" {
+			t.Fatalf("keys %q", e.Keys)
+		}
 		if e.Action != kindEditData || e.Source != "content.json" || e.Index != 0 || e.When == "" || e.Priority != "Late" {
 			t.Fatalf("evidence %+v", e)
 		}
@@ -256,5 +259,11 @@ func TestTextOverwritesAreShownNotCounted(t *testing.T) {
 	data := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("C.Data", "Data/Events/Mine"), pack("D.Data", "Data/Events/Mine")})
 	if len(data.AssetConflicts) != 1 || data.AssetConflicts[0].Cosmetic {
 		t.Fatalf("an event script overwrite still counts, got %+v", data.AssetConflicts)
+	}
+}
+
+func TestKeyLabelDropsPackScope(t *testing.T) {
+	if got := keyLabel("field:301/ContextTags/" + packScopedKey("/mods/A", "{{ModId}}_x") + ".Price"); got != "Field 301/ContextTags/{{ModId}}_x.Price" {
+		t.Fatalf("label %q", got)
 	}
 }

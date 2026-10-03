@@ -66,6 +66,8 @@ type ConflictEvidence struct {
 	CropY    int    `json:"cropY"`
 	CropW    int    `json:"cropW"`
 	CropH    int    `json:"cropH"`
+	// Keys are the data entries or fields this patch sets that another pack's patch also sets.
+	Keys []string `json:"keys"`
 }
 
 // ConflictFix sets one on/off field of a pack (Key, UniqueID) to Value, which turns off all of that pack's edits
