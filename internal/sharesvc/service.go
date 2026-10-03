@@ -373,6 +373,9 @@ func (s *Service) ReadClipboard() string {
 // PreviewLink reads a share link, or a bare payload, and resolves what it names against the profile it would join
 // (profileID may be empty).
 func (s *Service) PreviewLink(ctx context.Context, game, text, profileID string) (Preview, error) {
+	if domain, slug, revision, ok := parseCollectionURL(text); ok {
+		return s.previewCollection(ctx, game, domain, slug, revision, profileID)
+	}
 	shared, err := share.Parse(text)
 	if err != nil {
 		return Preview{}, err
@@ -1050,6 +1053,9 @@ func classify(arg string) (Arrival, bool) {
 		return Arrival{Kind: ArrivalMod, Value: arg, Game: route.game, ModID: route.modID}, true
 	}
 	if strings.HasPrefix(arg, appLinkPrefix) || strings.HasPrefix(arg, webLinkPrefix) {
+		return Arrival{Kind: ArrivalLink, Value: arg}, true
+	}
+	if _, _, _, ok := parseCollectionURL(arg); ok {
 		return Arrival{Kind: ArrivalLink, Value: arg}, true
 	}
 	arg = fileURLPath(arg)

@@ -14,9 +14,11 @@ import (
 )
 
 type fakeMeta struct {
-	refs   map[string][]meta.Ref
-	pages  map[int]meta.Page
-	broken map[string]string
+	refs    map[string][]meta.Ref
+	pages   map[int]meta.Page
+	broken  map[string]string
+	coll    meta.Collection
+	collErr error
 }
 
 func (f fakeMeta) Lookup(_ context.Context, id string) ([]meta.Ref, error) {

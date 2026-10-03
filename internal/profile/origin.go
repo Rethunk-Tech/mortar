@@ -2,10 +2,11 @@ package profile
 
 // Origin kinds recorded when a profile is created by import or duplicate.
 const (
-	OriginLink     = "link"
-	OriginMortar   = "mortar"
-	OriginGameMods = "game-mods"
-	OriginCopy     = "copy"
+	OriginLink       = "link"
+	OriginMortar     = "mortar"
+	OriginGameMods   = "game-mods"
+	OriginCopy       = "copy"
+	OriginCollection = "collection"
 )
 
 // SetOrigin records how the profile was created. Notes and origin never touch mods/, so a running game does not block it.
