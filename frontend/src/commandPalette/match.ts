@@ -39,7 +39,7 @@ function rank(query: string, item: PaletteItem): number {
   if (q.length === 0) {
     return RANK_FUZZY
   }
-  const fields = [item.label, item.hint ?? '']
+  const fields = [item.label, item.hint ?? '', item.match ?? '']
   let best = 0
   for (const field of fields) {
     const t = needle(field)
@@ -61,6 +61,7 @@ export interface PaletteItem {
   kind: PaletteKind
   label: string
   hint?: string
+  match?: string
   shortcut?: string
 }
 

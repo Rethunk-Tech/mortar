@@ -42,13 +42,15 @@ export function buildPaletteItems(input: {
       id: `mod:${mod.key}/${mod.uniqueId}`,
       kind: 'mod',
       label: mod.name,
-      hint: `${labels.modHint} · ${mod.uniqueId}`,
+      hint: labels.modHint,
+      match: mod.uniqueId,
     })
     items.push({
       id: `toggle-mod:${mod.key}/${mod.uniqueId}`,
       kind: 'action',
       label: labels.toggle(mod.name),
       hint: labels.modHint,
+      match: mod.uniqueId,
     })
   }
   for (const section of sections) {
