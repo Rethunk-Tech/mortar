@@ -53,6 +53,7 @@ export interface ImportOptions {
   file?: string
   data?: string
   external?: ProfilePreview
+  collectionUpdate?: boolean
 }
 
 export interface ImportRequest {
@@ -62,6 +63,7 @@ export interface ImportRequest {
   // Changes on every open, so opening again with the same seed previews again.
   run: number
   external?: ProfilePreview
+  collectionUpdate?: boolean
 }
 
 export const useImportDialog = create<{
@@ -73,7 +75,7 @@ export const useImportDialog = create<{
 }>((set) => ({
   request: null,
   busy: false,
-  open: ({ profileId = '', link = '', file = '', data = '', external }) => {
+  open: ({ profileId = '', link = '', file = '', data = '', external, collectionUpdate }) => {
     runs += 1
     let tab: ImportRequest['tab'] = 'link'
     if (file) {
@@ -89,6 +91,7 @@ export const useImportDialog = create<{
         seed: data || file || link,
         run: runs,
         ...(external ? { external } : {}),
+        ...(collectionUpdate ? { collectionUpdate: true } : {}),
       },
       busy: false,
     })

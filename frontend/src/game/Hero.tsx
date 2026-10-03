@@ -1,15 +1,21 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Typography } from '@mui/material'
+import { Box, Button, Link, Typography } from '@mui/material'
 import { type ReactNode, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { CollectionStatus } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
+import { CollectionStatus as loadCollectionStatus } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
 import { When } from '../i18n/When.tsx'
 import { useBadges } from '../mods/badges.ts'
+import { openPage } from '../mods/menu.ts'
 import { userModCount } from '../profiles/count.ts'
 import { ProfileMark } from '../profiles/ProfileMark.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { useSaves } from '../saves/store.ts'
 import { useSettings } from '../settings/store.ts'
+import { openImport } from '../share/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import { collectionHeader } from './collectionHeader.ts'
 import { compact, compactMeta, saveFits } from './compact.ts'
 import { HeroCover } from './HeroCover.tsx'
 import { NameField } from './NameField.tsx'
@@ -91,7 +97,80 @@ function Card({
   )
 }
 
-function HeroName({ profile, meta }: { profile: Profile; meta: string[] }) {
+function CollectionLine({ profile, game }: { profile: Profile; game: string }) {
+  const { t } = useLingui()
+  const [status, setStatus] = useState<CollectionStatus | null>(null)
+  useEffect(() => {
+    if (!profile.collection) {
+      setStatus(null)
+      return
+    }
+    let cancelled = false
+    loadCollectionStatus(game, profile.id)
+      .then((next) => {
+        if (!cancelled) {
+          setStatus(next)
+        }
+      })
+      .catch(() => {
+        if (!cancelled && profile.collection) {
+          setStatus({
+            linked: true,
+            name: profile.collection.name,
+            revision: profile.collection.revision,
+            latest: 0,
+            url: `https://www.nexusmods.com/games/${profile.collection.domain}/collections/${profile.collection.slug}`,
+          })
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [game, profile.id, profile.collection])
+  const pending =
+    profile.collection && !status
+      ? {
+          linked: true,
+          name: profile.collection.name,
+          revision: profile.collection.revision,
+          latest: 0,
+          url: `https://www.nexusmods.com/games/${profile.collection.domain}/collections/${profile.collection.slug}`,
+        }
+      : status
+  const { line, review } = collectionHeader(pending)
+  if (!line) {
+    return null
+  }
+  return (
+    <Typography
+      noWrap={true}
+      sx={{ mt: 0.5, fontSize: META_FONT_PX, display: 'flex', alignItems: 'center', gap: 1 }}
+    >
+      <Link
+        href={line.url}
+        underline="hover"
+        color="inherit"
+        onClick={(e) => {
+          e.preventDefault()
+          openPage(line.url).catch(reportUnexpected)
+        }}
+      >
+        {t`From collection ${line.name}, revision ${line.revision}`}
+      </Link>
+      {review === null ? null : (
+        <Button
+          size="small"
+          color="warning"
+          onClick={() => openImport({ profileId: profile.id, collectionUpdate: true })}
+        >
+          {t`Revision ${review} is out — Review`}
+        </Button>
+      )}
+    </Typography>
+  )
+}
+
+function HeroName({ profile, meta, game }: { profile: Profile; meta: string[]; game: string }) {
   const { t } = useLingui()
   const rename = useProfiles((s) => s.rename)
   const [editing, setEditing] = useState(false)
@@ -164,6 +243,7 @@ function HeroName({ profile, meta }: { profile: Profile; meta: string[] }) {
       >
         {meta.join(' · ')}
       </Typography>
+      <CollectionLine profile={profile} game={game} />
     </Box>
   )
 }
@@ -244,7 +324,7 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
           },
         }}
       >
-        <HeroName profile={profile} meta={meta} />
+        <HeroName profile={profile} meta={meta} game={game} />
         <Box sx={{ display: 'flex', gap: 1, [compact]: { display: 'none' } }}>
           <Card label={t`Mods`} value={String(mods)} />
           <Card

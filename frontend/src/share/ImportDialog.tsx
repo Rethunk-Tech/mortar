@@ -61,6 +61,76 @@ function MissingMods({
   )
 }
 
+async function seedPreview(
+  request: ImportRequest,
+  game: string,
+  flow: {
+    setTab: (tab: TabId) => void
+    setText: (text: string) => void
+    previewLink: (value: string) => Promise<void>
+    previewFile: (file: string) => Promise<void>
+    previewExternal: (value: NonNullable<ImportRequest['external']>) => Promise<void>
+    previewCollectionUpdate: () => Promise<void>
+  },
+) {
+  flow.setTab(request.tab === 'link' ? 'link' : 'file')
+  if (request.collectionUpdate) {
+    await flow.previewCollectionUpdate()
+    return
+  }
+  if (request.external) {
+    await flow.previewExternal(request.external)
+    return
+  }
+  if (request.seed && request.tab === 'link') {
+    flow.setText(request.seed)
+    await flow.previewLink(request.seed)
+    return
+  }
+  if (request.seed && request.tab === 'data') {
+    await PreviewData(game, request.seed, request.profileId)
+    return
+  }
+  if (request.seed) {
+    await flow.previewFile(request.seed)
+  }
+}
+
+function useSeedPreview(
+  request: ImportRequest,
+  game: string,
+  flow: {
+    setTab: (tab: TabId) => void
+    setText: (text: string) => void
+    previewLink: (value: string) => Promise<void>
+    previewFile: (file: string) => Promise<void>
+    previewExternal: (value: NonNullable<ImportRequest['external']>) => Promise<void>
+    previewCollectionUpdate: () => Promise<void>
+  },
+) {
+  const { setTab, setText, previewLink, previewFile, previewExternal, previewCollectionUpdate } =
+    flow
+  useEffect(() => {
+    seedPreview(request, game, {
+      setTab,
+      setText,
+      previewLink,
+      previewFile,
+      previewExternal,
+      previewCollectionUpdate,
+    }).catch(reportUnexpected)
+  }, [
+    request,
+    setTab,
+    setText,
+    previewLink,
+    previewFile,
+    previewExternal,
+    previewCollectionUpdate,
+    game,
+  ])
+}
+
 function Body({ request }: { request: ImportRequest }) {
   const { t } = useLingui()
   const close = useImportDialog((s) => s.close)
@@ -68,21 +138,8 @@ function Body({ request }: { request: ImportRequest }) {
   const targetName = useProfiles((s) => s.profiles.find((p) => p.id === request.profileId)?.name)
   const signedIn = useNexus((s) => s.signedIn)
   const flow = useImportFlow(game, request.profileId, close, request.external)
-  const { setTab, setText, previewLink, previewFile, previewExternal } = flow
-
-  useEffect(() => {
-    setTab(request.tab === 'link' ? 'link' : 'file')
-    if (request.external) {
-      previewExternal(request.external).catch(reportUnexpected)
-    } else if (request.seed && request.tab === 'link') {
-      setText(request.seed)
-      previewLink(request.seed).catch(reportUnexpected)
-    } else if (request.seed && request.tab === 'data') {
-      PreviewData(game, request.seed, request.profileId).catch(reportUnexpected)
-    } else if (request.seed) {
-      previewFile(request.seed).catch(reportUnexpected)
-    }
-  }, [request, setTab, setText, previewLink, previewFile, previewExternal, game])
+  const { setTab } = flow
+  useSeedPreview(request, game, flow)
 
   useEffect(() => {
     useImportDialog.setState({ busy: flow.busy })

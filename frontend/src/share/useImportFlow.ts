@@ -11,6 +11,7 @@ import {
   Discard,
   Import,
   PickFile,
+  PreviewCollectionUpdate,
   PreviewExternal,
   PreviewFile,
   PreviewLink,
@@ -189,6 +190,10 @@ export function useImportFlow(
     },
     [game, profileId, show],
   )
+  const previewCollectionUpdate = useCallback(
+    () => show(PreviewCollectionUpdate(game, profileId)),
+    [game, profileId, show],
+  )
   const previewExternal = useCallback(
     (value: ProfilePreview) => show(PreviewExternal(game, value, profileId)),
     [game, profileId, show],
@@ -260,6 +265,7 @@ export function useImportFlow(
     previewLink,
     previewFile,
     previewExternal,
+    previewCollectionUpdate,
     paste,
     pick,
     reset,
