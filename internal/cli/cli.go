@@ -1304,7 +1304,7 @@ func (c *cmd) install(p control.Params) error {
 		if res.Needs == "folder" {
 			what = "which folder is the mod"
 		}
-		return fmt.Errorf("this archive needs you to choose %s: install it from Mortar's window", what)
+		return fmt.Errorf("this archive needs you to choose %s: Mortar's window is asking now", what)
 	}
 	return c.emit(res, func() {
 		verb := "Installed"

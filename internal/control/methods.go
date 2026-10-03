@@ -30,6 +30,18 @@ import (
 // ChangedEvent tells the window a profile changed outside it, so it reloads that game's profiles.
 const ChangedEvent = "profiles:changed"
 
+// InstallAskEvent hands a CLI install that needs a choice (installer options or the mod's folder) to the window,
+// which asks it the same way it asks for an archive dropped on it.
+const InstallAskEvent = "install:ask"
+
+// InstallAsk is the question an InstallAskEvent carries.
+type InstallAsk struct {
+	Game    string            `json:"game"`
+	Profile string            `json:"profile"`
+	Fomod   *profile.FomodAsk `json:"fomod,omitempty"`
+	Remap   *profile.RemapAsk `json:"remap,omitempty"`
+}
+
 // Services are the running app's services the methods use.
 type Services struct {
 	Version  string
@@ -1013,6 +1025,9 @@ func (s *Services) install(gameID, id, path string) (InstallOutcome, error) {
 		out.Needs = "fomod"
 	case res.Remap != nil:
 		out.Needs = "folder"
+	}
+	if out.Needs != "" && s.Emit != nil {
+		s.Emit(InstallAskEvent, InstallAsk{Game: gameID, Profile: id, Fomod: res.Fomod, Remap: res.Remap})
 	}
 	if out.Added == nil {
 		out.Added = []string{}

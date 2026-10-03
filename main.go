@@ -82,6 +82,7 @@ func registerEvents() {
 	application.RegisterEvent[[]string](picker.DroppedEvent)
 	application.RegisterEvent[settings.Settings](settings.ChangedEvent)
 	application.RegisterEvent[string](control.ChangedEvent)
+	application.RegisterEvent[control.InstallAsk](control.InstallAskEvent)
 	application.RegisterEvent[shortcut.Request](shortcut.RequestedEvent)
 	application.RegisterEvent[nexussvc.Account](nexussvc.ChangedEvent)
 	application.RegisterEvent[queue.State](queue.ChangedEvent)

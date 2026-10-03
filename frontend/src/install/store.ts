@@ -1,4 +1,5 @@
 import { msg } from '@lingui/core/macro'
+import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import { PickArchives } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import type {
@@ -358,6 +359,31 @@ export const useInstall = create<{
     }
   },
 }))
+
+// A CLI install that needs a choice arrives here, so the window asks it exactly as for a dropped archive.
+export function initInstallAsks() {
+  Events.On('install:ask', (event) => {
+    const { game, profile: profileId, fomod, remap } = event.data
+    if (fomod) {
+      useFomod
+        .getState()
+        .open({ game, profileId, key: fomod.key, source: fomod.source, ask: fomod })
+      return
+    }
+    if (remap) {
+      const profileName =
+        useProfiles.getState().profiles.find((p) => p.id === profileId)?.name ?? ''
+      useInstall.getState().openRemap({
+        game,
+        profileName,
+        profileId,
+        key: remap.key,
+        source: remap.source,
+        ask: remap,
+      })
+    }
+  })
+}
 
 export function considerMissing(dependentIds: readonly string[]) {
   const mode = gamePrefs(useSettings.getState()).missingRequirements || 'ask'

@@ -6,6 +6,7 @@ import ReactDOM from 'react-dom/client'
 import { Get } from '../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { App } from './App.tsx'
 import { activateLanguage, i18n } from './i18n/index.ts'
+import { initInstallAsks } from './install/store.ts'
 import { IncomingPrompt } from './lan/IncomingPrompt.tsx'
 import { initIncoming } from './lan/incoming.ts'
 import { initLaunch } from './launch/events.ts'
@@ -38,6 +39,7 @@ document.addEventListener('contextmenu', (event) => {
 
 await activateLanguage((await Get()).language)
 initSettings().catch(reportUnexpected)
+initInstallAsks()
 initMortarUpdateBackground()
 initNexus().catch(reportUnexpected)
 initNexusSeen().catch(reportUnexpected)
