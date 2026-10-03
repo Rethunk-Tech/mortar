@@ -57,7 +57,6 @@ type PrefSpec struct {
 	Min                int      `json:"min,omitempty"`
 	Max                int      `json:"max,omitempty"`
 	Values             []string `json:"values,omitempty"`
-	LabelKey           string   `json:"labelKey"`
 	ProfileOverridable bool     `json:"profileOverridable,omitempty"`
 }
 
@@ -372,59 +371,6 @@ func validateGame(g GameSettings) error {
 	return nil
 }
 
-func migrateLegacyGameFields(s *Settings) {
-	legacy := GameSettings{
-		BackupBeforePlay:            s.LegacyBackupBeforePlay,
-		LaunchBackupsKept:           s.LegacyLaunchBackupsKept,
-		UpdateModsBeforePlayDefault: s.LegacyUpdateModsBeforePlayDefault,
-		RunsKept:                    s.LegacyRunsKept,
-		ConsoleLogCap:               s.LegacyConsoleLogCap,
-		NxmDefaultProfile:           s.LegacyNxmDefaultProfile,
-		CosmeticConflicts:           s.LegacyCosmeticConflicts,
-		EnableRequirements:          s.LegacyEnableRequirements,
-		MissingRequirements:         s.LegacyMissingRequirements,
-		SmapiBuilds:                 s.LegacySmapiBuilds,
-		DefaultLaunchMethod:         s.LegacyDefaultLaunchMethod,
-		ShowSmapiConsole:            s.LegacyShowSmapiConsole,
-		ConsoleLevel:                s.LegacyConsoleLevel,
-		ConsoleTimestamps:           s.LegacyConsoleTimestamps,
-		ConsoleFollow:               s.LegacyConsoleFollow,
-	}
-	if !hasLegacyGame(legacy) {
-		return
-	}
-	cur := s.GamePrefs(GameStardew)
-	mergeGame(&cur, legacy)
-	putGame(s, GameStardew, cur)
-	clearLegacyGame(s)
-}
-
-func hasLegacyGame(g GameSettings) bool {
-	return g.BackupBeforePlay != "" || g.LaunchBackupsKept != 0 || g.UpdateModsBeforePlayDefault ||
-		g.RunsKept != 0 || g.ConsoleLogCap != 0 || g.NxmDefaultProfile != "" ||
-		g.CosmeticConflicts != "" || g.EnableRequirements != "" || g.MissingRequirements != "" ||
-		g.SmapiBuilds != "" || g.DefaultLaunchMethod != "" || g.ShowSmapiConsole != nil ||
-		g.ConsoleLevel != "" || g.ConsoleTimestamps != nil || g.ConsoleFollow != nil
-}
-
-func clearLegacyGame(s *Settings) {
-	s.LegacyBackupBeforePlay = ""
-	s.LegacyLaunchBackupsKept = 0
-	s.LegacyUpdateModsBeforePlayDefault = false
-	s.LegacyRunsKept = 0
-	s.LegacyConsoleLogCap = 0
-	s.LegacyNxmDefaultProfile = ""
-	s.LegacyCosmeticConflicts = ""
-	s.LegacyEnableRequirements = ""
-	s.LegacyMissingRequirements = ""
-	s.LegacySmapiBuilds = ""
-	s.LegacyDefaultLaunchMethod = ""
-	s.LegacyShowSmapiConsole = nil
-	s.LegacyConsoleLevel = ""
-	s.LegacyConsoleTimestamps = nil
-	s.LegacyConsoleFollow = nil
-}
-
 // PrefSpecs is the descriptor the frontend renders.
 func PrefSpecs() []PrefSpec {
 	out := make([]PrefSpec, len(registry))
@@ -530,7 +476,7 @@ func ApplyKeyGame(s *Settings, key, value, game string) error {
 
 func enumPref(key, scope, def string, values []string, get func(Settings, string) string, set func(*Settings, string, string)) pref {
 	return pref{
-		spec: PrefSpec{Key: key, Scope: scope, Type: TypeEnum, Default: def, Values: values, LabelKey: "settings." + key},
+		spec: PrefSpec{Key: key, Scope: scope, Type: TypeEnum, Default: def, Values: values},
 		get:  get,
 		set: func(s *Settings, game, raw string) error {
 			if !slices.Contains(values, raw) {
@@ -544,7 +490,7 @@ func enumPref(key, scope, def string, values []string, get func(Settings, string
 
 func intPref(key, scope string, def, lo, hi int, get func(Settings, string) int, set func(*Settings, string, int)) pref {
 	return pref{
-		spec: PrefSpec{Key: key, Scope: scope, Type: TypeInt, Default: strconv.Itoa(def), Min: lo, Max: hi, LabelKey: "settings." + key},
+		spec: PrefSpec{Key: key, Scope: scope, Type: TypeInt, Default: strconv.Itoa(def), Min: lo, Max: hi},
 		get:  func(s Settings, g string) string { return strconv.Itoa(get(s, g)) },
 		set: func(s *Settings, game, raw string) error {
 			n, err := strconv.Atoi(raw)
@@ -562,7 +508,7 @@ func intPref(key, scope string, def, lo, hi int, get func(Settings, string) int,
 
 func boolPref(key, scope string, get func(Settings, string) bool, set func(*Settings, string, bool)) pref {
 	return pref{
-		spec: PrefSpec{Key: key, Scope: scope, Type: TypeBool, Default: "false", LabelKey: "settings." + key},
+		spec: PrefSpec{Key: key, Scope: scope, Type: TypeBool, Default: "false"},
 		get:  func(s Settings, g string) string { return strconv.FormatBool(get(s, g)) },
 		set: func(s *Settings, game, raw string) error {
 			on, err := parseBool(raw)
@@ -577,7 +523,7 @@ func boolPref(key, scope string, get func(Settings, string) bool, set func(*Sett
 
 func ptrPref(key, scope string, def bool, get func(Settings, string) *bool, set func(*Settings, string, bool)) pref {
 	return pref{
-		spec: PrefSpec{Key: key, Scope: scope, Type: TypeBool, Default: strconv.FormatBool(def), LabelKey: "settings." + key},
+		spec: PrefSpec{Key: key, Scope: scope, Type: TypeBool, Default: strconv.FormatBool(def)},
 		get: func(s Settings, g string) string {
 			v := get(s, g)
 			if v == nil {
@@ -598,7 +544,7 @@ func ptrPref(key, scope string, def bool, get func(Settings, string) *bool, set 
 
 func strPref(key, scope string, get func(Settings, string) string, set func(*Settings, string, string)) pref {
 	return pref{
-		spec: PrefSpec{Key: key, Scope: scope, Type: TypeString, Default: "", LabelKey: "settings." + key},
+		spec: PrefSpec{Key: key, Scope: scope, Type: TypeString, Default: ""},
 		get:  get,
 		set: func(s *Settings, game, raw string) error {
 			set(s, game, raw)

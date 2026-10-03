@@ -185,23 +185,6 @@ type Settings struct {
 	ExtensionConnection        string `json:"extensionConnection"`
 	// Games holds per-game prefs (Stardew Valley today).
 	Games map[string]*GameSettings `json:"games"`
-
-	// One-time migration from the pre-registry root fields. Cleared after Open.
-	LegacyBackupBeforePlay            string `json:"backupBeforePlay,omitempty"`
-	LegacyLaunchBackupsKept           int    `json:"launchBackupsKept,omitempty"`
-	LegacyUpdateModsBeforePlayDefault bool   `json:"updateModsBeforePlayDefault,omitempty"`
-	LegacyRunsKept                    int    `json:"runsKept,omitempty"`
-	LegacyConsoleLogCap               int    `json:"consoleLogCap,omitempty"`
-	LegacyNxmDefaultProfile           string `json:"nxmDefaultProfile,omitempty"`
-	LegacyCosmeticConflicts           string `json:"cosmeticConflicts,omitempty"`
-	LegacyEnableRequirements          string `json:"enableRequirements,omitempty"`
-	LegacyMissingRequirements         string `json:"missingRequirements,omitempty"`
-	LegacySmapiBuilds                 string `json:"smapiBuilds,omitempty"`
-	LegacyDefaultLaunchMethod         string `json:"defaultLaunchMethod,omitempty"`
-	LegacyShowSmapiConsole            *bool  `json:"showSmapiConsole,omitempty"`
-	LegacyConsoleLevel                string `json:"consoleLevel,omitempty"`
-	LegacyConsoleTimestamps           *bool  `json:"consoleTimestamps,omitempty"`
-	LegacyConsoleFollow               *bool  `json:"consoleFollow,omitempty"`
 }
 
 const (
@@ -305,7 +288,6 @@ func Open() (*Store, error) {
 		s.cur.BackupsKept = Defaults().BackupsKept
 	}
 	normalizeToggles(&s.cur)
-	migrateLegacyGameFields(&s.cur)
 	normalizePrefs(&s.cur)
 	normalizeList(&s.cur)
 	normalizeTips(&s.cur)

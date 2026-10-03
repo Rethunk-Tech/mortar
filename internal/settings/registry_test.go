@@ -1,9 +1,6 @@
 package settings
 
-import (
-	"encoding/json"
-	"testing"
-)
+import "testing"
 
 func TestRegistryDefaultsMatchToday(t *testing.T) {
 	s := Defaults()
@@ -45,51 +42,6 @@ func TestRegistryValidation(t *testing.T) {
 	got, err := s.LookupGame("smapiBuilds", GameStardew)
 	if err != nil || got != SmapiBuildsNever {
 		t.Fatalf("lookup %q %v", got, err)
-	}
-}
-
-func TestLegacyRootFieldsMigrateToStardew(t *testing.T) {
-	raw := []byte(`{
-		"smapiBuilds":"include",
-		"defaultLaunchMethod":"direct",
-		"runsKept":7,
-		"consoleLogCap":5000,
-		"backupBeforePlay":"always",
-		"launchBackupsKept":3,
-		"updateModsBeforePlayDefault":true,
-		"nxmDefaultProfile":"p1",
-		"cosmeticConflicts":"hidden",
-		"enableRequirements":"ask",
-		"missingRequirements":"never",
-		"showSmapiConsole":false,
-		"consoleLevel":"debug",
-		"consoleTimestamps":false,
-		"consoleFollow":false
-	}`)
-	var cur Settings
-	if err := json.Unmarshal(raw, &cur); err != nil {
-		t.Fatal(err)
-	}
-	migrateLegacyGameFields(&cur)
-	normalizePrefs(&cur)
-	if cur.LegacySmapiBuilds != "" || cur.LegacyRunsKept != 0 {
-		t.Fatalf("legacy fields should clear after migrate: %+v", cur)
-	}
-	g := cur.GamePrefs(GameStardew)
-	if g.SmapiBuilds != SmapiBuildsInclude || g.DefaultLaunchMethod != LaunchDirect || g.RunsKept != 7 {
-		t.Fatalf("migrated game: %+v", g)
-	}
-	if g.ConsoleLogCap != 5000 || g.BackupBeforePlay != BackupBeforePlayAlways || g.LaunchBackupsKept != 3 {
-		t.Fatalf("migrated launch/console: %+v", g)
-	}
-	if !g.UpdateModsBeforePlayDefault || g.NxmDefaultProfile != "p1" || g.CosmeticConflicts != CosmeticHidden {
-		t.Fatalf("migrated more: %+v", g)
-	}
-	if g.EnableRequirements != EnableReqAsk || g.MissingRequirements != MissingReqNever {
-		t.Fatalf("migrated reqs: %+v", g)
-	}
-	if ToggleOn(g.ShowSmapiConsole) || g.ConsoleLevel != ConsoleLevelDebug || ToggleOn(g.ConsoleTimestamps) || ToggleOn(g.ConsoleFollow) {
-		t.Fatalf("migrated console: %+v", g)
 	}
 }
 
