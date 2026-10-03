@@ -66,6 +66,20 @@ type LeftOut struct {
 	Reason string
 }
 
+// Include is what a share or export carries besides enabled mods. Zero values
+// mean omit; use DefaultInclude for today's behaviour.
+type Include struct {
+	DisabledMods bool `json:"disabledMods"`
+	FomodChoices bool `json:"fomodChoices"`
+	Notes        bool `json:"notes"`
+	ConfigFiles  bool `json:"configFiles"`
+}
+
+// DefaultInclude is the registry default: disabled mods off, the rest on.
+func DefaultInclude() Include {
+	return Include{FomodChoices: true, Notes: true, ConfigFiles: true}
+}
+
 // Result is an encoded profile: the payload, both link forms, and the entries left out.
 type Result struct {
 	Shared  Shared
@@ -274,16 +288,22 @@ func withoutDetails(s Shared) Shared {
 }
 
 // refOf maps an enabled, non-bundled entry to its Ref, or says why it cannot be shared.
-func refOf(e profile.Entry) (Ref, string) {
+func refOf(e profile.Entry, fomod bool) (Ref, string) {
 	switch e.Source.Kind {
 	case profile.KindNexus:
-		r := Ref{ModID: e.Source.ModID, FileID: e.Source.FileID, Disabled: slices.Clone(e.Disabled), Fomod: cloneFomod(e.Fomod)}
+		r := Ref{ModID: e.Source.ModID, FileID: e.Source.FileID, Disabled: slices.Clone(e.Disabled)}
+		if fomod {
+			r.Fomod = cloneFomod(e.Fomod)
+		}
 		if !r.valid() {
 			return Ref{}, "no Nexus file recorded"
 		}
 		return r, ""
 	case profile.KindGitHub:
-		r := Ref{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset, Disabled: slices.Clone(e.Disabled), Fomod: cloneFomod(e.Fomod)}
+		r := Ref{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset, Disabled: slices.Clone(e.Disabled)}
+		if fomod {
+			r.Fomod = cloneFomod(e.Fomod)
+		}
 		if !r.valid() {
 			return Ref{}, "no GitHub release asset recorded"
 		}
@@ -323,17 +343,21 @@ func containsFold(ids []string, id string) bool {
 
 // Collect splits a profile into what a link can carry and the enabled entries it cannot; off holds the keys of
 // the switched-off entries. Bundled entries are in none of them.
-func Collect(p profile.Profile) (s Shared, left []LeftOut, off []string) {
+func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, off []string) {
+	inc := DefaultInclude()
+	if len(include) > 0 {
+		inc = include[0]
+	}
 	s = Shared{Name: p.Name, Entries: []Ref{}}
 	for _, e := range p.Entries {
 		if bundled(e) {
 			continue
 		}
-		if !enabled(e) {
+		if !enabled(e) && !inc.DisabledMods {
 			off = append(off, e.Key)
 			continue
 		}
-		r, why := refOf(e)
+		r, why := refOf(e, inc.FomodChoices)
 		if why != "" {
 			left = append(left, LeftOut{Key: e.Key, Reason: why})
 			continue
@@ -344,8 +368,8 @@ func Collect(p profile.Profile) (s Shared, left []LeftOut, off []string) {
 }
 
 // Encode turns a profile into its share links.
-func Encode(p profile.Profile) (Result, error) {
-	s, left, _ := Collect(p)
+func Encode(p profile.Profile, include ...Include) (Result, error) {
+	s, left, _ := Collect(p, include...)
 	payload, err := s.payload()
 	if errors.Is(err, ErrTooLarge) {
 		fallback := withoutDetails(s)

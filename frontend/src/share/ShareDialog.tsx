@@ -3,7 +3,6 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
-  Dialog,
   Divider,
   IconButton,
   ListItemIcon,
@@ -15,26 +14,23 @@ import {
 } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { Check, Copy, FileText, List, MessageSquare, Save, Type, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Saved } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
-import {
-  SaveFile,
-  Share,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
+import { SaveFile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
 import { Logo } from '../brand/Logo.tsx'
 import { SendDialog } from '../lan/SendDialog.tsx'
 import { heading, paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { TipBanner } from '../tips/TipBanner.tsx'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { type MeterLevel, meter, type ShownInfo, shownInfo, suggestFile } from './logic.ts'
+import { IncludeOptions } from './IncludeOptions.tsx'
+import { type MeterLevel, meter, type ShownInfo, suggestFile } from './logic.ts'
 import { formatModList, listItems, type ModListFormat } from './modList.ts'
 import { SharedMods } from './SharedMods.tsx'
+import { ShareShell } from './ShareShell.tsx'
+import { type ShareInclude, toShareInclude } from './shareDefaults.ts'
 import { useShareDialog } from './store.ts'
-import { TabPills } from './TabPills.tsx'
-
-type Tab = 'link' | 'file'
+import { useShareBuild } from './useShareBuild.ts'
 
 const PERCENT = 100
 const PAGE_HOST = 'mortar.rethunk.tech'
@@ -179,7 +175,17 @@ function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }
   )
 }
 
-function LinkTab({ info, onFile }: { info: ShownInfo; onFile: () => void }) {
+function LinkTab({
+  info,
+  onFile,
+  include,
+  onInclude,
+}: {
+  info: ShownInfo
+  onFile: () => void
+  include: ShareInclude
+  onInclude: (next: ShareInclude) => void
+}) {
   const { t } = useLingui()
   const gameName = useProfiles((s) => s.game?.name ?? '')
   const copy = (text: string, done: string) => {
@@ -244,6 +250,7 @@ function LinkTab({ info, onFile }: { info: ShownInfo; onFile: () => void }) {
             </Box>
           </>
         )}
+        <IncludeOptions value={include} onChange={onInclude} file={false} />
         {large ? (
           <Box
             sx={{
@@ -364,11 +371,15 @@ function FileTab({
   game,
   profileId,
   keys,
+  include,
+  onInclude,
 }: {
   info: ShownInfo
   game: string
   profileId: string
   keys: string[]
+  include: ShareInclude
+  onInclude: (next: ShareInclude) => void
 }) {
   const { t } = useLingui()
   const [saved, setSaved] = useState<Saved | null>(null)
@@ -376,7 +387,7 @@ function FileTab({
   const save = async () => {
     setBusy(true)
     try {
-      const result = await SaveFile(game, profileId, keys)
+      const result = await SaveFile(game, profileId, keys, toShareInclude(include))
       if (result.path) {
         setSaved(result)
         useToasts.getState().push({ kind: 'success', title: t`File saved` })
@@ -396,6 +407,7 @@ function FileTab({
         <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
           {t`A .mortar file holds the same mods as the link, plus the settings files (.json) each mod has written. Send it to someone, and they open it from Mortar's Import.`}
         </Typography>
+        <IncludeOptions value={include} onChange={onInclude} file={true} />
         <Box>
           <Button
             variant="contained"
@@ -436,144 +448,42 @@ function FileTab({
 }
 
 export function ShareDialog() {
-  const { t } = useLingui()
-  const profileId = useShareDialog((s) => s.profileId)
-  const keys = useShareDialog((s) => s.keys)
-  const close = useShareDialog((s) => s.close)
-  const game = useProfiles((s) => s.game?.id ?? 'stardew')
   const art = useProfiles((s) => s.game?.artUrl)
-  const [tab, setTab] = useState<Tab>('link')
-  const [info, setInfo] = useState<ShownInfo | null>(null)
   const [sendNearby, setSendNearby] = useState(false)
-  useEffect(() => {
-    if (!profileId) {
-      return
-    }
-    let stale = false
-    setInfo(null)
-    setTab('link')
-    Share(game, profileId, keys).then(
-      (next) => {
-        if (!stale) {
-          setInfo(shownInfo(next))
-          setTab(suggestFile(next.count, next.tooLarge) ? 'file' : 'link')
-        }
-      },
-      (e: unknown) => {
-        if (stale) {
-          return
-        }
-        useToasts
-          .getState()
-          .push({ kind: 'error', title: t`Could not build the link`, body: errorMessage(e) })
-        close()
-      },
-    )
-    return () => {
-      stale = true
-    }
-  }, [profileId, keys, game, close, t])
+  const built = useShareBuild()
+  const { profileId, keys, close, game, tab, setTab, info, include, setInclude } = built
   return (
     <>
-      <Dialog
-        open={profileId !== '' && info !== null}
-        onClose={close}
-        maxWidth={false}
-        transitionDuration={0}
-        slotProps={{
-          paper: {
-            ...paper,
-            sx: {
-              ...paper.sx,
-              bgcolor: 'rgb(36,36,44)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              width: 'min(980px, calc(100% - 48px))',
-              height: 'min(620px, calc(100% - 48px))',
-              overflow: 'hidden',
-              borderRadius: '10px',
-            },
-          },
-        }}
+      <ShareShell
+        art={art}
+        onSendNearby={setSendNearby}
+        profileId={profileId}
+        close={close}
+        tab={tab}
+        setTab={setTab}
+        info={info}
+        headerExtra={<CopyModList />}
+        preview={tab === 'link' && info ? <PagePreview info={info} onClose={close} /> : null}
       >
-        {info ? (
-          <Box
-            role="dialog"
-            aria-label={t`Share ${info.name}`}
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: tab === 'link' ? 'minmax(0, 1fr) 340px' : 'minmax(0, 1fr)',
-              height: '100%',
-              minHeight: 0,
-            }}
-          >
-            <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
-              <TipBanner tip="share">
-                {t`A share link names this profile and the Nexus or GitHub files in it, not the archives.`}
-              </TipBanner>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, p: '20px 24px 0' }}>
-                {art ? (
-                  <Box
-                    component="img"
-                    src={art}
-                    alt=""
-                    sx={{ width: 64, height: 64, objectFit: 'cover', borderRadius: '8px' }}
-                  />
-                ) : null}
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography
-                    sx={{ fontSize: 13, color: 'text.secondary' }}
-                  >{t`Share profile`}</Typography>
-                  <Typography
-                    noWrap={true}
-                    title={info.name}
-                    sx={{ fontSize: 24, fontWeight: 700 }}
-                  >
-                    {info.name}
-                  </Typography>
-                </Box>
-                <CopyModList />
-                {tab === 'file' ? (
-                  <Tooltip title={t`Close`}>
-                    <IconButton
-                      aria-label={t`Close`}
-                      onClick={close}
-                      sx={{ alignSelf: 'flex-start' }}
-                    >
-                      <X size={18} />
-                    </IconButton>
-                  </Tooltip>
-                ) : null}
-              </Box>
-              <Box sx={{ m: '18px 24px 0', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <TabPills
-                  value={tab}
-                  onChange={setTab}
-                  label={t`How to share`}
-                  options={[
-                    { value: 'link', label: t`Link` },
-                    { value: 'file', label: t`.mortar file with settings` },
-                  ]}
-                />
-                <Button
-                  variant="outlined"
-                  color="inherit"
-                  onClick={() => setSendNearby(true)}
-                  sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
-                >
-                  {t`Send nearby…`}
-                </Button>
-              </Box>
-              <Box sx={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
-                {tab === 'link' ? <LinkTab info={info} onFile={() => setTab('file')} /> : null}
-                {tab === 'file' ? (
-                  <FileTab info={info} game={game} profileId={profileId} keys={keys} />
-                ) : null}
-              </Box>
-            </Box>
-            {tab === 'link' ? <PagePreview info={info} onClose={close} /> : null}
-          </Box>
+        {tab === 'link' && info ? (
+          <LinkTab
+            info={info}
+            onFile={() => setTab('file')}
+            include={include}
+            onInclude={setInclude}
+          />
         ) : null}
-      </Dialog>
+        {tab === 'file' && info ? (
+          <FileTab
+            info={info}
+            game={game}
+            profileId={profileId}
+            keys={keys}
+            include={include}
+            onInclude={setInclude}
+          />
+        ) : null}
+      </ShareShell>
       <SendDialog
         open={sendNearby}
         game={game}

@@ -93,21 +93,29 @@ func validUniqueID(id string) bool {
 // Write writes the profile as a .mortar zip: profile.json with the link's entries plus name, notes and
 // description, and the .json files of each enabled mod's folder under configs/<UniqueID>/. modsDir is the
 // profile's mods/ folder. Config files that are over the caps or have unusual names are skipped and returned as paths.
-func Write(w io.Writer, p profile.Profile, modsDir string) (skipped []string, err error) {
-	s, _, _ := Collect(p)
+func Write(w io.Writer, p profile.Profile, modsDir string, include ...Include) (skipped []string, err error) {
+	inc := DefaultInclude()
+	if len(include) > 0 {
+		inc = include[0]
+	}
+	s, _, _ := Collect(p, inc)
 	zw := zip.NewWriter(w)
 	entries, err := json.Marshal(s.Entries)
 	if err != nil {
 		return nil, err
 	}
+	notes := p.Notes
+	if !inc.Notes {
+		notes = ""
+	}
 	doc := fileDoc{
-		Version: FormatVersion, Name: s.Name, Notes: p.Notes, Description: p.Description,
+		Version: FormatVersion, Name: s.Name, Notes: notes, Description: p.Description,
 		Entries: entries, UniqueIDs: []string{},
 	}
 	if err := checkShared(s); err != nil {
 		return nil, err
 	}
-	if utf8.RuneCountInString(p.Notes) > profile.MaxNotes {
+	if utf8.RuneCountInString(notes) > profile.MaxNotes {
 		return nil, fmt.Errorf("%w: notes are too long", ErrBadFile)
 	}
 	if utf8.RuneCountInString(p.Description) > profile.MaxDescription {
@@ -115,7 +123,10 @@ func Write(w io.Writer, p profile.Profile, modsDir string) (skipped []string, er
 	}
 	var configs []Config
 	for _, e := range p.Entries {
-		if bundled(e) || !enabled(e) {
+		if !inc.ConfigFiles {
+			break
+		}
+		if bundled(e) || (!enabled(e) && !inc.DisabledMods) {
 			continue
 		}
 		for _, m := range e.Mods {

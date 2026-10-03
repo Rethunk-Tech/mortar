@@ -235,18 +235,22 @@ func withEntryKeys(p profile.Profile, keys []string) profile.Profile {
 }
 
 // Share builds the link of a profile, and what it holds and leaves out. keys, when set, keeps only those entries.
-func (s *Service) Share(game, profileID string, keys []string) (Info, error) {
+func (s *Service) Share(game, profileID string, keys []string, include share.Include) (Info, error) {
 	p, err := s.find(game, profileID)
 	if err != nil {
 		return Info{}, err
 	}
-	return describe(withEntryKeys(p, keys))
+	return describe(withEntryKeys(p, keys), include)
 }
 
-func describe(p profile.Profile) (Info, error) {
-	shared, left, off := share.Collect(p)
+func describe(p profile.Profile, include ...share.Include) (Info, error) {
+	inc := share.DefaultInclude()
+	if len(include) > 0 {
+		inc = include[0]
+	}
+	shared, left, off := share.Collect(p, inc)
 	info := Info{Name: p.Name, Limit: DiscordLimit, Count: len(shared.Entries), Groups: []Group{}, LeftOut: []Omitted{}}
-	res, err := share.Encode(p)
+	res, err := share.Encode(p, inc)
 	switch {
 	case err == nil:
 		info.Web, info.App, info.Length = res.Web, res.App, len(res.Web)
@@ -294,7 +298,7 @@ type Saved struct {
 var fileNameUnsafe = strings.NewReplacer("/", "-", "\\", "-", ":", "-", "*", "-", "?", "-", "\"", "-", "<", "-", ">", "-", "|", "-")
 
 // SaveFile asks where to save the profile as a .mortar file, and writes it there.
-func (s *Service) SaveFile(game, profileID string, keys []string) (Saved, error) {
+func (s *Service) SaveFile(game, profileID string, keys []string, include share.Include) (Saved, error) {
 	p, err := s.find(game, profileID)
 	if err != nil {
 		return Saved{}, err
@@ -318,7 +322,7 @@ func (s *Service) SaveFile(game, profileID string, keys []string) (Saved, error)
 		dest += ".mortar"
 	}
 	var buf bytes.Buffer
-	skipped, err := share.Write(&buf, p, modsDir)
+	skipped, err := share.Write(&buf, p, modsDir, include)
 	if err != nil {
 		return Saved{}, err
 	}
