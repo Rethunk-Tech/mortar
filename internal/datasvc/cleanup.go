@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
@@ -207,19 +208,8 @@ func fileAge(path string, now time.Time) time.Duration {
 	return now.Sub(info.ModTime())
 }
 
-func dirSize(dir string) (n int64) {
-	_ = filepath.WalkDir(filepath.Clean(dir), func(_ string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return fs.SkipDir
-		}
-		if d.Type()&fs.ModeSymlink != 0 || !d.Type().IsRegular() {
-			return nil
-		}
-		if info, infoErr := d.Info(); infoErr == nil {
-			n += info.Size()
-		}
-		return nil
-	})
+func dirSize(dir string) int64 {
+	n, _ := datadir.Size(dir)
 	return n
 }
 
@@ -241,8 +231,7 @@ func confined(root, rel string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	relBack, err := filepath.Rel(absRoot, abs)
-	if err != nil || relBack == ".." || strings.HasPrefix(relBack, ".."+string(os.PathSeparator)) {
+	if !datadir.UnderRoot(absRoot, abs) {
 		return "", fs.ErrInvalid
 	}
 	return abs, nil
