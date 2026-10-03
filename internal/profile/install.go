@@ -107,25 +107,31 @@ func (s *Store) InstallStaged(game, id, key string, source Source) (InstallResul
 	return s.installKey(game, id, key, source)
 }
 
-func (s *Store) installKey(game, id, key string, source Source) (InstallResult, error) {
-	p, updated, versionChanged, err := s.placeKey(game, id, key, source)
-	if need, ok := errors.AsType[*NeedChoicesError](err); ok {
+// installQuestion turns an install that stopped for the user's choice (FOMOD options or which folder
+// is the mod's root) into the result that asks it, with the profile as it stands.
+func (s *Store) installQuestion(game, id, key string, source Source, err error) (InstallResult, bool) {
+	current := func() Profile {
 		cur, rerr := s.read(game, id)
 		if rerr != nil {
-			cur = Profile{}
+			return Profile{}
 		}
-		need.Ask.Key = key
-		need.Ask.Source = source
-		return InstallResult{Profile: cur, Added: []string{}, Fomod: &need.Ask}, nil
+		return cur
+	}
+	if need, ok := errors.AsType[*NeedChoicesError](err); ok {
+		need.Ask.Key, need.Ask.Source = key, source
+		return InstallResult{Profile: current(), Added: []string{}, Fomod: &need.Ask}, true
 	}
 	if need, ok := errors.AsType[*NeedRootError](err); ok {
-		cur, rerr := s.read(game, id)
-		if rerr != nil {
-			cur = Profile{}
-		}
-		need.Ask.Key = key
-		need.Ask.Source = source
-		return InstallResult{Profile: cur, Added: []string{}, Remap: &need.Ask}, nil
+		need.Ask.Key, need.Ask.Source = key, source
+		return InstallResult{Profile: current(), Added: []string{}, Remap: &need.Ask}, true
+	}
+	return InstallResult{}, false
+}
+
+func (s *Store) installKey(game, id, key string, source Source) (InstallResult, error) {
+	p, updated, versionChanged, err := s.placeKey(game, id, key, source)
+	if ask, ok := s.installQuestion(game, id, key, source, err); ok {
+		return ask, nil
 	}
 	if err != nil {
 		return InstallResult{}, installError(err)

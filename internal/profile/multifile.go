@@ -217,23 +217,8 @@ func (s *Store) InstallNexusExtra(game, id, entryKey, path string, source Source
 		return InstallResult{}, installError(err)
 	}
 	p, err := s.AddExtra(game, id, entryKey, key, source)
-	if need, ok := errors.AsType[*NeedChoicesError](err); ok {
-		cur, rerr := s.read(game, id)
-		if rerr != nil {
-			cur = Profile{}
-		}
-		need.Ask.Key = key
-		need.Ask.Source = source
-		return InstallResult{Profile: cur, Added: []string{}, Fomod: &need.Ask}, nil
-	}
-	if need, ok := errors.AsType[*NeedRootError](err); ok {
-		cur, rerr := s.read(game, id)
-		if rerr != nil {
-			cur = Profile{}
-		}
-		need.Ask.Key = key
-		need.Ask.Source = source
-		return InstallResult{Profile: cur, Added: []string{}, Remap: &need.Ask}, nil
+	if ask, ok := s.installQuestion(game, id, key, source, err); ok {
+		return ask, nil
 	}
 	if err != nil {
 		return InstallResult{}, installError(err)
