@@ -37,14 +37,16 @@ export function ToolsMenu({ game, profileID }: { game: string; profileID: string
         onClick={(e) => setAnchor(e.currentTarget)}
       />
       <Menu open={anchor !== null} anchorEl={anchor} onClose={close} transitionDuration={0}>
-        <MenuItem disabled={true} dense={true} sx={{ opacity: 1 }}>
-          <ListItemText
-            primary={t`Launch other apps with this profile.`}
-            slotProps={{
-              primary: { sx: { fontSize: 12, color: 'text.secondary', fontWeight: 400 } },
-            }}
-          />
-        </MenuItem>
+        {tools.length === 0 ? (
+          <MenuItem disabled={true} dense={true} sx={{ opacity: 1 }}>
+            <ListItemText
+              primary={t`Launch other apps with this profile.`}
+              slotProps={{
+                primary: { sx: { fontSize: 12, color: 'text.secondary', fontWeight: 400 } },
+              }}
+            />
+          </MenuItem>
+        ) : null}
         {tools.length > 0 ? <Divider /> : null}
         {tools.map((tool) => (
           <MenuItem
