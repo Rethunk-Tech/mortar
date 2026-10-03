@@ -10,7 +10,7 @@ import { isNewer } from './nexusFormat.ts'
 const LIST_COLUMN_GROUPS = [
   ['on', 'name', 'author', 'category', 'notes', 'uniqueId'],
   ['version', 'latest', 'status', 'needs'],
-  ['installed', 'updated', 'lastRun'],
+  ['installed', 'updated', 'lastRun', 'size'],
   ['source', 'endorsements', 'downloads'],
 ] as const
 
@@ -43,6 +43,7 @@ const NARROW_HIDE_LIST_COLUMNS: readonly ListColumnId[] = [
   'needs',
   'notes',
   'lastRun',
+  'size',
 ]
 
 type ListSortDir = 'asc' | 'desc'
@@ -77,6 +78,7 @@ const LIST_COLUMN_WIDTH: Record<ListColumnId, string> = {
   status: '100px',
   notes: '160px',
   lastRun: '88px',
+  size: '88px',
 }
 
 interface ListRow {
@@ -86,6 +88,7 @@ interface ListRow {
   status: string
   note: string
   tags: string[]
+  size?: number
   categoryOverride?: string
   categoryLabel: string
   pinned?: boolean
@@ -245,6 +248,16 @@ function lastRunCounts(mod: Mod): { errors: number; warnings: number } | null {
   return { errors: hit.errors, warnings: hit.warnings }
 }
 
+function compareLastRun(a: ListRow, b: ListRow, dir: ListSortDir): number {
+  const av = lastRunCounts(a.mod)
+  const bv = lastRunCounts(b.mod)
+  let primary = missingLast(!av, !bv, dir, cmpNum(av?.errors ?? 0, bv?.errors ?? 0))
+  if (primary === 0 && av && bv) {
+    primary = missingLast(false, false, dir, cmpNum(av.warnings, bv.warnings))
+  }
+  return primary
+}
+
 function compareListRows(a: ListRow, b: ListRow, sort: ListColumnSort): number {
   const { column, dir } = sort
   let primary = 0
@@ -335,15 +348,17 @@ function compareListRows(a: ListRow, b: ListRow, sort: ListColumnSort): number {
       primary = missingLast(!av, !bv, dir, cmpText(av, bv))
       break
     }
-    case 'lastRun': {
-      const av = lastRunCounts(a.mod)
-      const bv = lastRunCounts(b.mod)
-      primary = missingLast(!av, !bv, dir, cmpNum(av?.errors ?? 0, bv?.errors ?? 0))
-      if (primary === 0 && av && bv) {
-        primary = missingLast(false, false, dir, cmpNum(av.warnings, bv.warnings))
-      }
+    case 'lastRun':
+      primary = compareLastRun(a, b, dir)
       break
-    }
+    case 'size':
+      primary = missingLast(
+        a.size === undefined,
+        b.size === undefined,
+        dir,
+        cmpNum(a.size ?? 0, b.size ?? 0),
+      )
+      break
     default:
       primary = 0
   }

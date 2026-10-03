@@ -39,6 +39,9 @@ const row = (over: Partial<ListRow> & { name: string }): ListRow => {
     tags: over.tags ?? [],
     categoryLabel: over.categoryLabel ?? '',
   }
+  if (over.size !== undefined) {
+    out.size = over.size
+  }
   if (over.details) {
     out.details = over.details
   }
@@ -160,6 +163,10 @@ test('compares numbers, versions, dates and text, with missing last in both dire
   expect(compareListRows(missing, a, { column: 'version', dir: 'asc' })).toBeGreaterThan(0)
   expect(compareListRows(missing, a, { column: 'version', dir: 'desc' })).toBeGreaterThan(0)
   expect(compareListRows(a, b, { column: 'installed', dir: 'asc' })).toBeGreaterThan(0)
+  const heavier = row({ name: 'Beta', size: 200 })
+  const lighter = row({ name: 'Alpha', size: 50 })
+  expect(compareListRows(heavier, lighter, { column: 'size', dir: 'desc' })).toBeLessThan(0)
+  expect(compareListRows(missing, heavier, { column: 'size', dir: 'asc' })).toBeGreaterThan(0)
   const sorted = sortListRows([a, missing, b], { column: 'name', dir: 'asc' })
   expect(sorted.map((r) => r.mod.name)).toEqual(['Alpha', 'Beta', 'Zed'])
 })

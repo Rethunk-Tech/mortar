@@ -1,13 +1,37 @@
 import { i18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
+import { useEffect, useState } from 'react'
+import type { EntrySize } from '../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
+import { EntrySizes } from '../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
 import type {
   CustomCategory,
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { customCategoryById, resolvedCategoryLabel } from './group.ts'
 import type { ListRow } from './listColumns.ts'
 import { kindLabel, nexusIdOf, sourceKind } from './lookup.ts'
+
+let entrySizes: Readonly<Record<string, number>> = {}
+
+function useEntrySizes(): Readonly<Record<string, number>> {
+  const [sizes, setSizes] = useState<Record<string, number>>({})
+  useEffect(() => {
+    EntrySizes()
+      .then((rows: EntrySize[]) => {
+        const next: Record<string, number> = {}
+        for (const r of rows ?? []) {
+          next[r.key] = r.size
+        }
+        setSizes(next)
+        entrySizes = next
+      })
+      .catch(reportUnexpected)
+  }, [])
+  entrySizes = sizes
+  return sizes
+}
 
 function toListRow(
   m: Mod,
@@ -39,10 +63,14 @@ function toListRow(
     categoryOverride: entry?.categoryOverride ?? '',
     categoryLabel,
   }
+  const n = entrySizes[m.key]
+  if (n !== undefined) {
+    row.size = n
+  }
   if (details) {
     row.details = details
   }
   return row
 }
 
-export { toListRow }
+export { toListRow, useEntrySizes }
