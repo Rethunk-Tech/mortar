@@ -59,8 +59,17 @@ type reply struct {
 	Open      *modInProfile  `json:"open,omitempty"`
 	Others    []modInProfile `json:"others,omitempty"`
 	Problems  []modProblem   `json:"problems,omitempty"`
+	Updates   *[]modUpdate   `json:"updates,omitempty"`
+	Profile   string         `json:"profile,omitempty"`
 	// Accent is Mortar's accent colour, read on every reply so the extension follows a change in the app.
 	Accent string `json:"accent,omitempty"`
+}
+
+type modUpdate struct {
+	ModID     int    `json:"modId"`
+	Name      string `json:"name"`
+	Installed string `json:"installed"`
+	Latest    string `json:"latest"`
 }
 
 type modProblem struct {
@@ -172,14 +181,14 @@ func requiredByMods(entries []diskEntry, targets []string) ([]string, []string) 
 
 // Serve answers messages from r until it closes, handing each message's link to open.
 func Serve(r io.Reader, w io.Writer, open func(link string) error) error {
-	return serveWithConnection(r, w, open, activeNexusModIDs, nexusModProfiles, activeNexusConnected, nexusModProblems)
+	return serveWithConnection(r, w, open, activeNexusModIDs, nexusModProfiles, activeNexusConnected, activeNexusUpdates, nexusModProblems)
 }
 
 func serve(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, mod func(game string, modID int) (modInProfile, []modInProfile), problem ...func(game string, modID int) []modProblem) error {
-	return serveWithConnection(r, w, open, installed, mod, nil, problem...)
+	return serveWithConnection(r, w, open, installed, mod, nil, nil, problem...)
 }
 
-func serveWithConnection(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, mod func(game string, modID int) (modInProfile, []modInProfile), connected func(string) bool, problem ...func(game string, modID int) []modProblem) error {
+func serveWithConnection(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, mod func(game string, modID int) (modInProfile, []modInProfile), connected func(string) bool, updates func(string) (string, []modUpdate), problem ...func(game string, modID int) []modProblem) error {
 	for {
 		var n uint32
 		if err := binary.Read(r, binary.NativeEndian, &n); err != nil {
@@ -212,6 +221,18 @@ func serveWithConnection(r io.Reader, w io.Writer, open func(link string) error,
 		case "mod":
 			openProfile, others := mod(req.Game, req.ModID)
 			rep = reply{Open: &openProfile, Others: others}
+		case "updates":
+			name, rows := "", []modUpdate{}
+			if updates != nil {
+				name, rows = updates(req.Game)
+			}
+			if rows == nil {
+				rows = []modUpdate{}
+			}
+			slices.SortFunc(rows, func(a, b modUpdate) int {
+				return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
+			})
+			rep = reply{Updates: &rows, Profile: name}
 		case "modProblems":
 			var rows []modProblem
 			if len(problem) > 0 && problem[0] != nil {
@@ -371,6 +392,80 @@ func activeNexusModIDs(domain string) []int {
 		}
 	}
 	return ids
+}
+
+func activeNexusUpdates(domain string) (string, []modUpdate) {
+	rows := []modUpdate{}
+	info, ok := components.BundledGameByNexusDomain(domain)
+	if !ok {
+		return "", rows
+	}
+	dataDir, err := datadir.Dir()
+	if err != nil || !mortarRunning(dataDir) {
+		return "", rows
+	}
+	store, err := settings.Open()
+	if err != nil {
+		return "", rows
+	}
+	profileID := store.Get().LastProfile[info.ID]
+	if profileID == "" || filepath.Base(profileID) != profileID {
+		return "", rows
+	}
+	root, err := os.OpenRoot(dataDir)
+	if err != nil {
+		return "", rows
+	}
+	defer func() { _ = root.Close() }()
+	data, err := root.ReadFile(filepath.Join("profiles", info.ID, profileID, "profile.json"))
+	if err != nil {
+		return "", rows
+	}
+	var profile struct {
+		Name    string      `json:"name"`
+		Entries []diskEntry `json:"entries"`
+	}
+	if err := json.Unmarshal(data, &profile); err != nil {
+		return "", rows
+	}
+	seen := map[int]struct{}{}
+	for _, entry := range profile.Entries {
+		if entry.Source.Kind != "nexus" || entry.Source.ModID < 1 {
+			continue
+		}
+		if _, dup := seen[entry.Source.ModID]; dup {
+			continue
+		}
+		var version *string
+		installed := ""
+		name := ""
+		if len(entry.Mods) > 0 {
+			name = entry.Mods[0].Name
+			if name == "" {
+				name = entry.Mods[0].UniqueID
+			}
+			if entry.Mods[0].Version != "" {
+				v := entry.Mods[0].Version
+				version = &v
+				installed = v
+			}
+		}
+		pageVer, files := cachedNexusDetails(root, domain, entry.Source.ModID)
+		if !nexusUpdateAvailable(version, entry.Source.FileID, pageVer, files) {
+			continue
+		}
+		seen[entry.Source.ModID] = struct{}{}
+		rows = append(rows, modUpdate{
+			ModID:     entry.Source.ModID,
+			Name:      name,
+			Installed: installed,
+			Latest:    pageVer,
+		})
+	}
+	slices.SortFunc(rows, func(a, b modUpdate) int {
+		return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
+	})
+	return profile.Name, rows
 }
 
 func activeNexusConnected(domain string) bool {

@@ -128,7 +128,7 @@ func TestServeReportsConnectedWhenProfileHasNoMods(t *testing.T) {
 	in := frame(t, request{Type: "installed", Game: "stardewvalley"})
 	var out bytes.Buffer
 	err := serveWithConnection(bytes.NewReader(in), &out, func(string) error { return nil },
-		func(string) []int { return []int{} }, nil, func(string) bool { return true })
+		func(string) []int { return []int{} }, nil, func(string) bool { return true }, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -459,5 +459,159 @@ func TestNexusModProfilesUpdateAvailableFromCache(t *testing.T) {
 	}
 	if len(others) != 1 || others[0].Profile != "Co-op" || others[0].UpdateAvailable {
 		t.Fatalf("others = %+v", others)
+	}
+}
+
+func TestServeAnswersUpdates(t *testing.T) {
+	in := frame(t, request{Type: "updates", Game: "stardewvalley"})
+	var out bytes.Buffer
+	err := serveWithConnection(bytes.NewReader(in), &out, func(string) error {
+		t.Fatal("updates request opened a link")
+		return nil
+	}, nil, nil, nil, func(game string) (string, []modUpdate) {
+		if game != "stardewvalley" {
+			t.Fatalf("updates game = %q", game)
+		}
+		return "Default", []modUpdate{
+			{ModID: 2, Name: "Zed", Installed: "1.0.0", Latest: "2.0.0"},
+			{ModID: 1, Name: "Alpha", Installed: "3.0.0", Latest: ""},
+		}
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var n uint32
+	if err := binary.Read(&out, binary.NativeEndian, &n); err != nil {
+		t.Fatal(err)
+	}
+	var got reply
+	if err := json.Unmarshal(out.Next(int(n)), &got); err != nil {
+		t.Fatal(err)
+	}
+	if got.Profile != "Default" || got.Updates == nil || len(*got.Updates) != 2 {
+		t.Fatalf("updates reply = %+v", got)
+	}
+	gotUpdates := *got.Updates
+	if gotUpdates[0].Name != "Alpha" || gotUpdates[0].ModID != 1 || gotUpdates[0].Latest != "" {
+		t.Fatalf("sorted empty latest = %+v", gotUpdates[0])
+	}
+	if gotUpdates[1].Name != "Zed" || gotUpdates[1].Installed != "1.0.0" || gotUpdates[1].Latest != "2.0.0" {
+		t.Fatalf("second update = %+v", gotUpdates[1])
+	}
+}
+
+func TestActiveNexusUpdatesFromCache(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	dir, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = ln.Close() })
+	go func() {
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			_ = c.Close()
+		}
+	}()
+	addr, ok := ln.Addr().(*net.TCPAddr)
+	if !ok {
+		t.Fatalf("listen addr = %T", ln.Addr())
+	}
+	if err := os.WriteFile(filepath.Join(dir, "control.json"), []byte(`{"port":`+strconv.Itoa(addr.Port)+`}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	openID := "aaaaaaaaaaaaaaaa"
+	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"lastProfile":{"stardew":"`+openID+`"}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	pdir := filepath.Join(dir, "profiles", "stardew", openID)
+	if err := os.MkdirAll(pdir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	body, err := json.Marshal(map[string]any{
+		"name": "Default",
+		"entries": []map[string]any{
+			{
+				"source": map[string]any{"kind": "nexus", "modId": 10, "fileId": 1},
+				"mods":   []map[string]any{{"name": "Zed", "version": "1.0.0"}},
+			},
+			{
+				"source": map[string]any{"kind": "nexus", "modId": 20, "fileId": 2},
+				"mods":   []map[string]any{{"name": "Current", "version": "5.0.0"}},
+			},
+			{
+				"source": map[string]any{"kind": "nexus", "modId": 30, "fileId": 3},
+				"mods":   []map[string]any{{"name": "Alpha", "version": "0.1.0"}},
+			},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(pdir, "profile.json"), body, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	cacheDir := filepath.Join(dir, "cache", "nexus")
+	if err := os.MkdirAll(cacheDir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	writeCache := func(modID int, page string, files []map[string]any) {
+		t.Helper()
+		cache, err := json.Marshal(map[string]any{
+			"value": map[string]any{
+				"page":  map[string]any{"version": page},
+				"files": files,
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		path := filepath.Join(cacheDir, "details-v3-stardewvalley-"+strconv.Itoa(modID)+".json")
+		if err := os.WriteFile(path, cache, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	writeCache(10, "2.0.0", []map[string]any{{"fileId": 1, "version": "1.0.0"}})
+	writeCache(20, "5.0.0", []map[string]any{{"fileId": 2, "version": "5.0.0"}})
+	writeCache(30, "", []map[string]any{
+		{"fileId": 3, "version": "0.1.0", "replacedBy": 4},
+		{"fileId": 4, "version": "0.2.0"},
+	})
+	name, rows := activeNexusUpdates("stardewvalley")
+	if name != "Default" || len(rows) != 2 {
+		t.Fatalf("updates = %q %+v", name, rows)
+	}
+	if rows[0].Name != "Alpha" || rows[0].ModID != 30 || rows[0].Installed != "0.1.0" || rows[0].Latest != "" {
+		t.Fatalf("unknown latest = %+v", rows[0])
+	}
+	if rows[1].Name != "Zed" || rows[1].ModID != 10 || rows[1].Latest != "2.0.0" {
+		t.Fatalf("named update = %+v", rows[1])
+	}
+	in := frame(t, request{Type: "updates", Game: "stardewvalley"})
+	var out bytes.Buffer
+	if err := Serve(bytes.NewReader(in), &out, func(string) error {
+		t.Fatal("updates request opened a link")
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	var n uint32
+	if err := binary.Read(&out, binary.NativeEndian, &n); err != nil {
+		t.Fatal(err)
+	}
+	var got reply
+	if err := json.Unmarshal(out.Next(int(n)), &got); err != nil {
+		t.Fatal(err)
+	}
+	if got.Profile != "Default" || got.Updates == nil || len(*got.Updates) != 2 || (*got.Updates)[0].Latest != "" || (*got.Updates)[1].Name != "Zed" {
+		t.Fatalf("Serve updates = %+v", got)
 	}
 }
