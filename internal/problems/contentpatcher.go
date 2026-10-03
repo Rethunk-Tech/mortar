@@ -764,6 +764,7 @@ func readContentPackWithEnabled(mod Installed, requireEnabled bool) cachedPack {
 			Pack:        diskPackOf(pack),
 		})
 	}
+	dropPNGAlphaUnder(root)
 	return pack
 }
 
@@ -906,19 +907,26 @@ func clearDiskPackPayload(root string) {
 }
 
 func flushPackDiskCache(mods []Installed) {
-	path := loadPackDiskCache()
-	if path == "" {
-		return
-	}
 	present := map[string]bool{}
 	for _, mod := range mods {
 		if mod.Folder != "" {
 			present[filepath.Clean(mod.Folder)] = true
 		}
 	}
+	packCache.Range(func(k, _ any) bool {
+		root, ok := k.(string)
+		if !ok || !present[root] {
+			packCache.Delete(k)
+		}
+		return true
+	})
+	path := loadPackDiskCache()
+	if path == "" {
+		return
+	}
 	packDiskState.Lock()
 	for root := range packDiskState.entries {
-		if !present[root] {
+		if _, err := os.Stat(root); err != nil {
 			delete(packDiskState.entries, root)
 			packDiskState.dirty = true
 		}
@@ -1886,6 +1894,26 @@ func preloadContentPacks(mods []Installed) {
 
 func dropPNGAlphaMemo() {
 	pngAlphaCache.Range(func(k, v any) bool {
+		if pix, ok := v.(pngAlpha); ok {
+			releaseAlpha(pix.a)
+		}
+		pngAlphaCache.Delete(k)
+		return true
+	})
+}
+
+func dropPNGAlphaUnder(root string) {
+	root = filepath.Clean(root)
+	sep := root + string(os.PathSeparator)
+	pngAlphaCache.Range(func(k, v any) bool {
+		key, ok := k.(string)
+		if !ok {
+			return true
+		}
+		abs, _, _ := strings.Cut(key, "\x00")
+		if abs != root && !strings.HasPrefix(abs, sep) {
+			return true
+		}
 		if pix, ok := v.(pngAlpha); ok {
 			releaseAlpha(pix.a)
 		}

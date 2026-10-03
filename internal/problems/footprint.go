@@ -432,7 +432,7 @@ func opaqueImageShape(root, rel string, fromRaw json.RawMessage, x, y int) (cpSh
 	for py := minY; py < maxY; py++ {
 		row := py * decoded.w
 		for px := minX; px < maxX; px++ {
-			if decoded.a[row+px] == 0 {
+			if !maskSet(decoded.a, row+px) {
 				continue
 			}
 			cellX := (x + px - from.x) / 16
@@ -472,6 +472,7 @@ func loadPNGAlpha(root, rel, fileKey string) (pngAlpha, bool) {
 		pngAlphaCache.Store(fileKey, pngAlpha{})
 		return pngAlpha{}, false
 	}
+	pix.a = packNonzeroMask(pix.a)
 	actual, loaded := pngAlphaCache.LoadOrStore(fileKey, pix)
 	if loaded {
 		releaseAlpha(pix.a)
@@ -481,6 +482,26 @@ func loadPNGAlpha(root, rel, fileKey string) (pngAlpha, bool) {
 		return pngAlpha{}, false
 	}
 	return pix, true
+}
+
+func packNonzeroMask(a []byte) []byte {
+	n := (len(a) + 7) / 8
+	mask := acquireAlpha(n)
+	clear(mask)
+	for i, v := range a {
+		if v != 0 {
+			mask[i>>3] |= 1 << (i & 7)
+		}
+	}
+	releaseAlpha(a)
+	return mask
+}
+
+func maskSet(mask []byte, i int) bool {
+	if i < 0 || i>>3 >= len(mask) {
+		return false
+	}
+	return mask[i>>3]&(1<<(uint(i)&7)) != 0
 }
 
 func decodePNGAlpha(r io.Reader) (pngAlpha, bool) {

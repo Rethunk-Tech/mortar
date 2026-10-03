@@ -7,13 +7,16 @@ import (
 	"image/color"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
 func TestContentPackDiskCache(t *testing.T) {
@@ -96,8 +99,16 @@ func TestContentPackDiskCache(t *testing.T) {
 
 	flushPackDiskCache(nil)
 	cache = readDiskPackCache(t, cachePath)
+	if _, ok := cache.Packs[filepath.Clean(mod.Folder)]; !ok {
+		t.Fatal("disk cache dropped a pack folder that still exists")
+	}
+	if err := os.RemoveAll(mod.Folder); err != nil {
+		t.Fatal(err)
+	}
+	flushPackDiskCache(nil)
+	cache = readDiskPackCache(t, cachePath)
 	if len(cache.Packs) != 0 {
-		t.Fatalf("stale pack cache entries = %#v", cache.Packs)
+		t.Fatalf("missing pack folder still cached = %#v", cache.Packs)
 	}
 }
 
@@ -231,6 +242,59 @@ func BenchmarkPackDiskCacheLoad(b *testing.B) {
 			}
 		}
 	})
+}
+
+func TestPNGAlphaMemoIsBitMaskAndDroppedAfterPack(t *testing.T) {
+	dataHome := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", dataHome)
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+
+	mod, _, pngPath := diskCachePack(t)
+	info, err := os.Stat(pngPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fileKey := pngPath + "\x00" + strconv.FormatInt(info.Size(), 10) + "\x00" +
+		strconv.FormatInt(info.ModTime().UnixNano(), 10)
+	pix, ok := loadPNGAlpha(mod.Folder, "patch.png", fileKey)
+	if !ok {
+		t.Fatal("loadPNGAlpha")
+	}
+	want := (32*16 + 7) / 8
+	if len(pix.a) != want {
+		t.Fatalf("mask bytes = %d, want %d (byte-per-pixel would be %d)", len(pix.a), want, 32*16)
+	}
+
+	readContentPack(mod)
+	n := 0
+	pngAlphaCache.Range(func(_, _ any) bool {
+		n++
+		return true
+	})
+	if n != 0 {
+		t.Fatalf("alpha cache entries after pack parse = %d", n)
+	}
+}
+
+func TestPackMemoryCacheDropsFoldersNotInCurrentMods(t *testing.T) {
+	dataHome := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", dataHome)
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+
+	mod, _, _ := diskCachePack(t)
+	_ = readContentPack(mod)
+	if _, ok := packCache.Load(filepath.Clean(mod.Folder)); !ok {
+		t.Fatal("pack was not memoized")
+	}
+	other := t.TempDir()
+	flushPackDiskCache([]Installed{{Folder: other}})
+	if _, ok := packCache.Load(filepath.Clean(mod.Folder)); ok {
+		t.Fatal("packCache kept a folder that is not in the current mods list")
+	}
 }
 
 func resetContentPackCaches() {
@@ -380,4 +444,104 @@ func generatedPackCacheBytes(t testing.TB) (oldJSON, compactJSON, packed []byte)
 			sizeOf(sample.Patches), sizeOf(sample.Tokens), sizeOf(sample.Mentions), sizeOf(sample.Schema))
 	}
 	return oldJSON, compactJSON, packed
+}
+
+func TestScanBenchConflictRSS(t *testing.T) {
+	if os.Getenv("MORTAR_SCAN_BENCH") != "1" {
+		t.Skip("set MORTAR_SCAN_BENCH=1 to measure a reflink copy at /var/tmp/scan-bench")
+	}
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+
+	var mods []Installed
+	var globErr, parseErr int
+	packs, err := filepath.Glob("/var/tmp/scan-bench/*/mods/*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	seen := map[string]bool{}
+	for _, folder := range packs {
+		info, err := os.Stat(folder)
+		if err != nil || !info.IsDir() {
+			globErr++
+			continue
+		}
+		_ = filepath.WalkDir(folder, func(path string, d os.DirEntry, err error) error {
+			if err != nil || !d.IsDir() {
+				return err
+			}
+			if !isContentPatcherPack(path) {
+				return nil
+			}
+			raw, err := fsx.ReadFile(filepath.Join(path, manifest.FileName))
+			if err != nil {
+				parseErr++
+				return filepath.SkipDir
+			}
+			man, err := manifest.Parse(raw)
+			if err != nil || man.UniqueID == "" || seen[man.UniqueID] {
+				parseErr++
+				return filepath.SkipDir
+			}
+			seen[man.UniqueID] = true
+			mods = append(mods, Installed{
+				Key:      filepath.Base(folder) + ":" + man.UniqueID,
+				Enabled:  true,
+				Folder:   path,
+				Manifest: man,
+			})
+			return filepath.SkipDir
+		})
+	}
+	if len(mods) == 0 {
+		t.Fatalf("no mods in /var/tmp/scan-bench (glob=%d stat=%d parse=%d)", len(packs), globErr, parseErr)
+	}
+
+	before := vmHWM()
+	var peak atomic.Uint64
+	stop := make(chan struct{})
+	var wg sync.WaitGroup
+	wg.Go(func() {
+		var ms runtime.MemStats
+		for {
+			select {
+			case <-stop:
+				return
+			default:
+				runtime.ReadMemStats(&ms)
+				for {
+					cur := peak.Load()
+					if ms.HeapAlloc <= cur || peak.CompareAndSwap(cur, ms.HeapAlloc) {
+						break
+					}
+				}
+				time.Sleep(5 * time.Millisecond)
+			}
+		}
+	})
+	start := time.Now()
+	conflicts, _ := assetConflictResults(mods)
+	elapsed := time.Since(start)
+	close(stop)
+	wg.Wait()
+	after := vmHWM()
+	t.Logf("glob=%d mods=%d skippedStat=%d skippedParse=%d conflicts=%d elapsed=%s heapPeak=%d MiB vmHWM before=%d after=%d KiB",
+		len(packs), len(mods), globErr, parseErr, len(conflicts), elapsed, peak.Load()>>20, before, after)
+}
+
+func vmHWM() int64 {
+	raw, err := os.ReadFile("/proc/self/status")
+	if err != nil {
+		return 0
+	}
+	for line := range strings.SplitSeq(string(raw), "\n") {
+		if n, ok := strings.CutPrefix(line, "VmHWM:"); ok {
+			n = strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(n), "kB"))
+			v, _ := strconv.ParseInt(n, 10, 64)
+			return v
+		}
+	}
+	return 0
 }
