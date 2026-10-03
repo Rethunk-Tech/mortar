@@ -3,7 +3,7 @@ import { Divider, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/materi
 import { Play, Plus, Settings2, Wrench } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { IconAction } from '../shell/IconAction.tsx'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useTools } from './store.ts'
 import { ToolEditorDialog } from './ToolEditorDialog.tsx'
@@ -60,6 +60,7 @@ export function ToolsMenu({ game, profileID }: { game: string; profileID: string
                     kind: 'error',
                     title: t`Could not start ${tool.name}`,
                     body: errorMessage(e),
+                    detail: errorDetails(e),
                   }),
                 )
             }}

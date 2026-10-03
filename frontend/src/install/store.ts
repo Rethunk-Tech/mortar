@@ -28,7 +28,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { changeStillLatest } from '../toasts/history.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type MissingOffer, offersFor, wantsOf } from './missingDeps.ts'
 
@@ -74,6 +74,7 @@ async function undoArchiveInstall(
       kind: 'error',
       title: i18n._(msg`Could not undo the install`),
       body: errorMessage(e),
+      detail: errorDetails(e),
     })
     return
   }
@@ -285,6 +286,7 @@ export const useInstall = create<{
           kind: 'error',
           title: i18n._(msg`Could not add the chosen folder`),
           body: errorMessage(e),
+          detail: errorDetails(e),
         })
       })
       return
@@ -296,6 +298,7 @@ export const useInstall = create<{
           kind: 'error',
           title: i18n._(msg`Could not add the chosen folder`),
           body: errorMessage(e),
+          detail: errorDetails(e),
         })
       })
   },
@@ -331,6 +334,7 @@ export const useInstall = create<{
           kind: 'error',
           title: i18n._(msg`Could not add ${fileName(path)}`),
           body: errorMessage(e),
+          detail: errorDetails(e),
         })
       } finally {
         set((s) => ({ pending: s.pending - 1 }))
@@ -349,6 +353,7 @@ export const useInstall = create<{
         kind: 'error',
         title: i18n._(msg`Could not open the file dialog`),
         body: errorMessage(e),
+        detail: errorDetails(e),
       })
     }
   },

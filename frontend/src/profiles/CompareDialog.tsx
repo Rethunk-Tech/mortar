@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { CopyMods } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { errorMessage } from '../toasts/report.ts'
+import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { CompareBulkBody } from './CompareBulkBody.tsx'
@@ -95,9 +95,12 @@ export function CompareDialog({
         await CopyMods(game, from.id, to.id, uniqueIds)
         await refresh()
       } catch (error) {
-        useToasts
-          .getState()
-          .push({ kind: 'error', title: t`Could not copy mods`, body: errorMessage(error) })
+        useToasts.getState().push({
+          kind: 'error',
+          title: t`Could not copy mods`,
+          body: errorMessage(error),
+          detail: errorDetails(error),
+        })
       }
     })
   }

@@ -44,14 +44,16 @@ import { CompareDialog, PickCompareDialog } from '../profiles/CompareDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { applyStagedCover, hasPickedCover } from './cover.ts'
 
 // The profile actions shared by the profile page's buttons and the sidebar's context menu, so both offer the same.
 
 const toastError = (title: string) => (e: unknown) =>
-  useToasts.getState().push({ kind: 'error', title, body: errorMessage(e) })
+  useToasts
+    .getState()
+    .push({ kind: 'error', title, body: errorMessage(e), detail: errorDetails(e) })
 
 const sentenceCase = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
 

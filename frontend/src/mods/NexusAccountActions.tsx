@@ -10,7 +10,7 @@ import {
   Untrack,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
 import { useNexus } from '../settings/nexus.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { isAbstained, isEndorsed, isTracked, type TrackedMod } from './nexusAccount.ts'
 
@@ -63,7 +63,9 @@ export function NexusAccountActions({
   }
 
   const fail = (title: string, e: unknown) => {
-    useToasts.getState().push({ kind: 'error', title, body: errorMessage(e) })
+    useToasts
+      .getState()
+      .push({ kind: 'error', title, body: errorMessage(e), detail: errorDetails(e) })
   }
 
   const run = (work: () => Promise<void>) => {

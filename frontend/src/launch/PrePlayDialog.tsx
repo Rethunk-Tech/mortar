@@ -17,7 +17,7 @@ import {
 import { SetSkipPlayCheck } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import type { PlayIssueGroup } from './playIssues.ts'
 import { overflowIssueCount } from './playIssues.ts'
@@ -49,6 +49,7 @@ function persistSkip(game: string, profile: string, on: boolean) {
         kind: 'error',
         title: i18n._(msg`Could not save the profile`),
         body: errorMessage(e),
+        detail: errorDetails(e),
       })
     })
 }

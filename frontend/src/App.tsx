@@ -23,7 +23,7 @@ import { ImportDialog } from './share/ImportDialog.tsx'
 import { ShareDialog } from './share/ShareDialog.tsx'
 import { AppFrame } from './shell/AppFrame.tsx'
 import { ErrorBoundary } from './shell/ErrorBoundary.tsx'
-import { errorMessage } from './toasts/report.ts'
+import { errorDetails, errorMessage } from './toasts/report.ts'
 import { useToasts } from './toasts/store.ts'
 import { ToastHost } from './toasts/ToastHost.tsx'
 import { UpdateReadyBanner } from './updates/UpdateReadyBanner.tsx'
@@ -56,9 +56,12 @@ export function App() {
         }
       })
       .catch((e: unknown) =>
-        useToasts
-          .getState()
-          .push({ kind: 'error', title: t`Could not read your games`, body: errorMessage(e) }),
+        useToasts.getState().push({
+          kind: 'error',
+          title: t`Could not read your games`,
+          body: errorMessage(e),
+          detail: errorDetails(e),
+        }),
       )
       .finally(() => setReady(true))
   }, [t])

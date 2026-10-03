@@ -20,7 +20,7 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { nxmShowCategory, nxmShowWithIcon } from './minimisedNotice.ts'
 import { directProfile, NXM_GAME } from './route.ts'
@@ -64,6 +64,7 @@ async function install(arrival: Arrival, profile: Profile) {
       kind: 'error',
       title: i18n._(msg`Could not start the Nexus download`),
       body: errorMessage(e),
+      detail: errorDetails(e),
     })
     useNxm.getState().add(arrival)
     return

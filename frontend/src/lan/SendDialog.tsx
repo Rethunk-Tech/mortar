@@ -20,7 +20,7 @@ import type { Peer } from '../../bindings/github.com/Rethunk-AI/mortar/internal/
 import { Peers, Send } from '../../bindings/github.com/Rethunk-AI/mortar/internal/lan/service.ts'
 import { useSettings } from '../settings/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { errorMessage } from '../toasts/report.ts'
+import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 const refreshInterval = 3000
@@ -70,6 +70,7 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
           kind: 'error',
           title: t`Could not find Mortar users`,
           body: errorMessage(error),
+          detail: errorDetails(error),
         })
       })
       .finally(() => {
@@ -103,6 +104,7 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
           kind: 'error',
           title: t`Could not send to ${target.name}`,
           body: errorMessage(error),
+          detail: errorDetails(error),
         })
       })
       .finally(() => setSending(null))

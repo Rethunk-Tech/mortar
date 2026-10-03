@@ -13,7 +13,7 @@ import {
 import { BusySummary } from '../../bindings/github.com/Rethunk-AI/mortar/quitservice.ts'
 import { i18n } from '../i18n/index.ts'
 import { askQuit } from '../quit.ts'
-import { errorMessage } from '../toasts/report.ts'
+import { errorDetails, errorMessage } from '../toasts/report.ts'
 
 type Phase =
   | 'idle'
@@ -27,7 +27,7 @@ type Phase =
   | 'error'
 
 function checkFailure(e: unknown): { phase: Phase; error: string } {
-  const raw = errorMessage(e)
+  const raw = errorDetails(e)
   if (raw === 'none') {
     return { phase: 'none', error: '' }
   }

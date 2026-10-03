@@ -24,7 +24,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/service.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
-import { errorMessage } from '../toasts/report.ts'
+import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 interface BundleNameDialogProps {
@@ -64,7 +64,12 @@ function BundleNameDialog({
       await onSubmit(trimmed)
       onClose()
     } catch (error) {
-      useToasts.getState().push({ kind: 'error', title: errorTitle, body: errorMessage(error) })
+      useToasts.getState().push({
+        kind: 'error',
+        title: errorTitle,
+        body: errorMessage(error),
+        detail: errorDetails(error),
+      })
     } finally {
       setBusy(false)
     }
@@ -122,9 +127,12 @@ function useListedBundles(open: boolean, game: string) {
       })
       .catch((error: unknown) => {
         if (active) {
-          useToasts
-            .getState()
-            .push({ kind: 'error', title: t`Could not read bundles`, body: errorMessage(error) })
+          useToasts.getState().push({
+            kind: 'error',
+            title: t`Could not read bundles`,
+            body: errorMessage(error),
+            detail: errorDetails(error),
+          })
         }
       })
       .finally(() => {
@@ -211,6 +219,7 @@ function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToB
         kind: 'error',
         title: t`Could not add mods to the bundle`,
         body: errorMessage(error),
+        detail: errorDetails(error),
       })
     } finally {
       setBusy(false)
@@ -227,9 +236,12 @@ function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToB
       useToasts.getState().push({ kind: 'success', title: t`Created ${created.name}` })
       onClose()
     } catch (error) {
-      useToasts
-        .getState()
-        .push({ kind: 'error', title: t`Could not create the bundle`, body: errorMessage(error) })
+      useToasts.getState().push({
+        kind: 'error',
+        title: t`Could not create the bundle`,
+        body: errorMessage(error),
+        detail: errorDetails(error),
+      })
     } finally {
       setBusy(false)
     }
@@ -309,9 +321,12 @@ function ApplyBundleDialog({
       await onApplied(await Apply(game, bundle.id, profileId))
       onClose()
     } catch (error) {
-      useToasts
-        .getState()
-        .push({ kind: 'error', title: t`Could not add the bundle`, body: errorMessage(error) })
+      useToasts.getState().push({
+        kind: 'error',
+        title: t`Could not add the bundle`,
+        body: errorMessage(error),
+        detail: errorDetails(error),
+      })
     } finally {
       setBusy(false)
     }

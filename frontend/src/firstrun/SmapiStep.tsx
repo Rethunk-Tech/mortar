@@ -9,7 +9,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { useLoader } from '../loader/store.ts'
 import type { GameId } from '../nav/store.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { launchLine, launchOptionsSet } from './logic.ts'
 import { Panel } from './Panel.tsx'
@@ -94,9 +94,12 @@ function LaunchLine({
         recheck()
       })
       .catch((e: unknown) =>
-        useToasts
-          .getState()
-          .push({ kind: 'error', title: t`Could not set it in Steam`, body: errorMessage(e) }),
+        useToasts.getState().push({
+          kind: 'error',
+          title: t`Could not set it in Steam`,
+          body: errorMessage(e),
+          detail: errorDetails(e),
+        }),
       )
       .finally(() => setWriting(false))
   }

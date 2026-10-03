@@ -21,7 +21,7 @@ import { i18n } from '../i18n/index.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { beginWork } from '../toasts/usePending.ts'
 import { trackImport } from './importCompletion.ts'
@@ -149,6 +149,7 @@ async function afterImport(
       kind: 'error',
       title: i18n._(msg`Imported, but could not show the profile`),
       body: errorMessage(e),
+      detail: errorDetails(e),
     })
   }
 }

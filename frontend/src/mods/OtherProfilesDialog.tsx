@@ -18,7 +18,7 @@ import { ProfilesWithMod } from '../../bindings/github.com/Rethunk-AI/mortar/int
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { errorMessage } from '../toasts/report.ts'
+import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { isLocked } from './locked.ts'
 import { selectableProfileIds } from './otherProfiles.ts'
@@ -202,9 +202,12 @@ export function OtherProfilesDialog({
         ),
       )
       .catch((e) =>
-        useToasts
-          .getState()
-          .push({ kind: 'error', title: t`Could not read other profiles`, body: errorMessage(e) }),
+        useToasts.getState().push({
+          kind: 'error',
+          title: t`Could not read other profiles`,
+          body: errorMessage(e),
+          detail: errorDetails(e),
+        }),
       )
   }, [currentProfileId, game, open, t, uniqueId, uniqueIds])
   useEffect(() => {
@@ -255,9 +258,12 @@ export function OtherProfilesDialog({
       )
       onClose()
     } catch (e) {
-      useToasts
-        .getState()
-        .push({ kind: 'error', title: t`Could not change mods`, body: errorMessage(e) })
+      useToasts.getState().push({
+        kind: 'error',
+        title: t`Could not change mods`,
+        body: errorMessage(e),
+        detail: errorDetails(e),
+      })
     } finally {
       setPending(false)
     }

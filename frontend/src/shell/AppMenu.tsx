@@ -26,7 +26,7 @@ import { compact } from '../game/compact.ts'
 import { openSettings, routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { NexusAccount } from './NexusAccount.tsx'
 import { reportBug } from './reportBug.ts'
@@ -48,6 +48,7 @@ export function AppMenu() {
         kind: 'error',
         title: t`Could not quit Mortar`,
         body: errorMessage(e),
+        detail: errorDetails(e),
       }),
     )
   }

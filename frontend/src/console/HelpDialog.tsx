@@ -21,7 +21,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
 import { paper } from '../mods/paper.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { shareLogConfirm } from './shareLog.ts'
 import { useConsole } from './store.ts'
@@ -184,6 +184,7 @@ export function HelpDialog({ game }: { game: string }) {
           kind: 'error',
           title: t`Could not read the SMAPI log`,
           body: errorMessage(e),
+          detail: errorDetails(e),
         })
         setHelping(false)
       },
@@ -221,6 +222,7 @@ export function HelpDialog({ game }: { game: string }) {
           kind: 'error',
           title: t`Could not upload the log`,
           body: errorMessage(e),
+          detail: errorDetails(e),
         })
       })
       .finally(() => {

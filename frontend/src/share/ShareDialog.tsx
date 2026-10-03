@@ -21,7 +21,7 @@ import { Logo } from '../brand/Logo.tsx'
 import { SendDialog } from '../lan/SendDialog.tsx'
 import { heading, paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { IncludeOptions } from './IncludeOptions.tsx'
 import { type MeterLevel, meter, type ShownInfo, suggestFile } from './logic.ts'
@@ -393,9 +393,12 @@ function FileTab({
         useToasts.getState().push({ kind: 'success', title: t`File saved` })
       }
     } catch (e) {
-      useToasts
-        .getState()
-        .push({ kind: 'error', title: t`Could not save the file`, body: errorMessage(e) })
+      useToasts.getState().push({
+        kind: 'error',
+        title: t`Could not save the file`,
+        body: errorMessage(e),
+        detail: errorDetails(e),
+      })
     } finally {
       setBusy(false)
     }

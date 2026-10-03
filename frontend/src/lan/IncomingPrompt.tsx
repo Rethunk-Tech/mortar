@@ -23,7 +23,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useIncomingShares } from './incoming.ts'
 
@@ -159,6 +159,7 @@ export function IncomingPrompt() {
                   kind: 'error',
                   title: t`Could not cancel transfer`,
                   body: errorMessage(error),
+                  detail: errorDetails(error),
                 })
               })
             }}

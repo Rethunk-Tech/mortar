@@ -14,7 +14,7 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { changeStillLatest } from '../toasts/history.ts'
-import { errorMessage } from '../toasts/report.ts'
+import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { modId, reshow } from './lookup.ts'
 import { useMods } from './store.ts'
@@ -26,7 +26,9 @@ interface Extras {
 }
 
 const fail = (title: string) => (e: unknown) => {
-  useToasts.getState().push({ kind: 'error', title, body: errorMessage(e) })
+  useToasts
+    .getState()
+    .push({ kind: 'error', title, body: errorMessage(e), detail: errorDetails(e) })
 }
 
 const open = () => {

@@ -6,7 +6,7 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { errorMessage } from '../toasts/report.ts'
+import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useBadges } from './badges.ts'
 import { updateCount } from './lookup.ts'
@@ -102,6 +102,7 @@ const useUpdates = create<{
         kind: 'error',
         title: i18n._(msg`SMAPI update check failed`),
         body: errorMessage(e),
+        detail: errorDetails(e),
         action: {
           label: i18n._(msg`Retry now`),
           run: () => useUpdates.getState().load(),

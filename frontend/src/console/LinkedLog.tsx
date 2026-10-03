@@ -11,7 +11,7 @@ import { useTab } from '../game/tab.ts'
 import { useDetail } from '../mods/detail.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorMessage } from '../toasts/report.ts'
+import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import type { InstalledMod } from './consoleLinks.ts'
 import { VirtualLog } from './VirtualLog.tsx'
@@ -127,6 +127,7 @@ export function LinkedLog({
                 kind: 'error',
                 title: t`Could not open the folder`,
                 body: errorMessage(e),
+                detail: errorDetails(e),
               })
             })
           }}

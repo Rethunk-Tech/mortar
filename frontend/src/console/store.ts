@@ -16,7 +16,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'
-import { errorMessage } from '../toasts/report.ts'
+import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { DEFAULT_FILTERS, type Filters, levelsFromFloor } from './filter.ts'
 import { pushCommand } from './history.ts'
@@ -141,6 +141,7 @@ export const useConsole = create<{
           kind: 'error',
           title: i18n._(msg`Could not read the SMAPI log`),
           body: errorMessage(e),
+          detail: errorDetails(e),
         })
       }
     },
@@ -166,6 +167,7 @@ export const useConsole = create<{
           kind: 'error',
           title: i18n._(msg`Could not run the command`),
           body: errorMessage(e),
+          detail: errorDetails(e),
         })
         return false
       }

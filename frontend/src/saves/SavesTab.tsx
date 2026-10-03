@@ -389,6 +389,7 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
                       kind: 'error',
                       title: t`Could not back up ${label}`,
                       body: errorMessage(e),
+                      detail: errorDetails(e),
                     })
                   }
                 })

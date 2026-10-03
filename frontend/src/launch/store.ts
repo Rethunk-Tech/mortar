@@ -16,7 +16,7 @@ import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorMessage } from '../toasts/report.ts'
+import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type AutoUpdateRestorePoint, rollbackAutoUpdate } from './autoUpdate.ts'
 import { applyOnPlayWindow } from './onPlay.ts'
@@ -50,7 +50,9 @@ function resetConsole(status: Status, prev: Status | null) {
   return true
 }
 const reportError = (title: string) => (e: unknown) => {
-  useToasts.getState().push({ kind: 'error', title, body: errorMessage(e) })
+  useToasts
+    .getState()
+    .push({ kind: 'error', title, body: errorMessage(e), detail: errorDetails(e) })
 }
 function failureBody(status: Status): string {
   if (status.hint === Hint.HintSteam) {
@@ -82,6 +84,7 @@ function rollbackAction(point: AutoUpdateRestorePoint) {
         kind: 'error',
         title: i18n._(msg`Could not roll back updates`),
         body: errorMessage(error),
+        detail: errorDetails(error),
       })
     })
 }

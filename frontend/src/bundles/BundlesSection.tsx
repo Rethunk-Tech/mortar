@@ -22,7 +22,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { errorMessage } from '../toasts/report.ts'
+import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BundleNameDialog } from './dialogs.tsx'
 
@@ -60,9 +60,12 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
       })
       .catch((error: unknown) => {
         if (active) {
-          useToasts
-            .getState()
-            .push({ kind: 'error', title: t`Could not read bundles`, body: errorMessage(error) })
+          useToasts.getState().push({
+            kind: 'error',
+            title: t`Could not read bundles`,
+            body: errorMessage(error),
+            detail: errorDetails(error),
+          })
         }
       })
     return () => {
@@ -80,9 +83,12 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
       setDeleting(null)
       useToasts.getState().push({ kind: 'success', title: t`Bundle deleted` })
     } catch (error) {
-      useToasts
-        .getState()
-        .push({ kind: 'error', title: t`Could not delete the bundle`, body: errorMessage(error) })
+      useToasts.getState().push({
+        kind: 'error',
+        title: t`Could not delete the bundle`,
+        body: errorMessage(error),
+        detail: errorDetails(error),
+      })
     } finally {
       setBusy(false)
     }
