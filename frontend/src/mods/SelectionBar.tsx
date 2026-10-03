@@ -47,28 +47,29 @@ export function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod
   const categories = useCustomCategories((s) => s.categories)
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === profileId))
   const tags = [...new Set((profile?.entries ?? []).flatMap((entry) => entry.tags ?? []))].sort()
-  if (ids.length === 0) {
-    return null
-  }
+  // One selected mod is covered by the details panel and its menu; the bar is for acting on several.
+  const multi = ids.length > 1
   return (
     <>
-      <SelectionBarActions
-        selected={selected}
-        profile={profile}
-        latest={latest}
-        locked={locked}
-        count={count}
-        setEnabledMany={setEnabledMany}
-        setPinnedMany={setPinnedMany}
-        setSkipVersionMany={setSkipVersionMany}
-        askRemove={askRemove}
-        openAlso={() => setAlsoOpen(true)}
-        openSave={() => setSaveOpen(true)}
-        openTag={() => setTagOpen(true)}
-        openCategory={() => setCategoryOpen(true)}
-        share={() => openShare(profileId, keys)}
-        clear={clear}
-      />
+      {multi ? (
+        <SelectionBarActions
+          selected={selected}
+          profile={profile}
+          latest={latest}
+          locked={locked}
+          count={count}
+          setEnabledMany={setEnabledMany}
+          setPinnedMany={setPinnedMany}
+          setSkipVersionMany={setSkipVersionMany}
+          askRemove={askRemove}
+          openAlso={() => setAlsoOpen(true)}
+          openSave={() => setSaveOpen(true)}
+          openTag={() => setTagOpen(true)}
+          openCategory={() => setCategoryOpen(true)}
+          share={() => openShare(profileId, keys)}
+          clear={clear}
+        />
+      ) : null}
       <BundleNameDialog
         open={saveOpen}
         title={t`Save selection as bundle`}

@@ -1,8 +1,24 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
-import { PackagePlus, Pin, PinOff, Power, PowerOff, Share2, Tag, Trash2, X } from 'lucide-react'
+import { Box, Button, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material'
+import {
+  BellOff,
+  Copy,
+  Ellipsis,
+  Folder,
+  PackagePlus,
+  Pin,
+  PinOff,
+  Power,
+  PowerOff,
+  Share2,
+  Tag,
+  Trash2,
+  X,
+} from 'lucide-react'
+import { type ReactNode, useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 
 const noWrap = { whiteSpace: 'nowrap' } as const
@@ -41,9 +57,34 @@ export function SelectionBarActions({
   clear: () => void
 }) {
   const { t } = useLingui()
+  const [menu, setMenu] = useState<HTMLElement | null>(null)
   const pinned = selected.every(
     (mod) => profile?.entries?.find((entry) => entry.key === mod.key)?.pinned,
   )
+  const pick = (run: () => void) => () => {
+    setMenu(null)
+    run()
+  }
+  const more: { label: string; icon: ReactNode; run: () => void; edits: boolean }[] = [
+    { label: t`Tag…`, icon: <Tag size={16} />, run: openTag, edits: true },
+    { label: t`Set category…`, icon: <Folder size={16} />, run: openCategory, edits: true },
+    {
+      label: pinned ? t`Unpin version` : t`Pin version`,
+      icon: pinned ? <PinOff size={16} /> : <Pin size={16} />,
+      run: () => setPinnedMany(selected, !pinned).catch(reportUnexpected),
+      edits: true,
+    },
+    {
+      label: t`Skip current updates`,
+      icon: <BellOff size={16} />,
+      run: () =>
+        setSkipVersionMany(selected.filter((mod) => latest.has(mod.key))).catch(reportUnexpected),
+      edits: true,
+    },
+    { label: t`Also add to…`, icon: <Copy size={16} />, run: openAlso, edits: true },
+    { label: t`Save as bundle…`, icon: <PackagePlus size={16} />, run: openSave, edits: true },
+    { label: t`Share selection`, icon: <Share2 size={16} />, run: share, edits: false },
+  ]
   return (
     <Box
       sx={{
@@ -52,14 +93,16 @@ export function SelectionBarActions({
         gap: 1,
         px: 2,
         py: 0.75,
-        minHeight: 40,
+        minHeight: 44,
         borderBottom: '1px solid var(--mortar-hairline-muted)',
-        flexWrap: 'wrap',
+        overflow: 'hidden',
       }}
     >
-      <Typography sx={{ fontSize: 13, mr: 0.5, whiteSpace: 'nowrap' }}>{count}</Typography>
+      <Typography sx={{ fontSize: 14, fontWeight: 600, mr: 'auto', whiteSpace: 'nowrap' }}>
+        {count}
+      </Typography>
       <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
-        <Box sx={{ display: 'inline-flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
           <Button
             size="small"
             variant="outlined"
@@ -79,57 +122,6 @@ export function SelectionBarActions({
           <Button
             size="small"
             variant="outlined"
-            disabled={locked}
-            startIcon={<Tag size={15} />}
-            onClick={openTag}
-            sx={noWrap}
-          >{t`Tag`}</Button>
-          <Button
-            size="small"
-            variant="outlined"
-            disabled={locked}
-            onClick={openCategory}
-            sx={noWrap}
-          >{t`Set category`}</Button>
-          <Button
-            size="small"
-            variant="outlined"
-            disabled={locked}
-            startIcon={pinned ? <PinOff size={15} /> : <Pin size={15} />}
-            onClick={() => setPinnedMany(selected, !pinned).catch(reportUnexpected)}
-            sx={noWrap}
-          >
-            {pinned ? t`Unpin version` : t`Pin version`}
-          </Button>
-          <Button
-            size="small"
-            variant="outlined"
-            disabled={locked}
-            onClick={() =>
-              setSkipVersionMany(selected.filter((mod) => latest.has(mod.key))).catch(
-                reportUnexpected,
-              )
-            }
-            sx={noWrap}
-          >{t`Skip current updates`}</Button>
-          <Button
-            size="small"
-            variant="outlined"
-            disabled={locked}
-            onClick={openAlso}
-            sx={noWrap}
-          >{t`Also add to…`}</Button>
-          <Button
-            size="small"
-            variant="outlined"
-            disabled={locked}
-            startIcon={<PackagePlus size={15} />}
-            onClick={openSave}
-            sx={noWrap}
-          >{t`Save as bundle…`}</Button>
-          <Button
-            size="small"
-            variant="outlined"
             color="error"
             disabled={locked}
             startIcon={<Trash2 size={15} />}
@@ -138,20 +130,21 @@ export function SelectionBarActions({
           >{t`Remove`}</Button>
         </Box>
       </DisabledReason>
-      <Button
-        size="small"
-        variant="outlined"
-        startIcon={<Share2 size={15} />}
-        onClick={share}
-        sx={noWrap}
-      >{t`Share selection`}</Button>
-      <Button
-        size="small"
-        variant="text"
-        startIcon={<X size={15} />}
-        onClick={clear}
-        sx={noWrap}
-      >{t`Clear`}</Button>
+      <IconAction
+        label={t`More actions`}
+        icon={<Ellipsis size={18} />}
+        menu={true}
+        onClick={(e) => setMenu(e.currentTarget)}
+      />
+      <IconAction label={t`Clear selection`} icon={<X size={18} />} onClick={clear} />
+      <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
+        {more.map((m) => (
+          <MenuItem key={m.label} disabled={m.edits && locked} onClick={pick(m.run)}>
+            <ListItemIcon>{m.icon}</ListItemIcon>
+            <ListItemText>{m.label}</ListItemText>
+          </MenuItem>
+        ))}
+      </Menu>
     </Box>
   )
 }
