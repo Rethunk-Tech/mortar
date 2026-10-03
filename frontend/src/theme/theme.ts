@@ -12,6 +12,9 @@ const HTML_FONT_SIZE = 18
 const HTML_FONT_SIZE_COMPACT = 16
 const TITLE_BAR_PX = 36
 const TITLE_BAR_COMPACT_PX = 32
+const WINDOW_BUTTON_PX = 46
+const WINDOW_BUTTON_COMPACT_PX = 40
+const WINDOW_BUTTONS = 3
 const BUTTON_HEIGHT = TITLE_BAR_PX
 const BUTTON_HEIGHT_COMPACT = TITLE_BAR_COMPACT_PX
 const FOCUS_OUTLINE_PX = 2
@@ -40,9 +43,15 @@ function baselineCss(main: string, reduceMotion: boolean, mode: ThemeMode) {
   return {
     ':root': {
       '--title-bar': `${TITLE_BAR_PX}px`,
+      '--window-button': `${WINDOW_BUTTON_PX}px`,
+      '--window-controls': `${WINDOW_BUTTON_PX * WINDOW_BUTTONS}px`,
       ...surfaceCssVars(mode),
       colorScheme: mode,
-      [compact]: { '--title-bar': `${TITLE_BAR_COMPACT_PX}px` },
+      [compact]: {
+        '--title-bar': `${TITLE_BAR_COMPACT_PX}px`,
+        '--window-button': `${WINDOW_BUTTON_COMPACT_PX}px`,
+        '--window-controls': `${WINDOW_BUTTON_COMPACT_PX * WINDOW_BUTTONS}px`,
+      },
     },
     '*': {
       scrollbarWidth: 'thin',

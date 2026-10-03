@@ -12,6 +12,7 @@ import {
 import { useId } from 'react'
 import { mergeBindings } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
+import { controlsCutout } from '../shell/controlsCutout.ts'
 import {
   TOUR_STEP_COUNT,
   type TourRect,
@@ -77,20 +78,28 @@ function TourPopover({
         aria-hidden={true}
         sx={{
           position: 'fixed',
-          top: anchorRect.top - SPOTLIGHT_PAD,
-          left: anchorRect.left - SPOTLIGHT_PAD,
-          width: anchorRect.width + SPOTLIGHT_PAD * 2,
-          height: anchorRect.height + SPOTLIGHT_PAD * 2,
+          inset: 0,
           zIndex: TOUR_Z_INDEX - 1,
-          borderRadius: 1,
-          outline: '2px solid',
-          outlineColor: 'primary.main',
-          // The shadow dims everything outside the anchor, leaving the anchor itself lit.
-          boxShadow: '0 0 0 100vmax rgba(0,0,0,0.55)',
           pointerEvents: 'none',
-          transition: 'top 200ms, left 200ms, width 200ms, height 200ms',
+          clipPath: controlsCutout,
         }}
-      />
+      >
+        <Box
+          sx={{
+            position: 'fixed',
+            top: anchorRect.top - SPOTLIGHT_PAD,
+            left: anchorRect.left - SPOTLIGHT_PAD,
+            width: anchorRect.width + SPOTLIGHT_PAD * 2,
+            height: anchorRect.height + SPOTLIGHT_PAD * 2,
+            borderRadius: 1,
+            outline: '2px solid',
+            outlineColor: 'primary.main',
+            // The shadow dims everything outside the anchor, leaving the anchor itself lit.
+            boxShadow: '0 0 0 100vmax rgba(0,0,0,0.55)',
+            transition: 'top 200ms, left 200ms, width 200ms, height 200ms',
+          }}
+        />
+      </Box>
       <Popper
         open={true}
         anchorEl={anchorEl}

@@ -58,8 +58,7 @@ function WindowButton({
       onClick={onClick}
       sx={{
         ...noDrag,
-        width: 46,
-        [compact]: { width: 40 },
+        width: 'var(--window-button)',
         color: 'var(--mortar-ink-85)',
         '&:hover': { bgcolor: danger ? 'error.main' : 'var(--mortar-hairline)' },
       }}

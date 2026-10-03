@@ -29,6 +29,7 @@ import { nexusIdOf } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { controlsCutout } from '../shell/controlsCutout.ts'
 import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { holdFocus, launchEscHides } from './holdFocus.ts'
@@ -46,10 +47,6 @@ const SPINNER = 56
 const SPINNER_THICKNESS = 3.9
 const FULL = 100
 
-// Leave the frameless caption buttons clear so they stay clickable above the overlay.
-const CONTROLS_W = 140
-const CONTROLS_H = 40
-
 const scrim = {
   position: 'fixed',
   inset: 0,
@@ -60,7 +57,7 @@ const scrim = {
   alignItems: 'center',
   justifyContent: 'center',
   p: 3,
-  clipPath: `polygon(0 0, calc(100% - ${CONTROLS_W}px) 0, calc(100% - ${CONTROLS_W}px) ${CONTROLS_H}px, 100% ${CONTROLS_H}px, 100% 100%, 0 100%)`,
+  clipPath: controlsCutout,
 } as const
 
 function Spinner() {
@@ -122,8 +119,8 @@ function Overlay({ game }: { game: string }) {
           position: 'absolute',
           top: 0,
           left: 0,
-          right: CONTROLS_W,
-          height: CONTROLS_H,
+          right: 'var(--window-controls)',
+          height: 'var(--title-bar)',
           '--wails-draggable': 'drag',
         }}
       />
