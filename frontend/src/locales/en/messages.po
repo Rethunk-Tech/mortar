@@ -59,7 +59,7 @@ msgstr "Start muted"
 msgid "Interface tour"
 msgstr "Interface tour"
 
-#: src/settings/sections/DataUsage.tsx:169
+#: src/settings/sections/DataUsage.tsx:176
 msgid "Other"
 msgstr "Other"
 
@@ -310,7 +310,7 @@ msgstr "Always"
 msgid "Use a file"
 msgstr "Use a file"
 
-#: src/settings/sections/DataUsage.tsx:176
+#: src/settings/sections/DataUsage.tsx:185
 msgid "Clean up…"
 msgstr "Clean up…"
 
@@ -883,7 +883,7 @@ msgstr "{name} is marked obsolete and may not work with this game version."
 msgid "{endorsements} endorsements · {downloads} downloads"
 msgstr "{endorsements} endorsements · {downloads} downloads"
 
-#: src/settings/sections/DataUsage.tsx:177
+#: src/settings/sections/DataUsage.tsx:186
 msgid "Clear…"
 msgstr "Clear…"
 
@@ -1059,7 +1059,7 @@ msgstr "No supported game was found in your launchers."
 msgid "GitHub is busy, try again in a minute"
 msgstr "GitHub is busy, try again in a minute"
 
-#: src/settings/SettingsPage.tsx:107
+#: src/settings/SettingsPage.tsx:122
 msgid "Search results"
 msgstr "Search results"
 
@@ -1143,11 +1143,11 @@ msgstr "Copper"
 msgid "found, without {0}"
 msgstr "found, without {0}"
 
-#: src/settings/sections/DataUsage.tsx:222
+#: src/settings/sections/DataUsage.tsx:234
 msgid "Mortar's data"
 msgstr "Mortar's data"
 
-#: src/settings/sections/DataUsage.tsx:178
+#: src/settings/sections/DataUsage.tsx:187
 msgid "Deleted profiles…"
 msgstr "Deleted profiles…"
 
@@ -1224,7 +1224,7 @@ msgstr "SMAPI is the loader every Stardew mod needs. It goes into the game folde
 msgid "No changelog on Nexus"
 msgstr "No changelog on Nexus"
 
-#: src/settings/sections/DataUsage.tsx:199
+#: src/settings/sections/DataUsage.tsx:209
 msgid "Total"
 msgstr "Total"
 
@@ -1266,8 +1266,7 @@ msgstr "{name} is marked broken for this game version."
 msgid "SMAPI unofficial builds"
 msgstr "SMAPI unofficial builds"
 
-#: src/settings/sections/DataUsage.tsx:148
-#: src/settings/sections/DataUsage.tsx:183
+#: src/settings/sections/DataUsage.tsx:196
 msgid "Usage"
 msgstr "Usage"
 
@@ -1324,7 +1323,7 @@ msgid "Tell me when a new SMAPI is out"
 msgstr "Tell me when a new SMAPI is out"
 
 #: src/commandPalette/CommandPalette.tsx:128
-#: src/settings/SettingsPage.tsx:43
+#: src/settings/SettingsPage.tsx:49
 msgid "Nexus account"
 msgstr "Nexus account"
 
@@ -1700,7 +1699,7 @@ msgid "Add tool"
 msgstr "Add tool"
 
 #: src/commandPalette/CommandPalette.tsx:125
-#: src/settings/SettingsPage.tsx:40
+#: src/settings/SettingsPage.tsx:46
 msgid "Appearance"
 msgstr "Appearance"
 
@@ -1725,7 +1724,7 @@ msgid "Lutris"
 msgstr "Lutris"
 
 #: src/commandPalette/CommandPalette.tsx:126
-#: src/settings/SettingsPage.tsx:41
+#: src/settings/SettingsPage.tsx:47
 msgid "Mods and profiles"
 msgstr "Mods and profiles"
 
@@ -2055,6 +2054,11 @@ msgstr "Reading the log…"
 msgid "Show the tour again"
 msgstr "Show the tour again"
 
+#. placeholder {0}: formatBytes(bytes)
+#: src/settings/sections/DataUsage.tsx:209
+msgid "Measuring… {0}"
+msgstr "Measuring… {0}"
+
 #: src/firstrun/SmapiStep.tsx:181
 msgid "Check again"
 msgstr "Check again"
@@ -2116,7 +2120,7 @@ msgid "Local-only mods kept ({0})"
 msgstr "Local-only mods kept ({0})"
 
 #: src/commandPalette/CommandPalette.tsx:131
-#: src/settings/SettingsPage.tsx:46
+#: src/settings/SettingsPage.tsx:52
 msgid "Storage"
 msgstr "Storage"
 
@@ -2445,7 +2449,7 @@ msgid "Replace {targetName}?"
 msgstr "Replace {targetName}?"
 
 #: src/commandPalette/CommandPalette.tsx:133
-#: src/settings/SettingsPage.tsx:48
+#: src/settings/SettingsPage.tsx:54
 msgid "Shortcuts"
 msgstr "Shortcuts"
 
@@ -2652,7 +2656,7 @@ msgstr "{name} is abandoned: {summary}"
 msgid "Choose image…"
 msgstr "Choose image…"
 
-#: src/settings/sections/DataUsage.tsx:202
+#: src/settings/sections/DataUsage.tsx:213
 msgid "By game"
 msgstr "By game"
 
@@ -3259,7 +3263,7 @@ msgstr "Added from an archive, so it only exists on this computer."
 #: src/queue/QueueButton.tsx:14
 #: src/queue/QueueButton.tsx:17
 #: src/queue/QueueSheet.tsx:65
-#: src/settings/SettingsPage.tsx:42
+#: src/settings/SettingsPage.tsx:48
 msgid "Downloads"
 msgstr "Downloads"
 
@@ -3426,7 +3430,7 @@ msgstr "No Mortar users found nearby."
 msgid "Full"
 msgstr "Full"
 
-#: src/settings/sections/DataUsage.tsx:166
+#: src/settings/sections/DataUsage.tsx:173
 msgid "Cache"
 msgstr "Cache"
 
@@ -3626,7 +3630,7 @@ msgstr "Return to last known good"
 msgid "After the first release"
 msgstr "After the first release"
 
-#: src/settings/sections/DataUsage.tsx:168
+#: src/settings/sections/DataUsage.tsx:175
 msgid "Trash"
 msgstr "Trash"
 
@@ -4044,7 +4048,7 @@ msgstr "Open page"
 msgid "{count} to download"
 msgstr "{count} to download"
 
-#: src/settings/sections/DataUsage.tsx:124
+#: src/settings/sections/DataUsage.tsx:140
 msgid "Saves are zipped before mods update; older backups beyond this many are deleted. {MIN_KEPT} to {MAX_KEPT}."
 msgstr "Saves are zipped before mods update; older backups beyond this many are deleted. {MIN_KEPT} to {MAX_KEPT}."
 
@@ -4066,7 +4070,7 @@ msgid "Downloads and runs"
 msgstr "Downloads and runs"
 
 #: src/commandPalette/CommandPalette.tsx:130
-#: src/settings/SettingsPage.tsx:45
+#: src/settings/SettingsPage.tsx:51
 #: src/toasts/HistoryButton.tsx:127
 #: src/toasts/HistoryButton.tsx:177
 #: src/toasts/ToastHost.tsx:178
@@ -5273,7 +5277,7 @@ msgstr "Date"
 msgid "Problems and updates"
 msgstr "Problems and updates"
 
-#: src/settings/sections/DataUsage.tsx:165
+#: src/settings/sections/DataUsage.tsx:172
 msgid "Store"
 msgstr "Store"
 
@@ -5375,7 +5379,7 @@ msgid " {winnerName} wins; {losers} overridden."
 msgstr " {winnerName} wins; {losers} overridden."
 
 #: src/commandPalette/CommandPalette.tsx:132
-#: src/settings/SettingsPage.tsx:47
+#: src/settings/SettingsPage.tsx:53
 msgid "Launchers"
 msgstr "Launchers"
 
@@ -6034,7 +6038,7 @@ msgstr "Dark"
 
 #: src/profiles/ProfilesPage.tsx:175
 #: src/profiles/ProfilesPage.tsx:178
-#: src/settings/sections/DataUsage.tsx:230
+#: src/settings/sections/DataUsage.tsx:242
 msgid "Open folder"
 msgstr "Open folder"
 
@@ -6153,7 +6157,7 @@ msgid "Stop the game to change mods"
 msgstr "Stop the game to change mods"
 
 #: src/commandPalette/CommandPalette.tsx:129
-#: src/settings/SettingsPage.tsx:44
+#: src/settings/SettingsPage.tsx:50
 msgid "Updates"
 msgstr "Updates"
 
@@ -6370,7 +6374,7 @@ msgstr "Updates, missing dependencies and links from Nexus land here."
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
-#: src/settings/sections/DataUsage.tsx:123
+#: src/settings/sections/DataUsage.tsx:139
 msgid "Save backups kept"
 msgstr "Save backups kept"
 
@@ -6795,7 +6799,7 @@ msgstr "Lets nearby Mortar users find this installation and exchange profile lin
 
 #: src/saves/BackupsDialog.tsx:161
 #: src/saves/SavesTab.tsx:86
-#: src/settings/sections/DataUsage.tsx:167
+#: src/settings/sections/DataUsage.tsx:174
 msgid "Save backups"
 msgstr "Save backups"
 
@@ -7019,7 +7023,7 @@ msgstr "FromArea {0}"
 msgid "Required"
 msgstr "Required"
 
-#: src/settings/sections/DataUsage.tsx:197
+#: src/settings/sections/DataUsage.tsx:207
 msgid "Space saved by sharing files"
 msgstr "Space saved by sharing files"
 
@@ -7407,7 +7411,7 @@ msgid "Play the open profile without SMAPI"
 msgstr "Play the open profile without SMAPI"
 
 #: src/commandPalette/CommandPalette.tsx:134
-#: src/settings/SettingsPage.tsx:49
+#: src/settings/SettingsPage.tsx:55
 msgid "About"
 msgstr "About"
 
@@ -7642,7 +7646,7 @@ msgstr "Player"
 #: src/game/Sidebar.tsx:336
 #: src/profiles/ProfilesPage.tsx:371
 #: src/settings/sections/AboutDiagnostics.tsx:59
-#: src/settings/sections/DataUsage.tsx:164
+#: src/settings/sections/DataUsage.tsx:171
 #: src/settings/sections/Shortcuts.tsx:180
 msgid "Profiles"
 msgstr "Profiles"
@@ -7788,7 +7792,7 @@ msgstr "Source"
 
 #: src/commandPalette/CommandPalette.tsx:124
 #: src/settings/sections/Shortcuts.tsx:178
-#: src/settings/SettingsPage.tsx:39
+#: src/settings/SettingsPage.tsx:45
 msgid "General"
 msgstr "General"
 
@@ -7829,7 +7833,7 @@ msgstr "Closing the window hides Mortar instead of quitting."
 msgid "This is not a Mod Manager Download link from Nexus."
 msgstr "This is not a Mod Manager Download link from Nexus."
 
-#: src/settings/sections/DataUsage.tsx:221
+#: src/settings/sections/DataUsage.tsx:233
 #: src/settings/sections/StreamOverlay.tsx:84
 msgid "Location"
 msgstr "Location"
@@ -8186,8 +8190,8 @@ msgstr "Loading profiles…"
 msgid "Missing requirements on install"
 msgstr "Missing requirements on install"
 
-#: src/settings/sections/DataUsage.tsx:149
-#: src/settings/sections/DataUsage.tsx:222
+#: src/settings/sections/DataUsage.tsx:215
+#: src/settings/sections/DataUsage.tsx:234
 msgid "Measuring…"
 msgstr "Measuring…"
 

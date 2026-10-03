@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, LinearProgress, Tooltip, useTheme } from '@mui/material'
+import { Box, Button, LinearProgress, Skeleton, Tooltip, useTheme } from '@mui/material'
 import { FolderOpen } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Usage as DiskUse } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
@@ -46,6 +46,7 @@ const BAR_GAP = 2
 const END_RADIUS = 4
 const MIN_SEGMENT = 4
 const PERCENT = 100
+const SKELETON_WIDTH = 64
 
 function useSegmentColors() {
   return SEGMENT_COLORS[useTheme().palette.mode]
@@ -58,7 +59,7 @@ function SizeRow({
   color,
 }: {
   label: string
-  size: number
+  size: number | null
   action?: ReactNode
   color?: string
 }) {
@@ -72,7 +73,7 @@ function SizeRow({
           />
         ) : null}
         <Box sx={{ fontSize: 14, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>
-          {formatBytes(size)}
+          {size === null ? <Skeleton width={SKELETON_WIDTH} /> : formatBytes(size)}
         </Box>
         <Box sx={{ width: ACTION_WIDTH, display: 'flex', justifyContent: 'flex-end' }}>
           {action}
@@ -82,8 +83,21 @@ function SizeRow({
   )
 }
 
-function StorageBar({ usage, labels }: { usage: DiskUse; labels: Record<SegmentId, string> }) {
+function StorageBar({
+  usage,
+  labels,
+}: {
+  usage: DiskUse | null
+  labels: Record<SegmentId, string>
+}) {
   const colors = useSegmentColors()
+  if (!usage) {
+    return (
+      <Box sx={{ px: 2, py: 2 }}>
+        <LinearProgress sx={{ height: BAR_HEIGHT, borderRadius: `${END_RADIUS}px` }} />
+      </Box>
+    )
+  }
   const segs = storageSegments(usage).filter((s) => s.size > 0)
   const total = Math.max(1, usage.total)
   return (
@@ -145,18 +159,9 @@ export function UsageRows({
 }) {
   const { t } = useLingui()
   const colors = useSegmentColors()
-  if (!usage) {
-    return (
-      <SettingsSection title={t`Usage`}>
-        <SettingRow label={t`Measuring…`} description={formatBytes(bytes)}>
-          <LinearProgress sx={{ width: 160 }} />
-        </SettingRow>
-      </SettingsSection>
-    )
-  }
-  const games = [...(usage.games ?? [])].sort(
-    (a, b) => b.size - a.size || a.name.localeCompare(b.name),
-  )
+  const games = usage
+    ? [...(usage.games ?? [])].sort((a, b) => b.size - a.size || a.name.localeCompare(b.name))
+    : null
   const button = (label: string, onClick: () => void) => (
     <Button variant="outlined" onClick={onClick} sx={nowrap}>
       {label}
@@ -170,43 +175,48 @@ export function UsageRows({
     trash: t`Trash`,
     other: t`Other`,
   }
-  const sizes = Object.fromEntries(storageSegments(usage).map((s) => [s.id, s.size])) as Record<
-    SegmentId,
-    number
-  >
+  const sizes = usage
+    ? (Object.fromEntries(storageSegments(usage).map((s) => [s.id, s.size])) as Record<
+        SegmentId,
+        number
+      >)
+    : null
   const actions: Partial<Record<SegmentId, ReactNode>> = {
     store: button(t`Clean up…`, onCleanUp),
     cache: button(t`Clear…`, onClearCache),
     trash: button(t`Deleted profiles…`, onDeletedProfiles),
   }
   const order: SegmentId[] = ['profiles', 'store', 'cache', 'backups', 'trash', 'other']
+  let sharedSaved: number | null = null
+  if (usage) {
+    sharedSaved = usage.sharedSavedKnown ? usage.sharedSaved : 0
+  }
   return (
     <>
       <SettingsSection title={t`Usage`}>
         <StorageBar usage={usage} labels={labels} />
-        {order
-          .filter((id) => id !== 'other' || sizes.other > 0)
-          .map((id) => (
-            <SizeRow
-              key={id}
-              label={labels[id]}
-              size={sizes[id]}
-              color={colors[id]}
-              action={actions[id]}
-            />
-          ))}
-        {usage.sharedSavedKnown ? (
-          <SizeRow label={t`Space saved by sharing files`} size={usage.sharedSaved} />
-        ) : null}
-        <SizeRow label={t`Total`} size={usage.total} />
+        {order.map((id) => (
+          <SizeRow
+            key={id}
+            label={labels[id]}
+            size={sizes ? sizes[id] : null}
+            color={colors[id]}
+            action={actions[id]}
+          />
+        ))}
+        <SizeRow label={t`Space saved by sharing files`} size={sharedSaved} />
+        <SizeRow
+          label={usage ? t`Total` : t`Measuring… ${formatBytes(bytes)}`}
+          size={usage ? usage.total : null}
+        />
       </SettingsSection>
-      {games.length > 0 ? (
-        <SettingsSection title={t`By game`}>
-          {games.map((g) => (
-            <SizeRow key={g.game} label={g.name || g.game} size={g.size} />
-          ))}
-        </SettingsSection>
-      ) : null}
+      <SettingsSection title={t`By game`}>
+        {games === null ? (
+          <SizeRow label={t`Measuring…`} size={null} />
+        ) : (
+          games.map((g) => <SizeRow key={g.game} label={g.name || g.game} size={g.size} />)
+        )}
+      </SettingsSection>
     </>
   )
 }
