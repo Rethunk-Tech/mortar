@@ -267,3 +267,33 @@ func TestKeyLabelDropsPackScope(t *testing.T) {
 		t.Fatalf("label %q", got)
 	}
 }
+
+func TestConfigTokenValuesCompareResolved(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+
+	pack := func(id, configured string) Installed {
+		root := t.TempDir()
+		writeManifest(t, root, id)
+		content := `{"ConfigSchema":{"Incubation time":{"Default":"5"}},"Changes":[{"Action":"EditData","Target":"Data/FarmAnimals","TargetField":["Dinosaur"],"Entries":{"IncubationTime":"{{Incubation time}}"}}]}`
+		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if configured != "" {
+			if err := fsx.WriteFile(filepath.Join(root, "config.json"), []byte(`{"Incubation time":"`+configured+`"}`), 0o600); err != nil {
+				t.Fatal(err)
+			}
+		}
+		return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
+	}
+	same := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("Em.Dinos", ""), pack("Em.Animals", "5")})
+	if len(same.AssetConflicts) != 0 {
+		t.Fatalf("both resolve to 5, got %+v", same.AssetConflicts)
+	}
+	differ := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("Em.Dinos2", ""), pack("Em.Animals2", "9")})
+	if len(differ.AssetConflicts) != 1 {
+		t.Fatalf("5 against 9 clashes, got %+v", differ.AssetConflicts)
+	}
+}

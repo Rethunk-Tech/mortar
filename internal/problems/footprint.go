@@ -127,7 +127,7 @@ func packScopedKey(root, key string) string {
 	return key
 }
 
-func dataShapes(root string, ch cpChange) []cpShape {
+func dataShapes(root string, ch cpChange, values map[string]string) []cpShape {
 	var out []cpShape
 	// With TargetField, Entries and Fields address keys inside that field of one entry, not the asset's
 	// top-level entries, so the path is part of every key.
@@ -146,7 +146,7 @@ func dataShapes(root string, ch cpChange) []cpShape {
 				// Content Patcher appends "#-1" entries to the list: any number of packs can.
 				continue
 			}
-			out = append(out, cpShape{kind: 'p', key: "entry:" + base + packScopedKey(root, key), value: dataLiteral(entries[key])})
+			out = append(out, cpShape{kind: 'p', key: "entry:" + base + packScopedKey(root, key), value: dataLiteral(entries[key], values)})
 		}
 	}
 	var fields map[string]json.RawMessage
@@ -155,18 +155,38 @@ func dataShapes(root string, ch cpChange) []cpShape {
 			var inner map[string]json.RawMessage
 			if json.Unmarshal(fields[key], &inner) == nil && len(inner) > 0 {
 				for _, field := range slices.Sorted(maps.Keys(inner)) {
-					out = append(out, cpShape{kind: 'p', key: "field:" + base + packScopedKey(root, key) + "." + field, value: dataLiteral(inner[field])})
+					out = append(out, cpShape{kind: 'p', key: "field:" + base + packScopedKey(root, key) + "." + field, value: dataLiteral(inner[field], values)})
 				}
 				continue
 			}
-			out = append(out, cpShape{kind: 'p', key: "field:" + base + packScopedKey(root, key), value: dataLiteral(fields[key])})
+			out = append(out, cpShape{kind: 'p', key: "field:" + base + packScopedKey(root, key), value: dataLiteral(fields[key], values)})
 		}
 	}
 	return out
 }
 
-func dataLiteral(raw json.RawMessage) string {
+// packConfigValues are a pack's config values: its ConfigSchema defaults, then what config.json sets.
+func packConfigValues(schema map[string]cpSchema, root string) map[string]string {
+	values := make(map[string]string, len(schema))
+	for key, field := range schema {
+		values[strings.ToLower(key)] = field.defaultValue
+	}
+	maps.Copy(values, readPackConfig(root))
+	return values
+}
+
+// singleToken matches a value that is exactly one token, such as "{{Incubation time}}".
+var singleToken = regexp.MustCompile(`^"\s*\{\{\s*([^:|}]+?)\s*\}\}\s*"$`)
+
+func dataLiteral(raw json.RawMessage, values map[string]string) string {
 	if hasToken(string(raw)) {
+		// A value that is just one of the pack's config tokens is that token's configured value,
+		// so two packs set to the same value agree.
+		if m := singleToken.FindStringSubmatch(strings.TrimSpace(string(raw))); m != nil {
+			if v, ok := values[strings.ToLower(m[1])]; ok {
+				return strconv.Quote(v)
+			}
+		}
 		return ""
 	}
 	return string(stripJSONNoise(raw))

@@ -197,6 +197,9 @@ func (w cpWhen) holds(present map[string]bool) bool {
 }
 
 type cachedPack struct {
+	// values are the pack's config values (schema defaults, then config.json), by lower-case key;
+	// used while scanning only, so not cached on disk.
+	values      map[string]string
 	fingerprint string
 	files       []packFileStamp
 	patches     []cpPatch
@@ -206,7 +209,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 5
+const contentPackParserVersion = 6
 
 type packFileStamp struct {
 	Path    string `json:"path"`
@@ -588,7 +591,9 @@ func readContentPackWithEnabled(mod Installed, requireEnabled bool) cachedPack {
 		}
 	}
 	pack := cachedPack{mentions: map[string]bool{}, schema: readConfigSchema(root)}
+	pack.values = packConfigValues(pack.schema, root)
 	pack.recordPackFile(root, filepath.Join(root, "content.json"))
+	pack.recordPackFile(root, filepath.Join(root, "config.json"))
 	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
 	slices.SortFunc(pack.files, func(a, b packFileStamp) int {
 		return strings.Compare(a.Path, b.Path)
@@ -942,7 +947,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 		case strings.EqualFold(action, kindEditData):
 			kind = "edit"
 			action = kindEditData
-			shapes = dataShapes(root, ch)
+			shapes = dataShapes(root, ch, pack.values)
 			if len(shapes) == 0 {
 				kind = "other"
 			}
