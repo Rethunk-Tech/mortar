@@ -43,7 +43,7 @@ const defaults: Settings = {
   checkOnlyEnabledMods: false,
   enableModsWhenInstalled: true,
   backupsKept: 5,
-  listColumns: ['on', 'name', 'version', 'author', 'source', 'category', 'status'],
+  listColumns: ['on', 'name', 'version', 'author', 'source', 'category', 'status', 'size'],
   listSortColumn: 'name',
   listSortDir: 'asc',
   listGroupBy: 'status',

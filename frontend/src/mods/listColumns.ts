@@ -28,6 +28,7 @@ const DEFAULT_VISIBLE_LIST_COLUMNS: readonly ListColumnId[] = [
   'source',
   'category',
   'status',
+  'size',
 ]
 
 const NARROW_HIDE_LIST_COLUMNS: readonly ListColumnId[] = [

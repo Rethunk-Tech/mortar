@@ -81,6 +81,12 @@ const details = (over: {
     },
   }) as Details
 
+test('includes Size after Status in the default column set', () => {
+  const status = DEFAULT_VISIBLE_LIST_COLUMNS.indexOf('status')
+  expect(status).toBeGreaterThanOrEqual(0)
+  expect(DEFAULT_VISIBLE_LIST_COLUMNS[status + 1]).toBe('size')
+})
+
 test('resets settings list columns from getInitialState', () => {
   useSettings.setState({
     listColumns: ['on', 'name'],
