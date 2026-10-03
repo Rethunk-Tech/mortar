@@ -1104,7 +1104,26 @@ func hasUnknownMapLayer(p cpPatch) bool {
 // that applies in one location or weather only matters there; and a one-tile edit at a computed spot is too
 // small to place, so it is shown without counting as a problem.
 func harmless(x, y cpPatch) bool {
-	return (x.image && y.image) || overlayPriorityHarmless(x, y) || situational(x) || situational(y) || tinyOnly(x) || tinyOnly(y)
+	return (x.image && y.image) || (textOnly(x) && textOnly(y)) || overlayPriorityHarmless(x, y) || situational(x) || situational(y) || tinyOnly(x) || tinyOnly(y)
+}
+
+// textOnly is a data edit that only replaces lines of text: when two collide, one mod's line shows
+// instead of the other's and nothing breaks. Festival files also hold set-up, which is not text.
+func textOnly(p cpPatch) bool {
+	if p.action != kindEditData {
+		return false
+	}
+	t := strings.ToLower(p.target)
+	switch {
+	case strings.HasPrefix(t, "characters/dialogue/"), strings.HasPrefix(t, "strings/"), t == "data/extradialogue":
+		return true
+	case strings.HasPrefix(t, "data/festivals/"):
+		return !slices.ContainsFunc(p.shapes, func(s cpShape) bool {
+			k := strings.ToLower(s.key)
+			return strings.Contains(k, "set-up") || strings.Contains(k, "mainevent") || strings.Contains(k, "shop") || strings.Contains(k, "conditions")
+		})
+	}
+	return false
 }
 
 func overlayPriorityHarmless(x, y cpPatch) bool {

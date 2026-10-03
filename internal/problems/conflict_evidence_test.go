@@ -233,3 +233,28 @@ func TestListAppendsDoNotClash(t *testing.T) {
 		t.Fatalf("list appends never clash, got %+v", got.AssetConflicts)
 	}
 }
+
+func TestTextOverwritesAreShownNotCounted(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+
+	pack := func(id, target string) Installed {
+		root := t.TempDir()
+		writeManifest(t, root, id)
+		content := `{"Changes":[{"Action":"EditData","Target":"` + target + `","Entries":{"Mon2":"` + id + `"}}]}`
+		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
+	}
+	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("A.Lines", "Characters/Dialogue/Marnie"), pack("B.Lines", "Characters/Dialogue/Marnie")})
+	if len(got.AssetConflicts) != 1 || !got.AssetConflicts[0].Cosmetic {
+		t.Fatalf("a dialogue overwrite is shown as harmless, got %+v", got.AssetConflicts)
+	}
+	data := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("C.Data", "Data/Events/Mine"), pack("D.Data", "Data/Events/Mine")})
+	if len(data.AssetConflicts) != 1 || data.AssetConflicts[0].Cosmetic {
+		t.Fatalf("an event script overwrite still counts, got %+v", data.AssetConflicts)
+	}
+}
