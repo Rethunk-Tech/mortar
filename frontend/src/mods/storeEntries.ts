@@ -23,6 +23,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useSettings } from '../settings/store.ts'
 import { changeStillLatest } from '../toasts/history.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
@@ -31,6 +32,8 @@ import {
   fieldsStillUndoable,
   type UndoEntry,
 } from '../toasts/undo.ts'
+import { enableRequirementsDecision, pendingRequired } from './enableRequirements.ts'
+import { considerEnableRequirements } from './enableRequirementsApply.ts'
 import { modId } from './lookup.ts'
 import { useSelection } from './selection.ts'
 import { announceAlso, fail, open } from './storeView.ts'
@@ -48,6 +51,7 @@ export async function enableMany(
   }
   const ids = new Set(mods.map((m) => modId(m)))
   const prev = new Map(get().mods.map((m) => [modId(m), m.enabled]))
+  const pending = enabled ? pendingRequired(get().mods, mods) : []
   set((s) => ({
     mods: s.mods.map((m) => (ids.has(modId(m)) ? { ...m, enabled } : m)),
   }))
@@ -72,6 +76,21 @@ export async function enableMany(
     }))
     fail(i18n._(msg`Could not switch the selected mods`))(e)
     return
+  }
+  if (enabled) {
+    const extra = new Set(pending.map((m) => modId(m)))
+    if (
+      enableRequirementsDecision(
+        useSettings.getState().enableRequirements || 'always',
+        pending.length,
+      ) === 'enable'
+    ) {
+      set((s) => ({
+        mods: s.mods.map((m) => (extra.has(modId(m)) ? { ...m, enabled: true } : m)),
+      }))
+    } else {
+      await considerEnableRequirements(get().mods, mods, 'toggle')
+    }
   }
   await get().loadProblems()
 }
@@ -220,32 +239,45 @@ export async function setEntryNoteTags(mod: Mod, note: string, tags: string[]) {
   }
 }
 
-export function setEnabledAction(
+export async function setEnabledAction(
   set: (fn: (s: { mods: Mod[] }) => { mods: Mod[] }) => void,
-  get: () => { loadProblems: () => Promise<void> },
+  get: () => { mods: Mod[]; loadProblems: () => Promise<void> },
   mod: Mod,
   enabled: boolean,
 ) {
   const target = open()
   if (!target) {
-    return Promise.resolve()
+    return
   }
+  const pending = enabled ? pendingRequired(get().mods, [mod]) : []
   const flip = (on: boolean) =>
     set((s) => ({
       mods: s.mods.map((m) => (modId(m) === modId(mod) ? { ...m, enabled: on } : m)),
     }))
   flip(enabled)
-  return SetModEnabled(target.game, target.id, mod.key, mod.uniqueId, enabled).then(
-    (got) => {
-      useProfiles.getState().replace(got.profile)
-      announceAlso(got.alsoEnabled)
-      return get().loadProblems()
-    },
-    (e) => {
-      flip(!enabled)
-      fail(i18n._(msg`Could not switch ${mod.name}`))(e)
-    },
-  )
+  try {
+    const got = await SetModEnabled(target.game, target.id, mod.key, mod.uniqueId, enabled)
+    useProfiles.getState().replace(got.profile)
+    announceAlso(got.alsoEnabled)
+    if (enabled) {
+      const extra = new Set(pending.map((m) => modId(m)))
+      const decision = enableRequirementsDecision(
+        useSettings.getState().enableRequirements || 'always',
+        pending.length,
+      )
+      if (decision === 'enable') {
+        set((s) => ({
+          mods: s.mods.map((m) => (extra.has(modId(m)) ? { ...m, enabled: true } : m)),
+        }))
+      } else {
+        await considerEnableRequirements(get().mods, [mod], 'toggle')
+      }
+    }
+    await get().loadProblems()
+  } catch (e) {
+    flip(!enabled)
+    fail(i18n._(msg`Could not switch ${mod.name}`))(e)
+  }
 }
 
 export async function pinMod(mod: Mod, pinned: boolean) {

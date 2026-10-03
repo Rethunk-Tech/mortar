@@ -3,6 +3,7 @@ import { alpha, Box, Typography } from '@mui/material'
 import { Events } from '@wailsio/runtime'
 import { Download } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { EnableRequirementsDialog } from '../mods/EnableRequirementsDialog.tsx'
 import { useLocked } from '../mods/useLocked.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -53,6 +54,7 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
   return (
     <>
       <MissingDepsDialog />
+      <EnableRequirementsDialog />
       <RemapDialog />
       {dragging ? (
         <Box

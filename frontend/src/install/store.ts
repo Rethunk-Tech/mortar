@@ -20,6 +20,7 @@ import {
 import { useFomod } from '../fomod/store.ts'
 import { i18n } from '../i18n/index.ts'
 import { useLaunch } from '../launch/store.ts'
+import { considerEnableRequirements } from '../mods/enableRequirementsApply.ts'
 import { isLocked } from '../mods/locked.ts'
 import { useMods } from '../mods/store.ts'
 import { routeGame, useNav } from '../nav/store.ts'
@@ -91,6 +92,14 @@ async function maybeFinishInstall(profileId: string, dependentIds: string[]) {
   if (!shouldConsiderMissing(useProfiles.getState().openId, profileId)) {
     return
   }
+  await useMods.getState().load()
+  const { mods } = useMods.getState()
+  const folded = new Set(dependentIds.map((id) => id.trim().toLowerCase()))
+  await considerEnableRequirements(
+    mods,
+    mods.filter((m) => folded.has(m.uniqueId.trim().toLowerCase())),
+    'install',
+  )
   await useMods.getState().load()
   considerMissing(dependentIds)
 }
