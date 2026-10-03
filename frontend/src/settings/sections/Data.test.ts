@@ -8,6 +8,7 @@ test('unmount stops UsageProgress ticks and ignores a late Usage result', async 
   let release: (u: {
     path: string
     profiles: null
+    games: null
     store: number
     cache: number
     backups: number
@@ -46,6 +47,7 @@ test('unmount stops UsageProgress ticks and ignores a late Usage result', async 
   release({
     path: '/late',
     profiles: null,
+    games: null,
     store: 0,
     cache: 0,
     backups: 0,

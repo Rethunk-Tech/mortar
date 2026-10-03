@@ -58,6 +58,26 @@ export function BackupsKept() {
   )
 }
 
+export function DiskSizeByGame({ usage }: { usage: DiskUse | null }) {
+  const { t } = useLingui()
+  const games = [...(usage?.games ?? [])].sort(
+    (a, b) => b.size - a.size || a.name.localeCompare(b.name),
+  )
+  if (!usage || games.length === 0) {
+    return null
+  }
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 1 }}>
+      <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Disk size by game`}</Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: 480 }}>
+        {games.map((g) => (
+          <Row key={g.game} label={g.name || g.game} size={g.size} />
+        ))}
+      </Box>
+    </Box>
+  )
+}
+
 export function UsageSummary({
   usage,
   bytes,

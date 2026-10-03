@@ -13,11 +13,11 @@ import { useNav } from '../../nav/store.ts'
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { DataDialogs } from './DataDialogs.tsx'
-import { CacheClearDialog, DataByMod, DataSettingsFiles } from './DataMods.tsx'
+import { CacheClearDialog, DataSettingsFiles } from './DataMods.tsx'
 import { type MoveState, moveDataFolder } from './DataMoveRun.ts'
 import { DataPrefs } from './DataPrefs.tsx'
 import { DataStoreReport } from './DataStoreReport.tsx'
-import { BackupsKept, DataFolderCard, UsageSummary } from './DataUsage.tsx'
+import { BackupsKept, DataFolderCard, DiskSizeByGame, UsageSummary } from './DataUsage.tsx'
 import { useDataUsage } from './DataUsageLoad.ts'
 import { nowrap } from './dataStyles.ts'
 
@@ -131,14 +131,14 @@ export function Data() {
         openProfiles={d.openProfiles}
         onClearCache={() => d.setConfirmClear(true)}
       />
-      <DataByMod key={d.rev} onCleanup={d.openPreview} onChanged={d.restart} />
+      <DiskSizeByGame usage={d.usage} />
       <DataStoreReport key={`store-${d.rev}`} onChanged={d.restart} />
       <Button
         onClick={d.openPreview}
         startIcon={<Trash2 size={16} />}
         sx={{ alignSelf: 'flex-start', ...nowrap }}
       >
-        {t`Clean up unused`}
+        {t`Clean up unused mod files…`}
       </Button>
       <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Save backups`}</Box>
       <BackupsKept />
