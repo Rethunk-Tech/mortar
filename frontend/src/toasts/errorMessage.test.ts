@@ -31,3 +31,11 @@ test('errorMessage maps each kind to the same sentence as the CLI', () => {
   expect(src).toContain('msg`That request was not valid.`')
   expect(src).toContain('export function errorMessage')
 })
+
+test('untagged errors use the generic sentence; raw text stays in errorDetails', () => {
+  const src = readFileSync(join(import.meta.dir, 'report.ts'), 'utf8')
+  expect(src).toContain('return sentence(kindOf(e))')
+  expect(src).toContain('msg`Something went wrong.`')
+  expect(src).not.toContain('untagged errors keep their text')
+  expect(src).not.toContain('const raw = detailsOf(e)')
+})

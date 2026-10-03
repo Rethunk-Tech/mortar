@@ -38,19 +38,18 @@ export function errorDetails(e: unknown): string {
   return detailsOf(e)
 }
 
-/** Plain sentence for a kind; untagged errors keep their text. */
+/** Plain sentence for a kind. Untagged errors use the generic sentence; raw Go text stays in errorDetails. */
 export function errorMessage(e: unknown): string {
-  const kind = kindOf(e)
-  if (kind === 'unknown') {
-    const raw = detailsOf(e)
-    return raw === '' ? sentence(kind) : raw
-  }
-  return sentence(kind)
+  return sentence(kindOf(e))
 }
 
 // The sink for a promise nobody awaits. Stores report their own failures, so this only fires for one they did not expect.
 export const reportUnexpected = (e: unknown) => {
-  useToasts
-    .getState()
-    .push({ kind: 'error', title: i18n._(msg`Something went wrong`), body: errorMessage(e) })
+  const details = errorDetails(e)
+  useToasts.getState().push({
+    kind: 'error',
+    title: i18n._(msg`Something went wrong`),
+    body: errorMessage(e),
+    ...(details === '' ? {} : { detail: details }),
+  })
 }
