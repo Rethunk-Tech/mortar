@@ -1,5 +1,5 @@
 import type { I18n } from '@lingui/core'
-import { msg } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -10,10 +10,12 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
-import type { Preview } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
+import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import type {
+  Item as LeftoverItem,
+  Preview,
+} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
 import {
   Cleanup,
   CleanupPreview,
@@ -32,20 +34,20 @@ import { reportUnexpected } from '../../toasts/report.ts'
 import { nowrap } from './dataStyles.ts'
 
 const SELECT_SEP = '\u0000'
-const TITLE_SIZE = 14
-const HINT_SIZE = 13
+const NEXUS_KEY = /^nexus-(\d+)-\d+$/
 
 interface Sel {
+  id: string
   game: string
   item: Item
 }
-interface DupGroup {
-  game: string
-  items: Item[]
-}
 
-function selId(game: string, key: string) {
-  return `${game}${SELECT_SEP}${key}`
+type LeftoverKind = 'nexus' | 'github' | 'cache' | 'temp'
+
+interface LeftoverGroup {
+  kind: LeftoverKind
+  items: LeftoverItem[]
+  size: number
 }
 
 function newestOf(group: Item[]): Item {
@@ -54,310 +56,224 @@ function newestOf(group: Item[]): Item {
   )
 }
 
-function confirmBody(i18n: I18n, count: number, size: string) {
-  return i18n._(msg`Remove ${count} selected items? This frees ${size}.`)
-}
-
-function flattenReport(rep: StoreReport) {
+// Removable store items: everything no profile uses, plus every copy of a duplicate except the newest.
+function removable(rep: StoreReport): { unused: Sel[]; older: Sel[] } {
   const unused: Sel[] = []
-  const dups: DupGroup[] = []
+  const older: Sel[] = []
   for (const [game, g] of Object.entries(rep ?? {})) {
-    if (g) {
-      for (const item of g.unused ?? []) {
-        unused.push({ game, item })
-      }
-      for (const items of g.duplicates ?? []) {
-        if (items && items.length > 1) {
-          dups.push({ game, items })
-        }
+    for (const item of g?.unused ?? []) {
+      unused.push({ id: `${game}${SELECT_SEP}${item.key}`, game, item })
+    }
+    for (const items of (g?.duplicates ?? []).filter(
+      (d): d is Item[] => d !== null && d.length > 1,
+    )) {
+      const keep = newestOf(items)
+      for (const item of items.filter((i) => i !== keep)) {
+        older.push({ id: `${game}${SELECT_SEP}${item.key}`, game, item })
       }
     }
   }
-  return { unused, dups }
+  return { unused, older }
 }
 
-function selectedFrom(picked: string[], unused: Sel[], dups: DupGroup[]): Sel[] {
-  const byId = new Map<string, Sel>()
-  for (const row of unused) {
-    byId.set(selId(row.game, row.item.key), row)
+function leftoverKind(it: LeftoverItem): LeftoverKind {
+  if (it.kind === 'temp') {
+    return 'temp'
   }
-  for (const g of dups) {
-    for (const item of g.items) {
-      byId.set(selId(g.game, item.key), { game: g.game, item })
-    }
+  if (it.rel.startsWith('cache/nexus/')) {
+    return 'nexus'
   }
-  return picked.flatMap((id) => {
-    const hit = byId.get(id)
-    return hit ? [hit] : []
-  })
+  return it.rel.startsWith('cache/github-') ? 'github' : 'cache'
 }
 
-function UnusedList({
-  rows,
-  picked,
-  onToggle,
-}: {
-  rows: Sel[]
-  picked: string[]
-  onToggle: (id: string, on: boolean) => void
-}) {
-  const { t } = useLingui()
-  if (rows.length === 0) {
-    return null
+function groupLeftovers(preview: Preview | null): LeftoverGroup[] {
+  const groups = new Map<LeftoverKind, LeftoverGroup>()
+  for (const it of (preview?.items ?? []).filter((x) => x.kind !== 'store')) {
+    const kind = leftoverKind(it)
+    const g = groups.get(kind) ?? { kind, items: [], size: 0 }
+    g.items.push(it)
+    g.size += it.size
+    groups.set(kind, g)
   }
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <Box sx={{ fontSize: TITLE_SIZE }}>{t`Not used by any profile`}</Box>
-      {rows.map((row) => {
-        const id = selId(row.game, row.item.key)
-        return (
-          <ItemRow
-            key={id}
-            item={row.item}
-            checked={picked.includes(id)}
-            onToggle={(on) => onToggle(id, on)}
-          />
-        )
-      })}
-    </Box>
-  )
+  return [...groups.values()].sort((a, b) => b.size - a.size)
 }
 
-function DupList({
-  groups,
-  picked,
-  onToggle,
-}: {
-  groups: DupGroup[]
-  picked: string[]
-  onToggle: (id: string, on: boolean) => void
-}) {
-  const { t } = useLingui()
-  if (groups.length === 0) {
-    return null
+function leftoverLabel(i18n: I18n, kind: LeftoverKind): string {
+  switch (kind) {
+    case 'nexus':
+      return i18n._(msg`Cached Nexus mod details`)
+    case 'github':
+      return i18n._(msg`Cached GitHub release lists`)
+    case 'temp':
+      return i18n._(msg`Unfinished downloads and temporary files`)
+    default:
+      return i18n._(msg`Other cached data`)
   }
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <Box sx={{ fontSize: TITLE_SIZE }}>{t`Same mod stored twice`}</Box>
-      {groups.map((g) => {
-        const keep = newestOf(g.items)
-        return (
-          <Box key={`${g.game}-${g.items.map((i) => i.key).join('-')}`}>
-            <Box sx={{ fontSize: HINT_SIZE, color: 'text.secondary' }}>
-              {t`Keep the newest copy (${keep.name} ${keep.version})`}
-            </Box>
-            {g.items.map((item) => {
-              const id = selId(g.game, item.key)
-              return (
-                <ItemRow
-                  key={id}
-                  item={item}
-                  checked={picked.includes(id)}
-                  onToggle={(on) => onToggle(id, on)}
-                />
-              )
-            })}
-          </Box>
-        )
-      })}
-    </Box>
-  )
 }
 
-function ItemRow({
-  item,
+function itemName(i18n: I18n, item: Item): string {
+  if (item.name) {
+    return item.name
+  }
+  const id = NEXUS_KEY.exec(item.key)?.[1]
+  return id ? i18n._(msg`Nexus mod ${id}`) : item.key
+}
+
+function Row({
   checked,
   onToggle,
+  title,
+  detail,
+  size,
 }: {
-  item: Item
   checked: boolean
   onToggle: (on: boolean) => void
+  title: string
+  detail: ReactNode
+  size: number
 }) {
-  const { name, key, version, size, lastUsed } = item
   return (
-    <FormControlLabel
-      sx={{ ...nowrap, alignItems: 'center' }}
-      control={
-        <Checkbox
-          checked={checked}
-          onChange={(ev) => {
-            const { checked: on } = ev.target
-            onToggle(on)
-          }}
-        />
-      }
-      label={
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', fontSize: TITLE_SIZE }}>
-          <Box>{name || key}</Box>
-          <Box sx={{ color: 'text.secondary' }}>{version}</Box>
-          <Box sx={{ color: 'text.secondary' }}>{formatBytes(size)}</Box>
-          {lastUsed ? <When value={lastUsed} /> : null}
+    <Box
+      component="label"
+      sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: 36, cursor: 'pointer' }}
+    >
+      <Checkbox size="small" checked={checked} onChange={(ev) => onToggle(ev.target.checked)} />
+      <Box sx={{ flex: 1, minWidth: 0, fontSize: 14, ...nowrap, overflow: 'hidden' }}>{title}</Box>
+      <Box sx={{ flexShrink: 0, fontSize: 13, color: 'text.secondary', ...nowrap }}>{detail}</Box>
+      <Box
+        sx={{
+          flexShrink: 0,
+          width: 80,
+          textAlign: 'right',
+          fontSize: 13,
+          fontVariantNumeric: 'tabular-nums',
+        }}
+      >
+        {formatBytes(size)}
+      </Box>
+    </Box>
+  )
+}
+
+function Section({
+  title,
+  total,
+  children,
+}: {
+  title: string
+  total: number
+  children: ReactNode
+}) {
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          fontSize: 13,
+          fontWeight: 700,
+          color: 'text.secondary',
+          pb: 0.5,
+        }}
+      >
+        <span>{title}</span>
+        <Box component="span" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+          {formatBytes(total)}
         </Box>
+      </Box>
+      {children}
+    </Box>
+  )
+}
+
+function useCleanupData(open: boolean) {
+  const [store, setStore] = useState<{ unused: Sel[]; older: Sel[] } | null>(null)
+  const [preview, setPreview] = useState<Preview | null>(null)
+  const load = useCallback(() => {
+    Report()
+      .then((rep) => setStore(removable(rep)))
+      .catch(reportUnexpected)
+    CleanupPreview().then(setPreview).catch(reportUnexpected)
+  }, [])
+  useEffect(() => {
+    if (open) {
+      load()
+    }
+  }, [open, load])
+  return { store, preview, load }
+}
+
+function CleanupBody({
+  store,
+  leftovers,
+  picked,
+  setPicked,
+  toggle,
+}: {
+  store: { unused: Sel[]; older: Sel[] } | null
+  leftovers: LeftoverGroup[]
+  picked: Set<string>
+  setPicked: (next: Set<string>) => void
+  toggle: (id: string, on: boolean) => void
+}) {
+  const { t, i18n } = useLingui()
+  if (store === null) {
+    return <CircularProgress size={20} />
+  }
+  const items = [...store.unused, ...store.older]
+  const allIds = [...items.map((s) => s.id), ...leftovers.map((g) => g.kind)]
+  const itemRow = (s: Sel, detail: ReactNode) => (
+    <Row
+      key={s.id}
+      checked={picked.has(s.id)}
+      onToggle={(on) => toggle(s.id, on)}
+      title={
+        s.item.version ? `${itemName(i18n, s.item)} ${s.item.version}` : itemName(i18n, s.item)
       }
+      detail={detail}
+      size={s.item.size}
     />
   )
-}
-
-function allIds(unused: Sel[], dups: DupGroup[]): string[] {
-  const ids = unused.map((row) => selId(row.game, row.item.key))
-  for (const g of dups) {
-    const keep = newestOf(g.items)
-    for (const item of g.items) {
-      if (item !== keep) {
-        ids.push(selId(g.game, item.key))
-      }
-    }
+  const sum = (rows: Sel[]) => rows.reduce((n, s) => n + s.item.size, 0)
+  if (allIds.length === 0) {
+    return <Box sx={{ fontSize: 14 }}>{t`Nothing to clean up.`}</Box>
   }
-  return ids
-}
-
-function StoreItems({ onChanged }: { onChanged: () => void }) {
-  const { t, i18n } = useLingui()
-  const [unused, setUnused] = useState<Sel[]>([])
-  const [dups, setDups] = useState<DupGroup[]>([])
-  const [picked, setPicked] = useState<string[]>([])
-  const [confirm, setConfirm] = useState(false)
-  const [busy, setBusy] = useState(false)
-  useEffect(() => {
-    Report()
-      .then((rep) => {
-        const next = flattenReport(rep)
-        setUnused(next.unused)
-        setDups(next.dups)
-      })
-      .catch(reportUnexpected)
-  }, [])
-  const chosen = selectedFrom(picked, unused, dups)
-  const bytes = chosen.reduce((n, row) => n + row.item.size, 0)
-  const toggle = (id: string, on: boolean) => {
-    setPicked((cur) => (on ? [...cur, id] : cur.filter((x) => x !== id)))
-  }
-  const run = () => {
-    const byGame = new Map<string, string[]>()
-    for (const row of chosen) {
-      byGame.set(row.game, [...(byGame.get(row.game) ?? []), row.item.key])
-    }
-    setBusy(true)
-    Promise.all([...byGame.entries()].map(([game, keys]) => RemoveItems(game, keys)))
-      .then(() => {
-        setConfirm(false)
-        setPicked([])
-        onChanged()
-        return Report()
-      })
-      .then((rep) => {
-        const next = flattenReport(rep)
-        setUnused(next.unused)
-        setDups(next.dups)
-      })
-      .catch(reportUnexpected)
-      .finally(() => setBusy(false))
-  }
-  const empty = unused.length === 0 && dups.length === 0
-  const every = allIds(unused, dups)
-  const allPicked = every.length > 0 && every.every((id) => picked.includes(id))
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      {empty ? (
-        <Box sx={{ fontSize: TITLE_SIZE }}>{t`No unused or duplicate store items.`}</Box>
-      ) : (
-        <FormControlLabel
-          sx={{ ...nowrap, alignItems: 'center' }}
-          control={
-            <Checkbox
-              checked={allPicked}
-              indeterminate={picked.length > 0 && !allPicked}
-              onChange={(ev) => setPicked(ev.target.checked ? every : [])}
-            />
-          }
-          label={<Box sx={{ fontSize: TITLE_SIZE }}>{t`Select all`}</Box>}
-        />
-      )}
-      <UnusedList rows={unused} picked={picked} onToggle={toggle} />
-      <DupList groups={dups} picked={picked} onToggle={toggle} />
-      <Button
-        variant="outlined"
-        color="error"
-        disabled={chosen.length === 0}
-        onClick={() => setConfirm(true)}
-        sx={{ alignSelf: 'flex-start', ...nowrap }}
-      >
-        {t`Remove selected`}
-      </Button>
-      <ConfirmDialog
-        open={confirm}
-        title={t`Remove selected store items?`}
-        body={confirmBody(i18n, chosen.length, formatBytes(bytes))}
-        confirmLabel={t`Remove`}
-        color="error"
-        busy={busy}
-        onCancel={() => setConfirm(false)}
-        onConfirm={run}
-      />
-    </Box>
-  )
-}
-
-function Leftovers({ onChanged }: { onChanged: () => void }) {
-  const { t } = useLingui()
-  const [preview, setPreview] = useState<Preview | null>(null)
-  const [busy, setBusy] = useState(false)
-  const load = () => {
-    CleanupPreview().then(setPreview).catch(reportUnexpected)
-  }
-  useEffect(load, [])
-  // Store items are chosen in the list above; this part only removes cache and temp files.
-  const items = (preview?.items ?? []).filter((it) => it.kind !== 'store')
-  const total = items.reduce((n, it) => n + it.size, 0)
-  const remove = () => {
-    if (!preview) {
-      return
-    }
-    setBusy(true)
-    Cleanup({ ...preview, items, total })
-      .then(() => {
-        onChanged()
-        load()
-      })
-      .catch(reportUnexpected)
-      .finally(() => setBusy(false))
-  }
-  let body = (
     <>
-      {items.map((it) => (
-        <Box
-          key={it.rel}
-          sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, fontSize: HINT_SIZE }}
-        >
-          <Box sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', ...nowrap }}>
-            {it.label}
-          </Box>
-          <Box sx={{ flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
-            {formatBytes(it.size)}
-          </Box>
-        </Box>
-      ))}
-      <Button
-        variant="outlined"
-        color="error"
-        disabled={busy}
-        onClick={remove}
-        sx={{ alignSelf: 'flex-start', ...nowrap }}
-      >
-        {t`Remove leftover files (${formatBytes(total)})`}
-      </Button>
+      <Row
+        checked={allIds.every((id) => picked.has(id))}
+        onToggle={(on) => setPicked(on ? new Set(allIds) : new Set())}
+        title={t`Select all`}
+        detail=""
+        size={sum(items) + leftovers.reduce((n, g) => n + g.size, 0)}
+      />
+      {store.unused.length > 0 ? (
+        <Section title={t`Mods no profile uses`} total={sum(store.unused)}>
+          {store.unused.map((s) =>
+            itemRow(s, s.item.lastUsed ? <When value={s.item.lastUsed} /> : ''),
+          )}
+        </Section>
+      ) : null}
+      {store.older.length > 0 ? (
+        <Section title={t`Older copies of the same mod`} total={sum(store.older)}>
+          {store.older.map((s) => itemRow(s, t`a newer copy is kept`))}
+        </Section>
+      ) : null}
+      {leftovers.length > 0 ? (
+        <Section title={t`Leftover files`} total={leftovers.reduce((n, g) => n + g.size, 0)}>
+          {leftovers.map((g) => (
+            <Row
+              key={g.kind}
+              checked={picked.has(g.kind)}
+              onToggle={(on) => toggle(g.kind, on)}
+              title={leftoverLabel(i18n, g.kind)}
+              detail={plural(g.items.length, { one: '# file', other: '# files' })}
+              size={g.size}
+            />
+          ))}
+        </Section>
+      ) : null}
     </>
-  )
-  if (!preview) {
-    body = <CircularProgress size={20} />
-  } else if (items.length === 0) {
-    body = <Box sx={{ fontSize: TITLE_SIZE }}>{t`No leftover files.`}</Box>
-  }
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <Box sx={{ fontSize: TITLE_SIZE, fontWeight: 600 }}>{t`Leftover files`}</Box>
-      {body}
-    </Box>
   )
 }
 
@@ -371,6 +287,49 @@ function CleanupDialog({
   onChanged: () => void
 }) {
   const { t } = useLingui()
+  const { store, preview, load } = useCleanupData(open)
+  const [picked, setPicked] = useState<Set<string>>(new Set())
+  const [confirm, setConfirm] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const items = [...(store?.unused ?? []), ...(store?.older ?? [])]
+  const leftovers = groupLeftovers(preview)
+  const toggle = (id: string, on: boolean) =>
+    setPicked((cur) => {
+      const next = new Set(cur)
+      if (on) {
+        next.add(id)
+      } else {
+        next.delete(id)
+      }
+      return next
+    })
+  const chosenItems = items.filter((s) => picked.has(s.id))
+  const chosenLeftovers = leftovers.filter((g) => picked.has(g.kind))
+  const bytes =
+    chosenItems.reduce((n, s) => n + s.item.size, 0) +
+    chosenLeftovers.reduce((n, g) => n + g.size, 0)
+  const run = () => {
+    const byGame = new Map<string, string[]>()
+    for (const s of chosenItems) {
+      byGame.set(s.game, [...(byGame.get(s.game) ?? []), s.item.key])
+    }
+    const files = chosenLeftovers.flatMap((g) => g.items)
+    setBusy(true)
+    Promise.all([
+      ...[...byGame.entries()].map(([game, keys]) => RemoveItems(game, keys)),
+      ...(preview && files.length > 0
+        ? [Cleanup({ ...preview, items: files, total: files.reduce((n, f) => n + f.size, 0) })]
+        : []),
+    ])
+      .then(() => {
+        setConfirm(false)
+        setPicked(new Set())
+        onChanged()
+        load()
+      })
+      .catch(reportUnexpected)
+      .finally(() => setBusy(false))
+  }
   return (
     <Dialog
       open={open}
@@ -382,15 +341,39 @@ function CleanupDialog({
       slotProps={{ paper }}
     >
       <DialogTitle>{t`Clean up storage`}</DialogTitle>
-      <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <StoreItems onChanged={onChanged} />
-        <Leftovers onChanged={onChanged} />
+      <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <CleanupBody
+          store={store}
+          leftovers={leftovers}
+          picked={picked}
+          setPicked={setPicked}
+          toggle={toggle}
+        />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} sx={nowrap}>
           {t`Close`}
         </Button>
+        <Button
+          variant="contained"
+          color="error"
+          disabled={bytes === 0 && picked.size === 0}
+          onClick={() => setConfirm(true)}
+          sx={nowrap}
+        >
+          {t`Remove selected (${formatBytes(bytes)})`}
+        </Button>
       </DialogActions>
+      <ConfirmDialog
+        open={confirm}
+        title={t`Remove the selected items?`}
+        body={t`This frees ${formatBytes(bytes)}. Removed mods download again if a profile needs them later.`}
+        confirmLabel={t`Remove`}
+        color="error"
+        busy={busy}
+        onCancel={() => setConfirm(false)}
+        onConfirm={run}
+      />
     </Dialog>
   )
 }

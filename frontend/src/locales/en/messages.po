@@ -362,6 +362,10 @@ msgstr "{0} mods added"
 msgid "{0} {1} installed"
 msgstr "{0} {1} installed"
 
+#: src/settings/sections/DataStoreReport.tsx:258
+msgid "Older copies of the same mod"
+msgstr "Older copies of the same mod"
+
 #: src/lan/IncomingPrompt.tsx:134
 #: src/lan/IncomingPrompt.tsx:172
 msgid "Compare with a profile…"
@@ -941,10 +945,6 @@ msgstr "Notify when updates are found"
 #: src/mods/ModUpdateControls.tsx:40
 msgid "Update channel"
 msgstr "Update channel"
-
-#: src/settings/sections/DataStoreReport.tsx:285
-msgid "Remove selected"
-msgstr "Remove selected"
 
 #: src/settings/prefCopy.ts:259
 msgid "At most once a day"
@@ -1729,10 +1729,6 @@ msgstr "Mods and profiles"
 msgid "Imported {name}"
 msgstr "Imported {name}"
 
-#: src/settings/sections/DataStoreReport.tsx:58
-msgid "Remove {count} selected items? This frees {size}."
-msgstr "Remove {count} selected items? This frees {size}."
-
 #: src/mods/AssetMapPanel.tsx:69
 msgid "{count} mods"
 msgstr "{count} mods"
@@ -1769,6 +1765,10 @@ msgstr "Create another profile to compare it with this one."
 #: src/settings/prefCopy.ts:368
 msgid "Start Mortar when you sign in to this computer"
 msgstr "Start Mortar when you sign in to this computer"
+
+#: src/settings/sections/DataStoreReport.tsx:251
+msgid "Mods no profile uses"
+msgstr "Mods no profile uses"
 
 #. placeholder {0}: update.source
 #: src/mods/updateReview/UpdateActions.tsx:107
@@ -2124,6 +2124,10 @@ msgstr "Updated tags"
 msgid "Update mods before Play on new profiles"
 msgstr "Update mods before Play on new profiles"
 
+#: src/settings/sections/DataStoreReport.tsx:259
+msgid "a newer copy is kept"
+msgstr "a newer copy is kept"
+
 #: src/profiles/GameSettings.tsx:366
 msgid "Game settings"
 msgstr "Game settings"
@@ -2350,6 +2354,10 @@ msgstr "Stop the game?"
 #: src/settings/sections/Shortcuts.tsx:55
 msgid "Go back"
 msgstr "Go back"
+
+#: src/settings/sections/DataStoreReport.tsx:108
+msgid "Unfinished downloads and temporary files"
+msgstr "Unfinished downloads and temporary files"
 
 #: src/commandPalette/paletteLabels.ts:9
 msgid "Open Downloads"
@@ -2941,10 +2949,6 @@ msgstr "Update"
 msgid "Launch other apps with this profile."
 msgstr "Launch other apps with this profile."
 
-#: src/settings/sections/DataStoreReport.tsx:141
-msgid "Same mod stored twice"
-msgstr "Same mod stored twice"
-
 #: src/console/LogActions.tsx:82
 msgid "Jump to previous error"
 msgstr "Jump to previous error"
@@ -3118,6 +3122,10 @@ msgstr "Choose a file"
 #: src/launch/VanillaPlay.tsx:46
 msgid "Mortar starts the unmodded game directly so SMAPI's Linux launcher is not used. The Steam overlay and Steam's playtime tracking will not work. Steam still supplies the API if it is running."
 msgstr "Mortar starts the unmodded game directly so SMAPI's Linux launcher is not used. The Steam overlay and Steam's playtime tracking will not work. Steam still supplies the API if it is running."
+
+#: src/settings/sections/DataStoreReport.tsx:106
+msgid "Cached GitHub release lists"
+msgstr "Cached GitHub release lists"
 
 #: src/console/BisectDialog.tsx:168
 msgid "Finding the mod causing the crash"
@@ -3324,6 +3332,11 @@ msgstr "Restarting…"
 #: src/settings/prefCopy.ts:212
 msgid "Warn"
 msgstr "Warn"
+
+#. placeholder {0}: formatBytes(bytes)
+#: src/settings/sections/DataStoreReport.tsx:364
+msgid "Remove selected ({0})"
+msgstr "Remove selected ({0})"
 
 #: src/mods/columnLabel.ts:18
 #: src/mods/ModDependencyTree.tsx:203
@@ -4367,6 +4380,11 @@ msgstr "Send"
 msgid "Mods"
 msgstr "Mods"
 
+#. placeholder {0}: g.items.length
+#: src/settings/sections/DataStoreReport.tsx:270
+msgid "{0, plural, one {# file} other {# files}}"
+msgstr "{0, plural, one {# file} other {# files}}"
+
 #: src/settings/prefCopy.ts:317
 msgid "Auto-retry failed downloads"
 msgstr "Auto-retry failed downloads"
@@ -4445,6 +4463,10 @@ msgstr "{name} updated to {version} — {n, plural, one {# profile needs attenti
 #: src/queue/QueueHistory.tsx:161
 msgid "Clear download history?"
 msgstr "Clear download history?"
+
+#: src/settings/sections/DataStoreReport.tsx:110
+msgid "Other cached data"
+msgstr "Other cached data"
 
 #: src/mods/Sidebar.tsx:222
 msgid "Update in all profiles that have it"
@@ -5010,6 +5032,10 @@ msgstr "Update {wantedCount}"
 msgid "Could not skip the update for {0}"
 msgstr "Could not skip the update for {0}"
 
+#: src/settings/sections/DataStoreReport.tsx:119
+msgid "Nexus mod {id}"
+msgstr "Nexus mod {id}"
+
 #: src/game/ProfileMenuItems.tsx:124
 msgid "Add a shortcut that plays this profile"
 msgstr "Add a shortcut that plays this profile"
@@ -5167,12 +5193,6 @@ msgstr "Command copied"
 msgid "Mods list"
 msgstr "Mods list"
 
-#. placeholder {0}: keep.name
-#. placeholder {1}: keep.version
-#: src/settings/sections/DataStoreReport.tsx:147
-msgid "Keep the newest copy ({0} {1})"
-msgstr "Keep the newest copy ({0} {1})"
-
 #: src/mods/NexusAccountActions.tsx:135
 msgid "Could not track"
 msgstr "Could not track"
@@ -5262,6 +5282,10 @@ msgstr "Could not open the folder of {0}"
 msgid "Create a new profile"
 msgstr "Create a new profile"
 
+#: src/settings/sections/DataStoreReport.tsx:239
+msgid "Nothing to clean up."
+msgstr "Nothing to clean up."
+
 #: src/tools/ToolsManageDialog.tsx:46
 msgid "Add a program you run alongside the game, such as a save editor or a map viewer."
 msgstr "Add a program you run alongside the game, such as a save editor or a map viewer."
@@ -5323,6 +5347,10 @@ msgstr "A file it needs could not be opened."
 #: src/profiles/GameSettings.tsx:279
 msgid "Windowed resolution width"
 msgstr "Windowed resolution width"
+
+#: src/settings/sections/DataStoreReport.tsx:104
+msgid "Cached Nexus mod details"
+msgstr "Cached Nexus mod details"
 
 #: src/settings/sections/StreamOverlay.tsx:340
 #: src/settings/sections/StreamOverlay.tsx:343
@@ -6120,10 +6148,6 @@ msgstr "Updates"
 msgid "Nothing downloading"
 msgstr "Nothing downloading"
 
-#: src/settings/sections/DataStoreReport.tsx:289
-msgid "Remove selected store items?"
-msgstr "Remove selected store items?"
-
 #: src/settings/prefCopy.ts:331
 msgid "What the sidebar shows on profile badges"
 msgstr "What the sidebar shows on profile badges"
@@ -6268,10 +6292,6 @@ msgstr "none"
 #: src/mods/SelectionBarActions.tsx:114
 msgid "Skip current updates"
 msgstr "Skip current updates"
-
-#: src/settings/sections/DataStoreReport.tsx:354
-msgid "No leftover files."
-msgstr "No leftover files."
 
 #: src/settings/prefCopy.ts:180
 msgid "Download failed"
@@ -6422,10 +6442,6 @@ msgstr "No mods match your search"
 #: src/mods/NexusAccountActions.tsx:119
 msgid "Abstain"
 msgstr "Abstain"
-
-#: src/settings/sections/DataStoreReport.tsx:110
-msgid "Not used by any profile"
-msgstr "Not used by any profile"
 
 #: src/profiles/ProfilesPage.tsx:197
 #: src/profiles/ProfilesPage.tsx:200
@@ -6800,7 +6816,7 @@ msgstr "Switch to Saves"
 #: src/mods/problemFixButtons.tsx:131
 #: src/mods/ProblemsTab.tsx:217
 #: src/mods/SelectionBarActions.tsx:138
-#: src/settings/sections/DataStoreReport.tsx:291
+#: src/settings/sections/DataStoreReport.tsx:371
 msgid "Remove"
 msgstr "Remove"
 
@@ -6866,11 +6882,6 @@ msgstr "Mod"
 #: src/launch/PrePlayDialog.tsx:36
 msgid "Pending updates ({0})"
 msgstr "Pending updates ({0})"
-
-#. placeholder {0}: formatBytes(total)
-#: src/settings/sections/DataStoreReport.tsx:347
-msgid "Remove leftover files ({0})"
-msgstr "Remove leftover files ({0})"
 
 #. placeholder {0}: done.length
 #. placeholder {1}: names(done)
@@ -6998,6 +7009,10 @@ msgstr "Required"
 #: src/settings/sections/DataUsage.tsx:96
 msgid "Space saved by sharing files"
 msgstr "Space saved by sharing files"
+
+#: src/settings/sections/DataStoreReport.tsx:369
+msgid "Remove the selected items?"
+msgstr "Remove the selected items?"
 
 #: src/mods/detail.ts:128
 msgid "Redo update"
@@ -7139,6 +7154,11 @@ msgstr "Could not cancel transfer"
 #: src/game/Hero.tsx:298
 msgid "{fitting} of {total}"
 msgstr "{fitting} of {total}"
+
+#. placeholder {0}: formatBytes(bytes)
+#: src/settings/sections/DataStoreReport.tsx:370
+msgid "This frees {0}. Removed mods download again if a profile needs them later."
+msgstr "This frees {0}. Removed mods download again if a profile needs them later."
 
 #: src/mods/storeProblems.ts:67
 msgid "Could not dismiss the setting warning"
@@ -7431,10 +7451,6 @@ msgstr "You can roll back the completed updates from the profile history."
 msgid "Its source is not known."
 msgstr "Its source is not known."
 
-#: src/settings/sections/DataStoreReport.tsx:262
-msgid "No unused or duplicate store items."
-msgstr "No unused or duplicate store items."
-
 #: src/mods/ModsTab.tsx:121
 msgid "Clear search"
 msgstr "Clear search"
@@ -7548,7 +7564,7 @@ msgstr "Show one in the sidebar from Manage profiles."
 msgid "Not enough disk space"
 msgstr "Not enough disk space"
 
-#: src/settings/sections/DataStoreReport.tsx:384
+#: src/settings/sections/DataStoreReport.tsx:343
 msgid "Clean up storage"
 msgstr "Clean up storage"
 
@@ -7775,7 +7791,7 @@ msgstr "Teal"
 msgid "Could not read this profile"
 msgstr "Could not read this profile"
 
-#: src/settings/sections/DataStoreReport.tsx:273
+#: src/settings/sections/DataStoreReport.tsx:246
 msgid "Select all"
 msgstr "Select all"
 
@@ -8401,7 +8417,7 @@ msgstr "Reinstall"
 msgid "Checking for updates…"
 msgstr "Checking for updates…"
 
-#: src/settings/sections/DataStoreReport.tsx:358
+#: src/settings/sections/DataStoreReport.tsx:263
 msgid "Leftover files"
 msgstr "Leftover files"
 
@@ -8583,7 +8599,7 @@ msgstr "Restore second"
 #: src/profiles/CompareDialog.tsx:134
 #: src/profiles/HistoryPanel.tsx:117
 #: src/saves/BackupsDialog.tsx:204
-#: src/settings/sections/DataStoreReport.tsx:391
+#: src/settings/sections/DataStoreReport.tsx:355
 #: src/share/ImportDialog.tsx:211
 #: src/share/ImportDialog.tsx:214
 #: src/share/ShareDialog.tsx:105
