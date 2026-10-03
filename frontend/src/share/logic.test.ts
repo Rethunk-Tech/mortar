@@ -78,7 +78,9 @@ test('sizes read as approximate KB, MB and GB', () => {
 
 // Go writes a nil slice as null, whatever the generated types say.
 test('null lists from Go become empty lists', () => {
-  const info = shownInfo(JSON.parse('{"groups":[{"source":"nexus","count":0,"mods":null}],"leftOut":null}'))
+  const info = shownInfo(
+    JSON.parse('{"groups":[{"source":"nexus","count":0,"mods":null}],"leftOut":null}'),
+  )
   expect(info.groups).toEqual([{ source: 'nexus', count: 0, mods: [] }])
   expect(info.leftOut).toEqual([])
   const preview = shownPreview(JSON.parse('{"name":"x","mods":null,"problems":null}'))
