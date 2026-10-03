@@ -371,6 +371,25 @@ func run() error {
 		Parallel:     func() int { return store.Get().ParallelDownloads },
 		KeepArchives: func() bool { return store.Get().KeepDownloadArchives },
 		DownloadDir:  func() string { return store.Get().ArchiveDir() },
+		RetryFetches: func() int {
+			switch store.Get().AutoRetryDownloads {
+			case settings.AutoRetry1:
+				return 1
+			case settings.AutoRetry3:
+				return 3
+			default:
+				return 0
+			}
+		},
+		PauseWhilePlaying: func() bool { return store.Get().PauseDownloadsWhilePlaying },
+		GameBusy: func() bool {
+			st, err := launches.Status("stardew")
+			if err != nil {
+				return false
+			}
+			return st.State == launchsvc.Launching || st.State == launchsvc.Running
+		},
+		VerifyNexusMD5: func() bool { return store.Get().VerifyNexusMD5 },
 		Track: func(ctx context.Context, modID int) {
 			if !store.Get().AutoTrackNexus || modID <= 0 {
 				return
@@ -526,24 +545,35 @@ func run() error {
 	var windowMu sync.Mutex
 	windowGone := false
 	newWindow := func() *application.WebviewWindow {
-		w := app.Window.NewWithOptions(application.WebviewWindowOptions{
+		opts := application.WebviewWindowOptions{
 			Title:            "Mortar",
-			Width:            1280,
-			Height:           720,
-			MinWidth:         768,
-			MinHeight:        432,
+			Width:            defaultWindowWidth,
+			Height:           defaultWindowHeight,
+			MinWidth:         minWindowWidth,
+			MinHeight:        minWindowHeight,
 			Frameless:        true,
 			BackgroundType:   application.BackgroundTypeSolid,
 			BackgroundColour: application.NewRGBA(25, 25, 30, 255),
 			EnableFileDrop:   true,
 			URL:              "/",
-		})
+			Hidden:           store.Get().StartMinimised,
+		}
+		if store.Get().RememberWindow {
+			if g, ok := loadWindowGeom(dataDir, screensOf(app)); ok {
+				opts.X, opts.Y, opts.Width, opts.Height = g.X, g.Y, g.W, g.H
+			}
+		}
+		w := app.Window.NewWithOptions(opts)
 		w.OnWindowEvent(events.Common.WindowFilesDropped, func(e *application.WindowEvent) {
 			app.Event.Emit(picker.DroppedEvent, e.Context().DroppedFiles())
 		})
 		// Wayland gives an app no say over where a re-shown window goes, so closing to the tray
 		// destroys the window and showing builds a fresh one that the compositor places as new.
 		w.RegisterHook(events.Common.WindowClosing, func(*application.WindowEvent) {
+			if store.Get().RememberWindow {
+				x, y := w.Position()
+				saveWindowGeom(dataDir, windowGeom{X: x, Y: y, W: w.Width(), H: w.Height()})
+			}
 			if !store.Get().KeepInTray {
 				if quitSvc.AllowWindowClose() {
 					return
@@ -728,7 +758,7 @@ func run() error {
 		trayMenu.Update()
 	}
 	syncTray := func() {
-		if !store.Get().KeepInTray {
+		if !store.Get().KeepInTray && !store.Get().StartMinimised {
 			if tray != nil {
 				tray.Destroy()
 				tray = nil
