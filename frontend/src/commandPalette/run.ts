@@ -11,6 +11,8 @@ import { SHORTCUTS, type ShortcutId } from '../settings/shortcuts.ts'
 import { runShortcut } from '../settings/useShortcuts.ts'
 import { openImport, openShare } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
+import { startCrashBisectFromPalette } from './crashBisect.ts'
 import { useCommandPalette } from './store.ts'
 
 const sections = new Set<SettingsSection>([
@@ -50,6 +52,20 @@ function runAction(id: string): void {
     useTab.getState().setTab(id.slice(TAB_PREFIX_LENGTH) as TabId)
     return
   }
+  if (id.startsWith('configure-mod:')) {
+    const rest = id.slice('configure-mod:'.length)
+    const cut = rest.indexOf('/')
+    const mod = useMods
+      .getState()
+      .mods.find(
+        (candidate) =>
+          candidate.key === rest.slice(0, cut) && candidate.uniqueId === rest.slice(cut + 1),
+      )
+    if (mod) {
+      useMods.getState().openConfig(mod).catch(reportUnexpected)
+    }
+    return
+  }
   if (id.startsWith('toggle-mod:')) {
     const rest = id.slice('toggle-mod:'.length)
     const cut = rest.indexOf('/')
@@ -80,8 +96,25 @@ function runAction(id: string): void {
     useQueue.getState().setOpen(true)
     return
   }
-  if (id === 'action:import') {
+  if (id === 'action:import' || id === 'action:paste-link') {
     openImport({ profileId: useProfiles.getState().openId })
+    return
+  }
+  if (id === 'action:collection-review') {
+    const { openId } = useProfiles.getState()
+    if (openId) {
+      openImport({ profileId: openId, collectionUpdate: true })
+    }
+    return
+  }
+  if (id === 'action:find-crash-cause') {
+    startCrashBisectFromPalette()
+      .then((message) => {
+        if (message) {
+          useToasts.getState().push({ kind: 'info', title: message })
+        }
+      })
+      .catch(reportUnexpected)
     return
   }
   if (id === 'action:share') {

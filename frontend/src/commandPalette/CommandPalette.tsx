@@ -15,17 +15,17 @@ import {
   User,
 } from 'lucide-react'
 import { type KeyboardEvent, type ReactNode, useEffect, useRef, useState } from 'react'
+import { BisectDialog } from '../console/BisectDialog.tsx'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { paper } from '../mods/paper.ts'
 import type { SettingsSection } from '../nav/store.ts'
-import { userModEntries } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { mergeBindings, SHORTCUTS, type ShortcutId } from '../settings/shortcuts.ts'
+import { mergeBindings, type ShortcutId } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
-import { buildPaletteItems } from './items.ts'
-import { matchPaletteItems, type PaletteItem } from './match.ts'
+import type { PaletteItem } from './match.ts'
 import { runPaletteItem } from './run.ts'
 import { useCommandPalette } from './store.ts'
+import { usePaletteShown } from './usePaletteShown.ts'
 
 function iconFor(item: PaletteItem): ReactNode {
   if (item.kind === 'profile') {
@@ -152,56 +152,26 @@ export function CommandPalette() {
   const { t, i18n } = useLingui()
   const open = useCommandPalette((s) => s.open)
   const creating = useCommandPalette((s) => s.creating)
+  const bisect = useCommandPalette((s) => s.bisect)
   const profiles = useProfiles((s) => s.profiles)
   const openId = useProfiles((s) => s.openId)
+  const game = useProfiles((s) => s.game)
   const [query, setQuery] = useState('')
   const [index, setIndex] = useState(0)
   const searchRef = usePaletteWindow(open)
   const sections: { id: SettingsSection; label: string }[] = paletteSections(i18n)
   const shortcutLabelMap = shortcutLabels(i18n)
   const bindings = mergeBindings(useSettings((s) => s.shortcuts))
-  const profile = profiles.find((p) => p.id === openId)
-  const mods = userModEntries(profile?.entries).flatMap((entry) =>
-    (entry.mods ?? []).map((mod) => ({
-      key: entry.key,
-      uniqueId: mod.uniqueId,
-      name: mod.name,
-    })),
-  )
-  const shown = matchPaletteItems(
-    buildPaletteItems({
-      profiles: profiles.map((p) => ({ id: p.id, name: p.name })),
-      mods,
-      sections,
-      shortcuts: SHORTCUTS.map((row) => ({ ...row, keys: bindings[row.id] })),
-      shortcutLabels: shortcutLabelMap,
-      labels: {
-        play: t`Play`,
-        updates: t`Check for mod updates`,
-        downloads: t`Open Downloads`,
-        import: t`Import`,
-        share: t`Share`,
-        newProfile: t`New profile`,
-        streamOverlay: t`Stream overlay`,
-        recentChanges: t`Recent changes`,
-        diagnostics: t`Diagnostics`,
-        profileHint: t`Open profile`,
-        modHint: t`Open mod`,
-        settingsHint: t`Settings`,
-        tabs: {
-          mods: t`Go to Mods`,
-          problems: t`Go to Problems`,
-          'load-order': t`Go to Load order`,
-          saves: t`Go to Saves`,
-          notes: t`Go to Notes`,
-          console: t`Go to Console`,
-          performance: t`Go to Performance`,
-        },
-        toggle: (name) => t`Toggle ${name}`,
-      },
-    }),
+  const shown = usePaletteShown({
+    t,
     query,
-  )
+    profiles,
+    openId,
+    gameId: game?.id ?? '',
+    sections,
+    shortcutLabels: shortcutLabelMap,
+    bindings,
+  })
   const current = shown[Math.min(index, Math.max(shown.length - 1, 0))]
   const reset = () => {
     setQuery('')
@@ -266,6 +236,14 @@ export function CommandPalette() {
         open={creating}
         onClose={() => useCommandPalette.getState().setCreating(false)}
       />
+      {bisect ? (
+        <BisectDialog
+          game={bisect.game}
+          profile={bisect.profile}
+          jobID={bisect.id}
+          onClose={() => useCommandPalette.getState().setBisect(null)}
+        />
+      ) : null}
     </>
   )
 }
