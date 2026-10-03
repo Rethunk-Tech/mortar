@@ -541,6 +541,10 @@ msgstr "Installing SMAPI"
 msgid "Not in the link"
 msgstr "Not in the link"
 
+#: src/settings/sections/Notifications.tsx:55
+msgid "When"
+msgstr "When"
+
 #: src/console/ConsoleTab.tsx:297
 msgid "Type a command, for example help"
 msgstr "Type a command, for example help"
@@ -744,6 +748,10 @@ msgstr "Clear cache…"
 #: src/mods/updateReview/Changes.tsx:58
 msgid "What's new"
 msgstr "What's new"
+
+#: src/settings/sections/Notifications.tsx:74
+msgid "Mod updates are found"
+msgstr "Mod updates are found"
 
 #: src/profiles/ProfilesPage.tsx:287
 #: src/settings/sections/Shortcuts.tsx:48
@@ -1987,6 +1995,7 @@ msgid "Open the next profile"
 msgstr "Open the next profile"
 
 #: src/settings/sections/Appearance.tsx:181
+#: src/settings/sections/Notifications.tsx:58
 msgid "Desktop"
 msgstr "Desktop"
 
@@ -3352,7 +3361,7 @@ msgstr "SMAPI is not installed"
 msgid "Hammer"
 msgstr "Hammer"
 
-#: src/settings/sections/Notifications.tsx:12
+#: src/settings/sections/Notifications.tsx:88
 msgid "Mod updates"
 msgstr "Mod updates"
 
@@ -3982,6 +3991,10 @@ msgstr "Could not delete the bundle"
 msgid "Imported"
 msgstr "Imported"
 
+#: src/settings/sections/Notifications.tsx:57
+msgid "In Mortar"
+msgstr "In Mortar"
+
 #: src/settings/GameSettingsPage.tsx:41
 msgid "{name} settings"
 msgstr "{name} settings"
@@ -4127,10 +4140,6 @@ msgstr "Could not remove the selected mods"
 #: src/mods/ConfigEditor.tsx:249
 msgid "Saved"
 msgstr "Saved"
-
-#: src/settings/sections/Notifications.tsx:9
-msgid "Downloads and runs"
-msgstr "Downloads and runs"
 
 #: src/commandPalette/CommandPalette.tsx:130
 #: src/settings/SettingsPage.tsx:51
@@ -5053,6 +5062,10 @@ msgstr "Crash finding failed."
 msgid "Removed from Nexus"
 msgstr "Removed from Nexus"
 
+#: src/settings/sections/Notifications.tsx:72
+msgid "A download fails"
+msgstr "A download fails"
+
 #: src/launchers/LauncherList.tsx:148
 msgid "Add folder…"
 msgstr "Add folder…"
@@ -5253,6 +5266,11 @@ msgstr "Play this profile and SMAPI's log shows here as it runs. Every run is ke
 #: src/settings/sections/DataImport.tsx:38
 msgid "Tell when SMAPI is out: {from} → {to}"
 msgstr "Tell when SMAPI is out: {from} → {to}"
+
+#. placeholder {0}: e.label
+#: src/settings/sections/Notifications.tsx:83
+msgid "{0}: desktop notification"
+msgstr "{0}: desktop notification"
 
 #: src/settings/sections/StreamOverlay.tsx:100
 msgid "Weather"
@@ -5530,6 +5548,11 @@ msgstr "Couldn't read the window state"
 #: src/saves/lackChipActions.tsx:91
 msgid "Open {name} on Nexus"
 msgstr "Open {name} on Nexus"
+
+#. placeholder {0}: e.label
+#: src/settings/sections/Notifications.tsx:82
+msgid "{0}: in Mortar"
+msgstr "{0}: in Mortar"
 
 #: src/mods/LoadOrderTab.tsx:245
 msgid "These mods require each other."
@@ -6406,6 +6429,10 @@ msgstr "none"
 #: src/mods/SelectionBarActions.tsx:78
 msgid "Skip current updates"
 msgstr "Skip current updates"
+
+#: src/settings/sections/Notifications.tsx:68
+msgid "A download finishes"
+msgstr "A download finishes"
 
 #: src/settings/prefCopy.ts:200
 msgid "Download failed"
@@ -8609,8 +8636,8 @@ msgstr "Crashed: {0}"
 
 #: src/firstrunTour/TourAgainButton.tsx:21
 #: src/firstrunTour/useFirstRunTour.ts:43
-#: src/settings/PrefControls.tsx:171
-#: src/settings/PrefControls.tsx:216
+#: src/settings/PrefControls.tsx:179
+#: src/settings/PrefControls.tsx:224
 #: src/settings/PrefRow.tsx:35
 #: src/settings/sections/Appearance.tsx:43
 #: src/settings/sections/Appearance.tsx:59
@@ -8622,6 +8649,7 @@ msgstr "Crashed: {0}"
 #: src/settings/sections/GameSettings.tsx:518
 #: src/settings/sections/General.tsx:38
 #: src/settings/sections/ModsProfiles.tsx:20
+#: src/settings/sections/Notifications.tsx:35
 #: src/settings/sections/SmapiVersionRow.tsx:49
 #: src/settings/sections/StreamOverlay.tsx:430
 #: src/settings/sections/Updates.tsx:154
@@ -8682,6 +8710,10 @@ msgstr "Back up {label} now"
 #: src/tools/ToolsMenu.tsx:61
 msgid "Could not start {0}"
 msgstr "Could not start {0}"
+
+#: src/settings/sections/Notifications.tsx:73
+msgid "The game crashes"
+msgstr "The game crashes"
 
 #: src/settings/prefCopy.ts:209
 msgid "Back up saves only if the profile's mods changed since the last run."

@@ -142,11 +142,19 @@ export function PrefCards({
 export function PrefSwitch({
   checked,
   onChange,
+  label,
 }: {
   checked: boolean
   onChange: (on: boolean) => void
+  label?: string
 }) {
-  return <Switch checked={checked} onChange={(_, on) => onChange(on)} />
+  return (
+    <Switch
+      checked={checked}
+      onChange={(_, on) => onChange(on)}
+      {...(label ? { slotProps: { input: { 'aria-label': label } } } : {})}
+    />
+  )
 }
 
 export function PrefText({
