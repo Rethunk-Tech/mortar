@@ -55,6 +55,11 @@
     "url": "https://mui.com/material-ui/"
   },
   {
+    "name": "@tanstack/react-virtual",
+    "licence": "MIT",
+    "url": "https://tanstack.com/virtual"
+  },
+  {
     "name": "@wailsio/runtime",
     "licence": "MIT",
     "url": "https://v3.wails.io"
