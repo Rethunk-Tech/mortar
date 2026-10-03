@@ -87,30 +87,32 @@ function StorageBar({ usage, labels }: { usage: DiskUse; labels: Record<SegmentI
   const segs = storageSegments(usage).filter((s) => s.size > 0)
   const total = Math.max(1, usage.total)
   return (
-    <Box
-      role="img"
-      aria-label={segs.map((s) => `${labels[s.id]} ${formatBytes(s.size)}`).join(', ')}
-      sx={{ display: 'flex', gap: `${BAR_GAP}px`, height: BAR_HEIGHT, px: 2, py: 2 }}
-    >
-      {segs.map((s, i) => (
-        <Tooltip
-          key={s.id}
-          title={`${labels[s.id]} · ${formatBytes(s.size)} · ${Math.round((s.size / total) * PERCENT)}%`}
-        >
-          <Box
-            sx={{
-              flexGrow: s.size,
-              flexBasis: 0,
-              minWidth: MIN_SEGMENT,
-              bgcolor: colors[s.id],
-              borderTopLeftRadius: i === 0 ? END_RADIUS : 0,
-              borderBottomLeftRadius: i === 0 ? END_RADIUS : 0,
-              borderTopRightRadius: i === segs.length - 1 ? END_RADIUS : 0,
-              borderBottomRightRadius: i === segs.length - 1 ? END_RADIUS : 0,
-            }}
-          />
-        </Tooltip>
-      ))}
+    <Box sx={{ px: 2, py: 2 }}>
+      <Box
+        role="img"
+        aria-label={segs.map((s) => `${labels[s.id]} ${formatBytes(s.size)}`).join(', ')}
+        sx={{ display: 'flex', gap: `${BAR_GAP}px`, height: BAR_HEIGHT }}
+      >
+        {segs.map((s, i) => (
+          <Tooltip
+            key={s.id}
+            title={`${labels[s.id]} · ${formatBytes(s.size)} · ${Math.round((s.size / total) * PERCENT)}%`}
+          >
+            <Box
+              sx={{
+                flexGrow: s.size,
+                flexBasis: 0,
+                minWidth: MIN_SEGMENT,
+                bgcolor: colors[s.id],
+                borderTopLeftRadius: i === 0 ? END_RADIUS : 0,
+                borderBottomLeftRadius: i === 0 ? END_RADIUS : 0,
+                borderTopRightRadius: i === segs.length - 1 ? END_RADIUS : 0,
+                borderBottomRightRadius: i === segs.length - 1 ? END_RADIUS : 0,
+              }}
+            />
+          </Tooltip>
+        ))}
+      </Box>
     </Box>
   )
 }
