@@ -4,11 +4,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { SetNotes } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { useNow } from '../i18n/useNow.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorDetails, errorMessage } from '../toasts/report.ts'
 
 const DEBOUNCE_MS = 800
-const TICK_MS = 60_000
 // Keep this in sync with profile.MaxNotes.
 const MAX_NOTES = 20_000
 const COUNTER_THRESHOLD = 500
@@ -57,7 +57,7 @@ export function NotesTab({ profile }: { profile: Profile }) {
   const replace = useProfiles((s) => s.replace)
   const [text, setText] = useState(profile.notes)
   const [status, setStatus] = useState<Status>({ kind: 'idle' })
-  const [now, setNow] = useState(() => Date.now())
+  const now = useNow()
   const latest = useRef(profile.notes)
   const saved = useRef(profile.notes)
   const inflight = useRef(false)
@@ -97,11 +97,6 @@ export function NotesTab({ profile }: { profile: Profile }) {
       save()
     }
   }, [save])
-
-  useEffect(() => {
-    const id = globalThis.setInterval(() => setNow(Date.now()), TICK_MS)
-    return () => globalThis.clearInterval(id)
-  }, [])
 
   const onChange = (value: string) => {
     setText(value)

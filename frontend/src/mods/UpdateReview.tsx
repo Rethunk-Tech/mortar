@@ -2,6 +2,7 @@ import { Dialog, DialogContent } from '@mui/material'
 import { useEffect, useState } from 'react'
 import type { Update } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { useNow } from '../i18n/useNow.ts'
 import { download } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -11,7 +12,7 @@ import { modId, updatesForReview } from './lookup.ts'
 import { useNexusDetails } from './nexusDetails.ts'
 import { paper } from './paper.ts'
 import { useMods } from './store.ts'
-import { DIALOG_WIDTH, TICK_MS } from './updateReview/constants.ts'
+import { DIALOG_WIDTH } from './updateReview/constants.ts'
 import { loadAllDetails } from './updateReview/loadAll.ts'
 import { PropagateUpdate } from './updateReview/PropagateUpdate.tsx'
 import { ReviewFooter } from './updateReview/ReviewFooter.tsx'
@@ -37,16 +38,12 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   const items = useQueue((s) => s.state.items)
   const mods = useMods((s) => s.mods)
   const [acked, setAcked] = useState<Record<string, boolean>>({})
-  const [now, setNow] = useState(() => Date.now())
+  const now = useNow()
   const [propagating, setPropagating] = useState<Update[]>([])
   const [firstPropagating] = propagating
   const [include, setInclude] = useState<Record<string, boolean>>({})
   const [propagateAll, setPropagateAll] = useState(false)
   const [loadingAll, setLoadingAll] = useState(false)
-  useEffect(() => {
-    const id = globalThis.setInterval(() => setNow(Date.now()), TICK_MS)
-    return () => globalThis.clearInterval(id)
-  }, [])
   useEffect(() => {
     if (!open) {
       return
