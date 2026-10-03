@@ -432,6 +432,8 @@ func (c *cmd) dispatch() error {
 				return c.modsFiles()
 			case "config":
 				return c.modsConfig()
+			case "preset":
+				return c.modsPreset()
 			case "menu":
 				return c.modsMenu()
 			case "compat":
@@ -980,7 +982,7 @@ func (c *cmd) nexus() error {
 
 func (c *cmd) profile() error {
 	if len(c.args) < 2 {
-		return usageError{"profile needs create, from-save, rename, copy, compare, match, collection, history, revert, load-order, repair, list, shortcut, steam, delete, changes or good"}
+		return usageError{"profile needs create, from-save, rename, copy, compare, match, collection, history, health, revert, load-order, repair, list, shortcut, steam, delete, changes or good"}
 	}
 	sub := c.args[1]
 	var p profile.Profile
@@ -1089,6 +1091,8 @@ func (c *cmd) profile() error {
 			}
 			c.table("TIME\tSUMMARY", t)
 		})
+	case "health":
+		return c.profileHealth()
 	case "revert":
 		a, err := c.need(2, "a game", "a profile", "an event id")
 		if err != nil {
@@ -2114,6 +2118,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   trash empty --yes [--game stardew]      purge all deleted profiles
   profile compare <game> <profileA> <profileB>
   profile history <game> <profile>       restore points
+  profile health <game> <profile>        problem-check history
   history <game> --all                   recent changes across profiles
   history diff <game> <profile> <a> <b>  compare two snapshots
   history revert <game> <profile> <eventId> --item <mod>
@@ -2132,6 +2137,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   mods win <game> <profile> <winner> <loser> [--undo]
   mods files <game> <profile> <mod>       linked extra files (keys for mods split)
   mods config <game> <profile> <mod> [<field> <value>]  print or set one config field
+  mods preset <game> <profile> <mod> list|save|apply|delete [name]  config.json presets
   mods menu <game> <profile> <mod> [--set <page>/<index>=<value>]  captured GMCM menu
   sweep <game> [--json]                   patch-day check after a game or SMAPI change
   mods compat <game> <profile>            non-ok SMAPI compatibility-list rows

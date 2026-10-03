@@ -618,6 +618,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			out = append(out, HistoryRow{ID: event.ID, At: event.At, Kind: event.Kind, Summary: event.Label, Count: event.Count})
 		}
 		return out, nil
+	case "profile.health":
+		return s.Profiles.HealthHistory(p.Game, id)
 	case "profile.revert":
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.Revert(p.Game, id, p.Name) })
 	case "profile.delete":
@@ -639,6 +641,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, fmt.Errorf("mods files needs a mod")
 		}
 		return s.modExtraFiles(prof, p.UniqueIDs[0])
+	case "mods.preset":
+		return s.modsPreset(p, id, prof)
 	case "mods.config":
 		if len(p.UniqueIDs) == 0 {
 			return nil, fmt.Errorf("mods config needs a mod")
