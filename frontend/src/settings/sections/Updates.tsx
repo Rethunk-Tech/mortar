@@ -184,19 +184,11 @@ export function Updates() {
         }
         label={t`Include beta releases`}
       />
-      <SettingsSection prefKeys={['autoInstallMortarUpdates']}>
+      <SettingsSection>
         <PrefByKey prefKey="autoInstallMortarUpdates" />
       </SettingsSection>
       <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Mods`}</Box>
-      <SettingsSection
-        prefKeys={[
-          'updateCheckIntervalMinutes',
-          'notifyModUpdates',
-          'updateDigest',
-          'updateModsBeforePlayDefault',
-          'checkModUpdatesOnStart',
-        ]}
-      >
+      <SettingsSection>
         <PrefKeys
           keys={[
             'updateCheckIntervalMinutes',
@@ -219,7 +211,7 @@ export function Updates() {
         }
         label={t`Include pre-release mod versions`}
       />
-      <SettingsSection prefKeys={['smapiBuilds']}>
+      <SettingsSection>
         <PrefByKey prefKey="smapiBuilds" />
       </SettingsSection>
       <FormControlLabel

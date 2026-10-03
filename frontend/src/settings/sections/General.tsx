@@ -62,26 +62,7 @@ function ModsPrefs() {
   const fail = t`Couldn't save that setting`
   const sort = `${useSettings((s) => s.listSortColumn) || 'name'}:${useSettings((s) => s.listSortDir) || 'asc'}`
   return (
-    <SettingsSection
-      title={t`Mods`}
-      prefKeys={[
-        'defaultModsView',
-        'gridCardSize',
-        'showAuthorOnCards',
-        'enableRequirements',
-        'missingRequirements',
-        'reuseFomodChoices',
-        'listGroupBy',
-        'listSortColumn',
-        'listSortDir',
-        'confirmRemovals',
-        'cosmeticConflicts',
-        'conflictScanDepth',
-        'backgroundBadgeChecks',
-        'profileOrder',
-        'sidebarBadges',
-      ]}
-    >
+    <SettingsSection title={t`Mods`}>
       <PrefKeys
         keys={[
           'defaultModsView',
@@ -126,16 +107,10 @@ function DisplayAndNotices() {
   const { t } = useLingui()
   return (
     <>
-      <SettingsSection
-        title={t`Display`}
-        prefKeys={['dates', 'density', 'reduceMotion', 'profileHero']}
-      >
+      <SettingsSection title={t`Display`}>
         <PrefKeys keys={['dates', 'density', 'reduceMotion', 'profileHero']} />
       </SettingsSection>
-      <SettingsSection
-        title={t`Notifications`}
-        prefKeys={['notifyDownloadFinished', 'notifyDownloadFailed', 'notifyRunCrashed']}
-      >
+      <SettingsSection title={t`Notifications`}>
         <PrefKeys keys={['notifyDownloadFinished', 'notifyDownloadFailed', 'notifyRunCrashed']} />
       </SettingsSection>
     </>
@@ -178,10 +153,7 @@ export function General() {
   }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <SettingsSection
-        title={t`Window`}
-        prefKeys={['onPlay', 'startScreen', 'defaultLaunchMethod', 'showSmapiConsole']}
-      >
+      <SettingsSection title={t`Window`}>
         <WindowLaunch />
         <SettingRow
           label={t`Keep Mortar in the tray`}
@@ -205,7 +177,7 @@ export function General() {
           <TourAgainButton />
         </SettingRow>
       </SettingsSection>
-      <SettingsSection title={t`Sharing`} prefKeys={['lanName', 'lanAutoAcceptSameAccount']}>
+      <SettingsSection title={t`Sharing`}>
         <SettingRow
           label={t`Share profiles on the local network`}
           description={t`Lets nearby Mortar users find this installation and exchange profile links.`}

@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
 import { SetShortcuts } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import {
   conflictFor,
@@ -135,6 +136,7 @@ export function Shortcuts() {
   const query = useSettingsSearch()
   const [recording, setRecording] = useState<ShortcutId | null>(null)
   const [conflict, setConflict] = useState<{ id: ShortcutId; other: ShortcutId } | null>(null)
+  const [confirmReset, setConfirmReset] = useState(false)
   const stored = useSettings((s) => s.shortcuts)
   const bindings = useMemo(() => mergeBindings(stored), [stored])
   const labels = useShortcutLabels()
@@ -206,16 +208,22 @@ export function Shortcuts() {
           </Box>
         ) : null
       })}
-      <Button
-        variant="text"
-        onClick={() => {
+      <Button variant="text" onClick={() => setConfirmReset(true)} sx={{ alignSelf: 'flex-start' }}>
+        {t`Reset all`}
+      </Button>
+      <ConfirmDialog
+        open={confirmReset}
+        title={t`Reset every shortcut?`}
+        body={t`Every key returns to its default.`}
+        confirmLabel={t`Reset all`}
+        color="warning"
+        onCancel={() => setConfirmReset(false)}
+        onConfirm={() => {
+          setConfirmReset(false)
           setConflict(null)
           SetShortcuts(defaultBindings()).catch(reportUnexpected)
         }}
-        sx={{ alignSelf: 'flex-start' }}
-      >
-        {t`Reset all`}
-      </Button>
+      />
     </Box>
   )
 }

@@ -71,7 +71,7 @@ export function Appearance() {
           <FormHelperText>{t`More languages are coming.`}</FormHelperText>
         ) : null}
       </FormControl>
-      <SettingsSection title={t`Theme`} prefKeys={['theme']}>
+      <SettingsSection title={t`Theme`}>
         <PrefKeys keys={['theme']} />
       </SettingsSection>
       <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Accent colour`}</Box>

@@ -1,7 +1,6 @@
 import { Box, type SxProps, type Theme } from '@mui/material'
 import { Children, isValidElement, type ReactNode } from 'react'
 import { prefMatches, sectionVisible } from './prefFilter.ts'
-import { ResetSectionButton } from './ResetSection.tsx'
 import { useSettingsSearch } from './useSettingsSearch.ts'
 
 function nodeText(node: ReactNode): string {
@@ -16,13 +15,11 @@ export function SettingsSection({
   description,
   children,
   sx,
-  prefKeys,
 }: {
   title?: ReactNode
   description?: ReactNode
   children: ReactNode
   sx?: SxProps<Theme>
-  prefKeys?: string[]
 }) {
   const query = useSettingsSearch()
   const rows = Children.toArray(children).flatMap((child) => {
@@ -54,7 +51,6 @@ export function SettingsSection({
       >
         {children}
       </Box>
-      {prefKeys && prefKeys.length > 0 ? <ResetSectionButton keys={prefKeys} /> : null}
     </Box>
   )
 }

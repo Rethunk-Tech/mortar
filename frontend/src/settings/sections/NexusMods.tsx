@@ -241,10 +241,7 @@ function NexusModsSignedIn({
           </Select>
         </FormControl>
       ) : null}
-      <SettingsSection
-        title={t`Downloads`}
-        prefKeys={['autoTrackNexus', 'parallelDownloads', 'nxmDefaultProfile']}
-      >
+      <SettingsSection title={t`Downloads`}>
         <SettingRow
           label={t`Handle "Mod Manager Download" links`}
           description={t`Clicking these links on Nexus starts the download in Mortar.`}

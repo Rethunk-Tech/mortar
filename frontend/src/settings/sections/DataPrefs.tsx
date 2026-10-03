@@ -18,10 +18,7 @@ export function DataPrefs() {
   return (
     <>
       <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Stardew Valley`}</Box>
-      <SettingsSection
-        title={t`Play backups`}
-        prefKeys={['backupBeforePlay', 'launchBackupsKept', 'backupLocation']}
-      >
+      <SettingsSection title={t`Play backups`}>
         <PrefKeys keys={['backupBeforePlay', 'launchBackupsKept']} />
         <PrefByKey
           prefKey="backupLocation"
@@ -47,31 +44,12 @@ export function DataPrefs() {
           }
         />
       </SettingsSection>
-      <SettingsSection
-        title={t`Logs`}
-        prefKeys={[
-          'runsKept',
-          'consoleLogCap',
-          'consoleLevel',
-          'consoleTimestamps',
-          'consoleFollow',
-        ]}
-      >
+      <SettingsSection title={t`Logs`}>
         <PrefKeys
           keys={['runsKept', 'consoleLogCap', 'consoleLevel', 'consoleTimestamps', 'consoleFollow']}
         />
       </SettingsSection>
-      <SettingsSection
-        title={t`Store`}
-        prefKeys={[
-          'keepDownloadArchives',
-          'downloadFolder',
-          'driftChecks',
-          'storeRetentionDays',
-          'trashRetentionDays',
-          'historyEventsKept',
-        ]}
-      >
+      <SettingsSection title={t`Store`}>
         <PrefByKey prefKey="keepDownloadArchives" />
         <PrefByKey
           prefKey="downloadFolder"
