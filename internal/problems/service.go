@@ -285,16 +285,7 @@ func (s *Service) DismissAbandonedMod(_ context.Context, gameID, id, uniqueID st
 		return errors.New("missing mod id")
 	}
 	token := dismissToken("broken", strings.ToLower(uniqueID))
-	bucket := dismissBucket(gameID, id)
-	_, err := s.settings.Update(func(v *settings.Settings) {
-		if slices.Contains(v.Dismissed[bucket], token) {
-			return
-		}
-		next := maps.Clone(v.Dismissed)
-		next[bucket] = append(slices.Clone(v.Dismissed[bucket]), token)
-		v.Dismissed = next
-	})
-	return err
+	return s.appendDismissed(dismissBucket(gameID, id), token)
 }
 
 // DismissListedRequirement hides a Nexus-listed requirement for this profile until it is gone.
@@ -304,16 +295,7 @@ func (s *Service) DismissListedRequirement(_ context.Context, gameID, id, unique
 		return errors.New("missing requirement id")
 	}
 	token := dismissToken("listed", strings.ToLower(uniqueID))
-	bucket := dismissBucket(gameID, id)
-	_, err := s.settings.Update(func(v *settings.Settings) {
-		if slices.Contains(v.Dismissed[bucket], token) {
-			return
-		}
-		next := maps.Clone(v.Dismissed)
-		next[bucket] = append(slices.Clone(v.Dismissed[bucket]), token)
-		v.Dismissed = next
-	})
-	return err
+	return s.appendDismissed(dismissBucket(gameID, id), token)
 }
 
 // DismissSetting hides one compatibility setting for this profile until its patch group is gone.
@@ -323,16 +305,7 @@ func (s *Service) DismissSetting(_ context.Context, gameID, id, uniqueID, field 
 		return errors.New("missing setting")
 	}
 	token := dismissToken("setting", strings.ToLower(uniqueID)+"\t"+strings.ToLower(field))
-	bucket := dismissBucket(gameID, id)
-	_, err := s.settings.Update(func(v *settings.Settings) {
-		if slices.Contains(v.Dismissed[bucket], token) {
-			return
-		}
-		next := maps.Clone(v.Dismissed)
-		next[bucket] = append(slices.Clone(v.Dismissed[bucket]), token)
-		v.Dismissed = next
-	})
-	return err
+	return s.appendDismissed(dismissBucket(gameID, id), token)
 }
 
 // RememberSettingChoice keeps a setting hint hidden while its chosen value remains current.
@@ -342,16 +315,7 @@ func (s *Service) RememberSettingChoice(_ context.Context, gameID, id, uniqueID,
 		return errors.New("missing setting")
 	}
 	token := settingChoiceToken(uniqueID, field, value)
-	bucket := dismissBucket(gameID, id)
-	_, err := s.settings.Update(func(v *settings.Settings) {
-		if slices.Contains(v.Dismissed[bucket], token) {
-			return
-		}
-		next := maps.Clone(v.Dismissed)
-		next[bucket] = append(slices.Clone(v.Dismissed[bucket]), token)
-		v.Dismissed = next
-	})
-	return err
+	return s.appendDismissed(dismissBucket(gameID, id), token)
 }
 
 // ConflictImageCrop returns a PNG data URL of uniqueID's FromFile cropped to x,y,w,h, clamped to the image.
@@ -380,7 +344,10 @@ func (s *Service) DismissAssetConflict(_ context.Context, gameID, id, kind, targ
 		return errors.New("missing conflict kind or target")
 	}
 	token := dismissToken(kind, target)
-	bucket := dismissBucket(gameID, id)
+	return s.appendDismissed(dismissBucket(gameID, id), token)
+}
+
+func (s *Service) appendDismissed(bucket, token string) error {
 	_, err := s.settings.Update(func(v *settings.Settings) {
 		if slices.Contains(v.Dismissed[bucket], token) {
 			return
