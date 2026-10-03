@@ -241,6 +241,29 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, fmt.Errorf("settings set needs a key")
 		}
 		return nil, s.SettingsSvc.SetByKey(p.Key, p.Value, p.Game)
+	case "settings.export":
+		if p.Path == "" {
+			return nil, fmt.Errorf("settings export needs a file")
+		}
+		body, err := settings.MarshalExport(s.Settings.Get())
+		if err != nil {
+			return nil, err
+		}
+		if err := os.WriteFile(p.Path, body, 0o600); err != nil {
+			return nil, err
+		}
+		return map[string]string{"path": p.Path}, nil
+	case "settings.import":
+		if p.Path == "" {
+			return nil, fmt.Errorf("settings import needs a file")
+		}
+		raw, err := os.ReadFile(p.Path)
+		if err != nil {
+			return nil, err
+		}
+		return nil, s.SettingsSvc.ApplyImportedSettings(string(raw))
+	case "settings.reset":
+		return nil, resetSettings(s.SettingsSvc, p.Key, p.Game)
 	case "profiles":
 		return s.Profiles.List(p.Game)
 	case "trash.list":
@@ -517,6 +540,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.changed(p.Game, func() (any, error) {
 			return Removed{Mods: []string{prof.Name}}, s.Profiles.Delete(p.Game, id)
 		})
+	case "profile.set":
+		return s.changed(p.Game, func() (any, error) { return s.Profiles.SetOverride(p.Game, id, p.Key, p.Value) })
 	case "profile.repair":
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.Repair(p.Game, id) })
 	case "mods":
@@ -550,6 +575,59 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, err
 		}
 		return s.changed(p.Game, func() (any, error) { return s.remove(p.Game, id, prof, keys) })
+	case "mods.tag", "mods.untag":
+		keys, err := keysFor(prof, p.UniqueIDs)
+		if err != nil {
+			return nil, err
+		}
+		if p.Value == "" {
+			return nil, fmt.Errorf("mods %s needs a tag", strings.TrimPrefix(method, "mods."))
+		}
+		return s.changed(p.Game, func() (any, error) {
+			if _, err := s.Profiles.SetEntryTagsMany(p.Game, id, keys, p.Value, method == "mods.tag"); err != nil {
+				return nil, err
+			}
+			return modRows(s.reload(p.Game, id, prof)), nil
+		})
+	case "mods.category":
+		keys, err := keysFor(prof, p.UniqueIDs)
+		if err != nil {
+			return nil, err
+		}
+		return s.changed(p.Game, func() (any, error) {
+			if _, err := s.Profiles.SetEntryCategoryMany(p.Game, id, keys, p.Value); err != nil {
+				return nil, err
+			}
+			return modRows(s.reload(p.Game, id, prof)), nil
+		})
+	case "mods.note":
+		keys, err := keysFor(prof, p.UniqueIDs)
+		if err != nil {
+			return nil, err
+		}
+		return s.changed(p.Game, func() (any, error) {
+			cur := s.reload(p.Game, id, prof)
+			for _, k := range keys {
+				tags := tagsOf(cur, k)
+				if _, err := s.Profiles.SetEntryNoteTags(p.Game, id, k, p.Value, tags); err != nil {
+					return nil, err
+				}
+			}
+			return modRows(s.reload(p.Game, id, prof)), nil
+		})
+	case "mods.skip-version":
+		keys, err := keysFor(prof, p.UniqueIDs)
+		if err != nil {
+			return nil, err
+		}
+		return s.changed(p.Game, func() (any, error) {
+			for _, k := range keys {
+				if _, err := s.Profiles.SetSkipVersion(p.Game, id, k, p.Value); err != nil {
+					return nil, err
+				}
+			}
+			return modRows(s.reload(p.Game, id, prof)), nil
+		})
 	case "install":
 		return s.changed(p.Game, func() (any, error) { return s.install(p.Game, id, p.Path) })
 	case "conflicts":
@@ -634,6 +712,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.Launches.SearchRuns(p.Game, id, p.Query)
 	case "saves":
 		return s.Saves.Saves(ctx, p.Game, id)
+	case "play.check":
+		return s.playCheck(ctx, p.Game, id, prof)
 	case "launch":
 		return s.launch(ctx, p.Game, id, p.Force)
 	}
@@ -1012,6 +1092,139 @@ func (e launchWarningError) Error() string {
 		))
 	}
 	return strings.Join(append(warnings, "Play anyway with --force."), "\n")
+}
+
+const playIssueNameCap = 5
+
+// PlayIssueGroup is one pre-Play warning bucket, matching the window's playIssues summary.
+type PlayIssueGroup struct {
+	Kind  string   `json:"kind"`
+	Count int      `json:"count"`
+	Names []string `json:"names"`
+}
+
+func (s *Services) playCheck(ctx context.Context, gameID, id string, prof profile.Profile) ([]PlayIssueGroup, error) {
+	res, err := s.Problems.Problems(ctx, gameID, id)
+	if err != nil {
+		return nil, err
+	}
+	upd, err := s.Problems.Updates(ctx, gameID, id)
+	if err != nil {
+		return nil, err
+	}
+	smapiNever := false
+	if s.Settings != nil {
+		smapiNever = s.Settings.Get().GamePrefs(gameID).SmapiBuilds == settings.SmapiBuildsNever
+	}
+	return playIssueGroups(prof, res, upd, smapiNever), nil
+}
+
+func playIssueGroups(prof profile.Profile, res problems.Result, upd problems.UpdatesResult, smapiNever bool) []PlayIssueGroup {
+	var missing []string
+	for _, m := range res.Missing {
+		if m.Optional {
+			continue
+		}
+		name := m.UniqueID
+		if m.Where != nil && m.Where.PageName != "" {
+			name = m.Where.PageName
+		}
+		missing = append(missing, name)
+	}
+	var conflicts []string
+	for _, c := range res.AssetConflicts {
+		if c.Cosmetic {
+			continue
+		}
+		names := make([]string, 0, len(c.Names))
+		for _, n := range c.Names {
+			if n != "" {
+				names = append(names, n)
+			}
+		}
+		if len(names) > 0 {
+			conflicts = append(conflicts, strings.Join(names, ", "))
+		} else {
+			conflicts = append(conflicts, c.Target)
+		}
+	}
+	var updates []string
+	for _, u := range upd.Updates {
+		if smapiNever && u.Unofficial {
+			continue
+		}
+		e, ok := entryByKey(prof, u.Key)
+		if ok && (e.Pinned || (u.Source != "" && slices.Contains(e.SkipSources, u.Source)) || (e.SkipVersion != "" && e.SkipVersion == u.Version)) {
+			continue
+		}
+		updates = append(updates, u.Name)
+	}
+	var broken []string
+	for _, b := range res.Broken {
+		if b.Status == "broken" || b.Status == "obsolete" {
+			broken = append(broken, b.Name)
+		}
+	}
+	var out []PlayIssueGroup
+	for _, g := range []struct {
+		kind   string
+		labels []string
+	}{
+		{"missing", missing},
+		{"conflicts", conflicts},
+		{"updates", updates},
+		{"broken", broken},
+	} {
+		if len(g.labels) == 0 {
+			continue
+		}
+		names := g.labels
+		if len(names) > playIssueNameCap {
+			names = names[:playIssueNameCap]
+		}
+		out = append(out, PlayIssueGroup{Kind: g.kind, Count: len(g.labels), Names: names})
+	}
+	return out
+}
+
+func entryByKey(p profile.Profile, key string) (profile.Entry, bool) {
+	for _, e := range p.Entries {
+		if e.Key == key {
+			return e, true
+		}
+	}
+	return profile.Entry{}, false
+}
+
+func tagsOf(p profile.Profile, key string) []string {
+	e, ok := entryByKey(p, key)
+	if !ok {
+		return nil
+	}
+	return e.Tags
+}
+
+func resetSettings(svc *settings.Service, key, game string) error {
+	found := false
+	for _, spec := range settings.PrefSpecs() {
+		if key != "" && spec.Key != key {
+			continue
+		}
+		found = true
+		if spec.Scope == settings.ScopeGame && game == "" {
+			if key != "" {
+				return fmt.Errorf("settings reset %s needs --game", key)
+			}
+			continue
+		}
+		if err := svc.SetByKey(spec.Key, spec.Default, game); err != nil {
+			return err
+		}
+	}
+	if key != "" && !found {
+		return fmt.Errorf("unknown setting %q", key)
+	}
+	return nil
 }
 
 func (s *Services) launch(ctx context.Context, gameID, id string, force bool) (launchsvc.Status, error) {

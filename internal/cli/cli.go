@@ -38,7 +38,7 @@ const (
 // verbs are the first words that make an invocation a command-line call rather than a window launch.
 var verbs = map[string]bool{
 	"games": true, "profiles": true, "profile": true, "history": true, "mods": true, "mod": true, "install": true,
-	"conflicts": true, "problems": true, "updates": true, "share": true, "export": true, "open": true,
+	"conflicts": true, "problems": true, "updates": true, "share": true, "export": true, "open": true, "play": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
 	"bundles": true, "nexus": true, "trash": true, "cache": true, "data": true,
 	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
@@ -70,6 +70,8 @@ type cmd struct {
 	force       bool
 	wait        bool
 	byMod       bool
+	check       bool
+	format      string
 	run         string
 	game        string
 	profileFlag string
@@ -111,6 +113,9 @@ func run(version string, call caller, args []string, stdout, stderr io.Writer) i
 }
 
 func (c *cmd) fail(err error) int {
+	if _, ok := errors.AsType[playCheckError](err); ok {
+		return 3
+	}
 	if offline, ok := errors.AsType[offlineDoctorError](err); ok {
 		if c.json {
 			_ = json.NewEncoder(c.out).Encode(offline.result)
@@ -118,7 +123,7 @@ func (c *cmd) fail(err error) int {
 			fmt.Fprintln(c.out, offline.result["summary"])
 			findings, _ := offline.result["findings"].([]string)
 			for _, f := range findings {
-				fmt.Fprintln(c.out, "Finding:", f)
+				fmt.Fprintln(c.out, f)
 			}
 		}
 		return offline.code
@@ -180,8 +185,18 @@ func (c *cmd) parse(args []string) error {
 			c.yesFlag = true
 		case a == "--force":
 			c.force = true
+		case a == "--check":
+			c.check = true
 		case a == "--wait":
 			c.wait = true
+		case a == "--format":
+			if i+1 >= len(args) {
+				return usageError{"--format needs md or text"}
+			}
+			i++
+			c.format = args[i]
+		case strings.HasPrefix(a, "--format="):
+			c.format = strings.TrimPrefix(a, "--format=")
 		case a == "--run":
 			if i+1 >= len(args) {
 				return usageError{"--run needs a run id"}
@@ -310,6 +325,9 @@ func (c *cmd) dispatch() error {
 	case "tools":
 		return c.tools()
 	case "profile":
+		if len(c.args) > 1 && c.args[1] == "set" {
+			return c.profileSet()
+		}
 		return c.profile()
 	case "status", "stop":
 		a, err := c.need(1, "a game")
@@ -317,10 +335,12 @@ func (c *cmd) dispatch() error {
 			return err
 		}
 		return c.status(verb, a[0])
+	case "play":
+		return c.play()
 	case "mods":
 		if len(c.args) > 1 {
 			switch c.args[1] {
-			case "enable", "disable", "remove", "pin", "unpin":
+			case "enable", "disable", "remove", "pin", "unpin", "tag", "untag", "category", "note", "skip-version":
 				return c.modsChange(c.args[1])
 			}
 		}
@@ -348,7 +368,7 @@ func (c *cmd) dispatch() error {
 		return c.mods(p)
 	case "mod":
 		if len(a) < 3 {
-			return usageError{"mod needs a UniqueID"}
+			return usageError{"mod needs a mod id (SMAPI UniqueID)"}
 		}
 		p.UniqueIDs = a[2:3]
 		return c.mod(p)
@@ -463,7 +483,7 @@ func (c *cmd) profiles(gameID string) error {
 			}
 			t = append(t, []string{p.ID, p.Name, fmt.Sprintf("%d/%d", on, total), p.Updated.Local().Format("2006-01-02 15:04")})
 		}
-		c.table("ID\tNAME\tMODS ON\tUPDATED", t)
+		c.table("ID\tNAME\tENABLED\tUPDATED", t)
 	})
 }
 
@@ -560,9 +580,45 @@ func relativeDeleted(when time.Time) string {
 
 func (c *cmd) settings() error {
 	if len(c.args) < 2 {
-		return usageError{"settings needs get or set"}
+		return usageError{"settings needs get, set, export, import or reset"}
 	}
 	switch c.args[1] {
+	case "export":
+		a, err := c.need(2, "a file")
+		if err != nil {
+			return err
+		}
+		path := absPath(a[0])
+		var written map[string]string
+		if err := c.ask("settings.export", control.Params{Path: path}, &written, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(written, func() { fmt.Fprintf(c.out, "Wrote %s.\n", path) })
+	case "import":
+		a, err := c.need(2, "a file")
+		if err != nil {
+			return err
+		}
+		path := absPath(a[0])
+		if err := c.ask("settings.import", control.Params{Path: path}, nil, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(map[string]string{"path": path}, func() { fmt.Fprintf(c.out, "Imported %s.\n", path) })
+	case "reset":
+		key := ""
+		if len(c.args) > 2 {
+			key = c.args[2]
+		}
+		if err := c.ask("settings.reset", control.Params{Key: key, Game: c.game}, nil, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(map[string]string{"key": key, "game": c.game}, func() {
+			if key == "" {
+				fmt.Fprintln(c.out, "Settings reset.")
+				return
+			}
+			fmt.Fprintf(c.out, "Reset %s.\n", key)
+		})
 	case "get":
 		key := ""
 		if len(c.args) > 2 {
@@ -696,11 +752,24 @@ func (c *cmd) nexus() error {
 
 func (c *cmd) profile() error {
 	if len(c.args) < 2 {
-		return usageError{"profile needs create, rename, copy, compare, match, history, revert, load-order, repair or delete"}
+		return usageError{"profile needs create, rename, copy, compare, match, history, revert, load-order, repair, list or delete"}
 	}
 	sub := c.args[1]
 	var p profile.Profile
 	switch sub {
+	case "list":
+		a, err := c.need(2, "a game", "a profile")
+		if err != nil {
+			return err
+		}
+		if c.format != "md" && c.format != "text" {
+			return usageError{"profile list needs --format md or text"}
+		}
+		var rows []control.ModRow
+		if err := c.ask("mods", control.Params{Game: a[0], Profile: a[1]}, &rows, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(enabledMods(rows), func() { c.printEnabledMods(rows, a[0]) })
 	case "compare":
 		a, err := c.need(2, "a game", "a profile", "a second profile")
 		if err != nil {
@@ -817,21 +886,70 @@ func (c *cmd) profile() error {
 func (c *cmd) compareTable(diff profile.CLICompare) {
 	rows := [][]string{}
 	for _, side := range diff.OnlyA {
-		rows = append(rows, []string{"only-in-A", side.Name, side.UniqueID, side.Version, yes(side.Enabled)})
+		rows = append(rows, []string{"only-in-A", side.Name, side.Version, enabledLabel(side.Enabled)})
 	}
 	for _, side := range diff.OnlyB {
-		rows = append(rows, []string{"only-in-B", side.Name, side.UniqueID, side.Version, yes(side.Enabled)})
+		rows = append(rows, []string{"only-in-B", side.Name, side.Version, enabledLabel(side.Enabled)})
 	}
 	for _, pair := range diff.DifferentVersion {
-		rows = append(rows, []string{"different-version", pair.Name, pair.UniqueID, pair.A.Version + " -> " + pair.B.Version, ""})
+		rows = append(rows, []string{"different-version", pair.Name, pair.A.Version + " -> " + pair.B.Version, ""})
 	}
 	for _, pair := range diff.DifferentEnabled {
-		rows = append(rows, []string{"different-enabled", pair.Name, pair.UniqueID, "", yes(pair.A.Enabled) + " -> " + yes(pair.B.Enabled)})
+		rows = append(rows, []string{"different-enabled", pair.Name, "", enabledLabel(pair.A.Enabled) + " -> " + enabledLabel(pair.B.Enabled)})
 	}
 	for _, pair := range diff.Identical {
-		rows = append(rows, []string{"identical", pair.Name, pair.UniqueID, pair.A.Version, yes(pair.A.Enabled)})
+		rows = append(rows, []string{"identical", pair.Name, pair.A.Version, enabledLabel(pair.A.Enabled)})
 	}
-	c.table("SECTION\tNAME\tUNIQUEID\tVERSION\tENABLED", rows)
+	c.table("SECTION\tNAME\tVERSION\tENABLED", rows)
+}
+
+func enabledMods(rows []control.ModRow) []control.ModRow {
+	out := make([]control.ModRow, 0, len(rows))
+	for _, m := range rows {
+		if m.Enabled {
+			out = append(out, m)
+		}
+	}
+	return out
+}
+
+func nexusPage(game, source string) string {
+	if !strings.HasPrefix(source, "nexus:") {
+		return ""
+	}
+	rest := strings.TrimPrefix(source, "nexus:")
+	modID, _, _ := strings.Cut(rest, "/")
+	if modID == "" || modID == "0" {
+		return ""
+	}
+	domain := "stardewvalley"
+	if game != "" && game != "stardew" {
+		domain = game
+	}
+	return "https://www.nexusmods.com/" + domain + "/mods/" + modID
+}
+
+func (c *cmd) printEnabledMods(rows []control.ModRow, game string) {
+	for _, m := range rows {
+		if !m.Enabled {
+			continue
+		}
+		link := nexusPage(game, m.Source)
+		switch c.format {
+		case "md":
+			if link != "" {
+				fmt.Fprintf(c.out, "- %s %s %s\n", m.Name, m.Version, link)
+			} else {
+				fmt.Fprintf(c.out, "- %s %s\n", m.Name, m.Version)
+			}
+		default:
+			if link != "" {
+				fmt.Fprintf(c.out, "%s\t%s\t%s\n", m.Name, m.Version, link)
+			} else {
+				fmt.Fprintf(c.out, "%s\t%s\n", m.Name, m.Version)
+			}
+		}
+	}
 }
 
 func (c *cmd) tools() error {
@@ -864,6 +982,13 @@ func (c *cmd) tools() error {
 	})
 }
 
+func enabledLabel(on bool) string {
+	if on {
+		return "enabled"
+	}
+	return "disabled"
+}
+
 func (c *cmd) mods(p control.Params) error {
 	var rows []control.ModRow
 	if err := c.ask("mods", p, &rows, readTimeout); err != nil {
@@ -875,25 +1000,48 @@ func (c *cmd) mods(p control.Params) error {
 func (c *cmd) modTable(rows []control.ModRow) {
 	t := [][]string{}
 	for _, m := range rows {
-		state := "on"
-		if !m.Enabled {
-			state = "off"
-		}
+		state := enabledLabel(m.Enabled)
 		if m.Pinned {
 			state += ", pinned"
 		}
-		t = append(t, []string{m.UniqueID, m.Name, m.Version, state, m.Source})
+		if c.verbose {
+			t = append(t, []string{m.UniqueID, m.Name, m.Version, state, m.Source})
+			continue
+		}
+		t = append(t, []string{m.Name, m.Version, state, m.Source})
 	}
-	c.table("UNIQUEID\tNAME\tVERSION\tSTATE\tSOURCE", t)
+	if c.verbose {
+		c.table("MOD ID\tNAME\tVERSION\tSTATE\tSOURCE", t)
+		return
+	}
+	c.table("NAME\tVERSION\tSTATE\tSOURCE", t)
 }
 
 func (c *cmd) modsChange(sub string) error {
-	a, err := c.need(2, "a game", "a profile", "one or more UniqueIDs")
+	a, err := c.need(2, "a game", "a profile", "one or more mod ids")
 	if err != nil {
 		return err
 	}
 	p := control.Params{Game: a[0], Profile: a[1], UniqueIDs: a[2:]}
 	switch sub {
+	case "tag", "untag", "category", "note", "skip-version":
+		if sub != "note" && sub != "skip-version" && len(a) < 4 {
+			return usageError{"mods " + sub + " needs a value"}
+		}
+		if len(a) >= 4 {
+			p.UniqueIDs = a[2 : len(a)-1]
+			p.Value = a[len(a)-1]
+			if len(p.UniqueIDs) == 0 {
+				return usageError{"mods " + sub + " needs a mod id (SMAPI UniqueID)"}
+			}
+		} else {
+			p.UniqueIDs = a[2:]
+		}
+		var rows []control.ModRow
+		if err := c.ask("mods."+sub, p, &rows, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(rows, func() { c.modTable(rows) })
 	case "enable", "disable":
 		var res profile.EnableResult
 		if err := c.ask("mods."+sub, p, &res, readTimeout); err != nil {
@@ -925,11 +1073,11 @@ func (c *cmd) mod(p control.Params) error {
 		return err
 	}
 	return c.emit(m, func() {
-		state := "on"
-		if !m.Enabled {
-			state = "off"
+		state := enabledLabel(m.Enabled)
+		fmt.Fprintf(c.out, "%s %s by %s, %s, from %s\n", m.Name, m.Version, m.Author, state, m.Source)
+		if c.verbose {
+			fmt.Fprintf(c.out, "Mod id: %s\n", m.UniqueID)
 		}
-		fmt.Fprintf(c.out, "%s (%s) %s by %s, %s, from %s\n", m.Name, m.UniqueID, m.Version, m.Author, state, m.Source)
 		list := func(label string, xs []string) {
 			if len(xs) > 0 {
 				fmt.Fprintf(c.out, "%s: %s\n", label, strings.Join(xs, ", "))
@@ -1009,7 +1157,43 @@ func (c *cmd) problems(p control.Params) error {
 	if err := c.ask("problems", p, &r, readTimeout); err != nil {
 		return err
 	}
-	return c.emit(r, func() { c.printProblems(r) })
+	if c.format != "" && c.format != "text" {
+		return usageError{"problems --format supports text"}
+	}
+	return c.emit(r, func() {
+		if c.format == "text" {
+			c.printProblemsText(r)
+			return
+		}
+		c.printProblems(r)
+	})
+}
+
+func (c *cmd) printProblemsText(r problems.Result) {
+	conflicts, harmless := 0, 0
+	for _, x := range r.AssetConflicts {
+		if x.Cosmetic {
+			harmless++
+		} else {
+			conflicts++
+		}
+	}
+	optional := 0
+	for _, x := range r.Missing {
+		if x.Optional {
+			optional++
+		}
+	}
+	harmless += optional
+	fmt.Fprintf(c.out, "missing: %d\n", len(r.Missing)-optional)
+	fmt.Fprintf(c.out, "duplicates: %d\n", len(r.Duplicates))
+	fmt.Fprintf(c.out, "broken: %d\n", len(r.Broken))
+	fmt.Fprintf(c.out, "conflicts: %d\n", conflicts)
+	fmt.Fprintf(c.out, "settings: %d\n", len(r.Settings))
+	fmt.Fprintf(c.out, "last-run errors: %d\n", len(r.RunErrors))
+	fmt.Fprintf(c.out, "outside edits: %d\n", len(r.Drift))
+	fmt.Fprintf(c.out, "counted: %d\n", r.Count())
+	fmt.Fprintf(c.out, "harmless: %d\n", harmless)
 }
 
 func (c *cmd) printProblems(r problems.Result) {
@@ -1145,9 +1329,9 @@ func (c *cmd) updates(p control.Params) error {
 		}
 		t := [][]string{}
 		for _, u := range r.Updates {
-			t = append(t, []string{u.UniqueID, u.Name, u.Installed, u.Version, u.Source, u.URL})
+			t = append(t, []string{u.Name, u.Installed, u.Version, u.Source, u.URL})
 		}
-		c.table("UNIQUEID\tNAME\tINSTALLED\tNEWEST\tSOURCE\tPAGE", t)
+		c.table("NAME\tINSTALLED\tNEWEST\tSOURCE\tPAGE", t)
 	})
 }
 
@@ -1296,11 +1480,22 @@ func (c *cmd) queue() error {
 			if len(c.args) > 2 {
 				id = c.args[2]
 			}
+			var before queue.State
+			if err := c.ask("queue", control.Params{}, &before, readTimeout); err != nil {
+				return err
+			}
+			n := queueActionCount(before, sub, id)
 			var st queue.State
 			if err := c.ask(method, control.Params{Name: id}, &st, readTimeout); err != nil {
 				return err
 			}
-			return c.emit(st, func() { fmt.Fprintf(c.out, "Queue %s.\n", sub) })
+			return c.emit(st, func() {
+				if sub == "retry" {
+					fmt.Fprintf(c.out, "Retried %d failed downloads.\n", n)
+					return
+				}
+				fmt.Fprintf(c.out, "Skipped %d downloads.\n", n)
+			})
 		case "pause", "resume", "clear":
 			var st queue.State
 			if err := c.ask(method, control.Params{}, &st, readTimeout); err != nil {
@@ -1322,7 +1517,7 @@ func (c *cmd) queue() error {
 		}
 		t := [][]string{}
 		for _, it := range st.Items {
-			t = append(t, []string{it.ID, it.Name, it.Version, it.State, it.Profile, it.Error})
+			t = append(t, []string{it.ID, it.Name, it.Version, queueHumanState(it.State), it.Profile, queueErrorLine(it.Error)})
 		}
 		c.table("ID\tNAME\tVERSION\tSTATE\tPROFILE\tERROR", t)
 		if st.Paused {
@@ -1342,7 +1537,7 @@ func (c *cmd) cacheCmd() error {
 			return err
 		}
 		return c.emit(info, func() {
-			fmt.Fprintf(c.out, "%s\n%d\n", info.Path, info.Size)
+			fmt.Fprintf(c.out, "%s at %s\n", humanBytes(info.Size), info.Path)
 		})
 	case "clear":
 		if err := c.ask("cache.clear", control.Params{}, nil, readTimeout); err != nil {
@@ -1384,7 +1579,7 @@ func (c *cmd) update() error {
 		return err
 	}
 	if len(a) == 2 && !c.all {
-		return usageError{"update needs one or more UniqueIDs, or --all"}
+		return usageError{"update needs one or more mod ids, or --all"}
 	}
 	var st queue.State
 	if err := c.ask("updates.queue", control.Params{Game: a[0], Profile: a[1], UniqueIDs: a[2:], All: c.all}, &st, installTimeout); err != nil {
@@ -1539,8 +1734,12 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
 
   settings get [--game stardew] [key]     list settings, or one key
   settings set [--game stardew] <key> <value>  change a setting
+  settings export <file>                  write portable settings JSON
+  settings import <file>                  apply a portable settings JSON
+  settings reset [key] [--game id]        restore defaults
   games                                   supported games, whether each is configured
   profiles <game>                         profiles of a game
+  profile list <game> <profile> --format md|text  enabled mods (name, version, Nexus link)
   profile create <game> <name>            new empty profile
   profile rename <game> <profile> <name>
   profile copy <game> <profile> [name]
@@ -1560,13 +1759,13 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   profile revert <game> <profile> <eventId>
   profile load-order <game> <profile>    enabled mods in SMAPI load order
   mods <game> <profile>                   mods with version, state and source
-  mods enable|disable <game> <profile> <UniqueID>...
-  mods pin|unpin <game> <profile> <UniqueID>...
-  mods remove <game> <profile> <UniqueID>...   removes each mod's whole download
-  mod <game> <profile> <UniqueID>         one mod: dependencies, dependents, conflicts, settings
+  mods enable|disable|pin|unpin|remove <game> <profile> <mod id>...
+  mods tag|untag|category|note|skip-version <game> <profile> <mod> [value]
+  mod <game> <profile> <mod id>           one mod: dependencies, dependents, conflicts, settings
+                                          (mod id is the SMAPI UniqueID)
   install <game> <profile> <archive>      install a local archive
   conflicts <game> <profile> [--all]      asset conflicts (--all includes cosmetic ones)
-  problems <game> <profile>               everything the Problems tab lists
+  problems <game> <profile> [--format text]  everything the Problems tab lists
   problems dismissed [--profile <name>]   dismissed problems (index, kind, text, token)
   problems dismiss <index> [--profile <name>]
   problems restore <token|index> [--profile <name>]
@@ -1575,6 +1774,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   share <game> <profile>                  share link
   export <game> <profile> <file.mortar>   write a .mortar file
   open <link|file>                        hand a share link or .mortar file to Mortar
+  play <game> <profile> --check           pre-Play summary; exits 3 when anything is wrong
   launch <game> <profile> [--wait] [--force] play; --force skips Play warnings
   status <game> | stop <game>
   runs <game> <profile>                   recent launches
@@ -1583,7 +1783,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   queue                                   the download queue
   queue retry|skip [<id>]                 retry or skip queued downloads
   queue pause|resume|clear                control the download queue
-  update <game> <profile> <UniqueID>...|--all
+  update <game> <profile> <mod id>...|--all
                                           queue available mod updates
   backups list                            list save backups
   backups create <save>                   pin a Manual backup of one save

@@ -44,8 +44,8 @@ func completion(w io.Writer, shell string) error {
 
 // subverbs are the second words of the verbs that take one.
 var subverbs = map[string][]string{
-	"profile":    {"create", "rename", "copy", "delete", "compare", "match", "history", "revert", "load-order", "repair"},
-	"mods":       {"enable", "disable", "pin", "unpin", "remove"},
+	"profile":    {"create", "rename", "copy", "delete", "compare", "match", "history", "revert", "load-order", "repair", "list"},
+	"mods":       {"enable", "disable", "pin", "unpin", "remove", "tag", "untag", "category", "note", "skip-version"},
 	"bundles":    {"apply"},
 	"nexus":      {"untrack"},
 	"trash":      {"list", "restore", "delete", "empty"},
@@ -57,7 +57,7 @@ var subverbs = map[string][]string{
 	"backups":    {"list", "create", "keep", "unkeep", "restore"},
 	"cache":      {"size", "clear"},
 	"data":       {"usage"},
-	"settings":   {"get", "set"},
+	"settings":   {"get", "set", "export", "import", "reset"},
 }
 
 // gameAt and profileAt give the positions (1-based after the verb) where a verb takes a game and a profile.

@@ -76,8 +76,12 @@ func TestCommandsSendTheirArguments(t *testing.T) {
 		t.Fatalf("disable: %+v", r)
 	}
 	r = invoke(t, results, "mods", "stardew", "abc")
-	if r.code != 0 || !strings.Contains(r.out, "UNIQUEID") || !strings.Contains(r.out, "off, pinned") {
+	if r.code != 0 || !strings.Contains(r.out, "NAME") || !strings.Contains(r.out, "disabled, pinned") || strings.Contains(r.out, "UNIQUEID") {
 		t.Fatalf("mods table: %q", r.out)
+	}
+	r = invoke(t, results, "mods", "stardew", "abc", "-v")
+	if r.code != 0 || !strings.Contains(r.out, "MOD ID") || !strings.Contains(r.out, "B.Mod") {
+		t.Fatalf("mods table verbose: %q", r.out)
 	}
 	r = invoke(t, results, "mods", "stardew", "abc", "--json")
 	var rows []control.ModRow
@@ -388,7 +392,7 @@ func TestCacheAndDataUsageByMod(t *testing.T) {
 		"data.usageByMod": usageByMod,
 	}
 	r := invoke(t, results, "cache", "size")
-	if r.code != 0 || r.calls[0].method != "cache.size" || !strings.Contains(r.out, "/data/cache") {
+	if r.code != 0 || r.calls[0].method != "cache.size" || !strings.Contains(r.out, "/data/cache") || !strings.Contains(r.out, "12 B") {
 		t.Fatalf("cache size: %+v", r)
 	}
 	r = invoke(t, results, "cache", "clear")
@@ -441,5 +445,143 @@ func TestJSONErrorsUseStructuredExitCodes(t *testing.T) {
 	}
 	if err := json.Unmarshal(errOut.Bytes(), &failure); err != nil || failure["code"] != float64(2) {
 		t.Fatalf("usage JSON = %q", errOut.String())
+	}
+}
+
+func TestPlayCheck(t *testing.T) {
+	groups := []control.PlayIssueGroup{
+		{Kind: "missing", Count: 1, Names: []string{"Pathoschild.ContentPatcher"}},
+		{Kind: "conflicts", Count: 2, Names: []string{"A, B"}},
+	}
+	r := invoke(t, map[string]any{"play.check": groups}, "play", "stardew", "Farm", "--check")
+	if r.code != 3 || r.calls[0].method != "play.check" || !strings.Contains(r.out, "missing (1):") || !strings.Contains(r.out, "conflicts (2):") {
+		t.Fatalf("play --check issues: %+v", r)
+	}
+	r = invoke(t, map[string]any{"play.check": []control.PlayIssueGroup{}}, "play", "stardew", "Farm", "--check")
+	if r.code != 0 || !strings.Contains(r.out, "Ready to play.") {
+		t.Fatalf("play --check clean: %+v", r)
+	}
+	r = invoke(t, map[string]any{"play.check": []control.PlayIssueGroup{}}, "play", "stardew", "Farm", "--check", "--json")
+	if r.code != 0 || !strings.Contains(r.out, "[") {
+		t.Fatalf("play --check json: %+v", r)
+	}
+	if r := invoke(t, nil, "play", "stardew", "Farm"); r.code != 2 {
+		t.Fatalf("play without --check: %+v", r)
+	}
+}
+
+func TestProfileListAndProblemsText(t *testing.T) {
+	results := map[string]any{
+		"mods": []control.ModRow{
+			{UniqueID: "A.Mod", Name: "Alpha", Version: "1.0", Enabled: true, Source: "nexus:1915/2"},
+			{UniqueID: "B.Mod", Name: "Beta", Version: "2.0", Enabled: false, Source: "local"},
+		},
+		"problems": problems.Result{
+			Missing:        []problems.Missing{{UniqueID: "Need.Mod", Optional: false}, {UniqueID: "Opt", Optional: true}},
+			AssetConflicts: []problems.AssetConflict{{Kind: "load", Target: "x", Names: []string{"A"}}, {Kind: "edit", Target: "y", Cosmetic: true}},
+		},
+	}
+	r := invoke(t, results, "profile", "list", "stardew", "Farm", "--format", "text")
+	if r.code != 0 || !strings.Contains(r.out, "Alpha") || !strings.Contains(r.out, "1.0") || strings.Contains(r.out, "Beta") {
+		t.Fatalf("profile list text: %+v", r)
+	}
+	if !strings.Contains(r.out, "https://www.nexusmods.com/stardewvalley/mods/1915") {
+		t.Fatalf("profile list nexus: %q", r.out)
+	}
+	r = invoke(t, results, "profile", "list", "stardew", "Farm", "--format", "md")
+	if r.code != 0 || !strings.Contains(r.out, "- Alpha 1.0 https://") {
+		t.Fatalf("profile list md: %q", r.out)
+	}
+	if r := invoke(t, results, "profile", "list", "stardew", "Farm"); r.code != 2 {
+		t.Fatalf("profile list needs format: %+v", r)
+	}
+	r = invoke(t, results, "problems", "stardew", "Farm", "--format", "text")
+	if r.code != 0 || !strings.Contains(r.out, "missing: 1") || !strings.Contains(r.out, "conflicts: 1") || !strings.Contains(r.out, "harmless: 2") {
+		t.Fatalf("problems text: %q", r.out)
+	}
+}
+
+func TestSettingsExportImportReset(t *testing.T) {
+	results := map[string]any{
+		"settings.export": map[string]string{"path": "/tmp/mortar-settings.json"},
+		"settings.import": nil,
+		"settings.reset":  nil,
+	}
+	r := invoke(t, results, "settings", "export", "/tmp/mortar-settings.json")
+	if r.code != 0 || r.calls[0].method != "settings.export" || !strings.Contains(r.out, "Wrote") {
+		t.Fatalf("export: %+v", r)
+	}
+	r = invoke(t, results, "settings", "import", "/tmp/mortar-settings.json")
+	if r.code != 0 || r.calls[0].method != "settings.import" || !strings.Contains(r.out, "Imported") {
+		t.Fatalf("import: %+v", r)
+	}
+	r = invoke(t, results, "settings", "reset", "onPlay")
+	if r.code != 0 || r.calls[0].method != "settings.reset" || r.calls[0].params.Key != "onPlay" {
+		t.Fatalf("reset key: %+v", r)
+	}
+	r = invoke(t, results, "settings", "reset", "--game", "stardew")
+	if r.code != 0 || r.calls[0].params.Game != "stardew" || r.calls[0].params.Key != "" {
+		t.Fatalf("reset all: %+v", r)
+	}
+}
+
+func TestModsTagCategoryNoteSkipVersion(t *testing.T) {
+	rows := []control.ModRow{{UniqueID: "A.Mod", Name: "Alpha", Version: "1.0", Enabled: true}}
+	results := map[string]any{
+		"mods.tag":          rows,
+		"mods.untag":        rows,
+		"mods.category":     rows,
+		"mods.note":         rows,
+		"mods.skip-version": rows,
+	}
+	r := invoke(t, results, "mods", "tag", "stardew", "Farm", "A.Mod", "qol")
+	if r.code != 0 || r.calls[0].method != "mods.tag" || r.calls[0].params.Value != "qol" || len(r.calls[0].params.UniqueIDs) != 1 {
+		t.Fatalf("tag: %+v", r)
+	}
+	r = invoke(t, results, "mods", "untag", "stardew", "Farm", "A.Mod", "qol")
+	if r.code != 0 || r.calls[0].method != "mods.untag" {
+		t.Fatalf("untag: %+v", r)
+	}
+	r = invoke(t, results, "mods", "category", "stardew", "Farm", "A.Mod", "Crops")
+	if r.code != 0 || r.calls[0].params.Value != "Crops" {
+		t.Fatalf("category: %+v", r)
+	}
+	r = invoke(t, results, "mods", "note", "stardew", "Farm", "A.Mod", "keep")
+	if r.code != 0 || r.calls[0].method != "mods.note" || r.calls[0].params.Value != "keep" {
+		t.Fatalf("note: %+v", r)
+	}
+	r = invoke(t, results, "mods", "skip-version", "stardew", "Farm", "A.Mod", "2.0.0")
+	if r.code != 0 || r.calls[0].method != "mods.skip-version" || r.calls[0].params.Value != "2.0.0" {
+		t.Fatalf("skip-version: %+v", r)
+	}
+	r = invoke(t, results, "mods", "skip-version", "stardew", "Farm", "A.Mod")
+	if r.code != 0 || r.calls[0].params.Value != "" || len(r.calls[0].params.UniqueIDs) != 1 {
+		t.Fatalf("skip-version clear: %+v", r)
+	}
+}
+
+func TestQueueRetrySkipAndHumanStates(t *testing.T) {
+	st := map[string]any{
+		"items": []map[string]any{
+			{"id": "1", "name": "Alpha", "version": "1", "state": "queued", "error": ""},
+			{"id": "2", "name": "Beta", "version": "1", "state": "failed", "error": "[network] timeout"},
+			{"id": "3", "name": "Gamma", "version": "1", "state": "waiting-click", "error": ""},
+		},
+	}
+	results := map[string]any{"queue": st, "queue.retry": st, "queue.skip": st}
+	r := invoke(t, results, "queue")
+	if r.code != 0 || !strings.Contains(r.out, "waiting") || !strings.Contains(r.out, "failed") || !strings.Contains(r.out, "needs a click") {
+		t.Fatalf("queue table: %q", r.out)
+	}
+	if !strings.Contains(r.out, "A network request failed.") {
+		t.Fatalf("queue error sentence: %q", r.out)
+	}
+	r = invoke(t, results, "queue", "retry")
+	if r.code != 0 || !strings.Contains(r.out, "Retried 1 failed downloads.") {
+		t.Fatalf("retry: %q", r.out)
+	}
+	r = invoke(t, results, "queue", "skip")
+	if r.code != 0 || !strings.Contains(r.out, "Skipped 2 downloads.") {
+		t.Fatalf("skip: %q", r.out)
 	}
 }

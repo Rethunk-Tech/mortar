@@ -37,14 +37,18 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `games` | supported games and whether each is configured |
 | `profiles <game>`, `profile create\|rename\|copy\|delete\|repair ...` | list and manage profiles |
 | `trash list [--game stardew]`, `trash restore\|delete\|empty ...` | recently deleted profiles (`delete` and `empty` need `--yes`) |
+| `profile list <game> <profile> --format md\|text` | enabled mods: name, version, Nexus link when known |
 | `profile compare <game> <A> <B>` | mods only in A, only in B, version or enabled differences |
+| `play <game> <profile> --check` | pre-Play summary; exits 3 when anything is wrong |
+| `mods tag\|untag\|category\|note\|skip-version ...` | the Mods selection-bar setters |
+| `settings export\|import <file>`, `settings reset [key] [--game id]` | portable settings and restore defaults |
 | `profile match <game> <profile> <link-or-file>` | preview a friend's share against a profile |
 | `profile history <game> <profile>`, `profile revert <game> <profile> <eventId>` | restore points; revert to one |
 | `history <game> --all` | recent changes across that game's profiles |
 | `profile load-order <game> <profile>` | enabled mods in SMAPI load order |
-| `mods <game> <profile>`, `mods enable\|disable\|pin\|unpin\|remove ... <UniqueID>...`, `mod ... <UniqueID>` | list, change and inspect mods |
+| `mods <game> <profile>`, `mods enable\|disable\|pin\|unpin\|remove ... <mod id>...`, `mod ... <mod id>` | list, change and inspect mods (mod id is the SMAPI UniqueID) |
 | `install <game> <profile> <archive>` | install a local archive |
-| `conflicts`, `problems`, `updates`, `saves <game> <profile>` | what the Problems, Mods and Saves tabs show |
+| `conflicts`, `problems [--format text]`, `updates`, `saves <game> <profile>` | what the Problems, Mods and Saves tabs show |
 | `problems dismissed`, `problems dismiss <index>`, `problems restore <token\|index>` (`--profile`, `--game stardew`) | dismiss and restore Problems-tab warnings like the GUI |
 | `share`, `export <game> <profile> [file]`, `open <link\|file>` | share links and `.mortar` files |
 | `launch <game> <profile> [--wait]`, `status`, `stop <game>`, `runs`, `logs`, `logs search <query> [--profile <name>]` | play and read past runs |
@@ -57,7 +61,7 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `backups list`, `backups create <save>`, `backups restore <name> [save...]` | list, pin a Manual backup of one save, or restore |
 | `queue`, `doctor`, `version`, `completion bash\|zsh\|fish` | the download queue, the environment, shell completion |
 
-`--json` writes failures to stderr as `{"error":"...","code":...}`. Exit code 2 means usage or confirmation was required, 3 means Mortar was not running, and 1 means another failure. `mortar doctor` falls back to read-only offline checks when Mortar is not running: it exits 0 when those checks find nothing, 1 when they find problems, and 3 when the offline check is healthy.
+`--json` writes failures to stderr as `{"error":"...","code":...}`. Exit code 2 means usage or confirmation was required, 3 means Mortar was not running or `play --check` found issues, and 1 means another failure. `mortar doctor` falls back to read-only offline checks when Mortar is not running: it exits 0 when those checks find nothing, 1 when they find problems, and 3 when the offline check is healthy.
 
 ```sh
 mortar conflicts stardew "Profile 2"
