@@ -19,6 +19,27 @@ Remaining ([architecture.md](architecture.md#release)):
 - The repo turns public at the first release and builds go on its GitHub Releases, since the updater's manifest and assets must be publicly downloadable.
 - **Measure on Windows:** how launch arguments order around `%command%`, and whether SMAPI needs `--no-terminal`; one real update through the updater, and `DisplayVersion` after it.
 
+## Settings reorganisation
+
+Decided with NOMAD (Settings pages grew by accretion: per-game prefs on global pages, three groups called "Mods", inline unbounded lists). Code: `frontend/src/settings/SettingsPage.tsx` (section list), `sections/*.tsx`, per-game page `sections/GameSettings.tsx`; pref scope comes from `internal/settings/registry.go`.
+
+- **Pages, in nav order:**
+  - General: Startup and window (on Play, start screen, launch at login, start minimised, remember window, keep in tray), Language, Help (tips, tour), Settings file (Export…, Import…).
+  - Appearance: Theme, Accent, Background, Display (dates, density, reduce motion, profile hero), Mods view (default view, card size, author on cards, grouping, sort), Sidebar (profile order, badge counts).
+  - Mods and profiles: Installing (enable on install, auto-enable requirements, missing requirements, reuse FOMOD choices, confirm removals, modified outside Mortar), Problems (harmless conflicts, scan depth, background badge checks).
+  - Downloads: Mod Manager Download links (+ other games' redirect), browser extension, default profile for Nexus links, parallel, auto-retry, pause while playing, verify MD5, preferred server, download folder, keep archives.
+  - Nexus account: account banner, Tracking (auto-track, untrack all…, untrack unused…), Endorsements, API quota.
+  - Updates: Mortar (status, beta, install automatically), Mods (check on start, interval, enabled only, pre-release versions).
+  - Notifications: downloads finished/failed, run crashed, mod-update digest (one control replacing "Notify when updates are found" + "Update digest notification").
+  - Storage (replaces Data): Location (path, Open folder, Move…), Usage by game with right-aligned sizes in the app font, summary rows with a size and a button each (Clean up store…, Deleted profiles…, Clear cache), Retention (unused store item days, trash days, history events, run logs kept, save backups kept).
+  - Launchers, Shortcuts (group "Console" renamed "Tabs", group names translated), About: unchanged otherwise.
+- **Per-game page gets** every game-scope pref now on global pages: default launch, SMAPI console window, enable/missing requirements, harmless conflicts, conflict scan depth, play backups (before Play, kept, location), console level/timestamps/follow/log cap, update mods before Play default, SMAPI unofficial builds. Global page rows stop writing `settings.lastGame || 'stardew'` (`PrefRow.tsx:28`, `DataPrefs.tsx:36`, `SmapiVersionRow.tsx:75`); the game page passes its game.
+- **One row pattern:** every control is a `SettingRow` (label and description left, control right) inside a titled `SettingsSection`; no floating-label fields, no `FormControlLabel` switches, no loose text boxes in cards, no untitled or single-row sections where a neighbour fits.
+- **No reset links:** "Reset section to defaults" and `ResetSection.tsx` are removed (NOMAD: remove entirely). Shortcuts keeps per-shortcut Reset; "Reset all" gets a confirm.
+- **Lists and flows open dialogs:** Store cleanup (unused + duplicates, one list with select-all and a single error-coloured confirm, replacing both the inline list in `DataStoreReport.tsx` and the separate "Clean up unused mod files…" flow), Deleted profiles, Clear cache, Move data folder.
+- **Defects to fix on the way:** empty "Default sort" and "Default profile for Nexus links" selects; Nexus tracking text hard-coded "Stardew Valley"; Cache/Trash size misalignment; "0 byte" pluralisation.
+- **Done when** every pref in `registry.go` appears exactly once (game scope only on the game page), search finds every row, no page renders an unbounded list inline, and `gui-design.md` describes the new pages.
+
 ## Queued for v1
 
 - **Library:** an extra folder to scan for mods; a toggle to show dot-hidden mods; asking before deleting old files on update; new folders in the game's own `Mods` folder offered for moving into a profile.
