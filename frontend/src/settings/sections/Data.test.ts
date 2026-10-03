@@ -13,6 +13,8 @@ test('unmount stops UsageProgress ticks and ignores a late Usage result', async 
     backups: number
     trash: number
     total: number
+    sharedSaved: number
+    sharedSavedKnown: boolean
   }) => void = () => undefined
   const usage = new Promise<Parameters<typeof release>[0]>((resolve) => {
     release = resolve
@@ -49,6 +51,8 @@ test('unmount stops UsageProgress ticks and ignores a late Usage result', async 
     backups: 0,
     trash: 0,
     total: 0,
+    sharedSaved: 0,
+    sharedSavedKnown: false,
   })
   await usage
   expect(bytes).toEqual([9])

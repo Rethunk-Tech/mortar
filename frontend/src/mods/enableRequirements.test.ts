@@ -16,7 +16,7 @@ const mod = (
   enabled: over.enabled ?? true,
   needs: over.needs ?? [],
   optional: over.optional ?? [],
-  contentPackFor: over.contentPackFor,
+  ...(over.contentPackFor === undefined ? {} : { contentPackFor: over.contentPackFor }),
 })
 
 test('pendingRequired lists disabled required deps already in the profile', () => {

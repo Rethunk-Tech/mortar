@@ -39,62 +39,6 @@ import { useSelection } from './selection.ts'
 import { announceAlso, fail, open } from './storeView.ts'
 import { useUpdates } from './updates.ts'
 
-export async function enableMany(
-  set: (fn: (s: { mods: Mod[] }) => { mods: Mod[] }) => void,
-  get: () => { mods: Mod[]; loadProblems: () => Promise<void> },
-  mods: Mod[],
-  enabled: boolean,
-) {
-  const target = open()
-  if (!target || mods.length === 0) {
-    return
-  }
-  const ids = new Set(mods.map((m) => modId(m)))
-  const prev = new Map(get().mods.map((m) => [modId(m), m.enabled]))
-  const pending = enabled ? pendingRequired(get().mods, mods) : []
-  set((s) => ({
-    mods: s.mods.map((m) => (ids.has(modId(m)) ? { ...m, enabled } : m)),
-  }))
-  try {
-    useProfiles.getState().replace(
-      await SetModsEnabled(
-        target.game,
-        target.id,
-        mods.map((m) => ({ key: m.key, uniqueId: m.uniqueId })),
-        enabled,
-      ).then((r) => {
-        announceAlso(r.alsoEnabled)
-        return r.profile
-      }),
-    )
-  } catch (e) {
-    set((s) => ({
-      mods: s.mods.map((m) => {
-        const was = prev.get(modId(m))
-        return was === undefined ? m : { ...m, enabled: was }
-      }),
-    }))
-    fail(i18n._(msg`Could not switch the selected mods`))(e)
-    return
-  }
-  if (enabled) {
-    const extra = new Set(pending.map((m) => modId(m)))
-    if (
-      enableRequirementsDecision(
-        useSettings.getState().enableRequirements || 'always',
-        pending.length,
-      ) === 'enable'
-    ) {
-      set((s) => ({
-        mods: s.mods.map((m) => (extra.has(modId(m)) ? { ...m, enabled: true } : m)),
-      }))
-    } else {
-      await considerEnableRequirements(get().mods, mods, 'toggle')
-    }
-  }
-  await get().loadProblems()
-}
-
 function pushFieldsUndo(
   profileId: string,
   fields: ReturnType<typeof entryFieldsOf>,
@@ -163,6 +107,62 @@ function pushRemovedUndo(
       },
     },
   })
+}
+
+export async function enableMany(
+  set: (fn: (s: { mods: Mod[] }) => { mods: Mod[] }) => void,
+  get: () => { mods: Mod[]; loadProblems: () => Promise<void> },
+  mods: Mod[],
+  enabled: boolean,
+) {
+  const target = open()
+  if (!target || mods.length === 0) {
+    return
+  }
+  const ids = new Set(mods.map((m) => modId(m)))
+  const prev = new Map(get().mods.map((m) => [modId(m), m.enabled]))
+  const pending = enabled ? pendingRequired(get().mods, mods) : []
+  set((s) => ({
+    mods: s.mods.map((m) => (ids.has(modId(m)) ? { ...m, enabled } : m)),
+  }))
+  try {
+    useProfiles.getState().replace(
+      await SetModsEnabled(
+        target.game,
+        target.id,
+        mods.map((m) => ({ key: m.key, uniqueId: m.uniqueId })),
+        enabled,
+      ).then((r) => {
+        announceAlso(r.alsoEnabled)
+        return r.profile
+      }),
+    )
+  } catch (e) {
+    set((s) => ({
+      mods: s.mods.map((m) => {
+        const was = prev.get(modId(m))
+        return was === undefined ? m : { ...m, enabled: was }
+      }),
+    }))
+    fail(i18n._(msg`Could not switch the selected mods`))(e)
+    return
+  }
+  if (enabled) {
+    const extra = new Set(pending.map((m) => modId(m)))
+    if (
+      enableRequirementsDecision(
+        useSettings.getState().enableRequirements || 'always',
+        pending.length,
+      ) === 'enable'
+    ) {
+      set((s) => ({
+        mods: s.mods.map((m) => (extra.has(modId(m)) ? { ...m, enabled: true } : m)),
+      }))
+    } else {
+      await considerEnableRequirements(get().mods, mods, 'toggle')
+    }
+  }
+  await get().loadProblems()
 }
 
 export async function batchProfile(

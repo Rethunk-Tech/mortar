@@ -84,6 +84,7 @@ test('cosmetic conflicts get their own section and are not counted', () => {
     overridden: null,
     cosmetic,
     fixes: [],
+    evidence: [],
   })
   const result: Result = {
     ...emptyResult(),
@@ -114,6 +115,7 @@ test('dismissed problems are listed but not counted', () => {
           overridden: [],
           cosmetic: false,
           fixes: [],
+          evidence: [],
         },
       },
     ],

@@ -19,7 +19,7 @@ function useEntrySizes(): Readonly<Record<string, number>> {
   const [sizes, setSizes] = useState<Record<string, number>>({})
   useEffect(() => {
     EntrySizes()
-      .then((rows: EntrySize[]) => {
+      .then((rows: EntrySize[] | null) => {
         const next: Record<string, number> = {}
         for (const r of rows ?? []) {
           next[r.key] = r.size

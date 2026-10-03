@@ -154,7 +154,7 @@ func TestProfileRepair(t *testing.T) {
 func TestHistoryAll(t *testing.T) {
 	results := map[string]any{
 		"history.all": []profile.RecentEvent{
-			{ProfileID: "p1", ProfileName: "Farm", HistoryEvent: profile.HistoryEvent{ID: "event-2", Kind: "added", Label: "Added Beta"}},
+			{ProfileID: "p1", ProfileName: "Farm", ID: "event-2", Kind: "added", Label: "Added Beta"},
 		},
 	}
 	r := invoke(t, results, "history", "stardew", "--all")
