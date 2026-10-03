@@ -48,7 +48,7 @@ func (s *Store) eventDiff(game, id, eventID string) ([]Entry, string, HistoryDif
 	if !ok {
 		return nil, "", HistoryDiff{}, fmt.Errorf("history event %s not found", eventID)
 	}
-	after, ok := snapshotEntries(data, ev.SnapshotID)
+	after, ok := snapshotEntries(&data, ev.SnapshotID)
 	if !ok {
 		return nil, "", HistoryDiff{}, fmt.Errorf("history snapshot %s not found", ev.SnapshotID)
 	}

@@ -87,8 +87,9 @@ func zipModName(rel string, skip map[string]bool) (string, bool) {
 }
 
 func omitFromProfileZip(rel string) bool {
-	return rel == historyFile || rel == "runs" || rel == historyFilesDir ||
-		strings.HasPrefix(rel, "runs/") || strings.HasPrefix(rel, historyFilesDir+"/")
+	return rel == historyFile || rel == "runs" || rel == historyFilesDir || rel == snapshotsDir ||
+		strings.HasPrefix(rel, "runs/") || strings.HasPrefix(rel, historyFilesDir+"/") ||
+		strings.HasPrefix(rel, snapshotsDir+"/")
 }
 
 func snapshotProfileExport(src, dst string, p Profile) error {

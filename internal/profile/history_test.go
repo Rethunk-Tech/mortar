@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -232,8 +233,19 @@ func TestHistoryDeduplicatesSnapshots(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(data.Events) != 3 || len(data.Snapshots) != 2 {
-		t.Fatalf("history events=%d snapshots=%d, want 3 and 2", len(data.Events), len(data.Snapshots))
+	sidecars, err := os.ReadDir(filepath.Join(dir, snapshotsDir))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data.Events) != 3 || len(sidecars) != 2 {
+		t.Fatalf("history events=%d snapshots=%d, want 3 and 2", len(data.Events), len(sidecars))
+	}
+	raw, err := fsx.ReadFile(filepath.Join(dir, historyFile))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Contains(raw, []byte(`"snapshots"`)) {
+		t.Fatal("history.json embeds snapshot bodies")
 	}
 }
 
@@ -641,5 +653,114 @@ func TestRecentHistoryOrdersAndSkipsDamaged(t *testing.T) {
 	}
 	if capped[0].ID != fmt.Sprintf("c%02d", recentHistoryCap) {
 		t.Fatalf("newest after cap = %q", capped[0].ID)
+	}
+}
+
+func TestChangesSinceCachedUntilProfileUpdated(t *testing.T) {
+	s := newStore(t)
+	p, err := s.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	entry := Entry{Key: "k", Mods: []EntryMod{{UniqueID: "x", Name: "X", Version: "1", Folder: "."}}}
+	if _, err := s.update("stardew", p.ID, func(p *Profile, _ string) error {
+		p.Entries = []Entry{entry}
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	since := time.Now().UTC().Add(-time.Hour)
+	decodes := 0
+	onHistoryDecode = func() { decodes++ }
+	t.Cleanup(func() { onHistoryDecode = nil })
+	if _, err := s.ChangesSince("stardew", p.ID, since); err != nil {
+		t.Fatal(err)
+	}
+	if decodes == 0 {
+		t.Fatal("first ChangesSince did not decode history")
+	}
+	decodes = 0
+	if _, err := s.ChangesSince("stardew", p.ID, since); err != nil {
+		t.Fatal(err)
+	}
+	if decodes != 0 {
+		t.Fatalf("cached ChangesSince decoded %d times", decodes)
+	}
+	if _, err := s.update("stardew", p.ID, func(p *Profile, _ string) error {
+		p.Entries[0].Mods[0].Version = "2"
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	decodes = 0
+	if _, err := s.ChangesSince("stardew", p.ID, since); err != nil {
+		t.Fatal(err)
+	}
+	if decodes == 0 {
+		t.Fatal("ChangesSince after update used stale cache")
+	}
+}
+
+func TestLegacyCombinedHistorySplitsOut(t *testing.T) {
+	dir := t.TempDir()
+	legacy := []byte(`{"events":[{"id":"aa","snapshotId":"bb"}],"snapshots":{"bb":[{"key":"k"}]}}`)
+	if err := os.WriteFile(filepath.Join(dir, historyFile), legacy, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	data, err := readHistory(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data.Events) != 1 || data.Events[0].ID != "aa" {
+		t.Fatalf("legacy events = %+v", data.Events)
+	}
+	entries, ok := snapshotEntries(&data, "bb")
+	if !ok || len(entries) != 1 || entries[0].Key != "k" {
+		t.Fatalf("split snapshot = %v %+v", ok, entries)
+	}
+	raw, err := fsx.ReadFile(filepath.Join(dir, historyFile))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Contains(raw, []byte(`"snapshots"`)) {
+		t.Fatal("history.json still embeds snapshot bodies")
+	}
+}
+
+func TestNOMADHistoryBench(t *testing.T) {
+	const dir = "/var/tmp/hist-bench/bf8012eb5944d3ad"
+	st, err := os.Stat(filepath.Join(dir, historyFile))
+	if err != nil {
+		t.Skip(err)
+	}
+	t.Logf("history.json before %d bytes", st.Size())
+	start := time.Now()
+	data, err := readHistory(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	read1 := time.Since(start)
+	t.Logf("readHistory %s events=%d snapshots=%d", read1, len(data.Events), len(data.Snapshots))
+	after := []Entry{{Key: "bench", Mods: []EntryMod{{UniqueID: "bench", Name: "Bench", Version: "1", Folder: "."}}}}
+	if len(data.Events) > 0 {
+		if entries, ok := snapshotEntries(&data, data.Events[len(data.Events)-1].SnapshotID); ok && len(entries) > 0 {
+			after = cloneEntries(entries)
+			after[0].Pinned = !after[0].Pinned
+		}
+	}
+	start = time.Now()
+	if _, err := appendHistory(dir, HistoryEvent{Kind: historyPinned, Label: "bench", Count: 1}, after, maxHistory); err != nil {
+		t.Fatal(err)
+	}
+	append1 := time.Since(start)
+	t.Logf("appendHistory %s", append1)
+	start = time.Now()
+	if _, err := readHistory(dir); err != nil {
+		t.Fatal(err)
+	}
+	read2 := time.Since(start)
+	t.Logf("readHistory after append %s", read2)
+	if info, err := os.Stat(filepath.Join(dir, historyFile)); err == nil {
+		t.Logf("history.json after %d bytes", info.Size())
 	}
 }

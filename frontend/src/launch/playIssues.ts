@@ -11,6 +11,7 @@ import {
   Problems,
   Updates,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
+import type { HistoryDiff } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ChangesSince } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { LastSaveGap } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { visibleUpdates } from '../mods/lookup.ts'
@@ -18,6 +19,8 @@ import { diffLines } from '../profiles/historyDiff.ts'
 import { useProfiles } from '../profiles/store.ts'
 
 const PLAY_ISSUE_NAME_CAP = 5
+
+const changesSinceCache = new Map<string, HistoryDiff | null>()
 
 type PlayIssueKind =
   | 'missing'
@@ -162,7 +165,15 @@ async function gatherPlayIssues(game: string, profileId: string): Promise<PlayIs
   })
   try {
     const runs = await Runs(game, profileId)
-    const diff = await ChangesSince(game, profileId, runs?.[0]?.started ?? '')
+    const since = runs?.[0]?.started ?? ''
+    const key = `${game}\0${profileId}\0${profile?.updated ?? ''}\0${since}`
+    let diff: HistoryDiff | null | undefined
+    if (changesSinceCache.has(key)) {
+      diff = changesSinceCache.get(key)
+    } else {
+      diff = await ChangesSince(game, profileId, since)
+      changesSinceCache.set(key, diff)
+    }
     const names = diff ? diffLines(diff) : []
     if (names.length > 0) {
       groups.push({

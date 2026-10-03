@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
@@ -21,6 +22,7 @@ import (
 
 const (
 	historyFile      = "history.json"
+	snapshotsDir     = "snapshots"
 	maxHistory       = 200
 	recentHistoryCap = 50
 	historyAdded     = "added"
@@ -52,7 +54,8 @@ type HistoryEvent struct {
 
 type historyFileData struct {
 	Events    []HistoryEvent     `json:"events"`
-	Snapshots map[string][]Entry `json:"snapshots"`
+	Snapshots map[string][]Entry `json:"-"`
+	dir       string             `json:"-"`
 }
 
 // History returns this profile's change events, newest first.
@@ -75,9 +78,9 @@ func (s *Store) History(game, id string) ([]HistoryEvent, error) {
 		ev := e
 		var before []Entry
 		if i > 0 {
-			before, _ = snapshotEntries(data, data.Events[i-1].SnapshotID)
+			before, _ = snapshotEntries(&data, data.Events[i-1].SnapshotID)
 		}
-		if after, ok := snapshotEntries(data, e.SnapshotID); ok {
+		if after, ok := snapshotEntries(&data, e.SnapshotID); ok {
 			ev.Added, ev.Removed, ev.Updated = ModDiffCounts(before, after)
 		}
 		out[len(data.Events)-1-i] = ev
@@ -151,7 +154,7 @@ func (s *Store) Snapshot(game, id, snapshotID string) ([]Entry, error) {
 	if err != nil {
 		return nil, err
 	}
-	entries, ok := snapshotEntries(data, snapshotID)
+	entries, ok := snapshotEntries(&data, snapshotID)
 	if !ok {
 		return nil, fmt.Errorf("history snapshot %s not found", snapshotID)
 	}
@@ -197,7 +200,7 @@ func (s *Store) Revert(game, id, eventID string) (Profile, error) {
 	if target == nil {
 		return Profile{}, fmt.Errorf("history event %s not found", eventID)
 	}
-	snap, ok := snapshotEntries(data, target.SnapshotID)
+	snap, ok := snapshotEntries(&data, target.SnapshotID)
 	if !ok {
 		return Profile{}, fmt.Errorf("history snapshot %s not found", target.SnapshotID)
 	}
@@ -472,10 +475,10 @@ func (s *Store) RecordHistoryBatch(game, id, batchID string) error {
 	}
 	if batch.EventID == "" && len(data.Events) > 0 {
 		last := data.Events[len(data.Events)-1]
-		if entries, exists := snapshotEntries(data, last.SnapshotID); exists && entriesEqual(entries, p.Entries) {
+		if entries, exists := snapshotEntries(&data, last.SnapshotID); exists && entriesEqual(entries, p.Entries) {
 			batch.EventID = last.ID
 			if len(data.Events) > 1 {
-				if previous, exists := snapshotEntries(data, data.Events[len(data.Events)-2].SnapshotID); exists {
+				if previous, exists := snapshotEntries(&data, data.Events[len(data.Events)-2].SnapshotID); exists {
 					batch.Before = cloneEntries(previous)
 				}
 			} else {
@@ -549,9 +552,13 @@ func (s *Store) recordHistoryBatchData(dir string, data *historyFileData, batch 
 	if err != nil {
 		return err
 	}
-	if _, exists := data.Snapshots[snapshot]; !exists {
-		data.Snapshots[snapshot] = cloneEntries(after)
+	if err := writeSnapshotFile(dir, snapshot, after); err != nil {
+		return err
 	}
+	if data.Snapshots == nil {
+		data.Snapshots = map[string][]Entry{}
+	}
+	data.Snapshots[snapshot] = cloneEntries(after)
 	ev.SnapshotID = snapshot
 	data.Events[index] = ev
 	return writeHistory(dir, *data, 0)
@@ -576,14 +583,12 @@ func (s *Store) recordSnapshot(game, id, kind, label string, count int) error {
 var onHistoryDecode func()
 
 func peekHistory(dir string) (historyFileData, error) {
-	b, err := fsx.ReadFile(filepath.Join(dir, historyFile))
+	data, err := readHistory(dir)
 	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return emptyHistory(), nil
-		}
 		return historyFileData{}, err
 	}
-	return historyFromBytes(b)
+	data.dir = dir
+	return data, nil
 }
 
 func latestSnapshotAt(dir string) ([]Entry, bool) {
@@ -599,14 +604,18 @@ func readHistory(dir string) (historyFileData, error) {
 	b, err := fsx.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return emptyHistory(), nil
+			return emptyHistoryAt(dir), nil
 		}
 		return historyFileData{}, err
+	}
+	if legacyCombinedHistory(b) {
+		return splitLegacyHistory(dir, path, b)
 	}
 	data, err := historyFromBytes(b)
 	if err != nil {
 		return quarantineHistory(path, err)
 	}
+	data.dir = dir
 	return data, nil
 }
 
@@ -627,8 +636,45 @@ func historyFromBytes(b []byte) (historyFileData, error) {
 	return data, nil
 }
 
+func legacyCombinedHistory(b []byte) bool {
+	return bytes.Contains(b, []byte(`"snapshots"`))
+}
+
+func splitLegacyHistory(dir, path string, b []byte) (historyFileData, error) {
+	if onHistoryDecode != nil {
+		onHistoryDecode()
+	}
+	var legacy struct {
+		Events    []HistoryEvent     `json:"events"`
+		Snapshots map[string][]Entry `json:"snapshots"`
+	}
+	if err := json.Unmarshal(b, &legacy); err != nil {
+		return quarantineHistory(path, err)
+	}
+	data := historyFileData{Events: legacy.Events, Snapshots: legacy.Snapshots, dir: dir}
+	if data.Events == nil {
+		data.Events = []HistoryEvent{}
+	}
+	if data.Snapshots == nil {
+		data.Snapshots = map[string][]Entry{}
+	}
+	for id, entries := range data.Snapshots {
+		if err := writeSnapshotFile(dir, id, entries); err != nil {
+			return historyFileData{}, err
+		}
+	}
+	if err := writeHistory(dir, data, 0); err != nil {
+		return historyFileData{}, err
+	}
+	return data, nil
+}
+
 func emptyHistory() historyFileData {
-	return historyFileData{Events: []HistoryEvent{}, Snapshots: map[string][]Entry{}}
+	return emptyHistoryAt("")
+}
+
+func emptyHistoryAt(dir string) historyFileData {
+	return historyFileData{Events: []HistoryEvent{}, Snapshots: map[string][]Entry{}, dir: dir}
 }
 
 func quarantineHistory(path string, cause error) (historyFileData, error) {
@@ -646,9 +692,6 @@ func writeHistory(dir string, data historyFileData, keep int) error {
 	if len(data.Events) > keep {
 		data.Events = data.Events[len(data.Events)-keep:]
 	}
-	if data.Snapshots == nil {
-		data.Snapshots = map[string][]Entry{}
-	}
 	referenced := make(map[string]struct{}, len(data.Events))
 	for _, event := range data.Events {
 		referenced[event.SnapshotID] = struct{}{}
@@ -658,24 +701,108 @@ func writeHistory(dir string, data historyFileData, keep int) error {
 			delete(data.Snapshots, id)
 		}
 	}
-	if err := datadir.WriteJSON(filepath.Join(dir, historyFile), data); err != nil {
+	if err := datadir.WriteJSON(filepath.Join(dir, historyFile), historyFileData{Events: data.Events}); err != nil {
+		return err
+	}
+	if err := pruneSnapshotFiles(dir, referenced); err != nil {
 		return err
 	}
 	pruneHistoryFiles(dir, referenced)
 	return nil
 }
 
-func snapshotEntries(data historyFileData, id string) ([]Entry, bool) {
+func snapshotEntries(data *historyFileData, id string) ([]Entry, bool) {
+	if data == nil || id == "" {
+		return nil, false
+	}
 	if entries, ok := data.Snapshots[id]; ok {
 		return entries, true
 	}
+	hash := id
 	for _, event := range data.Events {
 		if event.ID == id {
-			entries, ok := data.Snapshots[event.SnapshotID]
-			return entries, ok
+			hash = event.SnapshotID
+			if entries, ok := data.Snapshots[hash]; ok {
+				return entries, true
+			}
+			break
 		}
 	}
-	return nil, false
+	dir := data.dir
+	entries, ok := readSnapshotFile(dir, hash)
+	if !ok {
+		return nil, false
+	}
+	if data.Snapshots == nil {
+		data.Snapshots = map[string][]Entry{}
+	}
+	data.Snapshots[hash] = entries
+	return entries, true
+}
+
+func snapshotFilePath(dir, id string) (string, bool) {
+	if dir == "" || id == "" || len(id) > 64 {
+		return "", false
+	}
+	for _, c := range id {
+		if (c < '0' || c > '9') && (c < 'a' || c > 'f') {
+			return "", false
+		}
+	}
+	return filepath.Join(dir, snapshotsDir, id+".json"), true
+}
+
+func readSnapshotFile(dir, id string) ([]Entry, bool) {
+	path, ok := snapshotFilePath(dir, id)
+	if !ok {
+		return nil, false
+	}
+	b, err := fsx.ReadFile(path)
+	if err != nil {
+		return nil, false
+	}
+	var entries []Entry
+	if err := json.Unmarshal(b, &entries); err != nil {
+		return nil, false
+	}
+	return entries, true
+}
+
+func writeSnapshotFile(dir, id string, entries []Entry) error {
+	path, ok := snapshotFilePath(dir, id)
+	if !ok {
+		return fmt.Errorf("history snapshot %s not writable", id)
+	}
+	if _, err := os.Stat(path); err == nil {
+		return nil
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return err
+	}
+	return datadir.WriteJSON(path, entries)
+}
+
+func pruneSnapshotFiles(dir string, referenced map[string]struct{}) error {
+	entries, err := os.ReadDir(filepath.Join(dir, snapshotsDir))
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+	for _, ent := range entries {
+		if ent.IsDir() {
+			continue
+		}
+		name := strings.TrimSuffix(ent.Name(), ".json")
+		if _, ok := referenced[name]; ok {
+			continue
+		}
+		if err := os.Remove(filepath.Join(dir, snapshotsDir, ent.Name())); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+	}
+	return nil
 }
 
 func entriesSnapshotID(entries []Entry) (string, error) {
@@ -742,9 +869,13 @@ func appendHistory(dir string, ev HistoryEvent, after []Entry, keep int) (Histor
 	if err != nil {
 		return HistoryEvent{}, err
 	}
-	if _, exists := data.Snapshots[snapshotID]; !exists {
-		data.Snapshots[snapshotID] = entries
+	if err := writeSnapshotFile(dir, snapshotID, entries); err != nil {
+		return HistoryEvent{}, err
 	}
+	if data.Snapshots == nil {
+		data.Snapshots = map[string][]Entry{}
+	}
+	data.Snapshots[snapshotID] = entries
 	data.Events = append(data.Events, ev)
 	captureHistoryConfigs(dir, snapshotID, after)
 	if err := writeHistory(dir, data, keep); err != nil {

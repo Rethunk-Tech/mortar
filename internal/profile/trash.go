@@ -290,7 +290,7 @@ func (s *Store) StoreKeys() (map[string][]string, error) {
 				return nil, err
 			}
 			for _, ev := range data.Events {
-				entries, ok := snapshotEntries(data, ev.SnapshotID)
+				entries, ok := snapshotEntries(&data, ev.SnapshotID)
 				if !ok {
 					return nil, fmt.Errorf("history snapshot %s not found", ev.SnapshotID)
 				}

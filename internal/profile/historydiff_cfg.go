@@ -204,7 +204,7 @@ func predecessorOf(data historyFileData, eventID string) (before []Entry, before
 		}
 		if i > 0 {
 			prev := data.Events[i-1]
-			before, ok = snapshotEntries(data, prev.SnapshotID)
+			before, ok = snapshotEntries(&data, prev.SnapshotID)
 			beforeID = prev.SnapshotID
 			if !ok {
 				before = nil

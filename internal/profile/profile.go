@@ -219,6 +219,7 @@ type Store struct {
 	historyLabel    string
 	historyQuietIDs map[string]int
 	historyBatches  map[string]historyBatch
+	changesCache    map[string]changesSinceCache
 }
 
 func (s *Store) historyKeep() int {

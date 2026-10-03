@@ -245,6 +245,12 @@ func TestExportZipOmitsRunsAndHistory(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, historyFilesDir, historyBlobsDir, "deadbeef"), []byte("cfg"), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	if err := os.MkdirAll(filepath.Join(dir, snapshotsDir), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, snapshotsDir, "abcd.json"), []byte("[]"), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	zipPath := filepath.Join(t.TempDir(), "p.zip")
 	if err := e.ExportZip("stardew", p.ID, zipPath, "0.0.1"); err != nil {
 		t.Fatal(err)
@@ -255,7 +261,8 @@ func TestExportZipOmitsRunsAndHistory(t *testing.T) {
 	}
 	defer func() { _ = zr.Close() }()
 	for _, f := range zr.File {
-		if strings.HasPrefix(f.Name, "runs/") || f.Name == historyFile || strings.HasPrefix(f.Name, historyFilesDir+"/") {
+		if strings.HasPrefix(f.Name, "runs/") || f.Name == historyFile || strings.HasPrefix(f.Name, historyFilesDir+"/") ||
+			strings.HasPrefix(f.Name, snapshotsDir+"/") {
 			t.Fatalf("export included %s", f.Name)
 		}
 	}

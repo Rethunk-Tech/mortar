@@ -92,11 +92,11 @@ func (s *Store) HistoryDiff(game, id, a, b string) (HistoryDiff, error) {
 	if err != nil {
 		return HistoryDiff{}, err
 	}
-	before, ok := snapshotEntries(data, a)
+	before, ok := snapshotEntries(&data, a)
 	if !ok {
 		return HistoryDiff{}, fmt.Errorf("history snapshot %s not found", a)
 	}
-	after, ok := snapshotEntries(data, b)
+	after, ok := snapshotEntries(&data, b)
 	if !ok {
 		return HistoryDiff{}, fmt.Errorf("history snapshot %s not found", b)
 	}
@@ -306,7 +306,7 @@ func overlayLiveIfCurrent(dir string, data historyFileData, entries []Entry, cfg
 
 func latestSnapshotOf(data historyFileData) ([]Entry, bool) {
 	for _, ev := range slices.Backward(data.Events) {
-		if entries, ok := snapshotEntries(data, ev.SnapshotID); ok {
+		if entries, ok := snapshotEntries(&data, ev.SnapshotID); ok {
 			return cloneEntries(entries), true
 		}
 	}

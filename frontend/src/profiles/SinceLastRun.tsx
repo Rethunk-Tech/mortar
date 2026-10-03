@@ -7,22 +7,33 @@ import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launc
 import type { HistoryDiff } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ChangesSince } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { diffLines } from './historyDiff.ts'
+import { useProfiles } from './store.ts'
+
+const changesSinceCache = new Map<string, HistoryDiff | null>()
 
 export function SinceLastRun({ game, profileId }: { game: string; profileId: string }) {
   const { t } = useLingui()
+  const updated = useProfiles((s) => s.profiles.find((p) => p.id === profileId)?.updated ?? '')
   const [diff, setDiff] = useState<HistoryDiff | null>(null)
   const [open, setOpen] = useState(false)
   useEffect(() => {
+    const key = `${game}\0${profileId}\0${updated}`
+    if (changesSinceCache.has(key)) {
+      setDiff(changesSinceCache.get(key) ?? null)
+      return
+    }
     let live = true
     Runs(game, profileId)
       .then(async (runs) => {
         const since = runs?.[0]?.started ?? ''
         const next = await ChangesSince(game, profileId, since)
+        changesSinceCache.set(key, next)
         if (live) {
           setDiff(next)
         }
       })
       .catch(() => {
+        changesSinceCache.set(key, null)
         if (live) {
           setDiff(null)
         }
@@ -30,7 +41,7 @@ export function SinceLastRun({ game, profileId }: { game: string; profileId: str
     return () => {
       live = false
     }
-  }, [game, profileId])
+  }, [game, profileId, updated])
   const lines = diff ? diffLines(diff) : []
   if (lines.length === 0) {
     return null
