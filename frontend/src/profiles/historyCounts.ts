@@ -1,7 +1,9 @@
-import type { HistoryEvent } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-
 /** "+3 −1 ~2" style summary of mod adds, removes, and updates for one history event. */
-export function historyChangeSummary(ev: HistoryEvent): string {
+export function historyChangeSummary(ev: {
+  added?: number | null
+  removed?: number | null
+  updated?: number | null
+}): string {
   const parts: string[] = []
   const added = ev.added ?? 0
   const removed = ev.removed ?? 0
