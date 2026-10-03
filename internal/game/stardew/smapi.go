@@ -161,6 +161,14 @@ func (g Game) InstallLoader(ctx context.Context, dir string, bundled loader.Bund
 	if err != nil {
 		return "", err
 	}
+	return g.InstallLoaderAt(ctx, dir, version, bundled, progress)
+}
+
+// InstallLoaderAt installs the given SMAPI version into dir.
+func (g Game) InstallLoaderAt(ctx context.Context, dir, version string, bundled loader.Bundled, progress func(loader.Step)) (string, error) {
+	if err := g.ValidInstall(dir); err != nil {
+		return "", err
+	}
 	instDir, exe, err := installer(version, runtime.GOOS)
 	if err != nil {
 		return "", err
@@ -185,7 +193,6 @@ func (g Game) InstallLoader(ctx context.Context, dir string, bundled loader.Bund
 	}
 
 	folder := filepath.Join(unpacked, instDir)
-	// Extraction writes plain files, and the Linux installer must be executable.
 	if err := fsx.Chmod(filepath.Join(folder, exe), 0o700); err != nil {
 		return "", fmt.Errorf("SMAPI %s installer is missing %s: %w", version, exe, err)
 	}

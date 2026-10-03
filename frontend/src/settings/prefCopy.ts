@@ -265,6 +265,10 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
         { value: 'include', label: i18n._(msg`Include`) },
       ],
     },
+    smapiPin: {
+      label: i18n._(msg`SMAPI version`),
+      description: i18n._(msg`Empty follows the latest release`),
+    },
     autoTrackNexus: {
       label: i18n._(msg`Auto-track installed mods`),
       description: i18n._(msg`Track a Nexus mod when Mortar installs it`),

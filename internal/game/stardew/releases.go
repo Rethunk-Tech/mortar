@@ -45,7 +45,12 @@ func (g Game) loaderComponent() (components.Component, bool) {
 
 func (g Game) installerAsset(version string) string {
 	if component, ok := g.loaderComponent(); ok {
-		return component.Asset
+		if component.Version == version {
+			return component.Asset
+		}
+		if component.Version != "" {
+			return strings.ReplaceAll(component.Asset, component.Version, version)
+		}
 	}
 	pattern := g.AssetPattern
 	if pattern == "" {
@@ -134,9 +139,40 @@ func (g Game) fetchLatest(ctx context.Context) (string, error) {
 	return "", errors.New("GitHub lists no stable SMAPI release with an installer")
 }
 
+const lastLoaderReleases = 10
+
+// LoaderVersions returns the last GitHub SMAPI releases that look like versions, newest first.
+func (g Game) LoaderVersions(ctx context.Context) ([]string, error) {
+	url := g.ReleasesURL
+	if url == "" {
+		if component, ok := g.loaderComponent(); ok && component.Source.Owner != "" && component.Source.Repo != "" {
+			url = "https://api.github.com/repos/" + component.Source.Owner + "/" + component.Source.Repo + "/releases"
+		}
+	}
+	if url == "" {
+		return nil, errors.New("SMAPI component manifest is not configured")
+	}
+	all, err := github.FetchReleases(ctx, g.Client, url)
+	if err != nil {
+		return nil, fmt.Errorf("look up SMAPI releases: %w", err)
+	}
+	var out []string
+	for _, r := range all {
+		v := strings.TrimPrefix(r.Tag, "v")
+		if r.Draft || !versionPattern.MatchString(v) {
+			continue
+		}
+		out = append(out, v)
+		if len(out) == lastLoaderReleases {
+			break
+		}
+	}
+	return out, nil
+}
+
 // download saves the release installer to dest.
 func (g Game) download(ctx context.Context, version, dest string) error {
-	if component, ok := g.loaderComponent(); ok {
+	if component, ok := g.loaderComponent(); ok && component.Version == version {
 		client := g.Components
 		if client == nil {
 			client = configuredComponents.Load()
@@ -147,6 +183,11 @@ func (g Game) download(ctx context.Context, version, dest string) error {
 		return nil
 	}
 	base := g.DownloadBase
+	if base == "" {
+		if component, ok := g.loaderComponent(); ok && component.Source.Owner != "" && component.Source.Repo != "" {
+			base = "https://github.com/" + component.Source.Owner + "/" + component.Source.Repo + "/releases/download"
+		}
+	}
 	if base == "" {
 		return errors.New("SMAPI component manifest is not configured")
 	}

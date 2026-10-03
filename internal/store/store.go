@@ -100,6 +100,25 @@ func LocalKey(sha256Hex string) string { return "local-" + sha256Hex }
 // SMAPIKey is the key of SMAPI's bundled-mods entry for a SMAPI version.
 func SMAPIKey(version string) string { return "smapi-" + version }
 
+// Keys lists store items for a game.
+func (s *Store) Keys(game string) ([]string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err := s.migrateCompleteMarkers(); err != nil {
+		return nil, err
+	}
+	idx, err := s.loadIndex()
+	if err != nil {
+		return nil, err
+	}
+	var keys []string
+	for k := range idx[game] {
+		keys = append(keys, k)
+	}
+	slices.Sort(keys)
+	return keys, nil
+}
+
 // NexusKey is the key of a file downloaded from Nexus Mods.
 func NexusKey(modID, fileID int) string { return fmt.Sprintf("nexus-%d-%d", modID, fileID) }
 

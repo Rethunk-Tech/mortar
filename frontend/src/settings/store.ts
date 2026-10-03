@@ -68,6 +68,7 @@ const defaults: Settings = {
       enableRequirements: 'always',
       missingRequirements: 'ask',
       smapiBuilds: 'show',
+      smapiPin: '',
       defaultLaunchMethod: 'steam',
       showSmapiConsole: true,
       consoleLevel: 'info',

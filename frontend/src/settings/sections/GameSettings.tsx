@@ -39,6 +39,7 @@ import { useLoader } from '../../loader/store.ts'
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { useSettings } from '../store.ts'
+import { SmapiVersionRow } from './SmapiVersionRow.tsx'
 import { StreamOverlay } from './StreamOverlay.tsx'
 
 const GAME = 'stardew'
@@ -526,6 +527,7 @@ function GameBody() {
       />
       <FlatpakAccess />
       <Smapi key={folder} onVersion={setVersion} />
+      <SmapiVersionRow />
       <StreamOverlay />
     </Box>
   )
