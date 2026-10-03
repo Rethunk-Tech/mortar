@@ -13,15 +13,12 @@ type inodeKey struct {
 type shareAcc struct {
 	logical, allocated int64
 	seen               map[inodeKey]struct{}
+	blocks             shareBlocks
 	ok                 bool
 }
 
 func newShareAcc() *shareAcc {
-	return &shareAcc{seen: map[inodeKey]struct{}{}}
-}
-
-func (s *shareAcc) add(info os.FileInfo) {
-	s.addSize(info, true)
+	return &shareAcc{seen: map[inodeKey]struct{}{}, blocks: newShareBlocks()}
 }
 
 func (s *shareAcc) addFollowed(info os.FileInfo) {

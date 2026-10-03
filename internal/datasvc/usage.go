@@ -72,7 +72,7 @@ type profileMeta struct {
 	Name string `json:"name"`
 }
 
-// Measure walks root without following symlinks and reports each bucket's size.
+// Measure walks root without following symlinks and reports each bucket's exclusive size.
 func Measure(root string, report func(Progress)) (Usage, error) {
 	u := Usage{Path: root, Profiles: []ProfileSize{}, Games: []GameUsage{}}
 	mods := map[string]int64{}
@@ -80,66 +80,103 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 	backupGame := map[string]int64{}
 	cacheSeg := map[[2]string]int64{}
 	share := newShareAcc()
-	err := filepath.WalkDir(filepath.Clean(root), func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			if path == root {
-				return err
-			}
-			return fs.SkipDir
+	root = filepath.Clean(root)
+	account := func(path string, info os.FileInfo) {
+		share.addFollowed(info)
+		n, known := fileExclusive(path, info, share)
+		if known {
+			share.allocated += n
 		}
-		if d.Type()&fs.ModeSymlink != 0 {
-			if d.IsDir() {
+		u.Total += n
+		rel := path
+		if r, relErr := filepath.Rel(root, path); relErr == nil {
+			rel = r
+		}
+		slash := filepath.ToSlash(rel)
+		switch {
+		case hasPrefix(slash, "store/"):
+			u.Store += n
+			if game := nestedGame(slash, "store/"); game != "" {
+				direct[game] += n
+			}
+		case hasPrefix(slash, "cache/"):
+			u.Cache += n
+			cacheSeg[cacheSegs(slash)] += n
+		case hasPrefix(slash, "backups/"):
+			u.Backups += n
+			if game := nestedGame(slash, "backups/"); game != "" {
+				backupGame[game] += n
+			}
+		case hasPrefix(slash, "trash/"):
+			u.Trash += n
+		default:
+			if game := nestedGame(slash, "profiles/"); game != "" {
+				direct[game] += n
+			}
+			if game, id, ok := profileMods(slash); ok {
+				mods[game+"/"+id] += n
+			}
+		}
+		if report != nil {
+			report(Progress{Measuring: true, Bytes: u.Total, Path: slash})
+		}
+	}
+	walk := func(path string, skipNamed bool) error {
+		st, err := os.Lstat(path)
+		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				return nil
+			}
+			return err
+		}
+		if st.Mode()&os.ModeSymlink != 0 {
+			return nil
+		}
+		if !st.IsDir() {
+			return nil
+		}
+		return filepath.WalkDir(path, func(p string, d fs.DirEntry, err error) error {
+			if err != nil {
+				if p == path {
+					return err
+				}
 				return fs.SkipDir
 			}
-			if info, infoErr := os.Stat(filepath.Clean(path)); infoErr == nil && info.Mode().IsRegular() {
-				if resolved, resErr := filepath.EvalSymlinks(path); resErr == nil && under(root, resolved) {
-					share.addFollowed(info)
+			if skipNamed && p != root {
+				rel, relErr := filepath.Rel(root, p)
+				if relErr == nil && filepath.Dir(rel) == "." {
+					switch d.Name() {
+					case "store", "profiles", "backups", "cache", "trash":
+						return fs.SkipDir
+					}
 				}
+			}
+			if d.Type()&fs.ModeSymlink != 0 {
+				if d.IsDir() {
+					return fs.SkipDir
+				}
+				if info, infoErr := os.Stat(filepath.Clean(p)); infoErr == nil && info.Mode().IsRegular() {
+					if resolved, resErr := filepath.EvalSymlinks(p); resErr == nil && under(root, resolved) {
+						share.addFollowed(info)
+					}
+				}
+				return nil
+			}
+			if !d.Type().IsRegular() {
+				return nil
+			}
+			if info, infoErr := d.Info(); infoErr == nil {
+				account(p, info)
 			}
 			return nil
+		})
+	}
+	for _, name := range []string{"store", "profiles", "backups", "cache", "trash"} {
+		if err := walk(filepath.Join(root, name), false); err != nil {
+			return Usage{}, err
 		}
-		if !d.Type().IsRegular() {
-			return nil
-		}
-		if info, infoErr := d.Info(); infoErr == nil {
-			share.add(info)
-			n := info.Size()
-			u.Total += n
-			rel := path
-			if r, relErr := filepath.Rel(root, path); relErr == nil {
-				rel = r
-			}
-			slash := filepath.ToSlash(rel)
-			switch {
-			case hasPrefix(slash, "store/"):
-				u.Store += n
-				if game := nestedGame(slash, "store/"); game != "" {
-					direct[game] += n
-				}
-			case hasPrefix(slash, "cache/"):
-				u.Cache += n
-				cacheSeg[cacheSegs(slash)] += n
-			case hasPrefix(slash, "backups/"):
-				u.Backups += n
-				if game := nestedGame(slash, "backups/"); game != "" {
-					backupGame[game] += n
-				}
-			case hasPrefix(slash, "trash/"):
-				u.Trash += n
-			default:
-				if game := nestedGame(slash, "profiles/"); game != "" {
-					direct[game] += n
-				}
-				if game, id, ok := profileMods(slash); ok {
-					mods[game+"/"+id] += n
-				}
-			}
-			if report != nil {
-				report(Progress{Measuring: true, Bytes: u.Total, Path: slash})
-			}
-		}
-		return nil
-	})
+	}
+	err := walk(root, true)
 	if err != nil {
 		return Usage{}, err
 	}
