@@ -192,6 +192,7 @@ export function Updates() {
         prefKeys={[
           'updateCheckIntervalMinutes',
           'notifyModUpdates',
+          'updateDigest',
           'updateModsBeforePlayDefault',
           'checkModUpdatesOnStart',
         ]}
@@ -200,6 +201,7 @@ export function Updates() {
           keys={[
             'updateCheckIntervalMinutes',
             'notifyModUpdates',
+            'updateDigest',
             'updateModsBeforePlayDefault',
             'checkModUpdatesOnStart',
           ]}

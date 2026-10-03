@@ -249,6 +249,15 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
       description: i18n._(msg`Minutes between background update checks`),
     },
     notifyModUpdates: { label: i18n._(msg`Notify when updates are found`) },
+    updateDigest: {
+      label: i18n._(msg`Update digest notification`),
+      description: i18n._(msg`Toast when background checks find new mod updates`),
+      options: [
+        { value: 'off', label: i18n._(msg`Off`) },
+        { value: 'each', label: i18n._(msg`After each check`) },
+        { value: 'daily', label: i18n._(msg`At most once a day`) },
+      ],
+    },
     updateModsBeforePlayDefault: {
       label: i18n._(msg`Update mods before Play on new profiles`),
       description: i18n._(msg`Default for a profile you just created`),

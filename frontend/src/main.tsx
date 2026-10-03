@@ -14,6 +14,7 @@ import { initLaunch } from './launch/events.ts'
 import { initPlayRequests } from './launch/playRequests.ts'
 import { initLoader } from './loader/store.ts'
 import { initNexusSeen } from './mods/nexusDetails.ts'
+import { initUpdateDigestToast } from './mods/updateDigestToast.ts'
 import { initNxm } from './nxm/store.ts'
 import { initProfilesChanged } from './profiles/store.ts'
 import { initQueue } from './queue/store.ts'
@@ -42,6 +43,7 @@ await activateLanguage((await Get()).language)
 initSettings().catch(reportUnexpected)
 initInstallAsks()
 initMortarUpdateBackground()
+initUpdateDigestToast()
 initNexus().catch(reportUnexpected)
 initNexusSeen().catch(reportUnexpected)
 initLaunch()
