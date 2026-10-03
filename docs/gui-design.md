@@ -163,7 +163,7 @@ On the Mods tab, problems take one 38px clickable banner (warning colour when an
 
 A read-only list of the open profile's enabled mods in the order the game loader chooses (**The game loader chooses this order. Mortar does not change it.**, SMAPI in the line's `title`). Mortar does not change SMAPI's order. SMAPI sorts by dependencies: required and optional dependencies load before dependents; content packs after their ContentPackFor framework; otherwise alphabetical by name (ModResolver). A filter field and **Copy load order** (numbered plain text) sit above the list. Each row shows its position, name, and chips for required dependencies, optional dependencies and dependents; past four required dependencies or two dependents the row shows a **Used by N mods** chip that expands the full list. A required dependency the profile lacks is a red chip; a dependency cycle is flagged on the rows in it. A dependency whose name is unknown is **Unknown mod**, with its UniqueID in the tooltip. Clicking a chip for a mod in the list scrolls to that row. `mortar profile load-order` prints the same list.
 
-- Loading: "Reading load order…"
+- Loading: placeholder rows in the list's shape (announced as "Reading load order…")
 - Error: "Could not read load order" with **Retry**
 - None: "No enabled mods."
 

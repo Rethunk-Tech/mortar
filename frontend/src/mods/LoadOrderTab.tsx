@@ -1,6 +1,15 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Chip, InputAdornment, TextField, Tooltip, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Chip,
+  InputAdornment,
+  Skeleton,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Clipboard } from '@wailsio/runtime'
 import { Copy, ListOrdered, Search } from 'lucide-react'
@@ -10,7 +19,6 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import { LoadOrder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useTab } from '../game/tab.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { formatLoadOrderCopy, loadOrderEmptyKind } from './loadOrderText.ts'
@@ -264,6 +272,43 @@ function OrderList({
   )
 }
 
+const SKELETON_ROWS = 10
+const SKELETON_KEYS = Array.from({ length: SKELETON_ROWS }, (_, n) => `row-${n}`)
+const SKELETON_NAME = ['40%', '55%', '30%', '48%', '36%']
+
+// Placeholder rows in the list's own shape, so the tab shows where the order will appear while it is read.
+function OrderSkeleton({ label }: { label: string }) {
+  return (
+    <Box
+      role="status"
+      aria-label={label}
+      sx={{ px: 2, py: 1.5, display: 'flex', flexDirection: 'column' }}
+    >
+      <Skeleton variant="rounded" height={34} sx={{ mb: 1.5 }} />
+      {SKELETON_KEYS.map((key, i) => (
+        <Box
+          key={key}
+          sx={{
+            display: 'flex',
+            gap: 1.5,
+            py: 1,
+            borderBottom: '1px solid var(--mortar-hairline-faint)',
+          }}
+        >
+          <Skeleton width={24} />
+          <Box sx={{ flex: 1 }}>
+            <Skeleton width={SKELETON_NAME[i % SKELETON_NAME.length]} />
+            <Box sx={{ display: 'flex', gap: 0.75, mt: 0.75 }}>
+              <Skeleton variant="rounded" width={120} height={22} />
+              <Skeleton variant="rounded" width={90} height={22} />
+            </Box>
+          </Box>
+        </Box>
+      ))}
+    </Box>
+  )
+}
+
 export function LoadOrderTab({ profile, game }: { profile: Profile; game: string }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
@@ -327,7 +372,7 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
   }, [rows])
 
   if (rows === null) {
-    return <LoadingRow>{t`Reading load order…`}</LoadingRow>
+    return <OrderSkeleton label={t`Reading load order…`} />
   }
   const kind = loadOrderEmptyKind(failed, rows.length)
   if (kind === 'error') {
