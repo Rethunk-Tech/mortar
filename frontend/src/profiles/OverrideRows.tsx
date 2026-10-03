@@ -58,9 +58,13 @@ export function OverridesSection({
         const gameLabel = overrideChoiceLabel(key, gameValue, i18n)
         const field = (
           <FormControl key={key} fullWidth={true} margin="dense" size="small">
-            <InputLabel id={`override-${key}`}>{label}</InputLabel>
+            <InputLabel shrink={true} id={`override-${key}`}>
+              {label}
+            </InputLabel>
             <Select
               labelId={`override-${key}`}
+              displayEmpty={true}
+              notched={true}
               label={label}
               value={choice.useGame ? '' : choice.value}
               onChange={(event) => {

@@ -26,6 +26,7 @@ export function PrefSelect({
   return (
     <Select
       size="small"
+      displayEmpty={true}
       value={value}
       onChange={(e) => onChange(String(e.target.value))}
       sx={{ minWidth: 180 }}

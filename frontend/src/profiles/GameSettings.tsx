@@ -161,9 +161,11 @@ function WindowModeField({ disabled, value, onChange }: WindowModeFieldProps) {
   const labelId = useId()
   return (
     <FormControl disabled={disabled} fullWidth={true}>
-      <InputLabel id={labelId}>{t`Window mode`}</InputLabel>
+      <InputLabel shrink={true} id={labelId}>{t`Window mode`}</InputLabel>
       <Select
         labelId={labelId}
+        displayEmpty={true}
+        notched={true}
         label={t`Window mode`}
         value={value ?? ''}
         onChange={(event) => {
