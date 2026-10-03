@@ -144,6 +144,7 @@ function DisplayAndNotices() {
 export function General() {
   const { t } = useLingui()
   const [firewallBlocked, setFirewallBlocked] = useState(false)
+  const [fixingFirewall, setFixingFirewall] = useState(false)
   const enableModsWhenInstalled = useSettings((s) => s.enableModsWhenInstalled)
   const lanSharing = useSettings((s) => s.lanSharing)
   const lanPort = useSettings((s) => s.lanPort)
@@ -256,14 +257,17 @@ export function General() {
             <Button
               size="small"
               variant="outlined"
+              disabled={fixingFirewall}
               onClick={() => {
+                setFixingFirewall(true)
                 FixFirewall()
                   .then(() => FirewallBlocked())
                   .then(setFirewallBlocked)
                   .catch(reportFailure)
+                  .finally(() => setFixingFirewall(false))
               }}
             >
-              {t`Fix`}
+              {fixingFirewall ? t`Fixing…` : t`Fix`}
             </Button>
           </Box>
         )}

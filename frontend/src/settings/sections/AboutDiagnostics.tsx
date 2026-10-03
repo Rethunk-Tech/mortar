@@ -9,6 +9,11 @@ import { useToasts } from '../../toasts/store.ts'
 
 const detail = { color: 'rgba(235,235,240,0.95)' }
 
+function diagnosticKind(id: string): string {
+  const cut = id.indexOf(':')
+  return cut === -1 ? id : id.slice(0, cut)
+}
+
 function StatusIcon({ status }: { status: string }) {
   if (status === 'fail') {
     return <CircleX size={16} color="#C70A0A" aria-hidden={true} />
@@ -24,6 +29,34 @@ export function Diagnostics() {
   const push = useToasts((s) => s.push)
   const [report, setReport] = useState<Report | null>(null)
   const [busy, setBusy] = useState(false)
+  const checkTitle = (id: string) => {
+    switch (diagnosticKind(id)) {
+      case 'mortar':
+        return t`Mortar`
+      case 'dataDir':
+        return t`Data folder`
+      case 'game':
+        return t`Game`
+      case 'nxm':
+        return t`Nexus Mod Manager links`
+      case 'settings':
+        return t`Settings`
+      case 'settingsCopies':
+        return t`Settings backups`
+      case 'profile':
+        return t`Profile`
+      case 'profiles':
+        return t`Profiles`
+      case 'control':
+        return t`Control file`
+      case 'disk':
+        return t`Disk space`
+      case 'store':
+        return t`Mod store`
+      default:
+        return id
+    }
+  }
   const run = () => {
     setBusy(true)
     Doctor()
@@ -36,7 +69,8 @@ export function Diagnostics() {
       return
     }
     const text =
-      (report.checks ?? []).map((c) => c.detail).join('\n') + (report.checks?.length ? '\n' : '')
+      (report.checks ?? []).map((c) => `${checkTitle(c.id)}\n${c.detail}`).join('\n\n') +
+      (report.checks?.length ? '\n' : '')
     navigator.clipboard.writeText(text).then(
       () => push({ kind: 'success', title: t`Copied the report` }),
       (err: unknown) => {
@@ -72,8 +106,8 @@ export function Diagnostics() {
       {(report?.checks ?? []).map((c) => (
         <Box key={c.id} sx={{ display: 'flex', gap: '8px', alignItems: 'flex-start', minWidth: 0 }}>
           <StatusIcon status={c.status} />
-          <Box component="span" sx={{ ...detail, minWidth: 0 }}>
-            {c.detail}
+          <Box component="span" title={c.detail} sx={{ ...detail, minWidth: 0 }}>
+            {checkTitle(c.id)}
           </Box>
         </Box>
       ))}

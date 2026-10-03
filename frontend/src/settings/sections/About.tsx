@@ -80,6 +80,9 @@ export function About() {
         ))}
       </Box>
       <Diagnostics />
+      <Box sx={{ fontSize: 13, color: 'text.secondary', lineHeight: 1.5 }}>
+        {t`Save diagnostics… writes a redacted zip for a bug report. Run checks for a live summary.`}
+      </Box>
       <Button
         variant="outlined"
         color="inherit"

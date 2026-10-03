@@ -9,9 +9,11 @@ const ACTIVE_WEIGHT = 600
 export function SettingsNav({
   section,
   sections,
+  onSection,
 }: {
   section: SettingsSection
   sections: { id: SettingsSection; label: string }[]
+  onSection?: (id: SettingsSection) => void
 }) {
   const { t } = useLingui()
   const closeSettings = useNav((s) => s.closeSettings)
@@ -52,7 +54,7 @@ export function SettingsNav({
         return (
           <ButtonBase
             key={s.id}
-            onClick={() => setSection(s.id)}
+            onClick={() => (onSection ?? setSection)(s.id)}
             aria-current={active ? 'page' : undefined}
             sx={{
               justifyContent: 'flex-start',

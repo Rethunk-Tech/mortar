@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, TextField, Typography } from '@mui/material'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { type SettingsSection, useNav } from '../nav/store.ts'
 import { SettingsNav } from './SettingsNav.tsx'
 import { SettingsSearchProvider } from './SettingsSearch.tsx'
@@ -53,11 +53,21 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
     about: <About />,
   }
   const current = sections.find((s) => s.id === section)
+  const pane = useRef<HTMLDivElement>(null)
+  const pickSection = (id: SettingsSection) => {
+    useNav.getState().openSettings(id)
+    if (query) {
+      document.getElementById(`settings-section-${id}`)?.scrollIntoView({ block: 'start' })
+      return
+    }
+    pane.current?.scrollTo(0, 0)
+  }
   return (
     <SettingsSearchProvider query={query}>
       <Box sx={{ height: '100%', display: 'grid', gridTemplateColumns: '200px minmax(0, 1fr)' }}>
-        <SettingsNav section={section} sections={sections} />
+        <SettingsNav section={section} sections={sections} onSection={pickSection} />
         <Box
+          ref={pane}
           sx={{
             minWidth: 0,
             overflow: 'auto',
@@ -79,7 +89,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
               alignItems: 'center',
             }}
           >
-            {current?.label}
+            {query ? t`Search results` : current?.label}
           </Typography>
           <TextField
             size="small"
@@ -107,7 +117,17 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
           >
             {query
               ? sections.map((s) => (
-                  <Box key={s.id} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
+                  <Box
+                    key={s.id}
+                    id={`settings-section-${s.id}`}
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 2,
+                      mb: 2,
+                      '&:empty': { display: 'none' },
+                    }}
+                  >
                     {body[s.id]}
                   </Box>
                 ))

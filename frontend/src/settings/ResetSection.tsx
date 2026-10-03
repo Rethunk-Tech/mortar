@@ -9,6 +9,7 @@ import {
 } from '@mui/material'
 import { useState } from 'react'
 import { SetByKey } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { pushUndoToast } from '../toasts/undo.ts'
 import { specByKey, usePrefSpecs } from './prefSpecs.ts'
@@ -44,7 +45,9 @@ export function ResetSectionButton({ keys }: { keys: string[] }) {
       .then(() => {
         pushUndoToast(push, t`Section reset to defaults`, t`Undo`, restore)
       })
-      .catch(() => undefined)
+      .catch((e: unknown) => {
+        push({ kind: 'error', title: t`Could not reset this section.`, body: errorMessage(e) })
+      })
   }
   if (keys.length === 0) {
     return null

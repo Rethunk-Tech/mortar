@@ -1,6 +1,6 @@
 import { Box, type SxProps, type Theme } from '@mui/material'
-import { Children, type ReactNode } from 'react'
-import { prefMatches } from './prefFilter.ts'
+import { Children, isValidElement, type ReactNode } from 'react'
+import { prefMatches, sectionVisible } from './prefFilter.ts'
 import { ResetSectionButton } from './ResetSection.tsx'
 import { useSettingsSearch } from './useSettingsSearch.ts'
 
@@ -25,8 +25,17 @@ export function SettingsSection({
   prefKeys?: string[]
 }) {
   const query = useSettingsSearch()
-  const shown = Children.toArray(children)
-  if (query && shown.length === 0) {
+  const rows = Children.toArray(children).flatMap((child) => {
+    if (!isValidElement(child)) {
+      return []
+    }
+    const props = child.props as { label?: ReactNode; description?: ReactNode }
+    if (props.label === undefined) {
+      return []
+    }
+    return [{ label: nodeText(props.label), description: nodeText(props.description) }]
+  })
+  if (query && rows.length > 0 && !sectionVisible(query, rows)) {
     return null
   }
   return (
@@ -69,6 +78,7 @@ export function SettingRow({
         <Box sx={{ fontSize: 14 }}>{label}</Box>
         {description ? (
           <Box
+            title={nodeText(description)}
             sx={{
               fontSize: 12,
               color: 'text.secondary',
