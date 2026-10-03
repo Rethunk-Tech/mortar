@@ -5,6 +5,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { LogActions } from '../console/LogActions.tsx'
 import { PerformancePanel } from '../console/PerformancePanel.tsx'
+import { LoadOrderTab } from '../mods/LoadOrderTab.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { ProblemActions, ProblemsTab } from '../mods/ProblemsTab.tsx'
 import { useNav } from '../nav/store.ts'
@@ -55,6 +56,7 @@ function WorkspaceTabs({ problemsTabCount }: { problemsTabCount: number | null }
           </Box>
         }
       />
+      <Tab value="load-order" label={t`Load order`} />
       <Tab value="saves" label={t`Saves`} />
       <Tab value="notes" label={t`Notes`} />
       <Tab value="console" label={t`Console`} />
@@ -139,6 +141,9 @@ export function ProfileWorkspace({
         {tab === 'saves' ? <SavesTab profile={profile} game={game} /> : null}
         {tab === 'mods' ? <ModsTab key={`mods-${profile.id}`} profile={profile} /> : null}
         {tab === 'problems' ? <ProblemsTab key={`problems-${profile.id}`} /> : null}
+        {tab === 'load-order' ? (
+          <LoadOrderTab key={`load-order-${profile.id}`} profile={profile} game={game} />
+        ) : null}
       </ErrorBoundary>
     </Box>
   )

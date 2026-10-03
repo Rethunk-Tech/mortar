@@ -1,4 +1,4 @@
-import { useTab } from '../game/tab.ts'
+import { type TabId, useTab } from '../game/tab.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
 import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
@@ -46,17 +46,7 @@ function openProfile(id: string): void {
 
 function runAction(id: string): void {
   if (id.startsWith('tab:')) {
-    useTab
-      .getState()
-      .setTab(
-        id.slice(TAB_PREFIX_LENGTH) as
-          | 'mods'
-          | 'problems'
-          | 'saves'
-          | 'notes'
-          | 'console'
-          | 'performance',
-      )
+    useTab.getState().setTab(id.slice(TAB_PREFIX_LENGTH) as TabId)
     return
   }
   if (id.startsWith('toggle-mod:')) {

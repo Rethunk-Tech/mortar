@@ -74,7 +74,7 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
     - each save in the Saves folder with its fit: "all mods present" or "has used N mods this profile lacks" with their names, from the save scan ([architecture.md](architecture.md#saves))
     - a mod can be dismissed for a save
     - Players pick their save inside the game; Play also warns from the newest save ([architecture.md](architecture.md#launch)).
-  - Tabs: **Mods** (default), **Problems** (a count chip when the open profile has any problems), **Saves**, **Notes**, **Console**, **Performance**, then 32px bordered icon buttons with tooltips at the right of the row: a **Tools** menu (Wrench; lists configured tools for one-click launch, **Add tool…** and **Manage tools** for edit and remove, with **Add tool…** and a line saying what tools are for when none exist; the editor uses the native executable picker and documents placeholders), **Share**, and the game settings icon at the end of the tab row.
+  - Tabs: **Mods** (default), **Problems** (a count chip when the open profile has any problems), **Load order**, **Saves**, **Notes**, **Console**, **Performance**, then 32px bordered icon buttons with tooltips at the right of the row: a **Tools** menu (Wrench; lists configured tools for one-click launch, **Add tool…** and **Manage tools** for edit and remove, with **Add tool…** and a line saying what tools are for when none exist; the editor uses the native executable picker and documents placeholders), **Share**, and the game settings icon at the end of the tab row.
 - **Launching** covers the whole window with the launch overlay, the title bar inert except its window controls:
   - a spinner, "Launching Stardew Valley", and SMAPI's first log lines as they arrive (started, mods loading, mods it will skip), with Open console and Hide, until the game is up or the launch fails
   - a launch where SMAPI exits without writing a log fails with its exit code
@@ -154,6 +154,13 @@ Each row shows the full wrapped text, severity icon, the Nexus author note when 
 - Some checks could not run offline: the connection warning from the summary
 
 On the Mods tab, problems take one 38px clickable banner (warning colour when any problem is a warning): the count, the first warning's text truncated, and **Open Problems**; clicking anywhere on it opens this tab. While problems are still loading, the same banner shows a spinner and "Checking the mods for problems…".
+
+## Load order tab
+
+A read-only list of the open profile's enabled mods in the order SMAPI loads them. Mortar does not change SMAPI's order. SMAPI sorts by dependencies: required and optional dependencies load before dependents; content packs after their ContentPackFor framework; otherwise alphabetical by name (ModResolver). Each row shows its position, name, and chips for required dependencies, optional dependencies and dependents. A required dependency the profile lacks is a red chip; a dependency cycle is flagged on the rows in it. Clicking a chip for a mod in the list scrolls to that row. `mortar profile load-order` prints the same list.
+
+- Loading: "Reading load order…"
+- None: "No enabled mods."
 
 ## Notes tab
 
@@ -257,7 +264,7 @@ Short toasts, bottom right, stacked (at most three; the oldest goes first), each
 
 **Times:** a moment within the last week reads relative ("a few seconds ago", "3 minutes ago", "yesterday", "3 days ago"); older ones show the date, with the time where the list is a timeline (runs, backups, profile history, notifications). This covers the mod list's Updated and Installed columns, the hero's Updated and Created, save cards, Game Select's last played, and the Notes and update-check status lines.
 
-**Empty states:** a tab with nothing to show centres an icon, a title, a line on how to fill it and, where one helps, a button: Saves with no saves, Problems with none found, Console for a profile that has never run (an empty log with past runs shows the log), and Performance before a report.
+**Empty states:** a tab with nothing to show centres an icon, a title, a line on how to fill it and, where one helps, a button: Saves with no saves, Problems with none found, Load order with no enabled mods, Console for a profile that has never run (an empty log with past runs shows the log), and Performance before a report.
 
 **First-open tips:** the Mods tab, the Saves tab, the Console and the Share dialog each show a short dismissible banner the first time they open; Settings › General has **Show tips again**.
 
@@ -272,7 +279,7 @@ Mortar's Settings holds only what is Mortar-wide, never one game's. It is a full
 - **Nexus Mods:** the personal API key, or once signed in a green alert with the account name, a Premium or Free chip and **Sign out** inside it (saving it the first time asks whether Mortar should handle `nxm://` links); **Tracked mods (N for \<game\>)** with **Untrack every \<game\> mod…** and **Untrack mods not in any profile…** (confirm: Nexus has no undo); the switch **Ask me to endorse mods I keep using** (on by default); a capped-width **Preferred download server** when Mortar has seen servers; the switch **Handle Nexus "Mod Manager Download" links** with helper text under its label (who owns the links now and what turning it off does); and when a previous handler is recorded, **Send other games' links to …** (default on). A line reads "<n> requests left today · <n> this hour" from the last response, or in secondary text says the counts appear after Mortar talks to Nexus, or that Nexus is throttling.
 - **Updates:** the installed Mortar version, the check's state and **Check now**, then **Download and install** and **Restart now** as the update progresses; a development build says it does not check; **Include beta releases** (default off) offers Mortar nightlies from GitHub. Under **Mods**, switches for **Check for mod updates when Mortar starts** (on by default; also the background desktop notification, [architecture.md](architecture.md#profile-operations)), **Include pre-release mod versions** (off by default), and **Check only enabled mods** (off by default). Mod and SMAPI updates stay where they are (each profile's mod list and the game settings SMAPI card, which includes **Tell me when a new SMAPI is out**, on by default), linked from here as Review mod updates and Open Stardew Valley settings once a game has been opened.
 - **Shortcuts:** grouped rows for General, Navigation, Profiles, Mods list and Console, with a filter and keycaps. Click a keycap to record a new combo (Esc cancels). A combo already used by another row is refused, naming that action. Each row has Reset; Reset all restores the defaults. Bindings persist in `settings.json`. Ctrl+J opens Downloads, Ctrl+Shift+N opens notification history, Ctrl+PageUp/PageDown move the open profile, Ctrl+B collapses the sidebar, Ctrl+Shift+F focuses find-in-all-profiles, and Ctrl+Shift+P plays without SMAPI. Except Esc they stay silent while typing or with a dialog open.
-- **About:** third-party licences and credits, including the Stardew mod dataset (CC-BY-SA 4.0), a **Credits** list in as many 260px columns as the pane holds, each bundled project's name linking its page with its licence id, and **Save diagnostics…** at the foot.
+- **About:** third-party licences and credits, including the Stardew mod dataset (CC-BY-SA 4.0), a **Credits** list in as many 260px columns as the pane holds, each bundled project's name linking its page with its licence id, a **Diagnostics** section that runs the same checks as `mortar doctor` on **Run checks** (pass/warn/fail rows and **Copy report**), and **Save diagnostics…** at the foot.
 
 **Game settings** are per game and live on their own page, opened from the game screen by the last icon button in the tab row (Lucide Settings2, labelled "Stardew Valley settings"), after **Share** (Share2). The page is titled "Stardew Valley settings", has a back button to the game (Esc also returns), and the title bar keeps the game tab highlighted.
 

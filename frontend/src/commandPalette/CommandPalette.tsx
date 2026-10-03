@@ -189,6 +189,7 @@ export function CommandPalette() {
         tabs: {
           mods: t`Go to Mods`,
           problems: t`Go to Problems`,
+          'load-order': t`Go to Load order`,
           saves: t`Go to Saves`,
           notes: t`Go to Notes`,
           console: t`Go to Console`,
