@@ -1,6 +1,14 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import { Browser } from '@wailsio/runtime'
 import {
   Archive,
@@ -15,6 +23,7 @@ import {
   Leaf,
   Plus,
   Power,
+  Search,
   Snowflake,
   Sprout,
   Sun,
@@ -42,6 +51,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
@@ -51,6 +61,7 @@ import { usePending } from '../toasts/usePending.ts'
 import { BackupsDialog } from './BackupsDialog.tsx'
 import { useSaveBackups } from './backups.ts'
 import { goldText, hoursPlayed } from './card.ts'
+import { filterAndSortSaves } from './filterAndSortSaves.ts'
 import { useSaves } from './store.ts'
 
 const nowrap = { whiteSpace: 'nowrap' } as const
@@ -165,15 +176,18 @@ function LackChip({
         </Tooltip>
       ) : null}
       {source ? (
-        <Button
-          size="small"
-          disabled={copying || locked}
-          title={source.name}
-          onClick={() => runCopy(() => CopyMods(game, source.id, profile.id, [lack.uniqueId]))}
-          sx={{ minWidth: 0, px: 0.5, ...nowrap }}
-        >
-          {t`Copy`}
-        </Button>
+        <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+          <Button
+            size="small"
+            disabled={copying || locked}
+            title={source.name}
+            aria-label={t`Copy ${source.name}`}
+            onClick={() => runCopy(() => CopyMods(game, source.id, profile.id, [lack.uniqueId]))}
+            sx={{ minWidth: 0, px: 0.5, ...nowrap }}
+          >
+            {t`Copy`}
+          </Button>
+        </DisabledReason>
       ) : null}
       {!(lack.disabled || want) && url ? (
         <Tooltip title={nexusPage ? t`Open on Nexus` : t`Open page`}>
@@ -217,17 +231,19 @@ function AddAll({ missing, profile }: { missing: Lack[]; profile: Profile }) {
     return null
   }
   return (
-    <Button
-      size="small"
-      variant="outlined"
-      color="inherit"
-      startIcon={<Plus size={14} />}
-      disabled={pending || locked}
-      onClick={() => run(() => download(wants))}
-      sx={nowrap}
-    >
-      {t`Add all ${wants.length}`}
-    </Button>
+    <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+      <Button
+        size="small"
+        variant="outlined"
+        color="inherit"
+        startIcon={<Plus size={14} />}
+        disabled={pending || locked}
+        onClick={() => run(() => download(wants))}
+        sx={nowrap}
+      >
+        {t`Add all ${wants.length}`}
+      </Button>
+    </DisabledReason>
   )
 }
 
@@ -311,9 +327,10 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
   const hours = hoursPlayed(fit.millisecondsPlayed)
   const subtitle = [fit.farmer, kind].filter(Boolean).join(' · ')
   const label = fit.farm || fit.folder
-  const lastName =
-    useProfiles.getState().profiles.find((p) => p.id === fit.lastProfileId)?.name ??
-    fit.lastProfileId
+  const lastProfile = useProfiles.getState().profiles.find((p) => p.id === fit.lastProfileId)
+  const lastGone = Boolean(fit.lastProfileId) && lastProfile === undefined
+  const lastName = lastProfile?.name ?? (lastGone ? t`a deleted profile` : '')
+  const lastLine = lastName === '' ? '' : t`Last played with ${lastName}`
   return (
     <Box
       sx={{
@@ -426,8 +443,12 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
           {t`Last played ${formatWhen(fit.played)}`}
         </Typography>
         {fit.lastProfileId ? (
-          <Typography sx={{ fontSize: 12, color: 'text.secondary' }} noWrap={true}>
-            {t`Last played with ${lastName}`}
+          <Typography
+            sx={{ fontSize: 12, color: 'text.secondary' }}
+            noWrap={true}
+            title={lastGone ? fit.lastProfileId : lastLine}
+          >
+            {lastLine}
             {fit.lastProfileAt ? (
               <>
                 {' '}
@@ -455,6 +476,8 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   const { fits, status, error: detail, load } = useSaves()
   const { name } = profile
   const [backupsOpen, setBackupsOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const shown = filterAndSortSaves(fits, query)
   let body: ReactNode = null
   if (status === 'error') {
     body = (
@@ -482,7 +505,7 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
       </EmptyState>
     )
   } else {
-    body = fits.map((fit) => <SaveRow key={fit.folder} fit={fit} profile={profile} game={game} />)
+    body = shown.map((fit) => <SaveRow key={fit.folder} fit={fit} profile={profile} game={game} />)
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
@@ -493,6 +516,25 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
         <Typography sx={{ flex: 1, minWidth: 0, fontSize: 13, lineHeight: 1.5 }}>
           {t`Mortar reads each save for the mods it has used. You pick the save in the game; this is how well each one fits ${name}.`}
         </Typography>
+        {fits.length === 0 ? null : (
+          <TextField
+            size="small"
+            value={query}
+            onChange={(e) => setQuery(e.currentTarget.value)}
+            placeholder={t`Filter saves`}
+            slotProps={{
+              htmlInput: { 'aria-label': t`Filter saves` },
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search size={14} />
+                  </InputAdornment>
+                ),
+              },
+            }}
+            sx={{ width: 200, flexShrink: 0 }}
+          />
+        )}
         <Button
           size="small"
           startIcon={<History size={14} />}
