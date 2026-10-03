@@ -183,6 +183,16 @@ func (s *Service) RemoveEntry(game, id, key string) (Profile, error) {
 	return s.store.RemoveEntry(game, id, key)
 }
 
+// SplitExtra turns an extra file of an entry into its own profile entry.
+func (s *Service) SplitExtra(game, id, entryKey, extraKey string) (Profile, error) {
+	return s.store.SplitExtra(game, id, entryKey, extraKey)
+}
+
+// CombineEntries attaches otherKey as an extra file of targetKey when both are from the same Nexus page.
+func (s *Service) CombineEntries(game, id, targetKey, otherKey string) (Profile, error) {
+	return s.store.CombineEntries(game, id, targetKey, otherKey)
+}
+
 func (s *Service) RemoveEntries(game, id string, keys []string) (Profile, error) {
 	return s.store.RemoveEntries(game, id, keys)
 }

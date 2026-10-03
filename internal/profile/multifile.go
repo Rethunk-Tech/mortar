@@ -73,6 +73,105 @@ func (s *Store) AddExtra(game, id, entryKey, extraKey string, source Source) (Pr
 	return p, s.items.Touch(game, extraKey)
 }
 
+// SplitExtra turns extraKey into its own profile entry, as a separate install of that store item would.
+func (s *Store) SplitExtra(game, id, entryKey, extraKey string) (Profile, error) {
+	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
+		ei := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == entryKey })
+		if ei < 0 {
+			return fmt.Errorf("%q is not in this profile", entryKey)
+		}
+		e := &p.Entries[ei]
+		xi := slices.Index(e.ExtraStoreKeys, extraKey)
+		if xi < 0 {
+			return fmt.Errorf("%q is not an extra file of this entry", extraKey)
+		}
+		disabled := extraDisabled(*e, extraKey)
+		source := extraSource(*e, extraKey)
+		e.ExtraStoreKeys = slices.Delete(e.ExtraStoreKeys, xi, xi+1)
+		if xi < len(e.PreviousExtraStoreKeys) {
+			e.PreviousExtraStoreKeys = slices.Delete(e.PreviousExtraStoreKeys, xi, xi+1)
+		}
+		entryDir := liveEntryDir(filepath.Join(dir, "mods"), e.Key)
+		if err := os.RemoveAll(filepath.Join(entryDir, extraKey)); err != nil {
+			return err
+		}
+		if err := s.refreshEntryMods(e, entryDir); err != nil {
+			return err
+		}
+		was := s.NewModsEnabled
+		s.NewModsEnabled = func() bool { return true }
+		defer func() { s.NewModsEnabled = was }()
+		_, err := s.addTo(game, p, dir, extraKey, source, disabled)
+		return err
+	})
+	if err != nil {
+		return Profile{}, err
+	}
+	if err := s.RecordModsSnapshot(game, id); err != nil {
+		return Profile{}, err
+	}
+	return p, s.items.Touch(game, extraKey)
+}
+
+// CombineEntries attaches otherKey as an extra file of targetKey when both are from the same Nexus page.
+func (s *Store) CombineEntries(game, id, targetKey, otherKey string) (Profile, error) {
+	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
+		if targetKey == "" || otherKey == "" || targetKey == otherKey {
+			return fmt.Errorf("cannot combine %q with %q", targetKey, otherKey)
+		}
+		ti := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == targetKey })
+		oi := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == otherKey })
+		if ti < 0 {
+			return fmt.Errorf("%q is not in this profile", targetKey)
+		}
+		if oi < 0 {
+			return fmt.Errorf("%q is not in this profile", otherKey)
+		}
+		target, other := p.Entries[ti], p.Entries[oi]
+		if len(other.ExtraStoreKeys) > 0 {
+			return fmt.Errorf("%q has extra files of its own", otherKey)
+		}
+		if target.Source.Kind != KindNexus || other.Source.Kind != KindNexus || target.Source.ModID != other.Source.ModID || target.Source.ModID <= 0 {
+			return fmt.Errorf("those mods are not from the same Nexus page")
+		}
+		if err := removeFrom(p, dir, otherKey); err != nil {
+			return err
+		}
+		return s.addExtraLocked(game, p, dir, targetKey, otherKey, other.Source.WithFomod(other.Fomod).WithDisabled(other.Disabled))
+	})
+	if err != nil {
+		return Profile{}, err
+	}
+	if err := s.RecordModsSnapshot(game, id); err != nil {
+		return Profile{}, err
+	}
+	return p, s.items.Touch(game, otherKey)
+}
+
+func extraSource(e Entry, extraKey string) Source {
+	src := Source{Kind: e.Source.Kind, Name: e.Source.Name, Picture: e.Source.Picture, EndorsementCount: e.Source.EndorsementCount}
+	if modID, fileID, ok := store.NexusFile(extraKey); ok {
+		src.Kind = KindNexus
+		src.ModID, src.FileID = modID, fileID
+	}
+	return src
+}
+
+func extraDisabled(e Entry, extraKey string) []string {
+	prefix := filepath.ToSlash(extraKey) + "/"
+	var ids []string
+	for _, m := range e.Mods {
+		folder := filepath.ToSlash(m.Folder)
+		if folder != extraKey && !strings.HasPrefix(folder, prefix) {
+			continue
+		}
+		if hasID(e.Disabled, m.UniqueID) {
+			ids = append(ids, m.UniqueID)
+		}
+	}
+	return ids
+}
+
 func (s *Store) addExtraLocked(game string, p *Profile, dir, entryKey, extraKey string, source Source) error {
 	ei := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == entryKey })
 	if ei < 0 {
