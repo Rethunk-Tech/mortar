@@ -85,8 +85,9 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 		eligible := true
 		for _, patch := range pack.patches {
 			targets := splitTargets(patch.target)
-			if patch.kind == "other" || len(targets) == 0 ||
-				(patch.kind != "load" && !patch.image) {
+			// Only a pack that loads new sheets can go unused: editing an existing sheet retextures
+			// something the game always draws.
+			if patch.kind != "load" || len(targets) == 0 {
 				eligible = false
 				break
 			}

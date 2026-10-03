@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
@@ -146,5 +147,23 @@ func TestMapScanners(t *testing.T) {
 	runs := printableRuns([]byte("\x00\x01SharedTiles\x00ab\x00Maps/Town\x00SharedTiles"))
 	if len(runs) != 2 || runs[0] != "sharedtiles" || runs[1] != "maps/town" {
 		t.Fatalf("tbin runs = %q", runs)
+	}
+}
+
+func TestRetextureOfVanillaSheetIsNotUnusedTilesheets(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+
+	root := t.TempDir()
+	writeManifest(t, root, "Colling.ElegantTools")
+	content := `{"Changes":[{"Action":"EditImage","Target":"TileSheets/tools","FromFile":"tools.png"}]}`
+	if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	mod := Installed{Key: "tools", Enabled: true, Folder: root, Name: "Elegant Tools", UniqueID: "Colling.ElegantTools"}
+	if got := unusedTilesheetPacks([]Installed{mod}); len(got) != 0 {
+		t.Fatalf("a retexture is never an unused tilesheet pack, got %+v", got)
 	}
 }

@@ -384,7 +384,7 @@ Saves live in one folder, `%APPDATA%\StardewValley\Saves` or `~/.config/StardewV
   - duplicate `UniqueID`s (resolved in a dialog that keeps one copy and switches the other off)
   - mods SMAPI's API marks broken, obsolete or abandoned for the game version, with `compatibilitySummary` when SMAPI supplies it, including a one-click replacement when the summary names a Nexus or GitHub target Mortar can install, or a `UniqueID` the mod dataset resolves
   - Content Patcher asset conflicts, each with a one-click fix
-  - cleanup suggestions for unused frameworks and conservatively detected unused Content Patcher tilesheet packs
+  - cleanup suggestions for unused frameworks and conservatively detected unused Content Patcher tilesheet packs (packs that only `Load` new sheets; one that edits an existing sheet is a retexture and never a candidate)
   - enabled mods that logged errors in this profile's newest stored run (warning when that run crashed or hit a fatal error, info otherwise; **Switch off** and **Get help** on the stored run's log; cleared by a later clean run, switching the mod off, or updating it)
   - Abandoned mods are info-level and dismissible per profile like Content Patcher conflicts
 - **What counts as a Content Patcher conflict:** two or more enabled packs (`ContentPackFor.UniqueID` `Pathoschild.ContentPatcher`) that `Load` the same target (warning: only one wins) or that `EditImage`/`EditMap` the same target, or `EditData` the same entry or field (info, dismissible per profile via `settings.json` `dismissed`). Both kinds can be restored from Problems. `EditData` that only shares a target is not reported.
