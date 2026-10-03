@@ -9,6 +9,40 @@ const timers = new Map<number, ReturnType<typeof setTimeout>>()
 
 let nextId = 1
 
+const SAVED_KEY = 'mortar.toastHistory'
+const SAVED_CAP = 100
+const KINDS: readonly string[] = ['info', 'success', 'warning', 'error']
+
+function isSavedItem(v: unknown): v is ToastHistoryItem {
+  if (typeof v !== 'object' || v === null) {
+    return false
+  }
+  const o = v as Record<string, unknown>
+  return typeof o.at === 'number' && typeof o.title === 'string' && KINDS.includes(String(o.kind))
+}
+
+// The previous session's notifications come back without their actions (those closed over live state) and
+// with negative ids so they never collide with this session's.
+function loadSaved(): ToastHistoryItem[] {
+  try {
+    const parsed: unknown = JSON.parse(localStorage.getItem(SAVED_KEY) ?? '[]')
+    return Array.isArray(parsed)
+      ? parsed.filter(isSavedItem).map((item, i) => ({ ...item, id: -(i + 1) }))
+      : []
+  } catch {
+    return []
+  }
+}
+
+function saveHistory(history: ToastHistoryItem[]) {
+  try {
+    const kept = history.slice(0, SAVED_CAP).map(({ action: _, ...rest }) => rest)
+    localStorage.setItem(SAVED_KEY, JSON.stringify(kept))
+  } catch {
+    // Storage blocked: history stays for this session only.
+  }
+}
+
 export type ToastKind = 'info' | 'success' | 'warning' | 'error'
 
 export interface ToastAction {
@@ -71,7 +105,7 @@ export const useToasts = create<{
   }
   return {
     toasts: [],
-    history: [],
+    history: loadSaved(),
     unread: 0,
     historyOpen: false,
     push: (input) => {
@@ -86,6 +120,7 @@ export const useToasts = create<{
             toast.title === input.title ? { ...toast, count } : toast,
           ),
         }))
+        saveHistory(get().history)
         return previous.id
       }
       const id = nextId
@@ -110,6 +145,7 @@ export const useToasts = create<{
         history: prependHistory(get().history, item),
         unread: Math.min(HISTORY_CAP, get().unread + 1),
       })
+      saveHistory(get().history)
       arm(id, input.kind)
       return id
     },
@@ -118,6 +154,7 @@ export const useToasts = create<{
         toasts: s.toasts.map((toast) => (toast.id === id ? { ...toast, ...input } : toast)),
         history: s.history.map((toast) => (toast.id === id ? { ...toast, ...input } : toast)),
       }))
+      saveHistory(get().history)
     },
     dismiss: (id) => {
       clearTimeout(timers.get(id))
@@ -133,7 +170,10 @@ export const useToasts = create<{
       }
     },
     markRead: () => set({ unread: 0 }),
-    clearHistory: () => set({ history: [], unread: 0 }),
+    clearHistory: () => {
+      set({ history: [], unread: 0 })
+      saveHistory([])
+    },
     setHistoryOpen: (open) => set({ historyOpen: open, ...(open ? { unread: 0 } : {}) }),
   }
 })
