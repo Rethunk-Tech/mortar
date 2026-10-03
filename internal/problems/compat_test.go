@@ -3,7 +3,6 @@ package problems
 import (
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/meta"
 )
 
@@ -18,10 +17,10 @@ func TestMatchCompatByUniqueIDAndNexus(t *testing.T) {
 		},
 	}
 	mods := []Installed{
-		{Key: "a", Manifest: manifest.Manifest{UniqueID: "Author.Broken", Name: "Broken"}},
-		{Key: "b", Manifest: manifest.Manifest{UniqueID: "Author.NexusOnly", Name: "Nexus", UpdateKeys: []string{"Nexus:42"}}},
-		{Key: "c", Manifest: manifest.Manifest{UniqueID: "Author.Ok", Name: "Fine"}},
-		{Key: "d", Manifest: manifest.Manifest{UniqueID: "Author.Unknown", Name: "Unknown"}},
+		{Key: "a", UniqueID: "Author.Broken", Name: "Broken"},
+		{Key: "b", UniqueID: "Author.NexusOnly", Name: "Nexus", UpdateKeys: []string{"Nexus:42"}},
+		{Key: "c", UniqueID: "Author.Ok", Name: "Fine"},
+		{Key: "d", UniqueID: "Author.Unknown", Name: "Unknown"},
 	}
 	all := matchCompat(idx, mods, false)
 	if len(all) != 3 {
