@@ -224,6 +224,7 @@ func run() error {
 		slog.SetDefault(slog.New(slog.NewTextHandler(out, nil)))
 	}
 	support.DetectLastRunCrashed(dataDir)
+	capCrashLog(dataDir)
 
 	store, err = settings.Open()
 	if err != nil {
