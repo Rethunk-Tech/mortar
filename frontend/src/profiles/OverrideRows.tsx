@@ -1,3 +1,5 @@
+import type { I18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material'
 import { gamePrefs } from '../settings/gamePrefs.ts'
@@ -12,20 +14,20 @@ import {
   type OverrideKey,
 } from './overrideValue.ts'
 
-function overrideLabel(key: OverrideKey, t: ReturnType<typeof useLingui>['t']): string {
+function overrideLabel(key: OverrideKey, i18n: I18n): string {
   switch (key) {
     case 'defaultLaunchMethod':
-      return t`Launch method`
+      return i18n._(msg`Launch method`)
     case 'showSmapiConsole':
-      return t`Show SMAPI console`
+      return i18n._(msg`Show SMAPI console`)
     case 'backupBeforePlay':
-      return t`Backup before Play`
+      return i18n._(msg`Backup before Play`)
     case 'launchBackupsKept':
-      return t`Launch backups kept`
+      return i18n._(msg`Launch backups kept`)
     case 'updateModsBeforePlayDefault':
-      return t`Update mods before Play`
+      return i18n._(msg`Update mods before Play`)
     case 'skipPlayCheck':
-      return t`Skip pre-Play check`
+      return i18n._(msg`Skip pre-Play check`)
     default:
       return key
   }
@@ -38,7 +40,7 @@ export function OverridesSection({
   overrides: Record<string, string>
   onChange: (next: Record<string, string>) => void
 }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const prefs = gamePrefs(useSettings())
   const premium = useNexus((s) => s.premium)
   return (
@@ -48,7 +50,7 @@ export function OverridesSection({
         const gameValue = gamePrefString(key, prefs)
         const stored = overrides[key]
         const choice = choiceFromOverride(stored)
-        const label = overrideLabel(key, t)
+        const label = overrideLabel(key, i18n)
         return (
           <FormControl key={key} fullWidth={true} margin="dense" size="small">
             <InputLabel id={`override-${key}`}>{label}</InputLabel>

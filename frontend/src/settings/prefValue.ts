@@ -8,7 +8,7 @@ export const GAME_STARDEW = 'stardew'
 export function prefRaw(settings: Settings, spec: PrefSpec, game = GAME_STARDEW): unknown {
   if (spec.scope === 'game') {
     const block = settings.games?.[game]
-    return block ? (block as Record<string, unknown>)[spec.key] : undefined
+    return block ? (block as unknown as Record<string, unknown>)[spec.key] : undefined
   }
   return (settings as unknown as Record<string, unknown>)[spec.key]
 }

@@ -59,6 +59,7 @@ const defaults: Settings = {
       backupBeforePlay: 'changed',
       launchBackupsKept: 5,
       updateModsBeforePlayDefault: false,
+      skipPlayCheck: false,
       runsKept: 20,
       consoleLogCap: 20_000,
       nxmDefaultProfile: '',

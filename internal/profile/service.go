@@ -126,7 +126,7 @@ func (s *Service) SetUpdateBeforePlay(game, id string, on bool) (Profile, error)
 	return s.store.SetUpdateBeforePlay(game, id, on)
 }
 
-// SetSkipPlayCheck records whether the pre-Play problems dialog is skipped for this profile.
+// SetOverride sets one profile override of a game setting; "default" removes it so the game value applies.
 func (s *Service) SetOverride(game, id, key, value string) (Profile, error) {
 	return s.store.SetOverride(game, id, key, value)
 }

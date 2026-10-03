@@ -1,3 +1,4 @@
+import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 export const OVERRIDE_KEYS = [
   'defaultLaunchMethod',
   'showSmapiConsole',
@@ -60,12 +61,15 @@ export function resolveOverride(
   return gameValue
 }
 
-export function foldedOverrides(profile: {
-  overrides?: Record<string, string> | null
-  updateBeforePlay?: boolean
-  skipPlayCheck?: boolean
-}): Record<string, string> {
-  const out = { ...(profile.overrides ?? {}) }
+export function foldedOverrides(
+  profile: Pick<Profile, 'overrides' | 'updateBeforePlay' | 'skipPlayCheck'>,
+): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const [key, value] of Object.entries(profile.overrides ?? {})) {
+    if (value !== undefined) {
+      out[key] = value
+    }
+  }
   if (!Object.hasOwn(out, 'updateModsBeforePlayDefault') && profile.updateBeforePlay) {
     out.updateModsBeforePlayDefault = 'true'
   }

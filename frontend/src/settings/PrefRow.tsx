@@ -21,12 +21,12 @@ import { SettingRow } from './SettingsSection.tsx'
 import { useSettings } from './store.ts'
 
 export function PrefRow({ spec, extra }: { spec: PrefSpec; extra?: ReactNode }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const push = useToasts((s) => s.push)
   const fail = t`Couldn't save that setting`
   const settings = useSettings()
   const game = settings.lastGame || GAME_STARDEW
-  const copy = prefCopy(t, spec.key)
+  const copy = prefCopy(i18n, spec.key)
   const raw = prefRaw(settings, spec, game)
   const gameArg = specGameArg(spec, game)
   const save = (value: string) => persist(() => SetByKey(spec.key, value, gameArg), push, fail)
@@ -54,7 +54,7 @@ export function PrefRow({ spec, extra }: { spec: PrefSpec; extra?: ReactNode }) 
     control = (
       <PrefText
         value={prefAsString(raw, spec)}
-        placeholder={copy.placeholder}
+        {...(copy.placeholder === undefined ? {} : { placeholder: copy.placeholder })}
         onCommit={(v) => SetByKey(spec.key, v, gameArg)}
       />
     )

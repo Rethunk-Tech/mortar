@@ -12,14 +12,14 @@ import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 
 export function NexusDownloadPrefs() {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const push = useToasts((s) => s.push)
   const fail = t`Couldn't save that setting`
   const profiles = useProfiles((s) => s.profiles)
   const specs = usePrefSpecs()
   const spec = specByKey(specs, 'nxmDefaultProfile')
   const settings = useSettings()
-  const copy = prefCopy(t, 'nxmDefaultProfile')
+  const copy = prefCopy(i18n, 'nxmDefaultProfile')
   const value = spec
     ? prefAsString(prefRaw(settings, spec, GAME_STARDEW), spec)
     : (settings.games?.[GAME_STARDEW]?.nxmDefaultProfile ?? '')

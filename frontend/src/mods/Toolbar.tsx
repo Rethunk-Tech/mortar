@@ -291,8 +291,9 @@ function CopyModListControl() {
           enabled: mod.enabled,
           name: mod.name,
           version: mod.version,
-          nexusUrl:
-            nexusId > 0 ? `https://www.nexusmods.com/stardewvalley/mods/${nexusId}` : undefined,
+          ...(nexusId > 0
+            ? { nexusUrl: `https://www.nexusmods.com/stardewvalley/mods/${nexusId}` }
+            : {}),
         }
       }),
       format,
