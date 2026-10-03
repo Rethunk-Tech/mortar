@@ -28,26 +28,39 @@ import {
 } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type {
+  Entry,
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
+  CombineEntries,
   CopyMods,
   FomodPreview,
   ModsDir,
   OpenConsolePath,
   RemoveEntry,
   SetModEnabled,
+  SplitExtra,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { AddToBundleDialog } from '../bundles/dialogs.tsx'
 import { useFomod } from '../fomod/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { pushUndoToast } from '../toasts/undo.ts'
 import { SetCategoryDialog } from './CategoryEditor.tsx'
 import { useDetail } from './detail.ts'
 import { entryOf, modId, nexusIdOf, updateFor } from './lookup.ts'
-import { type MenuAnchor, openPage, useContextMenu, useMenuState } from './menu.ts'
+import {
+  applyWithUndo,
+  entryFileLabel,
+  extraFileLabel,
+  type MenuAnchor,
+  openPage,
+  samePageSiblings,
+  useContextMenu,
+  useMenuState,
+} from './menu.ts'
 import { type ModAction, modActions } from './modActions.ts'
 import { useNexusDetails } from './nexusDetails.ts'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
@@ -132,6 +145,7 @@ function ModActionItems({
   onAddBundle,
   onRemoveOther,
   labels,
+  splitCombine,
 }: {
   actions: ModAction[]
   items: Record<ModAction | 'reinstall', { label: string; icon: ReactNode; run: () => void }>
@@ -145,6 +159,7 @@ function ModActionItems({
   onAddBundle: () => void
   onRemoveOther: () => void
   labels: { manifest: string; category: string; alsoAdd: string; addBundle: string }
+  splitCombine: ReactNode
 }) {
   const renderAction = (action: ModAction | 'reinstall', disabled = false) => (
     <MenuItem
@@ -251,6 +266,9 @@ function ModActionItems({
       onClick={onRemoveOther}
     />,
   )
+  if (splitCombine) {
+    result.push(splitCombine)
+  }
   if (has('remove')) {
     result.push(<Divider key="remove-divider" />)
     result.push(
@@ -269,6 +287,85 @@ function ModActionItems({
     )
   }
   return result
+}
+
+function SplitCombineItems({
+  extras,
+  siblings,
+  locked,
+  close,
+  gameId,
+  profileId,
+  entryKey,
+  extraLabel,
+}: {
+  extras: string[]
+  siblings: Entry[]
+  locked: boolean
+  close: () => void
+  gameId: string
+  profileId: string
+  entryKey: string
+  extraLabel: (extraKey: string) => string
+}) {
+  const { t } = useLingui()
+  const push = useToasts((s) => s.push)
+  if (extras.length === 0 && siblings.length === 0) {
+    return null
+  }
+  const toast = (title: string) => (undo: () => unknown) => {
+    pushUndoToast(push, title, t`Undo`, undo)
+  }
+  return (
+    <>
+      {extras.length > 0 ? (
+        <MenuItem disabled={true}>
+          <ListItemText>{t`Install separately`}</ListItemText>
+        </MenuItem>
+      ) : null}
+      {extras.map((extraKey) => (
+        <MenuItem
+          key={`split-${extraKey}`}
+          disabled={locked}
+          sx={{ pl: 4 }}
+          onClick={() => {
+            close()
+            applyWithUndo(
+              gameId,
+              profileId,
+              () => SplitExtra(gameId, profileId, entryKey, extraKey),
+              toast(t`Installed separately`),
+            ).catch(reportUnexpected)
+          }}
+        >
+          <ListItemText>{extraLabel(extraKey)}</ListItemText>
+        </MenuItem>
+      ))}
+      {siblings.length > 0 ? (
+        <MenuItem disabled={true}>
+          <ListItemText>{t`Combine with…`}</ListItemText>
+        </MenuItem>
+      ) : null}
+      {siblings.map((other) => (
+        <MenuItem
+          key={`combine-${other.key}`}
+          disabled={locked}
+          sx={{ pl: 4 }}
+          onClick={() => {
+            close()
+            applyWithUndo(
+              gameId,
+              profileId,
+              () => CombineEntries(gameId, profileId, entryKey, other.key),
+              toast(t`Combined`),
+            ).catch(reportUnexpected)
+          }}
+        >
+          <ListItemText>{entryFileLabel(other)}</ListItemText>
+        </MenuItem>
+      ))}
+    </>
+  )
 }
 
 function ModMenuItems({
@@ -302,6 +399,9 @@ function ModMenuItems({
   const update = useUpdates((s) => updateFor(s.updates, mod, profile))
   const currentEntry = (profile?.entries ?? []).find((e) => e.key === mod.key)
   const hasFomod = Boolean(currentEntry?.fomod && Object.keys(currentEntry.fomod).length > 0)
+  const extras = currentEntry?.extraStoreKeys ?? []
+  const siblings = samePageSiblings(profile, currentEntry)
+  const files = useNexusDetails((s) => s.byId[currentEntry?.source?.modId ?? 0]?.details?.files)
   const items: Record<
     ModAction | 'reinstall',
     { label: string; icon: ReactNode; run: () => void }
@@ -359,6 +459,18 @@ function ModMenuItems({
       run: () => askRemove(mod),
     },
   }
+  const splitCombine = (
+    <SplitCombineItems
+      extras={extras}
+      siblings={siblings}
+      locked={locked}
+      close={close}
+      gameId={game?.id ?? ''}
+      profileId={profile?.id ?? ''}
+      entryKey={currentEntry?.key ?? ''}
+      extraLabel={(extraKey) => extraFileLabel(currentEntry, extraKey, files)}
+    />
+  )
   return [
     ...ModActionItems({
       actions: modActions(state),
@@ -378,6 +490,7 @@ function ModMenuItems({
         alsoAdd: t`Also add to…`,
         addBundle: t`Add to bundle…`,
       },
+      splitCombine,
     }),
   ]
 }
