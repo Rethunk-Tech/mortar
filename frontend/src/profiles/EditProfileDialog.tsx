@@ -335,7 +335,7 @@ function ProfileFields({
         error={launchError?.field === 'options'}
         helperText={
           (launchError?.field === 'options' && launchError.message) ||
-          t`Extra SMAPI arguments for this profile. Mortar sets --mods-path itself.`
+          t`Extra SMAPI arguments for this profile. Mortar already sets the mods folder.`
         }
         slotProps={{ root: { sx: { userSelect: 'text' } } }}
       />

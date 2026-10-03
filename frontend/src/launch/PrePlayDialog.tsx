@@ -105,9 +105,9 @@ export function PrePlayDialog() {
           label={t`Don't check before Play`}
         />
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
         <Button onClick={cancel} sx={{ whiteSpace: 'nowrap' }}>{t`Cancel`}</Button>
-        <Button onClick={openProblems} sx={{ whiteSpace: 'nowrap' }}>{t`Open Problems`}</Button>
+        <Button onClick={openProblems} sx={{ whiteSpace: 'nowrap' }}>{t`Open problems`}</Button>
         {hasUpdates ? (
           <Button
             onClick={() => updateAndPlay().catch(reportUnexpected)}

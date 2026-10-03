@@ -425,7 +425,7 @@ export function Sidebar({ game }: { game: string }) {
             ...rail({ display: 'none' }),
           }}
         >
-          <Plus size={16} />
+          <Plus size={16} aria-hidden={true} />
           {t`New profile`}
         </ButtonBase>
       </Box>

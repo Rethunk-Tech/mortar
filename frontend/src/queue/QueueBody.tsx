@@ -364,21 +364,26 @@ function Active({ item }: { item: Item }) {
 function NextActions({ item }: { item: Item }) {
   const { t } = useLingui()
   return (
-    <Box sx={{ display: 'flex', gap: 1 }}>
-      <Button
-        size="small"
-        onClick={() => SkipAll().catch(reportUnexpected)}
-        sx={{ whiteSpace: 'nowrap' }}
-      >
-        {t`Skip all`}
-      </Button>
-      <Button
-        size="small"
-        onClick={() => SkipProfile(item.game, item.profileId).catch(reportUnexpected)}
-        sx={{ whiteSpace: 'nowrap' }}
-      >
-        {t`Skip this profile`}
-      </Button>
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
+      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+        {t`Skip every waiting download`}
+      </Typography>
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        <Button
+          size="small"
+          onClick={() => SkipAll().catch(reportUnexpected)}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          {t`Skip all`}
+        </Button>
+        <Button
+          size="small"
+          onClick={() => SkipProfile(item.game, item.profileId).catch(reportUnexpected)}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          {t`Skip this profile`}
+        </Button>
+      </Box>
     </Box>
   )
 }

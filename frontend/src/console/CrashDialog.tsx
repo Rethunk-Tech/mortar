@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -6,6 +7,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
@@ -72,18 +74,22 @@ export function CrashDialog() {
             </Box>
           ) : null}
           {crash.mods === null || crash.mods.length === 0 ? (
-            <Typography sx={{ fontSize: 14 }}>{t`The SMAPI log has errors.`}</Typography>
+            <Tooltip title={t`SMAPI`}>
+              <Typography sx={{ fontSize: 14 }}>{t`The game log has errors.`}</Typography>
+            </Tooltip>
           ) : (
             crash.mods.map((row: { mod: string; count: number; first: string }) => (
               <Box key={row.mod} sx={{ fontSize: 14, lineHeight: 1.45 }}>
-                <Box sx={{ fontWeight: 700 }}>{t`${row.mod} · ${row.count} errors`}</Box>
+                <Box sx={{ fontWeight: 700 }}>
+                  {t`${row.mod} · ${plural(row.count, { one: '# error', other: '# errors' })}`}
+                </Box>
                 <Box sx={{ color: 'text.secondary', mt: 0.25 }}>{row.first}</Box>
               </Box>
             ))
           )}
           {bisectError ? <Typography color="error">{bisectError}</Typography> : null}
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+        <DialogActions sx={{ px: 3, pb: 2.5, flexWrap: 'wrap', gap: 1 }}>
           <Button onClick={dismiss} sx={{ whiteSpace: 'nowrap' }}>
             {t`Dismiss`}
           </Button>

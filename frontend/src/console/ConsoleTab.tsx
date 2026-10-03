@@ -46,6 +46,9 @@ function LevelToggles() {
   const on = useConsole((s) => s.filters.levels)
   const toggle = useConsole((s) => s.toggleLevel)
   const counts = useMemo(() => countByLevel(entries), [entries])
+  const extra = LEVELS.filter((level) => level === Level.Trace || level === Level.Debug)
+  const primary = LEVELS.filter((level) => !extra.includes(level))
+  const [moreEl, setMoreEl] = useState<HTMLElement | null>(null)
   const names: Record<Level, string> = {
     [Level.$zero]: '',
     [Level.Trace]: t`Trace`,
@@ -69,10 +72,12 @@ function LevelToggles() {
     >
       {LEVELS.map((level) => {
         const pressed = on.includes(level)
+        const n = counts.get(level) ?? 0
         return (
           <ButtonBase
             key={level}
             aria-pressed={pressed}
+            aria-label={t`${names[level]}: ${n} lines`}
             onClick={() => toggle(level)}
             sx={{
               display: 'flex',
@@ -90,8 +95,8 @@ function LevelToggles() {
           >
             <Box sx={{ width: 8, height: 8, borderRadius: '4px', bgcolor: dots[level] }} />
             {names[level]}
-            <Box component="span" sx={{ opacity: 0.75 }}>
-              {counts.get(level) ?? 0}
+            <Box component="span" sx={{ opacity: 0.75 }} aria-hidden={true}>
+              {n}
             </Box>
           </ButtonBase>
         )

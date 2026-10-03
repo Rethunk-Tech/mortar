@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Chip, Typography } from '@mui/material'
+import { Box, Chip, Tooltip, Typography } from '@mui/material'
 import { ListOrdered } from 'lucide-react'
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import type { Row } from '../../bindings/github.com/Rethunk-AI/mortar/internal/loadorder/models.ts'
@@ -132,13 +132,15 @@ function OrderList({
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               <Typography sx={{ fontWeight: 600 }}>{row.name}</Typography>
               {row.cycle ? (
-                <Chip
-                  size="small"
-                  label={t`Cycle`}
-                  color="error"
-                  variant="outlined"
-                  sx={{ height: 22 }}
-                />
+                <Tooltip title={t`These mods require each other.`}>
+                  <Chip
+                    size="small"
+                    label={t`Dependency cycle`}
+                    color="error"
+                    variant="outlined"
+                    sx={{ height: 22 }}
+                  />
+                </Tooltip>
               ) : null}
             </Box>
             <DepChips row={row} names={names} onScroll={onScroll} />

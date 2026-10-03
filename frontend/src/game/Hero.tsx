@@ -47,14 +47,17 @@ function Card({
   label,
   value,
   onClick,
+  ariaLabel,
 }: {
   label: string
   value: ReactNode
   onClick?: () => void
+  ariaLabel?: string
 }) {
   return (
     <Box
       component={onClick ? 'button' : 'div'}
+      aria-label={onClick ? ariaLabel : undefined}
       onClick={onClick}
       sx={{
         border: 0,
@@ -247,6 +250,7 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
           <Card
             label={t`Saves`}
             value={total === 0 ? t`None` : t`${fitting} of ${total}`}
+            ariaLabel={t`Open saves (${fitting} of ${total})`}
             onClick={() => setTab('saves')}
           />
           <Card label={t`Updated`} value={<When value={profile.updated} />} />

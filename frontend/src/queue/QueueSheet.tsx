@@ -15,6 +15,7 @@ import {
   Pause,
   Resume,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import {
   emptyFilters,
@@ -28,6 +29,7 @@ import { HistoryList } from './QueueHistory.tsx'
 import { useQueue } from './store.ts'
 import { clockTime, megabytes, parallelDownloads, totals } from './totals.ts'
 
+const UNIX_MS_PER_SECOND = 1000
 const WIDTH = 500
 const GREEN = '#0cdf64'
 const BLUE = '#2b8bda'
@@ -120,8 +122,11 @@ function Header({
         <Box sx={{ width: `${sum.failedShare}%`, bgcolor: RED }} />
       </Box>
       {limitedUntil > 0 ? (
-        <Typography sx={{ mx: 2.5, mt: 1, fontSize: 13, color: 'warning.main' }}>
-          {t`Nexus or GitHub has limited requests for now. Downloads go on at ${clockTime(limitedUntil)}.`}
+        <Typography
+          title={clockTime(limitedUntil)}
+          sx={{ mx: 2.5, mt: 1, fontSize: 13, color: 'warning.main' }}
+        >
+          {t`Downloads resume ${formatWhen(limitedUntil * UNIX_MS_PER_SECOND)}.`}
         </Typography>
       ) : null}
     </>

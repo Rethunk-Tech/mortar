@@ -41,6 +41,7 @@ import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
 import { useInstall } from '../install/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -97,22 +98,25 @@ function ShowFilterControl({
   const { t, i18n } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const active = FILTERS.find((item) => item.id === filter)
+  const showLabel = active ? t`Show: ${active.label(i18n)}` : t`Show`
   const choose = (next: ModFilter) => {
     onFilter(next)
     setAnchor(null)
   }
   return (
     <>
-      <Button
-        variant="outlined"
-        color={active ? 'primary' : 'inherit'}
-        aria-label={t`Show`}
-        startIcon={<Filter size={14} />}
-        onClick={(e) => setAnchor(e.currentTarget)}
-        sx={iconWhenCompact}
-      >
-        <span className="label">{active ? active.label(i18n) : t`Show`}</span>
-      </Button>
+      <Tooltip title={showLabel}>
+        <Button
+          variant="outlined"
+          color={active ? 'primary' : 'inherit'}
+          aria-label={showLabel}
+          startIcon={<Filter size={14} />}
+          onClick={(e) => setAnchor(e.currentTarget)}
+          sx={iconWhenCompact}
+        >
+          <span className="label">{active ? active.label(i18n) : t`Show`}</span>
+        </Button>
+      </Tooltip>
       <Menu
         open={anchor !== null}
         anchorEl={anchor}
@@ -240,20 +244,26 @@ function AddArchive({
   const installing = useInstall((s) => s.pending > 0)
   const pick = useInstall((s) => s.pick)
   const locked = useLocked()
+  const blocked = installing || locked
   return (
-    <Button
-      variant={variant}
-      size={size}
-      disabled={installing || locked}
-      aria-label={t`Add archive`}
-      startIcon={installing ? <CircularProgress size={14} color="inherit" /> : <Plus size={14} />}
-      onClick={() => {
-        pick().catch(reportUnexpected)
-      }}
-      sx={toolbar ? iconWhenCompact : undefined}
+    <DisabledReason
+      title={locked ? t`Stop the game to change mods.` : t`Adding…`}
+      disabled={blocked}
     >
-      <span className="label">{installing ? t`Adding…` : t`Add archive`}</span>
-    </Button>
+      <Button
+        variant={variant}
+        size={size}
+        disabled={blocked}
+        aria-label={t`Add archive`}
+        startIcon={installing ? <CircularProgress size={14} color="inherit" /> : <Plus size={14} />}
+        onClick={() => {
+          pick().catch(reportUnexpected)
+        }}
+        sx={toolbar ? iconWhenCompact : undefined}
+      >
+        <span className="label">{installing ? t`Adding…` : t`Add archive`}</span>
+      </Button>
+    </DisabledReason>
   )
 }
 
