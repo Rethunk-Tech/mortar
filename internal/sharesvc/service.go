@@ -376,6 +376,9 @@ func (s *Service) PreviewLink(ctx context.Context, game, text, profileID string)
 	if domain, slug, revision, ok := parseCollectionURL(text); ok {
 		return s.previewCollection(ctx, game, domain, slug, revision, profileID)
 	}
+	if domain, modID, ok := parseModPageURL(text); ok {
+		return s.previewModPage(ctx, game, domain, modID, profileID)
+	}
 	shared, err := share.Parse(text)
 	if err != nil {
 		return Preview{}, err

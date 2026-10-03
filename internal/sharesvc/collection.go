@@ -44,14 +44,8 @@ func parseCollectionURL(text string) (domain, slug string, revision int, ok bool
 }
 
 func (s *Service) previewCollection(ctx context.Context, game, domain, slug string, revision int, profileID string) (Preview, error) {
-	info, ok := components.BundledGame(game)
-	name := game
-	want := ""
-	if ok {
-		name, want = info.Name, info.Nexus.Domain
-	}
-	if want == "" || !strings.EqualFold(want, domain) {
-		return Preview{}, fmt.Errorf("that collection is not for %s", name)
+	if err := checkDomain(game, domain, "collection"); err != nil {
+		return Preview{}, err
 	}
 	col, err := s.d.Meta.Collection(ctx, domain, slug, revision)
 	if err != nil {
@@ -62,4 +56,18 @@ func (s *Service) previewCollection(ctx context.Context, game, domain, slug stri
 		entries = append(entries, share.Ref{ModID: f.ModID, FileID: f.FileID})
 	}
 	return s.preview(ctx, game, share.Shared{Name: col.Name, Entries: entries}, "", nil, profileID, profile.OriginCollection)
+}
+
+// checkDomain refuses a Nexus link whose game domain is not this game's; what names the link ("collection", "mod")
+// for the message.
+func checkDomain(game, domain, what string) error {
+	info, ok := components.BundledGame(game)
+	name, want := game, ""
+	if ok {
+		name, want = info.Name, info.Nexus.Domain
+	}
+	if want == "" || !strings.EqualFold(want, domain) {
+		return fmt.Errorf("that %s is not for %s", what, name)
+	}
+	return nil
 }
