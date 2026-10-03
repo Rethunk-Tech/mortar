@@ -1,22 +1,18 @@
 import { useLingui } from '@lingui/react/macro'
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   IconButton,
   InputAdornment,
   Switch,
   TextField,
   Tooltip,
 } from '@mui/material'
-import { ChevronDown, Copy, Eye, EyeOff } from 'lucide-react'
+import { Copy, Eye, EyeOff } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import {
   OverlayURL,
@@ -26,6 +22,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { errorText } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import {
   OVERLAY_EXAMPLE_CSS,
@@ -308,39 +305,35 @@ function OverlayConnection({
   }
   return (
     <>
-      <Accordion
-        disableGutters={true}
-        sx={{ bgcolor: 'transparent', boxShadow: 'none', '&:before': { display: 'none' } }}
+      <SettingRow label={t`Port`} description={t`The local port OBS reads the overlay from`}>
+        <TextField
+          type="number"
+          size="small"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commitPort}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+              e.target.blur()
+            }
+          }}
+          slotProps={{
+            htmlInput: { min: MIN_PORT, max: MAX_PORT, step: 1, 'aria-label': t`Port` },
+          }}
+          sx={{ width: 120 }}
+        />
+      </SettingRow>
+      <SettingRow
+        label={t`Token`}
+        description={t`Part of the OBS address; regenerate it if it leaks`}
       >
-        <AccordionSummary
-          expandIcon={<ChevronDown size={16} />}
-          sx={{ px: 0, minHeight: 36, '& .MuiAccordionSummary-content': { my: 0.5 } }}
-        >
-          <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Connection`}</Box>
-        </AccordionSummary>
-        <AccordionDetails sx={{ px: 0, pt: 0, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <TextField
-            type="number"
-            size="small"
-            label={t`Port`}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={commitPort}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
-                e.target.blur()
-              }
-            }}
-            slotProps={{ htmlInput: { min: MIN_PORT, max: MAX_PORT, step: 1 } }}
-            sx={{ alignSelf: 'flex-start', width: 320 }}
-          />
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           <TextField
             type={shown ? 'text' : 'password'}
             size="small"
-            label={t`Token`}
             value={token}
             slotProps={{
-              htmlInput: { readOnly: true },
+              htmlInput: { readOnly: true, 'aria-label': t`Token` },
               input: {
                 endAdornment: (
                   <InputAdornment position="end">
@@ -371,17 +364,13 @@ function OverlayConnection({
                 ),
               },
             }}
-            sx={{ alignSelf: 'flex-start', width: 320 }}
+            sx={{ width: 240 }}
           />
-          <Button
-            variant="text"
-            onClick={() => setConfirm(true)}
-            sx={{ textTransform: 'none', alignSelf: 'flex-start' }}
-          >
-            {t`Regenerate token`}
+          <Button variant="outlined" onClick={() => setConfirm(true)} sx={{ whiteSpace: 'nowrap' }}>
+            {t`Regenerate…`}
           </Button>
-        </AccordionDetails>
-      </Accordion>
+        </Box>
+      </SettingRow>
       <OverlayRegenDialog
         open={confirm}
         onClose={() => setConfirm(false)}
@@ -446,43 +435,23 @@ export function StreamOverlay() {
   const [labels, setLabels] = useState(false)
   const snapshot = useOverlaySnapshot(enabled, port, token)
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 1.5,
-        p: '14px',
-        bgcolor: 'var(--mortar-raised)',
-        borderRadius: '6px',
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Box
-          sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}
-        >
-          <Box sx={{ fontSize: 15, fontWeight: 600 }}>{t`Stream overlay`}</Box>
-          <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
-            {t`Show live game info in OBS. Changes apply the next time you press Play.`}
-          </Box>
-        </Box>
-        <FormControlLabel
-          sx={{ m: 0, flexShrink: 0 }}
-          control={
-            <Switch
-              checked={enabled}
-              onChange={(_, on) => persist(() => SetOverlayEnabled(on), push, fail)}
-            />
-          }
-          label={t`Enable`}
+    <SettingsSection title={t`Stream overlay`}>
+      <SettingRow
+        label={t`Stream overlay`}
+        description={t`Show live game info in OBS. Changes apply the next time you press Play.`}
+      >
+        <Switch
+          checked={enabled}
+          onChange={(_, on) => persist(() => SetOverlayEnabled(on), push, fail)}
         />
-      </Box>
+      </SettingRow>
       {enabled ? (
-        <>
-          <FormControlLabel
-            sx={{ m: 0 }}
-            control={<Switch checked={labels} onChange={(_, on) => setLabels(on)} />}
-            label={t`Show labels`}
-          />
+        <SettingRow label={t`Show labels`}>
+          <Switch checked={labels} onChange={(_, on) => setLabels(on)} />
+        </SettingRow>
+      ) : null}
+      {enabled ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 2 }}>
           <OverlayValues
             snapshot={snapshot}
             labels={labels}
@@ -494,9 +463,9 @@ export function StreamOverlay() {
             push={push}
           />
           <OverlayHowTo push={push} copied={copied} failCopy={failCopy} />
-          <OverlayConnection port={port} token={token} push={push} fail={fail} />
-        </>
+        </Box>
       ) : null}
-    </Box>
+      {enabled ? <OverlayConnection port={port} token={token} push={push} fail={fail} /> : null}
+    </SettingsSection>
   )
 }
