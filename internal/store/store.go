@@ -73,6 +73,8 @@ var ErrIncomplete = errors.New("store item is incomplete")
 type Store struct {
 	root string
 	mu   sync.Mutex
+	// UnusedFor is unused-item lifetime; 0 uses the built-in 30 days, negative means keep forever.
+	UnusedFor time.Duration
 }
 
 // Open returns a store rooted at <datadir>/store.
@@ -720,7 +722,7 @@ func (s *Store) Collect(referenced map[string][]string, now time.Time) error {
 			if keep[key] || !seen {
 				last = now
 			}
-			if !keep[key] && now.Sub(last) > retention {
+			if !keep[key] && unusedPast(now, last, s.unusedFor()) {
 				if err := os.RemoveAll(filepath.Join(s.root, g.Name(), key)); err != nil {
 					errs = append(errs, err)
 					next[g.Name()][key] = last
@@ -732,6 +734,23 @@ func (s *Store) Collect(referenced map[string][]string, now time.Time) error {
 	}
 	errs = append(errs, s.saveIndex(next))
 	return errors.Join(errs...)
+}
+
+func (s *Store) unusedFor() time.Duration {
+	if s.UnusedFor < 0 {
+		return 0
+	}
+	if s.UnusedFor == 0 {
+		return retention
+	}
+	return s.UnusedFor
+}
+
+func unusedPast(now, last time.Time, keep time.Duration) bool {
+	if keep <= 0 {
+		return false
+	}
+	return now.Sub(last) > keep
 }
 
 func keepSet(keys []string) map[string]bool {

@@ -66,7 +66,7 @@ func (s *Service) installNexusPath(it Item, path string, mod nexus.Mod) error {
 	}
 	var dup *profile.DuplicateError
 	if err == nil || errors.As(err, &dup) {
-		dropDownload(path)
+		s.dropDownloadUnlessKept(path)
 	}
 	return s.afterInstall(it.ID, res, err, false)
 }

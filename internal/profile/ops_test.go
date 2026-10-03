@@ -11,6 +11,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 
+	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
@@ -331,6 +332,31 @@ func TestTrashRestorePurge(t *testing.T) {
 	}
 	if tr, _ := e.ListTrash("stardew"); len(tr) != 0 {
 		t.Fatalf("trash after purge = %+v", tr)
+	}
+}
+
+func TestPurgeTrashUsesSettingsRetention(t *testing.T) {
+	e := newEnv(t)
+	st, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := st.Update(func(s *settings.Settings) { s.TrashRetentionDays = 1 }); err != nil {
+		t.Fatal(err)
+	}
+	e.settings = st
+	p, err := e.Create("stardew", "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := e.Delete("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.PurgeTrash(time.Now().Add(25 * time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	if tr, _ := e.ListTrash("stardew"); len(tr) != 0 {
+		t.Fatalf("1-day retention should have purged: %+v", tr)
 	}
 }
 

@@ -38,10 +38,16 @@ func TestChangedSinceLastRun(t *testing.T) {
 
 func TestBackupNeededWhenGameVersionChanged(t *testing.T) {
 	lastRun := time.Date(2026, 10, 2, 12, 0, 0, 0, time.UTC)
-	if !backupNeeded(nil, lastRun, "1.6.14", "1.6.15") {
+	if !backupNeeded("", nil, lastRun, "1.6.14", "1.6.15") {
 		t.Fatal("a changed game version must trigger a launch backup")
 	}
-	if backupNeeded(nil, lastRun, "1.6.15", "1.6.15") {
+	if backupNeeded("", nil, lastRun, "1.6.15", "1.6.15") {
 		t.Fatal("an unchanged game version must not trigger a launch backup")
+	}
+	if backupNeeded("never", nil, lastRun, "1.6.14", "1.6.15") {
+		t.Fatal("never must skip a launch backup")
+	}
+	if !backupNeeded("always", nil, lastRun, "1.6.15", "1.6.15") {
+		t.Fatal("always must take a launch backup")
 	}
 }

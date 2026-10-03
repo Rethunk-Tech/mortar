@@ -326,10 +326,16 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		run.Cause = &cause
 	}
 	idx.Runs = append([]Run{run}, idx.Runs...)
+	keep := maxRuns
+	if s.settings != nil {
+		if n := s.settings.Get().RunsKept; n > 0 {
+			keep = n
+		}
+	}
 	var drop []Run
-	if len(idx.Runs) > maxRuns {
-		drop = idx.Runs[maxRuns:]
-		idx.Runs = idx.Runs[:maxRuns]
+	if len(idx.Runs) > keep {
+		drop = idx.Runs[keep:]
+		idx.Runs = idx.Runs[:keep]
 	}
 	if err := datadir.WriteJSON(filepath.Join(dir, "index.json"), idx); err != nil {
 		return

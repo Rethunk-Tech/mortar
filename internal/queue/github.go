@@ -100,7 +100,9 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 	if err != nil {
 		return err
 	}
-	dropDownload(path)
+	if s.d.KeepArchives == nil || !s.d.KeepArchives() {
+		dropDownload(path)
+	}
 	owner, repo, _ := strings.Cut(it.Repo, "/")
 	unverified := false
 	for _, id := range ids {

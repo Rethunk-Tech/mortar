@@ -317,15 +317,37 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 }
 
 func (s *Service) fetchSlot(ctx context.Context, it Item) (func(), error) {
-	slot := s.freeFetch
-	if it.Repo != "" || s.d.Premium() {
-		slot = s.premiumFetch
+	if it.Repo == "" && (s.d.Premium == nil || !s.d.Premium()) {
+		select {
+		case s.freeFetch <- struct{}{}:
+			return func() { <-s.freeFetch }, nil
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		}
 	}
-	select {
-	case slot <- struct{}{}:
-		return func() { <-slot }, nil
-	case <-ctx.Done():
-		return nil, ctx.Err()
+	limit := 3
+	if s.d.Parallel != nil {
+		if n := s.d.Parallel(); n >= 1 {
+			limit = n
+		}
+	}
+	for {
+		s.mu.Lock()
+		if s.premiumInUse < limit {
+			s.premiumInUse++
+			s.mu.Unlock()
+			return func() {
+				s.mu.Lock()
+				s.premiumInUse--
+				s.mu.Unlock()
+			}, nil
+		}
+		s.mu.Unlock()
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(50 * time.Millisecond):
+		}
 	}
 }
 

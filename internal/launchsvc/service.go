@@ -633,7 +633,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 		backupErr = s.backupChangedSaves(g.ID(), profileID, g, dir)
 	}
 	runCtx, cancel := context.WithCancel(ctx)
-	buf := &launch.Buffer{}
+	buf := &launch.Buffer{Cap: s.settings.Get().ConsoleLogCap}
 	started := time.Now()
 	mods := s.profileModRefs(gameID, profileID)
 	s.mu.Lock()
@@ -680,7 +680,7 @@ func (s *Service) backupChangedSaves(gameID, profileID string, g game.Game, inst
 	set := s.settings.Get()
 	recorded := set.LastPlayed[gameID].GameVersion
 	installed := g.LoaderStatus(installDir, set.Loaders[gameID]).GameVersion
-	if !backupNeeded(events, lastRun, recorded, installed) {
+	if !backupNeeded(set.BackupBeforePlay, events, lastRun, recorded, installed) {
 		return nil
 	}
 	_, selected, _, err := game.Resolve(s.home, set, gameID)
@@ -698,15 +698,15 @@ func (s *Service) backupChangedSaves(gameID, profileID string, g game.Game, inst
 	_, err = backup.Saves(
 		savesDir,
 		filepath.Join(base, "backups"),
-		set.BackupsKept,
+		set.LaunchBackupsKept,
 		time.Now(),
 		backup.Cause{Profile: profileID, Kind: backup.KindLaunch},
 	)
 	return err
 }
 
-func backupNeeded(events []profile.HistoryEvent, lastRun time.Time, recorded, installed string) bool {
-	return changedSinceLastRun(events, lastRun) || stardew.GameVersionChanged(recorded, installed)
+func backupNeeded(mode string, events []profile.HistoryEvent, lastRun time.Time, recorded, installed string) bool {
+	return settings.ShouldBackupBeforePlay(mode, changedSinceLastRun(events, lastRun), stardew.GameVersionChanged(recorded, installed))
 }
 
 func changedSinceLastRun(events []profile.HistoryEvent, lastRun time.Time) bool {

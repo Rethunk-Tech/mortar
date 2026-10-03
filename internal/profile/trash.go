@@ -13,8 +13,15 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/game"
 )
 
-// trashRetention is how long a deleted profile stays restorable.
+// trashRetention is how long a deleted profile stays restorable when no setting is present.
 const trashRetention = 30 * 24 * time.Hour
+
+func (s *Store) trashKeep() time.Duration {
+	if s.settings != nil {
+		return s.settings.Get().TrashKeepFor()
+	}
+	return trashRetention
+}
 
 // TrashItem is a deleted profile that can still be restored.
 type TrashItem struct {
@@ -110,7 +117,7 @@ func (s *Store) ListTrash(gameID string) ([]TrashItem, error) {
 	}
 	now := time.Now()
 	for i := range items {
-		left := trashRetention - now.Sub(items[i].DeletedAt)
+		left := s.trashKeep() - now.Sub(items[i].DeletedAt)
 		items[i].DaysLeft = max(0, int((left+24*time.Hour-1)/(24*time.Hour)))
 	}
 	slices.SortFunc(items, func(a, b TrashItem) int { return b.DeletedAt.Compare(a.DeletedAt) })
@@ -223,7 +230,7 @@ func (s *Store) PurgeTrash(target any) error {
 			continue
 		}
 		for _, it := range items {
-			if now.Sub(it.DeletedAt) > trashRetention {
+			if now.Sub(it.DeletedAt) > s.trashKeep() {
 				errs = append(errs, os.RemoveAll(filepath.Join(s.trash, g.Name(), it.ID)))
 			}
 		}

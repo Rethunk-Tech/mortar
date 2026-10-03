@@ -216,6 +216,10 @@ type Deps struct {
 	// Dir is the data folder holding queue.json and the downloads folder; it must be on the store's volume.
 	Dir string
 	Now func() time.Time
+	// Parallel is the Premium/GitHub fetch pool size; nil means 3.
+	Parallel func() int
+	// KeepArchives leaves downloaded zips after they are extracted; nil means delete.
+	KeepArchives func() bool
 }
 
 // Service is the download queue.
@@ -233,6 +237,7 @@ type Service struct {
 	installMu    sync.Mutex
 	premiumFetch chan struct{}
 	freeFetch    chan struct{}
+	premiumInUse int
 }
 
 // New reads the saved queue: what was under way is queued again so a partial file can resume, and a file

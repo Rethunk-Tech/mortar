@@ -231,7 +231,7 @@ func run() error {
 		}
 		if all, err := profiles.List(gameID); err == nil {
 			for _, p := range all {
-				if p.ID != profileID {
+				if p.Error != "" || p.ID != profileID {
 					continue
 				}
 				switch p.Cover {
@@ -329,7 +329,7 @@ func run() error {
 				return 0
 			}
 			for _, p := range all {
-				if p.ID == profileID {
+				if p.Error == "" && p.ID == profileID {
 					return profile.NewestFromPage(p, modID)
 				}
 			}
@@ -341,7 +341,7 @@ func run() error {
 				return profile.MergeAsk{}, false
 			}
 			for _, p := range all {
-				if p.ID == profileID {
+				if p.Error == "" && p.ID == profileID {
 					return profile.SamePageAsk(p, modID, fileID, category)
 				}
 			}
@@ -367,6 +367,8 @@ func run() error {
 		HistoryBatch: func(game, profileID, batchID string) error {
 			return profiles.RecordHistoryBatch(game, profileID, batchID)
 		},
+		Parallel:     func() int { return store.Get().ParallelDownloads },
+		KeepArchives: func() bool { return store.Get().KeepDownloadArchives },
 	})
 	if err != nil {
 		return err
@@ -570,6 +572,11 @@ func run() error {
 			for g, staged := range queueSvc.StagedKeys() {
 				keys[g] = append(keys[g], staged...)
 			}
+			if d := store.Get().StoreUnusedFor(); d == 0 {
+				items.UnusedFor = -1
+			} else {
+				items.UnusedFor = d
+			}
 			if err := items.Collect(keys, now); err != nil {
 				log.Printf("store collect: %v", err)
 			}
@@ -633,7 +640,7 @@ func run() error {
 				continue
 			}
 			for _, p := range all {
-				if p.Hidden {
+				if p.Error != "" || p.Hidden {
 					continue
 				}
 				result, err := problemsSvc.Updates(ctx, g.ID, p.ID)

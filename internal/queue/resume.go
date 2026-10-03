@@ -39,7 +39,17 @@ func dropDownload(path string) {
 	_ = os.Remove(resumeSidecar(path))
 }
 
+func (s *Service) dropDownloadUnlessKept(path string) {
+	if s.d.KeepArchives != nil && s.d.KeepArchives() {
+		return
+	}
+	dropDownload(path)
+}
+
 func (s *Service) sweepDownloads() {
+	if s.d.KeepArchives != nil && s.d.KeepArchives() {
+		return
+	}
 	root := filepath.Join(s.d.Dir, downloadsDir)
 	entries, err := os.ReadDir(root)
 	if err != nil {

@@ -139,6 +139,15 @@ type Buffer struct {
 	head       []Entry
 	tail       []Entry
 	summarized bool
+	// Cap overrides MaxLines when greater than zero.
+	Cap int
+}
+
+func (b *Buffer) cap() int {
+	if b.Cap > 0 {
+		return b.Cap
+	}
+	return MaxLines
 }
 
 // Add appends e, discarding the oldest entries beyond MaxLines. It compacts only once a quarter over the bound so
@@ -159,8 +168,9 @@ func (b *Buffer) Add(e Entry) {
 		b.trimHead()
 		return
 	}
-	if len(b.lines) > MaxLines+MaxLines/4 {
-		b.lines = slices.Clone(b.lines[len(b.lines)-MaxLines:])
+	limit := b.cap()
+	if len(b.lines) > limit+limit/4 {
+		b.lines = slices.Clone(b.lines[len(b.lines)-limit:])
 	}
 }
 
@@ -177,18 +187,19 @@ func (b *Buffer) Lines() []Entry {
 		}
 		return out
 	}
-	return slices.Clone(b.lines[max(0, len(b.lines)-MaxLines):])
+	return slices.Clone(b.lines[max(0, len(b.lines)-b.cap()):])
 }
 
 func (b *Buffer) trimHead() {
-	if len(b.head) >= MaxLines {
-		b.head = slices.Clone(b.head[len(b.head)-MaxLines+1:])
+	limit := b.cap()
+	if len(b.head) >= limit {
+		b.head = slices.Clone(b.head[len(b.head)-limit+1:])
 	}
 	b.trimTail()
 }
 
 func (b *Buffer) trimTail() {
-	limit := max(0, MaxLines-len(b.head)-1)
+	limit := max(0, b.cap()-len(b.head)-1)
 	if len(b.tail) > limit {
 		b.tail = slices.Clone(b.tail[len(b.tail)-limit:])
 	}
