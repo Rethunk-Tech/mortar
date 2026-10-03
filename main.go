@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/archive"
 	"github.com/Rethunk-AI/mortar/internal/backdrop"
 	"github.com/Rethunk-AI/mortar/internal/bisect"
+	"github.com/Rethunk-AI/mortar/internal/browse"
 	"github.com/Rethunk-AI/mortar/internal/bundles"
 	"github.com/Rethunk-AI/mortar/internal/cli"
 	"github.com/Rethunk-AI/mortar/internal/components"
@@ -552,6 +553,7 @@ func run() error {
 		application.NewService(dataSvc), application.NewService(toolsSvc),
 		application.NewService(dlWatch),
 		application.NewService(quitSvc),
+		application.NewService(browse.NewService(version, profileSvc)),
 	} {
 		app.RegisterService(s)
 	}

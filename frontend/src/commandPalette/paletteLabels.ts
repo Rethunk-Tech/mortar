@@ -21,6 +21,7 @@ export function paletteActionLabels(i18n: I18n): PaletteLabels {
     modHint: i18n._(msg`Open mod`),
     settingsHint: i18n._(msg`Settings`),
     tabs: {
+      browse: i18n._(msg`Go to Browse`),
       mods: i18n._(msg`Go to Mods`),
       problems: i18n._(msg`Go to Problems`),
       'load-order': i18n._(msg`Go to Load order`),

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 export type TabId =
+  | 'browse'
   | 'mods'
   | 'problems'
   | 'load-order'

@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, IconButton, Tooltip } from '@mui/material'
-import { ChevronRight, ListOrdered, Plus } from 'lucide-react'
+import { ChevronRight, ListOrdered, Plus, Search } from 'lucide-react'
 import { type PointerEvent, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { HelpDialog } from '../console/HelpDialog.tsx'
@@ -225,6 +225,7 @@ function ResizeHandle({ width, onWidth }: { width: number; onWidth: (w: number) 
 
 // Downloads, recent changes, notifications and Support over the Play button, pinned under the profile list.
 function BottomBlock({ game }: { game: string }) {
+  const { t } = useLingui()
   return (
     <Box
       sx={{
@@ -247,6 +248,11 @@ function BottomBlock({ game }: { game: string }) {
         <Box sx={{ flex: 1, height: 40, display: 'flex', alignItems: 'center' }}>
           <QueueButton />
         </Box>
+        <Tooltip title={t`Browse`}>
+          <IconButton aria-label={t`Browse`} onClick={() => useTab.getState().setTab('browse')}>
+            <Search size={20} />
+          </IconButton>
+        </Tooltip>
         <RecentChangesButton game={game} />
         <HistoryButton />
         <SupportButton game={game} />

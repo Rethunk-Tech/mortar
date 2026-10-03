@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Chip, Divider, Tab, Tabs } from '@mui/material'
 import { Settings2, Share2 } from 'lucide-react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { BrowseHost } from '../browse/BrowseHost.tsx'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { LogActions } from '../console/LogActions.tsx'
 import { PerformancePanel } from '../console/PerformancePanel.tsx'
@@ -43,6 +44,7 @@ function WorkspaceTabs({ problemsTabCount }: { problemsTabCount: number | null }
         },
       }}
     >
+      <Tab value="browse" label={t`Browse`} />
       <Tab value="mods" label={t`Mods`} />
       <Tab
         value="problems"
@@ -144,6 +146,9 @@ export function ProfileWorkspace({
         {tab === 'performance' ? <PerformancePanel game={game} /> : null}
         {tab === 'notes' ? <NotesTab key={`notes-${profile.id}`} profile={profile} /> : null}
         {tab === 'saves' ? <SavesTab profile={profile} game={game} /> : null}
+        {tab === 'browse' ? (
+          <BrowseHost key={`browse-${profile.id}`} game={game} profileID={profile.id} />
+        ) : null}
         {tab === 'mods' ? <ModsTab key={`mods-${profile.id}`} profile={profile} /> : null}
         {tab === 'problems' ? (
           <Box
