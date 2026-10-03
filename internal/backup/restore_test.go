@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/archive"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
@@ -167,11 +168,39 @@ func TestRestoreRejectsZipSlip(t *testing.T) {
 		t.Fatal(err)
 	}
 	err := Restore(zipPath, saves, nil, DefaultKeep, time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC))
-	if !errors.Is(err, ErrZipSlip) {
+	if !errors.Is(err, archive.ErrTraversal) {
 		t.Fatalf("err = %v", err)
 	}
 	if _, err := os.Stat(outside); err == nil {
 		t.Fatal("zip slip wrote outside Saves")
+	}
+}
+
+func TestRestoreRejectsReservedName(t *testing.T) {
+	root := t.TempDir()
+	saves := filepath.Join(root, "Saves")
+	if err := os.MkdirAll(saves, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	zipPath := filepath.Join(root, "2026-06-01T00-00-00.000.zip")
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	w, err := zw.Create("Saves/Farm_1/CON")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := io.Copy(w, bytes.NewReader([]byte("nope"))); err != nil {
+		t.Fatal(err)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(zipPath, buf.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	err = Restore(zipPath, saves, nil, DefaultKeep, time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC))
+	if !errors.Is(err, archive.ErrUnsafeName) {
+		t.Fatalf("err = %v", err)
 	}
 }
 
