@@ -63,6 +63,18 @@ function SizeRow({ label, size }: { label: string; size: number | null }) {
   )
 }
 
+// While measuring, the legend keeps the entries the last measurement in this session had, so it does not
+// shrink when the numbers arrive; the first measurement starts from the two that are never empty in use.
+let lastShown: SegmentId[] = ['profiles', 'store']
+
+function legendIds(sizes: Record<SegmentId, number> | null): SegmentId[] {
+  if (sizes === null) {
+    return lastShown
+  }
+  lastShown = SEGMENT_ORDER.filter((id) => sizes[id] > 0)
+  return lastShown
+}
+
 function Legend({
   sizes,
   labels,
@@ -73,7 +85,7 @@ function Legend({
   const colors = useSegmentColors()
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2, rowGap: 0.75, pt: 1.5 }}>
-      {SEGMENT_ORDER.filter((id) => sizes === null || sizes[id] > 0).map((id) => (
+      {legendIds(sizes).map((id) => (
         <Box
           key={id}
           sx={{
