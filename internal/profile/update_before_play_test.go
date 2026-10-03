@@ -10,7 +10,7 @@ func TestUpdateBeforePlayDefaultsFalseAndPersists(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if p.UpdateBeforePlay {
+	if p.Overrides["updateModsBeforePlayDefault"] != "" {
 		t.Fatal("new profile enables update before Play")
 	}
 
@@ -18,7 +18,7 @@ func TestUpdateBeforePlayDefaultsFalseAndPersists(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !got.UpdateBeforePlay {
+	if got.Overrides["updateModsBeforePlayDefault"] != "true" {
 		t.Fatal("setter did not enable update before Play")
 	}
 
@@ -26,7 +26,7 @@ func TestUpdateBeforePlayDefaultsFalseAndPersists(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(listed) != 1 || !listed[0].UpdateBeforePlay {
+	if len(listed) != 1 || listed[0].Overrides["updateModsBeforePlayDefault"] != "true" {
 		t.Fatalf("listed profile = %+v", listed)
 	}
 
@@ -34,7 +34,7 @@ func TestUpdateBeforePlayDefaultsFalseAndPersists(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got.UpdateBeforePlay {
+	if got.Overrides["updateModsBeforePlayDefault"] != "false" {
 		t.Fatal("setter did not disable update before Play")
 	}
 }

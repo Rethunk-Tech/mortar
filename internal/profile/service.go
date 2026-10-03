@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"unicode"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/game"
@@ -124,11 +123,6 @@ func (s *Service) Rename(game, id, name string) (Profile, error) {
 
 func (s *Service) SetNotes(game, id, notes string) (Profile, error) {
 	return s.store.SetNotes(game, id, notes)
-}
-
-// SetUpdateBeforePlay records whether available mod updates run before Play.
-func (s *Service) SetUpdateBeforePlay(game, id string, on bool) (Profile, error) {
-	return s.store.SetUpdateBeforePlay(game, id, on)
 }
 
 // SetOverride sets one profile override of a game setting; "default" removes it so the game value applies.
@@ -322,82 +316,6 @@ func (s *Service) ReadConfig(game, id, key, uniqueID string) (string, error) {
 // WriteConfig replaces the mod's config.json atomically.
 func (s *Service) WriteConfig(game, id, key, uniqueID, contents string) error {
 	return s.store.WriteConfig(game, id, key, uniqueID, contents)
-}
-
-// Content Patcher accepts comments and trailing commas in the files it owns.
-func stripConfigJSONNoise(b []byte) []byte {
-	out := make([]byte, 0, len(b))
-	inStr := false
-	esc := false
-	for i := 0; i < len(b); {
-		c := b[i]
-		if inStr {
-			out = append(out, c)
-			if esc {
-				esc = false
-			} else if c == '\\' {
-				esc = true
-			} else if c == '"' {
-				inStr = false
-			}
-			i++
-			continue
-		}
-		if c == '"' {
-			inStr = true
-			out = append(out, c)
-			i++
-			continue
-		}
-		if c == '/' && i+1 < len(b) && b[i+1] == '/' {
-			i += 2
-			for i < len(b) && b[i] != '\n' {
-				i++
-			}
-			continue
-		}
-		if c == '/' && i+1 < len(b) && b[i+1] == '*' {
-			i += 2
-			for i+1 < len(b) && (b[i] != '*' || b[i+1] != '/') {
-				i++
-			}
-			if i+1 < len(b) {
-				i += 2
-			}
-			continue
-		}
-		if c == ',' {
-			j := i + 1
-			for j < len(b) && unicode.IsSpace(rune(b[j])) {
-				j++
-			}
-			for j < len(b) && b[j] == '/' && j+1 < len(b) && (b[j+1] == '/' || b[j+1] == '*') {
-				if b[j+1] == '/' {
-					for j < len(b) && b[j] != '\n' {
-						j++
-					}
-				} else {
-					j += 2
-					for j+1 < len(b) && (b[j] != '*' || b[j+1] != '/') {
-						j++
-					}
-					if j+1 < len(b) {
-						j += 2
-					}
-				}
-				for j < len(b) && unicode.IsSpace(rune(b[j])) {
-					j++
-				}
-			}
-			if j < len(b) && (b[j] == '}' || b[j] == ']') {
-				i++
-				continue
-			}
-		}
-		out = append(out, c)
-		i++
-	}
-	return out
 }
 
 // SetPinned records whether the entry stays on its current version.

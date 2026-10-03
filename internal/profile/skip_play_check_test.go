@@ -10,7 +10,7 @@ func TestSkipPlayCheckDefaultsFalseAndPersists(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if p.SkipPlayCheck {
+	if p.Overrides["skipPlayCheck"] != "" {
 		t.Fatal("new profile skips the pre-Play check")
 	}
 
@@ -18,7 +18,7 @@ func TestSkipPlayCheckDefaultsFalseAndPersists(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !got.SkipPlayCheck {
+	if got.Overrides["skipPlayCheck"] != "true" {
 		t.Fatal("setter did not skip the pre-Play check")
 	}
 
@@ -26,7 +26,7 @@ func TestSkipPlayCheckDefaultsFalseAndPersists(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(listed) != 1 || !listed[0].SkipPlayCheck {
+	if len(listed) != 1 || listed[0].Overrides["skipPlayCheck"] != "true" {
 		t.Fatalf("listed profile = %+v", listed)
 	}
 
@@ -34,7 +34,7 @@ func TestSkipPlayCheckDefaultsFalseAndPersists(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got.SkipPlayCheck {
+	if got.Overrides["skipPlayCheck"] != "false" {
 		t.Fatal("setter did not restore the pre-Play check")
 	}
 }

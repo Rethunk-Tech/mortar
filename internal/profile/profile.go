@@ -180,10 +180,6 @@ type Profile struct {
 	LaunchPrefix string `json:"launchPrefix,omitempty"`
 	// LaunchEnv contains one NAME=value environment variable per line for direct launches.
 	LaunchEnv string `json:"launchEnv,omitempty"`
-	// UpdateBeforePlay applies available mod updates before launching this profile; false is the default.
-	UpdateBeforePlay bool `json:"updateBeforePlay,omitempty"`
-	// SkipPlayCheck skips the pre-Play problems dialog for this profile.
-	SkipPlayCheck bool `json:"skipPlayCheck,omitempty"`
 	// Overrides are profile values for settings.ProfileOverridable keys.
 	Overrides map[string]string `json:"overrides,omitempty"`
 	// Error is set on a list item whose profile.json could not be read.
@@ -508,9 +504,6 @@ func (s *Store) create(game, name string) (Profile, error) {
 	}
 	now := time.Now().UTC().Truncate(time.Second)
 	p := Profile{ID: id, Name: name, Order: len(existing), Created: now, Updated: now, Entries: []Entry{}}
-	if s.settings != nil {
-		p.UpdateBeforePlay = s.settings.Get().GamePrefs(game).UpdateModsBeforePlayDefault
-	}
 	if len(existing) > 0 {
 		p.Order = existing[len(existing)-1].Order + 1
 	}
@@ -560,12 +553,12 @@ func (s *Store) SetNotes(game, id, notes string) (Profile, error) {
 
 // SetUpdateBeforePlay records whether available mod updates run before Play.
 func (s *Store) SetUpdateBeforePlay(game, id string, on bool) (Profile, error) {
-	return s.SetOverride(game, id, "updateModsBeforePlayDefault", strconv.FormatBool(on))
+	return s.SetOverride(game, id, overrideUpdateBeforePlay, strconv.FormatBool(on))
 }
 
 // SetSkipPlayCheck records whether the pre-Play problems dialog is skipped for this profile.
 func (s *Store) SetSkipPlayCheck(game, id string, on bool) (Profile, error) {
-	return s.SetOverride(game, id, "skipPlayCheck", strconv.FormatBool(on))
+	return s.SetOverride(game, id, overrideSkipPlayCheck, strconv.FormatBool(on))
 }
 
 // update reads the profile under the lock, applies fn (given the profile folder), then writes it with a new updated time.

@@ -3,7 +3,6 @@ package profile
 import (
 	"fmt"
 	"maps"
-	"strconv"
 
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
@@ -13,22 +12,12 @@ const (
 	overrideSkipPlayCheck    = "skipPlayCheck"
 )
 
-// PrefOverrides is the map Resolve should see, including folded legacy fields.
+// PrefOverrides is the map Resolve should see.
 func (p Profile) PrefOverrides() map[string]string {
-	out := map[string]string{}
-	if p.Overrides != nil {
-		out = maps.Clone(p.Overrides)
-	}
-	if _, ok := out[overrideUpdateBeforePlay]; !ok && p.UpdateBeforePlay {
-		out[overrideUpdateBeforePlay] = "true"
-	}
-	if _, ok := out[overrideSkipPlayCheck]; !ok && p.SkipPlayCheck {
-		out[overrideSkipPlayCheck] = "true"
-	}
-	if len(out) == 0 {
+	if len(p.Overrides) == 0 {
 		return nil
 	}
-	return out
+	return maps.Clone(p.Overrides)
 }
 
 // SetOverride writes one profile-overridable setting, or clears it when value is "default".
@@ -51,7 +40,6 @@ func (s *Store) SetOverride(game, id, key, value string) (Profile, error) {
 		} else {
 			p.Overrides[key] = value
 		}
-		syncLegacyOverrides(p)
 		if len(p.Overrides) == 0 {
 			p.Overrides = nil
 		}
@@ -79,22 +67,6 @@ func (s *Store) SetOverrides(game, id string, overrides map[string]string) (Prof
 		} else {
 			p.Overrides = maps.Clone(overrides)
 		}
-		syncLegacyOverrides(p)
 		return nil
 	})
-}
-
-func syncLegacyOverrides(p *Profile) {
-	if v, ok := p.Overrides[overrideUpdateBeforePlay]; ok {
-		on, err := strconv.ParseBool(v)
-		p.UpdateBeforePlay = err == nil && on
-	} else {
-		p.UpdateBeforePlay = false
-	}
-	if v, ok := p.Overrides[overrideSkipPlayCheck]; ok {
-		on, err := strconv.ParseBool(v)
-		p.SkipPlayCheck = err == nil && on
-	} else {
-		p.SkipPlayCheck = false
-	}
 }

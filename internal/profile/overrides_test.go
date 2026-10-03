@@ -42,7 +42,7 @@ func TestSetOverridePersists(t *testing.T) {
 	}
 }
 
-func TestSetOverrideFoldsSkipPlayCheck(t *testing.T) {
+func TestSetSkipPlayCheckWritesOverride(t *testing.T) {
 	s := overrideStore(t)
 	p, err := s.Create("stardew", "Farm")
 	if err != nil {
@@ -52,8 +52,8 @@ func TestSetOverrideFoldsSkipPlayCheck(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !got.SkipPlayCheck || got.Overrides["skipPlayCheck"] != "true" {
-		t.Fatalf("fold = skip %v overrides %#v", got.SkipPlayCheck, got.Overrides)
+	if got.Overrides["skipPlayCheck"] != "true" {
+		t.Fatalf("overrides %#v", got.Overrides)
 	}
 	if got.PrefOverrides()["skipPlayCheck"] != "true" {
 		t.Fatalf("pref overrides = %#v", got.PrefOverrides())
