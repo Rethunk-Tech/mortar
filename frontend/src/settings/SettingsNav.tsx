@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Typography } from '@mui/material'
+import { Box, ButtonBase, TextField, Typography } from '@mui/material'
 import { ArrowLeft } from 'lucide-react'
 import type { SettingsSection } from '../nav/store.ts'
 import { useNav } from '../nav/store.ts'
@@ -10,10 +10,14 @@ export function SettingsNav({
   section,
   sections,
   onSection,
+  query,
+  setQuery,
 }: {
   section: SettingsSection
   sections: { id: SettingsSection; label: string }[]
   onSection?: (id: SettingsSection) => void
+  query: string
+  setQuery: (query: string) => void
 }) {
   const { t } = useLingui()
   const closeSettings = useNav((s) => s.closeSettings)
@@ -49,6 +53,21 @@ export function SettingsNav({
           {t`Settings`}
         </Typography>
       </Box>
+      <TextField
+        size="small"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder={t`Search settings`}
+        slotProps={{ htmlInput: { 'aria-label': t`Search settings` } }}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape' && query) {
+            e.preventDefault()
+            e.stopPropagation()
+            setQuery('')
+          }
+        }}
+        sx={{ width: '100%', mb: 0.5 }}
+      />
       {sections.map((s) => {
         const active = section === s.id
         return (

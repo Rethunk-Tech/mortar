@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, TextField, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { type SettingsSection, useNav } from '../nav/store.ts'
 import { SettingsNav } from './SettingsNav.tsx'
@@ -65,7 +65,13 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
   return (
     <SettingsSearchProvider query={query}>
       <Box sx={{ height: '100%', display: 'grid', gridTemplateColumns: '200px minmax(0, 1fr)' }}>
-        <SettingsNav section={section} sections={sections} onSection={pickSection} />
+        <SettingsNav
+          section={section}
+          sections={sections}
+          onSection={pickSection}
+          query={query}
+          setQuery={setQuery}
+        />
         <Box
           ref={pane}
           sx={{
@@ -91,21 +97,6 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
           >
             {query ? t`Search results` : current?.label}
           </Typography>
-          <TextField
-            size="small"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t`Search settings`}
-            slotProps={{ htmlInput: { 'aria-label': t`Search settings` } }}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape' && query) {
-                e.preventDefault()
-                e.stopPropagation()
-                setQuery('')
-              }
-            }}
-            sx={{ width: '100%', maxWidth: 760 }}
-          />
           <Box
             sx={{
               width: '100%',
