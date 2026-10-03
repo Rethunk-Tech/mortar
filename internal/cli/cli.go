@@ -678,7 +678,7 @@ func (c *cmd) nexus() error {
 
 func (c *cmd) profile() error {
 	if len(c.args) < 2 {
-		return usageError{"profile needs create, rename, copy, compare, match, history, revert, load-order or delete"}
+		return usageError{"profile needs create, rename, copy, compare, match, history, revert, load-order, repair or delete"}
 	}
 	sub := c.args[1]
 	var p profile.Profile
@@ -782,6 +782,14 @@ func (c *cmd) profile() error {
 			return err
 		}
 		return c.emit(r, func() { fmt.Fprintf(c.out, "Moved %s to Mortar's trash.\n", strings.Join(r.Mods, ", ")) })
+	case "repair":
+		a, err := c.need(2, "a game", "a profile")
+		if err != nil {
+			return err
+		}
+		if err := c.ask("profile.repair", control.Params{Game: a[0], Profile: a[1]}, &p, readTimeout); err != nil {
+			return err
+		}
 	default:
 		return usageError{"unknown profile command " + sub}
 	}
@@ -1398,6 +1406,17 @@ func (c *cmd) backups() error {
 					fmt.Fprintf(c.out, "Unkept %s.\n", a[0])
 				}
 			})
+		case "create":
+			a, err := c.need(2, "a save")
+			if err != nil {
+				return err
+			}
+			if err := c.ask("backups.create", control.Params{Name: a[0]}, nil, readTimeout); err != nil {
+				return err
+			}
+			return c.emit(map[string]any{"save": a[0]}, func() {
+				fmt.Fprintf(c.out, "Backed up %s.\n", a[0])
+			})
 		case "list":
 			break
 		default:
@@ -1512,6 +1531,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   bundles apply <game> <bundle> <profile> apply a bundle
   nexus untrack <game> --all|--unused    bulk untrack Nexus mods
   profile delete <game> <profile>         moves it to Mortar's trash
+  profile repair <game> <profile>         rebuild damaged profile.json from history
   trash list [--game stardew]             recently deleted profiles
   trash restore <name|id> [--game stardew]
   trash delete <name|id> --yes            permanently delete one
@@ -1548,6 +1568,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   update <game> <profile> <UniqueID>...|--all
                                           queue available mod updates
   backups list                            list save backups
+  backups create <save>                   pin a Manual backup of one save
   cache size                              analysis cache size
   cache clear                             delete the analysis cache
   data usage --by-mod                     store items with size on disk

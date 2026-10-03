@@ -19,12 +19,14 @@ import {
   PurgeTrash,
   Rename,
   Reorder,
+  Repair,
   Restore,
   RestoreFromZip,
   SetAppearance,
   SetHidden,
   SetLaunchOptions,
   SetLaunchSettings,
+  UndoRepair,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { SetLastProfile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { loadGameStatus } from '../games/status.ts'
@@ -213,6 +215,33 @@ async function reorderProfiles(
   }
 }
 
+async function repairProfile(
+  get: () => {
+    game: GameInfo | null
+    refresh: () => Promise<void>
+  },
+  id: string,
+) {
+  const { game } = get()
+  if (!game) {
+    return
+  }
+  const repaired = await Repair(game.id, id)
+  await get().refresh()
+  useToasts.getState().push({
+    kind: 'success',
+    title: i18n._(msg`Repaired “${repaired.name || id}”`),
+    action: {
+      label: i18n._(msg`Undo`),
+      profileId: id,
+      run: async () => {
+        await UndoRepair(game.id, id)
+        await get().refresh()
+      },
+    },
+  })
+}
+
 async function restoreProfile(
   get: () => {
     game: GameInfo | null
@@ -270,6 +299,7 @@ export const useProfiles = create<{
   exportProfile: (id: string) => Promise<void>
   restoreZip: () => Promise<void>
   openFolder: (id: string) => Promise<void>
+  repair: (id: string) => Promise<void>
   setHidden: (id: string, hidden: boolean) => Promise<void>
   remove: (id: string) => Promise<void>
   restore: (id: string) => Promise<void>
@@ -361,6 +391,13 @@ export const useProfiles = create<{
       await OpenFolder(game.id, id)
     } catch (e) {
       fail(i18n._(msg`Could not open the profile folder`))(e)
+    }
+  },
+  repair: async (id) => {
+    try {
+      await repairProfile(get, id)
+    } catch (e) {
+      fail(i18n._(msg`Could not repair the profile`))(e)
     }
   },
   restoreZip: async () => {

@@ -162,8 +162,12 @@ type Profile struct {
 	LaunchEnv string `json:"launchEnv,omitempty"`
 	// UpdateBeforePlay applies available mod updates before launching this profile; false is the default.
 	UpdateBeforePlay bool `json:"updateBeforePlay,omitempty"`
+	// SkipPlayCheck skips the pre-Play problems dialog for this profile.
+	SkipPlayCheck bool `json:"skipPlayCheck,omitempty"`
 	// Error is set on a list item whose profile.json could not be read.
 	Error string `json:"error,omitempty"`
+	// RepairError is why Repair is unavailable on a damaged list item.
+	RepairError string `json:"repairError,omitempty"`
 }
 
 // Store reads and writes profiles under one root folder.
@@ -338,7 +342,11 @@ func (s *Store) List(game string) ([]Profile, error) {
 		}
 		p, err := s.read(game, d.Name())
 		if err != nil {
-			out = append(out, Profile{ID: d.Name(), Error: err.Error()})
+			row := Profile{ID: d.Name(), Error: err.Error()}
+			if _, ok := latestSnapshotAt(filepath.Join(dir, d.Name())); !ok {
+				row.RepairError = errNoSnapshot.Error()
+			}
+			out = append(out, row)
 			continue
 		}
 		out = append(out, p)
@@ -528,6 +536,14 @@ func (s *Store) SetNotes(game, id, notes string) (Profile, error) {
 func (s *Store) SetUpdateBeforePlay(game, id string, on bool) (Profile, error) {
 	return s.update(game, id, func(p *Profile, _ string) error {
 		p.UpdateBeforePlay = on
+		return nil
+	})
+}
+
+// SetSkipPlayCheck records whether the pre-Play problems dialog is skipped for this profile.
+func (s *Store) SetSkipPlayCheck(game, id string, on bool) (Profile, error) {
+	return s.update(game, id, func(p *Profile, _ string) error {
+		p.SkipPlayCheck = on
 		return nil
 	})
 }

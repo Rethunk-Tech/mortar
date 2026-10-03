@@ -138,6 +138,19 @@ func TestProfileCompareHistoryAndRevert(t *testing.T) {
 	}
 }
 
+func TestProfileRepair(t *testing.T) {
+	results := map[string]any{
+		"profile.repair": profile.Profile{ID: "0123456789abcdef", Name: "Farm"},
+	}
+	r := invoke(t, results, "profile", "repair", "stardew", "0123456789abcdef", "--json")
+	if r.code != 0 || r.calls[0].method != "profile.repair" || r.calls[0].params.Profile != "0123456789abcdef" {
+		t.Fatalf("repair: %+v", r)
+	}
+	if !strings.Contains(r.out, `"id": "0123456789abcdef"`) {
+		t.Fatalf("repair json: %q", r.out)
+	}
+}
+
 func TestHistoryAll(t *testing.T) {
 	results := map[string]any{
 		"history.all": []profile.RecentEvent{
@@ -157,6 +170,25 @@ func TestHistoryAll(t *testing.T) {
 	}
 	if r := invoke(t, results, "history", "stardew"); r.code != 2 {
 		t.Fatalf("history without --all: %+v", r)
+	}
+}
+
+func TestBackupsCreate(t *testing.T) {
+	results := map[string]any{"backups.create": nil}
+	r := invoke(t, results, "backups", "create", "Farm_1")
+	if r.code != 0 || r.calls[0].method != "backups.create" || r.calls[0].params.Name != "Farm_1" {
+		t.Fatalf("create: %+v", r)
+	}
+	if !strings.Contains(r.out, "Backed up Farm_1") {
+		t.Fatalf("create out: %q", r.out)
+	}
+	r = invoke(t, results, "backups", "create", "Farm_1", "--json")
+	if r.code != 0 || r.calls[0].method != "backups.create" {
+		t.Fatalf("create json: %+v", r)
+	}
+	var body map[string]any
+	if err := json.Unmarshal([]byte(r.out), &body); err != nil || body["save"] != "Farm_1" {
+		t.Fatalf("create json: %v %q", err, r.out)
 	}
 }
 

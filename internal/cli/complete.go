@@ -44,7 +44,7 @@ func completion(w io.Writer, shell string) error {
 
 // subverbs are the second words of the verbs that take one.
 var subverbs = map[string][]string{
-	"profile":    {"create", "rename", "copy", "delete", "compare", "match", "history", "revert", "load-order"},
+	"profile":    {"create", "rename", "copy", "delete", "compare", "match", "history", "revert", "load-order", "repair"},
 	"mods":       {"enable", "disable", "pin", "unpin", "remove"},
 	"bundles":    {"apply"},
 	"nexus":      {"untrack"},
@@ -54,7 +54,7 @@ var subverbs = map[string][]string{
 	"tools":      {"run"},
 	"problems":   {"dismissed", "dismiss", "restore"},
 	"queue":      {"retry", "skip", "pause", "resume", "clear"},
-	"backups":    {"list", "keep", "unkeep", "restore"},
+	"backups":    {"list", "create", "keep", "unkeep", "restore"},
 	"cache":      {"size", "clear"},
 	"data":       {"usage"},
 	"settings":   {"get", "set"},

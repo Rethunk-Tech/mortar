@@ -71,6 +71,12 @@ func (s *Service) List(game string) ([]Profile, error) { return s.store.List(gam
 
 func (s *Service) ListDamaged(game string) ([]Profile, error) { return s.store.ListDamaged(game) }
 
+// Repair rebuilds a damaged profile.json from its latest history snapshot.
+func (s *Service) Repair(game, id string) (Profile, error) { return s.store.Repair(game, id) }
+
+// UndoRepair restores the aside damaged profile.json.
+func (s *Service) UndoRepair(game, id string) error { return s.store.UndoRepair(game, id) }
+
 // OpenFolder shows the profile's folder in the system file manager.
 func (s *Service) OpenFolder(game, id string) error {
 	dir, err := s.store.profileDir(game, id)
@@ -118,6 +124,11 @@ func (s *Service) SetNotes(game, id, notes string) (Profile, error) {
 // SetUpdateBeforePlay records whether available mod updates run before Play.
 func (s *Service) SetUpdateBeforePlay(game, id string, on bool) (Profile, error) {
 	return s.store.SetUpdateBeforePlay(game, id, on)
+}
+
+// SetSkipPlayCheck records whether the pre-Play problems dialog is skipped for this profile.
+func (s *Service) SetSkipPlayCheck(game, id string, on bool) (Profile, error) {
+	return s.store.SetSkipPlayCheck(game, id, on)
 }
 
 // SetAppearance replaces a profile's colour, icon and short description.

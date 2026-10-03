@@ -339,6 +339,11 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, errors.New("backups are unavailable")
 		}
 		return nil, s.Saves.SetBackupPinned(p.Name, false)
+	case "backups.create":
+		if s.Saves == nil {
+			return nil, errors.New("backups are unavailable")
+		}
+		return nil, s.Saves.CreateBackup(p.Name)
 	case "bundles":
 		if s.Bundles == nil {
 			return nil, errors.New("bundles are unavailable")
@@ -512,6 +517,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.changed(p.Game, func() (any, error) {
 			return Removed{Mods: []string{prof.Name}}, s.Profiles.Delete(p.Game, id)
 		})
+	case "profile.repair":
+		return s.changed(p.Game, func() (any, error) { return s.Profiles.Repair(p.Game, id) })
 	case "mods":
 		return modRows(prof), nil
 	case "mod":

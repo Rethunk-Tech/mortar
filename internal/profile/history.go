@@ -588,6 +588,31 @@ func (s *Store) recordSnapshot(game, id, kind, label string, count int) error {
 	return err
 }
 
+func peekHistory(dir string) (historyFileData, error) {
+	b, err := fsx.ReadFile(filepath.Join(dir, historyFile))
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return emptyHistory(), nil
+		}
+		return historyFileData{}, err
+	}
+	data, _, err := historyFromBytes(b)
+	return data, err
+}
+
+func latestSnapshotAt(dir string) ([]Entry, bool) {
+	data, err := peekHistory(dir)
+	if err != nil {
+		return nil, false
+	}
+	for _, ev := range slices.Backward(data.Events) {
+		if entries, ok := snapshotEntries(data, ev.SnapshotID); ok {
+			return cloneEntries(entries), true
+		}
+	}
+	return nil, false
+}
+
 func readHistory(dir string) (historyFileData, error) {
 	path := filepath.Join(dir, historyFile)
 	b, err := fsx.ReadFile(path)
@@ -597,16 +622,29 @@ func readHistory(dir string) (historyFileData, error) {
 		}
 		return historyFileData{}, err
 	}
+	data, legacy, err := historyFromBytes(b)
+	if err != nil {
+		return quarantineHistory(path, err)
+	}
+	if legacy {
+		if err := writeHistory(dir, data, 0); err != nil {
+			return historyFileData{}, err
+		}
+	}
+	return data, nil
+}
+
+func historyFromBytes(b []byte) (historyFileData, bool, error) {
 	var envelope struct {
 		Snapshots map[string][]Entry `json:"snapshots"`
 	}
 	if err := json.Unmarshal(b, &envelope); err != nil {
-		return quarantineHistory(path, err)
+		return historyFileData{}, false, err
 	}
 	if envelope.Snapshots != nil {
 		var data historyFileData
 		if err := json.Unmarshal(b, &data); err != nil {
-			return quarantineHistory(path, err)
+			return historyFileData{}, false, err
 		}
 		if data.Events == nil {
 			data.Events = []HistoryEvent{}
@@ -614,18 +652,18 @@ func readHistory(dir string) (historyFileData, error) {
 		if data.Snapshots == nil {
 			data.Snapshots = map[string][]Entry{}
 		}
-		return data, nil
+		return data, false, nil
 	}
 	var legacy legacyHistoryFileData
 	if err := json.Unmarshal(b, &legacy); err != nil {
-		return quarantineHistory(path, err)
+		return historyFileData{}, false, err
 	}
 	data := emptyHistory()
 	for _, old := range legacy.Events {
 		entries := cloneEntries(old.Entries)
 		id, err := entriesSnapshotID(entries)
 		if err != nil {
-			return historyFileData{}, err
+			return historyFileData{}, true, err
 		}
 		if _, exists := data.Snapshots[id]; !exists {
 			data.Snapshots[id] = entries
@@ -635,10 +673,7 @@ func readHistory(dir string) (historyFileData, error) {
 			From: old.From, To: old.To, SnapshotID: id,
 		})
 	}
-	if err := writeHistory(dir, data, 0); err != nil {
-		return historyFileData{}, err
-	}
-	return data, nil
+	return data, true, nil
 }
 
 func emptyHistory() historyFileData {

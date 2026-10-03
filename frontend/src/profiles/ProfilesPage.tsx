@@ -39,12 +39,14 @@ import {
   Download,
   FileUp,
   FolderInput,
+  FolderOpen,
   Plus,
   RotateCcw,
   Search,
   Trash2,
+  Wrench,
 } from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { SourceInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/migrate/models.ts'
 import type {
   Profile,
@@ -60,7 +62,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { ExternalImportMenuItems, ExternalImportProfileDialog } from './ExternalImportMenu.tsx'
 import { useExternalImportSources } from './externalImportSources.ts'
-import { findModInProfiles, openModInProfile } from './findMod.ts'
+import { findModInProfiles, onFindAllFocus, openModInProfile } from './findMod.ts'
 import { GameModsDialog } from './GameModsDialog.tsx'
 import { shouldShowExternalImportDivider } from './importMenu.ts'
 import { ProfileRow } from './ProfileRow.tsx'
@@ -142,6 +144,7 @@ function Damaged() {
   const { t } = useLingui()
   const damaged = useProfiles((s) => s.damaged)
   const openFolder = useProfiles((s) => s.openFolder)
+  const repair = useProfiles((s) => s.repair)
   const remove = useProfiles((s) => s.remove)
   const [pending, run] = usePending()
   if (damaged.length === 0) {
@@ -182,6 +185,17 @@ function Damaged() {
                 onClick={() => run(() => openFolder(item.id))}
               >
                 <FolderOpen size={16} />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title={item.repairError || t`Repair`}>
+            <span>
+              <IconButton
+                aria-label={t`Repair`}
+                disabled={pending || Boolean(item.repairError)}
+                onClick={() => run(() => repair(item.id))}
+              >
+                <Wrench size={16} />
               </IconButton>
             </span>
           </Tooltip>
@@ -272,7 +286,9 @@ function Trash() {
 function FindModSearch({ profiles }: { profiles: Profile[] }) {
   const { t } = useLingui()
   const [query, setQuery] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
   const hits = findModInProfiles(profiles, query)
+  useEffect(() => onFindAllFocus(() => inputRef.current?.focus()), [])
   return (
     <Box sx={{ px: 2.5, pt: 1.5, flexShrink: 0 }}>
       <TextField
@@ -281,6 +297,7 @@ function FindModSearch({ profiles }: { profiles: Profile[] }) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder={t`Find a mod in all profiles`}
+        inputRef={inputRef}
         slotProps={{
           input: {
             startAdornment: (
