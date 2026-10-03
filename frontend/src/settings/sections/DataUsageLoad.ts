@@ -10,12 +10,10 @@ import { beginUsageLoad } from '../usageLoad.ts'
 export function useDataUsage() {
   const [usage, setUsage] = useState<DiskUse | null>(null)
   const [bytes, setBytes] = useState(0)
-  const [rev, setRev] = useState(0)
   const stopRef = useRef<() => void>(() => undefined)
   const restart = useCallback(() => {
     stopRef.current()
     setUsage(null)
-    setRev((n) => n + 1)
     stopRef.current = beginUsageLoad({
       usage: Usage,
       progress: UsageProgress,
@@ -28,5 +26,5 @@ export function useDataUsage() {
     restart()
     return () => stopRef.current()
   }, [restart])
-  return { usage, bytes, restart, rev }
+  return { usage, bytes, restart }
 }

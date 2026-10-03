@@ -1,9 +1,22 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Checkbox, FormControlLabel } from '@mui/material'
-import { useEffect, useState } from 'react'
 import {
+  Box,
+  Button,
+  Checkbox,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+} from '@mui/material'
+import { useEffect, useState } from 'react'
+import type { Preview } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
+import {
+  Cleanup,
+  CleanupPreview,
   RemoveItems,
   Report,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
@@ -13,6 +26,7 @@ import type {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/store/models.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { When } from '../../i18n/When.tsx'
+import { paper } from '../../mods/paper.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { nowrap } from './dataStyles.ts'
@@ -184,7 +198,20 @@ function ItemRow({
   )
 }
 
-function DataStoreReport({ onChanged }: { onChanged: () => void }) {
+function allIds(unused: Sel[], dups: DupGroup[]): string[] {
+  const ids = unused.map((row) => selId(row.game, row.item.key))
+  for (const g of dups) {
+    const keep = newestOf(g.items)
+    for (const item of g.items) {
+      if (item !== keep) {
+        ids.push(selId(g.game, item.key))
+      }
+    }
+  }
+  return ids
+}
+
+function StoreItems({ onChanged }: { onChanged: () => void }) {
   const { t, i18n } = useLingui()
   const [unused, setUnused] = useState<Sel[]>([])
   const [dups, setDups] = useState<DupGroup[]>([])
@@ -227,15 +254,30 @@ function DataStoreReport({ onChanged }: { onChanged: () => void }) {
       .finally(() => setBusy(false))
   }
   const empty = unused.length === 0 && dups.length === 0
+  const every = allIds(unused, dups)
+  const allPicked = every.length > 0 && every.every((id) => picked.includes(id))
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Box sx={{ fontSize: TITLE_SIZE, fontWeight: 600, pt: 1 }}>{t`Store cleanup`}</Box>
       {empty ? (
         <Box sx={{ fontSize: TITLE_SIZE }}>{t`No unused or duplicate store items.`}</Box>
-      ) : null}
+      ) : (
+        <FormControlLabel
+          sx={{ ...nowrap, alignItems: 'center' }}
+          control={
+            <Checkbox
+              checked={allPicked}
+              indeterminate={picked.length > 0 && !allPicked}
+              onChange={(ev) => setPicked(ev.target.checked ? every : [])}
+            />
+          }
+          label={<Box sx={{ fontSize: TITLE_SIZE }}>{t`Select all`}</Box>}
+        />
+      )}
       <UnusedList rows={unused} picked={picked} onToggle={toggle} />
       <DupList groups={dups} picked={picked} onToggle={toggle} />
       <Button
+        variant="outlined"
+        color="error"
         disabled={chosen.length === 0}
         onClick={() => setConfirm(true)}
         sx={{ alignSelf: 'flex-start', ...nowrap }}
@@ -256,4 +298,101 @@ function DataStoreReport({ onChanged }: { onChanged: () => void }) {
   )
 }
 
-export { DataStoreReport }
+function Leftovers({ onChanged }: { onChanged: () => void }) {
+  const { t } = useLingui()
+  const [preview, setPreview] = useState<Preview | null>(null)
+  const [busy, setBusy] = useState(false)
+  const load = () => {
+    CleanupPreview().then(setPreview).catch(reportUnexpected)
+  }
+  useEffect(load, [])
+  // Store items are chosen in the list above; this part only removes cache and temp files.
+  const items = (preview?.items ?? []).filter((it) => it.kind !== 'store')
+  const total = items.reduce((n, it) => n + it.size, 0)
+  const remove = () => {
+    if (!preview) {
+      return
+    }
+    setBusy(true)
+    Cleanup({ ...preview, items, total })
+      .then(() => {
+        onChanged()
+        load()
+      })
+      .catch(reportUnexpected)
+      .finally(() => setBusy(false))
+  }
+  let body = (
+    <>
+      {items.map((it) => (
+        <Box
+          key={it.rel}
+          sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, fontSize: HINT_SIZE }}
+        >
+          <Box sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', ...nowrap }}>
+            {it.label}
+          </Box>
+          <Box sx={{ flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
+            {formatBytes(it.size)}
+          </Box>
+        </Box>
+      ))}
+      <Button
+        variant="outlined"
+        color="error"
+        disabled={busy}
+        onClick={remove}
+        sx={{ alignSelf: 'flex-start', ...nowrap }}
+      >
+        {t`Remove leftover files (${formatBytes(total)})`}
+      </Button>
+    </>
+  )
+  if (!preview) {
+    body = <CircularProgress size={20} />
+  } else if (items.length === 0) {
+    body = <Box sx={{ fontSize: TITLE_SIZE }}>{t`No leftover files.`}</Box>
+  }
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Box sx={{ fontSize: TITLE_SIZE, fontWeight: 600 }}>{t`Leftover files`}</Box>
+      {body}
+    </Box>
+  )
+}
+
+function CleanupDialog({
+  open,
+  onClose,
+  onChanged,
+}: {
+  open: boolean
+  onClose: () => void
+  onChanged: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth={true}
+      scroll="paper"
+      transitionDuration={0}
+      slotProps={{ paper }}
+    >
+      <DialogTitle>{t`Clean up storage`}</DialogTitle>
+      <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <StoreItems onChanged={onChanged} />
+        <Leftovers onChanged={onChanged} />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} sx={nowrap}>
+          {t`Close`}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
+export { CleanupDialog }

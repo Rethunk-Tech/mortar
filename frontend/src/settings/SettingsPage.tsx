@@ -6,7 +6,6 @@ import { SettingsNav } from './SettingsNav.tsx'
 import { SettingsSearchProvider } from './SettingsSearch.tsx'
 import { About } from './sections/About.tsx'
 import { Appearance } from './sections/Appearance.tsx'
-import { Data } from './sections/Data.tsx'
 import { Downloads } from './sections/Downloads.tsx'
 import { General } from './sections/General.tsx'
 import { Launchers } from './sections/Launchers.tsx'
@@ -14,6 +13,7 @@ import { ModsProfiles } from './sections/ModsProfiles.tsx'
 import { NexusMods } from './sections/NexusMods.tsx'
 import { Notifications } from './sections/Notifications.tsx'
 import { Shortcuts } from './sections/Shortcuts.tsx'
+import { Storage } from './sections/Storage.tsx'
 import { Updates } from './sections/Updates.tsx'
 import { shouldLeavePageOnEscape } from './shouldLeavePageOnEscape.ts'
 
@@ -56,7 +56,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
     nexus: <NexusMods />,
     updates: <Updates />,
     notifications: <Notifications />,
-    storage: <Data />,
+    storage: <Storage />,
     launchers: <Launchers />,
     shortcuts: <Shortcuts />,
     about: <About />,

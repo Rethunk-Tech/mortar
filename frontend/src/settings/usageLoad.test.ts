@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { beginUsageLoad } from '../usageLoad.ts'
+import { beginUsageLoad } from './usageLoad.ts'
 
 test('unmount stops UsageProgress ticks and ignores a late Usage result', async () => {
   const bytes: number[] = []
