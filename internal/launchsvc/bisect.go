@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
+	"slices"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/launch"
@@ -92,25 +92,15 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string, di
 	}
 }
 
+// bisectStartupFailure reports a SMAPI crash report while the game runs. Plain error lines (a skipped mod, missing
+// Steam) do not fail a bisect step: the bisect looks for the mod behind a crash, and counting errors would blame
+// whichever mod logs one.
 func bisectStartupFailure(lines []launch.Entry) bool {
-	for _, entry := range lines {
-		if entry.Level == launch.Alert {
-			return true
-		}
-		if entry.Level != launch.Error {
-			continue
-		}
-		message := strings.ToLower(entry.Message)
-		if strings.Contains(message, "steam achievements") {
-			continue
-		}
-		return true
-	}
-	return false
+	return slices.ContainsFunc(lines, func(entry launch.Entry) bool { return entry.Level == launch.Alert })
 }
 
 func summaryHealthy(summary launch.Summary) bool {
-	return !summary.Crashed && summary.Errors == 0
+	return !summary.Crashed
 }
 
 func (s *Service) stopBisectRun(gameID string) error {
