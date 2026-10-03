@@ -187,7 +187,7 @@ msgstr "Make {name} win"
 #: src/mods/parts.tsx:380
 #: src/mods/parts.tsx:391
 #: src/mods/problemFix/WinFix.tsx:51
-#: src/mods/SelectionBarActions.tsx:61
+#: src/mods/SelectionBarActions.tsx:104
 #: src/mods/Toolbar.tsx:251
 #: src/saves/lackChipActions.tsx:42
 #: src/saves/lackChipActions.tsx:74
@@ -524,7 +524,7 @@ msgstr "Open"
 msgid "A network request failed."
 msgstr "A network request failed."
 
-#: src/mods/SelectionBar.tsx:74
+#: src/mods/SelectionBar.tsx:75
 msgid "Save selection as bundle"
 msgstr "Save selection as bundle"
 
@@ -2400,7 +2400,7 @@ msgid "Not checked yet."
 msgstr "Not checked yet."
 
 #: src/mods/ModMenu.tsx:113
-#: src/mods/SelectionBarActions.tsx:78
+#: src/mods/SelectionBarActions.tsx:121
 msgid "Disable"
 msgstr "Disable"
 
@@ -2902,7 +2902,7 @@ msgstr "Browser extension"
 msgid "Violet"
 msgstr "Violet"
 
-#: src/mods/SelectionBarActions.tsx:102
+#: src/mods/SelectionBarActions.tsx:72
 msgid "Pin version"
 msgstr "Pin version"
 
@@ -3017,7 +3017,6 @@ msgid "Freed {0}"
 msgstr "Freed {0}"
 
 #: src/mods/CategoryEditor.tsx:206
-#: src/mods/SelectionBarActions.tsx:93
 msgid "Set category"
 msgstr "Set category"
 
@@ -3190,6 +3189,7 @@ msgstr "{0, plural, one {# settings file was left out (too large or an unusual n
 msgid "The banner at the top of a profile"
 msgstr "The banner at the top of a profile"
 
+#: src/mods/SelectionBarActions.tsx:139
 #: src/settings/sections/DataStoreReport.tsx:372
 msgid "Clear selection"
 msgstr "Clear selection"
@@ -3946,6 +3946,10 @@ msgstr "{name} settings"
 msgid "Open {0}"
 msgstr "Open {0}"
 
+#: src/mods/SelectionBarActions.tsx:69
+msgid "Tag…"
+msgstr "Tag…"
+
 #: src/game/detailStates.tsx:68
 msgid "No profiles yet"
 msgstr "No profiles yet"
@@ -4307,7 +4311,7 @@ msgid "Dismissed"
 msgstr "Dismissed"
 
 #: src/mods/ModMenu.tsx:193
-#: src/mods/SelectionBarActions.tsx:121
+#: src/mods/SelectionBarActions.tsx:84
 #: src/mods/Sidebar.tsx:401
 msgid "Also add to…"
 msgstr "Also add to…"
@@ -4327,6 +4331,10 @@ msgstr "Decline"
 #: src/profiles/GameModsDialog.tsx:153
 msgid "Nothing to import"
 msgstr "Nothing to import"
+
+#: src/mods/SelectionBarActions.tsx:134
+msgid "More actions"
+msgstr "More actions"
 
 #: src/profiles/ProfilesPage.tsx:253
 msgid "Deleted profiles stay here for 30 days, mods and settings included."
@@ -4511,7 +4519,7 @@ msgstr "Update in all profiles that have it"
 msgid "Default for a profile you just created"
 msgstr "Default for a profile you just created"
 
-#: src/mods/SelectionBarActions.tsx:129
+#: src/mods/SelectionBarActions.tsx:85
 msgid "Save as bundle…"
 msgstr "Save as bundle…"
 
@@ -5104,7 +5112,7 @@ msgstr "·"
 #: src/mods/problemFix/ListedFix.tsx:18
 #: src/mods/problemFix/MissingFix.tsx:28
 #: src/mods/problemFix/MissingFix.tsx:52
-#: src/mods/SelectionBar.tsx:114
+#: src/mods/SelectionBar.tsx:115
 #: src/mods/Sidebar.tsx:410
 #: src/mods/TrackedNotInProfile.tsx:89
 msgid "Add"
@@ -5291,7 +5299,7 @@ msgstr "Mortar minimises while you play and comes back when the game exits."
 
 #. placeholder {0}: created.name
 #: src/bundles/dialogs.tsx:236
-#: src/mods/SelectionBar.tsx:83
+#: src/mods/SelectionBar.tsx:84
 msgid "Created {0}"
 msgstr "Created {0}"
 
@@ -5911,7 +5919,7 @@ msgid "Details copied"
 msgstr "Details copied"
 
 #: src/mods/ModMenu.tsx:113
-#: src/mods/SelectionBarActions.tsx:70
+#: src/mods/SelectionBarActions.tsx:113
 msgid "Enable"
 msgstr "Enable"
 
@@ -5930,7 +5938,7 @@ msgstr "Choose the mod folder"
 msgid "Not now"
 msgstr "Not now"
 
-#: src/mods/SelectionBar.tsx:113
+#: src/mods/SelectionBar.tsx:114
 msgid "Also add selected mods to…"
 msgstr "Also add selected mods to…"
 
@@ -6311,7 +6319,7 @@ msgid "Import as new profile"
 msgstr "Import as new profile"
 
 #: src/bundles/dialogs.tsx:241
-#: src/mods/SelectionBar.tsx:76
+#: src/mods/SelectionBar.tsx:77
 msgid "Could not create the bundle"
 msgstr "Could not create the bundle"
 
@@ -6340,7 +6348,7 @@ msgstr "Handle Nexus download links?"
 msgid "none"
 msgstr "none"
 
-#: src/mods/SelectionBarActions.tsx:114
+#: src/mods/SelectionBarActions.tsx:78
 msgid "Skip current updates"
 msgstr "Skip current updates"
 
@@ -6871,7 +6879,7 @@ msgstr "Switch to Saves"
 #: src/mods/parts.tsx:393
 #: src/mods/problemFixButtons.tsx:131
 #: src/mods/ProblemsTab.tsx:217
-#: src/mods/SelectionBarActions.tsx:138
+#: src/mods/SelectionBarActions.tsx:130
 #: src/settings/sections/DataStoreReport.tsx:375
 #: src/settings/sections/DataStoreReport.tsx:383
 msgid "Remove"
@@ -6963,7 +6971,7 @@ msgstr "Beach farm"
 #: src/mods/CategoryEditor.tsx:149
 #: src/mods/ConfigEditor.tsx:253
 #: src/mods/ConfigPresets.tsx:65
-#: src/mods/SelectionBar.tsx:75
+#: src/mods/SelectionBar.tsx:76
 #: src/profiles/EditProfileDialog.tsx:445
 #: src/tools/ToolEditorDialog.tsx:119
 msgid "Save"
@@ -7177,7 +7185,7 @@ msgstr "Launching {name}"
 msgid "Pinned: {0}"
 msgstr "Pinned: {0}"
 
-#: src/mods/SelectionBarActions.tsx:102
+#: src/mods/SelectionBarActions.tsx:72
 msgid "Unpin version"
 msgstr "Unpin version"
 
@@ -7329,7 +7337,6 @@ msgstr "{0} needs a newer version than this."
 msgid "No launchers found. You can still continue and choose each game's folder when you open it."
 msgstr "No launchers found. You can still continue and choose each game's folder when you open it."
 
-#: src/mods/SelectionBarActions.tsx:86
 #: src/mods/SelectionBarDialogs.tsx:45
 #: src/mods/Toolbar.tsx:170
 #: src/settings/prefCopy.ts:124
@@ -7849,7 +7856,7 @@ msgstr "Select all"
 msgid "Foraging skill"
 msgstr "Foraging skill"
 
-#: src/mods/SelectionBarActions.tsx:147
+#: src/mods/SelectionBarActions.tsx:86
 msgid "Share selection"
 msgstr "Share selection"
 
@@ -8104,7 +8111,6 @@ msgid "Enable them too"
 msgstr "Enable them too"
 
 #: src/console/LogActions.tsx:94
-#: src/mods/SelectionBarActions.tsx:154
 #: src/settings/sections/DataMods.tsx:21
 #: src/toasts/HistoryButton.tsx:134
 msgid "Clear"
@@ -8851,6 +8857,7 @@ msgid "{gameName} settings"
 msgstr "{gameName} settings"
 
 #: src/mods/ModMenu.tsx:192
+#: src/mods/SelectionBarActions.tsx:70
 msgid "Set category…"
 msgstr "Set category…"
 
