@@ -12,7 +12,6 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
-import type { Settings as BackendGameSettings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/gamesettings/models.ts'
 import { GameSettings as GetGameSettings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { PickImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
@@ -20,6 +19,7 @@ import { hasPickedCover, type StagedCover } from '../game/cover.ts'
 import { HeroCover } from '../game/HeroCover.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { colorHex, MAX_DESCRIPTION, PROFILE_COLORS, PROFILE_ICONS } from './appearance.ts'
+import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
 import { GameSettings, type GameSettingsValues } from './GameSettings.tsx'
 import { LaunchPreview } from './LaunchPreview.tsx'
 import { OverridesSection } from './OverrideRows.tsx'
@@ -33,48 +33,6 @@ const PATH_SEPARATORS = /[\\/]/
 // LaunchError is a rejected launch field: the extra SMAPI arguments, or the prefix and environment saved together.
 type LaunchError = { field: 'options' | 'settings'; message: string } | null
 
-function toGameSettings(value: BackendGameSettings): GameSettingsValues | null {
-  const next: GameSettingsValues = {}
-  if (
-    value.windowMode === 'windowed' ||
-    value.windowMode === 'fullscreen' ||
-    value.windowMode === 'borderless'
-  ) {
-    next.windowMode = value.windowMode
-  }
-  if (value.displayIndex !== undefined && value.displayIndex !== null) {
-    next.displayIndex = value.displayIndex
-  }
-  if (value.preferredResolutionX !== undefined && value.preferredResolutionX !== null) {
-    next.preferredResolutionX = value.preferredResolutionX
-  }
-  if (value.preferredResolutionY !== undefined && value.preferredResolutionY !== null) {
-    next.preferredResolutionY = value.preferredResolutionY
-  }
-  if (value.fullscreenResolutionX !== undefined && value.fullscreenResolutionX !== null) {
-    next.fullscreenResolutionX = value.fullscreenResolutionX
-  }
-  if (value.fullscreenResolutionY !== undefined && value.fullscreenResolutionY !== null) {
-    next.fullscreenResolutionY = value.fullscreenResolutionY
-  }
-  if (value.zoomLevel !== undefined && value.zoomLevel !== null) {
-    next.zoomLevel = value.zoomLevel
-  }
-  if (value.uiScale !== undefined && value.uiScale !== null) {
-    next.uiScale = value.uiScale
-  }
-  if (value.startMuted !== undefined && value.startMuted !== null) {
-    next.startMuted = value.startMuted
-  }
-  if (value.musicVolumeLevel !== undefined && value.musicVolumeLevel !== null) {
-    next.musicVolumeLevel = value.musicVolumeLevel
-  }
-  if (value.soundVolumeLevel !== undefined && value.soundVolumeLevel !== null) {
-    next.soundVolumeLevel = value.soundVolumeLevel
-  }
-  return Object.keys(next).length === 0 ? null : next
-}
-
 function useProfileGameSettings(gameId: string, profileId: string, open: boolean) {
   const [value, setValue] = useState<GameSettingsValues | null>(null)
   const [loaded, setLoaded] = useState(false)
@@ -87,7 +45,7 @@ function useProfileGameSettings(gameId: string, profileId: string, open: boolean
         GetGameSettings(gameId, profileId)
           .then((next) => {
             if (active) {
-              setValue(toGameSettings(next))
+              setValue(formSettingsFromBackend(next))
               setLoaded(true)
             }
           })
