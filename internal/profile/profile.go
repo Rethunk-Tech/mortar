@@ -134,6 +134,14 @@ type Entry struct {
 	PreviousExtraStoreKeys []string `json:"previousExtraStoreKeys,omitempty"`
 }
 
+// CollectionRef is the Nexus collection a profile was imported from.
+type CollectionRef struct {
+	Domain   string `json:"domain"`
+	Slug     string `json:"slug"`
+	Name     string `json:"name"`
+	Revision int    `json:"revision"`
+}
+
 // Profile is the on-disk shape of profile.json.
 type Profile struct {
 	ID      string    `json:"id"`
@@ -146,8 +154,10 @@ type Profile struct {
 	Updated time.Time `json:"updated"`
 	Entries []Entry   `json:"entries"`
 	// Origin is how the profile was created when that is known: OriginLink, OriginMortar,
-	// OriginGameMods, or OriginCopy. Empty for a profile made with New profile.
+	// OriginGameMods, OriginCopy, or OriginCollection. Empty for a profile made with New profile.
 	Origin string `json:"origin,omitempty"`
+	// Collection is the Nexus collection this profile was imported from, when Origin is OriginCollection.
+	Collection *CollectionRef `json:"collection,omitempty"`
 	// CopyOf is the source profile's name when Origin is OriginCopy.
 	CopyOf string `json:"copyOf,omitempty"`
 	// Color is a palette token from ProfileColors, or empty for the default sidebar mark.

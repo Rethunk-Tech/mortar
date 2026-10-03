@@ -25,6 +25,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/queue"
 	"github.com/Rethunk-AI/mortar/internal/savessvc"
+	"github.com/Rethunk-AI/mortar/internal/sharesvc"
 	"github.com/Rethunk-AI/mortar/internal/tools"
 	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
@@ -75,6 +76,7 @@ type cmd struct {
 	run         string
 	game        string
 	profileFlag string
+	updateFlag  bool
 	args        []string
 }
 
@@ -189,6 +191,8 @@ func (c *cmd) parse(args []string) error {
 			c.check = true
 		case a == "--wait":
 			c.wait = true
+		case a == "--update":
+			c.updateFlag = true
 		case a == "--format":
 			if i+1 >= len(args) {
 				return usageError{"--format needs md or text"}
@@ -895,7 +899,7 @@ func (c *cmd) nexus() error {
 
 func (c *cmd) profile() error {
 	if len(c.args) < 2 {
-		return usageError{"profile needs create, rename, copy, compare, match, history, revert, load-order, repair, list or delete"}
+		return usageError{"profile needs create, rename, copy, compare, match, collection, history, revert, load-order, repair, list or delete"}
 	}
 	sub := c.args[1]
 	var p profile.Profile
@@ -943,6 +947,30 @@ func (c *cmd) profile() error {
 			if len(match.OnlyYours) > 0 {
 				fmt.Fprintf(c.out, "Only in yours: %s\n", strings.Join(match.OnlyYours, ", "))
 			}
+		})
+	case "collection":
+		a, err := c.need(2, "a game", "a profile")
+		if err != nil {
+			return err
+		}
+		p := control.Params{Game: a[0], Profile: a[1], All: c.updateFlag}
+		if c.updateFlag {
+			var res sharesvc.Result
+			if err := c.ask("profile.collection", p, &res, installTimeout); err != nil {
+				return err
+			}
+			return c.emit(res, func() { fmt.Fprintf(c.out, "Queued %d downloads.\n", res.Queued) })
+		}
+		var st sharesvc.CollectionStatus
+		if err := c.ask("profile.collection", p, &st, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(st, func() {
+			if !st.Linked {
+				fmt.Fprintln(c.out, "not from a collection")
+				return
+			}
+			fmt.Fprintf(c.out, "%s\n%s\nrevision %d\nlatest %d\n", st.Name, st.URL, st.Revision, st.Latest)
 		})
 	case "load-order":
 		a, err := c.need(2, "a game", "a profile")
@@ -1946,6 +1974,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   profile rename <game> <profile> <name>
   profile copy <game> <profile> [name]
   profile match <game> <profile> <link-or-file> preview a friend's profile
+  profile collection <game> <profile> [--update]  collection link, revision, latest
   bundles <game>                         list saved bundles
   bundles apply <game> <bundle> <profile> apply a bundle
   nexus untrack <game> --all|--unused    bulk untrack Nexus mods

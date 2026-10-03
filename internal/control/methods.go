@@ -523,6 +523,20 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			}
 		}
 		return out, nil
+	case "profile.collection":
+		if s.Shares == nil {
+			return nil, errors.New("sharing is unavailable")
+		}
+		if p.All {
+			return s.changed(p.Game, func() (any, error) {
+				preview, err := s.Shares.PreviewCollectionUpdate(ctx, p.Game, id)
+				if err != nil {
+					return nil, err
+				}
+				return s.Shares.Import(ctx, p.Game, preview.Session, id, nil)
+			})
+		}
+		return s.Shares.CollectionStatus(ctx, p.Game, id)
 	case "profile.loadOrder":
 		return s.Profiles.LoadOrder(p.Game, id)
 	case "profile.history":

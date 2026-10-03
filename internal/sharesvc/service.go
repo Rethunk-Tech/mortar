@@ -136,6 +136,7 @@ type session struct {
 	description string
 	configs     []share.Config
 	origin      string
+	collection  *profile.CollectionRef
 	// target is the profile the preview was resolved against; refs are what it resolved.
 	target   string
 	refs     []share.Ref
@@ -706,6 +707,13 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 			}
 			p = stamped
 		}
+		if cur.collection != nil {
+			stamped, err := s.d.Profiles.SetCollection(game, p.ID, *cur.collection)
+			if err != nil {
+				return Result{}, errors.Join(err, s.d.Profiles.Delete(game, p.ID))
+			}
+			p = stamped
+		}
 		notes := joinNotes(cur.notes, unavailableNote(mods))
 		if utf8.RuneCountInString(notes) > profile.MaxNotes {
 			notes = string([]rune(notes)[:profile.MaxNotes])
@@ -730,6 +738,13 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		p, err := s.find(game, profileID)
 		if err != nil {
 			return Result{}, err
+		}
+		if cur.collection != nil {
+			stamped, err := s.d.Profiles.SetCollection(game, profileID, *cur.collection)
+			if err != nil {
+				return Result{}, err
+			}
+			p = stamped
 		}
 		res.Profile = p
 		configs = slices.DeleteFunc(slices.Clone(configs), func(c share.Config) bool { return holds(p, c.UniqueID) })

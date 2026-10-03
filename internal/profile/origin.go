@@ -17,3 +17,11 @@ func (s *Store) SetOrigin(game, id, kind, copyOf string) (Profile, error) {
 		return nil
 	})
 }
+
+// SetCollection records the Nexus collection this profile was imported from. It does not touch mods/.
+func (s *Store) SetCollection(game, id string, ref CollectionRef) (Profile, error) {
+	return s.update(game, id, func(p *Profile, _ string) error {
+		p.Collection = &CollectionRef{Domain: ref.Domain, Slug: ref.Slug, Name: ref.Name, Revision: ref.Revision}
+		return nil
+	})
+}

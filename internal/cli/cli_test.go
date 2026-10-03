@@ -12,6 +12,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/savessvc"
+	"github.com/Rethunk-AI/mortar/internal/sharesvc"
 )
 
 type call struct {
@@ -232,14 +233,25 @@ func TestBackupsKeepAndUnkeep(t *testing.T) {
 	}
 }
 
-func TestProfileMatchSendsPreviewRequest(t *testing.T) {
-	r := invoke(t, map[string]any{"profile.match": control.ProfileMatch{Already: 2, Missing: []string{"Missing"}}},
-		"profile", "match", "stardew", "Farm", "mortar://example")
-	if r.code != 0 || !strings.Contains(r.out, "2 mods already match") {
-		t.Fatalf("match: %+v", r)
+func TestHelpListsProfileCollection(t *testing.T) {
+	r := invoke(t, nil, "help")
+	if r.code != 0 || !strings.Contains(r.out, "profile collection") {
+		t.Fatalf("help: %d %q", r.code, r.out)
 	}
-	if got := r.calls[0]; got.method != "profile.match" || got.params.Path != "mortar://example" {
-		t.Fatalf("match params: %+v", got)
+}
+
+func TestProfileCollectionSendsStatusRequest(t *testing.T) {
+	st := sharesvc.CollectionStatus{Linked: true, Name: "Cozy Farm", URL: "https://example", Revision: 2, Latest: 4}
+	r := invoke(t, map[string]any{"profile.collection": st}, "profile", "collection", "stardew", "Farm")
+	if r.code != 0 || !strings.Contains(r.out, "revision 2") || !strings.Contains(r.out, "latest 4") {
+		t.Fatalf("collection: %+v", r)
+	}
+	if got := r.calls[0]; got.method != "profile.collection" || got.params.All {
+		t.Fatalf("collection params: %+v", got)
+	}
+	r = invoke(t, map[string]any{"profile.collection": sharesvc.Result{Queued: 3}}, "profile", "collection", "stardew", "Farm", "--update")
+	if r.code != 0 || !strings.Contains(r.out, "Queued 3") || !r.calls[0].params.All {
+		t.Fatalf("collection --update: %+v", r)
 	}
 }
 
