@@ -1,6 +1,7 @@
 package updatesvc
 
 import (
+	"slices"
 	"testing"
 	"time"
 
@@ -12,7 +13,7 @@ func TestDecideUpdateDigestSameSetNoToast(t *testing.T) {
 	prev := []string{"a\x00" + "1.0", "b\x00" + "2.0"}
 	next := []string{"a\x00" + "1.0", "b\x00" + "2.0"}
 	notify, persist := DecideUpdateDigest(settings.UpdateDigestEach, prev, next, "", time.Now())
-	if notify || !digestSetsEqual(persist, prev) {
+	if notify || !slices.Equal(persist, prev) {
 		t.Fatalf("same set: notify=%t persist=%v", notify, persist)
 	}
 }
@@ -21,7 +22,7 @@ func TestDecideUpdateDigestNewVersionToasts(t *testing.T) {
 	prev := []string{"a\x00" + "1.0"}
 	next := []string{"a\x00" + "2.0"}
 	notify, persist := DecideUpdateDigest(settings.UpdateDigestEach, prev, next, "", time.Now())
-	if !notify || !digestSetsEqual(persist, next) {
+	if !notify || !slices.Equal(persist, next) {
 		t.Fatalf("new version: notify=%t persist=%v", notify, persist)
 	}
 }
@@ -32,7 +33,7 @@ func TestDecideUpdateDigestDailyThrottle(t *testing.T) {
 	prev := []string{"a\x00" + "1.0"}
 	next := []string{"a\x00" + "2.0"}
 	notify, persist := DecideUpdateDigest(settings.UpdateDigestDaily, prev, next, lastAt, now)
-	if notify || !digestSetsEqual(persist, next) {
+	if notify || !slices.Equal(persist, prev) {
 		t.Fatalf("throttled: notify=%t persist=%v", notify, persist)
 	}
 	notify, _ = DecideUpdateDigest(settings.UpdateDigestDaily, prev, next, now.Add(-25*time.Hour).Format(time.RFC3339), now)
@@ -45,7 +46,7 @@ func TestDecideUpdateDigestOffPersistsWithoutToast(t *testing.T) {
 	prev := []string{"a\x00" + "1.0"}
 	next := []string{"a\x00" + "2.0"}
 	notify, persist := DecideUpdateDigest(settings.UpdateDigestOff, prev, next, "", time.Now())
-	if notify || !digestSetsEqual(persist, next) {
+	if notify || !slices.Equal(persist, next) {
 		t.Fatalf("off: notify=%t persist=%v", notify, persist)
 	}
 }

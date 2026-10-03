@@ -74,6 +74,7 @@ type Portable struct {
 	StartMinimised               bool                     `json:"startMinimised"`
 	RememberWindow               bool                     `json:"rememberWindow"`
 	ExtensionConnection          string                   `json:"extensionConnection"`
+	UpdateDigest                 string                   `json:"updateDigest"`
 	Games                        map[string]*GameSettings `json:"games"`
 
 	// Legacy root game fields, accepted on import then moved into Games.
@@ -358,6 +359,7 @@ func fillPortable(s Settings) Portable {
 		StartMinimised:               s.StartMinimised,
 		RememberWindow:               s.RememberWindow,
 		ExtensionConnection:          s.ExtensionConnection,
+		UpdateDigest:                 s.UpdateDigest,
 		Games:                        games,
 	}
 }
@@ -543,6 +545,9 @@ func copyPortable(dst *Settings, p Portable, present map[string]struct{}) {
 	}
 	if has(present, "extensionConnection") {
 		dst.ExtensionConnection = p.ExtensionConnection
+	}
+	if has(present, "updateDigest") {
+		dst.UpdateDigest = p.UpdateDigest
 	}
 	if has(present, "games") && p.Games != nil {
 		if dst.Games == nil {

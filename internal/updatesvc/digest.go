@@ -66,18 +66,6 @@ func mergeDigestKeys(profiles []ProfileModUpdates) []string {
 	return out
 }
 
-func digestSetsEqual(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
 func digestShownWithinDay(at string, now time.Time) bool {
 	if at == "" {
 		return false
@@ -97,8 +85,7 @@ func DecideUpdateDigest(
 	lastAt string,
 	now time.Time,
 ) (notify bool, persist []string) {
-	persist = next
-	if digestSetsEqual(prev, next) {
+	if slices.Equal(prev, next) {
 		return false, prev
 	}
 	switch mode {
@@ -107,8 +94,9 @@ func DecideUpdateDigest(
 	case settings.UpdateDigestEach:
 		return true, next
 	case settings.UpdateDigestDaily:
+		// A held-back digest keeps the previous set, so tomorrow's check still announces these updates.
 		if digestShownWithinDay(lastAt, now) {
-			return false, next
+			return false, prev
 		}
 		return true, next
 	default:
