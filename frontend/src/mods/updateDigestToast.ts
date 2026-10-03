@@ -3,7 +3,7 @@ import { Events } from '@wailsio/runtime'
 import type { ModUpdateDigestNotice } from '../../bindings/github.com/Rethunk-AI/mortar/internal/updatesvc/models.ts'
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
-import { useNav } from '../nav/store.ts'
+import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useMods } from './store.ts'
@@ -16,15 +16,19 @@ function digestTitle(notice: ModUpdateDigestNotice): string {
 }
 
 function openDigestReview(notice: ModUpdateDigestNotice) {
+  const { game } = notice
+  if (!isGameId(game)) {
+    return
+  }
   if (notice.openProfiles) {
-    useNav.getState().openGame(notice.game)
+    useNav.getState().openGame(game)
     useNav.getState().openProfiles()
     return
   }
   if (notice.profile === '') {
     return
   }
-  useNav.getState().openGame(notice.game)
+  useNav.getState().openGame(game)
   useProfiles.getState().open(notice.profile)
   useMods.getState().showUpdates()
   useTab.getState().setTab('mods')

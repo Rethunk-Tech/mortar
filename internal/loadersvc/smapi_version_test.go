@@ -41,6 +41,7 @@ func testServiceWithReleases(t *testing.T, releases []string) (*Service, *fakeSM
 		t.Fatal(err)
 	}
 	svc := NewService(t.TempDir(), set, items, profiles)
+	svc.procDir = t.TempDir()
 	fake := &fakeSMAPI{releases: releases}
 	svc.listVersions = func(context.Context, string) ([]string, error) { return fake.releases, nil }
 	svc.fetchInstall = func(_ context.Context, _, version string) error {

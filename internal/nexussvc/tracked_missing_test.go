@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
@@ -61,7 +62,7 @@ func TestTrackedMissingFiltersDomainAndProfileMods(t *testing.T) {
 		t.Fatal(err)
 	}
 	profPath := filepath.Join(root, "profiles", "stardew", p.ID, "profile.json")
-	b, err := os.ReadFile(profPath)
+	b, err := fsx.ReadFile(profPath)
 	if err != nil {
 		t.Fatal(err)
 	}
