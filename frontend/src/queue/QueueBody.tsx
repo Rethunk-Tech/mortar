@@ -17,14 +17,13 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { QueueNeedsMerge } from '../install/QueueNeedsMerge.tsx'
 import { QueueNeedsRoot } from '../install/QueueNeedsRoot.tsx'
-import { accent } from '../mods/paper.ts'
 import { LetterTile } from '../mods/parts.tsx'
-import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { Callout, Title } from './Callout.tsx'
 import { Fold } from './QueueFold.tsx'
-import { downloadedKb, isActive, megabytes, megabytesPerSecond, profileOf } from './totals.ts'
+import { downloadedKb, isActive, megabytes, megabytesPerSecond, tile } from './totals.ts'
 
 const BLUE = '#2b8bda'
 const ROW = {
@@ -43,34 +42,6 @@ const names = (items: Item[]) =>
     .slice(0, NAME_MAX)
     .map((i) => i.name || i.fileName)
     .join(', ')
-
-const tile = (i: Item) => ({
-  uniqueId: i.repo || String(i.modId),
-  name: i.name || i.repo || String(i.modId),
-  picture: i.picture ?? '',
-})
-
-// The item's name with the profile it installs into under it; the sheet is too narrow to fit both on one line.
-function Title({ item, size }: { item: Item; size: number }) {
-  const { t } = useLingui()
-  const profile = useProfiles((s) => profileOf(item, s.game?.id, s.profiles))
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-      <Typography
-        noWrap={true}
-        title={item.name || item.fileName}
-        sx={{ fontSize: size, fontWeight: 600 }}
-      >
-        {item.name || item.fileName}
-      </Typography>
-      {profile === null ? null : (
-        <Typography noWrap={true} title={profile} sx={{ fontSize: 12, color: 'text.secondary' }}>
-          {profile ? t`into ${profile}` : t`into a deleted profile`}
-        </Typography>
-      )}
-    </Box>
-  )
-}
 
 function SectionTitle({
   color,
@@ -129,57 +100,6 @@ const detail = {
   overflow: 'hidden',
   textOverflow: 'ellipsis',
 } as const
-
-// A card for an item that waits for the user, with its own actions on the right and any choices under the text.
-function Callout({
-  item,
-  label,
-  text,
-  actions,
-  children,
-}: {
-  item: Item
-  label: string
-  text: string
-  actions: ReactNode
-  children?: ReactNode
-}) {
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        p: '14px',
-        bgcolor: accent.fill,
-        border: '1px solid',
-        borderColor: 'primary.main',
-        borderRadius: '8px',
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <LetterTile mod={tile(item)} size={44} />
-        <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-          <Typography
-            sx={{
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              color: 'primary.main',
-            }}
-          >
-            {label}
-          </Typography>
-          <Title item={item} size={16} />
-        </Box>
-        <Box sx={{ flexShrink: 0 }}>{actions}</Box>
-      </Box>
-      <Typography sx={{ fontSize: 13, lineHeight: 1.45 }}>{text}</Typography>
-      {children}
-    </Box>
-  )
-}
 
 function Click({ item }: { item: Item }) {
   const { t } = useLingui()
