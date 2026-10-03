@@ -46,9 +46,6 @@ function LevelToggles() {
   const on = useConsole((s) => s.filters.levels)
   const toggle = useConsole((s) => s.toggleLevel)
   const counts = useMemo(() => countByLevel(entries), [entries])
-  const extra = LEVELS.filter((level) => level === Level.Trace || level === Level.Debug)
-  const primary = LEVELS.filter((level) => !extra.includes(level))
-  const [moreEl, setMoreEl] = useState<HTMLElement | null>(null)
   const names: Record<Level, string> = {
     [Level.$zero]: '',
     [Level.Trace]: t`Trace`,
@@ -64,6 +61,7 @@ function LevelToggles() {
       aria-label={t`Levels`}
       sx={{
         display: 'flex',
+        flexWrap: 'wrap',
         p: '3px',
         gap: '2px',
         bgcolor: 'rgba(0,0,0,0.3)',

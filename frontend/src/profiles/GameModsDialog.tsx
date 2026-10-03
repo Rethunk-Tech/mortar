@@ -15,6 +15,8 @@ import {
   PreviewGameMods,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import type { GameId } from '../nav/store.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { formatOutcomeDetail, formatPreviewRow, willImport } from './gameModsFormat.ts'
@@ -122,7 +124,9 @@ export function GameModsDialog({
     >
       <DialogTitle>{t`Import from the game's Mods folder`}</DialogTitle>
       <DialogContent>
-        {error === '' ? (
+        {error === '' ? null : <Typography sx={{ color: 'error.main' }}>{error}</Typography>}
+        {error === '' && previewing ? <LoadingRow>{t`Reading the Mods folder…`}</LoadingRow> : null}
+        {error === '' && !previewing ? (
           <>
             <Typography sx={{ mb: 1.5, color: 'text.secondary' }}>
               {plural(importable, {
@@ -140,22 +144,22 @@ export function GameModsDialog({
               </Typography>
             ))}
           </>
-        ) : (
-          <Typography sx={{ color: 'error.main' }}>{error}</Typography>
-        )}
+        ) : null}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={busy} sx={{ whiteSpace: 'nowrap' }}>
           {t`Cancel`}
         </Button>
-        <Button
-          variant="contained"
-          disabled={busy || previewing || importable === 0 || error !== ''}
-          onClick={() => importMods().catch(reportUnexpected)}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
-          {t`Import`}
-        </Button>
+        <DisabledReason title={t`Nothing to import`} disabled={previewing || importable === 0}>
+          <Button
+            variant="contained"
+            disabled={busy || previewing || importable === 0 || error !== ''}
+            onClick={() => importMods().catch(reportUnexpected)}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            {t`Import`}
+          </Button>
+        </DisabledReason>
       </DialogActions>
     </Dialog>
   )

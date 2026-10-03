@@ -15,6 +15,7 @@ import { useState } from 'react'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useSettings } from '../settings/store.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
@@ -182,17 +183,19 @@ function CleanupRow({
           {t`${cleanup.name || cleanup.uniqueId}: ${cleanup.reason || 'Not needed by any enabled mod'}`}
         </Typography>
       </Box>
-      <Button
-        size="small"
-        disabled={mod === undefined}
-        onClick={() => {
-          if (mod !== undefined) {
-            remove(mod).catch(reportUnexpected)
-          }
-        }}
-      >
-        {t`Remove`}
-      </Button>
+      <DisabledReason title={t`This mod is no longer in the profile.`} disabled={mod === undefined}>
+        <Button
+          size="small"
+          disabled={mod === undefined}
+          onClick={() => {
+            if (mod !== undefined) {
+              remove(mod).catch(reportUnexpected)
+            }
+          }}
+        >
+          {t`Remove`}
+        </Button>
+      </DisabledReason>
     </Box>
   )
 }
@@ -235,7 +238,14 @@ function ProblemSection({
           {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
           {heading}
           {action ? (
-            <Button size="small" onClick={action.onClick} sx={{ ml: 1, height: 26 }}>
+            <Button
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation()
+                action.onClick()
+              }}
+              sx={{ ml: 1, height: 26 }}
+            >
               {action.label}
             </Button>
           ) : null}
@@ -463,7 +473,7 @@ export function ProblemsTab() {
       )}
       <Dialog open={confirmCleanup} onClose={() => setConfirmCleanup(false)}>
         <DialogTitle>{t`Remove all ${cleanup.length} mods from this profile?`}</DialogTitle>
-        <DialogContent>{t`This cannot be undone.`}</DialogContent>
+        <DialogContent>{t`This change can be undone from History.`}</DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmCleanup(false)}>{t`Cancel`}</Button>
           <Button

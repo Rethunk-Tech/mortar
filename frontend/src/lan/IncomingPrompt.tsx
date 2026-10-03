@@ -22,6 +22,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { formatBytes } from '../saves/backupFormat.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useIncomingShares } from './incoming.ts'
@@ -125,9 +126,11 @@ export function IncomingPrompt() {
         </DialogContent>
         <DialogActions>
           <Button onClick={decline}>{t`Decline`}</Button>
-          <Button onClick={() => setChoosing(true)} disabled={profiles.length === 0}>
-            {t`Compare with a profile…`}
-          </Button>
+          <DisabledReason title={t`Create a profile first.`} disabled={profiles.length === 0}>
+            <Button onClick={() => setChoosing(true)} disabled={profiles.length === 0}>
+              {t`Compare with a profile…`}
+            </Button>
+          </DisabledReason>
           <Button variant="contained" onClick={() => accept()}>
             {t`Import as new profile`}
           </Button>

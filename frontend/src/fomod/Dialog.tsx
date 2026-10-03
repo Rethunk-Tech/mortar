@@ -15,6 +15,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { FomodImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { paper } from '../mods/paper.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { type FomodSession, useFomod, watchFomodQueue } from './store.ts'
 
@@ -196,18 +197,22 @@ function FomodWizard({ session }: { session: FomodSession }) {
               const body = (g.plugins ?? []).map((p) => {
                 const blocked = p.type === 'NotUsable'
                 const checked = selected.includes(p.name) || p.type === 'Required'
-                const control = exclusive ? (
-                  <Radio
-                    checked={checked}
-                    disabled={blocked}
-                    onChange={() => pick(g.type, g.name, p.name, true)}
-                  />
-                ) : (
-                  <Checkbox
-                    checked={checked}
-                    disabled={blocked || p.type === 'Required'}
-                    onChange={(_, on) => pick(g.type, g.name, p.name, on)}
-                  />
+                const control = (
+                  <DisabledReason title={t`This option cannot be used.`} disabled={blocked}>
+                    {exclusive ? (
+                      <Radio
+                        checked={checked}
+                        disabled={blocked}
+                        onChange={() => pick(g.type, g.name, p.name, true)}
+                      />
+                    ) : (
+                      <Checkbox
+                        checked={checked}
+                        disabled={blocked || p.type === 'Required'}
+                        onChange={(_, on) => pick(g.type, g.name, p.name, on)}
+                      />
+                    )}
+                  </DisabledReason>
                 )
                 return (
                   <Box key={p.name} sx={{ pl: 1 }}>

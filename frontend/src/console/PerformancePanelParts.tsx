@@ -18,6 +18,7 @@ import type {
   PerformanceRow,
   SavedReport,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { CompareTable, ReportSelect } from './PerformanceComparison.tsx'
 import type { PanelBusy, SortColumn, SortDirection } from './usePerformancePanel.ts'
@@ -178,37 +179,46 @@ export function PanelHeader(props: HeaderProps) {
       <Typography sx={{ flex: '1 1 auto', fontSize: 13, fontWeight: 600 }}>
         {t`Performance`}
       </Typography>
-      <Button
-        size="small"
-        variant="outlined"
-        startIcon={<Play size={14} />}
-        disabled={!running || busy !== '' || measuring}
-        onClick={onStart}
-        sx={{ whiteSpace: 'nowrap' }}
-      >
-        {measuring ? t`Measuring` : t`Start measuring`}
-      </Button>
-      <Button
-        size="small"
-        variant="outlined"
-        startIcon={<RefreshCw size={14} />}
+      <DisabledReason title={t`Play this profile to measure.`} disabled={!running}>
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<Play size={14} />}
+          disabled={!running || busy !== '' || measuring}
+          onClick={onStart}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          {measuring ? t`Measuring` : t`Start measuring`}
+        </Button>
+      </DisabledReason>
+      <DisabledReason
+        title={running ? t`Start measuring first.` : t`Play this profile to measure.`}
         disabled={!running || busy !== '' || !measuring}
-        onClick={onReport}
-        sx={{ whiteSpace: 'nowrap' }}
       >
-        {t`Show report`}
-      </Button>
-      <Button
-        size="small"
-        variant="text"
-        color="inherit"
-        startIcon={<Copy size={14} />}
-        disabled={!hasReport}
-        onClick={onCopy}
-        sx={{ whiteSpace: 'nowrap' }}
-      >
-        {t`Copy report`}
-      </Button>
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<RefreshCw size={14} />}
+          disabled={!running || busy !== '' || !measuring}
+          onClick={onReport}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          {t`Show report`}
+        </Button>
+      </DisabledReason>
+      <DisabledReason title={t`Show a report first.`} disabled={!hasReport}>
+        <Button
+          size="small"
+          variant="text"
+          color="inherit"
+          startIcon={<Copy size={14} />}
+          disabled={!hasReport}
+          onClick={onCopy}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          {t`Copy report`}
+        </Button>
+      </DisabledReason>
       <ComparePickers {...props} />
       {(compareId !== '' || (beforeId !== '' && afterId !== '')) && (
         <Button size="small" color="inherit" onClick={onClearCompare}>

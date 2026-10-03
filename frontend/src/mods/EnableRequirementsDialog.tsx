@@ -44,8 +44,17 @@ export function EnableRequirementsDialog() {
       .catch(fail(t`Could not enable required mods`))
   }
   return (
-    <Dialog open={true} onClose={dismiss} slotProps={{ paper }} transitionDuration={0}>
-      <DialogTitle>{t`${offer.dependentName} needs ${andList(names)}`}</DialogTitle>
+    <Dialog
+      open={true}
+      onClose={dismiss}
+      slotProps={{ paper }}
+      transitionDuration={0}
+      maxWidth="sm"
+      fullWidth={true}
+    >
+      <DialogTitle sx={{ whiteSpace: 'normal', overflowWrap: 'anywhere' }}>
+        {t`${offer.dependentName} needs ${andList(names)}`}
+      </DialogTitle>
       <DialogContent>
         <List dense={true}>
           {offer.mods.map((m) => (

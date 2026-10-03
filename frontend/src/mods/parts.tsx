@@ -19,6 +19,7 @@ import { ArrowUp, Ban, Pin, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { dependentsOf } from './dependents.ts'
 import { useDescribe } from './describe.ts'
@@ -269,16 +270,18 @@ export function ModSwitch({ mod }: { mod: Mod }) {
   const setEnabled = useMods((s) => s.setEnabled)
   const locked = useLocked()
   return (
-    <Switch
-      size="small"
-      checked={mod.enabled}
-      disabled={locked}
-      onChange={(e) => {
-        setEnabled(mod, e.target.checked).catch(reportUnexpected)
-      }}
-      onClick={(e) => e.stopPropagation()}
-      slotProps={{ input: { 'aria-label': t`Enable ${mod.name}` } }}
-    />
+    <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+      <Switch
+        size="small"
+        checked={mod.enabled}
+        disabled={locked}
+        onChange={(e) => {
+          setEnabled(mod, e.target.checked).catch(reportUnexpected)
+        }}
+        onClick={(e) => e.stopPropagation()}
+        slotProps={{ input: { 'aria-label': t`Enable ${mod.name}` } }}
+      />
+    </DisabledReason>
   )
 }
 
@@ -303,15 +306,17 @@ export function RemoveButton({ mod }: { mod: Mod }) {
   const askRemove = useMods((s) => s.askRemove)
   const locked = useLocked()
   return (
-    <Button
-      variant="outlined"
-      color="error"
-      disabled={locked}
-      sx={{ whiteSpace: 'nowrap' }}
-      onClick={() => askRemove(mod)}
-    >
-      {t`Remove`}
-    </Button>
+    <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+      <Button
+        variant="outlined"
+        color="error"
+        disabled={locked}
+        sx={{ whiteSpace: 'nowrap' }}
+        onClick={() => askRemove(mod)}
+      >
+        {t`Remove`}
+      </Button>
+    </DisabledReason>
   )
 }
 
@@ -366,21 +371,27 @@ export function RemoveDialog() {
         <Button onClick={close}>{t`Cancel`}</Button>
         {dependents.length > 0 ? (
           <>
-            <Button color="error" disabled={locked} onClick={() => drop(removing)}>
-              {t`Remove anyway`}
-            </Button>
-            <Button
-              color="error"
-              disabled={locked}
-              onClick={() => drop([...removing, ...dependents])}
-            >
-              {t`Remove all ${allCount}`}
-            </Button>
+            <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+              <Button color="error" disabled={locked} onClick={() => drop(removing)}>
+                {t`Remove anyway`}
+              </Button>
+            </DisabledReason>
+            <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+              <Button
+                color="error"
+                disabled={locked}
+                onClick={() => drop([...removing, ...dependents])}
+              >
+                {t`Remove all ${allCount}`}
+              </Button>
+            </DisabledReason>
           </>
         ) : (
-          <Button color="error" disabled={locked} onClick={() => drop(removing)}>
-            {t`Remove`}
-          </Button>
+          <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+            <Button color="error" disabled={locked} onClick={() => drop(removing)}>
+              {t`Remove`}
+            </Button>
+          </DisabledReason>
         )}
       </DialogActions>
     </Dialog>
