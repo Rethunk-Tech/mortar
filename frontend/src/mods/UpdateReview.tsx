@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react'
 import type { Update } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { useNow } from '../i18n/useNow.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
-import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { mergeCachedDetails } from './changelogRange.ts'
@@ -47,6 +47,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   const [include, setInclude] = useState<Record<string, boolean>>({})
   const [propagateAll, setPropagateAll] = useState(false)
   const [everywhereAll, setEverywhereAll] = useState(false)
+  const [loadingAll, setLoadingAll] = useState(false)
   useEffect(() => {
     if (!open) {
       return

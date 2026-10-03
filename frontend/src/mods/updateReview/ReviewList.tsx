@@ -5,11 +5,9 @@ import type {
   Profile,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { acknowledgeUpdateCaution } from '../../launch/autoUpdate.ts'
-import { download } from '../../queue/actions.ts'
-import { reportUnexpected } from '../../toasts/report.ts'
 import { entryOf, modId } from '../lookup.ts'
 import { Row } from './Row.tsx'
-import { installedCaution, updateWant } from './wants.ts'
+import { installedCaution } from './wants.ts'
 
 export function ReviewList({
   list,
@@ -19,7 +17,6 @@ export function ReviewList({
   include,
   onAck,
   onInclude,
-  onPropagate,
 }: {
   list: Update[]
   profile: Profile
@@ -28,7 +25,6 @@ export function ReviewList({
   include: Record<string, boolean>
   onAck: (id: string, on: boolean) => void
   onInclude: (id: string, on: boolean) => void
-  onPropagate: (update: Update) => void
 }) {
   return (
     <Box role="list">
@@ -50,15 +46,6 @@ export function ReviewList({
             }}
             onInclude={(on) => onInclude(id, on)}
             {...(picture === undefined ? {} : { picture })}
-            onUpdateAll={() => {
-              download([updateWant(u)])
-                .then((added) => {
-                  if (added) {
-                    onPropagate(u)
-                  }
-                })
-                .catch(reportUnexpected)
-            }}
           />
         )
       })}

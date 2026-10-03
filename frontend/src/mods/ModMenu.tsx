@@ -32,6 +32,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { SetCategoryDialog } from './CategoryEditor.tsx'
 import { useDetail } from './detail.ts'
+import { EverywhereMenuItem } from './EverywhereMenuItem.tsx'
 import { modId, nexusIdOf, updateFor } from './lookup.ts'
 import { ModActionItems } from './ModActionItems.tsx'
 import {
@@ -217,6 +218,7 @@ function ModActionMenu({
   const [removeOtherOpen, setRemoveOtherOpen] = useState(false)
   const game = useProfiles((s) => s.game?.id ?? '')
   const currentProfileId = useProfiles((s) => s.openId)
+  const update = useUpdates((s) => updateFor(s.updates, mod, profile))
   const position =
     'el' in anchor ? {} : { anchorReference: 'anchorPosition' as const, anchorPosition: anchor }
   return (
@@ -235,6 +237,7 @@ function ModActionMenu({
           onAddBundle={() => setBundleOpen(true)}
           onRemoveOther={() => setRemoveOtherOpen(true)}
         />
+        {update ? <EverywhereMenuItem game={game} uniqueId={mod.uniqueId} close={onClose} /> : null}
       </Menu>
       <SetCategoryDialog
         open={categoryOpen}
