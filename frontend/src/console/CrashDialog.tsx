@@ -19,6 +19,7 @@ import { useTab } from '../game/tab.ts'
 import { useLaunch } from '../launch/store.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { paper } from '../mods/paper.ts'
+import { ReportToAuthorButton } from '../mods/ReportToAuthorButton.tsx'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorDetails, errorMessage } from '../toasts/report.ts'
@@ -183,6 +184,15 @@ export function CrashDialog() {
             {t`Dismiss`}
           </Button>
           {mod ? <SwitchOffButton mod={mod} /> : null}
+          {mod && profile && crash.cause ? (
+            <ReportToAuthorButton
+              game={crash.game}
+              profile={profile}
+              runId={crash.runId}
+              mod={mod}
+              modLogName={crash.cause.modName}
+            />
+          ) : null}
           {nexusID > 0 ? (
             <Button
               onClick={() =>

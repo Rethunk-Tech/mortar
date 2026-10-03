@@ -1938,7 +1938,7 @@ msgid "Fullscreen resolution height"
 msgstr "Fullscreen resolution height"
 
 #: src/console/HelpDialog.tsx:239
-#: src/mods/ReportToAuthorButton.tsx:206
+#: src/mods/ReportToAuthorButton.tsx:212
 msgid "Reading the log…"
 msgstr "Reading the log…"
 
@@ -2123,7 +2123,7 @@ msgstr "Could not sign in"
 msgid "Report a bug"
 msgstr "Report a bug"
 
-#: src/mods/ReportToAuthorButton.tsx:238
+#: src/mods/ReportToAuthorButton.tsx:244
 msgid "Skip sharing"
 msgstr "Skip sharing"
 
@@ -2453,7 +2453,7 @@ msgstr "Cover image"
 #: src/mods/OtherProfilesDialog.tsx:52
 #: src/mods/parts.tsx:372
 #: src/mods/pinReasonDialog.tsx:58
-#: src/mods/ReportToAuthorButton.tsx:230
+#: src/mods/ReportToAuthorButton.tsx:236
 #: src/mods/SelectionBarDialogs.tsx:52
 #: src/mods/SelectionBarDialogs.tsx:102
 #: src/mods/updateReview/EverywhereDialog.tsx:149
@@ -2670,7 +2670,6 @@ msgstr "Could not reset this section."
 msgid "Show live game info in OBS. Changes apply the next time you press Play."
 msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 
-#: src/mods/reportToAuthor.ts:94
 #: src/settings/sections/About.tsx:32
 #: src/settings/sections/AboutDiagnostics.tsx:43
 #: src/settings/sections/Updates.tsx:175
@@ -3129,10 +3128,6 @@ msgstr "Hammer"
 msgid "Couldn't prepare the data folder move"
 msgstr "Couldn't prepare the data folder move"
 
-#: src/mods/reportToAuthor.ts:96
-msgid "Log"
-msgstr "Log"
-
 #: src/mods/describe.ts:102
 msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
@@ -3193,7 +3188,7 @@ msgid "Values"
 msgstr "Values"
 
 #. placeholder {0}: mod.name
-#: src/mods/ReportToAuthorButton.tsx:74
+#: src/mods/ReportToAuthorButton.tsx:77
 msgid "Error in {0}"
 msgstr "Error in {0}"
 
@@ -3301,7 +3296,7 @@ msgid "Pin this version"
 msgstr "Pin this version"
 
 #: src/console/HelpDialog.tsx:272
-#: src/mods/ReportToAuthorButton.tsx:246
+#: src/mods/ReportToAuthorButton.tsx:252
 msgid "Uploading…"
 msgstr "Uploading…"
 
@@ -4470,7 +4465,7 @@ msgid "Open the game's settings"
 msgstr "Open the game's settings"
 
 #: src/console/HelpDialog.tsx:92
-#: src/mods/ReportToAuthorButton.tsx:223
+#: src/mods/ReportToAuthorButton.tsx:229
 msgid "Hide my user name"
 msgstr "Hide my user name"
 
@@ -4530,7 +4525,6 @@ msgid "Not found"
 msgstr "Not found"
 
 #: src/console/CrashDialog.tsx:163
-#: src/mods/reportToAuthor.ts:93
 #: src/profiles/OverrideRows.tsx:92
 msgid "SMAPI"
 msgstr "SMAPI"
@@ -4791,7 +4785,7 @@ msgstr "Check interval"
 
 #: src/console/HelpDialog.tsx:185
 #: src/console/store.ts:142
-#: src/mods/ReportToAuthorButton.tsx:133
+#: src/mods/ReportToAuthorButton.tsx:136
 msgid "Could not read the SMAPI log"
 msgstr "Could not read the SMAPI log"
 
@@ -4822,7 +4816,7 @@ msgid "{0} goes back to {previous}, keeping its settings. Your saves are backed 
 msgstr "{0} goes back to {previous}, keeping its settings. Your saves are backed up first."
 
 #: src/console/HelpDialog.tsx:223
-#: src/mods/ReportToAuthorButton.tsx:178
+#: src/mods/ReportToAuthorButton.tsx:184
 msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
@@ -4868,7 +4862,6 @@ msgstr "Crashed"
 msgid "Wilderness farm"
 msgstr "Wilderness farm"
 
-#: src/mods/reportToAuthor.ts:92
 #: src/settings/sections/AboutDiagnostics.tsx:47
 #: src/shell/TitleBar.tsx:107
 msgid "Game"
@@ -5741,8 +5734,8 @@ msgstr "Plain text"
 
 #: src/console/PerformancePanel.tsx:70
 #: src/mods/ProblemsTab.tsx:453
-#: src/mods/ReportToAuthorButton.tsx:91
-#: src/mods/ReportToAuthorButton.tsx:96
+#: src/mods/ReportToAuthorButton.tsx:94
+#: src/mods/ReportToAuthorButton.tsx:99
 msgid "Report copied"
 msgstr "Report copied"
 
@@ -6016,7 +6009,7 @@ msgid "Log link"
 msgstr "Log link"
 
 #: src/console/HelpDialog.tsx:117
-#: src/mods/ReportToAuthorButton.tsx:213
+#: src/mods/ReportToAuthorButton.tsx:219
 msgid "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 msgstr "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 
@@ -6062,7 +6055,7 @@ msgstr "Skip current updates"
 msgid "Download failed"
 msgstr "Download failed"
 
-#: src/mods/ReportToAuthorButton.tsx:92
+#: src/mods/ReportToAuthorButton.tsx:95
 msgid "Paste it on the mod's bug tracker."
 msgstr "Paste it on the mod's bug tracker."
 
@@ -6626,10 +6619,6 @@ msgstr "Launchers…"
 msgid "Delete {0} permanently?"
 msgstr "Delete {0} permanently?"
 
-#: src/mods/reportToAuthor.ts:97
-msgid "(none captured)"
-msgstr "(none captured)"
-
 #: src/firstrun/FindStep.tsx:176
 msgid "Change…"
 msgstr "Change…"
@@ -6647,7 +6636,6 @@ msgid "{dependentName} needs {dep}, which is switched off."
 msgstr "{dependentName} needs {dep}, which is switched off."
 
 #: src/console/PerformanceComparison.tsx:57
-#: src/mods/reportToAuthor.ts:91
 msgid "Mod"
 msgstr "Mod"
 
@@ -7011,10 +6999,6 @@ msgstr "Could not add the bundle"
 #: src/profiles/GameModsDialog.tsx:128
 msgid "Reading the Mods folder…"
 msgstr "Reading the Mods folder…"
-
-#: src/mods/reportToAuthor.ts:95
-msgid "Errors"
-msgstr "Errors"
 
 #. placeholder {0}: st.profiles.length
 #: src/games/GameSelect.tsx:298
@@ -7532,8 +7516,8 @@ msgstr "Source"
 msgid "General"
 msgstr "General"
 
-#: src/mods/ReportToAuthorButton.tsx:195
-#: src/mods/ReportToAuthorButton.tsx:203
+#: src/mods/ReportToAuthorButton.tsx:201
+#: src/mods/ReportToAuthorButton.tsx:209
 msgid "Report to author"
 msgstr "Report to author"
 
@@ -7943,7 +7927,7 @@ msgstr "What to do when an installed mod still needs other mods"
 msgid "Pin selected versions"
 msgstr "Pin selected versions"
 
-#: src/mods/ReportToAuthorButton.tsx:246
+#: src/mods/ReportToAuthorButton.tsx:252
 msgid "Share log and continue"
 msgstr "Share log and continue"
 

@@ -7,6 +7,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { installableUpdate, sameId, updateFor } from './lookup.ts'
+import { ReportToAuthorButton } from './ReportToAuthorButton.tsx'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
 
@@ -47,12 +48,22 @@ export function RunErrorButtons({
     useConsole.getState().viewRun(game.id, openId, runError.runId)
     useConsole.getState().setHelping(true)
   }
+  const gameId = useProfiles((s) => s.game?.id ?? '')
   return (
     <>
       {current && !runError.updated
         ? button(t`Switch off`, () => setEnabled(current, false).catch(reportUnexpected))
         : null}
       {want ? button(t`Update`, () => download([want]).catch(reportUnexpected)) : null}
+      {current && profile && gameId && runError.runId !== '' ? (
+        <ReportToAuthorButton
+          game={gameId}
+          profile={profile}
+          runId={runError.runId}
+          mod={current}
+          modLogName={runError.name}
+        />
+      ) : null}
       <Button
         size="small"
         color="warning"
