@@ -10,25 +10,12 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/nativehost"
 )
 
-// chromiumConfigDirs are the Chromium browsers' user data directories under XDG_CONFIG_HOME; each reads host
-// manifests from its own NativeMessagingHosts folder.
-var chromiumConfigDirs = []string{
-	"google-chrome", "google-chrome-beta", "google-chrome-unstable", "chromium",
-	"BraveSoftware/Brave-Browser", "microsoft-edge", "vivaldi", "vivaldi-snapshot",
-}
-
 // hostManifestPaths lists where each installed browser looks for Mortar's host manifest, with whether it is
 // Firefox. A browser whose profile folder does not exist is skipped, so nothing is created for it.
 func (l *System) hostManifestPaths() map[string]bool {
 	paths := map[string]bool{}
-	for _, d := range chromiumConfigDirs {
-		dir := filepath.Join(l.configHome, d)
-		if _, err := os.Stat(dir); err == nil {
-			paths[filepath.Join(dir, "NativeMessagingHosts", nativehost.Name+".json")] = false
-		}
-	}
-	if dir := filepath.Join(l.home, ".mozilla"); dirExists(dir) {
-		paths[filepath.Join(dir, "native-messaging-hosts", nativehost.Name+".json")] = true
+	for _, b := range l.nativeHostEntries() {
+		paths[manifestPath(l, b)] = b.firefox
 	}
 	return paths
 }
