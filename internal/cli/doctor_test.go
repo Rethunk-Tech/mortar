@@ -11,6 +11,10 @@ import (
 )
 
 func TestDoctorPrintsSharedChecks(t *testing.T) {
+	// The report also lists browsers found on this machine; an empty home has none.
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", home)
 	d := control.Doctor{
 		Version: "1.2.3",
 		DataDir: "/data/mortar",
