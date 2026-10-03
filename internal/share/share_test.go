@@ -345,10 +345,12 @@ func TestMortarFileRoundTrip(t *testing.T) {
 func TestEntryNotesRoundTrip(t *testing.T) {
 	p := profile.Profile{Name: "Notes", Entries: []profile.Entry{
 		nexus("one", 541, 1000),
-		{Key: "gh", Source: profile.Source{Kind: profile.KindGitHub, Repo: "owner/repo", Tag: "v1", Asset: "a.zip"},
-			Mods: []profile.EntryMod{{UniqueID: "G", Folder: "."}}, Note: "gh note", Tags: []string{"git"}},
+		{
+			Key: "gh", Source: profile.Source{Kind: profile.KindGitHub, Repo: "owner/repo", Tag: "v1", Asset: "a.zip"},
+			Mods: []profile.EntryMod{{UniqueID: "G", Folder: "."}}, Note: "gh note", Tags: []string{"git"},
+		},
 	}}
-	p.Entries[0].Note = "farm tweak"
+	p.Entries[0].Note = "farm tweak\n\tsecond line"
 	p.Entries[0].Tags = []string{"QoL", "UI"}
 	res, err := Encode(p)
 	if err != nil {
@@ -358,7 +360,7 @@ func TestEntryNotesRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(got.Entries) != 2 || got.Entries[0].Note != "farm tweak" || !slices.Equal(got.Entries[0].Tags, []string{"QoL", "UI"}) ||
+	if len(got.Entries) != 2 || got.Entries[0].Note != p.Entries[0].Note || !slices.Equal(got.Entries[0].Tags, []string{"QoL", "UI"}) ||
 		got.Entries[1].Note != "gh note" || !slices.Equal(got.Entries[1].Tags, []string{"git"}) {
 		t.Fatalf("link notes = %+v", got.Entries)
 	}
@@ -370,15 +372,17 @@ func TestEntryNotesRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if pv.Entries[0].Note != "farm tweak" || !slices.Equal(pv.Entries[0].Tags, []string{"QoL", "UI"}) {
+	if pv.Entries[0].Note != p.Entries[0].Note || !slices.Equal(pv.Entries[0].Tags, []string{"QoL", "UI"}) {
 		t.Fatalf("file notes = %+v", pv.Entries[0])
 	}
 }
 
 func TestCollectOmitsEntryNotesWhenDisabled(t *testing.T) {
 	p := profile.Profile{Name: "x", Entries: []profile.Entry{
-		{Key: "n", Source: profile.Source{Kind: profile.KindNexus, ModID: 1, FileID: 2},
-			Mods: []profile.EntryMod{{UniqueID: "A", Folder: "."}}, Note: "secret", Tags: []string{"t"}},
+		{
+			Key: "n", Source: profile.Source{Kind: profile.KindNexus, ModID: 1, FileID: 2},
+			Mods: []profile.EntryMod{{UniqueID: "A", Folder: "."}}, Note: "secret", Tags: []string{"t"},
+		},
 	}}
 	s, _, _ := Collect(p, Include{Notes: false, FomodChoices: true})
 	if len(s.Entries) != 1 || s.Entries[0].Note != "" || len(s.Entries[0].Tags) != 0 {

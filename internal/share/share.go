@@ -209,7 +209,12 @@ func validEntryNote(note string) bool {
 	if utf8.RuneCountInString(note) > profile.MaxEntryNote {
 		return false
 	}
-	return !strings.ContainsFunc(note, unicode.IsControl)
+	return !strings.ContainsFunc(note, badNoteRune)
+}
+
+// badNoteRune allows the line breaks and tabs a profile note may hold and refuses every other control character.
+func badNoteRune(r rune) bool {
+	return unicode.IsControl(r) && r != '\n' && r != '\t'
 }
 
 func validEntryTags(tags []string) bool {
@@ -242,14 +247,12 @@ func importEntryNoteTags(note string, tags []string) (string, []string) {
 	if n := utf8.RuneCountInString(note); n > profile.MaxEntryNote {
 		note = string([]rune(note)[:profile.MaxEntryNote])
 	}
-	if strings.ContainsFunc(note, unicode.IsControl) {
-		note = strings.Map(func(r rune) rune {
-			if unicode.IsControl(r) {
-				return -1
-			}
-			return r
-		}, note)
-	}
+	note = strings.Map(func(r rune) rune {
+		if badNoteRune(r) {
+			return -1
+		}
+		return r
+	}, note)
 	out := make([]string, 0, len(tags))
 	seen := map[string]bool{}
 	for _, raw := range tags {
