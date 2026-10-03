@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import type {
   AssetConflict,
   ConflictEvidence,
@@ -18,6 +18,15 @@ function evidenceKey(e: ConflictEvidence) {
 }
 
 const KEYS_SHOWN = 8
+
+function EvidenceLine({ children }: { children: ReactNode }) {
+  return (
+    <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'normal' }}>
+      {children}
+    </Typography>
+  )
+}
+
 export function ConflictWhy({ asset }: { asset: AssetConflict }) {
   const { t } = useLingui()
   const gameId = useProfiles((s) => s.game?.id) ?? ''
@@ -72,12 +81,8 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
       {(asset.evidence ?? []).map((e) => (
         <Box key={evidenceKey(e)}>
           <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{e.packName || e.packId}</Typography>
-          <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'normal' }}>
-            {t`${e.source} · ${e.index}`}
-          </Typography>
-          <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'normal' }}>
-            {t`${e.action} ${e.target}`}
-          </Typography>
+          <EvidenceLine>{t`${e.source} · ${e.index}`}</EvidenceLine>
+          <EvidenceLine>{t`${e.action} ${e.target}`}</EvidenceLine>
           {e.keys && e.keys.length > 0 ? (
             <Typography
               title={e.keys.join('\n')}
@@ -93,24 +98,12 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
                 : t`Both set: ${e.keys.join(', ')}`}
             </Typography>
           ) : null}
-          {e.toArea ? (
-            <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'normal' }}>
-              {t`ToArea ${e.toArea}`}
-            </Typography>
-          ) : null}
-          {e.fromArea ? (
-            <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'normal' }}>
-              {t`FromArea ${e.fromArea}`}
-            </Typography>
-          ) : null}
-          {e.when ? (
-            <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'normal' }}>
-              {t`When ${e.when}`}
-            </Typography>
-          ) : null}
-          <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'normal' }}>
+          {e.toArea ? <EvidenceLine>{t`ToArea ${e.toArea}`}</EvidenceLine> : null}
+          {e.fromArea ? <EvidenceLine>{t`FromArea ${e.fromArea}`}</EvidenceLine> : null}
+          {e.when ? <EvidenceLine>{t`When ${e.when}`}</EvidenceLine> : null}
+          <EvidenceLine>
             {e.priority === '' ? t`Priority Default` : t`Priority ${e.priority}`}
-          </Typography>
+          </EvidenceLine>
         </Box>
       ))}
       {images.length === 0 ? null : (
