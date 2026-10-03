@@ -53,7 +53,7 @@ export function SelectionBarActions({
         px: 2,
         py: 0.75,
         minHeight: 40,
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        borderBottom: '1px solid var(--mortar-hairline-muted)',
         flexWrap: 'wrap',
       }}
     >

@@ -139,15 +139,15 @@ function HeaderGhost({ label }: { label: string }) {
         px: 1.5,
         borderRadius: '6px',
         border: `1px solid ${theme.palette.primary.main}`,
-        bgcolor: 'rgba(28,28,34,0.95)',
-        color: '#ffffff',
+        bgcolor: 'var(--mortar-menu-95)',
+        color: 'var(--mortar-ink)',
         fontSize: 12,
         fontWeight: 700,
         letterSpacing: '0.06em',
         textTransform: 'uppercase',
         whiteSpace: 'nowrap',
         cursor: 'grabbing',
-        boxShadow: '0 6px 18px rgba(0,0,0,0.45)',
+        boxShadow: '0 6px 18px var(--mortar-overlay-45)',
       })}
     >
       {label}

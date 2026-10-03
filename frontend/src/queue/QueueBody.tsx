@@ -64,7 +64,7 @@ function SectionTitle({
         fontWeight: 700,
         letterSpacing: '0.06em',
         textTransform: 'uppercase',
-        color: color ?? 'rgba(225,225,230,0.95)',
+        color: color ?? 'var(--mortar-ink-sec)',
       }}
     >
       {children}
@@ -262,14 +262,14 @@ function Active({ item }: { item: Item }) {
     ? t`${formatBytes(downloadedKb(item) * KIB)} of ${formatBytes(item.sizeKb * KIB)} · ${formatBytes(item.speed)}/s`
     : t`Installing`
   return (
-    <Box sx={{ ...ROW, bgcolor: 'rgba(55,55,65,0.9)' }}>
+    <Box sx={{ ...ROW, bgcolor: 'var(--mortar-raised)' }}>
       <LetterTile mod={tile(item)} size={36} />
       <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '5px' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
           <Title item={item} size={14} />
           <Typography sx={{ ...detail, flexShrink: 0 }}>{text}</Typography>
         </Box>
-        <Box sx={{ height: 4, borderRadius: '2px', bgcolor: 'rgba(255,255,255,0.1)' }}>
+        <Box sx={{ height: 4, borderRadius: '2px', bgcolor: 'var(--mortar-hairline)' }}>
           <Box sx={{ width: `${item.progress}%`, height: 4, borderRadius: '2px', bgcolor: BLUE }} />
         </Box>
       </Box>
@@ -367,7 +367,7 @@ export function Body({ items }: { items: Item[] }) {
       ))}
       {next.length > 0 ? (
         <Fold
-          bg="rgba(55,55,65,0.6)"
+          bg="var(--mortar-raised-60)"
           line={more > 0 ? t`Up next: ${names(next)} and ${more} more` : t`Up next: ${names(next)}`}
           action={firstProfile ? <NextActions item={firstProfile} /> : null}
         >
@@ -375,7 +375,7 @@ export function Body({ items }: { items: Item[] }) {
             <Row
               key={i.id}
               item={i}
-              sx={{ bgcolor: 'rgba(55,55,65,0.6)' }}
+              sx={{ bgcolor: 'var(--mortar-raised-60)' }}
               sub={
                 <Typography sx={{ ...detail, color: 'text.secondary' }}>{i.fileName}</Typography>
               }
@@ -426,12 +426,12 @@ export function Body({ items }: { items: Item[] }) {
         </Fold>
       ) : null}
       {dropped.length > 0 ? (
-        <Fold bg="rgba(55,55,65,0.6)" line={t`Skipped (${dropped.length}): ${names(dropped)}`}>
+        <Fold bg="var(--mortar-raised-60)" line={t`Skipped (${dropped.length}): ${names(dropped)}`}>
           {dropped.map((i) => (
             <Row
               key={i.id}
               item={i}
-              sx={{ bgcolor: 'rgba(55,55,65,0.6)' }}
+              sx={{ bgcolor: 'var(--mortar-raised-60)' }}
               sub={
                 <Typography sx={{ ...detail, color: 'text.secondary' }}>
                   {i.state === 'cancelled' ? t`Cancelled` : t`Skipped`}

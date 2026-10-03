@@ -69,7 +69,7 @@ function Meter({ info }: { info: ShownInfo }) {
           flex: 1,
           height: 8,
           borderRadius: '4px',
-          bgcolor: 'rgba(255,255,255,0.1)',
+          bgcolor: 'var(--mortar-hairline)',
           overflow: 'hidden',
         }}
       >
@@ -97,7 +97,7 @@ function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }
         gap: 1.5,
         p: 2.5,
         bgcolor: 'rgba(24,24,30,0.9)',
-        borderLeft: '1px solid rgba(255,255,255,0.08)',
+        borderLeft: '1px solid var(--mortar-hairline-muted)',
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -215,8 +215,8 @@ function LinkTab({
                   alignItems: 'center',
                   height: 46,
                   px: 1.5,
-                  bgcolor: 'rgba(0,0,0,0.45)',
-                  border: '1px solid rgba(255,255,255,0.15)',
+                  bgcolor: 'var(--mortar-overlay-45)',
+                  border: '1px solid var(--mortar-hairline-15)',
                   borderRadius: '6px',
                   fontFamily: '"IBM Plex Mono", monospace',
                   fontSize: 13,

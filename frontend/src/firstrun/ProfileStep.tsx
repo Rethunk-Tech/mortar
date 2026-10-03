@@ -21,7 +21,7 @@ const cardSx = (borderColor: string) => ({
   flexDirection: 'column',
   gap: '10px',
   p: '22px',
-  bgcolor: 'rgba(50,50,60,0.78)',
+  bgcolor: 'var(--mortar-paper-78)',
   border: '2px solid',
   borderColor,
   borderRadius: '8px',

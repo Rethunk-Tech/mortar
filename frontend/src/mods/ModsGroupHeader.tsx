@@ -30,8 +30,8 @@ export function ModsGroupHeader({
         textAlign: 'left',
         fontFamily: 'inherit',
         color: 'inherit',
-        bgcolor: 'rgba(255,255,255,0.04)',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        bgcolor: 'var(--mortar-hairline-ghost)',
+        borderBottom: '1px solid var(--mortar-hairline-muted)',
       }}
     >
       {open ? (

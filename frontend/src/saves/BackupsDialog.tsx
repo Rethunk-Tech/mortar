@@ -94,7 +94,7 @@ function BackupRow({
         gap: 1,
         px: 1.5,
         py: 1.25,
-        bgcolor: 'rgba(50,50,60,0.78)',
+        bgcolor: 'var(--mortar-paper-78)',
         borderRadius: '6px',
       }}
     >

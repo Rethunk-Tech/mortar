@@ -43,7 +43,7 @@ export function WhatsNewDialog() {
       <DialogContent>
         <DialogContentText
           component="div"
-          sx={{ whiteSpace: 'pre-wrap', fontSize: 14, color: 'rgba(225,225,230,0.95)' }}
+          sx={{ whiteSpace: 'pre-wrap', fontSize: 14, color: 'var(--mortar-ink-sec)' }}
         >
           {payload?.notes}
         </DialogContentText>

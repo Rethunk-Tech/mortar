@@ -68,7 +68,7 @@ function LauncherRow({
       defaultExpanded={open}
       disableGutters={true}
       sx={{
-        bgcolor: 'rgba(50,50,60,0.78)',
+        bgcolor: 'var(--mortar-paper-78)',
         backgroundImage: 'none',
         '&::before': { display: 'none' },
       }}

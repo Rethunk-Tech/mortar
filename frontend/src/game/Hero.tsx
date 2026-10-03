@@ -22,8 +22,8 @@ import { NameField } from './NameField.tsx'
 import { useRenameRequest } from './renameRequest.ts'
 import { useTab } from './tab.ts'
 
-const CARD_HOVER = 'rgba(60,60,70,0.9)'
-const CARD_BG = 'rgba(40,40,48,0.85)'
+const CARD_HOVER = 'var(--mortar-card-hover)'
+const CARD_BG = 'var(--mortar-panel-85)'
 const CARD_RADIUS = '6px'
 const LABEL_FONT_PX = 12
 const VALUE_FONT_PX = 18
@@ -37,13 +37,13 @@ const NAME_FONT_COMPACT_PX = 18
 const NAME_LINE_COMPACT = 1.3
 const NAME_GLOW = '0 0 32px rgba(255,255,255,0.45)'
 const DESC_FONT_PX = 13
-const DESC_COLOR = 'rgba(255,255,255,0.72)'
-const DESC_SHADOW = '0 1px 8px rgba(0,0,0,0.55)'
+const DESC_COLOR = 'var(--mortar-ink-72)'
+const DESC_SHADOW = '0 1px 8px var(--mortar-overlay-55)'
 const META_FONT_PX = 12
 const HERO_HEIGHT_PX = 190
 const HERO_COMPACT_HEIGHT_PX = 52
-const HERO_COMPACT_BG = 'rgba(15,15,18,0.5)'
-const HERO_COMPACT_BORDER = '1px solid rgba(255,255,255,0.1)'
+const HERO_COMPACT_BG = 'var(--mortar-hero)'
+const HERO_COMPACT_BORDER = '1px solid var(--mortar-hairline)'
 const COVER_TINT = 'rgba(20,20,24,0.18)'
 const HERO_INSET_PX = 24
 const HERO_BOTTOM_PX = 16
@@ -212,7 +212,7 @@ function HeroName({ profile, meta, game }: { profile: Profile; meta: string[]; g
                 fontSize: NAME_FONT_PX,
                 fontWeight: NAME_WEIGHT,
                 lineHeight: NAME_LINE_HEIGHT,
-                color: '#ffffff',
+                color: 'var(--mortar-ink)',
                 textShadow: NAME_GLOW,
                 [compact]: { fontSize: NAME_FONT_COMPACT_PX, lineHeight: NAME_LINE_COMPACT },
               }}

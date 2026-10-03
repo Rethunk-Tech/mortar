@@ -26,7 +26,6 @@ export function Row({
   included,
   onAck,
   onInclude,
-  onUpdateAll,
   picture,
 }: {
   update: Update
@@ -36,7 +35,6 @@ export function Row({
   included: boolean
   onAck: (on: boolean) => void
   onInclude: (on: boolean) => void
-  onUpdateAll: () => void
   picture?: string
 }) {
   const { t } = useLingui()
@@ -72,7 +70,7 @@ export function Row({
         alignItems: 'center',
         px: 3,
         py: 1.75,
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        borderBottom: '1px solid var(--mortar-hairline-muted)',
       }}
     >
       <LetterTile
@@ -111,7 +109,6 @@ export function Row({
           queued={queued}
           caution={caution}
           acked={acked}
-          onUpdateAll={onUpdateAll}
         />
       </Box>
       <RowInclude

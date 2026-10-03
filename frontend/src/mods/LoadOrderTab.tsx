@@ -168,7 +168,7 @@ function OrderList({
               alignItems: 'flex-start',
               gap: 1.5,
               py: 1,
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid var(--mortar-hairline-faint)',
               ...(row.cycle
                 ? { outline: '1px solid', outlineColor: 'error.main', outlineOffset: -1 }
                 : {}),

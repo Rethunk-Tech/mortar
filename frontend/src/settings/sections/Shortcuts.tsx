@@ -84,7 +84,7 @@ function ShortcutRow({
         gap: 2,
         px: 2,
         py: 1,
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        borderBottom: '1px solid var(--mortar-hairline)',
       }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, minWidth: 0 }}>
@@ -102,14 +102,14 @@ function ShortcutRow({
           aria-label={t`Change shortcut`}
           onClick={onRecord}
           sx={{
-            color: 'rgba(225,225,230,0.95)',
+            color: 'var(--mortar-ink-sec)',
             fontFamily: 'inherit',
             fontSize: 12,
             px: 0.75,
             py: 0.25,
-            border: '1px solid rgba(255,255,255,0.25)',
+            border: '1px solid var(--mortar-hairline-25)',
             borderRadius: 0.5,
-            bgcolor: recording ? 'rgba(255,255,255,0.12)' : 'transparent',
+            bgcolor: recording ? 'var(--mortar-hairline-12)' : 'transparent',
             cursor: 'pointer',
             whiteSpace: 'nowrap',
           }}
@@ -199,7 +199,7 @@ export function Shortcuts() {
             <Box sx={{ mb: 0.5, fontSize: 13, fontWeight: 700, color: 'text.secondary' }}>
               {group}
             </Box>
-            <Box sx={{ bgcolor: 'rgba(0,0,0,0.25)', borderRadius: 1, overflow: 'hidden' }}>
+            <Box sx={{ bgcolor: 'var(--mortar-overlay-25)', borderRadius: 1, overflow: 'hidden' }}>
               {grouped.map((row) => (
                 <ShortcutRow
                   key={row.id}

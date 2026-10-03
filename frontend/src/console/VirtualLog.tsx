@@ -41,10 +41,10 @@ const looks: Record<Level, Look> = {
     text: 'rgba(210,210,220,0.95)',
   },
   [Level.Info]: {
-    color: 'rgba(235,235,240,0.95)',
+    color: 'var(--mortar-ink-soft)',
     bar: CLEAR,
     row: CLEAR,
-    text: 'rgba(235,235,240,0.95)',
+    text: 'var(--mortar-ink-soft)',
   },
   [Level.Warn]: { color: '#F3B416', bar: '#F3B416', row: 'rgba(243,180,22,0.08)', text: '#f7d56a' },
   [Level.Error]: {

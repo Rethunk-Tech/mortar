@@ -8,8 +8,8 @@ import (
 func TestRegistryDefaultsMatchToday(t *testing.T) {
 	s := Defaults()
 	g := s.GamePrefs(GameStardew)
-	if s.OnPlay != OnPlayStay || s.Density != DensityComfortable || s.Dates != DatesRelative {
-		t.Fatalf("app defaults: onPlay=%q density=%q dates=%q", s.OnPlay, s.Density, s.Dates)
+	if s.OnPlay != OnPlayStay || s.Density != DensityComfortable || s.Theme != ThemeDark || s.Dates != DatesRelative {
+		t.Fatalf("app defaults: onPlay=%q density=%q theme=%q dates=%q", s.OnPlay, s.Density, s.Theme, s.Dates)
 	}
 	if g.SmapiBuilds != SmapiBuildsShow || g.DefaultLaunchMethod != LaunchSteam || g.ConsoleLevel != ConsoleLevelInfo {
 		t.Fatalf("game defaults: smapi=%q launch=%q level=%q", g.SmapiBuilds, g.DefaultLaunchMethod, g.ConsoleLevel)
@@ -147,6 +147,9 @@ func TestPortableRoundTripGameScope(t *testing.T) {
 	if err := ApplyKey(&s, "density", DensityCompact); err != nil {
 		t.Fatal(err)
 	}
+	if err := ApplyKey(&s, "theme", ThemeLight); err != nil {
+		t.Fatal(err)
+	}
 	blob, err := MarshalExport(s)
 	if err != nil {
 		t.Fatal(err)
@@ -159,6 +162,9 @@ func TestPortableRoundTripGameScope(t *testing.T) {
 	ApplyExport(&in, p, present)
 	if in.Density != DensityCompact {
 		t.Fatalf("density %q", in.Density)
+	}
+	if in.Theme != ThemeLight {
+		t.Fatalf("theme %q", in.Theme)
 	}
 	if in.GamePrefs(GameStardew).SmapiBuilds != SmapiBuildsInclude {
 		t.Fatalf("game smapi %q", in.GamePrefs(GameStardew).SmapiBuilds)

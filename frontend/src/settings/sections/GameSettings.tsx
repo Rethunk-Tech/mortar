@@ -139,7 +139,7 @@ function ExtraInstalls({
               <Box
                 sx={{
                   fontSize: 12,
-                  color: 'rgba(225,225,230,0.95)',
+                  color: 'var(--mortar-ink-sec)',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
@@ -210,8 +210,8 @@ function GameFolder({
             px: '12px',
             display: 'flex',
             alignItems: 'center',
-            bgcolor: 'rgba(0,0,0,0.4)',
-            border: '1px solid rgba(255,255,255,0.18)',
+            bgcolor: 'var(--mortar-overlay-40)',
+            border: '1px solid var(--mortar-hairline-18)',
             borderRadius: '6px',
             fontSize: 13,
             overflow: 'hidden',
@@ -294,7 +294,7 @@ function GameFolder({
           {error}
         </Box>
       ) : (
-        <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
+        <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
           {source}
           {versionNote}
         </Box>
@@ -326,7 +326,7 @@ function FlatpakAccess() {
     <>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Flatpak Steam cannot read your mods`}</Box>
-        <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
+        <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
           {t`Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods.`}
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
@@ -336,8 +336,8 @@ function FlatpakAccess() {
               minWidth: 0,
               px: 1.5,
               py: 0.75,
-              bgcolor: 'rgba(0,0,0,0.45)',
-              border: '1px solid rgba(255,255,255,0.15)',
+              bgcolor: 'var(--mortar-overlay-45)',
+              border: '1px solid var(--mortar-hairline-15)',
               borderRadius: '6px',
               fontFamily: 'monospace',
               fontSize: 13,
@@ -453,7 +453,7 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
         flexDirection: 'column',
         gap: 1.5,
         p: '14px',
-        bgcolor: 'rgba(55,55,65,0.9)',
+        bgcolor: 'var(--mortar-raised)',
         borderRadius: '6px',
       }}
     >

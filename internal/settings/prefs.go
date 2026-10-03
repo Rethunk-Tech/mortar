@@ -31,6 +31,9 @@ const (
 
 	DensityComfortable = "comfortable"
 	DensityCompact     = "compact"
+	ThemeDark          = "dark"
+	ThemeLight         = "light"
+	ThemeSystem        = "system"
 
 	GridCardSmall  = "small"
 	GridCardMedium = "medium"
@@ -131,6 +134,7 @@ func defaultPrefs() Settings {
 		NotifyDownloadFailed:       on(),
 		NotifyRunCrashed:           on(),
 		Density:                    DensityComfortable,
+		Theme:                      ThemeDark,
 		GridCardSize:               GridCardMedium,
 		ShowAuthorOnCards:          on(),
 		ReduceMotion:               ReduceMotionSystem,
@@ -207,6 +211,9 @@ func normalizePrefs(s *Settings) {
 	}
 	if !slices.Contains(densityValues, s.Density) {
 		s.Density = DensityComfortable
+	}
+	if !slices.Contains(themeValues, s.Theme) {
+		s.Theme = ThemeDark
 	}
 	if !slices.Contains(gridCardValues, s.GridCardSize) {
 		s.GridCardSize = GridCardMedium
@@ -297,6 +304,9 @@ func validatePrefs(s Settings) error {
 	if !slices.Contains(densityValues, s.Density) {
 		return fmt.Errorf("density must be comfortable or compact, got %q", s.Density)
 	}
+	if !slices.Contains(themeValues, s.Theme) {
+		return fmt.Errorf("theme must be dark, light or system, got %q", s.Theme)
+	}
 	if !slices.Contains(gridCardValues, s.GridCardSize) {
 		return fmt.Errorf("grid card size must be small, medium or large, got %q", s.GridCardSize)
 	}
@@ -337,6 +347,7 @@ var (
 	datesValues               = []string{DatesRelative, DatesAbsolute}
 	modsViewValues            = []string{ModsViewGrid, ModsViewList}
 	densityValues             = []string{DensityComfortable, DensityCompact}
+	themeValues               = []string{ThemeDark, ThemeLight, ThemeSystem}
 	gridCardValues            = []string{GridCardSmall, GridCardMedium, GridCardLarge}
 	reduceMotionValues        = []string{ReduceMotionSystem, ReduceMotionAlways, ReduceMotionNever}
 	heroValues                = []string{HeroFull, HeroCompact, HeroHidden}

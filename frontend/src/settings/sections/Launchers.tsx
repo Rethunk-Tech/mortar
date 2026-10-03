@@ -19,7 +19,7 @@ export function Launchers() {
   useRefreshOnFocus(refresh)
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
+      <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
         {t`Mortar finds your games through these launchers. Choose a folder for one it did not find, or that you moved.`}
       </Box>
       <LauncherList launchers={launchers} refresh={refresh} />

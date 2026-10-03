@@ -14,7 +14,12 @@ export function TabPills<T extends string>({
 }) {
   return (
     <Box
-      sx={{ p: '4px', bgcolor: 'rgba(0,0,0,0.3)', borderRadius: '8px', alignSelf: 'flex-start' }}
+      sx={{
+        p: '4px',
+        bgcolor: 'var(--mortar-overlay-30)',
+        borderRadius: '8px',
+        alignSelf: 'flex-start',
+      }}
     >
       <Tabs
         value={value}
@@ -34,9 +39,9 @@ export function TabPills<T extends string>({
             fontWeight: 400,
             color: 'text.secondary',
             '&.Mui-selected': {
-              color: '#ffffff',
+              color: 'var(--mortar-ink)',
               fontWeight: 600,
-              bgcolor: 'rgba(255,255,255,0.14)',
+              bgcolor: 'var(--mortar-hairline-14)',
             },
           },
         }}

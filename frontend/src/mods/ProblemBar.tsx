@@ -33,8 +33,8 @@ export function ProblemBar() {
           height: 38,
           px: 1.5,
           color: 'text.secondary',
-          bgcolor: 'rgba(255,255,255,0.06)',
-          border: '1px solid rgba(255,255,255,0.16)',
+          bgcolor: 'var(--mortar-hairline-faint)',
+          border: '1px solid var(--mortar-hairline-16)',
           borderRadius: '6px',
         }}
       >

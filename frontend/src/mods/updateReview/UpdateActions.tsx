@@ -1,15 +1,19 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button, IconButton, Menu, MenuItem } from '@mui/material'
 import { MoreHorizontal } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Update } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import type {
+  EverywherePreview,
   Mod,
   Profile,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { PreviewEverywhere } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { useProfiles } from '../../profiles/store.ts'
 import { download } from '../../queue/actions.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useMods } from '../store.ts'
+import { EverywhereDialog } from './EverywhereDialog.tsx'
 import { downloadable, updateWant } from './wants.ts'
 
 export function UpdateActions({
@@ -19,7 +23,6 @@ export function UpdateActions({
   queued,
   caution,
   acked,
-  onUpdateAll,
 }: {
   update: Update
   mod?: Mod
@@ -27,13 +30,24 @@ export function UpdateActions({
   queued: boolean
   caution: string
   acked: boolean
-  onUpdateAll: () => void
 }) {
   const { t } = useLingui()
+  const game = useProfiles((s) => s.game?.id ?? '')
   const setPinned = useMods((s) => s.setPinned)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const setSkipSource = useMods((s) => s.setSkipSource)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const [everywhere, setEverywhere] = useState(false)
+  const [preview, setPreview] = useState<EverywherePreview | null>(null)
+  useEffect(() => {
+    if (game === '' || update.uniqueId === '') {
+      return
+    }
+    PreviewEverywhere(game, update.uniqueId)
+      .then(setPreview)
+      .catch(() => setPreview(null))
+  }, [game, update.uniqueId])
+  const n = preview?.affected?.length ?? 0
   const blocked = queued || (caution !== '' && !acked)
   const act = (fn: () => Promise<unknown>) => () => {
     setAnchor(null)
@@ -55,7 +69,7 @@ export function UpdateActions({
         aria-label={t`More actions for ${update.name}`}
         aria-haspopup="menu"
         onClick={(e) => setAnchor(e.currentTarget)}
-        sx={{ borderRadius: '6px', bgcolor: anchor ? 'rgba(255,255,255,0.1)' : 'transparent' }}
+        sx={{ borderRadius: '6px', bgcolor: anchor ? 'var(--mortar-hairline)' : 'transparent' }}
       >
         <MoreHorizontal size={18} />
       </IconButton>
@@ -66,8 +80,14 @@ export function UpdateActions({
         transitionDuration={0}
       >
         {downloadable(update) ? (
-          <MenuItem disabled={blocked} onClick={act(async () => onUpdateAll())}>
-            {t`Update in all profiles that have it`}
+          <MenuItem
+            disabled={blocked}
+            onClick={() => {
+              setAnchor(null)
+              setEverywhere(true)
+            }}
+          >
+            {t`Update in all profiles (${n})`}
           </MenuItem>
         ) : null}
         <MenuItem
@@ -88,6 +108,12 @@ export function UpdateActions({
           </MenuItem>
         ) : null}
       </Menu>
+      <EverywhereDialog
+        open={everywhere}
+        game={game}
+        mods={[{ id: update.uniqueId, newKey: 'latest' }]}
+        onClose={() => setEverywhere(false)}
+      />
     </>
   )
 }

@@ -99,7 +99,7 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
           flexDirection: 'column',
           gap: 1.25,
           p: 2,
-          bgcolor: 'rgba(40,40,48,0.78)',
+          bgcolor: 'var(--mortar-panel)',
           borderRadius: '8px',
         }}
       >
@@ -117,7 +117,7 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
             return (
               <Box
                 key={bundle.id}
-                sx={{ p: 1.25, bgcolor: 'rgba(55,55,65,0.9)', borderRadius: '6px' }}
+                sx={{ p: 1.25, bgcolor: 'var(--mortar-raised)', borderRadius: '6px' }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Typography

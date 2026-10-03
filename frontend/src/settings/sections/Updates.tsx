@@ -107,7 +107,7 @@ function MortarUpdate() {
   return (
     <>
       <Box
-        sx={{ fontSize: 14, color: 'rgba(225,225,230,0.95)' }}
+        sx={{ fontSize: 14, color: 'var(--mortar-ink-sec)' }}
       >{t`Installed: Mortar ${info.version}`}</Box>
       <Box
         role="status"
@@ -130,7 +130,7 @@ function MortarUpdate() {
             maxHeight: 200,
             overflow: 'auto',
             p: 1.5,
-            bgcolor: 'rgba(0,0,0,0.3)',
+            bgcolor: 'var(--mortar-overlay-30)',
             borderRadius: '6px',
           }}
         >
@@ -230,7 +230,7 @@ export function Updates() {
         }
         label={t`Check only enabled mods`}
       />
-      <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
+      <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
         {t`Mod updates show on each profile's mod list. A game's mod loader version and its update notice are in that game's settings.`}
       </Box>
       {game ? (

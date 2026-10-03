@@ -36,7 +36,7 @@ export function EmptyState({
         px: 3,
         py: compact ? COMPACT_PADDING : REGULAR_PADDING,
         textAlign: 'center',
-        color: 'rgba(255,255,255,0.6)',
+        color: 'var(--mortar-ink-dim-60)',
       }}
     >
       <Box

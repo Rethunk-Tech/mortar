@@ -9,7 +9,7 @@ const nameChip = {
   px: 1.25,
   py: 0.5,
   borderRadius: '4px',
-  bgcolor: 'rgba(60,60,70,0.9)',
+  bgcolor: 'var(--mortar-card-hover)',
   fontSize: 13,
   whiteSpace: 'nowrap',
 } as const
@@ -47,7 +47,7 @@ export function SharedMods({ info, notIn }: { info: ShownInfo; notIn: string }) 
                 px: 1,
                 py: '2px',
                 borderRadius: '10px',
-                bgcolor: 'rgba(255,255,255,0.08)',
+                bgcolor: 'var(--mortar-hairline-muted)',
                 fontSize: 12,
               }}
             >
@@ -89,7 +89,7 @@ export function SharedMods({ info, notIn }: { info: ShownInfo; notIn: string }) 
             >
               <Box
                 component="span"
-                sx={{ px: 1, py: '2px', borderRadius: '4px', bgcolor: 'rgba(0,0,0,0.3)' }}
+                sx={{ px: 1, py: '2px', borderRadius: '4px', bgcolor: 'var(--mortar-overlay-30)' }}
               >
                 {o.name}
               </Box>

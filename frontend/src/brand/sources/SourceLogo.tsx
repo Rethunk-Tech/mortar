@@ -15,7 +15,7 @@ export function SourceLogo({ name, size }: { name: string; size: number }) {
     return null
   }
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" fill="#fff">
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" fill="var(--mortar-ink)">
       <path d={icon.path} />
     </svg>
   )

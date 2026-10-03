@@ -110,7 +110,7 @@ export function ReportTable({
                 key={column}
                 align={column === 'name' ? 'left' : 'right'}
                 sx={{
-                  bgcolor: 'rgba(25,25,30,0.96)',
+                  bgcolor: 'var(--mortar-console)',
                   color: 'rgba(230,230,235,0.8)',
                   fontSize: 11,
                   whiteSpace: 'nowrap',
@@ -122,7 +122,7 @@ export function ReportTable({
                   onClick={() => onSort(column)}
                   sx={{
                     color: 'inherit',
-                    '&.Mui-active': { color: '#ffffff' },
+                    '&.Mui-active': { color: 'var(--mortar-ink)' },
                     '& .MuiTableSortLabel-icon': { color: 'inherit !important' },
                   }}
                 >
@@ -321,8 +321,8 @@ export function MeasuredPanel({
         mb: 1.5,
         flexShrink: 0,
         overflow: 'hidden',
-        bgcolor: 'rgba(0,0,0,0.24)',
-        borderColor: 'rgba(255,255,255,0.14)',
+        bgcolor: 'var(--mortar-overlay-24)',
+        borderColor: 'var(--mortar-hairline-14)',
       }}
     >
       <PanelHeader {...header} />

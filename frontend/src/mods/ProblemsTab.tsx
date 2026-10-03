@@ -16,7 +16,9 @@ import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { CompatSection } from './CompatSection.tsx'
 import { ConflictWhy } from './ConflictWhy.tsx'
+import { compatReportChunks } from './compatChip.ts'
 import { useDescribe, useDescribeDrift } from './describe.ts'
 import { DriftButtons, FixButton } from './problemFixButtons.tsx'
 import {
@@ -128,7 +130,7 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
                   textAlign: 'left',
                   borderRadius: '4px',
                   textDecoration: 'underline',
-                  textDecorationColor: 'rgba(255,255,255,0.35)',
+                  textDecorationColor: 'var(--mortar-hairline-35)',
                 },
               }
             : {})}
@@ -364,9 +366,11 @@ export function ProblemActions() {
   const rowText = useRowText()
   const sections = result === null ? [] : problemSections(result)
   const cleanup = result?.cleanup ?? []
+  const compat = result?.compat ?? []
   const harmlessCount = (result?.assetConflicts ?? []).filter((asset) => asset.cosmetic).length
   const nothing =
-    result === null || (sections.length === 0 && cleanup.length === 0 && harmlessCount === 0)
+    result === null ||
+    (sections.length === 0 && cleanup.length === 0 && compat.length === 0 && harmlessCount === 0)
   return (
     <IconAction
       label={t`Copy report`}
@@ -402,6 +406,7 @@ export function ProblemActions() {
                     }),
                   },
                 ]),
+            ...compatReportChunks(compat, t`Compatibility`),
           ],
           t`Harmless`,
           harmlessCount,
@@ -432,7 +437,8 @@ export function ProblemsTab() {
   }
 
   const sections = problemSections(result)
-  const cleanup = result.cleanup ?? []
+  const cleanup = result.cleanup ?? [],
+    compat = result.compat ?? []
   const installable =
     sections
       .find((section) => section.id === 'missing')
@@ -444,8 +450,8 @@ export function ProblemsTab() {
           row.missing.where !== null,
       ) ?? []
   const empty =
-    sections.filter((section) => section.id !== 'dismissed').length === 0 &&
-    cleanup.length === 0 &&
+    sections.filter((s) => s.id !== 'dismissed').length === 0 &&
+    cleanup.length + compat.length === 0 &&
     !result.unknown
 
   const sectionExtras = (section: (typeof sections)[number]) => {
@@ -515,6 +521,7 @@ export function ProblemsTab() {
         </EmptyState>
       ) : null}
       {renderProblemSections(sections, cosmeticConflicts, sectionTitle, sectionExtras)}
+      <CompatSection rows={compat} />
       {cleanup.length === 0 ? null : (
         <Box>
           <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>

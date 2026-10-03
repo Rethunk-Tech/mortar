@@ -1,7 +1,7 @@
 import { IconButton, Tooltip } from '@mui/material'
 import type { MouseEvent, ReactNode } from 'react'
 
-const BORDER = 'rgba(255,255,255,0.22)'
+const BORDER = 'var(--mortar-hairline-22)'
 
 export function IconAction({
   label,
@@ -36,7 +36,7 @@ export function IconAction({
             height: 32,
             borderRadius: '6px',
             border: `1px solid ${on ? 'currentColor' : BORDER}`,
-            color: on ? 'primary.main' : '#ffffff',
+            color: on ? 'primary.main' : 'var(--mortar-ink)',
           }}
         >
           {icon}

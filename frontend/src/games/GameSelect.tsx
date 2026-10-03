@@ -35,7 +35,7 @@ const SOURCES: Record<string, string[]> = {
 const LONG_NAME = 8
 const SMALL_FONT = 13
 const NORMAL_FONT = 15
-const shadow = '0 1px 2px rgba(0,0,0,0.9), 0 0 18px rgba(0,0,0,0.85)'
+const shadow = '0 1px 2px var(--mortar-overlay-90), 0 0 18px var(--mortar-overlay-85)'
 
 function fail(title: string, err: unknown) {
   useToasts
@@ -64,7 +64,7 @@ function Art({ src, openable }: { src: string; openable: boolean }) {
         sx={{
           position: 'absolute',
           inset: 0,
-          bgcolor: openable ? 'rgba(0,0,0,0.28)' : 'rgba(0,0,0,0.55)',
+          bgcolor: openable ? 'var(--mortar-overlay-28)' : 'var(--mortar-overlay-55)',
         }}
       />
     </>
@@ -85,7 +85,7 @@ function SourceBadges({ gameId }: { gameId: string }) {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
-            bgcolor: 'rgba(28,28,32,0.92)',
+            bgcolor: 'var(--mortar-game-dim)',
             fontSize: name.length > LONG_NAME ? SMALL_FONT : NORMAL_FONT,
             fontWeight: 700,
             color: '#fff',

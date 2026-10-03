@@ -17,12 +17,12 @@ export function NexusAccount({ onNavigate }: { onNavigate: () => void }) {
         display: 'flex',
         alignItems: 'center',
         gap: 1,
-        borderTop: '1px solid rgba(255,255,255,0.12)',
+        borderTop: '1px solid var(--mortar-hairline-12)',
       }}
     >
       <Box sx={{ minWidth: 0, flexGrow: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
         <Box
-          sx={{ flexShrink: 0, fontSize: 12, color: 'rgba(225,225,230,0.95)' }}
+          sx={{ flexShrink: 0, fontSize: 12, color: 'var(--mortar-ink-sec)' }}
         >{t`Nexus Mods`}</Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
           <Box sx={{ fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }}>

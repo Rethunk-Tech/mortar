@@ -137,7 +137,7 @@ function LackChip({
         pl: 1,
         pr: 0.25,
         borderRadius: '4px',
-        bgcolor: 'rgba(0,0,0,0.3)',
+        bgcolor: 'var(--mortar-overlay-30)',
       }}
     >
       <Typography sx={{ fontSize: 13, ...nowrap }}>
@@ -263,7 +263,7 @@ function Stat({ icon, children }: { icon: ReactNode; children: ReactNode }) {
         alignItems: 'center',
         gap: 0.75,
         fontSize: 13,
-        color: 'rgba(255,255,255,0.85)',
+        color: 'var(--mortar-ink-85)',
         ...nowrap,
       }}
     >
@@ -338,10 +338,10 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
         flexDirection: 'column',
         gap: 1.25,
         p: 1.75,
-        bgcolor: 'rgba(50,50,60,0.78)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        bgcolor: 'var(--mortar-paper-78)',
+        border: '1px solid var(--mortar-hairline-faint)',
         borderRadius: '8px',
-        '&:hover': { borderColor: 'rgba(255,255,255,0.16)' },
+        '&:hover': { borderColor: 'var(--mortar-hairline-16)' },
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -355,7 +355,7 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
             placeItems: 'center',
             borderRadius: '10px',
             bgcolor: style.color,
-            color: '#ffffff',
+            color: 'var(--mortar-ink)',
           }}
         >
           <style.Icon size={26} />
@@ -426,7 +426,7 @@ function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: str
           alignItems: 'center',
           gap: 1,
           pt: 1,
-          borderTop: '1px solid rgba(255,255,255,0.08)',
+          borderTop: '1px solid var(--mortar-hairline-muted)',
         }}
       >
         <Typography

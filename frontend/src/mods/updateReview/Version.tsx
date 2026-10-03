@@ -21,7 +21,7 @@ export function Version({ children, isNew }: { children: string; isNew?: boolean
         fontSize: 13,
         fontWeight: isNew ? MEDIUM : 'normal',
         color: isNew ? 'primary.main' : 'text.primary',
-        bgcolor: isNew ? accent.chip : 'rgba(255,255,255,0.08)',
+        bgcolor: isNew ? accent.chip : 'var(--mortar-hairline-muted)',
       }}
     >
       {children}

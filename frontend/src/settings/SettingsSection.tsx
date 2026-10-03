@@ -46,10 +46,10 @@ export function SettingsSection({
       {description ? <Box sx={{ fontSize: 13, color: 'text.secondary' }}>{description}</Box> : null}
       <Box
         sx={{
-          bgcolor: 'rgba(0,0,0,0.25)',
+          bgcolor: 'var(--mortar-overlay-25)',
           borderRadius: 1,
           overflow: 'hidden',
-          '& > * + *': { borderTop: '1px solid rgba(255,255,255,0.1)' },
+          '& > * + *': { borderTop: '1px solid var(--mortar-hairline)' },
         }}
       >
         {children}

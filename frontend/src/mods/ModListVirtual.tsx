@@ -79,9 +79,9 @@ function ListShell({
               px: 2,
               height: 30,
               zIndex: 1,
-              bgcolor: 'rgba(25,25,30,0.9)',
+              bgcolor: 'var(--mortar-console-90)',
               ...heading,
-              borderBottom: '1px solid rgba(255,255,255,0.08)',
+              borderBottom: '1px solid var(--mortar-hairline-muted)',
             }}
           >
             <HeaderCells

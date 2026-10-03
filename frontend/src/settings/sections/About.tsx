@@ -12,7 +12,7 @@ import { Diagnostics } from './AboutDiagnostics.tsx'
 
 const LICENCE = 'https://github.com/Rethunk-AI/mortar/blob/main/LICENSE'
 
-const body = { color: 'rgba(235,235,240,0.95)' }
+const body = { color: 'var(--mortar-ink-soft)' }
 
 // Credits flow into as many columns of at least this width as the pane holds.
 const CREDIT_COLUMN = '260px'
@@ -31,7 +31,7 @@ export function About() {
           <Box component="span" sx={{ fontSize: 18, fontWeight: 700 }}>
             {t`Mortar`}
           </Box>
-          <Box component="span" sx={{ color: 'rgba(225,225,230,0.95)' }}>
+          <Box component="span" sx={{ color: 'var(--mortar-ink-sec)' }}>
             {t`AGPL-3.0 · Rethunk-AI/mortar`}
           </Box>
         </Box>

@@ -111,15 +111,15 @@ function ProfileButton({
         fontSize: 14,
         fontWeight: selected ? SELECTED_WEIGHT : 'normal',
         textAlign: 'left',
-        color: selected ? '#ffffff' : 'rgba(255,255,255,0.88)',
-        bgcolor: selected ? 'rgba(255,255,255,0.12)' : 'transparent',
-        '&:hover': { bgcolor: selected ? 'rgba(255,255,255,0.12)' : 'action.hover' },
+        color: selected ? 'var(--mortar-ink)' : 'var(--mortar-ink-88)',
+        bgcolor: selected ? 'var(--mortar-hairline-12)' : 'transparent',
+        '&:hover': { bgcolor: selected ? 'var(--mortar-hairline-12)' : 'action.hover' },
         ...rail({
           width: 40,
           p: 0,
           justifyContent: 'center',
           borderRadius: '8px',
-          bgcolor: selected ? 'rgba(255,255,255,0.14)' : 'transparent',
+          bgcolor: selected ? 'var(--mortar-hairline-14)' : 'transparent',
         }),
       }}
     >
@@ -155,7 +155,7 @@ function ProfileButton({
         sx={{
           display: 'none',
           fontWeight: 700,
-          color: '#ffffff',
+          color: 'var(--mortar-ink)',
           ...rail({ display: 'inline-flex' }),
         }}
       >
@@ -226,7 +226,7 @@ function BottomBlock({ game }: { game: string }) {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        borderTop: '1px solid rgba(255,255,255,0.08)',
+        borderTop: '1px solid var(--mortar-hairline-muted)',
         ...rail({ borderTop: 0 }),
       }}
     >

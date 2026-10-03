@@ -85,9 +85,9 @@ const viewButton = (active: boolean) => ({
   width: 34,
   height: 30,
   borderRadius: '6px',
-  bgcolor: active ? 'rgba(255,255,255,0.16)' : 'transparent',
-  color: active ? '#ffffff' : 'text.secondary',
-  '&:hover': { bgcolor: active ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.08)' },
+  bgcolor: active ? 'var(--mortar-hairline-16)' : 'transparent',
+  color: active ? 'var(--mortar-ink)' : 'text.secondary',
+  '&:hover': { bgcolor: active ? 'var(--mortar-hairline-16)' : 'var(--mortar-hairline-muted)' },
 })
 
 function persistGroupBy(by: GroupBy) {
@@ -385,7 +385,7 @@ export function Toolbar({
           display: 'flex',
           p: '3px',
           gap: '2px',
-          bgcolor: 'rgba(0,0,0,0.3)',
+          bgcolor: 'var(--mortar-overlay-30)',
           borderRadius: '8px',
         }}
       >
@@ -432,8 +432,8 @@ export function Toolbar({
                 height: 36,
                 fontSize: 13,
                 borderRadius: '6px',
-                bgcolor: 'rgba(0,0,0,0.30)',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.15)' },
+                bgcolor: 'var(--mortar-overlay-30)',
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--mortar-hairline-15)' },
               },
             },
           }}

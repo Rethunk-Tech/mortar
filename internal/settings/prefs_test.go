@@ -41,7 +41,7 @@ func TestPrefDefaultsMatchToday(t *testing.T) {
 	if !ToggleOn(d.NotifyDownloadFinished) || !ToggleOn(d.NotifyDownloadFailed) || !ToggleOn(d.NotifyRunCrashed) {
 		t.Fatal("notify defaults")
 	}
-	if d.Density != DensityComfortable || d.GridCardSize != GridCardMedium || !ToggleOn(d.ShowAuthorOnCards) {
+	if d.Density != DensityComfortable || d.Theme != ThemeDark || d.GridCardSize != GridCardMedium || !ToggleOn(d.ShowAuthorOnCards) {
 		t.Fatal("density / card defaults")
 	}
 	if d.ReduceMotion != ReduceMotionSystem || d.ProfileHero != HeroFull {
@@ -101,7 +101,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"cosmeticConflicts": "hidden", "backgroundBadgeChecks": "false", "startScreen": "gameselect",
 		"dates": "absolute", "trashRetentionDays": "10", "historyEventsKept": "50",
 		"notifyDownloadFinished": "false", "notifyDownloadFailed": "false", "notifyRunCrashed": "false",
-		"density": "compact", "gridCardSize": "large", "showAuthorOnCards": "false",
+		"density": "compact", "theme": "light", "gridCardSize": "large", "showAuthorOnCards": "false",
 		"reduceMotion": "always", "profileHero": "hidden", "enableRequirements": "never",
 		"missingRequirements": "autodownload", "reuseFomodChoices": "false", "driftChecks": "false",
 		"smapiBuilds": "include", "autoInstallMortarUpdates": "false", "autoTrackNexus": "true",

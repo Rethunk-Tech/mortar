@@ -69,7 +69,7 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
         height: 52,
         pr: 1,
         minWidth: 0,
-        bgcolor: 'rgba(60,60,70,0.9)',
+        bgcolor: 'var(--mortar-card-hover)',
         borderRadius: '3px',
         overflow: 'hidden',
         opacity: checked || state === 'unavailable' ? 1 : DIMMED,
@@ -349,7 +349,7 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
         <Info size={18} />
         {ready ? t`Ready to import` : t`Nothing to download`}
       </Box>
-      <Box sx={{ width: '1px', height: 24, bgcolor: 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
+      <Box sx={{ width: '1px', height: 24, bgcolor: 'var(--mortar-hairline-15)', flexShrink: 0 }} />
       <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <Typography noWrap={true} sx={{ fontSize: 16, fontWeight: 600 }} title={preview.name}>
           {preview.name}

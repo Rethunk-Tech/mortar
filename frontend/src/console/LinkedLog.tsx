@@ -101,7 +101,7 @@ export function LinkedLog({
         minHeight: 0,
         mx: 2,
         mb: 1.5,
-        bgcolor: 'rgba(0,0,0,0.5)',
+        bgcolor: 'var(--mortar-overlay-50)',
         borderRadius: '6px',
         fontFamily: MONO,
         fontSize: 13,

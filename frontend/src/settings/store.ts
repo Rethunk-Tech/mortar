@@ -92,6 +92,7 @@ const defaults: Settings = {
   notifyDownloadFailed: true,
   notifyRunCrashed: true,
   density: 'comfortable',
+  theme: 'dark',
   gridCardSize: 'medium',
   showAuthorOnCards: true,
   reduceMotion: 'system',

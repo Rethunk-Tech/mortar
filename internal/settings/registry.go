@@ -85,6 +85,7 @@ var registry = []pref{
 	ptrPref("notifyDownloadFailed", ScopeApp, true, func(s Settings, _ string) *bool { return s.NotifyDownloadFailed }, func(s *Settings, _ string, on bool) { s.NotifyDownloadFailed = &on }),
 	ptrPref("notifyRunCrashed", ScopeApp, true, func(s Settings, _ string) *bool { return s.NotifyRunCrashed }, func(s *Settings, _ string, on bool) { s.NotifyRunCrashed = &on }),
 	enumPref("density", ScopeApp, DensityComfortable, densityValues, func(s Settings, _ string) string { return s.Density }, func(s *Settings, _, v string) { s.Density = v }),
+	enumPref("theme", ScopeApp, ThemeDark, themeValues, func(s Settings, _ string) string { return s.Theme }, func(s *Settings, _, v string) { s.Theme = v }),
 	enumPref("gridCardSize", ScopeApp, GridCardMedium, gridCardValues, func(s Settings, _ string) string { return s.GridCardSize }, func(s *Settings, _, v string) { s.GridCardSize = v }),
 	ptrPref("showAuthorOnCards", ScopeApp, true, func(s Settings, _ string) *bool { return s.ShowAuthorOnCards }, func(s *Settings, _ string, on bool) { s.ShowAuthorOnCards = &on }),
 	enumPref("reduceMotion", ScopeApp, ReduceMotionSystem, reduceMotionValues, func(s Settings, _ string) string { return s.ReduceMotion }, func(s *Settings, _, v string) { s.ReduceMotion = v }),

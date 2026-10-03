@@ -33,7 +33,7 @@ function InstallLog({ steps, installing }: { steps: string[]; installing: boolea
         flexDirection: 'column',
         gap: '4px',
         p: '12px 14px',
-        bgcolor: 'rgba(0,0,0,0.45)',
+        bgcolor: 'var(--mortar-overlay-45)',
         borderRadius: '6px',
         fontFamily: MONO,
         fontSize: 13,
@@ -51,7 +51,7 @@ function InstallLog({ steps, installing }: { steps: string[]; installing: boolea
               display: 'flex',
               alignItems: 'center',
               gap: 1,
-              color: done ? 'success.light' : '#fff',
+              color: done ? 'success.light' : 'var(--mortar-ink)',
             }}
           >
             {done ? <Check size={14} /> : <Ellipsis size={14} />}
@@ -119,8 +119,8 @@ function LaunchLine({
             minHeight: 44,
             px: 1.5,
             py: 0.75,
-            bgcolor: 'rgba(0,0,0,0.45)',
-            border: '1px solid rgba(255,255,255,0.15)',
+            bgcolor: 'var(--mortar-overlay-45)',
+            border: '1px solid var(--mortar-hairline-15)',
             borderRadius: '6px',
             fontFamily: MONO,
             fontSize: 13,

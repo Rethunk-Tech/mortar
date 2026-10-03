@@ -12,6 +12,7 @@ import { When } from '../i18n/When.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { CompatChip } from './CompatChip.tsx'
 import { useCustomCategories } from './customCategories.ts'
 import { useDetail } from './detail.ts'
 import {
@@ -175,6 +176,7 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string) {
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
             <PinBadge mod={m} />
+            <CompatChip mod={m} />
             <ProblemBadge mod={m} />
             <NexusGoneBadge mod={m} />
             <UpdateBadge mod={m} />
@@ -272,7 +274,7 @@ function ModRow({
           if (marked) {
             return alpha(th.palette.primary.main, SELECTED_ALPHA)
           }
-          return striped ? 'rgba(255,255,255,0.03)' : 'transparent'
+          return striped ? 'var(--mortar-hairline-ghost)' : 'transparent'
         },
       }}
     >

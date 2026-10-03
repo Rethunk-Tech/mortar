@@ -7,7 +7,7 @@ import { Doctor } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 
-const detail = { color: 'rgba(235,235,240,0.95)' }
+const detail = { color: 'var(--mortar-ink-soft)' }
 
 function diagnosticKind(id: string): string {
   const cut = id.indexOf(':')

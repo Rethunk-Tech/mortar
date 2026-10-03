@@ -148,6 +148,15 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
         { value: 'compact', label: i18n._(msg`Compact`) },
       ],
     },
+    theme: {
+      label: i18n._(msg`Theme`),
+      description: i18n._(msg`App chrome. Follow system uses the OS colour scheme.`),
+      options: [
+        { value: 'dark', label: i18n._(msg`Dark`) },
+        { value: 'light', label: i18n._(msg`Light`) },
+        { value: 'system', label: i18n._(msg`Follow system`) },
+      ],
+    },
     reduceMotion: {
       label: i18n._(msg`Reduce motion`),
       description: i18n._(msg`Shorter animations. Honour the OS unless you override it.`),

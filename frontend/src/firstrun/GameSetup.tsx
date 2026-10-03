@@ -51,7 +51,7 @@ function StepChip({
           ({
             done: 'rgba(12,223,100,0.18)',
             current: theme.palette.primary.main,
-            todo: 'rgba(255,255,255,0.1)',
+            todo: 'var(--mortar-hairline)',
           })[state],
         color: (theme) =>
           ({

@@ -28,7 +28,7 @@ export function SettingsNav({
         gap: '2px',
         px: 1,
         py: 2,
-        bgcolor: 'rgba(30,30,36,0.8)',
+        bgcolor: 'var(--mortar-nav)',
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pb: 1.25 }}>
@@ -65,9 +65,9 @@ export function SettingsNav({
               fontWeight: active ? ACTIVE_WEIGHT : 'normal',
               fontFamily: 'inherit',
               whiteSpace: 'nowrap',
-              bgcolor: active ? 'rgba(255,255,255,0.12)' : 'transparent',
-              color: active ? '#ffffff' : 'rgba(225,225,230,0.95)',
-              '&:hover': { bgcolor: active ? 'rgba(255,255,255,0.12)' : 'action.hover' },
+              bgcolor: active ? 'var(--mortar-hairline-12)' : 'transparent',
+              color: active ? 'var(--mortar-ink)' : 'var(--mortar-ink-sec)',
+              '&:hover': { bgcolor: active ? 'var(--mortar-hairline-12)' : 'action.hover' },
             }}
           >
             {s.label}

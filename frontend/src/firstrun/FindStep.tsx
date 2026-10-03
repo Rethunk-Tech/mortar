@@ -15,7 +15,7 @@ import { errorMessage } from '../toasts/report.ts'
 import { Panel } from './Panel.tsx'
 import { useRefreshOnFocus } from './useRefreshOnFocus.ts'
 
-const shadow = '0 1px 2px rgba(0,0,0,0.9), 0 0 18px rgba(0,0,0,0.85)'
+const shadow = '0 1px 2px var(--mortar-overlay-90), 0 0 18px var(--mortar-overlay-85)'
 // The art is dimmed until the game is found.
 const artOpacity = { found: 0.8, missing: 0.4 }
 

@@ -1,10 +1,12 @@
 import { alpha, createTheme, responsiveFontSizes, type Theme } from '@mui/material/styles'
 import { compact } from '../game/compact.ts'
 import { type AccentName, accents } from './accents.ts'
+import { mortarPalette, surfaceCssVars, surfaces, type ThemeMode } from './palette.ts'
 
 const THUMB_ALPHA = 0.45
 const THUMB_HOVER_ALPHA = 0.7
-const TRACK_ALPHA = 0.08
+const TRACK_ALPHA_DARK = 0.08
+const TRACK_ALPHA_LIGHT = 0.16
 const FONT = '"Open Sans", sans-serif'
 const HTML_FONT_SIZE = 18
 const HTML_FONT_SIZE_COMPACT = 16
@@ -33,15 +35,18 @@ const REDUCE_MOTION_MS = '0.01ms'
 const UNDERLINE_OFFSET_EM = '0.15em'
 const REDUCE_MOTION_ITERATIONS = '1'
 
-function baselineCss(main: string, reduceMotion: boolean) {
+function baselineCss(main: string, reduceMotion: boolean, mode: ThemeMode) {
+  const trackAlpha = mode === 'light' ? TRACK_ALPHA_LIGHT : TRACK_ALPHA_DARK
   return {
     ':root': {
       '--title-bar': `${TITLE_BAR_PX}px`,
+      ...surfaceCssVars(mode),
+      colorScheme: mode,
       [compact]: { '--title-bar': `${TITLE_BAR_COMPACT_PX}px` },
     },
     '*': {
       scrollbarWidth: 'thin',
-      scrollbarColor: `${alpha(main, THUMB_ALPHA)} ${alpha(main, TRACK_ALPHA)}`,
+      scrollbarColor: `${alpha(main, THUMB_ALPHA)} ${alpha(main, trackAlpha)}`,
       ...(reduceMotion
         ? {
             animationDuration: `${REDUCE_MOTION_MS} !important`,
@@ -51,7 +56,7 @@ function baselineCss(main: string, reduceMotion: boolean) {
         : {}),
     },
     '*::-webkit-scrollbar': { width: SCROLL_EM, height: SCROLL_EM },
-    '*::-webkit-scrollbar-track': { background: alpha(main, TRACK_ALPHA) },
+    '*::-webkit-scrollbar-track': { background: alpha(main, trackAlpha) },
     '*::-webkit-scrollbar-thumb': {
       background: alpha(main, THUMB_ALPHA),
       borderRadius: THUMB_RADIUS_EM,
@@ -66,21 +71,24 @@ function baselineCss(main: string, reduceMotion: boolean) {
 
 export function createMortarTheme(
   accent: AccentName,
-  opts: { compact?: boolean; reduceMotion?: boolean } = {},
+  opts: { compact?: boolean; reduceMotion?: boolean; mode?: ThemeMode } = {},
 ): Theme {
   const main = accents[accent]
   const compactUi = opts.compact === true
   const reduceMotion = opts.reduceMotion === true
+  const mode: ThemeMode = opts.mode === 'light' ? 'light' : 'dark'
+  const pal = mortarPalette(mode, main)
+  const s = surfaces(mode)
   const theme = createTheme({
     palette: {
-      mode: 'dark',
-      background: { default: 'rgba(25,25,30,0.80)', paper: 'rgba(50,50,60,0.80)' },
-      text: { primary: 'rgba(255,255,255,0.90)', secondary: 'rgba(225,225,230,0.95)' },
-      primary: { main, contrastText: '#1b1a17' },
-      info: { main: '#2B8BDA' },
-      success: { main: '#0CDF64' },
-      warning: { main: '#F3B416' },
-      error: { main: '#C70A0A' },
+      mode,
+      background: pal.background,
+      text: pal.text,
+      primary: pal.primary,
+      info: pal.info,
+      success: pal.success,
+      warning: pal.warning,
+      error: pal.error,
     },
     typography: {
       fontFamily: FONT,
@@ -88,28 +96,26 @@ export function createMortarTheme(
     },
     components: {
       MuiCssBaseline: {
-        styleOverrides: baselineCss(main, reduceMotion),
+        styleOverrides: baselineCss(pal.primaryMain, reduceMotion, mode),
       },
       MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
       MuiDialog: {
         defaultProps: { transitionDuration: 0 },
-        styleOverrides: { paper: { backgroundColor: 'rgb(40,40,48)' } },
+        styleOverrides: { paper: { backgroundColor: s.panelSolid } },
       },
       MuiBackdrop: {
         defaultProps: { transitionDuration: 0 },
         styleOverrides: {
           root: {
-            variants: [
-              { props: { invisible: false }, style: { backgroundColor: 'rgba(0,0,0,0.3)' } },
-            ],
+            variants: [{ props: { invisible: false }, style: { backgroundColor: s.overlay30 } }],
           },
         },
       },
       MuiMenu: {
         styleOverrides: {
           paper: {
-            backgroundColor: 'rgba(28,28,34,0.99)',
-            border: '1px solid rgba(255,255,255,0.14)',
+            backgroundColor: s.menu,
+            border: `1px solid ${s.hairline14}`,
             borderRadius: MENU_RADIUS_PX,
           },
         },
@@ -144,11 +150,11 @@ export function createMortarTheme(
           {
             props: { variant: 'outlined', color: 'primary' },
             style: {
-              color: '#ffffff',
-              borderColor: 'rgba(255,255,255,0.22)',
+              color: s.ink,
+              borderColor: s.hairline22,
               '&:hover': {
-                borderColor: 'rgba(255,255,255,0.4)',
-                backgroundColor: 'rgba(255,255,255,0.06)',
+                borderColor: s.hairline40,
+                backgroundColor: s.hairlineFaint,
               },
             },
           },
@@ -158,11 +164,11 @@ export function createMortarTheme(
       MuiLink: {
         styleOverrides: {
           root: {
-            color: 'rgba(225,225,230,0.95)',
+            color: s.inkSec,
             textDecoration: 'underline dotted',
             textUnderlineOffset: UNDERLINE_OFFSET_EM,
             '&:hover, &:focus-visible': {
-              color: 'rgba(255,255,255,0.90)',
+              color: s.ink90,
               textDecoration: 'underline solid',
             },
           },
@@ -172,7 +178,7 @@ export function createMortarTheme(
         styleOverrides: {
           root: {
             '&.Mui-focusVisible': {
-              outline: `${FOCUS_OUTLINE_PX}px solid ${main}`,
+              outline: `${FOCUS_OUTLINE_PX}px solid ${pal.primaryMain}`,
               outlineOffset: FOCUS_OUTLINE_PX,
             },
           },

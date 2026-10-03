@@ -33,7 +33,7 @@ function CopyDetail({ text }: { text: string }) {
         gap: '4px',
         fontSize: 12,
         fontFamily: 'inherit',
-        color: 'rgba(235,235,240,0.95)',
+        color: 'var(--mortar-ink-soft)',
         textDecoration: 'underline',
       }}
     >
@@ -76,8 +76,8 @@ function ToastCard({ toast }: { toast: Toast }) {
         gap: '12px',
         minHeight: 60,
         p: '8px 8px 8px 12px',
-        bgcolor: 'rgba(30,30,36,0.98)',
-        border: '1px solid rgba(255,255,255,0.12)',
+        bgcolor: 'var(--mortar-toast)',
+        border: '1px solid var(--mortar-hairline-12)',
         borderLeft: '4px solid',
         borderLeftColor: edge[toast.kind],
         borderRadius: '8px',
@@ -91,7 +91,7 @@ function ToastCard({ toast }: { toast: Toast }) {
           {toast.title}
         </Box>
         {toast.body ? (
-          <Box component="span" sx={{ fontSize: 13, color: 'rgba(235,235,240,0.95)' }}>
+          <Box component="span" sx={{ fontSize: 13, color: 'var(--mortar-ink-soft)' }}>
             {toast.body}
           </Box>
         ) : null}
@@ -104,7 +104,7 @@ function ToastCard({ toast }: { toast: Toast }) {
               fontSize: 12,
               fontFamily: 'inherit',
               whiteSpace: 'pre-wrap',
-              color: 'rgba(235,235,240,0.95)',
+              color: 'var(--mortar-ink-soft)',
             }}
           >
             {toast.detail}
@@ -121,9 +121,9 @@ function ToastCard({ toast }: { toast: Toast }) {
             height: 34,
             px: '12px',
             mt: '4px',
-            bgcolor: 'rgba(255,255,255,0.1)',
+            bgcolor: 'var(--mortar-hairline)',
             borderRadius: '6px',
-            color: '#ffffff',
+            color: 'var(--mortar-ink)',
             fontSize: 13,
             fontWeight: 600,
             fontFamily: 'inherit',
@@ -144,9 +144,9 @@ function ToastCard({ toast }: { toast: Toast }) {
               sx={{
                 height: 34,
                 px: '12px',
-                bgcolor: 'rgba(255,255,255,0.1)',
+                bgcolor: 'var(--mortar-hairline)',
                 borderRadius: '6px',
-                color: '#ffffff',
+                color: 'var(--mortar-ink)',
                 fontSize: 13,
                 fontWeight: 600,
                 fontFamily: 'inherit',
@@ -161,7 +161,7 @@ function ToastCard({ toast }: { toast: Toast }) {
       <IconButton
         aria-label={t`Dismiss`}
         onClick={() => dismiss(toast.id)}
-        sx={{ width: 32, height: 32, color: 'rgba(235,235,240,0.95)' }}
+        sx={{ width: 32, height: 32, color: 'var(--mortar-ink-soft)' }}
       >
         <X size={14} />
       </IconButton>

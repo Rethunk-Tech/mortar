@@ -123,7 +123,7 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
                     imageRendering: 'pixelated',
                     maxWidth: 128,
                     maxHeight: 128,
-                    border: '1px solid rgba(255,255,255,0.2)',
+                    border: '1px solid var(--mortar-hairline-20)',
                   }}
                 />
               </Box>

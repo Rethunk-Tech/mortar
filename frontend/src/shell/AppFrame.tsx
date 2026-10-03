@@ -7,7 +7,7 @@ import { useSettings } from '../settings/store.ts'
 import { TitleBar } from './TitleBar.tsx'
 import { win } from './win.ts'
 
-const TINT = 'rgba(25,25,30,0.8)'
+const TINT = 'var(--mortar-tint)'
 
 export function AppFrame({ children }: { children: ReactNode }) {
   const [maximised, setMaximised] = useState(false)
@@ -31,7 +31,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
         flexDirection: 'column',
         overflow: 'hidden',
         boxSizing: 'border-box',
-        border: maximised ? 0 : '1px solid rgba(255,255,255,0.12)',
+        border: maximised ? 0 : '1px solid var(--mortar-hairline-12)',
         borderRadius: maximised ? 0 : '10px',
         userSelect: 'none',
       }}

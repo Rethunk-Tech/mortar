@@ -31,7 +31,7 @@ function Tab({
         [compact]: { fontSize: 14 },
         fontFamily: 'inherit',
         whiteSpace: 'nowrap',
-        color: active ? '#ffffff' : 'rgba(210,210,215,0.92)',
+        color: active ? 'var(--mortar-ink)' : 'var(--mortar-ink-dim-92)',
         borderBottom: '2px solid',
         borderColor: active ? 'primary.main' : 'transparent',
       }}
@@ -60,8 +60,8 @@ function WindowButton({
         ...noDrag,
         width: 46,
         [compact]: { width: 40 },
-        color: 'rgba(255,255,255,0.85)',
-        '&:hover': { bgcolor: danger ? 'error.main' : 'rgba(255,255,255,0.1)' },
+        color: 'var(--mortar-ink-85)',
+        '&:hover': { bgcolor: danger ? 'error.main' : 'var(--mortar-hairline)' },
       }}
     >
       {children}

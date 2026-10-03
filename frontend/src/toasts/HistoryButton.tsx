@@ -107,9 +107,9 @@ function HistoryPopover({
             width: 360,
             maxWidth: 'calc(100vw - 32px)',
             maxHeight: 440,
-            bgcolor: 'rgb(40,40,48)',
+            bgcolor: 'var(--mortar-panel-solid)',
             backgroundImage: 'none',
-            border: '1px solid rgba(255,255,255,0.12)',
+            border: '1px solid var(--mortar-hairline-12)',
             borderRadius: '8px',
           },
         },
@@ -121,7 +121,7 @@ function HistoryPopover({
           alignItems: 'center',
           px: 1.5,
           py: 1,
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          borderBottom: '1px solid var(--mortar-hairline-muted)',
         }}
       >
         <Typography sx={{ flex: 1, fontSize: 13, fontWeight: 700 }}>{t`Notifications`}</Typography>

@@ -117,7 +117,7 @@ export function DataFolderCard({
         alignItems: 'center',
         gap: 1.5,
         p: '14px',
-        bgcolor: 'rgba(55,55,65,0.9)',
+        bgcolor: 'var(--mortar-raised)',
         borderRadius: '6px',
       }}
     >

@@ -18,7 +18,7 @@ import { type Tab as TabId, useImportFlow } from './useImportFlow.ts'
 const dialogSx = {
   ...paper.sx,
   bgcolor: 'rgb(34,34,40)',
-  border: '1px solid rgba(255,255,255,0.1)',
+  border: '1px solid var(--mortar-hairline)',
   width: 'min(1180px, calc(100% - 72px))',
   maxHeight: 'none',
   overflow: 'hidden',
@@ -164,7 +164,7 @@ function Body({ request }: { request: ImportRequest }) {
           alignItems: 'stretch',
           height: 46,
           flexShrink: 0,
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          borderBottom: '1px solid var(--mortar-hairline)',
         }}
       >
         <Typography
@@ -229,7 +229,7 @@ function Body({ request }: { request: ImportRequest }) {
               minHeight: 0,
               overflowY: 'auto',
               p: 1,
-              bgcolor: 'rgba(0,0,0,0.2)',
+              bgcolor: 'var(--mortar-overlay-20)',
             }}
           >
             {flow.external?.missing && flow.external.missing.length > 0 ? (

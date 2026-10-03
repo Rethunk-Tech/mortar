@@ -5,6 +5,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import { useNow } from '../i18n/useNow.ts'
 import { download } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { mergeCachedDetails } from './changelogRange.ts'
@@ -13,6 +14,7 @@ import { useNexusDetails } from './nexusDetails.ts'
 import { paper } from './paper.ts'
 import { useMods } from './store.ts'
 import { DIALOG_WIDTH } from './updateReview/constants.ts'
+import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
 import { loadAllDetails } from './updateReview/loadAll.ts'
 import { PropagateUpdate } from './updateReview/PropagateUpdate.tsx'
 import { ReviewFooter } from './updateReview/ReviewFooter.tsx'
@@ -28,6 +30,7 @@ export function UpdateBar() {
 
 export function UpdateReview({ profile }: { profile: Profile }) {
   const signedIn = useNexus((s) => s.signedIn)
+  const gameId = useProfiles((s) => s.game?.id ?? '')
   const open = useUpdates((s) => s.reviewing)
   const updates = useUpdates((s) => s.updates)
   const checkedAt = useUpdates((s) => s.checkedAt)
@@ -43,7 +46,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   const [firstPropagating] = propagating
   const [include, setInclude] = useState<Record<string, boolean>>({})
   const [propagateAll, setPropagateAll] = useState(false)
-  const [loadingAll, setLoadingAll] = useState(false)
+  const [everywhereAll, setEverywhereAll] = useState(false)
   useEffect(() => {
     if (!open) {
       return
@@ -82,7 +85,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
         checkedLabel={checkedWithSmapi(checkedAt, now, updates?.unknown === true)}
         onClose={close}
       />
-      <DialogContent sx={{ p: 0, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+      <DialogContent sx={{ p: 0, borderTop: '1px solid var(--mortar-hairline-muted)' }}>
         <ReviewList
           list={list}
           profile={profile}
@@ -91,7 +94,6 @@ export function UpdateReview({ profile }: { profile: Profile }) {
           include={include}
           onAck={(id, on) => setAcked((prev) => ({ ...prev, [id]: on }))}
           onInclude={(id, on) => setInclude((prev) => ({ ...prev, [id]: on }))}
-          onPropagate={(u) => setPropagating([u])}
         />
       </DialogContent>
       <ReviewFooter
@@ -118,6 +120,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
             })
             .catch(reportUnexpected)
         }}
+        onEverywhere={() => setEverywhereAll(true)}
       />
       {firstPropagating ? (
         <PropagateUpdate
@@ -126,6 +129,14 @@ export function UpdateReview({ profile }: { profile: Profile }) {
           onDone={() => setPropagating((pending) => pending.slice(1))}
         />
       ) : null}
+      <EverywhereDialog
+        open={everywhereAll}
+        game={gameId}
+        mods={list
+          .filter((u) => wanted.some((w) => w.currentKey === u.key))
+          .map((u) => ({ id: u.uniqueId, newKey: 'latest' }))}
+        onClose={() => setEverywhereAll(false)}
+      />
     </Dialog>
   )
 }

@@ -109,7 +109,7 @@ function ModsBody({
             key={n}
             variant="rounded"
             height={ROW_HEIGHT}
-            sx={{ bgcolor: 'rgba(255,255,255,0.06)' }}
+            sx={{ bgcolor: 'var(--mortar-hairline-faint)' }}
           />
         ))}
       </Box>

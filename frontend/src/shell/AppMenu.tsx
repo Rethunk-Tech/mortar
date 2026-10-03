@@ -69,7 +69,7 @@ export function AppMenu() {
           [compact]: { pl: '11px', pr: '11px', '& .label': { display: 'none' } },
           fontFamily: 'inherit',
           color: 'inherit',
-          bgcolor: 'rgba(0,0,0,0.3)',
+          bgcolor: 'var(--mortar-overlay-30)',
         }}
       >
         <Logo size={20} />
@@ -87,7 +87,7 @@ export function AppMenu() {
               width: 280,
               top: 'var(--title-bar)',
               height: 'calc(100% - var(--title-bar))',
-              bgcolor: 'rgba(40,40,48,0.92)',
+              bgcolor: 'var(--mortar-panel-92)',
             },
           },
         }}

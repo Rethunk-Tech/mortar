@@ -218,7 +218,7 @@ function AppearancePickers({
                 width: 36,
                 height: 36,
                 borderRadius: '6px',
-                bgcolor: icon === name ? 'rgba(255,255,255,0.12)' : 'transparent',
+                bgcolor: icon === name ? 'var(--mortar-hairline-12)' : 'transparent',
               }}
             >
               <ProfileMark profile={{ ...profile, color, icon: name }} size={28} />

@@ -12,6 +12,7 @@ export function ReviewFooter({
   onLoadAll,
   onPropagate,
   onUpdate,
+  onEverywhere,
 }: {
   wantedCount: number
   signedIn: boolean
@@ -22,10 +23,11 @@ export function ReviewFooter({
   onLoadAll: () => void
   onPropagate: (on: boolean) => void
   onUpdate: () => void
+  onEverywhere: () => void
 }) {
   const { t } = useLingui()
   return (
-    <DialogActions sx={{ px: 3, py: 2, gap: 1.5, bgcolor: 'rgba(0,0,0,0.2)' }}>
+    <DialogActions sx={{ px: 3, py: 2, gap: 1.5, bgcolor: 'var(--mortar-overlay-20)' }}>
       <Box sx={{ color: '#a3d3f7', display: 'flex' }}>
         <ShieldCheck size={18} aria-hidden={true} />
       </Box>
@@ -64,6 +66,11 @@ export function ReviewFooter({
       {wantedCount > 0 ? (
         <Button variant="contained" onClick={onUpdate} sx={{ whiteSpace: 'nowrap' }}>
           {t`Update ${wantedCount}`}
+        </Button>
+      ) : null}
+      {wantedCount > 0 ? (
+        <Button variant="outlined" onClick={onEverywhere} sx={{ whiteSpace: 'nowrap' }}>
+          {t`Update all everywhere`}
         </Button>
       ) : null}
     </DialogActions>

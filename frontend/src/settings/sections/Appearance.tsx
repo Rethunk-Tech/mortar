@@ -25,6 +25,8 @@ import { availableLocales } from '../../i18n/locales.ts'
 import { type AccentName, accents } from '../../theme/accents.ts'
 import { errorText } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { PrefKeys } from '../PrefRow.tsx'
+import { SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { isAccent } from '../theme.ts'
 
@@ -69,6 +71,9 @@ export function Appearance() {
           <FormHelperText>{t`More languages are coming.`}</FormHelperText>
         ) : null}
       </FormControl>
+      <SettingsSection title={t`Theme`} prefKeys={['theme']}>
+        <PrefKeys keys={['theme']} />
+      </SettingsSection>
       <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Accent colour`}</Box>
       <Box
         role="radiogroup"
@@ -91,11 +96,11 @@ export function Appearance() {
                 alignItems: 'flex-start',
                 gap: '10px',
                 p: '12px',
-                bgcolor: 'rgba(55,55,65,0.9)',
+                bgcolor: 'var(--mortar-raised)',
                 border: '2px solid',
-                borderColor: checked ? '#ffffff' : 'transparent',
+                borderColor: checked ? 'var(--mortar-ink)' : 'transparent',
                 borderRadius: '8px',
-                color: '#ffffff',
+                color: 'var(--mortar-ink)',
                 textAlign: 'left',
                 fontFamily: 'inherit',
               }}
@@ -106,7 +111,7 @@ export function Appearance() {
               <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
                 {card.label}
               </Box>
-              <Box component="span" sx={{ fontSize: 12, color: 'rgba(225,225,230,0.95)' }}>
+              <Box component="span" sx={{ fontSize: 12, color: 'var(--mortar-ink-sec)' }}>
                 {card.note}
               </Box>
             </ButtonBase>
@@ -119,7 +124,7 @@ export function Appearance() {
           alignItems: 'center',
           gap: '12px',
           p: '14px',
-          bgcolor: 'rgba(0,0,0,0.25)',
+          bgcolor: 'var(--mortar-overlay-25)',
           borderRadius: '8px',
         }}
       >
@@ -139,7 +144,7 @@ export function Appearance() {
         </Box>
         <Box
           component="span"
-          sx={{ flexGrow: 1, textAlign: 'right', fontSize: 13, color: 'rgba(225,225,230,0.95)' }}
+          sx={{ flexGrow: 1, textAlign: 'right', fontSize: 13, color: 'var(--mortar-ink-sec)' }}
         >
           {t`Changes apply right away`}
         </Box>

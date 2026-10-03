@@ -9,6 +9,7 @@ import { compact, compactQuery } from '../game/compact.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { CompatChip } from './CompatChip.tsx'
 import { useCustomCategories } from './customCategories.ts'
 import { useDetail } from './detail.ts'
 import {
@@ -66,7 +67,7 @@ const NAME_WEIGHT = 600
 const META_FONT_PX = 12
 const TAG_MAX_PX = 96
 const LANE_GAP_PX = '6px'
-const DIVIDER = '1px solid rgba(255,255,255,0.12)'
+const DIVIDER = '1px solid var(--mortar-hairline-12)'
 
 function cardHeightPx(size: string): number {
   if (size === 'large') {
@@ -175,6 +176,7 @@ function ModCard({
         </Box>
       </ButtonBase>
       <PinBadge mod={m} />
+      <CompatChip mod={m} />
       <UpdateBadge mod={m} />
       <NexusGoneBadge mod={m} />
       <ProblemBadge mod={m} />

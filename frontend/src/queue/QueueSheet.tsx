@@ -114,7 +114,7 @@ function Header({
           mx: 2.5,
           borderRadius: '3px',
           overflow: 'hidden',
-          bgcolor: 'rgba(255,255,255,0.1)',
+          bgcolor: 'var(--mortar-hairline)',
         }}
       >
         <Box sx={{ width: `${sum.doneShare}%`, bgcolor: GREEN }} />
@@ -184,7 +184,7 @@ export function QueueSheet() {
             top: 'var(--title-bar)',
             height: 'calc(100% - var(--title-bar))',
             bgcolor: 'rgb(34,34,42)',
-            borderLeft: '1px solid rgba(255,255,255,0.12)',
+            borderLeft: '1px solid var(--mortar-hairline-12)',
           },
         },
         backdrop: { sx: { top: 'var(--title-bar)' } },

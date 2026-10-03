@@ -41,7 +41,7 @@ export function RowCopy({
             alignSelf: 'flex-start',
             px: 1,
             borderRadius: '10px',
-            bgcolor: 'rgba(255,255,255,0.08)',
+            bgcolor: 'var(--mortar-hairline-muted)',
             fontSize: 12,
           }}
         >

@@ -48,7 +48,6 @@ Not in the first release; re-weigh only when asked:
 - Windows code signing.
 - macOS, as Stardrop ships for x64 and arm64: needs an Apple developer account for signing and notarization, Mac Steam paths and nxm registration, and a Mac to test on.
 - More interface languages than English, as Stardrop (17+), MO2 and r2modman ship; every string already goes through Lingui (English only for v1).
-- A light theme, as in Stardrop and Vortex, built once the design system is revisited (MUI stays; Tailwind and shadcn were raised).
 - Portable mode: the data folder beside the executable, switched by a marker file (Move data folder exists).
 - Previewing an archive's file tree before installing it (the folder picker shows it only when no manifest is found).
 - Bottles as a launcher (Linux): games there are Windows builds in a Wine prefix, so it needs SMAPI's Windows installer run inside the bottle (`bottles-cli run -b <bottle> -e <installer>`) and launches through `bottles-cli run` with `--mods-path`; the Linux SMAPI install would break such a copy. Detection is simple: bottles under `~/.local/share/bottles/bottles` and `~/.var/app/com.usebottles.bottles/data/bottles/bottles`, each searched for `drive_c/Program Files (x86)/Steam` and GOG folders.

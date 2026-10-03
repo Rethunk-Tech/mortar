@@ -22,7 +22,7 @@ export function NexusMeter() {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: 14 }}>
       <Box>{t`${daily} requests left today · ${hourly} this hour`}</Box>
       {throttled ? (
-        <Box sx={{ color: 'rgba(225,225,230,0.95)' }}>
+        <Box sx={{ color: 'var(--mortar-ink-sec)' }}>
           {t`Nexus is throttling requests until the window resets.`}
         </Box>
       ) : null}

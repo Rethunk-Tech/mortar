@@ -49,6 +49,7 @@ type Portable struct {
 	NotifyDownloadFailed         *bool                    `json:"notifyDownloadFailed"`
 	NotifyRunCrashed             *bool                    `json:"notifyRunCrashed"`
 	Density                      string                   `json:"density"`
+	Theme                        string                   `json:"theme"`
 	GridCardSize                 string                   `json:"gridCardSize"`
 	ShowAuthorOnCards            *bool                    `json:"showAuthorOnCards"`
 	ReduceMotion                 string                   `json:"reduceMotion"`
@@ -332,6 +333,7 @@ func fillPortable(s Settings) Portable {
 		NotifyDownloadFailed:         s.NotifyDownloadFailed,
 		NotifyRunCrashed:             s.NotifyRunCrashed,
 		Density:                      s.Density,
+		Theme:                        s.Theme,
 		GridCardSize:                 s.GridCardSize,
 		ShowAuthorOnCards:            s.ShowAuthorOnCards,
 		ReduceMotion:                 s.ReduceMotion,
@@ -468,6 +470,7 @@ func copyPortable(dst *Settings, p Portable, present map[string]struct{}) {
 	}
 	if has(present, "density") {
 		dst.Density = p.Density
+		dst.Theme = p.Theme
 	}
 	if has(present, "gridCardSize") {
 		dst.GridCardSize = p.GridCardSize

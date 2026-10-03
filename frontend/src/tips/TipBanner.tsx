@@ -25,8 +25,8 @@ export function TipBanner({ tip, children }: { tip: TipId; children: ReactNode }
         py: 1,
         mx: 2,
         mt: 1.25,
-        bgcolor: 'rgb(40,40,48)',
-        border: '1px solid rgba(255,255,255,0.12)',
+        bgcolor: 'var(--mortar-panel-solid)',
+        border: '1px solid var(--mortar-hairline-12)',
         borderRadius: '8px',
       }}
     >

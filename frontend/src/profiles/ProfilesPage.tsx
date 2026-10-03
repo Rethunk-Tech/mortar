@@ -84,7 +84,7 @@ function TrashRow({ item }: { item: TrashItem }) {
         py: 1,
         pl: 1.5,
         pr: 0.5,
-        bgcolor: 'rgba(55,55,65,0.9)',
+        bgcolor: 'var(--mortar-raised)',
         borderRadius: '6px',
       }}
     >
@@ -160,7 +160,7 @@ function Damaged() {
             py: 1,
             pl: 1.5,
             pr: 0.5,
-            bgcolor: 'rgba(55,55,65,0.9)',
+            bgcolor: 'var(--mortar-raised)',
             borderRadius: '6px',
           }}
         >
@@ -230,7 +230,7 @@ function Trash() {
         flexDirection: 'column',
         gap: 1.25,
         p: 2,
-        bgcolor: 'rgba(40,40,48,0.78)',
+        bgcolor: 'var(--mortar-panel)',
         borderRadius: '8px',
       }}
     >

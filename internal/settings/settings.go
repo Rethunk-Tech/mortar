@@ -144,6 +144,7 @@ type Settings struct {
 	NotifyDownloadFailed       *bool  `json:"notifyDownloadFailed"`
 	NotifyRunCrashed           *bool  `json:"notifyRunCrashed"`
 	Density                    string `json:"density"`
+	Theme                      string `json:"theme"`
 	GridCardSize               string `json:"gridCardSize"`
 	ShowAuthorOnCards          *bool  `json:"showAuthorOnCards"`
 	ReduceMotion               string `json:"reduceMotion"`

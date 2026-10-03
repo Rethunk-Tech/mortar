@@ -43,7 +43,7 @@ export function ShareShell({
           sx: {
             ...paper.sx,
             bgcolor: 'rgb(36,36,44)',
-            border: '1px solid rgba(255,255,255,0.12)',
+            border: '1px solid var(--mortar-hairline-12)',
             width: 'min(980px, calc(100% - 48px))',
             height: 'min(620px, calc(100% - 48px))',
             overflow: 'hidden',

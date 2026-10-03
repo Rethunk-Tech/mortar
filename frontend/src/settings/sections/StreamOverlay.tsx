@@ -178,7 +178,7 @@ function OverlayValues({
             flexGrow: 1,
             minWidth: 0,
             fontSize: 13,
-            color: 'rgba(225,225,230,0.95)',
+            color: 'var(--mortar-ink-sec)',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
@@ -230,7 +230,7 @@ function OverlayHowTo({
   const { t } = useLingui()
   const [done, setDone] = useState(false)
   return (
-    <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
+    <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
       {t`In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS.`}
       <Button
         variant="text"
@@ -452,7 +452,7 @@ export function StreamOverlay() {
         flexDirection: 'column',
         gap: 1.5,
         p: '14px',
-        bgcolor: 'rgba(55,55,65,0.9)',
+        bgcolor: 'var(--mortar-raised)',
         borderRadius: '6px',
       }}
     >
@@ -461,7 +461,7 @@ export function StreamOverlay() {
           sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}
         >
           <Box sx={{ fontSize: 15, fontWeight: 600 }}>{t`Stream overlay`}</Box>
-          <Box sx={{ fontSize: 13, color: 'rgba(225,225,230,0.95)' }}>
+          <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
             {t`Show live game info in OBS. Changes apply the next time you press Play.`}
           </Box>
         </Box>

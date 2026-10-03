@@ -82,7 +82,7 @@ function RecentRow({
         gap: 1,
         px: 1.5,
         py: 1,
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        borderBottom: '1px solid var(--mortar-hairline-faint)',
       }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -188,9 +188,9 @@ function RecentPanel({
             width: 400,
             maxWidth: 'calc(100vw - 32px)',
             maxHeight: 440,
-            bgcolor: 'rgb(40,40,48)',
+            bgcolor: 'var(--mortar-panel-solid)',
             backgroundImage: 'none',
-            border: '1px solid rgba(255,255,255,0.12)',
+            border: '1px solid var(--mortar-hairline-12)',
             borderRadius: '8px',
           },
         },
@@ -202,7 +202,7 @@ function RecentPanel({
           alignItems: 'center',
           px: 1.5,
           py: 1,
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          borderBottom: '1px solid var(--mortar-hairline-muted)',
         }}
       >
         <Typography sx={{ flex: 1, fontSize: 13, fontWeight: 700 }}>{t`Recent changes`}</Typography>
@@ -229,7 +229,7 @@ function RecentPanel({
         <RecentList loaded={loaded} shown={shown} busy={busy} onUndo={onUndo} />
       </Box>
       {errorText !== '' && (
-        <Box sx={{ px: 1.5, py: 1, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        <Box sx={{ px: 1.5, py: 1, borderTop: '1px solid var(--mortar-hairline-muted)' }}>
           <Typography sx={{ fontSize: 13, color: 'error.main' }}>{errorText}</Typography>
           {missingEvent !== '' && missingWants.length > 0 && (
             <Button

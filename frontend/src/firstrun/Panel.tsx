@@ -10,7 +10,7 @@ export function Panel({ children, width = 680 }: { children: ReactNode; width?: 
         flexDirection: 'column',
         gap: '16px',
         p: '24px',
-        bgcolor: 'rgba(50,50,60,0.78)',
+        bgcolor: 'var(--mortar-paper-78)',
         borderRadius: '8px',
         flexShrink: 0,
       }}

@@ -47,12 +47,12 @@ export function LauncherLogo({ id, size }: { id: string; size: number }) {
     return null
   }
   if (!FLATPAK.has(id)) {
-    return <Mark path={icon.path} size={size} fill="#fff" />
+    return <Mark path={icon.path} size={size} fill="var(--mortar-ink)" />
   }
   const badge = Math.round(size * BADGE_SCALE)
   return (
     <Box sx={{ position: 'relative', width: size, height: size }}>
-      <Mark path={icon.path} size={size} fill="#fff" />
+      <Mark path={icon.path} size={size} fill="var(--mortar-ink)" />
       <Box
         sx={{
           position: 'absolute',

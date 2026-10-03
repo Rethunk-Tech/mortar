@@ -110,7 +110,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
             sx={{
               width: '100%',
               maxWidth: 760,
-              bgcolor: 'rgba(0,0,0,0.25)',
+              bgcolor: 'var(--mortar-overlay-25)',
               borderRadius: 1,
               p: 2,
             }}

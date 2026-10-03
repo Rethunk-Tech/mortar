@@ -65,7 +65,7 @@ function LevelToggles() {
         flexWrap: 'wrap',
         p: '3px',
         gap: '2px',
-        bgcolor: 'rgba(0,0,0,0.3)',
+        bgcolor: 'var(--mortar-overlay-30)',
         borderRadius: '8px',
       }}
     >
@@ -87,9 +87,11 @@ function LevelToggles() {
               borderRadius: '6px',
               fontSize: 13,
               whiteSpace: 'nowrap',
-              bgcolor: pressed ? 'rgba(255,255,255,0.14)' : 'transparent',
-              color: pressed ? '#ffffff' : 'rgba(210,210,215,0.85)',
-              '&:hover': { bgcolor: pressed ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)' },
+              bgcolor: pressed ? 'var(--mortar-hairline-14)' : 'transparent',
+              color: pressed ? 'var(--mortar-ink)' : 'var(--mortar-ink-dim)',
+              '&:hover': {
+                bgcolor: pressed ? 'var(--mortar-hairline-18)' : 'var(--mortar-hairline-muted)',
+              },
             }}
           >
             <Box sx={{ width: 8, height: 8, borderRadius: '4px', bgcolor: dots[level] }} />
@@ -118,7 +120,7 @@ function ModPicker() {
         color="inherit"
         endIcon={<ChevronDown size={12} />}
         onClick={(e) => setAnchor(e.currentTarget)}
-        sx={{ height: 34, borderColor: 'rgba(255,255,255,0.2)', color: '#ffffff' }}
+        sx={{ height: 34, borderColor: 'var(--mortar-hairline-20)', color: 'var(--mortar-ink)' }}
       >
         {t`Mods`}
       </Button>
@@ -166,10 +168,10 @@ function SearchBox() {
         gap: 1,
         height: 34,
         px: 1.25,
-        bgcolor: 'rgba(0,0,0,0.3)',
-        border: '1px solid rgba(255,255,255,0.15)',
+        bgcolor: 'var(--mortar-overlay-30)',
+        border: '1px solid var(--mortar-hairline-15)',
         borderRadius: '6px',
-        color: 'rgba(210,210,215,0.92)',
+        color: 'var(--mortar-ink-dim-92)',
       }}
     >
       <Search size={14} aria-hidden={true} />
@@ -185,7 +187,7 @@ function SearchBox() {
           minWidth: 0,
           bgcolor: 'transparent',
           border: 0,
-          color: '#ffffff',
+          color: 'var(--mortar-ink)',
           font: 'inherit',
           fontSize: 13,
           outline: 'none',
@@ -279,12 +281,12 @@ function CommandLine({ game }: { game: string }) {
         mb: 1.5,
         px: 1.5,
         flexShrink: 0,
-        bgcolor: 'rgba(0,0,0,0.5)',
-        border: '1px solid rgba(255,255,255,0.15)',
+        bgcolor: 'var(--mortar-overlay-50)',
+        border: '1px solid var(--mortar-hairline-15)',
         borderRadius: '6px',
         fontFamily: MONO,
         fontSize: 13,
-        color: running ? '#ffffff' : 'rgba(210,210,215,0.6)',
+        color: running ? 'var(--mortar-ink)' : 'var(--mortar-ink-dim-60)',
       }}
     >
       <span aria-hidden={true}>{'>'}</span>
@@ -508,7 +510,7 @@ export function ConsoleTab({ game }: { game: string }) {
               label={t`Mod: ${mod}`}
               onDelete={() => setMods(filters.mods.filter((m) => m !== mod))}
               deleteIcon={<X size={14} aria-label={t`Remove filter ${mod}`} />}
-              sx={{ bgcolor: 'rgba(255,255,255,0.1)', fontSize: 13 }}
+              sx={{ bgcolor: 'var(--mortar-hairline)', fontSize: 13 }}
             />
           ))}
           <Button

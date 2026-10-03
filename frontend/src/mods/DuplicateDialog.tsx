@@ -48,7 +48,7 @@ function CopyOption({ copy, dup, differ }: { copy: Copy; dup: Duplicate; differ:
         gap: 1.25,
         p: 2,
         cursor: 'pointer',
-        bgcolor: 'rgba(55,55,65,0.9)',
+        bgcolor: 'var(--mortar-raised)',
         border: '2px solid transparent',
         borderRadius: '8px',
         '&:has(input:checked)': { borderColor: 'primary.main' },

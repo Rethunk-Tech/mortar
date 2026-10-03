@@ -53,7 +53,7 @@ const scrim = {
   position: 'fixed',
   inset: 0,
   zIndex: 1200,
-  bgcolor: 'rgba(0,0,0,0.80)',
+  bgcolor: 'var(--mortar-overlay-80)',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -70,7 +70,7 @@ function Spinner() {
         value={FULL}
         size={SPINNER}
         thickness={SPINNER_THICKNESS}
-        sx={{ position: 'absolute', color: 'rgba(255,255,255,0.15)' }}
+        sx={{ position: 'absolute', color: 'var(--mortar-hairline-15)' }}
       />
       <CircularProgress size={SPINNER} thickness={SPINNER_THICKNESS} />
     </Box>
@@ -140,7 +140,7 @@ function Overlay({ game }: { game: string }) {
           minHeight: VISIBLE_LINES * LINE_HEIGHT + 2 * LOG_PAD,
           px: 1.75,
           py: 1.5,
-          bgcolor: 'rgba(0,0,0,0.55)',
+          bgcolor: 'var(--mortar-overlay-55)',
           fontFamily: 'monospace',
           fontSize: 13,
           lineHeight: `${LINE_HEIGHT}px`,
@@ -152,7 +152,10 @@ function Overlay({ game }: { game: string }) {
           <Typography
             key={line.seq}
             noWrap={true}
-            sx={{ font: 'inherit', color: i === shown.length - 1 ? '#ffffff' : 'inherit' }}
+            sx={{
+              font: 'inherit',
+              color: i === shown.length - 1 ? 'var(--mortar-ink)' : 'inherit',
+            }}
           >
             {format(line)}
           </Typography>
@@ -190,8 +193,8 @@ function LaunchLine({ line }: { line: string }) {
           alignItems: 'center',
           px: 1.5,
           py: 0.75,
-          bgcolor: 'rgba(0,0,0,0.45)',
-          border: '1px solid rgba(255,255,255,0.15)',
+          bgcolor: 'var(--mortar-overlay-45)',
+          border: '1px solid var(--mortar-hairline-15)',
           borderRadius: '6px',
           fontFamily: 'monospace',
           fontSize: 13,

@@ -138,7 +138,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
                       bgcolor: 'transparent',
                       textAlign: 'left',
                       cursor: 'pointer',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' },
+                      '&:hover': { bgcolor: 'var(--mortar-hairline-muted)' },
                     }}
                   >
                     <Typography

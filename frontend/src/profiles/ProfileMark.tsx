@@ -52,8 +52,8 @@ export function ProfileMark({ profile, size = 28 }: { profile: Profile; size?: n
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: hex ?? 'rgba(255,255,255,0.12)',
-        color: hex ? '#1b1a17' : 'rgba(255,255,255,0.88)',
+        bgcolor: hex ?? 'var(--mortar-hairline-12)',
+        color: hex ? '#1b1a17' : 'var(--mortar-ink-88)',
       }}
     >
       {Icon ? <Icon size={Math.round(size * ICON_SIZE)} /> : null}

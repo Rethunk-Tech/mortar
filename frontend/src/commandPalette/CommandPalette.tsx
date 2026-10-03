@@ -77,7 +77,7 @@ function PaletteRows({
           role="option"
           aria-selected={item.id === currentId}
         >
-          <ListItemIcon sx={{ minWidth: 32, color: 'rgba(225,225,230,0.95)' }}>
+          <ListItemIcon sx={{ minWidth: 32, color: 'var(--mortar-ink-sec)' }}>
             {iconFor(item)}
           </ListItemIcon>
           <ListItemText
@@ -86,7 +86,7 @@ function PaletteRows({
             slotProps={{ primary: { noWrap: true }, secondary: { noWrap: true } }}
           />
           {item.shortcut ? (
-            <kbd style={{ color: 'rgba(225,225,230,0.95)', fontSize: 12 }}>{item.shortcut}</kbd>
+            <kbd style={{ color: 'var(--mortar-ink-sec)', fontSize: 12 }}>{item.shortcut}</kbd>
           ) : null}
         </ListItemButton>
       ))}

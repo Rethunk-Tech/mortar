@@ -19,7 +19,7 @@ import { useProfiles } from './store.ts'
 import { joinSummary, knownCount, originLine } from './summary.ts'
 
 const DRAG_TINT_ALPHA = 0.24
-const panelSx = { bgcolor: 'rgba(50,50,60,0.78)', borderRadius: '6px' }
+const panelSx = { bgcolor: 'var(--mortar-paper-78)', borderRadius: '6px' }
 function RowMenu({
   profile,
   anchor,
@@ -195,7 +195,12 @@ export function ProfileRow({ profile }: { profile: Profile }) {
             {profile.hidden ? (
               <Box
                 component="span"
-                sx={{ px: 1, borderRadius: '10px', bgcolor: 'rgba(255,255,255,0.1)', fontSize: 12 }}
+                sx={{
+                  px: 1,
+                  borderRadius: '10px',
+                  bgcolor: 'var(--mortar-hairline)',
+                  fontSize: 12,
+                }}
               >
                 {t`Hidden`}
               </Box>
@@ -234,7 +239,7 @@ export function ProfileRow({ profile }: { profile: Profile }) {
             width: 40,
             height: 40,
             borderRadius: '6px',
-            bgcolor: anchor ? 'rgba(255,255,255,0.1)' : 'transparent',
+            bgcolor: anchor ? 'var(--mortar-hairline)' : 'transparent',
           }}
         >
           <MoreHorizontal size={18} />

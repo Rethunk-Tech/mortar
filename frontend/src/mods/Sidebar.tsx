@@ -463,7 +463,7 @@ export function ModSidebar({ profile }: { profile: Profile }) {
               width: 320,
               top: 'var(--title-bar)',
               height: 'calc(100% - var(--title-bar))',
-              bgcolor: 'rgba(40,40,48,0.92)',
+              bgcolor: 'var(--mortar-panel-92)',
             },
           },
         }}
@@ -484,7 +484,7 @@ export function ModSidebar({ profile }: { profile: Profile }) {
         width: 300,
         overflowY: 'auto',
         bgcolor: 'rgba(40,40,48,0.72)',
-        borderLeft: '1px solid rgba(255,255,255,0.1)',
+        borderLeft: '1px solid var(--mortar-hairline)',
       }}
     >
       <Inspector mod={selected} profile={profile} />
