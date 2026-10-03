@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/bundles"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
+	"github.com/Rethunk-AI/mortar/internal/dlwatch"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/logshare"
@@ -60,6 +61,7 @@ type Services struct {
 	Nexus       *nexussvc.Service
 	Shares      *sharesvc.Service
 	Data        *datasvc.Service
+	Downloads   *dlwatch.Service
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 }
@@ -490,6 +492,10 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, err
 		}
 		return s.Launches.Status(p.Game)
+	case "downloads":
+		return s.downloads()
+	case "downloads.install":
+		return s.downloadsInstall(p)
 	}
 	if method == "logs.search" {
 		prof, err := s.resolve(p.Game, p.Profile)

@@ -42,7 +42,8 @@ var verbs = map[string]bool{
 	"games": true, "profiles": true, "profile": true, "history": true, "mods": true, "mod": true, "install": true,
 	"conflicts": true, "problems": true, "updates": true, "share": true, "export": true, "open": true, "play": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
-	"bundles": true, "nexus": true, "trash": true, "cache": true, "data": true,
+	"downloads": true,
+	"bundles":   true, "nexus": true, "trash": true, "cache": true, "data": true,
 	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
@@ -306,6 +307,8 @@ func (c *cmd) dispatch() error {
 		return c.launchers()
 	case "queue":
 		return c.queue()
+	case "downloads":
+		return c.downloads()
 	case "update":
 		return c.update()
 	case "backups":
@@ -2054,6 +2057,8 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   queue                                   the download queue
   queue retry|skip [<id>]                 retry or skip queued downloads
   queue pause|resume|clear                control the download queue
+  downloads                               archives noticed in Downloads this session
+  downloads install <n>                   install one into the open profile
   update <game> <profile> <mod id>...|--all
                                           queue available mod updates
   backups list                            list save backups

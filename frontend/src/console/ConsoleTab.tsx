@@ -27,6 +27,7 @@ import { countByLevel, incompatibleSMAPI, isFiltered, LEVELS, modsOf } from './f
 import { stepHistory } from './history.ts'
 import { LinkedLog } from './LinkedLog.tsx'
 import { useShownEntries, useVisible } from './logHooks.ts'
+import { RunProblemsStrip } from './RunProblems.tsx'
 import { RunsPicker } from './RunsPicker.tsx'
 import { canSendTo, useConsole } from './store.ts'
 
@@ -522,6 +523,7 @@ export function ConsoleTab({ game }: { game: string }) {
         </Box>
       ) : null}
       <CauseBanner game={target.game} profile={target.profile} run={viewingRun} />
+      <RunProblemsStrip game={target.game} profile={target.profile} run={viewingRun} />
       {offerReinstall ? <ReinstallLoader game={game} /> : null}
       <LinkedLog
         game={game}
