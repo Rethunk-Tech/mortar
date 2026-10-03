@@ -9,6 +9,7 @@ const HISTORY_KINDS = new Set([
   'restored',
   'reverted',
   'bulk',
+  'good',
 ])
 
 /** "+3 −1 ~2" style summary of mod adds, removes, and updates for one history event. */

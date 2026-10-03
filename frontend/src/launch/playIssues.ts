@@ -168,7 +168,7 @@ async function gatherPlayIssues(game: string, profileId: string): Promise<PlayIs
       groups.push({
         kind: 'changes',
         count: names.length,
-        names: names.slice(0, 8),
+        names: names.slice(0, PLAY_ISSUE_NAME_CAP),
       })
     }
   } catch {

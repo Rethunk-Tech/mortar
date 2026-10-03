@@ -11,6 +11,7 @@ import { ModsTab } from '../mods/ModsTab.tsx'
 import { ProblemActions, ProblemsTab } from '../mods/ProblemsTab.tsx'
 import { useNav } from '../nav/store.ts'
 import { NotesTab } from '../notes/NotesTab.tsx'
+import { SinceLastRun } from '../profiles/SinceLastRun.tsx'
 import { SavesTab } from '../saves/SavesTab.tsx'
 import { openShare } from '../share/store.ts'
 import { usePasteLink } from '../share/usePasteLink.ts'
@@ -124,6 +125,7 @@ export function ProfileWorkspace({
   return (
     <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
       <Hero key={`hero-${profile.id}`} profile={profile} game={game} />
+      <SinceLastRun game={game} profileId={profile.id} />
       <Box
         sx={{
           display: 'flex',
