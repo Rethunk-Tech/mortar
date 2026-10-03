@@ -23,6 +23,8 @@ type Service struct {
 	modCache ModUsage
 	modFP    string
 	busy     []BusySource
+	// OnClearCache runs after ClearCache empties the cache folder, to drop copies held in memory.
+	OnClearCache func()
 	// Busy is true while the game is launching or running; nil means never busy.
 	Busy func() bool
 	// Restart starts Mortar again after a successful move; nil skips that in tests.
@@ -75,13 +77,20 @@ func (s *Service) CacheInfo() (CacheInfo, error) {
 	return CacheInfo{Path: cache, Size: dirSize(cache)}, nil
 }
 
-// ClearCache deletes the contents of the cache folder. Problem scans rebuild on the next check.
+// ClearCache deletes the contents of the cache folder (Nexus and SMAPI details, problem scans) and
+// what is held in memory from it; everything is fetched or rebuilt again when next needed.
 func (s *Service) ClearCache() error {
 	dir, err := datadir.Dir()
 	if err != nil {
 		return err
 	}
-	return clearCache(filepath.Join(dir, "cache"))
+	if err := clearCache(filepath.Join(dir, "cache")); err != nil {
+		return err
+	}
+	if s.OnClearCache != nil {
+		s.OnClearCache()
+	}
+	return nil
 }
 
 // ModUsage lists store items with sizes, cached until the store or profiles change.

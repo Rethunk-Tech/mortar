@@ -220,6 +220,21 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	return s.withDrift(gameID, id, s.withDismissed(gameID, id, r))
 }
 
+// ForgetCached drops every result and scan Mortar holds in memory, after the cache folder is cleared,
+// so the next check reads and fetches everything afresh.
+func (s *Service) ForgetCached() {
+	s.mu.Lock()
+	s.cache = map[string]cached{}
+	s.updates = map[string]cachedUpdates{}
+	s.mu.Unlock()
+	packDiskState.Lock()
+	packDiskState.loaded, packDiskState.entries, packDiskState.dirty = false, nil, false
+	packDiskState.Unlock()
+	mapScans.Lock()
+	mapScans.byPath = map[string]mapScan{}
+	mapScans.Unlock()
+}
+
 func (s *Service) withDrift(gameID, id string, r Result) (Result, error) {
 	if s.settings != nil && !s.settings.Get().DriftChecksOn() {
 		r.Drift = []profile.Drift{}

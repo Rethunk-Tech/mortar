@@ -197,7 +197,7 @@ function CacheClearDialog({
   return (
     <Dialog open={open} onClose={onClose} transitionDuration={0} slotProps={{ paper }}>
       <DialogTitle>{t`Clear cache`}</DialogTitle>
-      <DialogContent>{t`Problem scans rebuild the cache on the next check.`}</DialogContent>
+      <DialogContent>{t`Removes cached Nexus and SMAPI details and problem scans. Use it if an API key was revoked or the details look wrong. Mortar fetches them again as needed, so the next problem check takes longer.`}</DialogContent>
       <DialogActions>
         <Button onClick={onClose} sx={nowrap}>{t`Cancel`}</Button>
         <Button

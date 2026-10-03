@@ -84,7 +84,7 @@ msgstr "Auto-track installed mods"
 msgid "Leave the zip after it is installed into the store"
 msgstr "Leave the zip after it is installed into the store"
 
-#: src/mods/storeEntries.ts:77
+#: src/mods/storeEntries.ts:147
 msgid "Could not switch the selected mods"
 msgstr "Could not switch the selected mods"
 
@@ -143,8 +143,8 @@ msgstr "Stop the game to change mods."
 msgid "Mortar takes Stardew Valley links only."
 msgstr "Mortar takes Stardew Valley links only."
 
-#: src/mods/storeEntries.ts:120
-#: src/mods/storeEntries.ts:157
+#: src/mods/storeEntries.ts:64
+#: src/mods/storeEntries.ts:101
 #: src/profiles/historyRevert.ts:77
 msgid "That profile is gone."
 msgstr "That profile is gone."
@@ -1339,8 +1339,8 @@ msgstr "Compact"
 
 #: src/install/store.ts:158
 #: src/install/store.ts:219
-#: src/mods/storeEntries.ts:107
-#: src/mods/storeEntries.ts:144
+#: src/mods/storeEntries.ts:51
+#: src/mods/storeEntries.ts:88
 #: src/profiles/historyRevert.ts:69
 #: src/profiles/RecentChangesButton.tsx:53
 #: src/profiles/store.ts:192
@@ -1815,7 +1815,7 @@ msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
 
 #. placeholder {0}: entries.length
-#: src/mods/storeEntries.ts:142
+#: src/mods/storeEntries.ts:86
 msgid "Removed {0} mods"
 msgstr "Removed {0} mods"
 
@@ -2420,6 +2420,10 @@ msgstr "Drop archives anywhere on the window, or Browse Nexus to find mods."
 msgid "Folder chosen by you"
 msgstr "Folder chosen by you"
 
+#: src/settings/sections/DataMods.tsx:200
+msgid "Removes cached Nexus and SMAPI details and problem scans. Use it if an API key was revoked or the details look wrong. Mortar fetches them again as needed, so the next problem check takes longer."
+msgstr "Removes cached Nexus and SMAPI details and problem scans. Use it if an API key was revoked or the details look wrong. Mortar fetches them again as needed, so the next problem check takes longer."
+
 #: src/share/ImportPreview.tsx:320
 msgid "{mods} · about {size} to download"
 msgstr "{mods} · about {size} to download"
@@ -2669,8 +2673,8 @@ msgstr "Added from an archive, so it only exists on this computer."
 #: src/mods/ListColumnMenu.tsx:56
 #: src/mods/NexusDetails.tsx:136
 #: src/mods/Sidebar.tsx:133
-#: src/queue/QueueButton.tsx:25
-#: src/queue/QueueButton.tsx:54
+#: src/queue/QueueButton.tsx:14
+#: src/queue/QueueButton.tsx:17
 #: src/queue/QueueSheet.tsx:63
 #: src/settings/sections/NexusMods.tsx:211
 msgid "Downloads"
@@ -3031,10 +3035,6 @@ msgstr "Found"
 msgid "Before you play"
 msgstr "Before you play"
 
-#: src/settings/sections/DataMods.tsx:200
-msgid "Problem scans rebuild the cache on the next check."
-msgstr "Problem scans rebuild the cache on the next check."
-
 #. placeholder {0}: formatWhen(fit.played)
 #: src/saves/SavesTab.tsx:421
 msgid "Last played {0}"
@@ -3344,7 +3344,7 @@ msgid "Stamina"
 msgstr "Stamina"
 
 #. placeholder {0}: first?.mods?.[0]?.name ?? 'mod'
-#: src/mods/storeEntries.ts:141
+#: src/mods/storeEntries.ts:85
 msgid "Removed {0}"
 msgstr "Removed {0}"
 
@@ -6738,8 +6738,8 @@ msgstr "Season"
 msgid "Tools"
 msgstr "Tools"
 
-#: src/mods/storeEntries.ts:124
-#: src/mods/storeEntries.ts:162
+#: src/mods/storeEntries.ts:68
+#: src/mods/storeEntries.ts:106
 #: src/profiles/historyRevert.ts:82
 msgid "This is no longer the latest change."
 msgstr "This is no longer the latest change."

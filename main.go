@@ -458,6 +458,7 @@ func run() error {
 		}),
 	)
 	dataSvc.Restart = datasvc.RestartSelf
+	dataSvc.OnClearCache = problemsSvc.ForgetCached
 	quitSvc := &QuitService{app: app, queue: queueSvc, lan: lanSvc, launch: launches}
 
 	for _, s := range []application.Service{
