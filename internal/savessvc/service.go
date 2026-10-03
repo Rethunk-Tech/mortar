@@ -249,3 +249,26 @@ func (s *Service) Dismiss(saveFolder, uniqueID string) error {
 	})
 	return err
 }
+
+// RestoreDismissed shows uniqueID's missing-mod warning for the save folder again.
+func (s *Service) RestoreDismissed(saveFolder, uniqueID string) error {
+	if saveFolder == "" || uniqueID == "" {
+		return errors.New("save folder and mod are required")
+	}
+	id := strings.ToLower(uniqueID)
+	_, err := s.settings.Update(func(v *settings.Settings) {
+		current := v.Dismissed[saveFolder]
+		kept := slices.DeleteFunc(slices.Clone(current), func(x string) bool { return x == id })
+		if len(kept) == len(current) {
+			return
+		}
+		next := maps.Clone(v.Dismissed)
+		if len(kept) == 0 {
+			delete(next, saveFolder)
+		} else {
+			next[saveFolder] = kept
+		}
+		v.Dismissed = next
+	})
+	return err
+}

@@ -32,6 +32,13 @@ func TestDismissHidesModForThatSaveOnly(t *testing.T) {
 	if len(d["Farm_1"]) != 1 {
 		t.Fatalf("dismissed twice: %v", d["Farm_1"])
 	}
+	if err := s.RestoreDismissed("Farm_1", "Author.Mod"); err != nil {
+		t.Fatal(err)
+	}
+	d = store.Get().Dismissed
+	if got := saves.Lacking(used, nil, d["Farm_1"]); !reflect.DeepEqual(got, []saves.Lack{{UniqueID: "author.mod"}, {UniqueID: "other.mod"}}) {
+		t.Fatalf("Farm_1 after restore lacks %+v", got)
+	}
 }
 
 func TestLastGapIsTheNewestSaveOnly(t *testing.T) {
