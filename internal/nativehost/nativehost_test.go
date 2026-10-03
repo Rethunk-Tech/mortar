@@ -566,6 +566,7 @@ func TestActiveNexusUpdatesFromCache(t *testing.T) {
 	writeCache := func(modID int, page string, files []map[string]any) {
 		t.Helper()
 		cache, err := json.Marshal(map[string]any{
+			"fetched": "2026-01-02T03:04:05Z",
 			"value": map[string]any{
 				"page":  map[string]any{"version": page},
 				"files": files,

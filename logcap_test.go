@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 func TestCappedWriterStopsAtLimitWithOneNotice(t *testing.T) {
@@ -48,7 +50,7 @@ func TestCapCrashLogLeavesFileWhenSeenIsBehind(t *testing.T) {
 		t.Fatal(err)
 	}
 	capCrashLogAt(dir, 10)
-	got, err := os.ReadFile(path)
+	got, err := fsx.ReadFile(path)
 	if err != nil || string(got) != "crash-bytes-here" {
 		t.Fatalf("got %q %v", got, err)
 	}

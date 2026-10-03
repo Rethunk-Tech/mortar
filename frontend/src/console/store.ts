@@ -15,6 +15,7 @@ import {
   Send,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -25,11 +26,11 @@ import { pushCommand } from './history.ts'
 const MAX_CONSOLE_LINES = 20_000
 
 function consoleDefaults() {
-  const s = useSettings.getState()
+  const p = gamePrefs(useSettings.getState())
   return {
-    filters: { ...DEFAULT_FILTERS, levels: levelsFromFloor(s.consoleLevel || 'info') },
-    timestamps: s.consoleTimestamps !== false,
-    follow: s.consoleFollow !== false,
+    filters: { ...DEFAULT_FILTERS, levels: levelsFromFloor(p.consoleLevel) },
+    timestamps: p.consoleTimestamps,
+    follow: p.consoleFollow,
   }
 }
 

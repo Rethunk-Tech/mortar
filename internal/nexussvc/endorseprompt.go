@@ -3,7 +3,6 @@ package nexussvc
 import (
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"sync"

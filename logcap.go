@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 // maxLogBytes caps mortar.log so a long session cannot fill the disk; the previous run's log is kept separately.
@@ -48,7 +50,7 @@ func capCrashLogAt(dataDir string, limit int64) {
 	if err != nil || info.Size() <= limit {
 		return
 	}
-	seenRaw, err := os.ReadFile(filepath.Join(dataDir, "crash.seen"))
+	seenRaw, err := fsx.ReadFile(filepath.Join(dataDir, "crash.seen"))
 	if err != nil {
 		return
 	}

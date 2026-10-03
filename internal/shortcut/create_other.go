@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 // create writes a desktop entry under the user's applications folder, where launchers and app menus find it.
@@ -79,7 +80,7 @@ func Renamed(game, profile, profileName, gameName string) error {
 	if !replaced {
 		return fmt.Errorf("desktop entry %s has no Name", path)
 	}
-	return fsx.WriteFile(path, []byte(strings.Join(lines, "")), 0o600)
+	return datadir.WriteFile(path, []byte(strings.Join(lines, "")), 0o600)
 }
 
 // Removed removes the desktop entry for a deleted profile.

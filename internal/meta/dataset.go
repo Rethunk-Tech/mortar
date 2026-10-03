@@ -145,9 +145,9 @@ type Dependency struct {
 
 // Requirement is a Nexus page requirement.
 type Requirement struct {
-	ModID int
-	Name  string
-	Notes string
+	ModID int    `json:"modId"`
+	Name  string `json:"name"`
+	Notes string `json:"notes"`
 }
 
 // Page returns Nexus mod page id, from cache while younger than a month.

@@ -14,7 +14,6 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
