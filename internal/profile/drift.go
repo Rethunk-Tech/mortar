@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -98,6 +99,14 @@ func undotDirs(rel string) string {
 }
 
 func walkFolderStat(root, peer string) (FolderStat, error) {
+	var inPeer map[string]struct{}
+	if peer != "" && peer != root {
+		var err error
+		if inPeer, err = relFiles(peer); err != nil {
+			return FolderStat{}, err
+		}
+	}
+	prefix := root + string(filepath.Separator)
 	var st FolderStat
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -106,15 +115,16 @@ func walkFolderStat(root, peer string) (FolderStat, error) {
 		if d.IsDir() {
 			return nil
 		}
-		rel, err := filepath.Rel(root, path)
-		if err != nil {
-			return err
-		}
+		rel := strings.TrimPrefix(path, prefix)
 		if isUserWritten(rel) {
 			return nil
 		}
-		if peer != "" && !exists(filepath.Join(peer, rel)) && !exists(filepath.Join(peer, undotDirs(rel))) {
-			return nil
+		if inPeer != nil {
+			if _, ok := inPeer[rel]; !ok {
+				if _, ok := inPeer[undotDirs(rel)]; !ok {
+					return nil
+				}
+			}
 		}
 		info, err := d.Info()
 		if err != nil {
@@ -122,13 +132,29 @@ func walkFolderStat(root, peer string) (FolderStat, error) {
 		}
 		st.Files++
 		st.Size += info.Size()
-		mod := info.ModTime().UnixNano()
-		if mod > st.Newest {
-			st.Newest = mod
-		}
+		st.Newest = max(st.Newest, info.ModTime().UnixNano())
 		return nil
 	})
 	return st, err
+}
+
+// relFiles lists the files under root by path relative to it, from directory entries alone.
+func relFiles(root string) (map[string]struct{}, error) {
+	prefix := root + string(filepath.Separator)
+	out := map[string]struct{}{}
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) && path == root {
+				return filepath.SkipAll
+			}
+			return err
+		}
+		if !d.IsDir() {
+			out[strings.TrimPrefix(path, prefix)] = struct{}{}
+		}
+		return nil
+	})
+	return out, err
 }
 
 func liveFolders(modsDir, heldDir string) (map[string]string, error) {
@@ -411,9 +437,12 @@ func (s *Store) ScanModsDrift(game, id string) ([]Drift, error) {
 			storeStats[key] = st
 		}
 	}
+	before := maps.Clone(snap.Folders)
 	snap = reconcileSnapshot(snap, keys, stats, storeStats)
-	if err := writeSnapshot(dir, snap); err != nil {
-		return nil, err
+	if !maps.Equal(before, snap.Folders) {
+		if err := writeSnapshot(dir, snap); err != nil {
+			return nil, err
+		}
 	}
 	return scanDrift(names, stats, keys, snap), nil
 }
