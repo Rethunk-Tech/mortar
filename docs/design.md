@@ -40,6 +40,20 @@ Decided with NOMAD (Settings pages grew by accretion: per-game prefs on global p
 - **Defects to fix on the way:** empty "Default sort" and "Default profile for Nexus links" selects; Nexus tracking text hard-coded "Stardew Valley"; Cache/Trash size misalignment; "0 byte" pluralisation.
 - **Done when** every pref in `registry.go` appears exactly once (game scope only on the game page), search finds every row, no page renders an unbounded list inline, and `gui-design.md` describes the new pages.
 
+## Settings visual pass (Steam-style)
+
+Decided with NOMAD after comparing with Steam's Settings. Code: `frontend/src/settings/SettingsSection.tsx` (section + row), `SettingsNav.tsx`, `PrefControls.tsx`, `sections/*`.
+
+- **Rows as tiles:** each `SettingRow` is its own rounded tile (8px gap, `--mortar-overlay-45`), no single card with hairline dividers; section titles are 18px semibold headings in the primary ink.
+- **Type:** labels 16px, descriptions 14px secondary and wrap in full (no one-line ellipsis).
+- **Nav:** an icon per item (lucide), full-width highlighted selection, dividers between groups: General, Appearance | Mods and profiles, Downloads, Nexus account, Updates, Notifications | Storage, Launchers | Shortcuts, About.
+- **Filled controls:** selects and row buttons are filled (`--mortar-raised`) with a chevron, not outlined; the accent colour only on the one primary action of a page or dialog.
+- **Segmented buttons** for 2–4 option prefs (theme, dates, density, default view, card size, harmless conflicts, reduce motion, profile hero, sidebar badges); dropdowns stay for longer or dynamic lists.
+- **Radio cards** for modes with consequences: When you press Play, Start screen, Backup before Play.
+- **Storage like Steam:** inline legend under the bar (dot, LABEL, size); store cleanup is an in-page list (checkboxes, sizes right, newest-copy rule) with Remove anchored at the bottom when something is selected, replacing the cleanup dialog's store part; leftover files stay a row with Clear….
+- **Notification matrix:** one row per event (download finished, download failed, run crashed, mod updates found) with columns In-app toast and Desktop notification; adds a desktop-notification channel (Wails notifications on Linux/Windows) and per-event, per-channel prefs.
+- **Done when** every Settings page uses only these patterns and NOMAD signs off on screenshots.
+
 ## Queued for v1
 
 - **Library:** an extra folder to scan for mods; a toggle to show dot-hidden mods; asking before deleting old files on update; new folders in the game's own `Mods` folder offered for moving into a profile.
