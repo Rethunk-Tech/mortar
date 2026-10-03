@@ -1,4 +1,7 @@
+import type { I18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { prefCopy } from '../settings/prefCopy.ts'
 export const OVERRIDE_KEYS = [
   'defaultLaunchMethod',
   'showSmapiConsole',
@@ -106,4 +109,18 @@ export function gamePrefString(
     default:
       return ''
   }
+}
+
+export function overrideChoiceLabel(key: OverrideKey, value: string, i18n: I18n): string {
+  const hit = prefCopy(i18n, key).options?.find((option) => option.value === value)
+  if (hit) {
+    return hit.label
+  }
+  if (value === 'true') {
+    return i18n._(msg`On`)
+  }
+  if (value === 'false') {
+    return i18n._(msg`Off`)
+  }
+  return value
 }

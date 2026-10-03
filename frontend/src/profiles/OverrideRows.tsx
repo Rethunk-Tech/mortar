@@ -1,7 +1,7 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material'
+import { Box, FormControl, InputLabel, MenuItem, Select, Tooltip, Typography } from '@mui/material'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { useSettings } from '../settings/store.ts'
@@ -12,6 +12,7 @@ import {
   OVERRIDE_KEYS,
   OVERRIDE_VALUES,
   type OverrideKey,
+  overrideChoiceLabel,
 } from './overrideValue.ts'
 
 function overrideLabel(key: OverrideKey, i18n: I18n): string {
@@ -19,7 +20,7 @@ function overrideLabel(key: OverrideKey, i18n: I18n): string {
     case 'defaultLaunchMethod':
       return i18n._(msg`Launch method`)
     case 'showSmapiConsole':
-      return i18n._(msg`Show SMAPI console`)
+      return i18n._(msg`Show the game log`)
     case 'backupBeforePlay':
       return i18n._(msg`Backup before Play`)
     case 'launchBackupsKept':
@@ -45,13 +46,17 @@ export function OverridesSection({
   const premium = useNexus((s) => s.premium)
   return (
     <Box sx={{ mt: 2, mb: 2 }}>
-      <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Overrides`}</Typography>
+      <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{t`Overrides`}</Typography>
+      <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 1 }}>
+        {t`These apply only to this profile.`}
+      </Typography>
       {OVERRIDE_KEYS.map((key) => {
         const gameValue = gamePrefString(key, prefs)
         const stored = overrides[key]
         const choice = choiceFromOverride(stored)
         const label = overrideLabel(key, i18n)
-        return (
+        const gameLabel = overrideChoiceLabel(key, gameValue, i18n)
+        const field = (
           <FormControl key={key} fullWidth={true} margin="dense" size="small">
             <InputLabel id={`override-${key}`}>{label}</InputLabel>
             <Select
@@ -69,10 +74,10 @@ export function OverridesSection({
                 )
               }}
             >
-              <MenuItem value="">{t`Use game setting (${gameValue})`}</MenuItem>
+              <MenuItem value="">{t`Use game setting (${gameLabel})`}</MenuItem>
               {OVERRIDE_VALUES[key].map((value) => (
                 <MenuItem key={value} value={value}>
-                  {value}
+                  {overrideChoiceLabel(key, value, i18n)}
                 </MenuItem>
               ))}
             </Select>
@@ -82,6 +87,13 @@ export function OverridesSection({
               </Typography>
             ) : null}
           </FormControl>
+        )
+        return key === 'showSmapiConsole' ? (
+          <Tooltip key={key} title={t`SMAPI`}>
+            {field}
+          </Tooltip>
+        ) : (
+          field
         )
       })}
     </Box>

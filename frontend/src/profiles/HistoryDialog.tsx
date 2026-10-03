@@ -105,7 +105,7 @@ export function HistoryDialog({
                       disabled={busy !== ''}
                       onClick={() => revertTo(ev.id).catch(reportUnexpected)}
                     >
-                      {t`Revert to here`}
+                      {t`Undo this change`}
                     </Button>
                   }
                 >

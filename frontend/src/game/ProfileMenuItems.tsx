@@ -10,6 +10,7 @@ import {
   ListItemIcon,
   ListItemText,
   MenuItem,
+  Tooltip,
 } from '@mui/material'
 import {
   Copy,
@@ -58,18 +59,28 @@ function ProfileMenuItem({
   icon,
   label,
   disabled,
+  tooltip,
   onClick,
 }: {
   icon: ReactNode
   label: string
   disabled?: boolean
+  tooltip?: string
   onClick: () => void
 }) {
-  return (
+  const item = (
     <MenuItem disabled={disabled} onClick={onClick}>
       <ListItemIcon sx={{ color: 'inherit' }}>{icon}</ListItemIcon>
       <ListItemText>{label}</ListItemText>
     </MenuItem>
+  )
+  if (!tooltip) {
+    return item
+  }
+  return (
+    <Tooltip title={tooltip}>
+      <span>{item}</span>
+    </Tooltip>
   )
 }
 
@@ -201,6 +212,7 @@ function SendProfileMenuItem({ profile, close }: { profile: Profile; close: () =
         icon={<SendIcon size={16} />}
         label={t`Send to…`}
         disabled={!(lanSharing && currentGame)}
+        {...(lanSharing ? {} : { tooltip: t`Turn on sharing nearby in Settings › General.` })}
         onClick={() => {
           close()
           setOpen(true)

@@ -132,14 +132,66 @@ function AppearancePickers({
   onIcon: (next: string) => void
 }) {
   const { t } = useLingui()
+  const colorName = (token: string) => {
+    switch (token) {
+      case 'rose':
+        return t`Rose`
+      case 'orange':
+        return t`Orange`
+      case 'gold':
+        return t`Gold`
+      case 'lime':
+        return t`Lime`
+      case 'teal':
+        return t`Teal`
+      case 'sky':
+        return t`Sky`
+      case 'violet':
+        return t`Violet`
+      case 'pink':
+        return t`Pink`
+      default:
+        return token
+    }
+  }
+  const iconName = (token: string) => {
+    switch (token) {
+      case 'sprout':
+        return t`Sprout`
+      case 'leaf':
+        return t`Leaf`
+      case 'wheat':
+        return t`Wheat`
+      case 'fish':
+        return t`Fish`
+      case 'hammer':
+        return t`Hammer`
+      case 'pickaxe':
+        return t`Pickaxe`
+      case 'star':
+        return t`Star`
+      case 'heart':
+        return t`Heart`
+      case 'mountain':
+        return t`Mountain`
+      case 'sun':
+        return t`Sun`
+      case 'moon':
+        return t`Moon`
+      case 'sparkles':
+        return t`Sparkles`
+      default:
+        return token
+    }
+  }
   return (
     <>
       <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Colour`}</Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
         {PROFILE_COLORS.map((token) => (
-          <Tooltip key={token} title={token}>
+          <Tooltip key={token} title={colorName(token)}>
             <IconButton
-              aria-label={token}
+              aria-label={colorName(token)}
               aria-pressed={color === token}
               onClick={() => onColor(color === token ? '' : token)}
               sx={{
@@ -157,9 +209,9 @@ function AppearancePickers({
       <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Icon`}</Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
         {PROFILE_ICONS.map((name) => (
-          <Tooltip key={name} title={name}>
+          <Tooltip key={name} title={iconName(name)}>
             <IconButton
-              aria-label={name}
+              aria-label={iconName(name)}
               aria-pressed={icon === name}
               onClick={() => onIcon(icon === name ? '' : name)}
               sx={{
@@ -424,14 +476,18 @@ export function EditProfileDialog({
         />
         <DialogActions>
           <Button onClick={onClose} sx={{ whiteSpace: 'nowrap' }}>{t`Cancel`}</Button>
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={busy || !gameSettingsLoaded}
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            {t`Save`}
-          </Button>
+          <Tooltip title={gameSettingsLoaded ? '' : t`Loading game settings…`}>
+            <span>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={busy || !gameSettingsLoaded}
+                sx={{ whiteSpace: 'nowrap' }}
+              >
+                {t`Save`}
+              </Button>
+            </span>
+          </Tooltip>
         </DialogActions>
       </form>
     </Dialog>

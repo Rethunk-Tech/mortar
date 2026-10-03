@@ -19,22 +19,61 @@ import {
 import { compact } from '../game/compact.ts'
 import { When } from '../i18n/When.tsx'
 import { download } from '../queue/actions.ts'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
-import { historyChangeSummary } from './historyCounts.ts'
+import { historyChangeSummary, historyEventKind } from './historyCounts.ts'
 import { revertHistoryEvent } from './historyRevert.ts'
 import { useRecentChanges } from './recentChanges.ts'
 
 function RecentRow({
   ev,
-  busy,
+  busyId,
   onUndo,
 }: {
   ev: RecentEvent
-  busy: boolean
+  busyId: string
   onUndo: (profileId: string, eventId: string) => void
 }) {
   const { t } = useLingui()
   const changes = historyChangeSummary(ev)
+  const kind = historyEventKind(ev)
+  let label = ev.label
+  switch (kind) {
+    case 'added':
+      label = ev.label === 'added' ? t`Added` : ev.label
+      break
+    case 'removed':
+      label = ev.label === 'removed' ? t`Removed` : ev.label
+      break
+    case 'updated':
+      label = ev.label === 'updated' ? t`Updated` : ev.label
+      break
+    case 'enabled':
+      label = ev.label === 'enabled' ? t`Switched on` : ev.label
+      break
+    case 'disabled':
+      label = ev.label === 'disabled' ? t`Switched off` : ev.label
+      break
+    case 'pinned':
+      label = ev.label === 'pinned' ? t`Pinned` : ev.label
+      break
+    case 'imported':
+      label = ev.label === 'imported' ? t`Imported` : ev.label
+      break
+    case 'restored':
+      label = ev.label === 'restored' ? t`Restored` : ev.label
+      break
+    case 'reverted':
+      label = ev.label === 'reverted' ? t`Reverted` : ev.label
+      break
+    case 'bulk':
+      label = ev.label === 'bulk' ? t`Bulk change` : ev.label
+      break
+    default:
+      break
+  }
+  const thisBusy = busyId === ev.id
+  const otherBusy = busyId !== '' && !thisBusy
   return (
     <Box
       sx={{
@@ -47,22 +86,61 @@ function RecentRow({
       }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{ev.profileName}</Typography>
-        <Typography sx={{ fontSize: 13 }}>{ev.label}</Typography>
+        <Typography noWrap={true} title={ev.profileName} sx={{ fontSize: 13, fontWeight: 600 }}>
+          {ev.profileName}
+        </Typography>
+        <Typography noWrap={true} title={label} sx={{ fontSize: 13 }}>
+          {label}
+        </Typography>
         <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
           {changes === '' ? null : `${changes} · `}
           <When value={ev.at} withTime={true} />
         </Typography>
       </Box>
-      <Button
-        size="small"
-        disabled={busy}
-        onClick={() => onUndo(ev.profileId, ev.id)}
-        sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
-      >
-        {t`Undo`}
-      </Button>
+      <Tooltip title={otherBusy ? t`Restoring…` : ''}>
+        <span>
+          <Button
+            size="small"
+            disabled={thisBusy}
+            onClick={() => onUndo(ev.profileId, ev.id)}
+            sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
+            {t`Undo this change`}
+          </Button>
+        </span>
+      </Tooltip>
     </Box>
+  )
+}
+
+function RecentList({
+  loaded,
+  shown,
+  busy,
+  onUndo,
+}: {
+  loaded: boolean
+  shown: RecentEvent[]
+  busy: string
+  onUndo: (profileId: string, eventId: string) => void
+}) {
+  const { t } = useLingui()
+  if (!loaded) {
+    return <LoadingRow>{t`Loading…`}</LoadingRow>
+  }
+  if (shown.length === 0) {
+    return (
+      <Typography sx={{ p: 1.75, fontSize: 13, color: 'text.secondary' }}>
+        {t`No changes yet`}
+      </Typography>
+    )
+  }
+  return (
+    <>
+      {shown.map((ev) => (
+        <RecentRow key={`${ev.profileId}:${ev.id}`} ev={ev} busyId={busy} onUndo={onUndo} />
+      ))}
+    </>
   )
 }
 
@@ -70,6 +148,7 @@ function RecentPanel({
   open,
   anchor,
   events,
+  loaded,
   busy,
   errorText,
   missingEvent,
@@ -81,6 +160,7 @@ function RecentPanel({
   open: boolean
   anchor: HTMLElement | null
   events: RecentEvent[]
+  loaded: boolean
   busy: string
   errorText: string
   missingEvent: string
@@ -146,20 +226,7 @@ function RecentPanel({
         ) : null}
       </Box>
       <Box sx={{ overflowY: 'auto', maxHeight: 380, [compact]: { maxHeight: 280 } }}>
-        {shown.length === 0 ? (
-          <Typography sx={{ p: 1.75, fontSize: 13, color: 'text.secondary' }}>
-            {t`No changes yet`}
-          </Typography>
-        ) : (
-          shown.map((ev) => (
-            <RecentRow
-              key={`${ev.profileId}:${ev.id}`}
-              ev={ev}
-              busy={busy !== ''}
-              onUndo={onUndo}
-            />
-          ))
-        )}
+        <RecentList loaded={loaded} shown={shown} busy={busy} onUndo={onUndo} />
       </Box>
       {errorText !== '' && (
         <Box sx={{ px: 1.5, py: 1, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
@@ -185,6 +252,7 @@ export function RecentChangesButton({ game }: { game: string }) {
   const open = useRecentChanges((s) => s.open)
   const setOpen = useRecentChanges((s) => s.setOpen)
   const [events, setEvents] = useState<RecentEvent[]>([])
+  const [loaded, setLoaded] = useState(false)
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
   const [missingEvent, setMissingEvent] = useState('')
@@ -196,16 +264,24 @@ export function RecentChangesButton({ game }: { game: string }) {
 
   useEffect(() => {
     if (!open) {
+      setLoaded(false)
       return
     }
     let live = true
+    setLoaded(false)
     RecentHistory(game)
       .then((list) => {
         if (live) {
           setEvents(list ?? [])
+          setLoaded(true)
         }
       })
-      .catch(reportUnexpected)
+      .catch((e: unknown) => {
+        reportUnexpected(e)
+        if (live) {
+          setLoaded(true)
+        }
+      })
     return () => {
       live = false
     }
@@ -243,6 +319,7 @@ export function RecentChangesButton({ game }: { game: string }) {
         open={open}
         anchor={btn.current}
         events={events}
+        loaded={loaded}
         busy={busy}
         errorText={errorText}
         missingEvent={missingEvent}
