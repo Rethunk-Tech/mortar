@@ -7,6 +7,7 @@ import { useSettings } from '../settings/store.ts'
 import { errorText } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { resolveTourAnchor } from './anchors.ts'
+import { sameRectOr, type TourRect } from './logic.ts'
 import { useTourReplay } from './replay.ts'
 import { tourMarkSeen, tourShouldRun } from './seen.ts'
 
@@ -24,11 +25,15 @@ function useFirstRunTour() {
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState(0)
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+  const [anchorRect, setAnchorRect] = useState<TourRect | null>(null)
+  // Closing must not wait for the saved setting to round-trip, or a failed save reopens the tour.
+  const [dismissed, setDismissed] = useState(false)
 
   const onGameWithProfile = route.name === 'game' && loaded && openId !== '' && hasProfile
-  const eligible = onGameWithProfile && (tourShouldRun(seen) || replay)
+  const eligible = onGameWithProfile && ((tourShouldRun(seen) && !dismissed) || replay)
 
   const finish = useCallback(() => {
+    setDismissed(true)
     clearReplay()
     setOpen(false)
     SetTipsSeen(tourMarkSeen(seen)).catch((err: unknown) => {
@@ -52,9 +57,14 @@ function useFirstRunTour() {
   useLayoutEffect(() => {
     if (!open) {
       setAnchorEl(null)
+      setAnchorRect(null)
       return
     }
-    const sync = () => setAnchorEl(resolveTourAnchor(step))
+    const sync = () => {
+      const el = resolveTourAnchor(step)
+      setAnchorEl(el)
+      setAnchorRect((prev) => sameRectOr(prev, el?.getBoundingClientRect() ?? null))
+    }
     sync()
     const id = globalThis.setInterval(sync, ANCHOR_POLL_MS)
     globalThis.addEventListener('resize', sync)
@@ -82,7 +92,7 @@ function useFirstRunTour() {
 
   const active = open && eligible && anchorEl !== null
 
-  return { active, anchorEl, step, setStep, finish }
+  return { active, anchorEl, anchorRect, step, setStep, finish }
 }
 
 export { useFirstRunTour }

@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { tourOnLastStep, tourStepBack, tourStepNext } from './logic.ts'
+import { sameRectOr, tourOnLastStep, tourStepBack, tourStepNext } from './logic.ts'
 import { tourClearSeen, tourMarkSeen, tourShouldRun } from './seen.ts'
 
 test('tour step sequencing clamps at ends', () => {
@@ -18,4 +18,11 @@ test('tour seen state uses the tour tip id', () => {
   expect(tourMarkSeen(['mods'])).toEqual(['mods', 'tour'])
   expect(tourShouldRun(['mods', 'tour'])).toBe(false)
   expect(tourClearSeen(['mods', 'tour'])).toEqual(['mods'])
+})
+
+test('anchor rect keeps identity until it moves', () => {
+  const a = { top: 1, left: 2, width: 3, height: 4 }
+  expect(sameRectOr(a, { ...a })).toBe(a)
+  expect(sameRectOr(a, { ...a, top: 5 })).toEqual({ ...a, top: 5 })
+  expect(sameRectOr(a, null)).toBeNull()
 })

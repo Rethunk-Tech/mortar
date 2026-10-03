@@ -18,7 +18,7 @@ func TestTipsSeen(t *testing.T) {
 	if s.Get().TipsSeen != nil {
 		t.Fatal("state changed on rejected set")
 	}
-	next := []string{"mods", "share"}
+	next := []string{"mods", "share", "tour"}
 	if _, err := s.Update(func(v *Settings) { v.TipsSeen = next }); err != nil {
 		t.Fatal(err)
 	}

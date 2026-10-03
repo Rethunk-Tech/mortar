@@ -12,7 +12,13 @@ import {
 import { useId } from 'react'
 import { mergeBindings } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
-import { TOUR_STEP_COUNT, tourOnLastStep, tourStepBack, tourStepNext } from './logic.ts'
+import {
+  TOUR_STEP_COUNT,
+  type TourRect,
+  tourOnLastStep,
+  tourStepBack,
+  tourStepNext,
+} from './logic.ts'
 import {
   TOUR_STEP_COMMAND,
   TOUR_STEP_MODS,
@@ -23,16 +29,19 @@ import {
 
 const TOUR_Z_INDEX = 1400
 const POPPER_OFFSET = 12
+const SPOTLIGHT_PAD = 6
 
 const placements = ['right-start', 'right', 'bottom', 'bottom', 'top'] as const
 
 function TourPopover({
   anchorEl,
+  anchorRect,
   step,
   setStep,
   finish,
 }: {
   anchorEl: HTMLElement
+  anchorRect: TourRect
   step: number
   setStep: (value: number | ((prev: number) => number)) => void
   finish: () => void
@@ -68,10 +77,18 @@ function TourPopover({
         aria-hidden={true}
         sx={{
           position: 'fixed',
-          inset: 0,
+          top: anchorRect.top - SPOTLIGHT_PAD,
+          left: anchorRect.left - SPOTLIGHT_PAD,
+          width: anchorRect.width + SPOTLIGHT_PAD * 2,
+          height: anchorRect.height + SPOTLIGHT_PAD * 2,
           zIndex: TOUR_Z_INDEX - 1,
-          bgcolor: 'rgba(0,0,0,0.35)',
+          borderRadius: 1,
+          outline: '2px solid',
+          outlineColor: 'primary.main',
+          // The shadow dims everything outside the anchor, leaving the anchor itself lit.
+          boxShadow: '0 0 0 100vmax rgba(0,0,0,0.55)',
           pointerEvents: 'none',
+          transition: 'top 200ms, left 200ms, width 200ms, height 200ms',
         }}
       />
       <Popper

@@ -5,7 +5,7 @@ import (
 	"slices"
 )
 
-var knownTips = []string{"mods", "saves", "console", "share"}
+var knownTips = []string{"mods", "saves", "console", "share", "tour"}
 
 func knownTip(id string) bool {
 	return slices.Contains(knownTips, id)
