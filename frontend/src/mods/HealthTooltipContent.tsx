@@ -12,41 +12,18 @@ import {
 } from './healthSparkline.ts'
 
 const RUN_OUTCOMES_SHOWN = 5
-const RUN_DOT = 8
-const RUN_DOT_GAP = 0.5
 
-type RunKind = 'crashed' | 'errors' | 'clean'
-
-function runKind(run: Run): RunKind {
-  if (run.outcome === 'crashed') {
-    return 'crashed'
-  }
-  if ((run.errors ?? 0) > 0) {
-    return 'errors'
-  }
-  return 'clean'
-}
-
-function runColor(kind: RunKind): string {
-  switch (kind) {
-    case 'crashed':
-      return '#f44336'
-    case 'errors':
-      return '#ff9800'
-    default:
-      return '#66bb6a'
-  }
-}
-
-function runLabel(i18n: I18n, kind: RunKind): string {
-  switch (kind) {
-    case 'crashed':
-      return i18n._(msg`Crashed`)
-    case 'errors':
-      return i18n._(msg`Errors`)
-    default:
-      return i18n._(msg`Clean`)
-  }
+function runSummary(i18n: I18n, runs: Run[]): string {
+  const crashed = runs.filter((r) => r.outcome === 'crashed').length
+  const errors = runs.filter((r) => r.outcome !== 'crashed' && (r.errors ?? 0) > 0).length
+  const clean = runs.length - crashed - errors
+  const parts = [
+    crashed > 0 ? i18n._(msg`${crashed} crashed`) : '',
+    errors > 0 ? i18n._(msg`${errors} with errors`) : '',
+    clean > 0 ? i18n._(msg`${clean} clean`) : '',
+  ].filter((p) => p !== '')
+  const n = runs.length
+  return i18n._(msg`Last ${n} runs: ${parts.join(', ')}`)
 }
 
 export function HealthTooltipContent({
@@ -70,7 +47,8 @@ export function HealthTooltipContent({
       <Typography variant="caption" sx={{ whiteSpace: 'pre-line' }}>
         {summary}
       </Typography>
-      {path === '' ? null : (
+      {/* A flat line says nothing, so the trend shows only when the count moved. */}
+      {path === '' || new Set(values).size < 2 ? null : (
         <Box
           component="svg"
           width={HEALTH_SPARKLINE_WIDTH}
@@ -81,24 +59,9 @@ export function HealthTooltipContent({
         </Box>
       )}
       {recentRuns.length > 0 ? (
-        <Stack direction="row" spacing={RUN_DOT_GAP} sx={{ alignItems: 'center' }}>
-          {recentRuns.map((run) => {
-            const kind = runKind(run)
-            return (
-              <Box
-                key={run.id}
-                role="img"
-                aria-label={runLabel(i18n, kind)}
-                sx={{
-                  width: RUN_DOT,
-                  height: RUN_DOT,
-                  borderRadius: '50%',
-                  bgcolor: runColor(kind),
-                }}
-              />
-            )
-          })}
-        </Stack>
+        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          {runSummary(i18n, recentRuns)}
+        </Typography>
       ) : null}
     </Stack>
   )
