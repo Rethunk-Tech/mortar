@@ -152,6 +152,58 @@ func TestImageAlphaFallbackKeepsLowOpacity(t *testing.T) {
 	}
 }
 
+func TestSkipImageOverlapUsesRectangles(t *testing.T) {
+	dir := t.TempDir()
+	img := image.NewNRGBA(image.Rect(0, 0, 32, 16))
+	img.SetNRGBA(0, 0, color.NRGBA{A: 255})
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, img); err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(filepath.Join(dir, "patch.png"), buf.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	ch := change(t, `{"FromFile":"patch.png","PatchMode":"Overlay"}`)
+	full := imagePatchShapes(dir, ch, 0, 0)
+	if len(full) != 1 || full[0].cells == "" {
+		t.Fatalf("full scan shapes = %#v", full)
+	}
+	skipImageOverlap = true
+	t.Cleanup(func() { skipImageOverlap = false })
+	skipped := imagePatchShapes(dir, ch, 0, 0)
+	if len(skipped) != 1 || skipped[0].cells != "" || skipped[0].w != 32 || skipped[0].h != 16 {
+		t.Fatalf("skip scan shapes = %#v", skipped)
+	}
+}
+
+func TestOpaqueImageShapeConcurrent(t *testing.T) {
+	dir := t.TempDir()
+	img := image.NewNRGBA(image.Rect(0, 0, 32, 16))
+	img.SetNRGBA(8, 8, color.NRGBA{A: 255})
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, img); err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(filepath.Join(dir, "patch.png"), buf.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	errCh := make(chan string, 16)
+	var wg sync.WaitGroup
+	for range 8 {
+		wg.Go(func() {
+			got, ok := opaqueImageShape(dir, "patch.png", nil, 0, 0)
+			if !ok || !strings.Contains(got.cells, "0,0") {
+				errCh <- got.cells
+			}
+		})
+	}
+	wg.Wait()
+	close(errCh)
+	for msg := range errCh {
+		t.Fatalf("concurrent opaque shape = %q", msg)
+	}
+}
+
 type lowOpacityImage struct{}
 
 func (lowOpacityImage) ColorModel() color.Model { return color.RGBA64Model }

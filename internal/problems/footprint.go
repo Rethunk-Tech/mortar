@@ -93,18 +93,38 @@ func (s cpShape) overlaps(o cpShape) bool {
 }
 
 func cellSetsOverlap(a, b string) bool {
-	other := map[string]bool{}
-	for cell := range strings.SplitSeq(b, ";") {
-		if cell != "" {
-			other[cell] = true
-		}
+	if a == "" || b == "" {
+		return false
 	}
-	for cell := range strings.SplitSeq(a, ";") {
-		if cell != "" && other[cell] {
+	if a == b {
+		return true
+	}
+	other := internCellSet(b)
+	for cell := range internCellSet(a) {
+		if other[cell] {
 			return true
 		}
 	}
 	return false
+}
+
+func internCellSet(s string) map[string]bool {
+	if cached, ok := cellSetCache.Load(s); ok {
+		if set, ok := cached.(map[string]bool); ok {
+			return set
+		}
+	}
+	set := map[string]bool{}
+	for cell := range strings.SplitSeq(s, ";") {
+		if cell != "" {
+			set[cell] = true
+		}
+	}
+	actual, _ := cellSetCache.LoadOrStore(s, set)
+	if kept, ok := actual.(map[string]bool); ok {
+		return kept
+	}
+	return set
 }
 
 func shapesOverlap(a, b []cpShape) bool {
@@ -282,14 +302,60 @@ func editShapes(root string, ch cpChange, image bool) []cpShape {
 	return out
 }
 
-var pngShapeCache sync.Map
+var (
+	pngShapeCache    sync.Map
+	pngAlphaCache    sync.Map
+	pngPixPools      sync.Map
+	cellSetCache     sync.Map
+	skipImageOverlap bool
+)
+
+type pngAlpha struct {
+	w, h int
+	a    []byte
+}
+
+func pngPixPool(n int) *sync.Pool {
+	actual, _ := pngPixPools.LoadOrStore(n, &sync.Pool{New: func() any {
+		b := make([]byte, n)
+		return &b
+	}})
+	p, ok := actual.(*sync.Pool)
+	if !ok {
+		p = &sync.Pool{New: func() any {
+			b := make([]byte, n)
+			return &b
+		}}
+		pngPixPools.Store(n, p)
+	}
+	return p
+}
+
+func acquireAlpha(n int) []byte {
+	p := pngPixPool(n)
+	got := p.Get()
+	buf, ok := got.(*[]byte)
+	if !ok || cap(*buf) < n {
+		b := make([]byte, n)
+		return b
+	}
+	*buf = (*buf)[:n]
+	return *buf
+}
+
+func releaseAlpha(b []byte) {
+	if b == nil {
+		return
+	}
+	pngPixPool(cap(b)).Put(&b)
+}
 
 func imagePatchShapes(root string, ch cpChange, x, y int) []cpShape {
 	files := sourceFiles(root, ch.FromFile)
 	if len(files) == 0 {
 		return whole
 	}
-	if !strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
+	if skipImageOverlap || !strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
 		var out []cpShape
 		for _, file := range files {
 			if from, ok := areaOf(ch.FromArea); ok {
@@ -337,30 +403,23 @@ func opaqueImageShape(root, rel string, fromRaw json.RawMessage, x, y int) (cpSh
 		fromKey = strconv.Itoa(from.x) + "," + strconv.Itoa(from.y) + "," +
 			strconv.Itoa(from.w) + "," + strconv.Itoa(from.h)
 	}
-	key := abs + "\x00" + strconv.FormatInt(info.Size(), 10) + "\x00" +
-		strconv.FormatInt(info.ModTime().UnixNano(), 10) + "\x00" + fromKey + "\x00" +
-		strconv.Itoa(x) + "," + strconv.Itoa(y)
+	fileKey := abs + "\x00" + strconv.FormatInt(info.Size(), 10) + "\x00" +
+		strconv.FormatInt(info.ModTime().UnixNano(), 10)
+	key := fileKey + "\x00" + fromKey + "\x00" + strconv.Itoa(x) + "," + strconv.Itoa(y)
 	if cached, ok := pngShapeCache.Load(key); ok {
 		if cells, ok := cached.(string); ok {
 			return cpShape{kind: 'r', cells: cells}, true
 		}
 	}
-	var decoded image.Image
-	file, err := os.OpenInRoot(root, filepath.FromSlash(rel))
-	if err != nil {
+	decoded, ok := loadPNGAlpha(root, rel, fileKey)
+	if !ok {
 		return cpShape{}, false
 	}
-	decoded, err = png.Decode(file)
-	_ = file.Close()
-	if err != nil {
-		return cpShape{}, false
-	}
-	bounds := decoded.Bounds()
 	if fromKey == "full" {
-		from = cpShape{w: bounds.Dx(), h: bounds.Dy()}
+		from = cpShape{w: decoded.w, h: decoded.h}
 	}
-	minX, maxX := max(from.x, bounds.Min.X), min(from.x+from.w, bounds.Max.X)
-	minY, maxY := max(from.y, bounds.Min.Y), min(from.y+from.h, bounds.Max.Y)
+	minX, maxX := max(from.x, 0), min(from.x+from.w, decoded.w)
+	minY, maxY := max(from.y, 0), min(from.y+from.h, decoded.h)
 	if minX >= maxX || minY >= maxY {
 		return cpShape{kind: 'r'}, true
 	}
@@ -371,8 +430,9 @@ func opaqueImageShape(root, rel string, fromRaw json.RawMessage, x, y int) (cpSh
 	width := lastCellX - firstCellX + 1
 	bitmap := make([]bool, width*(lastCellY-firstCellY+1))
 	for py := minY; py < maxY; py++ {
+		row := py * decoded.w
 		for px := minX; px < maxX; px++ {
-			if imageAlpha(decoded, px, py) == 0 {
+			if decoded.a[row+px] == 0 {
 				continue
 			}
 			cellX := (x + px - from.x) / 16
@@ -395,6 +455,255 @@ func opaqueImageShape(root, rel string, fromRaw json.RawMessage, x, y int) (cpSh
 	return cpShape{kind: 'r', cells: cells.String()}, true
 }
 
+func loadPNGAlpha(root, rel, fileKey string) (pngAlpha, bool) {
+	if cached, ok := pngAlphaCache.Load(fileKey); ok {
+		if pix, ok := cached.(pngAlpha); ok {
+			return pix, pix.a != nil
+		}
+	}
+	file, err := os.OpenInRoot(root, filepath.FromSlash(rel))
+	if err != nil {
+		pngAlphaCache.Store(fileKey, pngAlpha{})
+		return pngAlpha{}, false
+	}
+	pix, ok := decodePNGAlpha(file)
+	_ = file.Close()
+	if !ok {
+		pngAlphaCache.Store(fileKey, pngAlpha{})
+		return pngAlpha{}, false
+	}
+	actual, loaded := pngAlphaCache.LoadOrStore(fileKey, pix)
+	if loaded {
+		releaseAlpha(pix.a)
+		if kept, ok := actual.(pngAlpha); ok {
+			return kept, kept.a != nil
+		}
+		return pngAlpha{}, false
+	}
+	return pix, true
+}
+
+func decodePNGAlpha(r io.Reader) (pngAlpha, bool) {
+	raw, err := io.ReadAll(r)
+	if err != nil || len(raw) < 8 || string(raw[:8]) != "\x89PNG\r\n\x1a\n" {
+		return pngAlpha{}, false
+	}
+	var (
+		w, h, bitDepth, colorType, interlace int
+		trns, idat                           []byte
+		gotIHDR                              bool
+	)
+	for i := 8; i+12 <= len(raw); {
+		n := int(binary.BigEndian.Uint32(raw[i:]))
+		i += 4
+		if i+4+n+4 > len(raw) {
+			return pngAlpha{}, false
+		}
+		kind := string(raw[i : i+4])
+		data := raw[i+4 : i+4+n]
+		i += 4 + n + 4
+		switch kind {
+		case "IHDR":
+			if n < 13 {
+				return pngAlpha{}, false
+			}
+			w = int(binary.BigEndian.Uint32(data[0:4]))
+			h = int(binary.BigEndian.Uint32(data[4:8]))
+			bitDepth = int(data[8])
+			colorType = int(data[9])
+			interlace = int(data[12])
+			gotIHDR = true
+		case "tRNS":
+			trns = data
+		case "IDAT":
+			idat = append(idat, data...)
+		case "IEND":
+			i = len(raw)
+		}
+	}
+	if !gotIHDR || w <= 0 || h <= 0 || interlace != 0 || bitDepth != 8 {
+		return decodePNGAlphaStd(bytes.NewReader(raw))
+	}
+	n := w * h
+	alpha := acquireAlpha(n)
+	opaque := colorType == 0 || colorType == 2
+	if opaque && len(trns) == 0 {
+		for i := range alpha {
+			alpha[i] = 255
+		}
+		return pngAlpha{w: w, h: h, a: alpha}, true
+	}
+	if !inflatePNGAlpha(idat, alpha, w, h, colorType, trns) {
+		releaseAlpha(alpha)
+		return decodePNGAlphaStd(bytes.NewReader(raw))
+	}
+	return pngAlpha{w: w, h: h, a: alpha}, true
+}
+
+func inflatePNGAlpha(idat, alpha []byte, w, h, colorType int, trns []byte) bool {
+	cpp := pngChannels(colorType)
+	if cpp == 0 {
+		return false
+	}
+	zr, err := zlib.NewReader(bytes.NewReader(idat))
+	if err != nil {
+		return false
+	}
+	defer func() { _ = zr.Close() }()
+	stride := w*cpp + 1
+	row := make([]byte, stride)
+	prev := make([]byte, stride)
+	i := 0
+	for range h {
+		if _, err := io.ReadFull(zr, row); err != nil {
+			return false
+		}
+		if !pngUnfilter(row, prev, cpp) {
+			return false
+		}
+		pix := row[1:]
+		switch colorType {
+		case 0:
+			for x := range w {
+				a := byte(255)
+				if len(trns) >= 2 && pix[x] == trns[1] {
+					a = 0
+				}
+				alpha[i] = a
+				i++
+			}
+		case 2:
+			for x := range w {
+				off := x * 3
+				a := byte(255)
+				if len(trns) >= 6 && pix[off] == trns[1] && pix[off+1] == trns[3] && pix[off+2] == trns[5] {
+					a = 0
+				}
+				alpha[i] = a
+				i++
+			}
+		case 3:
+			for x := range w {
+				idx := int(pix[x])
+				a := byte(255)
+				if idx < len(trns) {
+					a = trns[idx]
+				}
+				alpha[i] = a
+				i++
+			}
+		case 4:
+			for x := range w {
+				alpha[i] = pix[x*2+1]
+				i++
+			}
+		case 6:
+			for x := range w {
+				alpha[i] = pix[x*4+3]
+				i++
+			}
+		default:
+			return false
+		}
+		copy(prev, row)
+	}
+	return i == len(alpha)
+}
+
+func pngChannels(colorType int) int {
+	switch colorType {
+	case 0, 3:
+		return 1
+	case 2:
+		return 3
+	case 4:
+		return 2
+	case 6:
+		return 4
+	default:
+		return 0
+	}
+}
+
+func pngUnfilter(row, prev []byte, cpp int) bool {
+	filter := row[0]
+	cur := row[1:]
+	prior := prev[1:]
+	switch filter {
+	case 0:
+		return true
+	case 1:
+		for i := cpp; i < len(cur); i++ {
+			cur[i] += cur[i-cpp]
+		}
+		return true
+	case 2:
+		for i := range cur {
+			cur[i] += prior[i]
+		}
+		return true
+	case 3:
+		for i := range cur {
+			var a byte
+			if i >= cpp {
+				a = cur[i-cpp]
+			}
+			cur[i] += a>>1 + prior[i]>>1 + a&prior[i]&1
+		}
+		return true
+	case 4:
+		for i := range cur {
+			var a, c byte
+			if i >= cpp {
+				a = cur[i-cpp]
+				c = prior[i-cpp]
+			}
+			cur[i] += paeth(a, prior[i], c)
+		}
+		return true
+	default:
+		return false
+	}
+}
+
+func paeth(a, b, c byte) byte {
+	ia, ib, ic := int(a), int(b), int(c)
+	p := ia + ib - ic
+	pa, pb, pc := absInt(p-ia), absInt(p-ib), absInt(p-ic)
+	if pa <= pb && pa <= pc {
+		return a
+	}
+	if pb <= pc {
+		return b
+	}
+	return c
+}
+
+func absInt(n int) int {
+	if n < 0 {
+		return -n
+	}
+	return n
+}
+
+func decodePNGAlphaStd(r io.Reader) (pngAlpha, bool) {
+	decoded, err := png.Decode(r)
+	if err != nil {
+		return pngAlpha{}, false
+	}
+	b := decoded.Bounds()
+	n := b.Dx() * b.Dy()
+	alpha := acquireAlpha(n)
+	i := 0
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		for x := b.Min.X; x < b.Max.X; x++ {
+			alpha[i] = imageAlpha(decoded, x, y)
+			i++
+		}
+	}
+	return pngAlpha{w: b.Dx(), h: b.Dy(), a: alpha}, true
+}
+
 func imageAlpha(img image.Image, x, y int) uint8 {
 	switch img := img.(type) {
 	case *image.NRGBA:
@@ -402,8 +711,8 @@ func imageAlpha(img image.Image, x, y int) uint8 {
 	case *image.RGBA:
 		return img.Pix[img.PixOffset(x, y)+3]
 	default:
-		_, _, _, alpha := img.At(x, y).RGBA()
-		if alpha > 0 {
+		_, _, _, a := img.At(x, y).RGBA()
+		if a > 0 {
 			return 1
 		}
 		return 0
@@ -1090,7 +1399,7 @@ func editsClash(a, b []cpPatch) (clash, minor bool) {
 			if mapOverlayHasUnknownLayer(x, y) {
 				continue
 			}
-			if x.image && y.image && len(x.imageSource) > 0 && bytes.Equal(x.imageSource, y.imageSource) && x.imageFromArea == y.imageFromArea {
+			if x.image && y.image && x.imageDigest != "" && x.imageDigest == y.imageDigest && x.imageFromArea == y.imageFromArea {
 				continue
 			}
 			if x.image && y.image && strings.EqualFold(strings.TrimSpace(x.patchMode), "overlay") && strings.EqualFold(strings.TrimSpace(y.patchMode), "overlay") {
