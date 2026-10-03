@@ -30,7 +30,10 @@ function stepProfile(dir: -1 | 1) {
   }
   const i = visible.findIndex((p) => p.id === openId)
   const from = i < 0 ? 0 : i
-  open(visible[(from + dir + visible.length) % visible.length].id)
+  const next = visible[(from + dir + visible.length) % visible.length]
+  if (next) {
+    open(next.id)
+  }
 }
 
 export function runShortcut(id: ShortcutId) {
