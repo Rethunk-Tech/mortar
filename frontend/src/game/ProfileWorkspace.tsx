@@ -45,9 +45,10 @@ function WorkspaceTabs({ problemsTabCount }: { problemsTabCount: number | null }
       }}
     >
       <Tab value="browse" label={t`Browse`} />
-      <Tab value="mods" label={t`Mods`} />
+      <Tab value="mods" label={t`Mods`} data-tour="mods-tab" />
       <Tab
         value="problems"
+        data-tour="problems-tab"
         label={
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
             {t`Problems`}
