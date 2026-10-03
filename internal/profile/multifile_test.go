@@ -139,8 +139,7 @@ func TestSplitAndCombineEntries(t *testing.T) {
 	entryKey := res.Profile.Entries[0].Key
 	extraKey := store.NexusKey(7, 2)
 	e.item(t, extraKey, map[string]string{"B/manifest.json": manifestJSON("X.B")})
-	got, err := e.AddExtra("stardew", p.ID, entryKey, extraKey, Source{Kind: KindNexus, ModID: 7, FileID: 2})
-	if err != nil {
+	if _, err := e.AddExtra("stardew", p.ID, entryKey, extraKey, Source{Kind: KindNexus, ModID: 7, FileID: 2}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.SplitExtra("stardew", p.ID, entryKey, "missing-extra"); err == nil {
@@ -150,7 +149,7 @@ func TestSplitAndCombineEntries(t *testing.T) {
 	if err != nil || len(before) == 0 {
 		t.Fatalf("history before split: %v %v", before, err)
 	}
-	got, err = e.SplitExtra("stardew", p.ID, entryKey, extraKey)
+	got, err := e.SplitExtra("stardew", p.ID, entryKey, extraKey)
 	if err != nil {
 		t.Fatal(err)
 	}
