@@ -98,7 +98,7 @@ func Scan(dir string) Report {
 	return Report{Checks: checks}
 }
 
-// Findings are the non-passing checks, in the same order and wording the CLI used to print.
+// Findings are the non-passing checks, in report order.
 func Findings(r Report) (findings, fixes []string) {
 	for _, c := range r.Checks {
 		if c.Status == Pass {
