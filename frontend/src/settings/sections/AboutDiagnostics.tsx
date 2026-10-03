@@ -2,12 +2,19 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
 import { CircleCheck, CircleX, Copy, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
-import type { Report } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/doctor/models.ts'
-import { Doctor } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
+import type {
+  Check,
+  Report,
+} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/doctor/models.ts'
+import {
+  Doctor,
+  RepairNativeHosts,
+} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 
 const detail = { color: 'var(--mortar-ink-soft)' }
+const repairFix = 'Repair'
 
 function diagnosticKind(id: string): string {
   const cut = id.indexOf(':')
@@ -24,11 +31,12 @@ function StatusIcon({ status }: { status: string }) {
   return <CircleCheck size={16} color="#0CDF64" aria-hidden={true} />
 }
 
-export function Diagnostics() {
+function Diagnostics() {
   const { t } = useLingui()
   const push = useToasts((s) => s.push)
   const [report, setReport] = useState<Report | null>(null)
   const [busy, setBusy] = useState(false)
+  const [repairing, setRepairing] = useState<string | null>(null)
   const checkTitle = (id: string) => {
     switch (diagnosticKind(id)) {
       case 'mortar':
@@ -39,6 +47,8 @@ export function Diagnostics() {
         return t`Game`
       case 'nxm':
         return t`Nexus Mod Manager links`
+      case 'nativeHost':
+        return t`Browser extension`
       case 'settings':
         return t`Settings`
       case 'settingsCopies':
@@ -63,6 +73,13 @@ export function Diagnostics() {
       .then((r) => setReport(r ?? { checks: [] }))
       .catch(reportUnexpected)
       .finally(() => setBusy(false))
+  }
+  const repair = (check: Check) => {
+    setRepairing(check.id)
+    RepairNativeHosts()
+      .then(run)
+      .catch(reportUnexpected)
+      .finally(() => setRepairing(null))
   }
   const copy = () => {
     if (!report) {
@@ -106,11 +123,25 @@ export function Diagnostics() {
       {(report?.checks ?? []).map((c) => (
         <Box key={c.id} sx={{ display: 'flex', gap: '8px', alignItems: 'flex-start', minWidth: 0 }}>
           <StatusIcon status={c.status} />
-          <Box component="span" title={c.detail} sx={{ ...detail, minWidth: 0 }}>
+          <Box component="span" title={c.detail} sx={{ ...detail, minWidth: 0, flex: 1 }}>
             {checkTitle(c.id)}
           </Box>
+          {c.fix === repairFix ? (
+            <Button
+              size="small"
+              variant="outlined"
+              color="inherit"
+              disabled={repairing === c.id || busy}
+              onClick={() => repair(c)}
+              sx={{ flexShrink: 0, minWidth: 0, py: 0 }}
+            >
+              {t`Repair`}
+            </Button>
+          ) : null}
         </Box>
       ))}
     </Box>
   )
 }
+
+export { Diagnostics }

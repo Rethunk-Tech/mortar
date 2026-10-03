@@ -2058,10 +2058,7 @@ func (c *cmd) doctor() error {
 		}
 		return err
 	}
-	rep := doctor.FromLive(doctor.Live{
-		Version: d.Version, CommandVersion: c.version, DataDir: d.DataDir,
-		Games: d.Games, Environment: d.Environment, NxmHandled: d.NxmHandled, NxmPrevious: d.NxmPrevious,
-	})
+	rep := liveDoctorReport(d, c.version)
 	return c.emit(rep, func() {
 		fmt.Fprint(c.out, doctor.PlainText(rep))
 	})

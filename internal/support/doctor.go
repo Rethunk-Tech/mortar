@@ -31,7 +31,7 @@ func (s *Service) Doctor() (doctor.Report, error) {
 			env[g.ID] = s.env(g.ID)
 		}
 	}
-	live := doctor.FromLive(doctor.Live{
+	live := doctor.LiveWithNativeHosts(doctor.Live{
 		Version:        s.version,
 		CommandVersion: s.version,
 		DataDir:        dir,
