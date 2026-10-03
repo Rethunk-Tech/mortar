@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Skeleton, Typography } from '@mui/material'
 import { SearchX } from 'lucide-react'
@@ -7,6 +8,7 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { formatBytes } from '../i18n/bytes.ts'
 import { useLaunch } from '../launch/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -20,6 +22,7 @@ import { useDetail } from './detail.ts'
 import { EndorsePrompt } from './EndorsePrompt.tsx'
 import { LockedNote } from './LockedNote.tsx'
 import { useLastRun } from './lastRun.ts'
+import { useEntrySizes } from './listRows.ts'
 import { entryOf, modId, modStatusProblem, updateFor } from './lookup.ts'
 import { Cards } from './ModCards.tsx'
 import { ModDetail } from './ModDetail.tsx'
@@ -125,13 +128,34 @@ function ModsBody({
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto' }}>
-      {view === 'list' ? (
-        <ModList profile={profile} mods={shown} />
-      ) : (
-        <Cards shown={shown} profile={profile} />
-      )}
+      <Box sx={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        {view === 'list' ? (
+          <ModList profile={profile} mods={shown} />
+        ) : (
+          <Cards shown={shown} profile={profile} />
+        )}
+        <ModsFooter mods={shown} />
+      </Box>
       <ModSidebar profile={profile} />
     </Box>
+  )
+}
+
+// How many mods are shown and how much disk their entries take, once sizes have been measured.
+function ModsFooter({ mods }: { mods: Mod[] }) {
+  const { t } = useLingui()
+  const sizes = useEntrySizes()
+  const keys = new Set(mods.map((m) => m.key))
+  let total = 0
+  for (const key of keys) {
+    total += sizes[key] ?? 0
+  }
+  const count = plural(mods.length, { one: '# mod', other: '# mods' })
+  const label = total > 0 ? t`${count} · ${formatBytes(total)}` : count
+  return (
+    <Typography sx={{ px: 1.5, py: 0.75, fontSize: 12, color: 'text.secondary', flexShrink: 0 }}>
+      {label}
+    </Typography>
   )
 }
 
