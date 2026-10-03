@@ -9,7 +9,7 @@ import { SettingsSection } from '../SettingsSection.tsx'
 import { CacheClearDialog } from './DataMods.tsx'
 import { MoveDialog } from './DataMove.tsx'
 import { type MoveState, moveDataFolder } from './DataMoveRun.ts'
-import { StoreCleanup } from './DataStoreReport.tsx'
+import { CleanupDialog } from './DataStoreReport.tsx'
 import { BackupsKept, Location, UsageRows } from './DataUsage.tsx'
 import { useDataUsage } from './DataUsageLoad.ts'
 
@@ -70,21 +70,23 @@ export function Storage() {
   const { usage, bytes, restart } = useDataUsage()
   const move = useMove()
   const [clearing, setClearing] = useState(false)
+  const [cleaning, setCleaning] = useState(false)
   return (
     <>
       <Location usage={usage} onPicked={move.prepare} />
       <UsageRows
         usage={usage}
         bytes={bytes}
+        onCleanUp={() => setCleaning(true)}
         onClearCache={() => setClearing(true)}
         onDeletedProfiles={openProfiles}
       />
-      <StoreCleanup onChanged={restart} />
       <SettingsSection title={t`Retention`}>
         <PrefKeys keys={['storeRetentionDays', 'trashRetentionDays', 'historyEventsKept']} />
         <BackupsKept />
       </SettingsSection>
       {move.dialog}
+      <CleanupDialog open={cleaning} onClose={() => setCleaning(false)} onChanged={restart} />
       <CacheClearDialog open={clearing} onClose={() => setClearing(false)} onCleared={restart} />
     </>
   )

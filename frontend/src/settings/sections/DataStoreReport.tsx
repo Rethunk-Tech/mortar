@@ -1,7 +1,16 @@
 import type { I18n } from '@lingui/core'
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Checkbox, Skeleton } from '@mui/material'
+import {
+  Box,
+  Button,
+  Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Skeleton,
+} from '@mui/material'
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import type {
   Item as LeftoverItem,
@@ -19,10 +28,10 @@ import type {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/store/models.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { When } from '../../i18n/When.tsx'
+import { paper } from '../../mods/paper.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
-import { Searchable, SettingsSection } from '../SettingsSection.tsx'
 import { nowrap } from './dataStyles.ts'
 
 const SELECT_SEP = '\u0000'
@@ -203,7 +212,7 @@ function Section({
   )
 }
 
-function useCleanupData() {
+function useCleanupData(open: boolean) {
   const [store, setStore] = useState<{ unused: Sel[]; older: Sel[] } | null>(null)
   const [preview, setPreview] = useState<Preview | null>(null)
   const load = useCallback(() => {
@@ -213,8 +222,10 @@ function useCleanupData() {
     CleanupPreview().then(setPreview).catch(reportUnexpected)
   }, [])
   useEffect(() => {
-    load()
-  }, [load])
+    if (open) {
+      load()
+    }
+  }, [open, load])
   return { store, preview, load }
 }
 
@@ -292,9 +303,17 @@ function CleanupBody({
   )
 }
 
-function StoreCleanup({ onChanged }: { onChanged: () => void }) {
+function CleanupDialog({
+  open,
+  onClose,
+  onChanged,
+}: {
+  open: boolean
+  onClose: () => void
+  onChanged: () => void
+}) {
   const { t } = useLingui()
-  const { store, preview, load } = useCleanupData()
+  const { store, preview, load } = useCleanupData(open)
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const [confirm, setConfirm] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -332,6 +351,7 @@ function StoreCleanup({ onChanged }: { onChanged: () => void }) {
         setConfirm(false)
         setPicked(new Set())
         load()
+        onClose()
         onChanged()
         useToasts.getState().push({ kind: 'success', title: t`Freed ${formatBytes(bytes)}` })
       })
@@ -339,47 +359,42 @@ function StoreCleanup({ onChanged }: { onChanged: () => void }) {
       .finally(() => setBusy(false))
   }
   return (
-    <SettingsSection title={t`Clean up`}>
-      <Searchable
-        terms={`${t`Clean up`} ${t`Storage`} ${t`Mods no profile uses`} ${t`Older copies of the same mod`} ${t`Leftover files`}`}
-      >
-        <Box sx={{ display: 'flex', flexDirection: 'column', py: 0.5 }}>
-          <CleanupBody
-            store={store}
-            leftovers={leftovers}
-            picked={picked}
-            setPicked={setPicked}
-            toggle={toggle}
-          />
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth={true}
+      scroll="paper"
+      transitionDuration={0}
+      slotProps={{ paper }}
+    >
+      <DialogTitle>{t`Clean up storage`}</DialogTitle>
+      <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', py: 0.5 }}>
+        <CleanupBody
+          store={store}
+          leftovers={leftovers}
+          picked={picked}
+          setPicked={setPicked}
+          toggle={toggle}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Box sx={{ flex: 1, pl: 1, fontSize: 15 }}>
+          {picked.size > 0 ? t`${picked.size} selected · ${formatBytes(bytes)}` : ''}
         </Box>
-      </Searchable>
-      {picked.size > 0 ? (
-        // Pinned to the bottom of the page while anything is selected, like a list's action bar.
-        <Box
-          sx={{
-            position: 'sticky',
-            bottom: 0,
-            zIndex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-            px: 2,
-            py: 1.25,
-            bgcolor: 'var(--mortar-panel-92) !important',
-            boxShadow: '0 -4px 12px rgba(0,0,0,0.3)',
-          }}
+        <Button onClick={onClose} sx={nowrap}>
+          {t`Close`}
+        </Button>
+        <Button
+          variant="contained"
+          color="error"
+          disabled={picked.size === 0}
+          onClick={() => setConfirm(true)}
+          sx={nowrap}
         >
-          <Box sx={{ flex: 1, fontSize: 15 }}>
-            {t`${picked.size} selected · ${formatBytes(bytes)}`}
-          </Box>
-          <Button onClick={() => setPicked(new Set())} sx={nowrap}>
-            {t`Clear selection`}
-          </Button>
-          <Button variant="contained" color="error" onClick={() => setConfirm(true)} sx={nowrap}>
-            {t`Remove`}
-          </Button>
-        </Box>
-      ) : null}
+          {t`Remove`}
+        </Button>
+      </DialogActions>
       <ConfirmDialog
         open={confirm}
         title={t`Remove the selected items?`}
@@ -390,8 +405,8 @@ function StoreCleanup({ onChanged }: { onChanged: () => void }) {
         onCancel={() => setConfirm(false)}
         onConfirm={run}
       />
-    </SettingsSection>
+    </Dialog>
   )
 }
 
-export { StoreCleanup }
+export { CleanupDialog }

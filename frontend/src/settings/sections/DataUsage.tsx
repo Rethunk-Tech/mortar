@@ -45,6 +45,7 @@ const END_RADIUS = 4
 const MIN_SEGMENT = 4
 const PERCENT = 100
 const SKELETON_WIDTH = 64
+const LEGEND_SKELETON = 40
 const SEGMENT_ORDER: SegmentId[] = ['profiles', 'store', 'cache', 'backups', 'trash', 'other']
 const filled = { ...nowrap, bgcolor: 'var(--mortar-raised)', boxShadow: 'none' } as const
 
@@ -71,9 +72,18 @@ function Legend({
 }) {
   const colors = useSegmentColors()
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2.5, rowGap: 0.75, pt: 1.5 }}>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2, rowGap: 0.75, pt: 1.5 }}>
       {SEGMENT_ORDER.map((id) => (
-        <Box key={id} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: 13 }}>
+        <Box
+          key={id}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+            fontSize: 13,
+            whiteSpace: 'nowrap',
+          }}
+        >
           <Box
             aria-hidden={true}
             sx={{
@@ -84,17 +94,14 @@ function Legend({
               flexShrink: 0,
             }}
           />
-          <Box
-            component="span"
-            sx={{ fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}
-          >
+          <Box component="span" sx={{ fontWeight: 600 }}>
             {labels[id]}
           </Box>
           <Box
             component="span"
             sx={{ color: 'text.secondary', fontVariantNumeric: 'tabular-nums' }}
           >
-            {sizes ? formatBytes(sizes[id]) : <Skeleton width={SKELETON_WIDTH} />}
+            {sizes ? formatBytes(sizes[id]) : <Skeleton width={LEGEND_SKELETON} />}
           </Box>
         </Box>
       ))}
@@ -186,11 +193,13 @@ export function BackupsKept() {
 export function UsageRows({
   usage,
   bytes,
+  onCleanUp,
   onClearCache,
   onDeletedProfiles,
 }: {
   usage: DiskUse | null
   bytes: number
+  onCleanUp: () => void
   onClearCache: () => void
   onDeletedProfiles: () => void
 }) {
@@ -208,6 +217,9 @@ export function UsageRows({
   }
   const actions = (
     <>
+      <Button variant="contained" color="inherit" onClick={onCleanUp} sx={filled}>
+        {t`Clean up…`}
+      </Button>
       <Button variant="contained" color="inherit" onClick={onClearCache} sx={filled}>
         {t`Clear cache…`}
       </Button>
@@ -220,7 +232,7 @@ export function UsageRows({
     <>
       <SettingsSection title={t`Usage`}>
         <Searchable
-          terms={`${t`Usage`} ${t`Storage`} ${t`disk space`} ${Object.values(labels).join(' ')} ${t`Clear cache…`} ${t`Deleted profiles…`}`}
+          terms={`${t`Usage`} ${t`Storage`} ${t`disk space`} ${Object.values(labels).join(' ')} ${t`Clean up…`} ${t`Clear cache…`} ${t`Deleted profiles…`}`}
         >
           <StorageBar usage={usage} labels={labels} bytes={bytes} actions={actions} />
         </Searchable>

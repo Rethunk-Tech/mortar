@@ -149,22 +149,21 @@ function NexusModsSignedIn({
       </Searchable>
       <SettingsSection title={t`Tracking`}>
         <PrefByKey prefKey="autoTrackNexus" />
-        <SettingRow label={t`Untrack all…`} description={trackedText}>
-          <Button
-            variant="outlined"
-            disabled={untrackOff}
-            onClick={() => setConfirming(false)}
-          >{t`Untrack all…`}</Button>
-        </SettingRow>
-        <SettingRow
-          label={t`Untrack unused…`}
-          description={t`Untrack mods not used by any profile`}
-        >
-          <Button
-            variant="outlined"
-            disabled={untrackOff}
-            onClick={() => setConfirming(true)}
-          >{t`Untrack unused…`}</Button>
+        <SettingRow label={t`Untrack on Nexus`} description={trackedText}>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              disabled={untrackOff}
+              onClick={() => setConfirming(true)}
+              sx={{ whiteSpace: 'nowrap' }}
+            >{t`Unused…`}</Button>
+            <Button
+              variant="outlined"
+              disabled={untrackOff}
+              onClick={() => setConfirming(false)}
+              sx={{ whiteSpace: 'nowrap' }}
+            >{t`All…`}</Button>
+          </Box>
         </SettingRow>
       </SettingsSection>
       <SettingsSection title={t`Endorsements`}>
@@ -177,7 +176,7 @@ function NexusModsSignedIn({
         {...(premium
           ? {}
           : {
-              description: t`Free accounts need one click on Nexus for every download. Mortar opens each file's page in turn and takes the download from your click.`,
+              description: t`Free accounts click Download on Nexus for each file; Mortar opens each page in turn.`,
             })}
       >
         <Searchable terms={`${t`API requests`} Nexus ${t`rate limit`}`}>
