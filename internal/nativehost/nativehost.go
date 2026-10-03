@@ -86,6 +86,7 @@ type modInProfile struct {
 	RequiredBy      []string `json:"requiredBy,omitempty"`
 	RequiredByNames []string `json:"requiredByNames,omitempty"`
 	Pinned          bool     `json:"pinned,omitempty"`
+	PinReason       string   `json:"pinReason,omitempty"`
 	SkipVersion     string   `json:"skipVersion,omitempty"`
 	SkipSources     []string `json:"skipSources,omitempty"`
 }
@@ -101,6 +102,7 @@ type diskMod struct {
 
 type diskEntry struct {
 	Pinned      bool     `json:"pinned"`
+	PinReason   string   `json:"pinReason,omitempty"`
 	SkipVersion string   `json:"skipVersion"`
 	SkipSources []string `json:"skipSources"`
 	Disabled    []string `json:"disabled"`
@@ -543,6 +545,7 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 		var fileID int
 		var targets []string
 		var pinned bool
+		var pinReason string
 		var skipVersion string
 		var skipSources []string
 		for _, entry := range profile.Entries {
@@ -555,6 +558,7 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 			}
 			fileID = entry.Source.FileID
 			pinned = entry.Pinned
+			pinReason = entry.PinReason
 			skipVersion = entry.SkipVersion
 			skipSources = append([]string{}, entry.SkipSources...)
 			for _, m := range entry.Mods {
@@ -570,6 +574,7 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 		}
 		if dir.Name() == openID {
 			found.Pinned = pinned
+			found.PinReason = pinReason
 			found.SkipVersion = skipVersion
 			found.SkipSources = skipSources
 			found.RequiredBy, found.RequiredByNames = requiredByMods(profile.Entries, targets)
