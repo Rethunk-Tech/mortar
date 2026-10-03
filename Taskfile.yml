@@ -54,6 +54,10 @@ tasks:
         msg: "MORTAR_UPDATE_KEY must name the updater's private key file"
       - sh: grep -q 'const version = "{{.VERSION}}"' main.go
         msg: "main.go's version is not {{.VERSION}}; an app built from it would offer itself the same update"
+      - sh: 'grep -q ''version: "{{.VERSION}}"'' build/config.yml'
+        msg: "build/config.yml info.version is not {{.VERSION}}"
+      - sh: 'grep -q ''name="tech.rethunk.mortar" version="{{.VERSION}}"'' build/windows/wails.exe.manifest'
+        msg: "build/windows/wails.exe.manifest assembly version is not {{.VERSION}}"
       - sh: test -f bin/mortar-linux-x86_64.AppImage && test -f bin/mortar-windows-amd64.exe
         msg: "need the amd64 AppImage and Windows exe; include mortar-linux-aarch64.AppImage when the arm64 job has produced it"
     cmds:

@@ -47,6 +47,17 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Version agreement
+        run: |
+          set -euo pipefail
+          go_ver="$(sed -n 's/^const version = "\(.*\)"$/\1/p' main.go)"
+          cfg_ver="$(sed -n 's/^  version: "\(.*\)".*/\1/p' build/config.yml)"
+          man_ver="$(sed -n 's/.*name="tech.rethunk.mortar" version="\([^"]*\)".*/\1/p' build/windows/wails.exe.manifest)"
+          if [ -z "$go_ver" ] || [ "$go_ver" != "$cfg_ver" ] || [ "$go_ver" != "$man_ver" ]; then
+            echo "version mismatch: main.go=$go_ver config.yml=$cfg_ver manifest=$man_ver" >&2
+            exit 1
+          fi
+
       - name: GTK4 and WebKitGTK 6.0
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev
 
