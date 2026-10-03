@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, TextField } from '@mui/material'
+import { Box, Button } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
 import { SetShortcuts } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
@@ -13,6 +13,7 @@ import {
   setShortcutCapturing,
 } from '../shortcuts.ts'
 import { useSettings } from '../store.ts'
+import { useSettingsSearch } from '../useSettingsSearch.ts'
 
 type Labels = Record<ShortcutId, string>
 
@@ -131,7 +132,7 @@ function ShortcutRow({
 
 export function Shortcuts() {
   const { t } = useLingui()
-  const [filter, setFilter] = useState('')
+  const query = useSettingsSearch()
   const [recording, setRecording] = useState<ShortcutId | null>(null)
   const [conflict, setConflict] = useState<{ id: ShortcutId; other: ShortcutId } | null>(null)
   const stored = useSettings((s) => s.shortcuts)
@@ -169,29 +170,10 @@ export function Shortcuts() {
       setShortcutCapturing(false)
     }
   }, [recording, bindings])
-  const rows = SHORTCUTS.filter((row) =>
-    labels[row.id].toLowerCase().includes(filter.toLowerCase()),
-  )
+  const q = query.toLowerCase()
+  const rows = SHORTCUTS.filter((row) => labels[row.id].toLowerCase().includes(q))
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: 14 }}>
-      <TextField
-        size="small"
-        label={t`Filter shortcuts`}
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-      />
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <Button
-          size="small"
-          onClick={() => {
-            setConflict(null)
-            SetShortcuts(defaultBindings()).catch(reportUnexpected)
-          }}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
-          {t`Reset all`}
-        </Button>
-      </Box>
       {(['General', 'Navigation', 'Profiles', 'Mods list', 'Console'] as const).map((group) => {
         const grouped = rows.filter((row) => row.group === group)
         return grouped.length > 0 ? (
@@ -224,6 +206,16 @@ export function Shortcuts() {
           </Box>
         ) : null
       })}
+      <Button
+        variant="text"
+        onClick={() => {
+          setConflict(null)
+          SetShortcuts(defaultBindings()).catch(reportUnexpected)
+        }}
+        sx={{ alignSelf: 'flex-start' }}
+      >
+        {t`Reset all`}
+      </Button>
     </Box>
   )
 }
