@@ -18,10 +18,10 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"unicode"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/jsonc"
 )
 
 const contentPatcherID = "Pathoschild.ContentPatcher"
@@ -965,7 +965,7 @@ func flushPackDiskCache(mods []Installed) {
 		packDiskState.Unlock()
 		return
 	}
-	if err := os.WriteFile(path, packed, 0o600); err != nil {
+	if err := datadir.WriteFile(path, packed, 0o600); err != nil {
 		packDiskState.Lock()
 		packDiskState.dirty = true
 		packDiskState.Unlock()
@@ -998,7 +998,7 @@ func readConfigSchema(root string) map[string]cpSchema {
 	var doc struct {
 		ConfigSchema map[string]json.RawMessage `json:"ConfigSchema"`
 	}
-	if json.Unmarshal(stripJSONNoise(raw), &doc) != nil {
+	if json.Unmarshal(jsonc.Clean(raw), &doc) != nil {
 		return nil
 	}
 	out := make(map[string]cpSchema, len(doc.ConfigSchema))
@@ -1036,7 +1036,7 @@ func isContentPatcherPack(folder string) bool {
 		return false
 	}
 	var doc map[string]json.RawMessage
-	if json.Unmarshal(stripJSONNoise(raw), &doc) != nil {
+	if json.Unmarshal(jsonc.Clean(raw), &doc) != nil {
 		return false
 	}
 	var pack map[string]json.RawMessage
@@ -1085,7 +1085,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			When  map[string]json.RawMessage `json:"When"`
 		} `json:"DynamicTokens"`
 	}
-	if err := json.Unmarshal(stripJSONNoise(raw), &doc); err != nil {
+	if err := json.Unmarshal(jsonc.Clean(raw), &doc); err != nil {
 		return
 	}
 	// A dynamic token's value gates content like a change does, so its conditions count for compatibility
@@ -1158,8 +1158,8 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			pack.patches = append(pack.patches, cpPatch{kind: kind, when: when, source: rel, index: i, action: action})
 			continue
 		}
-		fromArea := string(stripJSONNoise(ch.FromArea))
-		toArea := string(stripJSONNoise(ch.ToArea))
+		fromArea := string(jsonc.Clean(ch.FromArea))
+		toArea := string(jsonc.Clean(ch.ToArea))
 		for _, t := range splitTargets(ch.Target) {
 			if hasToken(t) {
 				pack.skips++
@@ -1787,90 +1787,10 @@ func inside(root, rel string) (string, bool) {
 		return "", false
 	}
 	joined := filepath.Join(root, filepath.FromSlash(rel))
-	relToRoot, err := filepath.Rel(root, joined)
-	if err != nil || relToRoot == ".." || strings.HasPrefix(relToRoot, ".."+string(os.PathSeparator)) {
+	if !datadir.UnderRoot(root, joined) {
 		return "", false
 	}
 	return joined, true
-}
-
-// stripJSONNoise removes // and /* */ comments and trailing commas so Content Patcher's JSON parses.
-func stripJSONNoise(b []byte) []byte {
-	out := make([]byte, 0, len(b))
-	inStr := false
-	esc := false
-	i := 0
-	for i < len(b) {
-		c := b[i]
-		if inStr {
-			out = append(out, c)
-			if esc {
-				esc = false
-			} else if c == '\\' {
-				esc = true
-			} else if c == '"' {
-				inStr = false
-			}
-			i++
-			continue
-		}
-		if c == '"' {
-			inStr = true
-			out = append(out, c)
-			i++
-			continue
-		}
-		if c == '/' && i+1 < len(b) {
-			if b[i+1] == '/' {
-				i += 2
-				for i < len(b) && b[i] != '\n' {
-					i++
-				}
-				continue
-			}
-			if b[i+1] == '*' {
-				i += 2
-				for i+1 < len(b) && (b[i] != '*' || b[i+1] != '/') {
-					i++
-				}
-				if i+1 < len(b) {
-					i += 2
-				}
-				continue
-			}
-		}
-		if c == ',' {
-			j := i + 1
-			for j < len(b) && unicode.IsSpace(rune(b[j])) {
-				j++
-			}
-			for j < len(b) && b[j] == '/' && j+1 < len(b) && (b[j+1] == '/' || b[j+1] == '*') {
-				if b[j+1] == '/' {
-					for j < len(b) && b[j] != '\n' {
-						j++
-					}
-				} else {
-					j += 2
-					for j+1 < len(b) && (b[j] != '*' || b[j+1] != '/') {
-						j++
-					}
-					if j+1 < len(b) {
-						j += 2
-					}
-				}
-				for j < len(b) && unicode.IsSpace(rune(b[j])) {
-					j++
-				}
-			}
-			if j < len(b) && (b[j] == '}' || b[j] == ']') {
-				i++
-				continue
-			}
-		}
-		out = append(out, c)
-		i++
-	}
-	return out
 }
 
 func assetConflicts(mods []Installed) []AssetConflict {
@@ -2435,7 +2355,7 @@ func loadFileBlank(hit packHit, load cpPatch, target string) bool {
 	if !ok {
 		return false
 	}
-	raw = bytes.TrimSpace(stripJSONNoise(raw))
+	raw = bytes.TrimSpace(jsonc.Clean(raw))
 	var object map[string]json.RawMessage
 	if json.Unmarshal(raw, &object) == nil && object != nil && len(object) == 0 {
 		return true
@@ -2463,7 +2383,7 @@ func loadFilesEqual(a packHit, ap cpPatch, b packHit, bp cpPatch, target string)
 
 func loadJSONValue(raw []byte) (any, bool) {
 	var value any
-	if json.Unmarshal(stripJSONNoise(raw), &value) != nil {
+	if json.Unmarshal(jsonc.Clean(raw), &value) != nil {
 		return nil, false
 	}
 	return value, true
@@ -2655,11 +2575,7 @@ func hideDismissedBroken(broken []Broken, tokens []string) ([]Broken, []Dismisse
 	dismissed := []DismissedProblem{}
 	for _, b := range broken {
 		token := dismissToken("broken", strings.ToLower(b.UniqueID))
-		legacy := dismissToken("abandoned", strings.ToLower(b.UniqueID))
-		if (b.Status == "abandoned" || b.Status == "obsolete" || b.Status == "deprecated") && (skip[token] || skip[legacy]) {
-			if skip[legacy] {
-				token = legacy
-			}
+		if (b.Status == "abandoned" || b.Status == "obsolete" || b.Status == "deprecated") && skip[token] {
 			dismissed = append(dismissed, DismissedProblem{Token: token, Broken: &b})
 			continue
 		}

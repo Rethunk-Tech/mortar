@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/jsonc"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
@@ -25,7 +26,7 @@ func testdataPack(t *testing.T, name string) Installed {
 	}
 	id := name
 	var doc map[string]any
-	if json.Unmarshal(stripJSONNoise(raw), &doc) == nil {
+	if json.Unmarshal(jsonc.Clean(raw), &doc) == nil {
 		if u, ok := doc["UniqueID"].(string); ok {
 			id = u
 		}
