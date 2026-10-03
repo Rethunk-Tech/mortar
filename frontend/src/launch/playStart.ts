@@ -7,7 +7,9 @@ import { LastSaveGap } from '../../bindings/github.com/Rethunk-AI/mortar/interna
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { isGameId, useNav } from '../nav/store.ts'
+import { foldedOverrides, resolveOverride } from '../profiles/overrideValue.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useSettings } from '../settings/store.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
@@ -128,7 +130,16 @@ async function startWithWarning(opts: {
   }
   if (!opts.skipPrePlay) {
     const listed = useProfiles.getState().profiles.find((p) => p.id === opts.profile)
-    if (!listed?.skipPlayCheck) {
+    const skipCheck =
+      resolveOverride(
+        'skipPlayCheck',
+        String(
+          (useSettings.getState().games?.stardew as { skipPlayCheck?: boolean } | undefined)
+            ?.skipPlayCheck ?? false,
+        ),
+        listed ? foldedOverrides(listed) : undefined,
+      ) === 'true'
+    if (!skipCheck) {
       opts.set({ starting: true, startingProfile: opts.profile })
       try {
         const groups = await gatherPlayIssues(opts.game, opts.profile)
@@ -141,7 +152,7 @@ async function startWithWarning(opts: {
               profile: opts.profile,
               direct: opts.direct,
               groups,
-              skipPlayCheck: listed?.skipPlayCheck ?? false,
+              skipPlayCheck: skipCheck,
             },
           })
           return

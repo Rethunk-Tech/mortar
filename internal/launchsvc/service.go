@@ -579,7 +579,9 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 	if ps, err := s.gameProcs(g); err == nil && len(ps) > 0 {
 		return usererr.Wrap(usererr.Busy, fmt.Errorf("%s is already running", g.Name()))
 	}
-	req := launch.Request{InstallDir: dir, ModsDir: modsDir, Direct: direct, Vanilla: vanilla, Seen: s.seen(g), HideWindow: !s.settings.Get().GamePrefs(g.ID()).ShowConsoleWindow()}
+	ov := launchOverrides(s.profiles, g.ID(), profileID)
+	showConsole := settings.Resolve(s.settings.Get(), "showSmapiConsole", g.ID(), ov) == "true"
+	req := launch.Request{InstallDir: dir, ModsDir: modsDir, Direct: direct, Vanilla: vanilla, Seen: s.seen(g), HideWindow: !showConsole}
 	if !vanilla && profileID != "" {
 		st := s.settings.Get()
 		if err := overlay.ApplyToMods(modsDir, st.OverlayEnabled, st.OverlayPort, st.OverlayToken); err != nil {
@@ -684,8 +686,9 @@ func (s *Service) backupChangedSaves(gameID, profileID string, g game.Game, inst
 	set := s.settings.Get()
 	recorded := set.LastPlayed[gameID].GameVersion
 	installed := g.LoaderStatus(installDir, set.Loaders[gameID]).GameVersion
-	gp := set.GamePrefs(gameID)
-	if !backupNeeded(gp.BackupBeforePlay, events, lastRun, recorded, installed) {
+	ov := launchOverrides(s.profiles, gameID, profileID)
+	mode := settings.Resolve(set, "backupBeforePlay", gameID, ov)
+	if !backupNeeded(mode, events, lastRun, recorded, installed) {
 		return nil
 	}
 	_, selected, _, err := game.Resolve(s.home, set, gameID)
@@ -703,11 +706,35 @@ func (s *Service) backupChangedSaves(gameID, profileID string, g game.Game, inst
 	_, err = backup.Saves(
 		savesDir,
 		filepath.Join(base, "backups"),
-		gp.LaunchBackupsKept,
+		launchBackupsKept(set, gameID, ov),
 		time.Now(),
 		backup.Cause{Profile: profileID, Kind: backup.KindLaunch},
 	)
 	return err
+}
+
+func launchOverrides(profiles *profile.Store, gameID, profileID string) map[string]string {
+	if profiles == nil || profileID == "" {
+		return nil
+	}
+	all, err := profiles.List(gameID)
+	if err != nil {
+		return nil
+	}
+	for _, p := range all {
+		if p.ID == profileID {
+			return p.PrefOverrides()
+		}
+	}
+	return nil
+}
+
+func launchBackupsKept(set settings.Settings, gameID string, ov map[string]string) int {
+	n, err := strconv.Atoi(settings.Resolve(set, "launchBackupsKept", gameID, ov))
+	if err != nil {
+		return set.GamePrefs(gameID).LaunchBackupsKept
+	}
+	return n
 }
 
 func backupNeeded(mode string, events []profile.HistoryEvent, lastRun time.Time, recorded, installed string) bool {

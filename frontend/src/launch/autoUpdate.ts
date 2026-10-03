@@ -20,9 +20,12 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { installableUpdate, sameId, visibleUpdates } from '../mods/lookup.ts'
+import { foldedOverrides, resolveOverride } from '../profiles/overrideValue.ts'
 import { useProfiles } from '../profiles/store.ts'
 import type { Want } from '../queue/actions.ts'
+import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useNexus } from '../settings/nexus.ts'
+import { useSettings } from '../settings/store.ts'
 
 interface AutoUpdatePlan {
   updates: Update[]
@@ -186,7 +189,14 @@ async function updateBeforePlay(
   force = false,
 ): Promise<AutoUpdateResult> {
   const profile = useProfiles.getState().profiles.find((candidate) => candidate.id === profileId)
-  if (!(force || profile?.updateBeforePlay)) {
+  const prefs = gamePrefs(useSettings.getState())
+  const updateOn =
+    resolveOverride(
+      'updateModsBeforePlayDefault',
+      String(prefs.updateModsBeforePlayDefault),
+      profile ? foldedOverrides(profile) : undefined,
+    ) === 'true'
+  if (!(force || updateOn)) {
     return { restorePoint: null, previousRunId: '', previousErrors: null }
   }
   if (!profile) {
