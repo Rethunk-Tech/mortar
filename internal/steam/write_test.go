@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
@@ -17,7 +18,7 @@ func TestBackupBeforeEditOnlyCopiesOnce(t *testing.T) {
 	if err := backupBeforeEdit(path, []byte("new"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.AtomicWriteFile(path, []byte("new"), 0o600); err != nil {
+	if err := datadir.WriteFile(path, []byte("new"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := backupBeforeEdit(path, []byte("newer"), 0o600); err != nil {
@@ -38,7 +39,7 @@ func TestAtomicWriteFileLeavesOldFileOnWriteFailure(t *testing.T) {
 	if err := os.WriteFile(path, []byte("old"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.AtomicWriteFile(filepath.Join(dir, "missing", "steam.vdf"), []byte("new"), 0o600); err == nil {
+	if err := datadir.WriteFile(filepath.Join(dir, "missing", "steam.vdf"), []byte("new"), 0o600); err == nil {
 		t.Fatal("expected write failure")
 	}
 	body, err := fsx.ReadFile(path)

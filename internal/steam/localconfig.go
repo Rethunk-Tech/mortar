@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
@@ -171,5 +172,5 @@ func (s Steam) SetLaunchOptions(appID string, merge func(current string) string)
 	if err := backupBeforeEdit(path, next, info.Mode().Perm()); err != nil {
 		return "", err
 	}
-	return value, fsx.AtomicWriteFile(path, next, info.Mode().Perm())
+	return value, datadir.WriteFile(path, next, info.Mode().Perm())
 }

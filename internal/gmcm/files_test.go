@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
 
 func TestReadWriteCaptureAndPending(t *testing.T) {
@@ -30,7 +32,7 @@ func TestReadWriteCaptureAndPending(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(dir, captureDir), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := writeJSONAtomic(CapturePath(dir, "Example.Mod"), menu); err != nil {
+	if err := datadir.WriteJSON(CapturePath(dir, "Example.Mod"), menu); err != nil {
 		t.Fatal(err)
 	}
 	got, err := ReadCapture(dir, "Example.Mod")
@@ -40,7 +42,7 @@ func TestReadWriteCaptureAndPending(t *testing.T) {
 	if got.Mod.ID != "Example.Mod" || len(got.Pages) != 1 || got.Pages[0].Options[0].Name != "Volume" {
 		t.Fatalf("capture: %+v", got)
 	}
-	if err := writeJSONAtomic(filepath.Join(dir, captureDir, indexName), Index{
+	if err := datadir.WriteJSON(filepath.Join(dir, captureDir, indexName), Index{
 		Schema: Schema,
 		Mods:   []IndexMod{{ID: "Example.Mod", Name: "Example"}},
 	}); err != nil {
@@ -61,7 +63,7 @@ func TestReadWriteCaptureAndPending(t *testing.T) {
 	if pending.Edits[0].Value != float64(8) && pending.Edits[0].Value != 8 {
 		t.Fatalf("value %v", pending.Edits[0].Value)
 	}
-	if err := writeJSONAtomic(ResultPath(dir, "Example.Mod"), Result{
+	if err := datadir.WriteJSON(ResultPath(dir, "Example.Mod"), Result{
 		Schema:  Schema,
 		Applied: 0,
 		Skipped: []Skipped{{Edit: edit, Reason: "not found"}},
@@ -83,7 +85,7 @@ func TestReadPendingRejectsUnknownSchema(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(dir, pendingDir), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := writeJSONAtomic(PendingPath(dir, "Example.Mod"), Pending{
+	if err := datadir.WriteJSON(PendingPath(dir, "Example.Mod"), Pending{
 		Schema: Schema + 1,
 		Edits:  []Edit{{Name: "Volume"}},
 	}); err != nil {

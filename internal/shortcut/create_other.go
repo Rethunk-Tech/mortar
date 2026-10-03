@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
 
 // create writes a desktop entry under the user's applications folder, where launchers and app menus find it.
@@ -33,7 +33,7 @@ Icon=mortar
 Terminal=false
 Categories=Game;
 `, desktopValue(name), strings.ReplaceAll(exe, `"`, `\"`), arg)
-	if err := os.WriteFile(path, []byte(entry), 0o600); err != nil {
+	if err := datadir.WriteFile(path, []byte(entry), 0o600); err != nil {
 		return "", err
 	}
 	return path, nil

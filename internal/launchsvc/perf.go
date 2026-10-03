@@ -1,7 +1,6 @@
 package launchsvc
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -11,7 +10,6 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 )
 
@@ -126,16 +124,13 @@ func (s *Service) PerformanceReports(gameID, profileID string) ([]SavedReport, e
 }
 
 func readPerformanceReports(dir string) (performanceReportsIndex, error) {
-	data, err := fsx.ReadFile(filepath.Join(dir, "performance.json"))
-	if errors.Is(err, os.ErrNotExist) {
-		return performanceReportsIndex{Reports: []SavedReport{}}, nil
-	}
+	var index performanceReportsIndex
+	found, err := datadir.ReadJSON(filepath.Join(dir, "performance.json"), &index)
 	if err != nil {
 		return performanceReportsIndex{}, err
 	}
-	var index performanceReportsIndex
-	if err := json.Unmarshal(data, &index); err != nil {
-		return performanceReportsIndex{}, err
+	if !found {
+		return performanceReportsIndex{Reports: []SavedReport{}}, nil
 	}
 	if index.Reports == nil {
 		index.Reports = []SavedReport{}

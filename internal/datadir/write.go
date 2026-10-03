@@ -5,7 +5,24 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
+
+// ReadJSON reads path into v. Missing files yield found=false and leave v unchanged.
+func ReadJSON(path string, v any) (found bool, err error) {
+	b, err := fsx.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	if err := json.Unmarshal(b, v); err != nil {
+		return true, err
+	}
+	return true, nil
+}
 
 // WriteJSON marshals v and replaces path with it through a temp file and rename.
 func WriteJSON(path string, v any) error {

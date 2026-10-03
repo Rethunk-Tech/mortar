@@ -1,7 +1,6 @@
 package savessvc
 
 import (
-	"encoding/json"
 	"errors"
 	"maps"
 	"os"
@@ -120,16 +119,13 @@ func (s *Store) load(gameID string) (lastPlayedFile, error) {
 }
 
 func (s *Store) loadUnlocked(gameID string) (lastPlayedFile, error) {
-	data, err := os.ReadFile(s.path(gameID))
-	if errors.Is(err, os.ErrNotExist) {
-		return lastPlayedFile{Saves: map[string]LastPlayed{}}, nil
-	}
+	var parsed lastPlayedFile
+	found, err := datadir.ReadJSON(s.path(gameID), &parsed)
 	if err != nil {
 		return lastPlayedFile{}, err
 	}
-	var parsed lastPlayedFile
-	if err := json.Unmarshal(data, &parsed); err != nil {
-		return lastPlayedFile{}, err
+	if !found {
+		return lastPlayedFile{Saves: map[string]LastPlayed{}}, nil
 	}
 	if parsed.Saves == nil {
 		parsed.Saves = map[string]LastPlayed{}

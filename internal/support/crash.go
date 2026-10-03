@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync/atomic"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
@@ -64,7 +65,7 @@ func writeCrashSeen(seenPath, crashPath string) {
 	if info, err := os.Stat(crashPath); err == nil {
 		size = info.Size()
 	}
-	_ = os.WriteFile(seenPath, []byte(strconv.FormatInt(size, 10)+"\n"), 0o600)
+	_ = datadir.WriteFile(seenPath, []byte(strconv.FormatInt(size, 10)+"\n"), 0o600)
 }
 
 func prevLogUnclean(prevPath string) bool {

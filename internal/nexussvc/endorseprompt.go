@@ -1,7 +1,6 @@
 package nexussvc
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -10,7 +9,6 @@ import (
 	"sync"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 const (
@@ -49,15 +47,12 @@ type promptStore struct {
 
 func openPromptStore(dir string) (*promptStore, error) {
 	p := &promptStore{path: filepath.Join(dir, promptFileName), mods: map[string]promptProgress{}}
-	data, err := fsx.ReadFile(p.path)
-	if errors.Is(err, os.ErrNotExist) {
-		return p, nil
-	}
+	found, err := datadir.ReadJSON(p.path, &p.mods)
 	if err != nil {
 		return nil, err
 	}
-	if err := json.Unmarshal(data, &p.mods); err != nil {
-		return nil, err
+	if !found {
+		return p, nil
 	}
 	if p.mods == nil {
 		p.mods = map[string]promptProgress{}

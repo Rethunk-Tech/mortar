@@ -4,7 +4,6 @@ package tools
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -45,16 +44,13 @@ func (s *Store) load(game string) ([]Tool, error) {
 	if err != nil {
 		return nil, err
 	}
-	b, err := os.ReadFile(filepath.Clean(path))
-	if errors.Is(err, os.ErrNotExist) {
-		return []Tool{}, nil
-	}
+	var f file
+	found, err := datadir.ReadJSON(path, &f)
 	if err != nil {
 		return nil, err
 	}
-	var f file
-	if err := json.Unmarshal(b, &f); err != nil {
-		return nil, err
+	if !found {
+		return []Tool{}, nil
 	}
 	if f.Tools == nil {
 		return []Tool{}, nil

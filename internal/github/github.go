@@ -127,23 +127,15 @@ type resumeMeta struct {
 func resumeSidecar(path string) string { return path + ".resume.json" }
 
 func loadResume(path string) resumeMeta {
-	b, err := os.ReadFile(resumeSidecar(path))
-	if err != nil {
-		return resumeMeta{}
-	}
 	var m resumeMeta
-	if json.Unmarshal(b, &m) != nil {
+	if _, err := datadir.ReadJSON(resumeSidecar(path), &m); err != nil {
 		return resumeMeta{}
 	}
 	return m
 }
 
 func saveResume(path string, m resumeMeta) {
-	b, err := json.Marshal(m)
-	if err != nil {
-		return
-	}
-	_ = os.WriteFile(resumeSidecar(path), b, 0o600)
+	_ = datadir.WriteJSON(resumeSidecar(path), m)
 }
 
 func dropDownload(path string) {

@@ -1,7 +1,6 @@
 package gmcm
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -9,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
 
 const (
@@ -108,7 +107,7 @@ func WritePending(profileDir, uniqueID string, edits []Edit) error {
 		}
 		return nil
 	}
-	return writeJSONAtomic(PendingPath(profileDir, uniqueID), Pending{Schema: Schema, Edits: edits})
+	return datadir.WriteJSON(PendingPath(profileDir, uniqueID), Pending{Schema: Schema, Edits: edits})
 }
 
 func ReadResult(profileDir, uniqueID string) (Result, error) {
@@ -131,33 +130,12 @@ func checkSchema(got int) error {
 }
 
 func readJSON(path string, dest any) error {
-	raw, err := fsx.ReadFile(path)
+	found, err := datadir.ReadJSON(path, dest)
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(raw, dest)
-}
-
-func writeJSONAtomic(path string, v any) error {
-	raw, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		return err
+	if !found {
+		return fs.ErrNotExist
 	}
-	raw = append(raw, '\n')
-	dir := filepath.Dir(path)
-	tmp, err := os.CreateTemp(dir, ".gmcm-*.tmp")
-	if err != nil {
-		return err
-	}
-	tmpName := tmp.Name()
-	if _, err := tmp.Write(raw); err != nil {
-		_ = tmp.Close()
-		_ = os.Remove(tmpName)
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		_ = os.Remove(tmpName)
-		return err
-	}
-	return os.Rename(tmpName, path)
+	return nil
 }

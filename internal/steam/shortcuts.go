@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
@@ -198,7 +199,7 @@ func (s Steam) AddShortcut(sc Shortcut) (bool, error) {
 	if err := backupBeforeEdit(path, next, 0o600); err != nil {
 		return false, err
 	}
-	if err := fsx.AtomicWriteFile(path, next, 0o600); err != nil {
+	if err := datadir.WriteFile(path, next, 0o600); err != nil {
 		return false, err
 	}
 	if err := writeGrid(dir, shortcutAppID(quoted(sc.Exe), sc.Name), sc.Cover); err != nil {

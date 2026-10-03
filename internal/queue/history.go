@@ -1,8 +1,6 @@
 package queue
 
 import (
-	"encoding/json"
-	"os"
 	"path/filepath"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
@@ -41,12 +39,8 @@ func (s *Service) historyPath() string {
 }
 
 func (s *Service) loadHistory() []HistoryEntry {
-	b, err := os.ReadFile(s.historyPath())
-	if err != nil {
-		return nil
-	}
 	var entries []HistoryEntry
-	if json.Unmarshal(b, &entries) != nil {
+	if _, err := datadir.ReadJSON(s.historyPath(), &entries); err != nil || entries == nil {
 		return nil
 	}
 	return entries

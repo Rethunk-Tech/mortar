@@ -24,6 +24,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/desktopnotify"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/nxm"
@@ -272,7 +273,7 @@ func New(d Deps) (*Service, error) {
 		d: d, kick: make(chan struct{}, 1), cancels: map[string]context.CancelFunc{},
 		premiumFetch: make(chan struct{}, 3), freeFetch: make(chan struct{}, 1),
 	}
-	b, err := os.ReadFile(filepath.Join(d.Dir, fileName))
+	b, err := fsx.ReadFile(filepath.Join(d.Dir, fileName))
 	if errors.Is(err, fs.ErrNotExist) {
 		return s, nil
 	}

@@ -9,6 +9,8 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
 
 type Settings struct {
@@ -28,7 +30,7 @@ type Settings struct {
 var (
 	elementPattern = regexp.MustCompile(`(<([A-Za-z_][A-Za-z0-9_.:-]*)(?:\s[^>]*)?>)([^<]*)(</([A-Za-z_][A-Za-z0-9_.:-]*)>)`)
 	readFile       = os.ReadFile
-	writeFile      = os.WriteFile
+	writeFile      = datadir.WriteFile
 )
 
 func (s Settings) Validate() error {

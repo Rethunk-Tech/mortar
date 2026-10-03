@@ -4,7 +4,6 @@ package bundles
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -16,7 +15,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
 	gamepkg "github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	modstore "github.com/Rethunk-AI/mortar/internal/store"
@@ -90,16 +88,13 @@ func (s *Service) readLocked(gameID string) ([]Bundle, error) {
 	if err != nil {
 		return nil, err
 	}
-	b, err := fsx.ReadFile(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return []Bundle{}, nil
-	}
-	if err != nil {
-		return nil, err
-	}
 	var bundles []Bundle
-	if err := json.Unmarshal(b, &bundles); err != nil {
+	found, err := datadir.ReadJSON(path, &bundles)
+	if err != nil {
 		return nil, fmt.Errorf("read bundles for %s: %w", gameID, err)
+	}
+	if !found {
+		return []Bundle{}, nil
 	}
 	if bundles == nil {
 		bundles = []Bundle{}

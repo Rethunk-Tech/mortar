@@ -4,6 +4,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 const lastRunFile = "last-run-version"
@@ -13,7 +16,7 @@ func lastRunPath(dir string) string {
 }
 
 func readLastRun(dir string) (string, error) {
-	b, err := os.ReadFile(lastRunPath(dir))
+	b, err := fsx.ReadFile(lastRunPath(dir))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return "", nil
@@ -27,7 +30,7 @@ func writeLastRun(dir, version string) error {
 	if dir == "" || version == "" {
 		return nil
 	}
-	return os.WriteFile(lastRunPath(dir), []byte(version), 0o600)
+	return datadir.WriteFile(lastRunPath(dir), []byte(version), 0o600)
 }
 
 // upgraded reports whether current is semver-newer than last.

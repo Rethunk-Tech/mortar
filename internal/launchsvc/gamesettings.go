@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/gamesettings"
 )
@@ -118,7 +119,7 @@ func (s *Service) prepareGameSettings(game, id string) (*settingsRestore, bool, 
 	if err := writeSettingsRestore(recordPath, restore); err != nil {
 		return nil, false, err
 	}
-	if err := fsx.AtomicWriteFile(path, patched, 0o600); err != nil {
+	if err := datadir.WriteFile(path, patched, 0o600); err != nil {
 		return nil, false, errors.Join(err, os.Remove(recordPath))
 	}
 	return restore, false, nil
@@ -130,7 +131,7 @@ func writeSettingsRestore(path string, restore *settingsRestore) error {
 		return err
 	}
 	body = append(body, '\n')
-	return fsx.AtomicWriteFile(path, body, 0o600)
+	return datadir.WriteFile(path, body, 0o600)
 }
 
 func readSettingsRestore(path string) (*settingsRestore, error) {
@@ -188,7 +189,7 @@ func (s *Service) restoreGameSettings(restore *settingsRestore) error {
 			restoreErr = removeSettingsRestore(restore.recordPath)
 			return
 		}
-		if err := fsx.AtomicWriteFile(restore.path, patched, 0o600); err != nil {
+		if err := datadir.WriteFile(restore.path, patched, 0o600); err != nil {
 			restoreErr = err
 			return
 		}
