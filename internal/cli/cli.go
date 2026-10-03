@@ -69,6 +69,7 @@ type cmd struct {
 	verbose       bool
 	all           bool
 	unused        bool
+	missing       bool
 	yesFlag       bool
 	force         bool
 	wait          bool
@@ -202,6 +203,8 @@ func (c *cmd) parse(args []string) error {
 			c.filter = strings.TrimPrefix(a, "--filter=")
 		case a == "--unused":
 			c.unused = true
+		case a == "--missing":
+			c.missing = true
 		case a == "--by-mod":
 			c.byMod = true
 		case a == "--yes":
@@ -957,43 +960,17 @@ func (c *cmd) trash() error {
 }
 
 func (c *cmd) nexus() error {
-	if len(c.args) < 2 || c.args[1] != "untrack" {
+	if len(c.args) < 2 {
 		return usageError{"unknown nexus command"}
 	}
-	a, err := c.need(2, "a game")
-	if err != nil {
-		return err
+	switch c.args[1] {
+	case "untrack":
+		return c.nexusUntrack()
+	case "tracked":
+		return c.nexusTracked()
+	default:
+		return usageError{"unknown nexus command"}
 	}
-	if c.all == c.unused {
-		return usageError{"nexus untrack needs exactly one of --all or --unused"}
-	}
-	var count int
-	if err := c.ask("nexus.tracked", control.Params{Game: a[0]}, &count, readTimeout); err != nil {
-		return err
-	}
-	if !c.yesFlag {
-		if info, err := os.Stdin.Stat(); err != nil || info.Mode()&os.ModeCharDevice == 0 {
-			return refusedError{"nexus untrack needs --yes when stdin is not a terminal"}
-		}
-		fmt.Fprintf(c.errOut, "Untrack %d mods? [y/N] ", count)
-		var answer string
-		if _, err := fmt.Fscan(os.Stdin, &answer); err != nil {
-			return err
-		}
-		if strings.ToLower(answer) != "y" && strings.ToLower(answer) != "yes" {
-			return errors.New("cancelled")
-		}
-	}
-	var result control.NexusUntrack
-	if err := c.ask("nexus.untrack", control.Params{Game: a[0], Unused: c.unused}, &result, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(result, func() {
-		fmt.Fprintf(c.out, "Untracked %d mods; %d remaining.\n", result.Untracked, result.Remaining)
-		if result.StoppedForLimit {
-			fmt.Fprintln(c.out, "Stopped at the Nexus API limit.")
-		}
-	})
 }
 
 func (c *cmd) profile() error {
@@ -2123,6 +2100,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   bundles <game>                         list saved bundles
   bundles apply <game> <bundle> <profile> apply a bundle
   nexus untrack <game> --all|--unused    bulk untrack Nexus mods
+  nexus tracked <game> <profile> --missing   tracked on Nexus but not in profile
   profile delete <game> <profile>         moves it to Mortar's trash
   profile repair <game> <profile>         rebuild damaged profile.json from history
   trash list [--game stardew]             recently deleted profiles
