@@ -9,6 +9,7 @@ import { compact, compactQuery } from '../game/compact.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { AuthorLink } from './AuthorLink.tsx'
 import { CompatChip } from './CompatChip.tsx'
 import { useCustomCategories } from './customCategories.ts'
 import { useDetail } from './detail.ts'
@@ -99,8 +100,7 @@ function ModCard({
   const fresh = useNexusFresh(nexusIdOf(profile, m))
   const tag = firstTag(entryOf(profile, m.key)?.tags)
   const cardSize = useSettings((s) => s.gridCardSize) || 'medium'
-  const meta =
-    useSettings((s) => s.showAuthorOnCards) === false ? m.version : `${m.author} · ${m.version}`
+  const showAuthor = useSettings((s) => s.showAuthorOnCards) !== false
   return (
     <Card
       {...contextMenuProps(m)}
@@ -170,10 +170,17 @@ function ModCard({
           </Typography>
           <Typography
             noWrap={true}
-            title={meta}
+            title={showAuthor ? `${m.author} · ${m.version}` : m.version}
             sx={{ fontSize: META_FONT_PX, color: 'text.secondary' }}
           >
-            {meta}
+            {showAuthor ? (
+              <>
+                <AuthorLink authorField={m.author} mod={m} profile={profile} />
+                {` · ${m.version}`}
+              </>
+            ) : (
+              m.version
+            )}
           </Typography>
         </Box>
       </ButtonBase>

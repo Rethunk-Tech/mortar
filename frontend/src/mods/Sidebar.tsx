@@ -18,6 +18,7 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { AuthorLink } from './AuthorLink.tsx'
 import { useCustomCategories } from './customCategories.ts'
 import { useDescribe } from './describe.ts'
 import { useDetail } from './detail.ts'
@@ -38,6 +39,7 @@ import {
 } from './lookup.ts'
 import { ModDependencyTree } from './ModDependencyTree.tsx'
 import { ModNoteTags } from './ModNoteTags.tsx'
+import { ModUpdateControls } from './ModUpdateControls.tsx'
 import { useLookedSnapshot, useNexusEntry, useNexusFresh } from './nexusDetails.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
 import { goneCaption, nexusPageMark, offersNexusDownload } from './nexusMark.ts'
@@ -321,7 +323,6 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
 function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   const { t, i18n } = useLingui()
   const all = useMods((s) => s.mods)
-  const setPinned = useMods((s) => s.setPinned)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const setSkipSource = useMods((s) => s.setSkipSource)
   const others = siblingsOf(all, mod)
@@ -346,20 +347,18 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
           <Typography sx={{ fontSize: 16, fontWeight: 700, overflowWrap: 'anywhere' }}>
             {mod.name}
           </Typography>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-            {`${mod.author} · ${sourceName}`}
+          <Typography
+            component="div"
+            sx={{ fontSize: 13, color: 'text.secondary', overflowWrap: 'anywhere' }}
+          >
+            <AuthorLink authorField={mod.author} mod={mod} profile={profile} />
+            {` · ${sourceName}`}
           </Typography>
         </Box>
         <ModSwitch mod={mod} />
       </Box>
       <Field label={t`Version`} value={mod.version} />
-      <Button
-        variant="outlined"
-        onClick={() => setPinned(mod, !entry?.pinned).catch(reportUnexpected)}
-        sx={noWrap}
-      >
-        {entry?.pinned ? t`Unpin` : t`Pin this version`}
-      </Button>
+      <ModUpdateControls mod={mod} entry={entry} />
       {entry?.skipVersion && !offered ? (
         <Button
           variant="outlined"
