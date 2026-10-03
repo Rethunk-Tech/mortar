@@ -12,8 +12,11 @@ import (
 )
 
 const (
-	bisectRunTimeout   = 3 * time.Minute
-	bisectStartupGrace = 3 * time.Second
+	bisectRunTimeout = 3 * time.Minute
+	// Mods commonly crash on SMAPI's GameLaunched, which fires once the title screen has loaded: several seconds
+	// after the process counts as Running. A shorter grace calls the crashing step healthy and blames the other half.
+	// ponytail: fixed grace; a title-screen signal from the bridge would end each step as soon as it is safe.
+	bisectStartupGrace = 20 * time.Second
 )
 
 // RunForBisect launches one profile the way Play would (the profile's launch method) and returns whether it reached a
@@ -56,8 +59,6 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (b
 			if runningSince.IsZero() {
 				runningSince = time.Now()
 			}
-			// SMAPI reports skipped startup mods after the process is Running, so allow its
-			// initial log batch to arrive before treating Running as a healthy title screen.
 			if time.Since(runningSince) >= bisectStartupGrace {
 				if err := s.Stop(gameID); err != nil {
 					return false, launch.Summary{}, err
