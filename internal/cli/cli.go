@@ -345,6 +345,9 @@ func (c *cmd) dispatch() error {
 			}
 		}
 	}
+	if verb == "logs" && len(c.args) >= 2 && c.args[1] == "share" {
+		return c.shareLog()
+	}
 	if verb == "logs" && len(c.args) >= 3 && c.args[1] == "search" {
 		return c.searchLogs(c.args[2])
 	}
@@ -1394,6 +1397,40 @@ func (c *cmd) logs(p control.Params) error {
 	return c.emit(l, func() { fmt.Fprint(c.out, l.Text) })
 }
 
+func (c *cmd) shareLog() error {
+	a, err := c.need(2, "a game", "a profile")
+	if err != nil {
+		return err
+	}
+	run := c.run
+	if run == "" && len(c.args) > 4 {
+		run = c.args[4]
+	}
+	p := control.Params{Game: a[0], Profile: a[1], Run: run}
+	var l control.RunLog
+	if err := c.ask("logs", p, &l, readTimeout); err != nil {
+		return err
+	}
+	if !c.yesFlag {
+		if info, err := os.Stdin.Stat(); err != nil || info.Mode()&os.ModeCharDevice == 0 {
+			return refusedError{"sharing a log needs --yes when stdin is not a terminal"}
+		}
+		fmt.Fprintf(c.errOut, "This log is %s. Sharing uploads it to smapi.io, where it becomes public at a link. Continue? [y/N] ", humanBytes(int64(len(l.Text))))
+		var answer string
+		if _, err := fmt.Fscan(os.Stdin, &answer); err != nil {
+			return err
+		}
+		if strings.ToLower(answer) != "y" && strings.ToLower(answer) != "yes" {
+			return errors.New("cancelled")
+		}
+	}
+	var result map[string]string
+	if err := c.ask("logs.share", p, &result, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(result, func() { fmt.Fprintln(c.out, result["url"]) })
+}
+
 func (c *cmd) searchLogs(query string) error {
 	var result launchsvc.RunSearch
 	if err := c.call("logs.search", control.Params{Game: "stardew", Profile: c.profileFlag, Query: query}, &result, readTimeout); err != nil {
@@ -1778,7 +1815,8 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   launch <game> <profile> [--wait] [--force] play; --force skips Play warnings
   status <game> | stop <game>
   runs <game> <profile>                   recent launches
-  logs <game> <profile> [--run <id>]      a stored SMAPI log (latest by default)
+	logs <game> <profile> [--run <id>]      a stored SMAPI log (latest by default)
+  logs share <game> <profile> [run] [--yes]  upload that run's log to smapi.io (prompts unless --yes)
   logs search <query> [--profile <name>]  search all stored run logs
   queue                                   the download queue
   queue retry|skip [<id>]                 retry or skip queued downloads

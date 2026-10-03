@@ -455,7 +455,7 @@ export function ConsoleTab({ game }: { game: string }) {
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <TipBanner tip="console">
-        {t`Filter by level or mod, and use Get help to share this log.`}
+        {t`Filter by level or mod, and use Share log to upload this run to smapi.io.`}
       </TipBanner>
       <Box
         sx={{

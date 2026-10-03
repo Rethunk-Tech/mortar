@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
+	"github.com/Rethunk-AI/mortar/internal/logshare"
 	"github.com/Rethunk-AI/mortar/internal/nexussvc"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -708,6 +709,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.Launches.Runs(p.Game, id)
 	case "logs":
 		return s.runLog(p.Game, id, p.Run)
+	case "logs.share":
+		return s.shareLog(ctx, p.Game, id, p.Run)
 	case "logs.search":
 		return s.Launches.SearchRuns(p.Game, id, p.Query)
 	case "saves":
@@ -1054,6 +1057,18 @@ func (s *Services) runLog(gameID, id, run string) (RunLog, error) {
 		return RunLog{}, fmt.Errorf("run %s has no stored log", run)
 	}
 	return RunLog{Run: run, Text: text}, nil
+}
+
+func (s *Services) shareLog(ctx context.Context, gameID, id, run string) (map[string]string, error) {
+	l, err := s.runLog(gameID, id, run)
+	if err != nil {
+		return nil, err
+	}
+	link, err := logshare.New().Upload(ctx, l.Text)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]string{"url": link, "run": l.Run}, nil
 }
 
 // launchWait bounds how long launch waits for the game to leave Launching.

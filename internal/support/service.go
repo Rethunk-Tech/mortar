@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-AI/mortar/internal/logshare"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -103,32 +104,8 @@ func (s *Service) Upload(ctx context.Context, log string) (string, error) {
 	if len(log) > MaxLog {
 		return "", errors.New("the log is too large to upload")
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, s.base+"/log",
-		strings.NewReader(url.Values{"input": {log}}.Encode()))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	resp, err := s.client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	_ = resp.Body.Close()
-	if resp.StatusCode < 300 || resp.StatusCode > 399 {
-		if resp.StatusCode == http.StatusOK {
-			return "", errors.New("smapi.io did not accept the log")
-		}
-		return "", fmt.Errorf("smapi.io answered %s", resp.Status)
-	}
-	loc, err := resp.Location()
-	if err != nil {
-		return "", err
-	}
-	id, ok := strings.CutPrefix(loc.Path, "/log/")
-	if !ok || id == "" || strings.Contains(id, "/") {
-		return "", fmt.Errorf("smapi.io redirected to %q, not a log page", loc.Path)
-	}
-	return s.base + "/log/" + url.PathEscape(id), nil
+	c := &logshare.Client{BaseURL: strings.TrimRight(s.base, "/") + "/log", HTTP: s.client}
+	return c.Upload(ctx, log)
 }
 
 // BugURL is a new GitHub issue on Mortar prefilled with the version, OS and game, and no log.

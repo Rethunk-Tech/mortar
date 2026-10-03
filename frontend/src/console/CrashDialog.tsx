@@ -135,7 +135,7 @@ export function CrashDialog() {
             }}
             sx={{ whiteSpace: 'nowrap' }}
           >
-            {t`Get help`}
+            {t`Share log`}
           </Button>
           <Button
             variant="contained"

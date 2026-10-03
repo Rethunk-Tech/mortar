@@ -58,6 +58,7 @@ var subverbs = map[string][]string{
 	"cache":      {"size", "clear"},
 	"data":       {"usage"},
 	"settings":   {"get", "set", "export", "import", "reset"},
+	"logs":       {"search", "share"},
 }
 
 // gameAt and profileAt give the positions (1-based after the verb) where a verb takes a game and a profile.
@@ -95,6 +96,14 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 			return 0, 0, 0
 		}
 		return 1, 2, 0
+	case "logs":
+		if len(words) > 1 && words[1] == "search" {
+			return 0, 0, 0
+		}
+		if len(words) > 1 && words[1] == "share" {
+			return 2, 3, 0
+		}
+		return 1, 2, 0
 	}
 	return 1, 2, 0
 }
@@ -113,7 +122,7 @@ func (c *cmd) complete(words []string) error {
 				cands = append(cands, v)
 			}
 		}
-	} else if subs, ok := subverbs[words[0]]; ok && pos == 1 && words[0] != "mods" && words[0] != "problems" {
+	} else if subs, ok := subverbs[words[0]]; ok && pos == 1 && words[0] != "mods" && words[0] != "problems" && words[0] != "logs" {
 		cands = subs
 	} else if words[0] == "problems" && pos == 1 {
 		cands = append(cands, subverbs["problems"]...)
@@ -133,6 +142,9 @@ func (c *cmd) complete(words []string) error {
 	} else {
 		if words[0] == "mods" && pos == 1 {
 			cands = append(cands, subverbs["mods"]...)
+		}
+		if words[0] == "logs" && pos == 1 {
+			cands = append(cands, subverbs["logs"]...)
 		}
 		gameAt, profileAt, modAt := positions(words)
 		switch pos {

@@ -136,7 +136,7 @@ export function LogActions({ game }: { game: string }) {
         onClick={() => setSearching(true)}
       />
       <IconAction
-        label={t`Get help`}
+        label={t`Share log`}
         icon={<LifeBuoy size={16} />}
         onClick={() => setHelping(true)}
       />

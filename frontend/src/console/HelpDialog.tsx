@@ -23,6 +23,7 @@ import { paper } from '../mods/paper.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { shareLogConfirm } from './shareLog.ts'
 import { useConsole } from './store.ts'
 
 const MONO = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace'
@@ -106,11 +107,11 @@ function HelpLog({
   setHideUserName: (value: boolean) => void
   copy: (text: string) => void
 }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   return (
     <>
       <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
-        {t`Upload your SMAPI log to smapi.io, the Stardew modding community's log viewer, and share the link where you ask for help.`}
+        {shareLogConfirm(i18n, new TextEncoder().encode(log).length)}
       </Typography>
       <Alert severity="warning" icon={<TriangleAlert size={16} aria-hidden={true} />}>
         {t`The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it.`}
@@ -243,7 +244,7 @@ export function HelpDialog({ game }: { game: string }) {
       transitionDuration={0}
       slotProps={{ paper: { sx: { ...paper.sx, width: 780, maxWidth: 'calc(100% - 32px)' } } }}
     >
-      <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Get help`}</DialogTitle>
+      <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Share log`}</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {body ? (
           <>
