@@ -73,6 +73,9 @@ var ErrIncomplete = errors.New("store item is incomplete")
 type Store struct {
 	root string
 	mu   sync.Mutex
+	// migrated is set once this process has repaired incomplete items and recorded the marker
+	// version; item lookups then skip the whole-store pass. Guarded by mu.
+	migrated bool
 	// UnusedFor is unused-item lifetime; 0 uses the built-in 30 days, negative means keep forever.
 	UnusedFor time.Duration
 }
@@ -553,6 +556,9 @@ func (s *Store) saveIndex(idx index) error {
 }
 
 func (s *Store) migrateCompleteMarkers() error {
+	if s.migrated {
+		return nil
+	}
 	if err := s.repairIncompleteLocked(); err != nil {
 		return err
 	}
@@ -561,13 +567,18 @@ func (s *Store) migrateCompleteMarkers() error {
 		return err
 	}
 	if !idx[indexMetadata][completeMarkerVersion].IsZero() {
+		s.migrated = true
 		return nil
 	}
 	if idx[indexMetadata] == nil {
 		idx[indexMetadata] = map[string]time.Time{}
 	}
 	idx[indexMetadata][completeMarkerVersion] = time.Now().UTC()
-	return s.saveIndex(idx)
+	if err := s.saveIndex(idx); err != nil {
+		return err
+	}
+	s.migrated = true
+	return nil
 }
 
 // RepairIncomplete re-extracts store items missing .complete when a source archive is still beside them.
