@@ -28,6 +28,7 @@ import { When } from '../i18n/When.tsx'
 import { useLaunch } from '../launch/store.ts'
 import { paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -255,51 +256,32 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
           </MenuItem>
         ))}
       </Menu>
-      <Dialog
+      <ConfirmDialog
         open={confirm !== null}
-        onClose={() => {
+        title={t`Restore this backup?`}
+        confirmLabel={t`Restore`}
+        busy={pending || busyGame}
+        onCancel={() => {
           setConfirm(null)
         }}
-        transitionDuration={0}
-        slotProps={{ paper }}
+        onConfirm={() => {
+          if (!confirm) {
+            return
+          }
+          const { backup, snaps } = confirm
+          run(async () => {
+            await restore(
+              backup.name,
+              snaps.length === (backup.saves ?? []).length ? [] : snaps.map((s) => s.folder),
+            )
+            setConfirm(null)
+          })
+        }}
       >
-        <DialogTitle>{t`Restore this backup?`}</DialogTitle>
-        <DialogContent>
-          <Typography sx={{ fontSize: 14 }}>
-            {overwriteMessage(confirm?.snaps ?? [], new Set((fits ?? []).map((f) => f.folder)))}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              setConfirm(null)
-            }}
-            sx={nowrap}
-          >
-            {t`Cancel`}
-          </Button>
-          <Button
-            variant="contained"
-            disabled={pending || busyGame}
-            onClick={() => {
-              if (!confirm) {
-                return
-              }
-              const { backup, snaps } = confirm
-              run(async () => {
-                await restore(
-                  backup.name,
-                  snaps.length === (backup.saves ?? []).length ? [] : snaps.map((s) => s.folder),
-                )
-                setConfirm(null)
-              })
-            }}
-            sx={nowrap}
-          >
-            {t`Restore`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Typography sx={{ fontSize: 14 }}>
+          {overwriteMessage(confirm?.snaps ?? [], new Set((fits ?? []).map((f) => f.folder)))}
+        </Typography>
+      </ConfirmDialog>
     </>
   )
 }

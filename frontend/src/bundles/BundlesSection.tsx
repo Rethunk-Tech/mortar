@@ -1,17 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  IconButton,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { Box, IconButton, Tooltip, Typography } from '@mui/material'
 import { PackagePlus, Pencil, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Bundle } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/models.ts'
@@ -21,6 +10,7 @@ import {
   Rename,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -182,29 +172,16 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
           setRenaming(null)
         }}
       />
-      <Dialog
+      <ConfirmDialog
         open={deleting !== null}
-        onClose={busy ? undefined : () => setDeleting(null)}
-        transitionDuration={0}
-      >
-        <DialogTitle>{t`Delete ${deleting?.name ?? ''}?`}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>{t`This bundle will be removed from Mortar.`}</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleting(null)} disabled={busy}>
-            {t`Cancel`}
-          </Button>
-          <Button
-            color="error"
-            variant="contained"
-            onClick={() => confirmDelete().catch(() => undefined)}
-            disabled={busy}
-          >
-            {t`Delete`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        title={t`Delete ${deleting?.name ?? ''}?`}
+        body={t`This bundle will be removed from Mortar.`}
+        confirmLabel={t`Delete`}
+        danger={true}
+        busy={busy}
+        onCancel={() => setDeleting(null)}
+        onConfirm={() => confirmDelete().catch(() => undefined)}
+      />
     </>
   )
 }

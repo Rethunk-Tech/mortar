@@ -5,7 +5,6 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   Link,
   Typography,
@@ -21,6 +20,7 @@ import type {
   ModState,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { EditConfigButton } from './ConfigEditor.tsx'
 import { useDetail } from './detail.ts'
@@ -170,36 +170,23 @@ function Confirm({
   const resetConfig = useDetail((s) => s.resetConfig)
   const rolling = confirming === 'rollback'
   return (
-    <Dialog
+    <ConfirmDialog
       open={confirming !== null}
-      onClose={onClose}
-      transitionDuration={0}
-      slotProps={{ paper }}
-    >
-      <DialogTitle>
-        {rolling ? t`Roll back ${mod.name}?` : t`Reset the settings of ${mod.name}?`}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          {rolling
-            ? t`${mod.name} goes back to ${previous}, keeping its settings. Your saves are backed up first.`
-            : t`config.json is deleted, and the mod writes a fresh one with its own defaults the next time the game runs.`}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Cancel`}</Button>
-        <Button
-          color={rolling ? 'primary' : 'error'}
-          onClick={() => {
-            const run = rolling ? rollBack : resetConfig
-            onClose()
-            run(mod).catch(reportUnexpected)
-          }}
-        >
-          {rolling ? t`Roll back` : t`Reset`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      title={rolling ? t`Roll back ${mod.name}?` : t`Reset the settings of ${mod.name}?`}
+      body={
+        rolling
+          ? t`${mod.name} goes back to ${previous}, keeping its settings. Your saves are backed up first.`
+          : t`config.json is deleted, and the mod writes a fresh one with its own defaults the next time the game runs.`
+      }
+      confirmLabel={rolling ? t`Roll back` : t`Reset`}
+      danger={!rolling}
+      onCancel={onClose}
+      onConfirm={() => {
+        const run = rolling ? rollBack : resetConfig
+        onClose()
+        run(mod).catch(reportUnexpected)
+      }}
+    />
   )
 }
 

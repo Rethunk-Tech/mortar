@@ -19,11 +19,6 @@ import {
   Box,
   Button,
   ButtonBase,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Divider,
   IconButton,
   InputAdornment,
@@ -57,6 +52,7 @@ import { compact } from '../game/compact.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { useNav } from '../nav/store.ts'
 import { openImport } from '../share/store.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { errorDetails, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -117,25 +113,18 @@ function TrashRow({ item }: { item: TrashItem }) {
           </IconButton>
         </span>
       </Tooltip>
-      <Dialog open={confirming} onClose={() => setConfirming(false)}>
-        <DialogTitle>{t`Delete ${item.name} permanently?`}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>{t`This cannot be undone.`}</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirming(false)}>{t`Cancel`}</Button>
-          <Button
-            color="error"
-            variant="contained"
-            onClick={() => {
-              setConfirming(false)
-              run(() => purge(item.id))
-            }}
-          >
-            {t`Delete permanently`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDialog
+        open={confirming}
+        title={t`Delete ${item.name} permanently?`}
+        body={t`This cannot be undone.`}
+        confirmLabel={t`Delete permanently`}
+        danger={true}
+        onCancel={() => setConfirming(false)}
+        onConfirm={() => {
+          setConfirming(false)
+          run(() => purge(item.id))
+        }}
+      />
     </Box>
   )
 }
@@ -265,25 +254,18 @@ function Trash() {
       {trash.map((item) => (
         <TrashRow key={item.id} item={item} />
       ))}
-      <Dialog open={confirming} onClose={() => setConfirming(false)}>
-        <DialogTitle>{t`Empty trash?`}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>{t`This cannot be undone.`}</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirming(false)}>{t`Cancel`}</Button>
-          <Button
-            color="error"
-            variant="contained"
-            onClick={() => {
-              setConfirming(false)
-              run(purgeTrash)
-            }}
-          >
-            {t`Empty trash`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDialog
+        open={confirming}
+        title={t`Empty trash?`}
+        body={t`This cannot be undone.`}
+        confirmLabel={t`Empty trash`}
+        danger={true}
+        onCancel={() => setConfirming(false)}
+        onConfirm={() => {
+          setConfirming(false)
+          run(purgeTrash)
+        }}
+      />
     </Box>
   )
 }

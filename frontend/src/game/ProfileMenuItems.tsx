@@ -1,17 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Divider,
-  ListItemIcon,
-  ListItemText,
-  MenuItem,
-  Tooltip,
-} from '@mui/material'
+import { Divider, ListItemIcon, ListItemText, MenuItem, Tooltip } from '@mui/material'
 import {
   Copy,
   Eye,
@@ -44,6 +32,7 @@ import { CompareDialog, PickCompareDialog } from '../profiles/CompareDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { applyStagedCover, hasPickedCover } from './cover.ts'
@@ -98,27 +87,18 @@ function DeleteProfileDialog({
   const { t } = useLingui()
   const remove = useProfiles((s) => s.remove)
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{t`Delete ${profile.name}?`}</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          {t`The profile stays restorable for 30 days from Recently deleted.`}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Cancel`}</Button>
-        <Button
-          variant="contained"
-          color="error"
-          onClick={() => {
-            onClose()
-            remove(profile.id).catch(reportUnexpected)
-          }}
-        >
-          {t`Delete`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <ConfirmDialog
+      open={open}
+      title={t`Delete ${profile.name}?`}
+      body={t`The profile stays restorable for 30 days from Recently deleted.`}
+      confirmLabel={t`Delete`}
+      danger={true}
+      onCancel={onClose}
+      onConfirm={() => {
+        onClose()
+        remove(profile.id).catch(reportUnexpected)
+      }}
+    />
   )
 }
 

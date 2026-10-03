@@ -1,14 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  ButtonBase,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material'
+import { Box, Button, ButtonBase, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { ChevronDown, ChevronRight, Copy, ShieldCheck, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
@@ -17,6 +8,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
@@ -509,47 +501,37 @@ export function ProblemsTab() {
           </Box>
         </Box>
       )}
-      <Dialog open={confirmCleanup} onClose={() => setConfirmCleanup(false)}>
-        <DialogTitle>{t`Remove all ${cleanup.length} mods from this profile?`}</DialogTitle>
-        <DialogContent>{t`This change can be undone from History.`}</DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmCleanup(false)}>{t`Cancel`}</Button>
-          <Button
-            color="error"
-            variant="contained"
-            onClick={() => {
-              setConfirmCleanup(false)
-              const mods = cleanup
-                .map((item) => useMods.getState().mods.find((mod) => mod.key === item.key))
-                .filter((mod): mod is NonNullable<typeof mod> => mod !== undefined)
-              removeMany(mods).catch(reportUnexpected)
-            }}
-          >
-            {t`Remove all`}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog open={confirmDismissCosmetic} onClose={() => setConfirmDismissCosmetic(false)}>
-        <DialogTitle>{t`Dismiss all harmless overlaps?`}</DialogTitle>
-        <DialogContent>{t`They move to Dismissed. Restore them from that section.`}</DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDismissCosmetic(false)}>{t`Cancel`}</Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setConfirmDismissCosmetic(false)
-              const cosmetic = sections.find((section) => section.id === 'cosmetic')
-              for (const row of cosmetic?.rows ?? []) {
-                if (!isDismissedRow(row) && row.kind === 'asset') {
-                  dismissAsset(row.asset).catch(reportUnexpected)
-                }
-              }
-            }}
-          >
-            {t`Dismiss all`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDialog
+        open={confirmCleanup}
+        title={t`Remove all ${cleanup.length} mods from this profile?`}
+        body={t`This change can be undone from History.`}
+        confirmLabel={t`Remove all`}
+        danger={true}
+        onCancel={() => setConfirmCleanup(false)}
+        onConfirm={() => {
+          setConfirmCleanup(false)
+          const mods = cleanup
+            .map((item) => useMods.getState().mods.find((mod) => mod.key === item.key))
+            .filter((mod): mod is NonNullable<typeof mod> => mod !== undefined)
+          removeMany(mods).catch(reportUnexpected)
+        }}
+      />
+      <ConfirmDialog
+        open={confirmDismissCosmetic}
+        title={t`Dismiss all harmless overlaps?`}
+        body={t`They move to Dismissed. Restore them from that section.`}
+        confirmLabel={t`Dismiss all`}
+        onCancel={() => setConfirmDismissCosmetic(false)}
+        onConfirm={() => {
+          setConfirmDismissCosmetic(false)
+          const cosmetic = sections.find((section) => section.id === 'cosmetic')
+          for (const row of cosmetic?.rows ?? []) {
+            if (!isDismissedRow(row) && row.kind === 'asset') {
+              dismissAsset(row.asset).catch(reportUnexpected)
+            }
+          }
+        }}
+      />
       {result.unknown ? (
         <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
           {t`Some checks could not run without a connection, so more problems may show up later.`}
