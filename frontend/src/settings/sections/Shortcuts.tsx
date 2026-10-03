@@ -10,6 +10,7 @@ import {
   formatChord,
   mergeBindings,
   SHORTCUTS,
+  type Shortcut,
   type ShortcutId,
   setShortcutCapturing,
 } from '../shortcuts.ts'
@@ -173,15 +174,22 @@ export function Shortcuts() {
     }
   }, [recording, bindings])
   const q = query.toLowerCase()
+  const groups: [Shortcut['group'], string][] = [
+    ['General', t`General`],
+    ['Navigation', t`Navigation`],
+    ['Profiles', t`Profiles`],
+    ['Mods list', t`Mods list`],
+    ['Tabs', t`Tabs`],
+  ]
   const rows = SHORTCUTS.filter((row) => labels[row.id].toLowerCase().includes(q))
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: 14 }}>
-      {(['General', 'Navigation', 'Profiles', 'Mods list', 'Console'] as const).map((group) => {
+      {groups.map(([group, name]) => {
         const grouped = rows.filter((row) => row.group === group)
         return grouped.length > 0 ? (
           <Box key={group}>
             <Box sx={{ mb: 0.5, fontSize: 13, fontWeight: 700, color: 'text.secondary' }}>
-              {group}
+              {name}
             </Box>
             <Box sx={{ bgcolor: 'var(--mortar-overlay-25)', borderRadius: 1, overflow: 'hidden' }}>
               {grouped.map((row) => (

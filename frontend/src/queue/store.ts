@@ -113,7 +113,7 @@ function failureToast(item: Item) {
   if (error.includes('Not enough disk space')) {
     return {
       title: i18n._(msg`Not enough disk space`),
-      action: { label: i18n._(msg`Open data folder settings`), run: () => openSettings('data') },
+      action: { label: i18n._(msg`Open storage settings`), run: () => openSettings('storage') },
     }
   }
   if (error.includes('quarantined')) {

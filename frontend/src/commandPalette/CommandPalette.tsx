@@ -123,9 +123,13 @@ function paletteSections(i18n: I18n) {
   return [
     { id: 'general' as const, label: i18n._(msg`General`) },
     { id: 'appearance' as const, label: i18n._(msg`Appearance`) },
-    { id: 'data' as const, label: i18n._(msg`Data`) },
-    { id: 'nexus' as const, label: i18n._(msg`Nexus Mods`) },
+    { id: 'mods' as const, label: i18n._(msg`Mods and profiles`) },
+    { id: 'downloads' as const, label: i18n._(msg`Downloads`) },
+    { id: 'nexus' as const, label: i18n._(msg`Nexus account`) },
     { id: 'updates' as const, label: i18n._(msg`Updates`) },
+    { id: 'notifications' as const, label: i18n._(msg`Notifications`) },
+    { id: 'storage' as const, label: i18n._(msg`Storage`) },
+    { id: 'launchers' as const, label: i18n._(msg`Launchers`) },
     { id: 'shortcuts' as const, label: i18n._(msg`Shortcuts`) },
     { id: 'about' as const, label: i18n._(msg`About`) },
   ]

@@ -18,9 +18,13 @@ import { useCommandPalette } from './store.ts'
 const sections = new Set<SettingsSection>([
   'general',
   'appearance',
-  'data',
+  'mods',
+  'downloads',
   'nexus',
   'updates',
+  'notifications',
+  'storage',
+  'launchers',
   'shortcuts',
   'about',
 ])

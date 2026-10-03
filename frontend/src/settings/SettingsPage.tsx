@@ -7,9 +7,12 @@ import { SettingsSearchProvider } from './SettingsSearch.tsx'
 import { About } from './sections/About.tsx'
 import { Appearance } from './sections/Appearance.tsx'
 import { Data } from './sections/Data.tsx'
+import { Downloads } from './sections/Downloads.tsx'
 import { General } from './sections/General.tsx'
 import { Launchers } from './sections/Launchers.tsx'
+import { ModsProfiles } from './sections/ModsProfiles.tsx'
 import { NexusMods } from './sections/NexusMods.tsx'
+import { Notifications } from './sections/Notifications.tsx'
 import { Shortcuts } from './sections/Shortcuts.tsx'
 import { Updates } from './sections/Updates.tsx'
 import { shouldLeavePageOnEscape } from './shouldLeavePageOnEscape.ts'
@@ -35,20 +38,26 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
   const sections: { id: SettingsSection; label: string }[] = [
     { id: 'general', label: t`General` },
     { id: 'appearance', label: t`Appearance` },
-    { id: 'launchers', label: t`Launchers` },
-    { id: 'data', label: t`Data` },
-    { id: 'nexus', label: t`Nexus Mods` },
+    { id: 'mods', label: t`Mods and profiles` },
+    { id: 'downloads', label: t`Downloads` },
+    { id: 'nexus', label: t`Nexus account` },
     { id: 'updates', label: t`Updates` },
+    { id: 'notifications', label: t`Notifications` },
+    { id: 'storage', label: t`Storage` },
+    { id: 'launchers', label: t`Launchers` },
     { id: 'shortcuts', label: t`Shortcuts` },
     { id: 'about', label: t`About` },
   ]
   const body: Record<SettingsSection, ReactNode> = {
     general: <General />,
     appearance: <Appearance />,
-    launchers: <Launchers />,
-    data: <Data />,
+    mods: <ModsProfiles />,
+    downloads: <Downloads />,
     nexus: <NexusMods />,
     updates: <Updates />,
+    notifications: <Notifications />,
+    storage: <Data />,
+    launchers: <Launchers />,
     shortcuts: <Shortcuts />,
     about: <About />,
   }
@@ -104,6 +113,9 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
               bgcolor: 'var(--mortar-overlay-25)',
               borderRadius: 1,
               p: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
             }}
           >
             {query

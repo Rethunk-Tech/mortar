@@ -85,7 +85,7 @@ export interface Shortcut {
   id: ShortcutId
   keys: string
   always: boolean
-  group: 'General' | 'Navigation' | 'Profiles' | 'Mods list' | 'Console'
+  group: 'General' | 'Navigation' | 'Profiles' | 'Mods list' | 'Tabs'
 }
 
 export interface Chord {
@@ -126,7 +126,7 @@ export const SHORTCUTS: readonly Shortcut[] = [
       ['tab-console', 'Ctrl+5'],
       ['tab-performance', 'Ctrl+6'],
     ] as const
-  ).map(([id, keys]) => ({ id, keys, always: false, group: 'Console' as const })),
+  ).map(([id, keys]) => ({ id, keys, always: false, group: 'Tabs' as const })),
   { id: 'new-profile', keys: 'Ctrl+N', always: false, group: 'Profiles' },
   { id: 'duplicate-profile', keys: 'Ctrl+D', always: false, group: 'Profiles' },
   { id: 'rename-profile', keys: 'F2', always: false, group: 'Profiles' },

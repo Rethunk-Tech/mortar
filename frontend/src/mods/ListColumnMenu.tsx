@@ -309,4 +309,4 @@ function ListColumnMenu({
   )
 }
 
-export { HeaderCells, ListColumnMenu }
+export { columnLabel, HeaderCells, ListColumnMenu }
