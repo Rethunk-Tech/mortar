@@ -11,7 +11,7 @@ import {
   LinearProgress,
   TextField,
 } from '@mui/material'
-import { Download, FolderInput, FolderOpen, Trash2, Upload } from 'lucide-react'
+import { FolderInput, FolderOpen, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   Usage as DiskUse,
@@ -31,9 +31,7 @@ import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/inter
 import type { ImportPreview } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
 import {
   ApplyImportedSettings,
-  ExportSettings,
   OpenDataFolder,
-  PreviewImportSettings,
   SetBackupsKept,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useLaunch } from '../../launch/store.ts'
@@ -44,6 +42,7 @@ import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { useSettings } from '../store.ts'
 import { beginUsageLoad } from '../usageLoad.ts'
+import { CacheClearDialog, DataByMod, DataSettingsFiles } from './DataMods.tsx'
 import { DataPrefs } from './DataPrefs.tsx'
 
 const MIN_KEPT = 1
@@ -377,10 +376,12 @@ function UsageSummary({
   usage,
   bytes,
   openProfiles,
+  onClearCache,
 }: {
   usage: DiskUse | null
   bytes: number
   openProfiles: () => void
+  onClearCache: () => void
 }) {
   const { t } = useLingui()
   return usage ? (
@@ -389,7 +390,12 @@ function UsageSummary({
         <Row key={`${p.game}/${p.id}`} label={t`${p.name} (profile)`} size={p.size} />
       ))}
       <Row label={t`Store`} size={usage.store} />
-      <Row label={t`Cache`} size={usage.cache} />
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+        <Row label={t`Cache`} size={usage.cache} />
+        <Button size="small" onClick={onClearCache} sx={{ ...nowrap, flexShrink: 0 }}>
+          {t`Clear`}
+        </Button>
+      </Box>
       <Row label={t`Save backups`} size={usage.backups} />
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
         <Row label={t`Trash`} size={usage.trash} />
@@ -406,14 +412,15 @@ function UsageSummary({
     </Box>
   )
 }
-
 function useDataUsage() {
   const [usage, setUsage] = useState<DiskUse | null>(null)
   const [bytes, setBytes] = useState(0)
+  const [rev, setRev] = useState(0)
   const stopRef = useRef<() => void>(() => undefined)
   const restart = useCallback(() => {
     stopRef.current()
     setUsage(null)
+    setRev((n) => n + 1)
     stopRef.current = beginUsageLoad({
       usage: Usage,
       progress: UsageProgress,
@@ -426,13 +433,47 @@ function useDataUsage() {
     restart()
     return () => stopRef.current()
   }, [restart])
-  return { usage, bytes, restart }
+  return { usage, bytes, restart, rev }
 }
-
-export function Data() {
+function DataFolderCard({
+  usage,
+  onPicked,
+}: {
+  usage: DiskUse | null
+  onPicked: (dest: string) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        p: '14px',
+        bgcolor: 'rgba(55,55,65,0.9)',
+        borderRadius: '6px',
+      }}
+    >
+      <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <Box sx={{ fontSize: 15, fontWeight: 600 }}>{t`Mortar's data`}</Box>
+        <Box sx={{ ...mono, wordBreak: 'break-all' }}>{usage ? usage.path : t`Measuring…`}</Box>
+      </Box>
+      <Button
+        variant="outlined"
+        startIcon={<FolderOpen size={16} />}
+        onClick={() => OpenDataFolder().catch(reportUnexpected)}
+        sx={{ ...nowrap, flexShrink: 0 }}
+      >
+        {t`Open folder`}
+      </Button>
+      <MoveDataButton onPicked={onPicked} />
+    </Box>
+  )
+}
+function useDataSection() {
   const { t } = useLingui()
   const openProfiles = useNav((s) => s.openProfiles)
-  const { usage, bytes, restart } = useDataUsage()
+  const { usage, bytes, restart, rev } = useDataUsage()
   const [preview, setPreview] = useState<Preview | null>(null)
   const [importPreview, setImportPreview] = useState<ImportPreview | null>(null)
   const [busy, setBusy] = useState(false)
@@ -445,14 +486,15 @@ export function Data() {
     bytes: 0,
     totalBytes: 0,
   })
+  const [confirmClear, setConfirmClear] = useState(false)
   const openPreview = () => {
     CleanupPreview().then(setPreview).catch(reportUnexpected)
   }
   const runCleanup = () => {
-    setBusy(true)
     if (!preview) {
       return
     }
+    setBusy(true)
     Cleanup(preview)
       .then(() => {
         setPreview(null)
@@ -477,73 +519,57 @@ export function Data() {
       })
   }
   const runMove = () => {
-    if (!move) {
-      return
+    if (move) {
+      moveDataFolder({
+        move,
+        setMove,
+        setMoveError,
+        setMoving,
+        setMoveProgress,
+        moveErrorText: t`Could not move the data folder.`,
+      })
     }
-    moveDataFolder({
-      move,
-      setMove,
-      setMoveError,
-      setMoving,
-      setMoveProgress,
-      moveErrorText: t`Could not move the data folder.`,
-    })
   }
+  return {
+    openProfiles,
+    usage,
+    bytes,
+    restart,
+    rev,
+    preview,
+    importPreview,
+    busy,
+    move,
+    setMove,
+    moving,
+    moveProgress,
+    moveError,
+    confirmClear,
+    setConfirmClear,
+    setPreview,
+    setImportPreview,
+    openPreview,
+    runCleanup,
+    prepareMove,
+    runMove,
+  }
+}
+export function Data() {
+  const { t } = useLingui()
+  const d = useDataSection()
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.5,
-          p: '14px',
-          bgcolor: 'rgba(55,55,65,0.9)',
-          borderRadius: '6px',
-        }}
-      >
-        <Box
-          sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}
-        >
-          <Box sx={{ fontSize: 15, fontWeight: 600 }}>{t`Mortar's data`}</Box>
-          <Box sx={{ ...mono, wordBreak: 'break-all' }}>{usage ? usage.path : t`Measuring…`}</Box>
-        </Box>
-        <Button
-          variant="outlined"
-          startIcon={<FolderOpen size={16} />}
-          onClick={() => OpenDataFolder().catch(reportUnexpected)}
-          sx={{ ...nowrap, flexShrink: 0 }}
-        >
-          {t`Open folder`}
-        </Button>
-        <MoveDataButton onPicked={prepareMove} />
-      </Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-        <Button
-          onClick={() => ExportSettings().catch(reportUnexpected)}
-          startIcon={<Download size={16} />}
-          sx={{ alignSelf: 'flex-start', ...nowrap }}
-        >
-          {t`Export settings…`}
-        </Button>
-        <Button
-          onClick={() => {
-            PreviewImportSettings()
-              .then((next) => {
-                if (next.raw) {
-                  setImportPreview(next)
-                }
-              })
-              .catch(reportUnexpected)
-          }}
-          startIcon={<Upload size={16} />}
-          sx={{ alignSelf: 'flex-start', ...nowrap }}
-        >
-          {t`Import settings…`}
-        </Button>
-      </Box>
-      <UsageSummary usage={usage} bytes={bytes} openProfiles={openProfiles} />
+      <DataFolderCard usage={d.usage} onPicked={d.prepareMove} />
+      <DataSettingsFiles onImport={d.setImportPreview} />
+      <UsageSummary
+        usage={d.usage}
+        bytes={d.bytes}
+        openProfiles={d.openProfiles}
+        onClearCache={() => d.setConfirmClear(true)}
+      />
+      <DataByMod key={d.rev} onCleanup={d.openPreview} onChanged={d.restart} />
       <Button
-        onClick={openPreview}
+        onClick={d.openPreview}
         startIcon={<Trash2 size={16} />}
         sx={{ alignSelf: 'flex-start', ...nowrap }}
       >
@@ -553,18 +579,23 @@ export function Data() {
       <BackupsKept />
       <DataPrefs />
       <DataDialogs
-        preview={preview}
-        busy={busy}
-        onClosePreview={() => setPreview(null)}
-        onCleanup={runCleanup}
-        importPreview={importPreview}
-        onCloseImport={() => setImportPreview(null)}
-        move={move}
-        moving={moving}
-        moveProgress={moveProgress}
-        moveError={moveError}
-        onCloseMove={() => setMove(null)}
-        onMove={runMove}
+        preview={d.preview}
+        busy={d.busy}
+        onClosePreview={() => d.setPreview(null)}
+        onCleanup={d.runCleanup}
+        importPreview={d.importPreview}
+        onCloseImport={() => d.setImportPreview(null)}
+        move={d.move}
+        moving={d.moving}
+        moveProgress={d.moveProgress}
+        moveError={d.moveError}
+        onCloseMove={() => d.setMove(null)}
+        onMove={d.runMove}
+      />
+      <CacheClearDialog
+        open={d.confirmClear}
+        onClose={() => d.setConfirmClear(false)}
+        onCleared={d.restart}
       />
     </Box>
   )
