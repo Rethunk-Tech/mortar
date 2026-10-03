@@ -184,14 +184,8 @@ A full-height text field fills the tab. Its placeholder explains that notes trav
 ## Console tab
 
 - SMAPI's log as it is written, monospace, in columns: a level bar, time, level, mod and message; warnings and errors get a tinted row.
-- Filters: a search box that grows to fill the row, toggles for SMAPI's six levels (Trace, Debug, Info, Warn, Error, Alert) each with its line count (Trace and Debug off by default), a mod picker whose choices show as removable chips, and Clear filters; icon toggles (tooltip and aria-label, aria-pressed for state) for timestamps (Clock) and following new lines (ArrowDownToLine, on by default) at the right of the filter row.
-- Log actions are icon buttons beside the tabs, each with a tooltip and aria-label, so the tab row does not wrap:
-  - Jump to first error (CircleAlert)
-  - Clear (Eraser)
-  - **Copy** (Copy)
-  - **Save log…** (Download): a native save dialog, default name `SMAPI-<profile>-<date>.txt`; the raw SMAPI log file when this profile owns it, otherwise the Console's lines; off when there is nothing to save
-  - **Search all runs** (FileSearch): searches every stored run and opens a matching run at its line
-  - **Share log** (LifeBuoy): shows the log size, states it becomes public at a link, and asks before uploading it to smapi.io/log, then copies the link and offers Open
+- Filters: a search box that grows to fill the row, a non-wrapping group of level toggles for Info, Warn, Error and Alert, each with a compact line count (6.2K), and a **More levels** menu holding Trace and Debug (both off by default) as checkboxes with their counts, a mod picker whose choices show as removable chips, and Clear filters; icon toggles (tooltip and aria-label, aria-pressed for state) for timestamps (Clock) and following new lines (ArrowDownToLine, on by default) at the right of the filter row.
+- Log actions sit at the right end of the filter row, which never wraps: an error group (Jump to first error, previous error, next error), a **Log actions** menu (Ellipsis) with **Copy log**, **Save log…** (a native save dialog, default name `SMAPI-<profile>-<date>.txt`; the raw SMAPI log file when this profile owns it, otherwise the Console's lines; off when there is nothing to save), **Search all runs…** (searches every stored run and opens a matching run at its line) and **Clear**, then **Share log** (LifeBuoy), which shows the log size, states it becomes public at a link, and asks before uploading it to smapi.io/log, then copies the link and offers Open.
 - **Runs** picker, on the filter row after the mod picker (its button reads This session or the run shown):
   - This session, or one of the profile's last 20 recorded launches (outcome Ran, Crashed or Failed, with its time)
   - a past run loads its stored log read-only, and Save log and Share log use it

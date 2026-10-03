@@ -12,7 +12,7 @@ msgstr ""
 msgid "Performance"
 msgstr "Performance"
 
-#: src/console/ConsoleTab.tsx:522
+#: src/console/ConsoleTab.tsx:447
 msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
@@ -246,6 +246,10 @@ msgstr "Copying mod files"
 msgid "{name} is broken for {detail}"
 msgstr "{name} is broken for {detail}"
 
+#: src/console/LevelToggles.tsx:88
+msgid "More levels"
+msgstr "More levels"
+
 #: src/settings/sections/Appearance.tsx:62
 msgid "Sand"
 msgstr "Sand"
@@ -388,7 +392,6 @@ msgstr "How many times to retry a failed download"
 msgid "Could not change the profile's visibility"
 msgstr "Could not change the profile's visibility"
 
-#: src/console/LogActions.tsx:134
 #: src/console/SearchRunsDialog.tsx:90
 msgid "Search all runs"
 msgstr "Search all runs"
@@ -422,7 +425,7 @@ msgstr "Show token"
 msgid "Add archive"
 msgstr "Add archive"
 
-#: src/console/ConsoleTab.tsx:458
+#: src/console/ConsoleTab.tsx:383
 msgid "No lines match the filters."
 msgstr "No lines match the filters."
 
@@ -549,7 +552,7 @@ msgstr "Not in the link"
 msgid "When"
 msgstr "When"
 
-#: src/console/ConsoleTab.tsx:298
+#: src/console/ConsoleTab.tsx:223
 msgid "Type a command, for example help"
 msgstr "Type a command, for example help"
 
@@ -991,7 +994,7 @@ msgstr "{0, plural, one {# failed} other {# failed}}"
 
 #. placeholder {0}: cause.modName
 #. placeholder {0}: crash.cause.modName
-#: src/console/ConsoleTab.tsx:219
+#: src/console/ConsoleTab.tsx:144
 #: src/console/CrashDialog.tsx:156
 #: src/launch/LaunchLayer.tsx:299
 msgid "Caused by {0}"
@@ -1485,7 +1488,7 @@ msgstr "Installed in your profiles"
 msgid "Skip tour"
 msgstr "Skip tour"
 
-#: src/console/ConsoleTab.tsx:488
+#: src/console/ConsoleTab.tsx:413
 msgid "Follow new lines"
 msgstr "Follow new lines"
 
@@ -1870,7 +1873,7 @@ msgid "Stardew Valley closed with errors"
 msgstr "Stardew Valley closed with errors"
 
 #. placeholder {0}: names[level]
-#: src/console/ConsoleTab.tsx:81
+#: src/console/LevelToggles.tsx:61
 msgid "{0}: {n} lines"
 msgstr "{0}: {n} lines"
 
@@ -1889,7 +1892,7 @@ msgstr "{count} checked later"
 msgid "Created “{0}”"
 msgstr "Created “{0}”"
 
-#: src/console/ConsoleTab.tsx:456
+#: src/console/ConsoleTab.tsx:381
 msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
@@ -2037,6 +2040,10 @@ msgstr "Edit categories…"
 #: src/mods/NexusDetails.tsx:138
 msgid "Installed file"
 msgstr "Installed file"
+
+#: src/console/LogActions.tsx:151
+msgid "Search all runs…"
+msgstr "Search all runs…"
 
 #: src/install/NeedsRootCallout.tsx:55
 msgid "Choose folder…"
@@ -2324,7 +2331,7 @@ msgstr "Couldn't update Steam's launch options"
 msgid "Include FOMOD choices"
 msgstr "Include FOMOD choices"
 
-#: src/console/ConsoleTab.tsx:56
+#: src/console/LevelToggles.tsx:35
 #: src/settings/prefCopy.ts:243
 msgid "Info"
 msgstr "Info"
@@ -3027,7 +3034,7 @@ msgstr "Delete the game folder, then reinstall Stardew Valley from your launcher
 msgid "Launch other apps with this profile."
 msgstr "Launch other apps with this profile."
 
-#: src/console/LogActions.tsx:82
+#: src/console/LogActions.tsx:103
 msgid "Jump to previous error"
 msgstr "Jump to previous error"
 
@@ -3232,7 +3239,7 @@ msgstr "Also updates {0} (same download)"
 msgid "Changelog on Nexus"
 msgstr "Changelog on Nexus"
 
-#: src/console/LogActions.tsx:105
+#: src/console/LogActions.tsx:131
 msgid "Log copied"
 msgstr "Log copied"
 
@@ -3420,7 +3427,7 @@ msgstr "Created · updated"
 msgid "Restarting…"
 msgstr "Restarting…"
 
-#: src/console/ConsoleTab.tsx:57
+#: src/console/LevelToggles.tsx:36
 #: src/settings/prefCopy.ts:244
 msgid "Warn"
 msgstr "Warn"
@@ -3522,7 +3529,7 @@ msgstr "This file comes from the same Nexus page as {0}. Install it together wit
 msgid "SMAPI {0} installed"
 msgstr "SMAPI {0} installed"
 
-#: src/console/ConsoleTab.tsx:463
+#: src/console/ConsoleTab.tsx:388
 msgid "Filter by level or mod, and use Share log to upload this run to smapi.io."
 msgstr "Filter by level or mod, and use Share log to upload this run to smapi.io."
 
@@ -3694,7 +3701,7 @@ msgstr "Launch options"
 msgid "Up next: {0}"
 msgstr "Up next: {0}"
 
-#: src/console/ConsoleTab.tsx:524
+#: src/console/ConsoleTab.tsx:449
 msgid "Remove filter {mod}"
 msgstr "Remove filter {mod}"
 
@@ -3877,7 +3884,6 @@ msgid "Different enabled state"
 msgstr "Different enabled state"
 
 #: src/console/HelpDialog.tsx:67
-#: src/console/LogActions.tsx:100
 #: src/firstrun/SmapiStep.tsx:140
 #: src/launch/LaunchLayer.tsx:216
 #: src/saves/lackChipActions.tsx:83
@@ -3903,7 +3909,7 @@ msgstr "Image"
 msgid "Problem: {text}"
 msgstr "Problem: {text}"
 
-#: src/console/ConsoleTab.tsx:54
+#: src/console/LevelToggles.tsx:33
 #: src/settings/prefCopy.ts:241
 msgid "Trace"
 msgstr "Trace"
@@ -4093,7 +4099,7 @@ msgstr "config.json, made by the mod"
 msgid "Start the game to see values"
 msgstr "Start the game to see values"
 
-#: src/console/ConsoleTab.tsx:297
+#: src/console/ConsoleTab.tsx:222
 msgid "Console command"
 msgstr "Console command"
 
@@ -4384,7 +4390,7 @@ msgstr "Dismissed"
 msgid "Also add to…"
 msgstr "Also add to…"
 
-#: src/console/ConsoleTab.tsx:64
+#: src/console/LevelToggles.tsx:43
 msgid "Levels"
 msgstr "Levels"
 
@@ -4429,8 +4435,8 @@ msgstr "Could not check the mods for problems"
 msgid "{0} mods already match {targetName}."
 msgstr "{0} mods already match {targetName}."
 
-#: src/console/ConsoleTab.tsx:183
-#: src/console/ConsoleTab.tsx:184
+#: src/console/ConsoleTab.tsx:108
+#: src/console/ConsoleTab.tsx:109
 msgid "Search the log"
 msgstr "Search the log"
 
@@ -4477,7 +4483,7 @@ msgstr "Direct launch preview"
 msgid "Send"
 msgstr "Send"
 
-#: src/console/ConsoleTab.tsx:127
+#: src/console/ConsoleTab.tsx:52
 #: src/firstrunTour/TourPopover.tsx:63
 #: src/game/Hero.tsx:295
 #: src/game/ProfileWorkspace.tsx:46
@@ -5197,7 +5203,7 @@ msgstr "Game"
 msgid "Minutes between background update checks"
 msgstr "Minutes between background update checks"
 
-#: src/console/ConsoleTab.tsx:219
+#: src/console/ConsoleTab.tsx:144
 msgid "·"
 msgstr "·"
 
@@ -5290,7 +5296,7 @@ msgstr "The rest of Mortar still works. Try again, or copy the details for a bug
 msgid "New since you last looked"
 msgstr "New since you last looked"
 
-#: src/console/ConsoleTab.tsx:403
+#: src/console/ConsoleTab.tsx:328
 msgid "Play this profile and SMAPI's log shows here as it runs. Every run is kept, so you can look back at it later."
 msgstr "Play this profile and SMAPI's log shows here as it runs. Every run is kept, so you can look back at it later."
 
@@ -5314,6 +5320,10 @@ msgstr "Set to {value}"
 #: src/mods/NexusAccountActions.tsx:154
 msgid "Could not untrack"
 msgstr "Could not untrack"
+
+#: src/console/LogActions.tsx:139
+msgid "Copy log"
+msgstr "Copy log"
 
 #. placeholder {0}: extra.join(', ')
 #: src/mods/parts.tsx:345
@@ -5383,7 +5393,7 @@ msgstr "{name} was updated since this run and logged an error: {first}"
 msgid "Performance comparison"
 msgstr "Performance comparison"
 
-#: src/console/LogActions.tsx:125
+#: src/console/LogActions.tsx:86
 msgid "Save log"
 msgstr "Save log"
 
@@ -5640,7 +5650,7 @@ msgstr "That request was not valid."
 msgid "Description"
 msgstr "Description"
 
-#: src/console/ConsoleTab.tsx:136
+#: src/console/ConsoleTab.tsx:61
 msgid "No mods have logged yet"
 msgstr "No mods have logged yet"
 
@@ -5707,7 +5717,7 @@ msgstr "Unofficial update available: {0}"
 msgid "Winter"
 msgstr "Winter"
 
-#: src/console/LogActions.tsx:88
+#: src/console/LogActions.tsx:109
 msgid "Jump to next error"
 msgstr "Jump to next error"
 
@@ -5922,7 +5932,7 @@ msgstr "Clear history"
 msgid "A game's mod loader version and its update notice are in that game's settings."
 msgstr "A game's mod loader version and its update notice are in that game's settings."
 
-#: src/console/ConsoleTab.tsx:55
+#: src/console/LevelToggles.tsx:34
 #: src/settings/prefCopy.ts:242
 msgid "Debug"
 msgstr "Debug"
@@ -6269,6 +6279,10 @@ msgstr "Music volume ({value}%)"
 #: src/settings/sections/About.tsx:72
 msgid "AGPL-3.0 · Rethunk-AI/mortar"
 msgstr "AGPL-3.0 · Rethunk-AI/mortar"
+
+#: src/console/LogActions.tsx:116
+msgid "Log actions"
+msgstr "Log actions"
 
 #. placeholder {0}: names.length - shown.length
 #: src/share/SharedMods.tsx:66
@@ -6871,7 +6885,7 @@ msgstr "Install {name}?"
 msgid "Switch off"
 msgstr "Switch off"
 
-#: src/console/ConsoleTab.tsx:58
+#: src/console/LevelToggles.tsx:37
 #: src/settings/prefCopy.ts:245
 msgid "Error"
 msgstr "Error"
@@ -7342,7 +7356,7 @@ msgstr "This frees {0}. Removed mods download again if a profile needs them late
 msgid "Could not dismiss the setting warning"
 msgstr "Could not dismiss the setting warning"
 
-#: src/console/ConsoleTab.tsx:495
+#: src/console/ConsoleTab.tsx:420
 msgid "Clear filters"
 msgstr "Clear filters"
 
@@ -7417,6 +7431,10 @@ msgstr "Could not add the bundle"
 #: src/profiles/GameModsDialog.tsx:128
 msgid "Reading the Mods folder…"
 msgstr "Reading the Mods folder…"
+
+#: src/console/LogActions.tsx:95
+msgid "Errors"
+msgstr "Errors"
 
 #. placeholder {0}: st.profiles.length
 #: src/games/GameSelect.tsx:316
@@ -7856,7 +7874,7 @@ msgstr "Games"
 msgid "Language"
 msgstr "Language"
 
-#: src/console/ConsoleTab.tsx:401
+#: src/console/ConsoleTab.tsx:326
 msgid "No game output yet"
 msgstr "No game output yet"
 
@@ -7892,7 +7910,7 @@ msgstr "Could not build the link"
 msgid "{0, plural, one {# warning} other {# warnings}}"
 msgstr "{0, plural, one {# warning} other {# warnings}}"
 
-#: src/console/LogActions.tsx:76
+#: src/console/LogActions.tsx:97
 msgid "Jump to first error"
 msgstr "Jump to first error"
 
@@ -8248,7 +8266,7 @@ msgstr "{hours}h played"
 msgid "Enable them too"
 msgstr "Enable them too"
 
-#: src/console/LogActions.tsx:94
+#: src/console/LogActions.tsx:157
 #: src/settings/sections/DataMods.tsx:21
 #: src/toasts/HistoryButton.tsx:134
 msgid "Clear"
@@ -8465,7 +8483,7 @@ msgstr "Set up {0}"
 msgid "GOG via Minigalaxy"
 msgstr "GOG via Minigalaxy"
 
-#: src/console/ConsoleTab.tsx:482
+#: src/console/ConsoleTab.tsx:407
 msgid "Show times"
 msgstr "Show times"
 
@@ -8486,7 +8504,7 @@ msgstr "Get Mortar"
 msgid "Collapse or expand the profile sidebar"
 msgstr "Collapse or expand the profile sidebar"
 
-#: src/console/LogActions.tsx:111
+#: src/console/LogActions.tsx:145
 msgid "Save log…"
 msgstr "Save log…"
 
@@ -8613,7 +8631,7 @@ msgstr "Open Nexus settings"
 msgid "Stop"
 msgstr "Stop"
 
-#: src/console/ConsoleTab.tsx:361
+#: src/console/ConsoleTab.tsx:286
 #: src/loader/Banner.tsx:35
 #: src/settings/sections/GameSettings.tsx:424
 #: src/settings/sections/GameSettings.tsx:427
@@ -8767,9 +8785,15 @@ msgstr "Back up saves only if the profile's mods changed since the last run."
 
 #: src/console/CrashDialog.tsx:82
 #: src/console/HelpDialog.tsx:249
-#: src/console/LogActions.tsx:139
+#: src/console/LogActions.tsx:122
 msgid "Share log"
 msgstr "Share log"
+
+#. placeholder {0}: names[level]
+#. placeholder {1}: compactCount.format(counts.get(level) ?? 0)
+#: src/console/LevelToggles.tsx:106
+msgid "{0} ({1})"
+msgstr "{0} ({1})"
 
 #: src/mods/ProblemsTab.tsx:57
 msgid "Errors in the last run"
@@ -8943,7 +8967,7 @@ msgstr "Before ms"
 msgid "Profile hero"
 msgstr "Profile hero"
 
-#: src/console/ConsoleTab.tsx:59
+#: src/console/LevelToggles.tsx:38
 msgid "Alert"
 msgstr "Alert"
 

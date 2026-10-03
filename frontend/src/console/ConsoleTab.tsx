@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Checkbox, Chip, Menu, MenuItem } from '@mui/material'
+import { Box, Button, Checkbox, Chip, Menu, MenuItem } from '@mui/material'
 import {
   ArrowDownToLine,
   ChevronDown,
@@ -11,7 +11,6 @@ import {
   X,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import {
   RunCause,
@@ -24,89 +23,15 @@ import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
-import { countByLevel, incompatibleSMAPI, isFiltered, LEVELS, modsOf } from './filter.ts'
+import { incompatibleSMAPI, isFiltered, modsOf } from './filter.ts'
 import { stepHistory } from './history.ts'
+import { LevelToggles } from './LevelToggles.tsx'
 import { LinkedLog } from './LinkedLog.tsx'
 import { LogActions } from './LogActions.tsx'
 import { useShownEntries, useVisible } from './logHooks.ts'
 import { RunProblemsStrip } from './RunProblems.tsx'
 import { RunsPicker } from './RunsPicker.tsx'
 import { canSendTo, useConsole } from './store.ts'
-
-const dots: Record<Level, string> = {
-  [Level.$zero]: 'transparent',
-  [Level.Trace]: '#9a9aa6',
-  [Level.Debug]: '#b4b4c0',
-  [Level.Info]: '#ececf0',
-  [Level.Warn]: '#F3B416',
-  [Level.Error]: '#ff6b5f',
-  [Level.Alert]: '#c792ea',
-}
-
-function LevelToggles() {
-  const { t } = useLingui()
-  const entries = useShownEntries()
-  const on = useConsole((s) => s.filters.levels)
-  const toggle = useConsole((s) => s.toggleLevel)
-  const counts = useMemo(() => countByLevel(entries), [entries])
-  const names: Record<Level, string> = {
-    [Level.$zero]: '',
-    [Level.Trace]: t`Trace`,
-    [Level.Debug]: t`Debug`,
-    [Level.Info]: t`Info`,
-    [Level.Warn]: t`Warn`,
-    [Level.Error]: t`Error`,
-    [Level.Alert]: t`Alert`,
-  }
-  return (
-    <Box
-      role="group"
-      aria-label={t`Levels`}
-      sx={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        p: '3px',
-        gap: '2px',
-        bgcolor: 'var(--mortar-overlay-30)',
-        borderRadius: '8px',
-      }}
-    >
-      {LEVELS.map((level) => {
-        const pressed = on.includes(level)
-        const n = counts.get(level) ?? 0
-        return (
-          <ButtonBase
-            key={level}
-            aria-pressed={pressed}
-            aria-label={t`${names[level]}: ${n} lines`}
-            onClick={() => toggle(level)}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              height: 28,
-              px: 1.25,
-              borderRadius: '6px',
-              fontSize: 13,
-              whiteSpace: 'nowrap',
-              bgcolor: pressed ? 'var(--mortar-hairline-14)' : 'transparent',
-              color: pressed ? 'var(--mortar-ink)' : 'var(--mortar-ink-dim)',
-              '&:hover': {
-                bgcolor: pressed ? 'var(--mortar-hairline-18)' : 'var(--mortar-hairline-muted)',
-              },
-            }}
-          >
-            <Box sx={{ width: 8, height: 8, borderRadius: '4px', bgcolor: dots[level] }} />
-            {names[level]}
-            <Box component="span" sx={{ opacity: 0.75 }} aria-hidden={true}>
-              {n}
-            </Box>
-          </ButtonBase>
-        )
-      })}
-    </Box>
-  )
-}
 
 function ModPicker() {
   const { t } = useLingui()
