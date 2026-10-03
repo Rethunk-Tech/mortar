@@ -24,7 +24,9 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { applyCPSchema, parseCPSchema } from './configFields.ts'
 import { type ConfigNode, parseConfig, setAt, stringifyConfig } from './configForm.ts'
 import { Fields } from './configFormUi.tsx'
+import { MenuHint, MenuPages } from './configMenuUi.tsx'
 import { paper } from './paper.ts'
+import { useGmcmMenu } from './useGmcmMenu.ts'
 import { useLocked } from './useLocked.ts'
 
 const text = { fontSize: 13 } as const
@@ -114,12 +116,14 @@ function useConfigDoc(mod: Mod, open: boolean) {
       return
     }
     let body = jsonDraft
-    if (tab === 0) {
+    if (tab === 1) {
       if (!tree) {
         return
       }
       body = stringifyConfig(tree)
-    } else if (!applyJson()) {
+    } else if (tab === 2 && !applyJson()) {
+      return
+    } else if (tab === 0) {
       return
     }
     WriteConfig(target.game, target.id, mod.key, mod.uniqueId, body)
@@ -168,6 +172,7 @@ function EditorDialog({
   saved,
   discardOpen,
   locked,
+  menu,
   onClose,
   onDiscard,
   onKeep,
@@ -185,6 +190,7 @@ function EditorDialog({
   saved: boolean
   discardOpen: boolean
   locked: boolean
+  menu: ReturnType<typeof useGmcmMenu>
   onClose: () => void
   onDiscard: () => void
   onKeep: () => void
@@ -209,12 +215,24 @@ function EditorDialog({
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           {error ? <Typography sx={text}>{error}</Typography> : null}
           <Tabs value={tab} onChange={(_, next: number) => onTab(next)}>
+            <Tab label={t`Menu`} />
             <Tab label={t`Form`} />
             <Tab label={t`JSON`} />
           </Tabs>
-          {tab === 0 ? (
-            <Fields tree={tree} onChange={onTree} onOpen={onOpenJson} />
-          ) : (
+          {tab === 0 && menu.capture ? (
+            <MenuPages
+              capture={menu.capture}
+              pageId={menu.pageId}
+              drafts={menu.drafts}
+              result={menu.result}
+              onPage={menu.setPageId}
+              onChange={menu.change}
+              onDiscard={menu.discard}
+            />
+          ) : null}
+          {tab === 0 && !menu.capture ? <MenuHint /> : null}
+          {tab === 1 ? <Fields tree={tree} onChange={onTree} onOpen={onOpenJson} /> : null}
+          {tab === 2 ? (
             <TextField
               size="small"
               fullWidth={true}
@@ -224,13 +242,13 @@ function EditorDialog({
               onChange={(e) => onJson(e.target.value)}
               slotProps={{ input: { sx: { fontFamily: 'ui-monospace, monospace', fontSize: 13 } } }}
             />
-          )}
+          ) : null}
         </DialogContent>
         <DialogActions>
           {saved ? <Typography sx={{ mr: 'auto', ...text }}>{t`Saved`}</Typography> : null}
           <Button onClick={onClose} sx={noWrap}>{t`Close`}</Button>
           <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
-            <Button onClick={onSave} disabled={locked || (tab === 0 && !tree)} sx={noWrap}>
+            <Button onClick={onSave} disabled={locked || (tab === 1 && !tree)} sx={noWrap}>
               {t`Save`}
             </Button>
           </DisabledReason>
@@ -249,6 +267,7 @@ function EditorDialog({
 
 function ConfigEditor({ mod, open, onClose }: { mod: Mod; open: boolean; onClose: () => void }) {
   const doc = useConfigDoc(mod, open)
+  const menu = useGmcmMenu(mod.uniqueId, open)
   const close = () => {
     if (doc.dirty) {
       doc.setDiscardOpen(true)
@@ -266,15 +285,22 @@ function ConfigEditor({ mod, open, onClose }: { mod: Mod; open: boolean; onClose
       saved={doc.saved}
       discardOpen={doc.discardOpen}
       locked={doc.locked}
+      menu={menu}
       onClose={close}
       onDiscard={onClose}
       onKeep={() => doc.setDiscardOpen(false)}
-      onSave={doc.save}
+      onSave={() => {
+        if (doc.tab === 0) {
+          menu.save()
+          return
+        }
+        doc.save()
+      }}
       onTab={(next) => {
-        if (next === 1 && doc.tree) {
+        if (next === 2 && doc.tree) {
           doc.setJsonDraft(stringifyConfig(doc.tree))
         }
-        if (next === 0 && !doc.applyJson()) {
+        if (next === 1 && doc.tab === 2 && !doc.applyJson()) {
           return
         }
         doc.setTab(next)
@@ -285,7 +311,7 @@ function ConfigEditor({ mod, open, onClose }: { mod: Mod; open: boolean; onClose
         if (doc.tree) {
           doc.setJsonDraft(stringifyConfig(doc.tree))
         }
-        doc.setTab(1)
+        doc.setTab(2)
       }}
     />
   )
