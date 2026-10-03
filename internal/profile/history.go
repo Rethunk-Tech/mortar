@@ -122,11 +122,16 @@ func (s *Store) Snapshot(game, id, snapshotID string) ([]Entry, error) {
 
 // MissingKeys are store keys a revert needs that are not in the store.
 type MissingKeys struct {
-	Keys []string
+	Keys  []string
+	Names []string
 }
 
 func (e *MissingKeys) Error() string {
-	return "missing from the store: " + strings.Join(e.Keys, ", ")
+	who := e.Names
+	if len(who) == 0 {
+		who = e.Keys
+	}
+	return "missing from the store: " + strings.Join(who, ", ")
 }
 
 // Revert restores the profile's entries to the snapshot stored with eventID.
@@ -163,7 +168,7 @@ func (s *Store) Revert(game, id, eventID string) (Profile, error) {
 		return Profile{}, err
 	}
 	if len(missing) > 0 {
-		return Profile{}, &MissingKeys{Keys: missing}
+		return Profile{}, &MissingKeys{Keys: missing, Names: namesForStoreKeys(snap, missing)}
 	}
 	label := "Reverted to " + target.At.UTC().Format(time.RFC3339)
 	snap = cloneEntries(snap)
@@ -242,6 +247,66 @@ func restoreModsOld(dir string) {
 	}
 	_ = os.RemoveAll(modsDir)
 	_ = os.Rename(old, modsDir)
+}
+
+func entryUsesKey(e Entry, want map[string]struct{}) bool {
+	if _, ok := want[e.Key]; ok {
+		return true
+	}
+	if _, ok := want[e.PreviousKey]; ok {
+		return true
+	}
+	for _, key := range e.ExtraStoreKeys {
+		if _, ok := want[key]; ok {
+			return true
+		}
+	}
+	for _, key := range e.PreviousExtraStoreKeys {
+		if _, ok := want[key]; ok {
+			return true
+		}
+	}
+	return false
+}
+
+func namesForStoreKeys(entries []Entry, keys []string) []string {
+	want := make(map[string]struct{}, len(keys))
+	for _, key := range keys {
+		want[key] = struct{}{}
+	}
+	var names []string
+	seen := map[string]struct{}{}
+	add := func(label string) {
+		if label == "" {
+			return
+		}
+		if _, ok := seen[label]; ok {
+			return
+		}
+		seen[label] = struct{}{}
+		names = append(names, label)
+	}
+	used := map[string]struct{}{}
+	for _, e := range entries {
+		if !entryUsesKey(e, want) {
+			continue
+		}
+		add(entryLabel(e))
+		used[e.Key] = struct{}{}
+		used[e.PreviousKey] = struct{}{}
+		for _, key := range e.ExtraStoreKeys {
+			used[key] = struct{}{}
+		}
+		for _, key := range e.PreviousExtraStoreKeys {
+			used[key] = struct{}{}
+		}
+	}
+	for _, key := range keys {
+		if _, ok := used[key]; !ok {
+			add(key)
+		}
+	}
+	return names
 }
 
 func (s *Store) missingStoreKeys(game string, entries []Entry) ([]string, error) {
@@ -419,7 +484,7 @@ func (s *Store) recordHistoryBatchData(dir string, data *historyFileData, batch 
 	}
 	ev.Label = fmt.Sprintf("Changed %d mods", ev.Count)
 	if batch.EventID == "" {
-		created, err := appendHistory(dir, ev, after)
+		created, err := appendHistory(dir, ev, after, 0)
 		if err != nil {
 			return err
 		}
@@ -435,7 +500,7 @@ func (s *Store) recordHistoryBatchData(dir string, data *historyFileData, batch 
 		}
 	}
 	if index < 0 {
-		created, err := appendHistory(dir, ev, after)
+		created, err := appendHistory(dir, ev, after, 0)
 		if err != nil {
 			return err
 		}
@@ -451,7 +516,7 @@ func (s *Store) recordHistoryBatchData(dir string, data *historyFileData, batch 
 	}
 	ev.SnapshotID = snapshot
 	data.Events[index] = ev
-	return writeHistory(dir, *data)
+	return writeHistory(dir, *data, 0)
 }
 
 func (s *Store) recordSnapshot(game, id, kind, label string, count int) error {
@@ -466,7 +531,7 @@ func (s *Store) recordSnapshot(game, id, kind, label string, count int) error {
 		return err
 	}
 	ev := HistoryEvent{Kind: kind, Label: label, Count: count}
-	_, err = appendHistory(dir, ev, p.Entries)
+	_, err = appendHistory(dir, ev, p.Entries, s.historyKeep())
 	return err
 }
 
@@ -517,7 +582,7 @@ func readHistory(dir string) (historyFileData, error) {
 			From: old.From, To: old.To, SnapshotID: id,
 		})
 	}
-	if err := writeHistory(dir, data); err != nil {
+	if err := writeHistory(dir, data, 0); err != nil {
 		return historyFileData{}, err
 	}
 	return data, nil
@@ -535,9 +600,12 @@ func quarantineHistory(path string, cause error) (historyFileData, error) {
 	return emptyHistory(), nil
 }
 
-func writeHistory(dir string, data historyFileData) error {
-	if len(data.Events) > maxHistory {
-		data.Events = data.Events[len(data.Events)-maxHistory:]
+func writeHistory(dir string, data historyFileData, keep int) error {
+	if keep <= 0 {
+		keep = maxHistory
+	}
+	if len(data.Events) > keep {
+		data.Events = data.Events[len(data.Events)-keep:]
 	}
 	if data.Snapshots == nil {
 		data.Snapshots = map[string][]Entry{}
@@ -594,7 +662,7 @@ func entriesEqual(a, b []Entry) bool {
 	return reflect.DeepEqual(a, b)
 }
 
-func recordHistory(dir string, before, after []Entry, kind, label string) error {
+func recordHistory(dir string, before, after []Entry, kind, label string, keep int) error {
 	if entriesEqual(before, after) {
 		return nil
 	}
@@ -605,11 +673,11 @@ func recordHistory(dir string, before, after []Entry, kind, label string) error 
 	if label != "" {
 		ev.Label = label
 	}
-	_, err := appendHistory(dir, ev, after)
+	_, err := appendHistory(dir, ev, after, keep)
 	return err
 }
 
-func appendHistory(dir string, ev HistoryEvent, after []Entry) (HistoryEvent, error) {
+func appendHistory(dir string, ev HistoryEvent, after []Entry, keep int) (HistoryEvent, error) {
 	ev.At = time.Now().UTC().Truncate(time.Second)
 	var raw [8]byte
 	if _, err := rand.Read(raw[:]); err != nil {
@@ -630,7 +698,7 @@ func appendHistory(dir string, ev HistoryEvent, after []Entry) (HistoryEvent, er
 		data.Snapshots[snapshotID] = entries
 	}
 	data.Events = append(data.Events, ev)
-	if err := writeHistory(dir, data); err != nil {
+	if err := writeHistory(dir, data, keep); err != nil {
 		return HistoryEvent{}, err
 	}
 	return ev, nil

@@ -69,6 +69,17 @@ func (s *Service) ImportGameMods(gameID string) (GameModsResult, error) {
 
 func (s *Service) List(game string) ([]Profile, error) { return s.store.List(game) }
 
+func (s *Service) ListDamaged(game string) ([]Profile, error) { return s.store.ListDamaged(game) }
+
+// OpenFolder shows the profile's folder in the system file manager.
+func (s *Service) OpenFolder(game, id string) error {
+	dir, err := s.store.profileDir(game, id)
+	if err != nil {
+		return err
+	}
+	return datadir.Open(dir)
+}
+
 // History lists this profile's mod-set changes, newest first.
 func (s *Service) History(game, id string) ([]HistoryEvent, error) {
 	return s.store.History(game, id)
@@ -150,6 +161,11 @@ func (s *Service) RemoveEntry(game, id, key string) (Profile, error) {
 
 func (s *Service) RemoveEntries(game, id string, keys []string) (Profile, error) {
 	return s.store.RemoveEntries(game, id, keys)
+}
+
+// RestoreEntries puts removed store items back into the profile with their previous entry fields.
+func (s *Service) RestoreEntries(game, id string, entries []Entry) (Profile, error) {
+	return s.store.RestoreEntries(game, id, entries)
 }
 
 // SetModEnabled switches a mod of the entry key on or off.
@@ -570,4 +586,9 @@ func (s *Service) SetEntryCategoryMany(game, id string, keys []string, override 
 
 func (s *Service) SetEntryTagsMany(game, id string, keys []string, tag string, add bool) (Profile, error) {
 	return s.store.SetEntryTagsMany(game, id, keys, tag, add)
+}
+
+// RestoreEntryFields writes each entry's previous pin, skip, tags and category in one profile write.
+func (s *Service) RestoreEntryFields(game, id string, fields []EntryFields) (Profile, error) {
+	return s.store.RestoreEntryFields(game, id, fields)
 }

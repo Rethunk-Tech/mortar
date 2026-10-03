@@ -169,8 +169,12 @@ func TestHistoryRevertMissingStoreKeys(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err = e.Revert("stardew", p.ID, events[0].ID)
-	if missing, ok := errors.AsType[*MissingKeys](err); !ok || len(missing.Keys) == 0 {
+	missing, ok := errors.AsType[*MissingKeys](err)
+	if !ok || len(missing.Keys) == 0 {
 		t.Fatalf("Revert = %v, want MissingKeys", err)
+	}
+	if !strings.Contains(err.Error(), "Me.A") {
+		t.Fatalf("Revert error %q, want named mod", err)
 	}
 }
 

@@ -129,6 +129,47 @@ func (s *Store) SetSkipVersionMany(game, id string, refs []SkipVersionRef) (Prof
 	})
 }
 
+// EntryFields is the pin, skip, tag and category state of one profile entry.
+type EntryFields struct {
+	Key              string   `json:"key"`
+	Pinned           bool     `json:"pinned"`
+	SkipVersion      string   `json:"skipVersion"`
+	Tags             []string `json:"tags"`
+	CategoryOverride string   `json:"categoryOverride"`
+}
+
+// RestoreEntryFields writes each entry's previous pin, skip, tags and category in one profile write.
+func (s *Store) RestoreEntryFields(game, id string, fields []EntryFields) (Profile, error) {
+	if len(fields) == 0 {
+		p, err := s.read(game, id)
+		return p, err
+	}
+	return s.updateMods(game, id, func(p *Profile, _ string) error {
+		for _, field := range fields {
+			found := false
+			for i := range p.Entries {
+				if p.Entries[i].Key != field.Key {
+					continue
+				}
+				p.Entries[i].Pinned = field.Pinned
+				p.Entries[i].SkipVersion = field.SkipVersion
+				_, tags, err := CleanEntryNoteTags(p.Entries[i].Note, field.Tags)
+				if err != nil {
+					return err
+				}
+				p.Entries[i].Tags = tags
+				p.Entries[i].CategoryOverride = field.CategoryOverride
+				found = true
+				break
+			}
+			if !found {
+				return fmt.Errorf("unknown profile entry %q", field.Key)
+			}
+		}
+		return nil
+	})
+}
+
 // SetSkipSourceMany records whether updates from source are hidden for each entry.
 func (s *Store) SetSkipSourceMany(game, id string, keys []string, source string, skip bool) (Profile, error) {
 	return s.updateEntries(game, id, keys, func(e *Entry, _ string) error {

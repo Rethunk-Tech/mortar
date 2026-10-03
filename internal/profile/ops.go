@@ -295,7 +295,7 @@ func (s *Store) ApplyBundledForStart(game string, b Bundle) error {
 func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	all, err := s.List(game)
+	all, err := s.listOK(game)
 	if err != nil {
 		return err
 	}
@@ -409,6 +409,68 @@ func (s *Store) updateMods(game, id string, fn func(p *Profile, dir string) erro
 	return s.updateLocked(game, id, fn)
 }
 
+func applyRestoredMeta(p *Profile, want Entry) {
+	for i := range p.Entries {
+		if p.Entries[i].Key != want.Key {
+			continue
+		}
+		p.Entries[i].Disabled = slices.Clone(want.Disabled)
+		p.Entries[i].Pinned = want.Pinned
+		p.Entries[i].SkipVersion = want.SkipVersion
+		p.Entries[i].SkipSources = slices.Clone(want.SkipSources)
+		p.Entries[i].Note = want.Note
+		p.Entries[i].Tags = slices.Clone(want.Tags)
+		p.Entries[i].CategoryOverride = want.CategoryOverride
+		if !want.Added.IsZero() {
+			p.Entries[i].Added = want.Added
+		}
+		return
+	}
+}
+
+// RestoreEntries copies each store item back into the profile and reapplies its previous enabled
+// state, pins, tags and other entry fields.
+func (s *Store) RestoreEntries(game, id string, entries []Entry) (Profile, error) {
+	if len(entries) == 0 {
+		p, err := s.read(game, id)
+		return p, err
+	}
+	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
+		for _, want := range entries {
+			if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == want.Key }) {
+				continue
+			}
+			src := want.Source
+			if len(want.Fomod) > 0 {
+				src = src.WithFomod(want.Fomod)
+			}
+			if _, err := s.addTo(game, p, dir, want.Key, src, want.Disabled); err != nil {
+				return err
+			}
+			for _, m := range p.Entries {
+				if m.Key != want.Key {
+					continue
+				}
+				for _, mod := range m.Mods {
+					if err := applyEnabled(p, dir, want.Key, mod.UniqueID, !hasID(want.Disabled, mod.UniqueID)); err != nil {
+						return err
+					}
+				}
+				break
+			}
+			applyRestoredMeta(p, want)
+		}
+		return nil
+	})
+	if err != nil {
+		return Profile{}, err
+	}
+	if err := s.RecordModsSnapshot(game, id); err != nil {
+		return Profile{}, err
+	}
+	return p, nil
+}
+
 // RemoveEntry deletes the entry's folder and drops it from the profile.
 func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
 	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
@@ -507,7 +569,7 @@ func (s *Store) SetHidden(game, id string, hidden bool) (Profile, error) {
 func (s *Store) Reorder(game string, ids []string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	all, err := s.List(game)
+	all, err := s.listOK(game)
 	if err != nil {
 		return err
 	}
@@ -558,7 +620,7 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 	}
 	srcDir, _ := s.profileDir(game, id)
 	gdir, _ := s.gameDir(game)
-	all, err := s.List(game)
+	all, err := s.listOK(game)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -609,7 +671,7 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 		return Profile{}, errors.Join(err, os.RemoveAll(tmp))
 	}
 
-	all, err = s.List(game)
+	all, err = s.listOK(game)
 	if err != nil {
 		return Profile{}, err
 	}
