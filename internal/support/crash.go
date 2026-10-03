@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 const (
@@ -44,7 +46,7 @@ func crashLogGrew(crashPath, seenPath string) bool {
 }
 
 func readSeenSize(seenPath string) (int64, bool) {
-	b, err := os.ReadFile(seenPath)
+	b, err := fsx.ReadFile(seenPath)
 	if err != nil {
 		return 0, false
 	}
@@ -64,11 +66,11 @@ func writeCrashSeen(seenPath, crashPath string) {
 }
 
 func prevLogUnclean(prevPath string) bool {
-	f, err := os.Open(prevPath)
+	f, err := fsx.Open(prevPath)
 	if err != nil {
 		return false
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	var last string
 	sc := bufio.NewScanner(f)
@@ -81,7 +83,7 @@ func prevLogUnclean(prevPath string) bool {
 		return true
 	}
 	// slog text handler: msg=shutdown clean=true
-	return !(strings.Contains(last, "msg=shutdown") && strings.Contains(last, "clean=true"))
+	return !strings.Contains(last, "msg=shutdown") || !strings.Contains(last, "clean=true")
 }
 
 // LastRunCrashed reports whether the previous Mortar process ended unexpectedly.
@@ -96,12 +98,12 @@ func logTailSections(dataDir, home string, budget int) string {
 	var bodies []string
 	var names []string
 	for _, name := range []string{prevLogName, crashLogName} {
-		b, err := os.ReadFile(filepath.Join(dataDir, name))
+		b, err := fsx.ReadFile(filepath.Join(dataDir, name))
 		if err != nil {
 			continue
 		}
 		names = append(names, name)
-		bodies = append(bodies, hideHome(lastLines(string(b), logTailLines), home))
+		bodies = append(bodies, hideHomeIn(lastLines(string(b), logTailLines), home))
 	}
 	if len(names) == 0 {
 		return ""
@@ -153,4 +155,15 @@ func shrinkTail(s string) string {
 		return s[:len(s)/2]
 	}
 	return ""
+}
+
+// hideHomeIn replaces every occurrence of the home folder in free text such as a log, where paths appear mid-line;
+// hideHome only rewrites a value that starts with it.
+func hideHomeIn(text, home string) string {
+	for _, h := range []string{home, filepath.ToSlash(home), filepath.FromSlash(home)} {
+		if h = strings.TrimRight(h, `/\`); h != "" {
+			text = strings.ReplaceAll(text, h, "~")
+		}
+	}
+	return text
 }
