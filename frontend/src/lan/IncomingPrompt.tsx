@@ -115,15 +115,7 @@ export function IncomingPrompt() {
   }
   return (
     <>
-      <Dialog
-        open={!(choosing || transferring)}
-        disableEscapeKeyDown={true}
-        onClose={(_, reason) => {
-          if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
-            return
-          }
-        }}
-      >
+      <Dialog open={!(choosing || transferring)}>
         <DialogTitle title={incomingGame}>
           {t`${incoming.sender} sent you ${incoming.profileName} (${gameName})`}
         </DialogTitle>
