@@ -19,6 +19,8 @@ func Sentence(kind usererr.Kind) string {
 		return "That data could not be read."
 	case usererr.Invalid:
 		return "That request was not valid."
+	case usererr.Unknown:
+		return "Something went wrong."
 	default:
 		return "Something went wrong."
 	}

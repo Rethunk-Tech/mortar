@@ -41,20 +41,20 @@ export function errorText(e: unknown): string | undefined {
 }
 
 export function errorKind(e: unknown): ErrorKind {
-  const text = asText(e)
-  const m = kindRe.exec(text)
-  if (m && kinds.has(m[1])) {
-    return m[1] as ErrorKind
+  const kind = kindRe.exec(asText(e) ?? '')?.[1]
+  if (kind !== undefined && kinds.has(kind)) {
+    return kind as ErrorKind
   }
   return 'unknown'
 }
 
 /** Cause text for a Details tooltip; strips the `[kind] ` wire prefix when present. */
 export function errorDetails(e: unknown): string {
-  const text = asText(e)
+  const text = asText(e) ?? ''
   const m = kindRe.exec(text)
-  if (m && kinds.has(m[1])) {
-    return m[2]
+  const kind = m?.[1]
+  if (kind !== undefined && kinds.has(kind)) {
+    return m?.[2] ?? text
   }
   return text
 }

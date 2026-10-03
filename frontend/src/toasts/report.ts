@@ -3,16 +3,28 @@ import { i18n } from '../i18n/index.ts'
 import { errorDetails as detailsOf, errorKind as kindOf, errorText as textOf } from './errorKind.ts'
 import { useToasts } from './store.ts'
 
-const sentences = {
-  not_found: msg`That item could not be found.`,
-  busy: msg`The game is already running.`,
-  network: msg`A network request failed.`,
-  permission: msg`Mortar does not have permission to do that.`,
-  disk_full: msg`The disk is full.`,
-  damaged: msg`That data could not be read.`,
-  invalid: msg`That request was not valid.`,
-  unknown: msg`Something went wrong.`,
-} as const
+// Built on call, not at import: Lingui macros only run inside compiled code, and this module is
+// imported nearly everywhere, tests included.
+function sentence(kind: ReturnType<typeof kindOf>): string {
+  switch (kind) {
+    case 'not_found':
+      return i18n._(msg`That item could not be found.`)
+    case 'busy':
+      return i18n._(msg`The game is already running.`)
+    case 'network':
+      return i18n._(msg`A network request failed.`)
+    case 'permission':
+      return i18n._(msg`Mortar does not have permission to do that.`)
+    case 'disk_full':
+      return i18n._(msg`The disk is full.`)
+    case 'damaged':
+      return i18n._(msg`That data could not be read.`)
+    case 'invalid':
+      return i18n._(msg`That request was not valid.`)
+    default:
+      return i18n._(msg`Something went wrong.`)
+  }
+}
 
 export function errorText(e: unknown): string | undefined {
   return textOf(e)
@@ -31,9 +43,9 @@ export function errorMessage(e: unknown): string {
   const kind = kindOf(e)
   if (kind === 'unknown') {
     const raw = detailsOf(e)
-    return raw === '' ? i18n._(sentences.unknown) : raw
+    return raw === '' ? sentence(kind) : raw
   }
-  return i18n._(sentences[kind])
+  return sentence(kind)
 }
 
 // The sink for a promise nobody awaits. Stores report their own failures, so this only fires for one they did not expect.

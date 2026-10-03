@@ -1,5 +1,12 @@
 import type { Settings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
 
+function on(v: boolean | null | undefined, fallback: boolean): boolean {
+  if (v === null || v === undefined) {
+    return fallback
+  }
+  return v
+}
+
 export const STARDEW = 'stardew'
 
 export interface GamePrefBlock {
@@ -36,13 +43,6 @@ export const defaultGamePrefs: GamePrefBlock = {
   consoleLevel: 'info',
   consoleTimestamps: true,
   consoleFollow: true,
-}
-
-function on(v: boolean | null | undefined, fallback: boolean): boolean {
-  if (v === null || v === undefined) {
-    return fallback
-  }
-  return v
 }
 
 export function gamePrefs(s: Settings): GamePrefBlock {

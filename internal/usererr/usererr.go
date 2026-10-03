@@ -1,3 +1,4 @@
+// Package usererr classifies errors into kinds the GUI and CLI turn into plain sentences.
 package usererr
 
 import (
@@ -23,8 +24,10 @@ const (
 	Unknown    Kind = "unknown"
 )
 
-const prefix = "["
-const mid = "] "
+const (
+	prefix = "["
+	mid    = "] "
+)
 
 // Error is a Kind plus the original cause. errors.Is / errors.As see the cause.
 type Error struct {
@@ -71,8 +74,7 @@ func KindOf(err error) Kind {
 	if err == nil {
 		return Unknown
 	}
-	var ue *Error
-	if errors.As(err, &ue) {
+	if ue, ok := errors.AsType[*Error](err); ok {
 		return ue.kind
 	}
 	return classify(err)
@@ -91,16 +93,13 @@ func classify(err error) Kind {
 	if isENOSPC(err) {
 		return DiskFull
 	}
-	var ne net.Error
-	if errors.As(err, &ne) {
+	if _, ok := errors.AsType[net.Error](err); ok {
 		return Network
 	}
-	var op *net.OpError
-	if errors.As(err, &op) {
+	if _, ok := errors.AsType[*net.OpError](err); ok {
 		return Network
 	}
-	var dns *net.DNSError
-	if errors.As(err, &dns) {
+	if _, ok := errors.AsType[*net.DNSError](err); ok {
 		return Network
 	}
 	return Unknown
@@ -125,6 +124,7 @@ func Parse(s string) (kind Kind, raw string) {
 			switch k {
 			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid:
 				return k, s[i+2:]
+			case Unknown:
 			}
 			return Unknown, s
 		}
