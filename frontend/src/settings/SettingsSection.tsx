@@ -38,18 +38,21 @@ export function SettingsSection({
     return null
   }
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, ...sx }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, ...sx }}>
       {title ? (
-        <Box sx={{ fontSize: 13, fontWeight: 700, color: 'text.secondary' }}>{title}</Box>
+        <Box component="h3" sx={{ m: 0, mt: 1.5, mb: 0.5, fontSize: 18, fontWeight: 600 }}>
+          {title}
+        </Box>
       ) : null}
-      {description ? <Box sx={{ fontSize: 13, color: 'text.secondary' }}>{description}</Box> : null}
+      {description ? <Box sx={{ fontSize: 14, color: 'text.secondary' }}>{description}</Box> : null}
       <Box
         sx={{
-          bgcolor: 'var(--mortar-overlay-45)',
-          borderRadius: 1,
-          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1,
           containerType: 'inline-size',
-          '& > * + *': { borderTop: '1px solid var(--mortar-hairline)' },
+          // Every setting is its own tile; a section is the heading above a stack of tiles.
+          '& > *': { bgcolor: 'var(--mortar-overlay-45)', borderRadius: '6px' },
         }}
       >
         {children}
@@ -76,35 +79,31 @@ export function SettingRow({
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 2,
-        minHeight: 58,
-        px: 2,
-        py: 1,
-        // A narrow card puts the control under its label instead of squeezing the label to an ellipsis.
+        gap: 3,
+        minHeight: 64,
+        px: 2.5,
+        py: 1.5,
+        // Controls inside a row are filled blocks rather than outlined, so the tile reads as one surface.
+        '& .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent' },
+        '& .MuiInputBase-root': { bgcolor: 'var(--mortar-raised)' },
+        '& .MuiButton-outlined': {
+          border: 0,
+          bgcolor: 'var(--mortar-raised)',
+          color: 'text.primary',
+          '&:hover': { border: 0, bgcolor: 'var(--mortar-hairline-16)' },
+        },
+        // A narrow card puts the control under its label instead of squeezing the label.
         [`@container (max-width: ${STACK_BELOW}px)`]: {
           flexDirection: 'column',
           alignItems: 'stretch',
           gap: 1,
-          '& .setting-description': { whiteSpace: 'normal' },
         },
       }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box sx={{ fontSize: 14 }}>{label}</Box>
+        <Box sx={{ fontSize: 16 }}>{label}</Box>
         {description ? (
-          <Box
-            className="setting-description"
-            title={nodeText(description)}
-            sx={{
-              fontSize: 12,
-              color: 'text.secondary',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {description}
-          </Box>
+          <Box sx={{ fontSize: 14, color: 'text.secondary', mt: 0.25 }}>{description}</Box>
         ) : null}
       </Box>
       <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>{children}</Box>

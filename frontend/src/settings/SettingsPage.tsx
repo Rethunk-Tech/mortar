@@ -19,8 +19,8 @@ import { shouldLeavePageOnEscape } from './shouldLeavePageOnEscape.ts'
 
 // One readable column: wider rows push controls too far from their labels, so the content stops growing here.
 const CONTENT_MAX = 880
-const NAV_WIDTH = 200
-const NAV_WIDTH_NARROW = 168
+const NAV_WIDTH = 224
+const NAV_WIDTH_NARROW = 196
 const NARROW_WINDOW = 999
 
 export function SettingsPage({ section }: { section: SettingsSection }) {

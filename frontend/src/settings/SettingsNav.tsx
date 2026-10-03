@@ -1,10 +1,46 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, TextField, Typography } from '@mui/material'
-import { ArrowLeft } from 'lucide-react'
+import {
+  ArrowLeft,
+  Bell,
+  Download,
+  HardDrive,
+  Info,
+  Keyboard,
+  type LucideIcon,
+  Package,
+  Palette,
+  RefreshCw,
+  Rocket,
+  SlidersHorizontal,
+  UserRound,
+} from 'lucide-react'
 import type { SettingsSection } from '../nav/store.ts'
 import { useNav } from '../nav/store.ts'
 
 const ACTIVE_WEIGHT = 600
+const ICON_SIZE = 18
+
+const ICONS: Record<SettingsSection, LucideIcon> = {
+  general: SlidersHorizontal,
+  appearance: Palette,
+  mods: Package,
+  downloads: Download,
+  nexus: UserRound,
+  updates: RefreshCw,
+  notifications: Bell,
+  storage: HardDrive,
+  launchers: Rocket,
+  shortcuts: Keyboard,
+  about: Info,
+}
+
+// A divider follows each of these, splitting the list into look, mods, disk and help groups.
+const GROUP_ENDS: ReadonlySet<SettingsSection> = new Set([
+  'appearance',
+  'notifications',
+  'launchers',
+])
 
 export function SettingsNav({
   section,
@@ -70,27 +106,37 @@ export function SettingsNav({
       />
       {sections.map((s) => {
         const active = section === s.id
+        const Icon = ICONS[s.id]
         return (
-          <ButtonBase
-            key={s.id}
-            onClick={() => (onSection ?? setSection)(s.id)}
-            aria-current={active ? 'page' : undefined}
-            sx={{
-              justifyContent: 'flex-start',
-              height: 38,
-              px: '12px',
-              borderRadius: '6px',
-              fontSize: 14,
-              fontWeight: active ? ACTIVE_WEIGHT : 'normal',
-              fontFamily: 'inherit',
-              whiteSpace: 'nowrap',
-              bgcolor: active ? 'var(--mortar-hairline-12)' : 'transparent',
-              color: active ? 'var(--mortar-ink)' : 'var(--mortar-ink-sec)',
-              '&:hover': { bgcolor: active ? 'var(--mortar-hairline-12)' : 'action.hover' },
-            }}
-          >
-            {s.label}
-          </ButtonBase>
+          <Box key={s.id} sx={{ display: 'contents' }}>
+            <ButtonBase
+              onClick={() => (onSection ?? setSection)(s.id)}
+              aria-current={active ? 'page' : undefined}
+              sx={{
+                justifyContent: 'flex-start',
+                gap: 1.5,
+                height: 42,
+                px: '12px',
+                borderRadius: '6px',
+                fontSize: 15,
+                fontWeight: active ? ACTIVE_WEIGHT : 'normal',
+                fontFamily: 'inherit',
+                whiteSpace: 'nowrap',
+                bgcolor: active ? 'var(--mortar-hairline-12)' : 'transparent',
+                color: active ? 'var(--mortar-ink)' : 'var(--mortar-ink-sec)',
+                '&:hover': { bgcolor: active ? 'var(--mortar-hairline-12)' : 'action.hover' },
+              }}
+            >
+              <Icon size={ICON_SIZE} aria-hidden={true} />
+              {s.label}
+            </ButtonBase>
+            {GROUP_ENDS.has(s.id) ? (
+              <Box
+                role="separator"
+                sx={{ height: '1px', bgcolor: 'var(--mortar-hairline)', mx: 1, my: 0.75 }}
+              />
+            ) : null}
+          </Box>
         )
       })}
     </Box>
