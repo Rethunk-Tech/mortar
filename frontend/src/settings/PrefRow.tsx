@@ -9,24 +9,28 @@ import { persist } from './persist.ts'
 import { prefControl } from './prefControl.ts'
 import { prefCopy } from './prefCopy.ts'
 import { specByKey, usePrefSpecs } from './prefSpecs.ts'
-import {
-  GAME_STARDEW,
-  prefAsBool,
-  prefAsNumber,
-  prefAsString,
-  prefRaw,
-  specGameArg,
-} from './prefValue.ts'
+import { prefAsBool, prefAsNumber, prefAsString, prefRaw, specGameArg } from './prefValue.ts'
 import { SettingRow } from './SettingsSection.tsx'
 import { useSettings } from './store.ts'
 
-export function PrefRow({ spec, extra }: { spec: PrefSpec; extra?: ReactNode }) {
+// Game-scope prefs render only where a game is passed, so global pages never write to a guessed game.
+export function PrefRow({
+  spec,
+  extra,
+  game,
+}: {
+  spec: PrefSpec
+  extra?: ReactNode
+  game?: string
+}) {
   const { t, i18n } = useLingui()
   const push = useToasts((s) => s.push)
   const fail = t`Couldn't save that setting`
   const settings = useSettings()
-  const game = settings.lastGame || GAME_STARDEW
   const copy = prefCopy(i18n, spec.key)
+  if (spec.scope === 'game' && !game) {
+    return null
+  }
   const raw = prefRaw(settings, spec, game)
   const gameArg = specGameArg(spec, game)
   const save = (value: string) => persist(() => SetByKey(spec.key, value, gameArg), push, fail)
@@ -73,19 +77,27 @@ export function PrefRow({ spec, extra }: { spec: PrefSpec; extra?: ReactNode }) 
   )
 }
 
-export function PrefByKey({ prefKey, extra }: { prefKey: string; extra?: ReactNode }) {
+export function PrefByKey({
+  prefKey,
+  extra,
+  game,
+}: {
+  prefKey: string
+  extra?: ReactNode
+  game?: string
+}) {
   const spec = specByKey(usePrefSpecs(), prefKey)
   if (!spec) {
     return null
   }
-  return <PrefRow spec={spec} extra={extra} />
+  return <PrefRow spec={spec} extra={extra} {...(game ? { game } : {})} />
 }
 
-export function PrefKeys({ keys }: { keys: string[] }) {
+export function PrefKeys({ keys, game }: { keys: string[]; game?: string }) {
   return (
     <>
       {keys.map((key) => (
-        <PrefByKey key={key} prefKey={key} />
+        <PrefByKey key={key} prefKey={key} {...(game ? { game } : {})} />
       ))}
     </>
   )

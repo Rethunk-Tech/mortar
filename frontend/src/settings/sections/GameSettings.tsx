@@ -24,8 +24,10 @@ import {
   SteamAccess,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { State } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import {
   ChooseGameFolder,
+  SetByKey,
   SetGameFolder,
   SetGameStore,
   SetTellWhenSmapiOut,
@@ -38,6 +40,9 @@ import { InstallSteps } from '../../loader/InstallSteps.tsx'
 import { useLoader } from '../../loader/store.ts'
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
+import { persist } from '../persist.ts'
+import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { SmapiVersionRow } from './SmapiVersionRow.tsx'
 import { StreamOverlay } from './StreamOverlay.tsx'
@@ -408,8 +413,6 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
       (s.status?.game === GAME &&
         (s.status.state === State.Launching || s.status.state === State.Running)),
   )
-  const tellWhenSmapiOut = useSettings((s) => s.tellWhenSmapiOut) !== false
-  const push = useToasts((s) => s.push)
   useEffect(() => {
     check(GAME)
     refreshLaunch(GAME)
@@ -476,26 +479,84 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
         </Box>
         {control}
       </Box>
-      <FormControlLabel
-        sx={{ m: 0, alignItems: 'center' }}
-        control={
-          <Switch
-            checked={tellWhenSmapiOut}
-            onChange={(_, value) =>
-              SetTellWhenSmapiOut(value).catch((err: unknown) => {
-                const body = errorText(err)
-                push({
-                  kind: 'error',
-                  title: t`Couldn't save that setting`,
-                  ...(body ? { body } : {}),
-                })
-              })
-            }
-          />
-        }
-        label={t`Tell me when a new SMAPI is out`}
-      />
     </Box>
+  )
+}
+
+function SmapiVersion() {
+  const { t } = useLingui()
+  const tellWhenSmapiOut = useSettings((s) => s.tellWhenSmapiOut) !== false
+  const push = useToasts((s) => s.push)
+  return (
+    <SettingsSection title={t`SMAPI version`}>
+      <SettingRow label={t`Tell me when a new SMAPI is out`}>
+        <Switch
+          checked={tellWhenSmapiOut}
+          onChange={(_, on) =>
+            persist(() => SetTellWhenSmapiOut(on), push, t`Couldn't save that setting`)
+          }
+        />
+      </SettingRow>
+      <SmapiVersionRow />
+      <PrefByKey prefKey="smapiBuilds" game={GAME} />
+    </SettingsSection>
+  )
+}
+
+function GamePrefs() {
+  const { t } = useLingui()
+  const push = useToasts((s) => s.push)
+  const chooseBackupLocation = () =>
+    persist(
+      async () => {
+        const dir = await PickFolder(t`Backup location`)
+        if (dir) {
+          await SetByKey('backupLocation', dir, GAME)
+        }
+      },
+      push,
+      t`Couldn't save that setting`,
+    )
+  return (
+    <>
+      <SmapiVersion />
+      <SettingsSection title={t`Play`}>
+        <PrefKeys
+          keys={['defaultLaunchMethod', 'showSmapiConsole', 'updateModsBeforePlayDefault']}
+          game={GAME}
+        />
+      </SettingsSection>
+      <SettingsSection title={t`Mods`}>
+        <PrefKeys
+          keys={[
+            'enableRequirements',
+            'missingRequirements',
+            'cosmeticConflicts',
+            'conflictScanDepth',
+            'watchDownloads',
+          ]}
+          game={GAME}
+        />
+      </SettingsSection>
+      <SettingsSection title={t`Play backups`}>
+        <PrefKeys keys={['backupBeforePlay', 'launchBackupsKept']} game={GAME} />
+        <PrefByKey
+          prefKey="backupLocation"
+          game={GAME}
+          extra={
+            <Button variant="outlined" onClick={chooseBackupLocation} sx={{ whiteSpace: 'nowrap' }}>
+              {t`Choose…`}
+            </Button>
+          }
+        />
+      </SettingsSection>
+      <SettingsSection title={t`Console`}>
+        <PrefKeys
+          keys={['runsKept', 'consoleLogCap', 'consoleLevel', 'consoleTimestamps', 'consoleFollow']}
+          game={GAME}
+        />
+      </SettingsSection>
+    </>
   )
 }
 
@@ -527,7 +588,7 @@ function GameBody() {
       />
       <FlatpakAccess />
       <Smapi key={folder} onVersion={setVersion} />
-      <SmapiVersionRow />
+      <GamePrefs />
       <StreamOverlay />
     </Box>
   )
