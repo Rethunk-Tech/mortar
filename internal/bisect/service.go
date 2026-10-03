@@ -154,7 +154,7 @@ func (s *Service) run(ctx context.Context, j *job) {
 		if _, err := s.profiles.SetModsEnabled(j.game, j.tempID, refs, false); err != nil {
 			return false, err
 		}
-		healthy, _, err := s.launches.RunForBisect(ctx, j.game, j.tempID, false)
+		healthy, _, err := s.launches.RunForBisect(ctx, j.game, j.tempID)
 		return !healthy, err
 	}, func(progress Progress) {
 		s.setStatus(Status{

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
 const (
@@ -15,15 +16,16 @@ const (
 	bisectStartupGrace = 3 * time.Second
 )
 
-// RunForBisect launches one profile and returns whether it reached a healthy running state.
-func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string, direct bool) (bool, launch.Summary, error) {
+// RunForBisect launches one profile the way Play would (the profile's launch method) and returns whether it reached a
+// healthy running state.
+func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (bool, launch.Summary, error) {
 	runCtx, cancel := context.WithTimeout(ctx, bisectRunTimeout)
 	defer cancel()
 	beforeRunID, _, err := s.LastRunSummary(gameID, profileID)
 	if err != nil {
 		return false, launch.Summary{}, err
 	}
-	if err := s.start(runCtx, gameID, profileID, direct); err != nil {
+	if err := s.start(runCtx, gameID, profileID, s.launchesDirect(gameID, profileID)); err != nil {
 		return false, launch.Summary{}, err
 	}
 
@@ -101,6 +103,11 @@ func bisectStartupFailure(lines []launch.Entry) bool {
 
 func summaryHealthy(summary launch.Summary) bool {
 	return !summary.Crashed
+}
+
+func (s *Service) launchesDirect(gameID, profileID string) bool {
+	method := settings.Resolve(s.settings.Get(), "defaultLaunchMethod", gameID, launchOverrides(s.profiles, gameID, profileID))
+	return method == settings.LaunchDirect
 }
 
 func (s *Service) stopBisectRun(gameID string) error {
