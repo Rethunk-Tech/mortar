@@ -14,6 +14,7 @@ import { useLocked } from '../mods/useLocked.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { stillApplies } from './runProblemsLive.ts'
 
 function findMod(problem: SMAPIProblem): Mod | undefined {
   return useMods
@@ -157,7 +158,9 @@ export function RunProblemsStrip({
       () => setFound([]),
     )
   }, [game, profile, run])
-  if (found.length === 0) {
+  const mods = useMods((s) => s.mods)
+  const live = found.filter((p) => stillApplies(p, mods))
+  if (live.length === 0) {
     return null
   }
   return (
@@ -176,7 +179,7 @@ export function RunProblemsStrip({
       }}
     >
       <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{t`Problems in this run`}</Typography>
-      {found.map((problem) => (
+      {live.map((problem) => (
         <ProblemRow key={`${problem.kind}-${problem.modId}-${problem.detail}`} problem={problem} />
       ))}
     </Box>
