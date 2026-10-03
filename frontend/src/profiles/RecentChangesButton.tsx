@@ -37,7 +37,7 @@ function RecentRow({
   const { t } = useLingui()
   const changes = historyChangeSummary(ev)
   const kind = historyEventKind(ev)
-  let label = ev.label
+  let { label } = ev
   switch (kind) {
     case 'added':
       label = ev.label === 'added' ? t`Added` : ev.label

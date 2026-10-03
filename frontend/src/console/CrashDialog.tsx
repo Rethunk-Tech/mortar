@@ -14,6 +14,7 @@ import { Browser } from '@wailsio/runtime'
 import { LifeBuoy, Terminal } from 'lucide-react'
 import { useState } from 'react'
 import { Start as StartBisect } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bisect/service.ts'
+import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { useTab } from '../game/tab.ts'
 import { useLaunch } from '../launch/store.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
@@ -26,6 +27,75 @@ import { BisectDialog } from './BisectDialog.tsx'
 import { crashCauseDetailLine, crashCauseKind } from './crashCause.ts'
 import { useConsole } from './store.ts'
 
+type Crash = NonNullable<ReturnType<typeof useLaunch.getState>['crash']>
+
+// Switching the suspected mod off, with an Undo toast; busy while the profile write runs.
+function SwitchOffButton({ mod }: { mod: Mod }) {
+  const { t } = useLingui()
+  const [switching, setSwitching] = useState(false)
+  return (
+    <Button
+      disabled={switching}
+      onClick={() => {
+        setSwitching(true)
+        useMods
+          .getState()
+          .setEnabled(mod, false)
+          .then(() => {
+            useToasts.getState().push({
+              kind: 'success',
+              title: t`Switched off ${mod.name}`,
+              action: {
+                label: t`Undo`,
+                run: () => useMods.getState().setEnabled(mod, true),
+              },
+            })
+          })
+          .catch(() => undefined)
+          .finally(() => setSwitching(false))
+      }}
+    >
+      {t`Switch off`}
+    </Button>
+  )
+}
+
+// Share log and Open console both open the crashed run in the profile's Console.
+function CrashLogButtons({ crash, onDone }: { crash: Crash; onDone: () => void }) {
+  const { t } = useLingui()
+  const dismiss = onDone
+  return (
+    <>
+      <Button
+        variant="outlined"
+        startIcon={<LifeBuoy size={16} />}
+        onClick={() => {
+          useProfiles.getState().open(crash.profile)
+          useConsole.getState().viewRun(crash.game, crash.profile, crash.runId)
+          useConsole.getState().setHelping(true)
+          dismiss()
+        }}
+        sx={{ whiteSpace: 'nowrap' }}
+      >
+        {t`Share log`}
+      </Button>
+      <Button
+        variant="contained"
+        startIcon={<Terminal size={16} />}
+        onClick={() => {
+          useProfiles.getState().open(crash.profile)
+          useTab.getState().setTab('console')
+          useConsole.getState().viewRun(crash.game, crash.profile, crash.runId)
+          dismiss()
+        }}
+        sx={{ whiteSpace: 'nowrap' }}
+      >
+        {t`Open console`}
+      </Button>
+    </>
+  )
+}
+
 export function CrashDialog() {
   const { t } = useLingui()
   const crash = useLaunch((s) => s.crash)
@@ -34,7 +104,6 @@ export function CrashDialog() {
     null,
   )
   const [bisectError, setBisectError] = useState<string | null>(null)
-  const [switching, setSwitching] = useState(false)
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === crash?.profile))
   const mod = useMods((s) => s.mods.find((m) => m.key === crash?.cause?.modKey))
   if (!crash) {
@@ -112,31 +181,7 @@ export function CrashDialog() {
           <Button onClick={dismiss} sx={{ whiteSpace: 'nowrap' }}>
             {t`Dismiss`}
           </Button>
-          {mod ? (
-            <Button
-              disabled={switching}
-              onClick={() => {
-                setSwitching(true)
-                useMods
-                  .getState()
-                  .setEnabled(mod, false)
-                  .then(() => {
-                    useToasts.getState().push({
-                      kind: 'success',
-                      title: t`Switched off ${mod.name}`,
-                      action: {
-                        label: t`Undo`,
-                        run: () => useMods.getState().setEnabled(mod, true),
-                      },
-                    })
-                  })
-                  .catch(() => undefined)
-                  .finally(() => setSwitching(false))
-              }}
-            >
-              {t`Switch off`}
-            </Button>
-          ) : null}
+          {mod ? <SwitchOffButton mod={mod} /> : null}
           {nexusID > 0 ? (
             <Button
               onClick={() =>
@@ -151,32 +196,7 @@ export function CrashDialog() {
               {t`Find the mod causing this`}
             </Button>
           ) : null}
-          <Button
-            variant="outlined"
-            startIcon={<LifeBuoy size={16} />}
-            onClick={() => {
-              useProfiles.getState().open(crash.profile)
-              useConsole.getState().viewRun(crash.game, crash.profile, crash.runId)
-              useConsole.getState().setHelping(true)
-              dismiss()
-            }}
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            {t`Share log`}
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<Terminal size={16} />}
-            onClick={() => {
-              useProfiles.getState().open(crash.profile)
-              useTab.getState().setTab('console')
-              useConsole.getState().viewRun(crash.game, crash.profile, crash.runId)
-              dismiss()
-            }}
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            {t`Open console`}
-          </Button>
+          <CrashLogButtons crash={crash} onDone={dismiss} />
         </DialogActions>
       </Dialog>
       {bisectJob ? (

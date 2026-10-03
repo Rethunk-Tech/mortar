@@ -317,6 +317,9 @@ export const useInstall = create<{
       })
       return
     }
+    if (!(game && profile)) {
+      return
+    }
     const { push } = useToasts.getState()
     const dependentIds: string[] = []
     set((s) => ({ pending: s.pending + paths.length }))
