@@ -347,6 +347,98 @@ func (s *Service) SetNxmRedirectOtherGames(on bool) error {
 	return s.set(func(v *Settings) { v.NxmRedirectOtherGames = &on })
 }
 
+func (s *Service) SetOnPlay(v string) error {
+	return s.set(func(cur *Settings) { cur.OnPlay = v })
+}
+func (s *Service) SetBackupBeforePlay(v string) error {
+	return s.set(func(cur *Settings) { cur.BackupBeforePlay = v })
+}
+func (s *Service) SetLaunchBackupsKept(n int) error {
+	return s.set(func(cur *Settings) { cur.LaunchBackupsKept = n })
+}
+func (s *Service) SetUpdateModsBeforePlayDefault(on bool) error {
+	return s.set(func(cur *Settings) { cur.UpdateModsBeforePlayDefault = on })
+}
+func (s *Service) SetRunsKept(n int) error {
+	return s.set(func(cur *Settings) { cur.RunsKept = n })
+}
+func (s *Service) SetConsoleLogCap(n int) error {
+	return s.set(func(cur *Settings) { cur.ConsoleLogCap = n })
+}
+func (s *Service) SetParallelDownloads(n int) error {
+	return s.set(func(cur *Settings) { cur.ParallelDownloads = n })
+}
+func (s *Service) SetUpdateCheckIntervalMinutes(n int) error {
+	return s.set(func(cur *Settings) { cur.UpdateCheckIntervalMinutes = n })
+}
+func (s *Service) SetNotifyModUpdates(on bool) error {
+	return s.set(func(cur *Settings) { cur.NotifyModUpdates = &on })
+}
+func (s *Service) SetKeepDownloadArchives(on bool) error {
+	return s.set(func(cur *Settings) { cur.KeepDownloadArchives = on })
+}
+func (s *Service) SetStoreRetentionDays(n int) error {
+	return s.set(func(cur *Settings) { cur.StoreRetentionDays = n })
+}
+func (s *Service) SetNxmDefaultProfile(id string) error {
+	return s.set(func(cur *Settings) { cur.NxmDefaultProfile = id })
+}
+func (s *Service) SetDefaultModsView(v string) error {
+	return s.set(func(cur *Settings) { cur.DefaultModsView = v })
+}
+func (s *Service) SetConfirmRemovals(on bool) error {
+	return s.set(func(cur *Settings) { cur.ConfirmRemovals = &on })
+}
+func (s *Service) SetCosmeticConflicts(v string) error {
+	return s.set(func(cur *Settings) { cur.CosmeticConflicts = v })
+}
+func (s *Service) SetBackgroundBadgeChecks(on bool) error {
+	return s.set(func(cur *Settings) { cur.BackgroundBadgeChecks = &on })
+}
+func (s *Service) SetStartScreen(v string) error {
+	return s.set(func(cur *Settings) { cur.StartScreen = v })
+}
+func (s *Service) SetDates(v string) error {
+	return s.set(func(cur *Settings) { cur.Dates = v })
+}
+func (s *Service) SetTrashRetentionDays(n int) error {
+	return s.set(func(cur *Settings) { cur.TrashRetentionDays = n })
+}
+func (s *Service) SetHistoryEventsKept(n int) error {
+	return s.set(func(cur *Settings) { cur.HistoryEventsKept = n })
+}
+func (s *Service) SetNotifyDownloadFinished(on bool) error {
+	return s.set(func(cur *Settings) { cur.NotifyDownloadFinished = &on })
+}
+func (s *Service) SetNotifyDownloadFailed(on bool) error {
+	return s.set(func(cur *Settings) { cur.NotifyDownloadFailed = &on })
+}
+func (s *Service) SetNotifyRunCrashed(on bool) error {
+	return s.set(func(cur *Settings) { cur.NotifyRunCrashed = &on })
+}
+
+// SetByKey writes one CLI-visible setting.
+func (s *Service) SetByKey(key, value string) error {
+	var applyErr error
+	err := s.set(func(cur *Settings) {
+		applyErr = ApplyKey(cur, key, value)
+	})
+	if applyErr != nil {
+		return applyErr
+	}
+	return err
+}
+
+// SetShortcuts stores keyboard chords by action id. Missing ids keep their defaults.
+func (s *Service) SetShortcuts(chords map[string]string) error {
+	return s.set(func(v *Settings) {
+		v.Shortcuts = maps.Clone(chords)
+		if v.Shortcuts == nil {
+			v.Shortcuts = map[string]string{}
+		}
+	})
+}
+
 func (s *Service) set(fn func(*Settings)) error {
 	next, err := s.store.Update(fn)
 	if err != nil {

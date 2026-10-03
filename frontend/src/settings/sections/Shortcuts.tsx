@@ -1,13 +1,25 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, TextField } from '@mui/material'
-import { useMemo, useState } from 'react'
-import { SHORTCUTS } from '../shortcuts.ts'
+import { Box, Button, TextField } from '@mui/material'
+import { useEffect, useMemo, useState } from 'react'
+import { SetShortcuts } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { reportUnexpected } from '../../toasts/report.ts'
+import {
+  conflictFor,
+  defaultBindings,
+  formatChord,
+  mergeBindings,
+  SHORTCUTS,
+  type ShortcutId,
+  setShortcutCapturing,
+} from '../shortcuts.ts'
+import { useSettings } from '../store.ts'
 
-export function Shortcuts() {
+type Labels = Record<ShortcutId, string>
+
+function useShortcutLabels(): Labels {
   const { t } = useLingui()
-  const [filter, setFilter] = useState('')
-  const labels = useMemo(
-    (): Record<(typeof SHORTCUTS)[number]['id'], string> => ({
+  return useMemo(
+    () => ({
       'command-palette': t`Open the command palette`,
       'filter-mods': t`Focus the search`,
       play: t`Play the open profile`,
@@ -43,9 +55,122 @@ export function Shortcuts() {
     }),
     [t],
   )
-  const rows = useMemo(
-    () => SHORTCUTS.filter((row) => labels[row.id].toLowerCase().includes(filter.toLowerCase())),
-    [filter, labels],
+}
+
+function ShortcutRow({
+  id,
+  label,
+  keys,
+  recording,
+  conflictName,
+  onRecord,
+  onReset,
+}: {
+  id: ShortcutId
+  label: string
+  keys: string
+  recording: boolean
+  conflictName: string | null
+  onRecord: () => void
+  onReset: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: 2,
+        px: 2,
+        py: 1,
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+      }}
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, minWidth: 0 }}>
+        <Box component="span">{label}</Box>
+        {conflictName ? (
+          <Box component="span" sx={{ fontSize: 12, color: 'error.main' }}>
+            {t`Already used by ${conflictName}`}
+          </Box>
+        ) : null}
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+        <Box
+          component="button"
+          type="button"
+          aria-label={t`Change shortcut`}
+          onClick={onRecord}
+          sx={{
+            color: 'rgba(225,225,230,0.95)',
+            fontFamily: 'inherit',
+            fontSize: 12,
+            px: 0.75,
+            py: 0.25,
+            border: '1px solid rgba(255,255,255,0.25)',
+            borderRadius: 0.5,
+            bgcolor: recording ? 'rgba(255,255,255,0.12)' : 'transparent',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {recording ? t`Press a key` : keys || ''}
+        </Box>
+        <Button
+          size="small"
+          disabled={keys === defaultBindings()[id]}
+          onClick={onReset}
+          sx={{ whiteSpace: 'nowrap', minWidth: 0 }}
+        >
+          {t`Reset`}
+        </Button>
+      </Box>
+    </Box>
+  )
+}
+
+export function Shortcuts() {
+  const { t } = useLingui()
+  const [filter, setFilter] = useState('')
+  const [recording, setRecording] = useState<ShortcutId | null>(null)
+  const [conflict, setConflict] = useState<{ id: ShortcutId; other: ShortcutId } | null>(null)
+  const stored = useSettings((s) => s.shortcuts)
+  const bindings = useMemo(() => mergeBindings(stored), [stored])
+  const labels = useShortcutLabels()
+  useEffect(() => {
+    setShortcutCapturing(recording !== null)
+    if (!recording) {
+      return
+    }
+    const onKey = (e: KeyboardEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (e.key === 'Escape') {
+        setRecording(null)
+        setConflict(null)
+        return
+      }
+      const keys = formatChord(e)
+      if (!keys) {
+        return
+      }
+      const other = conflictFor(recording, keys, bindings)
+      if (other) {
+        setConflict({ id: recording, other })
+        return
+      }
+      setConflict(null)
+      setRecording(null)
+      SetShortcuts({ ...bindings, [recording]: keys }).catch(reportUnexpected)
+    }
+    globalThis.addEventListener('keydown', onKey, true)
+    return () => {
+      globalThis.removeEventListener('keydown', onKey, true)
+      setShortcutCapturing(false)
+    }
+  }, [recording, bindings])
+  const rows = SHORTCUTS.filter((row) =>
+    labels[row.id].toLowerCase().includes(filter.toLowerCase()),
   )
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: 14 }}>
@@ -55,6 +180,18 @@ export function Shortcuts() {
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
       />
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Button
+          size="small"
+          onClick={() => {
+            setConflict(null)
+            SetShortcuts(defaultBindings()).catch(reportUnexpected)
+          }}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          {t`Reset all`}
+        </Button>
+      </Box>
       {(['General', 'Navigation', 'Profiles', 'Mods list', 'Console'] as const).map((group) => {
         const grouped = rows.filter((row) => row.group === group)
         return grouped.length > 0 ? (
@@ -64,32 +201,24 @@ export function Shortcuts() {
             </Box>
             <Box sx={{ bgcolor: 'rgba(0,0,0,0.25)', borderRadius: 1, overflow: 'hidden' }}>
               {grouped.map((row) => (
-                <Box
+                <ShortcutRow
                   key={row.id}
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    gap: 2,
-                    px: 2,
-                    py: 1,
-                    borderBottom: '1px solid rgba(255,255,255,0.1)',
+                  id={row.id}
+                  label={labels[row.id]}
+                  keys={bindings[row.id]}
+                  recording={recording === row.id}
+                  conflictName={conflict?.id === row.id ? labels[conflict.other] : null}
+                  onRecord={() => {
+                    setConflict(null)
+                    setRecording(row.id)
                   }}
-                >
-                  <Box component="span">{labels[row.id]}</Box>
-                  <Box
-                    component="kbd"
-                    sx={{
-                      color: 'rgba(225,225,230,0.95)',
-                      fontFamily: 'inherit',
-                      fontSize: 12,
-                      px: 0.75,
-                      border: '1px solid rgba(255,255,255,0.25)',
-                      borderRadius: 0.5,
-                    }}
-                  >
-                    {row.keys}
-                  </Box>
-                </Box>
+                  onReset={() => {
+                    setConflict(null)
+                    SetShortcuts({ ...bindings, [row.id]: defaultBindings()[row.id] }).catch(
+                      reportUnexpected,
+                    )
+                  }}
+                />
               ))}
             </Box>
           </Box>

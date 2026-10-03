@@ -1,5 +1,14 @@
 import { describe, expect, test } from 'bun:test'
-import { matchShortcut, SHORTCUTS, shortcutAllowed } from './shortcuts.ts'
+import {
+  conflictFor,
+  defaultBindings,
+  formatChord,
+  matchShortcut,
+  mergeBindings,
+  parseKeys,
+  SHORTCUTS,
+  shortcutAllowed,
+} from './shortcuts.ts'
 
 describe('SHORTCUTS', () => {
   test('lists every chord the handler recognises', () => {
@@ -7,6 +16,12 @@ describe('SHORTCUTS', () => {
     expect(new Set(ids).size).toBe(ids.length)
     expect(ids).toContain('tab-performance')
     expect(ids).toContain('vanilla-play')
+    expect(ids).toContain('downloads')
+    expect(ids).toContain('notifications')
+    expect(ids).toContain('previous-profile')
+    expect(ids).toContain('next-profile')
+    expect(ids).toContain('collapse-sidebar')
+    expect(ids).toContain('find-all-mods')
   })
 
   test('matchShortcut covers the table', () => {
@@ -27,6 +42,41 @@ describe('SHORTCUTS', () => {
     expect(matchShortcut({ key: 'F2' })).toBe('rename-profile')
     expect(matchShortcut({ key: 'i', ctrlKey: true })).toBe('import')
     expect(matchShortcut({ key: 'ArrowLeft', altKey: true })).toBe('back')
+    expect(matchShortcut({ key: 'j', ctrlKey: true })).toBe('downloads')
+    expect(matchShortcut({ key: 'n', ctrlKey: true, shiftKey: true })).toBe('notifications')
+    expect(matchShortcut({ key: 'PageUp', ctrlKey: true })).toBe('previous-profile')
+    expect(matchShortcut({ key: 'PageDown', ctrlKey: true })).toBe('next-profile')
+    expect(matchShortcut({ key: 'b', ctrlKey: true })).toBe('collapse-sidebar')
+    expect(matchShortcut({ key: 'f', ctrlKey: true, shiftKey: true })).toBe('find-all-mods')
+    expect(matchShortcut({ key: 'p', ctrlKey: true, shiftKey: true })).toBe('vanilla-play')
+  })
+})
+
+describe('combo parse and match', () => {
+  test('parseKeys and formatChord round-trip the table', () => {
+    for (const row of SHORTCUTS) {
+      const parsed = parseKeys(row.keys)
+      expect(parsed).not.toBeNull()
+      expect(formatChord(parsed as NonNullable<typeof parsed>)).toBe(row.keys)
+    }
+  })
+
+  test('matchShortcut uses live bindings', () => {
+    const bindings = { ...defaultBindings(), play: 'Ctrl+Shift+L' }
+    expect(matchShortcut({ key: 'p', ctrlKey: true }, bindings)).toBeNull()
+    expect(matchShortcut({ key: 'l', ctrlKey: true, shiftKey: true }, bindings)).toBe('play')
+  })
+
+  test('conflictFor names the other action', () => {
+    const bindings = mergeBindings({})
+    expect(conflictFor('downloads', 'Ctrl+K', bindings)).toBe('command-palette')
+    expect(conflictFor('downloads', 'Ctrl+J', bindings)).toBeNull()
+    expect(conflictFor('command-palette', 'Ctrl+K', bindings)).toBeNull()
+  })
+
+  test('formatChord ignores modifier-only presses', () => {
+    expect(formatChord({ key: 'Control', ctrlKey: true })).toBeNull()
+    expect(formatChord({ key: 'Shift', shiftKey: true })).toBeNull()
   })
 })
 

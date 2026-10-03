@@ -20,7 +20,8 @@ import { paper } from '../mods/paper.ts'
 import type { SettingsSection } from '../nav/store.ts'
 import { userModEntries } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { SHORTCUTS, type ShortcutId } from '../settings/shortcuts.ts'
+import { mergeBindings, SHORTCUTS, type ShortcutId } from '../settings/shortcuts.ts'
+import { useSettings } from '../settings/store.ts'
 import { buildPaletteItems } from './items.ts'
 import { matchPaletteItems, type PaletteItem } from './match.ts'
 import { runPaletteItem } from './run.ts'
@@ -158,6 +159,7 @@ export function CommandPalette() {
   const searchRef = usePaletteWindow(open)
   const sections: { id: SettingsSection; label: string }[] = paletteSections(i18n)
   const shortcutLabelMap = shortcutLabels(i18n)
+  const bindings = mergeBindings(useSettings((s) => s.shortcuts))
   const profile = profiles.find((p) => p.id === openId)
   const mods = userModEntries(profile?.entries).flatMap((entry) =>
     (entry.mods ?? []).map((mod) => ({
@@ -171,7 +173,7 @@ export function CommandPalette() {
       profiles: profiles.map((p) => ({ id: p.id, name: p.name })),
       mods,
       sections,
-      shortcuts: SHORTCUTS,
+      shortcuts: SHORTCUTS.map((row) => ({ ...row, keys: bindings[row.id] })),
       shortcutLabels: shortcutLabelMap,
       labels: {
         play: t`Play`,

@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useLaunch } from '../launch/store.ts'
 import { isLocked } from '../mods/locked.ts'
 import { LetterTile } from '../mods/parts.tsx'
+import { HistoryFallback } from './HistoryButton.tsx'
 import { reportUnexpected } from './report.ts'
 import { type Toast, type ToastKind, useToasts } from './store.ts'
 
@@ -161,6 +162,7 @@ export function ToastHost() {
       {toasts.map((toast) => (
         <ToastCard key={toast.id} toast={toast} />
       ))}
+      <HistoryFallback />
     </Box>
   )
 }

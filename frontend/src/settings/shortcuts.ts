@@ -1,4 +1,51 @@
-const tabNumberKey = /^[1-6]$/
+const toEventKey: Record<string, string> = {
+  Esc: 'Escape',
+  Escape: 'Escape',
+  '↑': 'ArrowUp',
+  ArrowUp: 'ArrowUp',
+  '↓': 'ArrowDown',
+  ArrowDown: 'ArrowDown',
+  Left: 'ArrowLeft',
+  ArrowLeft: 'ArrowLeft',
+  Right: 'ArrowRight',
+  ArrowRight: 'ArrowRight',
+  Space: ' ',
+  ' ': ' ',
+}
+
+const fromEventKey: Record<string, string> = {
+  Escape: 'Esc',
+  ArrowUp: '↑',
+  ArrowDown: '↓',
+  ArrowLeft: 'Left',
+  ArrowRight: 'Right',
+  ' ': 'Space',
+}
+
+const modifiers = new Set(['Control', 'Shift', 'Alt', 'Meta', 'OS', 'Hyper', 'Super'])
+let capturing = false
+
+function eventKey(key: string): string {
+  const mapped = toEventKey[key]
+  if (mapped) {
+    return mapped
+  }
+  if (key.length === 1) {
+    return key.toLowerCase()
+  }
+  return key
+}
+
+function chordKey(c: {
+  key: string
+  ctrlKey?: boolean
+  metaKey?: boolean
+  shiftKey?: boolean
+  altKey?: boolean
+}): string {
+  const ctrl = Boolean(c.ctrlKey || c.metaKey)
+  return `${ctrl ? 1 : 0}${c.shiftKey ? 1 : 0}${c.altKey ? 1 : 0}${eventKey(c.key)}`
+}
 
 export type ShortcutId =
   | 'command-palette'
@@ -54,6 +101,8 @@ export interface TypingTarget {
   isContentEditable?: boolean
 }
 
+export type ShortcutBindings = Partial<Record<ShortcutId, string>>
+
 /** Single table for key handling and Settings › Shortcuts. */
 export const SHORTCUTS: readonly Shortcut[] = [
   { id: 'command-palette', keys: 'Ctrl+K', always: false, group: 'General' },
@@ -94,6 +143,85 @@ export const SHORTCUTS: readonly Shortcut[] = [
   { id: 'vanilla-play', keys: 'Ctrl+Shift+P', always: false, group: 'General' },
 ]
 
+export function parseKeys(keys: string): Chord | null {
+  const parts = keys.split('+').filter(Boolean)
+  if (parts.length === 0) {
+    return null
+  }
+  let ctrlKey = false
+  let shiftKey = false
+  let altKey = false
+  let key = ''
+  for (const part of parts) {
+    if (part === 'Ctrl' || part === 'Cmd' || part === 'Meta') {
+      ctrlKey = true
+    } else if (part === 'Shift') {
+      shiftKey = true
+    } else if (part === 'Alt') {
+      altKey = true
+    } else {
+      key = eventKey(part)
+    }
+  }
+  if (!key) {
+    return null
+  }
+  return { key, ctrlKey, shiftKey, altKey }
+}
+
+export function formatChord(e: Chord): string | null {
+  if (modifiers.has(e.key) || e.key === '') {
+    return null
+  }
+  const parts: string[] = []
+  if (e.ctrlKey || e.metaKey) {
+    parts.push('Ctrl')
+  }
+  if (e.shiftKey) {
+    parts.push('Shift')
+  }
+  if (e.altKey) {
+    parts.push('Alt')
+  }
+  const display = fromEventKey[e.key] ?? (e.key.length === 1 ? e.key.toUpperCase() : e.key)
+  parts.push(display)
+  return parts.join('+')
+}
+
+export function defaultBindings(): Record<ShortcutId, string> {
+  return Object.fromEntries(SHORTCUTS.map((row) => [row.id, row.keys])) as Record<
+    ShortcutId,
+    string
+  >
+}
+
+export function mergeBindings(stored?: ShortcutBindings | null): Record<ShortcutId, string> {
+  const next = defaultBindings()
+  if (!stored) {
+    return next
+  }
+  for (const row of SHORTCUTS) {
+    const keys = stored[row.id]
+    if (keys) {
+      next[row.id] = keys
+    }
+  }
+  return next
+}
+
+export function conflictFor(
+  id: ShortcutId,
+  keys: string,
+  bindings: ShortcutBindings,
+): ShortcutId | null {
+  for (const row of SHORTCUTS) {
+    if (row.id !== id && (bindings[row.id] ?? row.keys) === keys) {
+      return row.id
+    }
+  }
+  return null
+}
+
 export function isTypingTarget(el: TypingTarget | null): boolean {
   if (!el) {
     return false
@@ -128,55 +256,24 @@ export function shortcutAllowed(
   return true
 }
 
-export function matchShortcut(e: Chord): ShortcutId | null {
-  const { key, ctrlKey, metaKey, shiftKey, altKey } = e
-  const ctrl = Boolean(ctrlKey || metaKey)
-  if (key === 'Escape') {
-    return 'dismiss'
+export function setShortcutCapturing(on: boolean): void {
+  capturing = on
+}
+
+export function shortcutCapturing(): boolean {
+  return capturing
+}
+
+export function matchShortcut(
+  e: Chord,
+  bindings: ShortcutBindings = defaultBindings(),
+): ShortcutId | null {
+  const want = chordKey(e)
+  for (const row of SHORTCUTS) {
+    const parsed = parseKeys(bindings[row.id] ?? row.keys)
+    if (parsed && chordKey(parsed) === want) {
+      return row.id
+    }
   }
-  if (altKey && key === 'ArrowLeft') {
-    return 'back'
-  }
-  const fixed: Record<string, ShortcutId> = {
-    F1: 'help',
-    F2: 'rename-profile',
-    F5: 'check-updates',
-    ArrowUp: 'mod-up',
-    ArrowDown: 'mod-down',
-    ' ': 'mod-toggle',
-    Enter: 'mod-details',
-    Delete: 'mod-remove',
-  }
-  if (!ctrl) {
-    return fixed[key] ?? null
-  }
-  if (shiftKey) {
-    return (
-      ({ f: 'find-all-mods', n: 'notifications', p: 'vanilla-play' } as const)[
-        key.toLowerCase() as 'f' | 'n' | 'p'
-      ] ?? null
-    )
-  }
-  if (tabNumberKey.test(key)) {
-    return `tab-${['mods', 'problems', 'saves', 'notes', 'console', 'performance'][Number(key) - 1]}` as ShortcutId
-  }
-  return (
-    (
-      {
-        k: 'command-palette',
-        f: 'filter-mods',
-        p: 'play',
-        n: 'new-profile',
-        d: 'duplicate-profile',
-        i: 'import',
-        e: 'export-profile',
-        j: 'downloads',
-        b: 'collapse-sidebar',
-        a: 'select-all-mods',
-        ',': 'open-settings',
-        PageUp: 'previous-profile',
-        PageDown: 'next-profile',
-      } as Record<string, ShortcutId>
-    )[key.length === 1 ? key.toLowerCase() : key] ?? null
-  )
+  return null
 }

@@ -52,9 +52,10 @@ export const useNav = create<{
   openSetup: () => set({ route: { name: 'setup' } }),
   openGameSetup: (game) => set({ route: { name: 'game-setup', game } }),
   openProfiles: () =>
-    set(({ route }) =>
-      route.name === 'game' ? { route: { name: 'profiles', game: route.game } } : {},
-    ),
+    set(({ route }) => {
+      const game = routeGame(route)
+      return game ? { route: { name: 'profiles', game } } : {}
+    }),
   closeProfiles: () =>
     set(({ route }) =>
       route.name === 'profiles' ? { route: { name: 'game', game: route.game } } : {},

@@ -1,6 +1,5 @@
 import { useTab } from '../game/tab.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
-import { requestFilterFocus } from '../mods/filterFocus.ts'
 import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { type GameId, type SettingsSection, useNav } from '../nav/store.ts'
@@ -8,6 +7,7 @@ import { openModInProfile } from '../profiles/findMod.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { SHORTCUTS, type ShortcutId } from '../settings/shortcuts.ts'
+import { runShortcut } from '../settings/useShortcuts.ts'
 import { openImport, openShare } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useCommandPalette } from './store.ts'
@@ -42,26 +42,6 @@ function openProfile(id: string): void {
   }
   useProfiles.getState().open(id)
   leaveShellPages()
-}
-
-function runShortcut(id: ShortcutId): void {
-  if (id === 'command-palette' || id === 'dismiss') {
-    return
-  }
-  if (id === 'filter-mods') {
-    leaveShellPages()
-    requestFilterFocus()
-    return
-  }
-  if (id === 'play') {
-    playOpenProfile()
-    return
-  }
-  if (id === 'check-updates') {
-    useUpdates.getState().load().catch(reportUnexpected)
-    return
-  }
-  useNav.getState().openSettings()
 }
 
 function runAction(id: string): void {

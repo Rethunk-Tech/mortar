@@ -4,6 +4,10 @@ import { sameId } from '../mods/lookup.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from './store.ts'
 
+type Listener = () => void
+const findAllListeners = new Set<Listener>()
+let findAllPending = false
+
 export interface ModHit {
   profileId: string
   profileName: string
@@ -44,4 +48,23 @@ export function openModInProfile(hit: Pick<ModHit, 'profileId' | 'key' | 'unique
   useDetail.getState().showAfterLoad({ key: hit.key, uniqueId: hit.uniqueId })
   useProfiles.getState().open(hit.profileId)
   useNav.getState().closeProfiles()
+}
+
+export function requestFindAllFocus() {
+  findAllPending = true
+  for (const fn of findAllListeners) {
+    fn()
+    findAllPending = false
+  }
+}
+
+export function onFindAllFocus(fn: Listener): () => void {
+  findAllListeners.add(fn)
+  if (findAllPending) {
+    fn()
+    findAllPending = false
+  }
+  return () => {
+    findAllListeners.delete(fn)
+  }
 }

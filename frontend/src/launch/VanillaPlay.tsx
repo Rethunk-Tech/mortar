@@ -14,36 +14,69 @@ import {
   MenuItem,
   Tooltip,
 } from '@mui/material'
-import { System } from '@wailsio/runtime'
 import { ChevronDown, Gamepad2, Play } from 'lucide-react'
 import { type MouseEvent, useState } from 'react'
-import { ForcesSMAPI } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { compact } from '../game/compact.ts'
-import { reportUnexpected } from '../toasts/report.ts'
-import { windowsVanillaAfterForcesCheck } from './playOpen.ts'
+import { routeGame, useNav } from '../nav/store.ts'
+import { playVanillaOpen, rememberLinuxVanillaDirect, useVanillaPrompt } from './playOpen.ts'
 import { SmapiWarnDialog } from './SmapiWarnDialog.tsx'
 import { useLaunch } from './store.ts'
 
-const linuxVanillaDirectKey = 'mortar.linuxVanillaDirect'
-
-function linuxVanillaDirectAgreed(): boolean {
-  try {
-    return localStorage.getItem(linuxVanillaDirectKey) === '1'
-  } catch {
-    return false
+export function VanillaPlayDialogs() {
+  const { t } = useLingui()
+  const game = routeGame(useNav((s) => s.route))
+  const startVanilla = useLaunch((s) => s.startVanilla)
+  const smapiWarn = useVanillaPrompt((s) => s.smapiWarn)
+  const linuxDirect = useVanillaPrompt((s) => s.linuxDirect)
+  const setSmapiWarn = useVanillaPrompt((s) => s.setSmapiWarn)
+  const setLinuxDirect = useVanillaPrompt((s) => s.setLinuxDirect)
+  if (!game) {
+    return null
   }
-}
-
-function rememberLinuxVanillaDirect() {
-  try {
-    localStorage.setItem(linuxVanillaDirectKey, '1')
-  } catch {
-    // Private mode can refuse localStorage; the next Play without mods asks again.
-  }
+  return (
+    <>
+      <SmapiWarnDialog
+        open={smapiWarn}
+        onClose={() => setSmapiWarn(false)}
+        onPlay={() => {
+          setSmapiWarn(false)
+          startVanilla(game, false).then(() => undefined)
+        }}
+      />
+      <Dialog
+        open={linuxDirect}
+        onClose={() => setLinuxDirect(false)}
+        transitionDuration={0}
+        slotProps={{ paper: { sx: { maxWidth: 440 } } }}
+      >
+        <DialogTitle>{t`Play without Steam overlay`}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t`Mortar starts the unmodded game directly so SMAPI's Linux launcher is not used. The Steam overlay and Steam's playtime tracking will not work. Steam still supplies the API if it is running.`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setLinuxDirect(false)} sx={{ whiteSpace: 'nowrap' }}>
+            {t`Cancel`}
+          </Button>
+          <Button
+            variant="contained"
+            sx={{ whiteSpace: 'nowrap' }}
+            onClick={() => {
+              rememberLinuxVanillaDirect()
+              setLinuxDirect(false)
+              startVanilla(game, true).then(() => undefined)
+            }}
+          >
+            {t`Play without mods`}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  )
 }
 
 export function VanillaPlay({
-  game,
   playDisabled,
   vanillaDisabled,
   label,
@@ -56,10 +89,7 @@ export function VanillaPlay({
   play: () => void
 }) {
   const { t } = useLingui()
-  const startVanilla = useLaunch((s) => s.startVanilla)
   const [menu, setMenu] = useState<HTMLElement | null>(null)
-  const [smapiWarn, setSmapiWarn] = useState(false)
-  const [linuxDirect, setLinuxDirect] = useState(false)
   const openMenu = (el: HTMLElement) => {
     if (!vanillaDisabled) {
       setMenu(el)
@@ -68,29 +98,6 @@ export function VanillaPlay({
   const onContext = (e: MouseEvent<HTMLElement>) => {
     e.preventDefault()
     openMenu(e.currentTarget)
-  }
-  const playVanilla = () => {
-    setMenu(null)
-    if (!System.IsWindows()) {
-      if (!linuxVanillaDirectAgreed()) {
-        setLinuxDirect(true)
-        return
-      }
-      startVanilla(game, true).catch(() => undefined)
-      return
-    }
-    ForcesSMAPI(game)
-      .then((forces) => {
-        const next = windowsVanillaAfterForcesCheck(true, forces)
-        if (next === 'warn') {
-          setSmapiWarn(true)
-          return
-        }
-        return startVanilla(game, false)
-      })
-      .catch((e: unknown) => {
-        reportUnexpected(e)
-      })
   }
   return (
     <>
@@ -155,50 +162,19 @@ export function VanillaPlay({
         </span>
       </Tooltip>
       <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
-        <MenuItem disabled={vanillaDisabled} onClick={playVanilla}>
+        <MenuItem
+          disabled={vanillaDisabled}
+          onClick={() => {
+            setMenu(null)
+            playVanillaOpen()
+          }}
+        >
           <ListItemIcon sx={{ color: 'inherit' }}>
             <Gamepad2 size={16} />
           </ListItemIcon>
           <ListItemText>{t`Play without mods`}</ListItemText>
         </MenuItem>
       </Menu>
-      <SmapiWarnDialog
-        open={smapiWarn}
-        onClose={() => setSmapiWarn(false)}
-        onPlay={() => {
-          setSmapiWarn(false)
-          startVanilla(game, false).then(() => undefined)
-        }}
-      />
-      <Dialog
-        open={linuxDirect}
-        onClose={() => setLinuxDirect(false)}
-        transitionDuration={0}
-        slotProps={{ paper: { sx: { maxWidth: 440 } } }}
-      >
-        <DialogTitle>{t`Play without Steam overlay`}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t`Mortar starts the unmodded game directly so SMAPI's Linux launcher is not used. The Steam overlay and Steam's playtime tracking will not work. Steam still supplies the API if it is running.`}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setLinuxDirect(false)} sx={{ whiteSpace: 'nowrap' }}>
-            {t`Cancel`}
-          </Button>
-          <Button
-            variant="contained"
-            sx={{ whiteSpace: 'nowrap' }}
-            onClick={() => {
-              rememberLinuxVanillaDirect()
-              setLinuxDirect(false)
-              startVanilla(game, true).then(() => undefined)
-            }}
-          >
-            {t`Play without mods`}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   )
 }

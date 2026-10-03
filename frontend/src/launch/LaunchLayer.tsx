@@ -35,6 +35,7 @@ import { holdFocus, launchEscHides } from './holdFocus.ts'
 import { SaveWarnDialog } from './SaveWarnDialog.tsx'
 import { useLaunch } from './store.ts'
 import { UpdateWarnDialog } from './UpdateWarnDialog.tsx'
+import { VanillaPlayDialogs } from './VanillaPlay.tsx'
 
 const VISIBLE_LINES = 8
 const LINE_HEIGHT = 21
@@ -375,6 +376,7 @@ export function LaunchLayer({ game }: { game: string }) {
       <CrashDialog />
       <UpdateWarnDialog />
       <SaveWarnDialog />
+      <VanillaPlayDialogs />
     </>
   )
 }

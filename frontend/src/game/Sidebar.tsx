@@ -18,6 +18,7 @@ import { compact } from './compact.ts'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
 import { ProfileContextMenu } from './ProfileContextMenu.tsx'
 import { SupportButton } from './SupportButton.tsx'
+import { useSidebarCollapsed } from './sidebarCollapsed.ts'
 
 const MIN = 150
 const MAX = 300
@@ -28,6 +29,8 @@ const NUDGE_PX = 16
 const SELECTED_WEIGHT = 600
 const INITIALS = 2
 const WHITESPACE = /\s+/
+
+const rail = (sx: object) => ({ [compact]: sx, '[data-collapsed="true"] &': sx })
 
 const clamp = (w: number) => Math.min(MAX, Math.max(MIN, w))
 
@@ -59,6 +62,15 @@ function initials(name: string): string {
 
 const PROBLEM_MARK = '!'
 
+const compactPill = {
+  position: 'absolute' as const,
+  top: 1,
+  right: 1,
+  ml: 0,
+  px: '4px',
+  fontSize: 10,
+}
+
 const pill = {
   flexShrink: 0,
   ml: 0.5,
@@ -68,7 +80,7 @@ const pill = {
   color: '#1b1a17',
   fontSize: 12,
   fontWeight: 700,
-  [compact]: { position: 'absolute', top: 1, right: 1, ml: 0, px: '4px', fontSize: 10 },
+  ...rail(compactPill),
 } as const
 
 function Badges({ profile }: { profile: Profile }) {
@@ -94,7 +106,7 @@ function Badges({ profile }: { profile: Profile }) {
           sx={{
             ...pill,
             bgcolor: 'warning.main',
-            [compact]: { ...pill[compact], right: 'auto', left: 1 },
+            ...rail({ ...compactPill, right: 'auto', left: 1 }),
           }}
         >
           {PROBLEM_MARK}
@@ -146,13 +158,13 @@ function ProfileButton({
         color: selected ? '#ffffff' : 'rgba(255,255,255,0.88)',
         bgcolor: selected ? 'rgba(255,255,255,0.12)' : 'transparent',
         '&:hover': { bgcolor: selected ? 'rgba(255,255,255,0.12)' : 'action.hover' },
-        [compact]: {
+        ...rail({
           width: 40,
           p: 0,
           justifyContent: 'center',
           borderRadius: '8px',
           bgcolor: selected ? 'rgba(255,255,255,0.14)' : 'transparent',
-        },
+        }),
       }}
     >
       <Box
@@ -164,7 +176,7 @@ function ProfileButton({
           flex: 1,
           minWidth: 0,
           overflow: 'hidden',
-          [compact]: { display: 'none' },
+          ...rail({ display: 'none' }),
         }}
       >
         <ProfileMark profile={profile} size={22} />
@@ -188,7 +200,7 @@ function ProfileButton({
           display: 'none',
           fontWeight: 700,
           color: '#ffffff',
-          [compact]: { display: 'inline-flex' },
+          ...rail({ display: 'inline-flex' }),
         }}
       >
         {profile.color || profile.icon ? (
@@ -245,7 +257,7 @@ function ResizeHandle({ width, onWidth }: { width: number; onWidth: (w: number) 
         width: 8,
         cursor: 'col-resize',
         zIndex: 1,
-        [compact]: { display: 'none' },
+        ...rail({ display: 'none' }),
       }}
     />
   )
@@ -259,7 +271,7 @@ function BottomBlock({ game }: { game: string }) {
         display: 'flex',
         flexDirection: 'column',
         borderTop: '1px solid rgba(255,255,255,0.08)',
-        [compact]: { borderTop: 0 },
+        ...rail({ borderTop: 0 }),
       }}
     >
       <Box
@@ -269,7 +281,7 @@ function BottomBlock({ game }: { game: string }) {
           height: 40,
           pr: '6px',
           '& > button, & .MuiIconButton-root': { height: 40, width: 40 },
-          [compact]: { flexDirection: 'column', pr: 0 },
+          ...rail({ flexDirection: 'column', pr: 0 }),
         }}
       >
         <Box sx={{ flex: 1, height: 40, display: 'flex', alignItems: 'center' }}>
@@ -323,6 +335,7 @@ export function Sidebar({ game }: { game: string }) {
   const openProfiles = useNav((s) => s.openProfiles)
   const [width, setWidth] = useState(storedWidth)
   const [creating, setCreating] = useState(false)
+  const collapsed = useSidebarCollapsed((s) => s.collapsed)
   const loadBadges = useBadges((s) => s.loadAll)
   // A profile's badges follow its mods, which change with `updated`.
   const stamp = profiles.map((p) => `${p.id}:${String(p.updated)}`).join(',')
@@ -338,9 +351,10 @@ export function Sidebar({ game }: { game: string }) {
   return (
     <Box
       component="nav"
+      data-collapsed={collapsed ? 'true' : undefined}
       sx={{
         position: 'relative',
-        width,
+        width: collapsed ? RAIL : width,
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
@@ -365,7 +379,7 @@ export function Sidebar({ game }: { game: string }) {
           fontFamily: 'inherit',
           whiteSpace: 'nowrap',
           '&:hover': { bgcolor: 'action.hover' },
-          [compact]: { display: 'none' },
+          ...rail({ display: 'none' }),
         }}
       >
         {t`Profiles`}
@@ -380,14 +394,14 @@ export function Sidebar({ game }: { game: string }) {
           display: 'flex',
           flexDirection: 'column',
           gap: '2px',
-          [compact]: {
+          ...rail({
             pt: 1,
             px: 0,
             gap: 0,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-          },
+          }),
         }}
       >
         <ProfileList game={game} profiles={profiles} />
@@ -406,7 +420,7 @@ export function Sidebar({ game }: { game: string }) {
             whiteSpace: 'nowrap',
             color: 'primary.main',
             '&:hover': { bgcolor: 'action.hover' },
-            [compact]: { display: 'none' },
+            ...rail({ display: 'none' }),
           }}
         >
           <Plus size={16} />
@@ -416,13 +430,13 @@ export function Sidebar({ game }: { game: string }) {
       <Box
         sx={{
           display: 'none',
-          [compact]: {
+          ...rail({
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: 0.5,
             pt: 1,
-          },
+          }),
         }}
       >
         <Tooltip title={t`Manage profiles`}>

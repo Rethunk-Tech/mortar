@@ -59,6 +59,8 @@ export const useToasts = create<{
   release: (id: number) => void
   markRead: () => void
   clearHistory: () => void
+  historyOpen: boolean
+  setHistoryOpen: (open: boolean) => void
 }>((set, get) => {
   const arm = (id: number, kind: ToastKind) => {
     clearTimeout(timers.get(id))
@@ -71,6 +73,7 @@ export const useToasts = create<{
     toasts: [],
     history: [],
     unread: 0,
+    historyOpen: false,
     push: (input) => {
       const now = Date.now()
       const [previous] = get().history
@@ -131,5 +134,6 @@ export const useToasts = create<{
     },
     markRead: () => set({ unread: 0 }),
     clearHistory: () => set({ history: [], unread: 0 }),
+    setHistoryOpen: (open) => set({ historyOpen: open, ...(open ? { unread: 0 } : {}) }),
   }
 })

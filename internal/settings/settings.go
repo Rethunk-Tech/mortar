@@ -119,6 +119,42 @@ type Settings struct {
 	OverlayEnabled bool   `json:"overlayEnabled"`
 	OverlayPort    int    `json:"overlayPort"`
 	OverlayToken   string `json:"overlayToken"`
+	// Shortcuts maps action id to a chord such as Ctrl+K. Missing ids use DefaultShortcuts.
+	Shortcuts map[string]string `json:"shortcuts"`
+	// OnPlay is stay, minimise, or hide (to the tray) when a game launches.
+	OnPlay string `json:"onPlay"`
+	// BackupBeforePlay is changed, always, or never.
+	BackupBeforePlay string `json:"backupBeforePlay"`
+	// LaunchBackupsKept is how many KindLaunch save backups to retain.
+	LaunchBackupsKept int `json:"launchBackupsKept"`
+	// UpdateModsBeforePlayDefault is the UpdateBeforePlay flag on a newly created profile.
+	UpdateModsBeforePlayDefault bool `json:"updateModsBeforePlayDefault"`
+	RunsKept                    int  `json:"runsKept"`
+	ConsoleLogCap               int  `json:"consoleLogCap"`
+	ParallelDownloads           int  `json:"parallelDownloads"`
+	UpdateCheckIntervalMinutes  int  `json:"updateCheckIntervalMinutes"`
+	// NotifyModUpdates toasts when a background check finds updates. Nil means off.
+	NotifyModUpdates     *bool `json:"notifyModUpdates"`
+	KeepDownloadArchives bool  `json:"keepDownloadArchives"`
+	// StoreRetentionDays is unused store-item lifetime; 0 means keep forever.
+	StoreRetentionDays int `json:"storeRetentionDays"`
+	// NxmDefaultProfile is the profile nxm links go to; empty means the last-opened profile.
+	NxmDefaultProfile string `json:"nxmDefaultProfile"`
+	DefaultModsView   string `json:"defaultModsView"`
+	// ConfirmRemovals asks before removing mods. Nil means on.
+	ConfirmRemovals *bool `json:"confirmRemovals"`
+	// CosmeticConflicts is collapsed, expanded, or hidden.
+	CosmeticConflicts string `json:"cosmeticConflicts"`
+	// BackgroundBadgeChecks fills sidebar badges for other profiles. Nil means on.
+	BackgroundBadgeChecks *bool `json:"backgroundBadgeChecks"`
+	// StartScreen is last (last opened profile) or gameselect.
+	StartScreen            string `json:"startScreen"`
+	Dates                  string `json:"dates"`
+	TrashRetentionDays     int    `json:"trashRetentionDays"`
+	HistoryEventsKept      int    `json:"historyEventsKept"`
+	NotifyDownloadFinished *bool  `json:"notifyDownloadFinished"`
+	NotifyDownloadFailed   *bool  `json:"notifyDownloadFailed"`
+	NotifyRunCrashed       *bool  `json:"notifyRunCrashed"`
 }
 
 const (
@@ -132,15 +168,33 @@ const (
 func on() *bool { v := true; return &v }
 
 func Defaults() Settings {
-	return Settings{
-		Language: "", Accent: "sand", Background: BackgroundImage, LastProfile: map[string]string{}, LastPlayed: map[string]Played{}, GameFolders: map[string]string{},
-		GameStores: map[string]string{}, LauncherRoots: map[string][]string{},
-		Loaders: map[string]string{}, Dismissed: map[string][]string{}, NexusSeenDownloadServers: []string{}, LanPort: DefaultLanPort, LanAddresses: []string{}, BackupsKept: backup.DefaultKeep,
-		ListColumns: slices.Clone(defaultListColumns), ListSortColumn: defaultListSortColumn, ListSortDir: defaultListSortDir, ListGroupBy: defaultListGroupBy,
-		CheckModUpdatesOnStart: on(), TellWhenSmapiOut: on(), EnableModsWhenInstalled: on(), AskEndorseMods: on(),
-		LanSharing:  false,
-		OverlayPort: DefaultOverlayPort,
-	}
+	s := defaultPrefs()
+	s.Language = ""
+	s.Accent = "sand"
+	s.Background = BackgroundImage
+	s.LastProfile = map[string]string{}
+	s.LastPlayed = map[string]Played{}
+	s.GameFolders = map[string]string{}
+	s.GameStores = map[string]string{}
+	s.LauncherRoots = map[string][]string{}
+	s.Loaders = map[string]string{}
+	s.Dismissed = map[string][]string{}
+	s.NexusSeenDownloadServers = []string{}
+	s.LanPort = DefaultLanPort
+	s.LanAddresses = []string{}
+	s.BackupsKept = backup.DefaultKeep
+	s.ListColumns = slices.Clone(defaultListColumns)
+	s.ListSortColumn = defaultListSortColumn
+	s.ListSortDir = defaultListSortDir
+	s.ListGroupBy = defaultListGroupBy
+	s.CheckModUpdatesOnStart = on()
+	s.TellWhenSmapiOut = on()
+	s.EnableModsWhenInstalled = on()
+	s.AskEndorseMods = on()
+	s.LanSharing = false
+	s.OverlayPort = DefaultOverlayPort
+	s.Shortcuts = DefaultShortcuts()
+	return s
 }
 
 // Store reads and writes settings.json under the user data folder.
@@ -200,11 +254,13 @@ func Open() (*Store, error) {
 		s.cur.BackupsKept = Defaults().BackupsKept
 	}
 	normalizeToggles(&s.cur)
+	normalizePrefs(&s.cur)
 	normalizeList(&s.cur)
 	normalizeTips(&s.cur)
 	normalizeOverlay(&s.cur)
 	normalizeNexus(&s.cur)
 	normalizeLAN(&s.cur)
+	normalizeShortcuts(&s.cur)
 	return s, nil
 }
 
@@ -243,9 +299,13 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	if next.LanPort < 0 || next.LanPort > 65535 {
 		return s.cur, fmt.Errorf("LAN port must be between 0 and 65535, got %d", next.LanPort)
 	}
+	if err := validatePrefs(next); err != nil {
+		return s.cur, err
+	}
 	next.LastPlayed = validLastPlayed(next.LastPlayed)
 	normalizeStores(&next)
 	normalizeToggles(&next)
+	normalizePrefs(&next)
 	if err := validateList(next); err != nil {
 		return s.cur, err
 	}
@@ -258,10 +318,17 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	if err := validateNexus(next); err != nil {
 		return s.cur, err
 	}
+	if err := rejectUnknownShortcuts(next); err != nil {
+		return s.cur, err
+	}
 	normalizeList(&next)
 	normalizeTips(&next)
 	normalizeNexus(&next)
 	normalizeLAN(&next)
+	normalizeShortcuts(&next)
+	if err := rejectDuplicateShortcuts(next); err != nil {
+		return s.cur, err
+	}
 	if err := datadir.WriteJSON(s.path, next); err != nil {
 		return s.cur, err
 	}

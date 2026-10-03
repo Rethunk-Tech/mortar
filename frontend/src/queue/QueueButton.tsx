@@ -17,6 +17,7 @@ export function QueueButton() {
         flex: 1,
         pl: '6px',
         [compact]: { flex: 'none', pl: 0, justifyContent: 'center' },
+        '[data-collapsed="true"] &': { flex: 'none', pl: 0, justifyContent: 'center' },
       }}
     >
       <ButtonBase
@@ -34,12 +35,22 @@ export function QueueButton() {
           whiteSpace: 'nowrap',
           '&:hover': { bgcolor: 'action.hover' },
           [compact]: { flex: 'none', width: 40, height: 40, justifyContent: 'center', p: 0 },
+          '[data-collapsed="true"] &': {
+            flex: 'none',
+            width: 40,
+            height: 40,
+            justifyContent: 'center',
+            p: 0,
+          },
         }}
       >
         <Badge badgeContent={left} color="primary" max={99}>
           <Download size={18} aria-hidden={true} />
         </Badge>
-        <Box component="span" sx={{ [compact]: { display: 'none' } }}>
+        <Box
+          component="span"
+          sx={{ [compact]: { display: 'none' }, '[data-collapsed="true"] &': { display: 'none' } }}
+        >
           {t`Downloads`}
         </Box>
       </ButtonBase>

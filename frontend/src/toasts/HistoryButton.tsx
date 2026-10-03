@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Badge, Box, Button, IconButton, Popover, Tooltip, Typography } from '@mui/material'
 import { Bell } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { compact } from '../game/compact.ts'
 import { When } from '../i18n/When.tsx'
 import { useLaunch } from '../launch/store.ts'
@@ -74,23 +74,109 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
   )
 }
 
+let bellMounted = false
+
+function HistoryPopover({
+  open,
+  anchorEl,
+  history,
+  onClose,
+  onClear,
+}: {
+  open: boolean
+  anchorEl: HTMLElement | null
+  history: ToastHistoryItem[]
+  onClose: () => void
+  onClear: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <Popover
+      open={open}
+      anchorEl={anchorEl}
+      onClose={onClose}
+      transitionDuration={0}
+      anchorReference={anchorEl ? 'anchorEl' : 'anchorPosition'}
+      anchorPosition={{ top: 80, left: 16 }}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      slotProps={{
+        paper: {
+          role: 'dialog',
+          sx: {
+            width: 360,
+            maxWidth: 'calc(100vw - 32px)',
+            maxHeight: 440,
+            bgcolor: 'rgb(40,40,48)',
+            backgroundImage: 'none',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: '8px',
+          },
+        },
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          px: 1.5,
+          py: 1,
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+        }}
+      >
+        <Typography sx={{ flex: 1, fontSize: 13, fontWeight: 700 }}>{t`Notifications`}</Typography>
+        <Button
+          size="small"
+          onClick={onClear}
+          disabled={history.length === 0}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          {t`Clear`}
+        </Button>
+      </Box>
+      <Box sx={{ overflowY: 'auto', maxHeight: 380, [compact]: { maxHeight: 280 } }}>
+        {history.length === 0 ? (
+          <Typography sx={{ p: 1.75, fontSize: 13, color: 'text.secondary' }}>
+            {t`No notifications yet`}
+          </Typography>
+        ) : (
+          history.map((item) => <HistoryRow key={item.id} item={item} />)
+        )}
+      </Box>
+    </Popover>
+  )
+}
+
 export function HistoryButton() {
   const { t } = useLingui()
+  const historyOpen = useToasts((s) => s.historyOpen)
+  const setHistoryOpen = useToasts((s) => s.setHistoryOpen)
   const history = useToasts((s) => s.history)
   const unread = useToasts((s) => s.unread)
-  const markRead = useToasts((s) => s.markRead)
   const clearHistory = useToasts((s) => s.clearHistory)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const bell = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    bellMounted = true
+    return () => {
+      bellMounted = false
+    }
+  }, [])
   const open = (el: HTMLElement) => {
     setAnchor(el)
-    markRead()
+    setHistoryOpen(true)
+  }
+  const close = () => {
+    setAnchor(null)
+    setHistoryOpen(false)
   }
   return (
     <>
       <IconButton
+        ref={bell}
         aria-label={t`Notifications`}
         aria-haspopup="dialog"
-        aria-expanded={anchor !== null}
+        aria-expanded={historyOpen}
         onClick={(e) => open(e.currentTarget)}
         sx={{ width: 40, height: 40, borderRadius: '6px' }}
       >
@@ -98,59 +184,29 @@ export function HistoryButton() {
           <Bell size={18} aria-hidden={true} />
         </Badge>
       </IconButton>
-      <Popover
-        open={anchor !== null}
-        anchorEl={anchor}
-        onClose={() => setAnchor(null)}
-        transitionDuration={0}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        slotProps={{
-          paper: {
-            role: 'dialog',
-            sx: {
-              width: 360,
-              maxWidth: 'calc(100vw - 32px)',
-              maxHeight: 440,
-              bgcolor: 'rgb(40,40,48)',
-              backgroundImage: 'none',
-              border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: '8px',
-            },
-          },
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            px: 1.5,
-            py: 1,
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          <Typography
-            sx={{ flex: 1, fontSize: 13, fontWeight: 700 }}
-          >{t`Notifications`}</Typography>
-          <Button
-            size="small"
-            onClick={clearHistory}
-            disabled={history.length === 0}
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            {t`Clear`}
-          </Button>
-        </Box>
-        <Box sx={{ overflowY: 'auto', maxHeight: 380, [compact]: { maxHeight: 280 } }}>
-          {history.length === 0 ? (
-            <Typography sx={{ p: 1.75, fontSize: 13, color: 'text.secondary' }}>
-              {t`No notifications yet`}
-            </Typography>
-          ) : (
-            history.map((item) => <HistoryRow key={item.id} item={item} />)
-          )}
-        </Box>
-      </Popover>
+      <HistoryPopover
+        open={historyOpen}
+        anchorEl={anchor ?? bell.current}
+        history={history}
+        onClose={close}
+        onClear={clearHistory}
+      />
     </>
+  )
+}
+
+export function HistoryFallback() {
+  const historyOpen = useToasts((s) => s.historyOpen)
+  const setHistoryOpen = useToasts((s) => s.setHistoryOpen)
+  const history = useToasts((s) => s.history)
+  const clearHistory = useToasts((s) => s.clearHistory)
+  return (
+    <HistoryPopover
+      open={historyOpen && !bellMounted}
+      anchorEl={null}
+      history={history}
+      onClose={() => setHistoryOpen(false)}
+      onClear={clearHistory}
+    />
   )
 }
