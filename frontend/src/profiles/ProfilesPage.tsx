@@ -50,6 +50,9 @@ import type {
 import { BundlesSection } from '../bundles/BundlesSection.tsx'
 import { compact } from '../game/compact.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
+import { useProfilePageBadges } from '../game/useSidebarProfiles.ts'
+import { useBadges } from '../mods/badges.ts'
+import { ProfileHealth } from '../mods/ProfileHealth.tsx'
 import { useNav } from '../nav/store.ts'
 import { openImport } from '../share/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
@@ -451,6 +454,8 @@ export function ProfilesPage() {
   const closeProfiles = useNav((s) => s.closeProfiles)
   const game = useNav((s) => (s.route.name === 'profiles' ? s.route.game : 'stardew'))
   const profiles = useProfiles((s) => s.profiles)
+  useProfilePageBadges(game)
+  const byProfile = useBadges((s) => s.byProfile)
   const damaged = useProfiles((s) => s.damaged)
   const reorder = useProfiles((s) => s.reorder)
   const restoreZip = useProfiles((s) => s.restoreZip)
@@ -533,7 +538,12 @@ export function ProfilesPage() {
                 strategy={verticalListSortingStrategy}
               >
                 {profiles.map((p) => (
-                  <ProfileRow key={p.id} profile={p} />
+                  <Box key={p.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <ProfileRow profile={p} />
+                    </Box>
+                    <ProfileHealth counts={byProfile[p.id]} />
+                  </Box>
                 ))}
               </SortableContext>
             </DndContext>

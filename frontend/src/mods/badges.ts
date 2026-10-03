@@ -6,11 +6,12 @@ import {
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { useSettings } from '../settings/store.ts'
 import { runBackgroundBadgeChecks } from './badgeDisplay.ts'
-import { problemCount, updateCount } from './lookup.ts'
+import { missingCount, problemCount, updateCount } from './lookup.ts'
 
-interface Counts {
+export interface Counts {
   updates: number
   problems: number
+  missing: number
 }
 
 // What the sidebar shows beside each profile. A profile whose check failed keeps its last counts (or none):
@@ -26,7 +27,13 @@ export const useBadges = create<{
     set((s) => ({
       byProfile: {
         ...s.byProfile,
-        [profileId]: { updates: 0, problems: 0, ...s.byProfile[profileId], ...counts },
+        [profileId]: {
+          updates: 0,
+          problems: 0,
+          missing: 0,
+          ...s.byProfile[profileId],
+          ...counts,
+        },
       },
     })),
   loadAll: async (game, profiles, skip) => {
@@ -39,10 +46,15 @@ export const useBadges = create<{
     for (const p of profiles.filter((q) => !q.hidden && q.id !== skip)) {
       try {
         const [problems, updates] = await Promise.all([Problems(game, p.id), Updates(game, p.id)])
+        const missing = missingCount(problems)
         set((s) => ({
           byProfile: {
             ...s.byProfile,
-            [p.id]: { problems: problemCount(problems), updates: updateCount(updates, p) },
+            [p.id]: {
+              missing,
+              problems: problemCount(problems) - missing,
+              updates: updateCount(updates, p),
+            },
           },
         }))
       } catch {

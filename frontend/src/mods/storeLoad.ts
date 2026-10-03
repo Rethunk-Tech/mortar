@@ -13,7 +13,7 @@ import { useSettings } from '../settings/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useBadges } from './badges.ts'
 import { loadCollapsed, persistCollapsed } from './group.ts'
-import { problemCount } from './lookup.ts'
+import { missingCount, problemCount } from './lookup.ts'
 import { fail, open } from './storeView.ts'
 import { useUpdates } from './updates.ts'
 
@@ -84,7 +84,11 @@ export async function loadModProblems(
     if (open()?.id === target.id) {
       set({ problems, problemsFor: target.id })
     }
-    useBadges.getState().patch(target.id, { problems: problemCount(problems) })
+    const missing = missingCount(problems)
+    useBadges.getState().patch(target.id, {
+      missing,
+      problems: problemCount(problems) - missing,
+    })
   } catch (e) {
     fail(i18n._(msg`Could not check the mods for problems`))(e)
   }

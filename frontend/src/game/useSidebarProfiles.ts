@@ -44,3 +44,16 @@ export function useSidebarBadges(game: string) {
     backgroundBadgeChecks,
   ])
 }
+
+export function useProfilePageBadges(game: string) {
+  const allProfiles = useProfiles((s) => s.profiles)
+  const loadBadges = useBadges((s) => s.loadAll)
+  const stamp = allProfiles.map((p) => `${p.id}:${String(p.updated)}`).join(',')
+  const sidebarBadges = useSettings((s) => s.sidebarBadges)
+  const backgroundBadgeChecks = useSettings((s) => s.backgroundBadgeChecks)
+  useEffect(() => {
+    if (stamp && runBackgroundBadgeChecks(sidebarBadges, backgroundBadgeChecks)) {
+      loadBadges(game, allProfiles, '').catch(reportUnexpected)
+    }
+  }, [game, stamp, allProfiles, loadBadges, sidebarBadges, backgroundBadgeChecks])
+}

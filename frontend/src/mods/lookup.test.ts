@@ -8,6 +8,7 @@ import {
   entryHasDrift,
   installableUpdate,
   listedAgainstNexus,
+  missingCount,
   modStatusProblem,
   nexusKeepKey,
   offersUpdate,
@@ -108,6 +109,37 @@ test('problems and updates are counted per finding', () => {
     }),
   ).toBe(4)
   expect(updateCount(null)).toBe(0)
+})
+
+test('missingCount is the missing dependencies and is excluded from badge problems', () => {
+  const onlyMissing = {
+    missing: [
+      {
+        dependentId: 'd',
+        dependentName: 'Dep',
+        uniqueId: 'a',
+        minimumVersion: '',
+        installedVersion: '',
+        reason: 'absent',
+        listed: false,
+        note: '',
+        optional: false,
+        where: null,
+      },
+    ],
+    duplicates: [],
+    broken: [],
+    assetConflicts: [],
+    settings: [],
+    runErrors: [],
+    drift: [],
+    dismissed: [],
+    unknown: false,
+  }
+  expect(missingCount(null)).toBe(0)
+  expect(missingCount(onlyMissing)).toBe(1)
+  expect(problemCount(onlyMissing) - missingCount(onlyMissing)).toBe(0)
+  expect(problemCount(onlyMissing)).toBe(1)
 })
 
 test('an update belongs to one copy of a mod', () => {

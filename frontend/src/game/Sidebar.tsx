@@ -1,4 +1,3 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, IconButton, Tooltip } from '@mui/material'
 import { ChevronRight, ListOrdered, Plus } from 'lucide-react'
@@ -6,14 +5,13 @@ import { type PointerEvent, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { HelpDialog } from '../console/HelpDialog.tsx'
 import { PlayControl } from '../launch/PlayControl.tsx'
-import { showProblemBadge, showUpdateBadge } from '../mods/badgeDisplay.ts'
 import { useBadges } from '../mods/badges.ts'
+import { ProfileHealth } from '../mods/ProfileHealth.tsx'
 import { useNav } from '../nav/store.ts'
 import { ProfileMark } from '../profiles/ProfileMark.tsx'
 import { RecentChangesButton } from '../profiles/RecentChangesButton.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { QueueButton } from '../queue/QueueButton.tsx'
-import { useSettings } from '../settings/store.ts'
 import { HistoryButton } from '../toasts/HistoryButton.tsx'
 import { compact } from './compact.ts'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
@@ -62,61 +60,9 @@ function initials(name: string): string {
   return chars.join('').toUpperCase()
 }
 
-const PROBLEM_MARK = '!'
-
-const compactPill = {
-  position: 'absolute' as const,
-  top: 1,
-  right: 1,
-  ml: 0,
-  px: '4px',
-  fontSize: 10,
-}
-
-const pill = {
-  flexShrink: 0,
-  ml: 0.5,
-  px: '7px',
-  py: '1px',
-  borderRadius: '10px',
-  color: '#1b1a17',
-  fontSize: 12,
-  fontWeight: 700,
-  ...rail(compactPill),
-} as const
-
 function Badges({ profile }: { profile: Profile }) {
-  const { t } = useLingui()
-  const mode = useSettings((s) => s.sidebarBadges)
   const counts = useBadges((s) => s.byProfile[profile.id])
-  return (
-    <>
-      {showUpdateBadge(mode) && counts && counts.updates > 0 ? (
-        <Box
-          component="span"
-          role="img"
-          aria-label={t`${plural(counts.updates, { one: '# update', other: '# updates' })}`}
-          sx={{ ...pill, bgcolor: 'primary.main' }}
-        >
-          {counts.updates}
-        </Box>
-      ) : null}
-      {showProblemBadge(mode) && counts && counts.problems > 0 ? (
-        <Box
-          component="span"
-          role="img"
-          aria-label={t`${plural(counts.problems, { one: '# problem', other: '# problems' })}`}
-          sx={{
-            ...pill,
-            bgcolor: 'warning.main',
-            ...rail({ ...compactPill, right: 'auto', left: 1 }),
-          }}
-        >
-          {PROBLEM_MARK}
-        </Box>
-      ) : null}
-    </>
-  )
+  return <ProfileHealth counts={counts} sidebar={true} />
 }
 
 function ProfileButton({

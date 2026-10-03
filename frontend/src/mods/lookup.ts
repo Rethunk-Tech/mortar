@@ -129,6 +129,8 @@ export function nexusKeepKey(copies: Copy[]): string | null {
   return nexus.length === 1 ? (nexus[0]?.key ?? null) : null
 }
 
+export const missingCount = (result: Result | null): number => result?.missing?.length ?? 0
+
 export const problemCount = (result: Result | null): number =>
   problemsOf(result).length + (result?.drift?.length ?? 0)
 
