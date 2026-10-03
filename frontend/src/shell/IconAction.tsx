@@ -8,6 +8,7 @@ export function IconAction({
   icon,
   onClick,
   disabled = false,
+  disabledTitle,
   pressed,
   menu = false,
 }: {
@@ -15,12 +16,13 @@ export function IconAction({
   icon: ReactNode
   onClick: (e: MouseEvent<HTMLElement>) => void
   disabled?: boolean
+  disabledTitle?: string
   pressed?: boolean
   menu?: boolean
 }) {
   const on = pressed === true
   return (
-    <Tooltip title={label}>
+    <Tooltip title={disabled && disabledTitle !== undefined ? disabledTitle : label}>
       {/* A disabled button fires no pointer events, so the tooltip needs a live wrapper. */}
       <span>
         <IconButton

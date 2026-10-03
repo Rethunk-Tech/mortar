@@ -23,6 +23,7 @@ import { IconAction } from '../shell/IconAction.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { ConflictWhy } from './ConflictWhy.tsx'
 import { useDescribe, useDescribeDrift } from './describe.ts'
 import { DriftButtons, FixButton } from './problemFixButtons.tsx'
@@ -242,7 +243,7 @@ function ProblemSection({
   title: string
   rows: (Row | DismissedRow)[]
   collapsible: boolean
-  action?: { label: string; onClick: () => void }
+  action?: { label: string; onClick: () => void; disabled?: boolean }
 }) {
   const { t } = useLingui()
   const [open, setOpen] = useState(!collapsible)
@@ -266,6 +267,7 @@ function ProblemSection({
           {action ? (
             <Button
               size="small"
+              disabled={action.disabled}
               onClick={(e) => {
                 e.stopPropagation()
                 action.onClick()
@@ -280,7 +282,12 @@ function ProblemSection({
         <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
           {heading}
           {action ? (
-            <Button size="small" onClick={action.onClick} sx={{ ml: 1, height: 26 }}>
+            <Button
+              size="small"
+              disabled={action.disabled}
+              onClick={action.onClick}
+              sx={{ ml: 1, height: 26 }}
+            >
               {action.label}
             </Button>
           ) : null}
@@ -306,7 +313,7 @@ function renderProblemSections(
   cosmeticConflicts: string,
   sectionTitle: (id: ProblemSectionId) => string,
   extras: (section: ReturnType<typeof problemSections>[number]) => {
-    action?: { label: string; onClick: () => void }
+    action?: { label: string; onClick: () => void; disabled?: boolean }
   },
 ) {
   return sections.map((section) => {
@@ -331,28 +338,48 @@ export function ProblemActions() {
   const { t } = useLingui()
   const result = useOpenProblems()
   const sectionTitle = useSectionTitle()
-  const sections =
-    result === null
-      ? []
-      : problemSections(result).filter(
-          (section) => section.id !== 'dismissed' && section.id !== 'cosmetic',
-        )
+  const rowText = useRowText()
+  const sections = result === null ? [] : problemSections(result)
+  const cleanup = result?.cleanup ?? []
   const harmlessCount = (result?.assetConflicts ?? []).filter((asset) => asset.cosmetic).length
+  const nothing =
+    result === null || (sections.length === 0 && cleanup.length === 0 && harmlessCount === 0)
   return (
     <IconAction
       label={t`Copy report`}
       icon={<Copy size={16} />}
-      disabled={result === null || (sections.length === 0 && harmlessCount === 0)}
+      disabled={nothing}
+      disabledTitle={t`No problems to copy.`}
       onClick={() => {
         const text = formatProblemReport(
-          sections.map((section) => ({
-            title: sectionTitle(section.id),
-            count: section.rows.length,
-            whyKeys: section.rows.flatMap((entry) => {
-              const row = isDismissedRow(entry) ? entry.row : entry
-              return row.kind === 'asset' ? whyKeysOf(row.asset.evidence) : []
-            }),
-          })),
+          [
+            ...sections.map((section) => ({
+              title: sectionTitle(section.id),
+              count: section.rows.length,
+              whyKeys: section.rows.flatMap((entry) => {
+                const row = isDismissedRow(entry) ? entry.row : entry
+                return row.kind === 'asset' ? whyKeysOf(row.asset.evidence) : []
+              }),
+              lines: section.rows.map((entry) => {
+                const row = isDismissedRow(entry) ? entry.row : entry
+                const { text: sentence, note } = rowText(row)
+                return note === '' ? sentence : `${sentence} ${note}`
+              }),
+            })),
+            ...(cleanup.length === 0
+              ? []
+              : [
+                  {
+                    title: t`Cleanup`,
+                    count: cleanup.length,
+                    lines: cleanup.map((item) => {
+                      const who = item.name.trim() === '' ? t`Unknown mod` : item.name
+                      const reason = item.reason || 'Not needed by any enabled mod'
+                      return `${who}: ${reason}`
+                    }),
+                  },
+                ]),
+          ],
           t`Harmless`,
           harmlessCount,
         )
@@ -373,6 +400,8 @@ export function ProblemsTab() {
   const removeMany = useMods((s) => s.removeMany)
   const dismissAsset = useMods((s) => s.dismissAsset)
   const [confirmCleanup, setConfirmCleanup] = useState(false)
+  const [confirmDismissCosmetic, setConfirmDismissCosmetic] = useState(false)
+  const [addingAll, runAddAll] = usePending()
   const cosmeticConflicts = useSettings((s) => gamePrefs(s).cosmeticConflicts)
 
   if (result === null) {
@@ -401,6 +430,7 @@ export function ProblemsTab() {
       return {
         action: {
           label: t`Add all ${installable.length}`,
+          disabled: addingAll,
           onClick: () => {
             const wants: Want[] = installable.flatMap(({ missing }): Want[] => {
               const { where } = missing
@@ -421,7 +451,7 @@ export function ProblemsTab() {
                     },
                   ]
             })
-            download(wants).catch(reportUnexpected)
+            runAddAll(() => download(wants))
           },
         },
       }
@@ -431,11 +461,7 @@ export function ProblemsTab() {
         action: {
           label: t`Dismiss all`,
           onClick: () => {
-            for (const row of section.rows) {
-              if (!isDismissedRow(row) && row.kind === 'asset') {
-                dismissAsset(row.asset).catch(reportUnexpected)
-              }
-            }
+            setConfirmDismissCosmetic(true)
           },
         },
       }
@@ -500,6 +526,27 @@ export function ProblemsTab() {
             }}
           >
             {t`Remove all`}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={confirmDismissCosmetic} onClose={() => setConfirmDismissCosmetic(false)}>
+        <DialogTitle>{t`Dismiss all harmless overlaps?`}</DialogTitle>
+        <DialogContent>{t`They move to Dismissed. Restore them from that section.`}</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDismissCosmetic(false)}>{t`Cancel`}</Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setConfirmDismissCosmetic(false)
+              const cosmetic = sections.find((section) => section.id === 'cosmetic')
+              for (const row of cosmetic?.rows ?? []) {
+                if (!isDismissedRow(row) && row.kind === 'asset') {
+                  dismissAsset(row.asset).catch(reportUnexpected)
+                }
+              }
+            }}
+          >
+            {t`Dismiss all`}
           </Button>
         </DialogActions>
       </Dialog>

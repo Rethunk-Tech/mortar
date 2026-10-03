@@ -2,6 +2,7 @@ interface ProblemReportSection {
   title: string
   count: number
   whyKeys?: readonly string[]
+  lines?: readonly string[]
 }
 
 interface WhyEvidence {
@@ -28,7 +29,9 @@ function formatProblemReport(
   const lines = sections.flatMap((section) => {
     const head = `${section.title}: ${section.count}`
     const keys = (section.whyKeys ?? []).filter((key) => key.trim() !== '')
-    return keys.length === 0 ? [head] : [head, ...keys.map((key) => `  ${key}`)]
+    const extra = (section.lines ?? []).filter((line) => line.trim() !== '')
+    const rest = [...keys.map((key) => `  ${key}`), ...extra.map((line) => `  ${line}`)]
+    return rest.length === 0 ? [head] : [head, ...rest]
   })
   lines.push(`${harmlessLabel}: ${harmlessCount}`)
   return lines.join('\n')
