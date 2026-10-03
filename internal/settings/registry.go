@@ -72,6 +72,7 @@ var registry = []pref{
 	intPref("updateCheckIntervalMinutes", ScopeApp, DefaultUpdateCheckIntervalMinutes, MinUpdateCheckIntervalMinutes, MaxUpdateCheckIntervalMinutes, func(s Settings, _ string) int { return s.UpdateCheckIntervalMinutes }, func(s *Settings, _ string, n int) { s.UpdateCheckIntervalMinutes = n }),
 	ptrPref("checkModUpdatesOnStart", ScopeApp, true, func(s Settings, _ string) *bool { return s.CheckModUpdatesOnStart }, func(s *Settings, _ string, on bool) { s.CheckModUpdatesOnStart = &on }),
 	ptrPref("notifyModUpdates", ScopeApp, false, func(s Settings, _ string) *bool { return s.NotifyModUpdates }, func(s *Settings, _ string, on bool) { s.NotifyModUpdates = &on }),
+	enumPref("updateDigest", ScopeApp, UpdateDigestDaily, updateDigestValues, func(s Settings, _ string) string { return s.UpdateDigest }, func(s *Settings, _, v string) { s.UpdateDigest = v }),
 	boolPref("keepDownloadArchives", ScopeApp, func(s Settings, _ string) bool { return s.KeepDownloadArchives }, func(s *Settings, _ string, on bool) { s.KeepDownloadArchives = on }),
 	intPref("storeRetentionDays", ScopeApp, DefaultStoreRetentionDays, MinStoreRetentionDays, MaxStoreRetentionDays, func(s Settings, _ string) int { return s.StoreRetentionDays }, func(s *Settings, _ string, n int) { s.StoreRetentionDays = n }),
 	enumPref("defaultModsView", ScopeApp, ModsViewGrid, modsViewValues, func(s Settings, _ string) string { return s.DefaultModsView }, func(s *Settings, _, v string) { s.DefaultModsView = v }),

@@ -2,7 +2,6 @@ package updatesvc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 )
@@ -12,49 +11,30 @@ const (
 	modUpdateInterval     = 4 * time.Hour
 )
 
-type ModUpdate struct {
-	Game        string
-	ProfileID   string
-	ProfileName string
-	Count       int
-}
-
-type ModUpdateSource interface {
-	ModUpdates(context.Context) ([]ModUpdate, error)
-}
-
-type ModUpdateNotifier interface {
-	Notify(ModUpdate)
-}
-
 type ModUpdateSetting interface {
 	ModUpdatesEnabled() bool
 }
 
-type modUpdateState struct {
-	notified map[string]int
+type ModUpdateSource interface {
+	ProfileModUpdates(context.Context) ([]ProfileModUpdates, error)
 }
 
-func decideModUpdateNotification(state *modUpdateState, updates []ModUpdate) (ModUpdate, bool) {
-	if state.notified == nil {
-		state.notified = make(map[string]int)
-	}
-	var notify ModUpdate
-	found := false
-	for _, update := range updates {
-		key := update.Game + "\x00" + update.ProfileID
-		if update.Count > state.notified[key] {
-			if !found || update.Count > notify.Count {
-				notify = update
-				found = true
-			}
-		}
-		state.notified[key] = update.Count
-	}
-	return notify, found
+type ModDigestSettings interface {
+	UpdateDigestMode() string
+	LastModUpdateDigest() []string
+	LastModUpdateDigestAt() string
 }
 
-func StartModBackground(ctx context.Context, enabled ModUpdateSetting, source ModUpdateSource, notify ModUpdateNotifier) {
+type ModDigestStore interface {
+	ModDigestSettings
+	SaveModUpdateDigest(keys []string, at string) error
+}
+
+type ModUpdateDigestNotifier interface {
+	NotifyDigest(ModUpdateDigestNotice)
+}
+
+func StartModBackground(ctx context.Context, enabled ModUpdateSetting, source ModUpdateSource, store ModDigestStore, notify ModUpdateDigestNotifier) {
 	go func() {
 		timer := time.NewTimer(modUpdateInitialDelay)
 		defer timer.Stop()
@@ -63,18 +43,34 @@ func StartModBackground(ctx context.Context, enabled ModUpdateSetting, source Mo
 			return
 		case <-timer.C:
 		}
-		state := &modUpdateState{}
 		run := func() {
 			if !enabled.ModUpdatesEnabled() {
 				return
 			}
-			updates, err := source.ModUpdates(ctx)
+			profiles, err := source.ProfileModUpdates(ctx)
 			if err != nil {
 				log.Printf("mod update check: %v", err)
 				return
 			}
-			if update, ok := decideModUpdateNotification(state, updates); ok {
-				notify.Notify(update)
+			keys, summary := DigestFromProfiles(profiles)
+			now := time.Now()
+			should, persist := DecideUpdateDigest(
+				store.UpdateDigestMode(),
+				store.LastModUpdateDigest(),
+				keys,
+				store.LastModUpdateDigestAt(),
+				now,
+			)
+			at := ""
+			if should {
+				at = now.Format(time.RFC3339)
+			}
+			if err := store.SaveModUpdateDigest(persist, at); err != nil {
+				log.Printf("mod update digest save: %v", err)
+				return
+			}
+			if should && summary.TotalUpdates > 0 {
+				notify.NotifyDigest(summary)
 			}
 		}
 		run()
@@ -89,12 +85,4 @@ func StartModBackground(ctx context.Context, enabled ModUpdateSetting, source Mo
 			}
 		}
 	}()
-}
-
-func ModUpdateNotification(update ModUpdate) (title, body string) {
-	label := "mod updates"
-	if update.Count == 1 {
-		label = "mod update"
-	}
-	return "Mod updates available", fmt.Sprintf("%d %s available for %s", update.Count, label, update.ProfileName)
 }

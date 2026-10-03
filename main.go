@@ -97,6 +97,7 @@ func registerEvents() {
 	application.RegisterEvent[launchsvc.BackupWarning](launchsvc.BackupWarningEvent)
 	application.RegisterEvent[launchsvc.SettingsRestoreWarning](launchsvc.SettingsRestoreWarningEvent)
 	application.RegisterEvent[updatesvc.Release](updatesvc.StagedEvent)
+	application.RegisterEvent[updatesvc.ModUpdateDigestNotice](updatesvc.ModUpdateDigestEvent)
 	application.RegisterEvent[string](quitRequestedEvent)
 }
 
@@ -723,50 +724,7 @@ func run() error {
 		window.Restore()
 		window.Show().Focus()
 	}
-	updatesvc.StartModBackground(updateCtx, modUpdateSettingFunc(func() bool {
-		check := store.Get().CheckModUpdatesOnStart
-		return check != nil && *check
-	}), modUpdateSourceFunc(func(ctx context.Context) ([]updatesvc.ModUpdate, error) {
-		games, err := gamesSvc.List()
-		if err != nil {
-			return nil, err
-		}
-		var out []updatesvc.ModUpdate
-		for _, g := range games {
-			if !g.Available || !g.Installed {
-				continue
-			}
-			all, err := profiles.List(g.ID)
-			if err != nil {
-				log.Printf("mod updates: %s profiles: %v", g.ID, err)
-				continue
-			}
-			for _, p := range all {
-				if p.Error != "" || p.Hidden {
-					continue
-				}
-				result, err := problemsSvc.Updates(ctx, g.ID, p.ID)
-				if err != nil {
-					log.Printf("mod updates: %s/%s: %v", g.ID, p.ID, err)
-					continue
-				}
-				out = append(out, updatesvc.ModUpdate{
-					Game: g.ID, ProfileID: p.ID, ProfileName: p.Name, Count: officialUpdateCount(result.Updates),
-				})
-			}
-		}
-		return out, nil
-	}), modUpdateNotifierFunc(func(update updatesvc.ModUpdate) {
-		title, body := updatesvc.ModUpdateNotification(update)
-		if err := notifier.SendNotification(notifications.NotificationOptions{
-			ID:    fmt.Sprintf("mod-updates-%s-%d", update.ProfileID, time.Now().UnixNano()),
-			Title: title,
-			Body:  body,
-			Data:  map[string]any{"game": update.Game, "profile": update.ProfileID},
-		}); err != nil {
-			log.Printf("mod update notification: %v", err)
-		}
-	}))
+	startModUpdateBackground(updateCtx, svc, gamesSvc, profiles, problemsSvc, app)
 
 	var tray *application.SystemTray
 	var trayMenu *application.Menu
@@ -874,22 +832,10 @@ func run() error {
 	return err
 }
 
-type modUpdateSourceFunc func(context.Context) ([]updatesvc.ModUpdate, error)
-
 type modUpdateSettingFunc func() bool
 
 func (f modUpdateSettingFunc) ModUpdatesEnabled() bool {
 	return f()
-}
-
-func (f modUpdateSourceFunc) ModUpdates(ctx context.Context) ([]updatesvc.ModUpdate, error) {
-	return f(ctx)
-}
-
-type modUpdateNotifierFunc func(updatesvc.ModUpdate)
-
-func (f modUpdateNotifierFunc) Notify(update updatesvc.ModUpdate) {
-	f(update)
 }
 
 func releaseLinks() error {

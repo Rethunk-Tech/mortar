@@ -126,8 +126,14 @@ type Settings struct {
 	ParallelDownloads          int    `json:"parallelDownloads"`
 	UpdateCheckIntervalMinutes int    `json:"updateCheckIntervalMinutes"`
 	// NotifyModUpdates toasts when a background check finds updates. Nil means off.
-	NotifyModUpdates     *bool `json:"notifyModUpdates"`
-	KeepDownloadArchives bool  `json:"keepDownloadArchives"`
+	NotifyModUpdates *bool `json:"notifyModUpdates"`
+	// UpdateDigest controls in-app digests after background mod-update checks: off, each, or daily.
+	UpdateDigest string `json:"updateDigest"`
+	// LastModUpdateDigest is the key+version set last digested (see updatesvc digest keys).
+	LastModUpdateDigest []string `json:"lastModUpdateDigest,omitempty"`
+	// LastModUpdateDigestAt is when Mortar last showed the mod-update digest toast (RFC3339).
+	LastModUpdateDigestAt string `json:"lastModUpdateDigestAt,omitempty"`
+	KeepDownloadArchives  bool   `json:"keepDownloadArchives"`
 	// StoreRetentionDays is unused store-item lifetime; 0 means keep forever.
 	StoreRetentionDays int    `json:"storeRetentionDays"`
 	DefaultModsView    string `json:"defaultModsView"`

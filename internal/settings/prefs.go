@@ -121,6 +121,7 @@ func defaultPrefs() Settings {
 		ParallelDownloads:          DefaultParallelDownloads,
 		UpdateCheckIntervalMinutes: DefaultUpdateCheckIntervalMinutes,
 		NotifyModUpdates:           off(),
+		UpdateDigest:               UpdateDigestDaily,
 		KeepDownloadArchives:       false,
 		StoreRetentionDays:         DefaultStoreRetentionDays,
 		DefaultModsView:            ModsViewGrid,
@@ -176,6 +177,7 @@ func normalizePrefs(s *Settings) {
 	if s.NotifyModUpdates == nil {
 		s.NotifyModUpdates = off()
 	}
+	normalizeUpdateDigest(s)
 	if s.StoreRetentionDays < MinStoreRetentionDays || s.StoreRetentionDays > MaxStoreRetentionDays {
 		s.StoreRetentionDays = DefaultStoreRetentionDays
 	}
