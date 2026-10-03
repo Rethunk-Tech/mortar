@@ -22,6 +22,7 @@ import {
   Share,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
 import { Logo } from '../brand/Logo.tsx'
+import { SendDialog } from '../lan/SendDialog.tsx'
 import { heading, paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
@@ -216,7 +217,7 @@ function LinkTab({ info, onFile }: { info: ShownInfo; onFile: () => void }) {
                   userSelect: 'text',
                 }}
               >
-                <Typography noWrap={true} sx={{ font: 'inherit' }}>
+                <Typography noWrap={true} title={info.web} sx={{ font: 'inherit' }}>
                   {info.web}
                 </Typography>
               </Box>
@@ -443,6 +444,7 @@ export function ShareDialog() {
   const art = useProfiles((s) => s.game?.artUrl)
   const [tab, setTab] = useState<Tab>('link')
   const [info, setInfo] = useState<ShownInfo | null>(null)
+  const [sendNearby, setSendNearby] = useState(false)
   useEffect(() => {
     if (!profileId) {
       return
@@ -472,92 +474,112 @@ export function ShareDialog() {
     }
   }, [profileId, keys, game, close, t])
   return (
-    <Dialog
-      open={profileId !== '' && info !== null}
-      onClose={close}
-      maxWidth={false}
-      transitionDuration={0}
-      slotProps={{
-        paper: {
-          ...paper,
-          sx: {
-            ...paper.sx,
-            bgcolor: 'rgb(36,36,44)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            width: 'min(980px, calc(100% - 48px))',
-            height: 'min(620px, calc(100% - 48px))',
-            overflow: 'hidden',
-            borderRadius: '10px',
+    <>
+      <Dialog
+        open={profileId !== '' && info !== null}
+        onClose={close}
+        maxWidth={false}
+        transitionDuration={0}
+        slotProps={{
+          paper: {
+            ...paper,
+            sx: {
+              ...paper.sx,
+              bgcolor: 'rgb(36,36,44)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              width: 'min(980px, calc(100% - 48px))',
+              height: 'min(620px, calc(100% - 48px))',
+              overflow: 'hidden',
+              borderRadius: '10px',
+            },
           },
-        },
-      }}
-    >
-      {info ? (
-        <Box
-          role="dialog"
-          aria-label={t`Share ${info.name}`}
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: tab === 'link' ? 'minmax(0, 1fr) 340px' : 'minmax(0, 1fr)',
-            height: '100%',
-            minHeight: 0,
-          }}
-        >
-          <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
-            <TipBanner tip="share">
-              {t`A share link names this profile and the Nexus or GitHub files in it, not the archives.`}
-            </TipBanner>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, p: '20px 24px 0' }}>
-              {art ? (
-                <Box
-                  component="img"
-                  src={art}
-                  alt=""
-                  sx={{ width: 64, height: 64, objectFit: 'cover', borderRadius: '8px' }}
-                />
-              ) : null}
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography
-                  sx={{ fontSize: 13, color: 'text.secondary' }}
-                >{t`Share profile`}</Typography>
-                <Typography noWrap={true} title={info.name} sx={{ fontSize: 24, fontWeight: 700 }}>
-                  {info.name}
-                </Typography>
-              </Box>
-              <CopyModList />
-              {tab === 'file' ? (
-                <Tooltip title={t`Close`}>
-                  <IconButton
-                    aria-label={t`Close`}
-                    onClick={close}
-                    sx={{ alignSelf: 'flex-start' }}
+        }}
+      >
+        {info ? (
+          <Box
+            role="dialog"
+            aria-label={t`Share ${info.name}`}
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: tab === 'link' ? 'minmax(0, 1fr) 340px' : 'minmax(0, 1fr)',
+              height: '100%',
+              minHeight: 0,
+            }}
+          >
+            <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
+              <TipBanner tip="share">
+                {t`A share link names this profile and the Nexus or GitHub files in it, not the archives.`}
+              </TipBanner>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, p: '20px 24px 0' }}>
+                {art ? (
+                  <Box
+                    component="img"
+                    src={art}
+                    alt=""
+                    sx={{ width: 64, height: 64, objectFit: 'cover', borderRadius: '8px' }}
+                  />
+                ) : null}
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography
+                    sx={{ fontSize: 13, color: 'text.secondary' }}
+                  >{t`Share profile`}</Typography>
+                  <Typography
+                    noWrap={true}
+                    title={info.name}
+                    sx={{ fontSize: 24, fontWeight: 700 }}
                   >
-                    <X size={18} />
-                  </IconButton>
-                </Tooltip>
-              ) : null}
+                    {info.name}
+                  </Typography>
+                </Box>
+                <CopyModList />
+                {tab === 'file' ? (
+                  <Tooltip title={t`Close`}>
+                    <IconButton
+                      aria-label={t`Close`}
+                      onClick={close}
+                      sx={{ alignSelf: 'flex-start' }}
+                    >
+                      <X size={18} />
+                    </IconButton>
+                  </Tooltip>
+                ) : null}
+              </Box>
+              <Box sx={{ m: '18px 24px 0', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <TabPills
+                  value={tab}
+                  onChange={setTab}
+                  label={t`How to share`}
+                  options={[
+                    { value: 'link', label: t`Link` },
+                    { value: 'file', label: t`.mortar file with settings` },
+                  ]}
+                />
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  onClick={() => setSendNearby(true)}
+                  sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
+                >
+                  {t`Send nearby…`}
+                </Button>
+              </Box>
+              <Box sx={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                {tab === 'link' ? <LinkTab info={info} onFile={() => setTab('file')} /> : null}
+                {tab === 'file' ? (
+                  <FileTab info={info} game={game} profileId={profileId} keys={keys} />
+                ) : null}
+              </Box>
             </Box>
-            <Box sx={{ m: '18px 24px 0', display: 'flex' }}>
-              <TabPills
-                value={tab}
-                onChange={setTab}
-                label={t`How to share`}
-                options={[
-                  { value: 'link', label: t`Link` },
-                  { value: 'file', label: t`.mortar file with settings` },
-                ]}
-              />
-            </Box>
-            <Box sx={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
-              {tab === 'link' ? <LinkTab info={info} onFile={() => setTab('file')} /> : null}
-              {tab === 'file' ? (
-                <FileTab info={info} game={game} profileId={profileId} keys={keys} />
-              ) : null}
-            </Box>
+            {tab === 'link' ? <PagePreview info={info} onClose={close} /> : null}
           </Box>
-          {tab === 'link' ? <PagePreview info={info} onClose={close} /> : null}
-        </Box>
-      ) : null}
-    </Dialog>
+        ) : null}
+      </Dialog>
+      <SendDialog
+        open={sendNearby}
+        game={game}
+        profileId={profileId}
+        onClose={() => setSendNearby(false)}
+      />
+    </>
   )
 }

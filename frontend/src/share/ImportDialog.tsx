@@ -11,7 +11,7 @@ import { CompareSummary } from './CompareSummary.tsx'
 import { ImportFooter } from './ImportFooter.tsx'
 import { ImportInput } from './ImportInput.tsx'
 import { Tiles } from './ImportPreview.tsx'
-import { summarize } from './logic.ts'
+import { missingModName, summarize } from './logic.ts'
 import { type ImportRequest, useImportDialog } from './store.ts'
 import { type Tab as TabId, useImportFlow } from './useImportFlow.ts'
 
@@ -25,7 +25,13 @@ const dialogSx = {
   borderRadius: '6px',
 }
 
-function MissingMods({ ids }: { ids: string[] }) {
+function MissingMods({
+  ids,
+  mods,
+}: {
+  ids: string[]
+  mods: { name: string; uniqueIds?: string[] | null }[]
+}) {
   const { t } = useLingui()
   return (
     <Box
@@ -42,9 +48,14 @@ function MissingMods({ ids }: { ids: string[] }) {
         {t`Not found in the Mods folder`}
       </Typography>
       <Box component="ul" sx={{ m: 0, pl: 2.5, fontSize: 13, color: 'text.secondary' }}>
-        {ids.map((id) => (
-          <li key={id}>{id}</li>
-        ))}
+        {ids.map((id) => {
+          const name = missingModName(id, mods)
+          return (
+            <li key={id} title={id}>
+              {name ?? id}
+            </li>
+          )
+        })}
       </Box>
     </Box>
   )
@@ -165,7 +176,7 @@ function Body({ request }: { request: ImportRequest }) {
             }}
           >
             {flow.external?.missing && flow.external.missing.length > 0 ? (
-              <MissingMods ids={flow.external.missing} />
+              <MissingMods ids={flow.external.missing} mods={preview.mods} />
             ) : null}
             {targetName && !flow.external ? (
               <CompareSummary preview={preview} targetName={targetName} />

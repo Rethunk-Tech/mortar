@@ -34,6 +34,13 @@ export const shownPreview = (p: Preview): ShownPreview => ({
   problems: p.problems ?? [],
 })
 
+export function missingModName(
+  uniqueId: string,
+  mods: readonly { name: string; uniqueIds?: string[] | null }[],
+): string | undefined {
+  return mods.find((m) => (m.uniqueIds ?? []).includes(uniqueId))?.name
+}
+
 // About how many mods fit a link under Discord's limit (measured: 498 characters for 50 mods, 1,630 for 200).
 export const SUGGEST_FILE_AT = 240
 

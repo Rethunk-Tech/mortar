@@ -13,6 +13,7 @@ import { useState } from 'react'
 import { useLaunch } from '../launch/store.ts'
 import { isLocked } from '../mods/locked.ts'
 import { paper } from '../mods/paper.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { Problems, StatusBar } from './ImportPreview.tsx'
 import type { ShownPreview, Summary } from './logic.ts'
@@ -94,26 +95,30 @@ export function ImportFooter({
           {t`Reset`}
         </Button>
         {targetName ? (
-          <Button
-            variant="outlined"
-            disabled={!canRun || targetLocked}
-            onClick={() => {
-              flow.run(true).catch(reportUnexpected)
-            }}
-            sx={{ height: 40 }}
-          >
-            {t`Add to ${targetName}`}
-          </Button>
+          <DisabledReason title={t`Stop the game to change mods.`} disabled={targetLocked}>
+            <Button
+              variant="outlined"
+              disabled={!canRun || targetLocked}
+              onClick={() => {
+                flow.run(true).catch(reportUnexpected)
+              }}
+              sx={{ height: 40 }}
+            >
+              {t`Add to ${targetName}`}
+            </Button>
+          </DisabledReason>
         ) : null}
         {targetName ? (
-          <Button
-            variant="outlined"
-            disabled={!canRun || targetLocked}
-            onClick={() => setAskReplace(true)}
-            sx={{ height: 40 }}
-          >
-            {t`Replace ${targetName}`}
-          </Button>
+          <DisabledReason title={t`Stop the game to change mods.`} disabled={targetLocked}>
+            <Button
+              variant="outlined"
+              disabled={!canRun || targetLocked}
+              onClick={() => setAskReplace(true)}
+              sx={{ height: 40 }}
+            >
+              {t`Replace ${targetName}`}
+            </Button>
+          </DisabledReason>
         ) : null}
         <Button
           variant="contained"

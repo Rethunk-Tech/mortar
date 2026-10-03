@@ -3,6 +3,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/s
 import {
   formatSize,
   meter,
+  missingModName,
   SUGGEST_FILE_AT,
   shownInfo,
   shownPreview,
@@ -83,4 +84,10 @@ test('null lists from Go become empty lists', () => {
   const preview = shownPreview(JSON.parse('{"name":"x","mods":null,"problems":null}'))
   expect(preview.mods).toEqual([])
   expect(preview.problems).toEqual([])
+})
+
+test('missing mods list a known name and keep the UniqueID for the title', () => {
+  const mods = [{ name: 'Content Patcher', uniqueIds: ['Pathoschild.ContentPatcher'] }]
+  expect(missingModName('Pathoschild.ContentPatcher', mods)).toBe('Content Patcher')
+  expect(missingModName('Unknown.Mod', mods)).toBeUndefined()
 })
