@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -9,6 +9,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(here, '..')
 const frontendRoot = join(repoRoot, 'frontend')
 const licenceFileName = /^(license|licence|copying)(\..+)?$/i
+const noticeFileName = /^notice(\..+)?$/i
 
 function asRecord(v: unknown): Record<string, unknown> {
   return v !== null && typeof v === 'object' && !Array.isArray(v)
@@ -198,6 +199,13 @@ interface CreditEntry {
   url: string
 }
 
+interface NoticeEntry {
+  name: string
+  licence: string
+  url: string
+  texts: string[]
+}
+
 function isCreditList(v: unknown): v is CreditEntry[] {
   if (!Array.isArray(v) || v.length === 0) {
     return false
@@ -213,6 +221,185 @@ function isCreditList(v: unknown): v is CreditEntry[] {
       /^https?:\/\//.test(rec.url)
     )
   })
+}
+
+function dirTexts(dir: string): { licence: string; texts: string[] } | null {
+  let names: string[]
+  try {
+    names = readdirSync(dir)
+  } catch {
+    return null
+  }
+  const licenceHits = names.filter((n) => licenceFileName.test(n)).sort()
+  const noticeHits = names.filter((n) => noticeFileName.test(n)).sort()
+  const texts = [...licenceHits, ...noticeHits].map((n) => readFileSync(join(dir, n), 'utf8'))
+  if (texts.length === 0) {
+    return null
+  }
+  let licence = 'see text'
+  if (licenceHits[0]) {
+    try {
+      licence = classifyLicenceText(readFileSync(join(dir, licenceHits[0]), 'utf8'))
+    } catch {
+      licence = 'see text'
+    }
+  }
+  return { licence, texts }
+}
+
+function parseGoListJSONStream(stdout: string): Record<string, unknown>[] {
+  const trimmed = stdout.trim()
+  if (!trimmed) {
+    return []
+  }
+  return trimmed.split(/\n}\s*\n\{/).map((chunk, i, arr) => {
+    let body = chunk
+    if (i > 0) {
+      body = `{${body}`
+    }
+    if (i < arr.length - 1) {
+      body = `${body}\n}`
+    }
+    return asRecord(JSON.parse(body))
+  })
+}
+
+function goModuleNotices(): NoticeEntry[] {
+  Bun.spawnSync(['go', 'mod', 'download'], {
+    cwd: repoRoot,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+  const proc = Bun.spawnSync(['go', 'list', '-m', '-json', 'all'], {
+    cwd: repoRoot,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+  if (proc.exitCode !== 0) {
+    throw new Error(`go list -m all: ${proc.stderr.toString()}`)
+  }
+  const recs = parseGoListJSONStream(proc.stdout.toString())
+  const out: NoticeEntry[] = []
+  for (const rec of recs) {
+    const replace = asRecord(rec.Replace)
+    const path = stringField(replace, 'Path') || stringField(rec, 'Path')
+    const version = stringField(replace, 'Version') || stringField(rec, 'Version')
+    const dir = stringField(replace, 'Dir') || stringField(rec, 'Dir')
+    if (path && path !== 'github.com/Rethunk-AI/mortar') {
+      const found = dir ? dirTexts(dir) : null
+      const name = version ? `${path}@${version}` : path
+      out.push({
+        name,
+        licence: found?.licence ?? 'unknown',
+        url: goModuleURL(path),
+        texts: found?.texts ?? [`(no LICENSE or NOTICE in module directory for ${path})\n`],
+      })
+    }
+  }
+  return out
+}
+
+function parseBunLockPackages(lockText: string): { name: string; spec: string }[] {
+  const start = lockText.indexOf('"packages"')
+  if (start < 0) {
+    throw new Error('bun.lock: no packages table')
+  }
+  const body = lockText.slice(start)
+  const pkgs: { name: string; spec: string }[] = []
+  const re = /^\s+"([^"]+)": \["([^"]+)"/gm
+  for (const m of body.matchAll(re)) {
+    const name = m[1] ?? ''
+    const spec = m[2] ?? ''
+    if (name && spec && name !== 'mortar' && name !== 'mortar-frontend') {
+      pkgs.push({ name, spec })
+    }
+  }
+  if (pkgs.length === 0) {
+    throw new Error('bun.lock: empty packages table')
+  }
+  return pkgs
+}
+
+function npmPackageDir(name: string): string | null {
+  const candidates = [
+    join(frontendRoot, 'node_modules', ...name.split('/')),
+    join(repoRoot, 'node_modules', ...name.split('/')),
+  ]
+  for (const dir of candidates) {
+    if (existsSync(join(dir, 'package.json'))) {
+      return dir
+    }
+  }
+  for (const base of [frontendRoot, repoRoot]) {
+    try {
+      return dirname(Bun.resolveSync(`${name}/package.json`, base))
+    } catch {
+      // try the other base
+    }
+  }
+  return null
+}
+
+function npmNoticeFor(name: string, spec: string): NoticeEntry {
+  const dir = npmPackageDir(name)
+  const found = dir ? dirTexts(dir) : null
+  let licence = found?.licence ?? ''
+  let url = `https://www.npmjs.com/package/${encodeURIComponent(name)}`
+  if (dir) {
+    try {
+      const meta = readJSON(join(dir, 'package.json'))
+      licence = licence === 'see text' || licence === '' ? npmLicence(meta) : licence
+      url = npmHomepage(name, meta)
+    } catch {
+      licence = licence || 'unknown'
+    }
+  }
+  licence = licence || 'unknown'
+  return {
+    name: spec.includes('@') ? spec : `${name}@${spec}`,
+    licence,
+    url,
+    texts: found?.texts ?? [`(no LICENSE or NOTICE in ${name}; declared licence: ${licence})\n`],
+  }
+}
+
+function npmNotices(): NoticeEntry[] {
+  const pkgs = parseBunLockPackages(readFileSync(join(repoRoot, 'bun.lock'), 'utf8'))
+  const seen = new Set<string>()
+  const out: NoticeEntry[] = []
+  for (const { name, spec } of pkgs) {
+    if (!seen.has(name)) {
+      seen.add(name)
+      out.push(npmNoticeFor(name, spec))
+    }
+  }
+  return out
+}
+
+function collectNotices(): NoticeEntry[] {
+  const entries = [...goModuleNotices(), ...npmNotices()]
+  entries.sort((a, b) => a.name.localeCompare(b.name))
+  return entries
+}
+
+function formatNotices(entries: NoticeEntry[]): string {
+  const blocks = entries.map((e) => {
+    const header = `${e.name}\nlicence: ${e.licence}\n${e.url}`
+    return `${header}\n\n${e.texts.join('\n\n').trim()}\n`
+  })
+  return [
+    'Third-party notices',
+    '',
+    'Go modules compiled into Mortar and npm packages named in bun.lock, with the',
+    'licence and NOTICE text from each package directory.',
+    '',
+    '================================================================================',
+    '',
+    blocks.join(
+      '\n--------------------------------------------------------------------------------\n\n',
+    ),
+    '',
+  ].join('\n')
 }
 
 function buildCredits(): CreditEntry[] {
@@ -272,10 +459,11 @@ function main(): void {
   const outDir = join(frontendRoot, 'src', 'settings', 'generated')
   mkdirSync(outDir, { recursive: true })
   writeFileSync(join(outDir, 'credits.json'), `${JSON.stringify(entries, null, 2)}\n`)
+  writeFileSync(join(repoRoot, 'THIRD_PARTY_NOTICES'), formatNotices(collectNotices()))
 }
 
 if (import.meta.main) {
   main()
 }
 
-export { classifyLicenceText }
+export { classifyLicenceText, collectNotices, parseBunLockPackages }

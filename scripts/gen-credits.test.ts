@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { classifyLicenceText } from './gen-credits.ts'
+import { classifyLicenceText, collectNotices } from './gen-credits.ts'
 
 describe('classifyLicenceText', () => {
   test('finds licence text after a copyright header', () => {
@@ -8,5 +8,20 @@ Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files.`
 
     expect(classifyLicenceText(text)).toBe('MIT')
+  })
+})
+
+describe('collectNotices', () => {
+  test('includes compiled Go modules and lockfile npm packages with licence text', () => {
+    const notices = collectNotices()
+    const names = notices.map((n) => n.name)
+    expect(names.some((n) => n.startsWith('github.com/miekg/dns@'))).toBe(true)
+    expect(names.some((n) => n.startsWith('github.com/hashicorp/golang-lru/v2@'))).toBe(true)
+    expect(names.some((n) => n.includes('@mui/system@'))).toBe(true)
+    expect(names.some((n) => n.includes('@emotion/react@'))).toBe(true)
+    const dns = notices.find((n) => n.name.startsWith('github.com/miekg/dns@'))
+    expect(dns?.texts.join('\n')).toMatch(/redistribution and use in source and binary forms/i)
+    const react = notices.find((n) => n.name.startsWith('react@'))
+    expect(react?.texts.join('\n')).toMatch(/permission is hereby granted/i)
   })
 })
