@@ -575,7 +575,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 	if ps, err := s.gameProcs(g); err == nil && len(ps) > 0 {
 		return fmt.Errorf("%s is already running", g.Name())
 	}
-	req := launch.Request{InstallDir: dir, ModsDir: modsDir, Direct: direct, Vanilla: vanilla, Seen: s.seen(g)}
+	req := launch.Request{InstallDir: dir, ModsDir: modsDir, Direct: direct, Vanilla: vanilla, Seen: s.seen(g), HideWindow: !s.settings.Get().ShowConsoleWindow()}
 	if !vanilla && profileID != "" {
 		st := s.settings.Get()
 		if err := overlay.ApplyToMods(modsDir, st.OverlayEnabled, st.OverlayPort, st.OverlayToken); err != nil {

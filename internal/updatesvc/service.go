@@ -74,6 +74,9 @@ type Service struct {
 	// empty runs when Check finds no newer release, so a missing manifest is not reported as up to date.
 	empty func(context.Context) error
 
+	// AutoInstall, when set, gates background DownloadAndInstall. Nil means install (today's behaviour).
+	AutoInstall func() bool
+
 	mu            sync.Mutex
 	cond          *sync.Cond
 	once          sync.Once

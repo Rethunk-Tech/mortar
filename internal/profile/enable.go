@@ -40,6 +40,13 @@ func disabledUID(p *Profile, uniqueID string) bool {
 	return false
 }
 
+func (s *Store) autoEnableRequirements() bool {
+	if s.settings == nil {
+		return true
+	}
+	return s.settings.Get().AutoEnableRequirements()
+}
+
 // enableRequired turns on required dependencies of uniqueID that are already in the profile but switched off.
 // Optional dependencies are left as they are. Returns the names that were switched on.
 func enableRequired(p *Profile, dir, uniqueID string) []string {

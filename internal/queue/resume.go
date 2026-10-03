@@ -26,6 +26,19 @@ func destPath(dir, id, fileName string) string {
 	return filepath.Join(dir, downloadsDir, id+filepath.Ext(fileName))
 }
 
+func (s *Service) downloadRoot() string {
+	if s.d.DownloadDir != nil {
+		if d := strings.TrimSpace(s.d.DownloadDir()); filepath.IsAbs(d) {
+			return d
+		}
+	}
+	return filepath.Join(s.d.Dir, downloadsDir)
+}
+
+func (s *Service) dest(id, fileName string) string {
+	return filepath.Join(s.downloadRoot(), id+filepath.Ext(fileName))
+}
+
 func resumeSidecar(path string) string {
 	return path + ".resume.json"
 }
@@ -50,7 +63,7 @@ func (s *Service) sweepDownloads() {
 	if s.d.KeepArchives != nil && s.d.KeepArchives() {
 		return
 	}
-	root := filepath.Join(s.d.Dir, downloadsDir)
+	root := s.downloadRoot()
 	entries, err := os.ReadDir(root)
 	if err != nil {
 		return

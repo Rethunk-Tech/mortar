@@ -347,3 +347,21 @@ func TestFetchGivesUpOnALoopingPartialRange(t *testing.T) {
 		t.Fatalf("requests = %d, livelock", n.Load())
 	}
 }
+
+func TestDownloadRootUsesSeparateFolder(t *testing.T) {
+	dir := t.TempDir()
+	custom := t.TempDir()
+	s := &Service{d: Deps{Dir: dir, DownloadDir: func() string { return custom }}}
+	if s.downloadRoot() != custom {
+		t.Fatalf("root = %s", s.downloadRoot())
+	}
+	got := s.dest("item", "m.zip")
+	want := filepath.Join(custom, "item.zip")
+	if got != want {
+		t.Fatalf("dest = %s want %s", got, want)
+	}
+	plain := &Service{d: Deps{Dir: dir}}
+	if plain.downloadRoot() != filepath.Join(dir, downloadsDir) {
+		t.Fatalf("default root = %s", plain.downloadRoot())
+	}
+}

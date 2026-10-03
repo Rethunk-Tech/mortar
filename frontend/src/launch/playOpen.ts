@@ -6,6 +6,7 @@ import { useLoader } from '../loader/store.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { playDirect } from './directPref.ts'
 import { useLaunch } from './store.ts'
 
 const linuxVanillaDirectKey = 'mortar.linuxVanillaDirect'
@@ -64,7 +65,7 @@ export function playOpenProfile() {
   if (vanillaBusy(game)) {
     return
   }
-  start(game, openId, false)
+  start(game, openId, playDirect())
 }
 
 export function playVanillaOpen() {

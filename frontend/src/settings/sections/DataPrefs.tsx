@@ -1,7 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
+import { Box, Button } from '@mui/material'
+import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import {
   SetBackupBeforePlay,
+  SetConsoleFollow,
+  SetConsoleLevel,
   SetConsoleLogCap,
+  SetConsoleTimestamps,
+  SetDownloadFolder,
+  SetDriftChecks,
   SetHistoryEventsKept,
   SetKeepDownloadArchives,
   SetLaunchBackupsKept,
@@ -10,7 +17,7 @@ import {
   SetTrashRetentionDays,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useToasts } from '../../toasts/store.ts'
-import { PrefNumber, PrefSelect, PrefSwitch } from '../PrefControls.tsx'
+import { PrefNumber, PrefSelect, PrefSwitch, PrefText } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
@@ -68,6 +75,34 @@ export function DataPrefs() {
             onCommit={(n) => SetConsoleLogCap(n)}
           />
         </SettingRow>
+        <SettingRow
+          label={t`Console level`}
+          description={t`Live log starts at this level and above`}
+        >
+          <PrefSelect
+            value={useSettings((s) => s.consoleLevel) || 'info'}
+            onChange={(v) => persist(() => SetConsoleLevel(v), push, fail)}
+            options={[
+              { value: 'trace', label: t`Trace` },
+              { value: 'debug', label: t`Debug` },
+              { value: 'info', label: t`Info` },
+              { value: 'warn', label: t`Warn` },
+              { value: 'error', label: t`Error` },
+            ]}
+          />
+        </SettingRow>
+        <SettingRow label={t`Console timestamps`}>
+          <PrefSwitch
+            checked={useSettings((s) => s.consoleTimestamps) !== false}
+            onChange={(on) => persist(() => SetConsoleTimestamps(on), push, fail)}
+          />
+        </SettingRow>
+        <SettingRow label={t`Follow live log`}>
+          <PrefSwitch
+            checked={useSettings((s) => s.consoleFollow) !== false}
+            onChange={(on) => persist(() => SetConsoleFollow(on), push, fail)}
+          />
+        </SettingRow>
       </SettingsSection>
       <SettingsSection title={t`Store`}>
         <SettingRow
@@ -77,6 +112,44 @@ export function DataPrefs() {
           <PrefSwitch
             checked={useSettings((s) => s.keepDownloadArchives)}
             onChange={(on) => persist(() => SetKeepDownloadArchives(on), push, fail)}
+          />
+        </SettingRow>
+        <SettingRow
+          label={t`Download folder`}
+          description={t`Archives land here instead of Mortar's downloads folder. Empty uses the default.`}
+        >
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <PrefText
+              value={useSettings((s) => s.downloadFolder)}
+              onCommit={(v) => SetDownloadFolder(v)}
+            />
+            <Button
+              variant="outlined"
+              onClick={() => {
+                persist(
+                  async () => {
+                    const dir = await PickFolder(t`Download folder`)
+                    if (dir) {
+                      await SetDownloadFolder(dir)
+                    }
+                  },
+                  push,
+                  fail,
+                )
+              }}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              {t`Choose…`}
+            </Button>
+          </Box>
+        </SettingRow>
+        <SettingRow
+          label={t`Modified outside Mortar`}
+          description={t`Scan the mods folder for changes Mortar did not make`}
+        >
+          <PrefSwitch
+            checked={useSettings((s) => s.driftChecks) !== false}
+            onChange={(on) => persist(() => SetDriftChecks(on), push, fail)}
           />
         </SettingRow>
         <SettingRow

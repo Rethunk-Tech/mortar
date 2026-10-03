@@ -15,6 +15,7 @@ import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { gameSetupNeeded } from '../firstrun/needed.ts'
 import { useRefreshOnFocus } from '../firstrun/useRefreshOnFocus.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { playDirect } from '../launch/directPref.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { isGameId, openSettings, useNav } from '../nav/store.ts'
@@ -144,7 +145,7 @@ function Row({
       fail(t`Could not save the open profile`, err),
     )
     useNav.getState().openGame(game.id)
-    start(game.id, lastPlayedId, false).then(() => undefined)
+    start(game.id, lastPlayedId, playDirect()).then(() => undefined)
   }
   const named = game.store ? storeName(game.store) : null
   const store = named ? t(named) : ''

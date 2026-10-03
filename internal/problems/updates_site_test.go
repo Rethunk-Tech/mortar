@@ -23,7 +23,7 @@ func TestStableSuffixIsNotPrerelease(t *testing.T) {
 			t.Errorf("hasPrerelease(%q) = %v", v, got)
 		}
 	}
-	held := HideHeld(UpdatesResult{Updates: []Update{{Key: "k", Installed: "1.4.10-stable", Version: "1.5.3-beta"}}}, nil, false)
+	held := HideHeld(UpdatesResult{Updates: []Update{{Key: "k", Installed: "1.4.10-stable", Version: "1.5.3-beta"}}}, nil, false, "")
 	if len(held.Updates) != 0 {
 		t.Fatalf("beta offered with prereleases off: %+v", held.Updates)
 	}

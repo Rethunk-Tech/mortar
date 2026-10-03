@@ -9,6 +9,7 @@ import { userModCount } from '../profiles/count.ts'
 import { ProfileMark } from '../profiles/ProfileMark.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { useSaves } from '../saves/store.ts'
+import { useSettings } from '../settings/store.ts'
 import { compact, compactMeta, saveFits } from './compact.ts'
 import { HeroCover } from './HeroCover.tsx'
 import { NameField } from './NameField.tsx'
@@ -140,6 +141,7 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
   const { fitting, total } = saveFits(fits)
   const updates = useBadges((s) => s.byProfile[profile.id]?.updates ?? 0)
   const problems = useBadges((s) => s.byProfile[profile.id]?.problems ?? 0)
+  const hero = useSettings((s) => s.profileHero) || 'full'
   const meta = compactMeta(mods, updates, problems).map((part) => {
     if (part.kind === 'mods') {
       return t`${plural(part.n, { one: '# mod', other: '# mods' })}`
@@ -149,6 +151,10 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
     }
     return t`${plural(part.n, { one: '# problem', other: '# problems' })}`
   })
+  if (hero === 'hidden') {
+    return null
+  }
+  const forceCompact = hero === 'compact'
   return (
     <Box
       sx={{
@@ -156,11 +162,19 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
         height: 190,
         flexShrink: 0,
         overflow: 'hidden',
-        [compact]: {
-          height: 52,
-          bgcolor: 'rgba(15,15,18,0.5)',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
-        },
+        ...(forceCompact
+          ? {
+              height: 52,
+              bgcolor: 'rgba(15,15,18,0.5)',
+              borderBottom: '1px solid rgba(255,255,255,0.1)',
+            }
+          : {
+              [compact]: {
+                height: 52,
+                bgcolor: 'rgba(15,15,18,0.5)',
+                borderBottom: '1px solid rgba(255,255,255,0.1)',
+              },
+            }),
       }}
     >
       <Box

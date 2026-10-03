@@ -39,6 +39,46 @@ export function PrefSwitch({
   return <Switch checked={checked} onChange={(_, on) => onChange(on)} />
 }
 
+export function PrefText({
+  value,
+  onCommit,
+  placeholder,
+}: {
+  value: string
+  onCommit: (v: string) => Promise<void>
+  placeholder?: string
+}) {
+  const { t } = useLingui()
+  const [draft, setDraft] = useState(value)
+  const push = useToasts((s) => s.push)
+  useEffect(() => setDraft(value), [value])
+  const commit = () => {
+    if (draft === value) {
+      return
+    }
+    onCommit(draft).catch((err: unknown) => {
+      const body = errorText(err)
+      push({ kind: 'error', title: t`Couldn't save that setting`, ...(body ? { body } : {}) })
+      setDraft(value)
+    })
+  }
+  return (
+    <TextField
+      size="small"
+      value={draft}
+      placeholder={placeholder}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+          e.target.blur()
+        }
+      }}
+      sx={{ minWidth: 180 }}
+    />
+  )
+}
+
 export function PrefNumber({
   value,
   min,

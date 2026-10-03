@@ -220,6 +220,10 @@ type Deps struct {
 	Parallel func() int
 	// KeepArchives leaves downloaded zips after they are extracted; nil means delete.
 	KeepArchives func() bool
+	// DownloadDir is an absolute folder for archives; empty or nil uses <data>/downloads.
+	DownloadDir func() string
+	// Track records a Nexus mod as tracked after a successful install; nil means never.
+	Track func(ctx context.Context, modID int)
 }
 
 // Service is the download queue.
@@ -769,7 +773,7 @@ func (s *Service) end(id, to string, from ...string) {
 	s.publish(true)
 	if rec != nil {
 		if to == StateCancelled || to == StateSkipped {
-			dropDownload(destPath(s.d.Dir, rec.ID, rec.FileName))
+			dropDownload(s.dest(rec.ID, rec.FileName))
 		}
 		s.recordHistory(rec, to)
 	}

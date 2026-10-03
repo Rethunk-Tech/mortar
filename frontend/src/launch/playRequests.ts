@@ -4,6 +4,7 @@ import { Take } from '../../bindings/github.com/Rethunk-AI/mortar/internal/short
 import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { playDirect } from './directPref.ts'
 import { useLaunch } from './store.ts'
 
 // A desktop shortcut asks to play a profile: open it and play through the usual Play path, warnings included.
@@ -13,7 +14,7 @@ function play(r: Request) {
   }
   useNav.getState().openGame(r.game)
   useProfiles.getState().open(r.profile)
-  useLaunch.getState().start(r.game, r.profile, false).catch(reportUnexpected)
+  useLaunch.getState().start(r.game, r.profile, playDirect()).catch(reportUnexpected)
 }
 
 export function initPlayRequests() {

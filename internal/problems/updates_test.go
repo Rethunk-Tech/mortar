@@ -83,7 +83,7 @@ func TestHideHeldDropsPinnedAndSkipped(t *testing.T) {
 		{Key: "skip", SkipVersion: "2.0.0"},
 		{Key: "later", SkipVersion: "2.0.0"},
 		{Key: "open"},
-	}, true)
+	}, true, "")
 	if len(got.Updates) != 2 || got.Updates[0].Key != "later" || got.Updates[1].Key != "open" {
 		t.Fatalf("got %+v", got.Updates)
 	}
@@ -97,7 +97,7 @@ func TestHideHeldDropsSkippedSources(t *testing.T) {
 	got := HideHeld(r, []Installed{
 		{Key: "nexus", SkipSources: []string{"Nexus"}},
 		{Key: "github"},
-	}, true)
+	}, true, "")
 	if len(got.Updates) != 1 || got.Updates[0].Key != "github" {
 		t.Fatalf("got %+v", got.Updates)
 	}
@@ -159,13 +159,29 @@ func TestHideHeldDropsPrereleaseUnlessInstalledIsPrerelease(t *testing.T) {
 		{Key: "release", Installed: "1.0.0", Version: "2.0.0", URL: "https://example.test/stable"},
 	}}
 	mods := []Installed{{Key: "stable"}, {Key: "beta"}, {Key: "release"}}
-	got := HideHeld(r, mods, false)
+	got := HideHeld(r, mods, false, "")
 	if len(got.Updates) != 2 || got.Updates[0].Key != "beta" || got.Updates[1].Key != "release" {
 		t.Fatalf("got %+v", got.Updates)
 	}
-	gotAll := HideHeld(r, mods, true)
+	gotAll := HideHeld(r, mods, true, "")
 	if len(gotAll.Updates) != 3 {
 		t.Fatalf("include prerelease = %+v", gotAll.Updates)
+	}
+}
+
+func TestHideHeldDropsUnofficialWhenNever(t *testing.T) {
+	r := UpdatesResult{Updates: []Update{
+		{Key: "off", Version: "2.0.0", Unofficial: true},
+		{Key: "on", Version: "2.0.0"},
+	}}
+	mods := []Installed{{Key: "off"}, {Key: "on"}}
+	got := HideHeld(r, mods, true, "never")
+	if len(got.Updates) != 1 || got.Updates[0].Key != "on" {
+		t.Fatalf("got %+v", got.Updates)
+	}
+	shown := HideHeld(r, mods, true, "show")
+	if len(shown.Updates) != 2 {
+		t.Fatalf("show = %+v", shown.Updates)
 	}
 }
 

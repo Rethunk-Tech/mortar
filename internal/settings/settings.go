@@ -148,13 +148,33 @@ type Settings struct {
 	// BackgroundBadgeChecks fills sidebar badges for other profiles. Nil means on.
 	BackgroundBadgeChecks *bool `json:"backgroundBadgeChecks"`
 	// StartScreen is last (last opened profile) or gameselect.
-	StartScreen            string `json:"startScreen"`
-	Dates                  string `json:"dates"`
-	TrashRetentionDays     int    `json:"trashRetentionDays"`
-	HistoryEventsKept      int    `json:"historyEventsKept"`
-	NotifyDownloadFinished *bool  `json:"notifyDownloadFinished"`
-	NotifyDownloadFailed   *bool  `json:"notifyDownloadFailed"`
-	NotifyRunCrashed       *bool  `json:"notifyRunCrashed"`
+	StartScreen              string `json:"startScreen"`
+	Dates                    string `json:"dates"`
+	TrashRetentionDays       int    `json:"trashRetentionDays"`
+	HistoryEventsKept        int    `json:"historyEventsKept"`
+	NotifyDownloadFinished   *bool  `json:"notifyDownloadFinished"`
+	NotifyDownloadFailed     *bool  `json:"notifyDownloadFailed"`
+	NotifyRunCrashed         *bool  `json:"notifyRunCrashed"`
+	Density                  string `json:"density"`
+	GridCardSize             string `json:"gridCardSize"`
+	ShowAuthorOnCards        *bool  `json:"showAuthorOnCards"`
+	ReduceMotion             string `json:"reduceMotion"`
+	ProfileHero              string `json:"profileHero"`
+	EnableRequirements       string `json:"enableRequirements"`
+	MissingRequirements      string `json:"missingRequirements"`
+	ReuseFomodChoices        *bool  `json:"reuseFomodChoices"`
+	DriftChecks              *bool  `json:"driftChecks"`
+	SmapiBuilds              string `json:"smapiBuilds"`
+	AutoInstallMortarUpdates *bool  `json:"autoInstallMortarUpdates"`
+	AutoTrackNexus           bool   `json:"autoTrackNexus"`
+	DefaultLaunchMethod      string `json:"defaultLaunchMethod"`
+	ShowSmapiConsole         *bool  `json:"showSmapiConsole"`
+	ConsoleLevel             string `json:"consoleLevel"`
+	ConsoleTimestamps        *bool  `json:"consoleTimestamps"`
+	ConsoleFollow            *bool  `json:"consoleFollow"`
+	LanName                  string `json:"lanName"`
+	LanAutoAcceptSameAccount bool   `json:"lanAutoAcceptSameAccount"`
+	DownloadFolder           string `json:"downloadFolder"`
 }
 
 const (

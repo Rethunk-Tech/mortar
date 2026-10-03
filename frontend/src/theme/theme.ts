@@ -6,9 +6,18 @@ const THUMB_ALPHA = 0.45
 const THUMB_HOVER_ALPHA = 0.7
 const TRACK_ALPHA = 0.08
 const FONT = '"Open Sans", sans-serif'
+const HTML_FONT_SIZE = 18
+const HTML_FONT_SIZE_COMPACT = 16
+const BUTTON_HEIGHT = 36
+const BUTTON_HEIGHT_COMPACT = 32
 
-export function createMortarTheme(accent: AccentName): Theme {
+export function createMortarTheme(
+  accent: AccentName,
+  opts: { compact?: boolean; reduceMotion?: boolean } = {},
+): Theme {
   const main = accents[accent]
+  const compactUi = opts.compact === true
+  const reduceMotion = opts.reduceMotion === true
   const theme = createTheme({
     palette: {
       mode: 'dark',
@@ -20,7 +29,10 @@ export function createMortarTheme(accent: AccentName): Theme {
       warning: { main: '#F3B416' },
       error: { main: '#C70A0A' },
     },
-    typography: { fontFamily: FONT, htmlFontSize: 18 },
+    typography: {
+      fontFamily: FONT,
+      htmlFontSize: compactUi ? HTML_FONT_SIZE_COMPACT : HTML_FONT_SIZE,
+    },
     components: {
       MuiCssBaseline: {
         styleOverrides: {
@@ -28,6 +40,13 @@ export function createMortarTheme(accent: AccentName): Theme {
           '*': {
             scrollbarWidth: 'thin',
             scrollbarColor: `${alpha(main, THUMB_ALPHA)} ${alpha(main, TRACK_ALPHA)}`,
+            ...(reduceMotion
+              ? {
+                  animationDuration: '0.01ms !important',
+                  animationIterationCount: '1 !important',
+                  transitionDuration: '0.01ms !important',
+                }
+              : {}),
           },
           '*::-webkit-scrollbar': { width: '0.5em', height: '0.5em' },
           '*::-webkit-scrollbar-track': { background: alpha(main, TRACK_ALPHA) },
@@ -77,8 +96,8 @@ export function createMortarTheme(accent: AccentName): Theme {
             fontSize: 13,
             fontWeight: 500,
             lineHeight: 1.4,
-            height: 36,
-            padding: '0 12px',
+            height: compactUi ? BUTTON_HEIGHT_COMPACT : BUTTON_HEIGHT,
+            padding: compactUi ? '0 10px' : '0 12px',
           },
           sizeSmall: { height: 28, padding: '0 10px' },
           sizeLarge: { height: 44, padding: '0 20px', fontSize: 15 },

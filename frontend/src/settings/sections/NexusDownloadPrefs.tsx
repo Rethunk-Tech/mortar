@@ -1,11 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import {
+  SetAutoTrackNexus,
   SetNxmDefaultProfile,
   SetParallelDownloads,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { useToasts } from '../../toasts/store.ts'
-import { PrefNumber, PrefSelect } from '../PrefControls.tsx'
+import { PrefNumber, PrefSelect, PrefSwitch } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
@@ -19,6 +20,15 @@ export function NexusDownloadPrefs() {
   const profiles = useProfiles((s) => s.profiles)
   return (
     <>
+      <SettingRow
+        label={t`Auto-track installed mods`}
+        description={t`Track a Nexus mod when Mortar installs it`}
+      >
+        <PrefSwitch
+          checked={useSettings((s) => s.autoTrackNexus)}
+          onChange={(on) => persist(() => SetAutoTrackNexus(on), push, fail)}
+        />
+      </SettingRow>
       <SettingRow
         label={t`Parallel downloads`}
         description={t`Premium and GitHub downloads at once`}

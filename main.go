@@ -369,6 +369,13 @@ func run() error {
 		},
 		Parallel:     func() int { return store.Get().ParallelDownloads },
 		KeepArchives: func() bool { return store.Get().KeepDownloadArchives },
+		DownloadDir:  func() string { return store.Get().ArchiveDir() },
+		Track: func(ctx context.Context, modID int) {
+			if !store.Get().AutoTrackNexus || modID <= 0 {
+				return
+			}
+			_ = nexusSvc.Track(ctx, modID)
+		},
 	})
 	if err != nil {
 		return err
@@ -471,6 +478,7 @@ func run() error {
 	}, dataDir); err != nil {
 		return err
 	}
+	updates.AutoInstall = func() bool { return store.Get().AutoInstallMortar() }
 	updateCtx, stopUpdates := context.WithCancel(context.Background())
 	defer stopUpdates()
 	updates.StartBackground(updateCtx, emit)
@@ -484,7 +492,7 @@ func run() error {
 	ctl := &control.Services{
 		Version: version, Settings: store, SettingsSvc: svc, Games: gamesSvc, Store: profiles, Profiles: profileSvc,
 		Problems: problemsSvc, Launches: launches, Saves: savesSvc, Queue: queueSvc, Tools: toolsSvc, Bundles: bundlesSvc,
-		Nexus: nexusSvc, Shares: shareSvc, Emit: emit,
+		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Emit: emit,
 	}
 	go func() {
 		if err := control.Serve(queueCtx, dataDir, version, ctl.Handle); err != nil && !errors.Is(err, context.Canceled) {

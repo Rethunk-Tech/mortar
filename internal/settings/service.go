@@ -350,71 +350,173 @@ func (s *Service) SetNxmRedirectOtherGames(on bool) error {
 func (s *Service) SetOnPlay(v string) error {
 	return s.set(func(cur *Settings) { cur.OnPlay = v })
 }
+
 func (s *Service) SetBackupBeforePlay(v string) error {
 	return s.set(func(cur *Settings) { cur.BackupBeforePlay = v })
 }
+
 func (s *Service) SetLaunchBackupsKept(n int) error {
 	return s.set(func(cur *Settings) { cur.LaunchBackupsKept = n })
 }
+
 func (s *Service) SetUpdateModsBeforePlayDefault(on bool) error {
 	return s.set(func(cur *Settings) { cur.UpdateModsBeforePlayDefault = on })
 }
+
 func (s *Service) SetRunsKept(n int) error {
 	return s.set(func(cur *Settings) { cur.RunsKept = n })
 }
+
 func (s *Service) SetConsoleLogCap(n int) error {
 	return s.set(func(cur *Settings) { cur.ConsoleLogCap = n })
 }
+
 func (s *Service) SetParallelDownloads(n int) error {
 	return s.set(func(cur *Settings) { cur.ParallelDownloads = n })
 }
+
 func (s *Service) SetUpdateCheckIntervalMinutes(n int) error {
 	return s.set(func(cur *Settings) { cur.UpdateCheckIntervalMinutes = n })
 }
+
 func (s *Service) SetNotifyModUpdates(on bool) error {
 	return s.set(func(cur *Settings) { cur.NotifyModUpdates = &on })
 }
+
 func (s *Service) SetKeepDownloadArchives(on bool) error {
 	return s.set(func(cur *Settings) { cur.KeepDownloadArchives = on })
 }
+
 func (s *Service) SetStoreRetentionDays(n int) error {
 	return s.set(func(cur *Settings) { cur.StoreRetentionDays = n })
 }
+
 func (s *Service) SetNxmDefaultProfile(id string) error {
 	return s.set(func(cur *Settings) { cur.NxmDefaultProfile = id })
 }
+
 func (s *Service) SetDefaultModsView(v string) error {
 	return s.set(func(cur *Settings) { cur.DefaultModsView = v })
 }
+
 func (s *Service) SetConfirmRemovals(on bool) error {
 	return s.set(func(cur *Settings) { cur.ConfirmRemovals = &on })
 }
+
 func (s *Service) SetCosmeticConflicts(v string) error {
 	return s.set(func(cur *Settings) { cur.CosmeticConflicts = v })
 }
+
 func (s *Service) SetBackgroundBadgeChecks(on bool) error {
 	return s.set(func(cur *Settings) { cur.BackgroundBadgeChecks = &on })
 }
+
 func (s *Service) SetStartScreen(v string) error {
 	return s.set(func(cur *Settings) { cur.StartScreen = v })
 }
+
 func (s *Service) SetDates(v string) error {
 	return s.set(func(cur *Settings) { cur.Dates = v })
 }
+
 func (s *Service) SetTrashRetentionDays(n int) error {
 	return s.set(func(cur *Settings) { cur.TrashRetentionDays = n })
 }
+
 func (s *Service) SetHistoryEventsKept(n int) error {
 	return s.set(func(cur *Settings) { cur.HistoryEventsKept = n })
 }
+
 func (s *Service) SetNotifyDownloadFinished(on bool) error {
 	return s.set(func(cur *Settings) { cur.NotifyDownloadFinished = &on })
 }
+
 func (s *Service) SetNotifyDownloadFailed(on bool) error {
 	return s.set(func(cur *Settings) { cur.NotifyDownloadFailed = &on })
 }
+
 func (s *Service) SetNotifyRunCrashed(on bool) error {
 	return s.set(func(cur *Settings) { cur.NotifyRunCrashed = &on })
+}
+
+func (s *Service) SetDensity(v string) error {
+	return s.set(func(cur *Settings) { cur.Density = v })
+}
+
+func (s *Service) SetGridCardSize(v string) error {
+	return s.set(func(cur *Settings) { cur.GridCardSize = v })
+}
+
+func (s *Service) SetShowAuthorOnCards(on bool) error {
+	return s.set(func(cur *Settings) { cur.ShowAuthorOnCards = &on })
+}
+
+func (s *Service) SetReduceMotion(v string) error {
+	return s.set(func(cur *Settings) { cur.ReduceMotion = v })
+}
+
+func (s *Service) SetProfileHero(v string) error {
+	return s.set(func(cur *Settings) { cur.ProfileHero = v })
+}
+
+func (s *Service) SetEnableRequirements(v string) error {
+	return s.set(func(cur *Settings) { cur.EnableRequirements = v })
+}
+
+func (s *Service) SetMissingRequirements(v string) error {
+	return s.set(func(cur *Settings) { cur.MissingRequirements = v })
+}
+
+func (s *Service) SetReuseFomodChoices(on bool) error {
+	return s.set(func(cur *Settings) { cur.ReuseFomodChoices = &on })
+}
+
+func (s *Service) SetDriftChecks(on bool) error {
+	return s.set(func(cur *Settings) { cur.DriftChecks = &on })
+}
+
+func (s *Service) SetSmapiBuilds(v string) error {
+	return s.set(func(cur *Settings) { cur.SmapiBuilds = v })
+}
+
+func (s *Service) SetAutoInstallMortarUpdates(on bool) error {
+	return s.set(func(cur *Settings) { cur.AutoInstallMortarUpdates = &on })
+}
+
+func (s *Service) SetAutoTrackNexus(on bool) error {
+	return s.set(func(cur *Settings) { cur.AutoTrackNexus = on })
+}
+
+func (s *Service) SetDefaultLaunchMethod(v string) error {
+	return s.set(func(cur *Settings) { cur.DefaultLaunchMethod = v })
+}
+
+func (s *Service) SetShowSmapiConsole(on bool) error {
+	return s.set(func(cur *Settings) { cur.ShowSmapiConsole = &on })
+}
+
+func (s *Service) SetConsoleLevel(v string) error {
+	return s.set(func(cur *Settings) { cur.ConsoleLevel = v })
+}
+
+func (s *Service) SetConsoleTimestamps(on bool) error {
+	return s.set(func(cur *Settings) { cur.ConsoleTimestamps = &on })
+}
+
+func (s *Service) SetConsoleFollow(on bool) error {
+	return s.set(func(cur *Settings) { cur.ConsoleFollow = &on })
+}
+
+func (s *Service) SetLanName(v string) error {
+	return s.set(func(cur *Settings) { cur.LanName = v })
+}
+
+func (s *Service) SetLanAutoAcceptSameAccount(on bool) error {
+	return s.set(func(cur *Settings) { cur.LanAutoAcceptSameAccount = on })
+}
+
+func (s *Service) SetDownloadFolder(v string) error {
+	return s.set(func(cur *Settings) { cur.DownloadFolder = v })
 }
 
 // SetByKey writes one CLI-visible setting.

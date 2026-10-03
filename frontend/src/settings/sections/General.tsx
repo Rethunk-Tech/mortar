@@ -16,7 +16,7 @@ import { errorText } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
-import { DisplayAndNotices, ModsPrefs, WindowLaunch } from './GeneralMore.tsx'
+import { DisplayAndNotices, LanIdentity, ModsPrefs, WindowLaunch } from './GeneralMore.tsx'
 
 const maxLanPort = 65_535
 const defaultLanPort = 8080
@@ -84,6 +84,7 @@ export function General() {
             onChange={(_, on) => SetLanSharing(on).catch(reportFailure)}
           />
         </SettingRow>
+        <LanIdentity />
         {lanSharing ? (
           <>
             <SettingRow

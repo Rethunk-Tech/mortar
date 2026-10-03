@@ -30,6 +30,42 @@ const (
 	ModsViewGrid = "grid"
 	ModsViewList = "list"
 
+	DensityComfortable = "comfortable"
+	DensityCompact     = "compact"
+
+	GridCardSmall  = "small"
+	GridCardMedium = "medium"
+	GridCardLarge  = "large"
+
+	ReduceMotionSystem = "system"
+	ReduceMotionAlways = "always"
+	ReduceMotionNever  = "never"
+
+	HeroFull    = "full"
+	HeroCompact = "compact"
+	HeroHidden  = "hidden"
+
+	EnableReqAlways = "always"
+	EnableReqAsk    = "ask"
+	EnableReqNever  = "never"
+
+	MissingReqAsk          = "ask"
+	MissingReqAutodownload = "autodownload"
+	MissingReqNever        = "never"
+
+	SmapiBuildsNever   = "never"
+	SmapiBuildsShow    = "show"
+	SmapiBuildsInclude = "include"
+
+	LaunchSteam  = "steam"
+	LaunchDirect = "direct"
+
+	ConsoleLevelTrace = "trace"
+	ConsoleLevelDebug = "debug"
+	ConsoleLevelInfo  = "info"
+	ConsoleLevelWarn  = "warn"
+	ConsoleLevelError = "error"
+
 	DefaultRunsKept                   = 20
 	DefaultConsoleLogCap              = 20000
 	DefaultParallelDownloads          = 3
@@ -84,6 +120,26 @@ func defaultPrefs() Settings {
 		NotifyDownloadFinished:      on(),
 		NotifyDownloadFailed:        on(),
 		NotifyRunCrashed:            on(),
+		Density:                     DensityComfortable,
+		GridCardSize:                GridCardMedium,
+		ShowAuthorOnCards:           on(),
+		ReduceMotion:                ReduceMotionSystem,
+		ProfileHero:                 HeroFull,
+		EnableRequirements:          EnableReqAlways,
+		MissingRequirements:         MissingReqAsk,
+		ReuseFomodChoices:           on(),
+		DriftChecks:                 on(),
+		SmapiBuilds:                 SmapiBuildsShow,
+		AutoInstallMortarUpdates:    on(),
+		AutoTrackNexus:              false,
+		DefaultLaunchMethod:         LaunchSteam,
+		ShowSmapiConsole:            on(),
+		ConsoleLevel:                ConsoleLevelInfo,
+		ConsoleTimestamps:           on(),
+		ConsoleFollow:               on(),
+		LanName:                     "",
+		LanAutoAcceptSameAccount:    false,
+		DownloadFolder:              "",
 	}
 }
 
@@ -148,6 +204,54 @@ func normalizePrefs(s *Settings) {
 	if s.NotifyRunCrashed == nil {
 		s.NotifyRunCrashed = on()
 	}
+	if !slices.Contains(densityValues, s.Density) {
+		s.Density = DensityComfortable
+	}
+	if !slices.Contains(gridCardValues, s.GridCardSize) {
+		s.GridCardSize = GridCardMedium
+	}
+	if s.ShowAuthorOnCards == nil {
+		s.ShowAuthorOnCards = on()
+	}
+	if !slices.Contains(reduceMotionValues, s.ReduceMotion) {
+		s.ReduceMotion = ReduceMotionSystem
+	}
+	if !slices.Contains(heroValues, s.ProfileHero) {
+		s.ProfileHero = HeroFull
+	}
+	if !slices.Contains(enableReqValues, s.EnableRequirements) {
+		s.EnableRequirements = EnableReqAlways
+	}
+	if !slices.Contains(missingReqValues, s.MissingRequirements) {
+		s.MissingRequirements = MissingReqAsk
+	}
+	if s.ReuseFomodChoices == nil {
+		s.ReuseFomodChoices = on()
+	}
+	if s.DriftChecks == nil {
+		s.DriftChecks = on()
+	}
+	if !slices.Contains(smapiBuildsValues, s.SmapiBuilds) {
+		s.SmapiBuilds = SmapiBuildsShow
+	}
+	if s.AutoInstallMortarUpdates == nil {
+		s.AutoInstallMortarUpdates = on()
+	}
+	if !slices.Contains(launchMethodValues, s.DefaultLaunchMethod) {
+		s.DefaultLaunchMethod = LaunchSteam
+	}
+	if s.ShowSmapiConsole == nil {
+		s.ShowSmapiConsole = on()
+	}
+	if !slices.Contains(consoleLevelValues, s.ConsoleLevel) {
+		s.ConsoleLevel = ConsoleLevelInfo
+	}
+	if s.ConsoleTimestamps == nil {
+		s.ConsoleTimestamps = on()
+	}
+	if s.ConsoleFollow == nil {
+		s.ConsoleFollow = on()
+	}
 }
 
 func validatePrefs(s Settings) error {
@@ -193,6 +297,33 @@ func validatePrefs(s Settings) error {
 	if s.HistoryEventsKept < MinHistoryEventsKept || s.HistoryEventsKept > MaxHistoryEventsKept {
 		return fmt.Errorf("history events kept must be %d to %d, got %d", MinHistoryEventsKept, MaxHistoryEventsKept, s.HistoryEventsKept)
 	}
+	if !slices.Contains(densityValues, s.Density) {
+		return fmt.Errorf("density must be comfortable or compact, got %q", s.Density)
+	}
+	if !slices.Contains(gridCardValues, s.GridCardSize) {
+		return fmt.Errorf("grid card size must be small, medium or large, got %q", s.GridCardSize)
+	}
+	if !slices.Contains(reduceMotionValues, s.ReduceMotion) {
+		return fmt.Errorf("reduce motion must be system, always or never, got %q", s.ReduceMotion)
+	}
+	if !slices.Contains(heroValues, s.ProfileHero) {
+		return fmt.Errorf("profile hero must be full, compact or hidden, got %q", s.ProfileHero)
+	}
+	if !slices.Contains(enableReqValues, s.EnableRequirements) {
+		return fmt.Errorf("enable requirements must be always, ask or never, got %q", s.EnableRequirements)
+	}
+	if !slices.Contains(missingReqValues, s.MissingRequirements) {
+		return fmt.Errorf("missing requirements must be ask, autodownload or never, got %q", s.MissingRequirements)
+	}
+	if !slices.Contains(smapiBuildsValues, s.SmapiBuilds) {
+		return fmt.Errorf("smapi builds must be never, show or include, got %q", s.SmapiBuilds)
+	}
+	if !slices.Contains(launchMethodValues, s.DefaultLaunchMethod) {
+		return fmt.Errorf("default launch method must be steam or direct, got %q", s.DefaultLaunchMethod)
+	}
+	if !slices.Contains(consoleLevelValues, s.ConsoleLevel) {
+		return fmt.Errorf("console level must be trace, debug, info, warn or error, got %q", s.ConsoleLevel)
+	}
 	return nil
 }
 
@@ -203,6 +334,15 @@ var (
 	startScreenValues      = []string{StartScreenLast, StartScreenGameSelect}
 	datesValues            = []string{DatesRelative, DatesAbsolute}
 	modsViewValues         = []string{ModsViewGrid, ModsViewList}
+	densityValues          = []string{DensityComfortable, DensityCompact}
+	gridCardValues         = []string{GridCardSmall, GridCardMedium, GridCardLarge}
+	reduceMotionValues     = []string{ReduceMotionSystem, ReduceMotionAlways, ReduceMotionNever}
+	heroValues             = []string{HeroFull, HeroCompact, HeroHidden}
+	enableReqValues        = []string{EnableReqAlways, EnableReqAsk, EnableReqNever}
+	missingReqValues       = []string{MissingReqAsk, MissingReqAutodownload, MissingReqNever}
+	smapiBuildsValues      = []string{SmapiBuildsNever, SmapiBuildsShow, SmapiBuildsInclude}
+	launchMethodValues     = []string{LaunchSteam, LaunchDirect}
+	consoleLevelValues     = []string{ConsoleLevelTrace, ConsoleLevelDebug, ConsoleLevelInfo, ConsoleLevelWarn, ConsoleLevelError}
 )
 
 // PrefKey is one CLI/settings get|set name.
@@ -242,6 +382,26 @@ func PrefKeys() []PrefKey {
 		{Key: "notifyDownloadFinished", Get: ptrGet(func(s Settings) *bool { return s.NotifyDownloadFinished }), Apply: ptrApply(func(s *Settings, on bool) { s.NotifyDownloadFinished = &on })},
 		{Key: "notifyDownloadFailed", Get: ptrGet(func(s Settings) *bool { return s.NotifyDownloadFailed }), Apply: ptrApply(func(s *Settings, on bool) { s.NotifyDownloadFailed = &on })},
 		{Key: "notifyRunCrashed", Get: ptrGet(func(s Settings) *bool { return s.NotifyRunCrashed }), Apply: ptrApply(func(s *Settings, on bool) { s.NotifyRunCrashed = &on })},
+		{Key: "density", Get: func(s Settings) string { return s.Density }, Apply: enumApply(densityValues, func(s *Settings, v string) { s.Density = v })},
+		{Key: "gridCardSize", Get: func(s Settings) string { return s.GridCardSize }, Apply: enumApply(gridCardValues, func(s *Settings, v string) { s.GridCardSize = v })},
+		{Key: "showAuthorOnCards", Get: ptrGet(func(s Settings) *bool { return s.ShowAuthorOnCards }), Apply: ptrApply(func(s *Settings, on bool) { s.ShowAuthorOnCards = &on })},
+		{Key: "reduceMotion", Get: func(s Settings) string { return s.ReduceMotion }, Apply: enumApply(reduceMotionValues, func(s *Settings, v string) { s.ReduceMotion = v })},
+		{Key: "profileHero", Get: func(s Settings) string { return s.ProfileHero }, Apply: enumApply(heroValues, func(s *Settings, v string) { s.ProfileHero = v })},
+		{Key: "enableRequirements", Get: func(s Settings) string { return s.EnableRequirements }, Apply: enumApply(enableReqValues, func(s *Settings, v string) { s.EnableRequirements = v })},
+		{Key: "missingRequirements", Get: func(s Settings) string { return s.MissingRequirements }, Apply: enumApply(missingReqValues, func(s *Settings, v string) { s.MissingRequirements = v })},
+		{Key: "reuseFomodChoices", Get: ptrGet(func(s Settings) *bool { return s.ReuseFomodChoices }), Apply: ptrApply(func(s *Settings, on bool) { s.ReuseFomodChoices = &on })},
+		{Key: "driftChecks", Get: ptrGet(func(s Settings) *bool { return s.DriftChecks }), Apply: ptrApply(func(s *Settings, on bool) { s.DriftChecks = &on })},
+		{Key: "smapiBuilds", Get: func(s Settings) string { return s.SmapiBuilds }, Apply: enumApply(smapiBuildsValues, func(s *Settings, v string) { s.SmapiBuilds = v })},
+		{Key: "autoInstallMortarUpdates", Get: ptrGet(func(s Settings) *bool { return s.AutoInstallMortarUpdates }), Apply: ptrApply(func(s *Settings, on bool) { s.AutoInstallMortarUpdates = &on })},
+		{Key: "autoTrackNexus", Get: boolGet(func(s Settings) bool { return s.AutoTrackNexus }), Apply: boolApply(func(s *Settings, on bool) { s.AutoTrackNexus = on })},
+		{Key: "defaultLaunchMethod", Get: func(s Settings) string { return s.DefaultLaunchMethod }, Apply: enumApply(launchMethodValues, func(s *Settings, v string) { s.DefaultLaunchMethod = v })},
+		{Key: "showSmapiConsole", Get: ptrGet(func(s Settings) *bool { return s.ShowSmapiConsole }), Apply: ptrApply(func(s *Settings, on bool) { s.ShowSmapiConsole = &on })},
+		{Key: "consoleLevel", Get: func(s Settings) string { return s.ConsoleLevel }, Apply: enumApply(consoleLevelValues, func(s *Settings, v string) { s.ConsoleLevel = v })},
+		{Key: "consoleTimestamps", Get: ptrGet(func(s Settings) *bool { return s.ConsoleTimestamps }), Apply: ptrApply(func(s *Settings, on bool) { s.ConsoleTimestamps = &on })},
+		{Key: "consoleFollow", Get: ptrGet(func(s Settings) *bool { return s.ConsoleFollow }), Apply: ptrApply(func(s *Settings, on bool) { s.ConsoleFollow = &on })},
+		{Key: "lanName", Get: func(s Settings) string { return s.LanName }, Apply: func(s *Settings, v string) error { s.LanName = v; return nil }},
+		{Key: "lanAutoAcceptSameAccount", Get: boolGet(func(s Settings) bool { return s.LanAutoAcceptSameAccount }), Apply: boolApply(func(s *Settings, on bool) { s.LanAutoAcceptSameAccount = on })},
+		{Key: "downloadFolder", Get: func(s Settings) string { return s.DownloadFolder }, Apply: func(s *Settings, v string) error { s.DownloadFolder = v; return nil }},
 	}
 }
 
@@ -382,4 +542,34 @@ func ShouldBackupBeforePlay(mode string, modsChanged, gameVersionChanged bool) b
 	default:
 		return modsChanged || gameVersionChanged
 	}
+}
+
+// AutoEnableRequirements is whether enabling a mod also turns on its required dependencies already in the profile.
+func (s Settings) AutoEnableRequirements() bool {
+	return s.EnableRequirements != EnableReqNever && s.EnableRequirements != EnableReqAsk
+}
+
+// DriftChecksOn is whether Mortar looks for mods changed outside Mortar.
+func (s Settings) DriftChecksOn() bool {
+	return ToggleOn(s.DriftChecks)
+}
+
+// ReuseFomod is whether saved FOMOD plugin choices skip the wizard when they still match.
+func (s Settings) ReuseFomod() bool {
+	return ToggleOn(s.ReuseFomodChoices)
+}
+
+// AutoInstallMortar is whether a found Mortar update is staged without asking.
+func (s Settings) AutoInstallMortar() bool {
+	return ToggleOn(s.AutoInstallMortarUpdates)
+}
+
+// ShowConsoleWindow is whether a direct SMAPI launch keeps a console window.
+func (s Settings) ShowConsoleWindow() bool {
+	return ToggleOn(s.ShowSmapiConsole)
+}
+
+// ArchiveDir is where download zips land; empty means the data folder's downloads directory.
+func (s Settings) ArchiveDir() string {
+	return strings.TrimSpace(s.DownloadFolder)
 }

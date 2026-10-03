@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"slices"
 	"strings"
 
@@ -76,10 +75,10 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 	if i < 0 {
 		return fmt.Errorf("release %s of %s has no asset %s", it.Tag, it.Repo, it.Asset)
 	}
-	if err := os.MkdirAll(filepath.Join(s.d.Dir, downloadsDir), 0o700); err != nil {
+	if err := os.MkdirAll(s.downloadRoot(), 0o700); err != nil {
 		return err
 	}
-	path := destPath(s.d.Dir, it.ID, it.Asset)
+	path := s.dest(it.ID, it.Asset)
 	if err := s.fetch(ctx, it, assets[i].URL, path); err != nil {
 		if ctx.Err() != nil {
 			return ctx.Err()
@@ -131,7 +130,7 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 // installStaged installs what Confirm released. The user has decided, so nothing is verified again.
 // A staged key the store no longer holds is dropped, so Retry downloads the file again.
 func (s *Service) installStaged(ctx context.Context, it Item) error {
-	if ok, err := s.installReadyZip(it); ok || err != nil {
+	if ok, err := s.installReadyZip(ctx, it); ok || err != nil {
 		return s.contentPatcherHint(ctx, it, err)
 	}
 	src := sourceOf(it)

@@ -13,6 +13,7 @@ import {
   RollBack,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import {
+  Add,
   AnswerRoot,
   FailRoot,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
@@ -23,10 +24,11 @@ import { isLocked } from '../mods/locked.ts'
 import { useMods } from '../mods/store.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useSettings } from '../settings/store.ts'
 import { changeStillLatest } from '../toasts/history.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { type MissingOffer, offersFor } from './missingDeps.ts'
+import { type MissingOffer, offersFor, wantsOf } from './missingDeps.ts'
 
 function startingProfile() {
   const { starting, startingProfile: id } = useLaunch.getState()
@@ -323,8 +325,37 @@ export const useInstall = create<{
 }))
 
 export function considerMissing(dependentIds: readonly string[]) {
+  const mode = useSettings.getState().missingRequirements || 'ask'
+  if (mode === 'never') {
+    return
+  }
   const next = offersFor(dependentIds, useMods.getState().problems)
   if (next.length === 0) {
+    return
+  }
+  if (mode === 'autodownload') {
+    const wants = next.flatMap((o) => wantsOf(o.missing))
+    const { game, openId } = useProfiles.getState()
+    if (wants.length > 0 && game && openId) {
+      Add(
+        wants.map((r) => ({
+          kind: r.kind,
+          modId: r.modId ?? 0,
+          repo: r.repo ?? '',
+          tag: r.tag ?? '',
+          asset: r.asset ?? '',
+          fileId: r.fileId ?? 0,
+          name: r.name ?? '',
+          fileName: r.fileName ?? '',
+          version: r.version ?? '',
+          currentKey: r.currentKey ?? '',
+          batchId: '',
+          latest: r.latest ?? false,
+          game: game.id,
+          profileId: openId,
+        })),
+      ).catch(reportUnexpected)
+    }
     return
   }
   useInstall.setState((s) => ({ offers: [...s.offers, ...next] }))

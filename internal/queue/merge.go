@@ -53,7 +53,7 @@ func sourceWithOptions(it Item, source profile.Source) profile.Source {
 	return source
 }
 
-func (s *Service) installNexusPath(it Item, path string, mod nexus.Mod) error {
+func (s *Service) installNexusPath(ctx context.Context, it Item, path string, mod nexus.Mod) error {
 	src := nexusSource(it, mod)
 	var res profile.InstallResult
 	var err error
@@ -63,6 +63,9 @@ func (s *Service) installNexusPath(it Item, path string, mod nexus.Mod) error {
 		res, err = s.d.InstallExtra(it.Game, it.Profile, it.Merge.EntryKey, path, src)
 	} else {
 		res, err = s.d.Install(it.Game, it.Profile, path, src)
+	}
+	if err == nil && src.ModID > 0 && s.d.Track != nil {
+		s.d.Track(ctx, src.ModID)
 	}
 	var dup *profile.DuplicateError
 	if err == nil || errors.As(err, &dup) {
@@ -103,10 +106,10 @@ func (s *Service) contentPatcherHint(ctx context.Context, it Item, err error) er
 	return &profile.InstallError{Msg: installErr.Msg + " Content Patcher file: " + name, Err: err}
 }
 
-func (s *Service) installReadyZip(it Item) (bool, error) {
+func (s *Service) installReadyZip(ctx context.Context, it Item) (bool, error) {
 	if !it.readyZip || it.Repo != "" {
 		return false, nil
 	}
-	path := destPath(s.d.Dir, it.ID, it.FileName)
-	return true, s.installNexusPath(it, path, nexus.Mod{PictureURL: "", EndorsementCount: 0})
+	path := s.dest(it.ID, it.FileName)
+	return true, s.installNexusPath(ctx, it, path, nexus.Mod{PictureURL: "", EndorsementCount: 0})
 }

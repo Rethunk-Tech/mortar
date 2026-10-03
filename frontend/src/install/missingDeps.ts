@@ -2,7 +2,20 @@ import type {
   Missing,
   Result,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import type { Want } from '../queue/actions.ts'
+
+interface DepWant {
+  kind: 'dependency'
+  repo?: string
+  name?: string
+  modId?: number
+  latest?: boolean
+  fileId?: number
+  fileName?: string
+  version?: string
+  tag?: string
+  asset?: string
+  currentKey?: string
+}
 
 interface ProfileLike {
   entries?: Array<{ mods?: Array<{ uniqueId?: string }> | null }> | null
@@ -118,7 +131,7 @@ function stillMissing(offer: MissingOffer, result: Result | null): Missing[] {
   )
 }
 
-function wantOf(missing: Missing): Want | null {
+function wantOf(missing: Missing): DepWant | null {
   const { where } = missing
   if (!where?.url) {
     return null
@@ -140,8 +153,8 @@ function wantOf(missing: Missing): Want | null {
       }
 }
 
-function wantsOf(missing: Missing[]): Want[] {
-  const out: Want[] = []
+function wantsOf(missing: Missing[]): DepWant[] {
+  const out: DepWant[] = []
   const seen = new Set<string>()
   for (const item of missing) {
     const want = wantOf(item)

@@ -52,6 +52,20 @@ import {
 } from './virtualRows.ts'
 
 const OFF_OPACITY = 0.6
+const CARD_HEIGHT_SMALL = 50
+const CARD_HEIGHT_MEDIUM = 64
+const CARD_HEIGHT_LARGE = 80
+const LARGE_LANE_EXTRA = 16
+
+function cardHeightPx(size: string): number {
+  if (size === 'large') {
+    return CARD_HEIGHT_LARGE
+  }
+  if (size === 'small') {
+    return CARD_HEIGHT_SMALL
+  }
+  return CARD_HEIGHT_MEDIUM
+}
 
 function ModCard({
   mod: m,
@@ -70,11 +84,12 @@ function ModCard({
   const marked = selectedIds.includes(id) || (selectedIds.length === 0 && id === selectedId)
   const fresh = useNexusFresh(nexusIdOf(profile, m))
   const tag = firstTag(entryOf(profile, m.key)?.tags)
+  const cardSize = useSettings((s) => s.gridCardSize) || 'medium'
   return (
     <Card
       {...contextMenuProps(m)}
       sx={{
-        height: 64,
+        height: cardHeightPx(cardSize),
         pl: 1,
         pr: 0.75,
         display: 'flex',
@@ -126,7 +141,9 @@ function ModCard({
             {m.name}
           </Typography>
           <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
-            {`${m.author} · ${m.version}`}
+            {useSettings((s) => s.showAuthorOnCards) === false
+              ? m.version
+              : `${m.author} · ${m.version}`}
           </Typography>
         </Box>
       </ButtonBase>
@@ -221,6 +238,9 @@ function CardsPane({
   profile: Profile
 }) {
   const compactCards = useMediaQuery(compactQuery)
+  const cardSize = useSettings((s) => s.gridCardSize) || 'medium'
+  const laneCompact = compactCards || cardSize === 'small'
+  const lanePx = gridLanePx(laneCompact) + (cardSize === 'large' ? LARGE_LANE_EXTRA : 0)
   const [width, setWidth] = useState(0)
   const columns = gridColumnCount(width)
   const items = useMemo(
@@ -233,7 +253,7 @@ function CardsPane({
       }),
     [collapsed, columns, groupBy, groups],
   )
-  const { parentRef, virtualizer } = useModVirtual(items, gridLanePx(compactCards))
+  const { parentRef, virtualizer } = useModVirtual(items, lanePx)
   const detailId = useDetail((s) => s.detailId)
   const lastReveal = useRef('')
   useEffect(() => {

@@ -209,7 +209,7 @@ func (s *Service) start() error {
 	}
 	port := tcpAddress.Port
 	zone, err := mdns.NewMDNSService(
-		s.name,
+		s.deviceName(),
 		serviceType,
 		"local.",
 		"",
@@ -356,7 +356,7 @@ func (s *Service) Send(peerID, game, profileID string) error {
 
 func (s *Service) sendPayload(peerID, game string, payload []byte) error {
 	encoded := base64.RawStdEncoding.EncodeToString(payload)
-	if _, err := validateRequest(shareRequest{Sender: s.name, Game: game, Payload: encoded, Version: protocolVersion}); err != nil {
+	if _, err := validateRequest(shareRequest{Sender: s.deviceName(), Game: game, Payload: encoded, Version: protocolVersion}); err != nil {
 		return err
 	}
 	hello, err := s.hello(peerID)
@@ -364,7 +364,7 @@ func (s *Service) sendPayload(peerID, game string, payload []byte) error {
 		return err
 	}
 	request := shareRequest{
-		Sender:     s.name,
+		Sender:     s.deviceName(),
 		Game:       game,
 		Payload:    encoded,
 		Version:    protocolVersion,
@@ -527,7 +527,7 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 	s.nonces[nonce] = nonceRecord{peer: peer, expires: now.Add(nonceTTL)}
 	s.mu.Unlock()
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(helloResponse{Name: s.name, Version: protocolVersion, Nonce: nonce})
+	_ = json.NewEncoder(w).Encode(helloResponse{Name: s.deviceName(), Version: protocolVersion, Nonce: nonce})
 }
 
 func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
@@ -831,6 +831,15 @@ func unescapeDNSName(name string) string {
 		out.WriteByte(name[i])
 	}
 	return out.String()
+}
+
+func (s *Service) deviceName() string {
+	if s.deps.Settings != nil {
+		if name := cleanName(s.deps.Settings.Get().LanName); name != "" {
+			return name
+		}
+	}
+	return localName()
 }
 
 func localName() string {

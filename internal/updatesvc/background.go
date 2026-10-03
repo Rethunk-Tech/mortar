@@ -44,6 +44,9 @@ func (s *Service) backgroundTick(ctx context.Context, emit func(string, any)) {
 	if rel.Staged {
 		return
 	}
+	if s.AutoInstall != nil && !s.AutoInstall() {
+		return
+	}
 	if err := s.Install(ctx); err != nil {
 		log.Printf("updater background install: %v", err)
 		return

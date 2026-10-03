@@ -63,6 +63,8 @@ type Request struct {
 	Steam *steam.Steam
 	// Direct launches the loader without Steam, after the user agreed to lose the overlay and playtime.
 	Direct bool
+	// HideWindow hides the process window (Windows SMAPI console) when true.
+	HideWindow bool
 	// Vanilla starts the game without the loader or a profile mods folder.
 	Vanilla bool
 	// Seen reports that a vanilla launch succeeded, when the game process is running. Ignored otherwise.
@@ -81,11 +83,20 @@ func Start(dir, name string, args ...string) (<-chan error, error) {
 // StartWithEnv starts a process with additional environment variables; ctx ending kills it, so a game the caller
 // does not want tied to its request passes a context without cancellation.
 func StartWithEnv(ctx context.Context, env []string, dir, name string, args ...string) (<-chan error, error) {
+	return startCmd(ctx, env, dir, name, args, false)
+}
+
+func StartHidden(ctx context.Context, env []string, dir, name string, args ...string) (<-chan error, error) {
+	return startCmd(ctx, env, dir, name, args, true)
+}
+
+func startCmd(ctx context.Context, env []string, dir, name string, args []string, hide bool) (<-chan error, error) {
 	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Dir = dir
 	if len(env) > 0 {
 		cmd.Env = append(os.Environ(), env...)
 	}
+	hideWindow(cmd, hide)
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}

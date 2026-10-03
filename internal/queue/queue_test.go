@@ -329,7 +329,7 @@ func TestInstallsAreSerialized(t *testing.T) {
 	var wg sync.WaitGroup
 	for range 2 {
 		wg.Go(func() {
-			_ = f.s.installNexusPath(Item{ID: newID(), Game: "stardew", Profile: "p1"}, "", nexus.Mod{})
+			_ = f.s.installNexusPath(t.Context(), Item{ID: newID(), Game: "stardew", Profile: "p1"}, "", nexus.Mod{})
 		})
 	}
 	<-entered

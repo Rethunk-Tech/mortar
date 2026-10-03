@@ -13,13 +13,14 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   CancelTransfer,
   Transfer,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/lan/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { formatBytes } from '../saves/backupFormat.ts'
+import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -40,19 +41,14 @@ export function IncomingPrompt() {
   const [choosing, setChoosing] = useState(false)
   const [transferring, setTransferring] = useState(false)
   const [transferError, setTransferError] = useState('')
+  const autoAccept = useSettings((s) => s.lanAutoAcceptSameAccount)
+  const incomingId = incoming?.id ?? ''
+  const sameAccount = incoming?.sameAccount === true
 
-  if (!incoming) {
-    return null
-  }
-
-  const decline = () => {
-    setChoosing(false)
-    removeFirst()
-  }
-  const compare = (profileId: string) => {
-    accept(profileId).catch(reportUnexpected)
-  }
   const accept = async (profileId = '') => {
+    if (!incoming) {
+      return
+    }
     setChoosing(false)
     setTransferError('')
     if (incoming.sameAccount) {
@@ -70,6 +66,49 @@ export function IncomingPrompt() {
     removeFirst()
   }
 
+  useEffect(() => {
+    if (!(sameAccount && autoAccept && incomingId)) {
+      return
+    }
+    const [item] = useIncomingShares.getState().items
+    if (item?.id !== incomingId) {
+      return
+    }
+    let cancelled = false
+    setChoosing(false)
+    setTransferError('')
+    setTransferring(true)
+    Transfer(incomingId)
+      .then(() => {
+        if (cancelled) {
+          return
+        }
+        setTransferring(false)
+        openImport({ data: item.payload })
+        removeFirst()
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return
+        }
+        setTransferring(false)
+        setTransferError(errorMessage(error))
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [autoAccept, incomingId, removeFirst, sameAccount])
+
+  if (!incoming) {
+    return null
+  }
+  const decline = () => {
+    setChoosing(false)
+    removeFirst()
+  }
+  const compare = (profileId: string) => {
+    accept(profileId).catch(reportUnexpected)
+  }
   return (
     <>
       <Dialog open={!(choosing || transferring)} onClose={decline}>

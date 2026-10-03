@@ -22,6 +22,22 @@ export const DEFAULT_FILTERS: Filters = {
   excludeMods: [],
 }
 
+export function levelsFromFloor(floor: string): Level[] {
+  const order = [Level.Trace, Level.Debug, Level.Info, Level.Warn, Level.Error]
+  const start = order.indexOf(
+    (
+      {
+        trace: Level.Trace,
+        debug: Level.Debug,
+        info: Level.Info,
+        warn: Level.Warn,
+        error: Level.Error,
+      } as Record<string, Level>
+    )[floor] ?? Level.Info,
+  )
+  return LEVELS.filter((l) => l === Level.Alert || order.indexOf(l) >= start)
+}
+
 export function shownLog(entries: Entry[], mine: boolean): Entry[] {
   return mine ? entries : []
 }

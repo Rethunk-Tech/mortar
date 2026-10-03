@@ -4,18 +4,20 @@ import { Download, RefreshCw, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { List as ListGames } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import {
+  SetAutoInstallMortarUpdates,
   SetCheckModUpdatesOnStart,
   SetCheckOnlyEnabledMods,
   SetIncludeBetaReleases,
   SetIncludePrereleaseModVersions,
   SetNotifyModUpdates,
+  SetSmapiBuilds,
   SetUpdateCheckIntervalMinutes,
   SetUpdateModsBeforePlayDefault,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useNav } from '../../nav/store.ts'
 import { errorMessage, errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
-import { PrefNumber, PrefSwitch } from '../PrefControls.tsx'
+import { PrefNumber, PrefSelect, PrefSwitch } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
@@ -190,6 +192,15 @@ export function Updates() {
         }
         label={t`Include beta releases`}
       />
+      <SettingRow
+        label={t`Install Mortar updates automatically`}
+        description={t`Download and stage a found update without asking`}
+      >
+        <PrefSwitch
+          checked={useSettings((s) => s.autoInstallMortarUpdates) !== false}
+          onChange={(on) => persist(() => SetAutoInstallMortarUpdates(on), push, fail)}
+        />
+      </SettingRow>
       <Box sx={{ fontSize: 14, fontWeight: 600, pt: 1 }}>{t`Mods`}</Box>
       <SettingsSection>
         <SettingRow
@@ -241,6 +252,22 @@ export function Updates() {
         }
         label={t`Include pre-release mod versions`}
       />
+      <SettingsSection>
+        <SettingRow
+          label={t`SMAPI unofficial builds`}
+          description={t`Pre-releases and unofficial SMAPI updates. Show lists them; Include lets Update all install them.`}
+        >
+          <PrefSelect
+            value={useSettings((s) => s.smapiBuilds) || 'show'}
+            onChange={(v) => persist(() => SetSmapiBuilds(v), push, fail)}
+            options={[
+              { value: 'never', label: t`Never` },
+              { value: 'show', label: t`Show` },
+              { value: 'include', label: t`Include` },
+            ]}
+          />
+        </SettingRow>
+      </SettingsSection>
       <FormControlLabel
         sx={{ m: 0, alignItems: 'center' }}
         control={

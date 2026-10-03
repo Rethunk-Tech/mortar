@@ -10,6 +10,7 @@ import {
   formatAll,
   incompatibleSMAPI,
   isFiltered,
+  levelsFromFloor,
   modsOf,
   shownLog,
   visible,
@@ -32,6 +33,11 @@ const log = [
   e(Level.Error, 'Love of Cooking', '  needs SpaceCore', true),
   e(Level.Alert, 'Cooking', 'hello'),
 ]
+
+test('levelsFromFloor info matches the default filter', () => {
+  expect(levelsFromFloor('info')).toEqual(DEFAULT_FILTERS.levels)
+  expect(levelsFromFloor('error')).toEqual([Level.Error, Level.Alert])
+})
 
 test('Trace and Debug are hidden by default and counts cover every line', () => {
   expect(visible(log, DEFAULT_FILTERS)).toHaveLength(5)

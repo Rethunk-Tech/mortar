@@ -53,6 +53,13 @@ type NeedChoicesError struct {
 
 func (e *NeedChoicesError) Error() string { return "this mod has install options" }
 
+func (s *Store) reuseFomod() bool {
+	if s.settings == nil {
+		return true
+	}
+	return s.settings.Get().ReuseFomod()
+}
+
 func (s *Store) fileIndex(modsDir string) fomod.FileIndex {
 	states := map[string]string{}
 	_ = filepath.WalkDir(modsDir, func(p string, d fs.DirEntry, err error) error {
@@ -158,7 +165,7 @@ func (s *Store) fomodAsk(game, id, key string, source Source, oldKey string, cho
 		return FomodAsk{}, false, err
 	}
 	eval := s.fomodEval(game, s.fileIndex(modsDir))
-	if fomod.Match(cfg, choices, eval) {
+	if fomod.Match(cfg, choices, eval) && s.reuseFomod() {
 		return FomodAsk{}, false, nil
 	}
 	return askFrom(cfg, key, source, oldKey, choices, eval), true, nil
@@ -180,7 +187,7 @@ func (s *Store) replayAsk(game, id, key string, source Source, oldKey string, ch
 		return FomodAsk{}, false, err
 	}
 	eval := s.fomodEval(game, s.fileIndex(modsDir))
-	if fomod.Match(cfg, choices, eval) && !fomod.Unanswered(old, cfg, choices, eval) {
+	if fomod.Match(cfg, choices, eval) && !fomod.Unanswered(old, cfg, choices, eval) && s.reuseFomod() {
 		return FomodAsk{}, false, nil
 	}
 	ask := askFrom(cfg, key, source, oldKey, fomod.Keep(cfg, choices), eval)

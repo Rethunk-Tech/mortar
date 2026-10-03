@@ -9,6 +9,7 @@ import {
 import { compact } from '../game/compact.ts'
 import { useLoader } from '../loader/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { playDirect } from './directPref.ts'
 import { StopDialog } from './StopDialog.tsx'
 import { useLaunch } from './store.ts'
 import { VanillaPlay } from './VanillaPlay.tsx'
@@ -158,7 +159,7 @@ export function PlayControl({ game }: { game: string }) {
       playDisabled={openId === '' || launching || busy}
       vanillaDisabled={launching || busy}
       label={label}
-      play={() => start(game, openId, false)}
+      play={() => start(game, openId, playDirect())}
     />
   )
 }

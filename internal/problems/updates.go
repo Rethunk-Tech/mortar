@@ -122,13 +122,16 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 
 // HideHeld drops updates the profile has pinned or skipped for that exact newer version, and prerelease
 // versions when includePrerelease is false unless the installed version is itself a prerelease.
-func HideHeld(r UpdatesResult, mods []Installed, includePrerelease bool) UpdatesResult {
+func HideHeld(r UpdatesResult, mods []Installed, includePrerelease bool, smapiBuilds string) UpdatesResult {
 	byKey := make(map[string]Installed, len(mods))
 	for _, m := range mods {
 		byKey[m.Key] = m
 	}
 	kept := make([]Update, 0, len(r.Updates))
 	for _, u := range r.Updates {
+		if smapiBuilds == "never" && u.Unofficial {
+			continue
+		}
 		m, ok := byKey[u.Key]
 		if !ok {
 			if !includePrerelease && hasPrerelease(u.Version) && !hasPrerelease(u.Installed) {

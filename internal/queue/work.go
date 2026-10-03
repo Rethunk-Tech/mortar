@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"sync"
 	"time"
 
@@ -398,10 +397,10 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	if len(links) == 0 {
 		return errors.New("the download has no link")
 	}
-	if err := os.MkdirAll(filepath.Join(s.d.Dir, downloadsDir), 0o700); err != nil {
+	if err := os.MkdirAll(s.downloadRoot(), 0o700); err != nil {
 		return err
 	}
-	path := destPath(s.d.Dir, it.ID, it.FileName)
+	path := s.dest(it.ID, it.FileName)
 	uri := links[0].URI
 	var fetchErr error
 	for attempt := range 2 {
@@ -441,7 +440,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	}
 	s.mu.Unlock()
 	s.publish(true)
-	return s.contentPatcherHint(ctx, it, s.installNexusPath(it, path, mod))
+	return s.contentPatcherHint(ctx, it, s.installNexusPath(ctx, it, path, mod))
 }
 
 func (s *Service) pauseFomod(id, key string) {
