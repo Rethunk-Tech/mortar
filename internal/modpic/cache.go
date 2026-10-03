@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -24,6 +25,9 @@ const Path = "/mod-picture/"
 
 // MaxSize caps a cached picture, in bytes.
 const MaxSize = 8 << 20
+
+// MaxCacheBytes is the on-disk budget for cache/modpic; New drops oldest files until the folder fits.
+const MaxCacheBytes = 64 << 20
 
 const workers = 4
 
@@ -51,10 +55,58 @@ func New(dataDir string, client *http.Client) *Cache {
 	if client == nil {
 		client = http.DefaultClient
 	}
-	return &Cache{
+	c := &Cache{
 		dir:   filepath.Join(dataDir, "cache", "modpic"),
 		http:  client,
 		slots: make(chan struct{}, workers),
+	}
+	c.pruneTo(MaxCacheBytes)
+	return c
+}
+
+func (c *Cache) pruneTo(budget int64) {
+	entries, err := os.ReadDir(c.dir)
+	if err != nil {
+		return
+	}
+	type item struct {
+		name string
+		mod  time.Time
+		size int64
+	}
+	var files []item
+	var total int64
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+		info, err := e.Info()
+		if err != nil || !info.Mode().IsRegular() {
+			continue
+		}
+		files = append(files, item{name: e.Name(), mod: info.ModTime(), size: info.Size()})
+		total += info.Size()
+	}
+	if total <= budget {
+		return
+	}
+	slices.SortFunc(files, func(a, b item) int {
+		if a.mod.Before(b.mod) {
+			return -1
+		}
+		if a.mod.After(b.mod) {
+			return 1
+		}
+		return strings.Compare(a.name, b.name)
+	})
+	for _, f := range files {
+		if total <= budget {
+			return
+		}
+		if err := os.Remove(filepath.Join(c.dir, f.name)); err != nil {
+			continue
+		}
+		total -= f.size
 	}
 }
 

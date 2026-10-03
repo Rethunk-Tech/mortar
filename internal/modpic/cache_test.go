@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
+	"time"
 )
 
 var png1x1 = []byte{
@@ -148,5 +150,31 @@ func TestEnsureIgnoresEmpty(t *testing.T) {
 	c.Ensure(t.Context(), "")
 	if entries, err := os.ReadDir(c.dir); err == nil && len(entries) != 0 {
 		t.Fatal(entries)
+	}
+}
+
+func TestPruneToDropsOldestOverBudget(t *testing.T) {
+	c := New(t.TempDir(), http.DefaultClient)
+	if err := os.MkdirAll(c.dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	oldPath := filepath.Join(c.dir, "old")
+	newPath := filepath.Join(c.dir, "new")
+	if err := os.WriteFile(oldPath, []byte("12345"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(newPath, []byte("67890"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	past := time.Now().Add(-time.Hour)
+	if err := os.Chtimes(oldPath, past, past); err != nil {
+		t.Fatal(err)
+	}
+	c.pruneTo(6)
+	if _, err := os.Stat(oldPath); err == nil {
+		t.Fatal("kept the older file over budget")
+	}
+	if _, err := os.Stat(newPath); err != nil {
+		t.Fatal("dropped the newer file")
 	}
 }
