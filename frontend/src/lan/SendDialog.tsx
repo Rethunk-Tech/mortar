@@ -25,6 +25,20 @@ import { useToasts } from '../toasts/store.ts'
 
 const refreshInterval = 3000
 
+function sendPeerView(
+  looked: boolean,
+  refreshing: boolean,
+  peerCount: number,
+): 'empty' | 'looking' | 'list' {
+  if (peerCount === 0 && looked && !refreshing) {
+    return 'empty'
+  }
+  if (peerCount === 0 && !looked) {
+    return 'looking'
+  }
+  return 'list'
+}
+
 interface SendDialogProps {
   open: boolean
   game: string
@@ -41,6 +55,7 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
   const { t } = useLingui()
   const [peers, setPeers] = useState<Peer[]>([])
   const [refreshing, setRefreshing] = useState(false)
+  const [looked, setLooked] = useState(false)
   const [sending, setSending] = useState<string | null>(null)
   const [manual, setManual] = useState('')
   const [addressPicker, setAddressPicker] = useState(false)
@@ -57,7 +72,10 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
           body: errorMessage(error),
         })
       })
-      .finally(() => setRefreshing(false))
+      .finally(() => {
+        setRefreshing(false)
+        setLooked(true)
+      })
   }, [t])
 
   useEffect(() => {
@@ -65,6 +83,7 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
       setPeers([])
       setManual('')
       setAddressPicker(false)
+      setLooked(false)
       return
     }
     refresh()
@@ -98,7 +117,7 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
         </IconButton>
       </DialogTitle>
       <DialogContent dividers={true}>
-        {peers.length === 0 && !refreshing ? (
+        {sendPeerView(looked, refreshing, peers.length) === 'empty' ? (
           <EmptyState
             compact={true}
             icon={<Inbox size={28} />}
@@ -106,6 +125,11 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
           >{t`Ask another Mortar user to open sharing nearby.`}</EmptyState>
         ) : (
           <List disablePadding={true}>
+            {sendPeerView(looked, refreshing, peers.length) === 'looking' ? (
+              <ListItem>
+                <ListItemText primary={t`Looking for Mortar users…`} />
+              </ListItem>
+            ) : null}
             {peers.map((peer) => (
               <ListItem key={peer.id} disablePadding={true}>
                 <ListItemButton disabled={sending !== null} onClick={() => send(peer)}>

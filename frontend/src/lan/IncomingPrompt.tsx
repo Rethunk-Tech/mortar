@@ -33,9 +33,12 @@ export function IncomingPrompt() {
   const removeFirst = useIncomingShares((state) => state.removeFirst)
   const profiles = useProfiles((state) => state.profiles)
   const incomingGame = incoming?.game ?? ''
-  const gameName = useProfiles((state) =>
-    state.game?.id === incomingGame ? (state.game.name ?? incomingGame) : incomingGame,
-  )
+  const gameName = useProfiles((state) => {
+    if (state.game?.id === incomingGame && state.game.name) {
+      return state.game.name
+    }
+    return incomingGame === 'stardew' ? 'Stardew Valley' : incomingGame
+  })
   const progress = useIncomingShares((state) =>
     incoming ? state.progress[incoming.id] : undefined,
   )
@@ -112,8 +115,16 @@ export function IncomingPrompt() {
   }
   return (
     <>
-      <Dialog open={!(choosing || transferring)} onClose={decline}>
-        <DialogTitle>
+      <Dialog
+        open={!(choosing || transferring)}
+        disableEscapeKeyDown={true}
+        onClose={(_, reason) => {
+          if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+            return
+          }
+        }}
+      >
+        <DialogTitle title={incomingGame}>
           {t`${incoming.sender} sent you ${incoming.profileName} (${gameName})`}
         </DialogTitle>
         <DialogContent>
