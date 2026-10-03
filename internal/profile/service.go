@@ -391,12 +391,22 @@ func stripConfigJSONNoise(b []byte) []byte {
 }
 
 // SetPinned records whether the entry stays on its current version.
-func (s *Service) SetPinned(game, id, key string, pinned bool) (Profile, error) {
-	return s.store.SetPinned(game, id, key, pinned)
+func (s *Service) SetPinned(game, id, key string, pinned bool, pinReason string) (Profile, error) {
+	return s.store.SetPinned(game, id, key, pinned, pinReason)
 }
 
-func (s *Service) SetPinnedMany(game, id string, keys []string, pinned bool) (Profile, error) {
-	return s.store.SetPinnedMany(game, id, keys, pinned)
+func (s *Service) SetPinnedMany(game, id string, keys []string, pinned bool, pinReason string) (Profile, error) {
+	return s.store.SetPinnedMany(game, id, keys, pinned, pinReason)
+}
+
+// ClearCollection removes the Nexus collection link from a profile.
+func (s *Service) ClearCollection(game, id string) (Profile, error) {
+	return s.store.ClearCollection(game, id)
+}
+
+// SetCollection records the Nexus collection this profile was imported from.
+func (s *Service) SetCollection(game, id string, ref CollectionRef) (Profile, error) {
+	return s.store.SetCollection(game, id, ref)
 }
 
 // SetSkipVersion hides that exact newer version, or clears the skip when version is empty.

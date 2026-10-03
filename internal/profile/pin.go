@@ -28,11 +28,18 @@ func (s *Store) patchEntry(game, id, key string, fn func(*Entry) error) (Profile
 }
 
 // SetPinned records whether the entry stays on its current version. Pinning clears a skipped update.
-func (s *Store) SetPinned(game, id, key string, pinned bool) (Profile, error) {
+func (s *Store) SetPinned(game, id, key string, pinned bool, pinReason string) (Profile, error) {
+	reason, err := cleanPinReason(pinReason)
+	if err != nil {
+		return Profile{}, err
+	}
 	return s.patchEntry(game, id, key, func(e *Entry) error {
 		e.Pinned = pinned
 		if pinned {
 			e.SkipVersion = ""
+			e.PinReason = reason
+		} else {
+			e.PinReason = ""
 		}
 		return nil
 	})

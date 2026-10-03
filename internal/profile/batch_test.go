@@ -15,7 +15,7 @@ func TestBatchEntryOperationsWriteAllSelectedEntries(t *testing.T) {
 		}
 	}
 
-	if p, err = s.SetPinnedMany("stardew", p.ID, []string{"a-1", "b-1"}, true); err != nil {
+	if p, err = s.SetPinnedMany("stardew", p.ID, []string{"a-1", "b-1"}, true, ""); err != nil {
 		t.Fatal(err)
 	}
 	if p, err = s.SetEntryTagsMany("stardew", p.ID, []string{"a-1", "b-1"}, "QoL", true); err != nil {

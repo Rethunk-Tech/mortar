@@ -47,7 +47,7 @@ func TestPreviewEverywhereExcludesPinnedSkippedLocked(t *testing.T) {
 	if _, err := e.AddEntry("stardew", c.ID, "a-1", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetPinned("stardew", a.ID, "a-1", true); err != nil {
+	if _, err := e.SetPinned("stardew", a.ID, "a-1", true, ""); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.SetSkipVersion("stardew", b.ID, "a-1", "2.0.0"); err != nil {

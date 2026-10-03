@@ -20,7 +20,7 @@ func TestRestoreEntriesReappliesEntryFields(t *testing.T) {
 	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "Me.A", false); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetPinned("stardew", p.ID, "local-a", true); err != nil {
+	if _, err := e.SetPinned("stardew", p.ID, "local-a", true, ""); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.SetEntryNoteTags("stardew", p.ID, "local-a", "keep", []string{"farm"}); err != nil {
@@ -67,7 +67,7 @@ func TestRestoreEntryFieldsWritesPreviousValues(t *testing.T) {
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetPinnedMany("stardew", p.ID, []string{"local-a"}, true); err != nil {
+	if _, err := e.SetPinnedMany("stardew", p.ID, []string{"local-a"}, true, ""); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.SetEntryTagsMany("stardew", p.ID, []string{"local-b"}, "keep", true); err != nil {

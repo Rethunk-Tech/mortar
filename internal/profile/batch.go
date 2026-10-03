@@ -39,11 +39,18 @@ func (s *Store) updateEntries(game, id string, keys []string, fn func(*Entry, st
 }
 
 // SetPinnedMany changes the pinned state of each named entry in one profile write.
-func (s *Store) SetPinnedMany(game, id string, keys []string, pinned bool) (Profile, error) {
+func (s *Store) SetPinnedMany(game, id string, keys []string, pinned bool, pinReason string) (Profile, error) {
+	reason, err := cleanPinReason(pinReason)
+	if err != nil {
+		return Profile{}, err
+	}
 	return s.updateEntries(game, id, keys, func(e *Entry, _ string) error {
 		e.Pinned = pinned
 		if pinned {
 			e.SkipVersion = ""
+			e.PinReason = reason
+		} else {
+			e.PinReason = ""
 		}
 		return nil
 	})

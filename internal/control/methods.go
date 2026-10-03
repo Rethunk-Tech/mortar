@@ -623,6 +623,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			})
 		}
 		return s.Profiles.ListConfigFields(p.Game, id, ref.Key, ref.UniqueID)
+	case "mods.menu":
+		return s.modsMenu(p)
 	case "mod":
 		return s.modInfo(ctx, p.Game, prof, p.UniqueIDs)
 	case "mods.enable", "mods.disable":

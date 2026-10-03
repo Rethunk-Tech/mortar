@@ -116,6 +116,8 @@ type Entry struct {
 	Added time.Time `json:"added,omitzero"`
 	// Pinned keeps this entry on its current version; Mortar offers no update while it is true.
 	Pinned bool `json:"pinned,omitempty"`
+	// PinReason is an optional note for why this version is pinned.
+	PinReason string `json:"pinReason,omitempty"`
 	// SkipVersion is one newer version to hide; a later version is offered again.
 	SkipVersion string `json:"skipVersion,omitempty"`
 	// SkipSources hides updates reported by these sources.

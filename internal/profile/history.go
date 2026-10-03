@@ -752,7 +752,12 @@ func entriesEqual(a, b []Entry) bool {
 
 func recordHistory(dir string, before, after []Entry, kind, label string, keep int) error {
 	if entriesEqual(before, after) {
-		return nil
+		if kind == "" {
+			return nil
+		}
+		ev := HistoryEvent{Kind: kind, Label: label, Count: 1}
+		_, err := appendHistory(dir, ev, after, keep)
+		return err
 	}
 	ev := classifyHistory(before, after)
 	if kind != "" {

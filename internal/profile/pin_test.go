@@ -66,7 +66,7 @@ func TestSetPinnedAndSkipVersion(t *testing.T) {
 	if p.Entries[0].SkipVersion != "2.0.0" {
 		t.Fatalf("skip: %q", p.Entries[0].SkipVersion)
 	}
-	p, err = s.SetPinned("stardew", p.ID, "nexus-1-1", true)
+	p, err = s.SetPinned("stardew", p.ID, "nexus-1-1", true, "stays on 1.0")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,7 +76,10 @@ func TestSetPinnedAndSkipVersion(t *testing.T) {
 	if p.Entries[0].SkipVersion != "" {
 		t.Fatalf("pin should clear skip, got %q", p.Entries[0].SkipVersion)
 	}
-	p, err = s.SetPinned("stardew", p.ID, "nexus-1-1", false)
+	if p.Entries[0].PinReason != "stays on 1.0" {
+		t.Fatalf("pin reason: %q", p.Entries[0].PinReason)
+	}
+	p, err = s.SetPinned("stardew", p.ID, "nexus-1-1", false, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,7 +100,7 @@ func TestSetPinnedAndSkipVersion(t *testing.T) {
 	if loaded.Entries[0].Pinned {
 		t.Fatal("unpinned must persist")
 	}
-	if _, err := s.SetPinned("stardew", p.ID, "missing", true); err == nil {
+	if _, err := s.SetPinned("stardew", p.ID, "missing", true, ""); err == nil {
 		t.Fatal("missing key must fail")
 	}
 }

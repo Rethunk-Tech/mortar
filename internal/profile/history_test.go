@@ -37,7 +37,7 @@ func TestHistoryRecordsEachOperation(t *testing.T) {
 	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "Me.A", true); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetPinned("stardew", p.ID, "local-a", true); err != nil {
+	if _, err := e.SetPinned("stardew", p.ID, "local-a", true, ""); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.UpdateEntry("stardew", p.ID, "local-a", "local-a2"); err != nil {

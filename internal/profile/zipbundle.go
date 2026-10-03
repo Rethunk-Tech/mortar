@@ -319,7 +319,7 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 			}
 		}
 		if e.Pinned {
-			out, err = s.SetPinned(game, created.ID, key, true)
+			out, err = s.SetPinned(game, created.ID, key, true, "")
 			if err != nil {
 				return Profile{}, err
 			}
