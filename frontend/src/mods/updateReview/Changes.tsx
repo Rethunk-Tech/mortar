@@ -18,7 +18,7 @@ export function Changes({ update }: { update: Update }) {
   if (!details) {
     return (
       <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-        {t`Changelog is not cached yet.`}
+        {signedIn ? t`Changelog is not cached yet.` : t`Sign in to Nexus to load the changelog.`}
         {signedIn ? (
           <Button
             size="small"

@@ -226,7 +226,7 @@ function Loaded({
       <NexusAccountActions modId={modId} version={mod.version} endorsement={page.endorsement} />
       <Files details={details} fileId={fileId} looked={looked} />
       {logs.length > 0 ? (
-        <Fold title={t`Recent changes`}>
+        <Fold title={t`Changelog on Nexus`}>
           {recentChangelogs(logs).map((c) => (
             <Box key={c.version} sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'baseline' }}>
