@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material'
 import { PackagePlus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import type {
   ApplyResult,
   Bundle,
@@ -104,26 +104,15 @@ function BundleNameDialog({
   )
 }
 
-interface AddToBundleDialogProps {
-  open: boolean
-  game: string
-  profileId: string
-  uniqueIds: string[]
-  onClose: () => void
-}
-
-function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToBundleDialogProps) {
+function useListedBundles(open: boolean, game: string) {
   const { t } = useLingui()
   const [bundles, setBundles] = useState<Bundle[]>([])
-  const [newName, setNewName] = useState('')
   const [loading, setLoading] = useState(false)
-  const [busy, setBusy] = useState(false)
   useEffect(() => {
     if (!open) {
       return
     }
     let active = true
-    setNewName('')
     setLoading(true)
     ListBundles(game)
       .then((listed) => {
@@ -147,6 +136,67 @@ function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToB
       active = false
     }
   }, [game, open, t])
+  return { bundles, loading }
+}
+
+function BundlePickList({
+  loading,
+  bundles,
+  busy,
+  empty,
+  onPick,
+}: {
+  loading: boolean
+  bundles: Bundle[]
+  busy: boolean
+  empty: ReactNode
+  onPick: (bundle: Bundle) => Promise<void>
+}) {
+  const { t } = useLingui()
+  if (loading) {
+    return <LoadingRow>{t`Loading bundles…`}</LoadingRow>
+  }
+  if (bundles.length === 0) {
+    return empty
+  }
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      {bundles.map((bundle) => (
+        <Button
+          key={bundle.id}
+          variant="outlined"
+          disabled={busy}
+          onClick={() => onPick(bundle).catch(() => undefined)}
+          sx={{ justifyContent: 'space-between', textTransform: 'none' }}
+        >
+          <span>{bundle.name}</span>
+          <Typography component="span" sx={{ color: 'text.secondary', fontSize: 12 }}>
+            {t`${bundle.mods?.length ?? 0} mods`}
+          </Typography>
+        </Button>
+      ))}
+    </Box>
+  )
+}
+
+interface AddToBundleDialogProps {
+  open: boolean
+  game: string
+  profileId: string
+  uniqueIds: string[]
+  onClose: () => void
+}
+
+function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToBundleDialogProps) {
+  const { t } = useLingui()
+  const { bundles, loading } = useListedBundles(open, game)
+  const [newName, setNewName] = useState('')
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    if (open) {
+      setNewName('')
+    }
+  }, [open])
   const addTo = async (bundle: Bundle) => {
     if (busy) {
       return
@@ -184,38 +234,6 @@ function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToB
       setBusy(false)
     }
   }
-  const bundleContent = (() => {
-    if (loading) {
-      return <LoadingRow>{t`Loading bundles…`}</LoadingRow>
-    }
-    if (bundles.length === 0) {
-      return (
-        <EmptyState
-          compact={true}
-          icon={<PackagePlus size={28} />}
-          title={t`No bundles yet.`}
-        >{t`Create a bundle to reuse a set of mods.`}</EmptyState>
-      )
-    }
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-        {bundles.map((bundle) => (
-          <Button
-            key={bundle.id}
-            variant="outlined"
-            disabled={busy}
-            onClick={() => addTo(bundle).catch(() => undefined)}
-            sx={{ justifyContent: 'space-between', textTransform: 'none' }}
-          >
-            <span>{bundle.name}</span>
-            <Typography component="span" sx={{ color: 'text.secondary', fontSize: 12 }}>
-              {t`${bundle.mods?.length ?? 0} mods`}
-            </Typography>
-          </Button>
-        ))}
-      </Box>
-    )
-  })()
   return (
     <Dialog open={open} onClose={busy ? undefined : onClose} transitionDuration={0}>
       <DialogTitle>{t`Add to bundle`}</DialogTitle>
@@ -223,7 +241,19 @@ function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToB
         <Typography sx={{ mb: 1.25, color: 'text.secondary', fontSize: 13 }}>
           {t`Choose an existing bundle or create one.`}
         </Typography>
-        {bundleContent}
+        <BundlePickList
+          loading={loading}
+          bundles={bundles}
+          busy={busy}
+          empty={
+            <EmptyState
+              compact={true}
+              icon={<PackagePlus size={28} />}
+              title={t`No bundles yet.`}
+            >{t`Create a bundle to reuse a set of mods.`}</EmptyState>
+          }
+          onPick={addTo}
+        />
         <Divider sx={{ my: 2 }} />
         <TextField
           fullWidth={true}
@@ -268,37 +298,8 @@ function ApplyBundleDialog({
   onApplied,
 }: ApplyBundleDialogProps) {
   const { t } = useLingui()
-  const [bundles, setBundles] = useState<Bundle[]>([])
-  const [loading, setLoading] = useState(false)
+  const { bundles, loading } = useListedBundles(open, game)
   const [busy, setBusy] = useState(false)
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-    let active = true
-    setLoading(true)
-    ListBundles(game)
-      .then((listed) => {
-        if (active) {
-          setBundles(listed ?? [])
-        }
-      })
-      .catch((error: unknown) => {
-        if (active) {
-          useToasts
-            .getState()
-            .push({ kind: 'error', title: t`Could not read bundles`, body: errorMessage(error) })
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setLoading(false)
-        }
-      })
-    return () => {
-      active = false
-    }
-  }, [game, open, t])
   const apply = async (bundle: Bundle) => {
     if (busy) {
       return
@@ -315,37 +316,17 @@ function ApplyBundleDialog({
       setBusy(false)
     }
   }
-  const bundleContent = (() => {
-    if (loading) {
-      return <LoadingRow>{t`Loading bundles…`}</LoadingRow>
-    }
-    if (bundles.length === 0) {
-      return <Typography sx={{ color: 'text.secondary' }}>{t`No bundles yet.`}</Typography>
-    }
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-        {bundles.map((bundle) => (
-          <Button
-            key={bundle.id}
-            variant="outlined"
-            disabled={busy}
-            onClick={() => apply(bundle).catch(() => undefined)}
-            sx={{ justifyContent: 'space-between', textTransform: 'none' }}
-          >
-            <span>{bundle.name}</span>
-            <Typography component="span" sx={{ color: 'text.secondary', fontSize: 12 }}>
-              {t`${bundle.mods?.length ?? 0} mods`}
-            </Typography>
-          </Button>
-        ))}
-      </Box>
-    )
-  })()
   return (
     <Dialog open={open} onClose={busy ? undefined : onClose} transitionDuration={0}>
       <DialogTitle>{t`Add a bundle to ${profileName}`}</DialogTitle>
       <DialogContent sx={{ minWidth: 420, maxWidth: 'calc(100vw - 64px)' }}>
-        {bundleContent}
+        <BundlePickList
+          loading={loading}
+          bundles={bundles}
+          busy={busy}
+          empty={<Typography sx={{ color: 'text.secondary' }}>{t`No bundles yet.`}</Typography>}
+          onPick={apply}
+        />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={busy}>
