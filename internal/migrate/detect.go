@@ -31,11 +31,24 @@ func Preview(home, modsPath, kind, id string) (ProfilePreview, error) {
 	if err != nil {
 		return ProfilePreview{}, err
 	}
+	var last error
+	seen := false
 	for _, install := range installs {
 		if install.info.Kind != kind {
 			continue
 		}
-		return previewInstallation(install, id)
+		seen = true
+		preview, previewErr := previewInstallation(install, id)
+		if previewErr == nil {
+			return preview, nil
+		}
+		last = previewErr
+	}
+	if last != nil {
+		return ProfilePreview{}, last
+	}
+	if seen {
+		return ProfilePreview{}, fmt.Errorf("%s profile %s not found", kind, id)
 	}
 	return ProfilePreview{}, fmt.Errorf("%s is not detected", kind)
 }
@@ -71,6 +84,12 @@ func detect(home, modsPath string) ([]installation, error) {
 			modsPath: resolvedModsPath,
 		})
 	}
+
+	mo2, err := mo2Installations(base, modsPath)
+	if err != nil {
+		return nil, err
+	}
+	out = append(out, mo2...)
 	return out, nil
 }
 
@@ -80,6 +99,8 @@ func previewInstallation(install installation, id string) (ProfilePreview, error
 		return stardropPreview(install.root, install.modsPath, id)
 	case KindVortex:
 		return vortexPreview(install.root, install.modsPath, id)
+	case KindMO2:
+		return mo2Preview(install.root, install.modsPath, id)
 	default:
 		return ProfilePreview{}, fmt.Errorf("unsupported import source %q", install.info.Kind)
 	}

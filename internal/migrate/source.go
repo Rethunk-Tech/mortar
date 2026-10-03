@@ -3,6 +3,7 @@ package migrate
 const (
 	KindStardrop = "stardrop"
 	KindVortex   = "vortex"
+	KindMO2      = "mo2"
 )
 
 // SourceInfo is one detected external mod manager and its profiles.

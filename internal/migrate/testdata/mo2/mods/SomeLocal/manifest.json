@@ -1,0 +1,9 @@
+{
+  "Name": "Some Local",
+  "Author": "Fixture",
+  "Version": "1.2.3",
+  "Description": "fixture",
+  "UniqueID": "Fixture.SomeLocal",
+  "EntryDll": "SomeLocal.dll",
+  "MinimumApiVersion": "4.0.0"
+}

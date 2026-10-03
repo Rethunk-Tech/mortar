@@ -1,0 +1,10 @@
+{
+  "Name": "Content Patcher",
+  "Author": "Pathoschild",
+  "Version": "2.0.0",
+  "Description": "fixture",
+  "UniqueID": "Pathoschild.ContentPatcher",
+  "EntryDll": "ContentPatcher.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": ["Nexus:1915"]
+}
