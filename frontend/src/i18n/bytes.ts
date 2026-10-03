@@ -14,7 +14,8 @@ export function formatBytes(bytes: number): string {
   return new Intl.NumberFormat(i18n.locale || 'en', {
     style: 'unit',
     unit: UNITS[unitIndex],
-    unitDisplay: 'short',
+    // 'long' for bytes so the count agrees ("1 byte", "0 bytes"); the short form reads "0 byte".
+    unitDisplay: unitIndex === 0 ? 'long' : 'short',
     maximumFractionDigits: unitIndex === 0 ? 0 : 1,
   }).format(value)
 }
