@@ -1,16 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
-import { FileArchive } from 'lucide-react'
 import { useState } from 'react'
 import { Logo } from '../../brand/Logo.tsx'
 import { paper } from '../../mods/paper.ts'
-import { routeGame, useNav } from '../../nav/store.ts'
-import { useProfiles } from '../../profiles/store.ts'
-import { saveDiagnostics } from '../../shell/saveDiagnostics.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import credits from '../generated/credits.json' with { type: 'json' }
-import { Searchable } from '../SettingsSection.tsx'
+import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { Diagnostics } from './AboutDiagnostics.tsx'
 
 const LICENCE = 'https://github.com/Rethunk-AI/mortar/blob/main/LICENSE'
@@ -62,85 +58,54 @@ function CreditList() {
 
 export function About() {
   const { t } = useLingui()
-  const game = useNav((s) => routeGame(s.route) ?? '')
-  const profile = useProfiles((s) => s.openId)
   const [creditsOpen, setCreditsOpen] = useState(false)
   return (
-    <Searchable
-      terms={`${t`About`} Mortar ${t`version`} ${t`licence`} ${t`Credits`} ${t`Diagnostics`} SMAPI`}
-      loose={true}
-    >
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-          fontSize: 14,
-          lineHeight: 1.55,
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+    <>
+      <SettingsSection title={t`Mortar`}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2.5, py: 2 }}>
           <Logo size={40} />
-          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <Box component="span" sx={{ fontSize: 18, fontWeight: 700 }}>
               {t`Mortar`}
             </Box>
-            <Box component="span" sx={{ color: 'var(--mortar-ink-sec)' }}>
+            <Box component="span" sx={{ color: 'var(--mortar-ink-sec)', fontSize: 14 }}>
               {t`AGPL-3.0 · Rethunk-AI/mortar`}
             </Box>
           </Box>
-        </Box>
-        <Box sx={{ fontWeight: 600 }}>{t`Built on`}</Box>
-        <Box sx={body}>
-          {t`SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · and open-source libraries under their own licences.`}{' '}
-          <Link
-            component="button"
+          <Button
+            variant="outlined"
             onClick={() => Browser.OpenURL(LICENCE).catch(reportUnexpected)}
-            sx={{ fontSize: 'inherit', verticalAlign: 'baseline' }}
           >
-            {t`Mortar's licence`}
-          </Link>
-        </Box>
-        <Box sx={{ fontWeight: 600 }}>{t`Default background`}</Box>
-        <Box sx={body}>
-          {t`Fedora 44 default wallpaper (f44-01-night) by the Fedora Design Team, CC-BY-SA 4.0.`}
-        </Box>
-        <Box>
-          <Button variant="outlined" color="inherit" onClick={() => setCreditsOpen(true)}>
-            {t`Open-source licences (${credits.length})`}
+            {t`Licence`}
           </Button>
         </Box>
-        <Dialog
-          open={creditsOpen}
-          onClose={() => setCreditsOpen(false)}
-          maxWidth="md"
-          fullWidth={true}
-          scroll="paper"
-          transitionDuration={0}
-          slotProps={{ paper }}
+        <SettingRow
+          label={t`Open-source licences`}
+          description={t`Libraries, icons and artwork built into Mortar, with their licences.`}
         >
-          <DialogTitle>{t`Open-source licences`}</DialogTitle>
-          <DialogContent dividers={true}>
-            <CreditList />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setCreditsOpen(false)}>{t`Close`}</Button>
-          </DialogActions>
-        </Dialog>
-        <Diagnostics />
-        <Box sx={{ fontSize: 13, color: 'text.secondary', lineHeight: 1.5 }}>
-          {t`Save diagnostics… writes a redacted zip for a bug report. Run checks for a live summary.`}
-        </Box>
-        <Button
-          variant="outlined"
-          color="inherit"
-          startIcon={<FileArchive size={16} />}
-          onClick={() => saveDiagnostics(game, profile)}
-          sx={{ alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
-        >
-          {t`Save diagnostics…`}
-        </Button>
-      </Box>
-    </Searchable>
+          <Button variant="outlined" onClick={() => setCreditsOpen(true)}>
+            {t`View (${credits.length})`}
+          </Button>
+        </SettingRow>
+      </SettingsSection>
+      <Diagnostics />
+      <Dialog
+        open={creditsOpen}
+        onClose={() => setCreditsOpen(false)}
+        maxWidth="md"
+        fullWidth={true}
+        scroll="paper"
+        transitionDuration={0}
+        slotProps={{ paper }}
+      >
+        <DialogTitle>{t`Open-source licences`}</DialogTitle>
+        <DialogContent dividers={true}>
+          <CreditList />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreditsOpen(false)}>{t`Close`}</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   )
 }

@@ -31,14 +31,14 @@ func TestFromLiveMatchesCLIPrint(t *testing.T) {
 	got := PlainText(FromLive(in))
 	want := "Mortar 1.2.3 (this command 9.9.9)\n" +
 		"Data folder: /data/mortar\n" +
-		"Stardew Valley: installed yes, folder \"/games/Stardew Valley\", store steam, game 1.6.15, SMAPI 4.1.10, Linux\n" +
-		"Lethal Company: installed no, folder \"\", store , game , SMAPI , Linux\n" +
+		"Stardew Valley 1.6.15 with SMAPI 4.1.10 in \"/games/Stardew Valley\" (steam, Linux)\n" +
+		"Lethal Company: not installed\n" +
 		"nxm:// links: Mortar (other games go to Vortex)\n"
 	if got != want {
 		t.Fatalf("got:\n%s\nwant:\n%s", got, want)
 	}
 	r := FromLive(in)
-	if r.Checks[0].Status != Pass || r.Checks[2].Status != Pass || r.Checks[3].Status != Warn || r.Checks[4].Status != Pass {
+	if r.Checks[0].Status != Pass || r.Checks[2].Status != Pass || r.Checks[3].Status != Pass || r.Checks[4].Status != Pass {
 		t.Fatalf("statuses: %+v", r.Checks)
 	}
 }

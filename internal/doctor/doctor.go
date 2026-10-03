@@ -58,18 +58,12 @@ func FromLive(in Live) Report {
 	if in.DataDir == "" {
 		checks[1].Status = Fail
 	}
+	anyInstalled := false
 	for _, g := range in.Games {
-		e := env[g.ID]
-		st := Pass
-		if !g.Installed {
-			st = Warn
-		}
-		checks = append(checks, Check{
-			ID:     "game:" + g.ID,
-			Status: st,
-			Detail: fmt.Sprintf("%s: installed %s, folder %q, store %s, game %s, SMAPI %s, %s",
-				g.Name, yes(g.Installed), g.InstallDir, g.Store, e.GameVersion, e.APIVersion, e.Platform),
-		})
+		anyInstalled = anyInstalled || g.Installed
+	}
+	for _, g := range in.Games {
+		checks = append(checks, gameCheck(g, env[g.ID], anyInstalled))
 	}
 	handler := "off"
 	nxmStatus := Warn
@@ -98,9 +92,32 @@ func PlainText(r Report) string {
 	return b.String()
 }
 
-func yes(b bool) string {
-	if b {
-		return "yes"
+// A game that is not installed only warns when no game is: Mortar supports several and most people own one.
+func gameCheck(g game.GameInfo, e problems.Environment, anyInstalled bool) Check {
+	c := Check{ID: "game:" + g.ID, Status: Pass}
+	if !g.Installed {
+		c.Detail = g.Name + ": not installed"
+		if !anyInstalled {
+			c.Status = Warn
+		}
+		return c
 	}
-	return "no"
+	parts := []string{g.Name}
+	if e.GameVersion != "" {
+		parts = append(parts, e.GameVersion)
+	}
+	if e.APIVersion != "" {
+		parts = append(parts, "with SMAPI "+e.APIVersion)
+	}
+	where := []string{}
+	for _, v := range []string{g.Store, e.Platform} {
+		if v != "" {
+			where = append(where, v)
+		}
+	}
+	c.Detail = strings.Join(parts, " ") + fmt.Sprintf(" in %q", g.InstallDir)
+	if len(where) > 0 {
+		c.Detail += " (" + strings.Join(where, ", ") + ")"
+	}
+	return c
 }

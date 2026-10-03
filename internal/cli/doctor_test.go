@@ -37,7 +37,7 @@ func TestDoctorPrintsSharedChecks(t *testing.T) {
 	if r.out != want {
 		t.Fatalf("got %q want %q", r.out, want)
 	}
-	if !strings.Contains(r.out, "Stardew Valley: installed yes") || !strings.Contains(r.out, "nxm:// links: Mortar") {
+	if !strings.Contains(r.out, "Stardew Valley 1.6") || !strings.Contains(r.out, "nxm:// links: Mortar") {
 		t.Fatalf("report %q", r.out)
 	}
 }

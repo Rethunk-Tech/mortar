@@ -7,10 +7,6 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#: src/settings/sections/About.tsx:101
-msgid "Mortar's licence"
-msgstr "Mortar's licence"
-
 #: src/console/PerformancePanelParts.tsx:179
 #: src/game/ProfileWorkspace.tsx:69
 msgid "Performance"
@@ -327,6 +323,10 @@ msgstr "Clean up…"
 msgid "Switch to Console"
 msgstr "Switch to Console"
 
+#: src/settings/sections/AboutDiagnostics.tsx:157
+msgid "Run checks…"
+msgstr "Run checks…"
+
 #: src/nxm/ArrivalDialog.tsx:89
 msgid "You started this download on Nexus, but there is no {gameName} profile to put it in yet."
 msgstr "You started this download on Nexus, but there is no {gameName} profile to put it in yet."
@@ -360,7 +360,7 @@ msgstr "Mortar finds your games through the launchers that installed them. You s
 msgid "Density"
 msgstr "Density"
 
-#: src/settings/sections/AboutDiagnostics.tsx:65
+#: src/settings/sections/AboutDiagnostics.tsx:100
 msgid "Mod store"
 msgstr "Mod store"
 
@@ -476,7 +476,7 @@ msgstr "Show a report first."
 
 #: src/profiles/ProfilesPage.tsx:186
 #: src/profiles/ProfilesPage.tsx:189
-#: src/settings/sections/AboutDiagnostics.tsx:138
+#: src/settings/sections/AboutDiagnostics.tsx:204
 msgid "Repair"
 msgstr "Repair"
 
@@ -744,10 +744,6 @@ msgstr "Unused store items"
 msgid "Steam's launch options for Stardew Valley lack the SMAPI line. In Steam, right-click the game, choose Properties, and paste this line into Launch Options."
 msgstr "Steam's launch options for Stardew Valley lack the SMAPI line. In Steam, right-click the game, choose Properties, and paste this line into Launch Options."
 
-#: src/settings/sections/AboutDiagnostics.tsx:49
-msgid "Nexus Mod Manager links"
-msgstr "Nexus Mod Manager links"
-
 #: src/settings/sections/DataUsage.tsx:224
 #: src/settings/sections/DataUsage.tsx:235
 msgid "Clear cache…"
@@ -790,6 +786,10 @@ msgstr "Mod list copied"
 #: src/game/ProfileMenuItems.tsx:168
 msgid "Already in Steam"
 msgstr "Already in Steam"
+
+#: src/settings/sections/AboutDiagnostics.tsx:85
+msgid "Nexus download links"
+msgstr "Nexus download links"
 
 #: src/queue/QueueSheet.tsx:56
 msgid "{parallel} · {counts}"
@@ -946,7 +946,7 @@ msgstr "{0, plural, one {# setting is still waiting for its mod to install.} oth
 msgid "Import profile"
 msgstr "Import profile"
 
-#: src/settings/sections/About.tsx:141
+#: src/settings/sections/AboutDiagnostics.tsx:218
 #: src/shell/AppMenu.tsx:141
 msgid "Save diagnostics…"
 msgstr "Save diagnostics…"
@@ -1136,10 +1136,6 @@ msgstr "Not in the file"
 #: src/mods/storeProblems.ts:50
 msgid "Could not dismiss the warning"
 msgstr "Could not dismiss the warning"
-
-#: src/settings/sections/About.tsx:70
-msgid "licence"
-msgstr "licence"
 
 #: src/game/Hero.tsx:133
 msgid "Unlink"
@@ -1544,10 +1540,6 @@ msgstr "Skip {0}"
 msgid "Latest on Nexus"
 msgstr "Latest on Nexus"
 
-#: src/settings/sections/AboutDiagnostics.tsx:110
-msgid "Run checks"
-msgstr "Run checks"
-
 #. placeholder {0}: seasons[fit.season] ?? ''
 #. placeholder {1}: fit.day
 #. placeholder {2}: fit.year
@@ -1632,6 +1624,10 @@ msgstr "Conflicts ({0})"
 msgid "Choose executable"
 msgstr "Choose executable"
 
+#: src/settings/sections/AboutDiagnostics.tsx:162
+msgid "Writes a zip with logs and settings, personal paths removed, to attach to a bug report."
+msgstr "Writes a zip with logs and settings, personal paths removed, to attach to a bug report."
+
 #: src/profiles/RecentChangesButton.tsx:52
 msgid "Switched on"
 msgstr "Switched on"
@@ -1705,7 +1701,8 @@ msgstr "Stardew Valley is now {0}. This profile last launched on {1}."
 msgid "Only in {targetName}"
 msgstr "Only in {targetName}"
 
-#: src/settings/sections/About.tsx:122
+#: src/settings/sections/About.tsx:83
+#: src/settings/sections/About.tsx:101
 msgid "Open-source licences"
 msgstr "Open-source licences"
 
@@ -1733,6 +1730,10 @@ msgstr "Could not start the Nexus download"
 #: src/settings/prefCopy.ts:262
 msgid "Scan the mods folder for changes Mortar did not make"
 msgstr "Scan the mods folder for changes Mortar did not make"
+
+#: src/settings/sections/AboutDiagnostics.tsx:147
+msgid "Check Mortar"
+msgstr "Check Mortar"
 
 #: src/share/ShareDialog.tsx:56
 msgid "{length} of {limit} characters · fits one Discord message"
@@ -1896,10 +1897,6 @@ msgstr "{count} checked later"
 msgid "Created “{0}”"
 msgstr "Created “{0}”"
 
-#: src/settings/sections/About.tsx:95
-msgid "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · and open-source libraries under their own licences."
-msgstr "SMAPI by Pathoschild (LGPL-3.0) · the Stardew mod dataset by Pathoschild (CC-BY-SA 4.0 / MIT) · Wails · and open-source libraries under their own licences."
-
 #: src/console/ConsoleTab.tsx:455
 msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
@@ -1960,7 +1957,7 @@ msgstr "Queue"
 msgid "Not found in the Mods folder"
 msgstr "Not found in the Mods folder"
 
-#: src/settings/sections/AboutDiagnostics.tsx:45
+#: src/settings/sections/AboutDiagnostics.tsx:81
 msgid "Data folder"
 msgstr "Data folder"
 
@@ -2178,6 +2175,10 @@ msgstr "Local-only mods kept ({0})"
 #: src/settings/SettingsPage.tsx:41
 msgid "Storage"
 msgstr "Storage"
+
+#: src/settings/sections/About.tsx:79
+msgid "Licence"
+msgstr "Licence"
 
 #: src/mods/storeEntries.ts:383
 msgid "Updated tags"
@@ -2586,11 +2587,6 @@ msgstr "Part of the OBS address; regenerate it if it leaks"
 msgid "{0, plural, one {Since last run: # change} other {Since last run: # changes}}"
 msgstr "{0, plural, one {Since last run: # change} other {Since last run: # changes}}"
 
-#. placeholder {0}: credits.length
-#: src/settings/sections/About.tsx:110
-msgid "Open-source licences ({0})"
-msgstr "Open-source licences ({0})"
-
 #: src/launch/playStart.ts:117
 #: src/launch/vanillaStart.ts:10
 msgid "Could not launch the game"
@@ -2878,8 +2874,8 @@ msgstr "Include disabled mods"
 msgid "Show live game info in OBS. Changes apply the next time you press Play."
 msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 
-#: src/settings/sections/About.tsx:86
-#: src/settings/sections/AboutDiagnostics.tsx:43
+#: src/settings/sections/About.tsx:64
+#: src/settings/sections/About.tsx:69
 #: src/settings/sections/Updates.tsx:157
 #: src/shell/AppMenu.tsx:77
 msgid "Mortar"
@@ -2909,10 +2905,6 @@ msgstr "Last run: {summary}"
 #: src/settings/sections/SmapiVersionRow.tsx:92
 msgid "Could not install SMAPI"
 msgstr "Could not install SMAPI"
-
-#: src/settings/sections/About.tsx:106
-msgid "Fedora 44 default wallpaper (f44-01-night) by the Fedora Design Team, CC-BY-SA 4.0."
-msgstr "Fedora 44 default wallpaper (f44-01-night) by the Fedora Design Team, CC-BY-SA 4.0."
 
 #: src/console/BisectDialog.tsx:119
 msgid "The original profile was not changed."
@@ -2956,7 +2948,7 @@ msgstr "Link copied"
 msgid "Version"
 msgstr "Version"
 
-#: src/settings/sections/AboutDiagnostics.tsx:51
+#: src/settings/sections/AboutDiagnostics.tsx:87
 msgid "Browser extension"
 msgstr "Browser extension"
 
@@ -3288,7 +3280,7 @@ msgstr "Checking profiles…"
 msgid "Theme"
 msgstr "Theme"
 
-#: src/settings/sections/AboutDiagnostics.tsx:55
+#: src/settings/sections/AboutDiagnostics.tsx:91
 msgid "Settings backups"
 msgstr "Settings backups"
 
@@ -3661,6 +3653,10 @@ msgstr "Use {0}'s version in {1}"
 #: src/mods/storeEntries.ts:226
 msgid "Could not remove {0}"
 msgstr "Could not remove {0}"
+
+#: src/settings/sections/About.tsx:84
+msgid "Libraries, icons and artwork built into Mortar, with their licences."
+msgstr "Libraries, icons and artwork built into Mortar, with their licences."
 
 #. js-lingui-explicit-id
 #: src/mods/configMenuControls.tsx:108
@@ -4179,10 +4175,6 @@ msgstr "Removed {0}"
 #: src/profiles/ProfileRow.tsx:110
 msgid "imported from a link"
 msgstr "imported from a link"
-
-#: src/settings/sections/AboutDiagnostics.tsx:61
-msgid "Control file"
-msgstr "Control file"
 
 #: src/settings/NexusMeter.tsx:13
 msgid "Request counts appear after Mortar talks to Nexus."
@@ -4896,9 +4888,13 @@ msgstr "Preparing transfer…"
 msgid "Update downloads a mod's new file from Nexus or GitHub. For other pages, download the archive and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details."
 msgstr "Update downloads a mod's new file from Nexus or GitHub. For other pages, download the archive and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details."
 
-#: src/settings/sections/AboutDiagnostics.tsx:92
+#: src/settings/sections/AboutDiagnostics.tsx:137
 msgid "Copied the report"
 msgstr "Copied the report"
+
+#: src/settings/sections/AboutDiagnostics.tsx:222
+msgid "Run again"
+msgstr "Run again"
 
 #: src/settings/sections/Appearance.tsx:171
 msgid "Reset to default"
@@ -4969,10 +4965,6 @@ msgstr "Choose cover image"
 #: src/mods/SplitCombineItems.tsx:44
 msgid "Install separately"
 msgstr "Install separately"
-
-#: src/settings/sections/About.tsx:70
-msgid "Credits"
-msgstr "Credits"
 
 #: src/profiles/EditProfileDialog.tsx:176
 msgid "Mountain"
@@ -5170,7 +5162,6 @@ msgstr "Crashed"
 msgid "Wilderness farm"
 msgstr "Wilderness farm"
 
-#: src/settings/sections/AboutDiagnostics.tsx:47
 #: src/shell/TitleBar.tsx:106
 msgid "Game"
 msgstr "Game"
@@ -5246,7 +5237,7 @@ msgstr "Patch-day review"
 msgid "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
 msgstr "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
 
-#: src/settings/sections/AboutDiagnostics.tsx:95
+#: src/settings/sections/AboutDiagnostics.tsx:140
 msgid "Could not copy the report"
 msgstr "Could not copy the report"
 
@@ -6038,10 +6029,6 @@ msgstr "Skills"
 msgid "Enable mods when installed"
 msgstr "Enable mods when installed"
 
-#: src/settings/sections/About.tsx:132
-msgid "Save diagnostics… writes a redacted zip for a bug report. Run checks for a live summary."
-msgstr "Save diagnostics… writes a redacted zip for a bug report. Run checks for a live summary."
-
 #: src/settings/prefCopy.ts:20
 msgid "Mortar stays on screen beside the game."
 msgstr "Mortar stays on screen beside the game."
@@ -6172,10 +6159,6 @@ msgstr "Dark"
 msgid "Open folder"
 msgstr "Open folder"
 
-#: src/settings/sections/About.tsx:104
-msgid "Default background"
-msgstr "Default background"
-
 #: src/settings/sections/Shortcuts.tsx:147
 msgid "Reset every shortcut?"
 msgstr "Reset every shortcut?"
@@ -6212,6 +6195,7 @@ msgstr "Allow Mortar through the firewall so nearby users can send profiles."
 msgid "Keep"
 msgstr "Keep"
 
+#: src/settings/sections/AboutDiagnostics.tsx:89
 #: src/settings/sections/General.tsx:224
 #: src/settings/sections/General.tsx:226
 msgid "Settings file"
@@ -6244,7 +6228,7 @@ msgstr "{0} not installed yet"
 
 #: src/console/PerformancePanelParts.tsx:218
 #: src/mods/ProblemsTab.tsx:415
-#: src/settings/sections/AboutDiagnostics.tsx:120
+#: src/settings/sections/AboutDiagnostics.tsx:212
 msgid "Copy report"
 msgstr "Copy report"
 
@@ -6256,7 +6240,7 @@ msgstr "Search mods"
 msgid "Music volume ({value}%)"
 msgstr "Music volume ({value}%)"
 
-#: src/settings/sections/About.tsx:89
+#: src/settings/sections/About.tsx:72
 msgid "AGPL-3.0 · Rethunk-AI/mortar"
 msgstr "AGPL-3.0 · Rethunk-AI/mortar"
 
@@ -6962,10 +6946,6 @@ msgstr "Manage profiles"
 msgid "Running {time}"
 msgstr "Running {time}"
 
-#: src/settings/sections/About.tsx:93
-msgid "Built on"
-msgstr "Built on"
-
 #: src/settings/sections/Shortcuts.tsx:41
 msgid "Switch to Saves"
 msgstr "Switch to Saves"
@@ -7259,7 +7239,6 @@ msgstr "colour"
 #: src/commandPalette/paletteLabels.ts:22
 #: src/mods/ModDetail.tsx:142
 #: src/mods/ProblemsTab.tsx:54
-#: src/settings/sections/AboutDiagnostics.tsx:53
 #: src/settings/SettingsPage.tsx:61
 #: src/shell/AppMenu.tsx:106
 #: src/shell/TitleBar.tsx:111
@@ -7446,8 +7425,8 @@ msgid "Couldn't reach Nexus"
 msgstr "Couldn't reach Nexus"
 
 #: src/commandPalette/paletteLabels.ts:19
-#: src/settings/sections/About.tsx:70
-#: src/settings/sections/AboutDiagnostics.tsx:101
+#: src/settings/sections/AboutDiagnostics.tsx:145
+#: src/settings/sections/AboutDiagnostics.tsx:181
 msgid "Diagnostics"
 msgstr "Diagnostics"
 
@@ -7517,6 +7496,11 @@ msgstr "Adult content"
 msgid "Downloads resume {0}."
 msgstr "Downloads resume {0}."
 
+#. placeholder {0}: credits.length
+#: src/settings/sections/About.tsx:87
+msgid "View ({0})"
+msgstr "View ({0})"
+
 #: src/settings/sections/GameSettings.tsx:280
 #: src/settings/sections/GameSettings.tsx:290
 msgid "Game install deleted"
@@ -7549,7 +7533,6 @@ msgid "Play the open profile without SMAPI"
 msgstr "Play the open profile without SMAPI"
 
 #: src/commandPalette/CommandPalette.tsx:134
-#: src/settings/sections/About.tsx:70
 #: src/settings/SettingsPage.tsx:44
 msgid "About"
 msgstr "About"
@@ -7668,10 +7651,6 @@ msgstr "{0} (optional)"
 msgid "last played {lastPlayedName} · {ago}"
 msgstr "last played {lastPlayedName} · {ago}"
 
-#: src/settings/sections/AboutDiagnostics.tsx:57
-msgid "Profile"
-msgstr "Profile"
-
 #. placeholder {0}: installable.length
 #. placeholder {0}: wants.length
 #: src/mods/ProblemsTab.tsx:497
@@ -7695,6 +7674,10 @@ msgstr "Include {0}"
 #: src/mods/describe.ts:23
 msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
+
+#: src/settings/sections/AboutDiagnostics.tsx:79
+msgid "Mortar version"
+msgstr "Mortar version"
 
 #: src/settings/prefCopy.ts:311
 #: src/settings/sections/SmapiVersionRow.tsx:104
@@ -7784,7 +7767,7 @@ msgstr "Player"
 #: src/firstrunTour/TourPopover.tsx:57
 #: src/game/Sidebar.tsx:336
 #: src/profiles/ProfilesPage.tsx:371
-#: src/settings/sections/AboutDiagnostics.tsx:59
+#: src/settings/sections/AboutDiagnostics.tsx:94
 #: src/settings/sections/DataUsage.tsx:211
 #: src/settings/sections/Shortcuts.tsx:205
 msgid "Profiles"
@@ -7830,6 +7813,10 @@ msgstr "Downloaded"
 #: src/queue/QueueHistory.tsx:83
 msgid "Cancelled"
 msgstr "Cancelled"
+
+#: src/settings/sections/AboutDiagnostics.tsx:83
+msgid "Games"
+msgstr "Games"
 
 #: src/settings/sections/General.tsx:71
 #: src/settings/sections/General.tsx:73
@@ -8282,6 +8269,10 @@ msgstr "This archive has no SMAPI mod where Mortar expects one. Pick the folder 
 msgid "Skip this update"
 msgstr "Skip this update"
 
+#: src/settings/sections/AboutDiagnostics.tsx:96
+msgid "Command-line control"
+msgstr "Command-line control"
+
 #: src/games/GameSelect.tsx:137
 #: src/games/GameSelect.tsx:149
 #: src/games/ProfileCards.tsx:50
@@ -8395,13 +8386,10 @@ msgstr "No eligible profiles."
 msgid "Check this download"
 msgstr "Check this download"
 
+#: src/settings/sections/AboutDiagnostics.tsx:169
 #: src/share/ShareDialog.tsx:423
 msgid "Save…"
 msgstr "Save…"
-
-#: src/settings/sections/About.tsx:70
-msgid "version"
-msgstr "version"
 
 #: src/settings/sections/General.tsx:212
 msgid "Walk through profiles, Play, mods, and the command palette"
@@ -8773,7 +8761,8 @@ msgstr "Restore second"
 #: src/profiles/CompareDialog.tsx:134
 #: src/profiles/HistoryPanel.tsx:117
 #: src/saves/BackupsDialog.tsx:204
-#: src/settings/sections/About.tsx:127
+#: src/settings/sections/About.tsx:106
+#: src/settings/sections/AboutDiagnostics.tsx:225
 #: src/settings/sections/DataStoreReport.tsx:386
 #: src/share/ImportDialog.tsx:211
 #: src/share/ImportDialog.tsx:214
@@ -8954,6 +8943,10 @@ msgstr "Command palette"
 msgid "No config.json yet"
 msgstr "No config.json yet"
 
+#: src/settings/sections/AboutDiagnostics.tsx:161
+msgid "Save diagnostics"
+msgstr "Save diagnostics"
+
 #: src/install/MissingDepsDialog.tsx:46
 #: src/launch/PrePlayDialog.tsx:178
 #: src/launch/SaveWarnDialog.tsx:89
@@ -8989,7 +8982,7 @@ msgstr "Share profiles on the local network"
 msgid "Could not set it in Steam"
 msgstr "Could not set it in Steam"
 
-#: src/settings/sections/AboutDiagnostics.tsx:63
+#: src/settings/sections/AboutDiagnostics.tsx:98
 msgid "Disk space"
 msgstr "Disk space"
 
@@ -9052,6 +9045,10 @@ msgstr "Untrack mods?"
 #: src/settings/prefCopy.ts:336
 msgid "Sidebar profile order"
 msgstr "Sidebar profile order"
+
+#: src/settings/sections/AboutDiagnostics.tsx:148
+msgid "Checks the data folder, games, Nexus download links and the browser extension."
+msgstr "Checks the data folder, games, Nexus download links and the browser extension."
 
 #: src/settings/sections/Downloads.tsx:110
 msgid "Preferred download server"

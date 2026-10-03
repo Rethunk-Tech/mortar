@@ -73,7 +73,7 @@ function Legend({
   const colors = useSegmentColors()
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2, rowGap: 0.75, pt: 1.5 }}>
-      {SEGMENT_ORDER.map((id) => (
+      {SEGMENT_ORDER.filter((id) => sizes === null || sizes[id] > 0).map((id) => (
         <Box
           key={id}
           sx={{
