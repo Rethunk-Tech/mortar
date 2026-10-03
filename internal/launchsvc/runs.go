@@ -71,6 +71,8 @@ type Crash struct {
 	RunID   string            `json:"runId"`
 	Mods    []launch.ModError `json:"mods"`
 	Cause   *Cause            `json:"cause,omitempty"`
+	// Crashed separates a crash from a run that only logged errors.
+	Crashed bool `json:"crashed"`
 }
 
 type runIndex struct {
@@ -360,7 +362,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		if run.Cause != nil {
 			crashCause = run.Cause
 		}
-		s.emit(CrashEvent, Crash{Game: g.ID(), Profile: profileID, RunID: id, Mods: stats.Mods, Cause: crashCause})
+		s.emit(CrashEvent, Crash{Game: g.ID(), Profile: profileID, RunID: id, Mods: stats.Mods, Cause: crashCause, Crashed: stats.Crashed})
 	}
 }
 
