@@ -33,7 +33,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
       ) : (
         <>
           <Typography sx={{ fontSize: 14 }}>
-            {t`Paste a Mortar share link, a .mortar file, or a Nexus collection link.`}
+            {t`Paste a share link, a collection link, or (Premium) a Nexus mod link with Ctrl+V.`}
           </Typography>
           <Box
             component="form"

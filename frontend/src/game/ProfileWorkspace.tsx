@@ -12,6 +12,7 @@ import { useNav } from '../nav/store.ts'
 import { NotesTab } from '../notes/NotesTab.tsx'
 import { SavesTab } from '../saves/SavesTab.tsx'
 import { openShare } from '../share/store.ts'
+import { usePasteLink } from '../share/usePasteLink.ts'
 import { ErrorBoundary } from '../shell/ErrorBoundary.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { ToolsMenu } from '../tools/ToolsMenu.tsx'
@@ -118,6 +119,7 @@ export function ProfileWorkspace({
   problemsTabCount: number | null
 }) {
   const tab = useTab((s) => s.tab)
+  usePasteLink(profile.id)
   return (
     <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
       <Hero key={`hero-${profile.id}`} profile={profile} game={game} />

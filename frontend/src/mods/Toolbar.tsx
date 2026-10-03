@@ -498,7 +498,7 @@ export function EmptyMods({ profileId }: { profileId: string }) {
         </>
       }
     >
-      {t`Add mods from an archive you downloaded, or find them on Nexus.`}
+      {t`Paste a share link, a collection link, or (Premium) a Nexus mod link with Ctrl+V.`}
     </EmptyState>
   )
 }
