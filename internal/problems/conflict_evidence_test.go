@@ -212,3 +212,24 @@ func TestTargetFieldScopesDataKeys(t *testing.T) {
 		t.Fatalf("Price on the same item still clashes, got %+v", same.AssetConflicts)
 	}
 }
+
+func TestListAppendsDoNotClash(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+
+	pack := func(id string) Installed {
+		root := t.TempDir()
+		writeManifest(t, root, id)
+		content := `{"Changes":[{"Action":"EditData","Target":"Data/Objects","TargetField":["16","ContextTags"],"Entries":{"#-1":"` + id + `_tag"}}]}`
+		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
+	}
+	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("A.Tags"), pack("B.Tags")})
+	if len(got.AssetConflicts) != 0 {
+		t.Fatalf("list appends never clash, got %+v", got.AssetConflicts)
+	}
+}

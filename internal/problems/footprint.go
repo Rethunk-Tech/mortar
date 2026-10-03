@@ -142,6 +142,10 @@ func dataShapes(root string, ch cpChange) []cpShape {
 	var entries map[string]json.RawMessage
 	if json.Unmarshal(ch.Entries, &entries) == nil {
 		for _, key := range slices.Sorted(maps.Keys(entries)) {
+			if key == "#-1" {
+				// Content Patcher appends "#-1" entries to the list: any number of packs can.
+				continue
+			}
 			out = append(out, cpShape{kind: 'p', key: "entry:" + base + packScopedKey(root, key), value: dataLiteral(entries[key])})
 		}
 	}

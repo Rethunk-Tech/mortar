@@ -204,7 +204,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 4
+const contentPackParserVersion = 5
 
 type packFileStamp struct {
 	Path    string `json:"path"`
