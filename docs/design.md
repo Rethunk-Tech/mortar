@@ -27,6 +27,10 @@ Remaining ([architecture.md](architecture.md#release)):
 - **CurseForge** as a third source, after the repository is public: apply for a 3rd-party API key, then build it without caching API data, with a User-Agent on every request, and honouring each author's distribution setting.
 
 ## Later
+- **Browse Nexus inside Mortar** (search, sort, mod details, then open on Nexus to download): parked 2026-10-02; the browser extension marks and relays from Nexus pages, and free accounts must still click Nexus's own download button.
+- **UI translations** beyond English: the Lingui machinery and extracted catalogs exist; needs chosen languages and translators. Parked 2026-10-02 (not v1).
+- **Steam Deck / gamepad mode** (larger targets, gamepad focus navigation, Game Mode): parked 2026-10-02 (not v1).
+- **macOS build**: Stardew runs on macOS, but Mortar has no macOS CI or test machine. Parked 2026-10-02 (not v1).
 
 Not in the first release; re-weigh only when asked:
 
