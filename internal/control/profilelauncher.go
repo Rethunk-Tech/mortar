@@ -81,8 +81,8 @@ type SteamLaunchOptionResult struct {
 	Cleared bool   `json:"cleared,omitempty"`
 }
 
-func (s *Services) gameSteamLaunchOption(gameID string, set, clear bool) (SteamLaunchOptionResult, error) {
-	if set && clear {
+func (s *Services) gameSteamLaunchOption(gameID string, set, unset bool) (SteamLaunchOptionResult, error) {
+	if set && unset {
 		return SteamLaunchOptionResult{}, fmt.Errorf("use either --set or --clear, not both")
 	}
 	if set {
@@ -92,7 +92,7 @@ func (s *Services) gameSteamLaunchOption(gameID string, set, clear bool) (SteamL
 		}
 		return SteamLaunchOptionResult{Options: opts, Set: true}, nil
 	}
-	if clear {
+	if unset {
 		opts, err := s.Games.ClearLaunchOption(gameID)
 		if err != nil {
 			return SteamLaunchOptionResult{}, err

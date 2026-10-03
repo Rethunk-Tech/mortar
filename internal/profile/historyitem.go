@@ -6,7 +6,7 @@ import (
 
 // RevertHistoryItem undoes one item of eventID through a normal profile mutation.
 func (s *Store) RevertHistoryItem(game, id, eventID, item string) (Profile, error) {
-	before, beforeSnap, _, diff, err := s.eventDiff(game, id, eventID)
+	before, beforeSnap, diff, err := s.eventDiff(game, id, eventID)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -30,31 +30,31 @@ func (s *Store) RevertHistoryItem(game, id, eventID, item string) (Profile, erro
 	}
 }
 
-func (s *Store) eventDiff(game, id, eventID string) ([]Entry, string, HistoryEvent, HistoryDiff, error) {
+func (s *Store) eventDiff(game, id, eventID string) ([]Entry, string, HistoryDiff, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if _, err := s.read(game, id); err != nil {
-		return nil, "", HistoryEvent{}, HistoryDiff{}, err
+		return nil, "", HistoryDiff{}, err
 	}
 	dir, err := s.profileDir(game, id)
 	if err != nil {
-		return nil, "", HistoryEvent{}, HistoryDiff{}, err
+		return nil, "", HistoryDiff{}, err
 	}
 	data, err := readHistory(dir)
 	if err != nil {
-		return nil, "", HistoryEvent{}, HistoryDiff{}, err
+		return nil, "", HistoryDiff{}, err
 	}
 	before, beforeID, ev, ok := predecessorOf(data, eventID)
 	if !ok {
-		return nil, "", HistoryEvent{}, HistoryDiff{}, fmt.Errorf("history event %s not found", eventID)
+		return nil, "", HistoryDiff{}, fmt.Errorf("history event %s not found", eventID)
 	}
 	after, ok := snapshotEntries(data, ev.SnapshotID)
 	if !ok {
-		return nil, "", HistoryEvent{}, HistoryDiff{}, fmt.Errorf("history snapshot %s not found", ev.SnapshotID)
+		return nil, "", HistoryDiff{}, fmt.Errorf("history snapshot %s not found", ev.SnapshotID)
 	}
 	cfgA := loadHistoryConfigs(dir, beforeID, before)
 	cfgB := loadHistoryConfigs(dir, ev.SnapshotID, after)
-	return before, beforeID, ev, DiffSnapshots(beforeID, ev.ID, before, after, cfgA, cfgB), nil
+	return before, beforeID, DiffSnapshots(beforeID, ev.ID, before, after, cfgA, cfgB), nil
 }
 
 func pickHistoryItem(items []HistoryItem, want string) (HistoryItem, error) {

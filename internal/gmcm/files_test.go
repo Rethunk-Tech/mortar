@@ -10,7 +10,7 @@ func TestReadWriteCaptureAndPending(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
 	field := "Volume"
-	cap := Capture{
+	menu := Capture{
 		Schema: Schema,
 		Mod:    ModInfo{ID: "Example.Mod", Name: "Example", Version: "1.0.0"},
 		Pages: []Page{{
@@ -22,15 +22,15 @@ func TestReadWriteCaptureAndPending(t *testing.T) {
 				FieldID: &field,
 				Name:    "Volume",
 				Value:   4.0,
-				Min:     ptr(0.0),
-				Max:     ptr(10.0),
+				Min:     new(0.0),
+				Max:     new(10.0),
 			}},
 		}},
 	}
-	if err := os.MkdirAll(filepath.Join(dir, captureDir), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(dir, captureDir), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := writeJSONAtomic(CapturePath(dir, "Example.Mod"), cap); err != nil {
+	if err := writeJSONAtomic(CapturePath(dir, "Example.Mod"), menu); err != nil {
 		t.Fatal(err)
 	}
 	got, err := ReadCapture(dir, "Example.Mod")
@@ -93,10 +93,10 @@ func TestParseSetFlag(t *testing.T) {
 func TestEditFromCapture(t *testing.T) {
 	t.Parallel()
 	field := "On"
-	cap := Capture{Pages: []Page{{ID: "main", Options: []Option{{
+	menu := Capture{Pages: []Page{{ID: "main", Options: []Option{{
 		Index: 1, Kind: "bool", FieldID: &field, Name: "On", Value: false,
 	}}}}}
-	edit, err := EditFromCapture(cap, "main", 1, "true")
+	edit, err := EditFromCapture(menu, "main", 1, "true")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,5 +104,3 @@ func TestEditFromCapture(t *testing.T) {
 		t.Fatalf("%+v", edit)
 	}
 }
-
-func ptr(v float64) *float64 { return &v }

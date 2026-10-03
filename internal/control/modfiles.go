@@ -1,7 +1,6 @@
 package control
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/Rethunk-AI/mortar/internal/nexus"
@@ -14,7 +13,7 @@ type ModExtraFile struct {
 	Label string `json:"label"`
 }
 
-func (s *Services) modExtraFiles(_ context.Context, gameID string, prof profile.Profile, modID string) ([]ModExtraFile, error) {
+func (s *Services) modExtraFiles(prof profile.Profile, modID string) ([]ModExtraFile, error) {
 	e, ok := entryOf(prof, modID)
 	if !ok {
 		return nil, fmt.Errorf("profile %s has no mod %q", prof.Name, modID)

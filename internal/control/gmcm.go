@@ -18,11 +18,11 @@ func (s *Services) modsMenu(p Params) (any, error) {
 	if p.Value != "" {
 		return s.setGmcm(p.Game, prof.ID, uid, p.Value)
 	}
-	cap, err := s.Profiles.GmcmMenu(p.Game, prof.ID, uid)
+	menu, err := s.Profiles.GmcmMenu(p.Game, prof.ID, uid)
 	if err != nil {
 		return nil, err
 	}
-	return formatMenu(cap), nil
+	return formatMenu(menu), nil
 }
 
 func (s *Services) setGmcm(game, profile, uid, spec string) (any, error) {
@@ -30,11 +30,11 @@ func (s *Services) setGmcm(game, profile, uid, spec string) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	cap, err := s.Profiles.GmcmMenu(game, profile, uid)
+	menu, err := s.Profiles.GmcmMenu(game, profile, uid)
 	if err != nil {
 		return nil, err
 	}
-	edit, err := gmcm.EditFromCapture(cap, page, index, raw)
+	edit, err := gmcm.EditFromCapture(menu, page, index, raw)
 	if err != nil {
 		return nil, err
 	}
@@ -66,9 +66,9 @@ func replaceEdit(cur []gmcm.Edit, next gmcm.Edit) []gmcm.Edit {
 	return out
 }
 
-func formatMenu(cap gmcm.Capture) []string {
+func formatMenu(menu gmcm.Capture) []string {
 	var lines []string
-	for _, page := range cap.Pages {
+	for _, page := range menu.Pages {
 		for _, opt := range page.Options {
 			lines = append(lines, fmt.Sprintf("%s/%d %s %v", page.ID, opt.Index, opt.Name, opt.Value))
 		}

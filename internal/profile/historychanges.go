@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"slices"
 	"time"
 )
 
@@ -46,9 +47,9 @@ func snapshotsAround(data historyFileData, since time.Time) (a, b string) {
 	}
 	last := data.Events[len(data.Events)-1]
 	b = last.ID
-	for i := len(data.Events) - 1; i >= 0; i-- {
-		if !data.Events[i].At.After(since) {
-			return data.Events[i].ID, b
+	for _, ev := range slices.Backward(data.Events) {
+		if !ev.At.After(since) {
+			return ev.ID, b
 		}
 	}
 	return "", b
@@ -56,6 +57,6 @@ func snapshotsAround(data historyFileData, since time.Time) (a, b string) {
 
 // EventDiff is the change set of one history event against its predecessor.
 func (s *Store) EventDiff(game, id, eventID string) (HistoryDiff, error) {
-	_, _, _, diff, err := s.eventDiff(game, id, eventID)
+	_, _, diff, err := s.eventDiff(game, id, eventID)
 	return diff, err
 }

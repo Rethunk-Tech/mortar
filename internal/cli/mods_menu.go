@@ -13,16 +13,17 @@ func writeModsMenu(w io.Writer, lines []string) {
 
 func modsMenuArgs(rest []string) (game, profile, mod, set string, err error) {
 	var pos []string
-	for i := 0; i < len(rest); i++ {
-		if rest[i] == "--set" {
-			if i+1 >= len(rest) {
-				return "", "", "", "", fmt.Errorf("mods menu --set needs page/index=value")
-			}
-			set = rest[i+1]
-			i++
+	for len(rest) > 0 {
+		arg := rest[0]
+		rest = rest[1:]
+		if arg != "--set" {
+			pos = append(pos, arg)
 			continue
 		}
-		pos = append(pos, rest[i])
+		if len(rest) == 0 {
+			return "", "", "", "", fmt.Errorf("mods menu --set needs page/index=value")
+		}
+		set, rest = rest[0], rest[1:]
 	}
 	if len(pos) < 3 {
 		return "", "", "", "", fmt.Errorf("mods menu <game> <profile> <mod>")

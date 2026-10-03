@@ -24,8 +24,8 @@ func ParseSetFlag(spec string) (page string, index int, value string, err error)
 	return page, index, value, nil
 }
 
-func EditFromCapture(cap Capture, page string, index int, value string) (Edit, error) {
-	for _, p := range cap.Pages {
+func EditFromCapture(menu Capture, page string, index int, value string) (Edit, error) {
+	for _, p := range menu.Pages {
 		if p.ID != page {
 			continue
 		}

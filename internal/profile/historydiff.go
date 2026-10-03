@@ -155,9 +155,7 @@ func appendEntryPair(out *HistoryDiff, id string, be, ae Entry, oldCfg, newCfg m
 			OldKey: be.Key, NewKey: ae.Key,
 		})
 	}
-	for _, ch := range enabledChanges(be, ae) {
-		out.Enabled = append(out.Enabled, ch)
-	}
+	out.Enabled = append(out.Enabled, enabledChanges(be, ae)...)
 	files := configFileDiff(oldCfg, newCfg)
 	if len(files) > 0 {
 		out.Configs = append(out.Configs, DiffConfig{ID: id, Name: entryName(ae), Key: ae.Key, Files: files})

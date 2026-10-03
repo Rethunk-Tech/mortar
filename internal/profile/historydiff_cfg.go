@@ -44,27 +44,7 @@ func loadHistoryConfigs(dir, snapshotID string, entries []Entry) map[string]map[
 	root := filepath.Join(dir, historyFilesDir, snapshotID)
 	for _, e := range entries {
 		id := entryIdentity(e)
-		files := map[string][]byte{}
-		base := filepath.Join(root, e.Key)
-		_ = filepath.WalkDir(base, func(path string, d fs.DirEntry, err error) error {
-			if err != nil || d.IsDir() {
-				return nil
-			}
-			rel, relErr := filepath.Rel(base, path)
-			if relErr != nil {
-				return nil
-			}
-			slash := filepath.ToSlash(rel)
-			if !datadir.WritableRel(slash) {
-				return nil
-			}
-			body, readErr := fsx.ReadFile(path)
-			if readErr != nil {
-				return nil
-			}
-			files[slash] = body
-			return nil
-		})
+		files := configFilesIn(filepath.Join(root, e.Key))
 		if len(files) > 0 {
 			out[id] = files
 		}
@@ -86,25 +66,26 @@ func readLiveConfigs(mods string, entries []Entry) map[string]map[string][]byte 
 func configFilesIn(root string) map[string][]byte {
 	files := map[string][]byte{}
 	_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
-			return nil
+		if err == nil && !d.IsDir() {
+			addConfigFile(files, root, path)
 		}
-		rel, relErr := filepath.Rel(root, path)
-		if relErr != nil {
-			return nil
-		}
-		slash := filepath.ToSlash(rel)
-		if !datadir.WritableRel(slash) {
-			return nil
-		}
-		body, readErr := fsx.ReadFile(path)
-		if readErr != nil {
-			return nil
-		}
-		files[slash] = body
 		return nil
 	})
 	return files
+}
+
+func addConfigFile(files map[string][]byte, root, path string) {
+	rel, err := filepath.Rel(root, path)
+	if err != nil {
+		return
+	}
+	slash := filepath.ToSlash(rel)
+	if !datadir.WritableRel(slash) {
+		return
+	}
+	if body, err := fsx.ReadFile(path); err == nil {
+		files[slash] = body
+	}
 }
 
 func restoreHistoryConfig(dir, snapshotID, key, file string) error {

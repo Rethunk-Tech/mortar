@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 const (
@@ -91,7 +93,7 @@ func ReadPending(profileDir, uniqueID string) (Pending, error) {
 }
 
 func WritePending(profileDir, uniqueID string, edits []Edit) error {
-	if err := os.MkdirAll(filepath.Join(profileDir, pendingDir), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(profileDir, pendingDir), 0o750); err != nil {
 		return err
 	}
 	if len(edits) == 0 {
@@ -113,7 +115,7 @@ func ReadResult(profileDir, uniqueID string) (Result, error) {
 }
 
 func readJSON(path string, dest any) error {
-	raw, err := os.ReadFile(path)
+	raw, err := fsx.ReadFile(path)
 	if err != nil {
 		return err
 	}
