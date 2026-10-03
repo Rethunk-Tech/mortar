@@ -1,7 +1,12 @@
+import { useLingui } from '@lingui/react/macro'
 import { useEffect } from 'react'
 import { Get } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { LastRunCrashed } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
 import { useLoader } from '../loader/store.ts'
 import { loadUpdates } from '../mods/updates.ts'
+import { reportBug } from '../shell/reportBug.ts'
+import { useToasts } from '../toasts/store.ts'
+import { lastRunCrashToast } from './crashToast.ts'
 import { maybeToastSmapi } from './smapiToast.ts'
 
 function ignore() {
@@ -13,9 +18,23 @@ function shouldRunStartupCheck(on: boolean | null | undefined): boolean {
 }
 
 export function useStartupChecks() {
+  const { t } = useLingui()
   useEffect(() => {
     const run = async () => {
       const s = await Get()
+      const crashed = await LastRunCrashed()
+      const toast = lastRunCrashToast(
+        crashed,
+        {
+          title: t`Mortar closed unexpectedly last time`,
+          body: t`Report it so it can be fixed.`,
+          action: t`Report a bug`,
+        },
+        () => reportBug(s.lastGame ?? ''),
+      )
+      if (toast) {
+        useToasts.getState().push(toast)
+      }
       if (shouldRunStartupCheck(s.checkModUpdatesOnStart)) {
         const last = s.lastProfile ?? {}
         await Promise.all(
@@ -31,7 +50,7 @@ export function useStartupChecks() {
       }
     }
     run().catch(ignore)
-  }, [])
+  }, [t])
 }
 
 export { shouldRunStartupCheck }
