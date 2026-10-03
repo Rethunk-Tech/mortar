@@ -151,12 +151,12 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 			k := req.key(req.Mods[i])
 			switch {
 			case err == nil:
+				// The API answered: a mod it does not list is known to have no data, not unknown.
 				out[i] = got[strings.ToLower(req.Mods[i].ID)]
 				out[i].ID = req.Mods[i].ID
-				if out[i].Known {
-					store[k] = entry[UpdateResult]{Fetched: now, Value: out[i]}
-					dirty = true
-				}
+				out[i].Known = true
+				store[k] = entry[UpdateResult]{Fetched: now, Value: out[i]}
+				dirty = true
 			case store[k].Value.Known:
 				out[i] = store[k].Value
 			default:
