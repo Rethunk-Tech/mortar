@@ -93,6 +93,52 @@ func TestLegacyRootFieldsMigrateToStardew(t *testing.T) {
 	}
 }
 
+func TestBatchPrefDefaultsAndSet(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	s := Defaults()
+	g := s.GamePrefs(GameStardew)
+	if s.ProfileOrder != ProfileOrderManual || s.AutoRetryDownloads != AutoRetryOff || s.PauseDownloadsWhilePlaying {
+		t.Fatalf("order/retry/pause defaults: %q %q %v", s.ProfileOrder, s.AutoRetryDownloads, s.PauseDownloadsWhilePlaying)
+	}
+	if s.SidebarBadges != SidebarBadgesAll || s.VerifyNexusMD5 || s.LaunchAtLogin || s.StartMinimised || s.RememberWindow {
+		t.Fatal("badge / verify / session defaults")
+	}
+	if ToggleOn(s.ShareIncludeDisabledMods) || !ToggleOn(s.ShareIncludeFomodChoices) || !ToggleOn(s.ShareIncludeNotes) || !ToggleOn(s.ShareIncludeConfigFiles) {
+		t.Fatal("share content defaults")
+	}
+	if s.ExtensionConnection != ExtensionAllow || g.BackupLocation != "" || g.ConflictScanDepth != ConflictScanFull {
+		t.Fatalf("extension/backup/scan defaults: %q %q %q", s.ExtensionConnection, g.BackupLocation, g.ConflictScanDepth)
+	}
+	if err := ApplyKey(&s, "autoRetryDownloads", AutoRetry3); err != nil {
+		t.Fatal(err)
+	}
+	if err := ApplyKey(&s, "pauseDownloadsWhilePlaying", "true"); err != nil {
+		t.Fatal(err)
+	}
+	if err := ApplyKey(&s, "shareIncludeDisabledMods", "true"); err != nil {
+		t.Fatal(err)
+	}
+	if err := ApplyKey(&s, "extensionConnection", ExtensionOff); err != nil {
+		t.Fatal(err)
+	}
+	retry, err := s.Lookup("autoRetryDownloads")
+	if err != nil || retry != AutoRetry3 {
+		t.Fatalf("auto-retry %q %v", retry, err)
+	}
+	pause, err := s.Lookup("pauseDownloadsWhilePlaying")
+	if err != nil || pause != "true" {
+		t.Fatalf("pause %q %v", pause, err)
+	}
+	disabled, err := s.Lookup("shareIncludeDisabledMods")
+	if err != nil || disabled != "true" {
+		t.Fatalf("share disabled %q %v", disabled, err)
+	}
+	ext, err := s.Lookup("extensionConnection")
+	if err != nil || ext != ExtensionOff {
+		t.Fatalf("extension %q %v", ext, err)
+	}
+}
+
 func TestPortableRoundTripGameScope(t *testing.T) {
 	s := Defaults()
 	if err := ApplyKeyGame(&s, "smapiBuilds", SmapiBuildsInclude, GameStardew); err != nil {

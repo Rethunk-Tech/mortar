@@ -83,6 +83,8 @@ func TestAutoEnableRequirementsAlwaysOnly(t *testing.T) {
 }
 
 func TestPrefsExportImportRoundTrip(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	src := Defaults()
 	src.Language = "en"
 	src.Accent = "moss"
@@ -106,6 +108,11 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"defaultLaunchMethod": "direct", "showSmapiConsole": "false", "skipPlayCheck": "true", "consoleLevel": "debug",
 		"consoleTimestamps": "false", "consoleFollow": "false", "lanName": "Workshop",
 		"lanAutoAcceptSameAccount": "true", "downloadFolder": "/var/tmp/mortar-dl",
+		"profileOrder": "name", "autoRetryDownloads": "3", "pauseDownloadsWhilePlaying": "true",
+		"sidebarBadges": "problems", "backupLocation": "/var/tmp/mortar-bak", "conflictScanDepth": "skipImages",
+		"shareIncludeDisabledMods": "true", "shareIncludeFomodChoices": "false", "shareIncludeNotes": "false",
+		"shareIncludeConfigFiles": "false", "verifyNexusMD5": "true", "launchAtLogin": "true",
+		"startMinimised": "true", "rememberWindow": "true", "extensionConnection": "off",
 	}
 	for _, p := range PrefKeys() {
 		v, ok := overrides[p.Key]

@@ -60,6 +60,19 @@ type Portable struct {
 	LanName                      string                   `json:"lanName"`
 	LanAutoAcceptSameAccount     bool                     `json:"lanAutoAcceptSameAccount"`
 	DownloadFolder               string                   `json:"downloadFolder"`
+	ProfileOrder                 string                   `json:"profileOrder"`
+	AutoRetryDownloads           string                   `json:"autoRetryDownloads"`
+	PauseDownloadsWhilePlaying   bool                     `json:"pauseDownloadsWhilePlaying"`
+	SidebarBadges                string                   `json:"sidebarBadges"`
+	ShareIncludeDisabledMods     *bool                    `json:"shareIncludeDisabledMods"`
+	ShareIncludeFomodChoices     *bool                    `json:"shareIncludeFomodChoices"`
+	ShareIncludeNotes            *bool                    `json:"shareIncludeNotes"`
+	ShareIncludeConfigFiles      *bool                    `json:"shareIncludeConfigFiles"`
+	VerifyNexusMD5               bool                     `json:"verifyNexusMD5"`
+	LaunchAtLogin                bool                     `json:"launchAtLogin"`
+	StartMinimised               bool                     `json:"startMinimised"`
+	RememberWindow               bool                     `json:"rememberWindow"`
+	ExtensionConnection          string                   `json:"extensionConnection"`
 	Games                        map[string]*GameSettings `json:"games"`
 
 	// Legacy root game fields, accepted on import then moved into Games.
@@ -108,6 +121,9 @@ var portableFields = []string{
 	"reuseFomodChoices", "driftChecks",
 	"autoInstallMortarUpdates", "autoTrackNexus",
 	"lanName", "lanAutoAcceptSameAccount", "downloadFolder",
+	"profileOrder", "autoRetryDownloads", "pauseDownloadsWhilePlaying", "sidebarBadges",
+	"shareIncludeDisabledMods", "shareIncludeFomodChoices", "shareIncludeNotes", "shareIncludeConfigFiles",
+	"verifyNexusMD5", "launchAtLogin", "startMinimised", "rememberWindow", "extensionConnection",
 	"games",
 }
 
@@ -327,6 +343,19 @@ func fillPortable(s Settings) Portable {
 		LanName:                      s.LanName,
 		LanAutoAcceptSameAccount:     s.LanAutoAcceptSameAccount,
 		DownloadFolder:               s.DownloadFolder,
+		ProfileOrder:                 s.ProfileOrder,
+		AutoRetryDownloads:           s.AutoRetryDownloads,
+		PauseDownloadsWhilePlaying:   s.PauseDownloadsWhilePlaying,
+		SidebarBadges:                s.SidebarBadges,
+		ShareIncludeDisabledMods:     s.ShareIncludeDisabledMods,
+		ShareIncludeFomodChoices:     s.ShareIncludeFomodChoices,
+		ShareIncludeNotes:            s.ShareIncludeNotes,
+		ShareIncludeConfigFiles:      s.ShareIncludeConfigFiles,
+		VerifyNexusMD5:               s.VerifyNexusMD5,
+		LaunchAtLogin:                s.LaunchAtLogin,
+		StartMinimised:               s.StartMinimised,
+		RememberWindow:               s.RememberWindow,
+		ExtensionConnection:          s.ExtensionConnection,
 		Games:                        games,
 	}
 }
@@ -472,6 +501,45 @@ func copyPortable(dst *Settings, p Portable, present map[string]struct{}) {
 	}
 	if has(present, "downloadFolder") {
 		dst.DownloadFolder = p.DownloadFolder
+	}
+	if has(present, "profileOrder") {
+		dst.ProfileOrder = p.ProfileOrder
+	}
+	if has(present, "autoRetryDownloads") {
+		dst.AutoRetryDownloads = p.AutoRetryDownloads
+	}
+	if has(present, "pauseDownloadsWhilePlaying") {
+		dst.PauseDownloadsWhilePlaying = p.PauseDownloadsWhilePlaying
+	}
+	if has(present, "sidebarBadges") {
+		dst.SidebarBadges = p.SidebarBadges
+	}
+	if has(present, "shareIncludeDisabledMods") {
+		dst.ShareIncludeDisabledMods = p.ShareIncludeDisabledMods
+	}
+	if has(present, "shareIncludeFomodChoices") {
+		dst.ShareIncludeFomodChoices = p.ShareIncludeFomodChoices
+	}
+	if has(present, "shareIncludeNotes") {
+		dst.ShareIncludeNotes = p.ShareIncludeNotes
+	}
+	if has(present, "shareIncludeConfigFiles") {
+		dst.ShareIncludeConfigFiles = p.ShareIncludeConfigFiles
+	}
+	if has(present, "verifyNexusMD5") {
+		dst.VerifyNexusMD5 = p.VerifyNexusMD5
+	}
+	if has(present, "launchAtLogin") {
+		dst.LaunchAtLogin = p.LaunchAtLogin
+	}
+	if has(present, "startMinimised") {
+		dst.StartMinimised = p.StartMinimised
+	}
+	if has(present, "rememberWindow") {
+		dst.RememberWindow = p.RememberWindow
+	}
+	if has(present, "extensionConnection") {
+		dst.ExtensionConnection = p.ExtensionConnection
 	}
 	if has(present, "games") && p.Games != nil {
 		if dst.Games == nil {

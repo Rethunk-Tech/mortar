@@ -72,6 +72,8 @@ const defaults: Settings = {
       consoleLevel: 'info',
       consoleTimestamps: true,
       consoleFollow: true,
+      backupLocation: '',
+      conflictScanDepth: 'full',
     },
   },
   parallelDownloads: 3,
@@ -101,6 +103,19 @@ const defaults: Settings = {
   lanName: '',
   lanAutoAcceptSameAccount: false,
   downloadFolder: '',
+  profileOrder: 'manual',
+  autoRetryDownloads: 'off',
+  pauseDownloadsWhilePlaying: false,
+  sidebarBadges: 'problemsAndUpdates',
+  shareIncludeDisabledMods: false,
+  shareIncludeFomodChoices: true,
+  shareIncludeNotes: true,
+  shareIncludeConfigFiles: true,
+  verifyNexusMD5: false,
+  launchAtLogin: false,
+  startMinimised: false,
+  rememberWindow: false,
+  extensionConnection: 'allow',
 } as Settings
 
 export const useSettings = create<Settings>(() => defaults)

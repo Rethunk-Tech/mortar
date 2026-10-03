@@ -271,10 +271,99 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
   }
 }
 
+function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
+  return {
+    profileOrder: {
+      label: i18n._(msg`Sidebar profile order`),
+      description: i18n._(msg`How profiles are ordered in the sidebar`),
+      options: [
+        { value: 'manual', label: i18n._(msg`Manual`) },
+        { value: 'name', label: i18n._(msg`Name`) },
+        { value: 'lastPlayed', label: i18n._(msg`Last played`) },
+      ],
+    },
+    backupLocation: {
+      label: i18n._(msg`Backup location`),
+      description: i18n._(msg`Folder for launch backups. Empty uses the default.`),
+    },
+    autoRetryDownloads: {
+      label: i18n._(msg`Auto-retry failed downloads`),
+      description: i18n._(msg`How many times to retry a failed download`),
+      options: [
+        { value: 'off', label: i18n._(msg`Off`) },
+        { value: '1', label: i18n._(msg`1 time`) },
+        { value: '3', label: i18n._(msg`3 times`) },
+      ],
+    },
+    pauseDownloadsWhilePlaying: {
+      label: i18n._(msg`Pause downloads while the game runs`),
+      description: i18n._(msg`Hold the download queue until the game exits`),
+    },
+    sidebarBadges: {
+      label: i18n._(msg`Sidebar badge counts`),
+      description: i18n._(msg`What the sidebar shows on profile badges`),
+      options: [
+        { value: 'problemsAndUpdates', label: i18n._(msg`Problems and updates`) },
+        { value: 'problems', label: i18n._(msg`Problems only`) },
+        { value: 'off', label: i18n._(msg`Off`) },
+      ],
+    },
+    conflictScanDepth: {
+      label: i18n._(msg`Conflict scan depth`),
+      description: i18n._(msg`How thoroughly Mortar analyses overlapping files`),
+      options: [
+        { value: 'full', label: i18n._(msg`Full`) },
+        { value: 'skipImages', label: i18n._(msg`Skip image overlap analysis`) },
+      ],
+    },
+    shareIncludeDisabledMods: {
+      label: i18n._(msg`Share switched-off mods`),
+      description: i18n._(msg`Default for Share and Export. You can change it per share.`),
+    },
+    shareIncludeFomodChoices: {
+      label: i18n._(msg`Share FOMOD choices`),
+      description: i18n._(msg`Default for Share and Export. You can change it per share.`),
+    },
+    shareIncludeNotes: {
+      label: i18n._(msg`Share notes`),
+      description: i18n._(msg`Default for Share and Export. You can change it per share.`),
+    },
+    shareIncludeConfigFiles: {
+      label: i18n._(msg`Share config files`),
+      description: i18n._(msg`Default for Share and Export. You can change it per share.`),
+    },
+    verifyNexusMD5: {
+      label: i18n._(msg`Verify downloads with Nexus MD5`),
+      description: i18n._(msg`Check the file hash when Nexus provides one`),
+    },
+    launchAtLogin: {
+      label: i18n._(msg`Launch Mortar at login`),
+      description: i18n._(msg`Start Mortar when you sign in to this computer`),
+    },
+    startMinimised: {
+      label: i18n._(msg`Start minimised to tray`),
+      description: i18n._(msg`Open in the tray instead of showing the window`),
+    },
+    rememberWindow: {
+      label: i18n._(msg`Remember window size and position`),
+      description: i18n._(msg`Restore the last window bounds on startup`),
+    },
+    extensionConnection: {
+      label: i18n._(msg`Browser extension connection`),
+      description: i18n._(msg`Allow the native host to talk to the browser extension`),
+      options: [
+        { value: 'allow', label: i18n._(msg`Allow`) },
+        { value: 'off', label: i18n._(msg`Off`) },
+      ],
+    },
+  }
+}
+
 export function prefCopy(i18n: I18n, key: string): PrefCopy {
   return (
     windowAndMods(i18n)[key] ??
     displayAndData(i18n)[key] ??
-    logsAndNexus(i18n)[key] ?? { label: key }
+    logsAndNexus(i18n)[key] ??
+    batchPrefs(i18n)[key] ?? { label: key }
   )
 }

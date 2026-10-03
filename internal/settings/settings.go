@@ -136,25 +136,38 @@ type Settings struct {
 	// BackgroundBadgeChecks fills sidebar badges for other profiles. Nil means on.
 	BackgroundBadgeChecks *bool `json:"backgroundBadgeChecks"`
 	// StartScreen is last (last opened profile) or gameselect.
-	StartScreen              string `json:"startScreen"`
-	Dates                    string `json:"dates"`
-	TrashRetentionDays       int    `json:"trashRetentionDays"`
-	HistoryEventsKept        int    `json:"historyEventsKept"`
-	NotifyDownloadFinished   *bool  `json:"notifyDownloadFinished"`
-	NotifyDownloadFailed     *bool  `json:"notifyDownloadFailed"`
-	NotifyRunCrashed         *bool  `json:"notifyRunCrashed"`
-	Density                  string `json:"density"`
-	GridCardSize             string `json:"gridCardSize"`
-	ShowAuthorOnCards        *bool  `json:"showAuthorOnCards"`
-	ReduceMotion             string `json:"reduceMotion"`
-	ProfileHero              string `json:"profileHero"`
-	ReuseFomodChoices        *bool  `json:"reuseFomodChoices"`
-	DriftChecks              *bool  `json:"driftChecks"`
-	AutoInstallMortarUpdates *bool  `json:"autoInstallMortarUpdates"`
-	AutoTrackNexus           bool   `json:"autoTrackNexus"`
-	LanName                  string `json:"lanName"`
-	LanAutoAcceptSameAccount bool   `json:"lanAutoAcceptSameAccount"`
-	DownloadFolder           string `json:"downloadFolder"`
+	StartScreen                string `json:"startScreen"`
+	Dates                      string `json:"dates"`
+	TrashRetentionDays         int    `json:"trashRetentionDays"`
+	HistoryEventsKept          int    `json:"historyEventsKept"`
+	NotifyDownloadFinished     *bool  `json:"notifyDownloadFinished"`
+	NotifyDownloadFailed       *bool  `json:"notifyDownloadFailed"`
+	NotifyRunCrashed           *bool  `json:"notifyRunCrashed"`
+	Density                    string `json:"density"`
+	GridCardSize               string `json:"gridCardSize"`
+	ShowAuthorOnCards          *bool  `json:"showAuthorOnCards"`
+	ReduceMotion               string `json:"reduceMotion"`
+	ProfileHero                string `json:"profileHero"`
+	ReuseFomodChoices          *bool  `json:"reuseFomodChoices"`
+	DriftChecks                *bool  `json:"driftChecks"`
+	AutoInstallMortarUpdates   *bool  `json:"autoInstallMortarUpdates"`
+	AutoTrackNexus             bool   `json:"autoTrackNexus"`
+	LanName                    string `json:"lanName"`
+	LanAutoAcceptSameAccount   bool   `json:"lanAutoAcceptSameAccount"`
+	DownloadFolder             string `json:"downloadFolder"`
+	ProfileOrder               string `json:"profileOrder"`
+	AutoRetryDownloads         string `json:"autoRetryDownloads"`
+	PauseDownloadsWhilePlaying bool   `json:"pauseDownloadsWhilePlaying"`
+	SidebarBadges              string `json:"sidebarBadges"`
+	ShareIncludeDisabledMods   *bool  `json:"shareIncludeDisabledMods"`
+	ShareIncludeFomodChoices   *bool  `json:"shareIncludeFomodChoices"`
+	ShareIncludeNotes          *bool  `json:"shareIncludeNotes"`
+	ShareIncludeConfigFiles    *bool  `json:"shareIncludeConfigFiles"`
+	VerifyNexusMD5             bool   `json:"verifyNexusMD5"`
+	LaunchAtLogin              bool   `json:"launchAtLogin"`
+	StartMinimised             bool   `json:"startMinimised"`
+	RememberWindow             bool   `json:"rememberWindow"`
+	ExtensionConnection        string `json:"extensionConnection"`
 	// Games holds per-game prefs (Stardew Valley today).
 	Games map[string]*GameSettings `json:"games"`
 

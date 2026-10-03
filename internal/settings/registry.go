@@ -39,6 +39,8 @@ type GameSettings struct {
 	ConsoleLevel                string `json:"consoleLevel"`
 	ConsoleTimestamps           *bool  `json:"consoleTimestamps"`
 	ConsoleFollow               *bool  `json:"consoleFollow"`
+	BackupLocation              string `json:"backupLocation"`
+	ConflictScanDepth           string `json:"conflictScanDepth"`
 }
 
 // PrefSpec is one registry row, served to the CLI and frontend.
@@ -93,6 +95,22 @@ var registry = []pref{
 	strPref("lanName", ScopeApp, func(s Settings, _ string) string { return s.LanName }, func(s *Settings, _, v string) { s.LanName = v }),
 	boolPref("lanAutoAcceptSameAccount", ScopeApp, func(s Settings, _ string) bool { return s.LanAutoAcceptSameAccount }, func(s *Settings, _ string, on bool) { s.LanAutoAcceptSameAccount = on }),
 	strPref("downloadFolder", ScopeApp, func(s Settings, _ string) string { return s.DownloadFolder }, func(s *Settings, _, v string) { s.DownloadFolder = v }),
+	enumPref("profileOrder", ScopeApp, ProfileOrderManual, profileOrderValues, func(s Settings, _ string) string { return s.ProfileOrder }, func(s *Settings, _, v string) { s.ProfileOrder = v }),
+	enumPref("autoRetryDownloads", ScopeApp, AutoRetryOff, autoRetryValues, func(s Settings, _ string) string { return s.AutoRetryDownloads }, func(s *Settings, _, v string) { s.AutoRetryDownloads = v }),
+	boolPref("pauseDownloadsWhilePlaying", ScopeApp, func(s Settings, _ string) bool { return s.PauseDownloadsWhilePlaying }, func(s *Settings, _ string, on bool) { s.PauseDownloadsWhilePlaying = on }),
+	enumPref("sidebarBadges", ScopeApp, SidebarBadgesAll, sidebarBadgesValues, func(s Settings, _ string) string { return s.SidebarBadges }, func(s *Settings, _, v string) { s.SidebarBadges = v }),
+	ptrPref("shareIncludeDisabledMods", ScopeApp, false, func(s Settings, _ string) *bool { return s.ShareIncludeDisabledMods }, func(s *Settings, _ string, on bool) { s.ShareIncludeDisabledMods = &on }),
+	ptrPref("shareIncludeFomodChoices", ScopeApp, true, func(s Settings, _ string) *bool { return s.ShareIncludeFomodChoices }, func(s *Settings, _ string, on bool) { s.ShareIncludeFomodChoices = &on }),
+	ptrPref("shareIncludeNotes", ScopeApp, true, func(s Settings, _ string) *bool { return s.ShareIncludeNotes }, func(s *Settings, _ string, on bool) { s.ShareIncludeNotes = &on }),
+	ptrPref("shareIncludeConfigFiles", ScopeApp, true, func(s Settings, _ string) *bool { return s.ShareIncludeConfigFiles }, func(s *Settings, _ string, on bool) { s.ShareIncludeConfigFiles = &on }),
+	boolPref("verifyNexusMD5", ScopeApp, func(s Settings, _ string) bool { return s.VerifyNexusMD5 }, func(s *Settings, _ string, on bool) { s.VerifyNexusMD5 = on }),
+	boolPref("launchAtLogin", ScopeApp, func(s Settings, _ string) bool { return s.LaunchAtLogin }, func(s *Settings, _ string, on bool) {
+		s.LaunchAtLogin = on
+		_ = applyAutostart(on)
+	}),
+	boolPref("startMinimised", ScopeApp, func(s Settings, _ string) bool { return s.StartMinimised }, func(s *Settings, _ string, on bool) { s.StartMinimised = on }),
+	boolPref("rememberWindow", ScopeApp, func(s Settings, _ string) bool { return s.RememberWindow }, func(s *Settings, _ string, on bool) { s.RememberWindow = on }),
+	enumPref("extensionConnection", ScopeApp, ExtensionAllow, extensionConnectionValues, func(s Settings, _ string) string { return s.ExtensionConnection }, func(s *Settings, _, v string) { s.ExtensionConnection = v }),
 
 	overridable(enumPref("backupBeforePlay", ScopeGame, BackupBeforePlayChanged, backupBeforePlayValues, func(s Settings, g string) string { return s.GamePrefs(g).BackupBeforePlay }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BackupBeforePlay = v; putGame(s, g, gp) })),
 	overridable(intPref("launchBackupsKept", ScopeGame, DefaultLaunchBackupsKept, MinLaunchBackupsKept, MaxLaunchBackupsKept, func(s Settings, g string) int { return s.GamePrefs(g).LaunchBackupsKept }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.LaunchBackupsKept = n; putGame(s, g, gp) })),
@@ -126,6 +144,8 @@ var registry = []pref{
 		putGame(s, g, gp)
 	}),
 	ptrPref("consoleFollow", ScopeGame, true, func(s Settings, g string) *bool { return s.GamePrefs(g).ConsoleFollow }, func(s *Settings, g string, on bool) { gp := s.GamePrefs(g); gp.ConsoleFollow = &on; putGame(s, g, gp) }),
+	strPref("backupLocation", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).BackupLocation }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BackupLocation = v; putGame(s, g, gp) }),
+	enumPref("conflictScanDepth", ScopeGame, ConflictScanFull, conflictScanValues, func(s Settings, g string) string { return s.GamePrefs(g).ConflictScanDepth }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.ConflictScanDepth = v; putGame(s, g, gp) }),
 }
 
 func defaultGameSettings() GameSettings {
@@ -145,6 +165,8 @@ func defaultGameSettings() GameSettings {
 		ConsoleLevel:                ConsoleLevelInfo,
 		ConsoleTimestamps:           on(),
 		ConsoleFollow:               on(),
+		BackupLocation:              "",
+		ConflictScanDepth:           ConflictScanFull,
 	}
 }
 
@@ -229,6 +251,10 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.ConsoleFollow != nil {
 		dst.ConsoleFollow = src.ConsoleFollow
 	}
+	dst.BackupLocation = src.BackupLocation
+	if src.ConflictScanDepth != "" {
+		dst.ConflictScanDepth = src.ConflictScanDepth
+	}
 }
 
 func normalizeGame(g *GameSettings) {
@@ -272,6 +298,9 @@ func normalizeGame(g *GameSettings) {
 	if g.ConsoleFollow == nil {
 		g.ConsoleFollow = d.ConsoleFollow
 	}
+	if !slices.Contains(conflictScanValues, g.ConflictScanDepth) {
+		g.ConflictScanDepth = d.ConflictScanDepth
+	}
 }
 
 func validateGame(g GameSettings) error {
@@ -304,6 +333,9 @@ func validateGame(g GameSettings) error {
 	}
 	if !slices.Contains(consoleLevelValues, g.ConsoleLevel) {
 		return fmt.Errorf("console level must be trace, debug, info, warn or error, got %q", g.ConsoleLevel)
+	}
+	if !slices.Contains(conflictScanValues, g.ConflictScanDepth) {
+		return fmt.Errorf("conflict scan depth must be full or skipImages, got %q", g.ConflictScanDepth)
 	}
 	return nil
 }

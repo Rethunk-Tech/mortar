@@ -27,6 +27,10 @@ export function NexusDownloadPrefs() {
     <>
       <PrefByKey prefKey="autoTrackNexus" />
       <PrefByKey prefKey="parallelDownloads" />
+      <PrefByKey prefKey="autoRetryDownloads" />
+      <PrefByKey prefKey="pauseDownloadsWhilePlaying" />
+      <PrefByKey prefKey="verifyNexusMD5" />
+      <PrefByKey prefKey="extensionConnection" />
       <SettingRow label={copy.label} description={copy.description}>
         <PrefSelect
           value={value}

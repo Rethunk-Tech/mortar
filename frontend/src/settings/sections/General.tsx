@@ -25,11 +25,34 @@ const maxLanPort = 65_535
 const defaultLanPort = 8080
 
 function WindowLaunch() {
-  return <PrefKeys keys={['onPlay', 'startScreen', 'defaultLaunchMethod', 'showSmapiConsole']} />
+  return (
+    <PrefKeys
+      keys={[
+        'onPlay',
+        'startScreen',
+        'defaultLaunchMethod',
+        'showSmapiConsole',
+        'launchAtLogin',
+        'startMinimised',
+        'rememberWindow',
+      ]}
+    />
+  )
 }
 
 function LanIdentity() {
-  return <PrefKeys keys={['lanName', 'lanAutoAcceptSameAccount']} />
+  return (
+    <PrefKeys
+      keys={[
+        'lanName',
+        'lanAutoAcceptSameAccount',
+        'shareIncludeDisabledMods',
+        'shareIncludeFomodChoices',
+        'shareIncludeNotes',
+        'shareIncludeConfigFiles',
+      ]}
+    />
+  )
 }
 
 function ModsPrefs() {
@@ -52,7 +75,10 @@ function ModsPrefs() {
         'listSortDir',
         'confirmRemovals',
         'cosmeticConflicts',
+        'conflictScanDepth',
         'backgroundBadgeChecks',
+        'profileOrder',
+        'sidebarBadges',
       ]}
     >
       <PrefKeys
@@ -81,7 +107,16 @@ function ModsPrefs() {
           ]}
         />
       </SettingRow>
-      <PrefKeys keys={['confirmRemovals', 'cosmeticConflicts', 'backgroundBadgeChecks']} />
+      <PrefKeys
+        keys={[
+          'confirmRemovals',
+          'cosmeticConflicts',
+          'conflictScanDepth',
+          'backgroundBadgeChecks',
+          'profileOrder',
+          'sidebarBadges',
+        ]}
+      />
     </SettingsSection>
   )
 }

@@ -65,6 +65,24 @@ const (
 	ConsoleLevelWarn  = "warn"
 	ConsoleLevelError = "error"
 
+	ProfileOrderManual     = "manual"
+	ProfileOrderName       = "name"
+	ProfileOrderLastPlayed = "lastPlayed"
+
+	AutoRetryOff = "off"
+	AutoRetry1   = "1"
+	AutoRetry3   = "3"
+
+	SidebarBadgesAll      = "problemsAndUpdates"
+	SidebarBadgesProblems = "problems"
+	SidebarBadgesOff      = "off"
+
+	ConflictScanFull       = "full"
+	ConflictScanSkipImages = "skipImages"
+
+	ExtensionAllow = "allow"
+	ExtensionOff   = "off"
+
 	DefaultRunsKept                   = 20
 	DefaultConsoleLogCap              = 20000
 	DefaultParallelDownloads          = 3
@@ -124,6 +142,19 @@ func defaultPrefs() Settings {
 		LanName:                    "",
 		LanAutoAcceptSameAccount:   false,
 		DownloadFolder:             "",
+		ProfileOrder:               ProfileOrderManual,
+		AutoRetryDownloads:         AutoRetryOff,
+		PauseDownloadsWhilePlaying: false,
+		SidebarBadges:              SidebarBadgesAll,
+		ShareIncludeDisabledMods:   off(),
+		ShareIncludeFomodChoices:   on(),
+		ShareIncludeNotes:          on(),
+		ShareIncludeConfigFiles:    on(),
+		VerifyNexusMD5:             false,
+		LaunchAtLogin:              false,
+		StartMinimised:             false,
+		RememberWindow:             false,
+		ExtensionConnection:        ExtensionAllow,
 		Games:                      map[string]*GameSettings{},
 	}
 }
@@ -198,6 +229,30 @@ func normalizePrefs(s *Settings) {
 	if s.AutoInstallMortarUpdates == nil {
 		s.AutoInstallMortarUpdates = on()
 	}
+	if !slices.Contains(profileOrderValues, s.ProfileOrder) {
+		s.ProfileOrder = ProfileOrderManual
+	}
+	if !slices.Contains(autoRetryValues, s.AutoRetryDownloads) {
+		s.AutoRetryDownloads = AutoRetryOff
+	}
+	if !slices.Contains(sidebarBadgesValues, s.SidebarBadges) {
+		s.SidebarBadges = SidebarBadgesAll
+	}
+	if s.ShareIncludeDisabledMods == nil {
+		s.ShareIncludeDisabledMods = off()
+	}
+	if s.ShareIncludeFomodChoices == nil {
+		s.ShareIncludeFomodChoices = on()
+	}
+	if s.ShareIncludeNotes == nil {
+		s.ShareIncludeNotes = on()
+	}
+	if s.ShareIncludeConfigFiles == nil {
+		s.ShareIncludeConfigFiles = on()
+	}
+	if !slices.Contains(extensionConnectionValues, s.ExtensionConnection) {
+		s.ExtensionConnection = ExtensionAllow
+	}
 	if s.Games == nil {
 		s.Games = map[string]*GameSettings{}
 	}
@@ -251,6 +306,18 @@ func validatePrefs(s Settings) error {
 	if !slices.Contains(heroValues, s.ProfileHero) {
 		return fmt.Errorf("profile hero must be full, compact or hidden, got %q", s.ProfileHero)
 	}
+	if !slices.Contains(profileOrderValues, s.ProfileOrder) {
+		return fmt.Errorf("profile order must be manual, name or lastPlayed, got %q", s.ProfileOrder)
+	}
+	if !slices.Contains(autoRetryValues, s.AutoRetryDownloads) {
+		return fmt.Errorf("auto-retry downloads must be off, 1 or 3, got %q", s.AutoRetryDownloads)
+	}
+	if !slices.Contains(sidebarBadgesValues, s.SidebarBadges) {
+		return fmt.Errorf("sidebar badges must be problemsAndUpdates, problems or off, got %q", s.SidebarBadges)
+	}
+	if !slices.Contains(extensionConnectionValues, s.ExtensionConnection) {
+		return fmt.Errorf("extension connection must be allow or off, got %q", s.ExtensionConnection)
+	}
 	for _, g := range s.Games {
 		if g == nil {
 			continue
@@ -263,21 +330,26 @@ func validatePrefs(s Settings) error {
 }
 
 var (
-	onPlayValues           = []string{OnPlayStay, OnPlayMinimise, OnPlayHide}
-	backupBeforePlayValues = []string{BackupBeforePlayChanged, BackupBeforePlayAlways, BackupBeforePlayNever}
-	cosmeticValues         = []string{CosmeticCollapsed, CosmeticExpanded, CosmeticHidden}
-	startScreenValues      = []string{StartScreenLast, StartScreenGameSelect}
-	datesValues            = []string{DatesRelative, DatesAbsolute}
-	modsViewValues         = []string{ModsViewGrid, ModsViewList}
-	densityValues          = []string{DensityComfortable, DensityCompact}
-	gridCardValues         = []string{GridCardSmall, GridCardMedium, GridCardLarge}
-	reduceMotionValues     = []string{ReduceMotionSystem, ReduceMotionAlways, ReduceMotionNever}
-	heroValues             = []string{HeroFull, HeroCompact, HeroHidden}
-	enableReqValues        = []string{EnableReqAlways, EnableReqAsk, EnableReqNever}
-	missingReqValues       = []string{MissingReqAsk, MissingReqAutodownload, MissingReqNever}
-	smapiBuildsValues      = []string{SmapiBuildsNever, SmapiBuildsShow, SmapiBuildsInclude}
-	launchMethodValues     = []string{LaunchSteam, LaunchDirect}
-	consoleLevelValues     = []string{ConsoleLevelTrace, ConsoleLevelDebug, ConsoleLevelInfo, ConsoleLevelWarn, ConsoleLevelError}
+	onPlayValues              = []string{OnPlayStay, OnPlayMinimise, OnPlayHide}
+	backupBeforePlayValues    = []string{BackupBeforePlayChanged, BackupBeforePlayAlways, BackupBeforePlayNever}
+	cosmeticValues            = []string{CosmeticCollapsed, CosmeticExpanded, CosmeticHidden}
+	startScreenValues         = []string{StartScreenLast, StartScreenGameSelect}
+	datesValues               = []string{DatesRelative, DatesAbsolute}
+	modsViewValues            = []string{ModsViewGrid, ModsViewList}
+	densityValues             = []string{DensityComfortable, DensityCompact}
+	gridCardValues            = []string{GridCardSmall, GridCardMedium, GridCardLarge}
+	reduceMotionValues        = []string{ReduceMotionSystem, ReduceMotionAlways, ReduceMotionNever}
+	heroValues                = []string{HeroFull, HeroCompact, HeroHidden}
+	enableReqValues           = []string{EnableReqAlways, EnableReqAsk, EnableReqNever}
+	missingReqValues          = []string{MissingReqAsk, MissingReqAutodownload, MissingReqNever}
+	smapiBuildsValues         = []string{SmapiBuildsNever, SmapiBuildsShow, SmapiBuildsInclude}
+	launchMethodValues        = []string{LaunchSteam, LaunchDirect}
+	consoleLevelValues        = []string{ConsoleLevelTrace, ConsoleLevelDebug, ConsoleLevelInfo, ConsoleLevelWarn, ConsoleLevelError}
+	profileOrderValues        = []string{ProfileOrderManual, ProfileOrderName, ProfileOrderLastPlayed}
+	autoRetryValues           = []string{AutoRetryOff, AutoRetry1, AutoRetry3}
+	sidebarBadgesValues       = []string{SidebarBadgesAll, SidebarBadgesProblems, SidebarBadgesOff}
+	conflictScanValues        = []string{ConflictScanFull, ConflictScanSkipImages}
+	extensionConnectionValues = []string{ExtensionAllow, ExtensionOff}
 )
 
 func parseBool(raw string) (bool, error) {
