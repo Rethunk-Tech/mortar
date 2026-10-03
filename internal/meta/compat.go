@@ -8,7 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
+
+	"github.com/Rethunk-AI/mortar/internal/jsonc"
 )
 
 // Wiki-backed compatibility list behind https://smapi.io/mods. SMAPI.Web (Pathoschild/SMAPI
@@ -115,7 +116,7 @@ func (n *flexInt) UnmarshalJSON(b []byte) error {
 }
 
 func parseCompatJSON(b []byte) (CompatIndex, error) {
-	b = stripJSONC(b)
+	b = jsonc.Clean(b)
 	mods, err := decodeCompatMods(b)
 	if err != nil {
 		return CompatIndex{}, err
@@ -296,84 +297,4 @@ func replacementOf(raw json.RawMessage) string {
 		return strings.TrimSpace(many[0])
 	}
 	return ""
-}
-
-func stripJSONC(b []byte) []byte {
-	var out bytes.Buffer
-	out.Grow(len(b))
-	inStr, esc, slash, block := false, false, false, false
-	for i := 0; i < len(b); i++ {
-		c := b[i]
-		if block {
-			if c == '*' && i+1 < len(b) && b[i+1] == '/' {
-				block = false
-				i++
-			}
-			continue
-		}
-		if slash {
-			slash = false
-			if !inStr && c == '/' {
-				for i < len(b) && b[i] != '\n' {
-					i++
-				}
-				if i < len(b) {
-					out.WriteByte('\n')
-				}
-				continue
-			}
-			if !inStr && c == '*' {
-				block = true
-				continue
-			}
-			out.WriteByte('/')
-		}
-		if !inStr && c == '/' {
-			slash = true
-			continue
-		}
-		if inStr {
-			out.WriteByte(c)
-			if esc {
-				esc = false
-				continue
-			}
-			if c == '\\' {
-				esc = true
-				continue
-			}
-			if c == '"' {
-				inStr = false
-			}
-			continue
-		}
-		if c == '"' {
-			inStr = true
-			out.WriteByte(c)
-			continue
-		}
-		out.WriteByte(c)
-	}
-	s := out.Bytes()
-	return stripTrailingCommas(s)
-}
-
-func stripTrailingCommas(b []byte) []byte {
-	var out []byte
-	i := 0
-	for i < len(b) {
-		if b[i] == ',' {
-			j := i + 1
-			for j < len(b) && unicode.IsSpace(rune(b[j])) {
-				j++
-			}
-			if j < len(b) && (b[j] == '}' || b[j] == ']') {
-				i = j
-				continue
-			}
-		}
-		out = append(out, b[i])
-		i++
-	}
-	return out
 }
