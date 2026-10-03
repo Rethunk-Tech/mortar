@@ -39,7 +39,7 @@ const (
 
 // verbs are the first words that make an invocation a command-line call rather than a window launch.
 var verbs = map[string]bool{
-	"games": true, "profiles": true, "profile": true, "history": true, "mods": true, "mod": true, "install": true,
+	"games": true, "game": true, "profiles": true, "profile": true, "history": true, "mods": true, "mod": true, "install": true,
 	"conflicts": true, "problems": true, "who": true, "updates": true, "share": true, "export": true, "open": true, "play": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
 	"downloads": true,
@@ -79,8 +79,13 @@ type cmd struct {
 	game          string
 	profileFlag   string
 	updateFlag    bool
+	unlinkFlag    bool
+	reasonFlag    string
 	changelogFlag bool
 	everywhere    bool
+	removeFlag    bool
+	setFlag       bool
+	clearFlag     bool
 	filter        string
 	args          []string
 }
@@ -206,10 +211,26 @@ func (c *cmd) parse(args []string) error {
 			c.wait = true
 		case a == "--update":
 			c.updateFlag = true
+		case a == "--unlink":
+			c.unlinkFlag = true
+		case a == "--reason":
+			if i+1 >= len(args) {
+				return usageError{"--reason needs a value"}
+			}
+			i++
+			c.reasonFlag = args[i]
+		case strings.HasPrefix(a, "--reason="):
+			c.reasonFlag = strings.TrimPrefix(a, "--reason=")
 		case a == "--changelog":
 			c.changelogFlag = true
 		case a == "--everywhere":
 			c.everywhere = true
+		case a == "--remove":
+			c.removeFlag = true
+		case a == "--set":
+			c.setFlag = true
+		case a == "--clear":
+			c.clearFlag = true
 		case a == "--format":
 			if i+1 >= len(args) {
 				return usageError{"--format needs md or text"}
@@ -313,6 +334,8 @@ func (c *cmd) dispatch() error {
 		return open(a[0])
 	case "games":
 		return c.games()
+	case "game":
+		return c.gameCmd()
 	case "doctor":
 		return c.doctor()
 	case "launchers":
@@ -348,8 +371,15 @@ func (c *cmd) dispatch() error {
 	case "tools":
 		return c.tools()
 	case "profile":
-		if len(c.args) > 1 && c.args[1] == "set" {
-			return c.profileSet()
+		if len(c.args) > 1 {
+			switch c.args[1] {
+			case "set":
+				return c.profileSet()
+			case "shortcut":
+				return c.profileShortcut()
+			case "steam":
+				return c.profileSteam()
+			}
 		}
 		return c.profile()
 	case "status", "stop":
@@ -365,6 +395,8 @@ func (c *cmd) dispatch() error {
 			switch c.args[1] {
 			case "enable", "disable", "remove", "pin", "unpin", "tag", "untag", "category", "note", "skip-version", "split", "combine":
 				return c.modsChange(c.args[1])
+			case "files":
+				return c.modsFiles()
 			case "config":
 				return c.modsConfig()
 			case "compat":
@@ -934,7 +966,7 @@ func (c *cmd) nexus() error {
 
 func (c *cmd) profile() error {
 	if len(c.args) < 2 {
-		return usageError{"profile needs create, rename, copy, compare, match, collection, history, revert, load-order, repair, list or delete"}
+		return usageError{"profile needs create, rename, copy, compare, match, collection, history, revert, load-order, repair, list, shortcut, steam or delete"}
 	}
 	sub := c.args[1]
 	var p profile.Profile
@@ -988,7 +1020,17 @@ func (c *cmd) profile() error {
 		if err != nil {
 			return err
 		}
-		p := control.Params{Game: a[0], Profile: a[1], All: c.updateFlag}
+		if c.unlinkFlag && c.updateFlag {
+			return usageError{"profile collection: use either --update or --unlink"}
+		}
+		p := control.Params{Game: a[0], Profile: a[1], All: c.updateFlag, Unlink: c.unlinkFlag}
+		if c.unlinkFlag {
+			var prof profile.Profile
+			if err := c.ask("profile.collection", p, &prof, readTimeout); err != nil {
+				return err
+			}
+			return c.emit(prof, func() { fmt.Fprintln(c.out, "unlinked collection") })
+		}
 		if c.updateFlag {
 			var res sharesvc.Result
 			if err := c.ask("profile.collection", p, &res, installTimeout); err != nil {
@@ -1287,6 +1329,10 @@ func (c *cmd) modsChange(sub string) error {
 			return err
 		}
 		return c.emit(r, func() { fmt.Fprintf(c.out, "Removed %s.\n", strings.Join(r.Mods, ", ")) })
+	case "pin", "unpin":
+		if sub == "pin" {
+			p.Value = c.reasonFlag
+		}
 	}
 	var rows []control.ModRow
 	if err := c.ask("mods."+sub, p, &rows, readTimeout); err != nil {
@@ -2038,7 +2084,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   profile rename <game> <profile> <name>
   profile copy <game> <profile> [name]
   profile match <game> <profile> <link-or-file> preview a friend's profile
-  profile collection <game> <profile> [--update]  collection link, revision, latest
+  profile collection <game> <profile> [--update|--unlink]  collection link, revision, latest
   bundles <game>                         list saved bundles
   bundles apply <game> <bundle> <profile> apply a bundle
   nexus untrack <game> --all|--unused    bulk untrack Nexus mods
@@ -2053,11 +2099,15 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   history <game> --all                   recent changes across profiles
   profile revert <game> <profile> <eventId>
   profile load-order <game> <profile>    enabled mods in SMAPI load order
+  profile shortcut <game> <profile> [--remove]  desktop shortcut that plays this profile
+  profile steam <game> <profile>         add this profile to Steam as a non-Steam game
+  game steam-launch-option <game> [--set|--clear]  read or change Steam's loader launch options
   mods <game> <profile>                   mods with version, state and source
-  mods enable|disable|pin|unpin|remove <game> <profile> <mod id>...
+  mods enable|disable|pin|unpin|remove <game> <profile> <mod id>...  (pin accepts --reason)
   mods tag|untag|category|note|skip-version <game> <profile> <mod> [value]
   mods split <game> <profile> <mod> <file>
   mods combine <game> <profile> <mod> <into-mod>
+  mods files <game> <profile> <mod>       linked extra files (keys for mods split)
   mods config <game> <profile> <mod> [<field> <value>]  print or set one config field
   mods compat <game> <profile>            non-ok SMAPI compatibility-list rows
   mod <game> <profile> <mod id>           one mod: dependencies, dependents, conflicts, settings

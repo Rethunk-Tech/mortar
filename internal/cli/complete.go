@@ -44,8 +44,9 @@ func completion(w io.Writer, shell string) error {
 
 // subverbs are the second words of the verbs that take one.
 var subverbs = map[string][]string{
-	"profile":    {"create", "rename", "copy", "delete", "compare", "match", "collection", "history", "revert", "load-order", "repair", "list"},
-	"mods":       {"enable", "disable", "pin", "unpin", "remove", "tag", "untag", "category", "note", "skip-version", "split", "combine", "config", "compat"},
+	"profile":    {"create", "rename", "copy", "delete", "compare", "match", "collection", "history", "revert", "load-order", "repair", "list", "shortcut", "steam"},
+	"mods":       {"enable", "disable", "pin", "unpin", "remove", "tag", "untag", "category", "note", "skip-version", "split", "combine", "files", "config", "compat"},
+	"game":       {"steam-launch-option"},
 	"bundles":    {"apply"},
 	"nexus":      {"untrack"},
 	"trash":      {"list", "restore", "delete", "empty"},
@@ -68,6 +69,8 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 	switch words[0] {
 	case "games", "doctor", "queue", "downloads", "backups", "cache", "data", "settings", "version", "help", "open", "completion", "launchers":
 		return 0, 0, 0
+	case "game":
+		return 2, 0, 0
 	case "bundles":
 		return 1, 0, 0
 	case "nexus":
@@ -84,6 +87,9 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 	case "profile":
 		if len(words) > 1 && words[1] == "create" {
 			return 2, 0, 0
+		}
+		if len(words) > 1 && (words[1] == "shortcut" || words[1] == "steam") {
+			return 2, 3, 0
 		}
 		return 2, 3, 0
 	case "mods":
