@@ -8,7 +8,7 @@ import {
   SetBackgroundImage,
   SetListSort,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
-import { columnLabel } from '../../mods/ListColumnMenu.tsx'
+import { columnLabel } from '../../mods/columnLabel.ts'
 import { LIST_COLUMN_IDS, sanitizeListSort } from '../../mods/listColumns.ts'
 import { type AccentName, accents } from '../../theme/accents.ts'
 import { errorText } from '../../toasts/report.ts'

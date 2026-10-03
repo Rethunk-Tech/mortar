@@ -15,8 +15,6 @@ import {
   sortableKeyboardCoordinates,
   useSortable,
 } from '@dnd-kit/sortable'
-import { i18n, type MessageDescriptor } from '@lingui/core'
-import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -34,6 +32,7 @@ import { type MouseEvent, type ReactNode, useRef, useState } from 'react'
 import { SetListSort } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { columnLabel } from './columnLabel.ts'
 import {
   LIST_COLUMN_GROUPS,
   type ListColumnId,
@@ -42,30 +41,6 @@ import {
   nextListSort,
   type sanitizeListSort,
 } from './listColumns.ts'
-
-const COLUMN_LABELS: Record<ListColumnId, MessageDescriptor> = {
-  on: msg`On`,
-  name: msg`Name`,
-  version: msg`Version`,
-  latest: msg`Latest on Nexus`,
-  uniqueId: msg`UniqueID`,
-  author: msg`Author`,
-  source: msg`Source`,
-  category: msg`Category`,
-  endorsements: msg`Endorsements`,
-  downloads: msg`Downloads`,
-  updated: msg`Updated on Nexus`,
-  installed: msg`Installed`,
-  needs: msg`Needs`,
-  status: msg`Status`,
-  notes: msg`Notes and tags`,
-  lastRun: msg`Last run`,
-  size: msg`Size`,
-}
-
-function columnLabel(id: ListColumnId): string {
-  return i18n._(COLUMN_LABELS[id])
-}
 
 const DRAG_TINT = 0.16
 
@@ -309,4 +284,4 @@ function ListColumnMenu({
   )
 }
 
-export { columnLabel, HeaderCells, ListColumnMenu }
+export { HeaderCells, ListColumnMenu }
