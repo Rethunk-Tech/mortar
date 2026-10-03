@@ -118,6 +118,37 @@ func shapesOverlap(a, b []cpShape) bool {
 
 var whole = []cpShape{{kind: 'w'}}
 
+func dataShapes(ch cpChange) []cpShape {
+	var out []cpShape
+	var entries map[string]json.RawMessage
+	if json.Unmarshal(ch.Entries, &entries) == nil {
+		for _, key := range slices.Sorted(maps.Keys(entries)) {
+			out = append(out, cpShape{kind: 'p', key: "entry:" + key, value: dataLiteral(entries[key])})
+		}
+	}
+	var fields map[string]json.RawMessage
+	if json.Unmarshal(ch.Fields, &fields) == nil {
+		for _, key := range slices.Sorted(maps.Keys(fields)) {
+			var inner map[string]json.RawMessage
+			if json.Unmarshal(fields[key], &inner) == nil && len(inner) > 0 {
+				for _, field := range slices.Sorted(maps.Keys(inner)) {
+					out = append(out, cpShape{kind: 'p', key: "field:" + key + "." + field, value: dataLiteral(inner[field])})
+				}
+				continue
+			}
+			out = append(out, cpShape{kind: 'p', key: "field:" + key, value: dataLiteral(fields[key])})
+		}
+	}
+	return out
+}
+
+func dataLiteral(raw json.RawMessage) string {
+	if hasToken(string(raw)) {
+		return ""
+	}
+	return string(stripJSONNoise(raw))
+}
+
 // editShapes is what one EditImage or EditMap change writes. An edit that only adds warps, rewrites text
 // properties or sets tile properties has no shape: Content Patcher merges those, so they never overwrite
 // another pack's work.

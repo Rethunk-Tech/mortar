@@ -20,6 +20,7 @@ import { IconAction } from '../shell/IconAction.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { ConflictWhy } from './ConflictWhy.tsx'
 import { useDescribe, useDescribeDrift } from './describe.ts'
 import { DriftButtons, FixButton } from './problemFixButtons.tsx'
 import {
@@ -82,8 +83,10 @@ function useRowText() {
 }
 
 function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) {
+  const { t } = useLingui()
   const info = isInfoRow(row)
   const { text, note: authorNote } = useRowText()(row)
+  const [why, setWhy] = useState(false)
   return (
     <Box
       role="alert"
@@ -122,6 +125,21 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
             {authorNote}
           </Typography>
         )}
+        {row.kind === 'asset' ? (
+          <Box sx={{ mt: 0.75 }}>
+            <ButtonBase
+              onClick={() => setWhy(!why)}
+              aria-expanded={why}
+              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, borderRadius: '4px' }}
+            >
+              {why ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
+                {t`Why?`}
+              </Typography>
+            </ButtonBase>
+            {why ? <ConflictWhy asset={row.asset} /> : null}
+          </Box>
+        ) : null}
       </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, justifyContent: 'flex-end' }}>
         {row.kind === 'drift' ? (

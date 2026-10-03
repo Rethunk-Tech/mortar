@@ -27,10 +27,11 @@ const (
 	kindLoad      = "Load"
 	kindEditImage = "EditImage"
 	kindEditMap   = "EditMap"
+	kindEditData  = "EditData"
 )
 
 // AssetConflict is two or more enabled Content Patcher packs that Load the same target (hard)
-// or EditImage/EditMap the same target (soft). EditData on the same target is not a conflict.
+// or EditImage/EditMap the same target, or EditData the same entry or field (soft).
 type AssetConflict struct {
 	Kind       string   `json:"kind"` // "load" (hard) or "edit" (soft)
 	Target     string   `json:"target"`
@@ -43,8 +44,28 @@ type AssetConflict struct {
 	// Cosmetic marks an edit conflict whose every overlap is harmless (see harmless): shown, never counted.
 	Cosmetic bool `json:"cosmetic"`
 	// Fixes are settings that switch off every clashing edit of one pack.
-	Fixes []ConflictFix `json:"fixes"`
-	Info  string        `json:"info,omitempty"`
+	Fixes    []ConflictFix      `json:"fixes"`
+	Info     string             `json:"info,omitempty"`
+	Evidence []ConflictEvidence `json:"evidence"`
+}
+
+// ConflictEvidence is one clashing patch of a pack in an AssetConflict.
+type ConflictEvidence struct {
+	PackName string `json:"packName"`
+	PackID   string `json:"packId"`
+	Source   string `json:"source"`
+	Index    int    `json:"index"`
+	Action   string `json:"action"`
+	Target   string `json:"target"`
+	ToArea   string `json:"toArea,omitempty"`
+	FromArea string `json:"fromArea,omitempty"`
+	When     string `json:"when,omitempty"`
+	Priority string `json:"priority"`
+	FromFile string `json:"fromFile,omitempty"`
+	CropX    int    `json:"cropX"`
+	CropY    int    `json:"cropY"`
+	CropW    int    `json:"cropW"`
+	CropH    int    `json:"cropH"`
 }
 
 // ConflictFix sets one on/off field of a pack (Key, UniqueID) to Value, which turns off all of that pack's edits
@@ -91,6 +112,10 @@ type cpPatch struct {
 	image         bool                // an EditImage change, which only changes how something looks
 	imageSource   []byte
 	imageFromArea string
+	source        string
+	index         int
+	action        string
+	toArea        string
 	// tokenValue is a dynamic token's value; a token that yields a picker value only when a mod is
 	// installed is how a pack says which mod that value is for.
 	tokenName  string
@@ -179,7 +204,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 2
+const contentPackParserVersion = 3
 
 type packFileStamp struct {
 	Path    string `json:"path"`
@@ -219,6 +244,10 @@ type diskPatch struct {
 	Image         bool                `json:"image"`
 	ImageSource   []byte              `json:"imageSource"`
 	ImageFromArea string              `json:"imageFromArea"`
+	Source        string              `json:"source"`
+	Index         int                 `json:"index"`
+	Action        string              `json:"action"`
+	ToArea        string              `json:"toArea"`
 	TokenName     string              `json:"tokenName"`
 	TokenValue    string              `json:"tokenValue"`
 }
@@ -375,6 +404,10 @@ func diskPatchOf(patch cpPatch) diskPatch {
 		Image:         patch.image,
 		ImageSource:   patch.imageSource,
 		ImageFromArea: patch.imageFromArea,
+		Source:        patch.source,
+		Index:         patch.index,
+		Action:        patch.action,
+		ToArea:        patch.toArea,
 		TokenName:     patch.tokenName,
 		TokenValue:    patch.tokenValue,
 	}
@@ -411,6 +444,10 @@ func cpPatchOfDisk(patch diskPatch) cpPatch {
 		image:         patch.Image,
 		imageSource:   patch.ImageSource,
 		imageFromArea: patch.ImageFromArea,
+		source:        patch.Source,
+		index:         patch.Index,
+		action:        patch.Action,
+		toArea:        patch.ToArea,
 		tokenName:     patch.TokenName,
 		tokenValue:    patch.TokenValue,
 	}
@@ -863,7 +900,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			pack.patches = append(pack.patches, cpPatch{kind: "other", when: outer.with(parseWhen(tok.When, pack.mentions, pack.schema)), tokenName: strings.ToLower(strings.TrimSpace(tok.Name)), tokenValue: value})
 		}
 	}
-	for _, rawChange := range doc.Changes {
+	for i, rawChange := range doc.Changes {
 		var ch cpChange
 		if json.Unmarshal(rawChange, &ch) != nil {
 			continue
@@ -885,12 +922,25 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			continue
 		case strings.EqualFold(action, kindLoad):
 			kind = "load"
+			action = kindLoad
 			ch.FromFile = contentSourceReference(root, rel, ch.FromFile)
 		case strings.EqualFold(action, kindEditImage), strings.EqualFold(action, kindEditMap):
 			kind = "edit"
+			if strings.EqualFold(action, kindEditImage) {
+				action = kindEditImage
+			} else {
+				action = kindEditMap
+			}
 			ch.FromFile = contentSourceReference(root, rel, ch.FromFile)
-			recordReferencedPackFiles(root, ch.FromFile, strings.EqualFold(action, kindEditImage), pack)
-			shapes = editShapes(root, ch, strings.EqualFold(action, kindEditImage))
+			recordReferencedPackFiles(root, ch.FromFile, action == kindEditImage, pack)
+			shapes = editShapes(root, ch, action == kindEditImage)
+			if len(shapes) == 0 {
+				kind = "other"
+			}
+		case strings.EqualFold(action, kindEditData):
+			kind = "edit"
+			action = kindEditData
+			shapes = dataShapes(ch)
 			if len(shapes) == 0 {
 				kind = "other"
 			}
@@ -899,9 +949,11 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 		}
 		// Changes that cannot conflict still count for compatibility settings, whatever their target.
 		if kind == "other" {
-			pack.patches = append(pack.patches, cpPatch{kind: kind, when: when})
+			pack.patches = append(pack.patches, cpPatch{kind: kind, when: when, source: rel, index: i, action: action})
 			continue
 		}
+		fromArea := string(stripJSONNoise(ch.FromArea))
+		toArea := string(stripJSONNoise(ch.ToArea))
 		for _, t := range splitTargets(ch.Target) {
 			if hasToken(t) {
 				pack.skips++
@@ -911,9 +963,10 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			pack.patches = append(pack.patches, cpPatch{
 				kind: kind, target: normalizeTarget(t), fromFile: ch.FromFile, priority: strings.TrimSpace(priority),
 				patchMode: strings.TrimSpace(ch.PatchMode), when: when,
-				shapes: shapes, spouse: when.spouse, places: when.places, image: strings.EqualFold(action, kindEditImage),
-				imageSource:   imageSource(root, ch.FromFile, strings.EqualFold(action, kindEditImage)),
-				imageFromArea: string(stripJSONNoise(ch.FromArea)),
+				shapes: shapes, spouse: when.spouse, places: when.places, image: action == kindEditImage,
+				imageSource:   imageSource(root, ch.FromFile, action == kindEditImage),
+				imageFromArea: fromArea,
+				source:        rel, index: i, action: action, toArea: toArea,
 			})
 		}
 	}
@@ -1481,6 +1534,8 @@ type cpChange struct {
 	ToArea        json.RawMessage            `json:"ToArea"`
 	MapTiles      []json.RawMessage          `json:"MapTiles"`
 	MapProperties map[string]json.RawMessage `json:"MapProperties"`
+	Fields        json.RawMessage            `json:"Fields"`
+	Entries       json.RawMessage            `json:"Entries"`
 }
 
 func splitTargets(s string) []string {
@@ -1684,6 +1739,7 @@ func assetConflictResults(mods []Installed) ([]AssetConflict, []SettingHint) {
 			}
 			if len(hits) >= 2 {
 				c := conflictOf(kind, t, hits)
+				c.Evidence = conflictEvidence(kind, hits)
 				if kind == "load" {
 					if allLoadFilesBlank(hits, t) || allLoadFilesIdentical(hits, t) {
 						continue

@@ -210,6 +210,10 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 }
 
 func (s *Service) withDrift(gameID, id string, r Result) (Result, error) {
+	if s.settings != nil && !s.settings.Get().DriftChecksOn() {
+		r.Drift = []profile.Drift{}
+		return r, nil
+	}
 	drift, err := s.profiles.ScanModsDrift(gameID, id)
 	if err != nil {
 		return Result{}, err
@@ -311,6 +315,25 @@ func (s *Service) RememberSettingChoice(_ context.Context, gameID, id, uniqueID,
 	return err
 }
 
+// ConflictImageCrop returns a PNG data URL of uniqueID's FromFile cropped to x,y,w,h, clamped to the image.
+func (s *Service) ConflictImageCrop(_ context.Context, gameID, id, uniqueID, fromFile string, x, y, w, h int) (string, error) {
+	mods, err := s.installed(gameID, id)
+	if err != nil {
+		return "", err
+	}
+	uniqueID, fromFile = strings.TrimSpace(uniqueID), contentReference("", fromFile)
+	if uniqueID == "" || fromFile == "" {
+		return "", errors.New("missing pack or image")
+	}
+	for _, m := range mods {
+		if !sameID(m.UniqueID, uniqueID) {
+			continue
+		}
+		return cropPackImage(m.Folder, fromFile, x, y, w, h)
+	}
+	return "", errors.New("unknown pack")
+}
+
 // DismissAssetConflict hides a Content Patcher overlap for this profile until it is gone.
 func (s *Service) DismissAssetConflict(_ context.Context, gameID, id, kind, target string) error {
 	kind, target = strings.TrimSpace(kind), strings.TrimSpace(target)
@@ -376,7 +399,7 @@ func (s *Service) Updates(ctx context.Context, gameID, id string) (UpdatesResult
 }
 
 func hideUpdates(r UpdatesResult, mods []Installed, set settings.Settings) UpdatesResult {
-	return HideHeld(r, mods, set.IncludePrereleaseModVersions)
+	return HideHeld(r, mods, set.IncludePrereleaseModVersions, set.SmapiBuilds)
 }
 
 // UpdateWarning is the Play dialog after a game update: the last launched Stardew version versus the installed one.
