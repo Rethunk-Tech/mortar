@@ -158,17 +158,6 @@ func TestSetGameFolderValidates(t *testing.T) {
 	}
 }
 
-func TestDataFolderMeasures(t *testing.T) {
-	s, dir := open(t)
-	if err := os.WriteFile(filepath.Join(dir, "x"), make([]byte, 42), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	got, err := NewService(s).DataFolder()
-	if err != nil || got.Path != dir || got.Size != 42 {
-		t.Fatalf("DataFolder = %+v, %v", got, err)
-	}
-}
-
 func TestBackupsKeptRange(t *testing.T) {
 	s, dir := open(t)
 	for _, n := range []int{MinBackupsKept - 1, MaxBackupsKept + 1} {

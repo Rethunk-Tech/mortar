@@ -30,10 +30,6 @@ func NewService(store *Store) *Service { return &Service{store: store} }
 
 func (s *Service) Get() Settings { return s.store.Get() }
 
-// CorruptSettingsPath returns the one-time path of settings preserved at startup.
-func (s *Service) CorruptSettingsPath() string { return s.store.CorruptPath() }
-
-// SetLanguage stores the preferred interface language, or the empty string for the system language.
 func (s *Service) SetLanguage(language string) error {
 	return s.set(func(v *Settings) { v.Language = language })
 }
@@ -42,55 +38,56 @@ func (s *Service) SetAccent(accent string) error {
 	return s.set(func(v *Settings) { v.Accent = accent })
 }
 
-// SetBackupsKept sets how many save backups to retain.
 func (s *Service) SetBackupsKept(n int) error {
 	return s.set(func(v *Settings) { v.BackupsKept = n })
 }
 
-// SetCheckModUpdatesOnStart sets whether startup checks the last-opened profile of each game.
-func (s *Service) SetCheckModUpdatesOnStart(on bool) error {
-	return s.set(func(v *Settings) { v.CheckModUpdatesOnStart = &on })
-}
-
-// SetTellWhenSmapiOut sets whether Mortar toasts when a newer SMAPI exists.
 func (s *Service) SetTellWhenSmapiOut(on bool) error {
 	return s.set(func(v *Settings) { v.TellWhenSmapiOut = &on })
 }
 
-// SetKeepInTray sets whether closing the window hides Mortar to the system tray.
 func (s *Service) SetKeepInTray(on bool) error {
 	return s.set(func(v *Settings) { v.KeepInTray = on })
 }
 
-// SetLanSharing sets whether nearby Mortar users may discover this installation and exchange profile links.
 func (s *Service) SetLanSharing(on bool) error {
 	return s.set(func(v *Settings) { v.LanSharing = on })
 }
 
-// SetLanPort stores the fixed LAN sharing port, or zero to let the OS choose one.
 func (s *Service) SetLanPort(port int) error {
 	return s.set(func(v *Settings) { v.LanPort = port })
 }
 
-// SetIncludeBetaReleases sets whether Mortar update checks include GitHub prereleases.
 func (s *Service) SetIncludeBetaReleases(on bool) error {
 	return s.set(func(v *Settings) { v.IncludeBetaReleases = on })
 }
 
-// SetIncludePrereleaseModVersions sets whether offered mod updates may include semver prereleases.
 func (s *Service) SetIncludePrereleaseModVersions(on bool) error {
 	return s.set(func(v *Settings) { v.IncludePrereleaseModVersions = on })
 }
 
-// SetCheckOnlyEnabledMods sets whether SMAPI update checks skip disabled mods.
 func (s *Service) SetCheckOnlyEnabledMods(on bool) error {
 	return s.set(func(v *Settings) { v.CheckOnlyEnabledMods = on })
 }
 
-// SetEnableModsWhenInstalled sets whether newly installed entries start with mods enabled.
 func (s *Service) SetEnableModsWhenInstalled(on bool) error {
 	return s.set(func(v *Settings) { v.EnableModsWhenInstalled = &on })
 }
+
+func (s *Service) SetBackground(background string) error {
+	return s.set(func(v *Settings) { v.Background = background })
+}
+
+func (s *Service) SetNexusPreferredDownloadServer(shortName string) error {
+	return s.set(func(v *Settings) { v.NexusPreferredDownloadServer = shortName })
+}
+
+func (s *Service) SetNxmRedirectOtherGames(on bool) error {
+	return s.set(func(v *Settings) { v.NxmRedirectOtherGames = &on })
+}
+
+// CorruptSettingsPath returns the one-time path of settings preserved at startup.
+func (s *Service) CorruptSettingsPath() string { return s.store.CorruptPath() }
 
 // SetListColumns stores which Mods list-view columns are shown.
 func (s *Service) SetListColumns(ids []string) error {
@@ -115,10 +112,6 @@ func (s *Service) SetTipsSeen(ids []string) error {
 // SetSmapiToastAt stores when Mortar last showed the SMAPI-update toast.
 func (s *Service) SetSmapiToastAt(at string) error {
 	return s.set(func(v *Settings) { v.SmapiToastAt = at })
-}
-
-func (s *Service) SetBackground(background string) error {
-	return s.set(func(v *Settings) { v.Background = background })
 }
 
 // SetBackgroundImage stores path as the wallpaper, or restores the default one when path is empty.
@@ -253,22 +246,6 @@ func (s *Service) ChooseGameFolder(game string) error {
 	return s.SetGameFolder(game, dir)
 }
 
-// DataFolder is Mortar's data folder and the space it takes.
-type DataFolder struct {
-	Path string `json:"path"`
-	Size int64  `json:"size"`
-}
-
-// DataFolder measures the data folder; Wails runs it off the UI thread.
-func (s *Service) DataFolder() (DataFolder, error) {
-	dir, err := datadir.Dir()
-	if err != nil {
-		return DataFolder{}, err
-	}
-	size, err := datadir.Size(dir)
-	return DataFolder{Path: dir, Size: size}, err
-}
-
 // OpenDataFolder shows the data folder in the system file manager.
 func (s *Service) OpenDataFolder() error {
 	dir, err := datadir.Dir()
@@ -333,190 +310,13 @@ func (s *Service) ApplyImportedSettings(raw string) error {
 	})
 }
 
-func (s *Service) SetNexusPreferredDownloadServer(shortName string) error {
-	return s.set(func(v *Settings) { v.NexusPreferredDownloadServer = shortName })
+func (s *Service) SetNxmDefaultProfile(id string) error {
+	return s.set(func(cur *Settings) { gameSet(cur).NxmDefaultProfile = id })
 }
 
 // SetAskEndorseMods sets whether Mortar suggests endorsing mods after clean runs.
 func (s *Service) SetAskEndorseMods(on bool) error {
 	return s.set(func(v *Settings) { v.AskEndorseMods = &on })
-}
-
-// SetNxmRedirectOtherGames sets whether non-Stardew nxm links go to the previous handler.
-func (s *Service) SetNxmRedirectOtherGames(on bool) error {
-	return s.set(func(v *Settings) { v.NxmRedirectOtherGames = &on })
-}
-
-func (s *Service) SetOnPlay(v string) error {
-	return s.set(func(cur *Settings) { cur.OnPlay = v })
-}
-
-func (s *Service) SetBackupBeforePlay(v string) error {
-	return s.set(func(cur *Settings) { gameSet(cur).BackupBeforePlay = v })
-}
-
-func (s *Service) SetLaunchBackupsKept(n int) error {
-	return s.set(func(cur *Settings) { gameSet(cur).LaunchBackupsKept = n })
-}
-
-func (s *Service) SetUpdateModsBeforePlayDefault(on bool) error {
-	return s.set(func(cur *Settings) { gameSet(cur).UpdateModsBeforePlayDefault = on })
-}
-
-func (s *Service) SetRunsKept(n int) error {
-	return s.set(func(cur *Settings) { gameSet(cur).RunsKept = n })
-}
-
-func (s *Service) SetConsoleLogCap(n int) error {
-	return s.set(func(cur *Settings) { gameSet(cur).ConsoleLogCap = n })
-}
-
-func (s *Service) SetParallelDownloads(n int) error {
-	return s.set(func(cur *Settings) { cur.ParallelDownloads = n })
-}
-
-func (s *Service) SetUpdateCheckIntervalMinutes(n int) error {
-	return s.set(func(cur *Settings) { cur.UpdateCheckIntervalMinutes = n })
-}
-
-func (s *Service) SetNotifyModUpdates(on bool) error {
-	return s.set(func(cur *Settings) { cur.NotifyModUpdates = &on })
-}
-
-func (s *Service) SetKeepDownloadArchives(on bool) error {
-	return s.set(func(cur *Settings) { cur.KeepDownloadArchives = on })
-}
-
-func (s *Service) SetStoreRetentionDays(n int) error {
-	return s.set(func(cur *Settings) { cur.StoreRetentionDays = n })
-}
-
-func (s *Service) SetNxmDefaultProfile(id string) error {
-	return s.set(func(cur *Settings) { gameSet(cur).NxmDefaultProfile = id })
-}
-
-func (s *Service) SetDefaultModsView(v string) error {
-	return s.set(func(cur *Settings) { cur.DefaultModsView = v })
-}
-
-func (s *Service) SetConfirmRemovals(on bool) error {
-	return s.set(func(cur *Settings) { cur.ConfirmRemovals = &on })
-}
-
-func (s *Service) SetCosmeticConflicts(v string) error {
-	return s.set(func(cur *Settings) { gameSet(cur).CosmeticConflicts = v })
-}
-
-func (s *Service) SetBackgroundBadgeChecks(on bool) error {
-	return s.set(func(cur *Settings) { cur.BackgroundBadgeChecks = &on })
-}
-
-func (s *Service) SetStartScreen(v string) error {
-	return s.set(func(cur *Settings) { cur.StartScreen = v })
-}
-
-func (s *Service) SetDates(v string) error {
-	return s.set(func(cur *Settings) { cur.Dates = v })
-}
-
-func (s *Service) SetTrashRetentionDays(n int) error {
-	return s.set(func(cur *Settings) { cur.TrashRetentionDays = n })
-}
-
-func (s *Service) SetHistoryEventsKept(n int) error {
-	return s.set(func(cur *Settings) { cur.HistoryEventsKept = n })
-}
-
-func (s *Service) SetNotifyDownloadFinished(on bool) error {
-	return s.set(func(cur *Settings) { cur.NotifyDownloadFinished = &on })
-}
-
-func (s *Service) SetNotifyDownloadFailed(on bool) error {
-	return s.set(func(cur *Settings) { cur.NotifyDownloadFailed = &on })
-}
-
-func (s *Service) SetNotifyRunCrashed(on bool) error {
-	return s.set(func(cur *Settings) { cur.NotifyRunCrashed = &on })
-}
-
-func (s *Service) SetDensity(v string) error {
-	return s.set(func(cur *Settings) { cur.Density = v })
-}
-
-func (s *Service) SetGridCardSize(v string) error {
-	return s.set(func(cur *Settings) { cur.GridCardSize = v })
-}
-
-func (s *Service) SetShowAuthorOnCards(on bool) error {
-	return s.set(func(cur *Settings) { cur.ShowAuthorOnCards = &on })
-}
-
-func (s *Service) SetReduceMotion(v string) error {
-	return s.set(func(cur *Settings) { cur.ReduceMotion = v })
-}
-
-func (s *Service) SetProfileHero(v string) error {
-	return s.set(func(cur *Settings) { cur.ProfileHero = v })
-}
-
-func (s *Service) SetEnableRequirements(v string) error {
-	return s.set(func(cur *Settings) { gameSet(cur).EnableRequirements = v })
-}
-
-func (s *Service) SetMissingRequirements(v string) error {
-	return s.set(func(cur *Settings) { gameSet(cur).MissingRequirements = v })
-}
-
-func (s *Service) SetReuseFomodChoices(on bool) error {
-	return s.set(func(cur *Settings) { cur.ReuseFomodChoices = &on })
-}
-
-func (s *Service) SetDriftChecks(on bool) error {
-	return s.set(func(cur *Settings) { cur.DriftChecks = &on })
-}
-
-func (s *Service) SetSmapiBuilds(v string) error {
-	return s.set(func(cur *Settings) { gameSet(cur).SmapiBuilds = v })
-}
-
-func (s *Service) SetAutoInstallMortarUpdates(on bool) error {
-	return s.set(func(cur *Settings) { cur.AutoInstallMortarUpdates = &on })
-}
-
-func (s *Service) SetAutoTrackNexus(on bool) error {
-	return s.set(func(cur *Settings) { cur.AutoTrackNexus = on })
-}
-
-func (s *Service) SetDefaultLaunchMethod(v string) error {
-	return s.set(func(cur *Settings) { gameSet(cur).DefaultLaunchMethod = v })
-}
-
-func (s *Service) SetShowSmapiConsole(on bool) error {
-	return s.set(func(cur *Settings) { gameSet(cur).ShowSmapiConsole = &on })
-}
-
-func (s *Service) SetConsoleLevel(v string) error {
-	return s.set(func(cur *Settings) { gameSet(cur).ConsoleLevel = v })
-}
-
-func (s *Service) SetConsoleTimestamps(on bool) error {
-	return s.set(func(cur *Settings) { gameSet(cur).ConsoleTimestamps = &on })
-}
-
-func (s *Service) SetConsoleFollow(on bool) error {
-	return s.set(func(cur *Settings) { gameSet(cur).ConsoleFollow = &on })
-}
-
-func (s *Service) SetLanName(v string) error {
-	return s.set(func(cur *Settings) { cur.LanName = v })
-}
-
-func (s *Service) SetLanAutoAcceptSameAccount(on bool) error {
-	return s.set(func(cur *Settings) { cur.LanAutoAcceptSameAccount = on })
-}
-
-func (s *Service) SetDownloadFolder(v string) error {
-	return s.set(func(cur *Settings) { cur.DownloadFolder = v })
 }
 
 // PrefSpecs returns the registry descriptor for the frontend and CLI.

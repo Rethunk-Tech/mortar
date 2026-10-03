@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { List as ListGames } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import {
-  SetDownloadFolder,
+  SetByKey,
   SetNexusPreferredDownloadServer,
   SetNxmDefaultProfile,
   SetNxmRedirectOtherGames,
@@ -129,7 +129,7 @@ export function Downloads() {
       async () => {
         const dir = await PickFolder(t`Download folder`)
         if (dir) {
-          await SetDownloadFolder(dir)
+          await SetByKey('downloadFolder', dir, '')
         }
       },
       push,
