@@ -794,6 +794,7 @@ func appendHistory(dir string, ev HistoryEvent, after []Entry, keep int) (Histor
 	if err := writeHistory(dir, data, keep); err != nil {
 		return HistoryEvent{}, err
 	}
+	captureHistoryConfigs(dir, snapshotID, after)
 	return ev, nil
 }
 
