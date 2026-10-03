@@ -124,7 +124,8 @@ func (s *Service) BugURL(gameID string) string {
 	}
 	body := "**What happened**\n\n\n**What you expected**\n\n\n**Steps to reproduce**\n\n\n---\n" + about + "\n"
 	if report, err := s.Doctor(); err == nil {
-		body += diagnosticsSection(report, s.home)
+		dir, _ := s.dataDir()
+		body += diagnosticsSection(report, s.home, dir)
 	}
 	return issuesURL + "?" + url.Values{"title": {"Bug: "}, "body": {body}}.Encode()
 }
@@ -134,7 +135,7 @@ const maxDiagnostics = 3000
 
 // diagnosticsSection lists each diagnostics check as "status: detail" with the home folder shown as ~,
 // cut short once it would make the issue link too long.
-func diagnosticsSection(report doctor.Report, home string) string {
+func diagnosticsSection(report doctor.Report, home, dataDir string) string {
 	var b strings.Builder
 	b.WriteString("\n**Diagnostics**\n```\n")
 	for _, c := range report.Checks {
@@ -146,5 +147,6 @@ func diagnosticsSection(report doctor.Report, home string) string {
 		b.WriteString(line)
 	}
 	b.WriteString("```\n")
+	b.WriteString(logTailSections(dataDir, home, maxDiagnostics-b.Len()))
 	return b.String()
 }

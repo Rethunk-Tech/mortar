@@ -191,6 +191,7 @@ func run() error {
 			if lanSvc != nil {
 				lanSvc.Shutdown()
 			}
+			slog.Info("shutdown", "clean", true)
 			_ = updates.ApplyOnQuit(context.Background())
 		},
 		SingleInstance: &application.SingleInstanceOptions{
@@ -214,6 +215,7 @@ func run() error {
 		log.SetOutput(out)
 		slog.SetDefault(slog.New(slog.NewTextHandler(out, nil)))
 	}
+	support.DetectLastRunCrashed(dataDir)
 
 	store, err = settings.Open()
 	if err != nil {

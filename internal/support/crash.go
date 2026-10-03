@@ -1,0 +1,156 @@
+package support
+
+import (
+	"bufio"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+)
+
+const (
+	crashLogName  = "crash.log"
+	crashSeenName = "crash.seen"
+	prevLogName   = "mortar.prev.log"
+	logTailLines  = 40
+)
+
+// lastRunCrashed is set by DetectLastRunCrashed at process start so LastRunCrashed
+// stays true for this run without re-reading files the frontend might call twice.
+var lastRunCrashed bool
+
+// DetectLastRunCrashed reports whether the previous process ended unexpectedly:
+// crash.log larger than the byte count in crash.seen, or mortar.prev.log whose
+// last line is not the clean-shutdown record. crash.seen is written after the
+// check so a given growth is reported once.
+func DetectLastRunCrashed(dataDir string) bool {
+	crashPath := filepath.Join(dataDir, crashLogName)
+	grew := crashLogGrew(crashPath, filepath.Join(dataDir, crashSeenName))
+	writeCrashSeen(filepath.Join(dataDir, crashSeenName), crashPath)
+	lastRunCrashed = grew || prevLogUnclean(filepath.Join(dataDir, prevLogName))
+	return lastRunCrashed
+}
+
+func crashLogGrew(crashPath, seenPath string) bool {
+	info, err := os.Stat(crashPath)
+	if err != nil {
+		return false
+	}
+	seen, ok := readSeenSize(seenPath)
+	if !ok {
+		return info.Size() > 0
+	}
+	return info.Size() > seen
+}
+
+func readSeenSize(seenPath string) (int64, bool) {
+	b, err := os.ReadFile(seenPath)
+	if err != nil {
+		return 0, false
+	}
+	n, err := strconv.ParseInt(strings.TrimSpace(string(b)), 10, 64)
+	if err != nil {
+		return 0, false
+	}
+	return n, true
+}
+
+func writeCrashSeen(seenPath, crashPath string) {
+	var size int64
+	if info, err := os.Stat(crashPath); err == nil {
+		size = info.Size()
+	}
+	_ = os.WriteFile(seenPath, []byte(strconv.FormatInt(size, 10)+"\n"), 0o600)
+}
+
+func prevLogUnclean(prevPath string) bool {
+	f, err := os.Open(prevPath)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+
+	var last string
+	sc := bufio.NewScanner(f)
+	for sc.Scan() {
+		if line := sc.Text(); line != "" {
+			last = line
+		}
+	}
+	if err := sc.Err(); err != nil || last == "" {
+		return true
+	}
+	// slog text handler: msg=shutdown clean=true
+	return !(strings.Contains(last, "msg=shutdown") && strings.Contains(last, "clean=true"))
+}
+
+// LastRunCrashed reports whether the previous Mortar process ended unexpectedly.
+func (s *Service) LastRunCrashed() bool {
+	return lastRunCrashed
+}
+
+func logTailSections(dataDir, home string, budget int) string {
+	if dataDir == "" || budget <= 0 {
+		return ""
+	}
+	var bodies []string
+	var names []string
+	for _, name := range []string{prevLogName, crashLogName} {
+		b, err := os.ReadFile(filepath.Join(dataDir, name))
+		if err != nil {
+			continue
+		}
+		names = append(names, name)
+		bodies = append(bodies, hideHome(lastLines(string(b), logTailLines), home))
+	}
+	if len(names) == 0 {
+		return ""
+	}
+	for {
+		out := formatTailSections(names, bodies)
+		if len(out) <= budget {
+			return out
+		}
+		i := longestIndex(bodies)
+		if i < 0 || bodies[i] == "" {
+			return ""
+		}
+		bodies[i] = shrinkTail(bodies[i])
+	}
+}
+
+func formatTailSections(names, bodies []string) string {
+	var b strings.Builder
+	for i, name := range names {
+		b.WriteString("\n**")
+		b.WriteString(name)
+		b.WriteString("**\n```\n")
+		b.WriteString(bodies[i])
+		if bodies[i] != "" && !strings.HasSuffix(bodies[i], "\n") {
+			b.WriteByte('\n')
+		}
+		b.WriteString("```\n")
+	}
+	return b.String()
+}
+
+func longestIndex(bodies []string) int {
+	best, n := -1, 0
+	for i, s := range bodies {
+		if len(s) >= n {
+			best, n = i, len(s)
+		}
+	}
+	return best
+}
+
+func shrinkTail(s string) string {
+	s = strings.TrimRight(s, "\n")
+	if i := strings.LastIndex(s, "\n"); i >= 0 {
+		return s[:i]
+	}
+	if len(s) > 1 {
+		return s[:len(s)/2]
+	}
+	return ""
+}
