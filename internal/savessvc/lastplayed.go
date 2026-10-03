@@ -6,16 +6,33 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"sync"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
 
+// PlayedMod is one enabled mod from the profile at the end of a run.
+type PlayedMod struct {
+	UniqueID       string `json:"uniqueId"`
+	Name           string `json:"name"`
+	Version        string `json:"version"`
+	Key            string `json:"key"`
+	SourceKind     string `json:"sourceKind,omitempty"`
+	ModID          int    `json:"modId,omitempty"`
+	FileID         int    `json:"fileId,omitempty"`
+	Repo           string `json:"repo,omitempty"`
+	Tag            string `json:"tag,omitempty"`
+	Asset          string `json:"asset,omitempty"`
+	ContentPackFor string `json:"contentPackFor,omitempty"`
+}
+
 // LastPlayed maps a save folder name to the profile it was last launched with.
 type LastPlayed struct {
-	ProfileID string    `json:"profileId"`
-	At        time.Time `json:"at"`
+	ProfileID string      `json:"profileId"`
+	At        time.Time   `json:"at"`
+	Mods      []PlayedMod `json:"mods,omitempty"`
 }
 
 type lastPlayedFile struct {
@@ -75,6 +92,24 @@ func (s *Store) Record(gameID, saveFolder, profileID string, at time.Time) error
 		all.Saves = map[string]LastPlayed{}
 	}
 	all.Saves[saveFolder] = LastPlayed{ProfileID: profileID, At: at.UTC()}
+	return s.writeUnlocked(gameID, all)
+}
+
+// RecordRun stores the profile and the enabled mod list from that run.
+func (s *Store) RecordRun(gameID, saveFolder, profileID string, at time.Time, mods []PlayedMod) error {
+	if gameID == "" || saveFolder == "" || profileID == "" {
+		return errors.New("game, save, and profile are required")
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	all, err := s.loadUnlocked(gameID)
+	if err != nil {
+		return err
+	}
+	if all.Saves == nil {
+		all.Saves = map[string]LastPlayed{}
+	}
+	all.Saves[saveFolder] = LastPlayed{ProfileID: profileID, At: at.UTC(), Mods: slices.Clone(mods)}
 	return s.writeUnlocked(gameID, all)
 }
 

@@ -39,7 +39,7 @@ func TestNotePlayedAndAttachLast(t *testing.T) {
 	s := &Service{last: NewStore(t.TempDir())}
 	s.NotePlayed("stardew", "p1", "Farm_1")
 	fit := Fit{Folder: "Farm_1"}
-	s.attachLast("stardew", &fit)
+	s.fillLast("stardew", &fit, nil, nil)
 	if fit.LastProfileID != "p1" || fit.LastProfileAt == 0 {
 		t.Fatalf("fit = %#v", fit)
 	}

@@ -323,6 +323,16 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, errors.New("a profile needs a name")
 		}
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.Create(p.Game, p.Name) })
+	case "profile.fromSave":
+		if s.Saves == nil {
+			return nil, errors.New("saves are unavailable")
+		}
+		return s.changed(p.Game, func() (any, error) { return s.Saves.FromSave(p.Game, p.Name) })
+	case "saves.check":
+		if s.Saves == nil {
+			return nil, errors.New("saves are unavailable")
+		}
+		return s.Saves.Check(ctx, p.Game, p.Name, p.Profile)
 	case "doctor":
 		return s.doctor()
 	case "launchers":
@@ -574,6 +584,14 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.Shares.CollectionStatus(ctx, p.Game, id)
 	case "profile.loadOrder":
 		return s.Profiles.LoadOrder(p.Game, id)
+	case "history.diff":
+		return s.historyDiff(p.Game, id, p.Name, p.Value)
+	case "history.revert":
+		return s.historyRevertItem(p.Game, id, p.Name, p.Value)
+	case "profile.changes":
+		return s.profileChanges(p.Game, id)
+	case "profile.good":
+		return s.profileGood(p.Game, id, p.All, p.Force)
 	case "profile.history":
 		events, err := s.Profiles.History(p.Game, id)
 		if err != nil {
@@ -1279,7 +1297,11 @@ func (s *Services) playCheck(ctx context.Context, gameID, id string, prof profil
 	if s.Settings != nil {
 		smapiNever = s.Settings.Get().GamePrefs(gameID).SmapiBuilds == settings.SmapiBuildsNever
 	}
-	return playIssueGroups(prof, res, upd, smapiNever), nil
+	groups := playIssueGroups(prof, res, upd, smapiNever)
+	if ch := s.changesPlayGroup(ctx, gameID, id); ch.Kind != "" {
+		groups = append(groups, ch)
+	}
+	return groups, nil
 }
 
 func playIssueGroups(prof profile.Profile, res problems.Result, upd problems.UpdatesResult, smapiNever bool) []PlayIssueGroup {

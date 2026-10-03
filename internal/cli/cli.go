@@ -87,6 +87,9 @@ type cmd struct {
 	setFlag       bool
 	clearFlag     bool
 	filter        string
+	item          string
+	mark          bool
+	restore       bool
 	args          []string
 }
 
@@ -205,6 +208,18 @@ func (c *cmd) parse(args []string) error {
 			c.yesFlag = true
 		case a == "--force":
 			c.force = true
+		case a == "--item":
+			if i+1 >= len(args) {
+				return usageError{"--item needs a mod"}
+			}
+			i++
+			c.item = args[i]
+		case strings.HasPrefix(a, "--item="):
+			c.item = strings.TrimPrefix(a, "--item=")
+		case a == "--mark":
+			c.mark = true
+		case a == "--restore":
+			c.restore = true
 		case a == "--check":
 			c.check = true
 		case a == "--wait":
@@ -367,7 +382,7 @@ func (c *cmd) dispatch() error {
 		}
 		return c.profiles(a[0])
 	case "history":
-		return c.historyAll()
+		return c.historyCmd()
 	case "tools":
 		return c.tools()
 	case "profile":
@@ -379,6 +394,10 @@ func (c *cmd) dispatch() error {
 				return c.profileShortcut()
 			case "steam":
 				return c.profileSteam()
+			case "changes":
+				return c.profileChanges()
+			case "good":
+				return c.profileGood()
 			}
 		}
 		return c.profile()
@@ -399,6 +418,8 @@ func (c *cmd) dispatch() error {
 				return c.modsFiles()
 			case "config":
 				return c.modsConfig()
+			case "menu":
+				return c.modsMenu()
 			case "compat":
 				return c.modsCompat()
 			}
@@ -412,6 +433,9 @@ func (c *cmd) dispatch() error {
 	}
 	if verb == "logs" && len(c.args) >= 3 && c.args[1] == "search" {
 		return c.searchLogs(c.args[2])
+	}
+	if verb == "saves" && len(c.args) > 1 && c.args[1] == "check" {
+		return c.savesCheck()
 	}
 	if verb == "problems" && len(c.args) > 1 {
 		switch c.args[1] {
@@ -966,7 +990,7 @@ func (c *cmd) nexus() error {
 
 func (c *cmd) profile() error {
 	if len(c.args) < 2 {
-		return usageError{"profile needs create, rename, copy, compare, match, collection, history, revert, load-order, repair, list, shortcut, steam or delete"}
+		return usageError{"profile needs create, from-save, rename, copy, compare, match, collection, history, revert, load-order, repair, list, shortcut, steam, delete, changes or good"}
 	}
 	sub := c.args[1]
 	var p profile.Profile
@@ -1083,6 +1107,8 @@ func (c *cmd) profile() error {
 		if err := c.ask("profile.revert", control.Params{Game: a[0], Profile: a[1], Name: a[2]}, &p, readTimeout); err != nil {
 			return err
 		}
+	case "from-save":
+		return c.profileFromSave()
 	case "create":
 		a, err := c.need(2, "a game", "a name")
 		if err != nil {
@@ -2081,6 +2107,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   profiles <game>                         profiles of a game
   profile list <game> <profile> --format md|text  enabled mods (name, version, Nexus link)
   profile create <game> <name>            new empty profile
+  profile from-save <game> <save>         profile named after the farm, with that save's last mods
   profile rename <game> <profile> <name>
   profile copy <game> <profile> [name]
   profile match <game> <profile> <link-or-file> preview a friend's profile
@@ -2097,6 +2124,10 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   profile compare <game> <profileA> <profileB>
   profile history <game> <profile>       restore points
   history <game> --all                   recent changes across profiles
+  history diff <game> <profile> <a> <b>  compare two snapshots
+  history revert <game> <profile> <eventId> --item <mod>
+  profile changes <game> <profile>       changes since last run
+  profile good <game> <profile> [--mark|--restore]
   profile revert <game> <profile> <eventId>
   profile load-order <game> <profile>    enabled mods in SMAPI load order
   profile shortcut <game> <profile> [--remove]  desktop shortcut that plays this profile
@@ -2109,6 +2140,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   mods combine <game> <profile> <mod> <into-mod>
   mods files <game> <profile> <mod>       linked extra files (keys for mods split)
   mods config <game> <profile> <mod> [<field> <value>]  print or set one config field
+  mods menu <game> <profile> <mod> [--set <page>/<index>=<value>]  captured GMCM menu
   mods compat <game> <profile>            non-ok SMAPI compatibility-list rows
   mod <game> <profile> <mod id>           one mod: dependencies, dependents, conflicts, settings
                                           (mod id is the SMAPI UniqueID)
@@ -2124,6 +2156,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   updates <game> <profile> [--changelog]  mods with a newer version
   updates apply --everywhere <game> [mod]  same update in every eligible profile
   saves <game> <profile>                  saves and the mods each one lacks
+  saves check <game> <save> [<profile>]   mods that save last used that this profile lacks
   share <game> <profile>                  share link
   export <game> <profile> <file.mortar>   write a .mortar file
   open <link|file>                        hand a share link or .mortar file to Mortar

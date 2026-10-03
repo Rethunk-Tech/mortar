@@ -44,8 +44,9 @@ func completion(w io.Writer, shell string) error {
 
 // subverbs are the second words of the verbs that take one.
 var subverbs = map[string][]string{
-	"profile":    {"create", "rename", "copy", "delete", "compare", "match", "collection", "history", "revert", "load-order", "repair", "list", "shortcut", "steam"},
-	"mods":       {"enable", "disable", "pin", "unpin", "remove", "tag", "untag", "category", "note", "skip-version", "split", "combine", "files", "config", "compat"},
+	"profile":    {"create", "from-save", "rename", "copy", "delete", "compare", "match", "collection", "history", "revert", "load-order", "repair", "list", "shortcut", "steam", "changes", "good"},
+	"history":    {"diff", "revert"},
+	"mods":       {"enable", "disable", "pin", "unpin", "remove", "tag", "untag", "category", "note", "skip-version", "split", "combine", "files", "config", "menu", "compat"},
 	"game":       {"steam-launch-option"},
 	"bundles":    {"apply"},
 	"nexus":      {"untrack"},
@@ -53,7 +54,7 @@ var subverbs = map[string][]string{
 	"completion": {"bash", "zsh", "fish"},
 	"launchers":  {"add", "remove"},
 	"tools":      {"run"},
-	"problems":   {"dismissed", "dismiss", "restore"},
+	"saves":      {"check"},
 	"queue":      {"retry", "skip", "pause", "resume", "clear"},
 	"downloads":  {"install"},
 	"backups":    {"list", "create", "keep", "unkeep", "restore"},
@@ -82,10 +83,15 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 			return 2, 3, 4
 		}
 		return 1, 0, 0
-	case "profiles", "status", "stop", "history":
+	case "profiles", "status", "stop":
+		return 1, 0, 0
+	case "history":
+		if len(words) > 1 && (words[1] == "diff" || words[1] == "revert") {
+			return 2, 3, 0
+		}
 		return 1, 0, 0
 	case "profile":
-		if len(words) > 1 && words[1] == "create" {
+		if len(words) > 1 && (words[1] == "create" || words[1] == "from-save") {
 			return 2, 0, 0
 		}
 		if len(words) > 1 && (words[1] == "shortcut" || words[1] == "steam") {
@@ -125,6 +131,11 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 		}
 		if len(words) > 1 && words[1] == "fixes" {
 			return 2, 3, 0
+		}
+		return 1, 2, 0
+	case "saves":
+		if len(words) > 1 && words[1] == "check" {
+			return 2, 4, 0
 		}
 		return 1, 2, 0
 	}

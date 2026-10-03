@@ -1,3 +1,4 @@
+import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import type {
   AssetConflict,
   Broken,
@@ -10,13 +11,22 @@ import {
   Problems,
   Updates,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
+import { ChangesSince } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { LastSaveGap } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { visibleUpdates } from '../mods/lookup.ts'
+import { diffLines } from '../profiles/historyDiff.ts'
 import { useProfiles } from '../profiles/store.ts'
 
 const PLAY_ISSUE_NAME_CAP = 5
 
-type PlayIssueKind = 'missing' | 'conflicts' | 'updates' | 'broken' | 'lastProfile'
+type PlayIssueKind =
+  | 'missing'
+  | 'conflicts'
+  | 'updates'
+  | 'broken'
+  | 'lastProfile'
+  | 'changes'
+  | 'saveMods'
 
 interface PlayIssueGroup {
   kind: PlayIssueKind
@@ -65,6 +75,8 @@ function playIssueSummary(input: {
   updates?: Update[] | null
   currentProfileId?: string
   lastPlayed?: { folder: string; farm: string; profileId: string; profileName: string } | null
+  saveMods?: { name: string }[]
+  switchProfileId?: string
 }): PlayIssueGroup[] {
   const groups: PlayIssueGroup[] = []
   const missing = groupOf(
@@ -101,6 +113,16 @@ function playIssueSummary(input: {
       switchProfileId: last.profileId,
     })
   }
+  const saveMods = input.saveMods ?? []
+  if (saveMods.length > 0) {
+    const slice = saveMods.slice(0, PLAY_ISSUE_NAME_CAP)
+    groups.push({
+      kind: 'saveMods',
+      count: saveMods.length,
+      names: slice.map((m) => m.name),
+      switchProfileId: input.switchProfileId,
+    })
+  }
   return groups
 }
 
@@ -120,7 +142,7 @@ async function gatherPlayIssues(game: string, profileId: string): Promise<PlayIs
     ? (useProfiles.getState().profiles.find((p) => p.id === fit.lastProfileId)?.name ??
       fit.lastProfileId)
     : ''
-  return playIssueSummary({
+  const groups = playIssueSummary({
     missing: problems.missing,
     assetConflicts: problems.assetConflicts,
     broken: problems.broken,
@@ -135,7 +157,24 @@ async function gatherPlayIssues(game: string, profileId: string): Promise<PlayIs
             profileName: lastName,
           }
         : null,
+    saveMods: (fit?.lastMissing ?? []).map((m) => ({ name: m.name || m.uniqueId })),
+    switchProfileId: fit?.lastProfileExists ? fit.lastProfileId : '',
   })
+  try {
+    const runs = await Runs(game, profileId)
+    const diff = await ChangesSince(game, profileId, runs?.[0]?.started ?? '')
+    const names = diff ? diffLines(diff) : []
+    if (names.length > 0) {
+      groups.push({
+        kind: 'changes',
+        count: names.length,
+        names: names.slice(0, 8),
+      })
+    }
+  } catch {
+    // pre-Play still shows problems when history is unavailable
+  }
+  return groups
 }
 
 function overflowIssueCount(group: Pick<PlayIssueGroup, 'count' | 'names'>): number {

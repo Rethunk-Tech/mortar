@@ -15,8 +15,10 @@ import {
   Typography,
 } from '@mui/material'
 import { SetSkipPlayCheck } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { LastSaveGap } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { addRecordedMods } from '../saves/recordedActions.ts'
 import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import type { PlayIssueGroup } from './playIssues.ts'
@@ -36,6 +38,10 @@ function GroupHeading({ group }: { group: PlayIssueGroup }) {
       return t`Broken or obsolete (${group.count})`
     case 'lastProfile':
       return t`${group.save} was last played with ${group.profileName}`
+    case 'changes':
+      return t`Changed since last run (${group.count})`
+    case 'saveMods':
+      return t`This save was last played with ${group.count} mods this profile lacks`
     default:
       return ''
   }
@@ -93,6 +99,7 @@ export function PrePlayDialog() {
   const skip = check?.skipPlayCheck ?? false
   const hasUpdates = (check?.groups ?? []).some((g) => g.kind === 'updates')
   const lastProfile = (check?.groups ?? []).find((g) => g.kind === 'lastProfile')
+  const saveMods = (check?.groups ?? []).find((g) => g.kind === 'saveMods')
   const persistThen = (fn: () => void) => {
     if (check) {
       persistSkip(check.game, check.profile, check.skipPlayCheck)
@@ -155,6 +162,20 @@ export function PrePlayDialog() {
             sx={{ whiteSpace: 'nowrap' }}
           >
             {t`Switch profile`}
+          </Button>
+        ) : null}
+        {saveMods && check ? (
+          <Button
+            onClick={() =>
+              persistThen(() => {
+                LastSaveGap(check.game, check.profile)
+                  .then(([save]) => addRecordedMods(check.game, check.profile, save))
+                  .catch(reportUnexpected)
+              })
+            }
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            {t`Add them`}
           </Button>
         ) : null}
         <Button

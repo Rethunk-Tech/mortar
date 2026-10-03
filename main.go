@@ -429,6 +429,7 @@ func run() error {
 	profileSvc := profile.NewService(profiles, home, store)
 	profileSvc.QueueProfileDeleted = queueSvc.SkipProfile
 	profileSvc.QueueProfileRestored = queueSvc.RestoreProfile
+	savesSvc.Enqueue = queueSvc.Add
 	profileSvc.Version = version
 	bundlesSvc := bundles.NewService(profiles, dataDir)
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)

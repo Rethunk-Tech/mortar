@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-AI/mortar/internal/queue"
 	"github.com/Rethunk-AI/mortar/internal/saves"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
@@ -43,19 +44,22 @@ type Lack struct {
 // when unknown. Played is when the save was last written, in Unix milliseconds. WhichFarm is Game1.whichFarm
 // (−1 when missing). MillisecondsPlayed and Money come from SaveGameInfo.
 type Fit struct {
-	Folder             string `json:"folder"`
-	Farm               string `json:"farm"`
-	Farmer             string `json:"farmer"`
-	Season             int    `json:"season"`
-	Day                int    `json:"day"`
-	Year               int    `json:"year"`
-	Played             int64  `json:"played"`
-	WhichFarm          int    `json:"whichFarm"`
-	MillisecondsPlayed int64  `json:"millisecondsPlayed"`
-	Money              int    `json:"money"`
-	Missing            []Lack `json:"missing"`
-	LastProfileID      string `json:"lastProfileId"`
-	LastProfileAt      int64  `json:"lastProfileAt"`
+	Folder             string      `json:"folder"`
+	Farm               string      `json:"farm"`
+	Farmer             string      `json:"farmer"`
+	Season             int         `json:"season"`
+	Day                int         `json:"day"`
+	Year               int         `json:"year"`
+	Played             int64       `json:"played"`
+	WhichFarm          int         `json:"whichFarm"`
+	MillisecondsPlayed int64       `json:"millisecondsPlayed"`
+	Money              int         `json:"money"`
+	Missing            []Lack      `json:"missing"`
+	LastProfileID      string      `json:"lastProfileId"`
+	LastProfileAt      int64       `json:"lastProfileAt"`
+	LastProfileExists  bool        `json:"lastProfileExists"`
+	LastMods           []PlayedMod `json:"lastMods"`
+	LastMissing        []Lack      `json:"lastMissing"`
 }
 
 // Service exposes the save scan to the frontend.
@@ -69,6 +73,8 @@ type Service struct {
 	Launches *launchsvc.Service
 	last     *Store
 	busy     func() bool
+	// Enqueue queues downloads when FromSave cannot reuse a store item.
+	Enqueue func([]queue.Request) ([]queue.Item, error)
 }
 
 // NewService reads saves from the Stardew Valley Saves folder and caches scans in <datadir>/cache.
@@ -103,11 +109,7 @@ func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, err
 	if err != nil {
 		return nil, err
 	}
-	have := map[string]bool{}
-	for _, m := range mods {
-		id := strings.ToLower(m.UniqueID)
-		have[id] = have[id] || m.Enabled
-	}
+	present, enabled := haveMaps(mods)
 	infos, err := s.scanner.Scan(index)
 	if err != nil {
 		log.Printf("save scan: %v", err)
@@ -116,7 +118,7 @@ func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, err
 	fits := make([]Fit, len(infos))
 	wanted := map[string]bool{}
 	for i, in := range infos {
-		lacks := saves.Lacking(in.Used, have, dismissed[in.Folder])
+		lacks := saves.Lacking(in.Used, enabled, dismissed[in.Folder])
 		fits[i] = Fit{
 			Folder: in.Folder, Farm: in.Farm, Farmer: in.Farmer, Season: in.Season, Day: in.Day, Year: in.Year,
 			Played: in.Played, WhichFarm: in.WhichFarm, MillisecondsPlayed: in.MillisecondsPlayed, Money: in.Money,
@@ -124,6 +126,10 @@ func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, err
 		}
 		for j, l := range lacks {
 			fits[i].Missing[j] = Lack{UniqueID: l.UniqueID, Name: l.UniqueID, Disabled: l.Disabled}
+			wanted[l.UniqueID] = true
+		}
+		s.fillLast(game, &fits[i], present, enabled)
+		for _, l := range fits[i].LastMissing {
 			wanted[l.UniqueID] = true
 		}
 	}
@@ -134,29 +140,13 @@ func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, err
 				fits[i].Missing[j].Name, fits[i].Missing[j].Where = d.name, d.where
 			}
 		}
-		s.attachLast(game, &fits[i])
+		for j := range fits[i].LastMissing {
+			if d, ok := names[fits[i].LastMissing[j].UniqueID]; ok {
+				fits[i].LastMissing[j].Name, fits[i].LastMissing[j].Where = d.name, d.where
+			}
+		}
 	}
 	return fits, nil
-}
-
-func (s *Service) attachLast(game string, fit *Fit) {
-	if s.last == nil || fit.Folder == "" {
-		return
-	}
-	rec, ok, err := s.last.Get(game, fit.Folder)
-	if err != nil || !ok {
-		return
-	}
-	fit.LastProfileID = rec.ProfileID
-	fit.LastProfileAt = rec.At.UnixMilli()
-}
-
-// NotePlayed records that profileID just ran saveFolder. launchsvc calls this when a run's log names the save.
-func (s *Service) NotePlayed(gameID, profileID, saveFolder string) {
-	if s.last == nil {
-		return
-	}
-	_ = s.last.Record(gameID, saveFolder, profileID, time.Now())
 }
 
 func fitFor(in saves.Info, have map[string]bool, dismissed []string) (Fit, bool) {
@@ -227,11 +217,7 @@ func (s *Service) LastSaveGap(ctx context.Context, game, profileID string) (fit 
 	if err != nil {
 		return Fit{}, false, err
 	}
-	have := map[string]bool{}
-	for _, mod := range mods {
-		id := strings.ToLower(mod.UniqueID)
-		have[id] = have[id] || mod.Enabled
-	}
+	present, enabled := haveMaps(mods)
 	info, err := s.scanner.Newest(index)
 	if err != nil {
 		return Fit{}, false, err
@@ -239,8 +225,11 @@ func (s *Service) LastSaveGap(ctx context.Context, game, profileID string) (fit 
 	if info.Folder == "" {
 		return Fit{}, false, nil
 	}
-	fit, ok = fitFor(info, have, s.settings.Get().Dismissed[info.Folder])
-	s.attachLast(game, &fit)
+	fit, ok = fitFor(info, enabled, s.settings.Get().Dismissed[info.Folder])
+	s.fillLast(game, &fit, present, enabled)
+	if len(fit.LastMissing) > 0 {
+		ok = true
+	}
 	return fit, ok, nil
 }
 
