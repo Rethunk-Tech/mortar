@@ -17,7 +17,6 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/backup"
 	"github.com/Rethunk-AI/mortar/internal/bridge"
-	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/game/stardew"
@@ -699,13 +698,13 @@ func (s *Service) backupChangedSaves(gameID, profileID string, g game.Game, inst
 	if err != nil {
 		return err
 	}
-	base, err := datadir.Dir()
+	writeDir, _, err := backup.Locations(settings.Resolve(set, "backupLocation", gameID, nil))
 	if err != nil {
 		return err
 	}
 	_, err = backup.Saves(
 		savesDir,
-		filepath.Join(base, "backups"),
+		writeDir,
 		launchBackupsKept(set, gameID, ov),
 		time.Now(),
 		backup.Cause{Profile: profileID, Kind: backup.KindLaunch},

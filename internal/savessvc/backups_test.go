@@ -114,6 +114,56 @@ func TestCreateBackupIsManualPinnedAndOnlyThatSave(t *testing.T) {
 	}
 }
 
+func TestCreateBackupUsesGameBackupLocationAndStillListsOldFolder(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	cfg, err := os.UserConfigDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	savesDir := filepath.Join(cfg, "StardewValley", "Saves")
+	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
+	store, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := &Service{settings: store, scanner: &saves.Scanner{Dir: savesDir}}
+	if err := s.CreateBackup("Farm_1"); err != nil {
+		t.Fatal(err)
+	}
+	old, err := s.ListBackups()
+	if err != nil || len(old) != 1 {
+		t.Fatalf("default list = %+v, %v", old, err)
+	}
+	custom := filepath.Join(t.TempDir(), "backups")
+	if _, err := store.Update(func(cur *settings.Settings) {
+		_ = settings.ApplyKeyGame(cur, "backupLocation", custom, settings.GameStardew)
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.CreateBackup("Farm_1"); err != nil {
+		t.Fatal(err)
+	}
+	listed, err := s.ListBackups()
+	if err != nil || len(listed) != 2 {
+		t.Fatalf("list after custom = %+v, %v", listed, err)
+	}
+	names, err := os.ReadDir(custom)
+	if err != nil {
+		t.Fatal(err)
+	}
+	zips := 0
+	for _, n := range names {
+		if filepath.Ext(n.Name()) == ".zip" {
+			zips++
+		}
+	}
+	if zips != 1 {
+		t.Fatalf("custom dir %v", names)
+	}
+}
+
 func TestOpenSaveFolderRefusesPathsOutsideSaves(t *testing.T) {
 	s := &Service{scanner: &saves.Scanner{Dir: t.TempDir()}}
 	for _, folder := range []string{"", ".", "..", "../etc", "a/b", "Missing_123"} {

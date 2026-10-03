@@ -1,16 +1,19 @@
 package savessvc
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/backup"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
+	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
 // ErrBusy is returned when restore is refused because the game is launching or running.
@@ -18,11 +21,29 @@ var ErrBusy = errors.New("stop the game to restore saves")
 
 // ListBackups returns save backups newest first.
 func (s *Service) ListBackups() ([]backup.Backup, error) {
-	_, dir, err := s.backupDirs()
+	_, reads, err := s.backupReads()
 	if err != nil {
 		return nil, err
 	}
-	return backup.List(dir)
+	var out []backup.Backup
+	seen := map[string]bool{}
+	for _, dir := range reads {
+		listed, err := backup.List(dir)
+		if err != nil {
+			return nil, err
+		}
+		for _, b := range listed {
+			if seen[b.Name] {
+				continue
+			}
+			seen[b.Name] = true
+			out = append(out, b)
+		}
+	}
+	slices.SortFunc(out, func(a, b backup.Backup) int {
+		return cmp.Compare(b.At, a.At)
+	})
+	return out, nil
 }
 
 // SetBackupPinned keeps or unkeeps a backup during rotation.
@@ -43,7 +64,7 @@ func (s *Service) RestoreBackup(name string, folders []string) error {
 	if err := backupNameOK(name); err != nil {
 		return err
 	}
-	savesDir, backupsDir, err := s.backupDirs()
+	savesDir, reads, err := s.backupReads()
 	if err != nil {
 		return err
 	}
@@ -51,7 +72,8 @@ func (s *Service) RestoreBackup(name string, folders []string) error {
 	if s.settings != nil {
 		keep = s.settings.Get().BackupsKept
 	}
-	return backup.Restore(filepath.Join(backupsDir, name), savesDir, folders, keep, time.Now())
+	src := findBackup(reads, name)
+	return backup.Restore(src, savesDir, folders, keep, time.Now())
 }
 
 // OpenBackupsFolder shows the backups folder in the system file manager.
@@ -101,11 +123,35 @@ func (s *Service) OpenSaveFolder(folder string) error {
 
 func (s *Service) backupDirs() (savesDir, backupsDir string, err error) {
 	savesDir = s.scanner.Dir
-	base, err := datadir.Dir()
-	if err != nil {
-		return "", "", err
+	loc := ""
+	if s.settings != nil {
+		loc = settings.Resolve(s.settings.Get(), "backupLocation", settings.GameStardew, nil)
 	}
-	return savesDir, filepath.Join(base, "backups"), nil
+	backupsDir, _, err = backup.Locations(loc)
+	return savesDir, backupsDir, err
+}
+
+func (s *Service) backupReads() (savesDir string, reads []string, err error) {
+	savesDir = s.scanner.Dir
+	loc := ""
+	if s.settings != nil {
+		loc = settings.Resolve(s.settings.Get(), "backupLocation", settings.GameStardew, nil)
+	}
+	_, reads, err = backup.Locations(loc)
+	return savesDir, reads, err
+}
+
+func findBackup(reads []string, name string) string {
+	for _, dir := range reads {
+		p := filepath.Join(dir, name)
+		if _, err := os.Stat(p); err == nil {
+			return p
+		}
+	}
+	if len(reads) == 0 {
+		return name
+	}
+	return filepath.Join(reads[0], name)
 }
 
 func (s *Service) gameBusy() bool {
