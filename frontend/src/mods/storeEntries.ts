@@ -4,6 +4,7 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
+  AddToGroup,
   OpenConfig,
   RemoveEntries,
   RemoveEntry,
@@ -12,6 +13,7 @@ import {
   SetEntryCategoryMany,
   SetEntryNoteTags,
   SetEntryTagsMany,
+  SetGroupEnabled,
   SetModEnabled,
   SetModsEnabled,
   SetPinned,
@@ -388,5 +390,29 @@ export async function openModConfig(mod: Mod) {
     await OpenConfig(target.game, target.id, mod.key, mod.uniqueId)
   } catch (e) {
     fail(i18n._(msg`Could not open config.json of ${mod.name}`))(e)
+  }
+}
+
+export async function addModToGroup(key: string, name: string) {
+  const target = open()
+  if (!target) {
+    return
+  }
+  try {
+    useProfiles.getState().replace(await AddToGroup(target.game, target.id, name, key))
+  } catch (e) {
+    fail(i18n._(msg`Could not add to the group`))(e)
+  }
+}
+
+export async function setGroupEnabled(name: string, on: boolean) {
+  const target = open()
+  if (!target) {
+    return
+  }
+  try {
+    useProfiles.getState().replace(await SetGroupEnabled(target.game, target.id, name, on))
+  } catch (e) {
+    fail(i18n._(msg`Could not switch the group`))(e)
   }
 }

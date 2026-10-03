@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Table, TableBody, TableHead, TableRow } from '@mui/material'
 import { type MouseEvent, type ReactNode, type Ref, useLayoutEffect, useRef } from 'react'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useDetail } from './detail.ts'
 import { type sanitizeListGroupBy, toggleCollapsed } from './group.ts'
 import { HeaderCells, ListColumnMenu } from './ListColumnMenu.tsx'
@@ -15,6 +16,8 @@ import {
 import { modId } from './lookup.ts'
 import { ModsGroupHeader } from './ModsGroupHeader.tsx'
 import { heading } from './paper.ts'
+import { useMods } from './store.ts'
+import { setGroupEnabled } from './storeEntries.ts'
 import {
   groupKeyHolding,
   LIST_ROW_PX,
@@ -125,6 +128,7 @@ function ListSlot({
   setCollapsed,
   groupBy,
   tagHint,
+  groups,
   renderRow,
   onArrow,
 }: {
@@ -135,6 +139,7 @@ function ListSlot({
   setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
   groupBy: ReturnType<typeof sanitizeListGroupBy>
   tagHint: string
+  groups: readonly { key: string; items: readonly ListRow[] }[]
   renderRow: (
     row: ListRow,
     striped: boolean,
@@ -154,6 +159,18 @@ function ListSlot({
           )
         }
         {...(groupBy === 'tag' ? { hint: tagHint } : {})}
+        {...(groupBy === 'group' && item.groupKey !== ''
+          ? {
+              enabled:
+                groups.find((g) => g.key === item.groupKey)?.items.every((r) => r.mod.enabled) ===
+                true,
+              onEnabled: (on: boolean) => {
+                setGroupEnabled(item.groupKey, on)
+                  .then(() => useMods.getState().load())
+                  .catch(reportUnexpected)
+              },
+            }
+          : {})}
       />
     )
   }
@@ -295,6 +312,7 @@ export function ModListTable({
               setCollapsed={setCollapsed}
               groupBy={groupBy}
               tagHint={tagHint}
+              groups={groups}
               renderRow={renderRow}
               onArrow={onArrow}
             />

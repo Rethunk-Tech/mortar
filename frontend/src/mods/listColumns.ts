@@ -91,6 +91,7 @@ interface ListRow {
   size?: number
   categoryOverride?: string
   categoryLabel: string
+  groupName?: string
   pinned?: boolean
   details?: Details
 }

@@ -177,6 +177,7 @@ function GroupByControl() {
           { id: 'tag' as const, label: t`Tag`, Icon: Tag, hint: tagHint },
           { id: 'framework' as const, label: t`Framework`, Icon: Layers },
           { id: 'author' as const, label: t`Author`, Icon: User },
+          { id: 'group' as const, label: t`Group`, Icon: FolderTree },
         ].map((item) => (
           <Tooltip key={item.id} title={item.hint ?? ''} placement="right">
             <MenuItem

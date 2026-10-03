@@ -7,7 +7,16 @@ const MAX_ENTRY_NOTE = 500
 const MAX_ENTRY_TAGS = 8
 const MAX_ENTRY_TAG = 24
 
-const GROUP_BY_IDS = ['none', 'status', 'category', 'source', 'tag', 'framework', 'author'] as const
+const GROUP_BY_IDS = [
+  'none',
+  'status',
+  'category',
+  'source',
+  'tag',
+  'framework',
+  'author',
+  'group',
+] as const
 
 const STATUS_GROUP_ORDER = ['problems', 'update', 'enabled', 'disabled'] as const
 
@@ -18,7 +27,7 @@ type StatusGroup = (typeof STATUS_GROUP_ORDER)[number]
 
 function emptyGroupLabel(
   by: GroupBy,
-  labels: { category: string; source: string; tag: string; author: string },
+  labels: { category: string; source: string; tag: string; author: string; group: string },
 ): string {
   if (by === 'category') {
     return labels.category
@@ -28,6 +37,9 @@ function emptyGroupLabel(
   }
   if (by === 'author') {
     return labels.author
+  }
+  if (by === 'group') {
+    return labels.group
   }
   return labels.tag
 }
@@ -260,6 +272,7 @@ interface GroupRow {
   tags: readonly string[]
   categoryOverride?: string
   details?: { category?: string }
+  groupName?: string
   mod: {
     uniqueId: string
     author: string
@@ -297,6 +310,9 @@ function rowGroupKey(
   }
   if (by === 'framework') {
     return frameworkGroupKey(row.mod.contentPackFor, row.mod.uniqueId, ctx.names)
+  }
+  if (by === 'group') {
+    return row.groupName ?? ''
   }
   return ''
 }
@@ -348,10 +364,23 @@ function orderedGroupKeys(by: GroupBy, keys: readonly string[]): string[] {
   return [...named, ...tail]
 }
 
+function entryGroupName(
+  groups: readonly { name?: string; keys?: string[] | null }[] | null | undefined,
+  key: string,
+): string {
+  for (const g of groups ?? []) {
+    if ((g.keys ?? []).includes(key)) {
+      return g.name ?? ''
+    }
+  }
+  return ''
+}
+
 export type { Group, GroupBy, StatusGroup }
 export {
   customCategoryById,
   emptyGroupLabel,
+  entryGroupName,
   firstRequiredNeed,
   firstTag,
   frameworkGroupKey,

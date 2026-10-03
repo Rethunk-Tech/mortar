@@ -65,6 +65,7 @@ test('groups by first tag, empty last, sort within groups', () => {
   expect(sanitizeListGroupBy('nope')).toBe('status')
   expect(sanitizeListGroupBy('tag')).toBe('tag')
   expect(sanitizeListGroupBy('framework')).toBe('framework')
+  expect(sanitizeListGroupBy('group')).toBe('group')
   const items = [
     { name: 'Zed', tag: 'b' },
     { name: 'Ann', tag: 'a' },

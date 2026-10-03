@@ -19,6 +19,7 @@ import { ExtraFilesChip } from './ExtraFilesChip.tsx'
 import {
   customCategoryById,
   emptyGroupLabel,
+  type GroupBy,
   groupHeading,
   groupSorted,
   installedNames,
@@ -298,6 +299,32 @@ function ModRow({
   )
 }
 
+function listHeadingFor(
+  groupBy: GroupBy,
+  copy: {
+    category: string
+    source: string
+    tag: string
+    author: string
+    group: string
+    problems: string
+    update: string
+    enabled: string
+    disabled: string
+    smapi: string
+  },
+) {
+  return (key: string) =>
+    groupHeading(groupBy, key, {
+      empty: emptyGroupLabel(groupBy, copy),
+      problems: copy.problems,
+      update: copy.update,
+      enabled: copy.enabled,
+      disabled: copy.disabled,
+      smapi: copy.smapi,
+    })
+}
+
 export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   const { t, i18n } = useLingui()
   const narrow = useMediaQuery(compactQuery)
@@ -320,19 +347,15 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   useEntrySizes()
   const problems = useMods((s) => s.problems)
   const updates = useUpdates((s) => s.updates)
-
   const tagHint = t`A mod with several tags appears under its first tag.`
-
   useEffect(() => {
     setCollapsed(loadCollapsed(gameId))
   }, [gameId])
-
   useEffect(() => {
     primeDetails(mods.map((m) => nexusIdOf(profile, m)).filter((id) => id > 0)).catch(
       reportUnexpected,
     )
   }, [mods, profile])
-
   const names = installedNames(mods)
   const groups = groupSorted(
     mods.map((m) => toListRow(m, profile, byId, customCategories)),
@@ -358,21 +381,18 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   const orderedIds = groups.flatMap((g) => g.items.map((r) => modId(r.mod)))
   const onMenu = (e: MouseEvent) => setMenu(columnMenuFromEvent(e))
   const grid = listGridColumns(cols)
-  const emptyLabel = emptyGroupLabel(groupBy, {
+  const headingFor = listHeadingFor(groupBy, {
     category: t`Uncategorised`,
     source: t`Unknown source`,
     tag: t`Untagged`,
     author: t`Unknown author`,
+    group: t`Ungrouped`,
+    problems: t`Problems`,
+    update: t`Update available`,
+    enabled: t`Enabled`,
+    disabled: t`Disabled`,
+    smapi: t`SMAPI mods`,
   })
-  const headingFor = (key: string) =>
-    groupHeading(groupBy, key, {
-      empty: emptyLabel,
-      problems: t`Problems`,
-      update: t`Update available`,
-      enabled: t`Enabled`,
-      disabled: t`Disabled`,
-      smapi: t`SMAPI mods`,
-    })
   const onCommit = () => {
     if (preview) {
       persistColumns([...preview, ...visible.filter((id) => !preview.includes(id))])

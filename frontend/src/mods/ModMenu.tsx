@@ -30,6 +30,7 @@ import { useFomod } from '../fomod/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { AddToGroupDialog, AddToGroupMenuItem } from './AddToGroupDialog.tsx'
 import { SetCategoryDialog } from './CategoryEditor.tsx'
 import { useDetail } from './detail.ts'
 import { EverywhereMenuItem } from './EverywhereMenuItem.tsx'
@@ -207,6 +208,7 @@ function ModActionMenu({
   onClose: () => void
 }) {
   const { t } = useLingui()
+  const locked = useLocked()
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
   const byId = useNexusDetails((s) => s.byId)
   const entry = (profile?.entries ?? []).find((e) => e.key === mod.key)
@@ -215,6 +217,7 @@ function ModActionMenu({
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [alsoOpen, setAlsoOpen] = useState(false)
   const [bundleOpen, setBundleOpen] = useState(false)
+  const [groupOpen, setGroupOpen] = useState(false)
   const [removeOtherOpen, setRemoveOtherOpen] = useState(false)
   const game = useProfiles((s) => s.game?.id ?? '')
   const currentProfileId = useProfiles((s) => s.openId)
@@ -236,6 +239,13 @@ function ModActionMenu({
           onAlsoAdd={() => setAlsoOpen(true)}
           onAddBundle={() => setBundleOpen(true)}
           onRemoveOther={() => setRemoveOtherOpen(true)}
+        />
+        <AddToGroupMenuItem
+          locked={locked}
+          onClick={() => {
+            onClose()
+            setGroupOpen(true)
+          }}
         />
         {update ? <EverywhereMenuItem game={game} uniqueId={mod.uniqueId} close={onClose} /> : null}
       </Menu>
@@ -297,6 +307,12 @@ function ModActionMenu({
         game={game}
         profileId={currentProfileId}
         uniqueIds={[mod.uniqueId]}
+      />
+      <AddToGroupDialog
+        open={groupOpen}
+        onClose={() => setGroupOpen(false)}
+        entryKey={mod.key}
+        profile={profile}
       />
     </>
   )

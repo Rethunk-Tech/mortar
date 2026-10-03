@@ -1,19 +1,28 @@
-import { Box, ButtonBase, Typography } from '@mui/material'
+import { useLingui } from '@lingui/react/macro'
+import { Box, ButtonBase, Switch, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight } from 'lucide-react'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { useLocked } from './useLocked.ts'
 
-export function ModsGroupHeader({
+function ModsGroupHeader({
   label,
   count,
   open,
   onToggle,
   hint,
+  enabled,
+  onEnabled,
 }: {
   label: string
   count: number
   open: boolean
   onToggle: () => void
   hint?: string
+  enabled?: boolean
+  onEnabled?: (on: boolean) => void
 }) {
+  const { t } = useLingui()
+  const locked = useLocked()
   return (
     <ButtonBase
       onClick={onToggle}
@@ -43,6 +52,25 @@ export function ModsGroupHeader({
       <Box component="span" sx={{ fontSize: 12, color: 'text.secondary' }}>
         {count}
       </Box>
+      {onEnabled ? (
+        <Box
+          sx={{ ml: 'auto' }}
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+            <Switch
+              size="small"
+              checked={enabled === true}
+              disabled={locked}
+              onChange={(_, on) => onEnabled(on)}
+              slotProps={{ input: { 'aria-label': label } }}
+            />
+          </DisabledReason>
+        </Box>
+      ) : null}
     </ButtonBase>
   )
 }
+
+export { ModsGroupHeader }

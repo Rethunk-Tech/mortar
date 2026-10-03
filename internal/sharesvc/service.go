@@ -142,6 +142,7 @@ type session struct {
 	refs     []share.Ref
 	stored   map[string]bool
 	external []migrate.ModPreview
+	groups   []share.FileGroup
 }
 
 func (s *Service) emit(name string, data any) {
@@ -400,6 +401,7 @@ func (s *Service) PreviewFile(ctx context.Context, game, file, profileID string)
 	s.mu.Lock()
 	if s.current != nil && s.current.id == out.Session {
 		s.current.description = pv.Description
+		s.current.groups = pv.Groups
 	}
 	s.mu.Unlock()
 	return out, nil
@@ -418,6 +420,7 @@ func (s *Service) previewBytes(ctx context.Context, game string, data []byte, pr
 	s.mu.Lock()
 	if s.current != nil && s.current.id == out.Session {
 		s.current.description = pv.Description
+		s.current.groups = pv.Groups
 	}
 	s.mu.Unlock()
 	return out, nil
@@ -840,13 +843,19 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		}
 		return Result{}, err
 	}
+	if err := s.applySharedGroups(game, profileID, cur.groups); err != nil {
+		if created {
+			err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
+		}
+		return Result{}, err
+	}
 	if len(reqs) > 0 {
 		// savePending marshals every pending import, which queueChanged edits under applyMu.
 		s.applyMu.Lock()
 		s.mu.Lock()
 		s.pending = append(s.pending, &pending{
 			Game: game, Profile: profileID, BatchID: batchID, Wanted: wanted, Configs: configs,
-			Refs: slices.Clone(cur.refs),
+			Refs: slices.Clone(cur.refs), Groups: slices.Clone(cur.groups),
 		})
 		s.mu.Unlock()
 		s.savePending()
@@ -928,12 +937,13 @@ func (w wantedFile) item(it queue.Item) bool {
 
 // pending is a .mortar file's config files waiting for the mods they belong to.
 type pending struct {
-	Game    string         `json:"game"`
-	Profile string         `json:"profile"`
-	BatchID string         `json:"batchId"`
-	Wanted  []wantedFile   `json:"wanted"`
-	Configs []share.Config `json:"configs"`
-	Refs    []share.Ref    `json:"refs,omitempty"`
+	Game    string            `json:"game"`
+	Profile string            `json:"profile"`
+	BatchID string            `json:"batchId"`
+	Wanted  []wantedFile      `json:"wanted"`
+	Configs []share.Config    `json:"configs"`
+	Refs    []share.Ref       `json:"refs,omitempty"`
+	Groups  []share.FileGroup `json:"groups,omitempty"`
 	// seen is the set of finished downloads the configs were last applied for; it starts over with the process.
 	seen string
 }
@@ -1009,8 +1019,14 @@ func (s *Service) queueChanged(st queue.State) {
 				changed = true
 			}
 		}
+		if len(p.Groups) > 0 && (seen == "on-profile" || settled >= len(p.Wanted)) {
+			if err := s.applySharedGroups(p.Game, p.Profile, p.Groups); err == nil {
+				p.Groups = nil
+				changed = true
+			}
+		}
 		// Configs stay until they land; queue eviction must not drop them.
-		if len(p.Configs) == 0 && len(p.Refs) == 0 {
+		if len(p.Configs) == 0 && len(p.Refs) == 0 && len(p.Groups) == 0 {
 			s.mu.Lock()
 			s.pending = slices.DeleteFunc(s.pending, func(x *pending) bool { return x == p })
 			s.mu.Unlock()

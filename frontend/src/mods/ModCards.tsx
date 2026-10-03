@@ -42,6 +42,7 @@ import {
 } from './parts.tsx'
 import { useSelection } from './selection.ts'
 import { useMods } from './store.ts'
+import { setGroupEnabled } from './storeEntries.ts'
 import { useUpdates } from './updates.ts'
 import {
   flattenModGroups,
@@ -200,6 +201,7 @@ function GridSlot({
   columns,
   orderedIds,
   profile,
+  groups,
 }: {
   item: VirtualRow<ListRow>
   heading: (key: string) => string
@@ -211,6 +213,7 @@ function GridSlot({
   columns: number
   orderedIds: readonly string[]
   profile: Profile
+  groups: readonly { key: string; items: readonly ListRow[] }[]
 }) {
   if (item.kind === 'header') {
     return (
@@ -224,6 +227,18 @@ function GridSlot({
           )
         }
         {...(groupBy === 'tag' ? { hint: tagHint } : {})}
+        {...(groupBy === 'group' && item.groupKey !== ''
+          ? {
+              enabled:
+                groups.find((g) => g.key === item.groupKey)?.items.every((r) => r.mod.enabled) ===
+                true,
+              onEnabled: (on: boolean) => {
+                setGroupEnabled(item.groupKey, on)
+                  .then(() => useMods.getState().load())
+                  .catch(reportUnexpected)
+              },
+            }
+          : {})}
       />
     )
   }
@@ -357,6 +372,7 @@ function CardsPane({
                 columns={columns}
                 orderedIds={orderedIds}
                 profile={profile}
+                groups={groups}
               />
             </Box>
           )
@@ -407,6 +423,7 @@ export function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
     source: t`Unknown source`,
     tag: t`Untagged`,
     author: t`Unknown author`,
+    group: t`Ungrouped`,
   })
   const heading = (key: string) =>
     groupHeading(groupBy, key, {

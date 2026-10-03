@@ -57,6 +57,7 @@ type Preview struct {
 	Description string
 	UniqueIDs   []string
 	Configs     []Config
+	Groups      []FileGroup
 }
 
 type fileDoc struct {
@@ -66,6 +67,7 @@ type fileDoc struct {
 	Description string          `json:"description,omitempty"`
 	Entries     json.RawMessage `json:"entries"`
 	UniqueIDs   []string        `json:"uniqueIds"`
+	Groups      []FileGroup     `json:"groups,omitempty"`
 }
 
 func validSegment(s string) bool {
@@ -111,6 +113,9 @@ func Write(w io.Writer, p profile.Profile, modsDir string, include ...Include) (
 	doc := fileDoc{
 		Version: FormatVersion, Name: s.Name, Notes: notes, Description: p.Description,
 		Entries: entries, UniqueIDs: []string{},
+	}
+	if inc.Notes {
+		doc.Groups = collectFileGroups(p)
 	}
 	if err := checkShared(s); err != nil {
 		return nil, err
@@ -360,7 +365,7 @@ func parseFileDoc(raw []byte) (Preview, error) {
 	if err != nil {
 		return Preview{}, err
 	}
-	pv := Preview{Name: d.Name, Entries: entries, Notes: d.Notes, Description: d.Description, UniqueIDs: d.UniqueIDs}
+	pv := Preview{Name: d.Name, Entries: entries, Notes: d.Notes, Description: d.Description, UniqueIDs: d.UniqueIDs, Groups: d.Groups}
 	if err := checkShared(pv.Shared); err != nil {
 		return Preview{}, err
 	}

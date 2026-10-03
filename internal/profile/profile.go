@@ -157,6 +157,8 @@ type Profile struct {
 	Created time.Time `json:"created"`
 	Updated time.Time `json:"updated"`
 	Entries []Entry   `json:"entries"`
+	// Groups are named sets of entry keys that toggle together.
+	Groups []Group `json:"groups,omitempty"`
 	// Origin is how the profile was created when that is known: OriginLink, OriginMortar,
 	// OriginGameMods, OriginCopy, or OriginCollection. Empty for a profile made with New profile.
 	Origin string `json:"origin,omitempty"`

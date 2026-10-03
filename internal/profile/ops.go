@@ -368,6 +368,7 @@ func removeFrom(p *Profile, dir, key string) error {
 		}
 	}
 	p.Entries = slices.Delete(p.Entries, i, i+1)
+	dropKeyFromGroups(p, key)
 	return nil
 }
 

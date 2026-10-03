@@ -9,7 +9,7 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { customCategoryById, resolvedCategoryLabel } from './group.ts'
+import { customCategoryById, entryGroupName, resolvedCategoryLabel } from './group.ts'
 import type { ListRow } from './listColumns.ts'
 import { kindLabel, nexusIdOf, sourceKind } from './lookup.ts'
 
@@ -62,6 +62,7 @@ function toListRow(
     tags: [...(entry?.tags ?? [])],
     categoryOverride: entry?.categoryOverride ?? '',
     categoryLabel,
+    groupName: entryGroupName(profile.groups, m.key),
   }
   const n = entrySizes[m.key]
   if (n !== undefined) {

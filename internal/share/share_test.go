@@ -377,6 +377,43 @@ func TestEntryNotesRoundTrip(t *testing.T) {
 	}
 }
 
+func TestGroupsFileRoundTrip(t *testing.T) {
+	p := profile.Profile{Name: "G", Entries: []profile.Entry{
+		nexus("one", 541, 1000),
+		nexus("two", 2, 3),
+	}, Groups: []profile.Group{{Name: "Core", Keys: []string{"one", "two"}}}}
+	var buf bytes.Buffer
+	if _, err := Write(&buf, p, t.TempDir()); err != nil {
+		t.Fatal(err)
+	}
+	pv, err := ReadBytes(buf.Bytes())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(pv.Groups) != 1 || pv.Groups[0].Name != "Core" || len(pv.Groups[0].Refs) != 2 {
+		t.Fatalf("groups = %+v", pv.Groups)
+	}
+	imported := profile.Profile{Entries: []profile.Entry{
+		nexus("alpha", 541, 1000),
+		nexus("beta", 2, 3),
+	}}
+	keys := ResolveGroupKeys(imported, pv.Groups[0])
+	if !slices.Equal(keys, []string{"alpha", "beta"}) {
+		t.Fatalf("resolved = %v", keys)
+	}
+	var omit bytes.Buffer
+	if _, err := Write(&omit, p, t.TempDir(), Include{Notes: false, FomodChoices: true}); err != nil {
+		t.Fatal(err)
+	}
+	off, err := ReadBytes(omit.Bytes())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(off.Groups) != 0 {
+		t.Fatalf("notes off still carried groups: %+v", off.Groups)
+	}
+}
+
 func TestCollectOmitsEntryNotesWhenDisabled(t *testing.T) {
 	p := profile.Profile{Name: "x", Entries: []profile.Entry{
 		{
