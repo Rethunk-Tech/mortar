@@ -16,6 +16,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/control"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/datasvc"
 	"github.com/Rethunk-AI/mortar/internal/doctor"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
@@ -38,7 +39,7 @@ var verbs = map[string]bool{
 	"games": true, "profiles": true, "profile": true, "history": true, "mods": true, "mod": true, "install": true,
 	"conflicts": true, "problems": true, "updates": true, "share": true, "export": true, "open": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
-	"bundles": true, "nexus": true, "trash": true,
+	"bundles": true, "nexus": true, "trash": true, "cache": true, "data": true,
 	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
@@ -66,6 +67,7 @@ type cmd struct {
 	yesFlag     bool
 	force       bool
 	wait        bool
+	byMod       bool
 	run         string
 	game        string
 	profileFlag string
@@ -154,6 +156,8 @@ func (c *cmd) parse(args []string) error {
 			c.all = true
 		case a == "--unused":
 			c.unused = true
+		case a == "--by-mod":
+			c.byMod = true
 		case a == "--yes":
 			c.yesFlag = true
 		case a == "--force":
@@ -273,6 +277,10 @@ func (c *cmd) dispatch() error {
 		return c.nexus()
 	case "trash":
 		return c.trash()
+	case "cache":
+		return c.cacheCmd()
+	case "data":
+		return c.dataCmd()
 	case "profiles":
 		a, err := c.need(1, "a game")
 		if err != nil {
@@ -1297,6 +1305,53 @@ func (c *cmd) queue() error {
 	})
 }
 
+func (c *cmd) cacheCmd() error {
+	if len(c.args) < 2 {
+		return usageError{"cache needs size or clear"}
+	}
+	switch c.args[1] {
+	case "size":
+		var info datasvc.CacheInfo
+		if err := c.ask("cache.size", control.Params{}, &info, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(info, func() {
+			fmt.Fprintf(c.out, "%s\n%d\n", info.Path, info.Size)
+		})
+	case "clear":
+		if err := c.ask("cache.clear", control.Params{}, nil, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(map[string]bool{"cleared": true}, func() { fmt.Fprintln(c.out, "Cache cleared.") })
+	default:
+		return usageError{"unknown cache command " + c.args[1]}
+	}
+}
+
+func (c *cmd) dataCmd() error {
+	if len(c.args) < 2 || c.args[1] != "usage" {
+		return usageError{"data needs usage --by-mod"}
+	}
+	if !c.byMod {
+		return usageError{"data usage needs --by-mod"}
+	}
+	var u datasvc.ModUsage
+	if err := c.ask("data.usageByMod", control.Params{}, &u, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(u, func() {
+		rows := make([][]string, 0, len(u.Items))
+		for _, it := range u.Items {
+			rows = append(rows, []string{
+				it.Game, it.Key, it.Name, strconv.FormatInt(it.Size, 10),
+				strconv.Itoa(it.Profiles), strconv.FormatInt(it.ProfileSize, 10), it.LastUsed,
+			})
+		}
+		c.table("GAME\tKEY\tNAME\tSIZE\tPROFILES\tCOPIES\tLAST USED", rows)
+		fmt.Fprintf(c.out, "Total %d\n", u.Total)
+	})
+}
+
 func (c *cmd) update() error {
 	a, err := c.need(1, "a game", "a profile")
 	if err != nil {
@@ -1493,6 +1548,9 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   update <game> <profile> <UniqueID>...|--all
                                           queue available mod updates
   backups list                            list save backups
+  cache size                              analysis cache size
+  cache clear                             delete the analysis cache
+  data usage --by-mod                     store items with size on disk
   backups keep <name>                     keep a save backup during rotation
   backups unkeep <name>                   stop keeping a save backup
   backups restore <name> [save...]        restore a save backup

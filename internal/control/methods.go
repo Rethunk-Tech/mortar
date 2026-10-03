@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/bundles"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/datasvc"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/nexussvc"
@@ -45,6 +46,7 @@ type Services struct {
 	Bundles     *bundles.Service
 	Nexus       *nexussvc.Service
 	Shares      *sharesvc.Service
+	Data        *datasvc.Service
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 }
@@ -415,6 +417,21 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, errors.New("nexus is unavailable")
 		}
 		return s.Nexus.TrackedCount(ctx, p.Game)
+	case "cache.size":
+		if s.Data == nil {
+			return nil, errors.New("data is unavailable")
+		}
+		return s.Data.CacheInfo()
+	case "cache.clear":
+		if s.Data == nil {
+			return nil, errors.New("data is unavailable")
+		}
+		return nil, s.Data.ClearCache()
+	case "data.usageByMod":
+		if s.Data == nil {
+			return nil, errors.New("data is unavailable")
+		}
+		return s.Data.ModUsage()
 	case "history.all":
 		return s.Profiles.RecentHistory(p.Game)
 	case "status":

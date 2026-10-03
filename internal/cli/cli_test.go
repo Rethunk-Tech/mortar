@@ -333,6 +333,39 @@ func TestProblemsDismissRestoreAndDismissed(t *testing.T) {
 	}
 }
 
+func TestCacheAndDataUsageByMod(t *testing.T) {
+	results := map[string]any{
+		"cache.size":  map[string]any{"path": "/data/cache", "size": 12},
+		"cache.clear": nil,
+		"data.usageByMod": map[string]any{
+			"total": 100,
+			"items": []map[string]any{
+				{"game": "stardew", "key": "nexus-1-1", "name": "Alpha", "size": 100, "profiles": 1, "profileSize": 80, "lastUsed": "2026-01-02T03:04:05Z"},
+			},
+		},
+	}
+	r := invoke(t, results, "cache", "size")
+	if r.code != 0 || r.calls[0].method != "cache.size" || !strings.Contains(r.out, "/data/cache") {
+		t.Fatalf("cache size: %+v", r)
+	}
+	r = invoke(t, results, "cache", "clear")
+	if r.code != 0 || r.calls[0].method != "cache.clear" {
+		t.Fatalf("cache clear: %+v", r)
+	}
+	r = invoke(t, results, "data", "usage")
+	if r.code != 2 {
+		t.Fatalf("data usage without --by-mod: %+v", r)
+	}
+	r = invoke(t, results, "data", "usage", "--by-mod")
+	if r.code != 0 || r.calls[0].method != "data.usageByMod" || !strings.Contains(r.out, "nexus-1-1") {
+		t.Fatalf("data usage --by-mod: %+v", r)
+	}
+	r = invoke(t, results, "data", "usage", "--by-mod", "--json")
+	if r.code != 0 || !strings.Contains(r.out, `"total"`) {
+		t.Fatalf("data usage json: %+v", r)
+	}
+}
+
 func TestIsTakesVerbsAndBareWordsButNotLinksOrFiles(t *testing.T) {
 	for arg, want := range map[string]bool{
 		"games": true, "nonsense": true, "nxm://stardewvalley/mods/1/files/2": false,
