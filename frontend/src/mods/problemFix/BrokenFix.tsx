@@ -62,8 +62,8 @@ export function BrokenFix({
     broken.status === 'deprecated' ? (
       <Button
         size="small"
-        color="info"
-        variant="outlined"
+        color="inherit"
+        variant="text"
         onClick={() => dismissAbandoned(broken.uniqueId).catch(reportUnexpected)}
         sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
       >

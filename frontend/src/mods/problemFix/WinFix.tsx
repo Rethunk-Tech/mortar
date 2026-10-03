@@ -35,7 +35,13 @@ function applyWins(winnerKey: string, packIds: string[], skip: number, on: boole
   run().catch(reportUnexpected)
 }
 
-function WinFix({ problem }: { problem: Extract<Problem, { kind: 'asset' }> }) {
+function WinFix({
+  problem,
+  primary,
+}: {
+  problem: Extract<Problem, { kind: 'asset' }>
+  primary: boolean
+}) {
   const { t } = useLingui()
   const locked = useLocked()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
@@ -73,8 +79,8 @@ function WinFix({ problem }: { problem: Extract<Problem, { kind: 'asset' }> }) {
     <>
       <Button
         size="small"
-        variant="contained"
-        color="warning"
+        variant={primary ? 'contained' : 'outlined'}
+        color={primary ? 'warning' : 'inherit'}
         disabled={locked}
         onClick={(e: MouseEvent<HTMLButtonElement>) => setAnchor(e.currentTarget)}
         sx={sx}

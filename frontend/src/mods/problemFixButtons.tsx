@@ -53,10 +53,11 @@ function SettingKind({ problem, dismissedToken }: KindProps<'setting'>) {
 
 function AssetKind({ problem, dismissedToken }: KindProps<'asset'>) {
   return (
-    <>
-      <AssetFix problem={problem} dismissedToken={dismissedToken} />
-      <WinFix problem={problem} />
-    </>
+    <AssetFix
+      problem={problem}
+      dismissedToken={dismissedToken}
+      win={(primary) => <WinFix problem={problem} primary={primary} />}
+    />
   )
 }
 

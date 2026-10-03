@@ -18,8 +18,8 @@ export function ListedFix({
       {missing.where ? <WhereButtons where={missing.where} addLabel={t`Add`} /> : null}
       <Button
         size="small"
-        color="info"
-        variant="outlined"
+        color="inherit"
+        variant="text"
         onClick={() => dismiss(missing.uniqueId).catch(reportUnexpected)}
         sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
       >

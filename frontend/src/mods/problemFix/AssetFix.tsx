@@ -1,17 +1,22 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button, Tooltip } from '@mui/material'
+import type { ReactNode } from 'react'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { type Problem, sameId } from '../lookup.ts'
 import { assetFixButtonStyle } from '../problemGroups.ts'
 import { useMods } from '../store.ts'
 import { useLocked } from '../useLocked.ts'
 
+// Order and weight: the suggested fix first and filled, then the "make a pack win" choice, then Switch off,
+// then Dismiss as the quietest action.
 export function AssetFix({
   problem,
   dismissedToken,
+  win,
 }: {
   problem: Extract<Problem, { kind: 'asset' }>
   dismissedToken?: string | undefined
+  win: (primary: boolean) => ReactNode
 }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
@@ -48,18 +53,29 @@ export function AssetFix({
       </span>
     </Tooltip>
   ))
-  const off = mod
-    ? assetButton(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected))
-    : null
+  const off = mod ? (
+    <Button
+      size="small"
+      variant="outlined"
+      color="inherit"
+      disabled={locked}
+      onClick={() => setEnabled(mod, false).catch(reportUnexpected)}
+      sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+    >
+      {t`Switch off`}
+    </Button>
+  ) : null
+  const winButton = win(fixes.length === 0 && !problem.asset.cosmetic)
   if (dismissedToken !== undefined) {
     return (
       <>
         {fixes}
+        {winButton}
         {off}
         <Button
           size="small"
-          color="info"
-          variant="outlined"
+          color="inherit"
+          variant="text"
           onClick={() => restoreDismissed(dismissedToken).catch(reportUnexpected)}
           sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
         >
@@ -71,12 +87,13 @@ export function AssetFix({
   return (
     <>
       {fixes}
+      {winButton}
       {off}
       {problem.asset.kind === '' ? null : (
         <Button
           size="small"
-          color="info"
-          variant="outlined"
+          color="inherit"
+          variant="text"
           onClick={() => dismissAsset(problem.asset).catch(reportUnexpected)}
           sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
         >

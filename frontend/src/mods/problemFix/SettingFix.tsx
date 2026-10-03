@@ -59,8 +59,8 @@ export function SettingFix({
       ) : (
         <Button
           size="small"
-          color="info"
-          variant="outlined"
+          color="inherit"
+          variant="text"
           onClick={() =>
             useMods.getState().restoreDismissed(dismissedToken).catch(reportUnexpected)
           }
@@ -93,8 +93,8 @@ export function SettingFix({
       ) : null}
       <Button
         size="small"
-        color="info"
-        variant="outlined"
+        color="inherit"
+        variant="text"
         onClick={() => dismissSetting(setting).catch(reportUnexpected)}
         sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
       >
