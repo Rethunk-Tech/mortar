@@ -25,6 +25,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/steam"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -393,7 +394,7 @@ func (s *Service) start(parent context.Context, gameID, profileID string, direct
 	}
 	s.mu.Unlock()
 	if busy {
-		return fmt.Errorf("%s is already running", g.Name())
+		return usererr.Wrap(usererr.Busy, fmt.Errorf("%s is already running", g.Name()))
 	}
 	dir, modsDir, err := s.target(g, profileID)
 	if err != nil {
@@ -475,7 +476,7 @@ func (s *Service) StartVanilla(gameID string, direct bool) error {
 	}
 	s.mu.Unlock()
 	if busy {
-		return fmt.Errorf("%s is already running", g.Name())
+		return usererr.Wrap(usererr.Busy, fmt.Errorf("%s is already running", g.Name()))
 	}
 	dir, err := game.InstallDir(s.home, s.settings.Get(), g.ID())
 	if err != nil {
@@ -573,7 +574,7 @@ func (s *Service) donePreparing(gameID string) {
 func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDir string, direct, vanilla bool) error {
 	gameID := g.ID()
 	if ps, err := s.gameProcs(g); err == nil && len(ps) > 0 {
-		return fmt.Errorf("%s is already running", g.Name())
+		return usererr.Wrap(usererr.Busy, fmt.Errorf("%s is already running", g.Name()))
 	}
 	req := launch.Request{InstallDir: dir, ModsDir: modsDir, Direct: direct, Vanilla: vanilla, Seen: s.seen(g), HideWindow: !s.settings.Get().ShowConsoleWindow()}
 	if !vanilla && profileID != "" {

@@ -15,6 +15,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 const requestTimeout = 20 * time.Second
@@ -125,11 +126,14 @@ func (c *Client) do(req *http.Request, limit int64) ([]byte, error) {
 	defer cancel()
 	resp, err := c.client().Do(req.WithContext(ctx))
 	if err != nil {
-		return nil, err
+		return nil, usererr.Wrap(usererr.Network, err)
 	}
 	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, usererr.Wrap(usererr.NotFound, &StatusError{Code: resp.StatusCode, Status: resp.Status})
+	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, &StatusError{Code: resp.StatusCode, Status: resp.Status}
+		return nil, usererr.Wrap(usererr.Network, &StatusError{Code: resp.StatusCode, Status: resp.Status})
 	}
 	return io.ReadAll(io.LimitReader(resp.Body, limit))
 }

@@ -23,6 +23,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 const (
@@ -317,7 +318,7 @@ func (s *Store) profileDir(game, id string) (string, error) {
 		return "", err
 	}
 	if !idPattern.MatchString(id) {
-		return "", fmt.Errorf("invalid profile id %q", id)
+		return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("invalid profile id %q", id))
 	}
 	return filepath.Join(dir, id), nil
 }
@@ -342,7 +343,7 @@ func (s *Store) List(game string) ([]Profile, error) {
 		}
 		p, err := s.read(game, d.Name())
 		if err != nil {
-			row := Profile{ID: d.Name(), Error: err.Error()}
+			row := Profile{ID: d.Name(), Error: usererr.Wrap(usererr.Damaged, err).Error()}
 			if _, ok := latestSnapshotAt(filepath.Join(dir, d.Name())); !ok {
 				row.RepairError = errNoSnapshot.Error()
 			}
@@ -406,11 +407,14 @@ func (s *Store) read(game, id string) (Profile, error) {
 func readAt(dir, id string) (Profile, error) {
 	b, err := fsx.ReadFile(filepath.Join(dir, fileName))
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return Profile{}, usererr.Wrap(usererr.NotFound, err)
+		}
 		return Profile{}, err
 	}
 	var p Profile
 	if err := json.Unmarshal(b, &p); err != nil {
-		return Profile{}, fmt.Errorf("read profile %s: %w", id, err)
+		return Profile{}, usererr.Wrap(usererr.Damaged, fmt.Errorf("read profile %s: %w", id, err))
 	}
 	if p.Entries == nil {
 		p.Entries = []Entry{}
@@ -483,7 +487,7 @@ func (s *Store) create(game, name string) (Profile, error) {
 	now := time.Now().UTC().Truncate(time.Second)
 	p := Profile{ID: id, Name: name, Order: len(existing), Created: now, Updated: now, Entries: []Entry{}}
 	if s.settings != nil {
-		p.UpdateBeforePlay = s.settings.Get().UpdateModsBeforePlayDefault
+		p.UpdateBeforePlay = s.settings.Get().GamePrefs(game).UpdateModsBeforePlayDefault
 	}
 	if len(existing) > 0 {
 		p.Order = existing[len(existing)-1].Order + 1

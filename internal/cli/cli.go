@@ -26,6 +26,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/queue"
 	"github.com/Rethunk-AI/mortar/internal/savessvc"
 	"github.com/Rethunk-AI/mortar/internal/tools"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 const (
@@ -62,6 +63,7 @@ type cmd struct {
 	out         io.Writer
 	errOut      io.Writer
 	json        bool
+	verbose     bool
 	all         bool
 	unused      bool
 	yesFlag     bool
@@ -131,9 +133,23 @@ func (c *cmd) fail(err error) int {
 	if errors.Is(err, control.ErrNotRunning) {
 		code = 3
 	}
+	kind, raw := usererr.Parse(err.Error())
+	if kind == usererr.Unknown {
+		kind = usererr.KindOf(err)
+		raw = err.Error()
+	}
 	if c.json {
-		_ = json.NewEncoder(c.errOut).Encode(map[string]any{"error": err.Error(), "code": code})
+		_ = json.NewEncoder(c.errOut).Encode(map[string]any{"error": raw, "kind": string(kind), "code": code})
 		return code
+	}
+	shown := err.Error()
+	if !c.verbose && code != 2 {
+		shown = Sentence(kind)
+		if kind == usererr.Unknown {
+			shown = raw
+		}
+	} else if c.verbose {
+		shown = raw
 	}
 	if code == 2 {
 		fmt.Fprintln(c.errOut, "mortar:", err)
@@ -142,7 +158,7 @@ func (c *cmd) fail(err error) int {
 		}
 		return code
 	}
-	fmt.Fprintln(c.errOut, "mortar:", err)
+	fmt.Fprintln(c.errOut, "mortar:", shown)
 	return code
 }
 
@@ -152,6 +168,8 @@ func (c *cmd) parse(args []string) error {
 		switch {
 		case a == "--json":
 			c.json = true
+		case a == "-v", a == "--verbose":
+			c.verbose = true
 		case a == "--all":
 			c.all = true
 		case a == "--unused":
@@ -1082,7 +1100,7 @@ func (c *cmd) problemsDismiss() error {
 	if err := c.ask("problems", control.Params{Game: game, Profile: profile}, &r, readTimeout); err != nil {
 		return err
 	}
-	rows := dismissableRows(r)
+	rows := problems.DismissableRows(r)
 	if index > len(rows) {
 		return refusedError{fmt.Sprintf("problem index %d is not dismissable (%d dismissable rows; run mortar problems %s %s)", index, len(rows), game, profile)}
 	}

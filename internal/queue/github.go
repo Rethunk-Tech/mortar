@@ -12,6 +12,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 // release finds the stable release an item names and its archive assets.
@@ -19,7 +20,7 @@ func (s *Service) release(ctx context.Context, it Item) (github.Release, []githu
 	owner, repo, _ := strings.Cut(it.Repo, "/")
 	all, err := s.d.GitHub.Releases(ctx, owner, repo)
 	if err != nil {
-		return github.Release{}, nil, err
+		return github.Release{}, nil, usererr.Wrap(usererr.Network, err)
 	}
 	rel, assets, err := github.Select(all, cmp.Or(it.Tag, it.Version))
 	if err != nil {

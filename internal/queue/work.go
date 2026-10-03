@@ -14,6 +14,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 type action int
@@ -277,7 +278,7 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 	}
 	files, err := c.Files(ctx, it.ModID)
 	if err != nil {
-		return err
+		return usererr.Wrap(usererr.Network, err)
 	}
 	statuses, _ := c.ScanStatuses(ctx, it.ModID)
 	var file nexus.File
@@ -300,7 +301,7 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 		file, _ = ChooseFile(files, it.Version, it.Current)
 	}
 	if file.FileID == 0 {
-		return errors.New("no suitable file for this mod is listed on Nexus")
+		return usererr.New(usererr.NotFound, "no suitable file for this mod is listed on Nexus")
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -392,10 +393,10 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	s.mu.Unlock()
 	links, err := c.DownloadLinks(ctx, it.ModID, it.FileID, key, expires)
 	if err != nil {
-		return err
+		return usererr.Wrap(usererr.Network, err)
 	}
 	if len(links) == 0 {
-		return errors.New("the download has no link")
+		return usererr.New(usererr.Network, "the download has no link")
 	}
 	if err := os.MkdirAll(s.downloadRoot(), 0o700); err != nil {
 		return err
@@ -410,10 +411,10 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		}
 		links, err = c.DownloadLinks(ctx, it.ModID, it.FileID, key, expires)
 		if err != nil {
-			return err
+			return usererr.Wrap(usererr.Network, err)
 		}
 		if len(links) == 0 {
-			return errors.New("the download has no link")
+			return usererr.New(usererr.Network, "the download has no link")
 		}
 		uri = links[0].URI
 	}
@@ -523,7 +524,7 @@ func (s *Service) batchFinished(rec *Item) bool {
 
 func (s *Service) diskError(err error, total int64) error {
 	if err != nil && store.IsDiskFull(err) {
-		return &store.DiskFullError{NeedMB: total>>20 + 1, Err: err}
+		return usererr.Wrap(usererr.DiskFull, &store.DiskFullError{NeedMB: total>>20 + 1, Err: err})
 	}
 	return err
 }

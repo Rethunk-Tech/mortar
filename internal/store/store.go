@@ -25,6 +25,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/archive"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 // Unused items are deleted this long after their last use.
@@ -162,7 +163,7 @@ func (s *Store) folder(game, key string) (string, error) {
 	}
 	if _, err := os.Stat(dir); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			return "", &Error{Game: game, Key: key, Err: ErrNotFound}
+			return "", usererr.Wrap(usererr.NotFound, &Error{Game: game, Key: key, Err: ErrNotFound})
 		}
 		return "", err
 	}
@@ -176,7 +177,7 @@ func (s *Store) folder(game, key string) (string, error) {
 			if exists(dir) {
 				return "", &Error{Game: game, Key: key, Err: ErrIncomplete}
 			}
-			return "", &Error{Game: game, Key: key, Err: ErrNotFound}
+			return "", usererr.Wrap(usererr.NotFound, &Error{Game: game, Key: key, Err: ErrNotFound})
 		}
 	}
 	return dir, nil
@@ -317,7 +318,7 @@ func (s *Store) install(game, key string, fill func(tmp string) error, need func
 	}
 	if err != nil {
 		if diskFull(err) {
-			err = &DiskFullError{NeedMB: need()>>20 + 1, Err: err}
+			err = usererr.Wrap(usererr.DiskFull, &DiskFullError{NeedMB: need()>>20 + 1, Err: err})
 		}
 		return &Error{Game: game, Key: key, Err: err}
 	}
