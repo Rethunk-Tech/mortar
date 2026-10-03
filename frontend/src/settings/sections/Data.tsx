@@ -16,6 +16,7 @@ import { DataDialogs } from './DataDialogs.tsx'
 import { CacheClearDialog, DataByMod, DataSettingsFiles } from './DataMods.tsx'
 import { type MoveState, moveDataFolder } from './DataMoveRun.ts'
 import { DataPrefs } from './DataPrefs.tsx'
+import { DataStoreReport } from './DataStoreReport.tsx'
 import { BackupsKept, DataFolderCard, UsageSummary } from './DataUsage.tsx'
 import { useDataUsage } from './DataUsageLoad.ts'
 import { nowrap } from './dataStyles.ts'
@@ -131,6 +132,7 @@ export function Data() {
         onClearCache={() => d.setConfirmClear(true)}
       />
       <DataByMod key={d.rev} onCleanup={d.openPreview} onChanged={d.restart} />
+      <DataStoreReport key={`store-${d.rev}`} onChanged={d.restart} />
       <Button
         onClick={d.openPreview}
         startIcon={<Trash2 size={16} />}
