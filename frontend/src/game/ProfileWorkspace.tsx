@@ -154,12 +154,20 @@ export function ProfileWorkspace({
         {tab === 'problems' ? (
           <Box
             key={`problems-${profile.id}`}
-            sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
           >
-            <Box sx={{ px: 2, pt: 2, flexShrink: 0 }}>
+            {/* One scroll area: the problems come first, the asset map after them, so a large map never
+                pushes the problems out of reach. */}
+            <ProblemsTab />
+            <Box sx={{ px: 2, pb: 2, flexShrink: 0 }}>
               <AssetMapPanel />
             </Box>
-            <ProblemsTab />
           </Box>
         ) : null}
         {tab === 'load-order' ? (

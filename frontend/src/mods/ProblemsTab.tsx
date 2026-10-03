@@ -536,9 +536,7 @@ export function ProblemsTab() {
   return (
     <Box
       sx={{
-        flex: 1,
-        minHeight: 0,
-        overflowY: 'auto',
+        flexShrink: 0,
         px: 2,
         pt: 2,
         pb: 1.5,
