@@ -1,5 +1,8 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useRef } from 'react'
+import { type RefObject, useEffect, useRef } from 'react'
+
+const TYPEAHEAD_LETTER = /^\p{L}$/u
+export const TYPEAHEAD_MS = 500
 
 export const LIST_ROW_PX = 36
 export const GROUP_HEADER_PX = 36
@@ -156,4 +159,96 @@ export function useModVirtual<T>(items: readonly VirtualRow<T>[], lanePx: number
     getItemKey: (index) => items[index]?.key ?? index,
   })
   return { parentRef, virtualizer }
+}
+
+export function typeaheadChar(e: {
+  key: string
+  ctrlKey: boolean
+  altKey: boolean
+  metaKey: boolean
+  target: EventTarget | null
+}): string | undefined {
+  if (e.ctrlKey || e.altKey || e.metaKey || e.key.length !== 1) {
+    return undefined
+  }
+  if (!TYPEAHEAD_LETTER.test(e.key)) {
+    return undefined
+  }
+  const el = e.target as { tagName?: string; isContentEditable?: boolean } | null
+  if (el?.tagName === 'INPUT' || el?.tagName === 'TEXTAREA' || el?.isContentEditable) {
+    return undefined
+  }
+  return e.key
+}
+
+export function typeaheadQuery(prev: string, at: number, key: string, now: number): string {
+  if (now - at > TYPEAHEAD_MS) {
+    return key
+  }
+  return prev + key
+}
+
+export function firstNamePrefix<T>(
+  items: readonly T[],
+  query: string,
+  nameOf: (item: T) => string,
+): T | undefined {
+  const q = query.toLocaleLowerCase()
+  if (!q) {
+    return undefined
+  }
+  return items.find((item) => nameOf(item).toLocaleLowerCase().startsWith(q))
+}
+
+export function useModTypeahead<T>(opts: {
+  items: readonly VirtualRow<T>[]
+  nameOf: (item: T) => string
+  idOf: (item: T) => string
+  virtualizer: { scrollToIndex: (index: number, opts?: { align: 'auto' }) => void }
+  parentRef: RefObject<HTMLElement | null>
+}) {
+  const { items, nameOf, idOf, virtualizer, parentRef } = opts
+  const buf = useRef({ text: '', at: 0 })
+  useEffect(() => {
+    const root = parentRef.current
+    if (!root) {
+      return
+    }
+    const onKey = (e: KeyboardEvent) => {
+      const ch = typeaheadChar(e)
+      if (ch === undefined) {
+        return
+      }
+      const active = document.activeElement
+      if (active !== root && !root.contains(active)) {
+        return
+      }
+      e.preventDefault()
+      const now = Date.now()
+      const text = typeaheadQuery(buf.current.text, buf.current.at, ch, now)
+      buf.current = { text, at: now }
+      const mods: T[] = []
+      for (const row of items) {
+        if (row.kind === 'row') {
+          mods.push(row.item)
+        } else if (row.kind === 'lane') {
+          mods.push(...row.items)
+        }
+      }
+      const hit = firstNamePrefix(mods, text, nameOf)
+      if (!hit) {
+        return
+      }
+      const id = idOf(hit)
+      const idx = virtualIndexOf(items, id, idOf)
+      if (idx >= 0) {
+        virtualizer.scrollToIndex(idx, { align: 'auto' })
+      }
+      requestAnimationFrame(() => {
+        parentRef.current?.querySelector<HTMLElement>(`[data-mod-id="${CSS.escape(id)}"]`)?.focus()
+      })
+    }
+    root.addEventListener('keydown', onKey)
+    return () => root.removeEventListener('keydown', onKey)
+  }, [idOf, items, nameOf, parentRef, virtualizer])
 }

@@ -46,6 +46,7 @@ import {
   gridColumnCount,
   gridLanePx,
   groupKeyHolding,
+  useModTypeahead,
   useModVirtual,
   type VirtualRow,
   virtualIndexOf,
@@ -103,6 +104,7 @@ function ModCard({
       }}
     >
       <ButtonBase
+        data-mod-id={id}
         aria-label={t`Details of ${m.name}`}
         onMouseDown={(e) => {
           if (e.shiftKey) {
@@ -284,8 +286,19 @@ function CardsPane({
     lastReveal.current = token
     virtualizer.scrollToIndex(idx, { align: 'auto' })
   }, [collapsed, detailId, gameId, groups, items, setCollapsed, virtualizer])
+  useModTypeahead({
+    items,
+    nameOf: (row) => row.mod.name,
+    idOf: (row) => modId(row.mod),
+    virtualizer,
+    parentRef,
+  })
   return (
-    <Box ref={parentRef} sx={{ minHeight: 0, height: '100%', overflowY: 'auto' }}>
+    <Box
+      ref={parentRef}
+      tabIndex={0}
+      sx={{ minHeight: 0, height: '100%', overflowY: 'auto', outline: 'none' }}
+    >
       <Box sx={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
         {virtualizer.getVirtualItems().map((vi) => {
           const item = items[vi.index]

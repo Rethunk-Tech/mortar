@@ -1,10 +1,14 @@
 import { expect, test } from 'bun:test'
 import {
+  firstNamePrefix,
   flattenModGroups,
   gridColumnCount,
   groupKeyHolding,
   neighborId,
   orderedModIds,
+  TYPEAHEAD_MS,
+  typeaheadChar,
+  typeaheadQuery,
   virtualIndexOf,
 } from './virtualRows.ts'
 
@@ -46,4 +50,31 @@ test('flattens grouped list rows, skips collapsed items, lanes for the grid', ()
   expect(orderedModIds(listed, idOf)).toEqual(['a', 'b', 'c'])
   expect(neighborId(['a', 'b', 'c'], 'c', 1)).toBe('a')
   expect(neighborId(['a', 'b', 'c'], 'a', -1)).toBe('c')
+})
+
+test('firstNamePrefix matches the first name that starts with the typed text', () => {
+  const mods = [{ name: 'Automate' }, { name: 'Bigger Backpack' }, { name: 'Auto-Gravestones' }]
+  expect(firstNamePrefix(mods, 'au', (m) => m.name)?.name).toBe('Automate')
+  expect(firstNamePrefix(mods, 'bi', (m) => m.name)?.name).toBe('Bigger Backpack')
+  expect(firstNamePrefix(mods, 'zz', (m) => m.name)).toBeUndefined()
+  expect(typeaheadQuery('A', 0, 'u', TYPEAHEAD_MS + 1)).toBe('u')
+  expect(typeaheadQuery('A', 0, 'u', TYPEAHEAD_MS - 1)).toBe('Au')
+  expect(
+    typeaheadChar({
+      key: 'a',
+      ctrlKey: false,
+      altKey: false,
+      metaKey: false,
+      target: { tagName: 'INPUT', isContentEditable: false } as HTMLElement,
+    }),
+  ).toBeUndefined()
+  expect(
+    typeaheadChar({
+      key: 'a',
+      ctrlKey: false,
+      altKey: false,
+      metaKey: false,
+      target: { tagName: 'DIV', isContentEditable: false } as HTMLElement,
+    }),
+  ).toBe('a')
 })

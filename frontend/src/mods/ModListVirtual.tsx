@@ -20,6 +20,7 @@ import {
   LIST_ROW_PX,
   neighborId,
   orderedModIds,
+  useModTypeahead,
   useModVirtual,
   type VirtualRow,
   virtualIndexOf,
@@ -94,7 +95,11 @@ function ListShell({
           </TableRow>
         </TableHead>
       </Table>
-      <Box ref={parentRef} sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pb: 1.5 }}>
+      <Box
+        ref={parentRef}
+        tabIndex={0}
+        sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pb: 1.5, outline: 'none' }}
+      >
         <Table sx={{ display: 'block', '& tbody': { display: 'block' } }}>
           <TableBody sx={{ display: 'block', position: 'relative', height: total }}>
             {children}
@@ -208,6 +213,13 @@ export function ModListTable({
   const { parentRef, virtualizer } = useModVirtual(items, LIST_ROW_PX)
   const lastReveal = useRef('')
   const navIds = orderedModIds(items, (row) => modId(row.mod))
+  useModTypeahead({
+    items,
+    nameOf: (row) => row.mod.name,
+    idOf: (row) => modId(row.mod),
+    virtualizer,
+    parentRef,
+  })
   useLayoutEffect(() => {
     if (!detailId) {
       return
