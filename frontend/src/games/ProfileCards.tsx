@@ -108,6 +108,7 @@ function ProfileCards({
       {visible.map((profile) => (
         <ProfileCard
           key={profile.id}
+          gameId={gameId}
           profile={profile}
           lastPlayedAt={profileCardLastPlayedIso(profile.id, lastPlayed, runStarted)}
           playDisabled={starting}
@@ -137,12 +138,14 @@ function ProfileCards({
 }
 
 function ProfileCard({
+  gameId,
   profile,
   lastPlayedAt,
   playDisabled,
   onOpen,
   onPlay,
 }: {
+  gameId: GameId
   profile: Profile
   lastPlayedAt: string
   playDisabled: boolean
@@ -181,7 +184,7 @@ function ProfileCard({
         >
           {profile.name}
         </Typography>
-        <ProfileHealth counts={counts} />
+        <ProfileHealth counts={counts} game={gameId} profileId={profile.id} />
       </Box>
       <Box
         sx={{

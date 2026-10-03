@@ -2,10 +2,14 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Tooltip } from '@mui/material'
 import type { KeyboardEvent } from 'react'
+import { useState } from 'react'
+import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { HealthHistory } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { compact } from '../game/compact.ts'
 import { useSettings } from '../settings/store.ts'
 import { healthView } from './badgeDisplay.ts'
 import type { Counts } from './badges.ts'
+import { HealthTooltipContent } from './HealthTooltipContent.tsx'
 
 const pill = {
   flexShrink: 0,
@@ -40,10 +44,14 @@ const sidebarPill = {
 
 export function ProfileHealth({
   counts,
+  game,
+  profileId,
   sidebar = false,
   onClick,
 }: {
   counts?: Counts | undefined
+  game?: string
+  profileId?: string
   sidebar?: boolean
   // Opens the profile's Problems tab; the badge is a button only when it is set.
   onClick?: () => void
@@ -56,11 +64,37 @@ export function ProfileHealth({
     problems: (n) => t`${plural(n, { one: '# problem', other: '# problems' })}`,
     updates: (n) => t`${plural(n, { one: '# update', other: '# updates' })}`,
   })
+  const [detail, setDetail] = useState<{
+    history: Awaited<ReturnType<typeof HealthHistory>>
+    runs: Awaited<ReturnType<typeof Runs>>
+  } | null>(null)
+
+  const loadDetail = () => {
+    if (!(game && profileId) || detail !== null) {
+      return
+    }
+    Promise.all([HealthHistory(game, profileId), Runs(game, profileId)])
+      .then(([history, runs]) => {
+        setDetail({ history: history ?? [], runs: runs ?? [] })
+      })
+      .catch(() => {
+        setDetail({ history: [], runs: [] })
+      })
+  }
+
   if (view.tone === 'none') {
     return null
   }
+
+  const tooltipTitle =
+    game && profileId && detail !== null ? (
+      <HealthTooltipContent summary={view.tooltip} history={detail.history} runs={detail.runs} />
+    ) : (
+      view.tooltip
+    )
+
   return (
-    <Tooltip title={view.tooltip} disableInteractive={true}>
+    <Tooltip title={tooltipTitle} disableInteractive={true} onOpen={loadDetail}>
       <Box
         component="span"
         role={onClick ? 'button' : 'img'}

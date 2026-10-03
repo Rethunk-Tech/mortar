@@ -147,7 +147,7 @@ msgstr "Make {name} win"
 
 #: src/console/RunProblems.tsx:106
 #: src/install/store.ts:320
-#: src/mods/ConfigEditor.tsx:250
+#: src/mods/ConfigEditor.tsx:258
 #: src/mods/LockedNote.tsx:9
 #: src/mods/OtherProfilesDialog.tsx:96
 #: src/mods/parts.tsx:274
@@ -266,7 +266,7 @@ msgstr "History"
 msgid "Remove {0} mods from this profile?"
 msgstr "Remove {0} mods from this profile?"
 
-#: src/mods/ConfigEditor.tsx:258
+#: src/mods/ConfigEditor.tsx:266
 msgid "Discard changes?"
 msgstr "Discard changes?"
 
@@ -849,7 +849,7 @@ msgstr "Orange"
 msgid "Fishing skill"
 msgstr "Fishing skill"
 
-#: src/games/ProfileCards.tsx:132
+#: src/games/ProfileCards.tsx:133
 msgid "+{more} more"
 msgstr "+{more} more"
 
@@ -960,7 +960,7 @@ msgid "Grid view"
 msgstr "Grid view"
 
 #: src/launch/events.ts:45
-#: src/mods/updateDigestToast.ts:50
+#: src/mods/updateDigestToast.ts:54
 #: src/mods/updateReview/UpdateBar.tsx:55
 msgid "Review"
 msgstr "Review"
@@ -1426,9 +1426,9 @@ msgstr "Dependency cycle"
 
 #: src/commandPalette/paletteLabels.ts:16
 #: src/game/NewProfileDialog.tsx:45
-#: src/game/Sidebar.tsx:373
-#: src/game/Sidebar.tsx:393
-#: src/game/Sidebar.tsx:394
+#: src/game/Sidebar.tsx:378
+#: src/game/Sidebar.tsx:398
+#: src/game/Sidebar.tsx:399
 #: src/nxm/ArrivalDialog.tsx:149
 #: src/profiles/ProfilesPage.tsx:447
 #: src/profiles/ProfilesPage.tsx:530
@@ -1823,7 +1823,7 @@ msgstr "Data folder"
 msgid "Uncategorized"
 msgstr "Uncategorized"
 
-#: src/mods/ConfigEditor.tsx:220
+#: src/mods/ConfigEditor.tsx:228
 msgid "JSON"
 msgstr "JSON"
 
@@ -2053,7 +2053,7 @@ msgstr "This log is {size}. Sharing uploads it to smapi.io, where it becomes pub
 msgid "The link was made for another Nexus account than the one signed in."
 msgstr "The link was made for another Nexus account than the one signed in."
 
-#: src/mods/ConfigEditor.tsx:261
+#: src/mods/ConfigEditor.tsx:269
 msgid "Discard"
 msgstr "Discard"
 
@@ -2119,7 +2119,7 @@ msgstr "Could not read your profiles"
 msgid "Removed {0} mods"
 msgstr "Removed {0} mods"
 
-#: src/mods/ProfileHealth.tsx:55
+#: src/mods/ProfileHealth.tsx:63
 msgid "{n, plural, one {# missing requirement} other {# missing requirements}}"
 msgstr "{n, plural, one {# missing requirement} other {# missing requirements}}"
 
@@ -2359,7 +2359,7 @@ msgstr "Prefix for direct launches only (for example, gamemoderun mangohud). On 
 msgid "SMAPI update check failed"
 msgstr "SMAPI update check failed"
 
-#: src/game/Sidebar.tsx:189
+#: src/game/Sidebar.tsx:193
 msgid "Resize sidebar"
 msgstr "Resize sidebar"
 
@@ -2459,7 +2459,7 @@ msgstr "Cover image"
 #: src/launch/UpdateWarnDialog.tsx:51
 #: src/mods/CategoryEditor.tsx:163
 #: src/mods/CategoryEditor.tsx:220
-#: src/mods/ConfigEditor.tsx:260
+#: src/mods/ConfigEditor.tsx:268
 #: src/mods/OtherProfilesDialog.tsx:52
 #: src/mods/parts.tsx:372
 #: src/mods/pinReasonDialog.tsx:58
@@ -2851,7 +2851,7 @@ msgstr "This archive holds several variants of the same mod. Pick the one to ins
 msgid "Could not add {0}"
 msgstr "Could not add {0}"
 
-#: src/mods/ConfigEditor.tsx:332
+#: src/mods/ConfigEditor.tsx:340
 msgid "Edit"
 msgstr "Edit"
 
@@ -3178,6 +3178,10 @@ msgstr "Background preview"
 msgid "Created · updated"
 msgstr "Created · updated"
 
+#: src/mods/HealthTooltipContent.tsx:48
+msgid "Clean"
+msgstr "Clean"
+
 #: src/settings/sections/Updates.tsx:69
 msgid "Restarting…"
 msgstr "Restarting…"
@@ -3399,7 +3403,7 @@ msgstr "Start measuring to view a report."
 msgid "Download missing mods"
 msgstr "Download missing mods"
 
-#: src/mods/ProfileHealth.tsx:56
+#: src/mods/ProfileHealth.tsx:64
 msgid "{n, plural, one {# problem} other {# problems}}"
 msgstr "{n, plural, one {# problem} other {# problems}}"
 
@@ -3683,7 +3687,7 @@ msgid "Endorsements"
 msgstr "Endorsements"
 
 #. placeholder {0}: profile.name
-#: src/games/ProfileCards.tsx:217
+#: src/games/ProfileCards.tsx:220
 msgid "Play {0}"
 msgstr "Play {0}"
 
@@ -3894,7 +3898,7 @@ msgstr "{0, plural, one {# skipped} other {# skipped}}"
 msgid "Could not remove the selected mods"
 msgstr "Could not remove the selected mods"
 
-#: src/mods/ConfigEditor.tsx:248
+#: src/mods/ConfigEditor.tsx:256
 msgid "Saved"
 msgstr "Saved"
 
@@ -4865,6 +4869,7 @@ msgid "Add a shortcut that plays this profile"
 msgstr "Add a shortcut that plays this profile"
 
 #: src/console/outcome.ts:9
+#: src/mods/HealthTooltipContent.tsx:44
 msgid "Crashed"
 msgstr "Crashed"
 
@@ -5409,7 +5414,7 @@ msgstr "This cannot be undone."
 msgid "Restored"
 msgstr "Restored"
 
-#: src/mods/ProfileHealth.tsx:57
+#: src/mods/ProfileHealth.tsx:65
 msgid "{n, plural, one {# update} other {# updates}}"
 msgstr "{n, plural, one {# update} other {# updates}}"
 
@@ -5965,7 +5970,7 @@ msgstr "Updated by your package manager"
 msgid "Never"
 msgstr "Never"
 
-#: src/mods/ConfigEditor.tsx:219
+#: src/mods/ConfigEditor.tsx:227
 msgid "Form"
 msgstr "Form"
 
@@ -6204,7 +6209,7 @@ msgstr "No mods match your search"
 msgid "Abstain"
 msgstr "Abstain"
 
-#: src/games/ProfileCards.tsx:155
+#: src/games/ProfileCards.tsx:158
 msgid "{updates, plural, one {# update} other {# updates}}"
 msgstr "{updates, plural, one {# update} other {# updates}}"
 
@@ -6561,8 +6566,8 @@ msgid "Mortar menu"
 msgstr "Mortar menu"
 
 #: src/game/detailStates.tsx:53
-#: src/game/Sidebar.tsx:388
-#: src/game/Sidebar.tsx:389
+#: src/game/Sidebar.tsx:393
+#: src/game/Sidebar.tsx:394
 msgid "Manage profiles"
 msgstr "Manage profiles"
 
@@ -6613,7 +6618,7 @@ msgstr "Find the crash cause"
 
 #: src/commandPalette/paletteLabels.ts:7
 #: src/games/GameSelect.tsx:207
-#: src/games/ProfileCards.tsx:232
+#: src/games/ProfileCards.tsx:235
 #: src/launch/PlayControl.tsx:149
 #: src/settings/sections/Appearance.tsx:136
 msgid "Play"
@@ -6674,7 +6679,7 @@ msgstr "Beach farm"
 
 #: src/bundles/BundlesSection.tsx:167
 #: src/mods/CategoryEditor.tsx:149
-#: src/mods/ConfigEditor.tsx:252
+#: src/mods/ConfigEditor.tsx:260
 #: src/mods/SelectionBar.tsx:75
 #: src/profiles/EditProfileDialog.tsx:487
 #: src/tools/ToolEditorDialog.tsx:119
@@ -7008,6 +7013,10 @@ msgstr "Could not add the bundle"
 #: src/profiles/GameModsDialog.tsx:128
 msgid "Reading the Mods folder…"
 msgstr "Reading the Mods folder…"
+
+#: src/mods/HealthTooltipContent.tsx:46
+msgid "Errors"
+msgstr "Errors"
 
 #. placeholder {0}: st.profiles.length
 #: src/games/GameSelect.tsx:298
@@ -7371,7 +7380,7 @@ msgstr "Update in all profiles ({n})"
 msgid "Player"
 msgstr "Player"
 
-#: src/game/Sidebar.tsx:331
+#: src/game/Sidebar.tsx:336
 #: src/profiles/ProfilesPage.tsx:374
 #: src/settings/sections/AboutDiagnostics.tsx:59
 #: src/settings/sections/DataMods.tsx:119
@@ -8294,7 +8303,7 @@ msgstr "Restore second"
 #: src/launch/LaunchLayer.tsx:311
 #: src/launch/SweepDialog.tsx:101
 #: src/mods/CategoryEditor.tsx:143
-#: src/mods/ConfigEditor.tsx:249
+#: src/mods/ConfigEditor.tsx:257
 #: src/mods/ModDetail.tsx:302
 #: src/mods/updateReview/ReviewFooter.tsx:40
 #: src/mods/updateReview/ReviewTitle.tsx:40
@@ -8553,7 +8562,7 @@ msgstr "Mortar looked in:"
 msgid "Personal API key"
 msgstr "Personal API key"
 
-#: src/mods/ConfigEditor.tsx:218
+#: src/mods/ConfigEditor.tsx:226
 msgid "Menu"
 msgstr "Menu"
 
@@ -8587,6 +8596,6 @@ msgstr "Update profiles"
 msgid ".mortar file with settings"
 msgstr ".mortar file with settings"
 
-#: src/mods/ConfigEditor.tsx:214
+#: src/mods/ConfigEditor.tsx:222
 msgid "Edit config.json"
 msgstr "Edit config.json"

@@ -545,6 +545,8 @@ export function ProfilesPage() {
                     </Box>
                     <ProfileHealth
                       counts={byProfile[p.id]}
+                      game={game}
+                      profileId={p.id}
                       onClick={() => {
                         openProfile(p.id)
                         closeProfiles()

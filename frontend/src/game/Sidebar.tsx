@@ -61,11 +61,13 @@ function initials(name: string): string {
   return chars.join('').toUpperCase()
 }
 
-function Badges({ profile }: { profile: Profile }) {
+function Badges({ game, profile }: { game: string; profile: Profile }) {
   const counts = useBadges((s) => s.byProfile[profile.id])
   return (
     <ProfileHealth
       counts={counts}
+      game={game}
+      profileId={profile.id}
       sidebar={true}
       onClick={() => useTab.getState().setTab('problems')}
     />
@@ -73,11 +75,13 @@ function Badges({ profile }: { profile: Profile }) {
 }
 
 function ProfileButton({
+  game,
   profile,
   selected,
   onOpen,
   onMenu,
 }: {
+  game: string
   profile: Profile
   selected: boolean
   onOpen: () => void
@@ -148,7 +152,7 @@ function ProfileButton({
           {profile.name}
         </Box>
       </Box>
-      <Badges profile={profile} />
+      <Badges game={game} profile={profile} />
       <Box
         component="span"
         aria-hidden={true}
@@ -267,6 +271,7 @@ function ProfileList({ game, profiles }: { game: string; profiles: Profile[] }) 
       {profiles.map((p) => (
         <ProfileButton
           key={p.id}
+          game={game}
           profile={p}
           selected={p.id === openId}
           onOpen={() => open(p.id)}
