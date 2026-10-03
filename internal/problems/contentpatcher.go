@@ -204,7 +204,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 3
+const contentPackParserVersion = 4
 
 type packFileStamp struct {
 	Path    string `json:"path"`
@@ -940,7 +940,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 		case strings.EqualFold(action, kindEditData):
 			kind = "edit"
 			action = kindEditData
-			shapes = dataShapes(ch)
+			shapes = dataShapes(root, ch)
 			if len(shapes) == 0 {
 				kind = "other"
 			}
@@ -1535,6 +1535,7 @@ type cpChange struct {
 	MapTiles      []json.RawMessage          `json:"MapTiles"`
 	MapProperties map[string]json.RawMessage `json:"MapProperties"`
 	Fields        json.RawMessage            `json:"Fields"`
+	TargetField   []string                   `json:"TargetField"`
 	Entries       json.RawMessage            `json:"Entries"`
 }
 

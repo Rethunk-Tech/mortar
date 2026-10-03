@@ -118,12 +118,31 @@ func shapesOverlap(a, b []cpShape) bool {
 
 var whole = []cpShape{{kind: 'w'}}
 
-func dataShapes(ch cpChange) []cpShape {
+// packScopedKey keeps a data key that holds a token, such as {{ModId}} or a pack's own config token,
+// from matching another pack's identical text: each pack fills its tokens with its own values.
+func packScopedKey(root, key string) string {
+	if hasToken(key) {
+		return "@" + root + "|" + key
+	}
+	return key
+}
+
+func dataShapes(root string, ch cpChange) []cpShape {
 	var out []cpShape
+	// With TargetField, Entries and Fields address keys inside that field of one entry, not the asset's
+	// top-level entries, so the path is part of every key.
+	base := ""
+	if len(ch.TargetField) > 0 {
+		parts := make([]string, len(ch.TargetField))
+		for i, part := range ch.TargetField {
+			parts[i] = packScopedKey(root, part)
+		}
+		base = strings.Join(parts, "/") + "/"
+	}
 	var entries map[string]json.RawMessage
 	if json.Unmarshal(ch.Entries, &entries) == nil {
 		for _, key := range slices.Sorted(maps.Keys(entries)) {
-			out = append(out, cpShape{kind: 'p', key: "entry:" + key, value: dataLiteral(entries[key])})
+			out = append(out, cpShape{kind: 'p', key: "entry:" + base + packScopedKey(root, key), value: dataLiteral(entries[key])})
 		}
 	}
 	var fields map[string]json.RawMessage
@@ -132,11 +151,11 @@ func dataShapes(ch cpChange) []cpShape {
 			var inner map[string]json.RawMessage
 			if json.Unmarshal(fields[key], &inner) == nil && len(inner) > 0 {
 				for _, field := range slices.Sorted(maps.Keys(inner)) {
-					out = append(out, cpShape{kind: 'p', key: "field:" + key + "." + field, value: dataLiteral(inner[field])})
+					out = append(out, cpShape{kind: 'p', key: "field:" + base + packScopedKey(root, key) + "." + field, value: dataLiteral(inner[field])})
 				}
 				continue
 			}
-			out = append(out, cpShape{kind: 'p', key: "field:" + key, value: dataLiteral(fields[key])})
+			out = append(out, cpShape{kind: 'p', key: "field:" + base + packScopedKey(root, key), value: dataLiteral(fields[key])})
 		}
 	}
 	return out

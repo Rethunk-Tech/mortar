@@ -166,3 +166,49 @@ func decodeDataURLPNG(t *testing.T, url string) image.Image {
 	}
 	return img
 }
+
+func TestTokenDataKeysDoNotClashAcrossPacks(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+
+	pack := func(id, value string) Installed {
+		root := t.TempDir()
+		writeManifest(t, root, id)
+		content := `{"Changes":[{"Action":"EditData","Target":"Data/TriggerActions","Entries":{"{{ModId}}_MigrateIds":"` + value + `"}}]}`
+		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
+	}
+	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("Mizu.Quail", "a"), pack("Mizu.Turkey", "b")})
+	if len(got.AssetConflicts) != 0 {
+		t.Fatalf("{{ModId}} keys are per pack, got %+v", got.AssetConflicts)
+	}
+}
+
+func TestTargetFieldScopesDataKeys(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+
+	pack := func(id, item string) Installed {
+		root := t.TempDir()
+		writeManifest(t, root, id)
+		content := `{"Changes":[{"Action":"EditData","Target":"Data/Objects","TargetField":["` + item + `"],"Entries":{"Price":"` + id + `"}}]}`
+		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
+	}
+	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("A.One", "301"), pack("B.Two", "302")})
+	if len(got.AssetConflicts) != 0 {
+		t.Fatalf("Price on different items is no conflict, got %+v", got.AssetConflicts)
+	}
+	same := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("C.One", "301"), pack("D.Two", "301")})
+	if len(same.AssetConflicts) != 1 {
+		t.Fatalf("Price on the same item still clashes, got %+v", same.AssetConflicts)
+	}
+}
