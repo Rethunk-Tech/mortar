@@ -141,6 +141,9 @@ func fingerprint(env Environment, mods []Installed, runID string) string {
 		for _, d := range m.Dependencies {
 			b.WriteString("|" + d.UniqueID + ">=" + d.MinimumVersion)
 		}
+		for _, id := range m.LoadAfter {
+			b.WriteString("|after:" + id)
+		}
 	}
 	return b.String()
 }
@@ -154,7 +157,8 @@ func (s *Service) installed(gameID, id string) ([]Installed, error) {
 	for i, m := range installed {
 		mods[i] = Installed{
 			Key: m.Key, SourceKind: m.Source.Kind, SourceVersion: m.Source.Version, Enabled: m.Enabled, Folder: m.Folder,
-			Pinned: m.Pinned, SkipVersion: m.SkipVersion, SkipSources: m.SkipSources, IgnoreUpdates: m.IgnoreUpdates, Manifest: m.Manifest,
+			Pinned: m.Pinned, SkipVersion: m.SkipVersion, SkipSources: m.SkipSources, IgnoreUpdates: m.IgnoreUpdates,
+			LoadAfter: m.LoadAfter, Manifest: m.Manifest,
 		}
 	}
 	return mods, nil

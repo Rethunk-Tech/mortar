@@ -1,0 +1,248 @@
+package profile
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"path/filepath"
+	"strings"
+	"unicode"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
+)
+
+// SetWinner records or clears a LoadAfter on winnerKey for loserUniqueID and rewrites the winner's
+// installed manifest so SMAPI loads the winner later.
+func (s *Store) SetWinner(game, profileID, winnerKey, loserUniqueID string, on bool) (Profile, error) {
+	loserUniqueID = strings.TrimSpace(loserUniqueID)
+	if loserUniqueID == "" {
+		return Profile{}, fmt.Errorf("loser unique ID is empty")
+	}
+	var drop []string
+	if !on {
+		drop = []string{loserUniqueID}
+	}
+	return s.updateMods(game, profileID, func(p *Profile, dir string) error {
+		i := entryIndex(*p, winnerKey)
+		if i < 0 {
+			return fmt.Errorf("mod %q is not in this profile", winnerKey)
+		}
+		e := p.Entries[i]
+		e.LoadAfter = setLoadAfter(e.LoadAfter, loserUniqueID, on)
+		p.Entries[i] = e
+		return applyLoadAfter(filepath.Join(dir, "mods", e.Key), e, drop)
+	})
+}
+
+// SetWinner records or clears a LoadAfter on winnerKey for loserUniqueID.
+func (s *Service) SetWinner(game, profileID, winnerKey, loserUniqueID string, on bool) (Profile, error) {
+	return s.store.SetWinner(game, profileID, winnerKey, loserUniqueID, on)
+}
+
+func entryIndex(p Profile, key string) int {
+	for i, e := range p.Entries {
+		if e.Key == key {
+			return i
+		}
+	}
+	return -1
+}
+
+func setLoadAfter(ids []string, loser string, on bool) []string {
+	out := make([]string, 0, len(ids)+1)
+	for _, id := range ids {
+		if !sameID(id, loser) {
+			out = append(out, id)
+		}
+	}
+	if on {
+		out = append(out, loser)
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return out
+}
+
+func applyLoadAfter(root string, e Entry, drop []string) error {
+	if len(e.LoadAfter) == 0 && len(drop) == 0 {
+		return nil
+	}
+	for _, m := range e.Mods {
+		rel := filepath.FromSlash(m.Folder)
+		if m.Folder == "." {
+			rel = ""
+		}
+		path := filepath.Join(root, rel, manifest.FileName)
+		raw, err := fsx.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		rewritten, err := rewriteManifestDeps(raw, e.LoadAfter, drop)
+		if err != nil {
+			return err
+		}
+		if err := fsx.WriteFile(path, rewritten, 0o644); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func rewriteManifestDeps(raw []byte, want, drop []string) ([]byte, error) {
+	if _, err := manifest.Parse(raw); err != nil {
+		return nil, err
+	}
+	doc, err := lenientObject(raw)
+	if err != nil {
+		return nil, err
+	}
+	type dep struct {
+		UniqueID       string `json:"UniqueID"`
+		IsRequired     *bool  `json:"IsRequired,omitempty"`
+		MinimumVersion string `json:"MinimumVersion,omitempty"`
+	}
+	var deps []dep
+	if v, ok := doc["Dependencies"]; ok {
+		_ = json.Unmarshal(v, &deps)
+	}
+	dropSet, wantSet := idSet(drop), idSet(want)
+	kept := make([]dep, 0, len(deps)+len(want))
+	seen := map[string]bool{}
+	for _, d := range deps {
+		low := strings.ToLower(d.UniqueID)
+		required := d.IsRequired == nil || *d.IsRequired
+		if !required && dropSet[low] && !wantSet[low] {
+			continue
+		}
+		kept = append(kept, d)
+		seen[low] = true
+	}
+	off := false
+	for _, id := range want {
+		if seen[strings.ToLower(id)] {
+			continue
+		}
+		kept = append(kept, dep{UniqueID: id, IsRequired: &off})
+		seen[strings.ToLower(id)] = true
+	}
+	if len(kept) == 0 {
+		delete(doc, "Dependencies")
+	} else {
+		b, err := json.Marshal(kept)
+		if err != nil {
+			return nil, err
+		}
+		doc["Dependencies"] = b
+	}
+	out, err := json.MarshalIndent(doc, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return append(out, '\n'), nil
+}
+
+func idSet(ids []string) map[string]bool {
+	out := map[string]bool{}
+	for _, id := range ids {
+		out[strings.ToLower(id)] = true
+	}
+	return out
+}
+
+func lenientObject(raw []byte) (map[string]json.RawMessage, error) {
+	var doc map[string]json.RawMessage
+	cleaned := dropTrailing(dropCommentsJSON(bytes.TrimPrefix(raw, []byte("\xef\xbb\xbf"))))
+	if err := json.Unmarshal(cleaned, &doc); err != nil {
+		return nil, err
+	}
+	return doc, nil
+}
+
+func dropCommentsJSON(b []byte) []byte {
+	out := make([]byte, 0, len(b))
+	inStr, esc := false, false
+	i := 0
+	for i < len(b) {
+		c := b[i]
+		if inStr {
+			out = append(out, c)
+			if esc {
+				esc = false
+			} else if c == '\\' {
+				esc = true
+			} else if c == '"' {
+				inStr = false
+			}
+			i++
+			continue
+		}
+		if c == '"' {
+			inStr, out = true, append(out, c)
+			i++
+			continue
+		}
+		if c == '/' && i+1 < len(b) && b[i+1] == '/' {
+			for i < len(b) && b[i] != '\n' {
+				i++
+			}
+			if i < len(b) {
+				out = append(out, '\n')
+				i++
+			}
+			continue
+		}
+		if c == '/' && i+1 < len(b) && b[i+1] == '*' {
+			end := bytes.Index(b[i+2:], []byte("*/"))
+			if end < 0 {
+				return out
+			}
+			i += end + 4
+			out = append(out, ' ')
+			continue
+		}
+		out = append(out, c)
+		i++
+	}
+	return out
+}
+
+func dropTrailing(b []byte) []byte {
+	out := make([]byte, 0, len(b))
+	inStr, esc := false, false
+	i := 0
+	for i < len(b) {
+		c := b[i]
+		if inStr {
+			out = append(out, c)
+			if esc {
+				esc = false
+			} else if c == '\\' {
+				esc = true
+			} else if c == '"' {
+				inStr = false
+			}
+			i++
+			continue
+		}
+		if c == '"' {
+			inStr, out = true, append(out, c)
+			i++
+			continue
+		}
+		if c == ',' {
+			j := i + 1
+			for j < len(b) && unicode.IsSpace(rune(b[j])) {
+				j++
+			}
+			if j < len(b) && (b[j] == '}' || b[j] == ']') {
+				i++
+				continue
+			}
+		}
+		out = append(out, c)
+		i++
+	}
+	return out
+}

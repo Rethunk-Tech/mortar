@@ -782,6 +782,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			}
 			return modRows(s.reload(p.Game, id, prof)), nil
 		})
+	case "mods.win":
+		return s.modsWin(p, prof, id)
 	case "install":
 		return s.changed(p.Game, func() (any, error) { return s.install(p.Game, id, p.Path) })
 	case "conflicts":

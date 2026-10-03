@@ -215,6 +215,9 @@ func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry
 			}
 		}
 	}
+	if err := applyLoadAfter(tmp, *ne, nil); err != nil {
+		return swapped{}, err
+	}
 	final, err := materialize(tmp, *ne)
 	if err != nil {
 		return swapped{}, err

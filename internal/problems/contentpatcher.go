@@ -98,6 +98,7 @@ type packHit struct {
 	eligible     []cpPatch // edits whose HasMod conditions hold, including config-off variants
 	loadClashes  map[int]bool
 	dependencies map[string]bool
+	loadAfter    map[string]bool
 	schema       map[string]cpSchema
 	config       map[string]string
 	clashes      map[int]bool // indices into edits that overlap an edit of a pack it was not built with
@@ -1924,11 +1925,18 @@ func assetConflictResults(mods []Installed) ([]AssetConflict, []SettingHint) {
 		pack := readContentPack(mod)
 		knows := maps.Clone(pack.mentions)
 		dependencies := map[string]bool{}
+		loadAfter := map[string]bool{}
+		for _, id := range mod.LoadAfter {
+			loadAfter[strings.ToLower(id)] = true
+		}
 		for _, d := range mod.Dependencies {
 			if knows == nil {
 				knows = map[string]bool{}
 			}
 			id := strings.ToLower(d.UniqueID)
+			if loadAfter[id] {
+				continue
+			}
 			knows[id] = true
 			dependencies[id] = true
 		}
@@ -1946,7 +1954,7 @@ func assetConflictResults(mods []Installed) ([]AssetConflict, []SettingHint) {
 				hits = append(hits, packHit{
 					id: mod.UniqueID, name: mod.Name, key: mod.Key, priority: p.priority, mentions: knows,
 					root: mod.Folder, tokens: pack.patches, present: present, schema: pack.schema, config: config,
-					dependencies: dependencies,
+					dependencies: dependencies, loadAfter: loadAfter,
 				})
 				i = len(hits) - 1
 				at[p.kind][p.target] = hits
@@ -1993,6 +2001,7 @@ func assetConflictResults(mods []Installed) ([]AssetConflict, []SettingHint) {
 				}
 				if kind == "edit" {
 					c.Cosmetic = cosmetic
+					markLoadAfterWinner(&c, hits)
 				}
 				c.Fixes = []ConflictFix{}
 				for _, h := range hits {

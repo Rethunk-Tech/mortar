@@ -38,6 +38,8 @@ type Installed struct {
 	SkipVersion   string
 	SkipSources   []string
 	IgnoreUpdates bool
+	// LoadAfter is UniqueIDs this pack should load after when the user made it win an edit conflict.
+	LoadAfter []string
 	// Folder is the mod's directory in the profile, used to read Content Patcher content.json.
 	Folder string
 	manifest.Manifest

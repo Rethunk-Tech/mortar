@@ -17,6 +17,7 @@ type Installed struct {
 	SkipVersion   string
 	SkipSources   []string
 	IgnoreUpdates bool
+	LoadAfter     []string
 	manifest.Manifest
 }
 
@@ -55,7 +56,8 @@ func (s *Store) Installed(game, id string) ([]Installed, error) {
 			}
 			out = append(out, Installed{
 				Key: e.Key, Folder: folder, Source: e.Source, Enabled: enabled,
-				Pinned: e.Pinned, SkipVersion: e.SkipVersion, SkipSources: e.SkipSources, IgnoreUpdates: e.IgnoreUpdates, Manifest: mf,
+				Pinned: e.Pinned, SkipVersion: e.SkipVersion, SkipSources: e.SkipSources, IgnoreUpdates: e.IgnoreUpdates,
+				LoadAfter: e.LoadAfter, Manifest: mf,
 			})
 		}
 	}

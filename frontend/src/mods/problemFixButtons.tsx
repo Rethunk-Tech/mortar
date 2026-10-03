@@ -19,6 +19,7 @@ import { DismissedBrokenFix } from './problemFix/DismissedBrokenFix.tsx'
 import { DuplicateFix } from './problemFix/DuplicateFix.tsx'
 import { MissingFix } from './problemFix/MissingFix.tsx'
 import { SettingFix } from './problemFix/SettingFix.tsx'
+import { WinFix } from './problemFix/WinFix.tsx'
 import type { WarningButton } from './problemFix/warningButton.tsx'
 import { useWarningButton } from './problemFix/warningButton.tsx'
 import { RunErrorButtons } from './runErrorFixButtons.tsx'
@@ -51,7 +52,12 @@ function SettingKind({ problem, dismissedToken }: KindProps<'setting'>) {
 }
 
 function AssetKind({ problem, dismissedToken }: KindProps<'asset'>) {
-  return <AssetFix problem={problem} dismissedToken={dismissedToken} />
+  return (
+    <>
+      <AssetFix problem={problem} dismissedToken={dismissedToken} />
+      <WinFix problem={problem} />
+    </>
+  )
 }
 
 function MissingKind({ problem, dismissedToken, button }: KindProps<'missing'>) {

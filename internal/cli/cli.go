@@ -82,6 +82,7 @@ type cmd struct {
 	updateFlag    bool
 	unlinkFlag    bool
 	reasonFlag    string
+	undoFlag      bool
 	changelogFlag bool
 	everywhere    bool
 	removeFlag    bool
@@ -239,6 +240,8 @@ func (c *cmd) parse(args []string) error {
 			c.reasonFlag = args[i]
 		case strings.HasPrefix(a, "--reason="):
 			c.reasonFlag = strings.TrimPrefix(a, "--reason=")
+		case a == "--undo":
+			c.undoFlag = true
 		case a == "--changelog":
 			c.changelogFlag = true
 		case a == "--everywhere":
@@ -423,6 +426,8 @@ func (c *cmd) dispatch() error {
 			switch c.args[1] {
 			case "enable", "disable", "remove", "pin", "unpin", "tag", "untag", "category", "note", "skip-version", "split", "combine":
 				return c.modsChange(c.args[1])
+			case "win":
+				return c.modsWin()
 			case "files":
 				return c.modsFiles()
 			case "config":
@@ -2124,6 +2129,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   mods tag|untag|category|note|skip-version <game> <profile> <mod> [value]
   mods split <game> <profile> <mod> <file>
   mods combine <game> <profile> <mod> <into-mod>
+  mods win <game> <profile> <winner> <loser> [--undo]
   mods files <game> <profile> <mod>       linked extra files (keys for mods split)
   mods config <game> <profile> <mod> [<field> <value>]  print or set one config field
   mods menu <game> <profile> <mod> [--set <page>/<index>=<value>]  captured GMCM menu

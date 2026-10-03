@@ -112,6 +112,8 @@ type Entry struct {
 	PreviousSource *Source    `json:"previousSource,omitempty"`
 	Mods           []EntryMod `json:"mods"`
 	Disabled       []string   `json:"disabled"`
+	// LoadAfter is UniqueIDs this entry should load after, recorded when the user makes it win an edit conflict.
+	LoadAfter []string `json:"loadAfter,omitempty"`
 	// Added is when this entry was put in the profile; zero for entries written before the field existed.
 	Added time.Time `json:"added,omitzero"`
 	// Pinned keeps this entry on its current version; Mortar offers no update while it is true.

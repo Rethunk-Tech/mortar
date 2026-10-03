@@ -141,6 +141,10 @@ msgstr "Updated categories"
 msgid "Updated"
 msgstr "Updated"
 
+#: src/mods/problemFix/WinFix.tsx:90
+msgid "Make {name} win"
+msgstr "Make {name} win"
+
 #: src/console/RunProblems.tsx:106
 #: src/install/store.ts:320
 #: src/mods/ConfigEditor.tsx:250
@@ -151,6 +155,7 @@ msgstr "Updated"
 #: src/mods/parts.tsx:375
 #: src/mods/parts.tsx:380
 #: src/mods/parts.tsx:391
+#: src/mods/problemFix/WinFix.tsx:51
 #: src/mods/SelectionBarActions.tsx:61
 #: src/mods/Toolbar.tsx:257
 #: src/saves/lackChipActions.tsx:42
@@ -630,6 +635,10 @@ msgstr "A .mortar file holds the same mods as the link, plus the settings files 
 #: src/launch/SweepDialog.tsx:29
 msgid "Turn off"
 msgstr "Turn off"
+
+#: src/mods/problemFix/WinFix.tsx:82
+msgid "Make a pack win"
+msgstr "Make a pack win"
 
 #: src/mods/SelectionBarDialogs.tsx:87
 msgid "Set category for selected mods"
@@ -1276,7 +1285,7 @@ msgstr "Files added"
 msgid "Loading bundles…"
 msgstr "Loading bundles…"
 
-#: src/mods/problemFixButtons.tsx:149
+#: src/mods/problemFixButtons.tsx:155
 msgid "Forget"
 msgstr "Forget"
 
@@ -1534,6 +1543,7 @@ msgstr "Compact"
 #: src/console/RunProblems.tsx:75
 #: src/install/store.ts:171
 #: src/install/store.ts:232
+#: src/mods/problemFix/WinFix.tsx:70
 #: src/mods/SplitCombineItems.tsx:38
 #: src/mods/storeEntries.ts:52
 #: src/mods/storeEntries.ts:89
@@ -1925,7 +1935,7 @@ msgstr "Sky"
 msgid "Both set: {0}"
 msgstr "Both set: {0}"
 
-#: src/mods/problemFixButtons.tsx:163
+#: src/mods/problemFixButtons.tsx:169
 msgid "Keep my changes"
 msgstr "Keep my changes"
 
@@ -1938,7 +1948,7 @@ msgid "Fullscreen resolution height"
 msgstr "Fullscreen resolution height"
 
 #: src/console/HelpDialog.tsx:239
-#: src/mods/ReportToAuthorButton.tsx:212
+#: src/mods/ReportToAuthorButton.tsx:223
 msgid "Reading the log…"
 msgstr "Reading the log…"
 
@@ -2123,7 +2133,7 @@ msgstr "Could not sign in"
 msgid "Report a bug"
 msgstr "Report a bug"
 
-#: src/mods/ReportToAuthorButton.tsx:244
+#: src/mods/ReportToAuthorButton.tsx:255
 msgid "Skip sharing"
 msgstr "Skip sharing"
 
@@ -2453,7 +2463,7 @@ msgstr "Cover image"
 #: src/mods/OtherProfilesDialog.tsx:52
 #: src/mods/parts.tsx:372
 #: src/mods/pinReasonDialog.tsx:58
-#: src/mods/ReportToAuthorButton.tsx:236
+#: src/mods/ReportToAuthorButton.tsx:247
 #: src/mods/SelectionBarDialogs.tsx:52
 #: src/mods/SelectionBarDialogs.tsx:102
 #: src/mods/updateReview/EverywhereDialog.tsx:149
@@ -3188,7 +3198,7 @@ msgid "Values"
 msgstr "Values"
 
 #. placeholder {0}: mod.name
-#: src/mods/ReportToAuthorButton.tsx:77
+#: src/mods/ReportToAuthorButton.tsx:159
 msgid "Error in {0}"
 msgstr "Error in {0}"
 
@@ -3296,7 +3306,7 @@ msgid "Pin this version"
 msgstr "Pin this version"
 
 #: src/console/HelpDialog.tsx:272
-#: src/mods/ReportToAuthorButton.tsx:252
+#: src/mods/ReportToAuthorButton.tsx:263
 msgid "Uploading…"
 msgstr "Uploading…"
 
@@ -4178,7 +4188,7 @@ msgstr "Last used"
 msgid "Restore {0}"
 msgstr "Restore {0}"
 
-#: src/mods/problemFixButtons.tsx:172
+#: src/mods/problemFixButtons.tsx:178
 #: src/profiles/HistoryEventRow.tsx:56
 msgid "Revert"
 msgstr "Revert"
@@ -4465,7 +4475,7 @@ msgid "Open the game's settings"
 msgstr "Open the game's settings"
 
 #: src/console/HelpDialog.tsx:92
-#: src/mods/ReportToAuthorButton.tsx:229
+#: src/mods/ReportToAuthorButton.tsx:240
 msgid "Hide my user name"
 msgstr "Hide my user name"
 
@@ -4785,7 +4795,7 @@ msgstr "Check interval"
 
 #: src/console/HelpDialog.tsx:185
 #: src/console/store.ts:142
-#: src/mods/ReportToAuthorButton.tsx:136
+#: src/mods/ReportToAuthorButton.tsx:139
 msgid "Could not read the SMAPI log"
 msgstr "Could not read the SMAPI log"
 
@@ -4816,7 +4826,7 @@ msgid "{0} goes back to {previous}, keeping its settings. Your saves are backed 
 msgstr "{0} goes back to {previous}, keeping its settings. Your saves are backed up first."
 
 #: src/console/HelpDialog.tsx:223
-#: src/mods/ReportToAuthorButton.tsx:184
+#: src/mods/ReportToAuthorButton.tsx:195
 msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
@@ -5734,8 +5744,7 @@ msgstr "Plain text"
 
 #: src/console/PerformancePanel.tsx:70
 #: src/mods/ProblemsTab.tsx:453
-#: src/mods/ReportToAuthorButton.tsx:94
-#: src/mods/ReportToAuthorButton.tsx:99
+#: src/mods/ReportToAuthorButton.tsx:167
 msgid "Report copied"
 msgstr "Report copied"
 
@@ -6009,7 +6018,7 @@ msgid "Log link"
 msgstr "Log link"
 
 #: src/console/HelpDialog.tsx:117
-#: src/mods/ReportToAuthorButton.tsx:219
+#: src/mods/ReportToAuthorButton.tsx:230
 msgid "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 msgstr "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 
@@ -6055,7 +6064,7 @@ msgstr "Skip current updates"
 msgid "Download failed"
 msgstr "Download failed"
 
-#: src/mods/ReportToAuthorButton.tsx:95
+#: src/mods/ReportToAuthorButton.tsx:168
 msgid "Paste it on the mod's bug tracker."
 msgstr "Paste it on the mod's bug tracker."
 
@@ -6573,7 +6582,7 @@ msgstr "Switch to Saves"
 #: src/mods/ModMenu.tsx:274
 #: src/mods/parts.tsx:318
 #: src/mods/parts.tsx:393
-#: src/mods/problemFixButtons.tsx:125
+#: src/mods/problemFixButtons.tsx:131
 #: src/mods/ProblemsTab.tsx:217
 #: src/mods/SelectionBarActions.tsx:138
 #: src/settings/sections/DataMods.tsx:138
@@ -7516,8 +7525,8 @@ msgstr "Source"
 msgid "General"
 msgstr "General"
 
-#: src/mods/ReportToAuthorButton.tsx:201
-#: src/mods/ReportToAuthorButton.tsx:209
+#: src/mods/ReportToAuthorButton.tsx:212
+#: src/mods/ReportToAuthorButton.tsx:220
 msgid "Report to author"
 msgstr "Report to author"
 
@@ -7927,7 +7936,7 @@ msgstr "What to do when an installed mod still needs other mods"
 msgid "Pin selected versions"
 msgstr "Pin selected versions"
 
-#: src/mods/ReportToAuthorButton.tsx:252
+#: src/mods/ReportToAuthorButton.tsx:263
 msgid "Share log and continue"
 msgstr "Share log and continue"
 
@@ -8155,7 +8164,7 @@ msgstr "UI scale ({value}%)"
 #: src/mods/problemFix/DismissedBrokenFix.tsx:59
 #: src/mods/problemFix/MissingFix.tsx:36
 #: src/mods/problemFix/SettingFix.tsx:69
-#: src/mods/problemFixButtons.tsx:140
+#: src/mods/problemFixButtons.tsx:146
 #: src/profiles/ProfilesPage.tsx:97
 #: src/saves/BackupsDialog.tsx:113
 #: src/saves/BackupsDialog.tsx:262
@@ -8519,7 +8528,7 @@ msgstr "Sound volume ({value}%)"
 msgid "Reuse FOMOD choices"
 msgstr "Reuse FOMOD choices"
 
-#: src/mods/problemFixButtons.tsx:116
+#: src/mods/problemFixButtons.tsx:122
 msgid "Adopt"
 msgstr "Adopt"
 
