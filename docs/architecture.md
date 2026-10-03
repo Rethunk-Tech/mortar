@@ -240,7 +240,7 @@ Everything from outside is untrusted: links, `.mortar` files, archives, API resp
 
 ## Failure behaviour
 
-Once mods are installed, nothing external is needed to open, edit or launch a profile.
+Once mods are installed, nothing external is needed to open, edit or launch a profile. Failures that reach the user are classified in `internal/usererr` (not found, busy, network, permission, disk full, damaged, invalid). Go wraps the cause as `[kind] message`; the window (`errorMessage` in `frontend/src/toasts/report.ts`) and the CLI (`Sentence` in `internal/cli`) map the kind to the same English sentence, with the cause in a Details tooltip or under `--json` / `-v`.
 
 - **SMAPI's API or the dataset unreachable:** the feature degrades and never blocks; update checks show "unknown", dependencies are checked after download.
 - **A download cut off or corrupt:** extraction goes to a temp folder on the store's volume and moves into the store only when every entry passed its checksum (CRC32 in zip, RAR and 7z); failure deletes the temp folder and the item can be retried. **Disk full** fails the same way and says how much space the item needs.

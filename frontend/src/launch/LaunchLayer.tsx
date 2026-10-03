@@ -29,7 +29,7 @@ import { nexusIdOf } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { holdFocus, launchEscHides } from './holdFocus.ts'
 import { PrePlayDialog } from './PrePlayDialog.tsx'
@@ -290,7 +290,9 @@ function Failure({ game }: { game: string }) {
         {t`${name} did not start`}
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
-        <DialogContentText>{failure.body}</DialogContentText>
+        <DialogContentText title={errorDetails(failure.body)}>
+          {errorMessage(failure.body)}
+        </DialogContentText>
         {cause ? (
           <DialogContentText>
             <strong>{t`Caused by ${cause.modName}`}</strong>

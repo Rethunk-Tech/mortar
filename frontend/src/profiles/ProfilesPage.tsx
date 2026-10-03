@@ -173,9 +173,14 @@ function Damaged() {
         >
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography noWrap={true} title={item.id} sx={{ fontSize: 15, fontWeight: 600 }}>
-              {item.id}
+              {item.id.slice(Math.max(item.id.lastIndexOf('/'), item.id.lastIndexOf('\\')) + 1)}
             </Typography>
-            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{item.error}</Typography>
+            <Typography
+              sx={{ fontSize: 13, color: 'text.secondary' }}
+              title={errorDetails(item.error)}
+            >
+              {t`Could not read this profile`}
+            </Typography>
           </Box>
           <Tooltip title={t`Open folder`}>
             <span>

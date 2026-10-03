@@ -5,6 +5,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import { SetNotes } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { errorDetails, errorMessage } from '../toasts/report.ts'
 
 const DEBOUNCE_MS = 800
 const TICK_MS = 60_000
@@ -34,9 +35,9 @@ function StatusLine({
   if (status.kind === 'error') {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography
-          sx={{ fontSize: 13, color: 'error.main' }}
-        >{t`Could not save notes: ${status.message}`}</Typography>
+        <Typography sx={{ fontSize: 13, color: 'error.main' }} title={errorDetails(status.message)}>
+          {errorMessage(status.message)}
+        </Typography>
         <Button size="small" onClick={onRetry} sx={{ whiteSpace: 'nowrap' }}>
           {t`Retry`}
         </Button>

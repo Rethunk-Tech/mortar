@@ -18,7 +18,7 @@ import { History } from '../../bindings/github.com/Rethunk-AI/mortar/internal/pr
 import { When } from '../i18n/When.tsx'
 import { download } from '../queue/actions.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { historyChangeSummary } from './historyCounts.ts'
 import { revertHistoryEvent } from './historyRevert.ts'
 import { useProfiles } from './store.ts'
@@ -76,7 +76,7 @@ export function HistoryDialog({
     setBusy('')
   }
   const errorText =
-    missingNames.length > 0 ? t`Could not restore ${missingNames.join(', ')}` : error
+    missingNames.length > 0 ? t`Could not restore ${missingNames.join(', ')}` : errorMessage(error)
   return (
     <Dialog
       open={open}
@@ -125,7 +125,12 @@ export function HistoryDialog({
         )}
         {error !== '' && (
           <Box sx={{ mt: 1 }}>
-            <Typography sx={{ fontSize: 13, color: 'error.main' }}>{errorText}</Typography>
+            <Typography
+              sx={{ fontSize: 13, color: 'error.main' }}
+              title={missingNames.length > 0 ? undefined : errorDetails(error)}
+            >
+              {errorText}
+            </Typography>
             {missingEvent !== '' && missingWants.length > 0 && (
               <Button
                 size="small"

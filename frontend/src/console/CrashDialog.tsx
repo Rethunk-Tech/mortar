@@ -20,6 +20,7 @@ import { nexusIdOf } from '../mods/lookup.ts'
 import { paper } from '../mods/paper.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { BisectDialog } from './BisectDialog.tsx'
 import { useConsole } from './store.ts'
 
@@ -87,7 +88,11 @@ export function CrashDialog() {
               </Box>
             ))
           )}
-          {bisectError ? <Typography color="error">{bisectError}</Typography> : null}
+          {bisectError ? (
+            <Typography color="error" title={errorDetails(bisectError)}>
+              {errorMessage(bisectError)}
+            </Typography>
+          ) : null}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5, flexWrap: 'wrap', gap: 1 }}>
           <Button onClick={dismiss} sx={{ whiteSpace: 'nowrap' }}>
