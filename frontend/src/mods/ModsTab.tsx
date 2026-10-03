@@ -37,6 +37,7 @@ import { ModSidebar } from './Sidebar.tsx'
 import { useSelection } from './selection.ts'
 import { useMods, type View } from './store.ts'
 import { EmptyMods, type ModFilter, Toolbar } from './Toolbar.tsx'
+import { TrackedNotInProfile } from './TrackedNotInProfile.tsx'
 import { UpdateBar, UpdateReview } from './UpdateReview.tsx'
 import { useUpdates } from './updates.ts'
 
@@ -233,7 +234,12 @@ export function ModsTab({ profile }: { profile: Profile }) {
   }, [load, loadKey, profile.id])
 
   if (userModCount(profile) === 0) {
-    return <EmptyMods profileId={profile.id} />
+    return (
+      <>
+        <TrackedNotInProfile profile={profile} />
+        <EmptyMods profileId={profile.id} />
+      </>
+    )
   }
 
   const q = query.trim().toLowerCase()
@@ -277,6 +283,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
         filter={filter}
         onFilter={setFilter}
       />
+      <TrackedNotInProfile profile={profile} />
       <LockedNote />
       <SelectionKeys shown={shown} />
       <SelectionBar profileId={profile.id} mods={shown} />
