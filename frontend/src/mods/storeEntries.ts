@@ -281,13 +281,15 @@ export async function setEnabledAction(
   }
 }
 
-export async function pinMod(mod: Mod, pinned: boolean) {
+export async function pinMod(mod: Mod, pinned: boolean, pinReason = '') {
   const target = open()
   if (!target) {
     return
   }
   try {
-    useProfiles.getState().replace(await SetPinned(target.game, target.id, mod.key, pinned))
+    useProfiles
+      .getState()
+      .replace(await SetPinned(target.game, target.id, mod.key, pinned, pinReason))
   } catch (e) {
     fail(i18n._(pinned ? msg`Could not pin ${mod.name}` : msg`Could not unpin ${mod.name}`))(e)
     return
@@ -295,10 +297,10 @@ export async function pinMod(mod: Mod, pinned: boolean) {
   await useUpdates.getState().load()
 }
 
-export function pinMany(mods: Mod[], pinned: boolean) {
+export function pinMany(mods: Mod[], pinned: boolean, pinReason = '') {
   return batchProfile(
     mods,
-    (game, id, keys) => SetPinnedMany(game, id, keys, pinned),
+    (game, id, keys) => SetPinnedMany(game, id, keys, pinned, pinReason),
     i18n._(pinned ? msg`Could not pin the selected mods` : msg`Could not unpin the selected mods`),
     i18n._(pinned ? msg`Pinned selected mods` : msg`Unpinned selected mods`),
   )

@@ -25,7 +25,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { CompatDetail } from './CompatChip.tsx'
 import { EditConfigButton } from './ConfigEditor.tsx'
 import { useDetail } from './detail.ts'
-import { modId, siblingsOf } from './lookup.ts'
+import { entryOf, modId, siblingsOf } from './lookup.ts'
 import { NexusDetails } from './NexusDetails.tsx'
 import { heading, paper } from './paper.ts'
 import { useMods } from './store.ts'
@@ -85,18 +85,26 @@ type Confirming = 'rollback' | 'reset' | null
 
 function Versions({
   mod,
+  profile,
   state,
   ask,
 }: {
   mod: Mod
+  profile: Profile
   state?: ModState | undefined
   ask: () => void
 }) {
   const { t } = useLingui()
   const locked = useLocked()
+  const entry = entryOf(profile, mod.key)
   return (
     <Section title={t`Versions`}>
       <Typography sx={{ ...row }}>{t`${mod.version} · in use`}</Typography>
+      {entry?.pinned && entry.pinReason ? (
+        <Typography
+          sx={{ ...row, color: 'text.secondary' }}
+        >{t`Pinned: ${entry.pinReason}`}</Typography>
+      ) : null}
       {state?.previousVersion ? (
         <Box sx={row}>
           <Typography sx={{ flex: 1, ...text }}>
@@ -191,7 +199,7 @@ function Confirm({
   )
 }
 
-function Body({ mod, relations, state, ask }: BodyProps) {
+function Body({ mod, profile, relations, state, ask }: BodyProps) {
   const { t } = useLingui()
   const others = siblingsOf(
     useMods((s) => s.mods),
@@ -218,7 +226,7 @@ function Body({ mod, relations, state, ask }: BodyProps) {
           ))}
         </Section>
       ) : null}
-      <Versions mod={mod} state={state} ask={() => ask('rollback')} />
+      <Versions mod={mod} profile={profile} state={state} ask={() => ask('rollback')} />
       <Settings mod={mod} state={state} ask={() => ask('reset')} />
       <CompatDetail mod={mod} />
       <Section title={t`Needed by`}>
@@ -233,6 +241,7 @@ function Body({ mod, relations, state, ask }: BodyProps) {
 
 interface BodyProps {
   mod: Mod
+  profile: Profile
   relations?: Relations | undefined
   state?: ModState | undefined
   ask: (what: Confirming) => void
@@ -281,7 +290,13 @@ function Details({ mod, profile }: { mod: Mod; profile: Profile }) {
         {source?.kind === 'nexus' && source.modId ? (
           <NexusDetails mod={mod} modId={source.modId} fileId={source.fileId ?? 0} />
         ) : null}
-        <Body mod={mod} relations={mine?.relations} state={mine?.state} ask={setConfirming} />
+        <Body
+          mod={mod}
+          profile={profile}
+          relations={mine?.relations}
+          state={mine?.state}
+          ask={setConfirming}
+        />
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setOpen(false)}>{t`Close`}</Button>

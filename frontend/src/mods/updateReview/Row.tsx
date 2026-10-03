@@ -54,6 +54,7 @@ export function Row({
   const notes = [
     ...(mod ? siblingsOf(mods, mod).map((o) => t`Also updates ${o.name} (same download)`) : []),
     ...(mod && !mod.enabled ? [t`Switched off in this profile`] : []),
+    ...(entry?.pinned && entry.pinReason ? [t`Pinned: ${entry.pinReason}`] : []),
     ...(update.unofficial ? [t`Unofficial`] : []),
   ]
   const reportedElsewhere =

@@ -187,10 +187,11 @@ export function LastRunBadge({ mod }: { mod: Mod }) {
 export function PinBadge({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
-  if (!entryOf(profile, mod.key)?.pinned) {
+  const entry = entryOf(profile, mod.key)
+  if (!entry?.pinned) {
     return null
   }
-  const text = t`Pinned at this version`
+  const text = entry.pinReason ? t`Pinned: ${entry.pinReason}` : t`Pinned at this version`
   return (
     <Tooltip title={text}>
       <Box

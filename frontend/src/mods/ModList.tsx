@@ -15,6 +15,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { CompatChip } from './CompatChip.tsx'
 import { useCustomCategories } from './customCategories.ts'
 import { useDetail } from './detail.ts'
+import { ExtraFilesChip } from './ExtraFilesChip.tsx'
 import {
   customCategoryById,
   emptyGroupLabel,
@@ -84,7 +85,7 @@ function ValueCell({ text, title, accent }: { text: ReactNode; title?: string; a
   )
 }
 
-function cellsFor(id: ListColumnId, row: ListRow, locale: string) {
+function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profile) {
   const m = row.mod
   const page = row.details?.page
   switch (id) {
@@ -97,7 +98,12 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string) {
     case 'name':
       return (
         <Cell key="name" title={m.name} sx={{ ...ellipsis, fontWeight: 500 }}>
-          {m.name}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+            <Box component="span" sx={{ ...ellipsis, minWidth: 0 }}>
+              {m.name}
+            </Box>
+            <ExtraFilesChip mod={m} profile={profile} />
+          </Box>
         </Cell>
       )
     case 'version':
@@ -284,9 +290,9 @@ function ModRow({
               <Cell key="tile">
                 <LetterTile mod={m} size={26} fresh={fresh} />
               </Cell>,
-              cellsFor(id, row, locale),
+              cellsFor(id, row, locale, profile),
             ]
-          : [cellsFor(id, row, locale)],
+          : [cellsFor(id, row, locale, profile)],
       )}
     </TableRow>
   )

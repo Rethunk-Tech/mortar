@@ -8,6 +8,7 @@ import type {
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { useSettings } from '../settings/store.ts'
 import { dependentsOf } from './dependents.ts'
+import { requestPinWithReason } from './pinReasonStore.ts'
 import {
   dropMod,
   dropMods,
@@ -91,8 +92,14 @@ export const useMods = create<{
   loadProblems: () => loadModProblems(set, get),
   setEnabled: (mod, enabled) => setEnabledAction(set, get, mod, enabled),
   setEnabledMany: (mods, enabled) => enableMany(set, get, mods, enabled),
-  setPinned: (mod, pinned) => pinMod(mod, pinned),
-  setPinnedMany: (mods, pinned) => pinMany(mods, pinned),
+  setPinned: (mod, pinned) => {
+    const want = requestPinWithReason([mod], pinned)
+    return want.unpinned ? pinMod(mod, false) : Promise.resolve()
+  },
+  setPinnedMany: (mods, pinned) => {
+    const want = requestPinWithReason(mods, pinned)
+    return want.unpinned ? pinMany(mods, false) : Promise.resolve()
+  },
   setSkipVersion: (mod, version) => skipVersion(mod, version),
   setSkipVersionMany: (mods) => skipVersionMany(mods),
   setSkipSource: (mod, source, skip) => skipSource(mod, source, skip),

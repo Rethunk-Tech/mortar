@@ -11,6 +11,7 @@ import { GameSelect } from './games/GameSelect.tsx'
 import { loadGameStatus } from './games/status.ts'
 import { LaunchLayer } from './launch/LaunchLayer.tsx'
 import { overlayGame, useLaunch } from './launch/store.ts'
+import { PinReasonDialog } from './mods/pinReasonDialog.tsx'
 import { isGameId, useNav } from './nav/store.ts'
 import { ArrivalDialog } from './nxm/ArrivalDialog.tsx'
 import { ProfilesPage } from './profiles/ProfilesPage.tsx'
@@ -83,6 +84,7 @@ export function App() {
       <ArrivalDialog />
       <FomodDialog />
       <CommandPalette />
+      <PinReasonDialog />
       <ShareDialog />
       <ImportDialog />
       <WhatsNewDialog />

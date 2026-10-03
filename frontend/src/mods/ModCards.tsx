@@ -12,6 +12,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { CompatChip } from './CompatChip.tsx'
 import { useCustomCategories } from './customCategories.ts'
 import { useDetail } from './detail.ts'
+import { ExtraFilesChip } from './ExtraFilesChip.tsx'
 import {
   customCategoryById,
   emptyGroupLabel,
@@ -175,6 +176,7 @@ function ModCard({
           </Typography>
         </Box>
       </ButtonBase>
+      <ExtraFilesChip mod={m} profile={profile} />
       <PinBadge mod={m} />
       <CompatChip mod={m} />
       <UpdateBadge mod={m} />
