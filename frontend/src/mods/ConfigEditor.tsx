@@ -21,6 +21,7 @@ import {
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { PresetsButton } from './ConfigPresets.tsx'
 import { applyCPSchema, parseCPSchema } from './configFields.ts'
 import { type ConfigNode, parseConfig, setAt, stringifyConfig } from './configForm.ts'
 import { Fields } from './configFormUi.tsx'
@@ -331,6 +332,7 @@ function EditConfigButton({ mod }: { mod: Mod }) {
       >
         {t`Edit`}
       </Button>
+      <PresetsButton mod={mod} />
       <ConfigEditor mod={mod} open={open} onClose={() => setOpen(false)} />
     </>
   )

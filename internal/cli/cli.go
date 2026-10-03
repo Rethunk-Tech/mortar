@@ -88,6 +88,7 @@ type cmd struct {
 	removeFlag    bool
 	setFlag       bool
 	clearFlag     bool
+	testFlag      bool
 	filter        string
 	item          string
 	mark          bool
@@ -252,6 +253,8 @@ func (c *cmd) parse(args []string) error {
 			c.setFlag = true
 		case a == "--clear":
 			c.clearFlag = true
+		case a == "--test":
+			c.testFlag = true
 		case a == "--format":
 			if i+1 >= len(args) {
 				return usageError{"--format needs md or text"}
@@ -426,6 +429,8 @@ func (c *cmd) dispatch() error {
 			switch c.args[1] {
 			case "enable", "disable", "remove", "pin", "unpin", "tag", "untag", "category", "note", "skip-version", "split", "combine":
 				return c.modsChange(c.args[1])
+			case "group":
+				return c.modsGroup()
 			case "win":
 				return c.modsWin()
 			case "files":
@@ -2129,9 +2134,11 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   profile shortcut <game> <profile> [--remove]  desktop shortcut that plays this profile
   profile steam <game> <profile>         add this profile to Steam as a non-Steam game
   game steam-launch-option <game> [--set|--clear]  read or change Steam's loader launch options
+  game launch-presets <game> [add|remove <name> [options [prefix [env]]]]  per-game launch presets
   mods <game> <profile>                   mods with version, state and source
   mods enable|disable|pin|unpin|remove <game> <profile> <mod id>...  (pin accepts --reason)
   mods tag|untag|category|note|skip-version <game> <profile> <mod> [value]
+  mods group <game> <profile> list|create|delete|add|remove|on|off …
   mods split <game> <profile> <mod> <file>
   mods combine <game> <profile> <mod> <into-mod>
   mods win <game> <profile> <winner> <loser> [--undo]
@@ -2161,6 +2168,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   export <game> <profile> <file.mortar>   write a .mortar file
   open <link|file>                        hand a share link or .mortar file to Mortar
   play <game> <profile> --check           pre-Play summary; exits 3 when anything is wrong
+  play <game> <profile> --test            launch, wait for the title screen, and stop
   launch <game> <profile> [--wait] [--force] play; --force skips Play warnings
   status <game> | stop <game>
   runs <game> <profile>                   recent launches

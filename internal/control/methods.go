@@ -254,6 +254,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.games()
 	case "game.steamLaunchOption":
 		return s.gameSteamLaunchOption(p.Game, p.Set, p.Clear)
+	case "game.launchPresets":
+		return s.gameLaunchPresets(p)
 	case "settings.get":
 		cur := s.Settings.Get()
 		if p.Key == "" {
@@ -788,6 +790,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		})
 	case "mods.win":
 		return s.modsWin(p, prof, id)
+	case "mods.group":
+		return s.modsGroup(p, prof, id)
 	case "install":
 		return s.changed(p.Game, func() (any, error) { return s.install(p.Game, id, p.Path) })
 	case "conflicts":
@@ -884,6 +888,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.Saves.Saves(ctx, p.Game, id)
 	case "play.check":
 		return s.playCheck(ctx, p.Game, id, prof)
+	case "play.test":
+		return s.playTest(ctx, p.Game, id)
 	case "launch":
 		return s.launch(ctx, p.Game, id, p.Force)
 	}
