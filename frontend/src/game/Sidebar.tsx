@@ -238,13 +238,13 @@ function BottomBlock({ game }: { game: string }) {
         sx={{
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'space-evenly',
           height: 40,
-          pr: '6px',
           '& > button, & .MuiIconButton-root': { height: 40, width: 40 },
-          ...rail({ flexDirection: 'column', pr: 0 }),
+          ...rail({ flexDirection: 'column' }),
         }}
       >
-        <Box sx={{ flex: 1, height: 40, display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ height: 40, display: 'flex', alignItems: 'center' }}>
           <QueueButton />
         </Box>
         <RecentChangesButton game={game} />
