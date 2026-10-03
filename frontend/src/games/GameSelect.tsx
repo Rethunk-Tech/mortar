@@ -6,6 +6,7 @@ import { type MouseEvent, useCallback, useEffect, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { List } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import type { Played } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
 import {
   Get,
   SetLastGame,
@@ -22,6 +23,7 @@ import { isGameId, openSettings, useNav } from '../nav/store.ts'
 import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { gameArt } from './art.ts'
+import { ProfileCards } from './ProfileCards.tsx'
 import { type GameStatus, loaderCaption, loadGameStatus } from './status.ts'
 import { storeName } from './storeName.ts'
 
@@ -237,6 +239,7 @@ interface GameState {
   profiles: Profile[]
   lastPlayedId: string
   lastPlayedAt: string
+  lastPlayed: Played | undefined
   setupNeeded: boolean
 }
 
@@ -269,6 +272,7 @@ export function GameSelect() {
                   setupNeeded,
                   lastPlayedId: still && played ? played.profile : '',
                   lastPlayedAt: still && played ? played.at : '',
+                  lastPlayed: still && played ? played : undefined,
                 },
               ]
             }),
@@ -302,17 +306,30 @@ export function GameSelect() {
         {status.games.map((g) => {
           const st = states[g.id]
           const lastId = st?.lastPlayedId ?? ''
+          const showCards =
+            g.available &&
+            g.installed &&
+            st &&
+            !st.setupNeeded &&
+            st.profiles.some((p) => !p.hidden)
           return (
-            <Row
+            <Box
               key={g.id}
-              game={g}
-              openable={g.available}
-              note={noteFor(g)}
-              loader={loaderCaption(g.loader, g.id === 'stardew' ? loaderStatus : null)}
-              lastPlayedName={st?.profiles.find((p) => p.id === lastId)?.name ?? ''}
-              lastPlayedAt={st?.lastPlayedAt ?? ''}
-              lastPlayedId={st?.setupNeeded ? '' : lastId}
-            />
+              sx={{ display: 'flex', flexDirection: 'column', flex: '1 1 0', minHeight: 0 }}
+            >
+              <Row
+                game={g}
+                openable={g.available}
+                note={noteFor(g)}
+                loader={loaderCaption(g.loader, g.id === 'stardew' ? loaderStatus : null)}
+                lastPlayedName={st?.profiles.find((p) => p.id === lastId)?.name ?? ''}
+                lastPlayedAt={st?.lastPlayedAt ?? ''}
+                lastPlayedId={st?.setupNeeded ? '' : lastId}
+              />
+              {showCards && isGameId(g.id) ? (
+                <ProfileCards gameId={g.id} profiles={st.profiles} lastPlayed={st.lastPlayed} />
+              ) : null}
+            </Box>
           )
         })}
       </Box>
