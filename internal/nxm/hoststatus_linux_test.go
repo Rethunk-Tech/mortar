@@ -16,7 +16,7 @@ func TestNativeHostStatusOkMissingAndStale(t *testing.T) {
 	home := t.TempDir()
 	cfg := filepath.Join(home, ".config")
 	mortar := filepath.Join(home, "mortar")
-	if err := os.WriteFile(mortar, []byte("bin"), 0o700); err != nil {
+	if err := os.WriteFile(mortar, []byte("bin"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	chromeDir := filepath.Join(cfg, "google-chrome")

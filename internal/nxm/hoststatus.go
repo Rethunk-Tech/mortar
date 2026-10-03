@@ -57,16 +57,10 @@ func exeMatches(want, got string) bool {
 
 // RepairNativeHosts rewrites native-messaging host manifests for installed browsers.
 func RepairNativeHosts(exe string) error {
-	if skipXdgMime() {
-		return nil
-	}
 	return repairNativeHosts(exe)
 }
 
 // StatusForExecutable reports native host manifests for browsers found on this system.
 func StatusForExecutable(exe string) []HostStatus {
-	if skipXdgMime() {
-		return nil
-	}
 	return statusForExecutable(exe)
 }
