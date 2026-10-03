@@ -102,7 +102,7 @@ func (s *Store) HistoryDiff(game, id, a, b string) (HistoryDiff, error) {
 	}
 	cfgA := loadHistoryConfigs(dir, snapshotHash(data, a), before)
 	cfgB := loadHistoryConfigs(dir, snapshotHash(data, b), after)
-	overlayLiveIfCurrent(dir, after, cfgB)
+	overlayLiveIfCurrent(dir, data, after, cfgB)
 	return DiffSnapshots(a, b, before, after, cfgA, cfgB), nil
 }
 
@@ -296,12 +296,21 @@ func emptyConfigs() map[string]map[string][]byte {
 	return map[string]map[string][]byte{}
 }
 
-func overlayLiveIfCurrent(dir string, entries []Entry, cfg map[string]map[string][]byte) {
-	latest, ok := latestSnapshotAt(dir)
+func overlayLiveIfCurrent(dir string, data historyFileData, entries []Entry, cfg map[string]map[string][]byte) {
+	latest, ok := latestSnapshotOf(data)
 	if !ok || !entriesEqual(latest, entries) {
 		return
 	}
 	overlayLiveConfigs(dir, entries, cfg)
+}
+
+func latestSnapshotOf(data historyFileData) ([]Entry, bool) {
+	for _, ev := range slices.Backward(data.Events) {
+		if entries, ok := snapshotEntries(data, ev.SnapshotID); ok {
+			return cloneEntries(entries), true
+		}
+	}
+	return nil, false
 }
 
 func overlayLiveConfigs(dir string, entries []Entry, cfg map[string]map[string][]byte) {

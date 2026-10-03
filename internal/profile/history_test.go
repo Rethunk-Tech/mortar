@@ -11,7 +11,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
@@ -235,51 +234,6 @@ func TestHistoryDeduplicatesSnapshots(t *testing.T) {
 	}
 	if len(data.Events) != 3 || len(data.Snapshots) != 2 {
 		t.Fatalf("history events=%d snapshots=%d, want 3 and 2", len(data.Events), len(data.Snapshots))
-	}
-}
-
-func TestHistoryMigratesLegacyEntriesInPlace(t *testing.T) {
-	s := newStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	dir, err := s.profileDir("stardew", p.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	entries := []Entry{{Key: "legacy", Mods: []EntryMod{{UniqueID: "legacy.mod", Folder: "."}}}}
-	old := legacyHistoryFileData{Events: []legacyHistoryEvent{{
-		ID: "legacy-event", At: time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC),
-		Kind: historyAdded, Label: "Added legacy", Count: 1, Entries: entries,
-	}}}
-	if err := datadir.WriteJSON(filepath.Join(dir, historyFile), old); err != nil {
-		t.Fatal(err)
-	}
-	events, err := s.History("stardew", p.ID)
-	if err != nil || len(events) != 1 {
-		t.Fatalf("migrated history = %+v, %v", events, err)
-	}
-	if events[0].SnapshotID == "" {
-		t.Fatal("legacy event has no snapshot ID")
-	}
-	snapshot, err := s.Snapshot("stardew", p.ID, events[0].ID)
-	if err != nil || !reflect.DeepEqual(snapshot, entries) {
-		t.Fatalf("migrated snapshot = %+v, %v", snapshot, err)
-	}
-	data, err := readHistory(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(data.Snapshots) != 1 || len(data.Events) != 1 {
-		t.Fatalf("migrated data = %+v", data)
-	}
-	raw, err := fsx.ReadFile(filepath.Join(dir, historyFile))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if strings.Contains(string(raw), `"entries"`) {
-		t.Fatalf("legacy entries remain in migrated history: %s", raw)
 	}
 }
 

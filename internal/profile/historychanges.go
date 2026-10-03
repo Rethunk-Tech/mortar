@@ -37,7 +37,7 @@ func (s *Store) ChangesSince(game, id string, since time.Time) (HistoryDiff, err
 	}
 	cfgA := loadHistoryConfigs(dir, snapshotHash(data, a), before)
 	cfgB := loadHistoryConfigs(dir, snapshotHash(data, b), after)
-	overlayLiveIfCurrent(dir, after, cfgB)
+	overlayLiveIfCurrent(dir, data, after, cfgB)
 	return DiffSnapshots(a, b, before, after, cfgA, cfgB), nil
 }
 
