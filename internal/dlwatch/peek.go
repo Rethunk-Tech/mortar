@@ -26,7 +26,7 @@ func PeekName(path string) string {
 	if err != nil {
 		return ""
 	}
-	defer zr.Close()
+	defer func() { _ = zr.Close() }()
 	best := ""
 	bestDepth := 1 << 20
 	for _, f := range zr.File {

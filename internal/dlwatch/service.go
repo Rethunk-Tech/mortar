@@ -8,7 +8,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
-// Event names for the binding generator.
+// ArrivedEvent tells the window a new archive is waiting for an install decision.
 const ArrivedEvent = "dlwatch:arrived"
 
 const (

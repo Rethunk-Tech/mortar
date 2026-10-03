@@ -1,11 +1,13 @@
 package dlwatch
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 )
 
 // UserDir is the platform Downloads folder: xdg-user-dir DOWNLOAD or ~/Downloads
@@ -18,7 +20,9 @@ func UserDir() string {
 }
 
 func unixDownloads() string {
-	out, err := exec.Command("xdg-user-dir", "DOWNLOAD").Output()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	out, err := exec.CommandContext(ctx, "xdg-user-dir", "DOWNLOAD").Output()
 	if err == nil {
 		p := strings.TrimSpace(string(out))
 		if p != "" {

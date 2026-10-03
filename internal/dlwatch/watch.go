@@ -19,23 +19,14 @@ type seenFile struct {
 	ignored bool // existed when watching started
 }
 
-// Folder polls dir for new finished archives. Interval and Stable are
-// overridable in tests.
+// Folder polls dir for new finished archives. Stable is overridable in tests.
 type Folder struct {
-	Dir      string
-	Interval time.Duration
-	Stable   time.Duration
-	Now      func() time.Time
+	Dir    string
+	Stable time.Duration
+	Now    func() time.Time
 
 	known   map[string]*seenFile
 	started bool
-}
-
-func (f *Folder) interval() time.Duration {
-	if f.Interval > 0 {
-		return f.Interval
-	}
-	return pollEvery
 }
 
 func (f *Folder) stable() time.Duration {

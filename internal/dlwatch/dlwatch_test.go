@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 func TestParseNexusFilename(t *testing.T) {
@@ -132,7 +134,7 @@ func TestStabilityWaitsForSizeAndPartSibling(t *testing.T) {
 func TestPeekNameFromZip(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "plain.zip")
-	f, err := os.Create(path)
+	f, err := fsx.Create(path)
 	if err != nil {
 		t.Fatal(err)
 	}
