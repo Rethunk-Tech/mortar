@@ -25,6 +25,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/share"
 	"github.com/Rethunk-AI/mortar/internal/sharesvc"
+	"github.com/Rethunk-AI/mortar/internal/shortcut"
 	"github.com/Rethunk-AI/mortar/internal/tools"
 )
 
@@ -62,6 +63,7 @@ type Services struct {
 	Shares      *sharesvc.Service
 	Data        *datasvc.Service
 	Downloads   *dlwatch.Service
+	Plays       *shortcut.Service
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 }
@@ -75,14 +77,15 @@ type GameRow struct {
 
 // ModRow is one mod of a profile.
 type ModRow struct {
-	UniqueID string `json:"uniqueId"`
-	Name     string `json:"name"`
-	Version  string `json:"version"`
-	Author   string `json:"author"`
-	Enabled  bool   `json:"enabled"`
-	Pinned   bool   `json:"pinned"`
-	Key      string `json:"key"`
-	Source   string `json:"source"`
+	UniqueID  string `json:"uniqueId"`
+	Name      string `json:"name"`
+	Version   string `json:"version"`
+	Author    string `json:"author"`
+	Enabled   bool   `json:"enabled"`
+	Pinned    bool   `json:"pinned"`
+	PinReason string `json:"pinReason,omitempty"`
+	Key       string `json:"key"`
+	Source    string `json:"source"`
 }
 
 // ModInfo is one mod with what relates to it.
@@ -241,6 +244,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	switch method {
 	case "games":
 		return s.games()
+	case "game.steamLaunchOption":
+		return s.gameSteamLaunchOption(p.Game, p.Set, p.Clear)
 	case "settings.get":
 		cur := s.Settings.Get()
 		if p.Key == "" {
@@ -549,6 +554,11 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		return out, nil
 	case "profile.collection":
+		if p.Unlink {
+			return s.changed(p.Game, func() (any, error) {
+				return s.Profiles.ClearCollection(p.Game, id)
+			})
+		}
 		if s.Shares == nil {
 			return nil, errors.New("sharing is unavailable")
 		}
@@ -584,8 +594,17 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.SetOverride(p.Game, id, p.Key, p.Value) })
 	case "profile.repair":
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.Repair(p.Game, id) })
+	case "profile.shortcut":
+		return s.profileShortcut(p.Game, id, p.Remove)
+	case "profile.steam":
+		return s.profileSteam(p.Game, id)
 	case "mods":
 		return modRows(prof), nil
+	case "mods.files":
+		if len(p.UniqueIDs) == 0 {
+			return nil, fmt.Errorf("mods files needs a mod")
+		}
+		return s.modExtraFiles(ctx, p.Game, prof, p.UniqueIDs[0])
 	case "mods.config":
 		if len(p.UniqueIDs) == 0 {
 			return nil, fmt.Errorf("mods config needs a mod")
@@ -621,7 +640,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		return s.changed(p.Game, func() (any, error) {
 			for _, k := range keys {
-				if _, err := s.Profiles.SetPinned(p.Game, id, k, method == "mods.pin"); err != nil {
+				if _, err := s.Profiles.SetPinned(p.Game, id, k, method == "mods.pin", p.Value); err != nil {
 					return nil, err
 				}
 			}
@@ -962,7 +981,7 @@ func modRows(p profile.Profile) []ModRow {
 			out = append(out, ModRow{
 				UniqueID: m.UniqueID, Name: m.Name, Version: m.Version, Author: m.Author, Key: e.Key,
 				Enabled: !slices.ContainsFunc(e.Disabled, func(d string) bool { return strings.EqualFold(d, m.UniqueID) }),
-				Pinned:  e.Pinned, Source: source(e.Source),
+				Pinned:  e.Pinned, PinReason: e.PinReason, Source: source(e.Source),
 			})
 		}
 	}

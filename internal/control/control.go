@@ -45,6 +45,10 @@ type Params struct {
 	Force     bool     `json:"force,omitempty"`
 	Key       string   `json:"key,omitempty"`
 	Value     string   `json:"value,omitempty"`
+	Remove    bool     `json:"remove,omitempty"`
+	Set       bool     `json:"set,omitempty"`
+	Clear     bool     `json:"clear,omitempty"`
+	Unlink    bool     `json:"unlink,omitempty"`
 }
 
 type request struct {
