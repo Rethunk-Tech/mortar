@@ -52,15 +52,16 @@ type request struct {
 }
 
 type reply struct {
-	OK        bool           `json:"ok,omitempty"`
-	Error     string         `json:"error,omitempty"`
-	Connected bool           `json:"connected"`
-	ModIDs    *[]int         `json:"modIds,omitempty"`
-	Open      *modInProfile  `json:"open,omitempty"`
-	Others    []modInProfile `json:"others,omitempty"`
-	Problems  []modProblem   `json:"problems,omitempty"`
-	Updates   *[]modUpdate   `json:"updates,omitempty"`
-	Profile   string         `json:"profile,omitempty"`
+	OK           bool              `json:"ok,omitempty"`
+	Error        string            `json:"error,omitempty"`
+	Connected    bool              `json:"connected"`
+	ModIDs       *[]int            `json:"modIds,omitempty"`
+	Open         *modInProfile     `json:"open,omitempty"`
+	Others       []modInProfile    `json:"others,omitempty"`
+	Problems     []modProblem      `json:"problems,omitempty"`
+	Updates      *[]modUpdate      `json:"updates,omitempty"`
+	Requirements []requirementItem `json:"requirements,omitempty"`
+	Profile      string            `json:"profile,omitempty"`
 	// Accent is Mortar's accent colour, read on every reply so the extension follows a change in the app.
 	Accent string `json:"accent,omitempty"`
 }
@@ -239,6 +240,8 @@ func serveWithConnection(r io.Reader, w io.Writer, open func(link string) error,
 				rows = problem[0](req.Game, req.ModID)
 			}
 			rep = reply{Problems: rows}
+		case "requirements":
+			rep = reply{Requirements: nexusPageRequirements(req.Game, req.ModID)}
 		case "":
 			if err := open(req.Link); err != nil {
 				rep = reply{Error: err.Error()}
