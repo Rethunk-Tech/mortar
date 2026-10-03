@@ -69,3 +69,18 @@ func TestCopyTreeSkipsASymlinkDirectory(t *testing.T) {
 		t.Fatalf("regular file = %q, %v", got, err)
 	}
 }
+
+func TestUnderRoot(t *testing.T) {
+	if !UnderRoot("/", "/etc") {
+		t.Fatal("path under filesystem root")
+	}
+	if !UnderRoot("/data", "/data") {
+		t.Fatal("path equal to root")
+	}
+	if UnderRoot("/data", "/data-other") {
+		t.Fatal("sibling prefix")
+	}
+	if UnderRoot("/data", "/etc") {
+		t.Fatal("path outside root")
+	}
+}

@@ -2,8 +2,6 @@ package datasvc
 
 import (
 	"os"
-	"path/filepath"
-	"strings"
 )
 
 type inodeKey struct {
@@ -48,13 +46,4 @@ func (s *shareAcc) saved() (n int64, known bool) {
 		return 0, false
 	}
 	return max(s.logical-s.allocated, 0), true
-}
-
-func under(root, p string) bool {
-	root = filepath.Clean(root)
-	p = filepath.Clean(p)
-	if root == p {
-		return true
-	}
-	return strings.HasPrefix(p, root+string(os.PathSeparator))
 }

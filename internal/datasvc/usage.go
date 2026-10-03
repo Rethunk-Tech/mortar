@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 )
@@ -156,7 +157,7 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 					return fs.SkipDir
 				}
 				if info, infoErr := os.Stat(filepath.Clean(p)); infoErr == nil && info.Mode().IsRegular() {
-					if resolved, resErr := filepath.EvalSymlinks(p); resErr == nil && under(root, resolved) {
+					if resolved, resErr := filepath.EvalSymlinks(p); resErr == nil && datadir.UnderRoot(root, resolved) {
 						share.addFollowed(info)
 					}
 				}

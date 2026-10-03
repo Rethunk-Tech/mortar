@@ -1,7 +1,6 @@
 package launchsvc
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -249,16 +248,13 @@ func (s *Service) runFile(gameID, profileID, runID string) (string, error) {
 }
 
 func readIndex(dir string) (runIndex, error) {
-	data, err := fsx.ReadFile(filepath.Join(dir, "index.json"))
-	if errors.Is(err, os.ErrNotExist) {
-		return runIndex{}, nil
-	}
+	var idx runIndex
+	found, err := datadir.ReadJSON(filepath.Join(dir, "index.json"), &idx)
 	if err != nil {
 		return runIndex{}, err
 	}
-	var idx runIndex
-	if err := json.Unmarshal(data, &idx); err != nil {
-		return runIndex{}, err
+	if !found {
+		return runIndex{}, nil
 	}
 	if idx.Runs == nil {
 		idx.Runs = []Run{}
@@ -476,8 +472,7 @@ func pathWithin(path, dir string) bool {
 	if err1 != nil || err2 != nil {
 		return false
 	}
-	rel, err := filepath.Rel(absDir, absPath)
-	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
+	return datadir.UnderRoot(absDir, absPath)
 }
 
 func (s *Service) runText(g game.Game, profileID, modsDir string) string {

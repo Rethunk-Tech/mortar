@@ -128,10 +128,8 @@ func copyTree(src, dst string, report func(CopyProgress), put func(from, to, rel
 func UnderRoot(root, p string) bool {
 	root = filepath.Clean(root)
 	p = filepath.Clean(p)
-	if root == p {
-		return true
-	}
-	return strings.HasPrefix(p, root+string(os.PathSeparator))
+	rel, err := filepath.Rel(root, p)
+	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(os.PathSeparator))
 }
 
 // RealDirUnder reports whether p is a directory whose own path still resolves under root, not a symlink
