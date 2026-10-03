@@ -252,6 +252,7 @@ function ProblemSection({
     <Box>
       {collapsible ? (
         <ButtonBase
+          component="div"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1, borderRadius: '4px' }}

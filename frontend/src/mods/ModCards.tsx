@@ -126,6 +126,7 @@ function ModCard({
       }}
     >
       <ButtonBase
+        component="div"
         data-mod-id={id}
         aria-label={t`Details of ${m.name}`}
         onMouseDown={(e) => {
