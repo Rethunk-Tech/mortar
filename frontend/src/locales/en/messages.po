@@ -20,7 +20,7 @@ msgstr "Performance"
 msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
-#: src/settings/sections/GameSettings.tsx:236
+#: src/settings/sections/GameSettings.tsx:210
 #: src/tools/ToolEditorDialog.tsx:93
 msgid "Browse…"
 msgstr "Browse…"
@@ -81,7 +81,7 @@ msgid "Failed ({0})"
 msgstr "Failed ({0})"
 
 #: src/settings/sections/Downloads.tsx:161
-#: src/settings/sections/GameSettings.tsx:548
+#: src/settings/sections/GameSettings.tsx:498
 msgid "Choose…"
 msgstr "Choose…"
 
@@ -129,6 +129,10 @@ msgstr "Priority Default"
 msgid "Show failed"
 msgstr "Show failed"
 
+#: src/settings/GameSettingsPage.tsx:59
+msgid "Streaming"
+msgstr "Streaming"
+
 #: src/saves/SaveRow.tsx:119
 msgid "Could not back up {label}"
 msgstr "Could not back up {label}"
@@ -146,7 +150,7 @@ msgid "Mod updates show on each profile's mod list."
 msgstr "Mod updates show on each profile's mod list."
 
 #. placeholder {0}: status.version
-#: src/settings/sections/GameSettings.tsx:431
+#: src/settings/sections/GameSettings.tsx:426
 #: src/settings/sections/SmapiVersionRow.tsx:72
 msgid "SMAPI {0}"
 msgstr "SMAPI {0}"
@@ -426,8 +430,8 @@ msgstr "No lines match the filters."
 msgid "Never for this mod"
 msgstr "Never for this mod"
 
-#: src/settings/SettingsNav.tsx:96
-#: src/settings/SettingsNav.tsx:97
+#: src/settings/SettingsNav.tsx:68
+#: src/settings/SettingsNav.tsx:69
 msgid "Search settings"
 msgstr "Search settings"
 
@@ -1078,7 +1082,7 @@ msgstr "No supported game was found in your launchers."
 msgid "GitHub is busy, try again in a minute"
 msgstr "GitHub is busy, try again in a minute"
 
-#: src/settings/SettingsPage.tsx:122
+#: src/settings/SettingsShell.tsx:112
 msgid "Search results"
 msgstr "Search results"
 
@@ -1257,7 +1261,7 @@ msgid "Set to automatic"
 msgstr "Set to automatic"
 
 #: src/launch/LaunchLayer.tsx:241
-#: src/settings/sections/GameSettings.tsx:375
+#: src/settings/sections/GameSettings.tsx:370
 msgid "Grant Flatpak Steam access?"
 msgstr "Grant Flatpak Steam access?"
 
@@ -1343,14 +1347,14 @@ msgstr "Fullscreen resolution width"
 msgid "Host:port"
 msgstr "Host:port"
 
-#: src/settings/sections/GameSettings.tsx:492
+#: src/settings/sections/GameSettings.tsx:462
 msgid "Tell me when a new SMAPI is out"
 msgstr "Tell me when a new SMAPI is out"
 
 #: src/commandPalette/CommandPalette.tsx:128
 #: src/settings/sections/NexusMods.tsx:121
 #: src/settings/sections/NexusMods.tsx:237
-#: src/settings/SettingsPage.tsx:49
+#: src/settings/SettingsPage.tsx:38
 msgid "Nexus account"
 msgstr "Nexus account"
 
@@ -1573,8 +1577,9 @@ msgstr "Not signed in"
 
 #: src/firstrun/FindStep.tsx:158
 #: src/firstrun/GameSetup.tsx:113
-#: src/settings/sections/GameSettings.tsx:199
-#: src/settings/sections/GameSettings.tsx:210
+#: src/settings/sections/GameSettings.tsx:198
+#: src/settings/sections/GameSettings.tsx:200
+#: src/settings/sections/GameSettings.tsx:231
 msgid "Game folder"
 msgstr "Game folder"
 
@@ -1734,7 +1739,7 @@ msgid "Add tool"
 msgstr "Add tool"
 
 #: src/commandPalette/CommandPalette.tsx:125
-#: src/settings/SettingsPage.tsx:46
+#: src/settings/SettingsPage.tsx:35
 msgid "Appearance"
 msgstr "Appearance"
 
@@ -1759,7 +1764,7 @@ msgid "Lutris"
 msgstr "Lutris"
 
 #: src/commandPalette/CommandPalette.tsx:126
-#: src/settings/SettingsPage.tsx:47
+#: src/settings/SettingsPage.tsx:36
 msgid "Mods and profiles"
 msgstr "Mods and profiles"
 
@@ -2168,7 +2173,7 @@ msgstr "Local-only mods kept ({0})"
 #: src/commandPalette/CommandPalette.tsx:131
 #: src/settings/sections/DataStoreReport.tsx:344
 #: src/settings/sections/DataUsage.tsx:223
-#: src/settings/SettingsPage.tsx:52
+#: src/settings/SettingsPage.tsx:41
 msgid "Storage"
 msgstr "Storage"
 
@@ -2308,7 +2313,7 @@ msgstr "Report a bug"
 msgid "Skip sharing"
 msgstr "Skip sharing"
 
-#: src/settings/sections/GameSettings.tsx:277
+#: src/settings/sections/GameSettings.tsx:282
 msgid "Couldn't update Steam's launch options"
 msgstr "Couldn't update Steam's launch options"
 
@@ -2355,7 +2360,8 @@ msgid "Go to Saves"
 msgstr "Go to Saves"
 
 #: src/game/ProfileWorkspace.tsx:68
-#: src/settings/sections/GameSettings.tsx:553
+#: src/settings/GameSettingsPage.tsx:58
+#: src/settings/GameSettingsPage.tsx:103
 msgid "Console"
 msgstr "Console"
 
@@ -2501,7 +2507,7 @@ msgid "Replace {targetName}?"
 msgstr "Replace {targetName}?"
 
 #: src/commandPalette/CommandPalette.tsx:133
-#: src/settings/SettingsPage.tsx:54
+#: src/settings/SettingsPage.tsx:43
 msgid "Shortcuts"
 msgstr "Shortcuts"
 
@@ -2609,7 +2615,7 @@ msgstr "Review mod updates"
 msgid "Sun"
 msgstr "Sun"
 
-#: src/settings/sections/GameSettings.tsx:76
+#: src/settings/sections/GameSettings.tsx:75
 msgid "Reset game install?"
 msgstr "Reset game install?"
 
@@ -2672,8 +2678,8 @@ msgstr "Cover image"
 #: src/queue/QueueHistory.tsx:163
 #: src/settings/sections/DataImport.tsx:71
 #: src/settings/sections/DataMove.tsx:97
-#: src/settings/sections/GameSettings.tsx:84
-#: src/settings/sections/GameSettings.tsx:385
+#: src/settings/sections/GameSettings.tsx:83
+#: src/settings/sections/GameSettings.tsx:380
 #: src/settings/sections/nxmHandler.tsx:84
 #: src/settings/sections/StreamOverlay.tsx:268
 #: src/share/ImportFooter.tsx:167
@@ -2784,7 +2790,12 @@ msgstr "Downloads paused"
 msgid "{0, plural, one {# error} other {# errors}}"
 msgstr "{0, plural, one {# error} other {# errors}}"
 
-#: src/settings/GameSettingsPage.tsx:28
+#. placeholder {0}: g.version
+#: src/settings/GameSettingsPage.tsx:70
+msgid " · Stardew Valley {0}"
+msgstr " · Stardew Valley {0}"
+
+#: src/settings/GameSettingsPage.tsx:123
 msgid "Back to {name}"
 msgstr "Back to {name}"
 
@@ -2828,10 +2839,6 @@ msgstr "Summary"
 #: src/firstrun/ProfileStep.tsx:113
 msgid "A profile with only SMAPI. Add mods from Nexus or from archives."
 msgstr "A profile with only SMAPI. Add mods from Nexus or from archives."
-
-#: src/settings/sections/GameSettings.tsx:587
-msgid " · Stardew Valley {version}"
-msgstr " · Stardew Valley {version}"
 
 #: src/bundles/BundlesSection.tsx:52
 #: src/bundles/dialogs.tsx:132
@@ -3009,10 +3016,14 @@ msgstr "Could not read recently deleted profiles"
 #: src/mods/Sidebar.tsx:220
 #: src/mods/updateReview/EverywhereDialog.tsx:152
 #: src/mods/updateReview/UpdateActions.tsx:65
-#: src/settings/sections/GameSettings.tsx:432
+#: src/settings/sections/GameSettings.tsx:427
 #: src/settings/smapiToast.ts:35
 msgid "Update"
 msgstr "Update"
+
+#: src/settings/sections/GameSettings.tsx:250
+msgid "Delete the game folder, then reinstall Stardew Valley from your launcher."
+msgstr "Delete the game folder, then reinstall Stardew Valley from your launcher."
 
 #: src/tools/ToolsMenu.tsx:43
 msgid "Launch other apps with this profile."
@@ -3331,7 +3342,7 @@ msgstr "Added from an archive, so it only exists on this computer."
 #: src/queue/QueueButton.tsx:14
 #: src/queue/QueueButton.tsx:17
 #: src/queue/QueueSheet.tsx:65
-#: src/settings/SettingsPage.tsx:48
+#: src/settings/SettingsPage.tsx:37
 msgid "Downloads"
 msgstr "Downloads"
 
@@ -3352,7 +3363,7 @@ msgid "Could not read this Mortar build's version: {failed}"
 msgstr "Could not read this Mortar build's version: {failed}"
 
 #: src/loader/Banner.tsx:31
-#: src/settings/sections/GameSettings.tsx:424
+#: src/settings/sections/GameSettings.tsx:419
 #: src/settings/sections/SmapiVersionRow.tsx:72
 msgid "SMAPI is not installed"
 msgstr "SMAPI is not installed"
@@ -3794,7 +3805,7 @@ msgid "{name} logged {count} errors in the last run."
 msgstr "{name} logged {count} errors in the last run."
 
 #: src/settings/prefCopy.ts:345
-#: src/settings/sections/GameSettings.tsx:512
+#: src/settings/sections/GameSettings.tsx:482
 msgid "Backup location"
 msgstr "Backup location"
 
@@ -3867,7 +3878,7 @@ msgstr "Different enabled state"
 #: src/firstrun/SmapiStep.tsx:140
 #: src/launch/LaunchLayer.tsx:216
 #: src/saves/lackChipActions.tsx:83
-#: src/settings/sections/GameSettings.tsx:367
+#: src/settings/sections/GameSettings.tsx:362
 msgid "Copy"
 msgstr "Copy"
 
@@ -3995,7 +4006,7 @@ msgstr "Imported"
 msgid "In Mortar"
 msgstr "In Mortar"
 
-#: src/settings/GameSettingsPage.tsx:41
+#: src/settings/GameSettingsPage.tsx:122
 msgid "{name} settings"
 msgstr "{name} settings"
 
@@ -4083,8 +4094,8 @@ msgstr "Start the game to see values"
 msgid "Console command"
 msgstr "Console command"
 
-#: src/settings/sections/GameSettings.tsx:187
-#: src/settings/sections/GameSettings.tsx:292
+#: src/settings/sections/GameSettings.tsx:186
+#: src/settings/sections/GameSettings.tsx:297
 msgid "That folder cannot be used"
 msgstr "That folder cannot be used"
 
@@ -4142,7 +4153,7 @@ msgid "Saved"
 msgstr "Saved"
 
 #: src/commandPalette/CommandPalette.tsx:130
-#: src/settings/SettingsPage.tsx:51
+#: src/settings/SettingsPage.tsx:40
 #: src/toasts/HistoryButton.tsx:127
 #: src/toasts/HistoryButton.tsx:177
 #: src/toasts/ToastHost.tsx:178
@@ -4187,7 +4198,7 @@ msgstr "Rescan"
 #: src/firstrunTour/TourPopover.tsx:147
 #: src/fomod/Dialog.tsx:253
 #: src/profiles/ProfilesPage.tsx:359
-#: src/settings/SettingsNav.tsx:76
+#: src/settings/SettingsPage.tsx:62
 msgid "Back"
 msgstr "Back"
 
@@ -4299,7 +4310,7 @@ msgstr "Create a profile first."
 msgid "Open data folder"
 msgstr "Open data folder"
 
-#: src/settings/sections/GameSettings.tsx:193
+#: src/settings/sections/GameSettings.tsx:192
 msgid "Chosen by you"
 msgstr "Chosen by you"
 
@@ -4472,7 +4483,8 @@ msgstr "Send"
 #: src/game/Hero.tsx:295
 #: src/game/ProfileWorkspace.tsx:48
 #: src/mods/ModListVirtual.tsx:283
-#: src/settings/sections/GameSettings.tsx:529
+#: src/settings/GameSettingsPage.tsx:56
+#: src/settings/GameSettingsPage.tsx:86
 #: src/settings/sections/Updates.tsx:167
 msgid "Mods"
 msgstr "Mods"
@@ -4634,11 +4646,11 @@ msgstr "Copy {0}"
 msgid "Download them"
 msgstr "Download them"
 
-#: src/settings/sections/GameSettings.tsx:435
+#: src/settings/sections/GameSettings.tsx:430
 msgid "Installed and up to date"
 msgstr "Installed and up to date"
 
-#: src/settings/sections/GameSettings.tsx:79
+#: src/settings/sections/GameSettings.tsx:78
 msgid "This deletes the game folder at {folder}, including every file in it, SMAPI, and any mods placed there. Saves are not in this folder and will be kept. Profiles' mods are stored separately by Mortar and will be kept."
 msgstr "This deletes the game folder at {folder}, including every file in it, SMAPI, and any mods placed there. Saves are not in this folder and will be kept. Profiles' mods are stored separately by Mortar and will be kept."
 
@@ -4808,12 +4820,14 @@ msgstr "{0} · {1} unique"
 
 #: src/launchers/LauncherList.tsx:62
 #: src/launchers/LauncherList.tsx:93
-#: src/settings/sections/GameSettings.tsx:228
+#: src/settings/sections/GameSettings.tsx:201
 msgid "Not found"
 msgstr "Not found"
 
 #: src/console/CrashDialog.tsx:163
 #: src/profiles/OverrideRows.tsx:92
+#: src/settings/GameSettingsPage.tsx:54
+#: src/settings/sections/GameSettings.tsx:460
 msgid "SMAPI"
 msgstr "SMAPI"
 
@@ -5304,7 +5318,7 @@ msgid "Copy OBS URL"
 msgstr "Copy OBS URL"
 
 #: src/profiles/LaunchPreview.tsx:60
-#: src/settings/sections/GameSettings.tsx:361
+#: src/settings/sections/GameSettings.tsx:356
 msgid "Command copied"
 msgstr "Command copied"
 
@@ -5490,7 +5504,7 @@ msgstr " {winnerName} wins; {losers} overridden."
 
 #: src/commandPalette/CommandPalette.tsx:132
 #: src/settings/sections/Launchers.tsx:23
-#: src/settings/SettingsPage.tsx:53
+#: src/settings/SettingsPage.tsx:42
 msgid "Launchers"
 msgstr "Launchers"
 
@@ -5783,6 +5797,7 @@ msgstr "Press a key"
 #: src/mods/configFormUi.tsx:108
 #: src/mods/ModDetail.tsx:157
 #: src/mods/ModDetail.tsx:190
+#: src/settings/sections/GameSettings.tsx:247
 #: src/settings/sections/Shortcuts.tsx:130
 #: src/share/ImportFooter.tsx:95
 msgid "Reset"
@@ -5862,7 +5877,7 @@ msgstr "Mortar can start SMAPI directly instead. The Steam overlay and Steam's p
 msgid "Endorse"
 msgstr "Endorse"
 
-#: src/settings/sections/GameSettings.tsx:276
+#: src/settings/sections/GameSettings.tsx:281
 msgid "Remove SMAPI from Steam's launch options"
 msgstr "Remove SMAPI from Steam's launch options"
 
@@ -5877,6 +5892,10 @@ msgstr "last played {lastPlayedName}"
 #: src/mods/updates.ts:20
 msgid "Checked with SMAPI's update service"
 msgstr "Checked with SMAPI's update service"
+
+#: src/settings/sections/GameSettings.tsx:259
+msgid "Reset…"
+msgstr "Reset…"
 
 #: src/share/useImportFlow.ts:125
 msgid "A profile with that name already exists, so this one is \"{name}\""
@@ -5974,8 +5993,9 @@ msgstr "Open the page of {name}"
 
 #: src/launch/LaunchLayer.tsx:238
 #: src/launch/LaunchLayer.tsx:256
-#: src/settings/sections/GameSettings.tsx:370
-#: src/settings/sections/GameSettings.tsx:393
+#: src/settings/sections/GameSettings.tsx:327
+#: src/settings/sections/GameSettings.tsx:365
+#: src/settings/sections/GameSettings.tsx:388
 msgid "Grant access"
 msgstr "Grant access"
 
@@ -6219,7 +6239,7 @@ msgstr "{0} will be overwritten. A backup of the current Saves folder is made fi
 msgid "Open on Nexus"
 msgstr "Open on Nexus"
 
-#: src/settings/sections/GameSettings.tsx:336
+#: src/settings/sections/GameSettings.tsx:331
 msgid "Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods."
 msgstr "Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods."
 
@@ -6277,7 +6297,7 @@ msgid "Stop the game to change mods"
 msgstr "Stop the game to change mods"
 
 #: src/commandPalette/CommandPalette.tsx:129
-#: src/settings/SettingsPage.tsx:50
+#: src/settings/SettingsPage.tsx:39
 msgid "Updates"
 msgstr "Updates"
 
@@ -6301,7 +6321,7 @@ msgstr "Follow system"
 msgid "Every Play"
 msgstr "Every Play"
 
-#: src/settings/sections/GameSettings.tsx:256
+#: src/settings/sections/GameSettings.tsx:249
 msgid "Reset game install"
 msgstr "Reset game install"
 
@@ -6798,7 +6818,7 @@ msgstr "the open profile"
 msgid "Undo this change"
 msgstr "Undo this change"
 
-#: src/settings/sections/GameSettings.tsx:245
+#: src/settings/sections/GameSettings.tsx:219
 msgid "Use discovered"
 msgstr "Use discovered"
 
@@ -6992,8 +7012,9 @@ msgstr "Find the crash cause"
 #: src/firstrunTour/TourPopover.tsx:60
 #: src/games/GameSelect.tsx:225
 #: src/launch/PlayControl.tsx:149
+#: src/settings/GameSettingsPage.tsx:55
+#: src/settings/GameSettingsPage.tsx:77
 #: src/settings/sections/Appearance.tsx:142
-#: src/settings/sections/GameSettings.tsx:523
 msgid "Play"
 msgstr "Play"
 
@@ -7129,13 +7150,14 @@ msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 #: src/downloads/DownloadsAsk.tsx:93
 #: src/fomod/Dialog.tsx:261
 #: src/loader/Banner.tsx:32
-#: src/settings/sections/GameSettings.tsx:426
+#: src/settings/GameSettingsPage.tsx:53
+#: src/settings/sections/GameSettings.tsx:421
 #: src/settings/sections/SmapiVersionRow.tsx:131
 msgid "Install"
 msgstr "Install"
 
 #: src/launch/LaunchLayer.tsx:244
-#: src/settings/sections/GameSettings.tsx:378
+#: src/settings/sections/GameSettings.tsx:373
 msgid "This runs the command below once for your user. Steam will then be able to read Mortar's data folder."
 msgstr "This runs the command below once for your user. Steam will then be able to read Mortar's data folder."
 
@@ -7180,7 +7202,7 @@ msgstr "Checking the mods for problems…"
 msgid "Dismiss {name} for this save"
 msgstr "Dismiss {name} for this save"
 
-#: src/settings/sections/GameSettings.tsx:195
+#: src/settings/sections/GameSettings.tsx:194
 msgid "Found in {foundIn}"
 msgstr "Found in {foundIn}"
 
@@ -7228,8 +7250,8 @@ msgstr "All profiles are hidden"
 
 #: src/games/storeName.ts:5
 #: src/settings/prefCopy.ts:56
-#: src/settings/sections/GameSettings.tsx:57
-#: src/settings/sections/GameSettings.tsx:190
+#: src/settings/sections/GameSettings.tsx:56
+#: src/settings/sections/GameSettings.tsx:189
 msgid "Steam"
 msgstr "Steam"
 
@@ -7249,7 +7271,7 @@ msgstr "colour"
 #: src/mods/ModDetail.tsx:142
 #: src/mods/ProblemsTab.tsx:54
 #: src/settings/sections/AboutDiagnostics.tsx:53
-#: src/settings/SettingsNav.tsx:89
+#: src/settings/SettingsPage.tsx:61
 #: src/shell/AppMenu.tsx:106
 #: src/shell/TitleBar.tsx:111
 msgid "Settings"
@@ -7514,8 +7536,8 @@ msgstr "Adult content"
 msgid "Downloads resume {0}."
 msgstr "Downloads resume {0}."
 
-#: src/settings/sections/GameSettings.tsx:275
-#: src/settings/sections/GameSettings.tsx:285
+#: src/settings/sections/GameSettings.tsx:280
+#: src/settings/sections/GameSettings.tsx:290
 msgid "Game install deleted"
 msgstr "Game install deleted"
 
@@ -7547,7 +7569,7 @@ msgstr "Play the open profile without SMAPI"
 
 #: src/commandPalette/CommandPalette.tsx:134
 #: src/settings/sections/About.tsx:70
-#: src/settings/SettingsPage.tsx:55
+#: src/settings/SettingsPage.tsx:44
 msgid "About"
 msgstr "About"
 
@@ -7694,7 +7716,6 @@ msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
 
 #: src/settings/prefCopy.ts:311
-#: src/settings/sections/GameSettings.tsx:491
 #: src/settings/sections/SmapiVersionRow.tsx:104
 msgid "SMAPI version"
 msgstr "SMAPI version"
@@ -7904,7 +7925,7 @@ msgstr "How profiles are ordered in the sidebar"
 msgid "Could not repair the profile"
 msgstr "Could not repair the profile"
 
-#: src/settings/sections/GameSettings.tsx:191
+#: src/settings/sections/GameSettings.tsx:190
 msgid "Stardew Valley was not found. Browse to its folder."
 msgstr "Stardew Valley was not found. Browse to its folder."
 
@@ -7925,7 +7946,7 @@ msgstr "Source"
 
 #: src/commandPalette/CommandPalette.tsx:124
 #: src/settings/sections/Shortcuts.tsx:180
-#: src/settings/SettingsPage.tsx:45
+#: src/settings/SettingsPage.tsx:34
 msgid "General"
 msgstr "General"
 
@@ -8032,7 +8053,7 @@ msgstr "List columns: {from} → {to}"
 msgid "System default"
 msgstr "System default"
 
-#: src/settings/sections/GameSettings.tsx:87
+#: src/settings/sections/GameSettings.tsx:86
 msgid "Delete and restore"
 msgstr "Delete and restore"
 
@@ -8171,7 +8192,7 @@ msgstr "No differences."
 msgid "Also update other profiles that hold the same files"
 msgstr "Also update other profiles that hold the same files"
 
-#: src/settings/sections/GameSettings.tsx:334
+#: src/settings/sections/GameSettings.tsx:329
 msgid "Flatpak Steam cannot read your mods"
 msgstr "Flatpak Steam cannot read your mods"
 
@@ -8189,7 +8210,7 @@ msgstr "Cancel {0}"
 msgid "Test launch"
 msgstr "Test launch"
 
-#: src/settings/sections/GameSettings.tsx:286
+#: src/settings/sections/GameSettings.tsx:291
 msgid "Reinstall Stardew Valley from your game launcher."
 msgstr "Reinstall Stardew Valley from your game launcher."
 
@@ -8290,7 +8311,7 @@ msgstr "Who changes this?"
 
 #. placeholder {0}: status.latest
 #: src/loader/Banner.tsx:37
-#: src/settings/sections/GameSettings.tsx:434
+#: src/settings/sections/GameSettings.tsx:429
 msgid "SMAPI {0} is available"
 msgstr "SMAPI {0} is available"
 
@@ -8493,7 +8514,7 @@ msgstr "Copy link"
 msgid "Mortar downloads and installs a mod when you click Mod Manager Download on Nexus."
 msgstr "Mortar downloads and installs a mod when you click Mod Manager Download on Nexus."
 
-#: src/settings/SettingsNav.tsx:64
+#: src/settings/SettingsNav.tsx:32
 msgid "Settings sections"
 msgstr "Settings sections"
 
@@ -8507,7 +8528,8 @@ msgstr "Delete {0}"
 msgid "{modID} is not in {0}"
 msgstr "{modID} is not in {0}"
 
-#: src/settings/sections/GameSettings.tsx:541
+#: src/settings/GameSettingsPage.tsx:57
+#: src/settings/sections/GameSettings.tsx:491
 msgid "Play backups"
 msgstr "Play backups"
 
@@ -8563,8 +8585,8 @@ msgstr "Stop"
 
 #: src/console/ConsoleTab.tsx:360
 #: src/loader/Banner.tsx:35
-#: src/settings/sections/GameSettings.tsx:429
-#: src/settings/sections/GameSettings.tsx:432
+#: src/settings/sections/GameSettings.tsx:424
+#: src/settings/sections/GameSettings.tsx:427
 msgid "Reinstall"
 msgstr "Reinstall"
 
@@ -8645,8 +8667,8 @@ msgstr "Crashed: {0}"
 #: src/settings/sections/Downloads.tsx:86
 #: src/settings/sections/Downloads.tsx:116
 #: src/settings/sections/Downloads.tsx:136
-#: src/settings/sections/GameSettings.tsx:496
-#: src/settings/sections/GameSettings.tsx:518
+#: src/settings/sections/GameSettings.tsx:466
+#: src/settings/sections/GameSettings.tsx:488
 #: src/settings/sections/General.tsx:38
 #: src/settings/sections/ModsProfiles.tsx:20
 #: src/settings/sections/Notifications.tsx:35
@@ -8917,7 +8939,7 @@ msgid "Reading backups…"
 msgstr "Reading backups…"
 
 #: src/loader/Banner.tsx:34
-#: src/settings/sections/GameSettings.tsx:428
+#: src/settings/sections/GameSettings.tsx:423
 msgid "A game update replaced SMAPI's launcher"
 msgstr "A game update replaced SMAPI's launcher"
 

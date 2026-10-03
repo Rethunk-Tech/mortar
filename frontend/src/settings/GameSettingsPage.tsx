@@ -1,48 +1,139 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Typography } from '@mui/material'
-import { ArrowLeft } from 'lucide-react'
-import { useEffect } from 'react'
+import {
+  Archive,
+  FolderOpen,
+  Package,
+  Play,
+  Puzzle,
+  Radio as RadioIcon,
+  SquareTerminal,
+} from 'lucide-react'
+import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import type { FoundInstall } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
+import { loadGameStatus } from '../games/status.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { GameSettings } from './sections/GameSettings.tsx'
-import { shouldLeavePageOnEscape } from './shouldLeavePageOnEscape.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import { PrefKeys } from './PrefRow.tsx'
+import { SettingsSection } from './SettingsSection.tsx'
+import { SettingsShell, type ShellPage } from './SettingsShell.tsx'
+import { BackupsPage, GameFolder, SmapiPage } from './sections/GameSettings.tsx'
+import { StreamOverlay } from './sections/StreamOverlay.tsx'
+import { useSettings } from './store.ts'
 
-export function GameSettingsPage() {
+const GAME = 'stardew'
+
+type GamePage = 'install' | 'smapi' | 'play' | 'mods' | 'backups' | 'console' | 'streaming'
+
+function useGameInstall() {
+  const [folder, setFolder] = useState('')
+  const [store, setStore] = useState('')
+  const [installs, setInstalls] = useState<FoundInstall[]>([])
+  const [version, setVersion] = useState('')
+  const load = useCallback(() => {
+    loadGameStatus()
+      .then((s) => {
+        const g = s.games.find((x) => x.id === GAME)
+        setFolder(g?.installDir ?? '')
+        setStore(g?.store ?? '')
+        setInstalls(g?.installs ?? [])
+      })
+      .catch(reportUnexpected)
+  }, [])
+  useEffect(load, [load])
+  return { folder, store, installs, version, setVersion, load }
+}
+
+function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) => void }) {
   const { t } = useLingui()
   const name = useProfiles((s) => s.game?.name ?? '')
   const close = useNav((s) => s.closeGameSettings)
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (shouldLeavePageOnEscape(e, document.querySelector('[role="dialog"]') !== null)) {
-        close()
-      }
+  const g = useGameInstall()
+  const pages: ShellPage<GamePage>[] = [
+    { id: 'install', label: t`Install`, icon: FolderOpen },
+    { id: 'smapi', label: t`SMAPI`, icon: Puzzle, groupEnd: true },
+    { id: 'play', label: t`Play`, icon: Play },
+    { id: 'mods', label: t`Mods`, icon: Package },
+    { id: 'backups', label: t`Play backups`, icon: Archive },
+    { id: 'console', label: t`Console`, icon: SquareTerminal },
+    { id: 'streaming', label: t`Streaming`, icon: RadioIcon },
+  ]
+  const render = (id: GamePage): ReactNode => {
+    switch (id) {
+      case 'install':
+        return (
+          <GameFolder
+            folder={g.folder}
+            store={g.store}
+            installs={g.installs}
+            onRefresh={g.load}
+            versionNote={g.version ? t` · Stardew Valley ${g.version}` : ''}
+          />
+        )
+      case 'smapi':
+        return <SmapiPage key={g.folder} onVersion={g.setVersion} />
+      case 'play':
+        return (
+          <SettingsSection title={t`Play`}>
+            <PrefKeys
+              keys={['defaultLaunchMethod', 'showSmapiConsole', 'updateModsBeforePlayDefault']}
+              game={GAME}
+            />
+          </SettingsSection>
+        )
+      case 'mods':
+        return (
+          <SettingsSection title={t`Mods`}>
+            <PrefKeys
+              keys={[
+                'enableRequirements',
+                'missingRequirements',
+                'cosmeticConflicts',
+                'conflictScanDepth',
+                'watchDownloads',
+              ]}
+              game={GAME}
+            />
+          </SettingsSection>
+        )
+      case 'backups':
+        return <BackupsPage />
+      case 'console':
+        return (
+          <SettingsSection title={t`Console`}>
+            <PrefKeys
+              keys={[
+                'runsKept',
+                'consoleLogCap',
+                'consoleLevel',
+                'consoleTimestamps',
+                'consoleFollow',
+              ]}
+              game={GAME}
+            />
+          </SettingsSection>
+        )
+      default:
+        return <StreamOverlay />
     }
-    globalThis.addEventListener('keydown', onKey)
-    return () => globalThis.removeEventListener('keydown', onKey)
-  }, [close])
+  }
   return (
-    <Box sx={{ height: '100%', overflow: 'auto', px: 3.5, pt: 3, pb: 1.5 }}>
-      <Box sx={{ maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <ButtonBase
-            aria-label={t`Back to ${name}`}
-            onClick={close}
-            sx={{
-              width: 36,
-              height: 36,
-              flexShrink: 0,
-              borderRadius: '6px',
-              '&:hover': { bgcolor: 'action.hover' },
-            }}
-          >
-            <ArrowLeft size={20} />
-          </ButtonBase>
-          <Typography component="h1" sx={{ fontSize: 22, fontWeight: 700 }}>
-            {t`${name} settings`}
-          </Typography>
-        </Box>
-        <GameSettings />
-      </Box>
-    </Box>
+    <SettingsShell
+      title={t`${name} settings`}
+      backLabel={t`Back to ${name}`}
+      onBack={close}
+      pages={pages}
+      current={page}
+      onPage={setPage}
+      render={render}
+    />
   )
+}
+
+// A new folder or store choice re-reads the install from scratch.
+export function GameSettingsPage() {
+  const override = useSettings((s) => s.gameFolders?.[GAME] ?? '')
+  const chosen = useSettings((s) => s.gameStores?.[GAME] ?? '')
+  const [page, setPage] = useState<GamePage>('install')
+  return <GamePages key={`${override}:${chosen}`} page={page} setPage={setPage} />
 }

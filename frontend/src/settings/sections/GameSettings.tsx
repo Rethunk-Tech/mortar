@@ -33,7 +33,6 @@ import {
   SetTellWhenSmapiOut,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { launchOptionsSet } from '../../firstrun/logic.ts'
-import { loadGameStatus } from '../../games/status.ts'
 import { storeName } from '../../games/storeName.ts'
 import { useLaunch } from '../../launch/store.ts'
 import { InstallSteps } from '../../loader/InstallSteps.tsx'
@@ -42,14 +41,14 @@ import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
-import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { SmapiVersionRow } from './SmapiVersionRow.tsx'
-import { StreamOverlay } from './StreamOverlay.tsx'
 
 const GAME = 'stardew'
 
 const outline = { whiteSpace: 'nowrap', flexShrink: 0, height: 42 }
+const nowrap = { whiteSpace: 'nowrap', flexShrink: 0 }
 
 function StoreLabel({ store }: { store: string }) {
   const { t } = useLingui()
@@ -195,66 +194,72 @@ function GameFolder({
     source = t`Found in ${foundIn}`
   }
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-      <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Game folder`}</Box>
-      <ExtraInstalls
-        installs={installs}
-        store={store}
-        override={override}
-        onPick={(next) => change(SetGameFolder(GAME, '').then(() => SetGameStore(GAME, next)))}
-      />
-      <Box sx={{ display: 'flex', gap: 1 }}>
-        <Box
-          role="textbox"
-          aria-readonly={true}
-          aria-label={t`Game folder`}
-          title={folder || undefined}
-          sx={{
-            flexGrow: 1,
-            minWidth: 0,
-            height: 42,
-            px: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            bgcolor: 'var(--mortar-overlay-40)',
-            border: '1px solid var(--mortar-hairline-18)',
-            borderRadius: '6px',
-            fontSize: 13,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
+    <>
+      <SettingsSection title={t`Game folder`}>
+        <SettingRow
+          label={t`Game folder`}
+          description={`${folder || t`Not found`} · ${source}${versionNote}`}
         >
-          {folder || t`Not found`}
-        </Box>
-        <Button
-          variant="outlined"
-          startIcon={<FolderOpen size={16} />}
-          onClick={() => change(ChooseGameFolder(GAME))}
-          sx={outline}
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              startIcon={<FolderOpen size={16} />}
+              onClick={() => change(ChooseGameFolder(GAME))}
+              sx={nowrap}
+            >
+              {t`Browse…`}
+            </Button>
+            {override ? (
+              <Button
+                variant="outlined"
+                startIcon={<Undo2 size={16} />}
+                onClick={() => change(SetGameFolder(GAME, ''))}
+                sx={nowrap}
+              >
+                {t`Use discovered`}
+              </Button>
+            ) : null}
+          </Box>
+        </SettingRow>
+        {error ? (
+          <Box role="alert" sx={{ px: 2.5, py: 1.5, fontSize: 14, color: 'error.light' }}>
+            {error}
+          </Box>
+        ) : null}
+        {installs.length > 1 ? (
+          <Searchable
+            terms={`${t`Game folder`} ${installs.map((i) => `${i.store} ${i.dir}`).join(' ')}`}
+          >
+            <Box sx={{ px: 2.5, py: 1.5 }}>
+              <ExtraInstalls
+                installs={installs}
+                store={store}
+                override={override}
+                onPick={(next) =>
+                  change(SetGameFolder(GAME, '').then(() => SetGameStore(GAME, next)))
+                }
+              />
+            </Box>
+          </Searchable>
+        ) : null}
+        <FlatpakAccess />
+      </SettingsSection>
+      <SettingsSection title={t`Reset`}>
+        <SettingRow
+          label={t`Reset game install`}
+          description={t`Delete the game folder, then reinstall Stardew Valley from your launcher.`}
         >
-          {t`Browse…`}
-        </Button>
-        {override ? (
           <Button
             variant="outlined"
-            startIcon={<Undo2 size={16} />}
-            onClick={() => change(SetGameFolder(GAME, ''))}
-            sx={outline}
+            color="error"
+            disabled={resetting || !folder}
+            onClick={() => setResetting(true)}
+            sx={nowrap}
           >
-            {t`Use discovered`}
+            {t`Reset…`}
           </Button>
-        ) : null}
-      </Box>
-      <Button
-        variant="text"
-        color="error"
-        disabled={resetting || !folder}
-        onClick={() => setResetting(true)}
-        sx={{ alignSelf: 'flex-start', minHeight: 36 }}
-      >
-        {t`Reset game install`}
-      </Button>
+        </SettingRow>
+      </SettingsSection>
       <ResetInstallDialog
         open={resetting}
         folder={folder}
@@ -295,17 +300,7 @@ function GameFolder({
           }
         }}
       />
-      {error ? (
-        <Box role="alert" sx={{ fontSize: 13, color: 'error.light' }}>
-          {error}
-        </Box>
-      ) : (
-        <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
-          {source}
-          {versionNote}
-        </Box>
-      )}
-    </Box>
+    </>
   )
 }
 
@@ -329,9 +324,9 @@ function FlatpakAccess() {
     return null
   }
   return (
-    <>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Flatpak Steam cannot read your mods`}</Box>
+    <Searchable terms={`Flatpak Steam ${t`Grant access`}`}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, px: 2.5, py: 1.5 }}>
+        <Box sx={{ fontSize: 16 }}>{t`Flatpak Steam cannot read your mods`}</Box>
         <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
           {t`Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods.`}
         </Box>
@@ -394,7 +389,7 @@ function FlatpakAccess() {
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </Searchable>
   )
 }
 
@@ -451,44 +446,19 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
     )
   }
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 1.5,
-        p: '14px',
-        bgcolor: 'var(--mortar-raised)',
-        borderRadius: '6px',
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Box
-          sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}
-        >
-          <Box sx={{ fontSize: 15, fontWeight: 600 }}>{title}</Box>
-          {detail ? (
-            <Box
-              sx={{
-                fontSize: 13,
-                color: status?.updateAvailable ? 'warning.main' : 'success.main',
-              }}
-            >
-              {detail}
-            </Box>
-          ) : null}
-        </Box>
-        {control}
-      </Box>
-    </Box>
+    <SettingRow label={title} description={detail} block={installing}>
+      {control}
+    </SettingRow>
   )
 }
 
-function SmapiVersion() {
+function SmapiPage({ onVersion }: { onVersion: (v: string) => void }) {
   const { t } = useLingui()
   const tellWhenSmapiOut = useSettings((s) => s.tellWhenSmapiOut) !== false
   const push = useToasts((s) => s.push)
   return (
-    <SettingsSection title={t`SMAPI version`}>
+    <SettingsSection title={t`SMAPI`}>
+      <Smapi onVersion={onVersion} />
       <SettingRow label={t`Tell me when a new SMAPI is out`}>
         <Switch
           checked={tellWhenSmapiOut}
@@ -503,7 +473,7 @@ function SmapiVersion() {
   )
 }
 
-function GamePrefs() {
+function BackupsPage() {
   const { t } = useLingui()
   const push = useToasts((s) => s.push)
   const chooseBackupLocation = () =>
@@ -518,84 +488,19 @@ function GamePrefs() {
       t`Couldn't save that setting`,
     )
   return (
-    <>
-      <SmapiVersion />
-      <SettingsSection title={t`Play`}>
-        <PrefKeys
-          keys={['defaultLaunchMethod', 'showSmapiConsole', 'updateModsBeforePlayDefault']}
-          game={GAME}
-        />
-      </SettingsSection>
-      <SettingsSection title={t`Mods`}>
-        <PrefKeys
-          keys={[
-            'enableRequirements',
-            'missingRequirements',
-            'cosmeticConflicts',
-            'conflictScanDepth',
-            'watchDownloads',
-          ]}
-          game={GAME}
-        />
-      </SettingsSection>
-      <SettingsSection title={t`Play backups`}>
-        <PrefKeys keys={['backupBeforePlay', 'launchBackupsKept']} game={GAME} />
-        <PrefByKey
-          prefKey="backupLocation"
-          game={GAME}
-          extra={
-            <Button variant="outlined" onClick={chooseBackupLocation} sx={{ whiteSpace: 'nowrap' }}>
-              {t`Choose…`}
-            </Button>
-          }
-        />
-      </SettingsSection>
-      <SettingsSection title={t`Console`}>
-        <PrefKeys
-          keys={['runsKept', 'consoleLogCap', 'consoleLevel', 'consoleTimestamps', 'consoleFollow']}
-          game={GAME}
-        />
-      </SettingsSection>
-    </>
-  )
-}
-
-function GameBody() {
-  const { t } = useLingui()
-  const [folder, setFolder] = useState('')
-  const [store, setStore] = useState('')
-  const [installs, setInstalls] = useState<FoundInstall[]>([])
-  const [version, setVersion] = useState('')
-  const load = () => {
-    loadGameStatus()
-      .then((s) => {
-        const g = s.games.find((x) => x.id === GAME)
-        setFolder(g?.installDir ?? '')
-        setStore(g?.store ?? '')
-        setInstalls(g?.installs ?? [])
-      })
-      .catch(reportUnexpected)
-  }
-  useEffect(load, [])
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <GameFolder
-        folder={folder}
-        store={store}
-        installs={installs}
-        onRefresh={load}
-        versionNote={version ? t` · Stardew Valley ${version}` : ''}
+    <SettingsSection title={t`Play backups`}>
+      <PrefKeys keys={['backupBeforePlay', 'launchBackupsKept']} game={GAME} />
+      <PrefByKey
+        prefKey="backupLocation"
+        game={GAME}
+        extra={
+          <Button variant="outlined" onClick={chooseBackupLocation} sx={nowrap}>
+            {t`Choose…`}
+          </Button>
+        }
       />
-      <FlatpakAccess />
-      <Smapi key={folder} onVersion={setVersion} />
-      <GamePrefs />
-      <StreamOverlay />
-    </Box>
+    </SettingsSection>
   )
 }
 
-export function GameSettings() {
-  const override = useSettings((s) => s.gameFolders?.[GAME] ?? '')
-  const chosen = useSettings((s) => s.gameStores?.[GAME] ?? '')
-  return <GameBody key={`${override}:${chosen}`} />
-}
+export { BackupsPage, GameFolder, SmapiPage }

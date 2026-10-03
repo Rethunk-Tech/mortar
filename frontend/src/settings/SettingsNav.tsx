@@ -1,63 +1,31 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, TextField, Typography } from '@mui/material'
-import {
-  ArrowLeft,
-  Bell,
-  Download,
-  HardDrive,
-  Info,
-  Keyboard,
-  type LucideIcon,
-  Package,
-  Palette,
-  RefreshCw,
-  Rocket,
-  SlidersHorizontal,
-  UserRound,
-} from 'lucide-react'
-import type { SettingsSection } from '../nav/store.ts'
-import { useNav } from '../nav/store.ts'
+import { ArrowLeft } from 'lucide-react'
+import type { ShellPage } from './SettingsShell.tsx'
 
 const ACTIVE_WEIGHT = 600
 const ICON_SIZE = 18
 
-const ICONS: Record<SettingsSection, LucideIcon> = {
-  general: SlidersHorizontal,
-  appearance: Palette,
-  mods: Package,
-  downloads: Download,
-  nexus: UserRound,
-  updates: RefreshCw,
-  notifications: Bell,
-  storage: HardDrive,
-  launchers: Rocket,
-  shortcuts: Keyboard,
-  about: Info,
-}
-
-// A divider follows each of these, splitting the list into look, mods, disk and help groups.
-const GROUP_ENDS: ReadonlySet<SettingsSection> = new Set([
-  'appearance',
-  'notifications',
-  'launchers',
-])
-
-export function SettingsNav({
-  section,
-  sections,
-  onSection,
+export function SettingsNav<Id extends string>({
+  title,
+  backLabel,
+  onBack,
+  pages,
+  current,
+  onPage,
   query,
   setQuery,
 }: {
-  section: SettingsSection
-  sections: { id: SettingsSection; label: string }[]
-  onSection?: (id: SettingsSection) => void
+  title: string
+  backLabel: string
+  onBack: () => void
+  pages: ShellPage<Id>[]
+  current: Id
+  onPage: (id: Id) => void
   query: string
   setQuery: (query: string) => void
 }) {
   const { t } = useLingui()
-  const closeSettings = useNav((s) => s.closeSettings)
-  const setSection = useNav((s) => s.openSettings)
   return (
     <Box
       component="nav"
@@ -73,8 +41,8 @@ export function SettingsNav({
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pb: 1.25 }}>
         <ButtonBase
-          aria-label={t`Back`}
-          onClick={closeSettings}
+          aria-label={backLabel}
+          onClick={onBack}
           sx={{
             width: 36,
             height: 36,
@@ -85,8 +53,12 @@ export function SettingsNav({
         >
           <ArrowLeft size={20} />
         </ButtonBase>
-        <Typography component="h1" sx={{ fontSize: 20, fontWeight: 700 }}>
-          {t`Settings`}
+        <Typography
+          component="h1"
+          sx={{ fontSize: 20, fontWeight: 700, minWidth: 0 }}
+          noWrap={true}
+        >
+          {title}
         </Typography>
       </Box>
       <TextField
@@ -104,13 +76,13 @@ export function SettingsNav({
         }}
         sx={{ width: '100%', mb: 0.5 }}
       />
-      {sections.map((s) => {
-        const active = section === s.id
-        const Icon = ICONS[s.id]
+      {pages.map((s) => {
+        const active = current === s.id
+        const Icon = s.icon
         return (
           <Box key={s.id} sx={{ display: 'contents' }}>
             <ButtonBase
-              onClick={() => (onSection ?? setSection)(s.id)}
+              onClick={() => onPage(s.id)}
               aria-current={active ? 'page' : undefined}
               sx={{
                 justifyContent: 'flex-start',
@@ -130,7 +102,7 @@ export function SettingsNav({
               <Icon size={ICON_SIZE} aria-hidden={true} />
               {s.label}
             </ButtonBase>
-            {GROUP_ENDS.has(s.id) ? (
+            {s.groupEnd ? (
               <Box
                 role="separator"
                 sx={{ height: '1px', bgcolor: 'var(--mortar-hairline)', mx: 1, my: 0.75 }}
