@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/desktopnotify"
 	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/nxm"
@@ -343,13 +344,16 @@ func Run(ctx context.Context, s *Service, assigned <-chan nxmsvc.Assignment) (wa
 // request so that Retry can download it once the cause is fixed.
 func (s *Service) reject(r Request, err error) {
 	log.Printf("queue: mod %d file %d could not be queued: %v", r.ModID, r.FileID, err)
-	s.mu.Lock()
-	s.items = append(s.items, &Item{
+	it := &Item{
 		ID: newID(), Kind: r.Kind, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
 		State: StateFailed, Error: err.Error(), key: r.key, expires: r.expires,
-	})
+	}
+	s.mu.Lock()
+	s.items = append(s.items, it)
+	name, game, profile := it.Name, it.Game, it.Profile
 	s.mu.Unlock()
 	s.publish(true)
+	notifyDesktopDownload(name, game, profile, false)
 }
 
 // describe fills a queued Nexus item's name and picture from its mod page, so it shows them while it waits.
@@ -759,7 +763,16 @@ func (s *Service) FailRoot(id string) {
 	s.publish(true)
 	if rec != nil {
 		s.recordHistory(rec, StateFailed)
+		notifyDesktopDownload(rec.Name, rec.Game, rec.Profile, false)
 	}
+}
+
+func notifyDesktopDownload(name, game, profile string, ok bool) {
+	title, key := "Download failed", "desktopDownloadFailed"
+	if ok {
+		title, key = "Download finished", "desktopDownloadFinished"
+	}
+	desktopnotify.SendIf(desktopnotify.Pref(key), title, name, map[string]any{"game": game, "profile": profile})
 }
 
 // Cancel stops an item, including a download under way. An install cannot be interrupted.

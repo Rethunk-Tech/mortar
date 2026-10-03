@@ -26,6 +26,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/control"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
+	"github.com/Rethunk-AI/mortar/internal/desktopnotify"
 	"github.com/Rethunk-AI/mortar/internal/dlwatch"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
@@ -429,6 +430,10 @@ func run() error {
 	launches.Unlocked = func() { queue.NotifyUnlocked(queueSvc) }
 	nxmSvc.Route = queueSvc.Route
 	notifier := notifications.New()
+	desktopnotify.Setup(notifier, nxmSvc.NotificationIcon, func(key string) bool {
+		v, err := store.Get().Lookup(key)
+		return err == nil && v == "true"
+	})
 
 	pick := &picker.Service{}
 	profileSvc := profile.NewService(profiles, home, store)
@@ -798,21 +803,10 @@ func run() error {
 				showWindow()
 			})
 			launches.NotifyRunEnd = func(n launchsvc.RunEndNotice) {
-				id := fmt.Sprintf("run-end-%s-%d", n.Profile, time.Now().UnixNano())
-				opts := notifications.NotificationOptions{
-					ID:    id,
-					Title: n.Title,
-					Body:  n.Body,
-					Data:  map[string]any{"game": n.Game, "profile": n.Profile},
+				if strings.HasSuffix(n.Title, " crashed") && !desktopnotify.Pref("desktopRunCrashed") {
+					return
 				}
-				if icon := nxmSvc.NotificationIcon(); icon != "" {
-					opts.Attachments = []notifications.NotificationAttachment{
-						{ID: "icon", Path: icon, Type: "appLogoOverride"},
-					}
-				}
-				if err := notifier.SendNotification(opts); err != nil {
-					log.Printf("run-end notification: %v", err)
-				}
+				desktopnotify.Send(n.Title, n.Body, map[string]any{"game": n.Game, "profile": n.Profile})
 			}
 			// Menus are GTK objects: rebuilding one off the main thread, or twice at once from a burst of
 			// events, leaves items without their native handle and panics.

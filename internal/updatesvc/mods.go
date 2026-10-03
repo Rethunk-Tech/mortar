@@ -2,8 +2,11 @@ package updatesvc
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/desktopnotify"
 )
 
 const (
@@ -71,6 +74,12 @@ func StartModBackground(ctx context.Context, enabled ModUpdateSetting, source Mo
 			}
 			if should && summary.TotalUpdates > 0 {
 				notify.NotifyDigest(summary)
+				desktopnotify.SendIf(
+					desktopnotify.Pref("desktopModUpdates"),
+					fmt.Sprintf("%d mod updates available", summary.TotalUpdates),
+					"",
+					map[string]any{"game": summary.Game, "profile": summary.ProfileID},
+				)
 			}
 		}
 		run()

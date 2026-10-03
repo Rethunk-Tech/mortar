@@ -309,6 +309,7 @@ func (s *Service) settle(id string, err error) {
 	s.publish(true)
 	if rec != nil {
 		s.recordHistory(rec, StateFailed)
+		notifyDesktopDownload(rec.Name, rec.Game, rec.Profile, false)
 	}
 	if reopen {
 		// An expired key, or a premium-only answer: the page gives a fresh one.
@@ -578,6 +579,7 @@ func (s *Service) finish(id string, err error, unverified bool) error {
 	s.publish(true)
 	if rec != nil {
 		s.recordHistory(rec, StateDone)
+		notifyDesktopDownload(rec.Name, rec.Game, rec.Profile, true)
 		if s.d.HistoryBatch != nil {
 			if batchErr := s.d.HistoryBatch(rec.Game, rec.Profile, rec.BatchID); batchErr != nil {
 				log.Printf("queue: record profile history batch %s: %v", rec.BatchID, batchErr)
