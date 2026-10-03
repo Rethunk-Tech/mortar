@@ -22,7 +22,7 @@ import { When } from '../../i18n/When.tsx'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
-import { SettingsSection } from '../SettingsSection.tsx'
+import { Searchable, SettingsSection } from '../SettingsSection.tsx'
 import { nowrap } from './dataStyles.ts'
 
 const SELECT_SEP = '\u0000'
@@ -340,15 +340,19 @@ function StoreCleanup({ onChanged }: { onChanged: () => void }) {
   }
   return (
     <SettingsSection title={t`Clean up`}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', py: 0.5 }}>
-        <CleanupBody
-          store={store}
-          leftovers={leftovers}
-          picked={picked}
-          setPicked={setPicked}
-          toggle={toggle}
-        />
-      </Box>
+      <Searchable
+        terms={`${t`Clean up`} ${t`Storage`} ${t`Mods no profile uses`} ${t`Older copies of the same mod`} ${t`Leftover files`}`}
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', py: 0.5 }}>
+          <CleanupBody
+            store={store}
+            leftovers={leftovers}
+            picked={picked}
+            setPicked={setPicked}
+            toggle={toggle}
+          />
+        </Box>
+      </Searchable>
       {picked.size > 0 ? (
         // Pinned to the bottom of the page while anything is selected, like a list's action bar.
         <Box

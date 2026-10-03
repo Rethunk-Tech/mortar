@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { SetShortcuts } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
+import { Searchable, SettingsSection } from '../SettingsSection.tsx'
 import {
   conflictFor,
   defaultBindings,
@@ -85,9 +86,10 @@ function ShortcutRow({
         justifyContent: 'space-between',
         alignItems: 'center',
         gap: 2,
-        px: 2,
+        minHeight: 56,
+        px: 2.5,
         py: 1,
-        borderBottom: '1px solid var(--mortar-hairline)',
+        fontSize: 16,
       }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, minWidth: 0 }}>
@@ -187,38 +189,39 @@ export function Shortcuts() {
       {groups.map(([group, name]) => {
         const grouped = rows.filter((row) => row.group === group)
         return grouped.length > 0 ? (
-          <Box key={group}>
-            <Box sx={{ mb: 0.5, fontSize: 13, fontWeight: 700, color: 'text.secondary' }}>
-              {name}
-            </Box>
-            <Box sx={{ bgcolor: 'var(--mortar-overlay-25)', borderRadius: 1, overflow: 'hidden' }}>
-              {grouped.map((row) => (
-                <ShortcutRow
-                  key={row.id}
-                  id={row.id}
-                  label={labels[row.id]}
-                  keys={bindings[row.id]}
-                  recording={recording === row.id}
-                  conflictName={conflict?.id === row.id ? labels[conflict.other] : null}
-                  onRecord={() => {
-                    setConflict(null)
-                    setRecording(row.id)
-                  }}
-                  onReset={() => {
-                    setConflict(null)
-                    SetShortcuts({ ...bindings, [row.id]: defaultBindings()[row.id] }).catch(
-                      reportUnexpected,
-                    )
-                  }}
-                />
-              ))}
-            </Box>
-          </Box>
+          <SettingsSection key={group} title={name}>
+            {grouped.map((row) => (
+              <ShortcutRow
+                key={row.id}
+                id={row.id}
+                label={labels[row.id]}
+                keys={bindings[row.id]}
+                recording={recording === row.id}
+                conflictName={conflict?.id === row.id ? labels[conflict.other] : null}
+                onRecord={() => {
+                  setConflict(null)
+                  setRecording(row.id)
+                }}
+                onReset={() => {
+                  setConflict(null)
+                  SetShortcuts({ ...bindings, [row.id]: defaultBindings()[row.id] }).catch(
+                    reportUnexpected,
+                  )
+                }}
+              />
+            ))}
+          </SettingsSection>
         ) : null
       })}
-      <Button variant="text" onClick={() => setConfirmReset(true)} sx={{ alignSelf: 'flex-start' }}>
-        {t`Reset all`}
-      </Button>
+      <Searchable terms={t`Reset all shortcuts`} loose={true}>
+        <Button
+          variant="text"
+          onClick={() => setConfirmReset(true)}
+          sx={{ alignSelf: 'flex-start' }}
+        >
+          {t`Reset all`}
+        </Button>
+      </Searchable>
       <ConfirmDialog
         open={confirmReset}
         title={t`Reset every shortcut?`}

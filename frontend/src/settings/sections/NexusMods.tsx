@@ -19,7 +19,7 @@ import { useToasts } from '../../toasts/store.ts'
 import { NexusMeter } from '../NexusMeter.tsx'
 import { useNexus } from '../nexus.ts'
 import { PrefByKey } from '../PrefRow.tsx'
-import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useNxmHandler } from './nxmHandler.tsx'
 
 function UntrackConfirmDialog({
@@ -118,33 +118,35 @@ function NexusModsSignedIn({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Alert
-        severity="success"
-        icon={<Check size={16} aria-hidden={true} />}
-        action={
-          <Button
-            color="inherit"
-            size="small"
-            startIcon={<LogOut size={16} />}
-            onClick={() => {
-              SignOut().catch(reportUnexpected)
-            }}
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            {t`Sign out`}
-          </Button>
-        }
-        sx={{ alignItems: 'center', fontSize: 14 }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span>{t`Signed in as ${name}`}</span>
-          <Chip
-            size="small"
-            color={premium ? 'primary' : 'default'}
-            label={premium ? t`Premium` : t`Free`}
-          />
-        </Box>
-      </Alert>
+      <Searchable terms={`${t`Nexus account`} Nexus ${t`Sign out`} ${name}`} loose={true}>
+        <Alert
+          severity="success"
+          icon={<Check size={16} aria-hidden={true} />}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              startIcon={<LogOut size={16} />}
+              onClick={() => {
+                SignOut().catch(reportUnexpected)
+              }}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              {t`Sign out`}
+            </Button>
+          }
+          sx={{ alignItems: 'center', fontSize: 14 }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>{t`Signed in as ${name}`}</span>
+            <Chip
+              size="small"
+              color={premium ? 'primary' : 'default'}
+              label={premium ? t`Premium` : t`Free`}
+            />
+          </Box>
+        </Alert>
+      </Searchable>
       <SettingsSection title={t`Tracking`}>
         <PrefByKey prefKey="autoTrackNexus" />
         <SettingRow label={t`Untrack all…`} description={trackedText}>
@@ -178,9 +180,11 @@ function NexusModsSignedIn({
               description: t`Free accounts need one click on Nexus for every download. Mortar opens each file's page in turn and takes the download from your click.`,
             })}
       >
-        <Box sx={{ px: 2, py: 1.5 }}>
-          <NexusMeter />
-        </Box>
+        <Searchable terms={`${t`API requests`} Nexus ${t`rate limit`}`}>
+          <Box sx={{ px: 2, py: 1.5 }}>
+            <NexusMeter />
+          </Box>
+        </Searchable>
       </SettingsSection>
       <UntrackConfirmDialog
         unused={confirming}
@@ -230,6 +234,7 @@ export function NexusMods() {
       .catch((err: unknown) => setError(errorText(err) ?? t`Could not sign in`))
       .finally(() => setBusy(false))
   }
+  const terms = `${t`Nexus account`} Nexus ${t`API key`} ${t`Sign in`}`
   if (signedIn) {
     return (
       <>
@@ -244,7 +249,7 @@ export function NexusMods() {
     )
   }
   return (
-    <>
+    <Searchable terms={terms} loose={true}>
       {nxm.dialog}
       <Box
         component="form"
@@ -277,6 +282,6 @@ export function NexusMods() {
         </Box>
         {error ? <Alert severity="error">{error}</Alert> : null}
       </Box>
-    </>
+    </Searchable>
   )
 }

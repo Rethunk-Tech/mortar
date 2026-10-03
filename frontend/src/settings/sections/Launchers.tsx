@@ -6,6 +6,7 @@ import { Launchers as ListLaunchers } from '../../../bindings/github.com/Rethunk
 import { useRefreshOnFocus } from '../../firstrun/useRefreshOnFocus.ts'
 import { LauncherList } from '../../launchers/LauncherList.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
+import { Searchable } from '../SettingsSection.tsx'
 
 export function Launchers() {
   const { t } = useLingui()
@@ -18,11 +19,16 @@ export function Launchers() {
   useEffect(refresh, [refresh])
   useRefreshOnFocus(refresh)
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
-        {t`Mortar finds your games through these launchers. Choose a folder for one it did not find, or that you moved.`}
+    <Searchable
+      terms={`${t`Launchers`} Steam GOG Flatpak ${t`game folder`} ${launchers.map((l) => l.name).join(' ')}`}
+      loose={true}
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
+          {t`Mortar finds your games through these launchers. Choose a folder for one it did not find, or that you moved.`}
+        </Box>
+        <LauncherList launchers={launchers} refresh={refresh} />
       </Box>
-      <LauncherList launchers={launchers} refresh={refresh} />
-    </Box>
+    </Searchable>
   )
 }

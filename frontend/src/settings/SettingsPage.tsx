@@ -140,7 +140,9 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
                       flexDirection: 'column',
                       gap: 2,
                       mb: 2,
-                      '&:empty': { display: 'none' },
+                      '&:not(:has(.settings-tiles:not(:empty), .settings-match))': {
+                        display: 'none',
+                      },
                     }}
                   >
                     {body[s.id]}

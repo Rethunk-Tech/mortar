@@ -40,7 +40,17 @@ export function SettingsSection({
     return null
   }
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, ...sx }}>
+    <Box
+      className="settings-section"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+        // A section whose rows all filtered out (each row renders nothing) hides with its heading.
+        '&:has(> .settings-tiles:empty)': { display: 'none' },
+        ...sx,
+      }}
+    >
       {title ? (
         <Box component="h3" sx={{ m: 0, mt: 1.5, mb: 0.5, fontSize: 18, fontWeight: 600 }}>
           {title}
@@ -48,6 +58,7 @@ export function SettingsSection({
       ) : null}
       {description ? <Box sx={{ fontSize: 14, color: 'text.secondary' }}>{description}</Box> : null}
       <Box
+        className="settings-tiles"
         sx={{
           display: 'flex',
           flexDirection: 'column',
@@ -60,6 +71,30 @@ export function SettingsSection({
         {children}
       </Box>
     </Box>
+  )
+}
+
+// Content that is not a SettingRow takes part in search through its terms. Loose content outside a section
+// marks itself so the search results know a page still has something to show.
+export function Searchable({
+  terms,
+  loose = false,
+  children,
+}: {
+  terms: string
+  loose?: boolean
+  children: ReactNode
+}) {
+  const query = useSettingsSearch()
+  if (!prefMatches(query, terms)) {
+    return null
+  }
+  return loose && query ? (
+    <Box className="settings-match" sx={{ display: 'contents' }}>
+      {children}
+    </Box>
+  ) : (
+    children
   )
 }
 

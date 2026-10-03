@@ -10,7 +10,7 @@ import {
 import { formatBytes } from '../../i18n/bytes.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { PrefNumber } from '../PrefControls.tsx'
-import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { MoveDataButton } from './DataMove.tsx'
 import { nowrap } from './dataStyles.ts'
@@ -219,7 +219,11 @@ export function UsageRows({
   return (
     <>
       <SettingsSection title={t`Usage`}>
-        <StorageBar usage={usage} labels={labels} bytes={bytes} actions={actions} />
+        <Searchable
+          terms={`${t`Usage`} ${t`Storage`} ${t`disk space`} ${Object.values(labels).join(' ')} ${t`Clear cache…`} ${t`Deleted profiles…`}`}
+        >
+          <StorageBar usage={usage} labels={labels} bytes={bytes} actions={actions} />
+        </Searchable>
       </SettingsSection>
       <SettingsSection title={t`By game`}>
         {games === null ? (

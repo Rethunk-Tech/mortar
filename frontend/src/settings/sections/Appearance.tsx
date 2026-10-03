@@ -16,7 +16,7 @@ import { useToasts } from '../../toasts/store.ts'
 import { PrefSegmented, PrefSelect } from '../PrefControls.tsx'
 import { PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
-import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { isAccent } from '../theme.ts'
 
@@ -70,92 +70,103 @@ export function Appearance() {
         <PrefKeys keys={['theme']} />
       </SettingsSection>
       <SettingsSection title={t`Accent colour`}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', p: 2 }}>
-          <Box
-            role="radiogroup"
-            aria-label={t`Accent colour`}
-            sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '10px' }}
-          >
-            {cards.map((card) => {
-              const checked = isAccent(accent) && accent === card.name
-              return (
-                <ButtonBase
-                  key={card.name}
-                  role="radio"
-                  aria-checked={checked}
-                  onClick={() => {
-                    SetAccent(card.name).catch(reportFailure)
-                  }}
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    gap: '10px',
-                    p: '12px',
-                    bgcolor: 'var(--mortar-raised)',
-                    border: '2px solid',
-                    borderColor: checked ? 'var(--mortar-ink)' : 'transparent',
-                    borderRadius: '8px',
-                    color: 'var(--mortar-ink)',
-                    textAlign: 'left',
-                    fontFamily: 'inherit',
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: '100%',
-                      height: 44,
-                      borderRadius: '6px',
-                      bgcolor: accents[card.name],
-                    }}
-                  />
-                  <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
-                    {card.label}
-                  </Box>
-                  <Box component="span" sx={{ fontSize: 12, color: 'var(--mortar-ink-sec)' }}>
-                    {card.note}
-                  </Box>
-                </ButtonBase>
-              )
-            })}
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              p: '14px',
-              bgcolor: 'var(--mortar-overlay-25)',
-              borderRadius: '8px',
-            }}
-          >
-            <Button
-              variant="contained"
-              tabIndex={-1}
-              sx={{ width: 140, height: 44, fontSize: 17, fontWeight: 700 }}
-            >
-              {t`Play`}
-            </Button>
-            <Chip label={t`3 updates`} color="primary" size="small" sx={{ fontWeight: 700 }} />
+        <Searchable terms={`${t`Accent colour`} ${t`colour`} ${t`color`} ${t`theme`}`}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', p: 2 }}>
             <Box
-              component="span"
+              role="radiogroup"
+              aria-label={t`Accent colour`}
               sx={{
-                py: '6px',
-                borderBottom: '2px solid',
-                borderColor: 'primary.main',
-                fontSize: 14,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+                gap: '10px',
               }}
             >
-              {t`Stardew Valley`}
+              {cards.map((card) => {
+                const checked = isAccent(accent) && accent === card.name
+                return (
+                  <ButtonBase
+                    key={card.name}
+                    role="radio"
+                    aria-checked={checked}
+                    onClick={() => {
+                      SetAccent(card.name).catch(reportFailure)
+                    }}
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      gap: '10px',
+                      p: '12px',
+                      bgcolor: 'var(--mortar-raised)',
+                      border: '2px solid',
+                      borderColor: checked ? 'var(--mortar-ink)' : 'transparent',
+                      borderRadius: '8px',
+                      color: 'var(--mortar-ink)',
+                      textAlign: 'left',
+                      fontFamily: 'inherit',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: '100%',
+                        height: 44,
+                        borderRadius: '6px',
+                        bgcolor: accents[card.name],
+                      }}
+                    />
+                    <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
+                      {card.label}
+                    </Box>
+                    <Box component="span" sx={{ fontSize: 12, color: 'var(--mortar-ink-sec)' }}>
+                      {card.note}
+                    </Box>
+                  </ButtonBase>
+                )
+              })}
             </Box>
             <Box
-              component="span"
-              sx={{ flexGrow: 1, textAlign: 'right', fontSize: 13, color: 'var(--mortar-ink-sec)' }}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                p: '14px',
+                bgcolor: 'var(--mortar-overlay-25)',
+                borderRadius: '8px',
+              }}
             >
-              {t`Changes apply right away`}
+              <Button
+                variant="contained"
+                tabIndex={-1}
+                sx={{ width: 140, height: 44, fontSize: 17, fontWeight: 700 }}
+              >
+                {t`Play`}
+              </Button>
+              <Chip label={t`3 updates`} color="primary" size="small" sx={{ fontWeight: 700 }} />
+              <Box
+                component="span"
+                sx={{
+                  py: '6px',
+                  borderBottom: '2px solid',
+                  borderColor: 'primary.main',
+                  fontSize: 14,
+                }}
+              >
+                {t`Stardew Valley`}
+              </Box>
+              <Box
+                component="span"
+                sx={{
+                  flexGrow: 1,
+                  textAlign: 'right',
+                  fontSize: 13,
+                  color: 'var(--mortar-ink-sec)',
+                }}
+              >
+                {t`Changes apply right away`}
+              </Box>
             </Box>
           </Box>
-        </Box>
+        </Searchable>
       </SettingsSection>
       <SettingsSection title={t`Background`}>
         <SettingRow label={t`Background`}>
