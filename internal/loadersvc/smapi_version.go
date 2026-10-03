@@ -34,6 +34,12 @@ func (s *Service) InstallVersion(ctx context.Context, id, version string) (loade
 	if err != nil {
 		return loader.Status{}, err
 	}
+	// A version that does not exist is refused before asking the user to close the game.
+	if _, err := s.items.Path(id, store.SMAPIKey(version)); version != "" && errors.Is(err, store.ErrNotFound) {
+		if err := s.ensureKnown(ctx, id, version); err != nil {
+			return loader.Status{}, err
+		}
+	}
 	running, err := s.gameRunning(g)
 	if err != nil {
 		return loader.Status{}, err
