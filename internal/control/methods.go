@@ -458,6 +458,11 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, errors.New("nexus is unavailable")
 		}
 		return s.Nexus.TrackedCount(ctx, p.Game)
+	case "changelog":
+		if s.Nexus == nil {
+			return nil, errors.New("nexus is unavailable")
+		}
+		return s.changelogBetween(ctx, p.Game, p.ModID, p.Name, p.Value)
 	case "cache.size":
 		if s.Data == nil {
 			return nil, errors.New("data is unavailable")
@@ -776,6 +781,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.runLog(p.Game, id, p.Run)
 	case "logs.share":
 		return s.shareLog(ctx, p.Game, id, p.Run)
+	case "logs.fixes":
+		return s.Launches.RunProblems(p.Game, id, p.Run)
 	case "logs.search":
 		return s.Launches.SearchRuns(p.Game, id, p.Query)
 	case "saves":

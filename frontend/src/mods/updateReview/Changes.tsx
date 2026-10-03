@@ -1,56 +1,61 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
+import { useEffect, useState } from 'react'
+import type { Changelog } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
+import { ChangelogBetween } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
 import type { Update } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import { useNexus } from '../../settings/nexus.ts'
+import { useProfiles } from '../../profiles/store.ts'
 import { Fold } from '../../shell/Fold.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
-import { changelogNoteIsRisky, changelogsBetween } from '../changelogRange.ts'
-import { loadDetails, useNexusDetails } from '../nexusDetails.ts'
+import { changelogNoteIsRisky } from '../changelogRange.ts'
 
 export function Changes({ update }: { update: Update }) {
   const { t } = useLingui()
-  const details = useNexusDetails((s) => s.byId[update.nexusId]?.details)
-  const signedIn = useNexus((s) => s.signedIn)
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const [logs, setLogs] = useState<Changelog[] | undefined>(undefined)
+  const [failed, setFailed] = useState(false)
+  useEffect(() => {
+    if (!(update.nexusId > 0 && game)) {
+      return
+    }
+    let cancelled = false
+    setLogs(undefined)
+    setFailed(false)
+    ChangelogBetween(game, update.nexusId, update.installed, update.version).then(
+      (got) => {
+        if (!cancelled) {
+          setLogs(got ?? [])
+        }
+      },
+      (e: unknown) => {
+        if (!cancelled) {
+          setFailed(true)
+          reportUnexpected(e)
+        }
+      },
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [game, update.installed, update.nexusId, update.version])
   if (!update.nexusId) {
     return null
   }
-  if (!details) {
-    return (
-      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-        {signedIn ? t`Changelog is not cached yet.` : t`Sign in to Nexus to load the changelog.`}
-        {signedIn ? (
-          <Button
-            size="small"
-            onClick={() => loadDetails(update.nexusId).catch(reportUnexpected)}
-            sx={{ ml: 0.75, minWidth: 0, p: 0, fontSize: 12, textTransform: 'none' }}
-          >
-            {t`Load changes`}
-          </Button>
-        ) : null}
-      </Typography>
-    )
+  if (failed) {
+    return null
   }
-  const all = details.changelogs ?? []
-  const logs = changelogsBetween(all, update.installed, update.version)
-  if (all.length === 0) {
-    return (
-      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-        {t`This mod has no changelog.`}
-      </Typography>
-    )
+  if (logs === undefined) {
+    return <Box role="status" aria-busy={true} sx={{ minHeight: 20 }} />
   }
   if (logs.length === 0) {
     return (
-      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-        {t`No changelog entries between these versions.`}
-      </Typography>
+      <Typography
+        sx={{ fontSize: 12, color: 'text.secondary' }}
+      >{t`No changelog on Nexus`}</Typography>
     )
   }
   return (
-    <Fold
-      title={t`${plural(logs.length, { one: '# version of changes', other: '# versions of changes' })}`}
-    >
+    <Fold title={t`What's new`}>
       {logs.map((c) => (
         <Box key={c.version}>
           <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{c.version}</Typography>

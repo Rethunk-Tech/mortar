@@ -21,6 +21,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/loadorder"
+	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/queue"
@@ -59,25 +60,26 @@ func Is(args []string) bool {
 type caller func(method string, p control.Params, out any, timeout time.Duration) error
 
 type cmd struct {
-	version     string
-	call        caller
-	out         io.Writer
-	errOut      io.Writer
-	json        bool
-	verbose     bool
-	all         bool
-	unused      bool
-	yesFlag     bool
-	force       bool
-	wait        bool
-	byMod       bool
-	check       bool
-	format      string
-	run         string
-	game        string
-	profileFlag string
-	updateFlag  bool
-	args        []string
+	version       string
+	call          caller
+	out           io.Writer
+	errOut        io.Writer
+	json          bool
+	verbose       bool
+	all           bool
+	unused        bool
+	yesFlag       bool
+	force         bool
+	wait          bool
+	byMod         bool
+	check         bool
+	format        string
+	run           string
+	game          string
+	profileFlag   string
+	updateFlag    bool
+	changelogFlag bool
+	args          []string
 }
 
 // refusedError is a destructive action blocked until the user passes --yes: exit 2 with the message only.
@@ -193,6 +195,8 @@ func (c *cmd) parse(args []string) error {
 			c.wait = true
 		case a == "--update":
 			c.updateFlag = true
+		case a == "--changelog":
+			c.changelogFlag = true
 		case a == "--format":
 			if i+1 >= len(args) {
 				return usageError{"--format needs md or text"}
@@ -351,6 +355,9 @@ func (c *cmd) dispatch() error {
 	}
 	if verb == "logs" && len(c.args) >= 2 && c.args[1] == "share" {
 		return c.shareLog()
+	}
+	if verb == "logs" && len(c.args) >= 2 && c.args[1] == "fixes" {
+		return c.logFixes()
 	}
 	if verb == "logs" && len(c.args) >= 3 && c.args[1] == "search" {
 		return c.searchLogs(c.args[2])
@@ -1509,6 +1516,19 @@ func (c *cmd) updates(p control.Params) error {
 	if err := c.ask("updates", p, &r, readTimeout); err != nil {
 		return err
 	}
+	changelogs := map[int][]nexus.Changelog{}
+	if c.changelogFlag {
+		for _, u := range r.Updates {
+			if u.NexusID < 1 {
+				continue
+			}
+			var logs []nexus.Changelog
+			if err := c.ask("changelog", control.Params{Game: p.Game, ModID: u.NexusID, Name: u.Installed, Value: u.Version}, &logs, readTimeout); err != nil {
+				return err
+			}
+			changelogs[u.NexusID] = logs
+		}
+	}
 	return c.emit(r, func() {
 		if len(r.Updates) == 0 {
 			fmt.Fprintln(c.out, "Everything is up to date.")
@@ -1519,6 +1539,22 @@ func (c *cmd) updates(p control.Params) error {
 			t = append(t, []string{u.Name, u.Installed, u.Version, u.Source, u.URL})
 		}
 		c.table("NAME\tINSTALLED\tNEWEST\tSOURCE\tPAGE", t)
+		if !c.changelogFlag {
+			return
+		}
+		for _, u := range r.Updates {
+			logs := changelogs[u.NexusID]
+			if len(logs) == 0 {
+				continue
+			}
+			fmt.Fprintf(c.out, "%s\n", u.Name)
+			for _, e := range logs {
+				fmt.Fprintf(c.out, "  %s\n", e.Version)
+				for _, line := range e.Notes {
+					fmt.Fprintf(c.out, "    - %s\n", line)
+				}
+			}
+		}
 	})
 }
 
@@ -2002,7 +2038,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   problems dismissed [--profile <name>]   dismissed problems (index, kind, text, token)
   problems dismiss <index> [--profile <name>]
   problems restore <token|index> [--profile <name>]
-  updates <game> <profile>                mods with a newer version
+  updates <game> <profile> [--changelog]  mods with a newer version
   saves <game> <profile>                  saves and the mods each one lacks
   share <game> <profile>                  share link
   export <game> <profile> <file.mortar>   write a .mortar file
@@ -2014,6 +2050,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
 	logs <game> <profile> [--run <id>]      a stored SMAPI log (latest by default)
   logs share <game> <profile> [run] [--yes]  upload that run's log to smapi.io (prompts unless --yes)
   logs search <query> [--profile <name>]  search all stored run logs
+  logs fixes <game> <profile> [run]       recognised SMAPI errors in that run and their fixes
   queue                                   the download queue
   queue retry|skip [<id>]                 retry or skip queued downloads
   queue pause|resume|clear                control the download queue
