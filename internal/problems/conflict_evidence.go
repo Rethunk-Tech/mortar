@@ -16,6 +16,7 @@ import (
 
 func conflictEvidence(kind string, hits []packHit) []ConflictEvidence {
 	out := []ConflictEvidence{}
+	var bounds [][]patchBounds
 	for _, hit := range hits {
 		patches, clashes := hit.edits, hit.clashes
 		if kind == "load" {
@@ -39,7 +40,10 @@ func conflictEvidence(kind string, hits []packHit) []ConflictEvidence {
 				FromFile: patch.fromFile,
 			}
 			if patch.image {
-				if ox, oy, ow, oh, ok := overlapAgainst(patch, hits, hit.id); ok {
+				if bounds == nil {
+					bounds = editBounds(hits)
+				}
+				if ox, oy, ow, oh, ok := overlapAgainst(patch, hits, bounds, hit.id); ok {
 					e.CropX, e.CropY, e.CropW, e.CropH = sourceCrop(patch, ox, oy, ow, oh)
 				}
 			}
@@ -88,23 +92,40 @@ func whenSummary(w cpWhen) string {
 	return strings.Join(parts, "; ")
 }
 
-func overlapAgainst(patch cpPatch, hits []packHit, self string) (x, y, w, h int, ok bool) {
+// patchBounds is one edit's destination rectangle, computed once per conflict rather than once per
+// pair of clashing patches.
+type patchBounds struct {
+	r  image.Rectangle
+	ok bool
+}
+
+func editBounds(hits []packHit) [][]patchBounds {
+	out := make([][]patchBounds, len(hits))
+	for i, hit := range hits {
+		out[i] = make([]patchBounds, len(hit.edits))
+		for j, edit := range hit.edits {
+			out[i][j].r, out[i][j].ok = destBounds(edit)
+		}
+	}
+	return out
+}
+
+func overlapAgainst(patch cpPatch, hits []packHit, bounds [][]patchBounds, self string) (x, y, w, h int, ok bool) {
 	own, ok := destBounds(patch)
 	if !ok {
 		return 0, 0, 0, 0, false
 	}
 	var inter image.Rectangle
 	found := false
-	for _, hit := range hits {
+	for i, hit := range hits {
 		if sameID(hit.id, self) {
 			continue
 		}
-		for _, other := range hit.edits {
-			peer, ok := destBounds(other)
-			if !ok {
+		for _, peer := range bounds[i] {
+			if !peer.ok {
 				continue
 			}
-			r := own.Intersect(peer)
+			r := own.Intersect(peer.r)
 			if r.Empty() {
 				continue
 			}
@@ -143,15 +164,12 @@ func destBounds(p cpPatch) (image.Rectangle, bool) {
 		}
 		if s.cells != "" {
 			for cell := range strings.SplitSeq(s.cells, ";") {
-				if cell == "" {
+				xs, ys, isCell := strings.Cut(cell, ",")
+				if !isCell {
 					continue
 				}
-				parts := strings.SplitN(cell, ",", 2)
-				if len(parts) != 2 {
-					continue
-				}
-				cx, errX := strconv.Atoi(parts[0])
-				cy, errY := strconv.Atoi(parts[1])
+				cx, errX := strconv.Atoi(xs)
+				cy, errY := strconv.Atoi(ys)
 				if errX != nil || errY != nil {
 					continue
 				}

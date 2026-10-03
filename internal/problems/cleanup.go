@@ -130,9 +130,11 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 		if containsMod(candidates, mod) {
 			continue
 		}
+		mentions := readContentPackForCleanup(mod).mentions
 		for _, candidate := range candidates {
-			if manifestUses(mod, candidate.UniqueID) || contentMentions(mod, candidate.UniqueID) {
-				recordTilesheetUse(uses[strings.ToLower(candidate.UniqueID)], mod)
+			id := strings.ToLower(candidate.UniqueID)
+			if manifestUses(mod, candidate.UniqueID) || mentions[id] {
+				recordTilesheetUse(uses[id], mod)
 			}
 		}
 	}
@@ -238,10 +240,6 @@ func manifestUses(mod Installed, uniqueID string) bool {
 	return slices.ContainsFunc(mod.Dependencies, func(dep manifest.Dependency) bool {
 		return sameID(dep.UniqueID, uniqueID)
 	})
-}
-
-func contentMentions(mod Installed, uniqueID string) bool {
-	return readContentPackForCleanup(mod).mentions[strings.ToLower(uniqueID)]
 }
 
 func recordTilesheetUse(use *tilesheetUse, mod Installed) {
