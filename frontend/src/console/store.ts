@@ -18,6 +18,9 @@ import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'
 import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+
+// Matches the backend's launch.MaxLines, so a long session keeps the same window the log file does.
+const MAX_CONSOLE_LINES = 20_000
 import { DEFAULT_FILTERS, type Filters, levelsFromFloor } from './filter.ts'
 import { pushCommand } from './history.ts'
 
@@ -93,7 +96,7 @@ export const useConsole = create<{
       const seen = Math.max(lastSeq(get().entries), get().cleared)
       const fresh = (entries ?? []).filter((e) => e.seq > seen)
       if (fresh.length > 0) {
-        set((s) => ({ entries: [...s.entries, ...fresh] }))
+        set((s) => ({ entries: [...s.entries, ...fresh].slice(-MAX_CONSOLE_LINES) }))
       }
     },
     reset: (game, profile) =>
