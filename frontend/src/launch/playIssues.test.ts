@@ -5,7 +5,7 @@ import type {
   Missing,
   Update,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import { playIssueSummary } from './playIssues.ts'
+import { overflowIssueCount, playIssueSummary } from './playIssues.ts'
 
 const missing = (over: Partial<Missing> = {}): Missing => ({
   dependentId: 'A.Mod',
@@ -93,6 +93,21 @@ test('playIssueSummary adds a last-profile group when the newest save used anoth
   ])
 })
 
+test('playIssueSummary names a missing requirement Unknown mod when the page has no name', () => {
+  expect(
+    playIssueSummary({
+      missing: [missing({ uniqueId: 'Need.This', where: null })],
+    }),
+  ).toEqual([
+    {
+      kind: 'missing',
+      count: 1,
+      names: ['Unknown mod'],
+      nameTitles: ['Need.This'],
+    },
+  ])
+})
+
 test('playIssueSummary groups required missing, non-cosmetic conflicts, updates, and broken or obsolete', () => {
   const names = ['A', 'B', 'C', 'D', 'E', 'F']
   expect(
@@ -125,4 +140,9 @@ test('playIssueSummary groups required missing, non-cosmetic conflicts, updates,
     { kind: 'updates', count: 6, names: ['A', 'B', 'C', 'D', 'E'] },
     { kind: 'broken', count: 1, names: ['Old'] },
   ])
+})
+
+test('overflowIssueCount is the names past the five shown', () => {
+  expect(overflowIssueCount({ count: 6, names: ['A', 'B', 'C', 'D', 'E'] })).toBe(1)
+  expect(overflowIssueCount({ count: 2, names: ['A', 'B'] })).toBe(0)
 })

@@ -22,25 +22,40 @@ interface PlayIssueGroup {
   kind: PlayIssueKind
   count: number
   names: string[]
+  nameTitles?: string[]
   save?: string
   profileName?: string
   switchProfileId?: string
 }
 
-function groupOf(kind: PlayIssueKind, labels: string[]): PlayIssueGroup | null {
-  if (labels.length === 0) {
+function groupOf(
+  kind: PlayIssueKind,
+  entries: { name: string; title?: string }[],
+): PlayIssueGroup | null {
+  if (entries.length === 0) {
     return null
   }
-  return { kind, count: labels.length, names: labels.slice(0, PLAY_ISSUE_NAME_CAP) }
+  const slice = entries.slice(0, PLAY_ISSUE_NAME_CAP)
+  const titles = slice.map((entry) => entry.title ?? '')
+  return {
+    kind,
+    count: entries.length,
+    names: slice.map((entry) => entry.name),
+    ...(titles.some((title) => title !== '') ? { nameTitles: titles } : {}),
+  }
 }
 
-function missingName(m: Missing): string {
-  return m.where?.pageName || m.uniqueId
+function missingName(m: Missing): { name: string; title?: string } {
+  const page = (m.where?.pageName ?? '').trim()
+  if (page !== '') {
+    return { name: page }
+  }
+  return { name: 'Unknown mod', title: m.uniqueId }
 }
 
-function conflictName(c: AssetConflict): string {
+function conflictName(c: AssetConflict): { name: string } {
   const names = (c.names ?? []).filter((n) => n !== '')
-  return names.length > 0 ? names.join(', ') : c.target
+  return { name: names.length > 0 ? names.join(', ') : c.target }
 }
 
 function playIssueSummary(input: {
@@ -62,13 +77,13 @@ function playIssueSummary(input: {
   )
   const updates = groupOf(
     'updates',
-    (input.updates ?? []).map((u) => u.name),
+    (input.updates ?? []).map((u) => ({ name: u.name })),
   )
   const broken = groupOf(
     'broken',
     (input.broken ?? [])
       .filter((b) => b.status === 'broken' || b.status === 'obsolete')
-      .map((b) => b.name),
+      .map((b) => ({ name: b.name })),
   )
   for (const g of [missing, conflicts, updates, broken]) {
     if (g) {
@@ -123,5 +138,9 @@ async function gatherPlayIssues(game: string, profileId: string): Promise<PlayIs
   })
 }
 
+function overflowIssueCount(group: Pick<PlayIssueGroup, 'count' | 'names'>): number {
+  return Math.max(0, group.count - group.names.length)
+}
+
 export type { PlayIssueGroup, PlayIssueKind }
-export { gatherPlayIssues, playIssueSummary }
+export { gatherPlayIssues, overflowIssueCount, playIssueSummary }

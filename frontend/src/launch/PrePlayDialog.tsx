@@ -20,6 +20,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import type { PlayIssueGroup } from './playIssues.ts'
+import { overflowIssueCount } from './playIssues.ts'
 import { useLaunch } from './store.ts'
 
 function GroupHeading({ group }: { group: PlayIssueGroup }) {
@@ -53,6 +54,8 @@ function persistSkip(game: string, profile: string, on: boolean) {
 }
 
 function Group({ group }: { group: PlayIssueGroup }) {
+  const { t } = useLingui()
+  const extra = overflowIssueCount(group)
   return (
     <>
       <Typography sx={{ mt: 1.5, fontWeight: 600 }}>
@@ -60,11 +63,19 @@ function Group({ group }: { group: PlayIssueGroup }) {
       </Typography>
       {group.names.length === 0 ? null : (
         <List dense={true}>
-          {group.names.map((name) => (
+          {group.names.map((name, i) => (
             <ListItem key={name} disableGutters={true}>
-              <ListItemText primary={name} />
+              <ListItemText
+                primary={name}
+                slotProps={{ primary: { title: group.nameTitles?.[i] } }}
+              />
             </ListItem>
           ))}
+          {extra > 0 ? (
+            <ListItem disableGutters={true}>
+              <ListItemText primary={t`and ${extra} more`} />
+            </ListItem>
+          ) : null}
         </List>
       )}
     </>
@@ -81,10 +92,16 @@ export function PrePlayDialog() {
   const skip = check?.skipPlayCheck ?? false
   const hasUpdates = (check?.groups ?? []).some((g) => g.kind === 'updates')
   const lastProfile = (check?.groups ?? []).find((g) => g.kind === 'lastProfile')
+  const persistThen = (fn: () => void) => {
+    if (check) {
+      persistSkip(check.game, check.profile, check.skipPlayCheck)
+    }
+    fn()
+  }
   return (
     <Dialog
       open={check !== null}
-      onClose={cancel}
+      onClose={() => persistThen(cancel)}
       transitionDuration={0}
       slotProps={{ paper: { sx: { maxWidth: 480 } } }}
     >
@@ -102,7 +119,6 @@ export function PrePlayDialog() {
               onChange={(_, on) => {
                 if (check) {
                   useLaunch.setState({ playCheck: { ...check, skipPlayCheck: on } })
-                  persistSkip(check.game, check.profile, on)
                 }
               }}
             />
@@ -111,11 +127,17 @@ export function PrePlayDialog() {
         />
       </DialogContent>
       <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
-        <Button onClick={cancel} sx={{ whiteSpace: 'nowrap' }}>{t`Cancel`}</Button>
-        <Button onClick={openProblems} sx={{ whiteSpace: 'nowrap' }}>{t`Open problems`}</Button>
+        <Button
+          onClick={() => persistThen(cancel)}
+          sx={{ whiteSpace: 'nowrap' }}
+        >{t`Cancel`}</Button>
+        <Button
+          onClick={() => persistThen(openProblems)}
+          sx={{ whiteSpace: 'nowrap' }}
+        >{t`Open problems`}</Button>
         {hasUpdates ? (
           <Button
-            onClick={() => updateAndPlay().catch(reportUnexpected)}
+            onClick={() => persistThen(() => updateAndPlay().catch(reportUnexpected))}
             sx={{ whiteSpace: 'nowrap' }}
           >
             {t`Update and play`}
@@ -123,10 +145,12 @@ export function PrePlayDialog() {
         ) : null}
         {lastProfile?.switchProfileId ? (
           <Button
-            onClick={() => {
-              useProfiles.getState().open(lastProfile.switchProfileId ?? '')
-              cancel()
-            }}
+            onClick={() =>
+              persistThen(() => {
+                useProfiles.getState().open(lastProfile.switchProfileId ?? '')
+                cancel()
+              })
+            }
             sx={{ whiteSpace: 'nowrap' }}
           >
             {t`Switch profile`}
@@ -134,7 +158,7 @@ export function PrePlayDialog() {
         ) : null}
         <Button
           variant="contained"
-          onClick={() => playAnyway().catch(reportUnexpected)}
+          onClick={() => persistThen(() => playAnyway().catch(reportUnexpected))}
           sx={{ whiteSpace: 'nowrap' }}
         >
           {t`Play anyway`}
