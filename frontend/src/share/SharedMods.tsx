@@ -37,7 +37,7 @@ export function SharedMods({ info, notIn }: { info: ShownInfo; notIn: string }) 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, p: '16px 24px' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexWrap: 'wrap' }}>
           <Typography sx={{ fontSize: 15, fontWeight: 600 }}>
-            {plural(names.length, { one: '# mod included', other: '# mods included' })}
+            {plural(info.count, { one: '# mod included', other: '# mods included' })}
           </Typography>
           {info.groups.map((g) => (
             <Box
@@ -51,7 +51,7 @@ export function SharedMods({ info, notIn }: { info: ShownInfo; notIn: string }) 
                 fontSize: 12,
               }}
             >
-              {source(g.source, g.mods.length)}
+              {source(g.source, g.count)}
             </Box>
           ))}
         </Box>

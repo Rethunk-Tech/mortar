@@ -162,6 +162,7 @@ type Omitted struct {
 // Group is the shared mods of one source: "nexus" or "github".
 type Group struct {
 	Source string   `json:"source"`
+	Count  int      `json:"count"`
 	Mods   []string `json:"mods"`
 }
 
@@ -250,8 +251,8 @@ func describe(p profile.Profile, include ...share.Include) (Info, error) {
 	if len(include) > 0 {
 		inc = include[0]
 	}
-	shared, left, off := share.Collect(p, inc)
-	info := Info{Name: p.Name, Limit: DiscordLimit, Count: len(shared.Entries), Groups: []Group{}, LeftOut: []Omitted{}}
+	_, left, off := share.Collect(p, inc)
+	info := Info{Name: p.Name, Limit: DiscordLimit, Groups: []Group{}, LeftOut: []Omitted{}}
 	res, err := share.Encode(p, inc)
 	switch {
 	case err == nil:
@@ -285,6 +286,8 @@ func describe(p profile.Profile, include ...share.Include) (Info, error) {
 			g = &info.Groups[len(info.Groups)-1]
 			groups[e.Source.Kind] = g
 		}
+		g.Count++
+		info.Count++
 		for _, name := range entryNames(e, false) {
 			if !slices.Contains(g.Mods, name) {
 				g.Mods = append(g.Mods, name)

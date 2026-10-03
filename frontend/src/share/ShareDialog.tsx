@@ -287,6 +287,7 @@ function CopyModList() {
   const setFormat = useShareDialog((s) => s.setListFormat)
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === profileId))
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const [partsAnchor, setPartsAnchor] = useState<HTMLElement | null>(null)
   const items = listItems(profile, keys)
   const labels = { enabled: t`Enabled`, disabled: t`Disabled` }
   const parts = formatModList(format, items, labels)
@@ -298,26 +299,19 @@ function CopyModList() {
   return (
     <>
       <ButtonGroup variant="outlined" color="inherit" sx={{ mr: 5 }}>
-        {format === 'discord' && parts.length > 1 ? (
-          parts.map((part) => (
-            <Button
-              key={part.id}
-              startIcon={<Copy size={16} />}
-              onClick={() => copyText(part.text, t`Copied part ${part.n}`)}
-              sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
-            >
-              {t`Copy part ${part.n}`}
-            </Button>
-          ))
-        ) : (
-          <Button
-            startIcon={<List size={16} />}
-            onClick={() => copyText(parts[0]?.text ?? '', t`Mod list copied`)}
-            sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
-          >
-            {t`Copy mod list`}
-          </Button>
-        )}
+        <Button
+          startIcon={<List size={16} />}
+          onClick={(e) => {
+            if (parts.length > 1) {
+              setPartsAnchor(e.currentTarget)
+              return
+            }
+            copyText(parts[0]?.text ?? '', t`Mod list copied`)
+          }}
+          sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
+        >
+          {parts.length > 1 ? t`Copy mod list (${parts.length} parts)` : t`Copy mod list`}
+        </Button>
         <Button
           aria-label={t`Mod list format`}
           endIcon={<ChevronDown size={14} />}
@@ -352,6 +346,28 @@ function CopyModList() {
             </MenuItem>
           )
         })}
+      </Menu>
+      <Menu
+        open={Boolean(partsAnchor)}
+        anchorEl={partsAnchor}
+        onClose={() => setPartsAnchor(null)}
+        transitionDuration={0}
+        slotProps={{ paper }}
+      >
+        {parts.map((part) => (
+          <MenuItem
+            key={part.id}
+            onClick={() => {
+              copyText(part.text, t`Copied part ${part.n}`)
+              setPartsAnchor(null)
+            }}
+          >
+            <ListItemIcon sx={{ color: 'inherit' }}>
+              <Copy size={16} />
+            </ListItemIcon>
+            <ListItemText>{t`Copy part ${part.n} of ${parts.length}`}</ListItemText>
+          </MenuItem>
+        ))}
       </Menu>
     </>
   )

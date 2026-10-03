@@ -42,7 +42,7 @@ msgstr "Launch method"
 msgid "Hidden on Nexus · {0}"
 msgstr "Hidden on Nexus · {0}"
 
-#. placeholder {0}: names.length
+#. placeholder {0}: info.count
 #: src/share/SharedMods.tsx:40
 msgid "{0, plural, one {# mod included} other {# mods included}}"
 msgstr "{0, plural, one {# mod included} other {# mods included}}"
@@ -165,7 +165,7 @@ msgstr "Open storage settings"
 msgid "Updated"
 msgstr "Updated"
 
-#: src/mods/problemFix/WinFix.tsx:90
+#: src/mods/problemFix/WinFix.tsx:96
 msgid "Make {name} win"
 msgstr "Make {name} win"
 
@@ -182,7 +182,7 @@ msgstr "Make {name} win"
 #: src/mods/parts.tsx:375
 #: src/mods/parts.tsx:380
 #: src/mods/parts.tsx:391
-#: src/mods/problemFix/WinFix.tsx:51
+#: src/mods/problemFix/WinFix.tsx:57
 #: src/mods/SelectionBarActions.tsx:104
 #: src/mods/Toolbar.tsx:251
 #: src/saves/lackChipActions.tsx:42
@@ -217,7 +217,7 @@ msgstr "{name} broke in {brokeIn}."
 msgid "Snapshot diff"
 msgstr "Snapshot diff"
 
-#: src/share/ShareDialog.tsx:389
+#: src/share/ShareDialog.tsx:405
 msgid "Could not save the file"
 msgstr "Could not save the file"
 
@@ -501,7 +501,7 @@ msgid "Updated on Nexus"
 msgstr "Updated on Nexus"
 
 #: src/console/CrashDialog.tsx:184
-#: src/mods/problemFix/AssetFix.tsx:83
+#: src/mods/problemFix/AssetFix.tsx:100
 #: src/mods/problemFix/BrokenFix.tsx:70
 #: src/mods/problemFix/ListedFix.tsx:26
 #: src/mods/problemFix/SettingFix.tsx:101
@@ -692,7 +692,7 @@ msgstr "Rename"
 msgid "Add to {targetName}"
 msgstr "Add to {targetName}"
 
-#: src/share/ShareDialog.tsx:402
+#: src/share/ShareDialog.tsx:418
 msgid "A .mortar file holds the same mods as the link, plus the settings files (.json) each mod has written. Send it to someone, and they open it from Mortar's Import."
 msgstr "A .mortar file holds the same mods as the link, plus the settings files (.json) each mod has written. Send it to someone, and they open it from Mortar's Import."
 
@@ -700,7 +700,7 @@ msgstr "A .mortar file holds the same mods as the link, plus the settings files 
 msgid "Turn off"
 msgstr "Turn off"
 
-#: src/mods/problemFix/WinFix.tsx:82
+#: src/mods/problemFix/WinFix.tsx:88
 msgid "Make a pack win"
 msgstr "Make a pack win"
 
@@ -779,7 +779,7 @@ msgstr "Switch to Problems"
 msgid "switched off"
 msgstr "switched off"
 
-#: src/share/ShareDialog.tsx:315
+#: src/share/ShareDialog.tsx:309
 msgid "Mod list copied"
 msgstr "Mod list copied"
 
@@ -1124,7 +1124,7 @@ msgstr "Roll back"
 msgid "Windows Firewall blocks incoming sends to Mortar"
 msgstr "Windows Firewall blocks incoming sends to Mortar"
 
-#: src/share/ShareDialog.tsx:439
+#: src/share/ShareDialog.tsx:455
 msgid "Not in the file"
 msgstr "Not in the file"
 
@@ -1221,7 +1221,7 @@ msgstr "Skip"
 msgid "Nothing in the queue needs a decision."
 msgstr "Nothing in the queue needs a decision."
 
-#: src/share/ShareDialog.tsx:318
+#: src/share/ShareDialog.tsx:313
 msgid "Copy mod list"
 msgstr "Copy mod list"
 
@@ -1396,7 +1396,7 @@ msgstr "Files added"
 msgid "Loading bundles…"
 msgstr "Loading bundles…"
 
-#: src/mods/problemFixButtons.tsx:155
+#: src/mods/problemFixButtons.tsx:156
 msgid "Forget"
 msgstr "Forget"
 
@@ -1665,7 +1665,7 @@ msgstr "Compact"
 #: src/console/RunProblems.tsx:76
 #: src/install/store.ts:171
 #: src/install/store.ts:232
-#: src/mods/problemFix/WinFix.tsx:70
+#: src/mods/problemFix/WinFix.tsx:76
 #: src/mods/SplitCombineItems.tsx:38
 #: src/mods/storeEntries.ts:55
 #: src/mods/storeEntries.ts:92
@@ -2076,7 +2076,7 @@ msgstr "Both set: {0}"
 msgid " · {0} more required"
 msgstr " · {0} more required"
 
-#: src/mods/problemFixButtons.tsx:169
+#: src/mods/problemFixButtons.tsx:170
 msgid "Keep my changes"
 msgstr "Keep my changes"
 
@@ -2850,7 +2850,7 @@ msgstr "Could not read bundles"
 #: src/mods/ModCards.tsx:442
 #: src/mods/ModList.tsx:393
 #: src/mods/Toolbar.tsx:59
-#: src/share/ShareDialog.tsx:291
+#: src/share/ShareDialog.tsx:292
 msgid "Disabled"
 msgstr "Disabled"
 
@@ -3082,7 +3082,7 @@ msgstr "Freed {0}"
 msgid "Set category"
 msgstr "Set category"
 
-#: src/share/ShareDialog.tsx:384
+#: src/share/ShareDialog.tsx:400
 msgid "File saved"
 msgstr "File saved"
 
@@ -3243,7 +3243,7 @@ msgid "Play without mods"
 msgstr "Play without mods"
 
 #. placeholder {0}: skipped.length
-#: src/share/ShareDialog.tsx:425
+#: src/share/ShareDialog.tsx:441
 msgid "{0, plural, one {# settings file was left out (too large or an unusual name):} other {# settings files were left out (too large or an unusual name):}}"
 msgstr "{0, plural, one {# settings file was left out (too large or an unusual name):} other {# settings files were left out (too large or an unusual name):}}"
 
@@ -3715,7 +3715,7 @@ msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
 #. placeholder {0}: part.n
-#: src/share/ShareDialog.tsx:306
+#: src/share/ShareDialog.tsx:361
 msgid "Copied part {0}"
 msgstr "Copied part {0}"
 
@@ -4349,7 +4349,7 @@ msgstr "Roll back {0}?"
 msgid "Show {0} in its profile"
 msgstr "Show {0} in its profile"
 
-#: src/share/ShareDialog.tsx:322
+#: src/share/ShareDialog.tsx:316
 msgid "Mod list format"
 msgstr "Mod list format"
 
@@ -4455,7 +4455,7 @@ msgstr "Add to group…"
 msgid "Restore {0}"
 msgstr "Restore {0}"
 
-#: src/mods/problemFixButtons.tsx:178
+#: src/mods/problemFixButtons.tsx:179
 #: src/profiles/HistoryEventRow.tsx:56
 msgid "Revert"
 msgstr "Revert"
@@ -5793,7 +5793,7 @@ msgstr "CurseForge"
 msgid "{n, plural, one {# update} other {# updates}}"
 msgstr "{n, plural, one {# update} other {# updates}}"
 
-#: src/share/ShareDialog.tsx:296
+#: src/share/ShareDialog.tsx:297
 msgid "Discord"
 msgstr "Discord"
 
@@ -6121,7 +6121,7 @@ msgstr "Include config files"
 msgid "Remove {dir}"
 msgstr "Remove {dir}"
 
-#: src/share/ShareDialog.tsx:295
+#: src/share/ShareDialog.tsx:296
 msgid "Plain text"
 msgstr "Plain text"
 
@@ -6312,6 +6312,12 @@ msgstr "What the sidebar shows on profile badges"
 #: src/settings/sections/General.tsx:126
 msgid "Sharing"
 msgstr "Sharing"
+
+#. placeholder {0}: part.n
+#. placeholder {1}: parts.length
+#: src/share/ShareDialog.tsx:368
+msgid "Copy part {0} of {1}"
+msgstr "Copy part {0} of {1}"
 
 #: src/settings/prefCopy.ts:178
 msgid "Follow system"
@@ -6678,7 +6684,7 @@ msgstr "Auto-enable requirements"
 #: src/profiles/CompareBulkBody.tsx:245
 #: src/profiles/ProfilesPage.tsx:305
 #: src/profiles/ProfilesPage.tsx:316
-#: src/share/ShareDialog.tsx:291
+#: src/share/ShareDialog.tsx:292
 msgid "Enabled"
 msgstr "Enabled"
 
@@ -6796,7 +6802,7 @@ msgid "Some files could not be checked against Nexus, so a few may differ from w
 msgstr "Some files could not be checked against Nexus, so a few may differ from what was shared."
 
 #. placeholder {0}: fix.name
-#: src/mods/problemFix/AssetFix.tsx:42
+#: src/mods/problemFix/AssetFix.tsx:47
 msgid "In {0}; turns off its edits here"
 msgstr "In {0}; turns off its edits here"
 
@@ -6858,7 +6864,7 @@ msgstr "Install {name}?"
 #: src/console/CrashDialog.tsx:60
 #: src/console/RunProblems.tsx:114
 #: src/launch/LaunchLayer.tsx:319
-#: src/mods/problemFix/AssetFix.tsx:52
+#: src/mods/problemFix/AssetFix.tsx:65
 #: src/mods/problemFix/BrokenFix.tsx:75
 #: src/mods/problemFix/DismissedBrokenFix.tsx:50
 #: src/mods/runErrorFixButtons.tsx:55
@@ -6980,7 +6986,7 @@ msgstr "Switch to Saves"
 #: src/mods/ModMenu.tsx:284
 #: src/mods/parts.tsx:318
 #: src/mods/parts.tsx:393
-#: src/mods/problemFixButtons.tsx:131
+#: src/mods/problemFixButtons.tsx:132
 #: src/mods/SelectionBarActions.tsx:130
 #: src/settings/sections/DataStoreReport.tsx:395
 #: src/settings/sections/DataStoreReport.tsx:402
@@ -7315,7 +7321,7 @@ msgstr "Check the file hash when Nexus provides one"
 msgid "{0} needs {1}"
 msgstr "{0} needs {1}"
 
-#: src/share/ShareDialog.tsx:294
+#: src/share/ShareDialog.tsx:295
 msgid "Markdown"
 msgstr "Markdown"
 
@@ -7400,7 +7406,7 @@ msgid "First profile"
 msgstr "First profile"
 
 #. placeholder {0}: saved.path
-#: src/share/ShareDialog.tsx:419
+#: src/share/ShareDialog.tsx:435
 msgid "Saved to {0}"
 msgstr "Saved to {0}"
 
@@ -7508,6 +7514,11 @@ msgstr "Drop to install into {0}"
 msgid "Newer."
 msgstr "Newer."
 
+#. placeholder {0}: parts.length
+#: src/share/ShareDialog.tsx:313
+msgid "Copy mod list ({0} parts)"
+msgstr "Copy mod list ({0} parts)"
+
 #: src/launch/KnownGoodOffer.tsx:63
 #: src/profiles/HistoryToolbar.tsx:17
 msgid "Mark known good"
@@ -7550,7 +7561,7 @@ msgstr "Navigation"
 
 #. placeholder {0}: fix.field
 #. placeholder {1}: fix.value
-#: src/mods/problemFix/AssetFix.tsx:45
+#: src/mods/problemFix/AssetFix.tsx:50
 msgid "Set {0} to {1}"
 msgstr "Set {0} to {1}"
 
@@ -7589,11 +7600,6 @@ msgstr "Acknowledge caution to include"
 #: src/queue/QueueSheet.tsx:92
 msgid "Resume"
 msgstr "Resume"
-
-#. placeholder {0}: part.n
-#: src/share/ShareDialog.tsx:309
-msgid "Copy part {0}"
-msgstr "Copy part {0}"
 
 #: src/profiles/LaunchOptionsBlock.tsx:82
 msgid "Preset name"
@@ -8422,7 +8428,7 @@ msgid "Check this download"
 msgstr "Check this download"
 
 #: src/settings/sections/AboutDiagnostics.tsx:169
-#: src/share/ShareDialog.tsx:414
+#: src/share/ShareDialog.tsx:430
 msgid "Save…"
 msgstr "Save…"
 
@@ -8638,11 +8644,11 @@ msgstr "UI scale ({value}%)"
 msgid "rate limit"
 msgstr "rate limit"
 
-#: src/mods/problemFix/AssetFix.tsx:66
+#: src/mods/problemFix/AssetFix.tsx:82
 #: src/mods/problemFix/DismissedBrokenFix.tsx:59
 #: src/mods/problemFix/MissingFix.tsx:36
 #: src/mods/problemFix/SettingFix.tsx:69
-#: src/mods/problemFixButtons.tsx:146
+#: src/mods/problemFixButtons.tsx:147
 #: src/profiles/ProfilesPage.tsx:94
 #: src/saves/BackupsDialog.tsx:113
 #: src/saves/BackupsDialog.tsx:262
@@ -9050,7 +9056,7 @@ msgstr "Sound volume ({value}%)"
 msgid "Reuse FOMOD choices"
 msgstr "Reuse FOMOD choices"
 
-#: src/mods/problemFixButtons.tsx:122
+#: src/mods/problemFixButtons.tsx:123
 msgid "Adopt"
 msgstr "Adopt"
 
