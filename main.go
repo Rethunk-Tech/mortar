@@ -214,7 +214,7 @@ func run() error {
 	logPath := filepath.Join(dataDir, "mortar.log")
 	_ = os.Rename(logPath, filepath.Join(dataDir, "mortar.prev.log"))
 	if logFile, err := fsx.OpenFile(logPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600); err == nil {
-		out := io.MultiWriter(os.Stderr, logFile)
+		out := io.MultiWriter(os.Stderr, &cappedWriter{w: logFile, left: maxLogBytes})
 		log.SetOutput(out)
 		slog.SetDefault(slog.New(slog.NewTextHandler(out, nil)))
 	}
