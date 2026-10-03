@@ -180,9 +180,10 @@ function Row({
       <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '14px' }}>
         {openable && lastPlayedId ? (
           <Button
-            component="span"
+            type="button"
             variant="contained"
             size="large"
+            aria-label={t`Play ${lastPlayedName}`}
             startIcon={<Play size={22} fill="currentColor" />}
             onClick={playLast}
             sx={{
@@ -222,7 +223,7 @@ function Row({
     fontFamily: 'inherit',
   } as const
   return openable ? (
-    <ButtonBase onClick={open} sx={sx}>
+    <ButtonBase component="div" onClick={open} aria-label={t`Open ${game.name}`} sx={sx}>
       {content}
     </ButtonBase>
   ) : (

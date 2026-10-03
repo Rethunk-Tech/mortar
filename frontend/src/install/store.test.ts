@@ -6,7 +6,13 @@ import { useLaunch } from '../launch/store.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useToasts } from '../toasts/store.ts'
-import { entryForNames, shouldConsiderMissing, undoArchiveInstall, useInstall } from './store.ts'
+import {
+  dropInstallGate,
+  entryForNames,
+  shouldConsiderMissing,
+  undoArchiveInstall,
+  useInstall,
+} from './store.ts'
 
 const calls = {
   remove: [] as string[],
@@ -97,6 +103,13 @@ test('undo of an archive install does nothing while the profile is locked', asyn
   })
   await undoArchiveInstall('stardew', 'p1', 'k1', false)
   expect(calls.remove).toEqual([])
+})
+
+test('dropInstallGate toasts locked as locked and other missing context as skip', () => {
+  expect(dropInstallGate(true, true, true)).toBe('locked')
+  expect(dropInstallGate(true, true, false)).toBe('ok')
+  expect(dropInstallGate(false, true, true)).toBe('skip')
+  expect(dropInstallGate(true, false, true)).toBe('skip')
 })
 
 test('missing-deps offers skip when the open profile is no longer the install target', () => {

@@ -32,6 +32,16 @@ import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type MissingOffer, offersFor, wantsOf } from './missingDeps.ts'
 
+function dropInstallGate(hasRoute: boolean, hasTarget: boolean, locked: boolean) {
+  if (!(hasRoute && hasTarget)) {
+    return 'skip' as const
+  }
+  if (locked) {
+    return 'locked' as const
+  }
+  return 'ok' as const
+}
+
 function startingProfile() {
   const { starting, startingProfile: id } = useLaunch.getState()
   return starting ? id : ''
@@ -292,12 +302,19 @@ export const useInstall = create<{
   install: async (paths) => {
     const { game, openId, profiles } = useProfiles.getState()
     const profile = profiles.find((p) => p.id === openId)
-    if (
-      routeGame(useNav.getState().route) === null ||
-      !game ||
-      !profile ||
-      isLocked(useLaunch.getState().status, openId, startingProfile())
-    ) {
+    const gate = dropInstallGate(
+      routeGame(useNav.getState().route) !== null,
+      Boolean(game && profile),
+      isLocked(useLaunch.getState().status, openId, startingProfile()),
+    )
+    if (gate === 'skip') {
+      return
+    }
+    if (gate === 'locked') {
+      useToasts.getState().push({
+        kind: 'warning',
+        title: i18n._(msg`Stop the game to change mods.`),
+      })
       return
     }
     const { push } = useToasts.getState()
@@ -372,4 +389,4 @@ export function considerMissing(dependentIds: readonly string[]) {
 }
 
 export type { RemapSession }
-export { entryForNames, shouldConsiderMissing, undoArchiveInstall }
+export { dropInstallGate, entryForNames, shouldConsiderMissing, undoArchiveInstall }

@@ -21,7 +21,9 @@ import { paper } from '../mods/paper.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorDetails, errorMessage } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { BisectDialog } from './BisectDialog.tsx'
+import { crashCauseDetailLine, crashCauseKind } from './crashCause.ts'
 import { useConsole } from './store.ts'
 
 export function CrashDialog() {
@@ -32,6 +34,7 @@ export function CrashDialog() {
     null,
   )
   const [bisectError, setBisectError] = useState<string | null>(null)
+  const [switching, setSwitching] = useState(false)
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === crash?.profile))
   const mod = useMods((s) => s.mods.find((m) => m.key === crash?.cause?.modKey))
   if (!crash) {
@@ -56,6 +59,15 @@ export function CrashDialog() {
       setBisectError(error instanceof Error ? error.message : String(error))
     }
   }
+  const causeKind = crash.cause ? crashCauseKind(crash.cause.reason) : ''
+  let causeBody = crash.cause ? crashCauseDetailLine(crash.cause.detail) : ''
+  if (causeKind === 'missing-file') {
+    causeBody = t`A file it needs could not be opened.`
+  } else if (causeKind === 'asset-load') {
+    causeBody = t`It could not load an asset.`
+  } else if (causeKind === 'mod-exception') {
+    causeBody = t`It encountered an error.`
+  }
   return (
     <>
       <Dialog
@@ -71,7 +83,9 @@ export function CrashDialog() {
           {crash.cause ? (
             <Box sx={{ fontSize: 14 }}>
               <Box sx={{ fontWeight: 700 }}>{t`Caused by ${crash.cause.modName}`}</Box>
-              <Box sx={{ color: 'text.secondary', mt: 0.25 }}>{crash.cause.detail}</Box>
+              <Box sx={{ color: 'text.secondary', mt: 0.25 }} title={crash.cause.detail}>
+                {causeBody}
+              </Box>
             </Box>
           ) : null}
           {crash.mods === null || crash.mods.length === 0 ? (
@@ -100,12 +114,25 @@ export function CrashDialog() {
           </Button>
           {mod ? (
             <Button
-              onClick={() =>
+              disabled={switching}
+              onClick={() => {
+                setSwitching(true)
                 useMods
                   .getState()
                   .setEnabled(mod, false)
+                  .then(() => {
+                    useToasts.getState().push({
+                      kind: 'success',
+                      title: t`Switched off ${mod.name}`,
+                      action: {
+                        label: t`Undo`,
+                        run: () => useMods.getState().setEnabled(mod, true),
+                      },
+                    })
+                  })
                   .catch(() => undefined)
-              }
+                  .finally(() => setSwitching(false))
+              }}
             >
               {t`Switch off`}
             </Button>
@@ -148,7 +175,7 @@ export function CrashDialog() {
             }}
             sx={{ whiteSpace: 'nowrap' }}
           >
-            {t`Open Console`}
+            {t`Open console`}
           </Button>
         </DialogActions>
       </Dialog>

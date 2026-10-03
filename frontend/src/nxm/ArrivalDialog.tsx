@@ -100,8 +100,11 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
     >
       <DialogTitle>{t`Install ${name}?`}</DialogTitle>
       <DialogContent>
-        <DialogContentText sx={{ mb: 1 }}>
-          {t`File ${arrival.link.fileId} · version ${arrival.link.key}`}
+        <DialogContentText
+          sx={{ mb: 1 }}
+          title={t`File ${arrival.link.fileId} · ${arrival.link.key}`}
+        >
+          {t`File from Nexus`}
         </DialogContentText>
         {arrivals.length > 1 ? (
           <DialogContentText sx={{ mb: 1 }}>
