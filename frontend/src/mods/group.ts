@@ -92,19 +92,12 @@ function profileTags(entries: readonly Entry[] | null | undefined): string[] {
   return out
 }
 
+function isGroupBy(by: string | null | undefined): by is GroupBy {
+  return (GROUP_BY_IDS as readonly (string | null | undefined)[]).includes(by)
+}
+
 function sanitizeListGroupBy(by: string | null | undefined): GroupBy {
-  if (
-    by === 'category' ||
-    by === 'source' ||
-    by === 'tag' ||
-    by === 'none' ||
-    by === 'status' ||
-    by === 'framework' ||
-    by === 'author'
-  ) {
-    return by
-  }
-  return 'status'
+  return isGroupBy(by) ? by : 'status'
 }
 
 function statusGroupKey(hasProblem: boolean, hasUpdate: boolean, enabled: boolean): StatusGroup {
