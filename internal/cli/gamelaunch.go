@@ -6,13 +6,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/control"
 )
 
-func (c *cmd) gameCmd() error {
-	if len(c.args) < 2 {
-		return usageError{"game needs steam-launch-option"}
-	}
-	if c.args[1] != "steam-launch-option" {
-		return usageError{"unknown game command " + c.args[1]}
-	}
+func (c *cmd) gameSteamLaunchOption() error {
 	a, err := c.need(2, "a game")
 	if err != nil {
 		return err

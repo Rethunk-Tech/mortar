@@ -21,7 +21,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { colorHex, MAX_DESCRIPTION, PROFILE_COLORS, PROFILE_ICONS } from './appearance.ts'
 import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
 import { GameSettings, type GameSettingsValues } from './GameSettings.tsx'
-import { LaunchPreview } from './LaunchPreview.tsx'
+import { LaunchOptionsBlock } from './LaunchOptionsBlock.tsx'
 import { OverridesSection } from './OverrideRows.tsx'
 import { foldedOverrides } from './overrideValue.ts'
 import { ProfileMark } from './ProfileMark.tsx'
@@ -304,59 +304,17 @@ function ProfileFields({
           root: { sx: { userSelect: 'text' } },
         }}
       />
-      <TextField
-        fullWidth={true}
-        margin="dense"
-        label={t`Launch options`}
-        value={launchOptions}
-        onChange={(event) => {
-          onLaunchOptions(event.target.value)
-          onLaunchError(null)
-        }}
-        error={launchError?.field === 'options'}
-        helperText={
-          (launchError?.field === 'options' && launchError.message) ||
-          t`Extra SMAPI arguments for this profile. Mortar already sets the mods folder.`
-        }
-        slotProps={{ root: { sx: { userSelect: 'text' } } }}
-      />
-      <TextField
-        fullWidth={true}
-        margin="dense"
-        label={t`Launch prefix`}
-        value={launchPrefix}
-        onChange={(event) => {
-          onLaunchPrefix(event.target.value)
-          onLaunchError(null)
-        }}
-        error={launchError?.field === 'settings'}
-        helperText={t`Prefix for direct launches only (for example, gamemoderun mangohud). On Windows, prefixes are unavailable.`}
-        slotProps={{ root: { sx: { userSelect: 'text' } } }}
-      />
-      <TextField
-        fullWidth={true}
-        margin="dense"
-        multiline={true}
-        minRows={2}
-        label={t`Launch environment`}
-        value={launchEnv}
-        onChange={(event) => {
-          onLaunchEnv(event.target.value)
-          onLaunchError(null)
-        }}
-        error={launchError?.field === 'settings'}
-        helperText={
-          (launchError?.field === 'settings' && launchError.message) ||
-          t`One VAR=value per line; applies to direct launches only. Steam launches do not receive these settings.`
-        }
-        slotProps={{ root: { sx: { userSelect: 'text' } } }}
-      />
-      <LaunchPreview
+      <LaunchOptionsBlock
         gameId={gameId}
         profileId={profile.id}
-        options={launchOptions}
-        prefix={launchPrefix}
-        env={launchEnv}
+        launchOptions={launchOptions}
+        onLaunchOptions={onLaunchOptions}
+        launchPrefix={launchPrefix}
+        onLaunchPrefix={onLaunchPrefix}
+        launchEnv={launchEnv}
+        onLaunchEnv={onLaunchEnv}
+        launchError={launchError}
+        onLaunchError={onLaunchError}
       />
       <OverridesSection overrides={overrides} onChange={onOverrides} />
       <GameSettings profileId={profile.id} value={gameSettings} onChange={onGameSettings} />

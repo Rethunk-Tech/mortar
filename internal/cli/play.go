@@ -12,6 +12,12 @@ type playCheckError struct{ code int }
 func (e playCheckError) Error() string { return "play check found issues" }
 
 func (c *cmd) play() error {
+	if c.testFlag && c.check {
+		return usageError{"use either --test or --check, not both"}
+	}
+	if c.testFlag {
+		return c.playTest()
+	}
 	if !c.check {
 		return usageError{"play needs --check"}
 	}

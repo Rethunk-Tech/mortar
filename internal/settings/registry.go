@@ -23,28 +23,29 @@ const (
 
 // GameSettings is the per-game preference block (Stardew Valley today).
 type GameSettings struct {
-	BackupBeforePlay            string `json:"backupBeforePlay"`
-	LaunchBackupsKept           int    `json:"launchBackupsKept"`
-	UpdateModsBeforePlayDefault bool   `json:"updateModsBeforePlayDefault"`
-	RunsKept                    int    `json:"runsKept"`
-	ConsoleLogCap               int    `json:"consoleLogCap"`
-	NxmDefaultProfile           string `json:"nxmDefaultProfile"`
-	CosmeticConflicts           string `json:"cosmeticConflicts"`
-	EnableRequirements          string `json:"enableRequirements"`
-	MissingRequirements         string `json:"missingRequirements"`
-	SmapiBuilds                 string `json:"smapiBuilds"`
-	SmapiPin                    string `json:"smapiPin"`
-	DefaultLaunchMethod         string `json:"defaultLaunchMethod"`
-	ShowSmapiConsole            *bool  `json:"showSmapiConsole"`
-	SkipPlayCheck               bool   `json:"skipPlayCheck"`
-	ConsoleLevel                string `json:"consoleLevel"`
-	ConsoleTimestamps           *bool  `json:"consoleTimestamps"`
-	ConsoleFollow               *bool  `json:"consoleFollow"`
-	BackupLocation              string `json:"backupLocation"`
-	ConflictScanDepth           string `json:"conflictScanDepth"`
-	WatchDownloads              *bool  `json:"watchDownloads"`
-	LastSweepGameVersion        string `json:"lastSweepGameVersion,omitempty"`
-	LastSweepSMAPIVersion       string `json:"lastSweepSMAPIVersion,omitempty"`
+	BackupBeforePlay            string         `json:"backupBeforePlay"`
+	LaunchBackupsKept           int            `json:"launchBackupsKept"`
+	UpdateModsBeforePlayDefault bool           `json:"updateModsBeforePlayDefault"`
+	RunsKept                    int            `json:"runsKept"`
+	ConsoleLogCap               int            `json:"consoleLogCap"`
+	NxmDefaultProfile           string         `json:"nxmDefaultProfile"`
+	CosmeticConflicts           string         `json:"cosmeticConflicts"`
+	EnableRequirements          string         `json:"enableRequirements"`
+	MissingRequirements         string         `json:"missingRequirements"`
+	SmapiBuilds                 string         `json:"smapiBuilds"`
+	SmapiPin                    string         `json:"smapiPin"`
+	DefaultLaunchMethod         string         `json:"defaultLaunchMethod"`
+	ShowSmapiConsole            *bool          `json:"showSmapiConsole"`
+	SkipPlayCheck               bool           `json:"skipPlayCheck"`
+	ConsoleLevel                string         `json:"consoleLevel"`
+	ConsoleTimestamps           *bool          `json:"consoleTimestamps"`
+	ConsoleFollow               *bool          `json:"consoleFollow"`
+	BackupLocation              string         `json:"backupLocation"`
+	ConflictScanDepth           string         `json:"conflictScanDepth"`
+	WatchDownloads              *bool          `json:"watchDownloads"`
+	LastSweepGameVersion        string         `json:"lastSweepGameVersion,omitempty"`
+	LastSweepSMAPIVersion       string         `json:"lastSweepSMAPIVersion,omitempty"`
+	LaunchPresets               []LaunchPreset `json:"launchPresets,omitempty"`
 }
 
 // PrefSpec is one registry row, served to the CLI and frontend.
@@ -278,6 +279,7 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.LastSweepSMAPIVersion != "" {
 		dst.LastSweepSMAPIVersion = src.LastSweepSMAPIVersion
 	}
+	dst.LaunchPresets = append([]LaunchPreset(nil), src.LaunchPresets...)
 }
 
 func normalizeGame(g *GameSettings) {
