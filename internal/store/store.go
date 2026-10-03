@@ -376,14 +376,6 @@ func syncTree(root string) error {
 	return nil
 }
 
-func syncPath(path string) error {
-	f, err := fsx.Open(path)
-	if err != nil {
-		return err
-	}
-	return errors.Join(f.Sync(), f.Close())
-}
-
 // IsDiskFull reports whether err is a write that ran out of space.
 func IsDiskFull(err error) bool { return diskFull(err) }
 
