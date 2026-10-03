@@ -45,6 +45,60 @@ func TestMeasureSizesSkipSymlinks(t *testing.T) {
 	}
 }
 
+func TestMeasureModUsageAggregatesStoreAndProfileCopies(t *testing.T) {
+	root := t.TempDir()
+	write := func(rel string, n int) {
+		t.Helper()
+		p := filepath.Join(root, filepath.FromSlash(rel))
+		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, make([]byte, n), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("store/stardew/nexus-1-1/m.bin", 100)
+	write("store/stardew/local-aa/m.bin", 40)
+	write("profiles/stardew/aaa/profile.json", 1)
+	write("profiles/stardew/aaa/mods/nexus-1-1/copy.bin", 80)
+	write("profiles/stardew/bbb/profile.json", 1)
+	write("profiles/stardew/bbb/mods/nexus-1-1/copy.bin", 90)
+	if err := os.WriteFile(filepath.Join(root, "profiles", "stardew", "aaa", "profile.json"), []byte(
+		`{"id":"aaa","name":"A","entries":[{"key":"nexus-1-1","source":{"name":"Alpha","version":"1.0"}}]}`,
+	), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "profiles", "stardew", "bbb", "profile.json"), []byte(
+		`{"id":"bbb","name":"B","entries":[{"key":"nexus-1-1","source":{"name":"Alpha","version":"1.0"}}]}`,
+	), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "store", "index.json"), []byte(
+		`{"stardew":{"nexus-1-1":"2026-01-02T03:04:05Z"}}`,
+	), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got, err := MeasureMods(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Total != 140 {
+		t.Fatalf("total = %d", got.Total)
+	}
+	byKey := map[string]ModUse{}
+	for _, it := range got.Items {
+		byKey[it.Key] = it
+	}
+	a := byKey["nexus-1-1"]
+	if a.Size != 100 || a.Profiles != 2 || a.ProfileSize != 170 || a.Name != "Alpha 1.0" || a.LastUsed != "2026-01-02T03:04:05Z" {
+		t.Fatalf("nexus-1-1 = %+v", a)
+	}
+	b := byKey["local-aa"]
+	if b.Size != 40 || b.Profiles != 0 || b.ProfileSize != 0 {
+		t.Fatalf("local-aa = %+v", b)
+	}
+}
+
 func TestMeasureReportsProgress(t *testing.T) {
 	root := t.TempDir()
 	p := filepath.Join(root, "store", "f.bin")

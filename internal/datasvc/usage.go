@@ -6,7 +6,9 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
@@ -39,6 +41,19 @@ type Usage struct {
 	Backups  int64         `json:"backups"`
 	Trash    int64         `json:"trash"`
 	Total    int64         `json:"total"`
+}
+
+// CacheInfo is Mortar's cache folder.
+type CacheInfo struct {
+	Path string `json:"path"`
+	Size int64  `json:"size"`
+}
+
+// EntrySize is one store key's size on disk.
+type EntrySize struct {
+	Game string `json:"game"`
+	Key  string `json:"key"`
+	Size int64  `json:"size"`
 }
 
 type profileMeta struct {
@@ -155,4 +170,180 @@ func readProfile(path string) profileMeta {
 	var m profileMeta
 	_ = json.Unmarshal(b, &m)
 	return m
+}
+
+// ModUse is one store item's disk use.
+type ModUse struct {
+	Game        string `json:"game"`
+	Key         string `json:"key"`
+	Name        string `json:"name"`
+	Size        int64  `json:"size"`
+	Profiles    int    `json:"profiles"`
+	ProfileSize int64  `json:"profileSize"`
+	LastUsed    string `json:"lastUsed"`
+}
+
+// ModUsage is store items with sizes, who uses them, and a store-size total.
+type ModUsage struct {
+	Total int64    `json:"total"`
+	Items []ModUse `json:"items"`
+}
+
+type profileEntries struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	Entries []struct {
+		Key            string   `json:"key"`
+		ExtraStoreKeys []string `json:"extraStoreKeys"`
+		Source         struct {
+			Name    string `json:"name"`
+			Version string `json:"version"`
+		} `json:"source"`
+	} `json:"entries"`
+}
+
+// MeasureMods reports each store folder's size, live-profile use, and copy sizes under profiles/.
+func MeasureMods(root string) (ModUsage, error) {
+	out := ModUsage{Items: []ModUse{}}
+	last := readStoreIndex(filepath.Join(root, "store", "index.json"))
+	names, uses, copies := profileUse(root)
+	storeRoot := filepath.Join(root, "store")
+	games, err := os.ReadDir(storeRoot)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return ModUsage{}, err
+	}
+	for _, g := range games {
+		if !g.IsDir() || g.Type()&fs.ModeSymlink != 0 {
+			continue
+		}
+		items, err := os.ReadDir(filepath.Join(storeRoot, g.Name()))
+		if err != nil {
+			continue
+		}
+		for _, it := range items {
+			if !it.IsDir() || it.Type()&fs.ModeSymlink != 0 || strings.HasPrefix(it.Name(), ".") {
+				continue
+			}
+			id := g.Name() + "/" + it.Name()
+			n := dirSize(filepath.Join(storeRoot, g.Name(), it.Name()))
+			name := names[id]
+			if name == "" {
+				name = it.Name()
+			}
+			used := last[g.Name()][it.Name()]
+			lastUsed := ""
+			if !used.IsZero() {
+				lastUsed = used.UTC().Format(time.RFC3339)
+			}
+			out.Items = append(out.Items, ModUse{
+				Game: g.Name(), Key: it.Name(), Name: name, Size: n,
+				Profiles: uses[id], ProfileSize: copies[id], LastUsed: lastUsed,
+			})
+			out.Total += n
+		}
+	}
+	return out, nil
+}
+
+func readStoreIndex(path string) map[string]map[string]time.Time {
+	b, err := fsx.ReadFile(path)
+	if err != nil {
+		return nil
+	}
+	var idx map[string]map[string]time.Time
+	if json.Unmarshal(b, &idx) != nil {
+		return nil
+	}
+	return idx
+}
+
+func profileUse(root string) (names map[string]string, uses map[string]int, copies map[string]int64) {
+	names = map[string]string{}
+	uses = map[string]int{}
+	copies = map[string]int64{}
+	profilesRoot := filepath.Join(root, "profiles")
+	games, err := os.ReadDir(profilesRoot)
+	if err != nil {
+		return names, uses, copies
+	}
+	for _, g := range games {
+		if !g.IsDir() || g.Type()&fs.ModeSymlink != 0 {
+			continue
+		}
+		ids, err := os.ReadDir(filepath.Join(profilesRoot, g.Name()))
+		if err != nil {
+			continue
+		}
+		for _, d := range ids {
+			if !d.IsDir() || d.Type()&fs.ModeSymlink != 0 {
+				continue
+			}
+			p := readProfileEntries(filepath.Join(profilesRoot, g.Name(), d.Name(), "profile.json"))
+			mods := filepath.Join(profilesRoot, g.Name(), d.Name(), "mods")
+			seen := map[string]bool{}
+			for _, e := range p.Entries {
+				keys := append([]string{e.Key}, e.ExtraStoreKeys...)
+				for _, key := range keys {
+					if key == "" {
+						continue
+					}
+					id := g.Name() + "/" + key
+					if e.Source.Name != "" && names[id] == "" {
+						if e.Source.Version == "" {
+							names[id] = e.Source.Name
+						} else {
+							names[id] = e.Source.Name + " " + e.Source.Version
+						}
+					}
+					if !seen[id] {
+						uses[id]++
+						seen[id] = true
+					}
+					if key == e.Key {
+						copies[id] += dirSize(filepath.Join(mods, key)) + dirSize(filepath.Join(mods, "."+key))
+					} else {
+						copies[id] += dirSize(filepath.Join(mods, e.Key, key))
+					}
+				}
+			}
+		}
+	}
+	return names, uses, copies
+}
+
+func readProfileEntries(path string) profileEntries {
+	b, err := fsx.ReadFile(path)
+	if err != nil {
+		return profileEntries{}
+	}
+	var p profileEntries
+	_ = json.Unmarshal(b, &p)
+	return p
+}
+
+func clearCache(dir string) error {
+	ents, err := os.ReadDir(dir)
+	if errors.Is(err, fs.ErrNotExist) {
+		return os.MkdirAll(dir, 0o700)
+	}
+	if err != nil {
+		return err
+	}
+	var errs []error
+	for _, e := range ents {
+		errs = append(errs, os.RemoveAll(filepath.Join(dir, e.Name())))
+	}
+	return errors.Join(errs...)
+}
+
+func usageFingerprint(root string) (string, error) {
+	var n int64
+	for _, rel := range []string{filepath.Join("store", "index.json"), "profiles", "store"} {
+		info, err := os.Stat(filepath.Join(root, rel))
+		if err != nil {
+			continue
+		}
+		n += info.ModTime().UnixNano()
+	}
+	return strconv.FormatInt(n, 10), nil
 }

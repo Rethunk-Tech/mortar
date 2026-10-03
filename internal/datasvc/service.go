@@ -3,6 +3,7 @@ package datasvc
 
 import (
 	"errors"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -18,6 +19,8 @@ type Service struct {
 	staged   func() map[string][]string
 	mu       sync.Mutex
 	progress Progress
+	modCache ModUsage
+	modFP    string
 	busy     []BusySource
 	// Busy is true while the game is launching or running; nil means never busy.
 	Busy func() bool
@@ -61,6 +64,90 @@ func (s *Service) Usage() (Usage, error) {
 	return Measure(dir, s.setProgress)
 }
 
+// CacheInfo is the cache folder path and size.
+func (s *Service) CacheInfo() (CacheInfo, error) {
+	dir, err := datadir.Dir()
+	if err != nil {
+		return CacheInfo{}, err
+	}
+	cache := filepath.Join(dir, "cache")
+	return CacheInfo{Path: cache, Size: dirSize(cache)}, nil
+}
+
+// ClearCache deletes the contents of the cache folder. Problem scans rebuild on the next check.
+func (s *Service) ClearCache() error {
+	dir, err := datadir.Dir()
+	if err != nil {
+		return err
+	}
+	return clearCache(filepath.Join(dir, "cache"))
+}
+
+// ModUsage lists store items with sizes, cached until the store or profiles change.
+func (s *Service) ModUsage() (ModUsage, error) {
+	dir, err := datadir.Dir()
+	if err != nil {
+		return ModUsage{}, err
+	}
+	fp, err := usageFingerprint(dir)
+	if err != nil {
+		return ModUsage{}, err
+	}
+	s.mu.Lock()
+	if s.modFP == fp && s.modFP != "" {
+		u := s.modCache
+		s.mu.Unlock()
+		return u, nil
+	}
+	s.mu.Unlock()
+	u, err := MeasureMods(dir)
+	if err != nil {
+		return ModUsage{}, err
+	}
+	s.mu.Lock()
+	s.modCache = u
+	s.modFP = fp
+	s.mu.Unlock()
+	return u, nil
+}
+
+// EntrySizes is each store key's size, the same data ModUsage uses.
+func (s *Service) EntrySizes() ([]EntrySize, error) {
+	u, err := s.ModUsage()
+	if err != nil {
+		return nil, err
+	}
+	out := make([]EntrySize, 0, len(u.Items))
+	for _, it := range u.Items {
+		out = append(out, EntrySize{Game: it.Game, Key: it.Key, Size: it.Size})
+	}
+	return out, nil
+}
+
+func (s *Service) forgetModUsage() {
+	s.mu.Lock()
+	s.modFP = ""
+	s.mu.Unlock()
+}
+
+// RemoveStoreItem deletes one store folder when no keep-set entry still names it.
+func (s *Service) RemoveStoreItem(game, key string) error {
+	keys, err := s.referenced()
+	if err != nil {
+		return err
+	}
+	for _, k := range keys[game] {
+		if k == key {
+			return errInUse
+		}
+	}
+	if err := s.items.Remove([]store.Ref{{Game: game, Key: key}}); err != nil {
+		return err
+	}
+	s.forgetModUsage()
+	return nil
+}
+
 // CleanupPreview lists what Clean up unused would remove.
 func (s *Service) CleanupPreview() (Preview, error) {
 	dir, err := datadir.Dir()
@@ -89,7 +176,11 @@ func (s *Service) Cleanup(preview Preview) error {
 	if err != nil {
 		return err
 	}
-	return s.applyPreview(dir, preview)
+	err = s.applyPreview(dir, preview)
+	if err == nil {
+		s.forgetModUsage()
+	}
+	return err
 }
 
 func (s *Service) applyPreview(root string, preview Preview) error {
@@ -132,6 +223,8 @@ func (s *Service) MoveDataFolderPreview(dest string) (MoveEstimate, error) {
 }
 
 var errGameRunning = errors.New("stop the game before moving the data folder")
+
+var errInUse = errors.New("a profile still uses this store item")
 
 // MoveDataFolder copies the data folder to dest, verifies it, points the default location at dest, removes the old copy, and restarts.
 func (s *Service) MoveDataFolder(dest string) error {
