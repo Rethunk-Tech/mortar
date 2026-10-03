@@ -584,6 +584,24 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.Repair(p.Game, id) })
 	case "mods":
 		return modRows(prof), nil
+	case "mods.config":
+		if len(p.UniqueIDs) == 0 {
+			return nil, fmt.Errorf("mods config needs a mod")
+		}
+		refs, err := refsFor(prof, p.UniqueIDs[:1])
+		if err != nil {
+			return nil, err
+		}
+		ref := refs[0]
+		if p.Key != "" {
+			return s.changed(p.Game, func() (any, error) {
+				if err := s.Profiles.SetConfigValue(p.Game, id, ref.Key, ref.UniqueID, p.Key, p.Value); err != nil {
+					return nil, err
+				}
+				return s.Profiles.ListConfigFields(p.Game, id, ref.Key, ref.UniqueID)
+			})
+		}
+		return s.Profiles.ListConfigFields(p.Game, id, ref.Key, ref.UniqueID)
 	case "mod":
 		return s.modInfo(ctx, p.Game, prof, p.UniqueIDs)
 	case "mods.enable", "mods.disable":

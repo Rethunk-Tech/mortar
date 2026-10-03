@@ -5,6 +5,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Get } from '../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { App } from './App.tsx'
+import { DownloadsAsk } from './downloads/DownloadsAsk.tsx'
 import { activateLanguage, i18n } from './i18n/index.ts'
 import { initInstallAsks } from './install/store.ts'
 import { IncomingPrompt } from './lan/IncomingPrompt.tsx'
@@ -61,6 +62,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <CssBaseline />
         <App />
         <IncomingPrompt />
+        <DownloadsAsk />
       </Themed>
     </I18nProvider>
   </React.StrictMode>,

@@ -113,6 +113,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"shareIncludeDisabledMods": "true", "shareIncludeFomodChoices": "false", "shareIncludeNotes": "false",
 		"shareIncludeConfigFiles": "false", "verifyNexusMD5": "true", "launchAtLogin": "true",
 		"startMinimised": "true", "rememberWindow": "true", "extensionConnection": "off",
+		"watchDownloads": "false",
 	}
 	for _, p := range PrefKeys() {
 		v, ok := overrides[p.Key]

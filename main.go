@@ -25,6 +25,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/control"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
+	"github.com/Rethunk-AI/mortar/internal/dlwatch"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/github"
@@ -88,6 +89,7 @@ func registerEvents() {
 	application.RegisterEvent[queue.State](queue.ChangedEvent)
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
 	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
+	application.RegisterEvent[dlwatch.Arrival](dlwatch.ArrivedEvent)
 	application.RegisterEvent[sharesvc.Arrival](sharesvc.ArrivedEvent)
 	application.RegisterEvent[lan.Arrival](lan.ArrivedEvent)
 	application.RegisterEvent[lan.TransferProgress](lan.TransferProgressEvent)
@@ -500,6 +502,43 @@ func run() error {
 	dataSvc.OnClearCache = problemsSvc.ForgetCached
 	quitSvc := &QuitService{app: app, queue: queueSvc, lan: lanSvc, launch: launches}
 
+	dlWatch := dlwatch.New(dlwatch.Deps{
+		Enabled: func() bool {
+			return settings.ToggleOn(store.Get().GamePrefs("stardew").WatchDownloads)
+		},
+		Current: func() (string, string, string, error) {
+			cur := store.Get()
+			gameID := cur.LastGame
+			if gameID == "" {
+				gameID = "stardew"
+			}
+			var id string
+			if cur.LastProfile != nil {
+				id = cur.LastProfile[gameID]
+			}
+			if id == "" {
+				return "", "", "", fmt.Errorf("no open profile")
+			}
+			all, err := profiles.List(gameID)
+			if err != nil {
+				return gameID, id, "", err
+			}
+			for _, p := range all {
+				if p.ID == id {
+					return gameID, id, p.Name, nil
+				}
+			}
+			return gameID, id, "", nil
+		},
+		Install: func(game, profileID, path string, src profile.Source) (profile.InstallResult, error) {
+			if src.ModID > 0 {
+				return profiles.InstallNexus(game, profileID, path, src)
+			}
+			return profileSvc.InstallArchive(game, profileID, path)
+		},
+		Emit: emit,
+	})
+
 	for _, s := range []application.Service{
 		application.NewService(svc), application.NewService(gamesSvc),
 		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
@@ -508,6 +547,7 @@ func run() error {
 		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc), application.NewService(lanSvc),
 		application.NewService(supportSvc), application.NewService(updates), application.NewService(bisectSvc),
 		application.NewService(dataSvc), application.NewService(toolsSvc),
+		application.NewService(dlWatch),
 		application.NewService(quitSvc),
 	} {
 		app.RegisterService(s)
@@ -532,7 +572,7 @@ func run() error {
 	ctl := &control.Services{
 		Version: version, Settings: store, SettingsSvc: svc, Games: gamesSvc, Store: profiles, Profiles: profileSvc,
 		Problems: problemsSvc, Launches: launches, Saves: savesSvc, Queue: queueSvc, Tools: toolsSvc, Bundles: bundlesSvc,
-		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Emit: emit,
+		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Downloads: dlWatch, Emit: emit,
 	}
 	go func() {
 		if err := control.Serve(queueCtx, dataDir, version, ctl.Handle); err != nil && !errors.Is(err, context.Canceled) {

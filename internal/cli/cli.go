@@ -353,6 +353,8 @@ func (c *cmd) dispatch() error {
 			switch c.args[1] {
 			case "enable", "disable", "remove", "pin", "unpin", "tag", "untag", "category", "note", "skip-version", "split", "combine":
 				return c.modsChange(c.args[1])
+			case "config":
+				return c.modsConfig()
 			}
 		}
 	}
@@ -2033,6 +2035,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   mods tag|untag|category|note|skip-version <game> <profile> <mod> [value]
   mods split <game> <profile> <mod> <file>
   mods combine <game> <profile> <mod> <into-mod>
+  mods config <game> <profile> <mod> [<field> <value>]  print or set one config field
   mod <game> <profile> <mod id>           one mod: dependencies, dependents, conflicts, settings
                                           (mod id is the SMAPI UniqueID)
   install <game> <profile> <archive>      install a local archive

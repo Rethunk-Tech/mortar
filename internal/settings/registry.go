@@ -41,6 +41,7 @@ type GameSettings struct {
 	ConsoleFollow               *bool  `json:"consoleFollow"`
 	BackupLocation              string `json:"backupLocation"`
 	ConflictScanDepth           string `json:"conflictScanDepth"`
+	WatchDownloads              *bool  `json:"watchDownloads"`
 }
 
 // PrefSpec is one registry row, served to the CLI and frontend.
@@ -146,6 +147,11 @@ var registry = []pref{
 	ptrPref("consoleFollow", ScopeGame, true, func(s Settings, g string) *bool { return s.GamePrefs(g).ConsoleFollow }, func(s *Settings, g string, on bool) { gp := s.GamePrefs(g); gp.ConsoleFollow = &on; putGame(s, g, gp) }),
 	strPref("backupLocation", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).BackupLocation }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BackupLocation = v; putGame(s, g, gp) }),
 	enumPref("conflictScanDepth", ScopeGame, ConflictScanFull, conflictScanValues, func(s Settings, g string) string { return s.GamePrefs(g).ConflictScanDepth }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.ConflictScanDepth = v; putGame(s, g, gp) }),
+	ptrPref("watchDownloads", ScopeGame, true, func(s Settings, g string) *bool { return s.GamePrefs(g).WatchDownloads }, func(s *Settings, g string, on bool) {
+		gp := s.GamePrefs(g)
+		gp.WatchDownloads = &on
+		putGame(s, g, gp)
+	}),
 }
 
 func defaultGameSettings() GameSettings {
@@ -167,6 +173,7 @@ func defaultGameSettings() GameSettings {
 		ConsoleFollow:               on(),
 		BackupLocation:              "",
 		ConflictScanDepth:           ConflictScanFull,
+		WatchDownloads:              on(),
 	}
 }
 
@@ -255,6 +262,9 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.ConflictScanDepth != "" {
 		dst.ConflictScanDepth = src.ConflictScanDepth
 	}
+	if src.WatchDownloads != nil {
+		dst.WatchDownloads = src.WatchDownloads
+	}
 }
 
 func normalizeGame(g *GameSettings) {
@@ -300,6 +310,9 @@ func normalizeGame(g *GameSettings) {
 	}
 	if !slices.Contains(conflictScanValues, g.ConflictScanDepth) {
 		g.ConflictScanDepth = d.ConflictScanDepth
+	}
+	if g.WatchDownloads == nil {
+		g.WatchDownloads = d.WatchDownloads
 	}
 }
 

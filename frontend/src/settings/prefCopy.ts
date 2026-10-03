@@ -268,6 +268,10 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
       label: i18n._(msg`Default profile for Nexus links`),
       description: i18n._(msg`Where nxm downloads go. Empty follows the last opened profile.`),
     },
+    watchDownloads: {
+      label: i18n._(msg`Watch Downloads folder`),
+      description: i18n._(msg`Offer to install new Nexus archives from your Downloads folder`),
+    },
   }
 }
 
