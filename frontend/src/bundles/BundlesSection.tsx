@@ -177,7 +177,7 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
         title={t`Delete ${deleting?.name ?? ''}?`}
         body={t`This bundle will be removed from Mortar.`}
         confirmLabel={t`Delete`}
-        danger={true}
+        color="error"
         busy={busy}
         onCancel={() => setDeleting(null)}
         onConfirm={() => confirmDelete().catch(() => undefined)}

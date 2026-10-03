@@ -17,7 +17,7 @@ export function StopDialog({
     <ConfirmDialog
       open={open}
       maxWidth={420}
-      danger={true}
+      color="error"
       title={t`Stop the game?`}
       body={t`Stardew Valley will close now, and any progress since your last save is lost.`}
       confirmLabel={t`Stop game`}

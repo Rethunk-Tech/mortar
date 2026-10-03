@@ -92,7 +92,7 @@ function DeleteProfileDialog({
       title={t`Delete ${profile.name}?`}
       body={t`The profile stays restorable for 30 days from Recently deleted.`}
       confirmLabel={t`Delete`}
-      danger={true}
+      color="error"
       onCancel={onClose}
       onConfirm={() => {
         onClose()

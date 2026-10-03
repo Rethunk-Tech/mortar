@@ -118,7 +118,7 @@ function TrashRow({ item }: { item: TrashItem }) {
         title={t`Delete ${item.name} permanently?`}
         body={t`This cannot be undone.`}
         confirmLabel={t`Delete permanently`}
-        danger={true}
+        color="error"
         onCancel={() => setConfirming(false)}
         onConfirm={() => {
           setConfirming(false)
@@ -259,7 +259,7 @@ function Trash() {
         title={t`Empty trash?`}
         body={t`This cannot be undone.`}
         confirmLabel={t`Empty trash`}
-        danger={true}
+        color="error"
         onCancel={() => setConfirming(false)}
         onConfirm={() => {
           setConfirming(false)

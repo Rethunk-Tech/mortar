@@ -86,7 +86,7 @@ function UntrackConfirmDialog({
   return (
     <ConfirmDialog
       open={unused !== null}
-      danger={true}
+      color="error"
       busy={busy}
       title={t`Untrack mods?`}
       body={

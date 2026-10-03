@@ -17,7 +17,7 @@ export function ConfirmDialog({
   children,
   confirmLabel,
   cancelLabel,
-  danger = false,
+  color = 'primary',
   busy = false,
   maxWidth = 440,
   onCancel,
@@ -29,7 +29,7 @@ export function ConfirmDialog({
   children?: ReactNode
   confirmLabel: ReactNode
   cancelLabel?: ReactNode
-  danger?: boolean
+  color?: 'primary' | 'error' | 'warning'
   busy?: boolean
   maxWidth?: number
   onCancel: () => void
@@ -53,7 +53,7 @@ export function ConfirmDialog({
         </Button>
         <Button
           variant="contained"
-          color={danger ? 'error' : 'primary'}
+          color={color}
           disabled={busy}
           onClick={onConfirm}
           sx={{ whiteSpace: 'nowrap' }}

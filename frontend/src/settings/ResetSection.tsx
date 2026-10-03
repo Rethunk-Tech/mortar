@@ -61,6 +61,7 @@ export function ResetSectionButton({ keys }: { keys: string[] }) {
         title={t`Reset this section?`}
         body={t`Restore every setting in this group to its default. You can undo from the toast.`}
         confirmLabel={t`Reset`}
+        color="warning"
         onCancel={() => setOpen(false)}
         onConfirm={run}
       />

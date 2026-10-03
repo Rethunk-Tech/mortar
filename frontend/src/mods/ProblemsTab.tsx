@@ -506,7 +506,7 @@ export function ProblemsTab() {
         title={t`Remove all ${cleanup.length} mods from this profile?`}
         body={t`This change can be undone from History.`}
         confirmLabel={t`Remove all`}
-        danger={true}
+        color="error"
         onCancel={() => setConfirmCleanup(false)}
         onConfirm={() => {
           setConfirmCleanup(false)

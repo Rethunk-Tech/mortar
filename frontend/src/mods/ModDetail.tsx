@@ -179,7 +179,7 @@ function Confirm({
           : t`config.json is deleted, and the mod writes a fresh one with its own defaults the next time the game runs.`
       }
       confirmLabel={rolling ? t`Roll back` : t`Reset`}
-      danger={!rolling}
+      color={rolling ? 'primary' : 'error'}
       onCancel={onClose}
       onConfirm={() => {
         const run = rolling ? rollBack : resetConfig
