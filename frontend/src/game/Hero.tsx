@@ -16,6 +16,33 @@ import { NameField } from './NameField.tsx'
 import { useRenameRequest } from './renameRequest.ts'
 import { useTab } from './tab.ts'
 
+const CARD_HOVER = 'rgba(60,60,70,0.9)'
+const CARD_BG = 'rgba(40,40,48,0.85)'
+const CARD_RADIUS = '6px'
+const LABEL_FONT_PX = 12
+const VALUE_FONT_PX = 18
+const VALUE_LINE_HEIGHT = 1.4
+const MARK_SIZE = 44
+const MARK_SIZE_COMPACT = 18
+const NAME_FONT_PX = 44
+const NAME_WEIGHT = 700
+const NAME_LINE_HEIGHT = 1.1
+const NAME_FONT_COMPACT_PX = 18
+const NAME_LINE_COMPACT = 1.3
+const NAME_GLOW = '0 0 32px rgba(255,255,255,0.45)'
+const DESC_FONT_PX = 13
+const DESC_COLOR = 'rgba(255,255,255,0.72)'
+const DESC_SHADOW = '0 1px 8px rgba(0,0,0,0.55)'
+const META_FONT_PX = 12
+const HERO_HEIGHT_PX = 190
+const HERO_COMPACT_HEIGHT_PX = 52
+const HERO_COMPACT_BG = 'rgba(15,15,18,0.5)'
+const HERO_COMPACT_BORDER = '1px solid rgba(255,255,255,0.1)'
+const COVER_TINT = 'rgba(20,20,24,0.18)'
+const HERO_INSET_PX = 24
+const HERO_BOTTOM_PX = 16
+const HERO_INSET_COMPACT_PX = 12
+
 function Card({
   label,
   value,
@@ -35,19 +62,26 @@ function Card({
         font: 'inherit',
         textAlign: 'left',
         cursor: onClick ? 'pointer' : 'default',
-        '&:hover': onClick ? { bgcolor: 'rgba(60,60,70,0.9)' } : undefined,
+        '&:hover': onClick ? { bgcolor: CARD_HOVER } : undefined,
         display: 'flex',
         flexDirection: 'column',
         px: 1.5,
         py: 1,
-        bgcolor: 'rgba(40,40,48,0.85)',
-        borderRadius: '6px',
+        bgcolor: CARD_BG,
+        borderRadius: CARD_RADIUS,
       }}
     >
-      <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'nowrap' }}>
+      <Typography sx={{ fontSize: LABEL_FONT_PX, color: 'text.secondary', whiteSpace: 'nowrap' }}>
         {label}
       </Typography>
-      <Typography sx={{ fontSize: 18, fontWeight: 700, lineHeight: 1.4, whiteSpace: 'nowrap' }}>
+      <Typography
+        sx={{
+          fontSize: VALUE_FONT_PX,
+          fontWeight: NAME_WEIGHT,
+          lineHeight: VALUE_LINE_HEIGHT,
+          whiteSpace: 'nowrap',
+        }}
+      >
         {value}
       </Typography>
     </Box>
@@ -82,10 +116,10 @@ function HeroName({ profile, meta }: { profile: Profile; meta: string[] }) {
             {profile.color || profile.icon ? (
               <>
                 <Box sx={{ flexShrink: 0, [compact]: { display: 'none' } }}>
-                  <ProfileMark profile={profile} size={44} />
+                  <ProfileMark profile={profile} size={MARK_SIZE} />
                 </Box>
                 <Box sx={{ display: 'none', flexShrink: 0, [compact]: { display: 'block' } }}>
-                  <ProfileMark profile={profile} size={18} />
+                  <ProfileMark profile={profile} size={MARK_SIZE_COMPACT} />
                 </Box>
               </>
             ) : null}
@@ -93,12 +127,12 @@ function HeroName({ profile, meta }: { profile: Profile; meta: string[] }) {
               noWrap={true}
               title={profile.name}
               sx={{
-                fontSize: 44,
-                fontWeight: 700,
-                lineHeight: 1.1,
+                fontSize: NAME_FONT_PX,
+                fontWeight: NAME_WEIGHT,
+                lineHeight: NAME_LINE_HEIGHT,
                 color: '#ffffff',
-                textShadow: '0 0 32px rgba(255,255,255,0.45)',
-                [compact]: { fontSize: 18, lineHeight: 1.3 },
+                textShadow: NAME_GLOW,
+                [compact]: { fontSize: NAME_FONT_COMPACT_PX, lineHeight: NAME_LINE_COMPACT },
               }}
             >
               {profile.name}
@@ -112,9 +146,9 @@ function HeroName({ profile, meta }: { profile: Profile; meta: string[] }) {
           title={profile.description}
           sx={{
             mt: 0.5,
-            fontSize: 13,
-            color: 'rgba(255,255,255,0.72)',
-            textShadow: '0 1px 8px rgba(0,0,0,0.55)',
+            fontSize: DESC_FONT_PX,
+            color: DESC_COLOR,
+            textShadow: DESC_SHADOW,
             [compact]: { display: 'none' },
           }}
         >
@@ -123,7 +157,7 @@ function HeroName({ profile, meta }: { profile: Profile; meta: string[] }) {
       ) : null}
       <Typography
         noWrap={true}
-        sx={{ display: 'none', fontSize: 12, [compact]: { display: 'block' } }}
+        sx={{ display: 'none', fontSize: META_FONT_PX, [compact]: { display: 'block' } }}
       >
         {meta.join(' · ')}
       </Typography>
@@ -159,20 +193,20 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
     <Box
       sx={{
         position: 'relative',
-        height: 190,
+        height: HERO_HEIGHT_PX,
         flexShrink: 0,
         overflow: 'hidden',
         ...(forceCompact
           ? {
-              height: 52,
-              bgcolor: 'rgba(15,15,18,0.5)',
-              borderBottom: '1px solid rgba(255,255,255,0.1)',
+              height: HERO_COMPACT_HEIGHT_PX,
+              bgcolor: HERO_COMPACT_BG,
+              borderBottom: HERO_COMPACT_BORDER,
             }
           : {
               [compact]: {
-                height: 52,
-                bgcolor: 'rgba(15,15,18,0.5)',
-                borderBottom: '1px solid rgba(255,255,255,0.1)',
+                height: HERO_COMPACT_HEIGHT_PX,
+                bgcolor: HERO_COMPACT_BG,
+                borderBottom: HERO_COMPACT_BORDER,
               },
             }),
       }}
@@ -187,18 +221,24 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
         }}
       >
         <HeroCover game={game} profile={profile} />
-        <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(20,20,24,0.18)' }} />
+        <Box sx={{ position: 'absolute', inset: 0, bgcolor: COVER_TINT }} />
       </Box>
       <Box
         sx={{
           position: 'absolute',
-          left: 24,
-          right: 24,
-          bottom: 16,
+          left: HERO_INSET_PX,
+          right: HERO_INSET_PX,
+          bottom: HERO_BOTTOM_PX,
           display: 'flex',
           alignItems: 'flex-end',
           gap: 2,
-          [compact]: { top: 0, bottom: 0, left: 12, right: 12, alignItems: 'center' },
+          [compact]: {
+            top: 0,
+            bottom: 0,
+            left: HERO_INSET_COMPACT_PX,
+            right: HERO_INSET_COMPACT_PX,
+            alignItems: 'center',
+          },
         }}
       >
         <HeroName profile={profile} meta={meta} />

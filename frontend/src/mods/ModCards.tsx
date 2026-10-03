@@ -57,6 +57,16 @@ const CARD_HEIGHT_SMALL = 50
 const CARD_HEIGHT_MEDIUM = 64
 const CARD_HEIGHT_LARGE = 80
 const LARGE_LANE_EXTRA = 16
+const TILE_COMPACT_PX = 38
+const TILE_COMPACT_FONT_PX = 19
+const CARD_GAP_PX = '10px'
+const CARD_RADIUS_PX = '6px'
+const NAME_FONT_PX = 14
+const NAME_WEIGHT = 600
+const META_FONT_PX = 12
+const TAG_MAX_PX = 96
+const LANE_GAP_PX = '6px'
+const DIVIDER = '1px solid rgba(255,255,255,0.12)'
 
 function cardHeightPx(size: string): number {
   if (size === 'large') {
@@ -95,12 +105,19 @@ function ModCard({
         pr: 0.75,
         display: 'flex',
         alignItems: 'center',
-        gap: '10px',
+        gap: CARD_GAP_PX,
         minWidth: 0,
-        borderRadius: '6px',
+        borderRadius: CARD_RADIUS_PX,
         outline: marked ? '1px solid' : 'none',
         outlineColor: 'primary.main',
-        [compact]: { height: 50, '& .tile': { width: 38, height: 38, fontSize: 19 } },
+        [compact]: {
+          height: CARD_HEIGHT_SMALL,
+          '& .tile': {
+            width: TILE_COMPACT_PX,
+            height: TILE_COMPACT_PX,
+            fontSize: TILE_COMPACT_FONT_PX,
+          },
+        },
       }}
     >
       <ButtonBase
@@ -122,7 +139,7 @@ function ModCard({
           height: '100%',
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
+          gap: CARD_GAP_PX,
           justifyContent: 'flex-start',
           textAlign: 'left',
           fontFamily: 'inherit',
@@ -134,15 +151,19 @@ function ModCard({
           sx={{
             flex: 1,
             minWidth: 0,
-            pl: '10px',
-            borderLeft: '1px solid rgba(255,255,255,0.12)',
+            pl: CARD_GAP_PX,
+            borderLeft: DIVIDER,
             opacity: m.enabled ? 1 : OFF_OPACITY,
           }}
         >
-          <Typography noWrap={true} title={m.name} sx={{ fontSize: 14, fontWeight: 600 }}>
+          <Typography
+            noWrap={true}
+            title={m.name}
+            sx={{ fontSize: NAME_FONT_PX, fontWeight: NAME_WEIGHT }}
+          >
             {m.name}
           </Typography>
-          <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
+          <Typography noWrap={true} sx={{ fontSize: META_FONT_PX, color: 'text.secondary' }}>
             {useSettings((s) => s.showAuthorOnCards) === false
               ? m.version
               : `${m.author} · ${m.version}`}
@@ -154,7 +175,7 @@ function ModCard({
       <NexusGoneBadge mod={m} />
       <ProblemBadge mod={m} />
       <LastRunBadge mod={m} />
-      {tag ? <Chip size="small" label={tag} sx={{ maxWidth: 96 }} /> : null}
+      {tag ? <Chip size="small" label={tag} sx={{ maxWidth: TAG_MAX_PX }} /> : null}
       <ModMenu mod={m} />
     </Card>
   )
@@ -206,7 +227,7 @@ function GridSlot({
       sx={{
         display: 'grid',
         gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-        gap: '6px',
+        gap: LANE_GAP_PX,
         px: 2,
         alignContent: 'start',
       }}
