@@ -56,6 +56,7 @@ function SelectionKeys({ shown }: { shown: Mod[] }) {
       }
       if (e.key === 'Escape') {
         useSelection.getState().clear()
+        useDetail.getState().show(null)
         return
       }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {

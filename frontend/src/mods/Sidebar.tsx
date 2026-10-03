@@ -2,7 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Drawer, Link, Tooltip, Typography, useMediaQuery } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
-import { TriangleAlert } from 'lucide-react'
+import { TriangleAlert, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
   Mod,
@@ -17,6 +17,7 @@ import { compactQuery } from '../game/compact.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
 import { useCustomCategories } from './customCategories.ts'
@@ -356,6 +357,11 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
           </Typography>
         </Box>
         <ModSwitch mod={mod} />
+        <IconAction
+          label={t`Close details`}
+          icon={<X size={18} />}
+          onClick={() => useDetail.getState().show(null)}
+        />
       </Box>
       <Field label={t`Version`} value={mod.version} />
       <ModUpdateControls mod={mod} entry={entry} />
