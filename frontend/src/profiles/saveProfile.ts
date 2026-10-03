@@ -1,6 +1,6 @@
 import { SetGameSettings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { SetUpdateBeforePlay } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { SetOverrides } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { applyStagedCover, type StagedCover } from '../game/cover.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -34,7 +34,7 @@ export async function saveProfile({
   launchOptions,
   launchPrefix,
   launchEnv,
-  updateBeforePlay,
+  overrides,
   stagedCover,
   gameSettings,
   color,
@@ -53,7 +53,7 @@ export async function saveProfile({
   launchOptions: string
   launchPrefix: string
   launchEnv: string
-  updateBeforePlay: boolean
+  overrides: Record<string, string>
   stagedCover: StagedCover
   gameSettings: GameSettingsValues | null
   color: string
@@ -86,9 +86,7 @@ export async function saveProfile({
       await setAppearance(profile.id, color, icon, clipDescription(description))
       if (gameId) {
         await SetGameSettings(gameId, profile.id, gameSettings ?? {})
-        useProfiles
-          .getState()
-          .replace(await SetUpdateBeforePlay(gameId, profile.id, updateBeforePlay))
+        useProfiles.getState().replace(await SetOverrides(gameId, profile.id, overrides))
       }
     } catch (error) {
       reportUnexpected(error)

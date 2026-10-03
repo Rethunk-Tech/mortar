@@ -6,9 +6,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   IconButton,
-  Switch,
   TextField,
   Tooltip,
   Typography,
@@ -20,11 +18,12 @@ import { PickImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { hasPickedCover, type StagedCover } from '../game/cover.ts'
 import { HeroCover } from '../game/HeroCover.tsx'
-import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { colorHex, MAX_DESCRIPTION, PROFILE_COLORS, PROFILE_ICONS } from './appearance.ts'
 import { GameSettings, type GameSettingsValues } from './GameSettings.tsx'
 import { LaunchPreview } from './LaunchPreview.tsx'
+import { OverridesSection } from './OverrideRows.tsx'
+import { foldedOverrides } from './overrideValue.ts'
 import { ProfileMark } from './ProfileMark.tsx'
 import { saveProfile } from './saveProfile.ts'
 import { useProfiles } from './store.ts'
@@ -221,34 +220,6 @@ function AppearancePickers({
   )
 }
 
-function UpdateBeforePlayField({
-  checked,
-  onChange,
-}: {
-  checked: boolean
-  onChange: (checked: boolean) => void
-}) {
-  const { t } = useLingui()
-  const premium = useNexus((s) => s.premium)
-  return (
-    <FormControlLabel
-      sx={{ alignItems: 'flex-start', m: 0, mb: 2 }}
-      control={<Switch checked={checked} onChange={(_, value) => onChange(value)} />}
-      label={
-        <Box>
-          <Typography>{t`Update mods before Play`}</Typography>
-          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-            {t`Applies available updates (not pinned mods) and keeps a restore point you can roll back to.`}
-            {premium
-              ? ''
-              : ` ${t`Free Nexus accounts must click each download on Nexus; those updates will not block Play.`}`}
-          </Typography>
-        </Box>
-      }
-    />
-  )
-}
-
 interface ProfileFieldsProps {
   profile: Profile
   gameId: string
@@ -270,8 +241,8 @@ interface ProfileFieldsProps {
   onLaunchError: (value: LaunchError) => void
   gameSettings: GameSettingsValues | null
   onGameSettings: (value: GameSettingsValues | null) => void
-  updateBeforePlay: boolean
-  onUpdateBeforePlay: (value: boolean) => void
+  overrides: Record<string, string>
+  onOverrides: (value: Record<string, string>) => void
 }
 
 function ProfileFields({
@@ -295,8 +266,8 @@ function ProfileFields({
   onLaunchError,
   gameSettings,
   onGameSettings,
-  updateBeforePlay,
-  onUpdateBeforePlay,
+  overrides,
+  onOverrides,
 }: ProfileFieldsProps) {
   const { t } = useLingui()
   return (
@@ -377,7 +348,7 @@ function ProfileFields({
         prefix={launchPrefix}
         env={launchEnv}
       />
-      <UpdateBeforePlayField checked={updateBeforePlay} onChange={onUpdateBeforePlay} />
+      <OverridesSection overrides={overrides} onChange={onOverrides} />
       <GameSettings profileId={profile.id} value={gameSettings} onChange={onGameSettings} />
     </DialogContent>
   )
@@ -403,7 +374,7 @@ export function EditProfileDialog({
   const [launchOptions, setLaunchOptionsField] = useState(profile.launchOptions ?? '')
   const [launchPrefix, setLaunchPrefix] = useState(profile.launchPrefix ?? '')
   const [launchEnv, setLaunchEnv] = useState(profile.launchEnv ?? '')
-  const [updateBeforePlay, setUpdateBeforePlayField] = useState(profile.updateBeforePlay ?? false)
+  const [overrides, setOverrides] = useState(() => foldedOverrides(profile))
   const [stagedCover, setStagedCover] = useState<StagedCover>(undefined)
   const [gameSettings, setGameSettings, gameSettingsLoaded] = useProfileGameSettings(
     gameId,
@@ -420,7 +391,7 @@ export function EditProfileDialog({
       setLaunchOptionsField(profile.launchOptions ?? '')
       setLaunchPrefix(profile.launchPrefix ?? '')
       setLaunchEnv(profile.launchEnv ?? '')
-      setUpdateBeforePlayField(profile.updateBeforePlay ?? false)
+      setOverrides(foldedOverrides(profile))
       setStagedCover(undefined)
       setLaunchError(null)
     }
@@ -432,7 +403,7 @@ export function EditProfileDialog({
     profile.launchOptions,
     profile.launchPrefix,
     profile.launchEnv,
-    profile.updateBeforePlay,
+    profile,
   ])
   const save = () =>
     saveProfile({
@@ -441,7 +412,7 @@ export function EditProfileDialog({
       launchOptions,
       launchPrefix,
       launchEnv,
-      updateBeforePlay,
+      overrides,
       stagedCover,
       gameSettings,
       setLaunchOptions,
@@ -490,8 +461,8 @@ export function EditProfileDialog({
           onLaunchError={setLaunchError}
           gameSettings={gameSettings}
           onGameSettings={setGameSettings}
-          updateBeforePlay={updateBeforePlay}
-          onUpdateBeforePlay={setUpdateBeforePlayField}
+          overrides={overrides}
+          onOverrides={setOverrides}
         />
         <DialogActions>
           <Button onClick={onClose} sx={{ whiteSpace: 'nowrap' }}>{t`Cancel`}</Button>

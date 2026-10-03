@@ -1,0 +1,105 @@
+export const OVERRIDE_KEYS = [
+  'defaultLaunchMethod',
+  'showSmapiConsole',
+  'backupBeforePlay',
+  'launchBackupsKept',
+  'updateModsBeforePlayDefault',
+  'skipPlayCheck',
+] as const
+
+export type OverrideKey = (typeof OVERRIDE_KEYS)[number]
+
+export const OVERRIDE_VALUES: Record<OverrideKey, string[]> = {
+  defaultLaunchMethod: ['steam', 'direct'],
+  showSmapiConsole: ['true', 'false'],
+  backupBeforePlay: ['changed', 'always', 'never'],
+  launchBackupsKept: Array.from({ length: 50 }, (_, i) => String(i + 1)),
+  updateModsBeforePlayDefault: ['true', 'false'],
+  skipPlayCheck: ['true', 'false'],
+}
+
+export type OverrideChoice = { useGame: true } | { useGame: false; value: string }
+
+export function choiceFromOverride(stored: string | undefined): OverrideChoice {
+  if (stored === undefined || stored === '') {
+    return { useGame: true }
+  }
+  return { useGame: false, value: stored }
+}
+
+export function rowValue(choice: OverrideChoice): string | undefined {
+  if (choice.useGame) {
+    return undefined
+  }
+  return choice.value
+}
+
+export function applyRow(
+  overrides: Record<string, string>,
+  key: string,
+  choice: OverrideChoice,
+): Record<string, string> {
+  const next = { ...overrides }
+  const value = rowValue(choice)
+  if (value === undefined) {
+    delete next[key]
+  } else {
+    next[key] = value
+  }
+  return next
+}
+
+export function resolveOverride(
+  key: string,
+  gameValue: string,
+  overrides?: Record<string, string> | null,
+): string {
+  if (overrides && Object.hasOwn(overrides, key)) {
+    return overrides[key] ?? gameValue
+  }
+  return gameValue
+}
+
+export function foldedOverrides(profile: {
+  overrides?: Record<string, string> | null
+  updateBeforePlay?: boolean
+  skipPlayCheck?: boolean
+}): Record<string, string> {
+  const out = { ...(profile.overrides ?? {}) }
+  if (!Object.hasOwn(out, 'updateModsBeforePlayDefault') && profile.updateBeforePlay) {
+    out.updateModsBeforePlayDefault = 'true'
+  }
+  if (!Object.hasOwn(out, 'skipPlayCheck') && profile.skipPlayCheck) {
+    out.skipPlayCheck = 'true'
+  }
+  return out
+}
+
+export function gamePrefString(
+  key: OverrideKey,
+  prefs: {
+    defaultLaunchMethod: string
+    showSmapiConsole: boolean
+    backupBeforePlay: string
+    launchBackupsKept: number
+    updateModsBeforePlayDefault: boolean
+    skipPlayCheck?: boolean
+  },
+): string {
+  switch (key) {
+    case 'defaultLaunchMethod':
+      return prefs.defaultLaunchMethod
+    case 'showSmapiConsole':
+      return String(prefs.showSmapiConsole)
+    case 'backupBeforePlay':
+      return prefs.backupBeforePlay
+    case 'launchBackupsKept':
+      return String(prefs.launchBackupsKept)
+    case 'updateModsBeforePlayDefault':
+      return String(prefs.updateModsBeforePlayDefault)
+    case 'skipPlayCheck':
+      return String(prefs.skipPlayCheck ?? false)
+    default:
+      return ''
+  }
+}
