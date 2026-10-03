@@ -19,7 +19,7 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { playDirect } from '../launch/directPref.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
-import { isGameId, openSettings, useNav } from '../nav/store.ts'
+import { type GameId, isGameId, openSettings, useNav } from '../nav/store.ts'
 import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { gameArt } from './art.ts'
@@ -109,6 +109,7 @@ function Row({
   lastPlayedName,
   lastPlayedAt,
   lastPlayedId,
+  cards,
 }: {
   game: Game
   openable: boolean
@@ -117,6 +118,7 @@ function Row({
   lastPlayedName: string
   lastPlayedAt: string
   lastPlayedId: string
+  cards: { gameId: GameId; profiles: Profile[]; lastPlayed: Played | undefined } | undefined
 }) {
   const { t, i18n } = useLingui()
   const start = useLaunch((s) => s.start)
@@ -164,7 +166,16 @@ function Row({
   const content = (
     <>
       {gameArt(game) ? <Art src={gameArt(game)} openable={openable} /> : null}
-      <Box sx={{ position: 'relative', textShadow: shadow, textAlign: 'left', color: '#fff' }}>
+      <Box
+        sx={{
+          position: 'relative',
+          minWidth: 0,
+          overflow: 'hidden',
+          textShadow: shadow,
+          textAlign: 'left',
+          color: '#fff',
+        }}
+      >
         <Typography sx={{ fontSize: 34, fontWeight: 600, lineHeight: 1.2 }}>{game.name}</Typography>
         <Typography
           title={
@@ -180,6 +191,13 @@ function Row({
           {loaderLine}
         </Typography>
         <Typography sx={{ mt: '6px', fontSize: 16, fontWeight: 600 }}>{note}</Typography>
+        {cards ? (
+          <ProfileCards
+            gameId={cards.gameId}
+            profiles={cards.profiles}
+            lastPlayed={cards.lastPlayed}
+          />
+        ) : null}
       </Box>
       <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '14px' }}>
         {openable && lastPlayedId ? (
@@ -313,23 +331,21 @@ export function GameSelect() {
             !st.setupNeeded &&
             st.profiles.some((p) => !p.hidden)
           return (
-            <Box
+            <Row
               key={g.id}
-              sx={{ display: 'flex', flexDirection: 'column', flex: '1 1 0', minHeight: 0 }}
-            >
-              <Row
-                game={g}
-                openable={g.available}
-                note={noteFor(g)}
-                loader={loaderCaption(g.loader, g.id === 'stardew' ? loaderStatus : null)}
-                lastPlayedName={st?.profiles.find((p) => p.id === lastId)?.name ?? ''}
-                lastPlayedAt={st?.lastPlayedAt ?? ''}
-                lastPlayedId={st?.setupNeeded ? '' : lastId}
-              />
-              {showCards && isGameId(g.id) ? (
-                <ProfileCards gameId={g.id} profiles={st.profiles} lastPlayed={st.lastPlayed} />
-              ) : null}
-            </Box>
+              game={g}
+              openable={g.available}
+              note={noteFor(g)}
+              loader={loaderCaption(g.loader, g.id === 'stardew' ? loaderStatus : null)}
+              lastPlayedName={st?.profiles.find((p) => p.id === lastId)?.name ?? ''}
+              lastPlayedAt={st?.lastPlayedAt ?? ''}
+              lastPlayedId={st?.setupNeeded ? '' : lastId}
+              cards={
+                showCards && isGameId(g.id)
+                  ? { gameId: g.id, profiles: st.profiles, lastPlayed: st.lastPlayed }
+                  : undefined
+              }
+            />
           )
         })}
       </Box>
