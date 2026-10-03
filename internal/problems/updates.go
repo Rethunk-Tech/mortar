@@ -117,6 +117,7 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 			})
 		}
 	}
+	applyChannelFileOffers(ctx, m, asked, &r)
 	return r
 }
 
@@ -134,7 +135,7 @@ func HideHeld(r UpdatesResult, mods []Installed, includePrerelease bool, smapiBu
 		}
 		m, ok := byKey[u.Key]
 		if !ok {
-			if !includePrerelease && hasPrerelease(u.Version) && !hasPrerelease(u.Installed) {
+			if !keepPrerelease(Installed{}, includePrerelease, u.Version, u.Installed) {
 				continue
 			}
 			kept = append(kept, u)
@@ -147,7 +148,7 @@ func HideHeld(r UpdatesResult, mods []Installed, includePrerelease bool, smapiBu
 		if !hold.OffersUpdate(u.Version) {
 			continue
 		}
-		if !includePrerelease && hasPrerelease(u.Version) && !hasPrerelease(u.Installed) {
+		if !keepPrerelease(m, includePrerelease, u.Version, u.Installed) {
 			continue
 		}
 		kept = append(kept, u)

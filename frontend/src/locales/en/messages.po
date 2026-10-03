@@ -12,7 +12,7 @@ msgid "Mortar's licence"
 msgstr "Mortar's licence"
 
 #: src/console/PerformancePanelParts.tsx:179
-#: src/game/ProfileWorkspace.tsx:66
+#: src/game/ProfileWorkspace.tsx:68
 msgid "Performance"
 msgstr "Performance"
 
@@ -42,7 +42,7 @@ msgstr "Launch method"
 #. placeholder {0}: mark.date
 #: src/mods/NexusDetails.tsx:203
 #: src/mods/parts.tsx:131
-#: src/mods/Sidebar.tsx:121
+#: src/mods/Sidebar.tsx:122
 msgid "Hidden on Nexus · {0}"
 msgstr "Hidden on Nexus · {0}"
 
@@ -101,7 +101,7 @@ msgstr "Leave the zip after it is installed into the store"
 msgid "Sidebar badge counts"
 msgstr "Sidebar badge counts"
 
-#: src/mods/storeEntries.ts:150
+#: src/mods/storeEntries.ts:151
 msgid "Could not switch the selected mods"
 msgstr "Could not switch the selected mods"
 
@@ -109,7 +109,7 @@ msgstr "Could not switch the selected mods"
 msgid "Open profile"
 msgstr "Open profile"
 
-#: src/browse/BrowsePage.tsx:141
+#: src/browse/BrowsePage.tsx:103
 msgid "Nexus"
 msgstr "Nexus"
 
@@ -147,12 +147,12 @@ msgstr "SMAPI {0}"
 msgid "Skip this profile"
 msgstr "Skip this profile"
 
-#: src/mods/storeEntries.ts:359
+#: src/mods/storeEntries.ts:374
 msgid "Updated categories"
 msgstr "Updated categories"
 
 #: src/game/Hero.tsx:302
-#: src/mods/Sidebar.tsx:142
+#: src/mods/Sidebar.tsx:143
 #: src/profiles/RecentChangesButton.tsx:49
 msgid "Updated"
 msgstr "Updated"
@@ -195,8 +195,8 @@ msgstr "Stop the game to change mods."
 msgid "Mortar takes Stardew Valley links only."
 msgstr "Mortar takes Stardew Valley links only."
 
-#: src/mods/storeEntries.ts:67
-#: src/mods/storeEntries.ts:104
+#: src/mods/storeEntries.ts:68
+#: src/mods/storeEntries.ts:105
 #: src/profiles/historyRevert.ts:77
 msgid "That profile is gone."
 msgstr "That profile is gone."
@@ -410,7 +410,7 @@ msgstr "Never for this mod"
 msgid "Search settings"
 msgstr "Search settings"
 
-#: src/game/ProfileWorkspace.tsx:64
+#: src/game/ProfileWorkspace.tsx:66
 msgid "Notes"
 msgstr "Notes"
 
@@ -427,7 +427,7 @@ msgstr "Could not add it to Steam"
 #. placeholder {1}: official.version
 #. placeholder {1}: update.version
 #: src/mods/parts.tsx:224
-#: src/mods/Sidebar.tsx:186
+#: src/mods/Sidebar.tsx:187
 msgid "Update available: {0} → {1}"
 msgstr "Update available: {0} → {1}"
 
@@ -746,7 +746,7 @@ msgstr "{parallel} · {counts}"
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 
-#: src/mods/storeEntries.ts:358
+#: src/mods/storeEntries.ts:373
 msgid "Could not set the category for the selected mods"
 msgstr "Could not set the category for the selected mods"
 
@@ -793,7 +793,7 @@ msgstr "Could not restore {0}"
 
 #: src/mods/NexusDetails.tsx:202
 #: src/mods/parts.tsx:130
-#: src/mods/Sidebar.tsx:120
+#: src/mods/Sidebar.tsx:121
 msgid "Hidden on Nexus"
 msgstr "Hidden on Nexus"
 
@@ -852,7 +852,7 @@ msgstr "More play options"
 msgid "{name} is marked obsolete and may not work with this game version."
 msgstr "{name} is marked obsolete and may not work with this game version."
 
-#: src/browse/BrowsePage.tsx:218
+#: src/browse/BrowsePage.tsx:184
 msgid "{endorsements} endorsements · {downloads} downloads"
 msgstr "{endorsements} endorsements · {downloads} downloads"
 
@@ -914,6 +914,10 @@ msgstr "Use the automatic cover"
 #: src/settings/prefCopy.ts:252
 msgid "Notify when updates are found"
 msgstr "Notify when updates are found"
+
+#: src/mods/ModUpdateControls.tsx:40
+msgid "Update channel"
+msgstr "Update channel"
 
 #: src/settings/ResetSection.tsx:40
 msgid "Section reset to defaults"
@@ -1021,7 +1025,7 @@ msgstr "See load errors, missing dependencies, and other issues before you play.
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
-#: src/browse/BrowsePage.tsx:111
+#: src/browse/BrowsePage.tsx:73
 msgid "GitHub is busy, try again in a minute"
 msgstr "GitHub is busy, try again in a minute"
 
@@ -1249,7 +1253,7 @@ msgstr "Identical mods"
 msgid "Add to bundle…"
 msgstr "Add to bundle…"
 
-#: src/commandPalette/paletteLabels.ts:26
+#: src/commandPalette/paletteLabels.ts:27
 msgid "Go to Load order"
 msgstr "Go to Load order"
 
@@ -1397,7 +1401,7 @@ msgstr "Show in profile"
 msgid "Will update"
 msgstr "Will update"
 
-#: src/commandPalette/paletteLabels.ts:29
+#: src/commandPalette/paletteLabels.ts:30
 msgid "Go to Console"
 msgstr "Go to Console"
 
@@ -1456,7 +1460,7 @@ msgstr "Skip {0}"
 
 #: src/mods/ListColumnMenu.tsx:50
 #: src/mods/NexusDetails.tsx:93
-#: src/mods/Sidebar.tsx:133
+#: src/mods/Sidebar.tsx:134
 msgid "Latest on Nexus"
 msgstr "Latest on Nexus"
 
@@ -1477,9 +1481,9 @@ msgstr "Dependency cycle"
 
 #: src/commandPalette/paletteLabels.ts:16
 #: src/game/NewProfileDialog.tsx:45
-#: src/game/Sidebar.tsx:378
-#: src/game/Sidebar.tsx:398
-#: src/game/Sidebar.tsx:399
+#: src/game/Sidebar.tsx:384
+#: src/game/Sidebar.tsx:404
+#: src/game/Sidebar.tsx:405
 #: src/nxm/ArrivalDialog.tsx:149
 #: src/profiles/ProfilesPage.tsx:447
 #: src/profiles/ProfilesPage.tsx:530
@@ -1596,8 +1600,8 @@ msgstr "Compact"
 #: src/install/store.ts:232
 #: src/mods/problemFix/WinFix.tsx:70
 #: src/mods/SplitCombineItems.tsx:38
-#: src/mods/storeEntries.ts:54
-#: src/mods/storeEntries.ts:91
+#: src/mods/storeEntries.ts:55
+#: src/mods/storeEntries.ts:92
 #: src/profiles/collectionUnlink.ts:40
 #: src/profiles/historyRevert.ts:69
 #: src/profiles/store.ts:194
@@ -1998,7 +2002,7 @@ msgstr "Both set: {0}"
 msgid "Keep my changes"
 msgstr "Keep my changes"
 
-#: src/mods/storeEntries.ts:307
+#: src/mods/storeEntries.ts:308
 msgid "Unpinned selected mods"
 msgstr "Unpinned selected mods"
 
@@ -2054,7 +2058,7 @@ msgstr "Priority {0}"
 msgid "Could not open the profile folder"
 msgstr "Could not open the profile folder"
 
-#: src/commandPalette/paletteLabels.ts:28
+#: src/commandPalette/paletteLabels.ts:29
 msgid "Go to Notes"
 msgstr "Go to Notes"
 
@@ -2071,7 +2075,7 @@ msgstr "It shows in your Steam library the next time Steam starts."
 msgid "Local-only mods kept ({0})"
 msgstr "Local-only mods kept ({0})"
 
-#: src/mods/storeEntries.ts:368
+#: src/mods/storeEntries.ts:383
 msgid "Updated tags"
 msgstr "Updated tags"
 
@@ -2178,7 +2182,7 @@ msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
 
 #. placeholder {0}: entries.length
-#: src/mods/storeEntries.ts:89
+#: src/mods/storeEntries.ts:90
 msgid "Removed {0} mods"
 msgstr "Removed {0} mods"
 
@@ -2242,11 +2246,11 @@ msgstr "Grid card size"
 msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
-#: src/commandPalette/paletteLabels.ts:27
+#: src/commandPalette/paletteLabels.ts:28
 msgid "Go to Saves"
 msgstr "Go to Saves"
 
-#: src/game/ProfileWorkspace.tsx:65
+#: src/game/ProfileWorkspace.tsx:67
 msgid "Console"
 msgstr "Console"
 
@@ -2549,7 +2553,7 @@ msgstr "Cover image"
 msgid "Cancel"
 msgstr "Cancel"
 
-#: src/mods/storeEntries.ts:306
+#: src/mods/storeEntries.ts:307
 msgid "Could not unpin the selected mods"
 msgstr "Could not unpin the selected mods"
 
@@ -2611,7 +2615,7 @@ msgstr "When Mortar zips Saves before launching"
 msgid "Reported by {0}"
 msgstr "Reported by {0}"
 
-#: src/commandPalette/paletteLabels.ts:25
+#: src/commandPalette/paletteLabels.ts:26
 msgid "Go to Problems"
 msgstr "Go to Problems"
 
@@ -2648,7 +2652,7 @@ msgstr "Downloads paused"
 
 #. placeholder {0}: hit.errors
 #: src/mods/parts.tsx:154
-#: src/mods/Sidebar.tsx:249
+#: src/mods/Sidebar.tsx:250
 msgid "{0, plural, one {# error} other {# errors}}"
 msgstr "{0, plural, one {# error} other {# errors}}"
 
@@ -2689,7 +2693,7 @@ msgstr "A mod with several tags appears under its first tag."
 msgid "Saves stay in one folder for every profile. This tab shows how well each one fits this one."
 msgstr "Saves stay in one folder for every profile. This tab shows how well each one fits this one."
 
-#: src/mods/Sidebar.tsx:130
+#: src/mods/Sidebar.tsx:131
 msgid "Summary"
 msgstr "Summary"
 
@@ -2769,7 +2773,7 @@ msgstr "{0} {1} has several archives. Which one should Mortar install?"
 msgid "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 msgstr "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 
-#: src/mods/Sidebar.tsx:256
+#: src/mods/Sidebar.tsx:257
 msgid "Last run: {summary}"
 msgstr "Last run: {summary}"
 
@@ -2880,7 +2884,7 @@ msgstr "Could not read recently deleted profiles"
 #: src/launch/SweepDialog.tsx:26
 #: src/loader/Banner.tsx:38
 #: src/mods/runErrorFixButtons.tsx:57
-#: src/mods/Sidebar.tsx:218
+#: src/mods/Sidebar.tsx:219
 #: src/mods/updateReview/EverywhereDialog.tsx:152
 #: src/mods/updateReview/UpdateActions.tsx:65
 #: src/settings/sections/GameSettings.tsx:429
@@ -3180,7 +3184,7 @@ msgstr "Added from an archive, so it only exists on this computer."
 
 #: src/mods/ListColumnMenu.tsx:56
 #: src/mods/NexusDetails.tsx:109
-#: src/mods/Sidebar.tsx:141
+#: src/mods/Sidebar.tsx:142
 #: src/queue/QueueButton.tsx:14
 #: src/queue/QueueButton.tsx:17
 #: src/queue/QueueSheet.tsx:65
@@ -3191,6 +3195,10 @@ msgstr "Downloads"
 #: src/bundles/BundlesSection.tsx:184
 msgid "This bundle will be removed from Mortar."
 msgstr "This bundle will be removed from Mortar."
+
+#: src/mods/ModUpdateControls.tsx:19
+msgid "Beta / prerelease"
+msgstr "Beta / prerelease"
 
 #: src/profiles/ProfilesPage.tsx:263
 msgid "Empty trash?"
@@ -3381,7 +3389,7 @@ msgid "Cosmetic overlaps on the Problems tab"
 msgstr "Cosmetic overlaps on the Problems tab"
 
 #: src/mods/ModMenu.tsx:150
-#: src/mods/Sidebar.tsx:366
+#: src/mods/ModUpdateControls.tsx:35
 msgid "Pin this version"
 msgstr "Pin this version"
 
@@ -3493,7 +3501,7 @@ msgid "Use {0}'s version in {1}"
 msgstr "Use {0}'s version in {1}"
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:225
+#: src/mods/storeEntries.ts:226
 msgid "Could not remove {0}"
 msgstr "Could not remove {0}"
 
@@ -3676,6 +3684,10 @@ msgstr "Farming skill"
 msgid "No notifications yet"
 msgstr "No notifications yet"
 
+#: src/mods/ModUpdateControls.tsx:18
+msgid "Optional files"
+msgstr "Optional files"
+
 #: src/settings/prefCopy.ts:339
 msgid "Conflict scan depth"
 msgstr "Conflict scan depth"
@@ -3761,7 +3773,7 @@ msgstr "Data"
 
 #: src/mods/ListColumnMenu.tsx:55
 #: src/mods/NexusDetails.tsx:108
-#: src/mods/Sidebar.tsx:389
+#: src/mods/Sidebar.tsx:383
 #: src/settings/sections/NexusMods.tsx:214
 msgid "Endorsements"
 msgstr "Endorsements"
@@ -3899,7 +3911,7 @@ msgid "Create and add"
 msgstr "Create and add"
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:392
+#: src/mods/storeEntries.ts:407
 msgid "Could not open config.json of {0}"
 msgstr "Could not open config.json of {0}"
 
@@ -3938,7 +3950,7 @@ msgstr "That folder cannot be used"
 msgid "Restoring…"
 msgstr "Restoring…"
 
-#: src/game/ProfileWorkspace.tsx:62
+#: src/game/ProfileWorkspace.tsx:64
 msgid "Load order"
 msgstr "Load order"
 
@@ -3956,7 +3968,7 @@ msgstr "Pin {name}"
 #: src/mods/ModDependencyTree.tsx:55
 #: src/mods/problemFix/BrokenFix.tsx:55
 #: src/mods/problemFix/WhereButtons.tsx:27
-#: src/mods/Sidebar.tsx:200
+#: src/mods/Sidebar.tsx:201
 #: src/mods/updateReview/Row.tsx:103
 #: src/saves/lackChipActions.tsx:88
 msgid "Open page"
@@ -3975,7 +3987,7 @@ msgstr "Saves are zipped before mods update; older backups beyond this many are 
 msgid "{0, plural, one {# skipped} other {# skipped}}"
 msgstr "{0, plural, one {# skipped} other {# skipped}}"
 
-#: src/mods/storeEntries.ts:208
+#: src/mods/storeEntries.ts:209
 msgid "Could not remove the selected mods"
 msgstr "Could not remove the selected mods"
 
@@ -4004,7 +4016,7 @@ msgid "Stamina"
 msgstr "Stamina"
 
 #. placeholder {0}: first?.mods?.[0]?.name ?? 'mod'
-#: src/mods/storeEntries.ts:88
+#: src/mods/storeEntries.ts:89
 msgid "Removed {0}"
 msgstr "Removed {0}"
 
@@ -4036,7 +4048,7 @@ msgstr "Back"
 msgid "Modified outside Mortar"
 msgstr "Modified outside Mortar"
 
-#: src/mods/Sidebar.tsx:486
+#: src/mods/Sidebar.tsx:480
 msgid "Selected mod"
 msgstr "Selected mod"
 
@@ -4087,7 +4099,7 @@ msgstr "Turn on sharing nearby in Settings › General."
 msgid "Unknown author"
 msgstr "Unknown author"
 
-#: src/browse/BrowsePage.tsx:210
+#: src/browse/BrowsePage.tsx:176
 msgid "In this profile"
 msgstr "In this profile"
 
@@ -4108,6 +4120,10 @@ msgstr "{length} of {limit} characters · too long for one Discord message"
 #: src/settings/prefCopy.ts:122
 msgid "Harmless conflicts"
 msgstr "Harmless conflicts"
+
+#: src/commandPalette/paletteLabels.ts:24
+msgid "Go to Browse"
+msgstr "Go to Browse"
 
 #: src/profiles/EditProfileDialog.tsx:180
 msgid "Moon"
@@ -4212,7 +4228,7 @@ msgstr "Dismissed"
 
 #: src/mods/ModMenu.tsx:193
 #: src/mods/SelectionBarActions.tsx:121
-#: src/mods/Sidebar.tsx:401
+#: src/mods/Sidebar.tsx:395
 msgid "Also add to…"
 msgstr "Also add to…"
 
@@ -4316,7 +4332,7 @@ msgstr "Send"
 #: src/console/ConsoleTab.tsx:125
 #: src/firstrunTour/TourPopover.tsx:53
 #: src/game/Hero.tsx:295
-#: src/game/ProfileWorkspace.tsx:46
+#: src/game/ProfileWorkspace.tsx:48
 #: src/mods/ModListVirtual.tsx:283
 #: src/settings/sections/General.tsx:66
 #: src/settings/sections/General.tsx:282
@@ -4329,7 +4345,7 @@ msgid "Auto-retry failed downloads"
 msgstr "Auto-retry failed downloads"
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:282
+#: src/mods/storeEntries.ts:283
 msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
@@ -4403,7 +4419,7 @@ msgstr "{name} updated to {version} — {n, plural, one {# profile needs attenti
 msgid "Clear download history?"
 msgstr "Clear download history?"
 
-#: src/mods/Sidebar.tsx:221
+#: src/mods/Sidebar.tsx:222
 msgid "Update in all profiles that have it"
 msgstr "Update in all profiles that have it"
 
@@ -4491,7 +4507,7 @@ msgstr "Large"
 
 #: src/mods/ListColumnMenu.tsx:54
 #: src/mods/NexusDetails.tsx:98
-#: src/mods/Sidebar.tsx:138
+#: src/mods/Sidebar.tsx:139
 #: src/mods/Toolbar.tsx:175
 #: src/settings/prefCopy.ts:102
 msgid "Category"
@@ -4689,7 +4705,7 @@ msgid "{0} mods need this: {1}"
 msgstr "{0} mods need this: {1}"
 
 #: src/mods/ModMenu.tsx:155
-#: src/mods/Sidebar.tsx:374
+#: src/mods/Sidebar.tsx:368
 msgid "Show skipped update"
 msgstr "Show skipped update"
 
@@ -4794,7 +4810,7 @@ msgid "Mountain"
 msgstr "Mountain"
 
 #: src/mods/ModMenu.tsx:118
-#: src/mods/Sidebar.tsx:434
+#: src/mods/Sidebar.tsx:428
 msgid "More details"
 msgstr "More details"
 
@@ -4886,7 +4902,7 @@ msgstr "Crash finding failed."
 
 #: src/mods/NexusDetails.tsx:204
 #: src/mods/parts.tsx:132
-#: src/mods/Sidebar.tsx:122
+#: src/mods/Sidebar.tsx:123
 msgid "Removed from Nexus"
 msgstr "Removed from Nexus"
 
@@ -4969,7 +4985,7 @@ msgid "Import settings…"
 msgstr "Import settings…"
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:323
+#: src/mods/storeEntries.ts:324
 msgid "Could not skip the update for {0}"
 msgstr "Could not skip the update for {0}"
 
@@ -4999,7 +5015,7 @@ msgstr "Minutes between background update checks"
 msgid "·"
 msgstr "·"
 
-#: src/browse/BrowsePage.tsx:235
+#: src/browse/BrowsePage.tsx:201
 #: src/mods/AddToGroupDialog.tsx:92
 #: src/mods/configFormUi.tsx:295
 #: src/mods/ModDependencyTree.tsx:86
@@ -5008,7 +5024,7 @@ msgstr "·"
 #: src/mods/problemFix/MissingFix.tsx:28
 #: src/mods/problemFix/MissingFix.tsx:52
 #: src/mods/SelectionBar.tsx:114
-#: src/mods/Sidebar.tsx:410
+#: src/mods/Sidebar.tsx:404
 #: src/mods/TrackedNotInProfile.tsx:89
 msgid "Add"
 msgstr "Add"
@@ -5139,7 +5155,7 @@ msgstr "Could not track"
 
 #. placeholder {0}: mod.name
 #: src/mods/ModMenu.tsx:268
-#: src/mods/Sidebar.tsx:409
+#: src/mods/Sidebar.tsx:403
 msgid "Also add {0} to…"
 msgstr "Also add {0} to…"
 
@@ -5205,7 +5221,7 @@ msgstr "Problems and updates"
 msgid "Store"
 msgstr "Store"
 
-#: src/browse/BrowsePage.tsx:229
+#: src/browse/BrowsePage.tsx:195
 #: src/share/ImportPreview.tsx:45
 msgid "Download"
 msgstr "Download"
@@ -5215,7 +5231,7 @@ msgid "Problems in this run"
 msgstr "Problems in this run"
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:380
+#: src/mods/storeEntries.ts:395
 msgid "Could not open the folder of {0}"
 msgstr "Could not open the folder of {0}"
 
@@ -5234,13 +5250,17 @@ msgid "Edit {0}"
 msgstr "Edit {0}"
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:322
+#: src/mods/storeEntries.ts:323
 msgid "Could not show the skipped update for {0}"
 msgstr "Could not show the skipped update for {0}"
 
 #: src/settings/prefCopy.ts:347
 msgid "Share switched-off mods"
 msgstr "Share switched-off mods"
+
+#: src/mods/ModUpdateControls.tsx:17
+msgid "Main only"
+msgstr "Main only"
 
 #: src/mods/CompatChip.tsx:64
 #: src/mods/CompatSection.tsx:57
@@ -5370,7 +5390,7 @@ msgstr "Nexus mod {modId}"
 msgid "Before playing"
 msgstr "Before playing"
 
-#: src/mods/storeEntries.ts:340
+#: src/mods/storeEntries.ts:355
 msgid "Could not skip updates for the selected mods"
 msgstr "Could not skip updates for the selected mods"
 
@@ -5392,7 +5412,7 @@ msgid "Press {paletteKeys} to jump anywhere — profiles, settings, downloads, a
 msgstr "Press {paletteKeys} to jump anywhere — profiles, settings, downloads, and more."
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:296
+#: src/mods/storeEntries.ts:297
 msgid "Could not pin {0}"
 msgstr "Could not pin {0}"
 
@@ -5427,7 +5447,7 @@ msgid "Regenerate token?"
 msgstr "Regenerate token?"
 
 #: src/mods/ModMenu.tsx:150
-#: src/mods/Sidebar.tsx:366
+#: src/mods/ModUpdateControls.tsx:35
 #: src/mods/updateReview/UpdateActions.tsx:100
 msgid "Unpin"
 msgstr "Unpin"
@@ -5452,7 +5472,7 @@ msgstr "already listed"
 msgid "Could not untrack mods"
 msgstr "Could not untrack mods"
 
-#: src/commandPalette/paletteLabels.ts:24
+#: src/commandPalette/paletteLabels.ts:25
 msgid "Go to Mods"
 msgstr "Go to Mods"
 
@@ -5463,7 +5483,7 @@ msgstr "Only in {aName}"
 #. placeholder {0}: unofficial.version
 #. placeholder {0}: update.version
 #: src/mods/parts.tsx:223
-#: src/mods/Sidebar.tsx:191
+#: src/mods/Sidebar.tsx:192
 #: src/mods/updateReview/RowCopy.tsx:25
 msgid "Unofficial update available: {0}"
 msgstr "Unofficial update available: {0}"
@@ -5493,7 +5513,7 @@ msgstr "Untrack all {trackedCount} tracked {gameName} mods on Nexus? Nexus has n
 msgid "Change"
 msgstr "Change"
 
-#: src/mods/storeEntries.ts:416
+#: src/mods/storeEntries.ts:431
 msgid "Could not switch the group"
 msgstr "Could not switch the group"
 
@@ -5509,7 +5529,10 @@ msgstr "Rename bundle"
 msgid "Bundle added"
 msgstr "Bundle added"
 
-#: src/browse/BrowsePage.tsx:123
+#: src/browse/BrowsePage.tsx:85
+#: src/game/ProfileWorkspace.tsx:47
+#: src/game/Sidebar.tsx:251
+#: src/game/Sidebar.tsx:252
 msgid "Browse"
 msgstr "Browse"
 
@@ -5546,7 +5569,7 @@ msgstr "This cannot be undone."
 msgid "Restored"
 msgstr "Restored"
 
-#: src/browse/BrowsePage.tsx:143
+#: src/browse/BrowsePage.tsx:105
 msgid "CurseForge"
 msgstr "CurseForge"
 
@@ -5722,7 +5745,7 @@ msgid "{0, plural, one {with # settings file, written once its mod is installed}
 msgstr "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 
 #: src/firstrunTour/TourPopover.tsx:56
-#: src/game/ProfileWorkspace.tsx:51
+#: src/game/ProfileWorkspace.tsx:53
 #: src/mods/ModCards.tsx:438
 #: src/mods/ModList.tsx:390
 msgid "Problems"
@@ -5867,7 +5890,7 @@ msgstr "Open a profile to install mods"
 msgid "What the person opening the link sees"
 msgstr "What the person opening the link sees"
 
-#: src/mods/storeEntries.ts:341
+#: src/mods/storeEntries.ts:356
 msgid "Skipped updates for selected mods"
 msgstr "Skipped updates for selected mods"
 
@@ -5989,7 +6012,7 @@ msgstr "Keep"
 msgid "{0} will be overwritten. A backup of the current Saves folder is made first."
 msgstr "{0} will be overwritten. A backup of the current Saves folder is made first."
 
-#: src/browse/BrowsePage.tsx:225
+#: src/browse/BrowsePage.tsx:191
 #: src/mods/ModMenu.tsx:126
 #: src/mods/TrackedNotInProfile.tsx:79
 #: src/saves/lackChipActions.tsx:88
@@ -6015,7 +6038,7 @@ msgstr "{0} not installed yet"
 msgid "Copy report"
 msgstr "Copy report"
 
-#: src/browse/BrowsePage.tsx:127
+#: src/browse/BrowsePage.tsx:89
 msgid "Search mods"
 msgstr "Search mods"
 
@@ -6148,7 +6171,7 @@ msgstr "Pin"
 msgid "Could not send to {0}"
 msgstr "Could not send to {0}"
 
-#: src/mods/storeEntries.ts:307
+#: src/mods/storeEntries.ts:308
 msgid "Pinned selected mods"
 msgstr "Pinned selected mods"
 
@@ -6275,7 +6298,7 @@ msgstr "Recent address"
 msgid "Updates, missing dependencies and links from Nexus land here."
 msgstr "Updates, missing dependencies and links from Nexus land here."
 
-#: src/mods/Sidebar.tsx:387
+#: src/mods/Sidebar.tsx:381
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
@@ -6291,6 +6314,11 @@ msgstr "Remove all {0} mods from this profile?"
 msgid "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 msgstr "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 
+#. placeholder {0}: mod.name
+#: src/mods/storeEntries.ts:340
+msgid "Could not set the update channel for {0}"
+msgstr "Could not set the update channel for {0}"
+
 #: src/launch/PlayControl.tsx:97
 msgid "Running"
 msgstr "Running"
@@ -6299,7 +6327,7 @@ msgstr "Running"
 msgid "Report it so it can be fixed."
 msgstr "Report it so it can be fixed."
 
-#: src/browse/BrowsePage.tsx:142
+#: src/browse/BrowsePage.tsx:104
 #: src/mods/listRows.ts:46
 #: src/mods/Sidebar.tsx:340
 msgid "GitHub"
@@ -6315,7 +6343,7 @@ msgstr "Actions for {0}"
 msgid "Include notes"
 msgstr "Include notes"
 
-#: src/mods/storeEntries.ts:306
+#: src/mods/storeEntries.ts:307
 msgid "Could not pin the selected mods"
 msgstr "Could not pin the selected mods"
 
@@ -6344,7 +6372,7 @@ msgstr "Combine with…"
 #. placeholder {0}: mark.date
 #: src/mods/NexusDetails.tsx:205
 #: src/mods/parts.tsx:133
-#: src/mods/Sidebar.tsx:123
+#: src/mods/Sidebar.tsx:124
 msgid "Removed from Nexus · {0}"
 msgstr "Removed from Nexus · {0}"
 
@@ -6429,8 +6457,8 @@ msgstr "Auto-enable requirements"
 #: src/mods/ModCards.tsx:440
 #: src/mods/ModDependencyTree.tsx:112
 #: src/mods/ModList.tsx:392
-#: src/mods/Sidebar.tsx:301
-#: src/mods/Sidebar.tsx:315
+#: src/mods/Sidebar.tsx:302
+#: src/mods/Sidebar.tsx:316
 #: src/profiles/CompareBulkBody.tsx:245
 #: src/profiles/ProfilesPage.tsx:308
 #: src/profiles/ProfilesPage.tsx:319
@@ -6449,12 +6477,12 @@ msgid "{profileName} has {0} more than once. SMAPI loads only one, so pick which
 msgstr "{profileName} has {0} more than once. SMAPI loads only one, so pick which to keep. The others are switched off, not deleted."
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:296
+#: src/mods/storeEntries.ts:297
 msgid "Could not unpin {0}"
 msgstr "Could not unpin {0}"
 
 #: src/mods/ModDetail.tsx:218
-#: src/mods/Sidebar.tsx:424
+#: src/mods/Sidebar.tsx:418
 msgid "In the same download"
 msgstr "In the same download"
 
@@ -6714,8 +6742,8 @@ msgid "Mortar menu"
 msgstr "Mortar menu"
 
 #: src/game/detailStates.tsx:53
-#: src/game/Sidebar.tsx:393
-#: src/game/Sidebar.tsx:394
+#: src/game/Sidebar.tsx:399
+#: src/game/Sidebar.tsx:400
 msgid "Manage profiles"
 msgstr "Manage profiles"
 
@@ -6960,7 +6988,7 @@ msgstr "Backup before Play"
 msgid "Riverland farm"
 msgstr "Riverland farm"
 
-#: src/commandPalette/paletteLabels.ts:32
+#: src/commandPalette/paletteLabels.ts:33
 msgid "Toggle {name}"
 msgstr "Toggle {name}"
 
@@ -7112,7 +7140,7 @@ msgstr "Pending"
 msgid "Couldn't inspect the destination folder"
 msgstr "Couldn't inspect the destination folder"
 
-#: src/browse/BrowsePage.tsx:219
+#: src/browse/BrowsePage.tsx:185
 msgid "{stars} stars"
 msgstr "{stars} stars"
 
@@ -7260,7 +7288,7 @@ msgstr "Minimise"
 msgid "Installed: Mortar {0}"
 msgstr "Installed: Mortar {0}"
 
-#: src/mods/Sidebar.tsx:263
+#: src/mods/Sidebar.tsx:264
 msgid "Show in Console"
 msgstr "Show in Console"
 
@@ -7325,7 +7353,7 @@ msgid "Could not roll back {0}"
 msgstr "Could not roll back {0}"
 
 #: src/game/Hero.tsx:297
-#: src/game/ProfileWorkspace.tsx:63
+#: src/game/ProfileWorkspace.tsx:65
 msgid "Saves"
 msgstr "Saves"
 
@@ -7539,7 +7567,7 @@ msgid "Player"
 msgstr "Player"
 
 #: src/firstrunTour/TourPopover.tsx:47
-#: src/game/Sidebar.tsx:336
+#: src/game/Sidebar.tsx:342
 #: src/profiles/ProfilesPage.tsx:374
 #: src/settings/sections/AboutDiagnostics.tsx:59
 #: src/settings/sections/DataMods.tsx:119
@@ -7628,7 +7656,7 @@ msgstr "Could not build the link"
 
 #. placeholder {0}: hit.warnings
 #: src/mods/parts.tsx:156
-#: src/mods/Sidebar.tsx:251
+#: src/mods/Sidebar.tsx:252
 msgid "{0, plural, one {# warning} other {# warnings}}"
 msgstr "{0, plural, one {# warning} other {# warnings}}"
 
@@ -7810,7 +7838,7 @@ msgstr "Broke in {0}"
 msgid "Open the previous profile"
 msgstr "Open the previous profile"
 
-#: src/commandPalette/paletteLabels.ts:30
+#: src/commandPalette/paletteLabels.ts:31
 msgid "Go to Performance"
 msgstr "Go to Performance"
 
@@ -7850,8 +7878,8 @@ msgstr "What's new in Mortar {0}"
 #: src/mods/AuthorDialog.tsx:135
 #: src/mods/ModDependencyTree.tsx:114
 #: src/mods/ModDetail.tsx:51
-#: src/mods/Sidebar.tsx:301
-#: src/mods/Sidebar.tsx:315
+#: src/mods/Sidebar.tsx:302
+#: src/mods/Sidebar.tsx:316
 #: src/profiles/CompareBulkBody.tsx:246
 #: src/profiles/ProfilesPage.tsx:308
 #: src/profiles/ProfilesPage.tsx:319
@@ -7864,11 +7892,11 @@ msgid "Run crashed"
 msgstr "Run crashed"
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:241
+#: src/mods/storeEntries.ts:242
 msgid "Could not save the note and tags for {0}"
 msgstr "Could not save the note and tags for {0}"
 
-#: src/mods/storeEntries.ts:404
+#: src/mods/storeEntries.ts:419
 msgid "Could not add to the group"
 msgstr "Could not add to the group"
 
@@ -7880,7 +7908,7 @@ msgstr "Store cleanup"
 msgid "Include pre-release mod versions: {from} → {to}"
 msgstr "Include pre-release mod versions: {from} → {to}"
 
-#: src/mods/Sidebar.tsx:294
+#: src/mods/Sidebar.tsx:295
 msgid "Also in these profiles"
 msgstr "Also in these profiles"
 
@@ -7993,8 +8021,8 @@ msgstr "Season"
 msgid "Tools"
 msgstr "Tools"
 
-#: src/mods/storeEntries.ts:71
-#: src/mods/storeEntries.ts:109
+#: src/mods/storeEntries.ts:72
+#: src/mods/storeEntries.ts:110
 #: src/profiles/historyRevert.ts:82
 msgid "This is no longer the latest change."
 msgstr "This is no longer the latest change."
@@ -8016,7 +8044,7 @@ msgstr "Last game: {from} → {to}"
 msgid "Compare with…"
 msgstr "Compare with…"
 
-#: src/mods/storeEntries.ts:367
+#: src/mods/storeEntries.ts:382
 msgid "Could not update tags for the selected mods"
 msgstr "Could not update tags for the selected mods"
 
@@ -8038,7 +8066,7 @@ msgstr "This archive has no SMAPI mod where Mortar expects one. Pick the folder 
 
 #: src/mods/ModMenu.tsx:155
 #: src/mods/parts.tsx:262
-#: src/mods/Sidebar.tsx:214
+#: src/mods/Sidebar.tsx:215
 msgid "Skip this update"
 msgstr "Skip this update"
 
@@ -8077,7 +8105,7 @@ msgstr "Welcome to Mortar"
 msgid "{unblocked} can load now."
 msgstr "{unblocked} can load now."
 
-#: src/mods/Sidebar.tsx:387
+#: src/mods/Sidebar.tsx:381
 msgid "Mod id"
 msgstr "Mod id"
 
@@ -8526,7 +8554,7 @@ msgstr "Check for mod updates"
 msgid "Link"
 msgstr "Link"
 
-#: src/mods/Sidebar.tsx:384
+#: src/mods/Sidebar.tsx:378
 msgid "Stop ignoring {ignoredSource} updates"
 msgstr "Stop ignoring {ignoredSource} updates"
 
@@ -8585,7 +8613,7 @@ msgid "Open in the tray instead of showing the window"
 msgstr "Open in the tray instead of showing the window"
 
 #: src/commandPalette/paletteLabels.ts:15
-#: src/game/ProfileWorkspace.tsx:99
+#: src/game/ProfileWorkspace.tsx:101
 #: src/profiles/ProfileRow.tsx:229
 msgid "Share"
 msgstr "Share"
@@ -8697,7 +8725,7 @@ msgstr "Confirm removals"
 msgid "Forest farm"
 msgstr "Forest farm"
 
-#: src/game/ProfileWorkspace.tsx:104
+#: src/game/ProfileWorkspace.tsx:106
 msgid "{gameName} settings"
 msgstr "{gameName} settings"
 

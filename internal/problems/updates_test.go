@@ -169,6 +169,17 @@ func TestHideHeldDropsPrereleaseUnlessInstalledIsPrerelease(t *testing.T) {
 	}
 }
 
+func TestHideHeldKeepsPrereleaseOnBetaChannel(t *testing.T) {
+	r := UpdatesResult{Updates: []Update{
+		{Key: "stable", Installed: "1.0.0", Version: "2.0.0-beta"},
+	}}
+	mods := []Installed{{Key: "stable", UpdateChannel: "beta"}}
+	got := HideHeld(r, mods, false, "")
+	if len(got.Updates) != 1 {
+		t.Fatalf("beta channel should keep prerelease, got %+v", got.Updates)
+	}
+}
+
 func TestHideHeldDropsUnofficialWhenNever(t *testing.T) {
 	r := UpdatesResult{Updates: []Update{
 		{Key: "off", Version: "2.0.0", Unofficial: true},

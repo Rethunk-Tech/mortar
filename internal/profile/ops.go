@@ -419,6 +419,7 @@ func applyRestoredMeta(p *Profile, want Entry) {
 		p.Entries[i].Pinned = want.Pinned
 		p.Entries[i].SkipVersion = want.SkipVersion
 		p.Entries[i].SkipSources = slices.Clone(want.SkipSources)
+		p.Entries[i].UpdateChannel = want.UpdateChannel
 		p.Entries[i].Note = want.Note
 		p.Entries[i].Tags = slices.Clone(want.Tags)
 		p.Entries[i].CategoryOverride = want.CategoryOverride

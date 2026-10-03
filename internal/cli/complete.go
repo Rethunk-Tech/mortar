@@ -72,6 +72,8 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 	switch words[0] {
 	case "games", "doctor", "queue", "downloads", "backups", "cache", "data", "settings", "version", "help", "open", "completion", "launchers":
 		return 0, 0, 0
+	case "browse":
+		return 1, 0, 0
 	case "store":
 		if len(words) > 1 && words[1] == "remove" {
 			return 2, 0, 0

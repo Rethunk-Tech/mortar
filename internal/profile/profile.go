@@ -124,6 +124,8 @@ type Entry struct {
 	SkipVersion string `json:"skipVersion,omitempty"`
 	// SkipSources hides updates reported by these sources.
 	SkipSources []string `json:"skipSources,omitempty"`
+	// UpdateChannel is main (empty), optional, or beta: which Nexus files count as updates.
+	UpdateChannel string `json:"updateChannel,omitempty"`
 	// Note is a per-entry remark in this profile, at most MaxEntryNote characters.
 	Note string `json:"note,omitempty"`
 	// Tags are per-entry labels in this profile, at most MaxEntryTags of MaxEntryTag characters each.

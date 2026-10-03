@@ -125,7 +125,7 @@ func fingerprint(env Environment, mods []Installed, runID string) string {
 	var b strings.Builder
 	b.WriteString(env.GameVersion + "|" + env.APIVersion + "|run:" + runID)
 	for _, m := range mods {
-		b.WriteString("\n" + m.Key + "|" + m.UniqueID + "|" + m.Version + "|" + m.Name)
+		b.WriteString("\n" + m.Key + "|" + m.UniqueID + "|" + m.Version + "|" + m.Name + "|ch:" + m.UpdateChannel)
 		b.WriteString("|desc:" + m.Description)
 		if m.Enabled {
 			b.WriteString("|on")
@@ -158,7 +158,8 @@ func (s *Service) installed(gameID, id string) ([]Installed, error) {
 		mods[i] = Installed{
 			Key: m.Key, SourceKind: m.Source.Kind, SourceVersion: m.Source.Version, Enabled: m.Enabled, Folder: m.Folder,
 			Pinned: m.Pinned, SkipVersion: m.SkipVersion, SkipSources: m.SkipSources, IgnoreUpdates: m.IgnoreUpdates,
-			LoadAfter: m.LoadAfter, Manifest: m.Manifest,
+			UpdateChannel: m.UpdateChannel,
+			LoadAfter:     m.LoadAfter, Manifest: m.Manifest,
 		}
 	}
 	return mods, nil

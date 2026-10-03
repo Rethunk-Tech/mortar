@@ -24,6 +24,7 @@ import {
   skipSource,
   skipVersion,
   skipVersionMany,
+  setUpdateChannel as writeUpdateChannel,
 } from './storeEntries.ts'
 import { loadModProblems, loadMods, showUpdatesView } from './storeLoad.ts'
 import { problemActions } from './storeProblems.ts'
@@ -52,6 +53,7 @@ export const useMods = create<{
   setPinnedMany: (mods: Mod[], pinned: boolean) => Promise<void>
   setSkipVersion: (mod: Mod, version: string) => Promise<void>
   setSkipVersionMany: (mods: Mod[]) => Promise<void>
+  setUpdateChannel: (mod: Mod, channel: string) => Promise<void>
   setSkipSource: (mod: Mod, source: string, skip: boolean) => Promise<void>
   setCategoryMany: (mods: Mod[], category: string) => Promise<void>
   setTagMany: (mods: Mod[], tag: string, add: boolean) => Promise<void>
@@ -102,6 +104,7 @@ export const useMods = create<{
   },
   setSkipVersion: (mod, version) => skipVersion(mod, version),
   setSkipVersionMany: (mods) => skipVersionMany(mods),
+  setUpdateChannel: (mod, channel) => writeUpdateChannel(mod, channel),
   setSkipSource: (mod, source, skip) => skipSource(mod, source, skip),
   setCategoryMany: (mods, category) => setCategoryMany(mods, category),
   setTagMany: (mods, tag, add) => setTagMany(mods, tag, add),

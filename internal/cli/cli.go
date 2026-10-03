@@ -43,6 +43,7 @@ var verbs = map[string]bool{
 	"conflicts": true, "problems": true, "who": true, "updates": true, "share": true, "export": true, "open": true, "play": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
 	"downloads": true,
+	"browse":    true,
 	"bundles":   true, "nexus": true, "trash": true, "cache": true, "data": true, "store": true,
 	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "smapi": true, "sweep": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
@@ -93,6 +94,8 @@ type cmd struct {
 	item          string
 	mark          bool
 	restore       bool
+	sourceFlag    string
+	pageFlag      int
 	args          []string
 }
 
@@ -287,6 +290,30 @@ func (c *cmd) parse(args []string) error {
 			c.game = args[i]
 		case strings.HasPrefix(a, "--game="):
 			c.game = strings.TrimPrefix(a, "--game=")
+		case a == "--source":
+			if i+1 >= len(args) {
+				return usageError{"--source needs nexus or github"}
+			}
+			i++
+			c.sourceFlag = args[i]
+		case strings.HasPrefix(a, "--source="):
+			c.sourceFlag = strings.TrimPrefix(a, "--source=")
+		case a == "--page":
+			if i+1 >= len(args) {
+				return usageError{"--page needs a number"}
+			}
+			i++
+			n, err := strconv.Atoi(args[i])
+			if err != nil {
+				return usageError{"--page needs a number"}
+			}
+			c.pageFlag = n
+		case strings.HasPrefix(a, "--page="):
+			n, err := strconv.Atoi(strings.TrimPrefix(a, "--page="))
+			if err != nil {
+				return usageError{"--page needs a number"}
+			}
+			c.pageFlag = n
 		case a == "--help" || a == "-h":
 			c.args = append(c.args, "help")
 		case strings.HasPrefix(a, "--"):
@@ -370,6 +397,8 @@ func (c *cmd) dispatch() error {
 		return c.queue()
 	case "downloads":
 		return c.downloads()
+	case "browse":
+		return c.browse()
 	case "update":
 		return c.update()
 	case "backups":
@@ -2142,6 +2171,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   mods <game> <profile>                   mods with version, state and source
   mods enable|disable|pin|unpin|remove <game> <profile> <mod id>...  (pin accepts --reason)
   mods tag|untag|category|note|skip-version <game> <profile> <mod> [value]
+  mods channel <game> <profile> <mod> main|optional|beta
   mods group <game> <profile> list|create|delete|add|remove|on|off …
   mods split <game> <profile> <mod> <file>
   mods combine <game> <profile> <mod> <into-mod>
@@ -2186,6 +2216,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   queue pause|resume|clear                control the download queue
   downloads                               archives noticed in Downloads this session
   downloads install <n>                   install one into the open profile
+  browse <game> <text> [--source nexus|github] [--page N]  search Nexus or GitHub
   update <game> <profile> <mod id>...|--all
                                           queue available mod updates
   backups list                            list save backups

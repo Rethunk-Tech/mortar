@@ -21,6 +21,7 @@ import {
   SetSkipSource,
   SetSkipVersion,
   SetSkipVersionMany,
+  SetUpdateChannel,
   ShowFiles,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
@@ -323,6 +324,20 @@ export async function skipVersion(mod: Mod, version: string) {
           : msg`Could not skip the update for ${mod.name}`,
       ),
     )(e)
+    return
+  }
+  await useUpdates.getState().load()
+}
+
+export async function setUpdateChannel(mod: Mod, channel: string) {
+  const target = open()
+  if (!target) {
+    return
+  }
+  try {
+    useProfiles.getState().replace(await SetUpdateChannel(target.game, target.id, mod.key, channel))
+  } catch (e) {
+    fail(i18n._(msg`Could not set the update channel for ${mod.name}`))(e)
     return
   }
   await useUpdates.getState().load()
