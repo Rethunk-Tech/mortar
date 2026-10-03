@@ -629,6 +629,45 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			}
 			return modRows(s.reload(p.Game, id, prof)), nil
 		})
+	case "mods.split":
+		if len(p.UniqueIDs) != 2 {
+			return nil, fmt.Errorf("mods split needs a mod and a file")
+		}
+		keys, err := keysFor(prof, p.UniqueIDs[:1])
+		if err != nil {
+			return nil, err
+		}
+		entry, ok := entryByKey(prof, keys[0])
+		if !ok {
+			return nil, fmt.Errorf("%q is not in this profile", keys[0])
+		}
+		extra, err := extraKeyOf(entry, p.UniqueIDs[1])
+		if err != nil {
+			return nil, err
+		}
+		return s.changed(p.Game, func() (any, error) {
+			if _, err := s.Profiles.SplitExtra(p.Game, id, keys[0], extra); err != nil {
+				return nil, err
+			}
+			return modRows(s.reload(p.Game, id, prof)), nil
+		})
+	case "mods.combine":
+		if len(p.UniqueIDs) != 2 {
+			return nil, fmt.Errorf("mods combine needs a mod and the entry to combine it into")
+		}
+		keys, err := keysFor(prof, p.UniqueIDs)
+		if err != nil {
+			return nil, err
+		}
+		if len(keys) != 2 {
+			return nil, fmt.Errorf("those mods are already one entry")
+		}
+		return s.changed(p.Game, func() (any, error) {
+			if _, err := s.Profiles.CombineEntries(p.Game, id, keys[1], keys[0]); err != nil {
+				return nil, err
+			}
+			return modRows(s.reload(p.Game, id, prof)), nil
+		})
 	case "install":
 		return s.changed(p.Game, func() (any, error) { return s.install(p.Game, id, p.Path) })
 	case "conflicts":
@@ -873,6 +912,26 @@ func entryOf(p profile.Profile, uniqueID string) (profile.Entry, bool) {
 		}
 	}
 	return profile.Entry{}, false
+}
+
+func extraKeyOf(e profile.Entry, id string) (string, error) {
+	if slices.Contains(e.ExtraStoreKeys, id) {
+		return id, nil
+	}
+	prefixFor := func(extra string) string { return filepath.ToSlash(extra) + "/" }
+	for _, extra := range e.ExtraStoreKeys {
+		prefix := prefixFor(extra)
+		for _, m := range e.Mods {
+			folder := filepath.ToSlash(m.Folder)
+			if folder != extra && !strings.HasPrefix(folder, prefix) {
+				continue
+			}
+			if strings.EqualFold(m.UniqueID, id) || strings.EqualFold(m.Name, id) {
+				return extra, nil
+			}
+		}
+	}
+	return "", fmt.Errorf("%q is not an extra file of this entry", id)
 }
 
 func refsFor(p profile.Profile, ids []string) ([]profile.EnableRef, error) {

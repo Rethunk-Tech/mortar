@@ -340,7 +340,7 @@ func (c *cmd) dispatch() error {
 	case "mods":
 		if len(c.args) > 1 {
 			switch c.args[1] {
-			case "enable", "disable", "remove", "pin", "unpin", "tag", "untag", "category", "note", "skip-version":
+			case "enable", "disable", "remove", "pin", "unpin", "tag", "untag", "category", "note", "skip-version", "split", "combine":
 				return c.modsChange(c.args[1])
 			}
 		}
@@ -1167,6 +1167,26 @@ func (c *cmd) modsChange(sub string) error {
 	}
 	p := control.Params{Game: a[0], Profile: a[1], UniqueIDs: a[2:]}
 	switch sub {
+	case "split", "combine":
+		need := "a file"
+		if sub == "combine" {
+			need = "the entry to combine it into"
+		}
+		if len(a) < 4 {
+			return usageError{"mods " + sub + " needs a mod and " + need}
+		}
+		p.UniqueIDs = a[2:4]
+		var rows []control.ModRow
+		if err := c.ask("mods."+sub, p, &rows, readTimeout); err != nil {
+			return err
+		}
+		return c.emit(rows, func() {
+			if sub == "split" {
+				fmt.Fprintln(c.out, "Installed that file as its own mod.")
+				return
+			}
+			fmt.Fprintln(c.out, "Combined those mods into one entry.")
+		})
 	case "tag", "untag", "category", "note", "skip-version":
 		if sub != "note" && sub != "skip-version" && len(a) < 4 {
 			return usageError{"mods " + sub + " needs a value"}
@@ -1943,6 +1963,8 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   mods <game> <profile>                   mods with version, state and source
   mods enable|disable|pin|unpin|remove <game> <profile> <mod id>...
   mods tag|untag|category|note|skip-version <game> <profile> <mod> [value]
+  mods split <game> <profile> <mod> <file>
+  mods combine <game> <profile> <mod> <into-mod>
   mod <game> <profile> <mod id>           one mod: dependencies, dependents, conflicts, settings
                                           (mod id is the SMAPI UniqueID)
   install <game> <profile> <archive>      install a local archive
