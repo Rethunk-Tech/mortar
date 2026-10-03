@@ -111,6 +111,11 @@ func (s *Service) ProfilesWithMod(game, uniqueID string) ([]ModInProfile, error)
 	return s.store.ProfilesWithMod(game, uniqueID)
 }
 
+// ModsByAuthor lists mods whose manifest Author field includes author in any profile of game.
+func (s *Service) ModsByAuthor(game, author string) ([]AuthorMod, error) {
+	return s.store.ModsByAuthor(game, author)
+}
+
 func (s *Service) Create(game, name string) (Profile, error) { return s.store.Create(game, name) }
 
 func (s *Service) Rename(game, id, name string) (Profile, error) {
