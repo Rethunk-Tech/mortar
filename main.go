@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -198,6 +199,11 @@ func run() error {
 			},
 		},
 	})
+	// A windowsgui build has no stderr, so a fatal panic would end the process without a trace.
+	if crash, err := fsx.OpenFile(filepath.Join(dataDir, "crash.log"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600); err == nil {
+		_ = debug.SetCrashOutput(crash, debug.CrashOptions{})
+		_ = crash.Close()
+	}
 
 	store, err = settings.Open()
 	if err != nil {
