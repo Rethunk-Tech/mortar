@@ -531,6 +531,10 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.downloadsInstall(p)
 	case "updates.apply":
 		return s.changed(p.Game, func() (any, error) { return s.applyEverywhere(ctx, p) })
+	case "mods.by-author":
+		return s.modsByAuthor(p)
+	case "browse":
+		return s.browseFromParams(ctx, p)
 	}
 	if method == "logs.search" {
 		prof, err := s.resolve(p.Game, p.Profile)
@@ -638,6 +642,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.profileSteam(p.Game, id)
 	case "mods":
 		return modRows(prof), nil
+	case "mods.channel":
+		return s.modsChannel(p, prof, id)
 	case "mods.files":
 		if len(p.UniqueIDs) == 0 {
 			return nil, fmt.Errorf("mods files needs a mod")

@@ -431,6 +431,8 @@ func (c *cmd) dispatch() error {
 				return c.modsChange(c.args[1])
 			case "group":
 				return c.modsGroup()
+			case "channel":
+				return c.modsChannel()
 			case "win":
 				return c.modsWin()
 			case "files":
@@ -445,6 +447,8 @@ func (c *cmd) dispatch() error {
 				return c.modsCompat()
 			case "report":
 				return c.modsReport()
+			case "by-author":
+				return c.modsByAuthor()
 			}
 		}
 	}
@@ -2149,6 +2153,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   sweep <game> [--json]                   patch-day check after a game or SMAPI change
   mods compat <game> <profile>            non-ok SMAPI compatibility-list rows
   mods report <game> <profile> <mod> [--run ID]  report text and author URL for a mod's log errors
+  mods by-author <game> <author>            mods installed in any profile for this author
   mod <game> <profile> <mod id>           one mod: dependencies, dependents, conflicts, settings
                                           (mod id is the SMAPI UniqueID)
   install <game> <profile> <archive>      install a local archive
