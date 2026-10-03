@@ -10,16 +10,18 @@ import {
   InputAdornment,
   ListItemIcon,
   ListItemText,
+  ListSubheader,
   Menu,
   MenuItem,
   TextField,
   Tooltip,
   useMediaQuery,
 } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
+import { Browser, Clipboard } from '@wailsio/runtime'
 import {
   Ban,
   Check,
+  Copy,
   Download,
   ExternalLink,
   Filter,
@@ -39,15 +41,19 @@ import { useEffect, useRef, useState } from 'react'
 import { SetListGroupBy } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
 import { useInstall } from '../install/store.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { CategoryEditorDialog } from './CategoryEditor.tsx'
 import { onFilterFocus } from './filterFocus.ts'
 import { type GroupBy, sanitizeListGroupBy } from './group.ts'
+import { nexusIdOf } from './lookup.ts'
+import { formatModList, type ModListFormat } from './modListText.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -267,6 +273,66 @@ function AddArchive({
   )
 }
 
+function CopyModListControl() {
+  const { t } = useLingui()
+  const mods = useMods((s) => s.mods)
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const enabled = mods.some((mod) => mod.enabled)
+  const copy = (format: ModListFormat) => {
+    setAnchor(null)
+    if (!profile) {
+      return
+    }
+    const text = formatModList(
+      mods.map((mod) => {
+        const nexusId = nexusIdOf(profile, mod)
+        return {
+          enabled: mod.enabled,
+          name: mod.name,
+          version: mod.version,
+          nexusUrl:
+            nexusId > 0 ? `https://www.nexusmods.com/stardewvalley/mods/${nexusId}` : undefined,
+        }
+      }),
+      format,
+    )
+    Clipboard.SetText(text).then(
+      () => useToasts.getState().push({ kind: 'success', title: t`Mod list copied` }),
+      reportUnexpected,
+    )
+  }
+  return (
+    <>
+      <Button
+        variant="outlined"
+        aria-label={t`Copy mod list`}
+        startIcon={<Copy size={14} />}
+        onClick={(e) => setAnchor(e.currentTarget)}
+        sx={iconWhenCompact}
+      >
+        <span className="label">{t`Copy`}</span>
+      </Button>
+      <Menu
+        open={anchor !== null}
+        anchorEl={anchor}
+        onClose={() => setAnchor(null)}
+        transitionDuration={0}
+      >
+        <ListSubheader sx={{ lineHeight: '32px', bgcolor: 'transparent' }}>
+          {t`Copy mod list`}
+        </ListSubheader>
+        <MenuItem disabled={!enabled} onClick={() => copy('markdown')}>
+          <ListItemText>{t`Markdown`}</ListItemText>
+        </MenuItem>
+        <MenuItem disabled={!enabled} onClick={() => copy('plain')}>
+          <ListItemText>{t`Plain text`}</ListItemText>
+        </MenuItem>
+      </Menu>
+    </>
+  )
+}
+
 export function Toolbar({
   query,
   onQuery,
@@ -394,6 +460,7 @@ export function Toolbar({
           )}
         </Button>
       ) : null}
+      <CopyModListControl />
       <BrowseNexus variant="outlined" toolbar={true} />
       <AddArchive variant="outlined" toolbar={true} />
     </Box>
