@@ -123,7 +123,7 @@ msgstr "Installing SMAPI {latest}"
 
 #. placeholder {0}: status.version
 #: src/settings/sections/GameSettings.tsx:428
-#: src/settings/sections/SmapiVersionRow.tsx:73
+#: src/settings/sections/SmapiVersionRow.tsx:72
 msgid "SMAPI {0}"
 msgstr "SMAPI {0}"
 
@@ -157,7 +157,7 @@ msgstr "Updated"
 #: src/saves/lackChipActions.tsx:74
 #: src/saves/lackChips.tsx:59
 #: src/saves/lackChips.tsx:103
-#: src/settings/sections/SmapiVersionRow.tsx:67
+#: src/settings/sections/SmapiVersionRow.tsx:66
 #: src/share/ImportFooter.tsx:98
 #: src/share/ImportFooter.tsx:112
 #: src/share/usePasteLink.ts:29
@@ -2680,7 +2680,7 @@ msgid "Last run: {summary}"
 msgstr "Last run: {summary}"
 
 #: src/loader/store.ts:58
-#: src/settings/sections/SmapiVersionRow.tsx:93
+#: src/settings/sections/SmapiVersionRow.tsx:92
 msgid "Could not install SMAPI"
 msgstr "Could not install SMAPI"
 
@@ -3098,7 +3098,7 @@ msgstr "Could not read this Mortar build's version: {failed}"
 
 #: src/loader/Banner.tsx:31
 #: src/settings/sections/GameSettings.tsx:421
-#: src/settings/sections/SmapiVersionRow.tsx:73
+#: src/settings/sections/SmapiVersionRow.tsx:72
 msgid "SMAPI is not installed"
 msgstr "SMAPI is not installed"
 
@@ -5364,7 +5364,7 @@ msgstr "{n, plural, one {# update} other {# updates}}"
 msgid "Discord"
 msgstr "Discord"
 
-#: src/settings/sections/SmapiVersionRow.tsx:129
+#: src/settings/sections/SmapiVersionRow.tsx:128
 msgid "Install the latest SMAPI and follow new releases."
 msgstr "Install the latest SMAPI and follow new releases."
 
@@ -5705,7 +5705,7 @@ msgstr "Remove from {0} profiles"
 msgid "Restore the last window bounds on startup"
 msgstr "Restore the last window bounds on startup"
 
-#: src/settings/sections/SmapiVersionRow.tsx:126
+#: src/settings/sections/SmapiVersionRow.tsx:125
 msgid "Install this SMAPI version?"
 msgstr "Install this SMAPI version?"
 
@@ -6625,7 +6625,7 @@ msgstr "{0} done · {1} in progress · {2} failed · {3} left"
 msgid "Hide from sidebar"
 msgstr "Hide from sidebar"
 
-#: src/settings/sections/SmapiVersionRow.tsx:119
+#: src/settings/sections/SmapiVersionRow.tsx:118
 msgid "Install this version"
 msgstr "Install this version"
 
@@ -6671,7 +6671,7 @@ msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 #: src/fomod/Dialog.tsx:261
 #: src/loader/Banner.tsx:32
 #: src/settings/sections/GameSettings.tsx:423
-#: src/settings/sections/SmapiVersionRow.tsx:132
+#: src/settings/sections/SmapiVersionRow.tsx:131
 msgid "Install"
 msgstr "Install"
 
@@ -6796,7 +6796,7 @@ msgstr "Settings"
 msgid "Could not read the details of {0}"
 msgstr "Could not read the details of {0}"
 
-#: src/settings/sections/SmapiVersionRow.tsx:130
+#: src/settings/sections/SmapiVersionRow.tsx:129
 msgid "Install SMAPI {selected}."
 msgstr "Install SMAPI {selected}."
 
@@ -6855,7 +6855,7 @@ msgstr "Clear filters"
 #. placeholder {0}: st.version
 #. placeholder {0}: status.version
 #: src/loader/store.ts:52
-#: src/settings/sections/SmapiVersionRow.tsx:86
+#: src/settings/sections/SmapiVersionRow.tsx:85
 msgid "SMAPI {0} is installed"
 msgstr "SMAPI {0} is installed"
 
@@ -7224,7 +7224,7 @@ msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
 
 #: src/settings/prefCopy.ts:269
-#: src/settings/sections/SmapiVersionRow.tsx:105
+#: src/settings/sections/SmapiVersionRow.tsx:104
 msgid "SMAPI version"
 msgstr "SMAPI version"
 
@@ -8111,7 +8111,7 @@ msgstr "Open settings"
 #: src/settings/sections/General.tsx:61
 #: src/settings/sections/General.tsx:156
 #: src/settings/sections/NexusDownloadPrefs.tsx:17
-#: src/settings/sections/SmapiVersionRow.tsx:50
+#: src/settings/sections/SmapiVersionRow.tsx:49
 #: src/settings/sections/StreamOverlay.tsx:441
 #: src/settings/sections/Updates.tsx:172
 #: src/tips/TipBanner.tsx:45
