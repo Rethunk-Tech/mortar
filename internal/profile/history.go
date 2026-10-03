@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strings"
 	"time"
 
@@ -19,18 +20,19 @@ import (
 )
 
 const (
-	historyFile     = "history.json"
-	maxHistory      = 200
-	historyAdded    = "added"
-	historyRemoved  = "removed"
-	historyUpdated  = "updated"
-	historyEnabled  = "enabled"
-	historyDisabled = "disabled"
-	historyPinned   = "pinned"
-	historyImported = "imported"
-	historyRestored = "restored"
-	historyReverted = "reverted"
-	historyBulk     = "bulk"
+	historyFile      = "history.json"
+	maxHistory       = 200
+	recentHistoryCap = 50
+	historyAdded     = "added"
+	historyRemoved   = "removed"
+	historyUpdated   = "updated"
+	historyEnabled   = "enabled"
+	historyDisabled  = "disabled"
+	historyPinned    = "pinned"
+	historyImported  = "imported"
+	historyRestored  = "restored"
+	historyReverted  = "reverted"
+	historyBulk      = "bulk"
 )
 
 // HistoryEvent is metadata for one change to a profile's mod set.
@@ -94,6 +96,57 @@ func (s *Store) History(game, id string) ([]HistoryEvent, error) {
 			ev.Added, ev.Removed, ev.Updated = ModDiffCounts(before, after)
 		}
 		out[len(data.Events)-1-i] = ev
+	}
+	return out, nil
+}
+
+// RecentEvent is one history event tagged with the profile it belongs to.
+type RecentEvent struct {
+	ProfileID   string `json:"profileId"`
+	ProfileName string `json:"profileName"`
+	HistoryEvent
+}
+
+// RecentHistory lists the newest change events across this game's usable, non-hidden profiles.
+func (s *Store) RecentHistory(game string) ([]RecentEvent, error) {
+	return s.recentHistory(game, recentHistoryCap)
+}
+
+func (s *Store) recentHistory(game string, limit int) ([]RecentEvent, error) {
+	list, err := s.List(game)
+	if err != nil {
+		return nil, err
+	}
+	var out []RecentEvent
+	for _, p := range list {
+		if p.Error != "" || p.Hidden {
+			continue
+		}
+		events, err := s.History(game, p.ID)
+		if err != nil {
+			return nil, err
+		}
+		for _, ev := range events {
+			out = append(out, RecentEvent{ProfileID: p.ID, ProfileName: p.Name, HistoryEvent: ev})
+		}
+	}
+	slices.SortFunc(out, func(a, b RecentEvent) int {
+		if c := b.At.Compare(a.At); c != 0 {
+			return c
+		}
+		if a.ProfileName != b.ProfileName {
+			if a.ProfileName < b.ProfileName {
+				return -1
+			}
+			return 1
+		}
+		return strings.Compare(b.ID, a.ID)
+	})
+	if limit > 0 && len(out) > limit {
+		out = out[:limit]
+	}
+	if out == nil {
+		out = []RecentEvent{}
 	}
 	return out, nil
 }

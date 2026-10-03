@@ -85,6 +85,11 @@ func (s *Service) History(game, id string) ([]HistoryEvent, error) {
 	return s.store.History(game, id)
 }
 
+// RecentHistory lists the newest change events across this game's usable, non-hidden profiles.
+func (s *Service) RecentHistory(game string) ([]RecentEvent, error) {
+	return s.store.RecentHistory(game)
+}
+
 // Snapshot returns the entries for a history snapshot or event.
 func (s *Service) Snapshot(game, id, snapshotID string) ([]Entry, error) {
 	return s.store.Snapshot(game, id, snapshotID)

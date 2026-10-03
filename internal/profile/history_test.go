@@ -2,6 +2,7 @@ package profile
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -592,5 +593,99 @@ func TestRevertRestoresLiveModsWhenProfileJSONFails(t *testing.T) {
 	}
 	if b, readErr := os.ReadFile(filepath.Clean(cfg)); readErr != nil || string(b) != `{"keep":true}` {
 		t.Fatalf("live config lost: %q, %v", b, readErr)
+	}
+}
+
+func seedHistory(t *testing.T, e env, id string, events []HistoryEvent) {
+	t.Helper()
+	dir, err := e.profileDir("stardew", id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := writeHistory(dir, historyFileData{Events: events, Snapshots: map[string][]Entry{}}, 0); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestRecentHistoryOrdersAndSkipsDamaged(t *testing.T) {
+	e := newEnv(t)
+	alpha, err := e.Create("stardew", "Alpha")
+	if err != nil {
+		t.Fatal(err)
+	}
+	beta, err := e.Create("stardew", "Beta")
+	if err != nil {
+		t.Fatal(err)
+	}
+	hidden, err := e.Create("stardew", "Hidden")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.SetHidden("stardew", hidden.ID, true); err != nil {
+		t.Fatal(err)
+	}
+	badID := "0123456789abcdef"
+	badDir := filepath.Join(e.root, "stardew", badID)
+	if err := os.MkdirAll(filepath.Join(badDir, "mods"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(badDir, fileName), []byte("{"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t1 := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	t2 := t1.Add(time.Hour)
+	t3 := t2.Add(time.Hour)
+	seedHistory(t, e, alpha.ID, []HistoryEvent{
+		{ID: "a-old", At: t1, Kind: historyAdded, Label: "Added old"},
+		{ID: "a-new", At: t3, Kind: historyAdded, Label: "Added new"},
+	})
+	seedHistory(t, e, beta.ID, []HistoryEvent{
+		{ID: "b-mid", At: t2, Kind: historyAdded, Label: "Added mid"},
+	})
+	seedHistory(t, e, hidden.ID, []HistoryEvent{
+		{ID: "h-skip", At: t3.Add(time.Hour), Kind: historyAdded, Label: "Added hidden"},
+	})
+	if err := writeHistory(badDir, historyFileData{
+		Events:    []HistoryEvent{{ID: "d-skip", At: t3.Add(2 * time.Hour), Kind: historyAdded, Label: "Added damaged"}},
+		Snapshots: map[string][]Entry{},
+	}, 0); err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := e.RecentHistory("stardew")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"a-new", "b-mid", "a-old"}
+	if len(got) != len(want) {
+		t.Fatalf("got %d events, want %d: %+v", len(got), len(want), got)
+	}
+	for i, id := range want {
+		if got[i].ID != id {
+			t.Fatalf("event %d = %q (%s), want %q", i, got[i].ID, got[i].ProfileName, id)
+		}
+	}
+	if got[0].ProfileName != "Alpha" || got[1].ProfileName != "Beta" {
+		t.Fatalf("profile names = %q %q", got[0].ProfileName, got[1].ProfileName)
+	}
+
+	many := make([]HistoryEvent, recentHistoryCap+1)
+	for i := range many {
+		many[i] = HistoryEvent{
+			ID: fmt.Sprintf("c%02d", i), At: t1.Add(time.Duration(i) * time.Minute),
+			Kind: historyAdded, Label: "Added",
+		}
+	}
+	seedHistory(t, e, alpha.ID, many)
+	seedHistory(t, e, beta.ID, nil)
+	capped, err := e.RecentHistory("stardew")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(capped) != recentHistoryCap {
+		t.Fatalf("capped = %d, want %d", len(capped), recentHistoryCap)
+	}
+	if capped[0].ID != fmt.Sprintf("c%02d", recentHistoryCap) {
+		t.Fatalf("newest after cap = %q", capped[0].ID)
 	}
 }
