@@ -10,6 +10,8 @@ function nodeText(node: ReactNode): string {
   return ''
 }
 
+const STACK_BELOW = 560
+
 export function SettingsSection({
   title,
   description,
@@ -46,6 +48,7 @@ export function SettingsSection({
           bgcolor: 'var(--mortar-overlay-45)',
           borderRadius: 1,
           overflow: 'hidden',
+          containerType: 'inline-size',
           '& > * + *': { borderTop: '1px solid var(--mortar-hairline)' },
         }}
       >
@@ -69,11 +72,28 @@ export function SettingRow({
     return null
   }
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minHeight: 58, px: 2, py: 1 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        minHeight: 58,
+        px: 2,
+        py: 1,
+        // A narrow card puts the control under its label instead of squeezing the label to an ellipsis.
+        [`@container (max-width: ${STACK_BELOW}px)`]: {
+          flexDirection: 'column',
+          alignItems: 'stretch',
+          gap: 1,
+          '& .setting-description': { whiteSpace: 'normal' },
+        },
+      }}
+    >
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ fontSize: 14 }}>{label}</Box>
         {description ? (
           <Box
+            className="setting-description"
             title={nodeText(description)}
             sx={{
               fontSize: 12,

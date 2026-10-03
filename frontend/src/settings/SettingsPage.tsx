@@ -17,6 +17,12 @@ import { Storage } from './sections/Storage.tsx'
 import { Updates } from './sections/Updates.tsx'
 import { shouldLeavePageOnEscape } from './shouldLeavePageOnEscape.ts'
 
+// One readable column: wider rows push controls too far from their labels, so the content stops growing here.
+const CONTENT_MAX = 880
+const NAV_WIDTH = 200
+const NAV_WIDTH_NARROW = 168
+const NARROW_WINDOW = 999
+
 export function SettingsPage({ section }: { section: SettingsSection }) {
   const { t } = useLingui()
   const closeSettings = useNav((s) => s.closeSettings)
@@ -73,7 +79,16 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
   }
   return (
     <SettingsSearchProvider query={query}>
-      <Box sx={{ height: '100%', display: 'grid', gridTemplateColumns: '200px minmax(0, 1fr)' }}>
+      <Box
+        sx={{
+          height: '100%',
+          display: 'grid',
+          gridTemplateColumns: `${NAV_WIDTH}px minmax(0, 1fr)`,
+          [`@media (max-width: ${NARROW_WINDOW}px)`]: {
+            gridTemplateColumns: `${NAV_WIDTH_NARROW}px minmax(0, 1fr)`,
+          },
+        }}
+      >
         <SettingsNav
           section={section}
           sections={sections}
@@ -109,7 +124,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
           <Box
             sx={{
               width: '100%',
-              maxWidth: 760,
+              maxWidth: CONTENT_MAX,
               display: 'flex',
               flexDirection: 'column',
               gap: 2,
