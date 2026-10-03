@@ -12,7 +12,16 @@ test('parseConfig keeps key order, ints, floats, nested objects and string lists
       { key: 'n', node: { kind: 'float', value: '1.5' } },
       { key: 'on', node: { kind: 'bool', value: true } },
       { key: 's', node: { kind: 'string', value: 'hi' } },
-      { key: 'xs', node: { kind: 'strings', value: ['a', 'b'] } },
+      {
+        key: 'xs',
+        node: {
+          kind: 'list',
+          items: [
+            { kind: 'string', value: 'a' },
+            { kind: 'string', value: 'b' },
+          ],
+        },
+      },
       {
         key: 'nested',
         node: { kind: 'object', entries: [{ key: 'k', node: { kind: 'int', value: '2' } }] },

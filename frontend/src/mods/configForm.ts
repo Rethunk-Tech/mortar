@@ -1,15 +1,59 @@
+interface Hint {
+  description: string
+  defaultValue: string
+  section: string
+}
+
 type ConfigNode =
-  | { kind: 'bool'; value: boolean }
-  | { kind: 'int'; value: string }
-  | { kind: 'float'; value: string }
-  | { kind: 'string'; value: string }
-  | { kind: 'strings'; value: string[] }
+  | { kind: 'bool'; value: boolean; hint?: Hint }
+  | { kind: 'int'; value: string; hint?: Hint }
+  | { kind: 'float'; value: string; hint?: Hint }
+  | { kind: 'string'; value: string; hint?: Hint }
+  | { kind: 'keybind'; value: string; hint?: Hint }
+  | {
+      kind: 'choice'
+      value: string
+      options: readonly string[]
+      multiple: boolean
+      allowBlank: boolean
+      defaultValue: string
+      description: string
+      section: string
+    }
+  | { kind: 'list'; items: ConfigNode[] }
   | { kind: 'object'; entries: { key: string; node: ConfigNode }[] }
   | { kind: 'readonly'; json: string }
 
 const numberPattern = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/
 const floatPattern = /[.eE]/
 const whitespacePattern = /\s/
+const namedButton =
+  /^(?:None|MouseLeft|MouseRight|MouseMiddle|MouseX1|MouseX2|LeftShift|RightShift|LeftControl|RightControl|LeftAlt|RightAlt|LeftWindows|RightWindows|Enter|Space|Escape|Tab|Back|CapsLock|Up|Down|Left|Right|Home|End|PageUp|PageDown|Insert|Delete|Pause|PrintScreen|VolumeUp|VolumeDown|VolumeMute|MediaNextTrack|MediaPreviousTrack|MediaStop|MediaPlayPause|Oemtilde|OemMinus|OemPlus|OemOpenBrackets|OemCloseBrackets|OemPipe|OemSemicolon|OemQuotes|OemComma|OemPeriod|OemQuestion|OemBackslash|ControllerA|ControllerB|ControllerX|ControllerY|ControllerBack|ControllerStart|LeftStick|RightStick|LeftShoulder|RightShoulder|LeftTrigger|RightTrigger|DPadUp|DPadDown|DPadLeft|DPadRight|BigButton)$/
+const letterButton = /^[A-Z]$/
+const digitButton = /^D[0-9]$/
+const functionButton = /^F([1-9]|1[0-9]|2[0-4])$/
+const numpadDigit = /^NumPad[0-9]$/
+
+function parseOneKeybind(text: string): boolean {
+  const parts = text.split('+').map((p) => p.trim())
+  return parts.length > 0 && parts.every((p) => p.length > 0 && isSButton(p))
+}
+
+function isSButton(name: string): boolean {
+  return (
+    namedButton.test(name) ||
+    letterButton.test(name) ||
+    digitButton.test(name) ||
+    functionButton.test(name) ||
+    numpadDigit.test(name) ||
+    name === 'NumPadEnter' ||
+    name === 'NumPadMinus' ||
+    name === 'NumPadPlus' ||
+    name === 'NumPadMultiply' ||
+    name === 'NumPadDivide' ||
+    name === 'NumPadDecimal'
+  )
+}
 
 class Parser {
   private at = 0
@@ -27,7 +71,8 @@ class Parser {
       return this.array()
     }
     if (c === '"') {
-      return { kind: 'string', value: this.string() }
+      const value = this.string()
+      return isKeybind(value) ? { kind: 'keybind', value } : { kind: 'string', value }
     }
     if (this.text.startsWith('true', this.at)) {
       this.at += 'true'.length
@@ -79,8 +124,8 @@ class Parser {
       }
     }
     this.at += 1
-    if (values.every((v): v is Extract<ConfigNode, { kind: 'string' }> => v.kind === 'string')) {
-      return { kind: 'strings', value: values.map((v) => v.value) }
+    if (values.every(isScalar)) {
+      return { kind: 'list', items: values }
     }
     return { kind: 'readonly', json: `[${values.map((v) => serialize(v)).join(',')}]` }
   }
@@ -106,6 +151,16 @@ class Parser {
   }
 }
 
+function isScalar(node: ConfigNode): boolean {
+  return (
+    node.kind === 'bool' ||
+    node.kind === 'int' ||
+    node.kind === 'float' ||
+    node.kind === 'string' ||
+    node.kind === 'keybind'
+  )
+}
+
 function serialize(node: ConfigNode): string {
   switch (node.kind) {
     case 'bool':
@@ -114,9 +169,11 @@ function serialize(node: ConfigNode): string {
     case 'float':
       return node.value
     case 'string':
+    case 'keybind':
+    case 'choice':
       return JSON.stringify(node.value)
-    case 'strings':
-      return `[${node.value.map((v) => JSON.stringify(v)).join(',')}]`
+    case 'list':
+      return `[${node.items.map((v) => serialize(v)).join(',')}]`
     case 'object':
       return `{${node.entries.map((e) => `${JSON.stringify(e.key)}:${serialize(e.node)}`).join(',')}}`
     case 'readonly':
@@ -128,28 +185,61 @@ function serialize(node: ConfigNode): string {
   }
 }
 
-export type { ConfigNode }
+function isKeybind(value: string): boolean {
+  if (!value.trim()) {
+    return false
+  }
+  return value
+    .split(',')
+    .map((p) => p.trim())
+    .every((p) => p.length > 0 && parseOneKeybind(p))
+}
 
-export function parseConfig(text: string): ConfigNode {
+function parseConfig(text: string): ConfigNode {
   return new Parser(text).value()
 }
 
-export function stringifyConfig(node: ConfigNode): string {
+function stringifyConfig(node: ConfigNode): string {
   return `${serialize(node)}\n`
 }
 
-export function setAt(node: ConfigNode, path: readonly number[], next: ConfigNode): ConfigNode {
+function setAt(node: ConfigNode, path: readonly number[], next: ConfigNode): ConfigNode {
   if (path.length === 0) {
     return next
   }
-  if (node.kind !== 'object') {
-    return node
-  }
   const [head, ...rest] = path
-  return {
-    kind: 'object',
-    entries: node.entries.map((entry, i) =>
-      i === head ? { key: entry.key, node: setAt(entry.node, rest, next) } : entry,
-    ),
+  if (node.kind === 'object') {
+    return {
+      kind: 'object',
+      entries: node.entries.map((entry, i) =>
+        i === head ? { key: entry.key, node: setAt(entry.node, rest, next) } : entry,
+      ),
+    }
+  }
+  if (node.kind === 'list') {
+    return {
+      kind: 'list',
+      items: node.items.map((item, i) => (i === head ? setAt(item, rest, next) : item)),
+    }
+  }
+  return node
+}
+
+function emptyItem(items: readonly ConfigNode[]): ConfigNode {
+  const [sample] = items
+  switch (sample?.kind) {
+    case 'bool':
+      return { kind: 'bool', value: false }
+    case 'int':
+      return { kind: 'int', value: '0' }
+    case 'float':
+      return { kind: 'float', value: '0' }
+    case 'keybind':
+      return { kind: 'keybind', value: 'None' }
+    default:
+      return { kind: 'string', value: '' }
   }
 }
+
+export type { ConfigNode, Hint }
+export { emptyItem, isKeybind, parseConfig, setAt, stringifyConfig }

@@ -1,249 +1,93 @@
 import { useLingui } from '@lingui/react/macro'
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Box,
   Button,
-  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Switch,
+  Tab,
+  Tabs,
   TextField,
   Typography,
 } from '@mui/material'
-import { ChevronDown, Pencil } from 'lucide-react'
+import { Pencil } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   ReadConfig,
+  ReadContentSchema,
   WriteConfig,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { applyCPSchema, parseCPSchema } from './configFields.ts'
 import { type ConfigNode, parseConfig, setAt, stringifyConfig } from './configForm.ts'
+import { Fields } from './configFormUi.tsx'
 import { paper } from './paper.ts'
-import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
 const text = { fontSize: 13 } as const
 const noWrap = { whiteSpace: 'nowrap' } as const
-const row = { display: 'flex', alignItems: 'center', gap: 1, minHeight: 36, ...text } as const
-const numberPattern = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/
+const cpFor = 'Pathoschild.ContentPatcher'
 
 function openTarget() {
   const { game, openId } = useProfiles.getState()
   return game && openId ? { game: game.id, id: openId } : null
 }
 
-function Field({
-  label,
-  node,
-  path,
-  onChange,
-  onOpen,
-}: {
-  label: string
-  node: ConfigNode
-  path: readonly number[]
-  onChange: (path: readonly number[], next: ConfigNode) => void
-  onOpen: () => void
-}) {
-  const { t } = useLingui()
-  const [draft, setDraft] = useState('')
-  switch (node.kind) {
-    case 'bool':
-      return (
-        <Box sx={row}>
-          <Typography sx={{ flex: 1, minWidth: 0, ...text }}>{label}</Typography>
-          <Switch
-            size="small"
-            checked={node.value}
-            onChange={(_, checked) => onChange(path, { kind: 'bool', value: checked })}
-          />
-        </Box>
-      )
-    case 'int':
-    case 'float':
-      return (
-        <TextField
-          size="small"
-          fullWidth={true}
-          label={label}
-          type="number"
-          value={String(node.value)}
-          onChange={(e) => {
-            const raw = e.target.value
-            if (!numberPattern.test(raw)) {
-              return
-            }
-            const float = node.kind === 'float' || raw.includes('.')
-            onChange(path, float ? { kind: 'float', value: raw } : { kind: 'int', value: raw })
-          }}
-        />
-      )
-    case 'string':
-      return (
-        <TextField
-          size="small"
-          fullWidth={true}
-          label={label}
-          value={node.value}
-          onChange={(e) => onChange(path, { kind: 'string', value: e.target.value })}
-        />
-      )
-    case 'strings':
-      return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          <Typography sx={text}>{label}</Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-            {node.value.map((chip, i) => (
-              <Chip
-                key={`${chip}-${String(i)}`}
-                size="small"
-                label={chip}
-                onDelete={() =>
-                  onChange(path, { kind: 'strings', value: node.value.filter((_, j) => j !== i) })
-                }
-              />
-            ))}
-          </Box>
-          <TextField
-            size="small"
-            value={draft}
-            label={t`Add a value`}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key !== 'Enter') {
-                return
-              }
-              e.preventDefault()
-              const next = draft.trim()
-              if (!next) {
-                return
-              }
-              onChange(path, { kind: 'strings', value: [...node.value, next] })
-              setDraft('')
-            }}
-          />
-        </Box>
-      )
-    case 'object':
-      return (
-        <Accordion
-          disableGutters={true}
-          elevation={0}
-          sx={{ bgcolor: 'transparent', '&:before': { display: 'none' } }}
-        >
-          <AccordionSummary expandIcon={<ChevronDown size={16} />}>
-            <Typography sx={text}>{label}</Typography>
-          </AccordionSummary>
-          <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', gap: 1, pl: 1 }}>
-            {node.entries.map((entry, i) => (
-              <Field
-                key={entry.key}
-                label={entry.key}
-                node={entry.node}
-                path={[...path, i]}
-                onChange={onChange}
-                onOpen={onOpen}
-              />
-            ))}
-          </AccordionDetails>
-        </Accordion>
-      )
-    case 'readonly':
-      return (
-        <Box sx={row}>
-          <Typography sx={{ flex: 1, minWidth: 0, ...text }}>
-            {t`${label}: ${node.json}`}
-          </Typography>
-          <Button size="small" variant="outlined" onClick={onOpen} sx={noWrap}>
-            {t`Open in editor`}
-          </Button>
-        </Box>
-      )
-    default: {
-      const exhaustive: never = node
-      return exhaustive
-    }
+function parseSchema(raw: string): ReturnType<typeof parseCPSchema> {
+  try {
+    return parseCPSchema(JSON.parse(raw) as unknown)
+  } catch {
+    return {}
   }
 }
 
-function Fields({
-  tree,
-  onChange,
-  onOpen,
-}: {
-  tree: ConfigNode | null
-  onChange: (path: readonly number[], next: ConfigNode) => void
-  onOpen: () => void
-}) {
-  const { t } = useLingui()
-  if (tree?.kind === 'object') {
-    return tree.entries.map((entry, i) => (
-      <Field
-        key={entry.key}
-        label={entry.key}
-        node={entry.node}
-        path={[i]}
-        onChange={onChange}
-        onOpen={onOpen}
-      />
-    ))
+function fetchDoc(mod: Mod) {
+  const target = openTarget()
+  if (!target) {
+    return Promise.reject(new Error('no profile'))
   }
-  if (tree) {
-    return (
-      <Field label={t`config.json`} node={tree} path={[]} onChange={onChange} onOpen={onOpen} />
-    )
-  }
-  return null
+  const schemaP =
+    mod.contentPackFor === cpFor
+      ? ReadContentSchema(target.game, target.id, mod.key, mod.uniqueId).catch(() => '{}')
+      : Promise.resolve('{}')
+  return Promise.all([ReadConfig(target.game, target.id, mod.key, mod.uniqueId), schemaP])
 }
 
-export function ConfigEditor({
-  mod,
-  open,
-  onClose,
-}: {
-  mod: Mod
-  open: boolean
-  onClose: () => void
-}) {
-  const { t } = useLingui()
+function useConfigDoc(mod: Mod, open: boolean) {
   const locked = useLocked()
-  const openConfig = useMods((s) => s.openConfig)
   const [tree, setTree] = useState<ConfigNode | null>(null)
+  const [jsonDraft, setJsonDraft] = useState('')
+  const [tab, setTab] = useState(0)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [discardOpen, setDiscardOpen] = useState(false)
   const readGen = useRef(0)
   useEffect(() => {
+    readGen.current += 1
     if (!open) {
-      readGen.current += 1
       setTree(null)
+      setJsonDraft('')
       setError('')
       setSaved(false)
       setDirty(false)
+      setTab(0)
       return
     }
-    const target = openTarget()
-    if (!target) {
-      return
-    }
-    readGen.current += 1
-    const seq = readGen.current
     setSaved(false)
     setDirty(false)
-    ReadConfig(target.game, target.id, mod.key, mod.uniqueId)
-      .then((raw) => {
+    const seq = readGen.current
+    fetchDoc(mod)
+      .then(([raw, schemaRaw]) => {
         if (seq !== readGen.current) {
           return
         }
         setError('')
-        setTree(parseConfig(raw))
+        setJsonDraft(raw)
+        setTree(applyCPSchema(parseConfig(raw), parseSchema(schemaRaw)))
       })
       .catch((e: unknown) => {
         if (seq !== readGen.current) {
@@ -252,34 +96,110 @@ export function ConfigEditor({
         setTree(null)
         setError(e instanceof Error ? e.message : String(e))
       })
-  }, [open, mod.key, mod.uniqueId])
+  }, [open, mod.key, mod.uniqueId, mod.contentPackFor, mod])
+  const applyJson = (): boolean => {
+    try {
+      setTree(parseConfig(jsonDraft))
+      setError('')
+      return true
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e))
+      return false
+    }
+  }
   const save = () => {
     const seq = readGen.current
     const target = openTarget()
-    if (!(target && tree)) {
+    if (!target) {
       return
     }
-    WriteConfig(target.game, target.id, mod.key, mod.uniqueId, stringifyConfig(tree))
+    let body = jsonDraft
+    if (tab === 0) {
+      if (!tree) {
+        return
+      }
+      body = stringifyConfig(tree)
+    } else if (!applyJson()) {
+      return
+    }
+    WriteConfig(target.game, target.id, mod.key, mod.uniqueId, body)
       .then(() => {
         if (seq === readGen.current) {
           setSaved(true)
           setDirty(false)
+          setJsonDraft(body)
         }
       })
       .catch(reportUnexpected)
   }
-  const close = () => {
-    if (dirty) {
-      setDiscardOpen(true)
-      return
-    }
-    onClose()
+  return {
+    locked,
+    tree,
+    jsonDraft,
+    tab,
+    error,
+    saved,
+    dirty,
+    discardOpen,
+    setDiscardOpen,
+    setTab,
+    setJsonDraft,
+    applyJson,
+    save,
+    markTree: (path: readonly number[], next: ConfigNode) => {
+      setSaved(false)
+      setDirty(true)
+      setTree((cur) => (cur ? setAt(cur, path, next) : cur))
+    },
+    markJson: (value: string) => {
+      setSaved(false)
+      setDirty(true)
+      setJsonDraft(value)
+    },
   }
+}
+
+function EditorDialog({
+  open,
+  tree,
+  jsonDraft,
+  tab,
+  error,
+  saved,
+  discardOpen,
+  locked,
+  onClose,
+  onDiscard,
+  onKeep,
+  onSave,
+  onTab,
+  onJson,
+  onTree,
+  onOpenJson,
+}: {
+  open: boolean
+  tree: ConfigNode | null
+  jsonDraft: string
+  tab: number
+  error: string
+  saved: boolean
+  discardOpen: boolean
+  locked: boolean
+  onClose: () => void
+  onDiscard: () => void
+  onKeep: () => void
+  onSave: () => void
+  onTab: (tab: number) => void
+  onJson: (value: string) => void
+  onTree: (path: readonly number[], next: ConfigNode) => void
+  onOpenJson: () => void
+}) {
+  const { t } = useLingui()
   return (
     <>
       <Dialog
         open={open}
-        onClose={close}
+        onClose={onClose}
         fullWidth={true}
         maxWidth="sm"
         transitionDuration={0}
@@ -288,36 +208,90 @@ export function ConfigEditor({
         <DialogTitle>{t`Edit config.json`}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           {error ? <Typography sx={text}>{error}</Typography> : null}
-          <Fields
-            tree={tree}
-            onChange={(path, next) => {
-              setSaved(false)
-              setDirty(true)
-              setTree((cur) => (cur ? setAt(cur, path, next) : cur))
-            }}
-            onOpen={() => openConfig(mod).catch(reportUnexpected)}
-          />
+          <Tabs value={tab} onChange={(_, next: number) => onTab(next)}>
+            <Tab label={t`Form`} />
+            <Tab label={t`JSON`} />
+          </Tabs>
+          {tab === 0 ? (
+            <Fields tree={tree} onChange={onTree} onOpen={onOpenJson} />
+          ) : (
+            <TextField
+              size="small"
+              fullWidth={true}
+              multiline={true}
+              minRows={12}
+              value={jsonDraft}
+              onChange={(e) => onJson(e.target.value)}
+              slotProps={{ input: { sx: { fontFamily: 'ui-monospace, monospace', fontSize: 13 } } }}
+            />
+          )}
         </DialogContent>
         <DialogActions>
           {saved ? <Typography sx={{ mr: 'auto', ...text }}>{t`Saved`}</Typography> : null}
-          <Button onClick={close} sx={noWrap}>{t`Close`}</Button>
-          <Button onClick={save} disabled={locked || !tree} sx={noWrap}>
-            {t`Save`}
-          </Button>
+          <Button onClick={onClose} sx={noWrap}>{t`Close`}</Button>
+          <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+            <Button onClick={onSave} disabled={locked || (tab === 0 && !tree)} sx={noWrap}>
+              {t`Save`}
+            </Button>
+          </DisabledReason>
         </DialogActions>
       </Dialog>
-      <Dialog open={discardOpen} onClose={() => setDiscardOpen(false)}>
+      <Dialog open={discardOpen} onClose={onKeep}>
         <DialogTitle>{t`Discard changes?`}</DialogTitle>
         <DialogActions>
-          <Button onClick={() => setDiscardOpen(false)}>{t`Cancel`}</Button>
-          <Button onClick={onClose} autoFocus={true}>{t`Discard`}</Button>
+          <Button onClick={onKeep}>{t`Cancel`}</Button>
+          <Button onClick={onDiscard} autoFocus={true}>{t`Discard`}</Button>
         </DialogActions>
       </Dialog>
     </>
   )
 }
 
-export function EditConfigButton({ mod }: { mod: Mod }) {
+function ConfigEditor({ mod, open, onClose }: { mod: Mod; open: boolean; onClose: () => void }) {
+  const doc = useConfigDoc(mod, open)
+  const close = () => {
+    if (doc.dirty) {
+      doc.setDiscardOpen(true)
+      return
+    }
+    onClose()
+  }
+  return (
+    <EditorDialog
+      open={open}
+      tree={doc.tree}
+      jsonDraft={doc.jsonDraft}
+      tab={doc.tab}
+      error={doc.error}
+      saved={doc.saved}
+      discardOpen={doc.discardOpen}
+      locked={doc.locked}
+      onClose={close}
+      onDiscard={onClose}
+      onKeep={() => doc.setDiscardOpen(false)}
+      onSave={doc.save}
+      onTab={(next) => {
+        if (next === 1 && doc.tree) {
+          doc.setJsonDraft(stringifyConfig(doc.tree))
+        }
+        if (next === 0 && !doc.applyJson()) {
+          return
+        }
+        doc.setTab(next)
+      }}
+      onJson={doc.markJson}
+      onTree={doc.markTree}
+      onOpenJson={() => {
+        if (doc.tree) {
+          doc.setJsonDraft(stringifyConfig(doc.tree))
+        }
+        doc.setTab(1)
+      }}
+    />
+  )
+}
+
+function EditConfigButton({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const [open, setOpen] = useState(false)
   return (
@@ -335,3 +309,5 @@ export function EditConfigButton({ mod }: { mod: Mod }) {
     </>
   )
 }
+
+export { ConfigEditor, EditConfigButton }
