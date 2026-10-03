@@ -998,7 +998,7 @@ msgstr "Before updating {0}"
 msgid "Skip this version"
 msgstr "Skip this version"
 
-#: src/launch/LaunchLayer.tsx:352
+#: src/launch/LaunchLayer.tsx:360
 msgid "Mortar can start Stardew Valley directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 msgstr "Mortar can start Stardew Valley directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 
@@ -1607,7 +1607,7 @@ msgstr "Upload log"
 msgid "Or import a shared profile"
 msgstr "Or import a shared profile"
 
-#: src/launch/LaunchLayer.tsx:361
+#: src/launch/LaunchLayer.tsx:369
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
 
@@ -2656,7 +2656,7 @@ msgstr "Cover image"
 #: src/lan/IncomingPrompt.tsx:185
 #: src/lan/SendDialog.tsx:184
 #: src/launch/LaunchLayer.tsx:248
-#: src/launch/LaunchLayer.tsx:358
+#: src/launch/LaunchLayer.tsx:366
 #: src/launch/PrePlayDialog.tsx:141
 #: src/launch/SaveWarnDialog.tsx:70
 #: src/launch/UpdateWarnDialog.tsx:51
@@ -3600,6 +3600,7 @@ msgstr "Pinned at this version"
 
 #: src/console/CrashDialog.tsx:95
 #: src/launch/LaunchLayer.tsx:172
+#: src/launch/LaunchLayer.tsx:315
 msgid "Open console"
 msgstr "Open console"
 
@@ -4121,7 +4122,7 @@ msgstr "Premium downloads come from this Nexus server when it offers the file."
 
 #: src/console/BisectDialog.tsx:147
 #: src/console/CrashDialog.tsx:202
-#: src/launch/LaunchLayer.tsx:320
+#: src/launch/LaunchLayer.tsx:328
 #: src/mods/ModDependencyTree.tsx:55
 #: src/mods/problemFix/BrokenFix.tsx:55
 #: src/mods/problemFix/WhereButtons.tsx:27
@@ -4714,7 +4715,7 @@ msgstr "Reverted the profile"
 msgid "New bundle name"
 msgstr "New bundle name"
 
-#: src/launch/LaunchLayer.tsx:330
+#: src/launch/LaunchLayer.tsx:338
 #: src/shell/ErrorBoundary.tsx:25
 msgid "Try again"
 msgstr "Try again"
@@ -5846,7 +5847,7 @@ msgstr "Default profile for Nexus links"
 msgid "Uncategorised"
 msgstr "Uncategorised"
 
-#: src/launch/LaunchLayer.tsx:348
+#: src/launch/LaunchLayer.tsx:356
 msgid "Steam was not found"
 msgstr "Steam was not found"
 
@@ -5868,7 +5869,7 @@ msgstr "{0} missing dependencies"
 msgid "Nexus is throttling requests until the window resets."
 msgstr "Nexus is throttling requests until the window resets."
 
-#: src/launch/LaunchLayer.tsx:353
+#: src/launch/LaunchLayer.tsx:361
 msgid "Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 msgstr "Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 
@@ -6858,7 +6859,7 @@ msgstr "Install {name}?"
 #: src/console/BisectDialog.tsx:148
 #: src/console/CrashDialog.tsx:60
 #: src/console/RunProblems.tsx:114
-#: src/launch/LaunchLayer.tsx:311
+#: src/launch/LaunchLayer.tsx:319
 #: src/mods/problemFix/AssetFix.tsx:52
 #: src/mods/problemFix/BrokenFix.tsx:75
 #: src/mods/problemFix/DismissedBrokenFix.tsx:50
@@ -7932,6 +7933,10 @@ msgstr "Stardew Valley was not found. Browse to its folder."
 #: src/settings/sections/StreamOverlay.tsx:231
 msgid "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
 msgstr "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
+
+#: src/launch/LaunchLayer.tsx:295
+msgid "The game exited before it started. The console has its output."
+msgstr "The game exited before it started. The console has its output."
 
 #: src/mods/Toolbar.tsx:171
 #: src/settings/prefCopy.ts:125

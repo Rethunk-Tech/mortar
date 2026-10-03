@@ -30,7 +30,7 @@ import { useMods } from '../mods/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { controlsCutout } from '../shell/controlsCutout.ts'
-import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { holdFocus, launchEscHides } from './holdFocus.ts'
 import { KnownGoodOffer } from './KnownGoodOffer.tsx'
@@ -291,8 +291,8 @@ function Failure({ game }: { game: string }) {
         {t`${name} did not start`}
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
-        <DialogContentText title={errorDetails(failure.body)}>
-          {errorMessage(failure.body)}
+        <DialogContentText sx={{ whiteSpace: 'pre-wrap', userSelect: 'text' }}>
+          {failure.body || t`The game exited before it started. The console has its output.`}
         </DialogContentText>
         {cause ? (
           <DialogContentText>
@@ -306,6 +306,14 @@ function Failure({ game }: { game: string }) {
       </DialogContent>
       <DialogActions>
         <Button onClick={dismiss}>{t`Close`}</Button>
+        <Button
+          onClick={() => {
+            dismiss()
+            useTab.getState().setTab('console')
+          }}
+        >
+          {t`Open console`}
+        </Button>
         {mod ? (
           <Button onClick={() => useMods.getState().setEnabled(mod, false).catch(reportUnexpected)}>
             {t`Switch off`}

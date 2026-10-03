@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -176,6 +177,9 @@ func (s *Service) set(st Status) {
 	stored := st
 	switch st.State {
 	case Failed, NoSteam:
+		if st.State == Failed {
+			log.Printf("launch: %s %s failed: %s", st.Game, st.Profile, st.Error)
+		}
 		stored = Status{Game: st.Game, State: Idle}
 	case Idle, Launching, Running:
 	}
