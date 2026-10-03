@@ -79,6 +79,15 @@ type cachedUpdates struct {
 type cached struct {
 	fingerprint string
 	result      Result
+	// until is when a result with unknown parts expires, so a lookup that failed is retried soon
+	// without re-running the whole check on every refresh; zero for complete results.
+	until time.Time
+}
+
+const unknownResultTTL = 2 * time.Minute
+
+func (c cached) fresh(fp string, now time.Time) bool {
+	return c.fingerprint == fp && (c.until.IsZero() || now.Before(c.until))
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store, m *meta.Client) *Service {
@@ -171,13 +180,13 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	s.mu.Lock()
 	c, ok := s.cache[key]
 	s.mu.Unlock()
-	if ok && c.fingerprint == fp {
+	if ok && c.fresh(fp, time.Now()) {
 		return s.withDrift(gameID, id, s.withDismissed(gameID, id, c.result))
 	}
 
 	checkKey := key + "\x00" + fp
 	s.mu.Lock()
-	if c, ok := s.cache[key]; ok && c.fingerprint == fp {
+	if c, ok := s.cache[key]; ok && c.fresh(fp, time.Now()) {
 		s.mu.Unlock()
 		return s.withDrift(gameID, id, s.withDismissed(gameID, id, c.result))
 	}
@@ -202,9 +211,11 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 		return Result{}, err
 	}
 	s.mu.Lock()
-	if !r.Unknown {
-		s.cache[key] = cached{fp, r}
+	entry := cached{fingerprint: fp, result: r}
+	if r.Unknown {
+		entry.until = time.Now().Add(unknownResultTTL)
 	}
+	s.cache[key] = entry
 	s.mu.Unlock()
 	return s.withDrift(gameID, id, s.withDismissed(gameID, id, r))
 }
