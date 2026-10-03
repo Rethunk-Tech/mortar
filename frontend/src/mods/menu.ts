@@ -36,6 +36,8 @@ export function useMenuState(mod: Mod): MenuState {
   }
 }
 
+export const ICON_SIZE = 16
+
 export const openPage = (url: string) => Browser.OpenURL(url)
 
 export type MenuAnchor = { el: HTMLElement } | { top: number; left: number }

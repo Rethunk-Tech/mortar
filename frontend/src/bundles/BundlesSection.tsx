@@ -34,12 +34,9 @@ function NoBundles() {
   )
 }
 
-export function BundlesSection({ game, profiles }: { game: string; profiles: Profile[] }) {
+function useBundleList(game: string) {
   const { t } = useLingui()
   const [bundles, setBundles] = useState<Bundle[]>([])
-  const [renaming, setRenaming] = useState<Bundle | null>(null)
-  const [deleting, setDeleting] = useState<Bundle | null>(null)
-  const [busy, setBusy] = useState(false)
   useEffect(() => {
     let active = true
     ListBundles(game)
@@ -62,6 +59,15 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
       active = false
     }
   }, [game, t])
+  return [bundles, setBundles] as const
+}
+
+export function BundlesSection({ game, profiles }: { game: string; profiles: Profile[] }) {
+  const { t } = useLingui()
+  const [bundles, setBundles] = useBundleList(game)
+  const [renaming, setRenaming] = useState<Bundle | null>(null)
+  const [deleting, setDeleting] = useState<Bundle | null>(null)
+  const [busy, setBusy] = useState(false)
   const confirmDelete = async () => {
     if (!deleting || busy) {
       return

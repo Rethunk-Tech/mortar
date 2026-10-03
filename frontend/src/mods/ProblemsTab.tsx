@@ -325,6 +325,37 @@ function renderProblemSections(
   })
 }
 
+function removeCleanup(
+  cleanup: { key: string }[],
+  removeMany: ReturnType<typeof useMods.getState>['removeMany'],
+) {
+  const mods = cleanup
+    .map((item) => useMods.getState().mods.find((mod) => mod.key === item.key))
+    .filter((mod): mod is NonNullable<typeof mod> => mod !== undefined)
+  removeMany(mods).catch(reportUnexpected)
+}
+
+function dismissCosmetic(
+  sections: ReturnType<typeof problemSections>,
+  dismissAsset: ReturnType<typeof useMods.getState>['dismissAsset'],
+) {
+  const cosmetic = sections.find((section) => section.id === 'cosmetic')
+  for (const row of cosmetic?.rows ?? []) {
+    if (!isDismissedRow(row) && row.kind === 'asset') {
+      dismissAsset(row.asset).catch(reportUnexpected)
+    }
+  }
+}
+
+function OfflineChecksNote() {
+  const { t } = useLingui()
+  return (
+    <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+      {t`Some checks could not run without a connection, so more problems may show up later.`}
+    </Typography>
+  )
+}
+
 // ProblemActions sits in the profile's tab row while the Problems tab is open, like the Console's log actions.
 export function ProblemActions() {
   const { t } = useLingui()
@@ -510,10 +541,7 @@ export function ProblemsTab() {
         onCancel={() => setConfirmCleanup(false)}
         onConfirm={() => {
           setConfirmCleanup(false)
-          const mods = cleanup
-            .map((item) => useMods.getState().mods.find((mod) => mod.key === item.key))
-            .filter((mod): mod is NonNullable<typeof mod> => mod !== undefined)
-          removeMany(mods).catch(reportUnexpected)
+          removeCleanup(cleanup, removeMany)
         }}
       />
       <ConfirmDialog
@@ -524,19 +552,10 @@ export function ProblemsTab() {
         onCancel={() => setConfirmDismissCosmetic(false)}
         onConfirm={() => {
           setConfirmDismissCosmetic(false)
-          const cosmetic = sections.find((section) => section.id === 'cosmetic')
-          for (const row of cosmetic?.rows ?? []) {
-            if (!isDismissedRow(row) && row.kind === 'asset') {
-              dismissAsset(row.asset).catch(reportUnexpected)
-            }
-          }
+          dismissCosmetic(sections, dismissAsset)
         }}
       />
-      {result.unknown ? (
-        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-          {t`Some checks could not run without a connection, so more problems may show up later.`}
-        </Typography>
-      ) : null}
+      {result.unknown ? <OfflineChecksNote /> : null}
     </Box>
   )
 }
