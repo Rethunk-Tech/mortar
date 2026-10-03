@@ -137,7 +137,7 @@ function BrowsePage({
   let hint = t`Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download.`
   if (source === GITHUB) {
     hint = t`Search GitHub for mods published as releases. Add puts the latest release in this profile.`
-  } else if (premium) {
+  } else if (source === NEXUS && premium) {
     hint = t`Search Nexus Mods. Download installs the mod into this profile.`
   }
   let body: React.ReactNode
