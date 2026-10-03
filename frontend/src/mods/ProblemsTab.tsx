@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { ChevronDown, ChevronRight, Copy, ShieldCheck, TriangleAlert } from 'lucide-react'
-import { useState } from 'react'
+import { type ComponentProps, useState } from 'react'
 import { useTab } from '../game/tab.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
@@ -358,6 +358,44 @@ function OfflineChecksNote() {
   )
 }
 
+function CleanupSection({ cleanup }: { cleanup: ComponentProps<typeof CleanupRow>['cleanup'][] }) {
+  const { t } = useLingui()
+  const removeMany = useMods((s) => s.removeMany)
+  const [confirmCleanup, setConfirmCleanup] = useState(false)
+  if (cleanup.length === 0) {
+    return null
+  }
+  return (
+    <Box>
+      <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
+        <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
+          {t`Cleanup`}
+        </Typography>
+        <Button size="small" sx={{ ml: 1, height: 26 }} onClick={() => setConfirmCleanup(true)}>
+          {t`Remove all`}
+        </Button>
+      </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        {cleanup.map((item) => (
+          <CleanupRow key={item.key} cleanup={item} />
+        ))}
+      </Box>
+      <ConfirmDialog
+        open={confirmCleanup}
+        title={t`Remove all ${cleanup.length} mods from this profile?`}
+        body={t`This change can be undone from History.`}
+        confirmLabel={t`Remove all`}
+        color="error"
+        onCancel={() => setConfirmCleanup(false)}
+        onConfirm={() => {
+          setConfirmCleanup(false)
+          removeCleanup(cleanup, removeMany)
+        }}
+      />
+    </Box>
+  )
+}
+
 // ProblemActions sits in the profile's tab row while the Problems tab is open, like the Console's log actions.
 export function ProblemActions() {
   const { t } = useLingui()
@@ -425,9 +463,7 @@ export function ProblemsTab() {
   const result = useOpenProblems()
   const sectionTitle = useSectionTitle()
   useLoadProblemsOnFocus()
-  const removeMany = useMods((s) => s.removeMany)
   const dismissAsset = useMods((s) => s.dismissAsset)
-  const [confirmCleanup, setConfirmCleanup] = useState(false)
   const [confirmDismissCosmetic, setConfirmDismissCosmetic] = useState(false)
   const [addingAll, runAddAll] = usePending()
   const cosmeticConflicts = useSettings((s) => gamePrefs(s).cosmeticConflicts)
@@ -521,35 +557,7 @@ export function ProblemsTab() {
       ) : null}
       {renderProblemSections(sections, cosmeticConflicts, sectionTitle, sectionExtras)}
       <CompatSection rows={compat} />
-      {cleanup.length === 0 ? null : (
-        <Box>
-          <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
-            <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
-              {t`Cleanup`}
-            </Typography>
-            <Button size="small" sx={{ ml: 1, height: 26 }} onClick={() => setConfirmCleanup(true)}>
-              {t`Remove all`}
-            </Button>
-          </Box>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            {cleanup.map((item) => (
-              <CleanupRow key={item.key} cleanup={item} />
-            ))}
-          </Box>
-        </Box>
-      )}
-      <ConfirmDialog
-        open={confirmCleanup}
-        title={t`Remove all ${cleanup.length} mods from this profile?`}
-        body={t`This change can be undone from History.`}
-        confirmLabel={t`Remove all`}
-        color="error"
-        onCancel={() => setConfirmCleanup(false)}
-        onConfirm={() => {
-          setConfirmCleanup(false)
-          removeCleanup(cleanup, removeMany)
-        }}
-      />
+      <CleanupSection cleanup={cleanup} />
       <ConfirmDialog
         open={confirmDismissCosmetic}
         title={t`Dismiss all harmless overlaps?`}

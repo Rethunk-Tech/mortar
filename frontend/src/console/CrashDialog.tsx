@@ -24,8 +24,8 @@ import { useProfiles } from '../profiles/store.ts'
 import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BisectDialog } from './BisectDialog.tsx'
-import { crashCauseDetailLine, crashCauseKind } from './crashCause.ts'
 import { canBisectCrash } from './canBisect.ts'
+import { crashCauseDetailLine, crashCauseKind } from './crashCause.ts'
 import { useConsole } from './store.ts'
 
 type Crash = NonNullable<ReturnType<typeof useLaunch.getState>['crash']>

@@ -111,7 +111,7 @@ function Reset({ node, path, onChange }: Omit<FieldProps, 'label' | 'onOpen'>) {
 }
 
 function BoolField(p: FieldProps) {
-  const node = p.node
+  const { node } = p
   if (node.kind !== 'bool') {
     return null
   }
@@ -163,7 +163,7 @@ function NumberField(p: FieldProps) {
 }
 
 function TextValueField(p: FieldProps) {
-  const node = p.node
+  const { node } = p
   if (node.kind !== 'string' && node.kind !== 'keybind') {
     return null
   }
@@ -184,7 +184,7 @@ function TextValueField(p: FieldProps) {
 
 function ChoiceField(p: FieldProps) {
   const { t } = useLingui()
-  const node = p.node
+  const { node } = p
   if (node.kind !== 'choice') {
     return null
   }

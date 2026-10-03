@@ -157,7 +157,7 @@ export function AssetMapPanel() {
           setQuery(e.target.value)
         }}
         placeholder={t`Who changes this?`}
-        inputProps={{ 'aria-label': t`Who changes this?` }}
+        slotProps={{ htmlInput: { 'aria-label': t`Who changes this?` } }}
       />
       {who.length > 0 ? <TargetList targets={who} /> : null}
       <TextField
@@ -167,7 +167,7 @@ export function AssetMapPanel() {
           setFilter(e.target.value)
         }}
         placeholder={t`Filter assets`}
-        inputProps={{ 'aria-label': t`Filter assets` }}
+        slotProps={{ htmlInput: { 'aria-label': t`Filter assets` } }}
       />
       <TargetList
         targets={mapTargets}

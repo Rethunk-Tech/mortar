@@ -62,6 +62,7 @@ const defaults: Settings = {
       skipPlayCheck: false,
       runsKept: 20,
       consoleLogCap: 20_000,
+      watchDownloads: true,
       nxmDefaultProfile: '',
       cosmeticConflicts: 'collapsed',
       enableRequirements: 'always',

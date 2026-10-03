@@ -1,11 +1,11 @@
 import type { PaletteOptions } from '@mui/material/styles'
 
-export type ThemeMode = 'light' | 'dark'
+type ThemeMode = 'light' | 'dark'
 
 const DARK_BASE = 'rgb(25,25,30)'
 const MIN_CONTRAST = 4.5
 
-export type Surfaces = {
+interface Surfaces {
   hairline: string
   hairlineMuted: string
   hairlineFaint: string
@@ -176,7 +176,7 @@ const lightSurfaces: Surfaces = {
   gameDim: 'rgba(255,255,255,0.92)',
 }
 
-export function surfaces(mode: ThemeMode): Surfaces {
+function surfaces(mode: ThemeMode): Surfaces {
   return mode === 'light' ? lightSurfaces : darkSurfaces
 }
 
@@ -200,7 +200,7 @@ const CONTRAST_PAD = 0.05
 const MIX_STEP = 0.08
 const MIX_TRIES = 48
 
-export function surfaceCssVars(mode: ThemeMode): Record<string, string> {
+function surfaceCssVars(mode: ThemeMode): Record<string, string> {
   const s = surfaces(mode)
   const out: Record<string, string> = {}
   for (const [key, value] of Object.entries(s)) {
@@ -212,25 +212,28 @@ export function surfaceCssVars(mode: ThemeMode): Record<string, string> {
   return out
 }
 
-type Rgb = { r: number; g: number; b: number; a: number }
+interface Rgb {
+  r: number
+  g: number
+  b: number
+  a: number
+}
 
-export function parseColor(input: string): Rgb {
+function parseColor(input: string): Rgb {
   const hex = HEX_COLOUR.exec(input)
   if (hex) {
-    const captured = hex[1]
+    const [, captured] = hex
     if (captured === undefined) {
       throw new Error(`unparseable colour ${input}`)
     }
     let h = captured
     if (h.length === SHORT_HEX_LEN) {
-      h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2]
+      h = [...h].map((c) => c + c).join('')
     }
-    return {
-      r: Number.parseInt(h.slice(0, 2), HEX_RADIX),
-      g: Number.parseInt(h.slice(2, 4), HEX_RADIX),
-      b: Number.parseInt(h.slice(4, 6), HEX_RADIX),
-      a: 1,
-    }
+    const [r = 0, g = 0, b = 0] = (h.match(/../g) ?? []).map((pair) =>
+      Number.parseInt(pair, HEX_RADIX),
+    )
+    return { r, g, b, a: 1 }
   }
   const rgb = RGB_COLOUR.exec(input)
   if (!rgb) {
@@ -249,22 +252,22 @@ function channel(value: number): number {
   return s <= SRGB_CUTOFF ? s / LINEAR_DIVISOR : ((s + GAMMA_OFFSET) / GAMMA_SCALE) ** GAMMA
 }
 
-export function relativeLuminance(color: string): number {
+function relativeLuminance(color: string): number {
   const { r, g, b } = parseColor(color)
   return LUMA_R * channel(r) + LUMA_G * channel(g) + LUMA_B * channel(b)
 }
 
-export function contrastRatio(a: string, b: string): number {
+function contrastRatio(a: string, b: string): number {
   const l1 = relativeLuminance(a)
   const l2 = relativeLuminance(b)
   const [hi, lo] = l1 > l2 ? [l1, l2] : [l2, l1]
   return (hi + CONTRAST_PAD) / (lo + CONTRAST_PAD)
 }
 
-export function composite(fg: string, bg: string): string {
+function composite(fg: string, bg: string): string {
   const f = parseColor(fg)
   const b = parseColor(bg)
-  const a = f.a
+  const { a } = f
   const r = Math.round(f.r * a + b.r * (1 - a))
   const g = Math.round(f.g * a + b.g * (1 - a))
   const bch = Math.round(f.b * a + b.b * (1 - a))
@@ -289,7 +292,7 @@ function mixToward(color: string, target: Rgb, amount: number): string {
   })
 }
 
-export function ensureContrast(fg: string, bg: string, min = MIN_CONTRAST): string {
+function ensureContrast(fg: string, bg: string, min = MIN_CONTRAST): string {
   let cur = toHex(parseColor(fg))
   const solidBg = composite(bg, bg)
   if (contrastRatio(cur, solidBg) >= min) {
@@ -312,11 +315,11 @@ function contrastText(bg: string): string {
   return contrastRatio('#ffffff', bg) >= MIN_CONTRAST ? '#ffffff' : '#1b1a17'
 }
 
-export function paperForContrast(paper: string, mode: ThemeMode): string {
+function paperForContrast(paper: string, mode: ThemeMode): string {
   return composite(paper, mode === 'dark' ? DARK_BASE : paper)
 }
 
-export function mortarPalette(
+function mortarPalette(
   mode: ThemeMode,
   accentHex: string,
 ): PaletteOptions & {
@@ -342,7 +345,7 @@ export function mortarPalette(
   }
 }
 
-export function honourTheme(setting: string, osLight: boolean): ThemeMode {
+function honourTheme(setting: string, osLight: boolean): ThemeMode {
   if (setting === 'light') {
     return 'light'
   }
@@ -350,4 +353,18 @@ export function honourTheme(setting: string, osLight: boolean): ThemeMode {
     return osLight ? 'light' : 'dark'
   }
   return 'dark'
+}
+
+export type { Surfaces, ThemeMode }
+export {
+  composite,
+  contrastRatio,
+  ensureContrast,
+  honourTheme,
+  mortarPalette,
+  paperForContrast,
+  parseColor,
+  relativeLuminance,
+  surfaceCssVars,
+  surfaces,
 }

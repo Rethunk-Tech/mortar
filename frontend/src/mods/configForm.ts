@@ -124,7 +124,8 @@ class Parser {
       }
     }
     this.at += 1
-    if (values.every(isScalar)) {
+    // A list editor adds items of one kind, so only single-kind scalar arrays are editable as a list.
+    if (values.every(isScalar) && new Set(values.map((v) => v.kind)).size <= 1) {
       return { kind: 'list', items: values }
     }
     return { kind: 'readonly', json: `[${values.map((v) => serialize(v)).join(',')}]` }
