@@ -46,7 +46,7 @@ func completion(w io.Writer, shell string) error {
 var subverbs = map[string][]string{
 	"profile":    {"create", "from-save", "rename", "copy", "delete", "compare", "match", "collection", "history", "revert", "load-order", "repair", "list", "shortcut", "steam", "changes", "good"},
 	"history":    {"diff", "revert"},
-	"mods":       {"enable", "disable", "pin", "unpin", "remove", "tag", "untag", "category", "note", "skip-version", "split", "combine", "files", "config", "menu", "compat"},
+	"mods":       {"enable", "disable", "pin", "unpin", "remove", "tag", "untag", "category", "note", "skip-version", "split", "combine", "files", "config", "menu", "compat", "report"},
 	"game":       {"steam-launch-option"},
 	"bundles":    {"apply"},
 	"nexus":      {"untrack"},

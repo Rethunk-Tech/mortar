@@ -428,6 +428,8 @@ func (c *cmd) dispatch() error {
 				return c.modsMenu()
 			case "compat":
 				return c.modsCompat()
+			case "report":
+				return c.modsReport()
 			}
 		}
 	}
@@ -2149,6 +2151,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   mods menu <game> <profile> <mod> [--set <page>/<index>=<value>]  captured GMCM menu
   sweep <game> [--json]                   patch-day check after a game or SMAPI change
   mods compat <game> <profile>            non-ok SMAPI compatibility-list rows
+  mods report <game> <profile> <mod> [--run ID]  report text and author URL for a mod's log errors
   mod <game> <profile> <mod id>           one mod: dependencies, dependents, conflicts, settings
                                           (mod id is the SMAPI UniqueID)
   install <game> <profile> <archive>      install a local archive
