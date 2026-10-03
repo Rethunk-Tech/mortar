@@ -204,6 +204,7 @@ export function SmapiStep({
   const steps = useLoader((s) => s.steps)
   const check = useLoader((s) => s.check)
   const error = useLoader((s) => s.error)
+  const errorDetail = useLoader((s) => s.errorDetail)
   const install = useLoader((s) => s.install)
   const pending = useLoader((s) => s.pending)
   const [options, setOptions] = useState('')
@@ -298,15 +299,41 @@ export function SmapiStep({
           <Typography role="alert" sx={{ fontSize: 14, color: 'error.light' }}>
             {error}
           </Typography>
-          <Button
-            variant="contained"
-            startIcon={<RefreshCw size={16} />}
-            disabled={pending}
-            onClick={() => install(game)}
-            sx={{ height: 46, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
+          {errorDetail && errorDetail !== error ? (
+            <Typography
+              sx={{
+                fontFamily: MONO,
+                fontSize: 12,
+                opacity: 0.8,
+                wordBreak: 'break-word',
+                userSelect: 'text',
+              }}
+            >
+              {errorDetail}
+            </Typography>
+          ) : null}
+          <Box
+            sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1.25 }}
           >
-            {t`Retry`}
-          </Button>
+            <Button
+              variant="outlined"
+              color="inherit"
+              disabled={pending}
+              onClick={onDone}
+              sx={{ height: 46, whiteSpace: 'nowrap' }}
+            >
+              {t`Skip for now`}
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<RefreshCw size={16} />}
+              disabled={pending}
+              onClick={() => install(game)}
+              sx={{ height: 46, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
+            >
+              {t`Retry`}
+            </Button>
+          </Box>
         </>
       ) : null}
     </Panel>

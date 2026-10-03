@@ -16,6 +16,8 @@ export const useLoader = create<{
   steps: string[]
   // Why the last install failed; empty while one runs or after one succeeded.
   error: string
+  // The raw cause behind error, for a Details line.
+  errorDetail: string
   // An install call is in flight; the loader:state event that sets installing lands after the click, so a second
   // click could otherwise start another.
   pending: boolean
@@ -27,6 +29,7 @@ export const useLoader = create<{
   pending: false,
   steps: [],
   error: '',
+  errorDetail: '',
   check: async (game) => {
     set({ status: null })
     try {
@@ -49,7 +52,7 @@ export const useLoader = create<{
         .push({ kind: 'success', title: i18n._(msg`SMAPI ${status.version} is installed`) })
     } catch (e) {
       const body = errorMessage(e)
-      set({ error: body })
+      set({ error: body, errorDetail: errorDetails(e) })
       useToasts.getState().push({
         kind: 'error',
         title: i18n._(msg`Could not install SMAPI`),
@@ -66,10 +69,14 @@ export function initLoader() {
   Events.On('loader:state', (event) => {
     const { game, installing, error } = event.data
     if (installing) {
-      useLoader.setState({ installing: true, steps: [], error: '' })
+      useLoader.setState({ installing: true, steps: [], error: '', errorDetail: '' })
       return
     }
-    useLoader.setState({ installing: false, error })
+    useLoader.setState({
+      installing: false,
+      error: error ? errorMessage(error) : '',
+      errorDetail: error ? errorDetails(error) : '',
+    })
     if (!error) {
       useLoader.getState().check(game)
     }
