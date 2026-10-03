@@ -1,12 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Chip, Collapse, Link, Typography } from '@mui/material'
+import { Box, Chip, Link, Typography } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
-import { ChevronDown, ChevronRight, TriangleAlert } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import { TriangleAlert } from 'lucide-react'
+import type { ReactNode } from 'react'
 import type { Details } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNexus } from '../settings/nexus.ts'
+import { Fold } from '../shell/Fold.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { type Block, parseBBCode, safeUrl } from './bbcode.ts'
@@ -69,34 +70,6 @@ function Rich({ blocks }: { blocks: Block[] }) {
       )}
     </Typography>
   ))
-}
-
-function Fold({ title, children }: { title: string; children: ReactNode }) {
-  const [shown, setShown] = useState(false)
-  const Icon = shown ? ChevronDown : ChevronRight
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-      <Button
-        size="small"
-        onClick={() => setShown(!shown)}
-        startIcon={<Icon size={14} aria-hidden={true} />}
-        aria-expanded={shown}
-        sx={{
-          ...noWrap,
-          ...muted,
-          fontWeight: BOLD,
-          textTransform: 'none',
-          alignSelf: 'flex-start',
-          px: 0.5,
-        }}
-      >
-        {title}
-      </Button>
-      <Collapse in={shown} unmountOnExit={true}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, pl: 1 }}>{children}</Box>
-      </Collapse>
-    </Box>
-  )
 }
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
