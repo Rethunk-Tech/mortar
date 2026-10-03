@@ -362,7 +362,7 @@ msgstr "{0} mods added"
 msgid "{0} {1} installed"
 msgstr "{0} {1} installed"
 
-#: src/settings/sections/DataStoreReport.tsx:258
+#: src/settings/sections/DataStoreReport.tsx:259
 msgid "Older copies of the same mod"
 msgstr "Older copies of the same mod"
 
@@ -1766,7 +1766,7 @@ msgstr "Create another profile to compare it with this one."
 msgid "Start Mortar when you sign in to this computer"
 msgstr "Start Mortar when you sign in to this computer"
 
-#: src/settings/sections/DataStoreReport.tsx:251
+#: src/settings/sections/DataStoreReport.tsx:252
 msgid "Mods no profile uses"
 msgstr "Mods no profile uses"
 
@@ -2124,7 +2124,7 @@ msgstr "Updated tags"
 msgid "Update mods before Play on new profiles"
 msgstr "Update mods before Play on new profiles"
 
-#: src/settings/sections/DataStoreReport.tsx:259
+#: src/settings/sections/DataStoreReport.tsx:260
 msgid "a newer copy is kept"
 msgstr "a newer copy is kept"
 
@@ -2355,7 +2355,7 @@ msgstr "Stop the game?"
 msgid "Go back"
 msgstr "Go back"
 
-#: src/settings/sections/DataStoreReport.tsx:108
+#: src/settings/sections/DataStoreReport.tsx:109
 msgid "Unfinished downloads and temporary files"
 msgstr "Unfinished downloads and temporary files"
 
@@ -2989,6 +2989,11 @@ msgstr "Working directory"
 msgid "Installed"
 msgstr "Installed"
 
+#. placeholder {0}: formatBytes(bytes)
+#: src/settings/sections/DataStoreReport.tsx:330
+msgid "Freed {0}"
+msgstr "Freed {0}"
+
 #: src/mods/CategoryEditor.tsx:206
 #: src/mods/SelectionBarActions.tsx:93
 msgid "Set category"
@@ -3123,7 +3128,7 @@ msgstr "Choose a file"
 msgid "Mortar starts the unmodded game directly so SMAPI's Linux launcher is not used. The Steam overlay and Steam's playtime tracking will not work. Steam still supplies the API if it is running."
 msgstr "Mortar starts the unmodded game directly so SMAPI's Linux launcher is not used. The Steam overlay and Steam's playtime tracking will not work. Steam still supplies the API if it is running."
 
-#: src/settings/sections/DataStoreReport.tsx:106
+#: src/settings/sections/DataStoreReport.tsx:107
 msgid "Cached GitHub release lists"
 msgstr "Cached GitHub release lists"
 
@@ -3334,7 +3339,7 @@ msgid "Warn"
 msgstr "Warn"
 
 #. placeholder {0}: formatBytes(bytes)
-#: src/settings/sections/DataStoreReport.tsx:364
+#: src/settings/sections/DataStoreReport.tsx:366
 msgid "Remove selected ({0})"
 msgstr "Remove selected ({0})"
 
@@ -4381,7 +4386,7 @@ msgid "Mods"
 msgstr "Mods"
 
 #. placeholder {0}: g.items.length
-#: src/settings/sections/DataStoreReport.tsx:270
+#: src/settings/sections/DataStoreReport.tsx:271
 msgid "{0, plural, one {# file} other {# files}}"
 msgstr "{0, plural, one {# file} other {# files}}"
 
@@ -4464,7 +4469,7 @@ msgstr "{name} updated to {version} — {n, plural, one {# profile needs attenti
 msgid "Clear download history?"
 msgstr "Clear download history?"
 
-#: src/settings/sections/DataStoreReport.tsx:110
+#: src/settings/sections/DataStoreReport.tsx:111
 msgid "Other cached data"
 msgstr "Other cached data"
 
@@ -5032,7 +5037,7 @@ msgstr "Update {wantedCount}"
 msgid "Could not skip the update for {0}"
 msgstr "Could not skip the update for {0}"
 
-#: src/settings/sections/DataStoreReport.tsx:119
+#: src/settings/sections/DataStoreReport.tsx:120
 msgid "Nexus mod {id}"
 msgstr "Nexus mod {id}"
 
@@ -5282,7 +5287,7 @@ msgstr "Could not open the folder of {0}"
 msgid "Create a new profile"
 msgstr "Create a new profile"
 
-#: src/settings/sections/DataStoreReport.tsx:239
+#: src/settings/sections/DataStoreReport.tsx:240
 msgid "Nothing to clean up."
 msgstr "Nothing to clean up."
 
@@ -5348,7 +5353,7 @@ msgstr "A file it needs could not be opened."
 msgid "Windowed resolution width"
 msgstr "Windowed resolution width"
 
-#: src/settings/sections/DataStoreReport.tsx:104
+#: src/settings/sections/DataStoreReport.tsx:105
 msgid "Cached Nexus mod details"
 msgstr "Cached Nexus mod details"
 
@@ -6816,7 +6821,7 @@ msgstr "Switch to Saves"
 #: src/mods/problemFixButtons.tsx:131
 #: src/mods/ProblemsTab.tsx:217
 #: src/mods/SelectionBarActions.tsx:138
-#: src/settings/sections/DataStoreReport.tsx:371
+#: src/settings/sections/DataStoreReport.tsx:373
 msgid "Remove"
 msgstr "Remove"
 
@@ -7010,7 +7015,7 @@ msgstr "Required"
 msgid "Space saved by sharing files"
 msgstr "Space saved by sharing files"
 
-#: src/settings/sections/DataStoreReport.tsx:369
+#: src/settings/sections/DataStoreReport.tsx:371
 msgid "Remove the selected items?"
 msgstr "Remove the selected items?"
 
@@ -7156,7 +7161,7 @@ msgid "{fitting} of {total}"
 msgstr "{fitting} of {total}"
 
 #. placeholder {0}: formatBytes(bytes)
-#: src/settings/sections/DataStoreReport.tsx:370
+#: src/settings/sections/DataStoreReport.tsx:372
 msgid "This frees {0}. Removed mods download again if a profile needs them later."
 msgstr "This frees {0}. Removed mods download again if a profile needs them later."
 
@@ -7564,7 +7569,7 @@ msgstr "Show one in the sidebar from Manage profiles."
 msgid "Not enough disk space"
 msgstr "Not enough disk space"
 
-#: src/settings/sections/DataStoreReport.tsx:343
+#: src/settings/sections/DataStoreReport.tsx:345
 msgid "Clean up storage"
 msgstr "Clean up storage"
 
@@ -7791,7 +7796,7 @@ msgstr "Teal"
 msgid "Could not read this profile"
 msgstr "Could not read this profile"
 
-#: src/settings/sections/DataStoreReport.tsx:246
+#: src/settings/sections/DataStoreReport.tsx:247
 msgid "Select all"
 msgstr "Select all"
 
@@ -8417,7 +8422,7 @@ msgstr "Reinstall"
 msgid "Checking for updates…"
 msgstr "Checking for updates…"
 
-#: src/settings/sections/DataStoreReport.tsx:263
+#: src/settings/sections/DataStoreReport.tsx:264
 msgid "Leftover files"
 msgstr "Leftover files"
 
@@ -8599,7 +8604,7 @@ msgstr "Restore second"
 #: src/profiles/CompareDialog.tsx:134
 #: src/profiles/HistoryPanel.tsx:117
 #: src/saves/BackupsDialog.tsx:204
-#: src/settings/sections/DataStoreReport.tsx:355
+#: src/settings/sections/DataStoreReport.tsx:357
 #: src/share/ImportDialog.tsx:211
 #: src/share/ImportDialog.tsx:214
 #: src/share/ShareDialog.tsx:105

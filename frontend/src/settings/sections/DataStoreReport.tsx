@@ -31,6 +31,7 @@ import { When } from '../../i18n/When.tsx'
 import { paper } from '../../mods/paper.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
+import { useToasts } from '../../toasts/store.ts'
 import { nowrap } from './dataStyles.ts'
 
 const SELECT_SEP = '\u0000'
@@ -287,7 +288,7 @@ function CleanupDialog({
   onChanged: () => void
 }) {
   const { t } = useLingui()
-  const { store, preview, load } = useCleanupData(open)
+  const { store, preview } = useCleanupData(open)
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const [confirm, setConfirm] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -324,8 +325,9 @@ function CleanupDialog({
       .then(() => {
         setConfirm(false)
         setPicked(new Set())
+        onClose()
         onChanged()
-        load()
+        useToasts.getState().push({ kind: 'success', title: t`Freed ${formatBytes(bytes)}` })
       })
       .catch(reportUnexpected)
       .finally(() => setBusy(false))
