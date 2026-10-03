@@ -8,6 +8,7 @@ import { useProfiles } from '../../profiles/store.ts'
 import { saveDiagnostics } from '../../shell/saveDiagnostics.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import credits from '../generated/credits.json' with { type: 'json' }
+import { Diagnostics } from './AboutDiagnostics.tsx'
 
 const LICENCE = 'https://github.com/Rethunk-AI/mortar/blob/main/LICENSE'
 
@@ -48,7 +49,7 @@ export function About() {
       </Box>
       <Box sx={{ fontWeight: 600 }}>{t`Default background`}</Box>
       <Box sx={body}>
-        {t`Fedora 44 default wallpaper (f44-01-night) by the Fedora Design Team, CC-BY-SA-4.0.`}
+        {t`Fedora 44 default wallpaper (f44-01-night) by the Fedora Design Team, CC-BY-SA 4.0.`}
       </Box>
       <Box sx={{ fontWeight: 600 }}>{t`Credits`}</Box>
       <Box sx={{ ...body, columnWidth: CREDIT_COLUMN, columnGap: 4 }}>
@@ -78,6 +79,7 @@ export function About() {
           </Box>
         ))}
       </Box>
+      <Diagnostics />
       <Button
         variant="outlined"
         color="inherit"
