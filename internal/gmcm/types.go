@@ -64,6 +64,7 @@ type Skipped struct {
 }
 
 type Result struct {
+	Schema  int       `json:"schema"`
 	Applied int       `json:"applied"`
 	Skipped []Skipped `json:"skipped"`
 }

@@ -39,7 +39,10 @@ func ReadCapture(profileDir, uniqueID string) (Capture, error) {
 	if errors.Is(err, fs.ErrNotExist) {
 		return out, fmt.Errorf("%w: %s", ErrNoCapture, uniqueID)
 	}
-	return out, err
+	if err != nil {
+		return out, err
+	}
+	return out, checkSchema(out.Schema)
 }
 
 func ReadIndex(profileDir string) (Index, error) {
@@ -48,7 +51,7 @@ func ReadIndex(profileDir string) (Index, error) {
 	if err != nil {
 		return out, err
 	}
-	return out, nil
+	return out, checkSchema(out.Schema)
 }
 
 func CapturedIDs(profileDir string) ([]string, error) {
@@ -89,7 +92,10 @@ func ReadPending(profileDir, uniqueID string) (Pending, error) {
 	if errors.Is(err, fs.ErrNotExist) {
 		return Pending{Schema: Schema}, nil
 	}
-	return out, err
+	if err != nil {
+		return out, err
+	}
+	return out, checkSchema(out.Schema)
 }
 
 func WritePending(profileDir, uniqueID string, edits []Edit) error {
@@ -111,7 +117,17 @@ func ReadResult(profileDir, uniqueID string) (Result, error) {
 	if errors.Is(err, fs.ErrNotExist) {
 		return Result{}, nil
 	}
-	return out, err
+	if err != nil {
+		return out, err
+	}
+	return out, checkSchema(out.Schema)
+}
+
+func checkSchema(got int) error {
+	if got != Schema {
+		return fmt.Errorf("gmcm: unsupported schema %d (want %d)", got, Schema)
+	}
+	return nil
 }
 
 func readJSON(path string, dest any) error {

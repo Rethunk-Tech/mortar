@@ -62,6 +62,7 @@ func TestReadWriteCaptureAndPending(t *testing.T) {
 		t.Fatalf("value %v", pending.Edits[0].Value)
 	}
 	if err := writeJSONAtomic(ResultPath(dir, "Example.Mod"), Result{
+		Schema:  Schema,
 		Applied: 0,
 		Skipped: []Skipped{{Edit: edit, Reason: "not found"}},
 	}); err != nil {
@@ -73,6 +74,24 @@ func TestReadWriteCaptureAndPending(t *testing.T) {
 	}
 	if _, err := ReadCapture(dir, "Missing.Mod"); err == nil {
 		t.Fatal("expected missing capture")
+	}
+}
+
+func TestReadPendingRejectsUnknownSchema(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, pendingDir), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := writeJSONAtomic(PendingPath(dir, "Example.Mod"), Pending{
+		Schema: Schema + 1,
+		Edits:  []Edit{{Name: "Volume"}},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	_, err := ReadPending(dir, "Example.Mod")
+	if err == nil {
+		t.Fatal("expected schema error")
 	}
 }
 
