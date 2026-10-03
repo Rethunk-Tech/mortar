@@ -5,7 +5,9 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -199,10 +201,18 @@ func run() error {
 			},
 		},
 	})
-	// A windowsgui build has no stderr, so a fatal panic would end the process without a trace.
+	// A windowsgui build has no stderr, so logs and fatal panics would end without a trace; both also go to
+	// files in the data folder, the previous run's log kept beside the current one.
 	if crash, err := fsx.OpenFile(filepath.Join(dataDir, "crash.log"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600); err == nil {
 		_ = debug.SetCrashOutput(crash, debug.CrashOptions{})
 		_ = crash.Close()
+	}
+	logPath := filepath.Join(dataDir, "mortar.log")
+	_ = os.Rename(logPath, filepath.Join(dataDir, "mortar.prev.log"))
+	if logFile, err := fsx.OpenFile(logPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600); err == nil {
+		out := io.MultiWriter(os.Stderr, logFile)
+		log.SetOutput(out)
+		slog.SetDefault(slog.New(slog.NewTextHandler(out, nil)))
 	}
 
 	store, err = settings.Open()
