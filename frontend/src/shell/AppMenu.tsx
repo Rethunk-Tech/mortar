@@ -56,6 +56,7 @@ export function AppMenu() {
     <>
       <ButtonBase
         aria-label={t`Mortar menu`}
+        data-tour="app-menu"
         aria-expanded={open}
         aria-controls={open ? drawerId : undefined}
         onClick={() => setOpen(true)}

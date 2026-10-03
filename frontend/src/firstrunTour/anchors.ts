@@ -30,7 +30,7 @@ function resolveTourAnchor(step: number): HTMLElement | null {
     case TOUR_STEP_PROBLEMS:
       return tourTarget('problems-tab')
     case TOUR_STEP_COMMAND:
-      return document.querySelector('main')
+      return document.querySelector<HTMLElement>('[data-tour="app-menu"]')
     default:
       return null
   }

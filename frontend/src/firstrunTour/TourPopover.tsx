@@ -31,7 +31,7 @@ const TOUR_Z_INDEX = 1400
 const POPPER_OFFSET = 12
 const SPOTLIGHT_PAD = 6
 
-const placements = ['right-start', 'right', 'bottom', 'bottom', 'top'] as const
+const placements = ['right-start', 'right', 'bottom', 'bottom', 'bottom-start'] as const
 
 function TourPopover({
   anchorEl,
