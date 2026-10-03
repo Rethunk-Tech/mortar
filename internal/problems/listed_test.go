@@ -46,6 +46,10 @@ func (listedFakeMeta) CheckUpdates(context.Context, meta.UpdateRequest) []meta.U
 	return nil
 }
 
+func (listedFakeMeta) Collection(context.Context, string, string, int) (meta.Collection, error) {
+	return meta.Collection{}, nil
+}
+
 func listedDependent() Installed {
 	return Installed{
 		Key:      "nexus-520-100",

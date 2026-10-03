@@ -21,6 +21,7 @@ type Meta interface {
 	Lookup(ctx context.Context, uniqueID string) ([]meta.Ref, error)
 	Page(ctx context.Context, id int) (meta.Page, error)
 	PageRequirements(ctx context.Context, pageID int) ([]meta.Requirement, error)
+	Collection(ctx context.Context, domain, slug string, revision int) (meta.Collection, error)
 	CheckUpdates(ctx context.Context, req meta.UpdateRequest) []meta.UpdateResult
 }
 
