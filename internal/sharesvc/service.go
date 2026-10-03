@@ -615,6 +615,35 @@ func joinNotes(parts ...string) string {
 	return strings.Join(kept, "\n\n")
 }
 
+func (s *Service) applySharedEntryNotes(game, profileID string, refs []share.Ref) error {
+	p, err := s.find(game, profileID)
+	if err != nil {
+		return err
+	}
+	for _, ref := range refs {
+		if ref.Note == "" && len(ref.Tags) == 0 {
+			continue
+		}
+		var key string
+		for _, e := range p.Entries {
+			if ref.MatchesEntry(e) {
+				key = e.Key
+				break
+			}
+		}
+		if key == "" {
+			continue
+		}
+		var patch profile.Entry
+		share.ImportEntryNotes(&patch, ref)
+		p, err = s.d.Profiles.SetEntryNoteTags(game, profileID, key, patch.Note, patch.Tags)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Import queues everything the preview named session lists as available, except the excluded keys, into
 // profileID, or into a new profile named as the share (with " (2)" and so on when that name is taken) when profileID
 // is empty. Mods the preview marked unavailable are listed in the new profile's notes. A .mortar file's config files
@@ -805,11 +834,20 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 	}
 	res.Queued = len(reqs)
 	res.BatchID = batchID
-	if len(configs) > 0 && len(reqs) > 0 {
+	if err := s.applySharedEntryNotes(game, profileID, cur.refs); err != nil {
+		if created {
+			err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
+		}
+		return Result{}, err
+	}
+	if len(reqs) > 0 {
 		// savePending marshals every pending import, which queueChanged edits under applyMu.
 		s.applyMu.Lock()
 		s.mu.Lock()
-		s.pending = append(s.pending, &pending{Game: game, Profile: profileID, BatchID: batchID, Wanted: wanted, Configs: configs})
+		s.pending = append(s.pending, &pending{
+			Game: game, Profile: profileID, BatchID: batchID, Wanted: wanted, Configs: configs,
+			Refs: slices.Clone(cur.refs),
+		})
 		s.mu.Unlock()
 		s.savePending()
 		s.applyMu.Unlock()
@@ -895,6 +933,7 @@ type pending struct {
 	BatchID string         `json:"batchId"`
 	Wanted  []wantedFile   `json:"wanted"`
 	Configs []share.Config `json:"configs"`
+	Refs    []share.Ref    `json:"refs,omitempty"`
 	// seen is the set of finished downloads the configs were last applied for; it starts over with the process.
 	seen string
 }
@@ -964,8 +1003,14 @@ func (s *Service) queueChanged(st queue.State) {
 			s.apply(p)
 			changed = changed || len(p.Configs) != before
 		}
+		if len(p.Refs) > 0 && (seen == "on-profile" || settled >= len(p.Wanted)) {
+			if err := s.applySharedEntryNotes(p.Game, p.Profile, p.Refs); err == nil {
+				p.Refs = nil
+				changed = true
+			}
+		}
 		// Configs stay until they land; queue eviction must not drop them.
-		if len(p.Configs) == 0 {
+		if len(p.Configs) == 0 && len(p.Refs) == 0 {
 			s.mu.Lock()
 			s.pending = slices.DeleteFunc(s.pending, func(x *pending) bool { return x == p })
 			s.mu.Unlock()

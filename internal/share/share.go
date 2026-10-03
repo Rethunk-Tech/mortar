@@ -52,6 +52,8 @@ type Ref struct {
 	GitHub   string
 	Disabled []string
 	Fomod    map[string]map[string][]string
+	Note     string
+	Tags     []string
 }
 
 // Shared is what a link carries.
@@ -134,6 +136,8 @@ type refDocument struct {
 	GitHub   string                         `json:"github,omitempty"`
 	Disabled []string                       `json:"disabled,omitempty"`
 	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
+	Note     string                         `json:"note,omitempty"`
+	Tags     []string                       `json:"tags,omitempty"`
 }
 
 func parseRef(raw json.RawMessage) (Ref, error) {
@@ -168,11 +172,14 @@ func checkShared(s Shared) error {
 }
 
 func (r Ref) hasDetails() bool {
-	return len(r.Disabled) > 0 || len(r.Fomod) > 0
+	return len(r.Disabled) > 0 || len(r.Fomod) > 0 || r.Note != "" || len(r.Tags) > 0
 }
 
 func validDetails(r Ref) bool {
 	if len(r.Disabled) > MaxEntries || len(r.Fomod) > MaxEntries {
+		return false
+	}
+	if !validEntryNote(r.Note) || !validEntryTags(r.Tags) {
 		return false
 	}
 	for _, id := range r.Disabled {
@@ -196,6 +203,85 @@ func validDetails(r Ref) bool {
 		}
 	}
 	return true
+}
+
+func validEntryNote(note string) bool {
+	if utf8.RuneCountInString(note) > profile.MaxEntryNote {
+		return false
+	}
+	return !strings.ContainsFunc(note, unicode.IsControl)
+}
+
+func validEntryTags(tags []string) bool {
+	if len(tags) > profile.MaxEntryTags {
+		return false
+	}
+	seen := map[string]bool{}
+	for _, raw := range tags {
+		tag := strings.TrimSpace(raw)
+		if tag == "" || utf8.RuneCountInString(tag) > profile.MaxEntryTag ||
+			strings.ContainsFunc(tag, unicode.IsControl) {
+			return false
+		}
+		key := strings.ToLower(tag)
+		if seen[key] {
+			return false
+		}
+		seen[key] = true
+	}
+	return true
+}
+
+// ImportEntryNotes copies note and tags from a shared ref onto an entry, truncating the note and dropping invalid tags.
+func ImportEntryNotes(e *profile.Entry, r Ref) {
+	e.Note, e.Tags = importEntryNoteTags(r.Note, r.Tags)
+}
+
+func importEntryNoteTags(note string, tags []string) (string, []string) {
+	note = strings.TrimSpace(note)
+	if n := utf8.RuneCountInString(note); n > profile.MaxEntryNote {
+		note = string([]rune(note)[:profile.MaxEntryNote])
+	}
+	if strings.ContainsFunc(note, unicode.IsControl) {
+		note = strings.Map(func(r rune) rune {
+			if unicode.IsControl(r) {
+				return -1
+			}
+			return r
+		}, note)
+	}
+	out := make([]string, 0, len(tags))
+	seen := map[string]bool{}
+	for _, raw := range tags {
+		tag := strings.TrimSpace(raw)
+		if tag == "" || utf8.RuneCountInString(tag) > profile.MaxEntryTag ||
+			strings.ContainsFunc(tag, unicode.IsControl) {
+			continue
+		}
+		key := strings.ToLower(tag)
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		out = append(out, tag)
+		if len(out) >= profile.MaxEntryTags {
+			break
+		}
+	}
+	if len(out) == 0 {
+		out = nil
+	}
+	return note, out
+}
+
+// MatchesEntry reports whether the ref names the same mod file as the profile entry.
+func (r Ref) MatchesEntry(e profile.Entry) bool {
+	if r.GitHub != "" {
+		repo, tag, asset := r.GitHubParts()
+		return e.Source.Kind == profile.KindGitHub && strings.EqualFold(e.Source.Repo, repo) &&
+			e.Source.Tag == tag && e.Source.Asset == asset
+	}
+	return e.Source.Kind == profile.KindNexus && e.Source.ModID == r.ModID && e.Source.FileID == r.FileID
 }
 
 func cloneFomod(in map[string]map[string][]string) map[string]map[string][]string {
@@ -288,12 +374,16 @@ func withoutDetails(s Shared) Shared {
 }
 
 // refOf maps an enabled, non-bundled entry to its Ref, or says why it cannot be shared.
-func refOf(e profile.Entry, fomod bool) (Ref, string) {
+func refOf(e profile.Entry, fomod, notes bool) (Ref, string) {
 	switch e.Source.Kind {
 	case profile.KindNexus:
 		r := Ref{ModID: e.Source.ModID, FileID: e.Source.FileID, Disabled: slices.Clone(e.Disabled)}
 		if fomod {
 			r.Fomod = cloneFomod(e.Fomod)
+		}
+		if notes {
+			r.Note = e.Note
+			r.Tags = slices.Clone(e.Tags)
 		}
 		if !r.valid() {
 			return Ref{}, "no Nexus file recorded"
@@ -303,6 +393,10 @@ func refOf(e profile.Entry, fomod bool) (Ref, string) {
 		r := Ref{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset, Disabled: slices.Clone(e.Disabled)}
 		if fomod {
 			r.Fomod = cloneFomod(e.Fomod)
+		}
+		if notes {
+			r.Note = e.Note
+			r.Tags = slices.Clone(e.Tags)
 		}
 		if !r.valid() {
 			return Ref{}, "no GitHub release asset recorded"
@@ -357,7 +451,7 @@ func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, o
 			off = append(off, e.Key)
 			continue
 		}
-		r, why := refOf(e, inc.FomodChoices)
+		r, why := refOf(e, inc.FomodChoices, inc.Notes)
 		if why != "" {
 			left = append(left, LeftOut{Key: e.Key, Reason: why})
 			continue

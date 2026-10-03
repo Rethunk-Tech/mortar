@@ -13,6 +13,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/andybalholm/brotli"
 
@@ -125,7 +126,7 @@ func TestLinkDropsDetailsBeforeRefs(t *testing.T) {
 		t.Fatalf("fallback payload is %d characters", len(res.Payload))
 	}
 	for _, ref := range res.Shared.Entries {
-		if len(ref.Disabled) != 0 || len(ref.Fomod) != 0 {
+		if len(ref.Disabled) != 0 || len(ref.Fomod) != 0 || ref.Note != "" || len(ref.Tags) != 0 {
 			t.Fatalf("details survived fallback: %+v", ref)
 		}
 	}
@@ -338,6 +339,66 @@ func TestMortarFileRoundTrip(t *testing.T) {
 	want := map[string]string{"A.one/config.json": `{"a":1}`, "A.one/data/deep.JSON": `{"b":2}`, "A.two/config.json": `{"c":3}`, "A.gh/config.json": `{"g":1}`}
 	if fmt.Sprint(got) != fmt.Sprint(want) {
 		t.Errorf("configs = %v, want %v", got, want)
+	}
+}
+
+func TestEntryNotesRoundTrip(t *testing.T) {
+	p := profile.Profile{Name: "Notes", Entries: []profile.Entry{
+		nexus("one", 541, 1000),
+		{Key: "gh", Source: profile.Source{Kind: profile.KindGitHub, Repo: "owner/repo", Tag: "v1", Asset: "a.zip"},
+			Mods: []profile.EntryMod{{UniqueID: "G", Folder: "."}}, Note: "gh note", Tags: []string{"git"}},
+	}}
+	p.Entries[0].Note = "farm tweak"
+	p.Entries[0].Tags = []string{"QoL", "UI"}
+	res, err := Encode(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := Parse(res.Payload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Entries) != 2 || got.Entries[0].Note != "farm tweak" || !slices.Equal(got.Entries[0].Tags, []string{"QoL", "UI"}) ||
+		got.Entries[1].Note != "gh note" || !slices.Equal(got.Entries[1].Tags, []string{"git"}) {
+		t.Fatalf("link notes = %+v", got.Entries)
+	}
+	var buf bytes.Buffer
+	if _, err := Write(&buf, p, t.TempDir()); err != nil {
+		t.Fatal(err)
+	}
+	pv, err := ReadBytes(buf.Bytes())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if pv.Entries[0].Note != "farm tweak" || !slices.Equal(pv.Entries[0].Tags, []string{"QoL", "UI"}) {
+		t.Fatalf("file notes = %+v", pv.Entries[0])
+	}
+}
+
+func TestCollectOmitsEntryNotesWhenDisabled(t *testing.T) {
+	p := profile.Profile{Name: "x", Entries: []profile.Entry{
+		{Key: "n", Source: profile.Source{Kind: profile.KindNexus, ModID: 1, FileID: 2},
+			Mods: []profile.EntryMod{{UniqueID: "A", Folder: "."}}, Note: "secret", Tags: []string{"t"}},
+	}}
+	s, _, _ := Collect(p, Include{Notes: false, FomodChoices: true})
+	if len(s.Entries) != 1 || s.Entries[0].Note != "" || len(s.Entries[0].Tags) != 0 {
+		t.Fatalf("collect = %+v", s.Entries[0])
+	}
+}
+
+func TestImportEntryNotesTruncates(t *testing.T) {
+	long := strings.Repeat("n", profile.MaxEntryNote+10)
+	ref := Ref{ModID: 1, FileID: 2, Note: long, Tags: []string{
+		strings.Repeat("t", profile.MaxEntryTag+1), "ok", "", "ok", "dup", "DUP",
+		"a", "b", "c", "d", "e", "f", "g", "h", "i",
+	}}
+	var e profile.Entry
+	ImportEntryNotes(&e, ref)
+	if utf8.RuneCountInString(e.Note) != profile.MaxEntryNote {
+		t.Fatalf("note len = %d", utf8.RuneCountInString(e.Note))
+	}
+	if !slices.Equal(e.Tags, []string{"ok", "dup", "a", "b", "c", "d", "e", "f"}) {
+		t.Fatalf("tags = %#v", e.Tags)
 	}
 }
 
