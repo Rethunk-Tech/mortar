@@ -352,23 +352,23 @@ func (s *Service) SetOnPlay(v string) error {
 }
 
 func (s *Service) SetBackupBeforePlay(v string) error {
-	return s.set(func(cur *Settings) { cur.BackupBeforePlay = v })
+	return s.set(func(cur *Settings) { gameSet(cur).BackupBeforePlay = v })
 }
 
 func (s *Service) SetLaunchBackupsKept(n int) error {
-	return s.set(func(cur *Settings) { cur.LaunchBackupsKept = n })
+	return s.set(func(cur *Settings) { gameSet(cur).LaunchBackupsKept = n })
 }
 
 func (s *Service) SetUpdateModsBeforePlayDefault(on bool) error {
-	return s.set(func(cur *Settings) { cur.UpdateModsBeforePlayDefault = on })
+	return s.set(func(cur *Settings) { gameSet(cur).UpdateModsBeforePlayDefault = on })
 }
 
 func (s *Service) SetRunsKept(n int) error {
-	return s.set(func(cur *Settings) { cur.RunsKept = n })
+	return s.set(func(cur *Settings) { gameSet(cur).RunsKept = n })
 }
 
 func (s *Service) SetConsoleLogCap(n int) error {
-	return s.set(func(cur *Settings) { cur.ConsoleLogCap = n })
+	return s.set(func(cur *Settings) { gameSet(cur).ConsoleLogCap = n })
 }
 
 func (s *Service) SetParallelDownloads(n int) error {
@@ -392,7 +392,7 @@ func (s *Service) SetStoreRetentionDays(n int) error {
 }
 
 func (s *Service) SetNxmDefaultProfile(id string) error {
-	return s.set(func(cur *Settings) { cur.NxmDefaultProfile = id })
+	return s.set(func(cur *Settings) { gameSet(cur).NxmDefaultProfile = id })
 }
 
 func (s *Service) SetDefaultModsView(v string) error {
@@ -404,7 +404,7 @@ func (s *Service) SetConfirmRemovals(on bool) error {
 }
 
 func (s *Service) SetCosmeticConflicts(v string) error {
-	return s.set(func(cur *Settings) { cur.CosmeticConflicts = v })
+	return s.set(func(cur *Settings) { gameSet(cur).CosmeticConflicts = v })
 }
 
 func (s *Service) SetBackgroundBadgeChecks(on bool) error {
@@ -460,11 +460,11 @@ func (s *Service) SetProfileHero(v string) error {
 }
 
 func (s *Service) SetEnableRequirements(v string) error {
-	return s.set(func(cur *Settings) { cur.EnableRequirements = v })
+	return s.set(func(cur *Settings) { gameSet(cur).EnableRequirements = v })
 }
 
 func (s *Service) SetMissingRequirements(v string) error {
-	return s.set(func(cur *Settings) { cur.MissingRequirements = v })
+	return s.set(func(cur *Settings) { gameSet(cur).MissingRequirements = v })
 }
 
 func (s *Service) SetReuseFomodChoices(on bool) error {
@@ -476,7 +476,7 @@ func (s *Service) SetDriftChecks(on bool) error {
 }
 
 func (s *Service) SetSmapiBuilds(v string) error {
-	return s.set(func(cur *Settings) { cur.SmapiBuilds = v })
+	return s.set(func(cur *Settings) { gameSet(cur).SmapiBuilds = v })
 }
 
 func (s *Service) SetAutoInstallMortarUpdates(on bool) error {
@@ -488,23 +488,23 @@ func (s *Service) SetAutoTrackNexus(on bool) error {
 }
 
 func (s *Service) SetDefaultLaunchMethod(v string) error {
-	return s.set(func(cur *Settings) { cur.DefaultLaunchMethod = v })
+	return s.set(func(cur *Settings) { gameSet(cur).DefaultLaunchMethod = v })
 }
 
 func (s *Service) SetShowSmapiConsole(on bool) error {
-	return s.set(func(cur *Settings) { cur.ShowSmapiConsole = &on })
+	return s.set(func(cur *Settings) { gameSet(cur).ShowSmapiConsole = &on })
 }
 
 func (s *Service) SetConsoleLevel(v string) error {
-	return s.set(func(cur *Settings) { cur.ConsoleLevel = v })
+	return s.set(func(cur *Settings) { gameSet(cur).ConsoleLevel = v })
 }
 
 func (s *Service) SetConsoleTimestamps(on bool) error {
-	return s.set(func(cur *Settings) { cur.ConsoleTimestamps = &on })
+	return s.set(func(cur *Settings) { gameSet(cur).ConsoleTimestamps = &on })
 }
 
 func (s *Service) SetConsoleFollow(on bool) error {
-	return s.set(func(cur *Settings) { cur.ConsoleFollow = &on })
+	return s.set(func(cur *Settings) { gameSet(cur).ConsoleFollow = &on })
 }
 
 func (s *Service) SetLanName(v string) error {
@@ -519,11 +519,14 @@ func (s *Service) SetDownloadFolder(v string) error {
 	return s.set(func(cur *Settings) { cur.DownloadFolder = v })
 }
 
+// PrefSpecs returns the registry descriptor for the frontend and CLI.
+func (s *Service) PrefSpecs() []PrefSpec { return PrefSpecs() }
+
 // SetByKey writes one CLI-visible setting.
-func (s *Service) SetByKey(key, value string) error {
+func (s *Service) SetByKey(key, value, game string) error {
 	var applyErr error
 	err := s.set(func(cur *Settings) {
-		applyErr = ApplyKey(cur, key, value)
+		applyErr = ApplyKeyGame(cur, key, value, game)
 	})
 	if applyErr != nil {
 		return applyErr

@@ -153,7 +153,9 @@ export function General() {
           />
         </SettingRow>
       </SettingsSection>
-      <ModsPrefs />
+      <SettingsSection title={t`Stardew Valley`}>
+        <ModsPrefs />
+      </SettingsSection>
       <DisplayAndNotices />
     </Box>
   )

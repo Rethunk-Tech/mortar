@@ -1,6 +1,10 @@
 package profile
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/settings"
+)
 
 func requiredNeeds(m EntryMod) []string {
 	opt := make(map[string]struct{}, len(m.Optional))
@@ -44,7 +48,7 @@ func (s *Store) autoEnableRequirements() bool {
 	if s.settings == nil {
 		return true
 	}
-	return s.settings.Get().AutoEnableRequirements()
+	return s.settings.Get().GamePrefs(settings.GameStardew).AutoEnableRequirements()
 }
 
 // enableRequired turns on required dependencies of uniqueID that are already in the profile but switched off.

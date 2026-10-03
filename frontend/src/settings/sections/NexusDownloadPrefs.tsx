@@ -6,6 +6,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { gamePrefs } from '../gamePrefs.ts'
 import { PrefNumber, PrefSelect, PrefSwitch } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
@@ -45,7 +46,7 @@ export function NexusDownloadPrefs() {
         description={t`Where nxm downloads go. Empty follows the last opened profile.`}
       >
         <PrefSelect
-          value={useSettings((s) => s.nxmDefaultProfile) || ''}
+          value={useSettings((s) => gamePrefs(s).nxmDefaultProfile) || ''}
           onChange={(v) => persist(() => SetNxmDefaultProfile(v), push, fail)}
           options={[
             { value: '', label: t`Last opened profile` },

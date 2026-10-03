@@ -8,13 +8,13 @@ import (
 
 func TestPrefDefaultsMatchToday(t *testing.T) {
 	d := Defaults()
-	if d.OnPlay != OnPlayStay || d.BackupBeforePlay != BackupBeforePlayChanged {
-		t.Fatalf("play defaults = %s %s", d.OnPlay, d.BackupBeforePlay)
+	if d.OnPlay != OnPlayStay || d.GamePrefs(GameStardew).BackupBeforePlay != BackupBeforePlayChanged {
+		t.Fatalf("play defaults = %s %s", d.OnPlay, d.GamePrefs(GameStardew).BackupBeforePlay)
 	}
-	if d.LaunchBackupsKept != DefaultLaunchBackupsKept || d.UpdateModsBeforePlayDefault {
+	if d.GamePrefs(GameStardew).LaunchBackupsKept != DefaultLaunchBackupsKept || d.GamePrefs(GameStardew).UpdateModsBeforePlayDefault {
 		t.Fatal("launch backup / update-before-play defaults")
 	}
-	if d.RunsKept != DefaultRunsKept || d.ConsoleLogCap != DefaultConsoleLogCap {
+	if d.GamePrefs(GameStardew).RunsKept != DefaultRunsKept || d.GamePrefs(GameStardew).ConsoleLogCap != DefaultConsoleLogCap {
 		t.Fatal("log defaults")
 	}
 	if d.ParallelDownloads != DefaultParallelDownloads {
@@ -26,10 +26,10 @@ func TestPrefDefaultsMatchToday(t *testing.T) {
 	if d.KeepDownloadArchives || d.StoreRetentionDays != DefaultStoreRetentionDays {
 		t.Fatal("archive / store defaults")
 	}
-	if d.NxmDefaultProfile != "" || d.DefaultModsView != ModsViewGrid {
+	if d.GamePrefs(GameStardew).NxmDefaultProfile != "" || d.DefaultModsView != ModsViewGrid {
 		t.Fatal("nxm / view defaults")
 	}
-	if !ToggleOn(d.ConfirmRemovals) || d.CosmeticConflicts != CosmeticCollapsed {
+	if !ToggleOn(d.ConfirmRemovals) || d.GamePrefs(GameStardew).CosmeticConflicts != CosmeticCollapsed {
 		t.Fatal("confirm / cosmetic defaults")
 	}
 	if !ToggleOn(d.BackgroundBadgeChecks) || d.StartScreen != StartScreenLast || d.Dates != DatesRelative {
@@ -47,16 +47,16 @@ func TestPrefDefaultsMatchToday(t *testing.T) {
 	if d.ReduceMotion != ReduceMotionSystem || d.ProfileHero != HeroFull {
 		t.Fatal("motion / hero defaults")
 	}
-	if d.EnableRequirements != EnableReqAlways || d.MissingRequirements != MissingReqAsk {
+	if d.GamePrefs(GameStardew).EnableRequirements != EnableReqAlways || d.GamePrefs(GameStardew).MissingRequirements != MissingReqAsk {
 		t.Fatal("requirement defaults")
 	}
-	if !ToggleOn(d.ReuseFomodChoices) || !d.DriftChecksOn() || d.SmapiBuilds != SmapiBuildsShow {
+	if !ToggleOn(d.ReuseFomodChoices) || !d.DriftChecksOn() || d.GamePrefs(GameStardew).SmapiBuilds != SmapiBuildsShow {
 		t.Fatal("fomod / drift / smapi-build defaults")
 	}
-	if !d.AutoInstallMortar() || d.AutoTrackNexus || d.DefaultLaunchMethod != LaunchSteam || !d.ShowConsoleWindow() {
+	if !d.AutoInstallMortar() || d.AutoTrackNexus || d.GamePrefs(GameStardew).DefaultLaunchMethod != LaunchSteam || !d.GamePrefs(GameStardew).ShowConsoleWindow() {
 		t.Fatal("update / launch defaults")
 	}
-	if d.ConsoleLevel != ConsoleLevelInfo || !ToggleOn(d.ConsoleTimestamps) || !ToggleOn(d.ConsoleFollow) {
+	if d.GamePrefs(GameStardew).ConsoleLevel != ConsoleLevelInfo || !ToggleOn(d.GamePrefs(GameStardew).ConsoleTimestamps) || !ToggleOn(d.GamePrefs(GameStardew).ConsoleFollow) {
 		t.Fatal("console defaults")
 	}
 	if d.LanName != "" || d.LanAutoAcceptSameAccount || d.DownloadFolder != "" {
@@ -66,14 +66,18 @@ func TestPrefDefaultsMatchToday(t *testing.T) {
 
 func TestAutoEnableRequirementsAlwaysOnly(t *testing.T) {
 	always := Defaults()
-	if !always.AutoEnableRequirements() {
+	if !always.GamePrefs(GameStardew).AutoEnableRequirements() {
 		t.Fatal("always")
 	}
 	ask := Defaults()
-	ask.EnableRequirements = EnableReqAsk
+	g := ask.GamePrefs(GameStardew)
+	g.EnableRequirements = EnableReqAsk
+	PutGame(&ask, GameStardew, g)
 	never := Defaults()
-	never.EnableRequirements = EnableReqNever
-	if ask.AutoEnableRequirements() || never.AutoEnableRequirements() {
+	g = never.GamePrefs(GameStardew)
+	g.EnableRequirements = EnableReqNever
+	PutGame(&never, GameStardew, g)
+	if ask.GamePrefs(GameStardew).AutoEnableRequirements() || never.GamePrefs(GameStardew).AutoEnableRequirements() {
 		t.Fatal("ask and never must not auto-enable")
 	}
 }
@@ -108,7 +112,11 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		if !ok {
 			t.Fatalf("round-trip missing override for %s", p.Key)
 		}
-		if err := p.Apply(&src, v); err != nil {
+		game := ""
+		if p.Scope == ScopeGame {
+			game = GameStardew
+		}
+		if err := p.Apply(&src, game, v); err != nil {
 			t.Fatalf("%s: %v", p.Key, err)
 		}
 	}
@@ -126,11 +134,15 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		t.Fatal("portable-only fields did not round-trip")
 	}
 	for _, key := range PrefKeys() {
-		want, err := src.Lookup(key.Key)
+		game := ""
+		if key.Scope == ScopeGame {
+			game = GameStardew
+		}
+		want, err := src.LookupGame(key.Key, game)
 		if err != nil {
 			t.Fatal(err)
 		}
-		have, err := got.Lookup(key.Key)
+		have, err := got.LookupGame(key.Key, game)
 		if err != nil || have != want {
 			t.Fatalf("%s: want %q got %q %v", key.Key, want, have, err)
 		}
@@ -148,7 +160,7 @@ func TestOmittedPrefsNormalizeToToday(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := s2.Get()
-	if got.OnPlay != OnPlayStay || got.BackupBeforePlay != BackupBeforePlayChanged || got.RunsKept != DefaultRunsKept {
+	if got.OnPlay != OnPlayStay || got.GamePrefs(GameStardew).BackupBeforePlay != BackupBeforePlayChanged || got.GamePrefs(GameStardew).RunsKept != DefaultRunsKept {
 		t.Fatalf("normalized prefs = %+v", got)
 	}
 }
@@ -192,14 +204,14 @@ func TestTrashKeepForDefaultThirtyDays(t *testing.T) {
 func TestPrefKeysRoundTrip(t *testing.T) {
 	st, _ := open(t)
 	svc := NewService(st)
-	if err := svc.SetByKey("onPlay", "hide"); err != nil {
+	if err := svc.SetByKey("onPlay", "hide", ""); err != nil {
 		t.Fatal(err)
 	}
 	got, err := st.Get().Lookup("onPlay")
 	if err != nil || got != "hide" {
 		t.Fatalf("lookup = %s %v", got, err)
 	}
-	if err := svc.SetByKey("onPlay", "jump"); err == nil {
+	if err := svc.SetByKey("onPlay", "jump", ""); err == nil {
 		t.Fatal("expected reject")
 	}
 }

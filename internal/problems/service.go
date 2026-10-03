@@ -425,7 +425,7 @@ func (s *Service) Updates(ctx context.Context, gameID, id string) (UpdatesResult
 }
 
 func hideUpdates(r UpdatesResult, mods []Installed, set settings.Settings) UpdatesResult {
-	return HideHeld(r, mods, set.IncludePrereleaseModVersions, set.SmapiBuilds)
+	return HideHeld(r, mods, set.IncludePrereleaseModVersions, set.GamePrefs(settings.GameStardew).SmapiBuilds)
 }
 
 // UpdateWarning is the Play dialog after a game update: the last launched Stardew version versus the installed one.

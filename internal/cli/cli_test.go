@@ -109,6 +109,14 @@ func TestSettingsGetSet(t *testing.T) {
 	}
 	r = invoke(t, results, "settings", "set", "onPlay", "hide")
 	if r.code != 0 || r.calls[0].method != "settings.set" || r.calls[0].params.Key != "onPlay" || r.calls[0].params.Value != "hide" {
+		t.Fatalf("set %+v", r)
+	}
+	r = invoke(t, results, "settings", "get", "--game", "stardew", "smapiBuilds")
+	if r.code != 0 || r.calls[0].params.Game != "stardew" || r.calls[0].params.Key != "smapiBuilds" {
+		t.Fatalf("get --game %+v", r)
+	}
+	r = invoke(t, results, "settings", "set", "--game", "stardew", "smapiBuilds", "include")
+	if r.code != 0 || r.calls[0].params.Game != "stardew" || r.calls[0].params.Key != "smapiBuilds" || r.calls[0].params.Value != "include" {
 		t.Fatalf("set: %+v", r)
 	}
 }

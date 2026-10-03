@@ -58,7 +58,11 @@ func TestEnableSkipsRequiredWhenSettingIsNever(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := st.Update(func(s *settings.Settings) { s.EnableRequirements = settings.EnableReqNever }); err != nil {
+	if _, err := st.Update(func(s *settings.Settings) {
+		g := s.GamePrefs(settings.GameStardew)
+		g.EnableRequirements = settings.EnableReqNever
+		settings.PutGame(s, settings.GameStardew, g)
+	}); err != nil {
 		t.Fatal(err)
 	}
 	e.settings = st

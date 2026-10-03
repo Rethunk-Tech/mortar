@@ -26,6 +26,7 @@ import {
   SetStartScreen,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { gamePrefs } from '../gamePrefs.ts'
 import { PrefSelect, PrefSwitch, PrefText } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
@@ -98,7 +99,7 @@ export function WindowLaunch() {
         description={t`How Play starts the game. Direct skips Steam's overlay and playtime.`}
       >
         <PrefSelect
-          value={useSettings((s) => s.defaultLaunchMethod) || 'steam'}
+          value={useSettings((s) => gamePrefs(s).defaultLaunchMethod) || 'steam'}
           onChange={(v) => persist(() => SetDefaultLaunchMethod(v), push, fail)}
           options={[
             { value: 'steam', label: t`Steam` },
@@ -111,7 +112,7 @@ export function WindowLaunch() {
         description={t`Show SMAPI's own window on a direct launch`}
       >
         <PrefSwitch
-          checked={useSettings((s) => s.showSmapiConsole) !== false}
+          checked={useSettings((s) => gamePrefs(s).showSmapiConsole) !== false}
           onChange={(on) => persist(() => SetShowSmapiConsole(on), push, fail)}
         />
       </SettingRow>
@@ -157,7 +158,7 @@ export function ModsPrefs() {
         description={t`When you switch a mod on, also enable its required mods already in the profile`}
       >
         <PrefSelect
-          value={useSettings((s) => s.enableRequirements) || 'always'}
+          value={useSettings((s) => gamePrefs(s).enableRequirements) || 'always'}
           onChange={(v) => persist(() => SetEnableRequirements(v), push, fail)}
           options={[
             { value: 'always', label: t`Always` },
@@ -171,7 +172,7 @@ export function ModsPrefs() {
         description={t`What to do when an installed mod still needs other mods`}
       >
         <PrefSelect
-          value={useSettings((s) => s.missingRequirements) || 'ask'}
+          value={useSettings((s) => gamePrefs(s).missingRequirements) || 'ask'}
           onChange={(v) => persist(() => SetMissingRequirements(v), push, fail)}
           options={[
             { value: 'ask', label: t`Ask` },
@@ -233,7 +234,7 @@ export function ModsPrefs() {
         description={t`Cosmetic overlaps on the Problems tab`}
       >
         <PrefSelect
-          value={useSettings((s) => s.cosmeticConflicts) || 'collapsed'}
+          value={useSettings((s) => gamePrefs(s).cosmeticConflicts) || 'collapsed'}
           onChange={(v) => persist(() => SetCosmeticConflicts(v), push, fail)}
           options={[
             { value: 'collapsed', label: t`Collapsed` },

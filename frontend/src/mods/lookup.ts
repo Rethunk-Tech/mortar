@@ -14,6 +14,7 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { offersNexusDownload } from './nexusMark.ts'
 
@@ -148,7 +149,7 @@ export const offersUpdate = (
 
 export const visibleUpdates = (result: UpdatesResult | null, profile?: Profile | null): Update[] =>
   (result?.updates ?? []).filter((u) => {
-    if (useSettings.getState().smapiBuilds === 'never' && u.unofficial) {
+    if (gamePrefs(useSettings.getState()).smapiBuilds === 'never' && u.unofficial) {
       return false
     }
     return offersUpdate(entryOf(profile, u.key), u.version, u.source)
@@ -177,7 +178,7 @@ export const updatesForReview = (
   )
 
 export const installableUpdate = (u: Update): boolean =>
-  (!u.unofficial || useSettings.getState().smapiBuilds === 'include') &&
+  (!u.unofficial || gamePrefs(useSettings.getState()).smapiBuilds === 'include') &&
   (u.githubRepo !== '' || u.nexusId > 0)
 
 export const updateCount = (

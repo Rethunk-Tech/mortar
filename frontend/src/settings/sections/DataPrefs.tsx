@@ -17,6 +17,7 @@ import {
   SetTrashRetentionDays,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { gamePrefs } from '../gamePrefs.ts'
 import { PrefNumber, PrefSelect, PrefSwitch, PrefText } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
@@ -34,13 +35,14 @@ export function DataPrefs() {
   const fail = t`Couldn't save that setting`
   return (
     <>
+      <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Stardew Valley`}</Box>
       <SettingsSection title={t`Play backups`}>
         <SettingRow
           label={t`Backup before Play`}
           description={t`When Mortar zips Saves before launching`}
         >
           <PrefSelect
-            value={useSettings((s) => s.backupBeforePlay) || 'changed'}
+            value={useSettings((s) => gamePrefs(s).backupBeforePlay) || 'changed'}
             onChange={(v) => persist(() => SetBackupBeforePlay(v), push, fail)}
             options={[
               { value: 'changed', label: t`When mods changed` },
@@ -51,7 +53,7 @@ export function DataPrefs() {
         </SettingRow>
         <SettingRow label={t`Launch backups kept`}>
           <PrefNumber
-            value={useSettings((s) => s.launchBackupsKept) || defaultLaunchBackups}
+            value={useSettings((s) => gamePrefs(s).launchBackupsKept) || defaultLaunchBackups}
             min={1}
             max={50}
             onCommit={(n) => SetLaunchBackupsKept(n)}
@@ -61,7 +63,7 @@ export function DataPrefs() {
       <SettingsSection title={t`Logs`}>
         <SettingRow label={t`Run logs kept`} description={t`Stored SMAPI logs per profile`}>
           <PrefNumber
-            value={useSettings((s) => s.runsKept) || defaultRunsKept}
+            value={useSettings((s) => gamePrefs(s).runsKept) || defaultRunsKept}
             min={1}
             max={100}
             onCommit={(n) => SetRunsKept(n)}
@@ -69,7 +71,7 @@ export function DataPrefs() {
         </SettingRow>
         <SettingRow label={t`Console log cap`} description={t`Newest lines kept in the Console`}>
           <PrefNumber
-            value={useSettings((s) => s.consoleLogCap) || defaultConsoleLogCap}
+            value={useSettings((s) => gamePrefs(s).consoleLogCap) || defaultConsoleLogCap}
             min={1000}
             max={100_000}
             onCommit={(n) => SetConsoleLogCap(n)}
@@ -80,7 +82,7 @@ export function DataPrefs() {
           description={t`Live log starts at this level and above`}
         >
           <PrefSelect
-            value={useSettings((s) => s.consoleLevel) || 'info'}
+            value={useSettings((s) => gamePrefs(s).consoleLevel) || 'info'}
             onChange={(v) => persist(() => SetConsoleLevel(v), push, fail)}
             options={[
               { value: 'trace', label: t`Trace` },
@@ -93,13 +95,13 @@ export function DataPrefs() {
         </SettingRow>
         <SettingRow label={t`Console timestamps`}>
           <PrefSwitch
-            checked={useSettings((s) => s.consoleTimestamps) !== false}
+            checked={useSettings((s) => gamePrefs(s).consoleTimestamps) !== false}
             onChange={(on) => persist(() => SetConsoleTimestamps(on), push, fail)}
           />
         </SettingRow>
         <SettingRow label={t`Follow live log`}>
           <PrefSwitch
-            checked={useSettings((s) => s.consoleFollow) !== false}
+            checked={useSettings((s) => gamePrefs(s).consoleFollow) !== false}
             onChange={(on) => persist(() => SetConsoleFollow(on), push, fail)}
           />
         </SettingRow>

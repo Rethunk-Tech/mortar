@@ -1,5 +1,6 @@
+import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 
 export function playDirect(): boolean {
-  return useSettings.getState().defaultLaunchMethod === 'direct'
+  return gamePrefs(useSettings.getState()).defaultLaunchMethod === 'direct'
 }

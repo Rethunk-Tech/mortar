@@ -12,69 +12,72 @@ const exportVersion = 1
 
 // Portable is settings.json minus secrets and machine-specific or personal fields.
 type Portable struct {
-	Version                      int      `json:"version"`
-	Language                     string   `json:"language"`
-	Accent                       string   `json:"accent"`
-	Background                   string   `json:"background"`
-	LastGame                     string   `json:"lastGame"`
-	BackupsKept                  int      `json:"backupsKept"`
-	ListColumns                  []string `json:"listColumns"`
-	ListSortColumn               string   `json:"listSortColumn"`
-	ListSortDir                  string   `json:"listSortDir"`
-	ListGroupBy                  string   `json:"listGroupBy"`
-	CheckModUpdatesOnStart       *bool    `json:"checkModUpdatesOnStart"`
-	TellWhenSmapiOut             *bool    `json:"tellWhenSmapiOut"`
-	KeepInTray                   bool     `json:"keepInTray"`
-	IncludeBetaReleases          bool     `json:"includeBetaReleases"`
-	IncludePrereleaseModVersions bool     `json:"includePrereleaseModVersions"`
-	CheckOnlyEnabledMods         bool     `json:"checkOnlyEnabledMods"`
-	EnableModsWhenInstalled      *bool    `json:"enableModsWhenInstalled"`
-	TipsSeen                     []string `json:"tipsSeen"`
-	NexusPreferredDownloadServer string   `json:"nexusPreferredDownloadServer"`
-	NxmRedirectOtherGames        *bool    `json:"nxmRedirectOtherGames"`
-	OnPlay                       string   `json:"onPlay"`
-	BackupBeforePlay             string   `json:"backupBeforePlay"`
-	LaunchBackupsKept            int      `json:"launchBackupsKept"`
-	UpdateModsBeforePlayDefault  bool     `json:"updateModsBeforePlayDefault"`
-	RunsKept                     int      `json:"runsKept"`
-	ConsoleLogCap                int      `json:"consoleLogCap"`
-	ParallelDownloads            int      `json:"parallelDownloads"`
-	UpdateCheckIntervalMinutes   int      `json:"updateCheckIntervalMinutes"`
-	NotifyModUpdates             *bool    `json:"notifyModUpdates"`
-	KeepDownloadArchives         bool     `json:"keepDownloadArchives"`
-	StoreRetentionDays           int      `json:"storeRetentionDays"`
-	NxmDefaultProfile            string   `json:"nxmDefaultProfile"`
-	DefaultModsView              string   `json:"defaultModsView"`
-	ConfirmRemovals              *bool    `json:"confirmRemovals"`
-	CosmeticConflicts            string   `json:"cosmeticConflicts"`
-	BackgroundBadgeChecks        *bool    `json:"backgroundBadgeChecks"`
-	StartScreen                  string   `json:"startScreen"`
-	Dates                        string   `json:"dates"`
-	TrashRetentionDays           int      `json:"trashRetentionDays"`
-	HistoryEventsKept            int      `json:"historyEventsKept"`
-	NotifyDownloadFinished       *bool    `json:"notifyDownloadFinished"`
-	NotifyDownloadFailed         *bool    `json:"notifyDownloadFailed"`
-	NotifyRunCrashed             *bool    `json:"notifyRunCrashed"`
-	Density                      string   `json:"density"`
-	GridCardSize                 string   `json:"gridCardSize"`
-	ShowAuthorOnCards            *bool    `json:"showAuthorOnCards"`
-	ReduceMotion                 string   `json:"reduceMotion"`
-	ProfileHero                  string   `json:"profileHero"`
-	EnableRequirements           string   `json:"enableRequirements"`
-	MissingRequirements          string   `json:"missingRequirements"`
-	ReuseFomodChoices            *bool    `json:"reuseFomodChoices"`
-	DriftChecks                  *bool    `json:"driftChecks"`
-	SmapiBuilds                  string   `json:"smapiBuilds"`
-	AutoInstallMortarUpdates     *bool    `json:"autoInstallMortarUpdates"`
-	AutoTrackNexus               bool     `json:"autoTrackNexus"`
-	DefaultLaunchMethod          string   `json:"defaultLaunchMethod"`
-	ShowSmapiConsole             *bool    `json:"showSmapiConsole"`
-	ConsoleLevel                 string   `json:"consoleLevel"`
-	ConsoleTimestamps            *bool    `json:"consoleTimestamps"`
-	ConsoleFollow                *bool    `json:"consoleFollow"`
-	LanName                      string   `json:"lanName"`
-	LanAutoAcceptSameAccount     bool     `json:"lanAutoAcceptSameAccount"`
-	DownloadFolder               string   `json:"downloadFolder"`
+	Version                      int                      `json:"version"`
+	Language                     string                   `json:"language"`
+	Accent                       string                   `json:"accent"`
+	Background                   string                   `json:"background"`
+	LastGame                     string                   `json:"lastGame"`
+	BackupsKept                  int                      `json:"backupsKept"`
+	ListColumns                  []string                 `json:"listColumns"`
+	ListSortColumn               string                   `json:"listSortColumn"`
+	ListSortDir                  string                   `json:"listSortDir"`
+	ListGroupBy                  string                   `json:"listGroupBy"`
+	CheckModUpdatesOnStart       *bool                    `json:"checkModUpdatesOnStart"`
+	TellWhenSmapiOut             *bool                    `json:"tellWhenSmapiOut"`
+	KeepInTray                   bool                     `json:"keepInTray"`
+	IncludeBetaReleases          bool                     `json:"includeBetaReleases"`
+	IncludePrereleaseModVersions bool                     `json:"includePrereleaseModVersions"`
+	CheckOnlyEnabledMods         bool                     `json:"checkOnlyEnabledMods"`
+	EnableModsWhenInstalled      *bool                    `json:"enableModsWhenInstalled"`
+	TipsSeen                     []string                 `json:"tipsSeen"`
+	NexusPreferredDownloadServer string                   `json:"nexusPreferredDownloadServer"`
+	NxmRedirectOtherGames        *bool                    `json:"nxmRedirectOtherGames"`
+	OnPlay                       string                   `json:"onPlay"`
+	ParallelDownloads            int                      `json:"parallelDownloads"`
+	UpdateCheckIntervalMinutes   int                      `json:"updateCheckIntervalMinutes"`
+	NotifyModUpdates             *bool                    `json:"notifyModUpdates"`
+	KeepDownloadArchives         bool                     `json:"keepDownloadArchives"`
+	StoreRetentionDays           int                      `json:"storeRetentionDays"`
+	DefaultModsView              string                   `json:"defaultModsView"`
+	ConfirmRemovals              *bool                    `json:"confirmRemovals"`
+	BackgroundBadgeChecks        *bool                    `json:"backgroundBadgeChecks"`
+	StartScreen                  string                   `json:"startScreen"`
+	Dates                        string                   `json:"dates"`
+	TrashRetentionDays           int                      `json:"trashRetentionDays"`
+	HistoryEventsKept            int                      `json:"historyEventsKept"`
+	NotifyDownloadFinished       *bool                    `json:"notifyDownloadFinished"`
+	NotifyDownloadFailed         *bool                    `json:"notifyDownloadFailed"`
+	NotifyRunCrashed             *bool                    `json:"notifyRunCrashed"`
+	Density                      string                   `json:"density"`
+	GridCardSize                 string                   `json:"gridCardSize"`
+	ShowAuthorOnCards            *bool                    `json:"showAuthorOnCards"`
+	ReduceMotion                 string                   `json:"reduceMotion"`
+	ProfileHero                  string                   `json:"profileHero"`
+	ReuseFomodChoices            *bool                    `json:"reuseFomodChoices"`
+	DriftChecks                  *bool                    `json:"driftChecks"`
+	AutoInstallMortarUpdates     *bool                    `json:"autoInstallMortarUpdates"`
+	AutoTrackNexus               bool                     `json:"autoTrackNexus"`
+	LanName                      string                   `json:"lanName"`
+	LanAutoAcceptSameAccount     bool                     `json:"lanAutoAcceptSameAccount"`
+	DownloadFolder               string                   `json:"downloadFolder"`
+	Games                        map[string]*GameSettings `json:"games"`
+
+	// Legacy root game fields, accepted on import then moved into Games.
+	BackupBeforePlay            string `json:"backupBeforePlay,omitempty"`
+	LaunchBackupsKept           int    `json:"launchBackupsKept,omitempty"`
+	UpdateModsBeforePlayDefault bool   `json:"updateModsBeforePlayDefault,omitempty"`
+	RunsKept                    int    `json:"runsKept,omitempty"`
+	ConsoleLogCap               int    `json:"consoleLogCap,omitempty"`
+	NxmDefaultProfile           string `json:"nxmDefaultProfile,omitempty"`
+	CosmeticConflicts           string `json:"cosmeticConflicts,omitempty"`
+	EnableRequirements          string `json:"enableRequirements,omitempty"`
+	MissingRequirements         string `json:"missingRequirements,omitempty"`
+	SmapiBuilds                 string `json:"smapiBuilds,omitempty"`
+	DefaultLaunchMethod         string `json:"defaultLaunchMethod,omitempty"`
+	ShowSmapiConsole            *bool  `json:"showSmapiConsole,omitempty"`
+	ConsoleLevel                string `json:"consoleLevel,omitempty"`
+	ConsoleTimestamps           *bool  `json:"consoleTimestamps,omitempty"`
+	ConsoleFollow               *bool  `json:"consoleFollow,omitempty"`
 }
 
 // Change is one field that import would replace.
@@ -96,17 +99,21 @@ var portableFields = []string{
 	"checkModUpdatesOnStart", "tellWhenSmapiOut", "keepInTray", "includeBetaReleases",
 	"includePrereleaseModVersions", "checkOnlyEnabledMods", "enableModsWhenInstalled", "tipsSeen",
 	"nexusPreferredDownloadServer", "nxmRedirectOtherGames",
-	"onPlay", "backupBeforePlay", "launchBackupsKept", "updateModsBeforePlayDefault",
-	"runsKept", "consoleLogCap", "parallelDownloads", "updateCheckIntervalMinutes",
-	"notifyModUpdates", "keepDownloadArchives", "storeRetentionDays", "nxmDefaultProfile",
-	"defaultModsView", "confirmRemovals", "cosmeticConflicts", "backgroundBadgeChecks",
+	"onPlay", "parallelDownloads", "updateCheckIntervalMinutes",
+	"notifyModUpdates", "keepDownloadArchives", "storeRetentionDays",
+	"defaultModsView", "confirmRemovals", "backgroundBadgeChecks",
 	"startScreen", "dates", "trashRetentionDays", "historyEventsKept",
 	"notifyDownloadFinished", "notifyDownloadFailed", "notifyRunCrashed",
 	"density", "gridCardSize", "showAuthorOnCards", "reduceMotion", "profileHero",
-	"enableRequirements", "missingRequirements", "reuseFomodChoices", "driftChecks",
-	"smapiBuilds", "autoInstallMortarUpdates", "autoTrackNexus", "defaultLaunchMethod",
-	"showSmapiConsole", "consoleLevel", "consoleTimestamps", "consoleFollow",
+	"reuseFomodChoices", "driftChecks",
+	"autoInstallMortarUpdates", "autoTrackNexus",
 	"lanName", "lanAutoAcceptSameAccount", "downloadFolder",
+	"games",
+}
+
+func has(present map[string]struct{}, key string) bool {
+	_, ok := present[key]
+	return ok
 }
 
 // MarshalExport writes a versioned JSON of s without secrets or machine-specific fields.
@@ -170,7 +177,11 @@ func previewChanges(cur Settings, p Portable, present map[string]struct{}) []Cha
 	ApplyExport(&next, p, present)
 	var out []Change
 	for _, field := range portableFields {
-		if _, ok := present[field]; !ok {
+		if field == "games" {
+			if !has(present, "games") && !legacyGamePresent(present) {
+				continue
+			}
+		} else if !has(present, field) {
 			continue
 		}
 		from, to := fieldText(cur, field), fieldText(next, field)
@@ -185,7 +196,32 @@ func previewChanges(cur Settings, p Portable, present map[string]struct{}) []Cha
 	return out
 }
 
+func legacyGamePresent(present map[string]struct{}) bool {
+	for _, k := range []string{
+		"backupBeforePlay", "launchBackupsKept", "updateModsBeforePlayDefault",
+		"runsKept", "consoleLogCap", "nxmDefaultProfile", "cosmeticConflicts",
+		"enableRequirements", "missingRequirements", "smapiBuilds",
+		"defaultLaunchMethod", "showSmapiConsole", "consoleLevel",
+		"consoleTimestamps", "consoleFollow",
+	} {
+		if has(present, k) {
+			return true
+		}
+	}
+	return false
+}
+
 func fieldText(s Settings, field string) string {
+	if field == "games" {
+		b, err := json.Marshal(s.Games)
+		if err != nil {
+			return ""
+		}
+		return string(b)
+	}
+	if v, err := s.LookupGame(field, GameStardew); err == nil {
+		return v
+	}
 	switch field {
 	case "language":
 		return s.Language
@@ -199,14 +235,6 @@ func fieldText(s Settings, field string) string {
 		return strconv.Itoa(s.BackupsKept)
 	case "listColumns":
 		return strings.Join(s.ListColumns, ", ")
-	case "listSortColumn":
-		return s.ListSortColumn
-	case "listSortDir":
-		return s.ListSortDir
-	case "listGroupBy":
-		return s.ListGroupBy
-	case "checkModUpdatesOnStart":
-		return boolText(s.CheckModUpdatesOnStart)
 	case "tellWhenSmapiOut":
 		return boolText(s.TellWhenSmapiOut)
 	case "keepInTray":
@@ -228,92 +256,6 @@ func fieldText(s Settings, field string) string {
 		return s.NexusPreferredDownloadServer
 	case "nxmRedirectOtherGames":
 		return strconv.FormatBool(s.RedirectOtherGames())
-	case "onPlay":
-		return s.OnPlay
-	case "backupBeforePlay":
-		return s.BackupBeforePlay
-	case "launchBackupsKept":
-		return strconv.Itoa(s.LaunchBackupsKept)
-	case "updateModsBeforePlayDefault":
-		return strconv.FormatBool(s.UpdateModsBeforePlayDefault)
-	case "runsKept":
-		return strconv.Itoa(s.RunsKept)
-	case "consoleLogCap":
-		return strconv.Itoa(s.ConsoleLogCap)
-	case "parallelDownloads":
-		return strconv.Itoa(s.ParallelDownloads)
-	case "updateCheckIntervalMinutes":
-		return strconv.Itoa(s.UpdateCheckIntervalMinutes)
-	case "notifyModUpdates":
-		return boolText(s.NotifyModUpdates)
-	case "keepDownloadArchives":
-		return strconv.FormatBool(s.KeepDownloadArchives)
-	case "storeRetentionDays":
-		return strconv.Itoa(s.StoreRetentionDays)
-	case "nxmDefaultProfile":
-		return s.NxmDefaultProfile
-	case "defaultModsView":
-		return s.DefaultModsView
-	case "confirmRemovals":
-		return boolText(s.ConfirmRemovals)
-	case "cosmeticConflicts":
-		return s.CosmeticConflicts
-	case "backgroundBadgeChecks":
-		return boolText(s.BackgroundBadgeChecks)
-	case "startScreen":
-		return s.StartScreen
-	case "dates":
-		return s.Dates
-	case "trashRetentionDays":
-		return strconv.Itoa(s.TrashRetentionDays)
-	case "historyEventsKept":
-		return strconv.Itoa(s.HistoryEventsKept)
-	case "notifyDownloadFinished":
-		return boolText(s.NotifyDownloadFinished)
-	case "notifyDownloadFailed":
-		return boolText(s.NotifyDownloadFailed)
-	case "notifyRunCrashed":
-		return boolText(s.NotifyRunCrashed)
-	case "density":
-		return s.Density
-	case "gridCardSize":
-		return s.GridCardSize
-	case "showAuthorOnCards":
-		return boolText(s.ShowAuthorOnCards)
-	case "reduceMotion":
-		return s.ReduceMotion
-	case "profileHero":
-		return s.ProfileHero
-	case "enableRequirements":
-		return s.EnableRequirements
-	case "missingRequirements":
-		return s.MissingRequirements
-	case "reuseFomodChoices":
-		return boolText(s.ReuseFomodChoices)
-	case "driftChecks":
-		return boolText(s.DriftChecks)
-	case "smapiBuilds":
-		return s.SmapiBuilds
-	case "autoInstallMortarUpdates":
-		return boolText(s.AutoInstallMortarUpdates)
-	case "autoTrackNexus":
-		return strconv.FormatBool(s.AutoTrackNexus)
-	case "defaultLaunchMethod":
-		return s.DefaultLaunchMethod
-	case "showSmapiConsole":
-		return boolText(s.ShowSmapiConsole)
-	case "consoleLevel":
-		return s.ConsoleLevel
-	case "consoleTimestamps":
-		return boolText(s.ConsoleTimestamps)
-	case "consoleFollow":
-		return boolText(s.ConsoleFollow)
-	case "lanName":
-		return s.LanName
-	case "lanAutoAcceptSameAccount":
-		return strconv.FormatBool(s.LanAutoAcceptSameAccount)
-	case "downloadFolder":
-		return s.DownloadFolder
 	default:
 		return ""
 	}
@@ -324,4 +266,245 @@ func boolText(v *bool) string {
 		return ""
 	}
 	return strconv.FormatBool(*v)
+}
+
+func fillPortable(s Settings) Portable {
+	games := map[string]*GameSettings{}
+	for id, g := range s.Games {
+		if g == nil {
+			continue
+		}
+		cp := *g
+		normalizeGame(&cp)
+		games[id] = &cp
+	}
+	return Portable{
+		Version:                      exportVersion,
+		Language:                     s.Language,
+		Accent:                       s.Accent,
+		Background:                   s.Background,
+		LastGame:                     s.LastGame,
+		BackupsKept:                  s.BackupsKept,
+		ListColumns:                  slices.Clone(s.ListColumns),
+		ListSortColumn:               s.ListSortColumn,
+		ListSortDir:                  s.ListSortDir,
+		ListGroupBy:                  s.ListGroupBy,
+		CheckModUpdatesOnStart:       s.CheckModUpdatesOnStart,
+		TellWhenSmapiOut:             s.TellWhenSmapiOut,
+		KeepInTray:                   s.KeepInTray,
+		IncludeBetaReleases:          s.IncludeBetaReleases,
+		IncludePrereleaseModVersions: s.IncludePrereleaseModVersions,
+		CheckOnlyEnabledMods:         s.CheckOnlyEnabledMods,
+		EnableModsWhenInstalled:      s.EnableModsWhenInstalled,
+		TipsSeen:                     slices.Clone(s.TipsSeen),
+		NexusPreferredDownloadServer: s.NexusPreferredDownloadServer,
+		NxmRedirectOtherGames:        s.NxmRedirectOtherGames,
+		OnPlay:                       s.OnPlay,
+		ParallelDownloads:            s.ParallelDownloads,
+		UpdateCheckIntervalMinutes:   s.UpdateCheckIntervalMinutes,
+		NotifyModUpdates:             s.NotifyModUpdates,
+		KeepDownloadArchives:         s.KeepDownloadArchives,
+		StoreRetentionDays:           s.StoreRetentionDays,
+		DefaultModsView:              s.DefaultModsView,
+		ConfirmRemovals:              s.ConfirmRemovals,
+		BackgroundBadgeChecks:        s.BackgroundBadgeChecks,
+		StartScreen:                  s.StartScreen,
+		Dates:                        s.Dates,
+		TrashRetentionDays:           s.TrashRetentionDays,
+		HistoryEventsKept:            s.HistoryEventsKept,
+		NotifyDownloadFinished:       s.NotifyDownloadFinished,
+		NotifyDownloadFailed:         s.NotifyDownloadFailed,
+		NotifyRunCrashed:             s.NotifyRunCrashed,
+		Density:                      s.Density,
+		GridCardSize:                 s.GridCardSize,
+		ShowAuthorOnCards:            s.ShowAuthorOnCards,
+		ReduceMotion:                 s.ReduceMotion,
+		ProfileHero:                  s.ProfileHero,
+		ReuseFomodChoices:            s.ReuseFomodChoices,
+		DriftChecks:                  s.DriftChecks,
+		AutoInstallMortarUpdates:     s.AutoInstallMortarUpdates,
+		AutoTrackNexus:               s.AutoTrackNexus,
+		LanName:                      s.LanName,
+		LanAutoAcceptSameAccount:     s.LanAutoAcceptSameAccount,
+		DownloadFolder:               s.DownloadFolder,
+		Games:                        games,
+	}
+}
+
+func copyPortable(dst *Settings, p Portable, present map[string]struct{}) {
+	if has(present, "language") {
+		dst.Language = p.Language
+	}
+	if has(present, "accent") {
+		dst.Accent = p.Accent
+	}
+	if has(present, "background") {
+		dst.Background = p.Background
+	}
+	if has(present, "lastGame") {
+		dst.LastGame = p.LastGame
+	}
+	if has(present, "backupsKept") {
+		dst.BackupsKept = p.BackupsKept
+	}
+	if has(present, "listColumns") {
+		dst.ListColumns = slices.Clone(p.ListColumns)
+	}
+	if has(present, "listSortColumn") {
+		dst.ListSortColumn = p.ListSortColumn
+	}
+	if has(present, "listSortDir") {
+		dst.ListSortDir = p.ListSortDir
+	}
+	if has(present, "listGroupBy") {
+		dst.ListGroupBy = p.ListGroupBy
+	}
+	if has(present, "checkModUpdatesOnStart") {
+		dst.CheckModUpdatesOnStart = p.CheckModUpdatesOnStart
+	}
+	if has(present, "tellWhenSmapiOut") {
+		dst.TellWhenSmapiOut = p.TellWhenSmapiOut
+	}
+	if has(present, "keepInTray") {
+		dst.KeepInTray = p.KeepInTray
+	}
+	if has(present, "includeBetaReleases") {
+		dst.IncludeBetaReleases = p.IncludeBetaReleases
+	}
+	if has(present, "includePrereleaseModVersions") {
+		dst.IncludePrereleaseModVersions = p.IncludePrereleaseModVersions
+	}
+	if has(present, "checkOnlyEnabledMods") {
+		dst.CheckOnlyEnabledMods = p.CheckOnlyEnabledMods
+	}
+	if has(present, "enableModsWhenInstalled") {
+		dst.EnableModsWhenInstalled = p.EnableModsWhenInstalled
+	}
+	if has(present, "tipsSeen") {
+		dst.TipsSeen = slices.Clone(p.TipsSeen)
+	}
+	if has(present, "nexusPreferredDownloadServer") {
+		dst.NexusPreferredDownloadServer = p.NexusPreferredDownloadServer
+	}
+	if has(present, "nxmRedirectOtherGames") {
+		dst.NxmRedirectOtherGames = p.NxmRedirectOtherGames
+	}
+	if has(present, "onPlay") {
+		dst.OnPlay = p.OnPlay
+	}
+	if has(present, "parallelDownloads") {
+		dst.ParallelDownloads = p.ParallelDownloads
+	}
+	if has(present, "updateCheckIntervalMinutes") {
+		dst.UpdateCheckIntervalMinutes = p.UpdateCheckIntervalMinutes
+	}
+	if has(present, "notifyModUpdates") {
+		dst.NotifyModUpdates = p.NotifyModUpdates
+	}
+	if has(present, "keepDownloadArchives") {
+		dst.KeepDownloadArchives = p.KeepDownloadArchives
+	}
+	if has(present, "storeRetentionDays") {
+		dst.StoreRetentionDays = p.StoreRetentionDays
+	}
+	if has(present, "defaultModsView") {
+		dst.DefaultModsView = p.DefaultModsView
+	}
+	if has(present, "confirmRemovals") {
+		dst.ConfirmRemovals = p.ConfirmRemovals
+	}
+	if has(present, "backgroundBadgeChecks") {
+		dst.BackgroundBadgeChecks = p.BackgroundBadgeChecks
+	}
+	if has(present, "startScreen") {
+		dst.StartScreen = p.StartScreen
+	}
+	if has(present, "dates") {
+		dst.Dates = p.Dates
+	}
+	if has(present, "trashRetentionDays") {
+		dst.TrashRetentionDays = p.TrashRetentionDays
+	}
+	if has(present, "historyEventsKept") {
+		dst.HistoryEventsKept = p.HistoryEventsKept
+	}
+	if has(present, "notifyDownloadFinished") {
+		dst.NotifyDownloadFinished = p.NotifyDownloadFinished
+	}
+	if has(present, "notifyDownloadFailed") {
+		dst.NotifyDownloadFailed = p.NotifyDownloadFailed
+	}
+	if has(present, "notifyRunCrashed") {
+		dst.NotifyRunCrashed = p.NotifyRunCrashed
+	}
+	if has(present, "density") {
+		dst.Density = p.Density
+	}
+	if has(present, "gridCardSize") {
+		dst.GridCardSize = p.GridCardSize
+	}
+	if has(present, "showAuthorOnCards") {
+		dst.ShowAuthorOnCards = p.ShowAuthorOnCards
+	}
+	if has(present, "reduceMotion") {
+		dst.ReduceMotion = p.ReduceMotion
+	}
+	if has(present, "profileHero") {
+		dst.ProfileHero = p.ProfileHero
+	}
+	if has(present, "reuseFomodChoices") {
+		dst.ReuseFomodChoices = p.ReuseFomodChoices
+	}
+	if has(present, "driftChecks") {
+		dst.DriftChecks = p.DriftChecks
+	}
+	if has(present, "autoInstallMortarUpdates") {
+		dst.AutoInstallMortarUpdates = p.AutoInstallMortarUpdates
+	}
+	if has(present, "autoTrackNexus") {
+		dst.AutoTrackNexus = p.AutoTrackNexus
+	}
+	if has(present, "lanName") {
+		dst.LanName = p.LanName
+	}
+	if has(present, "lanAutoAcceptSameAccount") {
+		dst.LanAutoAcceptSameAccount = p.LanAutoAcceptSameAccount
+	}
+	if has(present, "downloadFolder") {
+		dst.DownloadFolder = p.DownloadFolder
+	}
+	if has(present, "games") && p.Games != nil {
+		if dst.Games == nil {
+			dst.Games = map[string]*GameSettings{}
+		}
+		for id, g := range p.Games {
+			if g == nil {
+				continue
+			}
+			cp := *g
+			dst.Games[id] = &cp
+		}
+	}
+	legacy := GameSettings{
+		BackupBeforePlay:            p.BackupBeforePlay,
+		LaunchBackupsKept:           p.LaunchBackupsKept,
+		UpdateModsBeforePlayDefault: p.UpdateModsBeforePlayDefault,
+		RunsKept:                    p.RunsKept,
+		ConsoleLogCap:               p.ConsoleLogCap,
+		NxmDefaultProfile:           p.NxmDefaultProfile,
+		CosmeticConflicts:           p.CosmeticConflicts,
+		EnableRequirements:          p.EnableRequirements,
+		MissingRequirements:         p.MissingRequirements,
+		SmapiBuilds:                 p.SmapiBuilds,
+		DefaultLaunchMethod:         p.DefaultLaunchMethod,
+		ShowSmapiConsole:            p.ShowSmapiConsole,
+		ConsoleLevel:                p.ConsoleLevel,
+		ConsoleTimestamps:           p.ConsoleTimestamps,
+		ConsoleFollow:               p.ConsoleFollow,
+	}
+	if hasLegacyGame(legacy) && legacyGamePresent(present) {
+		cur := dst.GamePrefs(GameStardew)
+		mergeGame(&cur, legacy)
+		putGame(dst, GameStardew, cur)
+	}
 }

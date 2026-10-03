@@ -328,7 +328,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	idx.Runs = append([]Run{run}, idx.Runs...)
 	keep := maxRuns
 	if s.settings != nil {
-		if n := s.settings.Get().RunsKept; n > 0 {
+		if n := s.settings.Get().GamePrefs(g.ID()).RunsKept; n > 0 {
 			keep = n
 		}
 	}

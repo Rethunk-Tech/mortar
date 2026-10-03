@@ -20,6 +20,7 @@ import { List } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profi
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
@@ -46,7 +47,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const choose = useNxm((s) => s.choose)
   const arrivals = useNxm((s) => s.arrivals)
   const dismiss = useNxm((s) => s.dismiss)
-  const lastId = useSettings((s) => s.nxmDefaultProfile || s.lastProfile?.[NXM_GAME])
+  const lastId = useSettings((s) => gamePrefs(s).nxmDefaultProfile || s.lastProfile?.[NXM_GAME])
   const name = useModName(arrival.link.modId)
   // New profile creates in the game the profiles store has open, so it is offered only when that is this game.
   const canCreate = useProfiles((s) => s.game?.id === NXM_GAME)

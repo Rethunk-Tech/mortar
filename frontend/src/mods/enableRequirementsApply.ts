@@ -3,6 +3,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/p
 import { SetModsEnabled } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { useEnableAsk } from './enableAsk.ts'
 import { enableRequirementsDecision, pendingRequired } from './enableRequirements.ts'
@@ -18,7 +19,7 @@ export function considerEnableRequirements(
   }
   const pending = pendingRequired(allMods, enabling)
   const decision = enableRequirementsDecision(
-    useSettings.getState().enableRequirements || 'always',
+    gamePrefs(useSettings.getState()).enableRequirements || 'always',
     pending.length,
   )
   if (decision === 'skip' || (decision === 'enable' && source === 'toggle')) {

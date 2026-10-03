@@ -229,9 +229,9 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "settings.get":
 		cur := s.Settings.Get()
 		if p.Key == "" {
-			return cur.AllPrefs(), nil
+			return cur.AllPrefsGame(p.Game), nil
 		}
-		v, err := cur.Lookup(p.Key)
+		v, err := cur.LookupGame(p.Key, p.Game)
 		if err != nil {
 			return nil, err
 		}
@@ -240,7 +240,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if p.Key == "" {
 			return nil, fmt.Errorf("settings set needs a key")
 		}
-		return nil, s.SettingsSvc.SetByKey(p.Key, p.Value)
+		return nil, s.SettingsSvc.SetByKey(p.Key, p.Value, p.Game)
 	case "profiles":
 		return s.Profiles.List(p.Game)
 	case "trash.list":

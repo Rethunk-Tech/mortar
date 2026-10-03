@@ -17,6 +17,7 @@ import {
 import { useNav } from '../../nav/store.ts'
 import { errorMessage, errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { gamePrefs } from '../gamePrefs.ts'
 import { PrefNumber, PrefSelect, PrefSwitch } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
@@ -225,7 +226,7 @@ export function Updates() {
           description={t`Default for a profile you just created`}
         >
           <PrefSwitch
-            checked={useSettings((s) => s.updateModsBeforePlayDefault)}
+            checked={useSettings((s) => gamePrefs(s).updateModsBeforePlayDefault)}
             onChange={(on) => persist(() => SetUpdateModsBeforePlayDefault(on), push, fail)}
           />
         </SettingRow>
@@ -258,7 +259,7 @@ export function Updates() {
           description={t`Pre-releases and unofficial SMAPI updates. Show lists them; Include lets Update all install them.`}
         >
           <PrefSelect
-            value={useSettings((s) => s.smapiBuilds) || 'show'}
+            value={useSettings((s) => gamePrefs(s).smapiBuilds) || 'show'}
             onChange={(v) => persist(() => SetSmapiBuilds(v), push, fail)}
             options={[
               { value: 'never', label: t`Never` },

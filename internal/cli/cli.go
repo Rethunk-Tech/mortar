@@ -569,7 +569,7 @@ func (c *cmd) settings() error {
 			key = c.args[2]
 		}
 		var rows [][2]string
-		if err := c.ask("settings.get", control.Params{Key: key}, &rows, readTimeout); err != nil {
+		if err := c.ask("settings.get", control.Params{Key: key, Game: c.game}, &rows, readTimeout); err != nil {
 			return err
 		}
 		return c.emit(rows, func() {
@@ -583,7 +583,7 @@ func (c *cmd) settings() error {
 		if len(c.args) < 4 {
 			return usageError{"settings set needs a key and a value"}
 		}
-		return c.ask("settings.set", control.Params{Key: c.args[2], Value: strings.Join(c.args[3:], " ")}, nil, readTimeout)
+		return c.ask("settings.set", control.Params{Key: c.args[2], Value: strings.Join(c.args[3:], " "), Game: c.game}, nil, readTimeout)
 	default:
 		return usageError{"unknown settings command " + c.args[1]}
 	}
@@ -1537,8 +1537,8 @@ const usage = `Usage: mortar <command> [arguments] [--json]
 
 Mortar must be running; these commands ask the open app. <profile> is an id or a name.
 
-  settings get [key]                      list settings, or one key
-  settings set <key> <value>              change a setting
+  settings get [--game stardew] [key]     list settings, or one key
+  settings set [--game stardew] <key> <value>  change a setting
   games                                   supported games, whether each is configured
   profiles <game>                         profiles of a game
   profile create <game> <name>            new empty profile

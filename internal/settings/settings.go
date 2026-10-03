@@ -122,29 +122,17 @@ type Settings struct {
 	// Shortcuts maps action id to a chord such as Ctrl+K. Missing ids use DefaultShortcuts.
 	Shortcuts map[string]string `json:"shortcuts"`
 	// OnPlay is stay, minimise, or hide (to the tray) when a game launches.
-	OnPlay string `json:"onPlay"`
-	// BackupBeforePlay is changed, always, or never.
-	BackupBeforePlay string `json:"backupBeforePlay"`
-	// LaunchBackupsKept is how many KindLaunch save backups to retain.
-	LaunchBackupsKept int `json:"launchBackupsKept"`
-	// UpdateModsBeforePlayDefault is the UpdateBeforePlay flag on a newly created profile.
-	UpdateModsBeforePlayDefault bool `json:"updateModsBeforePlayDefault"`
-	RunsKept                    int  `json:"runsKept"`
-	ConsoleLogCap               int  `json:"consoleLogCap"`
-	ParallelDownloads           int  `json:"parallelDownloads"`
-	UpdateCheckIntervalMinutes  int  `json:"updateCheckIntervalMinutes"`
+	OnPlay                     string `json:"onPlay"`
+	ParallelDownloads          int    `json:"parallelDownloads"`
+	UpdateCheckIntervalMinutes int    `json:"updateCheckIntervalMinutes"`
 	// NotifyModUpdates toasts when a background check finds updates. Nil means off.
 	NotifyModUpdates     *bool `json:"notifyModUpdates"`
 	KeepDownloadArchives bool  `json:"keepDownloadArchives"`
 	// StoreRetentionDays is unused store-item lifetime; 0 means keep forever.
-	StoreRetentionDays int `json:"storeRetentionDays"`
-	// NxmDefaultProfile is the profile nxm links go to; empty means the last-opened profile.
-	NxmDefaultProfile string `json:"nxmDefaultProfile"`
-	DefaultModsView   string `json:"defaultModsView"`
+	StoreRetentionDays int    `json:"storeRetentionDays"`
+	DefaultModsView    string `json:"defaultModsView"`
 	// ConfirmRemovals asks before removing mods. Nil means on.
 	ConfirmRemovals *bool `json:"confirmRemovals"`
-	// CosmeticConflicts is collapsed, expanded, or hidden.
-	CosmeticConflicts string `json:"cosmeticConflicts"`
 	// BackgroundBadgeChecks fills sidebar badges for other profiles. Nil means on.
 	BackgroundBadgeChecks *bool `json:"backgroundBadgeChecks"`
 	// StartScreen is last (last opened profile) or gameselect.
@@ -160,21 +148,32 @@ type Settings struct {
 	ShowAuthorOnCards        *bool  `json:"showAuthorOnCards"`
 	ReduceMotion             string `json:"reduceMotion"`
 	ProfileHero              string `json:"profileHero"`
-	EnableRequirements       string `json:"enableRequirements"`
-	MissingRequirements      string `json:"missingRequirements"`
 	ReuseFomodChoices        *bool  `json:"reuseFomodChoices"`
 	DriftChecks              *bool  `json:"driftChecks"`
-	SmapiBuilds              string `json:"smapiBuilds"`
 	AutoInstallMortarUpdates *bool  `json:"autoInstallMortarUpdates"`
 	AutoTrackNexus           bool   `json:"autoTrackNexus"`
-	DefaultLaunchMethod      string `json:"defaultLaunchMethod"`
-	ShowSmapiConsole         *bool  `json:"showSmapiConsole"`
-	ConsoleLevel             string `json:"consoleLevel"`
-	ConsoleTimestamps        *bool  `json:"consoleTimestamps"`
-	ConsoleFollow            *bool  `json:"consoleFollow"`
 	LanName                  string `json:"lanName"`
 	LanAutoAcceptSameAccount bool   `json:"lanAutoAcceptSameAccount"`
 	DownloadFolder           string `json:"downloadFolder"`
+	// Games holds per-game prefs (Stardew Valley today).
+	Games map[string]*GameSettings `json:"games"`
+
+	// One-time migration from the pre-registry root fields. Cleared after Open.
+	LegacyBackupBeforePlay            string `json:"backupBeforePlay,omitempty"`
+	LegacyLaunchBackupsKept           int    `json:"launchBackupsKept,omitempty"`
+	LegacyUpdateModsBeforePlayDefault bool   `json:"updateModsBeforePlayDefault,omitempty"`
+	LegacyRunsKept                    int    `json:"runsKept,omitempty"`
+	LegacyConsoleLogCap               int    `json:"consoleLogCap,omitempty"`
+	LegacyNxmDefaultProfile           string `json:"nxmDefaultProfile,omitempty"`
+	LegacyCosmeticConflicts           string `json:"cosmeticConflicts,omitempty"`
+	LegacyEnableRequirements          string `json:"enableRequirements,omitempty"`
+	LegacyMissingRequirements         string `json:"missingRequirements,omitempty"`
+	LegacySmapiBuilds                 string `json:"smapiBuilds,omitempty"`
+	LegacyDefaultLaunchMethod         string `json:"defaultLaunchMethod,omitempty"`
+	LegacyShowSmapiConsole            *bool  `json:"showSmapiConsole,omitempty"`
+	LegacyConsoleLevel                string `json:"consoleLevel,omitempty"`
+	LegacyConsoleTimestamps           *bool  `json:"consoleTimestamps,omitempty"`
+	LegacyConsoleFollow               *bool  `json:"consoleFollow,omitempty"`
 }
 
 const (
@@ -214,6 +213,7 @@ func Defaults() Settings {
 	s.LanSharing = false
 	s.OverlayPort = DefaultOverlayPort
 	s.Shortcuts = DefaultShortcuts()
+	s.Games = map[string]*GameSettings{}
 	return s
 }
 
@@ -261,6 +261,9 @@ func Open() (*Store, error) {
 	if s.cur.Dismissed == nil {
 		s.cur.Dismissed = map[string][]string{}
 	}
+	if s.cur.Games == nil {
+		s.cur.Games = map[string]*GameSettings{}
+	}
 	if !slices.Contains(accents, s.cur.Accent) {
 		s.cur.Accent = Defaults().Accent
 	}
@@ -274,6 +277,7 @@ func Open() (*Store, error) {
 		s.cur.BackupsKept = Defaults().BackupsKept
 	}
 	normalizeToggles(&s.cur)
+	migrateLegacyGameFields(&s.cur)
 	normalizePrefs(&s.cur)
 	normalizeList(&s.cur)
 	normalizeTips(&s.cur)
@@ -318,6 +322,9 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	}
 	if next.LanPort < 0 || next.LanPort > 65535 {
 		return s.cur, fmt.Errorf("LAN port must be between 0 and 65535, got %d", next.LanPort)
+	}
+	if next.Games == nil {
+		next.Games = map[string]*GameSettings{}
 	}
 	if err := validatePrefs(next); err != nil {
 		return s.cur, err

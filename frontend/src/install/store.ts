@@ -25,6 +25,7 @@ import { isLocked } from '../mods/locked.ts'
 import { useMods } from '../mods/store.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { changeStillLatest } from '../toasts/history.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
@@ -334,7 +335,7 @@ export const useInstall = create<{
 }))
 
 export function considerMissing(dependentIds: readonly string[]) {
-  const mode = useSettings.getState().missingRequirements || 'ask'
+  const mode = gamePrefs(useSettings.getState()).missingRequirements || 'ask'
   if (mode === 'never') {
     return
   }

@@ -14,6 +14,7 @@ import { ChevronDown, ChevronRight, Copy, ShieldCheck, TriangleAlert } from 'luc
 import { useState } from 'react'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
+import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -361,7 +362,7 @@ export function ProblemsTab() {
   const removeMany = useMods((s) => s.removeMany)
   const dismissAsset = useMods((s) => s.dismissAsset)
   const [confirmCleanup, setConfirmCleanup] = useState(false)
-  const cosmeticConflicts = useSettings((s) => s.cosmeticConflicts)
+  const cosmeticConflicts = useSettings((s) => gamePrefs(s).cosmeticConflicts)
 
   if (result === null) {
     return <LoadingRow>{t`Checking the mods for problems…`}</LoadingRow>
