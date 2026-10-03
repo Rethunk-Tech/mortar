@@ -18,11 +18,11 @@ import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'
 import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { DEFAULT_FILTERS, type Filters, levelsFromFloor } from './filter.ts'
+import { pushCommand } from './history.ts'
 
 // Matches the backend's launch.MaxLines, so a long session keeps the same window the log file does.
 const MAX_CONSOLE_LINES = 20_000
-import { DEFAULT_FILTERS, type Filters, levelsFromFloor } from './filter.ts'
-import { pushCommand } from './history.ts'
 
 function consoleDefaults() {
   const s = useSettings.getState()
