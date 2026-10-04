@@ -13,6 +13,7 @@ import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { isAbstained, isEndorsed, isTracked, type TrackedMod } from './nexusAccount.ts'
+import { NEXUS_DOMAIN } from './nexusUrl.ts'
 
 export function NexusAccountActions({
   modId,
@@ -127,7 +128,7 @@ export function NexusAccountActions({
                 await Track(modId)
                 setMods((cur) => [
                   ...(cur ?? []).filter((m) => m.modId !== modId),
-                  { modId, domainName: 'stardewvalley' },
+                  { modId, domainName: NEXUS_DOMAIN },
                 ])
               },
               { errorTitle: t`Could not track` },

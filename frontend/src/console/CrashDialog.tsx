@@ -21,6 +21,7 @@ import { useLaunch } from '../launch/store.ts'
 import { useDetail } from '../mods/detail.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
+import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { ReportToAuthorButton } from '../mods/ReportToAuthorButton.tsx'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -129,9 +130,7 @@ function MoreActions({
             label={t`Open on Nexus`}
             onClick={() => {
               close()
-              openPage(`https://www.nexusmods.com/stardewvalley/mods/${nexusID}`).catch(
-                reportUnexpected,
-              )
+              openPage(nexusModUrl(nexusID)).catch(reportUnexpected)
             }}
           />
         ) : null}

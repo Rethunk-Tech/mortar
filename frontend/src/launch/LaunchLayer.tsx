@@ -24,6 +24,7 @@ import { launchLine } from '../firstrun/logic.ts'
 import { useTab } from '../game/tab.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
+import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
@@ -275,13 +276,7 @@ function Failure({ game }: { game: string }) {
         </Button>
         {mod ? <SwitchOffButton mod={mod} /> : null}
         {nexusID > 0 ? (
-          <Button
-            onClick={() =>
-              openPage(`https://www.nexusmods.com/stardewvalley/mods/${nexusID}`).catch(
-                reportUnexpected,
-              )
-            }
-          >
+          <Button onClick={() => openPage(nexusModUrl(nexusID)).catch(reportUnexpected)}>
             {t`Open on Nexus`}
           </Button>
         ) : null}

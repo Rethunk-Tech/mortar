@@ -21,17 +21,17 @@ import { openPage } from './menu.ts'
 import { modsByAuthor } from './modsByAuthor.ts'
 import { nexusAuthorPageUrl } from './nexusAuthorPage.ts'
 import { useNexusEntry } from './nexusDetails.ts'
+import { nexusModUrl } from './nexusUrl.ts'
 
 const text = { fontSize: 13 } as const
 const muted = { fontSize: 12, color: 'text.secondary' } as const
 
-function modPageUrl(profile: Profile, mod: Mod, gameId: string): string {
+function modPageUrl(profile: Profile, mod: Mod): string {
   const source = (profile.entries ?? []).find((e) => e.key === mod.key)?.source
   if (source?.kind !== 'nexus' || !source.modId) {
     return ''
   }
-  const domain = gameId === 'stardew' ? 'stardewvalley' : gameId
-  return `https://www.nexusmods.com/${domain}/mods/${source.modId}`
+  return nexusModUrl(source.modId)
 }
 
 function ModRow({
@@ -92,7 +92,6 @@ function AuthorDialogBody({
   seedProfile?: Profile | undefined
 }) {
   const { t } = useLingui()
-  const gameId = useProfiles((s) => s.game?.id ?? '')
   const profiles = useProfiles((s) => s.profiles)
   const rows = useMemo(() => modsByAuthor(profiles, author), [profiles, author])
   const nexusId = seedMod && seedProfile ? nexusIdOf(seedProfile, seedMod) : 0
@@ -103,8 +102,8 @@ function AuthorDialogBody({
     if (!(seedMod && seedProfile)) {
       return ''
     }
-    return modPageUrl(seedProfile, seedMod, gameId)
-  }, [seedMod, seedProfile, gameId])
+    return modPageUrl(seedProfile, seedMod)
+  }, [seedMod, seedProfile])
   const authorUrl =
     page && nexusName !== '' ? nexusAuthorPageUrl(page.uploaderUrl ?? '', modPage) : ''
 

@@ -48,12 +48,12 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { CategoryEditorDialog } from './CategoryEditor.tsx'
 import { ExtraFolderMenu } from './ExtraFolderMenu.tsx'
 import { onFilterFocus } from './filterFocus.ts'
+import { nexusModsUrl } from './nexusUrl.ts'
 import { type GroupBy, sanitizeListGroupBy } from './group.ts'
 import { openPage } from './menu.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
-const NEXUS = 'https://www.nexusmods.com/stardewvalley/mods'
 const FILTERS: readonly {
   id: Exclude<ModFilter, 'all'>
   label: (i18n: I18n) => string
@@ -261,7 +261,7 @@ function BrowseNexus({
           openSettings('nexus')
           return
         }
-        openPage(NEXUS).catch(reportUnexpected)
+        openPage(nexusModsUrl()).catch(reportUnexpected)
       }}
       sx={toolbar ? iconWhenCompact : undefined}
     >

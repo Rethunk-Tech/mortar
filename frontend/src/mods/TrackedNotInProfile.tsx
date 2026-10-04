@@ -22,13 +22,10 @@ import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { openPage } from './menu.ts'
 import type { TrackedMod } from './nexusAccount.ts'
+import { nexusModUrl } from './nexusUrl.ts'
 import { useLocked } from './useLocked.ts'
 
 const FALLBACK_PREFIX = '#'
-
-function nexusModURL(domainName: string, modId: number): string {
-  return `https://www.nexusmods.com/${domainName}/mods/${modId}`
-}
 
 function TrackedRow({
   mod,
@@ -60,7 +57,7 @@ function TrackedRow({
       live = false
     }
   }, [mod.modId])
-  const url = nexusModURL(mod.domainName, mod.modId)
+  const url = nexusModUrl(mod.modId, mod.domainName)
   return (
     <Box
       sx={{

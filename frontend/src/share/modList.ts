@@ -4,10 +4,10 @@ import type {
   Source,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { sameId } from '../mods/lookup.ts'
+import { nexusModUrl } from '../mods/nexusUrl.ts'
 
 const DISCORD_LIMIT = 2000
 const BUNDLED = new Set(['smapi', 'mortar'])
-const NEXUS_PAGE = 'https://www.nexusmods.com/stardewvalley/mods/'
 
 type ModListFormat = 'markdown' | 'plain' | 'discord'
 
@@ -27,7 +27,7 @@ const defaultLabels: GroupLabels = { enabled: 'On', disabled: 'Switched off' }
 
 function pageUrl(source: Source): string {
   if (source.kind === 'nexus' && source.modId) {
-    return `${NEXUS_PAGE}${source.modId}`
+    return nexusModUrl(source.modId)
   }
   if (source.kind === 'github' && source.repo) {
     return `https://github.com/${source.repo}`

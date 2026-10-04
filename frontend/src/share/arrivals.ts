@@ -8,6 +8,7 @@ import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { useDetail } from '../mods/detail.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
+import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
 import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -63,7 +64,7 @@ async function openMod(a: Arrival): Promise<void> {
           run: () =>
             openImport({
               profileId: current.id,
-              link: `https://www.nexusmods.com/stardewvalley/mods/${modID}`,
+              link: nexusModUrl(modID),
             }),
         },
       })

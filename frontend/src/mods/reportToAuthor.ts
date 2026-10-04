@@ -5,10 +5,10 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import type { Source } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { format } from '../console/filter.ts'
+import { NEXUS_DOMAIN, nexusModUrl } from './nexusUrl.ts'
 
 const MAX_ERROR_LINES = 20
 const MAX_GITHUB_BODY = 6000
-const STARDEW_NEXUS_DOMAIN = 'stardewvalley'
 
 interface ModReportFields {
   modName: string
@@ -83,7 +83,7 @@ function nexusBugsURL(domain: string, modId: number): string {
   if (domain === '' || modId <= 0) {
     return ''
   }
-  return `https://www.nexusmods.com/${domain}/mods/${modId}?tab=bugs`
+  return nexusModUrl(modId, domain, 'bugs')
 }
 
 function buildModReportText(_i18n: I18n, fields: ModReportFields): string {
@@ -120,7 +120,7 @@ function buildAuthorReportUrl(text: string, fields: ModReportFields): ModReportR
   if (modId <= 0 && source?.kind === 'nexus') {
     modId = source.modId ?? 0
   }
-  const domain = nexusDomain === '' ? STARDEW_NEXUS_DOMAIN : nexusDomain
+  const domain = nexusDomain === '' ? NEXUS_DOMAIN : nexusDomain
   if (repo.trim() !== '') {
     return {
       text,
