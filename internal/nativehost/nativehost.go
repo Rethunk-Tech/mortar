@@ -3,14 +3,12 @@
 package nativehost
 
 import (
-	"context"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"math"
-	"net"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -286,7 +284,7 @@ func nexusModProblems(domain string, modID int) []modProblem {
 		return []modProblem{}
 	}
 	dataDir, err := datadir.Dir()
-	if err != nil || !mortarRunning(dataDir) {
+	if err != nil || !controlwire.Running(dataDir) {
 		return []modProblem{}
 	}
 	store, err := settings.Open()
@@ -338,7 +336,7 @@ func activeNexusModIDs(domain string) []int {
 		return ids
 	}
 	dataDir, err := datadir.Dir()
-	if err != nil || !mortarRunning(dataDir) {
+	if err != nil || !controlwire.Running(dataDir) {
 		return ids
 	}
 	store, err := settings.Open()
@@ -415,7 +413,7 @@ func activeNexusUpdates(domain string) (string, []modUpdate) {
 		return "", rows
 	}
 	dataDir, err := datadir.Dir()
-	if err != nil || !mortarRunning(dataDir) {
+	if err != nil || !controlwire.Running(dataDir) {
 		return "", rows
 	}
 	store, err := settings.Open()
@@ -488,7 +486,7 @@ func activeNexusConnected(domain string) bool {
 		return false
 	}
 	dataDir, err := datadir.Dir()
-	if err != nil || !mortarRunning(dataDir) {
+	if err != nil || !controlwire.Running(dataDir) {
 		return false
 	}
 	store, err := settings.Open()
@@ -514,7 +512,7 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 		return openProfile, nil
 	}
 	dataDir, err := datadir.Dir()
-	if err != nil || !mortarRunning(dataDir) {
+	if err != nil || !controlwire.Running(dataDir) {
 		return openProfile, nil
 	}
 	store, err := settings.Open()
@@ -637,34 +635,6 @@ func nexusUpdateAvailable(version *string, fileID int, pageVer string, files []c
 	}
 }
 
-func mortarRunning(dataDir string) bool {
-	root, err := os.OpenRoot(dataDir)
-	if err != nil {
-		return false
-	}
-	data, err := root.ReadFile("control.json")
-	_ = root.Close()
-	if err != nil {
-		return false
-	}
-	var discovery struct {
-		Port int `json:"port"`
-	}
-	if json.Unmarshal(data, &discovery) != nil || discovery.Port < 1 || discovery.Port > 65535 {
-		return false
-	}
-	conn, err := (&net.Dialer{Timeout: time.Second}).DialContext(
-		context.Background(),
-		"tcp",
-		net.JoinHostPort("127.0.0.1", strconv.Itoa(discovery.Port)),
-	)
-	if err != nil {
-		return false
-	}
-	_ = conn.Close()
-	return true
-}
-
 // frameLen is a message's length as the uint32 prefix native messaging uses.
 func frameLen(n int) (uint32, error) {
 	if n < 0 || uint64(n) > math.MaxUint32 {
@@ -696,7 +666,7 @@ func accentColor() string {
 		Accent string `json:"accent"`
 	}
 	if dir, err := datadir.Dir(); err == nil {
-		if b, err := fsx.ReadFile(filepath.Join(dir, "settings.json")); err == nil {
+		if b, err := fsx.ReadFile(filepath.Join(dir, settings.FileName)); err == nil {
 			_ = json.Unmarshal(b, &s)
 		}
 	}

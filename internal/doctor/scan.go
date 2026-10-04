@@ -10,12 +10,13 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/controlwire"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
 // Scan checks a data folder the same way the CLI's offline doctor does.
 func Scan(dir string) Report {
 	var checks []Check
-	settingsPath := filepath.Join(dir, "settings.json")
+	settingsPath := filepath.Join(dir, settings.FileName)
 	if b, err := fsx.ReadFile(settingsPath); err != nil {
 		checks = append(checks, Check{
 			ID: "settings", Status: Fail, Detail: "settings.json is unreadable or missing",

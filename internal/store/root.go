@@ -19,10 +19,11 @@ func contentRoot(dir string) string {
 	if err != nil {
 		return ""
 	}
-	return cleanRoot(string(b))
+	return CleanRoot(string(b))
 }
 
-func cleanRoot(rel string) string {
+// CleanRoot turns a mod root relative to its archive into a clean slash path, or "" when it escapes the archive.
+func CleanRoot(rel string) string {
 	rel = path.Clean("/" + strings.TrimSpace(strings.ReplaceAll(rel, `\`, "/")))
 	rel = strings.TrimPrefix(rel, "/")
 	if rel == "." || rel == ".." || strings.HasPrefix(rel, "../") {
@@ -32,7 +33,7 @@ func cleanRoot(rel string) string {
 }
 
 func resolveRoot(dir, rel string) (string, bool) {
-	rel = cleanRoot(rel)
+	rel = CleanRoot(rel)
 	if rel == "" {
 		return "", false
 	}
@@ -56,7 +57,7 @@ func (s *Store) SetRoot(game, key, rel string) error {
 		return err
 	}
 	side := filepath.Join(dir, RootFile)
-	rel = cleanRoot(rel)
+	rel = CleanRoot(rel)
 	if rel == "" {
 		err := os.Remove(side)
 		if err != nil && !os.IsNotExist(err) {

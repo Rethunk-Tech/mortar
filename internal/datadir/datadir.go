@@ -81,8 +81,7 @@ func underTemp(dir string) bool {
 		if root == "" {
 			continue
 		}
-		rel, err := filepath.Rel(root, dir)
-		if err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		if UnderRoot(root, dir) {
 			return true
 		}
 	}

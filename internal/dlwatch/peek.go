@@ -31,7 +31,7 @@ func PeekName(path string) string {
 	best := ""
 	bestDepth := 1 << 20
 	for _, f := range zr.File {
-		if !strings.EqualFold(filepath.Base(f.Name), "manifest.json") {
+		if !strings.EqualFold(filepath.Base(f.Name), manifest.FileName) {
 			continue
 		}
 		depth := strings.Count(filepath.ToSlash(f.Name), "/")

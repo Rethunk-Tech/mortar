@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
@@ -31,7 +32,7 @@ func Apply(modsDir string, entries []profile.Entry, configs []Config) (written [
 				continue
 			}
 			for _, c := range configs {
-				if !strings.EqualFold(c.UniqueID, m.UniqueID) || !validConfigPath(c.Path) || strings.EqualFold(c.Path, "manifest.json") {
+				if !strings.EqualFold(c.UniqueID, m.UniqueID) || !validConfigPath(c.Path) || strings.EqualFold(c.Path, manifest.FileName) {
 					continue
 				}
 				dest := filepath.Join(folder, filepath.FromSlash(c.Path))

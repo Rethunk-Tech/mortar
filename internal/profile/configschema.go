@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/jsonc"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/modconfig"
 )
 
@@ -140,7 +141,7 @@ func (s *Service) contentSchema(game, id, key, uniqueID string) (modconfig.Schem
 	if err != nil {
 		return nil, err
 	}
-	man, err := fsx.ReadFile(filepath.Join(folder, "manifest.json"))
+	man, err := fsx.ReadFile(filepath.Join(folder, manifest.FileName))
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			return modconfig.Schema{}, nil

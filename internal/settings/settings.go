@@ -16,7 +16,8 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
-const fileName = "settings.json"
+// FileName is the settings file in the data folder.
+const FileName = "settings.json"
 
 var (
 	accents     = []string{"sand", "moss", "copper", "sky", "rose", "lavender", "teal", "slate"}
@@ -244,7 +245,7 @@ func Open() (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	s := &Store{path: filepath.Join(dir, fileName), cur: Defaults()}
+	s := &Store{path: filepath.Join(dir, FileName), cur: Defaults()}
 	if b, err := fsx.ReadFile(s.path); err == nil {
 		var loaded Settings
 		if err := json.Unmarshal(b, &loaded); err != nil {

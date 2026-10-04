@@ -20,6 +20,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -103,10 +104,10 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 	}
 
 	files := map[string][]byte{
-		"build.json":    jsonIndent(buildInfo(s.version)),
-		"settings.json": redactSettings(readFile(filepath.Join(dir, "settings.json")), s.home),
-		"profiles.json": jsonIndent(collectProfiles(filepath.Join(dir, "profiles"))),
-		"queue.json":    redactQueue(readFile(filepath.Join(dir, "queue.json"))),
+		"build.json":      jsonIndent(buildInfo(s.version)),
+		settings.FileName: redactSettings(readFile(filepath.Join(dir, settings.FileName)), s.home),
+		"profiles.json":   jsonIndent(collectProfiles(filepath.Join(dir, "profiles"))),
+		"queue.json":      redactQueue(readFile(filepath.Join(dir, "queue.json"))),
 	}
 
 	logName, logBody := mortarLog(dir, s.recentLines(gameID, profileID))

@@ -116,7 +116,7 @@ var bundledMods = []string{"ConsoleCommands", "SaveBackup"}
 
 // bundledVersion reads the version from Console Commands' manifest, which the installer sets to SMAPI's own.
 func bundledVersion(dir string) string {
-	b, err := fsx.ReadFile(filepath.Join(dir, "Mods", bundledMods[0], "manifest.json"))
+	b, err := fsx.ReadFile(filepath.Join(dir, "Mods", bundledMods[0], manifest.FileName))
 	if err != nil {
 		return ""
 	}

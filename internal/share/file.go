@@ -17,6 +17,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
@@ -206,7 +207,7 @@ func readConfigs(modsDir, key string, m profile.EntryMod) (found []Config, skipp
 			return err
 		}
 		rel = filepath.ToSlash(rel)
-		if strings.EqualFold(rel, "manifest.json") {
+		if strings.EqualFold(rel, manifest.FileName) {
 			return nil
 		}
 		data, err := readCapped(p)

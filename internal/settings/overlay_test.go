@@ -25,7 +25,7 @@ func TestOverlayDefaultsAndPortRange(t *testing.T) {
 	if _, err := s.Update(func(v *Settings) { v.OverlayPort = 9000 }); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, fileName), []byte(`{"accent":"sand","background":"image","overlayPort":80}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"accent":"sand","background":"image","overlayPort":80}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s2, err := Open()
@@ -96,7 +96,7 @@ func TestOverlayTokenStaysOutOfJSONLogsShape(t *testing.T) {
 	if err := svc.SetOverlayEnabled(true); err != nil {
 		t.Fatal(err)
 	}
-	raw, err := fsx.ReadFile(filepath.Join(dir, fileName))
+	raw, err := fsx.ReadFile(filepath.Join(dir, FileName))
 	if err != nil {
 		t.Fatal(err)
 	}

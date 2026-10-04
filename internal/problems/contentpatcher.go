@@ -787,8 +787,11 @@ func (p *cachedPack) recordPackFile(root, abs string) {
 	if err != nil {
 		return
 	}
+	if !datadir.UnderRoot(root, abs) {
+		return
+	}
 	relative, err := filepath.Rel(root, abs)
-	if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(os.PathSeparator)) {
+	if err != nil {
 		return
 	}
 	stamp := packFileStamp{
@@ -1045,7 +1048,7 @@ func readConfigSchema(root string) map[string]cpSchema {
 }
 
 func isContentPatcherPack(folder string) bool {
-	raw, err := fsx.ReadFile(filepath.Join(folder, "manifest.json"))
+	raw, err := fsx.ReadFile(filepath.Join(folder, manifest.FileName))
 	if err != nil {
 		return false
 	}

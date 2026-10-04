@@ -37,31 +37,52 @@ type Reply struct {
 	Error  string          `json:"error,omitempty"`
 }
 
-// CallDir sends one request to the app whose data folder is dir and decodes its result into out (nil to discard
-// it). timeout bounds the whole call.
-func CallDir(dir, method string, params, out any, timeout time.Duration) error {
+// Running reports whether a Mortar app with data folder dir is answering on its control channel.
+func Running(dir string) bool {
+	_, conn, err := dial(dir)
+	if err != nil {
+		return false
+	}
+	_ = conn.Close()
+	return true
+}
+
+func dial(dir string) (Discovery, net.Conn, error) {
+	var d Discovery
 	root, err := os.OpenRoot(dir)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return ErrNotRunning
+			return d, nil, ErrNotRunning
 		}
-		return err
+		return d, nil, err
 	}
 	b, err := root.ReadFile(FileName)
 	_ = root.Close()
 	if err != nil {
 		if os.IsNotExist(err) {
-			return ErrNotRunning
+			return d, nil, ErrNotRunning
 		}
-		return err
+		return d, nil, err
 	}
-	var d Discovery
 	if err := json.Unmarshal(b, &d); err != nil {
-		return fmt.Errorf("control: %s: %w", FileName, err)
+		return d, nil, fmt.Errorf("control: %s: %w", FileName, err)
+	}
+	if d.Port < 1 || d.Port > 65535 {
+		return d, nil, ErrNotRunning
 	}
 	conn, err := (&net.Dialer{Timeout: 2 * time.Second}).DialContext(context.Background(), "tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(d.Port)))
 	if err != nil {
-		return ErrNotRunning
+		return d, nil, ErrNotRunning
+	}
+	return d, conn, nil
+}
+
+// CallDir sends one request to the app whose data folder is dir and decodes its result into out (nil to discard
+// it). timeout bounds the whole call.
+func CallDir(dir, method string, params, out any, timeout time.Duration) error {
+	d, conn, err := dial(dir)
+	if err != nil {
+		return err
 	}
 	defer func() { _ = conn.Close() }()
 	_ = conn.SetDeadline(time.Now().Add(timeout))

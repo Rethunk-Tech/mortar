@@ -43,10 +43,10 @@ func TestDefaultsAndRoundTrip(t *testing.T) {
 		t.Fatalf("round trip = %+v", got)
 	}
 	entries, _ := os.ReadDir(dir)
-	if len(entries) != 1 || entries[0].Name() != fileName {
+	if len(entries) != 1 || entries[0].Name() != FileName {
 		t.Fatalf("leftover files: %v", entries)
 	}
-	raw, _ := fsx.ReadFile(filepath.Join(dir, fileName))
+	raw, _ := fsx.ReadFile(filepath.Join(dir, FileName))
 	if want := `"lastGame": "lethal"`; !strings.Contains(string(raw), want) {
 		t.Fatalf("json keys: %s", raw)
 	}
@@ -60,7 +60,7 @@ func TestInvalidAccent(t *testing.T) {
 	if s.Get().Accent != "sand" {
 		t.Fatal("state changed on rejected set")
 	}
-	if err := os.WriteFile(filepath.Join(dir, fileName), []byte(`{"accent":"neon","background":"neon"}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"accent":"neon","background":"neon"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s2, _ := Open()
@@ -71,7 +71,7 @@ func TestInvalidAccent(t *testing.T) {
 
 func TestCorruptFile(t *testing.T) {
 	s, dir := open(t)
-	if err := os.WriteFile(filepath.Join(dir, fileName), []byte("{not json"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, FileName), []byte("{not json"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s2, err := Open()
@@ -106,7 +106,7 @@ func TestBackground(t *testing.T) {
 		}
 	}
 	// A file without the field takes the default.
-	if err := os.WriteFile(filepath.Join(dir, fileName), []byte(`{"accent":"moss","translucent":false}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"accent":"moss","translucent":false}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s2, _ := Open()
@@ -168,7 +168,7 @@ func TestBackupsKeptRange(t *testing.T) {
 	if _, err := s.Update(func(v *Settings) { v.BackupsKept = MaxBackupsKept }); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(dir, fileName), []byte(`{"accent":"sand","background":"image","backupsKept":0}`), 0o600); err != nil {
+	if err := fsx.WriteFile(filepath.Join(dir, FileName), []byte(`{"accent":"sand","background":"image","backupsKept":0}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s2, err := Open()
@@ -215,7 +215,7 @@ func TestListColumns(t *testing.T) {
 	if _, err := s.Update(func(v *Settings) { v.ListGroupBy = "nope" }); err == nil {
 		t.Fatal("unknown group accepted")
 	}
-	if err := os.WriteFile(filepath.Join(dir, fileName), []byte(`{"accent":"sand","background":"image","listColumns":["nope","name"],"listSortColumn":"nope","listSortDir":"up","listGroupBy":"nope"}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"accent":"sand","background":"image","listColumns":["nope","name"],"listSortColumn":"nope","listSortDir":"up","listGroupBy":"nope"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s2, err := Open()
@@ -225,7 +225,7 @@ func TestListColumns(t *testing.T) {
 	if got := s2.Get(); !slices.Equal(got.ListColumns, []string{"on", "name"}) || got.ListSortColumn != defaultListSortColumn || got.ListSortDir != defaultListSortDir || got.ListGroupBy != defaultListGroupBy {
 		t.Fatalf("load = %+v", got)
 	}
-	if err := os.WriteFile(filepath.Join(dir, fileName), []byte(`{"accent":"sand","background":"image"}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"accent":"sand","background":"image"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s3, _ := Open()

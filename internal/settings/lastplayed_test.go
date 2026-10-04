@@ -34,7 +34,7 @@ func TestOpenDropsInvalidLastPlayed(t *testing.T) {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, fileName), b, 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, FileName), b, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s, err := Open()

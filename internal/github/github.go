@@ -320,41 +320,30 @@ func verifyDownload(path string, meta resumeMeta) error {
 	if meta.Hash == "" && meta.MD5 == "" {
 		return nil
 	}
+	var wantMD5 []byte
+	if meta.MD5 != "" {
+		b, err := base64.StdEncoding.DecodeString(meta.MD5)
+		if err != nil {
+			dropDownload(path)
+			return fmt.Errorf("Content-MD5: %w", err)
+		}
+		wantMD5 = b
+	}
 	f, err := fsx.Open(path)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = f.Close() }()
-	if meta.Hash != "" {
-		kind, want, _ := strings.Cut(meta.Hash, ":")
-		if kind == "sha256" {
-			h := sha256.New()
-			if _, err := io.Copy(h, f); err != nil {
-				return err
-			}
-			if !strings.EqualFold(want, hex.EncodeToString(h.Sum(nil))) {
-				dropDownload(path)
-				return errors.New("the download did not match its checksum")
-			}
-			if _, err := f.Seek(0, io.SeekStart); err != nil {
-				return err
-			}
-		}
-	}
-	if meta.MD5 == "" {
-		return nil
-	}
-	want, err := base64.StdEncoding.DecodeString(meta.MD5)
-	if err != nil {
-		dropDownload(path)
-		return fmt.Errorf("Content-MD5: %w", err)
-	}
+	sha := sha256.New()
 	sum := md5.New() // #nosec G401 -- Content-MD5 is MD5 by RFC 1864
-	if _, err := io.Copy(sum, f); err != nil {
+	if _, err := io.Copy(io.MultiWriter(sha, sum), f); err != nil {
 		return err
 	}
-	got := sum.Sum(nil)
-	if len(want) != md5.Size || string(got) != string(want) {
+	if kind, want, _ := strings.Cut(meta.Hash, ":"); kind == "sha256" && !strings.EqualFold(want, hex.EncodeToString(sha.Sum(nil))) {
+		dropDownload(path)
+		return errors.New("the download did not match its checksum")
+	}
+	if meta.MD5 != "" && (len(wantMD5) != md5.Size || string(sum.Sum(nil)) != string(wantMD5)) {
 		dropDownload(path)
 		return errors.New("the download did not match its Content-MD5 checksum")
 	}

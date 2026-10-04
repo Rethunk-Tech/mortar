@@ -18,7 +18,7 @@ func (s *Service) Doctor() (doctor.Report, error) {
 		return doctor.Report{}, err
 	}
 	cur := settings.Defaults()
-	if b, readErr := fsx.ReadFile(filepath.Join(dir, "settings.json")); readErr == nil {
+	if b, readErr := fsx.ReadFile(filepath.Join(dir, settings.FileName)); readErr == nil {
 		_ = json.Unmarshal(b, &cur)
 	}
 	games, err := listedGames(s.home, cur)

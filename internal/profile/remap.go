@@ -245,9 +245,8 @@ func (s *Store) InstallRemap(game, id, key, root string, source Source) (Install
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
-	rel := path.Clean("/" + strings.TrimSpace(strings.ReplaceAll(root, `\`, "/")))
-	rel = strings.TrimPrefix(rel, "/")
-	if rel == "." || rel == ".." || strings.HasPrefix(rel, "../") {
+	rel := store.CleanRoot(root)
+	if rel == "" {
 		return InstallResult{}, &InstallError{Msg: "Choose a folder that holds a SMAPI manifest", Err: fmt.Errorf("root %q", root)}
 	}
 	sub := filepath.Join(dir, filepath.FromSlash(rel))
