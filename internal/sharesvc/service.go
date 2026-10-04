@@ -376,6 +376,13 @@ func (s *Service) ReadClipboard() string {
 	return text
 }
 
+// IsCollectionURL reports whether text is the link of a Nexus collection page, which Mortar opens in the import
+// dialog like a share link.
+func IsCollectionURL(text string) bool {
+	_, slug, _, ok := parseCollectionURL(text)
+	return ok && slug != ""
+}
+
 // PreviewLink reads a share link, or a bare payload, and resolves what it names against the profile it would join
 // (profileID may be empty).
 func (s *Service) PreviewLink(ctx context.Context, game, text, profileID string) (Preview, error) {

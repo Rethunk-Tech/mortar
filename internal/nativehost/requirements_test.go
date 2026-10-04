@@ -7,8 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
 
 func TestParsePageRequirements(t *testing.T) {
@@ -57,13 +55,8 @@ func TestMarkRequirementPresence(t *testing.T) {
 	}
 }
 
-func TestRequirementsRequest(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	dir, err := datadir.Dir()
-	if err != nil {
-		t.Fatal(err)
-	}
+func TestModReplyCarriesRequirements(t *testing.T) {
+	dir := listenControl(t, `{"lastProfile":{"stardew":"p1"}}`)
 	cache := []byte(`{"fetched":"2026-01-01T00:00:00Z","value":[{"ModID":1915,"Name":"Content Patcher"},{"ModID":2400,"Name":"GMCM"},{"ModID":0,"Name":"SMAPI"}]}`)
 	if err := os.MkdirAll(filepath.Join(dir, "cache"), 0o700); err != nil {
 		t.Fatal(err)
@@ -78,12 +71,9 @@ func TestRequirementsRequest(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(pdir, "profile.json"), []byte(`{"name":"Main","entries":[{"source":{"kind":"nexus","modId":1915}}]}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"lastProfile":{"stardew":"p1"}}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
 
 	var out bytes.Buffer
-	if err := Serve(bytes.NewReader(frame(t, request{Type: "requirements", Game: "stardewvalley", ModID: 2400})), &out, func(string) error { return nil }); err != nil {
+	if err := Serve(bytes.NewReader(frame(t, request{Type: "mod", Game: "stardewvalley", ModID: 2400})), &out, func(string) error { return nil }); err != nil {
 		t.Fatal(err)
 	}
 	var n uint32
@@ -108,11 +98,10 @@ func TestRequirementsRequest(t *testing.T) {
 	}
 }
 
-func TestRequirementsRequestNoCache(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+func TestModReplyOmitsRequirementsWithoutCache(t *testing.T) {
+	listenControl(t, `{"lastProfile":{"stardew":"p1"}}`)
 	var out bytes.Buffer
-	if err := Serve(bytes.NewReader(frame(t, request{Type: "requirements", Game: "stardewvalley", ModID: 1})), &out, func(string) error { return nil }); err != nil {
+	if err := Serve(bytes.NewReader(frame(t, request{Type: "mod", Game: "stardewvalley", ModID: 1})), &out, func(string) error { return nil }); err != nil {
 		t.Fatal(err)
 	}
 	var n uint32

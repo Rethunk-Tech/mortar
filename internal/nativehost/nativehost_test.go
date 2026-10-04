@@ -127,18 +127,81 @@ func TestServeAnswersInstalledMods(t *testing.T) {
 	}
 }
 
-func TestActiveNexusConnectedOffWhenExtensionOff(t *testing.T) {
+func TestActiveNexusStateOffWhenExtensionOff(t *testing.T) {
 	listenControl(t, `{"extensionConnection":"off","lastProfile":{"stardew":"aaaaaaaaaaaaaaaa"}}`)
-	if activeNexusConnected("stardewvalley") {
-		t.Fatal("extension off should reply not-connected")
+	if st, _ := activeNexusState("stardewvalley"); st != stateOff {
+		t.Fatalf("extension off state = %q", st)
+	}
+}
+
+func TestActiveNexusStateNotRunningThenNoProfileThenReady(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	if st, _ := activeNexusState("stardewvalley"); st != stateNotRunning {
+		t.Fatalf("closed Mortar state = %q", st)
+	}
+	dir := listenControl(t, `{}`)
+	if st, _ := activeNexusState("stardewvalley"); st != stateNoProfile {
+		t.Fatalf("no profile state = %q", st)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"lastProfile":{"stardew":"p1"}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	pdir := filepath.Join(dir, "profiles", "stardew", "p1")
+	if err := os.MkdirAll(pdir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(pdir, "profile.json"), []byte(`{"name":"Farm"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if st, name := activeNexusState("stardewvalley"); st != stateReady || name != "Farm" {
+		t.Fatalf("ready state = %q %q", st, name)
+	}
+}
+
+func TestServeOffAnswersNothingAndModCarriesProblemsAndRequirements(t *testing.T) {
+	h := handlers{
+		open:      func(string) error { return nil },
+		installed: func(string) []int { t.Fatal("off read installed"); return nil },
+		mod: func(string, int) (modInProfile, []modInProfile) {
+			return modInProfile{Profile: "Farm", PageVersion: "2.0"}, nil
+		},
+		problems:     func(string, int) []modProblem { return []modProblem{{Kind: "x", Text: "bad"}} },
+		requirements: func(string, int) []requirementItem { return []requirementItem{{Name: "SMAPI", External: true}} },
+	}
+	for _, st := range []string{stateOff, stateReady, stateNoProfile} {
+		h.state = func(string) (string, string) { return st, "Farm" }
+		var out bytes.Buffer
+		in := append(frame(t, request{Type: "installed", Game: "stardewvalley"}), frame(t, request{Type: "mod", Game: "stardewvalley", ModID: 1})...)
+		if st == stateOff {
+			h.installed = func(string) []int { return nil }
+		}
+		if err := serveHandlers(bytes.NewReader(in), &out, h); err != nil {
+			t.Fatal(err)
+		}
+		installed, mod := readReply(t, &out), readReply(t, &out)
+		if installed.State != st || installed.Connected != (st == stateReady) {
+			t.Fatalf("%s installed reply = %+v", st, installed)
+		}
+		wantMod := st == stateReady
+		if (mod.Open != nil) != (st != stateOff) || (len(mod.Problems) == 1) != wantMod || (len(mod.Requirements) == 1) != wantMod {
+			t.Fatalf("%s mod reply = %+v", st, mod)
+		}
+		if st == stateReady && mod.Open.PageVersion != "2.0" {
+			t.Fatalf("page version = %+v", mod.Open)
+		}
 	}
 }
 
 func TestServeReportsConnectedWhenProfileHasNoMods(t *testing.T) {
 	in := frame(t, request{Type: "installed", Game: "stardewvalley"})
 	var out bytes.Buffer
-	err := serveWithConnection(bytes.NewReader(in), &out, func(string) error { return nil },
-		func(string) []int { return []int{} }, nil, func(string) bool { return true }, nil, func(string) []int { return []int{7} })
+	err := serveHandlers(bytes.NewReader(in), &out, handlers{
+		open:      func(string) error { return nil },
+		installed: func(string) []int { return []int{} },
+		state:     func(string) (string, string) { return stateReady, "Main" },
+		broken:    func(string) []int { return []int{7} },
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -372,18 +435,21 @@ func TestNexusModProfilesUpdateAvailableFromCache(t *testing.T) {
 func TestServeAnswersUpdates(t *testing.T) {
 	in := frame(t, request{Type: "updates", Game: "stardewvalley"})
 	var out bytes.Buffer
-	err := serveWithConnection(bytes.NewReader(in), &out, func(string) error {
-		t.Fatal("updates request opened a link")
-		return nil
-	}, nil, nil, nil, func(game string) (string, []modUpdate) {
-		if game != "stardewvalley" {
-			t.Fatalf("updates game = %q", game)
-		}
-		return "Default", []modUpdate{
-			{ModID: 2, Name: "Zed", Installed: "1.0.0", Latest: "2.0.0"},
-			{ModID: 1, Name: "Alpha", Installed: "3.0.0", Latest: ""},
-		}
-	}, nil)
+	err := serveHandlers(bytes.NewReader(in), &out, handlers{
+		open: func(string) error {
+			t.Fatal("updates request opened a link")
+			return nil
+		},
+		updates: func(game string) (string, []modUpdate) {
+			if game != "stardewvalley" {
+				t.Fatalf("updates game = %q", game)
+			}
+			return "Default", []modUpdate{
+				{ModID: 2, Name: "Zed", Installed: "1.0.0", Latest: "2.0.0"},
+				{ModID: 1, Name: "Alpha", Installed: "3.0.0", Latest: ""},
+			}
+		},
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

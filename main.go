@@ -883,9 +883,9 @@ func releaseLinks() error {
 	return nxmsvc.ReleaseLinks(store, h)
 }
 
-// serveNativeHost runs Mortar as the browser extension's native messaging host: each link is handed to a new Mortar
-// process, which forwards it to the running one like any nxm launch, or starts Mortar when none runs. The browser
-// waits for the reply, so the child is not waited for.
+// serveNativeHost runs Mortar as the browser extension's native messaging host: each nxm link or Nexus collection
+// page link is handed to a new Mortar process, which forwards it to the running one like any launch, or starts Mortar
+// when none runs. The browser waits for the reply, so the child is not waited for.
 func serveNativeHost() error {
 	exe, err := os.Executable()
 	if err != nil {
@@ -895,8 +895,8 @@ func serveNativeHost() error {
 		exe = img
 	}
 	return nativehost.Serve(os.Stdin, os.Stdout, func(link string) error {
-		if !nxm.IsLink(link) {
-			return fmt.Errorf("not an nxm link: %q", link)
+		if !nxm.IsLink(link) && !sharesvc.IsCollectionURL(link) {
+			return fmt.Errorf("not an nxm or collection link: %q", link)
 		}
 		return nativehost.Start(exe, link)
 	})

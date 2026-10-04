@@ -65,6 +65,8 @@ type reply struct {
 	Updates      *[]modUpdate      `json:"updates,omitempty"`
 	Requirements []requirementItem `json:"requirements,omitempty"`
 	Profile      string            `json:"profile,omitempty"`
+	State        string            `json:"state,omitempty"`
+	UpdateIDs    []int             `json:"updateIds,omitempty"`
 	// Accent is Mortar's accent colour, read on every reply so the extension follows a change in the app.
 	Accent string `json:"accent,omitempty"`
 }
@@ -92,6 +94,8 @@ type modInProfile struct {
 	PinReason       string   `json:"pinReason,omitempty"`
 	SkipVersion     string   `json:"skipVersion,omitempty"`
 	SkipSources     []string `json:"skipSources,omitempty"`
+	// PageVersion is the version Nexus lists for the mod, from Mortar's cached details.
+	PageVersion string `json:"pageVersion,omitempty"`
 }
 
 type diskMod struct {
@@ -185,16 +189,104 @@ func requiredByMods(entries []diskEntry, targets []string) ([]string, []string) 
 	return ids, names
 }
 
+// Host states a data reply carries, so the extension can tell a missing Mortar from one that is closed, one with no
+// profile open for the page's game, and a connection the user turned off in Mortar's settings.
+const (
+	stateOff        = "off"
+	stateNotRunning = "notRunning"
+	stateNoProfile  = "noProfile"
+	stateReady      = "ready"
+)
+
+type handlers struct {
+	open         func(link string) error
+	installed    func(game string) []int
+	mod          func(game string, modID int) (modInProfile, []modInProfile)
+	state        func(game string) (state, profile string)
+	updates      func(game string) (string, []modUpdate)
+	broken       func(game string) []int
+	problems     func(game string, modID int) []modProblem
+	requirements func(game string, modID int) []requirementItem
+}
+
 // Serve answers messages from r until it closes, handing each message's link to open.
 func Serve(r io.Reader, w io.Writer, open func(link string) error) error {
-	return serveWithConnection(r, w, open, activeNexusModIDs, nexusModProfiles, activeNexusConnected, activeNexusUpdates, brokenNexusModIDs, nexusModProblems)
+	return serveHandlers(r, w, handlers{
+		open: open, installed: activeNexusModIDs, mod: nexusModProfiles, state: activeNexusState,
+		updates: activeNexusUpdates, broken: brokenNexusModIDs, problems: nexusModProblems,
+		requirements: nexusPageRequirements,
+	})
 }
 
 func serve(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, mod func(game string, modID int) (modInProfile, []modInProfile), problem ...func(game string, modID int) []modProblem) error {
-	return serveWithConnection(r, w, open, installed, mod, nil, nil, nil, problem...)
+	h := handlers{open: open, installed: installed, mod: mod}
+	if len(problem) > 0 {
+		h.problems = problem[0]
+	}
+	return serveHandlers(r, w, h)
 }
 
-func serveWithConnection(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, mod func(game string, modID int) (modInProfile, []modInProfile), connected func(string) bool, updates func(string) (string, []modUpdate), broken func(string) []int, problem ...func(game string, modID int) []modProblem) error {
+// answer is the reply to one data request; a link is handled by the caller.
+func (h handlers) answer(req request) reply {
+	st, name := stateReady, ""
+	if h.state != nil {
+		st, name = h.state(req.Game)
+	}
+	var rep reply
+	switch req.Type {
+	case "installed":
+		ids := []int{}
+		if st != stateOff {
+			if h.installed != nil {
+				if found := h.installed(req.Game); found != nil {
+					ids = found
+				}
+			}
+			if h.broken != nil {
+				rep.BrokenIDs = h.broken(req.Game)
+			}
+			if h.updates != nil && st == stateReady {
+				_, rows := h.updates(req.Game)
+				for _, row := range rows {
+					rep.UpdateIDs = append(rep.UpdateIDs, row.ModID)
+				}
+			}
+		}
+		rep.ModIDs = &ids
+	case "mod":
+		if st == stateOff {
+			break
+		}
+		openProfile, others := h.mod(req.Game, req.ModID)
+		rep.Open, rep.Others = &openProfile, others
+		if st == stateReady {
+			if h.problems != nil {
+				rep.Problems = h.problems(req.Game, req.ModID)
+			}
+			if h.requirements != nil {
+				rep.Requirements = h.requirements(req.Game, req.ModID)
+			}
+		}
+	case "updates":
+		rows := []modUpdate{}
+		if st != stateOff && h.updates != nil {
+			name, rows = h.updates(req.Game)
+		}
+		if rows == nil {
+			rows = []modUpdate{}
+		}
+		slices.SortFunc(rows, func(a, b modUpdate) int {
+			return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
+		})
+		rep.Updates = &rows
+	default:
+		return reply{Error: fmt.Sprintf("unknown request type %q", req.Type)}
+	}
+	rep.State, rep.Connected, rep.Profile = st, st == stateReady, name
+	return rep
+}
+
+func serveHandlers(r io.Reader, w io.Writer, h handlers) error {
 	for {
 		var n uint32
 		if err := binary.Read(r, binary.NativeEndian, &n); err != nil {
@@ -210,52 +302,14 @@ func serveWithConnection(r io.Reader, w io.Writer, open func(link string) error,
 		if err := json.NewDecoder(io.LimitReader(r, int64(n))).Decode(&req); err != nil {
 			return err
 		}
-		rep := reply{OK: true}
-		switch req.Type {
-		case "installed":
-			ids := []int{}
-			if installed != nil {
-				if found := installed(req.Game); found != nil {
-					ids = found
-				}
-			}
-			isConnected := installed != nil
-			if connected != nil {
-				isConnected = connected(req.Game)
-			}
-			rep = reply{Connected: isConnected, ModIDs: &ids}
-			if broken != nil {
-				rep.BrokenIDs = broken(req.Game)
-			}
-		case "mod":
-			openProfile, others := mod(req.Game, req.ModID)
-			rep = reply{Open: &openProfile, Others: others}
-		case "updates":
-			name, rows := "", []modUpdate{}
-			if updates != nil {
-				name, rows = updates(req.Game)
-			}
-			if rows == nil {
-				rows = []modUpdate{}
-			}
-			slices.SortFunc(rows, func(a, b modUpdate) int {
-				return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
-			})
-			rep = reply{Updates: &rows, Profile: name}
-		case "modProblems":
-			var rows []modProblem
-			if len(problem) > 0 && problem[0] != nil {
-				rows = problem[0](req.Game, req.ModID)
-			}
-			rep = reply{Problems: rows}
-		case "requirements":
-			rep = reply{Requirements: nexusPageRequirements(req.Game, req.ModID)}
-		case "":
-			if err := open(req.Link); err != nil {
+		var rep reply
+		if req.Type == "" {
+			rep = reply{OK: true}
+			if err := h.open(req.Link); err != nil {
 				rep = reply{Error: err.Error()}
 			}
-		default:
-			rep = reply{Error: fmt.Sprintf("unknown request type %q", req.Type)}
+		} else {
+			rep = h.answer(req)
 		}
 		rep.Accent = accentColor()
 		out, err := json.Marshal(rep)
@@ -480,25 +534,50 @@ func activeNexusUpdates(domain string) (string, []modUpdate) {
 	return profile.Name, rows
 }
 
-func activeNexusConnected(domain string) bool {
+// activeNexusState is how far the page's game is from showing Mortar data, and the open profile's name when it is
+// ready. Off wins over everything: the user turned the connection off in Mortar.
+func activeNexusState(domain string) (string, string) {
 	info, ok := components.BundledGameByNexusDomain(domain)
 	if !ok {
-		return false
+		return stateNoProfile, ""
 	}
 	dataDir, err := datadir.Dir()
-	if err != nil || !controlwire.Running(dataDir) {
-		return false
+	if err != nil {
+		return stateNotRunning, ""
 	}
 	store, err := settings.Open()
 	if err != nil {
-		return false
+		return stateNotRunning, ""
 	}
 	cur := store.Get()
 	if conn, err := cur.Lookup("extensionConnection"); err == nil && conn == settings.ExtensionOff {
-		return false
+		return stateOff, ""
+	}
+	if !controlwire.Running(dataDir) {
+		return stateNotRunning, ""
 	}
 	profileID := cur.LastProfile[info.ID]
-	return profileID != "" && filepath.Base(profileID) == profileID
+	if profileID == "" || filepath.Base(profileID) != profileID {
+		return stateNoProfile, ""
+	}
+	return stateReady, profileName(dataDir, info.ID, profileID)
+}
+
+func profileName(dataDir, gameID, profileID string) string {
+	root, err := os.OpenRoot(dataDir)
+	if err != nil {
+		return ""
+	}
+	defer func() { _ = root.Close() }()
+	data, err := root.ReadFile(filepath.Join("profiles", gameID, profileID, "profile.json"))
+	if err != nil {
+		return ""
+	}
+	var p struct {
+		Name string `json:"name"`
+	}
+	_ = json.Unmarshal(data, &p)
+	return p.Name
 }
 
 func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
@@ -585,6 +664,7 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 			found.SkipVersion = skipVersion
 			found.SkipSources = skipSources
 			found.RequiredBy, found.RequiredByNames = requiredByMods(profile.Entries, targets)
+			found.PageVersion = pageVer
 			openProfile = found
 		} else {
 			others = append(others, found)
