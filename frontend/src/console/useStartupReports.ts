@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { useCallback, useEffect, useState } from 'react'
 import type { StartupReport } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import {
+  CancelMeasureNextLaunch,
   MeasureNextLaunch,
   MeasureNextLaunchPending,
   StartupReports,
@@ -37,7 +38,12 @@ function useStartupReports(game: string, profileId: string) {
       .then(() => setPending(true))
       .catch(reportError(t`Could not ask for a measured launch`))
   }
-  return { reports, pending, measureNext, reload: load }
+  const cancelMeasure = () => {
+    CancelMeasureNextLaunch(game, profileId)
+      .then(() => setPending(false))
+      .catch(reportError(t`Could not cancel the measured launch`))
+  }
+  return { reports, pending, measureNext, cancelMeasure, reload: load }
 }
 
 export { useStartupReports }

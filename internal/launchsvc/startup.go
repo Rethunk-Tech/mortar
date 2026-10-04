@@ -117,6 +117,18 @@ func (s *Service) MeasureNextLaunch(gameID, profileID string) error {
 	return datadir.WriteFile(filepath.Join(dir, startupDir, measureMarker), nil, 0o600)
 }
 
+// CancelMeasureNextLaunch takes back a pending measured launch; the next launch is timed as usual.
+func (s *Service) CancelMeasureNextLaunch(gameID, profileID string) error {
+	dir, err := s.profiles.ProfileDir(gameID, profileID)
+	if err != nil {
+		return err
+	}
+	if err := os.Remove(filepath.Join(dir, startupDir, measureMarker)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
+	return nil
+}
+
 // MeasureNextLaunchPending reports whether the profile's next launch will be measured.
 func (s *Service) MeasureNextLaunchPending(gameID, profileID string) (bool, error) {
 	dir, err := s.profiles.ProfileDir(gameID, profileID)

@@ -278,7 +278,7 @@ A tab of its own, with a **Startup** / **In game** switch at the top; Startup is
 
 Startup:
 
-- Heading **Title screen after N s** for the chosen launch (a picker lists the last 10 when there is more than one), and **Measure next launch** (off with a reason once requested), which also times every mod's Entry on that launch.
+- Heading **Title screen after N s** for the chosen launch (a picker lists the last 10 when there is more than one), and **Measure next launch**, which also times every mod's Entry and samples the game on that launch. Once requested, the button gives way to an info banner above the heading, **The next launch will be measured**, saying what happens and where the results appear, with **Play now** (off while the game runs) and **Cancel**.
 - A phase bar with a legend: SMAPI loads mods, Mods start, Game content, First updates, Title intro.
 - A table of mods by total time (Total, Entry, Slowest event, Assets and packs); a framework's row expands into its content packs by time (25 shown, then a count). After a measured launch a **Sampled** column adds each mod's sampled time, which includes its patches on game code. Mods under 50 ms in both fold into one **N other mods** row, and **Game and SMAPI** holds the unattributed rest.
 - Empty: a timer icon, **No startup measured yet**, and copy that says to play the profile.

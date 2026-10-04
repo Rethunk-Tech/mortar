@@ -1,6 +1,8 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
+  Alert,
+  AlertTitle,
   Box,
   Button,
   Collapse,
@@ -15,13 +17,15 @@ import {
   Typography,
 } from '@mui/material'
 import { ChevronDown, ChevronRight, Gauge, Timer } from 'lucide-react'
-import { useState } from 'react'
-import type {
-  StartupMod,
-  StartupReport,
+import { type ReactNode, useState } from 'react'
+import {
+  type StartupMod,
+  type StartupReport,
+  State,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import { playOpenProfile } from '../launch/playOpen.ts'
+import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import {
   foldMods,
@@ -254,38 +258,70 @@ function ReportPicker({
   )
 }
 
+function MeasureBanner({ onCancel }: { onCancel: () => void }) {
+  const { t } = useLingui()
+  const running = useLaunch(
+    (s) => s.starting || s.status?.state === State.Launching || s.status?.state === State.Running,
+  )
+  return (
+    <Alert
+      severity="info"
+      icon={<Gauge size={18} aria-hidden={true} />}
+      action={
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Button size="small" variant="contained" disabled={running} onClick={playOpenProfile}>
+            {t`Play now`}
+          </Button>
+          <Button size="small" color="inherit" onClick={onCancel}>
+            {t`Cancel`}
+          </Button>
+        </Box>
+      }
+    >
+      <AlertTitle>{t`The next launch will be measured`}</AlertTitle>
+      {t`Press Play. Mortar samples the game until the title screen and skips the intro animation; the results, with a Sampled column, appear here when the title screen is reached.`}
+    </Alert>
+  )
+}
+
 export function StartupPanel({ game }: { game: string }) {
   const { t } = useLingui()
   const duration = useDuration()
   const openId = useProfiles((s) => s.openId)
-  const { reports, pending, measureNext } = useStartupReports(game, openId)
+  const { reports, pending, measureNext, cancelMeasure } = useStartupReports(game, openId)
   const [selected, setSelected] = useState('')
-  const measure = (
-    <DisabledReason title={t`The next launch will be measured`} disabled={pending}>
-      <Button
-        variant="outlined"
-        size="small"
-        startIcon={<Gauge size={16} />}
-        disabled={pending}
-        onClick={measureNext}
-      >
-        {t`Measure next launch`}
-      </Button>
-    </DisabledReason>
+  const measure = pending ? null : (
+    <Button variant="outlined" size="small" startIcon={<Gauge size={16} />} onClick={measureNext}>
+      {t`Measure next launch`}
+    </Button>
   )
+  const banner: ReactNode = pending ? <MeasureBanner onCancel={cancelMeasure} /> : null
   if (reports === null) {
     return null
   }
   const report = reports.find((r) => r.id === selected) ?? reports[0]
   if (!report) {
     return (
-      <EmptyState icon={<Timer size={32} />} title={t`No startup measured yet`} action={measure}>
-        {t`Play this profile. The SMAPI Bridge records how long each mod adds before the title screen.`}
-      </EmptyState>
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          p: banner ? 2 : 0,
+        }}
+      >
+        {banner}
+        <EmptyState icon={<Timer size={32} />} title={t`No startup measured yet`} action={measure}>
+          {t`Play this profile. The SMAPI Bridge records how long each mod adds before the title screen.`}
+        </EmptyState>
+      </Box>
     )
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
+      {banner}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
         <Typography variant="h6" sx={{ flex: '1 1 auto' }}>
           {report.phases.titleScreen > 0

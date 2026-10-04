@@ -33,7 +33,7 @@ func TestRunForBisectStopsWhenStartupReportAppears(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := os.Mkdir(filepath.Join(mods, bridge.ModFolder), 0o700); err != nil {
+	if err := os.MkdirAll(filepath.Join(mods, "bridge-1.3.0", bridge.ModFolder), 0o700); err != nil {
 		t.Fatal(err)
 	}
 	prof, err := svc.profiles.ProfileDir("stardew", p.ID)
