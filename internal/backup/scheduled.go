@@ -26,7 +26,7 @@ func Scheduled(savesDir, backupsDir string, keep int, now time.Time) (Run, error
 	} else if err != nil {
 		return run, err
 	}
-	newest, err := scheduledNewest(backupsDir)
+	newest, err := scheduledNewest(backupsDir, now)
 	if err != nil {
 		return run, err
 	}
@@ -58,9 +58,10 @@ func Scheduled(savesDir, backupsDir string, keep int, now time.Time) (Run, error
 	return run, errors.Join(errs...)
 }
 
-// LastScheduled is when the newest scheduled backup in backupsDir was taken, zero when there is none.
-func LastScheduled(backupsDir string) (time.Time, error) {
-	newest, err := scheduledNewest(backupsDir)
+// LastScheduled is when the newest scheduled backup in backupsDir was taken, zero when there is none. Backups stamped
+// in the future are ignored (see scheduledNewest).
+func LastScheduled(backupsDir string, now time.Time) (time.Time, error) {
+	newest, err := scheduledNewest(backupsDir, now)
 	var last time.Time
 	for _, t := range newest {
 		if t.After(last) {
@@ -70,8 +71,12 @@ func LastScheduled(backupsDir string) (time.Time, error) {
 	return last, err
 }
 
-// scheduledNewest is each save's newest scheduled backup time.
-func scheduledNewest(backupsDir string) (map[string]time.Time, error) {
+// clockSkew is how far ahead of now a backup stamp may be before it is taken as written by a clock that was wrong.
+const clockSkew = 5 * time.Minute
+
+// scheduledNewest is each save's newest scheduled backup time. A stamp later than now by more than clockSkew came
+// from a clock that ran ahead; counting it would suppress every backup until real time caught up.
+func scheduledNewest(backupsDir string, now time.Time) (map[string]time.Time, error) {
 	zips, err := list(backupsDir)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return nil, err
@@ -82,7 +87,7 @@ func scheduledNewest(backupsDir string) (map[string]time.Time, error) {
 		if c.Kind != KindScheduled {
 			continue
 		}
-		if t, err := time.Parse(stamp, strings.TrimSuffix(n, ".zip")); err == nil && t.After(newest[c.Save]) {
+		if t, err := time.Parse(stamp, strings.TrimSuffix(n, ".zip")); err == nil && t.After(newest[c.Save]) && !t.After(now.Add(clockSkew)) {
 			newest[c.Save] = t
 		}
 	}

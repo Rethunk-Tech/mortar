@@ -88,3 +88,19 @@ func TestSavesStandInIgnoresSingleSaveBackups(t *testing.T) {
 		t.Fatalf("before-Play backup stood in with %s", got)
 	}
 }
+
+func TestScheduledIgnoresBackupsStampedInTheFuture(t *testing.T) {
+	saves := filepath.Join(t.TempDir(), "Saves")
+	out := t.TempDir()
+	now := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	writeSave(t, saves, "A_1", now.Add(-time.Hour))
+	if run, err := Scheduled(saves, out, 5, now.Add(48*time.Hour)); err != nil || run.Saved != 1 {
+		t.Fatalf("future-clock run = %+v %v", run, err)
+	}
+	if last, err := LastScheduled(out, now); err != nil || !last.IsZero() {
+		t.Fatalf("LastScheduled = %v %v, want zero", last, err)
+	}
+	if run, err := Scheduled(saves, out, 5, now); err != nil || run.Saved != 1 {
+		t.Fatalf("run after the clock was fixed = %+v %v", run, err)
+	}
+}

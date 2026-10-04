@@ -61,7 +61,7 @@ const MinGap = 10 * time.Minute
 const stamp = "2006-01-02T15-04-05.000"
 
 // FileName is the backup file name for a backup taken at t.
-func FileName(t time.Time) string { return t.Format(stamp) + ".zip" }
+func FileName(t time.Time) string { return t.UTC().Format(stamp) + ".zip" }
 
 // Saves zips savesDir into backupsDir/<timestamp>.zip through a temp file and rename, then deletes all but the
 // newest keep backups and temp files a crash left. It returns the zip's path (the newest existing one when that is

@@ -73,8 +73,12 @@ type Service struct {
 	Launches *launchsvc.Service
 	last     *Store
 	busy     func() bool
-	// lastScheduled is when the last scheduled backup pass ran; only RunScheduledBackups' goroutine touches it.
+	// schedMu guards lastScheduled, when the last scheduled backup pass ran, which the status read shares with the
+	// RunScheduledBackups goroutine.
+	schedMu       sync.Mutex
 	lastScheduled time.Time
+	// Emit is nil in tests that do not watch events.
+	Emit func(name string, data any)
 	// Enqueue queues downloads when FromSave cannot reuse a store item.
 	Enqueue func([]queue.Request) ([]queue.Item, error)
 }
