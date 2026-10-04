@@ -12,7 +12,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/testenv"
 )
 
 func runEnv(t *testing.T) (*Service, profile.Profile, string, string) {
@@ -21,14 +21,7 @@ func runEnv(t *testing.T) (*Service, profile.Profile, string, string) {
 	t.Setenv("XDG_CONFIG_HOME", cfg)
 	home := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", filepath.Join(home, "data"))
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	_, profiles := testenv.Stores(t)
 	p, err := profiles.Create("stardew", "A")
 	if err != nil {
 		t.Fatal(err)

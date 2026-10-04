@@ -11,12 +11,12 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/testenv"
 
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
-	modstore "github.com/Rethunk-AI/mortar/internal/store"
 	"github.com/zalando/go-keyring"
 )
 
@@ -45,14 +45,7 @@ func TestTrackedMissingFiltersDomainAndProfileMods(t *testing.T) {
 	}
 	c := nexus.New("1")
 	c.BaseURL = srv.URL
-	items, err := modstore.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	_, profiles := testenv.Stores(t)
 	p, err := profiles.Create("stardew", "Farm")
 	if err != nil {
 		t.Fatal(err)

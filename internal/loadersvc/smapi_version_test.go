@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/testenv"
 )
 
 type fakeSMAPI struct {
@@ -32,14 +32,7 @@ func testServiceWithReleases(t *testing.T, releases []string) (*Service, *fakeSM
 	if _, err := set.Update(func(v *settings.Settings) { v.GameFolders["stardew"] = folder }); err != nil {
 		t.Fatal(err)
 	}
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	items, profiles := testenv.Stores(t)
 	svc := NewService(t.TempDir(), set, items, profiles)
 	svc.procDir = t.TempDir()
 	fake := &fakeSMAPI{releases: releases}

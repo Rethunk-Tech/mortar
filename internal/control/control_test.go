@@ -17,7 +17,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/testenv"
 )
 
 func waitFile(t *testing.T, path string, present bool) {
@@ -127,14 +127,7 @@ func services(t *testing.T) *Services {
 	if err != nil {
 		t.Fatal(err)
 	}
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	_, profiles := testenv.Stores(t)
 	return &Services{
 		Version: "test", Settings: st, Games: game.NewService(home, st), Store: profiles,
 		Profiles: profile.NewService(profiles, home, st),

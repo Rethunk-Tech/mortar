@@ -10,7 +10,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/testenv"
 )
 
 func TestParseCollectionURL(t *testing.T) {
@@ -41,14 +41,7 @@ func TestParseCollectionURL(t *testing.T) {
 func TestPreviewLinkCollection(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	t.Setenv("LOCALAPPDATA", t.TempDir())
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	_, profiles := testenv.Stores(t)
 	fm := fakeMeta{
 		pages: map[int]meta.Page{
 			100: page(100, "One", dsFile(1, "1.0", meta.Mod{UniqueID: "A.One", Version: "1.0"})),
@@ -101,14 +94,7 @@ func cozyCollectionService(t *testing.T, revision int) (*Service, *profile.Store
 	t.Helper()
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	t.Setenv("LOCALAPPDATA", t.TempDir())
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	_, profiles := testenv.Stores(t)
 	fm := fakeMeta{
 		pages: map[int]meta.Page{
 			100: page(100, "One", dsFile(1, "1.0", meta.Mod{UniqueID: "A.One", Version: "1.0"})),

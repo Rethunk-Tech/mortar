@@ -9,7 +9,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/testenv"
 )
 
 func sweepEnv(t *testing.T) (*Service, *profile.Store) {
@@ -20,14 +20,7 @@ func sweepEnv(t *testing.T) (*Service, *profile.Store) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	_, profiles := testenv.Stores(t)
 	svc := NewService(t.TempDir(), set, profiles)
 	svc.SweepVersions = func(string) (string, string, error) { return "1.6.15", "4.1.10", nil }
 	svc.SweepCompat = func(context.Context) (meta.CompatIndex, error) {

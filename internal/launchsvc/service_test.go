@@ -20,19 +20,12 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/testenv"
 )
 
 func TestRunningFollowsProcessesAndLocksProfile(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	_, profiles := testenv.Stores(t)
 	a, err := profiles.Create("stardew", "A")
 	if err != nil {
 		t.Fatal(err)
@@ -73,14 +66,7 @@ func TestLinesReadsTheProfilesLastLog(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", cfg)
 	home := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", filepath.Join(home, "data"))
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	_, profiles := testenv.Stores(t)
 	a, err := profiles.Create("stardew", "A")
 	if err != nil {
 		t.Fatal(err)
@@ -137,14 +123,7 @@ func TestLinesReadsTheProfilesLastLog(t *testing.T) {
 
 func TestGameClosingEndsTheConsoleWithAMortarLine(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	_, profiles := testenv.Stores(t)
 	a, err := profiles.Create("stardew", "A")
 	if err != nil {
 		t.Fatal(err)
@@ -195,14 +174,7 @@ func startEnv(t *testing.T) (*Service, profile.Profile) {
 	if _, err := set.Update(func(v *settings.Settings) { v.GameFolders["stardew"] = folder }); err != nil {
 		t.Fatal(err)
 	}
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	_, profiles := testenv.Stores(t)
 	p, err := profiles.Create("stardew", "A")
 	if err != nil {
 		t.Fatal(err)
@@ -265,14 +237,7 @@ func TestStartInstallsAMissingLoaderBeforeLaunching(t *testing.T) {
 
 func TestSendRunsThroughTheBridgeAndEchoesTheCommand(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	items, profiles := testenv.Stores(t)
 	p, err := profiles.Create("stardew", "A")
 	if err != nil {
 		t.Fatal(err)

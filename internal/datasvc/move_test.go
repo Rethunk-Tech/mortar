@@ -8,8 +8,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/testenv"
 )
 
 func TestMoveDataFolderRefusesWhileTheGameRuns(t *testing.T) {
@@ -31,14 +30,7 @@ func TestMoveDataFolderRelocatesWhenIdle(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", home)
 	t.Setenv("LOCALAPPDATA", home)
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	items, profiles := testenv.Stores(t)
 	src, err := datadir.Dir()
 	if err != nil {
 		t.Fatal(err)

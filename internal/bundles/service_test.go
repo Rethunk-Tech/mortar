@@ -11,6 +11,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	modstore "github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/testenv"
 )
 
 func testService(t *testing.T) (*Service, *profile.Store, *modstore.Store) {
@@ -24,14 +25,7 @@ func testService(t *testing.T) (*Service, *profile.Store, *modstore.Store) {
 	}
 	t.Setenv("XDG_DATA_HOME", dataHome)
 	t.Setenv("LOCALAPPDATA", dataHome)
-	items, err := modstore.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	items, profiles := testenv.Stores(t)
 	dataDir, err := datadir.Dir()
 	if err != nil {
 		t.Fatal(err)

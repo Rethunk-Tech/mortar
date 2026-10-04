@@ -20,6 +20,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/testenv"
 )
 
 func put(t *testing.T, path, body string) {
@@ -89,14 +90,7 @@ func TestBundledBuiltFromGameFolder(t *testing.T) {
 	if _, err := set.Update(func(v *settings.Settings) { v.GameFolders["stardew"] = game }); err != nil {
 		t.Fatal(err)
 	}
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	items, profiles := testenv.Stores(t)
 	client, bridgeHash := bridgeClient(t)
 	svc := NewService(t.TempDir(), set, items, profiles, client)
 	early, err := profiles.Create("stardew", "Early")
@@ -160,14 +154,7 @@ func newEnsureEnv(t *testing.T) ensureEnv {
 	if _, err := set.Update(func(v *settings.Settings) { v.GameFolders["stardew"] = folder }); err != nil {
 		t.Fatal(err)
 	}
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	items, profiles := testenv.Stores(t)
 	svc := NewService(t.TempDir(), set, items, profiles)
 	var installs atomic.Int32
 	svc.run = func(context.Context, string, bool) (loader.Status, error) {

@@ -11,6 +11,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/queue"
 	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/testenv"
 )
 
 func TestRecordRunStoresEnabledMods(t *testing.T) {
@@ -87,14 +88,7 @@ func newSaveEnv(t *testing.T) saveEnv {
 	t.Setenv("XDG_DATA_HOME", base)
 	t.Setenv("XDG_CONFIG_HOME", base)
 	t.Setenv("LOCALAPPDATA", base)
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	ps, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	items, ps := testenv.Stores(t)
 	return saveEnv{ps, items}
 }
 

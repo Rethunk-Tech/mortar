@@ -17,7 +17,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/queue"
 	"github.com/Rethunk-AI/mortar/internal/share"
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/testenv"
 )
 
 type recorder struct {
@@ -34,14 +34,7 @@ func newService(t *testing.T, signedIn bool) (*Service, *recorder) {
 	t.Helper()
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	t.Setenv("LOCALAPPDATA", t.TempDir())
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	profiles, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	_, profiles := testenv.Stores(t)
 	r := testResolver(map[int][]nexus.File{
 		100: {nf(1, "1.0", "MAIN", true)},
 		600: {nf(6, "1.0", "MAIN", true)},
