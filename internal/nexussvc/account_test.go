@@ -10,14 +10,10 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
-	"github.com/Rethunk-AI/mortar/internal/settings"
-	"github.com/zalando/go-keyring"
 )
 
 func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
-	keyring.MockInit()
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	store := testStore(t)
 	var last string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		last = r.Method + " " + r.URL.Path
@@ -42,10 +38,6 @@ func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
 		}
 	}))
 	defer srv.Close()
-	store, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
 	c := nexus.New("1")
 	c.BaseURL = srv.URL
 	s := NewService(store, c, &meta.Client{})
@@ -80,9 +72,7 @@ func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
 }
 
 func TestEndorseWithoutDownloadSurfacesNexusMessage(t *testing.T) {
-	keyring.MockInit()
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	store := testStore(t)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/v1/users/validate.json" {
 			_, _ = w.Write([]byte(`{"user_id":7,"name":"Ada","is_premium":false}`))
@@ -92,10 +82,6 @@ func TestEndorseWithoutDownloadSurfacesNexusMessage(t *testing.T) {
 		_, _ = w.Write([]byte(`{"message":"You must download this mod before you can endorse it."}`))
 	}))
 	defer srv.Close()
-	store, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
 	c := nexus.New("1")
 	c.BaseURL = srv.URL
 	s := NewService(store, c, &meta.Client{})
@@ -103,7 +89,7 @@ func TestEndorseWithoutDownloadSurfacesNexusMessage(t *testing.T) {
 	if _, err := s.SignIn(ctx, "k"); err != nil {
 		t.Fatal(err)
 	}
-	_, err = s.Endorse(ctx, 541, "1.0.0")
+	_, err := s.Endorse(ctx, 541, "1.0.0")
 	if err == nil || err.Error() != "You must download this mod before you can endorse it." {
 		t.Fatalf("endorse = %v", err)
 	}

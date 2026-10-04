@@ -16,14 +16,10 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/settings"
-	"github.com/zalando/go-keyring"
 )
 
 func TestTrackedMissingFiltersDomainAndProfileMods(t *testing.T) {
-	keyring.MockInit()
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	store := testStore(t)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/v1/users/validate.json":
@@ -39,10 +35,6 @@ func TestTrackedMissingFiltersDomainAndProfileMods(t *testing.T) {
 		}
 	}))
 	defer srv.Close()
-	store, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
 	c := nexus.New("1")
 	c.BaseURL = srv.URL
 	_, profiles := testenv.Stores(t)

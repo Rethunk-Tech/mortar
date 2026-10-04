@@ -1,6 +1,7 @@
 package migrate
 
 import (
+	"cmp"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -176,7 +177,7 @@ func appendMO2Mod(out []ModPreview, missing []string, modsPath string, byBase ma
 			nexus = nexusID(item.UpdateKeys)
 		}
 		out = append(out, ModPreview{
-			UniqueID: item.UniqueID, Name: item.Name, Version: firstNonEmpty(item.Version, meta.version),
+			UniqueID: item.UniqueID, Name: item.Name, Version: cmp.Or(item.Version, meta.version),
 			Enabled: entry.enabled, NexusModID: nexus, SourcePath: localMO2Path(meta.modID, item.Path),
 		})
 	}
@@ -268,13 +269,4 @@ func parseModID(text string) int {
 		return 0
 	}
 	return id
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, value := range values {
-		if value != "" {
-			return value
-		}
-	}
-	return ""
 }

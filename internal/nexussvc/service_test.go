@@ -20,10 +20,44 @@ import (
 	"github.com/zalando/go-keyring"
 )
 
-func TestSignInOutKeepsKeyOutOfSettings(t *testing.T) {
+func testStore(t *testing.T) *settings.Store {
+	t.Helper()
 	keyring.MockInit()
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	t.Setenv("LOCALAPPDATA", t.TempDir())
+	store, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return store
+}
+
+// serveFixtures serves the recorded Nexus responses for mod 541 and counts every request.
+func serveFixtures(t *testing.T) (*httptest.Server, *atomic.Int32) {
+	t.Helper()
+	files := map[string]string{
+		"/v1/users/validate.json":                          "validate.json",
+		"/v1/games/stardewvalley/mods/541.json":            "mod-541.json",
+		"/v1/games/stardewvalley/mods/541/files.json":      "files-541.json",
+		"/v1/games/stardewvalley/mods/541/changelogs.json": "changelogs-541.json",
+		"/v1/games/stardewvalley.json":                     "game.json",
+	}
+	var hits atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits.Add(1)
+		b, err := fsx.ReadFile(filepath.Join("..", "nexus", "testdata", files[r.URL.Path]))
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		_, _ = w.Write(b)
+	}))
+	t.Cleanup(srv.Close)
+	return srv, &hits
+}
+
+func TestSignInOutKeepsKeyOutOfSettings(t *testing.T) {
+	store := testStore(t)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Apikey") != "secret-key" {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -32,10 +66,6 @@ func TestSignInOutKeepsKeyOutOfSettings(t *testing.T) {
 		_, _ = w.Write([]byte(`{"user_id":7,"name":"Ada","is_premium":true}`))
 	}))
 	defer srv.Close()
-	store, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
 	c := nexus.New("1")
 	c.BaseURL = srv.URL
 	s := NewService(store, c, &meta.Client{})
@@ -63,13 +93,7 @@ func TestSignInOutKeepsKeyOutOfSettings(t *testing.T) {
 }
 
 func TestModNameNeedsASignedInAccount(t *testing.T) {
-	keyring.MockInit()
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	store, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
+	store := testStore(t)
 	s := NewService(store, nexus.New("1"), &meta.Client{})
 	if _, err := s.ModName(context.Background(), 1); !errors.Is(err, ErrSignedOut) {
 		t.Fatalf("got %v", err)
@@ -77,31 +101,8 @@ func TestModNameNeedsASignedInAccount(t *testing.T) {
 }
 
 func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
-	keyring.MockInit()
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	files := map[string]string{
-		"/v1/users/validate.json":                          "validate.json",
-		"/v1/games/stardewvalley/mods/541.json":            "mod-541.json",
-		"/v1/games/stardewvalley/mods/541/files.json":      "files-541.json",
-		"/v1/games/stardewvalley/mods/541/changelogs.json": "changelogs-541.json",
-		"/v1/games/stardewvalley.json":                     "game.json",
-	}
-	var hits atomic.Int32
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		hits.Add(1)
-		b, err := fsx.ReadFile(filepath.Join("..", "nexus", "testdata", files[r.URL.Path]))
-		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-		_, _ = w.Write(b)
-	}))
-	defer srv.Close()
-	store, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
+	srv, hits := serveFixtures(t)
+	store := testStore(t)
 	c := nexus.New("1")
 	c.BaseURL = srv.URL
 	now := time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)
@@ -142,31 +143,8 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 }
 
 func TestDetailsRefetchesUnversionedCache(t *testing.T) {
-	keyring.MockInit()
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	files := map[string]string{
-		"/v1/users/validate.json":                          "validate.json",
-		"/v1/games/stardewvalley/mods/541.json":            "mod-541.json",
-		"/v1/games/stardewvalley/mods/541/files.json":      "files-541.json",
-		"/v1/games/stardewvalley/mods/541/changelogs.json": "changelogs-541.json",
-		"/v1/games/stardewvalley.json":                     "game.json",
-	}
-	var hits atomic.Int32
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		hits.Add(1)
-		b, err := fsx.ReadFile(filepath.Join("..", "nexus", "testdata", files[r.URL.Path]))
-		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-		_, _ = w.Write(b)
-	}))
-	defer srv.Close()
-	store, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
+	srv, hits := serveFixtures(t)
+	store := testStore(t)
 	c := nexus.New("1")
 	c.BaseURL = srv.URL
 	now := time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)

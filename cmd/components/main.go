@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"crypto/ed25519"
 	"crypto/x509"
@@ -52,7 +53,7 @@ func run(ctx context.Context, o options) error {
 		return err
 	}
 	httpClient := &http.Client{Timeout: 30 * time.Second}
-	if token := firstNonEmpty(os.Getenv("GH_TOKEN"), os.Getenv("GITHUB_TOKEN")); token != "" {
+	if token := cmp.Or(os.Getenv("GH_TOKEN"), os.Getenv("GITHUB_TOKEN")); token != "" {
 		httpClient.Transport = bearerTransport{token: token, next: http.DefaultTransport}
 	}
 	cacheDir, err := os.MkdirTemp("", "mortar-components-cache-*")
@@ -110,15 +111,6 @@ func run(ctx context.Context, o options) error {
 		return fmt.Errorf("write bundled component manifest: %w", err)
 	}
 	return nil
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, value := range values {
-		if value != "" {
-			return value
-		}
-	}
-	return ""
 }
 
 type bearerTransport struct {

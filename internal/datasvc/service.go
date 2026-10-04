@@ -25,8 +25,6 @@ type Service struct {
 	busy     []BusySource
 	// OnClearCache runs after ClearCache empties the cache folder, to drop copies held in memory.
 	OnClearCache func()
-	// Busy is true while the game is launching or running; nil means never busy.
-	Busy func() bool
 	// Restart starts Mortar again after a successful move; nil skips that in tests.
 	Restart func() error
 }
@@ -239,9 +237,6 @@ var errInUse = errors.New("a profile still uses this store item")
 func (s *Service) MoveDataFolder(dest string) error {
 	if dest == "" {
 		return errors.New("no folder chosen")
-	}
-	if s.Busy != nil && s.Busy() {
-		return errGameRunning
 	}
 	for _, busy := range s.busy {
 		if busy != nil && busy.Busy() {

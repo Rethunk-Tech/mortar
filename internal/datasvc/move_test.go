@@ -11,14 +11,6 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/testenv"
 )
 
-func TestMoveDataFolderRefusesWhileTheGameRuns(t *testing.T) {
-	s := NewService(nil, nil, nil)
-	s.Busy = func() bool { return true }
-	if err := s.MoveDataFolder(t.TempDir()); !errors.Is(err, errGameRunning) {
-		t.Fatalf("busy = %v", err)
-	}
-}
-
 func TestMoveDataFolderRefusesWhileAnotherServiceIsBusy(t *testing.T) {
 	s := NewService(nil, nil, nil, BusyFunc(func() bool { return true }))
 	if err := s.MoveDataFolder(t.TempDir()); !errors.Is(err, errGameRunning) {

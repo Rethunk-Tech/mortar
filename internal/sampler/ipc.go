@@ -23,20 +23,10 @@ const (
 
 var diagnosticMagic = [14]byte{'D', 'O', 'T', 'N', 'E', 'T', '_', 'I', 'P', 'C', '_', 'V', '1'}
 
-type diagnosticConn interface {
-	io.Reader
-	io.Writer
-	io.Closer
-}
-
-type diagnosticConnection struct {
-	diagnosticConn
-}
-
 // Session owns one EventPipe stream and its temporary nettrace file.
 type Session struct {
 	pid       int
-	conn      diagnosticConn
+	conn      io.ReadWriteCloser
 	path      string
 	sessionID uint64
 	streamErr chan error
@@ -287,7 +277,7 @@ func diagnosticSocketCandidates(pid int) ([]string, error) {
 	return matches, nil
 }
 
-func dialDiagnostic(ctx context.Context, pid int) (*diagnosticConnection, error) {
+func dialDiagnostic(ctx context.Context, pid int) (io.ReadWriteCloser, error) {
 	if ctx == nil {
 		return nil, errors.New("sampler: nil diagnostics context")
 	}
@@ -302,7 +292,7 @@ func dialDiagnostic(ctx context.Context, pid int) (*diagnosticConnection, error)
 	for _, path := range paths {
 		conn, err := openDiagnostic(ctx, path)
 		if err == nil {
-			return &diagnosticConnection{diagnosticConn: conn}, nil
+			return conn, nil
 		}
 		last = err
 	}

@@ -689,7 +689,7 @@ func parseEventBlock(payload []byte, metadata map[uint32]eventMetadata) []rawEve
 			if _, ok := metadata[event.metadata]; !ok && !payloadLooksKnown(event.payload) {
 				continue
 			}
-			key := fmt.Sprintf("%d/%d/%d/%d/%x", event.timestamp, event.threadID, event.metadata, event.stackID, event.payload[:minInt(12, len(event.payload))])
+			key := fmt.Sprintf("%d/%d/%d/%d/%x", event.timestamp, event.threadID, event.metadata, event.stackID, event.payload[:min(12, len(event.payload))])
 			if seen[key] {
 				continue
 			}
@@ -1232,13 +1232,6 @@ func readVarint(data []byte) (uint64, int) {
 		}
 	}
 	return 0, 0
-}
-
-func minInt(left, right int) int {
-	if left < right {
-		return left
-	}
-	return right
 }
 
 func uint32FromUint64(value uint64) uint32 {
