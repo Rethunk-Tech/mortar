@@ -34,7 +34,16 @@ func fileStem(name string) string {
 	return strings.ToLower(strings.Join(strings.Fields(name), " "))
 }
 
+// sameFileGroup reports whether two files are versions of the same download: the author's file_updates chain links
+// them, they share Nexus's display name, or their archive names match once versions are stripped. Archive names
+// alone are not enough: Nexus now appends an upload time and a random token to them.
 func sameFileGroup(a, b nexus.File) bool {
+	if a.ReplacedBy == b.FileID || b.ReplacedBy == a.FileID {
+		return true
+	}
+	if a.Name != "" && b.Name != "" {
+		return strings.EqualFold(strings.TrimSpace(a.Name), strings.TrimSpace(b.Name))
+	}
 	aStem, bStem := fileStem(a.FileName), fileStem(b.FileName)
 	return aStem == "" || bStem == "" || aStem == bStem
 }
@@ -66,6 +75,13 @@ func sameVersion(f nexus.File, want string) bool {
 func ChooseFile(files []nexus.File, version string, current int) (nexus.File, bool) {
 	categories := []string{categoryMain}
 	currentFile := fileByID(files, current)
+	// The author's own chain from the installed file is the surest answer for an update.
+	if currentFile.FileID != 0 {
+		if next := newestUpdate(files, currentFile); next.FileID != currentFile.FileID &&
+			(version == "" || sameVersion(next, version)) {
+			return next, true
+		}
+	}
 	for _, f := range files {
 		if f.FileID == current && strings.EqualFold(f.Category, categoryOptional) {
 			categories = []string{categoryOptional, categoryMain}

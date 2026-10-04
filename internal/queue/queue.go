@@ -584,6 +584,16 @@ func (s *Service) Route(link nxm.Link) bool {
 		return (it.State == StateWaitingClick || it.State == StateQueued) && it.ModID == link.ModID && it.FileID == link.FileID && it.FileID != 0
 	})
 	if i < 0 {
+		// An update that has not settled on a file yet (or could not) takes the file the user clicked on its page.
+		i = slices.IndexFunc(s.items, func(it *Item) bool {
+			return (it.Kind == KindUpdate || it.Latest) && it.ModID == link.ModID && it.Repo == "" &&
+				(it.State == StateWaitingClick || it.State == StateQueued || it.State == StateFailed)
+		})
+		if i >= 0 {
+			s.items[i].FileID, s.items[i].Error = link.FileID, ""
+		}
+	}
+	if i < 0 {
 		s.mu.Unlock()
 		return false
 	}

@@ -342,7 +342,12 @@ func nexusFileStem(name string) string {
 	return strings.ToLower(strings.Join(strings.Fields(name), " "))
 }
 
+// sameNexusFileGroup prefers the manifests inside each file: two files carrying the same mod are versions of one
+// download. Archive names are the fallback; the dataset sometimes stores them as hashed paths.
 func sameNexusFileGroup(a, b meta.File) bool {
+	if len(a.Mods) > 0 && len(b.Mods) > 0 {
+		return slices.ContainsFunc(a.Mods, func(m meta.Mod) bool { return containsPreviewMod(b, m.UniqueID) })
+	}
 	aStem, bStem := nexusFileStem(a.FileName), nexusFileStem(b.FileName)
 	return aStem == "" || bStem == "" || aStem == bStem
 }

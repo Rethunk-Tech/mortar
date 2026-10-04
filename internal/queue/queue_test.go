@@ -816,3 +816,20 @@ func TestNexusMD5MatchAllowsInstall(t *testing.T) {
 	}
 	f.wait("md5 ok", f.item(StateDone))
 }
+
+func TestRouteGivesAClickedFileToAPendingUpdate(t *testing.T) {
+	f := newFixture(t)
+	f.premium.Store(false)
+	f.s.mu.Lock()
+	f.s.items = append(f.s.items, &Item{ID: "u", Kind: KindUpdate, ModID: 41150, State: StateFailed, Error: "That item could not be found."})
+	f.s.mu.Unlock()
+	if !f.s.Route(nxm.Link{ModID: 41150, FileID: 185334, Key: "k", Expires: f.now().Unix() + 600}) {
+		t.Fatal("the link should complete the pending update")
+	}
+	f.s.mu.Lock()
+	defer f.s.mu.Unlock()
+	it := f.s.items[len(f.s.items)-1]
+	if it.FileID != 185334 || it.State != StateQueued || it.Error != "" {
+		t.Fatalf("update item %+v", *it)
+	}
+}
