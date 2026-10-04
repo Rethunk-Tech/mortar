@@ -36,7 +36,6 @@ tasks:
           DEV:
             ref: .DEV
       - task: common:generate:icons
-      - task: generate:dotdesktop
     preconditions:
       - sh: '{{if eq .OBFUSCATED "true"}}command -v garble >/dev/null 2>&1{{else}}true{{end}}'
         msg: "garble is required for obfuscated builds. Install it with: go install mvdan.cc/garble@v0.18.0 (requires Go 1.27+). See https://github.com/burrowers/garble/releases for version/toolchain compatibility."
@@ -64,10 +63,9 @@ tasks:
     dir: build/linux/appimage
     deps:
       - task: build
-      - task: generate:dotdesktop
     cmds:
       - cp "{{.APP_BINARY}}" "{{.APP_NAME}}"
-      - cp ../../appicon.png "{{.APP_NAME}}.png"
+      - cp ../../appicon.png "tech.rethunk.Mortar.png"
       - wails3 generate appimage -binary "{{.APP_NAME}}" -icon {{.ICON}} -desktopfile {{.DESKTOP_FILE}} -outputdir {{.OUTPUT_DIR}} -builddir {{.ROOT_DIR}}/build/linux/appimage/build
       - |
         set -euo pipefail
@@ -87,12 +85,12 @@ tasks:
         # The bare program beside the AppImage is the same unpackaged build: a portable binary that updates itself.
         case "$arch" in x86_64) goarch=amd64 ;; aarch64) goarch=arm64 ;; *) echo "unsupported arch $arch" >&2; exit 1 ;; esac
         cp -a "{{.APP_BINARY}}" "{{.OUTPUT_DIR}}/{{.APP_NAME}}-linux-${goarch}"
-        rm "{{.APP_NAME}}" "{{.APP_NAME}}.png"
+        rm "{{.APP_NAME}}" "tech.rethunk.Mortar.png"
     vars:
       APP_NAME: '{{.APP_NAME}}'
       APP_BINARY: '../../../bin/{{.APP_NAME}}'
-      ICON: '{{.APP_NAME}}.png'
-      DESKTOP_FILE: '../{{.APP_NAME}}.desktop'
+      ICON: 'tech.rethunk.Mortar.png'
+      DESKTOP_FILE: '../tech.rethunk.Mortar.desktop'
       OUTPUT_DIR: '../../../bin'
 
   nfpm:
@@ -132,19 +130,6 @@ tasks:
         mkdir -p bin
         flatpak-builder --user --force-clean --install-deps-from=flathub --repo=/var/tmp/mortar-flatpak-repo /var/tmp/mortar-flatpak-build build/linux/flatpak/tech.rethunk.Mortar.yml
         flatpak build-bundle --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo /var/tmp/mortar-flatpak-repo "$dest" tech.rethunk.Mortar
-
-  generate:dotdesktop:
-    summary: Generates a `.desktop` file
-    dir: build
-    cmds:
-      - mkdir -p {{.ROOT_DIR}}/build/linux/appimage
-      - wails3 generate .desktop -name "Mortar" -exec "{{.EXEC}}" -icon "{{.ICON}}" -comment "Multi-game desktop mod manager" -keywords "mod;manager;nexus;stardew;" -outputfile "{{.ROOT_DIR}}/build/linux/{{.APP_NAME}}.desktop" -categories "{{.CATEGORIES}}"
-    vars:
-      APP_NAME: '{{.APP_NAME}}'
-      EXEC: '{{.APP_NAME}}'
-      ICON: '{{.APP_NAME}}'
-      CATEGORIES: 'Game;Utility;'
-      OUTPUTFILE: '{{.ROOT_DIR}}/build/linux/{{.APP_NAME}}.desktop'
 
   run:
     cmds:
