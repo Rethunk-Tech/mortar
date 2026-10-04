@@ -9,6 +9,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { installableUpdate, sameId, updateFor } from './lookup.ts'
 import { ReportToAuthorButton } from './ReportToAuthorButton.tsx'
 import { useMods } from './store.ts'
+import { openTarget } from './storeView.ts'
 import { updateWant } from './updateReview/wants.ts'
 import { useUpdates } from './updates.ts'
 
@@ -33,11 +34,11 @@ export function RunErrorButtons({
       : undefined
   const want = update && installableUpdate(update) ? updateWant(update) : undefined
   const openHelp = () => {
-    const { game, openId } = useProfiles.getState()
-    if (!(game && openId) || runError.runId === '') {
+    const at = openTarget()
+    if (!at || runError.runId === '') {
       return
     }
-    useConsole.getState().viewRun(game.id, openId, runError.runId)
+    useConsole.getState().viewRun(at.game, at.id, runError.runId)
     useConsole.getState().setHelping(true)
   }
   const gameId = useProfiles((s) => s.game?.id ?? '')

@@ -7,7 +7,7 @@ import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { reportError } from '../toasts/report.ts'
 import { useEnableAsk } from './enableAsk.ts'
 import { useMods } from './store.ts'
-import { announceAlso, open } from './storeView.ts'
+import { announceAlso, openTarget } from './storeView.ts'
 
 export function EnableRequirementsDialog() {
   const { t } = useLingui()
@@ -18,7 +18,7 @@ export function EnableRequirementsDialog() {
   }
   const names = offer.mods.map((m) => ((m.name ?? '').trim() === '' ? t`Unknown mod` : m.name))
   const enableThem = () => {
-    const target = open()
+    const target = openTarget()
     dismiss()
     if (!target) {
       return

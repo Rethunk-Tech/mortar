@@ -14,7 +14,7 @@ import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts
 import { useBadges } from './badges.ts'
 import { loadCollapsed, persistCollapsed } from './group.ts'
 import { missingCount, problemCount } from './lookup.ts'
-import { open } from './storeView.ts'
+import { openTarget } from './storeView.ts'
 import { useUpdates } from './updates.ts'
 
 export function showUpdatesView() {
@@ -46,7 +46,7 @@ export async function loadMods(
   }) => void,
   get: () => { loadProblems: () => Promise<void> },
 ) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -56,11 +56,11 @@ export async function loadMods(
       Mods(target.game, target.id),
       Pages(target.game, target.id),
     ])
-    if (open()?.id === target.id) {
+    if (openTarget()?.id === target.id) {
       set({ mods: mods ?? [], pages: pages ?? {}, loaded: true, modsFor: target.id })
     }
   } catch (e) {
-    if (open()?.id === target.id) {
+    if (openTarget()?.id === target.id) {
       set({ loadError: errorMessage(e) })
     }
     return
@@ -72,7 +72,7 @@ export async function loadModProblems(
   set: (p: { problems: Result | null; problemsFor?: string }) => void,
   get: () => { problemsFor: string },
 ) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -81,7 +81,7 @@ export async function loadModProblems(
   }
   try {
     const problems = await Problems(target.game, target.id)
-    if (open()?.id === target.id) {
+    if (openTarget()?.id === target.id) {
       set({ problems, problemsFor: target.id })
     }
     const missing = missingCount(problems)

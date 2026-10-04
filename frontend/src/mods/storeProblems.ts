@@ -18,13 +18,13 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportError } from '../toasts/report.ts'
-import { open } from './storeView.ts'
+import { openTarget } from './storeView.ts'
 
 async function dismissAbandonedMod(
   get: () => { loadProblems: () => Promise<void> },
   uniqueId: string,
 ) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -41,7 +41,7 @@ async function dismissListedRequirement(
   get: () => { loadProblems: () => Promise<void> },
   uniqueId: string,
 ) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -58,7 +58,7 @@ async function dismissSettingHint(
   get: () => { loadProblems: () => Promise<void> },
   setting: SettingHint,
 ) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -76,7 +76,7 @@ async function setConfigSetting(
   setting: Pick<SettingHint, 'key' | 'uniqueId' | 'field' | 'name'>,
   value: string,
 ) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -100,7 +100,7 @@ async function dismissAssetConflict(
   get: () => { loadProblems: () => Promise<void> },
   conflict: AssetConflict,
 ) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -114,7 +114,7 @@ async function dismissAssetConflict(
 }
 
 async function restoreDismissed(get: () => { loadProblems: () => Promise<void> }, token: string) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -134,7 +134,7 @@ export function problemActions(
   return {
     resolve: (resolving: Duplicate | null) => set({ resolving }),
     keepCopy: async (dup: Duplicate, keepKey: string) => {
-      const target = open()
+      const target = openTarget()
       if (!target) {
         return
       }

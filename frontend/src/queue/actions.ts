@@ -2,18 +2,12 @@ import { msg, plural } from '@lingui/core/macro'
 import type { Request } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
 import { Add } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { openTarget } from '../mods/storeView.ts'
 import { openSettings } from '../nav/store.ts'
-import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useQueue } from './store.ts'
-
-// The game and profile open now, or null when none is.
-function target() {
-  const { game, openId } = useProfiles.getState()
-  return game && openId ? { game: game.id, profileId: openId } : null
-}
 
 // What a caller says about a file; the rest is filled in.
 export type Want = Pick<Request, 'kind'> &
@@ -49,7 +43,7 @@ export async function download(reqs: Want[], showQueue = false): Promise<boolean
     })
     return false
   }
-  const at = target()
+  const at = openTarget()
   if (!at) {
     return false
   }
@@ -69,7 +63,8 @@ export async function download(reqs: Want[], showQueue = false): Promise<boolean
         batchId,
         latest: false,
         ...r,
-        ...at,
+        game: at.game,
+        profileId: at.id,
       })),
     )
   } catch (e) {

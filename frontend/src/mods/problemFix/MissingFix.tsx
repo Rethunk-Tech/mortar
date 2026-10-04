@@ -1,9 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button } from '@mui/material'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { type Problem, sameId } from '../lookup.ts'
 import { useMods } from '../store.ts'
 import { ListedFix } from './ListedFix.tsx'
+import { RestoreButton } from './RestoreButton.tsx'
 import { WhereButtons } from './WhereButtons.tsx'
 import type { WarningButton } from './warningButton.tsx'
 
@@ -19,22 +19,13 @@ export function MissingFix({
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const setEnabled = useMods((s) => s.setEnabled)
-  const restoreDismissed = useMods((s) => s.restoreDismissed)
   const dismissListed = useMods((s) => s.dismissListed)
   const { missing } = problem
   if (dismissedToken !== undefined) {
     return (
       <>
         {missing.where ? <WhereButtons where={missing.where} addLabel={t`Add`} /> : null}
-        <Button
-          size="small"
-          color="inherit"
-          variant="text"
-          onClick={() => restoreDismissed(dismissedToken).catch(reportUnexpected)}
-          sx={{ flexShrink: 0 }}
-        >
-          {t`Restore`}
-        </Button>
+        <RestoreButton token={dismissedToken} />
       </>
     )
   }

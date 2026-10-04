@@ -4,11 +4,12 @@ import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { RememberSettingChoice } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import { SetConfigValue } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { useProfiles } from '../../profiles/store.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import type { Problem } from '../lookup.ts'
 import { useMods } from '../store.ts'
+import { openTarget } from '../storeView.ts'
 import { useLocked } from '../useLocked.ts'
+import { RestoreButton } from './RestoreButton.tsx'
 
 export function SettingFix({
   problem,
@@ -26,13 +27,13 @@ export function SettingFix({
   const values = setting.suggested ?? []
   const apply = async (value: string) => {
     setAnchorEl(null)
-    const { game, openId } = useProfiles.getState()
-    if (!(game && openId)) {
+    const at = openTarget()
+    if (!at) {
       return
     }
     try {
-      await SetConfigValue(game.id, openId, setting.key, setting.uniqueId, setting.field, value)
-      await RememberSettingChoice(game.id, openId, setting.uniqueId, setting.field, value)
+      await SetConfigValue(at.game, at.id, setting.key, setting.uniqueId, setting.field, value)
+      await RememberSettingChoice(at.game, at.id, setting.uniqueId, setting.field, value)
       await loadProblems()
     } catch (error) {
       reportUnexpected(error)
@@ -57,17 +58,7 @@ export function SettingFix({
           {label(first)}
         </Button>
       ) : (
-        <Button
-          size="small"
-          color="inherit"
-          variant="text"
-          onClick={() =>
-            useMods.getState().restoreDismissed(dismissedToken).catch(reportUnexpected)
-          }
-          sx={{ flexShrink: 0 }}
-        >
-          {t`Restore`}
-        </Button>
+        <RestoreButton token={dismissedToken} />
       )}
       {values.length > 1 ? (
         <>

@@ -5,14 +5,17 @@ import { reportUnexpected } from '../../toasts/report.ts'
 import { type Problem, sameId } from '../lookup.ts'
 import { openPage } from '../menu.ts'
 import { useMods } from '../store.ts'
+import { RestoreButton } from './RestoreButton.tsx'
 import { WhereButtons } from './WhereButtons.tsx'
 import type { WarningButton } from './warningButton.tsx'
 
 export function BrokenFix({
   problem,
+  dismissedToken,
   button,
 }: {
   problem: Extract<Problem, { kind: 'broken' }>
+  dismissedToken?: string | undefined
   button: WarningButton
 }) {
   const { t } = useLingui()
@@ -56,10 +59,15 @@ export function BrokenFix({
       </Button>
     )
   }
-  const dismiss =
+  let dismiss: ReactNode = null
+  if (dismissedToken !== undefined) {
+    dismiss = <RestoreButton token={dismissedToken} />
+  } else if (
     broken.status === 'abandoned' ||
     broken.status === 'obsolete' ||
-    broken.status === 'deprecated' ? (
+    broken.status === 'deprecated'
+  ) {
+    dismiss = (
       <Button
         size="small"
         color="inherit"
@@ -69,7 +77,8 @@ export function BrokenFix({
       >
         {t`Dismiss`}
       </Button>
-    ) : null
+    )
+  }
   return (
     <>
       {replace}

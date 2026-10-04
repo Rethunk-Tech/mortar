@@ -9,19 +9,14 @@ import {
   ReadConfig,
   SaveConfigPreset,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { openTarget } from './storeView.ts'
 import { useLocked } from './useLocked.ts'
 
 const maxPresetName = 40
-
-function openTarget() {
-  const { game, openId } = useProfiles.getState()
-  return game && openId ? { game: game.id, id: openId } : null
-}
 
 function PresetItems({
   names,

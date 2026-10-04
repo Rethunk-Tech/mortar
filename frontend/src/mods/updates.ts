@@ -15,6 +15,7 @@ import { useToasts } from '../toasts/store.ts'
 import { useBadges } from './badges.ts'
 import { updateCount } from './lookup.ts'
 import { useNexusDetails } from './nexusDetails.ts'
+import { openTarget } from './storeView.ts'
 
 function checkedWithSmapi(at: number | null, now: number, unknown: boolean): string {
   if (unknown) {
@@ -82,19 +83,19 @@ const useUpdates = create<{
   checkedAt: null,
   reviewing: false,
   load: async () => {
-    const { game, openId } = useProfiles.getState()
-    if (!(game && openId)) {
+    const at = openTarget()
+    if (!at) {
       return
     }
     try {
-      const updates = await loadUpdates(game.id, openId)
-      if (useProfiles.getState().openId === openId) {
+      const updates = await loadUpdates(at.game, at.id)
+      if (useProfiles.getState().openId === at.id) {
         set({ updates, checkedAt: Date.now() })
       }
       syncBadge()
       const count = updateCount(
         updates,
-        useProfiles.getState().profiles.find((p) => p.id === openId),
+        useProfiles.getState().profiles.find((p) => p.id === at.id),
       )
       if (count > 0 && useSettings.getState().notifyModUpdates) {
         useToasts.getState().push({
@@ -117,18 +118,18 @@ const useUpdates = create<{
   },
   // An explicit check: asks SMAPI's API again, ignoring cached answers, and returns how many updates it found.
   checkNow: async () => {
-    const { game, openId } = useProfiles.getState()
-    if (!(game && openId)) {
+    const at = openTarget()
+    if (!at) {
       return null
     }
-    const updates = await CheckUpdatesNow(game.id, openId)
-    if (useProfiles.getState().openId === openId) {
+    const updates = await CheckUpdatesNow(at.game, at.id)
+    if (useProfiles.getState().openId === at.id) {
       set({ updates, checkedAt: Date.now() })
     }
     syncBadge()
     return updateCount(
       updates,
-      useProfiles.getState().profiles.find((p) => p.id === openId),
+      useProfiles.getState().profiles.find((p) => p.id === at.id),
     )
   },
   setReviewing: (reviewing) => set({ reviewing }),

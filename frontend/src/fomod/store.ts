@@ -13,6 +13,7 @@ import {
   Skip,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { useMods } from '../mods/store.ts'
+import { openTarget } from '../mods/storeView.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
@@ -84,18 +85,18 @@ export function watchFomodQueue() {
     if (!(waiting && key)) {
       return
     }
-    const { game, openId } = useProfiles.getState()
-    if (!(game && openId)) {
+    const at = openTarget()
+    if (!at) {
       return
     }
     const cur = useFomod.getState().session
     if (cur?.queueId === waiting.id) {
       return
     }
-    FomodPreview(game.id, openId, key, {}).then((ask) => {
+    FomodPreview(at.game, at.id, key, {}).then((ask) => {
       useFomod.getState().open({
-        game: game.id,
-        profileId: openId,
+        game: at.game,
+        profileId: at.id,
         key,
         source: ask.source,
         queueId: waiting.id,

@@ -6,6 +6,7 @@ import { type Problem, sameId } from '../lookup.ts'
 import { assetFixButtonStyle } from '../problemGroups.ts'
 import { useMods } from '../store.ts'
 import { useLocked } from '../useLocked.ts'
+import { RestoreButton } from './RestoreButton.tsx'
 
 // Order and weight: the suggested fix first and filled, then the "make a pack win" choice, then Switch off,
 // then Dismiss as the quietest action.
@@ -22,7 +23,6 @@ export function AssetFix({
   const mods = useMods((s) => s.mods)
   const setEnabled = useMods((s) => s.setEnabled)
   const dismissAsset = useMods((s) => s.dismissAsset)
-  const restoreDismissed = useMods((s) => s.restoreDismissed)
   const setConfigValue = useMods((s) => s.setConfigValue)
   const locked = useLocked()
   const key = problem.asset.keys?.[0]
@@ -72,15 +72,7 @@ export function AssetFix({
         {fixes}
         {winButton}
         {off}
-        <Button
-          size="small"
-          color="inherit"
-          variant="text"
-          onClick={() => restoreDismissed(dismissedToken).catch(reportUnexpected)}
-          sx={{ flexShrink: 0 }}
-        >
-          {t`Restore`}
-        </Button>
+        <RestoreButton token={dismissedToken} />
       </>
     )
   }

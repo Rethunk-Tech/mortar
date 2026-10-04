@@ -5,7 +5,6 @@ import {
   PendingGmcm,
   SetGmcmEdits,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import {
   draftMap,
@@ -13,11 +12,7 @@ import {
   pendingEdits,
   type GmcmResult as Result,
 } from './configMenu.ts'
-
-function target() {
-  const { game, openId } = useProfiles.getState()
-  return game && openId ? { game: game.id, id: openId } : null
-}
+import { openTarget } from './storeView.ts'
 
 export function useGmcmMenu(uniqueId: string, open: boolean) {
   const [capture, setCapture] = useState<GmcmCapture | null>(null)
@@ -35,7 +30,7 @@ export function useGmcmMenu(uniqueId: string, open: boolean) {
       return
     }
     const seq = gen.current
-    const t = target()
+    const t = openTarget()
     if (!t) {
       return
     }
@@ -57,7 +52,7 @@ export function useGmcmMenu(uniqueId: string, open: boolean) {
       .catch(() => undefined)
   }, [open, uniqueId])
   const persist = (next: Record<string, unknown>, cap: GmcmCapture | null) => {
-    const t = target()
+    const t = openTarget()
     if (!(t && cap)) {
       return
     }
@@ -72,7 +67,7 @@ export function useGmcmMenu(uniqueId: string, open: boolean) {
   }
   const save = () => persist(drafts, capture)
   const discard = () => {
-    const t = target()
+    const t = openTarget()
     if (!t) {
       return
     }

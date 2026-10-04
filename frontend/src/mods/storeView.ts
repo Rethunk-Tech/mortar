@@ -47,7 +47,7 @@ export function announceAlso(names: string[] | null | undefined) {
   })
 }
 
-export const open = () => {
+export const openTarget = () => {
   const { game, openId } = useProfiles.getState()
   return game && openId ? { game: game.id, id: openId } : null
 }

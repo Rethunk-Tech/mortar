@@ -8,7 +8,7 @@ import { useSettings } from '../settings/store.ts'
 import { reportError } from '../toasts/report.ts'
 import { useEnableAsk } from './enableAsk.ts'
 import { enableRequirementsDecision, pendingRequired } from './enableRequirements.ts'
-import { announceAlso, open } from './storeView.ts'
+import { announceAlso, openTarget } from './storeView.ts'
 
 export function considerEnableRequirements(
   allMods: Mod[],
@@ -37,7 +37,7 @@ export function considerEnableRequirements(
     useEnableAsk.getState().enqueue({ dependentName, mods: pending })
     return Promise.resolve()
   }
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return Promise.resolve()
   }

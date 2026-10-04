@@ -18,6 +18,7 @@ import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { modId, reshow } from './lookup.ts'
 import { useMods } from './store.ts'
+import { openTarget } from './storeView.ts'
 
 interface Extras {
   id: string
@@ -26,11 +27,6 @@ interface Extras {
 }
 
 const fail = reportError
-
-const open = () => {
-  const { game, openId } = useProfiles.getState()
-  return game && openId ? { game: game.id, id: openId } : null
-}
 
 async function redoUpdate(game: string, id: string, key: string) {
   try {
@@ -84,7 +80,7 @@ export const useDetail = create<{
   },
   setOpen: (isOpen) => set({ open: isOpen }),
   loadExtras: async (mod) => {
-    const target = open()
+    const target = openTarget()
     if (!target) {
       return
     }
@@ -101,7 +97,7 @@ export const useDetail = create<{
     }
   },
   rollBack: async (mod) => {
-    const target = open()
+    const target = openTarget()
     if (!target) {
       return
     }
@@ -136,7 +132,7 @@ export const useDetail = create<{
     await useMods.getState().load()
   },
   resetConfig: async (mod) => {
-    const target = open()
+    const target = openTarget()
     if (!target) {
       return
     }

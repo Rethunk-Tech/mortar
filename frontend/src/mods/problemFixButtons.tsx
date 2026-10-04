@@ -15,7 +15,6 @@ import { reportUnexpected } from '../toasts/report.ts'
 import type { Problem } from './lookup.ts'
 import { AssetFix } from './problemFix/AssetFix.tsx'
 import { BrokenFix } from './problemFix/BrokenFix.tsx'
-import { DismissedBrokenFix } from './problemFix/DismissedBrokenFix.tsx'
 import { DuplicateFix } from './problemFix/DuplicateFix.tsx'
 import { MissingFix } from './problemFix/MissingFix.tsx'
 import { SettingFix } from './problemFix/SettingFix.tsx'
@@ -24,6 +23,7 @@ import type { WarningButton } from './problemFix/warningButton.tsx'
 import { useWarningButton } from './problemFix/warningButton.tsx'
 import { RunErrorButtons } from './runErrorFixButtons.tsx'
 import { useMods } from './store.ts'
+import { openTarget } from './storeView.ts'
 import { useLocked } from './useLocked.ts'
 
 interface KindProps<K extends Problem['kind']> {
@@ -41,10 +41,7 @@ function DuplicateKind({ problem, button }: KindProps<'duplicate'>) {
 }
 
 function BrokenKind({ problem, dismissedToken, button }: KindProps<'broken'>) {
-  if (dismissedToken !== undefined) {
-    return <DismissedBrokenFix problem={problem} dismissedToken={dismissedToken} button={button} />
-  }
-  return <BrokenFix problem={problem} button={button} />
+  return <BrokenFix problem={problem} dismissedToken={dismissedToken} button={button} />
 }
 
 function SettingKind({ problem, dismissedToken }: KindProps<'setting'>) {
@@ -95,10 +92,6 @@ export function DriftButtons({ drift }: { drift: Drift }) {
   const load = useMods((s) => s.load)
   const replace = useProfiles((s) => s.replace)
   const locked = useLocked()
-  const target = () => {
-    const { game, openId } = useProfiles.getState()
-    return game && openId ? { game: game.id, id: openId } : null
-  }
   const run = (work: () => Promise<unknown>) => {
     work()
       .then(() => load())
@@ -121,7 +114,7 @@ export function DriftButtons({ drift }: { drift: Drift }) {
       <>
         {button(t`Adopt`, () =>
           run(async () => {
-            const open = target()
+            const open = openTarget()
             if (!open) {
               return
             }
@@ -130,7 +123,7 @@ export function DriftButtons({ drift }: { drift: Drift }) {
         )}
         {button(t`Remove`, () =>
           run(async () => {
-            const open = target()
+            const open = openTarget()
             if (!open) {
               return
             }
@@ -145,7 +138,7 @@ export function DriftButtons({ drift }: { drift: Drift }) {
       <>
         {button(t`Restore`, () =>
           run(async () => {
-            const open = target()
+            const open = openTarget()
             if (!open) {
               return
             }
@@ -154,7 +147,7 @@ export function DriftButtons({ drift }: { drift: Drift }) {
         )}
         {button(t`Forget`, () =>
           run(async () => {
-            const open = target()
+            const open = openTarget()
             if (!open) {
               return
             }
@@ -168,7 +161,7 @@ export function DriftButtons({ drift }: { drift: Drift }) {
     <>
       {button(t`Keep my changes`, () =>
         run(async () => {
-          const open = target()
+          const open = openTarget()
           if (!open) {
             return
           }
@@ -177,7 +170,7 @@ export function DriftButtons({ drift }: { drift: Drift }) {
       )}
       {button(t`Revert`, () =>
         run(async () => {
-          const open = target()
+          const open = openTarget()
           if (!open) {
             return
           }

@@ -18,7 +18,6 @@ import {
   ReadContentSchema,
   WriteConfig,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { MONO } from '../theme/theme.ts'
@@ -29,16 +28,12 @@ import { applyCPSchema, parseCPSchema } from './configFields.ts'
 import { type ConfigNode, parseConfig, setAt, stringifyConfig } from './configForm.ts'
 import { Fields } from './configFormUi.tsx'
 import { MenuHint, MenuPages } from './configMenuUi.tsx'
+import { openTarget } from './storeView.ts'
 import { useGmcmMenu } from './useGmcmMenu.ts'
 import { useLocked } from './useLocked.ts'
 
 const text = { fontSize: 13 } as const
 const cpFor = 'Pathoschild.ContentPatcher'
-
-function openTarget() {
-  const { game, openId } = useProfiles.getState()
-  return game && openId ? { game: game.id, id: openId } : null
-}
 
 function parseSchema(raw: string): ReturnType<typeof parseCPSchema> {
   try {

@@ -1,4 +1,4 @@
-import { msg } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import type {
   Mod,
   Profile,
@@ -41,7 +41,7 @@ import { enableRequirementsDecision, pendingRequired } from './enableRequirement
 import { considerEnableRequirements } from './enableRequirementsApply.ts'
 import { modId } from './lookup.ts'
 import { useSelection } from './selection.ts'
-import { announceAlso, open } from './storeView.ts'
+import { announceAlso, openTarget } from './storeView.ts'
 import { useUpdates } from './updates.ts'
 
 function pushFieldsUndo(
@@ -56,7 +56,7 @@ function pushFieldsUndo(
       label: i18n._(msg`Undo`),
       profileId,
       run: async () => {
-        const target = open()
+        const target = openTarget()
         if (!target) {
           return
         }
@@ -86,14 +86,16 @@ function pushRemovedUndo(
   useToasts.getState().push({
     kind: 'success',
     title:
-      entries.length === 1
-        ? i18n._(msg`Removed ${first?.mods?.[0]?.name ?? 'mod'}`)
-        : i18n._(msg`Removed ${entries.length} mods`),
+      new Set(uniqueIds).size === 1 && first?.mods?.[0]?.name
+        ? i18n._(msg`Removed ${first.mods[0].name}`)
+        : i18n._(
+            msg`${plural(new Set(uniqueIds).size, { one: 'Removed # mod', other: 'Removed # mods' })}`,
+          ),
     action: {
       label: i18n._(msg`Undo`),
       profileId,
       run: async () => {
-        const target = open()
+        const target = openTarget()
         if (!target) {
           return
         }
@@ -120,7 +122,7 @@ async function batchProfile(
   title: string,
   done?: string,
 ) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -145,7 +147,7 @@ export async function enableMany(
   mods: Mod[],
   enabled: boolean,
 ) {
-  const target = open()
+  const target = openTarget()
   if (!target || mods.length === 0) {
     return
   }
@@ -196,7 +198,7 @@ export async function enableMany(
 }
 
 export async function dropMods(get: () => { load: () => Promise<void> }, mods: Mod[]) {
-  const target = open()
+  const target = openTarget()
   if (!target || mods.length === 0) {
     return
   }
@@ -214,7 +216,7 @@ export async function dropMods(get: () => { load: () => Promise<void> }, mods: M
 }
 
 export async function dropMod(get: () => { load: () => Promise<void> }, mod: Mod) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -231,7 +233,7 @@ export async function dropMod(get: () => { load: () => Promise<void> }, mod: Mod
 }
 
 export async function setEntryNoteTags(mod: Mod, note: string, tags: string[]) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -250,7 +252,7 @@ export async function setEnabledAction(
   mod: Mod,
   enabled: boolean,
 ) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -286,7 +288,7 @@ export async function setEnabledAction(
 }
 
 export async function pinMod(mod: Mod, pinned: boolean, pinReason = '') {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -313,7 +315,7 @@ export function pinMany(mods: Mod[], pinned: boolean, pinReason = '') {
 }
 
 export async function skipVersion(mod: Mod, version: string) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -333,7 +335,7 @@ export async function skipVersion(mod: Mod, version: string) {
 }
 
 export async function setUpdateChannel(mod: Mod, channel: string) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -361,7 +363,7 @@ export function skipVersionMany(mods: Mod[]) {
 }
 
 export async function skipSource(mod: Mod, source: string, skip: boolean) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -388,7 +390,7 @@ export function setTagMany(mods: Mod[], tag: string, add: boolean) {
 }
 
 export async function showModFiles(mod: Mod) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -400,7 +402,7 @@ export async function showModFiles(mod: Mod) {
 }
 
 export async function openModConfig(mod: Mod) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -412,7 +414,7 @@ export async function openModConfig(mod: Mod) {
 }
 
 export async function addModToGroup(key: string, name: string) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
@@ -424,7 +426,7 @@ export async function addModToGroup(key: string, name: string) {
 }
 
 export async function setGroupEnabled(name: string, on: boolean) {
-  const target = open()
+  const target = openTarget()
   if (!target) {
     return
   }
