@@ -17,8 +17,13 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
-// sameJobScore is how much of the larger footprint, by member weight, two mods must share to be flagged.
-const sameJobScore = 0.45
+// sameJobScore is how much of the larger footprint, by member weight, two mods must share to be flagged. They must
+// also share a member written by at most sameJobDistinctDF mods: a member most mods write, such as the open menu,
+// says nothing about the job even when it is all two small footprints hold.
+const (
+	sameJobScore      = 0.45
+	sameJobDistinctDF = 12
+)
 
 // Below sameJobSmall code mods the member weights are too noisy to score, so a pair is flagged only when one
 // footprint sits inside the other and every shared member is written by at most sameJobRare mods.
@@ -143,12 +148,13 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 			}
 			var both []string
 			sum := 0.0
-			common := 0
+			common, rarest := 0, n
 			for member := range fp[ida] {
 				if fp[idb][member] {
 					both = append(both, member)
 					sum += weight(member)
 					common = max(common, df[member])
+					rarest = min(rarest, df[member])
 				}
 			}
 			if len(both) == 0 {
@@ -158,7 +164,7 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 			if n < sameJobSmall {
 				similar = common <= sameJobRare && len(both) == min(len(fp[ida]), len(fp[idb]))
 			} else {
-				similar = sum > 0 && sum >= sameJobScore*max(total[ida], total[idb])
+				similar = sum > 0 && rarest <= sameJobDistinctDF && sum >= sameJobScore*max(total[ida], total[idb])
 			}
 			if similar {
 				by[ida] = append(by[ida], ModRef{Key: b.Key, Name: b.Name})
@@ -229,7 +235,7 @@ func shortMembers(members map[string]bool, weight func(string) float64) string {
 	return strings.Join(names, ", ")
 }
 
-const assemblyCacheVersion = 1
+const assemblyCacheVersion = 2
 
 type assemblyEntry struct {
 	Size   int64    `json:"size"`

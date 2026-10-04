@@ -72,8 +72,14 @@ func TestSameJobWeighsMembersByHowFewModsWriteThem(t *testing.T) {
 	add("q2", "Quill", []string{"Q1"}, "Q::q")
 	add("r1", "Ray", nil, "R::r")
 	add("r2", "Rex", nil, "R::r")
+	add("m1", "Mia", nil, "M::menu")
+	add("m2", "Max", nil, "M::menu")
 	for i := range 20 {
-		add(fmt.Sprint("filler", i), "", []string{"r1"}, fmt.Sprint("F::", i))
+		if i < 11 {
+			add(fmt.Sprint("filler", i), "", []string{"r1"}, fmt.Sprint("F::", i), "M::menu")
+		} else {
+			add(fmt.Sprint("filler", i), "", []string{"r1"}, fmt.Sprint("F::", i))
+		}
 	}
 	mods = append(mods, Installed{Key: "off", UniqueID: "off"})
 	fp["off"] = map[string]bool{"T::tool": true}

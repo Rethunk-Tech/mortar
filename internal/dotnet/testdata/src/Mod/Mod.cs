@@ -1,4 +1,7 @@
+using System.Collections.Generic;
 using StardewValley;
+using StardewValley.Buffs;
+using StardewValley.Menus;
 
 namespace Fixture
 {
@@ -29,6 +32,28 @@ namespace Fixture
         }
 
         public void Pockets(Farmer.Pocket pocket) => pocket.Count = 3;
+
+        public BuffEffects Effects() => new BuffEffects { Speed = 2, Defense = { Value = 3 } };
+
+        public ClickableComponent Component(List<ClickableComponent> into)
+        {
+            var built = new ClickableTextureComponent();
+            built.myID = 1;
+            into.Add(built);
+            built.leftNeighborID = 2;
+            return built;
+        }
+
+        public void Neighbours(bool current)
+        {
+            Game1.CurrentComponent.upNeighborID = 3;
+            var either = new ClickableComponent();
+            if (current)
+            {
+                either = Game1.CurrentComponent;
+            }
+            either.rightNeighborID = 4;
+        }
 
         public int Read(Farmer farmer) => farmer.CurrentToolIndex + farmer.maxHealth.Value + this.own;
     }

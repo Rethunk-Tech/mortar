@@ -35,5 +35,34 @@ namespace StardewValley
     {
         public static Farmer player = new Farmer();
         public static float flashAlpha;
+
+        public static Menus.ClickableComponent CurrentComponent { get; } = new Menus.ClickableComponent();
+    }
+}
+
+namespace StardewValley.Buffs
+{
+    using Netcode;
+
+    public class BuffEffects
+    {
+        public readonly NetInt Defense = new NetInt();
+
+        public int Speed { get; set; }
+    }
+}
+
+namespace StardewValley.Menus
+{
+    public class ClickableComponent
+    {
+        public int myID;
+        public int leftNeighborID;
+        public int rightNeighborID;
+        public int upNeighborID;
+    }
+
+    public class ClickableTextureComponent : ClickableComponent
+    {
     }
 }

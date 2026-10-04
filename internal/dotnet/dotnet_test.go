@@ -8,7 +8,8 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
-// testdata/mod.dll is compiled from testdata/src (rebuild with testdata/src/build.sh).
+// testdata/mod.dll is compiled from testdata/src (rebuild with testdata/src/build.sh). Its BuffEffects writes and the
+// myID and leftNeighborID stores go to objects the mod builds, so they are left out.
 func TestWritesListsGameMembersTheAssemblyAssigns(t *testing.T) {
 	got, err := Writes(filepath.Join("testdata", "mod.dll"), "StardewValley", "Netcode")
 	if err != nil {
@@ -21,6 +22,8 @@ func TestWritesListsGameMembersTheAssemblyAssigns(t *testing.T) {
 		"StardewValley.Farmer::health",
 		"StardewValley.Farmer::stamina",
 		"StardewValley.Game1::flashAlpha",
+		"StardewValley.Menus.ClickableComponent::rightNeighborID",
+		"StardewValley.Menus.ClickableComponent::upNeighborID",
 	}
 	if !slices.Equal(got, want) {
 		t.Fatalf("writes = %q\nwant     %q", got, want)
