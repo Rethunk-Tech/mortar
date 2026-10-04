@@ -1,9 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, LinearProgress } from '@mui/material'
 import { FolderInput } from 'lucide-react'
-import { State } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
+import { gameBusy } from '../../launch/busy.ts'
 import { useLaunch } from '../../launch/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
@@ -27,8 +27,7 @@ export function MoveDataButton({
         variant="outlined"
         startIcon={<FolderInput size={16} />}
         onClick={() => {
-          const st = useLaunch.getState().status
-          if (st?.state === State.Launching || st?.state === State.Running) {
+          if (gameBusy(useLaunch.getState().status)) {
             useToasts.getState().push({
               kind: 'error',
               title: t`Stop the game before moving the data folder.`,

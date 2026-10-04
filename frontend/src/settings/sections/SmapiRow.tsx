@@ -4,10 +4,9 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
 import { Download } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { State } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { ListVersions } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/loadersvc/service.ts'
 import { SetByKey } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
-import { useLaunch } from '../../launch/store.ts'
+import { useGameBusy, useLaunch } from '../../launch/store.ts'
 import { InstallSteps } from '../../loader/InstallSteps.tsx'
 import { useLoader } from '../../loader/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
@@ -53,12 +52,7 @@ function SmapiRow({ onVersion }: { onVersion: (v: string) => void }) {
   const installing = useLoader((s) => s.installing)
   const steps = useLoader((s) => s.steps)
   const refreshLaunch = useLaunch((s) => s.refresh)
-  const playing = useLaunch(
-    (s) =>
-      s.starting ||
-      (s.status?.game === GAME_STARDEW &&
-        (s.status.state === State.Launching || s.status.state === State.Running)),
-  )
+  const playing = useGameBusy(GAME_STARDEW)
   const [versions, setVersions] = useState<string[]>([])
   const [confirm, setConfirm] = useState(false)
   const [busy, setBusy] = useState(false)

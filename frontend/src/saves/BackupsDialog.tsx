@@ -17,10 +17,9 @@ import type {
   Backup,
   Snap,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/backup/models.ts'
-import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
-import { useLaunch } from '../launch/store.ts'
+import { useGameBusy } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -129,9 +128,7 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
   const { items, status, error, load, restore, setPinned, openFolder } = useSaveBackups()
   const profiles = useProfiles((s) => s.profiles)
   const fits = useSaves((s) => s.fits)
-  const busyGame = useLaunch(
-    (s) => s.starting || s.status?.state === State.Launching || s.status?.state === State.Running,
-  )
+  const busyGame = useGameBusy()
   const [pending, run] = usePending()
   const [menu, setMenu] = useState<{ backup: Backup; el: HTMLElement } | null>(null)
   const [confirm, setConfirm] = useState<{ backup: Backup; snaps: Snap[] } | null>(null)
