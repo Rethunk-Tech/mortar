@@ -62,7 +62,7 @@ func (s *Service) finishWait(g game.Game, x launch.Exit) {
 func (s *Service) awaitPID(g game.Game, profileID string) {
 	for {
 		cur := s.current(g.ID())
-		if cur.State != Running && cur.State != Launching {
+		if !cur.State.Active() {
 			return
 		}
 		var procs []launch.Process

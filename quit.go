@@ -31,7 +31,7 @@ func (s *QuitService) BusySummary() string {
 		return "Downloads and the running game will be interrupted"
 	}
 	status, err := s.launch.Status("stardew")
-	if err == nil && (status.State == launchsvc.Launching || status.State == launchsvc.Running) {
+	if err == nil && status.State.Active() {
 		return "Downloads and the running game will be interrupted"
 	}
 	return ""

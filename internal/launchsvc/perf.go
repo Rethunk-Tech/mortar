@@ -141,7 +141,7 @@ func readPerformanceReports(dir string) (performanceReportsIndex, error) {
 func (s *Service) activeRunID(gameID, profileID string) string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if status, ok := s.status[gameID]; !ok || (status.State != Launching && status.State != Running) || status.Profile != profileID {
+	if status, ok := s.status[gameID]; !ok || !status.State.Active() || status.Profile != profileID {
 		return ""
 	}
 	session, ok := s.logs[gameID]

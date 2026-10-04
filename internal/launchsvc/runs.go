@@ -384,27 +384,6 @@ func (s *Service) cause(gameID, profileID, text string) Cause {
 	if cause, ok := missingFileCause(mods, modsDir, lines); ok {
 		return cause
 	}
-	for _, line := range lines {
-		if !strings.Contains(line, "DirectoryNotFoundException") &&
-			!strings.Contains(line, "FileNotFoundException") &&
-			!strings.Contains(line, "Could not find a part of the path") {
-			continue
-		}
-		path := extractQuotedPath(line)
-		if path == "" || !pathWithin(path, modsDir) {
-			continue
-		}
-		rel, _ := filepath.Rel(modsDir, path)
-		key, _, _ := strings.Cut(rel, string(filepath.Separator))
-		for _, mod := range mods {
-			if mod.Key == key {
-				return Cause{
-					ModKey: mod.Key, ModName: mod.Name, UniqueID: mod.UniqueID, Reason: "missing-file",
-					Detail: fmt.Sprintf("%s: a file it needs could not be opened. Reinstall it.", mod.Name), Path: path,
-				}
-			}
-		}
-	}
 	asset := ""
 	for _, line := range lines {
 		if rest, _, ok := strings.Cut(line, "Failed loading asset '"); ok {

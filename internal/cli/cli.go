@@ -1856,7 +1856,7 @@ func (c *cmd) launch(p control.Params) error {
 	if !c.json {
 		fmt.Fprintf(c.out, "%s is %s; waiting for it to close.\n", p.Game, st.State)
 	}
-	for st.State == launchsvc.Running || st.State == launchsvc.Launching {
+	for st.State.Active() {
 		time.Sleep(2 * time.Second)
 		if err := c.ask("status", control.Params{Game: p.Game}, &st, readTimeout); err != nil {
 			return err

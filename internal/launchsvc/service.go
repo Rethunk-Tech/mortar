@@ -50,6 +50,9 @@ const (
 // State is where a game is in its launch.
 type State string
 
+// Active reports whether the game is starting or running.
+func (s State) Active() bool { return s == Launching || s == Running }
+
 const (
 	Idle      State = "idle"
 	Launching State = "launching"
@@ -415,7 +418,7 @@ func (s *Service) start(parent context.Context, gameID, profileID string, direct
 	s.mu.Lock()
 	cur := s.status[gameID]
 	_, busy := s.preparing[gameID]
-	busy = busy || cur.State == Launching || cur.State == Running
+	busy = busy || cur.State.Active()
 	if !busy {
 		s.preparing[gameID] = profileID
 	}
@@ -497,7 +500,7 @@ func (s *Service) StartVanilla(gameID string, direct bool) error {
 	s.mu.Lock()
 	cur := s.status[gameID]
 	_, busy := s.preparing[gameID]
-	busy = busy || cur.State == Launching || cur.State == Running
+	busy = busy || cur.State.Active()
 	if !busy {
 		s.preparing[gameID] = ""
 	}
@@ -592,7 +595,7 @@ func (s *Service) donePreparing(gameID string) {
 	delete(s.preparing, gameID)
 	st := s.status[gameID]
 	s.mu.Unlock()
-	if st.State != Launching && st.State != Running && s.Unlocked != nil {
+	if !st.State.Active() && s.Unlocked != nil {
 		s.Unlocked()
 	}
 }

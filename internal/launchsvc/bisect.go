@@ -167,7 +167,7 @@ func (s *Service) launchesDirect(gameID, profileID string) bool {
 
 func (s *Service) stopBisectRun(gameID string) error {
 	status, err := s.Status(gameID)
-	if err != nil || (status.State != Running && status.State != Launching) {
+	if err != nil || !status.State.Active() {
 		return err
 	}
 	if status.State == Running {
