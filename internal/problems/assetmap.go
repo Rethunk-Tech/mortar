@@ -422,7 +422,7 @@ func dataKeysOf(p cpPatch) []string {
 }
 
 // indexWinner follows Content Patcher's order (touches are sorted by SMAPI load order). Edits apply by
-// priority, then load order, then patch order (docs/author-guide/action-editdata.md, Priority), so the
+// priority, then load order, then patch order (Content Patcher's EditData author guide, Priority), so the
 // highest priority wins and a tie goes to the mod loaded last. Loads keep the highest priority; on a tie
 // PatchManager.ApplyPatchesToAsset replaces its pick with each later candidate, so the last loaded wins too
 // (the Load docs say "first", but the code only skips a strictly higher priority). Two Exclusive loads
