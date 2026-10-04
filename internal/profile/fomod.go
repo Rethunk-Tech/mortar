@@ -364,7 +364,7 @@ func (s *Store) InstallFomod(game, id, key string, source Source, choices map[st
 
 func (s *Store) applyFomod(game, id, key string, choices map[string]map[string][]string) (Profile, error) {
 	return s.updateMods(game, id, func(p *Profile, dir string) error {
-		ei := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == key })
+		ei := entryIndex(p.Entries, key)
 		if ei < 0 {
 			return fmt.Errorf("%q is not in this profile", key)
 		}

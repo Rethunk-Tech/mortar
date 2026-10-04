@@ -61,14 +61,7 @@ type historyFileData struct {
 func (s *Store) History(game, id string) ([]HistoryEvent, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if _, err := s.read(game, id); err != nil {
-		return nil, err
-	}
-	dir, err := s.profileDir(game, id)
-	if err != nil {
-		return nil, err
-	}
-	data, err := readHistory(dir)
+	data, err := s.loadHistory(game, id)
 	if err != nil {
 		return nil, err
 	}
@@ -142,14 +135,7 @@ func (s *Store) recentHistory(game string, limit int) ([]RecentEvent, error) {
 func (s *Store) Snapshot(game, id, snapshotID string) ([]Entry, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if _, err := s.read(game, id); err != nil {
-		return nil, err
-	}
-	dir, err := s.profileDir(game, id)
-	if err != nil {
-		return nil, err
-	}
-	data, err := readHistory(dir)
+	data, err := s.loadHistory(game, id)
 	if err != nil {
 		return nil, err
 	}
@@ -596,6 +582,18 @@ func latestSnapshotAt(dir string) ([]Entry, bool) {
 		return nil, false
 	}
 	return latestSnapshotOf(data)
+}
+
+// loadHistory reads the history of a profile that must exist; callers hold s.mu.
+func (s *Store) loadHistory(game, id string) (historyFileData, error) {
+	if _, err := s.read(game, id); err != nil {
+		return historyFileData{}, err
+	}
+	dir, err := s.profileDir(game, id)
+	if err != nil {
+		return historyFileData{}, err
+	}
+	return readHistory(dir)
 }
 
 func readHistory(dir string) (historyFileData, error) {

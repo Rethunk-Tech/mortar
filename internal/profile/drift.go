@@ -514,7 +514,7 @@ func (s *Store) refreshSnapshotKey(game, id, key string) error {
 
 func (s *Store) restoreDriftEntry(game, id, key string) (Profile, error) {
 	return s.updateMods(game, id, func(p *Profile, dir string) error {
-		i := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == key })
+		i := entryIndex(p.Entries, key)
 		if i < 0 {
 			return fmt.Errorf("%q is not in this profile", key)
 		}
@@ -530,7 +530,7 @@ func (s *Store) restoreDriftEntry(game, id, key string) (Profile, error) {
 
 func (s *Store) revertDriftEntry(game, id, key string) (Profile, error) {
 	return s.updateMods(game, id, func(p *Profile, dir string) error {
-		i := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == key })
+		i := entryIndex(p.Entries, key)
 		if i < 0 {
 			return fmt.Errorf("%q is not in this profile", key)
 		}

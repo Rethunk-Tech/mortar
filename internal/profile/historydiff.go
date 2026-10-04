@@ -81,14 +81,7 @@ type HistoryItem struct {
 func (s *Store) HistoryDiff(game, id, a, b string) (HistoryDiff, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if _, err := s.read(game, id); err != nil {
-		return HistoryDiff{}, err
-	}
-	dir, err := s.profileDir(game, id)
-	if err != nil {
-		return HistoryDiff{}, err
-	}
-	data, err := readHistory(dir)
+	data, err := s.loadHistory(game, id)
 	if err != nil {
 		return HistoryDiff{}, err
 	}
@@ -100,9 +93,9 @@ func (s *Store) HistoryDiff(game, id, a, b string) (HistoryDiff, error) {
 	if !ok {
 		return HistoryDiff{}, fmt.Errorf("history snapshot %s not found", b)
 	}
-	cfgA := loadHistoryConfigs(dir, snapshotHash(data, a), before)
-	cfgB := loadHistoryConfigs(dir, snapshotHash(data, b), after)
-	overlayLiveIfCurrent(dir, data, after, cfgB)
+	cfgA := loadHistoryConfigs(data.dir, snapshotHash(data, a), before)
+	cfgB := loadHistoryConfigs(data.dir, snapshotHash(data, b), after)
+	overlayLiveIfCurrent(data.dir, data, after, cfgB)
 	return DiffSnapshots(a, b, before, after, cfgA, cfgB), nil
 }
 

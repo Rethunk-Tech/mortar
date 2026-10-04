@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
@@ -23,7 +24,7 @@ func (s *Store) SetWinner(game, profileID, winnerKey, loserUniqueID string, on b
 		drop = []string{loserUniqueID}
 	}
 	return s.updateMods(game, profileID, func(p *Profile, dir string) error {
-		i := entryIndex(*p, winnerKey)
+		i := entryIndex(p.Entries, winnerKey)
 		if i < 0 {
 			return fmt.Errorf("mod %q is not in this profile", winnerKey)
 		}
@@ -39,13 +40,8 @@ func (s *Service) SetWinner(game, profileID, winnerKey, loserUniqueID string, on
 	return s.store.SetWinner(game, profileID, winnerKey, loserUniqueID, on)
 }
 
-func entryIndex(p Profile, key string) int {
-	for i, e := range p.Entries {
-		if e.Key == key {
-			return i
-		}
-	}
-	return -1
+func entryIndex(entries []Entry, key string) int {
+	return slices.IndexFunc(entries, func(e Entry) bool { return e.Key == key })
 }
 
 func setLoadAfter(ids []string, loser string, on bool) []string {

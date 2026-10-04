@@ -357,7 +357,7 @@ func entryLabel(e Entry) string {
 
 // removeFrom deletes the entry's folder and drops it from the profile.
 func removeFrom(p *Profile, dir, key string) error {
-	i := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == key })
+	i := entryIndex(p.Entries, key)
 	if i < 0 {
 		return fmt.Errorf("%q is not in this profile", key)
 	}
@@ -374,7 +374,7 @@ func removeFrom(p *Profile, dir, key string) error {
 
 // RemoveEntries deletes each named entry's folder and drops it from the profile, one write.
 func (s *Store) RemoveEntries(game, id string, keys []string) (Profile, error) {
-	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
+	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
 		seen := map[string]bool{}
 		for _, key := range keys {
 			if seen[key] {
@@ -390,6 +390,15 @@ func (s *Store) RemoveEntries(game, id string, keys []string) (Profile, error) {
 		}
 		return nil
 	})
+	if err != nil {
+		return Profile{}, err
+	}
+	return p, nil
+}
+
+// updateModsRecorded is updateMods followed by a mods/ snapshot, for changes that write the profile's mods.
+func (s *Store) updateModsRecorded(game, id string, fn func(p *Profile, dir string) error) (Profile, error) {
+	p, err := s.updateMods(game, id, fn)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -437,7 +446,7 @@ func (s *Store) RestoreEntries(game, id string, entries []Entry) (Profile, error
 		p, err := s.read(game, id)
 		return p, err
 	}
-	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
+	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
 		for _, want := range entries {
 			if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == want.Key }) {
 				continue
@@ -467,24 +476,18 @@ func (s *Store) RestoreEntries(game, id string, entries []Entry) (Profile, error
 	if err != nil {
 		return Profile{}, err
 	}
-	if err := s.RecordModsSnapshot(game, id); err != nil {
-		return Profile{}, err
-	}
 	return p, nil
 }
 
 // RemoveEntry deletes the entry's folder and drops it from the profile.
 func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
-	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
+	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
 		if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && isBundled(e) }) {
 			return errors.New("the bundled mods are needed by every profile and cannot be removed")
 		}
 		return removeFrom(p, dir, key)
 	})
 	if err != nil {
-		return Profile{}, err
-	}
-	if err := s.RecordModsSnapshot(game, id); err != nil {
 		return Profile{}, err
 	}
 	return p, nil

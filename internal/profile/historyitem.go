@@ -33,14 +33,7 @@ func (s *Store) RevertHistoryItem(game, id, eventID, item string) (Profile, erro
 func (s *Store) eventDiff(game, id, eventID string) ([]Entry, string, HistoryDiff, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if _, err := s.read(game, id); err != nil {
-		return nil, "", HistoryDiff{}, err
-	}
-	dir, err := s.profileDir(game, id)
-	if err != nil {
-		return nil, "", HistoryDiff{}, err
-	}
-	data, err := readHistory(dir)
+	data, err := s.loadHistory(game, id)
 	if err != nil {
 		return nil, "", HistoryDiff{}, err
 	}
@@ -52,8 +45,8 @@ func (s *Store) eventDiff(game, id, eventID string) ([]Entry, string, HistoryDif
 	if !ok {
 		return nil, "", HistoryDiff{}, fmt.Errorf("history snapshot %s not found", ev.SnapshotID)
 	}
-	cfgA := loadHistoryConfigs(dir, beforeID, before)
-	cfgB := loadHistoryConfigs(dir, ev.SnapshotID, after)
+	cfgA := loadHistoryConfigs(data.dir, beforeID, before)
+	cfgB := loadHistoryConfigs(data.dir, ev.SnapshotID, after)
 	return before, beforeID, DiffSnapshots(beforeID, ev.ID, before, after, cfgA, cfgB), nil
 }
 

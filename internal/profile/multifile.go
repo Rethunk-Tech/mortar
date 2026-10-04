@@ -61,13 +61,10 @@ func NewestFromPage(p Profile, modID int) int {
 
 // AddExtra copies extraKey into mods/<entryKey>/<extraKey>/ and records it on the entry.
 func (s *Store) AddExtra(game, id, entryKey, extraKey string, source Source) (Profile, error) {
-	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
+	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
 		return s.addExtraLocked(game, p, dir, entryKey, extraKey, source)
 	})
 	if err != nil {
-		return Profile{}, err
-	}
-	if err := s.RecordModsSnapshot(game, id); err != nil {
 		return Profile{}, err
 	}
 	return p, s.items.Touch(game, extraKey)
@@ -75,8 +72,8 @@ func (s *Store) AddExtra(game, id, entryKey, extraKey string, source Source) (Pr
 
 // SplitExtra turns extraKey into its own profile entry, as a separate install of that store item would.
 func (s *Store) SplitExtra(game, id, entryKey, extraKey string) (Profile, error) {
-	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
-		ei := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == entryKey })
+	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
+		ei := entryIndex(p.Entries, entryKey)
 		if ei < 0 {
 			return fmt.Errorf("%q is not in this profile", entryKey)
 		}
@@ -107,20 +104,17 @@ func (s *Store) SplitExtra(game, id, entryKey, extraKey string) (Profile, error)
 	if err != nil {
 		return Profile{}, err
 	}
-	if err := s.RecordModsSnapshot(game, id); err != nil {
-		return Profile{}, err
-	}
 	return p, s.items.Touch(game, extraKey)
 }
 
 // CombineEntries attaches otherKey as an extra file of targetKey when both are from the same Nexus page.
 func (s *Store) CombineEntries(game, id, targetKey, otherKey string) (Profile, error) {
-	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
+	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
 		if targetKey == "" || otherKey == "" || targetKey == otherKey {
 			return fmt.Errorf("cannot combine %q with %q", targetKey, otherKey)
 		}
-		ti := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == targetKey })
-		oi := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == otherKey })
+		ti := entryIndex(p.Entries, targetKey)
+		oi := entryIndex(p.Entries, otherKey)
 		if ti < 0 {
 			return fmt.Errorf("%q is not in this profile", targetKey)
 		}
@@ -140,9 +134,6 @@ func (s *Store) CombineEntries(game, id, targetKey, otherKey string) (Profile, e
 		return s.addExtraLocked(game, p, dir, targetKey, otherKey, other.Source.WithFomod(other.Fomod).WithDisabled(other.Disabled))
 	})
 	if err != nil {
-		return Profile{}, err
-	}
-	if err := s.RecordModsSnapshot(game, id); err != nil {
 		return Profile{}, err
 	}
 	return p, s.items.Touch(game, otherKey)
@@ -173,7 +164,7 @@ func extraDisabled(e Entry, extraKey string) []string {
 }
 
 func (s *Store) addExtraLocked(game string, p *Profile, dir, entryKey, extraKey string, source Source) error {
-	ei := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == entryKey })
+	ei := entryIndex(p.Entries, entryKey)
 	if ei < 0 {
 		return fmt.Errorf("%q is not in this profile", entryKey)
 	}
@@ -191,8 +182,8 @@ func (s *Store) addExtraLocked(game string, p *Profile, dir, entryKey, extraKey 
 
 // UpdateExtra replaces one extra store item on an entry with another.
 func (s *Store) UpdateExtra(game, id, entryKey, oldExtra, newExtra string) (Profile, error) {
-	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
-		ei := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == entryKey })
+	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
+		ei := entryIndex(p.Entries, entryKey)
 		if ei < 0 {
 			return fmt.Errorf("%q is not in this profile", entryKey)
 		}
@@ -213,18 +204,13 @@ func (s *Store) UpdateExtra(game, id, entryKey, oldExtra, newExtra string) (Prof
 		if err := s.fillOneExtraUpdate(game, p.ID, entryDir, entryDir, oldExtra, newExtra, *e); err != nil {
 			return err
 		}
-		if oldExtra != newExtra {
-			if err := os.RemoveAll(filepath.Join(entryDir, oldExtra)); err != nil {
-				return err
-			}
+		if err := os.RemoveAll(filepath.Join(entryDir, oldExtra)); err != nil {
+			return err
 		}
 		e.ExtraStoreKeys[xi] = newExtra
 		return s.refreshEntryMods(e, entryDir)
 	})
 	if err != nil {
-		return Profile{}, err
-	}
-	if err := s.RecordModsSnapshot(game, id); err != nil {
 		return Profile{}, err
 	}
 	return p, s.items.Touch(game, newExtra)

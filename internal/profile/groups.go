@@ -118,7 +118,7 @@ func (s *Store) AddToGroup(game, id, name, key string) (Profile, error) {
 		return Profile{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("entry key is empty"))
 	}
 	return s.update(game, id, func(p *Profile, _ string) error {
-		if slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == key }) < 0 {
+		if entryIndex(p.Entries, key) < 0 {
 			return usererr.Wrap(usererr.NotFound, fmt.Errorf("entry %q not found", key))
 		}
 		idx := p.groupIndex(name)
@@ -167,7 +167,7 @@ func (s *Store) SetGroupEnabled(game, id, name string, on bool) (Profile, error)
 			return usererr.Wrap(usererr.NotFound, fmt.Errorf("group %q not found", name))
 		}
 		for _, key := range p.Groups[idx].Keys {
-			ei := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == key })
+			ei := entryIndex(p.Entries, key)
 			if ei < 0 {
 				continue
 			}
