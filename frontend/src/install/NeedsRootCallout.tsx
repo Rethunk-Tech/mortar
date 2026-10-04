@@ -49,7 +49,7 @@ export function NeedsRootCallout({ item }: { item: Item }) {
             queueId: item.id,
           })
         }
-        sx={{ alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
+        sx={{ alignSelf: 'flex-start' }}
       >
         {variants ? t`Choose variant…` : t`Choose folder…`}
       </Button>

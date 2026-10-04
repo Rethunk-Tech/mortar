@@ -108,7 +108,7 @@ export function MenuPages({
         </Box>
       ) : null}
       {Object.keys(drafts).length > 0 ? (
-        <Button onClick={onDiscard} sx={{ alignSelf: 'flex-start', whiteSpace: 'nowrap' }}>
+        <Button onClick={onDiscard} sx={{ alignSelf: 'flex-start' }}>
           {t`Discard pending`}
         </Button>
       ) : null}

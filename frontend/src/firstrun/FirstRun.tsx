@@ -95,7 +95,7 @@ export function FirstRun() {
           variant="contained"
           disabled={busy}
           onClick={finish}
-          sx={{ height: 46, px: 4, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
+          sx={{ height: 46, px: 4, fontSize: 16, fontWeight: 700 }}
         >
           {t`Continue`}
         </Button>

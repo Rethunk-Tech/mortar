@@ -215,7 +215,7 @@ function OverlayHowTo({
             globalThis.setTimeout(() => setDone(false), COPIED_MS)
           })
         }}
-        sx={{ textTransform: 'none', ml: 1 }}
+        sx={{ ml: 1 }}
       >
         {done ? copied : t`Copy CSS`}
       </Button>

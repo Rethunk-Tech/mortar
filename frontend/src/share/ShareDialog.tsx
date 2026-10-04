@@ -314,7 +314,7 @@ function CopyModList() {
             }
             copyText(parts[0]?.text ?? '', t`Mod list copied`)
           }}
-          sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
+          sx={{ height: 40, px: '14px', fontSize: 14 }}
         >
           {parts.length > 1 ? t`Copy mod list (${parts.length} parts)` : t`Copy mod list`}
         </Button>
@@ -324,7 +324,7 @@ function CopyModList() {
           aria-haspopup="menu"
           aria-expanded={anchor !== null}
           onClick={(e) => setAnchor(e.currentTarget)}
-          sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
+          sx={{ height: 40, px: '14px', fontSize: 14 }}
         >
           {options.find((o) => o.id === format)?.label}
         </Button>

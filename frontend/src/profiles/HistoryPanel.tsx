@@ -105,7 +105,7 @@ export function HistoryPanel({
             {h.missingEvent !== '' && h.missingWants.length > 0 && (
               <Button
                 size="small"
-                sx={{ mt: 1, whiteSpace: 'nowrap' }}
+                sx={{ mt: 1 }}
                 disabled={h.busy !== ''}
                 onClick={() => download(h.missingWants).catch(reportUnexpected)}
               >

@@ -224,7 +224,7 @@ export function ProfileRow({ profile }: { profile: Profile }) {
         startIcon={<Share2 size={15} />}
         aria-label={t`Share ${profile.name}`}
         onClick={() => openShare(profile.id)}
-        sx={{ height: 40, whiteSpace: 'nowrap' }}
+        sx={{ height: 40 }}
       >
         {t`Share`}
       </Button>

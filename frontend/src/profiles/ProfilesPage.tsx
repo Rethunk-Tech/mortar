@@ -268,12 +268,10 @@ function FindModSearch({ profiles }: { profiles: Profile[] }) {
               onClick={() => openModInProfile(h)}
               title={`${h.name} · ${h.uniqueId} · ${h.profileName} · ${h.version} · ${h.enabled ? t`Enabled` : t`Switched off`}`}
               sx={{
-                whiteSpace: 'nowrap',
                 minWidth: 0,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 justifyContent: 'flex-start',
-                textTransform: 'none',
                 fontSize: 13,
               }}
             >
@@ -342,7 +340,7 @@ function ProfilesHeader({
         aria-expanded={importAnchor !== null}
         aria-controls={importMenuId}
         onClick={(event) => setImportAnchor(event.currentTarget)}
-        sx={{ height: 40, px: 2, fontSize: 14, whiteSpace: 'nowrap' }}
+        sx={{ height: 40, px: 2, fontSize: 14 }}
       >
         {t`Import`}
       </Button>

@@ -220,9 +220,6 @@ function Row({
               borderRadius: 0,
               fontSize: 17,
               fontWeight: 700,
-              textTransform: 'none',
-              boxShadow: 'none',
-              whiteSpace: 'nowrap',
               '& .MuiButton-startIcon': { mr: '10px' },
             }}
           >

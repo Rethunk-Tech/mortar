@@ -127,8 +127,6 @@ export function PlayControl({ game }: { game: string }) {
               borderRadius: 0,
               fontSize: 18,
               fontWeight: 600,
-              boxShadow: 'none',
-              whiteSpace: 'nowrap',
               [compact]: { display: 'none' },
             }}
           >

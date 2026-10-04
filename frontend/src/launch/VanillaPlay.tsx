@@ -103,9 +103,6 @@ export function VanillaPlay({
             borderRadius: 0,
             fontSize: 22,
             fontWeight: 700,
-            textTransform: 'none',
-            boxShadow: 'none',
-            whiteSpace: 'nowrap',
             '& .MuiButton-startIcon': { mr: '10px' },
           }}
         >
@@ -117,7 +114,7 @@ export function VanillaPlay({
           aria-haspopup="menu"
           aria-expanded={menu !== null}
           onClick={(e) => openMenu(e.currentTarget)}
-          sx={{ width: 40, minWidth: 40, px: 0, height: 58, borderRadius: 0, boxShadow: 'none' }}
+          sx={{ width: 40, minWidth: 40, px: 0, height: 58, borderRadius: 0 }}
         >
           <ChevronDown size={18} />
         </Button>

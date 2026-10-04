@@ -43,12 +43,7 @@ export function PickCompareDialog({
               key={p.id}
               color="inherit"
               onClick={() => onPicked(p)}
-              sx={{
-                display: 'block',
-                width: 1,
-                justifyContent: 'flex-start',
-                whiteSpace: 'nowrap',
-              }}
+              sx={{ display: 'block', width: 1, justifyContent: 'flex-start' }}
             >
               {p.name}
             </Button>

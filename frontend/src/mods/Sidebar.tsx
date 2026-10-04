@@ -306,7 +306,6 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
             width: '100%',
             justifyContent: 'flex-start',
             textAlign: 'left',
-            textTransform: 'none',
             fontSize: 13,
             px: 0.5,
             overflow: 'hidden',

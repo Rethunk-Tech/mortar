@@ -129,7 +129,7 @@ function BundlePickList({
           variant="outlined"
           disabled={busy}
           onClick={() => onPick(bundle)}
-          sx={{ justifyContent: 'space-between', textTransform: 'none' }}
+          sx={{ justifyContent: 'space-between' }}
         >
           <span>{bundle.name}</span>
           <Typography component="span" sx={{ color: 'text.secondary', fontSize: 12 }}>

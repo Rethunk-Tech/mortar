@@ -176,7 +176,7 @@ export function FindStep({
               color="inherit"
               startIcon={<FolderOpen size={16} />}
               onClick={browse}
-              sx={{ whiteSpace: 'nowrap', height: 40, flexShrink: 0 }}
+              sx={{ height: 40, flexShrink: 0 }}
             >
               {t`Change folder…`}
             </Button>
@@ -197,7 +197,7 @@ export function FindStep({
               variant="contained"
               startIcon={<FolderOpen size={16} />}
               onClick={browse}
-              sx={{ whiteSpace: 'nowrap', height: 40 }}
+              sx={{ height: 40 }}
             >
               {t`Choose folder…`}
             </Button>
@@ -221,7 +221,7 @@ export function FindStep({
         <Button
           variant="contained"
           onClick={onContinue}
-          sx={{ height: 46, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
+          sx={{ height: 46, fontSize: 16, fontWeight: 700 }}
         >
           {t`Continue`}
         </Button>

@@ -61,7 +61,7 @@ export function ExternalImportProfileDialog({
                   })
                   .catch(reportUnexpected)
               }}
-              sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
+              sx={{ justifyContent: 'flex-start' }}
             >
               {profile.name}
             </Button>

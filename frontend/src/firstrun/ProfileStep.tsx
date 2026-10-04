@@ -91,7 +91,7 @@ export function ProfileStep({ game }: { game: GameId }) {
             <Button
               variant="contained"
               onClick={() => setImportOpen(true)}
-              sx={{ height: 46, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
+              sx={{ height: 46, fontSize: 16, fontWeight: 700 }}
             >
               {t`Preview Mods folder import…`}
             </Button>
@@ -130,7 +130,7 @@ export function ProfileStep({ game }: { game: GameId }) {
             type="submit"
             variant={gameMods ? 'outlined' : 'contained'}
             disabled={busy}
-            sx={{ height: 46, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
+            sx={{ height: 46, fontSize: 16, fontWeight: 700 }}
           >
             {t`New profile`}
           </Button>
@@ -162,7 +162,7 @@ export function ProfileStep({ game }: { game: GameId }) {
           <Button
             type="submit"
             variant="outlined"
-            sx={{ height: 46, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
+            sx={{ height: 46, fontSize: 16, fontWeight: 700 }}
           >
             {t`Preview link…`}
           </Button>

@@ -176,11 +176,11 @@ function LaunchLine({
           color="inherit"
           startIcon={<RefreshCw size={16} />}
           onClick={recheck}
-          sx={{ height: 44, whiteSpace: 'nowrap' }}
+          sx={{ height: 44 }}
         >
           {t`Check again`}
         </Button>
-        <Button variant="contained" onClick={onContinue} sx={{ height: 44, whiteSpace: 'nowrap' }}>
+        <Button variant="contained" onClick={onContinue} sx={{ height: 44 }}>
           {t`Continue`}
         </Button>
       </Box>
@@ -259,7 +259,7 @@ function InstallFailed({
           color="inherit"
           disabled={pending}
           onClick={onSkip}
-          sx={{ height: 46, whiteSpace: 'nowrap' }}
+          sx={{ height: 46 }}
         >
           {t`Skip for now`}
         </Button>
@@ -268,7 +268,7 @@ function InstallFailed({
           startIcon={<RefreshCw size={16} />}
           disabled={pending}
           onClick={onRetry}
-          sx={{ height: 46, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
+          sx={{ height: 46, fontSize: 16, fontWeight: 700 }}
         >
           {t`Retry`}
         </Button>
@@ -376,7 +376,7 @@ export function SmapiStep({
             <Button
               variant="contained"
               onClick={onDone}
-              sx={{ height: 46, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
+              sx={{ height: 46, fontSize: 16, fontWeight: 700 }}
             >
               {t`Continue`}
             </Button>

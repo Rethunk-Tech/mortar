@@ -88,7 +88,7 @@ function ShortcutRow({
           disabled={keys === defaultBindings()[id]}
           onClick={onReset}
           aria-label={t`Reset ${label}`}
-          sx={{ whiteSpace: 'nowrap', minWidth: 0 }}
+          sx={{ minWidth: 0 }}
         >
           {t`Reset`}
         </Button>

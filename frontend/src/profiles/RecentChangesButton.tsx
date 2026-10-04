@@ -230,12 +230,7 @@ function RecentPanel({
         <Box sx={{ px: 1.5, py: 1, borderTop: '1px solid var(--mortar-hairline-muted)' }}>
           <Typography sx={{ fontSize: 13, color: 'error.main' }}>{errorText}</Typography>
           {missingEvent !== '' && missingWants.length > 0 && (
-            <Button
-              size="small"
-              sx={{ mt: 1, whiteSpace: 'nowrap' }}
-              disabled={busy !== ''}
-              onClick={onDownload}
-            >
+            <Button size="small" sx={{ mt: 1 }} disabled={busy !== ''} onClick={onDownload}>
               {t`Download missing mods`}
             </Button>
           )}

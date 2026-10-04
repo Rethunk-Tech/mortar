@@ -192,12 +192,7 @@ export function ReportToAuthorButton({
   const bytes = new TextEncoder().encode(log ?? '').length
   return (
     <>
-      <Button
-        size={size}
-        variant={variant}
-        onClick={start}
-        sx={{ height: 28, whiteSpace: 'nowrap' }}
-      >
+      <Button size={size} variant={variant} onClick={start} sx={{ height: 28 }}>
         {t`Report to author…`}
       </Button>
       <Dialog

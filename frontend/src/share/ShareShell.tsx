@@ -104,7 +104,7 @@ export function ShareShell({
                 variant="outlined"
                 color="inherit"
                 onClick={() => onSendNearby(true)}
-                sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
+                sx={{ height: 40, px: '14px', fontSize: 14 }}
               >
                 {t`Send nearby…`}
               </Button>

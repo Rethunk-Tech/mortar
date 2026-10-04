@@ -129,7 +129,7 @@ export function GameModsDialog({
         {error === '' ? null : (
           <>
             <Typography sx={{ color: 'error.main' }}>{error}</Typography>
-            <Button onClick={loadPreview} sx={{ whiteSpace: 'nowrap', mt: 1 }}>
+            <Button onClick={loadPreview} sx={{ mt: 1 }}>
               {t`Retry`}
             </Button>
           </>

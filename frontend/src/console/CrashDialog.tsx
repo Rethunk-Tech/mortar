@@ -229,7 +229,7 @@ export function CrashDialog() {
           ) : null}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
-          <Button onClick={dismiss} sx={{ whiteSpace: 'nowrap', mr: 'auto' }}>
+          <Button onClick={dismiss} sx={{ mr: 'auto' }}>
             {t`Dismiss`}
           </Button>
           <MoreActions
