@@ -594,3 +594,32 @@ func serve(r io.Reader, w io.Writer, open func(link string) error, installed fun
 	}
 	return serveHandlers(r, w, h)
 }
+
+func TestManifestAllowsStoreOrigins(t *testing.T) {
+	old := storeChromeIDs
+	storeChromeIDs = []string{"abcdefghijklmnopabcdefghijklmnop"}
+	t.Cleanup(func() { storeChromeIDs = old })
+	b, err := Manifest("/usr/bin/mortar", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var m struct {
+		AllowedOrigins []string `json:"allowed_origins"`
+	}
+	if err := json.Unmarshal(b, &m); err != nil {
+		t.Fatal(err)
+	}
+	want := []string{ChromeOrigin, "chrome-extension://abcdefghijklmnopabcdefghijklmnop/"}
+	if !slices.Equal(m.AllowedOrigins, want) {
+		t.Fatalf("allowed_origins = %q, want %q", m.AllowedOrigins, want)
+	}
+	if !Invoked([]string{want[1]}) {
+		t.Fatal("store origin must start the host")
+	}
+}
+
+func TestSupportedNexusDomainsIncludeStardew(t *testing.T) {
+	if !slices.Contains(supportedNexusDomains(), "stardewvalley") {
+		t.Fatalf("supportedNexusDomains = %q", supportedNexusDomains())
+	}
+}

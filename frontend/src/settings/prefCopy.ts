@@ -459,7 +459,9 @@ function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
     },
     extensionConnection: {
       label: i18n._(msg`Browser extension connection`),
-      description: i18n._(msg`Let the Mortar browser extension talk to Mortar`),
+      description: i18n._(
+        msg`Allow shows Nexus pages what Mortar has. Off hides that; download links still arrive`,
+      ),
       options: [
         { value: 'allow', label: i18n._(msg`Allow`) },
         { value: 'off', label: i18n._(msg`Off`) },

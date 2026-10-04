@@ -38,6 +38,19 @@ const (
 	maxMessage = 64 * 1024
 )
 
+// storeChromeIDs are the ids Chrome Web Store and Edge Add-ons assign the published extension, which differ from the
+// unpacked id; they are added here when the listings are published, and each is allowed to reach the host.
+var storeChromeIDs = []string{}
+
+// ChromeOrigins lists every extension origin the host manifest allows: the unpacked build plus the store builds.
+func ChromeOrigins() []string {
+	origins := []string{ChromeOrigin}
+	for _, id := range storeChromeIDs {
+		origins = append(origins, "chrome-extension://"+id+"/")
+	}
+	return origins
+}
+
 // Invoked reports whether args (without the program name) are a browser starting Mortar as a native host: Chromium
 // passes the caller's origin first, Firefox the manifest path and then the extension id.
 func Invoked(args []string) bool {
@@ -68,6 +81,8 @@ type reply struct {
 	Profile      string            `json:"profile,omitempty"`
 	State        string            `json:"state,omitempty"`
 	UpdateIDs    []int             `json:"updateIds,omitempty"`
+	// Games are the Nexus domains Mortar manages, so the extension draws its UI only on those games.
+	Games []string `json:"games,omitempty"`
 	// Accent is Mortar's accent colour, read on every reply so the extension follows a change in the app.
 	Accent string `json:"accent,omitempty"`
 }
@@ -283,6 +298,7 @@ func (h handlers) answer(req request) reply {
 		return reply{Error: fmt.Sprintf("unknown request type %q", req.Type)}
 	}
 	rep.State, rep.Connected, rep.Profile = st, st == stateReady, name
+	rep.Games = supportedNexusDomains()
 	return rep
 }
 
@@ -537,6 +553,21 @@ func activeNexusUpdates(domain string) (string, []modUpdate) {
 	return profile.Name, rows
 }
 
+// supportedNexusDomains are the Nexus domains of the games Mortar manages.
+func supportedNexusDomains() []string {
+	m, err := components.BundledManifest()
+	if err != nil {
+		return nil
+	}
+	var domains []string
+	for _, g := range m.Games {
+		if g.Nexus.Domain != "" {
+			domains = append(domains, g.Nexus.Domain)
+		}
+	}
+	return domains
+}
+
 // activeNexusState is how far the page's game is from showing Mortar data, and the open profile's name when it is
 // ready. Off wins over everything: the user turned the connection off in Mortar.
 func activeNexusState(domain string) (string, string) {
@@ -737,7 +768,7 @@ func Manifest(exe string, firefox bool) ([]byte, error) {
 	if firefox {
 		m["allowed_extensions"] = []string{FirefoxID}
 	} else {
-		m["allowed_origins"] = []string{ChromeOrigin}
+		m["allowed_origins"] = ChromeOrigins()
 	}
 	return json.MarshalIndent(m, "", "  ")
 }
