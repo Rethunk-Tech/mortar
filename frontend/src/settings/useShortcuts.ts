@@ -11,6 +11,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { openImport, openShare } from '../share/store.ts'
 import { checkForUpdates } from '../shell/checkForUpdates.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
   dialogOpen,
@@ -62,9 +63,9 @@ export function runShortcut(id: ShortcutId) {
     case 'tab-performance':
       return useTab.getState().setTab('performance')
     case 'new-profile':
-      return profiles.create('New profile').catch(() => undefined)
+      return useCommandPalette.getState().setCreating(true)
     case 'duplicate-profile':
-      return profiles.duplicate(profiles.openId).catch(() => undefined)
+      return profiles.duplicate(profiles.openId).catch(reportUnexpected)
     case 'rename-profile':
       return useRenameRequest.getState().request(profiles.openId)
     case 'import':
