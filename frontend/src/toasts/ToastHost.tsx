@@ -12,9 +12,8 @@ import {
   X,
 } from 'lucide-react'
 import { type FocusEvent, type MouseEvent, useState } from 'react'
-import { useLaunch } from '../launch/store.ts'
-import { isLocked } from '../mods/locked.ts'
 import { LetterTile } from '../mods/parts.tsx'
+import { useProfileLocked } from '../mods/useLocked.ts'
 import { HistoryFallback } from './HistoryButton.tsx'
 import { reportUnexpected } from './report.ts'
 import { type Toast, type ToastKind, useToasts } from './store.ts'
@@ -99,12 +98,10 @@ function ToastCard({ toast }: { toast: Toast }) {
   const holdProps = useHoldWhilePresent(toast.id)
   const { t } = useLingui()
   const dismiss = useToasts((s) => s.dismiss)
-  const status = useLaunch((s) => s.status)
-  const startingProfile = useLaunch((s) => (s.starting ? s.startingProfile : ''))
   const [open, setOpen] = useState(false)
   const { action } = toast
-  const locked =
-    action?.profileId !== undefined && isLocked(status, action.profileId, startingProfile)
+  const profileHeld = useProfileLocked(action?.profileId ?? '')
+  const locked = action?.profileId !== undefined && profileHeld
   const lockHint = t`Stop the game to change mods.`
   const run = () => {
     if (locked || !action) {

@@ -4,8 +4,7 @@ import { Bell } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { compact } from '../game/compact.ts'
 import { When } from '../i18n/When.tsx'
-import { useLaunch } from '../launch/store.ts'
-import { isLocked } from '../mods/locked.ts'
+import { useProfileLocked } from '../mods/useLocked.ts'
 import { historyActionState } from './history.ts'
 import { reportUnexpected } from './report.ts'
 import { type ToastHistoryItem, useToasts } from './store.ts'
@@ -19,11 +18,9 @@ const edge: Record<ToastHistoryItem['kind'], string> = {
 
 function HistoryRow({ item }: { item: ToastHistoryItem }) {
   const { t } = useLingui()
-  const status = useLaunch((s) => s.status)
-  const startingProfile = useLaunch((s) => (s.starting ? s.startingProfile : ''))
   const { action } = item
-  const locked =
-    action?.profileId !== undefined && isLocked(status, action.profileId, startingProfile)
+  const profileHeld = useProfileLocked(action?.profileId ?? '')
+  const locked = action?.profileId !== undefined && profileHeld
   const lockHint = t`Stop the game to change mods.`
   const state = historyActionState(action?.live, locked, lockHint)
   const run = () => {

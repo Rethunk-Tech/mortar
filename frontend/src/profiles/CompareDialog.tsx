@@ -7,9 +7,8 @@ import {
   CopyMods,
   UpdateEntry,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { useLaunch } from '../launch/store.ts'
-import { isLocked } from '../mods/locked.ts'
 import { applyWithUndo } from '../mods/menu.ts'
+import { lockedIn, useLaunchLocks } from '../mods/useLocked.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { useToasts } from '../toasts/store.ts'
 import { pushUndoToast } from '../toasts/undo.ts'
@@ -91,10 +90,9 @@ export function CompareDialog({
   }, [profileA, profileB])
   const [pending, run] = usePending()
 
-  const status = useLaunch((st) => st.status)
-  const startingProfile = useLaunch((st) => (st.starting ? st.startingProfile : ''))
+  const launch = useLaunchLocks()
   const lockedReason = (profile: Profile) =>
-    isLocked(status, profile.id, startingProfile)
+    lockedIn(launch, profile.id)
       ? t`${profile.name} is in use by the running game. Close the game to change its mods.`
       : ''
 

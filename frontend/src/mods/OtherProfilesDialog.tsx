@@ -8,13 +8,12 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ProfilesWithMod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportError } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
-import { isLocked } from './locked.ts'
+import { lockedIn, useLaunchLocks } from './useLocked.ts'
 
 function NoOtherProfiles() {
   const { t } = useLingui()
@@ -69,12 +68,6 @@ function ProfileChoice({
 
 const toggleSelected = (current: string[], id: string) =>
   current.includes(id) ? current.filter((value) => value !== id) : [...current, id]
-const profileIsLocked = (
-  status: Parameters<typeof isLocked>[0],
-  starting: boolean,
-  startingProfile: string,
-  profile: Profile,
-) => isLocked(status, profile.id, starting ? startingProfile : '')
 const profileHasPinned = (profile: Profile, row: ModInProfile, update?: { oldKey: string }) =>
   Boolean(update && profile.entries?.some((entry) => entry.key === row.key && entry.pinned))
 
@@ -149,9 +142,7 @@ export function OtherProfilesDialog({
   const [rows, setRows] = useState<ModInProfile[]>([])
   const [selected, setSelected] = useState<string[]>([])
   const [pending, run] = usePending()
-  const launchStatus = useLaunch((s) => s.status)
-  const launchStarting = useLaunch((s) => s.starting)
-  const launchStartingProfile = useLaunch((s) => s.startingProfile)
+  const launch = useLaunchLocks()
   useEffect(() => {
     if (!open) {
       return
@@ -182,11 +173,7 @@ export function OtherProfilesDialog({
           const profile = profiles.find((p) => p.id === row.profileId)
           const pinned =
             update && profile?.entries?.some((entry) => entry.key === row.key && entry.pinned)
-          return (
-            pinned ||
-            (profile &&
-              isLocked(launchStatus, profile.id, launchStarting ? launchStartingProfile : ''))
-          )
+          return pinned || (profile && lockedIn(launch, profile.id))
         })
         .map((row) => row.profileId),
     )
@@ -195,10 +182,9 @@ export function OtherProfilesDialog({
         ? []
         : profiles.map((profile) => profile.id).filter((id) => !unavailable.has(id)),
     )
-  }, [launchStarting, launchStartingProfile, launchStatus, mode, open, profiles, rows, update])
+  }, [launch, mode, open, profiles, rows, update])
   const choose = (id: string) => setSelected((current) => toggleSelected(current, id))
-  const locked = (profile: Profile) =>
-    profileIsLocked(launchStatus, launchStarting, launchStartingProfile, profile)
+  const locked = (profile: Profile) => lockedIn(launch, profile.id)
   const pinned = (profile: Profile, row: ModInProfile) => profileHasPinned(profile, row, update)
   const confirm = () => {
     run(

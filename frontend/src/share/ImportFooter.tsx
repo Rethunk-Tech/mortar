@@ -2,8 +2,8 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { ChevronRight } from 'lucide-react'
 import { useState } from 'react'
-import { useLaunch } from '../launch/store.ts'
-import { isLocked } from '../mods/locked.ts'
+import { LockedReason } from '../mods/LockedReason.tsx'
+import { useProfileLocked } from '../mods/useLocked.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
@@ -36,10 +36,7 @@ export function ImportFooter({
   }
   const [askReplace, setAskReplace] = useState(false)
   const targetId = useImportDialog((s) => s.request?.profileId ?? '')
-  const targetLocked = isLocked(
-    useLaunch((s) => s.status),
-    targetId,
-  )
+  const targetLocked = useProfileLocked(targetId)
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
       <Problems preview={preview} excluded={flow.excluded} onLeaveOut={flow.toggle} />
@@ -89,7 +86,7 @@ export function ImportFooter({
           {t`Reset`}
         </Button>
         {targetName ? (
-          <DisabledReason title={t`Stop the game to change mods.`} disabled={targetLocked}>
+          <LockedReason locked={targetLocked}>
             <Button
               variant="outlined"
               disabled={!canRun || targetLocked}
@@ -103,7 +100,7 @@ export function ImportFooter({
           </DisabledReason>
         ) : null}
         {targetName ? (
-          <DisabledReason title={t`Stop the game to change mods.`} disabled={targetLocked}>
+          <LockedReason locked={targetLocked}>
             <Button
               variant="outlined"
               color="error"

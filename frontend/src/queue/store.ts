@@ -20,9 +20,9 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { considerMissing } from '../install/store.ts'
-import { useLaunch } from '../launch/store.ts'
-import { isLocked } from '../mods/locked.ts'
+import { idKey } from '../mods/dependents.ts'
 import { useMods } from '../mods/store.ts'
+import { profileLocked } from '../mods/useLocked.ts'
 import { openSettings } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
@@ -146,11 +146,6 @@ function matchesItem(e: Entry, item: Pick<Item, 'modId' | 'name' | 'repo'>) {
     return true
   }
   return (e.mods ?? []).some((m) => m.name === item.name)
-}
-
-function profileLocked(profileId: string) {
-  const { status, starting, startingProfile } = useLaunch.getState()
-  return isLocked(status, profileId, starting ? startingProfile : '')
 }
 
 function singleNexusFailure(failed: Item[]) {
