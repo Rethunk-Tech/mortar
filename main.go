@@ -49,6 +49,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/savessvc"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
+	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 	"github.com/Rethunk-Tech/mortar/internal/shortcut"
@@ -344,6 +345,9 @@ func run() error {
 	}
 	if err := nxmHandler.Refresh(); err != nil {
 		log.Printf("desktop entry: %v", err)
+	}
+	if err := shortcut.Repoint(selfexe.Launchable(exe)); err != nil {
+		log.Printf("profile shortcuts: %v", err)
 	}
 	if h, ok := any(nxmHandler).(interface{ WriteNativeHosts() error }); ok && store.Get().NxmHandled {
 		if err := h.WriteNativeHosts(); err != nil {

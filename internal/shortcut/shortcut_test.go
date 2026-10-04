@@ -6,6 +6,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func TestParseTakesOnlyAWellFormedPlayArgument(t *testing.T) {
@@ -122,5 +124,36 @@ func TestExistsAndRemoveDesktopEntry(t *testing.T) {
 	}
 	if exists, err := s.Exists("stardew", "p1"); err != nil || exists {
 		t.Fatalf("after remove: exists=%v err=%v", exists, err)
+	}
+}
+
+func TestRepointMovesOnlyShortcutsWhoseProgramIsGone(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("desktop entries are Linux")
+	}
+	dir := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", dir)
+	live := filepath.Join(dir, "other-mortar")
+	if err := fsx.WriteFile(live, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	gone, err := create(filepath.Join(dir, "qa", "mortar"), Arg("stardew", "a"), "A (Stardew Valley)")
+	if err != nil {
+		t.Fatal(err)
+	}
+	kept, err := create(live, Arg("stardew", "b"), "B (Stardew Valley)")
+	if err != nil {
+		t.Fatal(err)
+	}
+	keptBefore, _ := fsx.ReadFile(kept)
+	exe := filepath.Join(dir, "Apps", `mor"tar.appimage`)
+	if err := Repoint(exe); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := fsx.ReadFile(gone); !strings.Contains(string(b), "Exec=\""+strings.ReplaceAll(exe, `"`, `\"`)+"\" "+Arg("stardew", "a")+"\n") {
+		t.Errorf("stale shortcut not repointed:\n%s", b)
+	}
+	if b, _ := fsx.ReadFile(kept); string(b) != string(keptBefore) {
+		t.Errorf("a live copy's shortcut changed:\n%s", b)
 	}
 }

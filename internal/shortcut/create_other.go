@@ -149,3 +149,52 @@ func RemoveStartMenu() error {
 	}
 	return errors.Join(errs...)
 }
+
+// Repoint rewrites each profile shortcut whose program no longer exists to exe, so shortcuts survive Mortar moving
+// (an AppImage an integrator renamed, a package replacing a portable copy). A shortcut whose program still exists
+// belongs to that copy of Mortar and is left alone.
+func Repoint(exe string) error {
+	if sandbox.InFlatpak() {
+		return nil // Flatpak shortcuts run flatpak-spawn, not a path.
+	}
+	base, err := dataHome()
+	if err != nil {
+		return err
+	}
+	paths, err := filepath.Glob(filepath.Join(base, "applications", "tech.rethunk.Mortar.play-*.desktop"))
+	if err != nil {
+		return err
+	}
+	quoted := `"` + strings.ReplaceAll(exe, `"`, `\"`) + `"`
+	var errs []error
+	for _, p := range paths {
+		b, err := fsx.ReadFile(p)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		lines := strings.SplitAfter(string(b), "\n")
+		changed := false
+		for i, line := range lines {
+			rest, ok := strings.CutPrefix(line, `Exec="`)
+			if !ok {
+				continue
+			}
+			end := strings.Index(rest, `" `)
+			if end < 0 {
+				break
+			}
+			target := strings.ReplaceAll(rest[:end], `\"`, `"`)
+			if _, err := os.Stat(target); err == nil || target == exe {
+				break
+			}
+			lines[i] = "Exec=" + quoted + rest[end+1:]
+			changed = true
+			break
+		}
+		if changed {
+			errs = append(errs, datadir.WriteFile(p, []byte(strings.Join(lines, "")), 0o600))
+		}
+	}
+	return errors.Join(errs...)
+}

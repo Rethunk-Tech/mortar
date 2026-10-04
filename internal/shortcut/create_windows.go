@@ -217,3 +217,49 @@ func RemoveStartMenu() error {
 	}
 	return fsx.RemoveAll(dir)
 }
+
+// Repoint retargets each profile shortcut in the Start menu whose program no longer exists to exe, so shortcuts
+// survive a portable Mortar moving. A shortcut whose program still exists belongs to that copy and is left alone.
+func Repoint(exe string) error {
+	dir, err := startMenuDir()
+	if err != nil {
+		return err
+	}
+	entries, err := os.ReadDir(dir)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	var errs []error
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.EqualFold(filepath.Ext(entry.Name()), ".lnk") {
+			continue
+		}
+		path := filepath.Join(dir, entry.Name())
+		var target, arg string
+		if err := withLink(path, func(link *ole.IDispatch) error {
+			for prop, dst := range map[string]*string{"TargetPath": &target, "Arguments": &arg} {
+				value, err := oleutil.GetProperty(link, prop)
+				if err != nil {
+					return err
+				}
+				*dst = value.ToString()
+				_ = value.Clear()
+			}
+			return nil
+		}); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		if !strings.HasPrefix(arg, playFlag) || strings.EqualFold(target, exe) {
+			continue
+		}
+		if _, err := os.Stat(target); err == nil {
+			continue
+		}
+		errs = append(errs, writeLink(path, exe, arg))
+	}
+	return errors.Join(errs...)
+}
