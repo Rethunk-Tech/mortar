@@ -68,14 +68,3 @@ type Result struct {
 	Applied int       `json:"applied"`
 	Skipped []Skipped `json:"skipped"`
 }
-
-type IndexMod struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-type Index struct {
-	Schema      int        `json:"schema"`
-	GmcmVersion string     `json:"gmcmVersion"`
-	Mods        []IndexMod `json:"mods"`
-}

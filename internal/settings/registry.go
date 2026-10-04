@@ -462,11 +462,6 @@ func (s Settings) LookupGame(key, game string) (string, error) {
 	return p.get(s, game), nil
 }
 
-// AllPrefs returns every CLI-visible app-scoped setting as key/value pairs.
-func (s Settings) AllPrefs() [][2]string {
-	return s.AllPrefsGame("")
-}
-
 // AllPrefsGame returns app keys, plus game keys when game is set.
 func (s Settings) AllPrefsGame(game string) [][2]string {
 	out := make([][2]string, 0, len(registry))

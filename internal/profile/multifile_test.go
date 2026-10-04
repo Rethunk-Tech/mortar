@@ -48,31 +48,19 @@ func TestAddUpdateRemoveMultiFileEntry(t *testing.T) {
 		t.Fatal(err)
 	}
 	entryKey := res.Profile.Entries[0].Key
-	e.item(t, "extra-old", map[string]string{"B/manifest.json": manifestJSON("X.B")})
-	got, err := e.AddExtra("stardew", p.ID, entryKey, "extra-old", Source{})
+	e.item(t, "extra-new", map[string]string{"C/manifest.json": manifestJSON("X.C")})
+	got, err := e.AddExtra("stardew", p.ID, entryKey, "extra-new", Source{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(got.Entries) != 1 || !slices.Equal(got.Entries[0].ExtraStoreKeys, []string{"extra-old"}) {
+	if len(got.Entries) != 1 || !slices.Equal(got.Entries[0].ExtraStoreKeys, []string{"extra-new"}) {
 		t.Fatalf("add extras: %+v", got.Entries)
 	}
-	if !hasMod(got.Entries[0], "X.A") || !hasMod(got.Entries[0], "X.B") {
+	if !hasMod(got.Entries[0], "X.A") || !hasMod(got.Entries[0], "X.C") {
 		t.Fatalf("add mods: %+v", got.Entries[0].Mods)
 	}
-	if _, err := os.Stat(filepath.Join(e.mods(p.ID), entryKey, "extra-old", "B", "manifest.json")); err != nil {
+	if _, err := os.Stat(filepath.Join(e.mods(p.ID), entryKey, "extra-new", "C", "manifest.json")); err != nil {
 		t.Fatalf("extra folder: %v", err)
-	}
-
-	e.item(t, "extra-new", map[string]string{"C/manifest.json": manifestJSON("X.C")})
-	got, err = e.UpdateExtra("stardew", p.ID, entryKey, "extra-old", "extra-new")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !slices.Equal(got.Entries[0].ExtraStoreKeys, []string{"extra-new"}) || hasMod(got.Entries[0], "X.B") || !hasMod(got.Entries[0], "X.C") {
-		t.Fatalf("update extra: %+v", got.Entries[0])
-	}
-	if _, err := os.Stat(filepath.Join(e.mods(p.ID), entryKey, "extra-old")); !os.IsNotExist(err) {
-		t.Fatalf("old extra folder: %v", err)
 	}
 
 	next := buildZip(t, "a2.zip", map[string]string{"A/manifest.json": `{"Name":"X.A","Author":"me","Version":"2.0.0","UniqueID":"X.A"}`})

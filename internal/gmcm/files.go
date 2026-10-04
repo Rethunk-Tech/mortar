@@ -6,7 +6,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
@@ -14,7 +13,6 @@ import (
 const (
 	captureDir = "gmcm"
 	pendingDir = "gmcm-pending"
-	indexName  = "_index.json"
 	resultExt  = ".result.json"
 )
 
@@ -42,47 +40,6 @@ func ReadCapture(profileDir, uniqueID string) (Capture, error) {
 		return out, err
 	}
 	return out, checkSchema(out.Schema)
-}
-
-func ReadIndex(profileDir string) (Index, error) {
-	var out Index
-	err := readJSON(filepath.Join(profileDir, captureDir, indexName), &out)
-	if err != nil {
-		return out, err
-	}
-	return out, checkSchema(out.Schema)
-}
-
-func CapturedIDs(profileDir string) ([]string, error) {
-	idx, err := ReadIndex(profileDir)
-	if err == nil && len(idx.Mods) > 0 {
-		ids := make([]string, 0, len(idx.Mods))
-		for _, m := range idx.Mods {
-			if m.ID != "" {
-				ids = append(ids, m.ID)
-			}
-		}
-		return ids, nil
-	}
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return nil, err
-	}
-	entries, err := os.ReadDir(filepath.Join(profileDir, captureDir))
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	var ids []string
-	for _, e := range entries {
-		name := e.Name()
-		if e.IsDir() || name == indexName || !strings.HasSuffix(name, ".json") {
-			continue
-		}
-		ids = append(ids, strings.TrimSuffix(name, ".json"))
-	}
-	return ids, nil
 }
 
 func ReadPending(profileDir, uniqueID string) (Pending, error) {

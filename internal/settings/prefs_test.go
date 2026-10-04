@@ -53,7 +53,7 @@ func TestPrefDefaultsMatchToday(t *testing.T) {
 	if !ToggleOn(d.ReuseFomodChoices) || !d.DriftChecksOn() || d.GamePrefs(GameStardew).SmapiBuilds != SmapiBuildsShow {
 		t.Fatal("fomod / drift / smapi-build defaults")
 	}
-	if !d.AutoInstallMortar() || d.AutoTrackNexus || d.GamePrefs(GameStardew).DefaultLaunchMethod != LaunchSteam || !d.GamePrefs(GameStardew).ShowConsoleWindow() {
+	if !d.AutoInstallMortar() || d.AutoTrackNexus || d.GamePrefs(GameStardew).DefaultLaunchMethod != LaunchSteam || !ToggleOn(d.GamePrefs(GameStardew).ShowSmapiConsole) {
 		t.Fatal("update / launch defaults")
 	}
 	if d.GamePrefs(GameStardew).ConsoleLevel != ConsoleLevelWarn || ToggleOn(d.GamePrefs(GameStardew).ConsoleTimestamps) || !ToggleOn(d.GamePrefs(GameStardew).ConsoleFollow) {
@@ -188,12 +188,6 @@ func TestShouldBackupBeforePlayModes(t *testing.T) {
 	}
 	if !ShouldBackupBeforePlay(BackupBeforePlayChanged, true, false) || ShouldBackupBeforePlay(BackupBeforePlayChanged, false, false) {
 		t.Fatal("changed")
-	}
-}
-
-func TestUpdateCheckEveryDefaultHour(t *testing.T) {
-	if Defaults().UpdateCheckEvery() != time.Hour {
-		t.Fatalf("interval = %s", Defaults().UpdateCheckEvery())
 	}
 }
 

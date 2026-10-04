@@ -182,42 +182,6 @@ func (s *Store) addExtraLocked(game string, p *Profile, dir, entryKey, extraKey 
 	return s.refreshEntryMods(e, entryDir)
 }
 
-// UpdateExtra replaces one extra store item on an entry with another.
-func (s *Store) UpdateExtra(game, id, entryKey, oldExtra, newExtra string) (Profile, error) {
-	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
-		ei, err := requireEntry(p.Entries, entryKey)
-		if err != nil {
-			return err
-		}
-		e := &p.Entries[ei]
-		xi := slices.Index(e.ExtraStoreKeys, oldExtra)
-		if xi < 0 {
-			return fmt.Errorf("%q is not an extra file of this entry", oldExtra)
-		}
-		if newExtra == "" || newExtra == e.Key || newExtra == oldExtra {
-			return fmt.Errorf("%q is not a new extra store key", newExtra)
-		}
-		if slices.Contains(e.ExtraStoreKeys, newExtra) {
-			return &DuplicateError{Key: newExtra, Label: entryLabel(*e)}
-		}
-		entryDir := liveEntryDir(filepath.Join(dir, "mods"), e.Key)
-		e.PreviousExtraStoreKeys = growPreviousExtras(*e)
-		e.PreviousExtraStoreKeys[xi] = oldExtra
-		if err := s.fillOneExtraUpdate(game, p.ID, entryDir, entryDir, oldExtra, newExtra, *e); err != nil {
-			return err
-		}
-		if err := os.RemoveAll(filepath.Join(entryDir, oldExtra)); err != nil {
-			return err
-		}
-		e.ExtraStoreKeys[xi] = newExtra
-		return s.refreshEntryMods(e, entryDir)
-	})
-	if err != nil {
-		return Profile{}, err
-	}
-	return p, s.items.Touch(game, newExtra)
-}
-
 // UpdateMultiFile swaps the entry's primary store item and every extra as one unit.
 func (s *Store) UpdateMultiFile(game, id, oldKey, newKey string, source *Source) (Profile, error) {
 	return s.moveTo(game, id, oldKey, newKey, source)
@@ -320,14 +284,6 @@ func (s *Store) InstallNexusExtra(game, id, entryKey, path string, source Source
 		}
 	}
 	return res, nil
-}
-
-func growPreviousExtras(e Entry) []string {
-	out := append([]string(nil), e.PreviousExtraStoreKeys...)
-	for len(out) < len(e.ExtraStoreKeys) {
-		out = append(out, e.ExtraStoreKeys[len(out)])
-	}
-	return out
 }
 
 func (s *Store) copyExtraInto(game, id, entryDir, extraKey string, choices map[string]map[string][]string) error {

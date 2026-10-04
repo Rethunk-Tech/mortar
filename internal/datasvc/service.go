@@ -4,7 +4,6 @@ package datasvc
 import (
 	"errors"
 	"path/filepath"
-	"slices"
 	"sync"
 	"time"
 
@@ -133,22 +132,6 @@ func (s *Service) forgetModUsage() {
 	s.mu.Lock()
 	s.modFP = ""
 	s.mu.Unlock()
-}
-
-// RemoveStoreItem deletes one store folder when no keep-set entry still names it.
-func (s *Service) RemoveStoreItem(game, key string) error {
-	keys, err := s.referenced()
-	if err != nil {
-		return err
-	}
-	if slices.Contains(keys[game], key) {
-		return errInUse
-	}
-	if err := s.items.Remove([]store.Ref{{Game: game, Key: key}}); err != nil {
-		return err
-	}
-	s.forgetModUsage()
-	return nil
 }
 
 // CleanupPreview lists what Clean up unused would remove.

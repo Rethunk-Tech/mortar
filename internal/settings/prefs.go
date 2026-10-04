@@ -387,15 +387,6 @@ func parseBool(raw string) (bool, error) {
 // ToggleOn is true when a *bool setting is on or omitted.
 func ToggleOn(v *bool) bool { return v == nil || *v }
 
-// UpdateCheckEvery is the background mod-update interval.
-func (s Settings) UpdateCheckEvery() time.Duration {
-	n := s.UpdateCheckIntervalMinutes
-	if n < MinUpdateCheckIntervalMinutes || n > MaxUpdateCheckIntervalMinutes {
-		n = DefaultUpdateCheckIntervalMinutes
-	}
-	return time.Duration(n) * time.Minute
-}
-
 // StoreUnusedFor is how long an unused store item is kept; 0 days means forever.
 func (s Settings) StoreUnusedFor() time.Duration {
 	if s.StoreRetentionDays <= 0 {
@@ -443,11 +434,6 @@ func (s Settings) ReuseFomod() bool {
 // AutoInstallMortar is whether a found Mortar update is staged without asking.
 func (s Settings) AutoInstallMortar() bool {
 	return ToggleOn(s.AutoInstallMortarUpdates)
-}
-
-// ShowConsoleWindow is whether a direct SMAPI launch keeps a console window.
-func (g GameSettings) ShowConsoleWindow() bool {
-	return ToggleOn(g.ShowSmapiConsole)
 }
 
 // ArchiveDir is where download zips land; empty means the data folder's downloads directory.

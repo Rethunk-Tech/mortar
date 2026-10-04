@@ -45,11 +45,3 @@ func (s *Service) GmcmResult(game, profile, uniqueID string) (gmcm.Result, error
 	}
 	return gmcm.ReadResult(d, uniqueID)
 }
-
-func (s *Service) CapturedMods(game, profile string) ([]string, error) {
-	d, err := s.store.ProfileDir(game, profile)
-	if err != nil {
-		return nil, err
-	}
-	return gmcm.CapturedIDs(d)
-}

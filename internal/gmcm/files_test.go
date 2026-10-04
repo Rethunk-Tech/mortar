@@ -42,16 +42,6 @@ func TestReadWriteCaptureAndPending(t *testing.T) {
 	if got.Mod.ID != "Example.Mod" || len(got.Pages) != 1 || got.Pages[0].Options[0].Name != "Volume" {
 		t.Fatalf("capture: %+v", got)
 	}
-	if err := datadir.WriteJSON(filepath.Join(dir, captureDir, indexName), Index{
-		Schema: Schema,
-		Mods:   []IndexMod{{ID: "Example.Mod", Name: "Example"}},
-	}); err != nil {
-		t.Fatal(err)
-	}
-	ids, err := CapturedIDs(dir)
-	if err != nil || len(ids) != 1 || ids[0] != "Example.Mod" {
-		t.Fatalf("ids %v %v", ids, err)
-	}
 	edit := Edit{Page: "main", Index: 0, Kind: "int", FieldID: field, Name: "Volume", Value: 8}
 	if err := WritePending(dir, "Example.Mod", []Edit{edit}); err != nil {
 		t.Fatal(err)
