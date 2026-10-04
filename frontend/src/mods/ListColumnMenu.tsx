@@ -203,6 +203,8 @@ function HeaderCells({
       sensors={sensors}
       collisionDetection={closestCenter}
       measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
+      // The header row is a <tr>, which cannot hold dnd-kit's hidden screen-reader text; it goes to the body instead.
+      accessibility={{ container: document.body }}
       onDragStart={({ active }) => {
         dragged.current = true
         setLifted(active.id as ListColumnId)
