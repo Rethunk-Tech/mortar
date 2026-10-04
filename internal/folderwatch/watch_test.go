@@ -41,7 +41,7 @@ func start(t *testing.T, targets func() []Target) *got {
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
 	go func() {
-		_ = Run(ctx, Deps{Targets: targets, Emit: g.emit, Quiet: 50 * time.Millisecond, Retarget: 50 * time.Millisecond})
+		_ = Run(ctx, Deps{Targets: targets, Emit: g.emit, Quiet: 50 * time.Millisecond, Stable: 300 * time.Millisecond, Retarget: 50 * time.Millisecond})
 		close(done)
 	}()
 	t.Cleanup(func() { cancel(); <-done })
@@ -92,4 +92,45 @@ func TestRetargetStopsOldFolder(t *testing.T) {
 	}
 	_ = os.WriteFile(filepath.Join(b, "x"), nil, 0o600)
 	g.wait(t, 1)
+}
+
+func TestSlowDirectWriterWaitsForStableSize(t *testing.T) {
+	dir := t.TempDir()
+	g := start(t, func() []Target { return []Target{{DownloadsEvent, "stardew", dir}} })
+	f, err := os.Create(filepath.Clean(filepath.Join(dir, "big.zip")))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = f.Close() }()
+	_, _ = f.WriteString("a")
+	time.Sleep(150 * time.Millisecond) // quiet period has passed; the first size check is under way
+	_, _ = f.WriteString("b")
+	time.Sleep(100 * time.Millisecond)
+	g.mu.Lock()
+	early := len(g.evs)
+	g.mu.Unlock()
+	if early != 0 {
+		t.Fatalf("announced while the writer was still going: %v", g.evs)
+	}
+	if evs := g.wait(t, 1); len(evs) != 1 {
+		t.Fatalf("events = %v", evs)
+	}
+}
+
+func TestRenamedInFileIsAnnouncedAtOnce(t *testing.T) {
+	dir := t.TempDir()
+	g := start(t, func() []Target { return []Target{{DownloadsEvent, "stardew", dir}} })
+	part := filepath.Join(t.TempDir(), "x.part")
+	if err := os.WriteFile(part, []byte("zip"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Rename(part, filepath.Join(dir, "x.zip")); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(200 * time.Millisecond) // well under the 300 ms stability wait
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	if len(g.evs) != 1 {
+		t.Fatalf("events = %v", g.evs)
+	}
 }

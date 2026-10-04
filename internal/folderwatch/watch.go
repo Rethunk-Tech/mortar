@@ -4,8 +4,10 @@ package folderwatch
 import (
 	"context"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"sync"
 	"time"
 
@@ -32,6 +34,9 @@ type Deps struct {
 	Emit    func(name string, data any)
 	// Quiet is how long a folder stays unchanged before its event fires.
 	Quiet time.Duration
+	// Stable is how long a download that was written in place must keep its size before it is announced; a file
+	// renamed into the folder, as browsers finish theirs, is announced at once.
+	Stable time.Duration
 	// Retarget is how often Targets is re-read, which also retries folders that did not exist.
 	Retarget time.Duration
 }
@@ -39,6 +44,9 @@ type Deps struct {
 type watch struct {
 	t     Target
 	timer *time.Timer
+	// writing holds files that received write events since the last announcement; gen counts every event.
+	writing map[string]struct{}
+	gen     int
 }
 
 // Run watches until ctx ends. fsnotify watches each folder's top level only; a folder that is missing is retried at
@@ -49,17 +57,40 @@ func Run(ctx context.Context, d Deps) error {
 		return err
 	}
 	defer func() { _ = w.Close() }()
-	quiet, every := d.Quiet, d.Retarget
+	quiet, every, stable := d.Quiet, d.Retarget, d.Stable
 	if quiet <= 0 {
 		quiet = 500 * time.Millisecond
 	}
 	if every <= 0 {
 		every = 2 * time.Second
 	}
+	if stable <= 0 {
+		stable = time.Second
+	}
 	var mu sync.Mutex
 	active := map[string]*watch{} // by Dir
 	missing := map[string]bool{}  // folders seen absent, so their appearing fires once
-	fire := func(t Target) { d.Emit(t.Event, t.Game) }
+	// settle announces a quiet folder. Files written in place may only be paused, so their sizes must match across
+	// a second look; any event or size change in between keeps the folder pending.
+	settle := func(a *watch) {
+		mu.Lock()
+		names, gen := slices.Collect(maps.Keys(a.writing)), a.gen
+		mu.Unlock()
+		before := sizesOf(names)
+		select {
+		case <-time.After(stable):
+		case <-ctx.Done():
+			return
+		}
+		mu.Lock()
+		defer mu.Unlock()
+		if a.gen != gen || !maps.Equal(before, sizesOf(names)) {
+			a.timer.Reset(quiet)
+			return
+		}
+		clear(a.writing)
+		d.Emit(a.t.Event, a.t.Game)
+	}
 	retarget := func() {
 		mu.Lock()
 		defer mu.Unlock()
@@ -88,7 +119,17 @@ func Run(ctx context.Context, d Deps) error {
 				log.Printf("folderwatch: %s: %v", dir, err)
 				continue
 			}
-			a := &watch{t: t, timer: time.AfterFunc(quiet, func() { fire(t) })}
+			a := &watch{t: t, writing: map[string]struct{}{}}
+			a.timer = time.AfterFunc(quiet, func() {
+				mu.Lock()
+				waits := t.Event == DownloadsEvent && len(a.writing) > 0
+				mu.Unlock()
+				if waits {
+					settle(a)
+					return
+				}
+				d.Emit(t.Event, t.Game)
+			})
 			if !missing[dir] {
 				a.timer.Stop()
 			}
@@ -122,6 +163,10 @@ func Run(ctx context.Context, d Deps) error {
 				delete(active, ev.Name)
 				missing[ev.Name] = true
 			} else if a := active[filepath.Dir(ev.Name)]; a != nil {
+				a.gen++
+				if ev.Has(fsnotify.Write) {
+					a.writing[ev.Name] = struct{}{}
+				}
 				a.timer.Reset(quiet)
 			}
 			mu.Unlock()
@@ -132,4 +177,16 @@ func Run(ctx context.Context, d Deps) error {
 			log.Printf("folderwatch: %v", err)
 		}
 	}
+}
+
+// sizesOf maps each file to its size, or -1 when it is gone.
+func sizesOf(names []string) map[string]int64 {
+	out := make(map[string]int64, len(names))
+	for _, n := range names {
+		out[n] = -1
+		if st, err := os.Stat(n); err == nil {
+			out[n] = st.Size()
+		}
+	}
+	return out
 }
