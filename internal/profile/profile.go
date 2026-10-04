@@ -210,7 +210,9 @@ type Store struct {
 	// BackupsKept returns how many save backups to retain; nil means backup.DefaultKeep.
 	BackupsKept func() int
 	// NewModsEnabled reports whether newly installed entries start enabled; nil means enabled.
-	NewModsEnabled  func() bool
+	NewModsEnabled func() bool
+	// OldFilesMode returns the game's oldFilesOnUpdate setting; nil means ask.
+	OldFilesMode    func(game string) string
 	historyKind     string
 	historyLabel    string
 	historyQuietIDs map[string]int

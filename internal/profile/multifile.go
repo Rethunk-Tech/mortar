@@ -280,7 +280,7 @@ func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey str
 			continue
 		}
 		configOnly := deleteOldVersion(found, om.UniqueID)
-		err = carryOverWalk(cur, filepath.Join(extraSrc, filepath.FromSlash(rel)), filepath.Join(scratch, filepath.FromSlash(rel)), configOnly)
+		err = carryOverWalk(cur, filepath.Join(extraSrc, filepath.FromSlash(rel)), filepath.Join(scratch, filepath.FromSlash(rel)), configOnly, nil)
 		if err != nil {
 			return err
 		}

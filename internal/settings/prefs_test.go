@@ -118,6 +118,9 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"watchDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep",
 		"saveBackupHours": "6", "saveBackupKeep": "3",
 	}
+	if len(overrides) != len(PrefKeys()) {
+		t.Fatalf("%d overrides for %d registered keys", len(overrides), len(PrefKeys()))
+	}
 	for _, p := range PrefKeys() {
 		v, ok := overrides[p.Key]
 		if !ok {

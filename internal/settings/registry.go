@@ -175,6 +175,7 @@ var registry = []pref{
 		gp.ShowDotHiddenMods = on
 		putGame(s, g, gp)
 	}),
+	enumPref("oldFilesOnUpdate", ScopeGame, OldFilesAsk, oldFilesValues, func(s Settings, g string) string { return s.GamePrefs(g).OldFilesOnUpdate }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.OldFilesOnUpdate = v; putGame(s, g, gp) }),
 }
 
 func defaultGameSettings() GameSettings {

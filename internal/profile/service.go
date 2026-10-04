@@ -28,6 +28,9 @@ type Service struct {
 
 func NewService(store *Store, home string, settings *settings.Store) *Service {
 	store.NewModsEnabled = func() bool { return settings.Get().NewModsEnabled() }
+	if settings != nil {
+		store.OldFilesMode = func(game string) string { return settings.Get().GamePrefs(game).OldFilesOnUpdate }
+	}
 	store.home, store.settings = home, settings
 	return &Service{store: store, home: home, settings: settings}
 }

@@ -250,7 +250,7 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 				_ = os.RemoveAll(staging)
 				return err
 			}
-			if err := carryOverWalk(live, old, liveEntryDir(staging, e.Key), false); err != nil {
+			if err := carryOverWalk(live, old, liveEntryDir(staging, e.Key), false, nil); err != nil {
 				_ = os.RemoveAll(staging)
 				return err
 			}

@@ -16,6 +16,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	gamepkg "github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
 // conflictSuffix names the profile's copy of a file the target version also changed.
@@ -179,6 +180,8 @@ func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry
 	if err := datadir.MaterializeTree(newSrc, tmp); err != nil {
 		return swapped{}, err
 	}
+	mode := s.oldFilesMode(game)
+	var held []heldFile
 	for _, nm := range ne.Mods {
 		i := slices.IndexFunc(e.Mods, func(m EntryMod) bool { return sameID(m.UniqueID, nm.UniqueID) })
 		if i < 0 {
@@ -196,7 +199,20 @@ func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry
 			continue
 		}
 		configOnly := deleteOldVersion(newManifests, nm.UniqueID)
-		err = carryOverWalk(cur, filepath.Join(oldSrc, filepath.FromSlash(e.Mods[i].Folder)), filepath.Join(tmp, filepath.FromSlash(nm.Folder)), configOnly)
+		target := filepath.Join(tmp, filepath.FromSlash(nm.Folder))
+		var gone func(rel, p string) error
+		switch mode {
+		case settings.OldFilesKeep:
+			gone = func(rel, p string) error { return copyOver(p, filepath.Join(target, rel)) }
+		case settings.OldFilesAsk:
+			if _, err := safeFolder(nm.UniqueID); err == nil && filepath.Base(nm.UniqueID) == nm.UniqueID {
+				gone = func(rel, p string) error {
+					held = append(held, heldFile{uniqueID: nm.UniqueID, rel: rel, abs: p})
+					return nil
+				}
+			}
+		}
+		err = carryOverWalk(cur, filepath.Join(oldSrc, filepath.FromSlash(e.Mods[i].Folder)), target, configOnly, gone)
 		if err != nil {
 			return swapped{}, err
 		}
@@ -222,17 +238,41 @@ func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry
 	if err != nil {
 		return swapped{}, err
 	}
-	return replaceFolder(modsDir, e.Key, tmp, final)
+	w, err := replaceFolder(modsDir, e.Key, tmp, final)
+	if err != nil || w.aside == "" {
+		return w, err
+	}
+	for _, h := range held {
+		rel, err := filepath.Rel(w.old, h.abs)
+		if err != nil {
+			return w, err
+		}
+		w.held = append(w.held, heldFile{uniqueID: h.uniqueID, rel: h.rel, abs: filepath.Join(w.aside, rel)})
+	}
+	w.heldDir = filepath.Join(filepath.Dir(modsDir), oldFilesDir, ne.Key)
+	return w, nil
 }
 
 // asidePrefix names an entry folder moved out of the way during an update. Its suffix is the folder's own name,
 // so rebuild can put it back if Mortar stops before profile.json records the update.
 const asidePrefix = tempPrefix + "aside_"
 
-// swapped is an entry folder replaced on disk but not yet recorded in profile.json.
-type swapped struct{ old, aside, placed string }
+// swapped is an entry folder replaced on disk but not yet recorded in profile.json. held are files of the old folder
+// to set aside under heldDir instead of deleting them with it.
+type swapped struct {
+	old, aside, placed string
+	held               []heldFile
+	heldDir            string
+}
 
 func (w swapped) commit() {
+	// The store keeps the previous version, so a file that fails to move aside is still recoverable by Roll back.
+	for _, h := range w.held {
+		dst := filepath.Join(w.heldDir, h.uniqueID, h.rel)
+		if os.MkdirAll(filepath.Dir(dst), 0o700) == nil {
+			_ = os.Rename(h.abs, dst)
+		}
+	}
 	if w.aside != "" {
 		// A failed delete leaves a temp-prefixed folder, which the next rebuild sweeps.
 		_ = os.RemoveAll(w.aside)
@@ -278,10 +318,12 @@ func replaceFolder(modsDir, oldKey, tmp, final string) (swapped, error) {
 // carryOver applies the three-way rule to every file of prof (the profile's mod folder), against old (the current
 // version in the store) and target (the new copy being built).
 func carryOver(prof, old, target string) error {
-	return carryOverWalk(prof, old, target, false)
+	return carryOverWalk(prof, old, target, false, nil)
 }
 
-func carryOverWalk(prof, old, target string, configOnly bool) error {
+// carryOverWalk applies the three-way rule. A file the old version shipped unchanged that target no longer has is
+// dropped, or handed to gone when it is set.
+func carryOverWalk(prof, old, target string, configOnly bool, gone func(rel, p string) error) error {
 	return filepath.WalkDir(prof, func(p string, d fs.DirEntry, err error) error {
 		if err != nil || !d.Type().IsRegular() {
 			return err
@@ -297,6 +339,9 @@ func carryOverWalk(prof, old, target string, configOnly bool) error {
 		inOld := exists(oldP)
 		if inOld {
 			if same, err := sameFile(p, oldP); err != nil || same {
+				if err == nil && gone != nil && !exists(newP) {
+					return gone(rel, p)
+				}
 				return err
 			}
 		}
