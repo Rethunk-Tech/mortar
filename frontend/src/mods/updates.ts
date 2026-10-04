@@ -31,13 +31,13 @@ function checkedWithSmapi(at: number | null, now: number, unknown: boolean): str
 const MS_PER_HOUR = 3_600_000
 let hourlyTimer: ReturnType<typeof setInterval> | undefined
 const inFlight = new Map<string, Promise<UpdatesResult>>()
+
 const countFor = (updates: UpdatesResult, id: string) =>
   updateCount(
     updates,
     useProfiles.getState().profiles.find((p) => p.id === id),
     useNexusDetails.getState().byId,
   )
-
 
 function syncBadge() {
   const { openId } = useProfiles.getState()
