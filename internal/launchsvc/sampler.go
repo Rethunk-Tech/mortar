@@ -26,7 +26,8 @@ type startupSamples struct {
 	ThreadSamples int              `json:"threadSamples"`
 }
 
-func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, modsDir string, before map[string]bool) {
+func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, modsDir string, before map[string]bool, stopped func()) {
+	defer stopped()
 	// A test launch stops the game the moment the report appears and cancels parent with it; the sampler must still
 	// see that report, so it ends on its own limit or when the game process is gone.
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(parent), startupSampleLimit)
@@ -53,6 +54,7 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 	stopCtx, stopCancel := context.WithTimeout(detached, 30*time.Second)
 	tracePath, stopErr := session.Stop(stopCtx)
 	stopCancel()
+	stopped()
 	if stopErr != nil {
 		_ = os.Remove(tracePath)
 		log.Printf("startup sampler: %s: %v", g.ID(), stopErr)

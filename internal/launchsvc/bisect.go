@@ -54,6 +54,7 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (b
 	defer ticker.Stop()
 	for {
 		if hasBridge && startupReportAfter(startup, launched) {
+			s.waitSampled(gameID, time.Minute)
 			if err := s.Stop(gameID); err != nil {
 				return false, launch.Summary{}, err
 			}

@@ -144,6 +144,8 @@ type Service struct {
 	WaitPID  func(pid int) (launch.Exit, error)
 	stopping map[string]bool
 	reaping  map[string]bool
+	// sampled is closed once a measured launch's sampler has stopped its session; the game must still be running then.
+	sampled map[string]chan struct{}
 	// SweepVersions, SweepCompat, SweepHasUpdate and SweepMissingDeps are replaced in tests.
 	SweepVersions    func(gameID string) (gameVer, smapiVer string, err error)
 	SweepCompat      func(ctx context.Context) (meta.CompatIndex, error)
@@ -156,7 +158,7 @@ func NewService(home string, s *settings.Store, profiles *profile.Store) *Servic
 		home: home, settings: s, profiles: profiles, procDir: procDirRun,
 		status: map[string]Status{}, watching: map[string]bool{},
 		logs: map[string]session{}, stop: map[string]context.CancelFunc{}, preparing: map[string]string{},
-		stopping: map[string]bool{}, reaping: map[string]bool{},
+		stopping: map[string]bool{}, reaping: map[string]bool{}, sampled: map[string]chan struct{}{},
 		EnsureLoader: func(context.Context, string, bool) error { return errors.New("the loader cannot be installed here") },
 	}
 }
@@ -708,10 +710,30 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 	}
 	s.watch(g)
 	if measure {
-		go s.sampleStartup(runCtx, g, profileID, modsDir, startupBefore)
+		stopped := make(chan struct{})
+		s.mu.Lock()
+		s.sampled[g.ID()] = stopped
+		s.mu.Unlock()
+		go s.sampleStartup(runCtx, g, profileID, modsDir, startupBefore, sync.OnceFunc(func() { close(stopped) }))
 	}
 	go s.run(runCtx, g, profileID, req, buf)
 	return nil
+}
+
+// waitSampled waits for a measured launch's sampler to stop its session, so stopping the game does not cut off the
+// method rundown the samples are resolved with.
+func (s *Service) waitSampled(gameID string, limit time.Duration) {
+	s.mu.Lock()
+	stopped := s.sampled[gameID]
+	delete(s.sampled, gameID)
+	s.mu.Unlock()
+	if stopped == nil {
+		return
+	}
+	select {
+	case <-stopped:
+	case <-time.After(limit):
+	}
 }
 
 func (s *Service) backupChangedSaves(gameID, profileID string, g game.Game, installDir string) error {
