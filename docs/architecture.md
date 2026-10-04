@@ -505,10 +505,10 @@ Saves live in one folder, `%APPDATA%\StardewValley\Saves` or `~/.config/StardewV
   - Two packs setting a map property to the same value agree and never conflict.
   - Overlapping image edits with the same source digest and `FromArea` agree and never conflict.
 - **Measured, not worth optimising** (main profile: 819 installed mods, 48,484 files under `mods/`):
-  - The production frontend bundle is one 1.31 MB minified script (the 2.76 MB file in `frontend/dist` is the unminified dev build), so code-splitting screens saves too little startup parse to pay for the lazy-loading seams.
+  - The production frontend bundle is one 1.46 MB minified script, so code-splitting screens saves too little startup parse to pay for the lazy-loading seams.
   - A full walk of the store takes 82 ms (180 ms with a stat per file) over 53,758 files; a profile walk takes 72 ms (168 ms with stats) over 48,484 files.
   - The problem-scan cache is 2.5 MB gzip (31 MB raw); rewriting it after one pack changes takes about 0.55 s of CPU and loading it once per process 0.47 s. Each stays under the noise of a check; shrinking the cache is tracked for disk use, not speed.
-  - A drift scan covers 48,484 files in 175 ms, and a repeat check within 5 s reuses it. `Installed()` over 819 manifests takes 18 ms.
+  - A drift scan covers 48,484 files in about 220 ms (240 ms CPU), and a repeat check within 5 s reuses it. `Installed()` over 819 manifests takes 18 ms.
   - dlwatch polls 15 archives. Queue history is capped at 1,000 items (299 KB, full on the main profile). `nexus-seen` is capped at 2,000. Runs are capped at 20 (the default `runsKept`).
   - JSON Lines for the append-only logs: reading, parsing and rewriting `history.json` (51 KB) costs 0.5 ms CPU per event and `download-history.json` (299 KB) 5.3 ms per finished download. Each history event also writes a snapshot file, events are edited in place (batches, change counts) and both files are trimmed to their cap, so an append-only format would still be rewritten.
   - Weighing the conflict fixes' master-switch rule by the assets a field reaches instead of its share of patches offered no new fix on the main profile and withheld fixes from small packs, so the one-fifth patch share stays.
