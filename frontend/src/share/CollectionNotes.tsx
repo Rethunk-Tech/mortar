@@ -96,3 +96,5 @@ export function CollectionNotes({ collection }: { collection: CollectionInfo }) 
     </>
   )
 }
+
+export { PageLink }

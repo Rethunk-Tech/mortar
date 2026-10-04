@@ -3977,6 +3977,10 @@ msgstr "Values"
 
 #. placeholder {0}: mod.name
 #: src/mods/ReportToAuthorButton.tsx:144
+#: src/updates/WhatsNewDialog.tsx:94
+msgid "Read the release notes on GitHub"
+msgstr "Read the release notes on GitHub"
+
 msgid "Error in {0}"
 msgstr "Error in {0}"
 
