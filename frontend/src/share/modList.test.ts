@@ -134,19 +134,19 @@ test('Markdown and plain text group by enabled when any mod is off', () => {
   ]
   expect(formatMarkdown(items)).toBe(
     [
-      'Enabled',
+      'On',
       '- [On](https://example.com/on) 1',
       '',
-      'Disabled',
+      'Switched off',
       '- [Off](https://example.com/off) 2',
     ].join('\n'),
   )
   expect(formatPlain(items)).toBe(
     [
-      'Enabled',
+      'On',
       'On v1 - https://example.com/on',
       '',
-      'Disabled',
+      'Switched off',
       'Off v2 - https://example.com/off',
     ].join('\n'),
   )

@@ -23,7 +23,7 @@ export function IncludeOptions({
   )
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-      {row('disabledMods', t`Include disabled mods`)}
+      {row('disabledMods', t`Include switched off mods`)}
       {row('fomodChoices', t`Include FOMOD choices`)}
       {row('notes', t`Include notes`)}
       {file ? row('configFiles', t`Include config files`) : null}

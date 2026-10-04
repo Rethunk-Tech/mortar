@@ -26,8 +26,9 @@ import { SendDialog } from '../lan/SendDialog.tsx'
 import { heading, paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MONO } from '../theme/theme.ts'
-import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { IncludeOptions } from './IncludeOptions.tsx'
 import { type MeterLevel, meter, type ShownInfo, suggestFile } from './logic.ts'
 import { formatModList, listItems, type ModListFormat } from './modList.ts'
@@ -296,7 +297,7 @@ function CopyModList() {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [partsAnchor, setPartsAnchor] = useState<HTMLElement | null>(null)
   const items = listItems(profile, keys)
-  const labels = { enabled: t`Enabled`, disabled: t`Disabled` }
+  const labels = { enabled: t`On`, disabled: t`Switched off` }
   const parts = formatModList(format, items, labels)
   const options: { id: ModListFormat; label: string; icon: typeof FileText }[] = [
     { id: 'markdown', label: t`Markdown`, icon: FileText },
@@ -365,7 +366,7 @@ function CopyModList() {
           <MenuItem
             key={part.id}
             onClick={() => {
-              copyText(part.text, t`Copied part ${part.n}`)
+              copyText(part.text, t`Part ${part.n} copied`)
               setPartsAnchor(null)
             }}
           >
@@ -397,25 +398,19 @@ function FileTab({
 }) {
   const { t } = useLingui()
   const [saved, setSaved] = useState<Saved | null>(null)
-  const [busy, setBusy] = useState(false)
-  const save = async () => {
-    setBusy(true)
-    try {
-      const result = await SaveFile(game, profileId, keys, toShareInclude(include))
-      if (result.path) {
-        setSaved(result)
-        useToasts.getState().push({ kind: 'success', title: t`File saved` })
+  const [busy, run] = usePending()
+  const save = () => {
+    run(async () => {
+      try {
+        const result = await SaveFile(game, profileId, keys, toShareInclude(include))
+        if (result.path) {
+          setSaved(result)
+          useToasts.getState().push({ kind: 'success', title: t`File saved` })
+        }
+      } catch (e) {
+        reportError(t`Could not save the file`)(e)
       }
-    } catch (e) {
-      useToasts.getState().push({
-        kind: 'error',
-        title: t`Could not save the file`,
-        body: errorMessage(e),
-        detail: errorDetails(e),
-      })
-    } finally {
-      setBusy(false)
-    }
+    })
   }
   const skipped = saved?.skipped ?? []
   return (

@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import type {
@@ -24,7 +25,7 @@ export function CompareSummary({ preview, targetName }: { preview: Preview; targ
   return (
     <Box sx={{ px: 1, pt: 0.5, pb: 1, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
       <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-        {t`${matching.length} mods already match ${targetName}.`}
+        {t`${plural(matching.length, { one: '# mod already matches', other: '# mods already match' })} ${targetName}.`}
       </Typography>
       {rows
         .filter((r) => r.items.length > 0)

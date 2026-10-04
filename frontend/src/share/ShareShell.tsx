@@ -37,6 +37,7 @@ export function ShareShell({
       onClose={close}
       maxWidth={false}
       transitionDuration={0}
+      aria-label={info ? t`Share ${info.name}` : undefined}
       slotProps={{
         paper: {
           ...paper,
@@ -54,8 +55,6 @@ export function ShareShell({
     >
       {info ? (
         <Box
-          role="dialog"
-          aria-label={t`Share ${info.name}`}
           sx={{
             position: 'relative',
             display: 'grid',

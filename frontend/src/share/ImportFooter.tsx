@@ -1,13 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 
 const INFO_FILL = 0.16
@@ -17,7 +9,7 @@ import { ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { useLaunch } from '../launch/store.ts'
 import { isLocked } from '../mods/locked.ts'
-import { paper } from '../mods/paper.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { Problems, StatusBar } from './ImportPreview.tsx'
@@ -92,7 +84,7 @@ export function ImportFooter({
         }}
       >
         <Button
-          variant="outlined"
+          variant="text"
           color="inherit"
           onClick={flow.reset}
           disabled={flow.busy}
@@ -118,6 +110,7 @@ export function ImportFooter({
           <DisabledReason title={t`Stop the game to change mods.`} disabled={targetLocked}>
             <Button
               variant="outlined"
+              color="error"
               disabled={!canRun || targetLocked}
               onClick={() => setAskReplace(true)}
               sx={{ height: 40 }}
@@ -138,50 +131,40 @@ export function ImportFooter({
           {runLabel}
         </Button>
       </Box>
-      <Dialog
+      <ConfirmDialog
         open={askReplace}
-        onClose={() => setAskReplace(false)}
-        transitionDuration={0}
-        slotProps={{ paper }}
+        color="error"
+        title={t`Replace ${targetName}?`}
+        confirmLabel={t`Replace ${targetName}`}
+        onCancel={() => setAskReplace(false)}
+        onConfirm={() => {
+          setAskReplace(false)
+          flow.runReplace().catch(reportUnexpected)
+        }}
       >
-        <DialogTitle>{t`Replace ${targetName}?`}</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 360 }}>
-          {(preview.replace?.remove ?? []).length > 0 ? (
-            <Box component="details">
-              <Typography component="summary" sx={{ fontSize: 13, cursor: 'pointer' }}>
-                {t`These will be removed (${(preview.replace?.remove ?? []).length})`}
-              </Typography>
-              <Typography sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}>
-                {(preview.replace?.remove ?? []).join(', ')}
-              </Typography>
-            </Box>
-          ) : (
-            <Typography sx={{ fontSize: 13 }}>{t`Nothing will be removed.`}</Typography>
-          )}
-          {(preview.replace?.keepLocal ?? []).length > 0 ? (
-            <Box component="details">
-              <Typography component="summary" sx={{ fontSize: 13, cursor: 'pointer' }}>
-                {t`Local-only mods kept (${(preview.replace?.keepLocal ?? []).length})`}
-              </Typography>
-              <Typography sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}>
-                {(preview.replace?.keepLocal ?? []).join(', ')}
-              </Typography>
-            </Box>
-          ) : null}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAskReplace(false)}>{t`Cancel`}</Button>
-          <Button
-            color="error"
-            onClick={() => {
-              setAskReplace(false)
-              flow.runReplace().catch(reportUnexpected)
-            }}
-          >
-            {t`Replace ${targetName}`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        {(preview.replace?.remove ?? []).length > 0 ? (
+          <Box component="details">
+            <Typography component="summary" sx={{ fontSize: 13, cursor: 'pointer' }}>
+              {t`These will be removed (${(preview.replace?.remove ?? []).length})`}
+            </Typography>
+            <Typography sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}>
+              {(preview.replace?.remove ?? []).join(', ')}
+            </Typography>
+          </Box>
+        ) : (
+          <Typography sx={{ fontSize: 13 }}>{t`Nothing will be removed.`}</Typography>
+        )}
+        {(preview.replace?.keepLocal ?? []).length > 0 ? (
+          <Box component="details">
+            <Typography component="summary" sx={{ fontSize: 13, cursor: 'pointer' }}>
+              {t`Local-only mods kept (${(preview.replace?.keepLocal ?? []).length})`}
+            </Typography>
+            <Typography sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}>
+              {(preview.replace?.keepLocal ?? []).join(', ')}
+            </Typography>
+          </Box>
+        ) : null}
+      </ConfirmDialog>
     </Box>
   )
 }

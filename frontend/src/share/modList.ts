@@ -22,7 +22,7 @@ interface GroupLabels {
   disabled: string
 }
 
-const defaultLabels: GroupLabels = { enabled: 'Enabled', disabled: 'Disabled' }
+const defaultLabels: GroupLabels = { enabled: 'On', disabled: 'Switched off' }
 
 function pageUrl(source: Source): string {
   if (source.kind === 'nexus' && source.modId) {
