@@ -1,17 +1,7 @@
 import { create } from 'zustand'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
 
-export type TabId =
-  | 'browse'
-  | 'mods'
-  | 'problems'
-  | 'load-order'
-  | 'saves'
-  | 'notes'
-  | 'console'
-  | 'performance'
-
-const TABS: readonly unknown[] = [
+const TABS = [
   'browse',
   'mods',
   'problems',
@@ -20,10 +10,12 @@ const TABS: readonly unknown[] = [
   'notes',
   'console',
   'performance',
-]
+] as const
 const TAB_KEY = 'mortar.tab'
 
-const isTabId = (value: unknown): value is TabId => TABS.includes(value)
+const isTabId = (value: unknown): value is TabId => (TABS as readonly unknown[]).includes(value)
+
+export type TabId = (typeof TABS)[number]
 
 export const useTab = create<{
   tab: TabId

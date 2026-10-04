@@ -106,7 +106,10 @@ const BRIDGE_ID = 'Rethunk.MortarSmapiBridge'
 
 type ModSort = 'name' | 'total' | 'entry' | 'event' | 'assets' | 'sampled'
 
-type StoredSort = { column: ModSort; direction: 'asc' | 'desc' }
+interface StoredSort {
+  column: ModSort
+  direction: 'asc' | 'desc'
+}
 
 const isStoredSort = (value: unknown): value is StoredSort | null =>
   value === null ||

@@ -14,6 +14,16 @@ interface ImportBatch {
 const batches = new Map<string, ImportBatch>()
 const settled = new Set(['done', 'failed', 'skipped', 'cancelled'])
 
+function importCountsLine(counts: SettledImportCounts) {
+  return [
+    counts.installed > 0 && i18n._(msg`${counts.installed} installed`),
+    counts.failed > 0 && i18n._(msg`${counts.failed} failed`),
+    counts.skipped > 0 && i18n._(msg`${counts.skipped} skipped`),
+  ]
+    .filter(Boolean)
+    .join(', ')
+}
+
 export interface SettledImportCounts {
   installed: number
   failed: number
@@ -56,16 +66,6 @@ export function trackImport(
 
 export function isTrackedImportBatch(batchId: string): boolean {
   return batchId !== '' && batches.has(batchId)
-}
-
-function importCountsLine(counts: SettledImportCounts) {
-  return [
-    counts.installed > 0 && i18n._(msg`${counts.installed} installed`),
-    counts.failed > 0 && i18n._(msg`${counts.failed} failed`),
-    counts.skipped > 0 && i18n._(msg`${counts.skipped} skipped`),
-  ]
-    .filter(Boolean)
-    .join(', ')
 }
 
 export function observeImportState(items: readonly Pick<Item, 'batchId' | 'state'>[]) {
