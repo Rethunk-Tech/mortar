@@ -27,7 +27,7 @@ import { useDetail } from './detail.ts'
 import { entryOf, modId, siblingsOf } from './lookup.ts'
 import { openPage } from './menu.ts'
 import { NexusDetails } from './NexusDetails.tsx'
-import { heading, paper } from './paper.ts'
+import { heading } from './paper.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -276,13 +276,7 @@ function Details({ mod, profile }: { mod: Mod; profile: Profile }) {
   const mine = extras?.id === modId(mod) ? extras : null
   const source = (profile.entries ?? []).find((e) => e.key === mod.key)?.source
   return (
-    <Dialog
-      open={true}
-      onClose={() => setOpen(false)}
-      fullWidth={true}
-      maxWidth="sm"
-      slotProps={{ paper }}
-    >
+    <Dialog open={true} onClose={() => setOpen(false)} fullWidth={true} maxWidth="sm">
       <DialogTitle>{mod.name}</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <PageLink url={mine?.relations.pageUrl ?? ''} />

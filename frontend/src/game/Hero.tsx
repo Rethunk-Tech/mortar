@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Link, Typography } from '@mui/material'
+import { Box, Button, ButtonBase, Link, Typography } from '@mui/material'
 import { type ReactNode, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { When } from '../i18n/When.tsx'
@@ -69,7 +69,7 @@ function Card({
 }) {
   return (
     <Box
-      component={onClick ? 'button' : 'div'}
+      component={onClick ? ButtonBase : 'div'}
       aria-label={onClick ? ariaLabel : undefined}
       onClick={onClick}
       sx={{
@@ -81,6 +81,7 @@ function Card({
         '&:hover': onClick ? { bgcolor: CARD_HOVER } : undefined,
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'stretch',
         px: 1.5,
         py: 1,
         bgcolor: CARD_BG,
@@ -88,10 +89,14 @@ function Card({
         boxShadow: (theme) => (tone ? `inset 0 0 0 1px ${theme.palette[tone].main}` : 'none'),
       }}
     >
-      <Typography sx={{ fontSize: LABEL_FONT_PX, color: 'text.secondary', whiteSpace: 'nowrap' }}>
+      <Typography
+        component="span"
+        sx={{ fontSize: LABEL_FONT_PX, color: 'text.secondary', whiteSpace: 'nowrap' }}
+      >
         {label}
       </Typography>
       <Typography
+        component="span"
         sx={{
           fontSize: VALUE_FONT_PX,
           fontWeight: NAME_WEIGHT,

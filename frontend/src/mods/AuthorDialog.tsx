@@ -21,7 +21,6 @@ import { openPage } from './menu.ts'
 import { modsByAuthor } from './modsByAuthor.ts'
 import { nexusAuthorPageUrl } from './nexusAuthorPage.ts'
 import { useNexusEntry } from './nexusDetails.ts'
-import { paper } from './paper.ts'
 
 const text = { fontSize: 13 } as const
 const muted = { fontSize: 12, color: 'text.secondary' } as const
@@ -154,7 +153,7 @@ export function AuthorDialog({
 }) {
   const { t } = useLingui()
   return (
-    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm" slotProps={{ paper }}>
+    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
       <DialogTitle>{t`Author · ${author}`}</DialogTitle>
       <DialogContent>
         {open ? (

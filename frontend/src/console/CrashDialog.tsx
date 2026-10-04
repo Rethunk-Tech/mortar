@@ -19,7 +19,6 @@ import { useTab } from '../game/tab.ts'
 import { useLaunch } from '../launch/store.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
-import { paper } from '../mods/paper.ts'
 import { ReportToAuthorButton } from '../mods/ReportToAuthorButton.tsx'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -93,7 +92,12 @@ function MoreActions({
   const close = () => setAnchor(null)
   return (
     <>
-      <Button endIcon={<ChevronDown size={16} />} onClick={(e) => setAnchor(e.currentTarget)}>
+      <Button
+        endIcon={<ChevronDown size={16} />}
+        aria-haspopup="menu"
+        aria-expanded={anchor !== null}
+        onClick={(e) => setAnchor(e.currentTarget)}
+      >
         {t`More`}
       </Button>
       <Menu anchorEl={anchor} open={anchor !== null} onClose={close}>
@@ -191,7 +195,7 @@ export function CrashDialog() {
       <Dialog
         open={true}
         onClose={dismiss}
-        slotProps={{ paper: { sx: { ...paper.sx, width: 520, maxWidth: 'calc(100% - 32px)' } } }}
+        slotProps={{ paper: { sx: { width: 520, maxWidth: 'calc(100% - 32px)' } } }}
       >
         <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>
           {crash.crashed ? t`Stardew Valley crashed` : t`Stardew Valley closed with errors`}

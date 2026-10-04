@@ -17,7 +17,6 @@ import type {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { nexusKeepKey, preselect } from './lookup.ts'
-import { paper } from './paper.ts'
 import { LetterTile } from './parts.tsx'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
@@ -142,7 +141,7 @@ export function DuplicateDialog({ profileName }: { profileName: string }) {
       open={dup !== null}
       onClose={() => resolve(null)}
       maxWidth={false}
-      slotProps={{ paper: { sx: { ...paper.sx, width: 780, maxWidth: 'calc(100% - 32px)' } } }}
+      slotProps={{ paper: { sx: { width: 780, maxWidth: 'calc(100% - 32px)' } } }}
     >
       {dup ? <Resolver key={dup.uniqueId} dup={dup} profileName={profileName} /> : null}
     </Dialog>

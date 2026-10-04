@@ -18,7 +18,6 @@ import type { Arrival } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { List } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
-import { paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
@@ -96,7 +95,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
           dismiss(arrival.id)
         }
       }}
-      slotProps={{ paper: { sx: { ...paper.sx, width: 460, maxWidth: 'calc(100% - 32px)' } } }}
+      slotProps={{ paper: { sx: { width: 460, maxWidth: 'calc(100% - 32px)' } } }}
     >
       <DialogTitle>{t`Install ${name}?`}</DialogTitle>
       <DialogContent>
@@ -135,7 +134,13 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
           {t`Ignore`}
         </Button>
         {others.length > 0 ? (
-          <Button variant="outlined" disabled={busy} onClick={(e) => setAnchor(e.currentTarget)}>
+          <Button
+            variant="outlined"
+            disabled={busy}
+            aria-haspopup="menu"
+            aria-expanded={anchor !== null}
+            onClick={(e) => setAnchor(e.currentTarget)}
+          >
             {t`Other profile…`}
           </Button>
         ) : null}

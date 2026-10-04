@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button } from '@mui/material'
+import { Box, Button, ButtonBase } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
 import { SetShortcuts } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
@@ -66,14 +66,11 @@ function ShortcutRow({
         ) : null}
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-        <Box
-          component="button"
-          type="button"
+        <ButtonBase
           aria-label={t`Change shortcut for ${label}, currently ${keys}`}
           onClick={onRecord}
           sx={{
             color: 'var(--mortar-ink-sec)',
-            fontFamily: 'inherit',
             fontSize: 12,
             px: 0.75,
             py: 0.25,
@@ -85,7 +82,7 @@ function ShortcutRow({
           }}
         >
           {recording ? t`Press a key` : keys || ''}
-        </Box>
+        </ButtonBase>
         <Button
           size="small"
           disabled={keys === defaultBindings()[id]}

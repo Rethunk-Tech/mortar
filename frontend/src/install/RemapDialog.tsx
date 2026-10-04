@@ -19,7 +19,6 @@ import type {
   RemapVariant,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { formatBytes } from '../i18n/bytes.ts'
-import { paper } from '../mods/paper.ts'
 import { useInstall } from './store.ts'
 
 function NodeRow({
@@ -140,7 +139,6 @@ function RemapBody() {
     <Dialog
       open={true}
       onClose={close}
-      slotProps={{ paper }}
       sx={{ '& .MuiDialog-paper': { minWidth: 420, maxHeight: '80vh' } }}
     >
       <DialogTitle>

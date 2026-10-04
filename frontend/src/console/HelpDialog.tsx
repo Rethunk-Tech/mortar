@@ -20,7 +20,6 @@ import {
   Upload,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
 import { openPage } from '../mods/menu.ts'
-import { paper } from '../mods/paper.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MONO } from '../theme/theme.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
@@ -232,7 +231,7 @@ export function HelpDialog({ game }: { game: string }) {
     <Dialog
       open={open}
       onClose={uploading ? undefined : close}
-      slotProps={{ paper: { sx: { ...paper.sx, width: 780, maxWidth: 'calc(100% - 32px)' } } }}
+      slotProps={{ paper: { sx: { width: 780, maxWidth: 'calc(100% - 32px)' } } }}
     >
       <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Share log…`}</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

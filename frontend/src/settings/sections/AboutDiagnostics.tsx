@@ -19,7 +19,6 @@ import {
   Doctor,
   RepairNativeHosts,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
-import { paper } from '../../mods/paper.ts'
 import { routeGame, useNav } from '../../nav/store.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { saveDiagnostics } from '../../shell/saveDiagnostics.ts'
@@ -175,7 +174,6 @@ function Diagnostics() {
         maxWidth="sm"
         fullWidth={true}
         scroll="paper"
-        slotProps={{ paper }}
       >
         <DialogTitle>{t`Diagnostics`}</DialogTitle>
         <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>

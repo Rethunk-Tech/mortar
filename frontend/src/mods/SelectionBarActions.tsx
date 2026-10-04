@@ -134,6 +134,8 @@ export function SelectionBarActions({
         label={t`More actions`}
         icon={<Ellipsis size={18} />}
         menu={true}
+        aria-haspopup="menu"
+        aria-expanded={menu !== null}
         onClick={(e) => setMenu(e.currentTarget)}
       />
       <IconAction label={t`Clear selection`} icon={<X size={18} />} onClick={clear} />

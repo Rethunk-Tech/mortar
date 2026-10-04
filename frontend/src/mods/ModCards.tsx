@@ -349,7 +349,12 @@ function CardsPane({
     <Box
       ref={parentRef}
       tabIndex={0}
-      sx={{ minHeight: 0, height: '100%', overflowY: 'auto', outline: 'none' }}
+      sx={{
+        minHeight: 0,
+        height: '100%',
+        overflowY: 'auto',
+        '&:focus-visible': { outlineOffset: -2 },
+      }}
     >
       <Box sx={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
         {virtualizer.getVirtualItems().map((vi) => {

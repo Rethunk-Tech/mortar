@@ -29,7 +29,6 @@ import { applyCPSchema, parseCPSchema } from './configFields.ts'
 import { type ConfigNode, parseConfig, setAt, stringifyConfig } from './configForm.ts'
 import { Fields } from './configFormUi.tsx'
 import { MenuHint, MenuPages } from './configMenuUi.tsx'
-import { paper } from './paper.ts'
 import { useGmcmMenu } from './useGmcmMenu.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -207,7 +206,7 @@ function EditorDialog({
   const { t } = useLingui()
   return (
     <>
-      <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm" slotProps={{ paper }}>
+      <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
         <DialogTitle>{t`Edit config.json`}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           {error ? (

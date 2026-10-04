@@ -2,7 +2,6 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Dialog, Typography } from '@mui/material'
 import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { paper } from '../mods/paper.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import type { ShownInfo } from './logic.ts'
@@ -40,9 +39,7 @@ export function ShareShell({
       aria-label={info ? t`Share ${info.name}` : undefined}
       slotProps={{
         paper: {
-          ...paper,
           sx: {
-            ...paper.sx,
             bgcolor: 'var(--mortar-panel-solid)',
             border: '1px solid var(--mortar-hairline-12)',
             width: 'min(980px, calc(100% - 48px))',

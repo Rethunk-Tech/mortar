@@ -10,7 +10,6 @@ import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { modId, updatesForReview } from './lookup.ts'
 import { mergeCachedDetails, useNexusDetails } from './nexusDetails.ts'
-import { paper } from './paper.ts'
 import { useMods } from './store.ts'
 import { DIALOG_WIDTH } from './updateReview/constants.ts'
 import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
@@ -75,7 +74,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
       onClose={close}
       maxWidth={false}
       slotProps={{
-        paper: { sx: { ...paper.sx, width: DIALOG_WIDTH, maxWidth: 'calc(100% - 32px)' } },
+        paper: { sx: { width: DIALOG_WIDTH, maxWidth: 'calc(100% - 32px)' } },
       }}
     >
       <ReviewTitle

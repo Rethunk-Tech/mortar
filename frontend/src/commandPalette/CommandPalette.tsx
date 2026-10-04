@@ -17,7 +17,6 @@ import {
 import { type KeyboardEvent, type ReactNode, useEffect, useRef, useState } from 'react'
 import { BisectDialog } from '../console/BisectDialog.tsx'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
-import { paper } from '../mods/paper.ts'
 import type { SettingsSection } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { shortcutLabels } from '../settings/shortcutLabels.ts'
@@ -202,9 +201,8 @@ export function CommandPalette() {
         onKeyDown={onKey}
         slotProps={{
           paper: {
-            ...paper,
             'aria-label': t`Command palette`,
-            sx: { ...paper.sx, width: 560, maxWidth: 'calc(100% - 48px)' },
+            sx: { width: 560, maxWidth: 'calc(100% - 48px)' },
           },
         }}
       >

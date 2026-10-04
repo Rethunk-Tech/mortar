@@ -258,6 +258,8 @@ function ListColumnMenu({
           return (
             <MenuItem
               key={id}
+              role="menuitemcheckbox"
+              aria-checked={shown}
               disabled={locked}
               onClick={() => {
                 onToggle(id)

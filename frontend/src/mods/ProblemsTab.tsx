@@ -166,7 +166,10 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
               sx={{ display: 'flex', alignItems: 'center', gap: 0.5, borderRadius: '4px' }}
             >
               {why ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
+              <Typography
+                component="span"
+                sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}
+              >
                 {t`Why?`}
               </Typography>
             </ButtonBase>

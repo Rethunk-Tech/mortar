@@ -234,6 +234,7 @@ export function ProfileRow({ profile }: { profile: Profile }) {
           data-actions={profile.id}
           aria-label={t`Actions for ${profile.name}`}
           aria-haspopup="menu"
+          aria-expanded={anchor !== null}
           onClick={(e) => setAnchor(e.currentTarget)}
           sx={{
             width: 40,

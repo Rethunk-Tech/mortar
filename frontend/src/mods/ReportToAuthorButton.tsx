@@ -32,7 +32,6 @@ import { useMortarUpdate } from '../settings/updates.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { entryOf, nexusIdOf } from './lookup.ts'
-import { paper } from './paper.ts'
 import { buildModReport, type ModReportFields, modErrorLines } from './reportToAuthor.ts'
 
 const homePath = /\/home\/([^/\\\s]+)/
@@ -204,7 +203,7 @@ export function ReportToAuthorButton({
       <Dialog
         open={open}
         onClose={close}
-        slotProps={{ paper: { sx: { ...paper.sx, width: 520, maxWidth: 'calc(100% - 32px)' } } }}
+        slotProps={{ paper: { sx: { width: 520, maxWidth: 'calc(100% - 32px)' } } }}
       >
         <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Report to author`}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

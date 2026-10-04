@@ -8,7 +8,6 @@ const WARN_LINE = 0.35
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
 import { PreviewData } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
-import { paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -21,7 +20,6 @@ import { type ImportRequest, useImportDialog } from './store.ts'
 import { type Tab as TabId, useImportFlow } from './useImportFlow.ts'
 
 const dialogSx = {
-  ...paper.sx,
   bgcolor: 'var(--mortar-panel-solid)',
   border: '1px solid var(--mortar-hairline)',
   width: 'min(1180px, calc(100% - 72px))',
@@ -278,7 +276,7 @@ export function ImportDialog() {
       open={request !== null}
       onClose={busy ? undefined : dismiss}
       maxWidth={false}
-      slotProps={{ paper: { ...paper, sx: dialogSx, 'aria-label': t`Import profile` } }}
+      slotProps={{ paper: { sx: dialogSx, 'aria-label': t`Import profile` } }}
     >
       {request ? <Body key={request.run} request={request} /> : null}
     </Dialog>

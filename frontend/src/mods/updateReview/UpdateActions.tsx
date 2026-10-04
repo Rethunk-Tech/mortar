@@ -73,6 +73,7 @@ export function UpdateActions({
       <IconButton
         aria-label={t`More actions for ${update.name}`}
         aria-haspopup="menu"
+        aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
         sx={{ borderRadius: '6px', bgcolor: anchor ? 'var(--mortar-hairline)' : 'transparent' }}
       >

@@ -99,6 +99,8 @@ function ShowFilterControl({
           color={active ? 'primary' : 'inherit'}
           aria-label={showLabel}
           startIcon={<Filter size={14} />}
+          aria-haspopup="menu"
+          aria-expanded={anchor !== null}
           onClick={(e) => setAnchor(e.currentTarget)}
           sx={iconWhenCompact}
         >
@@ -110,7 +112,13 @@ function ShowFilterControl({
           { id: 'all' as const, label: t`All mods` },
           ...FILTERS.map((item) => ({ id: item.id, label: item.label(i18n) })),
         ].map((item) => (
-          <MenuItem key={item.id} selected={filter === item.id} onClick={() => choose(item.id)}>
+          <MenuItem
+            key={item.id}
+            role="menuitemradio"
+            aria-checked={filter === item.id}
+            selected={filter === item.id}
+            onClick={() => choose(item.id)}
+          >
             <ListItemIcon sx={{ color: 'inherit' }}>
               {filter === item.id ? <Check size={16} aria-hidden={true} /> : null}
             </ListItemIcon>
@@ -134,6 +142,8 @@ function GroupByControl() {
         variant="outlined"
         aria-label={t`Group by`}
         startIcon={<FolderTree size={14} />}
+        aria-haspopup="menu"
+        aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
         sx={iconWhenCompact}
       >
@@ -152,6 +162,8 @@ function GroupByControl() {
         ].map((item) => (
           <Tooltip key={item.id} title={item.hint ?? ''} placement="right">
             <MenuItem
+              role="menuitemradio"
+              aria-checked={by === item.id}
               selected={by === item.id}
               onClick={() => {
                 persistGroupBy(item.id)

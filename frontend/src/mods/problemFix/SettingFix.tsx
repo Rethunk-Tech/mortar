@@ -77,6 +77,8 @@ export function SettingFix({
             color="warning"
             aria-label={t`More setting values`}
             disabled={locked}
+            aria-haspopup="menu"
+            aria-expanded={anchorEl !== null}
             onClick={(event) => setAnchorEl(event.currentTarget)}
             sx={{ minWidth: 28, width: 28, height: 28, px: 0, flexShrink: 0 }}
           >

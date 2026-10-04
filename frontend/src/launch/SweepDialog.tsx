@@ -12,7 +12,6 @@ import {
 } from '@mui/material'
 import type { SweepReport } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { UpdateEverywhere } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { paper } from '../mods/paper.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useSweepUi } from './events.ts'
@@ -91,7 +90,7 @@ function SweepDialog() {
       open={open && report !== null}
       onClose={pending ? undefined : close}
       slotProps={{
-        paper: { sx: { ...paper.sx, width: DIALOG_WIDTH, maxWidth: `calc(100% - ${EDGE}px)` } },
+        paper: { sx: { width: DIALOG_WIDTH, maxWidth: `calc(100% - ${EDGE}px)` } },
       }}
     >
       <DialogTitle>{t`Patch-day review`}</DialogTitle>

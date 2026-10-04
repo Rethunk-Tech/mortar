@@ -23,7 +23,7 @@ import type { Saved } from '../../bindings/github.com/Rethunk-AI/mortar/internal
 import { SaveFile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
 import { Logo } from '../brand/Logo.tsx'
 import { SendDialog } from '../lan/SendDialog.tsx'
-import { heading, paper } from '../mods/paper.ts'
+import { heading } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -309,6 +309,8 @@ function CopyModList() {
       <ButtonGroup variant="outlined" color="inherit" sx={{ mr: 5 }}>
         <Button
           startIcon={<List size={16} />}
+          aria-haspopup={parts.length > 1 ? 'menu' : undefined}
+          aria-expanded={parts.length > 1 ? partsAnchor !== null : undefined}
           onClick={(e) => {
             if (parts.length > 1) {
               setPartsAnchor(e.currentTarget)
@@ -323,23 +325,22 @@ function CopyModList() {
         <Button
           aria-label={t`Mod list format`}
           endIcon={<ChevronDown size={14} />}
+          aria-haspopup="menu"
+          aria-expanded={anchor !== null}
           onClick={(e) => setAnchor(e.currentTarget)}
           sx={{ height: 40, px: '14px', fontSize: 14, whiteSpace: 'nowrap' }}
         >
           {options.find((o) => o.id === format)?.label}
         </Button>
       </ButtonGroup>
-      <Menu
-        open={Boolean(anchor)}
-        anchorEl={anchor}
-        onClose={() => setAnchor(null)}
-        slotProps={{ paper }}
-      >
+      <Menu open={Boolean(anchor)} anchorEl={anchor} onClose={() => setAnchor(null)}>
         {options.map((o) => {
           const Icon = o.icon
           return (
             <MenuItem
               key={o.id}
+              role="menuitemradio"
+              aria-checked={o.id === format}
               selected={o.id === format}
               onClick={() => {
                 setFormat(o.id)
@@ -354,12 +355,7 @@ function CopyModList() {
           )
         })}
       </Menu>
-      <Menu
-        open={Boolean(partsAnchor)}
-        anchorEl={partsAnchor}
-        onClose={() => setPartsAnchor(null)}
-        slotProps={{ paper }}
-      >
+      <Menu open={Boolean(partsAnchor)} anchorEl={partsAnchor} onClose={() => setPartsAnchor(null)}>
         {parts.map((part) => (
           <MenuItem
             key={part.id}

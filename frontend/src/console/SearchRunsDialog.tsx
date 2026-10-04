@@ -6,6 +6,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  ListItemButton,
   Typography,
 } from '@mui/material'
 import { FileSearch } from 'lucide-react'
@@ -16,7 +17,6 @@ import type {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { SearchRuns } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
-import { paper } from '../mods/paper.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
@@ -97,7 +97,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
   }
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md" slotProps={{ paper }}>
+    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
       <DialogTitle>{t`Search all runs`}</DialogTitle>
       <DialogContent>
         <SearchField
@@ -132,29 +132,20 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
                     : null}
                 </Typography>
                 {hits.map((hit) => (
-                  <Box
-                    component="button"
+                  <ListItemButton
+                    dense={true}
                     key={`${hit.runId}-${hit.lineNumber}`}
                     onClick={() => choose(hit)}
-                    sx={{
-                      display: 'flex',
-                      width: '100%',
-                      gap: 1,
-                      border: 0,
-                      borderRadius: 1,
-                      px: 1,
-                      py: 0.5,
-                      color: 'inherit',
-                      bgcolor: 'transparent',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      '&:hover': { bgcolor: 'var(--mortar-hairline-muted)' },
-                    }}
+                    sx={{ gap: 1, borderRadius: 1, alignItems: 'flex-start' }}
                   >
-                    <Typography sx={{ minWidth: 42, color: 'text.secondary', fontFamily: MONO }}>
+                    <Typography
+                      component="span"
+                      sx={{ minWidth: 42, color: 'text.secondary', fontFamily: MONO }}
+                    >
                       {t`L${hit.lineNumber}`}
                     </Typography>
                     <Typography
+                      component="span"
                       sx={{
                         minWidth: 0,
                         whiteSpace: 'pre-wrap',
@@ -164,7 +155,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
                     >
                       <Highlight text={hit.line} query={query.trim()} />
                     </Typography>
-                  </Box>
+                  </ListItemButton>
                 ))}
               </Box>
             ))}

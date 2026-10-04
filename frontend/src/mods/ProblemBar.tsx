@@ -91,8 +91,11 @@ export function ProblemBar() {
       >
         <TriangleAlert size={16} aria-hidden={true} />
       </Box>
-      <Typography sx={{ flexShrink: 0, fontSize: 14, fontWeight: 600 }}>{headline}</Typography>
+      <Typography component="span" sx={{ flexShrink: 0, fontSize: 14, fontWeight: 600 }}>
+        {headline}
+      </Typography>
       <Typography
+        component="span"
         noWrap={true}
         sx={{ flex: 1, minWidth: 0, fontSize: 14, color: 'text.secondary' }}
       >

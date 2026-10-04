@@ -17,6 +17,7 @@ export function SupportButton({ game }: { game: string }) {
         <IconButton
           aria-label={t`Support`}
           aria-haspopup="menu"
+          aria-expanded={anchor !== null}
           onClick={(e) => setAnchor(e.currentTarget)}
           sx={{ width: 40, height: 40, borderRadius: '6px' }}
         >

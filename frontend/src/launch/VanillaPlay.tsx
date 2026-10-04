@@ -114,6 +114,8 @@ export function VanillaPlay({
         <Button
           disabled={vanillaDisabled}
           aria-label={t`More play options`}
+          aria-haspopup="menu"
+          aria-expanded={menu !== null}
           onClick={(e) => openMenu(e.currentTarget)}
           sx={{ width: 40, minWidth: 40, px: 0, height: 58, borderRadius: 0, boxShadow: 'none' }}
         >

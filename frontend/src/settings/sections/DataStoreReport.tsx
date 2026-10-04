@@ -28,7 +28,6 @@ import type {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/store/models.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { When } from '../../i18n/When.tsx'
-import { paper } from '../../mods/paper.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
@@ -365,14 +364,7 @@ function CleanupDialog({
     )
   }
   return (
-    <Dialog
-      open={open}
-      onClose={close}
-      maxWidth="md"
-      fullWidth={true}
-      scroll="paper"
-      slotProps={{ paper }}
-    >
+    <Dialog open={open} onClose={close} maxWidth="md" fullWidth={true} scroll="paper">
       <DialogTitle>{t`Clean up storage`}</DialogTitle>
       <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', py: 0.5 }}>
         {error ? (

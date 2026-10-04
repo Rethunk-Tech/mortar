@@ -101,7 +101,13 @@ function ListShell({
       <Box
         ref={parentRef}
         tabIndex={0}
-        sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pb: 1.5, outline: 'none' }}
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          pb: 1.5,
+          '&:focus-visible': { outlineOffset: -2 },
+        }}
       >
         <Table sx={{ display: 'block', '& tbody': { display: 'block' } }}>
           <TableBody sx={{ display: 'block', position: 'relative', height: total }}>

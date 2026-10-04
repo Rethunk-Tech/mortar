@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from '@mui/material'
 import { useEffect } from 'react'
-import { paper } from '../mods/paper.ts'
 import { useMods } from '../mods/store.ts'
 import { useLocked } from '../mods/useLocked.ts'
 import { download } from '../queue/actions.ts'
@@ -35,7 +34,7 @@ export function MissingDepsDialog() {
   const names = missing.map(depName)
   const wants = wantsOf(missing)
   return (
-    <Dialog open={true} onClose={dismissOffer} slotProps={{ paper }}>
+    <Dialog open={true} onClose={dismissOffer}>
       <DialogTitle>{t`${offer.dependentName} needs ${andList(names)}`}</DialogTitle>
       {wants.length === 0 ? (
         <DialogContent>

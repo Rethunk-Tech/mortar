@@ -83,6 +83,8 @@ function WinFix({
         variant={primary ? 'contained' : 'outlined'}
         color={primary ? 'warning' : 'inherit'}
         disabled={locked}
+        aria-haspopup="menu"
+        aria-expanded={anchor !== null}
         onClick={(e: MouseEvent<HTMLButtonElement>) => setAnchor(e.currentTarget)}
         sx={sx}
       >

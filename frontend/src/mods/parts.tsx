@@ -29,7 +29,6 @@ import { concerns, entryOf, modId, nexusIdOf, problemsOf, siblingsOf, updateFor 
 import { NewDot } from './NewSince.tsx'
 import { useNexusEntry } from './nexusDetails.ts'
 import { goneCaption, nexusPageMark, offersNexusDownload } from './nexusMark.ts'
-import { paper } from './paper.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
 import { useLocked } from './useLocked.ts'
@@ -357,7 +356,7 @@ export function RemoveDialog() {
       : ''
   const allCount = removing.length + dependents.length
   return (
-    <Dialog open={removing.length > 0} onClose={close} slotProps={{ paper }}>
+    <Dialog open={removing.length > 0} onClose={close}>
       <DialogTitle>
         {one
           ? t`Remove ${one.name} from this profile?`

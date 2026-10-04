@@ -89,6 +89,8 @@ function PresetsButton({ mod }: { mod: Mod }) {
       <Button
         size="small"
         variant="outlined"
+        aria-haspopup="menu"
+        aria-expanded={anchor !== null}
         onClick={(e) => {
           setAnchor(e.currentTarget)
           load()

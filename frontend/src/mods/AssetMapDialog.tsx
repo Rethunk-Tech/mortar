@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
+  ButtonBase,
   Chip,
   Dialog,
   DialogActions,
@@ -17,7 +18,6 @@ import { AssetMap } from '../../bindings/github.com/Rethunk-AI/mortar/internal/p
 import { useProfiles } from '../profiles/store.ts'
 import { SearchField } from '../shell/SearchField.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
-import { paper } from './paper.ts'
 
 const filterDelayMs = 200
 
@@ -50,8 +50,8 @@ function TargetList({
             }}
           >
             <Box
-              component={onToggle ? 'button' : 'div'}
-              type={onToggle ? 'button' : undefined}
+              component={onToggle ? ButtonBase : 'div'}
+              aria-expanded={onToggle ? expanded : undefined}
               onClick={
                 onToggle
                   ? () => {
@@ -62,6 +62,7 @@ function TargetList({
               sx={{
                 display: 'flex',
                 alignItems: 'baseline',
+                justifyContent: 'flex-start',
                 gap: 1,
                 width: '100%',
                 bgcolor: 'transparent',
@@ -72,8 +73,11 @@ function TargetList({
                 cursor: onToggle ? 'pointer' : 'default',
               }}
             >
-              <Typography sx={{ fontSize: 14, fontWeight: 600, flex: 1 }}>{label}</Typography>
+              <Typography component="span" sx={{ fontSize: 14, fontWeight: 600, flex: 1 }}>
+                {label}
+              </Typography>
               <Typography
+                component="span"
                 title={
                   many
                     ? t`More than one mod changes this; the winner's version is used.`
@@ -150,14 +154,7 @@ export function AssetMapDialog({ open, onClose }: { open: boolean; onClose: () =
   }, [open, game, openId, filter])
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth={true}
-      scroll="paper"
-      slotProps={{ paper }}
-    >
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth={true} scroll="paper">
       <DialogTitle>{t`Asset map`}</DialogTitle>
       <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>

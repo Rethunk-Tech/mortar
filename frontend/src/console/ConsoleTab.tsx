@@ -48,6 +48,8 @@ function ModPicker() {
         variant="outlined"
         color="inherit"
         endIcon={<ChevronDown size={12} />}
+        aria-haspopup="menu"
+        aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
         sx={{ height: 34, borderColor: 'var(--mortar-hairline-20)', color: 'var(--mortar-ink)' }}
       >
@@ -68,9 +70,17 @@ function ModPicker() {
             <MenuItem
               key={mod}
               dense={true}
+              role="menuitemcheckbox"
+              aria-checked={on}
               onClick={() => setMods(on ? picked.filter((m) => m !== mod) : [...picked, mod])}
             >
-              <Checkbox size="small" checked={on} tabIndex={-1} disableRipple={true} />
+              <Checkbox
+                size="small"
+                checked={on}
+                tabIndex={-1}
+                disableRipple={true}
+                slotProps={{ input: { 'aria-hidden': true } }}
+              />
               {mod}
             </MenuItem>
           )

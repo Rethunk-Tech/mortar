@@ -33,11 +33,6 @@ import {
 
 const millisecondsPerSecond = 1000
 
-const menu = {
-  transitionDuration: 0,
-  PaperProps: { sx: { bgcolor: 'var(--mortar-menu)' } },
-} as const
-
 function RetryHistoryButton({ entry }: { entry: HistoryEntry }) {
   const { t } = useLingui()
   if (entry.outcome !== 'failed' && entry.outcome !== 'skipped' && entry.outcome !== 'cancelled') {
@@ -95,8 +90,7 @@ export function HistoryList({
             displayEmpty={true}
             value={filters.outcome}
             onChange={(e) => onFilters({ ...filters, outcome: e.target.value })}
-            MenuProps={menu}
-            sx={{ whiteSpace: 'nowrap' }}
+            inputProps={{ 'aria-label': t`Filter by outcome` }}
           >
             <MenuItem value="" sx={{ display: 'flex', gap: 1 }}>
               <Filter size={14} />
@@ -115,8 +109,7 @@ export function HistoryList({
             displayEmpty={true}
             value={filters.profileId}
             onChange={(e) => onFilters({ ...filters, profileId: e.target.value })}
-            MenuProps={menu}
-            sx={{ whiteSpace: 'nowrap' }}
+            inputProps={{ 'aria-label': t`Filter by profile` }}
           >
             <MenuItem value="" sx={{ display: 'flex', gap: 1 }}>
               <User size={14} />

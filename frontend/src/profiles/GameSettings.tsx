@@ -108,7 +108,13 @@ function CopyFromProfileMenu({ gameId, profileId, onCopy }: CopyFromProfileProps
 
   return (
     <>
-      <Button disabled={!gameId} size="small" onClick={openMenu}>
+      <Button
+        disabled={!gameId}
+        size="small"
+        aria-haspopup="menu"
+        aria-expanded={anchor !== null}
+        onClick={openMenu}
+      >
         {t`Copy from profile…`}
       </Button>
       <Menu anchorEl={anchor} open={anchor !== null} onClose={closeMenu}>

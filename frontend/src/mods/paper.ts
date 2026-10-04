@@ -13,8 +13,6 @@ export const accent = {
   chip: tint(ACCENT_CHIP),
 }
 
-export const paper = { sx: {} }
-
 export const heading = {
   fontSize: 12,
   fontWeight: 700,

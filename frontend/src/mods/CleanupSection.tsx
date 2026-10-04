@@ -28,6 +28,8 @@ function RemoveOne({ choices }: { choices: { key: string; name: string }[] }) {
       <Button
         size="small"
         endIcon={<ChevronDown size={14} />}
+        aria-haspopup="menu"
+        aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
       >
         {t`Remove`}

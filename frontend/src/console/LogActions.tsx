@@ -116,6 +116,8 @@ export function LogActions({ game }: { game: string }) {
         label={t`Log actions`}
         icon={<Ellipsis size={16} />}
         menu={true}
+        aria-haspopup="menu"
+        aria-expanded={menu !== null}
         onClick={(e) => setMenu(e.currentTarget)}
       />
       <IconAction

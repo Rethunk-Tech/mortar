@@ -33,6 +33,8 @@ export function ToolsMenu({ game, profileID }: { game: string; profileID: string
         label={t`Tools`}
         icon={<Wrench size={16} />}
         menu={true}
+        aria-haspopup="menu"
+        aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
       />
       <Menu open={anchor !== null} anchorEl={anchor} onClose={close}>

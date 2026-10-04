@@ -21,7 +21,6 @@ import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/laun
 import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
 import { useLaunch } from '../launch/store.ts'
-import { paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -69,12 +68,14 @@ function BackupRow({
   busyGame,
   pending,
   profileName,
+  menuOpen,
   onRestore,
 }: {
   backup: Backup
   busyGame: boolean
   pending: boolean
   profileName: (id: string) => string
+  menuOpen: boolean
   onRestore: (el: HTMLElement) => void
 }) {
   const { t } = useLingui()
@@ -110,6 +111,8 @@ function BackupRow({
       <TipIconButton
         label={busyGame ? t`Stop the game to restore saves.` : t`Restore ${when}`}
         disabled={busyGame || pending}
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
         onClick={(e) => {
           onRestore(e.currentTarget)
         }}
@@ -142,7 +145,7 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} slotProps={{ paper }} maxWidth="sm" fullWidth={true}>
+      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth={true}>
         <DialogTitle>{t`Save backups`}</DialogTitle>
         <DialogContent>
           {status === 'error' ? (
@@ -173,6 +176,7 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
                 busyGame={busyGame}
                 pending={pending}
                 profileName={profileName}
+                menuOpen={menu?.backup.name === b.name}
                 onRestore={(el) => {
                   setMenu({ backup: b, el })
                 }}

@@ -3,7 +3,6 @@ import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link } 
 import { useState } from 'react'
 import { Logo } from '../../brand/Logo.tsx'
 import { openPage } from '../../mods/menu.ts'
-import { paper } from '../../mods/paper.ts'
 import credits from '../generated/credits.json' with { type: 'json' }
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { Diagnostics } from './AboutDiagnostics.tsx'
@@ -91,7 +90,6 @@ export function About() {
         maxWidth="md"
         fullWidth={true}
         scroll="paper"
-        slotProps={{ paper }}
       >
         <DialogTitle>{t`Open-source licences`}</DialogTitle>
         <DialogContent dividers={true}>

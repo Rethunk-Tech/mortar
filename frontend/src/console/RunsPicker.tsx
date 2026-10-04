@@ -60,6 +60,8 @@ export function RunsPicker({ game }: { game: string }) {
         startIcon={<History size={14} />}
         endIcon={<ChevronDown size={12} />}
         aria-label={t`Runs: ${button}`}
+        aria-haspopup="menu"
+        aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
         sx={{ height: 34, borderColor: 'var(--mortar-hairline-20)', color: 'var(--mortar-ink)' }}
       >
@@ -73,6 +75,8 @@ export function RunsPicker({ game }: { game: string }) {
       >
         <MenuItem
           dense={true}
+          role="menuitemradio"
+          aria-checked={viewingRun === ''}
           selected={viewingRun === ''}
           onClick={() => {
             viewRun(game, profile, '')
@@ -86,6 +90,8 @@ export function RunsPicker({ game }: { game: string }) {
           <MenuItem
             key={r.id}
             dense={true}
+            role="menuitemradio"
+            aria-checked={viewingRun === r.id}
             selected={viewingRun === r.id}
             title={runExitText(r.exit)}
             onClick={() => {
