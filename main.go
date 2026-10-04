@@ -337,6 +337,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	go updatesvc.RemoveOldExecutables(exe)
 	nxmHandler, err := nxm.New(exe)
 	if err != nil {
 		return err

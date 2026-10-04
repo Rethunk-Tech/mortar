@@ -215,10 +215,10 @@ func TestTemplateFileFormats(t *testing.T) {
 	if err := os.WriteFile(path, []byte(`[{"name":"Old","game":"stardew"}]`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	list, err := readList(path)
-	if err != nil || len(list) != 1 || list[0].Name != "Old" {
-		t.Fatalf("bare array = %v, %v", list, err)
+	if _, err := readList(path); err == nil {
+		t.Fatal("a bare array is not a templates file")
 	}
+	list := []Template{{Name: "Old", Game: "stardew"}}
 	newer := `{"formatVersion":99,"templates":[{"name":"New","game":"stardew"}]}`
 	if err := os.WriteFile(path, []byte(newer), 0o600); err != nil {
 		t.Fatal(err)

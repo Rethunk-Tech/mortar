@@ -3,7 +3,6 @@
 package templates
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -78,7 +77,7 @@ func (s *Service) read(game string) ([]Template, error) {
 	return list, nil
 }
 
-// templatesFile is the on-disk shape; files written before it carried a version are a bare array.
+// templatesFile is the on-disk shape.
 type templatesFile struct {
 	FormatVersion int        `json:"formatVersion"`
 	Templates     []Template `json:"templates"`
@@ -92,19 +91,14 @@ func readList(path string) ([]Template, error) {
 	if err != nil {
 		return nil, err
 	}
-	var list []Template
-	if bytes.HasPrefix(bytes.TrimSpace(b), []byte("[")) {
-		err = json.Unmarshal(b, &list)
-	} else {
-		var f templatesFile
-		if err = json.Unmarshal(b, &f); err == nil {
-			err = datadir.CheckVersion(f.FormatVersion)
-		}
-		list = f.Templates
-	}
-	if err != nil {
+	var f templatesFile
+	if err := json.Unmarshal(b, &f); err != nil {
 		return nil, err
 	}
+	if err := datadir.CheckVersion(f.FormatVersion); err != nil {
+		return nil, err
+	}
+	list := f.Templates
 	if list == nil {
 		list = []Template{}
 	}
