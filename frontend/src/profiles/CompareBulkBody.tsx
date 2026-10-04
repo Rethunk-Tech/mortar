@@ -80,6 +80,7 @@ function CompareModFilter({
       placeholder={t`Filter mods`}
       value={value}
       onChange={(event) => onChange(event.target.value)}
+      slotProps={{ htmlInput: { 'aria-label': t`Filter mods` } }}
       sx={{ mb: 2 }}
     />
   )
@@ -320,6 +321,9 @@ export function CompareBulkBody({
         </CompareSection>
       ) : null}
       <IdenticalList rows={identical} />
+      {needle !== '' && !hasDiff && identical.length === 0 ? (
+        <Typography sx={{ color: 'text.secondary' }}>{t`No matching mods`}</Typography>
+      ) : null}
       {!hasDiff && identical.length === 0 && !needle ? (
         <EmptyState
           compact={true}

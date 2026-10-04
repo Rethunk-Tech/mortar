@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import type { CommandPreview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { PreviewCommand } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { MONO } from '../theme/theme.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 const PREVIEW_DEBOUNCE_MS = 300
@@ -38,6 +38,7 @@ export function LaunchPreview({
 }) {
   const { t } = useLingui()
   const [preview, setPreview] = useState<CommandPreview>({ env: [], argv: [], error: '' })
+  const [loadError, setLoadError] = useState('')
   useEffect(() => {
     let active = true
     const timer = setTimeout(
@@ -45,10 +46,15 @@ export function LaunchPreview({
         PreviewCommand(gameId, profileId, options, prefix, env)
           .then((next) => {
             if (active) {
+              setLoadError('')
               setPreview(next)
             }
           })
-          .catch(() => undefined),
+          .catch((e: unknown) => {
+            if (active) {
+              setLoadError(errorMessage(e))
+            }
+          }),
       PREVIEW_DEBOUNCE_MS,
     )
     return () => {
@@ -69,7 +75,7 @@ export function LaunchPreview({
         <Typography sx={{ fontSize: 12, color: 'text.secondary', flex: 1 }}>
           {t`Direct launch preview`}
         </Typography>
-        {preview.error ? null : (
+        {preview.error || loadError ? null : (
           <IconButton
             size="small"
             aria-label={t`Copy the command`}
@@ -80,9 +86,9 @@ export function LaunchPreview({
           </IconButton>
         )}
       </Box>
-      {preview.error ? (
+      {preview.error || loadError ? (
         <Typography color="error" sx={{ fontSize: 12 }}>
-          {preview.error}
+          {preview.error || loadError}
         </Typography>
       ) : (
         <Box

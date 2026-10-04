@@ -8,7 +8,7 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { GameModPreview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   ImportGameMods,
@@ -42,17 +42,7 @@ export function GameModsDialog({
   const [previewing, setPreviewing] = useState(false)
   const gen = useRef(0)
   const live = useRef(false)
-  useEffect(() => {
-    if (!open) {
-      live.current = false
-      gen.current += 1
-      setMods([])
-      setError('')
-      setBusy(false)
-      setPreviewing(false)
-      return
-    }
-    live.current = true
+  const loadPreview = useCallback(() => {
     gen.current += 1
     const token = gen.current
     setMods([])
@@ -74,7 +64,20 @@ export function GameModsDialog({
         setError(errorMessage(e))
         setPreviewing(false)
       })
-  }, [open, game])
+  }, [game])
+  useEffect(() => {
+    if (!open) {
+      live.current = false
+      gen.current += 1
+      setMods([])
+      setError('')
+      setBusy(false)
+      setPreviewing(false)
+      return
+    }
+    live.current = true
+    loadPreview()
+  }, [open, loadPreview])
   const importable = mods.filter((m) => willImport(m.status)).length
   const importMods = async () => {
     if (busy || previewing || !live.current) {
@@ -124,7 +127,14 @@ export function GameModsDialog({
     >
       <DialogTitle>{t`Import from the game's Mods folder`}</DialogTitle>
       <DialogContent>
-        {error === '' ? null : <Typography sx={{ color: 'error.main' }}>{error}</Typography>}
+        {error === '' ? null : (
+          <>
+            <Typography sx={{ color: 'error.main' }}>{error}</Typography>
+            <Button onClick={loadPreview} sx={{ whiteSpace: 'nowrap', mt: 1 }}>
+              {t`Retry`}
+            </Button>
+          </>
+        )}
         {error === '' && previewing ? <LoadingRow>{t`Reading the Mods folder…`}</LoadingRow> : null}
         {error === '' && !previewing ? (
           <>

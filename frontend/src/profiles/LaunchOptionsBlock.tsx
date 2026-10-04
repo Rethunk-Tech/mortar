@@ -10,6 +10,7 @@ import {
   RemoveLaunchPreset,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useLaunch } from '../launch/store.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { applyLaunchPreset } from './applyLaunchPreset.ts'
 import { LaunchPreview } from './LaunchPreview.tsx'
@@ -34,6 +35,8 @@ function LaunchPresetBar({
   const [presets, setPresets] = useState<LaunchPreset[]>([])
   const [selected, setSelected] = useState('')
   const [saveName, setSaveName] = useState('')
+  const [removing, setRemoving] = useState(false)
+  const [overwriting, setOverwriting] = useState(false)
   const reload = useCallback(() => {
     if (!gameId) {
       return
@@ -50,6 +53,16 @@ function LaunchPresetBar({
     prefix: launchPrefix,
     env: launchEnv,
   })
+  const savePreset = () => {
+    const name = saveName.trim()
+    AddLaunchPreset(gameId, name, filled.options, filled.prefix, filled.env)
+      .then(() => {
+        setSelected(name)
+        setOverwriting(false)
+        reload()
+      })
+      .catch(reportUnexpected)
+  }
   return (
     <Box sx={{ mt: 1, mb: 1 }}>
       <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Preset`}</Typography>
@@ -87,28 +100,46 @@ function LaunchPresetBar({
         <Button
           disabled={!(gameId && saveName.trim())}
           onClick={() => {
-            AddLaunchPreset(gameId, saveName.trim(), filled.options, filled.prefix, filled.env)
-              .then(() => {
-                setSelected(saveName.trim())
-                reload()
-              })
-              .catch(reportUnexpected)
+            const name = saveName.trim()
+            if (presets.some((item) => item.name === name)) {
+              setOverwriting(true)
+              return
+            }
+            savePreset()
           }}
           sx={{ whiteSpace: 'nowrap' }}
         >{t`Save as preset`}</Button>
         <Button
           disabled={!(gameId && selected)}
-          onClick={() => {
-            RemoveLaunchPreset(gameId, selected)
-              .then(() => {
-                setSelected('')
-                reload()
-              })
-              .catch(reportUnexpected)
-          }}
+          onClick={() => setRemoving(true)}
           sx={{ whiteSpace: 'nowrap' }}
         >{t`Remove preset`}</Button>
       </Box>
+      <ConfirmDialog
+        open={removing}
+        title={t`Remove ${selected}?`}
+        body={t`This preset will be deleted.`}
+        confirmLabel={t`Remove preset`}
+        color="error"
+        onCancel={() => setRemoving(false)}
+        onConfirm={() => {
+          setRemoving(false)
+          RemoveLaunchPreset(gameId, selected)
+            .then(() => {
+              setSelected('')
+              reload()
+            })
+            .catch(reportUnexpected)
+        }}
+      />
+      <ConfirmDialog
+        open={overwriting}
+        title={t`Replace ${saveName.trim()}?`}
+        body={t`A preset with this name already exists.`}
+        confirmLabel={t`Save as preset`}
+        onCancel={() => setOverwriting(false)}
+        onConfirm={savePreset}
+      />
     </Box>
   )
 }
@@ -137,7 +168,7 @@ function TestLaunchRow({
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState('')
   return (
-    <Box sx={{ mt: 1, mb: 1 }}>
+    <Box sx={{ mt: 1, mb: 1, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
       <Button
         disabled={!(gameId && !playing && !busy)}
         onClick={() => {
@@ -174,6 +205,9 @@ function TestLaunchRow({
         }}
         sx={{ whiteSpace: 'nowrap' }}
       >{t`Test launch`}</Button>
+      <Typography
+        sx={{ fontSize: 13, color: 'text.secondary' }}
+      >{t`Uses the saved options`}</Typography>
       {result ? (
         <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 1 }}>{result}</Typography>
       ) : null}
