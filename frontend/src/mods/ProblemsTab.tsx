@@ -43,6 +43,7 @@ import {
   type Row,
 } from './problemGroups.ts'
 import { formatProblemReport, whyKeysOf } from './problemReport.ts'
+import { CheckTimings, SlowStartupSection } from './SlowStartupSection.tsx'
 import { useMods } from './store.ts'
 import { useLoadProblemsOnFocus } from './useLoadProblemsOnFocus.ts'
 
@@ -484,6 +485,7 @@ export function ProblemsTab() {
       ) : null}
       {renderProblemSections(sections, cosmeticConflicts, sectionTitle, sectionExtras)}
       <CompatSection rows={compat} />
+      <SlowStartupSection />
       <CleanupSection cleanup={cleanup} />
       <ConfirmDialog
         open={confirmDismissCosmetic}
@@ -497,6 +499,7 @@ export function ProblemsTab() {
         }}
       />
       {result.unknown ? <OfflineChecksNote /> : null}
+      <CheckTimings timings={result.timings ?? []} />
     </Box>
   )
 }

@@ -8,6 +8,7 @@ import {
   modTotal,
   phaseSegments,
   slowestEvent,
+  slowStartups,
   startupRegressions,
 } from './startupView.ts'
 
@@ -65,4 +66,25 @@ test('regressions name updated or new mods that added a second or more', () => {
     { name: 'new', version: '1.0.0', addedMs: 1500 },
   ])
   expect(startupRegressions(latest, undefined)).toEqual([])
+})
+
+test('slow startup names a framework by its packs and offers plain mods and slow packs', () => {
+  const report = {
+    mods: [
+      mod('cp', { UpdateTicked: 14_000 }, {
+        loadMs: 11_000,
+        packs: [
+          { id: 'rsv', name: 'RSV', assetMs: 0, loadMs: 1200, ms: 1200 },
+          { id: 'small', name: 'Small', assetMs: 0, loadMs: 300, ms: 300 },
+        ],
+      } as Partial<StartupMod>),
+      mod('fs', { GameLaunched: 3100 }),
+      mod('quick', { GameLaunched: 900 }),
+    ],
+  } as StartupReport
+  expect(slowStartups(report).map((s) => [s.kind, s.uniqueId])).toEqual([
+    ['packs', 'cp'],
+    ['mod', 'fs'],
+    ['pack', 'rsv'],
+  ])
 })
