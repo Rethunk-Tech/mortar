@@ -115,6 +115,11 @@
     "url": "https://github.com/coder/websocket"
   },
   {
+    "name": "github.com/fsnotify/fsnotify",
+    "licence": "BSD-3-Clause",
+    "url": "https://github.com/fsnotify/fsnotify"
+  },
+  {
     "name": "github.com/go-ole/go-ole",
     "licence": "MIT",
     "url": "https://github.com/go-ole/go-ole"
