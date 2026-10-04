@@ -17,7 +17,10 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/sampler"
 )
 
-const startupSampleLimit = 15 * time.Minute
+const (
+	startupSampleLimit = 15 * time.Minute
+	livenessEvery      = time.Second
+)
 
 type startupSamples struct {
 	Schema        int              `json:"schema"`
@@ -109,13 +112,18 @@ func (s *Service) waitForSampleProcess(ctx context.Context, g game.Game, profile
 func (s *Service) waitForSampleReport(ctx context.Context, g game.Game, profileID, modsDir, startupPath string, before map[string]bool) (string, bool) {
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
+	var scanned time.Time
 	for {
 		if id := newStartupReport(startupPath, before); id != "" {
 			return id, true
 		}
-		processes, err := s.procsFor(g, modsDir, profileID)
-		if err == nil && len(processes) == 0 {
-			return "", false
+		// Finding the game process scans all of /proc, which would compete with the startup being timed.
+		if now := time.Now(); now.Sub(scanned) >= livenessEvery {
+			scanned = now
+			processes, err := s.procsFor(g, modsDir, profileID)
+			if err == nil && len(processes) == 0 {
+				return "", false
+			}
 		}
 		select {
 		case <-ctx.Done():
