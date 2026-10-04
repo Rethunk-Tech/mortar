@@ -166,7 +166,13 @@ func (s *Service) fetchEntry(
 	}
 	defer func() { _ = fsx.RemoveAll(temp) }()
 	var received int64
+	var last time.Time
 	if err := extractTar(ctx, response.Body, temp, &received, func(n int64) {
+		if now := time.Now(); now.Sub(last) >= progressEvery {
+			last = now
+		} else {
+			return
+		}
 		s.emitTransfer(TransferProgress{
 			ID: id, Current: current, Total: total, Bytes: bytes + n, Rate: transferRate(bytes+n, started),
 		})
@@ -239,6 +245,9 @@ func (s *Service) rememberGrant(token, game string, keys []string) {
 	s.grants[token] = transferGrant{Game: game, Keys: allowed, Expires: time.Now().Add(transferTTL)}
 	s.mu.Unlock()
 }
+
+// progressEvery is the cadence of per-file byte progress inside one store entry, the same as the queue's.
+const progressEvery = 250 * time.Millisecond
 
 func (s *Service) emitTransfer(progress TransferProgress) {
 	if s.deps.Emit != nil {
