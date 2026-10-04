@@ -20,11 +20,13 @@ const (
 	pageName = "index.html"
 )
 
-// BridgeConfig is the SMAPI mod's config.json (PascalCase keys).
+// BridgeConfig is the SMAPI mod's config.json (PascalCase keys). Keys left out keep the mod's defaults.
 type BridgeConfig struct {
 	OverlayEnabled bool   `json:"OverlayEnabled"`
 	OverlayPort    int    `json:"OverlayPort"`
 	OverlayToken   string `json:"OverlayToken"`
+	// StartupProfile asks the bridge to also time every other mod's Entry on this launch.
+	StartupProfile bool `json:"StartupProfile"`
 }
 
 // PagePath is <dataDir>/overlay/index.html.
@@ -52,25 +54,21 @@ func FileURL(pagePath string, port int, token string) string {
 }
 
 // WriteBridgeConfig writes config.json in the bridge mod folder atomically at 0600.
-func WriteBridgeConfig(modDir string, enabled bool, port int, token string) error {
+func WriteBridgeConfig(modDir string, cfg BridgeConfig) error {
 	if err := os.MkdirAll(modDir, 0o700); err != nil {
 		return err
 	}
-	return datadir.WriteJSON(filepath.Join(modDir, "config.json"), BridgeConfig{
-		OverlayEnabled: enabled,
-		OverlayPort:    port,
-		OverlayToken:   token,
-	})
+	return datadir.WriteJSON(filepath.Join(modDir, "config.json"), cfg)
 }
 
-// ApplyToMods writes overlay config.json into every MortarSmapiBridge folder under modsDir.
-func ApplyToMods(modsDir string, enabled bool, port int, token string) error {
+// ApplyToMods writes config.json into every MortarSmapiBridge folder under modsDir.
+func ApplyToMods(modsDir string, cfg BridgeConfig) error {
 	matches, err := filepath.Glob(filepath.Join(modsDir, "*", bridge.ModFolder))
 	if err != nil {
 		return err
 	}
 	for _, dir := range matches {
-		if err := WriteBridgeConfig(dir, enabled, port, token); err != nil {
+		if err := WriteBridgeConfig(dir, cfg); err != nil {
 			return err
 		}
 	}

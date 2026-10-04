@@ -14,7 +14,7 @@ import (
 func TestWriteBridgeConfigUsesPascalCaseAndMode(t *testing.T) {
 	dir := t.TempDir()
 	mod := filepath.Join(dir, bridge.ModFolder)
-	if err := WriteBridgeConfig(mod, true, 8123, "secret-token"); err != nil {
+	if err := WriteBridgeConfig(mod, BridgeConfig{OverlayEnabled: true, OverlayPort: 8123, OverlayToken: "secret-token"}); err != nil {
 		t.Fatal(err)
 	}
 	path := filepath.Join(mod, "config.json")
@@ -46,10 +46,10 @@ func TestWriteBridgeConfigUsesPascalCaseAndMode(t *testing.T) {
 func TestWriteBridgeConfigOffClearsEnabled(t *testing.T) {
 	dir := t.TempDir()
 	mod := filepath.Join(dir, bridge.ModFolder)
-	if err := WriteBridgeConfig(mod, true, 9000, "keep"); err != nil {
+	if err := WriteBridgeConfig(mod, BridgeConfig{OverlayEnabled: true, OverlayPort: 9000, OverlayToken: "keep"}); err != nil {
 		t.Fatal(err)
 	}
-	if err := WriteBridgeConfig(mod, false, 9000, "keep"); err != nil {
+	if err := WriteBridgeConfig(mod, BridgeConfig{OverlayEnabled: false, OverlayPort: 9000, OverlayToken: "keep"}); err != nil {
 		t.Fatal(err)
 	}
 	raw, err := fsx.ReadFile(filepath.Join(mod, "config.json"))
@@ -75,7 +75,7 @@ func TestApplyToModsWritesEachBridgeFolder(t *testing.T) {
 	if err := os.MkdirAll(b, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := ApplyToMods(mods, false, 8123, "tok"); err != nil {
+	if err := ApplyToMods(mods, BridgeConfig{OverlayEnabled: false, OverlayPort: 8123, OverlayToken: "tok"}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(filepath.Join(a, "config.json")); err != nil {

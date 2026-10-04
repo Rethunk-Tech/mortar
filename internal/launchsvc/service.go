@@ -610,7 +610,12 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 	}
 	if !vanilla && profileID != "" {
 		st := s.settings.Get()
-		if err := overlay.ApplyToMods(modsDir, st.OverlayEnabled, st.OverlayPort, st.OverlayToken); err != nil {
+		measure, err := prepareStartup(modsDir)
+		if err != nil {
+			return err
+		}
+		cfg := overlay.BridgeConfig{OverlayEnabled: st.OverlayEnabled, OverlayPort: st.OverlayPort, OverlayToken: st.OverlayToken, StartupProfile: measure}
+		if err := overlay.ApplyToMods(modsDir, cfg); err != nil {
 			return err
 		}
 		opts, err := s.profiles.LaunchOptions(g.ID(), profileID)
