@@ -128,6 +128,38 @@ func internCellSet(s string) map[string]bool {
 	return set
 }
 
+// shapeSet is one patch's shapes with its properties grouped by key: a property only overlaps a property with the
+// same key, so a large data edit is matched by key instead of against every key of the other patch.
+type shapeSet struct {
+	props map[string][]cpShape
+	rest  []cpShape
+}
+
+func indexShapes(shapes []cpShape) *shapeSet {
+	set := &shapeSet{props: map[string][]cpShape{}}
+	for _, s := range shapes {
+		if s.kind == 'p' {
+			set.props[s.key] = append(set.props[s.key], s)
+		} else {
+			set.rest = append(set.rest, s)
+		}
+	}
+	return set
+}
+
+func (set *shapeSet) overlaps(shapes []cpShape) bool {
+	for _, x := range shapes {
+		others := set.rest
+		if x.kind == 'p' {
+			others = set.props[x.key]
+		}
+		if slices.ContainsFunc(others, x.overlaps) {
+			return true
+		}
+	}
+	return false
+}
+
 func shapesOverlap(a, b []cpShape) bool {
 	for _, x := range a {
 		if slices.ContainsFunc(b, x.overlaps) {
@@ -1439,8 +1471,9 @@ func exclusive(a, b cpPatch) bool {
 // such overlap is harmless (see harmless).
 func editsClash(a, b []cpPatch) (clash, minor bool) {
 	minor = true
+	sets := make([]*shapeSet, len(b))
 	for _, x := range a {
-		for _, y := range b {
+		for j, y := range b {
 			if mapOverlayHasUnknownLayer(x, y) {
 				continue
 			}
@@ -1450,9 +1483,18 @@ func editsClash(a, b []cpPatch) (clash, minor bool) {
 			if x.image && y.image && strings.EqualFold(strings.TrimSpace(x.patchMode), "overlay") && strings.EqualFold(strings.TrimSpace(y.patchMode), "overlay") {
 				continue
 			}
-			if !exclusive(x, y) && shapesOverlap(x.shapes, y.shapes) {
+			if exclusive(x, y) {
+				continue
+			}
+			if sets[j] == nil {
+				sets[j] = indexShapes(y.shapes)
+			}
+			if sets[j].overlaps(x.shapes) {
 				clash = true
-				minor = minor && harmless(x, y)
+				// One overlap that matters settles it: nothing later can make the pair minor again.
+				if !harmless(x, y) {
+					return true, false
+				}
 			}
 		}
 	}
