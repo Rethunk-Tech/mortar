@@ -47,56 +47,6 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Version agreement
-        env:
-          REF_NAME: ${{ github.ref_name }}
-          REF_TYPE: ${{ github.ref_type }}
-        run: |
-          set -euo pipefail
-          # build/config.yml is the one place the version is set; the gate checks every copy against it.
-          cfg_ver="$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)"
-          if [ -z "$cfg_ver" ]; then
-            echo "build/config.yml has no info.version" >&2
-            exit 1
-          fi
-          if [ "$REF_TYPE" = tag ] && [ "$REF_NAME" != "v$cfg_ver" ]; then
-            echo "tag $REF_NAME does not match build/config.yml version $cfg_ver" >&2
-            exit 1
-          fi
-
-      - name: GTK4 and WebKitGTK 6.0
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev
-
-      - name: NSIS
-        if: matrix.windows
-        run: sudo apt-get install -y --no-install-recommends nsis
-
-      - name: Setup Go
-        uses: Rethunk-Tech/gh-actions/setup-go@99dfb9093ab089d28f76d8036322a7c062259e76 # v1.13
-        with:
-          go-version-file: go.mod
-
-      # go.mod replaces wailsapp/wails/v3 with the Rethunk-AI fork, and `go install module@version` ignores
-      # replace directives, so the CLI is built inside the fork's own module at the exact version go.mod pins.
-      - name: Go tools
-        run: |
-          go mod download github.com/wailsapp/wails/v3
-          wails_dir="$(go list -m -f '{{.Replace.Dir}}' github.com/wailsapp/wails/v3)"
-          (cd "$wails_dir" && go build -o "$(go env GOPATH)/bin/wails3" ./cmd/wails3)
-          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.14.0
-          go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
-          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.47.0
-
-      - name: Setup Bun
-        uses: Rethunk-Tech/gh-actions/setup-bun@99dfb9093ab089d28f76d8036322a7c062259e76 # v1.13
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      # main.go embeds frontend/dist, so Go's typecheck in the gate needs it built.
-      - name: Frontend build
-        run: bun run bindings && bun run --cwd frontend build
-
       # A tag normally points at a commit CI already gated on main; re-running the gate then buys nothing.
       # Dispatch runs always gate.
       - name: Gate needed
@@ -115,6 +65,30 @@ jobs:
             echo "run=false" >>"$GITHUB_OUTPUT"
           else
             echo "run=true" >>"$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Mortar
+        uses: ./.github/actions/setup-mortar
+        with:
+          apt-packages: appstream
+          lint-tools: ${{ steps.gate.outputs.run }}
+          nfpm: "true"
+
+      - name: NSIS
+        if: matrix.windows
+        run: sudo apt-get install -y --no-install-recommends nsis
+
+      - name: Version agreement
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          set -euo pipefail
+          # build/config.yml is the one place the version is set; the gate checks every copy against it.
+          cfg_ver="$(go run ./cmd/version -print)"
+          if [ "$REF_TYPE" = tag ] && [ "$REF_NAME" != "v$cfg_ver" ]; then
+            echo "tag $REF_NAME does not match build/config.yml version $cfg_ver" >&2
+            exit 1
           fi
 
       - name: Offline gate
@@ -208,17 +182,10 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Setup Go
-        uses: Rethunk-Tech/gh-actions/setup-go@99dfb9093ab089d28f76d8036322a7c062259e76 # v1.13
+      - name: Set up Mortar
+        uses: ./.github/actions/setup-mortar
         with:
-          go-version-file: go.mod
-
-      - name: wails3 CLI
-        run: |
-          sudo apt-get update && sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev
-          go mod download github.com/wailsapp/wails/v3
-          wails_dir="$(go list -m -f '{{.Replace.Dir}}' github.com/wailsapp/wails/v3)"
-          (cd "$wails_dir" && go build -o "$(go env GOPATH)/bin/wails3" ./cmd/wails3)
+          frontend: "false"
 
       - name: Download artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -235,7 +202,7 @@ jobs:
           if [ "$REF_TYPE" = tag ]; then
             version="${REF_NAME#v}"
           else
-            version="$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)"
+            version="$(go run ./cmd/version -print)"
           fi
           umask 077
           key="$RUNNER_TEMP/updater.key"
@@ -289,7 +256,7 @@ jobs:
           if [ "$REF_TYPE" = tag ]; then
             build/release/notes.sh "$REF_NAME" >notes.md
           else
-            build/release/notes.sh "v$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)" HEAD >notes.md
+            build/release/notes.sh "v$(go run ./cmd/version -print)" HEAD >notes.md
           fi
           cat notes.md >>"$GITHUB_STEP_SUMMARY"
 

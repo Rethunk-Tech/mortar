@@ -1,6 +1,7 @@
 // Command version copies the app version from build/config.yml into the files that cannot read it themselves
 // (the Windows resource manifest and info, the Linux metainfo, the browser extension manifest). With -check it
-// changes nothing and fails when any copy differs, so the gate catches a version set in only one place.
+// changes nothing and fails when any copy differs, so the gate catches a version set in only one place. With
+// -print it only prints the version, for scripts and workflows.
 package main
 
 import (
@@ -32,14 +33,15 @@ var releaseDate = regexp.MustCompile(`(<release version="[^"]*" date=")[^"]*(")`
 
 func main() {
 	check := flag.Bool("check", false, "fail when a copy differs instead of rewriting it")
+	show := flag.Bool("print", false, "print build/config.yml's version and exit")
 	flag.Parse()
-	if err := run(*check); err != nil {
+	if err := run(*check, *show); err != nil {
 		fmt.Fprintln(os.Stderr, "version:", err)
 		os.Exit(1)
 	}
 }
 
-func run(check bool) error {
+func run(check, show bool) error {
 	config, err := fsx.ReadFile("build/config.yml")
 	if err != nil {
 		return err
@@ -47,6 +49,10 @@ func run(check bool) error {
 	want, err := appversion.FromConfig(config)
 	if err != nil {
 		return err
+	}
+	if show {
+		fmt.Println(want)
+		return nil
 	}
 	var stale []string
 	for _, c := range copies {

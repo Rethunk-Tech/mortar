@@ -23,33 +23,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: GTK4 and WebKitGTK 6.0
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev appstream
-
-      - name: Setup Go
-        uses: Rethunk-Tech/gh-actions/setup-go@99dfb9093ab089d28f76d8036322a7c062259e76 # v1.13
+      - name: Set up Mortar
+        uses: ./.github/actions/setup-mortar
         with:
-          go-version-file: go.mod
-
-      # go.mod replaces wailsapp/wails/v3 with the Rethunk-AI fork, and `go install module@version` ignores
-      # replace directives, so the CLI is built inside the fork's own module at the exact version go.mod pins.
-      - name: Go tools
-        run: |
-          go mod download github.com/wailsapp/wails/v3
-          wails_dir="$(go list -m -f '{{.Replace.Dir}}' github.com/wailsapp/wails/v3)"
-          (cd "$wails_dir" && go build -o "$(go env GOPATH)/bin/wails3" ./cmd/wails3)
-          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.14.0
-          go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
-
-      - name: Setup Bun
-        uses: Rethunk-Tech/gh-actions/setup-bun@99dfb9093ab089d28f76d8036322a7c062259e76 # v1.13
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      # main.go embeds frontend/dist, so Go's typecheck in the gate needs it built.
-      - name: Frontend build
-        run: bun run bindings && bun run --cwd frontend build
+          apt-packages: appstream
+          lint-tools: "true"
 
       - name: Offline gate
         run: bun run gate

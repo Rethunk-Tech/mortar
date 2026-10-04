@@ -102,23 +102,13 @@ if [[ ! -f "$root/frontend/dist/index.html" ]]; then
 fi
 
 cd "$root"
-go build -buildmode=pie -tags production -trimpath -buildvcs=false \
-  -ldflags="-w -s -X main.packaged=deb -X github.com/Rethunk-AI/mortar/internal/nxm.packaged=deb -extldflags '-Wl,-z,relro,-z,now'" \
-  -o bin/mortar-packaged
+# The packaged build, nfpm packages and bin/mortar-aur-linux-arm64 come from the same task the native build uses;
+# the exported CC/CGO env above makes it cross-compile.
+wails3 task linux:nfpm ARCH=arm64 NFPM_ARCH=arm64
 
-cp -a bin/mortar-packaged bin/mortar-linux-arm64
-
-VERSION="$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)"
-: "${VERSION:?build/config.yml has no info.version}"
-export VERSION
-export NFPM_ARCH=arm64
-nfpm package --config build/linux/nfpm/nfpm.yaml --packager deb --target "bin/mortar_${VERSION}_arm64.deb"
-nfpm package --config build/linux/nfpm/nfpm.yaml --packager rpm --target "bin/mortar-${VERSION}-1.aarch64.rpm"
-nfpm package --config build/linux/nfpm/nfpm.yaml --packager archlinux --target "bin/mortar-${VERSION}-1-aarch64.pkg.tar.zst"
-
-file bin/mortar-linux-arm64
+file bin/mortar-aur-linux-arm64
 # No --version flag; the dynamic linker exiting after a load trace is the non-GUI smoke.
-qemu-aarch64 -L "$sysroot" -E LD_TRACE_LOADED_OBJECTS=1 ./bin/mortar-linux-arm64
+qemu-aarch64 -L "$sysroot" -E LD_TRACE_LOADED_OBJECTS=1 ./bin/mortar-aur-linux-arm64
 
 missing=0
 while read -r lib; do
@@ -133,7 +123,7 @@ while read -r lib; do
         ;;
     esac
   fi
-done < <(readelf -d bin/mortar-linux-arm64 | sed -n 's/.*NEEDED.*\[\(.*\)\]/\1/p')
+done < <(readelf -d bin/mortar-aur-linux-arm64 | sed -n 's/.*NEEDED.*\[\(.*\)\]/\1/p')
 if [[ "$missing" -ne 0 ]]; then
   exit 1
 fi

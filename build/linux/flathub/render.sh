@@ -6,7 +6,7 @@ bin="${1:?usage: render.sh BIN_DIR OUT_DIR}"
 out="${2:?usage: render.sh BIN_DIR OUT_DIR}"
 here="$(cd "$(dirname "$0")" && pwd)"
 root="$(cd "$here/../../.." && pwd)"
-version="$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' "$root/build/config.yml")"
+version="$(cd "$root" && go run ./cmd/version -print)"
 mkdir -p "$out"
 
 cp "$here/tech.rethunk.Mortar.yml" "$out/tech.rethunk.Mortar.yml"
