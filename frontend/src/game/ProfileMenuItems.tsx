@@ -11,6 +11,7 @@ import {
   History,
   ImageOff,
   ImagePlus,
+  LayoutTemplate,
   PackagePlus,
   Send as SendIcon,
   SquareArrowOutUpRight,
@@ -36,6 +37,7 @@ import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { SaveTemplateDialog } from '../templates/TemplateDialogs.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { applyStagedCover, hasPickedCover } from './cover.ts'
@@ -192,6 +194,32 @@ function SendProfileMenuItem({ profile, close }: { profile: Profile; close: () =
         open={open}
         game={currentGame?.id ?? ''}
         profileId={profile.id}
+        onClose={() => setOpen(false)}
+      />
+    </>
+  )
+}
+
+function SaveTemplateMenuItem({ profile, close }: { profile: Profile; close: () => void }) {
+  const { t } = useLingui()
+  const currentGame = useProfiles((s) => s.game)
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <ProfileMenuItem
+        icon={<LayoutTemplate size={16} />}
+        label={t`Save as template…`}
+        disabled={!currentGame}
+        onClick={() => {
+          close()
+          setOpen(true)
+        }}
+      />
+      <SaveTemplateDialog
+        open={open}
+        game={currentGame?.id ?? ''}
+        profileId={profile.id}
+        profileName={profile.name}
         onClose={() => setOpen(false)}
       />
     </>
@@ -397,6 +425,7 @@ function MoreMenuItems({
         setBundleOpen(true)
       }}
     />,
+    <SaveTemplateMenuItem key="template" profile={profile} close={close} />,
     <Divider key="shortcut-divider" />,
     <ShortcutMenuItems key="shortcuts" profile={profile} close={close} />,
     <Divider key="delete-divider" />,
