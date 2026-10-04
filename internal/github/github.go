@@ -116,6 +116,9 @@ type Progress func(done, total int64)
 
 const downloadRestarts = 3
 
+// ErrLinkExpired is a CDN or host refusing this URL; Nexus then needs a fresh DownloadLinks call.
+var ErrLinkExpired = errors.New("the download link has expired")
+
 type resumeMeta struct {
 	ExpectedSize int64  `json:"expectedSize"`
 	ETag         string `json:"etag"`
@@ -209,7 +212,7 @@ func downloadOnce(ctx context.Context, hc *http.Client, url, dest string, limit 
 			meta.ExpectedSize = total
 		}
 	case http.StatusUnauthorized, http.StatusForbidden, http.StatusGone:
-		return errors.New("the download link has expired"), false
+		return ErrLinkExpired, false
 	case http.StatusRequestedRangeNotSatisfiable:
 		return nil, true
 	default:

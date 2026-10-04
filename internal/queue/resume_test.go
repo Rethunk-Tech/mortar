@@ -17,6 +17,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/nxmsvc"
@@ -53,11 +54,11 @@ func TestFetchResumesWithRangeWhenTheServerSupportsIt(t *testing.T) {
 	t.Cleanup(srv.Close)
 
 	s := rangeSvc(t, srv.Client())
-	path := destPath(s.d.Dir, "item", "m.zip")
+	path := s.dest("item", "m.zip")
 	if err := os.WriteFile(path, []byte(body[:10]), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	saveResume(path, resumeMeta{ExpectedSize: int64(len(body)), ETag: `"v1"`, URL: srv.URL})
+	_ = datadir.WriteJSON(path+".resume.json", map[string]any{"expectedSize": int64(len(body)), "etag": `"v1"`, "url": srv.URL})
 
 	if err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path); err != nil {
 		t.Fatal(err)
@@ -77,11 +78,11 @@ func TestFetchStartsOverWhenTheServerIgnoresRange(t *testing.T) {
 	t.Cleanup(srv.Close)
 
 	s := rangeSvc(t, srv.Client())
-	path := destPath(s.d.Dir, "item", "m.zip")
+	path := s.dest("item", "m.zip")
 	if err := os.WriteFile(path, []byte("PARTIAL!!"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	saveResume(path, resumeMeta{ExpectedSize: int64(len(body)), URL: srv.URL})
+	_ = datadir.WriteJSON(path+".resume.json", map[string]any{"expectedSize": int64(len(body)), "url": srv.URL})
 
 	if err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path); err != nil {
 		t.Fatal(err)
@@ -103,7 +104,7 @@ func TestFetchVerifiesAChecksumFromTheSource(t *testing.T) {
 	t.Cleanup(srv.Close)
 
 	s := rangeSvc(t, srv.Client())
-	path := destPath(s.d.Dir, "item", "m.zip")
+	path := s.dest("item", "m.zip")
 	if err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path); err != nil {
 		t.Fatal(err)
 	}
@@ -122,7 +123,7 @@ func TestFetchContentMD5(t *testing.T) {
 		}))
 		t.Cleanup(srv.Close)
 		s := rangeSvc(t, srv.Client())
-		path := destPath(s.d.Dir, "item", "m.zip")
+		path := s.dest("item", "m.zip")
 		if err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path); err != nil {
 			t.Fatal(err)
 		}
@@ -136,7 +137,7 @@ func TestFetchContentMD5(t *testing.T) {
 		}))
 		t.Cleanup(srv.Close)
 		s := rangeSvc(t, srv.Client())
-		path := destPath(s.d.Dir, "item", "m.zip")
+		path := s.dest("item", "m.zip")
 		err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path)
 		if err == nil || !strings.Contains(err.Error(), "Content-MD5") {
 			t.Fatalf("err = %v", err)
@@ -153,7 +154,7 @@ func TestFetchContentMD5(t *testing.T) {
 		}))
 		t.Cleanup(srv.Close)
 		s := rangeSvc(t, srv.Client())
-		path := destPath(s.d.Dir, "item", "m.zip")
+		path := s.dest("item", "m.zip")
 		if err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path); err != nil {
 			t.Fatal(err)
 		}
@@ -183,11 +184,11 @@ func TestTruncatedPartialResumesAfterRestart(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(f.dir, downloadsDir), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	path := destPath(f.dir, id, "a-1.0.zip")
+	path := filepath.Join(f.dir, downloadsDir, id+filepath.Ext("a-1.0.zip"))
 	if err := os.WriteFile(path, []byte(body[:half]), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	saveResume(path, resumeMeta{ExpectedSize: int64(len(body)), URL: "stale"})
+	_ = datadir.WriteJSON(path+".resume.json", map[string]any{"expectedSize": int64(len(body)), "url": "stale"})
 	f.s.mu.Lock()
 	f.s.items[0].State = StateDownloading
 	f.s.items[0].FileName = "a-1.0.zip"
@@ -277,11 +278,11 @@ func TestExpiredNexusLinkRefetchesThenRanges(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	path := destPath(dir, items[0].ID, "a-1.0.zip")
+	path := filepath.Join(dir, downloadsDir, items[0].ID+filepath.Ext("a-1.0.zip"))
 	if err := os.WriteFile(path, []byte(body[:half]), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	saveResume(path, resumeMeta{ExpectedSize: int64(len(body)), URL: srv.URL + "/cdn/old.zip"})
+	_ = datadir.WriteJSON(path+".resume.json", map[string]any{"expectedSize": int64(len(body)), "url": srv.URL + "/cdn/old.zip"})
 
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
@@ -304,8 +305,8 @@ func TestSweepKeepsPartialsForQueuedItems(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(f.dir, downloadsDir), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	keep := destPath(f.dir, "keepme", "a.zip")
-	drop := destPath(f.dir, "gone", "a.zip")
+	keep := filepath.Join(f.dir, downloadsDir, "keepme"+filepath.Ext("a.zip"))
+	drop := filepath.Join(f.dir, downloadsDir, "gone"+filepath.Ext("a.zip"))
 	if err := os.WriteFile(keep, []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -332,11 +333,11 @@ func TestFetchGivesUpOnALoopingPartialRange(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	s := rangeSvc(t, srv.Client())
-	path := destPath(s.d.Dir, "item", "m.zip")
+	path := s.dest("item", "m.zip")
 	if err := os.WriteFile(path, []byte("PARTIAL!!"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	saveResume(path, resumeMeta{ExpectedSize: 10, ETag: `"v1"`, URL: srv.URL})
+	_ = datadir.WriteJSON(path+".resume.json", map[string]any{"expectedSize": 10, "etag": `"v1"`, "url": srv.URL})
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	t.Cleanup(cancel)
 	err := s.fetch(ctx, Item{ID: "item"}, srv.URL, path)

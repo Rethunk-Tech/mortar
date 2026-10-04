@@ -460,7 +460,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		var ferr error
 		for attempt := range 2 {
 			ferr = s.fetch(ctx, it, uri, path)
-			if ferr == nil || !errors.Is(ferr, errLinkExpired) || attempt == 1 {
+			if ferr == nil || !errors.Is(ferr, github.ErrLinkExpired) || attempt == 1 {
 				break
 			}
 			next, lerr := c.DownloadLinks(ctx, it.ModID, it.FileID, key, expires)

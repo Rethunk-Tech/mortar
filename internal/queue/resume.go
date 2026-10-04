@@ -8,23 +8,8 @@ import (
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/archive"
-	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/github"
 )
-
-// errLinkExpired is a CDN or host refusing this URL; Nexus then needs a fresh DownloadLinks call.
-var errLinkExpired = errors.New("the download link has expired")
-
-type resumeMeta struct {
-	ExpectedSize int64  `json:"expectedSize"`
-	ETag         string `json:"etag"`
-	URL          string `json:"url"`
-	Hash         string `json:"hash"`
-}
-
-func destPath(dir, id, fileName string) string {
-	return filepath.Join(dir, downloadsDir, id+filepath.Ext(fileName))
-}
 
 func (s *Service) downloadRoot() string {
 	if s.d.DownloadDir != nil {
@@ -41,10 +26,6 @@ func (s *Service) dest(id, fileName string) string {
 
 func resumeSidecar(path string) string {
 	return path + ".resume.json"
-}
-
-func saveResume(path string, m resumeMeta) {
-	_ = datadir.WriteJSON(resumeSidecar(path), m)
 }
 
 func dropDownload(path string) {
@@ -98,8 +79,8 @@ func (s *Service) fetch(ctx context.Context, it Item, url, path string) error {
 		}
 		p.set(done)
 	})
-	if err != nil && err.Error() == errLinkExpired.Error() {
-		return errLinkExpired
+	if err != nil && errors.Is(err, github.ErrLinkExpired) {
+		return err
 	}
 	return s.diskError(err, p.total)
 }
