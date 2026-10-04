@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
@@ -6,23 +7,37 @@ import { Launchers } from '../../bindings/github.com/Rethunk-AI/mortar/internal/
 import { ConfirmLaunchers } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { LauncherList } from '../launchers/LauncherList.tsx'
 import { useNav } from '../nav/store.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useRefreshOnFocus } from './useRefreshOnFocus.ts'
 
 // First run: the launchers that tell Mortar which games are installed. Each game is set up when first opened.
 export function FirstRun() {
   const { t } = useLingui()
   const [launchers, setLaunchers] = useState<StoreApp[] | null>(null)
+  const [loadError, setLoadError] = useState('')
   const [busy, setBusy] = useState(false)
   const refresh = useCallback(() => {
+    setLoadError('')
+    setLaunchers(null)
     Launchers()
       .then((ls) => setLaunchers(ls ?? []))
-      .catch(reportUnexpected)
+      .catch((e: unknown) => setLoadError(errorMessage(e)))
   }, [])
   useEffect(refresh, [refresh])
   useRefreshOnFocus(refresh)
+  if (loadError !== '') {
+    return (
+      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+        <Typography role="alert">{loadError}</Typography>
+        <Button variant="contained" onClick={refresh}>
+          {t`Retry`}
+        </Button>
+      </Box>
+    )
+  }
   if (!launchers) {
-    return null
+    return <LoadingRow>{t`Loading…`}</LoadingRow>
   }
   const found = launchers.filter((l) => l.found).length
   const finish = () => {
@@ -73,7 +88,7 @@ export function FirstRun() {
       >
         <Typography sx={{ fontSize: 14, color: 'text.secondary', flex: 1 }}>
           {found > 0
-            ? t`${found} of ${launchers.length} launchers found.`
+            ? t`${found} of ${plural(launchers.length, { one: '# launcher', other: '# launchers' })} found.`
             : t`No launchers found. You can still continue and choose each game's folder when you open it.`}
         </Typography>
         <Button

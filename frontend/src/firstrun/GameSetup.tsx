@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 
 const DONE_FILL = 0.18
@@ -14,7 +14,8 @@ import {
   List,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import type { GameId } from '../nav/store.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { errorMessage } from '../toasts/report.ts'
 import { FindStep } from './FindStep.tsx'
 import { ProfileStep } from './ProfileStep.tsx'
 import { SmapiStep } from './SmapiStep.tsx'
@@ -76,20 +77,36 @@ export function GameSetup({ game: id }: { game: GameId }) {
   const [step, setStep] = useState<Step>(FIND)
   const [game, setGame] = useState<GameInfo | null>(null)
   const [launchers, setLaunchers] = useState<StoreApp[]>([])
+  const [loadError, setLoadError] = useState('')
+  const [ready, setReady] = useState(false)
   const refresh = useCallback(() => {
+    setLoadError('')
+    setReady(false)
     Promise.all([List(), Launchers()])
       .then(([games, ls]) => {
         setGame((games ?? []).find((g) => g.id === id) ?? null)
         setLaunchers(ls ?? [])
       })
-      .catch(reportUnexpected)
+      .catch((e: unknown) => setLoadError(errorMessage(e)))
+      .finally(() => setReady(true))
   }, [id])
   useEffect(refresh, [refresh])
   const goToProfile = useCallback(() => setStep(PROFILE), [])
   const Loader = loaderSteps[id]
 
-  if (!game) {
-    return null
+  if (!ready) {
+    return <LoadingRow>{t`Loading…`}</LoadingRow>
+  }
+  if (loadError !== '' || !game) {
+    const alert = loadError === '' ? t`Something went wrong.` : loadError
+    return (
+      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+        <Typography role="alert">{alert}</Typography>
+        <Button variant="contained" onClick={refresh}>
+          {t`Retry`}
+        </Button>
+      </Box>
+    )
   }
   const stateOf = (n: Step) => {
     if (n < step) {

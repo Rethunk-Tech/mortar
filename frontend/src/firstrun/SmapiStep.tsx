@@ -13,8 +13,9 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { useLoader } from '../loader/store.ts'
 import type { GameId } from '../nav/store.ts'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MONO } from '../theme/theme.ts'
-import { reportError, reportUnexpected } from '../toasts/report.ts'
+import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { launchLine, launchOptionsSet } from './logic.ts'
 import { Panel } from './Panel.tsx'
@@ -140,7 +141,7 @@ function LaunchLine({
       </Box>
       <Box>
         <Button
-          variant="contained"
+          variant="outlined"
           disabled={set || writing}
           onClick={write}
           sx={{ whiteSpace: 'nowrap' }}
@@ -192,6 +193,39 @@ function LaunchLine({
   )
 }
 
+function CheckFailed({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const { t } = useLingui()
+  return (
+    <Panel width={680}>
+      <Typography role="alert" sx={{ fontSize: 14, color: 'error.light' }}>
+        {message}
+      </Typography>
+      <Button variant="contained" onClick={onRetry}>
+        {t`Retry`}
+      </Button>
+    </Panel>
+  )
+}
+
+function CheckGate({
+  error,
+  ready,
+  onRetry,
+}: {
+  error: string
+  ready: boolean
+  onRetry: () => void
+}) {
+  const { t } = useLingui()
+  if (error !== '') {
+    return <CheckFailed message={error} onRetry={onRetry} />
+  }
+  if (!ready) {
+    return <LoadingRow>{t`Loading…`}</LoadingRow>
+  }
+  return null
+}
+
 export function SmapiStep({
   game,
   gameDir,
@@ -214,8 +248,10 @@ export function SmapiStep({
   const pending = useLoader((s) => s.pending)
   const [options, setOptions] = useState('')
   const [checked, setChecked] = useState(false)
+  const [checkError, setCheckError] = useState('')
   const entered = useRef(false)
   const started = useRef(false)
+  const checkGen = useRef(0)
 
   const readOptions = useCallback(
     // Steam's config is unreadable until the user has run Steam once, which reads as "not set yet".
@@ -223,11 +259,27 @@ export function SmapiStep({
       windows ? LaunchOptions(game).then(setOptions, () => setOptions('')) : Promise.resolve(),
     [windows, game],
   )
-  useEffect(() => {
+  const runCheck = useCallback(() => {
+    checkGen.current += 1
+    const token = checkGen.current
+    setChecked(false)
+    setCheckError('')
     Promise.all([check(game), readOptions()])
-      .then(() => setChecked(true))
-      .catch(reportUnexpected)
+      .then(() => {
+        if (token !== checkGen.current) {
+          return
+        }
+        setChecked(true)
+        setCheckError('')
+      })
+      .catch((e: unknown) => {
+        if (token !== checkGen.current) {
+          return
+        }
+        setCheckError(errorMessage(e))
+      })
   }, [check, readOptions, game])
+  useEffect(runCheck, [runCheck])
 
   const smapiReady = status?.installed === true && !status.broken
   const launchReady = !windows || launchOptionsSet(options)
@@ -248,8 +300,9 @@ export function SmapiStep({
     }
   }, [checked, smapiReady, installing, install, game])
 
-  if (!checked) {
-    return null
+  const waiting = <CheckGate error={checkError} ready={checked} onRetry={runCheck} />
+  if (waiting) {
+    return waiting
   }
   if (smapiReady && !installing) {
     const showLaunch = windows && !launchReady

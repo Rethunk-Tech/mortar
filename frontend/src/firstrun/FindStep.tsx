@@ -178,7 +178,7 @@ export function FindStep({
               onClick={browse}
               sx={{ whiteSpace: 'nowrap', height: 40, flexShrink: 0 }}
             >
-              {t`Change…`}
+              {t`Change folder…`}
             </Button>
           </Box>
           <Typography sx={{ fontSize: 13 }}>{details}</Typography>
@@ -199,7 +199,7 @@ export function FindStep({
               onClick={browse}
               sx={{ whiteSpace: 'nowrap', height: 40 }}
             >
-              {t`Choose the game folder…`}
+              {t`Choose folder…`}
             </Button>
             <Button
               variant="text"
