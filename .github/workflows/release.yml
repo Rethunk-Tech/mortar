@@ -48,13 +48,19 @@ jobs:
           persist-credentials: false
 
       - name: Version agreement
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
         run: |
           set -euo pipefail
-          go_ver="$(sed -n 's/^const version = "\(.*\)"$/\1/p' main.go)"
-          cfg_ver="$(sed -n 's/^  version: "\(.*\)".*/\1/p' build/config.yml)"
-          man_ver="$(sed -n 's/.*name="tech.rethunk.mortar" version="\([^"]*\)".*/\1/p' build/windows/wails.exe.manifest)"
-          if [ -z "$go_ver" ] || [ "$go_ver" != "$cfg_ver" ] || [ "$go_ver" != "$man_ver" ]; then
-            echo "version mismatch: main.go=$go_ver config.yml=$cfg_ver manifest=$man_ver" >&2
+          # build/config.yml is the one place the version is set; the gate checks every copy against it.
+          cfg_ver="$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)"
+          if [ -z "$cfg_ver" ]; then
+            echo "build/config.yml has no info.version" >&2
+            exit 1
+          fi
+          if [ "$REF_TYPE" = tag ] && [ "$REF_NAME" != "v$cfg_ver" ]; then
+            echo "tag $REF_NAME does not match build/config.yml version $cfg_ver" >&2
             exit 1
           fi
 
@@ -120,7 +126,7 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
           REF_TYPE: ${{ github.ref_type }}
         run: |
-          version="$(sed -n 's/^const version = "\(.*\)"$/\1/p' main.go)"
+          version="$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)"
           umask 077
           key="$RUNNER_TEMP/updater.key"
           trap 'rm -f "$key"' EXIT
@@ -190,7 +196,7 @@ jobs:
           if [ "$REF_TYPE" = tag ]; then
             version="${REF_NAME#v}"
           else
-            version="$(sed -n 's/^const version = "\(.*\)"$/\1/p' main.go)"
+            version="$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)"
           fi
           umask 077
           key="$RUNNER_TEMP/updater.key"

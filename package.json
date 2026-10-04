@@ -10,7 +10,8 @@
     "typecheck": "bun run bindings && bun run --cwd frontend tsc --noEmit",
     "test": "go test -race ./... && bun test",
     "vet": "go vet ./...",
-    "gate": "bun run lint && bun run typecheck && bun run vet && bun run test && bun run vuln",
+    "version:check": "go run ./cmd/version -check",
+    "gate": "bun run lint && bun run typecheck && bun run vet && bun run version:check && bun run test && bun run vuln",
     "vuln": "govulncheck ./..."
   },
   "devDependencies": {

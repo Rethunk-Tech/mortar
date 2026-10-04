@@ -93,11 +93,11 @@ MORTAR_UPDATE_KEY=/path/to/updater.key wails3 task release:manifest VERSION=1.2.
 
 `linux:build:arm64` cross-compiles on an x86_64 machine with no emulator registered: it needs `zig`, `docker` (to download the arm64 Ubuntu packages it links against, extracted under `tmp/`), `nfpm` and `qemu-aarch64`, which checks that every shared library resolves. The arm64 AppImage is built only in CI.
 
-`release:manifest` refuses a `VERSION` other than `main.go`'s `version`, copies `bin/mortar.exe` to `bin/mortar-windows-amd64.exe`, and writes `bin/manifest.json` signed with the private key `MORTAR_UPDATE_KEY` names, then verifies it against `build/updater/public.key`. The app reads the manifest from the latest release, or the latest pre-release when Settings › Updates includes beta releases; packaged Linux installs leave updating to the package manager. Where the key lives: [docs/architecture.md](docs/architecture.md#release).
+`release:manifest` refuses a `VERSION` other than `build/config.yml`'s `info.version`, copies `bin/mortar.exe` to `bin/mortar-windows-amd64.exe`, and writes `bin/manifest.json` signed with the private key `MORTAR_UPDATE_KEY` names, then verifies it against `build/updater/public.key`. The app reads the manifest from the latest release, or the latest pre-release when Settings › Updates includes beta releases; packaged Linux installs leave updating to the package manager. Where the key lives: [docs/architecture.md](docs/architecture.md#release).
 
 ### Cutting a release in CI
 
-`.github/workflows/release.yml` runs on a `v*` tag: the gate, then the AppImage, nfpm packages, Flatpak bundle, `bin/mortar.exe` and the per-user NSIS installer (`bin/mortar-amd64-installer.exe`) on x86_64, the AppImage and nfpm packages again on an `ubuntu-24.04-arm` runner, the signed `manifest.json`, and the GitHub release with all of those files. A manual dispatch (Actions › Release › Run workflow) builds and signs x86_64 only, for `main.go`'s version, and publishes nothing.
+`.github/workflows/release.yml` runs on a `v*` tag: the gate, then the AppImage, nfpm packages, Flatpak bundle, `bin/mortar.exe` and the per-user NSIS installer (`bin/mortar-amd64-installer.exe`) on x86_64, the AppImage and nfpm packages again on an `ubuntu-24.04-arm` runner, the signed `manifest.json`, and the GitHub release with all of those files. A manual dispatch (Actions › Release › Run workflow) builds and signs x86_64 only, for `build/config.yml`'s version, and publishes nothing.
 
 CI reads the repository secret `MORTAR_UPDATE_KEY`, which holds the private key file's PEM contents, not its path:
 
@@ -107,8 +107,8 @@ gh secret set MORTAR_UPDATE_KEY --repo Rethunk-AI/mortar < ~/.config/mortar-rele
 
 Per release:
 
-1. Set `const version` in `main.go` to the new version, gate, commit and push `main`.
-2. `git tag v1.2.3 && git push origin v1.2.3`. The tag must equal `main.go`'s version with a leading `v`, or the manifest step fails and nothing is published.
+1. Set `info.version` in `build/config.yml`, the only place the version is set, then run `go run ./cmd/version` to copy it into the Windows resources, the Linux metainfo and the extension manifest (`main.go` reads it from `build/config.yml` itself). Gate (it fails on any copy that differs), commit and push `main`.
+2. `git tag v1.2.3 && git push origin v1.2.3`. The tag must equal that version with a leading `v`, or the release stops before building.
 
 ### Flathub
 

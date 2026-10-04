@@ -1,0 +1,108 @@
+// Command version copies the app version from build/config.yml into the files that cannot read it themselves
+// (the Windows resource manifest and info, the Linux metainfo, the browser extension manifest). With -check it
+// changes nothing and fails when any copy differs, so the gate catches a version set in only one place.
+package main
+
+import (
+	"bytes"
+	"flag"
+	"fmt"
+	"os"
+	"regexp"
+	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/appversion"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+)
+
+type copyOf struct {
+	path    string
+	pattern *regexp.Regexp // group 1 is the version; every match is rewritten
+}
+
+var copies = []copyOf{
+	{"build/windows/wails.exe.manifest", regexp.MustCompile(`name="tech\.rethunk\.mortar" version="([^"]*)"`)},
+	{"build/windows/info.json", regexp.MustCompile(`"(?:file_version|ProductVersion)": "([^"]*)"`)},
+	{"build/linux/tech.rethunk.Mortar.metainfo.xml", regexp.MustCompile(`<release version="([^"]*)" date="[^"]*"`)},
+	{"browser-extension/manifest.json", regexp.MustCompile(`"version": "([^"]*)"`)},
+}
+
+var releaseDate = regexp.MustCompile(`(<release version="[^"]*" date=")[^"]*(")`)
+
+func main() {
+	check := flag.Bool("check", false, "fail when a copy differs instead of rewriting it")
+	flag.Parse()
+	if err := run(*check); err != nil {
+		fmt.Fprintln(os.Stderr, "version:", err)
+		os.Exit(1)
+	}
+}
+
+func run(check bool) error {
+	config, err := fsx.ReadFile("build/config.yml")
+	if err != nil {
+		return err
+	}
+	want, err := appversion.FromConfig(config)
+	if err != nil {
+		return err
+	}
+	var stale []string
+	for _, c := range copies {
+		b, err := fsx.ReadFile(c.path)
+		if err != nil {
+			return err
+		}
+		if !c.pattern.Match(b) {
+			return fmt.Errorf("%s has no version to set", c.path)
+		}
+		out := setVersion(c, b, want)
+		if bytes.Equal(out, b) {
+			continue
+		}
+		if check {
+			stale = append(stale, c.path)
+			continue
+		}
+		info, err := os.Stat(c.path)
+		if err != nil {
+			return err
+		}
+		if err := fsx.WriteFile(c.path, out, info.Mode().Perm()); err != nil {
+			return err
+		}
+		fmt.Printf("%s: %s\n", c.path, want)
+	}
+	if len(stale) > 0 {
+		return fmt.Errorf("these do not carry build/config.yml's version %s (run `go run ./cmd/version`): %v", want, stale)
+	}
+	return nil
+}
+
+// setVersion rewrites the version in every match, except in the metainfo, where only the first <release> is the
+// current one (older entries are history) and its date moves to today when its version changes.
+func setVersion(c copyOf, b []byte, want string) []byte {
+	metainfo := c.path == "build/linux/tech.rethunk.Mortar.metainfo.xml"
+	return firstOnly(c.pattern, b, metainfo, func(m []byte) []byte {
+		sub := c.pattern.FindSubmatchIndex(m)
+		if string(m[sub[2]:sub[3]]) == want {
+			return m
+		}
+		m = append(append(append([]byte{}, m[:sub[2]]...), want...), m[sub[3]:]...)
+		if metainfo {
+			m = releaseDate.ReplaceAll(m, []byte("${1}"+time.Now().Format(time.DateOnly)+"${2}"))
+		}
+		return m
+	})
+}
+
+func firstOnly(re *regexp.Regexp, b []byte, first bool, fn func([]byte) []byte) []byte {
+	done := false
+	return re.ReplaceAllFunc(b, func(m []byte) []byte {
+		if done {
+			return m
+		}
+		done = first
+		return fn(m)
+	})
+}

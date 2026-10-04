@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/appversion"
 	"github.com/Rethunk-AI/mortar/internal/archive"
 	"github.com/Rethunk-AI/mortar/internal/backdrop"
 	"github.com/Rethunk-AI/mortar/internal/bisect"
@@ -59,8 +60,19 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/services/notifications"
 )
 
-// version is the app version sent to Nexus; keep it equal to build/config.yml.
-const version = "0.0.1"
+//go:embed build/config.yml
+var buildConfig []byte
+
+// version is build/config.yml's info.version, the one place the app version is set.
+var version = mustVersion()
+
+func mustVersion() string {
+	v, err := appversion.FromConfig(buildConfig)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
 
 // packaged is set by nfpm, Flatpak and AUR builds (`-X main.packaged=deb`) so the self-updater stays off.
 var packaged string
