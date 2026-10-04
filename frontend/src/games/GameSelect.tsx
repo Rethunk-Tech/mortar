@@ -44,6 +44,14 @@ function fail(title: string, err: unknown) {
   reportError(title)(err)
 }
 
+// The row opens its game from a button laid under the content, so the Play button and profile cards on top are
+// separate controls rather than controls nested inside another.
+const aboveOpen = {
+  position: 'relative',
+  pointerEvents: 'none',
+  '& button, & [role="button"], & a': { pointerEvents: 'auto' },
+} as const
+
 function Art({ src, openable }: { src: string; openable: boolean }) {
   return (
     <>
@@ -166,9 +174,16 @@ function Row({
   const content = (
     <>
       {gameArt(game) ? <Art src={gameArt(game)} openable={openable} /> : null}
+      {openable ? (
+        <ButtonBase
+          onClick={open}
+          aria-label={t`Open ${game.name}`}
+          sx={{ position: 'absolute', inset: 0 }}
+        />
+      ) : null}
       <Box
         sx={{
-          position: 'relative',
+          ...aboveOpen,
           minWidth: 0,
           overflow: 'hidden',
           textShadow: shadow,
@@ -192,7 +207,7 @@ function Row({
           />
         ) : null}
       </Box>
-      <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '14px' }}>
+      <Box sx={{ ...aboveOpen, display: 'flex', alignItems: 'center', gap: '14px' }}>
         {openable && lastPlayedId ? (
           <Button
             type="button"
@@ -237,13 +252,7 @@ function Row({
     borderTop: '1px solid rgba(0,0,0,0.8)',
     fontFamily: 'inherit',
   } as const
-  return openable ? (
-    <ButtonBase component="div" onClick={open} aria-label={t`Open ${game.name}`} sx={sx}>
-      {content}
-    </ButtonBase>
-  ) : (
-    <Box sx={sx}>{content}</Box>
-  )
+  return <Box sx={sx}>{content}</Box>
 }
 
 interface GameState {
