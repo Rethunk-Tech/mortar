@@ -232,10 +232,6 @@
       }
     },
     {
-      "includes": ["browser-extension/**"],
-      "javascript": { "globals": ["chrome"] }
-    },
-    {
       "includes": ["**/*.d.ts"],
       "linter": {
         "rules": {

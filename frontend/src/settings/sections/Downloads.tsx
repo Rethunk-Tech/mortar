@@ -58,30 +58,40 @@ function NxmDefaultProfile() {
   )
 }
 
-const EXTENSION_ZIP =
-  'https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-browser-extension.zip'
-const EXTENSION_XPI =
-  'https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-browser-extension.xpi'
+const EXTENSION_RELEASE =
+  'https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest/download'
+const EXTENSION_ZIP = `${EXTENSION_RELEASE}/mortar-browser-extension.zip`
+const EXTENSION_XPI = `${EXTENSION_RELEASE}/mortar-browser-extension.xpi`
 
-// Until the browser stores list the extension, it is installed from the zip on each release.
+// Until the browser stores list the extension, it is installed from its own repo's latest release.
 function ExtensionConnection() {
   const { t } = useLingui()
-  const [contact, setContact] = useState<{ browser: string; lastSeen: string } | null>(null)
+  const [contact, setContact] = useState<{
+    browser: string
+    lastSeen: string
+    mismatch?: string
+  } | null>(null)
   useEffect(() => {
     ExtensionContact().then(setContact).catch(reportUnexpected)
   }, [])
   const connected = contact !== null && contact.browser !== ''
+  const mismatchText: Partial<Record<string, string>> = {
+    extensionTooOld: t`The browser extension is too old for this Mortar`,
+    extensionTooNew: t`The browser extension is too new for this Mortar`,
+  }
+  const mismatch = mismatchText[contact?.mismatch ?? '']
   return (
     <SettingRow label={t`Connection`}>
       <Box sx={{ fontSize: 14 }}>
-        {connected ? (
-          <>
-            {t`Connected from ${contact.browser}, last seen `}
-            <When value={contact.lastSeen} withTime={true} />
-          </>
-        ) : (
-          t`Not connected yet`
-        )}
+        {mismatch ??
+          (connected ? (
+            <>
+              {t`Connected from ${contact.browser}, last seen `}
+              <When value={contact.lastSeen} withTime={true} />
+            </>
+          ) : (
+            t`Not connected yet`
+          ))}
       </Box>
     </SettingRow>
   )

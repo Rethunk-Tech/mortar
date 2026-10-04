@@ -72,10 +72,10 @@ To make that button work, turn on **Handle "Mod Manager Download" links** in **S
 
 ## Browser extension
 
-The extension marks Nexus Mods pages with what your profile already has and sends Mod Manager Download clicks to Mortar. It is optional. **Settings › Downloads** has a **Download the extension** button; the same file is `mortar-browser-extension.zip` on the release. Unzip it for Chrome and Edge.
+The extension marks Nexus Mods pages with what your profile already has and sends Mod Manager Download clicks to Mortar. It is optional. It has its own releases at https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest; **Settings › Downloads** has a **Download the extension** button for `mortar-browser-extension.zip` there. Unzip it for Chrome and Edge. When Mortar and the extension are too far apart in version to talk, the extension says which one to update, and Settings › Downloads says **The browser extension is too old for this Mortar** (or too new).
 
 - **Chrome, Edge or another Chromium browser:** open `chrome://extensions`, turn on Developer mode, choose **Load unpacked** and pick the unzipped folder.
-- **Firefox:** download `mortar-browser-extension.xpi` from the [latest release](https://github.com/Rethunk-Tech/mortar/releases/latest) (**Settings › Downloads** links it too) and open it in Firefox, or drop it on `about:addons`. It is signed by Mozilla, so it stays installed. A release without the `.xpi` needs the zip instead: open `about:debugging`, choose **This Firefox**, then **Load Temporary Add-on** and pick `manifest.json` in the unzipped folder; Firefox removes a temporary add-on when it restarts.
+- **Firefox:** download `mortar-browser-extension.xpi` from the extension's [latest release](https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest) (**Settings › Downloads** links it too) and open it in Firefox, or drop it on `about:addons`. It is signed by Mozilla, so it stays installed. A release without the `.xpi` needs the zip instead: open `about:debugging`, choose **This Firefox**, then **Load Temporary Add-on** and pick `manifest.json` in the unzipped folder; Firefox removes a temporary add-on when it restarts.
 
 ## Profiles
 

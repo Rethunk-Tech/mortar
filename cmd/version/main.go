@@ -25,7 +25,6 @@ var copies = []copyOf{
 	{"build/windows/wails.exe.manifest", regexp.MustCompile(`name="tech\.rethunk\.mortar" version="([^"]*)"`)},
 	{"build/windows/info.json", regexp.MustCompile(`"(?:file_version|ProductVersion)": "([^"]*)"`)},
 	{"build/linux/tech.rethunk.Mortar.metainfo.xml", regexp.MustCompile(`<release version="([^"]*)" date="[^"]*"`)},
-	{"browser-extension/manifest.json", regexp.MustCompile(`"version": "([^"]*)"`)},
 	{"build/linux/aur/PKGBUILD", regexp.MustCompile(`(?m)^pkgver=(.*)$`)},
 }
 

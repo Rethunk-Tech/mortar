@@ -3,10 +3,3 @@ minVersion = "v8.25.0"
 
 [extend]
 useDefault = true
-
-# The browser extension's manifest key is a public key: Chromium derives the extension id from it, and Mortar's
-# native host manifest allows that id.
-[[allowlists]]
-description = "browser extension public key"
-paths = ['''^browser-extension/manifest\.json$''']
-regexes = ['''MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA[A-Za-z0-9+/=]+''']

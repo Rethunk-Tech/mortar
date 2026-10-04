@@ -158,7 +158,6 @@ jobs:
           if [ "${{ matrix.windows }}" = true ]; then
             cp bin/mortar-windows-amd64.exe bin/mortar-amd64-installer.exe \
               bin/mortar-windows-arm64.exe bin/mortar-arm64-installer.exe out/
-            (cd browser-extension && zip -q -r ../out/mortar-browser-extension.zip . -x '*.test.js')
           fi
 
       - name: Upload artifacts
@@ -171,7 +170,6 @@ jobs:
   finalize:
     needs: release
     runs-on: ubuntu-latest
-    # AMO's review of an unlisted version usually takes minutes, and signing waits for it.
     timeout-minutes: 30
     permissions:
       contents: write
@@ -233,7 +231,6 @@ jobs:
             bin/mortar-amd64-installer.exe
             bin/mortar-windows-arm64.exe
             bin/mortar-arm64-installer.exe
-            bin/mortar-browser-extension.zip
             bin/manifest.json
           if-no-files-found: error
 
@@ -257,34 +254,6 @@ jobs:
             cp "bin/flathub/$f" "bin/flathub-$f"
           done
           rm -r bin/aur bin/flathub
-
-      # AMO signs each extension version once, so a dispatch only lints and a rerun reuses the draft's signed copy.
-      - name: Firefox add-on
-        id: xpi
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
-          REF_TYPE: ${{ github.ref_type }}
-          WEB_EXT_API_KEY: ${{ secrets.AMO_JWT_ISSUER }}
-          WEB_EXT_API_SECRET: ${{ secrets.AMO_JWT_SECRET }}
-        run: |
-          set -euo pipefail
-          webext="npx --yes web-ext@10.7.0"
-          $webext lint --source-dir browser-extension --ignore-files '**/*.test.js' --self-hosted
-          if [ "$REF_TYPE" != tag ]; then
-            echo "::notice::Dry run: the Firefox add-on is linted, not signed"
-            exit 0
-          fi
-          if [ -z "$WEB_EXT_API_KEY" ] || [ -z "$WEB_EXT_API_SECRET" ]; then
-            echo "::notice::AMO_JWT_ISSUER or AMO_JWT_SECRET is not set; the release has no signed Firefox add-on"
-            exit 0
-          fi
-          if ! gh release download "$TAG" --repo "$GITHUB_REPOSITORY" -p mortar-browser-extension.xpi -D bin 2>/dev/null; then
-            $webext sign --channel unlisted --source-dir browser-extension --ignore-files '**/*.test.js' \
-              --artifacts-dir "$RUNNER_TEMP/xpi"
-            mv "$RUNNER_TEMP"/xpi/*.xpi bin/mortar-browser-extension.xpi
-          fi
-          echo "signed=true" >>"$GITHUB_OUTPUT"
 
       - name: Release notes
         env:
@@ -341,7 +310,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
-          XPI: ${{ steps.xpi.outputs.signed }}
         run: build/release/verify.sh "$TAG" bin
 
       - name: Publish release
@@ -357,7 +325,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
-          XPI: ${{ steps.xpi.outputs.signed }}
         run: build/release/verify.sh --public "$TAG"
 
   # The site deploy copies this artifact under https://mortar.rethunk.tech/packages.

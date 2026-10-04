@@ -14,6 +14,7 @@ Agents self-test everything they can: in the Wails dev server's browser view, an
 - Share links name their game. Form: [docs/architecture.md](docs/architecture.md#sharing).
 - Mortar never re-hosts mod files; downloads come from each mod's own source. One exception: a profile sent over the local network carries its mod files when both Mortars are signed in to the same Nexus account (the user's own machines); any other receiver gets the profile and downloads each mod from its source.
 - Nexus downloads start only from Nexus's own Mod Manager Download button (or a Premium API download the user asked for in Mortar); the browser extension reads and marks Nexus pages and relays those clicks, never starts downloads or opens Nexus pages itself.
+- The browser extension lives in its own repo, Rethunk-Tech/mortar-browser-extension, with its own version; the native-messaging protocol is versioned in the handshake (`internal/nativehost` `Protocol`, `MinProtocol`, `MaxProtocol`).
 
 ## Verify
 

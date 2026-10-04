@@ -183,7 +183,7 @@ msgstr "Open storage settings"
 msgid "Manage tools…"
 msgstr "Manage tools…"
 
-#: src/game/Hero.tsx:327
+#: src/game/Hero.tsx:332
 #: src/mods/Sidebar.tsx:146
 #: src/profiles/RecentChangesButton.tsx:50
 msgid "Updated"
@@ -548,7 +548,7 @@ msgstr "This computer"
 
 #. placeholder {0}: badge?.updates ?? 0
 #. placeholder {0}: part.n
-#: src/game/Hero.tsx:260
+#: src/game/Hero.tsx:262
 #: src/profiles/ProfileRow.tsx:103
 msgid "{0, plural, one {# update} other {# updates}}"
 msgstr "{0, plural, one {# update} other {# updates}}"
@@ -1157,7 +1157,7 @@ msgstr "Notify when updates are found"
 msgid "Switch on {0}"
 msgstr "Switch on {0}"
 
-#: src/settings/sections/Downloads.tsx:97
+#: src/settings/sections/Downloads.tsx:107
 msgid "It marks Nexus Mods pages with what your profile already has and sends Mod Manager Download links to Mortar."
 msgstr "It marks Nexus Mods pages with what your profile already has and sends Mod Manager Download links to Mortar."
 
@@ -1479,7 +1479,7 @@ msgstr "Could not ignore updates from {source}"
 msgid "Startup"
 msgstr "Startup"
 
-#: src/settings/sections/Downloads.tsx:83
+#: src/settings/sections/Downloads.tsx:93
 msgid "Not connected yet"
 msgstr "Not connected yet"
 
@@ -2014,7 +2014,7 @@ msgstr "Writes a zip with logs and settings, personal paths removed, to attach t
 msgid "Switched on"
 msgstr "Switched on"
 
-#: src/settings/sections/Downloads.tsx:228
+#: src/settings/sections/Downloads.tsx:238
 msgid "Downloading"
 msgstr "Downloading"
 
@@ -2534,7 +2534,7 @@ msgid "Installed file"
 msgstr "Installed file"
 
 #. placeholder {0}: contact.browser
-#: src/settings/sections/Downloads.tsx:79
+#: src/settings/sections/Downloads.tsx:89
 msgid "Connected from {0}, last seen "
 msgstr "Connected from {0}, last seen "
 
@@ -2671,7 +2671,7 @@ msgstr "Download and stage a found update without asking"
 msgid "Search GitHub releases"
 msgstr "Search GitHub releases"
 
-#: src/settings/sections/Downloads.tsx:220
+#: src/settings/sections/Downloads.tsx:230
 msgid "Nexus links"
 msgstr "Nexus links"
 
@@ -2886,6 +2886,10 @@ msgstr "Open notification history"
 #: src/console/RunsPicker.tsx:54
 msgid "Past run"
 msgstr "Past run"
+
+#: src/settings/sections/Downloads.tsx:79
+msgid "The browser extension is too old for this Mortar"
+msgstr "The browser extension is too old for this Mortar"
 
 #: src/fomod/Dialog.tsx:198
 msgid "This option cannot be used."
@@ -3173,7 +3177,7 @@ msgstr "This profile skips this version, so Mortar does not offer it."
 msgid "Search archives"
 msgstr "Search archives"
 
-#: src/game/Hero.tsx:328
+#: src/game/Hero.tsx:333
 msgid "Created"
 msgstr "Created"
 
@@ -3237,7 +3241,7 @@ msgstr "Local"
 msgid "Review mod updates"
 msgstr "Review mod updates"
 
-#: src/settings/sections/Downloads.tsx:100
+#: src/settings/sections/Downloads.tsx:110
 msgid "Download the extension"
 msgstr "Download the extension"
 
@@ -3416,7 +3420,7 @@ msgstr "Use update source"
 msgid "Reported by {0}"
 msgstr "Reported by {0}"
 
-#: src/settings/sections/Downloads.tsx:184
+#: src/settings/sections/Downloads.tsx:194
 msgid "Automatic"
 msgstr "Automatic"
 
@@ -3647,7 +3651,7 @@ msgstr "Last scheduled backup {when} · next one is due"
 msgid "Just this mod"
 msgstr "Just this mod"
 
-#: src/settings/sections/Downloads.tsx:159
+#: src/settings/sections/Downloads.tsx:169
 msgid "Links for games Mortar does not manage open in the app that had them before."
 msgstr "Links for games Mortar does not manage open in the app that had them before."
 
@@ -3663,11 +3667,11 @@ msgstr "Needs your click"
 msgid "This save has no recorded mod list yet."
 msgstr "This save has no recorded mod list yet."
 
-#: src/settings/sections/Downloads.tsx:96
+#: src/settings/sections/Downloads.tsx:106
 msgid "Get the extension"
 msgstr "Get the extension"
 
-#: src/game/Hero.tsx:323
+#: src/game/Hero.tsx:328
 #: src/mods/ModDependencyTree.tsx:166
 #: src/mods/Toolbar.tsx:195
 #: src/settings/prefCopy.ts:120
@@ -3691,7 +3695,7 @@ msgid "Version"
 msgstr "Version"
 
 #: src/settings/sections/AboutDiagnostics.tsx:89
-#: src/settings/sections/Downloads.tsx:224
+#: src/settings/sections/Downloads.tsx:234
 msgid "Browser extension"
 msgstr "Browser extension"
 
@@ -3775,7 +3779,7 @@ msgstr "Review {updateN, plural, one {# update} other {# updates}}"
 msgid "Update"
 msgstr "Update"
 
-#: src/settings/sections/Downloads.tsx:116
+#: src/settings/sections/Downloads.tsx:126
 msgid "Chrome, Edge or another Chromium browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder."
 msgstr "Chrome, Edge or another Chromium browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder."
 
@@ -3869,9 +3873,9 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/sections/Appearance.tsx:43
 #: src/settings/sections/Appearance.tsx:66
 #: src/settings/sections/Downloads.tsx:52
-#: src/settings/sections/Downloads.tsx:164
-#: src/settings/sections/Downloads.tsx:195
-#: src/settings/sections/Downloads.tsx:216
+#: src/settings/sections/Downloads.tsx:174
+#: src/settings/sections/Downloads.tsx:205
+#: src/settings/sections/Downloads.tsx:226
 #: src/settings/sections/GameSettings.tsx:303
 #: src/settings/sections/GameSettings.tsx:326
 #: src/settings/sections/GameSettings.tsx:329
@@ -3979,7 +3983,7 @@ msgstr "Save as preset"
 msgid "Changed outside Mortar"
 msgstr "Changed outside Mortar"
 
-#: src/settings/sections/Downloads.tsx:75
+#: src/settings/sections/Downloads.tsx:84
 msgid "Connection"
 msgstr "Connection"
 
@@ -4006,7 +4010,7 @@ msgstr "Launch environment"
 msgid "Ask"
 msgstr "Ask"
 
-#: src/settings/sections/Downloads.tsx:127
+#: src/settings/sections/Downloads.tsx:137
 msgid "and open it in Firefox. If that release has none, unzip the download, open about:debugging, choose This Firefox, then Load Temporary Add-on and pick manifest.json; Firefox removes it when it restarts."
 msgstr "and open it in Firefox. If that release has none, unzip the download, open about:debugging, choose This Firefox, then Load Temporary Add-on and pick manifest.json; Firefox removes it when it restarts."
 
@@ -4692,7 +4696,7 @@ msgid "Ready to import"
 msgstr "Ready to import"
 
 #: src/settings/prefCopy.ts:300
-#: src/settings/sections/Downloads.tsx:210
+#: src/settings/sections/Downloads.tsx:220
 msgid "Download folder"
 msgstr "Download folder"
 
@@ -4833,7 +4837,7 @@ msgstr "No notifications yet"
 msgid "Optional files"
 msgstr "Optional files"
 
-#: src/settings/sections/Downloads.tsx:125
+#: src/settings/sections/Downloads.tsx:135
 msgid "download the signed add-on"
 msgstr "download the signed add-on"
 
@@ -5193,7 +5197,7 @@ msgstr "Reverted"
 msgid "Pin {name}"
 msgstr "Pin {name}"
 
-#: src/settings/sections/Downloads.tsx:190
+#: src/settings/sections/Downloads.tsx:200
 msgid "Premium downloads come from this Nexus server when it offers the file."
 msgstr "Premium downloads come from this Nexus server when it offers the file."
 
@@ -5593,7 +5597,7 @@ msgstr "Could not check the mods for problems"
 msgid "Search the log"
 msgstr "Search the log"
 
-#: src/settings/sections/Downloads.tsx:147
+#: src/settings/sections/Downloads.tsx:157
 msgid "{owner} opens these links now."
 msgstr "{owner} opens these links now."
 
@@ -5642,7 +5646,7 @@ msgstr "Send"
 
 #: src/console/ConsoleTab.tsx:54
 #: src/firstrunTour/TourPopover.tsx:67
-#: src/game/Hero.tsx:320
+#: src/game/Hero.tsx:325
 #: src/game/ProfileWorkspace.tsx:65
 #: src/mods/ModListVirtual.tsx:275
 #: src/settings/GameSettingsPage.tsx:58
@@ -6227,7 +6231,7 @@ msgstr "Remove {0} from other profiles"
 msgid "Notification history"
 msgstr "Notification history"
 
-#: src/game/Hero.tsx:324
+#: src/game/Hero.tsx:329
 msgid "Open Saves ({fitting} of {total})"
 msgstr "Open Saves ({fitting} of {total})"
 
@@ -6699,7 +6703,7 @@ msgstr "There is no SMAPI log for this profile yet. Play this profile once, then
 msgid "Replacement: {0}"
 msgstr "Replacement: {0}"
 
-#: src/settings/sections/Downloads.tsx:119
+#: src/settings/sections/Downloads.tsx:129
 msgid "Firefox:"
 msgstr "Firefox:"
 
@@ -6745,6 +6749,10 @@ msgstr "Created {0}"
 #: src/settings/sections/StreamOverlay.tsx:78
 msgid "Date"
 msgstr "Date"
+
+#: src/settings/sections/Downloads.tsx:80
+msgid "The browser extension is too new for this Mortar"
+msgstr "The browser extension is too new for this Mortar"
 
 #: src/settings/sections/DismissedFolders.tsx:30
 msgid "Could not offer the folder again"
@@ -7188,7 +7196,7 @@ msgstr "Mod or event"
 msgid "Untrack every {gameName} mod on Nexus"
 msgstr "Untrack every {gameName} mod on Nexus"
 
-#: src/settings/sections/Downloads.tsx:146
+#: src/settings/sections/Downloads.tsx:156
 msgid "Clicking these links on Nexus starts the download in Mortar."
 msgstr "Clicking these links on Nexus starts the download in Mortar."
 
@@ -8463,8 +8471,8 @@ msgstr "winner"
 msgid "Maximise"
 msgstr "Maximise"
 
-#: src/settings/sections/Downloads.tsx:145
-#: src/settings/sections/Downloads.tsx:153
+#: src/settings/sections/Downloads.tsx:155
+#: src/settings/sections/Downloads.tsx:163
 msgid "Handle \"Mod Manager Download\" links"
 msgstr "Handle \"Mod Manager Download\" links"
 
@@ -8523,7 +8531,7 @@ msgstr "In {0}; turns off its edits here"
 msgid "Could not set the default launch preset"
 msgstr "Could not set the default launch preset"
 
-#: src/settings/sections/Downloads.tsx:239
+#: src/settings/sections/Downloads.tsx:249
 msgid "Files"
 msgstr "Files"
 
@@ -8903,7 +8911,7 @@ msgstr "Keep Mortar in the tray"
 #. placeholder {0}: badge?.problems ?? 0
 #. placeholder {0}: part.n
 #. placeholder {0}: problems.length
-#: src/game/Hero.tsx:262
+#: src/game/Hero.tsx:264
 #: src/mods/ProblemBar.tsx:55
 #: src/profiles/ProfileRow.tsx:104
 msgid "{0, plural, one {# problem} other {# problems}}"
@@ -9122,7 +9130,7 @@ msgstr "Markdown"
 msgid "Could not cancel transfer"
 msgstr "Could not cancel transfer"
 
-#: src/game/Hero.tsx:323
+#: src/game/Hero.tsx:328
 msgid "{fitting} of {total}"
 msgstr "{fitting} of {total}"
 
@@ -9189,8 +9197,8 @@ msgstr "SMAPI mods"
 msgid "Dates"
 msgstr "Dates"
 
-#: src/settings/sections/Downloads.tsx:158
-#: src/settings/sections/Downloads.tsx:166
+#: src/settings/sections/Downloads.tsx:168
+#: src/settings/sections/Downloads.tsx:176
 msgid "Send other games' links to {redirectName}"
 msgstr "Send other games' links to {redirectName}"
 
@@ -9428,7 +9436,7 @@ msgstr "Could not roll back {0}"
 msgid "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 msgstr "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 
-#: src/game/Hero.tsx:322
+#: src/game/Hero.tsx:327
 #: src/game/ProfileWorkspace.tsx:83
 msgid "Saves"
 msgstr "Saves"
@@ -9559,7 +9567,7 @@ msgid "Profile"
 msgstr "Profile"
 
 #: src/firstrun/FindStep.tsx:181
-#: src/settings/sections/Downloads.tsx:244
+#: src/settings/sections/Downloads.tsx:254
 #: src/settings/sections/GameSettings.tsx:189
 #: src/settings/sections/GameSettings.tsx:379
 msgid "Change folder…"
@@ -9675,7 +9683,7 @@ msgstr "Accent colour"
 msgid " {winnerName} wins."
 msgstr " {winnerName} wins."
 
-#: src/settings/sections/Downloads.tsx:147
+#: src/settings/sections/Downloads.tsx:157
 msgid "Mortar handles these links now."
 msgstr "Mortar handles these links now."
 
@@ -9983,7 +9991,7 @@ msgstr "API requests"
 #. placeholder {0}: info.count
 #: src/bundles/BundleRow.tsx:34
 #: src/bundles/dialogs.tsx:136
-#: src/game/Hero.tsx:257
+#: src/game/Hero.tsx:259
 #: src/game/NewProfileDialog.tsx:85
 #: src/share/ShareDialog.tsx:91
 #: src/share/ShareDialog.tsx:194
@@ -11237,8 +11245,8 @@ msgstr "Checks the data folder, games, Nexus download links and the browser exte
 msgid "The SMAPI event handler that took longest, and its time"
 msgstr "The SMAPI event handler that took longest, and its time"
 
-#: src/settings/sections/Downloads.tsx:189
-#: src/settings/sections/Downloads.tsx:198
+#: src/settings/sections/Downloads.tsx:199
+#: src/settings/sections/Downloads.tsx:208
 msgid "Preferred download server"
 msgstr "Preferred download server"
 
