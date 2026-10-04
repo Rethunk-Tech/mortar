@@ -17,22 +17,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  plan:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set.outputs.matrix }}
-    steps:
-      - id: set
-        run: |
-          amd64='{"runner":"ubuntu-latest","goarch":"amd64","appimage_arch":"x86_64","deb_arch":"amd64","rpm_arch":"x86_64","pkg_arch":"x86_64","windows":true,"flatpak":true}'
-          arm64='{"runner":"ubuntu-24.04-arm","goarch":"arm64","appimage_arch":"aarch64","deb_arch":"arm64","rpm_arch":"aarch64","pkg_arch":"aarch64","windows":false,"flatpak":false}'
-          echo "matrix={\"include\":[$amd64,$arm64]}" >>"$GITHUB_OUTPUT"
-
   release:
-    needs: plan
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+      matrix:
+        include:
+          - { runner: ubuntu-latest, goarch: amd64, appimage_arch: x86_64, deb_arch: amd64, rpm_arch: x86_64, pkg_arch: x86_64, windows: true, flatpak: true }
+          - { runner: ubuntu-24.04-arm, goarch: arm64, appimage_arch: aarch64, deb_arch: arm64, rpm_arch: aarch64, pkg_arch: aarch64, windows: false, flatpak: false }
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 40
     permissions:
@@ -54,13 +45,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REF_TYPE: ${{ github.ref_type }}
+          GOARCH: ${{ matrix.goarch }}
         run: |
           set -euo pipefail
           passed=0
           if [ "$REF_TYPE" = tag ]; then
             passed="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$GITHUB_SHA&event=push&status=success" --jq .total_count)"
           fi
-          if [ "$passed" -gt 0 ]; then
+          if [ "$GOARCH" != amd64 ]; then
+            echo "The gate runs on the amd64 leg only, as in ci.yml"
+            echo "run=false" >>"$GITHUB_OUTPUT"
+          elif [ "$passed" -gt 0 ]; then
             echo "CI already passed on $GITHUB_SHA; skipping the gate"
             echo "run=false" >>"$GITHUB_OUTPUT"
           else

@@ -15,6 +15,8 @@ concurrency:
 
 jobs:
   gate:
+    # Dependabot PRs are never merged (the bump is applied by hand on main, where this runs), so a gate on them is spent minutes.
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -23,11 +25,35 @@ jobs:
         with:
           persist-credentials: false
 
+      # Nothing the gate runs reads Markdown, so a docs-only change skips setup and gate. The filter is a step rather than
+      # paths-ignore so the check still reports green for a required status check.
+      - name: Code changed
+        id: changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          code=true
+          if [ -n "$BASE" ] && [ "$BASE" != 0000000000000000000000000000000000000000 ]; then
+            files="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE...$HEAD" --jq '.files[].filename')"
+            # The compare API lists at most 300 files; a longer list runs the gate.
+            if [ -n "$files" ] && [ "$(printf '%s\n' "$files" | wc -l)" -lt 300 ] \
+              && ! printf '%s\n' "$files" | grep -qvE '(\.md$|^docs/|^\.github/ISSUE_TEMPLATE/)'; then
+              code=false
+              echo "Only documentation changed; skipping the gate"
+            fi
+          fi
+          echo "code=$code" >>"$GITHUB_OUTPUT"
+
       - name: Set up Mortar
+        if: steps.changes.outputs.code == 'true'
         uses: ./.github/actions/setup-mortar
         with:
           apt-packages: appstream
           lint-tools: "true"
 
       - name: Offline gate
+        if: steps.changes.outputs.code == 'true'
         run: bun run gate
