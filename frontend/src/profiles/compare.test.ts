@@ -2,20 +2,9 @@ import { expect, test } from 'bun:test'
 import type {
   Entry,
   EntryMod,
-  Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compareProfiles } from './compare.ts'
-
-const profile = (partial: Partial<Profile> & Pick<Profile, 'id' | 'name'>): Profile => ({
-  notes: '',
-  cover: '',
-  order: 0,
-  hidden: false,
-  created: '',
-  updated: '',
-  entries: null,
-  ...partial,
-})
+import { testProfile } from './testProfile.ts'
 
 function mod(uniqueId: string, name: string, version: string): EntryMod {
   return { uniqueId, name, version, author: '', folder: '.' }
@@ -32,7 +21,7 @@ function entry(key: string, mods: EntryMod[], disabled: string[] | null = null):
 }
 
 test('compare splits version, enabled, and identical mods in both profiles', () => {
-  const a = profile({
+  const a = testProfile({
     id: 'a',
     name: 'A',
     entries: [
@@ -42,7 +31,7 @@ test('compare splits version, enabled, and identical mods in both profiles', () 
       entry('same', [mod('Me.Same', 'Same', '3.0')]),
     ],
   })
-  const b = profile({
+  const b = testProfile({
     id: 'b',
     name: 'B',
     entries: [
@@ -62,12 +51,12 @@ test('compare splits version, enabled, and identical mods in both profiles', () 
 })
 
 test('a mod with both version and enabled differences appears in both diff groups', () => {
-  const a = profile({
+  const a = testProfile({
     id: 'a',
     name: 'A',
     entries: [entry('x', [mod('Me.Both', 'Both', '1.0')])],
   })
-  const b = profile({
+  const b = testProfile({
     id: 'b',
     name: 'B',
     entries: [entry('y', [mod('Me.Both', 'Both', '2.0')], ['Me.Both'])],

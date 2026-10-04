@@ -1,21 +1,10 @@
 import { expect, test } from 'bun:test'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { testProfile } from '../profiles/testProfile.ts'
 import { modsByAuthor } from './modsByAuthor.ts'
-
-const profile = (partial: Partial<Profile> & Pick<Profile, 'id' | 'name'>): Profile => ({
-  notes: '',
-  cover: '',
-  order: 0,
-  hidden: false,
-  created: '',
-  updated: '',
-  entries: null,
-  ...partial,
-})
 
 test('groups mods by normalised author across profiles', () => {
   const profiles = [
-    profile({
+    testProfile({
       id: 'a',
       name: 'Farm',
       entries: [
@@ -38,7 +27,7 @@ test('groups mods by normalised author across profiles', () => {
         },
       ],
     }),
-    profile({
+    testProfile({
       id: 'b',
       name: 'Co-op',
       entries: [

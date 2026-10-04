@@ -1,9 +1,9 @@
 import { beforeEach, expect, test } from 'bun:test'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { useDetail } from '../mods/detail.ts'
 import { useNav } from '../nav/store.ts'
 import { findModInProfiles, openModInProfile } from './findMod.ts'
 import { useProfiles } from './store.ts'
+import { testProfile } from './testProfile.ts'
 
 beforeEach(() => {
   useDetail.setState(useDetail.getInitialState(), true)
@@ -11,20 +11,9 @@ beforeEach(() => {
   useProfiles.setState(useProfiles.getInitialState(), true)
 })
 
-const profile = (partial: Partial<Profile> & Pick<Profile, 'id' | 'name'>): Profile => ({
-  notes: '',
-  cover: '',
-  order: 0,
-  hidden: false,
-  created: '',
-  updated: '',
-  entries: null,
-  ...partial,
-})
-
 test('finds mods by name or UniqueID across profiles', () => {
   const profiles = [
-    profile({
+    testProfile({
       id: 'aaaa',
       name: 'Farm',
       entries: [
@@ -47,7 +36,7 @@ test('finds mods by name or UniqueID across profiles', () => {
         },
       ],
     }),
-    profile({
+    testProfile({
       id: 'bbbb',
       name: 'Co-op',
       entries: [
