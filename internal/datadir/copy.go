@@ -21,25 +21,45 @@ type CopyProgress struct {
 }
 
 // CopyTree copies the regular files and folders under src into dst (which may exist), file by file with io.Copy.
-// Directory junctions and symlink directories are not followed. Symlink files are copied by content when they still
-// resolve under src, and are an error when they escape.
+// Directory junctions, mount points and symlink directories are not followed. Symlink files are copied by content
+// when they still resolve under src, and are an error when they escape.
 func CopyTree(src, dst string) error {
-	return copyTree(src, dst, nil, nil)
+	_, err := copyTree(src, dst, nil, nil)
+	return err
 }
 
-func copyTree(src, dst string, report func(CopyProgress), put func(from, to, rel string) error) error {
+// LinkedDir reports an entry that leads to a directory without being one: a symlink to a folder, or on Windows a
+// junction or mount point, which Go reports as an irregular file.
+func LinkedDir(p string, info os.FileInfo) bool {
+	if info.IsDir() {
+		return false
+	}
+	if info.Mode()&os.ModeSymlink == 0 && info.Mode().IsRegular() {
+		return false
+	}
+	st, err := os.Stat(p)
+	return err == nil && st.IsDir()
+}
+
+// copyTree is CopyTree with progress and a custom per-file put; it also returns the linked folders it skipped.
+func copyTree(src, dst string, report func(CopyProgress), put func(from, to, rel string) error) (skipped []string, err error) {
+	return copyTreeFirst(src, dst, "", report, put)
+}
+
+// copyTreeFirst is copyTree that, when first names a top-level entry of src, copies that entry before the rest.
+func copyTreeFirst(src, dst, first string, report func(CopyProgress), put func(from, to, rel string) error) (skipped []string, err error) {
 	if put == nil {
 		put = func(from, to, _ string) error { return CopyFile(from, to) }
 	}
 	root, err := filepath.EvalSymlinks(src)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	var progress CopyProgress
 	if report != nil {
 		progress.TotalBytes, err = Size(src)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		err = filepath.WalkDir(src, func(p string, d fs.DirEntry, walkErr error) error {
 			if walkErr != nil {
@@ -51,12 +71,36 @@ func copyTree(src, dst string, report func(CopyProgress), put func(from, to, rel
 			return nil
 		})
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return filepath.WalkDir(src, func(p string, _ fs.DirEntry, err error) error {
+	passes := 1
+	if first != "" {
+		passes = 2
+	}
+	for pass := 0; pass < passes && err == nil; pass++ {
+		err = walkCopy(src, dst, first, pass, &progress, report, put, root, &skipped)
+	}
+	return skipped, err
+}
+
+// walkCopy is one walk of copyTreeFirst. In a two-pass copy, pass 0 takes only the first entry and pass 1 the rest.
+func walkCopy(src, dst, first string, pass int, progress *CopyProgress, report func(CopyProgress), put func(from, to, rel string) error, root string, skipped *[]string) error {
+	return filepath.WalkDir(src, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+		if first != "" && p != src {
+			top, relErr := filepath.Rel(src, p)
+			if relErr != nil {
+				return relErr
+			}
+			if (strings.SplitN(filepath.ToSlash(top), "/", 2)[0] == first) != (pass == 0) {
+				if d.IsDir() {
+					return fs.SkipDir
+				}
+				return nil
+			}
 		}
 		info, err := os.Lstat(p)
 		if err != nil {
@@ -72,6 +116,10 @@ func copyTree(src, dst string, report func(CopyProgress), put func(from, to, rel
 			}
 			return os.MkdirAll(filepath.Join(dst, rel), 0o750)
 		}
+		if LinkedDir(p, info) {
+			*skipped = append(*skipped, p)
+			return nil
+		}
 		resolved, err := filepath.EvalSymlinks(p)
 		if err != nil {
 			return err
@@ -82,13 +130,6 @@ func copyTree(src, dst string, report func(CopyProgress), put func(from, to, rel
 		}
 		target := filepath.Join(dst, rel)
 		if info.Mode()&os.ModeSymlink != 0 {
-			st, err := os.Stat(resolved)
-			if err != nil {
-				return err
-			}
-			if st.IsDir() {
-				return nil
-			}
 			if !UnderRoot(root, resolved) {
 				return fmt.Errorf("%s escapes %s", p, src)
 			}
@@ -102,7 +143,7 @@ func copyTree(src, dst string, report func(CopyProgress), put func(from, to, rel
 					return err
 				}
 				progress.Bytes += info.Size()
-				report(progress)
+				report(*progress)
 			}
 			return nil
 		}
@@ -118,7 +159,7 @@ func copyTree(src, dst string, report func(CopyProgress), put func(from, to, rel
 		if report != nil {
 			progress.Files++
 			progress.Bytes += info.Size()
-			report(progress)
+			report(*progress)
 		}
 		return nil
 	})

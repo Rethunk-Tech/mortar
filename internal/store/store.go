@@ -401,6 +401,9 @@ func hashDir(root string) (string, error) {
 			}
 			return nil
 		}
+		if datadir.LinkedDir(p, info) {
+			return nil
+		}
 		resolved, err := filepath.EvalSymlinks(p)
 		if err != nil {
 			return err
@@ -414,13 +417,6 @@ func hashDir(root string) (string, error) {
 		}
 		open := p
 		if info.Mode()&os.ModeSymlink != 0 {
-			st, err := os.Stat(resolved)
-			if err != nil {
-				return err
-			}
-			if st.IsDir() {
-				return nil
-			}
 			open = resolved
 		} else if !info.Mode().IsRegular() {
 			return fmt.Errorf("%s is not a regular file", p)

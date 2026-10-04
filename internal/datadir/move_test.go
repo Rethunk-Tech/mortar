@@ -19,7 +19,7 @@ func TestRelocateCopiesThenRemovesAndLeavesAPointer(t *testing.T) {
 	}
 	dest := filepath.Join(t.TempDir(), "new")
 	def := t.TempDir()
-	if err := Relocate(src, dest, def); err != nil {
+	if err := Relocate(src, dest, def, nil); err != nil {
 		t.Fatal(err)
 	}
 	got, err := fsx.ReadFile(filepath.Join(dest, "settings.json"))
@@ -37,14 +37,14 @@ func TestRelocateCopiesThenRemovesAndLeavesAPointer(t *testing.T) {
 
 func TestRelocateRefusesATargetInsideTheSourceOrANonEmptyFolder(t *testing.T) {
 	src := t.TempDir()
-	if err := Relocate(src, filepath.Join(src, "inside"), t.TempDir()); !errors.Is(err, ErrInside) {
+	if err := Relocate(src, filepath.Join(src, "inside"), t.TempDir(), nil); !errors.Is(err, ErrInside) {
 		t.Fatalf("inside = %v", err)
 	}
 	dest := t.TempDir()
 	if err := fsx.WriteFile(filepath.Join(dest, "x"), []byte("1"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := Relocate(src, dest, t.TempDir()); !errors.Is(err, ErrNotEmpty) {
+	if err := Relocate(src, dest, t.TempDir(), nil); !errors.Is(err, ErrNotEmpty) {
 		t.Fatalf("empty = %v", err)
 	}
 }
@@ -58,7 +58,7 @@ func TestRelocateRemovesPartialDestinationWhenCopyFails(t *testing.T) {
 		t.Fatal(err)
 	}
 	dest := filepath.Join(t.TempDir(), "new")
-	err := Relocate(src, dest, t.TempDir())
+	err := Relocate(src, dest, t.TempDir(), nil)
 	if err == nil {
 		t.Fatal("copy unexpectedly succeeded")
 	}
@@ -107,7 +107,7 @@ func TestRelocatePreservesHardlinks(t *testing.T) {
 	if n, err := Size(src); err != nil || n != 4096 {
 		t.Fatalf("Size = %d, %v; want one inode counted once", n, err)
 	}
-	if err := Relocate(src, dest, def); err != nil {
+	if err := Relocate(src, dest, def, nil); err != nil {
 		t.Fatal(err)
 	}
 	if !os.SameFile(mustStat(t, filepath.Join(dest, "store.bin")), mustStat(t, filepath.Join(dest, "p", "linked.bin"))) {

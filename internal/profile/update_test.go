@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -221,6 +222,9 @@ func TestUpdateBacksUpSavesAndHonoursLock(t *testing.T) {
 }
 
 func TestUpdateThatCannotRecordRestoresTheOldFolder(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("a read-only folder is made with chmod, which Windows ignores for directories")
+	}
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m})
 	writeFile(t, e.mods(p.ID), "a-1/A/config.json", "mine")

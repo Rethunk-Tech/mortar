@@ -13,7 +13,7 @@ func linkedKey(_ string, info os.FileInfo) (fileKey, bool) {
 	if !ok || st.Nlink < 2 {
 		return fileKey{}, false
 	}
-	return fileKey{u64(st.Dev), u64(st.Ino)}, true
+	return fileKey{u64(st.Dev), u64(st.Ino), 0}, true
 }
 
 // u64 widens a stat field whose width differs per platform.

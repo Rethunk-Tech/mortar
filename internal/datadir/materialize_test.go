@@ -226,9 +226,9 @@ func TestMaterializeFallbackChain(t *testing.T) {
 	}
 	ops := Ops{
 		Tiers:        []Tier{TierClone, TierHardlink, TierSymlink, TierCopy},
-		Clone:        track("clone", syscall.EOPNOTSUPP),
-		Hardlink:     track("hardlink", syscall.EXDEV),
-		Symlink:      track("symlink", syscall.EINVAL),
+		Clone:        track("clone", errNoClone),
+		Hardlink:     track("hardlink", errCrossDevice),
+		Symlink:      track("symlink", errBadLink),
 		Copy:         track("copy", nil),
 		DisableCache: true,
 	}
@@ -320,5 +320,6 @@ func MaterializeTreeOps(src, dst string, ops Ops) error {
 	if ops.Copy == nil {
 		ops.Copy = CopyFile
 	}
-	return copyTree(src, dst, nil, ops.put)
+	_, err := copyTree(src, dst, nil, ops.put)
+	return err
 }

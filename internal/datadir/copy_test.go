@@ -84,3 +84,14 @@ func TestUnderRoot(t *testing.T) {
 		t.Fatal("path outside root")
 	}
 }
+
+func TestCopyTreeReportsSkippedLinkedFolders(t *testing.T) {
+	src, outside := t.TempDir(), t.TempDir()
+	if err := os.Symlink(outside, filepath.Join(src, "link")); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+	skipped, err := copyTree(src, t.TempDir(), nil, nil)
+	if err != nil || len(skipped) != 1 {
+		t.Fatalf("skipped = %v, err = %v", skipped, err)
+	}
+}

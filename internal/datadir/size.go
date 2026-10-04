@@ -7,7 +7,10 @@ import (
 
 // Size returns the total size in bytes of the regular files under dir, counting hard-linked files once. Unreadable entries below dir are
 // skipped, so the size is a best-effort total; only a failure to read dir itself is an error.
-func Size(dir string) (int64, error) {
+func Size(dir string) (int64, error) { return size(dir, true) }
+
+// size is Size; with dedupe false every name counts in full, as it does on a target that refuses hard links.
+func size(dir string, dedupe bool) (int64, error) {
 	var total int64
 	seen := map[fileKey]bool{}
 	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
@@ -18,7 +21,7 @@ func Size(dir string) (int64, error) {
 			return nil
 		}
 		if info, infoErr := d.Info(); infoErr == nil {
-			if key, linked := linkedKey(path, info); linked {
+			if key, linked := linkedKey(path, info); linked && dedupe {
 				if seen[key] {
 					return nil
 				}
@@ -31,8 +34,8 @@ func Size(dir string) (int64, error) {
 	return total, err
 }
 
-// fileKey identifies one inode on one device.
-type fileKey [2]uint64
+// fileKey identifies one inode on one device; the third word is the high half of a 128-bit Windows file id.
+type fileKey [3]uint64
 
 func rootError(path, root string, err error) error {
 	if path == root {

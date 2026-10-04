@@ -1,9 +1,11 @@
 package datadir
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
@@ -26,12 +28,12 @@ func fakeExe(t *testing.T, marker bool) string {
 
 func TestPortableDirNeedsTheMarkerBesideTheResolvedExecutable(t *testing.T) {
 	t.Setenv("FLATPAK_ID", "")
-	if got := portableDir(fakeExe(t, false)); got != "" {
+	if got, err := portableDir(fakeExe(t, false)); got != "" || err != nil {
 		t.Fatalf("no marker = %q", got)
 	}
 	exe := fakeExe(t, true)
 	want := filepath.Join(filepath.Dir(exe), "data")
-	if got := portableDir(exe); got != want {
+	if got, err := portableDir(exe); !strings.EqualFold(got, want) || err != nil {
 		t.Fatalf("marker = %q, want %q", got, want)
 	}
 	if runtime.GOOS != "windows" {
@@ -39,17 +41,17 @@ func TestPortableDirNeedsTheMarkerBesideTheResolvedExecutable(t *testing.T) {
 		if err := os.Symlink(exe, link); err != nil {
 			t.Fatal(err)
 		}
-		if got := portableDir(link); got != want {
+		if got, err := portableDir(link); got != want || err != nil {
 			t.Fatalf("through a symlink = %q, want %q", got, want)
 		}
 	}
 	t.Setenv("FLATPAK_ID", "tech.rethunk.Mortar")
-	if got := portableDir(exe); got != "" {
+	if got, err := portableDir(exe); got != "" || err != nil {
 		t.Fatalf("inside a Flatpak = %q", got)
 	}
 }
 
-func TestPortableDirIgnoresAReadOnlyFolder(t *testing.T) {
+func TestPortableDirRefusesAReadOnlyFolder(t *testing.T) {
 	if runtime.GOOS == "windows" || os.Geteuid() == 0 {
 		t.Skip("needs POSIX permissions enforced")
 	}
@@ -60,8 +62,10 @@ func TestPortableDirIgnoresAReadOnlyFolder(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = fsx.Chmod(dir, 0o700) })
-	if got := portableDir(exe); got != "" {
-		t.Fatalf("read-only = %q", got)
+	got, err := portableDir(exe)
+	var pe *PortableError
+	if got != "" || !errors.As(err, &pe) {
+		t.Fatalf("read-only = %q, %v; want a PortableError", got, err)
 	}
 }
 
@@ -81,7 +85,7 @@ func TestPortableModeIgnoresThePointer(t *testing.T) {
 	}
 	want := filepath.Join(t.TempDir(), "data")
 	old := portable
-	portable = func() string { return want }
+	portable = func() (string, error) { return want, nil }
 	t.Cleanup(func() { portable = old })
 	got, err := Dir()
 	if err != nil || got != want {

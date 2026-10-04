@@ -183,7 +183,7 @@ func run() error {
 			}
 		}
 	}()
-	dataDir, err := datadir.Dir()
+	dataDir, err := dataDirOrRecover()
 	if err != nil {
 		return err
 	}
@@ -223,7 +223,7 @@ func run() error {
 			_ = updates.ApplyOnQuit(context.Background())
 		},
 		SingleInstance: &application.SingleInstanceOptions{
-			UniqueID: "tech.rethunk.mortar",
+			UniqueID: singleInstanceID(dataDir),
 			OnSecondInstanceLaunch: func(d application.SecondInstanceData) {
 				log.Printf("second instance: %d args queued", len(d.Args)-1)
 				handoffs <- d

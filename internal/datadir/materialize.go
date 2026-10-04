@@ -49,14 +49,22 @@ func defaultOps() Ops {
 // MaterializeTree puts src's files into dst using clone, hardlink, symlink, then copy.
 func MaterializeTree(src, dst string) error {
 	ops := defaultOps()
-	return copyTree(src, dst, nil, ops.put)
+	_, err := copyTree(src, dst, nil, ops.put)
+	return err
+}
+
+// MaterializeFile puts one store file at dst the way MaterializeTree would; rel is its path inside the mod, which
+// decides whether it may share an inode with the store.
+func MaterializeFile(src, dst, rel string) error {
+	return defaultOps().put(src, dst, rel)
 }
 
 // MaterializeTreeExclusive clones or copies only, so two profiles never share an inode.
 func MaterializeTreeExclusive(src, dst string) error {
 	ops := defaultOps()
 	ops.Tiers = []Tier{TierClone, TierCopy}
-	return copyTree(src, dst, nil, ops.put)
+	_, err := copyTree(src, dst, nil, ops.put)
+	return err
 }
 
 // textExts are files mods and players edit in place; a hardlinked or symlinked copy would carry that edit into the

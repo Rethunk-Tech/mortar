@@ -55,7 +55,11 @@ func defaultDir() (string, error) {
 var errRealDataInTest = fmt.Errorf("tests must point XDG_DATA_HOME (LOCALAPPDATA on Windows) at a temporary folder")
 
 func resolve() (string, error) {
-	if dir := portable(); dir != "" {
+	dir, err := portable()
+	if err != nil {
+		return "", err
+	}
+	if dir != "" {
 		if testing.Testing() && !underTemp(dir) {
 			return "", errRealDataInTest
 		}
@@ -79,7 +83,43 @@ func resolve() (string, error) {
 	if p == "" {
 		return def, nil
 	}
+	if info, err := os.Stat(p); err != nil || !info.IsDir() {
+		return "", &MissingLocationError{Path: p}
+	}
 	return p, nil
+}
+
+// MissingLocationError says data-location names a folder that is not there (an unplugged drive, or a letter that now
+// belongs to another volume). Creating it would start Mortar as a fresh install in the wrong place.
+type MissingLocationError struct{ Path string }
+
+func (e *MissingLocationError) Error() string {
+	return fmt.Sprintf("the data folder %s cannot be found; its drive may be unplugged", e.Path)
+}
+
+// UseDefaultLocation drops the relocation pointer so Dir returns the OS default again.
+func UseDefaultLocation() error {
+	def, err := defaultDir()
+	if err != nil {
+		return err
+	}
+	err = os.Remove(filepath.Join(def, PointerName))
+	if os.IsNotExist(err) {
+		return nil
+	}
+	return err
+}
+
+// SetLocation points Mortar at an existing folder that already holds (or will hold) its data.
+func SetLocation(dir string) error {
+	def, err := defaultDir()
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(def, 0o700); err != nil {
+		return err
+	}
+	return WriteFile(filepath.Join(def, PointerName), []byte(filepath.Clean(dir)+"\n"), 0o600)
 }
 
 // underTemp reports whether dir is inside a temp root; t.TempDir creates under GOTMPDIR when it is set.
