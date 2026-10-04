@@ -1,10 +1,18 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, Dialog, DialogActions, DialogTitle } from '@mui/material'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from '@mui/material'
 import { useEffect } from 'react'
 import { paper } from '../mods/paper.ts'
 import { useMods } from '../mods/store.ts'
 import { useLocked } from '../mods/useLocked.ts'
 import { download } from '../queue/actions.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { andList, depName, stillMissing, wantsOf } from './missingDeps.ts'
 import { useInstall } from './store.ts'
@@ -29,22 +37,31 @@ export function MissingDepsDialog() {
   return (
     <Dialog open={true} onClose={dismissOffer} slotProps={{ paper }} transitionDuration={0}>
       <DialogTitle>{t`${offer.dependentName} needs ${andList(names)}`}</DialogTitle>
+      {wants.length === 0 ? (
+        <DialogContent>
+          <DialogContentText>
+            {t`No download source is known for ${andList(names)}.`}
+          </DialogContentText>
+        </DialogContent>
+      ) : null}
       <DialogActions>
         <Button onClick={dismissOffer} sx={{ whiteSpace: 'nowrap' }}>
           {t`Not now`}
         </Button>
         {wants.length > 0 ? (
-          <Button
-            variant="contained"
-            disabled={locked}
-            onClick={() => {
-              download(wants).catch(reportUnexpected)
-              dismissOffer()
-            }}
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            {t`Add them`}
-          </Button>
+          <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+            <Button
+              variant="contained"
+              disabled={locked}
+              onClick={() => {
+                download(wants).catch(reportUnexpected)
+                dismissOffer()
+              }}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              {t`Add them`}
+            </Button>
+          </DisabledReason>
         ) : null}
       </DialogActions>
     </Dialog>

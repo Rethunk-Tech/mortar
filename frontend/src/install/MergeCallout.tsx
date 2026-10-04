@@ -51,7 +51,7 @@ export function MergeCallout({ item }: { item: Item }) {
           onClick={() => Skip(item.id).catch(reportUnexpected)}
           sx={{ whiteSpace: 'nowrap' }}
         >
-          {t`Don't install`}
+          {t`Skip`}
         </Button>
         {addFirst ? (
           <>
