@@ -49,14 +49,15 @@ done
 pkgcase ".rpm on fedora:latest" fedora:latest "dnf install -y /a/*.rpm" "dnf remove -y mortar"
 pkgcase ".pkg.tar.zst on archlinux:latest" archlinux:latest "pacman -Sy --noconfirm && pacman -U --noconfirm /a/*.pkg.tar.zst" "pacman -Rns --noconfirm mortar"
 
-# AppImage: extract-and-run needs no FUSE; the extracted tree must carry the desktop entry and icon.
+# AppImage: extract-and-run needs no FUSE; the extracted tree must carry the desktop entry, icon, licence and notices.
 if out=$($CT run --rm -v "$A":/a:ro -e VERSION="$VERSION" ubuntu:latest bash -c '
-  set -e; apt-get update >/dev/null && apt-get install -y libgtk-3-0t64 libwebkit2gtk-4.1-0 >/dev/null 2>&1 || true
+  set -e
   cp /a/*.AppImage /tmp/m.AppImage && chmod +x /tmp/m.AppImage && cd /tmp
   out=$(./m.AppImage --appimage-extract-and-run version 2>&1) || { echo "version exit $?: $out"; exit 1; }
   case $out in *"$VERSION"*) ;; *) echo "unexpected: $out"; exit 1 ;; esac
   ./m.AppImage --appimage-extract >/dev/null
   ls squashfs-root/*.desktop squashfs-root/*.png >/dev/null || { echo "no desktop/icon in AppImage"; exit 1; }
+  for n in LICENSE THIRD_PARTY_NOTICES; do [ -s squashfs-root/usr/share/doc/mortar/$n ] || { echo "no $n in AppImage"; exit 1; }; done
   [ -z "$(find /root -iname "*mortar*" 2>/dev/null)" ] || { echo "left in HOME"; exit 1; }' 2>&1); then
   record "AppImage on ubuntu:latest" PASS ""
 else

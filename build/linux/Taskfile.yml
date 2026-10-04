@@ -68,23 +68,25 @@ tasks:
     cmds:
       - cp "{{.APP_BINARY}}" "{{.APP_NAME}}"
       - cp ../../appicon.png "{{.APP_NAME}}.png"
-      - |
-        set -euo pipefail
-        arch="${APPIMAGE_ARCH:-$(uname -m)}"
-        appdir="{{.ROOT_DIR}}/build/linux/appimage/build/{{.APP_NAME}}-${arch}.AppDir"
-        mkdir -p "$appdir/usr/share/doc/mortar"
-        cp "{{.ROOT_DIR}}/LICENSE" "{{.ROOT_DIR}}/THIRD_PARTY_NOTICES" "$appdir/usr/share/doc/mortar/"
       - wails3 generate appimage -binary "{{.APP_NAME}}" -icon {{.ICON}} -desktopfile {{.DESKTOP_FILE}} -outputdir {{.OUTPUT_DIR}} -builddir {{.ROOT_DIR}}/build/linux/appimage/build
       - |
         set -euo pipefail
         arch="${APPIMAGE_ARCH:-$(uname -m)}"
-        mv "{{.OUTPUT_DIR}}/{{.APP_NAME}}-${arch}.AppImage" "{{.OUTPUT_DIR}}/{{.APP_NAME}}-linux-${arch}.AppImage"
-        appdir="{{.ROOT_DIR}}/build/linux/appimage/build/{{.APP_NAME}}-${arch}.AppDir"
+        build="{{.ROOT_DIR}}/build/linux/appimage/build"
+        appdir="$build/{{.APP_NAME}}-${arch}.AppDir"
+        # AppRun checks the host glibc before starting Mortar, then the AppDir is packed again with the linuxdeploy
+        # wails3 just used.
+        cp "{{.ROOT_DIR}}/build/linux/appimage/glibc-check.sh" "$appdir/glibc-check.sh"
+        grep -q 'glibc-check.sh' "$appdir/AppRun" || sed -i '/^APPDIR=/a . "$APPDIR/glibc-check.sh"' "$appdir/AppRun"
+        grep -q '^\. "$APPDIR/glibc-check.sh"$' "$appdir/AppRun"
         mkdir -p "$appdir/usr/share/doc/mortar"
         cp "{{.ROOT_DIR}}/LICENSE" "{{.ROOT_DIR}}/THIRD_PARTY_NOTICES" "$appdir/usr/share/doc/mortar/"
-        if command -v appimagetool >/dev/null 2>&1; then
-          ARCH="$arch" appimagetool "$appdir" "{{.OUTPUT_DIR}}/{{.APP_NAME}}-linux-${arch}.AppImage"
-        fi
+        (cd "$build" && OUTPUT="{{.APP_NAME}}-linux-${arch}.AppImage" "./linuxdeploy-${arch}.AppImage" --appimage-extract-and-run --appdir "$appdir" --output appimage)
+        mv "$build/{{.APP_NAME}}-linux-${arch}.AppImage" "{{.OUTPUT_DIR}}/{{.APP_NAME}}-linux-${arch}.AppImage"
+        rm "{{.OUTPUT_DIR}}/{{.APP_NAME}}-${arch}.AppImage"
+        # The bare program beside the AppImage is the same unpackaged build: a portable binary that updates itself.
+        case "$arch" in x86_64) goarch=amd64 ;; aarch64) goarch=arm64 ;; *) echo "unsupported arch $arch" >&2; exit 1 ;; esac
+        cp -a "{{.APP_BINARY}}" "{{.OUTPUT_DIR}}/{{.APP_NAME}}-linux-${goarch}"
         rm "{{.APP_NAME}}" "{{.APP_NAME}}.png"
     vars:
       APP_NAME: '{{.APP_NAME}}'
@@ -103,8 +105,7 @@ tasks:
     cmds:
       - |
         set -euo pipefail
-        VERSION="$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)"
-        : "${VERSION:?build/config.yml has no info.version}"
+        VERSION="$(go run ./cmd/version -print)"
         export VERSION
         export NFPM_ARCH="${NFPM_ARCH:-$(go env GOARCH)}"
         case "$NFPM_ARCH" in
@@ -115,7 +116,7 @@ tasks:
         nfpm package --config build/linux/nfpm/nfpm.yaml --packager deb --target "bin/mortar_${VERSION}_${NFPM_ARCH}.deb"
         nfpm package --config build/linux/nfpm/nfpm.yaml --packager rpm --target "bin/mortar-${VERSION}-1.${rpm_arch}.rpm"
         nfpm package --config build/linux/nfpm/nfpm.yaml --packager archlinux --target "bin/mortar-${VERSION}-1-${pkg_arch}.pkg.tar.zst"
-        cp -a "{{.BIN_DIR}}/mortar-packaged" "{{.BIN_DIR}}/mortar-linux-${bin_arch}"
+        cp -a "{{.BIN_DIR}}/mortar-packaged" "{{.BIN_DIR}}/mortar-aur-linux-${bin_arch}"
 
   flatpak:
     summary: Builds a single-file Flatpak bundle (self-updater off)

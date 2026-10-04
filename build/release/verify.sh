@@ -78,6 +78,26 @@ check_manifest() {
   done < <(jq -r '.artifacts[] | [.url, .size, .digest] | @tsv' "$dl/manifest.json")
 }
 
+# check_appimages DIR: the AppImage this host can run carries the AGPL text and the third-party notices.
+check_appimages() {
+  local f tmp
+  [ "$(uname -m)" = x86_64 ] || return 0
+  for f in "$1"/*-x86_64.AppImage; do
+    [ -f "$f" ] || continue
+    tmp="$(mktemp -d)"
+    cp "$f" "$tmp/a.AppImage"
+    chmod +x "$tmp/a.AppImage"
+    (cd "$tmp" && ./a.AppImage --appimage-extract 'usr/share/doc/mortar/*' >/dev/null 2>&1) || true
+    for n in LICENSE THIRD_PARTY_NOTICES; do
+      if [ ! -s "$tmp/squashfs-root/usr/share/doc/mortar/$n" ]; then
+        echo "$(basename "$f") has no usr/share/doc/mortar/$n" >&2
+        fail=1
+      fi
+    done
+    rm -rf "$tmp"
+  done
+}
+
 case "$mode" in
   release)
     tag="${1:?$usage}"
@@ -96,11 +116,13 @@ case "$mode" in
       fi
     done
     check_manifest "$dl"
+    check_appimages "$dl"
     summary="release $tag: $(find "$dir" -mindepth 1 -maxdepth 1 | wc -l) staged files present, manifest digests match"
     ;;
   staged)
     dir="${1:?$usage}"
     check_manifest "$dir"
+    check_appimages "$dir"
     summary="staged files in $dir match their manifest"
     ;;
   public)
