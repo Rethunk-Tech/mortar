@@ -29,8 +29,6 @@ var copies = []copyOf{
 	{"build/linux/aur/PKGBUILD", regexp.MustCompile(`(?m)^pkgver=(.*)$`)},
 }
 
-var releaseDate = regexp.MustCompile(`(<release version="[^"]*" date=")[^"]*(")`)
-
 func main() {
 	check := flag.Bool("check", false, "fail when a copy differs instead of rewriting it")
 	show := flag.Bool("print", false, "print build/config.yml's version and exit")
@@ -87,7 +85,8 @@ func run(check, show bool) error {
 }
 
 // setVersion rewrites the version in every match, except in the metainfo, where only the first <release> is the
-// current one (older entries are history) and its date moves to today when its version changes.
+// current one: a new version gets its own <release> dated today above it, so the previous one keeps its date and
+// description (build/release/notes.sh fills the new one's).
 func setVersion(c copyOf, b []byte, want string) []byte {
 	metainfo := c.path == "build/linux/tech.rethunk.Mortar.metainfo.xml"
 	return firstOnly(c.pattern, b, metainfo, func(m []byte) []byte {
@@ -95,11 +94,10 @@ func setVersion(c copyOf, b []byte, want string) []byte {
 		if string(m[sub[2]:sub[3]]) == want {
 			return m
 		}
-		m = append(append(append([]byte{}, m[:sub[2]]...), want...), m[sub[3]:]...)
 		if metainfo {
-			m = releaseDate.ReplaceAll(m, []byte("${1}"+time.Now().Format(time.DateOnly)+"${2}"))
+			return fmt.Appendf(nil, "<release version=%q date=%q />\n    %s", want, time.Now().Format(time.DateOnly), m)
 		}
-		return m
+		return append(append(append([]byte{}, m[:sub[2]]...), want...), m[sub[3]:]...)
 	})
 }
 
