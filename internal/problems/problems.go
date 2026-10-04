@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
 // Meta is the slice of meta.Client the checks use.
@@ -274,7 +275,7 @@ func duplicatesWithNexus(ctx context.Context, m Meta, enabled []Installed) []Dup
 		var files []NexusFile
 		optional := false
 		for _, copy := range out[i].Copies {
-			page, _, ok := nexusEntryFile(copy.Key)
+			page, _, ok := store.NexusFile(copy.Key)
 			if !ok {
 				continue
 			}
@@ -296,9 +297,9 @@ func duplicatesWithNexus(ctx context.Context, m Meta, enabled []Installed) []Dup
 			continue
 		}
 		for j := range files {
-			_, fileID, _ := nexusEntryFile(files[j].Key)
+			_, fileID, _ := store.NexusFile(files[j].Key)
 			for _, file := range page.Downloads {
-				if file.ID != fileID {
+				if file.ID != int64(fileID) {
 					continue
 				}
 				files[j].FileName, files[j].Version = file.FileName, file.Version
@@ -329,8 +330,8 @@ func newerNexusFile(a, b NexusFile) bool {
 	if c, ok := meta.CompareVersions(a.Version, b.Version); ok && c != 0 {
 		return c > 0
 	}
-	_, aID, _ := nexusEntryFile(a.Key)
-	_, bID, _ := nexusEntryFile(b.Key)
+	_, aID, _ := store.NexusFile(a.Key)
+	_, bID, _ := store.NexusFile(b.Key)
 	return aID > bID
 }
 
@@ -384,7 +385,7 @@ func listedRequirements(ctx context.Context, m Meta, enabled, all []Installed) (
 	out := []Missing{}
 	var pageIDs []int
 	for _, d := range enabled {
-		if pageID, ok := nexusEntryPage(d.Key); ok && !slices.Contains(pageIDs, pageID) {
+		if pageID, _, ok := store.NexusFile(d.Key); ok && !slices.Contains(pageIDs, pageID) {
 			pageIDs = append(pageIDs, pageID)
 		}
 	}
@@ -402,7 +403,7 @@ func listedRequirements(ctx context.Context, m Meta, enabled, all []Installed) (
 	seenEntries := map[string]bool{}
 
 	for _, d := range enabled {
-		pageID, ok := nexusEntryPage(d.Key)
+		pageID, _, ok := store.NexusFile(d.Key)
 		if !ok {
 			continue
 		}
@@ -468,38 +469,11 @@ func listedRequirements(ctx context.Context, m Meta, enabled, all []Installed) (
 	return out, unknown
 }
 
-func nexusEntryPage(key string) (int, bool) {
-	if !strings.HasPrefix(strings.ToLower(key), "nexus-") {
-		return 0, false
-	}
-	rest := key[len("nexus-"):]
-	page, _, ok := strings.Cut(rest, "-")
-	if !ok {
-		return 0, false
-	}
-	n, err := strconv.Atoi(page)
-	return n, err == nil
-}
-
-func nexusEntryFile(key string) (int, int64, bool) {
-	if !strings.HasPrefix(strings.ToLower(key), "nexus-") {
-		return 0, 0, false
-	}
-	rest := key[len("nexus-"):]
-	pageText, fileText, ok := strings.Cut(rest, "-")
-	if !ok {
-		return 0, 0, false
-	}
-	page, pageErr := strconv.Atoi(pageText)
-	file, fileErr := strconv.ParseInt(fileText, 10, 64)
-	return page, file, pageErr == nil && fileErr == nil
-}
-
 func listedDepState(all []Installed, pageID int, page meta.Page, pageKnown bool) (string, bool) {
-	prefix := "nexus-" + strconv.Itoa(pageID) + "-"
 	disabled := false
 	for _, x := range all {
-		matches := strings.HasPrefix(strings.ToLower(x.Key), prefix)
+		entryPage, _, listed := store.NexusFile(x.Key)
+		matches := listed && entryPage == pageID
 		if !matches && pageKnown {
 			for _, file := range page.Downloads {
 				for _, mod := range file.Mods {
@@ -712,17 +686,6 @@ func fillWhere(ctx context.Context, m Meta, enabled []Installed, missing []Missi
 	return unknown
 }
 
-// nexusKey returns the page number of a "Nexus:1234" or "Nexus:1234@subkey" update key.
-func nexusKey(key string) (int, bool) {
-	site, rest, ok := strings.Cut(key, ":")
-	if !ok || !strings.EqualFold(strings.TrimSpace(site), "nexus") {
-		return 0, false
-	}
-	rest, _, _ = strings.Cut(rest, "@")
-	n, err := strconv.Atoi(strings.TrimSpace(rest))
-	return n, err == nil
-}
-
 func siteURL(r meta.Ref) string {
 	switch strings.ToLower(r.Site) {
 	case "nexus":
@@ -760,7 +723,7 @@ func Locate(ctx context.Context, m Meta, uniqueID, minimum string, dependentKeys
 		return &Ref{Site: other[0].Site, PageID: other[0].ID, URL: siteURL(other[0])}, true
 	}
 	for _, k := range dependentKeys {
-		if n, ok := nexusKey(k); ok {
+		if n, ok := manifest.NexusUpdateKey(k); ok {
 			if i := slices.IndexFunc(nexus, func(r meta.Ref) bool { return r.ID == n }); i >= 0 {
 				nexus = []meta.Ref{nexus[i]}
 				break
@@ -796,7 +759,7 @@ func githubRepo(ctx context.Context, m Meta, uniqueID string) string {
 	if len(got) != 1 || !got[0].Known {
 		return ""
 	}
-	if repo, ok := githubKey("github:" + got[0].GitHubRepo); ok {
+	if repo, ok := manifest.GitHubUpdateKey("github:" + got[0].GitHubRepo); ok {
 		return repo
 	}
 	return ""

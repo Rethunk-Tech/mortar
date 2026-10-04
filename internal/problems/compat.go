@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/meta"
 )
 
@@ -89,7 +90,7 @@ func matchCompat(idx meta.CompatIndex, mods []Installed, skipOK bool) []Compat {
 
 func nexusIDOf(m Installed) int {
 	for _, key := range m.UpdateKeys {
-		if n, ok := nexusKey(key); ok {
+		if n, ok := manifest.NexusUpdateKey(key); ok {
 			return n
 		}
 	}

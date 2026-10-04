@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
 // updatesTTL bounds how long a profile's updates are served without asking again; meta.Client caches for the
@@ -90,15 +91,11 @@ type Held struct {
 	Reason   string `json:"reason"`
 }
 
-// CheckUpdates asks SMAPI's API about every user mod (the bundled ones update with SMAPI). It never returns
-// an error: a failed lookup leaves Unknown set.
-func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed, enabledOnly bool) UpdatesResult {
-	return checkUpdates(ctx, m, env, mods, enabledOnly, false, nil)
-}
-
 // NexusFilesOf lists many Nexus mods' current files in one call (nexus.Client.FilesOf); nil when signed out.
 type NexusFilesOf func(ctx context.Context, modIDs []int) (map[int][]nexus.BatchFile, error)
 
+// checkUpdates asks SMAPI's API about every user mod (the bundled ones update with SMAPI). It never returns an
+// error: a failed lookup leaves Unknown set.
 func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed, enabledOnly, fresh bool, filesOf NexusFilesOf) UpdatesResult {
 	r := UpdatesResult{Updates: []Update{}, Held: []Held{}}
 	req := meta.UpdateRequest{APIVersion: env.APIVersion, GameVersion: env.GameVersion, Platform: env.Platform, Fresh: fresh}
@@ -140,11 +137,12 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 			current(asked[i], res.Unofficial.URL, res.Unofficial.Version)) {
 			res.Unofficial = nil
 		}
-		switch {
-		case !res.Known:
+		if !res.Known {
 			r.Unknown = true
-		case res.Suggested != nil:
-			x := asked[i]
+			continue
+		}
+		x := asked[i]
+		if res.Suggested != nil {
 			r.Updates = append(r.Updates, Update{
 				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
 				Installed: x.Version, Version: res.Suggested.Version, URL: res.Suggested.URL,
@@ -152,17 +150,8 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 				GitHubFallback: cmp.Or(githubFallback(x.UpdateKeys, res.Suggested.URL), metadataFallback(res.GitHubRepo, res.Suggested.URL)),
 				Source:         updateSource(*res.Suggested, nexusUpdate(x.UpdateKeys, res.Suggested.URL), githubUpdate(x.UpdateKeys, res.Suggested.URL)),
 			})
-			if res.Unofficial != nil {
-				r.Updates = append(r.Updates, Update{
-					Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
-					Installed: x.Version, Version: res.Unofficial.Version, URL: res.Unofficial.URL,
-					NexusID: nexusUpdate(x.UpdateKeys, res.Unofficial.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Unofficial.URL),
-					Source:     updateSource(*res.Unofficial, nexusUpdate(x.UpdateKeys, res.Unofficial.URL), githubUpdate(x.UpdateKeys, res.Unofficial.URL)),
-					Unofficial: true,
-				})
-			}
-		case res.Unofficial != nil:
-			x := asked[i]
+		}
+		if res.Unofficial != nil {
 			r.Updates = append(r.Updates, Update{
 				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
 				Installed: x.Version, Version: res.Unofficial.Version, URL: res.Unofficial.URL,
@@ -332,10 +321,10 @@ func Pages(mods []Installed) map[string]string {
 // pageURL is the page of the first update key that names one: a Nexus mod or a GitHub repository.
 func pageURL(keys []string) string {
 	for _, k := range keys {
-		if n, ok := nexusKey(k); ok {
+		if n, ok := manifest.NexusUpdateKey(k); ok {
 			return siteURL(meta.Ref{Site: "Nexus", ID: n})
 		}
-		if repo, ok := githubKey(k); ok {
+		if repo, ok := manifest.GitHubUpdateKey(k); ok {
 			return "https://github.com/" + repo
 		}
 	}
@@ -345,21 +334,14 @@ func pageURL(keys []string) string {
 // nexusID is the Nexus mod of the first update key that names one, or 0.
 func nexusID(keys []string) int {
 	for _, k := range keys {
-		if n, ok := nexusKey(k); ok {
+		if n, ok := manifest.NexusUpdateKey(k); ok {
 			return n
 		}
 	}
 	return 0
 }
 
-// githubKey is the "owner/repo" of a "GitHub:owner/repo" update key.
-func githubKey(key string) (string, bool) {
-	site, rest, ok := strings.Cut(key, ":")
-	rest = strings.TrimSpace(rest)
-	return rest, ok && strings.EqualFold(strings.TrimSpace(site), "github") && strings.Count(rest, "/") == 1
-}
-
-// githubUpdate is the repository of the first GitHub update key, provided the suggested update lives on GitHub too.
+// nexusUpdate is the Nexus mod of the update keys, unless the suggested update lives somewhere other than Nexus or GitHub.
 func nexusUpdate(keys []string, url string) int {
 	u := strings.ToLower(url)
 	if u != "" && !strings.Contains(u, "nexusmods.com/") && !strings.HasPrefix(u, "https://github.com/") {
@@ -368,12 +350,13 @@ func nexusUpdate(keys []string, url string) int {
 	return nexusID(keys)
 }
 
+// githubUpdate is the repository of the first GitHub update key, provided the suggested update lives on GitHub too.
 func githubUpdate(keys []string, url string) string {
 	if !strings.HasPrefix(strings.ToLower(url), "https://github.com/") {
 		return ""
 	}
 	for _, k := range keys {
-		if repo, ok := githubKey(k); ok {
+		if repo, ok := manifest.GitHubUpdateKey(k); ok {
 			return repo
 		}
 	}
@@ -395,7 +378,7 @@ func githubFallback(keys []string, url string) string {
 		return ""
 	}
 	for _, k := range keys {
-		if repo, ok := githubKey(k); ok {
+		if repo, ok := manifest.GitHubUpdateKey(k); ok {
 			return repo
 		}
 	}
@@ -463,7 +446,7 @@ func nexusFileIsCurrent(ctx context.Context, m Meta, x Installed, url, suggested
 	if modID == 0 {
 		return false
 	}
-	keyModID, fileID, ok := nexusEntryFile(x.Key)
+	keyModID, fileID, ok := store.NexusFile(x.Key)
 	if !ok || keyModID != modID {
 		return false
 	}
@@ -473,7 +456,7 @@ func nexusFileIsCurrent(ctx context.Context, m Meta, x Installed, url, suggested
 	}
 	var installed meta.File
 	for _, file := range page.Downloads {
-		if file.ID == fileID {
+		if file.ID == int64(fileID) {
 			installed = file
 			break
 		}
@@ -528,13 +511,13 @@ func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, asked []Installed
 // liveFileIsCurrent says whether the installed Nexus file is still the newest in its group (same display name) and
 // already at the suggested version. known is false when the installed file is not in the list.
 func liveFileIsCurrent(files []nexus.BatchFile, x Installed, suggested string) (current, known bool) {
-	_, fileID, ok := nexusEntryFile(x.Key)
+	_, fileID, ok := store.NexusFile(x.Key)
 	if !ok {
 		return false, false
 	}
 	var installed nexus.BatchFile
 	for _, f := range files {
-		if int64(f.FileID) == fileID {
+		if f.FileID == fileID {
 			installed = f
 		}
 	}

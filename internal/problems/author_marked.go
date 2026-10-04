@@ -10,6 +10,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/nexussvc"
+	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
 var (
@@ -20,14 +21,14 @@ var (
 func authorMarkedMods(home string, enabled []Installed) []Broken {
 	var out []Broken
 	for _, mod := range enabled {
-		if pageID, fileID, ok := nexusEntryFile(mod.Key); ok {
+		if pageID, fileID, ok := store.NexusFile(mod.Key); ok {
 			details, ok := readCachedNexusDetails(home, pageID)
 			if !ok {
 				continue
 			}
 			var file *nexus.File
 			for i := range details.Files {
-				if details.Files[i].FileID == int(fileID) {
+				if details.Files[i].FileID == fileID {
 					file = &details.Files[i]
 					break
 				}

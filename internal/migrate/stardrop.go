@@ -232,12 +232,7 @@ func folderMods(modsPath string) ([]folderMod, error) {
 
 func nexusID(updateKeys []string) int {
 	for _, key := range updateKeys {
-		site, value, ok := strings.Cut(key, ":")
-		if !ok || !strings.EqualFold(strings.TrimSpace(site), "nexus") {
-			continue
-		}
-		value, _, _ = strings.Cut(value, "@")
-		if id, err := strconv.Atoi(strings.TrimSpace(value)); err == nil && id > 0 {
+		if id, ok := manifest.NexusUpdateKey(key); ok && id > 0 {
 			return id
 		}
 	}

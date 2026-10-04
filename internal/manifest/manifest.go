@@ -245,3 +245,21 @@ func LoaderManaged(uniqueID string) bool {
 	}
 	return false
 }
+
+// NexusUpdateKey returns the mod page of a "Nexus:1234" or "Nexus:1234@subkey" update key.
+func NexusUpdateKey(key string) (int, bool) {
+	site, rest, ok := strings.Cut(key, ":")
+	if !ok || !strings.EqualFold(strings.TrimSpace(site), "nexus") {
+		return 0, false
+	}
+	rest, _, _ = strings.Cut(rest, "@")
+	n, err := strconv.Atoi(strings.TrimSpace(rest))
+	return n, err == nil
+}
+
+// GitHubUpdateKey returns the "owner/repo" of a "GitHub:owner/repo" update key.
+func GitHubUpdateKey(key string) (string, bool) {
+	site, rest, ok := strings.Cut(key, ":")
+	rest = strings.TrimSpace(rest)
+	return rest, ok && strings.EqualFold(strings.TrimSpace(site), "github") && strings.Count(rest, "/") == 1
+}
