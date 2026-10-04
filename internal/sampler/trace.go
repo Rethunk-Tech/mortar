@@ -258,10 +258,11 @@ func v5BlockBounds(data []byte, dataStart int, kind string) (v5Block, bool) {
 }
 
 func parseTraceFields(data []byte, trace *Trace) {
-	if len(data) < 18+8+8+4 {
+	// The Trace object starts with a 16-byte SYSTEMTIME, then the sync QPC value and the QPC frequency.
+	if len(data) < 16+8+8+4 {
 		return
 	}
-	cursor := 18
+	cursor := 16
 	cursor += 8
 	trace.TimestampFrequency = binary.LittleEndian.Uint64(data[cursor : cursor+8])
 	cursor += 8

@@ -10,8 +10,10 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/sampler"
 )
 
@@ -24,13 +26,10 @@ type startupSamples struct {
 	ThreadSamples int              `json:"threadSamples"`
 }
 
-type startupManifest struct {
-	UniqueID string `json:"UniqueID"`
-	EntryDLL string `json:"EntryDll"`
-}
-
 func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, modsDir string, before map[string]bool) {
-	ctx, cancel := context.WithTimeout(parent, startupSampleLimit)
+	// A test launch stops the game the moment the report appears and cancels parent with it; the sampler must still
+	// see that report, so it ends on its own limit or when the game process is gone.
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(parent), startupSampleLimit)
 	defer cancel()
 
 	process, err := s.waitForSampleProcess(ctx, g, profileID, modsDir)
@@ -43,7 +42,6 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 		log.Printf("startup sampler: %s: %v", g.ID(), err)
 		return
 	}
-	// Stopping must still run after the launch's context ends (the game exited), so it keeps only its values.
 	detached := context.WithoutCancel(ctx)
 	profileDir, err := s.profiles.ProfileDir(g.ID(), profileID)
 	if err != nil {
@@ -64,9 +62,12 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 	if !reportFound {
 		return
 	}
-	if err := writeStartupSamples(tracePath, filepath.Join(profileDir, startupDir), reportID, modsDir); err != nil {
+	samples, err := writeStartupSamples(tracePath, filepath.Join(profileDir, startupDir), reportID, modsDir)
+	if err != nil {
 		log.Printf("startup sampler: %s: %v", g.ID(), err)
+		return
 	}
+	log.Printf("startup sampler: %s: %d main-thread samples, %d mods charged, %d ms other", g.ID(), samples.ThreadSamples, len(samples.Mods), samples.OtherMs)
 }
 
 func startSampler(ctx context.Context, pid int) (*sampler.Session, error) {
@@ -154,18 +155,18 @@ func newStartupReport(path string, before map[string]bool) string {
 	return ""
 }
 
-func writeStartupSamples(tracePath, startupPath, reportID, modsDir string) error {
+func writeStartupSamples(tracePath, startupPath, reportID, modsDir string) (startupSamples, error) {
 	trace, err := sampler.ParseFile(tracePath)
 	if err != nil {
-		return err
+		return startupSamples{}, err
 	}
 	assemblyToMod, err := assembliesToMods(modsDir)
 	if err != nil {
-		return err
+		return startupSamples{}, err
 	}
 	threadID, ok := mainSampleThread(trace.Samples, assemblyToMod)
 	if !ok {
-		return errors.New("no mod frames were sampled")
+		return startupSamples{}, errors.New("no mod frames were sampled")
 	}
 	charged := sampler.Charge(trace.Samples, threadID, assemblyToMod)
 	samples := startupSamples{
@@ -174,7 +175,7 @@ func writeStartupSamples(tracePath, startupPath, reportID, modsDir string) error
 		OtherMs:       charged.OtherMs,
 		ThreadSamples: charged.ThreadSamples,
 	}
-	return datadir.WriteJSON(filepath.Join(startupPath, reportID+".samples.json"), samples)
+	return samples, datadir.WriteJSON(filepath.Join(startupPath, reportID+".samples.json"), samples)
 }
 
 func assembliesToMods(modsDir string) (map[string]string, error) {
@@ -183,34 +184,34 @@ func assembliesToMods(modsDir string) (map[string]string, error) {
 		if walkErr != nil {
 			return walkErr
 		}
-		if entry.IsDir() || !strings.EqualFold(entry.Name(), "manifest.json") {
+		if entry.IsDir() || !strings.EqualFold(entry.Name(), manifest.FileName) {
 			return nil
 		}
-		var manifest startupManifest
-		found, err := datadir.ReadJSON(path, &manifest)
+		data, err := fsx.ReadFile(path)
 		if err != nil {
 			return err
 		}
-		if !found || manifest.UniqueID == "" {
-			return nil
-		}
-		dir := filepath.Dir(path)
-		if manifest.EntryDLL != "" {
-			assemblyToMod[strings.TrimSuffix(filepath.Base(manifest.EntryDLL), filepath.Ext(manifest.EntryDLL))] = manifest.UniqueID
-		}
-		entries, err := os.ReadDir(dir)
-		if err != nil {
-			return err
-		}
-		for _, one := range entries {
-			if one.IsDir() || !strings.EqualFold(filepath.Ext(one.Name()), ".dll") {
-				continue
-			}
-			assemblyToMod[strings.TrimSuffix(one.Name(), filepath.Ext(one.Name()))] = manifest.UniqueID
+		// SMAPI skips a mod whose manifest it cannot read, so such a mod has no frames to charge.
+		if parsed, parseErr := manifest.Parse(data); parseErr == nil {
+			return mapModAssemblies(assemblyToMod, filepath.Dir(path), parsed.UniqueID)
 		}
 		return nil
 	})
 	return assemblyToMod, err
+}
+
+func mapModAssemblies(assemblyToMod map[string]string, dir, uniqueID string) error {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	for _, one := range entries {
+		if one.IsDir() || !strings.EqualFold(filepath.Ext(one.Name()), ".dll") {
+			continue
+		}
+		assemblyToMod[strings.TrimSuffix(one.Name(), filepath.Ext(one.Name()))] = uniqueID
+	}
+	return nil
 }
 
 func mainSampleThread(samples []sampler.Sample, assemblyToMod map[string]string) (uint32, bool) {

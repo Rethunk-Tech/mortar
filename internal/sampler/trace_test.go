@@ -68,6 +68,10 @@ func TestParseSpinTrace(t *testing.T) {
 	if alphaNanos == 0 || betaNanos == 0 || alphaNanos < betaNanos*3/2 || alphaNanos > betaNanos*3 {
 		t.Fatalf("unexpected Alpha/Beta sample spread: alpha=%d beta=%d", alphaNanos, betaNanos)
 	}
+	// The fixture spins Alpha for 600 ms and Beta for 300 ms, so the totals check the timestamp scale too.
+	if alphaNanos < 400_000_000 || alphaNanos > 700_000_000 || betaNanos < 200_000_000 || betaNanos > 350_000_000 {
+		t.Fatalf("sampled times are off scale: alpha=%dns beta=%dns", alphaNanos, betaNanos)
+	}
 	t.Logf("samples=%d methods=%d assemblies=%v", len(trace.Samples), len(trace.Methods), trace.Assemblies)
 }
 
