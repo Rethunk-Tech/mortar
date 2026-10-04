@@ -29,12 +29,13 @@ import {
 } from './logic.ts'
 
 const DIMMED = 0.5
+const LATER_CHIP = 0.18
 
 const CHIP = (th: Theme): Record<ModState, { bg: string; fg: string }> => ({
-  installed: { bg: alpha(th.palette.success.main, SUCCESS_CHIP), fg: '#6ff5a8' },
-  download: { bg: alpha(th.palette.info.main, INFO_CHIP), fg: '#a3d3f7' },
-  dependency: { bg: alpha(th.palette.info.main, INFO_CHIP), fg: '#a3d3f7' },
-  later: { bg: 'rgba(200,200,200,0.18)', fg: '#e0e0e0' },
+  installed: { bg: alpha(th.palette.success.main, SUCCESS_CHIP), fg: th.palette.success.light },
+  download: { bg: alpha(th.palette.info.main, INFO_CHIP), fg: th.palette.info.light },
+  dependency: { bg: alpha(th.palette.info.main, INFO_CHIP), fg: th.palette.info.light },
+  later: { bg: alpha(th.palette.text.secondary, LATER_CHIP), fg: th.palette.text.primary },
   unavailable: { bg: alpha(th.palette.warning.main, WARN_CHIP), fg: th.palette.warning.main },
 })
 
@@ -42,9 +43,18 @@ const DOT = (th: Theme): Record<ModState, string> => ({
   installed: th.palette.success.main,
   download: th.palette.info.main,
   dependency: th.palette.info.main,
-  later: '#c8c8c8',
+  later: th.palette.text.secondary,
   unavailable: th.palette.warning.main,
 })
+
+// Share-card preview chrome: matches the public Stardew share card, not the app theme.
+const SHARE_CARD = {
+  bar: '#0e1116',
+  accent: '#a3d3f7',
+  leftOutBg: 'rgba(200,200,200,0.14)',
+  leftOutFg: '#e0e0e0',
+  leftOutDot: '#bdbdbd',
+}
 
 function useStateLabel() {
   const { t } = useLingui()
@@ -98,7 +108,7 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
             top: 3,
             left: 3,
             p: 0,
-            bgcolor: 'rgba(20,20,24,0.75)',
+            bgcolor: 'var(--mortar-overlay-80)',
             borderRadius: '3px',
             '& .MuiSvgIcon-root': { fontSize: 16 },
           }}
@@ -167,9 +177,9 @@ function ProblemRow({
       }
   let icon = <TriangleAlert size={16} color={theme.palette.warning.main} />
   if (problem.kind === 'free') {
-    icon = <Download size={16} color="#a3d3f7" />
+    icon = <Download size={16} color={theme.palette.info.light} />
   } else if (info) {
-    icon = <Info size={16} color="#a3d3f7" />
+    icon = <Info size={16} color={theme.palette.info.light} />
   }
   return (
     <Box
@@ -348,7 +358,7 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
         minHeight: 52,
         px: '18px',
         py: 0.5,
-        bgcolor: '#0e1116',
+        bgcolor: SHARE_CARD.bar,
         borderRadius: '4px',
       }}
     >
@@ -358,7 +368,7 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
           alignItems: 'center',
           gap: 1.25,
           fontSize: 16,
-          color: '#a3d3f7',
+          color: SHARE_CARD.accent,
           whiteSpace: 'nowrap',
         }}
       >
@@ -397,7 +407,7 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
           </Pill>
         ))}
         {summary.leftOut > 0 ? (
-          <Pill bg="rgba(200,200,200,0.14)" fg="#e0e0e0" dot="#bdbdbd">
+          <Pill bg={SHARE_CARD.leftOutBg} fg={SHARE_CARD.leftOutFg} dot={SHARE_CARD.leftOutDot}>
             {t`${summary.leftOut} left out`}
           </Pill>
         ) : null}

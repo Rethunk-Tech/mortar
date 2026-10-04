@@ -1,10 +1,15 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Link, Typography } from '@mui/material'
+import { alpha, useTheme } from '@mui/material/styles'
 import type { Compat } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { openPage } from './menu.ts'
 
+const INFO_FILL = 0.12
+const INFO_LINE = 0.45
+
 function CompatInfoRow({ row }: { row: Compat }) {
   const { t } = useLingui()
+  const info = useTheme().palette.info.main
   const summary = row.summary === '' ? '' : ` — ${row.summary}`
   const unofficial =
     row.unofficialUrl === '' ? null : (
@@ -33,8 +38,8 @@ function CompatInfoRow({ row }: { row: Compat }) {
         pr: 0.75,
         py: 1,
         fontSize: 14,
-        bgcolor: 'rgba(56,189,248,0.12)',
-        border: '1px solid rgba(56,189,248,0.45)',
+        bgcolor: alpha(info, INFO_FILL),
+        border: `1px solid ${alpha(info, INFO_LINE)}`,
         borderRadius: '6px',
       }}
     >

@@ -1,10 +1,7 @@
 import { Box } from '@mui/material'
-import { alpha, useTheme } from '@mui/material/styles'
+import { useTheme } from '@mui/material/styles'
 import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import {
-  type Entry,
-  Level,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import type { Entry } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import {
   type ConsoleLink,
   type ConsoleLinkRoots,
@@ -12,56 +9,13 @@ import {
   linksForModColumn,
   linksInText,
 } from './consoleLinks.ts'
+import { levelChrome } from './levelPalette.ts'
 
 // 13px monospace at line-height 1.75.
 const ROW = 23
 const OVERSCAN = 20
 // A jumped-to row lands a third of the way down the view.
 const JUMP_DIVISOR = 3
-
-interface Look {
-  color: string
-  bar: string
-  row: string
-  text: string
-}
-
-const CLEAR = 'transparent'
-const WARN_ROW = 0.08
-const looks: Record<Level, Look> = {
-  [Level.$zero]: { color: '', bar: CLEAR, row: CLEAR, text: '' },
-  [Level.Trace]: {
-    color: 'rgba(175,175,185,0.9)',
-    bar: CLEAR,
-    row: CLEAR,
-    text: 'rgba(190,190,200,0.9)',
-  },
-  [Level.Debug]: {
-    color: 'rgba(195,195,205,0.95)',
-    bar: CLEAR,
-    row: CLEAR,
-    text: 'rgba(210,210,220,0.95)',
-  },
-  [Level.Info]: {
-    color: 'var(--mortar-ink-soft)',
-    bar: CLEAR,
-    row: CLEAR,
-    text: 'var(--mortar-ink-soft)',
-  },
-  [Level.Warn]: { color: '#F3B416', bar: '#F3B416', row: 'rgba(243,180,22,0.08)', text: '#f7d56a' },
-  [Level.Error]: {
-    color: '#ff9a90',
-    bar: '#ff6b5f',
-    row: 'rgba(255,107,95,0.10)',
-    text: '#ffc4be',
-  },
-  [Level.Alert]: {
-    color: '#c792ea',
-    bar: '#c792ea',
-    row: 'rgba(199,146,234,0.10)',
-    text: '#e3c6f5',
-  },
-}
 
 const cell = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'pre' } as const
 
@@ -135,15 +89,7 @@ function Row({
   onPath: (path: string) => void
 }) {
   const theme = useTheme()
-  const look =
-    entry.level === Level.Warn
-      ? {
-          color: theme.palette.warning.main,
-          bar: theme.palette.warning.main,
-          row: alpha(theme.palette.warning.main, WARN_ROW),
-          text: '#f7d56a',
-        }
-      : looks[entry.level]
+  const look = levelChrome(theme, entry.level)
   const modLinks = useMemo(
     () => (entry.cont ? [] : linksForModColumn(entry.mod, mods)),
     [entry.cont, entry.mod, mods],
@@ -168,12 +114,12 @@ function Row({
     >
       <Box sx={{ alignSelf: 'stretch', bgcolor: look.bar }} />
       {timestamps ? (
-        <Box sx={{ ...cell, color: 'rgba(175,175,185,0.9)' }}>{entry.cont ? '' : entry.time}</Box>
+        <Box sx={{ ...cell, color: 'text.secondary' }}>{entry.cont ? '' : entry.time}</Box>
       ) : null}
       <Box sx={{ ...cell, color: look.color, fontWeight: 500 }}>
         {entry.cont ? '' : entry.level}
       </Box>
-      <Box sx={{ ...cell, color: 'rgba(214,214,220,0.95)' }}>
+      <Box sx={{ ...cell, color: 'text.secondary' }}>
         {entry.cont ? (
           ''
         ) : (

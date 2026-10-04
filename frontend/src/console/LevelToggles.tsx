@@ -1,21 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Checkbox, Menu, MenuItem } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import { ChevronDown } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { countByLevel, LEVELS } from './filter.ts'
+import { levelSwatch } from './levelPalette.ts'
 import { useShownEntries } from './logHooks.ts'
 import { useConsole } from './store.ts'
-
-const dots: Record<Level, string> = {
-  [Level.$zero]: 'transparent',
-  [Level.Trace]: '#9a9aa6',
-  [Level.Debug]: '#b4b4c0',
-  [Level.Info]: '#ececf0',
-  [Level.Warn]: '#F3B416',
-  [Level.Error]: '#ff6b5f',
-  [Level.Alert]: '#c792ea',
-}
 
 // Trace and Debug are rarely wanted and very long, so they live in a menu beside the everyday levels.
 const QUIET_LEVELS: Level[] = [Level.Trace, Level.Debug]
@@ -23,6 +15,7 @@ const compactCount = new Intl.NumberFormat(undefined, { notation: 'compact' })
 
 export function LevelToggles() {
   const { t } = useLingui()
+  const theme = useTheme()
   const entries = useShownEntries()
   const on = useConsole((s) => s.filters.levels)
   const toggle = useConsole((s) => s.toggleLevel)
@@ -76,7 +69,9 @@ export function LevelToggles() {
               },
             }}
           >
-            <Box sx={{ width: 8, height: 8, borderRadius: '4px', bgcolor: dots[level] }} />
+            <Box
+              sx={{ width: 8, height: 8, borderRadius: '4px', bgcolor: levelSwatch(theme, level) }}
+            />
             {names[level]}
             <Box component="span" sx={{ opacity: 0.75 }} aria-hidden={true}>
               {compactCount.format(n)}

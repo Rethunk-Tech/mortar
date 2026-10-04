@@ -11,6 +11,7 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import { Clipboard } from '@wailsio/runtime'
 import { CircleAlert, Copy } from 'lucide-react'
 import { useEffect } from 'react'
@@ -221,6 +222,7 @@ function LaunchLine({ line }: { line: string }) {
 
 function Failure({ game }: { game: string }) {
   const { t } = useLingui()
+  const theme = useTheme()
   const info = useProfiles((s) => s.game)
   const failure = useLaunch((s) => s.failure)
   const dismiss = useLaunch((s) => s.dismissFailure)
@@ -242,10 +244,10 @@ function Failure({ game }: { game: string }) {
       onClose={dismiss}
       fullWidth={true}
       maxWidth="sm"
-      slotProps={{ paper: { sx: { bgcolor: 'rgb(38,38,46)' } } }}
+      slotProps={{ paper: { sx: { bgcolor: 'var(--mortar-panel-solid)' } } }}
     >
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-        <CircleAlert size={22} color="#ff9a90" aria-hidden={true} />
+        <CircleAlert size={22} color={theme.palette.error.light} aria-hidden={true} />
         {t`${name} did not start`}
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>

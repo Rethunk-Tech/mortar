@@ -41,7 +41,7 @@ const NAME_WEIGHT = 700
 const NAME_LINE_HEIGHT = 1.1
 const NAME_FONT_COMPACT_PX = 18
 const NAME_LINE_COMPACT = 1.3
-const NAME_GLOW = '0 0 32px rgba(255,255,255,0.45)'
+const NAME_GLOW = '0 0 32px color-mix(in srgb, var(--mortar-ink) 45%, transparent)'
 const DESC_FONT_PX = 13
 const DESC_COLOR = 'var(--mortar-ink-72)'
 const DESC_SHADOW = '0 1px 8px var(--mortar-overlay-55)'
@@ -50,7 +50,7 @@ const HERO_HEIGHT_PX = 190
 const HERO_COMPACT_HEIGHT_PX = 52
 const HERO_COMPACT_BG = 'var(--mortar-hero)'
 const HERO_COMPACT_BORDER = '1px solid var(--mortar-hairline)'
-const COVER_TINT = 'rgba(20,20,24,0.18)'
+const COVER_TINT = 'var(--mortar-overlay-20)'
 const HERO_INSET_PX = 24
 const HERO_BOTTOM_PX = 16
 const HERO_INSET_COMPACT_PX = 12
@@ -261,7 +261,7 @@ function AttentionCards() {
   )
 }
 
-const HERO_FADE = 'linear-gradient(to bottom, #000 80%, transparent 100%)'
+const HERO_FADE = 'linear-gradient(to bottom, var(--mortar-overlay-90) 80%, transparent 100%)'
 
 export function Hero({ profile, game }: { profile: Profile; game: string }) {
   const { t } = useLingui()

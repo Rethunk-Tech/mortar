@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, FormControl, MenuItem, Select, Typography } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import {
   ArrowUpRight,
   CircleCheck,
@@ -80,6 +81,7 @@ export function HistoryList({
   onCleared: () => void
 }) {
   const { t } = useLingui()
+  const failColor = useTheme().palette.error.light
   const [confirmClear, setConfirmClear] = useState(false)
   const profiles = useProfiles((s) => s.profiles)
   const nameOf = (id: string) => profiles.find((p) => p.id === id)?.name || id
@@ -191,7 +193,7 @@ export function HistoryList({
                   ) : null}
                 </Typography>
                 {e.outcome === 'failed' && e.error ? (
-                  <Typography noWrap={true} title={e.error} sx={{ fontSize: 12, color: '#ffc4be' }}>
+                  <Typography noWrap={true} title={e.error} sx={{ fontSize: 12, color: failColor }}>
                     {e.error}
                   </Typography>
                 ) : null}

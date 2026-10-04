@@ -76,7 +76,8 @@ function LauncherRow({
   open?: boolean
 }) {
   const { t } = useLingui()
-  const ok = useTheme().palette.success.main
+  const { success, text } = useTheme().palette
+  const ok = success.main
   const [error, setError] = useState('')
   const games = (launcher.games ?? []).map((g) => g.name)
   const roots = launcher.roots ?? []
@@ -131,7 +132,7 @@ function LauncherRow({
           {launcher.found ? (
             <CircleCheck size={STATUS_ICON} color={ok} aria-label={t`Found`} />
           ) : (
-            <CircleX size={STATUS_ICON} color="#8A909A" aria-label={t`Not found`} />
+            <CircleX size={STATUS_ICON} color={text.secondary} aria-label={t`Not found`} />
           )}
         </Box>
       </AccordionSummary>

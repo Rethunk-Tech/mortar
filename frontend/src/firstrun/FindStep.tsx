@@ -65,7 +65,9 @@ function Hero({ game, dim }: { game: GameInfo; dim?: boolean }) {
 // Where Mortar looked: each launcher, whether it was found, and whether it holds this game.
 function Looked({ game, launchers }: { game: GameInfo; launchers: StoreApp[] }) {
   const { t } = useLingui()
-  const ok = useTheme().palette.success.main
+  const { success, text } = useTheme().palette
+  const ok = success.main
+  const muted = text.secondary
   return (
     <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: '6px' }}>
       {launchers.map((l) => {
@@ -82,7 +84,7 @@ function Looked({ game, launchers }: { game: GameInfo; launchers: StoreApp[] }) 
             key={l.id}
             sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 14 }}
           >
-            {l.found ? <Check size={15} color={ok} /> : <X size={15} color="#9AA0AA" />}
+            {l.found ? <Check size={15} color={ok} /> : <X size={15} color={muted} />}
             <Box component="span" sx={{ fontWeight: 600 }}>
               {l.name}
             </Box>

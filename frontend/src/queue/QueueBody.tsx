@@ -3,6 +3,8 @@ import { Box, Button, Typography } from '@mui/material'
 import { alpha, useTheme } from '@mui/material/styles'
 
 const DONE_FILL = 0.08
+const FAIL_FILL = 0.1
+const FAIL_LINE = 0.35
 
 import { Download, RotateCcw, X } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -197,6 +199,7 @@ function Confirmation({ item }: { item: Item }) {
 
 function Failed({ items }: { items: Item[] }) {
   const { t } = useLingui()
+  const { error } = useTheme().palette
   const [pending, run] = usePending()
   if (items.length === 0) {
     return null
@@ -204,7 +207,7 @@ function Failed({ items }: { items: Item[] }) {
   return (
     <>
       <SectionTitle
-        color="#ffb3ab"
+        color={error.light}
         action={
           <TipIconButton
             label={t`Retry failed`}
@@ -222,9 +225,12 @@ function Failed({ items }: { items: Item[] }) {
         <Row
           key={i.id}
           item={i}
-          sx={{ bgcolor: 'rgba(255,107,95,0.1)', border: '1px solid rgba(255,107,95,0.35)' }}
+          sx={{
+            bgcolor: alpha(error.main, FAIL_FILL),
+            border: `1px solid ${alpha(error.main, FAIL_LINE)}`,
+          }}
           sub={
-            <Typography title={errorDetails(i.error)} sx={{ ...detail, color: '#ffc4be' }}>
+            <Typography title={errorDetails(i.error)} sx={{ ...detail, color: error.light }}>
               {errorMessage(i.error)}
             </Typography>
           }
@@ -325,7 +331,8 @@ function NextActions({ item }: { item: Item }) {
 
 export function Body({ items }: { items: Item[] }) {
   const { t } = useLingui()
-  const doneBg = alpha(useTheme().palette.success.main, DONE_FILL)
+  const theme = useTheme()
+  const doneBg = alpha(theme.palette.success.main, DONE_FILL)
   const click = items.filter((i) => i.state === 'waiting-click')
   const choose = items.filter((i) => i.state === 'needs-choice')
   const confirm = items.filter((i) => i.state === 'needs-confirm')
@@ -402,7 +409,11 @@ export function Body({ items }: { items: Item[] }) {
         </Fold>
       ) : null}
       {done.length > 0 ? (
-        <Fold bg={doneBg} color="#6ff5a8" line={t`Done (${done.length}): ${names(done)}`}>
+        <Fold
+          bg={doneBg}
+          color={theme.palette.success.light}
+          line={t`Done (${done.length}): ${names(done)}`}
+        >
           {done.map((i) => (
             <Row
               key={i.id}
