@@ -94,6 +94,7 @@ function TourPopover({
         }}
       >
         <Box
+          data-tour-spotlight={true}
           sx={{
             position: 'fixed',
             top: anchorRect.top - SPOTLIGHT_PAD,

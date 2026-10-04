@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { sameRectOr, tourOnLastStep, tourStepBack, tourStepNext } from './logic.ts'
+import { sameRectOr, tourEligible, tourOnLastStep, tourStepBack, tourStepNext } from './logic.ts'
 import { tourClearSeen, tourMarkSeen, tourShouldRun } from './seen.ts'
 
 test('tour step sequencing clamps at ends', () => {
@@ -25,4 +25,13 @@ test('anchor rect keeps identity until it moves', () => {
   expect(sameRectOr(a, { ...a })).toBe(a)
   expect(sameRectOr(a, { ...a, top: 5 })).toEqual({ ...a, top: 5 })
   expect(sameRectOr(a, null)).toBeNull()
+})
+
+test('Skip keeps the tour closed even before the seen flag is saved; Show again reopens it', () => {
+  const base = { onGameWithProfile: true, unseen: true, dismissed: false, replay: false }
+  expect(tourEligible(base)).toBe(true)
+  expect(tourEligible({ ...base, dismissed: true })).toBe(false)
+  expect(tourEligible({ ...base, unseen: false })).toBe(false)
+  expect(tourEligible({ ...base, unseen: false, dismissed: true, replay: true })).toBe(true)
+  expect(tourEligible({ ...base, onGameWithProfile: false, replay: true })).toBe(false)
 })

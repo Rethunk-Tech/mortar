@@ -6,7 +6,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportError } from '../toasts/report.ts'
 import { resolveTourAnchor } from './anchors.ts'
-import { sameRectOr, type TourRect } from './logic.ts'
+import { sameRectOr, type TourRect, tourEligible } from './logic.ts'
 import { useTourReplay } from './replay.ts'
 import { tourMarkSeen, tourShouldRun } from './seen.ts'
 
@@ -29,7 +29,12 @@ function useFirstRunTour() {
   const [dismissed, setDismissed] = useState(false)
 
   const onGameWithProfile = route.name === 'game' && loaded && openId !== '' && hasProfile
-  const eligible = onGameWithProfile && ((tourShouldRun(seen) && !dismissed) || replay)
+  const eligible = tourEligible({
+    onGameWithProfile,
+    unseen: tourShouldRun(seen),
+    dismissed,
+    replay,
+  })
 
   const finish = useCallback(() => {
     setDismissed(true)
