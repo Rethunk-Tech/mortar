@@ -690,15 +690,16 @@ func (s *Store) RestoreModsFolder(game, id, token string) error {
 	return s.RecordModsSnapshot(game, id)
 }
 
-func (s *Service) ScanModsDrift(game, id string) ([]Drift, error) {
-	return s.store.ScanModsDrift(game, id)
-}
 // renameBusy words a failed move of a mods folder: the trash lives in the data folder, so the usual cause is a file in
 // the folder being open in another program.
 func renameBusy(err error) error {
 	return usererr.Wrap(usererr.Busy, fmt.Errorf("a file in that folder is in use by another program; close it and try again (%w)", err))
 }
 
+//wails:ignore
+func (s *Service) ScanModsDrift(game, id string) ([]Drift, error) {
+	return s.store.ScanModsDrift(game, id)
+}
 
 func (s *Service) KeepDriftChanges(game, id, key string) error {
 	return s.store.refreshSnapshotKey(game, id, key)

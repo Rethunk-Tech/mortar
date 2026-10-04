@@ -114,6 +114,8 @@ func platform() string {
 }
 
 // Environment reads the versions from the game's logs; without an install they stay empty.
+//
+//wails:ignore
 func (s *Service) Environment(id string) Environment {
 	env := Environment{Platform: platform()}
 	g := game.Find(id)
@@ -217,6 +219,8 @@ func (s *Service) ConflictEvidence(ctx context.Context, gameID, id, kind, target
 
 // ProblemsWithEvidence is Problems with every conflict's evidence. The answer is kept until the mods or versions
 // change, unless a lookup failed, in which case the next call tries again.
+//
+//wails:ignore
 func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (Result, error) {
 	mods, err := s.installed(gameID, id)
 	if err != nil {
@@ -310,6 +314,8 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 
 // ForgetCached drops every result and scan Mortar holds in memory, after the cache folder is cleared,
 // so the next check reads and fetches everything afresh.
+//
+//wails:ignore
 func (s *Service) ForgetCached() {
 	s.mu.Lock()
 	s.cache = map[string]cached{}

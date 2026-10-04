@@ -134,6 +134,8 @@ func NewService(deps Deps) *Service {
 }
 
 // Busy reports whether an incoming LAN transfer is active.
+//
+//wails:ignore
 func (s *Service) Busy() bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -141,6 +143,8 @@ func (s *Service) Busy() bool {
 }
 
 // SetEnabled starts or stops the LAN listener and mDNS discovery.
+//
+//wails:ignore
 func (s *Service) SetEnabled(enabled bool) error {
 	if !enabled {
 		return s.stop()
@@ -158,6 +162,8 @@ func (s *Service) SetEnabled(enabled bool) error {
 }
 
 // Shutdown stops LAN sharing permanently as Mortar exits.
+//
+//wails:ignore
 func (s *Service) Shutdown() {
 	s.lifeMu.Lock()
 	defer s.lifeMu.Unlock()

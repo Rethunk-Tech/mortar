@@ -50,6 +50,7 @@ func (s *Service) RestoreKnownGood(game, id string) (Profile, error) {
 	return s.store.RestoreKnownGood(game, id)
 }
 
+//wails:ignore
 func (s *Service) KnownGood(game, id string) ([]HistoryEvent, error) {
 	return s.store.KnownGood(game, id)
 }

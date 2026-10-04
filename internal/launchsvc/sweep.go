@@ -81,6 +81,8 @@ func (s *Service) Sweep(ctx context.Context, gameID string) (SweepReport, error)
 }
 
 // MaybeSweep runs Sweep and emits SweepEvent when versions changed and any profile needs attention.
+//
+//wails:ignore
 func (s *Service) MaybeSweep(ctx context.Context, gameID string) {
 	rep, err := s.Sweep(ctx, gameID)
 	if err != nil || !rep.Triggered || !rep.NeedsAttention() {

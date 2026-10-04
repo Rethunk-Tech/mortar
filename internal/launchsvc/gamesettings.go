@@ -194,6 +194,8 @@ func (s *Service) restoreGameSettings(restore *settingsRestore) error {
 }
 
 // RecoverGameSettings applies records left by a launch that ended before its in-memory restore ran.
+//
+//wails:ignore
 func (s *Service) RecoverGameSettings() error {
 	profiles, err := s.profiles.List("stardew")
 	if err != nil {

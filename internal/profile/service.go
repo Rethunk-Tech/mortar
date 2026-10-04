@@ -114,6 +114,8 @@ func (s *Service) ProfilesWithMod(game, uniqueID string) ([]ModInProfile, error)
 }
 
 // ModsByAuthor lists mods whose manifest Author field includes author in any profile of game.
+//
+//wails:ignore
 func (s *Service) ModsByAuthor(game, author string) ([]AuthorMod, error) {
 	return s.store.ModsByAuthor(game, author)
 }
@@ -129,6 +131,8 @@ func (s *Service) SetNotes(game, id, notes string) (Profile, error) {
 }
 
 // SetOverride sets one profile override of a game setting; "default" removes it so the game value applies.
+//
+//wails:ignore
 func (s *Service) SetOverride(game, id, key, value string) (Profile, error) {
 	return s.store.SetOverride(game, id, key, value)
 }
@@ -172,6 +176,8 @@ func (s *Service) SetDefaultLaunchPreset(game, id, presetID string) (Profile, er
 }
 
 // AddEntry copies the store item key into the profile.
+//
+//wails:ignore
 func (s *Service) AddEntry(game, id, key string, source Source) (Profile, error) {
 	return s.store.AddEntry(game, id, key, source)
 }
@@ -242,9 +248,6 @@ func (s *Service) ClearCover(game, id string) (Profile, error) { return s.store.
 func (s *Service) Covers(game, id string) ([]string, error) { return s.store.Covers(game, id) }
 
 func (s *Service) Duplicate(game, id string) (Profile, error) { return s.store.Duplicate(game, id) }
-
-// Diff compares two profiles of the same game by UniqueID.
-func (s *Service) Diff(game, aID, bID string) (Diff, error) { return s.store.Diff(game, aID, bID) }
 
 // CopyMods copies selected mods from one profile into another from the store, with no download.
 func (s *Service) CopyMods(game, fromID, toID string, uniqueIDs []string) (Profile, error) {

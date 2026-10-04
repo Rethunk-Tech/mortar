@@ -117,6 +117,8 @@ func (s *Service) fillLast(game string, fit *Fit, present, enabled map[string]bo
 }
 
 // NotePlayed records that profileID just ran saveFolder, with the mods that profile had on.
+//
+//wails:ignore
 func (s *Service) NotePlayed(gameID, profileID, saveFolder string) {
 	if s.last == nil {
 		return

@@ -229,6 +229,8 @@ func (s *Service) List(gameID string) ([]Bundle, error) {
 }
 
 // ReferencedStoreKeys lists the store items still needed by saved bundles.
+//
+//wails:ignore
 func (s *Service) ReferencedStoreKeys() (map[string][]string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -415,6 +417,8 @@ func (s *Service) Apply(gameID, bundleID, profileID string) (ApplyResult, error)
 
 // ApplyMods adds the store entries behind mods to a profile as Apply does for a saved bundle; label names the history
 // batch.
+//
+//wails:ignore
 func (s *Service) ApplyMods(gameID, label string, mods []Mod, profileID string) (ApplyResult, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

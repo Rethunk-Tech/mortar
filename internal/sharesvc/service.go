@@ -344,6 +344,8 @@ func (s *Service) SaveFile(game, profileID string, keys []string, include share.
 }
 
 // ExportBytes writes the profile's .mortar payload in memory.
+//
+//wails:ignore
 func (s *Service) ExportBytes(game, profileID string, keys []string) ([]byte, []string, error) {
 	p, err := s.find(game, profileID)
 	if err != nil {
@@ -1178,6 +1180,8 @@ func InDir(args []string, dir string) []string {
 
 // Receive picks the share links and .mortar files out of launch arguments, from a cold start or a second launch,
 // and hands each to the window's import dialog. It reports whether there were any.
+//
+//wails:ignore
 func (s *Service) Receive(args []string) bool {
 	found := false
 	for _, arg := range args {

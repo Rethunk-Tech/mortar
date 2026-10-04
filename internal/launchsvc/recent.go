@@ -23,6 +23,8 @@ type recentCandidate struct {
 }
 
 // RecentLaunches returns up to limit profiles most recently launched for game, newest first.
+//
+//wails:ignore
 func (s *Service) RecentLaunches(gameID string, limit int) ([]RecentLaunch, error) {
 	if game.Find(gameID) == nil {
 		return nil, fmt.Errorf("unknown game %q", gameID)

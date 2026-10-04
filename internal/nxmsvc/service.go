@@ -88,6 +88,8 @@ func (s *Service) emit(name string, data any) {
 
 // Receive reads every nxm:// link among args: an accepted one waits for a profile, a refused one is reported. It
 // reports whether there was any link.
+//
+//wails:ignore
 func (s *Service) Receive(args []string) bool {
 	found := false
 	for _, arg := range args {

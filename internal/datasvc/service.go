@@ -136,6 +136,8 @@ func (s *Service) ClearCache() error {
 }
 
 // ModUsage lists store items with sizes, cached until the store or profiles change.
+//
+//wails:ignore
 func (s *Service) ModUsage() (ModUsage, error) {
 	dir, err := datadir.Dir()
 	if err != nil {

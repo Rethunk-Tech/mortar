@@ -91,6 +91,7 @@ type indexedTouch struct {
 	rank  int
 }
 
+//wails:ignore
 func (s *Service) WhoChanges(_ context.Context, gameID, id, query string) (WhoChangesPage, error) {
 	index, err := s.assetIndex(gameID, id)
 	if err != nil {

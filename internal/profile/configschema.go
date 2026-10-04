@@ -68,6 +68,8 @@ func (s *Service) ReadContentSchema(game, id, key, uniqueID string) (string, err
 }
 
 // ListConfigFields lists config.json values and Content Patcher allowed values.
+//
+//wails:ignore
 func (s *Service) ListConfigFields(game, id, key, uniqueID string) ([]ConfigField, error) {
 	schema, err := s.contentSchema(game, id, key, uniqueID)
 	if err != nil {

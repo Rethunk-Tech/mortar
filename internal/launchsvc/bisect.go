@@ -24,6 +24,8 @@ var bisectStartupGrace = 20 * time.Second
 // RunForBisect launches one profile the way Play would (the profile's launch method) and returns whether it reached a
 // healthy running state. A new startup report after launch means the title screen was reached; otherwise the step
 // waits for a crash, exit, the 20 s grace when the bridge is absent, or bisectRunTimeout.
+//
+//wails:ignore
 func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (bool, launch.Summary, error) {
 	runCtx, cancel := context.WithTimeout(ctx, bisectRunTimeout)
 	defer cancel()

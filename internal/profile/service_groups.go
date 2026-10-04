@@ -1,5 +1,6 @@
 package profile
 
+//wails:ignore
 func (s *Service) CreateGroup(game, id, name string) (Profile, error) {
 	return s.store.CreateGroup(game, id, name)
 }

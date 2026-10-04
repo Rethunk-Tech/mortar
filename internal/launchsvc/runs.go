@@ -189,6 +189,8 @@ type RunIssues struct {
 }
 
 // LastRunID returns the newest recorded run's id from the run index, without reading its log.
+//
+//wails:ignore
 func (s *Service) LastRunID(gameID, profileID string) (string, error) {
 	runs, err := s.Runs(gameID, profileID)
 	if err != nil || len(runs) == 0 {
@@ -198,6 +200,8 @@ func (s *Service) LastRunID(gameID, profileID string) (string, error) {
 }
 
 // LastRunSummary returns the newest recorded run's id and what its SMAPI log reports.
+//
+//wails:ignore
 func (s *Service) LastRunSummary(gameID, profileID string) (string, launch.Summary, error) {
 	runs, err := s.Runs(gameID, profileID)
 	if err != nil {

@@ -441,6 +441,8 @@ func (s *Service) State() State {
 }
 
 // Busy reports whether the queue still has work or an open user decision.
+//
+//wails:ignore
 func (s *Service) Busy() bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -638,6 +640,8 @@ func (s *Service) Route(link nxm.Link) bool {
 }
 
 // StagedKeys lists, per game, the store keys of downloads staged for Confirm, which the store must keep.
+//
+//wails:ignore
 func (s *Service) StagedKeys() map[string][]string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -678,6 +682,8 @@ func (s *Service) Dismiss(id string) {
 }
 
 // ClearFinished removes every done, failed, cancelled or skipped item.
+//
+//wails:ignore
 func (s *Service) ClearFinished() {
 	s.drop(func(it *Item) bool { return dismissable(it.State) })
 }
@@ -723,6 +729,8 @@ func (s *Service) SkipProfile(game, profileID string) {
 }
 
 // RestoreProfile requeues items held because their profile was deleted.
+//
+//wails:ignore
 func (s *Service) RestoreProfile(game, profileID string) {
 	s.mu.Lock()
 	for _, it := range s.items {

@@ -59,6 +59,8 @@ type Service struct {
 }
 
 // Receive keeps a play request found in args and tells the window; it reports whether there was one.
+//
+//wails:ignore
 func (s *Service) Receive(args []string) bool {
 	r, ok := Parse(args)
 	if !ok {

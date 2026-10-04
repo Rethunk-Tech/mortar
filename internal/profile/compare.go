@@ -112,19 +112,6 @@ func (s *Store) load(game, id string) (Profile, error) {
 	return s.read(game, id)
 }
 
-// Diff compares two profiles of the same game.
-func (s *Store) Diff(game, aID, bID string) (Diff, error) {
-	a, err := s.load(game, aID)
-	if err != nil {
-		return Diff{}, err
-	}
-	b, err := s.load(game, bID)
-	if err != nil {
-		return Diff{}, err
-	}
-	return DiffProfiles(a, b), nil
-}
-
 func destHasKey(p Profile, key string) bool {
 	return slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key })
 }

@@ -8,6 +8,8 @@ import (
 )
 
 // UseDataDir opens the per-Nexus-mod seen-state file under dir.
+//
+//wails:ignore
 func (s *Service) UseDataDir(dir string) error {
 	st, err := nexus.OpenSeenStore(dir)
 	if err != nil {

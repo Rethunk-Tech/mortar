@@ -25,6 +25,8 @@ type compatLister interface {
 }
 
 // CompatibilityFor returns SMAPI compatibility-list rows for the profile's mods (including status ok).
+//
+//wails:ignore
 func (s *Service) CompatibilityFor(ctx context.Context, gameID, id string) ([]Compat, error) {
 	if gameID != "" && gameID != "stardew" {
 		return []Compat{}, nil

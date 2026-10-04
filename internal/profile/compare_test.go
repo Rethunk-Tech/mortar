@@ -57,10 +57,11 @@ func TestCopyModsAddsFromStoreAndRespectsTheRunningLock(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	d, err := e.Diff("stardew", from.ID, got.ID)
+	src, err := e.load("stardew", from.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
+	d := DiffProfiles(src, got)
 	if len(d.OnlyA) != 0 || len(d.OnlyB) != 0 || len(d.Changed) != 0 {
 		t.Fatalf("after copy diff = %+v", d)
 	}

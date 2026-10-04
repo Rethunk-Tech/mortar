@@ -15,6 +15,8 @@ const (
 const StagedEvent = "update:staged"
 
 // StartBackground checks for Mortar updates on a timer and stages them without user action.
+//
+//wails:ignore
 func (s *Service) StartBackground(ctx context.Context, emit func(string, any)) {
 	if s.info.Off != "" {
 		return

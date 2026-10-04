@@ -37,6 +37,7 @@ func (s *QuitService) BusySummary() string {
 	return ""
 }
 
+//wails:ignore
 func (s *QuitService) RequestQuit() {
 	s.app.Event.Emit(quitRequestedEvent, s.BusySummary())
 }
@@ -48,6 +49,7 @@ func (s *QuitService) ConfirmQuit() {
 	s.app.Quit()
 }
 
+//wails:ignore
 func (s *QuitService) AllowWindowClose() bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()

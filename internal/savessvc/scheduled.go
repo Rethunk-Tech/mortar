@@ -18,6 +18,8 @@ const scheduleCheck = 10 * time.Minute
 const scheduleRetry = 30 * time.Minute
 
 // RunScheduledBackups backs up changed saves on the saveBackupHours schedule until ctx ends.
+//
+//wails:ignore
 func (s *Service) RunScheduledBackups(ctx context.Context) {
 	tick := time.NewTicker(scheduleCheck)
 	defer tick.Stop()

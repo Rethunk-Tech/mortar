@@ -270,6 +270,8 @@ func (s *Service) Install(ctx context.Context, id string) (loader.Status, error)
 // Ensure installs the loader when it is missing or broken, waiting for an install already running, and does
 // nothing when it is fine. A newer release is never applied here: an update can break mods, so the user does it.
 // fromStart is true when Play requested this install, so a preparing claim for that Start is not treated as running.
+//
+//wails:ignore
 func (s *Service) Ensure(ctx context.Context, id string, fromStart bool) (loader.Status, error) {
 	s.busy.Lock()
 	defer s.busy.Unlock()

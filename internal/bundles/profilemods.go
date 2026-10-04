@@ -1,6 +1,8 @@
 package bundles
 
 // ProfileMods snapshots every mod of a profile in the form bundles store them.
+//
+//wails:ignore
 func (s *Service) ProfileMods(gameID, profileID string) ([]Mod, error) {
 	profiles, err := s.profiles.List(gameID)
 	if err != nil {
