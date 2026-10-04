@@ -3,7 +3,7 @@ package profile
 import (
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 func TestExtraFileLabelUsesNexusFileTitle(t *testing.T) {

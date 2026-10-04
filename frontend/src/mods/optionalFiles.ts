@@ -1,10 +1,10 @@
 import { create } from 'zustand'
-import type { File } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
-import type { Update } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { File } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
+import type { Update } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type {
   OverlayFileSet,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Want } from '../queue/actions.ts'
 import { parseBBCode } from './bbcode.ts'
 
@@ -16,11 +16,11 @@ const VERSION_SUFFIX = /(?:[\s._-]+v?\d+(?:[._-]\d+)+|[\s._-]+v?\d+)$/i
 type Entries = Pick<Profile, 'entries'> | null | undefined
 
 /** A mod page's current Optional and Miscellaneous files, as Nexus lists them. */
-export const nexusOptionalFiles = (files: readonly File[]) =>
+const nexusOptionalFiles = (files: readonly File[]) =>
   files.filter((f) => OPTIONAL_CATEGORIES.has(f.category.toUpperCase()))
 
 /** The Nexus file ids of modId the profile holds, so the page's files can be marked installed. */
-export const installedFileIds = (profile: Entries, modId: number) =>
+const installedFileIds = (profile: Entries, modId: number) =>
   new Set(
     (profile?.entries ?? [])
       .filter((e) => e.source.kind === 'nexus' && e.source.modId === modId)
@@ -28,7 +28,7 @@ export const installedFileIds = (profile: Entries, modId: number) =>
   )
 
 /** A Nexus file description as one line of plain text. */
-export const plainDescription = (bbcode: string) =>
+const plainDescription = (bbcode: string) =>
   parseBBCode(bbcode)
     .flatMap((b) => b.runs.map((r) => r.text))
     .join(' ')
@@ -58,7 +58,7 @@ const sameGroup = (a: File, b: File) => {
 }
 
 /** The newest listed version of file fileId, following the author's file_updates chain; undefined when it is current. */
-export function newerVersion(files: readonly File[], fileId: number): File | undefined {
+function newerVersion(files: readonly File[], fileId: number): File | undefined {
   const byId = new Map(files.map((f) => [f.fileId, f]))
   let cur = byId.get(fileId)
   if (!cur) {
@@ -86,22 +86,17 @@ export function newerVersion(files: readonly File[], fileId: number): File | und
 }
 
 /** Queue requests for newer versions of the optional files laid over the entry an update replaces. */
-export function optionalUpdateWants(
-  profile: Entries,
-  update: Update,
-  files: readonly File[],
-): Want[] {
+function optionalUpdateWants(profile: Entries, update: Update, files: readonly File[]): Want[] {
   const wants: Want[] = []
-  for (const e of profile?.entries ?? []) {
+  const overlays = (profile?.entries ?? []).filter(
+    (e) =>
+      e.overlayOf === update.key &&
+      e.source.kind === 'nexus' &&
+      (e.source.modId ?? 0) === update.nexusId &&
+      Boolean(e.source.fileId),
+  )
+  for (const e of overlays) {
     const { modId = 0, fileId = 0 } = e.source
-    if (
-      e.overlayOf !== update.key ||
-      e.source.kind !== 'nexus' ||
-      modId !== update.nexusId ||
-      !fileId
-    ) {
-      continue
-    }
     const newer = newerVersion(files, fileId)
     if (newer) {
       wants.push({
@@ -119,7 +114,7 @@ export function optionalUpdateWants(
 }
 
 /** Update keys whose optional files the user left out of the update. */
-export const useOptionalSkips = create<{
+const useOptionalSkips = create<{
   skipped: Record<string, boolean>
   setSkipped: (key: string, on: boolean) => void
 }>((set) => ({
@@ -128,7 +123,7 @@ export const useOptionalSkips = create<{
 }))
 
 /** Groups of optional files that replace some of the same files, in profile order; each lists two or more keys. */
-export function alternativeGroups(sets: readonly OverlayFileSet[]): string[][] {
+function alternativeGroups(sets: readonly OverlayFileSet[]): string[][] {
   const groups: string[][] = []
   const placed = new Set<string>()
   for (const set of sets) {
@@ -149,4 +144,14 @@ export function alternativeGroups(sets: readonly OverlayFileSet[]): string[][] {
     groups.push(sets.map((s) => s.key).filter((k) => group.includes(k)))
   }
   return groups
+}
+
+export {
+  alternativeGroups,
+  installedFileIds,
+  newerVersion,
+  nexusOptionalFiles,
+  optionalUpdateWants,
+  plainDescription,
+  useOptionalSkips,
 }

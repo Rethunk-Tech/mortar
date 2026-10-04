@@ -15,18 +15,18 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/backup"
-	"github.com/Rethunk-AI/mortar/internal/bridge"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/game"
-	"github.com/Rethunk-AI/mortar/internal/game/stardew"
-	"github.com/Rethunk-AI/mortar/internal/launch"
-	"github.com/Rethunk-AI/mortar/internal/meta"
-	"github.com/Rethunk-AI/mortar/internal/overlay"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/settings"
-	"github.com/Rethunk-AI/mortar/internal/steam"
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/backup"
+	"github.com/Rethunk-Tech/mortar/internal/bridge"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/overlay"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/steam"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -390,13 +390,13 @@ func (s *Service) watch(g game.Game) {
 	}()
 }
 
-// Status returns the game's launch state after looking for a game Mortar did not start.
 // Busy reports whether the game is launching or running.
 func (s *Service) Busy(gameID string) bool {
 	st, err := s.Status(gameID)
 	return err == nil && st.State.Active()
 }
 
+// Status returns the game's launch state after looking for a game Mortar did not start.
 func (s *Service) Status(gameID string) (Status, error) {
 	g, err := game.Require(gameID)
 	if err != nil {

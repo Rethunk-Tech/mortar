@@ -122,4 +122,4 @@ function GroupHeaderRow({
   )
 }
 
-export { GroupHeaderRow, ModsGroupHeader }
+export { GroupHeaderRow }

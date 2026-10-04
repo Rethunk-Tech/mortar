@@ -11,4 +11,4 @@ function playMenuEntries(presets: PlayPreset[]): PlayMenuEntry[] {
   ]
 }
 
-export { type PlayMenuEntry, playMenuEntries }
+export { playMenuEntries }

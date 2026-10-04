@@ -6,7 +6,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 func TestDefaultMerge(t *testing.T) {

@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/queue"
-	"github.com/Rethunk-AI/mortar/internal/store"
-	"github.com/Rethunk-AI/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
 func TestRecordRunStoresEnabledMods(t *testing.T) {
@@ -33,7 +33,7 @@ func TestNotePlayedRecordsProfileMods(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	e.item(t, "local-a", map[string]string{"manifest.json": `{"Name":"Alpha","Author":"me","Version":"1.0.0","UniqueID":"A.Mod"}`})
+	e.alphaItem(t)
 	if _, err := e.profiles.AddEntry("stardew", p.ID, "local-a", profile.Source{Kind: profile.KindLocal, Name: "a.zip"}); err != nil {
 		t.Fatal(err)
 	}
@@ -92,8 +92,11 @@ func newSaveEnv(t *testing.T) saveEnv {
 	return saveEnv{ps, items}
 }
 
-func (e saveEnv) item(t *testing.T, key string, files map[string]string) {
+// alphaItem stores the one mod these tests install, under local-a.
+func (e saveEnv) alphaItem(t *testing.T) {
 	t.Helper()
+	const key = "local-a"
+	files := map[string]string{"manifest.json": `{"Name":"Alpha","Author":"me","Version":"1.0.0","UniqueID":"A.Mod"}`}
 	src := t.TempDir()
 	for rel, body := range files {
 		p := filepath.Join(src, filepath.FromSlash(rel))
@@ -111,7 +114,7 @@ func (e saveEnv) item(t *testing.T, key string, files map[string]string) {
 
 func TestFromSaveReusesStoreAndQueuesTheRest(t *testing.T) {
 	e := newSaveEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": `{"Name":"Alpha","Author":"me","Version":"1.0.0","UniqueID":"A.Mod"}`})
+	e.alphaItem(t)
 	last := NewStore(t.TempDir())
 	if err := last.RecordRun("stardew", "Sunny_1", "old", time.Now(), []PlayedMod{
 		{UniqueID: "A.Mod", Name: "Alpha", Version: "1.0.0", Key: "local-a", SourceKind: profile.KindLocal},

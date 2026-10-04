@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func TestDotHiddenModsListsOnlyDotsMortarDidNotAdd(t *testing.T) {

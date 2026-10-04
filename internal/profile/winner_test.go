@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 func TestSetWinnerRewritesManifestIdempotent(t *testing.T) {

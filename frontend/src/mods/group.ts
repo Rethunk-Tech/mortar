@@ -1,7 +1,7 @@
 import type {
   CustomCategory,
   Entry,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { cmpText } from './cmpText.ts'
 import { idKey } from './dependents.ts'
@@ -321,7 +321,7 @@ function orderedGroupKeys(by: GroupBy, keys: readonly string[]): string[] {
   return [...named, ...tail]
 }
 
-type HeadingCopy = {
+interface HeadingCopy {
   category: string
   source: string
   tag: string
@@ -349,10 +349,8 @@ function listHeadingFor(groupBy: GroupBy, copy: HeadingCopy) {
 export type { GroupBy }
 export {
   customCategoryById,
-  emptyGroupLabel,
   firstTag,
   frameworkGroupKey,
-  groupHeading,
   groupSorted,
   installedNames,
   listHeadingFor,

@@ -2,7 +2,6 @@ package profile
 
 import (
 	"errors"
-	"github.com/Rethunk-AI/mortar/internal/backup"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -10,7 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/backup"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func read(t *testing.T, path string) string {

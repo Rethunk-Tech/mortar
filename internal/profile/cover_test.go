@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 var pngHeader = []byte("\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR")

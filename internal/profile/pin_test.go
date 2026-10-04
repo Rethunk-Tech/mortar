@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 )
 
 func pinTestProfile(t *testing.T, s *Store) Profile {

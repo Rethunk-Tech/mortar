@@ -10,10 +10,10 @@ import (
 	"slices"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/archive"
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // VerifyEvery is how long a verified item is left alone by the background pass.
@@ -86,12 +86,17 @@ func (s *Store) saveVerify(st verifyState) error {
 
 // sumTree hashes every regular file under dir except the completion marker, keyed by slash-separated path.
 func sumTree(ctx context.Context, dir string) (map[string]fileSum, error) {
+	return sumTreeUntil(ctx.Err, dir)
+}
+
+// sumTreeUntil hashes every regular file under dir, stopping when stop returns an error.
+func sumTreeUntil(stop func() error, dir string) (map[string]fileSum, error) {
 	out := map[string]fileSum{}
 	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		if err := ctx.Err(); err != nil {
+		if err := stop(); err != nil {
 			return err
 		}
 		if d.IsDir() {
@@ -152,7 +157,7 @@ func (s *Store) writeManifest(game, key string, files map[string]fileSum) error 
 // recordInstalled records the hashes of a freshly installed item and clears any earlier verdict on the key. A
 // failure only means the item is baselined by its first verification instead.
 func (s *Store) recordInstalled(game, key, dir string) {
-	files, err := sumTree(context.Background(), dir)
+	files, err := sumTreeUntil(func() error { return nil }, dir)
 	if err == nil {
 		err = s.writeManifest(game, key, files)
 	}

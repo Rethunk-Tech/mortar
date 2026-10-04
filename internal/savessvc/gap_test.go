@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func TestSaveGapSplitsMissingDisabledAndOlder(t *testing.T) {
@@ -13,7 +13,7 @@ func TestSaveGapSplitsMissingDisabledAndOlder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	e.item(t, "local-a", map[string]string{"manifest.json": `{"Name":"Alpha","Author":"me","Version":"1.0.0","UniqueID":"A.Mod"}`})
+	e.alphaItem(t)
 	if _, err := e.profiles.AddEntry("stardew", p.ID, "local-a", profile.Source{Kind: profile.KindLocal, Name: "a.zip"}); err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestSaveGapReportsSwitchedOffModAsDisabled(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	e.item(t, "local-a", map[string]string{"manifest.json": `{"Name":"Alpha","Author":"me","Version":"1.0.0","UniqueID":"A.Mod"}`})
+	e.alphaItem(t)
 	if _, err := e.profiles.AddEntry("stardew", p.ID, "local-a", profile.Source{Kind: profile.KindLocal, Name: "a.zip"}); err != nil {
 		t.Fatal(err)
 	}

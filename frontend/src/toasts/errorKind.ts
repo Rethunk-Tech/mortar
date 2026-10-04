@@ -27,13 +27,6 @@ function asText(e: unknown): string {
   return String(e)
 }
 
-export function errorText(e: unknown): string | undefined {
-  if (e instanceof Error) {
-    return e.message
-  }
-  return typeof e === 'string' ? e : undefined
-}
-
 export function errorKind(e: unknown): ErrorKind {
   const kind = kindRe.exec(asText(e) ?? '')?.[1]
   if (kind !== undefined && kinds.has(kind)) {
