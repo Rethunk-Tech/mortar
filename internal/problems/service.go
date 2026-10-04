@@ -100,8 +100,6 @@ func platform() string {
 	switch runtime.GOOS {
 	case "windows":
 		return "Windows"
-	case "darwin":
-		return "Mac"
 	}
 	return "Linux"
 }
@@ -350,15 +348,7 @@ func (s *Service) DismissAssetConflict(_ context.Context, gameID, id, kind, targ
 }
 
 func (s *Service) appendDismissed(bucket, token string) error {
-	_, err := s.settings.Update(func(v *settings.Settings) {
-		if slices.Contains(v.Dismissed[bucket], token) {
-			return
-		}
-		next := maps.Clone(v.Dismissed)
-		next[bucket] = append(slices.Clone(v.Dismissed[bucket]), token)
-		v.Dismissed = next
-	})
-	return err
+	return s.settings.AppendDismissed(bucket, token)
 }
 
 func (s *Service) RestoreDismissed(_ context.Context, gameID, id, token string) error {

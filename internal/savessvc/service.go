@@ -252,16 +252,7 @@ func (s *Service) Dismiss(saveFolder, uniqueID string) error {
 	if saveFolder == "" || uniqueID == "" {
 		return errors.New("save folder and mod are required")
 	}
-	id := strings.ToLower(uniqueID)
-	_, err := s.settings.Update(func(v *settings.Settings) {
-		if slices.Contains(v.Dismissed[saveFolder], id) {
-			return
-		}
-		next := maps.Clone(v.Dismissed)
-		next[saveFolder] = append(slices.Clone(v.Dismissed[saveFolder]), id)
-		v.Dismissed = next
-	})
-	return err
+	return s.settings.AppendDismissed(saveFolder, strings.ToLower(uniqueID))
 }
 
 // RestoreDismissed shows uniqueID's missing-mod warning for the save folder again.

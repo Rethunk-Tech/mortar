@@ -4,6 +4,7 @@ package settings
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -314,6 +315,19 @@ func (s *Store) Get() Settings {
 }
 
 // Update applies fn to a copy of the settings, validates, persists atomically and returns the result.
+// AppendDismissed records token in bucket unless it is already there.
+func (s *Store) AppendDismissed(bucket, token string) error {
+	_, err := s.Update(func(v *Settings) {
+		if slices.Contains(v.Dismissed[bucket], token) {
+			return
+		}
+		next := maps.Clone(v.Dismissed)
+		next[bucket] = append(slices.Clone(v.Dismissed[bucket]), token)
+		v.Dismissed = next
+	})
+	return err
+}
+
 func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
