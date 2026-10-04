@@ -878,14 +878,3 @@ func serveNativeHost() error {
 		return nativehost.Start(exe, link)
 	})
 }
-
-func officialUpdateCount(updates []problems.Update) int {
-	seen := make(map[string]struct{}, len(updates))
-	for _, update := range updates {
-		if update.Unofficial {
-			continue
-		}
-		seen[update.Key+"\x00"+update.UniqueID] = struct{}{}
-	}
-	return len(seen)
-}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/doctor"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 )
 
@@ -136,5 +137,25 @@ func TestLastRunCrashedReportsOncePerRun(t *testing.T) {
 	s := &Service{}
 	if !s.LastRunCrashed() || s.LastRunCrashed() {
 		t.Fatal("want true once, then false")
+	}
+}
+
+func TestDetectLastRunCrashedTruncatedResetsSeen(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, crashLogName), []byte("short"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, crashSeenName), []byte("9999\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if DetectLastRunCrashed(dir) {
+		t.Fatal("a truncated crash.log must not count as a new crash")
+	}
+	got, err := fsx.ReadFile(filepath.Join(dir, crashSeenName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.TrimSpace(string(got)) != "5" {
+		t.Fatalf("seen after truncate = %q", got)
 	}
 }

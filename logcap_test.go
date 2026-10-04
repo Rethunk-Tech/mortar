@@ -38,6 +38,10 @@ func TestCapCrashLogTruncatesWhenSeenCoversOverLimit(t *testing.T) {
 	if err != nil || info.Size() != 0 {
 		t.Fatalf("size %v %v", info, err)
 	}
+	seen, err := fsx.ReadFile(filepath.Join(dir, "crash.seen"))
+	if err != nil || strings.TrimSpace(string(seen)) != "0" {
+		t.Fatalf("seen %q %v", seen, err)
+	}
 }
 
 func TestCapCrashLogLeavesFileWhenSeenIsBehind(t *testing.T) {

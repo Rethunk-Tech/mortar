@@ -342,7 +342,7 @@ func completeItem(dir string) bool {
 
 func writeCompleteMarker(dir string) error {
 	marker := filepath.Join(dir, completeMarker)
-	if err := fsx.WriteFile(marker, nil, 0o600); err != nil {
+	if err := datadir.WriteFile(marker, nil, 0o600); err != nil {
 		return err
 	}
 	if err := syncPath(marker); err != nil {

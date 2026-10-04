@@ -3,6 +3,7 @@ package datadir
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -34,7 +35,16 @@ func WriteJSON(path string, v any) error {
 }
 
 // WriteFile replaces path with data through a temp file and rename, so a crash never leaves it truncated.
-func WriteFile(path string, data []byte, perm os.FileMode) (err error) {
+func WriteFile(path string, data []byte, perm os.FileMode) error {
+	return WriteStream(path, perm, func(w io.Writer) error {
+		_, err := w.Write(data)
+		return err
+	})
+}
+
+// WriteStream replaces path with write's output through a temp file, fsync, and rename, so a crash never leaves it
+// truncated. write seeing a failure, or returning one, removes the temp file and leaves path unchanged.
+func WriteStream(path string, perm os.FileMode, write func(io.Writer) error) (err error) {
 	f, err := os.CreateTemp(filepath.Dir(path), filepath.Base(path)+".*.tmp")
 	if err != nil {
 		return err
@@ -44,7 +54,7 @@ func WriteFile(path string, data []byte, perm os.FileMode) (err error) {
 			err = errors.Join(err, os.Remove(f.Name()))
 		}
 	}()
-	if _, err = f.Write(data); err != nil {
+	if err = write(f); err != nil {
 		return errors.Join(err, f.Close())
 	}
 	if err = f.Chmod(perm); err != nil {

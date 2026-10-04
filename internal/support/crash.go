@@ -45,6 +45,9 @@ func crashLogGrew(crashPath, seenPath string) bool {
 	if !ok {
 		return info.Size() > 0
 	}
+	if info.Size() < seen {
+		return false
+	}
 	return info.Size() > seen
 }
 

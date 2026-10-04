@@ -285,7 +285,7 @@ Once mods are installed, nothing external is needed to open, edit or launch a pr
 
 - **SMAPI's API or the dataset unreachable:** the feature degrades and never blocks; update checks show "unknown", dependencies are checked after download.
 - **A download cut off or corrupt:** extraction goes to a temp folder on the store's volume and moves into the store only when every entry passed its checksum (CRC32 in zip, RAR and 7z); failure deletes the temp folder and the item can be retried. **Disk full** fails the same way and says how much space the item needs.
-- **Mortar quits mid-operation:** every write is temp-then-rename, and startup removes leftover temp folders. A `mods/` folder deleted outside Mortar is rebuilt from the store from `profile.json`.
+- **Mortar quits mid-operation:** every write is temp-then-rename (`datadir.WriteFile` / `WriteJSON` / `WriteStream`), and startup removes leftover temp folders. `crash.log` is capped at startup once `crash.seen` already covers it (seen resets if the file was truncated). A `mods/` folder deleted outside Mortar is rebuilt from the store from `profile.json`.
 - **Steam not running:** `-applaunch` starts it. **Not installed:** a Steam copy can launch through SMAPI directly, without the overlay, after the user agrees.
 
 ## Tests

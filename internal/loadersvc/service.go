@@ -211,9 +211,9 @@ func (s *Service) ensureBundled(id string) (string, error) {
 }
 
 func (s *Service) target(id string) (game.Game, string, error) {
-	g := game.Find(id)
-	if g == nil {
-		return nil, "", fmt.Errorf("unknown game %q", id)
+	g, err := game.Require(id)
+	if err != nil {
+		return nil, "", err
 	}
 	dir, err := game.InstallDir(s.home, s.settings.Get(), id)
 	if err != nil {

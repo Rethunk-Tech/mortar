@@ -6,7 +6,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -56,19 +55,10 @@ func (s *Store) ExportZip(game, id, dest, mortarVersion string) error {
 	if err != nil {
 		return err
 	}
-	tmp, err := os.CreateTemp(filepath.Dir(dest), "mortar-profile-*.zip.tmp")
-	if err != nil {
+	if err := datadir.WriteStream(dest, 0o600, func(w io.Writer) error {
+		return writeProfileZip(w, mortarVersion, snap, p)
+	}); err != nil {
 		return err
-	}
-	err = writeProfileZip(tmp, mortarVersion, snap, p)
-	if err == nil {
-		err = tmp.Sync()
-	}
-	if err = errors.Join(err, tmp.Close()); err != nil {
-		return errors.Join(err, os.Remove(tmp.Name()))
-	}
-	if err := os.Rename(tmp.Name(), dest); err != nil {
-		return errors.Join(err, os.Remove(tmp.Name()))
 	}
 	return nil
 }

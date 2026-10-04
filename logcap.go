@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
@@ -61,5 +62,5 @@ func capCrashLogAt(dataDir string, limit int64) {
 	if err := os.Truncate(path, 0); err != nil {
 		return
 	}
-	_ = os.WriteFile(filepath.Join(dataDir, "crash.seen"), []byte("0\n"), 0o600)
+	_ = datadir.WriteFile(filepath.Join(dataDir, "crash.seen"), []byte("0\n"), 0o600)
 }

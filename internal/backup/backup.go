@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
@@ -79,11 +80,7 @@ func Saves(savesDir, backupsDir string, keep int, now time.Time, cause Cause) (s
 	if err := os.MkdirAll(backupsDir, 0o700); err != nil {
 		return "", err
 	}
-	tmp, err := os.CreateTemp(backupsDir, "backup-*.tmp")
-	if err != nil {
-		return "", err
-	}
-	return finishZip(tmp, backupsDir, savesDir, "", keep, now, name, cause)
+	return finishZip(backupsDir, savesDir, "", keep, now, name, cause)
 }
 
 // Folder zips one save folder into backupsDir the same way Saves does, without the recent-backup stand-in so a
@@ -111,24 +108,15 @@ func Folder(savesDir, backupsDir, folder string, keep int, now time.Time, cause 
 	if err := os.MkdirAll(backupsDir, 0o700); err != nil {
 		return "", err
 	}
-	tmp, err := os.CreateTemp(backupsDir, "backup-*.tmp")
-	if err != nil {
-		return "", err
-	}
-	return finishZip(tmp, backupsDir, savesDir, folder, keep, now, name, cause)
+	return finishZip(backupsDir, savesDir, folder, keep, now, name, cause)
 }
 
-func finishZip(tmp *os.File, backupsDir, savesDir, only string, keep int, now, name time.Time, cause Cause) (string, error) {
-	err := writeZip(tmp, savesDir, only)
-	if err == nil {
-		err = tmp.Sync()
-	}
-	if err = errors.Join(err, tmp.Close()); err != nil {
-		return "", errors.Join(err, os.Remove(tmp.Name()))
-	}
+func finishZip(backupsDir, savesDir, only string, keep int, now, name time.Time, cause Cause) (string, error) {
 	dst := filepath.Join(backupsDir, FileName(name))
-	if err := os.Rename(tmp.Name(), dst); err != nil {
-		return "", errors.Join(err, os.Remove(tmp.Name()))
+	if err := datadir.WriteStream(dst, 0o600, func(w io.Writer) error {
+		return writeZip(w, savesDir, only)
+	}); err != nil {
+		return "", err
 	}
 	if err := writeCause(dst, cause); err != nil {
 		return dst, errors.Join(err, prune(backupsDir, keep, now))
@@ -140,11 +128,7 @@ func writeCause(zipPath string, cause Cause) error {
 	if cause == (Cause{}) {
 		return nil
 	}
-	b, err := json.Marshal(cause)
-	if err != nil {
-		return err
-	}
-	return fsx.WriteFile(causePath(zipPath), b, 0o600)
+	return datadir.WriteJSON(causePath(zipPath), cause)
 }
 
 func causePath(zipPath string) string {
