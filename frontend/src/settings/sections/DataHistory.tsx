@@ -35,9 +35,13 @@ function HistoryRow({
         const next = await TrimHistory(gameId, usage.profileId, keep)
         setOpen(false)
         onTrimmed(next)
+        const freed = sizeOf(usage) - sizeOf(next)
         useToasts.getState().push({
           kind: 'success',
-          title: t`Trimmed ${usage.profileName}'s history, freed ${formatBytes(Math.max(0, sizeOf(usage) - sizeOf(next)))}`,
+          title:
+            freed > 0
+              ? t`Trimmed ${usage.profileName}'s history, freed ${formatBytes(freed)}`
+              : t`Trimmed ${usage.profileName}'s history`,
         })
       },
       { errorTitle: t`Could not trim history` },

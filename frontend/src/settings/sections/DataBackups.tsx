@@ -87,7 +87,10 @@ export function BackupsUsageRow() {
         setOpen(false)
         useToasts.getState().push({
           kind: 'success',
-          title: t`${plural(res.removed, { one: 'Removed # backup', other: 'Removed # backups' })}, freed ${formatBytes(res.freedBytes)}`,
+          title:
+            res.removed === 0
+              ? t`No backups to remove`
+              : t`${plural(res.removed, { one: 'Removed # backup', other: 'Removed # backups' })}, freed ${formatBytes(res.freedBytes)}`,
         })
         setUsage(await LoadBackupsUsage(gameId))
       },

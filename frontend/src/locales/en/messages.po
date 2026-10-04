@@ -347,7 +347,7 @@ msgid "Discard changes?"
 msgstr "Discard changes?"
 
 #. placeholder {0}: formatBytes(usage.totalBytes)
-#: src/settings/sections/DataBackups.tsx:97
+#: src/settings/sections/DataBackups.tsx:100
 msgid "Save backups: {0}"
 msgstr "Save backups: {0}"
 
@@ -1219,7 +1219,7 @@ msgstr "Launch options set in Steam"
 msgid "Choose an existing bundle or create one."
 msgstr "Choose an existing bundle or create one."
 
-#: src/settings/sections/DataBackups.tsx:94
+#: src/settings/sections/DataBackups.tsx:97
 msgid "Could not trim save backups"
 msgstr "Could not trim save backups"
 
@@ -1372,8 +1372,8 @@ msgstr "Switched off {names}"
 msgid "Mortar's data"
 msgstr "Mortar's data"
 
-#: src/settings/sections/DataBackups.tsx:99
-#: src/settings/sections/DataHistory.tsx:52
+#: src/settings/sections/DataBackups.tsx:102
+#: src/settings/sections/DataHistory.tsx:56
 msgid "Trim…"
 msgstr "Trim…"
 
@@ -1566,7 +1566,7 @@ msgid "Could not quit Mortar"
 msgstr "Could not quit Mortar"
 
 #. placeholder {0}: usage.profileName
-#: src/settings/sections/DataHistory.tsx:55
+#: src/settings/sections/DataHistory.tsx:59
 msgid "Trim history of {0}"
 msgstr "Trim history of {0}"
 
@@ -2881,6 +2881,11 @@ msgstr "Ask me to endorse mods I keep using"
 msgid "Both set: {0} +{1} more"
 msgstr "Both set: {0} +{1} more"
 
+#. placeholder {0}: usage.profileName
+#: src/settings/sections/DataHistory.tsx:44
+msgid "Trimmed {0}'s history"
+msgstr "Trimmed {0}'s history"
+
 #: src/bundles/BundlesSection.tsx:72
 #: src/bundles/BundlesSection.tsx:83
 msgid "Bundles"
@@ -3056,7 +3061,7 @@ msgstr "config.json, as the mod ships it"
 msgid "Check launchers…"
 msgstr "Check launchers…"
 
-#: src/settings/sections/DataHistory.tsx:43
+#: src/settings/sections/DataHistory.tsx:47
 msgid "Could not trim history"
 msgstr "Could not trim history"
 
@@ -4192,7 +4197,7 @@ msgid "Start minimised to tray"
 msgstr "Start minimised to tray"
 
 #. placeholder {0}: usage.events
-#: src/settings/sections/DataHistory.tsx:45
+#: src/settings/sections/DataHistory.tsx:49
 msgid "{0, plural, one {# change} other {# changes}}"
 msgstr "{0, plural, one {# change} other {# changes}}"
 
@@ -4705,7 +4710,7 @@ msgstr "Offer to install new Nexus archives from your Downloads folder"
 
 #. placeholder {0}: res.removed
 #. placeholder {1}: formatBytes(res.freedBytes)
-#: src/settings/sections/DataBackups.tsx:90
+#: src/settings/sections/DataBackups.tsx:93
 msgid "{0, plural, one {Removed # backup} other {Removed # backups}}, freed {1}"
 msgstr "{0, plural, one {Removed # backup} other {Removed # backups}}, freed {1}"
 
@@ -5169,6 +5174,10 @@ msgstr "{who} all load {target}.{winner}"
 msgid "Start the game with this profile, then measure here while you play."
 msgstr "Start the game with this profile, then measure here while you play."
 
+#: src/settings/sections/DataBackups.tsx:92
+msgid "No backups to remove"
+msgstr "No backups to remove"
+
 #: src/mods/storeLoad.ts:93
 msgid "Could not check the mods for problems"
 msgstr "Could not check the mods for problems"
@@ -5579,7 +5588,7 @@ msgstr "Each mod's Entry method, run one after another"
 msgid "Could not roll back updates"
 msgstr "Could not roll back updates"
 
-#: src/settings/sections/DataBackups.tsx:104
+#: src/settings/sections/DataBackups.tsx:107
 msgid "Backups to keep per save"
 msgstr "Backups to keep per save"
 
@@ -6731,7 +6740,7 @@ msgstr "Arguments"
 msgid "Edit as JSON"
 msgstr "Edit as JSON"
 
-#: src/settings/sections/DataBackups.tsx:103
+#: src/settings/sections/DataBackups.tsx:106
 msgid "Keep the newest backups of each save and delete the rest. Pinned backups are never removed."
 msgstr "Keep the newest backups of each save and delete the rest. Pinned backups are never removed."
 
@@ -7110,7 +7119,7 @@ msgstr "Damaged"
 msgid "Restore the last window bounds on startup"
 msgstr "Restore the last window bounds on startup"
 
-#: src/settings/sections/DataBackups.tsx:102
+#: src/settings/sections/DataBackups.tsx:105
 msgid "Trim save backups"
 msgstr "Trim save backups"
 
@@ -7242,7 +7251,7 @@ msgstr "faster"
 msgid "Copy report"
 msgstr "Copy report"
 
-#: src/settings/sections/DataHistory.tsx:57
+#: src/settings/sections/DataHistory.tsx:61
 msgid "Changes to keep"
 msgstr "Changes to keep"
 
@@ -7353,8 +7362,8 @@ msgid "Preview link…"
 msgstr "Preview link…"
 
 #. placeholder {0}: usage.profileName
-#. placeholder {1}: formatBytes(Math.max(0, sizeOf(usage) - sizeOf(next)))
-#: src/settings/sections/DataHistory.tsx:40
+#. placeholder {1}: formatBytes(freed)
+#: src/settings/sections/DataHistory.tsx:43
 msgid "Trimmed {0}'s history, freed {1}"
 msgstr "Trimmed {0}'s history, freed {1}"
 
@@ -8651,7 +8660,7 @@ msgstr "Installed: Mortar {0}"
 msgid "Show in Console"
 msgstr "Show in Console"
 
-#: src/settings/sections/DataHistory.tsx:56
+#: src/settings/sections/DataHistory.tsx:60
 msgid "Older changes are dropped and can no longer be undone."
 msgstr "Older changes are dropped and can no longer be undone."
 
@@ -9460,7 +9469,7 @@ msgid "Test launch"
 msgstr "Test launch"
 
 #. placeholder {0}: usage.profileName
-#: src/settings/sections/DataHistory.tsx:48
+#: src/settings/sections/DataHistory.tsx:52
 msgid "Profile history: {0}"
 msgstr "Profile history: {0}"
 
