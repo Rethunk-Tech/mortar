@@ -165,7 +165,7 @@ export function Downloads() {
           prefKey="downloadFolder"
           extra={
             <Button variant="outlined" onClick={chooseFolder} sx={{ whiteSpace: 'nowrap' }}>
-              {t`Choose…`}
+              {t`Change folder…`}
             </Button>
           }
         />

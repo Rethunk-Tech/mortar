@@ -187,7 +187,7 @@ function GameFolder({
               onClick={() => change(ChooseGameFolder(GAME))}
               sx={nowrap}
             >
-              {t`Browse…`}
+              {t`Change folder…`}
             </Button>
             {override ? (
               <Button
@@ -398,7 +398,7 @@ function BackupsPage() {
         game={GAME}
         extra={
           <Button variant="outlined" onClick={chooseBackupLocation} sx={nowrap}>
-            {t`Choose…`}
+            {t`Change folder…`}
           </Button>
         }
       />
