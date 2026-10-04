@@ -91,6 +91,7 @@ function ProfileCards({
       ))}
       {more > 0 ? (
         <ButtonBase
+          aria-label={t`Open ${more} more profiles`}
           onClick={openGame}
           sx={{
             flexShrink: 0,
@@ -123,9 +124,11 @@ function ProfileCard({
   onOpen: (ev: MouseEvent) => void
 }) {
   const counts = useBadges((s) => s.byProfile[profile.id])
+  const { t } = useLingui()
   return (
     <ButtonBase
       component="div"
+      aria-label={t`Open ${profile.name}`}
       onClick={onOpen}
       sx={{
         display: 'flex',

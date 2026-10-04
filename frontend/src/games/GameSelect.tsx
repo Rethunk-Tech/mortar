@@ -22,7 +22,8 @@ import { playDirect } from '../launch/directPref.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { type GameId, isGameId, openSettings, useNav } from '../nav/store.ts'
-import { reportError } from '../toasts/report.ts'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { errorMessage, reportError } from '../toasts/report.ts'
 import { gameArt } from './art.ts'
 import { ProfileCards } from './ProfileCards.tsx'
 import { type GameStatus, loaderCaption, loadGameStatus } from './status.ts'
@@ -267,12 +268,14 @@ export function GameSelect() {
   const { t } = useLingui()
   const [status, setStatus] = useState<GameStatus | null>(null)
   const [states, setStates] = useState<Record<string, GameState>>({})
+  const [loadError, setLoadError] = useState('')
   const loaderStatus = useLoader((s) => s.status)
   const checkLoader = useLoader((s) => s.check)
   useEffect(() => {
     checkLoader('stardew')
   }, [checkLoader])
   const refresh = useCallback(() => {
+    setLoadError('')
     Promise.all([loadGameStatus(), Get()])
       .then(async ([s, settings]) => {
         const entries = await Promise.all(
@@ -300,12 +303,25 @@ export function GameSelect() {
         setStatus(s)
         setStates(Object.fromEntries(entries))
       })
-      .catch((err: unknown) => fail(t`Could not read your games`, err))
+      .catch((err: unknown) => {
+        fail(t`Could not read your games`, err)
+        setLoadError(errorMessage(err))
+      })
   }, [t])
   useEffect(refresh, [refresh])
   useRefreshOnFocus(refresh)
+  if (loadError !== '') {
+    return (
+      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+        <Typography role="alert">{loadError}</Typography>
+        <Button variant="contained" onClick={refresh}>
+          {t`Retry`}
+        </Button>
+      </Box>
+    )
+  }
   if (!status) {
-    return null
+    return <LoadingRow>{t`Loading…`}</LoadingRow>
   }
   const noteFor = (g: Game) => {
     const st = states[g.id]
@@ -357,7 +373,7 @@ export function GameSelect() {
             {t`No supported game was found in your launchers.`}
           </Typography>
           <Link component="button" onClick={() => openSettings('launchers')} sx={{ fontSize: 14 }}>
-            {t`Launchers…`}
+            {t`Launchers`}
           </Link>
         </Box>
       )}
