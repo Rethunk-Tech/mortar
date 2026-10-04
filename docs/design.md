@@ -27,10 +27,10 @@ Remaining ([architecture.md](architecture.md#release)):
 
 ## Later
 
-- **UI translations** beyond English: the Lingui machinery and extracted catalogs exist; needs chosen languages and translators. Parked 2026-10-02 (not v1).
-- **Steam Deck / gamepad mode** (larger targets, gamepad focus navigation, Game Mode): parked 2026-10-02 (not v1).
-- **macOS build**: Stardew runs on macOS, but Mortar has no macOS CI or test machine. Parked 2026-10-02 (not v1).
-- **Scheduled save backups** (daily or every N hours while Mortar runs, keep the last N per save, never while the game writes), beside today's before-Play backups: parked 2026-10-03.
+- **UI translations** beyond English, as Stardrop (17+), MO2 and r2modman ship: every string already goes through Lingui and the catalogs are extracted; needs chosen languages and translators. Parked 2026-10-02 (not v1).
+- **Steam Deck / gamepad mode** (larger targets, gamepad focus navigation, Game Mode play: a `--play` launch from a Steam shortcut starts Mortar minimised or headless, shows only a small controller-friendly prompt when Play is blocked, and exits when the game closes so Steam tracks playtime): parked 2026-10-02 (not v1).
+- **macOS build**: Stardew runs on macOS, and Stardrop ships for x64 and arm64, but Mortar has no macOS CI or test machine; it needs an Apple developer account for signing and notarization, Mac Steam paths and nxm registration, and a Mac to test on. Parked 2026-10-02 (not v1).
+- **Scheduled save backups** (daily or every N hours while Mortar runs, keep the last N per save, never while the game writes), beside the before-Play backups: parked 2026-10-03.
 - **Accessibility pass** (keyboard-only navigation of every screen, focus order, screen-reader labels on icon buttons, reduced motion everywhere): parked 2026-10-03.
 - **Offline mode banner** (clear banner when Nexus/GitHub are unreachable, cached data with "as of" times, network actions disabled with a reason): parked 2026-10-03.
 
@@ -41,18 +41,14 @@ Not in the first release; re-weigh only when asked:
 - Translucent window, desktop showing through; on Windows it needs Acrylic measured with the frameless window. The see-through window looked wrong, so v1 is solid. The `Rethunk-AI/wails` fork's GTK4 `setTransparent()` fix (upstream wailsapp/wails#6197) makes it possible: stock GTK4 leaves `setTransparent()` empty (`wailsapp/wails` `v3/pkg/application/linux_cgo.go:1418`), and the fix registers a display-wide CSS provider that clears the window background except the title bar. Any fading or `backdrop-filter` full-window layer turns WebKitGTK's translucent window opaque; a static tint does not. Stacked alphas compound toward opaque, so images and overlays each need their own alpha. Frosted glass needs `ext-background-effect-v1`, below.
 - Frosted glass on Linux, built when the desktop runs GNOME 51. CSS cannot do it: `backdrop-filter` sees only the webview's pixels, and a full-window filter layer turns WebKitGTK's translucent window opaque. The compositor blurs behind the window through the Wayland protocol `ext-background-effect-v1` (Mutter from GNOME 51, KWin from Plasma 6.7; GTK 4.23.3 speaks it). Shape: in the `Rethunk-AI/wails` fork, beside `setTransparent()` in `v3/pkg/application/linux_cgo.go`, bind `ext_background_effect_manager_v1` on Wayland, and when it advertises blur, set the toplevel `wl_surface`'s blur region to the whole window, updated on resize; a no-op elsewhere, and only while the translucent window is on. Accept when the desktop behind the window shows blurred on GNOME 51 and is unchanged on GNOME 50. Offer it upstream with the GTK4 transparency PR. Windows already blurs through Acrylic.
 - A hosted share service with short codes and share versioning (running costs).
-- In-app mod search and browsing: Mortar links out to Nexus.
 - ModDrop as a source (no documented download API); the Xbox app version (WindowsApps folders are locked down).
 - Windows code signing.
-- macOS, as Stardrop ships for x64 and arm64: needs an Apple developer account for signing and notarization, Mac Steam paths and nxm registration, and a Mac to test on.
-- More interface languages than English, as Stardrop (17+), MO2 and r2modman ship; every string already goes through Lingui (English only for v1).
 - Portable mode: the data folder beside the executable, switched by a marker file (Move data folder exists).
 - Previewing an archive's file tree before installing it (the folder picker shows it only when no manifest is found).
 - Bottles as a launcher (Linux): games there are Windows builds in a Wine prefix, so it needs SMAPI's Windows installer run inside the bottle (`bottles-cli run -b <bottle> -e <installer>`) and launches through `bottles-cli run` with `--mods-path`; the Linux SMAPI install would break such a copy. Detection is simple: bottles under `~/.local/share/bottles/bottles` and `~/.var/app/com.usebottles.bottles/data/bottles/bottles`, each searched for `drive_c/Program Files (x86)/Steam` and GOG folders.
-- Steam Deck Game Mode play: a `--play` launch from a Steam shortcut starts Mortar minimised or headless, shows only a small controller-friendly prompt when Play is blocked, and exits when the game closes so Steam tracks playtime.
 - A profile sync folder (Syncthing, Dropbox, a NAS) holding each profile's `.mortar` state, so another machine is offered the changes, with conflict detection when both sides edited; mod files still come from their sources.
 - Needs Nexus's approval through app registration first (below), since it starts downloads outside Nexus's own Mod Manager Download button: an "Add to Mortar" button on Nexus listing tiles.
 - Profile templates: a new profile started from a bundle plus game settings and launch options.
 - Per-profile save isolation.
-- Settings considered and not taken (2026-10-02): new profiles starting as a copy of the open profile or from a bundle; scheduled save backups on a timer while the game runs; an offline mode that never contacts the network.
+- Settings considered and not taken (2026-10-02): new profiles starting as a copy of the open profile or from a bundle; an offline mode that never contacts the network.
 - Registering Mortar with Nexus (SSO slug; ask then about OAuth, which Vortex uses via `nxm://oauth/callback`, and Collections).

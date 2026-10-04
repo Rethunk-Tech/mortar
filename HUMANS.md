@@ -64,7 +64,7 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `backups list`, `backups create <save>`, `backups restore <name> [save...]` | list, pin a Manual backup of one save, or restore |
 | `queue`, `doctor`, `version`, `completion bash\|zsh\|fish` | the download queue, the environment, shell completion |
 
-`--json` writes failures to stderr as `{"error":"...","code":...}`. Exit code 2 means usage or confirmation was required, 3 means Mortar was not running or `play --check` found issues, and 1 means another failure. `mortar doctor` falls back to read-only offline checks when Mortar is not running: it exits 0 when those checks find nothing, 1 when they find problems, and 3 when the offline check is healthy.
+`--json` writes failures to stderr as `{"error":"...","code":...}`. Exit code 2 means usage or confirmation was required, 3 means Mortar was not running or `play --check` found issues, and 1 means another failure. `mortar doctor` falls back to read-only offline checks when Mortar is not running: it exits 1 when those checks find problems and 3 when they find none, never 0.
 
 ```sh
 mortar conflicts stardew "Profile 2"
@@ -78,7 +78,7 @@ source <(mortar completion bash)
 bun run gate    # runs the steps in package.json's gate script; stops at the first failure
 ```
 
-The pre-push hook runs the same command. CI repeats it in the release workflow, which runs only on `v*` tags or by manual dispatch.
+The pre-push hook runs the same command. Where CI runs it: [AGENTS.md](AGENTS.md#verify).
 
 ## Release
 
@@ -93,7 +93,7 @@ MORTAR_UPDATE_KEY=/path/to/updater.key wails3 task release:manifest VERSION=1.2.
 
 `linux:build:arm64` cross-compiles on an x86_64 machine with no emulator registered: it needs `zig`, `docker` (to download the arm64 Ubuntu packages it links against, extracted under `tmp/`), `nfpm` and `qemu-aarch64`, which checks that every shared library resolves. The arm64 AppImage is built only in CI.
 
-`release:manifest` refuses a `VERSION` other than `build/config.yml`'s `info.version`, copies `bin/mortar.exe` to `bin/mortar-windows-amd64.exe`, and writes `bin/manifest.json` signed with the private key `MORTAR_UPDATE_KEY` names, then verifies it against `build/updater/public.key`. The app reads the manifest from the latest release, or the latest pre-release when Settings › Updates includes beta releases; packaged Linux installs leave updating to the package manager. Where the key lives: [docs/architecture.md](docs/architecture.md#release).
+`release:manifest` refuses a `VERSION` other than `build/config.yml`'s `info.version`, needs `bin/mortar-windows-amd64.exe` to exist (copy `bin/mortar.exe` to it first; `release.yml` does that copy), and writes `bin/manifest.json` signed with the private key `MORTAR_UPDATE_KEY` names, then verifies it against `build/updater/public.key`. The app reads the manifest from the latest release, or the latest pre-release when Settings › Updates includes beta releases; packaged Linux installs leave updating to the package manager. Where the key lives: [docs/architecture.md](docs/architecture.md#release).
 
 ### Cutting a release in CI
 

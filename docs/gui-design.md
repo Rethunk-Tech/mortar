@@ -36,7 +36,6 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
   - When off, there is no tray icon and close quits.
   - **Start minimised** hides the window at launch (the tray Show brings it up).
   - **Remember window** restores the last size and position, clamped to a visible screen.
-- **Include beta releases** (Settings › Updates, default off): when on, Check for updates may offer Mortar nightlies published as GitHub prereleases with a signed manifest; when off, only the latest stable release is considered.
   - **Image** (the default): the chosen image, else the system Fedora wallpaper, else the bundled copy. Shows a preview with **Choose image…** (PNG, JPEG or WebP) and **Reset to default**.
   - **Desktop:** the user's own desktop wallpaper, read at runtime (GNOME `org.gnome.desktop.background` `picture-uri-dark` under the dark colour scheme, else `picture-uri`; Windows the `HKCU\Control Panel\Desktop` `Wallpaper` value, measured on Windows 11 26H2; a wallpaper changed while Mortar is open shows at the next mode change), falling back to Image's choice when it cannot be read.
   - **Solid:** no image, the plain base.
@@ -94,7 +93,7 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
     - each save in the Saves folder with its fit: "all mods present" or "has used N mods this profile lacks" with their names, from the save scan ([architecture.md](architecture.md#saves))
     - a mod can be dismissed for a save
     - Players pick their save inside the game; Play also warns from the newest save ([architecture.md](architecture.md#launch)).
-  - Tabs: **Mods** (default), **Problems** (a count chip when the open profile has any problems), **Load order**, **Saves**, **Notes**, **Console**, **Performance**, then 32px bordered icon buttons with tooltips at the right of the row: a **Tools** menu (Wrench; lists configured tools for one-click launch, **Add tool…** and **Manage tools** for edit and remove, with **Add tool…** and a line saying what tools are for when none exist; the editor uses the native executable picker and documents placeholders), **Share**, and the game settings icon at the end of the tab row.
+  - Tabs: **Browse**, **Mods** (default), **Problems** (a count chip when the open profile has any problems), **Load order**, **Saves**, **Notes**, **Console**, **Performance**, then 32px bordered icon buttons with tooltips at the right of the row: a **Tools** menu (Wrench; lists configured tools for one-click launch, **Add tool…** and **Manage tools** for edit and remove, with **Add tool…** and a line saying what tools are for when none exist; the editor uses the native executable picker and documents placeholders), **Share**, and the game settings icon at the end of the tab row.
 - **Launching** covers the whole window with the launch overlay, the title bar inert except its window controls:
   - a spinner, "Launching Stardew Valley", and SMAPI's first log lines as they arrive (started, mods loading, mods it will skip), with Open console and Hide, until the game is up or the launch fails
   - a launch where SMAPI exits without writing a log fails with its exit code
@@ -125,7 +124,7 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
   - Both views share one details sidebar for the selected mod.
   - A pinned mod carries a pin icon in the Version column and on its card.
   - Last-run error and warning badges appear in the list, the grid and the details sidebar.
-- **Group by:** a menu beside the view toggle (None, Status (default), Category, Source, Tag, Framework, Author), kept as `listGroupBy`.
+- **Group by:** a menu beside the view toggle (None, Status (default), Category, Source, Tag, Framework, Author, Group), kept as `listGroupBy`.
   - **Edit categories…** at the foot opens a dialog to add, rename, recolour (profile palette swatches) or delete custom categories stored per game under `<datadir>/categories/<game>.json`; deleting one moves its mods to Uncategorized.
   - Collapsible headers with counts appear in the list and the grid; collapsed groups are remembered per game.
   - An expanded category's cards keep a 6px gap and 4px padding above and below the card grid.
@@ -201,14 +200,18 @@ A full-height scrollable list of every problem for this profile, grouped under h
 - Settings (Content Patcher compatibility setting suggestions)
 - Cosmetic or harmless (never counts toward the tab's chip, the profile badge or the Mods-tab row)
 - Dismissed (collapsed by default; dismissed rows are muted and can be restored)
+- Compatibility (the profile's rows from SMAPI's compatibility list; never counted)
 - Slow startup (from the latest startup report: a mod adding 3 s or more, or a content pack adding 1 s or more, named with its framework; a framework that loads content packs, such as Content Patcher, is never a row itself since so many mods need it; never counted)
-- Cleanup (unused frameworks and conservatively detected unused tilesheet packs; never counted)
+- Redundant (mods replaced by an enabled replacement, packs every edit of which later packs overwrite, and C# mods doing the same job, where a smaller one may be "covered" by a larger; each same-job group is one row; counted among the profile's warnings, never toward the chip)
+- Cleanup (unused frameworks, conservatively detected unused tilesheet packs, and add-ons made for a recolour the profile does not have enabled; never counted)
+
+Conflicts between the same mods with the same winner and fix show as one row listing every asset.
 
 While the tab is open, the tab row holds an **Asset map** icon button and **Copy report**.
 
 - **Asset map** opens a dialog listing every game asset the profile's content packs change, filtered by one **Find an asset** field, each with **Changed by N mods** (warning-coloured, with a tooltip, when more than one mod changes it) and, opened, each mod's edit with the winner marked.
 - Warnings are amber tiles; information rows (including Cleanup) are neutral tiles with an info icon.
-- **Copy report** a plain-text count of problems by section, each row's sentence, each conflict's **Why?** keys, Cleanup, Dismissed, and the harmless count.
+- **Copy report** a plain-text count of problems by section, each row's sentence, each conflict's **Why?** keys, Dismissed, Cleanup, Redundant, Compatibility, and the harmless count.
 - Empty or still loading: the disabled tooltip is **No problems to copy.** **Add all** on missing requirements disables while the queue call is in flight.
 - **Dismiss all** on cosmetic overlaps asks first.
 
@@ -219,7 +222,7 @@ Each row shows the full wrapped text, severity icon, the Nexus author note when 
 - Fix buttons run in order of weight: the suggested fix first (a Content Patcher **Set … to …**, or **Make a pack win** when there is none) filled in the warning colour on real conflicts, then **Switch off** outlined, then **Dismiss** as a quiet text button last; harmless rows use outlined buttons throughout.
 - No fix button is blue.
 - Dismissed rows retain their normal actions, replace **Dismiss** with **Restore**, and are muted.
-- Cleanup rows read "<name>: Not needed by any enabled mod" or their specific reason (an empty name is **Unknown mod**, UniqueID in the tooltip), with **Remove**.
+- Cleanup rows read "<name>: Not needed by any enabled mod" or their specific reason (such as "Made for Earthy Recolour, which is not enabled") (an empty name is **Unknown mod**, UniqueID in the tooltip), with **Remove**.
 - Applying a Content Patcher **Set to** suggestion remembers that field value so the reverse hint stays hidden until the setting changes ([architecture.md](architecture.md#saves)).
 
 - Loading: the same "Checking the mods for problems…" line as the summary
@@ -281,8 +284,8 @@ A tab of its own, with a **Startup** / **In game** switch at the top; Startup is
 Startup:
 
 - Heading **Title screen after N s** for the chosen launch (a picker lists the last 10 when there is more than one), and **Measure next launch**, which also times every mod's Entry and samples the game on that launch. Once requested, the button gives way to an info banner above the heading, **The next launch will be measured**, saying what happens and where the results appear, with **Play now** (off while the game runs) and **Cancel**.
-- A phase bar with a legend: SMAPI loads mods, Mods start, Game content, First updates, Title intro.
-- A table of mods by total time (Total, Entry, Slowest event, Assets and packs); a framework's row expands into its content packs by time (25 shown, then a count). After a measured launch a **Sampled** column adds each mod's sampled time, which includes its patches on game code. Mods under 50 ms in both fold into one **N other mods** row, and **Game and SMAPI** holds the unattributed rest.
+- A phase bar with a legend: SMAPI loads mods, Mods start, Game content, First updates, Title intro; hovering a legend entry explains that phase.
+- A sortable table of mods (Mod, Total, Entry, Slowest event, Assets and packs), longest Total first by default. Each header explains itself on hover; clicking a column sorts it descending (Mod sorts A–Z) and a second click flips it. Clicking a mod's name shows it in Mods, and Mortar's bridge row carries a **Mortar** label; a framework's row expands into its content packs by time (25 shown, then a count). After a measured launch a **Sampled** column (also sortable) adds each mod's sampled time, which includes its patches on game code. Mods under 50 ms in both fold into one **N other mods** row, and **Game and SMAPI** holds the unattributed rest.
 - Empty: a timer icon, **No startup measured yet**, and copy that says to play the profile.
 
 In game: performance reports are saved per profile and can be compared from the tab. The comparison shows before/now average milliseconds, signed change and percentage, with new and gone mods called out.
@@ -376,7 +379,7 @@ Mortar's own setup finds launchers, not games, and opens until it is finished on
 - Expanded, a row lists every folder it was found in, or where Mortar looked when it was not, the folders the user added (each with a remove button), **Add folder…** (filled when not found, outlined when found; the folder is checked to be that launcher's) and **Rescan**.
 - When none of the launchers is found, the first row starts open.
 - Detection runs again when the window regains focus.
-- Below, a count ("3 of 5 launchers found", or a note that games can still be set up by folder) and **Continue**, always enabled, which leads to Game Select.
+- Below, a count ("3 of 6 launchers found", or a note that games can still be set up by folder) and **Continue**, always enabled, which leads to Game Select.
 - Settings › Launchers shows the same rows.
 
 Each game has its own setup, run when it is first opened from Game Select and the game is not set up (folder unknown, or no loader and no profile): "Set up <game>" with steps **Game folder**, the game's own loader step when it has one (SMAPI for Stardew Valley), and **First profile**.
@@ -423,7 +426,7 @@ Mortar's Settings holds only what is Mortar-wide, never one game's (the one exce
 - **Mods and profiles:** **Installing**: enable mods when installed, reuse FOMOD choices, confirm removals, modified outside Mortar (drift checks), badge checks for other profiles.
 - **Downloads:** **Nexus links**: **Handle "Mod Manager Download" links** (who owns them now in its tooltip; turning it on asks before taking them from another app), **Send other games' links to …** when a previous handler is recorded (default on), the browser extension connection, and **Default profile for Nexus links (Stardew Valley)** (**Last opened profile** when unset). **Downloading**: parallel downloads, auto-retry, pause while playing, verify MD5, and **Preferred download server** once Mortar has seen servers. **Files**: **Download folder** with **Choose…** (empty is the data folder's downloads directory) and keep download archives.
 - **Nexus account:** the personal API key, or once signed in a green alert with the account name, a Premium or Free chip and **Sign out** inside it (signing in the first time asks whether Mortar should handle `nxm://` links). **Tracking**: auto-track installed mods, **Untrack all…** (its description gives the tracked count for the last opened game) and **Untrack unused…** (confirm: Nexus has no undo). **Endorsements**: **Ask me to endorse mods I keep using** (on by default). **API requests**: "<n> requests left today · <n> this hour" from the last response, or that the counts appear after Mortar talks to Nexus, or that Nexus is throttling; free accounts get a note that each download needs one click on Nexus.
-- **Updates:** **Mortar**: the installed version with the check's state and **Check now**, then **Download and install** and **Restart now** as the update progresses (a development or packaged build says it does not check); **Include beta releases** (default off) offers Mortar nightlies from GitHub; **Install Mortar updates automatically** (on by default). **Mods**: **Check for mod updates when Mortar starts** (on by default), the background check interval, **Check only enabled mods** and **Include pre-release mod versions** (both off by default), then **Review mod updates** and **Open game settings** (for the mod loader) once a game has been opened.
+- **Updates:** **Mortar**: the installed version with the check's state and **Check now**, then **Download and install** and **Restart now** as the update progresses (a development or packaged build says it does not check); **Include beta releases** (default off) offers Mortar nightlies from GitHub; **Install Mortar updates automatically** (on by default). **Mods**: **Check for mod updates when Mortar starts** (on by default), how often the open profile is rechecked while Mortar runs (the background pass over every profile is fixed: 5 minutes after start, then every 4 hours), **Check only enabled mods** and **Include pre-release mod versions** (both off by default), then **Review mod updates** and **Open game settings** (for the mod loader) once a game has been opened.
 - **Notifications:** a matrix with one row per event (a download finishes, a download fails, the game crashes, mod updates are found) and two switch columns, **In Mortar** (toast) and **Desktop** (an OS notification with the app icon, sent whether or not the window is focused). **Mod updates**: the update digest (off, each, daily), which also paces the desktop notice for found updates.
 - **Storage:** **Location**: Mortar's data folder path with **Open folder** and **Move…**, which copies the folder to a chosen empty location with enough free space (refused while the game is running, if the target is inside the current folder, or if it is not empty), verifies the copy, records `data-location` at the default path, removes the old copy and restarts.
   - **Usage** is one tile, measured in the background ("Measuring…" with the bytes counted so far): the used total and, when measurable, the space saved by sharing files; a segmented bar (profiles, store, cache, save backups, trash, other) with an inline legend under it (dot, LABEL, size); then **Clean up…**, **Clear cache…** (confirm; problem scans rebuild on the next check) and **Deleted profiles…**.
@@ -459,7 +462,11 @@ Mortar's Settings holds only what is Mortar-wide, never one game's (the one exce
 
 The unpacked MV3 extension (`browser-extension/`) on `www.nexusmods.com`. Native-host requests: [architecture.md](architecture.md#nexus-mods).
 
-- **Popup:** label **Installed mods**, a select **Off** / **Highlight** (default) / **Hide**, stored in `chrome.storage.local` as `mode`. Status under it: **Mortar's browser helper is not installed**, **Mortar is not running or no profile is open**, or **Connected to Mortar · N mods in the open profile**.
-- **Listings, search, and collections:** in Highlight, tiles whose Nexus id is in the open profile get a gold outline and an **In profile** badge; Hide removes those tiles; Off draws none. Collection pages (`/games/<game>/collections/<slug>` with tiles linking to `/<game>/mods/<id>`) use the same marks.
+- **Popup:** label **On Nexus pages**, a select **Off (do not mark Nexus pages)** / **Highlight** (default) / **Hide mods already in Mortar**, stored in `chrome.storage.local` as `mode`. Status under it: **Mortar's browser helper is not installed**, **Open a profile in Mortar**, **Mortar could not read this profile**, **Mortar is running; this profile has no Nexus mods**, or **Connected to Mortar · N mods in the open profile**. Then **Open Mortar** and **Check now** buttons, and an **Updates** list (**Updates in \<profile\>** when known) linking each mod with its installed and latest version, or **No updates**, or **Mortar is not running**.
+- **Listings, search, and collections:** in Highlight, tiles whose Nexus id is in the open profile get a green outline and an **In profile** badge; Hide dims and desaturates those tiles in place, as **Gray out installed** does; Off draws none. Collection pages (`/games/<game>/collections/<slug>` with tiles linking to `/<game>/mods/<id>`) use the same marks.
+- **Listing filters:** a Mortar section at the top of Nexus's filter sidebar (`#filters-panel`, built from Nexus's own classes) with three rows that dim and desaturate tiles in place, so the listing keeps its length; hovering a dimmed tile brings it back up. All rows are saved per game in the extension's storage.
+  - **Gray out installed:** the tiles of mods in the profile last open for that game.
+  - **Gray out obsolete:** tiles whose title, or summary where the word speaks for the mod (its start, "This mod/file…", or a heading line), says obsolete, deprecated or depreciated: the same words and rule as the Problems check's author-marked mods (`authorStatusWord`, kept equal by a Go test). It needs no connection to Mortar.
+  - **Gray out broken:** mods SMAPI's compatibility list marks broken for the version last played ([architecture.md](architecture.md#nexus-mods)); it needs Mortar installed but not running.
 - **Mod page:** a panel under the title: **In \<profile\>: v\<version\>** or **Not in \<profile\>**, **Also in:** other profile names, **Nexus has a newer version** when the page version is newer, **Update available in N of your profiles** when the installed version in those profiles is older than the page's latest file (or Mortar's cached Nexus details mark an update), **Required by N mods in \<profile\>** (names on hover) when enabled mods in the active profile require it, **Pinned** / a skipped version or source when those are set on the entry, and **Open in Mortar** (`mortar://<game>/mod/<id>`). Off removes the panel. The panel is read-only.
 - **Files tab:** one badge per file that any of your (non-hidden) profiles has installed, listing those profile names (open profile first, highlighted).
