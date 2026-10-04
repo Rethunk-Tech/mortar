@@ -299,3 +299,49 @@ func TestRefreshDependenciesReadsOptionalFromStoreManifest(t *testing.T) {
 		t.Fatalf("Optional = %v, want [X.Opt]", opt)
 	}
 }
+
+func TestRestoreModsFolderUndoesTrash(t *testing.T) {
+	e := newEnv(t)
+	p, err := e.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, _ := e.profileDir("stardew", p.ID)
+	mod := filepath.Join(dir, "mods", "Loose")
+	if err := os.MkdirAll(mod, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(mod, "a.txt"), []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	token, err := e.trashModsFolder("stardew", p.ID, "Loose")
+	if err != nil || token == "" {
+		t.Fatalf("trash = %q, %v", token, err)
+	}
+	if _, err := os.Stat(mod); err == nil {
+		t.Fatal("folder still in mods")
+	}
+	if err := os.MkdirAll(mod, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.RestoreModsFolder("stardew", p.ID, token); err == nil {
+		t.Fatal("restore over a taken name accepted")
+	}
+	if err := os.RemoveAll(mod); err != nil {
+		t.Fatal(err)
+	}
+	e.Running = func(string, string) bool { return true }
+	if err := e.RestoreModsFolder("stardew", p.ID, token); err == nil {
+		t.Fatal("restore while running accepted")
+	}
+	e.Running = nil
+	if err := e.RestoreModsFolder("stardew", p.ID, "../x"); err == nil {
+		t.Fatal("bad token accepted")
+	}
+	if err := e.RestoreModsFolder("stardew", p.ID, token); err != nil {
+		t.Fatal(err)
+	}
+	if b, err := os.ReadFile(filepath.Join(mod, "a.txt")); err != nil || string(b) != "x" {
+		t.Fatalf("restored file = %q, %v", b, err)
+	}
+}

@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 
@@ -612,10 +613,60 @@ func (s *Store) adoptDriftFolder(game, id, folder string) (Profile, error) {
 	return res.Profile, nil
 }
 
-func (s *Store) trashModsFolder(game, id, folder string) error {
+// removedModsDir keeps folders taken out of a profile's mods/, apart from trashed profiles, which sit under
+// trash/<game>/<profile id>.
+func (s *Store) removedModsDir(game, id string) string {
+	trash := s.trash
+	if trash == "" {
+		trash = filepath.Join(filepath.Dir(s.root), "trash")
+	}
+	return filepath.Join(trash, game, "removed-mods", id)
+}
+
+// trashModsFolder moves an untracked mods folder aside and returns the token RestoreModsFolder takes.
+func (s *Store) trashModsFolder(game, id, folder string) (string, error) {
 	folder, err := safeFolder(folder)
 	if err != nil {
-		return err
+		return "", err
+	}
+	if err := s.unlocked(game, id); err != nil {
+		return "", err
+	}
+	dir, err := s.profileDir(game, id)
+	if err != nil {
+		return "", err
+	}
+	src := filepath.Join(dir, "mods", folder)
+	if !exists(src) {
+		src = filepath.Join(holdDir(dir), folder)
+	}
+	if !exists(src) {
+		return "", os.ErrNotExist
+	}
+	token := strconv.FormatInt(time.Now().UnixNano(), 10) + "/" + folder
+	dst := filepath.Join(s.removedModsDir(game, id), filepath.FromSlash(token))
+	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
+		return "", err
+	}
+	if err := fsx.Rename(src, dst); err != nil {
+		if err := datadir.CopyTree(src, dst); err != nil {
+			return "", err
+		}
+		if err := os.RemoveAll(src); err != nil {
+			return "", err
+		}
+	}
+	return token, s.RecordModsSnapshot(game, id)
+}
+
+// RestoreModsFolder moves a folder trashModsFolder set aside back into mods/.
+func (s *Store) RestoreModsFolder(game, id, token string) error {
+	stamp, folder, ok := strings.Cut(token, "/")
+	if _, err := strconv.ParseInt(stamp, 10, 64); !ok || err != nil {
+		return errors.New("invalid restore token")
+	}
+	if folder, err := safeFolder(folder); err != nil || folder != strings.TrimSpace(folder) {
+		return errors.New("invalid restore token")
 	}
 	if err := s.unlocked(game, id); err != nil {
 		return err
@@ -624,32 +675,23 @@ func (s *Store) trashModsFolder(game, id, folder string) error {
 	if err != nil {
 		return err
 	}
-	src := filepath.Join(dir, "mods", folder)
-	if !exists(src) {
-		src = filepath.Join(holdDir(dir), folder)
-	}
+	src := filepath.Join(s.removedModsDir(game, id), stamp, folder)
 	if !exists(src) {
 		return os.ErrNotExist
 	}
-	trash := s.trash
-	if trash == "" {
-		trash = filepath.Join(filepath.Dir(s.root), "trash")
-	}
-	dst := filepath.Join(trash, game, id, folder)
-	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
-		return err
-	}
+	dst := filepath.Join(dir, "mods", folder)
 	if exists(dst) {
-		if err := os.RemoveAll(dst); err != nil {
-			return err
-		}
+		return fmt.Errorf("mods already has a folder named %q", folder)
 	}
 	if err := fsx.Rename(src, dst); err != nil {
 		if err := datadir.CopyTree(src, dst); err != nil {
 			return err
 		}
-		return os.RemoveAll(src)
+		if err := os.RemoveAll(src); err != nil {
+			return err
+		}
 	}
+	_ = os.Remove(filepath.Dir(src))
 	return s.RecordModsSnapshot(game, id)
 }
 
@@ -696,6 +738,12 @@ func (s *Service) AdoptDriftFolder(game, id, folder string) (Profile, error) {
 	return s.store.adoptDriftFolder(game, id, folder)
 }
 
-func (s *Service) RemoveDriftFolder(game, id, folder string) error {
+// RemoveDriftFolder sets an untracked folder aside and returns the token RestoreDriftFolder takes to undo it.
+func (s *Service) RemoveDriftFolder(game, id, folder string) (string, error) {
 	return s.store.trashModsFolder(game, id, folder)
+}
+
+// RestoreDriftFolder puts a folder RemoveDriftFolder set aside back into mods/.
+func (s *Service) RestoreDriftFolder(game, id, token string) error {
+	return s.store.RestoreModsFolder(game, id, token)
 }
