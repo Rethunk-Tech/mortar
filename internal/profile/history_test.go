@@ -679,3 +679,25 @@ func TestAppendedEventsCarryTheirCounts(t *testing.T) {
 		t.Fatalf("second event counts = %+v", ev)
 	}
 }
+
+func TestPlainSnapshotIsReadAndGzipped(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, snapshotsDir), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	plain := filepath.Join(dir, snapshotsDir, "abcd.json")
+	if err := os.WriteFile(plain, []byte(`[{"key":"a"}]`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	entries, ok := readSnapshotFile(dir, "abcd")
+	if !ok || len(entries) != 1 || entries[0].Key != "a" {
+		t.Fatalf("entries = %v, %v", entries, ok)
+	}
+	if _, err := os.Stat(plain); !os.IsNotExist(err) {
+		t.Fatalf("plain snapshot still there: %v", err)
+	}
+	again, ok := readSnapshotFile(dir, "abcd")
+	if !ok || len(again) != 1 || again[0].Key != "a" {
+		t.Fatalf("gzipped read = %v, %v", again, ok)
+	}
+}

@@ -1,12 +1,14 @@
 package profile
 
 import (
+	"compress/gzip"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -740,14 +742,35 @@ func snapshotFilePath(dir, id string) (string, bool) {
 			return "", false
 		}
 	}
-	return filepath.Join(dir, snapshotsDir, id+".json"), true
+	return filepath.Join(dir, snapshotsDir, id+snapshotExt), true
 }
+
+// Snapshots are gzipped: a profile's entries compress about sevenfold, and a long history keeps hundreds of them.
+const snapshotExt = ".json.gz"
 
 func readSnapshotFile(dir, id string) ([]Entry, bool) {
 	path, ok := snapshotFilePath(dir, id)
 	if !ok {
 		return nil, false
 	}
+	f, err := fsx.Open(path)
+	if err != nil {
+		return migratePlainSnapshot(dir, id, strings.TrimSuffix(path, ".gz"))
+	}
+	defer func() { _ = f.Close() }()
+	zr, err := gzip.NewReader(f)
+	if err != nil {
+		return nil, false
+	}
+	var entries []Entry
+	if err := json.NewDecoder(zr).Decode(&entries); err != nil {
+		return nil, false
+	}
+	return entries, true
+}
+
+// migratePlainSnapshot reads an uncompressed snapshot and replaces it with the gzipped form.
+func migratePlainSnapshot(dir, id, path string) ([]Entry, bool) {
 	b, err := fsx.ReadFile(path)
 	if err != nil {
 		return nil, false
@@ -755,6 +778,9 @@ func readSnapshotFile(dir, id string) ([]Entry, bool) {
 	var entries []Entry
 	if err := json.Unmarshal(b, &entries); err != nil {
 		return nil, false
+	}
+	if writeSnapshotFile(dir, id, entries) == nil {
+		_ = os.Remove(path)
 	}
 	return entries, true
 }
@@ -770,7 +796,13 @@ func writeSnapshotFile(dir, id string, entries []Entry) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
-	return datadir.WriteJSON(path, entries)
+	return datadir.WriteStream(path, 0o600, func(w io.Writer) error {
+		zw := gzip.NewWriter(w)
+		if err := json.NewEncoder(zw).Encode(entries); err != nil {
+			return err
+		}
+		return zw.Close()
+	})
 }
 
 func pruneSnapshotFiles(dir string, referenced map[string]struct{}) error {
@@ -785,7 +817,7 @@ func pruneSnapshotFiles(dir string, referenced map[string]struct{}) error {
 		if ent.IsDir() {
 			continue
 		}
-		name := strings.TrimSuffix(ent.Name(), ".json")
+		name := strings.TrimSuffix(strings.TrimSuffix(ent.Name(), ".gz"), ".json")
 		if _, ok := referenced[name]; ok {
 			continue
 		}
