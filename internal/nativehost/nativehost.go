@@ -21,6 +21,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/controlwire"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexussvc"
 	"github.com/Rethunk-AI/mortar/internal/settings"
@@ -121,18 +122,16 @@ type diskEntry struct {
 	Mods []diskMod `json:"mods"`
 }
 
-func foldID(id string) string { return strings.ToLower(strings.TrimSpace(id)) }
-
 func requiresID(m diskMod, target string) bool {
 	if strings.EqualFold(strings.TrimSpace(m.ContentPackFor), target) {
 		return true
 	}
 	opt := map[string]bool{}
 	for _, id := range m.Optional {
-		opt[foldID(id)] = true
+		opt[manifest.FoldID(id)] = true
 	}
 	for _, id := range m.Needs {
-		if strings.EqualFold(id, target) && !opt[foldID(id)] {
+		if strings.EqualFold(id, target) && !opt[manifest.FoldID(id)] {
 			return true
 		}
 	}
@@ -149,7 +148,7 @@ func requiredByMods(entries []diskEntry, targets []string) ([]string, []string) 
 	offOf := func(disabled []string) map[string]bool {
 		m := map[string]bool{}
 		for _, id := range disabled {
-			m[foldID(id)] = true
+			m[manifest.FoldID(id)] = true
 		}
 		return m
 	}
@@ -157,7 +156,7 @@ func requiredByMods(entries []diskEntry, targets []string) ([]string, []string) 
 	for _, e := range entries {
 		off := offOf(e.Disabled)
 		for _, m := range e.Mods {
-			id := foldID(m.UniqueID)
+			id := manifest.FoldID(m.UniqueID)
 			if id == "" || off[id] || seen[id] {
 				continue
 			}
