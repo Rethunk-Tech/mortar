@@ -91,6 +91,7 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
                 'cosmeticConflicts',
                 'conflictScanDepth',
                 'watchDownloads',
+                'offerNewDownloads',
                 'oldFilesOnUpdate',
                 'showDotHiddenMods',
               ]}

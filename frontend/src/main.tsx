@@ -6,6 +6,7 @@ import ReactDOM from 'react-dom/client'
 import { Get } from '../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { App } from './App.tsx'
 import { DownloadsAsk } from './downloads/DownloadsAsk.tsx'
+import { initNewDownloads } from './downloads/newDownloads.ts'
 import { activateLanguage, i18n } from './i18n/index.ts'
 import { initInstallAsks } from './install/store.ts'
 import { IncomingPrompt } from './lan/IncomingPrompt.tsx'
@@ -44,6 +45,7 @@ initSettings().catch(reportUnexpected)
 initInstallAsks()
 initMortarUpdateBackground()
 initUpdateDigestToast()
+initNewDownloads()
 initNexus().catch(reportUnexpected)
 initNexusSeen().catch(reportUnexpected)
 initLaunch()

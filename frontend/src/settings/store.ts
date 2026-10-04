@@ -77,6 +77,7 @@ const defaults: Settings = {
       runsKept: 20,
       consoleLogCap: 20_000,
       watchDownloads: true,
+      offerNewDownloads: true,
       nxmDefaultProfile: '',
       cosmeticConflicts: 'collapsed',
       enableRequirements: 'always',

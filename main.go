@@ -30,6 +30,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
 	"github.com/Rethunk-AI/mortar/internal/desktopnotify"
 	"github.com/Rethunk-AI/mortar/internal/dlwatch"
+	"github.com/Rethunk-AI/mortar/internal/folderwatch"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/github"
@@ -108,6 +109,9 @@ func registerEvents() {
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
 	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
 	application.RegisterEvent[dlwatch.Arrival](dlwatch.ArrivedEvent)
+	application.RegisterEvent[string](folderwatch.ModsFolderEvent)
+	application.RegisterEvent[string](folderwatch.ExtraFolderEvent)
+	application.RegisterEvent[string](folderwatch.DownloadsEvent)
 	application.RegisterEvent[sharesvc.Arrival](sharesvc.ArrivedEvent)
 	application.RegisterEvent[lan.Arrival](lan.ArrivedEvent)
 	application.RegisterEvent[lan.TransferProgress](lan.TransferProgressEvent)
@@ -585,12 +589,10 @@ func run() error {
 	})
 
 	archivesSvc := archivesvc.NewService(archivesvc.Deps{
-		Dir: func() string {
-			if d := store.Get().ArchiveDir(); filepath.IsAbs(d) {
-				return d
-			}
-			return filepath.Join(dataDir, "downloads")
-		},
+		Dir:      func() string { return archiveDir(store, dataDir) },
+		Offer:    func(g string) bool { return settings.ToggleOn(store.Get().GamePrefs(g).OfferNewDownloads) },
+		Seen:     func(g string) int64 { return store.Get().GamePrefs(g).LastDownloadsSeen },
+		SetSeen:  store.RecordDownloadsSeen,
 		Keys:     items.Keys,
 		Profiles: profiles.List,
 		NexusMods: func() map[int]bool {
@@ -635,6 +637,7 @@ func run() error {
 	go savesSvc.RunScheduledBackups(updateCtx)
 	queueCtx, stopQueue := context.WithCancel(context.Background())
 	launchsvc.SetLife(launches, queueCtx)
+	watchLibraryFolders(queueCtx, home, dataDir, store, emit)
 	waitQueue := queue.Run(queueCtx, queueSvc, nxmSvc.Assigned)
 	defer func() {
 		stopQueue()

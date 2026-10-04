@@ -18,7 +18,7 @@ export function usePreviewRows(open: boolean, fetchRows: () => Promise<GameModsP
   const reload = useCallback(() => {
     gen.current += 1
     const token = gen.current
-    setRows({ mods: [], loading: true, error: '' })
+    setRows((s) => ({ ...s, loading: true, error: '' }))
     fetchRows()
       .then(
         (p) => token === gen.current && setRows({ mods: p.mods ?? [], loading: false, error: '' }),

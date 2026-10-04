@@ -394,7 +394,7 @@ Each game has its own setup, run when it is first opened from Game Select and th
 
 ## Confirmations
 
-Short toasts, bottom right, stacked (at most three; the oldest goes first), each with a coloured edge by kind and a dismiss button, dismissing themselves after 5 s (10 s for errors and warnings), with hover pausing the countdown, and an action where one exists: "Link copied", "SpaceCore installed" and "Added X to Y" (Undo), "… rolled back" (Redo update), "Couldn't reach Nexus" (Retry now), "N downloads need your decision" (Show), Undo after a history revert, deleting a profile, removing a mod, dismissing a save warning, and the Mods selection bar's bulk Tag / Set category / Pin / Skip updates.
+Short toasts, bottom right, stacked (at most three; the oldest goes first), each with a coloured edge by kind and a dismiss button, dismissing themselves after 5 s (10 s for errors and warnings), with hover pausing the countdown, and an action where one exists: "Link copied", "SpaceCore installed" and "Added X to Y" (Undo), "… rolled back" (Redo update), "Couldn't reach Nexus" (Retry now), "N downloads need your decision" (Show), "Add X to Y?" (Add) for one new archive in the download folder and "N new archives in your downloads folder" (Review, opening **From the downloads folder**) for several (setting **Offer new downloads**; never while the game runs), Undo after a history revert, deleting a profile, removing a mod, dismissing a save warning, and the Mods selection bar's bulk Tag / Set category / Pin / Skip updates.
 
 - A toast about a mod shows its picture, from the same cache as the cards.
 - Toasts stay in the session's notification history (the sidebar bell, [Main screen](#main-screen); [architecture.md](architecture.md#stack)).

@@ -6,6 +6,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import { NewGameModsFolders } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { useFolderEvent } from '../shell/useFolderEvent.ts'
 import { ListCallout } from './ListCallout.tsx'
 import { MoveFoldersDialog } from './MoveFoldersDialog.tsx'
 import { useLocked } from './useLocked.ts'
@@ -26,6 +27,7 @@ export function NewFoldersCallout({ profile }: { profile: Profile }) {
     [game, profile.updated],
   )
   const { mods, reload, drop } = usePreviewRows(true, fetchRows)
+  useFolderEvent('library:mods-folder', game, reload)
   if (mods.length === 0) {
     return null
   }

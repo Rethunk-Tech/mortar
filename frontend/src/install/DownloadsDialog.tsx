@@ -12,7 +12,7 @@ import {
   ListItemText,
 } from '@mui/material'
 import { FolderOpen } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DownloadArchive } from '../../bindings/github.com/Rethunk-AI/mortar/internal/archivesvc/models.ts'
 import { DownloadsArchives } from '../../bindings/github.com/Rethunk-AI/mortar/internal/archivesvc/service.ts'
 import { formatBytes } from '../i18n/bytes.ts'
@@ -20,30 +20,44 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
-import { reportError } from '../toasts/report.ts'
+import { useFolderEvent } from '../shell/useFolderEvent.ts'
+import { errorMessage, reportError } from '../toasts/report.ts'
 import { ArchivePreview } from './ArchivePreview.tsx'
 import { listArchives, useDownloadsDialog } from './downloadsDialog.ts'
 import { useInstall } from './store.ts'
 
 function useArchives(open: boolean, game: string) {
-  const { t } = useLingui()
   const [archives, setArchives] = useState<DownloadArchive[] | null>(null)
+  const [error, setError] = useState('')
+  const gen = useRef(0)
+  const load = useCallback(() => {
+    gen.current += 1
+    const token = gen.current
+    setError('')
+    DownloadsArchives(game)
+      .then((found) => token === gen.current && setArchives(found ?? []))
+      .catch((e: unknown) => {
+        if (token === gen.current) {
+          setError(errorMessage(e))
+        }
+      })
+  }, [game])
   useEffect(() => {
     if (!(open && game)) {
       return
     }
-    let active = true
     setArchives(null)
-    DownloadsArchives(game)
-      .then((found) => active && setArchives(found ?? []))
-      .catch(reportError(t`Could not read the downloads folder`))
+    setError('')
+    load()
     return () => {
-      active = false
+      gen.current += 1
     }
-  }, [open, game, t])
-  return archives
+  }, [open, game, load])
+  useFolderEvent('library:downloads', game, () => open && load())
+  return { archives, error, reload: load }
 }
 
 function ArchiveRows({
@@ -57,10 +71,17 @@ function ArchiveRows({
 }) {
   const { t } = useLingui()
   return (
-    <List dense={true} sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+    <List
+      dense={true}
+      role="listbox"
+      aria-label={t`Archives`}
+      sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}
+    >
       {archives.map((a) => (
         <ListItemButton
           key={a.path}
+          role="option"
+          aria-selected={a.path === selected}
           selected={a.path === selected}
           onClick={() => onSelect(a.path)}
         >
@@ -78,6 +99,8 @@ function ArchiveRows({
 
 function Body({
   archives,
+  error,
+  onRetry,
   shown,
   query,
   onQuery,
@@ -85,6 +108,8 @@ function Body({
   onSelect,
 }: {
   archives: DownloadArchive[] | null
+  error: string
+  onRetry: () => void
   shown: DownloadArchive[]
   query: string
   onQuery: (query: string) => void
@@ -92,6 +117,9 @@ function Body({
   onSelect: (path: string) => void
 }) {
   const { t } = useLingui()
+  if (error !== '') {
+    return <ErrorRetry message={error} onRetry={onRetry} />
+  }
   if (archives === null) {
     return <LoadingRow>{t`Looking in the downloads folder…`}</LoadingRow>
   }
@@ -122,7 +150,7 @@ export function DownloadsDialog() {
   const close = () => useDownloadsDialog.getState().setOpen(false)
   const game = useProfiles((s) => s.game?.id ?? '')
   const hasProfile = useProfiles((s) => s.openId !== '')
-  const archives = useArchives(open, game)
+  const { archives, error, reload } = useArchives(open, game)
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState('')
   useEffect(() => {
@@ -140,6 +168,8 @@ export function DownloadsDialog() {
       >
         <Body
           archives={archives}
+          error={error}
+          onRetry={reload}
           shown={shown}
           query={query}
           onQuery={setQuery}

@@ -23,34 +23,37 @@ const (
 
 // GameSettings is the per-game preference block (Stardew Valley today).
 type GameSettings struct {
-	BackupBeforePlay            string         `json:"backupBeforePlay"`
-	LaunchBackupsKept           int            `json:"launchBackupsKept"`
-	SaveBackupHours             int            `json:"saveBackupHours"`
-	SaveBackupKeep              int            `json:"saveBackupKeep"`
-	UpdateModsBeforePlayDefault bool           `json:"updateModsBeforePlayDefault"`
-	RunsKept                    int            `json:"runsKept"`
-	ConsoleLogCap               int            `json:"consoleLogCap"`
-	NxmDefaultProfile           string         `json:"nxmDefaultProfile"`
-	CosmeticConflicts           string         `json:"cosmeticConflicts"`
-	EnableRequirements          string         `json:"enableRequirements"`
-	MissingRequirements         string         `json:"missingRequirements"`
-	SmapiBuilds                 string         `json:"smapiBuilds"`
-	SmapiPin                    string         `json:"smapiPin"`
-	DefaultLaunchMethod         string         `json:"defaultLaunchMethod"`
-	ShowSmapiConsole            *bool          `json:"showSmapiConsole"`
-	SkipPlayCheck               bool           `json:"skipPlayCheck"`
-	ConsoleLevel                string         `json:"consoleLevel"`
-	ConsoleTimestamps           *bool          `json:"consoleTimestamps"`
-	ConsoleFollow               *bool          `json:"consoleFollow"`
-	BackupLocation              string         `json:"backupLocation"`
-	ConflictScanDepth           string         `json:"conflictScanDepth"`
-	WatchDownloads              *bool          `json:"watchDownloads"`
-	LastSweepGameVersion        string         `json:"lastSweepGameVersion,omitempty"`
-	LastSweepSMAPIVersion       string         `json:"lastSweepSMAPIVersion,omitempty"`
-	LaunchPresets               []LaunchPreset `json:"launchPresets,omitempty"`
-	ExtraModsFolder             string         `json:"extraModsFolder,omitempty"`
-	ShowDotHiddenMods           bool           `json:"showDotHiddenMods,omitempty"`
-	OldFilesOnUpdate            string         `json:"oldFilesOnUpdate,omitempty"`
+	BackupBeforePlay            string `json:"backupBeforePlay"`
+	LaunchBackupsKept           int    `json:"launchBackupsKept"`
+	SaveBackupHours             int    `json:"saveBackupHours"`
+	SaveBackupKeep              int    `json:"saveBackupKeep"`
+	UpdateModsBeforePlayDefault bool   `json:"updateModsBeforePlayDefault"`
+	RunsKept                    int    `json:"runsKept"`
+	ConsoleLogCap               int    `json:"consoleLogCap"`
+	NxmDefaultProfile           string `json:"nxmDefaultProfile"`
+	CosmeticConflicts           string `json:"cosmeticConflicts"`
+	EnableRequirements          string `json:"enableRequirements"`
+	MissingRequirements         string `json:"missingRequirements"`
+	SmapiBuilds                 string `json:"smapiBuilds"`
+	SmapiPin                    string `json:"smapiPin"`
+	DefaultLaunchMethod         string `json:"defaultLaunchMethod"`
+	ShowSmapiConsole            *bool  `json:"showSmapiConsole"`
+	SkipPlayCheck               bool   `json:"skipPlayCheck"`
+	ConsoleLevel                string `json:"consoleLevel"`
+	ConsoleTimestamps           *bool  `json:"consoleTimestamps"`
+	ConsoleFollow               *bool  `json:"consoleFollow"`
+	BackupLocation              string `json:"backupLocation"`
+	ConflictScanDepth           string `json:"conflictScanDepth"`
+	WatchDownloads              *bool  `json:"watchDownloads"`
+	OfferNewDownloads           *bool  `json:"offerNewDownloads"`
+	// LastDownloadsSeen is the newest archive mtime (ms) in the download folder already offered or skipped.
+	LastDownloadsSeen     int64          `json:"lastDownloadsSeen,omitempty"`
+	LastSweepGameVersion  string         `json:"lastSweepGameVersion,omitempty"`
+	LastSweepSMAPIVersion string         `json:"lastSweepSMAPIVersion,omitempty"`
+	LaunchPresets         []LaunchPreset `json:"launchPresets,omitempty"`
+	ExtraModsFolder       string         `json:"extraModsFolder,omitempty"`
+	ShowDotHiddenMods     bool           `json:"showDotHiddenMods,omitempty"`
+	OldFilesOnUpdate      string         `json:"oldFilesOnUpdate,omitempty"`
 }
 
 // PrefSpec is one registry row, served to the CLI and frontend.
@@ -169,6 +172,11 @@ var registry = []pref{
 		gp.WatchDownloads = &on
 		putGame(s, g, gp)
 	}),
+	ptrPref("offerNewDownloads", ScopeGame, true, func(s Settings, g string) *bool { return s.GamePrefs(g).OfferNewDownloads }, func(s *Settings, g string, on bool) {
+		gp := s.GamePrefs(g)
+		gp.OfferNewDownloads = &on
+		putGame(s, g, gp)
+	}),
 	strPref("extraModsFolder", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).ExtraModsFolder }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.ExtraModsFolder = v; putGame(s, g, gp) }),
 	boolPref("showDotHiddenMods", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).ShowDotHiddenMods }, func(s *Settings, g string, on bool) {
 		gp := s.GamePrefs(g)
@@ -199,6 +207,7 @@ func defaultGameSettings() GameSettings {
 		BackupLocation:              "",
 		ConflictScanDepth:           ConflictScanFull,
 		WatchDownloads:              on(),
+		OfferNewDownloads:           on(),
 		OldFilesOnUpdate:            OldFilesAsk,
 	}
 }
@@ -291,6 +300,12 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.WatchDownloads != nil {
 		dst.WatchDownloads = src.WatchDownloads
 	}
+	if src.OfferNewDownloads != nil {
+		dst.OfferNewDownloads = src.OfferNewDownloads
+	}
+	if src.LastDownloadsSeen != 0 {
+		dst.LastDownloadsSeen = src.LastDownloadsSeen
+	}
 	if src.LastSweepGameVersion != "" {
 		dst.LastSweepGameVersion = src.LastSweepGameVersion
 	}
@@ -357,6 +372,9 @@ func normalizeGame(g *GameSettings) {
 	}
 	if g.WatchDownloads == nil {
 		g.WatchDownloads = d.WatchDownloads
+	}
+	if g.OfferNewDownloads == nil {
+		g.OfferNewDownloads = d.OfferNewDownloads
 	}
 	if !slices.Contains(oldFilesValues, g.OldFilesOnUpdate) {
 		g.OldFilesOnUpdate = d.OldFilesOnUpdate

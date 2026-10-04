@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Button, Typography } from '@mui/material'
+import { Button } from '@mui/material'
 import { FolderOpen } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { ExtraFolderMods } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
@@ -8,7 +8,9 @@ import { useInstall } from '../install/store.ts'
 import { useNav } from '../nav/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { useFolderEvent } from '../shell/useFolderEvent.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { partitionPreview, selectedFolders, toggled } from './libraryRows.ts'
 import { PreviewPick } from './PreviewPick.tsx'
@@ -28,6 +30,7 @@ export function ExtraFolderDialog({
   const { t } = useLingui()
   const fetchRows = useCallback(() => ExtraFolderMods(game), [game])
   const { mods, loading, error, reload } = usePreviewRows(open, fetchRows)
+  useFolderEvent('library:extra-folder', game, () => open && reload())
   const [off, setOff] = useState<ReadonlySet<string>>(new Set())
   useEffect(() => {
     if (open) {
@@ -51,14 +54,7 @@ export function ExtraFolderDialog({
       }}
     >
       {loading ? <LoadingRow>{t`Reading ${folder}…`}</LoadingRow> : null}
-      {error === '' ? null : (
-        <>
-          <Typography sx={{ color: 'error.main' }}>{error}</Typography>
-          <Button onClick={reload} sx={{ mt: 1 }}>
-            {t`Retry`}
-          </Button>
-        </>
-      )}
+      {error === '' ? null : <ErrorRetry message={error} onRetry={reload} />}
       {empty ? (
         <EmptyState
           compact={true}

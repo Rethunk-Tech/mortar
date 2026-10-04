@@ -7,6 +7,7 @@ require (
 	github.com/andygrunwald/vdf v1.1.0
 	github.com/bodgit/sevenzip v1.6.5
 	github.com/coder/websocket v1.8.15
+	github.com/fsnotify/fsnotify v1.10.1
 	github.com/go-ole/go-ole v1.3.0
 	github.com/hashicorp/mdns v1.0.7
 	github.com/nwaples/rardecode/v2 v2.4.1

@@ -371,6 +371,12 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
       label: i18n._(msg`Watch Downloads folder`),
       description: i18n._(msg`Offer to install new Nexus archives from your Downloads folder`),
     },
+    offerNewDownloads: {
+      label: i18n._(msg`Offer new downloads`),
+      description: i18n._(
+        msg`Show a notice when an archive lands in Mortar's download folder, with a button to add it`,
+      ),
+    },
   }
 }
 

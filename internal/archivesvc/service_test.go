@@ -77,3 +77,36 @@ func TestDownloadsArchivesMissingDirAndPreview(t *testing.T) {
 		t.Fatalf("preview %+v, %v", p, err)
 	}
 }
+
+func TestNewDownloadsOffersOnlyArrivalsAfterTheMark(t *testing.T) {
+	dir := t.TempDir()
+	old := writeZip(t, dir, "old.zip", `{"UniqueID":"A.Old"}`)
+	if err := os.Chtimes(old, time.Now().Add(-time.Hour), time.Now().Add(-time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	var seen int64
+	on := true
+	s := NewService(Deps{
+		Dir:     func() string { return dir },
+		Offer:   func(string) bool { return on },
+		Seen:    func(string) int64 { return seen },
+		SetSeen: func(_ string, m int64) error { seen = m; return nil },
+	})
+	if got, err := s.NewDownloads("stardew"); err != nil || len(got) != 0 || seen == 0 {
+		t.Fatalf("first call sets the mark only: %v %v %d", got, err, seen)
+	}
+	writeZip(t, dir, "new.zip", `{"UniqueID":"A.New"}`)
+	writeZip(t, dir, "0123456789abcdef.zip", `{"UniqueID":"A.Queued"}`)
+	got, err := s.NewDownloads("stardew")
+	if err != nil || len(got) != 1 || got[0].Name != "new.zip" {
+		t.Fatalf("got %+v %v", got, err)
+	}
+	if again, _ := s.NewDownloads("stardew"); len(again) != 0 {
+		t.Fatalf("offered twice: %+v", again)
+	}
+	on = false
+	writeZip(t, dir, "later.zip", `{"UniqueID":"A.Later"}`)
+	if got, _ := s.NewDownloads("stardew"); len(got) != 0 {
+		t.Fatalf("offer off: %+v", got)
+	}
+}
