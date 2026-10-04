@@ -862,7 +862,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			}
 			reqs = append(reqs, queue.Request{
 				Kind: queue.KindUpdate, Game: p.Game, Profile: id, Name: u.Name, Version: u.Version,
-				CurrentKey: u.Key, ModID: u.NexusID, Repo: u.GitHubRepo, Latest: true,
+				CurrentKey: u.Key, ModID: u.NexusID, Repo: u.GitHubRepo, FallbackRepo: u.GitHubFallback, Latest: true,
 			})
 		}
 		if _, err := s.Queue.Add(reqs); err != nil {

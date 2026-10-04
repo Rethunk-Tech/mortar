@@ -327,3 +327,34 @@ func TestAddKeepsGitHubTagAndAssetDistinct(t *testing.T) {
 		t.Fatalf("dedup = %+v, %v", again, err)
 	}
 }
+
+func TestAClickBoundUpdateUsesTheSameGitHubVersionInstead(t *testing.T) {
+	g := newGitHubFixture(t)
+	add := func(id, version string) Item {
+		it := &Item{ID: id, Kind: KindUpdate, ModID: 6304, Version: version, FallbackRepo: "me/mod", State: StateWaitingClick}
+		g.s.mu.Lock()
+		g.s.items = append(g.s.items, it)
+		g.s.mu.Unlock()
+		return *it
+	}
+	if !g.s.useGitHubFallback(t.Context(), add("hit", "2.0.0")) {
+		t.Fatal("v2.0.0 has one archive; the update should switch to GitHub")
+	}
+	if g.s.useGitHubFallback(t.Context(), add("miss", "3.0.0")) {
+		t.Fatal("no 3.0.0 release; the update should keep waiting for the click")
+	}
+	g.multi.Store(true)
+	g.s.d.GitHub.CacheDir = t.TempDir()
+	if g.s.useGitHubFallback(t.Context(), add("two", "2.0.0")) {
+		t.Fatal("two archives cannot be chosen for the user")
+	}
+	g.s.mu.Lock()
+	defer g.s.mu.Unlock()
+	hit, miss := g.s.find("hit"), g.s.find("miss")
+	if hit.Repo != "me/mod" || hit.Tag != "v2.0.0" || hit.Asset != "mod-2.0.0.zip" || hit.State != StateQueued {
+		t.Fatalf("switched item %+v", *hit)
+	}
+	if miss.Repo != "" || miss.State != StateWaitingClick || !miss.fallbackTried {
+		t.Fatalf("missed item %+v", *miss)
+	}
+}

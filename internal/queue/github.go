@@ -29,6 +29,38 @@ func (s *Service) release(ctx context.Context, it Item) (github.Release, []githu
 	return rel, assets, nil
 }
 
+// useGitHubFallback turns a Nexus item that is about to wait for a click into a download of the same version from
+// the mod's GitHub releases, when it names a repo and that release has exactly one archive. It reports whether the
+// item was switched; it asks at most once per item, so a missing release costs one lookup.
+func (s *Service) useGitHubFallback(ctx context.Context, it Item) bool {
+	if it.FallbackRepo == "" || it.Version == "" || it.Repo != "" {
+		return false
+	}
+	s.mu.Lock()
+	cur := s.find(it.ID)
+	if cur == nil || cur.fallbackTried {
+		s.mu.Unlock()
+		return false
+	}
+	cur.fallbackTried = true
+	s.mu.Unlock()
+	rel, assets, err := s.release(ctx, Item{Repo: it.FallbackRepo, Version: it.Version})
+	if err != nil || len(assets) != 1 {
+		return false
+	}
+	s.mu.Lock()
+	cur = s.find(it.ID)
+	if cur == nil || cur.State != StateWaitingClick {
+		s.mu.Unlock()
+		return false
+	}
+	cur.Repo, cur.Tag, cur.Asset, cur.FileName = it.FallbackRepo, rel.Tag, assets[0].Name, assets[0].Name
+	cur.State, cur.key, cur.expires = StateQueued, "", 0
+	s.mu.Unlock()
+	s.publish(true)
+	return true
+}
+
 // resolveGitHub fixes the item's release and asset, or hands the choice to the user when the release has several
 // archives.
 func (s *Service) resolveGitHub(ctx context.Context, it Item) error {

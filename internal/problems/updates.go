@@ -48,8 +48,11 @@ type Update struct {
 	URL        string `json:"url"`
 	NexusID    int    `json:"nexusId"`
 	GitHubRepo string `json:"githubRepo"`
-	Unofficial bool   `json:"unofficial"`
-	Source     string `json:"source"`
+	// GitHubFallback is the mod's own GitHub repo when the update points elsewhere (usually Nexus); the queue uses
+	// it only when Nexus would need a click and the same version is released there.
+	GitHubFallback string `json:"githubFallback,omitempty"`
+	Unofficial     bool   `json:"unofficial"`
+	Source         string `json:"source"`
 }
 
 // UpdatesResult lists a profile's updates. Unknown is set when SMAPI's API could not be reached for some mod,
@@ -113,7 +116,8 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
 				Installed: x.Version, Version: res.Suggested.Version, URL: res.Suggested.URL,
 				NexusID: nexusUpdate(x.UpdateKeys, res.Suggested.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Suggested.URL),
-				Source: updateSource(*res.Suggested, nexusUpdate(x.UpdateKeys, res.Suggested.URL), githubUpdate(x.UpdateKeys, res.Suggested.URL)),
+				GitHubFallback: githubFallback(x.UpdateKeys, res.Suggested.URL),
+				Source:         updateSource(*res.Suggested, nexusUpdate(x.UpdateKeys, res.Suggested.URL), githubUpdate(x.UpdateKeys, res.Suggested.URL)),
 			})
 			if res.Unofficial != nil {
 				r.Updates = append(r.Updates, Update{
@@ -315,6 +319,19 @@ func nexusUpdate(keys []string, url string) int {
 
 func githubUpdate(keys []string, url string) string {
 	if !strings.HasPrefix(strings.ToLower(url), "https://github.com/") {
+		return ""
+	}
+	for _, k := range keys {
+		if repo, ok := githubKey(k); ok {
+			return repo
+		}
+	}
+	return ""
+}
+
+// githubFallback is the repo of the mod's GitHub update key when the suggested download is not on GitHub.
+func githubFallback(keys []string, url string) string {
+	if githubUpdate(keys, url) != "" {
 		return ""
 	}
 	for _, k := range keys {

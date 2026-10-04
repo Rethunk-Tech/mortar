@@ -147,3 +147,16 @@ func TestCheckUpdatesUsesOneLiveCallWhenAvailable(t *testing.T) {
 		t.Fatalf("calls %d updates %+v", calls, got.Updates)
 	}
 }
+
+func TestGitHubFallbackOnlyWhenTheUpdateIsNotOnGitHub(t *testing.T) {
+	keys := []string{"Nexus:6304", "GitHub:Esca-MMC/DestroyableBushes"}
+	if got := githubFallback(keys, "https://www.nexusmods.com/stardewvalley/mods/6304"); got != "Esca-MMC/DestroyableBushes" {
+		t.Fatalf("fallback %q", got)
+	}
+	if got := githubFallback(keys, "https://github.com/Esca-MMC/DestroyableBushes/releases"); got != "" {
+		t.Fatalf("a GitHub update needs no fallback, got %q", got)
+	}
+	if got := githubFallback([]string{"Nexus:6304"}, "https://www.nexusmods.com/stardewvalley/mods/6304"); got != "" {
+		t.Fatalf("no GitHub key, got %q", got)
+	}
+}

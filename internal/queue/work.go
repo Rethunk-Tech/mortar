@@ -249,6 +249,9 @@ func (s *Service) step(ctx context.Context) bool {
 	s.publish(true)
 	switch act {
 	case click:
+		if s.useGitHubFallback(itemCtx, snap) {
+			return true
+		}
 		if err := s.OpenPage(snap.ID); err != nil {
 			s.settle(snap.ID, err)
 		}
