@@ -10,6 +10,11 @@
     "url": "https://fedoraproject.org/wiki/F44_Artwork"
   },
   {
+    "name": "Nexus Mods logo (from Vortex)",
+    "licence": "GPL-3.0",
+    "url": "https://github.com/Nexus-Mods/Vortex"
+  },
+  {
     "name": "@dnd-kit/core",
     "licence": "MIT",
     "url": "https://github.com/clauderic/dnd-kit"

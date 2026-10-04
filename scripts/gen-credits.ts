@@ -404,8 +404,36 @@ function npmNotices(): NoticeEntry[] {
   return out
 }
 
+// Artwork Mortar ships beside its code; each licence asks for this notice wherever the file is redistributed.
+const assetNotices: NoticeEntry[] = [
+  {
+    name: 'Fedora 44 default wallpaper (f44-01-night)',
+    licence: 'CC-BY-SA-4.0',
+    url: 'https://fedoraproject.org/wiki/F44_Artwork',
+    texts: [
+      'Bundled as the default backdrop (internal/backdrop/f44-01-night.jpg). By the Fedora Project, licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence: https://creativecommons.org/licenses/by-sa/4.0/',
+    ],
+  },
+  {
+    name: 'Minigalaxy icon',
+    licence: 'GPL-3.0',
+    url: 'https://github.com/sharkwouter/minigalaxy',
+    texts: [
+      'Bundled launcher icon (frontend/src/brand/vendor/minigalaxy.png) from Minigalaxy, licensed under the GNU General Public License v3.0: https://www.gnu.org/licenses/gpl-3.0.html',
+    ],
+  },
+  {
+    name: 'Nexus Mods logo (from Vortex)',
+    licence: 'GPL-3.0',
+    url: 'https://github.com/Nexus-Mods/Vortex',
+    texts: [
+      'Bundled source icon (frontend/src/brand/vendor/nexusmods.svg) from Vortex, licensed under the GNU General Public License v3.0: https://www.gnu.org/licenses/gpl-3.0.html. Nexus Mods and its logo are trademarks of their owner.',
+    ],
+  },
+]
+
 function collectNotices(): NoticeEntry[] {
-  const entries = [...goModuleNotices(), ...npmNotices()]
+  const entries = [...goModuleNotices(), ...npmNotices(), ...assetNotices]
   entries.sort((a, b) => a.name.localeCompare(b.name))
   return entries
 }
@@ -419,9 +447,9 @@ function formatNotices(entries: NoticeEntry[]): string {
   return [
     'Third-party notices',
     '',
-    'Go modules compiled into Mortar and the frontend runtime npm closure (direct',
+    'Go modules compiled into Mortar, the frontend runtime npm closure (direct',
     'dependencies of frontend/package.json and their installed dependency trees),',
-    'with licence and NOTICE text from each package directory.',
+    'with licence and NOTICE text from each package directory, and bundled artwork.',
     '',
     '================================================================================',
     '',
@@ -466,6 +494,11 @@ function buildCredits(): CreditEntry[] {
       name: 'Fedora 44 default wallpaper (f44-01-night)',
       licence: 'CC-BY-SA-4.0',
       url: 'https://fedoraproject.org/wiki/F44_Artwork',
+    },
+    {
+      name: 'Nexus Mods logo (from Vortex)',
+      licence: 'GPL-3.0',
+      url: 'https://github.com/Nexus-Mods/Vortex',
     },
   ]
   return [...extra, ...npm, ...go].filter(
