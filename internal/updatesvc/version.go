@@ -7,6 +7,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/meta"
 )
 
 const lastRunFile = "last-run-version"
@@ -38,5 +39,5 @@ func upgraded(current, last string) bool {
 	if last == "" {
 		return false
 	}
-	return versionNewer(current, last)
+	return meta.Newer(current, last)
 }

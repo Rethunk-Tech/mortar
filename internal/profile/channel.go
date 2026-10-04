@@ -49,10 +49,10 @@ func NewestChannelFile(channel, installed string, files []nexus.File) (nexus.Fil
 		if !FileOnChannel(channel, f) {
 			continue
 		}
-		if !versionNewer(f.Version, installed) {
+		if !meta.Newer(f.Version, installed) {
 			continue
 		}
-		if !found || versionNewer(f.Version, best.Version) || (sameVersion(f.Version, best.Version) && f.FileID > best.FileID) {
+		if !found || meta.Newer(f.Version, best.Version) || (sameVersion(f.Version, best.Version) && f.FileID > best.FileID) {
 			best, found = f, true
 		}
 	}
@@ -119,11 +119,6 @@ func prereleaseText(s string) bool {
 	}
 	_, ok := meta.CompareVersions(v[:i], v[:i])
 	return ok
-}
-
-func versionNewer(a, b string) bool {
-	c, ok := meta.CompareVersions(a, b)
-	return ok && c > 0
 }
 
 func sameVersion(a, b string) bool {

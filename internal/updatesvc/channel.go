@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 
+	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/wailsapp/wails/v3/pkg/updater"
 )
 
@@ -34,7 +35,7 @@ func (p *channelProvider) Check(ctx context.Context, req updater.CheckRequest) (
 		return stable, nil
 	}
 	provider := p.stable.Name()
-	if beta != nil && chosen.Version == beta.Version && versionNewer(beta.Version, req.CurrentVersion) {
+	if beta != nil && chosen.Version == beta.Version && meta.Newer(beta.Version, req.CurrentVersion) {
 		provider = p.beta.Name()
 	}
 	return stampProvider(chosen, provider), nil

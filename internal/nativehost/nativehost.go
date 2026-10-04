@@ -664,7 +664,7 @@ func cachedNexusDetails(root *os.Root, modID int) (string, []cachedNexusFile) {
 }
 
 func nexusUpdateAvailable(version *string, fileID int, pageVer string, files []cachedNexusFile) bool {
-	if version != nil && newerVersion(pageVer, *version) {
+	if version != nil && meta.Newer(pageVer, *version) {
 		return true
 	}
 	if fileID < 1 {
@@ -684,43 +684,6 @@ func nexusUpdateAvailable(version *string, fileID int, pageVer string, files []c
 		seen[cur] = true
 		cur = f.ReplacedBy
 	}
-}
-
-func newerVersion(page, installed string) bool {
-	a, b := versionParts(page), versionParts(installed)
-	if len(a) == 0 || len(b) == 0 {
-		return false
-	}
-	n := max(len(a), len(b))
-	for i := range n {
-		av, bv := 0, 0
-		if i < len(a) {
-			av = a[i]
-		}
-		if i < len(b) {
-			bv = b[i]
-		}
-		if av != bv {
-			return av > bv
-		}
-	}
-	return false
-}
-
-func versionParts(value string) []int {
-	fields := strings.FieldsFunc(value, func(r rune) bool { return r < '0' || r > '9' })
-	if len(fields) == 0 {
-		return nil
-	}
-	out := make([]int, 0, len(fields))
-	for _, f := range fields {
-		n, err := strconv.Atoi(f)
-		if err != nil {
-			return nil
-		}
-		out = append(out, n)
-	}
-	return out
 }
 
 func mortarRunning(dataDir string) bool {

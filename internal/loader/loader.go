@@ -1,11 +1,6 @@
 // Package loader holds the types shared by every game's mod loader implementation.
 package loader
 
-import (
-	"strconv"
-	"strings"
-)
-
 // Step is one stage of a loader install, reported as it completes.
 type Step string
 
@@ -30,21 +25,3 @@ type Status struct {
 
 // Bundled receives the loader's own mods, extracted into modsDir, while the installer's files still exist.
 type Bundled func(version, modsDir string) error
-
-// Newer reports whether version a is newer than b, comparing dotted numbers.
-func Newer(a, b string) bool {
-	as, bs := strings.Split(a, "."), strings.Split(b, ".")
-	for i := range max(len(as), len(bs)) {
-		var x, y int
-		if i < len(as) {
-			x, _ = strconv.Atoi(as[i])
-		}
-		if i < len(bs) {
-			y, _ = strconv.Atoi(bs[i])
-		}
-		if x != y {
-			return x > y
-		}
-	}
-	return false
-}

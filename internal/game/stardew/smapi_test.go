@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/meta"
 
 	"github.com/Rethunk-AI/mortar/internal/loader"
 )
@@ -155,7 +156,7 @@ func TestInstallerPathsAndNewer(t *testing.T) {
 	if _, _, err := installer("4.5.2", "plan9"); err == nil {
 		t.Fatal("unsupported OS accepted")
 	}
-	if !loader.Newer("4.10.0", "4.9.9") || loader.Newer("4.5.2", "4.5.2") || loader.Newer("4.5", "4.5.1") {
+	if !meta.Newer("4.10.0", "4.9.9") || meta.Newer("4.5.2", "4.5.2") || meta.Newer("4.5", "4.5.1") {
 		t.Fatal("version order")
 	}
 }

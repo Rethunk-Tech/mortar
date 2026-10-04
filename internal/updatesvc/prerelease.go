@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/wailsapp/wails/v3/pkg/updater"
 	"github.com/wailsapp/wails/v3/pkg/updater/providers/endpoint"
 )
@@ -78,7 +79,7 @@ func (p *prereleaseProvider) latestPrereleaseTag(ctx context.Context, current st
 			continue
 		}
 		v := strings.TrimPrefix(strings.TrimSpace(r.TagName), "v")
-		if versionNewer(v, current) {
+		if meta.Newer(v, current) {
 			return strings.TrimSpace(r.TagName), nil
 		}
 	}

@@ -318,3 +318,22 @@ func TestPageMissingFromDatasetIsCached(t *testing.T) {
 		t.Fatalf("missing page fetched %d times, want once", hits.Load())
 	}
 }
+
+func TestNewerOrdersPrereleasesAndPrefixes(t *testing.T) {
+	for _, tc := range []struct {
+		a, b string
+		want bool
+	}{
+		{"1.2.0", "1.2.0-beta.1", true},
+		{"1.2.0-beta.2", "1.2.0", false},
+		{"4.1.0", "4.1.0-beta.1", true},
+		{"v4.10.0", "4.9.9", true},
+		{"4.5.2", "4.5.2", false},
+		{"4.5", "4.5.1", false},
+		{"not a version", "1.0.0", false},
+	} {
+		if got := Newer(tc.a, tc.b); got != tc.want {
+			t.Errorf("Newer(%q, %q) = %v, want %v", tc.a, tc.b, got, tc.want)
+		}
+	}
+}

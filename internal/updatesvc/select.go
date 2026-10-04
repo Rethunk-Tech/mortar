@@ -16,13 +16,8 @@ func preferRelease(includeBeta bool, stable, beta *updater.Release) *updater.Rel
 	if beta == nil {
 		return stable
 	}
-	if versionNewer(beta.Version, stable.Version) {
+	if meta.Newer(beta.Version, stable.Version) {
 		return beta
 	}
 	return stable
-}
-
-func versionNewer(a, b string) bool {
-	cmp, ok := meta.CompareVersions(a, b)
-	return ok && cmp > 0
 }

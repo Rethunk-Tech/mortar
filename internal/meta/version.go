@@ -34,6 +34,12 @@ func parseVersion(s string) (semver, bool) {
 	return v, true
 }
 
+// Newer reports whether a is a newer version than b; either failing to parse means not newer.
+func Newer(a, b string) bool {
+	c, ok := CompareVersions(a, b)
+	return ok && c > 0
+}
+
 // CompareVersions orders two SMAPI semantic versions (major.minor, optional patch and fourth number,
 // optional -prerelease and +build): -1, 0 or 1. ok is false when either is not one. A release outranks its
 // prereleases, and build metadata is ignored.

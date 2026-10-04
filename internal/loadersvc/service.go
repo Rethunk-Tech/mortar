@@ -16,6 +16,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/loader"
+	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/store"
@@ -249,7 +250,7 @@ func (s *Service) Status(ctx context.Context, id string) (loader.Status, error) 
 	}
 	if latest, err := g.LatestLoader(ctx); err == nil {
 		st.Latest = latest
-		st.UpdateAvailable = st.Installed && st.Version != "" && loader.Newer(latest, st.Version)
+		st.UpdateAvailable = st.Installed && st.Version != "" && meta.Newer(latest, st.Version)
 	}
 	return st, nil
 }
