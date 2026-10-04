@@ -11,7 +11,8 @@
     "test": "go test -race ./... && bun test",
     "vet": "go vet ./...",
     "version:check": "go run ./cmd/version -check",
-    "gate": "bun run lint && bun run typecheck && bun run vet && bun run version:check && bun run test && bun run vuln",
+    "metainfo": "appstreamcli validate --strict --no-net build/linux/tech.rethunk.Mortar.metainfo.xml",
+    "gate": "bun run lint && bun run typecheck && bun run vet && bun run version:check && bun run metainfo && bun run test && bun run vuln",
     "vuln": "govulncheck ./..."
   },
   "devDependencies": {

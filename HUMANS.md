@@ -115,7 +115,7 @@ gh secret set MORTAR_UPDATE_KEY --repo Rethunk-AI/mortar < ~/.config/mortar-rele
 
 Per release:
 
-1. Set `info.version` in `build/config.yml`, the only place the version is set, then run `go run ./cmd/version` to copy it into the Windows resources, the Linux metainfo, the AUR `PKGBUILD` and the extension manifest (`main.go` reads it from `build/config.yml` itself). Gate (it fails on any copy that differs), commit and push `main`.
+1. Set `info.version` in `build/config.yml`, the only place the version is set, then run `go run ./cmd/version` to copy it into the Windows resources, the Linux metainfo, the AUR `PKGBUILD` and the extension manifest (`main.go` reads it from `build/config.yml` itself). Then run `build/release/notes.sh --metainfo build/linux/tech.rethunk.Mortar.metainfo.xml v1.2.3 HEAD`, which writes the same user-facing notes the release will carry into that version's `<release><description>` (software centres and Flathub show it). Gate (it fails on any copy that differs, and `appstreamcli validate --strict --no-net` checks the metainfo), commit and push `main`.
 2. `git tag v1.2.3 && git push origin v1.2.3`. The tag must equal that version with a leading `v`, or the release stops before building.
 
 ### Flathub

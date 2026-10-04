@@ -23,8 +23,73 @@
     </p>
   </description>
   <launchable type="desktop-id">tech.rethunk.Mortar.desktop</launchable>
-  <content_rating type="oars-1.1" />
+  <screenshots>
+    <screenshot type="default">
+      <caption>A profile's mods, with a game folder's untracked mod offered for import</caption>
+      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-AI/mortar/main/build/linux/screenshots/mods.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Problems lists what a profile is missing, with one-click fixes</caption>
+      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-AI/mortar/main/build/linux/screenshots/problems.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Each save with its backups and whether its mods are present</caption>
+      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-AI/mortar/main/build/linux/screenshots/saves.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Settings for play, start-up and the window</caption>
+      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-AI/mortar/main/build/linux/screenshots/settings.png</image>
+    </screenshot>
+  </screenshots>
+  <branding>
+    <color type="primary" scheme_preference="light">#D6B17A</color>
+    <color type="primary" scheme_preference="dark">#19191E</color>
+  </branding>
+  <content_rating type="oars-1.1">
+    <content_attribute id="social-info">mild</content_attribute>
+  </content_rating>
   <releases>
-    <release version="0.1.1" date="2026-10-04" />
+    <release version="0.1.1" date="2026-10-04">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>Ask for a Nexus sign-in during game setup and from the empty profile</li>
+          <li>Show file for corrupt settings, Download them for missing bundle mods</li>
+          <li>Review action, plurals and mod names in update and crash surfaces</li>
+          <li>The Add menu always offers the downloads folder; the empty profile links it too</li>
+          <li>Profile templates: save, start a new profile from one, manage</li>
+          <li>Show release notes with links in What's New</li>
+          <li>Archive preview, downloads-folder install and collection notes</li>
+          <li>Extra mods folder, hidden mods, old files and new game folders in the mod list</li>
+          <li>Removing an untracked folder can be undone from its toast</li>
+          <li>Retry all failed downloads, extension contact, portable data, backup and history trim, Nexus SSO</li>
+          <li>Settings for the extra mods folder, hidden mods and old files on update; installs share one runner; crash cause text off Lingui t</li>
+          <li>Profile templates from a bundle, game settings and launch options</li>
+          <li>Preview archive listing, manifests and FOMOD without extracting</li>
+          <li>Apply curator FOMOD choices, bundled configs, instructions and external resources</li>
+          <li>Record the browser's last contact with the native host</li>
+          <li>…and 553 more</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Drawers close without an exit transition so the next click is not swallowed by the backdrop</li>
+          <li>A leading outlined field's label is no longer clipped under a dialog title; Start from shows Empty profile</li>
+          <li>Failed downloads in history read as the plain sentence, with the cause in the tooltip</li>
+          <li>An older mods load no longer overwrites a newer one when installs finish back to back</li>
+          <li>Treat a clean-shutdown record anywhere in the previous log as a clean exit</li>
+          <li>Trim toasts leave out a zero freed size and say when nothing was removed</li>
+          <li>Trim dialog field labels name the count instead of a literal N</li>
+          <li>Ask before discarding edits in profile, tool and bug-report dialogs</li>
+          <li>Problem rows link to the mod they name</li>
+          <li>Say why locked mod controls are disabled while the game runs</li>
+          <li>Before you play leads with Update and play when updates are pending, names the profile to switch to, and adding missing mods closes the dialog and opens the queue</li>
+          <li>Remember last tab, problem sections and table sorts; one large button size</li>
+          <li>Plain wording, plurals and links across toasts, dialogs, settings and saves</li>
+          <li>Grid keyboard nav, multi-select delete and toggle, filter empty state, tab shortcuts match tab order, tour Add mods step</li>
+          <li>Remove and Revert on outside changes ask first and are secondary to the keeping action; disabled while playing says why</li>
+          <li>…and 584 more</li>
+        </ul>
+      </description>
+    </release>
   </releases>
 </component>

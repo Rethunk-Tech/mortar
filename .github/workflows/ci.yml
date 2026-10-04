@@ -24,7 +24,7 @@ jobs:
           persist-credentials: false
 
       - name: GTK4 and WebKitGTK 6.0
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev appstream
 
       - name: Setup Go
         uses: Rethunk-Tech/gh-actions/setup-go@99dfb9093ab089d28f76d8036322a7c062259e76 # v1.13
