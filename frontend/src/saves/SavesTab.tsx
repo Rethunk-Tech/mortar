@@ -6,7 +6,6 @@ import { type ReactNode, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
-import { TipBanner } from '../tips/TipBanner.tsx'
 import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { BackupsDialog } from './BackupsDialog.tsx'
 import { filterAndSortSaves } from './filterAndSortSaves.ts'
@@ -61,9 +60,6 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
-      <TipBanner tip="saves">
-        {t`Saves stay in one folder for every profile. This tab shows how well each one fits this one.`}
-      </TipBanner>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 0.75 }}>
         {fits.length === 0 ? null : (
           <TextField
