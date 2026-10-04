@@ -3,6 +3,7 @@ package savessvc
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -101,5 +102,54 @@ func TestScheduledBackupsFollowTheIntervalAndWaitForTheGame(t *testing.T) {
 	restarted.scheduledTick(t0.Add(14 * time.Hour))
 	if n := scheduled(); n != 2 {
 		t.Fatalf("keep 2 per save, got %d", n)
+	}
+}
+
+func TestScheduledBackupRetriesHalfHourAfterAFailedPass(t *testing.T) {
+	if runtime.GOOS == "windows" || os.Geteuid() == 0 {
+		t.Skip("needs an unreadable file to fail the copy")
+	}
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	savesDir := filepath.Join(t.TempDir(), "Saves")
+	store, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.Update(func(v *settings.Settings) {
+		if err := settings.ApplyKeyGame(v, "saveBackupHours", "6", settings.GameStardew); err != nil {
+			t.Fatal(err)
+		}
+	}); err != nil {
+		t.Fatal(err)
+	}
+	t0 := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	writeFarm(t, savesDir, "Farm_1", "Sunny", "a")
+	locked := filepath.Join(savesDir, "Farm_1", "Farm_1")
+	if err := os.Chmod(locked, 0); err != nil {
+		t.Fatal(err)
+	}
+	var runs []ScheduledRun
+	s := &Service{settings: store, scanner: &saves.Scanner{Dir: savesDir}, busy: func() bool { return false }}
+	s.Emit = func(_ string, data any) {
+		if run, ok := data.(ScheduledRun); ok {
+			runs = append(runs, run)
+		}
+	}
+	s.scheduledTick(t0)
+	if len(runs) != 1 || runs[0].Failed != 1 {
+		t.Fatalf("first pass = %+v", runs)
+	}
+	if err := os.Chmod(locked, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s.scheduledTick(t0.Add(scheduleRetry - time.Minute))
+	if len(runs) != 1 {
+		t.Fatalf("retried before %v: %+v", scheduleRetry, runs)
+	}
+	s.scheduledTick(t0.Add(scheduleRetry))
+	if len(runs) != 2 || runs[1].Saved != 1 || runs[1].Failed != 0 {
+		t.Fatalf("retry = %+v", runs)
 	}
 }
