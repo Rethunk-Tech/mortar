@@ -3,12 +3,16 @@ package profile
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"slices"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/ids"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 // MoveGameMods moves the named top-level folders of modsDir (the game's own Mods folder) into the profile as local
@@ -17,6 +21,9 @@ import (
 func (s *Store) MoveGameMods(game, id, modsDir string, folders []string) (GameModsResult, error) {
 	if err := s.unlocked(game, id); err != nil {
 		return GameModsResult{}, err
+	}
+	if s.GameRunning != nil && s.GameRunning(game) {
+		return GameModsResult{}, usererr.Wrap(usererr.Busy, errors.New("the game is running: close it before moving mods out of its Mods folder"))
 	}
 	root, err := filepath.EvalSymlinks(modsDir)
 	if err != nil {
@@ -67,7 +74,7 @@ func (s *Store) MoveGameMods(game, id, modsDir string, folders []string) (GameMo
 				if ie, ok := errors.AsType[*InstallError](err); ok {
 					out.Reason = ie.Msg
 				}
-			} else if err := os.RemoveAll(slot.folder.dir); err != nil {
+			} else if err := s.removeFromGameMods(game, id, slot.folder.dir); err != nil {
 				out.Reason = "added, but it could not be removed from the game's Mods folder: " + err.Error()
 			}
 		}
@@ -92,6 +99,27 @@ func (s *Store) MoveGameMods(game, id, modsDir string, folders []string) (GameMo
 	}
 	res.Profile, err = s.read(game, id)
 	return res, err
+}
+
+// removeFromGameMods deletes dir from the game's Mods folder by renaming it aside first: a rename is atomic, so a
+// file held open by the game, an antivirus scan or the indexer leaves the folder whole instead of half deleted. The
+// folder goes to Mortar's trash staging, or beside itself when that is another volume.
+func (s *Store) removeFromGameMods(game, id, dir string) error {
+	aside := filepath.Join(s.removedModsDir(game, id), "moved-"+ids.New(), filepath.Base(dir))
+	err := os.MkdirAll(filepath.Dir(aside), 0o700)
+	if err == nil {
+		err = fsx.Rename(dir, aside)
+	}
+	if err != nil {
+		aside = filepath.Join(filepath.Dir(dir), ".mortar-moved-"+ids.New())
+		if err = fsx.Rename(dir, aside); err != nil {
+			return err
+		}
+	}
+	if err := fsx.RemoveAll(aside); err != nil {
+		log.Printf("moved mods folder %s: clearing %s: %v", dir, aside, err)
+	}
+	return nil
 }
 
 // gameModsBucket is the settings dismissal bucket for game Mods folders the user chose not to move.

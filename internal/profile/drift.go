@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-AI/mortar/internal/winname"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
@@ -319,7 +321,7 @@ func safeFolder(name string) (string, error) {
 	if name == "" || name == "." || name == ".." {
 		return "", errors.New("invalid folder")
 	}
-	if strings.ContainsAny(name, `/\`) {
+	if !winname.Valid(name) {
 		return "", errors.New("invalid folder")
 	}
 	return name, nil
@@ -554,13 +556,13 @@ func (s *Store) revertDriftEntry(game, id, key string) (Profile, error) {
 			return err
 		}
 		if err := datadir.MaterializeTree(src, scratch); err != nil {
-			return errors.Join(err, os.RemoveAll(scratch))
+			return errors.Join(err, fsx.RemoveAll(scratch))
 		}
 		none := filepath.Join(scratch, ".no-old")
 		for _, m := range e.Mods {
 			plain, dotted, err := ModPaths(modsDir, e.Key, m.Folder)
 			if err != nil {
-				return errors.Join(err, os.RemoveAll(scratch))
+				return errors.Join(err, fsx.RemoveAll(scratch))
 			}
 			cur := plain
 			if !exists(cur) {
@@ -570,16 +572,16 @@ func (s *Store) revertDriftEntry(game, id, key string) (Profile, error) {
 				continue
 			}
 			if err := carryOver(cur, none, filepath.Join(scratch, filepath.FromSlash(m.Folder))); err != nil {
-				return errors.Join(err, os.RemoveAll(scratch))
+				return errors.Join(err, fsx.RemoveAll(scratch))
 			}
 		}
 		final, err := materialize(scratch, e)
 		if err != nil {
-			return errors.Join(err, os.RemoveAll(scratch))
+			return errors.Join(err, fsx.RemoveAll(scratch))
 		}
 		w, err := replaceFolder(modsDir, e.Key, scratch, final)
 		if err != nil {
-			return errors.Join(err, os.RemoveAll(scratch))
+			return errors.Join(err, fsx.RemoveAll(scratch))
 		}
 		w.commit()
 		return nil
@@ -606,7 +608,7 @@ func (s *Store) adoptDriftFolder(game, id, folder string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	_ = os.RemoveAll(src)
+	_ = fsx.RemoveAll(src)
 	if err := s.RecordModsSnapshot(game, id); err != nil {
 		return Profile{}, err
 	}
@@ -649,12 +651,7 @@ func (s *Store) trashModsFolder(game, id, folder string) (string, error) {
 		return "", err
 	}
 	if err := fsx.Rename(src, dst); err != nil {
-		if err := datadir.CopyTree(src, dst); err != nil {
-			return "", err
-		}
-		if err := os.RemoveAll(src); err != nil {
-			return "", err
-		}
+		return "", renameBusy(err)
 	}
 	return token, s.RecordModsSnapshot(game, id)
 }
@@ -684,12 +681,7 @@ func (s *Store) RestoreModsFolder(game, id, token string) error {
 		return fmt.Errorf("mods already has a folder named %q", folder)
 	}
 	if err := fsx.Rename(src, dst); err != nil {
-		if err := datadir.CopyTree(src, dst); err != nil {
-			return err
-		}
-		if err := os.RemoveAll(src); err != nil {
-			return err
-		}
+		return renameBusy(err)
 	}
 	_ = os.Remove(filepath.Dir(src))
 	return s.RecordModsSnapshot(game, id)
@@ -698,6 +690,12 @@ func (s *Store) RestoreModsFolder(game, id, token string) error {
 func (s *Service) ScanModsDrift(game, id string) ([]Drift, error) {
 	return s.store.ScanModsDrift(game, id)
 }
+// renameBusy words a failed move of a mods folder: the trash lives in the data folder, so the usual cause is a file in
+// the folder being open in another program.
+func renameBusy(err error) error {
+	return usererr.Wrap(usererr.Busy, fmt.Errorf("a file in that folder is in use by another program; close it and try again (%w)", err))
+}
+
 
 func (s *Service) KeepDriftChanges(game, id, key string) error {
 	return s.store.refreshSnapshotKey(game, id, key)
