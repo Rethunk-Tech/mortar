@@ -1,15 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, FormControlLabel, Radio, RadioGroup, Switch } from '@mui/material'
-import { Browser, Clipboard, System } from '@wailsio/runtime'
-import { Copy, Download, FolderOpen, Undo2 } from 'lucide-react'
+import { Browser, System } from '@wailsio/runtime'
+import { Download, FolderOpen, Undo2 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import type { FoundInstall } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
 import {
   ClearLaunchOption,
-  GrantSteamAccess,
   LaunchOptions,
   ResetInstall,
-  SteamAccess,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { State } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
@@ -26,8 +24,8 @@ import { useLaunch } from '../../launch/store.ts'
 import { InstallSteps } from '../../loader/InstallSteps.tsx'
 import { useLoader } from '../../loader/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
-import { MONO } from '../../theme/theme.ts'
-import { errorText, reportError, reportUnexpected } from '../../toasts/report.ts'
+import { FlatpakGrant } from '../../shell/FlatpakGrant.tsx'
+import { errorText, reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
@@ -222,7 +220,9 @@ function GameFolder({
             </Box>
           </Searchable>
         ) : null}
-        <FlatpakAccess />
+        <Searchable terms={`Flatpak Steam ${t`Grant access`}`}>
+          <FlatpakGrant />
+        </Searchable>
       </SettingsSection>
       <SettingsSection title={t`Reset`}>
         <SettingRow
@@ -281,85 +281,6 @@ function GameFolder({
         }}
       />
     </>
-  )
-}
-
-function FlatpakAccess() {
-  const { t } = useLingui()
-  const [cmd, setCmd] = useState('')
-  const [needed, setNeeded] = useState(false)
-  const [granted, setGranted] = useState(false)
-  const [ask, setAsk] = useState(false)
-  const load = () => {
-    SteamAccess()
-      .then((a) => {
-        setCmd(a.command)
-        setNeeded(a.needed)
-        setGranted(a.granted)
-      })
-      .catch(reportUnexpected)
-  }
-  useEffect(load, [])
-  if (!needed || granted) {
-    return null
-  }
-  return (
-    <Searchable terms={`Flatpak Steam ${t`Grant access`}`}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, px: 2.5, py: 1.5 }}>
-        <Box sx={{ fontSize: 16 }}>{t`Flatpak Steam cannot read your mods`}</Box>
-        <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
-          {t`Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods.`}
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
-          <Box
-            sx={{
-              flex: 1,
-              minWidth: 0,
-              px: 1.5,
-              py: 0.75,
-              bgcolor: 'var(--mortar-overlay-45)',
-              border: '1px solid var(--mortar-hairline-15)',
-              borderRadius: '6px',
-              fontFamily: MONO,
-              fontSize: 13,
-              wordBreak: 'break-all',
-              userSelect: 'text',
-            }}
-          >
-            {cmd}
-          </Box>
-          <Button
-            variant="outlined"
-            startIcon={<Copy size={16} />}
-            onClick={() => {
-              Clipboard.SetText(cmd).then(
-                () => useToasts.getState().push({ kind: 'success', title: t`Command copied` }),
-                reportUnexpected,
-              )
-            }}
-            sx={outline}
-          >
-            {t`Copy`}
-          </Button>
-          <Button variant="contained" onClick={() => setAsk(true)} sx={outline}>
-            {t`Grant access`}
-          </Button>
-        </Box>
-      </Box>
-      <ConfirmDialog
-        open={ask}
-        title={t`Grant Flatpak Steam access?`}
-        body={t`This runs the command below once for your user. Steam will then be able to read Mortar's data folder.`}
-        confirmLabel={t`Grant access`}
-        onCancel={() => setAsk(false)}
-        onConfirm={() => {
-          setAsk(false)
-          GrantSteamAccess().then(load, reportUnexpected)
-        }}
-      >
-        <Box sx={{ mt: 1.5, fontFamily: MONO, fontSize: 13, userSelect: 'text' }}>{cmd}</Box>
-      </ConfirmDialog>
-    </Searchable>
   )
 }
 

@@ -13,11 +13,7 @@ import {
 } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { CircleAlert, Copy } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import {
-  GrantSteamAccess,
-  SteamAccess,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
+import { useEffect } from 'react'
 import { Hint } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { CrashDialog, SwitchOffButton } from '../console/CrashDialog.tsx'
@@ -32,6 +28,7 @@ import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { controlsCutout } from '../shell/controlsCutout.ts'
+import { FlatpakGrant } from '../shell/FlatpakGrant.tsx'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -219,50 +216,6 @@ function LaunchLine({ line }: { line: string }) {
         {t`Copy`}
       </Button>
     </Box>
-  )
-}
-
-function FlatpakGrant() {
-  const { t } = useLingui()
-  const [cmd, setCmd] = useState('')
-  const [ask, setAsk] = useState(false)
-  useEffect(() => {
-    SteamAccess()
-      .then((a) => setCmd(a.command))
-      .catch(reportUnexpected)
-  }, [])
-  if (!cmd) {
-    return null
-  }
-  return (
-    <>
-      <LaunchLine line={cmd} />
-      <Button variant="outlined" onClick={() => setAsk(true)} sx={{ whiteSpace: 'nowrap' }}>
-        {t`Grant access…`}
-      </Button>
-      <ConfirmDialog
-        open={ask}
-        title={t`Grant Flatpak Steam access?`}
-        body={
-          <>
-            {t`This runs the command below once for your user. Steam will then be able to read Mortar's data folder.`}{' '}
-            {cmd}
-          </>
-        }
-        confirmLabel={t`Grant access`}
-        onCancel={() => setAsk(false)}
-        onConfirm={() => {
-          setAsk(false)
-          GrantSteamAccess()
-            .then(() => SteamAccess())
-            .then((a) => {
-              setCmd(a.command)
-              useToasts.getState().push({ kind: 'success', title: t`Access granted` })
-            })
-            .catch(reportUnexpected)
-        }}
-      />
-    </>
   )
 }
 
