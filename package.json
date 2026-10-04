@@ -5,14 +5,14 @@
     "frontend"
   ],
   "scripts": {
-    "lint": "biome check --error-on-warnings . && knip && golangci-lint run && GOOS=windows golangci-lint run",
+    "lint": "biome check --error-on-warnings . && knip && golangci-lint run && GOOS=windows golangci-lint run && golangci-lint run --build-tags updatetest ./internal/updatesvc/...",
     "bindings": "wails3 generate bindings -clean=true -ts -i",
     "typecheck": "bun run bindings && bun run --cwd frontend tsc --noEmit",
     "test": "go test -race ./... && bun test",
-    "vet": "go vet ./...",
     "version:check": "go run ./cmd/version -check",
     "metainfo": "appstreamcli validate --strict --no-net build/linux/tech.rethunk.Mortar.metainfo.xml",
-    "gate": "bun run lint && bun run typecheck && bun run vet && bun run version:check && bun run metainfo && bun run test && bun run vuln",
+    "gate": "bun run lint && bun run typecheck && bun run version:check && bun run metainfo && bun run test && bun run vuln",
+    "e2e:updater": "go test -count=1 -tags updatetest -run TestUpdaterE2E ./internal/updatesvc",
     "vuln": "govulncheck ./..."
   },
   "devDependencies": {

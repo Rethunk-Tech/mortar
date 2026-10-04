@@ -20,8 +20,7 @@ tasks:
     dir: frontend
     sources:
       - package.json
-      - bun.lock
-      - bun.lockb
+      - ../bun.lock
     generates:
       - node_modules
     preconditions:

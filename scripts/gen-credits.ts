@@ -110,42 +110,26 @@ function npmHomepage(name: string, pkgJson: unknown): string {
   return `https://www.npmjs.com/package/${encodeURIComponent(name)}`
 }
 
-function firstRequireBlock(goMod: string): string[] {
-  const m = /require\s*\(([^)]*)\)/.exec(goMod)
-  if (!m) {
-    throw new Error('go.mod: no require block')
-  }
-  const mods: string[] = []
-  for (const line of (m[1] ?? '').split('\n')) {
-    const trimmed = line.replace(/\/\/.*$/, '').trim()
-    if (trimmed) {
-      const [path] = trimmed.split(/\s+/)
-      if (path) {
-        mods.push(path)
-      }
-    }
-  }
-  if (mods.length === 0) {
-    throw new Error('go.mod: empty first require block')
-  }
-  return mods
-}
-
-function goListDir(modulePath: string): string {
-  const proc = Bun.spawnSync(['go', 'list', '-m', '-json', modulePath], {
-    cwd: repoRoot,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  })
+// Direct dependencies with their module directories, from one `go list -m`.
+function directGoModules(): { path: string; dir: string }[] {
+  const proc = Bun.spawnSync(
+    ['go', 'list', '-m', '-f', '{{if not (or .Main .Indirect)}}{{.Path}}\t{{.Dir}}{{end}}', 'all'],
+    { cwd: repoRoot, stdout: 'pipe', stderr: 'pipe' },
+  )
   if (proc.exitCode !== 0) {
-    throw new Error(`go list ${modulePath}: ${proc.stderr.toString()}`)
+    throw new Error(`go list -m all: ${proc.stderr.toString()}`)
   }
-  const rec = asRecord(JSON.parse(proc.stdout.toString()))
-  const dir = typeof rec.Dir === 'string' ? rec.Dir : ''
-  if (!dir) {
-    throw new Error(`go list ${modulePath}: no Dir`)
-  }
-  return dir
+  return proc.stdout
+    .toString()
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => {
+      const [path = '', dir = ''] = line.split('\t')
+      if (!dir) {
+        throw new Error(`go list -m ${path}: no Dir`)
+      }
+      return { path, dir }
+    })
 }
 
 function goModuleURL(modulePath: string): string {
@@ -236,19 +220,6 @@ function dirTexts(dir: string): { licence: string; texts: string[] } | null {
   return { licence, texts }
 }
 
-function goModuleDir(path: string, version: string, listedDir: string): string {
-  if (listedDir && existsSync(listedDir)) {
-    return listedDir
-  }
-  const spec = version ? `${path}@${version}` : path
-  const proc = Bun.spawnSync(['go', 'list', '-m', '-f', '{{.Dir}}', spec], {
-    cwd: repoRoot,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  })
-  return proc.exitCode === 0 ? proc.stdout.toString().trim() : ''
-}
-
 function failMissing(kind: string, missing: string[]): void {
   if (missing.length > 0) {
     throw new Error(
@@ -273,7 +244,7 @@ function appendGoNotice(
     return
   }
   seen.add(name)
-  const dir = goModuleDir(path, version ?? '', listedDir ?? '')
+  const dir = listedDir && existsSync(listedDir) ? listedDir : ''
   const found = dir ? dirTexts(dir) : null
   const allowed = GO_LICENCE_ALLOWLIST[path]
   if (found || allowed) {
@@ -436,10 +407,10 @@ function buildCredits(): CreditEntry[] {
       const meta = readJSON(join(frontendRoot, 'node_modules', ...name.split('/'), 'package.json'))
       return { name, licence: npmLicence(meta), url: npmHomepage(name, meta) }
     })
-  const go = firstRequireBlock(readFileSync(join(repoRoot, 'go.mod'), 'utf8')).map((mod) => ({
-    name: mod,
-    licence: classifyLicenceText(readLicenceFile(goListDir(mod))),
-    url: goModuleURL(mod),
+  const go = directGoModules().map(({ path, dir }) => ({
+    name: path,
+    licence: classifyLicenceText(readLicenceFile(dir)),
+    url: goModuleURL(path),
   }))
   // Only what ships inside Mortar: SMAPI and the bridge are downloaded into a profile, never bundled.
   const art = bundledArtwork.map(({ notice: _notice, ...credit }) => credit)
