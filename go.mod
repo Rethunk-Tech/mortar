@@ -39,4 +39,4 @@ require (
 	golang.org/x/tools v0.47.0 // indirect
 )
 
-replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-beta.26.0.20261004070340-4d07f13ca56a
+replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-beta.27.0.20261004071642-dccbdeb852c6
