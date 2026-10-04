@@ -72,10 +72,10 @@ function ToastCard({ toast }: { toast: Toast }) {
       role={toast.kind === 'error' || toast.kind === 'warning' ? 'alert' : 'status'}
       sx={{
         display: 'flex',
-        alignItems: 'flex-start',
+        // A one-line toast centres its text on the close button instead of keeping a two-line height.
+        alignItems: toast.body || toast.picture !== undefined ? 'flex-start' : 'center',
         gap: '12px',
-        minHeight: 60,
-        p: '8px 8px 8px 12px',
+        p: '6px 6px 6px 12px',
         bgcolor: 'var(--mortar-toast)',
         border: '1px solid var(--mortar-hairline-12)',
         borderLeft: '4px solid',
