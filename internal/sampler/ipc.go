@@ -57,7 +57,7 @@ func Start(ctx context.Context, pid int) (*Session, error) {
 		_ = conn.Close()
 		return nil, err
 	}
-	_, payload, err := readMessage(conn)
+	payload, err := readMessage(conn)
 	if err != nil {
 		_ = conn.Close()
 		return nil, err
@@ -119,7 +119,7 @@ func (s *Session) stop(ctx context.Context) error {
 		_ = s.conn.Close()
 		return err
 	}
-	_, _, err = readMessage(conn)
+	_, err = readMessage(conn)
 	if err != nil {
 		_ = s.conn.Close()
 		return err
@@ -211,23 +211,46 @@ func writeMessage(conn io.Writer, commandID byte, payload []byte) error {
 	return err
 }
 
-func readMessage(conn io.Reader) (byte, []byte, error) {
+// readFrame reads one IPC message: its command set, command and payload.
+func readFrame(conn io.Reader) (byte, byte, []byte, error) {
 	header := make([]byte, 20)
 	if _, err := io.ReadFull(conn, header); err != nil {
-		return 0, nil, err
+		return 0, 0, nil, err
 	}
 	if string(header[:14]) != string(diagnosticMagic[:]) {
-		return 0, nil, errors.New("sampler: invalid diagnostics response magic")
+		return 0, 0, nil, errors.New("sampler: invalid diagnostics response magic")
 	}
 	size := int(binary.LittleEndian.Uint16(header[14:16]))
 	if size < 20 {
-		return 0, nil, errors.New("sampler: invalid diagnostics response size")
+		return 0, 0, nil, errors.New("sampler: invalid diagnostics response size")
 	}
 	payload := make([]byte, size-20)
 	if _, err := io.ReadFull(conn, payload); err != nil {
-		return 0, nil, err
+		return 0, 0, nil, err
 	}
-	return header[17], payload, nil
+	return header[16], header[17], payload, nil
+}
+
+// serverCommandSet and serverError mark the runtime's error reply; its payload is the failing HRESULT.
+const (
+	serverCommandSet = 0xFF
+	serverError      = 0xFF
+)
+
+// readMessage reads the runtime's reply and turns an error reply into an error, so a refused session is never
+// mistaken for one that started.
+func readMessage(conn io.Reader) ([]byte, error) {
+	set, command, payload, err := readFrame(conn)
+	if err != nil {
+		return nil, err
+	}
+	if set == serverCommandSet && command == serverError {
+		if len(payload) >= 4 {
+			return nil, fmt.Errorf("sampler: the runtime refused the request (HRESULT 0x%08X)", binary.LittleEndian.Uint32(payload))
+		}
+		return nil, errors.New("sampler: the runtime refused the request")
+	}
+	return payload, nil
 }
 
 func diagnosticSocketCandidates(pid int) ([]string, error) {

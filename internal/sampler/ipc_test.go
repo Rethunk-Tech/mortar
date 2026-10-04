@@ -3,12 +3,15 @@
 package sampler
 
 import (
+	"bytes"
 	"context"
+	"encoding/binary"
 	"io"
 	"net"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -35,7 +38,7 @@ func TestSessionUsesDiagnosticsSocket(t *testing.T) {
 			serverErr <- err
 			return
 		}
-		command, _, err := readMessage(first)
+		_, command, _, err := readFrame(first)
 		if err == nil && command != collectTracing2 {
 			err = errUnexpectedCommand
 		}
@@ -56,7 +59,7 @@ func TestSessionUsesDiagnosticsSocket(t *testing.T) {
 			serverErr <- acceptErr
 			return
 		}
-		stopCommand, _, stopErr := readMessage(second)
+		_, stopCommand, _, stopErr := readFrame(second)
 		if stopErr == nil && stopCommand != stopTracing {
 			stopErr = errUnexpectedCommand
 		}
@@ -100,3 +103,16 @@ func TestSessionUsesDiagnosticsSocket(t *testing.T) {
 }
 
 var errUnexpectedCommand = io.ErrUnexpectedEOF
+
+func TestAnErrorReplyIsAnError(t *testing.T) {
+	var buf bytes.Buffer
+	header := make([]byte, 20)
+	copy(header, diagnosticMagic[:])
+	binary.LittleEndian.PutUint16(header[14:16], 24)
+	header[16], header[17] = serverCommandSet, serverError
+	buf.Write(header)
+	buf.Write([]byte{0x05, 0x00, 0x07, 0x80})
+	if _, err := readMessage(&buf); err == nil || !strings.Contains(err.Error(), "0x80070005") {
+		t.Fatalf("error reply read as %v", err)
+	}
+}

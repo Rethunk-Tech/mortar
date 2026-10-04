@@ -43,14 +43,16 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 		log.Printf("startup sampler: %s: %v", g.ID(), err)
 		return
 	}
+	// Stopping must still run after the launch's context ends (the game exited), so it keeps only its values.
+	detached := context.WithoutCancel(ctx)
 	profileDir, err := s.profiles.ProfileDir(g.ID(), profileID)
 	if err != nil {
-		_, _ = session.Stop(context.Background())
+		_, _ = session.Stop(detached)
 		log.Printf("startup sampler: %s: %v", g.ID(), err)
 		return
 	}
 	reportID, reportFound := s.waitForSampleReport(ctx, g, profileID, modsDir, filepath.Join(profileDir, startupDir), before)
-	stopCtx, stopCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	stopCtx, stopCancel := context.WithTimeout(detached, 30*time.Second)
 	tracePath, stopErr := session.Stop(stopCtx)
 	stopCancel()
 	if stopErr != nil {
@@ -58,7 +60,7 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 		log.Printf("startup sampler: %s: %v", g.ID(), stopErr)
 		return
 	}
-	defer os.Remove(tracePath)
+	defer func() { _ = os.Remove(tracePath) }()
 	if !reportFound {
 		return
 	}
@@ -79,10 +81,7 @@ func startSampler(ctx context.Context, pid int) (*sampler.Session, error) {
 		select {
 		case <-ctx.Done():
 			timer.Stop()
-			if last != nil {
-				return nil, last
-			}
-			return nil, ctx.Err()
+			return nil, last
 		case <-timer.C:
 		}
 	}

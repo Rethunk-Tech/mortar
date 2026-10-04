@@ -5,11 +5,14 @@ package sampler
 import (
 	"context"
 	"os"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
-func openDiagnostic(ctx context.Context, path string) (diagnosticConn, error) {
+// openDiagnostic opens the runtime's diagnostics named pipe, which Windows exposes as a file path.
+func openDiagnostic(ctx context.Context, path string) (*os.File, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	return os.OpenFile(path, os.O_RDWR, 0)
+	return fsx.OpenFile(path, os.O_RDWR, 0)
 }
