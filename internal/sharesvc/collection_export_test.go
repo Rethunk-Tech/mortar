@@ -1,7 +1,10 @@
 package sharesvc
 
 import (
+	"archive/zip"
+	"bytes"
 	"encoding/json"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -52,6 +55,35 @@ func TestCollectionExportRoundTrip(t *testing.T) {
 	raw, err := json.Marshal(doc)
 	if err != nil {
 		t.Fatal(err)
+	}
+	packed, err := zipCollection(raw, files)
+	if err != nil {
+		t.Fatal(err)
+	}
+	zr, err := zip.NewReader(bytes.NewReader(packed), int64(len(packed)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	read := map[string][]byte{}
+	for _, f := range zr.File {
+		rc, err := f.Open()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if read[f.Name], err = io.ReadAll(rc); err != nil {
+			t.Fatal(err)
+		}
+		_ = rc.Close()
+	}
+	if !bytes.Equal(read[collectionManifestName], raw) || len(read) != len(files)+1 {
+		t.Fatalf("zip entries = %d", len(read))
+	}
+	raw = read[collectionManifestName]
+	files = files[:0]
+	for name, data := range read {
+		if name != collectionManifestName {
+			files = append(files, bundledFile{name, data})
+		}
 	}
 
 	got, err := parseChoices(raw)

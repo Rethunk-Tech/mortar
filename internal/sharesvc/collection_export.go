@@ -1,6 +1,8 @@
 package sharesvc
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -195,6 +197,27 @@ func buildCollection(p profile.Profile, domain, modsDir string, facts fileFacts)
 	return doc, files, skipped, nil
 }
 
+// zipCollection packs collection.json and the bundled/ files into one archive. Vortex packs a 7z and no Go library
+// here writes one, so the curator repacks this zip before uploading it to Nexus.
+func zipCollection(manifestJSON []byte, files []bundledFile) ([]byte, error) {
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	all := append([]bundledFile{{collectionManifestName, manifestJSON}}, files...)
+	for _, f := range all {
+		w, err := zw.Create(f.Path)
+		if err != nil {
+			return nil, err
+		}
+		if _, err := w.Write(f.Data); err != nil {
+			return nil, err
+		}
+	}
+	if err := zw.Close(); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
 // ExportedCollection is the outcome of ExportCollection. Path is empty when the dialog was cancelled; Skipped lists
 // config files left out for their size or name.
 type ExportedCollection struct {
@@ -203,8 +226,8 @@ type ExportedCollection struct {
 	External int      `json:"external"`
 }
 
-// ExportCollection asks where to save collection.json for the profile, and writes it there with a bundled/ folder
-// beside it when any mod has config files. It makes no Nexus call that changes anything.
+// ExportCollection asks where to save the profile's collection draft, a zip of collection.json and a bundled/
+// folder of the mods' config files. It makes no Nexus call that changes anything.
 func (s *Service) ExportCollection(ctx context.Context, game, profileID string) (ExportedCollection, error) {
 	p, err := s.find(game, profileID)
 	if err != nil {
@@ -219,7 +242,7 @@ func (s *Service) ExportCollection(ctx context.Context, game, profileID string) 
 		return ExportedCollection{}, fmt.Errorf("%s has no Nexus page to make a collection for", game)
 	}
 	domain := info.Nexus.Domain
-	d := s.App.Dialog.SaveFile().SetFilename(collectionManifestName).AddFilter("Nexus collection draft (collection.json)", "*.json")
+	d := s.App.Dialog.SaveFile().SetFilename("collection.zip").AddFilter("Nexus collection draft (zip)", "*.zip")
 	d.AttachToWindow(s.App.Window.Current())
 	dest, err := d.PromptForSingleSelection()
 	if err != nil || dest == "" {
@@ -255,14 +278,12 @@ func (s *Service) writeCollection(ctx context.Context, p profile.Profile, domain
 	if err != nil {
 		return ExportedCollection{}, err
 	}
-	if err := datadir.WriteFile(dest, raw, filePerm); err != nil {
+	packed, err := zipCollection(raw, files)
+	if err != nil {
 		return ExportedCollection{}, err
 	}
-	root := filepath.Dir(dest)
-	for _, f := range files {
-		if err := datadir.WriteFile(filepath.Join(root, filepath.FromSlash(f.Path)), f.Data, filePerm); err != nil {
-			return ExportedCollection{}, err
-		}
+	if err := datadir.WriteFile(dest, packed, filePerm); err != nil {
+		return ExportedCollection{}, err
 	}
 	external := 0
 	for _, m := range doc.Mods {

@@ -1327,7 +1327,7 @@ msgid "{checked}. All files are intact."
 msgstr "{checked}. All files are intact."
 
 #: src/launch/SaveWarnDialog.tsx:57
-#: src/mods/updateReview/Row.tsx:63
+#: src/mods/updateReview/Row.tsx:57
 msgid "Switched off in this profile"
 msgstr "Switched off in this profile"
 
@@ -4053,7 +4053,7 @@ msgid "{mods, plural, one {# mod} other {# mods}}"
 msgstr "{mods, plural, one {# mod} other {# mods}}"
 
 #. placeholder {0}: o.name
-#: src/mods/updateReview/Row.tsx:62
+#: src/mods/updateReview/Row.tsx:56
 msgid "Also updates {0} (same download)"
 msgstr "Also updates {0} (same download)"
 
@@ -4294,6 +4294,10 @@ msgstr "Created · updated"
 #: src/updates/WhatsNewDialog.tsx:135
 msgid "Read the release notes on GitHub"
 msgstr "Read the release notes on GitHub"
+
+#: src/game/ExportCollectionMenuItem.tsx:28
+msgid "Nexus takes a 7z: run 7z x collection.zip -oc && 7z a collection.7z ./c/*, then upload it."
+msgstr "Nexus takes a 7z: run 7z x collection.zip -oc && 7z a collection.7z ./c/*, then upload it."
 
 #: src/console/StartupPanel.tsx:476
 msgid "Mods measured"
@@ -5191,7 +5195,7 @@ msgstr "Premium downloads come from this Nexus server when it offers the file."
 #: src/mods/problemFix/BrokenFix.tsx:58
 #: src/mods/problemFix/WhereButtons.tsx:28
 #: src/mods/Sidebar.tsx:206
-#: src/mods/updateReview/Row.tsx:118
+#: src/mods/updateReview/Row.tsx:112
 msgid "Open page"
 msgstr "Open page"
 
@@ -5246,7 +5250,7 @@ msgstr "Load {0} after the other mods here, so its edit applies last"
 msgid "Reached the title screen"
 msgstr "Reached the title screen"
 
-#: src/mods/updateReview/Row.tsx:67
+#: src/mods/updateReview/Row.tsx:61
 msgid "{optional, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
 msgstr "{optional, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
 
@@ -5322,10 +5326,6 @@ msgstr "Selected mod"
 #: src/settings/sections/DataImport.tsx:87
 msgid "Nothing would change."
 msgstr "Nothing would change."
-
-#: src/game/ExportCollectionMenuItem.tsx:28
-msgid "Create the collection on Nexus and upload this draft."
-msgstr "Create the collection on Nexus and upload this draft."
 
 #: src/templates/TemplateDialogs.tsx:201
 msgid "Profiles already made from it are not changed."
@@ -6075,7 +6075,7 @@ msgid "Open game settings"
 msgstr "Open game settings"
 
 #. placeholder {0}: update.githubFallback
-#: src/mods/updateReview/Row.tsx:72
+#: src/mods/updateReview/Row.tsx:66
 msgid "From GitHub ({0}) when its release matches, else Nexus"
 msgstr "From GitHub ({0}) when its release matches, else Nexus"
 
@@ -6153,7 +6153,7 @@ msgid "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was adde
 msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 
 #: src/mods/CompatChip.tsx:23
-#: src/mods/updateReview/Row.tsx:70
+#: src/mods/updateReview/Row.tsx:64
 msgid "Unofficial"
 msgstr "Unofficial"
 
@@ -9071,7 +9071,7 @@ msgstr "View licences…"
 #. placeholder {0}: entry.pinReason
 #: src/mods/ModDetail.tsx:108
 #: src/mods/parts.tsx:194
-#: src/mods/updateReview/Row.tsx:64
+#: src/mods/updateReview/Row.tsx:58
 msgid "Pinned: {0}"
 msgstr "Pinned: {0}"
 

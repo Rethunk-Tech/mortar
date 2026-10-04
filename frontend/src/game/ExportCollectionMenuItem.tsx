@@ -25,7 +25,7 @@ export function ExportCollectionMenuItem({
       return
     }
     const skipped = r.skipped ?? []
-    const next = t`Create the collection on Nexus and upload this draft.`
+    const next = t`Nexus takes a 7z: run 7z x collection.zip -oc && 7z a collection.7z ./c/*, then upload it.`
     useToasts.getState().push({
       kind: skipped.length > 0 ? 'warning' : 'success',
       title: t`Collection draft saved`,
