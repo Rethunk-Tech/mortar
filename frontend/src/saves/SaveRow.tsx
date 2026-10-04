@@ -27,7 +27,9 @@ import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useSaveBackups } from './backups.ts'
 import { newProfileFromSave } from './recordedActions.ts'
+import { SaveBackupsSection } from './SaveBackupsSection.tsx'
 import { SaveDetails } from './SaveDetails.tsx'
+import { SaveGapLine } from './SaveGapLine.tsx'
 
 const nowrap = { whiteSpace: 'nowrap' } as const
 
@@ -188,6 +190,13 @@ export function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; ga
         lastGone={lastGone}
         status={<FitStatus missing={missing.length} />}
       />
+      <SaveGapLine
+        key={`${profile.updated}-${fit.lastProfileAt}`}
+        fit={fit}
+        profile={profile}
+        game={game}
+      />
+      <SaveBackupsSection folder={fit.folder} label={label} />
     </Box>
   )
 }
