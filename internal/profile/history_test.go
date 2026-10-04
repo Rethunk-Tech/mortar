@@ -447,12 +447,27 @@ func TestStoreKeysIncludesHistorySnapshots(t *testing.T) {
 	if _, err := e.RemoveEntry("stardew", p.ID, "local-a"); err != nil {
 		t.Fatal(err)
 	}
-	keys, err := e.StoreKeys()
+	keys, err := e.StoreKeys(true)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !slices.Contains(keys["stardew"], "local-a") {
 		t.Fatalf("history key missing from StoreKeys: %v", keys["stardew"])
+	}
+	dir, err := e.profileDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.RemoveAll(filepath.Join(dir, snapshotsDir)); err != nil {
+		t.Fatal(err)
+	}
+	cached, err := e.StoreKeys(true)
+	if err != nil || !slices.Contains(cached["stardew"], "local-a") {
+		t.Fatalf("cached history keys = %v, %v", cached["stardew"], err)
+	}
+	live, err := e.StoreKeys(false)
+	if err != nil || slices.Contains(live["stardew"], "local-a") {
+		t.Fatalf("live keys = %v, %v", live["stardew"], err)
 	}
 }
 

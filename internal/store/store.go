@@ -606,7 +606,9 @@ func (s *Store) Collect(referenced map[string][]string, now time.Time) error {
 		next[g.name] = map[string]time.Time{}
 		for _, key := range g.keys {
 			last, seen := idx[g.name][key]
-			if keep[key] || !seen {
+			// With retention off nothing is deleted and history-only keys are not reported as referenced, so every
+			// item counts as used now; turning retention on later starts its clock then.
+			if keep[key] || !seen || s.UnusedFor < 0 {
 				last = now
 			}
 			if !keep[key] && unusedPast(now, last, s.unusedFor()) {

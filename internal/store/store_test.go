@@ -494,3 +494,25 @@ func TestSMAPIVersion(t *testing.T) {
 		}
 	}
 }
+
+func TestCollectWithRetentionOffRestartsTheClock(t *testing.T) {
+	s := newStore(t)
+	if err := s.AddDir("stardew", "smapi-1", t.TempDir()); err != nil {
+		t.Fatal(err)
+	}
+	old := time.Now().Add(-90 * 24 * time.Hour).UTC()
+	if err := s.saveIndex(index{"stardew": {"smapi-1": old}}); err != nil {
+		t.Fatal(err)
+	}
+	s.UnusedFor = -1
+	if err := s.Collect(map[string][]string{}, time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	s.UnusedFor = 30 * 24 * time.Hour
+	if err := s.Collect(map[string][]string{}, time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if got := names(t, filepath.Join(s.root, "stardew")); len(got) != 1 {
+		t.Fatalf("item deleted right after retention was turned on: %v", got)
+	}
+}

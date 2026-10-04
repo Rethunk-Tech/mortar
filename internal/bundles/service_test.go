@@ -132,7 +132,7 @@ func TestReferencedKeysKeepProfileExtrasAndBundlesDuringCollect(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	keys, err := profiles.StoreKeys()
+	keys, err := profiles.StoreKeys(true)
 	if err != nil {
 		t.Fatal(err)
 	}

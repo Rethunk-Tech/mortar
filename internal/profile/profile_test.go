@@ -95,7 +95,7 @@ func TestStoreKeysSkipsDamagedAndListDamaged(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	keys, err := s.StoreKeys()
+	keys, err := s.StoreKeys(true)
 	if err != nil {
 		t.Fatal(err)
 	}

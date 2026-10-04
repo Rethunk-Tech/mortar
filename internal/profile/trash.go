@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 
 	"github.com/Rethunk-AI/mortar/internal/game"
@@ -241,8 +243,9 @@ func (s *Store) PurgeTrash(target any) error {
 	return errors.Join(errs...)
 }
 
-// StoreKeys lists, per game, every store key that a profile or trashed profile names.
-func (s *Store) StoreKeys() (map[string][]string, error) {
+// StoreKeys lists, per game, every store key that a profile or trashed profile names. With history, keys that only
+// older history snapshots name are included too; collection that never deletes can skip them.
+func (s *Store) StoreKeys(history bool) (map[string][]string, error) {
 	out := map[string][]string{}
 	games := map[string]bool{}
 	for _, root := range []string{s.root, s.trash} {
@@ -276,36 +279,19 @@ func (s *Store) StoreKeys() (map[string][]string, error) {
 			profiles = append(profiles, p)
 		}
 		for _, p := range profiles {
-			for _, e := range p.Entries {
-				out[g] = append(out[g], e.Key)
-				if e.PreviousKey != "" {
-					out[g] = append(out[g], e.PreviousKey)
-				}
-				out[g] = append(out[g], e.ExtraStoreKeys...)
-				out[g] = append(out[g], e.PreviousExtraStoreKeys...)
+			out[g] = append(out[g], entriesStoreKeys(p.Entries)...)
+			if !history {
+				continue
 			}
 			dir := filepath.Join(s.root, g, p.ID)
 			if _, err := os.Stat(filepath.Join(dir, fileName)); err != nil {
 				dir = filepath.Join(s.trash, g, p.ID)
 			}
-			data, err := readHistory(dir)
+			keys, err := historyStoreKeys(dir)
 			if err != nil {
 				return nil, err
 			}
-			for _, ev := range data.Events {
-				entries, ok := snapshotEntries(&data, ev.SnapshotID)
-				if !ok {
-					return nil, fmt.Errorf("history snapshot %s not found", ev.SnapshotID)
-				}
-				for _, e := range entries {
-					out[g] = append(out[g], e.Key)
-					if e.PreviousKey != "" {
-						out[g] = append(out[g], e.PreviousKey)
-					}
-					out[g] = append(out[g], e.ExtraStoreKeys...)
-					out[g] = append(out[g], e.PreviousExtraStoreKeys...)
-				}
-			}
+			out[g] = append(out[g], keys...)
 		}
 	}
 	for g, keys := range out {
@@ -324,4 +310,54 @@ func (s *Store) StoreKeys() (map[string][]string, error) {
 		out[g] = uniq
 	}
 	return out, nil
+}
+
+func entriesStoreKeys(entries []Entry) []string {
+	var keys []string
+	for _, e := range entries {
+		keys = append(keys, e.Key)
+		if e.PreviousKey != "" {
+			keys = append(keys, e.PreviousKey)
+		}
+		keys = append(keys, e.ExtraStoreKeys...)
+		keys = append(keys, e.PreviousExtraStoreKeys...)
+	}
+	return keys
+}
+
+// snapshotKeysFile caches, per snapshot hash, the store keys its entries name. A snapshot never changes under its
+// hash, so decoding a long history's gzipped snapshots happens once instead of on every launch.
+const snapshotKeysFile = "history-keys.json"
+
+func historyStoreKeys(dir string) ([]string, error) {
+	data, err := readHistory(dir)
+	if err != nil {
+		return nil, err
+	}
+	cached := map[string][]string{}
+	if _, err := datadir.ReadJSON(filepath.Join(dir, snapshotKeysFile), &cached); err != nil {
+		cached = map[string][]string{}
+	}
+	next := make(map[string][]string, len(data.Events))
+	var keys []string
+	for _, ev := range data.Events {
+		k, ok := next[ev.SnapshotID]
+		if !ok {
+			if k, ok = cached[ev.SnapshotID]; !ok {
+				entries, found := snapshotEntries(&data, ev.SnapshotID)
+				if !found {
+					return nil, fmt.Errorf("history snapshot %s not found", ev.SnapshotID)
+				}
+				k = entriesStoreKeys(entries)
+			}
+			next[ev.SnapshotID] = k
+		}
+		keys = append(keys, k...)
+	}
+	if !maps.EqualFunc(cached, next, slices.Equal) {
+		if err := datadir.WriteJSON(filepath.Join(dir, snapshotKeysFile), next); err != nil {
+			log.Printf("history key cache: %v", err)
+		}
+	}
+	return keys, nil
 }

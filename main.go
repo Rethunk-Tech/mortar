@@ -739,7 +739,8 @@ func run() error {
 			}
 		}
 		// An unreadable profile.json stops collection: its keys are unknown, and their items must not be deleted.
-		if keys, err := profiles.StoreKeys(); err != nil {
+		retention := store.Get().StoreUnusedFor()
+		if keys, err := profiles.StoreKeys(retention != 0); err != nil {
 			log.Printf("store collect skipped: %v", err)
 		} else {
 			bundleKeys, err := bundlesSvc.ReferencedStoreKeys()
@@ -753,10 +754,9 @@ func run() error {
 			for g, staged := range queueSvc.StagedKeys() {
 				keys[g] = append(keys[g], staged...)
 			}
-			if d := store.Get().StoreUnusedFor(); d == 0 {
+			items.UnusedFor = retention
+			if retention == 0 {
 				items.UnusedFor = -1
-			} else {
-				items.UnusedFor = d
 			}
 			if err := items.Collect(keys, now); err != nil {
 				log.Printf("store collect: %v", err)

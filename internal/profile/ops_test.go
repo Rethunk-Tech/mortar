@@ -501,7 +501,7 @@ func TestHiddenReorderAndStoreKeys(t *testing.T) {
 	if err := e.Delete("stardew", a.ID); err != nil {
 		t.Fatal(err)
 	}
-	keys, err := e.StoreKeys()
+	keys, err := e.StoreKeys(true)
 	if err != nil || !slices.Equal(keys["stardew"], []string{"local-a"}) {
 		t.Fatalf("keys = %v, %v", keys, err)
 	}
@@ -705,7 +705,7 @@ func TestUnreadableTrashedProfileBlocksOnlyItself(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(e.trash, "stardew", good.ID)); err == nil {
 		t.Fatal("readable expired profile was not purged")
 	}
-	if _, err := e.StoreKeys(); err == nil {
+	if _, err := e.StoreKeys(true); err == nil {
 		t.Fatal("StoreKeys ignored an unreadable trashed profile")
 	}
 }

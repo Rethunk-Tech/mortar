@@ -199,7 +199,7 @@ func (s *Service) applyPreview(root string, preview Preview) error {
 }
 
 func (s *Service) referenced() (map[string][]string, error) {
-	keys, err := s.profiles.StoreKeys()
+	keys, err := s.profiles.StoreKeys(true)
 	if err != nil {
 		return nil, err
 	}
