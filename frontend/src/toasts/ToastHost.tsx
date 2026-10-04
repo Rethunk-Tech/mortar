@@ -1,7 +1,17 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, IconButton, Tooltip } from '@mui/material'
-import { Check, ChevronDown, ChevronUp, Copy, X } from 'lucide-react'
-import { useState } from 'react'
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  CircleCheck,
+  CircleX,
+  Copy,
+  Info,
+  TriangleAlert,
+  X,
+} from 'lucide-react'
+import { type FocusEvent, type MouseEvent, useState } from 'react'
 import { useLaunch } from '../launch/store.ts'
 import { isLocked } from '../mods/locked.ts'
 import { LetterTile } from '../mods/parts.tsx'
@@ -9,11 +19,27 @@ import { HistoryFallback } from './HistoryButton.tsx'
 import { reportUnexpected } from './report.ts'
 import { type Toast, type ToastKind, useToasts } from './store.ts'
 
+const kindIcon: Record<ToastKind, typeof Info> = {
+  info: Info,
+  success: CircleCheck,
+  warning: TriangleAlert,
+  error: CircleX,
+}
+
 const edge: Record<ToastKind, string> = {
   info: 'info.main',
   success: 'success.main',
   warning: 'warning.main',
   error: 'error.main',
+}
+
+function KindIcon({ kind }: { kind: ToastKind }) {
+  const Icon = kindIcon[kind]
+  return (
+    <Box component="span" sx={{ display: 'flex', flexShrink: 0, color: edge[kind], mt: '1px' }}>
+      <Icon size={18} aria-hidden={true} />
+    </Box>
+  )
 }
 
 function CopyDetail({ text }: { text: string }) {
@@ -43,11 +69,36 @@ function CopyDetail({ text }: { text: string }) {
   )
 }
 
-function ToastCard({ toast }: { toast: Toast }) {
-  const { t } = useLingui()
-  const dismiss = useToasts((s) => s.dismiss)
+// Pointer or keyboard focus inside the toast keeps it up; it times out again only once both have left.
+function useHoldWhilePresent(id: number) {
   const hold = useToasts((s) => s.hold)
   const release = useToasts((s) => s.release)
+  return {
+    onMouseEnter: () => hold(id),
+    onMouseLeave: (e: MouseEvent<HTMLElement>) => {
+      if (!e.currentTarget.contains(document.activeElement)) {
+        release(id)
+      }
+    },
+    onFocus: () => hold(id),
+    onBlur: (e: FocusEvent<HTMLElement>) => {
+      const into = e.relatedTarget
+      if (
+        !(
+          (into instanceof Node && e.currentTarget.contains(into)) ||
+          e.currentTarget.matches(':hover')
+        )
+      ) {
+        release(id)
+      }
+    },
+  }
+}
+
+function ToastCard({ toast }: { toast: Toast }) {
+  const holdProps = useHoldWhilePresent(toast.id)
+  const { t } = useLingui()
+  const dismiss = useToasts((s) => s.dismiss)
   const status = useLaunch((s) => s.status)
   const startingProfile = useLaunch((s) => (s.starting ? s.startingProfile : ''))
   const [open, setOpen] = useState(false)
@@ -67,26 +118,9 @@ function ToastCard({ toast }: { toast: Toast }) {
   }
   return (
     <Box
-      // Pointer or keyboard focus inside the toast keeps it up; it times out again only once both have left.
-      onMouseEnter={() => hold(toast.id)}
-      onMouseLeave={(e) => {
-        if (!e.currentTarget.contains(document.activeElement)) {
-          release(toast.id)
-        }
-      }}
-      onFocus={() => hold(toast.id)}
-      onBlur={(e) => {
-        const into = e.relatedTarget
-        if (
-          !(
-            (into instanceof Node && e.currentTarget.contains(into)) ||
-            e.currentTarget.matches(':hover')
-          )
-        ) {
-          release(toast.id)
-        }
-      }}
-      role={toast.kind === 'error' || toast.kind === 'warning' ? 'alert' : 'status'}
+      {...holdProps}
+      // Errors and warnings interrupt; the rest are read out by the notifications region, which stays mounted.
+      role={toast.kind === 'error' || toast.kind === 'warning' ? 'alert' : undefined}
       sx={{
         display: 'flex',
         // A one-line toast centres its text on the close button instead of keeping a two-line height.
@@ -100,7 +134,9 @@ function ToastCard({ toast }: { toast: Toast }) {
         borderRadius: '8px',
       }}
     >
-      {toast.picture === undefined ? null : (
+      {toast.picture === undefined ? (
+        <KindIcon kind={toast.kind} />
+      ) : (
         <LetterTile mod={{ uniqueId: toast.title, name: toast.title, picture: toast.picture }} />
       )}
       <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
@@ -194,6 +230,7 @@ export function ToastHost() {
     <Box
       role="region"
       aria-label={t`Notifications`}
+      aria-live="polite"
       sx={{
         position: 'fixed',
         right: 20,
