@@ -14,7 +14,7 @@ import type { GameId } from '../nav/store.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { MONO } from '../theme/theme.ts'
-import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
+import { type InlineError, inlineError, reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { launchLine, launchOptionsSet } from './logic.ts'
 import { Panel } from './Panel.tsx'
@@ -185,12 +185,12 @@ function LaunchLine({
   )
 }
 
-function CheckFailed({ message, onRetry }: { message: string; onRetry: () => void }) {
+function CheckFailed({ error, onRetry }: { error: InlineError; onRetry: () => void }) {
   const { t } = useLingui()
   return (
     <Panel width={680}>
-      <Typography role="alert" sx={{ fontSize: 14, color: 'error.light' }}>
-        {message}
+      <Typography role="alert" title={error.details} sx={{ fontSize: 14, color: 'error.light' }}>
+        {error.message}
       </Typography>
       <Button variant="contained" onClick={onRetry}>
         {t`Retry`}
@@ -204,13 +204,13 @@ function CheckGate({
   ready,
   onRetry,
 }: {
-  error: string
+  error: InlineError | null
   ready: boolean
   onRetry: () => void
 }) {
   const { t } = useLingui()
-  if (error !== '') {
-    return <CheckFailed message={error} onRetry={onRetry} />
+  if (error) {
+    return <CheckFailed error={error} onRetry={onRetry} />
   }
   if (!ready) {
     return <LoadingRow>{t`Loading…`}</LoadingRow>
@@ -290,7 +290,7 @@ export function SmapiStep({
   const pending = useLoader((s) => s.pending)
   const [options, setOptions] = useState('')
   const [checked, setChecked] = useState(false)
-  const [checkError, setCheckError] = useState('')
+  const [checkError, setCheckError] = useState<InlineError | null>(null)
   const entered = useRef(false)
   const started = useRef(false)
   const checkGen = useRef(0)
@@ -305,20 +305,20 @@ export function SmapiStep({
     checkGen.current += 1
     const token = checkGen.current
     setChecked(false)
-    setCheckError('')
+    setCheckError(null)
     Promise.all([check(game), readOptions()])
       .then(() => {
         if (token !== checkGen.current) {
           return
         }
         setChecked(true)
-        setCheckError('')
+        setCheckError(null)
       })
       .catch((e: unknown) => {
         if (token !== checkGen.current) {
           return
         }
-        setCheckError(errorMessage(e))
+        setCheckError(inlineError(e))
       })
   }, [check, readOptions, game])
   useEffect(runCheck, [runCheck])
@@ -342,7 +342,7 @@ export function SmapiStep({
     }
   }, [checked, smapiReady, installing, install, game])
 
-  if (checkError !== '' || !checked) {
+  if (checkError || !checked) {
     return <CheckGate error={checkError} ready={checked} onRetry={runCheck} />
   }
   if (smapiReady && !installing) {

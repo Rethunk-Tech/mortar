@@ -12,7 +12,7 @@ import { SetGameFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/int
 import { gameArt } from '../games/art.ts'
 import { storeName } from '../games/storeName.ts'
 import { useLoader } from '../loader/store.ts'
-import { errorMessage } from '../toasts/report.ts'
+import { type InlineError, inlineError } from '../toasts/report.ts'
 import { Panel } from './Panel.tsx'
 import { useRefreshOnFocus } from './useRefreshOnFocus.ts'
 
@@ -114,7 +114,7 @@ export function FindStep({
   const found = game.installed
   const smapi = useLoader((s) => s.status)
   const check = useLoader((s) => s.check)
-  const [error, setError] = useState('')
+  const [error, setError] = useState<InlineError | null>(null)
   const dir = game.installDir
   const named = storeName(game.store)
   const caption = named ? t`Found in ${t(named)}` : t`Folder chosen by you`
@@ -132,10 +132,10 @@ export function FindStep({
         return
       }
       await SetGameFolder(game.id, picked)
-      setError('')
+      setError(null)
       refresh()
     } catch (e) {
-      setError(errorMessage(e))
+      setError(inlineError(e))
     }
   }
 
@@ -213,8 +213,8 @@ export function FindStep({
         </Box>
       )}
       {error ? (
-        <Typography role="alert" sx={{ fontSize: 13, color: 'error.light' }}>
-          {error}
+        <Typography role="alert" title={error.details} sx={{ fontSize: 13, color: 'error.light' }}>
+          {error.message}
         </Typography>
       ) : null}
       {found ? (

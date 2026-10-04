@@ -17,7 +17,7 @@ import {
 import type { GameId } from '../nav/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { formatOutcomeDetail, formatPreviewRow, willImport } from './gameModsFormat.ts'
 import { useProfiles } from './store.ts'
@@ -37,7 +37,7 @@ export function GameModsDialog({
   const switchedOff = t`switched off`
   const load = useProfiles((s) => s.load)
   const [mods, setMods] = useState<GameModPreview[]>([])
-  const [error, setError] = useState('')
+  const [error, setError] = useState<InlineError | null>(null)
   const [busy, setBusy] = useState(false)
   const [previewing, setPreviewing] = useState(false)
   const gen = useRef(0)
@@ -46,7 +46,7 @@ export function GameModsDialog({
     gen.current += 1
     const token = gen.current
     setMods([])
-    setError('')
+    setError(null)
     setPreviewing(true)
     PreviewGameMods(game)
       .then((p) => {
@@ -61,7 +61,7 @@ export function GameModsDialog({
           return
         }
         setMods([])
-        setError(errorMessage(e))
+        setError(inlineError(e))
         setPreviewing(false)
       })
   }, [game])
@@ -70,7 +70,7 @@ export function GameModsDialog({
       live.current = false
       gen.current += 1
       setMods([])
-      setError('')
+      setError(null)
       setBusy(false)
       setPreviewing(false)
       return
@@ -111,7 +111,7 @@ export function GameModsDialog({
       if (token !== gen.current || !live.current) {
         return
       }
-      setError(errorMessage(e))
+      setError(inlineError(e))
     } finally {
       if (token === gen.current) {
         setBusy(false)
@@ -126,16 +126,20 @@ export function GameModsDialog({
     >
       <DialogTitle>{t`Import from the game's Mods folder`}</DialogTitle>
       <DialogContent>
-        {error === '' ? null : (
+        {error === null ? null : (
           <>
-            <Typography sx={{ color: 'error.main' }}>{error}</Typography>
+            <Typography sx={{ color: 'error.main' }} title={error.details}>
+              {error.message}
+            </Typography>
             <Button onClick={loadPreview} sx={{ mt: 1 }}>
               {t`Retry`}
             </Button>
           </>
         )}
-        {error === '' && previewing ? <LoadingRow>{t`Reading the Mods folder…`}</LoadingRow> : null}
-        {error === '' && !previewing ? (
+        {error === null && previewing ? (
+          <LoadingRow>{t`Reading the Mods folder…`}</LoadingRow>
+        ) : null}
+        {error === null && !previewing ? (
           <>
             <Typography sx={{ mb: 1.5, color: 'text.secondary' }}>
               {plural(importable, {
@@ -162,7 +166,7 @@ export function GameModsDialog({
         <DisabledReason title={t`Nothing to import`} disabled={previewing || importable === 0}>
           <Button
             variant="contained"
-            disabled={busy || previewing || importable === 0 || error !== ''}
+            disabled={busy || previewing || importable === 0 || error !== null}
             onClick={() => importMods().catch(reportUnexpected)}
           >
             {t`Import`}

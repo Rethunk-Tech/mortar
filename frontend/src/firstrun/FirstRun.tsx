@@ -8,20 +8,20 @@ import { ConfirmLaunchers } from '../../bindings/github.com/Rethunk-Tech/mortar/
 import { LauncherList } from '../launchers/LauncherList.tsx'
 import { useNav } from '../nav/store.ts'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { useRefreshOnFocus } from './useRefreshOnFocus.ts'
 
 // First run: the launchers that tell Mortar which games are installed. Each game is set up when first opened.
 export function FirstRun() {
   const { t } = useLingui()
   const [launchers, setLaunchers] = useState<StoreApp[] | null>(null)
-  const [loadError, setLoadError] = useState('')
+  const [loadError, setLoadError] = useState<InlineError | null>(null)
   const [busy, setBusy] = useState(false)
   const loaded = useRef(false)
   // Only the first read shows Loading; a refresh on window focus keeps the page, its scroll and row errors.
   const refresh = useCallback(() => {
     if (!loaded.current) {
-      setLoadError('')
+      setLoadError(null)
     }
     Launchers()
       .then((ls) => {
@@ -30,14 +30,14 @@ export function FirstRun() {
       })
       .catch((e: unknown) => {
         if (!loaded.current) {
-          setLoadError(errorMessage(e))
+          setLoadError(inlineError(e))
         }
       })
   }, [])
   useEffect(refresh, [refresh])
   useRefreshOnFocus(refresh)
-  if (loadError !== '') {
-    return <LoadErrorRow message={loadError} onRetry={refresh} />
+  if (loadError) {
+    return <LoadErrorRow error={loadError} onRetry={refresh} />
   }
   if (!launchers) {
     return <LoadingRow>{t`Loading…`}</LoadingRow>

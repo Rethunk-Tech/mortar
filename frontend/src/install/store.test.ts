@@ -5,6 +5,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { useLaunch } from '../launch/store.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { testProfile } from '../profiles/testProfile.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
   dropInstallGate,
@@ -43,15 +44,9 @@ mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/serv
 }))
 
 function baseProfile(): Profile {
-  return {
+  return testProfile({
     id: 'p1',
     name: 'Main',
-    notes: '',
-    cover: '',
-    order: 0,
-    hidden: false,
-    created: '',
-    updated: '',
     entries: [
       {
         key: 'k1',
@@ -61,7 +56,7 @@ function baseProfile(): Profile {
         disabled: null,
       },
     ],
-  }
+  })
 }
 
 beforeEach(() => {

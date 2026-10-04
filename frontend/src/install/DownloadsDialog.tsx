@@ -15,7 +15,10 @@ import {
 import { FolderOpen } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DownloadArchive } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/models.ts'
-import { DownloadsArchives } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts'
+import {
+  DownloadsArchives,
+  DownloadsFolders,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { openSettings } from '../nav/store.ts'
@@ -26,24 +29,24 @@ import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { useFolderEvent } from '../shell/useFolderEvent.ts'
-import { errorMessage, reportError } from '../toasts/report.ts'
+import { type InlineError, inlineError, reportError } from '../toasts/report.ts'
 import { ArchivePreview } from './ArchivePreview.tsx'
 import { listArchives, useDownloadsDialog } from './downloadsDialog.ts'
 import { useInstall } from './store.ts'
 
 function useArchives(open: boolean, game: string) {
   const [archives, setArchives] = useState<DownloadArchive[] | null>(null)
-  const [error, setError] = useState('')
+  const [error, setError] = useState<InlineError | null>(null)
   const gen = useRef(0)
   const load = useCallback(() => {
     gen.current += 1
     const token = gen.current
-    setError('')
+    setError(null)
     DownloadsArchives(game)
       .then((found) => token === gen.current && setArchives(found ?? []))
       .catch((e: unknown) => {
         if (token === gen.current) {
-          setError(errorMessage(e))
+          setError(inlineError(e))
         }
       })
   }, [game])
@@ -52,7 +55,7 @@ function useArchives(open: boolean, game: string) {
       return
     }
     setArchives(null)
-    setError('')
+    setError(null)
     load()
     return () => {
       gen.current += 1
@@ -60,6 +63,43 @@ function useArchives(open: boolean, game: string) {
   }, [open, game, load])
   useFolderEvent('library:downloads', game, () => open && load())
   return { archives, error, reload: load }
+}
+
+function FolderLine({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useLingui()
+  const [dirs, setDirs] = useState<string[]>([])
+  useEffect(() => {
+    if (open) {
+      DownloadsFolders()
+        .then((found) => setDirs(found ?? []))
+        .catch(() => setDirs([]))
+    }
+  }, [open])
+  if (dirs.length === 0) {
+    return null
+  }
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 3, pb: 1 }}>
+      <Typography
+        variant="body2"
+        noWrap={true}
+        title={dirs.join('\n')}
+        sx={{ color: 'text.secondary', minWidth: 0 }}
+      >
+        {t`Reading ${dirs.join(', ')}`}
+      </Typography>
+      <Button
+        size="small"
+        sx={{ flexShrink: 0 }}
+        onClick={() => {
+          onClose()
+          openSettings('downloads')
+        }}
+      >
+        {t`Change folder`}
+      </Button>
+    </Box>
+  )
 }
 
 function ArchiveRows({
@@ -111,7 +151,7 @@ function Body({
   onClose,
 }: {
   archives: DownloadArchive[] | null
-  error: string
+  error: InlineError | null
   onRetry: () => void
   shown: DownloadArchive[]
   query: string
@@ -121,8 +161,8 @@ function Body({
   onClose: () => void
 }) {
   const { t } = useLingui()
-  if (error !== '') {
-    return <ErrorRetry message={error} onRetry={onRetry} />
+  if (error) {
+    return <ErrorRetry error={error} onRetry={onRetry} />
   }
   if (archives === null) {
     return <LoadingRow>{t`Looking in the downloads folder…`}</LoadingRow>
@@ -191,6 +231,7 @@ export function DownloadsDialog() {
   return (
     <Dialog open={open} onClose={close} maxWidth={false}>
       <DialogTitle>{t`From the downloads folder`}</DialogTitle>
+      <FolderLine open={open} onClose={close} />
       <DialogContent
         sx={{ width: 'min(900px, calc(100vw - 96px))', height: 460, display: 'flex', gap: 2 }}
       >

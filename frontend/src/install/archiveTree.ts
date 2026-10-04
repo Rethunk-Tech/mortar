@@ -71,7 +71,7 @@ export function groupEntries(
     }
   }
   const groups = new Map<string, TreeGroup>()
-  const sorted = [...rows.values()].sort((a, b) =>
+  const sorted = [...rows.values()].toSorted((a, b) =>
     compareSegments(segments(a.path), segments(b.path)),
   )
   for (const row of sorted) {

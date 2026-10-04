@@ -24,7 +24,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { NXM_GAME } from './route.ts'
 import { fallbackName, modName, useNxm } from './store.ts'
 
@@ -60,7 +60,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [creating, setCreating] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError] = useState<InlineError | null>(null)
   const [applyAll, setApplyAll] = useState(false)
   const load = useCallback(() => {
     List(NXM_GAME)
@@ -78,10 +78,10 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
       return
     }
     setBusy(true)
-    setError('')
+    setError(null)
     const ids = applyAll ? arrivals.map((a) => a.id) : [arrival.id]
     Promise.all(ids.map((id) => choose(id, profile)))
-      .catch((e: unknown) => setError(errorMessage(e)))
+      .catch((e: unknown) => setError(inlineError(e)))
       .finally(() => setBusy(false))
   }
   let text = t`You started this download on Nexus. Choose the profile it goes into.`
@@ -120,8 +120,8 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
           <DialogContentText>{text}</DialogContentText>
         )}
         {error ? (
-          <DialogContentText color="error" sx={{ mt: 1 }}>
-            {error}
+          <DialogContentText color="error" title={error.details} sx={{ mt: 1 }}>
+            {error.message}
           </DialogContentText>
         ) : null}
         {arrivals.length > 1 ? (

@@ -23,7 +23,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
-import { errorMessage, reportUnexpected, toastError } from '../toasts/report.ts'
+import { type InlineError, inlineError, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useIncomingShares } from './incoming.ts'
 
 export function IncomingPrompt() {
@@ -43,7 +43,7 @@ export function IncomingPrompt() {
   )
   const [choosing, setChoosing] = useState(false)
   const [transferring, setTransferring] = useState(false)
-  const [transferError, setTransferError] = useState('')
+  const [transferError, setTransferError] = useState<InlineError | null>(null)
   const autoAccept = useSettings((s) => s.lanAutoAcceptSameAccount)
   const incomingId = incoming?.id ?? ''
   const sameAccount = incoming?.sameAccount === true
@@ -53,14 +53,14 @@ export function IncomingPrompt() {
       return
     }
     setChoosing(false)
-    setTransferError('')
+    setTransferError(null)
     if (incoming.sameAccount) {
       setTransferring(true)
       try {
         await Transfer(incoming.id)
       } catch (error) {
         setTransferring(false)
-        setTransferError(errorMessage(error))
+        setTransferError(inlineError(error))
         return
       }
       setTransferring(false)
@@ -79,7 +79,7 @@ export function IncomingPrompt() {
     }
     let cancelled = false
     setChoosing(false)
-    setTransferError('')
+    setTransferError(null)
     setTransferring(true)
     Transfer(incomingId)
       .then(() => {
@@ -95,7 +95,7 @@ export function IncomingPrompt() {
           return
         }
         setTransferring(false)
-        setTransferError(errorMessage(error))
+        setTransferError(inlineError(error))
       })
     return () => {
       cancelled = true
@@ -124,7 +124,11 @@ export function IncomingPrompt() {
               ? t`The mod files can be copied directly from this Mortar.`
               : t`The files will download from each mod's source.`}
           </Typography>
-          {transferError ? <Typography color="error">{transferError}</Typography> : null}
+          {transferError ? (
+            <Typography color="error" title={transferError.details}>
+              {transferError.message}
+            </Typography>
+          ) : null}
         </DialogContent>
         <DialogActions>
           <Button onClick={decline}>{t`Decline`}</Button>

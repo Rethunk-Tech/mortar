@@ -17,7 +17,7 @@ import {
 import type { GameId } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
-import { errorMessage } from '../toasts/report.ts'
+import { type InlineError, inlineError } from '../toasts/report.ts'
 import { FindStep } from './FindStep.tsx'
 import { NexusStep } from './NexusStep.tsx'
 import { ProfileStep } from './ProfileStep.tsx'
@@ -90,13 +90,13 @@ export function GameSetup({ game: id }: { game: GameId }) {
   const [step, setStep] = useState<Step>(FIND)
   const [game, setGame] = useState<GameInfo | null>(null)
   const [launchers, setLaunchers] = useState<StoreApp[]>([])
-  const [loadError, setLoadError] = useState('')
+  const [loadError, setLoadError] = useState<InlineError | null>(null)
   const [ready, setReady] = useState(false)
   const loaded = useRef(false)
   // Only the first read shows Loading; a refresh on window focus keeps the step and its row errors.
   const refresh = useCallback(() => {
     if (!loaded.current) {
-      setLoadError('')
+      setLoadError(null)
       setReady(false)
     }
     Promise.all([List(), Launchers()])
@@ -107,7 +107,7 @@ export function GameSetup({ game: id }: { game: GameId }) {
       })
       .catch((e: unknown) => {
         if (!loaded.current) {
-          setLoadError(errorMessage(e))
+          setLoadError(inlineError(e))
         }
       })
       .finally(() => setReady(true))
@@ -128,9 +128,9 @@ export function GameSetup({ game: id }: { game: GameId }) {
   if (!ready) {
     return <LoadingRow>{t`Loading…`}</LoadingRow>
   }
-  if (loadError !== '' || !game) {
-    const alert = loadError === '' ? t`Something went wrong.` : loadError
-    return <LoadErrorRow message={alert} onRetry={refresh} />
+  if (loadError || !game) {
+    const alert = loadError ?? inlineError(null, t`Something went wrong.`)
+    return <LoadErrorRow error={alert} onRetry={refresh} />
   }
   const stateOf = (n: Step) => {
     if (n < step) {

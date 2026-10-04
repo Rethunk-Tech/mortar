@@ -11,7 +11,7 @@ import {
   UpdateEverywhere,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
-import { errorMessage } from '../../toasts/report.ts'
+import { type InlineError, inlineError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
 import { mergePreviews } from './mergePreviews.ts'
@@ -62,12 +62,16 @@ function PreviewBody({
   loadError,
   preview,
 }: {
-  loadError: string
+  loadError: InlineError | null
   preview: EverywherePreview | null
 }) {
   const { t } = useLingui()
-  if (loadError !== '') {
-    return <Typography color="error">{loadError}</Typography>
+  if (loadError) {
+    return (
+      <Typography color="error" title={loadError.details}>
+        {loadError.message}
+      </Typography>
+    )
   }
   if (preview === null) {
     return <Typography>{t`Checking profiles…`}</Typography>
@@ -96,21 +100,21 @@ export function EverywhereDialog({
   const { t } = useLingui()
   const [preview, setPreview] = useState<EverywherePreview | null>(null)
   const [pending, run] = usePending()
-  const [loadError, setLoadError] = useState('')
+  const [loadError, setLoadError] = useState<InlineError | null>(null)
   const spec = mods.map((m) => `${m.id}\0${m.newKey}`).join('\n')
   useEffect(() => {
     if (!open || game === '' || spec === '') {
       return
     }
     setPreview(null)
-    setLoadError('')
+    setLoadError(null)
     const items = spec.split('\n').map((row) => {
       const [id] = row.split('\0')
       return { id: id ?? '' }
     })
     Promise.all(items.map((m) => PreviewEverywhere(game, m.id)))
       .then((parts) => setPreview(mergePreviews(parts)))
-      .catch((err: unknown) => setLoadError(errorMessage(err)))
+      .catch((err: unknown) => setLoadError(inlineError(err)))
   }, [open, game, spec])
   const n = preview?.affected?.length ?? 0
   const apply = () => {

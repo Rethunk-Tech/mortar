@@ -18,7 +18,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { LauncherLogo } from '../brand/launchers/LauncherLogo.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
-import { errorMessage } from '../toasts/report.ts'
+import { type InlineError, inlineError } from '../toasts/report.ts'
 
 const STATUS_ICON = 30
 // Two columns once each can hold a row comfortably.
@@ -78,7 +78,7 @@ function LauncherRow({
   const { t } = useLingui()
   const { success, text } = useTheme().palette
   const ok = success.main
-  const [error, setError] = useState('')
+  const [error, setError] = useState<InlineError | null>(null)
   const games = (launcher.games ?? []).map((g) => g.name)
   const roots = launcher.roots ?? []
   const custom = launcher.custom ?? []
@@ -86,10 +86,10 @@ function LauncherRow({
   const run = (p: Promise<void>) =>
     p.then(
       () => {
-        setError('')
+        setError(null)
         refresh()
       },
-      (e: unknown) => setError(errorMessage(e)),
+      (e: unknown) => setError(inlineError(e)),
     )
   const add = async () => {
     try {
@@ -98,7 +98,7 @@ function LauncherRow({
         await run(AddLauncherRoot(launcher.id, picked))
       }
     } catch (e) {
-      setError(errorMessage(e))
+      setError(inlineError(e))
     }
   }
   let summary = t`Not found`
@@ -185,8 +185,12 @@ function LauncherRow({
           </Button>
         </Box>
         {error ? (
-          <Typography role="alert" sx={{ fontSize: 13, color: 'error.light' }}>
-            {error}
+          <Typography
+            role="alert"
+            title={error.details}
+            sx={{ fontSize: 13, color: 'error.light' }}
+          >
+            {error.message}
           </Typography>
         ) : null}
       </AccordionDetails>

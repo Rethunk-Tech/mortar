@@ -7,7 +7,7 @@ import { ArchivePreview as ReadArchive } from '../../bindings/github.com/Rethunk
 import { formatBytes } from '../i18n/bytes.ts'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
-import { errorMessage } from '../toasts/report.ts'
+import { type InlineError, inlineError } from '../toasts/report.ts'
 import { groupEntries, type TreeRow } from './archiveTree.ts'
 
 const INDENT = 14
@@ -72,16 +72,16 @@ function Tree({ preview }: { preview: Preview }) {
 export function ArchivePreview({ path }: { path: string }) {
   const { t } = useLingui()
   const [preview, setPreview] = useState<Preview | null>(null)
-  const [error, setError] = useState('')
+  const [error, setError] = useState<InlineError | null>(null)
   const gen = useRef(0)
   const load = useCallback(() => {
     gen.current += 1
     const token = gen.current
     setPreview(null)
-    setError('')
+    setError(null)
     ReadArchive(path)
       .then((read) => token === gen.current && setPreview(read))
-      .catch((e: unknown) => token === gen.current && setError(errorMessage(e)))
+      .catch((e: unknown) => token === gen.current && setError(inlineError(e)))
   }, [path])
   useEffect(() => {
     load()
@@ -89,8 +89,8 @@ export function ArchivePreview({ path }: { path: string }) {
       gen.current += 1
     }
   }, [load])
-  if (error !== '') {
-    return <ErrorRetry message={error} onRetry={load} />
+  if (error) {
+    return <ErrorRetry error={error} onRetry={load} />
   }
   if (!preview) {
     return <LoadingRow>{t`Reading the archive…`}</LoadingRow>

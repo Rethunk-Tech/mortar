@@ -39,7 +39,7 @@ export function ExtraFolderDialog({
   }, [open])
   const { pickable, blocked } = partitionPreview(mods)
   const chosen = selectedFolders(pickable, off)
-  const empty = !loading && error === '' && mods.length === 0
+  const empty = !loading && error === null && mods.length === 0
   return (
     <ConfirmDialog
       open={open}
@@ -54,7 +54,7 @@ export function ExtraFolderDialog({
       }}
     >
       {loading ? <LoadingRow>{t`Reading ${folder}…`}</LoadingRow> : null}
-      {error === '' ? null : <ErrorRetry message={error} onRetry={reload} />}
+      {error === null ? null : <ErrorRetry error={error} onRetry={reload} />}
       {empty ? (
         <EmptyState
           compact={true}

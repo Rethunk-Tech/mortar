@@ -201,6 +201,9 @@ func (s *Service) NewDownloads(game string) ([]DownloadArchive, error) {
 	return fresh, nil
 }
 
+// DownloadsFolders lists the folders DownloadsArchives reads, so the dialog can say where to put an archive.
+func (s *Service) DownloadsFolders() []string { return s.dirs() }
+
 func (s *Service) dirs() []string {
 	if s.d.Dirs == nil {
 		return nil

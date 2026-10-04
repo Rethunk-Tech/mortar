@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, CircularProgress, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
+import type { InlineError } from '../toasts/report.ts'
 
 export function LoadingRow({ children }: { children: ReactNode }) {
   return (
@@ -14,11 +15,13 @@ export function LoadingRow({ children }: { children: ReactNode }) {
   )
 }
 
-export function LoadErrorRow({ message, onRetry }: { message: string; onRetry: () => void }) {
+export function LoadErrorRow({ error, onRetry }: { error: InlineError; onRetry: () => void }) {
   const { t } = useLingui()
   return (
     <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-      <Typography role="alert">{message}</Typography>
+      <Typography role="alert" title={error.details}>
+        {error.message}
+      </Typography>
       <Button variant="contained" onClick={onRetry}>
         {t`Retry`}
       </Button>

@@ -24,7 +24,7 @@ import { useLoader } from '../loader/store.ts'
 import { type GameId, isGameId, openSettings, useNav } from '../nav/store.ts'
 import { CoverButton } from '../shell/CoverButton.tsx'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
-import { errorMessage, reportError } from '../toasts/report.ts'
+import { type InlineError, inlineError, reportError } from '../toasts/report.ts'
 import { gameArt } from './art.ts'
 import { ProfileCards } from './ProfileCards.tsx'
 import { type GameStatus, loaderCaption, loadGameStatus } from './status.ts'
@@ -261,14 +261,14 @@ export function GameSelect() {
   const { t } = useLingui()
   const [status, setStatus] = useState<GameStatus | null>(null)
   const [states, setStates] = useState<Record<string, GameState>>({})
-  const [loadError, setLoadError] = useState('')
+  const [loadError, setLoadError] = useState<InlineError | null>(null)
   const loaderStatus = useLoader((s) => s.status)
   const checkLoader = useLoader((s) => s.check)
   useEffect(() => {
     checkLoader('stardew')
   }, [checkLoader])
   const refresh = useCallback(() => {
-    setLoadError('')
+    setLoadError(null)
     Promise.all([loadGameStatus(), Get()])
       .then(async ([s, settings]) => {
         const entries = await Promise.all(
@@ -298,13 +298,13 @@ export function GameSelect() {
       })
       .catch((err: unknown) => {
         fail(t`Could not read your games`, err)
-        setLoadError(errorMessage(err))
+        setLoadError(inlineError(err))
       })
   }, [t])
   useEffect(refresh, [refresh])
   useRefreshOnFocus(refresh)
-  if (loadError !== '') {
-    return <LoadErrorRow message={loadError} onRetry={refresh} />
+  if (loadError) {
+    return <LoadErrorRow error={loadError} onRetry={refresh} />
   }
   if (!status) {
     return <LoadingRow>{t`Loading…`}</LoadingRow>
