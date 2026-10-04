@@ -14,9 +14,9 @@ const (
 var (
 	knownListColumns = []string{
 		"on", "name", "version", "latest", "uniqueId", "author", "source", "category",
-		"endorsements", "downloads", "updated", "installed", "needs", "status", "notes", "lastRun",
+		"endorsements", "downloads", "updated", "installed", "needs", "status", "notes", "lastRun", "size", "startup",
 	}
-	defaultListColumns = []string{"on", "name", "version", "author", "source", "category", "status"}
+	defaultListColumns = []string{"on", "name", "version", "author", "source", "category", "status", "size", "startup"}
 	lockedListColumns  = []string{"on", "name"}
 	listSortDirs       = []string{"asc", "desc"}
 	listGroupBys       = []string{"none", "status", "category", "source", "tag", "framework", "author", "group"}
