@@ -3,12 +3,10 @@ import { Box, Button, LinearProgress } from '@mui/material'
 import { FolderInput } from 'lucide-react'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
-import { gameBusy } from '../../launch/busy.ts'
-import { useLaunch } from '../../launch/store.ts'
+import { useGameBusy } from '../../launch/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
-import { reportError } from '../../toasts/report.ts'
-import { useToasts } from '../../toasts/store.ts'
+import { type InlineError, reportError } from '../../toasts/report.ts'
 import type { MoveState } from './DataMoveRun.ts'
 import { mono, nowrap } from './dataStyles.ts'
 
@@ -16,12 +14,15 @@ const PERCENT = 100
 
 export function MoveDataButton({
   onPicked,
-  disabledReason = '',
+  disabledReason: portableReason = '',
 }: {
   onPicked: (dest: string) => void
   disabledReason?: string
 }) {
   const { t } = useLingui()
+  const busy = useGameBusy()
+  const disabledReason =
+    portableReason || (busy ? t`Stop the game before moving the data folder.` : '')
   return (
     <DisabledReason title={disabledReason} disabled={disabledReason !== ''}>
       <Button
@@ -29,13 +30,6 @@ export function MoveDataButton({
         variant="outlined"
         startIcon={<FolderInput size={16} />}
         onClick={() => {
-          if (gameBusy(useLaunch.getState().status)) {
-            useToasts.getState().push({
-              kind: 'error',
-              title: t`Stop the game before moving the data folder.`,
-            })
-            return
-          }
           PickFolder(t`Move data folder…`)
             .then((dest) => (dest ? onPicked(dest) : undefined))
             .catch((err: unknown) => {
@@ -61,26 +55,35 @@ export function MoveDialog({
   move: MoveState | null
   moving: boolean
   progress: { files: number; totalFiles: number; bytes: number; totalBytes: number }
-  error: string
+  error: InlineError | null
   onClose: () => void
   onMove: () => void
 }) {
   const { t } = useLingui()
+  const short = move !== null && move.estimate.freeBytes < move.estimate.bytes
   return (
     <ConfirmDialog
       open={move !== null}
       title={t`Move data folder`}
       confirmLabel={t`Move`}
       busy={moving}
-      confirmDisabled={move === null}
-      maxWidth={360}
+      confirmDisabled={move === null || short}
+      maxWidth={420}
       onCancel={onClose}
       onConfirm={onMove}
     >
       {move ? (
         <>
+          <Box sx={{ ...mono, overflowWrap: 'anywhere' }} title={move.dest}>
+            {move.dest}
+          </Box>
           <Box>{t`Data to copy: ${formatBytes(move.estimate.bytes)}`}</Box>
           <Box>{t`Free space at destination: ${formatBytes(move.estimate.freeBytes)}`}</Box>
+          {short ? (
+            <Box role="alert" sx={{ color: 'error.main' }}>
+              {t`There is not enough free space at the destination.`}
+            </Box>
+          ) : null}
           {moving ? (
             <>
               <LinearProgress
@@ -94,8 +97,8 @@ export function MoveDialog({
             </>
           ) : null}
           {error ? (
-            <Box role="alert" sx={{ color: 'error.main' }}>
-              {error}
+            <Box role="alert" title={error.details} sx={{ color: 'error.main' }}>
+              {error.message}
             </Box>
           ) : null}
         </>

@@ -18,6 +18,7 @@ import { colorHex, PROFILE_COLORS } from '../profiles/appearance.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
+import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { categoriesDiffer, useCustomCategories } from './customCategories.ts'
@@ -73,7 +74,6 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
   const load = useCustomCategories((s) => s.load)
   const [draft, setDraft] = useState<CustomCategory[]>([])
   const [pendingDelete, setPendingDelete] = useState<CustomCategory | null>(null)
-  const [discardOpen, setDiscardOpen] = useState(false)
   const [pending, run] = usePending()
 
   useEffect(() => {
@@ -85,7 +85,6 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
   useEffect(() => {
     if (open) {
       setDraft(stored.map((c) => ({ ...c })))
-      setDiscardOpen(false)
     }
   }, [open, stored])
 
@@ -100,15 +99,11 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
   }
 
   const dirty = categoriesDiffer(draft, stored)
+  const guard = useDiscardGuard(dirty, onClose)
   const requestClose = () => {
-    if (pending) {
-      return
+    if (!pending) {
+      guard.request()
     }
-    if (dirty) {
-      setDiscardOpen(true)
-      return
-    }
-    onClose()
   }
 
   return (
@@ -159,7 +154,7 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
       <ConfirmDialog
         open={pendingDelete !== null}
         title={t`Delete ${pendingDelete?.name ?? ''}?`}
-        body={t`Mods in this category will move to Uncategorized.`}
+        body={t`Mods in this category will move to Uncategorised.`}
         confirmLabel={t`Delete`}
         color="error"
         busy={pending}
@@ -173,18 +168,7 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
           persist(next)
         }}
       />
-      <ConfirmDialog
-        open={discardOpen}
-        title={t`Discard changes?`}
-        confirmLabel={t`Discard`}
-        color="error"
-        onCancel={() => setDiscardOpen(false)}
-        onConfirm={() => {
-          setDiscardOpen(false)
-          setDraft(stored.map((c) => ({ ...c })))
-          onClose()
-        }}
-      />
+      {guard.dialog}
     </>
   )
 }
@@ -213,7 +197,7 @@ function SetCategoryDialog({
   }
 
   const options: { label: string; value: string }[] = [
-    { label: t`Uncategorized`, value: '' },
+    { label: t`Uncategorised`, value: '' },
     ...categories.map((c) => ({ label: c.name, value: c.id })),
   ]
   if (nexusCategory !== '' && !options.some((o) => o.value === nexusCategory)) {

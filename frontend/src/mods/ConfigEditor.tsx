@@ -18,8 +18,7 @@ import {
   ReadContentSchema,
   WriteConfig,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
 import { MONO } from '../theme/theme.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -63,7 +62,6 @@ function useConfigDoc(mod: Mod, open: boolean) {
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
   const [dirty, setDirty] = useState(false)
-  const [discardOpen, setDiscardOpen] = useState(false)
   const readGen = useRef(0)
   useEffect(() => {
     readGen.current += 1
@@ -141,8 +139,6 @@ function useConfigDoc(mod: Mod, open: boolean) {
     error,
     saved,
     dirty,
-    discardOpen,
-    setDiscardOpen,
     setTab,
     setJsonDraft,
     applyJson,
@@ -167,12 +163,9 @@ function EditorDialog({
   tab,
   error,
   saved,
-  discardOpen,
   locked,
   menu,
   onClose,
-  onDiscard,
-  onKeep,
   onSave,
   onTab,
   onJson,
@@ -185,12 +178,9 @@ function EditorDialog({
   tab: number
   error: string
   saved: boolean
-  discardOpen: boolean
   locked: boolean
   menu: ReturnType<typeof useGmcmMenu>
   onClose: () => void
-  onDiscard: () => void
-  onKeep: () => void
   onSave: () => void
   onTab: (tab: number) => void
   onJson: (value: string) => void
@@ -199,123 +189,103 @@ function EditorDialog({
 }) {
   const { t } = useLingui()
   return (
-    <>
-      <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
-        <DialogTitle>{t`Edit config.json`}</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {error ? (
-            <Typography role="alert" sx={text}>
-              {error}
-            </Typography>
-          ) : null}
-          <Tabs
-            value={tab}
-            onChange={(_, next: number) => onTab(next)}
-            aria-label={t`Settings view`}
-          >
-            <Tab label={t`Menu`} />
-            <Tab label={t`Form`} />
-            <Tab label={t`JSON`} />
-          </Tabs>
-          {tab === 0 && menu.capture ? (
-            <MenuPages
-              capture={menu.capture}
-              pageId={menu.pageId}
-              drafts={menu.drafts}
-              result={menu.result}
-              onPage={menu.setPageId}
-              onChange={menu.change}
-              onDiscard={menu.discard}
-            />
-          ) : null}
-          {tab === 0 && !menu.capture ? <MenuHint /> : null}
-          {tab === 1 ? <Fields tree={tree} onChange={onTree} onOpen={onOpenJson} /> : null}
-          {tab === 2 ? (
-            <TextField
-              size="small"
-              fullWidth={true}
-              multiline={true}
-              minRows={12}
-              value={jsonDraft}
-              onChange={(e) => onJson(e.target.value)}
-              slotProps={{
-                htmlInput: { 'aria-label': t`config.json` },
-                input: { sx: { fontFamily: MONO, fontSize: 13 } },
-              }}
-            />
-          ) : null}
-        </DialogContent>
-        <DialogActions>
-          {saved ? <Typography sx={{ mr: 'auto', ...text }}>{t`Saved`}</Typography> : null}
-          <Button onClick={onClose}>{t`Close`}</Button>
-          <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
-            <Button variant="contained" onClick={onSave} disabled={locked || (tab === 1 && !tree)}>
-              {t`Save`}
-            </Button>
-          </DisabledReason>
-        </DialogActions>
-      </Dialog>
-      <ConfirmDialog
-        open={discardOpen}
-        title={t`Discard changes?`}
-        confirmLabel={t`Discard`}
-        color="error"
-        onCancel={onKeep}
-        onConfirm={onDiscard}
-      />
-    </>
+    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
+      <DialogTitle>{t`Edit config.json`}</DialogTitle>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        {error ? (
+          <Typography role="alert" sx={text}>
+            {error}
+          </Typography>
+        ) : null}
+        <Tabs value={tab} onChange={(_, next: number) => onTab(next)} aria-label={t`Settings view`}>
+          <Tab label={t`Menu`} />
+          <Tab label={t`Form`} />
+          <Tab label={t`JSON`} />
+        </Tabs>
+        {tab === 0 && menu.capture ? (
+          <MenuPages
+            capture={menu.capture}
+            pageId={menu.pageId}
+            drafts={menu.drafts}
+            result={menu.result}
+            onPage={menu.setPageId}
+            onChange={menu.change}
+            onDiscard={menu.discard}
+          />
+        ) : null}
+        {tab === 0 && !menu.capture ? <MenuHint /> : null}
+        {tab === 1 ? <Fields tree={tree} onChange={onTree} onOpen={onOpenJson} /> : null}
+        {tab === 2 ? (
+          <TextField
+            size="small"
+            fullWidth={true}
+            multiline={true}
+            minRows={12}
+            value={jsonDraft}
+            onChange={(e) => onJson(e.target.value)}
+            slotProps={{
+              htmlInput: { 'aria-label': t`config.json` },
+              input: { sx: { fontFamily: MONO, fontSize: 13 } },
+            }}
+          />
+        ) : null}
+      </DialogContent>
+      <DialogActions>
+        {saved ? <Typography sx={{ mr: 'auto', ...text }}>{t`Saved`}</Typography> : null}
+        <Button onClick={onClose}>{t`Close`}</Button>
+        <LockedReason locked={locked}>
+          <Button variant="contained" onClick={onSave} disabled={locked || (tab === 1 && !tree)}>
+            {t`Save`}
+          </Button>
+        </LockedReason>
+      </DialogActions>
+    </Dialog>
   )
 }
 
 function ConfigEditor({ mod, open, onClose }: { mod: Mod; open: boolean; onClose: () => void }) {
   const doc = useConfigDoc(mod, open)
   const menu = useGmcmMenu(mod.uniqueId, open)
-  const close = () => {
-    if (doc.dirty) {
-      doc.setDiscardOpen(true)
-      return
-    }
-    onClose()
-  }
+  const guard = useDiscardGuard(doc.dirty, onClose)
   return (
-    <EditorDialog
-      open={open}
-      tree={doc.tree}
-      jsonDraft={doc.jsonDraft}
-      tab={doc.tab}
-      error={doc.error}
-      saved={doc.saved}
-      discardOpen={doc.discardOpen}
-      locked={doc.locked}
-      menu={menu}
-      onClose={close}
-      onDiscard={onClose}
-      onKeep={() => doc.setDiscardOpen(false)}
-      onSave={() => {
-        if (doc.tab === 0) {
-          menu.save()
-          return
-        }
-        doc.save()
-      }}
-      onTab={(next) => {
-        if (next === 2 && doc.tree) {
-          doc.setJsonDraft(stringifyConfig(doc.tree))
-        }
-        if (next === 1 && doc.tab === 2 && !doc.applyJson()) {
-          return
-        }
-        doc.setTab(next)
-      }}
-      onJson={doc.markJson}
-      onTree={doc.markTree}
-      onOpenJson={() => {
-        if (doc.tree) {
-          doc.setJsonDraft(stringifyConfig(doc.tree))
-        }
-        doc.setTab(2)
-      }}
-    />
+    <>
+      {guard.dialog}
+      <EditorDialog
+        open={open}
+        tree={doc.tree}
+        jsonDraft={doc.jsonDraft}
+        tab={doc.tab}
+        error={doc.error}
+        saved={doc.saved}
+        locked={doc.locked}
+        menu={menu}
+        onClose={guard.request}
+        onSave={() => {
+          if (doc.tab === 0) {
+            menu.save()
+            return
+          }
+          doc.save()
+        }}
+        onTab={(next) => {
+          if (next === 2 && doc.tree) {
+            doc.setJsonDraft(stringifyConfig(doc.tree))
+          }
+          if (next === 1 && doc.tab === 2 && !doc.applyJson()) {
+            return
+          }
+          doc.setTab(next)
+        }}
+        onJson={doc.markJson}
+        onTree={doc.markTree}
+        onOpenJson={() => {
+          if (doc.tree) {
+            doc.setJsonDraft(stringifyConfig(doc.tree))
+          }
+          doc.setTab(2)
+        }}
+      />
+    </>
   )
 }
 

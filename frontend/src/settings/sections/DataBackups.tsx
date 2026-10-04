@@ -8,12 +8,16 @@ import {
   TrimBackups,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
+import { useGameBusy } from '../../launch/store.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
+import { gamePrefs } from '../gamePrefs.ts'
 import { SettingRow } from '../SettingsSection.tsx'
+import { useSettings } from '../store.ts'
 
 const MIN_KEEP = 1
 
@@ -90,6 +94,8 @@ export function BackupsUsageRow() {
   const [open, setOpen] = useState(false)
   const [pending, run] = usePending()
   useEffect(() => {
+  const gameBusy = useGameBusy(gameId)
+  const keepPerSave = useSettings((s) => gamePrefs(s).saveBackupKeep)
     if (gameId) {
       LoadBackupsUsage(gameId).then(setUsage).catch(reportUnexpected)
     }
@@ -114,15 +120,24 @@ export function BackupsUsageRow() {
       { errorTitle: t`Could not trim save backups` },
     )
   return (
-    <SettingRow label={t`Save backups: ${formatBytes(usage.totalBytes)}`}>
-      <Button variant="outlined" disabled={usage.totalBytes === 0} onClick={() => setOpen(true)}>
-        {t`Trim…`}
-      </Button>
+    <SettingRow label={t`${gameName} save backups: ${formatBytes(usage.totalBytes)}`}>
+      <DisabledReason
+        title={gameBusy ? t`Stop the game to change save backups.` : t`Nothing to trim yet.`}
+        disabled={usage.totalBytes === 0 || gameBusy}
+      >
+        <Button
+          variant="outlined"
+          disabled={usage.totalBytes === 0 || gameBusy}
+          onClick={() => setOpen(true)}
+        >
+          {t`Trim…`}
+        </Button>
+      </DisabledReason>
       <TrimDialog
         title={t`Trim save backups`}
         body={t`Keep the newest backups of each save and delete the rest. Pinned backups are never removed.`}
         fieldLabel={t`Backups to keep per save`}
-        defaultKeep={5}
+        defaultKeep={keepPerSave}
         open={open}
         busy={pending}
         onClose={() => setOpen(false)}

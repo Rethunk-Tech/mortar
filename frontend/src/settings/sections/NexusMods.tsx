@@ -16,9 +16,10 @@ import {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
-import { errorText } from '../../toasts/errorKind.ts'
-import { reportError, reportUnexpected } from '../../toasts/report.ts'
+import { errorKind } from '../../toasts/errorKind.ts'
+import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { usePending } from '../../toasts/usePending.ts'
 import { NexusMeter } from '../NexusMeter.tsx'
 import { useNexus } from '../nexus.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
@@ -30,7 +31,7 @@ import { useNxmHandler } from './nxmHandler.tsx'
 function UntrackConfirmDialog({
   unused,
   busy,
-  setBusy,
+  run,
   gameId,
   gameName,
   trackedCount,
@@ -39,7 +40,7 @@ function UntrackConfirmDialog({
 }: {
   unused: boolean | null
   busy: boolean
-  setBusy: (v: boolean) => void
+  run: ReturnType<typeof usePending>[1]
   gameId: string | undefined
   gameName: string
   trackedCount: number
@@ -52,9 +53,9 @@ function UntrackConfirmDialog({
     if (unused === null || !gameId) {
       return
     }
-    setBusy(true)
-    UntrackAll(gameId, unused)
-      .then((result) => {
+    run(
+      async () => {
+        const result = await UntrackAll(gameId, unused)
         const toast = {
           kind: result.stoppedForLimit ? 'warning' : 'success',
           title: plural(result.untracked, {
@@ -68,9 +69,9 @@ function UntrackConfirmDialog({
         pushToast(toast)
         setTrackedCount(result.remaining)
         onCancel()
-      })
-      .catch(reportError(t`Could not untrack mods`))
-      .finally(() => setBusy(false))
+      },
+      { errorTitle: t`Could not untrack mods` },
+    )
   }
   return (
     <ConfirmDialog
@@ -104,7 +105,7 @@ function NexusModsSignedIn({
   const { t } = useLingui()
   const [trackedCount, setTrackedCount] = useState<number | null>(null)
   const [confirming, setConfirming] = useState<boolean | null>(null)
-  const [busy, setBusy] = useState(false)
+  const [busy, run] = usePending()
   // The game last opened; untracking is per game, and Settings has no game of its own.
   const game = useProfiles((s) => s.game)
 
@@ -199,7 +200,7 @@ function NexusModsSignedIn({
       <UntrackConfirmDialog
         unused={confirming}
         busy={busy}
-        setBusy={setBusy}
+        run={run}
         gameId={game?.id}
         gameName={gameName}
         trackedCount={trackedCount ?? 0}
