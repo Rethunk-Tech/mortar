@@ -43,13 +43,21 @@ export function errorMessage(e: unknown): string {
   return sentence(kindOf(e))
 }
 
-// The sink for a promise nobody awaits. Stores report their own failures, so this only fires for one they did not expect.
-export const reportUnexpected = (e: unknown) => {
+export function toastError(title: string, e: unknown): void {
   const details = errorDetails(e)
   useToasts.getState().push({
     kind: 'error',
-    title: i18n._(msg`Something went wrong`),
+    title,
     body: errorMessage(e),
     ...(details === '' ? {} : { detail: details }),
   })
+}
+
+export const reportError = (title: string) => (e: unknown) => {
+  toastError(title, e)
+}
+
+// The sink for a promise nobody awaits. Stores report their own failures, so this only fires for one they did not expect.
+export const reportUnexpected = (e: unknown) => {
+  toastError(i18n._(msg`Something went wrong`), e)
 }

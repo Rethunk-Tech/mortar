@@ -57,7 +57,6 @@ export function NexusAccount({ onNavigate }: { onNavigate: () => void }) {
             onNavigate()
             openSettings('nexus')
           }}
-          sx={{ whiteSpace: 'nowrap' }}
         >
           {t`Sign in`}
         </Button>

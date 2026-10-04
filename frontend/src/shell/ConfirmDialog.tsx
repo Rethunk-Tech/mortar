@@ -48,12 +48,7 @@ export function ConfirmDialog({
         {children}
       </DialogContent>
       <DialogActions sx={{ flexWrap: 'wrap' }}>
-        <Button
-          onClick={onCancel}
-          disabled={busy}
-          autoFocus={color === 'error'}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
+        <Button onClick={onCancel} disabled={busy} autoFocus={color === 'error'}>
           {cancelLabel ?? t`Cancel`}
         </Button>
         <Button
@@ -62,7 +57,6 @@ export function ConfirmDialog({
           disabled={busy}
           autoFocus={color !== 'error'}
           onClick={onConfirm}
-          sx={{ whiteSpace: 'nowrap' }}
         >
           {confirmLabel}
         </Button>

@@ -13,11 +13,9 @@ export function Fold({ title, children }: { title: string; children: ReactNode }
         startIcon={<Icon size={14} aria-hidden={true} />}
         aria-expanded={shown}
         sx={{
-          whiteSpace: 'nowrap',
           fontSize: 12,
           color: 'text.secondary',
           fontWeight: 700,
-          textTransform: 'none',
           alignSelf: 'flex-start',
           px: 0.5,
         }}
