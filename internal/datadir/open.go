@@ -12,8 +12,6 @@ func Open(dir string) error {
 	switch runtime.GOOS {
 	case "windows":
 		name = "explorer"
-	case "darwin":
-		name = "open"
 	}
 	cmd := exec.CommandContext(context.Background(), name, dir)
 	if err := cmd.Start(); err != nil {

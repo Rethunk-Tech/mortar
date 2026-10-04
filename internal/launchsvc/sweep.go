@@ -250,8 +250,6 @@ func sweepPlatform() string {
 	switch runtime.GOOS {
 	case "windows":
 		return "Windows"
-	case "darwin":
-		return "Mac"
 	default:
 		return "Linux"
 	}
