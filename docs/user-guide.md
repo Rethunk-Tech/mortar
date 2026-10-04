@@ -4,7 +4,7 @@ Mortar manages mods for Stardew Valley. It finds the game, installs SMAPI (the m
 
 ## Install
 
-Download from [Releases](https://github.com/Rethunk-AI/mortar/releases/latest) or the [download page](https://mortar.rethunk.tech/download/).
+Download from [Releases](https://github.com/Rethunk-AI/mortar/releases/latest).
 
 ### Windows
 
