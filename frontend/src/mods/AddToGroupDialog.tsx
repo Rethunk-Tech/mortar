@@ -11,9 +11,9 @@ import {
 import { FolderTree } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { LockedReason } from './LockedReason.tsx'
 import { addModToGroup } from './storeEntries.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -22,14 +22,14 @@ const ICON_SIZE = 16
 function AddToGroupMenuItem({ locked, onClick }: { locked: boolean; onClick: () => void }) {
   const { t } = useLingui()
   return (
-    <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+    <LockedReason locked={locked}>
       <MenuAction
         disabled={locked}
         icon={<FolderTree size={ICON_SIZE} />}
         label={t`Add to group…`}
         onClick={onClick}
       />
-    </DisabledReason>
+    </LockedReason>
   )
 }
 
@@ -60,7 +60,7 @@ function AddToGroupDialog({
   return (
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
       <DialogTitle>{t`Add to group…`}</DialogTitle>
-      <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+      <LockedReason locked={locked}>
         <DialogContent>
           {groups.map((g) => (
             <MenuItem
@@ -99,7 +99,7 @@ function AddToGroupDialog({
             {t`Add`}
           </Button>
         </DialogActions>
-      </DisabledReason>
+      </LockedReason>
     </Dialog>
   )
 }

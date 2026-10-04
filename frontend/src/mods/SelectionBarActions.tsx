@@ -17,9 +17,9 @@ import {
 } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { LockedReason } from './LockedReason.tsx'
 
 export function SelectionBarActions({
   selected,
@@ -99,7 +99,7 @@ export function SelectionBarActions({
       <Typography sx={{ fontSize: 14, fontWeight: 600, mr: 'auto', whiteSpace: 'nowrap' }}>
         {count}
       </Typography>
-      <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+      <LockedReason locked={locked}>
         <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
           <Button
             size="small"
@@ -124,7 +124,7 @@ export function SelectionBarActions({
             onClick={() => askRemove(selected)}
           >{t`Remove`}</Button>
         </Box>
-      </DisabledReason>
+      </LockedReason>
       <IconAction
         label={t`More actions`}
         icon={<Ellipsis size={18} />}

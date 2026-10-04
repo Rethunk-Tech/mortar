@@ -15,9 +15,9 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { LockedReason } from './LockedReason.tsx'
 import type { Problem } from './lookup.ts'
 import { AssetFix } from './problemFix/AssetFix.tsx'
 import { BrokenFix } from './problemFix/BrokenFix.tsx'
@@ -138,7 +138,7 @@ export function DriftButtons({ drift }: { drift: Drift }) {
   } | null>(null)
   // The keeping action is the main one; the one that discards the user's files is secondary and asks first.
   const button = (label: string, onClick: () => void, discard = false) => (
-    <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+    <LockedReason locked={locked}>
       <Button
         size="small"
         variant={discard ? 'outlined' : 'contained'}
@@ -149,7 +149,7 @@ export function DriftButtons({ drift }: { drift: Drift }) {
       >
         {label}
       </Button>
-    </DisabledReason>
+    </LockedReason>
   )
   const confirmDialog = confirm ? (
     <ConfirmDialog

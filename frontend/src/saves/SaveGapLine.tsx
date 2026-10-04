@@ -10,8 +10,8 @@ import type {
   GapMod,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
 import { SaveGap } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
+import { LockedReason } from '../mods/LockedReason.tsx'
 import { useLocked } from '../mods/useLocked.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { addRecordedMods } from './recordedActions.ts'
@@ -55,7 +55,7 @@ export function SaveGapLine({ fit, profile, game }: { fit: Fit; profile: Profile
         <Button size="small" onClick={() => setShown(!shown)}>
           {shown ? t`Hide` : t`Show`}
         </Button>
-        <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+        <LockedReason locked={locked}>
           <Button
             size="small"
             variant="outlined"
@@ -65,7 +65,7 @@ export function SaveGapLine({ fit, profile, game }: { fit: Fit; profile: Profile
           >
             {t`Add the missing mods`}
           </Button>
-        </DisabledReason>
+        </LockedReason>
       </Box>
       {shown
         ? rows.map(({ m, state }) => (

@@ -1,12 +1,11 @@
-import { useLingui } from '@lingui/react/macro'
 import { Box, Switch, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { CoverButton } from '../shell/CoverButton.tsx'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { toggleCollapsed } from './group.ts'
 import type { ListRow } from './listColumns.ts'
 import { useMods } from './store.ts'
+import { LockedReason } from './LockedReason.tsx'
 import { setGroupEnabled } from './storeEntries.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -27,7 +26,6 @@ function ModsGroupHeader({
   enabled?: boolean
   onEnabled?: (on: boolean) => void
 }) {
-  const { t } = useLingui()
   const locked = useLocked()
   return (
     <Box

@@ -22,9 +22,9 @@ import type {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { AssetMap } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { LockedReason } from './LockedReason.tsx'
 import { sameId } from './lookup.ts'
 import { LinkedText } from './ModLinks.tsx'
 import { applyWins } from './problemFix/applyWins.ts'
@@ -56,7 +56,7 @@ function TouchActions({
     .map((m) => m.modId)
     .filter((id, i, ids) => !sameId(id, mod.modId) && ids.findIndex((x) => sameId(x, id)) === i)
   return (
-    <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+    <LockedReason locked={locked}>
       <Box sx={{ display: 'flex', gap: 0.5, ml: 'auto' }}>
         {mod.canWin ? (
           <Button
@@ -88,7 +88,7 @@ function TouchActions({
           </Button>
         ) : null}
       </Box>
-    </DisabledReason>
+    </LockedReason>
   )
 }
 

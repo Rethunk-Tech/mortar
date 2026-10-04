@@ -7,9 +7,9 @@ import type {
   Fit,
   Lack,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
+import { LockedReason } from '../mods/LockedReason.tsx'
 import { openPage } from '../mods/menu.ts'
 import { download } from '../queue/actions.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -62,7 +62,7 @@ export function LackChipActions(p: {
         </TipIconButton>
       ) : null}
       {source ? (
-        <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+        <LockedReason locked={locked}>
           <Button
             size="small"
             disabled={copying || locked}
@@ -73,7 +73,7 @@ export function LackChipActions(p: {
           >
             {t`Copy`}
           </Button>
-        </DisabledReason>
+        </LockedReason>
       ) : null}
       {!(lack.disabled || want) && url ? (
         <TipIconButton

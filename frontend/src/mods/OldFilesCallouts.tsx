@@ -11,7 +11,6 @@ import {
   ResolveOldFiles,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { ListCallout } from './ListCallout.tsx'
@@ -19,6 +18,7 @@ import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
 function OldFilesCallout({
+import { LockedReason } from './LockedReason.tsx'
   set,
   game,
   profileId,
@@ -52,16 +52,27 @@ function OldFilesCallout({
           <Button variant="text" aria-expanded={shown} onClick={() => setShown(!shown)}>
             {t`Show files`}
           </Button>
-          <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
-            <Button variant="outlined" disabled={pending || locked} onClick={() => resolve(true)}>
+          <LockedReason locked={locked}>
+            <Button
+              variant="text"
+              aria-label={t`Keep ${set.label}'s old files`}
+              disabled={pending || locked}
+              onClick={keep}
+            >
               {t`Keep`}
             </Button>
-          </DisabledReason>
-          <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
-            <Button variant="contained" disabled={pending || locked} onClick={() => resolve(false)}>
+          </LockedReason>
+          <LockedReason locked={locked}>
+            <Button
+              variant="contained"
+              color="error"
+              aria-label={t`Delete ${set.label}'s old files`}
+              disabled={pending || locked}
+              onClick={trash}
+            >
               {t`Delete`}
             </Button>
-          </DisabledReason>
+          </LockedReason>
         </>
       }
     >

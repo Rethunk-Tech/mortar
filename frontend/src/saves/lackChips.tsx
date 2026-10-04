@@ -8,12 +8,12 @@ import type {
   Fit,
   Lack,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
+import { LockedReason } from '../mods/LockedReason.tsx'
 import { useLocked } from '../mods/useLocked.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { LackChipActions } from './lackChipActions.tsx'
@@ -100,7 +100,7 @@ export function AddAll({ missing, profile }: { missing: Lack[]; profile: Profile
     return null
   }
   return (
-    <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+    <LockedReason locked={locked}>
       <Button
         size="small"
         variant="outlined"
@@ -111,7 +111,7 @@ export function AddAll({ missing, profile }: { missing: Lack[]; profile: Profile
       >
         {t`Add all ${wants.length}`}
       </Button>
-    </DisabledReason>
+    </LockedReason>
   )
 }
 

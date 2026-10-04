@@ -10,9 +10,9 @@ import {
   SaveConfigPreset,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { LockedReason } from './LockedReason.tsx'
 import { openTarget } from './storeView.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -33,15 +33,11 @@ function PresetItems({
   return (
     <>
       {names.map((name) => (
-        <DisabledReason
-          key={`a-${name}`}
-          title={t`Stop the game to change mods.`}
-          disabled={locked}
-        >
+        <LockedReason key={`a-${name}`} locked={locked}>
           <MenuItem disabled={locked} onClick={() => onApply(name)}>
             {t`Apply ${name}`}
           </MenuItem>
-        </DisabledReason>
+        </LockedReason>
       ))}
       {names.map((name) => (
         <MenuItem key={`d-${name}`} sx={{ color: 'error.main' }} onClick={() => onAskDelete(name)}>

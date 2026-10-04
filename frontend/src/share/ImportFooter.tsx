@@ -5,7 +5,6 @@ import { useState } from 'react'
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { useProfileLocked } from '../mods/useLocked.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { Problems, StatusBar } from './ImportPreview.tsx'
@@ -97,7 +96,7 @@ export function ImportFooter({
             >
               {t`Add to ${targetName}`}
             </Button>
-          </DisabledReason>
+          </LockedReason>
         ) : null}
         {targetName ? (
           <LockedReason locked={targetLocked}>
@@ -110,7 +109,7 @@ export function ImportFooter({
             >
               {t`Replace ${targetName}`}
             </Button>
-          </DisabledReason>
+          </LockedReason>
         ) : null}
         <Button
           variant="contained"

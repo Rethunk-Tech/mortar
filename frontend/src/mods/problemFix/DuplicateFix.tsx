@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
-import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
+import { LockedReason } from '../LockedReason.tsx'
 import type { Problem } from '../lookup.ts'
 import { useMods } from '../store.ts'
 import { useLocked } from '../useLocked.ts'
@@ -26,11 +26,7 @@ export function DuplicateFix({
         {nexusFiles.map((file) => {
           const mod = mods.find((candidate) => candidate.key === file.key)
           return mod ? (
-            <DisabledReason
-              key={file.key}
-              title={t`Stop the game to change mods.`}
-              disabled={locked}
-            >
+            <LockedReason key={file.key} locked={locked}>
               <Button
                 size="small"
                 variant="outlined"
@@ -41,7 +37,7 @@ export function DuplicateFix({
               >
                 {t`Remove ${file.fileName || file.key}`}
               </Button>
-            </DisabledReason>
+            </LockedReason>
           ) : null
         })}
       </>

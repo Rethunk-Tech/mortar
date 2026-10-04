@@ -8,10 +8,10 @@ import {
   DialogTitle,
 } from '@mui/material'
 import { useEffect } from 'react'
+import { LockedReason } from '../mods/LockedReason.tsx'
 import { useMods } from '../mods/store.ts'
 import { useLocked } from '../mods/useLocked.ts'
 import { download } from '../queue/actions.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { andList, depName, stillMissing, wantsOf } from './missingDeps.ts'
 import { useInstall } from './store.ts'
@@ -46,7 +46,7 @@ export function MissingDepsDialog() {
       <DialogActions>
         <Button onClick={dismissOffer}>{t`Not now`}</Button>
         {wants.length > 0 ? (
-          <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+          <LockedReason locked={locked}>
             <Button
               variant="contained"
               disabled={locked}
@@ -57,7 +57,7 @@ export function MissingDepsDialog() {
             >
               {t`Add them`}
             </Button>
-          </DisabledReason>
+          </LockedReason>
         ) : null}
       </DialogActions>
     </Dialog>

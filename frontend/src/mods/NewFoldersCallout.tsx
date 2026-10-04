@@ -5,7 +5,6 @@ import { useCallback, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { NewGameModsFolders } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { useFolderEvent } from '../shell/useFolderEvent.ts'
 import { ListCallout } from './ListCallout.tsx'
 import { MoveFoldersDialog } from './MoveFoldersDialog.tsx'
@@ -16,6 +15,7 @@ import { usePreviewRows } from './usePreviewRows.ts'
 export function NewFoldersCallout({ profile }: { profile: Profile }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
+import { LockedReason } from './LockedReason.tsx'
   const locked = useLocked()
   const [open, setOpen] = useState(false)
   // A new profile.updated (an update, a move, a rollback) reads the folder again.
@@ -39,11 +39,16 @@ export function NewFoldersCallout({ profile }: { profile: Profile }) {
           other: "# mods in the game's Mods folder aren't in Mortar.",
         })}
         actions={
-          <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
-            <Button variant="contained" disabled={locked} onClick={() => setOpen(true)}>
-              {t`Move into this profile…`}
+          <>
+            <Button variant="text" disabled={pending} onClick={dismissAll}>
+              {t`Don't ask about these`}
             </Button>
-          </DisabledReason>
+            <LockedReason locked={locked}>
+              <Button variant="contained" disabled={locked} onClick={() => setOpen(true)}>
+                {t`Move into this profile…`}
+              </Button>
+            </LockedReason>
+          </>
         }
       />
       <MoveFoldersDialog

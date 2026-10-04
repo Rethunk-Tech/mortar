@@ -20,12 +20,12 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { CompatDetail } from './CompatChip.tsx'
 import { EditConfigButton } from './ConfigEditor.tsx'
 import { useDetail } from './detail.ts'
 import { LockedNote } from './LockedNote.tsx'
+import { LockedReason } from './LockedReason.tsx'
 import { entryOf, modId, siblingsOf } from './lookup.ts'
 import { openPage } from './menu.ts'
 import { NexusDetails } from './NexusDetails.tsx'
@@ -112,11 +112,11 @@ function Versions({
           <Typography sx={{ flex: 1, ...text }}>
             {t`${state.previousVersion} · kept for rollback`}
           </Typography>
-          <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+          <LockedReason locked={locked}>
             <Button size="small" variant="outlined" disabled={locked} onClick={ask}>
               {t`Roll back`}
             </Button>
-          </DisabledReason>
+          </LockedReason>
         </Box>
       ) : null}
     </Section>
@@ -156,11 +156,11 @@ function Settings({
             >
               {t`Open`}
             </Button>
-            <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+            <LockedReason locked={locked}>
               <Button size="small" variant="outlined" disabled={locked} onClick={ask}>
                 {t`Reset`}
               </Button>
-            </DisabledReason>
+            </LockedReason>
           </>
         ) : null}
       </Box>
