@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"cmp"
 	"fmt"
 	"slices"
 	"strings"
@@ -55,12 +56,17 @@ func indexUserMods(p Profile) map[string]DiffSide {
 	return out
 }
 
+// compareNameThenID orders mods by name, then UniqueID, ignoring case.
+func compareNameThenID(aName, aID, bName, bID string) int {
+	return cmp.Or(
+		strings.Compare(strings.ToLower(aName), strings.ToLower(bName)),
+		strings.Compare(strings.ToLower(aID), strings.ToLower(bID)),
+	)
+}
+
 func sortSides(sides []DiffSide) {
 	slices.SortFunc(sides, func(a, b DiffSide) int {
-		if n := strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)); n != 0 {
-			return n
-		}
-		return strings.Compare(strings.ToLower(a.UniqueID), strings.ToLower(b.UniqueID))
+		return compareNameThenID(a.Name, a.UniqueID, b.Name, b.UniqueID)
 	})
 }
 
@@ -90,10 +96,7 @@ func DiffProfiles(a, b Profile) Diff {
 	sortSides(d.OnlyA)
 	sortSides(d.OnlyB)
 	slices.SortFunc(d.Changed, func(a, b DiffPair) int {
-		if n := strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)); n != 0 {
-			return n
-		}
-		return strings.Compare(strings.ToLower(a.UniqueID), strings.ToLower(b.UniqueID))
+		return compareNameThenID(a.Name, a.UniqueID, b.Name, b.UniqueID)
 	})
 	if d.OnlyA == nil {
 		d.OnlyA = []DiffSide{}

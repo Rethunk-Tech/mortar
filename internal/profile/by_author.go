@@ -64,10 +64,7 @@ func (s *Store) ModsByAuthor(game, author string) ([]AuthorMod, error) {
 		out = append(out, *mod)
 	}
 	slices.SortFunc(out, func(a, b AuthorMod) int {
-		if n := strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)); n != 0 {
-			return n
-		}
-		return strings.Compare(strings.ToLower(a.UniqueID), strings.ToLower(b.UniqueID))
+		return compareNameThenID(a.Name, a.UniqueID, b.Name, b.UniqueID)
 	})
 	return out, nil
 }

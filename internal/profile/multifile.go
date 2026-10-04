@@ -73,9 +73,9 @@ func (s *Store) AddExtra(game, id, entryKey, extraKey string, source Source) (Pr
 // SplitExtra turns extraKey into its own profile entry, as a separate install of that store item would.
 func (s *Store) SplitExtra(game, id, entryKey, extraKey string) (Profile, error) {
 	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
-		ei := entryIndex(p.Entries, entryKey)
-		if ei < 0 {
-			return fmt.Errorf("%q is not in this profile", entryKey)
+		ei, err := requireEntry(p.Entries, entryKey)
+		if err != nil {
+			return err
 		}
 		e := &p.Entries[ei]
 		xi := slices.Index(e.ExtraStoreKeys, extraKey)
@@ -98,7 +98,7 @@ func (s *Store) SplitExtra(game, id, entryKey, extraKey string) (Profile, error)
 		was := s.NewModsEnabled
 		s.NewModsEnabled = func() bool { return true }
 		defer func() { s.NewModsEnabled = was }()
-		_, err := s.addTo(game, p, dir, extraKey, source, disabled)
+		_, err = s.addTo(game, p, dir, extraKey, source, disabled)
 		return err
 	})
 	if err != nil {
@@ -113,13 +113,13 @@ func (s *Store) CombineEntries(game, id, targetKey, otherKey string) (Profile, e
 		if targetKey == "" || otherKey == "" || targetKey == otherKey {
 			return fmt.Errorf("cannot combine %q with %q", targetKey, otherKey)
 		}
-		ti := entryIndex(p.Entries, targetKey)
-		oi := entryIndex(p.Entries, otherKey)
-		if ti < 0 {
-			return fmt.Errorf("%q is not in this profile", targetKey)
+		ti, err := requireEntry(p.Entries, targetKey)
+		if err != nil {
+			return err
 		}
-		if oi < 0 {
-			return fmt.Errorf("%q is not in this profile", otherKey)
+		oi, err := requireEntry(p.Entries, otherKey)
+		if err != nil {
+			return err
 		}
 		target, other := p.Entries[ti], p.Entries[oi]
 		if len(other.ExtraStoreKeys) > 0 {
@@ -164,9 +164,9 @@ func extraDisabled(e Entry, extraKey string) []string {
 }
 
 func (s *Store) addExtraLocked(game string, p *Profile, dir, entryKey, extraKey string, source Source) error {
-	ei := entryIndex(p.Entries, entryKey)
-	if ei < 0 {
-		return fmt.Errorf("%q is not in this profile", entryKey)
+	ei, err := requireEntry(p.Entries, entryKey)
+	if err != nil {
+		return err
 	}
 	e := &p.Entries[ei]
 	if extraKey == "" || extraKey == e.Key || slices.Contains(e.ExtraStoreKeys, extraKey) {
@@ -183,9 +183,9 @@ func (s *Store) addExtraLocked(game string, p *Profile, dir, entryKey, extraKey 
 // UpdateExtra replaces one extra store item on an entry with another.
 func (s *Store) UpdateExtra(game, id, entryKey, oldExtra, newExtra string) (Profile, error) {
 	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
-		ei := entryIndex(p.Entries, entryKey)
-		if ei < 0 {
-			return fmt.Errorf("%q is not in this profile", entryKey)
+		ei, err := requireEntry(p.Entries, entryKey)
+		if err != nil {
+			return err
 		}
 		e := &p.Entries[ei]
 		xi := slices.Index(e.ExtraStoreKeys, oldExtra)

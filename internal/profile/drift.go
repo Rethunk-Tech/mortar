@@ -397,10 +397,8 @@ func (s *Store) unplaceKeys(game, id string, keys []string) error {
 	}
 	modsDir := filepath.Join(dir, "mods")
 	for _, key := range keys {
-		for _, name := range []string{key, "." + key} {
-			if err := os.RemoveAll(filepath.Join(modsDir, name)); err != nil {
-				return err
-			}
+		if err := removeEntryFolders(modsDir, key); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -529,15 +527,13 @@ func (s *Store) refreshSnapshotKey(game, id, key string) error {
 
 func (s *Store) restoreDriftEntry(game, id, key string) (Profile, error) {
 	return s.updateMods(game, id, func(p *Profile, dir string) error {
-		i := entryIndex(p.Entries, key)
-		if i < 0 {
-			return fmt.Errorf("%q is not in this profile", key)
+		i, err := requireEntry(p.Entries, key)
+		if err != nil {
+			return err
 		}
 		modsDir := filepath.Join(dir, "mods")
-		for _, name := range []string{key, "." + key} {
-			if err := os.RemoveAll(filepath.Join(modsDir, name)); err != nil {
-				return err
-			}
+		if err := removeEntryFolders(modsDir, key); err != nil {
+			return err
 		}
 		return s.place(game, modsDir, p.Entries[i])
 	})
@@ -545,9 +541,9 @@ func (s *Store) restoreDriftEntry(game, id, key string) (Profile, error) {
 
 func (s *Store) revertDriftEntry(game, id, key string) (Profile, error) {
 	return s.updateMods(game, id, func(p *Profile, dir string) error {
-		i := entryIndex(p.Entries, key)
-		if i < 0 {
-			return fmt.Errorf("%q is not in this profile", key)
+		i, err := requireEntry(p.Entries, key)
+		if err != nil {
+			return err
 		}
 		e := p.Entries[i]
 		if s.items == nil {

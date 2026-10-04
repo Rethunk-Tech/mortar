@@ -46,11 +46,15 @@ func dropKeyFromGroups(p *Profile, key string) {
 	p.Groups = out
 }
 
-func (s *Store) mutateGroup(game, id, name string, fn func(p *Profile, idx int) error) (Profile, error) {
+func (s *Store) unlockedGroupName(game, id, name string) (string, error) {
 	if err := s.unlocked(game, id); err != nil {
-		return Profile{}, err
+		return "", err
 	}
-	name, err := cleanGroupName(name)
+	return cleanGroupName(name)
+}
+
+func (s *Store) mutateGroup(game, id, name string, fn func(p *Profile, idx int) error) (Profile, error) {
+	name, err := s.unlockedGroupName(game, id, name)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -65,10 +69,7 @@ func (s *Store) mutateGroup(game, id, name string, fn func(p *Profile, idx int) 
 
 // CreateGroup adds an empty group to the profile.
 func (s *Store) CreateGroup(game, id, name string) (Profile, error) {
-	if err := s.unlocked(game, id); err != nil {
-		return Profile{}, err
-	}
-	name, err := cleanGroupName(name)
+	name, err := s.unlockedGroupName(game, id, name)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -106,10 +107,7 @@ func (s *Store) DeleteGroup(game, id, name string) (Profile, error) {
 
 // AddToGroup records an entry key in the named group, creating the group if needed.
 func (s *Store) AddToGroup(game, id, name, key string) (Profile, error) {
-	if err := s.unlocked(game, id); err != nil {
-		return Profile{}, err
-	}
-	name, err := cleanGroupName(name)
+	name, err := s.unlockedGroupName(game, id, name)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -145,10 +143,7 @@ func (s *Store) RemoveFromGroup(game, id, name, key string) (Profile, error) {
 
 // SetGroupEnabled switches every mod of every entry in the group in one history event.
 func (s *Store) SetGroupEnabled(game, id, name string, on bool) (Profile, error) {
-	if err := s.unlocked(game, id); err != nil {
-		return Profile{}, err
-	}
-	name, err := cleanGroupName(name)
+	name, err := s.unlockedGroupName(game, id, name)
 	if err != nil {
 		return Profile{}, err
 	}

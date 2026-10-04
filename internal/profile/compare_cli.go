@@ -2,7 +2,6 @@ package profile
 
 import (
 	"slices"
-	"strings"
 )
 
 // CLICompare is the user-mod comparison exposed by the command line.
@@ -56,10 +55,7 @@ func CompareProfilesCLI(a, b Profile) CLICompare {
 	sortSides(out.OnlyB)
 	sortPairs := func(pairs []DiffPair) {
 		slices.SortFunc(pairs, func(a, b DiffPair) int {
-			if n := strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)); n != 0 {
-				return n
-			}
-			return strings.Compare(strings.ToLower(a.UniqueID), strings.ToLower(b.UniqueID))
+			return compareNameThenID(a.Name, a.UniqueID, b.Name, b.UniqueID)
 		})
 	}
 	sortPairs(out.DifferentVersion)

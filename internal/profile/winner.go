@@ -44,6 +44,14 @@ func entryIndex(entries []Entry, key string) int {
 	return slices.IndexFunc(entries, func(e Entry) bool { return e.Key == key })
 }
 
+func requireEntry(entries []Entry, key string) (int, error) {
+	i := entryIndex(entries, key)
+	if i < 0 {
+		return 0, fmt.Errorf("%q is not in this profile", key)
+	}
+	return i, nil
+}
+
 func setLoadAfter(ids []string, loser string, on bool) []string {
 	out := make([]string, 0, len(ids)+1)
 	for _, id := range ids {

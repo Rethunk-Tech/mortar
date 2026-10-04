@@ -81,6 +81,16 @@ func ModPaths(modsDir, key, folder string) (plain, dotted string, err error) {
 		filepath.Join(root, filepath.FromSlash(path.Dir(folder)), "."+path.Base(folder)), nil
 }
 
+// removeEntryFolders deletes both the enabled and disabled folder of a mod entry.
+func removeEntryFolders(modsDir, key string) error {
+	for _, name := range []string{key, "." + key} {
+		if err := os.RemoveAll(filepath.Join(modsDir, name)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // flip renames a folder between its enabled and disabled names; it does nothing when it already has the wanted one.
 func flip(plain, dotted string, enabled bool) error {
 	from, to := dotted, plain
@@ -357,15 +367,13 @@ func entryLabel(e Entry) string {
 
 // removeFrom deletes the entry's folder and drops it from the profile.
 func removeFrom(p *Profile, dir, key string) error {
-	i := entryIndex(p.Entries, key)
-	if i < 0 {
-		return fmt.Errorf("%q is not in this profile", key)
+	i, err := requireEntry(p.Entries, key)
+	if err != nil {
+		return err
 	}
 	modsDir := filepath.Join(dir, "mods")
-	for _, name := range []string{key, "." + key} {
-		if err := os.RemoveAll(filepath.Join(modsDir, name)); err != nil {
-			return err
-		}
+	if err := removeEntryFolders(modsDir, key); err != nil {
+		return err
 	}
 	p.Entries = slices.Delete(p.Entries, i, i+1)
 	dropKeyFromGroups(p, key)

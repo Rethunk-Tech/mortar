@@ -364,9 +364,9 @@ func (s *Store) InstallFomod(game, id, key string, source Source, choices map[st
 
 func (s *Store) applyFomod(game, id, key string, choices map[string]map[string][]string) (Profile, error) {
 	return s.updateMods(game, id, func(p *Profile, dir string) error {
-		ei := entryIndex(p.Entries, key)
-		if ei < 0 {
-			return fmt.Errorf("%q is not in this profile", key)
+		ei, err := requireEntry(p.Entries, key)
+		if err != nil {
+			return err
 		}
 		src, tmp, err := s.layoutItem(game, id, key, choices)
 		if tmp != "" {
@@ -393,10 +393,8 @@ func (s *Store) applyFomod(game, id, key string, choices map[string]map[string][
 			}
 		}
 		modsDir := filepath.Join(dir, "mods")
-		for _, name := range []string{key, "." + key} {
-			if err := os.RemoveAll(filepath.Join(modsDir, name)); err != nil {
-				return err
-			}
+		if err := removeEntryFolders(modsDir, key); err != nil {
+			return err
 		}
 		if err := s.place(game, modsDir, e); err != nil {
 			return err

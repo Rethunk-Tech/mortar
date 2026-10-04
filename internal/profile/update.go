@@ -52,9 +52,9 @@ func (s *Store) moveTo(game, id, oldKey, newKey string, source *Source) (Profile
 func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (Profile, error) {
 	var sw swapped
 	p, err := s.updateLocked(game, id, func(p *Profile, dir string) error {
-		ei := entryIndex(p.Entries, oldKey)
-		if ei < 0 {
-			return fmt.Errorf("%q is not in this profile", oldKey)
+		ei, err := requireEntry(p.Entries, oldKey)
+		if err != nil {
+			return err
 		}
 		rollBack := newKey == ""
 		if rollBack {
