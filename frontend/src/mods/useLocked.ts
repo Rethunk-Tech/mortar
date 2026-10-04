@@ -1,4 +1,4 @@
-import { useShallow } from 'zustand/react/shallow'
+import { useMemo } from 'react'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { isLocked } from './locked.ts'
@@ -13,14 +13,12 @@ export const lockedIn = (s: LaunchLocks, profileId: string) =>
   isLocked(s.status, profileId, s.starting ? s.startingProfile : '')
 
 /** The launch state lockedIn reads, for a list that tests many profiles; stable while those three are. */
-export const useLaunchLocks = () =>
-  useLaunch(
-    useShallow((s) => ({
-      status: s.status,
-      starting: s.starting,
-      startingProfile: s.startingProfile,
-    })),
-  )
+export const useLaunchLocks = (): LaunchLocks => {
+  const status = useLaunch((s) => s.status)
+  const starting = useLaunch((s) => s.starting)
+  const startingProfile = useLaunch((s) => s.startingProfile)
+  return useMemo(() => ({ status, starting, startingProfile }), [status, starting, startingProfile])
+}
 
 export const useProfileLocked = (profileId: string) => useLaunch((s) => lockedIn(s, profileId))
 
