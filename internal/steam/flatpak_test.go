@@ -33,12 +33,12 @@ func TestOverrideCommand(t *testing.T) {
 
 func TestGrantFilesystemUsesOverrideArgs(t *testing.T) {
 	var args []string
+	orig := runFlatpak
+	t.Cleanup(func() { runFlatpak = orig })
 	runFlatpak = func(a ...string) ([]byte, error) {
 		args = a
 		return nil, nil
 	}
-	orig := runFlatpak
-	t.Cleanup(func() { runFlatpak = orig })
 	dir := filepath.Join(t.TempDir(), "mortar")
 	if err := GrantFilesystem(dir); err != nil {
 		t.Fatal(err)
