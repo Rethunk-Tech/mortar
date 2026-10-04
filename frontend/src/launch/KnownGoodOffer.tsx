@@ -13,6 +13,15 @@ import { useLaunch } from './store.ts'
 
 const KNOWN_GOOD = 'good'
 
+async function markKnownGood(game: string, profile: string) {
+  try {
+    await MarkKnownGood(game, profile)
+    useToasts.getState().push({ kind: 'success', title: i18n._(msg`Marked known good`) })
+  } catch (e) {
+    reportUnexpected(e)
+  }
+}
+
 // After a clean run, offers to mark the profile's mods known good, unless they are unchanged since the last mark:
 // asking after every run with the same mods is noise.
 export function KnownGoodOffer() {
@@ -46,12 +55,7 @@ export function KnownGoodOffer() {
           action: {
             label: i18n._(msg`Mark known good`),
             profileId: profile,
-            run: () =>
-              MarkKnownGood(game, profile).then(() => {
-                useToasts
-                  .getState()
-                  .push({ kind: 'success', title: i18n._(msg`Marked known good`) })
-              }, reportUnexpected),
+            run: () => markKnownGood(game, profile),
           },
         })
       })

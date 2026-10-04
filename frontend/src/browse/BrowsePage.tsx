@@ -4,8 +4,9 @@ import { Box, Button, Card, Chip, Pagination, Skeleton, Typography } from '@mui/
 import { CloudOff, Download, ExternalLink, Plus, Search, SearchX } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { i18n } from '../i18n/index.ts'
+import { useNav } from '../nav/store.ts'
+import { useNexus } from '../settings/nexus.ts'
 import { PrefSegmented } from '../settings/PrefControls.tsx'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
@@ -297,6 +298,56 @@ function BrowseToolbar({
   )
 }
 
+// Premium downloads directly; free accounts use the files page's Mod Manager Download button, which Mortar picks up.
+function NexusAction({
+  premium,
+  pending,
+  onDownload,
+  onOpenFiles,
+}: {
+  premium: boolean
+  pending: boolean
+  onDownload: () => void
+  onOpenFiles: () => void
+}) {
+  const { t } = useLingui()
+  const signedIn = useNexus((state) => state.signedIn)
+  if (!signedIn) {
+    return (
+      <Button
+        size="small"
+        variant="outlined"
+        onClick={() => useNav.getState().openSettings('nexus')}
+      >
+        {t`Sign in to download`}
+      </Button>
+    )
+  }
+  if (premium) {
+    return (
+      <Button
+        size="small"
+        variant="contained"
+        startIcon={<Download size={14} />}
+        disabled={pending}
+        onClick={onDownload}
+      >
+        {t`Download`}
+      </Button>
+    )
+  }
+  return (
+    <Button
+      size="small"
+      variant="contained"
+      startIcon={<ExternalLink size={14} />}
+      onClick={onOpenFiles}
+    >
+      {t`Open files page`}
+    </Button>
+  )
+}
+
 function ResultCard({
   row,
   item,
@@ -346,25 +397,14 @@ function ResultCard({
         {t`Add`}
       </Button>
     )
-  } else if (source === NEXUS && premium) {
-    action = (
-      <Button
-        size="small"
-        variant="contained"
-        startIcon={<Download size={14} />}
-        disabled={pending}
-        onClick={() => run(() => Promise.resolve(downloadNexus(id)))}
-      >
-        {t`Download`}
-      </Button>
-    )
   } else if (source === NEXUS) {
     action = (
-      <DisabledReason title={t`Premium only`} disabled={true}>
-        <Button size="small" variant="contained" startIcon={<Download size={14} />} disabled={true}>
-          {t`Download`}
-        </Button>
-      </DisabledReason>
+      <NexusAction
+        premium={premium}
+        pending={pending}
+        onDownload={() => run(() => Promise.resolve(downloadNexus(id)))}
+        onOpenFiles={() => openUrl(`${url}?tab=files`)}
+      />
     )
   }
   const picturePx = row ? ROW_PICTURE_PX : PICTURE_PX
