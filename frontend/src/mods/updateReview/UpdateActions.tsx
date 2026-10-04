@@ -9,14 +9,16 @@ import type {
   Profile,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { PreviewEverywhere } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { useProfiles } from '../../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { download } from '../../queue/actions.ts'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { installableUpdate } from '../lookup.ts'
+import { useNexusDetails } from '../nexusDetails.ts'
+import { useOptionalSkips } from '../optionalFiles.ts'
 import { useMods } from '../store.ts'
 import { EverywhereDialog } from './EverywhereDialog.tsx'
-import { updateWant } from './wants.ts'
+import { withOptional } from './wants.ts'
 
 export function UpdateActions({
   update,
@@ -65,7 +67,14 @@ export function UpdateActions({
         <Button
           variant="contained"
           disabled={blocked}
-          onClick={() => download([updateWant(update)]).catch(reportUnexpected)}
+          onClick={() => {
+            const { byId } = useNexusDetails.getState()
+            const skipped = useOptionalSkips.getState().skipped[update.key] === true
+            const profile = openProfileOf(useProfiles.getState())
+            download(
+              withOptional(update, profile, byId[update.nexusId]?.details?.files ?? [], skipped),
+            ).catch(reportUnexpected)
+          }}
         >
           {queued ? t`Queued` : t`Update`}
         </Button>

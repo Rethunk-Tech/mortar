@@ -10,6 +10,7 @@ import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { installableUpdate, modId, updatesForReview } from './lookup.ts'
 import { mergeCachedDetails, useNexusDetails } from './nexusDetails.ts'
+import { useOptionalSkips } from './optionalFiles.ts'
 import { useMods } from './store.ts'
 import { DIALOG_WIDTH } from './updateReview/constants.ts'
 import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
@@ -21,7 +22,7 @@ import { ReviewFooter } from './updateReview/ReviewFooter.tsx'
 import { ReviewList } from './updateReview/ReviewList.tsx'
 import { ReviewTitle } from './updateReview/ReviewTitle.tsx'
 import { UpdateBar as ReviewBar } from './updateReview/UpdateBar.tsx'
-import { installedCaution, pendingUpdate, updateWant } from './updateReview/wants.ts'
+import { installedCaution, pendingUpdate, withOptional } from './updateReview/wants.ts'
 import { checkedWithSmapi, useUpdates } from './updates.ts'
 
 export function UpdateBar() {
@@ -48,6 +49,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   const [propagateAll, setPropagateAll] = useState(false)
   const [everywhereAll, setEverywhereAll] = useState(false)
   const [loadingAll, setLoadingAll] = useState(false)
+  const skipped = useOptionalSkips((s) => s.skipped)
   useEffect(() => {
     if (!open) {
       return
@@ -56,15 +58,16 @@ export function UpdateReview({ profile }: { profile: Profile }) {
       (updates?.updates ?? []).filter((u) => u.nexusId > 0).map((u) => u.nexusId),
     ).catch(reportUnexpected)
   }, [open, updates])
-  const wanted = list
-    .filter(
-      (u) =>
-        include[modId(u)] !== false &&
-        installableUpdate(u) &&
-        !pendingUpdate(items, profile.id, u) &&
-        (installedCaution(mods, u) === '' || acked[modId(u)] === true),
-    )
-    .map(updateWant)
+  const chosen = list.filter(
+    (u) =>
+      include[modId(u)] !== false &&
+      installableUpdate(u) &&
+      !pendingUpdate(items, profile.id, u) &&
+      (installedCaution(mods, u) === '' || acked[modId(u)] === true),
+  )
+  const wanted = chosen.flatMap((u) =>
+    withOptional(u, profile, byId[u.nexusId]?.details?.files ?? [], skipped[u.key] === true),
+  )
   const uncachedIds = [
     ...new Set(
       list.filter((u) => u.nexusId > 0 && !byId[u.nexusId]?.details).map((u) => u.nexusId),
@@ -98,7 +101,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
         <KeptGroup kept={keptUpdates(updates, profile)} mods={mods} />
       </DialogContent>
       <ReviewFooter
-        wantedCount={wanted.length}
+        wantedCount={chosen.length}
         signedIn={signedIn}
         uncachedIds={uncachedIds}
         loadingAll={loadingAll}

@@ -12,6 +12,7 @@ import { useNexusDetails } from '../nexusDetails.ts'
 import { LetterTile } from '../parts.tsx'
 import { useMods } from '../store.ts'
 import { ROW_TILE } from './constants.ts'
+import { OptionalUpdates } from './OptionalUpdates.tsx'
 import { RowCopy } from './RowCopy.tsx'
 import { RowInclude } from './RowInclude.tsx'
 import { UpdateActions } from './UpdateActions.tsx'
@@ -40,15 +41,9 @@ export function Row({
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const mod = mods.find((m) => m.key === update.key && sameId(m.uniqueId, update.uniqueId))
-  const entry = useProfiles((s) =>
-    s.profiles.find((p) => p.id === profileId)?.entries?.find((e) => e.key === update.key),
-  )
-  const optional = useProfiles(
-    (s) =>
-      (s.profiles.find((p) => p.id === profileId)?.entries ?? []).filter(
-        (e) => e.overlayOf === update.key,
-      ).length,
-  )
+  const entries = useProfiles((s) => s.profiles.find((p) => p.id === profileId)?.entries)
+  const entry = entries?.find((e) => e.key === update.key)
+  const optional = entries?.filter((e) => e.overlayOf === update.key).length ?? 0
   const details = useNexusDetails((s) => s.byId[update.nexusId]?.details)
   const riskyChangelog =
     update.nexusId > 0 && details
@@ -105,6 +100,7 @@ export function Row({
           <ArrowRight size={14} aria-hidden={true} />
           <Version isNew={true}>{update.version}</Version>
         </Box>
+        <OptionalUpdates update={update} profileId={profileId} />
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         {update.url ? (

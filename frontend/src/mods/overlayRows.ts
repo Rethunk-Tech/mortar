@@ -52,3 +52,5 @@ export function nestOverlays<T>(
   }
   return out
 }
+
+export { overlayLabel }

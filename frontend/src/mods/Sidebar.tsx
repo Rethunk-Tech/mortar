@@ -44,6 +44,7 @@ import { openPage } from './menu.ts'
 import { useLookedSnapshot, useNexusEntry, useNexusFresh } from './nexusDetails.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
 import { goneCaption, nexusPageMark, offersNexusDownload } from './nexusMark.ts'
+import { OptionalFiles } from './OptionalFiles.tsx'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { accent, heading } from './paper.ts'
 import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
@@ -395,6 +396,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
         />
       ) : null}
       <UpdateBanner mod={mod} />
+      <OptionalFiles mod={mod} profile={profile} />
       <Button variant="outlined" onClick={() => setAlsoOpen(true)}>
         {t`Also add to…`}
       </Button>
