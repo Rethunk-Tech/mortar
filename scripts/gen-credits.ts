@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { bundledArtwork } from './bundled-artwork.ts'
 
 const LICENCE_ERROR_CHARS = 280
+const PACKAGE_IN_PATH = /^.*node_modules\/((?:@[^/]+\/)?[^/]+)/
 const here = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(here, '..')
 const frontendRoot = join(repoRoot, 'frontend')
@@ -321,14 +322,6 @@ function goModuleNotices(): NoticeEntry[] {
   return out
 }
 
-function resolveNpmDir(name: string, fromDir: string): string | null {
-  try {
-    return dirname(Bun.resolveSync(`${name}/package.json`, fromDir))
-  } catch {
-    return null
-  }
-}
-
 function npmNoticeFromDir(name: string, dir: string): NoticeEntry | { missing: string } {
   const meta = readJSON(join(dir, 'package.json'))
   const pkgName = stringField(meta, 'name') || name
@@ -352,69 +345,61 @@ function npmNoticeFromDir(name: string, dir: string): NoticeEntry | { missing: s
   }
 }
 
-function visitNpm(
-  item: { name: string; from: string; optional: boolean },
-  ctx: {
-    seen: Set<string>
-    queue: { name: string; from: string; optional: boolean }[]
-    out: NoticeEntry[]
-    missing: string[]
-  },
-): void {
-  const dir = resolveNpmDir(item.name, item.from)
-  if (!dir) {
-    if (item.optional || item.from !== frontendRoot) {
-      return
+// The npm packages whose code is in the app's bundle, found from the bundler's module graph rather than the
+// dependency tree, which also names build-only packages that never ship.
+async function npmNotices(): Promise<NoticeEntry[]> {
+  const build = await Bun.build({
+    entrypoints: [join(frontendRoot, 'src', 'main.tsx')],
+    target: 'browser',
+    metafile: true,
+    throw: false,
+  })
+  if (!(build.success && build.metafile)) {
+    throw new Error(`bundle graph: ${build.logs.map(String).join('\n')}`)
+  }
+  const dirs = new Map<string, string>()
+  for (const input of Object.keys(build.metafile.inputs)) {
+    const m = PACKAGE_IN_PATH.exec(input)
+    if (m?.[1] && !dirs.has(m[1])) {
+      // The bundler reports inputs relative to the working directory.
+      dirs.set(m[1], resolve(m[0]))
     }
-    throw new Error(`npm package not installed: ${item.name}`)
   }
-  const meta = readJSON(join(dir, 'package.json'))
-  const pkgName = stringField(meta, 'name') || item.name
-  const version = stringField(meta, 'version')
-  const key = version ? `${pkgName}@${version}` : pkgName
-  if (ctx.seen.has(key)) {
-    return
-  }
-  ctx.seen.add(key)
-  const notice = npmNoticeFromDir(item.name, dir)
-  if ('missing' in notice) {
-    ctx.missing.push(notice.missing)
-  } else {
-    ctx.out.push(notice)
-  }
-  const rec = asRecord(meta)
-  for (const dep of Object.keys(asRecord(rec.dependencies))) {
-    ctx.queue.push({ name: dep, from: dir, optional: false })
-  }
-  for (const dep of Object.keys(asRecord(rec.optionalDependencies))) {
-    ctx.queue.push({ name: dep, from: dir, optional: true })
-  }
-}
-
-function npmNotices(): NoticeEntry[] {
-  const pkg = asRecord(readJSON(join(frontendRoot, 'package.json')))
-  const queue = Object.keys(asRecord(pkg.dependencies)).map((name) => ({
-    name,
-    from: frontendRoot,
-    optional: false,
-  }))
-  const seen = new Set<string>()
   const out: NoticeEntry[] = []
   const missing: string[] = []
-  while (queue.length > 0) {
-    const item = queue.shift()
-    if (item) {
-      visitNpm(item, { seen, queue, out, missing })
+  for (const [name, dir] of dirs) {
+    const notice = npmNoticeFromDir(name, dir)
+    if ('missing' in notice) {
+      missing.push(notice.missing)
+    } else {
+      out.push(notice)
     }
   }
   failMissing('npm packages', missing)
   return out
 }
 
-function collectNotices(): NoticeEntry[] {
+// The Go standard library is compiled into every build; its licence is the toolchain's own LICENSE.
+function goStdlibNotice(): NoticeEntry {
+  const proc = Bun.spawnSync(['go', 'env', 'GOROOT', 'GOVERSION'], {
+    cwd: repoRoot,
+    stdout: 'pipe',
+  })
+  const [goroot = '', version = ''] = proc.stdout.toString().trim().split('\n')
+  const text = readFileSync(join(goroot, 'LICENSE'), 'utf8').trim()
+  return {
+    name: `Go standard library ${version}`,
+    licence: classifyLicenceText(text),
+    url: 'https://go.dev/',
+    texts: [text],
+  }
+}
+
+async function collectNotices(): Promise<NoticeEntry[]> {
   const entries = [
+    goStdlibNotice(),
     ...goModuleNotices(),
-    ...npmNotices(),
+    ...(await npmNotices()),
     ...bundledArtwork.map(({ notice, ...credit }) => ({ ...credit, texts: [notice] })),
   ]
   entries.sort((a, b) => a.name.localeCompare(b.name))
@@ -430,9 +415,9 @@ function formatNotices(entries: NoticeEntry[]): string {
   return [
     'Third-party notices',
     '',
-    'Go modules compiled into Mortar, the frontend runtime npm closure (direct',
-    'dependencies of frontend/package.json and their installed dependency trees),',
-    'with licence and NOTICE text from each package directory, and bundled artwork.',
+    'The Go standard library and the Go modules linked into Mortar on each released',
+    'platform, the npm packages in the frontend bundle, and bundled artwork, with',
+    'licence and NOTICE text from each.',
     '',
     '================================================================================',
     '',
@@ -461,13 +446,13 @@ function buildCredits(): CreditEntry[] {
   return [...art, ...npm, ...go]
 }
 
-function main(): void {
+async function main(): Promise<void> {
   Bun.spawnSync(['go', 'mod', 'download'], { cwd: repoRoot, stdout: 'pipe', stderr: 'pipe' })
   const entries = buildCredits()
   if (!isCreditList(entries)) {
     throw new Error('generated credits failed shape check')
   }
-  const notices = collectNotices()
+  const notices = await collectNotices()
   const outDir = join(frontendRoot, 'src', 'settings', 'generated')
   mkdirSync(outDir, { recursive: true })
   writeFileSync(join(outDir, 'credits.json'), `${JSON.stringify(entries, null, 2)}\n`)
@@ -475,7 +460,7 @@ function main(): void {
 }
 
 if (import.meta.main) {
-  main()
+  await main()
 }
 
 export { classifyLicenceText, collectNotices }

@@ -12,13 +12,16 @@ of this software and associated documentation files.`
 })
 
 describe('collectNotices', () => {
-  test('covers the shipped Go and npm closure only, with real licence text', () => {
-    const notices = collectNotices()
+  test('covers only what ships, with real licence text', async () => {
+    const notices = await collectNotices()
     const names = notices.map((n) => n.name)
     const blob = notices.map((n) => n.texts.join('\n')).join('\n')
     expect(blob).not.toMatch(/no LICENSE or NOTICE/)
     expect(names.some((n) => n.startsWith('vite@'))).toBe(false)
     expect(names.some((n) => n.includes('@biomejs/'))).toBe(false)
+    expect(names.some((n) => n.startsWith('@babel/core@') || n.startsWith('@jest/'))).toBe(false)
+    expect(names.some((n) => n.startsWith('Go standard library'))).toBe(true)
+    expect(names.some((n) => n.startsWith('github.com/go-ole/go-ole@'))).toBe(true)
     expect(names.some((n) => n.startsWith('github.com/miekg/dns@'))).toBe(true)
     expect(names.some((n) => n.startsWith('github.com/hashicorp/golang-lru/v2@'))).toBe(true)
     expect(names.some((n) => n.includes('@mui/system@'))).toBe(true)
