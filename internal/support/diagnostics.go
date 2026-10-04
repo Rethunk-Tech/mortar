@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -384,41 +383,28 @@ func redactQueue(raw []byte) []byte {
 
 func collectProfiles(root string) []bundleProfile {
 	var out []bundleProfile
-	games, err := os.ReadDir(root)
+	dirs, err := datadir.ProfileDirs(root)
 	if err != nil {
 		return []bundleProfile{}
 	}
-	for _, g := range games {
-		if !g.IsDir() || g.Type()&fs.ModeSymlink != 0 {
-			continue
-		}
-		gameID := g.Name()
-		entries, err := os.ReadDir(filepath.Join(root, gameID))
+	for _, d := range dirs {
+		raw, err := fsx.ReadFile(filepath.Join(d.Dir, "profile.json"))
 		if err != nil {
 			continue
 		}
-		for _, e := range entries {
-			if !e.IsDir() || e.Type()&fs.ModeSymlink != 0 {
-				continue
-			}
-			raw, err := fsx.ReadFile(filepath.Join(root, gameID, e.Name(), "profile.json"))
-			if err != nil {
-				continue
-			}
-			var p profile.Profile
-			if json.Unmarshal(raw, &p) != nil {
-				continue
-			}
-			bp := bundleProfile{Game: gameID, ID: p.ID, Name: p.Name, EntryCount: len(p.Entries)}
-			for _, ent := range p.Entries {
-				be := bundleEntry{Source: ent.Source}
-				for _, mod := range ent.Mods {
-					be.Mods = append(be.Mods, bundleMod{Name: mod.Name, UniqueID: mod.UniqueID, Version: mod.Version})
-				}
-				bp.Entries = append(bp.Entries, be)
-			}
-			out = append(out, bp)
+		var p profile.Profile
+		if json.Unmarshal(raw, &p) != nil {
+			continue
 		}
+		bp := bundleProfile{Game: d.Game, ID: p.ID, Name: p.Name, EntryCount: len(p.Entries)}
+		for _, ent := range p.Entries {
+			be := bundleEntry{Source: ent.Source}
+			for _, mod := range ent.Mods {
+				be.Mods = append(be.Mods, bundleMod{Name: mod.Name, UniqueID: mod.UniqueID, Version: mod.Version})
+			}
+			bp.Entries = append(bp.Entries, be)
+		}
+		out = append(out, bp)
 	}
 	slices.SortFunc(out, func(a, b bundleProfile) int {
 		if a.Game != b.Game {
@@ -458,20 +444,17 @@ func zipFiles(files map[string][]byte) ([]byte, error) {
 // carry outcome, versions and counts; the log text stays out.
 func recentRuns(profilesRoot string, n int) []map[string]any {
 	var all []map[string]any
-	games, _ := os.ReadDir(profilesRoot)
-	for _, g := range games {
-		profs, _ := os.ReadDir(filepath.Join(profilesRoot, g.Name()))
-		for _, p := range profs {
-			var idx struct {
-				Runs []map[string]any `json:"runs"`
-			}
-			if json.Unmarshal(readFile(filepath.Join(profilesRoot, g.Name(), p.Name(), "runs", "index.json")), &idx) != nil {
-				continue
-			}
-			for _, r := range idx.Runs {
-				r["game"], r["profile"] = g.Name(), p.Name()
-				all = append(all, r)
-			}
+	dirs, _ := datadir.ProfileDirs(profilesRoot)
+	for _, d := range dirs {
+		var idx struct {
+			Runs []map[string]any `json:"runs"`
+		}
+		if json.Unmarshal(readFile(filepath.Join(d.Dir, "runs", "index.json")), &idx) != nil {
+			continue
+		}
+		for _, r := range idx.Runs {
+			r["game"], r["profile"] = d.Game, d.ID
+			all = append(all, r)
 		}
 	}
 	slices.SortFunc(all, func(a, b map[string]any) int {

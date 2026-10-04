@@ -182,36 +182,16 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 		return Usage{}, err
 	}
 	u.SharedSaved, u.SharedSavedKnown = share.saved()
-	profilesRoot := filepath.Join(root, "profiles")
-	games, err := os.ReadDir(filepath.Clean(profilesRoot))
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+	dirs, err := datadir.ProfileDirs(filepath.Join(root, "profiles"))
+	if err != nil {
 		return Usage{}, err
 	}
-	for _, g := range games {
-		if !g.IsDir() || g.Type()&fs.ModeSymlink != 0 {
-			continue
+	for _, d := range dirs {
+		name := d.ID
+		if meta := readProfile(filepath.Join(d.Dir, "profile.json")); meta.Name != "" {
+			name = meta.Name
 		}
-		ids, err := os.ReadDir(filepath.Clean(filepath.Join(profilesRoot, g.Name())))
-		if err != nil {
-			continue
-		}
-		for _, d := range ids {
-			if !d.IsDir() || d.Type()&fs.ModeSymlink != 0 {
-				continue
-			}
-			name := d.Name()
-			meta := readProfile(filepath.Join(profilesRoot, g.Name(), d.Name(), "profile.json"))
-			if meta.Name != "" {
-				name = meta.Name
-			}
-			key := g.Name() + "/" + d.Name()
-			u.Profiles = append(u.Profiles, ProfileSize{
-				Game: g.Name(),
-				ID:   d.Name(),
-				Name: name,
-				Size: mods[key],
-			})
-		}
+		u.Profiles = append(u.Profiles, ProfileSize{Game: d.Game, ID: d.ID, Name: name, Size: mods[d.Game+"/"+d.ID]})
 	}
 	known := map[string]struct{}{}
 	sizes := map[string]int64{}
@@ -387,49 +367,33 @@ func profileUse(root string) (names map[string]string, uses map[string]int, copi
 	names = map[string]string{}
 	uses = map[string]int{}
 	copies = map[string]int64{}
-	profilesRoot := filepath.Join(root, "profiles")
-	games, err := os.ReadDir(filepath.Clean(profilesRoot))
-	if err != nil {
-		return names, uses, copies
-	}
-	for _, g := range games {
-		if !g.IsDir() || g.Type()&fs.ModeSymlink != 0 {
-			continue
-		}
-		ids, err := os.ReadDir(filepath.Clean(filepath.Join(profilesRoot, g.Name())))
-		if err != nil {
-			continue
-		}
-		for _, d := range ids {
-			if !d.IsDir() || d.Type()&fs.ModeSymlink != 0 {
-				continue
-			}
-			p := readProfileEntries(filepath.Join(profilesRoot, g.Name(), d.Name(), "profile.json"))
-			mods := filepath.Join(profilesRoot, g.Name(), d.Name(), "mods")
-			seen := map[string]bool{}
-			for _, e := range p.Entries {
-				keys := append([]string{e.Key}, e.ExtraStoreKeys...)
-				for _, key := range keys {
-					if key == "" {
-						continue
-					}
-					id := g.Name() + "/" + key
-					if e.Source.Name != "" && names[id] == "" {
-						if e.Source.Version == "" {
-							names[id] = e.Source.Name
-						} else {
-							names[id] = e.Source.Name + " " + e.Source.Version
-						}
-					}
-					if !seen[id] {
-						uses[id]++
-						seen[id] = true
-					}
-					if key == e.Key {
-						copies[id] += dirSize(filepath.Join(mods, key)) + dirSize(filepath.Join(mods, "."+key))
+	dirs, _ := datadir.ProfileDirs(filepath.Join(root, "profiles"))
+	for _, d := range dirs {
+		p := readProfileEntries(filepath.Join(d.Dir, "profile.json"))
+		mods := filepath.Join(d.Dir, "mods")
+		seen := map[string]bool{}
+		for _, e := range p.Entries {
+			keys := append([]string{e.Key}, e.ExtraStoreKeys...)
+			for _, key := range keys {
+				if key == "" {
+					continue
+				}
+				id := d.Game + "/" + key
+				if e.Source.Name != "" && names[id] == "" {
+					if e.Source.Version == "" {
+						names[id] = e.Source.Name
 					} else {
-						copies[id] += dirSize(filepath.Join(mods, e.Key, key))
+						names[id] = e.Source.Name + " " + e.Source.Version
 					}
+				}
+				if !seen[id] {
+					uses[id]++
+					seen[id] = true
+				}
+				if key == e.Key {
+					copies[id] += dirSize(filepath.Join(mods, key)) + dirSize(filepath.Join(mods, "."+key))
+				} else {
+					copies[id] += dirSize(filepath.Join(mods, e.Key, key))
 				}
 			}
 		}
