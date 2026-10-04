@@ -1,4 +1,3 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Button,
@@ -13,13 +12,9 @@ import { useEffect, useState } from 'react'
 import type { Bundle } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/models.ts'
 import { Apply } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { download } from '../queue/actions.ts'
-import { reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
-import { bundleWants } from './missingWants.ts'
+import { bundleApplied } from './applied.ts'
 
 // Adds a saved bundle to a chosen profile from the Bundles panel, the other way round from a profile's menu.
 export function ApplyBundleToProfile({
@@ -49,30 +44,8 @@ export function ApplyBundleToProfile({
     run(
       async () => {
         const result = await Apply(game, bundle.id, profileId)
-        useProfiles.getState().replace(result.profile)
-        if (useProfiles.getState().openId === profileId) {
-          useMods.getState().load().catch(reportUnexpected)
-        }
         onClose()
-        const missing = result.missing ?? []
-        const added = plural(result.added, { one: '# mod added', other: '# mods added' })
-        const wants = bundleWants(result.missingMods)
-        useToasts.getState().push({
-          kind: missing.length > 0 ? 'warning' : 'success',
-          title: t`Bundle added`,
-          body:
-            missing.length > 0
-              ? `${added}\n${t`Not downloaded yet: ${missing.join(', ')}`}`
-              : added,
-          ...(wants.length > 0
-            ? {
-                action: {
-                  label: t`Download them`,
-                  run: () => download(wants, true).catch(reportUnexpected),
-                },
-              }
-            : {}),
-        })
+        bundleApplied(result, profileId)
       },
       { errorTitle: t`Could not add the bundle` },
     )

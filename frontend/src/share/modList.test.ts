@@ -1,8 +1,6 @@
 import { expect, test } from 'bun:test'
-import type {
-  Entry,
-  Profile,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { testProfile } from '../profiles/testProfile.ts'
 import {
   DISCORD_LIMIT,
   escapeMarkdown,
@@ -31,17 +29,7 @@ const entry = (partial: Partial<Entry> & Pick<Entry, 'key' | 'source'>): Entry =
   ...partial,
 })
 
-const profile = (entries: Entry[]): Profile => ({
-  id: 'p1',
-  name: 'Farm',
-  notes: '',
-  cover: '',
-  order: 0,
-  hidden: false,
-  created: '',
-  updated: '',
-  entries,
-})
+const profile = (entries: Entry[]) => testProfile({ id: 'p1', name: 'Farm', entries })
 
 test('listItems drops bundled SMAPI and the bridge and keeps disabled mods', () => {
   const items = listItems(

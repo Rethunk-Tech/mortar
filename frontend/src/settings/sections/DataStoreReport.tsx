@@ -95,7 +95,7 @@ function groupLeftovers(preview: Preview | null): LeftoverGroup[] {
     g.size += it.size
     groups.set(kind, g)
   }
-  return [...groups.values()].sort((a, b) => b.size - a.size)
+  return [...groups.values()].toSorted((a, b) => b.size - a.size)
 }
 
 function leftoverLabel(i18n: I18n, kind: LeftoverKind): string {

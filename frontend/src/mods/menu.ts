@@ -7,12 +7,11 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
-  History,
+  Baseline,
   Revert,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { undoRevertTarget } from '../toasts/undo.ts'
 import { entryOf, modId, updateFor } from './lookup.ts'
 import { hostOf, type MenuState } from './modActions.ts'
 import { useMods } from './store.ts'
@@ -126,12 +125,9 @@ export async function applyWithUndo(
   change: () => Promise<Profile>,
   toast: (undo: () => unknown) => void,
 ): Promise<void> {
-  const beforeId = undoRevertTarget((await History(gameId, profileId)) ?? [])
+  const beforeId = await Baseline(gameId, profileId)
   useProfiles.getState().replace(await change())
   toast(async () => {
-    if (!beforeId) {
-      return
-    }
     useProfiles.getState().replace(await Revert(gameId, profileId, beforeId))
   })
 }

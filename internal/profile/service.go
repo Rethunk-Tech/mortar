@@ -88,6 +88,11 @@ func (s *Service) History(game, id string) ([]HistoryEvent, error) {
 	return s.store.History(game, id)
 }
 
+// Baseline returns the history event for the profile as it stands, recording one when there is none to revert to.
+func (s *Service) Baseline(game, id string) (string, error) {
+	return s.store.Baseline(game, id)
+}
+
 // HealthHistory lists problem-check snapshots for this profile, oldest first.
 func (s *Service) HealthHistory(game, id string) ([]HealthPoint, error) {
 	return s.store.HealthHistory(game, id)

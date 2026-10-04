@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { problemCount } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useSaves } from '../saves/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { ProfilesEmpty, ProfilesFailed, ProfilesHidden, ProfilesLoading } from './detailStates.tsx'
@@ -9,14 +9,13 @@ import { ProfileWorkspace } from './ProfileWorkspace.tsx'
 
 export function Detail() {
   const profiles = useProfiles((s) => s.profiles)
-  const openId = useProfiles((s) => s.openId)
   const loaded = useProfiles((s) => s.loaded)
   const failed = useProfiles((s) => s.failed)
   const problemsResult = useMods((s) => s.problems)
   const problemsTabCount = problemsResult === null ? null : problemCount(problemsResult)
   const game = useProfiles((s) => s.game?.id ?? '')
   const gameName = useProfiles((s) => s.game?.name ?? '')
-  const profile = profiles.find((p) => p.id === openId)
+  const profile = useProfiles(openProfileOf)
   const loadSaves = useSaves((s) => s.load)
   const mods = useMods((s) => s.mods)
   const modState = useMemo(

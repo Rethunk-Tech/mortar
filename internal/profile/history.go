@@ -614,7 +614,7 @@ func (s *Store) Baseline(game, id string) (string, error) {
 			return last.ID, nil
 		}
 	}
-	ev, err := appendHistory(dir, HistoryEvent{Kind: historyRestored, Label: "Before applying a template", Count: 1}, p.Entries, s.historyKeep())
+	ev, err := appendHistory(dir, HistoryEvent{Kind: historyRestored, Label: "Before this change", Count: 1}, p.Entries, s.historyKeep())
 	return ev.ID, err
 }
 

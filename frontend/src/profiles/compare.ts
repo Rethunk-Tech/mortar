@@ -57,7 +57,7 @@ function indexUserMods(profile: Profile): Map<string, CompareSide> {
 }
 
 function sortSides(sides: CompareSide[]): CompareSide[] {
-  return [...sides].sort((a, b) => {
+  return sides.toSorted((a, b) => {
     const n = cmpText(a.name, b.name)
     if (n !== 0) {
       return n
@@ -67,7 +67,7 @@ function sortSides(sides: CompareSide[]): CompareSide[] {
 }
 
 function sortPairs(pairs: ComparePair[]): ComparePair[] {
-  return [...pairs].sort((a, b) => {
+  return pairs.toSorted((a, b) => {
     const n = cmpText(a.name, b.name)
     if (n !== 0) {
       return n

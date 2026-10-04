@@ -11,7 +11,7 @@ import { nexusIdOf } from '../mods/lookup.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
 import { isGameId, useNav } from '../nav/store.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -34,17 +34,13 @@ async function openMod(a: Arrival): Promise<void> {
   if (last && profilesState.profiles.some((p) => p.id === last && !p.hidden)) {
     profilesState.open(last)
   }
-  const profile = useProfiles
-    .getState()
-    .profiles.find((p) => p.id === useProfiles.getState().openId)
+  const profile = openProfileOf(useProfiles.getState())
   useTab.getState().setTab('mods')
   useDetail.getState().show(null)
   let selected = false
   if (profile) {
     await useMods.getState().load()
-    const current = useProfiles
-      .getState()
-      .profiles.find((p) => p.id === useProfiles.getState().openId)
+    const current = openProfileOf(useProfiles.getState())
     const mod = current
       ? useMods.getState().mods.find((candidate) => nexusIdOf(current, candidate) === modID)
       : undefined

@@ -1,5 +1,6 @@
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Route } from '../nav/store.ts'
+import { openProfileOf } from '../profiles/store.ts'
 
 // The game an nxm link for stardewvalley belongs to.
 export const NXM_GAME = 'stardew'
@@ -15,5 +16,5 @@ export function directProfile(
   if (route.name !== 'game' || route.game !== NXM_GAME || gameId !== NXM_GAME) {
     return null
   }
-  return profiles.find((p) => p.id === openId) ?? null
+  return openProfileOf({ profiles, openId }) ?? null
 }

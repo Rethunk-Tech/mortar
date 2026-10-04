@@ -4,6 +4,7 @@ import {
   type Drift,
   DriftKind,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { testProfile } from '../profiles/testProfile.ts'
 import {
   entryHasDrift,
   installableUpdate,
@@ -183,15 +184,9 @@ test('a pin or skipped version hides that update', () => {
     unofficial: false,
   }
   const result = { updates: [update], held: [], unknown: false }
-  const pinned = {
+  const pinned = testProfile({
     id: 'p',
     name: 'P',
-    notes: '',
-    cover: '',
-    order: 0,
-    hidden: false,
-    created: '',
-    updated: '',
     entries: [
       {
         key: 'a-1',
@@ -202,7 +197,7 @@ test('a pin or skipped version hides that update', () => {
         pinned: true,
       },
     ],
-  }
+  })
   expect(updateCount(result, pinned)).toBe(0)
   expect(updateFor(result, { key: 'a-1', uniqueId: 'me.a' }, pinned)).toBeUndefined()
 })

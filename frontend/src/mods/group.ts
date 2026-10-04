@@ -140,7 +140,7 @@ function groupSorted<T>(
   keyOf: (item: T) => string,
   compare: (a: T, b: T) => number,
 ): Group<T>[] {
-  const sortedByKey = (list: T[]) => [...list].sort(compare)
+  const sortedByKey = (list: T[]) => list.toSorted(compare)
   if (by === 'none') {
     return [{ key: '', items: sortedByKey([...items]) }]
   }

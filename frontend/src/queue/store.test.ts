@@ -9,6 +9,7 @@ import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import { useLaunch } from '../launch/store.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { testProfile } from '../profiles/testProfile.ts'
 import {
   applyProgress,
   entryForItem,
@@ -43,17 +44,7 @@ const entry = (): Entry => ({
 })
 
 function baseProfile(): Profile {
-  return {
-    id: 'p1',
-    name: 'Main',
-    notes: '',
-    cover: '',
-    order: 0,
-    hidden: false,
-    created: '',
-    updated: '',
-    entries: [entry()],
-  }
+  return testProfile({ id: 'p1', name: 'Main', entries: [entry()] })
 }
 
 const item = (over: Partial<Item> = {}): Item => ({

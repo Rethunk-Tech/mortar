@@ -11,10 +11,10 @@ export function orderProfiles<T extends OrderableProfile>(
   lastPlayedProfile = '',
 ): T[] {
   if (order === 'name') {
-    return [...profiles].sort((a, b) => cmpText(a.name, b.name))
+    return profiles.toSorted((a, b) => cmpText(a.name, b.name))
   }
   if (order === 'lastPlayed') {
-    return [...profiles].sort((a, b) => {
+    return profiles.toSorted((a, b) => {
       if (a.id === lastPlayedProfile && b.id !== lastPlayedProfile) {
         return -1
       }
