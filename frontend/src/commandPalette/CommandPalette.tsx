@@ -4,6 +4,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Dialog, List, ListItemButton, ListItemIcon, ListItemText, TextField } from '@mui/material'
 import {
   Download,
+  FolderOpen,
   FolderPlus,
   Inbox,
   Keyboard,
@@ -48,6 +49,9 @@ function iconFor(item: PaletteItem): ReactNode {
   }
   if (item.id === 'action:downloads') {
     return <Download size={16} />
+  }
+  if (item.id === 'action:downloads-folder') {
+    return <FolderOpen size={16} />
   }
   if (item.id === 'action:import') {
     return <Inbox size={16} />

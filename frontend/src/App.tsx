@@ -10,6 +10,7 @@ import { FomodDialog } from './fomod/Dialog.tsx'
 import { MainScreen } from './game/MainScreen.tsx'
 import { GameSelect } from './games/GameSelect.tsx'
 import { loadGameStatus } from './games/status.ts'
+import { DownloadsDialog } from './install/DownloadsDialog.tsx'
 import { LaunchLayer } from './launch/LaunchLayer.tsx'
 import { overlayGame, useLaunch } from './launch/store.ts'
 import { PinReasonDialog } from './mods/pinReasonDialog.tsx'
@@ -82,6 +83,7 @@ export function App() {
       <PinReasonDialog />
       <ShareDialog />
       <ImportDialog />
+      <DownloadsDialog />
       <WhatsNewDialog />
       <BugReportDialog />
       <QuitPrompt />

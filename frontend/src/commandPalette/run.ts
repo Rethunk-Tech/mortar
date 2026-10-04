@@ -1,4 +1,5 @@
 import { type TabId, useTab } from '../game/tab.ts'
+import { openDownloadsDialog } from '../install/downloadsDialog.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
 import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
@@ -98,6 +99,10 @@ function runAction(id: string): void {
   }
   if (id === 'action:downloads') {
     useQueue.getState().setOpen(true)
+    return
+  }
+  if (id === 'action:downloads-folder') {
+    openDownloadsDialog()
     return
   }
   if (id === 'action:import' || id === 'action:paste-link') {

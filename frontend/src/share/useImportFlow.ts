@@ -102,6 +102,19 @@ async function showImported(game: string, intoOpen: boolean, id: string) {
   }
 }
 
+function announceCollection(applied: Result['collection']) {
+  if (!applied) {
+    return
+  }
+  const mods = plural(applied.fomodMods, { one: '# mod', other: '# mods' })
+  const configs = plural(applied.configs, { one: '# config file', other: '# config files' })
+  useToasts.getState().push({
+    kind: applied.error ? 'warning' : 'success',
+    title: i18n._(msg`Applied the curator's choices for ${mods} and ${configs}`),
+    ...(applied.error ? { body: applied.error } : {}),
+  })
+}
+
 // Tells what an import did: the downloads it queued, and the name a new profile took when the shared one was taken.
 function announce(
   result: Result,
@@ -131,6 +144,7 @@ function announce(
     title: queued > 0 ? i18n._(msg`Importing into ${name}`) : i18n._(msg`Imported ${name}`),
     body,
   })
+  announceCollection(result.collection)
   if (shouldOpenQueueAfterImport(queued)) {
     useQueue.getState().setOpen(true)
   }

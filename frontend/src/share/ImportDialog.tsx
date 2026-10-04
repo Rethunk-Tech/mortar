@@ -7,6 +7,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { CollectionNotes } from './CollectionNotes.tsx'
 import { CompareSummary } from './CompareSummary.tsx'
 import { ImportFooter } from './ImportFooter.tsx'
 import { ImportInput } from './ImportInput.tsx'
@@ -236,6 +237,7 @@ function Body({ request }: { request: ImportRequest }) {
             {targetName && !flow.external ? (
               <CompareSummary preview={preview} targetName={targetName} />
             ) : null}
+            {preview.collection ? <CollectionNotes collection={preview.collection} /> : null}
             {hasMods ? (
               <Tiles mods={preview.mods} excluded={flow.excluded} onToggle={flow.toggle} />
             ) : (

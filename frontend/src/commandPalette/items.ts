@@ -6,6 +6,7 @@ export interface PaletteLabels {
   play: string
   updates: string
   downloads: string
+  downloadsFolder: string
   import: string
   pasteLink: string
   collectionReview: string
@@ -77,6 +78,7 @@ export function buildPaletteItems(input: {
     { id: 'action:play', kind: 'action', label: labels.play },
     { id: 'action:updates', kind: 'action', label: labels.updates },
     { id: 'action:downloads', kind: 'action', label: labels.downloads },
+    { id: 'action:downloads-folder', kind: 'action', label: labels.downloadsFolder },
     { id: 'action:import', kind: 'action', label: labels.import },
     { id: 'action:paste-link', kind: 'action', label: labels.pasteLink },
     ...(collectionReview
