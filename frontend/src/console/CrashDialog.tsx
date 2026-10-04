@@ -7,10 +7,11 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Menu,
   Tooltip,
   Typography,
 } from '@mui/material'
-import { LifeBuoy, Terminal } from 'lucide-react'
+import { ChevronDown, ExternalLink, LifeBuoy, Search, Terminal } from 'lucide-react'
 import { useState } from 'react'
 import { Start as StartBisect } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bisect/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
@@ -22,6 +23,7 @@ import { paper } from '../mods/paper.ts'
 import { ReportToAuthorButton } from '../mods/ReportToAuthorButton.tsx'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BisectDialog } from './BisectDialog.tsx'
@@ -32,11 +34,12 @@ import { useConsole } from './store.ts'
 type Crash = NonNullable<ReturnType<typeof useLaunch.getState>['crash']>
 
 // Switching the suspected mod off, with an Undo toast; busy while the profile write runs.
-function SwitchOffButton({ mod }: { mod: Mod }) {
+function SwitchOffButton({ mod, primary = false }: { mod: Mod; primary?: boolean }) {
   const { t } = useLingui()
   const [switching, setSwitching] = useState(false)
   return (
     <Button
+      variant={primary ? 'contained' : 'text'}
       disabled={switching}
       onClick={() => {
         setSwitching(true)
@@ -62,38 +65,81 @@ function SwitchOffButton({ mod }: { mod: Mod }) {
   )
 }
 
-// Share log and Open console both open the crashed run in the profile's Console.
-function CrashLogButtons({ crash, onDone }: { crash: Crash; onDone: () => void }) {
+function openRun(crash: Crash, console: boolean) {
+  useProfiles.getState().open(crash.profile)
+  if (console) {
+    useTab.getState().setTab('console')
+  }
+  useConsole.getState().viewRun(crash.game, crash.profile, crash.runId)
+}
+
+// Everything but the one primary action, so the row never wraps into a wall of buttons.
+function MoreActions({
+  crash,
+  nexusID,
+  onBisect,
+  withConsole,
+  onDone,
+}: {
+  crash: Crash
+  nexusID: number
+  onBisect: (() => void) | null
+  withConsole: boolean
+  onDone: () => void
+}) {
   const { t } = useLingui()
-  const dismiss = onDone
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const close = () => setAnchor(null)
   return (
     <>
-      <Button
-        variant="outlined"
-        startIcon={<LifeBuoy size={16} />}
-        onClick={() => {
-          useProfiles.getState().open(crash.profile)
-          useConsole.getState().viewRun(crash.game, crash.profile, crash.runId)
-          useConsole.getState().setHelping(true)
-          dismiss()
-        }}
-        sx={{ whiteSpace: 'nowrap' }}
-      >
-        {t`Share log…`}
+      <Button endIcon={<ChevronDown size={16} />} onClick={(e) => setAnchor(e.currentTarget)}>
+        {t`More`}
       </Button>
-      <Button
-        variant="contained"
-        startIcon={<Terminal size={16} />}
-        onClick={() => {
-          useProfiles.getState().open(crash.profile)
-          useTab.getState().setTab('console')
-          useConsole.getState().viewRun(crash.game, crash.profile, crash.runId)
-          dismiss()
-        }}
-        sx={{ whiteSpace: 'nowrap' }}
-      >
-        {t`Open console`}
-      </Button>
+      <Menu anchorEl={anchor} open={anchor !== null} onClose={close}>
+        {onBisect ? (
+          <MenuAction
+            icon={<Search size={16} />}
+            label={t`Find the mod causing this`}
+            onClick={() => {
+              close()
+              onBisect()
+            }}
+          />
+        ) : null}
+        {nexusID > 0 ? (
+          <MenuAction
+            icon={<ExternalLink size={16} />}
+            label={t`Open on Nexus`}
+            onClick={() => {
+              close()
+              openPage(`https://www.nexusmods.com/stardewvalley/mods/${nexusID}`).catch(
+                reportUnexpected,
+              )
+            }}
+          />
+        ) : null}
+        <MenuAction
+          icon={<LifeBuoy size={16} />}
+          label={t`Share log…`}
+          onClick={() => {
+            close()
+            openRun(crash, false)
+            useConsole.getState().setHelping(true)
+            onDone()
+          }}
+        />
+        {withConsole ? (
+          <MenuAction
+            icon={<Terminal size={16} />}
+            label={t`Open console`}
+            onClick={() => {
+              close()
+              openRun(crash, true)
+              onDone()
+            }}
+          />
+        ) : null}
+      </Menu>
     </>
   )
 }
@@ -179,11 +225,17 @@ export function CrashDialog() {
             </Typography>
           ) : null}
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2.5, flexWrap: 'wrap', gap: 1 }}>
-          <Button onClick={dismiss} sx={{ whiteSpace: 'nowrap' }}>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button onClick={dismiss} sx={{ whiteSpace: 'nowrap', mr: 'auto' }}>
             {t`Dismiss`}
           </Button>
-          {mod ? <SwitchOffButton mod={mod} /> : null}
+          <MoreActions
+            crash={crash}
+            nexusID={nexusID}
+            onBisect={canBisect ? startBisect : null}
+            withConsole={Boolean(mod)}
+            onDone={dismiss}
+          />
           {mod && profile && crash.cause ? (
             <ReportToAuthorButton
               game={crash.game}
@@ -193,23 +245,21 @@ export function CrashDialog() {
               modLogName={crash.cause.modName}
             />
           ) : null}
-          {nexusID > 0 ? (
+          {mod ? (
+            <SwitchOffButton mod={mod} primary={true} />
+          ) : (
             <Button
-              onClick={() =>
-                openPage(`https://www.nexusmods.com/stardewvalley/mods/${nexusID}`).catch(
-                  reportUnexpected,
-                )
-              }
+              variant="contained"
+              startIcon={<Terminal size={16} />}
+              onClick={() => {
+                openRun(crash, true)
+                dismiss()
+              }}
+              sx={{ whiteSpace: 'nowrap' }}
             >
-              {t`Open on Nexus`}
+              {t`Open console`}
             </Button>
-          ) : null}
-          {canBisect ? (
-            <Button onClick={startBisect} sx={{ whiteSpace: 'nowrap' }}>
-              {t`Find the mod causing this`}
-            </Button>
-          ) : null}
-          <CrashLogButtons crash={crash} onDone={dismiss} />
+          )}
         </DialogActions>
       </Dialog>
       {bisectJob ? (
