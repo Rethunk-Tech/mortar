@@ -19,7 +19,6 @@ import type {
   RemapVariant,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { formatBytes } from '../i18n/bytes.ts'
-import { OverlayPlaceDialog } from './OverlayPlaceDialog.tsx'
 import { ArchivePreview } from './ArchivePreview.tsx'
 import { OverlayPlaceDialog } from './OverlayPlaceDialog.tsx'
 import { useInstall } from './store.ts'
