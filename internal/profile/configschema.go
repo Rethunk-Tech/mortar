@@ -281,8 +281,8 @@ func listFields(n jsonNode, prefix string, schema modconfig.Schema, out *[]Confi
 
 func fieldForPath(schema modconfig.Schema, path string) modconfig.Field {
 	leaf := path
-	if i := strings.LastIndex(path, "."); i >= 0 {
-		leaf = path[i+1:]
+	if _, after, ok := strings.CutLast(path, "."); ok {
+		leaf = after
 	}
 	f, _ := schema.Lookup(leaf)
 	return f

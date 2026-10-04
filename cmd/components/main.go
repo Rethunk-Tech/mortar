@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/components"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/github"
 )
 
@@ -302,7 +303,7 @@ func nextSerial(output string) (uint64, error) {
 }
 
 func readPrivateKey(path string) (ed25519.PrivateKey, error) {
-	body, err := os.ReadFile(filepath.Clean(path))
+	body, err := fsx.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("read signing key: %w", err)
 	}

@@ -89,8 +89,8 @@ func (s Schema) Lookup(name string) (Field, bool) {
 // Validate checks a set value against AllowValues when the field has them.
 func (s Schema) Validate(path, value string) error {
 	leaf := path
-	if i := strings.LastIndex(path, "."); i >= 0 {
-		leaf = path[i+1:]
+	if _, after, ok := strings.CutLast(path, "."); ok {
+		leaf = after
 	}
 	f, ok := s.Lookup(leaf)
 	if !ok || len(f.AllowValues) == 0 {
