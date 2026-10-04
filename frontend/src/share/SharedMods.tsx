@@ -1,10 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
-import { alpha } from '@mui/material/styles'
-
-const WARN_FILL = 0.1
-const WARN_LINE = 0.4
+import { calloutFill, calloutLine } from '../theme/callout.ts'
 
 import type { ShownInfo } from './logic.ts'
 
@@ -81,9 +78,9 @@ export function SharedMods({ info, notIn }: { info: ShownInfo; notIn: string }) 
             gap: 1,
             m: '0 24px 18px',
             p: '12px 14px',
-            bgcolor: (th) => alpha(th.palette.warning.main, WARN_FILL),
+            bgcolor: calloutFill('warning'),
             border: '1px solid',
-            borderColor: (th) => alpha(th.palette.warning.main, WARN_LINE),
+            borderColor: calloutLine('warning'),
             borderRadius: '6px',
           }}
         >

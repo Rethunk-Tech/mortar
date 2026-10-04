@@ -2,11 +2,6 @@ import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { alpha } from '@mui/material/styles'
-
-const WARN_FILL = 0.14
-const WARN_LINE = 0.5
-
 import { useEffect, useState } from 'react'
 import type { SMAPIProblem } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { RunProblems as FetchRunProblems } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
@@ -19,6 +14,7 @@ import { useLocked } from '../mods/useLocked.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { duplicateCopies } from './runProblemsFix.ts'
@@ -216,9 +212,9 @@ export function RunProblemsStrip({
         display: 'flex',
         flexDirection: 'column',
         gap: 1,
-        bgcolor: (th) => alpha(th.palette.warning.main, WARN_FILL),
+        bgcolor: calloutFill('warning'),
         border: '1px solid',
-        borderColor: (th) => alpha(th.palette.warning.main, WARN_LINE),
+        borderColor: calloutLine('warning'),
         borderRadius: '6px',
       }}
     >

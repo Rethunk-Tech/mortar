@@ -1,16 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { alpha } from '@mui/material/styles'
-
-const INFO_FILL = 0.16
-const INFO_LINE = 0.5
-
 import { ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { useLaunch } from '../launch/store.ts'
 import { isLocked } from '../mods/locked.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { Problems, StatusBar } from './ImportPreview.tsx'
 import type { ShownPreview, Summary } from './logic.ts'
@@ -55,9 +51,9 @@ export function ImportFooter({
             gap: 1.5,
             m: '8px 8px 0',
             p: 1.25,
-            bgcolor: (th) => alpha(th.palette.info.main, INFO_FILL),
+            bgcolor: calloutFill('info'),
             border: '1px solid',
-            borderColor: (th) => alpha(th.palette.info.main, INFO_LINE),
+            borderColor: calloutLine('info'),
             borderRadius: '4px',
             fontSize: 13,
           }}

@@ -1,15 +1,9 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, CircularProgress, Typography } from '@mui/material'
-import { alpha } from '@mui/material/styles'
-
-const INFO_FILL = 0.12
-const WARN_FILL = 0.14
-const INFO_LINE = 0.45
-const WARN_LINE = 0.5
-
 import { TriangleAlert } from 'lucide-react'
 import { useTab } from '../game/tab.ts'
+import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { useDescribe, useDescribeDrift } from './describe.ts'
 import { problemsOf } from './lookup.ts'
 import { driftRows, isInfoRow } from './problemGroups.ts'
@@ -77,11 +71,9 @@ export function ProblemBar() {
         pl: 1.5,
         pr: 0.75,
         textAlign: 'left',
-        bgcolor: (th) =>
-          info ? alpha(th.palette.info.main, INFO_FILL) : alpha(th.palette.warning.main, WARN_FILL),
+        bgcolor: calloutFill(info ? 'info' : 'warning'),
         border: '1px solid',
-        borderColor: (th) =>
-          info ? alpha(th.palette.info.main, INFO_LINE) : alpha(th.palette.warning.main, WARN_LINE),
+        borderColor: calloutLine(info ? 'info' : 'warning'),
         borderRadius: '6px',
       }}
     >

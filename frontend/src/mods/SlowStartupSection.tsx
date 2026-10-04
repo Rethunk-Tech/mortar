@@ -1,18 +1,15 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { alpha, useTheme } from '@mui/material/styles'
 import { useEffect, useState } from 'react'
 import { StartupReports } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import type { CheckTiming } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { formatDuration, type SlowStartup, slowStartups } from '../console/startupView.ts'
 import { useTab } from '../game/tab.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { sameId } from './lookup.ts'
 import { useMods } from './store.ts'
-
-const INFO_FILL = 0.12
-const INFO_LINE = 0.45
 
 function useSlowStartups(): SlowStartup[] {
   const game = useProfiles((s) => s.game?.id ?? '')
@@ -31,7 +28,6 @@ function useSlowStartups(): SlowStartup[] {
 
 function SlowRow({ row }: { row: SlowStartup }) {
   const { t, i18n } = useLingui()
-  const info = useTheme().palette.info.main
   const mod = useMods((s) => s.mods.find((m) => sameId(m.uniqueId, row.uniqueId)))
   const setEnabled = useMods((s) => s.setEnabled)
   const time = formatDuration(row.ms, i18n.locale)
@@ -49,8 +45,9 @@ function SlowRow({ row }: { row: SlowStartup }) {
         pl: 1.5,
         pr: 0.75,
         py: 0.75,
-        bgcolor: alpha(info, INFO_FILL),
-        border: `1px solid ${alpha(info, INFO_LINE)}`,
+        bgcolor: calloutFill('info'),
+        border: '1px solid',
+        borderColor: calloutLine('info'),
         borderRadius: '6px',
       }}
     >

@@ -11,11 +11,6 @@ import {
   MenuItem,
   Typography,
 } from '@mui/material'
-import { alpha } from '@mui/material/styles'
-
-const WARN_FILL = 0.14
-const WARN_LINE = 0.5
-
 import { Clipboard } from '@wailsio/runtime'
 import { Check, ChevronDown, Copy, FileText, List, MessageSquare, Save, Type } from 'lucide-react'
 import { useState } from 'react'
@@ -25,6 +20,7 @@ import { Logo } from '../brand/Logo.tsx'
 import { SendDialog } from '../lan/SendDialog.tsx'
 import { heading } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -259,9 +255,9 @@ function LinkTab({
               alignItems: 'center',
               gap: 1.5,
               p: 1.5,
-              bgcolor: (th) => alpha(th.palette.warning.main, WARN_FILL),
+              bgcolor: calloutFill('warning'),
               border: '1px solid',
-              borderColor: (th) => alpha(th.palette.warning.main, WARN_LINE),
+              borderColor: calloutLine('warning'),
               borderRadius: '6px',
             }}
           >

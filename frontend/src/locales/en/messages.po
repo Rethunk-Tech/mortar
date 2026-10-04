@@ -50,7 +50,7 @@ msgid "Gentle violet"
 msgstr "Gentle violet"
 
 #. placeholder {0}: info.count
-#: src/share/SharedMods.tsx:45
+#: src/share/SharedMods.tsx:42
 msgid "{0, plural, one {# mod included} other {# mods included}}"
 msgstr "{0, plural, one {# mod included} other {# mods included}}"
 
@@ -87,7 +87,7 @@ msgstr "No profiles to import."
 msgid "Failed ({0})"
 msgstr "Failed ({0})"
 
-#: src/share/SharedMods.tsx:25
+#: src/share/SharedMods.tsx:22
 msgid "{n} Nexus"
 msgstr "{n} Nexus"
 
@@ -183,7 +183,7 @@ msgstr "Updated"
 msgid "Make {name} win"
 msgstr "Make {name} win"
 
-#: src/console/RunProblems.tsx:118
+#: src/console/RunProblems.tsx:114
 #: src/install/MissingDepsDialog.tsx:49
 #: src/install/store.ts:306
 #: src/mods/AddToGroupDialog.tsx:25
@@ -205,8 +205,8 @@ msgstr "Make {name} win"
 #: src/saves/lackChipActions.tsx:65
 #: src/saves/lackChips.tsx:59
 #: src/saves/lackChips.tsx:103
-#: src/share/ImportFooter.tsx:96
-#: src/share/ImportFooter.tsx:110
+#: src/share/ImportFooter.tsx:92
+#: src/share/ImportFooter.tsx:106
 #: src/share/usePasteLink.ts:29
 #: src/share/usePasteLink.ts:64
 #: src/toasts/HistoryButton.tsx:27
@@ -236,7 +236,7 @@ msgstr "{name} broke in {brokeIn}."
 msgid "Snapshot diff"
 msgstr "Snapshot diff"
 
-#: src/share/ShareDialog.tsx:405
+#: src/share/ShareDialog.tsx:401
 msgid "Could not save the file"
 msgstr "Could not save the file"
 
@@ -319,7 +319,7 @@ msgid "a new Mortar is ready"
 msgstr "a new Mortar is ready"
 
 #. placeholder {0}: row.name
-#: src/mods/SlowStartupSection.tsx:38
+#: src/mods/SlowStartupSection.tsx:34
 msgid "{0} adds {time} to startup"
 msgstr "{0} adds {time} to startup"
 
@@ -332,7 +332,7 @@ msgstr "Mortar leaves the taskbar and waits in the tray until the game exits."
 msgid "Always"
 msgstr "Always"
 
-#: src/share/ShareDialog.tsx:272
+#: src/share/ShareDialog.tsx:268
 msgid "Use a file"
 msgstr "Use a file"
 
@@ -468,7 +468,7 @@ msgstr "Notes"
 msgid "Startup and window"
 msgstr "Startup and window"
 
-#: src/mods/ProblemsTab.tsx:72
+#: src/mods/ProblemsTab.tsx:68
 msgid "Cosmetic or harmless"
 msgstr "Cosmetic or harmless"
 
@@ -564,7 +564,7 @@ msgstr "Group mods by these names, or assign one as a mod's primary category."
 msgid "Installing SMAPI"
 msgstr "Installing SMAPI"
 
-#: src/share/ShareDialog.tsx:278
+#: src/share/ShareDialog.tsx:274
 msgid "Not in the link"
 msgstr "Not in the link"
 
@@ -578,7 +578,7 @@ msgstr "Type a command, for example help"
 
 #. placeholder {0}: info.name
 #. placeholder {1}: info.web
-#: src/share/ShareDialog.tsx:199
+#: src/share/ShareDialog.tsx:195
 msgid "Try my Mortar profile \"{0}\" for {gameName} ({mods}): {1}"
 msgstr "Try my Mortar profile \"{0}\" for {gameName} ({mods}): {1}"
 
@@ -612,7 +612,7 @@ msgstr "Find mods to add"
 msgid "More languages are coming."
 msgstr "More languages are coming."
 
-#: src/mods/SlowStartupSection.tsx:91
+#: src/mods/SlowStartupSection.tsx:88
 msgid "other checks"
 msgstr "other checks"
 
@@ -688,7 +688,7 @@ msgstr "Missing in {targetName}"
 msgid "Mortar found it in Steam's settings."
 msgstr "Mortar found it in Steam's settings."
 
-#: src/share/ImportFooter.tsx:65
+#: src/share/ImportFooter.tsx:61
 msgid "Sign in to Nexus Mods to download these mods."
 msgstr "Sign in to Nexus Mods to download these mods."
 
@@ -726,7 +726,7 @@ msgstr "{list} do the same job: all change {detail}"
 msgid "Star"
 msgstr "Star"
 
-#: src/share/ShareDialog.tsx:110
+#: src/share/ShareDialog.tsx:106
 msgid "What they see"
 msgstr "What they see"
 
@@ -735,11 +735,11 @@ msgstr "What they see"
 msgid "Rename"
 msgstr "Rename"
 
-#: src/share/ImportFooter.tsx:105
+#: src/share/ImportFooter.tsx:101
 msgid "Add to {targetName}"
 msgstr "Add to {targetName}"
 
-#: src/share/ShareDialog.tsx:413
+#: src/share/ShareDialog.tsx:409
 msgid "A .mortar file holds the same mods as the link, plus the settings files (.json) each mod has written. Send it to someone, and they open it from Mortar's Import."
 msgstr "A .mortar file holds the same mods as the link, plus the settings files (.json) each mod has written. Send it to someone, and they open it from Mortar's Import."
 
@@ -831,7 +831,7 @@ msgstr "Measure next launch"
 msgid "switched off"
 msgstr "switched off"
 
-#: src/share/ShareDialog.tsx:319
+#: src/share/ShareDialog.tsx:315
 msgid "Mod list copied"
 msgstr "Mod list copied"
 
@@ -1010,7 +1010,7 @@ msgstr "+{more} more"
 msgid "{0, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
 msgstr "{0, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
 
-#: src/share/ImportDialog.tsx:279
+#: src/share/ImportDialog.tsx:275
 msgid "Import profile"
 msgstr "Import profile"
 
@@ -1144,7 +1144,7 @@ msgstr "List view"
 msgid "Sprout"
 msgstr "Sprout"
 
-#: src/share/ShareDialog.tsx:70
+#: src/share/ShareDialog.tsx:66
 msgid "Link length"
 msgstr "Link length"
 
@@ -1165,7 +1165,7 @@ msgid "Search results"
 msgstr "Search results"
 
 #. placeholder {0}: SOURCE_NAMES[flow.external.source] ?? flow.external.source
-#: src/share/ImportDialog.tsx:184
+#: src/share/ImportDialog.tsx:180
 msgid "Import from {0}"
 msgstr "Import from {0}"
 
@@ -1178,7 +1178,7 @@ msgstr "Switched off in this profile"
 msgid "Confirm update for {name}"
 msgstr "Confirm update for {name}"
 
-#: src/mods/ProblemsTab.tsx:58
+#: src/mods/ProblemsTab.tsx:54
 msgid "Missing requirements"
 msgstr "Missing requirements"
 
@@ -1199,7 +1199,7 @@ msgstr "What you expected"
 msgid "Roll back"
 msgstr "Roll back"
 
-#: src/console/RunProblems.tsx:49
+#: src/console/RunProblems.tsx:45
 msgid "No download source known for {uniqueId}"
 msgstr "No download source known for {uniqueId}"
 
@@ -1207,7 +1207,7 @@ msgstr "No download source known for {uniqueId}"
 msgid "Windows Firewall blocks incoming sends to Mortar"
 msgstr "Windows Firewall blocks incoming sends to Mortar"
 
-#: src/share/ShareDialog.tsx:443
+#: src/share/ShareDialog.tsx:439
 msgid "Not in the file"
 msgstr "Not in the file"
 
@@ -1298,7 +1298,7 @@ msgstr "Startup"
 msgid "Peak ms"
 msgstr "Peak ms"
 
-#: src/mods/SlowStartupSection.tsx:88
+#: src/mods/SlowStartupSection.tsx:85
 msgid "conflicts"
 msgstr "conflicts"
 
@@ -1321,7 +1321,7 @@ msgstr "Skip"
 msgid "Nothing in the queue needs a decision."
 msgstr "Nothing in the queue needs a decision."
 
-#: src/share/ShareDialog.tsx:323
+#: src/share/ShareDialog.tsx:319
 msgid "Copy mod list"
 msgstr "Copy mod list"
 
@@ -1685,7 +1685,7 @@ msgstr "Dependency cycle"
 #: src/game/Sidebar.tsx:388
 #: src/game/Sidebar.tsx:406
 #: src/nxm/ArrivalDialog.tsx:154
-#: src/share/ImportFooter.tsx:39
+#: src/share/ImportFooter.tsx:35
 msgid "New profile"
 msgstr "New profile"
 
@@ -1721,7 +1721,7 @@ msgstr "Hill-top farm"
 msgid "Installing SMAPI…"
 msgstr "Installing SMAPI…"
 
-#: src/mods/ProblemsTab.tsx:173
+#: src/mods/ProblemsTab.tsx:168
 msgid "Why?"
 msgstr "Why?"
 
@@ -1798,7 +1798,7 @@ msgstr "Compact"
 
 #: src/console/BisectDialog.tsx:118
 #: src/console/CrashDialog.tsx:53
-#: src/console/RunProblems.tsx:88
+#: src/console/RunProblems.tsx:84
 #: src/install/store.ts:167
 #: src/install/store.ts:228
 #: src/mods/problemFix/WinFix.tsx:77
@@ -1839,7 +1839,7 @@ msgid "Open-source licences"
 msgstr "Open-source licences"
 
 #: src/mods/CompatChip.tsx:51
-#: src/mods/CompatSection.tsx:23
+#: src/mods/CompatSection.tsx:19
 msgid "Unofficial update"
 msgstr "Unofficial update"
 
@@ -1847,7 +1847,7 @@ msgstr "Unofficial update"
 msgid "Check only enabled mods: {from} → {to}"
 msgstr "Check only enabled mods: {from} → {to}"
 
-#: src/mods/ProblemsTab.tsx:349
+#: src/mods/ProblemsTab.tsx:344
 msgid "No problems to copy."
 msgstr "No problems to copy."
 
@@ -1873,7 +1873,7 @@ msgstr "Scan the mods folder for changes Mortar did not make"
 msgid "Check Mortar"
 msgstr "Check Mortar"
 
-#: src/share/ShareDialog.tsx:62
+#: src/share/ShareDialog.tsx:58
 msgid "{length} of {limit} characters · fits one Discord message"
 msgstr "{length} of {limit} characters · fits one Discord message"
 
@@ -1894,7 +1894,7 @@ msgstr "Appearance"
 msgid "Could not restore the warning"
 msgstr "Could not restore the warning"
 
-#: src/console/RunProblems.tsx:238
+#: src/console/RunProblems.tsx:234
 msgid "Fix all"
 msgstr "Fix all"
 
@@ -1961,7 +1961,7 @@ msgid "No enabled mods"
 msgstr "No enabled mods"
 
 #: src/mods/CleanupSection.tsx:144
-#: src/mods/ProblemsTab.tsx:370
+#: src/mods/ProblemsTab.tsx:365
 msgid "Cleanup"
 msgstr "Cleanup"
 
@@ -2059,7 +2059,7 @@ msgstr "Could not set the category"
 msgid "game running"
 msgstr "game running"
 
-#: src/share/ImportFooter.tsx:37
+#: src/share/ImportFooter.tsx:33
 msgid "New profile from link"
 msgstr "New profile from link"
 
@@ -2092,7 +2092,7 @@ msgstr "Toggle downloads"
 msgid "Queue"
 msgstr "Queue"
 
-#: src/share/ImportDialog.tsx:52
+#: src/share/ImportDialog.tsx:48
 msgid "Not found in the Mods folder"
 msgstr "Not found in the Mods folder"
 
@@ -2334,7 +2334,7 @@ msgid "It shows in your Steam library the next time Steam starts."
 msgstr "It shows in your Steam library the next time Steam starts."
 
 #. placeholder {0}: (preview.replace?.keepLocal ?? []).length
-#: src/share/ImportFooter.tsx:160
+#: src/share/ImportFooter.tsx:156
 msgid "Local-only mods kept ({0})"
 msgstr "Local-only mods kept ({0})"
 
@@ -2411,7 +2411,7 @@ msgstr "Discard"
 msgid "{0, plural, one {# other mod} other {# other mods}}"
 msgstr "{0, plural, one {# other mod} other {# other mods}}"
 
-#: src/share/ShareDialog.tsx:142
+#: src/share/ShareDialog.tsx:138
 msgid "{gameName} · {mods}"
 msgstr "{gameName} · {mods}"
 
@@ -2549,7 +2549,7 @@ msgstr "Data folder moved"
 msgid "Keep downloaded archives"
 msgstr "Keep downloaded archives"
 
-#: src/mods/ProblemsTab.tsx:68
+#: src/mods/ProblemsTab.tsx:64
 msgid "Duplicates"
 msgstr "Duplicates"
 
@@ -2678,7 +2678,7 @@ msgstr "Extra SMAPI arguments for this profile. Mortar already sets the mods fol
 msgid "Bundle deleted"
 msgstr "Bundle deleted"
 
-#: src/share/ImportFooter.tsx:137
+#: src/share/ImportFooter.tsx:133
 msgid "Replace {targetName}?"
 msgstr "Replace {targetName}?"
 
@@ -2754,8 +2754,8 @@ msgstr "Hidden"
 msgid "Mortar · Install {name}?"
 msgstr "Mortar · Install {name}?"
 
-#: src/share/ImportFooter.tsx:118
-#: src/share/ImportFooter.tsx:138
+#: src/share/ImportFooter.tsx:114
+#: src/share/ImportFooter.tsx:134
 msgid "Replace {targetName}"
 msgstr "Replace {targetName}"
 
@@ -2980,7 +2980,7 @@ msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
 #: src/mods/CleanupSection.tsx:65
-#: src/mods/ProblemsTab.tsx:374
+#: src/mods/ProblemsTab.tsx:369
 msgid "Not needed by any enabled mod"
 msgstr "Not needed by any enabled mod"
 
@@ -3039,7 +3039,7 @@ msgstr "Skip every waiting download"
 msgid "{names} seems to cause the crash"
 msgstr "{names} seems to cause the crash"
 
-#: src/mods/ProblemsTab.tsx:511
+#: src/mods/ProblemsTab.tsx:506
 msgid "Dismiss all harmless overlaps?"
 msgstr "Dismiss all harmless overlaps?"
 
@@ -3119,7 +3119,7 @@ msgid "None"
 msgstr "None"
 
 #: src/console/HelpDialog.tsx:192
-#: src/share/ShareDialog.tsx:234
+#: src/share/ShareDialog.tsx:230
 msgid "Link copied"
 msgstr "Link copied"
 
@@ -3177,7 +3177,7 @@ msgstr "{mods} · about {size} to download"
 msgid "Search actions and destinations"
 msgstr "Search actions and destinations"
 
-#: src/share/ImportFooter.tsx:155
+#: src/share/ImportFooter.tsx:151
 msgid "Nothing will be removed."
 msgstr "Nothing will be removed."
 
@@ -3194,7 +3194,7 @@ msgstr "Could not read recently deleted profiles"
 msgid "Review {updateN, plural, one {# update} other {# updates}}"
 msgstr "Review {updateN, plural, one {# update} other {# updates}}"
 
-#: src/console/RunProblems.tsx:124
+#: src/console/RunProblems.tsx:120
 #: src/launch/SweepDialog.tsx:24
 #: src/loader/Banner.tsx:39
 #: src/mods/runErrorFixButtons.tsx:49
@@ -3231,7 +3231,7 @@ msgstr "Before"
 msgid "No download source is known for {0}."
 msgstr "No download source is known for {0}."
 
-#: src/share/ImportDialog.tsx:193
+#: src/share/ImportDialog.tsx:189
 msgid "Where the profile comes from"
 msgstr "Where the profile comes from"
 
@@ -3291,7 +3291,7 @@ msgstr "Set category"
 msgid "Search CurseForge. Open the mod's page to download it."
 msgstr "Search CurseForge. Open the mod's page to download it."
 
-#: src/share/ShareDialog.tsx:402
+#: src/share/ShareDialog.tsx:398
 msgid "File saved"
 msgstr "File saved"
 
@@ -3312,7 +3312,7 @@ msgstr "Take Nexus links from {0}?"
 msgid "{name} has no file Mortar can use in place of the one shared"
 msgstr "{name} has no file Mortar can use in place of the one shared"
 
-#: src/mods/ProblemsTab.tsx:512
+#: src/mods/ProblemsTab.tsx:507
 msgid "They move to Dismissed. Restore them from that section."
 msgstr "They move to Dismissed. Restore them from that section."
 
@@ -3359,11 +3359,11 @@ msgstr "Meadowlands farm"
 msgid "Save as preset"
 msgstr "Save as preset"
 
-#: src/mods/ProblemsTab.tsx:66
+#: src/mods/ProblemsTab.tsx:62
 msgid "Changed outside Mortar"
 msgstr "Changed outside Mortar"
 
-#: src/mods/ProblemsTab.tsx:390
+#: src/mods/ProblemsTab.tsx:385
 msgid "Harmless"
 msgstr "Harmless"
 
@@ -3465,7 +3465,7 @@ msgid "Entry, event handlers and asset work the SMAPI Bridge timed before the ti
 msgstr "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
 
 #. placeholder {0}: skipped.length
-#: src/share/ShareDialog.tsx:429
+#: src/share/ShareDialog.tsx:425
 msgid "{0, plural, one {# settings file was left out (too large or an unusual name):} other {# settings files were left out (too large or an unusual name):}}"
 msgstr "{0, plural, one {# settings file was left out (too large or an unusual name):} other {# settings files were left out (too large or an unusual name):}}"
 
@@ -3552,7 +3552,7 @@ msgstr "{count, plural, one {# dependency} other {# dependencies}}"
 msgid "Could not check for updates."
 msgstr "Could not check for updates."
 
-#: src/share/SharedMods.tsx:29
+#: src/share/SharedMods.tsx:26
 msgid "Added from an archive, so it only exists on this computer."
 msgstr "Added from an archive, so it only exists on this computer."
 
@@ -3741,7 +3741,7 @@ msgstr "Full"
 msgid "Cache"
 msgstr "Cache"
 
-#: src/console/RunProblems.tsx:128
+#: src/console/RunProblems.tsx:124
 msgid "Remove duplicate"
 msgstr "Remove duplicate"
 
@@ -3802,8 +3802,8 @@ msgstr "About Mortar"
 msgid "Lavender"
 msgstr "Lavender"
 
-#: src/mods/ProblemsTab.tsx:383
-#: src/mods/ProblemsTab.tsx:505
+#: src/mods/ProblemsTab.tsx:378
+#: src/mods/ProblemsTab.tsx:500
 msgid "Redundant"
 msgstr "Redundant"
 
@@ -4232,12 +4232,12 @@ msgstr "Honour OS"
 msgid "Download progress for {0}"
 msgstr "Download progress for {0}"
 
-#: src/mods/ProblemsTab.tsx:470
-#: src/mods/ProblemsTab.tsx:513
+#: src/mods/ProblemsTab.tsx:465
+#: src/mods/ProblemsTab.tsx:508
 msgid "Dismiss all"
 msgstr "Dismiss all"
 
-#: src/share/ImportDialog.tsx:247
+#: src/share/ImportDialog.tsx:243
 msgid "This profile has no mods to download"
 msgstr "This profile has no mods to download"
 
@@ -4405,7 +4405,7 @@ msgstr "Restoring…"
 msgid "Load order"
 msgstr "Load order"
 
-#: src/mods/SlowStartupSection.tsx:113
+#: src/mods/SlowStartupSection.tsx:110
 msgid "Slow startup"
 msgstr "Slow startup"
 
@@ -4562,11 +4562,11 @@ msgid "Deleted “{0}”"
 msgstr "Deleted “{0}”"
 
 #. placeholder {0}: part.n
-#: src/share/ShareDialog.tsx:363
+#: src/share/ShareDialog.tsx:359
 msgid "Part {0} copied"
 msgstr "Part {0} copied"
 
-#: src/share/ShareDialog.tsx:64
+#: src/share/ShareDialog.tsx:60
 msgid "{length} of {limit} characters · too long for one Discord message"
 msgstr "{length} of {limit} characters · too long for one Discord message"
 
@@ -4659,7 +4659,7 @@ msgstr "Roll back {0}?"
 msgid "Show {0} in its profile"
 msgstr "Show {0} in its profile"
 
-#: src/share/ShareDialog.tsx:326
+#: src/share/ShareDialog.tsx:322
 msgid "Mod list format"
 msgstr "Mod list format"
 
@@ -4680,11 +4680,11 @@ msgstr "Track"
 msgid "The update for {0} did not finish"
 msgstr "The update for {0} did not finish"
 
-#: src/mods/ProblemsTab.tsx:74
+#: src/mods/ProblemsTab.tsx:70
 msgid "Dismissed"
 msgstr "Dismissed"
 
-#: src/mods/SlowStartupSection.tsx:90
+#: src/mods/SlowStartupSection.tsx:87
 msgid "updates"
 msgstr "updates"
 
@@ -4814,7 +4814,7 @@ msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
 #: src/mods/AssetMapDialog.tsx:158
-#: src/mods/ProblemsTab.tsx:340
+#: src/mods/ProblemsTab.tsx:335
 msgid "Asset map"
 msgstr "Asset map"
 
@@ -4826,7 +4826,7 @@ msgstr "Could not change how Nexus links open"
 msgid "When you switch a mod on, also enable its required mods already in the profile"
 msgstr "When you switch a mod on, also enable its required mods already in the profile"
 
-#: src/mods/SlowStartupSection.tsx:89
+#: src/mods/SlowStartupSection.tsx:86
 msgid "requirements"
 msgstr "requirements"
 
@@ -5001,7 +5001,7 @@ msgstr "This deletes the game folder at {folder}, including every file in it, SM
 msgid "Regenerate token"
 msgstr "Regenerate token"
 
-#: src/share/ImportFooter.tsx:37
+#: src/share/ImportFooter.tsx:33
 msgid "New profile from file"
 msgstr "New profile from file"
 
@@ -5080,7 +5080,7 @@ msgstr "Check mod updates on start: {from} → {to}"
 msgid "Something went wrong."
 msgstr "Something went wrong."
 
-#: src/mods/ProblemsTab.tsx:60
+#: src/mods/ProblemsTab.tsx:56
 msgid "Conflicts"
 msgstr "Conflicts"
 
@@ -5221,7 +5221,7 @@ msgstr "Could not read the Nexus page: {0}"
 msgid "Imported, but could not show the profile"
 msgstr "Imported, but could not show the profile"
 
-#: src/mods/ProblemBar.tsx:105
+#: src/mods/ProblemBar.tsx:97
 msgid "Open problems"
 msgstr "Open problems"
 
@@ -5348,7 +5348,7 @@ msgid "More details"
 msgstr "More details"
 
 #. placeholder {0}: (preview.replace?.remove ?? []).length
-#: src/share/ImportFooter.tsx:148
+#: src/share/ImportFooter.tsx:144
 msgid "These will be removed ({0})"
 msgstr "These will be removed ({0})"
 
@@ -5444,7 +5444,7 @@ msgstr "A download fails"
 msgid "Add folder…"
 msgstr "Add folder…"
 
-#: src/share/ShareDialog.tsx:156
+#: src/share/ShareDialog.tsx:152
 msgid "Open in Mortar"
 msgstr "Open in Mortar"
 
@@ -5591,7 +5591,7 @@ msgstr "Crash finding was stopped."
 msgid "Couldn't minimise the window"
 msgstr "Couldn't minimise the window"
 
-#: src/share/ShareDialog.tsx:63
+#: src/share/ShareDialog.tsx:59
 msgid "{length} of {limit} characters · close to the Discord message limit"
 msgstr "{length} of {limit} characters · close to the Discord message limit"
 
@@ -5674,7 +5674,7 @@ msgstr "Could not untrack"
 msgid "Copy log"
 msgstr "Copy log"
 
-#: src/mods/SlowStartupSection.tsx:64
+#: src/mods/SlowStartupSection.tsx:61
 msgid "See startup"
 msgstr "See startup"
 
@@ -5722,7 +5722,7 @@ msgstr "Signed out of Nexus"
 msgid "Also add {0} to…"
 msgstr "Also add {0} to…"
 
-#: src/share/ShareDialog.tsx:173
+#: src/share/ShareDialog.tsx:169
 msgid "The page reads the profile from the link itself. Nothing is uploaded or stored on a server."
 msgstr "The page reads the profile from the link itself. Nothing is uploaded or stored on a server."
 
@@ -5745,7 +5745,7 @@ msgstr "There is no SMAPI log for this profile yet. Play this profile once, then
 
 #. placeholder {0}: row.replacement
 #: src/mods/CompatChip.tsx:56
-#: src/mods/CompatSection.tsx:28
+#: src/mods/CompatSection.tsx:24
 msgid "Replacement: {0}"
 msgstr "Replacement: {0}"
 
@@ -5801,7 +5801,7 @@ msgstr "Store"
 msgid "Download"
 msgstr "Download"
 
-#: src/console/RunProblems.tsx:228
+#: src/console/RunProblems.tsx:224
 msgid "Problems in this run"
 msgstr "Problems in this run"
 
@@ -5853,8 +5853,8 @@ msgid "Main only"
 msgstr "Main only"
 
 #: src/mods/CompatChip.tsx:63
-#: src/mods/CompatSection.tsx:61
-#: src/mods/ProblemsTab.tsx:388
+#: src/mods/CompatSection.tsx:58
+#: src/mods/ProblemsTab.tsx:383
 msgid "Compatibility"
 msgstr "Compatibility"
 
@@ -5918,7 +5918,7 @@ msgstr "Could not read the mods: {loadError}"
 msgid "No other profiles with overrides"
 msgstr "No other profiles with overrides"
 
-#: src/share/SharedMods.tsx:31
+#: src/share/SharedMods.tsx:28
 msgid "Switched off in this profile."
 msgstr "Switched off in this profile."
 
@@ -6046,8 +6046,8 @@ msgstr "No mods have logged yet"
 msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
-#: src/mods/ProblemBar.tsx:60
-#: src/mods/ProblemsTab.tsx:314
+#: src/mods/ProblemBar.tsx:54
+#: src/mods/ProblemsTab.tsx:309
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
@@ -6147,7 +6147,7 @@ msgstr "Bundle added"
 msgid "Browse"
 msgstr "Browse"
 
-#: src/share/ShareDialog.tsx:246
+#: src/share/ShareDialog.tsx:242
 msgid "Message copied"
 msgstr "Message copied"
 
@@ -6196,7 +6196,7 @@ msgstr "Open the import dialog"
 msgid "{n, plural, one {# update} other {# updates}}"
 msgstr "{n, plural, one {# update} other {# updates}}"
 
-#: src/share/ShareDialog.tsx:305
+#: src/share/ShareDialog.tsx:301
 msgid "Discord"
 msgstr "Discord"
 
@@ -6213,7 +6213,7 @@ msgstr "Press a key"
 #: src/mods/ModDetail.tsx:189
 #: src/settings/sections/GameSettings.tsx:224
 #: src/settings/sections/Shortcuts.tsx:93
-#: src/share/ImportFooter.tsx:93
+#: src/share/ImportFooter.tsx:89
 msgid "Reset"
 msgstr "Reset"
 
@@ -6528,7 +6528,7 @@ msgstr "Nothing"
 msgid "Open a profile to install mods"
 msgstr "Open a profile to install mods"
 
-#: src/share/ShareDialog.tsx:99
+#: src/share/ShareDialog.tsx:95
 msgid "What the person opening the link sees"
 msgstr "What the person opening the link sees"
 
@@ -6549,7 +6549,7 @@ msgstr "Include config files"
 msgid "Remove {dir}"
 msgstr "Remove {dir}"
 
-#: src/share/ShareDialog.tsx:304
+#: src/share/ShareDialog.tsx:300
 msgid "Plain text"
 msgstr "Plain text"
 
@@ -6559,7 +6559,7 @@ msgid "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 
 #: src/console/PerformancePanel.tsx:70
-#: src/mods/ProblemsTab.tsx:394
+#: src/mods/ProblemsTab.tsx:389
 #: src/mods/ReportToAuthorButton.tsx:161
 #: src/settings/sections/AboutDiagnostics.tsx:139
 msgid "Report copied"
@@ -6710,7 +6710,7 @@ msgid "faster"
 msgstr "faster"
 
 #: src/console/PerformancePanelParts.tsx:215
-#: src/mods/ProblemsTab.tsx:346
+#: src/mods/ProblemsTab.tsx:341
 #: src/settings/sections/AboutDiagnostics.tsx:220
 msgid "Copy report"
 msgstr "Copy report"
@@ -6728,7 +6728,7 @@ msgid "Log actions"
 msgstr "Log actions"
 
 #. placeholder {0}: names.length - shown.length
-#: src/share/SharedMods.tsx:71
+#: src/share/SharedMods.tsx:68
 msgid "and {0} more"
 msgstr "and {0} more"
 
@@ -6781,11 +6781,11 @@ msgstr "Sharing"
 
 #. placeholder {0}: part.n
 #. placeholder {1}: parts.length
-#: src/share/ShareDialog.tsx:370
+#: src/share/ShareDialog.tsx:366
 msgid "Copy part {0} of {1}"
 msgstr "Copy part {0} of {1}"
 
-#: src/console/RunProblems.tsx:167
+#: src/console/RunProblems.tsx:163
 msgid "Remove duplicate?"
 msgstr "Remove duplicate?"
 
@@ -6801,7 +6801,7 @@ msgstr "Every Play"
 msgid "Reset game install"
 msgstr "Reset game install"
 
-#: src/share/ImportDialog.tsx:211
+#: src/share/ImportDialog.tsx:207
 msgid ".mortar file"
 msgstr ".mortar file"
 
@@ -6926,7 +6926,7 @@ msgstr "Handle Nexus download links?"
 msgid "none"
 msgstr "none"
 
-#: src/mods/SlowStartupSection.tsx:87
+#: src/mods/SlowStartupSection.tsx:84
 msgid "Content Patcher packs"
 msgstr "Content Patcher packs"
 
@@ -6972,7 +6972,7 @@ msgstr "The next launch will be measured"
 msgid "Update ready — applies when you close Mortar."
 msgstr "Update ready — applies when you close Mortar."
 
-#: src/share/ShareDialog.tsx:269
+#: src/share/ShareDialog.tsx:265
 msgid "A .mortar file suits a profile this size better, and carries your mod settings too."
 msgstr "A .mortar file suits a profile this size better, and carries your mod settings too."
 
@@ -7140,7 +7140,7 @@ msgstr "Enter a number from {min} to {max}"
 msgid "Close downloads"
 msgstr "Close downloads"
 
-#: src/mods/ProblemsTab.tsx:212
+#: src/mods/ProblemsTab.tsx:207
 msgid "{title} · {count}"
 msgstr "{title} · {count}"
 
@@ -7326,7 +7326,7 @@ msgstr "Reset the settings of {0}?"
 
 #. placeholder {0}: row.name
 #. placeholder {1}: row.framework
-#: src/mods/SlowStartupSection.tsx:40
+#: src/mods/SlowStartupSection.tsx:36
 msgid "{0} adds {time} to startup (through {1})"
 msgstr "{0} adds {time} to startup (through {1})"
 
@@ -7348,7 +7348,7 @@ msgstr "Install {name}?"
 
 #: src/console/BisectDialog.tsx:174
 #: src/console/CrashDialog.tsx:62
-#: src/console/RunProblems.tsx:126
+#: src/console/RunProblems.tsx:122
 #: src/launch/SweepDialog.tsx:27
 #: src/mods/ModMenu.tsx:114
 #: src/mods/problemFix/AssetFix.tsx:65
@@ -7356,7 +7356,7 @@ msgstr "Install {name}?"
 #: src/mods/problemFix/DismissedBrokenFix.tsx:53
 #: src/mods/runErrorFixButtons.tsx:47
 #: src/mods/SelectionBarActions.tsx:117
-#: src/mods/SlowStartupSection.tsx:73
+#: src/mods/SlowStartupSection.tsx:70
 msgid "Switch off"
 msgstr "Switch off"
 
@@ -7386,7 +7386,7 @@ msgstr "No changes yet"
 
 #. placeholder {0}: mod.name
 #: src/console/CrashDialog.tsx:51
-#: src/console/RunProblems.tsx:86
+#: src/console/RunProblems.tsx:82
 msgid "Switched off {0}"
 msgstr "Switched off {0}"
 
@@ -7476,7 +7476,7 @@ msgstr "Running {time}"
 msgid "Switch to Saves"
 msgstr "Switch to Saves"
 
-#: src/console/RunProblems.tsx:173
+#: src/console/RunProblems.tsx:169
 #: src/mods/CleanupSection.tsx:35
 #: src/mods/CleanupSection.tsx:106
 #: src/mods/ModMenu.tsx:161
@@ -7626,7 +7626,7 @@ msgstr "Keep Mortar in the tray"
 #. placeholder {0}: part.n
 #. placeholder {0}: problems.length
 #: src/game/Hero.tsx:267
-#: src/mods/ProblemBar.tsx:61
+#: src/mods/ProblemBar.tsx:55
 #: src/profiles/ProfileRow.tsx:104
 msgid "{0, plural, one {# problem} other {# problems}}"
 msgstr "{0, plural, one {# problem} other {# problems}}"
@@ -7643,7 +7643,7 @@ msgstr "Could not verify its source"
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement."
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
-#: src/console/RunProblems.tsx:122
+#: src/console/RunProblems.tsx:118
 #: src/downloads/DownloadsAsk.tsx:87
 #: src/fomod/Dialog.tsx:258
 #: src/loader/Banner.tsx:33
@@ -7688,8 +7688,8 @@ msgstr "Redo update"
 msgid "Token"
 msgstr "Token"
 
-#: src/mods/ProblemBar.tsx:49
-#: src/mods/ProblemsTab.tsx:415
+#: src/mods/ProblemBar.tsx:43
+#: src/mods/ProblemsTab.tsx:410
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -7773,7 +7773,7 @@ msgstr "colour"
 
 #: src/commandPalette/paletteLabels.ts:22
 #: src/mods/ModDetail.tsx:142
-#: src/mods/ProblemsTab.tsx:70
+#: src/mods/ProblemsTab.tsx:66
 #: src/settings/SettingsPage.tsx:61
 #: src/shell/AppMenu.tsx:87
 #: src/shell/TitleBar.tsx:111
@@ -7823,7 +7823,7 @@ msgstr "Check the file hash when Nexus provides one"
 msgid "{0} needs {1}"
 msgstr "{0} needs {1}"
 
-#: src/share/ShareDialog.tsx:303
+#: src/share/ShareDialog.tsx:299
 msgid "Markdown"
 msgstr "Markdown"
 
@@ -7899,12 +7899,12 @@ msgid "First profile"
 msgstr "First profile"
 
 #. placeholder {0}: formatDuration(total, i18n.locale)
-#: src/mods/SlowStartupSection.tsx:99
+#: src/mods/SlowStartupSection.tsx:96
 msgid "Checked in {0}: {parts}"
 msgstr "Checked in {0}: {parts}"
 
 #. placeholder {0}: saved.path
-#: src/share/ShareDialog.tsx:423
+#: src/share/ShareDialog.tsx:419
 msgid "Saved to {0}"
 msgstr "Saved to {0}"
 
@@ -8028,7 +8028,7 @@ msgid "Newer."
 msgstr "Newer."
 
 #. placeholder {0}: parts.length
-#: src/share/ShareDialog.tsx:323
+#: src/share/ShareDialog.tsx:319
 msgid "Copy mod list ({0} parts)"
 msgstr "Copy mod list ({0} parts)"
 
@@ -8130,7 +8130,7 @@ msgstr "This is a development build of Mortar {0}, so it does not check for upda
 msgid "You can roll back the completed updates from the profile history."
 msgstr "You can roll back the completed updates from the profile history."
 
-#: src/share/SharedMods.tsx:33
+#: src/share/SharedMods.tsx:30
 msgid "Its source is not known."
 msgstr "Its source is not known."
 
@@ -8162,7 +8162,7 @@ msgstr "Import settings"
 #: src/mods/EnableRequirementsDialog.tsx:54
 #: src/mods/LoadOrderTab.tsx:66
 #: src/mods/LoadOrderTab.tsx:217
-#: src/mods/ProblemsTab.tsx:373
+#: src/mods/ProblemsTab.tsx:368
 msgid "Unknown mod"
 msgstr "Unknown mod"
 
@@ -8208,7 +8208,7 @@ msgstr "A preset with this name already exists."
 
 #. placeholder {0}: installable.length
 #. placeholder {0}: wants.length
-#: src/mods/ProblemsTab.tsx:440
+#: src/mods/ProblemsTab.tsx:435
 #: src/saves/lackChips.tsx:112
 msgid "Add all {0}"
 msgstr "Add all {0}"
@@ -8218,7 +8218,7 @@ msgstr "Add all {0}"
 msgid "Stop the game to change SMAPI."
 msgstr "Stop the game to change SMAPI."
 
-#: src/mods/ProblemsTab.tsx:495
+#: src/mods/ProblemsTab.tsx:490
 msgid "No problems found"
 msgstr "No problems found"
 
@@ -8578,8 +8578,8 @@ msgstr "API requests"
 #: src/bundles/BundlesSection.tsx:90
 #: src/bundles/dialogs.tsx:136
 #: src/game/Hero.tsx:262
-#: src/share/ShareDialog.tsx:95
-#: src/share/ShareDialog.tsx:198
+#: src/share/ShareDialog.tsx:91
+#: src/share/ShareDialog.tsx:194
 msgid "{0, plural, one {# mod} other {# mods}}"
 msgstr "{0, plural, one {# mod} other {# mods}}"
 
@@ -8657,7 +8657,7 @@ msgstr "What's new in Mortar {0}"
 #: src/profiles/ProfilesPage.tsx:269
 #: src/profiles/ProfilesPage.tsx:280
 #: src/profiles/RecentChangesButton.tsx:56
-#: src/share/ShareDialog.tsx:300
+#: src/share/ShareDialog.tsx:296
 msgid "Switched off"
 msgstr "Switched off"
 
@@ -8834,7 +8834,7 @@ msgid "Could not update tags for the selected mods"
 msgstr "Could not update tags for the selected mods"
 
 #. placeholder {0}: copies.remove.map((m) => m.name).join(', ')
-#: src/console/RunProblems.tsx:171
+#: src/console/RunProblems.tsx:167
 msgid "Remove {0}."
 msgstr "Remove {0}."
 
@@ -8928,7 +8928,7 @@ msgstr "Windowed resolution height"
 msgid "This source has no profiles Mortar can import."
 msgstr "This source has no profiles Mortar can import."
 
-#: src/share/ImportDialog.tsx:185
+#: src/share/ImportDialog.tsx:181
 msgid "Import profile from…"
 msgstr "Import profile from…"
 
@@ -8944,7 +8944,7 @@ msgstr "Pin selected versions"
 msgid "Share log and continue"
 msgstr "Share log and continue"
 
-#: src/share/SharedMods.tsx:25
+#: src/share/SharedMods.tsx:22
 msgid "{n} GitHub"
 msgstr "{n} GitHub"
 
@@ -8978,7 +8978,7 @@ msgstr "No eligible profiles."
 
 #. placeholder {0}: copies.keep.name
 #. placeholder {1}: copies.remove.map((m) => m.name).join(', ')
-#: src/console/RunProblems.tsx:170
+#: src/console/RunProblems.tsx:166
 msgid "Keep {0} and remove {1}."
 msgstr "Keep {0} and remove {1}."
 
@@ -8987,7 +8987,7 @@ msgid "Check this download"
 msgstr "Check this download"
 
 #: src/settings/sections/AboutDiagnostics.tsx:168
-#: src/share/ShareDialog.tsx:418
+#: src/share/ShareDialog.tsx:414
 msgid "Save…"
 msgstr "Save…"
 
@@ -9028,7 +9028,7 @@ msgstr "GOG via Minigalaxy"
 msgid "Show times"
 msgstr "Show times"
 
-#: src/mods/ProblemsTab.tsx:62
+#: src/mods/ProblemsTab.tsx:58
 msgid "Broken or outdated mods"
 msgstr "Broken or outdated mods"
 
@@ -9037,7 +9037,7 @@ msgstr "Broken or outdated mods"
 msgid "{0, plural, one {# imported} other {# imported}}"
 msgstr "{0, plural, one {# imported} other {# imported}}"
 
-#: src/share/ShareDialog.tsx:169
+#: src/share/ShareDialog.tsx:165
 msgid "Get Mortar"
 msgstr "Get Mortar"
 
@@ -9095,7 +9095,7 @@ msgstr "Find an asset"
 msgid "This mod is no longer in the profile."
 msgstr "This mod is no longer in the profile."
 
-#: src/share/ShareDialog.tsx:237
+#: src/share/ShareDialog.tsx:233
 msgid "Copy link"
 msgstr "Copy link"
 
@@ -9169,7 +9169,7 @@ msgid "{name}, descending"
 msgstr "{name}, descending"
 
 #: src/queue/store.ts:110
-#: src/share/ImportFooter.tsx:67
+#: src/share/ImportFooter.tsx:63
 msgid "Open Nexus settings"
 msgstr "Open Nexus settings"
 
@@ -9230,7 +9230,7 @@ msgstr "Changes since last run"
 msgid "Restore all"
 msgstr "Restore all"
 
-#: src/share/ShareDialog.tsx:206
+#: src/share/ShareDialog.tsx:202
 msgid "This profile is too large for a link."
 msgstr "This profile is too large for a link."
 
@@ -9347,7 +9347,7 @@ msgstr "Everything it changes, {by} also changes: {detail}"
 msgid "{0} ({1})"
 msgstr "{0} ({1})"
 
-#: src/mods/ProblemsTab.tsx:64
+#: src/mods/ProblemsTab.tsx:60
 msgid "Errors in the last run"
 msgstr "Errors in the last run"
 
@@ -9391,15 +9391,15 @@ msgstr "Downloads finished"
 #: src/settings/sections/About.tsx:99
 #: src/settings/sections/AboutDiagnostics.tsx:233
 #: src/settings/sections/DataStoreReport.tsx:394
-#: src/share/ImportDialog.tsx:213
-#: src/share/ImportDialog.tsx:216
+#: src/share/ImportDialog.tsx:209
+#: src/share/ImportDialog.tsx:212
 #: src/share/ShareShell.tsx:64
 #: src/shell/TitleBar.tsx:122
 #: src/tools/ToolsManageDialog.tsx:80
 msgid "Close"
 msgstr "Close"
 
-#: src/share/ImportDialog.tsx:210
+#: src/share/ImportDialog.tsx:206
 #: src/share/ShareShell.tsx:99
 msgid "Link"
 msgstr "Link"
@@ -9455,7 +9455,7 @@ msgstr "Remove {0} from this profile?"
 
 #: src/mods/columnLabel.ts:6
 #: src/profiles/overrideValue.ts:83
-#: src/share/ShareDialog.tsx:300
+#: src/share/ShareDialog.tsx:296
 msgid "On"
 msgstr "On"
 
@@ -9486,7 +9486,7 @@ msgstr "Leave out"
 msgid "No saves yet"
 msgstr "No saves yet"
 
-#: src/share/ShareDialog.tsx:249
+#: src/share/ShareDialog.tsx:245
 msgid "Copy as a message"
 msgstr "Copy as a message"
 
@@ -9522,7 +9522,7 @@ msgstr "{downloading, plural, one {# downloading} other {# downloading}} · {wai
 msgid "1 time"
 msgstr "1 time"
 
-#: src/mods/ProblemsTab.tsx:497
+#: src/mods/ProblemsTab.tsx:492
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 

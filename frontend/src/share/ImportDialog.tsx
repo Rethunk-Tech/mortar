@@ -1,15 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Dialog, IconButton, Tab, Tabs, Tooltip, Typography } from '@mui/material'
-import { alpha } from '@mui/material/styles'
-
-const WARN_FILL = 0.12
-const WARN_LINE = 0.35
-
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
 import { PreviewData } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
+import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { CompareSummary } from './CompareSummary.tsx'
 import { ImportFooter } from './ImportFooter.tsx'
@@ -42,9 +38,9 @@ function MissingMods({
         mb: 1,
         px: 1.5,
         py: 1,
-        bgcolor: (th) => alpha(th.palette.warning.main, WARN_FILL),
+        bgcolor: calloutFill('warning'),
         border: '1px solid',
-        borderColor: (th) => alpha(th.palette.warning.main, WARN_LINE),
+        borderColor: calloutLine('warning'),
         borderRadius: '4px',
       }}
     >
