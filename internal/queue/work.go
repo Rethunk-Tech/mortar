@@ -259,10 +259,23 @@ func (s *Service) step(ctx context.Context) bool {
 		s.settle(snap.ID, s.resolve(itemCtx, snap))
 	case fetch:
 		s.settle(snap.ID, s.download(itemCtx, snap))
+		s.dropIfEnded(snap)
 	case install:
 		s.settle(snap.ID, s.installStaged(itemCtx, snap))
 	}
 	return true
+}
+
+// dropIfEnded removes a download that was cancelled or skipped while it ran: end removes the files at once, but the
+// download may still write them until it has stopped, so they are removed again once it has.
+func (s *Service) dropIfEnded(snap Item) {
+	s.mu.Lock()
+	it := s.find(snap.ID)
+	ended := it != nil && (it.State == StateCancelled || it.State == StateSkipped)
+	s.mu.Unlock()
+	if ended {
+		dropDownload(s.dest(snap.ID, snap.FileName))
+	}
 }
 
 // settle records how a step ended: nil leaves the item as the step set it.
