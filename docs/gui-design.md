@@ -22,6 +22,7 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
 - **Command palette:** Ctrl+K opens a solid dialog with a search field over actions (Play, Check for mod updates, Open Downloads, Import, Share, New profile, Stream overlay), destinations (this game's profiles, the open profile's user mods and each Settings section) and every keyboard shortcut. Matching is fuzzy, arrows move, Enter runs and Esc closes from anywhere while it is open (including when the search field is not focused). Focus lands in the search field when it opens. Choosing an item closes it. SMAPI's bundled mods and the Mortar bridge are omitted, as on the Mods tab. Like the other shortcuts it stays silent while a field has focus or a dialog is open, and Esc always works.
 - Icons come from one set, Lucide (MIT), at 1.5-2px stroke; no hand-drawn or mixed icons.
 - Every focusable control shows a visible focus ring when reached by keyboard: a 2px outline in the primary colour, 2px outside the control.
+- **Dialog actions:** Cancel or Close is always a text button, leftmost; at most one contained primary sits rightmost, and a destructive primary is contained `color="error"`. Other actions beside them stay text.
 - Button and chip labels never wrap (`white-space: nowrap`); a long message gets its own full-width row, truncating with an ellipsis rather than squeezing the buttons beside it.
 
 ## Surfaces and colour

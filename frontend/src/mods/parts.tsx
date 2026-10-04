@@ -331,11 +331,11 @@ export function RemoveDialog() {
   ]
   const dependents = dependentsOf(mods, removing)
   const close = () => askRemove(null)
-  let body = t`Their folders in this profile are deleted.`
+  let body = t`Their folders in this profile are deleted. You can undo this.`
   if (extra.length > 0) {
-    body = t`Mods from the same download are removed together: ${extra.join(', ')}.`
+    body = t`Mods from the same download are removed together: ${extra.join(', ')}. You can undo this.`
   } else if (one) {
-    body = t`Its folder in this profile is deleted.`
+    body = t`Its folder in this profile is deleted. You can undo this.`
   }
   const drop = (list: typeof removing) => {
     close()
@@ -370,6 +370,7 @@ export function RemoveDialog() {
             </DisabledReason>
             <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
               <Button
+                variant="contained"
                 color="error"
                 disabled={locked}
                 onClick={() => drop([...removing, ...dependents])}
@@ -380,7 +381,12 @@ export function RemoveDialog() {
           </>
         ) : (
           <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
-            <Button color="error" disabled={locked} onClick={() => drop(removing)}>
+            <Button
+              variant="contained"
+              color="error"
+              disabled={locked}
+              onClick={() => drop(removing)}
+            >
               {t`Remove`}
             </Button>
           </DisabledReason>

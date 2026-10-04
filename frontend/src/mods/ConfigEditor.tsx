@@ -249,7 +249,7 @@ function EditorDialog({
           {saved ? <Typography sx={{ mr: 'auto', ...text }}>{t`Saved`}</Typography> : null}
           <Button onClick={onClose}>{t`Close`}</Button>
           <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
-            <Button onClick={onSave} disabled={locked || (tab === 1 && !tree)}>
+            <Button variant="contained" onClick={onSave} disabled={locked || (tab === 1 && !tree)}>
               {t`Save`}
             </Button>
           </DisabledReason>

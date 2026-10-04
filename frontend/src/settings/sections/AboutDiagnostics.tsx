@@ -226,12 +226,10 @@ function Diagnostics() {
             {t`Save diagnostics…`}
           </Button>
           <Box sx={{ flex: 1 }} />
-          <Button disabled={busy} onClick={run}>
+          <Button variant="contained" disabled={busy} onClick={run}>
             {t`Run again`}
           </Button>
-          <Button variant="contained" onClick={() => setOpen(false)}>
-            {t`Close`}
-          </Button>
+          <Button onClick={() => setOpen(false)}>{t`Close`}</Button>
         </DialogActions>
       </Dialog>
     </SettingsSection>

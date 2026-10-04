@@ -217,15 +217,10 @@ export function ReportToAuthorButton({
           )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5, flexWrap: 'wrap', gap: 1 }}>
-          <Button variant="outlined" disabled={uploading} onClick={close} sx={buttonSx}>
+          <Button disabled={uploading} onClick={close} sx={buttonSx}>
             {t`Cancel`}
           </Button>
-          <Button
-            variant="outlined"
-            disabled={uploading || log === null}
-            onClick={skipShare}
-            sx={buttonSx}
-          >
+          <Button disabled={uploading || log === null} onClick={skipShare} sx={buttonSx}>
             {t`Skip sharing`}
           </Button>
           <Button

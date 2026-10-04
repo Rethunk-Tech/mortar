@@ -92,6 +92,7 @@ function AddToGroupDialog({
         <DialogActions>
           <Button onClick={onClose}>{t`Cancel`}</Button>
           <Button
+            variant="contained"
             disabled={locked || name.trim() === ''}
             onClick={() => add(name).catch(reportUnexpected)}
           >

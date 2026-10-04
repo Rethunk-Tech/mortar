@@ -139,7 +139,6 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
         </Button>
         {others.length > 0 ? (
           <Button
-            variant="outlined"
             disabled={busy}
             aria-haspopup="menu"
             aria-expanded={anchor !== null}
@@ -154,7 +153,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
           </Button>
         ) : null}
         {profiles?.length === 0 && canCreate ? (
-          <Button variant="contained" onClick={() => setCreating(true)}>
+          <Button variant={open ? 'text' : 'contained'} onClick={() => setCreating(true)}>
             {t`New profile`}
           </Button>
         ) : null}

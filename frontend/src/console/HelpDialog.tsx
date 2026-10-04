@@ -230,7 +230,7 @@ export function HelpDialog({ game }: { game: string }) {
         )}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button variant="outlined" disabled={uploading} onClick={close} sx={button}>
+        <Button disabled={uploading} onClick={close} sx={button}>
           {link || !log ? t`Close` : t`Cancel`}
         </Button>
         {log && !link ? (
