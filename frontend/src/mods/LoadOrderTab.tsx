@@ -3,7 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, Skeleton, Tooltip, Typography } from '@mui/material'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Clipboard } from '@wailsio/runtime'
-import { Copy, ListOrdered } from 'lucide-react'
+import { Copy, ListOrdered, TriangleAlert } from 'lucide-react'
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import type { Row } from '../../bindings/github.com/Rethunk-AI/mortar/internal/loadorder/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
@@ -21,46 +21,31 @@ const INLINE_REQUIRED = 4
 const ROW_ESTIMATE_PX = 72
 const INLINE_USERS = 2
 
-// Thousands of these render at once, so they are plain buttons rather than MUI Chips with tooltips.
 function DepChip({
   label,
   title,
   missing = false,
+  expanded,
   onClick,
 }: {
   label: string
   title?: string
   missing?: boolean
+  expanded?: boolean
   onClick?: () => void
 }) {
   return (
-    <Box
-      component={onClick ? 'button' : 'span'}
-      type={onClick ? 'button' : undefined}
+    <Chip
+      size="small"
+      variant="outlined"
+      label={label}
       title={title}
+      color={missing ? 'error' : 'default'}
+      icon={missing ? <TriangleAlert size={12} aria-hidden={true} /> : undefined}
+      aria-expanded={expanded}
       onClick={onClick}
-      sx={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        height: 22,
-        maxWidth: 240,
-        px: 1,
-        border: '1px solid',
-        borderColor: missing ? 'error.main' : 'var(--mortar-hairline-22)',
-        borderRadius: '11px',
-        bgcolor: 'transparent',
-        color: missing ? 'error.main' : 'text.primary',
-        font: 'inherit',
-        fontSize: 12,
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        cursor: onClick ? 'pointer' : 'default',
-        '&:hover': onClick ? { bgcolor: 'action.hover' } : {},
-      }}
-    >
-      {label}
-    </Box>
+      sx={{ maxWidth: 240 }}
+    />
   )
 }
 
@@ -80,7 +65,7 @@ function DepChips({
     const known = name !== ''
     const label = known ? name : t`Unknown mod`
     const text = {
-      req: t`Required: ${label}`,
+      req: missing ? t`Missing: ${label}` : t`Required: ${label}`,
       opt: t`Optional: ${label}`,
       dep: t`Used by: ${label}`,
     }[prefix]
@@ -118,6 +103,7 @@ function DepChips({
                   ? t` · ${required.length - INLINE_REQUIRED} more required`
                   : '')
           }
+          expanded={open}
           onClick={() => setOpen((v) => !v)}
         />
       ) : null}
