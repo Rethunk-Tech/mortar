@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, FormControlLabel, Radio, RadioGroup, Switch } from '@mui/material'
+import { Box, Button, FormControlLabel, Radio, RadioGroup } from '@mui/material'
 import { Browser, System } from '@wailsio/runtime'
 import { Download, FolderOpen, Undo2 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
@@ -24,9 +24,11 @@ import { useLaunch } from '../../launch/store.ts'
 import { InstallSteps } from '../../loader/InstallSteps.tsx'
 import { useLoader } from '../../loader/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { FlatpakGrant } from '../../shell/FlatpakGrant.tsx'
 import { errorText, reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
@@ -63,7 +65,7 @@ function ResetInstallDialog({
       open={open}
       title={t`Reset game install?`}
       body={t`This deletes the game folder at ${folder}, including every file in it, SMAPI, and any mods placed there. Saves are not in this folder and will be kept. Profiles' mods are stored separately by Mortar and will be kept.`}
-      confirmLabel={t`Delete and restore`}
+      confirmLabel={t`Reset install`}
       color="error"
       busy={busy}
       onCancel={onClose}
@@ -194,7 +196,7 @@ function GameFolder({
                 onClick={() => change(SetGameFolder(GAME, ''))}
                 sx={nowrap}
               >
-                {t`Use discovered`}
+                {t`Use default`}
               </Button>
             ) : null}
           </Box>
@@ -274,7 +276,10 @@ function GameFolder({
             onRefresh()
             setResetting(false)
           } catch (e: unknown) {
-            setError(errorText(e) ?? t`That folder cannot be used`)
+            useToasts.getState().push({
+              kind: 'error',
+              title: errorText(e) ?? t`Could not reset the game install`,
+            })
           } finally {
             setRestoreBusy(false)
           }
@@ -307,6 +312,10 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
   useEffect(() => {
     onVersion(gameVersion)
   }, [gameVersion, onVersion])
+  const locked = pending || playing
+  const lockReason = playing
+    ? t`Stop the game to install SMAPI.`
+    : t`An install is already running.`
   let title = t`SMAPI is not installed`
   let detail = ''
   let action = t`Install`
@@ -325,15 +334,17 @@ function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
     control = <InstallSteps steps={steps} />
   } else if (status) {
     control = (
-      <Button
-        variant="outlined"
-        startIcon={<Download size={16} />}
-        disabled={pending || playing}
-        onClick={() => install(GAME)}
-        sx={{ ...outline, height: 38 }}
-      >
-        {action}
-      </Button>
+      <DisabledReason title={lockReason} disabled={locked}>
+        <Button
+          variant="outlined"
+          startIcon={<Download size={16} />}
+          disabled={locked}
+          onClick={() => install(GAME)}
+          sx={{ ...outline, height: 38 }}
+        >
+          {action}
+        </Button>
+      </DisabledReason>
     )
   }
   return (
@@ -351,11 +362,12 @@ function SmapiPage({ onVersion }: { onVersion: (v: string) => void }) {
     <SettingsSection title={t`SMAPI`}>
       <Smapi onVersion={onVersion} />
       <SettingRow label={t`Tell me when a new SMAPI is out`}>
-        <Switch
+        <PrefSwitch
           checked={tellWhenSmapiOut}
-          onChange={(_, on) =>
+          onChange={(on) =>
             persist(() => SetTellWhenSmapiOut(on), push, t`Couldn't save that setting`)
           }
+          label={t`Tell me when a new SMAPI is out`}
         />
       </SettingRow>
       <SmapiVersionRow />
