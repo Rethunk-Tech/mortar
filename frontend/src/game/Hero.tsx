@@ -5,11 +5,9 @@ import { type ReactNode, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { When } from '../i18n/When.tsx'
 import { useBadges } from '../mods/badges.ts'
-import { problemsOf, updateCount } from '../mods/lookup.ts'
+import { updateCount } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
 import { useNexusDetails } from '../mods/nexusDetails.ts'
-import { driftRows, isInfoRow } from '../mods/problemGroups.ts'
-import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { useLoadProblemsOnFocus } from '../mods/useLoadProblemsOnFocus.ts'
 import { unlinkCollection } from '../profiles/collectionUnlink.ts'
@@ -224,41 +222,23 @@ function HeroName({ profile, meta, game }: { profile: Profile; meta: string[]; g
   )
 }
 
-// Problems and updates live in the header so the Mods tab keeps its rows for the list.
+// Updates live in the header so the Mods tab keeps its rows for the list; the Problems tab carries its own count.
 function AttentionCards() {
   const { t } = useLingui()
-  const setTab = useTab((s) => s.setTab)
-  const result = useMods((s) => s.problems)
   const updates = useUpdates((s) => s.updates)
   const setReviewing = useUpdates((s) => s.setReviewing)
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
   useLoadProblemsOnFocus()
-  const problems = [...problemsOf(result), ...driftRows(result)]
-  const real = problems.some((p) => !isInfoRow(p))
   const updateN = updateCount(updates, profile, useNexusDetails.getState().byId)
-  return (
-    <>
-      {result === null ? <Card label={t`Problems`} value={t`Checking…`} /> : null}
-      {result !== null && problems.length > 0 ? (
-        <Card
-          label={t`Problems`}
-          value={String(problems.length)}
-          tone={real ? 'warning' : undefined}
-          ariaLabel={t`Open problems (${problems.length})`}
-          onClick={() => setTab('problems')}
-        />
-      ) : null}
-      {updateN > 0 ? (
-        <Card
-          label={t`Updates`}
-          value={String(updateN)}
-          tone="primary"
-          ariaLabel={t`Review ${plural(updateN, { one: '# update', other: '# updates' })}`}
-          onClick={() => setReviewing(true)}
-        />
-      ) : null}
-    </>
-  )
+  return updateN > 0 ? (
+    <Card
+      label={t`Updates`}
+      value={String(updateN)}
+      tone="primary"
+      ariaLabel={t`Review ${plural(updateN, { one: '# update', other: '# updates' })}`}
+      onClick={() => setReviewing(true)}
+    />
+  ) : null
 }
 
 const HERO_FADE = 'linear-gradient(to bottom, var(--mortar-overlay-90) 80%, transparent 100%)'
