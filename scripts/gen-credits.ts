@@ -288,7 +288,17 @@ function appendGoNotice(
 
 function goModuleNotices(): NoticeEntry[] {
   const proc = Bun.spawnSync(
-    ['go', 'list', '-deps', '-f', '{{with .Module}}{{.Path}}\t{{.Version}}\t{{.Dir}}{{end}}', '.'],
+    // -e: main.go embeds frontend/dist, which this build has not produced yet on a clean checkout (CI); the module
+    // list does not depend on it.
+    [
+      'go',
+      'list',
+      '-e',
+      '-deps',
+      '-f',
+      '{{with .Module}}{{.Path}}\t{{.Version}}\t{{.Dir}}{{end}}',
+      '.',
+    ],
     { cwd: repoRoot, stdout: 'pipe', stderr: 'pipe' },
   )
   if (proc.exitCode !== 0) {
