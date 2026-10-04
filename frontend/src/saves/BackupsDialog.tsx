@@ -9,10 +9,7 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  ListItemIcon,
-  ListItemText,
   Menu,
-  MenuItem,
   Tooltip,
   Typography,
 } from '@mui/material'
@@ -31,6 +28,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useSaveBackups } from './backups.ts'
@@ -161,9 +159,14 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
         <DialogTitle>{t`Save backups`}</DialogTitle>
         <DialogContent>
           {status === 'error' ? (
-            <Typography sx={{ fontSize: 13, color: 'error.main' }}>
-              {t`Could not list backups: ${error}`}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography sx={{ fontSize: 13, color: 'error.main' }}>
+                {t`Could not list backups: ${error}`}
+              </Typography>
+              <Button size="small" sx={nowrap} onClick={() => load().catch(reportUnexpected)}>
+                {t`Retry`}
+              </Button>
+            </Box>
           ) : null}
           {status === 'loading' && items.length === 0 ? (
             <LoadingRow>{t`Reading backups…`}</LoadingRow>
@@ -212,7 +215,9 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
           setMenu(null)
         }}
       >
-        <MenuItem
+        <MenuAction
+          icon={menu?.backup.pinned ? <PinOff size={16} /> : <Pin size={16} />}
+          label={menu?.backup.pinned ? t`Unkeep` : t`Keep`}
           onClick={() => {
             if (menu) {
               const { backup } = menu
@@ -220,40 +225,29 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
             }
             setMenu(null)
           }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            {menu?.backup.pinned ? <PinOff size={16} /> : <Pin size={16} />}
-          </ListItemIcon>
-          <ListItemText>{menu?.backup.pinned ? t`Unkeep` : t`Keep`}</ListItemText>
-        </MenuItem>
-        <MenuItem
+        />
+        <MenuAction
+          icon={<RotateCcw size={16} />}
+          label={t`Restore all`}
           onClick={() => {
             if (menu) {
               setConfirm({ backup: menu.backup, snaps: menu.backup.saves ?? [] })
             }
             setMenu(null)
           }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <RotateCcw size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Restore all`}</ListItemText>
-        </MenuItem>
+        />
         {(menu?.backup.saves ?? []).map((snap) => (
-          <MenuItem
+          <MenuAction
             key={snap.folder}
+            icon={<RotateCcw size={16} />}
+            label={t`Restore ${snap.farm || snap.folder}`}
             onClick={() => {
               if (menu) {
                 setConfirm({ backup: menu.backup, snaps: [snap] })
               }
               setMenu(null)
             }}
-          >
-            <ListItemIcon sx={{ color: 'inherit' }}>
-              <RotateCcw size={16} />
-            </ListItemIcon>
-            <ListItemText>{t`Restore ${snap.farm || snap.folder}`}</ListItemText>
-          </MenuItem>
+          />
         ))}
       </Menu>
       <ConfirmDialog

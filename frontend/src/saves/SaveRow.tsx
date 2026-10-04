@@ -21,7 +21,7 @@ import {
 import { useLocked } from '../mods/useLocked.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useSaveBackups } from './backups.ts'
@@ -133,7 +133,7 @@ function SaveButtons({ fit, game, label }: { fit: Fit; game: string; label: stri
           size="small"
           aria-label={t`Open the folder of ${label}`}
           onClick={() => {
-            OpenSaveFolder(fit.folder).catch(() => undefined)
+            OpenSaveFolder(fit.folder).catch(reportUnexpected)
           }}
         >
           <FolderOpen size={16} />

@@ -48,6 +48,14 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
         {t`Play this profile and start a farm. Each save shows here with how well it fits ${name}, so you know which mods it needs.`}
       </EmptyState>
     )
+  } else if (shown.length === 0 && query.trim() !== '') {
+    body = (
+      <EmptyState icon={<Search size={40} aria-hidden={true} />} title={t`No saves match`}>
+        <Button size="small" onClick={() => setQuery('')} sx={nowrap}>
+          {t`Clear filter`}
+        </Button>
+      </EmptyState>
+    )
   } else {
     body = shown.map((fit) => <SaveRow key={fit.folder} fit={fit} profile={profile} game={game} />)
   }
@@ -83,7 +91,7 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
           onClick={() => setBackupsOpen(true)}
           sx={nowrap}
         >
-          {t`Save backups`}
+          {t`Save backups…`}
         </Button>
       </Box>
       <Box
