@@ -274,9 +274,16 @@ A full-height text field fills the tab. Its placeholder explains that notes trav
 
 ## Performance tab
 
-Performance reports are saved per profile and can be compared from the tab. The comparison shows before/now average milliseconds, signed change and percentage, with new and gone mods called out.
+A tab of its own, with a **Startup** / **In game** switch at the top; Startup is shown first.
 
-A tab of its own.
+Startup:
+
+- Heading **Title screen after N s** for the chosen launch (a picker lists the last 10 when there is more than one), and **Measure next launch** (off with a reason once requested), which also times every mod's Entry on that launch.
+- A phase bar with a legend: SMAPI loads mods, Mods start, Game content, First updates, Title intro.
+- A table of mods by total time (Total, Entry, Slowest event, Assets and packs); a framework's row expands into its content packs by time (25 shown, then a count). Mods under 50 ms fold into one **N other mods** row, and **Game and SMAPI** holds the unattributed rest.
+- Empty: a timer icon, **No startup measured yet**, and copy that says to play the profile.
+
+In game: performance reports are saved per profile and can be compared from the tab. The comparison shows before/now average milliseconds, signed change and percentage, with new and gone mods called out.
 
 - Empty, before measuring: a gauge icon, **See which mods slow the game**, and copy that says to start the game with this profile then measure while playing, with **Start measuring** (off until this profile is running and This session is shown).
 - After measuring starts: **Start measuring** / **Measuring**, **Show report** and **Copy report**.

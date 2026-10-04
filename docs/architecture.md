@@ -402,6 +402,14 @@ A launch through Flatpak Steam that times out while the override is missing uses
   - The Mods list, grid and sidebar badge each user mod that logged errors or warnings in that profile's newest stored run; a later run with none for that mod clears the badge.
 - Trap: launching through Steam makes Steam Cloud download the user's saves, and SMAPI's Save Backup mod zips them into `save-backups/` in the game folder.
 
+### Startup timings
+
+- **What:** the bridge (from 1.3.0) measures each mod's share of startup, from its own Entry to the title screen, and writes `<profile>/startup/<process start UTC>.json` (last 10 kept; schema in the bridge README). Times are exclusive: an asset edit triggered from another mod's update tick counts for the editor only.
+- **Load early:** before each launch Mortar adds the bridge's UniqueID to `ModsToLoadEarly` in `<profile>/mods/SMAPI-config.json` (SMAPI's per-mods-folder settings), keeping other keys; a file that is not plain JSON is left alone. With the bridge first, every other mod's Entry runs after it.
+- **Measured launch:** **Measure next launch** writes `<profile>/startup/.measure-next-launch`; the next launch removes it and writes `StartupProfile: true` into the bridge's `config.json`, so the bridge also times every other mod's Entry. Always-on timing skips Entry because patching every mod's Entry costs time itself.
+- **What is timed:** every SMAPI event handler (delegates swapped in place on SMAPI's event manager, restored at the title screen), every asset edit and load by mod and by the content pack it acts for, and Content Patcher's per-pack work (reading `content.json` and `config.json`, parsing patches, each patch's token update). Measured on the main profile (193 mods, 417 packs): 44 s of 46 s between the bridge's Entry and the title screen attributed; Content Patcher's first update tick is 26 s, Fashion Sense's GameLaunched 2.9 s.
+- **Shown in:** Performance › Startup ([gui-design.md](gui-design.md#performance-tab)); reports reload when a run starts or ends.
+
 ### Saves
 
 Saves live in one folder, `%APPDATA%\StardewValley\Saves` or `~/.config/StardewValley/Saves`, which Steam Cloud syncs, so Mortar never moves it; profiles share saves.
