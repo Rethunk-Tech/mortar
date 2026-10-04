@@ -10,11 +10,13 @@ import {
 import { useTab } from '../game/tab.ts'
 import { useDetail } from '../mods/detail.ts'
 import { useMods } from '../mods/store.ts'
+import { useUpdates } from '../mods/updates.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MONO } from '../theme/theme.ts'
 import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import type { InstalledMod } from './consoleLinks.ts'
+import { smapiUpdateNotes } from './smapiUpdateNotes.ts'
 import { VirtualLog } from './VirtualLog.tsx'
 
 function installedOf(
@@ -71,6 +73,8 @@ export function LinkedLog({
   const gameDir = useProfiles((s) => s.game?.installDir ?? '')
   const profileEntries = useProfiles((s) => s.profiles.find((p) => p.id === s.openId)?.entries)
   const installed = useMemo(() => installedOf(profileEntries), [profileEntries])
+  const updates = useUpdates((s) => s.updates)
+  const notes = useMemo(() => smapiUpdateNotes(rows, updates), [rows, updates])
   const [modsDir, setModsDir] = useState('')
   useEffect(() => {
     if (profile === '') {
@@ -113,6 +117,7 @@ export function LinkedLog({
       ) : (
         <VirtualLog
           rows={rows}
+          notes={notes}
           timestamps={timestamps}
           follow={follow}
           onUnfollow={onUnfollow}

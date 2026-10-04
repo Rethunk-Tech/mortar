@@ -60,7 +60,33 @@ type Update struct {
 // so the list may be short.
 type UpdatesResult struct {
 	Updates []Update `json:"updates"`
-	Unknown bool     `json:"unknown"`
+	// Held lists versions SMAPI's API suggests that Mortar does not offer, with the reason, so the Console can say
+	// why SMAPI's "You can update" list differs from Mortar's.
+	Held    []Held `json:"held"`
+	Unknown bool   `json:"unknown"`
+}
+
+// Held reasons.
+const (
+	// HeldCurrent: the download installed is already that version; only a manifest inside it was not bumped.
+	HeldCurrent = "current"
+	// HeldSkipped, HeldPinned, HeldIgnored and HeldSource are the profile's own choices for the mod.
+	HeldSkipped = "skipped"
+	HeldPinned  = "pinned"
+	HeldIgnored = "ignored"
+	HeldSource  = "source"
+	// HeldPrerelease: a prerelease while prereleases are off; HeldUnofficial: an unofficial SMAPI build while those are off.
+	HeldPrerelease = "prerelease"
+	HeldUnofficial = "unofficial"
+)
+
+// Held is one suggested version Mortar holds back. Have is the version of the download installed.
+type Held struct {
+	UniqueID string `json:"uniqueId"`
+	Name     string `json:"name"`
+	Version  string `json:"version"`
+	Have     string `json:"have"`
+	Reason   string `json:"reason"`
 }
 
 // CheckUpdates asks SMAPI's API about every user mod (the bundled ones update with SMAPI). It never returns
@@ -73,7 +99,7 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 type NexusFilesOf func(ctx context.Context, modIDs []int) (map[int][]nexus.BatchFile, error)
 
 func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed, enabledOnly, fresh bool, filesOf NexusFilesOf) UpdatesResult {
-	r := UpdatesResult{Updates: []Update{}}
+	r := UpdatesResult{Updates: []Update{}, Held: []Held{}}
 	req := meta.UpdateRequest{APIVersion: env.APIVersion, GameVersion: env.GameVersion, Platform: env.Platform, Fresh: fresh}
 	var asked []Installed
 	for _, x := range mods {
@@ -102,6 +128,11 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 	for i, res := range results {
 		if res.Suggested != nil && (downloaded(asked[i], res.Suggested.Version) ||
 			current(asked[i], res.Suggested.URL, res.Suggested.Version)) {
+			x := asked[i]
+			r.Held = append(r.Held, Held{
+				UniqueID: x.UniqueID, Name: x.Name, Version: res.Suggested.Version,
+				Have: cmp.Or(x.SourceVersion, x.Version), Reason: HeldCurrent,
+			})
 			res.Suggested = nil
 		}
 		if res.Unofficial != nil && (downloaded(asked[i], res.Unofficial.Version) ||
@@ -152,32 +183,50 @@ func HideHeld(r UpdatesResult, mods []Installed, includePrerelease bool, smapiBu
 		byKey[m.Key] = m
 	}
 	kept := make([]Update, 0, len(r.Updates))
+	held := slices.Clone(r.Held)
+	hold := func(u Update, reason string) {
+		held = append(held, Held{UniqueID: u.UniqueID, Name: u.Name, Version: u.Version, Have: u.Installed, Reason: reason})
+	}
 	for _, u := range r.Updates {
 		if smapiBuilds == "never" && u.Unofficial {
+			hold(u, HeldUnofficial)
 			continue
 		}
 		m, ok := byKey[u.Key]
 		if !ok {
 			if !keepPrerelease(Installed{}, includePrerelease, u.Version, u.Installed) {
+				hold(u, HeldPrerelease)
 				continue
 			}
 			kept = append(kept, u)
 			continue
 		}
-		hold := profile.Entry{Pinned: m.Pinned, SkipVersion: m.SkipVersion, IgnoreUpdates: m.IgnoreUpdates}
-		if slices.Contains(m.SkipSources, u.Source) {
-			continue
+		entry := profile.Entry{Pinned: m.Pinned, SkipVersion: m.SkipVersion, IgnoreUpdates: m.IgnoreUpdates}
+		switch {
+		case slices.Contains(m.SkipSources, u.Source):
+			hold(u, HeldSource)
+		case !entry.OffersUpdate(u.Version):
+			hold(u, heldChoice(entry))
+		case !keepPrerelease(m, includePrerelease, u.Version, u.Installed):
+			hold(u, HeldPrerelease)
+		default:
+			kept = append(kept, u)
 		}
-		if !hold.OffersUpdate(u.Version) {
-			continue
-		}
-		if !keepPrerelease(m, includePrerelease, u.Version, u.Installed) {
-			continue
-		}
-		kept = append(kept, u)
 	}
-	r.Updates = kept
+	r.Updates, r.Held = kept, held
 	return r
+}
+
+// heldChoice names the profile choice that made OffersUpdate refuse a version.
+func heldChoice(e profile.Entry) string {
+	switch {
+	case e.IgnoreUpdates:
+		return HeldIgnored
+	case e.Pinned:
+		return HeldPinned
+	default:
+		return HeldSkipped
+	}
 }
 
 func updateSource(u meta.Update, nexusID int, githubRepo string) string {

@@ -66,6 +66,7 @@ test("drift on an entry flags that entry's mods for status grouping", () => {
     runErrors: [],
     drift: [drift],
     dismissed: [],
+    held: [],
     unknown: false,
   }
   expect(
@@ -134,6 +135,7 @@ test('missingCount is the missing dependencies and is excluded from badge proble
     runErrors: [],
     drift: [],
     dismissed: [],
+    held: [],
     unknown: false,
   }
   expect(missingCount(null)).toBe(0)
@@ -155,7 +157,7 @@ test('an update belongs to one copy of a mod', () => {
     source: '',
     unofficial: false,
   }
-  const result = { updates: [update], unknown: false }
+  const result = { updates: [update], held: [], unknown: false }
   expect(updateCount(result)).toBe(1)
   expect(updateFor(result, { key: 'a-1', uniqueId: 'me.a' })).toBe(update)
   expect(updateFor(result, { key: 'a-2', uniqueId: 'me.a' })).toBeUndefined()
@@ -180,7 +182,7 @@ test('a pin or skipped version hides that update', () => {
     source: '',
     unofficial: false,
   }
-  const result = { updates: [update], unknown: false }
+  const result = { updates: [update], held: [], unknown: false }
   const pinned = {
     id: 'p',
     name: 'P',
@@ -260,6 +262,7 @@ test('review updates use the same Nexus-filtered list as the count', () => {
         unofficial: false,
       },
     ],
+    held: [],
     unknown: false,
   }
   const details = {

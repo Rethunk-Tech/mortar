@@ -62,7 +62,7 @@ msgstr "Other"
 msgid "Could not reach GitHub. Check your connection and try again."
 msgstr "Could not reach GitHub. Check your connection and try again."
 
-#: src/console/LinkedLog.tsx:127
+#: src/console/LinkedLog.tsx:132
 msgid "Could not open the folder"
 msgstr "Could not open the folder"
 
@@ -135,6 +135,10 @@ msgstr "Free Nexus accounts must click each download on Nexus; those updates wil
 #: src/firstrun/SmapiStep.tsx:397
 msgid "Installing SMAPI {latest}"
 msgstr "Installing SMAPI {latest}"
+
+#: src/console/UpdateNoteTag.tsx:25
+msgid "Unofficial build"
+msgstr "Unofficial build"
 
 #: src/settings/sections/Updates.tsx:188
 msgid "Mod updates show on each profile's mod list."
@@ -1582,6 +1586,10 @@ msgstr "Skip tour"
 msgid "Could not measure disk use"
 msgstr "Could not measure disk use"
 
+#: src/console/UpdateNoteTag.tsx:24
+msgid "Prerelease"
+msgstr "Prerelease"
+
 #: src/console/ConsoleTab.tsx:419
 msgid "Follow new lines"
 msgstr "Follow new lines"
@@ -2313,6 +2321,10 @@ msgstr "Updated tags"
 msgid "Update mods before Play on new profiles"
 msgstr "Update mods before Play on new profiles"
 
+#: src/console/UpdateNoteTag.tsx:28
+msgid "Not downloadable here"
+msgstr "Not downloadable here"
+
 #: src/settings/sections/DataStoreReport.tsx:289
 msgid "a newer copy is kept"
 msgstr "a newer copy is kept"
@@ -2505,6 +2517,10 @@ msgstr "Keep downloaded archives"
 msgid "Duplicates"
 msgstr "Duplicates"
 
+#: src/console/UpdateNoteTag.tsx:29
+msgid "This version is only on a site Mortar cannot download from yet; open the link to get it."
+msgstr "This version is only on a site Mortar cannot download from yet; open the link to get it."
+
 #: src/console/StartupPanel.tsx:110
 msgid "Hide content packs"
 msgstr "Hide content packs"
@@ -2640,6 +2656,10 @@ msgstr "Should Mortar open Nexus \"Mod Manager Download\" links, so a click on N
 msgid "Also enabled {0}"
 msgstr "Also enabled {0}"
 
+#: src/console/UpdateNoteTag.tsx:26
+msgid "In Mortar's updates"
+msgstr "In Mortar's updates"
+
 #: src/share/ImportInput.tsx:18
 msgid "Open a .mortar file someone sent you. You see what it holds before anything downloads."
 msgstr "Open a .mortar file someone sent you. You see what it holds before anything downloads."
@@ -2675,6 +2695,10 @@ msgstr "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
 #: src/game/Sidebar.tsx:194
 msgid "Resize sidebar"
 msgstr "Resize sidebar"
+
+#: src/console/UpdateNoteTag.tsx:16
+msgid "This profile skips this version, so Mortar does not offer it."
+msgstr "This profile skips this version, so Mortar does not offer it."
 
 #: src/game/Hero.tsx:351
 msgid "Created"
@@ -2933,6 +2957,10 @@ msgstr "Choose your {0} folder"
 msgid "{0, plural, one {Remove all # mod from this profile?} other {Remove all # mods from this profile?}}"
 msgstr "{0, plural, one {Remove all # mod from this profile?} other {Remove all # mods from this profile?}}"
 
+#: src/console/UpdateNoteTag.tsx:49
+msgid "Mortar: {label}"
+msgstr "Mortar: {label}"
+
 #: src/mods/ModCards.tsx:406
 #: src/mods/ModList.tsx:369
 #: src/mods/Toolbar.tsx:137
@@ -2997,6 +3025,10 @@ msgstr "{0} {1} has several archives. Which one should Mortar install?"
 #: src/settings/sections/Shortcuts.tsx:93
 msgid "Reset {label}"
 msgstr "Reset {label}"
+
+#: src/console/UpdateNoteTag.tsx:23
+msgid "This profile skips updates from this source for this mod."
+msgstr "This profile skips updates from this source for this mod."
 
 #. placeholder {0}: skippedSettings.length
 #: src/share/ImportPreview.tsx:389
@@ -3071,6 +3103,10 @@ msgstr "Pin version"
 #: src/saves/BackupsDialog.tsx:64
 msgid "Unknown"
 msgstr "Unknown"
+
+#: src/console/UpdateNoteTag.tsx:20
+msgid "This mod is pinned in this profile, so Mortar does not offer updates for it."
+msgstr "This mod is pinned in this profile, so Mortar does not offer updates for it."
 
 #. placeholder {0}: mod.name
 #: src/mods/parts.tsx:285
@@ -5017,6 +5053,7 @@ msgstr "Colour"
 msgid "{trackedCount, plural, one {Untrack all # tracked {gameName} mod on Nexus? Nexus has no undo for this.} other {Untrack all # tracked {gameName} mods on Nexus? Nexus has no undo for this.}}"
 msgstr "{trackedCount, plural, one {Untrack all # tracked {gameName} mod on Nexus? Nexus has no undo for this.} other {Untrack all # tracked {gameName} mods on Nexus? Nexus has no undo for this.}}"
 
+#: src/console/UpdateNoteTag.tsx:19
 #: src/mods/Toolbar.tsx:61
 #: src/profiles/RecentChangesButton.tsx:59
 msgid "Pinned"
@@ -5658,6 +5695,10 @@ msgstr "Download"
 msgid "Problems in this run"
 msgstr "Problems in this run"
 
+#: src/console/UpdateNoteTag.tsx:12
+msgid "Your download is already {have}; the mod's manifest still carries the old number, so SMAPI keeps asking."
+msgstr "Your download is already {have}; the mod's manifest still carries the old number, so SMAPI keeps asking."
+
 #. placeholder {0}: mod.name
 #: src/mods/storeEntries.ts:395
 msgid "Could not open the folder of {0}"
@@ -5739,6 +5780,10 @@ msgstr "Windowed resolution width"
 #: src/settings/sections/DataStoreReport.tsx:105
 msgid "Cached Nexus mod details"
 msgstr "Cached Nexus mod details"
+
+#: src/console/UpdateNoteTag.tsx:26
+msgid "Mortar offers this update in the profile's update list."
+msgstr "Mortar offers this update in the profile's update list."
 
 #: src/settings/sections/StreamOverlay.tsx:320
 msgid "Hide token"
@@ -6180,6 +6225,10 @@ msgstr "Default"
 msgid "UniqueID"
 msgstr "UniqueID"
 
+#: src/console/UpdateNoteTag.tsx:23
+msgid "Source skipped"
+msgstr "Source skipped"
+
 #: src/launch/LaunchLayer.tsx:131
 msgid "{profileName} · {mods, plural, one {# mod} other {# mods}}"
 msgstr "{profileName} · {mods, plural, one {# mod} other {# mods}}"
@@ -6296,6 +6345,10 @@ msgstr "Skills"
 #: src/settings/sections/ModsProfiles.tsx:22
 msgid "Enable mods when installed"
 msgstr "Enable mods when installed"
+
+#: src/console/UpdateNoteTag.tsx:24
+msgid "Mortar offers prereleases only when Settings allows them."
+msgstr "Mortar offers prereleases only when Settings allows them."
 
 #. placeholder {0}: status.step
 #. placeholder {1}: status.total
@@ -6415,6 +6468,10 @@ msgstr "From collection {0}, revision {1}"
 msgid "Measuring"
 msgstr "Measuring"
 
+#: src/console/UpdateNoteTag.tsx:25
+msgid "Unofficial SMAPI-compatible builds are off in Settings."
+msgstr "Unofficial SMAPI-compatible builds are off in Settings."
+
 #: src/share/ImportPreview.tsx:337
 msgid "{total, plural, one {# mod} other {# mods}}"
 msgstr "{total, plural, one {# mod} other {# mods}}"
@@ -6457,6 +6514,10 @@ msgstr "Loading…"
 #: src/profiles/GameSettings.tsx:169
 msgid "Window mode"
 msgstr "Window mode"
+
+#: src/console/UpdateNoteTag.tsx:22
+msgid "This profile ignores updates for this mod."
+msgstr "This profile ignores updates for this mod."
 
 #: src/profiles/ProfilesPage.tsx:507
 msgid "Create a profile to manage a set of mods."
@@ -6559,6 +6620,10 @@ msgstr "SMAPI console window"
 #: src/settings/sections/StreamOverlay.tsx:240
 msgid "Existing OBS sources stop working until their URLs are copied again."
 msgstr "Existing OBS sources stop working until their URLs are copied again."
+
+#: src/console/UpdateNoteTag.tsx:22
+msgid "Updates ignored"
+msgstr "Updates ignored"
 
 #: src/install/DropOverlay.tsx:102
 msgid "Stop the game to change mods"
@@ -6810,6 +6875,10 @@ msgstr "Borderless"
 #: src/lan/SendDialog.tsx:157
 msgid "Recent address"
 msgstr "Recent address"
+
+#: src/console/UpdateNoteTag.tsx:15
+msgid "You skipped this version"
+msgstr "You skipped this version"
 
 #: src/queue/QueueBody.tsx:361
 msgid "Updates, missing dependencies and links from Nexus land here."
@@ -7544,6 +7613,10 @@ msgstr "Could not check the profile"
 #: src/game/detailStates.tsx:50
 msgid "All profiles are hidden"
 msgstr "All profiles are hidden"
+
+#: src/console/UpdateNoteTag.tsx:11
+msgid "Already installed"
+msgstr "Already installed"
 
 #: src/games/storeName.ts:5
 #: src/settings/prefCopy.ts:56

@@ -10,6 +10,8 @@ import {
   linksInText,
 } from './consoleLinks.ts'
 import { levelChrome } from './levelPalette.ts'
+import type { UpdateNote } from './smapiUpdateNotes.ts'
+import { UpdateNoteTag } from './UpdateNoteTag.tsx'
 
 // 13px monospace at line-height 1.75.
 const ROW = 23
@@ -80,8 +82,10 @@ function Row({
   roots,
   onMod,
   onPath,
+  note,
 }: {
   entry: Entry
+  note: UpdateNote | undefined
   timestamps: boolean
   mods: readonly InstalledMod[]
   roots: ConsoleLinkRoots
@@ -126,8 +130,14 @@ function Row({
           <Linked text={entry.mod} links={modLinks} onMod={onMod} onPath={onPath} />
         )}
       </Box>
-      <Box sx={{ ...cell, color: look.text }} title={entry.message}>
-        <Linked text={entry.message} links={messageLinks} onMod={onMod} onPath={onPath} />
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', minWidth: 0, color: look.text }}
+        title={entry.message}
+      >
+        <Box sx={cell}>
+          <Linked text={entry.message} links={messageLinks} onMod={onMod} onPath={onPath} />
+        </Box>
+        {note ? <UpdateNoteTag note={note} /> : null}
       </Box>
     </Box>
   )
@@ -144,8 +154,10 @@ export function VirtualLog({
   roots,
   onMod,
   onPath,
+  notes,
 }: {
   rows: Entry[]
+  notes: ReadonlyMap<number, UpdateNote>
   timestamps: boolean
   follow: boolean
   onUnfollow: () => void
@@ -207,6 +219,7 @@ export function VirtualLog({
             <Row
               key={entry.seq}
               entry={entry}
+              note={notes.get(entry.seq)}
               timestamps={timestamps}
               mods={mods}
               roots={roots}
