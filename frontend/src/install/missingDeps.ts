@@ -2,6 +2,7 @@ import type {
   Missing,
   Result,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import { sameId } from '../mods/lookup.ts'
 
 interface DepWant {
   kind: 'dependency'
@@ -25,8 +26,6 @@ interface MissingOffer {
   dependentName: string
   missing: Missing[]
 }
-
-const sameId = (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
 
 const text = (obj: Record<string, unknown> | undefined, key: string) => {
   const value = obj?.[key]

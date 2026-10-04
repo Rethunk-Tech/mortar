@@ -1,6 +1,6 @@
 import { Box, Tab, Tabs } from '@mui/material'
 
-// The segmented tab switch of the Share and Import dialogs.
+// A segmented switch between a few views of one page, such as Performance's Startup and In game.
 export function TabPills<T extends string>({
   value,
   onChange,

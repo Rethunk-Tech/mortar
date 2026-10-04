@@ -1,3 +1,4 @@
+import { sameId } from './lookup.ts'
 export type CompatStatus = 'ok' | 'optional' | 'unofficial' | 'broken' | 'obsolete' | 'abandoned'
 
 export function showCompatChip(status: string | undefined | null): boolean {
@@ -9,10 +10,7 @@ export function compatOf<T extends { uniqueId?: string; key?: string }>(
   rows: T[] | null | undefined,
   mod: { uniqueId: string; key: string },
 ): T | undefined {
-  return (rows ?? []).find(
-    (row) =>
-      row.key === mod.key && (row.uniqueId ?? '').toLowerCase() === mod.uniqueId.toLowerCase(),
-  )
+  return (rows ?? []).find((row) => row.key === mod.key && sameId(row.uniqueId ?? '', mod.uniqueId))
 }
 
 export function compatReportChunks(

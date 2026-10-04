@@ -22,6 +22,7 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { formatLoadOrderCopy, loadOrderEmptyKind } from './loadOrderText.ts'
+import { sameId } from './lookup.ts'
 import { useMods } from './store.ts'
 
 const INLINE_REQUIRED = 4
@@ -160,7 +161,7 @@ function OrderList({
     getItemKey: (index) => shown[index]?.uniqueId ?? index,
   })
   const onScroll = (id: string): boolean => {
-    const index = shown.findIndex((row) => row.uniqueId.toLowerCase() === id.toLowerCase())
+    const index = shown.findIndex((row) => sameId(row.uniqueId, id))
     if (index < 0) {
       return false
     }

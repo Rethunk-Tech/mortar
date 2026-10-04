@@ -9,6 +9,7 @@ import {
   Saves,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { sameId } from '../mods/lookup.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -67,7 +68,7 @@ export const useSaves = create<State>((set, get) => ({
   },
   enable: async (game, profile, uniqueId) => {
     const key = (profile.entries ?? []).find((e) =>
-      (e.mods ?? []).some((m) => m.uniqueId.toLowerCase() === uniqueId.toLowerCase()),
+      (e.mods ?? []).some((m) => sameId(m.uniqueId, uniqueId)),
     )?.key
     if (!key) {
       return

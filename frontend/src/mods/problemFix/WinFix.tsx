@@ -7,6 +7,7 @@ import { useProfiles } from '../../profiles/store.ts'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import type { Problem } from '../lookup.ts'
+import { sameId } from '../lookup.ts'
 import { useMods } from '../store.ts'
 import { useLocked } from '../useLocked.ts'
 
@@ -58,7 +59,7 @@ function WinFix({
   const sx = { height: buttonHeight, whiteSpace: 'nowrap', flexShrink: 0 } as const
   const undo = () => {
     const winnerId = asset.winnerId ?? ''
-    const index = packIds.findIndex((id) => id.toLowerCase() === winnerId.toLowerCase())
+    const index = packIds.findIndex((id) => sameId(id, winnerId))
     const winnerKey = keys[index]
     if (winnerKey) {
       applyWins(winnerKey, packIds, index, false)

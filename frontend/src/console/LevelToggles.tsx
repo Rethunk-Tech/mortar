@@ -4,6 +4,7 @@ import { useTheme } from '@mui/material/styles'
 import { ChevronDown } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import { formatCount } from '../mods/nexusFormat.ts'
 import { countByLevel, LEVELS } from './filter.ts'
 import { levelSwatch } from './levelPalette.ts'
 import { useShownEntries } from './logHooks.ts'
@@ -11,10 +12,9 @@ import { useConsole } from './store.ts'
 
 // Trace and Debug are rarely wanted and very long, so they live in a menu beside the everyday levels.
 const QUIET_LEVELS: Level[] = [Level.Trace, Level.Debug]
-const compactCount = new Intl.NumberFormat(undefined, { notation: 'compact' })
 
 export function LevelToggles() {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const theme = useTheme()
   const entries = useShownEntries()
   const on = useConsole((s) => s.filters.levels)
@@ -74,7 +74,7 @@ export function LevelToggles() {
             />
             {names[level]}
             <Box component="span" sx={{ opacity: 0.75 }} aria-hidden={true}>
-              {compactCount.format(n)}
+              {formatCount(n, i18n.locale)}
             </Box>
           </ButtonBase>
         )
@@ -98,7 +98,7 @@ export function LevelToggles() {
         {QUIET_LEVELS.map((level) => (
           <MenuItem key={level} onClick={() => toggle(level)}>
             <Checkbox size="small" checked={on.includes(level)} sx={{ p: 0, mr: 1 }} />
-            {t`${names[level]} (${compactCount.format(counts.get(level) ?? 0)})`}
+            {t`${names[level]} (${formatCount(counts.get(level) ?? 0, i18n.locale)})`}
           </MenuItem>
         ))}
       </Menu>

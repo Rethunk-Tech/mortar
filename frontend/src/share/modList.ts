@@ -3,6 +3,7 @@ import type {
   Profile,
   Source,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { sameId } from '../mods/lookup.ts'
 
 const LIMIT = 2000
 const BUNDLED = new Set(['smapi', 'mortar'])
@@ -35,7 +36,7 @@ function pageUrl(source: Source): string {
 }
 
 function isOn(entry: Entry, uniqueId: string): boolean {
-  return !(entry.disabled ?? []).some((id) => id.toLowerCase() === uniqueId.toLowerCase())
+  return !(entry.disabled ?? []).some((id) => sameId(id, uniqueId))
 }
 
 function markdownLine(item: Item): string {

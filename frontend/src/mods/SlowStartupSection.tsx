@@ -8,6 +8,7 @@ import { formatDuration, type SlowStartup, slowStartups } from '../console/start
 import { useTab } from '../game/tab.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { sameId } from './lookup.ts'
 import { useMods } from './store.ts'
 
 const INFO_FILL = 0.12
@@ -31,9 +32,7 @@ function useSlowStartups(): SlowStartup[] {
 function SlowRow({ row }: { row: SlowStartup }) {
   const { t, i18n } = useLingui()
   const info = useTheme().palette.info.main
-  const mod = useMods((s) =>
-    s.mods.find((m) => m.uniqueId.toLowerCase() === row.uniqueId.toLowerCase()),
-  )
+  const mod = useMods((s) => s.mods.find((m) => sameId(m.uniqueId, row.uniqueId)))
   const setEnabled = useMods((s) => s.setEnabled)
   const time = formatDuration(row.ms, i18n.locale)
   let text = t`${row.name} adds ${time} to startup`
