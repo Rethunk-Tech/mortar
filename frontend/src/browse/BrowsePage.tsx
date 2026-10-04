@@ -10,6 +10,7 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
+import { errorText } from '../toasts/errorKind.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { clampPage, DEBOUNCE_MS, PAGE_SIZE } from './browseState.ts'
 import type { BrowseItem, BrowsePageProps } from './browseTypes.ts'
@@ -103,9 +104,9 @@ function useBrowseQuery({
           setPage((current) => clampPage({ page: current, total: next.total }))
         }
       })
-      .catch((err: { message?: string }) => {
+      .catch((err: unknown) => {
         if (!cancelled) {
-          setError(err.message ?? '')
+          setError(errorText(err) ?? '')
           setStatus('error')
         }
       })

@@ -35,13 +35,11 @@ import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
-import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { applyStagedCover, hasPickedCover } from './cover.ts'
 
 // The profile actions shared by the profile page's buttons and the sidebar's context menu, so both offer the same.
-
-const sentenceCase = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
 
 function ProfileMenuItem({
   icon,
@@ -155,13 +153,7 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
                   body: t`It shows in your Steam library the next time Steam starts.`,
                 }),
               )
-              .catch((e) =>
-                useToasts.getState().push({
-                  kind: 'error',
-                  title: t`Could not add it to Steam`,
-                  body: sentenceCase(errorMessage(e)),
-                }),
-              )
+              .catch(reportError(t`Could not add it to Steam`))
           }
         }}
       />

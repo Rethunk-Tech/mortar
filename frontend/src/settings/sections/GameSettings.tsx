@@ -22,7 +22,7 @@ import { storeName } from '../../games/storeName.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { FlatpakGrant } from '../../shell/FlatpakGrant.tsx'
 import { errorText } from '../../toasts/errorKind.ts'
-import { reportError } from '../../toasts/report.ts'
+import { reportError, toastError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
@@ -271,10 +271,7 @@ function GameFolder({
             onRefresh()
             setResetting(false)
           } catch (e: unknown) {
-            useToasts.getState().push({
-              kind: 'error',
-              title: errorText(e) ?? t`Could not reset the game install`,
-            })
+            toastError(t`Could not reset the game install`, e)
           } finally {
             setRestoreBusy(false)
           }
