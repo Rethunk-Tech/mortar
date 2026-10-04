@@ -1,6 +1,6 @@
 # Contributing
 
-A private Rethunk-AI project until its first release. This is the workflow for maintainers and agents; the rules the code keeps are in [`AGENTS.md`](AGENTS.md), and every command is in [`HUMANS.md`](HUMANS.md).
+This is the workflow for maintainers and agents; the rules the code keeps are in [`AGENTS.md`](AGENTS.md), and every command is in [`HUMANS.md`](HUMANS.md).
 
 ## Before review
 
