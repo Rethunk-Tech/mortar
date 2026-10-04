@@ -258,6 +258,12 @@ func (s *Store) AnyRunning(game string) bool {
 	return slices.ContainsFunc(all, func(p Profile) bool { return s.unlocked(game, p.ID) != nil })
 }
 
+// HasStoreItem reports whether the mod store holds key for the game.
+func (s *Store) HasStoreItem(game, key string) bool {
+	_, err := s.items.Path(game, key)
+	return err == nil
+}
+
 // ModsDir returns the absolute path of the profile's mods/ folder, the one passed to the game as its mods path.
 func (s *Store) ModsDir(game, id string) (string, error) {
 	dir, err := s.profileDir(game, id)

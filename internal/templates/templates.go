@@ -155,40 +155,20 @@ func (s *Service) DeleteTemplate(game, name string) error {
 	return s.write(game, slices.Delete(list, i, i+1))
 }
 
-// NewProfileFromTemplate creates a profile, applies the template's game settings and launch options, then adds the
-// bundle's mods as a bundle apply does. Mods the store lacks come back in Missing for the caller to download. A
-// failure after the profile exists moves it to the trash again.
+// NewProfileFromTemplate creates a profile and fills it from the template. Mods the store lacks come back in Missing
+// for the caller to download. A failure after the profile exists moves it to the trash again.
 func (s *Service) NewProfileFromTemplate(game, templateName, profileName string) (bundles.ApplyResult, error) {
-	s.mu.Lock()
-	list, err := s.read(game)
-	s.mu.Unlock()
+	t, err := s.find(game, templateName)
 	if err != nil {
 		return bundles.ApplyResult{}, err
 	}
-	i := indexOf(list, templateName)
-	if i < 0 {
-		return bundles.ApplyResult{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("template %q was not found", templateName))
-	}
-	t := list[i]
 	p, err := s.d.Profiles.Create(game, profileName)
 	if err != nil {
 		return bundles.ApplyResult{}, err
 	}
-	res, err := s.fill(game, p.ID, t)
+	res, err := s.fill(game, p.ID, t, t.Bundle)
 	if err != nil {
 		return bundles.ApplyResult{}, errors.Join(err, s.d.Profiles.Delete(game, p.ID))
 	}
 	return res, nil
-}
-
-func (s *Service) fill(game, id string, t Template) (bundles.ApplyResult, error) {
-	if err := s.d.SetGameSettings(game, id, t.GameSettings); err != nil {
-		return bundles.ApplyResult{}, err
-	}
-	if t.LaunchOptions != "" {
-		if _, err := s.d.Profiles.SetLaunchOptions(game, id, t.LaunchOptions); err != nil {
-			return bundles.ApplyResult{}, err
-		}
-	}
-	return s.d.Bundles.ApplyMods(game, "template", t.Bundle, id)
 }

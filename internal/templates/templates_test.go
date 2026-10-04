@@ -74,6 +74,30 @@ func TestTemplateRoundTripFromProfileToNewProfile(t *testing.T) {
 		t.Fatalf("settings = %+v", got)
 	}
 
+	other, err := profiles.Create("stardew", "Other")
+	if err != nil {
+		t.Fatal(err)
+	}
+	pre, err := svc.PreviewApplyTemplate("stardew", "Starter", other.ID)
+	if err != nil || len(pre.Add) != 1 || len(pre.AlreadyHave) != 0 || len(pre.Missing) != 0 ||
+		len(pre.SettingsChanges) != 2 {
+		t.Fatalf("preview = %+v, %v", pre, err)
+	}
+	applied, err := svc.ApplyTemplate("stardew", "Starter", other.ID)
+	if err != nil || applied.Added != 1 || len(applied.Profile.Entries) != 1 {
+		t.Fatalf("apply = %+v, %v", applied, err)
+	}
+	if opts, _ := profiles.LaunchOptions("stardew", other.ID); opts != "--no-gui" {
+		t.Fatalf("launch options = %q", opts)
+	}
+	if again, err := svc.PreviewApplyTemplate("stardew", "Starter", other.ID); err != nil || len(again.Add) != 0 ||
+		len(again.AlreadyHave) != 1 || len(again.SettingsChanges) != 0 {
+		t.Fatalf("second preview = %+v, %v", again, err)
+	}
+	if evs, err := profiles.History("stardew", other.ID); err != nil || len(evs) == 0 {
+		t.Fatalf("history = %+v, %v", evs, err)
+	}
+
 	if _, err := svc.NewProfileFromTemplate("stardew", "Nope", "X"); err == nil {
 		t.Fatal("unknown template must fail")
 	}
