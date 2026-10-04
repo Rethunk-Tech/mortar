@@ -120,7 +120,7 @@ function failureToast(item: Item) {
     return { title: i18n._(msg`File quarantined`) }
   }
   return {
-    title: i18n._(msg`Couldn't reach Nexus`),
+    title: i18n._(msg`Could not reach Nexus`),
     action: {
       label: i18n._(msg`Retry now`),
       run: () => Retry(item.id),
@@ -215,7 +215,7 @@ function pushRateLimitPause(prev: Snapshot, next: Snapshot) {
     useToasts.getState().push({
       kind: 'warning',
       title: i18n._(msg`Downloads paused`),
-      body: i18n._(msg`Downloads paused. Retrying in ${n} s.`),
+      body: i18n._(msg`Retrying in ${n} s.`),
     })
   }
 }

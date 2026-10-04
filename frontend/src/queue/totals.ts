@@ -31,6 +31,9 @@ export function parallelDownloads(items: Item[]) {
 }
 
 // What the user still waits for: everything that neither finished nor was dropped, failures included.
+export const isClearableFinished = (state: string) =>
+  state === 'done' || state === 'skipped' || state === 'cancelled'
+
 export const isLeft = (i: Item) => !['done', 'skipped', 'cancelled'].includes(i.state)
 
 // A file that is queued or under way for this mod in this profile; a failed one does not count, so it can be added again.

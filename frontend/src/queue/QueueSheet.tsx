@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import {
-  ClearFinished,
+  Dismiss,
   Pause,
   Resume,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
@@ -28,7 +28,7 @@ import {
 import { Body } from './QueueBody.tsx'
 import { HistoryList } from './QueueHistory.tsx'
 import { useQueue } from './store.ts'
-import { clockTime, parallelDownloads, totals } from './totals.ts'
+import { clockTime, isClearableFinished, parallelDownloads, totals } from './totals.ts'
 
 const UNIX_MS_PER_SECOND = 1000
 const WIDTH = 500
@@ -55,7 +55,7 @@ function Header({
   const summary = parallel ? t`${parallel} · ${counts}` : counts
   const line = sum.sizeKb > 0 ? t`${summary} · ${formatKb(sum.sizeKb)}` : summary
   const idle = !paused && sum.active === 0 && sum.left === 0
-  const finished = items.filter((i) => ['done', 'failed', 'skipped', 'cancelled'].includes(i.state))
+  const finished = items.filter((i) => isClearableFinished(i.state))
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pt: 2, pr: 1, pb: 1.25, pl: 2.5 }}>
@@ -79,7 +79,9 @@ function Header({
           <Tooltip title={t`Clear finished`}>
             <IconButton
               aria-label={t`Clear finished`}
-              onClick={() => ClearFinished().catch(reportUnexpected)}
+              onClick={() =>
+                Promise.all(finished.map((item) => Dismiss(item.id))).catch(reportUnexpected)
+              }
             >
               <ListX size={16} />
             </IconButton>

@@ -271,7 +271,14 @@ function Active({ item }: { item: Item }) {
           <Title item={item} size={14} />
           <Typography sx={{ ...detail, flexShrink: 0 }}>{text}</Typography>
         </Box>
-        <Box sx={{ height: 4, borderRadius: '2px', bgcolor: 'var(--mortar-hairline)' }}>
+        <Box
+          role="progressbar"
+          aria-label={t`Download progress for ${item.name}`}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={item.progress}
+          sx={{ height: 4, borderRadius: '2px', bgcolor: 'var(--mortar-hairline)' }}
+        >
           <Box
             sx={{
               width: `${item.progress}%`,

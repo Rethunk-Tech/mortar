@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
-import { parallelDownloads, pendingFor, profileOf, totals } from './totals.ts'
+import { isClearableFinished, parallelDownloads, pendingFor, profileOf, totals } from './totals.ts'
 
 const item = (state: string, sizeKb = 0, modId = 1): Item => ({
   id: state + modId,
@@ -39,6 +39,12 @@ test('totals count each state and split the bar over what was asked for', () => 
   ])
   expect([t.done, t.active, t.failed, t.left, t.sizeKb]).toEqual([1, 1, 1, 3, 4096])
   expect([t.doneShare, t.activeShare, t.failedShare]).toEqual([25, 25, 25])
+})
+
+test('Clear finished drops done, skipped and cancelled rows and leaves failed ones', () => {
+  expect(
+    ['done', 'skipped', 'cancelled', 'failed', 'downloading'].filter(isClearableFinished),
+  ).toEqual(['done', 'skipped', 'cancelled'])
 })
 
 test('an empty queue has an empty bar', () => {

@@ -1,17 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogTitle,
-  FormControl,
-  IconButton,
-  MenuItem,
-  Select,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { Box, FormControl, IconButton, MenuItem, Select, Tooltip, Typography } from '@mui/material'
 import {
   ArrowUpRight,
   CircleCheck,
@@ -31,6 +19,7 @@ import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
 import { showInProfile } from '../mods/revealMod.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import {
@@ -49,7 +38,7 @@ const menu = {
 
 function RetryHistoryButton({ entry }: { entry: HistoryEntry }) {
   const { t } = useLingui()
-  if (entry.outcome !== 'failed' && entry.outcome !== 'skipped') {
+  if (entry.outcome !== 'failed' && entry.outcome !== 'skipped' && entry.outcome !== 'cancelled') {
     return null
   }
   return (
@@ -152,25 +141,22 @@ export function HistoryList({
             </IconButton>
           </Tooltip>
         ) : null}
-        <Dialog open={confirmClear} onClose={() => setConfirmClear(false)}>
-          <DialogTitle>{t`Clear download history?`}</DialogTitle>
-          <DialogActions>
-            <Button onClick={() => setConfirmClear(false)}>{t`Cancel`}</Button>
-            <Button
-              color="error"
-              onClick={() =>
-                ClearHistory()
-                  .then(() => {
-                    setConfirmClear(false)
-                    onCleared()
-                  })
-                  .catch(reportUnexpected)
-              }
-            >
-              {t`Clear history`}
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <ConfirmDialog
+          open={confirmClear}
+          color="error"
+          title={t`Clear download history?`}
+          body={t`This deletes the list of past downloads. In-progress downloads are not affected. Failed items lose Retry until you download them again.`}
+          confirmLabel={t`Clear history`}
+          onCancel={() => setConfirmClear(false)}
+          onConfirm={() =>
+            ClearHistory()
+              .then(() => {
+                setConfirmClear(false)
+                onCleared()
+              })
+              .catch(reportUnexpected)
+          }
+        />
       </Box>
       {rows.length === 0 ? (
         <EmptyState compact={true} icon={<Download />} title={t`No downloads in history.`}>
