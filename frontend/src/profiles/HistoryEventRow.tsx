@@ -28,16 +28,23 @@ export function HistoryEventRow({
   const { t } = useLingui()
   const changes = historyChangeSummary(ev)
   const marker = ev.kind === 'good'
+  const label = marker ? t`Known good` : ev.label
   return (
     <ListItem
       disableGutters={true}
       secondaryAction={
         <Button size="small" sx={{ whiteSpace: 'nowrap' }} disabled={busy} onClick={onUndo}>
-          {t`Undo this change`}
+          {t`Restore ${label}`}
         </Button>
       }
     >
-      <Checkbox size="small" checked={selected} onChange={onToggle} disabled={busy} />
+      <Checkbox
+        size="small"
+        checked={selected}
+        onChange={onToggle}
+        disabled={busy}
+        slotProps={{ input: { 'aria-label': t`Compare ${label}` } }}
+      />
       <ListItemText
         primary={marker ? t`Known good` : ev.label}
         secondary={
@@ -53,7 +60,7 @@ export function HistoryEventRow({
                   onClick={() => onRevertItem(itemModKey(item))}
                   sx={{ whiteSpace: 'nowrap' }}
                 >
-                  {t`Revert`}
+                  {t`Restore ${label}`}
                 </Button>
               </Box>
             ))}

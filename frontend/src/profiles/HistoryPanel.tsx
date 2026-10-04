@@ -76,6 +76,8 @@ export function HistoryPanel({
         {h.pair ? (
           <HistoryDiffView
             diff={h.pair}
+            aLabel={h.events.find((ev) => ev.id === h.pair.a)?.label ?? h.pair.a}
+            bLabel={h.events.find((ev) => ev.id === h.pair.b)?.label ?? h.pair.b}
             busy={h.busy !== ''}
             onRestoreA={() => {
               const id = h.pair?.a ?? ''

@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 
 export function HistoryToolbar({
   busy,
@@ -17,8 +17,11 @@ export function HistoryToolbar({
         {t`Mark known good`}
       </Button>
       <Button size="small" disabled={busy} onClick={onRestore} sx={{ whiteSpace: 'nowrap' }}>
-        {t`Return to last known good`}
+        {t`Restore last known good`}
       </Button>
+      <Typography sx={{ fontSize: 13, color: 'text.secondary', alignSelf: 'center' }}>
+        {t`Pick two to compare`}
+      </Typography>
     </Box>
   )
 }

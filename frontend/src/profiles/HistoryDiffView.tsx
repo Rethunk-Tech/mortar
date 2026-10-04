@@ -5,11 +5,15 @@ import { diffLines } from './historyDiff.ts'
 
 export function HistoryDiffView({
   diff,
+  aLabel,
+  bLabel,
   onRestoreA,
   onRestoreB,
   busy,
 }: {
   diff: HistoryDiff
+  aLabel: string
+  bLabel: string
   onRestoreA: () => void
   onRestoreB: () => void
   busy: boolean
@@ -32,10 +36,10 @@ export function HistoryDiffView({
       )}
       <Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
         <Button size="small" disabled={busy} onClick={onRestoreA} sx={{ whiteSpace: 'nowrap' }}>
-          {t`Restore first`}
+          {t`Restore ${aLabel}`}
         </Button>
         <Button size="small" disabled={busy} onClick={onRestoreB} sx={{ whiteSpace: 'nowrap' }}>
-          {t`Restore second`}
+          {t`Restore ${bLabel}`}
         </Button>
       </Box>
     </Box>
