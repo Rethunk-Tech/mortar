@@ -27,6 +27,16 @@ const (
 	sameJobRare  = 3
 )
 
+// A smaller mod is covered by a larger one when the larger changes sameJobCovered of its footprint by weight. Large
+// mods write many common members and so cover small ones by accident: the smaller footprint must weigh at least
+// sameJobCoveredWeight, which rules out one or two common members, and every shared member must be written by at most
+// sameJobCoveredDF mods.
+const (
+	sameJobCovered       = 0.8
+	sameJobCoveredWeight = 10
+	sameJobCoveredDF     = 12
+)
+
 // withSameJob adds the "sameJob" rows, skipping mods another check already lists under Redundant.
 func (s *Service) withSameJob(gameID, id string, r Result, mods []Installed) Result {
 	dir, err := s.profiles.ProfileDir(gameID, id)
@@ -76,7 +86,8 @@ func footprints(mods []Installed, replaces map[string][]string) map[string]map[s
 	return out
 }
 
-// sameJob flags pairs of enabled mods whose footprints overlap, weighting each member by how few mods change it.
+// sameJob flags pairs of enabled mods whose footprints overlap, weighting each member by how few mods change it, and
+// smaller mods whose footprint a larger one covers (listed on the smaller mod only).
 // Pairs that are meant to run together are left out: one depends on the other, they share an author or download,
 // or either is something another enabled mod builds on, since a framework writes what its users write.
 func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
@@ -113,6 +124,16 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 	}
 	by := map[string][]ModRef{}
 	shared := map[string]map[string]bool{}
+	coveredBy := map[string][]ModRef{}
+	coveredShared := map[string]map[string]bool{}
+	note := func(into map[string]map[string]bool, id string, members []string) {
+		if into[id] == nil {
+			into[id] = map[string]bool{}
+		}
+		for _, member := range members {
+			into[id][member] = true
+		}
+	}
 	for i, a := range code {
 		ida := strings.ToLower(a.UniqueID)
 		for _, b := range code[i+1:] {
@@ -122,40 +143,49 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 			}
 			var both []string
 			sum := 0.0
-			rare := true
+			common := 0
 			for member := range fp[ida] {
 				if fp[idb][member] {
 					both = append(both, member)
 					sum += weight(member)
-					rare = rare && df[member] <= sameJobRare
+					common = max(common, df[member])
 				}
 			}
 			if len(both) == 0 {
 				continue
 			}
+			var similar bool
 			if n < sameJobSmall {
-				if !rare || len(both) < min(len(fp[ida]), len(fp[idb])) {
-					continue
-				}
-			} else if sum == 0 || sum < sameJobScore*max(total[ida], total[idb]) {
+				similar = common <= sameJobRare && len(both) == min(len(fp[ida]), len(fp[idb]))
+			} else {
+				similar = sum > 0 && sum >= sameJobScore*max(total[ida], total[idb])
+			}
+			if similar {
+				by[ida] = append(by[ida], ModRef{Key: b.Key, Name: b.Name})
+				by[idb] = append(by[idb], ModRef{Key: a.Key, Name: a.Name})
+				note(shared, ida, both)
+				note(shared, idb, both)
 				continue
 			}
-			by[ida] = append(by[ida], ModRef{Key: b.Key, Name: b.Name})
-			by[idb] = append(by[idb], ModRef{Key: a.Key, Name: a.Name})
-			for _, id := range []string{ida, idb} {
-				if shared[id] == nil {
-					shared[id] = map[string]bool{}
-				}
-				for _, member := range both {
-					shared[id][member] = true
-				}
+			small, large := a, b
+			if total[idb] < total[ida] {
+				small, large = b, a
+			}
+			ids := strings.ToLower(small.UniqueID)
+			if n >= sameJobSmall && total[ids] >= sameJobCoveredWeight && common <= sameJobCoveredDF && sum >= sameJobCovered*total[ids] {
+				coveredBy[ids] = append(coveredBy[ids], ModRef{Key: large.Key, Name: large.Name})
+				note(coveredShared, ids, both)
 			}
 		}
 	}
 	var out []Redundant
 	for _, m := range code {
-		if id := strings.ToLower(m.UniqueID); len(by[id]) > 0 {
+		id := strings.ToLower(m.UniqueID)
+		switch {
+		case len(by[id]) > 0:
 			out = append(out, Redundant{Kind: "sameJob", Key: m.Key, UniqueID: m.UniqueID, Name: m.Name, By: by[id], Detail: shortMembers(shared[id], weight)})
+		case len(coveredBy[id]) > 0:
+			out = append(out, Redundant{Kind: "sameJob", Key: m.Key, UniqueID: m.UniqueID, Name: m.Name, By: coveredBy[id], Detail: shortMembers(coveredShared[id], weight), Covered: true})
 		}
 	}
 	return out

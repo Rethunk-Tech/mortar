@@ -114,3 +114,40 @@ func TestShortMembersCapsAtThreeMostDistinctive(t *testing.T) {
 		t.Fatalf("got %q", got)
 	}
 }
+
+func TestSameJobListsASmallerModALargerOneCovers(t *testing.T) {
+	fp := map[string]map[string]bool{}
+	var mods []Installed
+	add := func(id string, members ...string) {
+		fp[id] = map[string]bool{}
+		for _, m := range members {
+			fp[id][m] = true
+		}
+		mods = append(mods, Installed{Key: "k-" + id, Enabled: true, UniqueID: id, Name: id, Author: id})
+	}
+	var large []string
+	for i := range 20 {
+		large = append(large, fmt.Sprint("L::", i))
+	}
+	small := []string{"S::1", "S::2", "S::3", "S::4", "S::5"}
+	hubbed := []string{"R::1", "R::2", "R::3", "R::4", "R::5"}
+	add("large", slices.Concat(large, small, hubbed, []string{"One::x", "Hub::h"})...)
+	add("small", small...)
+	add("one", "One::x")
+	add("hubbed", slices.Concat(hubbed, []string{"Hub::h"})...)
+	for i := range 12 {
+		add(fmt.Sprint("filler", i), fmt.Sprint("F::", i), "Hub::h")
+	}
+	for i := range 6 {
+		add(fmt.Sprint("other", i), fmt.Sprint("O::", i))
+	}
+
+	got := sameJob(fp, mods)
+
+	if len(got) != 1 || got[0].Key != "k-small" || !got[0].Covered || !slices.Equal(got[0].By, []ModRef{{Key: "k-large", Name: "large"}}) {
+		t.Fatalf("rows = %+v", got)
+	}
+	if got[0].Detail != "S.1, S.2, S.3, …" {
+		t.Fatalf("detail = %q", got[0].Detail)
+	}
+}

@@ -7,8 +7,8 @@ import (
 )
 
 // Redundant is an enabled mod that adds nothing beside the others: "superseded" when its replacement is enabled too,
-// "shadowed" when later packs overwrite every edit it makes, "patches" when another mod replaces the same game
-// methods (a hint, since mods often share methods for unrelated reasons).
+// "shadowed" when later packs overwrite every edit it makes, "sameJob" when another enabled C# mod changes the same game
+// members (Covered when a larger mod changes everything this one does).
 type Redundant struct {
 	Kind     string   `json:"kind"`
 	Key      string   `json:"key"`
@@ -16,6 +16,7 @@ type Redundant struct {
 	Name     string   `json:"name"`
 	By       []ModRef `json:"by"`
 	Detail   string   `json:"detail,omitempty"`
+	Covered  bool     `json:"covered,omitempty"`
 }
 
 // ModRef names one enabled mod.

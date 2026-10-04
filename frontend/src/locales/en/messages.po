@@ -4141,6 +4141,10 @@ msgstr "{daily} requests left today · {hourly} this hour"
 msgid "Skip for now"
 msgstr "Skip for now"
 
+#: src/mods/redundantReason.ts:16
+msgid "Everything it changes, {names} also changes: {detail}"
+msgstr "Everything it changes, {names} also changes: {detail}"
+
 #: src/mods/parts.tsx:347
 msgid "Their folders in this profile are deleted."
 msgstr "Their folders in this profile are deleted."
@@ -6723,7 +6727,7 @@ msgstr "Reset game install"
 msgid ".mortar file"
 msgstr ".mortar file"
 
-#: src/mods/redundantReason.ts:15
+#: src/mods/redundantReason.ts:18
 msgid "Does the same job as {names}: both change {detail}"
 msgstr "Does the same job as {names}: both change {detail}"
 
