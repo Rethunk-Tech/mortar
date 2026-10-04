@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react'
 import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { SettingsNav } from './SettingsNav.tsx'
 import { SettingsSearchProvider } from './SettingsSearch.tsx'
+import { dialogOpen } from './shortcuts.ts'
 import { shouldLeavePageOnEscape } from './shouldLeavePageOnEscape.ts'
 
 // One readable column: wider rows push controls too far from their labels, so the content stops growing here.
@@ -54,7 +55,7 @@ export function SettingsShell<Id extends string>({
         e.preventDefault()
         return
       }
-      if (shouldLeavePageOnEscape(e, document.querySelector('[role="dialog"]') !== null)) {
+      if (shouldLeavePageOnEscape(e, dialogOpen())) {
         onBack()
       }
     }
