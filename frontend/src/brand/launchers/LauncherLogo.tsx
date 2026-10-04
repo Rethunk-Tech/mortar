@@ -2,12 +2,14 @@ import { Box } from '@mui/material'
 import { siFlatpak, siGogdotcom, siHeroicgameslauncher, siLutris, siSteam } from 'simple-icons'
 import minigalaxy from '../vendor/minigalaxy.png'
 
-const ICONS: Record<string, { path: string }> = {
-  steam: siSteam,
-  'flatpak-steam': siSteam,
-  heroic: siHeroicgameslauncher,
-  lutris: siLutris,
-  gog: siGogdotcom,
+// Each launcher sits on a tile of its brand colour so every logo is the same size and reads in colour on dark and
+// light surfaces. Steam's brand mark is black, so it takes the Steam client's blue instead.
+const TILES: Record<string, { path: string; bg: string }> = {
+  steam: { path: siSteam.path, bg: '#1A9FFF' },
+  'flatpak-steam': { path: siSteam.path, bg: '#1A9FFF' },
+  heroic: { path: siHeroicgameslauncher.path, bg: `#${siHeroicgameslauncher.hex}` },
+  lutris: { path: siLutris.path, bg: `#${siLutris.hex}` },
+  gog: { path: siGogdotcom.path, bg: `#${siGogdotcom.hex}` },
 }
 
 // Launchers that run as a Flatpak carry its mark, so they read apart from the same launcher installed natively.
@@ -16,6 +18,28 @@ const BADGE_SCALE = 0.5
 // The badge overhangs the logo's corner by a quarter of its size, inside a dark ring this many pixels wide.
 const BADGE_OVERHANG = 0.25
 const BADGE_RING = 4
+const MARK_SCALE = 0.62
+// Minigalaxy's artwork carries a transparent margin, so it draws larger to match the other marks.
+const ART_SCALE = 0.86
+const TILE_RADIUS = 0.22
+
+function Tile({ size, bg, children }: { size: number; bg: string; children: React.ReactNode }) {
+  return (
+    <Box
+      sx={{
+        width: size,
+        height: size,
+        borderRadius: `${Math.round(size * TILE_RADIUS)}px`,
+        bgcolor: bg,
+        display: 'grid',
+        placeItems: 'center',
+        flexShrink: 0,
+      }}
+    >
+      {children}
+    </Box>
+  )
+}
 
 function Mark({ path, size, fill }: { path: string; size: number; fill: string }) {
   return (
@@ -25,34 +49,36 @@ function Mark({ path, size, fill }: { path: string; size: number; fill: string }
   )
 }
 
-// Raster marks, drawn as a white silhouette to match the vector ones.
-const IMAGES: Record<string, string> = { minigalaxy }
-
 export function LauncherLogo({ id, size }: { id: string; size: number }) {
-  const image = IMAGES[id]
-  if (image) {
+  if (id === 'minigalaxy') {
     return (
-      <Box
-        component="img"
-        src={image}
-        alt=""
-        width={size}
-        height={size}
-        sx={{ filter: 'brightness(0) invert(1)' }}
-      />
+      <Tile size={size} bg="#3B4A8C">
+        <Box
+          component="img"
+          src={minigalaxy}
+          alt=""
+          width={size * ART_SCALE}
+          height={size * ART_SCALE}
+        />
+      </Tile>
     )
   }
-  const icon = ICONS[id]
-  if (!icon) {
+  const tile = TILES[id]
+  if (!tile) {
     return null
   }
+  const logo = (
+    <Tile size={size} bg={tile.bg}>
+      <Mark path={tile.path} size={Math.round(size * MARK_SCALE)} fill="#FFFFFF" />
+    </Tile>
+  )
   if (!FLATPAK.has(id)) {
-    return <Mark path={icon.path} size={size} fill="var(--mortar-ink)" />
+    return logo
   }
   const badge = Math.round(size * BADGE_SCALE)
   return (
     <Box sx={{ position: 'relative', width: size, height: size }}>
-      <Mark path={icon.path} size={size} fill="var(--mortar-ink)" />
+      {logo}
       <Box
         sx={{
           position: 'absolute',
