@@ -13,6 +13,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -382,6 +383,7 @@ func activeNexusModIDs(domain string) []int {
 		Entries []struct {
 			Source struct {
 				Kind  string `json:"kind"`
+				Name  string `json:"name"`
 				ModID int    `json:"modId"`
 			} `json:"source"`
 		} `json:"entries"`
@@ -390,15 +392,40 @@ func activeNexusModIDs(domain string) []int {
 		return ids
 	}
 	seen := make(map[int]struct{}, len(profile.Entries))
+	add := func(id int) {
+		if _, exists := seen[id]; id > 0 && !exists {
+			seen[id] = struct{}{}
+			ids = append(ids, id)
+		}
+	}
 	for _, entry := range profile.Entries {
-		if entry.Source.Kind == "nexus" && entry.Source.ModID > 0 {
-			if _, exists := seen[entry.Source.ModID]; !exists {
-				seen[entry.Source.ModID] = struct{}{}
-				ids = append(ids, entry.Source.ModID)
-			}
+		switch entry.Source.Kind {
+		case "nexus":
+			add(entry.Source.ModID)
+		case "smapi":
+			add(info.Nexus.LoaderModID)
+		case "local":
+			add(nexusArchiveModID(entry.Source.Name))
 		}
 	}
 	return ids
+}
+
+// nexusArchiveName matches the file name Nexus gives a download, "<name>-<mod id>-<version parts>-<unix time>.zip",
+// which a manually downloaded archive keeps when it is added to a profile.
+var nexusArchiveName = regexp.MustCompile(`-(\d+)(?:-[0-9a-zA-Z]+)*-\d{10}\.(?:zip|7z|rar)$`)
+
+// nexusArchiveModID is the Nexus mod id in a Nexus download's file name, or 0.
+func nexusArchiveModID(name string) int {
+	m := nexusArchiveName.FindStringSubmatch(name)
+	if m == nil {
+		return 0
+	}
+	id, err := strconv.Atoi(m[1])
+	if err != nil {
+		return 0
+	}
+	return id
 }
 
 func activeNexusUpdates(domain string) (string, []modUpdate) {

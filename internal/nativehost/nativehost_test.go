@@ -516,3 +516,18 @@ func TestActiveNexusUpdatesFromCache(t *testing.T) {
 		t.Fatalf("Serve updates = %+v", got)
 	}
 }
+
+func TestNexusArchiveNamesGiveTheirModID(t *testing.T) {
+	cases := map[string]int{
+		"Random Lost Library Book Covers-15393-1-2-0-1726137756.zip": 15393,
+		"Aspen-6754-0-0-53-1710866042.zip":                           6754,
+		"Fish Helper-33167-1-2-0-1758836697.7z":                      33167,
+		"EvenBetterArtisanGoodIcons.1.6.6.zip":                       0,
+		"my-pack-2-1.zip":                                            0,
+	}
+	for name, want := range cases {
+		if got := nexusArchiveModID(name); got != want {
+			t.Errorf("%s: %d, want %d", name, got, want)
+		}
+	}
+}

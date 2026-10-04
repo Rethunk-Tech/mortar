@@ -95,6 +95,9 @@ type LutrisInfo struct {
 type NexusInfo struct {
 	Domain string `json:"domain"`
 	ID     int    `json:"id"`
+	// LoaderModID is the Nexus mod page of the game's mod loader, which Mortar installs outside any profile entry's
+	// Nexus source but which is installed all the same.
+	LoaderModID int `json:"loaderModId,omitempty"`
 }
 
 // Validate checks that a game names itself and that no file or folder name could leave its folder.

@@ -43,7 +43,8 @@
       },
       "nexus": {
         "domain": "stardewvalley",
-        "id": 1303
+        "id": 1303,
+        "loaderModId": 2400
       }
     }
   ]
