@@ -88,8 +88,8 @@ func runLogPath(dir, id string) string {
 
 // Runs lists the newest recorded launches of the profile, at most the last 20.
 func (s *Service) Runs(gameID, profileID string) ([]Run, error) {
-	if game.Find(gameID) == nil {
-		return nil, fmt.Errorf("unknown game %q", gameID)
+	if _, err := game.Require(gameID); err != nil {
+		return nil, err
 	}
 	modsDir, err := s.profiles.ModsDir(gameID, profileID)
 	if err != nil {
@@ -234,8 +234,8 @@ func (s *Service) LastRunIssues(gameID, profileID string) (RunIssues, error) {
 }
 
 func (s *Service) runFile(gameID, profileID, runID string) (string, error) {
-	if game.Find(gameID) == nil {
-		return "", fmt.Errorf("unknown game %q", gameID)
+	if _, err := game.Require(gameID); err != nil {
+		return "", err
 	}
 	if !runIDPattern.MatchString(runID) {
 		return "", fmt.Errorf("unknown run %q", runID)

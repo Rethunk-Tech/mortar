@@ -1,6 +1,10 @@
 package control
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Rethunk-AI/mortar/internal/usererr"
+)
 
 // ShortcutResult is what profile.shortcut returns.
 type ShortcutResult struct {
@@ -24,7 +28,7 @@ func (s *Services) gameName(id string) (string, error) {
 			return g.Name, nil
 		}
 	}
-	return "", fmt.Errorf("unknown game %q", id)
+	return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", id))
 }
 
 func (s *Services) profileShortcut(gameID, profileID string, remove bool) (ShortcutResult, error) {

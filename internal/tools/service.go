@@ -78,7 +78,7 @@ func (s *Service) Launch(game, profileID, id string) error {
 		}
 	}
 	if t.ID == "" {
-		return fmt.Errorf("tool not found")
+		return errToolNotFound()
 	}
 	ctx, err := s.context(game, profileID)
 	if err != nil {

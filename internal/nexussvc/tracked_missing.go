@@ -9,6 +9,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 // TrackedMod is one Nexus tracked mod entry for the UI and CLI.
@@ -61,7 +62,7 @@ func (s *Service) profileByID(gameID, profileID string) (profile.Profile, error)
 			return p, nil
 		}
 	}
-	return profile.Profile{}, fmt.Errorf("profile %q not found", profileID)
+	return profile.Profile{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("profile %q not found", profileID))
 }
 
 func profileNexusModIDs(p profile.Profile) map[int]bool {

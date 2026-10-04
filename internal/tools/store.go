@@ -12,7 +12,12 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
+
+func errToolNotFound() error {
+	return usererr.Wrap(usererr.NotFound, fmt.Errorf("tool not found"))
+}
 
 type Store struct {
 	root string
@@ -33,7 +38,7 @@ func Open() (*Store, error) {
 
 func (s *Store) path(gameID string) (string, error) {
 	if !game.Valid(gameID) {
-		return "", fmt.Errorf("unknown game %q", gameID)
+		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", gameID))
 	}
 	return filepath.Join(s.root, gameID+".json"), nil
 }
@@ -77,58 +82,56 @@ func (s *Store) List(game string) ([]Tool, error) {
 	return s.load(game)
 }
 
-func (s *Store) Add(game string, t Tool) (Tool, error) {
+func (s *Store) mutate(game string, fn func([]Tool) ([]Tool, error)) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	tools, err := s.load(game)
+	if err != nil {
+		return err
+	}
+	tools, err = fn(tools)
+	if err != nil {
+		return err
+	}
+	return s.save(game, tools)
+}
+
+func (s *Store) Add(game string, t Tool) (Tool, error) {
 	t.Arguments = slices.Clone(t.Arguments)
 	id, err := newID()
 	if err != nil {
 		return Tool{}, err
 	}
 	t.ID = id
-	tools, err := s.load(game)
-	if err != nil {
-		return Tool{}, err
-	}
-	tools = append(tools, t)
-	if err := s.save(game, tools); err != nil {
-		return Tool{}, err
-	}
-	return t, nil
+	err = s.mutate(game, func(tools []Tool) ([]Tool, error) {
+		return append(tools, t), nil
+	})
+	return t, err
 }
 
 func (s *Store) Update(game string, t Tool) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
 	if t.ID == "" {
 		return fmt.Errorf("id is required")
 	}
 	t.Arguments = slices.Clone(t.Arguments)
-	tools, err := s.load(game)
-	if err != nil {
-		return err
-	}
-	i := slices.IndexFunc(tools, func(x Tool) bool { return x.ID == t.ID })
-	if i < 0 {
-		return fmt.Errorf("tool not found")
-	}
-	tools[i] = t
-	return s.save(game, tools)
+	return s.mutate(game, func(tools []Tool) ([]Tool, error) {
+		i := slices.IndexFunc(tools, func(x Tool) bool { return x.ID == t.ID })
+		if i < 0 {
+			return nil, errToolNotFound()
+		}
+		tools[i] = t
+		return tools, nil
+	})
 }
 
 func (s *Store) Remove(game, id string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	tools, err := s.load(game)
-	if err != nil {
-		return err
-	}
-	i := slices.IndexFunc(tools, func(x Tool) bool { return x.ID == id })
-	if i < 0 {
-		return fmt.Errorf("tool not found")
-	}
-	tools = slices.Delete(tools, i, i+1)
-	return s.save(game, tools)
+	return s.mutate(game, func(tools []Tool) ([]Tool, error) {
+		i := slices.IndexFunc(tools, func(x Tool) bool { return x.ID == id })
+		if i < 0 {
+			return nil, errToolNotFound()
+		}
+		return slices.Delete(tools, i, i+1), nil
+	})
 }
 
 // NormalizeArguments copies args for storage as a JSON array.

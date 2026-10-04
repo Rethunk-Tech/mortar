@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 func testStore(t *testing.T) *settings.Store {
@@ -183,5 +184,16 @@ func TestValidateFolder(t *testing.T) {
 		if err := ValidateFolder(tc.id, tc.dir); (err == nil) != tc.ok {
 			t.Errorf("ValidateFolder(%s, %q) = %v", tc.id, tc.dir, err)
 		}
+	}
+}
+
+func TestRequire(t *testing.T) {
+	g, err := Require("stardew")
+	if err != nil || g == nil || g.ID() != "stardew" {
+		t.Fatalf("stardew = %v, %v", g, err)
+	}
+	_, err = Require("nope")
+	if usererr.KindOf(err) != usererr.NotFound {
+		t.Fatalf("unknown = %v", err)
 	}
 }

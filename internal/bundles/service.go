@@ -18,6 +18,7 @@ import (
 	gamepkg "github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	modstore "github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 const maxName = 60
@@ -60,7 +61,7 @@ func NewService(profiles *profile.Store, dataDir string) *Service {
 
 func (s *Service) file(gameID string) (string, error) {
 	if !gamepkg.Valid(gameID) {
-		return "", fmt.Errorf("unknown game %q", gameID)
+		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", gameID))
 	}
 	return filepath.Join(s.root, gameID+".json"), nil
 }
@@ -124,7 +125,7 @@ func findBundle(bundles []Bundle, id string) (int, error) {
 	}
 	i := slices.IndexFunc(bundles, func(b Bundle) bool { return b.ID == id })
 	if i < 0 {
-		return -1, fmt.Errorf("bundle %q was not found", id)
+		return -1, usererr.Wrap(usererr.NotFound, fmt.Errorf("bundle %q was not found", id))
 	}
 	return i, nil
 }
@@ -160,7 +161,7 @@ func profileFor(profiles []profile.Profile, id string) (profile.Profile, error) 
 			return p, nil
 		}
 	}
-	return profile.Profile{}, fmt.Errorf("profile %q was not found", id)
+	return profile.Profile{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("profile %q was not found", id))
 }
 
 func snapshot(p profile.Profile, uniqueIDs []string) ([]Mod, error) {
@@ -270,32 +271,48 @@ func (s *Service) ReferencedStoreKeys() (map[string][]string, error) {
 	return out, nil
 }
 
+func (s *Service) mutate(gameID string, fn func([]Bundle) ([]Bundle, error)) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	bundles, err := s.readLocked(gameID)
+	if err != nil {
+		return err
+	}
+	bundles, err = fn(bundles)
+	if err != nil {
+		return err
+	}
+	return s.writeLocked(gameID, bundles)
+}
+
+func (s *Service) update(gameID string, fn func([]Bundle) ([]Bundle, Bundle, error)) (Bundle, error) {
+	var out Bundle
+	err := s.mutate(gameID, func(bundles []Bundle) ([]Bundle, error) {
+		next, b, err := fn(bundles)
+		out = b
+		return next, err
+	})
+	return out, err
+}
+
 // Create makes a bundle by snapshotting selected mods from a profile.
 func (s *Service) Create(gameID, name, profileID string, uniqueIDs []string) (Bundle, error) {
 	name, err := bundleName(name)
 	if err != nil {
 		return Bundle{}, err
 	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	bundles, err := s.readLocked(gameID)
-	if err != nil {
-		return Bundle{}, err
-	}
-	mods, err := s.modsFromProfile(gameID, profileID, uniqueIDs)
-	if err != nil {
-		return Bundle{}, err
-	}
-	id, err := newID(bundles)
-	if err != nil {
-		return Bundle{}, err
-	}
-	b := Bundle{ID: id, Name: name, Mods: mods}
-	bundles = append(bundles, b)
-	if err := s.writeLocked(gameID, bundles); err != nil {
-		return Bundle{}, err
-	}
-	return b, nil
+	return s.update(gameID, func(bundles []Bundle) ([]Bundle, Bundle, error) {
+		mods, err := s.modsFromProfile(gameID, profileID, uniqueIDs)
+		if err != nil {
+			return nil, Bundle{}, err
+		}
+		id, err := newID(bundles)
+		if err != nil {
+			return nil, Bundle{}, err
+		}
+		b := Bundle{ID: id, Name: name, Mods: mods}
+		return append(bundles, b), b, nil
+	})
 }
 
 // Rename changes a bundle's name.
@@ -304,96 +321,70 @@ func (s *Service) Rename(gameID, id, name string) (Bundle, error) {
 	if err != nil {
 		return Bundle{}, err
 	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	bundles, err := s.readLocked(gameID)
-	if err != nil {
-		return Bundle{}, err
-	}
-	i, err := findBundle(bundles, id)
-	if err != nil {
-		return Bundle{}, err
-	}
-	bundles[i].Name = name
-	if err := s.writeLocked(gameID, bundles); err != nil {
-		return Bundle{}, err
-	}
-	return bundles[i], nil
+	return s.update(gameID, func(bundles []Bundle) ([]Bundle, Bundle, error) {
+		i, err := findBundle(bundles, id)
+		if err != nil {
+			return nil, Bundle{}, err
+		}
+		bundles[i].Name = name
+		return bundles, bundles[i], nil
+	})
 }
 
 // Delete removes a bundle.
 func (s *Service) Delete(gameID, id string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	bundles, err := s.readLocked(gameID)
-	if err != nil {
-		return err
-	}
-	i, err := findBundle(bundles, id)
-	if err != nil {
-		return err
-	}
-	bundles = slices.Delete(bundles, i, i+1)
-	return s.writeLocked(gameID, bundles)
+	return s.mutate(gameID, func(bundles []Bundle) ([]Bundle, error) {
+		i, err := findBundle(bundles, id)
+		if err != nil {
+			return nil, err
+		}
+		return slices.Delete(bundles, i, i+1), nil
+	})
 }
 
 // AddMods snapshots selected mods from a profile into a bundle.
 func (s *Service) AddMods(gameID, bundleID, profileID string, uniqueIDs []string) (Bundle, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	bundles, err := s.readLocked(gameID)
-	if err != nil {
-		return Bundle{}, err
-	}
-	i, err := findBundle(bundles, bundleID)
-	if err != nil {
-		return Bundle{}, err
-	}
-	mods, err := s.modsFromProfile(gameID, profileID, uniqueIDs)
-	if err != nil {
-		return Bundle{}, err
-	}
-	known := make(map[string]struct{}, len(bundles[i].Mods))
-	for _, mod := range bundles[i].Mods {
-		known[strings.ToLower(mod.UniqueID)] = struct{}{}
-	}
-	for _, mod := range mods {
-		if _, exists := known[strings.ToLower(mod.UniqueID)]; exists {
-			continue
+	return s.update(gameID, func(bundles []Bundle) ([]Bundle, Bundle, error) {
+		i, err := findBundle(bundles, bundleID)
+		if err != nil {
+			return nil, Bundle{}, err
 		}
-		bundles[i].Mods = append(bundles[i].Mods, mod)
-		known[strings.ToLower(mod.UniqueID)] = struct{}{}
-	}
-	if err := s.writeLocked(gameID, bundles); err != nil {
-		return Bundle{}, err
-	}
-	return bundles[i], nil
+		mods, err := s.modsFromProfile(gameID, profileID, uniqueIDs)
+		if err != nil {
+			return nil, Bundle{}, err
+		}
+		known := make(map[string]struct{}, len(bundles[i].Mods))
+		for _, mod := range bundles[i].Mods {
+			known[strings.ToLower(mod.UniqueID)] = struct{}{}
+		}
+		for _, mod := range mods {
+			if _, exists := known[strings.ToLower(mod.UniqueID)]; exists {
+				continue
+			}
+			bundles[i].Mods = append(bundles[i].Mods, mod)
+			known[strings.ToLower(mod.UniqueID)] = struct{}{}
+		}
+		return bundles, bundles[i], nil
+	})
 }
 
 // RemoveMods removes selected unique IDs from a bundle.
 func (s *Service) RemoveMods(gameID, bundleID string, uniqueIDs []string) (Bundle, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	bundles, err := s.readLocked(gameID)
-	if err != nil {
-		return Bundle{}, err
-	}
-	i, err := findBundle(bundles, bundleID)
-	if err != nil {
-		return Bundle{}, err
-	}
-	remove := make(map[string]struct{}, len(uniqueIDs))
-	for _, id := range uniqueIDs {
-		remove[strings.ToLower(strings.TrimSpace(id))] = struct{}{}
-	}
-	bundles[i].Mods = slices.DeleteFunc(bundles[i].Mods, func(mod Mod) bool {
-		_, ok := remove[strings.ToLower(mod.UniqueID)]
-		return ok
+	return s.update(gameID, func(bundles []Bundle) ([]Bundle, Bundle, error) {
+		i, err := findBundle(bundles, bundleID)
+		if err != nil {
+			return nil, Bundle{}, err
+		}
+		remove := make(map[string]struct{}, len(uniqueIDs))
+		for _, id := range uniqueIDs {
+			remove[strings.ToLower(strings.TrimSpace(id))] = struct{}{}
+		}
+		bundles[i].Mods = slices.DeleteFunc(bundles[i].Mods, func(mod Mod) bool {
+			_, ok := remove[strings.ToLower(mod.UniqueID)]
+			return ok
+		})
+		return bundles, bundles[i], nil
 	})
-	if err := s.writeLocked(gameID, bundles); err != nil {
-		return Bundle{}, err
-	}
-	return bundles[i], nil
 }
 
 type entryMods struct {

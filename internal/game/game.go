@@ -3,6 +3,7 @@ package game
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"slices"
 	"strconv"
@@ -18,6 +19,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/loader"
 	"github.com/Rethunk-AI/mortar/internal/steam"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 const artPrefix = "/steam-art/"
@@ -110,6 +112,15 @@ func Find(id string) Game {
 		}
 	}
 	return nil
+}
+
+// Require returns the implemented game with this id, or a NotFound error.
+func Require(id string) (Game, error) {
+	g := Find(id)
+	if g == nil {
+		return nil, usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", id))
+	}
+	return g, nil
 }
 
 // Valid reports whether id names a listed game.

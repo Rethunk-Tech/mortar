@@ -52,8 +52,8 @@ func (s *Service) InstallVersion(ctx context.Context, id, version string) (loade
 
 // ListVersions is store-held SMAPI versions plus the last GitHub releases, newest first, unique.
 func (s *Service) ListVersions(ctx context.Context, id string) ([]string, error) {
-	if game.Find(id) == nil {
-		return nil, fmt.Errorf("unknown game %q", id)
+	if _, err := game.Require(id); err != nil {
+		return nil, err
 	}
 	remote, err := s.remoteVersions(ctx, id)
 	if err != nil {
@@ -165,9 +165,9 @@ func (s *Service) remoteVersions(ctx context.Context, id string) ([]string, erro
 	if s.listVersions != nil {
 		return s.listVersions(ctx, id)
 	}
-	g := game.Find(id)
-	if g == nil {
-		return nil, fmt.Errorf("unknown game %q", id)
+	g, err := game.Require(id)
+	if err != nil {
+		return nil, err
 	}
 	at, ok := g.(loaderAt)
 	if !ok {

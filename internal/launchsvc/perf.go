@@ -73,8 +73,8 @@ func (s *Service) PerformanceReport(lines []string) []PerformanceRow {
 }
 
 func (s *Service) SavePerformanceReport(gameID, profileID string, rows []PerformanceRow) (SavedReport, error) {
-	if game.Find(gameID) == nil {
-		return SavedReport{}, fmt.Errorf("unknown game %q", gameID)
+	if _, err := game.Require(gameID); err != nil {
+		return SavedReport{}, err
 	}
 	if len(rows) == 0 {
 		return SavedReport{}, errors.New("cannot save an empty performance report")
@@ -109,8 +109,8 @@ func (s *Service) SavePerformanceReport(gameID, profileID string, rows []Perform
 }
 
 func (s *Service) PerformanceReports(gameID, profileID string) ([]SavedReport, error) {
-	if game.Find(gameID) == nil {
-		return nil, fmt.Errorf("unknown game %q", gameID)
+	if _, err := game.Require(gameID); err != nil {
+		return nil, err
 	}
 	modsDir, err := s.profiles.ModsDir(gameID, profileID)
 	if err != nil {

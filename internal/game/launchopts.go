@@ -11,9 +11,9 @@ import (
 
 // LaunchOptions returns the launch options Steam holds for the game, or "" when none are set or Steam is missing.
 func (s *Service) LaunchOptions(id string) (string, error) {
-	g := Find(id)
-	if g == nil {
-		return "", fmt.Errorf("unknown game %q", id)
+	g, err := Require(id)
+	if err != nil {
+		return "", err
 	}
 	st, status := steam.Locate(s.home)
 	if status != steam.Found {
@@ -25,9 +25,9 @@ func (s *Service) LaunchOptions(id string) (string, error) {
 // SetLaunchOption writes the launch options that make Steam start the game's loader, keeping the user's own options,
 // and returns them. Steam rewrites its config when it exits, so this refuses while Steam is running.
 func (s *Service) SetLaunchOption(id string) (string, error) {
-	g := Find(id)
-	if g == nil {
-		return "", fmt.Errorf("unknown game %q", id)
+	g, err := Require(id)
+	if err != nil {
+		return "", err
 	}
 	dir, err := InstallDir(s.home, s.store.Get(), id)
 	if err != nil {
@@ -48,9 +48,9 @@ func (s *Service) SetLaunchOption(id string) (string, error) {
 
 // ClearLaunchOption removes the game's loader command from Steam's launch options.
 func (s *Service) ClearLaunchOption(id string) (string, error) {
-	g := Find(id)
-	if g == nil {
-		return "", fmt.Errorf("unknown game %q", id)
+	g, err := Require(id)
+	if err != nil {
+		return "", err
 	}
 	st, status := steam.Locate(s.home, roots(s.store.Get(), LauncherSteam)...)
 	if status != steam.Found {

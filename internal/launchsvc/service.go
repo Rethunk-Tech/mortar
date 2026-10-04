@@ -387,9 +387,9 @@ func (s *Service) watch(g game.Game) {
 
 // Status returns the game's launch state after looking for a game Mortar did not start.
 func (s *Service) Status(gameID string) (Status, error) {
-	g := game.Find(gameID)
-	if g == nil {
-		return Status{}, fmt.Errorf("unknown game %q", gameID)
+	g, err := game.Require(gameID)
+	if err != nil {
+		return Status{}, err
 	}
 	if s.poll(g) {
 		s.watch(g)
@@ -405,9 +405,9 @@ func (s *Service) Start(ctx context.Context, gameID, profileID string, direct bo
 }
 
 func (s *Service) start(parent context.Context, gameID, profileID string, direct bool) error {
-	g := game.Find(gameID)
-	if g == nil {
-		return fmt.Errorf("unknown game %q", gameID)
+	g, err := game.Require(gameID)
+	if err != nil {
+		return err
 	}
 	// preparing is claimed under the same lock as the check, so two Starts cannot both pass it.
 	s.mu.Lock()
@@ -466,9 +466,9 @@ func (s *Service) start(parent context.Context, gameID, profileID string, direct
 
 // ForcesSMAPI reports whether Steam's launch options will start SMAPI even for a vanilla launch.
 func (s *Service) ForcesSMAPI(gameID string) (bool, error) {
-	g := game.Find(gameID)
-	if g == nil {
-		return false, fmt.Errorf("unknown game %q", gameID)
+	g, err := game.Require(gameID)
+	if err != nil {
+		return false, err
 	}
 	if runtime.GOOS != "windows" {
 		return false, nil
@@ -488,9 +488,9 @@ func (s *Service) ForcesSMAPI(gameID string) (bool, error) {
 // with no extra arguments (Steam launch options may still force SMAPI). On Linux SMAPI replaced the
 // game launcher, so Mortar starts StardewValley-original directly.
 func (s *Service) StartVanilla(gameID string, direct bool) error {
-	g := game.Find(gameID)
-	if g == nil {
-		return fmt.Errorf("unknown game %q", gameID)
+	g, err := game.Require(gameID)
+	if err != nil {
+		return err
 	}
 	s.mu.Lock()
 	cur := s.status[gameID]
@@ -544,9 +544,9 @@ func (s *Service) PreviewCommand(gameID, profileID, options, prefix, env string)
 		preview.Error = err.Error()
 		return preview
 	}
-	g := game.Find(gameID)
-	if g == nil {
-		return fail(fmt.Errorf("unknown game %q", gameID))
+	g, err := game.Require(gameID)
+	if err != nil {
+		return fail(err)
 	}
 	dir, modsDir, err := s.target(g, profileID)
 	if err != nil {
@@ -804,9 +804,9 @@ func (s *Service) collect(gameID, profileID string, buf *launch.Buffer) func([]s
 // game, else the log file on disk, which is what the last session left after a crash. It is empty when the log is
 // another profile's.
 func (s *Service) Lines(gameID, profileID string) ([]launch.Entry, error) {
-	g := game.Find(gameID)
-	if g == nil {
-		return nil, fmt.Errorf("unknown game %q", gameID)
+	g, err := game.Require(gameID)
+	if err != nil {
+		return nil, err
 	}
 	s.mu.Lock()
 	sess, ok := s.logs[gameID]
@@ -920,16 +920,15 @@ func plainLaunchError(err error, dir string) string {
 
 // Stop terminates the loader process of the profile the game is running.
 func (s *Service) Stop(gameID string) error {
-	g := game.Find(gameID)
-	if g == nil {
-		return fmt.Errorf("unknown game %q", gameID)
+	g, err := game.Require(gameID)
+	if err != nil {
+		return err
 	}
 	cur := s.current(gameID)
 	if cur.State != Running {
 		return fmt.Errorf("%s is not running", g.Name())
 	}
 	var procs []launch.Process
-	var err error
 	if cur.Profile == "" {
 		procs, err = s.gameProcs(g)
 	} else {
@@ -1043,9 +1042,9 @@ func (s *Service) reportSettingsRestore(gameID, profileID string, err error) {
 // Send runs a console command in the running game through the bridge mod in the running profile. The command
 // is echoed into the console; its output arrives with the game's own log.
 func (s *Service) Send(gameID, command string) error {
-	g := game.Find(gameID)
-	if g == nil {
-		return fmt.Errorf("unknown game %q", gameID)
+	g, err := game.Require(gameID)
+	if err != nil {
+		return err
 	}
 	command = strings.TrimSpace(command)
 	if command == "" {

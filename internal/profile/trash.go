@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 // trashRetention is how long a deleted profile stays restorable when no setting is present.
@@ -33,7 +34,7 @@ type TrashItem struct {
 
 func (s *Store) trashDir(gameID, id string) (string, error) {
 	if !game.Valid(gameID) {
-		return "", fmt.Errorf("unknown game %q", gameID)
+		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", gameID))
 	}
 	if !idPattern.MatchString(id) {
 		return "", fmt.Errorf("invalid profile id %q", id)
@@ -109,7 +110,7 @@ func (s *Store) trashed(gameID string) ([]TrashItem, error) {
 // ListTrash returns the game's deleted profiles, newest deletion first, with the days left before they are purged.
 func (s *Store) ListTrash(gameID string) ([]TrashItem, error) {
 	if !game.Valid(gameID) {
-		return nil, fmt.Errorf("unknown game %q", gameID)
+		return nil, usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", gameID))
 	}
 	items, err := s.trashed(gameID)
 	if err != nil {
@@ -169,7 +170,7 @@ func (s *Store) Purge(gameID, id string) error {
 
 func (s *Store) purgeTrash(gameID string) error {
 	if !game.Valid(gameID) {
-		return fmt.Errorf("unknown game %q", gameID)
+		return usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", gameID))
 	}
 	dir := filepath.Join(s.trash, gameID)
 	items, err := os.ReadDir(dir)

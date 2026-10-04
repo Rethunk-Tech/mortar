@@ -28,6 +28,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/queue"
 	"github.com/Rethunk-AI/mortar/internal/share"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -186,7 +187,7 @@ func (s *Service) find(game, id string) (profile.Profile, error) {
 	}
 	i := slices.IndexFunc(all, func(p profile.Profile) bool { return p.Error == "" && p.ID == id })
 	if i < 0 {
-		return profile.Profile{}, fmt.Errorf("profile %s not found", id)
+		return profile.Profile{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("profile %s not found", id))
 	}
 	return all[i], nil
 }

@@ -132,7 +132,7 @@ func BridgeKey(version string, hashes ...string) string {
 
 func (s *Store) gameDir(id string) (string, error) {
 	if !game.Valid(id) {
-		return "", fmt.Errorf("unknown game %q", id)
+		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", id))
 	}
 	return filepath.Join(s.root, id), nil
 }
