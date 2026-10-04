@@ -10,6 +10,7 @@ import {
 import { isGameId, useNav } from '../../nav/store.ts'
 import { errorMessage, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { showWhatsNew } from '../../updates/whatsNew.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
@@ -125,6 +126,11 @@ function MortarUpdate() {
         }
       >
         {action}
+      </SettingRow>
+      <SettingRow label={t`What's new in ${info.version}`}>
+        <Button variant="outlined" onClick={() => showWhatsNew(info.version)} sx={button}>
+          {t`Show`}
+        </Button>
       </SettingRow>
       {phase === 'available' && release?.notes ? (
         <Box

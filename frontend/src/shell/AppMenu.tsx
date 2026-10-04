@@ -18,14 +18,17 @@ import {
   LogOut,
   RefreshCw,
   Settings,
+  Sparkles,
 } from 'lucide-react'
-import { useId, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { OpenDataFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { Logo } from '../brand/Logo.tsx'
 import { compact } from '../game/compact.ts'
 import { openPage } from '../mods/menu.ts'
 import { openSettings, routeGame, useNav } from '../nav/store.ts'
+import { useMortarUpdate } from '../settings/updates.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
+import { showWhatsNew } from '../updates/whatsNew.ts'
 import { checkForUpdates } from './checkForUpdates.ts'
 import { NexusAccount } from './NexusAccount.tsx'
 import { reportBug } from './reportBug.ts'
@@ -38,6 +41,13 @@ export function AppMenu() {
   const drawerId = useId()
   const [open, setOpen] = useState(false)
   const game = useNav((s) => routeGame(s.route) ?? '')
+  const version = useMortarUpdate((s) => s.info?.version)
+  useEffect(() => {
+    useMortarUpdate
+      .getState()
+      .load()
+      .catch(() => undefined)
+  }, [])
   const close = () => setOpen(false)
   const quit = () => {
     close()
@@ -109,6 +119,19 @@ export function AppMenu() {
             </ListItemIcon>
             <ListItemText primary={t`Check for updates`} />
           </ListItemButton>
+          {version ? (
+            <ListItemButton
+              onClick={() => {
+                close()
+                showWhatsNew(version)
+              }}
+            >
+              <ListItemIcon>
+                <Sparkles size={18} />
+              </ListItemIcon>
+              <ListItemText primary={t`What's new in ${version}`} />
+            </ListItemButton>
+          ) : null}
           <Divider />
           <ListItemButton
             onClick={() => {

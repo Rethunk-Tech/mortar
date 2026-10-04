@@ -11,10 +11,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
-import type {
-  ReleaseNotes as ReleaseNotesResult,
-  WhatsNew,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/updatesvc/models.ts'
+import type { ReleaseNotes as ReleaseNotesResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/updatesvc/models.ts'
 import {
   AckWhatsNew,
   WhatsNew as LoadWhatsNew,
@@ -23,6 +20,7 @@ import {
 import { openPage } from '../mods/menu.ts'
 import { PageLink } from '../share/CollectionNotes.tsx'
 import { parseInstructions } from '../share/instructions.ts'
+import { showWhatsNew, useWhatsNew } from './whatsNew.ts'
 
 const HEADING = /^#+\s*/
 
@@ -89,29 +87,29 @@ function Notes({ text }: { text: string }) {
 
 export function WhatsNewDialog() {
   const { t } = useLingui()
-  const [open, setOpen] = useState(false)
-  const [payload, setPayload] = useState<WhatsNew | null>(null)
+  const shown = useWhatsNew()
   const [release, setRelease] = useState<ReleaseNotesResult | null>(null)
+  const version = shown?.version
   useEffect(() => {
     LoadWhatsNew()
-      .then((w) => {
-        if (!(w.notes && w.version)) {
-          return null
-        }
-        setPayload(w)
-        setOpen(true)
-        return ReleaseNotes(w.version)
-      })
-      .then(setRelease)
+      .then((w) => (w.notes && w.version ? showWhatsNew(w.version, w.notes) : undefined))
       .catch(() => undefined)
   }, [])
+  useEffect(() => {
+    setRelease(null)
+    if (version) {
+      ReleaseNotes(version)
+        .then(setRelease)
+        .catch(() => undefined)
+    }
+  }, [version])
   const close = () => {
-    setOpen(false)
+    useWhatsNew.setState(null, true)
     AckWhatsNew().catch(() => undefined)
   }
   return (
-    <Dialog open={open} onClose={close} slotProps={{ paper: { sx: { maxWidth: 520 } } }}>
-      <DialogTitle>{t`What's new in Mortar ${payload?.version ?? ''}`}</DialogTitle>
+    <Dialog open={!!shown} onClose={close} slotProps={{ paper: { sx: { maxWidth: 520 } } }}>
+      <DialogTitle>{t`What's new in Mortar ${version ?? ''}`}</DialogTitle>
       <DialogContent>
         {release?.available ? (
           <Notes text={release.notes} />
@@ -120,7 +118,7 @@ export function WhatsNewDialog() {
             component="div"
             sx={{ whiteSpace: 'pre-wrap', fontSize: 14, color: 'var(--mortar-ink-sec)' }}
           >
-            {payload?.notes}
+            {shown?.fallback}
           </DialogContentText>
         )}
         {release && !release.available ? (
@@ -129,7 +127,7 @@ export function WhatsNewDialog() {
             type="button"
             sx={{ mt: 1, fontSize: 13 }}
             onClick={() =>
-              openPage(`https://github.com/Rethunk-Tech/mortar/releases/tag/v${payload?.version}`)
+              openPage(`https://github.com/Rethunk-Tech/mortar/releases/tag/v${version}`)
             }
           >
             {t`Read the release notes on GitHub`}
