@@ -59,26 +59,6 @@ func MaterializeTreeExclusive(src, dst string) error {
 	return copyTree(src, dst, nil, ops.put)
 }
 
-// MaterializeTreeOps is MaterializeTree with injectable tiers (tests).
-func MaterializeTreeOps(src, dst string, ops Ops) error {
-	if len(ops.Tiers) == 0 {
-		ops.Tiers = defaultOps().Tiers
-	}
-	if ops.Clone == nil {
-		ops.Clone = cloneFile
-	}
-	if ops.Hardlink == nil {
-		ops.Hardlink = os.Link
-	}
-	if ops.Symlink == nil {
-		ops.Symlink = defaultOps().Symlink
-	}
-	if ops.Copy == nil {
-		ops.Copy = CopyFile
-	}
-	return copyTree(src, dst, nil, ops.put)
-}
-
 // textExts are files mods and players edit in place; a hardlinked or symlinked copy would carry that edit into the
 // store and every other profile, so they are cloned or copied. Binaries (dll, png, xnb, audio) stay shareable.
 var textExts = map[string]bool{

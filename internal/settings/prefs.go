@@ -384,28 +384,6 @@ func parseBool(raw string) (bool, error) {
 	return false, fmt.Errorf("must be true or false, got %q", raw)
 }
 
-// PrefKey is one CLI/settings get|set name.
-type PrefKey struct {
-	Key   string
-	Scope string
-	Get   func(Settings, string) string
-	Apply func(*Settings, string, string) error
-}
-
-// PrefKeys are the user-facing settings the CLI can get and set.
-func PrefKeys() []PrefKey {
-	out := make([]PrefKey, 0, len(registry))
-	for _, p := range registry {
-		out = append(out, PrefKey{
-			Key:   p.spec.Key,
-			Scope: p.spec.Scope,
-			Get:   p.get,
-			Apply: p.set,
-		})
-	}
-	return out
-}
-
 // ToggleOn is true when a *bool setting is on or omitted.
 func ToggleOn(v *bool) bool { return v == nil || *v }
 

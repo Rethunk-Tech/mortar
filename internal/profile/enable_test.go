@@ -58,12 +58,14 @@ func TestEnableSkipsRequiredWhenSettingIsNever(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	var applyErr error
 	if _, err := st.Update(func(s *settings.Settings) {
-		g := s.GamePrefs(settings.GameStardew)
-		g.EnableRequirements = settings.EnableReqNever
-		settings.PutGame(s, settings.GameStardew, g)
+		applyErr = settings.ApplyKeyGame(s, "enableRequirements", settings.EnableReqNever, settings.GameStardew)
 	}); err != nil {
 		t.Fatal(err)
+	}
+	if applyErr != nil {
+		t.Fatal(applyErr)
 	}
 	e.settings = st
 	e.item(t, "core", map[string]string{"manifest.json": `{"Name":"Core","Author":"me","Version":"1.0.0","UniqueID":"Me.Core"}`})

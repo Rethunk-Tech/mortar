@@ -24,7 +24,7 @@ func TestRegistryDefaultsMatchToday(t *testing.T) {
 
 func TestRegistryValidation(t *testing.T) {
 	s := Defaults()
-	if err := ApplyKey(&s, "density", "huge"); err == nil {
+	if err := ApplyKeyGame(&s, "density", "huge", ""); err == nil {
 		t.Fatal("expected density reject")
 	}
 	if err := ApplyKeyGame(&s, "smapiBuilds", "nope", GameStardew); err == nil {
@@ -61,16 +61,16 @@ func TestBatchPrefDefaultsAndSet(t *testing.T) {
 	if s.ExtensionConnection != ExtensionAllow || g.BackupLocation != "" || g.ConflictScanDepth != ConflictScanFull {
 		t.Fatalf("extension/backup/scan defaults: %q %q %q", s.ExtensionConnection, g.BackupLocation, g.ConflictScanDepth)
 	}
-	if err := ApplyKey(&s, "autoRetryDownloads", AutoRetry3); err != nil {
+	if err := ApplyKeyGame(&s, "autoRetryDownloads", AutoRetry3, ""); err != nil {
 		t.Fatal(err)
 	}
-	if err := ApplyKey(&s, "pauseDownloadsWhilePlaying", "true"); err != nil {
+	if err := ApplyKeyGame(&s, "pauseDownloadsWhilePlaying", "true", ""); err != nil {
 		t.Fatal(err)
 	}
-	if err := ApplyKey(&s, "shareIncludeDisabledMods", "true"); err != nil {
+	if err := ApplyKeyGame(&s, "shareIncludeDisabledMods", "true", ""); err != nil {
 		t.Fatal(err)
 	}
-	if err := ApplyKey(&s, "extensionConnection", ExtensionOff); err != nil {
+	if err := ApplyKeyGame(&s, "extensionConnection", ExtensionOff, ""); err != nil {
 		t.Fatal(err)
 	}
 	retry, err := s.Lookup("autoRetryDownloads")
@@ -96,10 +96,10 @@ func TestPortableRoundTripGameScope(t *testing.T) {
 	if err := ApplyKeyGame(&s, "smapiBuilds", SmapiBuildsInclude, GameStardew); err != nil {
 		t.Fatal(err)
 	}
-	if err := ApplyKey(&s, "density", DensityCompact); err != nil {
+	if err := ApplyKeyGame(&s, "density", DensityCompact, ""); err != nil {
 		t.Fatal(err)
 	}
-	if err := ApplyKey(&s, "theme", ThemeLight); err != nil {
+	if err := ApplyKeyGame(&s, "theme", ThemeLight, ""); err != nil {
 		t.Fatal(err)
 	}
 	blob, err := MarshalExport(s)

@@ -227,14 +227,6 @@ func ServeFrom(args []string, r io.Reader, w io.Writer, open func(link string) e
 	})
 }
 
-func serve(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, mod func(game string, modID int) (modInProfile, []modInProfile), problem ...func(game string, modID int) []modProblem) error {
-	h := handlers{open: open, installed: installed, mod: mod}
-	if len(problem) > 0 {
-		h.problems = problem[0]
-	}
-	return serveHandlers(r, w, h)
-}
-
 // answer is the reply to one data request; a link is handled by the caller.
 func (h handlers) answer(req request) reply {
 	st, name := stateReady, ""

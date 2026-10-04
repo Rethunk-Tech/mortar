@@ -217,11 +217,6 @@ func (s Settings) GamePrefs(gameID string) GameSettings {
 	return out
 }
 
-// PutGame stores prefs for one game id.
-func PutGame(s *Settings, gameID string, g GameSettings) {
-	putGame(s, gameID, g)
-}
-
 func putGame(s *Settings, gameID string, g GameSettings) {
 	if s.Games == nil {
 		s.Games = map[string]*GameSettings{}
@@ -481,11 +476,6 @@ func (s Settings) AllPrefsGame(game string) [][2]string {
 		out = append(out, [2]string{p.spec.Key, p.get(s, g)})
 	}
 	return out
-}
-
-// ApplyKey writes one app-scoped CLI setting onto s.
-func ApplyKey(s *Settings, key, value string) error {
-	return ApplyKeyGame(s, key, value, "")
 }
 
 // ApplyKeyGame writes one CLI setting onto s.

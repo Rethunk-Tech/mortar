@@ -14,7 +14,7 @@ func TestLaunchAtLoginWritesAutostartFile(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", cfg)
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	s := Defaults()
-	if err := ApplyKey(&s, "launchAtLogin", "true"); err != nil {
+	if err := ApplyKeyGame(&s, "launchAtLogin", "true", ""); err != nil {
 		t.Fatal(err)
 	}
 	root, err := os.OpenRoot(filepath.Join(cfg, "autostart"))
@@ -29,7 +29,7 @@ func TestLaunchAtLoginWritesAutostartFile(t *testing.T) {
 	if !strings.Contains(string(body), "Type=Application") || !strings.Contains(string(body), "Name=Mortar") {
 		t.Fatalf("desktop file = %s", body)
 	}
-	if err := ApplyKey(&s, "launchAtLogin", "false"); err != nil {
+	if err := ApplyKeyGame(&s, "launchAtLogin", "false", ""); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := root.Stat("mortar.desktop"); !os.IsNotExist(err) {

@@ -9,7 +9,7 @@ func TestResolveOrder(t *testing.T) {
 		t.Fatalf("default = %q", got)
 	}
 	game := Settings{}
-	PutGame(&game, GameStardew, GameSettings{DefaultLaunchMethod: LaunchDirect})
+	putGame(&game, GameStardew, GameSettings{DefaultLaunchMethod: LaunchDirect})
 	if got := Resolve(game, "defaultLaunchMethod", GameStardew, nil); got != LaunchDirect {
 		t.Fatalf("game = %q", got)
 	}
@@ -25,7 +25,7 @@ func TestResolveSkipPlayCheck(t *testing.T) {
 		t.Fatalf("default skip = %q", got)
 	}
 	game := Settings{}
-	PutGame(&game, GameStardew, GameSettings{SkipPlayCheck: true})
+	putGame(&game, GameStardew, GameSettings{SkipPlayCheck: true})
 	if got := Resolve(game, "skipPlayCheck", GameStardew, nil); got != "true" {
 		t.Fatalf("game skip = %q", got)
 	}

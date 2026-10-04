@@ -47,10 +47,12 @@ func testServiceWithReleases(t *testing.T, releases []string) (*Service, *fakeSM
 
 func TestEnsureHonoursPin(t *testing.T) {
 	svc, fake := testServiceWithReleases(t, []string{"4.1.0", "4.0.0"})
-	gp := svc.settings.Get().GamePrefs("stardew")
-	gp.SmapiPin = "4.0.0"
-	if _, err := svc.settings.Update(func(v *settings.Settings) { settings.PutGame(v, "stardew", gp) }); err != nil {
+	var applyErr error
+	if _, err := svc.settings.Update(func(v *settings.Settings) { applyErr = settings.ApplyKeyGame(v, "smapiPin", "4.0.0", "stardew") }); err != nil {
 		t.Fatal(err)
+	}
+	if applyErr != nil {
+		t.Fatal(applyErr)
 	}
 	if _, err := svc.Ensure(context.Background(), "stardew", false); err != nil {
 		t.Fatal(err)

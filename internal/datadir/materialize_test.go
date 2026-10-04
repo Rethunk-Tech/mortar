@@ -302,3 +302,23 @@ func TestMaterializeFallbackNonFallbackError(t *testing.T) {
 		t.Fatalf("err %v", err)
 	}
 }
+
+// MaterializeTreeOps is MaterializeTree with injectable tiers.
+func MaterializeTreeOps(src, dst string, ops Ops) error {
+	if len(ops.Tiers) == 0 {
+		ops.Tiers = defaultOps().Tiers
+	}
+	if ops.Clone == nil {
+		ops.Clone = cloneFile
+	}
+	if ops.Hardlink == nil {
+		ops.Hardlink = os.Link
+	}
+	if ops.Symlink == nil {
+		ops.Symlink = defaultOps().Symlink
+	}
+	if ops.Copy == nil {
+		ops.Copy = CopyFile
+	}
+	return copyTree(src, dst, nil, ops.put)
+}

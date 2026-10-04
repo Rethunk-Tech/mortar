@@ -72,11 +72,11 @@ func TestAutoEnableRequirementsAlwaysOnly(t *testing.T) {
 	ask := Defaults()
 	g := ask.GamePrefs(GameStardew)
 	g.EnableRequirements = EnableReqAsk
-	PutGame(&ask, GameStardew, g)
+	putGame(&ask, GameStardew, g)
 	never := Defaults()
 	g = never.GamePrefs(GameStardew)
 	g.EnableRequirements = EnableReqNever
-	PutGame(&never, GameStardew, g)
+	putGame(&never, GameStardew, g)
 	if ask.GamePrefs(GameStardew).AutoEnableRequirements() || never.GamePrefs(GameStardew).AutoEnableRequirements() {
 		t.Fatal("ask and never must not auto-enable")
 	}
@@ -118,20 +118,20 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"watchDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep",
 		"saveBackupHours": "6", "saveBackupKeep": "3",
 	}
-	if len(overrides) != len(PrefKeys()) {
-		t.Fatalf("%d overrides for %d registered keys", len(overrides), len(PrefKeys()))
+	if len(overrides) != len(registry) {
+		t.Fatalf("%d overrides for %d registered keys", len(overrides), len(registry))
 	}
-	for _, p := range PrefKeys() {
-		v, ok := overrides[p.Key]
+	for _, p := range registry {
+		v, ok := overrides[p.spec.Key]
 		if !ok {
-			t.Fatalf("round-trip missing override for %s", p.Key)
+			t.Fatalf("round-trip missing override for %s", p.spec.Key)
 		}
 		game := ""
-		if p.Scope == ScopeGame {
+		if p.spec.Scope == ScopeGame {
 			game = GameStardew
 		}
-		if err := p.Apply(&src, game, v); err != nil {
-			t.Fatalf("%s: %v", p.Key, err)
+		if err := p.set(&src, game, v); err != nil {
+			t.Fatalf("%s: %v", p.spec.Key, err)
 		}
 	}
 	b, err := MarshalExport(src)
@@ -147,18 +147,18 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 	if got.Language != src.Language || got.Accent != src.Accent || got.IncludeBetaReleases != src.IncludeBetaReleases || got.KeepInTray != src.KeepInTray {
 		t.Fatal("portable-only fields did not round-trip")
 	}
-	for _, key := range PrefKeys() {
+	for _, key := range registry {
 		game := ""
-		if key.Scope == ScopeGame {
+		if key.spec.Scope == ScopeGame {
 			game = GameStardew
 		}
-		want, err := src.LookupGame(key.Key, game)
+		want, err := src.LookupGame(key.spec.Key, game)
 		if err != nil {
 			t.Fatal(err)
 		}
-		have, err := got.LookupGame(key.Key, game)
+		have, err := got.LookupGame(key.spec.Key, game)
 		if err != nil || have != want {
-			t.Fatalf("%s: want %q got %q %v", key.Key, want, have, err)
+			t.Fatalf("%s: want %q got %q %v", key.spec.Key, want, have, err)
 		}
 	}
 }
