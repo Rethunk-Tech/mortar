@@ -499,7 +499,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if s.Nexus == nil {
 			return nil, errors.New("nexus is unavailable")
 		}
-		return s.changelogBetween(ctx, p.Game, p.ModID, p.Name, p.Value)
+		return s.updateChangelog(ctx, p.Game, p.ModID, p.Repo, p.Name, p.Value)
 	case "cache.size":
 		if s.Data == nil {
 			return nil, errors.New("data is unavailable")

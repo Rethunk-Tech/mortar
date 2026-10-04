@@ -1614,15 +1614,15 @@ func (c *cmd) updates(p control.Params) error {
 	}
 	changelogs := map[int][]nexus.Changelog{}
 	if c.changelogFlag {
-		for _, u := range r.Updates {
-			if u.NexusID < 1 {
+		for i, u := range r.Updates {
+			if u.NexusID < 1 && u.GitHubRepo == "" {
 				continue
 			}
 			var logs []nexus.Changelog
-			if err := c.call("changelog", control.Params{Game: p.Game, ModID: u.NexusID, Name: u.Installed, Value: u.Version}, &logs, readTimeout); err != nil {
+			if err := c.call("changelog", control.Params{Game: p.Game, ModID: u.NexusID, Repo: u.GitHubRepo, Name: u.Installed, Value: u.Version}, &logs, readTimeout); err != nil {
 				return err
 			}
-			changelogs[u.NexusID] = logs
+			changelogs[i] = logs
 		}
 	}
 	return c.emit(r, func() {
@@ -1638,8 +1638,8 @@ func (c *cmd) updates(p control.Params) error {
 		if !c.changelogFlag {
 			return
 		}
-		for _, u := range r.Updates {
-			logs := changelogs[u.NexusID]
+		for i, u := range r.Updates {
+			logs := changelogs[i]
 			if len(logs) == 0 {
 				continue
 			}
@@ -1648,6 +1648,11 @@ func (c *cmd) updates(p control.Params) error {
 				fmt.Fprintf(c.out, "  %s\n", e.Version)
 				for _, line := range e.Notes {
 					fmt.Fprintf(c.out, "    - %s\n", line)
+				}
+				if len(e.Notes) == 0 && e.Body != "" {
+					for line := range strings.SplitSeq(e.Body, "\n") {
+						fmt.Fprintf(c.out, "    %s\n", strings.TrimRight(line, " \r"))
+					}
 				}
 			}
 		}

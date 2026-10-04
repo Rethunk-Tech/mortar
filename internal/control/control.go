@@ -45,6 +45,7 @@ type Params struct {
 	Unlink    bool     `json:"unlink,omitempty"`
 	Keep      int      `json:"keep,omitempty"`
 	Preset    string   `json:"preset,omitempty"`
+	Repo      string   `json:"repo,omitempty"`
 }
 
 type request struct {
