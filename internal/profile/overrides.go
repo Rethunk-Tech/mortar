@@ -7,10 +7,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
-const (
-	overrideUpdateBeforePlay = "updateModsBeforePlayDefault"
-	overrideSkipPlayCheck    = "skipPlayCheck"
-)
+const overrideSkipPlayCheck = "skipPlayCheck"
 
 // PrefOverrides is the map Resolve should see.
 func (p Profile) PrefOverrides() map[string]string {

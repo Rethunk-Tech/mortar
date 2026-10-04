@@ -551,11 +551,6 @@ func (s *Store) SetNotes(game, id, notes string) (Profile, error) {
 	})
 }
 
-// SetUpdateBeforePlay records whether available mod updates run before Play.
-func (s *Store) SetUpdateBeforePlay(game, id string, on bool) (Profile, error) {
-	return s.SetOverride(game, id, overrideUpdateBeforePlay, strconv.FormatBool(on))
-}
-
 // SetSkipPlayCheck records whether the pre-Play problems dialog is skipped for this profile.
 func (s *Store) SetSkipPlayCheck(game, id string, on bool) (Profile, error) {
 	return s.SetOverride(game, id, overrideSkipPlayCheck, strconv.FormatBool(on))
