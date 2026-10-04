@@ -412,10 +412,6 @@ func refOf(e profile.Entry, fomod, notes bool) (Ref, string) {
 	}
 }
 
-func bundled(e profile.Entry) bool {
-	return e.Source.Kind == profile.SourceSMAPI || e.Source.Kind == profile.SourceMortar
-}
-
 // enabled reports whether any mod of the entry is switched on; an entry with no recorded mods counts as on.
 func enabled(e profile.Entry) bool {
 	if len(e.Mods) == 0 {
@@ -438,7 +434,7 @@ func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, o
 	}
 	s = Shared{Name: p.Name, Entries: []Ref{}}
 	for _, e := range p.Entries {
-		if bundled(e) {
+		if e.Source.Bundled() {
 			continue
 		}
 		if !enabled(e) && !inc.DisabledMods {

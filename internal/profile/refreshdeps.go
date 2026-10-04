@@ -2,11 +2,9 @@ package profile
 
 import (
 	"log"
-	"path/filepath"
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
@@ -28,11 +26,7 @@ func (s *Store) RefreshDependencies(game string) error {
 func (s *Store) refreshDependencies(game, id string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p, err := s.read(game, id)
-	if err != nil {
-		return err
-	}
-	dir, err := s.profileDir(game, id)
+	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return err
 	}
@@ -64,5 +58,5 @@ func (s *Store) refreshDependencies(game, id string) error {
 	if !changed {
 		return nil
 	}
-	return datadir.WriteJSON(filepath.Join(dir, fileName), p)
+	return writeProfile(dir, p)
 }

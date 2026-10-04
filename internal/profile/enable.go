@@ -23,11 +23,11 @@ func requiredNeeds(m EntryMod) []string {
 
 func modByID(p *Profile, uniqueID string) (key string, m EntryMod, ok bool) {
 	for _, e := range p.Entries {
-		if isBundled(e) {
+		if e.Source.Bundled() {
 			continue
 		}
 		for _, em := range e.Mods {
-			if sameID(em.UniqueID, uniqueID) {
+			if SameID(em.UniqueID, uniqueID) {
 				return e.Key, em, true
 			}
 		}

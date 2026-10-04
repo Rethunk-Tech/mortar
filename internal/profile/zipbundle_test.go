@@ -78,7 +78,7 @@ func TestExportRestoreRoundTrip(t *testing.T) {
 	assertSameUserMods(t, src, got)
 	key := ""
 	for _, en := range got.Entries {
-		if !isBundled(en) {
+		if !en.Source.Bundled() {
 			key = en.Key
 			break
 		}
@@ -145,7 +145,7 @@ func assertSameUserMods(t *testing.T, a, b Profile) {
 	collect := func(p Profile) []row {
 		var out []row
 		for _, e := range p.Entries {
-			if isBundled(e) {
+			if e.Source.Bundled() {
 				continue
 			}
 			off := map[string]bool{}

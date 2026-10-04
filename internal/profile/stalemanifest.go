@@ -41,7 +41,7 @@ func (s *Store) FixStaleManifest(game, id, key, uniqueID, version string) error 
 		}
 		mi := -1
 		for i, m := range e.Mods {
-			if sameID(m.UniqueID, uniqueID) {
+			if SameID(m.UniqueID, uniqueID) {
 				mi = i
 			}
 		}
@@ -86,7 +86,7 @@ func setManifestVersion(path, uniqueID, version string) error {
 		return err
 	}
 	m, err := manifest.Parse(b)
-	if err != nil || !sameID(m.UniqueID, uniqueID) {
+	if err != nil || !SameID(m.UniqueID, uniqueID) {
 		return errNotFixable
 	}
 	if m.Version == version {

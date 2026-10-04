@@ -2,7 +2,6 @@ package profile
 
 import (
 	"compress/gzip"
-	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -15,6 +14,8 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/ids"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
@@ -464,11 +465,7 @@ func (s *Store) RecordHistoryBatch(game, id, batchID string) error {
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p, err := s.read(game, id)
-	if err != nil {
-		return err
-	}
-	dir, err := s.profileDir(game, id)
+	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return err
 	}
@@ -584,11 +581,7 @@ func (s *Store) recordHistoryBatchData(dir string, data *historyFileData, batch 
 func (s *Store) recordSnapshot(game, id, kind, label string, count int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p, err := s.read(game, id)
-	if err != nil {
-		return err
-	}
-	dir, err := s.profileDir(game, id)
+	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return err
 	}
@@ -881,11 +874,7 @@ func recordHistory(dir string, before, after []Entry, kind, label string, keep i
 
 func appendHistory(dir string, ev HistoryEvent, after []Entry, keep int) (HistoryEvent, error) {
 	ev.At = time.Now().UTC().Truncate(time.Second)
-	var raw [8]byte
-	if _, err := rand.Read(raw[:]); err != nil {
-		return HistoryEvent{}, err
-	}
-	ev.ID = hex.EncodeToString(raw[:])
+	ev.ID = ids.New()
 	entries := cloneEntries(after)
 	snapshotID, err := entriesSnapshotID(entries)
 	if err != nil {

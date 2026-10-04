@@ -11,7 +11,7 @@ import (
 func enabledPlayed(p profile.Profile) []PlayedMod {
 	out := []PlayedMod{}
 	for _, e := range p.Entries {
-		if e.Source.Kind == profile.SourceSMAPI || e.Source.Kind == profile.SourceMortar {
+		if e.Source.Bundled() {
 			continue
 		}
 		for _, m := range e.Mods {

@@ -56,16 +56,20 @@ func (s *Store) SetSkipVersion(game, id, key, version string) (Profile, error) {
 // SetSkipSource records whether updates from source are hidden for the entry.
 func (s *Store) SetSkipSource(game, id, key, source string, skip bool) (Profile, error) {
 	return s.patchEntry(game, id, key, func(e *Entry) error {
-		if skip {
-			if !slices.Contains(e.SkipSources, source) {
-				e.SkipSources = append(e.SkipSources, source)
-			}
-			return nil
-		}
-		e.SkipSources = slices.DeleteFunc(e.SkipSources, func(existing string) bool { return existing == source })
-		if len(e.SkipSources) == 0 {
-			e.SkipSources = nil
-		}
+		setSkipSource(e, source, skip)
 		return nil
 	})
+}
+
+func setSkipSource(e *Entry, source string, skip bool) {
+	if skip {
+		if !e.SkipsSource(source) {
+			e.SkipSources = append(e.SkipSources, source)
+		}
+		return
+	}
+	e.SkipSources = slices.DeleteFunc(e.SkipSources, func(existing string) bool { return existing == source })
+	if len(e.SkipSources) == 0 {
+		e.SkipSources = nil
+	}
 }

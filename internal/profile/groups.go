@@ -167,7 +167,7 @@ func (s *Store) SetGroupEnabled(game, id, name string, on bool) (Profile, error)
 				continue
 			}
 			e := p.Entries[ei]
-			if isBundled(e) {
+			if e.Source.Bundled() {
 				continue
 			}
 			for _, m := range e.Mods {

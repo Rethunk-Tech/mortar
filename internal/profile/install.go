@@ -244,7 +244,7 @@ func (s *Store) holding(game, id, key string, choices map[string]map[string][]st
 			return nil, &DuplicateError{Key: key, Label: entryLabel(e)}
 		}
 		if slices.ContainsFunc(e.Mods, func(m EntryMod) bool {
-			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return sameID(f.UniqueID, m.UniqueID) })
+			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return SameID(f.UniqueID, m.UniqueID) })
 		}) {
 			held = append(held, e)
 		}

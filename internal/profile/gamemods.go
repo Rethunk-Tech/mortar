@@ -44,7 +44,7 @@ func (s *Store) MoveGameMods(game, id, modsDir string, folders []string) (GameMo
 	held := func(f gameModFolder) string {
 		for _, e := range p.Entries {
 			for _, m := range e.Mods {
-				if slices.ContainsFunc(f.mods, func(x manifest.Mod) bool { return sameID(x.UniqueID, m.UniqueID) }) {
+				if slices.ContainsFunc(f.mods, func(x manifest.Mod) bool { return SameID(x.UniqueID, m.UniqueID) }) {
 					return m.Name
 				}
 			}

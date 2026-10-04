@@ -18,11 +18,7 @@ type changesSinceCache struct {
 func (s *Store) ChangesSince(game, id string, since time.Time) (HistoryDiff, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p, err := s.read(game, id)
-	if err != nil {
-		return HistoryDiff{}, err
-	}
-	dir, err := s.profileDir(game, id)
+	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return HistoryDiff{}, err
 	}

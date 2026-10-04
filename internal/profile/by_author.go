@@ -35,7 +35,7 @@ func (s *Store) ModsByAuthor(game, author string) ([]AuthorMod, error) {
 					UniqueID:    m.UniqueID,
 					Name:        m.Name,
 					Version:     m.Version,
-					Enabled:     !hasID(e.Disabled, m.UniqueID),
+					Enabled:     !isDisabled(e, m),
 				}
 				existing := byID[strings.ToLower(m.UniqueID)]
 				if existing == nil {

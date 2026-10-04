@@ -10,7 +10,6 @@ import (
 	"io"
 	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -18,6 +17,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/archive"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
 const (
@@ -34,12 +34,7 @@ type zipManifest struct {
 // ExportZip writes a zip of the profile (profile.json, notes, cover, mods as they are, configs) with per-file SHA-256.
 func (s *Store) ExportZip(game, id, dest, mortarVersion string) error {
 	s.mu.Lock()
-	p, err := s.read(game, id)
-	if err != nil {
-		s.mu.Unlock()
-		return err
-	}
-	dir, err := s.profileDir(game, id)
+	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		s.mu.Unlock()
 		return err
@@ -85,7 +80,7 @@ func omitFromProfileZip(rel string) bool {
 func snapshotProfileExport(src, dst string, p Profile) error {
 	skip := map[string]bool{}
 	for _, e := range p.Entries {
-		if isBundled(e) {
+		if e.Source.Bundled() {
 			skip[e.Key] = true
 		}
 	}
@@ -135,9 +130,8 @@ func writeProfileZip(w io.Writer, mortarVersion, profileDir string, p Profile) e
 	zw := zip.NewWriter(w)
 	hashes := map[string]string{}
 	add := func(name string, r io.Reader) error {
-		name = path.Clean("/" + strings.ReplaceAll(name, `\`, "/"))
-		name = strings.TrimPrefix(name, "/")
-		if name == "" || name == ".." || strings.HasPrefix(name, "../") {
+		name = store.CleanRoot(name)
+		if name == "" {
 			return fmt.Errorf("invalid zip path %q", name)
 		}
 		h := sha256.New()
@@ -157,7 +151,7 @@ func writeProfileZip(w io.Writer, mortarVersion, profileDir string, p Profile) e
 	}
 	skip := map[string]bool{}
 	for _, e := range p.Entries {
-		if isBundled(e) {
+		if e.Source.Bundled() {
 			skip[e.Key] = true
 		}
 	}
@@ -285,7 +279,7 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 	defer s.setHistoryQuiet(created.ID, false)
 	restored := 0
 	for _, e := range src.Entries {
-		if isBundled(e) {
+		if e.Source.Bundled() {
 			continue
 		}
 		srcDir := filepath.Join(tmp, "mods", e.Key)

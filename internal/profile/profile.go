@@ -2,8 +2,6 @@
 package profile
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,6 +15,8 @@ import (
 	"sync"
 	"time"
 	"unicode/utf8"
+
+	"github.com/Rethunk-AI/mortar/internal/ids"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 
@@ -417,11 +417,18 @@ func (s *Store) ListDamaged(game string) ([]Profile, error) {
 }
 
 func (s *Store) read(game, id string) (Profile, error) {
+	p, _, err := s.readDir(game, id)
+	return p, err
+}
+
+// readDir is read that also returns the profile's folder.
+func (s *Store) readDir(game, id string) (Profile, string, error) {
 	dir, err := s.profileDir(game, id)
 	if err != nil {
-		return Profile{}, err
+		return Profile{}, "", err
 	}
-	return readAt(dir, id)
+	p, err := readAt(dir, id)
+	return p, dir, err
 }
 
 func readAt(dir, id string) (Profile, error) {
@@ -492,11 +499,7 @@ func (s *Store) create(game, name string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	var raw [8]byte
-	if _, err := rand.Read(raw[:]); err != nil {
-		return Profile{}, err
-	}
-	id := hex.EncodeToString(raw[:])
+	id := ids.New()
 	dir, err := s.profileDir(game, id)
 	if err != nil {
 		return Profile{}, err
@@ -509,7 +512,7 @@ func (s *Store) create(game, name string) (Profile, error) {
 	if len(existing) > 0 {
 		p.Order = existing[len(existing)-1].Order + 1
 	}
-	if err := datadir.WriteJSON(filepath.Join(dir, fileName), p); err != nil {
+	if err := writeProfile(dir, p); err != nil {
 		return Profile{}, errors.Join(err, os.RemoveAll(dir))
 	}
 	return p, nil
@@ -566,11 +569,7 @@ func (s *Store) update(game, id string, fn func(p *Profile, dir string) error) (
 }
 
 func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) error) (Profile, error) {
-	p, err := s.read(game, id)
-	if err != nil {
-		return Profile{}, err
-	}
-	dir, err := s.profileDir(game, id)
+	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -580,7 +579,7 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 		return Profile{}, err
 	}
 	p.Updated = time.Now().UTC().Truncate(time.Second)
-	if err := datadir.WriteJSON(filepath.Join(dir, fileName), p); err != nil {
+	if err := writeProfile(dir, p); err != nil {
 		s.historyKind, s.historyLabel = "", ""
 		restoreModsOld(dir)
 		return Profile{}, err

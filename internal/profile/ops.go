@@ -1,8 +1,6 @@
 package profile
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -12,6 +10,8 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/ids"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
@@ -58,10 +58,11 @@ func exists(p string) bool {
 	return err == nil
 }
 
-func sameID(a, b string) bool { return strings.EqualFold(a, b) }
+// SameID reports whether two mod unique IDs are the same; IDs compare case-insensitively.
+func SameID(a, b string) bool { return strings.EqualFold(a, b) }
 
 func hasID(ids []string, id string) bool {
-	return slices.ContainsFunc(ids, func(x string) bool { return sameID(x, id) })
+	return slices.ContainsFunc(ids, func(x string) bool { return SameID(x, id) })
 }
 
 func writeProfile(dir string, p Profile) error {
@@ -216,7 +217,8 @@ type Bundle struct {
 	Source Source
 }
 
-func isBundled(e Entry) bool { return e.Source.Kind == SourceSMAPI || e.Source.Kind == SourceMortar }
+// Bundled reports whether the source is a loader or bridge entry every profile holds.
+func (s Source) Bundled() bool { return s.Kind == SourceSMAPI || s.Kind == SourceMortar }
 
 // addTo copies the store item key into the profile's mods/ and records its entry, switching off the
 // mods in disabled that it holds. placed is the new folder, for the caller to remove if a later step fails.
@@ -389,7 +391,7 @@ func (s *Store) RemoveEntries(game, id string, keys []string) (Profile, error) {
 				continue
 			}
 			seen[key] = true
-			if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && isBundled(e) }) {
+			if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && e.Source.Bundled() }) {
 				return errors.New("the bundled mods are needed by every profile and cannot be removed")
 			}
 			if err := removeFrom(p, dir, key); err != nil {
@@ -490,7 +492,7 @@ func (s *Store) RestoreEntries(game, id string, entries []Entry) (Profile, error
 // RemoveEntry deletes the entry's folder and drops it from the profile.
 func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
 	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
-		if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && isBundled(e) }) {
+		if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && e.Source.Bundled() }) {
 			return errors.New("the bundled mods are needed by every profile and cannot be removed")
 		}
 		return removeFrom(p, dir, key)
@@ -507,7 +509,7 @@ func applyEnabled(p *Profile, dir, key, uniqueID string, enabled bool) error {
 		if key != "" && e.Key != key {
 			continue
 		}
-		mi := slices.IndexFunc(e.Mods, func(m EntryMod) bool { return sameID(m.UniqueID, uniqueID) })
+		mi := slices.IndexFunc(e.Mods, func(m EntryMod) bool { return SameID(m.UniqueID, uniqueID) })
 		if mi < 0 {
 			continue
 		}
@@ -518,7 +520,7 @@ func applyEnabled(p *Profile, dir, key, uniqueID string, enabled bool) error {
 		if err := flip(plain, dotted, enabled); err != nil {
 			return err
 		}
-		e.Disabled = slices.DeleteFunc(e.Disabled, func(x string) bool { return sameID(x, uniqueID) })
+		e.Disabled = slices.DeleteFunc(e.Disabled, func(x string) bool { return SameID(x, uniqueID) })
 		if !enabled {
 			e.Disabled = append(e.Disabled, e.Mods[mi].UniqueID)
 		}
@@ -627,11 +629,10 @@ func (s *Store) applyOrder(game string, all []Profile, ids []string) error {
 func (s *Store) Duplicate(game, id string) (Profile, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	src, err := s.read(game, id)
+	src, srcDir, err := s.readDir(game, id)
 	if err != nil {
 		return Profile{}, err
 	}
-	srcDir, _ := s.profileDir(game, id)
 	gdir, _ := s.gameDir(game)
 	all, err := s.listOK(game)
 	if err != nil {
@@ -641,11 +642,7 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 	for _, p := range all {
 		taken = append(taken, p.Name)
 	}
-	var raw [8]byte
-	if _, err := rand.Read(raw[:]); err != nil {
-		return Profile{}, err
-	}
-	newID := hex.EncodeToString(raw[:])
+	newID := ids.New()
 	dstDir, _ := s.profileDir(game, newID)
 
 	const suffix = " copy"
@@ -711,18 +708,17 @@ func (s *Store) UserMods(game, id string) ([]Mod, error) { return s.mods(game, i
 func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p, err := s.read(game, id)
+	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return nil, err
 	}
-	dir, _ := s.profileDir(game, id)
 	if err := s.rebuild(game, dir, p); err != nil {
 		return nil, err
 	}
 	out := []Mod{}
 	modsDir := filepath.Join(dir, "mods")
 	for _, e := range p.Entries {
-		if !bundled && isBundled(e) {
+		if !bundled && e.Source.Bundled() {
 			continue
 		}
 		for _, m := range e.Mods {
@@ -817,17 +813,16 @@ func (s *Store) ModFolder(game, id, key, uniqueID string) (string, error) {
 }
 
 func (s *Store) modFolderLocked(game, id, key, uniqueID string) (string, error) {
-	p, err := s.read(game, id)
+	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return "", err
 	}
-	dir, _ := s.profileDir(game, id)
 	for _, e := range p.Entries {
 		if key != "" && e.Key != key {
 			continue
 		}
 		for _, m := range e.Mods {
-			if !sameID(m.UniqueID, uniqueID) {
+			if !SameID(m.UniqueID, uniqueID) {
 				continue
 			}
 			plain, dotted, err := ModPaths(filepath.Join(dir, "mods"), e.Key, m.Folder)

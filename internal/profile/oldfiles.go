@@ -45,11 +45,7 @@ func (s *Store) oldFilesMode(game string) string {
 func (s *Store) PendingOldFiles(game, id string) ([]OldFiles, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p, err := s.read(game, id)
-	if err != nil {
-		return nil, err
-	}
-	dir, err := s.profileDir(game, id)
+	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return nil, err
 	}

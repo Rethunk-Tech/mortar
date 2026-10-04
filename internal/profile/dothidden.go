@@ -29,18 +29,14 @@ type HiddenMod struct {
 func (s *Store) DotHiddenMods(game, id string) ([]HiddenMod, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p, err := s.read(game, id)
-	if err != nil {
-		return nil, err
-	}
-	dir, err := s.profileDir(game, id)
+	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return nil, err
 	}
 	modsDir := filepath.Join(dir, "mods")
 	out := []HiddenMod{}
 	for _, e := range p.Entries {
-		if isBundled(e) {
+		if e.Source.Bundled() {
 			continue
 		}
 		root := filepath.Join(modsDir, e.Key)

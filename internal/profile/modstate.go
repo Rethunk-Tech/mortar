@@ -57,7 +57,7 @@ func entryMod(p Profile, key, uniqueID string) (Entry, EntryMod, bool) {
 		if key != "" && e.Key != key {
 			continue
 		}
-		if i := slices.IndexFunc(e.Mods, func(m EntryMod) bool { return sameID(m.UniqueID, uniqueID) }); i >= 0 {
+		if i := slices.IndexFunc(e.Mods, func(m EntryMod) bool { return SameID(m.UniqueID, uniqueID) }); i >= 0 {
 			return e, e.Mods[i], true
 		}
 	}
@@ -121,7 +121,7 @@ func (s *Store) previousVersion(game string, e Entry, uniqueID string) string {
 		return ""
 	}
 	for _, f := range found {
-		if sameID(f.UniqueID, uniqueID) {
+		if SameID(f.UniqueID, uniqueID) {
 			return f.Version
 		}
 	}

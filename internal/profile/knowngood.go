@@ -14,11 +14,7 @@ func (s *Store) MarkKnownGood(game, id string) (HistoryEvent, error) {
 	if err := s.unlocked(game, id); err != nil {
 		return HistoryEvent{}, err
 	}
-	p, err := s.read(game, id)
-	if err != nil {
-		return HistoryEvent{}, err
-	}
-	dir, err := s.profileDir(game, id)
+	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return HistoryEvent{}, err
 	}

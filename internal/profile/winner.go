@@ -55,7 +55,7 @@ func requireEntry(entries []Entry, key string) (int, error) {
 func setLoadAfter(ids []string, loser string, on bool) []string {
 	out := make([]string, 0, len(ids)+1)
 	for _, id := range ids {
-		if !sameID(id, loser) {
+		if !SameID(id, loser) {
 			out = append(out, id)
 		}
 	}

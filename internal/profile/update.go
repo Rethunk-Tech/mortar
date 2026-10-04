@@ -154,7 +154,7 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 	ne.Tags = slices.Clone(e.Tags)
 	ne.Fomod = cloneFomod(choices)
 	for _, m := range ne.Mods {
-		if hasID(e.Disabled, m.UniqueID) {
+		if isDisabled(e, m) {
 			ne.Disabled = append(ne.Disabled, m.UniqueID)
 		}
 	}
@@ -183,7 +183,7 @@ func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry
 	mode := s.oldFilesMode(game)
 	var held []heldFile
 	for _, nm := range ne.Mods {
-		i := slices.IndexFunc(e.Mods, func(m EntryMod) bool { return sameID(m.UniqueID, nm.UniqueID) })
+		i := slices.IndexFunc(e.Mods, func(m EntryMod) bool { return SameID(m.UniqueID, nm.UniqueID) })
 		if i < 0 {
 			continue
 		}
@@ -226,7 +226,7 @@ func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry
 		}
 		ne.Disabled = ne.Disabled[:0]
 		for _, m := range ne.Mods {
-			if hasID(e.Disabled, m.UniqueID) {
+			if isDisabled(e, m) {
 				ne.Disabled = append(ne.Disabled, m.UniqueID)
 			}
 		}

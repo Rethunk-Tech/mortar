@@ -90,7 +90,7 @@ func hasLoadAfter(p Profile, key, loser string) bool {
 			continue
 		}
 		for _, id := range e.LoadAfter {
-			if sameID(id, loser) {
+			if SameID(id, loser) {
 				return true
 			}
 		}
@@ -111,7 +111,7 @@ func assertOptionalDep(t *testing.T, raw, uniqueID string, want bool) {
 	}
 	got := false
 	for _, d := range m.Dependencies {
-		if sameID(d.UniqueID, uniqueID) && !d.Required {
+		if SameID(d.UniqueID, uniqueID) && !d.Required {
 			got = true
 			break
 		}

@@ -84,11 +84,7 @@ func (s *Store) SetCover(game, id, path string) (Profile, error) {
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p, err := s.read(game, id)
-	if err != nil {
-		return Profile{}, err
-	}
-	dir, err := s.profileDir(game, id)
+	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -101,7 +97,7 @@ func (s *Store) SetCover(game, id, path string) (Profile, error) {
 	old := p.Cover
 	p.Cover = name
 	p.Updated = time.Now().UTC().Truncate(time.Second)
-	if err := datadir.WriteJSON(filepath.Join(dir, fileName), p); err != nil {
+	if err := writeProfile(dir, p); err != nil {
 		return Profile{}, err
 	}
 	if old != name {

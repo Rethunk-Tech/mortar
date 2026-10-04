@@ -164,7 +164,7 @@ func (s *Store) priorVariant(game, id string, found []manifest.Mod, vars []Remap
 	}
 	for _, e := range p.Entries {
 		if !slices.ContainsFunc(e.Mods, func(m EntryMod) bool {
-			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return sameID(f.UniqueID, m.UniqueID) })
+			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return SameID(f.UniqueID, m.UniqueID) })
 		}) {
 			continue
 		}

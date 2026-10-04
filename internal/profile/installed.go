@@ -27,11 +27,7 @@ type Installed struct {
 func (s *Store) Installed(game, id string) ([]Installed, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p, err := s.read(game, id)
-	if err != nil {
-		return nil, err
-	}
-	dir, err := s.profileDir(game, id)
+	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return nil, err
 	}

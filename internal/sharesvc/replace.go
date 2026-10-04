@@ -58,10 +58,6 @@ func entryLabel(e profile.Entry) string {
 	return e.Key
 }
 
-func bundled(e profile.Entry) bool {
-	return e.Source.Kind == profile.SourceSMAPI || e.Source.Kind == profile.SourceMortar
-}
-
 func idsOf(e profile.Entry) []string {
 	out := make([]string, 0, len(e.Mods))
 	for _, m := range e.Mods {
@@ -75,7 +71,7 @@ func PlanReplace(p profile.Profile, mods []Mod) ReplacePlan {
 	files, ids := shareIndex(mods)
 	plan := ReplacePlan{}
 	for _, e := range p.Entries {
-		if bundled(e) {
+		if e.Source.Bundled() {
 			continue
 		}
 		tok := entryToken(e)

@@ -325,11 +325,7 @@ func safeFolder(name string) (string, error) {
 }
 
 func (s *Store) missingEntryFolders(game, id string) ([]string, error) {
-	p, err := s.read(game, id)
-	if err != nil {
-		return nil, err
-	}
-	dir, err := s.profileDir(game, id)
+	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return nil, err
 	}
@@ -407,11 +403,7 @@ func (s *Store) unplaceKeys(game, id string, keys []string) error {
 }
 
 func (s *Store) liveDriftState(game, id string) (Profile, string, map[string]string, map[string]FolderStat, error) {
-	p, err := s.read(game, id)
-	if err != nil {
-		return Profile{}, "", nil, nil, err
-	}
-	dir, err := s.profileDir(game, id)
+	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return Profile{}, "", nil, nil, err
 	}

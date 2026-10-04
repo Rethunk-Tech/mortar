@@ -134,7 +134,7 @@ func (id everywhereID) note(e Entry) {
 
 func (id everywhereID) hasMod(e Entry) bool {
 	for _, m := range e.Mods {
-		if sameID(m.UniqueID, id.query) {
+		if SameID(m.UniqueID, id.query) {
 			return true
 		}
 	}
@@ -284,11 +284,11 @@ func latestMatch(found []manifest.Mod, wantID, oldKey, key string) bool {
 	if wantID == "" || key == wantID {
 		return true
 	}
-	if sameID(wantID, key) {
+	if SameID(wantID, key) {
 		return true
 	}
 	for _, m := range found {
-		if sameID(m.UniqueID, wantID) {
+		if SameID(m.UniqueID, wantID) {
 			return true
 		}
 	}

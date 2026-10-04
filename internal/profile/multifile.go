@@ -158,7 +158,7 @@ func extraDisabled(e Entry, extraKey string) []string {
 		if folder != extraKey && !strings.HasPrefix(folder, prefix) {
 			continue
 		}
-		if hasID(e.Disabled, m.UniqueID) {
+		if isDisabled(e, m) {
 			ids = append(ids, m.UniqueID)
 		}
 	}
@@ -273,7 +273,7 @@ func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey str
 		if !strings.HasPrefix(oldFolder, oldPrefix) {
 			continue
 		}
-		if !slices.ContainsFunc(found, func(m manifest.Mod) bool { return sameID(m.UniqueID, om.UniqueID) }) {
+		if !slices.ContainsFunc(found, func(m manifest.Mod) bool { return SameID(m.UniqueID, om.UniqueID) }) {
 			continue
 		}
 		rel := strings.TrimPrefix(oldFolder, oldPrefix)
@@ -374,7 +374,7 @@ func (s *Store) refreshEntryMods(e *Entry, entryDir string) error {
 	e.Mods = entryMods(found)
 	kept := e.Disabled[:0]
 	for _, id := range e.Disabled {
-		if slices.ContainsFunc(e.Mods, func(m EntryMod) bool { return sameID(m.UniqueID, id) }) {
+		if slices.ContainsFunc(e.Mods, func(m EntryMod) bool { return SameID(m.UniqueID, id) }) {
 			kept = append(kept, id)
 		}
 	}
@@ -385,10 +385,10 @@ func (s *Store) refreshEntryMods(e *Entry, entryDir string) error {
 	}
 	if !startEnabled {
 		for _, m := range e.Mods {
-			if slices.ContainsFunc(prev, func(old EntryMod) bool { return sameID(old.UniqueID, m.UniqueID) }) {
+			if slices.ContainsFunc(prev, func(old EntryMod) bool { return SameID(old.UniqueID, m.UniqueID) }) {
 				continue
 			}
-			if !hasID(e.Disabled, m.UniqueID) {
+			if !isDisabled(*e, m) {
 				e.Disabled = append(e.Disabled, m.UniqueID)
 			}
 		}

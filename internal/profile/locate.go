@@ -32,7 +32,7 @@ func (s *Store) ProfilesWithMod(game, uniqueID string) ([]ModInProfile, error) {
 func modIn(p Profile, uniqueID string) (ModInProfile, bool) {
 	for _, e := range p.Entries {
 		for _, m := range e.Mods {
-			if !sameID(m.UniqueID, uniqueID) {
+			if !SameID(m.UniqueID, uniqueID) {
 				continue
 			}
 			return ModInProfile{
@@ -42,7 +42,7 @@ func modIn(p Profile, uniqueID string) (ModInProfile, bool) {
 				UniqueID:    m.UniqueID,
 				Name:        m.Name,
 				Version:     m.Version,
-				Enabled:     !hasID(e.Disabled, m.UniqueID),
+				Enabled:     !isDisabled(e, m),
 			}, true
 		}
 	}

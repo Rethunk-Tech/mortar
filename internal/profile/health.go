@@ -1,14 +1,10 @@
 package profile
 
 import (
-	"encoding/json"
-	"errors"
-	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 const (
@@ -31,15 +27,8 @@ type healthFileData struct {
 
 // ReadHealth returns health history points, oldest first.
 func ReadHealth(dir string) ([]HealthPoint, error) {
-	data, err := fsx.ReadFile(filepath.Join(dir, healthFile))
-	if errors.Is(err, os.ErrNotExist) {
-		return []HealthPoint{}, nil
-	}
-	if err != nil {
-		return nil, err
-	}
 	var file healthFileData
-	if err := json.Unmarshal(data, &file); err != nil {
+	if _, err := datadir.ReadJSON(filepath.Join(dir, healthFile), &file); err != nil {
 		return nil, err
 	}
 	if file.Points == nil {

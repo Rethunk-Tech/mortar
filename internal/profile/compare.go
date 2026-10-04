@@ -33,13 +33,13 @@ type Diff struct {
 }
 
 func enabledOf(e Entry, uniqueID string) bool {
-	return !slices.ContainsFunc(e.Disabled, func(id string) bool { return sameID(id, uniqueID) })
+	return !slices.ContainsFunc(e.Disabled, func(id string) bool { return SameID(id, uniqueID) })
 }
 
 func indexUserMods(p Profile) map[string]DiffSide {
 	out := map[string]DiffSide{}
 	for _, e := range p.Entries {
-		if isBundled(e) {
+		if e.Source.Bundled() {
 			continue
 		}
 		for _, m := range e.Mods {

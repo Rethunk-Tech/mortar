@@ -1,9 +1,6 @@
 package profile
 
 import (
-	"crypto/rand"
-	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -12,8 +9,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Rethunk-AI/mortar/internal/ids"
+
 	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 )
 
@@ -49,15 +47,8 @@ func readCategories(game string) ([]CustomCategory, error) {
 	if err != nil {
 		return nil, err
 	}
-	b, err := fsx.ReadFile(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return []CustomCategory{}, nil
-	}
-	if err != nil {
-		return nil, err
-	}
 	var file categoriesFile
-	if err := json.Unmarshal(b, &file); err != nil {
+	if _, err := datadir.ReadJSON(path, &file); err != nil {
 		return nil, fmt.Errorf("read categories: %w", err)
 	}
 	out := make([]CustomCategory, 0, len(file.Categories))
@@ -110,14 +101,6 @@ func cleanCategoryName(name string) error {
 	return nil
 }
 
-func newCategoryID() (string, error) {
-	var raw [8]byte
-	if _, err := rand.Read(raw[:]); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(raw[:]), nil
-}
-
 // ListCustomCategories returns the game's custom mod categories.
 func (s *Store) ListCustomCategories(game string) ([]CustomCategory, error) {
 	return readCategories(game)
@@ -162,11 +145,7 @@ func cleanCategoryList(next []CustomCategory) ([]CustomCategory, error) {
 		}
 		seenName[nameKey] = true
 		if c.ID == "" {
-			id, err := newCategoryID()
-			if err != nil {
-				return nil, err
-			}
-			c.ID = id
+			c.ID = ids.New()
 		}
 		if seenID[c.ID] {
 			return nil, fmt.Errorf("duplicate category id %q", c.ID)
