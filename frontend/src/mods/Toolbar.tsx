@@ -4,6 +4,7 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
+  Chip,
   CircularProgress,
   Divider,
   ListItemIcon,
@@ -80,16 +81,52 @@ function persistGroupBy(by: GroupBy) {
   SetListGroupBy(by).catch(reportUnexpected)
 }
 
+function TagChips({
+  tags,
+  selected,
+  onTags,
+}: {
+  tags: readonly string[]
+  selected: readonly string[]
+  onTags: (tags: string[]) => void
+}) {
+  return (
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, px: 2, py: 1, maxWidth: 320 }}>
+      {tags.map((tag) => {
+        const on = selected.includes(tag)
+        return (
+          <Chip
+            key={tag}
+            size="small"
+            label={tag}
+            color={on ? 'primary' : 'default'}
+            variant={on ? 'filled' : 'outlined'}
+            aria-pressed={on}
+            onClick={() => onTags(on ? selected.filter((x) => x !== tag) : [...selected, tag])}
+          />
+        )
+      })}
+    </Box>
+  )
+}
+
 function ShowFilterControl({
   filter,
   onFilter,
+  tags,
+  selectedTags,
+  onTags,
 }: {
   filter: ModFilter
   onFilter: (filter: ModFilter) => void
+  tags: readonly string[]
+  selectedTags: readonly string[]
+  onTags: (tags: string[]) => void
 }) {
   const { t, i18n } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const active = FILTERS.find((item) => item.id === filter)
+  const tagged = selectedTags.length > 0
   const showLabel = active ? t`Show: ${active.label(i18n)}` : t`Show`
   const choose = (next: ModFilter) => {
     onFilter(next)
@@ -100,7 +137,7 @@ function ShowFilterControl({
       <Tooltip title={showLabel}>
         <Button
           variant="outlined"
-          color={active ? 'primary' : 'inherit'}
+          color={active || tagged ? 'primary' : 'inherit'}
           aria-label={showLabel}
           startIcon={<Filter size={14} />}
           aria-haspopup="menu"
@@ -129,6 +166,8 @@ function ShowFilterControl({
             <ListItemText>{item.label}</ListItemText>
           </MenuItem>
         ))}
+        {tags.length > 0 ? <Divider /> : null}
+        {tags.length > 0 ? <TagChips tags={tags} selected={selectedTags} onTags={onTags} /> : null}
       </Menu>
     </>
   )
@@ -279,12 +318,18 @@ export function Toolbar({
   total,
   filter,
   onFilter,
+  tags,
+  selectedTags,
+  onTags,
 }: {
   query: string
   onQuery: (q: string) => void
   total: number
   filter: ModFilter
   onFilter: (filter: ModFilter) => void
+  tags: readonly string[]
+  selectedTags: readonly string[]
+  onTags: (tags: string[]) => void
 }) {
   const { t } = useLingui()
   const view = useMods((s) => s.view)
@@ -330,7 +375,13 @@ export function Toolbar({
       ) : (
         <Box sx={{ flex: 1, minWidth: 0 }} />
       )}
-      <ShowFilterControl filter={filter} onFilter={onFilter} />
+      <ShowFilterControl
+        filter={filter}
+        onFilter={onFilter}
+        tags={tags}
+        selectedTags={selectedTags}
+        onTags={onTags}
+      />
       {narrow ? (
         <Button
           variant="outlined"

@@ -38,6 +38,7 @@ export const useMods = create<{
   modsFor: string
   queries: Record<string, string>
   filters: Record<string, ModFilter | undefined>
+  tagFilters: Record<string, string[] | undefined>
   loadError: string
   pages: Record<string, string | undefined>
   view: View
@@ -79,12 +80,14 @@ export const useMods = create<{
   showUpdates: () => void
   setQuery: (profileId: string, query: string) => void
   setFilter: (profileId: string, filter: ModFilter) => void
+  setTagFilter: (profileId: string, tags: string[]) => void
 }>((set, get) => ({
   mods: [],
   loaded: false,
   modsFor: '',
   queries: {},
   filters: {},
+  tagFilters: {},
   loadError: '',
   pages: {},
   view: storedView(),
@@ -97,6 +100,8 @@ export const useMods = create<{
   setQuery: (profileId, query) => set((s) => ({ queries: { ...s.queries, [profileId]: query } })),
   setFilter: (profileId, filter) =>
     set((s) => ({ filters: { ...s.filters, [profileId]: filter } })),
+  setTagFilter: (profileId, tags) =>
+    set((s) => ({ tagFilters: { ...s.tagFilters, [profileId]: tags } })),
   loadProblems: () => loadModProblems(set, get),
   setEnabled: (mod, enabled) => setEnabledAction(set, get, mod, enabled),
   setEnabledMany: (mods, enabled) => enableMany(set, get, mods, enabled),

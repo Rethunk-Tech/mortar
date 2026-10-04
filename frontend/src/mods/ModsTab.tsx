@@ -20,6 +20,7 @@ import { useCustomCategories } from './customCategories.ts'
 import { DuplicateDialog } from './DuplicateDialog.tsx'
 import { useDetail } from './detail.ts'
 import { EndorsePrompt } from './EndorsePrompt.tsx'
+import { customCategoryById, profileTags } from './group.ts'
 import { LibraryCallouts } from './LibraryCallouts.tsx'
 import { LockedNote } from './LockedNote.tsx'
 import { useLastRun } from './lastRun.ts'
@@ -29,6 +30,8 @@ import { ModDetail } from './ModDetail.tsx'
 import { ModList } from './ModList.tsx'
 import { ModContextMenu } from './ModMenu.tsx'
 import { useContextMenu } from './menu.ts'
+import { hasAllTags, matchesQuery, searchFields } from './modSearch.ts'
+import { useNexusDetails } from './nexusDetails.ts'
 import { ProblemBar } from './ProblemBar.tsx'
 import { RemoveDialog } from './parts.tsx'
 import { addedWithin, WEEK_MS } from './recent.ts'
@@ -169,6 +172,8 @@ function AttentionBars() {
   )
 }
 
+const NO_TAGS: string[] = []
+
 export function ModsTab({ profile }: { profile: Profile }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
@@ -180,6 +185,10 @@ export function ModsTab({ profile }: { profile: Profile }) {
   const updates = useUpdates((s) => s.updates)
   const filter = useMods((s) => s.filters[profile.id]) ?? 'all'
   const setFilter = useMods((s) => s.setFilter)
+  const selectedTags = useMods((s) => s.tagFilters[profile.id]) ?? NO_TAGS
+  const setTagFilter = useMods((s) => s.setTagFilter)
+  const nexusById = useNexusDetails((s) => s.byId)
+  const customCategories = useCustomCategories((s) => s.categories)
   const loadKey = `${profile.id}:${profile.updated}`
   const gameId = useProfiles((s) => s.game?.id)
   const launchState = useLaunch((s) => s.status?.state)
@@ -249,18 +258,11 @@ export function ModsTab({ profile }: { profile: Profile }) {
   }
 
   const q = query.trim().toLowerCase()
+  const customById = customCategoryById(customCategories)
   const shown = mods.filter((m) => {
     const entry = entryOf(profile, m.key)
-    const searchable = [
-      m.name,
-      m.author,
-      m.uniqueId,
-      ...(entry?.tags ?? []),
-      entry?.note ?? '',
-      entry?.categoryOverride ?? '',
-      JSON.stringify(entry?.source ?? ''),
-    ]
-    if (q && !searchable.some((value) => value.toLowerCase().includes(q))) {
+    const searchable = searchFields(m, entry, nexusById, customById)
+    if (!(matchesQuery(q, searchable) && hasAllTags(entry?.tags, selectedTags))) {
       return false
     }
     return (
@@ -288,6 +290,9 @@ export function ModsTab({ profile }: { profile: Profile }) {
         total={mods.length}
         filter={filter}
         onFilter={(value) => setFilter(profile.id, value)}
+        tags={profileTags(profile.entries)}
+        selectedTags={selectedTags}
+        onTags={(tags) => setTagFilter(profile.id, tags)}
       />
       <TrackedNotInProfile profile={profile} />
       <LockedNote />
@@ -297,10 +302,11 @@ export function ModsTab({ profile }: { profile: Profile }) {
         profile={profile}
         shown={shown}
         view={view}
-        filtering={q !== '' || filter !== 'all'}
+        filtering={q !== '' || filter !== 'all' || selectedTags.length > 0}
         onClear={() => {
           setQuery(profile.id, '')
           setFilter(profile.id, 'all')
+          setTagFilter(profile.id, [])
         }}
       />
       <ModDetail profile={profile} />
