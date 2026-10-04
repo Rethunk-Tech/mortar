@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { Switch } from '@mui/material'
 import { SetEnableModsWhenInstalled } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
@@ -14,11 +14,12 @@ export function ModsProfiles() {
   return (
     <SettingsSection title={t`Installing`}>
       <SettingRow label={t`Enable mods when installed`}>
-        <Switch
+        <PrefSwitch
           checked={enableModsWhenInstalled !== false}
-          onChange={(_, on) =>
+          onChange={(on) =>
             persist(() => SetEnableModsWhenInstalled(on), push, t`Couldn't save that setting`)
           }
+          label={t`Enable mods when installed`}
         />
       </SettingRow>
       <PrefKeys

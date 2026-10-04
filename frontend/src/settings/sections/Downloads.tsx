@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, Switch, Tooltip } from '@mui/material'
+import { Button, Tooltip } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { List as ListGames } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
@@ -11,7 +11,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { useToasts } from '../../toasts/store.ts'
-import { PrefSelect } from '../PrefControls.tsx'
+import { PrefSelect, PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
 import { prefCopy } from '../prefCopy.ts'
@@ -49,6 +49,7 @@ function NxmDefaultProfile() {
           persist(() => SetNxmDefaultProfile(v), push, t`Couldn't save that setting`)
         }
         options={options}
+        label={copy.label}
       />
     </SettingRow>
   )
@@ -72,7 +73,11 @@ function NxmLinks() {
         <Tooltip
           title={owner ? t`${owner} opens these links now.` : t`Mortar handles these links now.`}
         >
-          <Switch checked={nxm.handled} onChange={(_, on) => nxm.toggle(on)} />
+          <PrefSwitch
+            checked={nxm.handled}
+            onChange={(on) => nxm.toggle(on)}
+            label={t`Handle "Mod Manager Download" links`}
+          />
         </Tooltip>
       </SettingRow>
       {nxm.handled && nxmPrevious ? (
@@ -80,11 +85,12 @@ function NxmLinks() {
           label={t`Send other games' links to ${redirectName}`}
           description={t`Links for games Mortar does not manage open in the app that had them before.`}
         >
-          <Switch
+          <PrefSwitch
             checked={redirectOther}
-            onChange={(_, on) =>
+            onChange={(on) =>
               persist(() => SetNxmRedirectOtherGames(on), push, t`Couldn't save that setting`)
             }
+            label={t`Send other games' links to ${redirectName}`}
           />
         </SettingRow>
       ) : null}
@@ -116,6 +122,7 @@ function PreferredServer() {
           persist(() => SetNexusPreferredDownloadServer(v), push, t`Couldn't save that setting`)
         }
         options={options}
+        label={t`Preferred download server`}
       />
     </SettingRow>
   )

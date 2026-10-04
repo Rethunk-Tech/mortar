@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, CircularProgress, Switch } from '@mui/material'
+import { Alert, Box, Button, CircularProgress } from '@mui/material'
 import { Download, RefreshCw, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import {
@@ -10,6 +10,7 @@ import {
 import { useNav } from '../../nav/store.ts'
 import { errorMessage, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
@@ -157,9 +158,10 @@ export function Updates() {
       <SettingsSection title={t`Mortar`}>
         <MortarUpdate />
         <SettingRow label={t`Include beta releases`}>
-          <Switch
+          <PrefSwitch
             checked={includeBetaReleases}
-            onChange={(_, on) => persist(() => SetIncludeBetaReleases(on), push, fail)}
+            onChange={(on) => persist(() => SetIncludeBetaReleases(on), push, fail)}
+            label={t`Include beta releases`}
           />
         </SettingRow>
         <PrefByKey prefKey="autoInstallMortarUpdates" />
@@ -167,15 +169,17 @@ export function Updates() {
       <SettingsSection title={t`Mods`}>
         <PrefKeys keys={['checkModUpdatesOnStart', 'updateCheckIntervalMinutes']} />
         <SettingRow label={t`Check only enabled mods`}>
-          <Switch
+          <PrefSwitch
             checked={checkOnlyEnabledMods}
-            onChange={(_, on) => persist(() => SetCheckOnlyEnabledMods(on), push, fail)}
+            onChange={(on) => persist(() => SetCheckOnlyEnabledMods(on), push, fail)}
+            label={t`Check only enabled mods`}
           />
         </SettingRow>
         <SettingRow label={t`Include pre-release mod versions`}>
-          <Switch
+          <PrefSwitch
             checked={includePrereleaseModVersions}
-            onChange={(_, on) => persist(() => SetIncludePrereleaseModVersions(on), push, fail)}
+            onChange={(on) => persist(() => SetIncludePrereleaseModVersions(on), push, fail)}
+            label={t`Include pre-release mod versions`}
           />
         </SettingRow>
         {game ? (
