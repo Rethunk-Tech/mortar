@@ -4,11 +4,19 @@ import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
+import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { useToasts } from '../toasts/store.ts'
+import type { ModFilter } from './Toolbar.tsx'
 
 type View = 'grid' | 'list'
 
 const VIEW_KEY = 'mortar.modsView'
+
+const isFilter = (v: unknown): v is ModFilter =>
+  typeof v === 'string' &&
+  ['all', 'disabled', 'update', 'problem', 'pinned', 'local', 'recent'].includes(v)
+const isTags = (v: unknown): v is string[] =>
+  Array.isArray(v) && v.every((t) => typeof t === 'string')
 
 function setStoredView(set: (p: { view: View }) => void, view: View) {
 const isView = (v: unknown): v is View => v === 'list' || v === 'grid'
@@ -36,6 +44,15 @@ export function viewActions(set: (p: { view: View }) => void) {
     setView: (view: View) => setStoredView(set, view),
   }
 }
+
+export const storedFilter = (profileId: string): ModFilter =>
+  readStored(`mortar.modsFilter.${profileId}`, 'all', isFilter)
+export const storeFilter = (profileId: string, filter: ModFilter) =>
+  writeStored(`mortar.modsFilter.${profileId}`, filter)
+export const storedTags = (profileId: string): string[] =>
+  readStored(`mortar.modsTags.${profileId}`, [], isTags)
+export const storeTags = (profileId: string, tags: string[]) =>
+  writeStored(`mortar.modsTags.${profileId}`, tags)
 
 export function announceAlso(names: string[] | null | undefined) {
   const also = (names ?? []).filter(Boolean)

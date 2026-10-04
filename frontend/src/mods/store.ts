@@ -28,7 +28,14 @@ import {
 } from './storeEntries.ts'
 import { loadModProblems, loadMods, showUpdatesView } from './storeLoad.ts'
 import { problemActions } from './storeProblems.ts'
-import { removingOf, storedView, type View, viewActions } from './storeView.ts'
+import {
+  removingOf,
+  storedView,
+  storeFilter,
+  storeTags,
+  type View,
+  viewActions,
+} from './storeView.ts'
 import type { ModFilter } from './Toolbar.tsx'
 
 export const useMods = create<{
@@ -98,10 +105,14 @@ export const useMods = create<{
   ...viewActions(set),
   load: () => loadMods(set, get),
   setQuery: (profileId, query) => set((s) => ({ queries: { ...s.queries, [profileId]: query } })),
-  setFilter: (profileId, filter) =>
-    set((s) => ({ filters: { ...s.filters, [profileId]: filter } })),
-  setTagFilter: (profileId, tags) =>
-    set((s) => ({ tagFilters: { ...s.tagFilters, [profileId]: tags } })),
+  setFilter: (profileId, filter) => {
+    storeFilter(profileId, filter)
+    set((s) => ({ filters: { ...s.filters, [profileId]: filter } }))
+  },
+  setTagFilter: (profileId, tags) => {
+    storeTags(profileId, tags)
+    set((s) => ({ tagFilters: { ...s.tagFilters, [profileId]: tags } }))
+  },
   loadProblems: () => loadModProblems(set, get),
   setEnabled: (mod, enabled) => setEnabledAction(set, get, mod, enabled),
   setEnabledMany: (mods, enabled) => enableMany(set, get, mods, enabled),
