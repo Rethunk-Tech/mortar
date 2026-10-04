@@ -1,14 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  ClickAwayListener,
-  Fade,
-  Paper,
-  Popper,
-  Stack,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Fade, Paper, Popper, Stack, Typography } from '@mui/material'
 import { useEffect, useId, useRef } from 'react'
 import { mergeBindings } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
@@ -123,6 +114,12 @@ function TourPopover({
             <Paper
               role="dialog"
               aria-labelledby={titleId}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  e.stopPropagation()
+                  close()
+                }
+              }}
               elevation={8}
               sx={{
                 maxWidth: 320,
@@ -131,49 +128,47 @@ function TourPopover({
                 bgcolor: 'var(--mortar-panel-solid)',
               }}
             >
-              <ClickAwayListener onClickAway={() => undefined}>
-                <Stack spacing={1.5}>
-                  <Typography id={titleId} sx={{ fontSize: 15, fontWeight: 700 }}>
-                    {title}
-                  </Typography>
-                  <Typography sx={{ fontSize: 13, lineHeight: 1.5, color: 'text.secondary' }}>
-                    {body}
-                  </Typography>
-                  <Typography sx={{ fontSize: 12, color: 'text.disabled' }}>{stepLabel}</Typography>
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    sx={{ justifyContent: 'space-between', alignItems: 'center' }}
-                  >
-                    <Button size="small" color="inherit" onClick={close}>
-                      {t`Skip tour`}
+              <Stack spacing={1.5}>
+                <Typography id={titleId} sx={{ fontSize: 15, fontWeight: 700 }}>
+                  {title}
+                </Typography>
+                <Typography sx={{ fontSize: 13, lineHeight: 1.5, color: 'text.secondary' }}>
+                  {body}
+                </Typography>
+                <Typography sx={{ fontSize: 12, color: 'text.disabled' }}>{stepLabel}</Typography>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ justifyContent: 'space-between', alignItems: 'center' }}
+                >
+                  <Button size="small" color="inherit" onClick={close}>
+                    {t`Skip tour`}
+                  </Button>
+                  <Stack direction="row" spacing={1}>
+                    <Button
+                      size="small"
+                      disabled={step === TOUR_STEP_PROFILES}
+                      onClick={() => setStep((s) => tourStepBack(s))}
+                    >
+                      {t`Back`}
                     </Button>
-                    <Stack direction="row" spacing={1}>
-                      <Button
-                        size="small"
-                        disabled={step === TOUR_STEP_PROFILES}
-                        onClick={() => setStep((s) => tourStepBack(s))}
-                      >
-                        {t`Back`}
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        autoFocus={true}
-                        onClick={() => {
-                          if (last) {
-                            close()
-                          } else {
-                            setStep((s) => tourStepNext(s))
-                          }
-                        }}
-                      >
-                        {last ? t`Done` : t`Next`}
-                      </Button>
-                    </Stack>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      autoFocus={true}
+                      onClick={() => {
+                        if (last) {
+                          close()
+                        } else {
+                          setStep((s) => tourStepNext(s))
+                        }
+                      }}
+                    >
+                      {last ? t`Done` : t`Next`}
+                    </Button>
                   </Stack>
                 </Stack>
-              </ClickAwayListener>
+              </Stack>
             </Paper>
           </Fade>
         )}

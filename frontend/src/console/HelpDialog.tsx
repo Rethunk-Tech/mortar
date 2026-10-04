@@ -9,6 +9,7 @@ import {
   DialogTitle,
   FormControlLabel,
   Switch,
+  TextField,
   Typography,
 } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
@@ -43,23 +44,16 @@ function LinkRow({ link, onCopy }: { link: string; onCopy: () => void }) {
   const { t } = useLingui()
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <Box
-        component="input"
-        readOnly={true}
-        aria-label={t`Log link`}
+      <TextField
+        size="small"
         value={link}
-        onFocus={(e) => e.currentTarget.select()}
-        sx={{
-          flexGrow: 1,
-          minWidth: 0,
-          height: 34,
-          px: 1.25,
-          bgcolor: 'var(--mortar-overlay-30)',
-          border: '1px solid var(--mortar-hairline-15)',
-          borderRadius: '6px',
-          color: 'var(--mortar-ink)',
-          font: 'inherit',
-          fontSize: 14,
+        sx={{ flexGrow: 1, minWidth: 0 }}
+        slotProps={{
+          htmlInput: {
+            readOnly: true,
+            'aria-label': t`Log link`,
+            onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.currentTarget.select(),
+          },
         }}
       />
       <Button variant="outlined" startIcon={<Copy size={16} />} onClick={onCopy} sx={button}>
@@ -115,23 +109,17 @@ function HelpLog({
       <Alert severity="warning" icon={<TriangleAlert size={16} aria-hidden={true} />}>
         {t`The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it.`}
       </Alert>
-      <Box
-        component="textarea"
-        readOnly={true}
-        aria-label={t`SMAPI log`}
+      <TextField
+        multiline={true}
+        rows={15}
         value={log}
-        spellCheck={false}
-        sx={{
-          height: 320,
-          resize: 'none',
-          p: 1.5,
-          bgcolor: 'var(--mortar-overlay-50)',
-          border: '1px solid var(--mortar-hairline-15)',
-          borderRadius: '6px',
-          color: 'var(--mortar-ink)',
-          fontFamily: MONO,
-          fontSize: 12,
-          whiteSpace: 'pre',
+        slotProps={{
+          htmlInput: {
+            readOnly: true,
+            spellCheck: false,
+            'aria-label': t`SMAPI log`,
+            sx: { fontFamily: MONO, fontSize: 12, whiteSpace: 'pre', overflowX: 'auto' },
+          },
         }}
       />
       <HideUserName checked={hideUserName} onChange={setHideUserName} />

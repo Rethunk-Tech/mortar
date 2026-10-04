@@ -1,4 +1,4 @@
-import { Box } from '@mui/material'
+import { Box, Link } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Entry } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
@@ -21,13 +21,7 @@ const JUMP_DIVISOR = 3
 
 const cell = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'pre' } as const
 
-const linkSx = {
-  all: 'unset',
-  cursor: 'pointer',
-  textDecoration: 'underline',
-  textUnderlineOffset: '2px',
-  color: 'inherit',
-} as const
+const linkSx = { font: 'inherit', verticalAlign: 'baseline', textUnderlineOffset: '2px' } as const
 
 function Linked({
   text,
@@ -51,10 +45,12 @@ function Linked({
     }
     const label = text.slice(link.start, link.end)
     parts.push(
-      <Box
+      <Link
         key={`${link.kind}-${link.start}`}
         component="button"
         type="button"
+        color="inherit"
+        underline="always"
         onClick={() => {
           if (link.kind === 'mod') {
             onMod(link.uniqueID)
@@ -65,7 +61,7 @@ function Linked({
         sx={linkSx}
       >
         {label}
-      </Box>,
+      </Link>,
     )
     at = link.end
   }

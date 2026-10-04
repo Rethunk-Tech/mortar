@@ -182,6 +182,7 @@ function RecentPanel({
       slotProps={{
         paper: {
           role: 'dialog',
+          'aria-label': t`Recent changes`,
           sx: {
             width: 400,
             maxWidth: 'calc(100vw - 32px)',

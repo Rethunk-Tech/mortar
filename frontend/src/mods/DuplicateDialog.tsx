@@ -54,7 +54,11 @@ function CopyOption({ copy, dup, differ }: { copy: Copy; dup: Duplicate; differ:
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-        <Radio value={copy.key} sx={{ p: 0 }} slotProps={{ input: { 'aria-label': source } }} />
+        <Radio
+          value={copy.key}
+          sx={{ p: 0 }}
+          slotProps={{ input: { 'aria-label': t`${source}, version ${copy.version}` } }}
+        />
         <LetterTile mod={{ uniqueId: dup.uniqueId, name: copy.name }} size={40} />
         <Box sx={{ minWidth: 0 }}>
           <Typography sx={{ fontSize: 15, fontWeight: 700 }}>{source}</Typography>
@@ -87,6 +91,7 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
           {t`${profileName} has ${dup.name} more than once. SMAPI loads only one, so pick which to keep. The others are switched off, not deleted.`}
         </Typography>
         <RadioGroup
+          aria-label={t`Copy to keep`}
           value={keep}
           onChange={(e) => setKeep(e.target.value)}
           sx={{

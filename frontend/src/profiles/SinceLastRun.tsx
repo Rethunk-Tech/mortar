@@ -113,13 +113,14 @@ export function SinceLastRun({ game, profileId }: { game: string; profileId: str
         <Box component="span" sx={{ display: 'flex', flexShrink: 0, color: 'text.secondary' }}>
           <History size={16} aria-hidden={true} />
         </Box>
-        <Typography sx={{ flexShrink: 0, fontSize: 14, fontWeight: 600 }}>
+        <Typography component="span" sx={{ flexShrink: 0, fontSize: 14, fontWeight: 600 }}>
           {plural(lines.length, {
             one: 'Since last run: # change',
             other: 'Since last run: # changes',
           })}
         </Typography>
         <Typography
+          component="span"
           noWrap={true}
           sx={{ flex: 1, minWidth: 0, fontSize: 14, color: 'text.secondary' }}
         >

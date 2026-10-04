@@ -76,7 +76,6 @@ export function PlayControl({ game }: { game: string }) {
       <>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <Box
-            role="status"
             title={runningProfile?.name}
             sx={{
               display: 'flex',
@@ -97,7 +96,11 @@ export function PlayControl({ game }: { game: string }) {
                 flexShrink: 0,
               }}
             />
-            <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 600, minWidth: 0, flex: 1 }}>
+            <Typography
+              role="status"
+              noWrap={true}
+              sx={{ fontSize: 14, fontWeight: 600, minWidth: 0, flex: 1 }}
+            >
               {who === '' ? t`Running` : t`Running ${who}`}
             </Typography>
             <Typography

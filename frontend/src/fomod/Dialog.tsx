@@ -230,7 +230,13 @@ function FomodWizard({ session }: { session: FomodSession }) {
                   <Typography variant="body2" color="text.secondary">
                     {g.name}
                   </Typography>
-                  {exclusive ? <RadioGroup>{body}</RadioGroup> : <Box>{body}</Box>}
+                  {exclusive ? (
+                    <RadioGroup aria-label={g.name}>{body}</RadioGroup>
+                  ) : (
+                    <Box role="group" aria-label={g.name}>
+                      {body}
+                    </Box>
+                  )}
                 </Box>
               )
             })}

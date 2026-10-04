@@ -47,6 +47,7 @@ export function TagSelectionDialog({
           renderInput={(params) => <TextField {...params} autoFocus={true} label={t`Tag`} />}
         />
         <ToggleButtonGroup
+          aria-label={t`Add or remove the tag`}
           exclusive={true}
           size="small"
           value={addTag ? 'add' : 'remove'}

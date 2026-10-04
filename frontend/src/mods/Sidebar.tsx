@@ -458,6 +458,8 @@ export function ModSidebar({ profile }: { profile: Profile }) {
         sx={{ top: 'var(--title-bar)' }}
         slotProps={{
           paper: {
+            role: 'dialog',
+            'aria-label': t`Mod details`,
             sx: {
               width: 320,
               top: 'var(--title-bar)',

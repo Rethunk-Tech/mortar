@@ -103,11 +103,16 @@ function ExtraInstalls({
   override: string
   onPick: (store: string) => void
 }) {
+  const { t } = useLingui()
   if (installs.length <= 1) {
     return null
   }
   return (
-    <RadioGroup value={override ? '' : store} onChange={(e) => onPick(e.target.value)}>
+    <RadioGroup
+      aria-label={t`Game install`}
+      value={override ? '' : store}
+      onChange={(e) => onPick(e.target.value)}
+    >
       {installs.map((item) => (
         <FormControlLabel
           key={`${item.store}:${item.dir}`}

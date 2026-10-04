@@ -97,6 +97,7 @@ function HistoryPopover({
       slotProps={{
         paper: {
           role: 'dialog',
+          'aria-label': t`Notification history`,
           sx: {
             width: 360,
             maxWidth: 'calc(100vw - 32px)',

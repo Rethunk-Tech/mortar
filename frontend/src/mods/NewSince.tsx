@@ -10,6 +10,7 @@ export function NewDot({ show }: { show: boolean }) {
   }
   return (
     <Box
+      role="img"
       aria-label={t`New`}
       sx={{
         position: 'absolute',

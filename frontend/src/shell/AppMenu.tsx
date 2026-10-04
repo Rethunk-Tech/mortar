@@ -65,6 +65,8 @@ export function AppMenu() {
         sx={{ top: 'var(--title-bar)' }}
         slotProps={{
           paper: {
+            role: 'dialog',
+            'aria-label': t`Mortar menu`,
             sx: {
               width: 280,
               top: 'var(--title-bar)',

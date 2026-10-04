@@ -28,7 +28,7 @@ export function TabPills<T extends string>({
         slotProps={{ indicator: { sx: { display: 'none' } } }}
         sx={{
           minHeight: 36,
-          '& .MuiTabs-flexContainer': { gap: '4px' },
+          '& .MuiTabs-list': { gap: '4px' },
           '& .MuiTab-root': {
             minHeight: 36,
             height: 36,

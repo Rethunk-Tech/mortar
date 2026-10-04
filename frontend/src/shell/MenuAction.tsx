@@ -19,13 +19,21 @@ export function MenuAction({
 }) {
   const item = (
     <MenuItem disabled={disabled} onClick={onClick}>
-      <ListItemIcon sx={{ color: 'inherit', '& .MuiSvgIcon-root': { fontSize: 16 } }}>
-        {icon}
-      </ListItemIcon>
-      <ListItemText>{label}</ListItemText>
+      <ListItemIcon sx={{ color: 'inherit' }}>{icon}</ListItemIcon>
+      {disabled && tooltip ? (
+        <ListItemText
+          secondary={tooltip}
+          slotProps={{ secondary: { sx: { whiteSpace: 'normal' } } }}
+        >
+          {label}
+        </ListItemText>
+      ) : (
+        <ListItemText>{label}</ListItemText>
+      )}
     </MenuItem>
   )
-  return tooltip ? (
+  // A disabled item cannot be focused or hovered reliably, so its reason is shown as text instead of a tooltip.
+  return tooltip && !disabled ? (
     <Tooltip title={tooltip} placement="left">
       <span>{item}</span>
     </Tooltip>
