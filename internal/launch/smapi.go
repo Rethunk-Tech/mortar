@@ -96,15 +96,6 @@ func LogOwnedBy(log, home, modsDir string) bool {
 	return path == modsDir
 }
 
-// IncompatibleGame is the wording SMAPI writes when the game is newer than this SMAPI
-// (Program.AssertGameVersion's maximum-version check).
-const IncompatibleGame = "this version of SMAPI is only compatible up to Stardew Valley"
-
-// Incompatible reports whether message is SMAPI's game-version incompatibility error.
-func Incompatible(message string) bool {
-	return strings.Contains(message, IncompatibleGame)
-}
-
 // Parser turns log lines into entries, remembering the last header so continuation lines can inherit it.
 type Parser struct {
 	last   Entry

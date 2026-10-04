@@ -4,7 +4,6 @@ package gamesettings
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -142,22 +141,4 @@ func Patch(data []byte, settings Settings) ([]byte, error) {
 		return bytes.Join([][]byte{matches[1], []byte(value), matches[4]}, nil)
 	})
 	return result, nil
-}
-
-func PatchFile(path string, settings Settings) ([]byte, error) {
-	data, err := readFile(path)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	patched, err := Patch(data, settings)
-	if err != nil {
-		return nil, err
-	}
-	if err := writeFile(path, patched, 0o600); err != nil {
-		return nil, err
-	}
-	return patched, nil
 }

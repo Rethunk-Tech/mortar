@@ -9,37 +9,6 @@ import (
 	"testing"
 )
 
-func TestParsePageRequirements(t *testing.T) {
-	t.Parallel()
-	items := parsePageRequirements([]byte(`{
-		"fetched": "2026-01-01T00:00:00Z",
-		"value": [
-			{"ModID": 1915, "Name": "Content Patcher"},
-			{"ModID": 2400, "Name": "Generic Mod Config Menu"},
-			{"ModID": 0, "Name": "SMAPI"}
-		]
-	}`))
-	if len(items) != 3 {
-		t.Fatalf("got %d items", len(items))
-	}
-	if items[0].ModID != 1915 || items[0].Name != "Content Patcher" || items[0].External {
-		t.Fatalf("first: %+v", items[0])
-	}
-	if !items[2].External || items[2].Name != "SMAPI" {
-		t.Fatalf("external: %+v", items[2])
-	}
-}
-
-func TestParsePageRequirementsEmpty(t *testing.T) {
-	t.Parallel()
-	if parsePageRequirements([]byte(`{"fetched":"2026-01-01T00:00:00Z","value":[]}`)) != nil {
-		t.Fatal("empty cache should yield no items")
-	}
-	if parsePageRequirements([]byte(`not json`)) != nil {
-		t.Fatal("invalid json should yield no items")
-	}
-}
-
 func TestMarkRequirementPresence(t *testing.T) {
 	t.Parallel()
 	items := markRequirementPresence(

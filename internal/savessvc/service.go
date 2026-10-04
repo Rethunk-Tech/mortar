@@ -235,20 +235,6 @@ func (s *Service) LastSaveGap(ctx context.Context, game, profileID string) (fit 
 	return fit, ok, nil
 }
 
-// lastGap is the most recently written save and whether it lacks mods.
-func lastGap(fits []Fit) (Fit, bool) {
-	if len(fits) == 0 {
-		return Fit{}, false
-	}
-	last := fits[0]
-	for _, f := range fits[1:] {
-		if f.Played > last.Played {
-			last = f
-		}
-	}
-	return last, len(last.Missing) > 0
-}
-
 // Dismiss stops warning about uniqueID for the save folder.
 func (s *Service) Dismiss(saveFolder, uniqueID string) error {
 	if saveFolder == "" || uniqueID == "" {

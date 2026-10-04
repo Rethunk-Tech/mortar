@@ -2,9 +2,6 @@ package gamesettings
 
 import (
 	"bytes"
-	"errors"
-	"os"
-	"path/filepath"
 	"testing"
 )
 
@@ -30,16 +27,5 @@ func TestValidateRejectsInvalidValues(t *testing.T) {
 	volume := 101
 	if err := (Settings{MusicVolumeLevel: &volume}).Validate(); err == nil {
 		t.Fatal("invalid volume was accepted")
-	}
-}
-
-func TestPatchFileMissingLeavesFileAlone(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "startup_preferences")
-	mode := "windowed"
-	if got, err := PatchFile(path, Settings{WindowMode: &mode}); err != nil || got != nil {
-		t.Fatalf("missing file: got %q, err %v", got, err)
-	}
-	if _, err := os.Stat(path); !errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("missing file was created: %v", err)
 	}
 }

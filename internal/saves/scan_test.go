@@ -136,18 +136,6 @@ func TestKeysSpanChunks(t *testing.T) {
 	}
 }
 
-func TestFarmNameMatchesWhichFarm(t *testing.T) {
-	want := []string{"Standard", "Riverland", "Forest", "Hill-top", "Wilderness", "Four Corners", "Beach", "Meadowlands"}
-	for id, name := range want {
-		if got := farmName(id); got != name {
-			t.Errorf("farmName(%d) = %q, want %q", id, got, name)
-		}
-	}
-	if farmName(-1) != "" || farmName(8) != "" {
-		t.Fatal("unknown whichFarm must be empty")
-	}
-}
-
 func TestScanDoesNotWriteSaves(t *testing.T) {
 	dir := fixture(t)
 	main := filepath.Join(dir, "Farm_1", "Farm_1")
@@ -187,7 +175,7 @@ func TestWhichFarmSpansChunks(t *testing.T) {
 	dir := t.TempDir()
 	write(t, filepath.Join(dir, "Big_3", "Big_3"), string(pad)+"<whichFarm>7</whichFarm>"+item("Author.Mod/x"))
 	got, err := (&Scanner{Dir: dir}).Scan(index)
-	if err != nil || got[0].WhichFarm != 7 || farmName(got[0].WhichFarm) != "Meadowlands" {
+	if err != nil || got[0].WhichFarm != 7 {
 		t.Fatalf("whichFarm = %+v, %v", got, err)
 	}
 }

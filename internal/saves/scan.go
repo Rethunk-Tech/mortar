@@ -43,19 +43,6 @@ type Info struct {
 	Used               []string `json:"used"`
 }
 
-// Farm layout ids as Stardew's Game1.whichFarm / Farm.*_layout (1.6): 0 Standard, 1 Riverland, 2 Forest,
-// 3 Hill-top (mountains_layout), 4 Wilderness (combat_layout), 5 Four Corners, 6 Beach, 7 Meadowlands.
-var farmNames = []string{
-	"Standard", "Riverland", "Forest", "Hill-top", "Wilderness", "Four Corners", "Beach", "Meadowlands",
-}
-
-func farmName(which int) string {
-	if which < 0 || which >= len(farmNames) {
-		return ""
-	}
-	return farmNames[which]
-}
-
 const scanRev = 1
 
 // stamp is what a cached result was computed from; any change recomputes it. Index is the dataset index's size,

@@ -34,15 +34,6 @@ func ExitCrashed(x Exit) bool {
 	return x.Code != 0 || x.Signal != ""
 }
 
-// ClassifyWait is the run outcome of a process wait: Stopped wins over the wait result.
-func ClassifyWait(wait func() Exit, stopped bool) (Exit, bool) {
-	x := wait()
-	if stopped {
-		x.Stopped = true
-	}
-	return x, ExitCrashed(x)
-}
-
 // ApplyExit sets Summary.Exit and marks Crashed when the process ended abnormally.
 func ApplyExit(s *Summary, x Exit) {
 	s.Exit = x

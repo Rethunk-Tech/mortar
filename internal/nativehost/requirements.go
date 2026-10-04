@@ -48,16 +48,6 @@ func nexusPageRequirements(domain string, modID int) []requirementItem {
 	return markRequirementPresence(items, activeProfileNexusIDs(root, info.ID))
 }
 
-func parsePageRequirements(raw []byte) []requirementItem {
-	var wrap struct {
-		Value []meta.Requirement `json:"value"`
-	}
-	if json.Unmarshal(raw, &wrap) != nil {
-		return nil
-	}
-	return requirementItems(wrap.Value)
-}
-
 func requirementItems(reqs []meta.Requirement) []requirementItem {
 	items := make([]requirementItem, 0, len(reqs))
 	for _, req := range reqs {
