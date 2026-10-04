@@ -15,16 +15,7 @@ import {
 } from '@dnd-kit/sortable'
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  ButtonBase,
-  Divider,
-  InputAdornment,
-  Menu,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Box, Button, ButtonBase, Divider, Menu, Typography } from '@mui/material'
 import {
   ArrowLeft,
   Download,
@@ -33,7 +24,6 @@ import {
   FolderOpen,
   Plus,
   RotateCcw,
-  Search,
   Trash2,
   Wrench,
 } from 'lucide-react'
@@ -54,6 +44,7 @@ import { openImport } from '../share/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { SearchField } from '../shell/SearchField.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -258,23 +249,12 @@ function FindModSearch({ profiles }: { profiles: Profile[] }) {
   useEffect(() => onFindAllFocus(() => inputRef.current?.focus()), [])
   return (
     <Box sx={{ px: 2.5, pt: 1.5, flexShrink: 0 }}>
-      <TextField
-        size="small"
+      <SearchField
         fullWidth={true}
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder={t`Find a mod in all profiles`}
+        onChange={setQuery}
+        label={t`Find a mod in all profiles`}
         inputRef={inputRef}
-        slotProps={{
-          htmlInput: { 'aria-label': t`Find a mod in all profiles` },
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search size={16} aria-hidden={true} />
-              </InputAdornment>
-            ),
-          },
-        }}
       />
       {hits.length === 0 && query.trim() !== '' ? (
         <Typography sx={{ mt: 1, fontSize: 13, color: 'text.secondary' }}>

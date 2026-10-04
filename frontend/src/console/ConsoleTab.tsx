@@ -6,7 +6,6 @@ import {
   Clock,
   Download,
   FilterX,
-  Search,
   SquareTerminal,
   X,
 } from 'lucide-react'
@@ -23,6 +22,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
+import { SearchField } from '../shell/SearchField.tsx'
 import { MONO } from '../theme/theme.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { incompatibleSMAPI, isFiltered, modsOf } from './filter.ts'
@@ -87,42 +87,13 @@ function SearchBox() {
   const input = useRef<HTMLInputElement>(null)
   useEffect(() => onFilterFocus(() => input.current?.focus()), [])
   return (
-    <Box
-      component="label"
-      sx={{
-        flex: '1 1 120px',
-        minWidth: 120,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1,
-        height: 34,
-        px: 1.25,
-        bgcolor: 'var(--mortar-overlay-30)',
-        border: '1px solid var(--mortar-hairline-15)',
-        borderRadius: '6px',
-        color: 'var(--mortar-ink-dim-92)',
-      }}
-    >
-      <Search size={14} aria-hidden={true} />
-      <Box
-        component="input"
-        ref={input}
-        aria-label={t`Search the log`}
-        placeholder={t`Search the log`}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        sx={{
-          flexGrow: 1,
-          minWidth: 0,
-          bgcolor: 'transparent',
-          border: 0,
-          color: 'var(--mortar-ink)',
-          font: 'inherit',
-          fontSize: 13,
-          outline: 'none',
-        }}
-      />
-    </Box>
+    <SearchField
+      value={search}
+      onChange={setSearch}
+      label={t`Search the log`}
+      inputRef={input}
+      sx={{ flex: '1 1 120px', minWidth: 120 }}
+    />
   )
 }
 
@@ -212,6 +183,11 @@ function CommandLine({ game }: { game: string }) {
         bgcolor: 'var(--mortar-overlay-50)',
         border: '1px solid var(--mortar-hairline-15)',
         borderRadius: '6px',
+        '&:has(:focus-visible)': {
+          outline: '2px solid',
+          outlineColor: 'primary.main',
+          outlineOffset: '2px',
+        },
         fontFamily: MONO,
         fontSize: 13,
         color: running ? 'var(--mortar-ink)' : 'var(--mortar-ink-dim-60)',

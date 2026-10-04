@@ -61,7 +61,6 @@ function LinkRow({ link, onCopy }: { link: string; onCopy: () => void }) {
           color: 'var(--mortar-ink)',
           font: 'inherit',
           fontSize: 14,
-          outline: 'none',
         }}
       />
       <Button variant="outlined" startIcon={<Copy size={16} />} onClick={onCopy} sx={button}>
@@ -134,7 +133,6 @@ function HelpLog({
           fontFamily: MONO,
           fontSize: 12,
           whiteSpace: 'pre',
-          outline: 'none',
         }}
       />
       <HideUserName checked={hideUserName} onChange={setHideUserName} />

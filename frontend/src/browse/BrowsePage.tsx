@@ -1,16 +1,6 @@
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Card,
-  Chip,
-  InputAdornment,
-  Pagination,
-  Skeleton,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Card, Chip, Pagination, Skeleton, Typography } from '@mui/material'
 import { CloudOff, Download, ExternalLink, Plus, Search, SearchX } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { i18n } from '../i18n/index.ts'
@@ -18,6 +8,7 @@ import { PrefSegmented } from '../settings/PrefControls.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
+import { SearchField } from '../shell/SearchField.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { usePending } from '../toasts/usePending.ts'
 import { clampPage, DEBOUNCE_MS, PAGE_SIZE } from './browseState.ts'
@@ -294,29 +285,11 @@ function BrowseToolbar({
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.25, pb: 0.75 }}>
       <ViewToggle value={view} onChange={setView} />
       <PrefSegmented value={source} label={t`Source`} options={sources} onChange={onSource} />
-      <TextField
-        size="small"
+      <SearchField
         autoFocus={true}
         value={draft}
-        onChange={(e) => onDraft(e.target.value)}
-        placeholder={placeholder}
-        slotProps={{
-          htmlInput: { 'aria-label': placeholder },
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search size={14} />
-              </InputAdornment>
-            ),
-            sx: {
-              height: 36,
-              fontSize: 13,
-              borderRadius: '6px',
-              bgcolor: 'var(--mortar-overlay-30)',
-              '& .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--mortar-hairline-15)' },
-            },
-          },
-        }}
+        onChange={onDraft}
+        label={placeholder}
         sx={{ flex: 1, minWidth: 0 }}
       />
     </Box>

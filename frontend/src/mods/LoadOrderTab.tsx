@@ -1,24 +1,16 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Chip,
-  InputAdornment,
-  Skeleton,
-  TextField,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Chip, Skeleton, Tooltip, Typography } from '@mui/material'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Clipboard } from '@wailsio/runtime'
-import { Copy, ListOrdered, Search } from 'lucide-react'
+import { Copy, ListOrdered } from 'lucide-react'
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import type { Row } from '../../bindings/github.com/Rethunk-AI/mortar/internal/loadorder/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { LoadOrder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useTab } from '../game/tab.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { SearchField } from '../shell/SearchField.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { formatLoadOrderCopy, loadOrderEmptyKind } from './loadOrderText.ts'
@@ -172,21 +164,10 @@ function OrderList({
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 0.5 }}>
-        <TextField
-          size="small"
+        <SearchField
           value={query}
-          onChange={(e) => setQuery(e.currentTarget.value)}
-          placeholder={t`Filter load order`}
-          slotProps={{
-            htmlInput: { 'aria-label': t`Filter load order` },
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search size={14} />
-                </InputAdornment>
-              ),
-            },
-          }}
+          onChange={setQuery}
+          label={t`Filter load order`}
           sx={{ flex: 1, minWidth: 0 }}
         />
         <Button

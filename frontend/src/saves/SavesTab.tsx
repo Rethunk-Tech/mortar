@@ -1,11 +1,12 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, InputAdornment, TextField, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { History, Search, Sprout } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { SearchField } from '../shell/SearchField.tsx'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { BackupsDialog } from './BackupsDialog.tsx'
@@ -63,21 +64,11 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
     <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 0.75 }}>
         {fits.length === 0 ? null : (
-          <TextField
-            size="small"
+          <SearchField
             value={query}
-            onChange={(e) => setQuery(e.currentTarget.value)}
+            onChange={setQuery}
+            label={t`Filter saves`}
             placeholder={plural(fits.length, { one: 'Filter # save', other: 'Filter # saves' })}
-            slotProps={{
-              htmlInput: { 'aria-label': t`Filter saves` },
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search size={14} />
-                  </InputAdornment>
-                ),
-              },
-            }}
             sx={{ width: 360, maxWidth: '50%' }}
           />
         )}

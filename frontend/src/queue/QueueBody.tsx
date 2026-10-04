@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, LinearProgress, Typography } from '@mui/material'
 import { alpha, useTheme } from '@mui/material/styles'
 
 const DONE_FILL = 0.08
@@ -273,23 +273,18 @@ function Active({ item }: { item: Item }) {
           <Title item={item} size={14} />
           <Typography sx={{ ...detail, flexShrink: 0 }}>{text}</Typography>
         </Box>
-        <Box
-          role="progressbar"
+        <LinearProgress
+          variant="determinate"
+          color="info"
+          value={item.progress}
           aria-label={t`Download progress for ${item.name}`}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={item.progress}
-          sx={{ height: 4, borderRadius: '2px', bgcolor: 'var(--mortar-hairline)' }}
-        >
-          <Box
-            sx={{
-              width: `${item.progress}%`,
-              height: 4,
-              borderRadius: '2px',
-              bgcolor: 'info.main',
-            }}
-          />
-        </Box>
+          sx={{
+            height: 4,
+            borderRadius: '2px',
+            bgcolor: 'var(--mortar-hairline)',
+            '& .MuiLinearProgress-bar': { borderRadius: '2px' },
+          }}
+        />
       </Box>
       {downloading ? (
         <TipIconButton

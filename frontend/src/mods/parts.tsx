@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  IconButton,
   ListItemIcon,
   ListItemText,
   Menu,
@@ -225,24 +226,18 @@ export function UpdateBadge({ mod }: { mod: Mod }) {
   return (
     <>
       <Tooltip title={text}>
-        <Box
-          role="button"
-          tabIndex={0}
+        <IconButton
           aria-label={text}
-          sx={{ display: 'flex', flexShrink: 0, color: 'primary.main', cursor: 'pointer' }}
+          aria-haspopup="menu"
+          aria-expanded={anchor !== null}
           onClick={(e) => {
             e.stopPropagation()
             setAnchor(e.currentTarget)
           }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              setAnchor(e.currentTarget)
-            }
-          }}
+          sx={{ p: 0, flexShrink: 0, color: 'primary.main', borderRadius: '4px' }}
         >
           <ArrowUp size={16} />
-        </Box>
+        </IconButton>
       </Tooltip>
       <Menu
         open={anchor !== null}

@@ -6,12 +6,10 @@ import {
   Button,
   CircularProgress,
   Divider,
-  InputAdornment,
   ListItemIcon,
   ListItemText,
   Menu,
   MenuItem,
-  TextField,
   Tooltip,
   useMediaQuery,
 } from '@mui/material'
@@ -25,7 +23,6 @@ import {
   Layers,
   Library,
   Plus,
-  Search,
   Settings2,
   Tag,
   ToggleRight,
@@ -40,6 +37,7 @@ import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { SearchField } from '../shell/SearchField.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -285,35 +283,18 @@ export function Toolbar({
       <ViewToggle value={view} onChange={setView} />
       <GroupByControl />
       {fieldOpen ? (
-        <TextField
-          size="small"
+        <SearchField
           value={query}
-          onChange={(e) => onQuery(e.target.value)}
+          onChange={onQuery}
           onBlur={collapseIfEmpty}
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
               collapseIfEmpty()
             }
           }}
+          label={t`Filter mods`}
           placeholder={placeholder}
           inputRef={inputRef}
-          slotProps={{
-            htmlInput: { id: 'mods-filter', 'aria-label': t`Filter mods` },
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search size={14} />
-                </InputAdornment>
-              ),
-              sx: {
-                height: 36,
-                fontSize: 13,
-                borderRadius: '6px',
-                bgcolor: 'var(--mortar-overlay-30)',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--mortar-hairline-15)' },
-              },
-            },
-          }}
           sx={{ flex: 1, minWidth: 0 }}
         />
       ) : (
