@@ -1,15 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, FormControlLabel, Radio, RadioGroup } from '@mui/material'
 import { Browser, System } from '@wailsio/runtime'
-import { Download, FolderOpen, Undo2 } from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
+import { FolderOpen, Undo2 } from 'lucide-react'
+import { useState } from 'react'
 import type { FoundInstall } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
 import {
   ClearLaunchOption,
   LaunchOptions,
   ResetInstall,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
-import { State } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import {
   ChooseGameFolder,
@@ -20,11 +19,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { launchOptionsSet } from '../../firstrun/logic.ts'
 import { storeName } from '../../games/storeName.ts'
-import { useLaunch } from '../../launch/store.ts'
-import { InstallSteps } from '../../loader/InstallSteps.tsx'
-import { useLoader } from '../../loader/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
-import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { FlatpakGrant } from '../../shell/FlatpakGrant.tsx'
 import { errorText, reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
@@ -33,11 +28,10 @@ import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
-import { SmapiVersionRow } from './SmapiVersionRow.tsx'
+import { SmapiRow } from './SmapiRow.tsx'
 
 const GAME = 'stardew'
 
-const outline = { whiteSpace: 'nowrap', flexShrink: 0, height: 42 }
 const nowrap = { whiteSpace: 'nowrap', flexShrink: 0 }
 
 function StoreLabel({ store }: { store: string }) {
@@ -289,78 +283,13 @@ function GameFolder({
   )
 }
 
-function Smapi({ onVersion }: { onVersion: (v: string) => void }) {
-  const { t } = useLingui()
-  const status = useLoader((s) => s.status)
-  const installing = useLoader((s) => s.installing)
-  const steps = useLoader((s) => s.steps)
-  const check = useLoader((s) => s.check)
-  const install = useLoader((s) => s.install)
-  const pending = useLoader((s) => s.pending)
-  const refreshLaunch = useLaunch((s) => s.refresh)
-  const playing = useLaunch(
-    (s) =>
-      s.starting ||
-      (s.status?.game === GAME &&
-        (s.status.state === State.Launching || s.status.state === State.Running)),
-  )
-  useEffect(() => {
-    check(GAME)
-    refreshLaunch(GAME)
-  }, [check, refreshLaunch])
-  const gameVersion = status?.gameVersion ?? ''
-  useEffect(() => {
-    onVersion(gameVersion)
-  }, [gameVersion, onVersion])
-  const locked = pending || playing
-  const lockReason = playing
-    ? t`Stop the game to install SMAPI.`
-    : t`An install is already running.`
-  let title = t`SMAPI is not installed`
-  let detail = ''
-  let action = t`Install`
-  if (status?.broken) {
-    title = t`A game update replaced SMAPI's launcher`
-    action = t`Reinstall`
-  } else if (status?.installed) {
-    title = t`SMAPI ${status.version}`
-    action = status.updateAvailable ? t`Update` : t`Reinstall`
-    detail = status.updateAvailable
-      ? t`SMAPI ${status.latest} is available`
-      : t`Installed and up to date`
-  }
-  let control: ReactNode = null
-  if (installing) {
-    control = <InstallSteps steps={steps} />
-  } else if (status) {
-    control = (
-      <DisabledReason title={lockReason} disabled={locked}>
-        <Button
-          variant="outlined"
-          startIcon={<Download size={16} />}
-          disabled={locked}
-          onClick={() => install(GAME)}
-          sx={{ ...outline, height: 38 }}
-        >
-          {action}
-        </Button>
-      </DisabledReason>
-    )
-  }
-  return (
-    <SettingRow label={title} description={detail} block={installing}>
-      {control}
-    </SettingRow>
-  )
-}
-
 function SmapiPage({ onVersion }: { onVersion: (v: string) => void }) {
   const { t } = useLingui()
   const tellWhenSmapiOut = useSettings((s) => s.tellWhenSmapiOut) !== false
   const push = useToasts((s) => s.push)
   return (
     <SettingsSection title={t`SMAPI`}>
-      <Smapi onVersion={onVersion} />
+      <SmapiRow onVersion={onVersion} />
       <SettingRow label={t`Tell me when a new SMAPI is out`}>
         <PrefSwitch
           checked={tellWhenSmapiOut}
@@ -370,7 +299,6 @@ function SmapiPage({ onVersion }: { onVersion: (v: string) => void }) {
           label={t`Tell me when a new SMAPI is out`}
         />
       </SettingRow>
-      <SmapiVersionRow />
       <PrefByKey prefKey="smapiBuilds" game={GAME} />
     </SettingsSection>
   )

@@ -440,7 +440,7 @@ Mortar's Settings holds only what is Mortar-wide, never one game's (the one exce
   - Backend errors (including a running game) show as a row under the folder.
   - **Install › Reset:** **Reset game install** (outlined, error colour) opens **Reset game install?** explaining that the folder, SMAPI and mods placed there are deleted while Saves and Mortar profiles are kept; **Delete and restore** runs it ([architecture.md](architecture.md#finding-the-game)).
   - On Windows, a follow-up toast offers **Remove SMAPI from Steam's launch options**.
-- **SMAPI:** the installed version with Install, Reinstall or Update (its step checks replace the button while installing), **Tell me when a new SMAPI is out** (on by default), the version pin with **Install this version**, and **SMAPI pre-releases and unofficial builds** (`never` / `show` / `include`; default `show`).
+- **SMAPI:** one row: the installed version, a version picker (Latest, or a pinned version) and one button: Install, Update or Reinstall while following Latest, or **Install <version>…** (asks first, since every profile switches) for another pinned version; its step checks replace the controls while installing. Then **Tell me when a new SMAPI is out** (on by default) and **SMAPI pre-releases and unofficial builds** (`never` / `show` / `include`; default `show`).
 - **Play:** default launch (Steam or direct), **SMAPI console window**, update mods before Play.
 - **Mods:** auto-enable requirements, missing requirements on install, harmless conflicts, conflict scan depth, watch the Downloads folder.
 - **Play backups:** back up before Play, backups kept, and the backup location with **Choose…**.
