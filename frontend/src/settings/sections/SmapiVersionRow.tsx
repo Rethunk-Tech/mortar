@@ -5,7 +5,6 @@ import { Box, Button } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { State } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import {
-  Install,
   InstallVersion,
   ListVersions,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/loadersvc/service.ts'
@@ -50,6 +49,7 @@ function SmapiVersionRow() {
   const pin = useSettings((s) => s.games?.stardew?.smapiPin)
   const status = useLoader((s) => s.status)
   const check = useLoader((s) => s.check)
+  const installLatest = useLoader((s) => s.install)
   const pending = useLoader((s) => s.pending)
   const installing = useLoader((s) => s.installing)
   const playing = useLaunch(
@@ -76,20 +76,21 @@ function SmapiVersionRow() {
   }
   const install = () => {
     setBusy(true)
-    const run =
-      selected === LATEST
-        ? () => Install(GAME_STARDEW)
-        : () => InstallVersion(GAME_STARDEW, selected)
-    run()
+    const done = () => {
+      setBusy(false)
+      setConfirm(false)
+    }
+    if (selected === LATEST) {
+      installLatest(GAME_STARDEW).finally(done)
+      return
+    }
+    InstallVersion(GAME_STARDEW, selected)
       .then((st) => {
         push({ kind: 'success', title: t`SMAPI ${st.version} is installed` })
         return check(GAME_STARDEW)
       })
       .catch(reportError(t`Could not install SMAPI`))
-      .finally(() => {
-        setBusy(false)
-        setConfirm(false)
-      })
+      .finally(done)
   }
   return (
     <>
