@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Chip, Divider, Tab, Tabs } from '@mui/material'
+import { Box, Chip, Divider, Tab, Tabs, type TabsActions } from '@mui/material'
 import { Settings2, Share2 } from 'lucide-react'
+import { useEffect, useRef } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { BrowseHost } from '../browse/BrowseHost.tsx'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
@@ -24,8 +25,25 @@ function WorkspaceTabs({ problemsTabCount }: { problemsTabCount: number | null }
   const { t } = useLingui()
   const tab = useTab((s) => s.tab)
   const setTab = useTab((s) => s.setTab)
+  const actions = useRef<TabsActions>(null)
+  const root = useRef<HTMLDivElement>(null)
+  // MUI places the underline when the value changes, but a tab can widen afterwards (the Problems count arrives
+  // later, the bold selected label lands, a font loads), moving the tabs after it; re-place it on every resize.
+  useEffect(() => {
+    const el = root.current
+    if (!el) {
+      return
+    }
+    const observer = new ResizeObserver(() => actions.current?.updateIndicator())
+    for (const tabEl of el.querySelectorAll('[role="tab"]')) {
+      observer.observe(tabEl)
+    }
+    return () => observer.disconnect()
+  }, [])
   return (
     <Tabs
+      action={actions}
+      ref={root}
       value={tab}
       onChange={(_, value: TabId) => setTab(value)}
       sx={{
