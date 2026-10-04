@@ -49,10 +49,19 @@ function NodeRow({
       <ListItemButton
         selected={selected === node.path}
         onClick={() => onSelect(node.path, true)}
+        aria-expanded={open}
+        onKeyDown={(ev) => {
+          // Tree keys: Right opens a folder and Left closes it, so subfolders are reachable without a mouse.
+          if (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft') {
+            ev.preventDefault()
+            setOpen(ev.key === 'ArrowRight')
+          }
+        }}
         sx={{ py: 0.25 }}
       >
         <Box
           component="span"
+          aria-hidden={true}
           onClick={(ev) => {
             ev.stopPropagation()
             setOpen((v) => !v)

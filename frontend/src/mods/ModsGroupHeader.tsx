@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Switch, Typography } from '@mui/material'
+import { Box, Switch, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight } from 'lucide-react'
+import { CoverButton } from '../shell/CoverButton.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { useLocked } from './useLocked.ts'
 
@@ -24,25 +25,21 @@ function ModsGroupHeader({
   const { t } = useLingui()
   const locked = useLocked()
   return (
-    <ButtonBase
-      onClick={onToggle}
-      aria-expanded={open}
-      title={hint}
+    <Box
       sx={{
+        position: 'relative',
         display: 'flex',
         alignItems: 'center',
         gap: 0.75,
         width: '100%',
         px: 2,
         py: 0.75,
-        justifyContent: 'flex-start',
-        textAlign: 'left',
-        fontFamily: 'inherit',
-        color: 'inherit',
         bgcolor: 'var(--mortar-hairline-ghost)',
         borderBottom: '1px solid var(--mortar-hairline-muted)',
+        '& > :not(.MuiButtonBase-root, [data-control])': { pointerEvents: 'none' },
       }}
     >
+      <CoverButton onClick={onToggle} aria-expanded={open} aria-label={label} title={hint} />
       {open ? (
         <ChevronDown size={14} aria-hidden={true} />
       ) : (
@@ -53,11 +50,7 @@ function ModsGroupHeader({
         {count}
       </Box>
       {onEnabled ? (
-        <Box
-          sx={{ ml: 'auto' }}
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => e.stopPropagation()}
-        >
+        <Box data-control={true} sx={{ ml: 'auto', position: 'relative' }}>
           <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
             <Switch
               size="small"
@@ -69,7 +62,7 @@ function ModsGroupHeader({
           </DisabledReason>
         </Box>
       ) : null}
-    </ButtonBase>
+    </Box>
   )
 }
 

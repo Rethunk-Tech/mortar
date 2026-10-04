@@ -220,28 +220,26 @@ function ProblemSection({
   return (
     <Box>
       {collapsible ? (
-        <ButtonBase
-          component="div"
-          onClick={() => setOpen(!open)}
-          aria-expanded={open}
-          sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1, borderRadius: '4px' }}
-        >
-          {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-          {heading}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+          <ButtonBase
+            onClick={() => setOpen(!open)}
+            aria-expanded={open}
+            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, borderRadius: '4px' }}
+          >
+            {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            {heading}
+          </ButtonBase>
           {action ? (
             <Button
               size="small"
               disabled={action.disabled}
-              onClick={(e) => {
-                e.stopPropagation()
-                action.onClick()
-              }}
+              onClick={action.onClick}
               sx={{ ml: 1, height: 26 }}
             >
               {action.label}
             </Button>
           ) : null}
-        </ButtonBase>
+        </Box>
       ) : (
         <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
           {heading}

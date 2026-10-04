@@ -6,6 +6,7 @@ import {
   Box,
   Button,
   Collapse,
+  IconButton,
   Link,
   MenuItem,
   Select,
@@ -160,13 +161,18 @@ function ModRow({
       >
         <TableCell sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           {expandable ? (
-            <Box
-              component="span"
+            <IconButton
+              size="small"
+              aria-expanded={open}
               aria-label={open ? t`Hide content packs` : t`Show content packs`}
-              sx={{ display: 'inline-flex' }}
+              onClick={(e) => {
+                e.stopPropagation()
+                setOpen((o) => !o)
+              }}
+              sx={{ p: 0, borderRadius: '4px', color: 'inherit' }}
             >
               {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            </Box>
+            </IconButton>
           ) : (
             <Box component="span" sx={{ width: 14 }} />
           )}

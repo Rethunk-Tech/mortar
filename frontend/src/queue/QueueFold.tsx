@@ -1,6 +1,7 @@
 import { Box } from '@mui/material'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
+import { CoverButton } from '../shell/CoverButton.tsx'
 
 export function Fold({
   line,
@@ -19,38 +20,41 @@ export function Fold({
   return (
     <>
       <Box
-        component="button"
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
         sx={{
+          position: 'relative',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 1,
           minHeight: 40,
           px: '10px',
-          border: 0,
           borderRadius: '6px',
           bgcolor: bg,
           color: color ?? 'inherit',
-          fontFamily: 'inherit',
           fontSize: 13,
-          textAlign: 'left',
-          cursor: 'pointer',
         }}
       >
+        <CoverButton onClick={() => setOpen(!open)} aria-expanded={open} aria-label={line} />
         <Box
           component="span"
-          sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          sx={{
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            pointerEvents: 'none',
+          }}
         >
           {line}
         </Box>
-        {action ? <Box onClick={(e) => e.stopPropagation()}>{action}</Box> : null}
-        {open ? (
-          <ChevronUp size={14} aria-hidden={true} />
-        ) : (
-          <ChevronDown size={14} aria-hidden={true} />
-        )}
+        {action ? <Box sx={{ position: 'relative' }}>{action}</Box> : null}
+        <Box component="span" sx={{ display: 'flex', pointerEvents: 'none' }}>
+          {open ? (
+            <ChevronUp size={14} aria-hidden={true} />
+          ) : (
+            <ChevronDown size={14} aria-hidden={true} />
+          )}
+        </Box>
       </Box>
       {open ? children : null}
     </>

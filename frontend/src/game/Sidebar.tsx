@@ -12,6 +12,7 @@ import { ProfileMark } from '../profiles/ProfileMark.tsx'
 import { RecentChangesButton } from '../profiles/RecentChangesButton.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { QueueButton } from '../queue/QueueButton.tsx'
+import { CoverButton } from '../shell/CoverButton.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { HistoryButton } from '../toasts/HistoryButton.tsx'
 import { compact } from './compact.ts'
@@ -62,7 +63,7 @@ function initials(name: string): string {
   return chars.join('').toUpperCase()
 }
 
-function Badges({ game, profile }: { game: string; profile: Profile }) {
+function Badges({ game, profile, onOpen }: { game: string; profile: Profile; onOpen: () => void }) {
   const counts = useBadges((s) => s.byProfile[profile.id])
   return (
     <ProfileHealth
@@ -70,7 +71,10 @@ function Badges({ game, profile }: { game: string; profile: Profile }) {
       game={game}
       profileId={profile.id}
       sidebar={true}
-      onClick={() => useTab.getState().setTab('problems')}
+      onClick={() => {
+        useTab.getState().setTab('problems')
+        onOpen()
+      }}
     />
   )
 }
@@ -89,33 +93,23 @@ function ProfileButton({
   onMenu: (position: { top: number; left: number }) => void
 }) {
   return (
-    <ButtonBase
-      onClick={onOpen}
+    <Box
       onContextMenu={(e) => {
         e.preventDefault()
         onMenu({ top: e.clientY, left: e.clientX })
       }}
-      onKeyDown={(e) => {
-        if (e.key === 'ContextMenu' || (e.key === 'F10' && e.shiftKey)) {
-          e.preventDefault()
-          const rect = e.currentTarget.getBoundingClientRect()
-          onMenu({ top: rect.bottom, left: rect.left })
-        }
-      }}
-      aria-current={selected ? 'true' : undefined}
-      aria-label={profile.name}
-      title={profile.name}
       sx={{
         width: '100%',
         height: 40,
         justifyContent: 'flex-start',
         px: '10px',
         position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        '& > :not(.MuiButtonBase-root, [data-control])': { pointerEvents: 'none' },
         borderRadius: '6px',
-        fontFamily: 'inherit',
         fontSize: 14,
         fontWeight: selected ? SELECTED_WEIGHT : 'normal',
-        textAlign: 'left',
         color: selected ? 'var(--mortar-ink)' : 'var(--mortar-ink-88)',
         bgcolor: selected ? 'var(--mortar-hairline-12)' : 'transparent',
         '&:hover': { bgcolor: selected ? 'var(--mortar-hairline-12)' : 'action.hover' },
@@ -128,6 +122,19 @@ function ProfileButton({
         }),
       }}
     >
+      <CoverButton
+        onClick={onOpen}
+        onKeyDown={(e) => {
+          if (e.key === 'ContextMenu' || (e.key === 'F10' && e.shiftKey)) {
+            e.preventDefault()
+            const rect = e.currentTarget.getBoundingClientRect()
+            onMenu({ top: rect.bottom, left: rect.left })
+          }
+        }}
+        aria-current={selected ? 'true' : undefined}
+        aria-label={profile.name}
+        title={profile.name}
+      />
       <Box
         component="span"
         sx={{
@@ -153,7 +160,9 @@ function ProfileButton({
           {profile.name}
         </Box>
       </Box>
-      <Badges game={game} profile={profile} />
+      <Box data-control={true} sx={{ position: 'relative', display: 'flex' }}>
+        <Badges game={game} profile={profile} onOpen={onOpen} />
+      </Box>
       <Box
         component="span"
         aria-hidden={true}
@@ -170,7 +179,7 @@ function ProfileButton({
           initials(profile.name)
         )}
       </Box>
-    </ButtonBase>
+    </Box>
   )
 }
 
