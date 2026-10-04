@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Rethunk-AI/mortar/internal/control"
-	"github.com/Rethunk-AI/mortar/internal/nexussvc"
+	"github.com/Rethunk-AI/mortar/internal/nexus"
 )
 
 func (c *cmd) nexusTracked() error {
@@ -15,7 +15,7 @@ func (c *cmd) nexusTracked() error {
 	if err != nil {
 		return err
 	}
-	var mods []nexussvc.TrackedMod
+	var mods []nexus.TrackedMod
 	if err := c.ask("nexus.trackedMissing", control.Params{Game: a[0], Profile: a[1]}, &mods, readTimeout); err != nil {
 		return err
 	}

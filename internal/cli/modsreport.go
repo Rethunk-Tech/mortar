@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Rethunk-AI/mortar/internal/control"
+	"github.com/Rethunk-AI/mortar/internal/modreport"
 )
 
 func (c *cmd) modsReport() error {
@@ -12,7 +13,7 @@ func (c *cmd) modsReport() error {
 		return err
 	}
 	p := control.Params{Game: a[0], Profile: a[1], UniqueIDs: a[2:3], Run: c.run}
-	var res control.ModReport
+	var res modreport.Result
 	if err := c.ask("mods.report", p, &res, readTimeout); err != nil {
 		return err
 	}

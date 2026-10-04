@@ -12,11 +12,8 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
-// TrackedMod is one Nexus tracked mod entry for the UI and CLI.
-type TrackedMod = nexus.TrackedMod
-
 // TrackedMissing lists tracked mods for the game's Nexus domain that no Nexus entry in the profile uses.
-func (s *Service) TrackedMissing(ctx context.Context, gameID, profileID string) ([]TrackedMod, error) {
+func (s *Service) TrackedMissing(ctx context.Context, gameID, profileID string) ([]nexus.TrackedMod, error) {
 	if _, err := s.keyed(); err != nil {
 		return nil, err
 	}
@@ -36,7 +33,7 @@ func (s *Service) TrackedMissing(ctx context.Context, gameID, profileID string) 
 	if err != nil {
 		return nil, err
 	}
-	var out []TrackedMod
+	var out []nexus.TrackedMod
 	for _, mod := range mods {
 		if !strings.EqualFold(mod.DomainName, info.Nexus.Domain) {
 			continue

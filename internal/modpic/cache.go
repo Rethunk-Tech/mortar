@@ -183,12 +183,25 @@ func readFile(path string) ([]byte, string, error) {
 	if !info.Mode().IsRegular() {
 		return nil, "", fmt.Errorf("%s is not a regular file", filepath.Base(path))
 	}
-	b, err := io.ReadAll(io.LimitReader(f, MaxSize+1))
+	return readImage(f)
+}
+
+// ReadCapped reads r whole, failing when it holds more than limit bytes.
+func ReadCapped(r io.Reader, limit int) ([]byte, error) {
+	b, err := io.ReadAll(io.LimitReader(r, int64(limit)+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(b) > limit {
+		return nil, fmt.Errorf("the image is larger than %d MB", limit>>20)
+	}
+	return b, nil
+}
+
+func readImage(r io.Reader) ([]byte, string, error) {
+	b, err := ReadCapped(r, MaxSize)
 	if err != nil {
 		return nil, "", err
-	}
-	if len(b) > MaxSize {
-		return nil, "", fmt.Errorf("the image is larger than %d MB", MaxSize>>20)
 	}
 	typ := http.DetectContentType(b)
 	if _, ok := imageTypes[typ]; !ok {
@@ -219,16 +232,9 @@ func (c *Cache) fetch(ctx context.Context, picture, path string) ([]byte, string
 	if resp.ContentLength > MaxSize {
 		return nil, "", fmt.Errorf("the image is larger than %d MB", MaxSize>>20)
 	}
-	b, err := io.ReadAll(io.LimitReader(resp.Body, MaxSize+1))
+	b, typ, err := readImage(resp.Body)
 	if err != nil {
 		return nil, "", err
-	}
-	if len(b) > MaxSize {
-		return nil, "", fmt.Errorf("the image is larger than %d MB", MaxSize>>20)
-	}
-	typ := http.DetectContentType(b)
-	if _, ok := imageTypes[typ]; !ok {
-		return nil, "", errNotImage
 	}
 	if err := os.MkdirAll(c.dir, 0o700); err != nil {
 		return nil, "", err

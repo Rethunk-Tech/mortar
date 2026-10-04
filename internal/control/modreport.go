@@ -10,25 +10,22 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
-// ModReport is plain text plus an author URL from mods.report.
-type ModReport = modreport.Result
-
-func (s *Services) modReport(gameID, profileID string, prof profile.Profile, p Params) (ModReport, error) {
+func (s *Services) modReport(gameID, profileID string, prof profile.Profile, p Params) (modreport.Result, error) {
 	if len(p.UniqueIDs) == 0 {
-		return ModReport{}, errors.New("mods report needs a mod")
+		return modreport.Result{}, errors.New("mods report needs a mod")
 	}
 	refs, err := refsFor(prof, p.UniqueIDs[:1])
 	if err != nil {
-		return ModReport{}, err
+		return modreport.Result{}, err
 	}
 	ref := refs[0]
 	inst, ok := installedMod(prof, ref.Key, ref.UniqueID)
 	if !ok {
-		return ModReport{}, fmt.Errorf("profile has no mod %q", p.UniqueIDs[0])
+		return modreport.Result{}, fmt.Errorf("profile has no mod %q", p.UniqueIDs[0])
 	}
 	logText, err := s.runLog(gameID, profileID, p.Run)
 	if err != nil {
-		return ModReport{}, err
+		return modreport.Result{}, err
 	}
 	domain := ""
 	if info, ok := components.BundledGame(gameID); ok {
