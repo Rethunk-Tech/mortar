@@ -625,6 +625,14 @@ func run() error {
 		Version: version, Settings: store, SettingsSvc: svc, Games: gamesSvc, Store: profiles, Profiles: profileSvc,
 		Problems: problemsSvc, Launches: launches, Saves: savesSvc, Queue: queueSvc, Tools: toolsSvc, Bundles: bundlesSvc,
 		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Plays: plays, Loaders: loaders, Templates: templatesSvc, Archives: archivesSvc, Emit: emit,
+		Quit: func() {
+			// Busy downloads or a running game get the window's own confirmation, as the tray Quit does.
+			if quitSvc.BusySummary() == "" {
+				quitSvc.ConfirmQuit()
+			} else {
+				quitSvc.RequestQuit()
+			}
+		},
 	}
 	go func() {
 		if err := control.Serve(queueCtx, dataDir, version, ctl.Handle); err != nil && !errors.Is(err, context.Canceled) {

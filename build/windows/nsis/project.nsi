@@ -80,11 +80,42 @@ Function .onInit
    !insertmacro wails.checkArchitecture
 FunctionEnd
 
+# Closes a running Mortar before its exe is replaced or removed. Windows refuses to open a running exe for writing,
+# which finds the copy in $INSTDIR by path whatever its window or data folder; `mortar quit` asks it to close through
+# its control channel (an older Mortar without quit just fails the command). When it is still running five seconds
+# later the user is asked to close it, and Cancel stops the install or uninstall.
+!macro mortar.closeRunning
+    ${If} ${FileExists} "$INSTDIR\${PRODUCT_EXECUTABLE}"
+        DetailPrint "Closing Mortar if it is running"
+        ExecWait '"$INSTDIR\${PRODUCT_EXECUTABLE}" quit'
+        ${Do}
+            StrCpy $R1 0
+            ${Do}
+                ClearErrors
+                FileOpen $R0 "$INSTDIR\${PRODUCT_EXECUTABLE}" a
+                ${IfNot} ${Errors}
+                    FileClose $R0
+                    ${Break}
+                ${EndIf}
+                IntOp $R1 $R1 + 1
+                Sleep 500
+            ${LoopUntil} $R1 >= 10
+            ${If} $R1 < 10
+                ${Break}
+            ${EndIf}
+            ${IfNot} ${Cmd} `MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "Mortar is still running. Close it (Quit in its tray menu), then click Retry." /SD IDCANCEL IDRETRY`
+                Abort "Mortar is still running."
+            ${EndIf}
+        ${Loop}
+    ${EndIf}
+!macroend
+
 Section
     !insertmacro wails.setShellContext
 
     !insertmacro wails.webview2runtime
 
+    !insertmacro mortar.closeRunning
     SetOutPath $INSTDIR
     
     !insertmacro wails.files
@@ -105,6 +136,8 @@ SectionEnd
 
 Section "uninstall" 
     !insertmacro wails.setShellContext
+
+    !insertmacro mortar.closeRunning
 
     ExecWait '"$INSTDIR\${PRODUCT_EXECUTABLE}" --release-links'
     # Removes the profiles added to Steam; it must run while the exe still exists.

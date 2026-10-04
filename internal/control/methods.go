@@ -71,6 +71,8 @@ type Services struct {
 	Archives    *archivesvc.Service
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
+	// Quit closes the app as its tray Quit does; nil in tests.
+	Quit func()
 }
 
 // GameRow is one supported game for `mortar games`.
@@ -247,6 +249,13 @@ func resolveBundle(list []bundles.Bundle, name string) (bundles.Bundle, error) {
 // Handle runs one method against the live services.
 func (s *Services) Handle(ctx context.Context, method string, p Params) (any, error) {
 	switch method {
+	case "app.quit":
+		if s.Quit == nil {
+			return nil, errors.New("quit is not available")
+		}
+		// After the reply, so the caller hears back before the app goes away.
+		go s.Quit()
+		return true, nil
 	case "smapi.versions":
 		return s.smapiVersions(ctx, p.Game)
 	case "smapi.install":

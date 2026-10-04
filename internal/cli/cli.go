@@ -49,7 +49,7 @@ var verbs = map[string]bool{
 	"templates": true, "library": true, "archive": true,
 	"browse":  true,
 	"bundles": true, "nexus": true, "trash": true, "cache": true, "data": true, "store": true,
-	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "smapi": true, "sweep": true, "uninstall-cleanup": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
+	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "smapi": true, "sweep": true, "uninstall-cleanup": true, "quit": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
 // Is reports whether args (without the program name) are a command-line call: a known verb, or a bare word that
@@ -428,6 +428,8 @@ func (c *cmd) dispatch() error {
 	case "launchers":
 		return c.launchers()
 	case "queue":
+	case "quit":
+		return c.quit()
 		return c.queue()
 	case "templates":
 		return c.templatesCmd()
@@ -2178,6 +2180,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   settings get [--game stardew] [key]     list settings, or one key
   settings set [--game stardew] <key> <value>  change a setting
   settings export <file>                  write portable settings JSON
+  quit                                    close the running app and wait until it has exited
   settings import <file>                  apply a portable settings JSON
   settings reset [key] [--game id]        restore defaults
   smapi versions <game>                   SMAPI versions in the store and on GitHub
