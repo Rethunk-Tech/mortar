@@ -234,12 +234,13 @@ func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Resul
 	preloadContentPacks(enabled)
 	timings = append(timings, CheckTiming{Name: "contentPatcher", Ms: time.Since(parseStart).Milliseconds(), Count: packCount})
 	conflictStart := time.Now()
-	conflicts, conflictSettings := assetConflictResults(enabled)
+	conflicts, conflictSettings, shadowed := assetConflictScan(enabled)
 	timings = append(timings, CheckTiming{Name: "conflicts", Ms: time.Since(conflictStart).Milliseconds(), Count: packCount})
 	r := Result{
 		Missing:        []Missing{},
 		Broken:         []Broken{},
 		AssetConflicts: conflicts,
+		Redundant:      shadowed,
 		Drift:          []profile.Drift{},
 		Timings:        timings,
 	}

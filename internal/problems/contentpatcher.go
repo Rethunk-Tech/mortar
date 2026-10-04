@@ -126,6 +126,9 @@ type cpPatch struct {
 	// installed is how a pack says which mod that value is for.
 	tokenName  string
 	tokenValue string
+	// extra marks a change that also does something its shapes do not show (warps, text operations,
+	// appended list entries, a source map's properties), which a later edit never undoes.
+	extra bool
 }
 
 type cpConfig struct {
@@ -145,6 +148,9 @@ type cpWhen struct {
 	flags   []cpFlagCondition
 	spouse  string
 	places  map[string][]string
+	// conditional is set when the change, or an Include around it, has any When condition at all, including
+	// the ones this scan treats as met (time, queries, events).
+	conditional bool
 }
 
 type cpDynamicCondition struct {
@@ -174,13 +180,14 @@ func (w cpWhen) with(o cpWhen) cpWhen {
 		spouse = "\x00"
 	}
 	return cpWhen{
-		anyOf:   append(slices.Clone(w.anyOf), o.anyOf...),
-		noneOf:  append(slices.Clone(w.noneOf), o.noneOf...),
-		config:  append(slices.Clone(w.config), o.config...),
-		dynamic: append(slices.Clone(w.dynamic), o.dynamic...),
-		flags:   append(slices.Clone(w.flags), o.flags...),
-		spouse:  spouse,
-		places:  places,
+		anyOf:       append(slices.Clone(w.anyOf), o.anyOf...),
+		noneOf:      append(slices.Clone(w.noneOf), o.noneOf...),
+		config:      append(slices.Clone(w.config), o.config...),
+		dynamic:     append(slices.Clone(w.dynamic), o.dynamic...),
+		flags:       append(slices.Clone(w.flags), o.flags...),
+		spouse:      spouse,
+		places:      places,
+		conditional: w.conditional || o.conditional,
 	}
 }
 
@@ -213,7 +220,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 8
+const contentPackParserVersion = 9
 
 type packFileStamp struct {
 	Path    string `json:"path"`
@@ -257,6 +264,7 @@ type diskPatch struct {
 	ToArea        string      `json:"toArea,omitempty"`
 	TokenName     string      `json:"tokenName,omitempty"`
 	TokenValue    string      `json:"tokenValue,omitempty"`
+	Extra         bool        `json:"extra,omitempty"`
 }
 
 type diskShape struct {
@@ -280,6 +288,7 @@ type diskWhen struct {
 	Flags   []diskFlagCondition    `json:"flags,omitempty"`
 	Spouse  string                 `json:"spouse,omitempty"`
 	Places  map[string][]string    `json:"places,omitempty"`
+	Cond    bool                   `json:"cond,omitempty"`
 }
 
 type diskConfig struct {
@@ -415,6 +424,7 @@ func diskPatchOf(patch cpPatch) diskPatch {
 		ToArea:        patch.toArea,
 		TokenName:     patch.tokenName,
 		TokenValue:    patch.tokenValue,
+		Extra:         patch.extra,
 	}
 	if patch.shapes != nil {
 		out.Shapes = make([]diskShape, len(patch.shapes))
@@ -456,6 +466,7 @@ func cpPatchOfDisk(_ string, patch diskPatch) cpPatch {
 		toArea:        patch.ToArea,
 		tokenName:     patch.TokenName,
 		tokenValue:    patch.TokenValue,
+		extra:         patch.Extra,
 	}
 	if patch.Shapes != nil {
 		out.shapes = make([]cpShape, len(patch.Shapes))
@@ -639,6 +650,7 @@ func diskWhenOf(when cpWhen) diskWhen {
 		NoneOf: when.noneOf,
 		Spouse: when.spouse,
 		Places: when.places,
+		Cond:   when.conditional,
 	}
 	if when.config != nil {
 		out.Config = make([]diskConfig, len(when.config))
@@ -668,10 +680,11 @@ func diskWhenOf(when cpWhen) diskWhen {
 
 func cpWhenOfDisk(when diskWhen) cpWhen {
 	out := cpWhen{
-		anyOf:  when.AnyOf,
-		noneOf: when.NoneOf,
-		spouse: when.Spouse,
-		places: when.Places,
+		anyOf:       when.AnyOf,
+		noneOf:      when.NoneOf,
+		spouse:      when.Spouse,
+		places:      when.Places,
+		conditional: when.Cond,
 	}
 	if when.Config != nil {
 		out.config = make([]cpConfig, len(when.Config))
@@ -1113,6 +1126,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 		}
 		action := strings.TrimSpace(ch.Action)
 		when := outer.with(parseWhenWithTokens(ch.When, pack.mentions, pack.schema, pack.tokens))
+		when.conditional = when.conditional || len(ch.When) > 0
 		var kind string
 		var shapes []cpShape
 		switch {
@@ -1173,6 +1187,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 				imageDigest:   imageFileDigest(root, ch.FromFile, action == kindEditImage),
 				imageFromArea: fromArea,
 				source:        rel, index: i, action: action, toArea: toArea,
+				extra: changeDoesMore(rawChange, ch),
 			})
 		}
 	}
@@ -1859,6 +1874,12 @@ func dropCheckScratch() {
 }
 
 func assetConflictResults(mods []Installed) ([]AssetConflict, []SettingHint) {
+	conflicts, settings, _ := assetConflictScan(mods)
+	return conflicts, settings
+}
+
+// assetConflictScan also returns the packs whose every change later packs overwrite (see shadowedPacks).
+func assetConflictScan(mods []Installed) ([]AssetConflict, []SettingHint, []Redundant) {
 	defer flushPackDiskCache(mods)
 	defer dropCheckScratch()
 	preloadContentPacks(mods)
@@ -1923,6 +1944,7 @@ func assetConflictResults(mods []Installed) ([]AssetConflict, []SettingHint) {
 			}
 		}
 	}
+	shadowed := shadowedPacks(mods, at)
 	out := []AssetConflict{}
 	settings := []SettingHint{}
 	for kind, targets := range at {
@@ -1970,7 +1992,7 @@ func assetConflictResults(mods []Installed) ([]AssetConflict, []SettingHint) {
 		}
 		return strings.Compare(a.Target, b.Target)
 	})
-	return out, settings
+	return out, settings, shadowed
 }
 
 func clashingLoads(hits []packHit) (out []packHit) {
