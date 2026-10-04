@@ -2,7 +2,7 @@ import { msg } from '@lingui/core/macro'
 import { i18n } from '../i18n/index.ts'
 import { errorDetails, errorKind as kindOf } from './errorKind.ts'
 
-import { useToasts } from './store.ts'
+import { type ToastAction, useToasts } from './store.ts'
 
 // Built on call, not at import: Lingui macros only run inside compiled code, and this module is
 // imported nearly everywhere, tests included.
@@ -32,13 +32,29 @@ export function errorMessage(e: unknown): string {
   return sentence(kindOf(e))
 }
 
-export function toastError(title: string, e: unknown): void {
-  const details = errorDetails(e)
+/** A failure shown in place: the plain sentence to read, the cause for its title tooltip. */
+export interface InlineError {
+  message: string
+  details: string
+}
+
+export function inlineError(e: unknown, message = errorMessage(e)): InlineError {
+  return { message, details: errorDetails(e) }
+}
+
+/** `detail` is a line appended after the error's own text; `action` is the button the toast offers. */
+export function toastError(
+  title: string,
+  e: unknown,
+  extra: { action?: ToastAction; detail?: string } = {},
+): void {
+  const details = [errorDetails(e), extra.detail ?? ''].filter((part) => part !== '').join('\n')
   useToasts.getState().push({
     kind: 'error',
     title,
     body: errorMessage(e),
     ...(details === '' ? {} : { detail: details }),
+    ...(extra.action === undefined ? {} : { action: extra.action }),
   })
 }
 

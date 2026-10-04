@@ -10,8 +10,7 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { errorDetails } from '../toasts/errorKind.ts'
-import { errorMessage } from '../toasts/report.ts'
+import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useBadges } from './badges.ts'
 import { updateCount } from './lookup.ts'
@@ -115,11 +114,7 @@ const useUpdates = create<{
         })
       }
     } catch (e) {
-      useToasts.getState().push({
-        kind: 'error',
-        title: i18n._(msg`Could not check for mod updates`),
-        body: errorMessage(e),
-        detail: errorDetails(e),
+      toastError(i18n._(msg`Could not check for mod updates`), e, {
         action: {
           label: i18n._(msg`Retry now`),
           run: () => useUpdates.getState().load(),

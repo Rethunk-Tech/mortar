@@ -3,14 +3,11 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, Typography } from '@mui/material'
 import { alpha, type Theme, useTheme } from '@mui/material/styles'
 import { formatKb } from '../i18n/bytes.ts'
+import { calloutFill, calloutLine } from '../theme/callout.ts'
 
 const SUCCESS_CHIP = 0.2
 const INFO_CHIP = 0.25
 const WARN_CHIP = 0.22
-const INFO_ROW = 0.12
-const INFO_LINE = 0.4
-const WARN_ROW = 0.12
-const WARN_LINE = 0.45
 
 import { Download, Info, TriangleAlert } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -160,15 +157,7 @@ function ProblemRow({
     texts[problem.kind] ??
     t`Some files could not be checked against Nexus, so a few may differ from what was shared.`
   const info = problem.kind === 'free' || problem.kind === 'unconfirmed'
-  const tone = info
-    ? {
-        bg: alpha(theme.palette.info.main, INFO_ROW),
-        line: alpha(theme.palette.info.main, INFO_LINE),
-      }
-    : {
-        bg: alpha(theme.palette.warning.main, WARN_ROW),
-        line: alpha(theme.palette.warning.main, WARN_LINE),
-      }
+  const tone = info ? 'info' : 'warning'
   let icon = <TriangleAlert size={16} color={theme.palette.warning.main} />
   if (problem.kind === 'free') {
     icon = <Download size={16} color={theme.palette.info.light} />
@@ -184,8 +173,9 @@ function ProblemRow({
         height: 44,
         px: 1.5,
         minWidth: 0,
-        bgcolor: tone.bg,
-        border: `1px solid ${tone.line}`,
+        bgcolor: calloutFill(tone),
+        border: '1px solid',
+        borderColor: calloutLine(tone),
         borderRadius: '4px',
         fontSize: 13,
         whiteSpace: 'nowrap',

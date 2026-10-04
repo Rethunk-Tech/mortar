@@ -8,5 +8,6 @@ test('toastError puts the mapped sentence in body and raw text in detail', () =>
   expect(src).toContain('export const reportError')
   expect(src).toContain('body: errorMessage(e)')
   expect(src).toContain("...(details === '' ? {} : { detail: details })")
+  expect(src).toContain('...(extra.action === undefined ? {} : { action: extra.action })')
   expect(src).toContain('toastError(i18n._(msg`Something went wrong`), e)')
 })

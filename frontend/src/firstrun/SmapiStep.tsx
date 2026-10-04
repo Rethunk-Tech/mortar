@@ -1,8 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, LinearProgress, Typography } from '@mui/material'
-import { alpha, useTheme } from '@mui/material/styles'
-
-const STATUS_FILL = 0.14
+import { useTheme } from '@mui/material/styles'
 
 import { System } from '@wailsio/runtime'
 import { Check, Clock, Copy, Ellipsis, RefreshCw } from 'lucide-react'
@@ -14,6 +12,7 @@ import {
 import { useLoader } from '../loader/store.ts'
 import type { GameId } from '../nav/store.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { MONO } from '../theme/theme.ts'
 import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -155,10 +154,8 @@ function LaunchLine({
           fontSize: 14,
           borderRadius: '6px',
           border: '1px solid',
-          borderColor: set ? 'success.main' : 'warning.main',
-          bgcolor: set
-            ? alpha(theme.palette.success.main, STATUS_FILL)
-            : alpha(theme.palette.warning.main, STATUS_FILL),
+          borderColor: calloutLine(set ? 'success' : 'warning'),
+          bgcolor: calloutFill(set ? 'success' : 'warning'),
         }}
       >
         {set ? (

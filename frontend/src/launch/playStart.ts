@@ -10,8 +10,7 @@ import { isGameId, useNav } from '../nav/store.ts'
 import { foldedOverrides, resolveOverride } from '../profiles/overrideValue.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { errorMessage, reportError } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { reportError, toastError } from '../toasts/report.ts'
 import {
   type AutoUpdateRestorePoint,
   type AutoUpdateResult,
@@ -81,10 +80,7 @@ function updateContext(result: AutoUpdateResult): UpdateContext | undefined {
 
 function updateFailure(error: unknown, resume: () => Promise<void>) {
   const point = isAutoUpdateError(error) ? error.restorePoint : undefined
-  useToasts.getState().push({
-    kind: 'error',
-    title: i18n._(msg`Could not update mods before Play`),
-    body: errorMessage(error),
+  toastError(i18n._(msg`Could not update mods before Play`), error, {
     ...(point && point.updates.length > 0
       ? { detail: i18n._(msg`You can roll back the completed updates from the profile history.`) }
       : {}),
