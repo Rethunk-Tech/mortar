@@ -109,6 +109,18 @@ const detail = {
   textOverflow: 'ellipsis',
 } as const
 
+function DismissButton({ item }: { item: Item }) {
+  const { t } = useLingui()
+  return (
+    <TipIconButton
+      label={t`Dismiss ${item.name}`}
+      onClick={() => Dismiss(item.id).catch(reportUnexpected)}
+    >
+      <X size={14} />
+    </TipIconButton>
+  )
+}
+
 function Click({ item }: { item: Item }) {
   const { t } = useLingui()
   const [pending, run] = usePending()
@@ -241,12 +253,7 @@ function Failed({ items }: { items: Item[] }) {
               >
                 {t`Retry`}
               </Button>
-              <TipIconButton
-                label={t`Dismiss ${i.name}`}
-                onClick={() => Dismiss(i.id).catch(reportUnexpected)}
-              >
-                <X size={14} />
-              </TipIconButton>
+              <DismissButton item={i} />
             </>
           }
         />
@@ -413,14 +420,7 @@ export function Body({ items }: { items: Item[] }) {
                   </Typography>
                 ) : null
               }
-              actions={
-                <TipIconButton
-                  label={t`Dismiss ${i.name}`}
-                  onClick={() => Dismiss(i.id).catch(reportUnexpected)}
-                >
-                  <X size={14} />
-                </TipIconButton>
-              }
+              actions={<DismissButton item={i} />}
             />
           ))}
         </Fold>
@@ -437,14 +437,7 @@ export function Body({ items }: { items: Item[] }) {
                   {i.state === 'cancelled' ? t`Cancelled` : t`Skipped`}
                 </Typography>
               }
-              actions={
-                <TipIconButton
-                  label={t`Dismiss ${i.name}`}
-                  onClick={() => Dismiss(i.id).catch(reportUnexpected)}
-                >
-                  <X size={14} />
-                </TipIconButton>
-              }
+              actions={<DismissButton item={i} />}
             />
           ))}
         </Fold>

@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { Check } from 'lucide-react'
 
@@ -16,7 +16,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import type { GameId } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
-import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
 import { errorMessage } from '../toasts/report.ts'
 import { FindStep } from './FindStep.tsx'
 import { NexusStep } from './NexusStep.tsx'
@@ -121,14 +121,7 @@ export function GameSetup({ game: id }: { game: GameId }) {
   }
   if (loadError !== '' || !game) {
     const alert = loadError === '' ? t`Something went wrong.` : loadError
-    return (
-      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-        <Typography role="alert">{alert}</Typography>
-        <Button variant="contained" onClick={refresh}>
-          {t`Retry`}
-        </Button>
-      </Box>
-    )
+    return <LoadErrorRow message={alert} onRetry={refresh} />
   }
   const stateOf = (n: Step) => {
     if (n < step) {

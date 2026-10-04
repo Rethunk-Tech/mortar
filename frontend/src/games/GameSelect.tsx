@@ -23,7 +23,7 @@ import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { type GameId, isGameId, openSettings, useNav } from '../nav/store.ts'
 import { CoverButton } from '../shell/CoverButton.tsx'
-import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
 import { errorMessage, reportError } from '../toasts/report.ts'
 import { gameArt } from './art.ts'
 import { ProfileCards } from './ProfileCards.tsx'
@@ -304,14 +304,7 @@ export function GameSelect() {
   useEffect(refresh, [refresh])
   useRefreshOnFocus(refresh)
   if (loadError !== '') {
-    return (
-      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-        <Typography role="alert">{loadError}</Typography>
-        <Button variant="contained" onClick={refresh}>
-          {t`Retry`}
-        </Button>
-      </Box>
-    )
+    return <LoadErrorRow message={loadError} onRetry={refresh} />
   }
   if (!status) {
     return <LoadingRow>{t`Loading…`}</LoadingRow>

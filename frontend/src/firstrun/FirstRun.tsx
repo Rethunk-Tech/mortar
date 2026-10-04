@@ -1,13 +1,13 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { StoreApp } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
 import { Launchers } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { ConfirmLaunchers } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { LauncherList } from '../launchers/LauncherList.tsx'
 import { useNav } from '../nav/store.ts'
-import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useRefreshOnFocus } from './useRefreshOnFocus.ts'
 
@@ -27,14 +27,7 @@ export function FirstRun() {
   useEffect(refresh, [refresh])
   useRefreshOnFocus(refresh)
   if (loadError !== '') {
-    return (
-      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-        <Typography role="alert">{loadError}</Typography>
-        <Button variant="contained" onClick={refresh}>
-          {t`Retry`}
-        </Button>
-      </Box>
-    )
+    return <LoadErrorRow message={loadError} onRetry={refresh} />
   }
   if (!launchers) {
     return <LoadingRow>{t`Loading…`}</LoadingRow>

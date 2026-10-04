@@ -219,6 +219,16 @@ function ProblemSection({
       {label}
     </Typography>
   )
+  const actionButton = action ? (
+    <Button
+      size="small"
+      disabled={action.disabled}
+      onClick={action.onClick}
+      sx={{ ml: 1, height: 26 }}
+    >
+      {action.label}
+    </Button>
+  ) : null
   return (
     <Box>
       {collapsible ? (
@@ -231,30 +241,12 @@ function ProblemSection({
             {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             {heading}
           </ButtonBase>
-          {action ? (
-            <Button
-              size="small"
-              disabled={action.disabled}
-              onClick={action.onClick}
-              sx={{ ml: 1, height: 26 }}
-            >
-              {action.label}
-            </Button>
-          ) : null}
+          {actionButton}
         </Box>
       ) : (
         <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
           {heading}
-          {action ? (
-            <Button
-              size="small"
-              disabled={action.disabled}
-              onClick={action.onClick}
-              sx={{ ml: 1, height: 26 }}
-            >
-              {action.label}
-            </Button>
-          ) : null}
+          {actionButton}
         </Box>
       )}
       {open ? (

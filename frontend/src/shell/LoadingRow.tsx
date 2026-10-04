@@ -1,4 +1,5 @@
-import { Box, CircularProgress, Typography } from '@mui/material'
+import { useLingui } from '@lingui/react/macro'
+import { Box, Button, CircularProgress, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
 
 export function LoadingRow({ children }: { children: ReactNode }) {
@@ -9,6 +10,18 @@ export function LoadingRow({ children }: { children: ReactNode }) {
     >
       <CircularProgress size={16} aria-hidden={true} />
       <Typography sx={{ color: 'text.secondary' }}>{children}</Typography>
+    </Box>
+  )
+}
+
+export function LoadErrorRow({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const { t } = useLingui()
+  return (
+    <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+      <Typography role="alert">{message}</Typography>
+      <Button variant="contained" onClick={onRetry}>
+        {t`Retry`}
+      </Button>
     </Box>
   )
 }
