@@ -24,6 +24,7 @@ import {
   AddToSteam,
   Create as CreateShortcut,
   Remove as RemoveShortcut,
+  Capabilities as ShortcutCapabilities,
   Exists as ShortcutExists,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/shortcut/service.ts'
 import { ApplyBundleDialog } from '../bundles/dialogs.tsx'
@@ -91,6 +92,13 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
   const { t } = useLingui()
   const currentGame = useProfiles((s) => s.game)
   const [hasShortcut, setHasShortcut] = useState(false)
+  // Steam on the host cannot start Mortar inside a Flatpak, so the action is left out there.
+  const [steamShortcut, setSteamShortcut] = useState(true)
+  useEffect(() => {
+    ShortcutCapabilities()
+      .then((c) => setSteamShortcut(c.addToSteam))
+      .catch(reportUnexpected)
+  }, [])
   useEffect(() => {
     const g = currentGame
     if (!g) {
@@ -138,25 +146,27 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
           }}
         />
       ) : null}
-      <ProfileMenuItem
-        icon={<Gamepad2 size={16} />}
-        label={t`Add this profile to Steam`}
-        onClick={() => {
-          close()
-          const g = currentGame
-          if (g) {
-            AddToSteam(g.id, g.name, profile.id, profile.name)
-              .then((added) =>
-                useToasts.getState().push({
-                  kind: 'success',
-                  title: added ? t`Added to Steam` : t`Already in Steam`,
-                  body: t`It shows in your Steam library the next time Steam starts.`,
-                }),
-              )
-              .catch(reportError(t`Could not add it to Steam`))
-          }
-        }}
-      />
+      {steamShortcut ? (
+        <ProfileMenuItem
+          icon={<Gamepad2 size={16} />}
+          label={t`Add this profile to Steam`}
+          onClick={() => {
+            close()
+            const g = currentGame
+            if (g) {
+              AddToSteam(g.id, g.name, profile.id, profile.name)
+                .then((added) =>
+                  useToasts.getState().push({
+                    kind: 'success',
+                    title: added ? t`Added to Steam` : t`Already in Steam`,
+                    body: t`It shows in your Steam library the next time Steam starts.`,
+                  }),
+                )
+                .catch(reportError(t`Could not add it to Steam`))
+            }
+          }}
+        />
+      ) : null}
     </>
   )
 }
