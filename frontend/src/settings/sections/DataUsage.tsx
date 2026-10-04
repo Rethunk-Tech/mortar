@@ -197,7 +197,13 @@ export function BackupsKept() {
       label={t`Save backups kept`}
       description={t`Saves are zipped before mods update; older backups beyond this many are deleted. ${MIN_KEPT} to ${MAX_KEPT}.`}
     >
-      <PrefNumber value={kept} min={MIN_KEPT} max={MAX_KEPT} onCommit={SetBackupsKept} />
+      <PrefNumber
+        value={kept}
+        min={MIN_KEPT}
+        max={MAX_KEPT}
+        onCommit={SetBackupsKept}
+        label={t`Save backups kept`}
+      />
     </SettingRow>
   )
 }
@@ -224,19 +230,19 @@ export function UsageRows({
     store: t`Store`,
     cache: t`Cache`,
     backups: t`Save backups`,
-    trash: t`Trash`,
+    trash: t`Recently deleted`,
     other: t`Other`,
   }
   const actions = (
     <>
-      <Button variant="contained" color="inherit" onClick={onCleanUp} sx={filled}>
+      <Button variant="outlined" color="inherit" onClick={onCleanUp} sx={filled}>
         {t`Clean up…`}
       </Button>
-      <Button variant="contained" color="inherit" onClick={onClearCache} sx={filled}>
+      <Button variant="outlined" color="inherit" onClick={onClearCache} sx={filled}>
         {t`Clear cache…`}
       </Button>
-      <Button variant="contained" color="inherit" onClick={onDeletedProfiles} sx={filled}>
-        {t`Deleted profiles…`}
+      <Button variant="outlined" color="inherit" onClick={onDeletedProfiles} sx={filled}>
+        {t`Open recently deleted`}
       </Button>
     </>
   )
@@ -244,7 +250,7 @@ export function UsageRows({
     <>
       <SettingsSection title={t`Usage`}>
         <Searchable
-          terms={`${t`Usage`} ${t`Storage`} ${t`disk space`} ${Object.values(labels).join(' ')} ${t`Clean up…`} ${t`Clear cache…`} ${t`Deleted profiles…`}`}
+          terms={`${t`Usage`} ${t`Storage`} ${t`disk space`} ${Object.values(labels).join(' ')} ${t`Clean up…`} ${t`Clear cache…`} ${t`Open recently deleted`}`}
         >
           <StorageBar usage={usage} labels={labels} bytes={bytes} actions={actions} />
         </Searchable>
