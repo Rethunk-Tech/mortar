@@ -23,6 +23,7 @@ import { useCustomCategories } from './customCategories.ts'
 import { useDescribe } from './describe.ts'
 import { useDetail } from './detail.ts'
 import { customCategoryById, resolvedCategoryLabel } from './group.ts'
+import { HiddenInside } from './HiddenInside.tsx'
 import { showLastRunInConsole, useLastRun } from './lastRun.ts'
 import {
   concerns,
@@ -37,7 +38,6 @@ import {
   updateFor,
   visibleUpdates,
 } from './lookup.ts'
-import { HiddenInside } from './HiddenInside.tsx'
 import { ModDependencyTree } from './ModDependencyTree.tsx'
 import { ModNoteTags } from './ModNoteTags.tsx'
 import { ModUpdateControls } from './ModUpdateControls.tsx'

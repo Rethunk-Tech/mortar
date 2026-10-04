@@ -20,6 +20,7 @@ import { useCustomCategories } from './customCategories.ts'
 import { DuplicateDialog } from './DuplicateDialog.tsx'
 import { useDetail } from './detail.ts'
 import { EndorsePrompt } from './EndorsePrompt.tsx'
+import { LibraryCallouts } from './LibraryCallouts.tsx'
 import { LockedNote } from './LockedNote.tsx'
 import { useLastRun } from './lastRun.ts'
 import { entryOf, modId, modStatusProblem, updateFor } from './lookup.ts'
@@ -241,6 +242,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
     return (
       <>
         <TrackedNotInProfile profile={profile} />
+        <LibraryCallouts profile={profile} />
         <EmptyMods profileId={profile.id} />
       </>
     )
@@ -279,6 +281,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
         {t`Drop archives anywhere on the window, or Open Nexus Mods to find mods.`}
       </TipBanner>
       <AttentionBars />
+      <LibraryCallouts profile={profile} />
       <Toolbar
         query={query}
         onQuery={(value) => setQuery(profile.id, value)}

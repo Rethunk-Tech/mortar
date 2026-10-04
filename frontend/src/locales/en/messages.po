@@ -2638,7 +2638,7 @@ msgstr "Could not read your profiles"
 msgid "{n, plural, one {# missing requirement} other {# missing requirements}}"
 msgstr "{n, plural, one {# missing requirement} other {# missing requirements}}"
 
-#: src/install/DownloadsDialog.tsx:144
+#: src/install/DownloadsDialog.tsx:167
 msgid "Add to profile"
 msgstr "Add to profile"
 
@@ -2933,7 +2933,7 @@ msgstr "Resize sidebar"
 msgid "This profile skips this version, so Mortar does not offer it."
 msgstr "This profile skips this version, so Mortar does not offer it."
 
-#: src/install/DownloadsDialog.tsx:114
+#: src/install/DownloadsDialog.tsx:108
 msgid "Search archives"
 msgstr "Search archives"
 
@@ -3050,7 +3050,7 @@ msgstr "Where save backups are kept. Empty uses the default."
 #: src/console/HelpDialog.tsx:234
 #: src/console/StartupPanel.tsx:490
 #: src/fomod/Dialog.tsx:254
-#: src/install/DownloadsDialog.tsx:128
+#: src/install/DownloadsDialog.tsx:151
 #: src/install/RemapDialog.tsx:179
 #: src/lan/IncomingPrompt.tsx:161
 #: src/lan/IncomingPrompt.tsx:179
@@ -4175,7 +4175,7 @@ msgstr "Profile name"
 msgid "Could not save the profile"
 msgstr "Could not save the profile"
 
-#: src/install/DownloadsDialog.tsx:141
+#: src/install/DownloadsDialog.tsx:164
 msgid "Could not add the archive"
 msgstr "Could not add the archive"
 
@@ -5289,7 +5289,7 @@ msgstr "{name} updated to {version} — {n, plural, one {# profile needs attenti
 msgid "Pick up where you left off."
 msgstr "Pick up where you left off."
 
-#: src/install/DownloadsDialog.tsx:106
+#: src/install/DownloadsDialog.tsx:101
 msgid "Every archive in the downloads folder is already in a profile or Mortar's store."
 msgstr "Every archive in the downloads folder is already in a profile or Mortar's store."
 
@@ -5465,7 +5465,7 @@ msgstr "Copy the mods already in Stardew Valley's Mods folder into a new profile
 msgid " The winner is unclear."
 msgstr " The winner is unclear."
 
-#: src/install/DownloadsDialog.tsx:103
+#: src/install/DownloadsDialog.tsx:96
 msgid "Looking in the downloads folder…"
 msgstr "Looking in the downloads folder…"
 
@@ -5792,7 +5792,7 @@ msgstr "Dismiss {0}"
 msgid "Choose an option in {invalidGroup}."
 msgstr "Choose an option in {invalidGroup}."
 
-#: src/share/CollectionNotes.tsx:80
+#: src/share/CollectionNotes.tsx:79
 msgid "Your Premium account also applies the curator's installer choices and config files."
 msgstr "Your Premium account also applies the curator's installer choices and config files."
 
@@ -7373,7 +7373,7 @@ msgstr "Log link"
 msgid "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 msgstr "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 
-#: src/install/DownloadsDialog.tsx:130
+#: src/install/DownloadsDialog.tsx:153
 msgid "Open a profile first."
 msgstr "Open a profile first."
 
@@ -8573,7 +8573,7 @@ msgstr "Copy mod list ({0} parts)"
 msgid "Mark known good"
 msgstr "Mark known good"
 
-#: src/install/DownloadsDialog.tsx:105
+#: src/install/DownloadsDialog.tsx:100
 msgid "No archives to add"
 msgstr "No archives to add"
 
@@ -8731,7 +8731,7 @@ msgstr "Loading mods"
 msgid "{0} (optional)"
 msgstr "{0} (optional)"
 
-#: src/install/DownloadsDialog.tsx:98
+#: src/install/DownloadsDialog.tsx:137
 msgid "From the downloads folder"
 msgstr "From the downloads folder"
 
@@ -9787,7 +9787,7 @@ msgstr "Stay open"
 msgid "UI scale ({value}%)"
 msgstr "UI scale ({value}%)"
 
-#: src/share/CollectionNotes.tsx:82
+#: src/share/CollectionNotes.tsx:80
 msgid "Installers ask as usual; Premium accounts also get the curator's choices and configs."
 msgstr "Installers ask as usual; Premium accounts also get the curator's choices and configs."
 
@@ -10197,7 +10197,7 @@ msgstr "{gameName} settings"
 msgid "Set category…"
 msgstr "Set category…"
 
-#: src/install/DownloadsDialog.tsx:130
+#: src/install/DownloadsDialog.tsx:153
 msgid "Choose an archive first."
 msgstr "Choose an archive first."
 
