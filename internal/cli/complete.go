@@ -3,15 +3,12 @@ package cli
 import (
 	"fmt"
 	"io"
-	"path/filepath"
 	"slices"
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/control"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 )
-
-func absolute(p string) (string, error) { return filepath.Abs(p) }
 
 // Each shell script asks `mortar __complete <words before the cursor> <word at the cursor>` for candidates.
 var scripts = map[string]string{

@@ -24,10 +24,10 @@ func Apply(modsDir string, entries []profile.Entry, configs []Config) (written [
 				continue
 			}
 			folder := plain
-			if !isDir(folder) {
+			if !fsx.IsDir(folder) {
 				folder = dotted
 			}
-			if !isDir(folder) {
+			if !fsx.IsDir(folder) {
 				continue
 			}
 			for _, c := range configs {
@@ -52,9 +52,4 @@ func Apply(modsDir string, entries []profile.Entry, configs []Config) (written [
 		}
 	}
 	return written, nil
-}
-
-func isDir(p string) bool {
-	info, err := os.Stat(p)
-	return err == nil && info.IsDir()
 }

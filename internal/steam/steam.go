@@ -63,11 +63,11 @@ func Roots(home string, extra ...string) []string {
 func LocateAll(home string, extra ...string) []Steam {
 	var out []Steam
 	for _, root := range Roots(home, extra...) {
-		if isDir(filepath.Join(root, "steamapps")) {
+		if fsx.IsDir(filepath.Join(root, "steamapps")) {
 			out = append(out, Steam{Root: root, Kind: KindNative})
 		}
 	}
-	if fp := FlatpakRoot(home); isDir(filepath.Join(fp, "steamapps")) {
+	if fp := FlatpakRoot(home); fsx.IsDir(filepath.Join(fp, "steamapps")) {
 		out = append(out, Steam{Root: fp, Kind: KindFlatpak})
 	}
 	return out
@@ -78,7 +78,7 @@ func Locate(home string, extra ...string) (Steam, Status) {
 	if all := LocateAll(home, extra...); len(all) > 0 {
 		return all[0], Found
 	}
-	if isDir(FlatpakRoot(home)) {
+	if fsx.IsDir(FlatpakRoot(home)) {
 		return Steam{}, FlatpakOnly
 	}
 	return Steam{}, NotFound
@@ -173,7 +173,7 @@ func (s Steam) InstallDir(appID string) (string, error) {
 			continue
 		}
 		dir := filepath.Join(lib, "steamapps", "common", name)
-		if isDir(dir) {
+		if fsx.IsDir(dir) {
 			return dir, nil
 		}
 	}
@@ -224,11 +224,6 @@ func parseVDF(path string) (map[string]any, error) {
 		return nil, fmt.Errorf("parse %s: %w", filepath.Base(path), err)
 	}
 	return m, nil
-}
-
-func isDir(p string) bool {
-	st, err := os.Stat(p)
-	return err == nil && st.IsDir()
 }
 
 // steamID64Base is the offset between a SteamID64 and the account number naming its userdata folder.

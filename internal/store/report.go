@@ -100,7 +100,7 @@ func duplicateGroups(items []tagged) [][]Item {
 			continue
 		}
 		id := it.uniqueID + "\x00" + it.item.Version
-		if containsKey(byID[id], it.item.Key) {
+		if slices.ContainsFunc(byID[id], func(x Item) bool { return x.Key == it.item.Key }) {
 			continue
 		}
 		byID[id] = append(byID[id], it.item)
@@ -114,15 +114,6 @@ func duplicateGroups(items []tagged) [][]Item {
 	}
 	slices.SortFunc(groups, func(a, b []Item) int { return strings.Compare(a[0].Key, b[0].Key) })
 	return groups
-}
-
-func containsKey(items []Item, key string) bool {
-	for _, it := range items {
-		if it.Key == key {
-			return true
-		}
-	}
-	return false
 }
 
 func readManifest(dir string) (name, uniqueID, version string) {

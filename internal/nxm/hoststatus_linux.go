@@ -5,6 +5,7 @@ package nxm
 import (
 	"path/filepath"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/nativehost"
 )
 
@@ -29,13 +30,13 @@ func (l *System) nativeHostEntries() []browserEntry {
 	var out []browserEntry
 	for _, b := range nativeHostBrowsers {
 		if b.firefox {
-			if !dirExists(filepath.Join(l.home, b.dir)) {
+			if !fsx.IsDir(filepath.Join(l.home, b.dir)) {
 				continue
 			}
 			out = append(out, b)
 			continue
 		}
-		if !dirExists(filepath.Join(l.configHome, b.dir)) {
+		if !fsx.IsDir(filepath.Join(l.configHome, b.dir)) {
 			continue
 		}
 		out = append(out, b)

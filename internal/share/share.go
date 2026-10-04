@@ -422,16 +422,7 @@ func enabled(e profile.Entry) bool {
 		return true
 	}
 	for _, m := range e.Mods {
-		if !containsFold(e.Disabled, m.UniqueID) {
-			return true
-		}
-	}
-	return false
-}
-
-func containsFold(ids []string, id string) bool {
-	for _, x := range ids {
-		if strings.EqualFold(x, id) {
+		if !slices.ContainsFunc(e.Disabled, func(x string) bool { return strings.EqualFold(x, m.UniqueID) }) {
 			return true
 		}
 	}

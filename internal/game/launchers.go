@@ -3,11 +3,11 @@ package game
 import (
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"runtime"
 	"slices"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/gog"
 	"github.com/Rethunk-AI/mortar/internal/lutris"
 	"github.com/Rethunk-AI/mortar/internal/settings"
@@ -50,18 +50,13 @@ type launcherSpec struct {
 	usable func(dir string) bool
 }
 
-func isDir(p string) bool {
-	st, err := os.Stat(p)
-	return err == nil && st.IsDir()
-}
-
 func withCustom(custom []string, rest ...string) []string {
 	return append(slices.Clone(custom), rest...)
 }
 
 // launcherSpecs are the launchers Mortar reads on goos.
 func launcherSpecs(goos string) []launcherSpec {
-	steamDir := func(dir string) bool { return isDir(filepath.Join(dir, "steamapps")) }
+	steamDir := func(dir string) bool { return fsx.IsDir(filepath.Join(dir, "steamapps")) }
 	specs := []launcherSpec{{
 		id: LauncherSteam, name: "Steam", usable: steamDir,
 		looked: func(home string, added map[string][]string) []string {
@@ -75,26 +70,26 @@ func launcherSpecs(goos string) []launcherSpec {
 		})
 	}
 	specs = append(specs, launcherSpec{
-		id: LauncherHeroic, name: "Heroic", usable: func(dir string) bool { return isDir(filepath.Join(dir, "gog_store")) },
+		id: LauncherHeroic, name: "Heroic", usable: func(dir string) bool { return fsx.IsDir(filepath.Join(dir, "gog_store")) },
 		looked: func(home string, added map[string][]string) []string {
 			return gog.HeroicDirs(home, added[LauncherHeroic]...)
 		},
 	})
 	if goos == "linux" {
 		specs = append(specs, launcherSpec{
-			id: LauncherLutris, name: "Lutris", usable: isDir,
+			id: LauncherLutris, name: "Lutris", usable: fsx.IsDir,
 			looked: func(home string, added map[string][]string) []string {
 				return lutris.ConfigDirs(home, added[LauncherLutris]...)
 			},
 		}, launcherSpec{
-			id: LauncherMinigalaxy, name: "Minigalaxy", usable: isDir,
+			id: LauncherMinigalaxy, name: "Minigalaxy", usable: fsx.IsDir,
 			looked: func(home string, added map[string][]string) []string {
 				return withCustom(added[LauncherMinigalaxy], gog.MinigalaxyConfigDirs(home)...)
 			},
 		})
 	}
 	gogSpec := launcherSpec{
-		id: LauncherGOG, name: "GOG", usable: isDir,
+		id: LauncherGOG, name: "GOG", usable: fsx.IsDir,
 		looked: func(home string, added map[string][]string) []string {
 			return gog.OfflineDirs(home, gog.Roots{Games: added[LauncherGOG], Minigalaxy: added[LauncherMinigalaxy]})
 		},
@@ -151,7 +146,7 @@ func ValidateLauncherRoot(launcher, dir string) error {
 		if spec.id != launcher {
 			continue
 		}
-		if !isDir(dir) {
+		if !fsx.IsDir(dir) {
 			return fmt.Errorf("%s is not a folder", dir)
 		}
 		if !spec.usable(dir) {

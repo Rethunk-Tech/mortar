@@ -67,3 +67,9 @@ func WriteFile(path string, data []byte, perm os.FileMode) error {
 func Stat(path string) (os.FileInfo, error) {
 	return in(path, func(r *os.Root, name string) (os.FileInfo, error) { return r.Stat(name) })
 }
+
+// IsDir is true when path exists and is a directory.
+func IsDir(path string) bool {
+	st, err := Stat(path)
+	return err == nil && st.IsDir()
+}

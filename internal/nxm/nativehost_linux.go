@@ -20,11 +20,6 @@ func (l *System) hostManifestPaths() map[string]bool {
 	return paths
 }
 
-func dirExists(dir string) bool {
-	info, err := os.Stat(dir)
-	return err == nil && info.IsDir()
-}
-
 // WriteNativeHosts lets the Mortar browser extension start this copy of Mortar. A browser outside the Flatpak
 // sandbox cannot run the binary inside it, so a Flatpak build writes none.
 func (l *System) WriteNativeHosts() error {
