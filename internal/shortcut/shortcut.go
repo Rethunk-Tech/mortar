@@ -11,7 +11,7 @@ import (
 	"sync"
 
 	"github.com/Rethunk-AI/mortar/internal/launch"
-	"github.com/Rethunk-AI/mortar/internal/nxm"
+	"github.com/Rethunk-AI/mortar/internal/selfexe"
 	"github.com/Rethunk-AI/mortar/internal/steam"
 )
 
@@ -90,7 +90,7 @@ func (s *Service) Create(game, gameName, profile, profileName string) (string, e
 	if err != nil {
 		return "", err
 	}
-	return create(nxm.Launchable(exe), Arg(game, profile), profileName+" ("+gameName+")")
+	return create(selfexe.Launchable(exe), Arg(game, profile), profileName+" ("+gameName+")")
 }
 
 // Exists reports whether a desktop or Start-menu shortcut plays the profile.
@@ -140,7 +140,7 @@ func (s *Service) AddToSteam(game, gameName, profile, profileName string) (bool,
 	if err != nil {
 		return false, err
 	}
-	exe = nxm.Launchable(exe)
+	exe = selfexe.Launchable(exe)
 	cover := ""
 	if s.Covers != nil {
 		if paths, err := s.Covers(game, profile); err == nil {

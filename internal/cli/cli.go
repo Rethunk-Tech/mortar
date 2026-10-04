@@ -29,6 +29,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/queue"
 	"github.com/Rethunk-AI/mortar/internal/savessvc"
+	"github.com/Rethunk-AI/mortar/internal/selfexe"
 	"github.com/Rethunk-AI/mortar/internal/sharesvc"
 	"github.com/Rethunk-AI/mortar/internal/tools"
 	"github.com/Rethunk-AI/mortar/internal/usererr"
@@ -578,6 +579,7 @@ func open(target string) error {
 	if !strings.Contains(target, "://") {
 		target = absPath(target)
 	}
+	exe = selfexe.Launchable(exe)
 	proc, err := os.StartProcess(exe, []string{exe, target}, &os.ProcAttr{Files: []*os.File{nil, nil, nil}})
 	if err != nil {
 		return err

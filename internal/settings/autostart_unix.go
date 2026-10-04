@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/selfexe"
 )
 
 func applyAutostart(enable bool) error {
@@ -40,7 +42,7 @@ func applyAutostart(enable bool) error {
 		if err != nil {
 			return err
 		}
-		body := fmt.Sprintf("[Desktop Entry]\nType=Application\nName=Mortar\nExec=%s\nX-GNOME-Autostart-enabled=true\n", desktopExec(exe))
+		body := fmt.Sprintf("[Desktop Entry]\nType=Application\nName=Mortar\nExec=%s\nX-GNOME-Autostart-enabled=true\n", desktopExec(selfexe.Launchable(exe)))
 		return sub.WriteFile("mortar.desktop", []byte(body), 0o600)
 	}
 	sub, err := root.OpenRoot("autostart")

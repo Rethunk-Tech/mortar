@@ -1,4 +1,5 @@
-package nxm
+// Package selfexe resolves the path other processes should run to start this Mortar.
+package selfexe
 
 import (
 	"os"

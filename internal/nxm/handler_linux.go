@@ -15,6 +15,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/selfexe"
 )
 
 const (
@@ -71,7 +72,7 @@ func New(exe string) (*System, error) {
 		return nil, err
 	}
 	l := &System{
-		exe: Launchable(exe), home: home, dataHome: baseDir("XDG_DATA_HOME", filepath.Join(home, ".local", "share")),
+		exe: selfexe.Launchable(exe), home: home, dataHome: baseDir("XDG_DATA_HOME", filepath.Join(home, ".local", "share")),
 		configHome: baseDir("XDG_CONFIG_HOME", filepath.Join(home, ".config")), run: execRun,
 	}
 	for d := range strings.SplitSeq(baseDir("XDG_DATA_DIRS", "/usr/local/share:/usr/share"), ":") {
