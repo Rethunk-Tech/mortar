@@ -15,7 +15,7 @@ func enabledPlayed(p profile.Profile) []PlayedMod {
 			continue
 		}
 		for _, m := range e.Mods {
-			if slices.ContainsFunc(e.Disabled, func(id string) bool { return strings.EqualFold(id, m.UniqueID) }) {
+			if !e.Enabled(m.UniqueID) {
 				continue
 			}
 			out = append(out, PlayedMod{

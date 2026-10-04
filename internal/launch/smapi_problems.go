@@ -2,6 +2,8 @@ package launch
 
 import (
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
 // SMAPIProblemKind is a recognised class of SMAPI log error.
@@ -90,7 +92,7 @@ func ResolveSMAPIProblemMods(problems []SMAPIProblem, mods []ModRef) []SMAPIProb
 
 func matchModRef(id, name string, mods []ModRef) (ModRef, bool) {
 	for _, m := range mods {
-		if id != "" && strings.EqualFold(m.UniqueID, id) {
+		if id != "" && manifest.SameID(m.UniqueID, id) {
 			return m, true
 		}
 		if name != "" && strings.EqualFold(m.Name, name) {

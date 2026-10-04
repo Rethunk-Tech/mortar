@@ -146,7 +146,7 @@ func requiresID(m diskMod, target string) bool {
 		opt[manifest.FoldID(id)] = true
 	}
 	for _, id := range m.Needs {
-		if strings.EqualFold(id, target) && !opt[manifest.FoldID(id)] {
+		if manifest.SameID(id, target) && !opt[manifest.FoldID(id)] {
 			return true
 		}
 	}
@@ -175,7 +175,7 @@ func requiredByMods(entries []diskEntry, targets []string) ([]string, []string) 
 			if id == "" || off[id] || seen[id] {
 				continue
 			}
-			if slices.ContainsFunc(targets, func(t string) bool { return strings.EqualFold(t, m.UniqueID) }) {
+			if slices.ContainsFunc(targets, func(t string) bool { return manifest.SameID(t, m.UniqueID) }) {
 				continue
 			}
 			for _, t := range targets {

@@ -18,6 +18,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/meta"
 )
 
@@ -320,7 +321,7 @@ func Lacking(used []string, have map[string]bool, dismissed []string) []Lack {
 	out := []Lack{}
 	for _, id := range used {
 		enabled, present := have[id]
-		if enabled || slices.ContainsFunc(dismissed, func(d string) bool { return strings.EqualFold(d, id) }) {
+		if enabled || slices.ContainsFunc(dismissed, func(d string) bool { return manifest.SameID(d, id) }) {
 			continue
 		}
 		out = append(out, Lack{UniqueID: id, Disabled: present})

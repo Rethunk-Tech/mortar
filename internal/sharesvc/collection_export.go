@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
-	"slices"
 	"sort"
 	"strings"
 
@@ -166,7 +165,7 @@ func buildCollection(p profile.Profile, domain, modsDir string, facts fileFacts)
 		}
 		doc.Mods = append(doc.Mods, modOf(e, domain, facts))
 		for _, m := range e.Mods {
-			if slices.ContainsFunc(e.Disabled, func(x string) bool { return strings.EqualFold(x, m.UniqueID) }) {
+			if !e.Enabled(m.UniqueID) {
 				continue
 			}
 			found, skip, err := share.ReadConfigs(modsDir, e.Key, m)

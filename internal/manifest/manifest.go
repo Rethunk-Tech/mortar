@@ -266,3 +266,6 @@ func GitHubUpdateKey(key string) (string, bool) {
 
 // FoldID is the key a mod unique ID is compared and mapped by: IDs are case-insensitive and may carry stray spaces.
 func FoldID(id string) string { return strings.ToLower(strings.TrimSpace(id)) }
+
+// SameID reports whether two mod unique IDs are the same under FoldID.
+func SameID(a, b string) bool { return FoldID(a) == FoldID(b) }

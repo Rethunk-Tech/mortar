@@ -32,10 +32,6 @@ type Diff struct {
 	Changed []DiffPair `json:"changed"`
 }
 
-func enabledOf(e Entry, uniqueID string) bool {
-	return !slices.ContainsFunc(e.Disabled, func(id string) bool { return SameID(id, uniqueID) })
-}
-
 func indexUserMods(p Profile) map[string]DiffSide {
 	out := map[string]DiffSide{}
 	for _, e := range p.Entries {
@@ -48,7 +44,7 @@ func indexUserMods(p Profile) map[string]DiffSide {
 				continue
 			}
 			out[k] = DiffSide{
-				UniqueID: m.UniqueID, Name: m.Name, Version: m.Version, Enabled: enabledOf(e, m.UniqueID),
+				UniqueID: m.UniqueID, Name: m.Name, Version: m.Version, Enabled: e.Enabled(m.UniqueID),
 				Key: e.Key, Source: e.Source,
 			}
 		}

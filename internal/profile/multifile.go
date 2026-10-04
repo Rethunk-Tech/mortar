@@ -158,7 +158,7 @@ func extraDisabled(e Entry, extraKey string) []string {
 		if folder != extraKey && !strings.HasPrefix(folder, prefix) {
 			continue
 		}
-		if isDisabled(e, m) {
+		if !e.Enabled(m.UniqueID) {
 			ids = append(ids, m.UniqueID)
 		}
 	}
@@ -344,7 +344,7 @@ func (s *Store) refreshEntryMods(e *Entry, entryDir string) error {
 			if slices.ContainsFunc(prev, func(old EntryMod) bool { return SameID(old.UniqueID, m.UniqueID) }) {
 				continue
 			}
-			if !isDisabled(*e, m) {
+			if e.Enabled(m.UniqueID) {
 				e.Disabled = append(e.Disabled, m.UniqueID)
 			}
 		}

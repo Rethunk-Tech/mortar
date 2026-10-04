@@ -129,3 +129,9 @@ func TestParseReadsStringIsRequired(t *testing.T) {
 		}
 	}
 }
+
+func TestSameIDFoldsCaseAndSpace(t *testing.T) {
+	if !SameID(" Au.One ", "au.one") || SameID("au.one", "au.two") {
+		t.Error("SameID must compare by FoldID")
+	}
+}

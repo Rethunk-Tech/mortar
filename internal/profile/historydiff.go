@@ -167,6 +167,12 @@ func diffMod(e Entry) DiffMod {
 }
 
 func enabledChanges(before, after Entry) []DiffEnabled {
+	if after.IsOverlay() {
+		if before.OverlayOff == after.OverlayOff {
+			return nil
+		}
+		return []DiffEnabled{{ID: after.Key, Name: entryName(after), Key: after.Key, Old: !before.OverlayOff, New: !after.OverlayOff}}
+	}
 	ids := uniqueIDs(before)
 	for _, id := range uniqueIDs(after) {
 		if !slices.Contains(ids, id) {
@@ -175,8 +181,8 @@ func enabledChanges(before, after Entry) []DiffEnabled {
 	}
 	var out []DiffEnabled
 	for _, id := range ids {
-		oldOn := modEnabled(before, id)
-		newOn := modEnabled(after, id)
+		oldOn := before.Enabled(id)
+		newOn := after.Enabled(id)
 		if oldOn == newOn {
 			continue
 		}
@@ -194,13 +200,6 @@ func uniqueIDs(e Entry) []string {
 		out = append(out, m.UniqueID)
 	}
 	return out
-}
-
-func modEnabled(e Entry, uniqueID string) bool {
-	if uniqueID == "" {
-		return len(e.Disabled) == 0
-	}
-	return !hasID(e.Disabled, uniqueID)
 }
 
 func modName(after, before Entry, uniqueID string) string {

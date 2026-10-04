@@ -185,7 +185,7 @@ func classifyFolder(dir, name string) (gameModSlot, bool) {
 
 func modVersion(f gameModFolder, id string) string {
 	for _, m := range f.mods {
-		if strings.EqualFold(m.UniqueID, id) {
+		if SameID(m.UniqueID, id) {
 			return m.Version
 		}
 	}

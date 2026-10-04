@@ -52,7 +52,8 @@ type ModState struct {
 	Config          string `json:"config"`
 }
 
-func entryMod(p Profile, key, uniqueID string) (Entry, EntryMod, bool) {
+// FindMod is the entry and mod holding uniqueID; an empty key searches every entry.
+func (p Profile) FindMod(key, uniqueID string) (Entry, EntryMod, bool) {
 	for _, e := range p.Entries {
 		if key != "" && e.Key != key {
 			continue
@@ -70,7 +71,7 @@ func (s *Store) ModState(game, id, key, uniqueID string) (ModState, error) {
 	if err != nil {
 		return ModState{}, err
 	}
-	e, m, ok := entryMod(p, key, uniqueID)
+	e, m, ok := p.FindMod(key, uniqueID)
 	if !ok {
 		return ModState{}, errors.New("no such mod in this profile")
 	}

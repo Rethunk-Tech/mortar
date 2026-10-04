@@ -12,7 +12,6 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
-	"slices"
 	"strings"
 	"unicode/utf8"
 
@@ -143,7 +142,7 @@ func Write(w io.Writer, p profile.Profile, modsDir string, include ...Include) (
 			continue
 		}
 		for _, m := range e.Mods {
-			if slices.ContainsFunc(e.Disabled, func(x string) bool { return strings.EqualFold(x, m.UniqueID) }) || !validUniqueID(m.UniqueID) {
+			if !e.Enabled(m.UniqueID) || !validUniqueID(m.UniqueID) {
 				continue
 			}
 			doc.UniqueIDs = append(doc.UniqueIDs, m.UniqueID)

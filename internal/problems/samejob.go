@@ -214,7 +214,7 @@ func mayShareJob(a, b Installed, builtOn map[string]bool) bool {
 }
 
 func dependsOn(m Installed, id string) bool {
-	return slices.ContainsFunc(m.Dependencies, func(d manifest.Dependency) bool { return strings.EqualFold(d.UniqueID, id) })
+	return slices.ContainsFunc(m.Dependencies, func(d manifest.Dependency) bool { return manifest.SameID(d.UniqueID, id) })
 }
 
 // shortMembers names up to three members, most distinctive first, as "Type.Member" from "Namespace.Type::Member".

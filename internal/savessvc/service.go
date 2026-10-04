@@ -189,7 +189,7 @@ func (s *Service) describe(ctx context.Context, ids map[string]bool) map[string]
 					d.name = cmp.Or(page.Name, id)
 					for _, f := range page.Downloads {
 						for _, m := range f.Mods {
-							if strings.EqualFold(m.UniqueID, id) && m.Name != "" {
+							if profile.SameID(m.UniqueID, id) && m.Name != "" {
 								d.name = m.Name
 							}
 						}

@@ -14,7 +14,7 @@ type ModExtraFile struct {
 }
 
 func (s *Services) modExtraFiles(prof profile.Profile, modID string) ([]ModExtraFile, error) {
-	e, ok := entryOf(prof, modID)
+	e, _, ok := prof.FindMod("", modID)
 	if !ok {
 		return nil, fmt.Errorf("profile %s has no mod %q", prof.Name, modID)
 	}

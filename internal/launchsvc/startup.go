@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/bridge"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
 const (
@@ -98,7 +99,7 @@ func loadBridgeEarly(path string) error {
 	if list, ok := cfg[loadEarlyKey].([]any); ok {
 		early = list
 	}
-	if found && slices.ContainsFunc(early, func(v any) bool { s, _ := v.(string); return strings.EqualFold(s, bridge.UniqueID) }) {
+	if found && slices.ContainsFunc(early, func(v any) bool { s, _ := v.(string); return manifest.SameID(s, bridge.UniqueID) }) {
 		return nil
 	}
 	cfg[loadEarlyKey] = append([]any{bridge.UniqueID}, early...)

@@ -223,9 +223,8 @@ func validEntryTags(tags []string) bool {
 	}
 	seen := map[string]bool{}
 	for _, raw := range tags {
-		tag := strings.TrimSpace(raw)
-		if tag == "" || utf8.RuneCountInString(tag) > profile.MaxEntryTag ||
-			strings.ContainsFunc(tag, unicode.IsControl) {
+		tag, ok := profile.CleanTag(raw)
+		if !ok {
 			return false
 		}
 		key := strings.ToLower(tag)
@@ -256,9 +255,8 @@ func importEntryNoteTags(note string, tags []string) (string, []string) {
 	out := make([]string, 0, len(tags))
 	seen := map[string]bool{}
 	for _, raw := range tags {
-		tag := strings.TrimSpace(raw)
-		if tag == "" || utf8.RuneCountInString(tag) > profile.MaxEntryTag ||
-			strings.ContainsFunc(tag, unicode.IsControl) {
+		tag, ok := profile.CleanTag(raw)
+		if !ok {
 			continue
 		}
 		key := strings.ToLower(tag)
@@ -380,31 +378,23 @@ func withoutDetails(s Shared) Shared {
 func refOf(e profile.Entry, fomod, notes bool) (Ref, string) {
 	switch e.Source.Kind {
 	case profile.KindNexus:
-		r := Ref{ModID: e.Source.ModID, FileID: e.Source.FileID, Disabled: slices.Clone(e.Disabled)}
-		if fomod {
-			r.Fomod = cloneFomod(e.Fomod)
-		}
-		if notes {
-			r.Note = e.Note
-			r.Tags = slices.Clone(e.Tags)
-		}
-		if !r.valid() {
-			return Ref{}, "no Nexus file recorded"
-		}
-		return r, ""
+		r = Ref{ModID: e.Source.ModID, FileID: e.Source.FileID}
+		missing = "no Nexus file recorded"
 	case profile.KindGitHub:
-		r := Ref{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset, Disabled: slices.Clone(e.Disabled)}
-		if fomod {
-			r.Fomod = cloneFomod(e.Fomod)
-		}
-		if notes {
-			r.Note = e.Note
-			r.Tags = slices.Clone(e.Tags)
-		}
-		if !r.valid() {
-			return Ref{}, "no GitHub release asset recorded"
-		}
-		return r, ""
+		r = Ref{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset}
+	r.Disabled = slices.Clone(e.Disabled)
+	if fomod {
+		r.Fomod = cloneFomod(e.Fomod)
+	}
+	if notes {
+		r.Note = e.Note
+		r.Tags = slices.Clone(e.Tags)
+	}
+	if !r.valid() {
+		return Ref{}, missing
+	}
+	return r, ""
+		missing = "no GitHub release asset recorded"
 	case profile.KindLocal:
 		return Ref{}, "local archive"
 	default:
@@ -418,7 +408,7 @@ func Enabled(e profile.Entry) bool {
 		return true
 	}
 	for _, m := range e.Mods {
-		if !slices.ContainsFunc(e.Disabled, func(x string) bool { return strings.EqualFold(x, m.UniqueID) }) {
+		if e.Enabled(m.UniqueID) {
 			return true
 		}
 	}

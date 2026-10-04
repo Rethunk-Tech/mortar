@@ -1,9 +1,8 @@
 package problems
 
 import (
-	"strings"
-
 	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
 // RunError is an enabled mod that logged errors in the profile's most recent stored run.
@@ -37,11 +36,11 @@ func installedByRef(mods []Installed, ref launch.ModRef) (Installed, bool) {
 		if !m.Enabled {
 			continue
 		}
-		if ref.Key != "" && m.Key == ref.Key && (ref.UniqueID == "" || strings.EqualFold(m.UniqueID, ref.UniqueID)) &&
+		if ref.Key != "" && m.Key == ref.Key && (ref.UniqueID == "" || manifest.SameID(m.UniqueID, ref.UniqueID)) &&
 			(ref.Name == "" || m.Name == ref.Name) {
 			return m, true
 		}
-		if (ref.UniqueID != "" && strings.EqualFold(m.UniqueID, ref.UniqueID)) ||
+		if (ref.UniqueID != "" && manifest.SameID(m.UniqueID, ref.UniqueID)) ||
 			(ref.UniqueID == "" && ref.Name != "" && m.Name == ref.Name) {
 			return m, true
 		}

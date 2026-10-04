@@ -3,7 +3,6 @@ package control
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/modreport"
@@ -19,7 +18,7 @@ func (s *Services) modReport(gameID, profileID string, prof profile.Profile, p P
 		return modreport.Result{}, err
 	}
 	ref := refs[0]
-	inst, ok := installedMod(prof, ref.Key, ref.UniqueID)
+	_, inst, ok := prof.FindMod(ref.Key, ref.UniqueID)
 	if !ok {
 		return modreport.Result{}, fmt.Errorf("profile has no mod %q", p.UniqueIDs[0])
 	}
@@ -47,20 +46,6 @@ func (s *Services) modReport(gameID, profileID string, prof profile.Profile, p P
 		in.NexusModID = src.ModID
 	}
 	return modreport.BuildFromLog(logText.Text, inst.Name, in), nil
-}
-
-func installedMod(p profile.Profile, key, uniqueID string) (profile.EntryMod, bool) {
-	for _, e := range p.Entries {
-		if e.Key != key {
-			continue
-		}
-		for _, m := range e.Mods {
-			if strings.EqualFold(m.UniqueID, uniqueID) {
-				return m, true
-			}
-		}
-	}
-	return profile.EntryMod{}, false
 }
 
 func entrySource(p profile.Profile, key string) profile.Source {

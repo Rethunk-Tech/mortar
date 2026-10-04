@@ -790,7 +790,10 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 			p = stamped
 		}
 		res.Profile = p
-		configs = slices.DeleteFunc(slices.Clone(configs), func(c share.Config) bool { return holds(p, c.UniqueID) })
+		configs = slices.DeleteFunc(slices.Clone(configs), func(c share.Config) bool {
+			_, _, held := p.FindMod("", c.UniqueID)
+			return held
+		})
 	}
 	if len(local) > 0 || len(reqs) > 0 {
 		if batchID == "" {
@@ -828,7 +831,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 				return Result{}, err
 			}
 			configs = slices.DeleteFunc(slices.Clone(configs), func(c share.Config) bool {
-				return slices.ContainsFunc(written, func(id string) bool { return strings.EqualFold(id, c.UniqueID) })
+				return slices.ContainsFunc(written, func(id string) bool { return profile.SameID(id, c.UniqueID) })
 			})
 		}
 	}
@@ -907,12 +910,6 @@ func (s *Service) Replace(ctx context.Context, game, session, profileID string, 
 		}
 	}
 	return s.importWithBatch(ctx, game, session, profileID, exclude, batchID)
-}
-
-func holds(p profile.Profile, uniqueID string) bool {
-	return slices.ContainsFunc(p.Entries, func(e profile.Entry) bool {
-		return slices.ContainsFunc(e.Mods, func(m profile.EntryMod) bool { return strings.EqualFold(m.UniqueID, uniqueID) })
-	})
 }
 
 // --- Config files ---
@@ -1101,7 +1098,7 @@ func (s *Service) apply(p *pending) {
 		return
 	}
 	p.Configs = slices.DeleteFunc(p.Configs, func(c share.Config) bool {
-		return slices.ContainsFunc(written, func(id string) bool { return strings.EqualFold(id, c.UniqueID) })
+		return slices.ContainsFunc(written, func(id string) bool { return profile.SameID(id, c.UniqueID) })
 	})
 }
 

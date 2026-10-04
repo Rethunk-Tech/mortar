@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/backup"
@@ -154,7 +153,7 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 	ne.Tags = slices.Clone(e.Tags)
 	ne.Fomod = cloneFomod(choices)
 	for _, m := range ne.Mods {
-		if isDisabled(e, m) {
+		if !e.Enabled(m.UniqueID) {
 			ne.Disabled = append(ne.Disabled, m.UniqueID)
 		}
 	}
@@ -226,7 +225,7 @@ func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry
 		}
 		ne.Disabled = ne.Disabled[:0]
 		for _, m := range ne.Mods {
-			if isDisabled(e, m) {
+			if !e.Enabled(m.UniqueID) {
 				ne.Disabled = append(ne.Disabled, m.UniqueID)
 			}
 		}
@@ -398,7 +397,7 @@ func copyOver(src, dst string) error {
 
 func deleteOldVersion(found []manifest.Mod, uniqueID string) bool {
 	for _, m := range found {
-		if strings.EqualFold(m.UniqueID, uniqueID) {
+		if SameID(m.UniqueID, uniqueID) {
 			return m.DeleteOldVersion
 		}
 	}

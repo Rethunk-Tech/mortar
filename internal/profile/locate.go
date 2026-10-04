@@ -30,21 +30,17 @@ func (s *Store) ProfilesWithMod(game, uniqueID string) ([]ModInProfile, error) {
 }
 
 func modIn(p Profile, uniqueID string) (ModInProfile, bool) {
-	for _, e := range p.Entries {
-		for _, m := range e.Mods {
-			if !SameID(m.UniqueID, uniqueID) {
-				continue
-			}
-			return ModInProfile{
-				ProfileID:   p.ID,
-				ProfileName: p.Name,
-				Key:         e.Key,
-				UniqueID:    m.UniqueID,
-				Name:        m.Name,
-				Version:     m.Version,
-				Enabled:     !isDisabled(e, m),
-			}, true
-		}
+	e, m, ok := p.FindMod("", uniqueID)
+	if !ok {
+		return ModInProfile{}, false
 	}
-	return ModInProfile{}, false
+	return ModInProfile{
+		ProfileID:   p.ID,
+		ProfileName: p.Name,
+		Key:         e.Key,
+		UniqueID:    m.UniqueID,
+		Name:        m.Name,
+		Version:     m.Version,
+		Enabled:     e.Enabled(m.UniqueID),
+	}, true
 }

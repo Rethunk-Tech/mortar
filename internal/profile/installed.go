@@ -38,7 +38,7 @@ func (s *Store) Installed(game, id string) ([]Installed, error) {
 			if err != nil {
 				return nil, err
 			}
-			enabled := !isDisabled(e, m)
+			enabled := e.Enabled(m.UniqueID)
 			folder := plain
 			if !enabled {
 				folder = dotted

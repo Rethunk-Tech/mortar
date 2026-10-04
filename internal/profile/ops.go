@@ -58,8 +58,8 @@ func exists(p string) bool {
 	return err == nil
 }
 
-// SameID reports whether two mod unique IDs are the same; IDs compare case-insensitively.
-func SameID(a, b string) bool { return strings.EqualFold(a, b) }
+// SameID reports whether two mod unique IDs are the same; IDs compare case-insensitively and ignore stray spaces.
+func SameID(a, b string) bool { return manifest.SameID(a, b) }
 
 func hasID(ids []string, id string) bool {
 	return slices.ContainsFunc(ids, func(x string) bool { return SameID(x, id) })
@@ -108,7 +108,11 @@ func flip(plain, dotted string, enabled bool) error {
 	return fsx.Rename(from, to)
 }
 
-func isDisabled(e Entry, m EntryMod) bool { return hasID(e.Disabled, m.UniqueID) }
+// Enabled reports whether the entry's mod with this unique ID is switched on. A mod without an ID cannot be
+// switched off on its own, so it always counts as on.
+func (e Entry) Enabled(uniqueID string) bool {
+	return uniqueID == "" || !hasID(e.Disabled, uniqueID)
+}
 
 // materialize prepares a fresh copy of an entry in tmp: disabled nested mods get their dot names.
 // It returns the folder name the entry belongs under in mods/.
@@ -118,7 +122,7 @@ func materialize(tmp string, e Entry) (string, error) {
 	}
 	final := e.Key
 	for _, m := range e.Mods {
-		if !isDisabled(e, m) {
+		if e.Enabled(m.UniqueID) {
 			continue
 		}
 		if m.Folder == "." {
@@ -732,7 +736,7 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 			caution := ""
 			if plain, dotted, err := ModPaths(modsDir, e.Key, m.Folder); err == nil {
 				folder := plain
-				if isDisabled(e, m) {
+				if !e.Enabled(m.UniqueID) {
 					folder = dotted
 				}
 				if b, err := fsx.ReadFile(filepath.Join(folder, manifest.FileName)); err == nil {
@@ -743,7 +747,7 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 			}
 			out = append(out, Mod{
 				Key: e.Key, UniqueID: m.UniqueID, Name: m.Name, Author: m.Author, Version: m.Version,
-				Enabled: !isDisabled(e, m), Siblings: sib,
+				Enabled: e.Enabled(m.UniqueID), Siblings: sib,
 				Picture: e.Source.Picture, Endorsements: e.Source.EndorsementCount,
 				Needs: m.Needs, Optional: m.Optional, ContentPackFor: m.ContentPackFor,
 				UpdateCautionMessage: caution,
