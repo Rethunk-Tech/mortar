@@ -5,8 +5,11 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
+	"strings"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 )
 
@@ -76,5 +79,19 @@ func TestAuthorMarkedManifestDescription(t *testing.T) {
 	got := authorMarkedMods(t.TempDir(), []Installed{mod})
 	if len(got) != 1 || got[0].Status != "deprecated" {
 		t.Fatalf("got %+v", got)
+	}
+}
+
+func TestTheExtensionMarksTheSameObsoleteWords(t *testing.T) {
+	src, err := fsx.ReadFile(filepath.Join("..", "..", "browser-extension", "hideInProfile.js"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	words := regexp.MustCompile(`\((obsolete[a-z|]*)\)`).FindStringSubmatch(authorStatusWord.String())
+	if words == nil {
+		t.Fatalf("no word list in %s", authorStatusWord)
+	}
+	if !strings.Contains(string(src), `/\b(`+words[1]+`)\b/i`) {
+		t.Fatalf("browser-extension/hideInProfile.js must match the words %q", words[1])
 	}
 }
