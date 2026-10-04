@@ -53,7 +53,7 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 		case it.State == StateWaitingClick:
 			waiting = true
 		case it.State != StateQueued:
-		case s.waitsForSameMod(it):
+		case it.overlay && s.waitsForSameMod(it):
 		case running[it.Game+"\n"+it.Profile]:
 			held = true
 		case it.Repo != "":
@@ -204,7 +204,7 @@ func (s *Service) skipHeld() {
 	cands := s.obsolete()
 	s.mu.Unlock()
 	for _, it := range cands {
-		if have := s.d.Newest(it.Game, it.Profile, it.ModID); have >= it.FileID {
+		if have := s.d.Newest(it.Game, it.Profile, it.ModID, it.Current); have >= it.FileID {
 			log.Printf("queue: mod %d file %d skipped as %s, profile %s already has file %d", it.ModID, it.FileID, it.ID, it.Profile, have)
 			s.end(it.ID, StateSkipped, StateQueued, StateWaitingClick)
 		}
@@ -461,6 +461,10 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		s.mu.Unlock()
 	}
 	if s.stored(&it) {
+		it.overlay = it.overlay || (s.d.StoredOverlay != nil && s.d.StoredOverlay(it.Game, store.NexusKey(it.ModID, it.FileID)))
+		if s.parkOverlay(it.ID, it.overlay, false) {
+			return nil
+		}
 		if done, err := s.installStored(it, mod); done {
 			return err
 		}
@@ -534,6 +538,9 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		return err
 	}
 	optional := manifestLess(path)
+	if s.parkOverlay(it.ID, optional, true) {
+		return nil
+	}
 	s.mu.Lock()
 	cur := s.find(it.ID)
 	if cur == nil || cur.State != StateDownloading {
@@ -682,7 +689,7 @@ func (p *progress) set(n int64) {
 // installStored adds a Nexus file the store already holds to the item's profile. It reports false, so the file is
 // downloaded as usual, when the profile has an entry from the same mod page: that choice installs from the archive.
 func (s *Service) installStored(it Item, mod nexus.Mod) (bool, error) {
-	if it.Kind != KindUpdate && s.d.SamePage != nil {
+	if it.Kind != KindUpdate && !it.overlay && s.d.SamePage != nil {
 		if _, ok := s.d.SamePage(it.Game, it.Profile, it.ModID, it.FileID, it.Category); ok {
 			s.mu.Lock()
 			defer s.mu.Unlock()

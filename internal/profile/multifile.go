@@ -50,9 +50,15 @@ func SamePageAsk(p Profile, modID, fileID int, category string) (MergeAsk, bool)
 	return MergeAsk{}, false
 }
 
-// NewestFromPage is the highest Nexus file id the profile holds from modID's page, 0 when it holds none.
-func NewestFromPage(p Profile, modID int) int {
+// NewestFromPage is the highest Nexus file id the profile holds from modID's page, 0 when it holds none. When
+// current is an optional file the profile holds, it is current: that file's own versions are what count.
+func NewestFromPage(p Profile, modID, current int) int {
 	newest := 0
+	if current > 0 && slices.ContainsFunc(p.Entries, func(e Entry) bool {
+		return e.IsOverlay() && e.Source.ModID == modID && e.Source.FileID == current
+	}) {
+		return current
+	}
 	for _, e := range p.Entries {
 		if e.Source.Kind == KindNexus && e.Source.ModID == modID && !e.IsOverlay() {
 			newest = max(newest, e.Source.FileID)

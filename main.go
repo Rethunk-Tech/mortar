@@ -375,17 +375,18 @@ func run() error {
 			}
 			return profiles.SourceOf(game, key), true
 		},
+		StoredOverlay: profiles.StoredOverlay,
 		Stage:         profiles.StageGitHub,
 		InstallStaged: profiles.InstallStaged,
 		InstallRemap:  profiles.InstallRemap,
-		Newest: func(game, profileID string, modID int) int {
+		Newest: func(game, profileID string, modID, current int) int {
 			all, err := profiles.List(game)
 			if err != nil {
 				return 0
 			}
 			for _, p := range all {
 				if p.Error == "" && p.ID == profileID {
-					return profile.NewestFromPage(p, modID)
+					return profile.NewestFromPage(p, modID, current)
 				}
 			}
 			return 0

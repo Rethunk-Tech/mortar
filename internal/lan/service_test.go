@@ -146,6 +146,15 @@ func TestLoopbackTransfer(t *testing.T) {
 	if err := senderStore.AddDir("stardew", key, source); err != nil {
 		t.Fatal(err)
 	}
+	// An optional file laid over the main file travels as its own store item.
+	optional := t.TempDir()
+	if err := os.WriteFile(filepath.Join(optional, "alt.png"), []byte("optional"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	optKey := store.NexusKey(7, 3)
+	if err := senderStore.AddDir("stardew", optKey, optional); err != nil {
+		t.Fatal(err)
+	}
 
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	receiverStore, err := store.Open()
@@ -177,8 +186,11 @@ func TestLoopbackTransfer(t *testing.T) {
 
 	var payload bytes.Buffer
 	if _, err := share.Write(&payload, profile.Profile{
-		Name:    "Farm friends",
-		Entries: []profile.Entry{{Key: "mod", Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 2}}},
+		Name: "Farm friends",
+		Entries: []profile.Entry{
+			{Key: key, Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 2}},
+			{Key: optKey, Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 3}, OverlayOf: key},
+		},
 	}, t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
@@ -207,6 +219,13 @@ func TestLoopbackTransfer(t *testing.T) {
 	}
 	if string(got) != "from sender" {
 		t.Fatalf("installed contents = %q", got)
+	}
+	dir, err := receiverStore.Path("stardew", optKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, err := fsx.ReadFile(filepath.Join(dir, "alt.png")); err != nil || string(got) != "optional" {
+		t.Fatalf("optional file did not transfer: %q %v", got, err)
 	}
 }
 

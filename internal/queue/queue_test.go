@@ -121,7 +121,7 @@ func newFixture(t *testing.T) *fixture {
 			f.mu.Unlock()
 			return profile.InstallResult{}, nil
 		},
-		Newest: func(_, _ string, _ int) int { return int(f.newest.Load()) },
+		Newest: func(_, _ string, _, _ int) int { return int(f.newest.Load()) },
 		SamePage: func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool) {
 			if f.samePage == nil {
 				return profile.MergeAsk{}, false

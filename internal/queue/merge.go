@@ -50,6 +50,9 @@ func sourceWithOptions(it Item, source profile.Source) profile.Source {
 	if len(it.Disabled) > 0 {
 		source = source.WithDisabled(it.Disabled)
 	}
+	if it.Current != 0 {
+		source = source.WithReplacing(it.Current)
+	}
 	return source
 }
 
