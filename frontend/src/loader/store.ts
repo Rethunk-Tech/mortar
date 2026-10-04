@@ -4,6 +4,7 @@ import { create } from 'zustand'
 import type { Status } from '../../bindings/github.com/Rethunk-AI/mortar/internal/loader/models.ts'
 import {
   Install,
+  InstallVersion,
   Status as LoaderStatus,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/loadersvc/service.ts'
 import { i18n } from '../i18n/index.ts'
@@ -22,7 +23,7 @@ export const useLoader = create<{
   // click could otherwise start another.
   pending: boolean
   check: (game: string) => Promise<void>
-  install: (game: string) => Promise<void>
+  install: (game: string, version?: string) => Promise<void>
 }>((set, get) => ({
   status: null,
   installing: false,
@@ -39,13 +40,13 @@ export const useLoader = create<{
     }
   },
   // Progress and the outcome arrive as events, so an install Mortar starts by itself shows the same way.
-  install: async (game) => {
+  install: async (game, version) => {
     if (get().pending) {
       return
     }
     set({ pending: true })
     try {
-      const status = await Install(game)
+      const status = version ? await InstallVersion(game, version) : await Install(game)
       set({ status })
       useToasts
         .getState()

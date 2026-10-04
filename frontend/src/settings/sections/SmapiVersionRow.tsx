@@ -4,16 +4,12 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { State } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
-import {
-  InstallVersion,
-  ListVersions,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/loadersvc/service.ts'
+import { ListVersions } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/loadersvc/service.ts'
 import { SetByKey } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useLaunch } from '../../launch/store.ts'
 import { useLoader } from '../../loader/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
-import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSelect } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
@@ -48,7 +44,6 @@ function SmapiVersionRow() {
   const fail = t`Couldn't save that setting`
   const pin = useSettings((s) => s.games?.stardew?.smapiPin)
   const status = useLoader((s) => s.status)
-  const check = useLoader((s) => s.check)
   const installLatest = useLoader((s) => s.install)
   const pending = useLoader((s) => s.pending)
   const installing = useLoader((s) => s.installing)
@@ -63,7 +58,9 @@ function SmapiVersionRow() {
   const [busy, setBusy] = useState(false)
   const selected = pinValue(pin)
   const locked = playing || pending || installing
-  const lockReason = t`Stop the game to change mods.`
+  const lockReason = playing
+    ? t`Stop the game to install SMAPI.`
+    : t`An install is already running.`
   useEffect(() => {
     ListVersions(GAME_STARDEW)
       .then((rows) => setVersions(rows ?? []))
@@ -80,17 +77,7 @@ function SmapiVersionRow() {
       setBusy(false)
       setConfirm(false)
     }
-    if (selected === LATEST) {
-      installLatest(GAME_STARDEW).finally(done)
-      return
-    }
-    InstallVersion(GAME_STARDEW, selected)
-      .then((st) => {
-        push({ kind: 'success', title: t`SMAPI ${st.version} is installed` })
-        return check(GAME_STARDEW)
-      })
-      .catch(reportError(t`Could not install SMAPI`))
-      .finally(done)
+    installLatest(GAME_STARDEW, selected === LATEST ? undefined : selected).finally(done)
   }
   return (
     <>
@@ -100,6 +87,7 @@ function SmapiVersionRow() {
             value={selected}
             onChange={savePin}
             options={versionChoices(i18n, pin ? [pin, ...versions] : versions)}
+            label={t`SMAPI version`}
           />
           <DisabledReason title={lockReason} disabled={locked}>
             <Button
