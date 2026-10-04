@@ -32,6 +32,7 @@ type Service struct {
 	NexusFiles NexusFilesOf
 
 	mu      sync.Mutex
+	drift   map[string]driftScan
 	cache   map[string]cached
 	updates map[string]cachedUpdates
 	checks  map[string]*problemCall
@@ -94,7 +95,7 @@ func (c cached) fresh(fp string, now time.Time) bool {
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store, m *meta.Client) *Service {
-	return &Service{home: home, settings: s, profiles: profiles, meta: m, cache: map[string]cached{}, updates: map[string]cachedUpdates{}, checks: map[string]*problemCall{}}
+	return &Service{home: home, settings: s, profiles: profiles, meta: m, drift: map[string]driftScan{}, cache: map[string]cached{}, updates: map[string]cachedUpdates{}, checks: map[string]*problemCall{}}
 }
 
 func platform() string {
@@ -192,14 +193,14 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	c, ok := s.cache[key]
 	s.mu.Unlock()
 	if ok && c.fresh(fp, time.Now()) {
-		return s.withDrift(gameID, id, s.withDismissed(gameID, id, s.withCompat(ctx, gameID, id, c.result, mods)))
+		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, gameID, id, c.result, mods)))
 	}
 
 	checkKey := key + "\x00" + fp
 	s.mu.Lock()
 	if c, ok := s.cache[key]; ok && c.fresh(fp, time.Now()) {
 		s.mu.Unlock()
-		return s.withDrift(gameID, id, s.withDismissed(gameID, id, s.withCompat(ctx, gameID, id, c.result, mods)))
+		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, gameID, id, c.result, mods)))
 	}
 	s.mu.Unlock()
 
@@ -256,7 +257,7 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	}
 	s.cache[key] = entry
 	s.mu.Unlock()
-	return s.withDrift(gameID, id, s.withDismissed(gameID, id, s.withCompat(ctx, gameID, id, r, mods)))
+	return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, gameID, id, r, mods)))
 }
 
 // ForgetCached drops every result and scan Mortar holds in memory, after the cache folder is cleared,
@@ -264,6 +265,7 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 func (s *Service) ForgetCached() {
 	s.mu.Lock()
 	s.cache = map[string]cached{}
+	s.drift = map[string]driftScan{}
 	s.updates = map[string]cachedUpdates{}
 	s.mu.Unlock()
 	packDiskState.Lock()
@@ -274,9 +276,28 @@ func (s *Service) ForgetCached() {
 	mapScans.Unlock()
 }
 
-func (s *Service) withDrift(gameID, id string, r Result) (Result, error) {
+// driftRescan is how long one drift scan answers repeated checks of an unchanged profile, such as the focus events
+// of switching windows; a change to the mods or to the recorded baseline rescans at once.
+const driftRescan = 5 * time.Second
+
+type driftScan struct {
+	key   string
+	at    time.Time
+	drift []profile.Drift
+}
+
+func (s *Service) withDrift(gameID, id, fp string, r Result) (Result, error) {
 	if s.settings != nil && !s.settings.Get().DriftChecksOn() {
 		r.Drift = []profile.Drift{}
+		return r, nil
+	}
+	memo := gameID + "/" + id
+	key := fp + "|" + s.profiles.DriftBaseline(gameID, id)
+	s.mu.Lock()
+	last, ok := s.drift[memo]
+	s.mu.Unlock()
+	if ok && last.key == key && time.Since(last.at) < driftRescan {
+		r.Drift = last.drift
 		return r, nil
 	}
 	drift, err := s.profiles.ScanModsDrift(gameID, id)
@@ -286,6 +307,9 @@ func (s *Service) withDrift(gameID, id string, r Result) (Result, error) {
 	if drift == nil {
 		drift = []profile.Drift{}
 	}
+	s.mu.Lock()
+	s.drift[memo] = driftScan{key: key, at: time.Now(), drift: drift}
+	s.mu.Unlock()
 	r.Drift = drift
 	return r, nil
 }

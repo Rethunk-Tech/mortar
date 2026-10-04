@@ -2,9 +2,11 @@ package problems
 
 import (
 	"bytes"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -14,6 +16,52 @@ import (
 
 // markUnreadable records that a map could not be read, so the tilesheets it might use count as possibly used, and
 // lets the walk go on to the other files.
+// mapFiles remembers each mod folder's .tmx and .tbin files for its store key. A store item never changes after it
+// is extracted, so the list holds until the folder holds another key or is itself changed; the folder's own
+// modification time catches files added or removed at its top level.
+var mapFiles = struct {
+	sync.Mutex
+	byFolder map[string]mapFileList
+}{byFolder: map[string]mapFileList{}}
+
+type mapFileList struct {
+	stamp    string
+	paths    []string
+	complete bool
+}
+
+// modMapFiles lists the map files in mod's folder; complete is false when part of the folder could not be read.
+func modMapFiles(mod Installed) (paths []string, complete bool) {
+	stamp := mod.Key
+	if info, err := os.Stat(mod.Folder); err == nil {
+		stamp += "|" + strconv.FormatInt(info.ModTime().UnixNano(), 10)
+	}
+	mapFiles.Lock()
+	cached, ok := mapFiles.byFolder[mod.Folder]
+	mapFiles.Unlock()
+	if ok && cached.stamp == stamp {
+		return cached.paths, cached.complete
+	}
+	unreadable := false
+	if err := filepath.WalkDir(mod.Folder, func(path string, entry os.DirEntry, err error) error {
+		if err != nil {
+			return markUnreadable(&unreadable)
+		}
+		ext := strings.ToLower(filepath.Ext(path))
+		if !entry.IsDir() && (ext == ".tmx" || ext == ".tbin") {
+			paths = append(paths, path)
+		}
+		return nil
+	}); err != nil {
+		unreadable = true
+	}
+	complete = !unreadable
+	mapFiles.Lock()
+	mapFiles.byFolder[mod.Folder] = mapFileList{stamp: stamp, paths: paths, complete: complete}
+	mapFiles.Unlock()
+	return paths, complete
+}
+
 func markUnreadable(flag *bool) error {
 	*flag = true
 	return nil
@@ -146,20 +194,21 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 		if containsMod(candidates, mod) || mod.Folder == "" {
 			continue
 		}
-		if err := filepath.WalkDir(mod.Folder, func(path string, entry os.DirEntry, err error) error {
-			if err != nil {
-				return markUnreadable(&mapsUnreadable)
-			}
-			if entry.IsDir() {
-				return nil
+		paths, complete := modMapFiles(mod)
+		if !complete {
+			mapsUnreadable = true
+		}
+		for _, path := range paths {
+			info, statErr := os.Stat(path)
+			if statErr != nil {
+				mapsUnreadable = true
+				continue
 			}
 			ext := strings.ToLower(filepath.Ext(path))
-			if ext != ".tmx" && ext != ".tbin" {
-				return nil
-			}
-			scan, readErr := mapScanFor(path, entry, ext)
+			scan, readErr := mapScanFor(path, fs.FileInfoToDirEntry(info), ext)
 			if readErr != nil {
-				return markUnreadable(&mapsUnreadable)
+				mapsUnreadable = true
+				continue
 			}
 			for _, candidate := range candidates {
 				id := strings.ToLower(candidate.UniqueID)
@@ -179,9 +228,6 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 					recordTilesheetUse(uses[id], mod)
 				}
 			}
-			return nil
-		}); err != nil {
-			mapsUnreadable = true
 		}
 	}
 	out := []Cleanup{}

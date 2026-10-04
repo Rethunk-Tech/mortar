@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -45,6 +46,20 @@ type Drift struct {
 	Kind   DriftKind `json:"kind"`
 	Folder string    `json:"folder"`
 	Key    string    `json:"key"`
+}
+
+// DriftBaseline identifies the recorded mods snapshot that drift is measured against; it changes whenever Mortar
+// records a new one, so a caller can tell a remembered drift scan is out of date.
+func (s *Store) DriftBaseline(game, id string) string {
+	dir, err := s.ProfileDir(game, id)
+	if err != nil {
+		return ""
+	}
+	info, err := os.Stat(snapshotPath(dir))
+	if err != nil {
+		return ""
+	}
+	return strconv.FormatInt(info.ModTime().UnixNano(), 10) + "/" + strconv.FormatInt(info.Size(), 10)
 }
 
 func snapshotPath(profileDir string) string {

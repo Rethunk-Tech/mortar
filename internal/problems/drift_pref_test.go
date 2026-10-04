@@ -17,7 +17,7 @@ func TestDriftChecksOffSkipsScan(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := &Service{settings: set}
-	got, err := s.withDrift("stardew", "p", Result{})
+	got, err := s.withDrift("stardew", "p", "", Result{})
 	if err != nil {
 		t.Fatal(err)
 	}
