@@ -579,6 +579,29 @@ func (s *Store) recordHistoryBatchData(dir string, data *historyFileData, batch 
 	return writeHistory(dir, *data, 0)
 }
 
+// Baseline returns the history event whose snapshot is the profile as it stands, recording one when the newest
+// event is not that (a profile with no history yet included), so a later Revert to it undoes everything after.
+func (s *Store) Baseline(game, id string) (string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	p, dir, err := s.readDir(game, id)
+	if err != nil {
+		return "", err
+	}
+	data, err := readHistory(dir)
+	if err != nil {
+		return "", err
+	}
+	if n := len(data.Events); n > 0 {
+		last := data.Events[n-1]
+		if snap, ok := snapshotEntries(&data, last.SnapshotID); ok && entriesEqual(snap, p.Entries) {
+			return last.ID, nil
+		}
+	}
+	ev, err := appendHistory(dir, HistoryEvent{Kind: historyRestored, Label: "Before applying a template", Count: 1}, p.Entries, s.historyKeep())
+	return ev.ID, err
+}
+
 func (s *Store) recordSnapshot(game, id, kind, label string, count int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -838,12 +861,12 @@ func entriesSnapshotID(entries []Entry) (string, error) {
 func cloneEntries(in []Entry) []Entry {
 	out := make([]Entry, len(in))
 	for i, e := range in {
-		e.Mods = append([]EntryMod(nil), e.Mods...)
-		e.Disabled = append([]string(nil), e.Disabled...)
-		e.Tags = append([]string(nil), e.Tags...)
+		e.Mods = slices.Clone(e.Mods)
+		e.Disabled = slices.Clone(e.Disabled)
+		e.Tags = slices.Clone(e.Tags)
 		e.Fomod = cloneFomod(e.Fomod)
-		e.ExtraStoreKeys = append([]string(nil), e.ExtraStoreKeys...)
-		e.PreviousExtraStoreKeys = append([]string(nil), e.PreviousExtraStoreKeys...)
+		e.ExtraStoreKeys = slices.Clone(e.ExtraStoreKeys)
+		e.PreviousExtraStoreKeys = slices.Clone(e.PreviousExtraStoreKeys)
 		out[i] = e
 	}
 	return out

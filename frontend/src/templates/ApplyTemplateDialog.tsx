@@ -11,10 +11,6 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
-import {
-  History,
-  Revert,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import type {
   Preview,
   Template,
@@ -22,6 +18,7 @@ import type {
 import {
   ApplyTemplate,
   PreviewApplyTemplate,
+  UndoApplyTemplate,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/templates/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
@@ -66,7 +63,6 @@ function useApply(game: string, profileId: string, templates: Template[], onClos
   const apply = (name: string) =>
     run(
       async () => {
-        const before = ((await History(game, profileId)) ?? [])[0]?.id ?? ''
         const result = await ApplyTemplate(game, name, profileId)
         useProfiles.getState().replace(result.profile)
         onClose()
@@ -85,17 +81,13 @@ function useApply(game: string, profileId: string, templates: Template[], onClos
         useToasts.getState().push({
           kind: missing.length > 0 && !queued ? 'warning' : 'success',
           title,
-          ...(before === ''
-            ? {}
-            : {
-                action: {
-                  label: t`Undo`,
-                  profileId,
-                  run: async () => {
-                    useProfiles.getState().replace(await Revert(game, profileId, before))
-                  },
-                },
-              }),
+          action: {
+            label: t`Undo`,
+            profileId,
+            run: async () => {
+              useProfiles.getState().replace(await UndoApplyTemplate(game, profileId, result.undo))
+            },
+          },
         })
       },
       { errorTitle: t`Could not apply the template` },

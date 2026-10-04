@@ -94,8 +94,15 @@ func TestTemplateRoundTripFromProfileToNewProfile(t *testing.T) {
 		len(again.AlreadyHave) != 1 || len(again.SettingsChanges) != 0 {
 		t.Fatalf("second preview = %+v, %v", again, err)
 	}
-	if evs, err := profiles.History("stardew", other.ID); err != nil || len(evs) == 0 {
-		t.Fatalf("history = %+v, %v", evs, err)
+	if evs, err := profiles.History("stardew", other.ID); err != nil || len(evs) != 2 {
+		t.Fatalf("history = %+v, %v (want the baseline and the apply)", evs, err)
+	}
+	back, err := svc.UndoApplyTemplate("stardew", other.ID, applied.Undo)
+	if err != nil || len(back.Entries) != 0 || back.LaunchOptions != "" {
+		t.Fatalf("undo = %+v, %v", back, err)
+	}
+	if got := stored[other.ID]; got.WindowMode != nil {
+		t.Fatalf("settings after undo = %+v", got)
 	}
 
 	if _, err := svc.NewProfileFromTemplate("stardew", "Nope", "X"); err == nil {

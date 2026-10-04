@@ -140,20 +140,69 @@ func (s *Service) PreviewApplyTemplate(game, templateName, profileID string) (Pr
 	return out, nil
 }
 
+// Undo is what UndoApplyTemplate needs to put the profile back: the history event holding its mods before the
+// apply, and the game settings and launch options it replaced.
+type Undo struct {
+	EventID       string                `json:"eventId"`
+	ModsChanged   bool                  `json:"modsChanged"`
+	GameSettings  gamesettings.Settings `json:"gameSettings"`
+	LaunchOptions string                `json:"launchOptions"`
+}
+
+// Applied is the result of ApplyTemplate with the means to undo it.
+type Applied struct {
+	bundles.ApplyResult
+	Undo Undo `json:"undo"`
+}
+
 // ApplyTemplate merges the template into an existing profile: its mods are added (the profile's own are never
-// removed) as one history event, then its game settings and launch options replace the profile's. Settings are not
-// part of history, so undoing the event reverts the mods only.
-func (s *Service) ApplyTemplate(game, templateName, profileID string) (bundles.ApplyResult, error) {
+// removed) as one history event of their own, then its game settings and launch options replace the profile's.
+// The result carries what UndoApplyTemplate needs to restore all of it.
+func (s *Service) ApplyTemplate(game, templateName, profileID string) (Applied, error) {
 	t, err := s.find(game, templateName)
 	if err != nil {
-		return bundles.ApplyResult{}, err
+		return Applied{}, err
 	}
 	p, err := s.profileOf(game, profileID)
 	if err != nil {
-		return bundles.ApplyResult{}, err
+		return Applied{}, err
+	}
+	undo := Undo{}
+	if undo.GameSettings, err = s.d.GameSettings(game, profileID); err != nil {
+		return Applied{}, err
+	}
+	if undo.LaunchOptions, err = s.d.Profiles.LaunchOptions(game, profileID); err != nil {
+		return Applied{}, err
+	}
+	if undo.EventID, err = s.d.Profiles.Baseline(game, profileID); err != nil {
+		return Applied{}, err
 	}
 	add, _, _ := split(p, t.Bundle)
-	return s.fill(game, profileID, t, add)
+	res, err := s.fill(game, profileID, t, add)
+	if err != nil {
+		return Applied{}, err
+	}
+	undo.ModsChanged = res.Added > 0
+	return Applied{ApplyResult: res, Undo: undo}, nil
+}
+
+// UndoApplyTemplate reverts the mods an ApplyTemplate added and restores the game settings and launch options it
+// replaced.
+func (s *Service) UndoApplyTemplate(game, profileID string, u Undo) (profile.Profile, error) {
+	var p profile.Profile
+	var err error
+	if u.ModsChanged {
+		if p, err = s.d.Profiles.Revert(game, profileID, u.EventID); err != nil {
+			return profile.Profile{}, err
+		}
+	}
+	if err := s.d.SetGameSettings(game, profileID, u.GameSettings); err != nil {
+		return profile.Profile{}, err
+	}
+	if p, err = s.d.Profiles.SetLaunchOptions(game, profileID, u.LaunchOptions); err != nil {
+		return profile.Profile{}, err
+	}
+	return p, nil
 }
 
 func (s *Service) fill(game, id string, t Template, mods []bundles.Mod) (bundles.ApplyResult, error) {
