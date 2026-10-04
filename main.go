@@ -18,6 +18,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/appversion"
 	"github.com/Rethunk-AI/mortar/internal/archive"
+	"github.com/Rethunk-AI/mortar/internal/archivesvc"
 	"github.com/Rethunk-AI/mortar/internal/backdrop"
 	"github.com/Rethunk-AI/mortar/internal/bisect"
 	"github.com/Rethunk-AI/mortar/internal/browse"
@@ -53,6 +54,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/shortcut"
 	modstore "github.com/Rethunk-AI/mortar/internal/store"
 	"github.com/Rethunk-AI/mortar/internal/support"
+	"github.com/Rethunk-AI/mortar/internal/templates"
 	"github.com/Rethunk-AI/mortar/internal/tools"
 	"github.com/Rethunk-AI/mortar/internal/updatesvc"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -581,10 +583,34 @@ func run() error {
 		Emit: emit,
 	})
 
+	archivesSvc := archivesvc.NewService(archivesvc.Deps{
+		Dir: func() string {
+			if d := store.Get().ArchiveDir(); filepath.IsAbs(d) {
+				return d
+			}
+			return filepath.Join(dataDir, "downloads")
+		},
+		Keys:     items.Keys,
+		Profiles: profiles.List,
+		NexusMods: func() map[int]bool {
+			ids := map[int]bool{}
+			for _, h := range queueSvc.History() {
+				if h.ModID > 0 {
+					ids[h.ModID] = true
+				}
+			}
+			return ids
+		},
+	})
+	templatesSvc := templates.NewService(templates.Deps{
+		Profiles: profiles, Bundles: bundlesSvc,
+		GameSettings: launches.GameSettings, SetGameSettings: launches.SetGameSettings,
+	}, dataDir)
+
 	for _, s := range []application.Service{
 		application.NewService(svc), application.NewService(gamesSvc),
 		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
-		application.NewService(bundlesSvc),
+		application.NewService(bundlesSvc), application.NewService(templatesSvc), application.NewService(archivesSvc),
 		application.NewService(savesSvc), application.NewService(plays), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
 		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc), application.NewService(lanSvc),
 		application.NewService(supportSvc), application.NewService(updates), application.NewService(bisectSvc),
