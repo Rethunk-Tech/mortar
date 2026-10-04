@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/ed25519"
 	"crypto/sha256"
@@ -78,11 +79,15 @@ func run(ctx context.Context, o options) error {
 	if err := manifest.Validate(); err != nil {
 		return err
 	}
-	body, err := json.MarshalIndent(manifest, "", "  ")
-	if err != nil {
+	// Unescaped so version ranges such as ">=1.6.14" stay as the committed manifest has them.
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(manifest); err != nil {
 		return err
 	}
-	body = append(body, '\n')
+	body := buf.Bytes()
 	if err := os.WriteFile(o.output, body, 0o600); err != nil {
 		return fmt.Errorf("write component manifest: %w", err)
 	}
