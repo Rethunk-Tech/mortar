@@ -24,13 +24,9 @@ func (s *Service) dest(id, fileName string) string {
 	return filepath.Join(s.downloadRoot(), id+filepath.Ext(fileName))
 }
 
-func resumeSidecar(path string) string {
-	return path + ".resume.json"
-}
-
 func dropDownload(path string) {
 	_ = os.Remove(path)
-	_ = os.Remove(resumeSidecar(path))
+	_ = os.Remove(github.ResumeSidecar(path))
 }
 
 func (s *Service) dropDownloadUnlessKept(path string) {
@@ -59,7 +55,7 @@ func (s *Service) sweepDownloads() {
 	s.mu.Unlock()
 	for _, e := range entries {
 		name := e.Name()
-		id := strings.TrimSuffix(name, ".resume.json")
+		id := strings.TrimSuffix(name, github.ResumeSuffix)
 		id = strings.TrimSuffix(id, filepath.Ext(id))
 		if keep[id] {
 			continue

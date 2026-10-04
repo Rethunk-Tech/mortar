@@ -127,23 +127,27 @@ type resumeMeta struct {
 	MD5          string `json:"md5,omitempty"`
 }
 
-func resumeSidecar(path string) string { return path + ".resume.json" }
+// ResumeSuffix ends the sidecar that records a partial download so a later Download can resume it.
+const ResumeSuffix = ".resume.json"
+
+// ResumeSidecar is the sidecar path of the download at path.
+func ResumeSidecar(path string) string { return path + ResumeSuffix }
 
 func loadResume(path string) resumeMeta {
 	var m resumeMeta
-	if _, err := datadir.ReadJSON(resumeSidecar(path), &m); err != nil {
+	if _, err := datadir.ReadJSON(ResumeSidecar(path), &m); err != nil {
 		return resumeMeta{}
 	}
 	return m
 }
 
 func saveResume(path string, m resumeMeta) {
-	_ = datadir.WriteJSON(resumeSidecar(path), m)
+	_ = datadir.WriteJSON(ResumeSidecar(path), m)
 }
 
 func dropDownload(path string) {
 	_ = os.Remove(path)
-	_ = os.Remove(resumeSidecar(path))
+	_ = os.Remove(ResumeSidecar(path))
 }
 
 // Download streams url to dest, appending with Range when a partial and the server allow it, and

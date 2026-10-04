@@ -515,7 +515,7 @@ func (c *Client) Download(ctx context.Context, component Component, dest string)
 	}
 	defer func() {
 		_ = os.Remove(tmpPath)
-		_ = os.Remove(tmpPath + ".resume.json")
+		_ = os.Remove(github.ResumeSidecar(tmpPath))
 	}()
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
