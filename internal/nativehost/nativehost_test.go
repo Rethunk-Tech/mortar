@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"testing"
 
@@ -136,7 +137,7 @@ func TestServeReportsConnectedWhenProfileHasNoMods(t *testing.T) {
 	in := frame(t, request{Type: "installed", Game: "stardewvalley"})
 	var out bytes.Buffer
 	err := serveWithConnection(bytes.NewReader(in), &out, func(string) error { return nil },
-		func(string) []int { return []int{} }, nil, func(string) bool { return true }, nil)
+		func(string) []int { return []int{} }, nil, func(string) bool { return true }, nil, func(string) []int { return []int{7} })
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -148,7 +149,7 @@ func TestServeReportsConnectedWhenProfileHasNoMods(t *testing.T) {
 	if err := json.Unmarshal(out.Next(int(n)), &got); err != nil {
 		t.Fatal(err)
 	}
-	if !got.Connected || got.ModIDs == nil || len(*got.ModIDs) != 0 {
+	if !got.Connected || got.ModIDs == nil || len(*got.ModIDs) != 0 || !slices.Equal(got.BrokenIDs, []int{7}) {
 		t.Fatalf("installed reply = %+v", got)
 	}
 }
@@ -402,7 +403,7 @@ func TestServeAnswersUpdates(t *testing.T) {
 			{ModID: 2, Name: "Zed", Installed: "1.0.0", Latest: "2.0.0"},
 			{ModID: 1, Name: "Alpha", Installed: "3.0.0", Latest: ""},
 		}
-	})
+	}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -59,6 +59,7 @@ type reply struct {
 	Error        string            `json:"error,omitempty"`
 	Connected    bool              `json:"connected"`
 	ModIDs       *[]int            `json:"modIds,omitempty"`
+	BrokenIDs    []int             `json:"brokenIds,omitempty"`
 	Open         *modInProfile     `json:"open,omitempty"`
 	Others       []modInProfile    `json:"others,omitempty"`
 	Problems     []modProblem      `json:"problems,omitempty"`
@@ -187,14 +188,14 @@ func requiredByMods(entries []diskEntry, targets []string) ([]string, []string) 
 
 // Serve answers messages from r until it closes, handing each message's link to open.
 func Serve(r io.Reader, w io.Writer, open func(link string) error) error {
-	return serveWithConnection(r, w, open, activeNexusModIDs, nexusModProfiles, activeNexusConnected, activeNexusUpdates, nexusModProblems)
+	return serveWithConnection(r, w, open, activeNexusModIDs, nexusModProfiles, activeNexusConnected, activeNexusUpdates, brokenNexusModIDs, nexusModProblems)
 }
 
 func serve(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, mod func(game string, modID int) (modInProfile, []modInProfile), problem ...func(game string, modID int) []modProblem) error {
-	return serveWithConnection(r, w, open, installed, mod, nil, nil, problem...)
+	return serveWithConnection(r, w, open, installed, mod, nil, nil, nil, problem...)
 }
 
-func serveWithConnection(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, mod func(game string, modID int) (modInProfile, []modInProfile), connected func(string) bool, updates func(string) (string, []modUpdate), problem ...func(game string, modID int) []modProblem) error {
+func serveWithConnection(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, mod func(game string, modID int) (modInProfile, []modInProfile), connected func(string) bool, updates func(string) (string, []modUpdate), broken func(string) []int, problem ...func(game string, modID int) []modProblem) error {
 	for {
 		var n uint32
 		if err := binary.Read(r, binary.NativeEndian, &n); err != nil {
@@ -224,6 +225,9 @@ func serveWithConnection(r io.Reader, w io.Writer, open func(link string) error,
 				isConnected = connected(req.Game)
 			}
 			rep = reply{Connected: isConnected, ModIDs: &ids}
+			if broken != nil {
+				rep.BrokenIDs = broken(req.Game)
+			}
 		case "mod":
 			openProfile, others := mod(req.Game, req.ModID)
 			rep = reply{Open: &openProfile, Others: others}
@@ -349,6 +353,31 @@ func runningControlCall(dir, method string, params map[string]any, out any, time
 		return nil
 	}
 	return json.Unmarshal(rep.Result, out)
+}
+
+// brokenNexusModIDs lists the Nexus pages SMAPI's compatibility list marks broken for the game version last played,
+// from the copy Mortar cached for its Problems check.
+func brokenNexusModIDs(domain string) []int {
+	info, ok := components.BundledGameByNexusDomain(domain)
+	if !ok || info.ID != "stardew" {
+		return nil
+	}
+	idx, ok := meta.Peek[meta.CompatIndex](&meta.Client{}, meta.CompatCacheFile)
+	if !ok {
+		return nil
+	}
+	gameVersion := ""
+	if store, err := settings.Open(); err == nil {
+		gameVersion = store.Get().LastPlayed[info.ID].GameVersion
+	}
+	ids := []int{}
+	for id, e := range idx.ByNexus {
+		if e.BrokenOn(gameVersion) {
+			ids = append(ids, id)
+		}
+	}
+	slices.Sort(ids)
+	return ids
 }
 
 func activeNexusModIDs(domain string) []int {
