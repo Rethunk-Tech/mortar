@@ -9,7 +9,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { useId } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import { mergeBindings } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { controlsCutout } from '../shell/controlsCutout.ts'
@@ -53,6 +53,15 @@ function TourPopover({
   const paletteKeys = mergeBindings(shortcuts)['command-palette']
   const placement = placements[step] ?? 'bottom'
   const last = tourOnLastStep(step)
+  const previousFocus = useRef<HTMLElement | null>(null)
+  useEffect(() => {
+    const el = document.activeElement
+    previousFocus.current = el instanceof HTMLElement ? el : null
+  }, [])
+  const close = () => {
+    finish()
+    previousFocus.current?.focus()
+  }
 
   let title = t`Profiles`
   let body = t`Switch mod sets here. Right-click a profile for rename, duplicate, and more.`
@@ -61,7 +70,7 @@ function TourPopover({
     body = t`Launch the game with this profile's mods. Mortar applies your list before SMAPI starts.`
   } else if (step === TOUR_STEP_MODS) {
     title = t`Mods`
-    body = t`Enable, disable, and update mods for the open profile.`
+    body = t`Switch mods on and off, and update them for the open profile.`
   } else if (step === TOUR_STEP_PROBLEMS) {
     title = t`Problems`
     body = t`See load errors, missing dependencies, and other issues before you play.`
@@ -135,7 +144,7 @@ function TourPopover({
                     spacing={1}
                     sx={{ justifyContent: 'space-between', alignItems: 'center' }}
                   >
-                    <Button size="small" color="inherit" onClick={finish}>
+                    <Button size="small" color="inherit" onClick={close}>
                       {t`Skip tour`}
                     </Button>
                     <Stack direction="row" spacing={1}>
@@ -149,9 +158,10 @@ function TourPopover({
                       <Button
                         size="small"
                         variant="contained"
+                        autoFocus={true}
                         onClick={() => {
                           if (last) {
-                            finish()
+                            close()
                           } else {
                             setStep((s) => tourStepNext(s))
                           }
