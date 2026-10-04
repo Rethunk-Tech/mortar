@@ -13,10 +13,12 @@ import (
 )
 
 const (
-	crashLogName  = "crash.log"
-	crashSeenName = "crash.seen"
-	prevLogName   = "mortar.prev.log"
-	logTailLines  = 40
+	crashLogName = "crash.log"
+	// maxCrashLogBytes keeps crash.log small: mortar.log is capped, and only new growth matters here.
+	maxCrashLogBytes = 1 << 20
+	crashSeenName    = "crash.seen"
+	prevLogName      = "mortar.prev.log"
+	logTailLines     = 40
 )
 
 // lastRunCrashed is set by DetectLastRunCrashed at process start so LastRunCrashed
@@ -30,6 +32,11 @@ var lastRunCrashed atomic.Bool
 func DetectLastRunCrashed(dataDir string) bool {
 	crashPath := filepath.Join(dataDir, crashLogName)
 	grew := crashLogGrew(crashPath, filepath.Join(dataDir, crashSeenName))
+	// Once its growth is reported, a large crash.log starts over; the file is opened for appending, so later
+	// crashes still land at its new end.
+	if info, err := os.Stat(crashPath); err == nil && info.Size() > maxCrashLogBytes {
+		_ = os.Truncate(crashPath, 0)
+	}
 	writeCrashSeen(filepath.Join(dataDir, crashSeenName), crashPath)
 	crashed := grew || prevLogUnclean(filepath.Join(dataDir, prevLogName))
 	lastRunCrashed.Store(crashed)

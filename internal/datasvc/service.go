@@ -163,8 +163,12 @@ func (s *Service) CleanupPreview() (Preview, error) {
 	if err != nil {
 		return Preview{}, err
 	}
+	sources := map[string]map[string]profile.Source{}
 	return Select(dir, s.items, keys, time.Now(), func(game, key string) string {
-		source := s.profiles.SourceOf(game, key)
+		if sources[game] == nil {
+			sources[game] = s.profiles.SourcesOf(game)
+		}
+		source := sources[game][key]
 		if source.Name == "" {
 			return ""
 		}
