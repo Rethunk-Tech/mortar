@@ -27,6 +27,10 @@ function estimateVirtualSize<T>(row: VirtualRow<T>, lanePx: number): number {
   return LIST_ROW_PX
 }
 
+interface Scroller {
+  scrollToIndex: (index: number, opts?: { align: 'auto' }) => void
+}
+
 export const TYPEAHEAD_MS = 500
 
 export const LIST_ROW_PX = 36
@@ -214,8 +218,6 @@ export function firstNamePrefix<T>(
 }
 
 export const listRowId = (row: ListRow) => modId(row.mod)
-
-type Scroller = { scrollToIndex: (index: number, opts?: { align: 'auto' }) => void }
 
 export interface ModView<T> {
   items: readonly VirtualRow<T>[]

@@ -127,21 +127,20 @@ function alternativeGroups(sets: readonly OverlayFileSet[]): string[][] {
   const groups: string[][] = []
   const placed = new Set<string>()
   for (const set of sets) {
-    if (placed.has(set.key) || (set.alternatives ?? []).length === 0) {
-      continue
-    }
-    const group: string[] = []
-    const todo = [set.key]
-    while (todo.length > 0) {
-      const key = todo.shift() ?? ''
-      if (placed.has(key)) {
-        continue
+    // A key placed by an earlier group's walk is not a new group.
+    if (!placed.has(set.key) && (set.alternatives ?? []).length > 0) {
+      const group: string[] = []
+      const todo = [set.key]
+      while (todo.length > 0) {
+        const key = todo.shift() ?? ''
+        if (!placed.has(key)) {
+          placed.add(key)
+          group.push(key)
+          todo.push(...(sets.find((s) => s.key === key)?.alternatives ?? []))
+        }
       }
-      placed.add(key)
-      group.push(key)
-      todo.push(...(sets.find((s) => s.key === key)?.alternatives ?? []))
+      groups.push(sets.map((s) => s.key).filter((k) => group.includes(k)))
     }
-    groups.push(sets.map((s) => s.key).filter((k) => group.includes(k)))
   }
   return groups
 }

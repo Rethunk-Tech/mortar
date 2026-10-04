@@ -57,28 +57,10 @@ function PresetRow({
   )
 }
 
-/** Named launch presets of one profile; every change is saved at once, since Play lists them. */
-function LaunchPresetsBlock({
-  gameId,
-  profileId,
-  launchOptions,
-  launchPrefix,
-  launchEnv,
-}: {
-  gameId: string
-  profileId: string
-  launchOptions: string
-  launchPrefix: string
-  launchEnv: string
-}) {
+/** The profile's preset writes; each replaces the stored profile with the one the backend returns. */
+function usePresetActions(gameId: string, profileId: string) {
   const { t } = useLingui()
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === profileId))
   const replace = useProfiles((s) => s.replace)
-  const [editing, setEditing] = useState<LaunchPreset | null>(null)
-  const [templates, setTemplates] = useState(false)
-  const [removing, setRemoving] = useState<LaunchPreset | null>(null)
-  const presets = profile?.launchPresets ?? []
-  const defaultId = profile?.defaultLaunchPreset ?? ''
   const save = (next: LaunchPreset[], nextDefault: string) =>
     SetLaunchPresets(gameId, profileId, next, nextDefault)
       .then((p: Profile) => replace(p))
@@ -98,6 +80,48 @@ function LaunchPresetsBlock({
           .push({ kind: 'success', title: t`Saved ${name} as a launch preset template` }),
       )
       .catch(reportUnexpected)
+  const addFromTemplate = (tpl: {
+    name?: string
+    options: string
+    prefix: string
+    env: string
+    showConsole?: string
+  }) =>
+    AddLaunchPreset(gameId, profileId, {
+      id: '',
+      name: tpl.name ?? '',
+      launchOptions: tpl.options,
+      launchPrefix: tpl.prefix,
+      launchEnv: tpl.env,
+      showConsole: tpl.showConsole ?? '',
+    })
+      .then((p: Profile) => replace(p))
+      .catch(reportError(t`Could not add the launch preset`))
+  return { save, setDefault, saveTemplate, addFromTemplate }
+}
+
+/** Named launch presets of one profile; every change is saved at once, since Play lists them. */
+function LaunchPresetsBlock({
+  gameId,
+  profileId,
+  launchOptions,
+  launchPrefix,
+  launchEnv,
+}: {
+  gameId: string
+  profileId: string
+  launchOptions: string
+  launchPrefix: string
+  launchEnv: string
+}) {
+  const { t } = useLingui()
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === profileId))
+  const [editing, setEditing] = useState<LaunchPreset | null>(null)
+  const [templates, setTemplates] = useState(false)
+  const [removing, setRemoving] = useState<LaunchPreset | null>(null)
+  const presets = profile?.launchPresets ?? []
+  const defaultId = profile?.defaultLaunchPreset ?? ''
+  const { save, setDefault, saveTemplate, addFromTemplate } = usePresetActions(gameId, profileId)
   const saveOne = (preset: LaunchPreset) => {
     setEditing(null)
     const exists = presets.some((p) => p.id === preset.id)
@@ -156,16 +180,7 @@ function LaunchPresetsBlock({
         onClose={() => setTemplates(false)}
         onAdd={(tpl) => {
           setTemplates(false)
-          AddLaunchPreset(gameId, profileId, {
-            id: '',
-            name: tpl.name ?? '',
-            launchOptions: tpl.options,
-            launchPrefix: tpl.prefix,
-            launchEnv: tpl.env,
-            showConsole: tpl.showConsole ?? '',
-          })
-            .then((p: Profile) => replace(p))
-            .catch(reportError(t`Could not add the launch preset`))
+          addFromTemplate(tpl)
         }}
       />
       <LaunchPresetDialog

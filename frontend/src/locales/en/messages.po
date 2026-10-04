@@ -16,7 +16,7 @@ msgid "Allow shows Nexus pages what Mortar has. Off hides that; download links s
 msgstr "Allow shows Nexus pages what Mortar has. Off hides that; download links still arrive"
 
 #: src/console/PerformancePanelParts.tsx:177
-#: src/game/ProfileWorkspace.tsx:86
+#: src/game/ProfileWorkspace.tsx:94
 msgid "Performance"
 msgstr "Performance"
 
@@ -491,7 +491,7 @@ msgstr "Never for this mod"
 msgid "Search settings"
 msgstr "Search settings"
 
-#: src/game/ProfileWorkspace.tsx:84
+#: src/game/ProfileWorkspace.tsx:92
 msgid "Notes"
 msgstr "Notes"
 
@@ -1306,7 +1306,7 @@ msgstr "Sprout"
 msgid "Link length"
 msgstr "Link length"
 
-#: src/profiles/LaunchPresetsBlock.tsx:151
+#: src/profiles/LaunchPresetsBlock.tsx:175
 msgid "Add preset"
 msgstr "Add preset"
 
@@ -1510,7 +1510,7 @@ msgstr "Skip"
 msgid "Nothing in the queue needs a decision."
 msgstr "Nothing in the queue needs a decision."
 
-#: src/profiles/LaunchPresetsBlock.tsx:98
+#: src/profiles/LaunchPresetsBlock.tsx:80
 msgid "Saved {name} as a launch preset template"
 msgstr "Saved {name} as a launch preset template"
 
@@ -1576,7 +1576,7 @@ msgstr "Reading the archive…"
 msgid "Grant Flatpak Steam access?"
 msgstr "Grant Flatpak Steam access?"
 
-#: src/profiles/LaunchPresetsBlock.tsx:168
+#: src/profiles/LaunchPresetsBlock.tsx:99
 msgid "Could not add the launch preset"
 msgstr "Could not add the launch preset"
 
@@ -1622,7 +1622,7 @@ msgstr "SMAPI unofficial builds"
 msgid "Usage"
 msgstr "Usage"
 
-#: src/profiles/LaunchPresetsBlock.tsx:113
+#: src/profiles/LaunchPresetsBlock.tsx:137
 msgid "Launch presets"
 msgstr "Launch presets"
 
@@ -2595,7 +2595,7 @@ msgstr "Keep my changes"
 msgid "Unpinned selected mods"
 msgstr "Unpinned selected mods"
 
-#: src/game/ProfileWorkspace.tsx:49
+#: src/game/ProfileWorkspace.tsx:57
 msgid "Profile sections"
 msgstr "Profile sections"
 
@@ -2904,7 +2904,7 @@ msgstr "Grid card size"
 msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
-#: src/game/ProfileWorkspace.tsx:85
+#: src/game/ProfileWorkspace.tsx:93
 #: src/settings/GameSettingsPage.tsx:60
 #: src/settings/GameSettingsPage.tsx:114
 msgid "Console"
@@ -4219,7 +4219,7 @@ msgstr "Added from an archive, so it only exists on this computer."
 msgid "Downloads"
 msgstr "Downloads"
 
-#: src/profiles/LaunchPresetsBlock.tsx:115
+#: src/profiles/LaunchPresetsBlock.tsx:139
 msgid "The fields above are the Standard preset. Play uses the default preset; the Play menu can launch with another one once. Templates are game-wide and copied in."
 msgstr "The fields above are the Standard preset. Play uses the default preset; the Play menu can launch with another one once. Templates are game-wide and copied in."
 
@@ -4349,7 +4349,7 @@ msgstr "{name} profile history"
 msgid "Values"
 msgstr "Values"
 
-#: src/profiles/LaunchPresetsBlock.tsx:85
+#: src/profiles/LaunchPresetsBlock.tsx:67
 msgid "Could not save the launch presets"
 msgstr "Could not save the launch presets"
 
@@ -5181,7 +5181,7 @@ msgstr "Console command"
 msgid "Restoring…"
 msgstr "Restoring…"
 
-#: src/game/ProfileWorkspace.tsx:82
+#: src/game/ProfileWorkspace.tsx:90
 msgid "Load order"
 msgstr "Load order"
 
@@ -5647,7 +5647,7 @@ msgstr "Send"
 #: src/console/ConsoleTab.tsx:54
 #: src/firstrunTour/TourPopover.tsx:67
 #: src/game/Hero.tsx:325
-#: src/game/ProfileWorkspace.tsx:65
+#: src/game/ProfileWorkspace.tsx:73
 #: src/mods/ModListVirtual.tsx:275
 #: src/settings/GameSettingsPage.tsx:58
 #: src/settings/GameSettingsPage.tsx:89
@@ -7159,7 +7159,7 @@ msgstr "Rename bundle"
 msgid "Bundle added"
 msgstr "Bundle added"
 
-#: src/game/ProfileWorkspace.tsx:64
+#: src/game/ProfileWorkspace.tsx:72
 msgid "Browse"
 msgstr "Browse"
 
@@ -7440,7 +7440,7 @@ msgid "{0} failed"
 msgstr "{0} failed"
 
 #: src/firstrunTour/TourPopover.tsx:70
-#: src/game/ProfileWorkspace.tsx:71
+#: src/game/ProfileWorkspace.tsx:79
 #: src/mods/ModCards.tsx:426
 #: src/mods/ModList.tsx:346
 msgid "Problems"
@@ -7630,7 +7630,7 @@ msgstr "From the game's Mods folder…"
 msgid "Default for Share and Export. You can change it per share."
 msgstr "Default for Share and Export. You can change it per share."
 
-#: src/App.tsx:61
+#: src/App.tsx:71
 #: src/games/GameSelect.tsx:152
 #: src/games/GameSelect.tsx:300
 msgid "Could not read your games"
@@ -8298,7 +8298,7 @@ msgstr "Copy to keep"
 msgid "Actions for {0}"
 msgstr "Actions for {0}"
 
-#: src/profiles/LaunchPresetsBlock.tsx:152
+#: src/profiles/LaunchPresetsBlock.tsx:176
 msgid "Add from game presets…"
 msgstr "Add from game presets…"
 
@@ -8527,7 +8527,7 @@ msgid "In {0}; turns off its edits here"
 msgstr "In {0}; turns off its edits here"
 
 #: src/launch/PlayControl.tsx:181
-#: src/profiles/LaunchPresetsBlock.tsx:89
+#: src/profiles/LaunchPresetsBlock.tsx:71
 msgid "Could not set the default launch preset"
 msgstr "Could not set the default launch preset"
 
@@ -8844,7 +8844,7 @@ msgstr "Done ({0}): {1}"
 #: src/game/ProfileMenuItems.tsx:78
 #: src/mods/CategoryEditor.tsx:156
 #: src/mods/ConfigPresets.tsx:155
-#: src/profiles/LaunchPresetsBlock.tsx:180
+#: src/profiles/LaunchPresetsBlock.tsx:195
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:73
 #: src/tools/ToolsManageDialog.tsx:87
 msgid "Delete {0}?"
@@ -8919,8 +8919,8 @@ msgstr "{0, plural, one {# problem} other {# problems}}"
 
 #: src/launch/VanillaPlay.tsx:179
 #: src/launch/VanillaPlay.tsx:232
-#: src/profiles/LaunchPresetsBlock.tsx:118
-#: src/profiles/LaunchPresetsBlock.tsx:122
+#: src/profiles/LaunchPresetsBlock.tsx:142
+#: src/profiles/LaunchPresetsBlock.tsx:146
 msgid "Standard"
 msgstr "Standard"
 
@@ -9437,7 +9437,7 @@ msgid "Templates are shared by every profile of this game. Adding one copies it 
 msgstr "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 
 #: src/game/Hero.tsx:327
-#: src/game/ProfileWorkspace.tsx:83
+#: src/game/ProfileWorkspace.tsx:91
 msgid "Saves"
 msgstr "Saves"
 
@@ -9687,7 +9687,7 @@ msgstr " {winnerName} wins."
 msgid "Mortar handles these links now."
 msgstr "Mortar handles these links now."
 
-#: src/profiles/LaunchPresetsBlock.tsx:181
+#: src/profiles/LaunchPresetsBlock.tsx:196
 msgid "This launch preset will be deleted."
 msgstr "This launch preset will be deleted."
 
@@ -10178,7 +10178,7 @@ msgid "Downloading and verifying Mortar {0}…"
 msgstr "Downloading and verifying Mortar {0}…"
 
 #: src/mods/ConfigPresets.tsx:157
-#: src/profiles/LaunchPresetsBlock.tsx:182
+#: src/profiles/LaunchPresetsBlock.tsx:197
 msgid "Delete preset"
 msgstr "Delete preset"
 
@@ -10975,7 +10975,7 @@ msgid "Open in the tray instead of showing the window"
 msgstr "Open in the tray instead of showing the window"
 
 #: src/commandPalette/paletteLabels.ts:16
-#: src/game/ProfileWorkspace.tsx:113
+#: src/game/ProfileWorkspace.tsx:121
 #: src/profiles/ProfileRow.tsx:229
 msgid "Share"
 msgstr "Share"
@@ -11130,7 +11130,7 @@ msgstr "Recently deleted retention"
 msgid "Forest farm"
 msgstr "Forest farm"
 
-#: src/game/ProfileWorkspace.tsx:118
+#: src/game/ProfileWorkspace.tsx:126
 msgid "{gameName} settings"
 msgstr "{gameName} settings"
 

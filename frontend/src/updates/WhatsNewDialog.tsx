@@ -108,7 +108,7 @@ export function WhatsNewDialog() {
     AckWhatsNew().catch(() => undefined)
   }
   return (
-    <Dialog open={!!shown} onClose={close} slotProps={{ paper: { sx: { maxWidth: 520 } } }}>
+    <Dialog open={shown !== null} onClose={close} slotProps={{ paper: { sx: { maxWidth: 520 } } }}>
       <DialogTitle>{t`What's new in Mortar ${version ?? ''}`}</DialogTitle>
       <DialogContent>
         {release?.available ? (
