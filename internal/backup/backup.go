@@ -105,16 +105,23 @@ func Saves(savesDir, backupsDir string, keep int, now time.Time, cause Cause) (s
 	return finishZip(backupsDir, savesDir, "", keep, now, name, cause)
 }
 
-// Folder zips one save folder into backupsDir the same way Saves does, without the recent-backup stand-in so a
-// requested backup is always a new zip.
-func Folder(savesDir, backupsDir, folder string, keep int, now time.Time, cause Cause) (string, error) {
+// SaveDir is the path of one save, a direct child of savesDir, and fails when folder names anything else or is missing.
+func SaveDir(savesDir, folder string) (string, error) {
 	if folder == "" || folder != filepath.Base(folder) || folder == "." || folder == ".." {
 		return "", fmt.Errorf("not a save folder: %q", folder)
 	}
 	dir := filepath.Join(savesDir, folder)
-	info, err := os.Stat(dir)
-	if err != nil || !info.IsDir() {
+	if !fsx.IsDir(dir) {
 		return "", fmt.Errorf("save %q not found", folder)
+	}
+	return dir, nil
+}
+
+// Folder zips one save folder into backupsDir the same way Saves does, without the recent-backup stand-in so a
+// requested backup is always a new zip.
+func Folder(savesDir, backupsDir, folder string, keep int, now time.Time, cause Cause) (string, error) {
+	if _, err := SaveDir(savesDir, folder); err != nil {
+		return "", err
 	}
 	zips, err := list(backupsDir)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {

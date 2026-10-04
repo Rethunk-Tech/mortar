@@ -230,3 +230,18 @@ func TestABackwardsClockKeepsTheNewZip(t *testing.T) {
 		t.Fatalf("the zip just written is gone: %v", err)
 	}
 }
+
+func TestSaveDirRejectsEscapesAndMissing(t *testing.T) {
+	saves := t.TempDir()
+	if err := os.Mkdir(filepath.Join(saves, "Farm_1"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if dir, err := SaveDir(saves, "Farm_1"); err != nil || dir != filepath.Join(saves, "Farm_1") {
+		t.Fatalf("SaveDir = %q, %v", dir, err)
+	}
+	for _, folder := range []string{"", ".", "..", "../Farm_1", "Gone"} {
+		if _, err := SaveDir(saves, folder); err == nil {
+			t.Fatalf("SaveDir(%q) accepted", folder)
+		}
+	}
+}

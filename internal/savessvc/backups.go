@@ -90,9 +90,6 @@ func (s *Service) OpenBackupsFolder() error {
 
 // CreateBackup zips one save and marks the zip kept, with cause kind manual.
 func (s *Service) CreateBackup(folder string) error {
-	if folder == "" || folder != filepath.Base(folder) || folder == "." || folder == ".." {
-		return fmt.Errorf("not a save folder: %q", folder)
-	}
 	savesDir, backupsDir, err := s.backupDirs()
 	if err != nil {
 		return err
@@ -127,16 +124,13 @@ func uniqueBackupTime(dirs []string, now time.Time) time.Time {
 
 // OpenSaveFolder shows one save's folder (a direct child of the Saves folder) in the system file manager.
 func (s *Service) OpenSaveFolder(folder string) error {
-	if folder == "" || folder != filepath.Base(folder) || folder == "." || folder == ".." {
-		return fmt.Errorf("not a save folder: %q", folder)
-	}
 	savesDir, _, err := s.backupDirs()
 	if err != nil {
 		return err
 	}
-	dir := filepath.Join(savesDir, folder)
-	if info, err := os.Stat(dir); err != nil || !info.IsDir() {
-		return fmt.Errorf("save %q not found", folder)
+	dir, err := backup.SaveDir(savesDir, folder)
+	if err != nil {
+		return err
 	}
 	return datadir.Open(dir)
 }
