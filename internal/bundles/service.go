@@ -386,6 +386,18 @@ func (s *Service) Apply(gameID, bundleID, profileID string) (ApplyResult, error)
 	if err != nil {
 		return ApplyResult{}, err
 	}
+	return s.applyLocked(gameID, bundleID, bundles[i].Mods, profileID)
+}
+
+// ApplyMods adds the store entries behind mods to a profile as Apply does for a saved bundle; label names the history
+// batch.
+func (s *Service) ApplyMods(gameID, label string, mods []Mod, profileID string) (ApplyResult, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.applyLocked(gameID, label, mods, profileID)
+}
+
+func (s *Service) applyLocked(gameID, bundleID string, mods []Mod, profileID string) (ApplyResult, error) {
 	profiles, err := s.profiles.List(gameID)
 	if err != nil {
 		return ApplyResult{}, err
@@ -402,9 +414,9 @@ func (s *Service) Apply(gameID, bundleID, profileID string) (ApplyResult, error)
 		return ApplyResult{}, err
 	}
 	defer func() { _ = s.profiles.CloseHistoryBatch(gameID, profileID) }()
-	groups := make([]entryMods, 0, len(bundles[i].Mods))
+	groups := make([]entryMods, 0, len(mods))
 	groupAt := map[string]int{}
-	for _, mod := range bundles[i].Mods {
+	for _, mod := range mods {
 		at, ok := groupAt[mod.EntryKey]
 		if !ok {
 			groupAt[mod.EntryKey] = len(groups)
