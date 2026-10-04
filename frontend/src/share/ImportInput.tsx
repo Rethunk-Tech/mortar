@@ -65,11 +65,11 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
               onClick={() => {
                 flow.paste().catch(reportUnexpected)
               }}
-              sx={{ height: 44 }}
+              size="large"
             >
               {t`Paste from clipboard`}
             </Button>
-            <Button type="submit" variant="contained" disabled={!canPreview} sx={{ height: 44 }}>
+            <Button type="submit" variant="contained" disabled={!canPreview} size="large">
               {t`Preview`}
             </Button>
           </Box>

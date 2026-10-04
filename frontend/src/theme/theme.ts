@@ -29,9 +29,10 @@ const BUTTON_PAD_COMPACT = '0 10px'
 const BUTTON_PAD = '0 12px'
 const BUTTON_SMALL_HEIGHT = 28
 const BUTTON_SMALL_PAD = '0 10px'
-const BUTTON_LARGE_HEIGHT = 44
+const BUTTON_LARGE_HEIGHT = 46
 const BUTTON_LARGE_PAD = '0 20px'
-const BUTTON_LARGE_FONT_PX = 15
+const BUTTON_LARGE_FONT_PX = 16
+const BUTTON_LARGE_FONT_WEIGHT = 700
 const ICON_GAP_PX = 6
 const BUTTON_CONTAINED_WEIGHT = 700
 const SCROLL_EM = '0.5em'
@@ -155,6 +156,7 @@ export function createMortarTheme(
             height: BUTTON_LARGE_HEIGHT,
             padding: BUTTON_LARGE_PAD,
             fontSize: BUTTON_LARGE_FONT_PX,
+            fontWeight: BUTTON_LARGE_FONT_WEIGHT,
           },
           startIcon: { marginLeft: 0, marginRight: ICON_GAP_PX },
           contained: { fontWeight: BUTTON_CONTAINED_WEIGHT },

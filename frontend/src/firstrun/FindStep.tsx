@@ -218,11 +218,7 @@ export function FindStep({
         </Typography>
       ) : null}
       {found ? (
-        <Button
-          variant="contained"
-          onClick={onContinue}
-          sx={{ height: 46, fontSize: 16, fontWeight: 700 }}
-        >
+        <Button variant="contained" onClick={onContinue} size="large">
           {t`Continue`}
         </Button>
       ) : null}

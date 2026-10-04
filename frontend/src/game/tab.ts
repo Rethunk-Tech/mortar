@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { readStored, writeStored } from '../shell/useStoredState.ts'
 
 export type TabId =
   | 'browse'
@@ -10,6 +11,20 @@ export type TabId =
   | 'console'
   | 'performance'
 
+const TABS: readonly unknown[] = [
+  'browse',
+  'mods',
+  'problems',
+  'load-order',
+  'saves',
+  'notes',
+  'console',
+  'performance',
+]
+const TAB_KEY = 'mortar.tab'
+
+const isTabId = (value: unknown): value is TabId => TABS.includes(value)
+
 export const useTab = create<{
   tab: TabId
   setTab: (tab: TabId) => void
@@ -17,9 +32,12 @@ export const useTab = create<{
   revealLoadOrder: (id: string, fallback?: string) => void
   takePendingLoadOrder: () => { id: string; fallback: string } | null
 }>((set, get) => ({
-  tab: 'mods',
+  tab: readStored<TabId>(TAB_KEY, 'mods', isTabId),
   pendingLoadOrder: null,
-  setTab: (tab) => set({ tab }),
+  setTab: (tab) => {
+    writeStored(TAB_KEY, tab)
+    set({ tab })
+  },
   revealLoadOrder: (id, fallback = '') =>
     set({ tab: 'load-order', pendingLoadOrder: { id, fallback } }),
   takePendingLoadOrder: () => {

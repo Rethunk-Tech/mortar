@@ -176,11 +176,11 @@ function LaunchLine({
           color="inherit"
           startIcon={<RefreshCw size={16} />}
           onClick={recheck}
-          sx={{ height: 44 }}
+          size="large"
         >
           {t`Check again`}
         </Button>
-        <Button variant="contained" onClick={onContinue} sx={{ height: 44 }}>
+        <Button variant="contained" onClick={onContinue} size="large">
           {t`Continue`}
         </Button>
       </Box>
@@ -254,13 +254,7 @@ function InstallFailed({
         </Typography>
       ) : null}
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1.25 }}>
-        <Button
-          variant="outlined"
-          color="inherit"
-          disabled={pending}
-          onClick={onSkip}
-          sx={{ height: 46 }}
-        >
+        <Button variant="outlined" color="inherit" disabled={pending} onClick={onSkip} size="large">
           {t`Skip for now`}
         </Button>
         <Button
@@ -268,7 +262,7 @@ function InstallFailed({
           startIcon={<RefreshCw size={16} />}
           disabled={pending}
           onClick={onRetry}
-          sx={{ height: 46, fontSize: 16, fontWeight: 700 }}
+          size="large"
         >
           {t`Retry`}
         </Button>
@@ -373,11 +367,7 @@ export function SmapiStep({
         ) : (
           <>
             <InstallLog steps={steps} installing={false} />
-            <Button
-              variant="contained"
-              onClick={onDone}
-              sx={{ height: 46, fontSize: 16, fontWeight: 700 }}
-            >
+            <Button variant="contained" onClick={onDone} size="large">
               {t`Continue`}
             </Button>
           </>

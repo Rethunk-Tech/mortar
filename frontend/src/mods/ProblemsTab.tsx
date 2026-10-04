@@ -21,6 +21,7 @@ import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { useStoredState } from '../shell/useStoredState.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -44,6 +45,8 @@ import { useRedundantRows } from './redundantReason.ts'
 import { CheckTimings, SlowStartupSection } from './SlowStartupSection.tsx'
 import { useMods } from './store.ts'
 import { useLoadProblemsOnFocus } from './useLoadProblemsOnFocus.ts'
+
+const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean'
 
 const isDismissedRow = (row: Row | DismissedRow): row is DismissedRow => 'row' in row
 
@@ -203,7 +206,7 @@ function ProblemSection({
   action?: { label: string; onClick: () => void; disabled?: boolean }
 }) {
   const { t } = useLingui()
-  const [open, setOpen] = useState(!collapsible)
+  const [open, setOpen] = useStoredState(`mortar.problemSection.${title}`, !collapsible, isBoolean)
   const count = rows.length
   const label = collapsible ? t`${title} · ${count}` : title
   const heading = (

@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { useState } from 'react'
 import { useProfiles } from '../profiles/store.ts'
+import { useStoredState } from '../shell/useStoredState.ts'
 import { MeasuredPanel, PerformanceEmpty } from './PerformancePanelParts.tsx'
 import {
   copyReportLines,
@@ -13,6 +14,16 @@ import {
   useSavedReports,
 } from './usePerformancePanel.ts'
 
+const SORT_COLUMNS: readonly unknown[] = ['name', 'averageMs', 'peakMs', 'calls']
+
+const isStoredSort = (value: unknown): value is { column: SortColumn; direction: SortDirection } =>
+  typeof value === 'object' &&
+  value !== null &&
+  'column' in value &&
+  'direction' in value &&
+  SORT_COLUMNS.includes(value.column) &&
+  (value.direction === 'asc' || value.direction === 'desc')
+
 export function PerformancePanel({ game }: { game: string }) {
   const { t } = useLingui()
   const openId = useProfiles((s) => s.openId)
@@ -23,10 +34,11 @@ export function PerformancePanel({ game }: { game: string }) {
   const [compareId, setCompareId] = useState('')
   const [beforeId, setBeforeId] = useState('')
   const [afterId, setAfterId] = useState('')
-  const [sort, setSort] = useState<{ column: SortColumn; direction: SortDirection }>({
-    column: 'peakMs',
-    direction: 'desc',
-  })
+  const [sort, setSort] = useStoredState<{ column: SortColumn; direction: SortDirection }>(
+    'mortar.performanceSort',
+    { column: 'peakMs', direction: 'desc' },
+    isStoredSort,
+  )
   const reportLines = useReportLines(reportAfter)
   const [rows, setRows] = useParsedReport(reportLines, game, openId, setSavedReports)
   const { busy, startMeasuring, showReport } = usePanelControls({
@@ -89,10 +101,10 @@ export function PerformancePanel({ game }: { game: string }) {
       reportLines={reportLines}
       sort={sort}
       onSort={(column) =>
-        setSort((current) => ({
+        setSort({
           column,
-          direction: current.column === column && current.direction === 'asc' ? 'desc' : 'asc',
-        }))
+          direction: sort.column === column && sort.direction === 'asc' ? 'desc' : 'asc',
+        })
       }
     />
   )

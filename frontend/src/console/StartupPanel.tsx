@@ -31,6 +31,7 @@ import { useGameBusy } from '../launch/store.ts'
 import { showInProfile } from '../mods/revealMod.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { useStoredState } from '../shell/useStoredState.ts'
 import {
   foldMods,
   formatDuration,
@@ -104,6 +105,17 @@ const MOD_COLUMNS = 5
 const BRIDGE_ID = 'Rethunk.MortarSmapiBridge'
 
 type ModSort = 'name' | 'total' | 'entry' | 'event' | 'assets' | 'sampled'
+
+type StoredSort = { column: ModSort; direction: 'asc' | 'desc' }
+
+const isStoredSort = (value: unknown): value is StoredSort | null =>
+  value === null ||
+  (typeof value === 'object' &&
+    'column' in value &&
+    'direction' in value &&
+    (value.direction === 'asc' || value.direction === 'desc') &&
+    typeof value.column === 'string' &&
+    (value.column === 'name' || value.column in sortValue))
 
 const sortValue: Record<Exclude<ModSort, 'name'>, (mod: StartupMod) => number> = {
   total: modTotal,
@@ -270,7 +282,11 @@ function ModTable({ report, game }: { report: StartupReport; game: string }) {
   const { shown, folded } = foldMods(report.mods)
   // Sampled times exist only after a measured launch; they include time inside each mod's patches on game code.
   const sampled = report.sampledOtherMs > 0
-  const [sort, setSort] = useState<{ column: ModSort; direction: 'asc' | 'desc' } | null>(null)
+  const [sort, setSort] = useStoredState<StoredSort | null>(
+    'mortar.startupSort',
+    null,
+    isStoredSort,
+  )
   const active = sort ?? { column: 'total' as ModSort, direction: 'desc' as const }
   const rows = sortMods(shown, active.column, active.direction)
   const shownIds = new Set(shown.map((mod) => mod.id))

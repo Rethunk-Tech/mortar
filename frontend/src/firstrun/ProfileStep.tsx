@@ -88,11 +88,7 @@ export function ProfileStep({ game }: { game: GameId }) {
               {t`Copy the mods already in Stardew Valley's Mods folder into a new profile. Nothing in the game folder is moved or changed.`}
             </Typography>
             <Box sx={{ flex: 1 }} />
-            <Button
-              variant="contained"
-              onClick={() => setImportOpen(true)}
-              sx={{ height: 46, fontSize: 16, fontWeight: 700 }}
-            >
+            <Button variant="contained" onClick={() => setImportOpen(true)} size="large">
               {t`Preview Mods folder import…`}
             </Button>
           </Box>
@@ -130,7 +126,7 @@ export function ProfileStep({ game }: { game: GameId }) {
             type="submit"
             variant={gameMods ? 'outlined' : 'contained'}
             disabled={busy}
-            sx={{ height: 46, fontSize: 16, fontWeight: 700 }}
+            size="large"
           >
             {t`New profile`}
           </Button>
@@ -159,11 +155,7 @@ export function ProfileStep({ game }: { game: GameId }) {
             helperText=" "
             slotProps={{ root: { sx: { userSelect: 'text' } } }}
           />
-          <Button
-            type="submit"
-            variant="outlined"
-            sx={{ height: 46, fontSize: 16, fontWeight: 700 }}
-          >
+          <Button type="submit" variant="outlined" size="large">
             {t`Preview link…`}
           </Button>
         </Box>

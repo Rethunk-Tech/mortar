@@ -91,12 +91,7 @@ export function FirstRun() {
             ? t`${found} of ${plural(launchers.length, { one: '# launcher', other: '# launchers' })} found.`
             : t`No launchers found. You can still continue and choose each game's folder when you open it.`}
         </Typography>
-        <Button
-          variant="contained"
-          disabled={busy}
-          onClick={finish}
-          sx={{ height: 46, px: 4, fontSize: 16, fontWeight: 700 }}
-        >
+        <Button variant="contained" disabled={busy} onClick={finish} size="large" sx={{ px: 4 }}>
           {t`Continue`}
         </Button>
       </Box>
