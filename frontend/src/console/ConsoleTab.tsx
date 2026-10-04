@@ -11,11 +11,8 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
-import {
-  RunCause,
-  Runs,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
-import { useLaunch } from '../launch/store.ts'
+import { RunCause } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { useGameBusy, useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { onFilterFocus } from '../mods/filterFocus.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -34,6 +31,7 @@ import { useShownEntries, useVisible } from './logHooks.ts'
 import { RunProblemsStrip } from './RunProblems.tsx'
 import { RunsPicker } from './RunsPicker.tsx'
 import { canSendTo, useConsole } from './store.ts'
+import { useConsoleEmpty } from './useConsoleEmpty.ts'
 
 function ModPicker() {
   const { t } = useLingui()
@@ -245,12 +243,7 @@ function ReinstallLoader({ game }: { game: string }) {
   const install = useLoader((s) => s.install)
   const installing = useLoader((s) => s.installing)
   const pending = useLoader((s) => s.pending)
-  const playing = useLaunch(
-    (s) =>
-      s.starting ||
-      (s.status?.game === game &&
-        (s.status.state === State.Launching || s.status.state === State.Running)),
-  )
+  const playing = useGameBusy(game)
   return (
     <Box
       sx={{
@@ -279,34 +272,6 @@ function ReinstallLoader({ game }: { game: string }) {
       </DisabledReason>
     </Box>
   )
-}
-
-// useHasRuns reports whether the profile has any recorded run, re-reading once the game stops so a run that just
-// ended counts. Until it knows, it assumes runs exist so the log never flashes the empty state.
-function useHasRuns(game: string, profile: string, running: boolean): boolean {
-  const [hasRuns, setHasRuns] = useState(true)
-  useEffect(() => {
-    if (running) {
-      return
-    }
-    let live = true
-    Runs(game, profile).then(
-      (list) => {
-        if (live) {
-          setHasRuns((list ?? []).length > 0)
-        }
-      },
-      () => {
-        if (live) {
-          setHasRuns(true)
-        }
-      },
-    )
-    return () => {
-      live = false
-    }
-  }, [game, profile, running])
-  return hasRuns
 }
 
 // ConsoleEmpty stands in for the log until the profile has ever run, so a first visit is not an empty black box.
@@ -363,9 +328,8 @@ export function ConsoleTab({ game }: { game: string }) {
     }
   }, [target.game, target.profile, launchingOther, load])
   const total = entries.length
-  const running = useLaunch((s) => canSendTo(s.status, game, openId))
-  const hasRuns = useHasRuns(game, openId, running)
-  if (loaded && total === 0 && viewingRun === '' && !running && !hasRuns) {
+  const consoleEmpty = useConsoleEmpty(game)
+  if (loaded && consoleEmpty) {
     return <ConsoleEmpty />
   }
   let empty: string | null = null

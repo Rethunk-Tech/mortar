@@ -1,7 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, MenuItem, Select, TextField, Typography } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
-import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { TestLaunch } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import type { LaunchPreset } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
 import {
@@ -9,7 +8,7 @@ import {
   ListLaunchPresets,
   RemoveLaunchPreset,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
-import { useLaunch } from '../launch/store.ts'
+import { useGameBusy } from '../launch/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { applyLaunchPreset } from './applyLaunchPreset.ts'
@@ -161,9 +160,7 @@ function TestLaunchRow({
   const { t } = useLingui()
   const setLaunchOptions = useProfiles((s) => s.setLaunchOptions)
   const setLaunchSettings = useProfiles((s) => s.setLaunchSettings)
-  const playing = useLaunch(
-    (s) => s.starting || s.status?.state === State.Launching || s.status?.state === State.Running,
-  )
+  const playing = useGameBusy()
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState('')
   return (

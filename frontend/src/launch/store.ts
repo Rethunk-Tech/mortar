@@ -19,6 +19,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { reportError, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type AutoUpdateRestorePoint, rollbackAutoUpdate } from './autoUpdate.ts'
+import { gameBusy } from './busy.ts'
 import { applyOnPlayWindow } from './onPlay.ts'
 import {
   openProblems,
@@ -305,6 +306,10 @@ export const useLaunch = create<{
     }
   },
 }))
+
+// Also true between the Play click and the first status, which gameBusy cannot see.
+export const useGameBusy = (game?: string) =>
+  useLaunch((s) => s.starting || gameBusy(s.status, game))
 
 export const overlayGame = (routeName: string, routeGame: string, statusGame: string) =>
   routeName === 'game' ? routeGame : statusGame

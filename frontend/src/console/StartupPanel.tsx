@@ -21,14 +21,13 @@ import {
 } from '@mui/material'
 import { ChevronDown, ChevronRight, Gauge, Timer } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
-import {
-  type StartupMod,
-  type StartupReport,
-  State,
+import type {
+  StartupMod,
+  StartupReport,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { absoluteWhen } from '../i18n/when.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
-import { useLaunch } from '../launch/store.ts'
+import { useGameBusy } from '../launch/store.ts'
 import { showInProfile } from '../mods/revealMod.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -461,9 +460,7 @@ function Summary({
 
 function MeasureBanner({ onCancel }: { onCancel: () => void }) {
   const { t } = useLingui()
-  const running = useLaunch(
-    (s) => s.starting || s.status?.state === State.Launching || s.status?.state === State.Running,
-  )
+  const running = useGameBusy()
   return (
     <Alert
       severity="info"
