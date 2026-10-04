@@ -1,4 +1,4 @@
-import { msg } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { create } from 'zustand'
 import { Hint } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import {
@@ -7,6 +7,7 @@ import {
   type Status,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import {
+  LastRunIssues,
   Status as LaunchStatus,
   Runs,
   Stop,
@@ -80,6 +81,25 @@ function rollbackAction(point: AutoUpdateRestorePoint) {
     })
 }
 
+function profileName(rollback: UpdateRollback): string {
+  return (
+    useProfiles.getState().profiles.find((p) => p.id === rollback.profile)?.name ?? rollback.profile
+  )
+}
+
+const MODS_NAMED = 3
+
+async function erroredMods(game: string, profile: string): Promise<string> {
+  const issues = await LastRunIssues(game, profile).catch(() => null)
+  const names = (issues?.mods ?? []).filter((m) => m.errors > 0).map((m) => m.name)
+  const shown = names.slice(0, MODS_NAMED).join(', ')
+  const more = names.length - MODS_NAMED
+  if (more <= 0) {
+    return shown
+  }
+  return i18n._(msg`${shown} and ${plural(more, { one: '# more', other: '# more' })}`)
+}
+
 async function checkUpdatedRun(
   rollback: UpdateRollback,
   get: () => { updateRollback: UpdateRollback | null },
@@ -97,7 +117,8 @@ async function checkUpdatedRun(
         if (latest.errors > previousErrors) {
           useToasts.getState().push({
             kind: 'warning',
-            title: i18n._(msg`Errors appeared after updating`),
+            title: i18n._(msg`New errors after updating ${profileName(rollback)}`),
+            body: await erroredMods(rollback.game, rollback.profile),
             action: {
               label: i18n._(msg`Roll back`),
               run: rollbackAction(rollback.context.restorePoint),

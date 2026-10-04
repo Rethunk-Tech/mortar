@@ -7,6 +7,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Link,
   Menu,
   Typography,
 } from '@mui/material'
@@ -17,6 +18,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/p
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { useLaunch } from '../launch/store.ts'
+import { useDetail } from '../mods/detail.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
 import { ReportToAuthorButton } from '../mods/ReportToAuthorButton.tsx'
@@ -62,6 +64,17 @@ function SwitchOffButton({ mod, primary = false }: { mod: Mod; primary?: boolean
       {t`Switch off`}
     </Button>
   )
+}
+
+function showMod(name: string, onDone: () => void) {
+  const mod = useMods.getState().mods.find((m) => m.name === name)
+  if (!mod) {
+    return
+  }
+  useTab.getState().setTab('mods')
+  useDetail.getState().show(mod)
+  useDetail.getState().setOpen(true)
+  onDone()
 }
 
 function openRun(crash: Crash, console: boolean) {
@@ -135,7 +148,7 @@ function MoreActions({
         {withConsole ? (
           <MenuAction
             icon={<Terminal size={16} />}
-            label={t`Open console`}
+            label={t`Open Console`}
             onClick={() => {
               close()
               openRun(crash, true)
@@ -187,7 +200,7 @@ function CrashPrimary({
   }
   return (
     <Button variant="contained" startIcon={<Terminal size={16} />} onClick={onConsole}>
-      {t`Open console`}
+      {t`Open Console`}
     </Button>
   )
 }
@@ -254,7 +267,10 @@ export function CrashDialog() {
             crash.mods.map((row: { mod: string; count: number; first: string }) => (
               <Box key={row.mod} sx={{ fontSize: 14, lineHeight: 1.45 }}>
                 <Box sx={{ fontWeight: 700 }}>
-                  {t`${row.mod} · ${plural(row.count, { one: '# error', other: '# errors' })}`}
+                  <Link component="button" type="button" onClick={() => showMod(row.mod, dismiss)}>
+                    {row.mod}
+                  </Link>
+                  {t` · ${plural(row.count, { one: '# error', other: '# errors' })}`}
                 </Box>
                 <Box sx={{ color: 'text.secondary', mt: 0.25 }}>{row.first}</Box>
               </Box>

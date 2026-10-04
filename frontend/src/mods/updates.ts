@@ -1,10 +1,11 @@
-import { msg } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { create } from 'zustand'
 import type { UpdatesResult } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import {
   CheckUpdatesNow,
   Updates,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
+import { useTab } from '../game/tab.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -100,13 +101,22 @@ const useUpdates = create<{
       if (count > 0 && useSettings.getState().notifyModUpdates) {
         useToasts.getState().push({
           kind: 'info',
-          title: i18n._(msg`${count} updates available`),
+          title: i18n._(
+            msg`${plural(count, { one: '# mod update available', other: '# mod updates available' })}`,
+          ),
+          action: {
+            label: i18n._(msg`Review`),
+            run: () => {
+              useTab.getState().setTab('mods')
+              useUpdates.getState().setReviewing(true)
+            },
+          },
         })
       }
     } catch (e) {
       useToasts.getState().push({
         kind: 'error',
-        title: i18n._(msg`SMAPI update check failed`),
+        title: i18n._(msg`Could not check for mod updates`),
         body: errorMessage(e),
         detail: errorDetails(e),
         action: {
