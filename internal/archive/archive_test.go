@@ -138,6 +138,10 @@ func TestUnsafeEntriesRejected(t *testing.T) {
 		{"reserved dir", "com1/x", ErrUnsafeName},
 		{"lpt9", "LPT9.dll", ErrUnsafeName},
 		{"colon", "a:b", ErrUnsafeName},
+		{"trailing dot", "mod/foo.", ErrUnsafeName},
+		{"trailing space", "mod/foo ", ErrUnsafeName},
+		{"invalid character", "mod/a?b", ErrUnsafeName},
+		{"console device", "CONOUT$", ErrUnsafeName},
 		{"drive letter", "C:/x", ErrUnsafeName},
 	}
 	for _, c := range cases {

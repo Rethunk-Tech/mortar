@@ -4,12 +4,14 @@ package shortcut
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/winname"
 	"github.com/go-ole/go-ole"
 	"github.com/go-ole/go-ole/oleutil"
 )
@@ -23,11 +25,34 @@ func create(exe, arg, name string) (string, error) {
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return "", err
 	}
-	path := filepath.Join(dir, fileName(name)+".lnk")
+	path, err := freeLinkPath(dir, fileName(name), arg)
+	if err != nil {
+		return "", err
+	}
 	if err := writeLink(path, exe, arg); err != nil {
 		return "", err
 	}
 	return path, nil
+}
+
+// freeLinkPath is dir/<base>.lnk, or "<base> (2).lnk" and so on when that file is another profile's shortcut: file
+// names drop characters, so distinct profile names can collide. The shortcut already made for arg is reused.
+func freeLinkPath(dir, base, arg string) (string, error) {
+	for n := 1; ; n++ {
+		name := base
+		if n > 1 {
+			name = fmt.Sprintf("%s (%d)", base, n)
+		}
+		path := filepath.Join(dir, name+".lnk")
+		if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+			return path, nil
+		} else if err != nil {
+			return "", err
+		}
+		if got, err := linkArguments(path); err == nil && got == arg {
+			return path, nil
+		}
+	}
 }
 
 func startMenuDir() (string, error) {
@@ -178,17 +203,10 @@ func exists(game, profile string) (bool, error) {
 
 // fileName keeps a shortcut's name to characters every file system accepts.
 func fileName(name string) string {
-	clean := strings.Map(func(r rune) rune {
-		if strings.ContainsRune(`<>:"/\|?*`, r) || r < ' ' {
-			return '-'
-		}
-		return r
-	}, name)
-	clean = strings.Trim(clean, " .")
-	if clean == "" {
-		return "Mortar profile"
+	if clean := winname.Clean(name); clean != "" {
+		return clean
 	}
-	return clean
+	return "Mortar profile"
 }
 
 // RemoveStartMenu deletes the Start menu's Mortar folder with every profile shortcut in it.
@@ -197,5 +215,5 @@ func RemoveStartMenu() error {
 	if err != nil {
 		return err
 	}
-	return os.RemoveAll(dir)
+	return fsx.RemoveAll(dir)
 }

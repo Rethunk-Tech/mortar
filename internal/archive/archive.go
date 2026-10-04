@@ -17,6 +17,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/winname"
 	"golang.org/x/text/encoding/simplifiedchinese"
 
 	"github.com/bodgit/sevenzip"
@@ -381,7 +382,7 @@ func (x *extractor) admit(name string, isDir bool) (string, error) {
 
 func cleanName(name string) (string, error) {
 	name = strings.ReplaceAll(name, `\`, "/")
-	if strings.ContainsRune(name, 0) || strings.ContainsRune(name, ':') {
+	if strings.ContainsRune(name, 0) {
 		return "", ErrUnsafeName
 	}
 	if strings.HasPrefix(name, "/") {
@@ -395,24 +396,12 @@ func cleanName(name string) (string, error) {
 		case "..":
 			return "", ErrTraversal
 		}
-		if reserved(s) {
+		if !winname.Valid(s) {
 			return "", ErrUnsafeName
 		}
 		segs = append(segs, s)
 	}
 	return path.Join(segs...), nil
-}
-
-// reserved reports Windows device names, which Windows opens as devices even
-// with an extension ("CON.txt") or trailing spaces.
-func reserved(seg string) bool {
-	base, _, _ := strings.Cut(seg, ".")
-	base = strings.ToUpper(strings.TrimRight(base, " "))
-	switch base {
-	case "CON", "PRN", "AUX", "NUL":
-		return true
-	}
-	return len(base) == 4 && (strings.HasPrefix(base, "COM") || strings.HasPrefix(base, "LPT")) && base[3] >= '1' && base[3] <= '9'
 }
 
 // wrap types a library or filesystem error as an *Error. Filesystem errors
