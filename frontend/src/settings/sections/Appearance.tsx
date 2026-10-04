@@ -43,6 +43,7 @@ function DefaultSort() {
           persist(() => SetListSort(column, dir), push, t`Couldn't save that setting`)
         }}
         options={options}
+        label={t`Default sort`}
       />
     </SettingRow>
   )
@@ -164,7 +165,7 @@ export function Appearance() {
                   SetBackgroundImage('').catch(reportFailure)
                 }}
               >
-                {t`Reset to default`}
+                {t`Use default`}
               </Button>
             </Box>
           </SettingRow>
