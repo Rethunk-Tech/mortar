@@ -2,10 +2,12 @@ package sampler
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"sort"
 	"strings"
 	"unicode/utf16"
@@ -1077,18 +1079,25 @@ func resolveMethods(trace *Trace) {
 			trace.Methods[i].Assembly = trace.Assemblies[assemblyID]
 		}
 	}
+	// A startup trace holds about a million samples and tens of thousands of methods, so frames are matched by binary
+	// search over the methods sorted by start address.
+	byStart := slices.Clone(trace.Methods)
+	slices.SortStableFunc(byStart, func(a, b Method) int { return cmp.Compare(a.StartAddress, b.StartAddress) })
 	for sampleIndex := range trace.Samples {
 		for frameIndex := range trace.Samples[sampleIndex].Frames {
 			frame := &trace.Samples[sampleIndex].Frames[frameIndex]
-			for _, method := range trace.Methods {
-				if frame.IP < method.StartAddress || frame.IP >= method.StartAddress+method.Size {
-					continue
-				}
-				frame.Method = method.Name
-				frame.Type = method.Namespace
-				frame.Assembly = method.Assembly
-				break
+			// The candidate is the last method starting at or before the frame's address.
+			next := sort.Search(len(byStart), func(i int) bool { return byStart[i].StartAddress > frame.IP })
+			if next == 0 {
+				continue
 			}
+			method := byStart[next-1]
+			if frame.IP >= method.StartAddress+method.Size {
+				continue
+			}
+			frame.Method = method.Name
+			frame.Type = method.Namespace
+			frame.Assembly = method.Assembly
 		}
 	}
 }

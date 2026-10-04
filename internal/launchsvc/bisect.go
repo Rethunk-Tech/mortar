@@ -148,11 +148,11 @@ func startupReportAfter(dir string, since time.Time) bool {
 	return false
 }
 
-// bisectStartupFailure reports a SMAPI crash report while the game runs. Plain error lines (a skipped mod, missing
-// Steam) do not fail a bisect step: the bisect looks for the mod behind a crash, and counting errors would blame
-// whichever mod logs one.
+// bisectStartupFailure reports a game crash while the game runs. Mod errors, including a mod that crashed on entry,
+// do not fail a bisect step: the bisect looks for the mod behind a crash, and counting errors would blame whichever
+// mod logs one.
 func bisectStartupFailure(lines []launch.Entry) bool {
-	return slices.ContainsFunc(lines, func(entry launch.Entry) bool { return entry.Level == launch.Alert })
+	return slices.ContainsFunc(lines, launch.IsCrash)
 }
 
 func summaryHealthy(summary launch.Summary) bool {

@@ -22,8 +22,17 @@ const MaxLogBytes = MaxLines * 256
 
 var (
 	versionsRe = regexp.MustCompile(`SMAPI (\S+) with Stardew Valley (\S+)`)
-	crashRe    = regexp.MustCompile(`(?i)\bfatal\b|\bcrashed\b|game crash`)
+	crashRe    = regexp.MustCompile(`(?i)\bfatal\b|\bcrashed\b|game crash|failed to (launch|initialize)`)
 )
+
+// IsCrash reports a log line that means the game itself crashed. SMAPI also logs at ALERT for update notices, and a
+// mod that "crashed on entry" is skipped while the game keeps loading, so neither counts.
+func IsCrash(e Entry) bool {
+	if e.Cont || (e.Level != Error && e.Level != Alert) || strings.HasPrefix(e.Message, "Mod crashed on entry") {
+		return false
+	}
+	return crashRe.MatchString(e.Message)
+}
 
 // ModError is one mod that logged errors in a run, with how many and the first message.
 type ModError struct {
@@ -85,7 +94,7 @@ func Summarize(log string) Summary {
 			}
 		case Trace, Debug, Info:
 		}
-		if e.Level == Alert || ((e.Level == Error || e.Level == Alert) && crashRe.MatchString(e.Message)) {
+		if IsCrash(e) {
 			s.Crashed = true
 		}
 	}

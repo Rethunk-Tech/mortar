@@ -69,3 +69,21 @@ func TestCapLogKeepsSMAPIStartupAndTail(t *testing.T) {
 		t.Fatalf("startup or tail was lost: %q", got)
 	}
 }
+
+func TestIsCrashIgnoresUpdateAlertsAndModEntryErrors(t *testing.T) {
+	cases := []struct {
+		entry Entry
+		want  bool
+	}{
+		{Entry{Level: Alert, Mod: "SMAPI", Message: "You can update 8 mods:"}, false},
+		{Entry{Level: Error, Mod: "Quest Helper", Message: "Mod crashed on entry and might not work correctly. Technical details:"}, false},
+		{Entry{Level: Error, Mod: "SMAPI", Message: "The game failed to launch: NullReferenceException"}, true},
+		{Entry{Level: Error, Mod: "SMAPI", Message: "SMAPI failed to initialize: boom"}, true},
+		{Entry{Level: Info, Mod: "SMAPI", Message: "fatal"}, false},
+	}
+	for _, c := range cases {
+		if got := IsCrash(c.entry); got != c.want {
+			t.Errorf("IsCrash(%q) = %v, want %v", c.entry.Message, got, c.want)
+		}
+	}
+}
