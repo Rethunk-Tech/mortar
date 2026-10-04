@@ -43,9 +43,6 @@ func TestSaveCustomCategoriesAndDeleteClearsOverrides(t *testing.T) {
 	if p.Entries[0].CategoryOverride != id {
 		t.Fatalf("override = %q", p.Entries[0].CategoryOverride)
 	}
-	if ResolveCategoryName(id, "Nexus cat", saved) != "QoL" {
-		t.Fatal("resolve custom")
-	}
 	if _, err := s.SaveCustomCategories("stardew", nil); err != nil {
 		t.Fatal(err)
 	}

@@ -189,9 +189,3 @@ func TestKnownGoodMarkAndRestore(t *testing.T) {
 		t.Fatalf("markers = %+v %v", marks, err)
 	}
 }
-
-func TestTitleRunOK(t *testing.T) {
-	if !titleRunOK("ran", 0, false) || titleRunOK("ran", 1, false) || titleRunOK("crashed", 0, true) {
-		t.Fatal("title-run outcome")
-	}
-}

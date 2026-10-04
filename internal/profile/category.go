@@ -213,17 +213,6 @@ func (s *Store) clearCategoryOverridesLocked(game string, customIDs []string) er
 	return nil
 }
 
-// ResolveCategoryName turns an entry override and Nexus fallback into the label used for grouping.
-func ResolveCategoryName(override, nexus string, custom []CustomCategory) string {
-	if override != "" {
-		if i := slices.IndexFunc(custom, func(c CustomCategory) bool { return c.ID == override }); i >= 0 {
-			return custom[i].Name
-		}
-		return override
-	}
-	return nexus
-}
-
 // SetEntryCategory sets or clears the entry's primary category override (custom category id or Nexus category name).
 func (s *Store) SetEntryCategory(game, id, key, override string) (Profile, error) {
 	override = strings.TrimSpace(override)

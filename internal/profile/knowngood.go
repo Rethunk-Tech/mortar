@@ -60,15 +60,3 @@ func (s *Store) lastKnownGoodID(game, id string) (string, error) {
 	}
 	return events[0].ID, nil
 }
-
-func titleRunOK(outcome string, errors int, crashed bool) bool {
-	if crashed || errors > 0 {
-		return false
-	}
-	switch outcome {
-	case "ran", "ok", "success", "succeeded", "exited", "":
-		return true
-	default:
-		return false
-	}
-}
