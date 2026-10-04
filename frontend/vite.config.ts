@@ -13,4 +13,18 @@ export default defineConfig({
     strictPort: true,
   },
   plugins: [react(), lingui({ macroTransform: true }), wails('./bindings')],
+  build: {
+    rolldownOptions: {
+      output: {
+        // Libraries change less often than the app, and one bundle of everything passed Vite's 500 kB chunk warning.
+        codeSplitting: {
+          groups: [
+            { name: 'mui', test: /node_modules[\\/]@(mui|emotion|popperjs)[\\/]/ },
+            { name: 'react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
+            { name: 'vendor', test: /node_modules[\\/]/ },
+          ],
+        },
+      },
+    },
+  },
 })

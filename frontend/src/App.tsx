@@ -1,9 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Get } from '../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { CommandPalette } from './commandPalette/CommandPalette.tsx'
-import { FirstRun } from './firstrun/FirstRun.tsx'
-import { GameSetup } from './firstrun/GameSetup.tsx'
 import { gameSetupNeeded } from './firstrun/needed.ts'
 import { FirstRunTour } from './firstrunTour/FirstRunTour.tsx'
 import { FomodDialog } from './fomod/Dialog.tsx'
@@ -18,8 +16,6 @@ import { isGameId, useNav } from './nav/store.ts'
 import { ArrivalDialog } from './nxm/ArrivalDialog.tsx'
 import { ProfilesPage } from './profiles/ProfilesPage.tsx'
 import { QuitPrompt } from './QuitPrompt.tsx'
-import { GameSettingsPage } from './settings/GameSettingsPage.tsx'
-import { SettingsPage } from './settings/SettingsPage.tsx'
 import { useStartupChecks } from './settings/startupChecks.ts'
 import { useAppShortcuts } from './settings/useShortcuts.ts'
 import { ImportDialog } from './share/ImportDialog.tsx'
@@ -31,6 +27,20 @@ import { toastError } from './toasts/report.ts'
 import { ToastHost } from './toasts/ToastHost.tsx'
 import { UpdateReadyBanner } from './updates/UpdateReadyBanner.tsx'
 import { WhatsNewDialog } from './updates/WhatsNewDialog.tsx'
+
+// Pages opened on demand load on first use, which keeps the startup bundle under Vite's chunk size warning.
+const FirstRun = lazy(() =>
+  import('./firstrun/FirstRun.tsx').then((m) => ({ default: m.FirstRun })),
+)
+const GameSetup = lazy(() =>
+  import('./firstrun/GameSetup.tsx').then((m) => ({ default: m.GameSetup })),
+)
+const GameSettingsPage = lazy(() =>
+  import('./settings/GameSettingsPage.tsx').then((m) => ({ default: m.GameSettingsPage })),
+)
+const SettingsPage = lazy(() =>
+  import('./settings/SettingsPage.tsx').then((m) => ({ default: m.SettingsPage })),
+)
 
 export function App() {
   useAppShortcuts()
@@ -66,13 +76,15 @@ export function App() {
       <AppFrame>
         <UpdateReadyBanner />
         <ErrorBoundary resetKey={route.name}>
-          {route.name === 'settings' ? <SettingsPage section={route.section} /> : null}
-          {route.name === 'game-settings' ? <GameSettingsPage /> : null}
-          {route.name === 'profiles' ? <ProfilesPage /> : null}
-          {route.name === 'game' ? <MainScreen game={route.game} /> : null}
-          {route.name === 'setup' ? <FirstRun /> : null}
-          {route.name === 'game-setup' ? <GameSetup game={route.game} /> : null}
-          {ready && route.name === 'game-select' ? <GameSelect /> : null}
+          <Suspense fallback={null}>
+            {route.name === 'settings' ? <SettingsPage section={route.section} /> : null}
+            {route.name === 'game-settings' ? <GameSettingsPage /> : null}
+            {route.name === 'profiles' ? <ProfilesPage /> : null}
+            {route.name === 'game' ? <MainScreen game={route.game} /> : null}
+            {route.name === 'setup' ? <FirstRun /> : null}
+            {route.name === 'game-setup' ? <GameSetup game={route.game} /> : null}
+            {ready && route.name === 'game-select' ? <GameSelect /> : null}
+          </Suspense>
         </ErrorBoundary>
       </AppFrame>
       <LaunchLayer game={game} />

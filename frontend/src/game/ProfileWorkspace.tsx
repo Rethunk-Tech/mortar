@@ -1,18 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Chip, Divider, Tab, Tabs, type TabsActions } from '@mui/material'
 import { Settings2, Share2 } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { lazy, Suspense, useEffect, useRef } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { BrowseHost } from '../browse/BrowseHost.tsx'
-import { ConsoleTab } from '../console/ConsoleTab.tsx'
-import { PerformanceTab } from '../console/PerformanceTab.tsx'
-import { LoadOrderTab } from '../mods/LoadOrderTab.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { ProblemActions, ProblemsTab } from '../mods/ProblemsTab.tsx'
 import { useNav } from '../nav/store.ts'
-import { NotesTab } from '../notes/NotesTab.tsx'
 import { SinceLastRun } from '../profiles/SinceLastRun.tsx'
-import { SavesTab } from '../saves/SavesTab.tsx'
 import { openShare } from '../share/store.ts'
 import { usePasteLink } from '../share/usePasteLink.ts'
 import { ErrorBoundary } from '../shell/ErrorBoundary.tsx'
@@ -20,6 +15,19 @@ import { IconAction } from '../shell/IconAction.tsx'
 import { ToolsMenu } from '../tools/ToolsMenu.tsx'
 import { Hero } from './Hero.tsx'
 import { type TabId, useTab } from './tab.ts'
+
+// Tabs other than Mods, Problems and Browse load on first open, which keeps them out of the startup bundle.
+const ConsoleTab = lazy(() =>
+  import('../console/ConsoleTab.tsx').then((m) => ({ default: m.ConsoleTab })),
+)
+const LoadOrderTab = lazy(() =>
+  import('../mods/LoadOrderTab.tsx').then((m) => ({ default: m.LoadOrderTab })),
+)
+const NotesTab = lazy(() => import('../notes/NotesTab.tsx').then((m) => ({ default: m.NotesTab })))
+const SavesTab = lazy(() => import('../saves/SavesTab.tsx').then((m) => ({ default: m.SavesTab })))
+const PerformanceTab = lazy(() =>
+  import('../console/PerformanceTab.tsx').then((m) => ({ default: m.PerformanceTab })),
+)
 
 function WorkspaceTabs({ problemsTabCount }: { problemsTabCount: number | null }) {
   const { t } = useLingui()
@@ -154,10 +162,15 @@ export function ProfileWorkspace({
         <WorkspaceActions profile={profile} game={game} gameName={gameName} />
       </Box>
       <ErrorBoundary resetKey={`${tab}-${profile.id}`}>
-        {tab === 'console' ? <ConsoleTab game={game} /> : null}
-        {tab === 'performance' ? <PerformanceTab game={game} /> : null}
-        {tab === 'notes' ? <NotesTab key={`notes-${profile.id}`} profile={profile} /> : null}
-        {tab === 'saves' ? <SavesTab profile={profile} game={game} /> : null}
+        <Suspense fallback={null}>
+          {tab === 'console' ? <ConsoleTab game={game} /> : null}
+          {tab === 'performance' ? <PerformanceTab game={game} /> : null}
+          {tab === 'notes' ? <NotesTab key={`notes-${profile.id}`} profile={profile} /> : null}
+          {tab === 'saves' ? <SavesTab profile={profile} game={game} /> : null}
+          {tab === 'load-order' ? (
+            <LoadOrderTab key={`load-order-${profile.id}`} profile={profile} game={game} />
+          ) : null}
+        </Suspense>
         {tab === 'browse' ? (
           <BrowseHost key={`browse-${profile.id}`} game={game} profileID={profile.id} />
         ) : null}
@@ -175,9 +188,6 @@ export function ProfileWorkspace({
           >
             <ProblemsTab />
           </Box>
-        ) : null}
-        {tab === 'load-order' ? (
-          <LoadOrderTab key={`load-order-${profile.id}`} profile={profile} game={game} />
         ) : null}
       </ErrorBoundary>
     </Box>
