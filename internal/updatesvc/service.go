@@ -123,6 +123,7 @@ func configure(s *Service, u Updater, version string, publicKey []byte, producti
 	}
 	return u.Init(updater.Config{
 		CurrentVersion:  version,
+		Platform:        runningPlatform(),
 		Providers:       []updater.Provider{chain},
 		PublicKey:       publicKey,
 		OnUpdateApplied: onApplied(version),
