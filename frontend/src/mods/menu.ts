@@ -10,7 +10,7 @@ import {
   History,
   Revert,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { undoRevertTarget } from '../toasts/undo.ts'
 import { entryOf, modId, updateFor } from './lookup.ts'
@@ -25,7 +25,7 @@ const isMenuKey = (e: { key: string; shiftKey: boolean }) =>
 
 export function useMenuState(mod: Mod): MenuState {
   const host = useMods((s) => hostOf(s.pages[modId(mod)]))
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const profile = useProfiles(openProfileOf)
   const entry = entryOf(profile, mod.key)
   const update = useUpdates((s) => updateFor(s.updates, mod, profile))
   return {

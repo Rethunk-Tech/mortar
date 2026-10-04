@@ -29,7 +29,7 @@ import { considerEnableRequirements } from '../mods/enableRequirementsApply.ts'
 import { useMods } from '../mods/store.ts'
 import { profileLocked } from '../mods/useLocked.ts'
 import { routeGame, useNav } from '../nav/store.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { changeStillLatest } from '../toasts/history.ts'
@@ -313,12 +313,12 @@ async function runInstalls(
   set: InstallSet,
   callFor: (game: string, profile: string, item: string) => () => Promise<InstallResult>,
 ) {
-  const { game, openId, profiles } = useProfiles.getState()
-  const profile = profiles.find((p) => p.id === openId)
+  const { game } = useProfiles.getState()
+  const profile = openProfileOf(useProfiles.getState())
   const gate = dropInstallGate(
     routeGame(useNav.getState().route) !== null,
     Boolean(game && profile),
-    profileLocked(openId),
+    profileLocked(profile?.id ?? ''),
   )
   if (gate === 'skip') {
     return

@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { EnableRequirementsDialog } from '../mods/EnableRequirementsDialog.tsx'
 import { useLocked } from '../mods/useLocked.ts'
 import { routeGame, useNav } from '../nav/store.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { openImport } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { splitDropped } from './dropped.ts'
@@ -23,7 +23,7 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
   const [dragging, setDragging] = useState(false)
   const inGame = useNav((s) => routeGame(s.route) !== null)
   const locked = useLocked()
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const profile = useProfiles(openProfileOf)
   const ready = inGame && profile !== undefined && !locked
 
   useEffect(() => {

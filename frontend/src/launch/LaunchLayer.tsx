@@ -26,7 +26,7 @@ import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
 import { useMods } from '../mods/store.ts'
 import { userModCount } from '../profiles/count.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { controlsCutout } from '../shell/controlsCutout.ts'
 import { FlatpakGrant } from '../shell/FlatpakGrant.tsx'
@@ -228,7 +228,7 @@ function Failure({ game }: { game: string }) {
   const start = useLaunch((s) => s.start)
   const cause = failure?.cause
   const mod = useMods((s) => s.mods.find((m) => m.key === cause?.modKey))
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const profile = useProfiles(openProfileOf)
   // The dialog unmounts with `failure`, so nothing fades out with stale text.
   if (!failure) {
     return null

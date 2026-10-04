@@ -28,7 +28,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { AddToBundleDialog } from '../bundles/dialogs.tsx'
 import { useFomod } from '../fomod/store.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -102,7 +102,7 @@ function ModMenuItems({
   const page = useMods((s) => s.pages[modId(mod)])
   const state = useMenuState(mod)
   const locked = useLocked()
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const profile = useProfiles(openProfileOf)
   const game = useProfiles((s) => s.game)
   const update = useUpdates((s) => updateFor(s.updates, mod, profile))
   const currentEntry = (profile?.entries ?? []).find((e) => e.key === mod.key)
@@ -217,7 +217,7 @@ function ModActionMenu({
 }) {
   const { t } = useLingui()
   const locked = useLocked()
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const profile = useProfiles(openProfileOf)
   const byId = useNexusDetails((s) => s.byId)
   const entry = (profile?.entries ?? []).find((e) => e.key === mod.key)
   const nexusCategory =

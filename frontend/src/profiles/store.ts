@@ -464,3 +464,6 @@ export function initProfilesChanged() {
     }
   })
 }
+
+export const openProfileOf = (s: { profiles: Profile[]; openId: string }) =>
+  s.profiles.find((p) => p.id === s.openId)

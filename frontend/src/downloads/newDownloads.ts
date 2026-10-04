@@ -6,7 +6,7 @@ import { openDownloadsDialog } from '../install/downloadsDialog.ts'
 import { useInstall } from '../install/store.ts'
 import { gameBusy } from '../launch/busy.ts'
 import { useLaunch } from '../launch/store.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
@@ -20,8 +20,7 @@ async function offer(game: string) {
   if (!first) {
     return
   }
-  const { profiles, openId } = useProfiles.getState()
-  const profile = profiles.find((p) => p.id === openId)
+  const profile = openProfileOf(useProfiles.getState())
   const { push } = useToasts.getState()
   if (found.length === 1 && profile) {
     push({
