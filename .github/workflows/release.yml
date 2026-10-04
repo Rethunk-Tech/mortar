@@ -190,6 +190,7 @@ jobs:
 
       - name: wails3 CLI
         run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev
           go mod download github.com/wailsapp/wails/v3
           wails_dir="$(go list -m -f '{{.Replace.Dir}}' github.com/wailsapp/wails/v3)"
           (cd "$wails_dir" && go build -o "$(go env GOPATH)/bin/wails3" ./cmd/wails3)
