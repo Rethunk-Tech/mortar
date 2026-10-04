@@ -769,7 +769,8 @@ func readSnapshotFile(dir, id string) ([]Entry, bool) {
 	return entries, true
 }
 
-// migratePlainSnapshot reads an uncompressed snapshot and replaces it with the gzipped form.
+// migratePlainSnapshot reads an uncompressed snapshot and replaces it with the gzipped form; reads and prunes both
+// call it, so old snapshots shrink whether or not they are ever opened.
 func migratePlainSnapshot(dir, id, path string) ([]Entry, bool) {
 	b, err := fsx.ReadFile(path)
 	if err != nil {
@@ -819,6 +820,9 @@ func pruneSnapshotFiles(dir string, referenced map[string]struct{}) error {
 		}
 		name := strings.TrimSuffix(strings.TrimSuffix(ent.Name(), ".gz"), ".json")
 		if _, ok := referenced[name]; ok {
+			if !strings.HasSuffix(ent.Name(), ".gz") {
+				migratePlainSnapshot(dir, name, filepath.Join(dir, snapshotsDir, ent.Name()))
+			}
 			continue
 		}
 		if err := os.Remove(filepath.Join(dir, snapshotsDir, ent.Name())); err != nil && !errors.Is(err, os.ErrNotExist) {
