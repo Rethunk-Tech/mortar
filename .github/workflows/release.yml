@@ -109,6 +109,10 @@ jobs:
       - name: Linux Flatpak
         if: matrix.flatpak
         run: |
+          # The GNOME SDK, the build and its repo need more space than the hosted runner leaves free; these
+          # preinstalled toolchains are unused here.
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h / | tail -1
           sudo apt-get install -y --no-install-recommends flatpak
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           # Flathub's own builder: the distro flatpak-builder composes AppStream with the runner's older appstream,
