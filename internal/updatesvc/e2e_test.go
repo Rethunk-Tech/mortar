@@ -108,6 +108,12 @@ func (s *site) publish(t *testing.T, version string, artifact []byte, key string
 		args = append(args, "-key", key)
 	}
 	run(t, "wails3", append(args, asset)...)
+	// The fixture runs as a bare Linux binary, which updates from the portable entry, as release:manifest marks it.
+	manifest := filepath.Join(s.dir, "manifest.json")
+	b := bytes.ReplaceAll(readFile(t, manifest), []byte(`"platform": "linux"`), []byte(`"platform": "linux-portable"`))
+	if err := os.WriteFile(manifest, b, 0o600); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func (s *site) tamper(t *testing.T) {

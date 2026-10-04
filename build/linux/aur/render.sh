@@ -21,7 +21,7 @@ fi
 
 sum() { sha256sum "$1" | cut -d' ' -f1; }
 sed -e "s/^sha256sums=.*/sha256sums=('$src_sum')/" \
-    -e "s/^sha256sums_x86_64=.*/sha256sums_x86_64=('$(sum "$bin/mortar-linux-amd64")')/" \
-    -e "s/^sha256sums_aarch64=.*/sha256sums_aarch64=('$(sum "$bin/mortar-linux-arm64")')/" \
+    -e "s/^sha256sums_x86_64=.*/sha256sums_x86_64=('$(sum "$bin/mortar-aur-linux-amd64")')/" \
+    -e "s/^sha256sums_aarch64=.*/sha256sums_aarch64=('$(sum "$bin/mortar-aur-linux-arm64")')/" \
     "$here/PKGBUILD" >"$out/PKGBUILD"
 python3 "$here/srcinfo.py" "$out/PKGBUILD" >"$out/.SRCINFO"

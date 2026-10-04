@@ -89,10 +89,10 @@ The pre-push hook runs the same command. Where CI runs it: [AGENTS.md](AGENTS.md
 ## Release
 
 ```sh
-wails3 task linux:create:appimage     # bin/mortar-linux-x86_64.AppImage
-wails3 task linux:nfpm                # .deb, .rpm, Arch package, bin/mortar-linux-amd64
+wails3 task linux:create:appimage     # bin/mortar-linux-x86_64.AppImage and the portable bin/mortar-linux-amd64
+wails3 task linux:nfpm                # .deb, .rpm, Arch package, bin/mortar-aur-linux-amd64
 wails3 task linux:flatpak             # bin/mortar-linux-x86_64.flatpak (needs flatpak-builder)
-wails3 task linux:build:arm64         # bin/mortar-linux-arm64 and its .deb, .rpm, Arch package
+wails3 task linux:build:arm64         # bin/mortar-aur-linux-arm64 and its .deb, .rpm, Arch package
 wails3 build GOOS=windows             # bin/mortar.exe (ARCH=arm64 for Windows on ARM; wails3 task windows:package ARCH=arm64 also writes bin/mortar-arm64-installer.exe)
 MORTAR_UPDATE_KEY=/path/to/updater.key wails3 task release:manifest VERSION=1.2.3
 ```
@@ -129,7 +129,7 @@ CI only attaches a single-file `.flatpak` for people who sideload. Listing on Fl
 
 ### AUR mortar-bin
 
-`build/linux/aur/PKGBUILD` installs `mortar-linux-amd64` or `mortar-linux-arm64` from the GitHub release, plus the tagged desktop entry and icon. Publishing:
+`build/linux/aur/PKGBUILD` installs `mortar-aur-linux-amd64` or `mortar-aur-linux-arm64` (the packaged build, updater off) from the GitHub release, plus the tagged desktop entry and icon. Publishing:
 
 1. `git clone ssh://aur@aur.archlinux.org/mortar-bin.git`
 2. Copy the release's `PKGBUILD` and `SRCINFO` (saved as `.SRCINFO`) in; both carry real sums. The committed `PKGBUILD` keeps `SKIP` sums and its `pkgver` follows `build/config.yml` through `go run ./cmd/version`. If the source archive was not publicly downloadable when the release rendered them, its sum is `SKIP`: run `updpkgsums` and `makepkg --printsrcinfo > .SRCINFO`.

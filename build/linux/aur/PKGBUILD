@@ -13,19 +13,19 @@ source=(
   "mortar-${pkgver}.tar.gz::https://github.com/Rethunk-AI/mortar/archive/refs/tags/v${pkgver}.tar.gz"
 )
 source_x86_64=(
-  "mortar-linux-amd64::https://github.com/Rethunk-AI/mortar/releases/download/v${pkgver}/mortar-linux-amd64"
+  "mortar-aur-linux-amd64::https://github.com/Rethunk-AI/mortar/releases/download/v${pkgver}/mortar-aur-linux-amd64"
 )
 source_aarch64=(
-  "mortar-linux-arm64::https://github.com/Rethunk-AI/mortar/releases/download/v${pkgver}/mortar-linux-arm64"
+  "mortar-aur-linux-arm64::https://github.com/Rethunk-AI/mortar/releases/download/v${pkgver}/mortar-aur-linux-arm64"
 )
 sha256sums=('SKIP')
 sha256sums_x86_64=('SKIP')
 sha256sums_aarch64=('SKIP')
 
 package() {
-  local bin=mortar-linux-amd64
+  local bin=mortar-aur-linux-amd64
   if [[ $CARCH == aarch64 ]]; then
-    bin=mortar-linux-arm64
+    bin=mortar-aur-linux-arm64
   fi
   install -Dm755 "$bin" "${pkgdir}/usr/bin/mortar"
   install -Dm644 "mortar-${pkgver}/build/linux/tech.rethunk.Mortar.desktop" \
