@@ -4,12 +4,9 @@ import { FolderOpen } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import type { Usage as DiskUse } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
 import { DataLocation } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
-import {
-  OpenDataFolder,
-  SetBackupsKept,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
-import { cmpText } from '../../mods/cmpText.ts'
+import { OpenDataFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
+import { cmpText } from '../../mods/cmpText.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { PrefNumber } from '../PrefControls.tsx'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'

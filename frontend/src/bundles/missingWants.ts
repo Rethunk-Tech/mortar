@@ -2,7 +2,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/b
 import type { Want } from '../queue/actions.ts'
 
 // The download for one bundle mod; a mod with no Nexus or GitHub source cannot be fetched.
-export function bundleModWant({ name, source }: Mod): Want | null {
+function bundleModWant({ name, source }: Mod): Want | null {
   if (source.kind === 'nexus' && source.modId) {
     return {
       kind: 'install',

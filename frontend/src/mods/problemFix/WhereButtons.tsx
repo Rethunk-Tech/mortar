@@ -2,7 +2,8 @@ import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
 import type { Ref } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { useProfiles } from '../../profiles/store.ts'
-import { download, refWant } from '../../queue/actions.ts'
+import { download } from '../../queue/actions.ts'
+import { refWant } from '../../queue/refWant.ts'
 import { useQueue } from '../../queue/store.ts'
 import { pendingFor } from '../../queue/totals.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
@@ -43,7 +44,7 @@ export function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string
         onClick={() => download([want]).catch(reportUnexpected)}
         sx={{ flexShrink: 0 }}
       >
-        {queued ? t`Queued` : addLabel}
+        {queued ? t`Queued` : (addLabel ?? '')}
       </Button>
     </>
   )

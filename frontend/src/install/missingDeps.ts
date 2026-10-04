@@ -3,7 +3,8 @@ import type {
   Result,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { sameId } from '../mods/lookup.ts'
-import { refWant, type Want } from '../queue/actions.ts'
+import type { Want } from '../queue/actions.ts'
+import { refWant } from '../queue/refWant.ts'
 
 interface ProfileLike {
   entries?: Array<{ mods?: Array<{ uniqueId?: string }> | null }> | null
