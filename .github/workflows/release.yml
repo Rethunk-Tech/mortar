@@ -1,8 +1,9 @@
 name: Release
 
-# A v* tag builds, signs and publishes the release; a manual dispatch runs the amd64 (+ Windows) build and
-# signing as a dry run and publishes nothing. Linux arm64 is a second matrix leg on tags only
-# (ubuntu-24.04-arm). The signed manifest is assembled after both tag legs so it can name both AppImages.
+# A v* tag builds, signs and publishes the release. A manual dispatch is the dry run: it runs every step on both
+# legs, including the signed manifest, package-manager sources, release notes and a check of the staged files, and
+# only skips the GitHub release, so packaging faults show up before a tag exists. Linux arm64 is the second matrix
+# leg (ubuntu-24.04-arm); the signed manifest is assembled after both legs so it can name both AppImages.
 on:
   push:
     tags: ["v*"]
@@ -25,11 +26,7 @@ jobs:
         run: |
           amd64='{"runner":"ubuntu-latest","goarch":"amd64","appimage_arch":"x86_64","deb_arch":"amd64","rpm_arch":"x86_64","pkg_arch":"x86_64","windows":true,"flatpak":true}'
           arm64='{"runner":"ubuntu-24.04-arm","goarch":"arm64","appimage_arch":"aarch64","deb_arch":"arm64","rpm_arch":"aarch64","pkg_arch":"aarch64","windows":false,"flatpak":false}'
-          if [ "${{ github.ref_type }}" = tag ]; then
-            echo "matrix={\"include\":[$amd64,$arm64]}" >>"$GITHUB_OUTPUT"
-          else
-            echo "matrix={\"include\":[$amd64]}" >>"$GITHUB_OUTPUT"
-          fi
+          echo "matrix={\"include\":[$amd64,$arm64]}" >>"$GITHUB_OUTPUT"
 
   release:
     needs: plan
@@ -173,22 +170,7 @@ jobs:
           wails3 task windows:package INSTALL_SCOPE=user ARCH=arm64
           cp bin/mortar.exe bin/mortar-windows-arm64.exe
 
-      - name: Signed manifest
-        if: matrix.windows && github.ref_type != 'tag'
-        env:
-          UPDATE_KEY: ${{ secrets.MORTAR_UPDATE_KEY }}
-          REF_NAME: ${{ github.ref_name }}
-          REF_TYPE: ${{ github.ref_type }}
-        run: |
-          version="$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)"
-          umask 077
-          key="$RUNNER_TEMP/updater.key"
-          trap 'rm -f "$key"' EXIT
-          printf '%s\n' "$UPDATE_KEY" >"$key"
-          MORTAR_UPDATE_KEY="$key" wails3 task release:manifest VERSION="$version"
-
       - name: Stage artifacts
-        if: github.ref_type == 'tag'
         run: |
           mkdir -p out
           cp "bin/mortar-linux-${{ matrix.appimage_arch }}.AppImage" out/
@@ -206,7 +188,6 @@ jobs:
           fi
 
       - name: Upload artifacts
-        if: github.ref_type == 'tag'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: mortar-linux-${{ matrix.goarch }}
@@ -215,7 +196,6 @@ jobs:
 
   finalize:
     needs: release
-    if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -300,18 +280,74 @@ jobs:
           cp bin/flathub/SUBMISSION.md bin/flathub-SUBMISSION.md
           rm -r bin/aur bin/flathub
 
-      - name: Publish release
+      - name: Release notes
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          set -euo pipefail
+          if [ "$REF_TYPE" = tag ]; then
+            build/release/notes.sh "$REF_NAME" >notes.md
+          else
+            build/release/notes.sh "v$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)" HEAD >notes.md
+          fi
+          cat notes.md >>"$GITHUB_STEP_SUMMARY"
+
+      - name: Verify staged files
+        if: github.ref_type != 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: build/release/verify.sh --staged bin
+
+      # Published releases are immutable, so the release is built and verified as a draft and published only once it
+      # passes. A rerun finishes the existing draft for the tag instead of failing on it.
+      - name: Draft release
+        if: github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          build/release/notes.sh "$TAG" >notes.md
-          # Every file in bin/ is a release asset, so the verify step can hold the release to exactly this set.
-          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes-file notes.md bin/*
+          draft="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft 2>/dev/null || echo none)"
+          case "$draft" in
+            none)
+              # Every file in bin/ is a release asset, so the verify step can hold the release to exactly this set.
+              gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft --verify-tag --title "$TAG" --notes-file notes.md bin/*
+              ;;
+            true)
+              gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --notes-file notes.md
+              gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" --clobber bin/*
+              gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' |
+                while IFS= read -r name; do
+                  if [ ! -e "bin/$name" ]; then
+                    gh release delete-asset "$TAG" "$name" --repo "$GITHUB_REPOSITORY" --yes
+                  fi
+                done
+              ;;
+            *)
+              echo "release $TAG is already published, and published releases cannot change" >&2
+              exit 1
+              ;;
+          esac
 
-      - name: Verify release
+      - name: Verify draft
+        if: github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: build/release/verify.sh "$TAG" bin
+
+      - name: Publish release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+
+      # What a stranger's Mortar fetches: warns while the repo is private, fails once it is public.
+      - name: Check public reachability
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: build/release/verify.sh --public "$TAG"
