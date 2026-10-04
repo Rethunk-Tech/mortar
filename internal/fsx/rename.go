@@ -24,3 +24,9 @@ func retry(op func() error, transient func(error) bool, window time.Duration) er
 		time.Sleep(delay)
 	}
 }
+
+// RemoveAll is os.RemoveAll with the same antivirus/indexer retry as Rename; a repeat pass removes whatever the
+// first one could not.
+func RemoveAll(path string) error {
+	return retry(func() error { return os.RemoveAll(path) }, transientRename, renameRetryWindow)
+}
