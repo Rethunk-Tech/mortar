@@ -1,7 +1,9 @@
 package queue
 
 import (
+	"fmt"
 	"path/filepath"
+	"slices"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -103,10 +105,61 @@ func (s *Service) ClearHistory() {
 	s.writeHistory(nil)
 }
 
+func (e HistoryEntry) request() Request {
+	return Request{
+		Kind: e.Kind, Game: e.Game, Profile: e.Profile, ModID: e.ModID, FileID: e.FileID,
+		Name: e.Name, Version: e.Version, Repo: e.Repo, Tag: e.Tag, Asset: e.Asset, Latest: e.Latest,
+	}
+}
+
 // RetryHistory re-enqueues the request represented by a failed or skipped history entry.
 func (s *Service) RetryHistory(entry HistoryEntry) ([]Item, error) {
-	return s.Add([]Request{{
-		Kind: entry.Kind, Game: entry.Game, Profile: entry.Profile, ModID: entry.ModID, FileID: entry.FileID,
-		Name: entry.Name, Version: entry.Version, Repo: entry.Repo, Tag: entry.Tag, Asset: entry.Asset, Latest: entry.Latest,
-	}})
+	return s.Add([]Request{entry.request()})
+}
+
+// RetryAllResult says what RetryAllFailed did. Skipped counts failed entries left alone, by reason: "queued"
+// (the download is already waiting or running), "superseded" (a newer history entry covers the same download)
+// and "incomplete" (the entry lacks what a download needs).
+type RetryAllResult struct {
+	Requeued int            `json:"requeued"`
+	Skipped  map[string]int `json:"skipped"`
+}
+
+// RetryAllFailed re-enqueues every failed history entry that is still retryable. Only the newest entry of a
+// download counts, so one that later succeeded or already failed again is not queued twice.
+func (s *Service) RetryAllFailed() (RetryAllResult, error) {
+	res := RetryAllResult{Skipped: map[string]int{}}
+	entries := s.History()
+	seen := map[string]bool{}
+	var reqs []Request
+	s.mu.Lock()
+	for _, e := range slices.Backward(entries) {
+		r := e.request()
+		id := fmt.Sprint(r.Game, "|", r.Profile, "|", r.ModID, "|", r.FileID, "|", r.Repo, "|", r.Tag, "|", r.Asset)
+		if seen[id] {
+			if e.Outcome == StateFailed {
+				res.Skipped["superseded"]++
+			}
+			continue
+		}
+		seen[id] = true
+		switch {
+		case e.Outcome != StateFailed:
+		case r.Game == "" || r.Profile == "" || (r.ModID <= 0 && !validRepo(r.Repo)):
+			res.Skipped["incomplete"]++
+		case slices.ContainsFunc(s.items, func(it *Item) bool { return sameDownload(it, r) }):
+			res.Skipped["queued"]++
+		default:
+			reqs = append(reqs, r)
+		}
+	}
+	s.mu.Unlock()
+	if len(reqs) == 0 {
+		return res, nil
+	}
+	if _, err := s.Add(reqs); err != nil {
+		return res, err
+	}
+	res.Requeued = len(reqs)
+	return res, nil
 }

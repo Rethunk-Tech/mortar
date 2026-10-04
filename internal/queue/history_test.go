@@ -73,3 +73,42 @@ func TestHistoryFileIsJSON(t *testing.T) {
 		t.Fatalf("not a JSON array: %s", b)
 	}
 }
+
+func TestRetryAllFailed(t *testing.T) {
+	f := newFixture(t)
+	f.s.Pause()
+	if _, err := f.s.Add([]Request{req(30)}); err != nil {
+		t.Fatal(err)
+	}
+	base := HistoryEntry{Game: "stardew", Profile: "p1", ModID: 1, Kind: "nexus"}
+	mk := func(file int, outcome string) HistoryEntry {
+		e := base
+		e.FileID, e.Outcome = file, outcome
+		return e
+	}
+	gh := HistoryEntry{Game: "stardew", Profile: "p1", Repo: "o/r", Tag: "v1", Asset: "a.zip", Outcome: StateFailed}
+	bad := mk(0, StateFailed)
+	bad.Game = ""
+	f.s.writeHistory([]HistoryEntry{
+		mk(10, StateFailed), mk(10, StateFailed), // repeated failure: one retry
+		mk(11, StateFailed), mk(11, StateDone), // succeeded since
+		mk(12, StateDone), mk(12, StateFailed), // newest failed
+		mk(30, StateFailed), // already queued
+		mk(13, StateSkipped),
+		gh, bad,
+	})
+	got, err := f.s.RetryAllFailed()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Requeued != 3 || got.Skipped["superseded"] != 2 || got.Skipped["queued"] != 1 || got.Skipped["incomplete"] != 1 {
+		t.Fatalf("result %+v", got)
+	}
+	if n := len(f.s.State().Items); n != 4 {
+		t.Fatalf("%d items queued", n)
+	}
+	again, err := f.s.RetryAllFailed()
+	if err != nil || again.Requeued != 0 || again.Skipped["queued"] != 4 {
+		t.Fatalf("second run %+v, %v", again, err)
+	}
+}
