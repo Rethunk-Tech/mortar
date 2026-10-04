@@ -94,7 +94,7 @@ func (c *Client) searchNexus(ctx context.Context, game, text string, page int) (
 			Endorsements: n.Endorsements,
 			Downloads:    n.Downloads,
 			Updated:      n.UpdatedAt,
-			URL:          fmt.Sprintf("https://www.nexusmods.com/%s/mods/%s", domain, id),
+			URL:          nexus.ModURL(domain, n.ModID),
 		})
 	}
 	c.markInstalled(items)

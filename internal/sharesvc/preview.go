@@ -142,7 +142,7 @@ const (
 
 // nexusPage is a Nexus mod's page for the configured game.
 func nexusPage(modID int) string {
-	return "https://www.nexusmods.com/" + nexus.Game + "/mods/" + fmt.Sprint(modID)
+	return nexus.ModURL(nexus.Game, modID)
 }
 
 // resolver looks one import up. Its answers come from the mod dataset and, when signed in, Nexus's file lists;

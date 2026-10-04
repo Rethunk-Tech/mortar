@@ -2,8 +2,9 @@ package modreport
 
 import (
 	"net/url"
-	"strconv"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/nexus"
 )
 
 const maxGitHubBody = 6000
@@ -29,5 +30,5 @@ func NexusBugsURL(domain string, modID int) string {
 	if domain == "" || modID <= 0 {
 		return ""
 	}
-	return "https://www.nexusmods.com/" + domain + "/mods/" + strconv.Itoa(modID) + "?tab=bugs"
+	return nexus.ModURL(domain, modID) + "?tab=bugs"
 }

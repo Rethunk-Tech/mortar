@@ -128,7 +128,7 @@ func authorBroken(mod Installed, quote, where string) *Broken {
 func authorBrokenText(mod Installed, quote, where, text string) *Broken {
 	b := authorBrokenWithReplacement(mod, quote, where)
 	if ids := nexusModLink.FindStringSubmatch(text); len(ids) == 2 {
-		b.Replacement = &Ref{Site: "Nexus", PageID: mustInt(ids[1]), URL: "https://www.nexusmods.com/stardewvalley/mods/" + ids[1]}
+		b.Replacement = &Ref{Site: "Nexus", PageID: mustInt(ids[1]), URL: nexus.ModURL(nexus.Game, mustInt(ids[1]))}
 	}
 	return b
 }
@@ -146,7 +146,7 @@ func authorBrokenWithReplacement(mod Installed, quote, where string) *Broken {
 		Summary: fmt.Sprintf("%s says it is %s: %q", where, status, quote),
 	}
 	if ids := nexusModLink.FindStringSubmatch(quote); len(ids) == 2 {
-		b.Replacement = &Ref{Site: "Nexus", PageID: mustInt(ids[1]), URL: "https://www.nexusmods.com/stardewvalley/mods/" + ids[1]}
+		b.Replacement = &Ref{Site: "Nexus", PageID: mustInt(ids[1]), URL: nexus.ModURL(nexus.Game, mustInt(ids[1]))}
 	}
 	return b
 }

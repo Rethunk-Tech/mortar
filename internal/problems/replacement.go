@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-AI/mortar/internal/nexus"
 )
 
 var (
@@ -43,7 +44,7 @@ func replacementFromSummary(ctx context.Context, m Meta, dependentKeys []string,
 func refForNexusPage(ctx context.Context, m Meta, pageID int) *Ref {
 	page, err := m.Page(ctx, pageID)
 	if err != nil {
-		return &Ref{Site: "Nexus", PageID: pageID, URL: "https://www.nexusmods.com/stardewvalley/mods/" + strconv.Itoa(pageID)}
+		return &Ref{Site: "Nexus", PageID: pageID, URL: nexus.ModURL(nexus.Game, pageID)}
 	}
 	r := meta.Ref{Site: "Nexus", ID: pageID}
 	var best *Ref

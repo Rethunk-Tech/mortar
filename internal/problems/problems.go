@@ -16,6 +16,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
@@ -462,7 +463,7 @@ func listedRequirements(ctx context.Context, m Meta, enabled, all []Installed) (
 				Site:     "Nexus",
 				PageID:   req.ModID,
 				PageName: pageName,
-				URL:      "https://www.nexusmods.com/stardewvalley/mods/" + strconv.Itoa(req.ModID),
+				URL:      nexus.ModURL(nexus.Game, req.ModID),
 			}
 			if uniqueID == "nexus:"+strconv.Itoa(req.ModID) {
 				miss.Where = pageRef
@@ -699,7 +700,7 @@ func fillWhere(ctx context.Context, m Meta, enabled []Installed, missing []Missi
 func siteURL(r meta.Ref) string {
 	switch strings.ToLower(r.Site) {
 	case "nexus":
-		return "https://www.nexusmods.com/stardewvalley/mods/" + strconv.Itoa(r.ID)
+		return nexus.ModURL(nexus.Game, r.ID)
 	case "curseforge":
 		return "https://www.curseforge.com/projects/" + strconv.Itoa(r.ID)
 	case "moddrop":

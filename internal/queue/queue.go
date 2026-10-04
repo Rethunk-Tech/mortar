@@ -83,13 +83,12 @@ func validRepo(repo string) bool {
 }
 
 const (
-	fileName        = "queue.json"
-	downloadsDir    = "downloads"
-	keptFinished    = 100
-	progressEvery   = 250 * time.Millisecond
-	defaultBackoff  = time.Minute
-	keyValidMargin  = 5 * time.Second
-	pageURLTemplate = "https://www.nexusmods.com/%s/mods/%d?tab=files&file_id=%d&nmm=1"
+	fileName       = "queue.json"
+	downloadsDir   = "downloads"
+	keptFinished   = 100
+	progressEvery  = 250 * time.Millisecond
+	defaultBackoff = time.Minute
+	keyValidMargin = 5 * time.Second
 )
 
 // Item is one file to download and install. FileID is 0 until the file is chosen from the mod's files (an update
@@ -861,7 +860,7 @@ func (s *Service) OpenPage(id string) error {
 	it := s.find(id)
 	var url string
 	if it != nil && it.FileID != 0 {
-		url = fmt.Sprintf(pageURLTemplate, nexus.Game, it.ModID, it.FileID)
+		url = nexus.ModURL(nexus.Game, it.ModID) + fmt.Sprintf("?tab=files&file_id=%d&nmm=1", it.FileID)
 	}
 	s.mu.Unlock()
 	if url == "" {
