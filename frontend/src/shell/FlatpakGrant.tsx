@@ -70,7 +70,7 @@ export function FlatpakGrant() {
             {t`Copy`}
           </Button>
           <Button variant="contained" onClick={() => setAsk(true)} sx={{ whiteSpace: 'nowrap' }}>
-            {t`Grant access`}
+            {t`Grant access…`}
           </Button>
         </Box>
       </Box>
