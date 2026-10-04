@@ -285,11 +285,9 @@ function AddArchive({
   const locked = useLocked()
   const blocked = installing || locked
   const extraFolder = useSettings((s) => s.games?.stardew?.extraModsFolder ?? '')
+  const reason = locked ? t`Stop the game to change mods.` : t`Adding…`
   const add = (
-    <DisabledReason
-      title={locked ? t`Stop the game to change mods.` : t`Adding…`}
-      disabled={blocked}
-    >
+    <DisabledReason title={reason} disabled={blocked}>
       <Button
         variant={variant}
         size={size}
@@ -306,7 +304,13 @@ function AddArchive({
     </DisabledReason>
   )
   return (
-    <ExtraFolderMenu folder={extraFolder} blocked={blocked} variant={variant} size={size}>
+    <ExtraFolderMenu
+      folder={extraFolder}
+      blocked={blocked}
+      blockedReason={reason}
+      variant={variant}
+      size={size}
+    >
       {add}
     </ExtraFolderMenu>
   )

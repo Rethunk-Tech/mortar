@@ -20,6 +20,7 @@ export function ConfirmDialog({
   color = 'primary',
   busy = false,
   confirmDisabled = false,
+  fieldFocus = false,
   maxWidth = 440,
   onCancel,
   onConfirm,
@@ -33,6 +34,8 @@ export function ConfirmDialog({
   color?: 'primary' | 'error' | 'warning'
   busy?: boolean
   confirmDisabled?: boolean | undefined
+  /** The content holds a field that takes initial focus instead of a button. */
+  fieldFocus?: boolean
   maxWidth?: number
   onCancel: () => void
   onConfirm: () => void
@@ -50,14 +53,14 @@ export function ConfirmDialog({
         {children}
       </DialogContent>
       <DialogActions sx={{ flexWrap: 'wrap' }}>
-        <Button onClick={onCancel} disabled={busy} autoFocus={color === 'error'}>
+        <Button onClick={onCancel} disabled={busy} autoFocus={!fieldFocus && color === 'error'}>
           {cancelLabel ?? t`Cancel`}
         </Button>
         <Button
           variant="contained"
           color={color}
           disabled={busy || confirmDisabled}
-          autoFocus={color !== 'error'}
+          autoFocus={!fieldFocus && color !== 'error'}
           onClick={onConfirm}
         >
           {confirmLabel}

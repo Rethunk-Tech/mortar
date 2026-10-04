@@ -9,6 +9,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { useProfiles } from '../../profiles/store.ts'
+import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
@@ -52,9 +53,11 @@ function HistoryRow({
       label={t`Profile history: ${usage.profileName}`}
       description={`${formatBytes(sizeOf(usage))} · ${events}`}
     >
-      <Button variant="outlined" disabled={usage.events <= 1} onClick={() => setOpen(true)}>
-        {t`Trim…`}
-      </Button>
+      <DisabledReason title={t`Nothing to trim`} disabled={usage.events <= 1}>
+        <Button variant="outlined" disabled={usage.events <= 1} onClick={() => setOpen(true)}>
+          {t`Trim…`}
+        </Button>
+      </DisabledReason>
       <TrimDialog
         title={t`Trim history of ${usage.profileName}`}
         body={t`Older changes are dropped and can no longer be undone.`}

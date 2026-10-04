@@ -12,6 +12,8 @@ import { useToasts } from '../../toasts/store.ts'
 import type { MoveState } from './DataMoveRun.ts'
 import { mono, nowrap } from './dataStyles.ts'
 
+const PERCENT = 100
+
 export function MoveDataButton({
   onPicked,
   disabledReason = '',
@@ -81,8 +83,12 @@ export function MoveDialog({
           <Box>{t`Free space at destination: ${formatBytes(move.estimate.freeBytes)}`}</Box>
           {moving ? (
             <>
-              <LinearProgress />
-              <Box sx={{ ...mono }}>
+              <LinearProgress
+                variant="determinate"
+                value={progress.totalBytes ? (progress.bytes / progress.totalBytes) * PERCENT : 0}
+                aria-label={t`Moving data`}
+              />
+              <Box role="status" sx={{ ...mono }}>
                 {t`${progress.files}/${progress.totalFiles} files · ${formatBytes(progress.bytes)} / ${formatBytes(progress.totalBytes)}`}
               </Box>
             </>

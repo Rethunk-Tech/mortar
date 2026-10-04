@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Checkbox, FormControlLabel, Typography } from '@mui/material'
+import { Box, Checkbox, FormControlLabel, List, ListItem, ListItemText } from '@mui/material'
 import type { ReactNode } from 'react'
 import type { GameModPreview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { formatPreviewRow } from '../profiles/gameModsFormat.ts'
@@ -37,14 +37,20 @@ export function PreviewPick({
           {action?.(m)}
         </Box>
       ))}
-      {blocked.map((m) => (
-        <Typography
-          key={`${m.name}-${m.folder}`}
-          sx={{ fontSize: 14, py: 0.5, pl: 1, color: 'text.secondary', overflowWrap: 'anywhere' }}
-        >
-          {formatPreviewRow(m, switchedOff)}
-        </Typography>
-      ))}
+      <List dense={true} disablePadding={true}>
+        {blocked.map((m) => (
+          <ListItem key={`${m.name}-${m.folder}`} sx={{ py: 0.5, pl: 1 }}>
+            <ListItemText
+              primary={formatPreviewRow(m, switchedOff)}
+              slotProps={{
+                primary: {
+                  sx: { fontSize: 14, color: 'text.secondary', overflowWrap: 'anywhere' },
+                },
+              }}
+            />
+          </ListItem>
+        ))}
+      </List>
     </Box>
   )
 }

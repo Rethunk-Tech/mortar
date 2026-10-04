@@ -38,12 +38,18 @@ export function TrimDialog({
 }) {
   const { t } = useLingui()
   const [draft, setDraft] = useState(String(defaultKeep))
+  useEffect(() => {
+    if (open) {
+      setDraft(String(defaultKeep))
+    }
+  }, [open, defaultKeep])
   const keep = Number(draft)
   const valid = Number.isInteger(keep) && keep >= MIN_KEEP
   return (
     <ConfirmDialog
       open={open}
-      color="warning"
+      color="error"
+      fieldFocus={true}
       busy={busy}
       title={title}
       body={body}
@@ -52,16 +58,27 @@ export function TrimDialog({
       onCancel={onClose}
       onConfirm={() => onTrim(keep)}
     >
-      <TextField
-        type="number"
-        size="small"
-        label={fieldLabel}
-        value={draft}
-        error={!valid}
-        onChange={(e) => setDraft(e.target.value)}
-        slotProps={{ htmlInput: { min: MIN_KEEP, step: 1 } }}
-        sx={{ mt: 1.5 }}
-      />
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (valid && !busy) {
+            onTrim(keep)
+          }
+        }}
+      >
+        <TextField
+          type="number"
+          size="small"
+          label={fieldLabel}
+          value={draft}
+          error={!valid}
+          helperText={valid ? '' : t`Enter 1 or more`}
+          autoFocus={true}
+          onChange={(e) => setDraft(e.target.value)}
+          slotProps={{ htmlInput: { min: MIN_KEEP, step: 1 } }}
+          sx={{ mt: 1.5 }}
+        />
+      </form>
     </ConfirmDialog>
   )
 }

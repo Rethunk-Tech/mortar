@@ -1,5 +1,4 @@
-import { Box, Typography } from '@mui/material'
-import { Info } from 'lucide-react'
+import { Alert, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 
@@ -14,29 +13,25 @@ export function ListCallout({
   children?: ReactNode
 }) {
   return (
-    <Box
+    <Alert
+      severity="info"
+      role="region"
+      aria-label={text}
+      action={actions}
       sx={{
         mx: 2,
         mt: 1.25,
         flexShrink: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 1,
-        p: 1.5,
+        alignItems: 'center',
         bgcolor: calloutFill('info'),
         border: '1px solid',
         borderColor: calloutLine('info'),
-        borderRadius: '6px',
+        '& .MuiAlert-message': { flex: 1, minWidth: 200 },
+        '& .MuiAlert-action': { gap: 1, flexShrink: 0, alignItems: 'center' },
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexWrap: 'wrap' }}>
-        <Box component="span" sx={{ display: 'flex', flexShrink: 0, color: 'info.main' }}>
-          <Info size={16} aria-hidden={true} />
-        </Box>
-        <Typography sx={{ flex: 1, minWidth: 200, fontSize: 14 }}>{text}</Typography>
-        <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>{actions}</Box>
-      </Box>
+      <Typography sx={{ fontSize: 14 }}>{text}</Typography>
       {children}
-    </Box>
+    </Alert>
   )
 }

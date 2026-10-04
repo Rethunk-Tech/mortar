@@ -95,6 +95,7 @@ export function MoveFoldersDialog({
             size="small"
             variant="text"
             color="inherit"
+            aria-label={t`Don't ask again about ${row.folder ?? ''}`}
             disabled={busy}
             onClick={() => {
               DismissGameModsFolder(game, row.folder ?? '')

@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -25,25 +26,65 @@ import { parseInstructions } from '../share/instructions.ts'
 
 const HEADING = /^#+\s*/
 
+const BULLET = /^[-*]\s+/
+
+function NoteParts({ line }: { line: ReturnType<typeof parseInstructions>[number] }) {
+  const first = line.parts[0]?.text ?? ''
+  const strip = [HEADING, BULLET].find((marker) => marker.test(first))
+  return line.parts.map((part, i) => (
+    <PageLink
+      key={part.at}
+      part={i === 0 && strip ? { ...part, text: part.text.replace(strip, '') } : part}
+    />
+  ))
+}
+
+type Line = ReturnType<typeof parseInstructions>[number]
+
+const isBullet = (line: Line) => BULLET.test(line.parts[0]?.text ?? '')
+
+function NoteLine({ line }: { line: Line }) {
+  const heading = HEADING.test(line.parts[0]?.text ?? '')
+  const bullet = isBullet(line)
+  let component: 'h3' | 'li' | 'p' = 'p'
+  if (heading) {
+    component = 'h3'
+  } else if (bullet) {
+    component = 'li'
+  }
+  return (
+    <Typography
+      component={component}
+      variant={heading ? 'subtitle2' : 'body2'}
+      sx={{ m: 0, minHeight: '1.4em', color: heading ? 'text.primary' : 'var(--mortar-ink-sec)' }}
+    >
+      <NoteParts line={line} />
+    </Typography>
+  )
+}
+
+// Consecutive bullet lines share one list; every other line stands alone.
 function Notes({ text }: { text: string }) {
-  return parseInstructions(text).map((line) => {
-    const first = line.parts[0]?.text ?? ''
-    const heading = HEADING.test(first)
-    return (
-      <Typography
-        key={line.at}
-        variant={heading ? 'subtitle2' : 'body2'}
-        sx={{ minHeight: '1.4em', color: heading ? 'text.primary' : 'var(--mortar-ink-sec)' }}
-      >
-        {line.parts.map((part, i) => (
-          <PageLink
-            key={part.at}
-            part={i === 0 && heading ? { ...part, text: part.text.replace(HEADING, '') } : part}
-          />
+  const groups: Line[][] = []
+  for (const line of parseInstructions(text)) {
+    const last = groups.at(-1)
+    if (last && isBullet(line) && isBullet(last[0] as Line)) {
+      last.push(line)
+    } else {
+      groups.push([line])
+    }
+  }
+  return groups.map((group) =>
+    isBullet(group[0] as Line) ? (
+      <Box key={group[0]?.at} component="ul" sx={{ m: 0, pl: 2.5 }}>
+        {group.map((line) => (
+          <NoteLine key={line.at} line={line} />
         ))}
-      </Typography>
-    )
-  })
+      </Box>
+    ) : (
+      <NoteLine key={group[0]?.at} line={group[0] as Line} />
+    ),
+  )
 }
 
 export function WhatsNewDialog() {

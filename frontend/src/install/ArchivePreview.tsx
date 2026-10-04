@@ -1,12 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Chip, Typography } from '@mui/material'
 import { File, Folder } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Preview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/archive/models.ts'
 import { ArchivePreview as ReadArchive } from '../../bindings/github.com/Rethunk-AI/mortar/internal/archivesvc/service.ts'
 import { formatBytes } from '../i18n/bytes.ts'
+import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
-import { reportError } from '../toasts/report.ts'
+import { errorMessage } from '../toasts/report.ts'
 import { groupEntries, type TreeRow } from './archiveTree.ts'
 
 const INDENT = 14
@@ -46,9 +47,15 @@ function Row({ row }: { row: TreeRow }) {
 }
 
 function Tree({ preview }: { preview: Preview }) {
+  const { t } = useLingui()
   const groups = groupEntries(preview.entries ?? [], preview.manifests ?? [])
   return (
-    <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+    <Box
+      tabIndex={0}
+      role="region"
+      aria-label={t`Archive contents`}
+      sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}
+    >
       {groups.map((group) => (
         <Box key={group.folder} sx={{ mb: 1 }}>
           {group.rows.map((row) => (
@@ -64,16 +71,26 @@ function Tree({ preview }: { preview: Preview }) {
 export function ArchivePreview({ path }: { path: string }) {
   const { t } = useLingui()
   const [preview, setPreview] = useState<Preview | null>(null)
-  useEffect(() => {
-    let active = true
+  const [error, setError] = useState('')
+  const gen = useRef(0)
+  const load = useCallback(() => {
+    gen.current += 1
+    const token = gen.current
     setPreview(null)
+    setError('')
     ReadArchive(path)
-      .then((read) => active && setPreview(read))
-      .catch(reportError(t`Could not read the archive`))
+      .then((read) => token === gen.current && setPreview(read))
+      .catch((e: unknown) => token === gen.current && setError(errorMessage(e)))
+  }, [path])
+  useEffect(() => {
+    load()
     return () => {
-      active = false
+      gen.current += 1
     }
-  }, [path, t])
+  }, [load])
+  if (error !== '') {
+    return <ErrorRetry message={error} onRetry={load} />
+  }
   if (!preview) {
     return <LoadingRow>{t`Reading the archive…`}</LoadingRow>
   }

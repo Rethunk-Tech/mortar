@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Typography } from '@mui/material'
+import { Box, List, ListItem, ListItemText, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import type {
   HiddenMod,
@@ -37,17 +37,23 @@ export function HiddenInside({ mod, profile }: { mod: Mod; profile: Profile }) {
   }
   return (
     <Box>
-      <Typography sx={heading}>{t`Hidden inside this mod`}</Typography>
-      {mine.map((h) => (
-        <Box key={`${h.folder}-${h.uniqueId}`} sx={{ py: 0.25 }}>
-          <Typography sx={{ fontSize: 13, overflowWrap: 'anywhere' }}>
-            {h.version === '' ? h.name : `${h.name} · ${h.version}`}
-          </Typography>
-          <Typography sx={{ fontSize: 12, color: 'text.secondary', overflowWrap: 'anywhere' }}>
-            {h.folder}
-          </Typography>
-        </Box>
-      ))}
+      <Typography component="h3" sx={heading}>
+        {t`Hidden inside this mod`}
+      </Typography>
+      <List dense={true} disablePadding={true}>
+        {mine.map((h) => (
+          <ListItem key={`${h.folder}-${h.uniqueId}`} disableGutters={true} sx={{ py: 0.25 }}>
+            <ListItemText
+              primary={h.version === '' ? h.name : `${h.name} · ${h.version}`}
+              secondary={h.folder}
+              slotProps={{
+                primary: { sx: { fontSize: 13, overflowWrap: 'anywhere' } },
+                secondary: { sx: { fontSize: 12, overflowWrap: 'anywhere' } },
+              }}
+            />
+          </ListItem>
+        ))}
+      </List>
       <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>
         {t`SMAPI skips folders whose names start with a dot.`}
       </Typography>

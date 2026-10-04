@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
+import { useEffect, useRef } from 'react'
 import { useNexus } from '../settings/nexus.ts'
 import { NexusSignIn } from '../settings/sections/NexusMods.tsx'
 import { Panel } from './Panel.tsx'
@@ -8,15 +9,24 @@ import { Panel } from './Panel.tsx'
 export function NexusStep({ onDone }: { onDone: () => void }) {
   const { t } = useLingui()
   const { signedIn, name } = useNexus()
+  const continueRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (signedIn) {
+      continueRef.current?.focus()
+    }
+  }, [signedIn])
   return (
     <Panel>
-      <Typography variant="h6">{t`Sign in to Nexus Mods`}</Typography>
+      <Typography variant="h6" component="h2">{t`Sign in to Nexus Mods`}</Typography>
       <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
         {t`Mod Manager Download buttons on Nexus Mods only work in Mortar when you are signed in.`}
       </Typography>
       <NexusSignIn />
-      {signedIn ? <Typography>{t`Signed in as ${name}.`}</Typography> : null}
+      <Box role="status">
+        {signedIn ? <Typography>{t`Signed in as ${name}.`}</Typography> : null}
+      </Box>
       <Button
+        ref={continueRef}
         variant={signedIn ? 'contained' : 'text'}
         onClick={onDone}
         sx={{ alignSelf: 'flex-end' }}

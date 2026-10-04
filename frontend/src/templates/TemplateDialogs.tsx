@@ -1,18 +1,19 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
+  List,
+  ListItem,
+  ListItemText,
   Tooltip,
-  Typography,
 } from '@mui/material'
 import { LayoutTemplate, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { Template } from '../../bindings/github.com/Rethunk-AI/mortar/internal/templates/models.ts'
 import {
   DeleteTemplate,
@@ -69,17 +70,27 @@ function TemplateRow({ template, onDelete }: { template: Template; onDelete: () 
   const { t } = useLingui()
   const mods = plural(template.bundle?.length ?? 0, { one: '# mod', other: '# mods' })
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5 }}>
-      <Typography noWrap={true} sx={{ flex: 1, minWidth: 0 }} title={template.name}>
-        {template.name}
-      </Typography>
-      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{mods}</Typography>
-      <Tooltip title={t`Delete`}>
-        <IconButton size="small" aria-label={t`Delete ${template.name}`} onClick={onDelete}>
-          <Trash2 size={16} />
-        </IconButton>
-      </Tooltip>
-    </Box>
+    <ListItem
+      disableGutters={true}
+      secondaryAction={
+        <Tooltip title={t`Delete`}>
+          <IconButton
+            edge="end"
+            size="small"
+            aria-label={t`Delete ${template.name}`}
+            onClick={onDelete}
+          >
+            <Trash2 size={16} />
+          </IconButton>
+        </Tooltip>
+      }
+    >
+      <ListItemText
+        primary={template.name}
+        secondary={mods}
+        slotProps={{ primary: { noWrap: true, title: template.name } }}
+      />
+    </ListItem>
   )
 }
 
@@ -99,6 +110,7 @@ function ManageTemplatesDialog({
   const { t } = useLingui()
   const [deleting, setDeleting] = useState<string | null>(null)
   const [busy, run] = usePending()
+  const closeRef = useRef<HTMLButtonElement>(null)
   return (
     <>
       <Dialog open={open} onClose={onClose}>
@@ -109,17 +121,21 @@ function ManageTemplatesDialog({
               {t`Choose Save as template… from a profile's menu.`}
             </EmptyState>
           ) : (
-            templates.map((template) => (
-              <TemplateRow
-                key={template.name}
-                template={template}
-                onDelete={() => setDeleting(template.name)}
-              />
-            ))
+            <List dense={true}>
+              {templates.map((template) => (
+                <TemplateRow
+                  key={template.name}
+                  template={template}
+                  onDelete={() => setDeleting(template.name)}
+                />
+              ))}
+            </List>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>{t`Close`}</Button>
+          <Button ref={closeRef} onClick={onClose}>
+            {t`Close`}
+          </Button>
         </DialogActions>
       </Dialog>
       <ConfirmDialog
@@ -137,6 +153,7 @@ function ManageTemplatesDialog({
               DeleteTemplate(game, name).then(() => {
                 setDeleting(null)
                 onChanged()
+                setTimeout(() => closeRef.current?.focus(), 0)
               }),
             { errorTitle: t`Could not delete the template` },
           )

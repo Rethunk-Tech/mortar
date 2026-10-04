@@ -30,7 +30,6 @@ export function RetryAllButton({ failed }: { failed: number }) {
         startIcon={<RotateCcw size={16} />}
         disabled={pending}
         onClick={retry}
-        sx={{ whiteSpace: 'nowrap' }}
       >
         {t`Retry all failed`}
       </Button>

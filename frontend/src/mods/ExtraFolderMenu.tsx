@@ -13,6 +13,7 @@ import { type ReactNode, useState } from 'react'
 import { openDownloadsDialog } from '../install/downloadsDialog.ts'
 import { useInstall } from '../install/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { ExtraFolderDialog } from './ExtraFolderDialog.tsx'
 
@@ -21,11 +22,13 @@ import { ExtraFolderDialog } from './ExtraFolderDialog.tsx'
 export function ExtraFolderMenu({
   folder,
   blocked,
+  blockedReason,
   children,
   ...group
 }: {
   folder: string
   blocked: boolean
+  blockedReason: string
   children: ReactNode
 } & Pick<ButtonGroupProps, 'variant' | 'size'>) {
   const { t } = useLingui()
@@ -37,16 +40,18 @@ export function ExtraFolderMenu({
     <>
       <ButtonGroup {...group}>
         {children}
-        <Button
-          disabled={blocked}
-          aria-label={t`More ways to add mods`}
-          aria-haspopup="menu"
-          aria-expanded={anchor !== null}
-          onClick={(e) => setAnchor(e.currentTarget)}
-          sx={{ minWidth: 30, px: 0.5 }}
-        >
-          <ChevronDown size={14} aria-hidden={true} />
-        </Button>
+        <DisabledReason title={blockedReason} disabled={blocked}>
+          <Button
+            disabled={blocked}
+            aria-label={t`More ways to add mods`}
+            aria-haspopup="menu"
+            aria-expanded={anchor !== null}
+            onClick={(e) => setAnchor(e.currentTarget)}
+            sx={{ minWidth: 30, px: 0.5 }}
+          >
+            <ChevronDown size={14} aria-hidden={true} />
+          </Button>
+        </DisabledReason>
       </ButtonGroup>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
         <MenuItem

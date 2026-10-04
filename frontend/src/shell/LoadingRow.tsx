@@ -3,8 +3,11 @@ import type { ReactNode } from 'react'
 
 export function LoadingRow({ children }: { children: ReactNode }) {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, p: 2 }}>
-      <CircularProgress size={16} />
+    <Box
+      role="status"
+      sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, p: 2 }}
+    >
+      <CircularProgress size={16} aria-hidden={true} />
       <Typography sx={{ color: 'text.secondary' }}>{children}</Typography>
     </Box>
   )

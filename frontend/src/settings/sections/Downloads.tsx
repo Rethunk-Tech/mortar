@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Tooltip } from '@mui/material'
+import { Box, Button } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { List as ListGames } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
@@ -134,17 +134,15 @@ function NxmLinks() {
     <>
       <SettingRow
         label={t`Handle "Mod Manager Download" links`}
-        description={t`Clicking these links on Nexus starts the download in Mortar.`}
+        description={`${t`Clicking these links on Nexus starts the download in Mortar.`} ${
+          owner ? t`${owner} opens these links now.` : t`Mortar handles these links now.`
+        }`}
       >
-        <Tooltip
-          title={owner ? t`${owner} opens these links now.` : t`Mortar handles these links now.`}
-        >
-          <PrefSwitch
-            checked={nxm.handled}
-            onChange={(on) => nxm.toggle(on)}
-            label={t`Handle "Mod Manager Download" links`}
-          />
-        </Tooltip>
+        <PrefSwitch
+          checked={nxm.handled}
+          onChange={(on) => nxm.toggle(on)}
+          label={t`Handle "Mod Manager Download" links`}
+        />
       </SettingRow>
       {nxm.handled && nxmPrevious ? (
         <SettingRow

@@ -6,7 +6,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   MenuItem,
   TextField,
 } from '@mui/material'
@@ -22,7 +21,6 @@ import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 
 const EMPTY = ''
-const MANAGE = '\u0000manage'
 const MAX_NAME = 60
 
 function StartFromSelect({
@@ -30,33 +28,38 @@ function StartFromSelect({
   value,
   disabled,
   onChange,
+  onManage,
 }: {
   names: string[]
   value: string
   disabled: boolean
   onChange: (value: string) => void
+  onManage: () => void
 }) {
   const { t } = useLingui()
   return (
-    <TextField
-      select={true}
-      fullWidth={true}
-      label={t`Start from`}
-      value={value}
-      disabled={disabled}
-      onChange={(e) => onChange(e.target.value)}
-      slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
-      sx={{ mt: 2 }}
-    >
-      <MenuItem value={EMPTY}>{t`Empty profile`}</MenuItem>
-      {names.map((name) => (
-        <MenuItem key={name} value={name}>
-          {name}
-        </MenuItem>
-      ))}
-      <Divider />
-      <MenuItem value={MANAGE}>{t`Manage templates…`}</MenuItem>
-    </TextField>
+    <>
+      <TextField
+        select={true}
+        fullWidth={true}
+        label={t`Start from`}
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.value)}
+        slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
+        sx={{ mt: 2 }}
+      >
+        <MenuItem value={EMPTY}>{t`Empty profile`}</MenuItem>
+        {names.map((name) => (
+          <MenuItem key={name} value={name}>
+            {name}
+          </MenuItem>
+        ))}
+      </TextField>
+      <Button size="small" onClick={onManage} disabled={disabled} sx={{ mt: 0.5 }}>
+        {t`Manage templates…`}
+      </Button>
+    </>
   )
 }
 
@@ -139,7 +142,8 @@ export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: ()
                 names={templates.map((candidate) => candidate.name)}
                 value={template ? from : EMPTY}
                 disabled={busy}
-                onChange={(value) => (value === MANAGE ? setManaging(true) : setFrom(value))}
+                onChange={setFrom}
+                onManage={() => setManaging(true)}
               />
             ) : null}
           </DialogContent>

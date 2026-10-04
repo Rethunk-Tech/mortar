@@ -1,7 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Tooltip } from '@mui/material'
-import type { KeyboardEvent } from 'react'
+import { Box, ButtonBase, Tooltip } from '@mui/material'
 import { useState } from 'react'
 import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { HealthHistory } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
@@ -96,21 +95,10 @@ export function ProfileHealth({
   return (
     <Tooltip title={tooltipTitle} disableInteractive={true} onOpen={loadDetail}>
       <Box
-        component="span"
-        role={onClick ? 'button' : 'img'}
+        component={onClick ? ButtonBase : 'span'}
+        role={onClick ? undefined : 'img'}
         aria-label={view.tooltip}
-        tabIndex={onClick ? 0 : undefined}
         onClick={onClick}
-        onKeyDown={
-          onClick
-            ? (e: KeyboardEvent) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  onClick()
-                }
-              }
-            : undefined
-        }
         sx={{
           ...(sidebar ? sidebarPill : pill),
           cursor: onClick ? 'pointer' : 'default',

@@ -80,7 +80,7 @@ function NodeRow({
           slotProps={{ primary: { noWrap: true }, secondary: { noWrap: true } }}
         />
       </ListItemButton>
-      <Collapse in={open} timeout={0}>
+      <Collapse in={open}>
         <List disablePadding={true} sx={{ pl: 2 }}>
           {(node.children ?? []).map((c) => (
             <NodeRow key={c.path} node={c} selected={selected} onSelect={onSelect} />

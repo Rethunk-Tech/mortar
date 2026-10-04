@@ -5,7 +5,7 @@ import { Check } from 'lucide-react'
 
 const DONE_FILL = 0.18
 
-import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import type {
   GameInfo,
   StoreApp,
@@ -108,6 +108,13 @@ export function GameSetup({ game: id }: { game: GameId }) {
   const Loader = loaderSteps[id]
   const signedIn = useNexus((s) => s.signedIn)
   const afterNexus = Loader ? LOADER : PROFILE
+  const firstStep = useRef(step)
+  // The step's content remounts on each change, dropping focus to the page; a remounted wrapper takes it back.
+  const focusStep = (el: HTMLDivElement | null) => {
+    if (step !== firstStep.current) {
+      el?.focus()
+    }
+  }
 
   if (!ready) {
     return <LoadingRow>{t`Loading…`}</LoadingRow>
@@ -157,19 +164,33 @@ export function GameSetup({ game: id }: { game: GameId }) {
         ) : null}
         <StepChip n={Loader ? PROFILE : LOADER} label={t`First profile`} state={stateOf(PROFILE)} />
       </Box>
-      {step === FIND ? (
-        <FindStep
-          game={game}
-          launchers={launchers}
-          refresh={refresh}
-          onContinue={() => setStep(signedIn ? afterNexus : NEXUS)}
-        />
-      ) : null}
-      {step === NEXUS ? <NexusStep onDone={() => setStep(afterNexus)} /> : null}
-      {step === LOADER && Loader ? (
-        <Loader game={id} gameDir={game.installDir} onDone={goToProfile} />
-      ) : null}
-      {step === PROFILE ? <ProfileStep game={id} /> : null}
+      <Box
+        key={step}
+        ref={focusStep}
+        tabIndex={-1}
+        sx={{
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '20px',
+          outline: 'none',
+        }}
+      >
+        {step === FIND ? (
+          <FindStep
+            game={game}
+            launchers={launchers}
+            refresh={refresh}
+            onContinue={() => setStep(signedIn ? afterNexus : NEXUS)}
+          />
+        ) : null}
+        {step === NEXUS ? <NexusStep onDone={() => setStep(afterNexus)} /> : null}
+        {step === LOADER && Loader ? (
+          <Loader game={id} gameDir={game.installDir} onDone={goToProfile} />
+        ) : null}
+        {step === PROFILE ? <ProfileStep game={id} /> : null}
+      </Box>
     </Box>
   )
 }
