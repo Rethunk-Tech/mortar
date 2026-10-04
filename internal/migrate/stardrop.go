@@ -108,10 +108,10 @@ func stardropPreviewFile(path, id, modsPath string) (ProfilePreview, error) {
 	}
 	configs := make(map[string]json.RawMessage, len(source.PreservedModConfigs))
 	for uniqueID, config := range source.PreservedModConfigs {
-		configs[strings.ToLower(uniqueID)] = config
+		configs[manifest.FoldID(uniqueID)] = config
 	}
 	for i := range mods {
-		if config := configs[strings.ToLower(mods[i].UniqueID)]; len(config) > 0 && string(config) != "null" {
+		if config := configs[manifest.FoldID(mods[i].UniqueID)]; len(config) > 0 && string(config) != "null" {
 			mods[i].Config = config
 		}
 	}
@@ -152,7 +152,7 @@ func stardropMods(
 	seen := make(map[string]bool, len(found))
 	out := make([]ModPreview, 0, len(found)+len(portable))
 	for _, item := range found {
-		key := strings.ToLower(item.UniqueID)
+		key := manifest.FoldID(item.UniqueID)
 		seen[key] = true
 		out = append(out, ModPreview{
 			UniqueID: item.UniqueID, Name: item.Name, Version: item.Version,
@@ -160,7 +160,7 @@ func stardropMods(
 		})
 	}
 	for _, item := range portable {
-		key := strings.ToLower(strings.TrimSpace(item.UniqueID))
+		key := manifest.FoldID(item.UniqueID)
 		if key == "" || seen[key] {
 			continue
 		}
@@ -182,12 +182,12 @@ func stardropMods(
 func missingEnabledIDs(enabledIDs []string, found []folderMod) []string {
 	foundIDs := make(map[string]bool, len(found))
 	for _, item := range found {
-		foundIDs[strings.ToLower(strings.TrimSpace(item.UniqueID))] = true
+		foundIDs[manifest.FoldID(item.UniqueID)] = true
 	}
 	seen := make(map[string]bool, len(enabledIDs))
 	var missing []string
 	for _, id := range enabledIDs {
-		key := strings.ToLower(strings.TrimSpace(id))
+		key := manifest.FoldID(id)
 		if key == "" || seen[key] || foundIDs[key] || manifest.LoaderManaged(id) {
 			continue
 		}

@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
@@ -141,16 +142,16 @@ func buildAssetIndex(mods []Installed) []AssetTarget {
 	order := map[string]int{}
 	for i, mod := range mods {
 		if mod.Enabled {
-			present[strings.ToLower(mod.UniqueID)] = true
+			present[manifest.FoldID(mod.UniqueID)] = true
 		}
-		order[strings.ToLower(mod.UniqueID)] = i
+		order[manifest.FoldID(mod.UniqueID)] = i
 	}
 	grouped := map[assetIndexKey][]indexedTouch{}
 	for _, mod := range mods {
 		if !mod.Enabled {
 			continue
 		}
-		loadOrder := order[strings.ToLower(mod.UniqueID)]
+		loadOrder := order[manifest.FoldID(mod.UniqueID)]
 		if isContentPatcherPack(mod) {
 			indexContentPack(mod, present, loadOrder, grouped)
 			continue
@@ -177,7 +178,7 @@ func buildAssetIndex(mods []Installed) []AssetTarget {
 			if a.touch.LoadOrder != b.touch.LoadOrder {
 				return a.touch.LoadOrder - b.touch.LoadOrder
 			}
-			return strings.Compare(strings.ToLower(a.touch.ModID), strings.ToLower(b.touch.ModID))
+			return strings.Compare(manifest.FoldID(a.touch.ModID), manifest.FoldID(b.touch.ModID))
 		})
 		winner := indexWinner(touches)
 		modsOut := make([]AssetTouch, len(touches))

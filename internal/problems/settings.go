@@ -9,6 +9,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/jsonc"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
@@ -28,7 +29,7 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 		if !mod.Enabled {
 			continue
 		}
-		id := strings.ToLower(strings.TrimSpace(mod.UniqueID))
+		id := manifest.FoldID(mod.UniqueID)
 		if id == "" {
 			continue
 		}
@@ -132,7 +133,7 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 		if c := strings.Compare(strings.ToLower(a.Key), strings.ToLower(b.Key)); c != 0 {
 			return c
 		}
-		if c := strings.Compare(strings.ToLower(a.UniqueID), strings.ToLower(b.UniqueID)); c != 0 {
+		if c := strings.Compare(manifest.FoldID(a.UniqueID), manifest.FoldID(b.UniqueID)); c != 0 {
 			return c
 		}
 		return strings.Compare(strings.ToLower(a.Field), strings.ToLower(b.Field))
@@ -144,7 +145,7 @@ func enabledRequirements(when cpWhen, present map[string]bool, own string) []str
 	ids := map[string]bool{}
 	for _, group := range when.anyOf {
 		for _, id := range group {
-			id = strings.ToLower(strings.TrimSpace(id))
+			id = manifest.FoldID(id)
 			if id != "" && !profile.SameID(id, own) && present[id] {
 				ids[id] = true
 			}

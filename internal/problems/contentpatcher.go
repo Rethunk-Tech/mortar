@@ -23,6 +23,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/jsonc"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
@@ -1920,7 +1921,7 @@ func assetConflictScan(mods []Installed) ([]AssetConflict, []SettingHint, []Redu
 	present := map[string]bool{}
 	for _, mod := range mods {
 		if mod.Enabled {
-			present[strings.ToLower(mod.UniqueID)] = true
+			present[manifest.FoldID(mod.UniqueID)] = true
 		}
 	}
 	at := map[string]map[string][]packHit{"load": {}, "edit": {}}
@@ -1936,7 +1937,7 @@ func assetConflictScan(mods []Installed) ([]AssetConflict, []SettingHint, []Redu
 			if knows == nil {
 				knows = map[string]bool{}
 			}
-			id := strings.ToLower(d.UniqueID)
+			id := manifest.FoldID(d.UniqueID)
 			if loadAfter[id] {
 				continue
 			}
@@ -2627,7 +2628,7 @@ func dismissToken(kind, target string) string {
 }
 
 func settingChoiceToken(uniqueID, field, value string) string {
-	target := strings.ToLower(strings.TrimSpace(uniqueID)) + "\t" +
+	target := manifest.FoldID(uniqueID) + "\t" +
 		strings.ToLower(strings.TrimSpace(field)) + "\t" +
 		strings.ToLower(strings.TrimSpace(value))
 	return dismissToken("setting-choice", target)
@@ -2644,7 +2645,7 @@ func hideDismissedBroken(broken []Broken, tokens []string) ([]Broken, []Dismisse
 	out := []Broken{}
 	dismissed := []DismissedProblem{}
 	for _, b := range broken {
-		token := dismissToken("broken", strings.ToLower(b.UniqueID))
+		token := dismissToken("broken", manifest.FoldID(b.UniqueID))
 		if (b.Status == "abandoned" || b.Status == "obsolete" || b.Status == "deprecated") && skip[token] {
 			dismissed = append(dismissed, DismissedProblem{Token: token, Broken: &b})
 			continue
@@ -2665,7 +2666,7 @@ func hideDismissedListed(missing []Missing, tokens []string) ([]Missing, []Dismi
 	out := []Missing{}
 	dismissed := []DismissedProblem{}
 	for _, m := range missing {
-		token := dismissToken("listed", strings.ToLower(m.UniqueID))
+		token := dismissToken("listed", manifest.FoldID(m.UniqueID))
 		if m.Listed && skip[token] {
 			dismissed = append(dismissed, DismissedProblem{Token: token, Missing: &m})
 			continue
@@ -2686,7 +2687,7 @@ func hideDismissedSettings(settings []SettingHint, tokens []string) ([]SettingHi
 	out := []SettingHint{}
 	dismissed := []DismissedProblem{}
 	for _, setting := range settings {
-		target := strings.ToLower(setting.UniqueID) + "\t" + strings.ToLower(setting.Field)
+		target := manifest.FoldID(setting.UniqueID) + "\t" + strings.ToLower(setting.Field)
 		token := dismissToken("setting", target)
 		if skip[token] {
 			dismissed = append(dismissed, DismissedProblem{Token: token, Setting: &setting})

@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
 // Redundant is an enabled mod that adds nothing beside the others: "superseded" when its replacement is enabled too,
@@ -104,7 +106,7 @@ func namedIn(summary string, enabled []Installed, self string) []ModRef {
 		if m.Key == self {
 			continue
 		}
-		if pages[nexusIDOf(m)] || ids[strings.ToLower(m.UniqueID)] || names[strings.ToLower(strings.TrimSpace(m.Name))] {
+		if pages[nexusIDOf(m)] || ids[manifest.FoldID(m.UniqueID)] || names[strings.ToLower(strings.TrimSpace(m.Name))] {
 			out = append(out, ModRef{Key: m.Key, Name: m.Name})
 		}
 	}

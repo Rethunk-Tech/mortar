@@ -76,7 +76,7 @@ func footprints(mods []Installed, replaces map[string][]string) map[string]map[s
 	var ids, dlls []string
 	for _, m := range mods {
 		if m.Enabled && m.Folder != "" && m.EntryDll != "" && filepath.IsLocal(m.EntryDll) {
-			ids = append(ids, strings.ToLower(m.UniqueID))
+			ids = append(ids, manifest.FoldID(m.UniqueID))
 			dlls = append(dlls, filepath.Join(m.Folder, m.EntryDll))
 		}
 	}
@@ -109,9 +109,9 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 			continue
 		}
 		for _, d := range m.Dependencies {
-			builtOn[strings.ToLower(d.UniqueID)] = true
+			builtOn[manifest.FoldID(d.UniqueID)] = true
 		}
-		id := strings.ToLower(m.UniqueID)
+		id := manifest.FoldID(m.UniqueID)
 		if len(fp[id]) > 0 && !seen[id] {
 			seen[id] = true
 			code = append(code, m)
@@ -119,7 +119,7 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 	}
 	df := map[string]int{}
 	for _, m := range code {
-		for member := range fp[strings.ToLower(m.UniqueID)] {
+		for member := range fp[manifest.FoldID(m.UniqueID)] {
 			df[member]++
 		}
 	}
@@ -127,7 +127,7 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 	weight := func(member string) float64 { return math.Log(float64(n) / float64(df[member])) }
 	total := map[string]float64{}
 	for _, m := range code {
-		id := strings.ToLower(m.UniqueID)
+		id := manifest.FoldID(m.UniqueID)
 		for member := range fp[id] {
 			total[id] += weight(member)
 		}
@@ -145,9 +145,9 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 		}
 	}
 	for i, a := range code {
-		ida := strings.ToLower(a.UniqueID)
+		ida := manifest.FoldID(a.UniqueID)
 		for _, b := range code[i+1:] {
-			idb := strings.ToLower(b.UniqueID)
+			idb := manifest.FoldID(b.UniqueID)
 			if !mayShareJob(a, b, builtOn) {
 				continue
 			}
@@ -182,7 +182,7 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 			if total[idb] < total[ida] {
 				small, large = b, a
 			}
-			ids := strings.ToLower(small.UniqueID)
+			ids := manifest.FoldID(small.UniqueID)
 			if n >= sameJobSmall && total[ids] >= sameJobCoveredWeight && common <= sameJobCoveredDF && sum >= sameJobCovered*total[ids] {
 				coveredBy[ids] = append(coveredBy[ids], ModRef{Key: large.Key, Name: large.Name})
 				note(coveredShared, ids, both)
@@ -191,7 +191,7 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 	}
 	var out []Redundant
 	for _, m := range code {
-		id := strings.ToLower(m.UniqueID)
+		id := manifest.FoldID(m.UniqueID)
 		switch {
 		case len(by[id]) > 0:
 			out = append(out, Redundant{Kind: "sameJob", Key: m.Key, UniqueID: m.UniqueID, Name: m.Name, By: by[id], Detail: shortMembers(shared[id], weight)})
@@ -203,7 +203,7 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 }
 
 func mayShareJob(a, b Installed, builtOn map[string]bool) bool {
-	ida, idb := strings.ToLower(a.UniqueID), strings.ToLower(b.UniqueID)
+	ida, idb := manifest.FoldID(a.UniqueID), manifest.FoldID(b.UniqueID)
 	if a.Key == b.Key || builtOn[ida] || builtOn[idb] {
 		return false
 	}

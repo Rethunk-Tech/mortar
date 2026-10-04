@@ -582,7 +582,7 @@ func duplicates(enabled []Installed) []Duplicate {
 	out := []Duplicate{}
 	seen := map[string]bool{}
 	for _, first := range enabled {
-		id := strings.ToLower(first.UniqueID)
+		id := manifest.FoldID(first.UniqueID)
 		if seen[id] {
 			continue
 		}
@@ -672,7 +672,7 @@ func fillWhere(ctx context.Context, m Meta, enabled []Installed, missing []Missi
 		if dependent >= 0 {
 			keys = enabled[dependent].UpdateKeys
 		}
-		k := strings.ToLower(x.UniqueID) + "|" + x.MinimumVersion + "|" + strings.Join(keys, ",")
+		k := manifest.FoldID(x.UniqueID) + "|" + x.MinimumVersion + "|" + strings.Join(keys, ",")
 		f, hit := cache[k]
 		if !hit {
 			f.ref, f.ok = Locate(ctx, m, x.UniqueID, x.MinimumVersion, keys)

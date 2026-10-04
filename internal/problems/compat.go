@@ -74,7 +74,7 @@ func matchCompat(idx meta.CompatIndex, mods []Installed, skipOK bool) []Compat {
 		if skipOK && e.Status == meta.StatusOK {
 			continue
 		}
-		key := strings.ToLower(m.Key) + "\x00" + strings.ToLower(m.UniqueID)
+		key := strings.ToLower(m.Key) + "\x00" + manifest.FoldID(m.UniqueID)
 		if seen[key] {
 			continue
 		}

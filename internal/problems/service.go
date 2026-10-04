@@ -16,6 +16,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/game/stardew"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
@@ -377,7 +378,7 @@ func (s *Service) DismissAbandonedMod(_ context.Context, gameID, id, uniqueID st
 	if uniqueID == "" {
 		return errors.New("missing mod id")
 	}
-	token := dismissToken("broken", strings.ToLower(uniqueID))
+	token := dismissToken("broken", manifest.FoldID(uniqueID))
 	return s.appendDismissed(dismissBucket(gameID, id), token)
 }
 
@@ -387,7 +388,7 @@ func (s *Service) DismissListedRequirement(_ context.Context, gameID, id, unique
 	if uniqueID == "" {
 		return errors.New("missing requirement id")
 	}
-	token := dismissToken("listed", strings.ToLower(uniqueID))
+	token := dismissToken("listed", manifest.FoldID(uniqueID))
 	return s.appendDismissed(dismissBucket(gameID, id), token)
 }
 
@@ -397,7 +398,7 @@ func (s *Service) DismissSetting(_ context.Context, gameID, id, uniqueID, field 
 	if uniqueID == "" || field == "" {
 		return errors.New("missing setting")
 	}
-	token := dismissToken("setting", strings.ToLower(uniqueID)+"\t"+strings.ToLower(field))
+	token := dismissToken("setting", manifest.FoldID(uniqueID)+"\t"+strings.ToLower(field))
 	return s.appendDismissed(dismissBucket(gameID, id), token)
 }
 

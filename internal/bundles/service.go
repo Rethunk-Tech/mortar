@@ -2,8 +2,6 @@
 package bundles
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"os"
@@ -16,6 +14,8 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	gamepkg "github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-AI/mortar/internal/ids"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	modstore "github.com/Rethunk-AI/mortar/internal/store"
 	"github.com/Rethunk-AI/mortar/internal/usererr"
@@ -130,30 +130,16 @@ func findBundle(bundles []Bundle, id string) (int, error) {
 	return i, nil
 }
 
-func newID(bundles []Bundle) (string, error) {
-	used := make(map[string]struct{}, len(bundles))
-	for _, b := range bundles {
-		used[b.ID] = struct{}{}
-	}
+func newID(bundles []Bundle) string {
 	for {
-		var raw [8]byte
-		if _, err := rand.Read(raw[:]); err != nil {
-			return "", err
-		}
-		id := hex.EncodeToString(raw[:])
-		if _, ok := used[id]; !ok {
-			return id, nil
+		id := ids.New()
+		if !slices.ContainsFunc(bundles, func(b Bundle) bool { return b.ID == id }) {
+			return id
 		}
 	}
 }
 
-func historyBatchID(bundleID string) string {
-	var raw [8]byte
-	if _, err := rand.Read(raw[:]); err != nil {
-		return bundleID + "-apply"
-	}
-	return bundleID + "-" + hex.EncodeToString(raw[:])
-}
+func historyBatchID(bundleID string) string { return bundleID + "-" + ids.New() }
 
 func profileFor(profiles []profile.Profile, id string) (profile.Profile, error) {
 	for _, p := range profiles {
@@ -171,7 +157,7 @@ func snapshot(p profile.Profile, uniqueIDs []string) ([]Mod, error) {
 	byID := map[string]Mod{}
 	for _, e := range p.Entries {
 		for _, m := range e.Mods {
-			id := strings.ToLower(m.UniqueID)
+			id := manifest.FoldID(m.UniqueID)
 			if _, exists := byID[id]; exists {
 				continue
 			}
@@ -185,7 +171,7 @@ func snapshot(p profile.Profile, uniqueIDs []string) ([]Mod, error) {
 	out := make([]Mod, 0, len(uniqueIDs))
 	seen := map[string]struct{}{}
 	for _, id := range uniqueIDs {
-		key := strings.ToLower(strings.TrimSpace(id))
+		key := manifest.FoldID(id)
 		if key == "" {
 			return nil, errors.New("mod id is empty")
 		}
@@ -306,11 +292,7 @@ func (s *Service) Create(gameID, name, profileID string, uniqueIDs []string) (Bu
 		if err != nil {
 			return nil, Bundle{}, err
 		}
-		id, err := newID(bundles)
-		if err != nil {
-			return nil, Bundle{}, err
-		}
-		b := Bundle{ID: id, Name: name, Mods: mods}
+		b := Bundle{ID: newID(bundles), Name: name, Mods: mods}
 		return append(bundles, b), b, nil
 	})
 }
@@ -355,14 +337,14 @@ func (s *Service) AddMods(gameID, bundleID, profileID string, uniqueIDs []string
 		}
 		known := make(map[string]struct{}, len(bundles[i].Mods))
 		for _, mod := range bundles[i].Mods {
-			known[strings.ToLower(mod.UniqueID)] = struct{}{}
+			known[manifest.FoldID(mod.UniqueID)] = struct{}{}
 		}
 		for _, mod := range mods {
-			if _, exists := known[strings.ToLower(mod.UniqueID)]; exists {
+			if _, exists := known[manifest.FoldID(mod.UniqueID)]; exists {
 				continue
 			}
 			bundles[i].Mods = append(bundles[i].Mods, mod)
-			known[strings.ToLower(mod.UniqueID)] = struct{}{}
+			known[manifest.FoldID(mod.UniqueID)] = struct{}{}
 		}
 		return bundles, bundles[i], nil
 	})

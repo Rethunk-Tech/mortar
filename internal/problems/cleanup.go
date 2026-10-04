@@ -75,7 +75,7 @@ func cleanupHints(mods []Installed) []Cleanup {
 	tilesheets := unusedTilesheetPacks(mods)
 	tilesheetIDs := map[string]bool{}
 	for _, tilesheet := range tilesheets {
-		tilesheetIDs[strings.ToLower(strings.TrimSpace(tilesheet.UniqueID))] = true
+		tilesheetIDs[manifest.FoldID(tilesheet.UniqueID)] = true
 	}
 	for _, mod := range mods {
 		for _, dep := range mod.Dependencies {
@@ -88,7 +88,7 @@ func cleanupHints(mods []Installed) []Cleanup {
 
 	out := make([]Cleanup, 0)
 	for _, mod := range mods {
-		id := strings.ToLower(strings.TrimSpace(mod.UniqueID))
+		id := manifest.FoldID(mod.UniqueID)
 		if id == "" || mod.ContentPackFor != "" || tilesheetIDs[id] || enabledNeeds[id] || !disabledDependents[id] {
 			continue
 		}
@@ -100,13 +100,13 @@ func cleanupHints(mods []Installed) []Cleanup {
 		if c := strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)); c != 0 {
 			return c
 		}
-		return strings.Compare(strings.ToLower(a.UniqueID), strings.ToLower(b.UniqueID))
+		return strings.Compare(manifest.FoldID(a.UniqueID), manifest.FoldID(b.UniqueID))
 	})
 	return out
 }
 
 func recordCleanupDependency(mod Installed, uniqueID string, enabledNeeds, disabledDependents map[string]bool) {
-	id := strings.ToLower(strings.TrimSpace(uniqueID))
+	id := manifest.FoldID(uniqueID)
 	if id == "" {
 		return
 	}
@@ -164,7 +164,7 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 	uses := make(map[string]*tilesheetUse, len(candidates))
 	assetsByID := make(map[string]map[string]bool, len(candidates))
 	for _, candidate := range candidates {
-		id := strings.ToLower(candidate.UniqueID)
+		id := manifest.FoldID(candidate.UniqueID)
 		uses[id] = &tilesheetUse{}
 		assets := map[string]bool{}
 		for _, patch := range readContentPack(candidate).patches {
@@ -184,7 +184,7 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 		}
 		mentions := readContentPackForCleanup(mod).mentions
 		for _, candidate := range candidates {
-			id := strings.ToLower(candidate.UniqueID)
+			id := manifest.FoldID(candidate.UniqueID)
 			if manifestUses(mod, candidate.UniqueID) || mentions[id] {
 				recordTilesheetUse(uses[id], mod)
 			}
@@ -213,7 +213,7 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 				continue
 			}
 			for _, candidate := range candidates {
-				id := strings.ToLower(candidate.UniqueID)
+				id := manifest.FoldID(candidate.UniqueID)
 				if ext == ".tbin" {
 					if slices.ContainsFunc(basenamesByID[id], func(name string) bool {
 						return slices.ContainsFunc(scan.Runs, func(run string) bool {
@@ -234,7 +234,7 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 	}
 	out := []Cleanup{}
 	for _, candidate := range candidates {
-		use := uses[strings.ToLower(candidate.UniqueID)]
+		use := uses[manifest.FoldID(candidate.UniqueID)]
 		if mapsUnreadable || use.enabled {
 			continue
 		}

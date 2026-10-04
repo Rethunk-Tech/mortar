@@ -263,3 +263,6 @@ func GitHubUpdateKey(key string) (string, bool) {
 	rest = strings.TrimSpace(rest)
 	return rest, ok && strings.EqualFold(strings.TrimSpace(site), "github") && strings.Count(rest, "/") == 1
 }
+
+// FoldID is the key a mod unique ID is compared and mapped by: IDs are case-insensitive and may carry stray spaces.
+func FoldID(id string) string { return strings.ToLower(strings.TrimSpace(id)) }
