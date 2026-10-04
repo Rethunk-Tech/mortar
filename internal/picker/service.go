@@ -36,14 +36,20 @@ func (s *Service) PickImage(title string) (string, error) {
 
 // SaveFile asks where to write contents and writes them. It returns "" when the dialog is cancelled.
 func (s *Service) SaveFile(title, filename, contents string) (string, error) {
-	d := s.App.Dialog.SaveFile()
+	return SaveFile(s.App, title, filename, "Text files", "*.txt", []byte(contents))
+}
+
+// SaveFile asks where to write data through the native save dialog, offering one filter plus all files,
+// and writes it owner-only. It returns "" when the dialog is cancelled.
+func SaveFile(app *application.App, title, filename, filterName, pattern string, data []byte) (string, error) {
+	d := app.Dialog.SaveFile()
 	d.SetOptions(&application.SaveFileDialogOptions{Title: title, Filename: filename})
-	d.AddFilter("Text files", "*.txt")
+	d.AddFilter(filterName, pattern)
 	d.AddFilter("All files", "*")
-	d.AttachToWindow(s.App.Window.Current())
+	d.AttachToWindow(app.Window.Current())
 	path, err := d.PromptForSingleSelection()
 	if err != nil || path == "" {
 		return path, err
 	}
-	return path, fsx.WriteFile(path, []byte(contents), 0o600)
+	return path, fsx.WriteFile(path, data, 0o600)
 }

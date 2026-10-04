@@ -14,12 +14,20 @@ func (s *Services) modsChannel(p Params, prof profile.Profile, id string) (any, 
 	if err != nil {
 		return nil, err
 	}
-	return s.changed(p.Game, func() (any, error) {
+	return s.setEach(p.Game, id, prof, keys, func(k string) error {
+		_, err := s.Profiles.SetUpdateChannel(p.Game, id, k, p.Value)
+		return err
+	})
+}
+
+// setEach applies set to every key, then returns the refreshed mod rows.
+func (s *Services) setEach(game, id string, prof profile.Profile, keys []string, set func(key string) error) (any, error) {
+	return s.changed(game, func() (any, error) {
 		for _, k := range keys {
-			if _, err := s.Profiles.SetUpdateChannel(p.Game, id, k, p.Value); err != nil {
+			if err := set(k); err != nil {
 				return nil, err
 			}
 		}
-		return modRows(s.reload(p.Game, id, prof)), nil
+		return modRows(s.reload(game, id, prof)), nil
 	})
 }

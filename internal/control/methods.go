@@ -690,13 +690,9 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if err != nil {
 			return nil, err
 		}
-		return s.changed(p.Game, func() (any, error) {
-			for _, k := range keys {
-				if _, err := s.Profiles.SetPinned(p.Game, id, k, method == "mods.pin", p.Value); err != nil {
-					return nil, err
-				}
-			}
-			return modRows(s.reload(p.Game, id, prof)), nil
+		return s.setEach(p.Game, id, prof, keys, func(k string) error {
+			_, err := s.Profiles.SetPinned(p.Game, id, k, method == "mods.pin", p.Value)
+			return err
 		})
 	case "mods.remove":
 		keys, err := keysFor(prof, p.UniqueIDs)
@@ -749,13 +745,9 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if err != nil {
 			return nil, err
 		}
-		return s.changed(p.Game, func() (any, error) {
-			for _, k := range keys {
-				if _, err := s.Profiles.SetSkipVersion(p.Game, id, k, p.Value); err != nil {
-					return nil, err
-				}
-			}
-			return modRows(s.reload(p.Game, id, prof)), nil
+		return s.setEach(p.Game, id, prof, keys, func(k string) error {
+			_, err := s.Profiles.SetSkipVersion(p.Game, id, k, p.Value)
+			return err
 		})
 	case "mods.split":
 		if len(p.UniqueIDs) != 2 {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/picker"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -257,16 +258,7 @@ func (s *Service) ExportSettings() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	d := s.App.Dialog.SaveFile()
-	d.SetOptions(&application.SaveFileDialogOptions{Title: "Export settings", Filename: "mortar-settings.json"})
-	d.AddFilter("JSON", "*.json")
-	d.AddFilter("All files", "*")
-	d.AttachToWindow(s.App.Window.Current())
-	path, err := d.PromptForSingleSelection()
-	if err != nil || path == "" {
-		return path, err
-	}
-	return path, fsx.WriteFile(path, body, 0o600)
+	return picker.SaveFile(s.App, "Export settings", "mortar-settings.json", "JSON", "*.json", body)
 }
 
 // PreviewImportSettings opens a JSON file, validates it, and returns what would change. Empty Raw means cancelled.

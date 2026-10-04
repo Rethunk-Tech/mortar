@@ -19,9 +19,9 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-AI/mortar/internal/picker"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
-	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 const diagnosticsLogLines = 2000
@@ -35,16 +35,7 @@ func (s *Service) saveZip(filename string, data []byte) (string, error) {
 	if s.App == nil {
 		return "", errors.New("diagnostics save is not available")
 	}
-	d := s.App.Dialog.SaveFile()
-	d.SetOptions(&application.SaveFileDialogOptions{Title: "Save diagnostics", Filename: filename})
-	d.AddFilter("Zip archives", "*.zip")
-	d.AddFilter("All files", "*")
-	d.AttachToWindow(s.App.Window.Current())
-	path, err := d.PromptForSingleSelection()
-	if err != nil || path == "" {
-		return path, err
-	}
-	return path, fsx.WriteFile(path, data, 0o600)
+	return picker.SaveFile(s.App, "Save diagnostics", filename, "Zip archives", "*.zip", data)
 }
 
 func (s *Service) dataDir() (string, error) {
