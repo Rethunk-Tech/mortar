@@ -595,7 +595,7 @@ Sources: the API acceptable-use policy (help.nexusmods.com article 114), the SSO
 - The queue resolves a GitHub item with `Releases` and `Select` (an update asks for SMAPI's suggested version, an install for the newest stable release), downloads with `github.Download`, unpacks into the store under `github.Key`, and reads the manifests' `UniqueID`s before the profile changes.
 - Every ID verified installs; a known mismatch parks the item in `needs-confirm` (Install anyway or Skip); an unknown answer installs and marks the item "could not verify".
 - A release with several archives parks the item in `needs-choice` until the user picks one.
-- Update review's Update and Update all use GitHub when the mod's update key is `GitHub:<owner>/<repo>` and SMAPI's suggested update URL is on github.com (`problems.Update.GitHubRepo`); otherwise Nexus.
+- Update review's Update and Update all use GitHub when the mod's update key is `GitHub:<owner>/<repo>` and SMAPI's suggested update URL is on github.com (`problems.Update.GitHubRepo`); otherwise Nexus. A Nexus update of a mod that also declares a GitHub key carries that repo as a fallback (`GitHubFallback`): when the account would have to click Mod Manager Download, the queue first looks for a GitHub release at the same version with exactly one archive and downloads that instead (once per item); otherwise it waits for the click.
 - A missing dependency the dataset does not place on Nexus takes the GitHub repo SMAPI's API records for it (`problems.Ref.GitHub`), and the problem bar's Add queues it.
 
 ## Sharing

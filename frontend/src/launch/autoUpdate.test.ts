@@ -66,3 +66,11 @@ test('keeps caution acknowledgements for auto-update', () => {
   expect(cautionAcknowledged('profile', candidate)).toBe(true)
   acknowledgeUpdateCaution('profile', candidate, false)
 })
+
+test('a Nexus update carries the GitHub fallback when the mod has one', () => {
+  const plan = planAutoUpdates(
+    [update({ key: 'both', githubFallback: 'Esca-MMC/DestroyableBushes' })],
+    new Set(),
+  )
+  expect(plan.wants[0]).toMatchObject({ modId: 42, fallbackRepo: 'Esca-MMC/DestroyableBushes' })
+})

@@ -38,7 +38,12 @@ function planAutoUpdates(updates: Update[], pinned: ReadonlySet<string>): AutoUp
     updates: selected,
     wants: selected.map((update) => ({
       kind: 'update',
-      ...(update.githubRepo ? { repo: update.githubRepo } : { modId: update.nexusId }),
+      ...(update.githubRepo
+        ? { repo: update.githubRepo }
+        : {
+            modId: update.nexusId,
+            ...(update.githubFallback ? { fallbackRepo: update.githubFallback } : {}),
+          }),
       name: update.name,
       version: update.version,
       currentKey: update.key,
@@ -222,7 +227,12 @@ async function updateBeforePlay(
     }
     const wants = updates.map((update) => ({
       kind: 'update' as const,
-      ...(update.githubRepo ? { repo: update.githubRepo } : { modId: update.nexusId }),
+      ...(update.githubRepo
+        ? { repo: update.githubRepo }
+        : {
+            modId: update.nexusId,
+            ...(update.githubFallback ? { fallbackRepo: update.githubFallback } : {}),
+          }),
       name: update.name,
       version: update.version,
       currentKey: update.key,

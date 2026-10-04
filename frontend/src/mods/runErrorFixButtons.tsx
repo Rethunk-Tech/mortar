@@ -34,7 +34,12 @@ export function RunErrorButtons({
     update && installableUpdate(update)
       ? {
           kind: 'update' as const,
-          ...(update.githubRepo ? { repo: update.githubRepo } : { modId: update.nexusId }),
+          ...(update.githubRepo
+            ? { repo: update.githubRepo }
+            : {
+                modId: update.nexusId,
+                ...(update.githubFallback ? { fallbackRepo: update.githubFallback } : {}),
+              }),
           name: update.name,
           version: update.version,
           currentKey: update.key,
