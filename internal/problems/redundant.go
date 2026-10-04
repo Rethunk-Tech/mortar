@@ -37,8 +37,12 @@ func superseded(r Result, mods []Installed) Result {
 		}
 	}
 	gone := map[string]bool{}
+	listed := map[string]bool{}
+	for _, x := range r.Redundant {
+		listed[x.Key] = true
+	}
 	add := func(key, uniqueID, name, summary string) {
-		if gone[key] {
+		if gone[key] || listed[key] {
 			return
 		}
 		by := namedIn(summary, enabled, key)

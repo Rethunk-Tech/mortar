@@ -23,3 +23,17 @@ func TestSupersededWhenTheNamedReplacementIsEnabled(t *testing.T) {
 		t.Fatalf("rows left: broken %+v compat %+v", r.Broken, r.Compat)
 	}
 }
+
+func TestSupersededSkipsAModAlreadyRedundant(t *testing.T) {
+	mods := []Installed{
+		{Key: "old", UniqueID: "A.Old", Name: "Old", Enabled: true},
+		{Key: "new", UniqueID: "B.New", Name: "New", Enabled: true},
+	}
+	r := Result{
+		Redundant: []Redundant{{Kind: "shadowed", Key: "old"}},
+		Broken:    []Broken{{Key: "old", UniqueID: "A.Old", Name: "Old", Status: "obsolete", Summary: "use [New](#) instead."}},
+	}
+	if r = superseded(r, mods); len(r.Redundant) != 1 {
+		t.Fatalf("redundant = %+v", r.Redundant)
+	}
+}
