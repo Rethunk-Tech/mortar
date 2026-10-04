@@ -19,15 +19,6 @@ Remaining ([architecture.md](architecture.md#release)):
 - The repo turns public at the first release and builds go on its GitHub Releases, since the updater's manifest and assets must be publicly downloadable.
 - **Measure on Windows:** how launch arguments order around `%command%`, and whether SMAPI needs `--no-terminal`; one real update through the updater, and `DisplayVersion` after it.
 
-## Startup sampler
-
-Startup times come from the bridge ([architecture.md](architecture.md#startup-timings)); what it cannot see is time inside mods' Harmony patches on game code and the game's own work triggered from a mod's handler. Measured on the main profile (2026-10-04): Content Patcher's first update tick is 25.9 s, of which 11.2 s is attributed to its packs and 14.2 s is its own context update, during which the game reloads the assets CP invalidated.
-
-- **Shape:** on a measured launch ("Measure next launch"), Mortar connects to the game's .NET diagnostics socket (`dotnet-diagnostic-<pid>-*-socket` in the game's temp dir on Linux, `\\.\pipe\dotnet-diagnostic-<pid>` on Windows) as soon as the process appears, sends the IPC `CollectTracing2` command for `Microsoft-DotNETCore-SampleProfiler` plus `Microsoft-Windows-DotNETRuntime` (JIT and Loader keywords, rundown on stop), and stops the session when the bridge's report appears (its phases end at the title screen). Mortar parses the nettrace stream in Go, resolves each main-thread sample's frames through the method load and rundown events, and charges each sample to the innermost frame whose type belongs to a mod assembly (mod assemblies come from the report's mod list and each mod folder's DLLs); the rest is "game and SMAPI".
-- **Why outside the game:** TraceEvent and Diagnostics.NETCore.Client pull System.Text.Json 9 and other assemblies newer than the game's .NET 6 runtime into SMAPI's process, which risks breaking other mods. The IPC protocol and nettrace format are documented by the dotnet/diagnostics repository.
-- **Traps:** tiered compilation is off in Stardew's runtime config, so frames are fully jitted; SMAPI rewrites mod assemblies and loads them from bytes, so module paths may be empty and type names are the reliable key; Flatpak Steam runs the game in a sandbox with its own `/tmp`.
-- **Done when** a measured launch of the main profile attributes at least 90% of the time between the bridge's Entry and the title screen to named mods, Content Patcher's 14 s splits into game asset loading and CP work, and an unmeasured launch is unchanged.
-
 ## Queued for v1
 
 - **Library:** an extra folder to scan for mods; a toggle to show dot-hidden mods; asking before deleting old files on update; new folders in the game's own `Mods` folder offered for moving into a profile.
