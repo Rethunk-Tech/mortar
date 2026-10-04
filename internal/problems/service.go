@@ -3,6 +3,7 @@ package problems
 import (
 	"context"
 	"errors"
+	"log"
 	"maps"
 	"os"
 	"path/filepath"
@@ -423,12 +424,36 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 	}
 	set := s.settings.Get()
 	r := checkUpdates(ctx, s.meta, env, mods, set.CheckOnlyEnabledMods, fresh, s.NexusFiles)
+	s.fixStaleManifests(gameID, id, r.Held)
 	if !r.Unknown {
 		s.mu.Lock()
 		s.updates[key] = cachedUpdates{fp, time.Now(), r}
 		s.mu.Unlock()
 	}
 	return hideUpdates(r, mods, set), nil
+}
+
+// fixStaleManifests sets each manifest whose download is already the suggested version to that version, so SMAPI
+// stops offering an update that is installed. Authors often forget to bump a manifest; the download's version is
+// the truth.
+func (s *Service) fixStaleManifests(gameID, id string, held []Held) {
+	if s.profiles == nil {
+		return
+	}
+	fixed := 0
+	for _, h := range held {
+		if h.Reason != HeldCurrent {
+			continue
+		}
+		if err := s.profiles.FixStaleManifest(gameID, id, h.Key, h.UniqueID, h.Version); err != nil {
+			log.Printf("updates: %s: could not fix the manifest of %s: %v", id, h.UniqueID, err)
+			continue
+		}
+		fixed++
+	}
+	if fixed > 0 {
+		log.Printf("updates: %s: set %d stale manifest versions to their download's version", id, fixed)
+	}
 }
 
 func hideUpdates(r UpdatesResult, mods []Installed, set settings.Settings) UpdatesResult {

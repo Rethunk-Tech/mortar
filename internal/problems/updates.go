@@ -82,6 +82,7 @@ const (
 
 // Held is one suggested version Mortar holds back. Have is the version of the download installed.
 type Held struct {
+	Key      string `json:"key"`
 	UniqueID string `json:"uniqueId"`
 	Name     string `json:"name"`
 	Version  string `json:"version"`
@@ -130,7 +131,7 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 			current(asked[i], res.Suggested.URL, res.Suggested.Version)) {
 			x := asked[i]
 			r.Held = append(r.Held, Held{
-				UniqueID: x.UniqueID, Name: x.Name, Version: res.Suggested.Version,
+				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name, Version: res.Suggested.Version,
 				Have: cmp.Or(x.SourceVersion, x.Version), Reason: HeldCurrent,
 			})
 			res.Suggested = nil
@@ -185,7 +186,7 @@ func HideHeld(r UpdatesResult, mods []Installed, includePrerelease bool, smapiBu
 	kept := make([]Update, 0, len(r.Updates))
 	held := slices.Clone(r.Held)
 	hold := func(u Update, reason string) {
-		held = append(held, Held{UniqueID: u.UniqueID, Name: u.Name, Version: u.Version, Have: u.Installed, Reason: reason})
+		held = append(held, Held{Key: u.Key, UniqueID: u.UniqueID, Name: u.Name, Version: u.Version, Have: u.Installed, Reason: reason})
 	}
 	for _, u := range r.Updates {
 		if smapiBuilds == "never" && u.Unofficial {
