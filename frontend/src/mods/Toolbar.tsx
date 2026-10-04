@@ -32,6 +32,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { SetListGroupBy } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
+import { openDownloadsDialog } from '../install/downloadsDialog.ts'
 import { useInstall } from '../install/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
@@ -256,9 +257,7 @@ function AddArchive({
       </Button>
     </DisabledReason>
   )
-  return extraFolder === '' ? (
-    add
-  ) : (
+  return (
     <ButtonGroup variant={variant} size={size}>
       {add}
       <ExtraFolderMenu folder={extraFolder} blocked={blocked} />
@@ -374,6 +373,9 @@ export function EmptyMods({ profileId }: { profileId: string }) {
             sx={{ textDecoration: 'underline' }}
           >
             {t`Or import a shared profile…`}
+          </Button>
+          <Button variant="text" onClick={openDownloadsDialog} sx={{ textDecoration: 'underline' }}>
+            {t`Or add from the downloads folder…`}
           </Button>
         </>
       }
