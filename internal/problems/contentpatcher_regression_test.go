@@ -278,10 +278,10 @@ func TestSwitchOffOnlySuggestsNonClashingAllowedValue(t *testing.T) {
 
 func TestIncludedBlankLoadsUsePackRootPath(t *testing.T) {
 	root := t.TempDir()
-	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"Include","FromFile":"nested/content.json"}]}`)
-	writeRegressionFile(t, root, "nested/content.json", `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"blank.json","Priority":"low"}]}`)
-	writeRegressionFile(t, root, "blank.json", "{\r\n// empty\r\n}")
-	writeRegressionFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeProblemFile(t, root, "content.json", `{"Changes":[{"Action":"Include","FromFile":"nested/content.json"}]}`)
+	writeProblemFile(t, root, "nested/content.json", `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"blank.json","Priority":"low"}]}`)
+	writeProblemFile(t, root, "blank.json", "{\r\n// empty\r\n}")
+	writeProblemFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
 	mod := fromDisk(Installed{Key: "included", Enabled: true, Folder: root, UniqueID: "Included.Blank", Name: "Included Blank"})
 
 	conflicts := assetConflicts([]Installed{mod, syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"other.json"}]}`, map[string]string{
@@ -316,7 +316,7 @@ func TestDeadLowPriorityLoadOffersDefaultSetting(t *testing.T) {
 	loser := settingPack(t, `{"FarmCaveChange":{"Default":false,"AllowValues":"false, true"}}`,
 		`[{"Action":"Load","Target":"Maps/FarmCave","FromFile":"loser.json","Priority":"Low","When":{"FarmCaveChange":true}}]`,
 		`{"FarmCaveChange":true}`)
-	writeRegressionFile(t, loser.Folder, "loser.json", `{"Tile":1}`)
+	writeProblemFile(t, loser.Folder, "loser.json", `{"Tile":1}`)
 	winner := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/FarmCave","FromFile":"winner.json","Priority":"High"}]}`, map[string]string{
 		"winner.json": `{"Tile":2}`,
 	})
@@ -333,15 +333,15 @@ func TestDeadLowPriorityLoadOffersDefaultSetting(t *testing.T) {
 func syntheticImagePack(t *testing.T, file string, source []byte) Installed {
 	t.Helper()
 	root := t.TempDir()
-	writeRegressionFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
-	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"LooseSprites/Cursors","FromFile":"`+file+`","ToArea":{"X":2,"Y":3,"Width":18,"Height":20}}]}`)
-	writeRegressionFile(t, root, file, string(source))
+	writeProblemFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeProblemFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"LooseSprites/Cursors","FromFile":"`+file+`","ToArea":{"X":2,"Y":3,"Width":18,"Height":20}}]}`)
+	writeProblemFile(t, root, file, string(source))
 	return fromDisk(Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)})
 }
 
 func TestBareDynamicTokenWhenMergesSpouseCondition(t *testing.T) {
 	root := t.TempDir()
-	writeRegressionFile(t, root, "content.json", `{"DynamicTokens":[
+	writeProblemFile(t, root, "content.json", `{"DynamicTokens":[
 		{"Name":"ShadowKidsActive","Value":false},
 		{"Name":"ShadowKidsActive","Value":true,"When":{"Spouse":"SenS"}}
 	],"Changes":[{"Action":"EditImage","Target":"characters/toddler","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"ShadowKidsActive":true}}]}`)
@@ -354,11 +354,11 @@ func TestBareDynamicTokenWhenMergesSpouseCondition(t *testing.T) {
 
 func TestOverlayMapWithUnknownLayerDoesNotClash(t *testing.T) {
 	root := t.TempDir()
-	writeRegressionFile(t, root, "content.json", `{"Changes":[
+	writeProblemFile(t, root, "content.json", `{"Changes":[
 		{"Action":"EditMap","Target":"Maps/Test","FromFile":"fog.tmx","PatchMode":"Overlay"},
 		{"Action":"EditMap","Target":"Maps/Test","ToArea":{"X":0,"Y":0,"Width":2,"Height":2}}
 	]}`)
-	writeRegressionFile(t, root, "fog.tmx", `<?xml version="1.0"?><map width="2" height="2"><layer name="AlwaysFront4" width="2" height="2"><data encoding="csv">1,0,0,0</data></layer></map>`)
+	writeProblemFile(t, root, "fog.tmx", `<?xml version="1.0"?><map width="2" height="2"><layer name="AlwaysFront4" width="2" height="2"><data encoding="csv">1,0,0,0</data></layer></map>`)
 	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
 	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
 	if len(pack.patches) != 2 {
@@ -373,8 +373,8 @@ func TestOverlayImageUsesOpaqueCells(t *testing.T) {
 	opaque := image.NewNRGBA(image.Rect(0, 0, 32, 16))
 	opaque.SetNRGBA(0, 0, color.NRGBA{A: 255})
 	root := t.TempDir()
-	writeRegressionFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
-	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"patch.png","ToArea":{"X":0,"Y":0,"Width":32,"Height":16},"PatchMode":"Overlay"}]}`)
+	writeProblemFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeProblemFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"patch.png","ToArea":{"X":0,"Y":0,"Width":32,"Height":16},"PatchMode":"Overlay"}]}`)
 	writePNG(t, filepath.Join(root, "patch.png"), opaque)
 	pack := readContentPack(fromDisk(Installed{Enabled: true, Folder: root}))
 	other := cpPatch{image: true, shapes: []cpShape{{kind: 'r', x: 16, y: 0, w: 16, h: 16}}}
@@ -392,8 +392,8 @@ func TestOverlayImageUsesOpaqueCells(t *testing.T) {
 
 func TestTokenizedImageFromFileExpandsCaseInsensitive(t *testing.T) {
 	root := t.TempDir()
-	writeRegressionFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
-	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"sprites/{{season}}.png","ToArea":{"X":32,"Y":0,"Width":16,"Height":16},"PatchMode":"Overlay"}]}`)
+	writeProblemFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeProblemFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"sprites/{{season}}.png","ToArea":{"X":32,"Y":0,"Width":16,"Height":16},"PatchMode":"Overlay"}]}`)
 	for _, season := range []string{"Spring", "Summer", "Fall", "Winter"} {
 		img := image.NewNRGBA(image.Rect(0, 0, 16, 16))
 		if season == "Fall" {
@@ -414,8 +414,8 @@ func TestTokenizedImageFromFileExpandsCaseInsensitive(t *testing.T) {
 
 func TestUnresolvableTokenizedImageFallsBackToWholeSheet(t *testing.T) {
 	root := t.TempDir()
-	writeRegressionFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
-	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"sprites/{{missing}}.png","PatchMode":"Overlay"}]}`)
+	writeProblemFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeProblemFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"sprites/{{missing}}.png","PatchMode":"Overlay"}]}`)
 	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
 	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
 	if len(pack.patches) != 1 || len(pack.patches[0].shapes) != 1 || pack.patches[0].shapes[0].kind != 'w' {
@@ -425,7 +425,7 @@ func TestUnresolvableTokenizedImageFallsBackToWholeSheet(t *testing.T) {
 
 func TestDifferentSpouseConditionsExcludeEdits(t *testing.T) {
 	root := t.TempDir()
-	writeRegressionFile(t, root, "content.json", `{"Changes":[
+	writeProblemFile(t, root, "content.json", `{"Changes":[
 		{"Action":"EditImage","Target":"characters/toddler","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"Relationship:Sigurd":"Married"}},
 		{"Action":"EditImage","Target":"characters/toddler","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"Spouse":"SenS"}}
 	]}`)
@@ -476,17 +476,6 @@ func TestDynamicTokenReachabilityGatesConflicts(t *testing.T) {
 			t.Fatalf("opposite HasFlag definition should not apply: %#v", conflicts)
 		}
 	})
-}
-
-func writeRegressionFile(t *testing.T, root, rel, body string) {
-	t.Helper()
-	path := filepath.Join(root, filepath.FromSlash(rel))
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
 }
 
 func writePNG(t *testing.T, path string, image image.Image) {

@@ -40,39 +40,28 @@ func dumpTree(t *testing.T, root string) string {
 	return b.String()
 }
 
-func putGameMod(t *testing.T, mods, rel, body string) {
-	t.Helper()
-	p := filepath.Join(mods, filepath.FromSlash(rel))
-	if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(p, []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
-}
-
 func TestImportGameModsCopiesIntoAProfileAndLeavesTheGameFolderUnchanged(t *testing.T) {
 	e := newEnv(t)
 	gameDir := filepath.Join(t.TempDir(), "Stardew Valley")
 	mods := filepath.Join(gameDir, "Mods")
-	putGameMod(t, mods, "canary.txt", "do not touch")
-	putGameMod(t, mods, "ConsoleCommands/manifest.json",
+	writeFile(t, mods, "canary.txt", "do not touch")
+	writeFile(t, mods, "ConsoleCommands/manifest.json",
 		`{"Name":"Console Commands","Version":"4.5.2","UniqueID":"SMAPI.ConsoleCommands"}`)
-	putGameMod(t, mods, "SaveBackup/manifest.json",
+	writeFile(t, mods, "SaveBackup/manifest.json",
 		`{"Name":"Save Backup","Version":"4.5.2","UniqueID":"SMAPI.SaveBackup"}`)
-	putGameMod(t, mods, "MortarSmapiBridge/manifest.json",
+	writeFile(t, mods, "MortarSmapiBridge/manifest.json",
 		`{"Name":"Bridge","Version":"1.0.1","UniqueID":"Rethunk.MortarSmapiBridge"}`)
-	putGameMod(t, mods, "Pack/Alpha/manifest.json",
+	writeFile(t, mods, "Pack/Alpha/manifest.json",
 		`{"Name":"Alpha","Version":"2.0.0","UniqueID":"Me.Alpha","UpdateKeys":["Nexus:42"]}`)
-	putGameMod(t, mods, "Pack/Beta/manifest.json",
+	writeFile(t, mods, "Pack/Beta/manifest.json",
 		`{"Name":"Beta","Version":"2.0.0","UniqueID":"Me.Beta"}`)
-	putGameMod(t, mods, ".Quiet/manifest.json",
+	writeFile(t, mods, ".Quiet/manifest.json",
 		`{"Name":"Quiet","Version":"1.1.0","UniqueID":"Me.Quiet"}`)
-	putGameMod(t, mods, ".Quiet/config.json", `{"volume":3}`)
-	putGameMod(t, mods, "Loud/manifest.json",
+	writeFile(t, mods, ".Quiet/config.json", `{"volume":3}`)
+	writeFile(t, mods, "Loud/manifest.json",
 		`{"Name":"Loud","Version":"3.0.0","UniqueID":"Me.Loud","UpdateKeys":["GitHub:me/loud"]}`)
-	putGameMod(t, mods, "Loud/config.json", `{"on":true}`)
-	putGameMod(t, mods, "Broken/manifest.json", `{not json`)
+	writeFile(t, mods, "Loud/config.json", `{"on":true}`)
+	writeFile(t, mods, "Broken/manifest.json", `{not json`)
 	before := dumpTree(t, gameDir)
 
 	preview, err := e.PreviewGameMods(mods)
@@ -154,15 +143,15 @@ func TestImportGameModsPrefersEnabledDuplicateAndOmitsBundled(t *testing.T) {
 	e := newEnv(t)
 	gameDir := filepath.Join(t.TempDir(), "Stardew Valley")
 	mods := filepath.Join(gameDir, "Mods")
-	putGameMod(t, mods, "GenericModConfigMenu/manifest.json",
+	writeFile(t, mods, "GenericModConfigMenu/manifest.json",
 		`{"Name":"Generic Mod Config Menu","Version":"1.14.1","UniqueID":"spacechase0.GenericModConfigMenu"}`)
-	putGameMod(t, mods, "NPCMapLocations/manifest.json",
+	writeFile(t, mods, "NPCMapLocations/manifest.json",
 		`{"Name":"NPC Map Locations","Version":"3.3.0","UniqueID":"Bouhm.NPCMapLocations"}`)
-	putGameMod(t, mods, ".DisabledCopy/manifest.json",
+	writeFile(t, mods, ".DisabledCopy/manifest.json",
 		`{"Name":"NPC Map Locations","Version":"3.3.0","UniqueID":"Bouhm.NPCMapLocations"}`)
-	putGameMod(t, mods, "ConsoleCommands/manifest.json",
+	writeFile(t, mods, "ConsoleCommands/manifest.json",
 		`{"Name":"Console Commands","Version":"4.5.2","UniqueID":"SMAPI.ConsoleCommands"}`)
-	putGameMod(t, mods, "SaveBackup/manifest.json",
+	writeFile(t, mods, "SaveBackup/manifest.json",
 		`{"Name":"Save Backup","Version":"4.5.2","UniqueID":"SMAPI.SaveBackup"}`)
 	before := dumpTree(t, gameDir)
 
@@ -212,9 +201,9 @@ func TestImportGameModsPicksNewestWhenBothCopiesAreOff(t *testing.T) {
 	e := newEnv(t)
 	gameDir := filepath.Join(t.TempDir(), "Stardew Valley")
 	mods := filepath.Join(gameDir, "Mods")
-	putGameMod(t, mods, ".Old/manifest.json",
+	writeFile(t, mods, ".Old/manifest.json",
 		`{"Name":"Map","Version":"1.0.0","UniqueID":"Me.Map"}`)
-	putGameMod(t, mods, ".New/manifest.json",
+	writeFile(t, mods, ".New/manifest.json",
 		`{"Name":"Map","Version":"2.0.0","UniqueID":"Me.Map"}`)
 	before := dumpTree(t, gameDir)
 
@@ -255,7 +244,7 @@ func TestInstallFolderUsesTheSameStorePathAsAnArchive(t *testing.T) {
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	src := t.TempDir()
-	putGameMod(t, src, "manifest.json", manifestJSON("Me.Folder"))
+	writeFile(t, src, "manifest.json", manifestJSON("Me.Folder"))
 	res, err := e.InstallFolder("stardew", p.ID, src)
 	if err != nil || len(res.Added) != 1 || res.Profile.Entries[0].Source.Kind != KindLocal {
 		t.Fatalf("install folder: %+v %v", res, err)
@@ -265,9 +254,9 @@ func TestInstallFolderUsesTheSameStorePathAsAnArchive(t *testing.T) {
 func TestPreviewGameModsSkipsASymlinkDirectory(t *testing.T) {
 	e := newEnv(t)
 	mods := filepath.Join(t.TempDir(), "Mods")
-	putGameMod(t, mods, "Loud/manifest.json", `{"Name":"Loud","Version":"1.0.0","UniqueID":"Me.Loud"}`)
+	writeFile(t, mods, "Loud/manifest.json", `{"Name":"Loud","Version":"1.0.0","UniqueID":"Me.Loud"}`)
 	outside := t.TempDir()
-	putGameMod(t, outside, "manifest.json", `{"Name":"Docs","Version":"1.0.0","UniqueID":"Me.Docs"}`)
+	writeFile(t, outside, "manifest.json", `{"Name":"Docs","Version":"1.0.0","UniqueID":"Me.Docs"}`)
 	if err := os.Symlink(outside, filepath.Join(mods, "Innocent")); err != nil {
 		t.Fatal(err)
 	}
