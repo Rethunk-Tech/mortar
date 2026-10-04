@@ -270,7 +270,7 @@ func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][
 		return "", "", err
 	}
 	if err := fomod.Apply(root, tmp, fomod.Resolve(cfg, choices, eval)); err != nil {
-		_ = os.RemoveAll(tmp)
+		_ = fsx.RemoveAll(tmp)
 		return "", "", err
 	}
 	return tmp, tmp, nil

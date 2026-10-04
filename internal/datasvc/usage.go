@@ -457,7 +457,7 @@ func clearCache(dir string) error {
 	}
 	var errs []error
 	for _, e := range ents {
-		errs = append(errs, os.RemoveAll(filepath.Clean(filepath.Join(dir, e.Name()))))
+		errs = append(errs, fsx.RemoveAll(filepath.Clean(filepath.Join(dir, e.Name()))))
 	}
 	return errors.Join(errs...)
 }

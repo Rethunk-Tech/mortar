@@ -2,8 +2,9 @@ package game
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/settings"
@@ -67,7 +68,7 @@ func (s *Service) ResetInstall(id string) error {
 	if clean == string(filepath.Separator) || clean == home {
 		return fmt.Errorf("refusing to remove protected path %q", clean)
 	}
-	return os.RemoveAll(clean)
+	return fsx.RemoveAll(clean)
 }
 
 // SteamStatus reports whether a usable Steam was found.

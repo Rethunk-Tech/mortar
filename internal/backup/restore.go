@@ -24,7 +24,7 @@ func Restore(zipPath, savesDir string, folders []string, keep int, now time.Time
 	if err != nil {
 		return err
 	}
-	defer func() { _ = os.RemoveAll(tmp) }()
+	defer func() { _ = fsx.RemoveAll(tmp) }()
 	want, err := extractSaves(zipPath, tmp, folders)
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func Restore(zipPath, savesDir string, folders []string, keep int, now time.Time
 				_ = fsx.Rename(old, dst)
 				return err
 			}
-			if err := os.RemoveAll(old); err != nil {
+			if err := fsx.RemoveAll(old); err != nil {
 				return err
 			}
 			continue

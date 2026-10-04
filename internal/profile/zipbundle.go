@@ -46,7 +46,7 @@ func (s *Store) ExportZip(game, id, dest, mortarVersion string) error {
 		return err
 	}
 	err = snapshotProfileExport(dir, snap, p)
-	defer func() { _ = os.RemoveAll(snap) }()
+	defer func() { _ = fsx.RemoveAll(snap) }()
 	if err != nil {
 		return err
 	}
@@ -213,8 +213,8 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	defer func() { _ = os.RemoveAll(tmp) }()
-	if err := archive.Extract(zipPath, tmp, archive.Options{}); err != nil {
+	defer func() { _ = fsx.RemoveAll(tmp) }()
+	if err := archive.Extract(zipPath, tmp); err != nil {
 		return Profile{}, err
 	}
 	if err := verifyExtractedZip(tmp); err != nil {

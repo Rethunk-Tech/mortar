@@ -175,7 +175,7 @@ func (g Game) InstallLoaderAt(ctx context.Context, dir, version string, bundled 
 	if err != nil {
 		return "", err
 	}
-	defer func() { _ = os.RemoveAll(work) }()
+	defer func() { _ = fsx.RemoveAll(work) }()
 
 	zipPath := filepath.Join(work, "installer.zip")
 	if err := g.download(ctx, version, zipPath); err != nil {

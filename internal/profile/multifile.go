@@ -91,7 +91,7 @@ func (s *Store) SplitExtra(game, id, entryKey, extraKey string) (Profile, error)
 			e.PreviousExtraStoreKeys = slices.Delete(e.PreviousExtraStoreKeys, xi, xi+1)
 		}
 		entryDir := liveEntryDir(filepath.Join(dir, "mods"), e.Key)
-		if err := os.RemoveAll(filepath.Join(entryDir, extraKey)); err != nil {
+		if err := fsx.RemoveAll(filepath.Join(entryDir, extraKey)); err != nil {
 			return err
 		}
 		if err := s.refreshEntryMods(e, entryDir); err != nil {
@@ -238,7 +238,7 @@ func (s *Store) fillExtrasUpdate(game, id, modsDir, oldEntryKey, tmp string, e, 
 		if slices.Contains(ne.ExtraStoreKeys, stale) {
 			continue
 		}
-		_ = os.RemoveAll(filepath.Join(tmp, stale))
+		_ = fsx.RemoveAll(filepath.Join(tmp, stale))
 	}
 	return nil
 }
@@ -262,7 +262,7 @@ func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey str
 	if err != nil {
 		return err
 	}
-	defer func() { _ = os.RemoveAll(scratch) }()
+	defer func() { _ = fsx.RemoveAll(scratch) }()
 	if err := datadir.MaterializeTree(extraSrc, scratch); err != nil {
 		return err
 	}
@@ -288,7 +288,7 @@ func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey str
 		}
 	}
 	dest := filepath.Join(tmp, newKey)
-	if err := os.RemoveAll(dest); err != nil {
+	if err := fsx.RemoveAll(dest); err != nil {
 		return err
 	}
 	return fsx.Rename(scratch, dest)
@@ -354,10 +354,10 @@ func (s *Store) copyExtraInto(game, id, entryDir, extraKey string, choices map[s
 		return err
 	}
 	if err := datadir.MaterializeTree(src, scratch); err != nil {
-		return errors.Join(err, os.RemoveAll(scratch))
+		return errors.Join(err, fsx.RemoveAll(scratch))
 	}
 	if err := fsx.Rename(scratch, dest); err != nil {
-		return errors.Join(err, os.RemoveAll(scratch))
+		return errors.Join(err, fsx.RemoveAll(scratch))
 	}
 	return nil
 }

@@ -121,14 +121,14 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 	}
 	oldSrc, oldTmp, err := s.layoutItem(game, id, e.Key, e.Fomod)
 	if oldTmp != "" {
-		defer func() { _ = os.RemoveAll(oldTmp) }()
+		defer func() { _ = fsx.RemoveAll(oldTmp) }()
 	}
 	if err != nil {
 		return Entry{}, swapped{}, err
 	}
 	newSrc, newTmp, err := s.layoutItem(game, id, newKey, choices)
 	if newTmp != "" {
-		defer func() { _ = os.RemoveAll(newTmp) }()
+		defer func() { _ = fsx.RemoveAll(newTmp) }()
 	}
 	if err != nil {
 		return Entry{}, swapped{}, err
@@ -171,7 +171,7 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 	}
 	sw, err := fillUpdate(s, game, id, tmp, modsDir, oldSrc, newSrc, e, &ne, found)
 	if err != nil {
-		return Entry{}, swapped{}, errors.Join(err, os.RemoveAll(tmp))
+		return Entry{}, swapped{}, errors.Join(err, fsx.RemoveAll(tmp))
 	}
 	return ne, sw, nil
 }
@@ -275,7 +275,7 @@ func (w swapped) commit() {
 	}
 	if w.aside != "" {
 		// A failed delete leaves a temp-prefixed folder, which the next rebuild sweeps.
-		_ = os.RemoveAll(w.aside)
+		_ = fsx.RemoveAll(w.aside)
 	}
 }
 
@@ -283,7 +283,7 @@ func (w swapped) undo() error {
 	if w.placed == "" {
 		return nil
 	}
-	err := os.RemoveAll(w.placed)
+	err := fsx.RemoveAll(w.placed)
 	if w.aside != "" {
 		err = errors.Join(err, fsx.Rename(w.aside, w.old))
 	}
@@ -299,7 +299,7 @@ func replaceFolder(modsDir, oldKey, tmp, final string) (swapped, error) {
 	w := swapped{old: old, placed: filepath.Join(modsDir, final)}
 	if exists(old) {
 		w.aside = filepath.Join(modsDir, asidePrefix+filepath.Base(old))
-		if err := os.RemoveAll(w.aside); err != nil {
+		if err := fsx.RemoveAll(w.aside); err != nil {
 			return swapped{}, err
 		}
 		if err := fsx.Rename(old, w.aside); err != nil {

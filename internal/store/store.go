@@ -192,7 +192,7 @@ func (s *Store) prepareItem(game, key string) (bool, error) {
 	if !exists(dir) {
 		return false, nil
 	}
-	if err := os.RemoveAll(dir); err != nil {
+	if err := fsx.RemoveAll(dir); err != nil {
 		return false, &Error{Game: game, Key: key, Err: err}
 	}
 	return false, nil
@@ -292,7 +292,7 @@ func (s *Store) install(game, key string, fill func(tmp string) error, need func
 	}
 	defer func() {
 		if err != nil {
-			_ = os.RemoveAll(tmp)
+			_ = fsx.RemoveAll(tmp)
 		}
 	}()
 	if err = fill(tmp); err == nil {
@@ -613,7 +613,7 @@ func (s *Store) Collect(referenced map[string][]string, now time.Time) error {
 				last = now
 			}
 			if !keep[key] && unusedPast(now, last, s.unusedFor()) {
-				if err := os.RemoveAll(filepath.Join(s.root, g.name, key)); err != nil {
+				if err := fsx.RemoveAll(filepath.Join(s.root, g.name, key)); err != nil {
 					errs = append(errs, err)
 					next[g.name][key] = last
 				} else {
@@ -695,7 +695,7 @@ func (s *Store) Remove(refs []Ref) error {
 		if !game.Valid(it.Game) || strings.HasPrefix(it.Key, tempPrefix) || !keyPattern.MatchString(it.Key) {
 			continue
 		}
-		errs = append(errs, os.RemoveAll(filepath.Join(s.root, it.Game, it.Key)))
+		errs = append(errs, fsx.RemoveAll(filepath.Join(s.root, it.Game, it.Key)))
 		s.forget(it.Game, it.Key)
 		if idx[it.Game] != nil {
 			delete(idx[it.Game], it.Key)
@@ -727,7 +727,7 @@ func (s *Store) Cleanup() ([]string, error) {
 		}
 		for _, it := range items {
 			if strings.HasPrefix(it.Name(), tempPrefix) {
-				if err := os.RemoveAll(filepath.Join(s.root, g.Name(), it.Name())); err != nil {
+				if err := fsx.RemoveAll(filepath.Join(s.root, g.Name(), it.Name())); err != nil {
 					errs = append(errs, err)
 				} else {
 					removed = append(removed, g.Name()+"/"+it.Name())

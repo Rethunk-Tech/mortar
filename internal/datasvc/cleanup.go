@@ -172,7 +172,7 @@ func Apply(root string, items *store.Store, preview Preview, keep map[string][]s
 		if confErr != nil {
 			continue
 		}
-		_ = os.RemoveAll(filepath.Clean(abs))
+		_ = fsx.RemoveAll(filepath.Clean(abs))
 	}
 	return items.Remove(refs)
 }

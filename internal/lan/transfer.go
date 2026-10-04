@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
@@ -162,7 +164,7 @@ func (s *Service) fetchEntry(
 	if err != nil {
 		return 0, err
 	}
-	defer func() { _ = os.RemoveAll(temp) }()
+	defer func() { _ = fsx.RemoveAll(temp) }()
 	var received int64
 	if err := extractTar(ctx, response.Body, temp, &received, func(n int64) {
 		s.emitTransfer(TransferProgress{

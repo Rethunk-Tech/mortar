@@ -86,7 +86,7 @@ func ModPaths(modsDir, key, folder string) (plain, dotted string, err error) {
 // removeEntryFolders deletes both the enabled and disabled folder of a mod entry.
 func removeEntryFolders(modsDir, key string) error {
 	for _, name := range []string{key, "." + key} {
-		if err := os.RemoveAll(filepath.Join(modsDir, name)); err != nil {
+		if err := fsx.RemoveAll(filepath.Join(modsDir, name)); err != nil {
 			return err
 		}
 	}
@@ -141,7 +141,7 @@ func materialize(tmp string, e Entry) (string, error) {
 func (s *Store) place(game, modsDir string, e Entry) error {
 	src, tmp, err := s.layoutItem(game, filepath.Base(filepath.Dir(modsDir)), e.Key, e.Fomod)
 	if tmp != "" {
-		defer func() { _ = os.RemoveAll(tmp) }()
+		defer func() { _ = fsx.RemoveAll(tmp) }()
 	}
 	if err != nil {
 		return err
@@ -160,7 +160,7 @@ func (s *Store) place(game, modsDir string, e Entry) error {
 		err = fsx.Rename(scratch, filepath.Join(modsDir, final))
 	}
 	if err != nil {
-		return errors.Join(err, os.RemoveAll(scratch))
+		return errors.Join(err, fsx.RemoveAll(scratch))
 	}
 	return nil
 }
@@ -231,7 +231,7 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 	}
 	src, tmp, err := s.layoutItem(game, p.ID, key, source.fomodMap())
 	if tmp != "" {
-		defer func() { _ = os.RemoveAll(tmp) }()
+		defer func() { _ = fsx.RemoveAll(tmp) }()
 	}
 	if err != nil {
 		return "", err
@@ -285,7 +285,7 @@ func (s *Store) addEntryLocked(game, id, key string, source Source) (Profile, er
 	})
 	if err != nil {
 		if placed != "" {
-			err = errors.Join(err, os.RemoveAll(placed))
+			err = errors.Join(err, fsx.RemoveAll(placed))
 		}
 		return Profile{}, err
 	}
@@ -347,7 +347,7 @@ func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 			delete(s.historyQuietIDs, prof.ID)
 		}
 		if err != nil && placed != "" {
-			err = errors.Join(err, os.RemoveAll(placed))
+			err = errors.Join(err, fsx.RemoveAll(placed))
 		}
 		errs = append(errs, err)
 	}
@@ -679,7 +679,7 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 		err = fsx.Rename(tmp, dstDir)
 	}
 	if err != nil {
-		return Profile{}, errors.Join(err, os.RemoveAll(tmp))
+		return Profile{}, errors.Join(err, fsx.RemoveAll(tmp))
 	}
 
 	all, err = s.listOK(game)
@@ -784,7 +784,7 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 	}
 	for _, it := range items {
 		if strings.HasPrefix(it.Name(), tempPrefix) || (it.IsDir() && !known[it.Name()]) {
-			if err := os.RemoveAll(filepath.Join(modsDir, it.Name())); err != nil {
+			if err := fsx.RemoveAll(filepath.Join(modsDir, it.Name())); err != nil {
 				return err
 			}
 		}

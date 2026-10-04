@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 func junkDir(name string) bool {
@@ -55,7 +57,7 @@ func stripJunk(root string) {
 	slices.SortFunc(dirs, func(a, b string) int { return len(b) - len(a) })
 	for _, dir := range dirs {
 		if dir != root && thumbsOnly(dir) {
-			_ = os.RemoveAll(dir)
+			_ = fsx.RemoveAll(dir)
 		}
 	}
 }

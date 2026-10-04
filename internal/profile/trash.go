@@ -169,7 +169,7 @@ func (s *Store) Purge(gameID, id string) error {
 	if info.Mode()&os.ModeSymlink != 0 {
 		return fmt.Errorf("refusing to purge symlink %q", id)
 	}
-	return os.RemoveAll(dir)
+	return fsx.RemoveAll(dir)
 }
 
 func (s *Store) purgeTrash(gameID string) error {
@@ -198,7 +198,7 @@ func (s *Store) purgeTrash(gameID string) error {
 			errs = append(errs, fmt.Errorf("refusing to purge symlink %q", item.Name()))
 			continue
 		}
-		errs = append(errs, os.RemoveAll(filepath.Join(dir, item.Name())))
+		errs = append(errs, fsx.RemoveAll(filepath.Join(dir, item.Name())))
 	}
 	return errors.Join(errs...)
 }
@@ -236,7 +236,7 @@ func (s *Store) PurgeTrash(target any) error {
 		}
 		for _, it := range items {
 			if now.Sub(it.DeletedAt) > s.trashKeep() {
-				errs = append(errs, os.RemoveAll(filepath.Join(s.trash, g.Name(), it.ID)))
+				errs = append(errs, fsx.RemoveAll(filepath.Join(s.trash, g.Name(), it.ID)))
 			}
 		}
 	}

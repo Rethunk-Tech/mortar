@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+
 	"github.com/Rethunk-AI/mortar/internal/archive"
 	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/game"
@@ -144,7 +146,7 @@ func (s *Service) ensureBridge(id string) (profile.Bundle, error) {
 	if err != nil {
 		return profile.Bundle{}, err
 	}
-	defer func() { _ = os.RemoveAll(tmp) }()
+	defer func() { _ = fsx.RemoveAll(tmp) }()
 	archivePath := filepath.Join(tmp, "bridge.zip")
 	if err := s.components.Download(context.Background(), component, archivePath); err != nil {
 		return profile.Bundle{}, err
@@ -193,7 +195,7 @@ func (s *Service) ensureBundled(id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer func() { _ = os.RemoveAll(tmp) }()
+	defer func() { _ = fsx.RemoveAll(tmp) }()
 	if err := g.CopyBundled(dir, tmp); err != nil {
 		return "", err
 	}

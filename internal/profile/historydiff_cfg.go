@@ -51,7 +51,7 @@ func captureHistoryConfigs(dir, snapshotID string, entries []Entry) {
 		idx[e.Key] = paths
 	}
 	snapDir := filepath.Join(dir, historyFilesDir, snapshotID)
-	_ = os.RemoveAll(snapDir)
+	_ = fsx.RemoveAll(snapDir)
 	if err := os.MkdirAll(snapDir, 0o700); err != nil {
 		return
 	}
@@ -169,12 +169,12 @@ func pruneHistoryFiles(dir string, referenced map[string]struct{}) {
 		}
 		path := filepath.Join(root, name)
 		if _, ok := referenced[name]; !ok {
-			_ = os.RemoveAll(path)
+			_ = fsx.RemoveAll(path)
 			continue
 		}
 		idx, err := readSnapshotIndex(dir, name)
 		if err != nil {
-			_ = os.RemoveAll(path)
+			_ = fsx.RemoveAll(path)
 			continue
 		}
 		for _, files := range idx {
@@ -193,7 +193,7 @@ func pruneHistoryFiles(dir string, referenced map[string]struct{}) {
 		if _, ok := keepBlobs[ent.Name()]; ok {
 			continue
 		}
-		_ = os.RemoveAll(filepath.Join(root, historyBlobsDir, ent.Name()))
+		_ = fsx.RemoveAll(filepath.Join(root, historyBlobsDir, ent.Name()))
 	}
 }
 

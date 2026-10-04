@@ -231,7 +231,7 @@ func (s *Store) Revert(game, id, eventID string) (Profile, error) {
 func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries []Entry) error {
 	modsDir := filepath.Join(dir, "mods")
 	staging := modsDir + ".new"
-	_ = os.RemoveAll(staging)
+	_ = fsx.RemoveAll(staging)
 	if err := os.MkdirAll(staging, 0o700); err != nil {
 		return err
 	}
@@ -239,21 +239,21 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 	keys := make([]string, 0, len(entries)*2)
 	for _, e := range entries {
 		if err := s.place(game, staging, e); err != nil {
-			_ = os.RemoveAll(staging)
+			_ = fsx.RemoveAll(staging)
 			return err
 		}
 		live := liveEntryDir(modsDir, e.Key)
 		if exists(live) {
 			old, tmp, err := s.layoutItem(game, p.ID, e.Key, e.Fomod)
 			if tmp != "" {
-				defer func() { _ = os.RemoveAll(tmp) }()
+				defer func() { _ = fsx.RemoveAll(tmp) }()
 			}
 			if err != nil {
-				_ = os.RemoveAll(staging)
+				_ = fsx.RemoveAll(staging)
 				return err
 			}
 			if err := carryOverWalk(live, old, liveEntryDir(staging, e.Key), false, nil); err != nil {
-				_ = os.RemoveAll(staging)
+				_ = fsx.RemoveAll(staging)
 				return err
 			}
 		}
@@ -264,21 +264,21 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 		}
 	}
 	old := modsDir + ".old"
-	_ = os.RemoveAll(old)
+	_ = fsx.RemoveAll(old)
 	if _, err := os.Stat(modsDir); err == nil {
 		if err := fsx.Rename(modsDir, old); err != nil {
-			_ = os.RemoveAll(staging)
+			_ = fsx.RemoveAll(staging)
 			return err
 		}
 	} else if !errors.Is(err, os.ErrNotExist) {
-		_ = os.RemoveAll(staging)
+		_ = fsx.RemoveAll(staging)
 		return err
 	}
 	if err := fsx.Rename(staging, modsDir); err != nil {
 		if _, statErr := os.Stat(old); statErr == nil {
 			_ = fsx.Rename(old, modsDir)
 		}
-		_ = os.RemoveAll(staging)
+		_ = fsx.RemoveAll(staging)
 		return err
 	}
 	if s.items != nil && len(keys) > 0 {
@@ -296,7 +296,7 @@ func restoreModsOld(dir string) {
 	if _, err := os.Stat(old); err != nil {
 		return
 	}
-	_ = os.RemoveAll(modsDir)
+	_ = fsx.RemoveAll(modsDir)
 	_ = fsx.Rename(old, modsDir)
 }
 
