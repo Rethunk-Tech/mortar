@@ -6,6 +6,7 @@ require (
 	github.com/andybalholm/brotli v1.2.6
 	github.com/andygrunwald/vdf v1.1.0
 	github.com/bodgit/sevenzip v1.6.5
+	github.com/coder/websocket v1.8.15
 	github.com/go-ole/go-ole v1.3.0
 	github.com/hashicorp/mdns v1.0.7
 	github.com/nwaples/rardecode/v2 v2.4.1
@@ -20,7 +21,6 @@ require (
 	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect
 	github.com/bodgit/windows v1.0.1 // indirect
-	github.com/coder/websocket v1.8.15 // indirect
 	github.com/danieljoos/wincred v1.2.3 // indirect
 	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
@@ -37,4 +37,4 @@ require (
 	golang.org/x/net v0.59.0 // indirect
 )
 
-replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-beta.27.0.20261004071642-dccbdeb852c6
+replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-beta.27.0.20261004125021-d26ede43f636
