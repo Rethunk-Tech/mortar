@@ -35,6 +35,8 @@ type GameModPreview struct {
 	Status     string `json:"status"`
 	Reason     string `json:"reason,omitempty"`
 	Disabled   bool   `json:"disabled,omitempty"`
+	// Folder is the absolute path of the top-level folder holding this mod.
+	Folder string `json:"folder,omitempty"`
 }
 
 // GameModsPreview is the list PreviewGameMods returns, including skips and failures.
@@ -294,7 +296,7 @@ func previewMod(f gameModFolder, m manifest.Mod) GameModPreview {
 	}
 	return GameModPreview{
 		UniqueID: m.UniqueID, Name: name, Version: m.Version, Source: sourceLabel(f.source),
-		NexusModID: f.source.ModID, Status: outcomeImported, Disabled: f.disabled,
+		NexusModID: f.source.ModID, Status: outcomeImported, Disabled: f.disabled, Folder: f.dir,
 	}
 }
 
