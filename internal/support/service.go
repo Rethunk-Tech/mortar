@@ -109,8 +109,18 @@ func (s *Service) Upload(ctx context.Context, log string) (string, error) {
 	return c.Upload(ctx, log)
 }
 
-// BugURL is a new GitHub issue on Mortar prefilled with the version, OS and game, and no log.
-func (s *Service) BugURL(gameID string) string {
+// BugReport is what the user wrote in Mortar's Report a bug dialog.
+type BugReport struct {
+	Title       string `json:"title"`
+	Happened    string `json:"happened"`
+	Expected    string `json:"expected"`
+	Steps       string `json:"steps"`
+	Diagnostics bool   `json:"diagnostics"`
+}
+
+// BugURL is a new GitHub issue on Mortar prefilled with the report, the version, OS and game, and, when the user
+// left it on, the diagnostics checks and recent log lines; never a full log.
+func (s *Service) BugURL(gameID string, r BugReport) string {
 	about := fmt.Sprintf("Mortar %s · %s/%s", s.version, runtime.GOOS, runtime.GOARCH)
 	if g := game.Find(gameID); g != nil {
 		env := s.env(gameID)
@@ -122,12 +132,22 @@ func (s *Service) BugURL(gameID string) string {
 			about += fmt.Sprintf(" (%s %s)", g.LoaderName(), env.APIVersion)
 		}
 	}
-	body := "**What happened**\n\n\n**What you expected**\n\n\n**Steps to reproduce**\n\n\n---\n" + about + "\n"
-	if report, err := s.Doctor(); err == nil {
-		dir, _ := s.dataDir()
-		body += diagnosticsSection(report, s.home, dir)
+	section := func(heading, text string) string {
+		return "**" + heading + "**\n" + strings.TrimSpace(text) + "\n\n"
 	}
-	return issuesURL + "?" + url.Values{"title": {"Bug: "}, "body": {body}}.Encode()
+	body := section("What happened", r.Happened) + section("What you expected", r.Expected) +
+		section("Steps to reproduce", r.Steps) + "---\n" + about + "\n"
+	if r.Diagnostics {
+		if report, err := s.Doctor(); err == nil {
+			dir, _ := s.dataDir()
+			body += diagnosticsSection(report, s.home, dir)
+		}
+	}
+	title := strings.TrimSpace(r.Title)
+	if title == "" {
+		title = "Bug: "
+	}
+	return issuesURL + "?" + url.Values{"title": {title}, "body": {body}}.Encode()
 }
 
 // maxDiagnostics keeps the prefilled issue URL well under the length GitHub and browsers accept.

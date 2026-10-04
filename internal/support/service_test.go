@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -103,5 +104,29 @@ func TestDiagnosticsSectionHidesHomeAndStaysShort(t *testing.T) {
 	}
 	if got := diagnosticsSection(long, "", ""); len(got) > maxDiagnostics+64 || !strings.Contains(got, "…") {
 		t.Fatalf("long section %d bytes", len(got))
+	}
+}
+
+func TestBugURLCarriesTheReportAndDiagnosticsOnlyWhenAsked(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	s := NewService("1.2.3", func(string) problems.Environment { return problems.Environment{} }, t.TempDir(), nil)
+	parse := func(raw string) url.Values {
+		u, err := url.Parse(raw)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return u.Query()
+	}
+	q := parse(s.BugURL("", BugReport{Title: "Play button stuck", Happened: "It spins", Steps: "Click Play"}))
+	body := q.Get("body")
+	if q.Get("title") != "Play button stuck" || !strings.Contains(body, "**What happened**\nIt spins") ||
+		!strings.Contains(body, "**Steps to reproduce**\nClick Play") || !strings.Contains(body, "Mortar 1.2.3") {
+		t.Fatalf("title %q body %q", q.Get("title"), body)
+	}
+	if strings.Contains(body, "**Diagnostics**") {
+		t.Fatal("diagnostics included without being asked")
+	}
+	if !strings.Contains(parse(s.BugURL("", BugReport{Diagnostics: true})).Get("body"), "**Diagnostics**") {
+		t.Fatal("diagnostics missing when asked")
 	}
 }

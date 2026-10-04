@@ -24,6 +24,7 @@ import { useAppShortcuts } from './settings/useShortcuts.ts'
 import { ImportDialog } from './share/ImportDialog.tsx'
 import { ShareDialog } from './share/ShareDialog.tsx'
 import { AppFrame } from './shell/AppFrame.tsx'
+import { BugReportDialog } from './shell/BugReportDialog.tsx'
 import { ErrorBoundary } from './shell/ErrorBoundary.tsx'
 import { errorDetails, errorMessage } from './toasts/report.ts'
 import { useToasts } from './toasts/store.ts'
@@ -90,6 +91,7 @@ export function App() {
       <ShareDialog />
       <ImportDialog />
       <WhatsNewDialog />
+      <BugReportDialog />
       <QuitPrompt />
       <ToastHost />
     </>

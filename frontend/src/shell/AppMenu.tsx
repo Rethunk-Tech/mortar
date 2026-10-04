@@ -9,29 +9,18 @@ import {
   ListItemText,
 } from '@mui/material'
 import { Application } from '@wailsio/runtime'
-import {
-  Bug,
-  Code2,
-  FileArchive,
-  FolderOpen,
-  Info,
-  LogOut,
-  RefreshCw,
-  Settings,
-} from 'lucide-react'
+import { Bug, Code2, FolderOpen, Info, LogOut, RefreshCw, Settings } from 'lucide-react'
 import { useId, useState } from 'react'
 import { OpenDataFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { Logo } from '../brand/Logo.tsx'
 import { compact } from '../game/compact.ts'
 import { openPage } from '../mods/menu.ts'
 import { openSettings, routeGame, useNav } from '../nav/store.ts'
-import { useProfiles } from '../profiles/store.ts'
 import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { checkForUpdates } from './checkForUpdates.ts'
 import { NexusAccount } from './NexusAccount.tsx'
 import { reportBug } from './reportBug.ts'
-import { saveDiagnostics } from './saveDiagnostics.ts'
 
 const SOURCE = 'https://github.com/Rethunk-AI/mortar'
 
@@ -40,7 +29,6 @@ export function AppMenu() {
   const drawerId = useId()
   const [open, setOpen] = useState(false)
   const game = useNav((s) => routeGame(s.route) ?? '')
-  const profile = useProfiles((s) => s.openId)
   const close = () => setOpen(false)
   const quit = () => {
     close()
@@ -128,17 +116,6 @@ export function AppMenu() {
               <FolderOpen size={18} />
             </ListItemIcon>
             <ListItemText primary={t`Open data folder`} />
-          </ListItemButton>
-          <ListItemButton
-            onClick={() => {
-              close()
-              saveDiagnostics(game, profile)
-            }}
-          >
-            <ListItemIcon>
-              <FileArchive size={18} />
-            </ListItemIcon>
-            <ListItemText primary={t`Save diagnostics…`} />
           </ListItemButton>
           <ListItemButton
             onClick={() => {
