@@ -3,9 +3,11 @@ package problems
 import (
 	"context"
 	"errors"
+	"path/filepath"
 	"reflect"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -269,4 +271,16 @@ func TestCountShowsConflictsBetweenTheSameModsOnce(t *testing.T) {
 	if got := r.Count(); got != 2 {
 		t.Fatalf("count = %d, want 2", got)
 	}
+}
+
+// fromDisk fills in what the profile scan reads from a mod's manifest and Check relies on.
+func fromDisk(mod Installed) Installed {
+	raw, err := fsx.ReadFile(filepath.Join(mod.Folder, manifest.FileName))
+	if err != nil {
+		return mod
+	}
+	if m, err := manifest.Parse(raw); err == nil {
+		mod.ContentPackFor = m.ContentPackFor
+	}
+	return mod
 }

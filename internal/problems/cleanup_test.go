@@ -116,14 +116,14 @@ func tilesheetPack(t *testing.T, id, content string) Installed {
 	root := t.TempDir()
 	writeProblemFile(t, root, "manifest.json", `{"UniqueID":"`+id+`","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
 	writeProblemFile(t, root, "content.json", content)
-	return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
+	return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 }
 
 func modFolder(t *testing.T, name, file, content string) Installed {
 	t.Helper()
 	root := t.TempDir()
 	writeProblemFile(t, root, file, content)
-	return Installed{Key: name, Enabled: true, Folder: root, Name: name, UniqueID: name}
+	return fromDisk(Installed{Key: name, Enabled: true, Folder: root, Name: name, UniqueID: name})
 }
 
 func writeProblemFile(t *testing.T, root, name, content string) {
@@ -162,7 +162,7 @@ func TestRetextureOfVanillaSheetIsNotUnusedTilesheets(t *testing.T) {
 	if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	mod := Installed{Key: "tools", Enabled: true, Folder: root, Name: "Elegant Tools", UniqueID: "Colling.ElegantTools"}
+	mod := fromDisk(Installed{Key: "tools", Enabled: true, Folder: root, Name: "Elegant Tools", UniqueID: "Colling.ElegantTools"})
 	if got := unusedTilesheetPacks([]Installed{mod}); len(got) != 0 {
 		t.Fatalf("a retexture is never an unused tilesheet pack, got %+v", got)
 	}

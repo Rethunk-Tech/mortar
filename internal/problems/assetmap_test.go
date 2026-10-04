@@ -125,7 +125,7 @@ func loadPack(t *testing.T, id, target, priority string) Installed {
 	if err := fsx.WriteFile(filepath.Join(root, "a.png"), []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
+	return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 }
 
 func findTarget(targets []AssetTarget, name, key string) AssetTarget {

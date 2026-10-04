@@ -39,7 +39,7 @@ func (s *Service) CompatibilityFor(ctx context.Context, gameID, id string) ([]Co
 	return matchCompat(idx, mods, false), nil
 }
 
-func (s *Service) withCompat(ctx context.Context, gameID, id string, r Result, mods []Installed) Result {
+func (s *Service) withCompat(ctx context.Context, r Result, mods []Installed, sameJob []Redundant) Result {
 	idx, ok := s.compatIndex(ctx)
 	switch {
 	case ok:
@@ -47,7 +47,7 @@ func (s *Service) withCompat(ctx context.Context, gameID, id string, r Result, m
 	case r.Compat == nil:
 		r.Compat = []Compat{}
 	}
-	return s.withSameJob(gameID, id, superseded(r, mods), mods)
+	return withSameJob(superseded(r, mods), sameJob)
 }
 
 func (s *Service) compatIndex(ctx context.Context) (meta.CompatIndex, bool) {

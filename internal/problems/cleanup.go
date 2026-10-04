@@ -123,7 +123,7 @@ type tilesheetUse struct {
 func unusedTilesheetPacks(mods []Installed) []Cleanup {
 	var candidates []Installed
 	for _, mod := range mods {
-		if !mod.Enabled || !isContentPatcherPack(mod.Folder) {
+		if !mod.Enabled || !isContentPatcherPack(mod) {
 			continue
 		}
 		pack := readContentPack(mod)

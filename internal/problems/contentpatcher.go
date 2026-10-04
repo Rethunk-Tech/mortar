@@ -22,7 +22,6 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/jsonc"
-	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
 const contentPatcherID = "Pathoschild.ContentPatcher"
@@ -715,6 +714,10 @@ func cpWhenOfDisk(when diskWhen) cpWhen {
 
 var packCache sync.Map // folder path -> cachedPack
 
+// packValidated holds the folders whose cached pack was checked against its files during the running Check, so a
+// pack read many times in one Check is stat'ed once. Check clears it at both ends, never mid-check.
+var packValidated sync.Map
+
 func contentPackTargets(mod Installed) (load, edit []string, skips int) {
 	pack := readContentPack(mod)
 	for _, p := range pack.patches {
@@ -739,16 +742,24 @@ func readContentPackForCleanup(mod Installed) cachedPack {
 }
 
 func readContentPackWithEnabled(mod Installed, requireEnabled bool) cachedPack {
-	if (requireEnabled && !mod.Enabled) || mod.Folder == "" || !isContentPatcherPack(mod.Folder) {
+	if (requireEnabled && !mod.Enabled) || mod.Folder == "" || !isContentPatcherPack(mod) {
 		return cachedPack{}
 	}
 	root := filepath.Clean(mod.Folder)
+	if c, ok := packCache.Load(root); ok {
+		if _, fresh := packValidated.Load(root); fresh {
+			if got, ok := c.(cachedPack); ok {
+				return got
+			}
+		}
+	}
 	if _, err := os.Stat(filepath.Join(root, "content.json")); err != nil {
 		return cachedPack{}
 	}
 	if c, ok := packCache.Load(root); ok {
 		got, ok := c.(cachedPack)
 		if ok && packFingerprintValid(root, got.files, got.fingerprint) {
+			packValidated.Store(root, true)
 			return got
 		}
 	}
@@ -757,6 +768,7 @@ func readContentPackWithEnabled(mod Installed, requireEnabled bool) cachedPack {
 		if entry, ok := diskPackEntryFor(root); ok && packFingerprintValid(root, entry.Files, entry.Fingerprint) {
 			pack := cachedPackOfDisk(root, entry.Pack, entry)
 			packCache.Store(root, pack)
+			packValidated.Store(root, true)
 			clearDiskPackPayload(root)
 			return pack
 		}
@@ -771,6 +783,7 @@ func readContentPackWithEnabled(mod Installed, requireEnabled bool) cachedPack {
 	})
 	pack.fingerprint = packFilesFingerprint(pack.files)
 	packCache.Store(root, pack)
+	packValidated.Store(root, true)
 	if cachePath != "" {
 		storeDiskPackEntry(root, diskPackEntry{
 			Fingerprint: pack.fingerprint,
@@ -1047,13 +1060,8 @@ func readConfigSchema(root string) map[string]cpSchema {
 	return out
 }
 
-func isContentPatcherPack(folder string) bool {
-	raw, err := fsx.ReadFile(filepath.Join(folder, manifest.FileName))
-	if err != nil {
-		return false
-	}
-	m, err := manifest.Parse(raw)
-	return err == nil && sameID(m.ContentPackFor, contentPatcherID)
+func isContentPatcherPack(mod Installed) bool {
+	return sameID(mod.ContentPackFor, contentPatcherID)
 }
 
 func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack *cachedPack) {
@@ -1856,6 +1864,13 @@ func dropPNGAlphaUnder(root string) {
 			releaseAlpha(pix.a)
 		}
 		pngAlphaCache.Delete(k)
+		return true
+	})
+}
+
+func clearPackValidated() {
+	packValidated.Range(func(k, _ any) bool {
+		packValidated.Delete(k)
 		return true
 	})
 }

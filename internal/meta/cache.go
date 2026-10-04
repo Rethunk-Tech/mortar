@@ -31,6 +31,7 @@ type Client struct {
 	CompatURL  string
 	Now        func() time.Time
 	index      indexMemo
+	compat     compatMemo
 	// updatesMu serializes update checks so concurrent profiles share one fetch and one cache write.
 	updatesMu sync.Mutex
 	// updatesPause holds off smapi.io after a failed ask; until then stale cache or unknown is served.

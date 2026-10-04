@@ -149,7 +149,7 @@ func buildAssetIndex(mods []Installed) []AssetTarget {
 			continue
 		}
 		loadOrder := order[strings.ToLower(mod.UniqueID)]
-		if isContentPatcherPack(mod.Folder) {
+		if isContentPatcherPack(mod) {
 			indexContentPack(mod, present, loadOrder, grouped)
 			continue
 		}

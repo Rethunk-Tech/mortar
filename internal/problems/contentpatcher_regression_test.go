@@ -55,7 +55,7 @@ func syntheticLoadPack(t *testing.T, content string, files map[string]string) In
 			t.Fatal(err)
 		}
 	}
-	return Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)}
+	return fromDisk(Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)})
 }
 
 func TestEditMapPatchModesUseSourceLayers(t *testing.T) {
@@ -247,7 +247,7 @@ func syntheticEditPack(t *testing.T, content string) Installed {
 	if err := os.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	return Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)}
+	return fromDisk(Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)})
 }
 
 func TestSwitchOffOnlySuggestsNonClashingAllowedValue(t *testing.T) {
@@ -280,7 +280,7 @@ func TestIncludedBlankLoadsUsePackRootPath(t *testing.T) {
 	writeRegressionFile(t, root, "nested/content.json", `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"blank.json","Priority":"low"}]}`)
 	writeRegressionFile(t, root, "blank.json", "{\r\n// empty\r\n}")
 	writeRegressionFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
-	mod := Installed{Key: "included", Enabled: true, Folder: root, UniqueID: "Included.Blank", Name: "Included Blank"}
+	mod := fromDisk(Installed{Key: "included", Enabled: true, Folder: root, UniqueID: "Included.Blank", Name: "Included Blank"})
 
 	conflicts := assetConflicts([]Installed{mod, syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"other.json"}]}`, map[string]string{
 		"other.json": `{"value":1}`,
@@ -334,7 +334,7 @@ func syntheticImagePack(t *testing.T, file string, source []byte) Installed {
 	writeRegressionFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
 	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"LooseSprites/Cursors","FromFile":"`+file+`","ToArea":{"X":2,"Y":3,"Width":18,"Height":20}}]}`)
 	writeRegressionFile(t, root, file, string(source))
-	return Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)}
+	return fromDisk(Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)})
 }
 
 func TestBareDynamicTokenWhenMergesSpouseCondition(t *testing.T) {
@@ -374,7 +374,7 @@ func TestOverlayImageUsesOpaqueCells(t *testing.T) {
 	writeRegressionFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
 	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"patch.png","ToArea":{"X":0,"Y":0,"Width":32,"Height":16},"PatchMode":"Overlay"}]}`)
 	writePNG(t, filepath.Join(root, "patch.png"), opaque)
-	pack := readContentPack(Installed{Enabled: true, Folder: root})
+	pack := readContentPack(fromDisk(Installed{Enabled: true, Folder: root}))
 	other := cpPatch{image: true, shapes: []cpShape{{kind: 'r', x: 16, y: 0, w: 16, h: 16}}}
 	if clash, _ := editsClash(pack.patches, []cpPatch{other}); clash {
 		t.Fatal("transparent overlay cells must not clash")
@@ -382,7 +382,7 @@ func TestOverlayImageUsesOpaqueCells(t *testing.T) {
 	opaque.SetNRGBA(16, 0, color.NRGBA{A: 255})
 	writePNG(t, filepath.Join(root, "patch.png"), opaque)
 	packCache.Delete(filepath.Clean(root))
-	pack = readContentPack(Installed{Enabled: true, Folder: root})
+	pack = readContentPack(fromDisk(Installed{Enabled: true, Folder: root}))
 	if clash, _ := editsClash(pack.patches, []cpPatch{other}); !clash {
 		t.Fatal("opaque overlay cell must clash")
 	}

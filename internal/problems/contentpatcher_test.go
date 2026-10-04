@@ -31,7 +31,7 @@ func testdataPack(t *testing.T, name string) Installed {
 			id = u
 		}
 	}
-	m := Installed{Key: name, Enabled: true, Folder: folder}
+	m := fromDisk(Installed{Key: name, Enabled: true, Folder: folder})
 	m.Name, m.UniqueID = id, id
 	return m
 }
@@ -150,7 +150,7 @@ func TestContentPatcherJSONNoise(t *testing.T) {
 		t.Fatal(err)
 	}
 	peer := testdataPack(t, "include_b")
-	mod := Installed{Key: "noise", Enabled: true, Folder: folder}
+	mod := fromDisk(Installed{Key: "noise", Enabled: true, Folder: folder})
 	mod.Name, mod.UniqueID = "Pack.Noise", "Pack.Noise"
 	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{mod, peer})
 	if len(got.AssetConflicts) != 1 || got.AssetConflicts[0].Target != "maps/springobjects" {

@@ -32,7 +32,7 @@ func variantPack(t *testing.T, current string, blank bool) Installed {
 			t.Fatal(err)
 		}
 	}
-	return Installed{Key: "tiles", Enabled: true, Folder: dir, UniqueID: "Pack.Tiles", Name: "Tiles"}
+	return fromDisk(Installed{Key: "tiles", Enabled: true, Folder: dir, UniqueID: "Pack.Tiles", Name: "Tiles"})
 }
 
 func recolour(id string) Installed {

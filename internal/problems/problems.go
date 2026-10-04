@@ -218,6 +218,8 @@ func meets(version, minimum string) bool {
 
 // Check computes the problems of mods. Lookups that fail leave Unknown set and never return an error.
 func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Result {
+	clearPackValidated()
+	defer clearPackValidated()
 	enabled := slices.DeleteFunc(slices.Clone(mods), func(x Installed) bool { return !x.Enabled })
 	packCount := 0
 	for _, inst := range enabled {

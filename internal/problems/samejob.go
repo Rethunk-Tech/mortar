@@ -42,17 +42,22 @@ const (
 	sameJobCoveredDF     = 12
 )
 
-// withSameJob adds the "sameJob" rows, skipping mods another check already lists under Redundant.
-func (s *Service) withSameJob(gameID, id string, r Result, mods []Installed) Result {
+// sameJobRows lists the enabled C# mods that do the same job as another, from their assemblies and the last run.
+func (s *Service) sameJobRows(gameID, id string, mods []Installed) []Redundant {
 	dir, err := s.profiles.ProfileDir(gameID, id)
 	if err != nil {
-		return r
+		return nil
 	}
+	return sameJob(footprints(mods, launchsvc.LatestReplaces(dir)), mods)
+}
+
+// withSameJob adds the "sameJob" rows, skipping mods another check already lists under Redundant.
+func withSameJob(r Result, rows []Redundant) Result {
 	listed := map[string]bool{}
 	for _, x := range r.Redundant {
 		listed[x.Key] = true
 	}
-	for _, x := range sameJob(footprints(mods, launchsvc.LatestReplaces(dir)), mods) {
+	for _, x := range rows {
 		if !listed[x.Key] {
 			r.Redundant = append(r.Redundant, x)
 		}

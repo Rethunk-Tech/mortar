@@ -128,7 +128,7 @@ func imageConflictPack(t *testing.T, id string, x, y, w, h int) Installed {
 	if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
+	return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 }
 
 func dataConflictPack(t *testing.T, id, value string) Installed {
@@ -139,7 +139,7 @@ func dataConflictPack(t *testing.T, id, value string) Installed {
 	if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
+	return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 }
 
 func writeManifest(t *testing.T, root, id string) {
@@ -183,7 +183,7 @@ func TestTokenDataKeysDoNotClashAcrossPacks(t *testing.T) {
 		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 			t.Fatal(err)
 		}
-		return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
+		return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 	}
 	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("Mizu.Quail", "a"), pack("Mizu.Turkey", "b")})
 	if len(got.AssetConflicts) != 0 {
@@ -204,7 +204,7 @@ func TestTargetFieldScopesDataKeys(t *testing.T) {
 		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 			t.Fatal(err)
 		}
-		return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
+		return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 	}
 	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("A.One", "301"), pack("B.Two", "302")})
 	if len(got.AssetConflicts) != 0 {
@@ -229,7 +229,7 @@ func TestListAppendsDoNotClash(t *testing.T) {
 		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 			t.Fatal(err)
 		}
-		return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
+		return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 	}
 	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("A.Tags"), pack("B.Tags")})
 	if len(got.AssetConflicts) != 0 {
@@ -250,7 +250,7 @@ func TestTextOverwritesAreShownNotCounted(t *testing.T) {
 		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 			t.Fatal(err)
 		}
-		return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
+		return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 	}
 	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("A.Lines", "Characters/Dialogue/Marnie"), pack("B.Lines", "Characters/Dialogue/Marnie")})
 	if len(got.AssetConflicts) != 1 || !got.AssetConflicts[0].Cosmetic {
@@ -286,7 +286,7 @@ func TestConfigTokenValuesCompareResolved(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
+		return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 	}
 	same := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("Em.Dinos", ""), pack("Em.Animals", "5")})
 	if len(same.AssetConflicts) != 0 {

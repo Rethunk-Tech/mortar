@@ -86,6 +86,8 @@ type cached struct {
 	// until is when a result with unknown parts expires, so a lookup that failed is retried soon
 	// without re-running the whole check on every refresh; zero for complete results.
 	until time.Time
+	// sameJob is the result's same-job rows; the fingerprint covers their inputs (the mods and the last run).
+	sameJob []Redundant
 }
 
 const unknownResultTTL = 2 * time.Minute
@@ -193,14 +195,14 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	c, ok := s.cache[key]
 	s.mu.Unlock()
 	if ok && c.fresh(fp, time.Now()) {
-		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, gameID, id, c.result, mods)))
+		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, c.result, mods, c.sameJob)))
 	}
 
 	checkKey := key + "\x00" + fp
 	s.mu.Lock()
 	if c, ok := s.cache[key]; ok && c.fresh(fp, time.Now()) {
 		s.mu.Unlock()
-		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, gameID, id, c.result, mods)))
+		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, c.result, mods, c.sameJob)))
 	}
 	s.mu.Unlock()
 
@@ -250,14 +252,14 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	if err != nil {
 		return Result{}, err
 	}
+	entry := cached{fingerprint: fp, result: r, sameJob: s.sameJobRows(gameID, id, mods)}
 	s.mu.Lock()
-	entry := cached{fingerprint: fp, result: r}
 	if r.Unknown {
 		entry.until = time.Now().Add(unknownResultTTL)
 	}
 	s.cache[key] = entry
 	s.mu.Unlock()
-	return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, gameID, id, r, mods)))
+	return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, r, mods, entry.sameJob)))
 }
 
 // ForgetCached drops every result and scan Mortar holds in memory, after the cache folder is cleared,

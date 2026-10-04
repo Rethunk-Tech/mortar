@@ -71,7 +71,7 @@ func settingPack(t *testing.T, schema, changes, config string) Installed {
 			t.Fatal(err)
 		}
 	}
-	return Installed{Key: "pack", Enabled: true, Folder: dir, UniqueID: "Pack.Compat", Name: "Compatibility Pack"}
+	return fromDisk(Installed{Key: "pack", Enabled: true, Folder: dir, UniqueID: "Pack.Compat", Name: "Compatibility Pack"})
 }
 
 func TestCompatibilitySettingContainsForm(t *testing.T) {

@@ -5,8 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/jsonc"
@@ -67,10 +69,43 @@ func (e CompatEntry) BrokenOn(gameVersion string) bool {
 }
 
 // CompatList fetches the SMAPI compatibility JSON (cached a day).
+// compatMemo keeps the parsed cache file, so asking again does not re-parse megabytes of JSON while the file on
+// disk is unchanged.
+type compatMemo struct {
+	mu    sync.Mutex
+	stamp os.FileInfo
+	index CompatIndex
+}
+
 func (c *Client) CompatList(ctx context.Context) (CompatIndex, error) {
-	return Cached(c, CompatCacheFile, compatTTL, func() (CompatIndex, error) {
+	path, pathErr := c.cachePath(CompatCacheFile)
+	stamp := func() os.FileInfo {
+		if pathErr != nil {
+			return nil
+		}
+		info, err := os.Stat(path)
+		if err != nil {
+			return nil
+		}
+		return info
+	}
+	if now := stamp(); now != nil && c.now().Sub(now.ModTime()) < compatTTL {
+		c.compat.mu.Lock()
+		memo, index := c.compat.stamp, c.compat.index
+		c.compat.mu.Unlock()
+		if memo != nil && memo.Size() == now.Size() && memo.ModTime().Equal(now.ModTime()) {
+			return index, nil
+		}
+	}
+	index, err := Cached(c, CompatCacheFile, compatTTL, func() (CompatIndex, error) {
 		return c.fetchCompat(ctx)
 	})
+	if err == nil {
+		c.compat.mu.Lock()
+		c.compat.stamp, c.compat.index = stamp(), index
+		c.compat.mu.Unlock()
+	}
+	return index, err
 }
 
 func (c *Client) fetchCompat(ctx context.Context) (CompatIndex, error) {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -49,6 +50,7 @@ func (c *RepoCache) set(key string, page Page, now time.Time, ttl time.Duration)
 	if ttl <= 0 {
 		ttl = githubCacheTTL
 	}
+	maps.DeleteFunc(c.items, func(_ string, e cacheEntry) bool { return !now.Before(e.until) })
 	c.items[key] = cacheEntry{page: page, until: now.Add(ttl)}
 }
 

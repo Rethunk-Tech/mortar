@@ -131,7 +131,7 @@ func diskCachePack(t *testing.T) (Installed, string, string) {
 	img.SetNRGBA(0, 0, color.NRGBA{A: 255})
 	pngPath := filepath.Join(root, "patch.png")
 	writePNG(t, pngPath, img)
-	return Installed{Enabled: true, Folder: root, UniqueID: "Disk.Cache", Name: "Disk Cache", Key: "Disk.Cache"}, extra, pngPath
+	return fromDisk(Installed{Enabled: true, Folder: root, UniqueID: "Disk.Cache", Name: "Disk Cache", Key: "Disk.Cache"}), extra, pngPath
 }
 
 func TestReadContentPackConcurrent(t *testing.T) {
@@ -472,16 +472,11 @@ func TestScanBenchConflictRSS(t *testing.T) {
 			if err != nil || !d.IsDir() {
 				return err
 			}
-			if !isContentPatcherPack(path) {
+			man, ok := contentPackManifest(path)
+			if !ok {
 				return nil
 			}
-			raw, err := fsx.ReadFile(filepath.Join(path, manifest.FileName))
-			if err != nil {
-				parseErr++
-				return filepath.SkipDir
-			}
-			man, err := manifest.Parse(raw)
-			if err != nil || man.UniqueID == "" || seen[man.UniqueID] {
+			if man.UniqueID == "" || seen[man.UniqueID] {
 				parseErr++
 				return filepath.SkipDir
 			}
@@ -544,4 +539,17 @@ func vmHWM() int64 {
 		}
 	}
 	return 0
+}
+
+func contentPackManifest(folder string) (manifest.Manifest, bool) {
+	mod := fromDisk(Installed{Folder: folder})
+	if !isContentPatcherPack(mod) {
+		return manifest.Manifest{}, false
+	}
+	raw, err := fsx.ReadFile(filepath.Join(folder, manifest.FileName))
+	if err != nil {
+		return manifest.Manifest{}, false
+	}
+	man, err := manifest.Parse(raw)
+	return man, err == nil
 }
