@@ -416,3 +416,10 @@ func TestInDirResolvesOnlyRelativePaths(t *testing.T) {
 		t.Errorf("InDir = %q", got)
 	}
 }
+
+func TestRequestForCarriesOverlay(t *testing.T) {
+	r := requestFor("stardew", "p", Mod{Site: SiteNexus, ModID: 7, FileID: 2, Overlay: &share.Overlay{From: "a", To: "b", Off: true}})
+	if r.Overlay == nil || *r.Overlay != (queue.OverlayPlace{From: "a", To: "b", Off: true}) {
+		t.Fatalf("overlay = %+v", r.Overlay)
+	}
+}

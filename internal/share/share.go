@@ -54,6 +54,15 @@ type Ref struct {
 	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
 	Note     string                         `json:"note,omitempty"`
 	Tags     []string                       `json:"tags,omitempty"`
+	Overlay  *Overlay                       `json:"overlay,omitempty"`
+}
+
+// Overlay places an optional file inside the main file of the same mod: the folder of its archive that is laid
+// over, where in the main file's folder it goes (both slash paths, "" for the top), and whether it starts off.
+type Overlay struct {
+	From string `json:"from,omitempty"`
+	To   string `json:"to,omitempty"`
+	Off  bool   `json:"off,omitempty"`
 }
 
 // Shared is what a link carries.
@@ -164,7 +173,7 @@ func checkShared(s Shared) error {
 }
 
 func (r Ref) hasDetails() bool {
-	return len(r.Disabled) > 0 || len(r.Fomod) > 0 || r.Note != "" || len(r.Tags) > 0
+	return len(r.Disabled) > 0 || len(r.Fomod) > 0 || r.Note != "" || len(r.Tags) > 0 || r.Overlay != nil
 }
 
 func validDetails(r Ref) bool {
@@ -172,6 +181,9 @@ func validDetails(r Ref) bool {
 		return false
 	}
 	if !validEntryNote(r.Note) || !validEntryTags(r.Tags) {
+		return false
+	}
+	if r.Overlay != nil && (r.GitHub != "" || !validOverlayPath(r.Overlay.From) || !validOverlayPath(r.Overlay.To)) {
 		return false
 	}
 	for _, id := range r.Disabled {
@@ -192,6 +204,22 @@ func validDetails(r Ref) bool {
 					return false
 				}
 			}
+		}
+	}
+	return true
+}
+
+// validOverlayPath accepts "" or a relative slash path of plain segments that stays inside its folder.
+func validOverlayPath(p string) bool {
+	if p == "" {
+		return true
+	}
+	if len(p) > maxRelPath || strings.ContainsFunc(p, unicode.IsControl) || strings.Contains(p, `\`) || strings.Contains(p, ":") {
+		return false
+	}
+	for seg := range strings.SplitSeq(p, "/") {
+		if seg == "" || seg == "." || seg == ".." {
+			return false
 		}
 	}
 	return true
@@ -383,6 +411,12 @@ func refOf(e profile.Entry, fomod, notes bool) (Ref, string) {
 		return Ref{}, "unknown source"
 	}
 	r.Disabled = slices.Clone(e.Disabled)
+	if e.IsOverlay() {
+		if e.Source.Kind != profile.KindNexus {
+			return Ref{}, "optional file from a source a link cannot carry"
+		}
+		r.Overlay = &Overlay{From: e.OverlayFrom, To: e.OverlayTo, Off: e.OverlayOff}
+	}
 	if fomod {
 		r.Fomod = cloneFomod(e.Fomod)
 	}

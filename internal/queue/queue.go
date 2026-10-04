@@ -117,8 +117,10 @@ type Item struct {
 	Latest   bool                           `json:"latest,omitempty"`
 	Disabled []string                       `json:"disabled,omitempty"`
 	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
-	Speed    int64                          `json:"speed"`
-	Error    string                         `json:"error"`
+	// Overlay is where an optional file without a manifest goes in its main file, from a share; nil asks the user.
+	Overlay *OverlayPlace `json:"overlay,omitempty"`
+	Speed   int64         `json:"speed"`
+	Error   string        `json:"error"`
 	// ErrorKind classes a failed item's Error: network, blocked, auth, disk or other.
 	ErrorKind string `json:"errorKind,omitempty"`
 
@@ -207,9 +209,18 @@ type Request struct {
 	Latest   bool                           `json:"latest"`
 	Disabled []string                       `json:"disabled,omitempty"`
 	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
+	Overlay  *OverlayPlace                  `json:"overlay,omitempty"`
 
 	key     string
 	expires int64
+}
+
+// OverlayPlace is the placement of an optional file inside its main file's folder: the folder of the file laid
+// over it, where it goes, and whether it starts switched off.
+type OverlayPlace struct {
+	From string `json:"from"`
+	To   string `json:"to"`
+	Off  bool   `json:"off,omitempty"`
 }
 
 // Deps is what the queue needs from the rest of the app.
@@ -587,6 +598,9 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 			if len(r.Fomod) > 0 {
 				it.Fomod, it.fomod = r.Fomod, r.Fomod
 			}
+			if r.Overlay != nil {
+				it.Overlay = r.Overlay
+			}
 			log.Printf("queue: mod %d file %d %s joined existing item %s (%s)", r.ModID, r.FileID, r.Repo, it.ID, it.State)
 			out = append(out, *it)
 			continue
@@ -594,7 +608,7 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 		it := &Item{
 			ID: ids.New(), Kind: r.Kind, BatchID: r.BatchID, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
 			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
-			Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod,
+			Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
 		}
 		if it.Repo != "" {
 			it.Name = cmp.Or(it.Name, it.Repo)

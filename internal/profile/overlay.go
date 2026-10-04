@@ -41,12 +41,23 @@ func (e *NoBaseError) Error() string {
 	return fmt.Sprintf("%s has no manifest. Install the main file of %s first, then this optional file goes on top of it.", e.Archive, name)
 }
 
-type overlayPlace struct{ from, to string }
+type overlayPlace struct {
+	from, to string
+	off      bool
+}
 
 // WithOverlay returns a copy that lays a manifest-less store item at to inside its main entry, taking its from
 // folder, instead of working out where it goes.
 func (s Source) WithOverlay(from, to string) Source {
 	s.overlay = &overlayPlace{from: from, to: to}
+	return s
+}
+
+// WithOverlayOff makes an optional file placed by WithOverlay start switched off.
+func (s Source) WithOverlayOff(off bool) Source {
+	if s.overlay != nil {
+		s.overlay = &overlayPlace{from: s.overlay.from, to: s.overlay.to, off: off}
+	}
 	return s
 }
 
@@ -445,6 +456,7 @@ func (s *Store) placeOverlayLocked(game, id, key string, source Source) (Profile
 	if err != nil {
 		return Profile{}, err
 	}
+	off := source.overlay != nil && source.overlay.off
 	place := source
 	place.fomod, place.disabled, place.overlay, place.replacing = nil, nil, nil, 0
 	p, err := s.updateLocked(game, id, func(p *Profile, dir string) error {
@@ -456,10 +468,12 @@ func (s *Store) placeOverlayLocked(game, id, key string, source Source) (Profile
 		}
 		p.Entries = append(p.Entries, Entry{
 			Key: key, Source: place, Mods: []EntryMod{}, Disabled: []string{}, Added: time.Now().UTC(),
-			OverlayOf: base.Key, OverlayFrom: from, OverlayTo: to,
+			OverlayOf: base.Key, OverlayFrom: from, OverlayTo: to, OverlayOff: off,
 		})
-		if err := s.offAlternatives(game, p, key); err != nil {
-			return err
+		if !off {
+			if err := s.offAlternatives(game, p, key); err != nil {
+				return err
+			}
 		}
 		return s.relayBase(game, p, dir, base.Key, was)
 	})

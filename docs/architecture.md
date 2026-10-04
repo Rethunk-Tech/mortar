@@ -717,7 +717,7 @@ Sources: the API acceptable-use policy (help.nexusmods.com article 114), the SSO
   - Matching proof plus a sender port marks **same account**: the response carries a 5-minute Bearer token scoped to that share's Nexus store keys (GitHub entries are omitted).
   - The receiver then `GET`s `/store/<game>/<key>` with that token; the sender streams a tar of each granted store folder (10,000 entries and 2 GiB caps, same extraction rules as other archives) and the receiver installs through `Store.AddDirVerified`.
   - Other receivers still download each mod from its source.
-  - Optional files travel as their own store items like any entry; the receiver's queue installs them from the store after their main file and lays them over it, working out where they go the same way as a download.
+  - Optional files travel as their own store items like any entry; a link or `.mortar` file carries each one's placement (`overlay`: `from`, `to`, `off`, added to its ref without a format bump, so older Mortars ignore it), and the receiver's queue (`Request.Overlay`) installs it from the store after its main file and lays it there with the same switch, without asking. A ref with no `overlay` is placed the way a download is.
   - Incoming shares are rate-limited per peer (10 s).
   - UI: [gui-design.md](gui-design.md#profile-management).
 - **Windows firewall:** a machine-scope NSIS install adds an inbound allow named `Mortar` for the installed executable on private and domain profiles (`netsh advfirewall`) and deletes that rule on uninstall; the shipped per-user installer does not. Settings › General **Fix** elevates the same delete-then-add when an inbound block rule matches Mortar's executable.

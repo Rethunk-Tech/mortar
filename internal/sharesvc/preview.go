@@ -68,6 +68,8 @@ type Mod struct {
 	UniqueIDs  []string                       `json:"uniqueIds"`
 	Disabled   []string                       `json:"disabled,omitempty"`
 	Fomod      map[string]map[string][]string `json:"fomod,omitempty"`
+	// Overlay is set on an optional file: where it goes in its main file, and whether it starts off.
+	Overlay *share.Overlay `json:"overlay,omitempty"`
 }
 
 // Problem is something found before any download. Key is the mod it is about, when one is; Detail is a version
@@ -380,7 +382,7 @@ func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Prob
 			continue
 		}
 		m := r.nexus(ref.ModID, ref.FileID, StateDownload)
-		m.Disabled, m.Fomod = append([]string{}, ref.Disabled...), ref.Fomod
+		m.Disabled, m.Fomod, m.Overlay = append([]string{}, ref.Disabled...), ref.Fomod, ref.Overlay
 		mods = append(mods, m)
 	}
 	deps, probs := r.dependencies(ctx, mods)

@@ -601,6 +601,9 @@ func requestFor(game, profileID string, m Mod) queue.Request {
 		return r
 	}
 	r.ModID, r.FileID = m.ModID, m.FileID
+	if o := m.Overlay; o != nil {
+		r.Overlay = &queue.OverlayPlace{From: o.From, To: o.To, Off: o.Off}
+	}
 	return r
 }
 

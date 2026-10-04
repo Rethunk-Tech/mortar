@@ -355,3 +355,24 @@ func TestOverlayExportRestoreRoundTrip(t *testing.T) {
 		t.Fatalf("drift = %+v, %v", drift, err)
 	}
 }
+
+func TestOverlayPlacedWithoutAskingAndOff(t *testing.T) {
+	e := newEnv(t)
+	p, _ := e.Create("stardew", "P")
+	if _, err := e.InstallNexus("stardew", p.ID, mainZip(t, "1.0.0", "A-main"), overlaySource(1, "main.zip")); err != nil {
+		t.Fatal(err)
+	}
+	opt := buildZip(t, "opt.zip", map[string]string{overlayDir + "/assets/a.png": "A-opt"})
+	src := overlaySource(2, "opt.zip").WithOverlay(overlayDir, overlayDir).WithOverlayOff(true)
+	res, err := e.InstallNexus("stardew", p.ID, opt, src)
+	if err != nil || res.Remap != nil {
+		t.Fatalf("install = %+v, %v", res, err)
+	}
+	o := overlayEntry(res.Profile, store.NexusKey(overlayModID, 2))
+	if !o.OverlayOff || o.OverlayFrom != overlayDir || o.OverlayTo != overlayDir {
+		t.Fatalf("entry = %+v", o)
+	}
+	if got := readLive(t, e, p.ID, store.NexusKey(overlayModID, 1), overlayDir+"/assets/a.png"); got != "A-main" {
+		t.Fatalf("an off optional file was laid: %q", got)
+	}
+}

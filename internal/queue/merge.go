@@ -53,6 +53,9 @@ func sourceWithOptions(it Item, source profile.Source) profile.Source {
 	if it.Current != 0 {
 		source = source.WithReplacing(it.Current)
 	}
+	if it.Overlay != nil {
+		source = source.WithOverlay(it.Overlay.From, it.Overlay.To).WithOverlayOff(it.Overlay.Off)
+	}
 	return source
 }
 

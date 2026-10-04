@@ -189,10 +189,13 @@ func TestLoopbackTransfer(t *testing.T) {
 		Name: "Farm friends",
 		Entries: []profile.Entry{
 			{Key: key, Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 2}},
-			{Key: optKey, Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 3}, OverlayOf: key},
+			{Key: optKey, Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 3}, OverlayOf: key, OverlayFrom: "a", OverlayTo: "b", OverlayOff: true},
 		},
-	}, t.TempDir()); err != nil {
+	}, t.TempDir(), share.Include{DisabledMods: true}); err != nil {
 		t.Fatal(err)
+	}
+	if pv, err := share.ReadBytes(payload.Bytes()); err != nil || pv.Entries[1].Overlay == nil || *pv.Entries[1].Overlay != (share.Overlay{From: "a", To: "b", Off: true}) {
+		t.Fatalf("payload overlay = %+v, %v", pv.Entries, err)
 	}
 	if err := sender.sendPayload(strings.TrimPrefix(receiverServer.URL, "http://"), "stardew", payload.Bytes()); err != nil {
 		t.Fatal(err)

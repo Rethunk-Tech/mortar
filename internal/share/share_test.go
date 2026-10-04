@@ -537,3 +537,45 @@ func TestReadEntryCap(t *testing.T) {
 		t.Error("too many entries accepted")
 	}
 }
+
+func TestOverlayPlacementTravels(t *testing.T) {
+	p := profile.Profile{Name: "P", Entries: []profile.Entry{
+		nexus("main", 7, 1),
+		{Key: "opt", Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 2}, OverlayOf: "main", OverlayFrom: "[CP] X", OverlayTo: "[CP] X/assets"},
+		{Key: "alt", Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 3}, OverlayOf: "main", OverlayOff: true},
+	}}
+	res, err := Encode(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := Parse(res.Web)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Entries[0].Overlay != nil || len(got.Entries) != 2 {
+		t.Fatalf("entries = %+v", got.Entries)
+	}
+	if o := got.Entries[1].Overlay; o == nil || *o != (Overlay{From: "[CP] X", To: "[CP] X/assets"}) {
+		t.Fatalf("overlay = %+v", got.Entries[1].Overlay)
+	}
+	res, err = Encode(p, Include{DisabledMods: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, err = Parse(res.Web); err != nil || got.Entries[2].Overlay == nil || !got.Entries[2].Overlay.Off {
+		t.Fatalf("off overlay = %+v, %v", got.Entries, err)
+	}
+}
+
+func TestOverlayPlacementIsChecked(t *testing.T) {
+	for _, r := range []Ref{
+		{ModID: 1, FileID: 2, Overlay: &Overlay{To: "../x"}},
+		{ModID: 1, FileID: 2, Overlay: &Overlay{From: "/abs"}},
+		{ModID: 1, FileID: 2, Overlay: &Overlay{To: `a\b`}},
+		{GitHub: "o/r@v1/a.zip", Overlay: &Overlay{}},
+	} {
+		if checkShared(Shared{Name: "P", Entries: []Ref{r}}) == nil {
+			t.Errorf("%+v passed", r)
+		}
+	}
+}
