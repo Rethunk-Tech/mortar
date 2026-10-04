@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import type { LucideIcon } from 'lucide-react'
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { SettingsNav } from './SettingsNav.tsx'
 import { SettingsSearchProvider } from './SettingsSearch.tsx'
 import { shouldLeavePageOnEscape } from './shouldLeavePageOnEscape.ts'
@@ -45,6 +45,8 @@ export function SettingsShell<Id extends string>({
   const { t } = useLingui()
   const [query, setQuery] = useState('')
   const pane = useRef<HTMLDivElement>(null)
+  const results = useRef<HTMLDivElement>(null)
+  const [noneMatch, setNoneMatch] = useState(false)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && query) {
@@ -59,6 +61,16 @@ export function SettingsShell<Id extends string>({
     globalThis.addEventListener('keydown', onKey)
     return () => globalThis.removeEventListener('keydown', onKey)
   }, [onBack, query])
+  useLayoutEffect(() => {
+    if (!query) {
+      setNoneMatch(false)
+      return
+    }
+    const root = results.current
+    setNoneMatch(
+      root !== null && root.querySelector('.settings-tiles:not(:empty), .settings-match') === null,
+    )
+  }, [query])
   const pick = (id: Id) => {
     onPage(id)
     if (query) {
@@ -127,6 +139,7 @@ export function SettingsShell<Id extends string>({
             {query ? null : actions[current]}
           </Box>
           <Box
+            ref={results}
             sx={{
               width: '100%',
               maxWidth: CONTENT_MAX,
@@ -135,6 +148,11 @@ export function SettingsShell<Id extends string>({
               gap: 2,
             }}
           >
+            {query && noneMatch ? (
+              <Typography sx={{ fontSize: 15, color: 'text.secondary' }}>
+                {t`No settings match`}
+              </Typography>
+            ) : null}
             {query
               ? pages.map((p) => (
                   <Box
