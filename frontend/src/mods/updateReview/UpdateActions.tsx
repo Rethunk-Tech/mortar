@@ -13,9 +13,10 @@ import { useProfiles } from '../../profiles/store.ts'
 import { download } from '../../queue/actions.ts'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
+import { installableUpdate } from '../lookup.ts'
 import { useMods } from '../store.ts'
 import { EverywhereDialog } from './EverywhereDialog.tsx'
-import { downloadable, updateWant } from './wants.ts'
+import { updateWant } from './wants.ts'
 
 export function UpdateActions({
   update,
@@ -60,7 +61,7 @@ export function UpdateActions({
   }
   return (
     <>
-      {downloadable(update) ? (
+      {installableUpdate(update) ? (
         <Button
           variant="contained"
           disabled={blocked}
@@ -79,7 +80,7 @@ export function UpdateActions({
         <MoreHorizontal size={18} />
       </IconButton>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
-        {downloadable(update) ? (
+        {installableUpdate(update) ? (
           <DisabledReason title={everywhereWhy} disabled={everywhereBlocked}>
             <MenuItem
               disabled={everywhereBlocked || blocked}

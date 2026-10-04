@@ -8,7 +8,7 @@ import { download } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { modId, updatesForReview } from './lookup.ts'
+import { installableUpdate, modId, updatesForReview } from './lookup.ts'
 import { mergeCachedDetails, useNexusDetails } from './nexusDetails.ts'
 import { useMods } from './store.ts'
 import { DIALOG_WIDTH } from './updateReview/constants.ts'
@@ -19,7 +19,7 @@ import { ReviewFooter } from './updateReview/ReviewFooter.tsx'
 import { ReviewList } from './updateReview/ReviewList.tsx'
 import { ReviewTitle } from './updateReview/ReviewTitle.tsx'
 import { UpdateBar as ReviewBar } from './updateReview/UpdateBar.tsx'
-import { downloadable, installedCaution, pendingUpdate, updateWant } from './updateReview/wants.ts'
+import { installedCaution, pendingUpdate, updateWant } from './updateReview/wants.ts'
 import { checkedWithSmapi, useUpdates } from './updates.ts'
 
 export function UpdateBar() {
@@ -58,7 +58,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
     .filter(
       (u) =>
         include[modId(u)] !== false &&
-        downloadable(u) &&
+        installableUpdate(u) &&
         !pendingUpdate(items, profile.id, u) &&
         (installedCaution(mods, u) === '' || acked[modId(u)] === true),
     )
