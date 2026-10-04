@@ -73,8 +73,8 @@ func TestParseCompatJSONMapsIDAndNexus(t *testing.T) {
 		t.Fatalf("unofficial: %+v found=%v", unoff, found)
 	}
 	opt, found := idx.Lookup("Author.Workaround", 0)
-	if !found || opt.Status != StatusOptional {
-		t.Fatalf("workaround→optional: %+v found=%v", opt, found)
+	if !found || opt.Status != StatusBroken {
+		t.Fatalf("workaround→broken: %+v found=%v", opt, found)
 	}
 	obs, found := idx.Lookup("Author.Obsolete", 7)
 	if !found || obs.Status != StatusObsolete || obs.Replacement != "Author.New" {
@@ -108,5 +108,42 @@ func TestParseCompatJSONWikiObjectAndComments(t *testing.T) {
 	}
 	if !strings.Contains(defaultCompatURL, "SmapiCompatibilityList") {
 		t.Fatal(defaultCompatURL)
+	}
+}
+
+func TestBrokenOnComparesTheGameVersion(t *testing.T) {
+	cases := []struct {
+		e    CompatEntry
+		game string
+		want bool
+	}{
+		{CompatEntry{Status: StatusBroken, BrokeIn: "Stardew Valley 1.6"}, "1.6.15", true},
+		{CompatEntry{Status: StatusBroken, BrokeIn: "Stardew Valley 1.6.9"}, "1.6.8", false},
+		{CompatEntry{Status: StatusBroken, BrokeIn: "Stardew Valley 1.7"}, "1.6.15", false},
+		{CompatEntry{Status: StatusBroken, BrokeIn: "Stardew Valley 1.2?"}, "1.6.15", true},
+		{CompatEntry{Status: StatusBroken, BrokeIn: "SMAPI 3.0"}, "1.6.15", true},
+		{CompatEntry{Status: StatusBroken, BrokeIn: "never worked"}, "1.6.15", true},
+		{CompatEntry{Status: StatusBroken, BrokeIn: "Stardew Valley 1.7"}, "", true},
+		{CompatEntry{Status: StatusObsolete, BrokeIn: "Stardew Valley 1.6"}, "1.6.15", false},
+	}
+	for _, c := range cases {
+		if got := c.e.BrokenOn(c.game); got != c.want {
+			t.Errorf("%q on %q = %v, want %v", c.e.BrokeIn, c.game, got, c.want)
+		}
+	}
+}
+
+func TestCompatStatusDefaultsFollowTheSchema(t *testing.T) {
+	idx, err := parseCompatJSON([]byte(`{"mods":[
+		{"id":"A.Broke","nexus":1,"brokeIn":"Stardew Valley 1.6"},
+		{"id":"A.Unofficial","brokeIn":"Stardew Valley 1.6","unofficialUpdate":{"url":"https://example.com"}},
+		{"id":"A.Fine"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for id, want := range map[string]string{"A.Broke": StatusBroken, "A.Unofficial": StatusUnofficial, "A.Fine": StatusOK} {
+		if e, _ := idx.Lookup(id, 0); e.Status != want {
+			t.Errorf("%s: %q, want %q", id, e.Status, want)
+		}
 	}
 }

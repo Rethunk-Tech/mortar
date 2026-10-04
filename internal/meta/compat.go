@@ -14,12 +14,12 @@ import (
 
 // Wiki-backed compatibility list behind https://smapi.io/mods. SMAPI.Web (Pathoschild/SMAPI
 // src/SMAPI.Web) loads Pathoschild/SmapiCompatibilityList rather than scraping the HTML table.
-const defaultCompatURL = "https://raw.githubusercontent.com/Pathoschild/SmapiCompatibilityList/main/data/mods.jsonc"
+const defaultCompatURL = "https://raw.githubusercontent.com/Pathoschild/SmapiCompatibilityList/develop/data/mods.jsonc"
 
 const (
-	compatTTL  = 24 * time.Hour
-	compatFile = "smapi-compat.json"
-	maxCompat  = 16 << 20
+	compatTTL       = 24 * time.Hour
+	CompatCacheFile = "smapi-compat.json"
+	maxCompat       = 16 << 20
 )
 
 // CompatEntry is one SMAPI compatibility-list row, keyed later by UniqueID and Nexus id.
@@ -51,9 +51,24 @@ func (idx CompatIndex) Lookup(uniqueID string, nexusID int) (CompatEntry, bool) 
 	return CompatEntry{}, false
 }
 
+// BrokenOn reports whether a broken entry applies to this Stardew Valley version. A mod that broke in a later game
+// version (a beta the player does not run) is not broken for them; a break by anything else (SMAPI, Harmony), or an
+// unknown version on either side, counts.
+func (e CompatEntry) BrokenOn(gameVersion string) bool {
+	if e.Status != StatusBroken {
+		return false
+	}
+	v, ok := strings.CutPrefix(e.BrokeIn, "Stardew Valley ")
+	if !ok || gameVersion == "" {
+		return true
+	}
+	c, ok := CompareVersions(strings.TrimSuffix(strings.TrimSpace(v), "?"), gameVersion)
+	return !ok || c <= 0
+}
+
 // CompatList fetches the SMAPI compatibility JSON (cached a day).
 func (c *Client) CompatList(ctx context.Context) (CompatIndex, error) {
-	return Cached(c, compatFile, compatTTL, func() (CompatIndex, error) {
+	return Cached(c, CompatCacheFile, compatTTL, func() (CompatIndex, error) {
 		return c.fetchCompat(ctx)
 	})
 }
@@ -208,8 +223,16 @@ func entryFromRaw(raw rawCompatMod) CompatEntry {
 	if e.Replacement == "" {
 		e.Replacement = replacementOf(raw.Successor)
 	}
+	// The list's schema leaves status out when it follows from the other fields.
 	if e.Status == "" {
-		e.Status = StatusOK
+		switch {
+		case e.UnofficialURL != "":
+			e.Status = StatusUnofficial
+		case e.BrokeIn != "":
+			e.Status = StatusBroken
+		default:
+			e.Status = StatusOK
+		}
 	}
 	return e
 }
@@ -227,8 +250,11 @@ func normalizeCompatStatus(s string) string {
 	switch strings.ToLower(strings.TrimSpace(s)) {
 	case "ok", "compatible":
 		return StatusOK
-	case "optional", "workaround":
+	case "optional":
 		return StatusOptional
+	case "workaround":
+		// Not compatible; the summary names the alternative.
+		return StatusBroken
 	case "unofficial":
 		return StatusUnofficial
 	case "broken":
