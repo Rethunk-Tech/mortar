@@ -511,7 +511,7 @@ export function ProblemsTab() {
       <CleanupSection
         cleanup={redundant}
         title={t`Redundant`}
-        removeAll={redundant.every((item) => item.kind !== 'patches')}
+        removeAll={redundant.every((item) => item.kind !== 'sameJob')}
       />
       <CleanupSection cleanup={cleanup} />
       <ConfirmDialog

@@ -47,7 +47,7 @@ func (s *Service) withCompat(ctx context.Context, gameID, id string, r Result, m
 	case r.Compat == nil:
 		r.Compat = []Compat{}
 	}
-	return s.withPatches(gameID, id, superseded(r, mods), mods)
+	return s.withSameJob(gameID, id, superseded(r, mods), mods)
 }
 
 func (s *Service) compatIndex(ctx context.Context) (meta.CompatIndex, bool) {

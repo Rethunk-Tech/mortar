@@ -11,7 +11,7 @@ export function useRedundantReason() {
     if (item.kind === 'shadowed') {
       return t`Every edit it makes is overwritten by ${names}`
     }
-    const methods = item.detail ?? ''
-    return t`May do the same job as ${names}: both replace ${methods}`
+    const detail = item.detail ?? ''
+    return t`Does the same job as ${names}: both change ${detail}`
   }
 }

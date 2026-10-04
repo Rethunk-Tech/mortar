@@ -27,6 +27,8 @@ type Manifest struct {
 	UniqueID    string
 	Description string
 	UpdateKeys  []string
+	// EntryDll is the C# mod's assembly file, relative to the mod folder; empty for content packs.
+	EntryDll string
 	// ContentPackFor is the ContentPackFor framework UniqueID when the manifest declares one.
 	ContentPackFor string
 	// Dependencies lists Dependencies[] and, as a required entry, the ContentPackFor framework.
@@ -57,6 +59,7 @@ func Parse(b []byte) (Manifest, error) {
 		Version:              version(field(raw, "version")),
 		UniqueID:             text(raw, "uniqueid"),
 		Description:          text(raw, "description"),
+		EntryDll:             text(raw, "entrydll"),
 		UpdateKeys:           texts(field(raw, "updatekeys")),
 		UpdateCautionMessage: text(raw, "updatecautionmessage"),
 		DeleteOldVersion:     boolean(field(raw, "deleteoldversion")),

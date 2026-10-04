@@ -12,7 +12,7 @@ msgid "No saves match"
 msgstr "No saves match"
 
 #: src/console/PerformancePanelParts.tsx:179
-#: src/game/ProfileWorkspace.tsx:67
+#: src/game/ProfileWorkspace.tsx:85
 msgid "Performance"
 msgstr "Performance"
 
@@ -432,7 +432,7 @@ msgstr "Show token"
 msgid "Startup: {0} {1} added {2}"
 msgstr "Startup: {0} {1} added {2}"
 
-#: src/console/StartupPanel.tsx:194
+#: src/console/StartupPanel.tsx:297
 msgid "Assets and packs"
 msgstr "Assets and packs"
 
@@ -453,7 +453,7 @@ msgstr "Never for this mod"
 msgid "Search settings"
 msgstr "Search settings"
 
-#: src/game/ProfileWorkspace.tsx:65
+#: src/game/ProfileWorkspace.tsx:83
 msgid "Notes"
 msgstr "Notes"
 
@@ -637,7 +637,7 @@ msgstr "Untrack"
 msgid "More"
 msgstr "More"
 
-#: src/console/StartupPanel.tsx:339
+#: src/console/StartupPanel.tsx:476
 msgid "Mods' Entry is timed only on a measured launch."
 msgstr "Mods' Entry is timed only on a measured launch."
 
@@ -655,6 +655,10 @@ msgstr "Identical ({0})"
 #: src/settings/prefCopy.ts:219
 msgid "Start the game without a backup."
 msgstr "Start the game without a backup."
+
+#: src/console/StartupPanel.tsx:298
+msgid "Time editing and loading game assets, including content packs it loads"
+msgstr "Time editing and loading game assets, including content packs it loads"
 
 #: src/mods/NexusDetails.tsx:96
 msgid "Uploaded by"
@@ -807,7 +811,7 @@ msgstr "That item could not be found."
 msgid "Switch to Problems"
 msgstr "Switch to Problems"
 
-#: src/console/StartupPanel.tsx:295
+#: src/console/StartupPanel.tsx:432
 msgid "Measure next launch"
 msgstr "Measure next launch"
 
@@ -962,7 +966,7 @@ msgstr "{name} is marked obsolete and may not work with this game version."
 msgid "All outcomes"
 msgstr "All outcomes"
 
-#: src/console/StartupPanel.tsx:59
+#: src/console/StartupPanel.tsx:62
 msgid "Mods start"
 msgstr "Mods start"
 
@@ -1336,7 +1340,7 @@ msgstr "SMAPI is the loader every Stardew mod needs. It goes into the game folde
 msgid "No changelog on Nexus"
 msgstr "No changelog on Nexus"
 
-#: src/console/StartupPanel.tsx:191
+#: src/console/StartupPanel.tsx:279
 msgid "Total"
 msgstr "Total"
 
@@ -1418,7 +1422,7 @@ msgstr "Runs: {button}"
 msgid "Where Mortar opens after the launcher check."
 msgstr "Where Mortar opens after the launcher check."
 
-#: src/console/StartupPanel.tsx:329
+#: src/console/StartupPanel.tsx:466
 msgid "The title screen was not reached"
 msgstr "The title screen was not reached"
 
@@ -2358,7 +2362,7 @@ msgstr "Report a Mortar bug"
 msgid "History events kept"
 msgstr "History events kept"
 
-#: src/console/StartupPanel.tsx:61
+#: src/console/StartupPanel.tsx:64
 msgid "First updates"
 msgstr "First updates"
 
@@ -2376,7 +2380,7 @@ msgid "Discard"
 msgstr "Discard"
 
 #. placeholder {0}: folded.count
-#: src/console/StartupPanel.tsx:211
+#: src/console/StartupPanel.tsx:348
 msgid "{0, plural, one {# other mod} other {# other mods}}"
 msgstr "{0, plural, one {# other mod} other {# other mods}}"
 
@@ -2489,7 +2493,7 @@ msgstr "Grid card size"
 msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
-#: src/game/ProfileWorkspace.tsx:66
+#: src/game/ProfileWorkspace.tsx:84
 #: src/settings/GameSettingsPage.tsx:58
 #: src/settings/GameSettingsPage.tsx:103
 msgid "Console"
@@ -2525,7 +2529,7 @@ msgstr "Duplicates"
 msgid "This version is only on a site Mortar cannot download from yet; open the link to get it."
 msgstr "This version is only on a site Mortar cannot download from yet; open the link to get it."
 
-#: src/console/StartupPanel.tsx:110
+#: src/console/StartupPanel.tsx:165
 msgid "Hide content packs"
 msgstr "Hide content packs"
 
@@ -2791,7 +2795,7 @@ msgstr "Cover image"
 #: src/bundles/dialogs.tsx:221
 #: src/bundles/dialogs.tsx:279
 #: src/console/HelpDialog.tsx:259
-#: src/console/StartupPanel.tsx:276
+#: src/console/StartupPanel.tsx:413
 #: src/fomod/Dialog.tsx:251
 #: src/install/RemapDialog.tsx:174
 #: src/lan/IncomingPrompt.tsx:167
@@ -3009,6 +3013,7 @@ msgstr "Dismiss all harmless overlaps?"
 msgid "Show live game info in OBS. Changes apply the next time you press Play."
 msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 
+#: src/console/StartupPanel.tsx:196
 #: src/settings/sections/About.tsx:63
 #: src/settings/sections/About.tsx:68
 #: src/settings/sections/Updates.tsx:158
@@ -3417,6 +3422,10 @@ msgstr "Log copied"
 msgid "Play without mods"
 msgstr "Play without mods"
 
+#: src/console/StartupPanel.tsx:280
+msgid "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
+msgstr "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
+
 #. placeholder {0}: skipped.length
 #: src/share/ShareDialog.tsx:435
 msgid "{0, plural, one {# settings file was left out (too large or an unusual name):} other {# settings files were left out (too large or an unusual name):}}"
@@ -3452,6 +3461,10 @@ msgstr "Checking profiles…"
 #: src/browse/BrowsePage.tsx:51
 msgid "Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download."
 msgstr "Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download."
+
+#: src/console/StartupPanel.tsx:194
+msgid "Mortar's own SMAPI mod; it records these timings"
+msgstr "Mortar's own SMAPI mod; it records these timings"
 
 #: src/settings/prefCopy.ts:173
 #: src/settings/sections/Appearance.tsx:66
@@ -3860,6 +3873,10 @@ msgstr "Libraries, icons and artwork built into Mortar, with their licences."
 msgid "gmcm.alpha"
 msgstr "Alpha"
 
+#: src/console/StartupPanel.tsx:72
+msgid "The title screen's intro animation (Mortar skips it on measured launches)"
+msgstr "The title screen's intro animation (Mortar skips it on measured launches)"
+
 #: src/mods/CategoryEditor.tsx:163
 msgid "Mods in this category will move to Uncategorized."
 msgstr "Mods in this category will move to Uncategorized."
@@ -3886,7 +3903,7 @@ msgstr "Remove filter {mod}"
 msgid "After the first release"
 msgstr "After the first release"
 
-#: src/console/StartupPanel.tsx:62
+#: src/console/StartupPanel.tsx:65
 msgid "Title intro"
 msgstr "Title intro"
 
@@ -3951,7 +3968,7 @@ msgstr "Before you play"
 msgid "Last played {0}"
 msgstr "Last played {0}"
 
-#: src/console/StartupPanel.tsx:219
+#: src/console/StartupPanel.tsx:356
 msgid "Game and SMAPI"
 msgstr "Game and SMAPI"
 
@@ -3995,6 +4012,10 @@ msgstr "Backup location"
 #: src/queue/store.ts:251
 msgid "{first} installed into {0}"
 msgstr "{first} installed into {0}"
+
+#: src/console/StartupPanel.tsx:68
+msgid "From launch until SMAPI has loaded every mod's code"
+msgstr "From launch until SMAPI has loaded every mod's code"
 
 #: src/settings/sections/StreamOverlay.tsx:72
 msgid "Day"
@@ -4203,7 +4224,7 @@ msgstr "In Mortar"
 msgid "{name} settings"
 msgstr "{name} settings"
 
-#: src/console/StartupPanel.tsx:187
+#: src/console/StartupPanel.tsx:314
 msgid "Startup time by mod"
 msgstr "Startup time by mod"
 
@@ -4319,7 +4340,7 @@ msgstr "That folder cannot be used"
 msgid "Restoring…"
 msgstr "Restoring…"
 
-#: src/game/ProfileWorkspace.tsx:63
+#: src/game/ProfileWorkspace.tsx:81
 msgid "Load order"
 msgstr "Load order"
 
@@ -4363,6 +4384,10 @@ msgstr "{0, plural, one {# skipped} other {# skipped}}"
 #: src/mods/storeEntries.ts:209
 msgid "Could not remove the selected mods"
 msgstr "Could not remove the selected mods"
+
+#: src/console/StartupPanel.tsx:286
+msgid "The mod's Entry method; timed only on a measured launch"
+msgstr "The mod's Entry method; timed only on a measured launch"
 
 #: src/mods/ConfigEditor.tsx:258
 msgid "Saved"
@@ -4706,7 +4731,7 @@ msgstr "Send"
 #: src/console/ConsoleTab.tsx:54
 #: src/firstrunTour/TourPopover.tsx:72
 #: src/game/Hero.tsx:343
-#: src/game/ProfileWorkspace.tsx:46
+#: src/game/ProfileWorkspace.tsx:64
 #: src/mods/ModListVirtual.tsx:283
 #: src/settings/GameSettingsPage.tsx:56
 #: src/settings/GameSettingsPage.tsx:86
@@ -4782,7 +4807,7 @@ msgstr "Could not load what can be cleaned up"
 msgid "Unavailable"
 msgstr "Unavailable"
 
-#: src/console/StartupPanel.tsx:197
+#: src/console/StartupPanel.tsx:306
 msgid "Sampled on a measured launch: includes time in the mod's patches on game code"
 msgstr "Sampled on a measured launch: includes time in the mod's patches on game code"
 
@@ -5040,6 +5065,10 @@ msgstr "Add a tag"
 #: src/queue/store.ts:109
 msgid "Nexus rejected your API key"
 msgstr "Nexus rejected your API key"
+
+#: src/console/StartupPanel.tsx:69
+msgid "Each mod's Entry method, run one after another"
+msgstr "Each mod's Entry method, run one after another"
 
 #: src/launch/store.ts:80
 msgid "Could not roll back updates"
@@ -5638,6 +5667,10 @@ msgstr "Restart now"
 msgid "Backed up {label}"
 msgstr "Backed up {label}"
 
+#: src/console/StartupPanel.tsx:177
+msgid "Show in Mods"
+msgstr "Show in Mods"
+
 #: src/console/HelpDialog.tsx:228
 msgid "There is no SMAPI log for this profile yet. Play this profile once, then try again."
 msgstr "There is no SMAPI log for this profile yet. Play this profile once, then try again."
@@ -5864,6 +5897,10 @@ msgstr "On Nexus"
 msgid "Couldn't read the window state"
 msgstr "Couldn't read the window state"
 
+#: src/console/StartupPanel.tsx:276
+msgid "Click a mod to show it in Mods"
+msgstr "Click a mod to show it in Mods"
+
 #: src/saves/lackChipActions.tsx:80
 msgid "Open {name} on Nexus"
 msgstr "Open {name} on Nexus"
@@ -6018,11 +6055,11 @@ msgstr "Could not switch the group"
 msgid "{name} logged an error in the last run: {first}"
 msgstr "{name} logged an error in the last run: {first}"
 
-#: src/console/StartupPanel.tsx:110
+#: src/console/StartupPanel.tsx:165
 msgid "Show content packs"
 msgstr "Show content packs"
 
-#: src/console/StartupPanel.tsx:58
+#: src/console/StartupPanel.tsx:61
 msgid "SMAPI loads mods"
 msgstr "SMAPI loads mods"
 
@@ -6038,7 +6075,7 @@ msgstr "Rename bundle"
 msgid "Bundle added"
 msgstr "Bundle added"
 
-#: src/game/ProfileWorkspace.tsx:45
+#: src/game/ProfileWorkspace.tsx:63
 msgid "Browse"
 msgstr "Browse"
 
@@ -6254,7 +6291,7 @@ msgstr "{0, plural, one {with # settings file, written once its mod is installed
 #: src/firstrunTour/TourPopover.tsx:75
 #: src/game/Hero.tsx:241
 #: src/game/Hero.tsx:244
-#: src/game/ProfileWorkspace.tsx:52
+#: src/game/ProfileWorkspace.tsx:70
 #: src/mods/ModCards.tsx:439
 #: src/mods/ModList.tsx:409
 msgid "Problems"
@@ -6560,7 +6597,7 @@ msgstr "Keep"
 msgid "Settings file"
 msgstr "Settings file"
 
-#: src/console/StartupPanel.tsx:273
+#: src/console/StartupPanel.tsx:410
 msgid "Play now"
 msgstr "Play now"
 
@@ -6611,10 +6648,6 @@ msgstr "AGPL-3.0 · Rethunk-AI/mortar"
 #: src/console/LogActions.tsx:116
 msgid "Log actions"
 msgstr "Log actions"
-
-#: src/mods/redundantReason.ts:15
-msgid "May do the same job as {names}: both replace {methods}"
-msgstr "May do the same job as {names}: both replace {methods}"
 
 #. placeholder {0}: names.length - shown.length
 #: src/share/SharedMods.tsx:71
@@ -6689,6 +6722,10 @@ msgstr "Reset game install"
 #: src/share/ImportDialog.tsx:215
 msgid ".mortar file"
 msgstr ".mortar file"
+
+#: src/mods/redundantReason.ts:15
+msgid "Does the same job as {names}: both change {detail}"
+msgstr "Does the same job as {names}: both change {detail}"
 
 #: src/firstrun/ProfileStep.tsx:167
 msgid "Preview link…"
@@ -6845,7 +6882,7 @@ msgstr "SMAPI is the loader every Stardew mod needs. It goes into the game folde
 msgid "Follow live log"
 msgstr "Follow live log"
 
-#: src/console/StartupPanel.tsx:281
+#: src/console/StartupPanel.tsx:418
 msgid "The next launch will be measured"
 msgstr "The next launch will be measured"
 
@@ -6958,7 +6995,7 @@ msgstr "Could not pin the selected mods"
 msgid "Pause all"
 msgstr "Pause all"
 
-#: src/console/StartupPanel.tsx:193
+#: src/console/StartupPanel.tsx:291
 msgid "Slowest event"
 msgstr "Slowest event"
 
@@ -7138,7 +7175,7 @@ msgstr "copy of {name}"
 msgid "GOG via Heroic"
 msgstr "GOG via Heroic"
 
-#: src/console/StartupPanel.tsx:317
+#: src/console/StartupPanel.tsx:454
 msgid "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 msgstr "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 
@@ -7294,7 +7331,7 @@ msgid "Paste a link…"
 msgstr "Paste a link…"
 
 #. placeholder {0}: duration(report.phases.titleScreen)
-#: src/console/StartupPanel.tsx:328
+#: src/console/StartupPanel.tsx:465
 msgid "Title screen after {0}"
 msgstr "Title screen after {0}"
 
@@ -7344,6 +7381,10 @@ msgstr "Lets nearby Mortar users find this installation and exchange profile lin
 #: src/settings/sections/DataUsage.tsx:232
 msgid "Save backups"
 msgstr "Save backups"
+
+#: src/console/StartupPanel.tsx:71
+msgid "The game's first frames; mods doing setup work in update events show up here"
+msgstr "The game's first frames; mods doing setup work in update events show up here"
 
 #: src/shell/AppMenu.tsx:59
 #: src/shell/AppMenu.tsx:97
@@ -7428,7 +7469,7 @@ msgid "{dependentName} needs {dep}, which is switched off."
 msgstr "{dependentName} needs {dep}, which is switched off."
 
 #: src/console/PerformanceComparison.tsx:57
-#: src/console/StartupPanel.tsx:190
+#: src/console/StartupPanel.tsx:276
 msgid "Mod"
 msgstr "Mod"
 
@@ -7611,7 +7652,7 @@ msgstr "Someone sent you a Mortar link? You see what it holds first. Mods from N
 msgid "{0} · in use"
 msgstr "{0} · in use"
 
-#: src/console/StartupPanel.tsx:316
+#: src/console/StartupPanel.tsx:453
 msgid "No startup measured yet"
 msgstr "No startup measured yet"
 
@@ -7831,6 +7872,10 @@ msgstr "Stop the game to restore saves."
 msgid "Open replacement"
 msgstr "Open replacement"
 
+#: src/console/StartupPanel.tsx:70
+msgid "The game loads its own content"
+msgstr "The game loads its own content"
+
 #. placeholder {0}: merged.updated?.length ?? 0
 #. placeholder {0}: profiles.length
 #: src/mods/updateReview/EverywhereDialog.tsx:124
@@ -7976,7 +8021,7 @@ msgid "Could not roll back {0}"
 msgstr "Could not roll back {0}"
 
 #: src/game/Hero.tsx:345
-#: src/game/ProfileWorkspace.tsx:64
+#: src/game/ProfileWorkspace.tsx:82
 msgid "Saves"
 msgstr "Saves"
 
@@ -8124,7 +8169,7 @@ msgstr "Mortar version"
 msgid "SMAPI version"
 msgstr "SMAPI version"
 
-#: src/console/StartupPanel.tsx:192
+#: src/console/StartupPanel.tsx:285
 msgid "Entry"
 msgstr "Entry"
 
@@ -8229,7 +8274,7 @@ msgstr "Delete category"
 msgid "Play {lastPlayedName}"
 msgstr "Play {lastPlayedName}"
 
-#: src/console/StartupPanel.tsx:199
+#: src/console/StartupPanel.tsx:305
 msgid "Sampled"
 msgstr "Sampled"
 
@@ -8502,7 +8547,7 @@ msgstr "Last run"
 msgid "Share config files"
 msgstr "Share config files"
 
-#: src/console/StartupPanel.tsx:60
+#: src/console/StartupPanel.tsx:63
 msgid "Game content"
 msgstr "Game content"
 
@@ -8585,7 +8630,7 @@ msgstr "Search Nexus Mods"
 msgid "Check only enabled mods"
 msgstr "Check only enabled mods"
 
-#: src/console/StartupPanel.tsx:282
+#: src/console/StartupPanel.tsx:419
 msgid "Press Play. Mortar samples the game until the title screen and skips the intro animation; the results, with a Sampled column, appear here when the title screen is reached."
 msgstr "Press Play. Mortar samples the game until the title screen and skips the intro animation; the results, with a Sampled column, appear here when the title screen is reached."
 
@@ -8619,7 +8664,7 @@ msgid "No differences."
 msgstr "No differences."
 
 #. placeholder {0}: packs.length - PACKS_SHOWN
-#: src/console/StartupPanel.tsx:159
+#: src/console/StartupPanel.tsx:246
 msgid "{0, plural, one {# more pack} other {# more packs}}"
 msgstr "{0, plural, one {# more pack} other {# more packs}}"
 
@@ -9327,7 +9372,7 @@ msgid "Open in the tray instead of showing the window"
 msgstr "Open in the tray instead of showing the window"
 
 #: src/commandPalette/paletteLabels.ts:15
-#: src/game/ProfileWorkspace.tsx:94
+#: src/game/ProfileWorkspace.tsx:112
 #: src/profiles/ProfileRow.tsx:229
 msgid "Share"
 msgstr "Share"
@@ -9389,7 +9434,7 @@ msgstr "1 time"
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 
-#: src/console/StartupPanel.tsx:247
+#: src/console/StartupPanel.tsx:384
 msgid "Launch"
 msgstr "Launch"
 
@@ -9460,7 +9505,7 @@ msgstr "Recently deleted retention"
 msgid "Forest farm"
 msgstr "Forest farm"
 
-#: src/game/ProfileWorkspace.tsx:99
+#: src/game/ProfileWorkspace.tsx:117
 msgid "{gameName} settings"
 msgstr "{gameName} settings"
 
@@ -9548,6 +9593,10 @@ msgstr "Sidebar profile order"
 #: src/settings/sections/AboutDiagnostics.tsx:148
 msgid "Checks the data folder, games, Nexus download links and the browser extension."
 msgstr "Checks the data folder, games, Nexus download links and the browser extension."
+
+#: src/console/StartupPanel.tsx:292
+msgid "The SMAPI event handler that took longest, and its time"
+msgstr "The SMAPI event handler that took longest, and its time"
 
 #: src/settings/sections/Downloads.tsx:116
 #: src/settings/sections/Downloads.tsx:125
