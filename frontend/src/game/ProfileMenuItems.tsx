@@ -39,7 +39,9 @@ import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { ApplyTemplateDialog } from '../templates/ApplyTemplateDialog.tsx'
 import { SaveTemplateDialog } from '../templates/TemplateDialogs.tsx'
+import { useTemplates } from '../templates/useTemplates.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { applyStagedCover, hasPickedCover } from './cover.ts'
@@ -222,6 +224,32 @@ function SaveTemplateMenuItem({ profile, close }: { profile: Profile; close: () 
         game={currentGame?.id ?? ''}
         profileId={profile.id}
         profileName={profile.name}
+        onClose={() => setOpen(false)}
+      />
+    </>
+  )
+}
+
+function ApplyTemplateMenuItem({ profile, close }: { profile: Profile; close: () => void }) {
+  const { t } = useLingui()
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const { templates } = useTemplates(game, true)
+  const [open, setOpen] = useState(false)
+  return templates.length === 0 ? null : (
+    <>
+      <ProfileMenuItem
+        icon={<LayoutTemplate size={16} />}
+        label={t`Apply a template…`}
+        onClick={() => {
+          close()
+          setOpen(true)
+        }}
+      />
+      <ApplyTemplateDialog
+        open={open}
+        game={game}
+        profileId={profile.id}
+        templates={templates}
         onClose={() => setOpen(false)}
       />
     </>
@@ -437,6 +465,7 @@ function MoreMenuItems({
         setBundleOpen(true)
       }}
     />,
+    <ApplyTemplateMenuItem key="apply-template" profile={profile} close={close} />,
     <SaveTemplateMenuItem key="template" profile={profile} close={close} />,
     <Divider key="shortcut-divider" />,
     <ShortcutMenuItems key="shortcuts" profile={profile} close={close} />,

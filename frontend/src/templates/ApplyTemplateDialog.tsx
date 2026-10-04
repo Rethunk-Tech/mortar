@@ -1,0 +1,172 @@
+import { plural } from '@lingui/core/macro'
+import { useLingui } from '@lingui/react/macro'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  MenuItem,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { useEffect, useState } from 'react'
+import {
+  History,
+  Revert,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import type {
+  Preview,
+  Template,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/templates/models.ts'
+import {
+  ApplyTemplate,
+  PreviewApplyTemplate,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/templates/service.ts'
+import { useProfiles } from '../profiles/store.ts'
+import { download } from '../queue/actions.ts'
+import { reportError } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
+import { usePending } from '../toasts/usePending.ts'
+import { templateWants } from './templateWants.ts'
+
+function PreviewGroups({ preview }: { preview: Preview }) {
+  const { t } = useLingui()
+  const groups = [
+    { title: t`Adds ${preview.add?.length ?? 0} mods`, names: preview.add ?? [] },
+    { title: t`Already has ${preview.alreadyHave?.length ?? 0}`, names: preview.alreadyHave ?? [] },
+    {
+      title: t`Different version ${preview.versionDiffers?.length ?? 0} (kept as is)`,
+      names: preview.versionDiffers ?? [],
+    },
+    {
+      title: t`Settings changes ${preview.settingsChanges?.length ?? 0}`,
+      names: preview.settingsChanges ?? [],
+    },
+  ]
+  return (
+    <>
+      {groups.map((group) => (
+        <div key={group.title}>
+          <Typography sx={{ mt: 1.5, fontWeight: 600 }}>{group.title}</Typography>
+          {group.names.length > 0 ? (
+            <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+              {group.names.join(', ')}
+            </Typography>
+          ) : null}
+        </div>
+      ))}
+    </>
+  )
+}
+
+function useApply(game: string, profileId: string, templates: Template[], onClose: () => void) {
+  const { t } = useLingui()
+  const [busy, run] = usePending()
+  const apply = (name: string) =>
+    run(
+      async () => {
+        const before = ((await History(game, profileId)) ?? [])[0]?.id ?? ''
+        const result = await ApplyTemplate(game, name, profileId)
+        useProfiles.getState().replace(result.profile)
+        onClose()
+        const template = templates.find((candidate) => candidate.name === name)
+        const missing = result.missing ?? []
+        const wants = template ? templateWants(template, missing) : []
+        const queued = wants.length > 0 && (await download(wants))
+        const added = plural(result.added, { one: '# mod', other: '# mods' })
+        const downloading = plural(missing.length, { one: '# mod', other: '# mods' })
+        let title = t`Added ${added} from ${name}`
+        if (missing.length > 0) {
+          title = queued
+            ? t`Added ${added} from ${name}; downloading ${downloading}`
+            : t`Added ${added} from ${name}; ${downloading} still to download`
+        }
+        useToasts.getState().push({
+          kind: missing.length > 0 && !queued ? 'warning' : 'success',
+          title,
+          ...(before === ''
+            ? {}
+            : {
+                action: {
+                  label: t`Undo`,
+                  profileId,
+                  run: async () => {
+                    useProfiles.getState().replace(await Revert(game, profileId, before))
+                  },
+                },
+              }),
+        })
+      },
+      { errorTitle: t`Could not apply the template` },
+    )
+  return { busy, apply }
+}
+
+export function ApplyTemplateDialog({
+  open,
+  game,
+  profileId,
+  templates,
+  onClose,
+}: {
+  open: boolean
+  game: string
+  profileId: string
+  templates: Template[]
+  onClose: () => void
+}) {
+  const { t } = useLingui()
+  const [name, setName] = useState('')
+  const [preview, setPreview] = useState<Preview | null>(null)
+  const { busy, apply } = useApply(game, profileId, templates, onClose)
+  useEffect(() => {
+    if (open) {
+      setName(templates[0]?.name ?? '')
+    }
+  }, [open, templates])
+  useEffect(() => {
+    setPreview(null)
+    if (!(open && name)) {
+      return
+    }
+    let live = true
+    PreviewApplyTemplate(game, name, profileId)
+      .then((found) => live && setPreview(found))
+      .catch(reportError(t`Could not preview the template`))
+    return () => {
+      live = false
+    }
+  }, [open, game, name, profileId, t])
+  return (
+    <Dialog open={open} onClose={busy ? undefined : onClose}>
+      <DialogTitle>{t`Apply a template`}</DialogTitle>
+      <DialogContent sx={{ minWidth: 380, maxWidth: 'calc(100vw - 64px)' }}>
+        <TextField
+          select={true}
+          fullWidth={true}
+          label={t`Template`}
+          value={name}
+          disabled={busy}
+          onChange={(e) => setName(e.target.value)}
+          sx={{ mt: 1 }}
+        >
+          {templates.map((template) => (
+            <MenuItem key={template.name} value={template.name}>
+              {template.name}
+            </MenuItem>
+          ))}
+        </TextField>
+        {preview ? <PreviewGroups preview={preview} /> : null}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} disabled={busy}>
+          {t`Cancel`}
+        </Button>
+        <Button variant="contained" disabled={busy || !preview} onClick={() => apply(name)}>
+          {t`Apply`}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}

@@ -27,6 +27,7 @@ import { useToasts } from '../toasts/store.ts'
 import { beginWork } from '../toasts/usePending.ts'
 import { trackImport } from './importCompletion.ts'
 import { type ShownPreview, shownPreview } from './logic.ts'
+import { promptSaveImported } from './savePrompt.ts'
 import { type ImportOptions, importAfterSignIn, useImportDialog } from './store.ts'
 
 function shouldOpenQueueAfterImport(queued: number): boolean {
@@ -119,9 +120,9 @@ function announceCollection(applied: Result['collection']) {
 function announce(
   result: Result,
   intoOpen: boolean,
-  sharedName: string | undefined,
-  pendingSettings: number,
+  notice: { game: string; name: string | undefined; settings: number },
 ) {
+  const { game, name: sharedName, settings: pendingSettings } = notice
   const { name } = result.profile
   const { queued } = result
   trackImport(
@@ -143,6 +144,15 @@ function announce(
     kind: 'info',
     title: queued > 0 ? i18n._(msg`Importing into ${name}`) : i18n._(msg`Imported ${name}`),
     body,
+    ...(intoOpen
+      ? {}
+      : {
+          action: {
+            label: i18n._(msg`Save as template`),
+            run: () =>
+              promptSaveImported({ game, profileId: result.profile.id, name: sharedName ?? name }),
+          },
+        }),
   })
   announceCollection(result.collection)
   if (shouldOpenQueueAfterImport(queued)) {
@@ -158,7 +168,7 @@ async function afterImport(
 ) {
   try {
     await showImported(game, intoOpen, result.profile.id)
-    announce(result, intoOpen, notice.name, notice.settings)
+    announce(result, intoOpen, { game, ...notice })
   } catch (e) {
     toastError(i18n._(msg`Imported, but could not show the profile`), e)
   }

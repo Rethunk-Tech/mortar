@@ -13,6 +13,7 @@ import { ImportFooter } from './ImportFooter.tsx'
 import { ImportInput } from './ImportInput.tsx'
 import { Tiles } from './ImportPreview.tsx'
 import { missingModName, summarize } from './logic.ts'
+import { SaveImportedTemplateHost } from './SaveImportedTemplate.tsx'
 import { type ImportRequest, useImportDialog } from './store.ts'
 import { type Tab as TabId, useImportFlow } from './useImportFlow.ts'
 
@@ -270,13 +271,16 @@ export function ImportDialog() {
   const dismiss = useImportDialog((s) => s.close)
   const busy = useImportDialog((s) => s.busy)
   return (
-    <Dialog
-      open={request !== null}
-      onClose={busy ? undefined : dismiss}
-      maxWidth={false}
-      slotProps={{ paper: { sx: dialogSx, 'aria-label': t`Import profile` } }}
-    >
-      {request ? <Body key={request.run} request={request} /> : null}
-    </Dialog>
+    <>
+      <SaveImportedTemplateHost />
+      <Dialog
+        open={request !== null}
+        onClose={busy ? undefined : dismiss}
+        maxWidth={false}
+        slotProps={{ paper: { sx: dialogSx, 'aria-label': t`Import profile` } }}
+      >
+        {request ? <Body key={request.run} request={request} /> : null}
+      </Dialog>
+    </>
   )
 }
