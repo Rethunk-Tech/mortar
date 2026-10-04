@@ -243,3 +243,16 @@ func TestBroken(t *testing.T) {
 		t.Fatalf("offline: %+v", off)
 	}
 }
+
+func TestCheckPopulatesTimings(t *testing.T) {
+	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{mod("a", "A", "1.0", true)})
+	names := map[string]bool{}
+	for _, tmg := range got.Timings {
+		names[tmg.Name] = true
+	}
+	for _, name := range []string{"contentPatcher", "conflicts", "requirements", "others"} {
+		if !names[name] {
+			t.Fatalf("missing timing %q in %+v", name, got.Timings)
+		}
+	}
+}

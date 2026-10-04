@@ -6,10 +6,12 @@ package problems
 import (
 	"cmp"
 	"context"
+	"log"
 	"slices"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/meta"
@@ -167,6 +169,14 @@ type Result struct {
 	Drift          []profile.Drift    `json:"drift,omitempty"`
 	Dismissed      []DismissedProblem `json:"dismissed"`
 	Unknown        bool               `json:"unknown"`
+	Timings        []CheckTiming      `json:"timings,omitempty"`
+}
+
+// CheckTiming is one check family's duration and item count from the last Problems run for a profile.
+type CheckTiming struct {
+	Name  string `json:"name"`
+	Ms    int64  `json:"ms"`
+	Count int    `json:"count"`
 }
 
 // Count is the number of problems, one per missing dependency, duplicate, broken mod, asset conflict, setting and last-run error.
@@ -212,26 +222,49 @@ func meets(version, minimum string) bool {
 // Check computes the problems of mods. Lookups that fail leave Unknown set and never return an error.
 func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Result {
 	enabled := slices.DeleteFunc(slices.Clone(mods), func(x Installed) bool { return !x.Enabled })
+	packCount := 0
+	for _, inst := range enabled {
+		if inst.ContentPackFor != "" {
+			packCount++
+		}
+	}
+	var timings []CheckTiming
+	parseStart := time.Now()
+	preloadContentPacks(enabled)
+	timings = append(timings, CheckTiming{Name: "contentPatcher", Ms: time.Since(parseStart).Milliseconds(), Count: packCount})
+	conflictStart := time.Now()
 	conflicts, conflictSettings := assetConflictResults(enabled)
+	timings = append(timings, CheckTiming{Name: "conflicts", Ms: time.Since(conflictStart).Milliseconds(), Count: packCount})
 	r := Result{
 		Missing:        []Missing{},
-		Duplicates:     duplicatesWithNexus(ctx, m, enabled),
 		Broken:         []Broken{},
 		AssetConflicts: conflicts,
-		Settings:       append(compatibilitySettings(enabled), conflictSettings...),
-		Cleanup:        cleanupHints(mods),
 		Drift:          []profile.Drift{},
+		Timings:        timings,
 	}
+	reqStart := time.Now()
 	missing := missingDeps(enabled, mods)
 	listed, listedUnknown := listedRequirements(ctx, m, enabled, mods)
 	missing = append(missing, listed...)
+	r.Timings = append(r.Timings, CheckTiming{Name: "requirements", Ms: time.Since(reqStart).Milliseconds(), Count: len(missing)})
 	r.Unknown = fillWhere(ctx, m, enabled, missing)
 	r.Unknown = r.Unknown || listedUnknown
 	r.Missing = missing
+	otherStart := time.Now()
+	r.Duplicates = duplicatesWithNexus(ctx, m, enabled)
+	r.Settings = append(compatibilitySettings(enabled), conflictSettings...)
+	r.Cleanup = cleanupHints(mods)
 	broken, unknown := brokenMods(ctx, m, env, enabled)
 	r.Broken = broken
 	r.Unknown = r.Unknown || unknown
+	r.Timings = append(r.Timings, CheckTiming{Name: "others", Ms: time.Since(otherStart).Milliseconds(), Count: len(r.Duplicates) + len(r.Broken) + len(r.Cleanup)})
 	return r
+}
+
+func logCheckTimings(profileID string, timings []CheckTiming) {
+	for _, t := range timings {
+		log.Printf("problems: %s %s %v (%d packs)", profileID, t.Name, time.Duration(t.Ms)*time.Millisecond, t.Count)
+	}
 }
 
 func duplicatesWithNexus(ctx context.Context, m Meta, enabled []Installed) []Duplicate {

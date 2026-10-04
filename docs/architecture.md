@@ -465,7 +465,7 @@ Saves live in one folder, `%APPDATA%\StardewValley\Saves` or `~/.config/StardewV
   - The keyring is not read.
   - Report a Mortar bug opens a new GitHub issue prefilled with Mortar's version, OS and architecture, and the game with its and SMAPI's versions; no log is attached.
 - **Console links:** in visible log rows, exact installed mod names and `UniqueID`s link to that mod's panel, and paths under the profile's `mods/` folder or the game folder open their containing folder (`OpenConsolePath`, which resolves symlinks and refuses any other path).
-- **Problems** warn and never block. They report:
+- **Problems** warn and never block. Each check records per-family timings on the cached `Result` (`contentPatcher`, `conflicts`, `requirements`, `updates`, `others`) and logs `problems: <profile> <family> <duration> (<count> packs)`. They report:
   - missing dependencies
   - duplicate `UniqueID`s (resolved in a dialog that keeps one copy and switches the other off)
   - mods SMAPI's API marks broken, obsolete or abandoned for the game version, with `compatibilitySummary` when SMAPI supplies it, including a one-click replacement when the summary names a Nexus or GitHub target Mortar can install, or a `UniqueID` the mod dataset resolves

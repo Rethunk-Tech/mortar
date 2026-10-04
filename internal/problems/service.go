@@ -217,6 +217,31 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 		} else if r.RunErrors == nil {
 			r.RunErrors = []RunError{}
 		}
+		if s.meta != nil {
+			enabledOnly := false
+			if s.settings != nil {
+				enabledOnly = s.settings.Get().CheckOnlyEnabledMods
+			}
+			updateStart := time.Now()
+			ur := checkUpdates(ctx, s.meta, env, mods, enabledOnly, false, s.NexusFiles)
+			asked := 0
+			for _, x := range mods {
+				if x.SourceKind == profile.SourceSMAPI || x.SourceKind == profile.SourceMortar {
+					continue
+				}
+				if enabledOnly && !x.Enabled {
+					continue
+				}
+				asked++
+			}
+			r.Timings = append(r.Timings, CheckTiming{Name: "updates", Ms: time.Since(updateStart).Milliseconds(), Count: asked})
+			if s.updates != nil && !ur.Unknown {
+				s.mu.Lock()
+				s.updates[key] = cachedUpdates{fingerprint: fingerprint(env, mods, ""), at: time.Now(), result: ur}
+				s.mu.Unlock()
+			}
+		}
+		logCheckTimings(id, r.Timings)
 		s.recordHealth(gameID, id, env, mods, r)
 		return r
 	})
