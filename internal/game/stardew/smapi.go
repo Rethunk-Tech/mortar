@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"cmp"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -17,6 +16,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 
 	"github.com/Rethunk-AI/mortar/internal/archive"
 	"github.com/Rethunk-AI/mortar/internal/loader"
@@ -120,10 +120,8 @@ func bundledVersion(dir string) string {
 	if err != nil {
 		return ""
 	}
-	var m struct {
-		Version string `json:"Version"`
-	}
-	if json.Unmarshal(b, &m) != nil {
+	m, err := manifest.Parse(b)
+	if err != nil {
 		return ""
 	}
 	return m.Version

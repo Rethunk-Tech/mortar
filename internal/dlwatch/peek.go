@@ -2,19 +2,20 @@ package dlwatch
 
 import (
 	"archive/zip"
-	"encoding/json"
 	"io"
 	"path/filepath"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
-type manifestName struct {
-	Name string `json:"Name"`
-}
-
 func readManifestName(r io.Reader) string {
-	var m manifestName
-	if err := json.NewDecoder(r).Decode(&m); err != nil {
+	b, err := io.ReadAll(r)
+	if err != nil {
+		return ""
+	}
+	m, err := manifest.Parse(b)
+	if err != nil {
 		return ""
 	}
 	return strings.TrimSpace(m.Name)

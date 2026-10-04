@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
 const ContentPatcherID = "Pathoschild.ContentPatcher"
@@ -59,15 +61,8 @@ func Parse(contentJSON []byte) (Schema, error) {
 
 // IsContentPack reports a Pathoschild.ContentPatcher content pack.
 func IsContentPack(manifestJSON []byte) bool {
-	var doc struct {
-		ContentPackFor *struct {
-			UniqueID string `json:"UniqueID"`
-		} `json:"ContentPackFor"`
-	}
-	if json.Unmarshal(manifestJSON, &doc) != nil || doc.ContentPackFor == nil {
-		return false
-	}
-	return strings.EqualFold(doc.ContentPackFor.UniqueID, ContentPatcherID)
+	m, err := manifest.Parse(manifestJSON)
+	return err == nil && strings.EqualFold(m.ContentPackFor, ContentPatcherID)
 }
 
 // Lookup finds a field by name, ignoring case.

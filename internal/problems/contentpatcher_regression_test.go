@@ -44,7 +44,7 @@ func TestLoadConflictWithBlankLoserIsCosmetic(t *testing.T) {
 func syntheticLoadPack(t *testing.T, content string, files map[string]string) Installed {
 	t.Helper()
 	root := t.TempDir()
-	if err := os.WriteFile(filepath.Join(root, "manifest.json"), []byte(`{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(root, "manifest.json"), []byte(`{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
@@ -241,7 +241,7 @@ func TestConflictWinnerUsesClashingPatchPriority(t *testing.T) {
 func syntheticEditPack(t *testing.T, content string) Installed {
 	t.Helper()
 	root := t.TempDir()
-	if err := os.WriteFile(filepath.Join(root, "manifest.json"), []byte(`{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(root, "manifest.json"), []byte(`{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
@@ -279,7 +279,7 @@ func TestIncludedBlankLoadsUsePackRootPath(t *testing.T) {
 	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"Include","FromFile":"nested/content.json"}]}`)
 	writeRegressionFile(t, root, "nested/content.json", `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"blank.json","Priority":"low"}]}`)
 	writeRegressionFile(t, root, "blank.json", "{\r\n// empty\r\n}")
-	writeRegressionFile(t, root, "manifest.json", `{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeRegressionFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
 	mod := Installed{Key: "included", Enabled: true, Folder: root, UniqueID: "Included.Blank", Name: "Included Blank"}
 
 	conflicts := assetConflicts([]Installed{mod, syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"other.json"}]}`, map[string]string{
@@ -331,7 +331,7 @@ func TestDeadLowPriorityLoadOffersDefaultSetting(t *testing.T) {
 func syntheticImagePack(t *testing.T, file string, source []byte) Installed {
 	t.Helper()
 	root := t.TempDir()
-	writeRegressionFile(t, root, "manifest.json", `{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeRegressionFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
 	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"LooseSprites/Cursors","FromFile":"`+file+`","ToArea":{"X":2,"Y":3,"Width":18,"Height":20}}]}`)
 	writeRegressionFile(t, root, file, string(source))
 	return Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)}
@@ -371,7 +371,7 @@ func TestOverlayImageUsesOpaqueCells(t *testing.T) {
 	opaque := image.NewNRGBA(image.Rect(0, 0, 32, 16))
 	opaque.SetNRGBA(0, 0, color.NRGBA{A: 255})
 	root := t.TempDir()
-	writeRegressionFile(t, root, "manifest.json", `{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeRegressionFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
 	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"patch.png","ToArea":{"X":0,"Y":0,"Width":32,"Height":16},"PatchMode":"Overlay"}]}`)
 	writePNG(t, filepath.Join(root, "patch.png"), opaque)
 	pack := readContentPack(Installed{Enabled: true, Folder: root})
@@ -390,7 +390,7 @@ func TestOverlayImageUsesOpaqueCells(t *testing.T) {
 
 func TestTokenizedImageFromFileExpandsCaseInsensitive(t *testing.T) {
 	root := t.TempDir()
-	writeRegressionFile(t, root, "manifest.json", `{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeRegressionFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
 	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"sprites/{{season}}.png","ToArea":{"X":32,"Y":0,"Width":16,"Height":16},"PatchMode":"Overlay"}]}`)
 	for _, season := range []string{"Spring", "Summer", "Fall", "Winter"} {
 		img := image.NewNRGBA(image.Rect(0, 0, 16, 16))
@@ -412,7 +412,7 @@ func TestTokenizedImageFromFileExpandsCaseInsensitive(t *testing.T) {
 
 func TestUnresolvableTokenizedImageFallsBackToWholeSheet(t *testing.T) {
 	root := t.TempDir()
-	writeRegressionFile(t, root, "manifest.json", `{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeRegressionFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
 	writeRegressionFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"sprites/{{missing}}.png","PatchMode":"Overlay"}]}`)
 	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
 	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)

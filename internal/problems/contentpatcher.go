@@ -22,6 +22,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/jsonc"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
 const contentPatcherID = "Pathoschild.ContentPatcher"
@@ -1048,30 +1049,8 @@ func isContentPatcherPack(folder string) bool {
 	if err != nil {
 		return false
 	}
-	var doc map[string]json.RawMessage
-	if json.Unmarshal(jsonc.Clean(raw), &doc) != nil {
-		return false
-	}
-	var pack map[string]json.RawMessage
-	for k, v := range doc {
-		if strings.EqualFold(k, "contentpackfor") {
-			if json.Unmarshal(v, &pack) != nil {
-				return false
-			}
-			break
-		}
-	}
-	for k, v := range pack {
-		if !strings.EqualFold(k, "uniqueid") {
-			continue
-		}
-		var id string
-		if json.Unmarshal(v, &id) != nil {
-			return false
-		}
-		return sameID(strings.TrimSpace(id), contentPatcherID)
-	}
-	return false
+	m, err := manifest.Parse(raw)
+	return err == nil && sameID(m.ContentPackFor, contentPatcherID)
 }
 
 func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack *cachedPack) {

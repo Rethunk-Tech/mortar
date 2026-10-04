@@ -114,7 +114,7 @@ func TestCleanupHintsTilesheets(t *testing.T) {
 func tilesheetPack(t *testing.T, id, content string) Installed {
 	t.Helper()
 	root := t.TempDir()
-	writeProblemFile(t, root, "manifest.json", `{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeProblemFile(t, root, "manifest.json", `{"UniqueID":"`+id+`","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
 	writeProblemFile(t, root, "content.json", content)
 	return Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id}
 }

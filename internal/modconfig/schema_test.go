@@ -35,7 +35,7 @@ func TestParseConfigSchema(t *testing.T) {
 }
 
 func TestIsContentPack(t *testing.T) {
-	if !IsContentPack([]byte(`{"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)) {
+	if !IsContentPack([]byte("\ufeff{\"UniqueID\":\"A.Pack\", /* a comment */ \"contentpackfor\":{\"UniqueID\":\"Pathoschild.ContentPatcher\"},}")) {
 		t.Fatal("CP pack")
 	}
 	if IsContentPack([]byte(`{"UniqueID":"Some.Mod"}`)) {

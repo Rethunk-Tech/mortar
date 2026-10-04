@@ -143,7 +143,7 @@ func TestPeekNameFromZip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := w.Write([]byte(`{"Name":"Peeked Mod"}`)); err != nil {
+	if _, err := w.Write([]byte(`{"Name":"Peeked Mod","UniqueID":"Peeked.Mod",}`)); err != nil {
 		t.Fatal(err)
 	}
 	if err := zw.Close(); err != nil {
