@@ -148,8 +148,8 @@ var registry = []pref{
 		gp.SkipPlayCheck = on
 		putGame(s, g, gp)
 	})),
-	enumPref("consoleLevel", ScopeGame, ConsoleLevelInfo, consoleLevelValues, func(s Settings, g string) string { return s.GamePrefs(g).ConsoleLevel }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.ConsoleLevel = v; putGame(s, g, gp) }),
-	ptrPref("consoleTimestamps", ScopeGame, true, func(s Settings, g string) *bool { return s.GamePrefs(g).ConsoleTimestamps }, func(s *Settings, g string, on bool) {
+	enumPref("consoleLevel", ScopeGame, ConsoleLevelWarn, consoleLevelValues, func(s Settings, g string) string { return s.GamePrefs(g).ConsoleLevel }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.ConsoleLevel = v; putGame(s, g, gp) }),
+	ptrPref("consoleTimestamps", ScopeGame, false, func(s Settings, g string) *bool { return s.GamePrefs(g).ConsoleTimestamps }, func(s *Settings, g string, on bool) {
 		gp := s.GamePrefs(g)
 		gp.ConsoleTimestamps = &on
 		putGame(s, g, gp)
@@ -178,8 +178,8 @@ func defaultGameSettings() GameSettings {
 		SmapiBuilds:                 SmapiBuildsShow,
 		DefaultLaunchMethod:         LaunchSteam,
 		ShowSmapiConsole:            on(),
-		ConsoleLevel:                ConsoleLevelInfo,
-		ConsoleTimestamps:           on(),
+		ConsoleLevel:                ConsoleLevelWarn,
+		ConsoleTimestamps:           off(),
 		ConsoleFollow:               on(),
 		BackupLocation:              "",
 		ConflictScanDepth:           ConflictScanFull,

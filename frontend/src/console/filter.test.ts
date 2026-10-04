@@ -34,13 +34,16 @@ const log = [
   e(Level.Alert, 'Cooking', 'hello'),
 ]
 
-test('levelsFromFloor info matches the default filter', () => {
-  expect(levelsFromFloor('info')).toEqual(DEFAULT_FILTERS.levels)
+// The searches and mod filters below run at the Info floor, so the Info lines in the log count.
+const INFO = { ...DEFAULT_FILTERS, levels: levelsFromFloor('info') }
+
+test('levelsFromFloor warn matches the default filter', () => {
+  expect(levelsFromFloor('warn')).toEqual(DEFAULT_FILTERS.levels)
   expect(levelsFromFloor('error')).toEqual([Level.Error, Level.Alert])
 })
 
-test('Trace and Debug are hidden by default and counts cover every line', () => {
-  expect(visible(log, DEFAULT_FILTERS)).toHaveLength(5)
+test('Trace and Debug are hidden at the Info floor and counts cover every line', () => {
+  expect(visible(log, INFO)).toHaveLength(5)
   const counts = countByLevel(log)
   expect(counts.get(Level.Trace)).toBe(1)
   expect(counts.get(Level.Debug)).toBe(0)
@@ -48,20 +51,20 @@ test('Trace and Debug are hidden by default and counts cover every line', () => 
 })
 
 test('search matches message or mod, ignoring case', () => {
-  expect(visible(log, { ...DEFAULT_FILTERS, search: ' spacecore ' })).toHaveLength(2)
-  expect(visible(log, { ...DEFAULT_FILTERS, search: 'COOKING' })).toHaveLength(3)
+  expect(visible(log, { ...INFO, search: ' spacecore ' })).toHaveLength(2)
+  expect(visible(log, { ...INFO, search: 'COOKING' })).toHaveLength(3)
 })
 
 test('mod filter keeps only the picked mods', () => {
-  const rows = visible(log, { ...DEFAULT_FILTERS, mods: ['SMAPI', 'Cooking'] })
+  const rows = visible(log, { ...INFO, mods: ['SMAPI', 'Cooking'] })
   expect(rows.map((r) => r.message)).toEqual(['Loaded 42 mods', 'obsolete API', 'hello'])
   expect(modsOf(log)).toEqual(['Cooking', 'Love of Cooking', 'SMAPI'])
 })
 
 test('filters complete stack-trace entries and can exclude a mod', () => {
-  const rows = visible(log, { ...DEFAULT_FILTERS, excludeMods: ['Love of Cooking'] })
+  const rows = visible(log, { ...INFO, excludeMods: ['Love of Cooking'] })
   expect(rows.map((r) => r.message)).toEqual(['Loaded 42 mods', 'obsolete API', 'hello'])
-  expect(visible(log, { ...DEFAULT_FILTERS, search: 'spacecore' }).map((r) => r.message)).toEqual([
+  expect(visible(log, { ...INFO, search: 'spacecore' }).map((r) => r.message)).toEqual([
     'Failed to load:',
     '  needs SpaceCore',
   ])

@@ -17,7 +17,7 @@ export interface Filters {
 
 export const DEFAULT_FILTERS: Filters = {
   search: '',
-  levels: [Level.Info, Level.Warn, Level.Error, Level.Alert],
+  levels: [Level.Warn, Level.Error, Level.Alert],
   mods: [],
   excludeMods: [],
 }

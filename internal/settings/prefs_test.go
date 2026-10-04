@@ -56,7 +56,7 @@ func TestPrefDefaultsMatchToday(t *testing.T) {
 	if !d.AutoInstallMortar() || d.AutoTrackNexus || d.GamePrefs(GameStardew).DefaultLaunchMethod != LaunchSteam || !d.GamePrefs(GameStardew).ShowConsoleWindow() {
 		t.Fatal("update / launch defaults")
 	}
-	if d.GamePrefs(GameStardew).ConsoleLevel != ConsoleLevelInfo || !ToggleOn(d.GamePrefs(GameStardew).ConsoleTimestamps) || !ToggleOn(d.GamePrefs(GameStardew).ConsoleFollow) {
+	if d.GamePrefs(GameStardew).ConsoleLevel != ConsoleLevelWarn || ToggleOn(d.GamePrefs(GameStardew).ConsoleTimestamps) || !ToggleOn(d.GamePrefs(GameStardew).ConsoleFollow) {
 		t.Fatal("console defaults")
 	}
 	if d.LanName != "" || d.LanAutoAcceptSameAccount || d.DownloadFolder != "" {

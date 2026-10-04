@@ -8,7 +8,7 @@ func TestRegistryDefaultsMatchToday(t *testing.T) {
 	if s.OnPlay != OnPlayStay || s.Density != DensityComfortable || s.Theme != ThemeDark || s.Dates != DatesRelative {
 		t.Fatalf("app defaults: onPlay=%q density=%q theme=%q dates=%q", s.OnPlay, s.Density, s.Theme, s.Dates)
 	}
-	if g.SmapiBuilds != SmapiBuildsShow || g.DefaultLaunchMethod != LaunchSteam || g.ConsoleLevel != ConsoleLevelInfo {
+	if g.SmapiBuilds != SmapiBuildsShow || g.DefaultLaunchMethod != LaunchSteam || g.ConsoleLevel != ConsoleLevelWarn {
 		t.Fatalf("game defaults: smapi=%q launch=%q level=%q", g.SmapiBuilds, g.DefaultLaunchMethod, g.ConsoleLevel)
 	}
 	if g.RunsKept != DefaultRunsKept || g.ConsoleLogCap != DefaultConsoleLogCap || g.LaunchBackupsKept != DefaultLaunchBackupsKept {
@@ -17,8 +17,8 @@ func TestRegistryDefaultsMatchToday(t *testing.T) {
 	if g.BackupBeforePlay != BackupBeforePlayChanged || g.EnableRequirements != EnableReqAlways || g.MissingRequirements != MissingReqAsk {
 		t.Fatalf("game enums: backup=%q enable=%q missing=%q", g.BackupBeforePlay, g.EnableRequirements, g.MissingRequirements)
 	}
-	if !ToggleOn(g.ShowSmapiConsole) || !ToggleOn(g.ConsoleTimestamps) || !ToggleOn(g.ConsoleFollow) {
-		t.Fatal("console toggles should default on")
+	if !ToggleOn(g.ShowSmapiConsole) || ToggleOn(g.ConsoleTimestamps) || !ToggleOn(g.ConsoleFollow) {
+		t.Fatal("console toggles: SMAPI console and follow on, timestamps off")
 	}
 }
 
