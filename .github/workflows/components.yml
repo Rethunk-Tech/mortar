@@ -47,6 +47,6 @@ jobs:
           REPOSITORY: ${{ github.repository }}
         run: |
           if ! gh release view components --repo "$REPOSITORY" >/dev/null 2>&1; then
-            gh release create components --repo "$REPOSITORY" --title components --notes "Signed component manifest"
+            gh release create components --repo "$REPOSITORY" --title components --notes "Signed component manifest" --latest=false
           fi
           gh release upload components --repo "$REPOSITORY" components.json components.json.sig --clobber
