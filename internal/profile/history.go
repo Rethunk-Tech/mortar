@@ -52,7 +52,9 @@ type HistoryEvent struct {
 }
 
 type historyFileData struct {
-	Events    []HistoryEvent     `json:"events"`
+	Events []HistoryEvent `json:"events"`
+	// Counted marks a history whose events all carry their added, removed and updated counts.
+	Counted   bool               `json:"counted,omitempty"`
 	Snapshots map[string][]Entry `json:"-"`
 	dir       string             `json:"-"`
 }
@@ -65,19 +67,38 @@ func (s *Store) History(game, id string) ([]HistoryEvent, error) {
 	if err != nil {
 		return nil, err
 	}
+	if !data.Counted {
+		countAllEvents(&data)
+		if err := writeHistory(data.dir, data, 0); err != nil {
+			return nil, err
+		}
+	}
 	out := make([]HistoryEvent, len(data.Events))
 	for i, e := range data.Events {
-		ev := e
-		var before []Entry
-		if i > 0 {
-			before, _ = snapshotEntries(&data, data.Events[i-1].SnapshotID)
-		}
-		if after, ok := snapshotEntries(&data, e.SnapshotID); ok {
-			ev.Added, ev.Removed, ev.Updated = ModDiffCounts(before, after)
-		}
-		out[len(data.Events)-1-i] = ev
+		out[len(data.Events)-1-i] = e
 	}
 	return out, nil
+}
+
+// countEvent stores how event i changed the mods from the event before it, whose snapshot after is.
+func countEvent(data *historyFileData, i int, after []Entry) {
+	var before []Entry
+	if i > 0 {
+		before, _ = snapshotEntries(data, data.Events[i-1].SnapshotID)
+	}
+	ev := &data.Events[i]
+	ev.Added, ev.Removed, ev.Updated = ModDiffCounts(before, after)
+}
+
+// countAllEvents fills in every event's counts from the snapshots, once for a history written before events carried
+// them; later events are counted as they are recorded.
+func countAllEvents(data *historyFileData) {
+	for i := range data.Events {
+		if after, ok := snapshotEntries(data, data.Events[i].SnapshotID); ok {
+			countEvent(data, i, after)
+		}
+	}
+	data.Counted = true
 }
 
 // RecentEvent is one history event tagged with the profile it belongs to.
@@ -546,6 +567,15 @@ func (s *Store) recordHistoryBatchData(dir string, data *historyFileData, batch 
 	data.Snapshots[snapshot] = cloneEntries(after)
 	ev.SnapshotID = snapshot
 	data.Events[index] = ev
+	if !data.Counted {
+		countAllEvents(data)
+	}
+	countEvent(data, index, after)
+	if index+1 < len(data.Events) {
+		if next, ok := snapshotEntries(data, data.Events[index+1].SnapshotID); ok {
+			countEvent(data, index+1, next)
+		}
+	}
 	return writeHistory(dir, *data, 0)
 }
 
@@ -662,7 +692,7 @@ func writeHistory(dir string, data historyFileData, keep int) error {
 			delete(data.Snapshots, id)
 		}
 	}
-	if err := datadir.WriteJSON(filepath.Join(dir, historyFile), historyFileData{Events: data.Events}); err != nil {
+	if err := datadir.WriteJSON(filepath.Join(dir, historyFile), historyFileData{Events: data.Events, Counted: data.Counted}); err != nil {
 		return err
 	}
 	if err := pruneSnapshotFiles(dir, referenced); err != nil {
@@ -836,8 +866,13 @@ func appendHistory(dir string, ev HistoryEvent, after []Entry, keep int) (Histor
 	if data.Snapshots == nil {
 		data.Snapshots = map[string][]Entry{}
 	}
+	if !data.Counted {
+		countAllEvents(&data)
+	}
 	data.Snapshots[snapshotID] = entries
 	data.Events = append(data.Events, ev)
+	countEvent(&data, len(data.Events)-1, entries)
+	ev = data.Events[len(data.Events)-1]
 	captureHistoryConfigs(dir, snapshotID, after)
 	if err := writeHistory(dir, data, keep); err != nil {
 		return HistoryEvent{}, err

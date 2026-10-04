@@ -251,6 +251,7 @@ Files a mod may write (`config.json` at any depth, anything under `data/` or a s
   - When a profile's update count is higher than last notified this session, a desktop notification **"Mod updates available"** names the profile with the largest such increase (`N mod updates available for <name>`).
 - **Change history:** `internal/profile/history.go` appends an event list in `history.json` whose length is capped by `historyEventsKept` (default 200, 20 to 2000).
   - Each distinct entry snapshot is written to `snapshots/<sha256>.json`; snapshot and `history-files/` bytes are not capped.
+  - Each event stores its added, removed and updated counts when it is recorded, so listing history reads only `history.json`; `counted` marks a file whose events all carry them, and an older file is counted from its snapshots once.
   - Revert restores an earlier snapshot. A revert that needs store items Mortar no longer holds names those mods and the window offers to download them.
   - A successful revert toasts Undo, which reverts to the snapshot that was current before. Replacing a profile from a share records the removals in that log.
   - Export zip leaves `history.json`, `snapshots/`, `history-files/`, and `runs/` out.

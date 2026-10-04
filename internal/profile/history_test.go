@@ -696,3 +696,24 @@ func TestNOMADHistoryBench(t *testing.T) {
 		t.Logf("history.json after %d bytes", info.Size())
 	}
 }
+
+func TestAppendedEventsCarryTheirCounts(t *testing.T) {
+	dir := t.TempDir()
+	one := []Entry{{Key: "a", Mods: []EntryMod{{UniqueID: "A.Mod", Version: "1.0"}}}}
+	two := append(cloneEntries(one), Entry{Key: "b", Mods: []EntryMod{{UniqueID: "B.Mod", Version: "1.0"}}})
+	for _, after := range [][]Entry{one, two} {
+		if _, err := appendHistory(dir, HistoryEvent{Kind: historyPinned, Label: "change"}, after, 0); err != nil {
+			t.Fatal(err)
+		}
+	}
+	data, err := readHistory(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !data.Counted || len(data.Events) != 2 {
+		t.Fatalf("counted=%v events=%d", data.Counted, len(data.Events))
+	}
+	if ev := data.Events[1]; ev.Added != 1 || ev.Removed != 0 || ev.Updated != 0 {
+		t.Fatalf("second event counts = %+v", ev)
+	}
+}
