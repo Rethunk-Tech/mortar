@@ -49,7 +49,7 @@ var verbs = map[string]bool{
 	"downloads": true,
 	"browse":    true,
 	"bundles":   true, "nexus": true, "trash": true, "cache": true, "data": true, "store": true,
-	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "smapi": true, "sweep": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
+	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "smapi": true, "sweep": true, "uninstall-cleanup": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
 // Is reports whether args (without the program name) are a command-line call: a known verb, or a bare word that
@@ -393,6 +393,8 @@ func (c *cmd) dispatch() error {
 		return c.gameCmd()
 	case "doctor":
 		return c.doctor()
+	case "uninstall-cleanup":
+		return c.uninstallCleanup()
 	case "sweep":
 		return c.sweep()
 	case "launchers":

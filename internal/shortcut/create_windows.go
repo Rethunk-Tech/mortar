@@ -190,3 +190,12 @@ func fileName(name string) string {
 	}
 	return clean
 }
+
+// RemoveStartMenu deletes the Start menu's Mortar folder with every profile shortcut in it.
+func RemoveStartMenu() error {
+	dir, err := startMenuDir()
+	if err != nil {
+		return err
+	}
+	return os.RemoveAll(dir)
+}

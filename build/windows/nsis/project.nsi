@@ -107,6 +107,11 @@ Section "uninstall"
     !insertmacro wails.setShellContext
 
     ExecWait '"$INSTDIR\${PRODUCT_EXECUTABLE}" --release-links'
+    # Removes the profiles added to Steam; it must run while the exe still exists.
+    ExecWait '"$INSTDIR\${PRODUCT_EXECUTABLE}" uninstall-cleanup'
+    DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "Mortar"
+    # Profile shortcuts are always per-user, whatever the install scope.
+    RMDir /r "$APPDATA\Microsoft\Windows\Start Menu\Programs\Mortar"
 !if "${WAILS_INSTALL_SCOPE}" != "user"
     ExecWait '"$SYSDIR\netsh.exe" advfirewall firewall delete rule name="Mortar"'
 !endif

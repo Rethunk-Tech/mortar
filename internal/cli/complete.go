@@ -163,7 +163,7 @@ func (c *cmd) complete(words []string) error {
 	var cands []string
 	if pos == 0 {
 		for v := range verbs {
-			if !strings.HasPrefix(v, "-") && !strings.HasPrefix(v, "_") {
+			if !strings.HasPrefix(v, "-") && !strings.HasPrefix(v, "_") && v != "uninstall-cleanup" {
 				cands = append(cands, v)
 			}
 		}

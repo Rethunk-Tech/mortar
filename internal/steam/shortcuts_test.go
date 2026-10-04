@@ -3,6 +3,8 @@ package steam
 import (
 	"bufio"
 	"bytes"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -33,5 +35,48 @@ func TestAddShortcutAppendsOnceAndKeepsExistingEntries(t *testing.T) {
 	}
 	if entry.Child[0].Key != "appid" || entry.Child[0].Int&0x80000000 == 0 {
 		t.Fatal("a non-Steam shortcut's appid has its top bit set")
+	}
+}
+
+func TestRemoveShortcutsDropsOnlyMortarEntriesAndRenumbers(t *testing.T) {
+	var body []byte
+	for _, sc := range []Shortcut{
+		{Name: "Other", Exe: `C:\games\other.exe`, StartDir: `C:\games`},
+		{Name: "A", Exe: `C:\Mortar\mortar.exe`, StartDir: `C:\Mortar`, LaunchOptions: "--play=stardew/a"},
+		{Name: "Mortar itself", Exe: `C:\Mortar\mortar.exe`, StartDir: `C:\Mortar`},
+		{Name: "B", Exe: `c:\mortar\MORTAR.exe`, StartDir: `C:\Mortar`, LaunchOptions: "--play=stardew/b"},
+		{Name: "Elsewhere", Exe: `D:\other\mortar.exe`, StartDir: `D:\other`, LaunchOptions: "--play=stardew/c"},
+	} {
+		var err error
+		if body, _, err = addShortcut(body, sc); err != nil {
+			t.Fatal(err)
+		}
+	}
+	match := func(exe, opts string) bool {
+		return strings.EqualFold(exe, quoted(`C:\Mortar\mortar.exe`)) && strings.HasPrefix(opts, "--play=")
+	}
+	next, n, err := removeShortcuts(body, match)
+	if err != nil || n != 2 {
+		t.Fatalf("removed %d, %v", n, err)
+	}
+	root, err := readVDFMap(bufio.NewReader(bytes.NewReader(next)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var names []string
+	for i, e := range root[0].Child {
+		if e.Key != strconv.Itoa(i) {
+			t.Errorf("entry %d keyed %q", i, e.Key)
+		}
+		names = append(names, field(e, "AppName"))
+	}
+	if strings.Join(names, ",") != "Other,Mortar itself,Elsewhere" {
+		t.Fatalf("kept %v", names)
+	}
+	if same, n, err := removeShortcuts(next, match); err != nil || n != 0 || !bytes.Equal(same, next) {
+		t.Fatalf("second pass changed the file: %d %v", n, err)
+	}
+	if _, _, err := removeShortcuts([]byte("junk"), match); err == nil {
+		t.Fatal("a malformed file must be an error")
 	}
 }

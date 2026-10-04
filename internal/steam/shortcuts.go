@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
@@ -206,4 +207,67 @@ func (s Steam) AddShortcut(sc Shortcut) (bool, error) {
 		return true, err
 	}
 	return true, nil
+}
+
+// removeShortcuts drops every entry of a shortcuts.vdf body that match selects and renumbers the rest, since Steam
+// reads the list by consecutive index. It reports how many it dropped and returns body unchanged when none.
+func removeShortcuts(body []byte, match func(exe, launchOptions string) bool) ([]byte, int, error) {
+	root, err := readVDFMap(bufio.NewReader(bytes.NewReader(body)))
+	if err != nil {
+		return nil, 0, fmt.Errorf("read shortcuts.vdf: %w", err)
+	}
+	if len(root) != 1 || root[0].Kind != vdfMap || root[0].Key != "shortcuts" {
+		return nil, 0, errors.New("shortcuts.vdf has no shortcuts list")
+	}
+	var kept []vdfNode
+	for _, e := range root[0].Child {
+		if match(field(e, "Exe"), field(e, "LaunchOptions")) {
+			continue
+		}
+		e.Key = strconv.Itoa(len(kept))
+		kept = append(kept, e)
+	}
+	removed := len(root[0].Child) - len(kept)
+	if removed == 0 {
+		return body, 0, nil
+	}
+	root[0].Child = kept
+	var buf bytes.Buffer
+	writeVDFMap(&buf, root)
+	return buf.Bytes(), removed, nil
+}
+
+// RemoveShortcuts removes the shortcuts that run exe with launch options starting with optionsPrefix from every
+// account's library, and reports how many it removed. Steam rewrites shortcuts.vdf on exit, so the caller makes sure
+// Steam is closed.
+func (s Steam) RemoveShortcuts(exe, optionsPrefix string) (int, error) {
+	files, err := filepath.Glob(filepath.Join(s.Root, "userdata", "*", "config", "shortcuts.vdf"))
+	if err != nil {
+		return 0, err
+	}
+	want := quoted(exe)
+	match := func(e, opts string) bool {
+		return strings.EqualFold(e, want) && strings.HasPrefix(opts, optionsPrefix)
+	}
+	total := 0
+	var errs []error
+	for _, path := range files {
+		body, err := fsx.ReadFile(path)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		next, n, err := removeShortcuts(body, match)
+		if err == nil && n > 0 {
+			if err = backupBeforeEdit(path, next, 0o600); err == nil {
+				err = datadir.WriteFile(path, next, 0o600)
+			}
+		}
+		if err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", path, err))
+			continue
+		}
+		total += n
+	}
+	return total, errors.Join(errs...)
 }

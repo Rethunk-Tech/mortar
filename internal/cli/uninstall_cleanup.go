@@ -1,0 +1,42 @@
+package cli
+
+import (
+	"errors"
+	"fmt"
+	"os"
+
+	"github.com/Rethunk-AI/mortar/internal/selfexe"
+	"github.com/Rethunk-AI/mortar/internal/steam"
+)
+
+// uninstallCleanup undoes what Mortar wrote outside its install folder: the sign-in Run value, the Start menu
+// profile shortcuts and the profiles added to Steam. The Windows uninstaller runs it before it deletes the exe,
+// which is why it is not listed in the usage text. Profiles and mods are left alone.
+func (c *cmd) uninstallCleanup() error {
+	exe, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	exe = selfexe.Launchable(exe)
+	errs := []error{removePlatformLeftovers()}
+	if home, err := os.UserHomeDir(); err == nil {
+		errs = append(errs, c.removeSteamShortcuts(home, exe))
+	} else {
+		errs = append(errs, err)
+	}
+	return errors.Join(errs...)
+}
+
+func (c *cmd) removeSteamShortcuts(home, exe string) error {
+	var errs []error
+	removed := 0
+	for _, st := range steam.LocateAll(home) {
+		n, err := st.RemoveShortcuts(exe, "--play=")
+		removed += n
+		errs = append(errs, err)
+	}
+	if removed > 0 {
+		fmt.Fprintf(c.out, "Removed %d Mortar shortcuts from Steam\n", removed)
+	}
+	return errors.Join(errs...)
+}
