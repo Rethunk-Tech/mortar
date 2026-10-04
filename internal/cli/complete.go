@@ -42,7 +42,7 @@ func completion(w io.Writer, shell string) error {
 // subverbs are the second words of the verbs that take one.
 var subverbs = map[string][]string{
 	"profile":    {"create", "from-save", "rename", "copy", "delete", "compare", "match", "collection", "history", "health", "revert", "load-order", "repair", "list", "shortcut", "steam", "changes", "good"},
-	"history":    {"diff", "revert"},
+	"history":    {"diff", "revert", "usage", "trim"},
 	"mods":       {"enable", "disable", "pin", "unpin", "remove", "tag", "untag", "category", "channel", "note", "skip-version", "split", "combine", "files", "config", "preset", "menu", "compat", "report", "by-author", "win", "group"},
 	"game":       {"steam-launch-option", "launch-presets"},
 	"bundles":    {"apply"},
@@ -52,11 +52,14 @@ var subverbs = map[string][]string{
 	"launchers":  {"add", "remove"},
 	"tools":      {"run"},
 	"saves":      {"check"},
-	"queue":      {"retry", "skip", "pause", "resume", "clear"},
+	"queue":      {"retry", "retry-failed", "skip", "pause", "resume", "clear"},
 	"downloads":  {"install"},
-	"backups":    {"list", "create", "keep", "unkeep", "restore"},
+	"backups":    {"list", "create", "keep", "unkeep", "restore", "usage", "trim"},
 	"cache":      {"size", "clear"},
-	"data":       {"usage"},
+	"data":       {"usage", "location"},
+	"templates":  {"list", "save", "delete", "new"},
+	"library":    {"extra", "hidden", "old-files", "strays"},
+	"archive":    {"preview", "downloads"},
 	"store":      {"report", "remove"},
 	"settings":   {"get", "set", "export", "import", "reset"},
 	"smapi":      {"versions", "install", "pin"},
@@ -71,6 +74,14 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 		return 0, 0, 0
 	case "browse":
 		return 1, 0, 0
+	case "templates", "library", "archive":
+		if len(words) > 1 && (words[1] == "save" || words[1] == "hidden" || words[1] == "old-files" || words[1] == "strays") {
+			return 2, 3, 0
+		}
+		if words[0] == "archive" && len(words) > 1 && words[1] == "preview" {
+			return 0, 0, 0
+		}
+		return 2, 0, 0
 	case "store":
 		if len(words) > 1 && words[1] == "remove" {
 			return 2, 0, 0
@@ -97,8 +108,11 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 	case "smapi":
 		return 2, 0, 0
 	case "history":
-		if len(words) > 1 && (words[1] == "diff" || words[1] == "revert") {
+		if len(words) > 1 && (words[1] == "diff" || words[1] == "revert" || words[1] == "trim") {
 			return 2, 3, 0
+		}
+		if len(words) > 1 && words[1] == "usage" {
+			return 2, 0, 0
 		}
 		return 1, 0, 0
 	case "profile":

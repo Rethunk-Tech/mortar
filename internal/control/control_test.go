@@ -285,3 +285,36 @@ func TestHandleProfileCompareAndHistory(t *testing.T) {
 		t.Fatalf("empty history: %#v", res)
 	}
 }
+
+func TestHandleLibraryMethods(t *testing.T) {
+	s := services(t)
+	ctx := context.Background()
+	if _, err := s.Handle(ctx, "profile.create", Params{Game: "stardew", Name: "Farm"}); err != nil {
+		t.Fatal(err)
+	}
+	usage, err := s.Handle(ctx, "history.usage", Params{Game: "stardew"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rows, ok := usage.([]profile.HistoryUsage); !ok || len(rows) != 1 || rows[0].ProfileName != "Farm" {
+		t.Fatalf("history.usage = %#v", usage)
+	}
+	if _, err := s.Handle(ctx, "library.hidden", Params{Game: "stardew", Profile: "Farm"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Handle(ctx, "library.hidden", Params{Game: "stardew", Profile: "nope"}); err == nil {
+		t.Error("an unknown profile must be an error")
+	}
+	extra, err := s.Handle(ctx, "library.extra", Params{Game: "stardew"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if pv, ok := extra.(profile.GameModsPreview); !ok || len(pv.Mods) != 0 {
+		t.Fatalf("library.extra without a folder = %#v", extra)
+	}
+	for _, m := range []string{"templates", "backups.usage", "data.location", "archive.preview"} {
+		if _, err := s.Handle(ctx, m, Params{Game: "stardew"}); err == nil {
+			t.Errorf("%s without its service must fail", m)
+		}
+	}
+}

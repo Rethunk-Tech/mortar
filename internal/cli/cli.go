@@ -46,9 +46,9 @@ var verbs = map[string]bool{
 	"games": true, "game": true, "profiles": true, "profile": true, "history": true, "mods": true, "mod": true, "install": true,
 	"conflicts": true, "problems": true, "who": true, "updates": true, "share": true, "export": true, "open": true, "play": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
-	"downloads": true,
-	"browse":    true,
-	"bundles":   true, "nexus": true, "trash": true, "cache": true, "data": true, "store": true,
+	"downloads": true, "templates": true, "library": true, "archive": true,
+	"browse":  true,
+	"bundles": true, "nexus": true, "trash": true, "cache": true, "data": true, "store": true,
 	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "smapi": true, "sweep": true, "uninstall-cleanup": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
@@ -100,6 +100,10 @@ type cmd struct {
 	restore       bool
 	sourceFlag    string
 	pageFlag      int
+	keepFlag      string
+	deleteFlag    string
+	dismissFlag   string
+	moveFlag      []string
 	args          []string
 }
 
@@ -318,6 +322,21 @@ func (c *cmd) parse(args []string) error {
 				return usageError{"--page needs a number"}
 			}
 			c.pageFlag = n
+		case a == "--keep" || a == "--delete" || a == "--dismiss" || a == "--move":
+			if i+1 >= len(args) {
+				return usageError{a + " needs a value"}
+			}
+			i++
+			switch a {
+			case "--keep":
+				c.keepFlag = args[i]
+			case "--delete":
+				c.deleteFlag = args[i]
+			case "--dismiss":
+				c.dismissFlag = args[i]
+			default:
+				c.moveFlag = append(c.moveFlag, args[i])
+			}
 		case a == "--help" || a == "-h":
 			c.args = append(c.args, "help")
 		case strings.HasPrefix(a, "--"):
@@ -403,6 +422,12 @@ func (c *cmd) dispatch() error {
 		return c.queue()
 	case "downloads":
 		return c.downloads()
+	case "templates":
+		return c.templatesCmd()
+	case "library":
+		return c.libraryCmd()
+	case "archive":
+		return c.archiveCmd()
 	case "browse":
 		return c.browse()
 	case "update":
@@ -1905,6 +1930,8 @@ func (c *cmd) queue() error {
 				}
 				fmt.Fprintf(c.out, "Skipped %d downloads.\n", n)
 			})
+		case "retry-failed":
+			return c.queueRetryFailed()
 		case "pause", "resume", "clear":
 			var st queue.State
 			if err := c.ask(method, control.Params{}, &st, readTimeout); err != nil {
@@ -1959,8 +1986,11 @@ func (c *cmd) cacheCmd() error {
 }
 
 func (c *cmd) dataCmd() error {
+	if len(c.args) > 1 && c.args[1] == "location" {
+		return c.dataLocation()
+	}
 	if len(c.args) < 2 || c.args[1] != "usage" {
-		return usageError{"data needs usage --by-mod"}
+		return usageError{"data needs usage --by-mod or location"}
 	}
 	if !c.byMod {
 		return usageError{"data usage needs --by-mod"}
@@ -2039,6 +2069,10 @@ func (c *cmd) backups() error {
 			return c.emit(map[string]any{"save": a[0]}, func() {
 				fmt.Fprintf(c.out, "Backed up %s.\n", a[0])
 			})
+		case "usage":
+			return c.backupsUsage()
+		case "trim":
+			return c.backupsTrim()
 		case "list":
 			break
 		default:
@@ -2216,6 +2250,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   logs fixes <game> <profile> [run]       recognised SMAPI errors in that run and their fixes
   queue                                   the download queue
   queue retry|skip [<id>]                 retry or skip queued downloads
+  queue retry-failed                      requeue every retryable failed download in the history
   queue pause|resume|clear                control the download queue
   downloads                               archives noticed in Downloads this session
   downloads install <n>                   install one into the open profile
@@ -2224,9 +2259,23 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
                                           queue available mod updates
   backups list                            list save backups
   backups create <save>                   pin a Manual backup of one save
+  backups usage                           disk used by save backups, per save
+  backups trim --keep N                   delete all but the newest N backups of each save (kept ones stay)
   cache size                              analysis cache size
   cache clear                             delete the analysis cache
   data usage --by-mod                     store items with size on disk
+  data location                           the data folder in use, and whether it is portable
+  history usage <game>                    events and disk used by each profile's history
+  history trim <game> <profile> --keep N  keep a profile's newest N history events
+  templates list <game> | delete <game> <name>
+  templates save <game> <profile> <name>  capture a profile as a template
+  templates new <game> <template> <profile name>  create a profile from a template
+  library extra <game>                    mods in the extra mods folder
+  library hidden <game> <profile>         dot-hidden mods inside the profile's mods
+  library old-files <game> <profile> [--keep KEY | --delete KEY]  files updates set aside
+  library strays <game> [<profile> --move FOLDER...] [--dismiss FOLDER]  mods in the game's own Mods folder
+  archive preview <path>                  what an archive holds, without extracting it
+  archive downloads <game>                archives in the download folder no profile or store item accounts for
   store report [--game G]                 unused and duplicate store items
   store remove <game> <key>...            delete store items no profile uses
   backups keep <name>                     keep a save backup during rotation

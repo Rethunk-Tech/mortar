@@ -14,6 +14,12 @@ func (c *cmd) historyCmd() error {
 	if len(c.args) > 1 && c.args[1] == "revert" {
 		return c.historyRevertItem()
 	}
+	if len(c.args) > 1 && c.args[1] == "usage" {
+		return c.historyUsage()
+	}
+	if len(c.args) > 1 && c.args[1] == "trim" {
+		return c.historyTrim()
+	}
 	return c.historyAll()
 }
 

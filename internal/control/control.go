@@ -43,6 +43,7 @@ type Params struct {
 	Set       bool     `json:"set,omitempty"`
 	Clear     bool     `json:"clear,omitempty"`
 	Unlink    bool     `json:"unlink,omitempty"`
+	Keep      int      `json:"keep,omitempty"`
 }
 
 type request struct {

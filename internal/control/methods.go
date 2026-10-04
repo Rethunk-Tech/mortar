@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/archivesvc"
 	"github.com/Rethunk-AI/mortar/internal/bundles"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
@@ -28,6 +29,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/share"
 	"github.com/Rethunk-AI/mortar/internal/sharesvc"
 	"github.com/Rethunk-AI/mortar/internal/shortcut"
+	"github.com/Rethunk-AI/mortar/internal/templates"
 	"github.com/Rethunk-AI/mortar/internal/tools"
 	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
@@ -68,6 +70,8 @@ type Services struct {
 	Downloads   *dlwatch.Service
 	Plays       *shortcut.Service
 	Loaders     *loadersvc.Service
+	Templates   *templates.Service
+	Archives    *archivesvc.Service
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 }
@@ -537,6 +541,9 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.modsByAuthor(p)
 	case "browse":
 		return s.browseFromParams(ctx, p)
+	}
+	if res, ok, err := s.handleLibrary(method, p); ok {
+		return res, err
 	}
 	if method == "logs.search" {
 		prof, err := s.resolve(p.Game, p.Profile)
