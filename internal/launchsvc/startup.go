@@ -152,17 +152,43 @@ func (s *Service) StartupReports(gameID, profileID string) ([]StartupReport, err
 	return readStartupReports(filepath.Join(dir, startupDir))
 }
 
-func readStartupReports(dir string) ([]StartupReport, error) {
+// startupReportPaths lists the bridge's reports in dir, newest first.
+func startupReportPaths(dir string) ([]string, error) {
 	names, err := filepath.Glob(filepath.Join(dir, "*.json"))
 	if err != nil {
 		return nil, err
 	}
+	names = slices.DeleteFunc(names, func(name string) bool { return strings.HasSuffix(name, ".samples.json") })
 	sort.Sort(sort.Reverse(sort.StringSlice(names)))
+	return names, nil
+}
+
+// LatestReplaces reads, from the newest readable startup report in the profile folder, the game methods each
+// Harmony owner can replace (keyed by Harmony ID, values "Type.FullName::Method"). Nil when there is no report or
+// the bridge that wrote it predates the field.
+func LatestReplaces(profileDir string) map[string][]string {
+	names, err := startupReportPaths(filepath.Join(profileDir, startupDir))
+	if err != nil {
+		return nil
+	}
+	for _, name := range names {
+		var r struct {
+			Replaces map[string][]string `json:"replaces"`
+		}
+		if found, err := datadir.ReadJSON(name, &r); err == nil && found {
+			return r.Replaces
+		}
+	}
+	return nil
+}
+
+func readStartupReports(dir string) ([]StartupReport, error) {
+	names, err := startupReportPaths(dir)
+	if err != nil {
+		return nil, err
+	}
 	out := []StartupReport{}
 	for _, name := range names {
-		if strings.HasSuffix(name, ".samples.json") {
-			continue
-		}
 		var r StartupReport
 		if found, err := datadir.ReadJSON(name, &r); err != nil || !found {
 			continue

@@ -192,14 +192,14 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	c, ok := s.cache[key]
 	s.mu.Unlock()
 	if ok && c.fresh(fp, time.Now()) {
-		return s.withDrift(gameID, id, s.withDismissed(gameID, id, s.withCompat(ctx, c.result, mods)))
+		return s.withDrift(gameID, id, s.withDismissed(gameID, id, s.withCompat(ctx, gameID, id, c.result, mods)))
 	}
 
 	checkKey := key + "\x00" + fp
 	s.mu.Lock()
 	if c, ok := s.cache[key]; ok && c.fresh(fp, time.Now()) {
 		s.mu.Unlock()
-		return s.withDrift(gameID, id, s.withDismissed(gameID, id, s.withCompat(ctx, c.result, mods)))
+		return s.withDrift(gameID, id, s.withDismissed(gameID, id, s.withCompat(ctx, gameID, id, c.result, mods)))
 	}
 	s.mu.Unlock()
 
@@ -256,7 +256,7 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	}
 	s.cache[key] = entry
 	s.mu.Unlock()
-	return s.withDrift(gameID, id, s.withDismissed(gameID, id, s.withCompat(ctx, r, mods)))
+	return s.withDrift(gameID, id, s.withDismissed(gameID, id, s.withCompat(ctx, gameID, id, r, mods)))
 }
 
 // ForgetCached drops every result and scan Mortar holds in memory, after the cache folder is cleared,
