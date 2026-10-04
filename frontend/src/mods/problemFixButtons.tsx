@@ -93,7 +93,6 @@ export function FixButton({
 export function DriftButtons({ drift }: { drift: Drift }) {
   const { t } = useLingui()
   const load = useMods((s) => s.load)
-  const loadProblems = useMods((s) => s.loadProblems)
   const replace = useProfiles((s) => s.replace)
   const locked = useLocked()
   const target = () => {
@@ -102,7 +101,7 @@ export function DriftButtons({ drift }: { drift: Drift }) {
   }
   const run = (work: () => Promise<unknown>) => {
     work()
-      .then(() => Promise.all([load(), loadProblems()]))
+      .then(() => load())
       .catch(reportUnexpected)
   }
   const button = (label: string, onClick: () => void) => (
