@@ -32,8 +32,19 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
-// ChangedEvent is emitted with the new State after every change; progress ticks come at most every progressEvery.
+// ChangedEvent is emitted with the new State after every change except a progress tick, which sends ProgressEvent.
 const ChangedEvent = "queue:changed"
+
+// ProgressEvent carries one download's transfer figures between full states, so a tick does not resend the queue.
+const ProgressEvent = "queue:progress"
+
+// Progress is the part of an Item that changes on a progress tick.
+type Progress struct {
+	ID       string  `json:"id"`
+	Progress float64 `json:"progress"`
+	Speed    int64   `json:"speed"`
+	SizeKB   int64   `json:"sizeKb"`
+}
 
 // What an item is for.
 const (
@@ -458,6 +469,16 @@ func sameDownload(it *Item, r Request) bool {
 func NotifyUnlocked(s *Service) {
 	s.publish(false)
 	s.poke()
+}
+
+// publishProgress tells the window about one item's transfer without the rest of the queue. It takes the publish
+// lock so a delta never overtakes a full state emitted before it.
+func (s *Service) publishProgress(p Progress) {
+	s.pub.Lock()
+	defer s.pub.Unlock()
+	if s.d.Emit != nil {
+		s.d.Emit(ProgressEvent, p)
+	}
 }
 
 // publish tells the window; persist also writes queue.json, which progress ticks skip.

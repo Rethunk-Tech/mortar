@@ -101,6 +101,7 @@ func registerEvents() {
 	application.RegisterEvent[shortcut.Request](shortcut.RequestedEvent)
 	application.RegisterEvent[nexussvc.Account](nexussvc.ChangedEvent)
 	application.RegisterEvent[queue.State](queue.ChangedEvent)
+	application.RegisterEvent[queue.Progress](queue.ProgressEvent)
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
 	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
 	application.RegisterEvent[dlwatch.Arrival](dlwatch.ArrivedEvent)

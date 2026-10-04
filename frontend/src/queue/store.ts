@@ -1,4 +1,5 @@
 import { msg, plural } from '@lingui/core/macro'
+import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import type {
   Entry,
@@ -10,6 +11,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import type {
   Item,
+  Progress,
   State,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
 import {
@@ -342,9 +344,25 @@ export const useQueue = create<{
   consumeHistoryBatch: () => set({ historyBatchId: '' }),
 }))
 
+// A tick carries one download's figures; the rest of the queue is unchanged.
+export function applyProgress(snap: Snapshot, p: Progress): Snapshot {
+  if (!snap.items.some((i) => i.id === p.id)) {
+    return snap
+  }
+  return {
+    ...snap,
+    items: snap.items.map((i) =>
+      i.id === p.id ? { ...i, progress: p.progress, speed: p.speed, sizeKb: p.sizeKb } : i,
+    ),
+  }
+}
+
 // The first state seen, fetched or evented, is the silent baseline: items finished before startup are not news.
-export const initQueue = () =>
-  follow('queue:changed', fetchState, (state, first) => {
+export const initQueue = () => {
+  Events.On('queue:progress', (event) => {
+    useQueue.setState((cur) => ({ state: applyProgress(cur.state, event.data) }))
+  })
+  return follow('queue:changed', fetchState, (state, first) => {
     const prev = useQueue.getState().state
     const next = snapshot(state)
     useQueue.setState({ state: next })
@@ -353,6 +371,7 @@ export const initQueue = () =>
       announce(prev, next)
     }
   })
+}
 
 export {
   entryForItem,

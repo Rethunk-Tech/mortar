@@ -974,7 +974,7 @@ func (s *Service) wantedInstalled(p *pending) bool {
 	return true
 }
 
-// queueChanged runs on every queue change, progress ticks included, so it saves only when a pending import changed.
+// queueChanged runs on every full queue state, which progress ticks do not publish, and saves only when a pending import changed.
 func (s *Service) queueChanged(st queue.State) {
 	s.applyMu.Lock()
 	defer s.applyMu.Unlock()

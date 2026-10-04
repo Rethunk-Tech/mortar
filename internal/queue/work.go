@@ -656,17 +656,22 @@ func (p *progress) set(n int64) {
 	}
 	speed := int64(float64(p.n-p.from) / now.Sub(p.last).Seconds())
 	p.from, p.last = p.n, now
+	var tick Progress
 	p.s.mu.Lock()
-	if it := p.s.find(p.id); it != nil && it.State == StateDownloading {
+	it := p.s.find(p.id)
+	if it != nil && it.State == StateDownloading {
 		it.Speed = speed
 		if p.total > 0 {
 			it.Progress = float64(p.n) * 100 / float64(p.total)
 			// The file list can omit a size; the transfer's own length is the real one.
 			it.SizeKB = p.total >> 10
 		}
+		tick = Progress{ID: it.ID, Progress: it.Progress, Speed: it.Speed, SizeKB: it.SizeKB}
 	}
 	p.s.mu.Unlock()
-	p.s.publish(false)
+	if tick.ID != "" {
+		p.s.publishProgress(tick)
+	}
 }
 
 // installStored adds a Nexus file the store already holds to the item's profile. It reports false, so the file is

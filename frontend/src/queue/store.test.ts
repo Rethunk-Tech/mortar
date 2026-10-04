@@ -10,6 +10,7 @@ import { useLaunch } from '../launch/store.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import {
+  applyProgress,
   entryForItem,
   installUndo,
   queueErrorDetail,
@@ -181,4 +182,12 @@ test('queue failures keep the raw error for details only', () => {
 test('rate-limit retry wait is at least one second', () => {
   expect(retryWaitSeconds(1_700_000_012, 1_700_000_000_000)).toBe(12)
   expect(retryWaitSeconds(1_700_000_000, 1_700_000_500_000)).toBe(1)
+})
+
+test('a progress tick updates only its own item', () => {
+  const snap = { items: [item({ id: 'a' }), item({ id: 'b' })], paused: false, limitedUntil: 0 }
+  const next = applyProgress(snap, { id: 'b', progress: 40, speed: 9, sizeKb: 7 })
+  expect(next.items[0]).toBe(snap.items[0])
+  expect(next.items[1]).toMatchObject({ id: 'b', progress: 40, speed: 9, sizeKb: 7 })
+  expect(applyProgress(snap, { id: 'gone', progress: 1, speed: 1, sizeKb: 1 })).toBe(snap)
 })
