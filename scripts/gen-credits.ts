@@ -2,6 +2,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { bundledArtwork } from './bundled-artwork.ts'
 
 const LICENCE_ERROR_CHARS = 280
 const here = dirname(fileURLToPath(import.meta.url))
@@ -286,29 +287,35 @@ function appendGoNotice(
   missing.push(name)
 }
 
+// Each released build links its own modules (keyring and notifications differ by OS), so the notices cover the
+// modules linked into every target Mortar ships.
+const releaseTargets = ['linux', 'windows']
+
 function goModuleNotices(): NoticeEntry[] {
-  const proc = Bun.spawnSync(
-    // -e: main.go embeds frontend/dist, which this build has not produced yet on a clean checkout (CI); the module
-    // list does not depend on it.
-    [
-      'go',
-      'list',
-      '-e',
-      '-deps',
-      '-f',
-      '{{with .Module}}{{.Path}}\t{{.Version}}\t{{.Dir}}{{end}}',
-      '.',
-    ],
-    { cwd: repoRoot, stdout: 'pipe', stderr: 'pipe' },
-  )
-  if (proc.exitCode !== 0) {
-    throw new Error(`go list -deps: ${proc.stderr.toString()}`)
-  }
   const seen = new Set<string>()
   const out: NoticeEntry[] = []
   const missing: string[] = []
-  for (const line of proc.stdout.toString().split('\n')) {
-    appendGoNotice(line, seen, out, missing)
+  for (const goos of releaseTargets) {
+    const proc = Bun.spawnSync(
+      // -e: main.go embeds frontend/dist, which this build has not produced yet on a clean checkout (CI); the module
+      // list does not depend on it.
+      [
+        'go',
+        'list',
+        '-e',
+        '-deps',
+        '-f',
+        '{{with .Module}}{{.Path}}\t{{.Version}}\t{{.Dir}}{{end}}',
+        '.',
+      ],
+      { cwd: repoRoot, env: { ...process.env, GOOS: goos }, stdout: 'pipe', stderr: 'pipe' },
+    )
+    if (proc.exitCode !== 0) {
+      throw new Error(`go list -deps (${goos}): ${proc.stderr.toString()}`)
+    }
+    for (const line of proc.stdout.toString().split('\n')) {
+      appendGoNotice(line, seen, out, missing)
+    }
   }
   failMissing('Go modules', missing)
   return out
@@ -404,36 +411,12 @@ function npmNotices(): NoticeEntry[] {
   return out
 }
 
-// Artwork Mortar ships beside its code; each licence asks for this notice wherever the file is redistributed.
-const assetNotices: NoticeEntry[] = [
-  {
-    name: 'Fedora 44 default wallpaper (f44-01-night)',
-    licence: 'CC-BY-SA-4.0',
-    url: 'https://fedoraproject.org/wiki/F44_Artwork',
-    texts: [
-      'Bundled as the default backdrop (internal/backdrop/f44-01-night.jpg). By the Fedora Project, licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence: https://creativecommons.org/licenses/by-sa/4.0/',
-    ],
-  },
-  {
-    name: 'Minigalaxy icon',
-    licence: 'GPL-3.0',
-    url: 'https://github.com/sharkwouter/minigalaxy',
-    texts: [
-      'Bundled launcher icon (frontend/src/brand/vendor/minigalaxy.png) from Minigalaxy, licensed under the GNU General Public License v3.0: https://www.gnu.org/licenses/gpl-3.0.html',
-    ],
-  },
-  {
-    name: 'Nexus Mods logo (from Vortex)',
-    licence: 'GPL-3.0',
-    url: 'https://github.com/Nexus-Mods/Vortex',
-    texts: [
-      'Bundled source icon (frontend/src/brand/vendor/nexusmods.svg) from Vortex, licensed under the GNU General Public License v3.0: https://www.gnu.org/licenses/gpl-3.0.html. Nexus Mods and its logo are trademarks of their owner.',
-    ],
-  },
-]
-
 function collectNotices(): NoticeEntry[] {
-  const entries = [...goModuleNotices(), ...npmNotices(), ...assetNotices]
+  const entries = [
+    ...goModuleNotices(),
+    ...npmNotices(),
+    ...bundledArtwork.map(({ notice, ...credit }) => ({ ...credit, texts: [notice] })),
+  ]
   entries.sort((a, b) => a.name.localeCompare(b.name))
   return entries
 }
@@ -473,37 +456,9 @@ function buildCredits(): CreditEntry[] {
     licence: classifyLicenceText(readLicenceFile(goListDir(mod))),
     url: goModuleURL(mod),
   }))
-  const extra: CreditEntry[] = [
-    {
-      name: 'Mortar',
-      licence: classifyLicenceText(readLicenceFile(repoRoot)),
-      url: 'https://github.com/Rethunk-AI/mortar',
-    },
-    {
-      name: 'Mortar SMAPI Bridge',
-      licence: 'AGPL-3.0',
-      url: 'https://github.com/Rethunk-AI/mortar-smapi-bridge',
-    },
-    { name: 'SMAPI', licence: 'LGPL-3.0', url: 'https://smapi.io/' },
-    {
-      name: 'Minigalaxy icon',
-      licence: 'GPL-3.0',
-      url: 'https://github.com/sharkwouter/minigalaxy',
-    },
-    {
-      name: 'Fedora 44 default wallpaper (f44-01-night)',
-      licence: 'CC-BY-SA-4.0',
-      url: 'https://fedoraproject.org/wiki/F44_Artwork',
-    },
-    {
-      name: 'Nexus Mods logo (from Vortex)',
-      licence: 'GPL-3.0',
-      url: 'https://github.com/Nexus-Mods/Vortex',
-    },
-  ]
-  return [...extra, ...npm, ...go].filter(
-    (entry) => !new Set(['Mortar', 'Mortar SMAPI Bridge', 'SMAPI', 'BepInEx']).has(entry.name),
-  )
+  // Only what ships inside Mortar: SMAPI and the bridge are downloaded into a profile, never bundled.
+  const art = bundledArtwork.map(({ notice: _notice, ...credit }) => credit)
+  return [...art, ...npm, ...go]
 }
 
 function main(): void {
