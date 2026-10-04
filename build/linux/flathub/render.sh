@@ -10,11 +10,11 @@ version="$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' "$root/build/config.yml")"
 mkdir -p "$out"
 
 cp "$here/tech.rethunk.Mortar.yml" "$out/tech.rethunk.Mortar.yml"
-for path in $(grep -o '@sha:[^@]*@' "$here/tech.rethunk.Mortar.yml" | sed 's/^@sha://; s/@$//' | sort -u); do
+while IFS= read -r path; do
   file="$root/$path"
   case "$path" in bin/*) file="$bin/${path#bin/}" ;; esac
   sum="$(sha256sum "$file" | cut -d' ' -f1)"
   sed -i "s|@sha:$path@|$sum|" "$out/tech.rethunk.Mortar.yml"
-done
+done < <(grep -o '@sha:[^@]*@' "$here/tech.rethunk.Mortar.yml" | sed 's/^@sha://; s/@$//' | sort -u)
 sed -i "s/@VERSION@/$version/g" "$out/tech.rethunk.Mortar.yml"
 sed "s/@VERSION@/$version/g" "$here/SUBMISSION.md" >"$out/SUBMISSION.md"

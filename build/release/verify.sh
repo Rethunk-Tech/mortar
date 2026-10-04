@@ -40,4 +40,4 @@ if [ "$fail" != 0 ]; then
   echo "release $tag failed verification" >&2
   exit 1
 fi
-echo "release $tag verified: $(ls "$dir" | wc -l) staged files present, manifest digests match"
+echo "release $tag verified: $(find "$dir" -mindepth 1 -maxdepth 1 | wc -l) staged files present, manifest digests match"
