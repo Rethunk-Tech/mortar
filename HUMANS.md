@@ -62,6 +62,12 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `update game profile UniqueID...\|--all` | queue selected or all available mod updates |
 | `queue retry\|skip [id]`, `queue pause\|resume\|clear` | control queued downloads |
 | `backups list`, `backups create <save>`, `backups restore <name> [save...]` | list, pin a Manual backup of one save, or restore |
+| `backups usage`, `backups trim --keep N` | save backup sizes; keep the newest N per save (pinned ones stay) |
+| `history usage <game>`, `history trim <game> <profile> --keep N` | profile history sizes; keep the newest N changes |
+| `templates list\|save\|delete\|new ...` | profile templates; `new` starts a profile from one |
+| `library extra <game>`, `library hidden <game> <profile>` | mods in the extra mods folder; dot-hidden mods inside a profile |
+| `library old-files <game> <profile> [--keep\|--delete KEY]`, `library strays <game> [<profile> --move FOLDER...] [--dismiss FOLDER]` | files an update dropped; folders in the game's Mods folder that Mortar does not track |
+| `queue retry-failed`, `data location`, `archive preview <path>`, `archive downloads <game>` | retry every failed download; where the data folder is and whether it is portable; an archive's contents; archives in the downloads folder |
 | `queue`, `doctor`, `version`, `completion bash\|zsh\|fish` | the download queue, the environment, shell completion |
 
 `--json` writes failures to stderr as `{"error":"...","code":...}`. Exit code 2 means usage or confirmation was required, 3 means Mortar was not running or `play --check` found issues, and 1 means another failure. `mortar doctor` falls back to read-only offline checks when Mortar is not running: it exits 1 when those checks find problems and 3 when they find none, never 0.
