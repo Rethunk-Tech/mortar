@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, FormControl, MenuItem, Select, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import {
   ArrowUpRight,
   CircleCheck,
@@ -11,7 +12,7 @@ import {
   Trash2,
   User,
 } from 'lucide-react'
-import { useState } from 'react'
+import { type ReactNode, useMemo, useRef, useState } from 'react'
 import {
   ClearHistory,
   RetryHistory,
@@ -62,6 +63,52 @@ function OutcomeText({ outcome }: { outcome: string }) {
     default:
       return outcome
   }
+}
+
+const ROW_ESTIMATE_PX = 64
+
+// The newest first, rendered only near the viewport: the history keeps up to a thousand downloads.
+function HistoryRows({
+  rows,
+  renderRow,
+}: {
+  rows: HistoryEntry[]
+  renderRow: (e: HistoryEntry) => ReactNode
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const newest = useMemo(() => rows.slice().reverse(), [rows])
+  const virtualizer = useVirtualizer({
+    count: newest.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ROW_ESTIMATE_PX,
+    overscan: 8,
+  })
+  return (
+    <Box ref={scrollRef} sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+      <Box sx={{ position: 'relative', height: virtualizer.getTotalSize() }}>
+        {virtualizer.getVirtualItems().map((item) => {
+          const e = newest[item.index]
+          return e ? (
+            <Box
+              key={item.key}
+              data-index={item.index}
+              ref={virtualizer.measureElement}
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                pb: '12px',
+                transform: `translateY(${item.start}px)`,
+              }}
+            >
+              {renderRow(e)}
+            </Box>
+          ) : null
+        })}
+      </Box>
+    </Box>
+  )
 }
 
 export function HistoryList({
@@ -154,10 +201,9 @@ export function HistoryList({
           {t`Completed downloads will appear here.`}
         </EmptyState>
       ) : (
-        rows
-          .slice()
-          .reverse()
-          .map((e) => (
+        <HistoryRows
+          rows={rows}
+          renderRow={(e) => (
             <Box
               key={`${e.started}-${e.finished}-${e.name}-${e.profileId}-${e.outcome}`}
               sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.75 }}
@@ -201,7 +247,8 @@ export function HistoryList({
               ) : null}
               <RetryHistoryButton entry={e} />
             </Box>
-          ))
+          )}
+        />
       )}
     </>
   )

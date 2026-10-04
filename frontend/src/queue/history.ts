@@ -82,6 +82,7 @@ export function loadHistory(): Promise<HistoryEntry[]> {
       started: e.started ?? 0,
       finished: e.finished ?? 0,
       outcome: e.outcome ?? '',
+      ...(e.error ? { error: e.error } : {}),
     })),
   )
 }

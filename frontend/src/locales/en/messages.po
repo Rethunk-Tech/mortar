@@ -535,7 +535,7 @@ msgid "Dismiss"
 msgstr "Dismiss"
 
 #: src/profiles/RecentChangesButton.tsx:216
-#: src/queue/QueueHistory.tsx:116
+#: src/queue/QueueHistory.tsx:163
 msgid "All profiles"
 msgstr "All profiles"
 
@@ -847,7 +847,7 @@ msgstr "Nexus download links"
 msgid "{parallel} · {counts}"
 msgstr "{parallel} · {counts}"
 
-#: src/queue/QueueHistory.tsx:93
+#: src/queue/QueueHistory.tsx:140
 msgid "Filter by outcome"
 msgstr "Filter by outcome"
 
@@ -977,7 +977,7 @@ msgstr "More play options"
 msgid "{name} is marked obsolete and may not work with this game version."
 msgstr "{name} is marked obsolete and may not work with this game version."
 
-#: src/queue/QueueHistory.tsx:97
+#: src/queue/QueueHistory.tsx:144
 msgid "All outcomes"
 msgstr "All outcomes"
 
@@ -1224,7 +1224,7 @@ msgstr "Unlink"
 msgid "It could not load an asset."
 msgstr "It could not load an asset."
 
-#: src/queue/QueueHistory.tsx:43
+#: src/queue/QueueHistory.tsx:44
 msgid "Download again"
 msgstr "Download again"
 
@@ -1377,7 +1377,7 @@ msgid "Got it"
 msgstr "Got it"
 
 #: src/console/outcome.ts:12
-#: src/queue/QueueHistory.tsx:57
+#: src/queue/QueueHistory.tsx:58
 msgid "Failed"
 msgstr "Failed"
 
@@ -1773,7 +1773,7 @@ msgstr "Track a Nexus mod when Mortar installs it"
 
 #: src/mods/updateReview/EverywhereDialog.tsx:49
 #: src/queue/QueueBody.tsx:437
-#: src/queue/QueueHistory.tsx:59
+#: src/queue/QueueHistory.tsx:60
 msgid "Skipped"
 msgstr "Skipped"
 
@@ -2067,7 +2067,7 @@ msgstr "New profile from link"
 msgid "Title screen"
 msgstr "Title screen"
 
-#: src/mods/listRows.ts:88
+#: src/mods/listRows.ts:103
 #: src/profiles/overrideValue.ts:86
 #: src/settings/prefCopy.ts:289
 #: src/settings/prefCopy.ts:352
@@ -2113,7 +2113,7 @@ msgstr "JSON"
 msgid "No recorded runs yet"
 msgstr "No recorded runs yet"
 
-#: src/mods/listRows.ts:72
+#: src/mods/listRows.ts:87
 #: src/mods/Sidebar.tsx:338
 msgid "Archive"
 msgstr "Archive"
@@ -2565,8 +2565,8 @@ msgstr "Hide content packs"
 msgid "Collapsed"
 msgstr "Collapsed"
 
-#: src/mods/ModCards.tsx:445
-#: src/mods/ModList.tsx:410
+#: src/mods/ModCards.tsx:402
+#: src/mods/ModList.tsx:364
 #: src/mods/Toolbar.tsx:57
 msgid "Update available"
 msgstr "Update available"
@@ -2935,7 +2935,7 @@ msgstr "Compare {0} with…"
 
 #: src/firstrun/GameSetup.tsx:75
 #: src/firstrunTour/TourPopover.tsx:171
-#: src/queue/QueueHistory.tsx:55
+#: src/queue/QueueHistory.tsx:56
 msgid "Done"
 msgstr "Done"
 
@@ -3003,8 +3003,8 @@ msgstr "{0, plural, one {Remove all # mod from this profile?} other {Remove all 
 msgid "Mortar: {label}"
 msgstr "Mortar: {label}"
 
-#: src/mods/ModCards.tsx:411
-#: src/mods/ModList.tsx:369
+#: src/mods/ModCards.tsx:390
+#: src/mods/ModList.tsx:345
 #: src/mods/Toolbar.tsx:138
 msgid "A mod with several tags appears under its first tag."
 msgstr "A mod with several tags appears under its first tag."
@@ -3340,8 +3340,8 @@ msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile 
 msgid "Save these settings to a file, or load them on another computer."
 msgstr "Save these settings to a file, or load them on another computer."
 
-#: src/mods/ModCards.tsx:439
-#: src/mods/ModList.tsx:408
+#: src/mods/ModCards.tsx:396
+#: src/mods/ModList.tsx:362
 msgid "Ungrouped"
 msgstr "Ungrouped"
 
@@ -3528,7 +3528,7 @@ msgstr "{0} of {1}"
 msgid "Install {0}"
 msgstr "Install {0}"
 
-#: src/queue/QueueHistory.tsx:112
+#: src/queue/QueueHistory.tsx:159
 msgid "Filter by profile"
 msgstr "Filter by profile"
 
@@ -3695,7 +3695,7 @@ msgstr "Gold"
 msgid "Direct"
 msgstr "Direct"
 
-#: src/queue/QueueHistory.tsx:153
+#: src/queue/QueueHistory.tsx:200
 msgid "No downloads in history."
 msgstr "No downloads in history."
 
@@ -3767,8 +3767,8 @@ msgstr "SMAPI {0} installed"
 msgid "Filter by level or mod, and use Share log to upload this run to smapi.io."
 msgstr "Filter by level or mod, and use Share log to upload this run to smapi.io."
 
-#: src/mods/ModCards.tsx:436
-#: src/mods/ModList.tsx:405
+#: src/mods/ModCards.tsx:393
+#: src/mods/ModList.tsx:359
 msgid "Unknown source"
 msgstr "Unknown source"
 
@@ -4542,8 +4542,8 @@ msgstr "Move…"
 msgid "Turn on sharing nearby in Settings › General."
 msgstr "Turn on sharing nearby in Settings › General."
 
-#: src/mods/ModCards.tsx:438
-#: src/mods/ModList.tsx:407
+#: src/mods/ModCards.tsx:395
+#: src/mods/ModList.tsx:361
 msgid "Unknown author"
 msgstr "Unknown author"
 
@@ -4655,7 +4655,7 @@ msgid "Roll back {0}?"
 msgstr "Roll back {0}?"
 
 #. placeholder {0}: e.name
-#: src/queue/QueueHistory.tsx:196
+#: src/queue/QueueHistory.tsx:242
 msgid "Show {0} in its profile"
 msgstr "Show {0} in its profile"
 
@@ -4916,7 +4916,7 @@ msgstr "{name} updated to {version} — {n, plural, one {# profile needs attenti
 msgid "Pick up where you left off."
 msgstr "Pick up where you left off."
 
-#: src/queue/QueueHistory.tsx:138
+#: src/queue/QueueHistory.tsx:185
 msgid "Clear download history?"
 msgstr "Clear download history?"
 
@@ -4955,7 +4955,7 @@ msgstr "Saving…"
 msgid "New group"
 msgstr "New group"
 
-#: src/queue/QueueHistory.tsx:139
+#: src/queue/QueueHistory.tsx:186
 msgid "This deletes the list of past downloads. In-progress downloads are not affected. Failed items lose Retry until you download them again."
 msgstr "This deletes the list of past downloads. In-progress downloads are not affected. Failed items lose Retry until you download them again."
 
@@ -5300,7 +5300,7 @@ msgstr "Import"
 msgid "Obsolete"
 msgstr "Obsolete"
 
-#: src/queue/QueueHistory.tsx:154
+#: src/queue/QueueHistory.tsx:201
 msgid "Completed downloads will appear here."
 msgstr "Completed downloads will appear here."
 
@@ -5978,8 +5978,8 @@ msgstr "{0}: in Mortar"
 msgid "These mods require each other."
 msgstr "These mods require each other."
 
-#: src/mods/ModCards.tsx:437
-#: src/mods/ModList.tsx:406
+#: src/mods/ModCards.tsx:394
+#: src/mods/ModList.tsx:360
 msgid "Untagged"
 msgstr "Untagged"
 
@@ -6251,8 +6251,8 @@ msgstr "Installed separately"
 msgid "Default profile for Nexus links"
 msgstr "Default profile for Nexus links"
 
-#: src/mods/ModCards.tsx:435
-#: src/mods/ModList.tsx:404
+#: src/mods/ModCards.tsx:392
+#: src/mods/ModList.tsx:358
 msgid "Uncategorised"
 msgstr "Uncategorised"
 
@@ -6306,8 +6306,8 @@ msgstr "Reset…"
 msgid "A profile with that name already exists, so this one is \"{name}\""
 msgstr "A profile with that name already exists, so this one is \"{name}\""
 
-#: src/queue/QueueHistory.tsx:128
-#: src/queue/QueueHistory.tsx:140
+#: src/queue/QueueHistory.tsx:175
+#: src/queue/QueueHistory.tsx:187
 msgid "Clear history"
 msgstr "Clear history"
 
@@ -6358,8 +6358,8 @@ msgstr "{0, plural, one {with # settings file, written once its mod is installed
 
 #: src/firstrunTour/TourPopover.tsx:75
 #: src/game/ProfileWorkspace.tsx:71
-#: src/mods/ModCards.tsx:444
-#: src/mods/ModList.tsx:409
+#: src/mods/ModCards.tsx:401
+#: src/mods/ModList.tsx:363
 msgid "Problems"
 msgstr "Problems"
 
@@ -7049,7 +7049,7 @@ msgid "Report it so it can be fixed."
 msgstr "Report it so it can be fixed."
 
 #: src/browse/BrowsePage.tsx:161
-#: src/mods/listRows.ts:74
+#: src/mods/listRows.ts:89
 #: src/mods/Sidebar.tsx:340
 msgid "GitHub"
 msgstr "GitHub"
@@ -7170,10 +7170,10 @@ msgid "Auto-enable requirements"
 msgstr "Auto-enable requirements"
 
 #: src/mods/AuthorDialog.tsx:132
-#: src/mods/listRows.ts:88
-#: src/mods/ModCards.tsx:446
+#: src/mods/listRows.ts:103
+#: src/mods/ModCards.tsx:403
 #: src/mods/ModDependencyTree.tsx:112
-#: src/mods/ModList.tsx:411
+#: src/mods/ModList.tsx:365
 #: src/mods/Sidebar.tsx:302
 #: src/mods/Sidebar.tsx:316
 #: src/profiles/CompareBulkBody.tsx:245
@@ -7428,7 +7428,7 @@ msgid "From a backup…"
 msgstr "From a backup…"
 
 #. placeholder {0}: m.name
-#: src/mods/ModCards.tsx:131
+#: src/mods/ModCards.tsx:117
 msgid "Details of {0}"
 msgstr "Details of {0}"
 
@@ -7876,8 +7876,8 @@ msgstr "Status"
 msgid "Pending"
 msgstr "Pending"
 
-#: src/mods/ModCards.tsx:448
-#: src/mods/ModList.tsx:413
+#: src/mods/ModCards.tsx:405
+#: src/mods/ModList.tsx:367
 msgid "SMAPI mods"
 msgstr "SMAPI mods"
 
@@ -8373,7 +8373,7 @@ msgid "Downloaded"
 msgstr "Downloaded"
 
 #: src/queue/QueueBody.tsx:437
-#: src/queue/QueueHistory.tsx:61
+#: src/queue/QueueHistory.tsx:62
 msgid "Cancelled"
 msgstr "Cancelled"
 
@@ -8646,10 +8646,10 @@ msgid "What's new in Mortar {0}"
 msgstr "What's new in Mortar {0}"
 
 #: src/mods/AuthorDialog.tsx:133
-#: src/mods/ModCards.tsx:447
+#: src/mods/ModCards.tsx:404
 #: src/mods/ModDependencyTree.tsx:114
 #: src/mods/ModDetail.tsx:51
-#: src/mods/ModList.tsx:412
+#: src/mods/ModList.tsx:366
 #: src/mods/Sidebar.tsx:302
 #: src/mods/Sidebar.tsx:316
 #: src/mods/Toolbar.tsx:56
@@ -8691,7 +8691,7 @@ msgid "Include switched off mods"
 msgstr "Include switched off mods"
 
 #: src/browse/BrowsePage.tsx:160
-#: src/mods/listRows.ts:73
+#: src/mods/listRows.ts:88
 #: src/mods/Sidebar.tsx:339
 #: src/shell/NexusAccount.tsx:27
 msgid "Nexus Mods"
@@ -9651,7 +9651,7 @@ msgstr "Not in this profile"
 msgid "Switch profile"
 msgstr "Switch profile"
 
-#: src/queue/QueueHistory.tsx:183
+#: src/queue/QueueHistory.tsx:229
 msgid " · "
 msgstr " · "
 
