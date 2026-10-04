@@ -13,6 +13,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
 func conflictEvidence(kind string, hits []packHit) []ConflictEvidence {
@@ -64,7 +66,7 @@ func clashingKeys(patch cpPatch, hits []packHit, self string) []string {
 			continue
 		}
 		clash := slices.ContainsFunc(hits, func(h packHit) bool {
-			return !sameID(h.id, self) && slices.ContainsFunc(h.edits, func(o cpPatch) bool {
+			return !profile.SameID(h.id, self) && slices.ContainsFunc(h.edits, func(o cpPatch) bool {
 				return slices.ContainsFunc(o.shapes, s.overlaps)
 			})
 		})
@@ -153,7 +155,7 @@ func overlapAgainst(patch cpPatch, hits []packHit, bounds [][]patchBounds, self 
 	var inter image.Rectangle
 	found := false
 	for i, hit := range hits {
-		if sameID(hit.id, self) {
+		if profile.SameID(hit.id, self) {
 			continue
 		}
 		for _, peer := range bounds[i] {

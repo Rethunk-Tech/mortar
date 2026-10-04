@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
 // AssetTouch is one mod or patch that writes a target (or a data key on that target).
@@ -180,7 +182,7 @@ func buildAssetIndex(mods []Installed) []AssetTarget {
 		winner := indexWinner(touches)
 		modsOut := make([]AssetTouch, len(touches))
 		for i, t := range touches {
-			t.touch.Winner = winner != "" && sameID(t.touch.ModID, winner)
+			t.touch.Winner = winner != "" && profile.SameID(t.touch.ModID, winner)
 			modsOut[i] = t.touch
 		}
 		out = append(out, AssetTarget{Target: key.target, Key: key.key, Mods: modsOut, Winner: winner})

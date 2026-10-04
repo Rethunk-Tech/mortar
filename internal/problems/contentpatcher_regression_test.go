@@ -10,6 +10,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
 func TestLoadConflictWithBlankLoserIsCosmetic(t *testing.T) {
@@ -264,7 +266,7 @@ func TestSwitchOffOnlySuggestsNonClashingAllowedValue(t *testing.T) {
 		t.Fatalf("expected one conflict, got %#v", conflicts)
 	}
 	for _, fix := range conflicts[0].Fixes {
-		if sameID(fix.UniqueID, first.UniqueID) {
+		if profile.SameID(fix.UniqueID, first.UniqueID) {
 			if fix.Field != "Variant" || fix.Value != "Green" {
 				t.Fatalf("expected the only safe allowed value, got %#v", fix)
 			}

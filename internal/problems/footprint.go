@@ -22,6 +22,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/jsonc"
+	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
 // cpShape is part of a target one edit writes: an area (image pixels, or map tiles on every layer), one map
@@ -1710,7 +1711,7 @@ func settingStillClashes(h packHit, peers []packHit, field cpSchema, value strin
 		active = h.edits
 	}
 	for _, peer := range peers {
-		if sameID(peer.id, h.id) {
+		if profile.SameID(peer.id, h.id) {
 			continue
 		}
 		if clash, _ := editsClash(active, peer.edits); clash {

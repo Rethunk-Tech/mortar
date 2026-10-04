@@ -4,6 +4,8 @@ import (
 	"cmp"
 	"slices"
 	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
 // recolourFamily is a map recolour that packs offer as a config choice. Packs spell the choice their own way
@@ -45,7 +47,7 @@ func familyOfValue(value string) int {
 func enabledRecolours(mods []Installed, self string) map[int]Installed {
 	out := map[int]Installed{}
 	for _, m := range mods {
-		if !m.Enabled || sameID(m.UniqueID, self) {
+		if !m.Enabled || profile.SameID(m.UniqueID, self) {
 			continue
 		}
 		id := squash(m.UniqueID)

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
 type listedFakeMeta struct {
@@ -19,7 +20,7 @@ func (f listedFakeMeta) Lookup(_ context.Context, uniqueID string) ([]meta.Ref, 
 	for _, ref := range f.pages {
 		for _, file := range ref.Downloads {
 			for _, mod := range file.Mods {
-				if sameID(mod.UniqueID, uniqueID) {
+				if profile.SameID(mod.UniqueID, uniqueID) {
 					return []meta.Ref{{Site: "Nexus", ID: ref.ID}}, nil
 				}
 			}

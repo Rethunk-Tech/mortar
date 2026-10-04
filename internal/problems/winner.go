@@ -1,6 +1,10 @@
 package problems
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/profile"
+)
 
 func markLoadAfterWinner(c *AssetConflict, hits []packHit) {
 	winner, ok := loadAfterWinner(hits)
@@ -20,7 +24,7 @@ func loadAfterWinner(hits []packHit) (packHit, bool) {
 			if i == j || !a.loadAfter[strings.ToLower(b.id)] {
 				continue
 			}
-			if found > 0 && !sameID(winner.id, a.id) {
+			if found > 0 && !profile.SameID(winner.id, a.id) {
 				return packHit{}, false
 			}
 			winner, found = a, found+1

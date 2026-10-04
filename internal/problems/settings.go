@@ -9,6 +9,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/jsonc"
+	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
 type settingGroup struct {
@@ -90,7 +91,7 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 					groups[groupKey] = group
 				} else {
 					for _, mod := range required {
-						if !slices.ContainsFunc(group.required, func(m Installed) bool { return sameID(m.UniqueID, mod.UniqueID) }) {
+						if !slices.ContainsFunc(group.required, func(m Installed) bool { return profile.SameID(m.UniqueID, mod.UniqueID) }) {
 							group.required = append(group.required, mod)
 						}
 					}
@@ -144,7 +145,7 @@ func enabledRequirements(when cpWhen, present map[string]bool, own string) []str
 	for _, group := range when.anyOf {
 		for _, id := range group {
 			id = strings.ToLower(strings.TrimSpace(id))
-			if id != "" && !sameID(id, own) && present[id] {
+			if id != "" && !profile.SameID(id, own) && present[id] {
 				ids[id] = true
 			}
 		}
@@ -295,7 +296,7 @@ func variantSettings(packMod Installed, pack cachedPack, config map[string]strin
 			ids := make([]string, 0)
 			for _, group := range p.when.anyOf {
 				for _, id := range group {
-					if !sameID(id, packMod.UniqueID) {
+					if !profile.SameID(id, packMod.UniqueID) {
 						ids = append(ids, strings.ToLower(id))
 					}
 				}

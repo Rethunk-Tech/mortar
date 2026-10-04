@@ -271,7 +271,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 			ur := checkUpdates(ctx, s.meta, env, mods, enabledOnly, false, s.NexusFiles)
 			asked := 0
 			for _, x := range mods {
-				if x.SourceKind == profile.SourceSMAPI || x.SourceKind == profile.SourceMortar {
+				if (profile.Source{Kind: x.SourceKind}).Bundled() {
 					continue
 				}
 				if enabledOnly && !x.Enabled {
@@ -422,7 +422,7 @@ func (s *Service) ConflictImageCrop(_ context.Context, gameID, id, uniqueID, fro
 		return "", errors.New("missing pack or image")
 	}
 	for _, m := range mods {
-		if !sameID(m.UniqueID, uniqueID) {
+		if !profile.SameID(m.UniqueID, uniqueID) {
 			continue
 		}
 		return cropPackImage(m.Folder, fromFile, x, y, w, h)

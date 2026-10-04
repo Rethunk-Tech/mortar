@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
 // markUnreadable records that a map could not be read, so the tilesheets it might use count as possibly used, and
@@ -287,7 +288,7 @@ func assetBasenames(assets map[string]bool) []string {
 
 func manifestUses(mod Installed, uniqueID string) bool {
 	return slices.ContainsFunc(mod.Dependencies, func(dep manifest.Dependency) bool {
-		return sameID(dep.UniqueID, uniqueID)
+		return profile.SameID(dep.UniqueID, uniqueID)
 	})
 }
 

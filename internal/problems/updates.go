@@ -101,7 +101,7 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 	req := meta.UpdateRequest{APIVersion: env.APIVersion, GameVersion: env.GameVersion, Platform: env.Platform, Fresh: fresh}
 	var asked []Installed
 	for _, x := range mods {
-		if x.SourceKind == profile.SourceSMAPI || x.SourceKind == profile.SourceMortar {
+		if (profile.Source{Kind: x.SourceKind}).Bundled() {
 			continue
 		}
 		if enabledOnly && !x.Enabled {
@@ -280,7 +280,7 @@ type Relations struct {
 
 // Relate reports what the mod key/uniqueID needs and which mods need it. ok is false when the profile lacks it.
 func Relate(mods []Installed, key, uniqueID string) (r Relations, ok bool) {
-	i := slices.IndexFunc(mods, func(x Installed) bool { return x.Key == key && sameID(x.UniqueID, uniqueID) })
+	i := slices.IndexFunc(mods, func(x Installed) bool { return x.Key == key && profile.SameID(x.UniqueID, uniqueID) })
 	if i < 0 {
 		return Relations{}, false
 	}
@@ -288,7 +288,7 @@ func Relate(mods []Installed, key, uniqueID string) (r Relations, ok bool) {
 	r = Relations{PageURL: pageURL(self.UpdateKeys), Needs: []Need{}, NeededBy: []Dependent{}}
 	for _, dep := range self.Dependencies {
 		n := Need{UniqueID: dep.UniqueID, Name: dep.UniqueID, MinimumVersion: dep.MinimumVersion, Required: dep.Required, State: "ok"}
-		if j := slices.IndexFunc(mods, func(x Installed) bool { return sameID(x.UniqueID, dep.UniqueID) }); j >= 0 {
+		if j := slices.IndexFunc(mods, func(x Installed) bool { return profile.SameID(x.UniqueID, dep.UniqueID) }); j >= 0 {
 			n.Name = mods[j].Name
 		}
 		if reason, have := depState(mods, dep); reason != "" {
@@ -297,10 +297,10 @@ func Relate(mods []Installed, key, uniqueID string) (r Relations, ok bool) {
 		r.Needs = append(r.Needs, n)
 	}
 	for _, x := range mods {
-		if x.Key == self.Key && sameID(x.UniqueID, self.UniqueID) {
+		if x.Key == self.Key && profile.SameID(x.UniqueID, self.UniqueID) {
 			continue
 		}
-		if slices.ContainsFunc(x.Dependencies, func(d manifest.Dependency) bool { return sameID(d.UniqueID, self.UniqueID) }) {
+		if slices.ContainsFunc(x.Dependencies, func(d manifest.Dependency) bool { return profile.SameID(d.UniqueID, self.UniqueID) }) {
 			r.NeededBy = append(r.NeededBy, Dependent{Key: x.Key, UniqueID: x.UniqueID, Name: x.Name})
 		}
 	}
@@ -436,7 +436,7 @@ func newerPreviewFile(candidate, current meta.File) bool {
 }
 
 func containsPreviewMod(file meta.File, uniqueID string) bool {
-	return slices.ContainsFunc(file.Mods, func(m meta.Mod) bool { return sameID(m.UniqueID, uniqueID) })
+	return slices.ContainsFunc(file.Mods, func(m meta.Mod) bool { return profile.SameID(m.UniqueID, uniqueID) })
 }
 
 // nexusFileIsCurrent uses the cached SMAPI file preview to keep a stale manifest from making a file update itself.

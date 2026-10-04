@@ -23,6 +23,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/jsonc"
+	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
 const contentPatcherID = "Pathoschild.ContentPatcher"
@@ -1047,7 +1048,7 @@ func readConfigSchema(root string) map[string]cpSchema {
 }
 
 func isContentPatcherPack(mod Installed) bool {
-	return sameID(mod.ContentPackFor, contentPatcherID)
+	return profile.SameID(mod.ContentPackFor, contentPatcherID)
 }
 
 func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack *cachedPack) {
@@ -1951,7 +1952,7 @@ func assetConflictScan(mods []Installed) ([]AssetConflict, []SettingHint, []Redu
 				continue
 			}
 			hits := at[p.kind][p.target]
-			i := slices.IndexFunc(hits, func(h packHit) bool { return sameID(h.id, mod.UniqueID) })
+			i := slices.IndexFunc(hits, func(h packHit) bool { return profile.SameID(h.id, mod.UniqueID) })
 			if i < 0 {
 				hits = append(hits, packHit{
 					id: mod.UniqueID, name: mod.Name, key: mod.Key, priority: p.priority, mentions: knows,
@@ -2289,7 +2290,7 @@ func harmlessLoads(hits []packHit, conflict AssetConflict) (bool, *SettingHint) 
 	if allLoadFilesIdentical(hits, conflict.Target) {
 		return true, nil
 	}
-	winner := slices.IndexFunc(hits, func(h packHit) bool { return sameID(h.id, conflict.WinnerID) })
+	winner := slices.IndexFunc(hits, func(h packHit) bool { return profile.SameID(h.id, conflict.WinnerID) })
 	if winner < 0 {
 		for _, hit := range hits {
 			for _, load := range hit.loads {
@@ -2406,7 +2407,7 @@ func loadPriorityDecided(hits []packHit, conflict AssetConflict) bool {
 	if conflict.WinnerID == "" {
 		return false
 	}
-	winner := slices.IndexFunc(hits, func(h packHit) bool { return sameID(h.id, conflict.WinnerID) })
+	winner := slices.IndexFunc(hits, func(h packHit) bool { return profile.SameID(h.id, conflict.WinnerID) })
 	if winner < 0 {
 		return false
 	}

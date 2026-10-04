@@ -205,8 +205,6 @@ func (r Result) WarningCount() int {
 	return n
 }
 
-func sameID(a, b string) bool { return strings.EqualFold(a, b) }
-
 // meets reports whether version satisfies minimum. What cannot be compared is taken as satisfied: SMAPI itself
 // only complains about versions it can order.
 func meets(version, minimum string) bool {
@@ -477,7 +475,7 @@ func listedDepState(all []Installed, pageID int, page meta.Page, pageKnown bool)
 		if !matches && pageKnown {
 			for _, file := range page.Downloads {
 				for _, mod := range file.Mods {
-					if sameID(x.UniqueID, mod.UniqueID) {
+					if profile.SameID(x.UniqueID, mod.UniqueID) {
 						matches = true
 						break
 					}
@@ -503,7 +501,7 @@ func listedDepState(all []Installed, pageID int, page meta.Page, pageKnown bool)
 
 func manifestHasRequirement(all []Installed, entryKey string, page meta.Page) bool {
 	for _, d := range all {
-		if !d.Enabled || !sameID(d.Key, entryKey) {
+		if !d.Enabled || !profile.SameID(d.Key, entryKey) {
 			continue
 		}
 		for _, dep := range d.Dependencies {
@@ -512,7 +510,7 @@ func manifestHasRequirement(all []Installed, entryKey string, page meta.Page) bo
 			}
 			for _, file := range page.Downloads {
 				for _, mod := range file.Mods {
-					if sameID(dep.UniqueID, mod.UniqueID) {
+					if profile.SameID(dep.UniqueID, mod.UniqueID) {
 						return true
 					}
 				}
@@ -553,7 +551,7 @@ func isWordByte(b byte) bool {
 func depState(all []Installed, dep manifest.Dependency) (reason, installedVersion string) {
 	var installed []Installed
 	for _, x := range all {
-		if sameID(x.UniqueID, dep.UniqueID) {
+		if profile.SameID(x.UniqueID, dep.UniqueID) {
 			installed = append(installed, x)
 		}
 	}
@@ -591,7 +589,7 @@ func duplicates(enabled []Installed) []Duplicate {
 		seen[id] = true
 		var group []Installed
 		for _, x := range enabled {
-			if sameID(x.UniqueID, first.UniqueID) {
+			if profile.SameID(x.UniqueID, first.UniqueID) {
 				group = append(group, x)
 			}
 		}
@@ -613,7 +611,7 @@ func copies(group, enabled []Installed) []Copy {
 		}
 		for _, d := range enabled {
 			for _, dep := range d.Dependencies {
-				if !dep.Required || !sameID(dep.UniqueID, g.UniqueID) {
+				if !dep.Required || !profile.SameID(dep.UniqueID, g.UniqueID) {
 					continue
 				}
 				if meets(g.Version, dep.MinimumVersion) {
@@ -669,7 +667,7 @@ func fillWhere(ctx context.Context, m Meta, enabled []Installed, missing []Missi
 		if x.Where != nil {
 			continue
 		}
-		dependent := slices.IndexFunc(enabled, func(e Installed) bool { return sameID(e.UniqueID, x.DependentID) })
+		dependent := slices.IndexFunc(enabled, func(e Installed) bool { return profile.SameID(e.UniqueID, x.DependentID) })
 		var keys []string
 		if dependent >= 0 {
 			keys = enabled[dependent].UpdateKeys
@@ -774,7 +772,7 @@ func fileIn(page meta.Page, r meta.Ref, uniqueID, minimum string) (ref *Ref, top
 	holds := false
 	for _, f := range page.Downloads {
 		for _, mod := range f.Mods {
-			if !sameID(mod.UniqueID, uniqueID) {
+			if !profile.SameID(mod.UniqueID, uniqueID) {
 				continue
 			}
 			if c, ok := meta.CompareVersions(mod.Version, top); !holds || (ok && c > 0) {
