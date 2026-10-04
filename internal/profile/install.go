@@ -3,7 +3,6 @@ package profile
 import (
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -128,6 +127,19 @@ func (s *Store) installQuestion(game, id, key string, source Source, err error) 
 	return InstallResult{}, false
 }
 
+// addedNames lists the mods of the entries holding key; never nil, so it serialises as [].
+func addedNames(p Profile, key string) []string {
+	names := []string{}
+	for _, e := range p.Entries {
+		if e.Key == key {
+			for _, m := range e.Mods {
+				names = append(names, m.Name)
+			}
+		}
+	}
+	return names
+}
+
 func (s *Store) installKey(game, id, key string, source Source) (InstallResult, error) {
 	p, updated, versionChanged, err := s.placeKey(game, id, key, source)
 	if ask, ok := s.installQuestion(game, id, key, source, err); ok {
@@ -136,14 +148,7 @@ func (s *Store) installKey(game, id, key string, source Source) (InstallResult, 
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
-	res := InstallResult{Profile: p, Added: []string{}, Updated: updated, VersionChanged: versionChanged}
-	for _, e := range p.Entries {
-		if e.Key == key {
-			for _, m := range e.Mods {
-				res.Added = append(res.Added, m.Name)
-			}
-		}
-	}
+	res := InstallResult{Profile: p, Added: addedNames(p, key), Updated: updated, VersionChanged: versionChanged}
 	if err := s.RecordModsSnapshot(game, id); err != nil {
 		return InstallResult{}, err
 	}
@@ -220,19 +225,10 @@ func modsVersionChanged(old, neu []EntryMod) bool {
 // holding returns the profile's entries that hold any mod of the store item key. An entry that is already key is a
 // DuplicateError.
 func (s *Store) holding(game, id, key string, choices map[string]map[string][]string) ([]Entry, error) {
-	src, tmp, err := s.layoutItem(game, id, key, choices)
-	if tmp != "" {
-		defer func() { _ = os.RemoveAll(tmp) }()
-	}
+	_, found, done, err := s.scanItem(game, id, key, choices)
+	defer done()
 	if err != nil {
 		return nil, err
-	}
-	found, err := manifest.Scan(src)
-	if err != nil {
-		return nil, err
-	}
-	if len(found) == 0 {
-		return nil, &NoModError{Key: key}
 	}
 	p, err := s.read(game, id)
 	if err != nil {

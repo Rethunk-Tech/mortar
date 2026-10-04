@@ -248,6 +248,27 @@ func (s *Store) replacing(game, id, key string) (Entry, bool, error) {
 	return held[0], true, nil
 }
 
+// scanItem lays out a store item and scans it for mods; an item with none is a NoModError. done removes any temp
+// layout and is always safe to defer.
+func (s *Store) scanItem(game, id, key string, choices map[string]map[string][]string) (src string, found []manifest.Mod, done func(), err error) {
+	src, tmp, err := s.layoutItem(game, id, key, choices)
+	done = func() {
+		if tmp != "" {
+			_ = fsx.RemoveAll(tmp)
+		}
+	}
+	if err != nil {
+		return "", nil, done, err
+	}
+	if found, err = manifest.Scan(src); err != nil {
+		return "", nil, done, err
+	}
+	if len(found) == 0 {
+		return "", nil, done, &NoModError{Key: key}
+	}
+	return src, found, done, nil
+}
+
 func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][]string) (src, tmp string, err error) {
 	root, err := s.items.Path(game, key)
 	if err != nil {
@@ -345,14 +366,7 @@ func (s *Store) InstallFomod(game, id, key string, source Source, choices map[st
 			if err != nil {
 				return InstallResult{}, installError(err)
 			}
-			res := InstallResult{Profile: out, Added: []string{}, Updated: true}
-			for _, e := range out.Entries {
-				if e.Key == key {
-					for _, m := range e.Mods {
-						res.Added = append(res.Added, m.Name)
-					}
-				}
-			}
+			res := InstallResult{Profile: out, Added: addedNames(out, key), Updated: true}
 			if err := s.RecordModsSnapshot(game, id); err != nil {
 				return InstallResult{}, err
 			}
@@ -368,19 +382,10 @@ func (s *Store) applyFomod(game, id, key string, choices map[string]map[string][
 		if err != nil {
 			return err
 		}
-		src, tmp, err := s.layoutItem(game, id, key, choices)
-		if tmp != "" {
-			defer func() { _ = os.RemoveAll(tmp) }()
-		}
+		_, found, done, err := s.scanItem(game, id, key, choices)
+		defer done()
 		if err != nil {
 			return err
-		}
-		found, err := manifest.Scan(src)
-		if err != nil {
-			return err
-		}
-		if len(found) == 0 {
-			return &NoModError{Key: key}
 		}
 		e := p.Entries[ei]
 		e.Fomod = cloneFomod(choices)

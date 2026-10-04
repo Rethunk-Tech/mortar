@@ -208,19 +208,10 @@ func (s *Store) fillExtrasUpdate(game, id, modsDir, oldEntryKey, tmp string, e, 
 }
 
 func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey string, e Entry) error {
-	extraSrc, extraTmp, err := s.layoutItem(game, id, newKey, nil)
-	if extraTmp != "" {
-		defer func() { _ = os.RemoveAll(extraTmp) }()
-	}
+	extraSrc, found, done, err := s.scanItem(game, id, newKey, nil)
+	defer done()
 	if err != nil {
 		return err
-	}
-	found, err := manifest.Scan(extraSrc)
-	if err != nil {
-		return err
-	}
-	if len(found) == 0 {
-		return &NoModError{Key: newKey}
 	}
 	scratch, err := os.MkdirTemp(tmp, tempPrefix)
 	if err != nil {
@@ -274,32 +265,14 @@ func (s *Store) InstallNexusExtra(game, id, entryKey, path string, source Source
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
-	res := InstallResult{Profile: p, Added: []string{}}
-	for _, e := range p.Entries {
-		if e.Key != entryKey {
-			continue
-		}
-		for _, m := range e.Mods {
-			res.Added = append(res.Added, m.Name)
-		}
-	}
-	return res, nil
+	return InstallResult{Profile: p, Added: addedNames(p, entryKey)}, nil
 }
 
 func (s *Store) copyExtraInto(game, id, entryDir, extraKey string, choices map[string]map[string][]string) error {
-	src, tmp, err := s.layoutItem(game, id, extraKey, choices)
-	if tmp != "" {
-		defer func() { _ = os.RemoveAll(tmp) }()
-	}
+	src, _, done, err := s.scanItem(game, id, extraKey, choices)
+	defer done()
 	if err != nil {
 		return err
-	}
-	found, err := manifest.Scan(src)
-	if err != nil {
-		return err
-	}
-	if len(found) == 0 {
-		return &NoModError{Key: extraKey}
 	}
 	dest := filepath.Join(entryDir, extraKey)
 	if err := os.MkdirAll(entryDir, 0o700); err != nil {
