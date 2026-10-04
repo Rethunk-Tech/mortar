@@ -101,7 +101,7 @@ export function ToolEditorDialog({ open, initial, onClose, onSave }: Props) {
             onClick={browse}
             sx={{ alignSelf: 'flex-start' }}
           >
-            {t`Browse…`}
+            {t`Choose folder…`}
           </Button>
           <TextField
             label={t`Arguments`}
