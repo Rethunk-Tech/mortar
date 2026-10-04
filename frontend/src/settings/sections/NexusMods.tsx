@@ -14,7 +14,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
-import { errorText, reportUnexpected } from '../../toasts/report.ts'
+import { errorText, reportError, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { NexusMeter } from '../NexusMeter.tsx'
 import { useNexus } from '../nexus.ts'
@@ -61,9 +61,7 @@ function UntrackConfirmDialog({
         setTrackedCount(result.remaining)
         onCancel()
       })
-      .catch((err: unknown) =>
-        pushToast({ kind: 'error', title: errorText(err) ?? t`Could not untrack mods` }),
-      )
+      .catch(reportError(t`Could not untrack mods`))
       .finally(() => setBusy(false))
   }
   return (

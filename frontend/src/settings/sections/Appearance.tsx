@@ -11,7 +11,7 @@ import {
 import { columnLabel } from '../../mods/columnLabel.ts'
 import { LIST_COLUMN_IDS, sanitizeListSort } from '../../mods/listColumns.ts'
 import { type AccentName, accents } from '../../theme/accents.ts'
-import { errorText } from '../../toasts/report.ts'
+import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSegmented, PrefSelect } from '../PrefControls.tsx'
 import { PrefKeys } from '../PrefRow.tsx'
@@ -53,11 +53,7 @@ export function Appearance() {
   const accent = useSettings((s) => s.accent)
   const background = useSettings((s) => s.background)
   const backgroundImage = useSettings((s) => s.backgroundImage)
-  const push = useToasts((s) => s.push)
-  const reportFailure = (err: unknown) => {
-    const body = errorText(err)
-    push({ kind: 'error', title: t`Couldn't save that setting`, ...(body ? { body } : {}) })
-  }
+  const reportFailure = reportError(t`Could not save that setting`)
   const cards: { name: AccentName; label: string; note: string }[] = [
     { name: 'sand', label: t`Sand`, note: t`Default` },
     { name: 'moss', label: t`Moss`, note: t`Earthy green` },

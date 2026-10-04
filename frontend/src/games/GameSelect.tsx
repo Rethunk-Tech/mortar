@@ -22,8 +22,7 @@ import { playDirect } from '../launch/directPref.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { type GameId, isGameId, openSettings, useNav } from '../nav/store.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { reportError } from '../toasts/report.ts'
 import { gameArt } from './art.ts'
 import { ProfileCards } from './ProfileCards.tsx'
 import { type GameStatus, loaderCaption, loadGameStatus } from './status.ts'
@@ -42,9 +41,7 @@ const NORMAL_FONT = 15
 const shadow = '0 1px 2px var(--mortar-overlay-90), 0 0 18px var(--mortar-overlay-85)'
 
 function fail(title: string, err: unknown) {
-  useToasts
-    .getState()
-    .push({ kind: 'error', title, body: errorMessage(err), detail: errorDetails(err) })
+  reportError(title)(err)
 }
 
 function Art({ src, openable }: { src: string; openable: boolean }) {

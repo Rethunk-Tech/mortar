@@ -18,8 +18,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { TourAgainButton } from '../../firstrunTour/TourAgainButton.tsx'
 import { availableLocales } from '../../i18n/locales.ts'
-import { errorText, reportUnexpected } from '../../toasts/report.ts'
-import { useToasts } from '../../toasts/store.ts'
+import { reportError, reportUnexpected } from '../../toasts/report.ts'
 import { PrefKeys } from '../PrefRow.tsx'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
@@ -31,14 +30,7 @@ const nowrap = { whiteSpace: 'nowrap' } as const
 
 function useReportFailure() {
   const { t } = useLingui()
-  const push = useToasts((s) => s.push)
-  return useCallback(
-    (err: unknown) => {
-      const body = errorText(err)
-      push({ kind: 'error', title: t`Couldn't save that setting`, ...(body ? { body } : {}) })
-    },
-    [push, t],
-  )
+  return useCallback(reportError(t`Could not save that setting`), [])
 }
 
 function StartupAndWindow() {

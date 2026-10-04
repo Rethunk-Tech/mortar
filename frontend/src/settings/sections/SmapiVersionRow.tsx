@@ -14,7 +14,7 @@ import { useLaunch } from '../../launch/store.ts'
 import { useLoader } from '../../loader/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
-import { errorDetails, errorMessage } from '../../toasts/report.ts'
+import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSelect } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
@@ -85,15 +85,7 @@ function SmapiVersionRow() {
         push({ kind: 'success', title: t`SMAPI ${st.version} is installed` })
         return check(GAME_STARDEW)
       })
-      .catch((err: unknown) => {
-        const body = errorMessage(err)
-        push({
-          kind: 'error',
-          title: t`Could not install SMAPI`,
-          body,
-          detail: errorDetails(err),
-        })
-      })
+      .catch(reportError(t`Could not install SMAPI`))
       .finally(() => {
         setBusy(false)
         setConfirm(false)

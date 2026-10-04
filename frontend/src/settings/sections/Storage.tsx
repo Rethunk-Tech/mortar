@@ -2,8 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { useState } from 'react'
 import { MoveDataFolderPreview } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
 import { useNav } from '../../nav/store.ts'
-import { errorText } from '../../toasts/report.ts'
-import { useToasts } from '../../toasts/store.ts'
+import { reportError } from '../../toasts/report.ts'
 import { PrefKeys } from '../PrefRow.tsx'
 import { SettingsSection } from '../SettingsSection.tsx'
 import { CacheClearDialog } from './DataMods.tsx'
@@ -31,12 +30,7 @@ function useMove() {
         setMove({ dest, estimate })
       })
       .catch((err: unknown) => {
-        const body = errorText(err)
-        useToasts.getState().push({
-          kind: 'error',
-          title: t`Couldn't inspect the destination folder`,
-          ...(body ? { body } : {}),
-        })
+        reportError(t`Could not inspect the destination folder`)(err)
       })
   }
   const run = () => {

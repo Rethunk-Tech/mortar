@@ -14,8 +14,7 @@ import { ProfileHealth } from '../mods/ProfileHealth.tsx'
 import { type GameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { reportError } from '../toasts/report.ts'
 import { profileCardLastPlayedIso } from './profileCardLastPlayed.ts'
 import { profileCardsSlice } from './profileCardsSlice.ts'
 import { useProfileCardsMeta } from './useProfileCardsMeta.ts'
@@ -40,9 +39,7 @@ function ProfileCards({
   const runStarted = useProfileCardsMeta(gameId, profiles, visible, lastPlayed)
 
   const fail = (title: string, err: unknown) => {
-    useToasts
-      .getState()
-      .push({ kind: 'error', title, body: errorMessage(err), detail: errorDetails(err) })
+    reportError(title)(err)
   }
 
   const openProfile = (ev: MouseEvent, profileId: string) => {

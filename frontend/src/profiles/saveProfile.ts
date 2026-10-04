@@ -2,8 +2,7 @@ import { SetGameSettings } from '../../bindings/github.com/Rethunk-AI/mortar/int
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { SetOverrides } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { applyStagedCover, type StagedCover } from '../game/cover.ts'
-import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
 import { clipDescription } from './appearance.ts'
 import type { GameSettingsValues } from './GameSettings.tsx'
 import { useProfiles } from './store.ts'
@@ -23,12 +22,7 @@ async function coverSaved(
     }
     return true
   } catch (error) {
-    useToasts.getState().push({
-      kind: 'error',
-      title: failure,
-      body: errorMessage(error),
-      detail: errorDetails(error),
-    })
+    reportError(failure)(error)
     return false
   }
 }

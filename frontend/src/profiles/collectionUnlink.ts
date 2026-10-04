@@ -8,7 +8,7 @@ import {
   SetCollection,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
+import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useProfiles } from './store.ts'
 
@@ -16,12 +16,7 @@ async function restoreCollection(game: string, profileId: string, ref: Collectio
   try {
     useProfiles.getState().replace(await SetCollection(game, profileId, ref))
   } catch (e) {
-    useToasts.getState().push({
-      kind: 'error',
-      title: i18n._(msg`Could not restore the collection link`),
-      body: errorMessage(e),
-      detail: errorDetails(e),
-    })
+    reportError(i18n._(msg`Could not restore the collection link`))(e)
   }
 }
 
@@ -42,11 +37,6 @@ export async function unlinkCollection(game: string, profile: Profile) {
       },
     })
   } catch (e) {
-    useToasts.getState().push({
-      kind: 'error',
-      title: i18n._(msg`Could not unlink the collection`),
-      body: errorMessage(e),
-      detail: errorDetails(e),
-    })
+    reportError(i18n._(msg`Could not unlink the collection`))(e)
   }
 }

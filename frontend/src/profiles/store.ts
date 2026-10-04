@@ -32,14 +32,10 @@ import { SetLastProfile } from '../../bindings/github.com/Rethunk-AI/mortar/inte
 import { loadGameStatus } from '../games/status.ts'
 import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
+import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
-const fail = (title: string) => (e: unknown) => {
-  useToasts
-    .getState()
-    .push({ kind: 'error', title, body: errorMessage(e), detail: errorDetails(e) })
-}
+const fail = reportError
 
 async function exportProfileZip(gameId: string, id: string) {
   try {

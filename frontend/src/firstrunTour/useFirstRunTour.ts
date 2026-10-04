@@ -4,8 +4,7 @@ import { SetTipsSeen } from '../../bindings/github.com/Rethunk-AI/mortar/interna
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { errorText } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { reportError } from '../toasts/report.ts'
 import { resolveTourAnchor } from './anchors.ts'
 import { sameRectOr, type TourRect } from './logic.ts'
 import { useTourReplay } from './replay.ts'
@@ -36,14 +35,7 @@ function useFirstRunTour() {
     setDismissed(true)
     clearReplay()
     setOpen(false)
-    SetTipsSeen(tourMarkSeen(seen)).catch((err: unknown) => {
-      const body = errorText(err)
-      useToasts.getState().push({
-        kind: 'error',
-        title: t`Couldn't save that setting`,
-        ...(body ? { body } : {}),
-      })
-    })
+    SetTipsSeen(tourMarkSeen(seen)).catch(reportError(t`Could not save that setting`))
   }, [clearReplay, seen, t])
 
   useEffect(() => {

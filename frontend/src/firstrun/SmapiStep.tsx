@@ -14,7 +14,7 @@ import {
 import { useLoader } from '../loader/store.ts'
 import type { GameId } from '../nav/store.ts'
 import { MONO } from '../theme/theme.ts'
-import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { launchLine, launchOptionsSet } from './logic.ts'
 import { Panel } from './Panel.tsx'
@@ -98,14 +98,7 @@ function LaunchLine({
         useToasts.getState().push({ kind: 'success', title: t`Launch options set in Steam` })
         recheck()
       })
-      .catch((e: unknown) =>
-        useToasts.getState().push({
-          kind: 'error',
-          title: t`Could not set it in Steam`,
-          body: errorMessage(e),
-          detail: errorDetails(e),
-        }),
-      )
+      .catch(reportError(t`Could not set it in Steam`))
       .finally(() => setWriting(false))
   }
   return (

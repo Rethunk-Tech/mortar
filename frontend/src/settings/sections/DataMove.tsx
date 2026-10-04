@@ -14,7 +14,7 @@ import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/inter
 import { formatBytes } from '../../i18n/bytes.ts'
 import { useLaunch } from '../../launch/store.ts'
 import { paper } from '../../mods/paper.ts'
-import { errorText } from '../../toasts/report.ts'
+import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import type { MoveState } from './DataMoveRun.ts'
 import { mono, nowrap } from './dataStyles.ts'
@@ -37,12 +37,7 @@ export function MoveDataButton({ onPicked }: { onPicked: (dest: string) => void 
         PickFolder(t`Move data folder…`)
           .then((dest) => (dest ? onPicked(dest) : undefined))
           .catch((err: unknown) => {
-            const body = errorText(err)
-            useToasts.getState().push({
-              kind: 'error',
-              title: t`Couldn't prepare the data folder move`,
-              ...(body ? { body } : {}),
-            })
+            reportError(t`Could not prepare the data folder move`)(err)
           })
       }}
       sx={{ ...nowrap, flexShrink: 0 }}

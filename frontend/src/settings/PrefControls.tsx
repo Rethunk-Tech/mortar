@@ -11,8 +11,7 @@ import {
   ToggleButtonGroup,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { errorText } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { reportError } from '../toasts/report.ts'
 
 export function PrefSelect({
   value,
@@ -169,15 +168,13 @@ export function PrefText({
 }) {
   const { t } = useLingui()
   const [draft, setDraft] = useState(value)
-  const push = useToasts((s) => s.push)
   useEffect(() => setDraft(value), [value])
   const commit = () => {
     if (draft === value) {
       return
     }
     onCommit(draft).catch((err: unknown) => {
-      const body = errorText(err)
-      push({ kind: 'error', title: t`Couldn't save that setting`, ...(body ? { body } : {}) })
+      reportError(t`Could not save that setting`)(err)
       setDraft(value)
     })
   }
@@ -211,7 +208,6 @@ export function PrefNumber({
 }) {
   const { t } = useLingui()
   const [draft, setDraft] = useState(String(value))
-  const push = useToasts((s) => s.push)
   useEffect(() => setDraft(String(value)), [value])
   const commit = () => {
     const n = Number(draft)
@@ -221,8 +217,7 @@ export function PrefNumber({
     }
     if (n !== value) {
       onCommit(n).catch((err: unknown) => {
-        const body = errorText(err)
-        push({ kind: 'error', title: t`Couldn't save that setting`, ...(body ? { body } : {}) })
+        reportError(t`Could not save that setting`)(err)
         setDraft(String(value))
       })
     }

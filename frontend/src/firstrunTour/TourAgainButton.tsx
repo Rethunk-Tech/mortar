@@ -2,8 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
 import { SetTipsSeen } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useSettings } from '../settings/store.ts'
-import { errorText } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { reportError } from '../toasts/report.ts'
 import { useTourReplay } from './replay.ts'
 import { tourClearSeen } from './seen.ts'
 
@@ -14,14 +13,7 @@ function TourAgainButton() {
       variant="outlined"
       onClick={() => {
         const seen = useSettings.getState().tipsSeen
-        SetTipsSeen(tourClearSeen(seen)).catch((err: unknown) => {
-          const body = errorText(err)
-          useToasts.getState().push({
-            kind: 'error',
-            title: t`Couldn't save that setting`,
-            ...(body ? { body } : {}),
-          })
-        })
+        SetTipsSeen(tourClearSeen(seen)).catch(reportError(t`Could not save that setting`))
         useTourReplay.getState().request()
       }}
     >
