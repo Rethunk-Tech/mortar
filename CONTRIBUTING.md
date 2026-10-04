@@ -4,7 +4,7 @@ This is the workflow for maintainers and agents; the rules the code keeps are in
 
 ## Before review
 
-Run `bun run gate` ([`HUMANS.md`](HUMANS.md#gate)); it also runs as the lefthook pre-push hook. Nothing is merged on a red gate, and no hook is bypassed.
+Run `bun run gate` ([`HUMANS.md`](HUMANS.md#gate)); the lefthook pre-push hook runs `gate`, which covers it. Nothing is merged on a red gate, and no hook is bypassed.
 
 ## Commits
 

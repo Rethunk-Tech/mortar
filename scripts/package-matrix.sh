@@ -50,7 +50,7 @@ pkgcase ".rpm on fedora:latest" fedora:latest "dnf install -y /a/*.rpm" "dnf rem
 pkgcase ".pkg.tar.zst on archlinux:latest" archlinux:latest "pacman -Sy --noconfirm && pacman -U --noconfirm /a/*.pkg.tar.zst" "pacman -Rns --noconfirm mortar"
 
 # AppImage: extract-and-run needs no FUSE; the extracted tree must carry the desktop entry, icon, licence and notices.
-if out=$($CT run --rm -v "$A":/a:ro -e VERSION="$VERSION" ubuntu:latest bash -c '
+if out=$($CT run --rm -i -v "$A":/a:ro -e VERSION="$VERSION" ubuntu:latest bash -s 2>&1 <<'EOS'
   set -e
   cp /a/*.AppImage /tmp/m.AppImage && chmod +x /tmp/m.AppImage && cd /tmp
   out=$(./m.AppImage --appimage-extract-and-run version 2>&1) || { echo "version exit $?: $out"; exit 1; }
@@ -58,7 +58,9 @@ if out=$($CT run --rm -v "$A":/a:ro -e VERSION="$VERSION" ubuntu:latest bash -c 
   ./m.AppImage --appimage-extract >/dev/null
   ls squashfs-root/*.desktop squashfs-root/*.png >/dev/null || { echo "no desktop/icon in AppImage"; exit 1; }
   for n in LICENSE THIRD_PARTY_NOTICES; do [ -s squashfs-root/usr/share/doc/mortar/$n ] || { echo "no $n in AppImage"; exit 1; }; done
-  [ -z "$(find /root -iname "*mortar*" 2>/dev/null)" ] || { echo "left in HOME"; exit 1; }' 2>&1); then
+  [ -z "$(find /root -iname "*mortar*" 2>/dev/null)" ] || { echo "left in HOME"; exit 1; }
+EOS
+); then
   record "AppImage on ubuntu:latest" PASS ""
 else
   record "AppImage on ubuntu:latest" FAIL "$(printf '%s' "$out" | tail -3 | tr '\n' ' ')"

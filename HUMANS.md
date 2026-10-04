@@ -84,7 +84,7 @@ source <(mortar completion bash)
 bun run gate    # runs the steps in package.json's gate script; stops at the first failure
 ```
 
-`main.go` embeds `frontend/dist`, so a fresh clone needs `bun run bindings && bun run --cwd frontend build` once before the gate, as CI's setup does. The pre-push hook runs the same command. Where CI runs it: [AGENTS.md](AGENTS.md#verify).
+`main.go` embeds `frontend/dist`, so a fresh clone needs `bun run bindings && bun run --cwd frontend build` once before the gate, as CI's setup does. The lefthook pre-push hook runs `gate` ([rethunk-gate-cli](https://github.com/Rethunk-Tech/rethunk-gate-cli)), which runs these steps plus actionlint. Where CI runs it: [AGENTS.md](AGENTS.md#verify).
 
 ## Release
 

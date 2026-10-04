@@ -1,11 +1,12 @@
 {
   "name": "mortar",
   "private": true,
+  "packageManager": "bun@1.4.2",
   "workspaces": [
     "frontend"
   ],
   "scripts": {
-    "lint": "biome check --error-on-warnings . && knip && golangci-lint run && GOOS=windows golangci-lint run && golangci-lint run --build-tags updatetest ./internal/updatesvc/...",
+    "lint": "biome check --error-on-warnings . && git ls-files -z '*.sh' | xargs -0 shellcheck -x && knip && golangci-lint run && GOOS=windows golangci-lint run && golangci-lint run --build-tags updatetest ./internal/updatesvc/...",
     "bindings": "wails3 generate bindings -clean=true -ts -i",
     "typecheck": "bun run bindings && bun run --cwd frontend tsc --noEmit",
     "test": "go test -race ./... && bun test",

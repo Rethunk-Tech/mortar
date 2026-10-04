@@ -1,3 +1,4 @@
+# shellcheck shell=sh
 # Sourced by AppRun before Mortar starts. The bundled WebKitGTK and GTK 4 libraries need the host's glibc 2.38 or
 # newer; on an older system they fail with a loader error the user never sees when starting from a file manager.
 mortar_need=2.38
