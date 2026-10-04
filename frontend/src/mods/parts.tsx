@@ -330,6 +330,11 @@ export function RemoveDialog() {
     ),
   ]
   const dependents = dependentsOf(mods, removing)
+  const profile = useProfiles(openProfileOf)
+  const removingKeys = new Set(removing.map((m) => m.key))
+  const optional = (profile?.entries ?? []).filter((e) =>
+    removingKeys.has(e.overlayOf ?? ''),
+  ).length
   const close = () => askRemove(null)
   let body = t`Their folders in this profile are deleted. You can undo this.`
   if (extra.length > 0) {
@@ -357,6 +362,11 @@ export function RemoveDialog() {
       </DialogTitle>
       <DialogContent>
         <DialogContentText>{body}</DialogContentText>
+        {optional > 0 ? (
+          <DialogContentText sx={{ mt: 1 }}>
+            {t`${plural(optional, { one: 'Also removes # optional file that goes on top of it.', other: 'Also removes # optional files that go on top of it.' })}`}
+          </DialogContentText>
+        ) : null}
         {needLine ? <DialogContentText sx={{ mt: 1 }}>{needLine}</DialogContentText> : null}
       </DialogContent>
       <DialogActions>

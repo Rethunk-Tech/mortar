@@ -17,15 +17,22 @@ export function NeedsRootCallout({ item }: { item: Item }) {
   }
   const profileName = profile?.name ?? ''
   const variants = (ask.variants ?? []).length > 0
+  const { overlay } = ask
+  let label = variants ? t`Choose a variant` : t`Choose a folder`
+  let button = variants ? t`Choose variant…` : t`Choose folder…`
+  let text = variants
+    ? t`This archive holds several variants of the same mod. Pick the one to install; updates keep it.`
+    : t`This archive has no SMAPI mod where Mortar expects one. Pick the folder that holds manifest.json.`
+  if (overlay) {
+    label = t`Place the optional file`
+    button = t`Place…`
+    text = t`This optional file replaces files of ${overlay.baseLabel}. Pick where its files go.`
+  }
   return (
     <Callout
       item={item}
-      label={variants ? t`Choose a variant` : t`Choose a folder`}
-      text={
-        variants
-          ? t`This archive holds several variants of the same mod. Pick the one to install; updates keep it.`
-          : t`This archive has no SMAPI mod where Mortar expects one. Pick the folder that holds manifest.json.`
-      }
+      label={label}
+      text={text}
       actions={
         <Button
           variant="outlined"
@@ -51,7 +58,7 @@ export function NeedsRootCallout({ item }: { item: Item }) {
         }
         sx={{ alignSelf: 'flex-start' }}
       >
-        {variants ? t`Choose variant…` : t`Choose folder…`}
+        {button}
       </Button>
     </Callout>
   )

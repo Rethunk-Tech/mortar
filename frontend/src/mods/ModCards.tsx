@@ -21,6 +21,7 @@ import { ModMenu } from './ModMenu.tsx'
 import { GroupHeaderRow } from './ModsGroupHeader.tsx'
 import { contextMenuProps } from './menu.ts'
 import { useNexusFresh } from './nexusDetails.ts'
+import { OverlayCountChip } from './OverlayRow.tsx'
 import {
   LastRunBadge,
   LetterTile,
@@ -202,6 +203,7 @@ function ModCard({
         </Box>
       </ButtonBase>
       <ExtraFilesChip mod={m} profile={profile} />
+      <OverlayCountChip mod={m} profile={profile} />
       <PinBadge mod={m} />
       <CompatChip mod={m} />
       <UpdateBadge mod={m} />

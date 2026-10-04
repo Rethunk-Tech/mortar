@@ -32,6 +32,8 @@ import { ModListTable } from './ModListVirtual.tsx'
 import { contextMenuProps } from './menu.ts'
 import { useNexusFresh } from './nexusDetails.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
+import { OverlayCountChip } from './OverlayRow.tsx'
+import { nestOverlays, overlaysByBase } from './overlayRows.ts'
 import {
   LastRunBadge,
   LetterTile,
@@ -109,6 +111,7 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
               {m.name}
             </Box>
             <ExtraFilesChip mod={m} profile={profile} />
+            <OverlayCountChip mod={m} profile={profile} />
           </Box>
         </Cell>
       )
@@ -321,12 +324,16 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   const tagHint = t`A mod with several tags appears under its first tag.`
   const items = useMemo(
     () =>
-      flattenModGroups(groups, {
-        grouped: groupBy !== 'none',
-        collapsed,
-        idOf: (row) => modId(row.mod),
-      }),
-    [collapsed, groupBy, groups],
+      nestOverlays(
+        flattenModGroups(groups, {
+          grouped: groupBy !== 'none',
+          collapsed,
+          idOf: (row) => modId(row.mod),
+        }),
+        (row) => row.mod.key,
+        overlaysByBase(profile),
+      ),
+    [collapsed, groupBy, groups, profile],
   )
   const onMenu = (e: MouseEvent) => setMenu(columnMenuFromEvent(e))
   const grid = listGridColumns(cols)

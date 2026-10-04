@@ -1,5 +1,5 @@
 import { msg, plural } from '@lingui/core/macro'
-import { Events } from '@wailsio/runtime'
+import { Browser, Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import type {
   Entry,
@@ -21,6 +21,7 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { considerMissing } from '../install/store.ts'
 import { idKey } from '../mods/dependents.ts'
+import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
 import { profileLocked } from '../mods/useLocked.ts'
 import { openSettings } from '../nav/store.ts'
@@ -109,6 +110,16 @@ function failureToast(item: Item) {
     return {
       title: i18n._(msg`Nexus rejected your API key`),
       action: { label: i18n._(msg`Open Nexus settings`), run: () => openSettings('nexus') },
+    }
+  }
+  if (item.errorKind === 'nobase') {
+    return {
+      title: i18n._(msg`${item.name} needs its main file first`),
+      body: item.error,
+      action: {
+        label: i18n._(msg`Open files page`),
+        run: () => Browser.OpenURL(nexusModUrl(item.modId, undefined, 'files')),
+      },
     }
   }
   if (item.errorKind === 'disk') {

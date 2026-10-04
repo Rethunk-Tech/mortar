@@ -68,7 +68,7 @@ export function BundleRow({
           {mods.map((mod) => (
             <Box
               component="li"
-              key={mod.uniqueId}
+              key={mod.uniqueId || mod.entryKey}
               sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
             >
               <Typography
@@ -76,23 +76,25 @@ export function BundleRow({
                 title={mod.name}
                 sx={{ flex: 1, minWidth: 0, fontSize: 13 }}
               >
-                {mod.name}
+                {mod.overlayOf ? t`${mod.name} (optional file)` : mod.name}
               </Typography>
-              <TipIconButton
-                label={
-                  mods.length === 1
-                    ? t`A bundle keeps at least one mod; delete the bundle instead`
-                    : t`Remove ${mod.name} from ${bundle.name}`
-                }
-                disabled={mods.length === 1}
-                onClick={() => {
-                  RemoveMods(game, bundle.id, [mod.uniqueId])
-                    .then(onChanged)
-                    .catch(reportError(t`Could not remove the mod from the bundle`))
-                }}
-              >
-                <X size={ICON_SIZE} />
-              </TipIconButton>
+              {mod.overlayOf ? null : (
+                <TipIconButton
+                  label={
+                    mods.length === 1
+                      ? t`A bundle keeps at least one mod; delete the bundle instead`
+                      : t`Remove ${mod.name} from ${bundle.name}`
+                  }
+                  disabled={mods.length === 1}
+                  onClick={() => {
+                    RemoveMods(game, bundle.id, [mod.uniqueId])
+                      .then(onChanged)
+                      .catch(reportError(t`Could not remove the mod from the bundle`))
+                  }}
+                >
+                  <X size={ICON_SIZE} />
+                </TipIconButton>
+              )}
             </Box>
           ))}
         </Box>

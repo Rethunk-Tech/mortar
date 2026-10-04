@@ -21,6 +21,7 @@ import type {
 import { formatBytes } from '../i18n/bytes.ts'
 import { OverlayPlaceDialog } from './OverlayPlaceDialog.tsx'
 import { ArchivePreview } from './ArchivePreview.tsx'
+import { OverlayPlaceDialog } from './OverlayPlaceDialog.tsx'
 import { useInstall } from './store.ts'
 
 function NodeRow({

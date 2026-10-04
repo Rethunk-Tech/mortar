@@ -14,6 +14,7 @@ import {
 } from './listColumns.ts'
 import { modId } from './lookup.ts'
 import { GroupHeaderRow } from './ModsGroupHeader.tsx'
+import { OverlayListRow } from './OverlayRow.tsx'
 import { heading } from './paper.ts'
 import {
   focusModAt,
@@ -183,6 +184,9 @@ function ListSlot({
   }
   if (item.kind === 'row') {
     return renderRow(item.item, item.stripe, onArrow)
+  }
+  if (item.kind === 'overlay') {
+    return <OverlayListRow overlay={item.overlay} />
   }
   return null
 }

@@ -31,10 +31,20 @@ export const TYPEAHEAD_MS = 500
 
 export const LIST_ROW_PX = 36
 
+/** An optional file laid over a mod's main file, listed under the main file's row. */
+export interface OverlayRow {
+  key: string
+  baseKey: string
+  label: string
+  enabled: boolean
+  baseEnabled: boolean
+}
+
 export type VirtualRow<T> =
   | { kind: 'header'; key: string; groupKey: string; count: number }
   | { kind: 'row'; key: string; groupKey: string; item: T; stripe: boolean }
   | { kind: 'lane'; key: string; groupKey: string; items: readonly T[] }
+  | { kind: 'overlay'; key: string; groupKey: string; overlay: OverlayRow }
 
 export function gridColumnCount(width: number): number {
   if (width <= 0) {

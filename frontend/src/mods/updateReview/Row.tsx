@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
 import { ArrowRight, ExternalLink } from 'lucide-react'
@@ -42,6 +43,12 @@ export function Row({
   const entry = useProfiles((s) =>
     s.profiles.find((p) => p.id === profileId)?.entries?.find((e) => e.key === update.key),
   )
+  const optional = useProfiles(
+    (s) =>
+      (s.profiles.find((p) => p.id === profileId)?.entries ?? []).filter(
+        (e) => e.overlayOf === update.key,
+      ).length,
+  )
   const details = useNexusDetails((s) => s.byId[update.nexusId]?.details)
   const riskyChangelog =
     update.nexusId > 0 && details
@@ -54,6 +61,11 @@ export function Row({
     ...(mod ? siblingsOf(mods, mod).map((o) => t`Also updates ${o.name} (same download)`) : []),
     ...(mod && !mod.enabled ? [t`Switched off in this profile`] : []),
     ...(entry?.pinned && entry.pinReason ? [t`Pinned: ${entry.pinReason}`] : []),
+    ...(optional > 0
+      ? [
+          t`${plural(optional, { one: '# optional file will be re-applied; check it still fits this version', other: '# optional files will be re-applied; check they still fit this version' })}`,
+        ]
+      : []),
     ...(update.unofficial ? [t`Unofficial`] : []),
     ...(update.githubFallback && !update.githubRepo
       ? [t`From GitHub (${update.githubFallback}) when its release matches, else Nexus`]

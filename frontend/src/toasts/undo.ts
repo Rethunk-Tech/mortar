@@ -133,9 +133,13 @@ export function entryFieldsOf(entries: UndoEntry[], keys: string[]): EntryFields
     }))
 }
 
-export function entriesForKeys<T extends { key: string }>(entries: T[], keys: string[]): T[] {
+// Removing an entry takes the optional files laid over it along, so its undo brings them back too.
+export function entriesForKeys<T extends { key: string; overlayOf?: string | null }>(
+  entries: T[],
+  keys: string[],
+): T[] {
   const want = new Set(keys)
-  return entries.filter((entry) => want.has(entry.key))
+  return entries.filter((entry) => want.has(entry.key) || want.has(entry.overlayOf ?? ''))
 }
 
 export function undoRevertTarget(events: { id: string }[]): string {

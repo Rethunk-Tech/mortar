@@ -175,7 +175,7 @@ msgstr "Skip this profile"
 msgid "Updated categories"
 msgstr "Updated categories"
 
-#: src/queue/store.ts:117
+#: src/queue/store.ts:128
 msgid "Open storage settings"
 msgstr "Open storage settings"
 
@@ -290,7 +290,7 @@ msgid "Premium and GitHub downloads at once"
 msgstr "Premium and GitHub downloads at once"
 
 #. placeholder {0}: failed.length
-#: src/queue/store.ts:210
+#: src/queue/store.ts:221
 msgid "{0, plural, one {# download failed} other {# downloads failed}}"
 msgstr "{0, plural, one {# download failed} other {# downloads failed}}"
 
@@ -311,7 +311,7 @@ msgstr "Duplicate the open profile"
 msgid "Or paste a share or collection link with Ctrl+V."
 msgstr "Or paste a share or collection link with Ctrl+V."
 
-#: src/queue/store.ts:102
+#: src/queue/store.ts:103
 msgid "The download could not finish. Retry or skip it from the queue."
 msgstr "The download could not finish. Retry or skip it from the queue."
 
@@ -954,6 +954,11 @@ msgstr "Replaces some files of the mod above"
 msgid "{0} done"
 msgstr "{0} done"
 
+#. placeholder {0}: session.profileName
+#: src/install/overlayPlace.ts:34
+msgid "Added {names} to {0}"
+msgstr "Added {names} to {0}"
+
 #: src/mods/MoveFoldersDialog.tsx:113
 msgid "Could not dismiss that folder"
 msgstr "Could not dismiss that folder"
@@ -1043,7 +1048,7 @@ msgstr "Untrack on Nexus"
 msgid "Select all mods"
 msgstr "Select all mods"
 
-#: src/install/RemapDialog.tsx:210
+#: src/install/RemapDialog.tsx:211
 msgid "Use this folder"
 msgstr "Use this folder"
 
@@ -1055,7 +1060,7 @@ msgstr "Scheduled"
 msgid "Could not add the update downloads"
 msgstr "Could not add the update downloads"
 
-#: src/bundles/BundlesSection.tsx:43
+#: src/bundles/BundlesSection.tsx:46
 #: src/bundles/dialogs.tsx:195
 msgid "Create a bundle to reuse a set of mods."
 msgstr "Create a bundle to reuse a set of mods."
@@ -1318,7 +1323,7 @@ msgid "{checked}. All files are intact."
 msgstr "{checked}. All files are intact."
 
 #: src/launch/SaveWarnDialog.tsx:57
-#: src/mods/updateReview/Row.tsx:55
+#: src/mods/updateReview/Row.tsx:62
 msgid "Switched off in this profile"
 msgstr "Switched off in this profile"
 
@@ -1397,7 +1402,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/notes/NotesTab.tsx:43
 #: src/profiles/GameModsDialog.tsx:133
 #: src/queue/QueueBody.tsx:254
-#: src/queue/store.ts:132
+#: src/queue/store.ts:143
 #: src/saves/BackupsDialog.tsx:136
 #: src/saves/SavesTab.tsx:37
 #: src/settings/sections/DataStoreReport.tsx:377
@@ -1483,12 +1488,12 @@ msgid "Needed by"
 msgstr "Needed by"
 
 #: src/install/MergeCallout.tsx:51
-#: src/install/NeedsRootCallout.tsx:35
+#: src/install/NeedsRootCallout.tsx:42
 #: src/queue/QueueBody.tsx:156
 msgid "Skip"
 msgstr "Skip"
 
-#: src/queue/store.ts:58
+#: src/queue/store.ts:59
 msgid "Nothing in the queue needs a decision."
 msgstr "Nothing in the queue needs a decision."
 
@@ -1540,6 +1545,11 @@ msgstr "SMAPI is the loader every Stardew mod needs. It goes into the game folde
 #: src/console/StartupPanel.tsx:305
 msgid "Total"
 msgstr "Total"
+
+#. placeholder {0}: item.name
+#: src/queue/store.ts:117
+msgid "{0} needs its main file first"
+msgstr "{0} needs its main file first"
 
 #: src/mods/problemFix/SettingFix.tsx:48
 msgid "Set to automatic"
@@ -1653,6 +1663,10 @@ msgstr "Mortar renames the folder {0} without its leading dots, so SMAPI loads t
 msgid "Curator's instructions"
 msgstr "Curator's instructions"
 
+#: src/mods/parts.tsx:367
+msgid "{optional, plural, one {Also removes # optional file that goes on top of it.} other {Also removes # optional files that go on top of it.}}"
+msgstr "{optional, plural, one {Also removes # optional file that goes on top of it.} other {Also removes # optional files that go on top of it.}}"
+
 #: src/profiles/GameSettings.tsx:311
 msgid "Fullscreen resolution width"
 msgstr "Fullscreen resolution width"
@@ -1713,7 +1727,7 @@ msgstr "Already retrying failed downloads"
 msgid "Files added"
 msgstr "Files added"
 
-#: src/bundles/BundlesSection.tsx:102
+#: src/bundles/BundlesSection.tsx:105
 #: src/bundles/dialogs.tsx:118
 msgid "Loading bundles…"
 msgstr "Loading bundles…"
@@ -1721,6 +1735,11 @@ msgstr "Loading bundles…"
 #: src/mods/problemFixButtons.tsx:207
 msgid "Forget"
 msgstr "Forget"
+
+#. placeholder {0}: mod.name
+#: src/bundles/BundleRow.tsx:79
+msgid "{0} (optional file)"
+msgstr "{0} (optional file)"
 
 #: src/mods/LoadOrderTab.tsx:206
 msgid "The game loader chooses this order. Mortar does not change it."
@@ -1801,7 +1820,7 @@ msgstr "Console timestamps"
 msgid "Will update"
 msgstr "Will update"
 
-#: src/mods/parts.tsx:378
+#: src/mods/parts.tsx:388
 msgid "{allCount, plural, one {Remove all # mod} other {Remove all # mods}}"
 msgstr "{allCount, plural, one {Remove all # mod} other {Remove all # mods}}"
 
@@ -1866,8 +1885,8 @@ msgstr "Show the first-run tips again"
 #: src/nxm/store.ts:53
 #: src/profiles/LaunchPresetDialog.tsx:82
 #: src/queue/actions.ts:83
-#: src/queue/store.ts:213
-#: src/queue/store.ts:329
+#: src/queue/store.ts:224
+#: src/queue/store.ts:340
 #: src/saves/SaveGapLine.tsx:56
 #: src/settings/prefCopy.ts:353
 msgid "Show"
@@ -2046,7 +2065,7 @@ msgstr "Compact"
 #: src/profiles/historyRevert.ts:69
 #: src/profiles/store.ts:190
 #: src/profiles/store.ts:233
-#: src/queue/store.ts:264
+#: src/queue/store.ts:275
 #: src/saves/store.ts:65
 #: src/templates/ApplyTemplateDialog.tsx:84
 #: src/templates/TemplateDialogs.tsx:221
@@ -2072,7 +2091,7 @@ msgstr "Only in {targetName}"
 msgid "No mod matches"
 msgstr "No mod matches"
 
-#: src/queue/store.ts:258
+#: src/queue/store.ts:269
 msgid "{first} installed"
 msgstr "{first} installed"
 
@@ -2100,7 +2119,7 @@ msgstr "Could not restore profile game settings"
 
 #. placeholder {0}: dependents.length
 #. placeholder {1}: dependents.map((m) => m.name).join(', ')
-#: src/mods/parts.tsx:348
+#: src/mods/parts.tsx:353
 msgid "{0, plural, one {# mod needs this} other {# mods need this}}: {1}"
 msgstr "{0, plural, one {# mod needs this} other {# mods need this}}: {1}"
 
@@ -2444,7 +2463,7 @@ msgstr "Desktop"
 msgid "{0, plural, one {# mod added} other {# mods added}}"
 msgstr "{0, plural, one {# mod added} other {# mods added}}"
 
-#: src/mods/parts.tsx:334
+#: src/mods/parts.tsx:339
 msgid "Their folders in this profile are deleted. You can undo this."
 msgstr "Their folders in this profile are deleted. You can undo this."
 
@@ -2500,7 +2519,7 @@ msgid "Search all runs…"
 msgstr "Search all runs…"
 
 #: src/firstrun/FindStep.tsx:202
-#: src/install/NeedsRootCallout.tsx:54
+#: src/install/NeedsRootCallout.tsx:22
 #: src/settings/sections/GameSettings.tsx:342
 #: src/tools/ToolEditorDialog.tsx:112
 msgid "Choose folder…"
@@ -2524,6 +2543,10 @@ msgstr "Clear comparison"
 #: src/mods/describe.ts:120
 msgid "{0} has multiple Nexus files installed: {files}."
 msgstr "{0} has multiple Nexus files installed: {files}."
+
+#: src/install/NeedsRootCallout.tsx:27
+msgid "Place the optional file"
+msgstr "Place the optional file"
 
 #: src/profiles/EditProfileDialog.tsx:149
 #: src/settings/sections/Appearance.tsx:71
@@ -2677,6 +2700,7 @@ msgid "Send nearby…"
 msgstr "Send nearby…"
 
 #: src/browse/BrowsePage.tsx:357
+#: src/queue/store.ts:120
 msgid "Open files page"
 msgstr "Open files page"
 
@@ -2930,7 +2954,7 @@ msgstr "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 msgid "Stop the game?"
 msgstr "Stop the game?"
 
-#: src/mods/parts.tsx:338
+#: src/mods/parts.tsx:343
 msgid "Its folder in this profile is deleted. You can undo this."
 msgstr "Its folder in this profile is deleted. You can undo this."
 
@@ -2966,7 +2990,7 @@ msgstr "Default launch preset"
 msgid "Custom categories"
 msgstr "Custom categories"
 
-#: src/bundles/BundlesSection.tsx:147
+#: src/bundles/BundlesSection.tsx:150
 #: src/game/ProfileMenuItems.tsx:83
 #: src/game/ProfileMenuItems.tsx:422
 #: src/mods/CategoryEditor.tsx:158
@@ -3019,8 +3043,8 @@ msgstr "Ask me to endorse mods I keep using"
 msgid "Both set: {0} +{1} more"
 msgstr "Both set: {0} +{1} more"
 
-#: src/bundles/BundlesSection.tsx:89
-#: src/bundles/BundlesSection.tsx:100
+#: src/bundles/BundlesSection.tsx:92
+#: src/bundles/BundlesSection.tsx:103
 msgid "Bundles"
 msgstr "Bundles"
 
@@ -3028,7 +3052,7 @@ msgstr "Bundles"
 msgid "Extra SMAPI arguments for this profile. Mortar already sets the mods folder."
 msgstr "Extra SMAPI arguments for this profile. Mortar already sets the mods folder."
 
-#: src/bundles/BundlesSection.tsx:161
+#: src/bundles/BundlesSection.tsx:164
 msgid "Bundle deleted"
 msgstr "Bundle deleted"
 
@@ -3041,7 +3065,7 @@ msgstr "Replace {targetName}?"
 msgid "Shortcuts"
 msgstr "Shortcuts"
 
-#: src/bundles/BundleRow.tsx:84
+#: src/bundles/BundleRow.tsx:85
 msgid "A bundle keeps at least one mod; delete the bundle instead"
 msgstr "A bundle keeps at least one mod; delete the bundle instead"
 
@@ -3234,7 +3258,8 @@ msgstr "Where save backups are kept. Empty uses the default."
 #: src/fomod/Dialog.tsx:254
 #: src/game/NewProfileDialog.tsx:152
 #: src/install/DownloadsDialog.tsx:210
-#: src/install/RemapDialog.tsx:204
+#: src/install/OverlayPlaceDialog.tsx:118
+#: src/install/RemapDialog.tsx:205
 #: src/lan/IncomingPrompt.tsx:161
 #: src/lan/IncomingPrompt.tsx:179
 #: src/lan/SendDialog.tsx:174
@@ -3245,7 +3270,7 @@ msgstr "Where save backups are kept. Empty uses the default."
 #: src/mods/AddToGroupDialog.tsx:93
 #: src/mods/CategoryEditor.tsx:143
 #: src/mods/CategoryEditor.tsx:223
-#: src/mods/parts.tsx:363
+#: src/mods/parts.tsx:373
 #: src/mods/ReportToAuthorButton.tsx:222
 #: src/mods/SelectionBarDialogs.tsx:86
 #: src/mods/SelectionBarDialogs.tsx:136
@@ -3331,6 +3356,11 @@ msgstr "Choose a {0} folder"
 msgid "Play this profile and start a farm. Each save shows here with how well it fits {name}, so you know which mods it needs."
 msgstr "Play this profile and start a farm. Each save shows here with how well it fits {name}, so you know which mods it needs."
 
+#. placeholder {0}: overlay.baseLabel
+#: src/install/OverlayPlaceDialog.tsx:98
+msgid "This optional file has no manifest; it replaces files of {0}. Mortar could not tell where its files go. Pick the folder to take from it and the folder of the main mod it goes into."
+msgstr "This optional file has no manifest; it replaces files of {0}. Mortar could not tell where its files go. Pick the folder to take from it and the folder of the main mod it goes into."
+
 #: src/launchers/LauncherList.tsx:161
 msgid "Added by you"
 msgstr "Added by you"
@@ -3379,7 +3409,7 @@ msgstr "Untrack the {gameName} mods none of your profiles use, out of {trackedCo
 msgid "More ways to add mods"
 msgstr "More ways to add mods"
 
-#: src/queue/store.ts:222
+#: src/queue/store.ts:233
 msgid "Downloads paused"
 msgstr "Downloads paused"
 
@@ -3460,16 +3490,16 @@ msgid "A profile with only SMAPI. Add mods from Nexus or from archives."
 msgstr "A profile with only SMAPI. Add mods from Nexus or from archives."
 
 #. placeholder {0}: extra.join(', ')
-#: src/mods/parts.tsx:336
+#: src/mods/parts.tsx:341
 msgid "Mods from the same download are removed together: {0}. You can undo this."
 msgstr "Mods from the same download are removed together: {0}. You can undo this."
 
-#: src/bundles/BundlesSection.tsx:63
+#: src/bundles/BundlesSection.tsx:66
 #: src/bundles/dialogs.tsx:88
 msgid "Could not read bundles"
 msgstr "Could not read bundles"
 
-#: src/queue/store.ts:120
+#: src/queue/store.ts:131
 msgid "Show in queue"
 msgstr "Show in queue"
 
@@ -3741,8 +3771,8 @@ msgstr "No download source is known for {0}."
 msgid "Where the profile comes from"
 msgstr "Where the profile comes from"
 
-#: src/install/NeedsRootCallout.tsx:26
-#: src/install/RemapDialog.tsx:174
+#: src/install/NeedsRootCallout.tsx:24
+#: src/install/RemapDialog.tsx:175
 msgid "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 msgstr "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 
@@ -3872,6 +3902,10 @@ msgstr "The local port OBS reads the overlay from"
 msgid "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 
+#: src/install/OverlayPlaceDialog.tsx:110
+msgid "Main mod's folder"
+msgstr "Main mod's folder"
+
 #: src/settings/sections/DataUsage.tsx:276
 msgid "A portable copy keeps its data beside the program."
 msgstr "A portable copy keeps its data beside the program."
@@ -3986,7 +4020,7 @@ msgid "{mods, plural, one {# mod} other {# mods}}"
 msgstr "{mods, plural, one {# mod} other {# mods}}"
 
 #. placeholder {0}: o.name
-#: src/mods/updateReview/Row.tsx:54
+#: src/mods/updateReview/Row.tsx:61
 msgid "Also updates {0} (same download)"
 msgstr "Also updates {0} (same download)"
 
@@ -4142,7 +4176,7 @@ msgstr "Downloads"
 msgid "The fields above are the Standard preset. Play uses the default preset; the Play menu can launch with another one once. Templates are game-wide and copied in."
 msgstr "The fields above are the Standard preset. Play uses the default preset; the Play menu can launch with another one once. Templates are game-wide and copied in."
 
-#: src/bundles/BundlesSection.tsx:146
+#: src/bundles/BundlesSection.tsx:149
 msgid "This bundle will be removed from Mortar."
 msgstr "This bundle will be removed from Mortar."
 
@@ -4180,7 +4214,7 @@ msgid "Mod updates"
 msgstr "Mod updates"
 
 #. placeholder {0}: removing.length
-#: src/mods/parts.tsx:356
+#: src/mods/parts.tsx:361
 msgid "{0, plural, one {Remove # mod from this profile?} other {Remove # mods from this profile?}}"
 msgstr "{0, plural, one {Remove # mod from this profile?} other {Remove # mods from this profile?}}"
 
@@ -4518,7 +4552,7 @@ msgstr "{n, plural, one {# problem} other {# problems}}"
 
 #. placeholder {0}: mod.name
 #. placeholder {1}: bundle.name
-#: src/bundles/BundleRow.tsx:85
+#: src/bundles/BundleRow.tsx:86
 msgid "Remove {0} from {1}"
 msgstr "Remove {0} from {1}"
 
@@ -4696,7 +4730,7 @@ msgstr "Updates are unknown: SMAPI's update service could not be reached."
 msgid "Remove the focused mod"
 msgstr "Remove the focused mod"
 
-#: src/queue/store.ts:124
+#: src/queue/store.ts:135
 msgid "Allow it in your antivirus, then Retry."
 msgstr "Allow it in your antivirus, then Retry."
 
@@ -4705,7 +4739,7 @@ msgid "Backup location"
 msgstr "Backup location"
 
 #. placeholder {0}: profile.name
-#: src/queue/store.ts:257
+#: src/queue/store.ts:268
 msgid "{first} installed into {0}"
 msgstr "{first} installed into {0}"
 
@@ -4834,7 +4868,7 @@ msgstr "Not set up · Open it to set it up"
 msgid "Absolute"
 msgstr "Absolute"
 
-#: src/install/NeedsRootCallout.tsx:54
+#: src/install/NeedsRootCallout.tsx:22
 msgid "Choose variant…"
 msgstr "Choose variant…"
 
@@ -4935,7 +4969,11 @@ msgstr "You started this download on Nexus. There is no profile to put it in yet
 msgid "Rename the open profile"
 msgstr "Rename the open profile"
 
-#: src/bundles/BundlesSection.tsx:163
+#: src/install/OverlayPlaceDialog.tsx:95
+msgid "Place {file}"
+msgstr "Place {file}"
+
+#: src/bundles/BundlesSection.tsx:166
 msgid "Could not delete the bundle"
 msgstr "Could not delete the bundle"
 
@@ -5056,7 +5094,7 @@ msgid "Skip image overlap analysis"
 msgstr "Skip image overlap analysis"
 
 #. placeholder {0}: shownDone.length
-#: src/queue/store.ts:281
+#: src/queue/store.ts:292
 msgid "{0, plural, one {# mod installed} other {# mods installed}}"
 msgstr "{0, plural, one {# mod installed} other {# mods installed}}"
 
@@ -5114,7 +5152,7 @@ msgstr "Premium downloads come from this Nexus server when it offers the file."
 #: src/mods/problemFix/BrokenFix.tsx:58
 #: src/mods/problemFix/WhereButtons.tsx:28
 #: src/mods/Sidebar.tsx:205
-#: src/mods/updateReview/Row.tsx:104
+#: src/mods/updateReview/Row.tsx:116
 msgid "Open page"
 msgstr "Open page"
 
@@ -5168,6 +5206,10 @@ msgstr "Load {0} after the other mods here, so its edit applies last"
 #: src/profiles/LaunchOptionsBlock.tsx:57
 msgid "Reached the title screen"
 msgstr "Reached the title screen"
+
+#: src/mods/updateReview/Row.tsx:66
+msgid "{optional, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
+msgstr "{optional, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
 
 #: src/templates/ApplyTemplateDialog.tsx:77
 msgid "Added {added} from {name}; downloading {downloading}"
@@ -5259,7 +5301,7 @@ msgstr "Load order copied"
 msgid "config.json"
 msgstr "config.json"
 
-#: src/queue/store.ts:64
+#: src/queue/store.ts:65
 msgid "That download is no longer waiting to retry."
 msgstr "That download is no longer waiting to retry."
 
@@ -5374,8 +5416,8 @@ msgstr "{requeued, plural, one {Retried # download} other {Retried # downloads}}
 msgid "Chosen by you"
 msgstr "Chosen by you"
 
-#: src/install/NeedsRootCallout.tsx:23
-#: src/install/RemapDialog.tsx:169
+#: src/install/NeedsRootCallout.tsx:21
+#: src/install/RemapDialog.tsx:170
 msgid "Choose a variant"
 msgstr "Choose a variant"
 
@@ -5665,7 +5707,7 @@ msgstr "Shortcut removed"
 msgid "Delete {0} permanently"
 msgstr "Delete {0} permanently"
 
-#: src/queue/store.ts:130
+#: src/queue/store.ts:141
 msgid "Could not reach Nexus"
 msgstr "Could not reach Nexus"
 
@@ -5884,6 +5926,10 @@ msgstr "Play without Steam overlay"
 msgid "Stardew Valley crashed"
 msgstr "Stardew Valley crashed"
 
+#: src/install/NeedsRootCallout.tsx:28
+msgid "Place…"
+msgstr "Place…"
+
 #: src/console/HelpDialog.tsx:76
 #: src/mods/ReportToAuthorButton.tsx:215
 msgid "Hide my user name"
@@ -5902,7 +5948,7 @@ msgstr "Note"
 msgid "Add a tag"
 msgstr "Add a tag"
 
-#: src/queue/store.ts:110
+#: src/queue/store.ts:111
 #: src/settings/sections/NexusMods.tsx:235
 msgid "Nexus rejected your API key"
 msgstr "Nexus rejected your API key"
@@ -5986,7 +6032,7 @@ msgid "Open game settings"
 msgstr "Open game settings"
 
 #. placeholder {0}: update.githubFallback
-#: src/mods/updateReview/Row.tsx:59
+#: src/mods/updateReview/Row.tsx:71
 msgid "From GitHub ({0}) when its release matches, else Nexus"
 msgstr "From GitHub ({0}) when its release matches, else Nexus"
 
@@ -6064,11 +6110,11 @@ msgid "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was adde
 msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 
 #: src/mods/CompatChip.tsx:23
-#: src/mods/updateReview/Row.tsx:57
+#: src/mods/updateReview/Row.tsx:69
 msgid "Unofficial"
 msgstr "Unofficial"
 
-#: src/install/RemapDialog.tsx:140
+#: src/install/RemapDialog.tsx:141
 msgid "Hide archive contents"
 msgstr "Hide archive contents"
 
@@ -6304,7 +6350,7 @@ msgstr "Something went wrong in this view"
 msgid "Copy to {bName}"
 msgstr "Copy to {bName}"
 
-#: src/install/NeedsRootCallout.tsx:23
+#: src/install/NeedsRootCallout.tsx:21
 msgid "Choose a folder"
 msgstr "Choose a folder"
 
@@ -6430,13 +6476,18 @@ msgstr "{length} of {limit} characters · close to the Discord message limit"
 msgid "Spacing of buttons and lists"
 msgstr "Spacing of buttons and lists"
 
-#: src/queue/store.ts:223
+#: src/queue/store.ts:234
 msgid "Retrying in {n} s."
 msgstr "Retrying in {n} s."
 
 #: src/firstrunTour/TourPopover.tsx:59
 msgid "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
 msgstr "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
+
+#. placeholder {0}: overlay.baseLabel
+#: src/install/NeedsRootCallout.tsx:29
+msgid "This optional file replaces files of {0}. Pick where its files go."
+msgstr "This optional file replaces files of {0}. Pick where its files go."
 
 #: src/settings/sections/AboutDiagnostics.tsx:140
 msgid "Could not copy the report"
@@ -6450,7 +6501,7 @@ msgstr "Applied the curator's choices for {mods} and {configs}"
 msgid "Change shortcut for {label}, currently {keys}"
 msgstr "Change shortcut for {label}, currently {keys}"
 
-#: src/bundles/BundlesSection.tsx:42
+#: src/bundles/BundlesSection.tsx:45
 #: src/bundles/dialogs.tsx:194
 #: src/bundles/dialogs.tsx:266
 msgid "No bundles yet."
@@ -6603,7 +6654,7 @@ msgstr "Firefox:"
 msgid "Could not restore the collection link"
 msgstr "Could not restore the collection link"
 
-#: src/install/RemapDialog.tsx:140
+#: src/install/RemapDialog.tsx:141
 msgid "Show archive contents"
 msgstr "Show archive contents"
 
@@ -7035,7 +7086,7 @@ msgstr "SMAPI loads mods"
 msgid "Pick two to compare"
 msgstr "Pick two to compare"
 
-#: src/bundles/BundlesSection.tsx:127
+#: src/bundles/BundlesSection.tsx:130
 msgid "Rename bundle"
 msgstr "Rename bundle"
 
@@ -7370,6 +7421,10 @@ msgstr "new"
 msgid "Combat skill"
 msgstr "Combat skill"
 
+#: src/install/overlayPlace.ts:36
+msgid "Could not add the optional file"
+msgstr "Could not add the optional file"
+
 #: src/mods/redundantReason.ts:101
 msgid "Every edit it makes is overwritten by {by}"
 msgstr "Every edit it makes is overwritten by {by}"
@@ -7423,9 +7478,13 @@ msgstr "Details copied"
 msgid "Check updates and problems in the background for profiles you are not looking at"
 msgstr "Check updates and problems in the background for profiles you are not looking at"
 
-#: src/install/RemapDialog.tsx:169
+#: src/install/RemapDialog.tsx:170
 msgid "Choose the mod folder"
 msgstr "Choose the mod folder"
+
+#: src/install/OverlayPlaceDialog.tsx:102
+msgid "From this file"
+msgstr "From this file"
 
 #: src/install/MissingDepsDialog.tsx:47
 #: src/mods/EndorsePrompt.tsx:144
@@ -7987,7 +8046,7 @@ msgstr "Could not reset the game install"
 msgid "Handle Nexus download links?"
 msgstr "Handle Nexus download links?"
 
-#: src/bundles/BundlesSection.tsx:109
+#: src/bundles/BundlesSection.tsx:112
 msgid "none"
 msgstr "none"
 
@@ -8077,7 +8136,7 @@ msgstr "{0} of {1} · {2}/s"
 msgid "Preview"
 msgstr "Preview"
 
-#: src/mods/parts.tsx:368
+#: src/mods/parts.tsx:378
 msgid "Remove anyway"
 msgstr "Remove anyway"
 
@@ -8100,6 +8159,10 @@ msgstr "Recent address"
 #: src/console/UpdateNoteTag.tsx:15
 msgid "You skipped this version"
 msgstr "You skipped this version"
+
+#: src/install/OverlayPlaceDialog.tsx:103
+msgid "Whole file"
+msgstr "Whole file"
 
 #: src/queue/QueueBody.tsx:355
 msgid "Updates, missing dependencies and links from Nexus land here."
@@ -8466,7 +8529,7 @@ msgid "Switch off"
 msgstr "Switch off"
 
 #. placeholder {0}: item.name
-#: src/queue/store.ts:138
+#: src/queue/store.ts:149
 msgid "Could not download {0}"
 msgstr "Could not download {0}"
 
@@ -8618,7 +8681,7 @@ msgstr "Switch to Saves"
 #: src/mods/ModMenu.tsx:169
 #: src/mods/ModMenu.tsx:292
 #: src/mods/parts.tsx:309
-#: src/mods/parts.tsx:390
+#: src/mods/parts.tsx:400
 #: src/mods/problemFixButtons.tsx:181
 #: src/mods/problemFixButtons.tsx:186
 #: src/mods/SelectionBarActions.tsx:125
@@ -8700,7 +8763,7 @@ msgstr "Done ({0}): {1}"
 #. placeholder {0}: deleting?.name ?? ''
 #. placeholder {0}: pendingDelete ?? ''
 #. placeholder {0}: pendingDelete?.name ?? ''
-#: src/bundles/BundlesSection.tsx:145
+#: src/bundles/BundlesSection.tsx:148
 #: src/game/ProfileMenuItems.tsx:81
 #: src/mods/CategoryEditor.tsx:156
 #: src/mods/ConfigPresets.tsx:155
@@ -8714,7 +8777,7 @@ msgstr "Delete {0}?"
 msgid "Beach farm"
 msgstr "Beach farm"
 
-#: src/bundles/BundlesSection.tsx:129
+#: src/bundles/BundlesSection.tsx:132
 #: src/mods/CategoryEditor.tsx:150
 #: src/mods/ConfigEditor.tsx:239
 #: src/mods/ConfigPresets.tsx:134
@@ -8734,6 +8797,10 @@ msgstr "No mods in {folder}"
 #: src/mods/DuplicateDialog.tsx:29
 msgid "From Nexus"
 msgstr "From Nexus"
+
+#: src/install/OverlayPlaceDialog.tsx:125
+msgid "Place here"
+msgstr "Place here"
 
 #: src/mods/ConfigEditor.tsx:201
 msgid "Settings view"
@@ -8948,7 +9015,7 @@ msgstr "View licences…"
 #. placeholder {0}: entry.pinReason
 #: src/mods/ModDetail.tsx:108
 #: src/mods/parts.tsx:194
-#: src/mods/updateReview/Row.tsx:56
+#: src/mods/updateReview/Row.tsx:63
 msgid "Pinned: {0}"
 msgstr "Pinned: {0}"
 
@@ -9161,7 +9228,7 @@ msgstr "Automatic port"
 msgid "Health"
 msgstr "Health"
 
-#: src/bundles/BundlesSection.tsx:130
+#: src/bundles/BundlesSection.tsx:133
 msgid "Could not rename the bundle"
 msgstr "Could not rename the bundle"
 
@@ -9493,7 +9560,7 @@ msgstr "Remove all"
 msgid "Show one in the sidebar from Manage profiles."
 msgstr "Show one in the sidebar from Manage profiles."
 
-#: src/queue/store.ts:116
+#: src/queue/store.ts:127
 msgid "Not enough disk space"
 msgstr "Not enough disk space"
 
@@ -9705,7 +9772,7 @@ msgstr "Could not repair the profile"
 msgid "Empty profile"
 msgstr "Empty profile"
 
-#: src/bundles/BundleRow.tsx:91
+#: src/bundles/BundleRow.tsx:92
 msgid "Could not remove the mod from the bundle"
 msgstr "Could not remove the mod from the bundle"
 
@@ -10151,8 +10218,8 @@ msgstr "Continue"
 msgid "Dependencies"
 msgstr "Dependencies"
 
-#: src/install/NeedsRootCallout.tsx:27
-#: src/install/RemapDialog.tsx:175
+#: src/install/NeedsRootCallout.tsx:25
+#: src/install/RemapDialog.tsx:176
 msgid "This archive has no SMAPI mod where Mortar expects one. Pick the folder that holds manifest.json."
 msgstr "This archive has no SMAPI mod where Mortar expects one. Pick the folder that holds manifest.json."
 
@@ -10198,7 +10265,7 @@ msgstr "Display"
 msgid "Welcome to Mortar"
 msgstr "Welcome to Mortar"
 
-#: src/queue/store.ts:259
+#: src/queue/store.ts:270
 msgid "{unblocked} can load now."
 msgstr "{unblocked} can load now."
 
@@ -10271,7 +10338,7 @@ msgid "Import from the game's Mods folder"
 msgstr "Import from the game's Mods folder"
 
 #. placeholder {0}: item.name
-#: src/queue/store.ts:123
+#: src/queue/store.ts:134
 msgid "{0} was blocked by your antivirus"
 msgstr "{0} was blocked by your antivirus"
 
@@ -10325,6 +10392,11 @@ msgstr "Walk through profiles, Play, mods, and the command palette"
 #: src/saves/SaveDetails.tsx:54
 msgid "Fall"
 msgstr "Fall"
+
+#. placeholder {0}: overlay.baseLabel
+#: src/install/OverlayPlaceDialog.tsx:109
+msgid "Into {0}"
+msgstr "Into {0}"
 
 #: src/browse/BrowsePage.tsx:210
 msgid "Try fewer words, or the mod's exact name."
@@ -10510,7 +10582,7 @@ msgstr "imported from a .mortar file"
 msgid "{name}, descending"
 msgstr "{name}, descending"
 
-#: src/queue/store.ts:111
+#: src/queue/store.ts:112
 #: src/share/ImportFooter.tsx:60
 msgid "Open Nexus settings"
 msgstr "Open Nexus settings"
@@ -10626,7 +10698,7 @@ msgid "Deleted profiles stay here, mods and settings included."
 msgstr "Deleted profiles stay here, mods and settings included."
 
 #. placeholder {0}: shownWaiting.length
-#: src/queue/store.ts:327
+#: src/queue/store.ts:338
 msgid "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 msgstr "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 
@@ -10797,7 +10869,7 @@ msgid "Stop the game to change save backups."
 msgstr "Stop the game to change save backups."
 
 #. placeholder {0}: one.name
-#: src/mods/parts.tsx:355
+#: src/mods/parts.tsx:360
 msgid "Remove {0} from this profile?"
 msgstr "Remove {0} from this profile?"
 

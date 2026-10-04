@@ -26,7 +26,10 @@ function hasBundle(profile: Profile, bundle: Bundle) {
       (entry.mods ?? []).map((mod) => idKey(mod.uniqueId)),
     ),
   )
-  return (bundle.mods ?? []).every((mod) => installed.has(idKey(mod.uniqueId)))
+  // Optional files have no UniqueID and travel with their main mod.
+  return (bundle.mods ?? []).every(
+    (mod) => (mod.overlayOf ?? '') !== '' || installed.has(idKey(mod.uniqueId)),
+  )
 }
 
 function holderNamesOf(profiles: Profile[], bundle: Bundle) {
