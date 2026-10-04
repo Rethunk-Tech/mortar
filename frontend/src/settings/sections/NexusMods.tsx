@@ -1,5 +1,6 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, Chip, Switch, TextField } from '@mui/material'
+import { Alert, Box, Button, Chip, TextField } from '@mui/material'
 import { Check, LogIn, LogOut } from 'lucide-react'
 import { type SubmitEvent, useEffect, useId, useState } from 'react'
 import {
@@ -18,6 +19,7 @@ import { errorText, reportError, reportUnexpected } from '../../toasts/report.ts
 import { useToasts } from '../../toasts/store.ts'
 import { NexusMeter } from '../NexusMeter.tsx'
 import { useNexus } from '../nexus.ts'
+import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey } from '../PrefRow.tsx'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useNxmHandler } from './nxmHandler.tsx'
@@ -52,7 +54,10 @@ function UntrackConfirmDialog({
       .then((result) => {
         const toast = {
           kind: result.stoppedForLimit ? 'warning' : 'success',
-          title: t`Untracked ${result.untracked} mods`,
+          title: plural(result.untracked, {
+            one: 'Untracked # mod',
+            other: 'Untracked # mods',
+          }),
           ...(result.stoppedForLimit
             ? { body: t`Stopped at the API limit; ${result.remaining} left` }
             : {}),
@@ -73,7 +78,7 @@ function UntrackConfirmDialog({
       body={
         unused
           ? t`Untrack the ${gameName} mods none of your profiles use, out of ${trackedCount} tracked? Nexus has no undo for this.`
-          : t`Untrack all ${trackedCount} tracked ${gameName} mods on Nexus? Nexus has no undo for this.`
+          : t`${plural(trackedCount, { one: `Untrack all # tracked ${gameName} mod on Nexus? Nexus has no undo for this.`, other: `Untrack all # tracked ${gameName} mods on Nexus? Nexus has no undo for this.` })}`
       }
       confirmLabel={t`Untrack mods`}
       onCancel={onCancel}
@@ -109,7 +114,7 @@ function NexusModsSignedIn({
   const untrackOff = busy || trackedCount === null || trackedCount === 0
   let trackedText = t`Untrack every mod you track on Nexus`
   if (gameName && trackedCount !== null) {
-    trackedText = t`${trackedCount} ${gameName} mods tracked on Nexus`
+    trackedText = t`${plural(trackedCount, { one: `# ${gameName} mod tracked on Nexus`, other: `# ${gameName} mods tracked on Nexus` })}`
   } else if (gameName) {
     trackedText = t`Untrack every ${gameName} mod on Nexus`
   }
@@ -126,7 +131,11 @@ function NexusModsSignedIn({
               size="small"
               startIcon={<LogOut size={16} />}
               onClick={() => {
-                SignOut().catch(reportUnexpected)
+                SignOut()
+                  .then(() =>
+                    useToasts.getState().push({ kind: 'success', title: t`Signed out of Nexus` }),
+                  )
+                  .catch(reportUnexpected)
               }}
               sx={{ whiteSpace: 'nowrap' }}
             >
@@ -154,19 +163,23 @@ function NexusModsSignedIn({
               disabled={untrackOff}
               onClick={() => setConfirming(true)}
               sx={{ whiteSpace: 'nowrap' }}
-            >{t`Unused…`}</Button>
+            >{t`Untrack unused…`}</Button>
             <Button
               variant="outlined"
               disabled={untrackOff}
               onClick={() => setConfirming(false)}
               sx={{ whiteSpace: 'nowrap' }}
-            >{t`All…`}</Button>
+            >{t`Untrack all…`}</Button>
           </Box>
         </SettingRow>
       </SettingsSection>
       <SettingsSection title={t`Endorsements`}>
         <SettingRow label={t`Ask me to endorse mods I keep using`}>
-          <Switch checked={askEndorse} onChange={(_, on) => onAskEndorse(on)} />
+          <PrefSwitch
+            checked={askEndorse}
+            onChange={onAskEndorse}
+            label={t`Ask me to endorse mods I keep using`}
+          />
         </SettingRow>
       </SettingsSection>
       <SettingsSection
