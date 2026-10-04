@@ -68,10 +68,15 @@ function removeCleanup(
   removeMany(mods).catch(reportUnexpected)
 }
 
+// title defaults to Cleanup; Remove all is offered only where every row is a sure removal.
 export function CleanupSection({
   cleanup,
+  title,
+  removeAll = true,
 }: {
   cleanup: ComponentProps<typeof CleanupRow>['cleanup'][]
+  title?: string
+  removeAll?: boolean
 }) {
   const { t } = useLingui()
   const removeMany = useMods((s) => s.removeMany)
@@ -83,9 +88,9 @@ export function CleanupSection({
     <Box>
       <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
         <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
-          {t`Cleanup`}
+          {title ?? t`Cleanup`}
         </Typography>
-        {cleanup.length > 1 ? (
+        {removeAll && cleanup.length > 1 ? (
           <Button size="small" sx={{ ml: 1, height: 26 }} onClick={() => setConfirmCleanup(true)}>
             {t`Remove all`}
           </Button>

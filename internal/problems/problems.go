@@ -165,6 +165,7 @@ type Result struct {
 	Settings       []SettingHint      `json:"settings"`
 	Cleanup        []Cleanup          `json:"cleanup,omitempty"`
 	Compat         []Compat           `json:"compat,omitempty"`
+	Redundant      []Redundant        `json:"redundant,omitempty"`
 	RunErrors      []RunError         `json:"runErrors"`
 	Drift          []profile.Drift    `json:"drift,omitempty"`
 	Dismissed      []DismissedProblem `json:"dismissed"`
@@ -196,9 +197,9 @@ func (r Result) Count() int {
 	return len(r.Missing) + duplicates + len(r.Broken) + conflicts + len(r.Settings) + len(r.RunErrors) + len(r.Drift)
 }
 
-// WarningCount is cosmetic asset conflicts plus compat and cleanup hints.
+// WarningCount is cosmetic asset conflicts plus compat, cleanup and redundancy hints.
 func (r Result) WarningCount() int {
-	n := len(r.Compat) + len(r.Cleanup)
+	n := len(r.Compat) + len(r.Cleanup) + len(r.Redundant)
 	for _, c := range r.AssetConflicts {
 		if c.Cosmetic {
 			n++

@@ -41,14 +41,13 @@ func (s *Service) CompatibilityFor(ctx context.Context, gameID, id string) ([]Co
 
 func (s *Service) withCompat(ctx context.Context, r Result, mods []Installed) Result {
 	idx, ok := s.compatIndex(ctx)
-	if !ok {
-		if r.Compat == nil {
-			r.Compat = []Compat{}
-		}
-		return r
+	switch {
+	case ok:
+		r.Compat = matchCompat(idx, mods, true)
+	case r.Compat == nil:
+		r.Compat = []Compat{}
 	}
-	r.Compat = matchCompat(idx, mods, true)
-	return r
+	return superseded(r, mods)
 }
 
 func (s *Service) compatIndex(ctx context.Context) (meta.CompatIndex, bool) {
