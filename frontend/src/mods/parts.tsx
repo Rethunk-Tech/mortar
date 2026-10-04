@@ -19,12 +19,12 @@ import {
 import { ArrowUp, Ban, Pin, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { useProfiles } from '../profiles/store.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { dependentsOf } from './dependents.ts'
 import { useDescribe } from './describe.ts'
-import { useLastRun } from './lastRun.ts'
+import { LockedReason } from './LockedReason.tsx'
+import { lastRunSummary, useLastRun } from './lastRun.ts'
 import { concerns, entryOf, modId, nexusIdOf, problemsOf, siblingsOf, updateFor } from './lookup.ts'
 import { NewDot } from './NewSince.tsx'
 import { useNexusEntry } from './nexusDetails.ts'
@@ -119,7 +119,7 @@ export function ProblemBadge({ mod }: { mod: Mod }) {
 
 export function NexusGoneBadge({ mod }: { mod: Mod }) {
   const { t } = useLingui()
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const profile = useProfiles(openProfileOf)
   const nexusId = profile ? nexusIdOf(profile, mod) : 0
   const page = useNexusEntry(nexusId)?.details?.page
   const mark = nexusPageMark(page?.status, page?.available, page?.updated, page?.created)
@@ -155,7 +155,7 @@ export function LastRunBadge({ mod }: { mod: Mod }) {
   const warnings = hit.warnings
     ? t`${plural(hit.warnings, { one: '# warning', other: '# warnings' })}`
     : ''
-  const text = [errors, warnings].filter((p) => p !== '').join(', ')
+  const text = lastRunSummary(hit)
   const chipSx = {
     minWidth: 16,
     height: 16,
@@ -186,7 +186,7 @@ export function LastRunBadge({ mod }: { mod: Mod }) {
 
 export function PinBadge({ mod }: { mod: Mod }) {
   const { t } = useLingui()
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const profile = useProfiles(openProfileOf)
   const entry = entryOf(profile, mod.key)
   if (!entry?.pinned) {
     return null
@@ -207,7 +207,7 @@ export function PinBadge({ mod }: { mod: Mod }) {
 
 export function UpdateBadge({ mod }: { mod: Mod }) {
   const { t } = useLingui()
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const profile = useProfiles(openProfileOf)
   const update = useUpdates((s) => updateFor(s.updates, mod, profile))
   const nexusId = profile ? nexusIdOf(profile, mod) : 0
   const page = useNexusEntry(nexusId)?.details?.page
@@ -265,7 +265,7 @@ export function ModSwitch({ mod }: { mod: Mod }) {
   const setEnabled = useMods((s) => s.setEnabled)
   const locked = useLocked()
   return (
-    <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+    <LockedReason locked={locked}>
       <Switch
         size="small"
         checked={mod.enabled}
@@ -280,7 +280,7 @@ export function ModSwitch({ mod }: { mod: Mod }) {
           },
         }}
       />
-    </DisabledReason>
+    </LockedReason>
   )
 }
 
@@ -304,11 +304,11 @@ export function RemoveButton({ mod }: { mod: Mod }) {
   const askRemove = useMods((s) => s.askRemove)
   const locked = useLocked()
   return (
-    <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+    <LockedReason locked={locked}>
       <Button variant="outlined" color="error" disabled={locked} onClick={() => askRemove(mod)}>
         {t`Remove`}
       </Button>
-    </DisabledReason>
+    </LockedReason>
   )
 }
 
@@ -363,12 +363,12 @@ export function RemoveDialog() {
         <Button onClick={close}>{t`Cancel`}</Button>
         {dependents.length > 0 ? (
           <>
-            <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+            <LockedReason locked={locked}>
               <Button color="error" disabled={locked} onClick={() => drop(removing)}>
                 {t`Remove anyway`}
               </Button>
-            </DisabledReason>
-            <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+            </LockedReason>
+            <LockedReason locked={locked}>
               <Button
                 variant="contained"
                 color="error"
@@ -377,10 +377,10 @@ export function RemoveDialog() {
               >
                 {t`${plural(allCount, { one: 'Remove all # mod', other: 'Remove all # mods' })}`}
               </Button>
-            </DisabledReason>
+            </LockedReason>
           </>
         ) : (
-          <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+          <LockedReason locked={locked}>
             <Button
               variant="contained"
               color="error"
@@ -389,7 +389,7 @@ export function RemoveDialog() {
             >
               {t`Remove`}
             </Button>
-          </DisabledReason>
+          </LockedReason>
         )}
       </DialogActions>
     </Dialog>

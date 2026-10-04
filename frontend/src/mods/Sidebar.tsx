@@ -1,4 +1,3 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Drawer, Link, Tooltip, Typography, useMediaQuery } from '@mui/material'
 import { TriangleAlert, X } from 'lucide-react'
@@ -15,7 +14,7 @@ import {
 import { compactQuery } from '../game/compact.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
@@ -24,7 +23,7 @@ import { useDescribe } from './describe.ts'
 import { useDetail } from './detail.ts'
 import { customCategoryById, resolvedCategoryLabel } from './group.ts'
 import { HiddenInside } from './HiddenInside.tsx'
-import { showLastRunInConsole, useLastRun } from './lastRun.ts'
+import { lastRunSummary, showLastRunInConsole, useLastRun } from './lastRun.ts'
 import {
   concerns,
   entryOf,
@@ -49,6 +48,7 @@ import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { accent, heading } from './paper.ts'
 import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
 import { useMods } from './store.ts'
+import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
 import { useUpdates } from './updates.ts'
 
 const noWrap = { whiteSpace: 'nowrap' } as const
@@ -150,11 +150,13 @@ function NexusFields({
 
 function UpdateBanner({ mod }: { mod: Mod }) {
   const { t } = useLingui()
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const profile = useProfiles(openProfileOf)
   const nexusId = profile ? nexusIdOf(profile, mod) : 0
   const details = useNexusEntry(nexusId)?.details
   const raw = useUpdates((s) => s.updates)
   const setReviewing = useUpdates((s) => s.setReviewing)
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const [everywhere, setEverywhere] = useState(false)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const mine = visibleUpdates(raw, profile).filter(
     (u) => u.key === mod.key && sameId(u.uniqueId, mod.uniqueId),
@@ -219,9 +221,15 @@ function UpdateBanner({ mod }: { mod: Mod }) {
       <Button size="small" variant="contained" onClick={() => setReviewing(true)}>
         {t`Update`}
       </Button>
-      <Button size="small" variant="outlined" onClick={() => setReviewing(true)}>
+      <Button size="small" variant="outlined" onClick={() => setEverywhere(true)}>
         {t`Update in all profiles that have it`}
       </Button>
+      <EverywhereDialog
+        open={everywhere}
+        game={game}
+        mods={[{ id: mod.uniqueId, newKey: 'latest' }]}
+        onClose={() => setEverywhere(false)}
+      />
     </Box>
   )
 }
@@ -248,11 +256,7 @@ function LastRunLine({ mod, profile }: { mod: Mod; profile: Profile }) {
   if (!hit || (hit.errors === 0 && hit.warnings === 0) || !game) {
     return null
   }
-  const errors = hit.errors ? t`${plural(hit.errors, { one: '# error', other: '# errors' })}` : ''
-  const warnings = hit.warnings
-    ? t`${plural(hit.warnings, { one: '# warning', other: '# warnings' })}`
-    : ''
-  const summary = [errors, warnings].filter((p) => p !== '').join(', ')
+  const summary = lastRunSummary(hit)
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, alignItems: 'flex-start' }}>
       <Typography sx={{ fontSize: 13 }}>{t`Last run: ${summary}`}</Typography>
