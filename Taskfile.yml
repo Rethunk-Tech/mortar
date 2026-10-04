@@ -35,6 +35,14 @@ tasks:
     cmds:
       - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
 
+  test:updater:
+    summary: End-to-end self-updater test; builds two fixture apps and swaps the binary through a local signed manifest (tag updatetest is test-only)
+    env:
+      GOTMPDIR: /var/tmp
+      TMPDIR: /var/tmp
+    cmds:
+      - go test -tags updatetest -count=1 -run TestUpdaterE2E ./internal/updatesvc
+
   selftest:
     summary: Runs Mortar in server mode against a sandboxed home with a copied game, for browser self-tests (scripts/selftest.sh)
     cmds:

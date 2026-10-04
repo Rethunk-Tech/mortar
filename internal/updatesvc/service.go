@@ -90,7 +90,7 @@ func (s *Service) lock() {
 // packaged is set (nfpm, Flatpak, AUR), u is left unconfigured and every call reports updates as off.
 func Configure(s *Service, u Updater, version string, publicKey []byte, packaged string, includeBeta func() bool, dataDir string) error {
 	s.dir = dataDir
-	if err := configure(s, u, version, publicKey, production && !application.System.IsServer(), packaged, includeBeta); err != nil {
+	if err := configure(s, u, version, publicKey, production && (serverUpdates || !application.System.IsServer()), packaged, includeBeta); err != nil {
 		return err
 	}
 	if s.info.Off == "" {
@@ -109,7 +109,7 @@ func configure(s *Service, u Updater, version string, publicKey []byte, producti
 		s.info.Off = "dev"
 		return nil
 	}
-	stable, err := endpoint.New(endpoint.Config{URL: ManifestURL})
+	stable, err := endpoint.New(endpoint.Config{URL: manifestURL()})
 	if err != nil {
 		return err
 	}
@@ -289,7 +289,7 @@ func classifyCheckError(err error) error {
 }
 
 func checkPublished(ctx context.Context) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ManifestURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, manifestURL(), nil)
 	if err != nil {
 		return nil
 	}
