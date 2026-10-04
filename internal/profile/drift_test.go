@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 func writeTimed(t *testing.T, path, body string, when time.Time) {
@@ -341,7 +343,7 @@ func TestRestoreModsFolderUndoesTrash(t *testing.T) {
 	if err := e.RestoreModsFolder("stardew", p.ID, token); err != nil {
 		t.Fatal(err)
 	}
-	if b, err := os.ReadFile(filepath.Join(mod, "a.txt")); err != nil || string(b) != "x" {
+	if b, err := fsx.ReadFile(filepath.Join(mod, "a.txt")); err != nil || string(b) != "x" {
 		t.Fatalf("restored file = %q, %v", b, err)
 	}
 }
