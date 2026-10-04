@@ -4,7 +4,7 @@ Mortar is a desktop mod manager, built for several games but supporting only Sta
 
 ## Testing
 
-Agents self-test everything they can: in the Wails dev server's browser view, and with the real game when a test needs it, always against a copied game folder (never a symlink) and stopped by its recorded PID. Browser self-tests run against `scripts/selftest.sh` (`wails3 task selftest -- start [--copy-data]`, then `restart` after changes): a server-mode build at http://127.0.0.1:9455 with a sandboxed home, a minimal Steam library and a copied game, so the real data, game and Steam config are never touched. The maintainer gets only the tests that need a human: a store login, owned games, hardware or a real desktop session.
+Agents self-test everything they can: in the Wails dev server's browser view, and with the real game when a test needs it, always against a copied game folder (never a symlink) and stopped by its recorded PID. Browser self-tests run against `scripts/selftest.sh` (`wails3 task selftest -- start [--copy-data]`, then `restart` after changes): a server-mode build at http://127.0.0.1:9455 with a sandboxed home, a minimal Steam library and a copied game, so the real data, game and Steam config are never touched. `wails3 task selftest -- seed` fills the running sandbox once, through the sandbox's own CLI, with two profiles (one from a template), mods from generated zips, history events, a manual and a scheduled backup, a stray game-Mods folder, a dot-hidden mod, an extra-mods folder and a failed download. The maintainer gets only the tests that need a human: a store login, owned games, hardware or a real desktop session.
 
 ## Decided
 

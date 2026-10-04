@@ -6,6 +6,7 @@
 #   scripts/selftest.sh start [--copy-data]   build, set up the sandbox if missing, start the server
 #   scripts/selftest.sh restart               rebuild from the working tree and restart
 #   scripts/selftest.sh stop                  stop the server
+#   scripts/selftest.sh seed                  fill the running sandbox with fixture data (once; skipped when present)
 #
 # --copy-data copies the real Mortar profiles and settings into the sandbox once (downloads, cache, trash and
 # backups are left out). The sandbox is never deleted by this script; remove $ROOT by hand to start over.
@@ -110,6 +111,85 @@ start() {
   exit 1
 }
 
+# mortar runs the sandbox's own command line, so the fixtures go through the same commands an agent would use.
+cli() {
+  env -u XDG_DATA_HOME -u XDG_CONFIG_HOME -u XDG_CACHE_HOME HOME="$SANDBOX_HOME" "$ROOT/mortar-server" "$@"
+}
+
+# make_mod DIR ID NAME writes a tiny content-pack mod whose manifest is valid and needs no network.
+make_mod() {
+  mkdir -p "$1"
+  printf '{"Name":"%s","Author":"Self-test","Version":"1.0.0","Description":"Fixture mod","UniqueID":"%s","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}\n' "$3" "$2" >"$1/manifest.json"
+}
+
+seed() {
+  [ -n "$(listener || true)" ] || {
+    echo "start the server first" >&2
+    exit 1
+  }
+  if cli profiles stardew --json | grep -q '"Seed Farm"'; then
+    echo "sandbox already seeded; leaving it"
+    return
+  fi
+  local fx=$ROOT/seed game="$SANDBOX_STEAM/steamapps/common/$GAME_FOLDER"
+  rm -rf "$fx"
+  mkdir -p "$fx/zips" "$ROOT/extra"
+  make_mod "$fx/alpha/Seed.Alpha" Seed.Alpha "Seed Alpha"
+  make_mod "$fx/beta/Seed.Beta" Seed.Beta "Seed Beta"
+  # A pack folder with no manifest of its own is what lets a dotted sibling count as hidden rather than as the mod.
+  make_mod "$fx/gamma/Seed.Pack/Seed.Gamma" Seed.Gamma "Seed Gamma"
+  make_mod "$fx/gamma/Seed.Pack/.Seed.Hidden" Seed.Hidden "Seed Hidden"
+  local m
+  for m in alpha beta gamma; do
+    (cd "$fx/$m" && python3 -m zipfile -c "$fx/zips/$m.zip" ./*)
+  done
+  make_mod "$ROOT/extra/ExtraOne" Seed.ExtraOne "Seed Extra One"
+  make_mod "$ROOT/extra/ExtraTwo" Seed.ExtraTwo "Seed Extra Two"
+  make_mod "$game/Mods/SeedStray" Seed.Stray "Seed Stray"
+  mkdir -p "$SANDBOX_HOME/.config/StardewValley/Saves/Seed_123456"
+  echo '<SaveGame/>' | tee "$SANDBOX_HOME/.config/StardewValley/Saves/Seed_123456/"{Seed_123456,SaveGameInfo} >/dev/null
+
+  cli settings set --game stardew showDotHiddenMods true
+  cli settings set --game stardew extraModsFolder "$ROOT/extra"
+  cli profile create stardew "Seed Farm"
+  for m in alpha beta gamma; do
+    cli install stardew "Seed Farm" "$fx/zips/$m.zip"
+  done
+  cli mods disable stardew "Seed Farm" Seed.Beta
+  cli mods enable stardew "Seed Farm" Seed.Beta
+  cli templates save stardew "Seed Farm" "Seed Template"
+  cli templates new stardew "Seed Template" "Seed From Template"
+  cli backups create Seed_123456
+
+  # A failed download has no command that makes one, so it is written where the queue keeps its history.
+  local pid data=$SANDBOX_HOME/.local/share/mortar
+  pid=$(cli profiles stardew --json | python3 -c 'import json,sys; print(next(p["id"] for p in json.load(sys.stdin) if p["name"] == "Seed Farm"))')
+  python3 - "$data/download-history.json" "$pid" <<'PY'
+import json, sys, time
+path, profile = sys.argv[1:]
+now = int(time.time())
+entry = {"name": "Seed Failed Download", "version": "1.0.0", "source": "nexus", "profileId": profile, "game": "stardew",
+         "modId": 1, "fileId": 1, "kind": "mod", "size": 2048, "started": now - 5, "finished": now,
+         "outcome": "failed", "error": "[network] connection reset"}
+json.dump([entry], open(path, "w"))
+PY
+
+  # The scheduled backup runs on the server's first check after start, so enable it and restart without rebuilding.
+  cli settings set --game stardew saveBackupHours 1
+  stop
+  sleep 1
+  start
+  for _ in $(seq 1 30); do
+    if cli backups list --json | grep -q scheduled; then
+      echo "sandbox seeded"
+      return
+    fi
+    sleep 1
+  done
+  echo "the scheduled backup never appeared; see $ROOT/server.log" >&2
+  exit 1
+}
+
 mkdir -p "$ROOT"
 case "${1:-}" in
   start)
@@ -125,9 +205,10 @@ case "${1:-}" in
     sleep 1
     start
     ;;
+  seed) seed ;;
   stop) stop ;;
   *)
-    sed -n '2,11p' "$0"
+    sed -n '2,12p' "$0"
     exit 2
     ;;
 esac
