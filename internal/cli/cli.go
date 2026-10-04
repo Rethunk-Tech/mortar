@@ -366,8 +366,13 @@ func (c *cmd) need(skip int, names ...string) ([]string, error) {
 	return got, nil
 }
 
-func (c *cmd) ask(method string, p control.Params, out any, timeout time.Duration) error {
-	return c.call(method, p, out, timeout)
+// show runs a read verb and prints the decoded result as JSON or through human.
+func show[T any](c *cmd, method string, p control.Params, human func(T)) error {
+	var v T
+	if err := c.call(method, p, &v, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(v, func() { human(v) })
 }
 
 // emit prints v as JSON with --json, otherwise calls human.
@@ -787,11 +792,7 @@ func saveLastPlayed(s savessvc.Fit, profileNames map[string]string) string {
 }
 
 func (c *cmd) games() error {
-	var rows []control.GameRow
-	if err := c.ask("games", control.Params{}, &rows, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(rows, func() {
+	return show(c, "games", control.Params{}, func(rows []control.GameRow) {
 		t := [][]string{}
 		for _, g := range rows {
 			t = append(t, []string{g.ID, gameSupportedLabel(g.Available), gameConfiguredLabel(g.Configured), fmt.Sprint(g.Profiles), g.Store, g.InstallDir})
@@ -801,11 +802,7 @@ func (c *cmd) games() error {
 }
 
 func (c *cmd) profiles(gameID string) error {
-	var list []profile.Profile
-	if err := c.ask("profiles", control.Params{Game: gameID}, &list, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(list, func() {
+	return show(c, "profiles", control.Params{Game: gameID}, func(list []profile.Profile) {
 		t := [][]string{}
 		for _, p := range list {
 			if p.Error != "" {
@@ -831,11 +828,7 @@ func (c *cmd) historyAll() error {
 	if err != nil {
 		return err
 	}
-	var rows []profile.RecentEvent
-	if err := c.ask("history.all", control.Params{Game: a[0]}, &rows, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(rows, func() {
+	return show(c, "history.all", control.Params{Game: a[0]}, func(rows []profile.RecentEvent) {
 		t := [][]string{}
 		for _, row := range rows {
 			t = append(t, []string{
@@ -852,11 +845,7 @@ func (c *cmd) bundles() error {
 		if err != nil {
 			return err
 		}
-		var result control.BundleApply
-		if err := c.ask("bundles.apply", control.Params{Game: a[0], Name: a[1], Profile: a[2]}, &result, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(result, func() {
+		return show(c, "bundles.apply", control.Params{Game: a[0], Name: a[1], Profile: a[2]}, func(result control.BundleApply) {
 			fmt.Fprintf(c.out, "Added %d mods.\n", result.Added)
 			if len(result.Missing) > 0 {
 				fmt.Fprintf(c.out, "Not in Mortar's store: %s\n", strings.Join(result.Missing, ", "))
@@ -867,11 +856,7 @@ func (c *cmd) bundles() error {
 	if err != nil {
 		return err
 	}
-	var list []control.BundleRow
-	if err := c.ask("bundles", control.Params{Game: a[0]}, &list, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(list, func() {
+	return show(c, "bundles", control.Params{Game: a[0]}, func(list []control.BundleRow) {
 		rows := make([][]string, 0, len(list))
 		for _, b := range list {
 			rows = append(rows, []string{b.ID, b.Name, fmt.Sprint(len(b.Mods)), strings.Join(b.Profiles, ", ")})
@@ -924,18 +909,14 @@ func (c *cmd) settings() error {
 			return err
 		}
 		path := absPath(a[0])
-		var written map[string]string
-		if err := c.ask("settings.export", control.Params{Path: path}, &written, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(written, func() { fmt.Fprintf(c.out, "Wrote %s.\n", path) })
+		return show(c, "settings.export", control.Params{Path: path}, func(written map[string]string) { fmt.Fprintf(c.out, "Wrote %s.\n", path) })
 	case "import":
 		a, err := c.need(2, "a file")
 		if err != nil {
 			return err
 		}
 		path := absPath(a[0])
-		if err := c.ask("settings.import", control.Params{Path: path}, nil, readTimeout); err != nil {
+		if err := c.call("settings.import", control.Params{Path: path}, nil, readTimeout); err != nil {
 			return err
 		}
 		return c.emit(map[string]string{"path": path}, func() { fmt.Fprintf(c.out, "Imported %s.\n", path) })
@@ -944,7 +925,7 @@ func (c *cmd) settings() error {
 		if len(c.args) > 2 {
 			key = c.args[2]
 		}
-		if err := c.ask("settings.reset", control.Params{Key: key, Game: c.game}, nil, readTimeout); err != nil {
+		if err := c.call("settings.reset", control.Params{Key: key, Game: c.game}, nil, readTimeout); err != nil {
 			return err
 		}
 		return c.emit(map[string]string{"key": key, "game": c.game}, func() {
@@ -959,11 +940,7 @@ func (c *cmd) settings() error {
 		if len(c.args) > 2 {
 			key = c.args[2]
 		}
-		var rows [][2]string
-		if err := c.ask("settings.get", control.Params{Key: key, Game: c.game}, &rows, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(rows, func() {
+		return show(c, "settings.get", control.Params{Key: key, Game: c.game}, func(rows [][2]string) {
 			out := make([][]string, 0, len(rows))
 			for _, r := range rows {
 				out = append(out, []string{r[0], r[1]})
@@ -974,7 +951,7 @@ func (c *cmd) settings() error {
 		if len(c.args) < 4 {
 			return usageError{"settings set needs a key and a value"}
 		}
-		return c.ask("settings.set", control.Params{Key: c.args[2], Value: strings.Join(c.args[3:], " "), Game: c.game}, nil, readTimeout)
+		return c.call("settings.set", control.Params{Key: c.args[2], Value: strings.Join(c.args[3:], " "), Game: c.game}, nil, readTimeout)
 	default:
 		return usageError{"unknown settings command " + c.args[1]}
 	}
@@ -988,11 +965,7 @@ func (c *cmd) trash() error {
 	sub := c.args[1]
 	switch sub {
 	case "list":
-		var items []profile.TrashItem
-		if err := c.ask("trash.list", control.Params{Game: game}, &items, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(items, func() {
+		return show(c, "trash.list", control.Params{Game: game}, func(items []profile.TrashItem) {
 			if len(items) == 0 {
 				fmt.Fprintln(c.out, "Trash is empty.")
 				return
@@ -1012,11 +985,7 @@ func (c *cmd) trash() error {
 		if err != nil {
 			return err
 		}
-		var p profile.Profile
-		if err := c.ask("trash.restore", control.Params{Game: game, Profile: a[0]}, &p, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(p, func() { fmt.Fprintf(c.out, "Restored %s (%s).\n", p.Name, p.ID) })
+		return show(c, "trash.restore", control.Params{Game: game, Profile: a[0]}, func(p profile.Profile) { fmt.Fprintf(c.out, "Restored %s (%s).\n", p.Name, p.ID) })
 	case "delete":
 		a, err := c.need(2, "a deleted profile name or id")
 		if err != nil {
@@ -1025,18 +994,14 @@ func (c *cmd) trash() error {
 		if !c.yesFlag {
 			return refusedError{"permanently deleting a profile needs --yes"}
 		}
-		var r control.Removed
-		if err := c.ask("trash.delete", control.Params{Game: game, Profile: a[0]}, &r, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(r, func() {
+		return show(c, "trash.delete", control.Params{Game: game, Profile: a[0]}, func(r control.Removed) {
 			fmt.Fprintf(c.out, "Permanently deleted %s.\n", strings.Join(r.Mods, ", "))
 		})
 	case "empty":
 		if !c.yesFlag {
 			return refusedError{"emptying trash needs --yes"}
 		}
-		if err := c.ask("trash.empty", control.Params{Game: game}, nil, readTimeout); err != nil {
+		if err := c.call("trash.empty", control.Params{Game: game}, nil, readTimeout); err != nil {
 			return err
 		}
 		return c.emit(map[string]bool{"emptied": true}, func() { fmt.Fprintln(c.out, "Trash emptied.") })
@@ -1075,7 +1040,7 @@ func (c *cmd) profile() error {
 			return usageError{"profile list needs --format md or text"}
 		}
 		var rows []control.ModRow
-		if err := c.ask("mods", control.Params{Game: a[0], Profile: a[1]}, &rows, readTimeout); err != nil {
+		if err := c.call("mods", control.Params{Game: a[0], Profile: a[1]}, &rows, readTimeout); err != nil {
 			return err
 		}
 		return c.emit(enabledMods(rows), func() { c.printEnabledMods(rows, a[0]) })
@@ -1084,21 +1049,13 @@ func (c *cmd) profile() error {
 		if err != nil {
 			return err
 		}
-		var diff profile.CLICompare
-		if err := c.ask("profile.compare", control.Params{Game: a[0], Profile: a[1], Name: a[2]}, &diff, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(diff, func() { c.compareTable(diff) })
+		return show(c, "profile.compare", control.Params{Game: a[0], Profile: a[1], Name: a[2]}, func(diff profile.CLICompare) { c.compareTable(diff) })
 	case "match":
 		a, err := c.need(2, "a game", "a profile", "a link or .mortar file")
 		if err != nil {
 			return err
 		}
-		var match control.ProfileMatch
-		if err := c.ask("profile.match", control.Params{Game: a[0], Profile: a[1], Path: a[2]}, &match, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(match, func() {
+		return show(c, "profile.match", control.Params{Game: a[0], Profile: a[1], Path: a[2]}, func(match control.ProfileMatch) {
 			fmt.Fprintf(c.out, "%d mods already match %s.\n", match.Already, a[1])
 			if len(match.Missing) > 0 {
 				fmt.Fprintf(c.out, "Missing in %s: %s\n", a[1], strings.Join(match.Missing, ", "))
@@ -1120,24 +1077,16 @@ func (c *cmd) profile() error {
 		}
 		p := control.Params{Game: a[0], Profile: a[1], All: c.updateFlag, Unlink: c.unlinkFlag}
 		if c.unlinkFlag {
-			var prof profile.Profile
-			if err := c.ask("profile.collection", p, &prof, readTimeout); err != nil {
-				return err
-			}
-			return c.emit(prof, func() { fmt.Fprintln(c.out, "unlinked collection") })
+			return show(c, "profile.collection", p, func(prof profile.Profile) { fmt.Fprintln(c.out, "unlinked collection") })
 		}
 		if c.updateFlag {
 			var res sharesvc.Result
-			if err := c.ask("profile.collection", p, &res, installTimeout); err != nil {
+			if err := c.call("profile.collection", p, &res, installTimeout); err != nil {
 				return err
 			}
 			return c.emit(res, func() { fmt.Fprintf(c.out, "Queued %d downloads.\n", res.Queued) })
 		}
-		var st sharesvc.CollectionStatus
-		if err := c.ask("profile.collection", p, &st, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(st, func() {
+		return show(c, "profile.collection", p, func(st sharesvc.CollectionStatus) {
 			if !st.Linked {
 				fmt.Fprintln(c.out, "not from a collection")
 				return
@@ -1149,21 +1098,13 @@ func (c *cmd) profile() error {
 		if err != nil {
 			return err
 		}
-		var order []loadorder.Row
-		if err := c.ask("profile.loadOrder", control.Params{Game: a[0], Profile: a[1]}, &order, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(order, func() { c.printLoadOrder(order) })
+		return show(c, "profile.loadOrder", control.Params{Game: a[0], Profile: a[1]}, func(order []loadorder.Row) { c.printLoadOrder(order) })
 	case "history":
 		a, err := c.need(2, "a game", "a profile")
 		if err != nil {
 			return err
 		}
-		var rows []control.HistoryRow
-		if err := c.ask("profile.history", control.Params{Game: a[0], Profile: a[1]}, &rows, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(rows, func() {
+		return show(c, "profile.history", control.Params{Game: a[0], Profile: a[1]}, func(rows []control.HistoryRow) {
 			t := [][]string{}
 			for _, row := range rows {
 				t = append(t, []string{row.At.Local().Format("2006-01-02 15:04"), historySummary(row.Kind, row.Count, row.Summary)})
@@ -1177,7 +1118,7 @@ func (c *cmd) profile() error {
 		if err != nil {
 			return err
 		}
-		if err := c.ask("profile.revert", control.Params{Game: a[0], Profile: a[1], Name: a[2]}, &p, readTimeout); err != nil {
+		if err := c.call("profile.revert", control.Params{Game: a[0], Profile: a[1], Name: a[2]}, &p, readTimeout); err != nil {
 			return err
 		}
 	case "from-save":
@@ -1187,7 +1128,7 @@ func (c *cmd) profile() error {
 		if err != nil {
 			return err
 		}
-		if err := c.ask("profile.create", control.Params{Game: a[0], Name: strings.Join(a[1:], " ")}, &p, readTimeout); err != nil {
+		if err := c.call("profile.create", control.Params{Game: a[0], Name: strings.Join(a[1:], " ")}, &p, readTimeout); err != nil {
 			return err
 		}
 	case "rename":
@@ -1195,7 +1136,7 @@ func (c *cmd) profile() error {
 		if err != nil {
 			return err
 		}
-		if err := c.ask("profile.rename", control.Params{Game: a[0], Profile: a[1], Name: strings.Join(a[2:], " ")}, &p, readTimeout); err != nil {
+		if err := c.call("profile.rename", control.Params{Game: a[0], Profile: a[1], Name: strings.Join(a[2:], " ")}, &p, readTimeout); err != nil {
 			return err
 		}
 	case "copy":
@@ -1203,7 +1144,7 @@ func (c *cmd) profile() error {
 		if err != nil {
 			return err
 		}
-		if err := c.ask("profile.copy", control.Params{Game: a[0], Profile: a[1], Name: strings.Join(a[2:], " ")}, &p, readTimeout); err != nil {
+		if err := c.call("profile.copy", control.Params{Game: a[0], Profile: a[1], Name: strings.Join(a[2:], " ")}, &p, readTimeout); err != nil {
 			return err
 		}
 	case "delete":
@@ -1211,17 +1152,15 @@ func (c *cmd) profile() error {
 		if err != nil {
 			return err
 		}
-		var r control.Removed
-		if err := c.ask("profile.delete", control.Params{Game: a[0], Profile: a[1]}, &r, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(r, func() { fmt.Fprintf(c.out, "Moved %s to Mortar's trash.\n", strings.Join(r.Mods, ", ")) })
+		return show(c, "profile.delete", control.Params{Game: a[0], Profile: a[1]}, func(r control.Removed) {
+			fmt.Fprintf(c.out, "Moved %s to Mortar's trash.\n", strings.Join(r.Mods, ", "))
+		})
 	case "repair":
 		a, err := c.need(2, "a game", "a profile")
 		if err != nil {
 			return err
 		}
-		if err := c.ask("profile.repair", control.Params{Game: a[0], Profile: a[1]}, &p, readTimeout); err != nil {
+		if err := c.call("profile.repair", control.Params{Game: a[0], Profile: a[1]}, &p, readTimeout); err != nil {
 			return err
 		}
 	default:
@@ -1309,7 +1248,7 @@ func (c *cmd) tools() error {
 		if err != nil {
 			return err
 		}
-		if err := c.ask("tools.run", control.Params{Game: a[0], Profile: a[1], Name: a[2]}, nil, launchTimeout); err != nil {
+		if err := c.call("tools.run", control.Params{Game: a[0], Profile: a[1], Name: a[2]}, nil, launchTimeout); err != nil {
 			return err
 		}
 		return c.emit(map[string]any{"started": true, "tool": a[2]}, func() {
@@ -1320,11 +1259,7 @@ func (c *cmd) tools() error {
 	if err != nil {
 		return err
 	}
-	var list []tools.Tool
-	if err := c.ask("tools", control.Params{Game: a[0]}, &list, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(list, func() {
+	return show(c, "tools", control.Params{Game: a[0]}, func(list []tools.Tool) {
 		rows := [][]string{}
 		for _, tool := range list {
 			rows = append(rows, []string{tool.ID, tool.Name, tool.Executable, tool.WorkingDir})
@@ -1341,11 +1276,7 @@ func enabledLabel(on bool) string {
 }
 
 func (c *cmd) mods(p control.Params) error {
-	var rows []control.ModRow
-	if err := c.ask("mods", p, &rows, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(rows, func() { c.modTable(rows) })
+	return show(c, "mods", p, func(rows []control.ModRow) { c.modTable(rows) })
 }
 
 func (c *cmd) modTable(rows []control.ModRow) {
@@ -1385,7 +1316,7 @@ func (c *cmd) modsChange(sub string) error {
 		}
 		p.UniqueIDs = a[2:4]
 		var rows []control.ModRow
-		if err := c.ask("mods."+sub, p, &rows, readTimeout); err != nil {
+		if err := c.call("mods."+sub, p, &rows, readTimeout); err != nil {
 			return err
 		}
 		return c.emit(rows, func() {
@@ -1409,47 +1340,39 @@ func (c *cmd) modsChange(sub string) error {
 			p.UniqueIDs = a[2:]
 		}
 		var rows []control.ModRow
-		if err := c.ask("mods."+sub, p, &rows, readTimeout); err != nil {
+		if err := c.call("mods."+sub, p, &rows, readTimeout); err != nil {
 			return err
 		}
 		return c.emit(rows, func() { c.modTable(rows) })
 	case "enable", "disable":
 		var res profile.EnableResult
-		if err := c.ask("mods."+sub, p, &res, readTimeout); err != nil {
+		if err := c.call("mods."+sub, p, &res, readTimeout); err != nil {
 			return err
 		}
 		return c.emit(res, func() {
 			fmt.Fprintf(c.out, "%sd %s.\n", strings.ToUpper(sub[:1])+sub[1:], strings.Join(p.UniqueIDs, ", "))
 			if len(res.AlsoEnabled) > 0 {
 				var mods []control.ModRow
-				_ = c.ask("mods", control.Params{Game: p.Game, Profile: p.Profile}, &mods, readTimeout)
+				_ = c.call("mods", control.Params{Game: p.Game, Profile: p.Profile}, &mods, readTimeout)
 				fmt.Fprintf(c.out, "Also enabled, as required: %s.\n", strings.Join(modNamesForIDs(res.AlsoEnabled, mods), ", "))
 			}
 		})
 	case "remove":
-		var r control.Removed
-		if err := c.ask("mods.remove", p, &r, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(r, func() { fmt.Fprintf(c.out, "Removed %s.\n", strings.Join(r.Mods, ", ")) })
+		return show(c, "mods.remove", p, func(r control.Removed) { fmt.Fprintf(c.out, "Removed %s.\n", strings.Join(r.Mods, ", ")) })
 	case "pin", "unpin":
 		if sub == "pin" {
 			p.Value = c.reasonFlag
 		}
 	}
 	var rows []control.ModRow
-	if err := c.ask("mods."+sub, p, &rows, readTimeout); err != nil {
+	if err := c.call("mods."+sub, p, &rows, readTimeout); err != nil {
 		return err
 	}
 	return c.emit(rows, func() { c.modTable(rows) })
 }
 
 func (c *cmd) mod(p control.Params) error {
-	var m control.ModInfo
-	if err := c.ask("mod", p, &m, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(m, func() {
+	return show(c, "mod", p, func(m control.ModInfo) {
 		state := enabledLabel(m.Enabled)
 		fmt.Fprintf(c.out, "%s %s by %s, %s, from %s\n", m.Name, m.Version, m.Author, state, m.Source)
 		if c.verbose {
@@ -1481,7 +1404,7 @@ func (c *cmd) install(p control.Params) error {
 
 func (c *cmd) installMethod(method string, p control.Params) error {
 	var res control.InstallOutcome
-	if err := c.ask(method, p, &res, installTimeout); err != nil {
+	if err := c.call(method, p, &res, installTimeout); err != nil {
 		return err
 	}
 	if res.Needs != "" {
@@ -1504,11 +1427,7 @@ func (c *cmd) installMethod(method string, p control.Params) error {
 }
 
 func (c *cmd) conflicts(p control.Params) error {
-	var list []problems.AssetConflict
-	if err := c.ask("conflicts", p, &list, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(list, func() {
+	return show(c, "conflicts", p, func(list []problems.AssetConflict) {
 		if len(list) == 0 {
 			fmt.Fprintln(c.out, "No conflicts.")
 			return
@@ -1535,7 +1454,7 @@ func (c *cmd) conflicts(p control.Params) error {
 
 func (c *cmd) problems(p control.Params) error {
 	var r problems.Result
-	if err := c.ask("problems", p, &r, readTimeout); err != nil {
+	if err := c.call("problems", p, &r, readTimeout); err != nil {
 		return err
 	}
 	if c.format != "" && c.format != "text" {
@@ -1629,11 +1548,7 @@ func (c *cmd) problemsDismissed() error {
 		return err
 	}
 	game := c.problemsGame()
-	var list []problems.DismissedProblem
-	if err := c.ask("problems.dismissed", control.Params{Game: game, Profile: profile}, &list, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(list, func() {
+	return show(c, "problems.dismissed", control.Params{Game: game, Profile: profile}, func(list []problems.DismissedProblem) {
 		for i, d := range list {
 			kind, text := dismissedKindText(d)
 			fmt.Fprintf(c.out, "%d\t%s\t%s\n", i+1, kind, text)
@@ -1656,14 +1571,14 @@ func (c *cmd) problemsDismiss() error {
 	}
 	game := c.problemsGame()
 	var r problems.Result
-	if err := c.ask("problems", control.Params{Game: game, Profile: profile}, &r, readTimeout); err != nil {
+	if err := c.call("problems", control.Params{Game: game, Profile: profile}, &r, readTimeout); err != nil {
 		return err
 	}
 	rows := problems.DismissableRows(r)
 	if index > len(rows) {
 		return refusedError{fmt.Sprintf("problem index %d is not dismissable (%d dismissable rows; run mortar problems %s %s)", index, len(rows), game, profile)}
 	}
-	if err := c.ask("problems.dismiss", control.Params{Game: game, Profile: profile, ModID: index}, nil, readTimeout); err != nil {
+	if err := c.call("problems.dismiss", control.Params{Game: game, Profile: profile, ModID: index}, nil, readTimeout); err != nil {
 		return err
 	}
 	return c.emit(map[string]bool{"dismissed": true}, func() { fmt.Fprintln(c.out, "Dismissed.") })
@@ -1686,7 +1601,7 @@ func (c *cmd) problemsRestore() error {
 	} else {
 		p.Name = arg
 	}
-	if err := c.ask("problems.restore", p, nil, readTimeout); err != nil {
+	if err := c.call("problems.restore", p, nil, readTimeout); err != nil {
 		return err
 	}
 	return c.emit(map[string]bool{"restored": true}, func() { fmt.Fprintln(c.out, "Restored.") })
@@ -1694,7 +1609,7 @@ func (c *cmd) problemsRestore() error {
 
 func (c *cmd) updates(p control.Params) error {
 	var r problems.UpdatesResult
-	if err := c.ask("updates", p, &r, readTimeout); err != nil {
+	if err := c.call("updates", p, &r, readTimeout); err != nil {
 		return err
 	}
 	changelogs := map[int][]nexus.Changelog{}
@@ -1704,7 +1619,7 @@ func (c *cmd) updates(p control.Params) error {
 				continue
 			}
 			var logs []nexus.Changelog
-			if err := c.ask("changelog", control.Params{Game: p.Game, ModID: u.NexusID, Name: u.Installed, Value: u.Version}, &logs, readTimeout); err != nil {
+			if err := c.call("changelog", control.Params{Game: p.Game, ModID: u.NexusID, Name: u.Installed, Value: u.Version}, &logs, readTimeout); err != nil {
 				return err
 			}
 			changelogs[u.NexusID] = logs
@@ -1741,7 +1656,7 @@ func (c *cmd) updates(p control.Params) error {
 
 func (c *cmd) share(p control.Params) error {
 	var l control.ShareLink
-	if err := c.ask("share", p, &l, readTimeout); err != nil {
+	if err := c.call("share", p, &l, readTimeout); err != nil {
 		return err
 	}
 	if l.TooLarge && !c.json {
@@ -1752,7 +1667,7 @@ func (c *cmd) share(p control.Params) error {
 
 func (c *cmd) export(p control.Params) error {
 	var e control.Exported
-	if err := c.ask("export", p, &e, installTimeout); err != nil {
+	if err := c.call("export", p, &e, installTimeout); err != nil {
 		return err
 	}
 	return c.emit(e, func() {
@@ -1769,11 +1684,7 @@ func (c *cmd) export(p control.Params) error {
 }
 
 func (c *cmd) runs(p control.Params) error {
-	var list []launchsvc.Run
-	if err := c.ask("runs", p, &list, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(list, func() {
+	return show(c, "runs", p, func(list []launchsvc.Run) {
 		t := [][]string{}
 		for _, r := range list {
 			t = append(t, []string{
@@ -1791,11 +1702,7 @@ func (c *cmd) runs(p control.Params) error {
 }
 
 func (c *cmd) logs(p control.Params) error {
-	var l control.RunLog
-	if err := c.ask("logs", p, &l, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(l, func() { fmt.Fprint(c.out, l.Text) })
+	return show(c, "logs", p, func(l control.RunLog) { fmt.Fprint(c.out, l.Text) })
 }
 
 func (c *cmd) shareLog() error {
@@ -1809,7 +1716,7 @@ func (c *cmd) shareLog() error {
 	}
 	p := control.Params{Game: a[0], Profile: a[1], Run: run}
 	var l control.RunLog
-	if err := c.ask("logs", p, &l, readTimeout); err != nil {
+	if err := c.call("logs", p, &l, readTimeout); err != nil {
 		return err
 	}
 	if !c.yesFlag {
@@ -1825,19 +1732,11 @@ func (c *cmd) shareLog() error {
 			return errors.New("cancelled")
 		}
 	}
-	var result map[string]string
-	if err := c.ask("logs.share", p, &result, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(result, func() { fmt.Fprintln(c.out, result["url"]) })
+	return show(c, "logs.share", p, func(result map[string]string) { fmt.Fprintln(c.out, result["url"]) })
 }
 
 func (c *cmd) searchLogs(query string) error {
-	var result launchsvc.RunSearch
-	if err := c.call("logs.search", control.Params{Game: "stardew", Profile: c.profileFlag, Query: query}, &result, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(result, func() {
+	return show(c, "logs.search", control.Params{Game: "stardew", Profile: c.profileFlag, Query: query}, func(result launchsvc.RunSearch) {
 		if len(result.Hits) == 0 {
 			fmt.Fprintln(c.out, "No matches.")
 			return
@@ -1853,13 +1752,13 @@ func (c *cmd) searchLogs(query string) error {
 
 func (c *cmd) saves(p control.Params) error {
 	var list []savessvc.Fit
-	if err := c.ask("saves", p, &list, readTimeout); err != nil {
+	if err := c.call("saves", p, &list, readTimeout); err != nil {
 		return err
 	}
 	seasons := []string{"Spring", "Summer", "Fall", "Winter"}
 	profileNames := map[string]string{}
 	var profiles []profile.Profile
-	if err := c.ask("profiles", control.Params{Game: p.Game}, &profiles, readTimeout); err == nil {
+	if err := c.call("profiles", control.Params{Game: p.Game}, &profiles, readTimeout); err == nil {
 		for _, pr := range profiles {
 			if pr.ID != "" && pr.Name != "" {
 				profileNames[pr.ID] = pr.Name
@@ -1885,7 +1784,7 @@ func (c *cmd) saves(p control.Params) error {
 
 func (c *cmd) launch(p control.Params) error {
 	var st launchsvc.Status
-	if err := c.ask("launch", p, &st, launchTimeout); err != nil {
+	if err := c.call("launch", p, &st, launchTimeout); err != nil {
 		return err
 	}
 	if !c.wait {
@@ -1896,7 +1795,7 @@ func (c *cmd) launch(p control.Params) error {
 	}
 	for st.State.Active() {
 		time.Sleep(2 * time.Second)
-		if err := c.ask("status", control.Params{Game: p.Game}, &st, readTimeout); err != nil {
+		if err := c.call("status", control.Params{Game: p.Game}, &st, readTimeout); err != nil {
 			return err
 		}
 	}
@@ -1905,7 +1804,7 @@ func (c *cmd) launch(p control.Params) error {
 
 func (c *cmd) status(verb, gameID string) error {
 	var st launchsvc.Status
-	if err := c.ask(verb, control.Params{Game: gameID}, &st, launchTimeout); err != nil {
+	if err := c.call(verb, control.Params{Game: gameID}, &st, launchTimeout); err != nil {
 		return err
 	}
 	return c.emit(st, func() {
@@ -1928,12 +1827,12 @@ func (c *cmd) queue() error {
 				id = c.args[2]
 			}
 			var before queue.State
-			if err := c.ask("queue", control.Params{}, &before, readTimeout); err != nil {
+			if err := c.call("queue", control.Params{}, &before, readTimeout); err != nil {
 				return err
 			}
 			n := queueActionCount(before, sub, id)
 			var st queue.State
-			if err := c.ask(method, control.Params{Name: id}, &st, readTimeout); err != nil {
+			if err := c.call(method, control.Params{Name: id}, &st, readTimeout); err != nil {
 				return err
 			}
 			return c.emit(st, func() {
@@ -1947,7 +1846,7 @@ func (c *cmd) queue() error {
 			return c.queueRetryFailed()
 		case "pause", "resume", "clear":
 			var st queue.State
-			if err := c.ask(method, control.Params{}, &st, readTimeout); err != nil {
+			if err := c.call(method, control.Params{}, &st, readTimeout); err != nil {
 				return err
 			}
 			return c.emit(st, func() { fmt.Fprintf(c.out, "Queue %s.\n", sub) })
@@ -1955,11 +1854,7 @@ func (c *cmd) queue() error {
 			return usageError{"unknown queue command " + sub}
 		}
 	}
-	var st queue.State
-	if err := c.ask("queue", control.Params{}, &st, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(st, func() {
+	return show(c, "queue", control.Params{}, func(st queue.State) {
 		if len(st.Items) == 0 {
 			fmt.Fprintln(c.out, "The download queue is empty.")
 			return
@@ -1981,15 +1876,11 @@ func (c *cmd) cacheCmd() error {
 	}
 	switch c.args[1] {
 	case "size":
-		var info datasvc.CacheInfo
-		if err := c.ask("cache.size", control.Params{}, &info, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(info, func() {
+		return show(c, "cache.size", control.Params{}, func(info datasvc.CacheInfo) {
 			fmt.Fprintf(c.out, "%s at %s\n", humanBytes(info.Size), info.Path)
 		})
 	case "clear":
-		if err := c.ask("cache.clear", control.Params{}, nil, readTimeout); err != nil {
+		if err := c.call("cache.clear", control.Params{}, nil, readTimeout); err != nil {
 			return err
 		}
 		return c.emit(map[string]bool{"cleared": true}, func() { fmt.Fprintln(c.out, "Cache cleared.") })
@@ -2008,11 +1899,7 @@ func (c *cmd) dataCmd() error {
 	if !c.byMod {
 		return usageError{"data usage needs --by-mod"}
 	}
-	var u datasvc.ModUsage
-	if err := c.ask("data.usageByMod", control.Params{}, &u, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(u, func() {
+	return show(c, "data.usageByMod", control.Params{}, func(u datasvc.ModUsage) {
 		rows := make([][]string, 0, len(u.Items))
 		for _, it := range u.Items {
 			rows = append(rows, []string{
@@ -2034,7 +1921,7 @@ func (c *cmd) update() error {
 		return usageError{"update needs one or more mod ids, or --all"}
 	}
 	var st queue.State
-	if err := c.ask("updates.queue", control.Params{Game: a[0], Profile: a[1], UniqueIDs: a[2:], All: c.all}, &st, installTimeout); err != nil {
+	if err := c.call("updates.queue", control.Params{Game: a[0], Profile: a[1], UniqueIDs: a[2:], All: c.all}, &st, installTimeout); err != nil {
 		return err
 	}
 	return c.emit(st, func() { fmt.Fprintf(c.out, "Queued updates.\n") })
@@ -2048,7 +1935,7 @@ func (c *cmd) backups() error {
 			if err != nil {
 				return err
 			}
-			if err := c.ask("backups.restore", control.Params{Name: a[0], UniqueIDs: a[1:]}, nil, installTimeout); err != nil {
+			if err := c.call("backups.restore", control.Params{Name: a[0], UniqueIDs: a[1:]}, nil, installTimeout); err != nil {
 				return err
 			}
 			return c.emit(map[string]any{"restored": a[0], "saves": a[1:]}, func() {
@@ -2060,7 +1947,7 @@ func (c *cmd) backups() error {
 				return err
 			}
 			method := "backups." + c.args[1]
-			if err := c.ask(method, control.Params{Name: a[0]}, nil, readTimeout); err != nil {
+			if err := c.call(method, control.Params{Name: a[0]}, nil, readTimeout); err != nil {
 				return err
 			}
 			pinned := c.args[1] == "keep"
@@ -2076,7 +1963,7 @@ func (c *cmd) backups() error {
 			if err != nil {
 				return err
 			}
-			if err := c.ask("backups.create", control.Params{Name: a[0]}, nil, readTimeout); err != nil {
+			if err := c.call("backups.create", control.Params{Name: a[0]}, nil, readTimeout); err != nil {
 				return err
 			}
 			return c.emit(map[string]any{"save": a[0]}, func() {
@@ -2092,11 +1979,7 @@ func (c *cmd) backups() error {
 			return usageError{"unknown backups command " + c.args[1]}
 		}
 	}
-	var list any
-	if err := c.ask("backups", control.Params{}, &list, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(list, func() { fmt.Fprintln(c.out, list) })
+	return show(c, "backups", control.Params{}, func(list any) { fmt.Fprintln(c.out, list) })
 }
 
 func (c *cmd) launchers() error {
@@ -2114,7 +1997,7 @@ func (c *cmd) launchers() error {
 		}
 	}
 	var list []game.StoreApp
-	if err := c.ask(method, p, &list, readTimeout); err != nil {
+	if err := c.call(method, p, &list, readTimeout); err != nil {
 		return err
 	}
 	return c.emit(list, func() {
@@ -2136,7 +2019,7 @@ func (c *cmd) launchers() error {
 
 func (c *cmd) doctor() error {
 	var d control.Doctor
-	if err := c.ask("doctor", control.Params{}, &d, readTimeout); err != nil {
+	if err := c.call("doctor", control.Params{}, &d, readTimeout); err != nil {
 		if errors.Is(err, controlwire.ErrNotRunning) {
 			return offlineDoctor()
 		}

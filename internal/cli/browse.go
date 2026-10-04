@@ -21,7 +21,7 @@ func (c *cmd) browse() error {
 	}
 	page := max(c.pageFlag, 1)
 	var result browse.Page
-	if err := c.ask("browse", control.Params{
+	if err := c.call("browse", control.Params{
 		Game: game, Query: text, Value: source, ModID: page, Profile: c.profileFlag,
 	}, &result, readTimeout); err != nil {
 		return err

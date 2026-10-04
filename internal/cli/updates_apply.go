@@ -17,7 +17,7 @@ func (c *cmd) updatesApply() error {
 	}
 	p := control.Params{Game: a[0], UniqueIDs: a[1:]}
 	var r profile.EverywhereResult
-	if err := c.ask("updates.apply", p, &r, installTimeout); err != nil {
+	if err := c.call("updates.apply", p, &r, installTimeout); err != nil {
 		return err
 	}
 	return c.emit(r, func() {

@@ -17,11 +17,7 @@ func (c *cmd) smapi() error {
 		if err != nil {
 			return err
 		}
-		var rows []string
-		if err := c.ask("smapi.versions", control.Params{Game: a[0]}, &rows, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(rows, func() {
+		return show(c, "smapi.versions", control.Params{Game: a[0]}, func(rows []string) {
 			for _, v := range rows {
 				fmt.Fprintln(c.out, v)
 			}
@@ -32,7 +28,7 @@ func (c *cmd) smapi() error {
 			return err
 		}
 		var st loader.Status
-		if err := c.ask("smapi.install", control.Params{Game: a[0], Name: a[1]}, &st, installTimeout); err != nil {
+		if err := c.call("smapi.install", control.Params{Game: a[0], Name: a[1]}, &st, installTimeout); err != nil {
 			return err
 		}
 		return c.emit(st, func() {
@@ -47,7 +43,7 @@ func (c *cmd) smapi() error {
 		if value == "latest" {
 			value = ""
 		}
-		if err := c.ask("smapi.pin", control.Params{Game: a[0], Value: value}, nil, readTimeout); err != nil {
+		if err := c.call("smapi.pin", control.Params{Game: a[0], Value: value}, nil, readTimeout); err != nil {
 			return err
 		}
 		return c.emit(map[string]string{"game": a[0], "pin": value}, func() {

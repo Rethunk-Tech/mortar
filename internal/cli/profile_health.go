@@ -12,11 +12,7 @@ func (c *cmd) profileHealth() error {
 	if err != nil {
 		return err
 	}
-	var rows []profile.HealthPoint
-	if err := c.ask("profile.health", control.Params{Game: a[0], Profile: a[1]}, &rows, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(rows, func() { c.printHealthTable(rows) })
+	return show(c, "profile.health", control.Params{Game: a[0], Profile: a[1]}, func(rows []profile.HealthPoint) { c.printHealthTable(rows) })
 }
 
 func (c *cmd) printHealthTable(rows []profile.HealthPoint) {

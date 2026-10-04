@@ -192,7 +192,7 @@ func (c *cmd) complete(words []string) error {
 			}
 		}
 		var items []profile.TrashItem
-		if c.ask("trash.list", control.Params{Game: game}, &items, readTimeout) == nil {
+		if c.call("trash.list", control.Params{Game: game}, &items, readTimeout) == nil {
 			for _, item := range items {
 				cands = append(cands, item.Name)
 			}
@@ -211,14 +211,14 @@ func (c *cmd) complete(words []string) error {
 		switch pos {
 		case gameAt:
 			var rows []control.GameRow
-			if c.ask("games", control.Params{}, &rows, readTimeout) == nil {
+			if c.call("games", control.Params{}, &rows, readTimeout) == nil {
 				for _, g := range rows {
 					cands = append(cands, g.ID)
 				}
 			}
 		case profileAt:
 			var list []profile.Profile
-			if c.ask("profiles", control.Params{Game: words[gameAt]}, &list, readTimeout) == nil {
+			if c.call("profiles", control.Params{Game: words[gameAt]}, &list, readTimeout) == nil {
 				for _, p := range list {
 					if p.Error == "" && p.Name != "" {
 						cands = append(cands, p.Name)
@@ -227,7 +227,7 @@ func (c *cmd) complete(words []string) error {
 			}
 		case modAt:
 			var rows []control.ModRow
-			if c.ask("mods", control.Params{Game: words[gameAt], Profile: words[profileAt]}, &rows, readTimeout) == nil {
+			if c.call("mods", control.Params{Game: words[gameAt], Profile: words[profileAt]}, &rows, readTimeout) == nil {
 				for _, m := range rows {
 					cands = append(cands, m.UniqueID)
 				}
@@ -236,7 +236,7 @@ func (c *cmd) complete(words []string) error {
 			var rows []struct {
 				ID string `json:"id"`
 			}
-			if c.ask("tools", control.Params{Game: words[gameAt]}, &rows, readTimeout) == nil {
+			if c.call("tools", control.Params{Game: words[gameAt]}, &rows, readTimeout) == nil {
 				for _, tool := range rows {
 					cands = append(cands, tool.ID)
 				}

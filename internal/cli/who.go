@@ -14,11 +14,7 @@ func (c *cmd) who() error {
 		return err
 	}
 	p := control.Params{Game: a[0], Profile: a[1], Query: strings.Join(a[2:], " ")}
-	var page problems.WhoChangesPage
-	if err := c.ask("who", p, &page, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(page, func() { printAssetTargets(c, page.Targets) })
+	return show(c, "who", p, func(page problems.WhoChangesPage) { printAssetTargets(c, page.Targets) })
 }
 
 func (c *cmd) conflictsMap() error {
@@ -27,11 +23,7 @@ func (c *cmd) conflictsMap() error {
 		return err
 	}
 	p := control.Params{Game: a[0], Profile: a[1], Query: c.filter}
-	var page problems.AssetMapPage
-	if err := c.ask("conflicts.map", p, &page, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(page, func() { printAssetTargets(c, page.Targets) })
+	return show(c, "conflicts.map", p, func(page problems.AssetMapPage) { printAssetTargets(c, page.Targets) })
 }
 
 func printAssetTargets(c *cmd, targets []problems.AssetTarget) {

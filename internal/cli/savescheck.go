@@ -17,11 +17,7 @@ func (c *cmd) savesCheck() error {
 	if len(a) > 2 {
 		profileID = a[2]
 	}
-	var ch savessvc.SaveCheck
-	if err := c.ask("saves.check", control.Params{Game: a[0], Name: a[1], Profile: profileID}, &ch, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(ch, func() {
+	return show(c, "saves.check", control.Params{Game: a[0], Name: a[1], Profile: profileID}, func(ch savessvc.SaveCheck) {
 		if len(ch.Missing) == 0 {
 			fmt.Fprintf(c.out, "%s has every recorded mod.\n", ch.Farm)
 			return

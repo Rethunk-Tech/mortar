@@ -20,11 +20,7 @@ func (c *cmd) modsConfig() error {
 	case len(a) == 4:
 		return usageError{"mods config needs a field and a value"}
 	}
-	var fields []profile.ConfigField
-	if err := c.ask("mods.config", p, &fields, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(fields, func() {
+	return show(c, "mods.config", p, func(fields []profile.ConfigField) {
 		for _, f := range fields {
 			line := f.Path + " = " + f.Value
 			if len(f.AllowValues) > 0 {

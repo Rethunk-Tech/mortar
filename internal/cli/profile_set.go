@@ -13,11 +13,7 @@ func (c *cmd) profileSet() error {
 	if err != nil {
 		return err
 	}
-	var p profile.Profile
-	if err := c.ask("profile.set", control.Params{Game: a[0], Profile: a[1], Key: a[2], Value: strings.Join(a[3:], " ")}, &p, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(p, func() {
+	return show(c, "profile.set", control.Params{Game: a[0], Profile: a[1], Key: a[2], Value: strings.Join(a[3:], " ")}, func(p profile.Profile) {
 		fmt.Fprintln(c.out, p.ID)
 	})
 }

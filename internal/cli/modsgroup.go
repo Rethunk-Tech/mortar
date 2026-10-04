@@ -16,11 +16,7 @@ func (c *cmd) modsGroup() error {
 	p := control.Params{Game: a[0], Profile: a[1], Sub: a[2]}
 	switch a[2] {
 	case "list":
-		var groups []profile.Group
-		if err := c.ask("mods.group", p, &groups, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(groups, func() {
+		return show(c, "mods.group", p, func(groups []profile.Group) {
 			if len(groups) == 0 {
 				fmt.Fprintln(c.out, "No groups.")
 				return
@@ -36,11 +32,7 @@ func (c *cmd) modsGroup() error {
 			return usageError{"mods group " + a[2] + " needs a group name"}
 		}
 		p.Name = a[3]
-		var got profile.Profile
-		if err := c.ask("mods.group", p, &got, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(got, func() {
+		return show(c, "mods.group", p, func(got profile.Profile) {
 			fmt.Fprintf(c.out, "Group %s %s.\n", p.Name, a[2])
 		})
 	case "add", "remove":
@@ -49,11 +41,7 @@ func (c *cmd) modsGroup() error {
 		}
 		p.Name = a[3]
 		p.UniqueIDs = a[4:5]
-		var got profile.Profile
-		if err := c.ask("mods.group", p, &got, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(got, func() {
+		return show(c, "mods.group", p, func(got profile.Profile) {
 			fmt.Fprintf(c.out, "%s %s %s.\n", strings.ToUpper(a[2][:1])+a[2][1:], p.UniqueIDs[0], p.Name)
 		})
 	default:

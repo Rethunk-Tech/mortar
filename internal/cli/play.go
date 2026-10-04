@@ -26,7 +26,7 @@ func (c *cmd) play() error {
 		return err
 	}
 	var groups []control.PlayIssueGroup
-	if err := c.ask("play.check", control.Params{Game: a[0], Profile: a[1]}, &groups, readTimeout); err != nil {
+	if err := c.call("play.check", control.Params{Game: a[0], Profile: a[1]}, &groups, readTimeout); err != nil {
 		return err
 	}
 	if err := c.emit(groups, func() { printPlayIssues(c, groups) }); err != nil {

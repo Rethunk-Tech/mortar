@@ -28,11 +28,7 @@ func (c *cmd) historyDiff() error {
 	if err != nil {
 		return err
 	}
-	var diff profile.HistoryDiff
-	if err := c.ask("history.diff", control.Params{Game: a[0], Profile: a[1], Name: a[2], Value: a[3]}, &diff, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(diff, func() { printHistoryDiff(c, diff) })
+	return show(c, "history.diff", control.Params{Game: a[0], Profile: a[1], Name: a[2], Value: a[3]}, func(diff profile.HistoryDiff) { printHistoryDiff(c, diff) })
 }
 
 func (c *cmd) historyRevertItem() error {
@@ -43,11 +39,7 @@ func (c *cmd) historyRevertItem() error {
 	if c.item == "" {
 		return usageError{"history revert needs --item"}
 	}
-	var p profile.Profile
-	if err := c.ask("history.revert", control.Params{Game: a[0], Profile: a[1], Name: a[2], Value: c.item}, &p, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(p, func() { fmt.Fprintf(c.out, "%s\t%s\n", p.ID, p.Name) })
+	return show(c, "history.revert", control.Params{Game: a[0], Profile: a[1], Name: a[2], Value: c.item}, func(p profile.Profile) { fmt.Fprintf(c.out, "%s\t%s\n", p.ID, p.Name) })
 }
 
 func (c *cmd) profileChanges() error {
@@ -55,11 +47,7 @@ func (c *cmd) profileChanges() error {
 	if err != nil {
 		return err
 	}
-	var diff profile.HistoryDiff
-	if err := c.ask("profile.changes", control.Params{Game: a[0], Profile: a[1]}, &diff, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(diff, func() { printHistoryDiff(c, diff) })
+	return show(c, "profile.changes", control.Params{Game: a[0], Profile: a[1]}, func(diff profile.HistoryDiff) { printHistoryDiff(c, diff) })
 }
 
 func (c *cmd) profileGood() error {
@@ -72,11 +60,7 @@ func (c *cmd) profileGood() error {
 	}
 	p := control.Params{Game: a[0], Profile: a[1], All: c.mark, Force: c.restore}
 	if !c.mark && !c.restore {
-		var rows []profile.HistoryEvent
-		if err := c.ask("profile.good", p, &rows, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(rows, func() {
+		return show(c, "profile.good", p, func(rows []profile.HistoryEvent) {
 			t := [][]string{}
 			for _, row := range rows {
 				t = append(t, []string{row.At.Local().Format("2006-01-02 15:04"), row.Label})
@@ -85,17 +69,9 @@ func (c *cmd) profileGood() error {
 		})
 	}
 	if c.restore {
-		var prof profile.Profile
-		if err := c.ask("profile.good", p, &prof, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(prof, func() { fmt.Fprintf(c.out, "%s\t%s\n", prof.ID, prof.Name) })
+		return show(c, "profile.good", p, func(prof profile.Profile) { fmt.Fprintf(c.out, "%s\t%s\n", prof.ID, prof.Name) })
 	}
-	var ev profile.HistoryEvent
-	if err := c.ask("profile.good", p, &ev, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(ev, func() { fmt.Fprintf(c.out, "%s\t%s\n", ev.ID, ev.Label) })
+	return show(c, "profile.good", p, func(ev profile.HistoryEvent) { fmt.Fprintf(c.out, "%s\t%s\n", ev.ID, ev.Label) })
 }
 
 func printHistoryDiff(c *cmd, diff profile.HistoryDiff) {

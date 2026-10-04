@@ -13,7 +13,7 @@ func (c *cmd) profileFromSave() error {
 		return err
 	}
 	var got savessvc.FromSaveResult
-	if err := c.ask("profile.fromSave", control.Params{Game: a[0], Name: a[1]}, &got, installTimeout); err != nil {
+	if err := c.call("profile.fromSave", control.Params{Game: a[0], Name: a[1]}, &got, installTimeout); err != nil {
 		return err
 	}
 	return c.emit(got, func() {

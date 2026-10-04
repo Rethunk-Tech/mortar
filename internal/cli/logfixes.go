@@ -16,11 +16,7 @@ func (c *cmd) logFixes() error {
 	if run == "" && len(c.args) > 4 {
 		run = c.args[4]
 	}
-	var found []launch.SMAPIProblem
-	if err := c.ask("logs.fixes", control.Params{Game: a[0], Profile: a[1], Run: run}, &found, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(found, func() {
+	return show(c, "logs.fixes", control.Params{Game: a[0], Profile: a[1], Run: run}, func(found []launch.SMAPIProblem) {
 		if len(found) == 0 {
 			fmt.Fprintln(c.out, "No recognised problems.")
 			return

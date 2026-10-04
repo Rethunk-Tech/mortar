@@ -21,21 +21,13 @@ func (c *cmd) modsMenu() error {
 			return usageError{err.Error()}
 		}
 		p.Value = a[3]
-		var edits []gmcm.Edit
-		if err := c.ask("mods.menu", p, &edits, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(edits, func() {
+		return show(c, "mods.menu", p, func(edits []gmcm.Edit) {
 			for _, e := range edits {
 				fmt.Fprintf(c.out, "%s/%d %s %v\n", e.Page, e.Index, e.Name, e.Value)
 			}
 		})
 	}
-	var lines []string
-	if err := c.ask("mods.menu", p, &lines, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(lines, func() {
+	return show(c, "mods.menu", p, func(lines []string) {
 		for _, line := range lines {
 			fmt.Fprintln(c.out, line)
 		}

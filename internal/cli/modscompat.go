@@ -13,7 +13,7 @@ func (c *cmd) modsCompat() error {
 		return err
 	}
 	var rows []problems.Compat
-	if err := c.ask("compatibility", control.Params{Game: a[0], Profile: a[1]}, &rows, readTimeout); err != nil {
+	if err := c.call("compatibility", control.Params{Game: a[0], Profile: a[1]}, &rows, readTimeout); err != nil {
 		return err
 	}
 	var shown []problems.Compat

@@ -23,11 +23,7 @@ func (c *cmd) storeCmd() error {
 }
 
 func (c *cmd) storeReport() error {
-	var rep store.Report
-	if err := c.ask("store.report", control.Params{Game: c.game}, &rep, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(rep, func() { printStoreReport(c, rep) })
+	return show(c, "store.report", control.Params{Game: c.game}, func(rep store.Report) { printStoreReport(c, rep) })
 }
 
 func (c *cmd) storeRemove() error {
@@ -35,7 +31,7 @@ func (c *cmd) storeRemove() error {
 	if err != nil {
 		return err
 	}
-	if err := c.ask("store.remove", control.Params{Game: a[0], UniqueIDs: a[1:]}, nil, readTimeout); err != nil {
+	if err := c.call("store.remove", control.Params{Game: a[0], UniqueIDs: a[1:]}, nil, readTimeout); err != nil {
 		return err
 	}
 	return c.emit(map[string]any{"removed": a[1:]}, func() {

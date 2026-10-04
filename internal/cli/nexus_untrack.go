@@ -18,7 +18,7 @@ func (c *cmd) nexusUntrack() error {
 		return usageError{"nexus untrack needs exactly one of --all or --unused"}
 	}
 	var count int
-	if err := c.ask("nexus.tracked", control.Params{Game: a[0]}, &count, readTimeout); err != nil {
+	if err := c.call("nexus.tracked", control.Params{Game: a[0]}, &count, readTimeout); err != nil {
 		return err
 	}
 	if !c.yesFlag {
@@ -34,11 +34,7 @@ func (c *cmd) nexusUntrack() error {
 			return errors.New("cancelled")
 		}
 	}
-	var result control.NexusUntrack
-	if err := c.ask("nexus.untrack", control.Params{Game: a[0], Unused: c.unused}, &result, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(result, func() {
+	return show(c, "nexus.untrack", control.Params{Game: a[0], Unused: c.unused}, func(result control.NexusUntrack) {
 		fmt.Fprintf(c.out, "Untracked %d mods; %d remaining.\n", result.Untracked, result.Remaining)
 		if result.StoppedForLimit {
 			fmt.Fprintln(c.out, "Stopped at the Nexus API limit.")

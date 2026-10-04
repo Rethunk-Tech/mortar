@@ -14,11 +14,7 @@ func (c *cmd) modsByAuthor() error {
 		return err
 	}
 	p := control.Params{Game: a[0], Query: strings.Join(a[1:], " ")}
-	var rows []profile.AuthorMod
-	if err := c.ask("mods.by-author", p, &rows, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(rows, func() {
+	return show(c, "mods.by-author", p, func(rows []profile.AuthorMod) {
 		if len(rows) == 0 {
 			fmt.Fprintln(c.out, "No mods for that author.")
 			return

@@ -22,11 +22,7 @@ func (c *cmd) modsPreset() error {
 	} else if a[3] != "list" {
 		return usageError{"mods preset " + a[3] + " needs a name"}
 	}
-	var names []string
-	if err := c.ask("mods.preset", p, &names, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(names, func() {
+	return show(c, "mods.preset", p, func(names []string) {
 		for _, name := range names {
 			fmt.Fprintln(c.out, name)
 		}

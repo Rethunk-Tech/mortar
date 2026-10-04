@@ -11,11 +11,7 @@ func (c *cmd) profileShortcut() error {
 	if err != nil {
 		return err
 	}
-	var res control.ShortcutResult
-	if err := c.ask("profile.shortcut", control.Params{Game: a[0], Profile: a[1], Remove: c.removeFlag}, &res, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(res, func() {
+	return show(c, "profile.shortcut", control.Params{Game: a[0], Profile: a[1], Remove: c.removeFlag}, func(res control.ShortcutResult) {
 		if res.Removed {
 			fmt.Fprintln(c.out, "Removed the shortcut for that profile.")
 			return
@@ -32,11 +28,7 @@ func (c *cmd) profileSteam() error {
 	if c.removeFlag {
 		return usageError{"profile steam does not support --remove; remove the entry from Steam"}
 	}
-	var res control.SteamShortcutResult
-	if err := c.ask("profile.steam", control.Params{Game: a[0], Profile: a[1]}, &res, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(res, func() {
+	return show(c, "profile.steam", control.Params{Game: a[0], Profile: a[1]}, func(res control.SteamShortcutResult) {
 		if res.Already {
 			fmt.Fprintln(c.out, "That profile is already in Steam.")
 			return

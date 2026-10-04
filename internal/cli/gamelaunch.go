@@ -14,11 +14,7 @@ func (c *cmd) gameSteamLaunchOption() error {
 	if c.setFlag && c.clearFlag {
 		return usageError{"use either --set or --clear, not both"}
 	}
-	var res control.SteamLaunchOptionResult
-	if err := c.ask("game.steamLaunchOption", control.Params{Game: a[0], Set: c.setFlag, Clear: c.clearFlag}, &res, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(res, func() {
+	return show(c, "game.steamLaunchOption", control.Params{Game: a[0], Set: c.setFlag, Clear: c.clearFlag}, func(res control.SteamLaunchOptionResult) {
 		switch {
 		case res.Set:
 			if res.Options == "" {
