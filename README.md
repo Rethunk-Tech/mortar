@@ -14,7 +14,7 @@ Version 1 supports Stardew Valley (SMAPI, Nexus Mods) only; Lethal Company (BepI
 
 ## Getting started
 
-Download the latest build from [Releases](https://github.com/Rethunk-AI/mortar/releases/latest) or the [download page](https://mortar.rethunk.tech/download/): a Windows installer (x64 or ARM64), or for Linux an AppImage, Flatpak, `.deb`, `.rpm` or Arch package. Mortar finds Stardew Valley from Steam, GOG, Heroic or Lutris and installs SMAPI itself. The Windows builds are not code-signed, so SmartScreen warns the first time one runs: choose **More info**, then **Run anyway**.
+Download the latest build from [Releases](https://github.com/Rethunk-AI/mortar/releases/latest) or the [download page](https://mortar.rethunk.tech/download/): a Windows installer (x64 or ARM64), or for Linux an AppImage, Flatpak, `.deb`, `.rpm` or Arch package. Mortar finds Stardew Valley from Steam, GOG, Heroic or Lutris and installs SMAPI itself. The [user guide](docs/user-guide.md) walks through installing, first run, Nexus sign-in, profiles, backups and troubleshooting. The Windows builds are not code-signed, so SmartScreen warns the first time one runs: choose **More info**, then **Run anyway**.
 
 The optional browser extension marks Nexus Mods pages with what a profile already has and hands Mod Manager Download clicks to Mortar. Until it is listed in the browser stores, take `mortar-browser-extension.zip` from the same release, unzip it, open `chrome://extensions` in Chrome, Edge or another Chromium browser, turn on Developer mode and choose **Load unpacked** on the unzipped folder. In Firefox, open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on** and pick its `manifest.json`; Firefox removes a temporary add-on when it restarts.
 
@@ -38,6 +38,7 @@ Prerequisites (including the `wails3` CLI built from the pinned Wails fork), bui
 
 | Topic | Location |
 | --- | --- |
+| Using Mortar | [docs/user-guide.md](docs/user-guide.md) |
 | How it works | [docs/architecture.md](docs/architecture.md) |
 | Decided work not yet built | [docs/design.md](docs/design.md) |
 | Screens and styling | [docs/gui-design.md](docs/gui-design.md) |
