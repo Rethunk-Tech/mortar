@@ -194,10 +194,9 @@ func parseReset(s string) time.Time {
 	return time.Time{}
 }
 
-// get decodes a 200 JSON answer for path into out; map403 turns a 403 into ErrPremiumRequired.
-func (c *Client) get(ctx context.Context, path string, map403 bool, out any) error {
+func (c *Client) roundTrip(ctx context.Context, method, path string, body any) (int, string, []byte, error) {
 	if err := c.blocked(); err != nil {
-		return err
+		return 0, "", nil, err
 	}
 	base := c.BaseURL
 	if base == "" {
@@ -205,45 +204,69 @@ func (c *Client) get(ctx context.Context, path string, map403 bool, out any) err
 	}
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
 	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, base+path, nil)
+	var rdr io.Reader
+	if body != nil {
+		raw, err := json.Marshal(body)
+		if err != nil {
+			return 0, "", nil, err
+		}
+		rdr = bytes.NewReader(raw)
+	}
+	req, err := http.NewRequestWithContext(ctx, method, base+path, rdr)
 	if err != nil {
-		return err
+		return 0, "", nil, err
 	}
 	req.Header.Set("Apikey", c.key)
 	req.Header.Set("Application-Name", "Mortar")
 	req.Header.Set("Application-Version", c.version)
 	req.Header.Set("User-Agent", "Mortar/"+c.version)
 	req.Header.Set("Accept", "application/json")
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
 	hc := c.HTTP
 	if hc == nil {
 		hc = http.DefaultClient
 	}
 	resp, err := hc.Do(req)
 	if err != nil {
-		return err
+		return 0, "", nil, err
 	}
 	defer func() { _ = resp.Body.Close() }()
 	c.record(resp.Header)
-	switch {
-	case resp.StatusCode == http.StatusOK:
-	case resp.StatusCode == http.StatusUnauthorized:
-		return ErrUnauthorized
-	case resp.StatusCode == http.StatusForbidden && map403:
-		return ErrPremiumRequired
-	case resp.StatusCode == http.StatusTooManyRequests:
-		reset := c.Limits().Hourly.Reset
-		if d := c.Limits().Daily; d.Remaining <= 0 {
-			reset = d.Reset
-		}
-		return &RateLimitError{Reset: reset}
-	default:
-		return &StatusError{Code: resp.StatusCode, Status: resp.Status}
+	raw, err := io.ReadAll(io.LimitReader(resp.Body, maxBody))
+	if err != nil {
+		return 0, "", nil, err
 	}
-	body, err := io.ReadAll(io.LimitReader(resp.Body, maxBody))
+	return resp.StatusCode, resp.Status, raw, nil
+}
+
+func (c *Client) rateLimited() error {
+	reset := c.Limits().Hourly.Reset
+	if d := c.Limits().Daily; d.Remaining <= 0 {
+		reset = d.Reset
+	}
+	return &RateLimitError{Reset: reset}
+}
+
+// get decodes a 200 JSON answer for path into out; map403 turns a 403 into ErrPremiumRequired.
+func (c *Client) get(ctx context.Context, path string, map403 bool, out any) error {
+	code, status, raw, err := c.roundTrip(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(body, out)
+	switch {
+	case code == http.StatusOK:
+	case code == http.StatusUnauthorized:
+		return ErrUnauthorized
+	case code == http.StatusForbidden && map403:
+		return ErrPremiumRequired
+	case code == http.StatusTooManyRequests:
+		return c.rateLimited()
+	default:
+		return &StatusError{Code: code, Status: status}
+	}
+	return json.Unmarshal(raw, out)
 }
 
 // User is the account a key belongs to.
@@ -293,37 +316,14 @@ func (c *Client) ScanStatuses(ctx context.Context, modID int) (map[int]string, e
 	}
 	c.scanMu.Unlock()
 
-	body, err := json.Marshal(map[string]string{
+	code, status, body, err := c.roundTrip(ctx, http.MethodPost, "/v2/graphql", map[string]string{
 		"query": fmt.Sprintf("{ modFiles(modId: %d, gameId: %d) { fileId scannedV2 } }", modID, GameID),
 	})
 	if err != nil {
 		return nil, err
 	}
-	base := c.BaseURL
-	if base == "" {
-		base = BaseURL
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, base+"/v2/graphql", bytes.NewReader(body))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Apikey", c.key)
-	req.Header.Set("Application-Name", "Mortar")
-	req.Header.Set("Application-Version", c.version)
-	req.Header.Set("User-Agent", "Mortar/"+c.version)
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-	hc := c.HTTP
-	if hc == nil {
-		hc = http.DefaultClient
-	}
-	resp, err := hc.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return nil, &StatusError{Code: resp.StatusCode, Status: resp.Status}
+	if code != http.StatusOK {
+		return nil, &StatusError{Code: code, Status: status}
 	}
 	var raw struct {
 		Data struct {
@@ -333,7 +333,7 @@ func (c *Client) ScanStatuses(ctx context.Context, modID int) (map[int]string, e
 			} `json:"modFiles"`
 		} `json:"data"`
 	}
-	if err := json.NewDecoder(io.LimitReader(resp.Body, maxBody)).Decode(&raw); err != nil {
+	if err := json.Unmarshal(body, &raw); err != nil {
 		return nil, err
 	}
 	statuses := make(map[int]string, len(raw.Data.Files))

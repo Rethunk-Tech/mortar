@@ -1,12 +1,10 @@
 package nexus
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"sync"
 	"time"
@@ -51,68 +49,25 @@ type trackedCache struct {
 }
 
 func (c *Client) do(ctx context.Context, method, path string, body, out any) error {
-	if err := c.blocked(); err != nil {
-		return err
-	}
-	base := c.BaseURL
-	if base == "" {
-		base = BaseURL
-	}
-	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
-	defer cancel()
-	var rdr io.Reader
-	if body != nil {
-		raw, err := json.Marshal(body)
-		if err != nil {
-			return err
-		}
-		rdr = bytes.NewReader(raw)
-	}
-	req, err := http.NewRequestWithContext(ctx, method, base+path, rdr)
+	code, status, raw, err := c.roundTrip(ctx, method, path, body)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Apikey", c.key)
-	req.Header.Set("Application-Name", "Mortar")
-	req.Header.Set("Application-Version", c.version)
-	req.Header.Set("User-Agent", "Mortar/"+c.version)
-	req.Header.Set("Accept", "application/json")
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-	hc := c.HTTP
-	if hc == nil {
-		hc = http.DefaultClient
-	}
-	resp, err := hc.Do(req)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	c.record(resp.Header)
-	raw, err := io.ReadAll(io.LimitReader(resp.Body, maxBody))
-	if err != nil {
-		return err
-	}
-	switch resp.StatusCode {
+	switch code {
 	case http.StatusOK, http.StatusCreated, http.StatusNoContent:
 	case http.StatusUnauthorized:
 		return ErrUnauthorized
 	case http.StatusTooManyRequests:
-		reset := c.Limits().Hourly.Reset
-		if d := c.Limits().Daily; d.Remaining <= 0 {
-			reset = d.Reset
-		}
-		return &RateLimitError{Reset: reset}
+		return c.rateLimited()
 	default:
 		var msg struct {
 			Message string `json:"message"`
 		}
 		_ = json.Unmarshal(raw, &msg)
 		if msg.Message != "" {
-			return &MessageError{Code: resp.StatusCode, Status: resp.Status, Message: msg.Message}
+			return &MessageError{Code: code, Status: status, Message: msg.Message}
 		}
-		return &StatusError{Code: resp.StatusCode, Status: resp.Status}
+		return &StatusError{Code: code, Status: status}
 	}
 	if out == nil || len(raw) == 0 {
 		return nil
