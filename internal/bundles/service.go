@@ -368,25 +368,6 @@ func (s *Service) AddMods(gameID, bundleID, profileID string, uniqueIDs []string
 	})
 }
 
-// RemoveMods removes selected unique IDs from a bundle.
-func (s *Service) RemoveMods(gameID, bundleID string, uniqueIDs []string) (Bundle, error) {
-	return s.update(gameID, func(bundles []Bundle) ([]Bundle, Bundle, error) {
-		i, err := findBundle(bundles, bundleID)
-		if err != nil {
-			return nil, Bundle{}, err
-		}
-		remove := make(map[string]struct{}, len(uniqueIDs))
-		for _, id := range uniqueIDs {
-			remove[strings.ToLower(strings.TrimSpace(id))] = struct{}{}
-		}
-		bundles[i].Mods = slices.DeleteFunc(bundles[i].Mods, func(mod Mod) bool {
-			_, ok := remove[strings.ToLower(mod.UniqueID)]
-			return ok
-		})
-		return bundles, bundles[i], nil
-	})
-}
-
 type entryMods struct {
 	key    string
 	source profile.Source
