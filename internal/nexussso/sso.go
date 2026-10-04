@@ -18,7 +18,7 @@ import (
 var (
 	// Slug is the application slug Nexus issues for legacy SSO.
 	Slug string
-	// ClientID is the OAuth2 client id Nexus issues.
+	// ClientID is the OAuth2 client id Nexus issues; when set it takes precedence over Slug.
 	ClientID string
 )
 

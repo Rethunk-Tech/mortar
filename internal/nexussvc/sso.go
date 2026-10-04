@@ -31,10 +31,10 @@ type ssoRun struct {
 	cancel context.CancelFunc
 }
 
-// SSOAvailable is whether this build has a Nexus application slug; the UI hides the button otherwise. OAuth is
-// not offered: Nexus documents no way to call the v1 API with its access token.
+// SSOAvailable is whether this build has a Nexus OAuth client id or application slug; the UI hides the button
+// otherwise. A client id selects OAuth PKCE, a slug alone selects legacy SSO.
 func (s *Service) SSOAvailable() bool {
-	return s.sso.Slug != ""
+	return s.oauth.ClientID != "" || s.sso.Slug != ""
 }
 
 // StartSSO signs in through the browser and returns the account. It streams SSOEvent states and ends when the
@@ -59,12 +59,24 @@ func (s *Service) StartSSO(ctx context.Context) (Account, error) {
 		s.run.mu.Unlock()
 	}()
 
-	cfg := s.sso
-	if cfg.OpenBrowser == nil {
-		cfg.OpenBrowser = s.openBrowser
+	onState := func(st nexussso.State) { s.emitSSO(SSOState{State: string(st)}) }
+	var key string
+	var err error
+	if s.oauth.ClientID != "" {
+		o := s.oauth
+		if o.OpenBrowser == nil {
+			o.OpenBrowser = s.openBrowser
+		}
+		o.OnState = onState
+		key, err = o.Key(runCtx)
+	} else {
+		l := s.sso
+		if l.OpenBrowser == nil {
+			l.OpenBrowser = s.openBrowser
+		}
+		l.OnState = onState
+		key, err = l.Run(runCtx)
 	}
-	cfg.OnState = func(st nexussso.State) { s.emitSSO(SSOState{State: string(st)}) }
-	key, err := cfg.Run(runCtx)
 	var acct Account
 	if err == nil {
 		acct, err = s.SignIn(runCtx, key)

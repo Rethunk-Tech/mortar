@@ -67,6 +67,15 @@ func (o OAuth) client() *http.Client {
 	return &http.Client{Timeout: 20 * time.Second}
 }
 
+// Key signs in and returns the access token for Service.SignIn to validate; the grant is kept in the keyring for Fresh.
+func (o OAuth) Key(ctx context.Context) (string, error) {
+	t, err := o.Authorize(ctx)
+	if err != nil {
+		return "", err
+	}
+	return t.Access, Save(t)
+}
+
 // Authorize runs the loopback authorization-code flow and returns the tokens.
 func (o OAuth) Authorize(ctx context.Context) (Tokens, error) {
 	if o.ClientID == "" {

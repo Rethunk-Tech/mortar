@@ -54,13 +54,14 @@ type Service struct {
 	// GitHub serves release notes for updates that come from GitHub.
 	GitHub *github.Client
 
-	sso nexussso.Legacy
-	run ssoRun
+	sso   nexussso.Legacy
+	oauth nexussso.OAuth
+	run   ssoRun
 }
 
 // NewService keeps mod page details in m's cache.
 func NewService(store *settings.Store, client *nexus.Client, m *meta.Client) *Service {
-	s := &Service{store: store, client: client, meta: m, sso: nexussso.Legacy{Slug: nexussso.Slug}}
+	s := &Service{store: store, client: client, meta: m, sso: nexussso.Legacy{Slug: nexussso.Slug}, oauth: nexussso.OAuth{ClientID: nexussso.ClientID}}
 	client.SetLimitsHook(func(lim nexus.Limits) {
 		if s.App != nil {
 			a := s.Account()
@@ -102,7 +103,7 @@ func (s *Service) SignIn(ctx context.Context, key string) (Account, error) {
 
 // SignOut deletes the key and forgets the account.
 func (s *Service) SignOut() (Account, error) {
-	if err := secret.Delete(keyName); err != nil {
+	if err := errors.Join(secret.Delete(keyName), nexussso.Forget()); err != nil {
 		return Account{}, err
 	}
 	return s.update(func(v *settings.Settings) { v.NexusUserID, v.NexusName, v.NexusPremium = 0, "", false })

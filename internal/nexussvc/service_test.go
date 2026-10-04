@@ -6,12 +6,15 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/meta"
@@ -26,8 +29,7 @@ import (
 func testStore(t *testing.T) *settings.Store {
 	t.Helper()
 	keyring.MockInit()
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	store, err := settings.Open()
 	if err != nil {
 		t.Fatal(err)
@@ -215,5 +217,48 @@ func TestStartSSOStoresKeyLikePasted(t *testing.T) {
 	}
 	if k, _ := secret.Get(keyName); k != "SSOKEY" {
 		t.Fatalf("stored key %q", k)
+	}
+}
+
+func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
+	store := testStore(t)
+	api, _ := serveFixtures(t)
+	idp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{"access_token":"A1","refresh_token":"R1","expires_in":3600}`))
+	}))
+	defer idp.Close()
+	client := nexus.New("test")
+	client.BaseURL = api.URL
+	s := NewService(store, client, &meta.Client{})
+	s.sso = nexussso.Legacy{Slug: "mortar"}
+	s.oauth = nexussso.OAuth{ClientID: "cid", AuthBase: idp.URL, OpenBrowser: func(raw string) error {
+		u, _ := url.Parse(raw)
+		go func() {
+			req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, u.Query().Get("redirect_uri")+"?code=C&state="+u.Query().Get("state"), nil)
+			if resp, err := http.DefaultClient.Do(req); err == nil {
+				_ = resp.Body.Close()
+			}
+		}()
+		return nil
+	}}
+	if !s.SSOAvailable() {
+		t.Fatal("SSO unavailable with a client id")
+	}
+	if acct, err := s.StartSSO(context.Background()); err != nil || !acct.SignedIn {
+		t.Fatalf("acct %+v err %v", acct, err)
+	}
+	if tok, err := nexussso.Load(); err != nil || tok.Refresh != "R1" {
+		t.Fatalf("tokens %+v err %v", tok, err)
+	}
+	if _, err := s.SignOut(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := nexussso.Load(); err == nil {
+		t.Fatal("OAuth tokens survived sign-out")
+	}
+	s.oauth = nexussso.OAuth{}
+	s.sso = nexussso.Legacy{}
+	if s.SSOAvailable() {
+		t.Fatal("SSO available with neither flag")
 	}
 }
