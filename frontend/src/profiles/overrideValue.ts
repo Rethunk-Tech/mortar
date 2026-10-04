@@ -64,20 +64,12 @@ export function resolveOverride(
   return gameValue
 }
 
-export function foldedOverrides(
-  profile: Pick<Profile, 'overrides' | 'updateBeforePlay' | 'skipPlayCheck'>,
-): Record<string, string> {
+export function foldedOverrides(profile: Pick<Profile, 'overrides'>): Record<string, string> {
   const out: Record<string, string> = {}
   for (const [key, value] of Object.entries(profile.overrides ?? {})) {
     if (value !== undefined) {
       out[key] = value
     }
-  }
-  if (!Object.hasOwn(out, 'updateModsBeforePlayDefault') && profile.updateBeforePlay) {
-    out.updateModsBeforePlayDefault = 'true'
-  }
-  if (!Object.hasOwn(out, 'skipPlayCheck') && profile.skipPlayCheck) {
-    out.skipPlayCheck = 'true'
   }
   return out
 }
