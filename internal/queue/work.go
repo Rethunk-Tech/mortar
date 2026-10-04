@@ -218,7 +218,9 @@ func (s *Service) step(ctx context.Context) bool {
 	running := s.runningOf(queued)
 	s.mu.Lock()
 	it, act, _ := s.next(running)
-	if it == nil || ctx.Err() != nil {
+	// Resolving leaves an item queued, so next can hand out one another worker is still resolving; a second
+	// request would race the first, and a stale rate-limit answer could pause the queue again after its reset.
+	if it == nil || ctx.Err() != nil || s.cancels[it.ID] != nil {
 		s.mu.Unlock()
 		return false
 	}
