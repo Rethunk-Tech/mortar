@@ -1,6 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, Chip, TextField } from '@mui/material'
+import { Events } from '@wailsio/runtime'
 import { Check, LogIn, LogOut } from 'lucide-react'
 import { type SubmitEvent, useEffect, useId, useState } from 'react'
 import {
@@ -209,28 +210,15 @@ function NexusModsSignedIn({
   )
 }
 
-export function NexusMods() {
+/** The Nexus sign-in form and the nxm link offer that follows it; renders only the offer once signed in. */
+export function NexusSignIn() {
   const { t } = useLingui()
-
   const keyId = useId()
-  const { signedIn, name, premium } = useNexus()
+  const { signedIn } = useNexus()
   const nxm = useNxmHandler()
   const [key, setKey] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [askEndorse, setAskEndorse] = useState(true)
-  useEffect(() => {
-    GetSettings()
-      .then((settings) => setAskEndorse(settings.askEndorseMods ?? true))
-      .catch(reportUnexpected)
-  }, [])
-  const onAskEndorse = (on: boolean) => {
-    setAskEndorse(on)
-    SetAskEndorseMods(on).catch((err: unknown) => {
-      setAskEndorse(!on)
-      reportUnexpected(err)
-    })
-  }
   const submit = (e: SubmitEvent) => {
     e.preventDefault()
     setBusy(true)
@@ -243,22 +231,22 @@ export function NexusMods() {
       .catch((err: unknown) => setError(errorText(err) ?? t`Could not sign in`))
       .finally(() => setBusy(false))
   }
-  const terms = `${t`Nexus account`} Nexus ${t`API key`} ${t`Sign in`}`
+  // A sign-in through the browser ends with an event, not a promise; the account update unmounts the form first.
+  const { offer } = nxm
+  useEffect(
+    () =>
+      Events.On('nexus:sso', (e) => {
+        if (e.data.state === 'done') {
+          offer()
+        }
+      }),
+    [offer],
+  )
   if (signedIn) {
-    return (
-      <>
-        <NexusModsSignedIn
-          name={name}
-          premium={premium}
-          askEndorse={askEndorse}
-          onAskEndorse={onAskEndorse}
-        />
-        {nxm.dialog}
-      </>
-    )
+    return nxm.dialog
   }
   return (
-    <Searchable terms={terms} loose={true}>
+    <Searchable terms={`${t`Nexus account`} Nexus ${t`API key`} ${t`Sign in`}`} loose={true}>
       {nxm.dialog}
       <Box
         component="form"
@@ -293,5 +281,35 @@ export function NexusMods() {
         {error ? <Alert severity="error">{error}</Alert> : null}
       </Box>
     </Searchable>
+  )
+}
+
+export function NexusMods() {
+  const { signedIn, name, premium } = useNexus()
+  const [askEndorse, setAskEndorse] = useState(true)
+  useEffect(() => {
+    GetSettings()
+      .then((settings) => setAskEndorse(settings.askEndorseMods ?? true))
+      .catch(reportUnexpected)
+  }, [])
+  const onAskEndorse = (on: boolean) => {
+    setAskEndorse(on)
+    SetAskEndorseMods(on).catch((err: unknown) => {
+      setAskEndorse(!on)
+      reportUnexpected(err)
+    })
+  }
+  return (
+    <>
+      <NexusSignIn />
+      {signedIn ? (
+        <NexusModsSignedIn
+          name={name}
+          premium={premium}
+          askEndorse={askEndorse}
+          onAskEndorse={onAskEndorse}
+        />
+      ) : null}
+    </>
   )
 }

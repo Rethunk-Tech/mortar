@@ -15,16 +15,19 @@ import {
   List,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import type { GameId } from '../nav/store.ts'
+import { useNexus } from '../settings/nexus.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { errorMessage } from '../toasts/report.ts'
 import { FindStep } from './FindStep.tsx'
+import { NexusStep } from './NexusStep.tsx'
 import { ProfileStep } from './ProfileStep.tsx'
 import { SmapiStep } from './SmapiStep.tsx'
 
 const FIND = 1
-const LOADER = 2
-const PROFILE = 3
-type Step = typeof FIND | typeof LOADER | typeof PROFILE
+const NEXUS = 2
+const LOADER = 3
+const PROFILE = 4
+type Step = typeof FIND | typeof NEXUS | typeof LOADER | typeof PROFILE
 
 type LoaderStep = (p: { game: GameId; gameDir: string; onDone: () => void }) => ReactNode
 
@@ -103,6 +106,8 @@ export function GameSetup({ game: id }: { game: GameId }) {
   useEffect(refresh, [refresh])
   const goToProfile = useCallback(() => setStep(PROFILE), [])
   const Loader = loaderSteps[id]
+  const signedIn = useNexus((s) => s.signedIn)
+  const afterNexus = Loader ? LOADER : PROFILE
 
   if (!ready) {
     return <LoadingRow>{t`Loading…`}</LoadingRow>
@@ -142,6 +147,7 @@ export function GameSetup({ game: id }: { game: GameId }) {
       </Typography>
       <Box component="ol" sx={{ display: 'flex', gap: '10px', m: 0, p: 0, listStyle: 'none' }}>
         <StepChip n={FIND} label={t`Game folder`} state={stateOf(FIND)} />
+        <StepChip n={NEXUS} label={t`Nexus Mods`} state={stateOf(NEXUS)} />
         {Loader ? (
           <StepChip
             n={LOADER}
@@ -156,9 +162,10 @@ export function GameSetup({ game: id }: { game: GameId }) {
           game={game}
           launchers={launchers}
           refresh={refresh}
-          onContinue={() => setStep(Loader ? LOADER : PROFILE)}
+          onContinue={() => setStep(signedIn ? afterNexus : NEXUS)}
         />
       ) : null}
+      {step === NEXUS ? <NexusStep onDone={() => setStep(afterNexus)} /> : null}
       {step === LOADER && Loader ? (
         <Loader game={id} gameDir={game.installDir} onDone={goToProfile} />
       ) : null}

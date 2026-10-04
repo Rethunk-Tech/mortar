@@ -34,6 +34,8 @@ import { SetListGroupBy } from '../../bindings/github.com/Rethunk-AI/mortar/inte
 import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
 import { openDownloadsDialog } from '../install/downloadsDialog.ts'
 import { useInstall } from '../install/store.ts'
+import { openSettings } from '../nav/store.ts'
+import { useNexus } from '../settings/nexus.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
@@ -199,13 +201,17 @@ function BrowseNexus({
   variant,
   toolbar = false,
   size,
+  signInFirst = false,
 }: {
   variant: 'contained' | 'outlined'
   toolbar?: boolean
   size?: 'large'
+  signInFirst?: boolean
 }) {
   const { t } = useLingui()
-  const label = t`Open Nexus Mods`
+  const signedIn = useNexus((s) => s.signedIn)
+  const signIn = signInFirst && !signedIn
+  const label = signIn ? t`Sign in to Nexus Mods` : t`Open Nexus Mods`
   return (
     <Button
       variant={variant}
@@ -213,6 +219,10 @@ function BrowseNexus({
       aria-label={label}
       startIcon={<ExternalLink size={14} />}
       onClick={() => {
+        if (signIn) {
+          openSettings('nexus')
+          return
+        }
         openPage(NEXUS).catch(reportUnexpected)
       }}
       sx={toolbar ? iconWhenCompact : undefined}
@@ -364,7 +374,7 @@ export function EmptyMods({ profileId }: { profileId: string }) {
         <>
           <TipBanner tip="mods">{t`Drop archives anywhere on the window, or Open Nexus Mods to find mods.`}</TipBanner>
           <Box sx={{ display: 'flex', gap: 1.5 }}>
-            <BrowseNexus variant="contained" size="large" />
+            <BrowseNexus variant="contained" size="large" signInFirst={true} />
             <AddArchive variant="outlined" size="large" />
           </Box>
           <Button
