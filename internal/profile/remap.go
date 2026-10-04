@@ -22,6 +22,9 @@ type RemapAsk struct {
 	Tree   []RemapNode `json:"tree"`
 	// Variants is set when the archive holds several copies of the same mod; the user picks one folder of them.
 	Variants []RemapVariant `json:"variants,omitempty"`
+	// Overlay is set when the archive is an optional file without a manifest and the user picks where it goes
+	// inside its main mod; answer it with InstallOverlay.
+	Overlay *OverlayAsk `json:"overlay,omitempty"`
 }
 
 // RemapVariant is one folder of an archive that ships the same mod in several variants.
@@ -77,6 +80,13 @@ func (s *Store) remapAsk(game, id, key string) (RemapAsk, bool, error) {
 	}
 	if len(found) == 0 && rawXNB {
 		return RemapAsk{}, false, &rawXNBError{Key: key}
+	}
+	if len(found) == 0 {
+		if has, err := hasManifestFile(dir); err != nil {
+			return RemapAsk{}, false, err
+		} else if !has {
+			return RemapAsk{}, false, &NoModError{Key: key}
+		}
 	}
 	vars := variants(found)
 	if len(found) > 0 && len(vars) == 0 {

@@ -39,7 +39,7 @@ func SamePageAsk(p Profile, modID, fileID int, category string) (MergeAsk, bool)
 	}
 	incoming := store.NexusKey(modID, fileID)
 	for _, e := range p.Entries {
-		if e.Source.Kind != KindNexus || e.Source.ModID != modID {
+		if e.Source.Kind != KindNexus || e.Source.ModID != modID || e.IsOverlay() {
 			continue
 		}
 		if e.Source.FileID == fileID || e.Key == incoming || slices.Contains(e.ExtraStoreKeys, incoming) {
@@ -54,7 +54,7 @@ func SamePageAsk(p Profile, modID, fileID int, category string) (MergeAsk, bool)
 func NewestFromPage(p Profile, modID int) int {
 	newest := 0
 	for _, e := range p.Entries {
-		if e.Source.Kind == KindNexus && e.Source.ModID == modID {
+		if e.Source.Kind == KindNexus && e.Source.ModID == modID && !e.IsOverlay() {
 			newest = max(newest, e.Source.FileID)
 		}
 	}
@@ -124,13 +124,16 @@ func (s *Store) CombineEntries(game, id, targetKey, otherKey string) (Profile, e
 			return err
 		}
 		target, other := p.Entries[ti], p.Entries[oi]
+		if target.IsOverlay() || other.IsOverlay() || len(overlaysOf(p.Entries, otherKey)) > 0 {
+			return fmt.Errorf("optional files laid over a mod cannot be combined")
+		}
 		if len(other.ExtraStoreKeys) > 0 {
 			return fmt.Errorf("%q has extra files of its own", otherKey)
 		}
 		if target.Source.Kind != KindNexus || other.Source.Kind != KindNexus || target.Source.ModID != other.Source.ModID || target.Source.ModID <= 0 {
 			return fmt.Errorf("those mods are not from the same Nexus page")
 		}
-		if err := removeFrom(p, dir, otherKey); err != nil {
+		if err := s.removeFrom(game, p, dir, otherKey); err != nil {
 			return err
 		}
 		return s.addExtraLocked(game, p, dir, targetKey, otherKey, other.Source.WithFomod(other.Fomod).WithDisabled(other.Disabled))
@@ -171,6 +174,9 @@ func (s *Store) addExtraLocked(game string, p *Profile, dir, entryKey, extraKey 
 		return err
 	}
 	e := &p.Entries[ei]
+	if e.IsOverlay() {
+		return fmt.Errorf("%q is an optional file and holds no mod of its own", entryKey)
+	}
 	if extraKey == "" || extraKey == e.Key || slices.Contains(e.ExtraStoreKeys, extraKey) {
 		return &DuplicateError{Key: extraKey, Label: entryLabel(*e)}
 	}
@@ -257,6 +263,11 @@ func (s *Store) InstallNexusExtra(game, id, entryKey, path string, source Source
 	key := store.NexusKey(source.ModID, source.FileID)
 	if err := s.items.AddArchiveKey(game, key, path); err != nil {
 		return InstallResult{}, installError(err)
+	}
+	if over, err := s.isOverlayItem(game, key, source); err != nil {
+		return InstallResult{}, installError(err)
+	} else if over {
+		return s.installKey(game, id, key, source)
 	}
 	p, err := s.AddExtra(game, id, entryKey, key, source)
 	if ask, ok := s.installQuestion(game, id, key, source, err); ok {

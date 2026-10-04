@@ -11,6 +11,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 // InstallResult is the profile after an install and the names of the mods it added.
@@ -135,6 +136,9 @@ func addedNames(p Profile, key string) []string {
 			for _, m := range e.Mods {
 				names = append(names, m.Name)
 			}
+			if e.IsOverlay() {
+				names = append(names, entryLabel(e))
+			}
 		}
 	}
 	return names
@@ -162,6 +166,12 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 	defer s.mu.Unlock()
 	if err := s.unlocked(game, id); err != nil {
 		return Profile{}, false, false, err
+	}
+	if over, err := s.isOverlayItem(game, key, source); err != nil {
+		return Profile{}, false, false, err
+	} else if over {
+		p, err := s.placeOverlayLocked(game, id, key, source)
+		return p, false, false, err
 	}
 	source, ask, need, err := s.installAsk(game, id, key, source)
 	if err != nil {
@@ -273,6 +283,8 @@ func installError(err error) error {
 		msg = fmt.Sprintf("This archive's mods are in several entries of this profile (%s): remove all but one, then install again", strings.Join(span.Labels, "; "))
 	case errors.As(err, new(*rawXNBError)):
 		msg = "This file replaces game files directly (raw .xnb). Mortar installs SMAPI mods; use the mod's Content Patcher version."
+	case errors.As(err, new(*NoBaseError)):
+		return &InstallError{Msg: err.Error(), Err: usererr.Wrap(usererr.NotFound, err)}
 	case errors.As(err, new(*NoModError)):
 		msg = "No SMAPI mod was found in this archive"
 	case errors.Is(err, store.ErrIncomplete):

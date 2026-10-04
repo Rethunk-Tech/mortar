@@ -309,7 +309,7 @@ func scanDrift(names map[string]string, stats map[string]FolderStat, keys []stri
 func entryKeys(p Profile) []string {
 	keys := make([]string, 0, len(p.Entries))
 	for _, e := range p.Entries {
-		if e.Key != "" {
+		if e.Key != "" && !e.IsOverlay() {
 			keys = append(keys, e.Key)
 		}
 	}
@@ -532,7 +532,10 @@ func (s *Store) restoreDriftEntry(game, id, key string) (Profile, error) {
 		if err := removeEntryFolders(modsDir, key); err != nil {
 			return err
 		}
-		return s.place(game, modsDir, p.Entries[i])
+		if err := s.place(game, modsDir, p.Entries[i]); err != nil {
+			return err
+		}
+		return s.relayBase(game, p, dir, key, nil)
 	})
 }
 
@@ -584,7 +587,7 @@ func (s *Store) revertDriftEntry(game, id, key string) (Profile, error) {
 			return errors.Join(err, fsx.RemoveAll(scratch))
 		}
 		w.commit()
-		return nil
+		return s.relayBase(game, p, dir, key, overlaysOf(p.Entries, key))
 	})
 }
 

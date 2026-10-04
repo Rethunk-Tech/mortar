@@ -235,9 +235,15 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 	if err := os.MkdirAll(staging, 0o700); err != nil {
 		return err
 	}
+	prev := p.Entries
 	p.Entries = []Entry{}
 	keys := make([]string, 0, len(entries)*2)
 	for _, e := range entries {
+		if e.IsOverlay() {
+			p.Entries = append(p.Entries, e)
+			keys = append(keys, e.Key)
+			continue
+		}
 		if err := s.place(game, staging, e); err != nil {
 			_ = fsx.RemoveAll(staging)
 			return err
@@ -261,6 +267,16 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 		keys = append(keys, e.Key)
 		if e.PreviousKey != "" {
 			keys = append(keys, e.PreviousKey)
+		}
+	}
+	for _, e := range p.Entries {
+		was := append(overlaysOf(prev, e.Key), overlaysOf(p.Entries, e.Key)...)
+		if e.IsOverlay() || len(was) == 0 {
+			continue
+		}
+		if err := s.layOverlays(game, p.ID, e, liveEntryDir(staging, e.Key), was, overlaysOn(p.Entries, e.Key)); err != nil {
+			_ = fsx.RemoveAll(staging)
+			return err
 		}
 	}
 	old := modsDir + ".old"
@@ -983,6 +999,13 @@ func classifyHistory(before, after []Entry) HistoryEvent {
 				enabled++
 			}
 			name = entryName(ae)
+		case be.OverlayOff != ae.OverlayOff:
+			if ae.OverlayOff {
+				disabled++
+			} else {
+				enabled++
+			}
+			name = entryName(ae)
 		case be.Pinned != ae.Pinned:
 			pinned++
 			name = entryName(ae)
@@ -1044,6 +1067,9 @@ func entryName(e Entry) string {
 	}
 	if len(e.Mods) > 0 {
 		return e.Mods[0].UniqueID
+	}
+	if e.Source.Name != "" {
+		return e.Source.Name
 	}
 	return e.Key
 }

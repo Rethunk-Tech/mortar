@@ -282,6 +282,11 @@ func (s *Store) AddEntry(game, id, key string, source Source) (Profile, error) {
 }
 
 func (s *Store) addEntryLocked(game, id, key string, source Source) (Profile, error) {
+	if over, err := s.isOverlayItem(game, key, source); err != nil {
+		return Profile{}, err
+	} else if over {
+		return s.placeOverlayLocked(game, id, key, source)
+	}
 	var placed string
 	p, err := s.updateLocked(game, id, func(p *Profile, dir string) (err error) {
 		placed, err = s.addTo(game, p, dir, key, source, nil)
@@ -336,7 +341,7 @@ func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 					continue
 				}
 				disabled = append(disabled, e.Disabled...)
-				if err := removeFrom(p, dir, e.Key); err != nil {
+				if err := s.removeFrom(game, p, dir, e.Key); err != nil {
 					return err
 				}
 			}
@@ -366,17 +371,27 @@ func entryLabel(e Entry) string {
 	for i, m := range e.Mods {
 		names[i] = m.Name
 	}
+	if len(names) == 0 && e.Source.Name != "" {
+		return e.Source.Name
+	}
 	if len(names) == 0 {
 		return e.Key
 	}
 	return strings.Join(names, ", ")
 }
 
-// removeFrom deletes the entry's folder and drops it from the profile.
-func removeFrom(p *Profile, dir, key string) error {
+// removeFrom deletes the entry's folder and drops it from the profile, with the optional files laid over it.
+// Removing an optional file puts its main entry's own files back.
+func (s *Store) removeFrom(game string, p *Profile, dir, key string) error {
 	i, err := requireEntry(p.Entries, key)
 	if err != nil {
 		return err
+	}
+	if base := p.Entries[i].OverlayOf; base != "" {
+		was := overlaysOf(p.Entries, base)
+		p.Entries = slices.Delete(p.Entries, i, i+1)
+		dropKeyFromGroups(p, key)
+		return s.relayBase(game, p, dir, base, was)
 	}
 	modsDir := filepath.Join(dir, "mods")
 	if err := removeEntryFolders(modsDir, key); err != nil {
@@ -384,6 +399,10 @@ func removeFrom(p *Profile, dir, key string) error {
 	}
 	p.Entries = slices.Delete(p.Entries, i, i+1)
 	dropKeyFromGroups(p, key)
+	for _, o := range overlaysOf(p.Entries, key) {
+		p.Entries = slices.DeleteFunc(p.Entries, func(e Entry) bool { return e.Key == o.Key })
+		dropKeyFromGroups(p, o.Key)
+	}
 	return nil
 }
 
@@ -391,6 +410,12 @@ func removeFrom(p *Profile, dir, key string) error {
 func (s *Store) RemoveEntries(game, id string, keys []string) (Profile, error) {
 	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
 		seen := map[string]bool{}
+		for _, e := range p.Entries {
+			// Removing the main entry takes its optional files with it.
+			if e.IsOverlay() && slices.Contains(keys, e.OverlayOf) {
+				seen[e.Key] = true
+			}
+		}
 		for _, key := range keys {
 			if seen[key] {
 				continue
@@ -399,7 +424,7 @@ func (s *Store) RemoveEntries(game, id string, keys []string) (Profile, error) {
 			if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && e.Source.Bundled() }) {
 				return errors.New("the bundled mods are needed by every profile and cannot be removed")
 			}
-			if err := removeFrom(p, dir, key); err != nil {
+			if err := s.removeFrom(game, p, dir, key); err != nil {
 				return err
 			}
 		}
@@ -461,9 +486,16 @@ func (s *Store) RestoreEntries(game, id string, entries []Entry) (Profile, error
 		p, err := s.read(game, id)
 		return p, err
 	}
+	entries = basesFirst(entries)
 	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
 		for _, want := range entries {
 			if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == want.Key }) {
+				continue
+			}
+			if want.IsOverlay() {
+				if err := s.restoreOverlay(game, p, dir, want); err != nil {
+					return err
+				}
 				continue
 			}
 			src := want.Source
@@ -500,7 +532,7 @@ func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
 		if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && e.Source.Bundled() }) {
 			return errors.New("the bundled mods are needed by every profile and cannot be removed")
 		}
-		return removeFrom(p, dir, key)
+		return s.removeFrom(game, p, dir, key)
 	})
 	if err != nil {
 		return Profile{}, err
@@ -543,7 +575,11 @@ func (s *Store) SetModEnabled(game, id, key, uniqueID string, enabled bool) (Pro
 
 func (s *Store) enableMod(game, id, key, uniqueID string, enabled bool) (Profile, []string, error) {
 	var also []string
+	overlay := false
 	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
+		if overlay = isOverlayKey(p, key); overlay {
+			return s.setOverlayLocked(game, p, dir, key, enabled)
+		}
 		if err := applyEnabled(p, dir, key, uniqueID, enabled); err != nil {
 			return err
 		}
@@ -552,6 +588,9 @@ func (s *Store) enableMod(game, id, key, uniqueID string, enabled bool) (Profile
 		}
 		return nil
 	})
+	if err == nil && overlay {
+		err = s.RecordModsSnapshot(game, id)
+	}
 	return p, also, err
 }
 
@@ -563,8 +602,16 @@ func (s *Store) SetModsEnabled(game, id string, mods []EnableRef, enabled bool) 
 
 func (s *Store) enableMods(game, id string, mods []EnableRef, enabled bool) (Profile, []string, error) {
 	var also []string
+	overlay := false
 	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
 		for _, m := range mods {
+			if isOverlayKey(p, m.Key) {
+				overlay = true
+				if err := s.setOverlayLocked(game, p, dir, m.Key, enabled); err != nil {
+					return err
+				}
+				continue
+			}
 			if err := applyEnabled(p, dir, m.Key, m.UniqueID, enabled); err != nil {
 				return err
 			}
@@ -574,6 +621,9 @@ func (s *Store) enableMods(game, id string, mods []EnableRef, enabled bool) (Pro
 		}
 		return nil
 	})
+	if err == nil && overlay {
+		err = s.RecordModsSnapshot(game, id)
+	}
 	return p, also, err
 }
 
@@ -794,6 +844,9 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 		}
 	}
 	for _, e := range p.Entries {
+		if e.IsOverlay() {
+			continue
+		}
 		if _, err := os.Stat(filepath.Join(modsDir, e.Key)); err == nil {
 			continue
 		}
@@ -803,6 +856,9 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 			return err
 		}
 		if err := s.place(game, modsDir, e); err != nil {
+			return fmt.Errorf("rebuild %s: %w", e.Key, err)
+		}
+		if err := s.layOverlays(game, p.ID, e, liveEntryDir(modsDir, e.Key), nil, overlaysOn(p.Entries, e.Key)); err != nil {
 			return fmt.Errorf("rebuild %s: %w", e.Key, err)
 		}
 	}

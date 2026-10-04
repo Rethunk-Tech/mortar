@@ -279,7 +279,8 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 	defer s.setHistoryQuiet(created.ID, false)
 	restored := 0
 	for _, e := range src.Entries {
-		if e.Source.Bundled() {
+		// An optional file's files were exported inside its main entry's folder and come back with it.
+		if e.Source.Bundled() || e.IsOverlay() {
 			continue
 		}
 		srcDir := filepath.Join(tmp, "mods", e.Key)

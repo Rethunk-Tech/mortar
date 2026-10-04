@@ -36,10 +36,10 @@ func TestRemapJunkWrapperSkippedSilently(t *testing.T) {
 	}
 }
 
-func TestRemapLooseFilesAsks(t *testing.T) {
+func TestRemapNestedManifestAsks(t *testing.T) {
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
-	z := buildZip(t, "loose.zip", map[string]string{"readme.txt": "hello", "notes.md": "x"})
+	z := buildZip(t, "loose.zip", map[string]string{"readme.txt": "hello", "notes.md": "x", "Mod/.hidden/manifest.json": manifestJSON("X.A")})
 	res, err := e.InstallArchive("stardew", p.ID, z)
 	if err != nil {
 		t.Fatal(err)
@@ -47,7 +47,7 @@ func TestRemapLooseFilesAsks(t *testing.T) {
 	if res.Remap == nil || res.Fomod != nil || len(res.Profile.Entries) != 0 {
 		t.Fatalf("want remap ask, got %+v", res)
 	}
-	if len(res.Remap.Tree) != 2 {
+	if len(res.Remap.Tree) != 3 {
 		t.Fatalf("tree = %+v", res.Remap.Tree)
 	}
 }
