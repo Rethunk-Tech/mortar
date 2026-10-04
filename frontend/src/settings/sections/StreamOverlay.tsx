@@ -416,7 +416,7 @@ export function StreamOverlay() {
       >
         <Switch
           checked={enabled}
-          inputProps={{ 'aria-label': t`Stream overlay` }}
+          slotProps={{ input: { 'aria-label': t`Stream overlay` } }}
           onChange={(_, on) => persist(() => SetOverlayEnabled(on), push, fail)}
         />
       </SettingRow>
@@ -424,7 +424,7 @@ export function StreamOverlay() {
         <SettingRow label={t`Show labels`}>
           <Switch
             checked={labels}
-            inputProps={{ 'aria-label': t`Show labels` }}
+            slotProps={{ input: { 'aria-label': t`Show labels` } }}
             onChange={(_, on) => setLabels(on)}
           />
         </SettingRow>

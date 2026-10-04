@@ -421,14 +421,7 @@ function FileTab({
         </Typography>
         <IncludeOptions value={include} onChange={onInclude} file={true} />
         <Box>
-          <Button
-            variant="contained"
-            startIcon={<Save size={16} />}
-            disabled={busy}
-            onClick={() => {
-              save().catch(reportUnexpected)
-            }}
-          >
+          <Button variant="contained" startIcon={<Save size={16} />} disabled={busy} onClick={save}>
             {t`Save…`}
           </Button>
         </Box>

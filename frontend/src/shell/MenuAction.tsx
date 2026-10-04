@@ -13,8 +13,8 @@ export function MenuAction({
 }: {
   icon: ReactNode
   label: ReactNode
-  disabled?: boolean
-  tooltip?: string
+  disabled?: boolean | undefined
+  tooltip?: string | undefined
   onClick: () => void
 }) {
   const item = (
