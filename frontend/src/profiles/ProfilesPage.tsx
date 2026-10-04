@@ -266,6 +266,7 @@ function FindModSearch({ profiles }: { profiles: Profile[] }) {
         placeholder={t`Find a mod in all profiles`}
         inputRef={inputRef}
         slotProps={{
+          htmlInput: { 'aria-label': t`Find a mod in all profiles` },
           input: {
             startAdornment: (
               <InputAdornment position="start">

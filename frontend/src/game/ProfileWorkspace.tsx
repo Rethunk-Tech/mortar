@@ -46,6 +46,7 @@ function WorkspaceTabs({ problemsTabCount }: { problemsTabCount: number | null }
       ref={root}
       value={tab}
       onChange={(_, value: TabId) => setTab(value)}
+      aria-label={t`Profile sections`}
       sx={{
         minHeight: 44,
         '& .MuiTabs-indicator': { height: 2 },

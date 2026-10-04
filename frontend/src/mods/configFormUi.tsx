@@ -122,6 +122,7 @@ function BoolField(p: FieldProps) {
         <Switch
           size="small"
           checked={node.value}
+          slotProps={{ input: { 'aria-label': p.label } }}
           onChange={(_, checked) => p.onChange(p.path, { ...node, value: checked })}
         />
         <Reset {...p} />
@@ -202,7 +203,7 @@ function ChoiceField(p: FieldProps) {
         displayEmpty={true}
         multiple={node.multiple}
         value={selected}
-        label={p.label}
+        inputProps={{ 'aria-label': p.label }}
         onChange={(e) => {
           const next = e.target.value
           p.onChange(p.path, {
@@ -333,6 +334,7 @@ function Field(p: FieldProps) {
             fullWidth={true}
             multiline={true}
             value={p.node.json}
+            slotProps={{ htmlInput: { 'aria-label': p.label } }}
             onChange={(e) => p.onChange(p.path, { kind: 'readonly', json: e.target.value })}
           />
           <ReadonlyLabel onOpen={p.onOpen} />

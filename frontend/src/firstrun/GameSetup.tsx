@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
+import { Check } from 'lucide-react'
 
 const DONE_FILL = 0.18
 
@@ -41,11 +42,15 @@ function StepChip({
   label: string
   state: 'done' | 'current' | 'todo'
 }) {
+  const { t } = useLingui()
   return (
     <Box
       component="li"
       aria-current={state === 'current' ? 'step' : undefined}
       sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.75,
         px: '14px',
         py: '6px',
         borderRadius: '16px',
@@ -66,7 +71,12 @@ function StepChip({
           })[state],
       }}
     >
-      {n} {label}
+      {state === 'done' ? (
+        <Check size={14} strokeWidth={2.5} role="img" aria-label={t`Done`} />
+      ) : (
+        String(n)
+      )}{' '}
+      {label}
     </Box>
   )
 }

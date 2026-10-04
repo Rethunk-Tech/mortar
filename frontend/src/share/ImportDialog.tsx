@@ -155,8 +155,6 @@ function Body({ request }: { request: ImportRequest }) {
   const hasMods = preview !== null && preview.mods.length > 0
   return (
     <Box
-      role="dialog"
-      aria-label={t`Import profile`}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -271,6 +269,7 @@ function Body({ request }: { request: ImportRequest }) {
 const SOURCE_NAMES: Record<string, string> = { stardrop: 'Stardrop', vortex: 'Vortex' }
 
 export function ImportDialog() {
+  const { t } = useLingui()
   const request = useImportDialog((s) => s.request)
   const dismiss = useImportDialog((s) => s.close)
   const busy = useImportDialog((s) => s.busy)
@@ -279,7 +278,7 @@ export function ImportDialog() {
       open={request !== null}
       onClose={busy ? undefined : dismiss}
       maxWidth={false}
-      slotProps={{ paper: { ...paper, sx: dialogSx } }}
+      slotProps={{ paper: { ...paper, sx: dialogSx, 'aria-label': t`Import profile` } }}
     >
       {request ? <Body key={request.run} request={request} /> : null}
     </Dialog>

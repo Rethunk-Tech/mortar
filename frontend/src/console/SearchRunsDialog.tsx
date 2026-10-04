@@ -106,6 +106,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={t`Search run logs`}
+          slotProps={{ htmlInput: { 'aria-label': t`Search run logs` } }}
           size="small"
           sx={{ mb: 1.5 }}
         />

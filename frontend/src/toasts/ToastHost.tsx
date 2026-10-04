@@ -115,6 +115,7 @@ function ToastCard({ toast }: { toast: Toast }) {
       {toast.detail ? (
         <ButtonBase
           onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
           sx={{
             display: 'flex',
             alignItems: 'center',

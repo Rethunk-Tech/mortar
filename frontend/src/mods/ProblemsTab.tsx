@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Typography } from '@mui/material'
+import { Box, Button, ButtonBase, Link, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 
 const WARN_FILL = 0.14
@@ -137,27 +137,22 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
         )}
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography
-          sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}
-          {...(row.kind === 'missing'
-            ? {
-                component: ButtonBase,
-                onClick: () =>
-                  useTab.getState().revealLoadOrder(row.missing.uniqueId, row.missing.dependentId),
-                sx: {
-                  fontSize: 14,
-                  whiteSpace: 'normal',
-                  wordBreak: 'break-word',
-                  textAlign: 'left',
-                  borderRadius: '4px',
-                  textDecoration: 'underline',
-                  textDecorationColor: 'var(--mortar-hairline-35)',
-                },
-              }
-            : {})}
-        >
-          {text}
-        </Typography>
+        {row.kind === 'missing' ? (
+          <Link
+            component="button"
+            color="inherit"
+            onClick={() =>
+              useTab.getState().revealLoadOrder(row.missing.uniqueId, row.missing.dependentId)
+            }
+            sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word', textAlign: 'left' }}
+          >
+            {text}
+          </Link>
+        ) : (
+          <Typography sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}>
+            {text}
+          </Typography>
+        )}
         {authorNote === '' ? null : (
           <Typography sx={{ mt: 0.5, fontSize: 13, color: 'text.secondary', whiteSpace: 'normal' }}>
             {authorNote}

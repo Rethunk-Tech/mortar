@@ -71,6 +71,7 @@ function LaunchPresetBar({
         fullWidth={true}
         size="small"
         value={selected}
+        inputProps={{ 'aria-label': t`Preset` }}
         onChange={(event) => {
           const name = event.target.value
           setSelected(name)

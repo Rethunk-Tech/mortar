@@ -215,7 +215,11 @@ function EditorDialog({
               {error}
             </Typography>
           ) : null}
-          <Tabs value={tab} onChange={(_, next: number) => onTab(next)}>
+          <Tabs
+            value={tab}
+            onChange={(_, next: number) => onTab(next)}
+            aria-label={t`Settings view`}
+          >
             <Tab label={t`Menu`} />
             <Tab label={t`Form`} />
             <Tab label={t`JSON`} />

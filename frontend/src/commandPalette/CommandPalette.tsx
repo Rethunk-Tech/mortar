@@ -201,7 +201,11 @@ export function CommandPalette() {
         onClose={close}
         onKeyDown={onKey}
         slotProps={{
-          paper: { ...paper, sx: { ...paper.sx, width: 560, maxWidth: 'calc(100% - 48px)' } },
+          paper: {
+            ...paper,
+            'aria-label': t`Command palette`,
+            sx: { ...paper.sx, width: 560, maxWidth: 'calc(100% - 48px)' },
+          },
         }}
       >
         <TextField

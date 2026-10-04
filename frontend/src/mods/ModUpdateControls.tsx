@@ -42,6 +42,7 @@ function ModUpdateControls({ mod, entry }: { mod: Mod; entry: Entry | undefined 
           size="small"
           fullWidth={true}
           value={channel}
+          inputProps={{ 'aria-label': t`Update channel` }}
           onChange={(ev) => setUpdateChannel(mod, String(ev.target.value)).catch(reportUnexpected)}
         >
           {channelOptions(i18n).map((opt) => (

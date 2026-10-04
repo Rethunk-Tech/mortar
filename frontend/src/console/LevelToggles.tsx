@@ -81,6 +81,8 @@ export function LevelToggles() {
       })}
       <ButtonBase
         aria-label={t`More levels`}
+        aria-haspopup="menu"
+        aria-expanded={more !== null}
         onClick={(e) => setMore(e.currentTarget)}
         sx={{
           height: 28,
@@ -96,8 +98,19 @@ export function LevelToggles() {
       </ButtonBase>
       <Menu anchorEl={more} open={more !== null} onClose={() => setMore(null)}>
         {QUIET_LEVELS.map((level) => (
-          <MenuItem key={level} onClick={() => toggle(level)}>
-            <Checkbox size="small" checked={on.includes(level)} sx={{ p: 0, mr: 1 }} />
+          <MenuItem
+            key={level}
+            role="menuitemcheckbox"
+            aria-checked={on.includes(level)}
+            onClick={() => toggle(level)}
+          >
+            <Checkbox
+              size="small"
+              checked={on.includes(level)}
+              tabIndex={-1}
+              slotProps={{ input: { 'aria-hidden': true } }}
+              sx={{ p: 0, mr: 1 }}
+            />
             {t`${names[level]} (${formatCount(counts.get(level) ?? 0, i18n.locale)})`}
           </MenuItem>
         ))}

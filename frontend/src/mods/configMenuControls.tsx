@@ -65,6 +65,8 @@ function NumberControl({
         step={opt.interval ?? 1}
         value={n}
         disabled={disabled}
+        aria-label={opt.name}
+        getAriaValueText={(v) => formatLabel(opt, v)}
         onChange={(_, next) => onChange(next as number)}
       />
       <Typography sx={text}>{formatLabel(opt, n)}</Typography>
@@ -73,11 +75,13 @@ function NumberControl({
 }
 
 function ColorControl({
+  name,
   value,
   disabled,
   i18n,
   onChange,
 }: {
+  name: string
   value: unknown
   disabled: boolean
   i18n: I18n
@@ -93,12 +97,18 @@ function ColorControl({
         type="color"
         value={hex}
         disabled={disabled}
+        slotProps={{ htmlInput: { 'aria-label': name } }}
         onChange={(e) => onChange(e.target.value)}
       />
       <TextField
         size="small"
         value={hex}
         disabled={disabled}
+        slotProps={{
+          htmlInput: {
+            'aria-label': i18n._({ id: 'gmcm.hex', message: '{name} as hex', values: { name } }),
+          },
+        }}
         onChange={(e) => onChange(e.target.value)}
       />
       {colorAllowsAlpha(value) ? (
@@ -143,6 +153,7 @@ export function MenuControl({
         size="small"
         checked={Boolean(value)}
         disabled={disabled}
+        slotProps={{ input: { 'aria-label': opt.name } }}
         onChange={(_, on) => onChange(key, on)}
       />
     )
@@ -164,6 +175,7 @@ export function MenuControl({
         fullWidth={true}
         value={asText(value)}
         disabled={disabled}
+        inputProps={{ 'aria-label': opt.name }}
         onChange={(e) => onChange(key, e.target.value)}
       >
         {(opt.choices ?? []).map((c) => (
@@ -177,6 +189,7 @@ export function MenuControl({
   if (kind === 'color') {
     return (
       <ColorControl
+        name={opt.name}
         value={value}
         disabled={disabled}
         i18n={i18n}
@@ -191,6 +204,7 @@ export function MenuControl({
         fullWidth={true}
         value={asText(value)}
         disabled={disabled}
+        slotProps={{ htmlInput: { 'aria-label': opt.name } }}
         onChange={(e) => onChange(key, e.target.value)}
       />
     )
