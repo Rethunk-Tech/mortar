@@ -2,12 +2,14 @@ package main
 
 import (
 	"bytes"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/support"
 )
 
 func TestCappedWriterStopsAtLimitWithOneNotice(t *testing.T) {
@@ -57,5 +59,23 @@ func TestCapCrashLogLeavesFileWhenSeenIsBehind(t *testing.T) {
 	got, err := fsx.ReadFile(path)
 	if err != nil || string(got) != "crash-bytes-here" {
 		t.Fatalf("got %q %v", got, err)
+	}
+}
+
+func TestCappedLogReadsAsCleanShutdown(t *testing.T) {
+	dir := t.TempDir()
+	f, err := os.Create(filepath.Join(dir, "mortar.prev.log"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	lg := slog.New(slog.NewTextHandler(&cappedWriter{w: f, left: maxLogBytes}, nil))
+	pad := strings.Repeat("x", 200)
+	for range maxLogBytes/250 + 10 {
+		lg.Info("control: install stardew p", "pad", pad)
+	}
+	lg.Info("shutdown", "clean", true)
+	_ = f.Close()
+	if support.DetectLastRunCrashed(dir) {
+		t.Errorf("clean shutdown after %d MB of log was reported as a crash", maxLogBytes>>20)
 	}
 }

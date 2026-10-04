@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"io"
 	"os"
 	"path/filepath"
@@ -29,13 +30,18 @@ type cappedWriter struct {
 func (c *cappedWriter) Write(p []byte) (int, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if c.ended {
-		return len(p), nil
-	}
-	if int64(len(p)) > c.left {
+	if !c.ended && int64(len(p)) > c.left {
 		c.ended = true
-		_, err := io.WriteString(c.w, "mortar.log reached its size limit; later lines go to stderr only\n")
-		return len(p), err
+		if _, err := io.WriteString(c.w, "mortar.log reached its size limit; later lines go to stderr only\n"); err != nil {
+			return len(p), err
+		}
+	}
+	if c.ended {
+		// The clean-shutdown record is what the next start reads to tell a quit from a crash, so it outlives the cap.
+		if bytes.Contains(p, []byte("msg=shutdown")) {
+			return c.w.Write(p)
+		}
+		return len(p), nil
 	}
 	c.left -= int64(len(p))
 	return c.w.Write(p)
