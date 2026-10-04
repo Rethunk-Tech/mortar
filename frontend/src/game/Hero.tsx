@@ -243,8 +243,6 @@ function AttentionCards() {
   ) : null
 }
 
-const HERO_FADE = 'linear-gradient(to bottom, var(--mortar-overlay-90) 80%, transparent 100%)'
-
 export function Hero({ profile, game }: { profile: Profile; game: string }) {
   const { t } = useLingui()
   const mods = userModCount(profile)
@@ -274,17 +272,16 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
         height: HERO_HEIGHT_PX,
         flexShrink: 0,
         overflow: 'hidden',
+        borderBottom: HERO_COMPACT_BORDER,
         ...(forceCompact
           ? {
               height: HERO_COMPACT_HEIGHT_PX,
               bgcolor: HERO_COMPACT_BG,
-              borderBottom: HERO_COMPACT_BORDER,
             }
           : {
               [compact]: {
                 height: HERO_COMPACT_HEIGHT_PX,
                 bgcolor: HERO_COMPACT_BG,
-                borderBottom: HERO_COMPACT_BORDER,
               },
             }),
       }}
@@ -293,8 +290,6 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
         sx={{
           position: 'absolute',
           inset: 0,
-          maskImage: HERO_FADE,
-          WebkitMaskImage: HERO_FADE,
           [compact]: { display: 'none' },
         }}
       >
