@@ -3,20 +3,7 @@ import type {
   Result,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { sameId } from '../mods/lookup.ts'
-
-interface DepWant {
-  kind: 'dependency'
-  repo?: string
-  name?: string
-  modId?: number
-  latest?: boolean
-  fileId?: number
-  fileName?: string
-  version?: string
-  tag?: string
-  asset?: string
-  currentKey?: string
-}
+import { refWant, type Want } from '../queue/actions.ts'
 
 interface ProfileLike {
   entries?: Array<{ mods?: Array<{ uniqueId?: string }> | null }> | null
@@ -130,30 +117,13 @@ function stillMissing(offer: MissingOffer, result: Result | null): Missing[] {
   )
 }
 
-function wantOf(missing: Missing): DepWant | null {
+function wantOf(missing: Missing): Want | null {
   const { where } = missing
-  if (!where?.url) {
-    return null
-  }
-  const github = where.site === 'GitHub' && where.github !== ''
-  if (!github && (where.site !== 'Nexus' || where.pageId <= 0)) {
-    return null
-  }
-  return github
-    ? { kind: 'dependency', repo: where.github, name: where.github }
-    : {
-        kind: 'dependency',
-        modId: where.pageId,
-        latest: true,
-        fileId: where.fileId,
-        name: where.pageName,
-        fileName: where.fileName,
-        version: where.version,
-      }
+  return where?.url ? refWant(where, 'dependency') : null
 }
 
-function wantsOf(missing: Missing[]): DepWant[] {
-  const out: DepWant[] = []
+function wantsOf(missing: Missing[]): Want[] {
+  const out: Want[] = []
   const seen = new Set<string>()
   for (const item of missing) {
     const want = wantOf(item)

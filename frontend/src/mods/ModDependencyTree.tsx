@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link, Typography } from '@mui/material'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { download, type Want } from '../queue/actions.ts'
+import { download, refWant } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -55,23 +55,11 @@ function MissingAdd({ uniqueID }: { uniqueID: string }) {
       {t`Open page`}
     </Button>
   )
-  if (!github && (where.site !== 'Nexus' || where.pageId <= 0)) {
+  const want = refWant(where, 'dependency')
+  if (!want) {
     return pageButton
   }
-  const queued = github
-    ? pendingFor(queue, profileId, 0, where.github)
-    : pendingFor(queue, profileId, where.pageId)
-  const want: Want = github
-    ? { kind: 'dependency', repo: where.github, name: where.github }
-    : {
-        kind: 'dependency',
-        modId: where.pageId,
-        latest: true,
-        fileId: where.fileId,
-        name: where.pageName,
-        fileName: where.fileName,
-        version: where.version,
-      }
+  const queued = pendingFor(queue, profileId, want.modId ?? 0, want.repo)
   return (
     <>
       {pageButton}

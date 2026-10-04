@@ -11,7 +11,7 @@ import { sameId } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { useLocked } from '../mods/useLocked.ts'
-import { download, type Want } from '../queue/actions.ts'
+import { download, refWant } from '../queue/actions.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
@@ -38,26 +38,14 @@ async function installDependency(i18n: I18n, uniqueId: string) {
   const missing = (useMods.getState().problems?.missing ?? []).find((m) =>
     sameId(m.uniqueId, uniqueId),
   )
-  const where = missing?.where
-  if (!where) {
+  const want = missing?.where ? refWant(missing.where, 'dependency') : null
+  if (!want) {
     useToasts.getState().push({
       kind: 'error',
       title: i18n._(msg`No download source known for ${uniqueId}`),
     })
     return
   }
-  const want: Want =
-    where.site === 'GitHub'
-      ? { kind: 'dependency', repo: where.github, name: where.github }
-      : {
-          kind: 'dependency',
-          modId: where.pageId,
-          fileId: where.fileId,
-          latest: true,
-          name: where.pageName,
-          fileName: where.fileName,
-          version: where.version,
-        }
   await download([want])
 }
 

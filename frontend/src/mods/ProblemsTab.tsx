@@ -14,7 +14,7 @@ import { useState } from 'react'
 import { ConflictEvidence } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import { useTab } from '../game/tab.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { download, type Want } from '../queue/actions.ts'
+import { download, refWant } from '../queue/actions.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
@@ -464,24 +464,9 @@ export function ProblemsTab() {
           label: t`Add all ${installable.length}`,
           disabled: addingAll,
           onClick: () => {
-            const wants: Want[] = installable.flatMap(({ missing }): Want[] => {
-              const { where } = missing
-              if (!where) {
-                return []
-              }
-              return where.site === 'GitHub'
-                ? [{ kind: 'dependency', repo: where.github, name: where.github }]
-                : [
-                    {
-                      kind: 'dependency',
-                      modId: where.pageId,
-                      fileId: where.fileId,
-                      latest: true,
-                      name: where.pageName,
-                      fileName: where.fileName,
-                      version: where.version,
-                    },
-                  ]
+            const wants = installable.flatMap(({ missing }) => {
+              const want = missing.where ? refWant(missing.where, 'dependency') : null
+              return want ? [want] : []
             })
             runAddAll(() => download(wants))
           },

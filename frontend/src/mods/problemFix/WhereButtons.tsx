@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
 import type { Ref } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { useProfiles } from '../../profiles/store.ts'
-import { download, type Want } from '../../queue/actions.ts'
+import { download, refWant } from '../../queue/actions.ts'
 import { useQueue } from '../../queue/store.ts'
 import { pendingFor } from '../../queue/totals.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
@@ -27,24 +27,11 @@ export function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string
       {t`Open page`}
     </Button>
   )
-  const github = where.site === 'GitHub' && where.github !== ''
-  if (!github && (where.site !== 'Nexus' || where.pageId <= 0)) {
+  const want = refWant(where, 'dependency')
+  if (!want) {
     return open
   }
-  const queued = github
-    ? pendingFor(queue, profileId, 0, where.github)
-    : pendingFor(queue, profileId, where.pageId)
-  const want: Want = github
-    ? { kind: 'dependency', repo: where.github, name: where.github }
-    : {
-        kind: 'dependency',
-        modId: where.pageId,
-        latest: true,
-        fileId: where.fileId,
-        name: where.pageName,
-        fileName: where.fileName,
-        version: where.version,
-      }
+  const queued = pendingFor(queue, profileId, want.modId ?? 0, want.repo)
   return (
     <>
       {open}
@@ -56,7 +43,7 @@ export function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string
         onClick={() => download([want]).catch(reportUnexpected)}
         sx={{ flexShrink: 0 }}
       >
-        {queued ? t`Queued` : (addLabel ?? '')}
+        {queued ? t`Queued` : addLabel}
       </Button>
     </>
   )
