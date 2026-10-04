@@ -285,8 +285,11 @@ func TestExpiredNexusLinkRefetchesThenRanges(t *testing.T) {
 	_ = datadir.WriteJSON(path+".resume.json", map[string]any{"expectedSize": int64(len(body)), "url": srv.URL + "/cdn/old.zip"})
 
 	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(cancel)
-	Run(ctx, s, make(chan nxmsvc.Assignment))
+	wait := Run(ctx, s, make(chan nxmsvc.Assignment))
+	t.Cleanup(func() {
+		cancel()
+		wait()
+	})
 	deadline := time.Now().Add(5 * time.Second)
 	for time.Now().Before(deadline) {
 		if st := s.State(); len(st.Items) > 0 && st.Items[0].State == StateDone && installs == 1 {

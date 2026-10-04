@@ -240,8 +240,11 @@ func TestConfirmSurvivesARestartAndItsInstallIgnoresCancel(t *testing.T) {
 		return profile.InstallResult{}, nil
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(cancel)
-	Run(ctx, again, make(chan nxmsvc.Assignment))
+	wait := Run(ctx, again, make(chan nxmsvc.Assignment))
+	t.Cleanup(func() {
+		cancel()
+		wait()
+	})
 	again.Confirm(id)
 	<-entered
 	again.Cancel(id)
