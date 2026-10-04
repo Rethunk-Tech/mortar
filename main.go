@@ -738,6 +738,11 @@ func run() error {
 				}
 			}
 		}
+		if n, c, err := profiles.MigrateHistory(); err != nil {
+			log.Printf("history migration: %v", err)
+		} else if n > 0 || c > 0 {
+			log.Printf("history migration: gzipped %d snapshots, counted %d histories", n, c)
+		}
 		// An unreadable profile.json stops collection: its keys are unknown, and their items must not be deleted.
 		retention := store.Get().StoreUnusedFor()
 		if keys, err := profiles.StoreKeys(retention != 0); err != nil {

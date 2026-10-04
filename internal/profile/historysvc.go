@@ -53,3 +53,11 @@ func (s *Service) RestoreKnownGood(game, id string) (Profile, error) {
 func (s *Service) KnownGood(game, id string) ([]HistoryEvent, error) {
 	return s.store.KnownGood(game, id)
 }
+
+func (s *Service) HistoryUsage(game string) ([]HistoryUsage, error) {
+	return s.store.HistoryUsage(game)
+}
+
+func (s *Service) TrimHistory(game, id string, keepLast int) (HistoryUsage, error) {
+	return s.store.TrimHistory(game, id, keepLast)
+}
