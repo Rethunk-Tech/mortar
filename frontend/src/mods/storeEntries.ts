@@ -1,3 +1,4 @@
+import type { MessageDescriptor } from '@lingui/core'
 import { msg, plural } from '@lingui/core/macro'
 import type {
   Mod,
@@ -7,7 +8,6 @@ import {
   AddToGroup,
   OpenConfig,
   RemoveEntries,
-  RemoveEntry,
   RestoreEntries,
   RestoreEntryFields,
   SetEntryCategoryMany,
@@ -141,6 +141,25 @@ async function batchProfile(
   await useUpdates.getState().load()
 }
 
+// Enables the required mods per the preference, or asks about them.
+async function afterEnable(
+  set: (fn: (s: { mods: Mod[] }) => { mods: Mod[] }) => void,
+  get: () => { mods: Mod[] },
+  pending: Mod[],
+  enabling: Mod[],
+) {
+  const decision = enableRequirementsDecision(
+    gamePrefs(useSettings.getState()).enableRequirements || 'always',
+    pending.length,
+  )
+  if (decision === 'enable') {
+    const extra = new Set(pending.map((m) => modId(m)))
+    set((s) => ({ mods: s.mods.map((m) => (extra.has(modId(m)) ? { ...m, enabled: true } : m)) }))
+  } else {
+    await considerEnableRequirements(get().mods, enabling, 'toggle')
+  }
+}
+
 export async function enableMany(
   set: (fn: (s: { mods: Mod[] }) => { mods: Mod[] }) => void,
   get: () => { mods: Mod[]; loadProblems: () => Promise<void> },
@@ -180,24 +199,16 @@ export async function enableMany(
     return
   }
   if (enabled) {
-    const extra = new Set(pending.map((m) => modId(m)))
-    if (
-      enableRequirementsDecision(
-        gamePrefs(useSettings.getState()).enableRequirements || 'always',
-        pending.length,
-      ) === 'enable'
-    ) {
-      set((s) => ({
-        mods: s.mods.map((m) => (extra.has(modId(m)) ? { ...m, enabled: true } : m)),
-      }))
-    } else {
-      await considerEnableRequirements(get().mods, mods, 'toggle')
-    }
+    await afterEnable(set, get, pending, mods)
   }
   await get().loadProblems()
 }
 
-export async function dropMods(get: () => { load: () => Promise<void> }, mods: Mod[]) {
+export async function dropMods(
+  get: () => { load: () => Promise<void> },
+  mods: Mod[],
+  failure: MessageDescriptor = msg`Could not remove the selected mods`,
+) {
   const target = openTarget()
   if (!target || mods.length === 0) {
     return
@@ -209,28 +220,14 @@ export async function dropMods(get: () => { load: () => Promise<void> }, mods: M
     useProfiles.getState().replace(await RemoveEntries(target.game, target.id, keys))
     pushRemovedUndo(target.id, removed, get().load)
   } catch (e) {
-    reportError(i18n._(msg`Could not remove the selected mods`))(e)
+    reportError(i18n._(failure))(e)
   }
   await get().load()
   useSelection.getState().clear()
 }
 
-export async function dropMod(get: () => { load: () => Promise<void> }, mod: Mod) {
-  const target = openTarget()
-  if (!target) {
-    return
-  }
-  const profile = useProfiles.getState().profiles.find((p) => p.id === target.id)
-  const removed = entriesForKeys(profile?.entries ?? [], [mod.key])
-  try {
-    useProfiles.getState().replace(await RemoveEntry(target.game, target.id, mod.key))
-    pushRemovedUndo(target.id, removed, get().load)
-  } catch (e) {
-    reportError(i18n._(msg`Could not remove ${mod.name}`))(e)
-  }
-  await get().load()
-  useSelection.getState().clear()
-}
+export const dropMod = (get: () => { load: () => Promise<void> }, mod: Mod) =>
+  dropMods(get, [mod], msg`Could not remove ${mod.name}`)
 
 export async function setEntryNoteTags(mod: Mod, note: string, tags: string[]) {
   const target = openTarget()
@@ -267,18 +264,7 @@ export async function setEnabledAction(
     useProfiles.getState().replace(got.profile)
     announceAlso(got.alsoEnabled)
     if (enabled) {
-      const extra = new Set(pending.map((m) => modId(m)))
-      const decision = enableRequirementsDecision(
-        gamePrefs(useSettings.getState()).enableRequirements || 'always',
-        pending.length,
-      )
-      if (decision === 'enable') {
-        set((s) => ({
-          mods: s.mods.map((m) => (extra.has(modId(m)) ? { ...m, enabled: true } : m)),
-        }))
-      } else {
-        await considerEnableRequirements(get().mods, [mod], 'toggle')
-      }
+      await afterEnable(set, get, pending, [mod])
     }
     await get().loadProblems()
   } catch (e) {

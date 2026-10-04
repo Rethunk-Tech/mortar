@@ -26,13 +26,10 @@ export function considerEnableRequirements(
   if (decision === 'skip' || (decision === 'enable' && source === 'toggle')) {
     return Promise.resolve()
   }
-  const dependentName =
-    enabling
-      .map((m) => m.name)
-      .filter(Boolean)
-      .join(', ') ||
-    enabling[0]?.name ||
-    ''
+  const dependentName = enabling
+    .map((m) => m.name)
+    .filter(Boolean)
+    .join(', ')
   if (decision === 'ask') {
     useEnableAsk.getState().enqueue({ dependentName, mods: pending })
     return Promise.resolve()
