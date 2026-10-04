@@ -14,8 +14,9 @@ import {
 import { Inbox, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { Tool } from '../../bindings/github.com/Rethunk-AI/mortar/internal/tools/models.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
+import { reportError } from '../toasts/report.ts'
 import { useTools } from './store.ts'
 import { ToolEditorDialog } from './ToolEditorDialog.tsx'
 
@@ -35,6 +36,7 @@ export function ToolsManageDialog({
   const add = useTools((s) => s.add)
   const [editing, setEditing] = useState<Tool | null>(null)
   const [adding, setAdding] = useState(false)
+  const [deleting, setDeleting] = useState<Tool | null>(null)
 
   return (
     <>
@@ -61,11 +63,11 @@ export function ToolsManageDialog({
                         <Pencil size={16} />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title={t`Remove ${tool.name}`}>
+                    <Tooltip title={t`Delete ${tool.name}`}>
                       <IconButton
                         edge="end"
-                        aria-label={t`Remove ${tool.name}`}
-                        onClick={() => remove(game, tool.id).catch(reportUnexpected)}
+                        aria-label={t`Delete ${tool.name}`}
+                        onClick={() => setDeleting(tool)}
                       >
                         <Trash2 size={16} />
                       </IconButton>
@@ -83,6 +85,23 @@ export function ToolsManageDialog({
           <Button onClick={onClose}>{t`Close`}</Button>
         </DialogActions>
       </Dialog>
+      <ConfirmDialog
+        open={deleting !== null}
+        title={t`Delete ${deleting?.name ?? ''}?`}
+        body={t`This tool will be removed from Mortar.`}
+        confirmLabel={t`Delete`}
+        color="error"
+        onCancel={() => setDeleting(null)}
+        onConfirm={() => {
+          if (deleting === null) {
+            return
+          }
+          const tool = deleting
+          remove(game, tool.id)
+            .then(() => setDeleting(null))
+            .catch(reportError(t`Could not delete ${tool.name}`))
+        }}
+      />
       <ToolEditorDialog
         open={adding}
         initial={null}

@@ -1,10 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
-import { Divider, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
+import { Divider, ListItemText, Menu, MenuItem } from '@mui/material'
 import { Play, Plus, Settings2, Wrench } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { IconAction } from '../shell/IconAction.tsx'
-import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { MenuAction } from '../shell/MenuAction.tsx'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useTools } from './store.ts'
 import { ToolEditorDialog } from './ToolEditorDialog.tsx'
 import { ToolsManageDialog } from './ToolsManageDialog.tsx'
@@ -18,7 +18,6 @@ export function ToolsMenu({ game, profileID }: { game: string; profileID: string
   const load = useTools((s) => s.load)
   const add = useTools((s) => s.add)
   const launch = useTools((s) => s.launch)
-  const push = useToasts((s) => s.push)
 
   useEffect(() => {
     if (game) {
@@ -49,51 +48,33 @@ export function ToolsMenu({ game, profileID }: { game: string; profileID: string
         ) : null}
         {tools.length > 0 ? <Divider /> : null}
         {tools.map((tool) => (
-          <MenuItem
+          <MenuAction
             key={tool.id}
+            icon={<Play size={16} />}
+            label={tool.name}
             onClick={() => {
               close()
-              launch(game, profileID, tool.id)
-                .then(() => push({ kind: 'success', title: t`Started ${tool.name}` }))
-                .catch((e: unknown) =>
-                  push({
-                    kind: 'error',
-                    title: t`Could not start ${tool.name}`,
-                    body: errorMessage(e),
-                    detail: errorDetails(e),
-                  }),
-                )
+              launch(game, profileID, tool.id).catch(reportError(t`Could not start ${tool.name}`))
             }}
-          >
-            <ListItemIcon sx={{ color: 'inherit' }}>
-              <Play size={16} />
-            </ListItemIcon>
-            <ListItemText>{tool.name}</ListItemText>
-          </MenuItem>
+          />
         ))}
         {tools.length > 0 ? <Divider /> : null}
-        <MenuItem
+        <MenuAction
+          icon={<Plus size={16} />}
+          label={t`Add tool…`}
           onClick={() => {
             close()
             setAddOpen(true)
           }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <Plus size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Add tool…`}</ListItemText>
-        </MenuItem>
-        <MenuItem
+        />
+        <MenuAction
+          icon={<Settings2 size={16} />}
+          label={t`Manage tools…`}
           onClick={() => {
             close()
             setManageOpen(true)
           }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <Settings2 size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Manage tools`}</ListItemText>
-        </MenuItem>
+        />
       </Menu>
       <ToolEditorDialog
         open={addOpen}
