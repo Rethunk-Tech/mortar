@@ -10,7 +10,7 @@ import {
   Untrack,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
 import { useNexus } from '../settings/nexus.ts'
-import { reportError, reportUnexpected } from '../toasts/report.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { isAbstained, isEndorsed, isTracked, type TrackedMod } from './nexusAccount.ts'
 
@@ -73,13 +73,12 @@ export function NexusAccountActions({
         variant={endorsed ? 'contained' : 'outlined'}
         startIcon={<ThumbsUp size={14} aria-hidden={true} />}
         onClick={() =>
-          run(async () => {
-            try {
+          run(
+            async () => {
               setStatus(await Endorse(modId, version))
-            } catch (e) {
-              reportError(t`Could not endorse`)(e)
-            }
-          })
+            },
+            { errorTitle: t`Could not endorse` },
+          )
         }
         sx={noWrap}
       >
@@ -91,13 +90,12 @@ export function NexusAccountActions({
         variant={abstained ? 'contained' : 'outlined'}
         startIcon={<ThumbsDown size={14} aria-hidden={true} />}
         onClick={() =>
-          run(async () => {
-            try {
+          run(
+            async () => {
               setStatus(await Abstain(modId, version))
-            } catch (e) {
-              reportError(t`Could not abstain`)(e)
-            }
-          })
+            },
+            { errorTitle: t`Could not abstain` },
+          )
         }
         sx={noWrap}
       >
@@ -110,14 +108,13 @@ export function NexusAccountActions({
           variant="outlined"
           startIcon={<BellOff size={14} aria-hidden={true} />}
           onClick={() =>
-            run(async () => {
-              try {
+            run(
+              async () => {
                 await Untrack(modId)
                 setMods((cur) => (cur ?? []).filter((m) => m.modId !== modId))
-              } catch (e) {
-                reportError(t`Could not untrack`)(e)
-              }
-            })
+              },
+              { errorTitle: t`Could not untrack` },
+            )
           }
           sx={noWrap}
         >
@@ -130,17 +127,16 @@ export function NexusAccountActions({
           variant="contained"
           startIcon={<Bell size={14} aria-hidden={true} />}
           onClick={() =>
-            run(async () => {
-              try {
+            run(
+              async () => {
                 await Track(modId)
                 setMods((cur) => [
                   ...(cur ?? []).filter((m) => m.modId !== modId),
                   { modId, domainName: 'stardewvalley' },
                 ])
-              } catch (e) {
-                reportError(t`Could not track`)(e)
-              }
-            })
+              },
+              { errorTitle: t`Could not track` },
+            )
           }
           sx={noWrap}
         >

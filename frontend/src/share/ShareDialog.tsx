@@ -26,7 +26,7 @@ import { SendDialog } from '../lan/SendDialog.tsx'
 import { heading, paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MONO } from '../theme/theme.ts'
-import { reportError, reportUnexpected } from '../toasts/report.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { IncludeOptions } from './IncludeOptions.tsx'
@@ -400,17 +400,16 @@ function FileTab({
   const [saved, setSaved] = useState<Saved | null>(null)
   const [busy, run] = usePending()
   const save = () => {
-    run(async () => {
-      try {
+    run(
+      async () => {
         const result = await SaveFile(game, profileId, keys, toShareInclude(include))
         if (result.path) {
           setSaved(result)
           useToasts.getState().push({ kind: 'success', title: t`File saved` })
         }
-      } catch (e) {
-        reportError(t`Could not save the file`)(e)
-      }
-    })
+      },
+      { errorTitle: t`Could not save the file` },
+    )
   }
   const skipped = saved?.skipped ?? []
   return (

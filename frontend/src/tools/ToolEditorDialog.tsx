@@ -3,7 +3,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } 
 import { useEffect, useState } from 'react'
 import { PickExecutable } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import type { Tool } from '../../bindings/github.com/Rethunk-AI/mortar/internal/tools/models.ts'
-import { reportError, reportUnexpected } from '../toasts/report.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 
 // The tokens Mortar substitutes in a tool's arguments; passed as a value so Lingui does not read them as variables.
@@ -67,13 +67,7 @@ export function ToolEditorDialog({ open, initial, onClose, onSave }: Props) {
       arguments: textToArgs(argsText),
       workingDir: workingDir.trim(),
     }
-    run(() =>
-      onSave(tool)
-        .then(() => onClose())
-        .catch((e: unknown) => {
-          reportError(t`Could not save the tool`)(e)
-        }),
-    )
+    run(() => onSave(tool).then(() => onClose()), { errorTitle: t`Could not save the tool` })
   }
 
   return (

@@ -1,7 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { useProfiles } from '../profiles/store.ts'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
-import { reportError } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 
 export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -18,13 +17,9 @@ export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: ()
       busy={busy}
       onCancel={onClose}
       onSubmit={(name) => {
-        run(() =>
-          create(name)
-            .then(() => onClose())
-            .catch((e: unknown) => {
-              reportError(t`Could not create the profile`)(e)
-            }),
-        )
+        run(() => create(name).then(() => onClose()), {
+          errorTitle: t`Could not create the profile`,
+        })
       }}
     />
   )

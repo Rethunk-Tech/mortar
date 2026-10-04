@@ -5,7 +5,6 @@ import { useMemo } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { CopyMods } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { reportError } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { CompareBulkBody } from './CompareBulkBody.tsx'
 import { compareProfiles } from './compare.ts'
@@ -89,14 +88,13 @@ export function CompareDialog({
   const [pending, run] = usePending()
 
   const copy = (from: Profile, to: Profile, uniqueIds: string[]) => {
-    run(async () => {
-      try {
+    run(
+      async () => {
         await CopyMods(game, from.id, to.id, uniqueIds)
         await refresh()
-      } catch (error) {
-        reportError(t`Could not copy mods`)(error)
-      }
-    })
+      },
+      { errorTitle: t`Could not copy mods` },
+    )
   }
 
   const aName = profileA?.name ?? ''

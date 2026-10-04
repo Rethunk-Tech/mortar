@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { reportUnexpected } from './report.ts'
+import { reportError, reportUnexpected } from './report.ts'
 
 function beginWork(lock: { current: boolean }) {
   if (lock.current) {
@@ -13,13 +13,14 @@ function beginWork(lock: { current: boolean }) {
 export function usePending() {
   const [pending, setPending] = useState(false)
   const inFlight = useRef(false)
-  const run = (action: () => Promise<unknown>) => {
+  const run = (action: () => Promise<unknown>, options?: { errorTitle?: string | undefined }) => {
     if (!beginWork(inFlight)) {
       return
     }
     setPending(true)
+    const title = options?.errorTitle
     action()
-      .catch(reportUnexpected)
+      .catch(title === undefined ? reportUnexpected : reportError(title))
       .finally(() => {
         inFlight.current = false
         setPending(false)

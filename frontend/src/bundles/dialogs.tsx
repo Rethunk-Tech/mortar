@@ -61,13 +61,7 @@ function BundleNameDialog({
       busy={busy}
       onCancel={onClose}
       onSubmit={(name) => {
-        run(() =>
-          onSubmit(name)
-            .then(() => onClose())
-            .catch((error: unknown) => {
-              reportError(errorTitle)(error)
-            }),
-        )
+        run(() => onSubmit(name).then(() => onClose()), { errorTitle })
       }}
     />
   )
@@ -174,15 +168,13 @@ function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToB
           if (!name) {
             return
           }
-          run(() =>
-            Create(game, name, profileId, uniqueIds)
-              .then((created) => {
+          run(
+            () =>
+              Create(game, name, profileId, uniqueIds).then((created) => {
                 useToasts.getState().push({ kind: 'success', title: t`Created ${created.name}` })
                 onClose()
-              })
-              .catch((error: unknown) => {
-                reportError(t`Could not create the bundle`)(error)
               }),
+            { errorTitle: t`Could not create the bundle` },
           )
         }}
       >
@@ -203,17 +195,15 @@ function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToB
               >{t`Create a bundle to reuse a set of mods.`}</EmptyState>
             }
             onPick={(bundle) => {
-              run(() =>
-                AddMods(game, bundle.id, profileId, uniqueIds)
-                  .then((updated) => {
+              run(
+                () =>
+                  AddMods(game, bundle.id, profileId, uniqueIds).then((updated) => {
                     useToasts
                       .getState()
                       .push({ kind: 'success', title: t`Added mods to ${updated.name}` })
                     onClose()
-                  })
-                  .catch((error: unknown) => {
-                    reportError(t`Could not add mods to the bundle`)(error)
                   }),
+                { errorTitle: t`Could not add mods to the bundle` },
               )
             }}
           />
@@ -274,13 +264,12 @@ function ApplyBundleDialog({
           busy={busy}
           empty={<Typography sx={{ color: 'text.secondary' }}>{t`No bundles yet.`}</Typography>}
           onPick={(bundle) => {
-            run(() =>
-              Apply(game, bundle.id, profileId)
-                .then((result) => onApplied(result))
-                .then(() => onClose())
-                .catch((error: unknown) => {
-                  reportError(t`Could not add the bundle`)(error)
-                }),
+            run(
+              () =>
+                Apply(game, bundle.id, profileId)
+                  .then((result) => onApplied(result))
+                  .then(() => onClose()),
+              { errorTitle: t`Could not add the bundle` },
             )
           }}
         />
