@@ -20,7 +20,7 @@ Not verified: whether Nexus currently issues OAuth client ids to third parties, 
 - Website / repository: https://github.com/Rethunk-AI/mortar
 - Logo: supply the app icon from the repository (confirm file and a 512x512 export before sending).
 - Testing build: attach the current release build from the GitHub releases page.
-- Contact: maintainer, GitHub @Albinogeek, damon.blais@gmail.com (confirm the address the owner wants Nexus to use).
+- Contact: the maintainer through security@rethunk.tech (the project address that receives mail).
 
 ## Authentication requested
 
