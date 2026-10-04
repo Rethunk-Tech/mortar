@@ -32,6 +32,20 @@ func frame(t *testing.T, v any) []byte {
 	return buf.Bytes()
 }
 
+// readReply reads one framed reply off out.
+func readReply(t *testing.T, out *bytes.Buffer) reply {
+	t.Helper()
+	var n uint32
+	if err := binary.Read(out, binary.NativeEndian, &n); err != nil {
+		t.Fatal(err)
+	}
+	var r reply
+	if err := json.Unmarshal(out.Next(int(n)), &r); err != nil {
+		t.Fatal(err)
+	}
+	return r
+}
+
 func listenControl(t *testing.T, settingsJSON string) string {
 	t.Helper()
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
@@ -85,13 +99,7 @@ func TestServeHandsEachLinkOverAndReplies(t *testing.T) {
 	}
 	var replies []reply
 	for out.Len() > 0 {
-		var n uint32
-		_ = binary.Read(&out, binary.NativeEndian, &n)
-		var r reply
-		if err := json.Unmarshal(out.Next(int(n)), &r); err != nil {
-			t.Fatal(err)
-		}
-		replies = append(replies, r)
+		replies = append(replies, readReply(t, &out))
 	}
 	if len(replies) != 2 || !replies[0].OK || replies[1].OK || replies[1].Error != "refused" {
 		t.Fatalf("replies = %+v", replies)
@@ -113,14 +121,7 @@ func TestServeAnswersInstalledMods(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var n uint32
-	if err := binary.Read(&out, binary.NativeEndian, &n); err != nil {
-		t.Fatal(err)
-	}
-	var got reply
-	if err := json.Unmarshal(out.Next(int(n)), &got); err != nil {
-		t.Fatal(err)
-	}
+	got := readReply(t, &out)
 	if got.ModIDs == nil || len(*got.ModIDs) != 2 || (*got.ModIDs)[0] != 123 || (*got.ModIDs)[1] != 456 {
 		t.Fatalf("installed reply = %+v", got.ModIDs)
 	}
@@ -141,14 +142,7 @@ func TestServeReportsConnectedWhenProfileHasNoMods(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var n uint32
-	if err := binary.Read(&out, binary.NativeEndian, &n); err != nil {
-		t.Fatal(err)
-	}
-	var got reply
-	if err := json.Unmarshal(out.Next(int(n)), &got); err != nil {
-		t.Fatal(err)
-	}
+	got := readReply(t, &out)
 	if !got.Connected || got.ModIDs == nil || len(*got.ModIDs) != 0 || !slices.Equal(got.BrokenIDs, []int{7}) {
 		t.Fatalf("installed reply = %+v", got)
 	}
@@ -170,14 +164,7 @@ func TestServeAnswersModProfiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var n uint32
-	if err := binary.Read(&out, binary.NativeEndian, &n); err != nil {
-		t.Fatal(err)
-	}
-	var got reply
-	if err := json.Unmarshal(out.Next(int(n)), &got); err != nil {
-		t.Fatal(err)
-	}
+	got := readReply(t, &out)
 	if got.Open == nil || got.Open.Profile != "Default" || got.Open.Version == nil || *got.Open.Version != "1.2.3" ||
 		got.Open.FileID != 456 ||
 		len(got.Others) != 1 || got.Others[0].Profile != "Co-op" || got.Others[0].Version != nil || got.Others[0].FileID != 789 {
@@ -318,14 +305,7 @@ func TestServeAnswersModUpdateAvailable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var n uint32
-	if err := binary.Read(&out, binary.NativeEndian, &n); err != nil {
-		t.Fatal(err)
-	}
-	var got reply
-	if err := json.Unmarshal(out.Next(int(n)), &got); err != nil {
-		t.Fatal(err)
-	}
+	got := readReply(t, &out)
 	if got.Open == nil || !got.Open.UpdateAvailable || len(got.Others) != 1 || got.Others[0].UpdateAvailable {
 		t.Fatalf("mod reply = %+v", got)
 	}
@@ -407,14 +387,7 @@ func TestServeAnswersUpdates(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var n uint32
-	if err := binary.Read(&out, binary.NativeEndian, &n); err != nil {
-		t.Fatal(err)
-	}
-	var got reply
-	if err := json.Unmarshal(out.Next(int(n)), &got); err != nil {
-		t.Fatal(err)
-	}
+	got := readReply(t, &out)
 	if got.Profile != "Default" || got.Updates == nil || len(*got.Updates) != 2 {
 		t.Fatalf("updates reply = %+v", got)
 	}
@@ -505,14 +478,7 @@ func TestActiveNexusUpdatesFromCache(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	var n uint32
-	if err := binary.Read(&out, binary.NativeEndian, &n); err != nil {
-		t.Fatal(err)
-	}
-	var got reply
-	if err := json.Unmarshal(out.Next(int(n)), &got); err != nil {
-		t.Fatal(err)
-	}
+	got := readReply(t, &out)
 	if got.Profile != "Default" || got.Updates == nil || len(*got.Updates) != 2 || (*got.Updates)[0].Latest != "" || (*got.Updates)[1].Name != "Zed" {
 		t.Fatalf("Serve updates = %+v", got)
 	}

@@ -504,12 +504,13 @@ Saves live in one folder, `%APPDATA%\StardewValley\Saves` or `~/.config/StardewV
   - Edits that need different spouses (`Relationship:<NPC>`: `Engaged` or `Married`, or `Query: '{{Spouse}}' = '<NPC>'`) never apply together, nor do edits that require disjoint literal values of `LocationName`, `LocationContext`, `Season`, `Weather` or `DayOfWeek`.
   - Two packs setting a map property to the same value agree and never conflict.
   - Overlapping image edits with the same source digest and `FromArea` agree and never conflict.
-- **Measured, not worth optimising** (571-mod profile):
+- **Measured, not worth optimising** (main profile: 819 installed mods, 48,484 files under `mods/`):
   - The production frontend bundle is one 1.31 MB minified script (the 2.76 MB file in `frontend/dist` is the unminified dev build), so code-splitting screens saves too little startup parse to pay for the lazy-loading seams.
-  - A full walk of the store takes 67 ms over 60,361 files; a profile walk takes 50 ms over 42,112 files.
-  - The problem-scan cache is 2.1 MB gzip. Each stays under the noise of a check; shrinking the cache is tracked for disk use, not speed.
-  - A drift focus scan covers 39,394 files in 130 ms. `Installed()` and `isContentPatcherPack` over 640 manifests take 7 ms.
-  - dlwatch polls 15 archives. Queue history is capped at 1,000 items (284 KB). `nexus-seen` is capped at 2,000. Runs are capped at 20 (the default `runsKept`).
+  - A full walk of the store takes 82 ms (180 ms with a stat per file) over 53,758 files; a profile walk takes 72 ms (168 ms with stats) over 48,484 files.
+  - The problem-scan cache is 2.5 MB gzip (31 MB raw); rewriting it after one pack changes takes about 0.55 s of CPU and loading it once per process 0.47 s. Each stays under the noise of a check; shrinking the cache is tracked for disk use, not speed.
+  - A drift scan covers 48,484 files in 175 ms, and a repeat check within 5 s reuses it. `Installed()` over 819 manifests takes 18 ms.
+  - dlwatch polls 15 archives. Queue history is capped at 1,000 items (299 KB, full on the main profile). `nexus-seen` is capped at 2,000. Runs are capped at 20 (the default `runsKept`).
+  - Weighing the conflict fixes' master-switch rule by the assets a field reaches instead of its share of patches offered no new fix on the main profile and withheld fixes from small packs, so the one-fifth patch share stays.
   - Opening a 418-mod profile in the self-test build (Performance API) showed mod cards 171 ms after the click and the size footer at 1.1 s, with no main-thread task over 50 ms.
   - Cold start in the same build: the server answers its first request 112 to 128 ms after the process starts, the page is interactive (DOM) at 40 ms, and startup issues about 120 binding calls over its first 5 s (about 2 ms each) and none at idle.
 - **Cosmetic or harmless:** an edit conflict whose every overlap is harmless is shown under **Cosmetic or harmless** and never counted as a problem. An overlap is harmless when both edits are images (they only change how something looks), when both are text edits (`Characters/Dialogue/*`, `Strings/*`, `Data/ExtraDialogue`, or `Data/Festivals/*` lines outside set-up, main event, shop and conditions: one mod's line shows instead of the other's), when either edit applies only in a literal `LocationName`, `LocationContext` or `Weather`, or when either is a one- or two-tile area at a tokenized position.
