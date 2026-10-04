@@ -101,6 +101,7 @@ func registerEvents() {
 	application.RegisterEvent[shortcut.Request](shortcut.RequestedEvent)
 	application.RegisterEvent[nexussvc.Account](nexussvc.ChangedEvent)
 	application.RegisterEvent[queue.State](queue.ChangedEvent)
+	application.RegisterEvent[queue.Progress](queue.ProgressEvent)
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
 	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
 	application.RegisterEvent[dlwatch.Arrival](dlwatch.ArrivedEvent)
@@ -181,8 +182,10 @@ func run() error {
 	}
 	updates := &updatesvc.Service{}
 	app := application.New(application.Options{
-		Name: "Mortar",
-		Icon: appIcon,
+		Name:         "Mortar",
+		Icon:         appIcon,
+		ErrorHandler: logAppError,
+		PanicHandler: panicHandler(dataDir),
 		// ApplicationID is the GtkApplication / Wayland app_id and the Linux desktop file id. It must not equal
 		// UniqueID: both become D-Bus names, and GApplication also owns ApplicationID on the session bus.
 		// Mortar decides itself whether closing the last window quits or leaves it in the tray.
@@ -594,6 +597,7 @@ func run() error {
 	updateCtx, stopUpdates := context.WithCancel(context.Background())
 	defer stopUpdates()
 	updates.StartBackground(updateCtx, emit)
+	go savesSvc.RunScheduledBackups(updateCtx)
 	queueCtx, stopQueue := context.WithCancel(context.Background())
 	launchsvc.SetLife(launches, queueCtx)
 	waitQueue := queue.Run(queueCtx, queueSvc, nxmSvc.Assigned)
@@ -681,12 +685,23 @@ func run() error {
 	}
 	window = newWindow()
 	go func() {
-		// Mods extracted before zip names were decoded may sit in folders the game cannot open.
-		for _, root := range []string{filepath.Join(dataDir, "store"), filepath.Join(dataDir, "profiles")} {
-			if n, err := archive.RepairNames(root); err != nil {
-				log.Printf("repair names under %s: %v", root, err)
-			} else if n > 0 {
-				log.Printf("repaired %d file names under %s", n, root)
+		// Mods extracted before zip names were decoded may sit in folders the game cannot open. Extraction decodes
+		// names now, so one clean pass over both trees is enough.
+		repairedMarker := filepath.Join(dataDir, "names-repaired")
+		if _, err := os.Stat(repairedMarker); err != nil {
+			clean := true
+			for _, root := range []string{filepath.Join(dataDir, "store"), filepath.Join(dataDir, "profiles")} {
+				if n, err := archive.RepairNames(root); err != nil {
+					clean = false
+					log.Printf("repair names under %s: %v", root, err)
+				} else if n > 0 {
+					log.Printf("repaired %d file names under %s", n, root)
+				}
+			}
+			if clean {
+				if err := os.WriteFile(repairedMarker, nil, 0o600); err != nil {
+					log.Printf("repair names marker: %v", err)
+				}
 			}
 		}
 		// An unreadable profile.json stops collection: its keys are unknown, and their items must not be deleted.
