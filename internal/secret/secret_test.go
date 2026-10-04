@@ -13,7 +13,7 @@ func TestExplainMapsMissingProvider(t *testing.T) {
 		t.Fatalf("got %q", got)
 	}
 	other := errors.New("boom")
-	if explain(other) != other || explain(nil) != nil {
+	if !errors.Is(explain(other), other) || explain(nil) != nil {
 		t.Fatal("unrelated errors must pass through")
 	}
 }

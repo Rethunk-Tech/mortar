@@ -64,7 +64,7 @@ func TestCapCrashLogLeavesFileWhenSeenIsBehind(t *testing.T) {
 
 func TestCappedLogReadsAsCleanShutdown(t *testing.T) {
 	dir := t.TempDir()
-	f, err := os.Create(filepath.Join(dir, "mortar.prev.log"))
+	f, err := fsx.Create(filepath.Join(dir, "mortar.prev.log"))
 	if err != nil {
 		t.Fatal(err)
 	}

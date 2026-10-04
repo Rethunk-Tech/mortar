@@ -2,12 +2,12 @@ package main
 
 import (
 	"errors"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -19,7 +19,7 @@ func TestAppendCrashKeepsEarlierStacks(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	b, err := os.ReadFile(filepath.Join(dir, "crash.log"))
+	b, err := fsx.ReadFile(filepath.Join(dir, "crash.log"))
 	if err != nil {
 		t.Fatal(err)
 	}
