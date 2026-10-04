@@ -3,6 +3,11 @@ import { Box, Switch, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { CoverButton } from '../shell/CoverButton.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { reportUnexpected } from '../toasts/report.ts'
+import { toggleCollapsed } from './group.ts'
+import type { ListRow } from './listColumns.ts'
+import { useMods } from './store.ts'
+import { setGroupEnabled } from './storeEntries.ts'
 import { useLocked } from './useLocked.ts'
 
 function ModsGroupHeader({
@@ -51,7 +56,7 @@ function ModsGroupHeader({
       </Box>
       {onEnabled ? (
         <Box data-control={true} sx={{ ml: 'auto', position: 'relative' }}>
-          <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+          <LockedReason locked={locked}>
             <Switch
               size="small"
               checked={enabled === true}
@@ -59,11 +64,55 @@ function ModsGroupHeader({
               onChange={(_, on) => onEnabled(on)}
               slotProps={{ input: { 'aria-label': label } }}
             />
-          </DisabledReason>
+          </LockedReason>
         </Box>
       ) : null}
     </Box>
   )
 }
 
-export { ModsGroupHeader }
+function GroupHeaderRow({
+  groupKey,
+  count,
+  label,
+  collapsed,
+  gameId,
+  setCollapsed,
+  groupBy,
+  tagHint,
+  groups,
+}: {
+  groupKey: string
+  count: number
+  label: string
+  collapsed: Record<string, boolean>
+  gameId: string
+  setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
+  groupBy: string
+  tagHint: string
+  groups: readonly { key: string; items: readonly ListRow[] }[]
+}) {
+  const open = collapsed[groupKey] !== true
+  return (
+    <ModsGroupHeader
+      label={label}
+      count={count}
+      open={open}
+      onToggle={() => setCollapsed((cur) => toggleCollapsed(gameId, cur, groupKey, open))}
+      {...(groupBy === 'tag' ? { hint: tagHint } : {})}
+      {...(groupBy === 'group' && groupKey !== ''
+        ? {
+            enabled:
+              groups.find((g) => g.key === groupKey)?.items.every((r) => r.mod.enabled) === true,
+            onEnabled: (on: boolean) => {
+              setGroupEnabled(groupKey, on)
+                .then(() => useMods.getState().load())
+                .catch(reportUnexpected)
+            },
+          }
+        : {})}
+    />
+  )
+}
+
+export { GroupHeaderRow, ModsGroupHeader }

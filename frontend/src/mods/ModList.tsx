@@ -17,7 +17,7 @@ import { actingMods, toggleActing } from './actingMods.ts'
 import { CompatChip } from './CompatChip.tsx'
 import { useDetail } from './detail.ts'
 import { ExtraFilesChip } from './ExtraFilesChip.tsx'
-import { emptyGroupLabel, type GroupBy, groupHeading } from './group.ts'
+import { listHeadingFor } from './group.ts'
 import {
   columnMenuFromEvent,
   type ListColumnId,
@@ -302,32 +302,6 @@ function ModRow({
       )}
     </TableRow>
   )
-}
-
-function listHeadingFor(
-  groupBy: GroupBy,
-  copy: {
-    category: string
-    source: string
-    tag: string
-    author: string
-    group: string
-    problems: string
-    update: string
-    enabled: string
-    disabled: string
-    smapi: string
-  },
-) {
-  return (key: string) =>
-    groupHeading(groupBy, key, {
-      empty: emptyGroupLabel(groupBy, copy),
-      problems: copy.problems,
-      update: copy.update,
-      enabled: copy.enabled,
-      disabled: copy.disabled,
-      smapi: copy.smapi,
-    })
 }
 
 export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {

@@ -321,6 +321,31 @@ function groupHeading(
   }
   return key || labels.empty
 }
+type HeadingCopy = {
+  category: string
+  source: string
+  tag: string
+  author: string
+  group: string
+  problems: string
+  update: string
+  enabled: string
+  disabled: string
+  smapi: string
+}
+
+function listHeadingFor(groupBy: GroupBy, copy: HeadingCopy) {
+  return (key: string) =>
+    groupHeading(groupBy, key, {
+      empty: emptyGroupLabel(groupBy, copy),
+      problems: copy.problems,
+      update: copy.update,
+      enabled: copy.enabled,
+      disabled: copy.disabled,
+      smapi: copy.smapi,
+    })
+}
+
 
 function orderedGroupKeys(by: GroupBy, keys: readonly string[]): string[] {
   if (by === 'status') {
@@ -330,6 +355,7 @@ function orderedGroupKeys(by: GroupBy, keys: readonly string[]): string[] {
   const tail: string[] = []
   if (keys.includes(SMAPI_MODS_GROUP)) {
     tail.push(SMAPI_MODS_GROUP)
+  listHeadingFor,
   }
   if (keys.includes('')) {
     tail.push('')

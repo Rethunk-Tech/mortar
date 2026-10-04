@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Card, Chip, Typography, useMediaQuery } from '@mui/material'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type {
   Mod,
   Profile,
@@ -14,11 +14,11 @@ import { actingMods, toggleActing } from './actingMods.ts'
 import { CompatChip } from './CompatChip.tsx'
 import { useDetail } from './detail.ts'
 import { ExtraFilesChip } from './ExtraFilesChip.tsx'
-import { emptyGroupLabel, firstTag, groupHeading, toggleCollapsed } from './group.ts'
+import { firstTag, listHeadingFor } from './group.ts'
 import type { ListRow } from './listColumns.ts'
 import { entryOf, modId, nexusIdOf } from './lookup.ts'
 import { ModMenu } from './ModMenu.tsx'
-import { ModsGroupHeader } from './ModsGroupHeader.tsx'
+import { GroupHeaderRow } from './ModsGroupHeader.tsx'
 import { contextMenuProps } from './menu.ts'
 import { useNexusFresh } from './nexusDetails.ts'
 import {
@@ -31,19 +31,19 @@ import {
 } from './parts.tsx'
 import { useSelection } from './selection.ts'
 import { useMods } from './store.ts'
-import { setGroupEnabled } from './storeEntries.ts'
 import { useModGroups } from './useModGroups.ts'
 import {
   flattenModGroups,
+  focusModAt,
   gridColumnCount,
   gridLanePx,
-  groupKeyHolding,
+  listRowId,
   orderedModIds,
   stepId,
+  useModReveal,
   useModTypeahead,
   useModVirtual,
   type VirtualRow,
-  virtualIndexOf,
 } from './virtualRows.ts'
 
 const OFF_OPACITY = 0.6
@@ -243,28 +243,16 @@ function GridSlot({
 }) {
   if (item.kind === 'header') {
     return (
-      <ModsGroupHeader
-        label={heading(item.groupKey)}
+      <GroupHeaderRow
+        groupKey={item.groupKey}
         count={item.count}
-        open={collapsed[item.groupKey] !== true}
-        onToggle={() =>
-          setCollapsed((cur) =>
-            toggleCollapsed(gameId, cur, item.groupKey, collapsed[item.groupKey] !== true),
-          )
-        }
-        {...(groupBy === 'tag' ? { hint: tagHint } : {})}
-        {...(groupBy === 'group' && item.groupKey !== ''
-          ? {
-              enabled:
-                groups.find((g) => g.key === item.groupKey)?.items.every((r) => r.mod.enabled) ===
-                true,
-              onEnabled: (on: boolean) => {
-                setGroupEnabled(item.groupKey, on)
-                  .then(() => useMods.getState().load())
-                  .catch(reportUnexpected)
-              },
-            }
-          : {})}
+        label={heading(item.groupKey)}
+        collapsed={collapsed}
+        gameId={gameId}
+        setCollapsed={setCollapsed}
+        groupBy={groupBy}
+        tagHint={tagHint}
+        groups={groups}
       />
     )
   }
@@ -334,7 +322,6 @@ function CardsPane({
   )
   const { parentRef, virtualizer } = useModVirtual(items, lanePx)
   const detailId = useDetail((s) => s.detailId)
-  const lastReveal = useRef('')
   useEffect(() => {
     const el = parentRef.current
     if (!el) {
@@ -346,45 +333,27 @@ function CardsPane({
     sync()
     return () => ro.disconnect()
   }, [parentRef])
-  useLayoutEffect(() => {
-    if (!detailId) {
-      return
-    }
-    const held = groupKeyHolding(groups, (row) => modId(row.mod) === detailId)
-    if (held !== undefined && collapsed[held] === true) {
-      setCollapsed((cur) => toggleCollapsed(gameId, cur, held, false))
-      return
-    }
-    const idx = virtualIndexOf(items, detailId, (row) => modId(row.mod))
-    const token = `${detailId}:${idx}`
-    if (lastReveal.current === token || idx < 0) {
-      return
-    }
-    lastReveal.current = token
-    virtualizer.scrollToIndex(idx, { align: 'auto' })
-  }, [collapsed, detailId, gameId, groups, items, setCollapsed, virtualizer])
+  useModReveal({
+    detailId,
+    groups,
+    items,
+    idOf: listRowId,
+    collapsed,
+    setCollapsed,
+    gameId,
+    virtualizer,
+  })
   const navIds = useMemo(() => orderedModIds(items, (row) => modId(row.mod)), [items])
   const onMove = (id: string, delta: number) => {
     const next = stepId(navIds, id, delta)
-    if (!next || next === id) {
-      return
+    if (next && next !== id) {
+      focusModAt({ items, idOf: listRowId, virtualizer, parentRef }, next)
     }
-    const idx = virtualIndexOf(items, next, (row) => modId(row.mod))
-    if (idx >= 0) {
-      virtualizer.scrollToIndex(idx, { align: 'auto' })
-    }
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        parentRef.current
-          ?.querySelector<HTMLElement>(`[data-mod-id="${CSS.escape(next)}"]`)
-          ?.focus()
-      })
-    })
   }
   useModTypeahead({
     items,
     nameOf: (row) => row.mod.name,
-    idOf: (row) => modId(row.mod),
+    idOf: listRowId,
     virtualizer,
     parentRef,
   })
@@ -446,22 +415,18 @@ export function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
     profile,
   )
   const tagHint = t`A mod with several tags appears under its first tag.`
-  const emptyLabel = emptyGroupLabel(groupBy, {
+  const heading = listHeadingFor(groupBy, {
     category: t`Uncategorised`,
     source: t`Unknown source`,
     tag: t`Untagged`,
     author: t`Unknown author`,
     group: t`Ungrouped`,
+    problems: t`Problems`,
+    update: t`Update available`,
+    enabled: t`Enabled`,
+    disabled: t`Off`,
+    smapi: t`SMAPI mods`,
   })
-  const heading = (key: string) =>
-    groupHeading(groupBy, key, {
-      empty: emptyLabel,
-      problems: t`Problems`,
-      update: t`Update available`,
-      enabled: t`Enabled`,
-      disabled: t`Off`,
-      smapi: t`SMAPI mods`,
-    })
   return (
     <CardsPane
       groups={groups}

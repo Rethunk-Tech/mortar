@@ -1,5 +1,8 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { type RefObject, useEffect, useRef } from 'react'
+import { type RefObject, useEffect, useLayoutEffect, useRef } from 'react'
+import { toggleCollapsed } from './group.ts'
+import type { ListRow } from './listColumns.ts'
+import { modId } from './lookup.ts'
 
 const TYPEAHEAD_LETTER = /^\p{L}$/u
 const GROUP_HEADER_PX = 36
@@ -146,21 +149,6 @@ export function stepId(ids: readonly string[], current: string, delta: number): 
   return ids[Math.min(ids.length - 1, Math.max(0, i + delta))]
 }
 
-export function neighborId(
-  ids: readonly string[],
-  current: string,
-  dir: -1 | 1,
-): string | undefined {
-  if (ids.length === 0) {
-    return undefined
-  }
-  const i = ids.indexOf(current)
-  if (i < 0) {
-    return undefined
-  }
-  return ids[(i + dir + ids.length) % ids.length]
-}
-
 export function useModVirtual<T>(items: readonly VirtualRow<T>[], lanePx: number) {
   const parentRef = useRef<HTMLDivElement>(null)
   const virtualizer = useVirtualizer({
@@ -215,11 +203,68 @@ export function firstNamePrefix<T>(
   return items.find((item) => nameOf(item).toLocaleLowerCase().startsWith(q))
 }
 
+export const listRowId = (row: ListRow) => modId(row.mod)
+
+type Scroller = { scrollToIndex: (index: number, opts?: { align: 'auto' }) => void }
+
+export interface ModView<T> {
+  items: readonly VirtualRow<T>[]
+  idOf: (item: T) => string
+  virtualizer: Scroller
+  parentRef: RefObject<HTMLElement | null>
+}
+
+// Scrolls the row into the virtual window, then focuses it once it has rendered.
+export function focusModAt<T>(view: ModView<T>, id: string) {
+  const { items, idOf, virtualizer, parentRef } = view
+  const idx = virtualIndexOf(items, id, idOf)
+  if (idx >= 0) {
+    virtualizer.scrollToIndex(idx, { align: 'auto' })
+  }
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      parentRef.current?.querySelector<HTMLElement>(`[data-mod-id="${CSS.escape(id)}"]`)?.focus()
+    })
+  })
+}
+
+// Brings the open detail's row into view, expanding its group first when collapsed.
+export function useModReveal<T>(opts: {
+  detailId: string
+  groups: readonly { key: string; items: readonly T[] }[]
+  items: readonly VirtualRow<T>[]
+  idOf: (item: T) => string
+  collapsed: Record<string, boolean>
+  setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
+  gameId: string
+  virtualizer: Scroller
+}) {
+  const { detailId, groups, items, idOf, collapsed, setCollapsed, gameId, virtualizer } = opts
+  const lastReveal = useRef('')
+  useLayoutEffect(() => {
+    if (!detailId) {
+      return
+    }
+    const held = groupKeyHolding(groups, (row) => idOf(row) === detailId)
+    if (held !== undefined && collapsed[held] === true) {
+      setCollapsed((cur) => toggleCollapsed(gameId, cur, held, false))
+      return
+    }
+    const idx = virtualIndexOf(items, detailId, idOf)
+    const token = `${detailId}:${idx}`
+    if (lastReveal.current === token || idx < 0) {
+      return
+    }
+    lastReveal.current = token
+    virtualizer.scrollToIndex(idx, { align: 'auto' })
+  }, [collapsed, detailId, gameId, groups, idOf, items, setCollapsed, virtualizer])
+}
+
 export function useModTypeahead<T>(opts: {
   items: readonly VirtualRow<T>[]
   nameOf: (item: T) => string
   idOf: (item: T) => string
-  virtualizer: { scrollToIndex: (index: number, opts?: { align: 'auto' }) => void }
+  virtualizer: Scroller
   parentRef: RefObject<HTMLElement | null>
 }) {
   const { items, nameOf, idOf, virtualizer, parentRef } = opts
@@ -255,13 +300,7 @@ export function useModTypeahead<T>(opts: {
         return
       }
       const id = idOf(hit)
-      const idx = virtualIndexOf(items, id, idOf)
-      if (idx >= 0) {
-        virtualizer.scrollToIndex(idx, { align: 'auto' })
-      }
-      requestAnimationFrame(() => {
-        parentRef.current?.querySelector<HTMLElement>(`[data-mod-id="${CSS.escape(id)}"]`)?.focus()
-      })
+      focusModAt({ items, idOf, virtualizer, parentRef }, id)
     }
     root.addEventListener('keydown', onKey)
     return () => root.removeEventListener('keydown', onKey)

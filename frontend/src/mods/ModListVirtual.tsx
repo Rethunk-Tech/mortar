@@ -1,9 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Table, TableBody, TableHead, TableRow } from '@mui/material'
-import { type MouseEvent, type ReactNode, type Ref, useLayoutEffect, useRef } from 'react'
-import { reportUnexpected } from '../toasts/report.ts'
+import type { MouseEvent, ReactNode, Ref } from 'react'
 import { useDetail } from './detail.ts'
-import { type sanitizeListGroupBy, toggleCollapsed } from './group.ts'
+import type { sanitizeListGroupBy } from './group.ts'
 import { HeaderCells, ListColumnMenu } from './ListColumnMenu.tsx'
 import {
   DEFAULT_VISIBLE_LIST_COLUMNS,
@@ -14,19 +13,18 @@ import {
   toggleListColumn,
 } from './listColumns.ts'
 import { modId } from './lookup.ts'
-import { ModsGroupHeader } from './ModsGroupHeader.tsx'
+import { GroupHeaderRow } from './ModsGroupHeader.tsx'
 import { heading } from './paper.ts'
-import { useMods } from './store.ts'
-import { setGroupEnabled } from './storeEntries.ts'
 import {
-  groupKeyHolding,
+  focusModAt,
   LIST_ROW_PX,
-  neighborId,
+  listRowId,
   orderedModIds,
+  stepId,
+  useModReveal,
   useModTypeahead,
   useModVirtual,
   type VirtualRow,
-  virtualIndexOf,
 } from './virtualRows.ts'
 
 function ListShell({
@@ -168,29 +166,16 @@ function ListSlot({
     return (
       <Box role="row" sx={{ display: 'contents' }}>
         <Box role="cell" sx={{ display: 'contents' }}>
-          <ModsGroupHeader
-            label={headingFor(item.groupKey)}
+          <GroupHeaderRow
+            groupKey={item.groupKey}
             count={item.count}
-            open={collapsed[item.groupKey] !== true}
-            onToggle={() =>
-              setCollapsed((cur) =>
-                toggleCollapsed(gameId, cur, item.groupKey, collapsed[item.groupKey] !== true),
-              )
-            }
-            {...(groupBy === 'tag' ? { hint: tagHint } : {})}
-            {...(groupBy === 'group' && item.groupKey !== ''
-              ? {
-                  enabled:
-                    groups
-                      .find((g) => g.key === item.groupKey)
-                      ?.items.every((r) => r.mod.enabled) === true,
-                  onEnabled: (on: boolean) => {
-                    setGroupEnabled(item.groupKey, on)
-                      .then(() => useMods.getState().load())
-                      .catch(reportUnexpected)
-                  },
-                }
-              : {})}
+            label={headingFor(item.groupKey)}
+            collapsed={collapsed}
+            gameId={gameId}
+            setCollapsed={setCollapsed}
+            groupBy={groupBy}
+            tagHint={tagHint}
+            groups={groups}
           />
         </Box>
       </Box>
@@ -250,48 +235,29 @@ export function ModListTable({
   const { t } = useLingui()
   const detailId = useDetail((s) => s.detailId)
   const { parentRef, virtualizer } = useModVirtual(items, LIST_ROW_PX)
-  const lastReveal = useRef('')
   const navIds = orderedModIds(items, (row) => modId(row.mod))
   useModTypeahead({
     items,
     nameOf: (row) => row.mod.name,
-    idOf: (row) => modId(row.mod),
+    idOf: listRowId,
     virtualizer,
     parentRef,
   })
-  useLayoutEffect(() => {
-    if (!detailId) {
-      return
-    }
-    const held = groupKeyHolding(groups, (row) => modId(row.mod) === detailId)
-    if (held !== undefined && collapsed[held] === true) {
-      setCollapsed((cur) => toggleCollapsed(gameId, cur, held, false))
-      return
-    }
-    const idx = virtualIndexOf(items, detailId, (row) => modId(row.mod))
-    const token = `${detailId}:${idx}`
-    if (lastReveal.current === token || idx < 0) {
-      return
-    }
-    lastReveal.current = token
-    virtualizer.scrollToIndex(idx, { align: 'auto' })
-  }, [collapsed, detailId, gameId, groups, items, setCollapsed, virtualizer])
+  useModReveal({
+    detailId,
+    groups,
+    items,
+    idOf: listRowId,
+    collapsed,
+    setCollapsed,
+    gameId,
+    virtualizer,
+  })
   const onArrow = (id: string, dir: -1 | 1) => {
-    const next = neighborId(navIds, id, dir)
-    if (!next) {
-      return
+    const next = stepId(navIds, id, dir)
+    if (next && next !== id) {
+      focusModAt({ items, idOf: listRowId, virtualizer, parentRef }, next)
     }
-    const idx = virtualIndexOf(items, next, (row) => modId(row.mod))
-    if (idx >= 0) {
-      virtualizer.scrollToIndex(idx, { align: 'auto' })
-    }
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        parentRef.current
-          ?.querySelector<HTMLElement>(`[data-mod-id="${CSS.escape(next)}"]`)
-          ?.focus()
-      })
-    })
   }
   return (
     <ListShell

@@ -4,7 +4,6 @@ import {
   flattenModGroups,
   gridColumnCount,
   groupKeyHolding,
-  neighborId,
   orderedModIds,
   stepId,
   TYPEAHEAD_MS,
@@ -49,8 +48,6 @@ test('flattens grouped list rows, skips collapsed items, lanes for the grid', ()
   expect(groupKeyHolding(groups, (item) => item.id === 'd')).toBe('disabled')
   expect(virtualIndexOf(listed, 'c', idOf)).toBe(3)
   expect(orderedModIds(listed, idOf)).toEqual(['a', 'b', 'c'])
-  expect(neighborId(['a', 'b', 'c'], 'c', 1)).toBe('a')
-  expect(neighborId(['a', 'b', 'c'], 'a', -1)).toBe('c')
 })
 
 test('firstNamePrefix matches the first name that starts with the typed text', () => {
