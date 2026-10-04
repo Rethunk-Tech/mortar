@@ -121,17 +121,27 @@ func Parse(r io.Reader) (*Trace, error) {
 	for _, stack := range stacks {
 		stackMap[stack.id] = append([]uint64(nil), stack.frames...)
 	}
+	// Samples on the same stack share one frame slice: a startup trace has about a million samples but few distinct
+	// stacks, and a copy per sample peaked at about 1 GB.
+	shared := make(map[*uint64][]Frame)
 	for _, event := range events {
 		name := metadata[event.metadata].name
 		provider := metadata[event.metadata].provider
 		if isSampleEvent(provider, name, event.payload) {
-			frames := make([]Frame, 0)
 			ips := event.frames
 			if !event.resolved {
 				ips = stackMap[event.stackID]
 			}
-			for _, ip := range ips {
-				frames = append(frames, Frame{IP: ip})
+			var frames []Frame
+			if len(ips) > 0 {
+				var ok bool
+				if frames, ok = shared[&ips[0]]; !ok {
+					frames = make([]Frame, len(ips))
+					for i, ip := range ips {
+						frames[i] = Frame{IP: ip}
+					}
+					shared[&ips[0]] = frames
+				}
 			}
 			trace.Samples = append(trace.Samples, Sample{
 				Timestamp: normalizeTimestamp(event.timestamp, trace.TimestampFrequency),
@@ -1101,9 +1111,15 @@ func resolveMethods(trace *Trace) {
 	// search over the methods sorted by start address.
 	byStart := slices.Clone(trace.Methods)
 	slices.SortStableFunc(byStart, func(a, b Method) int { return cmp.Compare(a.StartAddress, b.StartAddress) })
+	done := make(map[*Frame]bool)
 	for sampleIndex := range trace.Samples {
-		for frameIndex := range trace.Samples[sampleIndex].Frames {
-			frame := &trace.Samples[sampleIndex].Frames[frameIndex]
+		stack := trace.Samples[sampleIndex].Frames
+		if len(stack) == 0 || done[&stack[0]] {
+			continue
+		}
+		done[&stack[0]] = true
+		for frameIndex := range stack {
+			frame := &stack[frameIndex]
 			// The candidate is the last method starting at or before the frame's address.
 			next := sort.Search(len(byStart), func(i int) bool { return byStart[i].StartAddress > frame.IP })
 			if next == 0 {
