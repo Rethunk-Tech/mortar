@@ -3,7 +3,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/p
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
+import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 type View = 'grid' | 'list'
@@ -48,11 +48,7 @@ export function announceAlso(names: string[] | null | undefined) {
   })
 }
 
-export const fail = (title: string) => (e: unknown) => {
-  useToasts
-    .getState()
-    .push({ kind: 'error', title, body: errorMessage(e), detail: errorDetails(e) })
-}
+export const fail = reportError
 
 export const open = () => {
   const { game, openId } = useProfiles.getState()

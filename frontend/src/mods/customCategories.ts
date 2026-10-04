@@ -8,11 +8,10 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorMessage } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { reportError } from '../toasts/report.ts'
 
-const fail = (title: string) => (e: unknown) => {
-  useToasts.getState().push({ kind: 'error', title, detail: errorMessage(e) })
+export function categoriesDiffer(a: CustomCategory[], b: CustomCategory[]) {
+  return JSON.stringify(a) !== JSON.stringify(b)
 }
 
 export const useCustomCategories = create<{
@@ -47,7 +46,7 @@ export const useCustomCategories = create<{
     try {
       useProfiles.getState().replace(await SetEntryCategory(game, id, key, override))
     } catch (e) {
-      fail(i18n._(msg`Could not set the category`))(e)
+      reportError(i18n._(msg`Could not set the category`))(e)
     }
   },
 }))

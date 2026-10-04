@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Button,
@@ -18,8 +19,7 @@ import { ProfilesWithMod } from '../../bindings/github.com/Rethunk-AI/mortar/int
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { reportError } from '../toasts/report.ts'
 import { isLocked } from './locked.ts'
 import { selectableProfileIds } from './otherProfiles.ts'
 
@@ -201,14 +201,7 @@ export function OtherProfilesDialog({
             ),
         ),
       )
-      .catch((e) =>
-        useToasts.getState().push({
-          kind: 'error',
-          title: t`Could not read other profiles`,
-          body: errorMessage(e),
-          detail: errorDetails(e),
-        }),
-      )
+      .catch(reportError(t`Could not read other profiles`))
   }, [currentProfileId, game, open, t, uniqueId, uniqueIds])
   useEffect(() => {
     if (!open) {
@@ -257,18 +250,14 @@ export function OtherProfilesDialog({
         rows.filter((row) => selected.includes(row.profileId)),
       )
       onClose()
-    } catch (e) {
-      useToasts.getState().push({
-        kind: 'error',
-        title: t`Could not change mods`,
-        body: errorMessage(e),
-        detail: errorDetails(e),
-      })
     } finally {
       setPending(false)
     }
   }
-  const confirmText = mode === 'remove' ? t`Remove from ${selected.length} profiles` : confirmLabel
+  const confirmText =
+    mode === 'remove'
+      ? t`${plural(selected.length, { one: 'Remove from # profile', other: 'Remove from # profiles' })}`
+      : confirmLabel
   return (
     <Dialog open={open} onClose={pending ? undefined : onClose} transitionDuration={0}>
       <DialogTitle>{title}</DialogTitle>
@@ -289,7 +278,7 @@ export function OtherProfilesDialog({
         selected={profiles.length === 0 ? 0 : selected.length}
         confirmText={confirmText}
         onClose={onClose}
-        onConfirm={() => confirm().catch(() => undefined)}
+        onConfirm={() => confirm().catch(reportError(t`Could not change mods`))}
       />
     </Dialog>
   )
