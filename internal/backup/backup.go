@@ -16,6 +16,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 // KindLaunch, KindUpdate, KindRestore, KindManual, and KindScheduled are Cause.Kind values written beside a zip.
@@ -268,6 +269,25 @@ func SetPinned(backupsDir, name string, pinned bool) error {
 		return nil
 	}
 	return writeCause(path, cause)
+}
+
+// Delete removes an unpinned backup and its cause file; a pinned one must be unpinned first.
+func Delete(backupsDir, name string) error {
+	if name == "" || filepath.Base(name) != name || filepath.Ext(name) != ".zip" || strings.Contains(name, "..") {
+		return usererr.New(usererr.Invalid, "invalid backup name")
+	}
+	path := filepath.Join(backupsDir, name)
+	if _, err := os.Stat(path); err != nil {
+		return err
+	}
+	if readCause(path).Pinned {
+		return usererr.New(usererr.Invalid, "this backup is kept; allow cleanup first")
+	}
+	err := os.Remove(path)
+	if cerr := os.Remove(causePath(path)); cerr != nil && !errors.Is(cerr, fs.ErrNotExist) {
+		err = errors.Join(err, cerr)
+	}
+	return err
 }
 
 // prune removes the oldest unpinned backups of group beyond keep, and temp files older than MinGap: a backup still

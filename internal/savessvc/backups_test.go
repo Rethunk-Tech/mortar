@@ -172,3 +172,38 @@ func TestOpenSaveFolderRefusesPathsOutsideSaves(t *testing.T) {
 		}
 	}
 }
+
+func TestSaveBackupsFiltersAndDeleteRefusesPinned(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	savesDir := filepath.Join(t.TempDir(), "Saves")
+	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
+	writeFarm(t, savesDir, "Farm_2", "Rainy", "v1")
+	dir := filepath.Join(mustData(t), "mortar", "backups")
+	t0 := time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC)
+	if _, err := backup.Saves(savesDir, dir, backup.DefaultKeep, t0, backup.Cause{Kind: backup.KindLaunch}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := backup.Folder(savesDir, dir, "Farm_2", backup.DefaultKeep, t0.Add(time.Hour), backup.Cause{Kind: backup.KindManual, Pinned: true}); err != nil {
+		t.Fatal(err)
+	}
+	s := &Service{scanner: &saves.Scanner{Dir: savesDir}}
+	one, err := s.SaveBackups("Farm_1")
+	if err != nil || len(one) != 1 || one[0].Kind != backup.KindLaunch {
+		t.Fatalf("Farm_1 = %+v, %v", one, err)
+	}
+	two, err := s.SaveBackups("Farm_2")
+	if err != nil || len(two) != 2 || two[0].Kind != backup.KindManual {
+		t.Fatalf("Farm_2 = %+v, %v", two, err)
+	}
+	if err := s.DeleteBackup(two[0].Name); err == nil {
+		t.Fatal("deleted a pinned backup")
+	}
+	if err := s.DeleteBackup(two[1].Name); err != nil {
+		t.Fatal(err)
+	}
+	if left, _ := s.SaveBackups("Farm_2"); len(left) != 1 {
+		t.Fatalf("left = %+v", left)
+	}
+}

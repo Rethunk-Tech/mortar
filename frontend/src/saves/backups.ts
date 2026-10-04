@@ -1,3 +1,5 @@
+import { i18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
 import type { Backup } from '../../bindings/github.com/Rethunk-AI/mortar/internal/backup/models.ts'
 import {
@@ -56,3 +58,22 @@ export const useSaveBackups = create<{
     },
   }
 })
+
+export function causeLabel(b: Backup, profileName: (id: string) => string): string {
+  if (b.kind === 'update' && b.profile) {
+    return i18n._(msg`Before updating ${profileName(b.profile)}`)
+  }
+  if (b.kind === 'restore') {
+    return i18n._(msg`Before a restore`)
+  }
+  if (b.kind === 'launch') {
+    return i18n._(msg`Before playing`)
+  }
+  if (b.kind === 'scheduled') {
+    return i18n._(msg`Scheduled`)
+  }
+  if (b.kind === 'manual') {
+    return i18n._(msg`Manual`)
+  }
+  return i18n._(msg`Unknown`)
+}

@@ -45,6 +45,29 @@ func (s *Service) ListBackups() ([]backup.Backup, error) {
 	return out, nil
 }
 
+// SaveBackups lists, newest first, every backup that contains the save folder.
+func (s *Service) SaveBackups(save string) ([]backup.Backup, error) {
+	all, err := s.ListBackups()
+	if err != nil {
+		return nil, err
+	}
+	return slices.DeleteFunc(all, func(b backup.Backup) bool {
+		return !slices.ContainsFunc(b.Saves, func(sn backup.Snap) bool { return sn.Folder == save })
+	}), nil
+}
+
+// DeleteBackup removes an unpinned backup, wherever the backups folders hold it.
+func (s *Service) DeleteBackup(name string) error {
+	if err := backupNameOK(name); err != nil {
+		return err
+	}
+	_, reads, err := s.backupReads()
+	if err != nil {
+		return err
+	}
+	return backup.Delete(filepath.Dir(findBackup(reads, name)), name)
+}
+
 // SetBackupPinned keeps or unkeeps a backup during rotation.
 func (s *Service) SetBackupPinned(name string, pinned bool) error {
 	_, dir, err := s.backupDirs()

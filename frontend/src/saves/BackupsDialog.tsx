@@ -28,7 +28,7 @@ import { MenuAction } from '../shell/MenuAction.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
-import { useSaveBackups } from './backups.ts'
+import { causeLabel, useSaveBackups } from './backups.ts'
 import { useSaves } from './store.ts'
 
 function overwriteMessage(snaps: Snap[], have: Set<string>): string {
@@ -42,25 +42,6 @@ function overwriteMessage(snaps: Snap[], have: Set<string>): string {
   return i18n._(
     msg`${hit.join(', ')} will be overwritten. A backup of the current Saves folder is made first.`,
   )
-}
-
-function causeLabel(b: Backup, profileName: (id: string) => string): string {
-  if (b.kind === 'update' && b.profile) {
-    return i18n._(msg`Before updating ${profileName(b.profile)}`)
-  }
-  if (b.kind === 'restore') {
-    return i18n._(msg`Before a restore`)
-  }
-  if (b.kind === 'launch') {
-    return i18n._(msg`Before playing`)
-  }
-  if (b.kind === 'scheduled') {
-    return i18n._(msg`Scheduled`)
-  }
-  if (b.kind === 'manual') {
-    return i18n._(msg`Manual`)
-  }
-  return i18n._(msg`Unknown`)
 }
 
 function BackupRow({
