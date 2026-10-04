@@ -24,15 +24,14 @@ export function HiddenInside({ mod, profile }: { mod: Mod; profile: Profile }) {
       return
     }
     let live = true
-    DotHiddenMods(game, profile.id)
+    DotHiddenMods(game, profile.id, mod.key)
       .then((list) => live && setHidden(list ?? []))
       .catch(reportUnexpected)
     return () => {
       live = false
     }
-  }, [on, game, profile.id, profile.updated])
-  const mine = hidden.filter((h) => h.key === mod.key)
-  if (mine.length === 0) {
+  }, [on, game, profile.id, profile.updated, mod.key])
+  if (hidden.length === 0) {
     return null
   }
   return (
@@ -41,7 +40,7 @@ export function HiddenInside({ mod, profile }: { mod: Mod; profile: Profile }) {
         {t`Hidden inside this mod`}
       </Typography>
       <List dense={true} disablePadding={true}>
-        {mine.map((h) => (
+        {hidden.map((h) => (
           <ListItem key={`${h.folder}-${h.uniqueId}`} disableGutters={true} sx={{ py: 0.25 }}>
             <ListItemText
               primary={h.version === '' ? h.name : `${h.name} · ${h.version}`}

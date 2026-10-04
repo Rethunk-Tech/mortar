@@ -25,8 +25,9 @@ type HiddenMod struct {
 	Version  string `json:"version"`
 }
 
-// DotHiddenMods lists the dot-hidden mods in the profile's user entries.
-func (s *Store) DotHiddenMods(game, id string) ([]HiddenMod, error) {
+// DotHiddenMods lists the dot-hidden mods in the profile's user entries, or only in the entry with the given key
+// when key is not empty.
+func (s *Store) DotHiddenMods(game, id, key string) ([]HiddenMod, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	p, dir, err := s.readDir(game, id)
@@ -36,7 +37,7 @@ func (s *Store) DotHiddenMods(game, id string) ([]HiddenMod, error) {
 	modsDir := filepath.Join(dir, "mods")
 	out := []HiddenMod{}
 	for _, e := range p.Entries {
-		if e.Source.Bundled() {
+		if e.Source.Bundled() || (key != "" && e.Key != key) {
 			continue
 		}
 		root := filepath.Join(modsDir, e.Key)
@@ -63,12 +64,12 @@ func (s *Store) DotHiddenMods(game, id string) ([]HiddenMod, error) {
 }
 
 // DotHiddenMods lists mods inside the profile's entries that sit under a folder starting with a dot, which SMAPI
-// skips; it lists none unless the game setting showDotHiddenMods is on.
-func (s *Service) DotHiddenMods(game, id string) ([]HiddenMod, error) {
+// skips; it lists none unless the game setting showDotHiddenMods is on. A non-empty key limits it to that entry.
+func (s *Service) DotHiddenMods(game, id, key string) ([]HiddenMod, error) {
 	if !s.settings.Get().GamePrefs(game).ShowDotHiddenMods {
 		return []HiddenMod{}, nil
 	}
-	return s.store.DotHiddenMods(game, id)
+	return s.store.DotHiddenMods(game, id, key)
 }
 
 func hiddenUnder(root string, ours map[string]bool) ([]HiddenMod, error) {

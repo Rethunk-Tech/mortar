@@ -29,11 +29,11 @@ func TestDotHiddenModsListsOnlyDotsMortarDidNotAdd(t *testing.T) {
 	if _, err := e.SetModEnabled("stardew", p.ID, "pack", "me.off", false); err != nil {
 		t.Fatal(err)
 	}
-	if got, err := svc.DotHiddenMods("stardew", p.ID); err != nil || len(got) != 0 {
+	if got, err := svc.DotHiddenMods("stardew", p.ID, ""); err != nil || len(got) != 0 {
 		t.Fatalf("setting off = %+v, %v", got, err)
 	}
 	setGamePref(t, st, "showDotHiddenMods", "true")
-	got, err := svc.DotHiddenMods("stardew", p.ID)
+	got, err := svc.DotHiddenMods("stardew", p.ID, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,5 +45,11 @@ func TestDotHiddenModsListsOnlyDotsMortarDidNotAdd(t *testing.T) {
 		if h.Key != "pack" || want[h.UniqueID] != h.Folder {
 			t.Errorf("unexpected %+v", h)
 		}
+	}
+	if one, err := svc.DotHiddenMods("stardew", p.ID, "pack"); err != nil || len(one) != len(want) {
+		t.Fatalf("keyed = %+v, %v", one, err)
+	}
+	if none, err := svc.DotHiddenMods("stardew", p.ID, "other"); err != nil || len(none) != 0 {
+		t.Fatalf("other key = %+v, %v", none, err)
 	}
 }

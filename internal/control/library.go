@@ -21,7 +21,7 @@ func (s *Services) handleLibrary(method string, p Params) (res any, ok bool, err
 	case "library.extra":
 		res, err = s.Profiles.ExtraFolderMods(p.Game)
 	case "library.hidden":
-		res, err = s.profileCall(p, func(id string) (any, error) { return s.Profiles.DotHiddenMods(p.Game, id) })
+		res, err = s.profileCall(p, func(id string) (any, error) { return s.Profiles.DotHiddenMods(p.Game, id, p.Key) })
 	case "library.old-files":
 		res, err = s.profileCall(p, func(id string) (any, error) { return s.Profiles.PendingOldFiles(p.Game, id) })
 	case "library.old-files.resolve":
