@@ -1,4 +1,4 @@
-import { plural } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -13,20 +13,51 @@ import {
 } from '@mui/material'
 import { CloudOff, Download, ExternalLink, Plus, Search, SearchX } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { i18n } from '../i18n/index.ts'
 import { PrefSegmented } from '../settings/PrefControls.tsx'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
+import { usePending } from '../toasts/usePending.ts'
 import { clampPage, DEBOUNCE_MS, PAGE_SIZE } from './browseState.ts'
 import type { BrowseItem, BrowsePageProps } from './browseTypes.ts'
 
 const NEXUS = 'nexus'
 const GITHUB = 'github'
+const CURSEFORGE = 'curseforge'
 const FIRST_PAGE = 1
 const PICTURE_PX = 72
 const CARD_MIN_PX = 340
 const SKELETON_KEYS = ['a', 'b', 'c', 'd', 'e', 'f']
 const ICON_SIZE = 40
 const STALE_OPACITY = 0.6
+
+function searchHint(source: string, premium: boolean): string {
+  if (source === GITHUB) {
+    return i18n._(
+      msg`Search GitHub for mods published as releases. Add puts the latest release in this profile.`,
+    )
+  }
+  if (source === CURSEFORGE) {
+    return i18n._(msg`Search CurseForge. Open the mod's page to download it.`)
+  }
+  if (source === NEXUS && premium) {
+    return i18n._(msg`Search Nexus Mods. Download installs the mod into this profile.`)
+  }
+  return i18n._(
+    msg`Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download.`,
+  )
+}
+
+function openPageLabel(source: string): string {
+  if (source === GITHUB) {
+    return i18n._(msg`Open on GitHub`)
+  }
+  if (source === CURSEFORGE) {
+    return i18n._(msg`Open on CurseForge`)
+  }
+  return i18n._(msg`Open on Nexus`)
+}
 
 const grid = {
   display: 'grid',
@@ -130,16 +161,10 @@ function BrowsePage({
   const sources = [
     { value: NEXUS, label: t`Nexus Mods` },
     { value: GITHUB, label: t`GitHub` },
-    ...(hasCurseForgeKey ? [{ value: 'curseforge', label: t`CurseForge` }] : []),
+    ...(hasCurseForgeKey ? [{ value: CURSEFORGE, label: t`CurseForge` }] : []),
   ]
   const placeholder = source === GITHUB ? t`Search GitHub releases` : t`Search Nexus Mods`
-
-  let hint = t`Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download.`
-  if (source === GITHUB) {
-    hint = t`Search GitHub for mods published as releases. Add puts the latest release in this profile.`
-  } else if (source === NEXUS && premium) {
-    hint = t`Search Nexus Mods. Download installs the mod into this profile.`
-  }
+  const hint = searchHint(source, premium)
   let body: React.ReactNode
   if (status === 'idle') {
     body = (
@@ -274,6 +299,7 @@ function ResultCard({
   addGitHub: (repo: string) => void
 }) {
   const { t } = useLingui()
+  const [pending, run] = usePending()
   const {
     source,
     id,
@@ -300,21 +326,31 @@ function ResultCard({
         size="small"
         variant="contained"
         startIcon={<Plus size={14} />}
-        onClick={() => addGitHub(id)}
+        disabled={pending}
+        onClick={() => run(() => Promise.resolve(addGitHub(id)))}
       >
         {t`Add`}
       </Button>
     )
-  } else if (premium) {
+  } else if (source === NEXUS && premium) {
     action = (
       <Button
         size="small"
         variant="contained"
         startIcon={<Download size={14} />}
-        onClick={() => downloadNexus(id)}
+        disabled={pending}
+        onClick={() => run(() => Promise.resolve(downloadNexus(id)))}
       >
         {t`Download`}
       </Button>
+    )
+  } else if (source === NEXUS) {
+    action = (
+      <DisabledReason title={t`Premium only`} disabled={true}>
+        <Button size="small" variant="contained" startIcon={<Download size={14} />} disabled={true}>
+          {t`Download`}
+        </Button>
+      </DisabledReason>
     )
   }
   return (
@@ -375,7 +411,7 @@ function ResultCard({
         }}
       >
         <IconAction
-          label={source === GITHUB ? t`Open on GitHub` : t`Open on Nexus`}
+          label={openPageLabel(source)}
           icon={<ExternalLink size={15} />}
           onClick={() => openUrl(url)}
         />
