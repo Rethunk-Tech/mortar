@@ -87,3 +87,39 @@ func TestResolveFollowsThePointerFile(t *testing.T) {
 		t.Fatalf("resolve = %q %v", got, err)
 	}
 }
+
+func TestRelocatePreservesHardlinks(t *testing.T) {
+	root := t.TempDir()
+	src, dest, def := filepath.Join(root, "src"), filepath.Join(root, "dest"), filepath.Join(root, "def")
+	if err := os.MkdirAll(filepath.Join(src, "p"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	a, b := filepath.Join(src, "store.bin"), filepath.Join(src, "p", "linked.bin")
+	if err := os.WriteFile(a, make([]byte, 4096), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Link(a, b); err != nil {
+		t.Skipf("hard links unavailable: %v", err)
+	}
+	if _, ok := linkedKey(mustStat(t, a)); !ok {
+		t.Skip("link counts unavailable on this platform")
+	}
+	if n, err := Size(src); err != nil || n != 4096 {
+		t.Fatalf("Size = %d, %v; want one inode counted once", n, err)
+	}
+	if err := Relocate(src, dest, def); err != nil {
+		t.Fatal(err)
+	}
+	if !os.SameFile(mustStat(t, filepath.Join(dest, "store.bin")), mustStat(t, filepath.Join(dest, "p", "linked.bin"))) {
+		t.Fatal("hard link was copied as two files")
+	}
+}
+
+func mustStat(t *testing.T, p string) os.FileInfo {
+	t.Helper()
+	info, err := os.Stat(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return info
+}

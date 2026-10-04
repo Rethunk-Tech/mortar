@@ -78,6 +78,44 @@ func verifyCopy(src, dst string) error {
 	})
 }
 
+// linkingCopy copies each file, but re-creates a hard link for every further name of an inode already copied, so
+// files the store shares with profiles stay shared on the target. A link the target refuses becomes a copy.
+func linkingCopy() func(from, to, rel string) error {
+	copied := map[fileKey]string{}
+	return func(from, to, _ string) error {
+		info, err := os.Stat(from)
+		if err != nil {
+			return err
+		}
+		key, linked := linkedKey(info)
+		if !linked {
+			return CopyFile(from, to)
+		}
+		if first, ok := copied[key]; ok && os.Link(first, to) == nil {
+			return nil
+		}
+		if err := CopyFile(from, to); err != nil {
+			return err
+		}
+		if _, ok := copied[key]; !ok {
+			copied[key] = to
+		}
+		return nil
+	}
+}
+
+// clampProgress keeps reported bytes within total, which counts each hard-linked inode once.
+func clampProgress(report func(CopyProgress), total int64) func(CopyProgress) {
+	if report == nil {
+		return nil
+	}
+	return func(p CopyProgress) {
+		p.Bytes = min(p.Bytes, total)
+		p.TotalBytes = total
+		report(p)
+	}
+}
+
 func emptyDir(path string) error {
 	ents, err := os.ReadDir(path)
 	if err != nil {
@@ -131,7 +169,7 @@ func Relocate(src, dest, def string, reports ...func(CopyProgress)) error {
 	if estimate.FreeBytes < estimate.Bytes {
 		return &SpaceError{Need: estimate.Bytes}
 	}
-	if err := copyTree(src, dest, report, nil); err != nil {
+	if err := copyTree(src, dest, clampProgress(report, estimate.Bytes), linkingCopy()); err != nil {
 		_ = os.RemoveAll(dest)
 		return err
 	}
