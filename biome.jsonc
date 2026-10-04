@@ -147,7 +147,8 @@
         "**/*.test.ts",
         "**/*.test.tsx",
         "**/__tests__/**",
-        "**/test/**"
+        "**/test/**",
+        "**/e2e/**"
       ],
       "linter": {
         "rules": {
@@ -206,6 +207,8 @@
         "**/*.config.mjs",
         "**/*.config.ts",
         "**/scripts/**",
+        "**/e2e/global-*.ts",
+        "**/e2e/sandbox.ts",
         "tools/**"
       ],
       "linter": {

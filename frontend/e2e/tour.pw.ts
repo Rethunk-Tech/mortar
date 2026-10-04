@@ -13,6 +13,7 @@ async function serverUp(baseURL: string): Promise<boolean> {
 // Each step's spotlight must sit over the element the step talks about (in step order).
 const STEP_TARGETS = [
   'main nav',
+  'main [data-tour="browse-tab"]',
   'main nav button.MuiButton-contained, main nav .MuiButtonGroup-root button',
   'main [data-tour="mods-tab"]',
   'main [data-tour="problems-tab"]',

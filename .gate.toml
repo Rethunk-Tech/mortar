@@ -1,0 +1,9 @@
+[gates.e2e]
+run = "bun run --cwd frontend e2e"
+timeout = "3m"
+e2e = true
+
+[gates.e2e-updater]
+run = "bun run e2e:updater"
+timeout = "3m"
+e2e = true

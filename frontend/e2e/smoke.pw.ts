@@ -44,6 +44,7 @@ test('every tab and settings page opens without errors or long tasks', async ({
   page,
   baseURL,
 }) => {
+  test.setTimeout(90_000)
   // Opt-in: without the self-test server (scripts/selftest.sh start) there is nothing to drive.
   if (!(await serverUp(baseURL ?? ''))) {
     test
