@@ -183,7 +183,7 @@ The frontend moves on when one fails to load and shows a solid tone after the la
 - `launchAtLogin` (false): start Mortar when the user logs in; changing it writes or removes the OS autostart entry.
 - `startMinimised` (false): create the window hidden; the tray Show brings it up.
 - `rememberWindow` (false): persist size and position on close (`window.json`) and restore on start, clamped to a visible screen.
-- `extensionConnection` (`allow`): `allow` or `off`; `off` makes the native host report Mortar as not connected to the browser extension.
+- `extensionConnection` (`allow`): `allow` or `off`; `off` makes the native host answer every data request empty with state `off`, and the extension then draws nothing; link relaying still works.
 - `shortcuts` (the Settings › Shortcuts table): action id to a chord (`Ctrl+K`, `Ctrl+Shift+F`, …). Missing ids take the defaults; an unknown id is refused on write and dropped on load; a chord used by two actions is refused on write.
 
 **Export and import:** Settings › General › Settings file writes every field in `portableFields` (`internal/settings/portable.go`) as `{"version": 1, ...}` through the native save dialog.
