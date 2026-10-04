@@ -150,4 +150,4 @@ gh workflow run components.yml --repo Rethunk-AI/mortar
 gh api repos/Rethunk-AI/mortar/dispatches -f event_type=components
 ```
 
-The workflow writes the secret to a temporary file, runs the generator with `GOTMPDIR=/var/tmp TMPDIR=/var/tmp`, creates the fixed `components` release when needed, and uploads `components.json` and `components.json.sig` with `--clobber`.
+The workflow writes the secret to a temporary file, runs the generator with `GOTMPDIR=/var/tmp TMPDIR=/var/tmp`, and creates a `components-<serial>` release (not marked latest) holding `components.json` and `components.json.sig`, each published once because releases are immutable. Until `Rethunk-AI/mortar-smapi-bridge` is public the generator fails with a 404 looking it up, since the workflow's token reads only this repo.

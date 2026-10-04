@@ -41,12 +41,14 @@ jobs:
           printf '%s\n' "$UPDATE_KEY" >"$key"
           GOTMPDIR=/var/tmp TMPDIR=/var/tmp MORTAR_UPDATE_KEY="$key" go run ./cmd/components
 
+      # Published releases are immutable, so each signed manifest is its own components-<serial> release, created once
+      # with both files; Mortar reads the newest one.
       - name: Publish components release
         env:
           GH_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
         run: |
-          if ! gh release view components --repo "$REPOSITORY" >/dev/null 2>&1; then
-            gh release create components --repo "$REPOSITORY" --title components --notes "Signed component manifest" --latest=false
-          fi
-          gh release upload components --repo "$REPOSITORY" components.json components.json.sig --clobber
+          set -euo pipefail
+          serial="$(jq -r .serial components.json)"
+          gh release create "components-$serial" --repo "$REPOSITORY" --target "$GITHUB_SHA" --latest=false \
+            --title "Components $serial" --notes "Signed component manifest $serial" components.json components.json.sig

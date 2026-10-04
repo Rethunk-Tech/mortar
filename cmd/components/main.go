@@ -161,7 +161,13 @@ func resolve(ctx context.Context, client *github.Client, source components.Sourc
 	}
 	releases, err := client.Releases(ctx, source.Source.Owner, source.Source.Repo)
 	if err != nil {
-		return components.Component{}, fmt.Errorf("look up %s/%s: %w", source.Source.Owner, source.Source.Repo, err)
+		hint := ""
+		if strings.Contains(err.Error(), "404") {
+			// GitHub answers 404, not 403, for a private repo the token cannot read; the workflow's GITHUB_TOKEN reads
+			// only Mortar's own repo.
+			hint = " (a private repo answers 404 to a token without access: make it public or give the generator a token that can read it)"
+		}
+		return components.Component{}, fmt.Errorf("look up %s/%s: %w%s", source.Source.Owner, source.Source.Repo, err, hint)
 	}
 	release, asset, err := selectAsset(releases, source.Source.Owner+"/"+source.Source.Repo, source.Version, source.AssetPattern)
 	if err != nil {

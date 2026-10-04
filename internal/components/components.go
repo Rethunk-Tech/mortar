@@ -3,6 +3,7 @@ package components
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"crypto/ed25519"
 	"crypto/sha256"
@@ -28,7 +29,10 @@ import (
 )
 
 const (
-	ManifestURL = "https://github.com/Rethunk-AI/mortar/releases/download/components/components.json"
+	// ReleasesURL lists Mortar's releases. Published releases are immutable, so every signed manifest is its own
+	// components-<serial> release and the newest one is the current manifest.
+	ReleasesURL = "https://api.github.com/repos/Rethunk-AI/mortar/releases?per_page=100"
+	tagPrefix   = "components-"
 	cacheName   = "components-manifest.json"
 	day         = 24 * time.Hour
 
@@ -283,8 +287,10 @@ type cachedManifest struct {
 
 // Client loads the signed manifest and downloads assets named by it.
 type Client struct {
-	HTTP          *http.Client
+	HTTP *http.Client
+	// ManifestURL, when set, is fetched as is instead of looking up the newest components release.
 	ManifestURL   string
+	ReleasesURL   string
 	GitHubBaseURL string
 	manifest      Manifest
 }
@@ -301,11 +307,36 @@ func (c *Client) httpClient() *http.Client {
 	return http.DefaultClient
 }
 
-func (c *Client) manifestURL() string {
+func (c *Client) manifestURL(ctx context.Context) (string, error) {
 	if c.ManifestURL != "" {
-		return c.ManifestURL
+		return c.ManifestURL, nil
 	}
-	return ManifestURL
+	body, err := c.get(ctx, cmp.Or(c.ReleasesURL, ReleasesURL), maxManifest)
+	if err != nil {
+		return "", err
+	}
+	var releases []struct {
+		Tag    string `json:"tag_name"`
+		Draft  bool   `json:"draft"`
+		Assets []struct {
+			Name string `json:"name"`
+			URL  string `json:"browser_download_url"`
+		} `json:"assets"`
+	}
+	if err := json.Unmarshal(body, &releases); err != nil {
+		return "", err
+	}
+	for _, r := range releases {
+		if r.Draft || !strings.HasPrefix(r.Tag, tagPrefix) {
+			continue
+		}
+		for _, a := range r.Assets {
+			if a.Name == "components.json" {
+				return a.URL, nil
+			}
+		}
+	}
+	return "", errors.New("no components release is published")
 }
 
 // SetManifest selects the already verified manifest used by Component and Download.
@@ -448,11 +479,15 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 }
 
 func (c *Client) fetch(ctx context.Context) ([]byte, []byte, error) {
-	manifest, err := c.get(ctx, c.manifestURL(), maxManifest)
+	url, err := c.manifestURL(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
-	signature, err := c.get(ctx, c.manifestURL()+".sig", maxSignature)
+	manifest, err := c.get(ctx, url, maxManifest)
+	if err != nil {
+		return nil, nil, err
+	}
+	signature, err := c.get(ctx, url+".sig", maxSignature)
 	if err != nil {
 		return nil, nil, err
 	}

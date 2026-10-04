@@ -4,6 +4,7 @@ import (
 	"crypto/ed25519"
 	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -82,7 +83,15 @@ func TestLoadRefusesSerialRollbackAndKeepsCachedManifest(t *testing.T) {
 	body, signature := signedManifest(t, base+2, private)
 	rollback, rollbackSignature := signedManifest(t, base+1, private)
 	serveRollback := false
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	var server *httptest.Server
+	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/releases" {
+			// Newest first, as GitHub lists them: an app release and a draft come before the newest manifest.
+			_, _ = fmt.Fprintf(w, `[{"tag_name":"v9.9.9","assets":[{"name":"components.json","browser_download_url":"%[1]s/wrong"}]},
+				{"tag_name":"components-9","draft":true,"assets":[{"name":"components.json","browser_download_url":"%[1]s/wrong"}]},
+				{"tag_name":"components-2","assets":[{"name":"components.json","browser_download_url":"%[1]s/components.json"}]}]`, server.URL)
+			return
+		}
 		if r.URL.Path == "/components.json.sig" {
 			if serveRollback {
 				_, _ = w.Write(rollbackSignature)
@@ -101,7 +110,7 @@ func TestLoadRefusesSerialRollbackAndKeepsCachedManifest(t *testing.T) {
 	now := time.Now()
 	cache := &meta.Client{CacheDir: t.TempDir(), Now: func() time.Time { return now }}
 	client := NewClient(server.Client())
-	client.ManifestURL = server.URL + "/components.json"
+	client.ReleasesURL = server.URL + "/releases"
 	if manifest, err := client.Load(t.Context(), cache, public); err != nil || manifest.Serial != base+2 {
 		t.Fatalf("initial manifest = %#v, %v", manifest, err)
 	}
